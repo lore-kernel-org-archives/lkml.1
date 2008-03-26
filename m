@@ -1,104 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759879AbYCZREw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758246AbYCZRGS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759879AbYCZREw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Mar 2008 13:04:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755284AbYCZREo
+	id S1758246AbYCZRGS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Mar 2008 13:06:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757589AbYCZRGE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Mar 2008 13:04:44 -0400
-Received: from py-out-1112.google.com ([64.233.166.183]:63298 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753722AbYCZREn (ORCPT
+	Wed, 26 Mar 2008 13:06:04 -0400
+Received: from mga11.intel.com ([192.55.52.93]:43326 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757208AbYCZRGB convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Mar 2008 13:04:43 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=Xj/hv8R0hvI5tS7vMoaXgJdzpWNXR9Z5DtKQ0pr1HfInENM+FFtbxfIp9dHbN/vnL7GCZ5U2ooCfBBHNWv7qJiYoUB4jsWKG8Pusw7oMIRDdpxOfQfKl9rJyR4sT5hyFe1OYOWKreXnWpUxsFDeaD+m5FyohQ1x7UWiZM7xP0Io=
-Message-ID: <bc64b4640803261004t3ac4910bq43a889a6fab350b@mail.gmail.com>
-Date: Wed, 26 Mar 2008 20:04:41 +0300
-From: Dmitry <dbaryshkov@gmail.com>
-To: "Paul Mundt" <lethal@linux-sh.org>,
-       "Haavard Skinnemoen" <haavard.skinnemoen@atmel.com>,
-       "Dmitry Baryshkov" <dbaryshkov@gmail.com>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, hskinnemoen@atmel.com, tony@atomide.com,
-       rmk+kernel@arm.linux.org.uk, paul@pwsan.com
-Subject: Re: [PATCH 1/3] Clocklib: add generic framework for managing clocks.
-In-Reply-To: <20080326161456.GA12490@linux-sh.org>
+	Wed, 26 Mar 2008 13:06:01 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,559,1199692800"; 
+   d="scan'208";a="540414731"
+X-MIMEOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080326154913.GA15326@doriath.ww600.siemens.net>
-	 <20080326155203.GA15405@doriath.ww600.siemens.net>
-	 <20080326170441.795fb928@hskinnemo-gx620.norway.atmel.com>
-	 <20080326161456.GA12490@linux-sh.org>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Subject: RE: larger default page sizes...
+Date: Wed, 26 Mar 2008 10:05:16 -0700
+Message-ID: <1FE6DD409037234FAB833C420AA843ECE9E7AC@orsmsx424.amr.corp.intel.com>
+In-reply-to: <29495f1d0803260854j46d37eedrc0927af226b3b8c8@mail.gmail.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: larger default page sizes...
+Thread-Index: AciPW5kaTHwmg/O7SBy/ezEKZyE0DgABsbQQ
+References: <18408.29107.709577.374424@cargo.ozlabs.ibm.com> <20080324.211532.33163290.davem@davemloft.net> <18408.59112.945786.488350@cargo.ozlabs.ibm.com> <20080325.163240.102401706.davem@davemloft.net> <1FE6DD409037234FAB833C420AA843ECE9E2CA@orsmsx424.amr.corp.intel.com> <29495f1d0803260854j46d37eedrc0927af226b3b8c8@mail.gmail.com>
+From: "Luck, Tony" <tony.luck@intel.com>
+To: "Nish Aravamudan" <nish.aravamudan@gmail.com>
+Cc: "David Miller" <davem@davemloft.net>, <paulus@samba.org>,
+       <clameter@sgi.com>, <linux-mm@kvack.org>,
+       <linux-kernel@vger.kernel.org>, <linux-ia64@vger.kernel.org>,
+       <torvalds@linux-foundation.org>, <agl@us.ibm.com>,
+       "Mel Gorman" <mel@csn.ul.ie>
+X-OriginalArrivalTime: 26 Mar 2008 17:05:19.0928 (UTC) FILETIME=[924F8B80:01C88F63]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+> That's not entirely true. We have a dynamic pool now, thanks to Adam
+> Litke [added to Cc], which can be treated as a high watermark for the
+> hugetlb pool (and the static pool value serves as a low watermark).
+> Unless by hugepages you mean something other than what I think (but
+> referring to a 2M size on x86 imples you are not). And with the
+> antifragmentation improvements, hugepage pool changes at run-time are
+> more likely to succeed [added Mel to Cc].
 
-2008/3/26, Paul Mundt <lethal@linux-sh.org>:
-> On Wed, Mar 26, 2008 at 05:04:41PM +0100, Haavard Skinnemoen wrote:
->  > On Wed, 26 Mar 2008 18:52:03 +0300
->  > Dmitry Baryshkov <dbaryshkov@gmail.com> wrote:
->  >
->  > > +struct clk {
->  > > +   struct list_head node;
->  > > +   struct clk      *parent;
->  > > +
->  > > +   const char      *name;
->  > > +   struct module   *owner;
->  > > +
->  > > +   int             users;
->  > > +   unsigned long   rate;
->  > > +   int             delay;
->  > > +
->  > > +   int (*can_get)  (struct clk *, struct device *);
->  > > +   int (*set_parent) (struct clk *, struct clk *);
->  > > +   int (*enable)   (struct clk *);
->  > > +   void (*disable) (struct clk *);
->  > > +   unsigned long (*getrate) (struct clk*);
->  > > +   int (*setrate)  (struct clk *, unsigned long);
->  > > +   long (*roundrate) (struct clk *, unsigned long);
->  > > +
->  > > +   void            *priv;
->  > > +};
->  >
->  > Hmm...this is exactly twice as big as the struct I'm currently using,
->  > it doesn't contain all the fields I need, and it's undocumented.
->  >
->
-> Conversely it also has fields that I don't need. If struct clk could have
->  been done generically without growing to insane sizes, it would have been
->  done so in linux/clk.h a long time ago. The main thing there is API
->  consistency for drivers, leaving the details up to the architecture.
+Things are better than I thought ... though the phrase "more likely
+to succeed" doesn't fill me with confidence.  Instead I imagine a
+system where an occasional spike in memory load causes some memory
+fragmentation that can't be handled, and so from that point many of
+the applications that relied on huge pages take a 10% performance
+hit.  This results in sysadmins scheduling regular reboots to unjam
+things. [Reminds me of the instructions that came with my first
+flatbed scanner that recommended rebooting the system before and
+after each use :-( ]
 
-In reality, as noted David Brownell on LAKML, there is no API consistency.
-The driver has no way to know whether clk API is implemented at all or whether
-the "optional" functions do exist.
+> I feel like I should promote libhugetlbfs here.
 
-Moreover clocks aren't limited only to platform-specific code. As an
-example of the in-tree driver that will benefit from clocklib you can
-check drivers/mfd/sm501.c which  contains  it's own set of functions
-to manage clocks.
+This is also better than I thought ... sounds like some really
+good things have already happened here.
 
->  It's true that there is significant overlap between the different users
->  of the clock framework, but it's also not clear that there's any clean
->  way to share a common implementation (especially since struct clk means
->  totally different things on different architectures). I suspect everyone
->  in the CC list has been through this before, also.
-
-That's one of the initial reasons of this patchserie: I have a device
-that can be installed on several platforms. And I want for this device
-to provide clocks to some other devices.
-
-Simply saying "Oh, things are different" is behaving like a ostrich:
-hiding a head in the sand.
-
-As most generification patches do, this one has it's drawbacks, but
-they are not so big, as you describe.
-
--- 
-With best wishes
-Dmitry
+-Tony
