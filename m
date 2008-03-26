@@ -1,104 +1,226 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760781AbYCZBkL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761069AbYCZBkj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760781AbYCZBkL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Mar 2008 21:40:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757473AbYCZBi2
+	id S1761069AbYCZBkj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Mar 2008 21:40:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757585AbYCZBi3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Mar 2008 21:38:28 -0400
-Received: from relay2.sgi.com ([192.48.171.30]:43820 "EHLO relay.sgi.com"
+	Tue, 25 Mar 2008 21:38:29 -0400
+Received: from relay2.sgi.com ([192.48.171.30]:43819 "EHLO relay.sgi.com"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752578AbYCZBiP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1752562AbYCZBiP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 25 Mar 2008 21:38:15 -0400
-Message-Id: <20080326013812.324977000@polaris-admin.engr.sgi.com>
+Message-Id: <20080326013812.186940000@polaris-admin.engr.sgi.com>
 References: <20080326013811.569646000@polaris-admin.engr.sgi.com>
 User-Agent: quilt/0.46-1
-Date: Tue, 25 Mar 2008 18:38:15 -0700
+Date: Tue, 25 Mar 2008 18:38:14 -0700
 From: Mike Travis <travis@sgi.com>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Ingo Molnar <mingo@elte.hu>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>,
-       Dave Jones <davej@codemonkey.org.uk>
-Subject: [PATCH 04/12] cpumask: pass cpumask by reference to acpi-cpufreq
-Content-Disposition: inline; filename=check_freqs
+       linux-kernel@vger.kernel.org, Paul Jackson <pj@sgi.com>,
+       Cliff Wickman <cpw@sgi.com>
+Subject: [PATCH 03/12] cpumask: reduce stack pressure in sched_affinity
+Content-Disposition: inline; filename=cpumask_affinity
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pass cpumask_t variables by reference in acpi-cpufreq functions.
+Remove local and passed cpumask_t variables in kernel/sched.c
 
 Based on:
 	git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git
 	git://git.kernel.org/pub/scm/linux/kernel/git/x86/linux-2.6-x86.git
 
-Cc: Len Brown <len.brown@intel.com>
-Cc: Dave Jones <davej@codemonkey.org.uk>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Paul Jackson <pj@sgi.com>
+Cc: Cliff Wickman <cpw@sgi.com>
+
 Signed-off-by: Mike Travis <travis@sgi.com>
 ---
- arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c |   16 ++++++++--------
- 1 file changed, 8 insertions(+), 8 deletions(-)
+ arch/x86/kernel/cpu/mcheck/mce_amd_64.c |   46 ++++++++++++++++----------------
+ include/linux/sched.h                   |    2 -
+ kernel/compat.c                         |    2 -
+ kernel/rcupreempt.c                     |    4 +-
+ kernel/sched.c                          |    5 ++-
+ 5 files changed, 30 insertions(+), 29 deletions(-)
 
---- linux.trees.git.orig/arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c
-+++ linux.trees.git/arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c
-@@ -211,22 +211,22 @@ static void drv_write(struct drv_cmd *cm
- 	return;
+--- linux.trees.git.orig/arch/x86/kernel/cpu/mcheck/mce_amd_64.c
++++ linux.trees.git/arch/x86/kernel/cpu/mcheck/mce_amd_64.c
+@@ -251,18 +251,18 @@ struct threshold_attr {
+ 	ssize_t(*store) (struct threshold_block *, const char *, size_t count);
+ };
+ 
+-static cpumask_t affinity_set(unsigned int cpu)
++static void affinity_set(unsigned int cpu, cpumask_t *oldmask,
++						cpumask_t *newmask)
+ {
+-	cpumask_t oldmask = current->cpus_allowed;
+-	cpumask_t newmask = CPU_MASK_NONE;
+-	cpu_set(cpu, newmask);
+-	set_cpus_allowed(current, &newmask);
+-	return oldmask;
++	*oldmask = current->cpus_allowed;
++	*newmask = CPU_MASK_NONE;
++	cpu_set(cpu, *newmask);
++	set_cpus_allowed(current, newmask);
  }
  
--static u32 get_cur_val(cpumask_t mask)
-+static u32 get_cur_val(const cpumask_t *mask)
+-static void affinity_restore(cpumask_t oldmask)
++static void affinity_restore(cpumask_t *oldmask)
  {
- 	struct acpi_processor_performance *perf;
- 	struct drv_cmd cmd;
- 
--	if (unlikely(cpus_empty(mask)))
-+	if (unlikely(cpus_empty(*mask)))
- 		return 0;
- 
--	switch (per_cpu(drv_data, first_cpu(mask))->cpu_feature) {
-+	switch (per_cpu(drv_data, first_cpu(*mask))->cpu_feature) {
- 	case SYSTEM_INTEL_MSR_CAPABLE:
- 		cmd.type = SYSTEM_INTEL_MSR_CAPABLE;
- 		cmd.addr.msr.reg = MSR_IA32_PERF_STATUS;
- 		break;
- 	case SYSTEM_IO_CAPABLE:
- 		cmd.type = SYSTEM_IO_CAPABLE;
--		perf = per_cpu(drv_data, first_cpu(mask))->acpi_data;
-+		perf = per_cpu(drv_data, first_cpu(*mask))->acpi_data;
- 		cmd.addr.io.port = perf->control_register.address;
- 		cmd.addr.io.bit_width = perf->control_register.bit_width;
- 		break;
-@@ -234,7 +234,7 @@ static u32 get_cur_val(cpumask_t mask)
- 		return 0;
- 	}
- 
--	cmd.mask = mask;
-+	cmd.mask = *mask;
- 
- 	drv_read(&cmd);
- 
-@@ -347,13 +347,13 @@ static unsigned int get_cur_freq_on_cpu(
- 		return 0;
- 	}
- 
--	freq = extract_freq(get_cur_val(cpumask_of_cpu(cpu)), data);
-+	freq = extract_freq(get_cur_val(&cpumask_of_cpu(cpu)), data);
- 	dprintk("cur freq = %u\n", freq);
- 
- 	return freq;
+-	set_cpus_allowed(current, &oldmask);
++	set_cpus_allowed(current, oldmask);
  }
  
--static unsigned int check_freqs(cpumask_t mask, unsigned int freq,
-+static unsigned int check_freqs(const cpumask_t *mask, unsigned int freq,
- 				struct acpi_cpufreq_data *data)
+ #define SHOW_FIELDS(name)                                           \
+@@ -277,15 +277,15 @@ static ssize_t store_interrupt_enable(st
+ 				      const char *buf, size_t count)
  {
- 	unsigned int cur_freq;
-@@ -449,7 +449,7 @@ static int acpi_cpufreq_target(struct cp
- 	drv_write(&cmd);
+ 	char *end;
+-	cpumask_t oldmask;
++	cpumask_t oldmask, newmask;
+ 	unsigned long new = simple_strtoul(buf, &end, 0);
+ 	if (end == buf)
+ 		return -EINVAL;
+ 	b->interrupt_enable = !!new;
  
- 	if (acpi_pstate_strict) {
--		if (!check_freqs(cmd.mask, freqs.new, data)) {
-+		if (!check_freqs(&cmd.mask, freqs.new, data)) {
- 			dprintk("acpi_cpufreq_target failed (%d)\n",
- 				policy->cpu);
- 			return -EAGAIN;
+-	oldmask = affinity_set(b->cpu);
++	affinity_set(b->cpu, &oldmask, &newmask);
+ 	threshold_restart_bank(b, 0, 0);
+-	affinity_restore(oldmask);
++	affinity_restore(&oldmask);
+ 
+ 	return end - buf;
+ }
+@@ -294,7 +294,7 @@ static ssize_t store_threshold_limit(str
+ 				     const char *buf, size_t count)
+ {
+ 	char *end;
+-	cpumask_t oldmask;
++	cpumask_t oldmask, newmask;
+ 	u16 old;
+ 	unsigned long new = simple_strtoul(buf, &end, 0);
+ 	if (end == buf)
+@@ -306,9 +306,9 @@ static ssize_t store_threshold_limit(str
+ 	old = b->threshold_limit;
+ 	b->threshold_limit = new;
+ 
+-	oldmask = affinity_set(b->cpu);
++	affinity_set(b->cpu, &oldmask, &newmask);
+ 	threshold_restart_bank(b, 0, old);
+-	affinity_restore(oldmask);
++	affinity_restore(&oldmask);
+ 
+ 	return end - buf;
+ }
+@@ -316,10 +316,10 @@ static ssize_t store_threshold_limit(str
+ static ssize_t show_error_count(struct threshold_block *b, char *buf)
+ {
+ 	u32 high, low;
+-	cpumask_t oldmask;
+-	oldmask = affinity_set(b->cpu);
++	cpumask_t oldmask, newmask;
++	affinity_set(b->cpu, &oldmask, &newmask);
+ 	rdmsr(b->address, low, high);
+-	affinity_restore(oldmask);
++	affinity_restore(&oldmask);
+ 	return sprintf(buf, "%x\n",
+ 		       (high & 0xFFF) - (THRESHOLD_MAX - b->threshold_limit));
+ }
+@@ -327,10 +327,10 @@ static ssize_t show_error_count(struct t
+ static ssize_t store_error_count(struct threshold_block *b,
+ 				 const char *buf, size_t count)
+ {
+-	cpumask_t oldmask;
+-	oldmask = affinity_set(b->cpu);
++	cpumask_t oldmask, newmask;
++	affinity_set(b->cpu, &oldmask, &newmask);
+ 	threshold_restart_bank(b, 1, 0);
+-	affinity_restore(oldmask);
++	affinity_restore(&oldmask);
+ 	return 1;
+ }
+ 
+@@ -468,7 +468,7 @@ static __cpuinit int threshold_create_ba
+ {
+ 	int i, err = 0;
+ 	struct threshold_bank *b = NULL;
+-	cpumask_t oldmask = CPU_MASK_NONE;
++	cpumask_t oldmask = CPU_MASK_NONE, newmask;
+ 	char name[32];
+ 
+ 	sprintf(name, "threshold_bank%i", bank);
+@@ -519,10 +519,10 @@ static __cpuinit int threshold_create_ba
+ 
+ 	per_cpu(threshold_banks, cpu)[bank] = b;
+ 
+-	oldmask = affinity_set(cpu);
++	affinity_set(cpu, &oldmask, &newmask);
+ 	err = allocate_threshold_blocks(cpu, bank, 0,
+ 					MSR_IA32_MC0_MISC + bank * 4);
+-	affinity_restore(oldmask);
++	affinity_restore(&oldmask);
+ 
+ 	if (err)
+ 		goto out_free;
+--- linux.trees.git.orig/include/linux/sched.h
++++ linux.trees.git/include/linux/sched.h
+@@ -2026,7 +2026,7 @@ static inline void arch_pick_mmap_layout
+ }
+ #endif
+ 
+-extern long sched_setaffinity(pid_t pid, cpumask_t new_mask);
++extern long sched_setaffinity(pid_t pid, const cpumask_t *new_mask);
+ extern long sched_getaffinity(pid_t pid, cpumask_t *mask);
+ 
+ extern int sched_mc_power_savings, sched_smt_power_savings;
+--- linux.trees.git.orig/kernel/compat.c
++++ linux.trees.git/kernel/compat.c
+@@ -446,7 +446,7 @@ asmlinkage long compat_sys_sched_setaffi
+ 	if (retval)
+ 		return retval;
+ 
+-	return sched_setaffinity(pid, new_mask);
++	return sched_setaffinity(pid, &new_mask);
+ }
+ 
+ asmlinkage long compat_sys_sched_getaffinity(compat_pid_t pid, unsigned int len,
+--- linux.trees.git.orig/kernel/rcupreempt.c
++++ linux.trees.git/kernel/rcupreempt.c
+@@ -1007,10 +1007,10 @@ void __synchronize_sched(void)
+ 	if (sched_getaffinity(0, &oldmask) < 0)
+ 		oldmask = cpu_possible_map;
+ 	for_each_online_cpu(cpu) {
+-		sched_setaffinity(0, cpumask_of_cpu(cpu));
++		sched_setaffinity(0, &cpumask_of_cpu(cpu));
+ 		schedule();
+ 	}
+-	sched_setaffinity(0, oldmask);
++	sched_setaffinity(0, &oldmask);
+ }
+ EXPORT_SYMBOL_GPL(__synchronize_sched);
+ 
+--- linux.trees.git.orig/kernel/sched.c
++++ linux.trees.git/kernel/sched.c
+@@ -4706,9 +4706,10 @@ out_unlock:
+ 	return retval;
+ }
+ 
+-long sched_setaffinity(pid_t pid, cpumask_t new_mask)
++long sched_setaffinity(pid_t pid, const cpumask_t *in_mask)
+ {
+ 	cpumask_t cpus_allowed;
++	cpumask_t new_mask = *in_mask;
+ 	struct task_struct *p;
+ 	int retval;
+ 
+@@ -4789,7 +4790,7 @@ asmlinkage long sys_sched_setaffinity(pi
+ 	if (retval)
+ 		return retval;
+ 
+-	return sched_setaffinity(pid, new_mask);
++	return sched_setaffinity(pid, &new_mask);
+ }
+ 
+ /*
 
 -- 
