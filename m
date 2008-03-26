@@ -1,122 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757815AbYCZX3d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758233AbYCZX3q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757815AbYCZX3d (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Mar 2008 19:29:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754694AbYCZX3Z
+	id S1758233AbYCZX3q (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Mar 2008 19:29:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754681AbYCZX31
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Mar 2008 19:29:25 -0400
-Received: from www.tglx.de ([62.245.132.106]:47231 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754672AbYCZX3Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Mar 2008 19:29:24 -0400
-Date: Thu, 27 Mar 2008 00:23:04 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Greg KH <greg@kroah.com>, Randy Dunlap <randy.dunlap@oracle.com>,
-       Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [patch 2/5] infrastructure to debug (dynamic) objects
-In-Reply-To: <alpine.LFD.1.00.0803250915330.3781@apollo.tec.linutronix.de>
-Message-ID: <alpine.LFD.1.00.0803262352120.3781@apollo.tec.linutronix.de>
-References: <20080321200300.310393657@linutronix.de> <20080321200321.650649403@linutronix.de> <20080324130454.ced60108.akpm@linux-foundation.org> <alpine.LFD.1.00.0803250915330.3781@apollo.tec.linutronix.de>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+	Wed, 26 Mar 2008 19:29:27 -0400
+Received: from jurassic.park.msu.ru ([195.208.223.243]:59572 "EHLO
+	jurassic.park.msu.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755267AbYCZX30 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Mar 2008 19:29:26 -0400
+Date: Thu, 27 Mar 2008 02:29:22 +0300
+From: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Gary Hade <garyhade@us.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Meyer <thomas@m3y3r.de>,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       LKML <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Natalie Protasevich <protasnb@gmail.com>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>, pm@debian.org
+Subject: Re: [patch] pci: revert "PCI: remove transparent bridge sizing"
+Message-ID: <20080326232922.GA15784@jurassic.park.msu.ru>
+References: <47E969E1.6080608@m3y3r.de> <alpine.LFD.1.00.0803251445500.2775@woody.linux-foundation.org> <20080326101450.GA9060@jurassic.park.msu.ru> <20080326135458.GA27621@elte.hu> <20080326180701.GA6249@us.ibm.com> <alpine.LFD.1.00.0803261132310.2775@woody.linux-foundation.org> <20080326203012.GB6249@us.ibm.com> <alpine.LFD.1.00.0803261344430.2775@woody.linux-foundation.org> <20080326205828.GA15225@jurassic.park.msu.ru> <alpine.LFD.1.00.0803261416390.2775@woody.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.1.00.0803261416390.2775@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 25 Mar 2008, Thomas Gleixner wrote:
-> On Mon, 24 Mar 2008, Andrew Morton wrote:
-> > On Fri, 21 Mar 2008 20:26:18 -0000
-> > Thomas Gleixner <tglx@linutronix.de> wrote:
-> > 
-> > > The debugobjects core code keeps track of operations on static and
-> > > dynamic objects by inserting them into a hashed list and sanity
-> > > checking them on object operations and provides additional checks
-> > > whenever kernel memory is freed.
-> > 
-> > Prime candidates for conversion to this interface are locks: spinlocks,
-> > rwlocks, mutexes, etc.
-> > 
-> > a) it'd be interesting to get that done, as a proof-of-usefulness thing.
+On Wed, Mar 26, 2008 at 02:41:44PM -0700, Linus Torvalds wrote:
+> In fact, I think the old code was buggy too, because we actually *do* have 
+> single-byte resources where start == end, as showb by google:
 > 
-> /me looks for volunteers :)
+> 	PCI: Ignore bogus resource 1 [3f6:3f6] of Symphony Labs SL82c105
+> 	PCI: Ignore bogus resource 3 [376:376] of Symphony Labs SL82c105
+> 
+> where that resource actually looks valid, and should have a single byte 
+> alignment! Admittedly I think it was created with a quirk (can you get 
+> that kind of resource from actually _probing_ a PCI device?) but I do 
+> think that a single-byte resource is valid.
 
-I had a look into that and it's not a friday afternoon project as it
-needs some major distangling of lockdep, which seems to be on Peter's
-todo list for quite a while.
+Good point - even though 1-byte size/alignment is invalid for a regular BAR
+(minimum is 8 bytes for IO and 16 bytes for MEM, IIRC), nothing prevents
+us from using this code for non-standard stuff, including single-byte
+resources.
 
-vs. the proof-of-usefulness I just want to point out that having an
-infrastructure which allows us to retrieve valuable debug information
-with an exact pointer to the offending code from a live system is
-useful by definition and it has proven it already in several cases.
+> So I wonder if we shouldn't just make this a bit more readable and also a 
+> bit more explicit with something like the appended..
 
-I was able to fix two of those problems (use after free) myself, but
-I'm unable to get this one resolved w/o twisting my brain:
+Agreed, this looks better...
 
-http://bugzilla.kernel.org/show_bug.cgi?id=10068
+> NOTE! This will also consider a bridge resource at 0 to be an invalid 
+> resource (since now the alignment will be zero), which is a bit odd and 
+> makes me worry a bit. I wouldn't be surprised if some non-PC architectures 
+> have PCI bridges at zero. But maybe they should be (or already are?) 
+> marked IORESOURCE_PCI_FIXED?
 
-But .... having such precise info:
+Well, at this point (pdev_sort_resources call) bridge resource->start
+has nothing to do with a bus address, it just a temporary storage for
+required alignment, filled by sizing routines (and 0 is definitely invalid
+here). I know, this is quite confusing, but I didn't want to add extra
+fields to existing structures or create temporary per-bus trees...
+But after pci_assign_resource() that resource can certainly be at 0,
+depending on PCIBIOS_MIN_{IO,MEM} and free slots in the resource tree.
 
-ODEBUG: init active object: db112e94 timer_list
-WARNING: at lib/debugobjects.c:63 debug_print_object()
-Pid: 2023, comm: softmac Not tainted 2.6.24.2 #10
- [<c01c5181>] debug_object_op+0x89/0xe0
- [<c0120168>] init_timer+0x18/0x40
- [<e098f813>] ieee80211softmac_auth_req+0x6b/0x9c [ieee80211softmac]
- [<e0991543>] ieee80211softmac_assoc_work+0x292/0x392 [ieee80211softmac]
- [<e0991643>] ieee80211softmac_assoc_notify_scan+0x0/0x10 [ieee80211softmac]
- [<e0991ab6>] ieee80211softmac_notify_callback+0x40/0x48 [ieee80211softmac]
- [<e0991a76>] ieee80211softmac_notify_callback+0x0/0x48 [ieee80211softmac]
- [<e0991978>] ieee80211softmac_call_events_locked+0xdc/0xee [ieee80211softmac]
- [<e0991643>] ieee80211softmac_assoc_notify_scan+0x0/0x10 [ieee80211softmac]
- [<e0991a76>] ieee80211softmac_notify_callback+0x0/0x48 [ieee80211softmac]
- [<c01250bf>] run_workqueue+0x6b/0xdf
- [<c0335f0f>] schedule+0x1f0/0x20a
- [<c01256b2>] worker_thread+0x0/0xc2
- [<c0125766>] worker_thread+0xb4/0xc2
- [<c0127baa>] autoremove_wake_function+0x0/0x33
- [<c01256b2>] worker_thread+0x0/0xc2
- [<c0127a4a>] kthread+0x36/0x5c
- [<c0127a14>] kthread+0x0/0x5c
- [<c0104757>] kernel_thread_helper+0x7/0x10
+> +static inline resource_size_t get_resource_alignment(int resno, struct resource *r)
+> +{
+> +	resource_size_t start = r->start, end = r->end;
+> +	resource_size_t alignment = 0;
+> +
+> +	/* End == start == 0 - invalid resource */
+> +	if (end && start <= end) {
+> +		alignment = end - start - 1;
 
-instead of:
+Must be end - start + 1
 
-kernel BUG at kernel/timer.c: 607!
-Invalid opcode: 0000 [#1]
-Modules linked in: cpufreq_stats nls_cp437 sbp2 scsi_mod loop zd1211rw
-ieee80211softmac parport_pc parport ohci1394 snd_intel8x0 ieee1394 sis900
-ehci_hcd ide_cd cdrom fan asus_acpi backlight battery ac
+> Also, the reason I *think* this issue is ok is that I think the only PCI 
+> bus resources we can see in the whole pdev_sort_resources() mess is the 
+> ones that are behind the bus that we're not sizing for, and they've been 
+> set up by pbus_size_mem().
+> 
+> And pbus_size_mem() has this special magic setup where it calculates the 
+> size and the alignment of the bus resource, and then makes
+> 
+> 	r->start = alignment;
+> 	r->end = r->start + size - 1;
+> 
+> so using "r->start" *should* be ok in this case because it really means 
+> "alignment" in this one case.
 
-Pid 3239, comm: firefox-bin Not tainted (2.6.24.2 #1)
-EIP:0060 :[<c011e54b>] EFLAGS:00210007 CPU:0
-EIP is at cascade+0x3b/0x57
-EAX:0 EBX:0 ECX:5 EDX:d9eb3ca4
-ESI:5 EDI:c0485640 EBP:d9ecdf30 ESP:d9ecdf30
-DS:007b ES:007b FS:0000 GS:0033 SS:0068
+Yes, absolutely.
 
-...
+> I also wonder if we maybe should just add a separate "alignment" field to 
+> the resources. Rather than playing games like these (and having to compare 
+> the resource number to decide whether it is a bus resource or a normal PCI 
+> device resource), just adding the dang field would be a whole lot saner.
 
-Call trace
+Extra 4 or 8 bytes per resource? Well, if you think that people won't start
+complain too much about that, I'll be absolutely happy with that.
+It'd vastly improve readability.
 
-[<c011e6ad>] run_timer_softirq+0x55/0x141
-[<c012b8e3>] tick_handle_periodic+0xf/0x54
-[<c011bdcc>] __do_softirq+0x35/0x75
-[<c011be2e>] do_softirq+022/0x26
-[<c01055b0>] do_IRQ+0x58/0x6b
-[<c033b1a7>] schedule+0x1f0/0x20a
-[<c01045e7>] common_interrupt+0x23/0x28
+> I dunno. I'm not going to do anything in this area before 2.6.25 is out 
+> because this *does* make me a bit nervous, but if somebody wants to think 
+> about this and perhaps write patches for testing, that would be good.
 
-Kernel Panic - not syncing: Fatal exception in interrupt
+If the new "align" field (and then, maybe, "size" instead of "end"?)
+is OK, then I'm definitely willing to give it a try.
 
-makes it useful enough - at least for me.
-
-The fact, that this information has not been used by the knowledgable
-developers of the offending code to fix the root cause within 14 days
-is a totaly different problem.
-
-Thanks,
-
-	tglx
+Ivan.
