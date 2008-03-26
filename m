@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764287AbYCZRWA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764360AbYCZRWd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764287AbYCZRWA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Mar 2008 13:22:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761475AbYCZRJw
+	id S1764360AbYCZRWd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Mar 2008 13:22:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761488AbYCZRJy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Mar 2008 13:09:52 -0400
-Received: from g4t0016.houston.hp.com ([15.201.24.19]:42054 "EHLO
+	Wed, 26 Mar 2008 13:09:54 -0400
+Received: from g4t0016.houston.hp.com ([15.201.24.19]:42095 "EHLO
 	g4t0016.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761287AbYCZRJY (ORCPT
+	with ESMTP id S1761297AbYCZRJ2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Mar 2008 13:09:24 -0400
-Message-Id: <20080326171230.175280161@ldl.fc.hp.com>
+	Wed, 26 Mar 2008 13:09:28 -0400
+Message-Id: <20080326171230.772149785@ldl.fc.hp.com>
 References: <20080326171058.099442579@ldl.fc.hp.com>
 User-Agent: quilt/0.46-1
-Date: Wed, 26 Mar 2008 11:11:32 -0600
+Date: Wed, 26 Mar 2008 11:11:35 -0600
 From: Bjorn Helgaas <bjorn.helgaas@hp.com>
 To: Len Brown <lenb@kernel.org>
 Cc: linux-acpi@vger.kernel.org
@@ -25,190 +25,143 @@ Cc: Thomas Renninger <trenn@suse.de>
 Cc: Rene Herman <rene.herman@keyaccess.nl>
 Cc: Jaroslav Kysela <perex@perex.cz>
 Cc: Andrew Morton <akpm@linux-foundation.org>
-Subject: [patch 34/37] PNP: remove unused interfaces using pnp_resource_table
-Content-Disposition: inline; filename=pnp-remove-unused-interfaces
+Subject: [patch 37/37] PNP: make interfaces private to the PNP core
+Content-Disposition: inline; filename=pnp-make-interfaces-private
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rene Herman <rene.herman@gmail.com> recently removed the only in-tree
-driver uses of:
-
-    pnp_init_resource_table()
-    pnp_manual_config_dev()
-    pnp_resource_change()
-
-in this change:
-
-    http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=109c53f840e551d6e99ecfd8b0131a968332c89f
-
-These are no longer used in the PNP core either, so we can just remove
-them completely.
-
-It's possible that there are out-of-tree drivers that use these
-interfaces.  They should be changed to either (1) use PNP quirks
-to work around broken hardware or firmware, or (2) use the sysfs
-interfaces to control resource usage from userspace.
+The interfaces for registering protocols, devices, cards,
+and resource options should only be used inside the PNP core.
 
 Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
 
 ---
- drivers/pnp/manager.c |   78 +-------------------------------------------------
- include/linux/pnp.h   |    9 -----
- 2 files changed, 3 insertions(+), 84 deletions(-)
+ drivers/pnp/base.h  |   24 +++++++++++++++++++++++-
+ include/linux/pnp.h |   34 ----------------------------------
+ 2 files changed, 23 insertions(+), 35 deletions(-)
 
 Index: work7/include/linux/pnp.h
 ===================================================================
---- work7.orig/include/linux/pnp.h	2008-03-25 14:49:10.000000000 -0600
-+++ work7/include/linux/pnp.h	2008-03-25 14:49:13.000000000 -0600
-@@ -429,18 +429,14 @@
- int pnp_register_port_resource(struct pnp_option *option,
- 			       struct pnp_port *data);
- int pnp_register_mem_resource(struct pnp_option *option, struct pnp_mem *data);
--void pnp_init_resource_table(struct pnp_resource_table *table);
- void pnp_init_resources(struct pnp_dev *dev);
--int pnp_manual_config_dev(struct pnp_dev *dev, struct pnp_resource_table *res,
--			  int mode);
+--- work7.orig/include/linux/pnp.h	2008-03-25 15:28:23.000000000 -0600
++++ work7/include/linux/pnp.h	2008-03-25 15:37:32.000000000 -0600
+@@ -390,19 +390,12 @@
+ #if defined(CONFIG_PNP)
+ 
+ /* device management */
+-int pnp_register_protocol(struct pnp_protocol *protocol);
+-void pnp_unregister_protocol(struct pnp_protocol *protocol);
+-int pnp_add_device(struct pnp_dev *dev);
+ int pnp_device_attach(struct pnp_dev *pnp_dev);
+ void pnp_device_detach(struct pnp_dev *pnp_dev);
+ extern struct list_head pnp_global;
+ extern int pnp_platform_devices;
+ 
+ /* multidevice card support */
+-int pnp_add_card(struct pnp_card *card);
+-void pnp_remove_card(struct pnp_card *card);
+-int pnp_add_card_device(struct pnp_card *card, struct pnp_dev *dev);
+-void pnp_remove_card_device(struct pnp_dev *dev);
+ struct pnp_dev *pnp_request_card_device(struct pnp_card_link *clink,
+ 					const char *id, struct pnp_dev *from);
+ void pnp_release_card_device(struct pnp_dev *dev);
+@@ -411,23 +404,12 @@
+ extern struct list_head pnp_cards;
+ 
+ /* resource management */
+-struct pnp_option *pnp_register_independent_option(struct pnp_dev *dev);
+-struct pnp_option *pnp_register_dependent_option(struct pnp_dev *dev,
+-						 int priority);
+-int pnp_register_irq_resource(struct pnp_option *option, struct pnp_irq *data);
+-int pnp_register_dma_resource(struct pnp_option *option, struct pnp_dma *data);
+-int pnp_register_port_resource(struct pnp_option *option,
+-			       struct pnp_port *data);
+-int pnp_register_mem_resource(struct pnp_option *option, struct pnp_mem *data);
+-void pnp_init_resources(struct pnp_dev *dev);
  int pnp_auto_config_dev(struct pnp_dev *dev);
- int pnp_validate_config(struct pnp_dev *dev);
+-int pnp_validate_config(struct pnp_dev *dev);
  int pnp_start_dev(struct pnp_dev *dev);
  int pnp_stop_dev(struct pnp_dev *dev);
  int pnp_activate_dev(struct pnp_dev *dev);
  int pnp_disable_dev(struct pnp_dev *dev);
--void pnp_resource_change(struct resource *resource, resource_size_t start,
--			 resource_size_t size);
-+
  
+-
  /* protocol helpers */
  int pnp_is_active(struct pnp_dev *dev);
-@@ -477,16 +473,13 @@
- static inline int pnp_register_dma_resource(struct pnp_option *option, struct pnp_dma *data) { return -ENODEV; }
- static inline int pnp_register_port_resource(struct pnp_option *option, struct pnp_port *data) { return -ENODEV; }
- static inline int pnp_register_mem_resource(struct pnp_option *option, struct pnp_mem *data) { return -ENODEV; }
--static inline void pnp_init_resource_table(struct pnp_resource_table *table) { }
- static inline void pnp_init_resources(struct pnp_dev *dev) { }
--static inline int pnp_manual_config_dev(struct pnp_dev *dev, struct pnp_resource_table *res, int mode) { return -ENODEV; }
+ int compare_pnp_id(struct pnp_id *pos, const char *id);
+@@ -437,35 +419,19 @@
+ #else
+ 
+ /* device management */
+-static inline int pnp_register_protocol(struct pnp_protocol *protocol) { return -ENODEV; }
+-static inline void pnp_unregister_protocol(struct pnp_protocol *protocol) { }
+-static inline int pnp_init_device(struct pnp_dev *dev) { return -ENODEV; }
+-static inline int pnp_add_device(struct pnp_dev *dev) { return -ENODEV; }
+ static inline int pnp_device_attach(struct pnp_dev *pnp_dev) { return -ENODEV; }
+ static inline void pnp_device_detach(struct pnp_dev *pnp_dev) { }
+ 
+ #define pnp_platform_devices 0
+ 
+ /* multidevice card support */
+-static inline int pnp_add_card(struct pnp_card *card) { return -ENODEV; }
+-static inline void pnp_remove_card(struct pnp_card *card) { }
+-static inline int pnp_add_card_device(struct pnp_card *card, struct pnp_dev *dev) { return -ENODEV; }
+-static inline void pnp_remove_card_device(struct pnp_dev *dev) { }
+ static inline struct pnp_dev *pnp_request_card_device(struct pnp_card_link *clink, const char *id, struct pnp_dev *from) { return NULL; }
+ static inline void pnp_release_card_device(struct pnp_dev *dev) { }
+ static inline int pnp_register_card_driver(struct pnp_card_driver *drv) { return -ENODEV; }
+ static inline void pnp_unregister_card_driver(struct pnp_card_driver *drv) { }
+ 
+ /* resource management */
+-static inline struct pnp_option *pnp_register_independent_option(struct pnp_dev *dev) { return NULL; }
+-static inline struct pnp_option *pnp_register_dependent_option(struct pnp_dev *dev, int priority) { return NULL; }
+-static inline int pnp_register_irq_resource(struct pnp_option *option, struct pnp_irq *data) { return -ENODEV; }
+-static inline int pnp_register_dma_resource(struct pnp_option *option, struct pnp_dma *data) { return -ENODEV; }
+-static inline int pnp_register_port_resource(struct pnp_option *option, struct pnp_port *data) { return -ENODEV; }
+-static inline int pnp_register_mem_resource(struct pnp_option *option, struct pnp_mem *data) { return -ENODEV; }
+-static inline void pnp_init_resources(struct pnp_dev *dev) { }
  static inline int pnp_auto_config_dev(struct pnp_dev *dev) { return -ENODEV; }
- static inline int pnp_validate_config(struct pnp_dev *dev) { return -ENODEV; }
+-static inline int pnp_validate_config(struct pnp_dev *dev) { return -ENODEV; }
  static inline int pnp_start_dev(struct pnp_dev *dev) { return -ENODEV; }
  static inline int pnp_stop_dev(struct pnp_dev *dev) { return -ENODEV; }
  static inline int pnp_activate_dev(struct pnp_dev *dev) { return -ENODEV; }
- static inline int pnp_disable_dev(struct pnp_dev *dev) { return -ENODEV; }
--static inline void pnp_resource_change(struct resource *resource, resource_size_t start, resource_size_t size) { }
- 
- /* protocol helpers */
- static inline int pnp_is_active(struct pnp_dev *dev) { return 0; }
-Index: work7/drivers/pnp/manager.c
+Index: work7/drivers/pnp/base.h
 ===================================================================
---- work7.orig/drivers/pnp/manager.c	2008-03-25 14:49:12.000000000 -0600
-+++ work7/drivers/pnp/manager.c	2008-03-25 14:49:13.000000000 -0600
-@@ -216,8 +216,9 @@
-  * pnp_init_resources - Resets a resource table to default values.
-  * @table: pointer to the desired resource table
-  */
--void pnp_init_resource_table(struct pnp_resource_table *table)
-+void pnp_init_resources(struct pnp_dev *dev)
- {
-+	struct pnp_resource_table *table = &dev->res;
- 	int idx;
- 
- 	for (idx = 0; idx < PNP_MAX_IRQ; idx++) {
-@@ -250,11 +251,6 @@
- 	}
- }
- 
--void pnp_init_resources(struct pnp_dev *dev)
--{
--	pnp_init_resource_table(&dev->res);
--}
--
- /**
-  * pnp_clean_resources - clears resources that were not manually set
-  * @res: the resources to clean
-@@ -395,59 +391,6 @@
- }
- 
- /**
-- * pnp_manual_config_dev - Disables Auto Config and Manually sets the resource table
-- * @dev: pointer to the desired device
-- * @res: pointer to the new resource config
-- * @mode: 0 or PNP_CONFIG_FORCE
-- *
-- * This function can be used by drivers that want to manually set thier resources.
-- */
--int pnp_manual_config_dev(struct pnp_dev *dev, struct pnp_resource_table *res,
--			  int mode)
--{
--	int i;
--	struct pnp_resource_table *bak;
--
--	if (!pnp_can_configure(dev))
--		return -ENODEV;
--	bak = pnp_alloc(sizeof(struct pnp_resource_table));
--	if (!bak)
--		return -ENOMEM;
--	*bak = dev->res;
--
--	mutex_lock(&pnp_res_mutex);
--	dev->res = *res;
--	if (!(mode & PNP_CONFIG_FORCE)) {
--		for (i = 0; i < PNP_MAX_PORT; i++) {
--			if (!pnp_check_port(dev, i))
--				goto fail;
--		}
--		for (i = 0; i < PNP_MAX_MEM; i++) {
--			if (!pnp_check_mem(dev, i))
--				goto fail;
--		}
--		for (i = 0; i < PNP_MAX_IRQ; i++) {
--			if (!pnp_check_irq(dev, i))
--				goto fail;
--		}
--		for (i = 0; i < PNP_MAX_DMA; i++) {
--			if (!pnp_check_dma(dev, i))
--				goto fail;
--		}
--	}
--	mutex_unlock(&pnp_res_mutex);
--
--	kfree(bak);
--	return 0;
--
--fail:
--	dev->res = *bak;
--	mutex_unlock(&pnp_res_mutex);
--	kfree(bak);
--	return -EINVAL;
--}
--
--/**
-  * pnp_auto_config_dev - automatically assigns resources to a device
-  * @dev: pointer to the desired device
-  */
-@@ -573,24 +516,7 @@
- 	return 0;
- }
- 
--/**
-- * pnp_resource_change - change one resource
-- * @resource: pointer to resource to be changed
-- * @start: start of region
-- * @size: size of region
-- */
--void pnp_resource_change(struct resource *resource, resource_size_t start,
--			 resource_size_t size)
--{
--	resource->flags &= ~(IORESOURCE_AUTO | IORESOURCE_UNSET);
--	resource->start = start;
--	resource->end = start + size - 1;
--}
--
--EXPORT_SYMBOL(pnp_manual_config_dev);
- EXPORT_SYMBOL(pnp_start_dev);
- EXPORT_SYMBOL(pnp_stop_dev);
- EXPORT_SYMBOL(pnp_activate_dev);
- EXPORT_SYMBOL(pnp_disable_dev);
--EXPORT_SYMBOL(pnp_resource_change);
--EXPORT_SYMBOL(pnp_init_resource_table);
+--- work7.orig/drivers/pnp/base.h	2008-03-25 15:28:29.000000000 -0600
++++ work7/drivers/pnp/base.h	2008-03-25 15:32:05.000000000 -0600
+@@ -1,10 +1,32 @@
+ extern spinlock_t pnp_lock;
+ void *pnp_alloc(long size);
++
++int pnp_register_protocol(struct pnp_protocol *protocol);
++void pnp_unregister_protocol(struct pnp_protocol *protocol);
++
+ struct pnp_dev *pnp_alloc_dev(struct pnp_protocol *, int id, char *pnpid);
+ struct pnp_card *pnp_alloc_card(struct pnp_protocol *, int id, char *pnpid);
++
++int pnp_add_device(struct pnp_dev *dev);
+ struct pnp_id *pnp_add_id(struct pnp_dev *dev, char *id);
+-struct pnp_id *pnp_add_card_id(struct pnp_card *card, char *id);
+ int pnp_interface_attach_device(struct pnp_dev *dev);
++
++int pnp_add_card(struct pnp_card *card);
++struct pnp_id *pnp_add_card_id(struct pnp_card *card, char *id);
++void pnp_remove_card(struct pnp_card *card);
++int pnp_add_card_device(struct pnp_card *card, struct pnp_dev *dev);
++void pnp_remove_card_device(struct pnp_dev *dev);
++
++struct pnp_option *pnp_register_independent_option(struct pnp_dev *dev);
++struct pnp_option *pnp_register_dependent_option(struct pnp_dev *dev,
++						 int priority);
++int pnp_register_irq_resource(struct pnp_option *option, struct pnp_irq *data);
++int pnp_register_dma_resource(struct pnp_option *option, struct pnp_dma *data);
++int pnp_register_port_resource(struct pnp_option *option,
++			       struct pnp_port *data);
++int pnp_register_mem_resource(struct pnp_option *option, struct pnp_mem *data);
++void pnp_init_resources(struct pnp_dev *dev);
++
+ void pnp_fixup_device(struct pnp_dev *dev);
+ void pnp_free_option(struct pnp_option *option);
+ int __pnp_add_device(struct pnp_dev *dev);
 
 -- 
