@@ -1,60 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758520AbYCZKrl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759343AbYCZKsk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758520AbYCZKrl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Mar 2008 06:47:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754179AbYCZKrd
+	id S1759343AbYCZKsk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Mar 2008 06:48:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754122AbYCZKsd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Mar 2008 06:47:33 -0400
-Received: from wr-out-0506.google.com ([64.233.184.230]:4832 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753556AbYCZKrc (ORCPT
+	Wed, 26 Mar 2008 06:48:33 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:39918 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753849AbYCZKsc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Mar 2008 06:47:32 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=VYnAqf0peZq4Q2jnvXyEXmPIlwSC/1WHP8bMgcO17NELh6sBxSrfL4Kzpa+rrsJRUI4IbQDpmcQI/q5ORGub81CgWc6C+U42SOIJLI5YooL7DQZWrZdp1Gk3jSS7SUFdk5wTHzaMuhG3pWAMalyKvs5aIYFoScER9187IIM2ohw=
-Message-ID: <386072610803260347l4dd3b82cr1704b6a0a79d6ed8@mail.gmail.com>
-Date: Wed, 26 Mar 2008 03:47:28 -0700
-From: "Bryan Wu" <cooloney@kernel.org>
-To: "Andre Haupt" <andre@bitwigglers.org>
-Subject: Re: [PATCH 1/1] Input/Joystick Driver: add support AD7142 joystick driver
-Cc: dmitry.torokhov@gmail.com, khali@linux-fr.org, linux-input@vger.kernel.org,
-       i2c@lm-sensors.org, linux-kernel@vger.kernel.org,
-       "Michael Hennerich" <michael.hennerich@analog.com>,
-       "Bryan Wu" <bryan.wu@analog.com>
-In-Reply-To: <20080326101850.GA9184@ahaupt-debian-vm.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Wed, 26 Mar 2008 06:48:32 -0400
+Date: Wed, 26 Mar 2008 10:48:21 +0000
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: J?rn Engel <joern@logfs.org>, David Miller <davem@davemloft.net>,
+       jirislaby@gmail.com, joe@perches.com, tglx@linutronix.de,
+       linux-kernel@vger.kernel.org, Andy Whitcroft <apw@shadowen.org>
+Subject: Re: [patch] bkl2mtd: cleanup
+Message-ID: <20080326104821.GS10722@ZenIV.linux.org.uk>
+References: <47E647AC.1060906@gmail.com> <20080323.051929.267232495.davem@davemloft.net> <20080325104841.GA24211@elte.hu> <20080325111129.GB11359@logfs.org> <20080325122413.GA8729@elte.hu> <20080325131258.GC11359@logfs.org> <20080325133810.GA10044@elte.hu> <20080325134556.GA10424@elte.hu> <20080325160734.GA14583@logfs.org> <20080326101452.GA17176@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <1206579622-21915-1-git-send-email-cooloney@kernel.org>
-	 <20080326101850.GA9184@ahaupt-debian-vm.localdomain>
-X-Google-Sender-Auth: 553104d39f85e83d
+In-Reply-To: <20080326101452.GA17176@elte.hu>
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->  > diff --git a/drivers/input/joystick/Kconfig b/drivers/input/joystick/Kconfig
->  > index 7c662ee..e65aeb6 100644
->  > --- a/drivers/input/joystick/Kconfig
->  > +++ b/drivers/input/joystick/Kconfig
->  > @@ -282,4 +282,10 @@ config JOYSTICK_XPAD_LEDS
->  >         This option enables support for the LED which surrounds the Big X on
->  >         XBox 360 controller.
->  >
->  > +config JOYSTICK_AD7142
->  > +     tristate "Analog Devices AD7142 Joystick support"
->  > +     depends on BLACKFIN && I2C
->  does this really have to depend on Blackfin?
->
->  regards,
->
->  Andre
->
+On Wed, Mar 26, 2008 at 11:14:52AM +0100, Ingo Molnar wrote:
+>  /* Info for the block device */
+>  struct block2mtd_dev {
+> -	struct list_head list;
+> -	struct block_device *blkdev;
+> -	struct mtd_info mtd;
+> -	struct mutex write_mutex;
+> +	struct list_head	list;
+> +	struct block_device	*blkdev;
+> +	struct mtd_info		mtd;
+> +	/* serializes writes with each other and also with erase: */
+> +	struct mutex		write_mutex;
+>  };
 
-Right, I think it is ok for other architecture, while I only tested on Blackfin.
-I will remove this depends.
+Why the hell?
 
-Thanks
--Bryan
+> -static int _block2mtd_write(struct block2mtd_dev *dev, const u_char *buf,
+> -		loff_t to, size_t len, size_t *retlen)
+> +static int
+> +_block2mtd_write(struct block2mtd_dev *dev, const u_char *buf, loff_t to,
+> +		 size_t len, size_t *retlen)
+
+That's actually worse...  BTW, single-underscore-... for identifiers?  Odd.
+
+> -static int block2mtd_write(struct mtd_info *mtd, loff_t to, size_t len,
+> +static int
+> +block2mtd_write(struct mtd_info *mtd, loff_t to, size_t len,
+>  		size_t *retlen, const u_char *buf)
+
+Again, why split it that way?
+
+> -	dev->mtd.size = dev->blkdev->bd_inode->i_size & PAGE_MASK;
+> -	dev->mtd.erasesize = erase_size;
+> -	dev->mtd.writesize = 1;
+> -	dev->mtd.type = MTD_RAM;
+> -	dev->mtd.flags = MTD_CAP_RAM;
+> -	dev->mtd.erase = block2mtd_erase;
+> -	dev->mtd.write = block2mtd_write;
+> -	dev->mtd.writev = default_mtd_writev;
+> -	dev->mtd.sync = block2mtd_sync;
+> -	dev->mtd.read = block2mtd_read;
+> -	dev->mtd.priv = dev;
+> -	dev->mtd.owner = THIS_MODULE;
+> +	dev->mtd.size		= dev->blkdev->bd_inode->i_size & PAGE_MASK;
+> +	dev->mtd.erasesize	= erase_size;
+> +	dev->mtd.writesize	= 1;
+> +	dev->mtd.type		= MTD_RAM;
+> +	dev->mtd.flags		= MTD_CAP_RAM;
+> +	dev->mtd.erase		= block2mtd_erase;
+> +	dev->mtd.write		= block2mtd_write;
+> +	dev->mtd.writev		= default_mtd_writev;
+> +	dev->mtd.sync		= block2mtd_sync;
+> +	dev->mtd.read		= block2mtd_read;
+> +	dev->mtd.priv		= dev;
+> +	dev->mtd.owner		= THIS_MODULE;
+
+Bogus.
+
+> -		if (ret) {
+> +		if (ret)
+>  			parse_err("illegal erase size");
+> -		}
+>  	}
+
+BTW, I certainly wouldn't inflict that on patches; at some point in
+series the body of if may shrink to one line only to get longer in
+the next patch.  Removing and restoring {} would only add noise.
+
+OTOH, you've missed quite a few of my pet peeves, starting with
+u_char in the quoted part...
