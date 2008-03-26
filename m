@@ -1,71 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758391AbYCZQsK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759561AbYCZQs2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758391AbYCZQsK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Mar 2008 12:48:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755705AbYCZQrz
+	id S1759561AbYCZQs2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Mar 2008 12:48:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757688AbYCZQsA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Mar 2008 12:47:55 -0400
-Received: from tim.rpsys.net ([194.106.48.114]:45919 "EHLO tim.rpsys.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755284AbYCZQry (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Mar 2008 12:47:54 -0400
-Subject: Re: use of preempt_count instead of in_atomic() at leds-gpio.c
-From: Richard Purdie <rpurdie@rpsys.net>
-To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-Cc: Alan Stern <stern@rowland.harvard.edu>,
-       David Brownell <david-b@pacbell.net>, gitster@pobox.com, corbet@lwn.net,
-       mingo@elte.hu, mb@bu3sch.de, linux-kernel@vger.kernel.org,
-       khali@linux-fr.org, geert@linux-m68k.org, akpm@linux-foundation.org
-In-Reply-To: <20080326161724.GA3562@khazad-dum.debian.net>
-References: <20080325232042.4EDA7346532@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
-	 <Pine.LNX.4.44L0.0803261027580.4969-100000@iolanthe.rowland.org>
-	 <20080326161724.GA3562@khazad-dum.debian.net>
-Content-Type: text/plain
-Date: Wed, 26 Mar 2008 16:46:09 +0000
-Message-Id: <1206549969.13642.6.camel@dax.rpnet.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 26 Mar 2008 12:48:00 -0400
+Received: from e35.co.us.ibm.com ([32.97.110.153]:59629 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757401AbYCZQr6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Mar 2008 12:47:58 -0400
+Date: Wed, 26 Mar 2008 11:47:53 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Stephen Smalley <sds@tycho.nsa.gov>
+Cc: NeilBrown <neilb@suse.de>,
+       Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>, miklos@szeredi.hu,
+       viro@zeniv.linux.org.uk, haveblue@us.ibm.com,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, hch@infradead.org,
+       linux-security-module@vger.kernel.org, jmorris@namei.org
+Subject: Re: r-o bind in nfsd
+Message-ID: <20080326164753.GA20578@sergelap.ibm.com>
+References: <20080321155451.GU10722@ZenIV.linux.org.uk> <E1Jck2N-0001Q3-7W@pomaz-ex.szeredi.hu> <20080321163520.GV10722@ZenIV.linux.org.uk> <E1JckW9-0001Ub-Rs@pomaz-ex.szeredi.hu> <18408.26863.617591.836548@notabene.brown> <200803252045.CGB04105.HLSQFOJMtOFVOF@I-love.SAKURA.ne.jp> <57096.192.168.1.70.1206484328.squirrel@neil.brown.name> <1206533042.3302.266.camel@moss-spartans.epoch.ncsc.mil>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1206533042.3302.266.camel@moss-spartans.epoch.ncsc.mil>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Wed, 2008-03-26 at 13:17 -0300, Henrique de Moraes Holschuh wrote:
-> On Wed, 26 Mar 2008, Alan Stern wrote:
-> > On Tue, 25 Mar 2008, David Brownell wrote:
-> > > I _almost_ hate bringing this lovely flamage back onto $SUBJECT ... but
-> > > what's the resolution for the leds-gpio.c issue?  I've not seen a merge
-> > > notice for the patch I submitted a week ago now:
-> > > 
-> > > 	http://marc.info/?l=linux-kernel&m=120597839009399&w=2
->
-[...]
-> I have changed the thinkpad-acpi leds code to always assume an atomic
-> context, but I too would appreciate a proper flag (or secondary hook)
-> from the LED class to know when I am in an atomic context or not.
+Quoting Stephen Smalley (sds@tycho.nsa.gov):
 > 
-> LED Triggers also need to be modified, they are mostly called from an
-> atomic context so we have to assume that by default, but we'd do well to
-> add a way to call them from non-atomic contexts.
+> On Wed, 2008-03-26 at 09:32 +1100, NeilBrown wrote:
+> > On Tue, March 25, 2008 10:45 pm, Tetsuo Handa wrote:
+> > > Hello.
+> > >
+> > >> Maybe some enhancement to the 'intent' structure with a similar
+> > >> effect could be done instead.
+> > >>
+> > >> Then you could, presumably, put a security hook somewhere in
+> > >> link_path_walk for those modules (like AppArmor) which want to do
+> > >> checks based on the namespace.
+> > >
+> > > I think link_path_walk() is not a good place to insert new LSM hooks
+> > > for pathname based access control (AppArmor and TOMOYO) purpose because
+> > >
+> > >   (1) The kernel don't know what operation (open/create/truncate etc.)
+> > > will be
+> > >       done at the moment of link_path_walk().
+> > 
+> > Though the 'indent' data structure could be used to carry this information.
+> > 
+> > >
+> > >   (2) Not all operations call link_path_walk() before these operations
+> > >       are done. For example, ftruncate() doesn't call link_path_walk().
+> > 
+> > But do you want to impose path-name based controls to ftruncate?
+> > Surely once you have a file open for write (not O_APPEND), then no
+> > other permission is required to truncate the file, is it?
+> > If it is, then maybe the 'struct file' should be tagged at open time
+> > to say whether 'truncate' is allowed.
+> > 
+> > >
+> > >   (3) The rename() and link() operations handle two pathnames.
+> > >       But, it is not possible to know both pathnames at the moment of
+> > >       link_path_walk().
+> > 
+> > Not an insolvable problem.
+> > One could imagine an implementation where a TYPE_RENAME_FROM security
+> > check produced a cookie that was consumed by a TYPE_RENAME_TO security
+> > check.  The cookie could then be used by the security module to
+> > make any connection between the two names that might be appropriate.
+> > 
+> > >
+> > > I think we need to introduce new LSM hooks outside link_path_walk().
+> > > http://kerneltrap.org/mailarchive/linux-fsdevel/2008/2/17/882024
+> > >
+> > <rant>
+> > I suspect we would be much better off removing all the security hooks.
+> > Security done at that level seems to be way too complex such that most
+> > people don't really understand it.  And people who don't understand
+> > security don't use it.
+> > We'd be much better off getting rid of the whole "micro-manage security"
+> > concept and provide isolation via some sort of high level container
+> > approach.
+> > </rant>
 > 
-> Richard?  AFAIK, the ball *is* in your court as the LED maintainer.  You
-> have to decide which way to go and tell us.  I suppose either I or Alan
-> could write up patches to implement it, but I have better things to do
-> than to write patches that would be rejected anyway... OTOH, I don't
-> mind writing ones that I know are at least attempting to implement an
-> approved idea and would be rejected only if they need some fixing.
+> Containers can be useful, but they aren't a substitute for access
+> control, and they don't solve the same problem.
 
-I've been meaning to merge David's patch and will get that done shortly,
-sorry for the delay.
+Not only that, but containers require an LSM to provide user isolation
+and root containment.
 
-As I've said, I don't really think we need context flags for the LED
-class at the moment. As you say, most of the triggers are atomic context
-and those which can sleep are not time critical so I don't really see
-the point in the added complexity.
+Hopefully at some point we'll be able to get around that for most VPSs,
+but that's a long ways off and personally I suspect I would always want
+a policy locking VPSs up nice and tight.
 
-Cheers,
-
-Richard
-
-
+> And SELinux does get used, and recent stats on Fedora 8 suggest that few
+> people disable it anymore.  Advances in the SELinux tools (loadable
+> modules, semanage, system-config-selinux, setroubleshoot, etc) have gone
+> a long way to enabling users to solve problems they encounter.
+> 
+> -- 
+> Stephen Smalley
+> National Security Agency
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-security-module" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
