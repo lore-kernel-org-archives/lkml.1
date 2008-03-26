@@ -1,45 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760653AbYCZR6c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759429AbYCZSFd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760653AbYCZR6c (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Mar 2008 13:58:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758372AbYCZR6Q
+	id S1759429AbYCZSFd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Mar 2008 14:05:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756661AbYCZSFR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Mar 2008 13:58:16 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:54288 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1758213AbYCZR6O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Mar 2008 13:58:14 -0400
-Date: Wed, 26 Mar 2008 10:56:17 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Paul Mackerras <paulus@samba.org>
-cc: Andi Kleen <andi@firstfloor.org>, David Miller <davem@davemloft.net>,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       linux-ia64@vger.kernel.org, torvalds@linux-foundation.org
-Subject: Re: larger default page sizes...
-In-Reply-To: <18409.56843.909298.717089@cargo.ozlabs.ibm.com>
-Message-ID: <Pine.LNX.4.64.0803261052550.29859@schroedinger.engr.sgi.com>
-References: <Pine.LNX.4.64.0803211037140.18671@schroedinger.engr.sgi.com>
- <20080321.145712.198736315.davem@davemloft.net>
- <Pine.LNX.4.64.0803241121090.3002@schroedinger.engr.sgi.com>
- <20080324.133722.38645342.davem@davemloft.net> <18408.29107.709577.374424@cargo.ozlabs.ibm.com>
- <87wsnrgg9q.fsf@basil.nowhere.org> <18409.56843.909298.717089@cargo.ozlabs.ibm.com>
+	Wed, 26 Mar 2008 14:05:17 -0400
+Received: from az33egw01.freescale.net ([192.88.158.102]:41618 "EHLO
+	az33egw01.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755246AbYCZSFJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Mar 2008 14:05:09 -0400
+Message-ID: <47EA903C.5030104@freescale.com>
+Date: Wed, 26 Mar 2008 13:04:44 -0500
+From: Scott Wood <scottwood@freescale.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.9 (X11/20080110)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Jochen Friedrich <jochen@scram.de>
+CC: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+       Anton Vorontsov <avorontsov@ru.mvista.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] [POWERPC] CPM1: implement GPIO LIB API
+References: <47E92EC8.7010700@scram.de> <47E93350.6090806@freescale.com> <47EA8C1C.4090604@scram.de>
+In-Reply-To: <47EA8C1C.4090604@scram.de>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 26 Mar 2008, Paul Mackerras wrote:
+Jochen Friedrich wrote:
+> Hi Scott,
+> 
+>>> diff --git a/arch/powerpc/platforms/8xx/Kconfig b/arch/powerpc/platforms/8xx/Kconfig
+>>> index 7fd224c..e12cbf0 100644
+>>> --- a/arch/powerpc/platforms/8xx/Kconfig
+>>> +++ b/arch/powerpc/platforms/8xx/Kconfig
+>>> @@ -4,6 +4,8 @@ config FADS
+>>>  config CPM1
+>>>  	bool
+>>>  	select CPM
+>>> +	select GENERIC_GPIO
+>>> +	select GPIO_LIB
+>> Shouldn't this depend on the user enabling GPIO support?  Some 8xx 
+>> boards are very memory-constrained, so we don't want to be making the 
+>> kernel even bigger than it already is unless it's actually needed.
+> 
+> Are you more comfortable with this?
 
-> So the improvement in the user time is almost all due to the reduced
-> TLB misses (as one would expect).  For the system time, using 64k
-> pages in the VM reduces it by about 21%, and using 64k hardware pages
-> reduces it by another 30%.  So the reduction in kernel overhead is
-> significant but not as large as the impact of reducing TLB misses.
+Sure.
 
-One should emphasize that this test was a kernel compile which is not 
-a load that gains much from larger pages. 4k pages are mostly okay for 
-loads that use large amounts of small files.
-
-
+-Scott
