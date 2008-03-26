@@ -1,66 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758246AbYCZCMx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758350AbYCZCQY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758246AbYCZCMx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Mar 2008 22:12:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753701AbYCZCMm
+	id S1758350AbYCZCQY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Mar 2008 22:16:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754122AbYCZCQP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Mar 2008 22:12:42 -0400
-Received: from mail.windriver.com ([147.11.1.11]:55077 "EHLO mail.wrs.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750886AbYCZCMl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Mar 2008 22:12:41 -0400
-Message-ID: <47E9B115.9060109@windriver.com>
-Date: Wed, 26 Mar 2008 10:12:37 +0800
-From: yshi <yang.shi@windriver.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
+	Tue, 25 Mar 2008 22:16:15 -0400
+Received: from testure.choralone.org ([194.9.77.134]:40010 "EHLO
+	testure.choralone.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753701AbYCZCQP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Mar 2008 22:16:15 -0400
+Date: Tue, 25 Mar 2008 22:15:54 -0400
+From: Dave Jones <davej@codemonkey.org.uk>
+To: Mike Travis <travis@sgi.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       Len Brown <len.brown@intel.com>
+Subject: Re: [PATCH 04/12] cpumask: pass cpumask by reference to
+	acpi-cpufreq
+Message-ID: <20080326021554.GA8388@codemonkey.org.uk>
+Mail-Followup-To: Dave Jones <davej@codemonkey.org.uk>,
+	Mike Travis <travis@sgi.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Ingo Molnar <mingo@elte.hu>, linux-mm@kvack.org,
+	linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>
+References: <20080326013811.569646000@polaris-admin.engr.sgi.com> <20080326013812.324977000@polaris-admin.engr.sgi.com>
 MIME-Version: 1.0
-To: jgarzik@pobox.com
-CC: netdev@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>
-Subject: [PATCH] Improvev netconsole support for RTL8139 NIC driver
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 26 Mar 2008 02:12:32.0767 (UTC) FILETIME=[D9CB70F0:01C88EE6]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080326013812.324977000@polaris-admin.engr.sgi.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In current RTL8139 NIC driver, spin_lock()/spin_unlock() is used
-for irq handler. But for netconsole/netpoll, it prefers
-spin_lock_irqsave()/spin_unlcok_irqrestore(). So this patch fixed
-this problem to improve netconsole/netpoll support.
+On Tue, Mar 25, 2008 at 06:38:15PM -0700, Mike Travis wrote:
+ > Pass cpumask_t variables by reference in acpi-cpufreq functions.
+ > 
+ > Based on:
+ > 	git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git
+ > 	git://git.kernel.org/pub/scm/linux/kernel/git/x86/linux-2.6-x86.git
+ > 
+ > Cc: Len Brown <len.brown@intel.com>
+ > Cc: Dave Jones <davej@codemonkey.org.uk>
+ > Signed-off-by: Mike Travis <travis@sgi.com>
 
-Signed-off-by: Yang Shi <yang.shi@windriver.com>
----
- b/drivers/net/8139too.c |    9 +++++++++
- 1 file changed, 9 insertions(+)
----
+As this is dependant on non-cpufreq bits, I'm assuming this is going
+via Ingo.  From a quick eyeball of this, and the change its dependant on,
+it looks ok to me.
 
---- a/drivers/net/8139too.c
-+++ b/drivers/net/8139too.c
-@@ -2136,8 +2136,13 @@ static irqreturn_t rtl8139_interrupt (in
-        u16 status, ackstat;
-        int link_changed = 0; /* avoid bogus "uninit" warning */
-        int handled = 0;
-+#ifdef CONFIG_NET_POLL_CONTROLLER
-+       unsigned long flags;
+	Dave
 
-+       spin_lock_irqsave (&tp->lock, flags);
-+#else
-        spin_lock (&tp->lock);
-+#endif
-        status = RTL_R16 (IntrStatus);
-
-        /* shared irq? */
-@@ -2185,7 +2190,11 @@ static irqreturn_t rtl8139_interrupt (in
-                        RTL_W16 (IntrStatus, TxErr);
-        }
-  out:
-+#ifdef CONFIG_NET_POLL_CONTROLLER
-+       spin_unlock_irqrestore (&tp->lock, flags);
-+#else
-        spin_unlock (&tp->lock);
-+#endif
-
-        DPRINTK ("%s: exiting interrupt, intr_status=%#4.4x.\n",
-                 dev->name, RTL_R16 (IntrStatus));
-
+-- 
+http://www.codemonkey.org.uk
