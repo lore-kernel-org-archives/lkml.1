@@ -1,50 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759814AbYCZNK0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760220AbYCZNKk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759814AbYCZNK0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Mar 2008 09:10:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754401AbYCZNKL
+	id S1760220AbYCZNKk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Mar 2008 09:10:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759787AbYCZNKZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Mar 2008 09:10:11 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:46200 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754216AbYCZNKK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Mar 2008 09:10:10 -0400
-From: Jarod Wilson <jwilson@redhat.com>
-Organization: Red Hat, Inc.
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: Re: [PATCH] firewire: fw-ohci: plug dma memory leak in AR handler
-Date: Wed, 26 Mar 2008 09:09:49 -0400
-User-Agent: KMail/1.9.9
-Cc: linux1394-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-References: <200803251647.16227.jwilson@redhat.com> <47E9F6BB.4010601@s5r6.in-berlin.de>
-In-Reply-To: <47E9F6BB.4010601@s5r6.in-berlin.de>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Wed, 26 Mar 2008 09:10:25 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:42639 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759747AbYCZNKY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Mar 2008 09:10:24 -0400
+Subject: Re: why so many unexported headers checking __KERNEL__?
+From: David Woodhouse <dwmw2@infradead.org>
+To: "Robert P. J. Day" <rpjday@crashcourse.ca>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <alpine.LFD.1.00.0803260846390.6148@localhost.localdomain>
+References: <alpine.LFD.1.00.0803230229530.1203@localhost.localdomain>
+	 <1206533324.9540.268.camel@pmac.infradead.org>
+	 <alpine.LFD.1.00.0803260846390.6148@localhost.localdomain>
+Content-Type: text/plain
+Date: Wed, 26 Mar 2008 13:10:22 +0000
+Message-Id: <1206537022.9540.274.camel@pmac.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.0 (2.22.0-1.fc9) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200803260909.49850.jwilson@redhat.com>
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 26 March 2008 03:09:47 am Stefan Richter wrote:
-> Jarod Wilson wrote:
-> > @@ -605,7 +606,7 @@ static void ar_context_tasklet(unsigned long data)
-> >  			buffer = handle_ar_packet(ctx, buffer);
-> >
-> >  		dma_free_coherent(ohci->card.device, PAGE_SIZE,
-> > -				  buffer, buffer_bus);
-> > +				  start, start_bus);
-> >  		ar_context_add_page(ctx);
->
-> On the other hand, why do we free a page + allocate a page?
-> Why don't we re-initialize and re-add the old page?
+On Wed, 2008-03-26 at 08:53 -0400, Robert P. J. Day wrote:
+> not surprisingly, the only reason i noticed the above was because i
+> hacked together a short script that went looking for all of the above
+> and i was surprised at the number of files it identified. 
 
-Oh good, I'm not crazy (outside of having firewire on the brain way too much 
-right now). I had that same thought tossing and turning in bed late last 
-night. :)
+It's not _that_ surprising. Remember, before headers_install people just
+used to copy _all_ the headers across, and so the only way to hide stuff
+was to wrap entire files in #ifdef __KERNEL__.
+
+> p.s. the other case that could be identified is when a header file has
+> its *entire* contents encased in a __KERNEL__ test, (either ifdef or
+> ifndef).  AFAICT, unless that kind of test is partitioning *some* of a
+> header file content from the remainder, there's little value in a
+> __KERNEL__test if the end result is to either:
+> 
+>   a) leave the file exactly as is, or
+>   b) reduce it to empty
+
+Right.
+
+If it's entirely #ifndef __KERNEL__ then it's a userspace header. It
+probably doesn't live in the kernel source tree at all.
+
+If it's entirely #ifdef __KERNEL__ then it shouldn't be exported at all
+(although when we do that we sometimes have to deal with userspace
+programs which include it even though it's empty).
 
 -- 
-Jarod Wilson
-jwilson@redhat.com
+dwmw2
+
