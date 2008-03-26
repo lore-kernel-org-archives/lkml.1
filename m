@@ -1,54 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760788AbYCZQeS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760006AbYCZQgO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760788AbYCZQeS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Mar 2008 12:34:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756749AbYCZQeB
+	id S1760006AbYCZQgO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Mar 2008 12:36:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756858AbYCZQf6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Mar 2008 12:34:01 -0400
-Received: from out3.smtp.messagingengine.com ([66.111.4.27]:40031 "EHLO
-	out3.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756517AbYCZQeA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Mar 2008 12:34:00 -0400
-X-Sasl-enc: aoO79lTtvAmoblP/bwDL4t5SbsIw3pmPp4rFIGzeQNZQ 1206549238
-Date: Wed, 26 Mar 2008 13:33:56 -0300
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Corentin CHARY <corentincj@iksaif.net>
-Cc: Len Brown <lenb@kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Bjorn Helgaas <bjorn.helgaas@hp.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
-Subject: Re: ISA -> ISA_ (Re: [GIT PATCH] ACPI patches for 2.6.25-rc6)
-Message-ID: <20080326163356.GC3562@khazad-dum.debian.net>
-References: <200803180510.47670.lenb@kernel.org> <20080326081653.GA8247@elte.hu> <200803261132.21448.lenb@kernel.org> <200803261645.01343.corentincj@iksaif.net>
+	Wed, 26 Mar 2008 12:35:58 -0400
+Received: from relay2.sgi.com ([192.48.171.30]:57619 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752426AbYCZQf5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Mar 2008 12:35:57 -0400
+Date: Wed, 26 Mar 2008 09:34:00 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Bart Van Assche <bart.vanassche@gmail.com>
+cc: Ingo Molnar <mingo@elte.hu>, Nick Piggin <nickpiggin@yahoo.com.au>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: quicklists confuse meminfo
+In-Reply-To: <e2e108260803260337j4175b3emc3304b67b8314bea@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0803260929350.27909@schroedinger.engr.sgi.com>
+References: <alpine.LFD.1.00.0803090919481.3099@apollo.tec.linutronix.de> 
+ <20080309114640.85c9c3eb.akpm@linux-foundation.org> 
+ <Pine.LNX.4.64.0803100851560.23575@schroedinger.engr.sgi.com> 
+ <200803111507.20870.nickpiggin@yahoo.com.au> 
+ <e2e108260803210552i4cdef6a5qf8f5076eaac2cf03@mail.gmail.com> 
+ <20080321144517.GA1545@elte.hu>  <e2e108260803260045q37792686l80ddb421f2e67c6f@mail.gmail.com>
+  <20080326081349.GA8159@elte.hu> <e2e108260803260337j4175b3emc3304b67b8314bea@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200803261645.01343.corentincj@iksaif.net>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
-	1CDB 0FE3
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 26 Mar 2008, Corentin CHARY wrote:
-> thinkpad_acpi.c:IBM_HANDLE(ec, root, "\\_SB.PCI0.ISA.EC0",      /* 240, 240x */
-> thinkpad_acpi.c:           "\\_SB.PCI.ISA.EC",  /* 570 */
-> thinkpad_acpi.c:           "\\_SB.PCI0.ISA0.EC0",       /* 600e/x, 770e, 770x */
-> thinkpad_acpi.c:           "\\_SB.PCI0.ISA.EC", /* A21e, A2xm/p, T20-22, X20-21 */
-> thinkpad_acpi.c:           "\\_SB.PCI.ISA.SLCE",        /* 570 */
-> 
-> So it seems to work for thinkpads.
+On Wed, 26 Mar 2008, Bart Van Assche wrote:
 
-ThinkPads use "ISA" as the node (not ISA_ or anything else like that),
-and the ACPICA node match routine works properly.
+> Thanks to everyone who worked on this. By the way, I have asked Albert 
+> Calahan, the procps maintainer, to fix the free/top/vmstat tools such 
+> that these take recently added /proc/meminfo fields into account and 
+> display correct values on recent 2.6 kernels. See also 
+> http://bugzilla.kernel.org/show_bug.cgi?id=9991 and 
+> http://marc.info/?l=linux-mm&m=120496901605830&w=2.
 
-So please don't touch thinkpad-acpi's ".ISA." stuff.
-
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+Be aware that some distros have hacked their meminfo (proc and 
+/sys/devices/system/node/node*/meminfo) output to be more compatible with 
+recent 2.6 kernels but not updated to the new ZVC counter scheme. On those 
+kernels (<2.6.17) counters may show weird values and the sum of the per 
+node counters in sysfs may not yield the same amount shown in 
+/proc/meminfo.
