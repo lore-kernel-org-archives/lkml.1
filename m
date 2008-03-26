@@ -1,46 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761187AbYCZAJo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759542AbYCZAMI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761187AbYCZAJo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Mar 2008 20:09:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757081AbYCZAJh
+	id S1759542AbYCZAMI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Mar 2008 20:12:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752976AbYCZALz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Mar 2008 20:09:37 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:52658 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756601AbYCZAJg (ORCPT
+	Tue, 25 Mar 2008 20:11:55 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:49306 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753809AbYCZALz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Mar 2008 20:09:36 -0400
-Date: Tue, 25 Mar 2008 20:09:30 -0400
-From: Christoph Hellwig <hch@infradead.org>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Jack Steiner <steiner@sgi.com>, mingo@elte.hu, tglx@linutronix.de,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: [RFC 6/8] x86_64: Define the macros and tables for the basic
-	UV infrastructure.
-Message-ID: <20080326000930.GB18701@infradead.org>
-References: <20080324182118.GA21758@sgi.com> <87ej9zi05c.fsf@basil.nowhere.org>
+	Tue, 25 Mar 2008 20:11:55 -0400
+Message-ID: <47E9948C.3070807@zytor.com>
+Date: Tue, 25 Mar 2008 17:10:52 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <87ej9zi05c.fsf@basil.nowhere.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+CC: Ingo Molnar <mingo@elte.hu>,
+       Venki Pallipadi <venkatesh.pallipadi@intel.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       kernel list <linux-kernel@vger.kernel.org>, suresh.b.siddha@intel.com
+Subject: Re: [PATCH] x86: pat cpu feature bit setting for known cpus
+References: <200803242324.35357.yhlu.kernel@gmail.com>	 <47E9003B.5010002@zytor.com>	 <86802c440803251103taf4c8f2mb674c3d17f3c2345@mail.gmail.com>	 <20080325190851.GC30998@linux-os.sc.intel.com>	 <20080325200830.GB15330@elte.hu> <47E962AE.9040307@zytor.com>	 <47E9843A.1060702@zytor.com>	 <86802c440803251605w7021b60cmbc312eb9ca87d277@mail.gmail.com>	 <47E98572.704@zytor.com> <86802c440803251608v6f09f531x57d9688601cc84fd@mail.gmail.com>
+In-Reply-To: <86802c440803251608v6f09f531x57d9688601cc84fd@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 25, 2008 at 11:11:11AM +0100, Andi Kleen wrote:
-> Not sure what physical mode is.
+Yinghai Lu wrote:
+> On Tue, Mar 25, 2008 at 4:06 PM, H. Peter Anvin <hpa@zytor.com> wrote:
+>> Yinghai Lu wrote:
+>>  >>
+>>  >>  By the way, I want to clarify: I didn't mean it was *intended* as
+>>  >>  vendor-lockin, just that it's an undesirable effect of this.
+>>  >
+>>  > if the PAT works, we may need to trim the memory according to MTRR, right?
+>>  >
+>>
+>>  That doesn't seem like it's specific to PAT?
 > 
-> > +#ifdef __BIOS__
-> > +#define UV_ADDR(x)		((unsigned long *)(x))
-> > +#else
-> > +#define UV_ADDR(x)		((unsigned long *)__va(x))
-> > +#endif
+> could page table to  set WRBACK the range that is not covered by MTRR in e820..
 > 
-> But it it would be cleaner if your BIOS just supplied a suitable __va()
-> and then you remove these macros.
 
-the bios should just have headers of it's own instead of placing this
-burden on kernel code.
+We have to trim anyway... lest we end up using uncached memory and then 
+we're in a world of hurt.
+
+	-hpa
