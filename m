@@ -1,45 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756549AbYC0CSB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756739AbYC0Cru@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756549AbYC0CSB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Mar 2008 22:18:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754068AbYC0CRw
+	id S1756739AbYC0Cru (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Mar 2008 22:47:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753701AbYC0Crj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Mar 2008 22:17:52 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:58355 "EHLO mx1.redhat.com"
+	Wed, 26 Mar 2008 22:47:39 -0400
+Received: from ns1.suse.de ([195.135.220.2]:53710 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753624AbYC0CRv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Mar 2008 22:17:51 -0400
-From: Jarod Wilson <jwilson@redhat.com>
-Organization: Red Hat, Inc.
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: Re: [PATCH] firewire: fw-ohci: plug dma memory leak in AR handler
-Date: Wed, 26 Mar 2008 22:17:29 -0400
-User-Agent: KMail/1.9.9
-Cc: linux1394-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-References: <200803251647.16227.jwilson@redhat.com> <200803261737.30717.jwilson@redhat.com> <47EAE683.7010500@s5r6.in-berlin.de>
-In-Reply-To: <47EAE683.7010500@s5r6.in-berlin.de>
+	id S1753624AbYC0Cri (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Mar 2008 22:47:38 -0400
+Date: Wed, 26 Mar 2008 16:24:19 -0700
+From: Greg KH <greg@kroah.com>
+To: mark gross <mgross@linux.intel.com>
+Cc: lkml <linux-kernel@vger.kernel.org>, linux-rt-users@vger.kernel.org,
+       linux-usb@vger.kernel.org
+Subject: Re: Real time USB2Serial devices and behaivor
+Message-ID: <20080326232419.GC15468@kroah.com>
+References: <20080326152559.GA17164@linux.intel.com> <20080326162728.GC6020@kroah.com> <20080326164946.GA17928@linux.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200803262217.29064.jwilson@redhat.com>
+In-Reply-To: <20080326164946.GA17928@linux.intel.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 26 March 2008 08:12:51 pm Stefan Richter wrote:
-> Jarod Wilson wrote:
-> > So as it turns out, while this is indeed a leak that needs to be plugged,
-> > it does NOT remedy the 'out of iommu space' issue, it just delays it a
-> > while longer. Still working on tracing the root cause of the memory
-> > exhaustion.
->
-> Do you want to change the wording of the patch description before I
-> submit it upstream?
+On Wed, Mar 26, 2008 at 09:49:46AM -0700, mark gross wrote:
+> On Wed, Mar 26, 2008 at 09:27:28AM -0700, Greg KH wrote:
+> > On Wed, Mar 26, 2008 at 08:25:59AM -0700, mark gross wrote:
+> > > At home I'm playing with a real time amateur robotics application with a
+> > > micro controller talking over its serial port to a Linux box running an RT
+> > > kernel and some RT user mode software to suck in the serial port data
+> > > and do some processing in real time.  One example of what I want to do
+> > > with this type of configuration is to create a type of IMU thing and run
+> > > the data through a kalman filter to see how good I can do with my
+> > > hardware.
+> > > 
+> > > I'll be sending data regularly at data rates between 50 and 500 HZ from
+> > > the MCU (depending on mode)
+> > > 
+> > > Anyway, I have the RT code and the system prototyped using the hardware
+> > > serial port on my desktop and I'm getting rock solid RT delivery times
+> > > of the data +/- 30usec.  While stressing the system in CPU and disk. (I
+> > > still need to do the test while flood pinging the box)  However; when I
+> > > use my USB dongle instead of the hardware serial port the system falls
+> > > over WRT real time behavior.
+> > > 
+> > > I'm just starting to look into the behavior now but has anyone looked at
+> > > the RT'ness of USB2Serial + USB stack yet?  I would like to see what
+> > > other folks have done.  My googleing last night didn't get any useful
+> > > hits.
+> > 
+> > I have, and others have in the past, and it's something that you can not
+> > really do.  USB is not "deterministic", and these cheap usb to serial
+> > devices introduce a very big lag that also is not deterministic.
+> > 
+> 
+> I'm seeing some of that today :(
+> 
+> > I wouldn't recommend using USB for anything that you need to be able to
+> > accuratly control the latency of, it's just not going to work as that is
+> > not what it was designed for at all.
+> 
+> Oh, thats a drag.  I know bulk has retries, and that on a clean bus they
+> don't happen (well as far as my hobby use they shouldn't, real
+> applications should use isochronous streams to avoid them.)
+> 
+> What is the root cause for the non deterministic behavior?  HW or USB
+> stack?
 
-Yeah, I'll whip something up in just a sec and get it out the door...
+The USB hardware.  Go read the spec for the gory details, in short,
+nothing is guaranteed :(
 
--- 
-Jarod Wilson
-jwilson@redhat.com
+> Is there any reason to think that if I created my own isochronous
+> USB2Serial adapter and iso-usb-driver that I couldn't get determinism?
+
+I strongly doubt it as others have tried and failed in the past.
+
+sorry,
+
+greg k-h
