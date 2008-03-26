@@ -1,70 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759553AbYCZKeR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758720AbYCZKh0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759553AbYCZKeR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Mar 2008 06:34:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754153AbYCZKeD
+	id S1758720AbYCZKh0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Mar 2008 06:37:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754153AbYCZKhO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Mar 2008 06:34:03 -0400
-Received: from fk-out-0910.google.com ([209.85.128.190]:20356 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753832AbYCZKeA (ORCPT
+	Wed, 26 Mar 2008 06:37:14 -0400
+Received: from fg-out-1718.google.com ([72.14.220.157]:4938 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753660AbYCZKhM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Mar 2008 06:34:00 -0400
+	Wed, 26 Mar 2008 06:37:12 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=rvSG98AeQCDkfLsAgizQLI+3l6q9V8MsvX94j0s/W5gYGpadx+7nt4FQQSAcQYvodD/eKq8HKBaNxRX6lFsoiCT0YPSHjOKPuCJvez1SxnLehTWWQnaBkkJGq9fVUAuu60a6RU/39bGIXpi2yfL5HQUmilgHatTPgS+QxQYFgLE=
-Message-ID: <47EA268F.8070006@gmail.com>
-Date: Wed, 26 Mar 2008 11:33:51 +0100
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=OZTpnVI0XorKTGAlRhOPvCZDaV3oJuVuTZ8Zqv2T9qyoy0ZoY/wuRj9ICETlaO0Bfyb2YQKzi+7PaVKVmv4qGPsUgJHJlXtkYH0vlRzZQYVHzsVvUegcPulXpgAHErB7mVs8rbM4OkSCqQkowX7Xvm3W+iHxe/dK5DQoN8tLEBs=
+Message-ID: <e2e108260803260337j4175b3emc3304b67b8314bea@mail.gmail.com>
+Date: Wed, 26 Mar 2008 11:37:10 +0100
+From: "Bart Van Assche" <bart.vanassche@gmail.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: quicklists confuse meminfo
+Cc: "Nick Piggin" <nickpiggin@yahoo.com.au>,
+       "Christoph Lameter" <clameter@sgi.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>,
+       "Thomas Gleixner" <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>
+In-Reply-To: <20080326081349.GA8159@elte.hu>
 MIME-Version: 1.0
-To: Bryan Wu <cooloney@kernel.org>
-CC: linux-kernel@vger.kernel.org, Mike Frysinger <vapier.adi@gmail.com>,
-       Wim Van Sebroeck <wim@iguana.be>, "'Sam Ravnborg'" <sam@ravnborg.org>
-Subject: Re: [PATCH 1/1] [Blackfin try #2] char driver for Blackfin on-chip
- OTP memory
-References: <> <1206580131-22527-1-git-send-email-cooloney@kernel.org>
-In-Reply-To: <1206580131-22527-1-git-send-email-cooloney@kernel.org>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <alpine.LFD.1.00.0803090919481.3099@apollo.tec.linutronix.de>
+	 <20080309114640.85c9c3eb.akpm@linux-foundation.org>
+	 <Pine.LNX.4.64.0803100851560.23575@schroedinger.engr.sgi.com>
+	 <200803111507.20870.nickpiggin@yahoo.com.au>
+	 <e2e108260803210552i4cdef6a5qf8f5076eaac2cf03@mail.gmail.com>
+	 <20080321144517.GA1545@elte.hu>
+	 <e2e108260803260045q37792686l80ddb421f2e67c6f@mail.gmail.com>
+	 <20080326081349.GA8159@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 03/27/2008 02:08 AM, Bryan Wu wrote:
-> From: Mike Frysinger <vapier.adi@gmail.com>
-> 
-> initial char driver for otp memory
-> (only read supported atm ... needs real examples/docs for write support)
-> 
-> Signed-off-by: Mike Frysinger <vapier.adi@gmail.com>
-> Signed-off-by: Bryan Wu <cooloney@kernel.org>
+On Wed, Mar 26, 2008 at 9:13 AM, Ingo Molnar <mingo@elte.hu> wrote:
+>
+>  * Bart Van Assche <bart.vanassche@gmail.com> wrote:
+>
+>  > This issue is indeed fixed now, thanks (retested with kernel version
+>  > 2.6.25-rc6-00333-ga4083c9-dirty). Where can I find the patch that
+>  > fixed this issue ? A Google query for the commit ID returned only one
+>  > result, and that was an URL that pointed to your e-mail.
+>
+>  thanks a lot Bart for the persistent testing - this was a nasty one to
+>  track down. Find the standalone fix below.
 
-Nice,
-Acked-by: Jiri Slaby <jirislaby@gmail.com>
+Thanks to everyone who worked on this. By the way, I have asked Albert
+Calahan, the procps maintainer, to fix the free/top/vmstat tools such
+that these take recently added /proc/meminfo fields into account and
+display correct values on recent 2.6 kernels. See also
+http://bugzilla.kernel.org/show_bug.cgi?id=9991 and
+http://marc.info/?l=linux-mm&m=120496901605830&w=2.
 
-> diff --git a/drivers/char/bfin-otp.c b/drivers/char/bfin-otp.c
-> new file mode 100644
-> index 0000000..2edc284
-> --- /dev/null
-> +++ b/drivers/char/bfin-otp.c
-[...]
-> +static int __init bfin_otp_init(void)
-> +{
-> +	int ret;
-> +
-> +	stampit();
-> +
-> +	ret = misc_register(&bfin_otp_misc_device);
-> +	if (ret) {
-> +		pr_init(KERN_ERR PFX "unable to register a misc device\n");
-> +		return ret;
-> +	}
-> +
-> +	pr_init(KERN_INFO PFX "initialized\n");
-
-except the fact, that pr_init definition seems to be broken. Its defined __fmt 
-is const, so it should reside in .init.rodata (__initconst), not .init.data 
-(__initdata).
+Bart.
