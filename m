@@ -1,39 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755669AbYCZD3X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756046AbYCZDa6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755669AbYCZD3X (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Mar 2008 23:29:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752637AbYCZD3Q
+	id S1756046AbYCZDa6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Mar 2008 23:30:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752949AbYCZDas
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Mar 2008 23:29:16 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:55316 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752340AbYCZD3P (ORCPT
+	Tue, 25 Mar 2008 23:30:48 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:56604
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752637AbYCZDar (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Mar 2008 23:29:15 -0400
-Date: Tue, 25 Mar 2008 20:27:19 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Pekka J Enberg <penberg@cs.helsinki.fi>
-cc: akpm@linux-foundation.org, mel@csn.ul.ie, olaf@aepfle.de,
-       dan.yeisley@unisys.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] slab: fix cache_cache bootstrap in kmem_cache_init()
-In-Reply-To: <Pine.LNX.4.64.0803252357330.4422@sbz-30.cs.Helsinki.FI>
-Message-ID: <Pine.LNX.4.64.0803252023530.20780@schroedinger.engr.sgi.com>
-References: <Pine.LNX.4.64.0803252357330.4422@sbz-30.cs.Helsinki.FI>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 25 Mar 2008 23:30:47 -0400
+Date: Tue, 25 Mar 2008 20:30:43 -0700 (PDT)
+Message-Id: <20080325.203043.196469543.davem@davemloft.net>
+To: jgarzik@pobox.com
+Cc: yang.shi@windriver.com, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Improvev netconsole support for RTL8139 NIC driver
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <47E9BF7B.3030003@pobox.com>
+References: <47E9B39C.5010502@pobox.com>
+	<20080325.194221.16658596.davem@davemloft.net>
+	<47E9BF7B.3030003@pobox.com>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 25 Mar 2008, Pekka J Enberg wrote:
+From: Jeff Garzik <jgarzik@pobox.com>
+Date: Tue, 25 Mar 2008 23:14:03 -0400
 
-> Andrew/Christoph, this needs to go into 2.6.25 and probably 2.6.24.x as 
-> well. Hopefully either Mel or Olaf can test this on their machines to 
-> confirm the fix doesn't break their setup.
+> David Miller wrote:
+> > From: Jeff Garzik <jgarzik@pobox.com>
+> > Date: Tue, 25 Mar 2008 22:23:24 -0400
+> > 
+> >> This is bogus -- you should never need to slow down the hot path in such 
+> >> a way.
+> > 
+> > Slow down in what way?  Even on x86 saving the flags is just
+> > about as expensive as a plain sti/cli.
+> 
+> Replacing spin_lock() [current 8139too.c] with spin_lock_irqsave() 
+> results in a larger interrupt handler... more CPU instructions for the 
+> same result.
 
-Ok. I see the problem in the amazing artwork of NUMA bootstrap in SLAB 
-that was made even more complex with the fixes late in 2.6.24. 
-Now we are up for the da capo on this in 2.6.25. Sigh.
+Jeff, please be realistic.
 
-Will merge if I get confirmation that this indeed addresses the issue.
+These interrupt handlers about to do a PIO on a status register, which
+will consume on the order of a few hundred cpu cycles.
+
+Counting an I-cache line or two, or 18 cycles here or there,
+is immaterial by comparison.
