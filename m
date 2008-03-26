@@ -1,87 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759952AbYCZUyW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758501AbYCZU6l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759952AbYCZUyW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Mar 2008 16:54:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755075AbYCZUyM
+	id S1758501AbYCZU6l (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Mar 2008 16:58:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754068AbYCZU6d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Mar 2008 16:54:12 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:41029 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752214AbYCZUyL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Mar 2008 16:54:11 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [RFC][PATCH] PM: Introduce new top level suspend and hibernation callbacks (rev. 3)
-Date: Wed, 26 Mar 2008 21:54:01 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: pm list <linux-pm@lists.linux-foundation.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Greg KH <greg@kroah.com>, Len Brown <lenb@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Alexey Starikovskiy <astarikovskiy@suse.de>,
-       David Brownell <david-b@pacbell.net>, Pavel Machek <pavel@ucw.cz>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>
-References: <Pine.LNX.4.44L0.0803261633190.9881-100000@iolanthe.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0803261633190.9881-100000@iolanthe.rowland.org>
+	Wed, 26 Mar 2008 16:58:33 -0400
+Received: from jurassic.park.msu.ru ([195.208.223.243]:46032 "EHLO
+	jurassic.park.msu.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753866AbYCZU6c (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Mar 2008 16:58:32 -0400
+Date: Wed, 26 Mar 2008 23:58:28 +0300
+From: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Gary Hade <garyhade@us.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Meyer <thomas@m3y3r.de>,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       LKML <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Natalie Protasevich <protasnb@gmail.com>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>, pm@debian.org
+Subject: Re: [patch] pci: revert "PCI: remove transparent bridge sizing"
+Message-ID: <20080326205828.GA15225@jurassic.park.msu.ru>
+References: <20080325201125.GD15330@elte.hu> <20080325202954.GA22007@elte.hu> <47E969E1.6080608@m3y3r.de> <alpine.LFD.1.00.0803251445500.2775@woody.linux-foundation.org> <20080326101450.GA9060@jurassic.park.msu.ru> <20080326135458.GA27621@elte.hu> <20080326180701.GA6249@us.ibm.com> <alpine.LFD.1.00.0803261132310.2775@woody.linux-foundation.org> <20080326203012.GB6249@us.ibm.com> <alpine.LFD.1.00.0803261344430.2775@woody.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200803262154.03129.rjw@sisk.pl>
+In-Reply-To: <alpine.LFD.1.00.0803261344430.2775@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday, 26 of March 2008, Alan Stern wrote:
-> On Wed, 26 Mar 2008, Rafael J. Wysocki wrote:
-> 
-> > On Wednesday, 26 of March 2008, Alan Stern wrote:
-> > > On Tue, 25 Mar 2008, Rafael J. Wysocki wrote:
-> > > 
-> > > > > I just thought of another problem.  At the point where
-> > > > > local_irq_disable() is called, in between device_suspend() and
-> > > > > device_power_down(), it is possible in a preemptible kernel that
-> > > > > another task is holding dpm_list_mtx and is in the middle of updating
-> > > > > the list pointers.  This would mess up the traversal in
-> > > > > device_power_down().
-> > > > > 
-> > > > > I'm not sure about the best way to prevent this.  Is it legal to call
-> > > > > unlock_mutex() while interrupts or preemption are disabled?
-> > > > 
-> > > > Well, I think it is, but I'm not sure how that can help.
-> > > > 
-> > > > To prevent the race from happening, we can lock dpm_list_mtx before switching
-> > > > interrupts off in kernel/power/main.c:suspend_enter() and analogously in
-> > > > kernel/power/disk.c .
-> > > 
-> > > That's right.  And once interrupts are turned off you should unlock 
-> > > dpm_list_mtx again, in case a noirq method wants to unregister a 
-> > > device.
-> > 
-> > Why would a noirq method want to do that?  IMO, it's not a big deal if noirq
-> > methods are not allowed to unregister devices.
-> 
-> Okay, that's fine.  It keeps things simple.
-> 
-> > > Hence my question: Is it legal to call unlock_mutex() while interrupts are
-> > > disabled? 
-> > 
-> > Well, I suspect that will confuse lockdep quite a bit.  Otherwise, I don't see
-> > a problem with it (it's just changing the value of a shared variable after
-> > all).
-> 
-> Then you have your answer.  Perhaps have device_suspend() exit with the
-> mutex held and have device_resume() release it (with appropriate
-> handling for error situations, of course).
+On Wed, Mar 26, 2008 at 01:46:33PM -0700, Linus Torvalds wrote:
+> Ahh, ok, so it was directly caused by simply not sizing and setting up the 
+> bus resources properly.
 
-That wouldn't work, because enable_nonboot_cpus() is called before
-device_resume() and the notifiers in there may want to unregister devices
-if some CPUs fail to go online.
+Indeed.
 
-I added two accessor functions device_pm_lock() and device_pm_unlock()
-to be called just prior to disabling interrupts and right after enabling them,
-respectively, in the higher-level PM core (ie. kernel/power/main(disk).c).
+This should prevent an oops in all cases.
 
-Thanks,
-Rafael
+Ivan.
+
+---
+PCI: improved sanity check for pdev_sort_resources()
+
+Prevent potential oops with unsized PCI bridge resources.
+
+Signed-off-by: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+---
+ drivers/pci/setup-res.c |    7 +++----
+ 1 files changed, 3 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/pci/setup-res.c b/drivers/pci/setup-res.c
+index 4be7ccf..fb57c8b 100644
+--- a/drivers/pci/setup-res.c
++++ b/drivers/pci/setup-res.c
+@@ -226,18 +226,17 @@ void pdev_sort_resources(struct pci_dev *dev, struct resource_list *head)
+ 		if (r->flags & IORESOURCE_PCI_FIXED)
+ 			continue;
+ 
+-		r_align = r->end - r->start;
+-		
++		r_align = (i < PCI_BRIDGE_RESOURCES) ? r->end - r->start + 1 :
++						       r->start;
+ 		if (!(r->flags) || r->parent)
+ 			continue;
+-		if (!r_align) {
++		if (r_align <= 1) {
+ 			printk(KERN_WARNING "PCI: Ignore bogus resource %d "
+ 				"[%llx:%llx] of %s\n",
+ 				i, (unsigned long long)r->start,
+ 				(unsigned long long)r->end, pci_name(dev));
+ 			continue;
+ 		}
+-		r_align = (i < PCI_BRIDGE_RESOURCES) ? r_align + 1 : r->start;
+ 		for (list = head; ; list = list->next) {
+ 			resource_size_t align = 0;
+ 			struct resource_list *ln = list->next;
