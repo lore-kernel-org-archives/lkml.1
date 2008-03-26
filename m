@@ -1,49 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755702AbYCZWZ7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756196AbYCZW01@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755702AbYCZWZ7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Mar 2008 18:25:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752910AbYCZWZu
+	id S1756196AbYCZW01 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Mar 2008 18:26:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752910AbYCZW0P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Mar 2008 18:25:50 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:49923 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752758AbYCZWZu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Mar 2008 18:25:50 -0400
-Date: Wed, 26 Mar 2008 17:25:48 -0500
-From: Dean Nelson <dcn@sgi.com>
-To: jes@sgi.com, tony.luck@intel.com, linux-kernel@vger.kernel.org,
-       linux-ia64@vger.kernel.org
-Subject: Re: [Patch 0/5] prepare XPC and XPNET to support SGI UV -v3
-Message-ID: <20080326222548.GF31138@sgi.com>
-References: <20080326215807.GF31340@sgi.com>
-MIME-Version: 1.0
+	Wed, 26 Mar 2008 18:26:15 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:53555 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753499AbYCZW0O (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Mar 2008 18:26:14 -0400
+Date: Wed, 26 Mar 2008 22:25:41 +0000
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: akpm@linux-foundation.org, linuxram@us.ibm.com,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [patch 3/7] vfs: mountinfo: add mount ID
+Message-ID: <20080326222541.GT10722@ZenIV.linux.org.uk>
+References: <20080326211131.705321084@szeredi.hu> <20080326212139.187837394@szeredi.hu>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080326215807.GF31340@sgi.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20080326212139.187837394@szeredi.hu>
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 26, 2008 at 04:58:07PM -0500, Dean Nelson wrote:
-> This set of five patches moves XPC and XPNET to drivers/misc/xp in preparation
-> for enabling X86_64 support.
-> 
-> I discovered that the previous versions of this patch were missing the
-> replacement of kernel_thread() by kthread_run() and the elimination of
-> daemonize().
+On Wed, Mar 26, 2008 at 10:11:34PM +0100, Miklos Szeredi wrote:
+> +static int mnt_alloc_id(struct vfsmount *mnt)
+> +{
+> +	int res;
+> +
+> + retry:
+> +	spin_lock(&vfsmount_lock);
+> +	res = ida_get_new(&mnt_id_ida, &mnt->mnt_id);
+> +	spin_unlock(&vfsmount_lock);
+> +	if (res == -EAGAIN) {
+> +		if (ida_pre_get(&mnt_id_ida, GFP_KERNEL))
+> +			goto retry;
+> +		res = -ENOMEM;
+> +	}
+> +	return res;
 
-It looks like patches 3 and 4 of this patchset are too large to be
-accepted by the linux-ia64 mailing list (whereas they both do appear
-on the linux-kernel mailing list).
+*Ugh*
 
-  -rw-r--r-- 1 dcn os1 204460 2008-03-26 16:36 generic-xp	<<< [Patch 3/5]
-  -rw-r--r-- 1 dcn os1 163339 2008-03-26 16:36 Lindent		<<< [Patch 4/5]
+Why bother with vfsmount_lock here?  All allocations are done under
+namespace_sem.  Moreover, I'd rather replace that 'goto retry' with
+a single call of ida_get_new(), since we are serialized anyway.
 
-So what do I do about them? I'm assuming I need to re-submit the patchset
-with these two large patches broken up into multiple smaller patches?
-What's the max patch size accepted by linux_ia64 mailing list?
+> @@ -353,6 +386,7 @@ EXPORT_SYMBOL(simple_set_mnt);
+>  void free_vfsmnt(struct vfsmount *mnt)
+>  {
+>  	kfree(mnt->mnt_devname);
+> +	mnt_free_id(mnt);
+>  	kmem_cache_free(mnt_cache, mnt);
+>  }
 
-Thanks,
-Dean
+... and I'd rather do that earlier, e.g. in umount_tree().  At that point
+we (a) have namespace_sem and (b) irrevocably kick the sucker out of
+any namespace.
 
+I'd rather minimize banging vfsmount_lock like that...
