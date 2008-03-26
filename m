@@ -1,66 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756547AbYCZPYl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756057AbYCZP2p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756547AbYCZPYl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Mar 2008 11:24:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753417AbYCZPYe
+	id S1756057AbYCZP2p (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Mar 2008 11:28:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752214AbYCZP2j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Mar 2008 11:24:34 -0400
-Received: from lobo.ruivo.org ([66.92.68.119]:54381 "EHLO lobo.ruivo.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753074AbYCZPYd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Mar 2008 11:24:33 -0400
-Date: Wed, 26 Mar 2008 11:24:17 -0400
-From: Aristeu Rozanski <aris@ruivo.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
-Subject: Re: [RFC][PATCH] nmi watchdog: handle NMI_IO_APIC on nmi_watchdog
-Message-ID: <20080326152417.GE25854@cathedrallabs.org>
-References: <20080313180538.GC4620@cathedrallabs.org> <20080321114752.GA25225@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080321114752.GA25225@elte.hu>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Wed, 26 Mar 2008 11:28:39 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:55161 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750745AbYCZP2i (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Mar 2008 11:28:38 -0400
+Subject: [PATCH] smaps: account swap entries
+From: Peter Zijlstra <peterz@infradead.org>
+To: Andrew Morton <akpm@linux-foundation.org>, mpm <mpm@selenic.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>
+Content-Type: text/plain
+Date: Wed, 26 Mar 2008 16:28:24 +0100
+Message-Id: <1206545304.8514.494.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.21.92 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Ingo,
-> > This patch includes code to handle NMI_IO_APIC enabling/disabling by
-> > nmi_watchdog proc file.
-> 
-> hm:
-> 
-> > +static void disable_ioapic_nmi_watchdog(void)
-> > +{
-> > +	on_each_cpu(stop_apic_nmi_watchdog, NULL, 0, 1);
-> > +}
-> 
-> stop_apic_nmi_watchdog() doesnt currently properly disable the 
-> generation of NMIs when they come from an IO-APIC, so this will need 
-> more fixes i believe. One approach would be to save the IO-APIC id and 
-> pin when the watchdog is set up, and use it later on to poke that 
-> IO-APIC register to disable NMI generation there.
-the patch I sent has this change:
+Subject: smaps: account swap entries
 
-@@ -270,6 +270,8 @@ void stop_apic_nmi_watchdog(void *unused
-                return;
-        if (nmi_watchdog == NMI_LOCAL_APIC)
-                lapic_watchdog_stop();
-+       else
-+               __acpi_nmi_disable(NULL);
-        __get_cpu_var(wd_enabled) = 0;
-        atomic_dec(&nmi_active);
+Show the amount of swap for each vma. This can be used to see where all the
+swap goes.
+
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+---
+ fs/proc/task_mmu.c |   13 +++++++++++--
+ 1 file changed, 11 insertions(+), 2 deletions(-)
+
+Index: linux-2.6/fs/proc/task_mmu.c
+===================================================================
+--- linux-2.6.orig/fs/proc/task_mmu.c
++++ linux-2.6/fs/proc/task_mmu.c
+@@ -313,6 +313,7 @@ struct mem_size_stats
+ 	unsigned long private_clean;
+ 	unsigned long private_dirty;
+ 	unsigned long referenced;
++	unsigned long swap;
+ 	u64 pss;
+ };
+ 
+@@ -329,6 +330,12 @@ static int smaps_pte_range(pmd_t *pmd, u
+ 	pte = pte_offset_map_lock(vma->vm_mm, pmd, addr, &ptl);
+ 	for (; addr != end; pte++, addr += PAGE_SIZE) {
+ 		ptent = *pte;
++
++		if (is_swap_pte(ptent)) {
++			mss->swap += PAGE_SIZE;
++			continue;
++		}
++
+ 		if (!pte_present(ptent))
+ 			continue;
+ 
+@@ -387,7 +394,8 @@ static int show_smap(struct seq_file *m,
+ 		   "Shared_Dirty:   %8lu kB\n"
+ 		   "Private_Clean:  %8lu kB\n"
+ 		   "Private_Dirty:  %8lu kB\n"
+-		   "Referenced:     %8lu kB\n",
++		   "Referenced:     %8lu kB\n"
++		   "Swap:           %8lu kB\n",
+ 		   (vma->vm_end - vma->vm_start) >> 10,
+ 		   mss.resident >> 10,
+ 		   (unsigned long)(mss.pss >> (10 + PSS_SHIFT)),
+@@ -395,7 +403,8 @@ static int show_smap(struct seq_file *m,
+ 		   mss.shared_dirty  >> 10,
+ 		   mss.private_clean >> 10,
+ 		   mss.private_dirty >> 10,
+-		   mss.referenced >> 10);
++		   mss.referenced >> 10,
++		   mss.swap >> 10);
+ 
+ 	return ret;
  }
 
-and:
-static void __acpi_nmi_disable(void *__unused)
-{       
-        apic_write(APIC_LVT0, APIC_DM_NMI | APIC_LVT_MASKED);
-}
-
-do you think this isn't enough?
-
--- 
-Aristeu
 
