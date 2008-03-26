@@ -1,29 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762834AbYCZUQt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762941AbYCZURK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762834AbYCZUQt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Mar 2008 16:16:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759182AbYCZUM4
+	id S1762941AbYCZURK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Mar 2008 16:17:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759343AbYCZUM6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Mar 2008 16:12:56 -0400
-Received: from smtp.nokia.com ([192.100.105.134]:62288 "EHLO
-	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759012AbYCZUMz (ORCPT
+	Wed, 26 Mar 2008 16:12:58 -0400
+Received: from smtp.nokia.com ([192.100.122.233]:46764 "EHLO
+	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759210AbYCZUM4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Mar 2008 16:12:55 -0400
-Message-ID: <47EAAD79.7060607@indt.org.br>
-Date: Wed, 26 Mar 2008 16:09:29 -0400
+	Wed, 26 Mar 2008 16:12:56 -0400
+Message-ID: <47EAAD86.2060904@indt.org.br>
+Date: Wed, 26 Mar 2008 16:09:42 -0400
 From: Carlos Aguiar <carlos.aguiar@indt.org.br>
 User-Agent: Thunderbird 1.5.0.12 (X11/20070604)
 MIME-Version: 1.0
 To: ext Pierre Ossman <drzeus-list@drzeus.cx>
 CC: Tony Lindgren <tony@atomide.com>, linux-kernel@vger.kernel.org
-Subject: [PATCH 11/18] MMC: OMAP: Abort stuck commands
+Subject: [PATCH 14/18] MMC: OMAP: Use tasklet instead of workqueue for cover
+ switch notification
 References: <47DAD39C.90405@indt.org.br> <20080324132631.1e0d2125@mjolnir.drzeus.cx>
 In-Reply-To: <20080324132631.1e0d2125@mjolnir.drzeus.cx>
 X-Enigmail-Version: 0.94.0.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 26 Mar 2008 20:12:13.0233 (UTC) FILETIME=[ADF61A10:01C88F7D]
+X-OriginalArrivalTime: 26 Mar 2008 20:12:25.0108 (UTC) FILETIME=[B50A1540:01C88F7D]
 X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -31,168 +32,139 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Jarkko Lavinen <jarkko.lavinen@nokia.com>
 
-When a card is removed while it is being accessed, a command can get stuck so
-that no timeout or end of command interrupt ever occurs. The command getting
-stuck is almost always CDM12, but also the other commands can get stuck. Catch
-a stuck command with a timer and try sending the initialization stream until
-the controller starts running again and responds with the end of command
-status.
+The cover waitqueue is occasionally scheduled twice from timer
+and the interrupt and oops follows. It would have been possible
+to fix this problem with spinlocks but using tasklet was a dropin
+solution with no need for locking.
+
+This path also adds some cleanups.
 
 Signed-off-by: Jarkko Lavinen <jarkko.lavinen@nokia.com>
-Signed-off-by: Carlos Eduardo Aguiar <carlos.aguiar@indt.org.br>
-Signed-off-by: Tony Lindgren <tony@atomide.com>
+Signed-off-by: Hiroshi DOYU <Hiroshi.DOYU@nokia.com>
 ---
- drivers/mmc/host/omap.c |   93 ++++++++++++++++++++++++++++++++++++++++++-----
- 1 files changed, 83 insertions(+), 10 deletions(-)
+ drivers/mmc/host/omap.c |   67 ++++++++++++++++++++++++++++-------------------
+ 1 files changed, 40 insertions(+), 27 deletions(-)
 
 diff --git a/drivers/mmc/host/omap.c b/drivers/mmc/host/omap.c
-index 7858902..0646912 100644
+index 0e7ceb0..f97f390 100644
 --- a/drivers/mmc/host/omap.c
 +++ b/drivers/mmc/host/omap.c
-@@ -134,6 +134,9 @@ struct mmc_omap_host {
- 	unsigned char		bus_mode;
- 	unsigned char		hw_bus_mode;
+@@ -94,7 +94,7 @@
  
-+	struct work_struct	cmd_abort;
-+	struct timer_list	cmd_timer;
-+
- 	unsigned int		sg_len;
- 	int			sg_idx;
- 	u16 *			buffer;
-@@ -314,6 +317,8 @@ mmc_omap_start_command(struct mmc_omap_host *host, struct mmc_command *cmd)
- 	if (host->data && !(host->data->flags & MMC_DATA_WRITE))
- 		cmdreg |= 1 << 15;
+ /* Specifies how often in millisecs to poll for card status changes
+  * when the cover switch is open */
+-#define OMAP_MMC_SWITCH_POLL_DELAY	500
++#define OMAP_MMC_COVER_POLL_DELAY	500
  
-+	mod_timer(&host->cmd_timer, jiffies + HZ/2);
-+
- 	OMAP_MMC_WRITE(host, CTO, 200);
- 	OMAP_MMC_WRITE(host, ARGL, cmd->arg & 0xffff);
- 	OMAP_MMC_WRITE(host, ARGH, cmd->arg >> 16);
-@@ -373,9 +378,37 @@ mmc_omap_xfer_done(struct mmc_omap_host *host, struct mmc_data *data)
+ struct mmc_omap_host;
+ 
+@@ -106,8 +106,8 @@ struct mmc_omap_slot {
+ 	unsigned int		fclk_freq;
+ 	unsigned		powered:1;
+ 
+-	struct work_struct      switch_work;
+-	struct timer_list       switch_timer;
++	struct tasklet_struct	cover_tasklet;
++	struct timer_list       cover_timer;
+ 	unsigned		cover_open;
+ 
+ 	struct mmc_request      *mrq;
+@@ -740,40 +740,51 @@ static irqreturn_t mmc_omap_irq(int irq, void *dev_id)
+ 	return IRQ_HANDLED;
  }
  
- static void
-+mmc_omap_send_abort(struct mmc_omap_host *host)
-+{
-+	struct mmc_omap_slot *slot = host->current_slot;
-+	unsigned int restarts, passes, timeout;
-+	u16 stat = 0;
-+
-+	/* Sending abort takes 80 clocks. Have some extra and round up */
-+	timeout = (120*1000000 + slot->fclk_freq - 1)/slot->fclk_freq;
-+	restarts = 0;
-+	while (restarts < 10000) {
-+		OMAP_MMC_WRITE(host, STAT, 0xFFFF);
-+		OMAP_MMC_WRITE(host, CMD, (3 << 12) | (1 << 7));
-+
-+		passes = 0;
-+		while (passes < timeout) {
-+			stat = OMAP_MMC_READ(host, STAT);
-+			if (stat & OMAP_MMC_STAT_END_OF_CMD)
-+				goto out;
-+			udelay(1);
-+			passes++;
-+		}
-+
-+		restarts++;
-+	}
-+out:
-+	OMAP_MMC_WRITE(host, STAT, stat);
-+}
-+
-+static void
- mmc_omap_abort_xfer(struct mmc_omap_host *host, struct mmc_data *data)
+-void omap_mmc_notify_cover_event(struct device *dev, int slot, int is_closed)
++void omap_mmc_notify_cover_event(struct device *dev, int num, int is_closed)
  {
--	int loops;
- 	u16 ie;
++	int cover_open;
+ 	struct mmc_omap_host *host = dev_get_drvdata(dev);
++	struct mmc_omap_slot *slot = host->slots[num];
  
- 	if (host->dma_in_use)
-@@ -386,16 +419,8 @@ mmc_omap_abort_xfer(struct mmc_omap_host *host, struct mmc_data *data)
+-	BUG_ON(slot >= host->nr_slots);
++	BUG_ON(num >= host->nr_slots);
  
- 	ie = OMAP_MMC_READ(host, IE);
- 	OMAP_MMC_WRITE(host, IE, 0);
--	OMAP_MMC_WRITE(host, CMD, 1 << 7);
--	loops = 0;
--	while (!(OMAP_MMC_READ(host, STAT) & OMAP_MMC_STAT_END_OF_CMD)) {
--		udelay(1);
--		loops++;
--		if (loops == 100000)
--			break;
+ 	/* Other subsystems can call in here before we're initialised. */
+-	if (host->nr_slots == 0 || !host->slots[slot])
++	if (host->nr_slots == 0 || !host->slots[num])
+ 		return;
+ 
+-	schedule_work(&host->slots[slot]->switch_work);
++	cover_open = mmc_omap_cover_is_open(slot);
++	if (cover_open != slot->cover_open) {
++		slot->cover_open = cover_open;
++		sysfs_notify(&slot->mmc->class_dev.kobj, NULL, "cover_switch");
++	}
++
++	tasklet_hi_schedule(&slot->cover_tasklet);
+ }
+ 
+-static void mmc_omap_switch_timer(unsigned long arg)
++static void mmc_omap_cover_timer(unsigned long arg)
+ {
+ 	struct mmc_omap_slot *slot = (struct mmc_omap_slot *) arg;
+-
+-	schedule_work(&slot->switch_work);
++	tasklet_schedule(&slot->cover_tasklet);
+ }
+ 
+-static void mmc_omap_cover_handler(struct work_struct *work)
++static void mmc_omap_cover_handler(unsigned long param)
+ {
+-	struct mmc_omap_slot *slot = container_of(work, struct mmc_omap_slot,
+-						  switch_work);
+-	int cover_open;
++	struct mmc_omap_slot *slot = (struct mmc_omap_slot *)param;
++	int cover_open = mmc_omap_cover_is_open(slot);
+ 
+-	cover_open = mmc_omap_cover_is_open(slot);
+-	if (cover_open != slot->cover_open) {
+-		sysfs_notify(&slot->mmc->class_dev.kobj, NULL, "cover_switch");
+-		slot->cover_open = cover_open;
+-		dev_info(mmc_dev(slot->mmc), "cover is now %s\n",
+-			 cover_open ? "open" : "closed");
 -	}
--	OMAP_MMC_WRITE(host, STAT, OMAP_MMC_STAT_END_OF_CMD);
- 	OMAP_MMC_WRITE(host, IE, ie);
-+	mmc_omap_send_abort(host);
- }
- 
- static void
-@@ -451,6 +476,8 @@ mmc_omap_cmd_done(struct mmc_omap_host *host, struct mmc_command *cmd)
- {
- 	host->cmd = NULL;
- 
-+	del_timer(&host->cmd_timer);
-+
- 	if (cmd->flags & MMC_RSP_PRESENT) {
- 		if (cmd->flags & MMC_RSP_136) {
- 			/* response type 2 */
-@@ -486,6 +513,47 @@ mmc_omap_cmd_done(struct mmc_omap_host *host, struct mmc_command *cmd)
- 	}
- }
- 
-+/*
-+ * Abort stuck command. Can occur when card is removed while it is being
-+ * read.
-+ */
-+static void mmc_omap_abort_command(struct work_struct *work)
-+{
-+	struct mmc_omap_host *host = container_of(work, struct mmc_omap_host,
-+						  cmd_abort);
-+	u16 ie;
-+
-+	ie = OMAP_MMC_READ(host, IE);
-+	OMAP_MMC_WRITE(host, IE, 0);
-+
-+	if (!host->cmd) {
-+		OMAP_MMC_WRITE(host, IE, ie);
+-	mmc_detect_change(slot->mmc, slot->id);
++	mmc_detect_change(slot->mmc, 0);
++	if (!cover_open)
 +		return;
-+	}
 +
-+	dev_dbg(mmc_dev(host->mmc), "Aborting stuck command CMD%d\n",
-+		host->cmd->opcode);
++	/*
++	 * If no card is inserted, we postpone polling until
++	 * the cover has been closed.
++	 */
++	if (slot->mmc->card == NULL || !mmc_card_present(slot->mmc->card))
++		return;
 +
-+	if (host->data && host->dma_in_use)
-+		mmc_omap_release_dma(host, host->data, 1);
-+
-+	host->data = NULL;
-+	host->sg_len = 0;
-+
-+	mmc_omap_send_abort(host);
-+	host->cmd->error = -ETIMEDOUT;
-+	mmc_omap_cmd_done(host, host->cmd);
-+	OMAP_MMC_WRITE(host, IE, ie);
-+}
-+
-+static void
-+mmc_omap_cmd_timer(unsigned long data)
-+{
-+	struct mmc_omap_host *host = (struct mmc_omap_host *) data;
-+
-+	schedule_work(&host->cmd_abort);
-+}
-+
- /* PIO only */
- static void
- mmc_omap_sg_to_buf(struct mmc_omap_host *host)
-@@ -1233,6 +1301,11 @@ static int __init mmc_omap_probe(struct platform_device *pdev)
- 		goto err_free_mem_region;
++	mod_timer(&slot->cover_timer,
++		  jiffies + msecs_to_jiffies(OMAP_MMC_COVER_POLL_DELAY));
+ }
+ 
+ /* Prepare to transfer the next segment of a scatterlist */
+@@ -1237,10 +1248,11 @@ static int __init mmc_omap_new_slot(struct mmc_omap_host *host, int id)
+ 		if (r < 0)
+ 			goto err_remove_slot_name;
+ 
+-		INIT_WORK(&slot->switch_work, mmc_omap_cover_handler);
+-		setup_timer(&slot->switch_timer, mmc_omap_switch_timer,
+-			    (unsigned long) slot);
+-		schedule_work(&slot->switch_work);
++		setup_timer(&slot->cover_timer, mmc_omap_cover_timer,
++			    (unsigned long)slot);
++		tasklet_init(&slot->cover_tasklet, mmc_omap_cover_handler,
++			     (unsigned long)slot);
++		tasklet_schedule(&slot->cover_tasklet);
  	}
  
-+	INIT_WORK(&host->cmd_abort, mmc_omap_abort_command);
-+	init_timer(&host->cmd_timer);
-+	host->cmd_timer.function = mmc_omap_cmd_timer;
-+	host->cmd_timer.data = (unsigned long) host;
-+
- 	spin_lock_init(&host->dma_lock);
- 	init_timer(&host->dma_timer);
- 	spin_lock_init(&host->slot_lock);
+ 	return 0;
+@@ -1263,7 +1275,8 @@ static void mmc_omap_remove_slot(struct mmc_omap_slot *slot)
+ 	if (slot->pdata->get_cover_state != NULL)
+ 		device_remove_file(&mmc->class_dev, &dev_attr_cover_switch);
+ 
+-	del_timer_sync(&slot->switch_timer);
++	tasklet_kill(&slot->cover_tasklet);
++	del_timer_sync(&slot->cover_timer);
+ 	flush_scheduled_work();
+ 
+ 	mmc_remove_host(mmc);
 -- 1.5.3.GIT
 
