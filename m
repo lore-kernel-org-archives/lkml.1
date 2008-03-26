@@ -1,50 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760898AbYCZQ6d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761188AbYCZQ6w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760898AbYCZQ6d (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Mar 2008 12:58:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756061AbYCZQ6W
+	id S1761188AbYCZQ6w (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Mar 2008 12:58:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759559AbYCZQ6l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Mar 2008 12:58:22 -0400
-Received: from bzq-179-150-194.static.bezeqint.net ([212.179.150.194]:51061
-	"EHLO il.qumranet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755348AbYCZQ6W (ORCPT
+	Wed, 26 Mar 2008 12:58:41 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:49127 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756061AbYCZQ6k (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Mar 2008 12:58:22 -0400
-Message-ID: <47EA80AC.4070204@qumranet.com>
-Date: Wed, 26 Mar 2008 18:58:20 +0200
-From: Avi Kivity <avi@qumranet.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	Wed, 26 Mar 2008 12:58:40 -0400
+Date: Wed, 26 Mar 2008 11:58:39 -0500
+From: Dean Nelson <dcn@sgi.com>
+To: Andy Whitcroft <apw@shadowen.org>
+Cc: rdunlap@xenotime.net, jschopp@austin.ibm.com, jes@sgi.com,
+       linux-kernel@vger.kernel.org, tony.luck@intel.com,
+       linux-ia64@vger.kernel.org
+Subject: Re: [Patch 5/5] run drivers/misc/xp through scripts/checkpatch.pl
+Message-ID: <20080326165839.GG20663@sgi.com>
+References: <20080325192524.343385569@attica.americas.sgi.com> <20080325192558.959273025@attica.americas.sgi.com> <20080325200517.GA4446@sgi.com> <20080326100336.GE22584@shadowen.org>
 MIME-Version: 1.0
-To: Dave Hansen <dave@linux.vnet.ibm.com>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       kvm-devel <kvm-devel@lists.sourceforge.net>
-Subject: Re: [kvm-devel] kvm causing memory corruption?  ~2.6.25-rc6
-References: <1206479576.7562.21.camel@nimitz.home.sr71.net>	 <47EA1C63.8010202@qumranet.com> <1206550329.7883.5.camel@nimitz.home.sr71.net>
-In-Reply-To: <1206550329.7883.5.camel@nimitz.home.sr71.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080326100336.GE22584@shadowen.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dave Hansen wrote:
-> On Wed, 2008-03-26 at 11:50 +0200, Avi Kivity wrote:
->   
->> Dave Hansen wrote:
->>     
->>> I was getting some kvm userspace crashes trying to run a Windows guest.
->>> So, I decided to try a recent kernel (2.6.25-rc6-00333-ga4083c9)  with
->>> the kvm kernel code that shipped with that kernel.
->>>
->>>       
->> This is fixed in 2.6.25-rc7.
->>     
->
-> I just updated to -rc7 and re-tested.  Same symptoms:
->   
+On Wed, Mar 26, 2008 at 10:03:36AM +0000, Andy Whitcroft wrote:
+> On Tue, Mar 25, 2008 at 03:05:17PM -0500, Dean Nelson wrote:
+> 
+> Gah, who ever came up with that syntax.  Yep, thats a falsie.  Should be
+> fixed in the latest version:
+> 
+>   http://www.kernel.org/pub/linux/kernel/people/apw/checkpatch/checkpatch.pl-next
+> 
+> Thanks for the report.
 
-Bad.  Which kvm userspace are you running?
+You're welcome and thanks for the quick fix to checkpatch.pl.
+I used the new version and it fixed the problem except for ones that were of
+the following form:
 
--- 
-error compiling committee.c: too many arguments to function
+enum xp_retval (*xp_set_amo_with_interrupt) (u64 *amo_va, int op, u64 operand,
+                                             int remote, int nasid,
+                                             int phys_cpuid, int vector);
+EXPORT_SYMBOL_GPL(xp_set_amo_with_interrupt);
 
+which still generated the false positive:
+
+WARNING: EXPORT_SYMBOL(foo); should immediately follow its function/variable
+#70: FILE: misc/xp/xp_main.c:70:
++EXPORT_SYMBOL_GPL(xp_set_amo_with_interrupt);
+
+Thanks,
+Dean
