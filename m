@@ -1,88 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755343AbYCZOkh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756430AbYCZPBl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755343AbYCZOkh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Mar 2008 10:40:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752622AbYCZOk3
+	id S1756430AbYCZPBl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Mar 2008 11:01:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753018AbYCZPBb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Mar 2008 10:40:29 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:57000 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751925AbYCZOk2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Mar 2008 10:40:28 -0400
-Date: Wed, 26 Mar 2008 10:40:27 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Oliver Neukum <oliver@neukum.org>
-cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       <linux-pm@lists.linux-foundation.org>,
-       Alexey Starikovskiy <astarikovskiy@suse.de>,
-       Johannes Berg <johannes@sipsolutions.net>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [linux-pm] [RFC][PATCH] PM: Introduce new top level
- =?iso-8859-1?q?suspend=09and_hibernation_callbacks?= (rev. 2)
-In-Reply-To: <200803261524.18300.oliver@neukum.org>
-Message-ID: <Pine.LNX.4.44L0.0803261032140.4969-100000@iolanthe.rowland.org>
+	Wed, 26 Mar 2008 11:01:31 -0400
+Received: from khc.piap.pl ([195.187.100.11]:55223 "EHLO khc.piap.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752976AbYCZPBa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Mar 2008 11:01:30 -0400
+To: David Miller <davem@davemloft.net>
+Cc: jeff@garzik.org, akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: [PATCH v2] Re: WAN: new PPP code for generic HDLC
+References: <m3prtzsszg.fsf@maximus.localdomain>
+	<m3tzj92xq6.fsf@maximus.localdomain>
+	<m33aqedg0a.fsf@maximus.localdomain>
+	<20080325.161427.71442171.davem@davemloft.net>
+From: Krzysztof Halasa <khc@pm.waw.pl>
+Date: Wed, 26 Mar 2008 16:01:27 +0100
+In-Reply-To: <20080325.161427.71442171.davem@davemloft.net> (David Miller's message of "Tue\, 25 Mar 2008 16\:14\:27 -0700 \(PDT\)")
+Message-ID: <m3tzitmsvs.fsf@maximus.localdomain>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 26 Mar 2008, Oliver Neukum wrote:
+David Miller <davem@davemloft.net> writes:
 
-> Am Mittwoch, 26. März 2008 15:10:01 schrieb Alan Stern:
-> > > > IMO you must always keep the ordering invariant. If a parent returns an error
-> > > > the PM core must not wake its children.
-> > 
-> > Don't think of it that way.  The PM core doesn't wake anything.  It
-> > merely notifies drivers that the system sleep is ending, so that the
-> > drivers can wake their devices.  It's up to the driver to detect
-> > whether the parent failed to resume, in which case the driver should
-> > take appropriate action.
-> 
-> How do you propose that every driver should check the power state
-> of its parent? Without locking the parent?
+> Kyzysztof, this is the way you behave every time your
+> patches don't get looked at as quickly as you would
+> like them to.
+>
+> And this behavior does not trigger us maintainers to
+> stop everything we're doing and apply your patches.
+>
+> In fact it makes us want to review your patches even
+> less.
+>
+> Sending a healthy ping asking if your patches need
+> to be resent, etc., is one thing.  But this isn't
+> what you're doing here.
 
-It depends entirely on the driver and subsystem; generalizations are 
-not possible.  When appropriate, they can copy the scheme used by USB.  
-Or they can make up their own scheme.
+I don't know what are you talking about.
 
-> > The situation is no different from what happens when the user tries to 
-> > access a mounted USB disk drive after the USB cable has been unplugged.  
-> > The drivers take care of everything.
-> 
-> That completely throws away the reason to have a PM core.
+- someone broke my drivers, happens from time to time
+- I asked about related change and was told about some "out of tree"
+  drivers instead
+- I had two modules to fix, one took 15 minutes and for the other one
+  I had no time at the moment.
+- I finally rewrote the other module
+- got feedback, corrected it, resent.
+- asked if we are including it in 2.6.25 or if we are to make
+  temporary Kconfig change instead
 
-Nonsense.
+What exactly don't you like in my "behaviour"? I didn't invent
+synchronous serial devices. Actually, I'm doing it all in my free
+time, and I'm sure I can find better things to do in that time.
 
->  We've made
-> a guarantee to drivers that they wil not be woken unless their parents are
-> awake.
+I accept I may use not the best wording from time to time, I'm not
+native English writter.
 
-No we haven't.  The guarantee is only that the PM core will call the 
-parent's resume method before calling the child's method.  There is no 
-guarantee about whether the method succeeds or the parent is awake.
+What is your problem about me?
 
-Remember, the whole purpose of this is to let drivers know when the 
-system is going to sleep or waking up.  Proper handling of devices is 
-up to the drivers, not up to the core.
+I'd appreciate it if you point out the precise things I'm doing
+wrong.
 
->  In fact the semantics of the callbacks are defined in a way that
-> adding devices to a parent can be enabled. You cannot add children to a
-> dead parent.
-
-Depends what you mean.  In some cases it is possible -- i.e., you can
-do it and the kernel won't crash, although the new children probably
-won't be usable.  In any case it doesn't matter; the PM core doesn't
-care whether children are added to a dead parent, only drivers care.
-
-> It's the very reason for this rewrite.
-
-No it isn't.  See Rafael's changelog ocmments; the rewrite is being 
-done for completely different reasons.
-
-Alan Stern
-
+Thanks.
+-- 
+Krzysztof Halasa
