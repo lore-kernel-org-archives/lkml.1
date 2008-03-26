@@ -1,52 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756516AbYCZWte@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756723AbYCZWv2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756516AbYCZWte (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Mar 2008 18:49:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753816AbYCZWtZ
+	id S1756723AbYCZWv2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Mar 2008 18:51:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754140AbYCZWvS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Mar 2008 18:49:25 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:49102 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753575AbYCZWtY (ORCPT
+	Wed, 26 Mar 2008 18:51:18 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:33348 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753433AbYCZWvR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Mar 2008 18:49:24 -0400
-Date: Wed, 26 Mar 2008 15:47:03 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-cc: Ingo Molnar <mingo@elte.hu>, Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
-       Gary Hade <garyhade@us.ibm.com>, Thomas Meyer <thomas@m3y3r.de>,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       LKML <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Natalie Protasevich <protasnb@gmail.com>, pm@debian.org
-Subject: Re: [patch] pci: revert "PCI: remove transparent bridge sizing"
-In-Reply-To: <1206570546.6926.30.camel@pasglop>
-Message-ID: <alpine.LFD.1.00.0803261544210.2775@woody.linux-foundation.org>
-References: <alpine.LFD.1.00.0803251445500.2775@woody.linux-foundation.org>  <20080326101450.GA9060@jurassic.park.msu.ru>  <20080326135458.GA27621@elte.hu> <20080326180701.GA6249@us.ibm.com>  <alpine.LFD.1.00.0803261132310.2775@woody.linux-foundation.org> 
- <20080326203012.GB6249@us.ibm.com>  <alpine.LFD.1.00.0803261344430.2775@woody.linux-foundation.org>  <20080326205828.GA15225@jurassic.park.msu.ru>  <alpine.LFD.1.00.0803261416390.2775@woody.linux-foundation.org>  <1206568675.6926.7.camel@pasglop> 
- <20080326221027.GA7959@elte.hu> <1206570546.6926.30.camel@pasglop>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 26 Mar 2008 18:51:17 -0400
+Date: Wed, 26 Mar 2008 22:51:12 +0000
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: akpm@linux-foundation.org, linuxram@us.ibm.com,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [patch 7/7] vfs: mountinfo: show dominating group id
+Message-ID: <20080326225112.GW10722@ZenIV.linux.org.uk>
+References: <20080326211131.705321084@szeredi.hu> <20080326212144.764829833@szeredi.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080326212144.764829833@szeredi.hu>
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Mar 26, 2008 at 10:11:38PM +0100, Miklos Szeredi wrote:
+> +static struct vfsmount *get_peer_under_root(struct vfsmount *mnt,
+> +					    struct mnt_namespace *ns,
 
+Isn't it mnt->mnt_ns in all cases?
 
-On Thu, 27 Mar 2008, Benjamin Herrenschmidt wrote:
-> 
-> I was talking about IO not memory mostly here.
+> +int get_dominator_id_same_root(struct vfsmount *mnt, const struct path *root)
 
-Yeah, low IO is also reserved on PC's (the low 256 IO ports are 
-motherboard resources and contain stuff like legacy DMA channel setup 
-etc).
-
-You could imagine having it behind a PCI bridge, but in practice it's 
-always on the NB/SB (and if you want to support some of the odder things 
-like the NMI reason and the i387 error ports, they pretty much have to 
-be - it would be insane to make a special PCI chips on a separate bus 
-that does things like that).
-
-			Linus
+Open season for better name.  Leaving aside .au associations, it's too
+long and too uninformative...   Will do for now, but we'd better come up
+with something better.
