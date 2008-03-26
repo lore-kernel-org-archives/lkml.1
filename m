@@ -1,76 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757220AbYCZGzV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754930AbYCZHHY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757220AbYCZGzV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Mar 2008 02:55:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751599AbYCZGzI
+	id S1754930AbYCZHHY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Mar 2008 03:07:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751281AbYCZHHM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Mar 2008 02:55:08 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:48580 "EHLO smtps.tip.net.au"
+	Wed, 26 Mar 2008 03:07:12 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:58215 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750879AbYCZGzF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Mar 2008 02:55:05 -0400
-Date: Wed, 26 Mar 2008 17:54:59 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: linux-next@vger.kernel.org
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: linux-next: Tree for March 26
-Message-Id: <20080326175459.234515bb.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.5.0beta1 (GTK+ 2.12.9; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Wed__26_Mar_2008_17_54_59_+1100_pWUhjn/HScF2RIIn"
+	id S1751216AbYCZHHL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Mar 2008 03:07:11 -0400
+Date: Wed, 26 Mar 2008 08:06:16 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Glauber Costa <gcosta@redhat.com>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, glommer@gmail.com,
+       tglx@linutronix.de, kvm-devel@lists.sourceforge.net, avi@qumranet.com,
+       amit.shah@qumranet.com
+Subject: Re: [PATCH 0/20] dma_ops for i386
+Message-ID: <20080326070616.GI18301@elte.hu>
+References: <1206480999-21767-1-git-send-email-gcosta@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1206480999-21767-1-git-send-email-gcosta@redhat.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Wed__26_Mar_2008_17_54_59_+1100_pWUhjn/HScF2RIIn
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-Hi all,
+* Glauber Costa <gcosta@redhat.com> wrote:
 
-I have created today's linux-next tree at
-git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git
-(tar balls at
-http://www.kernel.org/pub/linux/kernel/people/sfr/linux-next/).
+> Hello,
+> 
+> Here there is a series of 20 patches that lays the foundations for 
+> using dma_ops in i386 in the very same way x86_64, as well as many 
+> other architectures already do.
+> 
+> The functions themselves for i386 are placed in a pci-base_32.c, but 
+> just a few among them are actually implemented. Most were no-ops 
+> anyway.
+> 
+> Also, as I said, this is by no means a complete coverage of dma_ops. 
+> there are still some call sites to be patches in pci-dma_32.c 
+> (although I don't really plan to change them, but to integrate them in 
+> a single pci-dma.c). I intend to have it done progressively.
+> 
+> The granularity is per-operation, meaning each patch moves one 
+> specific function to the common header. This is compiled-tested in 
+> both i386 and x86_64 in ~5 randconfigs each, and boot-tested in my 
+> hardware with my default configs
+> 
+> The motivation for that is the ongoing work for pci-passthrough in 
+> KVM. So ingo, avi, what do you think it's the best way to handle these 
+> patches through?
 
-You can see which trees have been included by looking in the Next/Trees
-file in the source.  There are also quilt-import.log and merge.log files
-in the Next directory.  Between each merge, the tree was built with
-a ppc64_defconfig for powerpc and an allmodconfig for x86_64.
+looks very nice to me! I've applied it to x86.git, lets see what 
+happens.
 
-There were a few merge conflicts (fairly trivial) and a couple of build
-failures that have been notified.
-
-We are up to 49 trees, more are welcome (even if they are currently
-empty).  Thanks to those who have contributed, and to those who haven't,
-please do.
-
-In particular, I have very few of the architecture trees ....
-
-Status of my local build tests is at
-http://kisskb.ellerman.id.au/linux-next.  If maintainers want to give
-advice about cross compilers/configs that work, we are always open to add
-more builds.
-
-Thanks to Jan Dittmer for adding the linux-next tree to his build tests
-at http://l4x.org/k/ and the guys at http://test.kernel.org/.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
---Signature=_Wed__26_Mar_2008_17_54_59_+1100_pWUhjn/HScF2RIIn
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFH6fNHTgG2atn1QN8RAsJFAKCG/k7YbFomDpL+BdQb+yVYZU6iMgCeLYbQ
-GKvo9ycxJ73RE7dHoqgShtE=
-=Tau+
------END PGP SIGNATURE-----
-
---Signature=_Wed__26_Mar_2008_17_54_59_+1100_pWUhjn/HScF2RIIn--
+	Ingo
