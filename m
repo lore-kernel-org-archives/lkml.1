@@ -1,68 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757315AbYCZLp3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758050AbYCZLrO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757315AbYCZLp3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Mar 2008 07:45:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751295AbYCZLpV
+	id S1758050AbYCZLrO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Mar 2008 07:47:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753250AbYCZLq7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Mar 2008 07:45:21 -0400
-Received: from E23SMTP03.au.ibm.com ([202.81.18.172]:54296 "EHLO
-	e23smtp03.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751137AbYCZLpU (ORCPT
+	Wed, 26 Mar 2008 07:46:59 -0400
+Received: from orion.ambsoft.pl ([212.109.144.130]:44770 "EHLO
+	orion.ambsoft.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751295AbYCZLq6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Mar 2008 07:45:20 -0400
-Message-ID: <47EA3684.60107@linux.vnet.ibm.com>
-Date: Wed, 26 Mar 2008 17:11:56 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	Wed, 26 Mar 2008 07:46:58 -0400
+From: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
+To: David Miller <davem@davemloft.net>
+Subject: Re: sparc64 BUG: using smp_processor_id() in preemptible
+Date: Wed, 26 Mar 2008 12:46:53 +0100
+User-Agent: KMail/1.9.7
+Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       sparclinux@vger.kernel.org
+References: <alpine.LFD.1.00.0803251856450.2775@woody.linux-foundation.org> <20080326.041626.224135350.davem@davemloft.net> <20080326.042516.261621639.davem@davemloft.net>
+In-Reply-To: <20080326.042516.261621639.davem@davemloft.net>
 MIME-Version: 1.0
-To: Paul Menage <menage@google.com>
-CC: linux-mm@kvack.org, Hugh Dickins <hugh@veritas.com>,
-       Sudhir Kumar <skumar@linux.vnet.ibm.com>,
-       YAMAMOTO Takashi <yamamoto@valinux.co.jp>, lizf@cn.fujitsu.com,
-       linux-kernel@vger.kernel.org, taka@valinux.co.jp,
-       David Rientjes <rientjes@google.com>,
-       Pavel Emelianov <xemul@openvz.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: Re: [RFC][-mm] Memory controller add mm->owner
-References: <20080324140142.28786.97267.sendpatchset@localhost.localdomain> <6599ad830803240803s5160101bi2bf68b36085f777f@mail.gmail.com> <47E7D51E.4050304@linux.vnet.ibm.com> <6599ad830803240934g2a70d904m1ca5548f8644c906@mail.gmail.com> <47E7E5D0.9020904@linux.vnet.ibm.com> <6599ad830803241046l61e2965t52fd28e165d5df7a@mail.gmail.com> <47E8E4F3.6090604@linux.vnet.ibm.com>  <47EA2592.7090600@linux.vnet.ibm.com> <6599ad830803260420v236127cfydd8cf828fcce65bb@mail.gmail.com>
-In-Reply-To: <6599ad830803260420v236127cfydd8cf828fcce65bb@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200803261246.53770.m.kozlowski@tuxland.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul Menage wrote:
-> On Wed, Mar 26, 2008 at 3:29 AM, Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
->>  >>
->>  >> - in the worst case, it's not going to be worse than doing a
->>  >> for_each_thread() loop
->>  >>
->>
->>  This will have to be the common case, since you never know what combination of
->>  clone calls did CLONE_VM and what did CLONE_THREAD. At exit time, we need to pay
->>  a for_each_process() overhead.
+Hello,
+
+> From: David Miller <davem@davemloft.net>
+> Date: Wed, 26 Mar 2008 04:16:26 -0700 (PDT)
 > 
-> I'm not convinced of this. All we have to do is find some other
-> process p where p->mm == current->mm and make it the new owner.
-> Exactly what sequence of clone() calls was used to cause the sharing
-> isn't really relevant. I really think that a suitable candidate will
-> be found amongst your children or your first sibling in 99.9% of those
-> cases where more than one process is using an mm.
+> > From: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
+> > Date: Wed, 26 Mar 2008 11:42:07 +0100
+> > 
+> > > I see lots of these messages on my ultra 60 box.
+> > 
+> > This is a sparc64 bug.
 > 
+> And this patch should fix it:
+> 
+> commit 69072f6e8e4bd4799d2a54e4ff8771d0657512c1
+> Author: David S. Miller <davem@davemloft.net>
+> Date:   Wed Mar 26 04:25:00 2008 -0700
+> 
+>     [SPARC64]: Fix __get_cpu_var in preemption-enabled area.
+>     
+>     Reported by Mariusz Kozlowski.
+>     
+>     Signed-off-by: David S. Miller <davem@davemloft.net>
+> 
+> diff --git a/arch/sparc64/mm/tlb.c b/arch/sparc64/mm/tlb.c
+> index 3f10fc9..a0f000b 100644
+> --- a/arch/sparc64/mm/tlb.c
+> +++ b/arch/sparc64/mm/tlb.c
+> @@ -23,10 +23,11 @@ DEFINE_PER_CPU(struct mmu_gather, mmu_gathers) = { 0, };
+>  
+>  void flush_tlb_pending(void)
+>  {
+> -	struct mmu_gather *mp = &__get_cpu_var(mmu_gathers);
+> +	struct mmu_gather *mp;
+>  
+>  	preempt_disable();
+>  
+> +	mp = &__get_cpu_var(mmu_gathers);
+>  	if (mp->tlb_nr) {
+>  		flush_tsb_user(mp);
 
-Hmmm.. the 99.9% of the time is just guess work (not measured, could be possibly
-true). I see and understand your code below. But before I try and implement
-something like that, I was wondering why zap_threads() does not have that
-heuristic. That should explain my inhibition.
+Ok it worked. Now I get a bunch of these:
 
-Can anyone elaborate on zap_threads further?
+BUG: using smp_processor_id() in preemptible [00000000] code: pidof/2471
+caller is flush_ptrace_access+0xc0/0x1a0
+Call Trace:
+ [000000000042ef78] flush_ptrace_access+0xc0/0x1a0
+ [00000000004ae6e4] access_process_vm+0x1ac/0x220
+ [0000000000508e38] proc_pid_cmdline+0x60/0x120
+ [000000000050acb8] proc_info_read+0x80/0xe0
+ [00000000004c6fcc] vfs_read+0x74/0x120
+ [00000000004c73cc] sys_read+0x34/0x60
+ [0000000000406314] linux_sparc_syscall32+0x3c/0x40
+ [00000000f7df5fe4] 0xf7df5fec
 
--- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+	Mariusz
