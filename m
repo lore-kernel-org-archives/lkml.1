@@ -1,69 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754360AbYCZOJz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756012AbYCZOKW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754360AbYCZOJz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Mar 2008 10:09:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751219AbYCZOJr
+	id S1756012AbYCZOKW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Mar 2008 10:10:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754767AbYCZOKE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Mar 2008 10:09:47 -0400
-Received: from mail.mev.co.uk ([62.49.15.74]:50958 "EHLO mail.mev.co.uk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751202AbYCZOJq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Mar 2008 10:09:46 -0400
-Message-ID: <47EA591F.9020507@mev.co.uk>
-Date: Wed, 26 Mar 2008 14:09:35 +0000
-From: Ian Abbott <abbotti@mev.co.uk>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080317)
+	Wed, 26 Mar 2008 10:10:04 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:44920 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1754764AbYCZOKB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Mar 2008 10:10:01 -0400
+Date: Wed, 26 Mar 2008 10:10:01 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: Oliver Neukum <oliver@neukum.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       <linux-pm@lists.linux-foundation.org>,
+       Alexey Starikovskiy <astarikovskiy@suse.de>,
+       Johannes Berg <johannes@sipsolutions.net>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [linux-pm] [RFC][PATCH] PM: Introduce new top level
+ =?iso-8859-1?q?suspend=09and_hibernation_callbacks?= (rev. 2)
+In-Reply-To: <200803252156.12185.rjw@sisk.pl>
+Message-ID: <Pine.LNX.4.44L0.0803261003540.4755-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-To: Rob Landley <rob@landley.net>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Corrections to Documentation/rbtree.txt
-References: <47E282F5.6090703@mev.co.uk> <200803201339.18618.rob@landley.net> <47E8DBBE.4030607@mev.co.uk> <200803251324.08769.rob@landley.net>
-In-Reply-To: <200803251324.08769.rob@landley.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 26 Mar 2008 14:09:37.0878 (UTC) FILETIME=[06C25F60:01C88F4B]
+Content-Type: TEXT/PLAIN; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 25/03/08 18:24, Rob Landley wrote:
-> On Tuesday 25 March 2008 06:02:22 Ian Abbott wrote:
->> On 20/03/08 18:39, Rob Landley wrote:
->>> On Thursday 20 March 2008 10:29:57 Ian Abbott wrote:
->>>> From: Ian Abbott <abbotti@mev.co.uk>
->>>>
->>>> The description of the rb_entry() macro in Documentation/rbtree.txt
->>>> seems incorrect. This patch improves it (hopefully).  Also I changed the
->>>> example code to call the previous 'my_search()' example instead of an
->>>> undefined 'mysearch()'.
->>> I have no objection to the patch (and the my_search thing seems like an
->>> obvious typo), but is there a reason to prefer rb_entry() rather than
->>> container_of()?  If so, the rationale might be a good thing to add to the
->>> documentation...
->> I don't know the rationale, but all the code I can see uses rb_entry()
->> and not container_of().
+On Tue, 25 Mar 2008, Rafael J. Wysocki wrote:
+
+> On Tuesday, 25 of March 2008, Oliver Neukum wrote:
+> > Am Dienstag, 25. März 2008 21:41:48 schrieb Rafael J. Wysocki:
+> > > On Tuesday, 25 of March 2008, Oliver Neukum wrote:
+> > > > Am Dienstag, 25. März 2008 15:33:22 schrieb Alan Stern:
+> > > > > > so I'd say a
+> > > > > > failure to resume is just a limited subcase of a device vanishing during
+> > > > > > sleep.
+> > > > > 
+> > > > > I'll go along with that.  If a device vanishes during sleep, the PM 
+> > > > > core isn't responsible for unregistering it -- the device's subsystem 
+> > > > > is.
+> > > > 
+> > > > Yes, that makes sense. You are right.
+> > > 
+> > > Still, if ->resume() returns an error, does it make sense, from the PM core's
+> > > point of view, to execute ->complete() for that device, for example?
+> > 
+> > IMO you must always keep the ordering invariant. If a parent returns an error
+> > the PM core must not wake its children.
+
+Don't think of it that way.  The PM core doesn't wake anything.  It
+merely notifies drivers that the system sleep is ending, so that the
+drivers can wake their devices.  It's up to the driver to detect
+whether the parent failed to resume, in which case the driver should
+take appropriate action.
+
+The situation is no different from what happens when the user tries to 
+access a mounted USB disk drive after the USB cable has been unplugged.  
+The drivers take care of everything.
+
+> I'm agreeing here, but one of the previous Alan's comments suggests he has a
+> differing opinion.  Alan?
 > 
-> Except container_of() works, which is a nice thing to know, and it already 
-> mentions rb_entry() as another way to do it.  If someone could explain _why_ 
-> to use one over the other, that would be a good thing to add.
+> I'm considering to make the PM core skip the resuming of the children of
+> devices that failed to resume and skip calling ->complete() for that devices
+> and their children.
 
-Let's see if Andrea Arcangeli can still remember the rationale from 9 
-years ago! :-)
+While that might in principle be a reasonable thing to do, it's 
+different from how the PM core has behaved in the past.  I don't see 
+any point in making a change like that now.
 
-container_of() works just as well, but _none_ of the existing code in 
-the kernel uses it to access the container of the struct rb_node; they 
-all use rb_entry(), including the example code in include/linux/rbtree.h.
+Alan Stern
 
-> Again, I don't care much either way, I just want to know what the point is of 
-> choosing one over the other that makes changing what's there worth bothering 
-> with.  You're changing the documentation to hide the fact that rb_entry() is 
-> basically another name for container_of(), and this is supposed to be an 
-> improvement?
-
-Personally I have no preference for rb_entry() over container_of(), but 
-as all the code in the kernel uses rb_entry() it seems better if the 
-examples in the documentation use it too.
-
--- 
--=( Ian Abbott @ MEV Ltd.    E-mail: <abbotti@mev.co.uk>        )=-
--=( Tel: +44 (0)161 477 1898   FAX: +44 (0)161 718 3587         )=-
