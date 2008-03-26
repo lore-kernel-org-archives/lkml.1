@@ -1,70 +1,198 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761517AbYCZUlZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759183AbYCZUqS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761517AbYCZUlZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Mar 2008 16:41:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757022AbYCZUlP
+	id S1759183AbYCZUqS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Mar 2008 16:46:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756809AbYCZUqH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Mar 2008 16:41:15 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:28328 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756903AbYCZUlN (ORCPT
+	Wed, 26 Mar 2008 16:46:07 -0400
+Received: from smtp-out3.tiscali.nl ([195.241.79.178]:47954 "EHLO
+	smtp-out3.tiscali.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756481AbYCZUqF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Mar 2008 16:41:13 -0400
-Date: Wed, 26 Mar 2008 13:40:53 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: "Ben Castricum" <lk08@bencastricum.nl>
-Cc: <linux-kernel@vger.kernel.org>
-Subject: Re: [TRIVIAL PATCH] Microcode: show results on success too plus fix
- typo
-Message-Id: <20080326134053.c75656dc.randy.dunlap@oracle.com>
-In-Reply-To: <001701c88f7f$1e2b6c80$0602a8c0@links>
-References: <001701c88f7f$1e2b6c80$0602a8c0@links>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 26 Mar 2008 16:46:05 -0400
+Message-ID: <47EAB608.6060204@tiscali.nl>
+Date: Wed, 26 Mar 2008 21:46:00 +0100
+From: Roel Kluin <12o3l@tiscali.nl>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+MIME-Version: 1.0
+To: dwalker@mvista.com, nickpiggin@yahoo.com.au
+CC: lkml <linux-kernel@vger.kernel.org>
+Subject: [PATCH v2] likeliness accounting cleanup
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 26 Mar 2008 21:22:25 +0100 Ben Castricum wrote:
+Store __builtin_return_address (caller) rather than __func__ in likeliness
+struct. 'line' and 'type' are combined in 'label'
 
-> Show a bit more info when updating microcode. It used to be there but 
-> no with DEBUG unset makes it very silent.
-> 
-> This is my first patch, please let me know if I did anything wrong.
-> 
-> Signed-off-by: Ben Castricum <lk08@bencastricum.nl>
-> 
-> diff --git a/arch/x86/kernel/microcode.c b/arch/x86/kernel/microcode.c
-> index f2702d0..ca1fd52 100644
-> --- a/arch/x86/kernel/microcode.c
-> +++ b/arch/x86/kernel/microcode.c
-> @@ -336,11 +336,11 @@ static void apply_microcode(int cpu)
-> 
->   spin_unlock_irqrestore(&microcode_update_lock, flags);
->   if (val[1] != uci->mc->hdr.rev) {
-> -  printk(KERN_ERR "microcode: CPU%d updated from revision "
-> +  printk(KERN_ERR "microcode: CPU%d update from revision "
->     "0x%x to 0x%x failed\n", cpu_num, uci->rev, val[1]);
->    return;
->   }
-> - pr_debug("microcode: CPU%d updated from revision "
-> + printk(KERN_INFO "microcode: CPU%d updated from revision "
->          "0x%x to 0x%x, date = %08x \n",
->          cpu_num, uci->rev, val[1], uci->mc->hdr.date);
->   uci->rev = val[1];
++/- now denotes whether expectation fails in less than 5% of the tests - rather
+than whether more unexpected than expected were encountered. The function at
+the displayed filename & line and the caller are not necessarily the same.
+A few more Likely Profiling Results changes were made.
 
-Your mailer client (*cough*) converted tabs to spaces,
-so the patch does not apply cleanly now.
-You'll need to find a way to send patches that does not mangle
-whitespace.
-
-
+struct seq_operations becomes static, unsigned ints true and false (shadowed)
+are replaced by pos and neg.
 ---
-~Randy
+New layout:
+
+Likely Profiling Results
+ --------------------------------------------------------------------
+[+- ]Type | # True  | # False | Function@Filename:Line
+ unlikely |        0|    32082| fget+0xd0/0x1d0@include/asm/arch/atomic_32.h:235
+
+Compiles and runs here. Thanks for previous comments.
+
+ include/linux/compiler.h |   16 ++++++++--------
+ lib/likely_prof.c        |   45 +++++++++++++++++++++++++--------------------
+ 2 files changed, 33 insertions(+), 28 deletions(-)
+
+diff --git a/include/linux/compiler.h b/include/linux/compiler.h
+index d6d9efc..bd31d4c 100644
+--- a/include/linux/compiler.h
++++ b/include/linux/compiler.h
+@@ -53,25 +53,25 @@ extern void __chk_io_ptr(const volatile void __iomem *);
+ 
+ #if defined(CONFIG_PROFILE_LIKELY) && !(defined(CONFIG_MODULE_UNLOAD) && defined(MODULE))
+ struct likeliness {
+-	const char *func;
+-	char *file;
+-	int line;
+-	int type;
++	char *const file;
++	unsigned long caller;
+ 	unsigned int count[2];
+ 	struct likeliness *next;
++	unsigned int label;
+ };
+ 
+-extern int do_check_likely(struct likeliness *likeliness, int exp);
++extern int do_check_likely(struct likeliness *likeliness, unsigned int exp);
+ 
++#define LP_IS_EXPECTED	1
+ #define LP_UNSEEN	4
++#define LP_LINE_SHIFT	3
+ 
+ #define __check_likely(exp, is_likely)					\
+ 	({								\
+ 		static struct likeliness likeliness = {			\
+-			.func = __func__,				\
+ 			.file = __FILE__,				\
+-			.line = __LINE__,				\
+-			.type = is_likely | LP_UNSEEN,			\
++			.label = __LINE__ << LP_LINE_SHIFT |		\
++						LP_UNSEEN | is_likely,	\
+ 		};							\
+ 		do_check_likely(&likeliness, !!(exp));			\
+ 	})
+diff --git a/lib/likely_prof.c b/lib/likely_prof.c
+index 5c6d91d..c9f5de3 100644
+--- a/lib/likely_prof.c
++++ b/lib/likely_prof.c
+@@ -15,34 +15,34 @@
+ #include <linux/fs.h>
+ #include <linux/seq_file.h>
+ #include <linux/proc_fs.h>
++#include <linux/kallsyms.h>
+ 
+ #include <asm/bug.h>
+ #include <asm/atomic.h>
+ 
+ static struct likeliness *likeliness_head;
+ 
+-int do_check_likely(struct likeliness *likeliness, int ret)
++int do_check_likely(struct likeliness *likeliness, unsigned int ret)
+ {
+ 	static unsigned long likely_lock;
+ 
+-	if (ret)
+-		likeliness->count[1]++;
+-	else
+-		likeliness->count[0]++;
++	likeliness->count[ret]++;
+ 
+-	if (likeliness->type & LP_UNSEEN) {
++	if (likeliness->label & LP_UNSEEN) {
+ 		/*
+-		 * We don't simple use a spinlock because internally to the
++		 * We don't simply use a spinlock because internally to the
+ 		 * spinlock there is a call to unlikely which causes recursion.
+ 		 * We opted for this method because we didn't need a preempt/irq
+ 		 * disable and it was a bit cleaner then using internal __raw
+ 		 * spinlock calls.
+ 		 */
+ 		if (!test_and_set_bit(0, &likely_lock)) {
+-			if (likeliness->type & LP_UNSEEN) {
+-				likeliness->type &= (~LP_UNSEEN);
++			if (likeliness->label & LP_UNSEEN) {
++				likeliness->label &= (~LP_UNSEEN);
+ 				likeliness->next = likeliness_head;
+ 				likeliness_head = likeliness;
++				likeliness->caller = (unsigned long)
++						__builtin_return_address(0);
+ 			}
+ 			smp_mb__before_clear_bit();
+ 			clear_bit(0, &likely_lock);
+@@ -61,8 +61,8 @@ static void * lp_seq_start(struct seq_file *out, loff_t *pos)
+ 		seq_printf(out, "Likely Profiling Results\n");
+ 		seq_printf(out, " --------------------------------------------"
+ 				"------------------------\n");
+-		seq_printf(out, "[+- ] Type | # True | # False | Function:"
+-				"Filename@Line\n");
++		seq_printf(out, "[+- ]Type | # True  | # False | Function@"
++				"Filename:Line\n");
+ 
+ 		out->private = likeliness_head;
+ 	}
+@@ -86,18 +86,22 @@ static void *lp_seq_next(struct seq_file *out, void *p, loff_t *pos)
+ static int lp_seq_show(struct seq_file *out, void *p)
+ {
+ 	struct likeliness *entry = p;
+-	unsigned int true = entry->count[1];
+-	unsigned int false = entry->count[0];
+-
+-	if (!entry->type) {
+-		if (true > false)
++	unsigned int pos = entry->count[1];
++	unsigned int neg = entry->count[0];
++	char function[KSYM_SYMBOL_LEN];
++
++	/*
++	 * Balanced if the suggestion was false in less than 5% of the tests
++	 */
++	if (!(entry->label & LP_IS_EXPECTED)) {
++		if (pos + neg < 20 * pos)
+ 			seq_printf(out, "+");
+ 		else
+ 			seq_printf(out, " ");
+ 
+ 		seq_printf(out, "unlikely ");
+ 	} else {
+-		if (true < false)
++		if (pos + neg < 20 * neg)
+ 			seq_printf(out, "-");
+ 		else
+ 			seq_printf(out, " ");
+@@ -105,8 +109,9 @@ static int lp_seq_show(struct seq_file *out, void *p)
+ 		seq_printf(out, "likely   ");
+ 	}
+ 
+-	seq_printf(out, "|%9u|%9u\t%s()@:%s@%d\n", true, false,
+-			entry->func, entry->file, entry->line);
++	sprint_symbol(function, entry->caller);
++	seq_printf(out, "|%9u|%9u|\t%s@%s:%u\n", pos, neg, function,
++			entry->file, entry->label >> LP_LINE_SHIFT);
+ 
+ 	return 0;
+ }
+@@ -115,7 +120,7 @@ static void lp_seq_stop(struct seq_file *m, void *p)
+ {
+ }
+ 
+-struct seq_operations likely_profiling_ops = {
++static struct seq_operations likely_profiling_ops = {
+ 	.start  = lp_seq_start,
+ 	.next   = lp_seq_next,
+ 	.stop   = lp_seq_stop,
+
