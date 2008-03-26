@@ -1,88 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757235AbYCZPlf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758046AbYCZPlr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757235AbYCZPlf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Mar 2008 11:41:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753273AbYCZPl1
+	id S1758046AbYCZPlr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Mar 2008 11:41:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755299AbYCZPlb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Mar 2008 11:41:27 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:44963 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753280AbYCZPl0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Mar 2008 11:41:26 -0400
-Message-ID: <47EA6EA3.1070609@sgi.com>
-Date: Wed, 26 Mar 2008 08:41:23 -0700
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Wed, 26 Mar 2008 11:41:31 -0400
+Received: from gwu.lbox.cz ([62.245.111.132]:38275 "EHLO gwu.lbox.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754729AbYCZPla (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Mar 2008 11:41:30 -0400
+Date: Wed, 26 Mar 2008 16:41:17 +0100 (CET)
+From: Nikola Ciprich <extmaillist@linuxbox.cz>
+To: linux-kernel@vger.kernel.org
+Subject: disabling MDI-X for via-rhine card?
+Message-ID: <alpine.LRH.0.9999.0803261615410.2535@linuxbox.linuxbox.cz>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Andi Kleen <ak@suse.de>
-Subject: Re: [PATCH 06/10] x86: reduce memory and stack usage in	intel_cacheinfo
-References: <20080325220650.835342000@polaris-admin.engr.sgi.com> <20080325220651.683748000@polaris-admin.engr.sgi.com> <20080326065023.GG18301@elte.hu>
-In-Reply-To: <20080326065023.GG18301@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
+X-Antivirus: on proxybox by Kaspersky antivirus, engine 5.5.10, data 596733 records(26-03-2008)
+X-Spam-Score: N/A (trusted relay)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Mike Travis <travis@sgi.com> wrote:
-> 
->> * Change the following static arrays sized by NR_CPUS to
->>   per_cpu data variables:
->>
->> 	_cpuid4_info *cpuid4_info[NR_CPUS];
->> 	_index_kobject *index_kobject[NR_CPUS];
->> 	kobject * cache_kobject[NR_CPUS];
->>
->> * Remove the local NR_CPUS array with a kmalloc'd region in
->>   show_shared_cpu_map().
-> 
-> thanks Travis, i've applied this to x86.git.
-> 
-> one observation:
-> 
->>  static ssize_t show_shared_cpu_map(struct _cpuid4_info *this_leaf, char *buf)
->>  {
->> -	char mask_str[NR_CPUS];
->> -	cpumask_scnprintf(mask_str, NR_CPUS, this_leaf->shared_cpu_map);
->> -	return sprintf(buf, "%s\n", mask_str);
->> +	int n = 0;
->> +	int len = cpumask_scnprintf_len(nr_cpu_ids);
->> +	char *mask_str = kmalloc(len, GFP_KERNEL);
->> +
->> +	if (mask_str) {
->> +		cpumask_scnprintf(mask_str, len, this_leaf->shared_cpu_map);
->> +		n = sprintf(buf, "%s\n", mask_str);
->> +		kfree(mask_str);
->> +	}
->> +	return n;
-> 
-> the other changes look good, but this one looks a bit ugly and complex. 
-> We basically want to sprintf shared_cpu_map into 'buf', but we do that 
-> by first allocating a temporary buffer, print a string into it, then 
-> print that string into another buffer ...
-> 
-> this very much smells like an API bug in cpumask_scnprintf() - why dont 
-> you create a cpumask_scnprintf_ptr() API that takes a pointer to a 
-> cpumask? Then this change would become a trivial and much more readable:
-> 
->  -	char mask_str[NR_CPUS];
->  -	cpumask_scnprintf(mask_str, NR_CPUS, this_leaf->shared_cpu_map);
->  -	return sprintf(buf, "%s\n", mask_str);
->  +	return cpumask_scnprintf_ptr(buf, NR_CPUS, &this_leaf->shared_cpu_map);
-> 
-> 	Ingo
+Hello,
+is it possible to somehow disable MDI-X on via-rhine cards? I have board 
+with three VT6105M chips, and I unfortunately need to disable MDI-X. By 
+looking into source of via-rhine it doesn't seem to be possible, does 
+anybody have a tip how this could be setup? Even some tip for needed 
+register changes could help, anything....
+Thanks a lot in advance
+with best regards
+nik
 
-The main goal was to avoid allocating 4096 bytes when only 32 would do
-(characters needed to represent nr_cpu_ids cpus instead of NR_CPUS cpus.)
-But I'll look at cleaning it up a bit more.  It wouldn't have to be
-a function if CHUNKSZ in cpumask_scnprintf() were visible (or a non-changeable
-constant.)
 
-Thanks,
-Mike
+-- 
+
