@@ -1,29 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761142AbYCZBQq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761799AbYCZBQ7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761142AbYCZBQq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Mar 2008 21:16:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758763AbYCZBQe
+	id S1761799AbYCZBQ7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Mar 2008 21:16:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760727AbYCZBQl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Mar 2008 21:16:34 -0400
-Received: from ug-out-1314.google.com ([66.249.92.171]:32669 "EHLO
+	Tue, 25 Mar 2008 21:16:41 -0400
+Received: from ug-out-1314.google.com ([66.249.92.169]:32188 "EHLO
 	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759876AbYCZBQa (ORCPT
+	with ESMTP id S1760713AbYCZBQk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Mar 2008 21:16:30 -0400
+	Tue, 25 Mar 2008 21:16:40 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
         h=date:to:cc:subject:message-id:user-agent:mime-version:content-type:from;
-        b=QaK5oEWZnKS/GnZYmdsckYzsBtdfw1lnXrQeCymQFV3cQMgoU8CevsHmQLKBsg4uecg1lnbOt4s0j4d/UrP2ESRmh06Ss6s8dbcmS9bislek/Pv5isQ9HTpdGygwWopAG8mJjSdmi/8vazjFmVF+YJFO8+ArHenQGnyvjnvkfcU=
-Date: Wed, 26 Mar 2008 02:16:32 +0100 (CET)
+        b=baZdR1xrh47c2Zmq2x6ruaOgrOXuIg2SpTAfVBEmxTc41OF1rffn3bTH1fboZ7IBC+SqFegN9+NDfx0QW62u1eV9vZmuPm+jIJ0A8Fj38ij1xCjEIKEDKm+YNbyJ0QAqc059xhuD6ZmVM2dyTsXwwI821GMYWYTLJjklVsAjmLk=
+Date: Wed, 26 Mar 2008 02:16:42 +0100 (CET)
 To: LKML <linux-kernel@vger.kernel.org>
-cc: Paul Mundt <lethal@linux-sh.org>, linux-sh@vger.kernel.org,
-       Ian Molton <spyro@f2s.com>, Alain L Knaff <Alain.Knaff@lll.lu>,
-       David C Niemi <niemi@tux.org>,
+cc: Kyle McMartin <kyle@parisc-linux.org>, Matthew Wilcox <matthew@wil.cx>,
+       Grant Grundler <grundler@parisc-linux.org>,
+       linux-parisc@vger.kernel.org, Ian Molton <spyro@f2s.com>,
+       Alain L Knaff <Alain.Knaff@lll.lu>, David C Niemi <niemi@tux.org>,
        Trivial Patch Monkey <trivial@kernel.org>,
        Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH] SuperH floppy: kill 'register' keyword from floppy.h
- header
-Message-ID: <alpine.LNX.1.00.0803260213550.1901@dragon.funnycrock.com>
+Subject: [PATCH] parisc floppy: kill the 'register' keyword from header
+Message-ID: <alpine.LNX.1.00.0803260212140.1901@dragon.funnycrock.com>
 User-Agent: Alpine 1.00 (LNX 882 2007-12-20)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
@@ -40,7 +40,7 @@ access to a single variable or two isn't going to make any real
 difference
 So let's just leave it to the compiler - it'll do a better job anyway.
 
-This patch does away with a few register keywords in the SuperH floppy
+This patch does away with a few register keywords in the parisc floppy 
 driver.
 
 
@@ -50,11 +50,11 @@ Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
  floppy.h |    6 +++---
  1 file changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/include/asm-sh/floppy.h b/include/asm-sh/floppy.h
-index 59fbfdc..afa7f8f 100644
---- a/include/asm-sh/floppy.h
-+++ b/include/asm-sh/floppy.h
-@@ -54,7 +54,7 @@ static int doing_pdma;
+diff --git a/include/asm-parisc/floppy.h b/include/asm-parisc/floppy.h
+index 4ca69f5..2f0a371 100644
+--- a/include/asm-parisc/floppy.h
++++ b/include/asm-parisc/floppy.h
+@@ -64,7 +64,7 @@ static int doing_pdma=0;
  
  static void floppy_hardint(int irq, void *dev_id, struct pt_regs * regs)
  {
@@ -63,17 +63,16 @@ index 59fbfdc..afa7f8f 100644
  
  #undef TRACE_FLPY_INT
  
-@@ -74,8 +74,8 @@ static void floppy_hardint(int irq, void *dev_id, struct pt_regs * regs)
+@@ -84,8 +84,8 @@ static void floppy_hardint(int irq, void *dev_id, struct pt_regs * regs)
  #endif
  
  	{
 -		register int lcount;
--		register char *lptr;
+-		register char *lptr = virtual_dma_addr;
 +		int lcount;
-+		char *lptr;
++		char *lptr = virtual_dma_addr;
  
- 		st = 1;
- 		for(lcount=virtual_dma_count, lptr=virtual_dma_addr; 
-
+ 		for (lcount = virtual_dma_count; lcount; lcount--) {
+ 			st = fd_inb(virtual_dma_port+4) & 0xa0 ;
 
 
