@@ -1,55 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756046AbYCZDa6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753074AbYCZDdU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756046AbYCZDa6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Mar 2008 23:30:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752949AbYCZDas
+	id S1753074AbYCZDdU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Mar 2008 23:33:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753105AbYCZDdI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Mar 2008 23:30:48 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:56604
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752637AbYCZDar (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Mar 2008 23:30:47 -0400
-Date: Tue, 25 Mar 2008 20:30:43 -0700 (PDT)
-Message-Id: <20080325.203043.196469543.davem@davemloft.net>
-To: jgarzik@pobox.com
-Cc: yang.shi@windriver.com, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Improvev netconsole support for RTL8139 NIC driver
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <47E9BF7B.3030003@pobox.com>
-References: <47E9B39C.5010502@pobox.com>
-	<20080325.194221.16658596.davem@davemloft.net>
-	<47E9BF7B.3030003@pobox.com>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Tue, 25 Mar 2008 23:33:08 -0400
+Received: from mail.suse.de ([195.135.220.2]:41400 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752742AbYCZDdG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Mar 2008 23:33:06 -0400
+Date: Tue, 25 Mar 2008 20:38:04 -0700
+From: Greg KH <gregkh@suse.de>
+To: Tejun Heo <htejun@gmail.com>
+Cc: Mark Lord <lkml@rtr.ca>, "H. Peter Anvin" <hpa@zytor.com>,
+       Jens Axboe <axboe@kernel.dk>, Jeff Garzik <jgarzik@pobox.com>,
+       Linus Torvalds <torvalds@osdl.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       IDE/ATA development list <linux-ide@vger.kernel.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>
+Subject: Re: What to do about the 2TB limit on HDIO_GETGEO ?
+Message-ID: <20080326033804.GA27925@suse.de>
+References: <47E875AD.1000901@rtr.ca> <47E87942.2020409@rtr.ca> <47E88A13.70808@zytor.com> <47E90019.3050006@rtr.ca> <47E90458.7030801@zytor.com> <47E9383F.3050908@rtr.ca> <20080325192515.GA24234@suse.de> <47E99A02.7040903@rtr.ca> <47E99EBE.7010708@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <47E99EBE.7010708@gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jeff Garzik <jgarzik@pobox.com>
-Date: Tue, 25 Mar 2008 23:14:03 -0400
-
-> David Miller wrote:
-> > From: Jeff Garzik <jgarzik@pobox.com>
-> > Date: Tue, 25 Mar 2008 22:23:24 -0400
-> > 
-> >> This is bogus -- you should never need to slow down the hot path in such 
-> >> a way.
-> > 
-> > Slow down in what way?  Even on x86 saving the flags is just
-> > about as expensive as a plain sti/cli.
+On Wed, Mar 26, 2008 at 09:54:22AM +0900, Tejun Heo wrote:
+> Hello,
 > 
-> Replacing spin_lock() [current 8139too.c] with spin_lock_irqsave() 
-> results in a larger interrupt handler... more CPU instructions for the 
-> same result.
+> Mark Lord wrote:
+> > So have we.  sysfs is a total nightmare to extract information from
+> > under program / script control.  The idea presented in this thread,
+> > is to have it cross-index the contents with a method that actually
+> > makes it easy to access in many common scenarios, without requiring
+> > huge gobs of code in user space.  Or in kernel space.
+> > 
+> > And it's not just a few 10s of lines of code currently,
+> > but rather about 80-100 lines just to find the correct device subdir,
+> > and *then* a few more 10s of lines of code to retrieve the value.
 
-Jeff, please be realistic.
+I think you are using either the wrong programming language, or your
+sysfs walking logic is quite convulted.  Look at the udev and HAL code
+if you want to steal some compact, working sysfs code :)
 
-These interrupt handlers about to do a PIO on a status register, which
-will consume on the order of a few hundred cpu cycles.
+> > In a bulletproof fashion, that is.  Sure it can be slightly smaller
+> > if niceties such as error checking/handling are omitted.
+> > 
+> > There's no guarantee that udev is present, and even if it were present,
+> > there's no guarantee that the names in /dev/ will match /sysfs/ pathnames,
+> > since udev is very configurable to do otherwise.
+> > 
+> > So lookups are by dev_t, which sysfs has no simple or even easy way
+> > of accomplishing.  O(n) at a minimum.
 
-Counting an I-cache line or two, or 18 cycles here or there,
-is immaterial by comparison.
+And again, is this a performance requiring operation?
+
+> > If we make it easier to access, then more programs will use it
+> > rather than us having to expand our tricky binary ioctl interfaces.
+> > 
+> > Isn't that part of the idea of sysfs -- to limit the need for new ioctls ?
+> 
+> The questions are...
+> 
+> 1. Are we gonna push sysfs as the primary interface and not provide an
+> alternative interface (ioctl here) which can provide equivalent
+> information?  There are people running their systems w/o sysfs but I
+> think we're getting closer to this everyday.
+
+Exactly, originally you suggested a new ioctl, which would be trivial to
+add, and trivial to switch any program that was currently using an ioctl
+to get the disk size, to use it instead.
+
+Since when is the major:minor view of devices the "standard" one that
+userspace uses?  Last I looked, userspace uses symlinks and lots of
+other ways of directly accessing block devices in /dev/, and does not
+rely on major:minor.
+
+And finally, I haven't seen a patch that implements this "shadow" tree,
+it would be interesting to see if it could even be done.
+
+> 2. Is udev an essential part of all systems?  I'm not sure about this
+> one.  Lots of small machines run w/o udev and I think udev is a bit too
+> high level to depend on for every system.
+
+My tiny little phone runs udev, I don't see why anyone wouldn't run it
+these days, except in very limited embedded applications with no dynamic
+devices.  But if you are in that situation, you aren't querying the size
+of any random block device either :)
+
+And heck, this phone is a very limited embedded application, with razor
+thin margins, if it can use udev, I'd be interested in hearing the
+justifications for anyone who says it is too large for their systems to
+use it.
+
+> If both #1 and #2 are true, I agree with Mark that we need an easy to
+> map from device number to matching sysfs nodes.  Tools which are used
+> early during boot and emergency sessions need this mapping and many of
+> them are minimal C program w/o much dependency for a good reason.
+> Requiring each of them to implement their own way to map device node to
+> sysfs node is too awkward.
+> 
+> Probably something like /sys/class/block/MAJ:MIN or
+> /sys/class/devnums/bMAJ:MIN?
+
+Why the preopcupation with major:minor?  Just because you are able to
+grab it from an open file handle?  Heck, why not just an ioctl to get
+the path within sysfs for the device currently open?  :)
+
+thanks,
+
+greg k-h
