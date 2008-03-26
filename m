@@ -1,117 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756456AbYCZEg6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755433AbYCZEiS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756456AbYCZEg6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Mar 2008 00:36:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752044AbYCZEgq
+	id S1755433AbYCZEiS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Mar 2008 00:38:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752191AbYCZEiJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Mar 2008 00:36:46 -0400
-Received: from hera.kernel.org ([140.211.167.34]:41349 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751965AbYCZEgp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Mar 2008 00:36:45 -0400
-From: Len Brown <lenb@kernel.org>
-Organization: Intel Open Source Technology Center
-To: Venki Pallipadi <venkatesh.pallipadi@intel.com>
-Subject: Re: [PATCH] acpi_unlazy_tlb only on C3 entry
-Date: Wed, 26 Mar 2008 00:35:55 -0400
+	Wed, 26 Mar 2008 00:38:09 -0400
+Received: from smtp-vbr7.xs4all.nl ([194.109.24.27]:3532 "EHLO
+	smtp-vbr7.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751569AbYCZEiI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Mar 2008 00:38:08 -0400
+X-Greylist: delayed 753 seconds by postgrey-1.27 at vger.kernel.org; Wed, 26 Mar 2008 00:38:07 EDT
+From: Roman Zippel <zippel@linux-m68k.org>
+To: john stultz <johnstul@us.ibm.com>
+Subject: Re: [PATCH 7/8] Remove current_tick_length()
+Date: Wed, 26 Mar 2008 02:53:20 +0100
 User-Agent: KMail/1.9.9
-Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-References: <20080324212410.GB6783@linux-os.sc.intel.com>
-In-Reply-To: <20080324212410.GB6783@linux-os.sc.intel.com>
+Cc: Ray Lee <ray-lk@madrabbit.org>, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
+References: <20080314184001.695807682@linux-m68k.org> <Pine.LNX.4.64.0803151812020.1791@scrub.home> <1205802064.28128.74.camel@localhost>
+In-Reply-To: <1205802064.28128.74.camel@localhost>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200803260035.55874.lenb@kernel.org>
+Message-Id: <200803260253.21921.zippel@linux-m68k.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Yes, this was causeed by a merge error -- the checked-in patch
-did not match the e-mailed patch.
+Hi,
 
-I found that I could reproduce the error if I used patch(1)
-and ignored this:
+On Tuesday 18. March 2008, john stultz wrote:
 
-patching file drivers/acpi/processor_idle.c
-Hunk #1 succeeded at 534 with fuzz 2 (offset 4 lines).
-Hunk #2 succeeded at 1420 (offset -66 lines).
+> On Sat, 2008-03-15 at 18:14 +0100, Roman Zippel wrote:
+> > Hi,
+> >
+> > On Sat, 15 Mar 2008, Ray Lee wrote:
+> > > Then make the original function an inline. With -O2 it should compile
+> > > to exactly the same thing.
+> >
+> > This would also defeat John's intention of keeping the value static.
+>
+> Well, don't mistake me for being fanatical about it. Having the values
+> be static is cleaner, but if its a real performance issue, then clearly
+> performance wins.
 
-The 2nd hunk is what failed:
-Index: linux-2.6.24-rc/drivers/acpi/processor_idle.c
-===================================================================
---- linux-2.6.24-rc.orig/drivers/acpi/processor_idle.c
-+++ linux-2.6.24-rc/drivers/acpi/processor_idle.c
-@@ -530,6 +530,7 @@ static void acpi_processor_idle(void)
-                break;
+There are two aspects, such functions tend to generate slightly larger and 
+slower code.
 
-        case ACPI_STATE_C3:
-+               acpi_unlazy_tlb(smp_processor_id());
-                /*
-                 * disable bus master
-                 * bm_check implies we need ARB_DIS
-@@ -1485,6 +1486,7 @@ static int acpi_idle_enter_bm(struct cpu
-                return 0;
-        }
+> I do like Ray's suggestion, and think using the inline'd function is
+> preferred to the raw variable, as it better establishes through use if
+> nothing else, the read-only nature of the value outside of ntp.
 
-+       acpi_unlazy_tlb(smp_processor_id());
-        /*
-         * Must be done before busmaster disable as we might need to
-         * access HPET !
+In other languages one would use private or protected for this, but we don't 
+have this. I'm not too fond of an inline function, as it would mark it as 
+some kind of public API, which it isn't. It's just an internal value used by 
+the timekeeping code, which happens to be needed by a few source files. If 
+you want to make a little more private, it would be better to move it to 
+header under kernel/time/.
 
-
-As this touches just acpi/processor_idle.c, I'll send this with
-a batch of acpi patches I've got.
-
-applied.
-
-thanks,
--Len
-
-On Monday 24 March 2008, Venki Pallipadi wrote:
-> 
-> Earlier patch here
-> http://ussg.iu.edu/hypermail/linux/kernel/0712.2/1451.html
-> was intending to add acpi_unlazy_tlb() to acpi_idle_enter_bm() routine which is
-> used for C3 entry. But, some where along the way the call got added to
-> acpi_idle_enter_simple() (which is C2 entry routine), probably due to identical
-> context in that function. Move it back to acpi_idle_enter_bm().
-> 
-> Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-> 
-> ---
->  drivers/acpi/processor_idle.c |    3 ++-
->  1 file changed, 2 insertions(+), 1 deletion(-)
-> 
-> Index: linux-2.6-x86.git/drivers/acpi/processor_idle.c
-> ===================================================================
-> --- linux-2.6-x86.git.orig/drivers/acpi/processor_idle.c	2008-03-21 08:28:47.000000000 -0700
-> +++ linux-2.6-x86.git/drivers/acpi/processor_idle.c	2008-03-24 06:43:01.000000000 -0700
-> @@ -1487,7 +1487,6 @@ static int acpi_idle_enter_simple(struct
->  		return 0;
->  	}
->  
-> -	acpi_unlazy_tlb(smp_processor_id());
->  	/*
->  	 * Must be done before busmaster disable as we might need to
->  	 * access HPET !
-> @@ -1577,6 +1576,8 @@ static int acpi_idle_enter_bm(struct cpu
->  		return 0;
->  	}
->  
-> +	acpi_unlazy_tlb(smp_processor_id());
-> +
->  	/* Tell the scheduler that we are going deep-idle: */
->  	sched_clock_idle_sleep_event();
->  	/*
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
-
-
+bye, Roman
