@@ -1,60 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757656AbYCZHqT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756796AbYCZHxp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757656AbYCZHqT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Mar 2008 03:46:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751938AbYCZHpt
+	id S1756796AbYCZHxp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Mar 2008 03:53:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752504AbYCZHxg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Mar 2008 03:45:49 -0400
-Received: from fg-out-1718.google.com ([72.14.220.156]:29910 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751216AbYCZHps (ORCPT
+	Wed, 26 Mar 2008 03:53:36 -0400
+Received: from de01egw01.freescale.net ([192.88.165.102]:48140 "EHLO
+	de01egw01.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752253AbYCZHxg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Mar 2008 03:45:48 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=Xaoelm6sgsjaPSBx2lW/RNF4XruA0BayIhzKGhVYw5InbrZ2UdJsXN8KHaYRL0OxMPaBBwYB/PhcMXK8dUysLemTIMnhM4tikFfDa1rLUuD0l8xPMsZ4WiR9nYu36OnkrR5M61j9wOzOylLcSIpDuI2jaQctz484OPFEg4OIIdE=
-Message-ID: <e2e108260803260045q37792686l80ddb421f2e67c6f@mail.gmail.com>
-Date: Wed, 26 Mar 2008 08:45:46 +0100
-From: "Bart Van Assche" <bart.vanassche@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: quicklists confuse meminfo
-Cc: "Nick Piggin" <nickpiggin@yahoo.com.au>,
-       "Christoph Lameter" <clameter@sgi.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>,
-       "Thomas Gleixner" <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>
-In-Reply-To: <20080321144517.GA1545@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <alpine.LFD.1.00.0803090919481.3099@apollo.tec.linutronix.de>
-	 <20080309114640.85c9c3eb.akpm@linux-foundation.org>
-	 <Pine.LNX.4.64.0803100851560.23575@schroedinger.engr.sgi.com>
-	 <200803111507.20870.nickpiggin@yahoo.com.au>
-	 <e2e108260803210552i4cdef6a5qf8f5076eaac2cf03@mail.gmail.com>
-	 <20080321144517.GA1545@elte.hu>
+	Wed, 26 Mar 2008 03:53:36 -0400
+From: Zhang Wei <wei.zhang@freescale.com>
+To: dan.j.williams@intel.com
+Cc: linux-kernel@vger.kernel.org, Zhang Wei <wei.zhang@freescale.com>
+Subject: [PATCH] fsldma: Split the MPC83xx event from MPC85xx and refine irq codes.
+Date: Wed, 26 Mar 2008 15:42:35 +0800
+Message-Id: <1206517356-11209-1-git-send-email-wei.zhang@freescale.com>
+X-Mailer: git-send-email 1.5.4
+X-OriginalArrivalTime: 26 Mar 2008 07:47:39.0457 (UTC) FILETIME=[AA50DB10:01C88F15]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 21, 2008 at 3:45 PM, Ingo Molnar <mingo@elte.hu> wrote:
->
->  * Bart Van Assche <bart.vanassche@gmail.com> wrote:
->
->  > Is anyone currently working on this
->  > (http://bugzilla.kernel.org/show_bug.cgi?id=9991) ? I think this
->  > should either be fixed or documented as a known issue.
->
->  it should be fixed in latest -git (by commit 985a34bd75cc8c9) - can you
->  still see it?
+Split MPC83xx EOCDI event from MPC85xx EOLNI event, which is
+also need to update cookie and start the next transfer.
+The DMA channel irq handler function code is refined.
+The patch is tested on MPC8377MDS board.
 
-This issue is indeed fixed now, thanks (retested with kernel version
-2.6.25-rc6-00333-ga4083c9-dirty). Where can I find the patch that
-fixed this issue ? A Google query for the commit ID returned only one
-result, and that was an URL that pointed to your e-mail.
+Signed-off-by: Zhang Wei <wei.zhang@freescale.com>
+---
+ drivers/dma/fsldma.c |   26 +++++++++++++++++++++-----
+ 1 files changed, 21 insertions(+), 5 deletions(-)
 
-Bart.
+diff --git a/drivers/dma/fsldma.c b/drivers/dma/fsldma.c
+index 07de0cf..b5a9d79 100644
+--- a/drivers/dma/fsldma.c
++++ b/drivers/dma/fsldma.c
+@@ -696,6 +696,8 @@ static irqreturn_t fsl_dma_chan_do_interrupt(int irq, void *data)
+ {
+ 	struct fsl_dma_chan *fsl_chan = (struct fsl_dma_chan *)data;
+ 	u32 stat;
++	int update_cookie = 0;
++	int xfer_ld_q = 0;
+ 
+ 	stat = get_sr(fsl_chan);
+ 	dev_dbg(fsl_chan->dev, "event: channel %d, stat = 0x%x\n",
+@@ -720,8 +722,8 @@ static irqreturn_t fsl_dma_chan_do_interrupt(int irq, void *data)
+ 			 * Now, update the completed cookie, and continue the
+ 			 * next uncompleted transfer.
+ 			 */
+-			fsl_dma_update_completed_cookie(fsl_chan);
+-			fsl_chan_xfer_ld_queue(fsl_chan);
++			update_cookie = 1;
++			xfer_ld_q = 1;
+ 		}
+ 		stat &= ~FSL_DMA_SR_PE;
+ 	}
+@@ -734,19 +736,33 @@ static irqreturn_t fsl_dma_chan_do_interrupt(int irq, void *data)
+ 		dev_dbg(fsl_chan->dev, "event: clndar %p, nlndar %p\n",
+ 			(void *)get_cdar(fsl_chan), (void *)get_ndar(fsl_chan));
+ 		stat &= ~FSL_DMA_SR_EOSI;
+-		fsl_dma_update_completed_cookie(fsl_chan);
++		update_cookie = 1;
++	}
++
++	/* For MPC8349, EOCDI event need to update cookie
++	 * and start the next transfer if it exist.
++	 */
++	if (stat & FSL_DMA_SR_EOCDI) {
++		dev_dbg(fsl_chan->dev, "event: End-of-Chain link INT\n");
++		stat &= ~FSL_DMA_SR_EOCDI;
++		update_cookie = 1;
++		xfer_ld_q = 1;
+ 	}
+ 
+ 	/* If it current transfer is the end-of-transfer,
+ 	 * we should clear the Channel Start bit for
+ 	 * prepare next transfer.
+ 	 */
+-	if (stat & (FSL_DMA_SR_EOLNI | FSL_DMA_SR_EOCDI)) {
++	if (stat & FSL_DMA_SR_EOLNI) {
+ 		dev_dbg(fsl_chan->dev, "event: End-of-link INT\n");
+ 		stat &= ~FSL_DMA_SR_EOLNI;
+-		fsl_chan_xfer_ld_queue(fsl_chan);
++		xfer_ld_q = 1;
+ 	}
+ 
++	if (update_cookie)
++		fsl_dma_update_completed_cookie(fsl_chan);
++	if (xfer_ld_q)
++		fsl_chan_xfer_ld_queue(fsl_chan);
+ 	if (stat)
+ 		dev_dbg(fsl_chan->dev, "event: unhandled sr 0x%02x\n",
+ 					stat);
+-- 
+1.5.4
+
