@@ -1,299 +1,330 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761602AbYCZVWy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761929AbYCZVXS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761602AbYCZVWy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Mar 2008 17:22:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757188AbYCZVWB
+	id S1761929AbYCZVXS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Mar 2008 17:23:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757401AbYCZVWD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Mar 2008 17:22:01 -0400
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:58471 "EHLO
+	Wed, 26 Mar 2008 17:22:03 -0400
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:58472 "EHLO
 	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756531AbYCZVVz (ORCPT
+	with ESMTP id S1756588AbYCZVV5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Mar 2008 17:21:55 -0400
-Message-Id: <20080326212142.255524094@szeredi.hu>
+	Wed, 26 Mar 2008 17:21:57 -0400
+Message-Id: <20080326212143.479034123@szeredi.hu>
 References: <20080326211131.705321084@szeredi.hu>
 User-Agent: quilt/0.45-1
-Date: Wed, 26 Mar 2008 22:11:36 +0100
+Date: Wed, 26 Mar 2008 22:11:37 +0100
 From: Miklos Szeredi <miklos@szeredi.hu>
 To: viro@zeniv.linux.org.uk
 Cc: akpm@linux-foundation.org, linuxram@us.ibm.com,
        linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [patch 5/7] vfs: mountinfo: allow using process root
-Content-Disposition: inline; filename=mountinfo_proc_mounts.patch
+Subject: [patch 6/7] vfs: mountinfo: add /proc/<pid>/mountinfo
+Content-Disposition: inline; filename=mountinfo_mountinfo.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Miklos Szeredi <mszeredi@suse.cz>
+From: Ram Pai <linuxram@us.ibm.com>
 
-Allow /proc/<pid>/mountinfo to use the root of <pid> to calculate
-mountpoints.
+[mszeredi@suse.cz] rewrite and split big patch into managable chunks
 
- - move definition of 'struct proc_mounts' to <linux/mnt_namespace.h>
- - add the process's namespace and root to this structure
- - pass a pointer to 'struct proc_mounts' into seq_operations
+/proc/mounts in its current form lacks important information:
 
-In addition the following cleanups are made:
+ - propagation state
+ - root of mount for bind mounts
+ - the st_dev value used within the filesystem
+ - identifier for each mount and it's parent
 
- - use a common open function for /proc/<pid>/{mounts,mountstat}
- - surround namespace.c part of these proc files with #ifdef CONFIG_PROC_FS
- - make the seq_operations structures const
+It also suffers from the following problems:
 
+ - not easily extendable
+ - ambiguity of mountpoints within a chrooted environment
+ - doesn't distinguish between filesystem dependent and independent options
+ - doesn't distinguish between per mount and per super block options
+
+This patch introduces /proc/<pid>/mountinfo which attempts to address
+all these deficiencies.
+
+Code shared between /proc/<pid>/mounts and /proc/<pid>/mountinfo is
+extracted into separate functions.
+
+Thanks to Al Viro for the help in getting the design right.
+
+Signed-off-by: Ram Pai <linuxram@us.ibm.com>
 Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
 ---
- fs/namespace.c                |   14 +++--
- fs/proc/base.c                |  108 +++++++++++++++++++-----------------------
- include/linux/mnt_namespace.h |   11 ++++
- 3 files changed, 70 insertions(+), 63 deletions(-)
+ Documentation/filesystems/proc.txt |   33 ++++++++++
+ fs/namespace.c                     |  121 +++++++++++++++++++++++++++++--------
+ fs/proc/base.c                     |   15 ++++
+ include/linux/mnt_namespace.h      |    1 
+ 4 files changed, 147 insertions(+), 23 deletions(-)
 
+Index: vfs-2.6/Documentation/filesystems/proc.txt
+===================================================================
+--- vfs-2.6.orig/Documentation/filesystems/proc.txt	2008-03-26 21:37:52.000000000 +0100
++++ vfs-2.6/Documentation/filesystems/proc.txt	2008-03-26 21:43:05.000000000 +0100
+@@ -43,6 +43,7 @@ Table of Contents
+   2.13	/proc/<pid>/oom_score - Display current oom-killer score
+   2.14	/proc/<pid>/io - Display the IO accounting fields
+   2.15	/proc/<pid>/coredump_filter - Core dump filtering settings
++  2.16	/proc/<pid>/mountinfo - Information about mounts
+ 
+ ------------------------------------------------------------------------------
+ Preface
+@@ -2348,4 +2349,36 @@ For example:
+   $ echo 0x7 > /proc/self/coredump_filter
+   $ ./some_program
+ 
++2.16	/proc/<pid>/mountinfo - Information about mounts
++--------------------------------------------------------
++
++This file contains lines of the form:
++
++36 35 98:0 /mnt1 /mnt2 rw,noatime rw master:1 - ext3 /dev/root,errors=continue
++(1)(2)(3)   (4)   (5)      (6)    (7)  (8)   (9) (10)   (11)      (12)
++
++(1) mount ID:  unique identifier of the mount (may be reused after umount)
++(2) parent ID:  ID of parent (or of self for the top of the mount tree)
++(3) major:minor:  value of st_dev for files on filesystem
++(4) root:  root of the mount within the filesystem
++(5) mount point:  mount point relative to the process's root
++(6) mount options:  per mount options
++(7) super options:  filesystem type independent, per super block options
++(8) optional fields:  zero or more fields of the form "tag[:value]"
++(9) separator:  marks the end of the optional fields
++(10) filesystem type:  name of filesystem of the form "type[.subtype]"
++(11) mount source:  filesystem specific information or "none"
++(12) filesystem options:  filesystem type dependent options
++
++Parsers should ignore all unrecognised optional fields.  Currently the
++possible optional fields are:
++
++shared:X  mount is shared in peer group X
++master:X  mount is slave to peer group X
++unbindable  mount is unbindable
++
++For more information on mount propagation see:
++
++  Documentation/filesystems/sharedsubtree.txt
++
+ ------------------------------------------------------------------------------
 Index: vfs-2.6/fs/namespace.c
 ===================================================================
---- vfs-2.6.orig/fs/namespace.c	2008-03-26 21:39:49.000000000 +0100
-+++ vfs-2.6/fs/namespace.c	2008-03-26 21:43:03.000000000 +0100
-@@ -731,20 +731,21 @@ void save_mount_options(struct super_blo
+--- vfs-2.6.orig/fs/namespace.c	2008-03-26 21:43:03.000000000 +0100
++++ vfs-2.6/fs/namespace.c	2008-03-26 21:43:05.000000000 +0100
+@@ -753,20 +753,30 @@ static void m_stop(struct seq_file *m, v
+ 	up_read(&namespace_sem);
  }
- EXPORT_SYMBOL(save_mount_options);
  
-+#ifdef CONFIG_PROC_FS
- /* iterator */
- static void *m_start(struct seq_file *m, loff_t *pos)
+-static int show_vfsmnt(struct seq_file *m, void *v)
++struct proc_fs_info {
++	int flag;
++	const char *str;
++};
++
++static void show_sb_opts(struct seq_file *m, struct super_block *sb)
  {
--	struct mnt_namespace *n = m->private;
-+	struct proc_mounts *p = m->private;
- 
- 	down_read(&namespace_sem);
--	return seq_list_start(&n->list, *pos);
-+	return seq_list_start(&p->ns->list, *pos);
- }
- 
- static void *m_next(struct seq_file *m, void *v, loff_t *pos)
- {
--	struct mnt_namespace *n = m->private;
-+	struct proc_mounts *p = m->private;
- 
--	return seq_list_next(v, &n->list, pos);
-+	return seq_list_next(v, &p->ns->list, pos);
- }
- 
- static void m_stop(struct seq_file *m, void *v)
-@@ -801,7 +802,7 @@ static int show_vfsmnt(struct seq_file *
- 	return err;
- }
- 
--struct seq_operations mounts_op = {
-+const struct seq_operations mounts_op = {
- 	.start	= m_start,
- 	.next	= m_next,
- 	.stop	= m_stop,
-@@ -840,12 +841,13 @@ static int show_vfsstat(struct seq_file 
- 	return err;
- }
- 
--struct seq_operations mountstats_op = {
-+const struct seq_operations mountstats_op = {
- 	.start	= m_start,
- 	.next	= m_next,
- 	.stop	= m_stop,
- 	.show	= show_vfsstat,
- };
-+#endif  /* CONFIG_PROC_FS */
- 
- /**
-  * may_umount_tree - check if a mount tree is busy
-Index: vfs-2.6/fs/proc/base.c
-===================================================================
---- vfs-2.6.orig/fs/proc/base.c	2008-03-26 21:37:52.000000000 +0100
-+++ vfs-2.6/fs/proc/base.c	2008-03-26 21:43:03.000000000 +0100
-@@ -502,17 +502,14 @@ static const struct inode_operations pro
- 	.setattr	= proc_setattr,
- };
- 
--extern const struct seq_operations mounts_op;
--struct proc_mounts {
--	struct seq_file m;
--	int event;
--};
--
--static int mounts_open(struct inode *inode, struct file *file)
-+static int mounts_open_common(struct inode *inode, struct file *file,
-+			      const struct seq_operations *op)
- {
- 	struct task_struct *task = get_proc_task(inode);
- 	struct nsproxy *nsp;
- 	struct mnt_namespace *ns = NULL;
-+	struct fs_struct *fs = NULL;
-+	struct path root;
- 	struct proc_mounts *p;
- 	int ret = -EINVAL;
- 
-@@ -525,40 +522,61 @@ static int mounts_open(struct inode *ino
- 				get_mnt_ns(ns);
- 		}
- 		rcu_read_unlock();
--
-+		if (ns)
-+			fs = get_fs_struct(task);
- 		put_task_struct(task);
- 	}
- 
--	if (ns) {
--		ret = -ENOMEM;
--		p = kmalloc(sizeof(struct proc_mounts), GFP_KERNEL);
--		if (p) {
--			file->private_data = &p->m;
--			ret = seq_open(file, &mounts_op);
--			if (!ret) {
--				p->m.private = ns;
--				p->event = ns->event;
--				return 0;
--			}
--			kfree(p);
--		}
--		put_mnt_ns(ns);
--	}
-+	if (!ns)
-+		goto err;
-+	if (!fs)
-+		goto err_put_ns;
+-	struct vfsmount *mnt = list_entry(v, struct vfsmount, mnt_list);
+-	int err = 0;
+-	static struct proc_fs_info {
+-		int flag;
+-		char *str;
+-	} fs_info[] = {
++	static const struct proc_fs_info fs_info[] = {
+ 		{ MS_SYNCHRONOUS, ",sync" },
+ 		{ MS_DIRSYNC, ",dirsync" },
+ 		{ MS_MANDLOCK, ",mand" },
+ 		{ 0, NULL }
+ 	};
+-	static struct proc_fs_info mnt_info[] = {
++	const struct proc_fs_info *fs_infop;
 +
-+	read_lock(&fs->lock);
-+	root = fs->root;
-+	path_get(&root);
-+	read_unlock(&fs->lock);
-+	put_fs_struct(fs);
-+
-+	ret = -ENOMEM;
-+	p = kmalloc(sizeof(struct proc_mounts), GFP_KERNEL);
-+	if (!p)
-+		goto err_put_path;
-+
-+	file->private_data = &p->m;
-+	ret = seq_open(file, op);
-+	if (ret)
-+		goto err_free;
-+
-+	p->m.private = p;
-+	p->ns = ns;
-+	p->root = root;
-+	p->event = ns->event;
-+
-+	return 0;
-+
-+ err_free:
-+	kfree(p);
-+ err_put_path:
-+	path_put(&root);
-+ err_put_ns:
-+	put_mnt_ns(ns);
-+ err:
- 	return ret;
- }
- 
- static int mounts_release(struct inode *inode, struct file *file)
- {
--	struct seq_file *m = file->private_data;
--	struct mnt_namespace *ns = m->private;
--	put_mnt_ns(ns);
-+	struct proc_mounts *p = file->private_data;
-+	path_put(&p->root);
-+	put_mnt_ns(p->ns);
- 	return seq_release(inode, file);
- }
- 
- static unsigned mounts_poll(struct file *file, poll_table *wait)
- {
- 	struct proc_mounts *p = file->private_data;
--	struct mnt_namespace *ns = p->m.private;
-+	struct mnt_namespace *ns = p->ns;
- 	unsigned res = 0;
- 
- 	poll_wait(file, &ns->poll, wait);
-@@ -573,6 +591,11 @@ static unsigned mounts_poll(struct file 
- 	return res;
- }
- 
-+static int mounts_open(struct inode *inode, struct file *file)
-+{
-+	return mounts_open_common(inode, file, &mounts_op);
++	for (fs_infop = fs_info; fs_infop->flag; fs_infop++) {
++		if (sb->s_flags & fs_infop->flag)
++			seq_puts(m, fs_infop->str);
++	}
 +}
 +
- static const struct file_operations proc_mounts_operations = {
- 	.open		= mounts_open,
- 	.read		= seq_read,
-@@ -581,38 +604,9 @@ static const struct file_operations proc
++static void show_mnt_opts(struct seq_file *m, struct vfsmount *mnt)
++{
++	static const struct proc_fs_info mnt_info[] = {
+ 		{ MNT_NOSUID, ",nosuid" },
+ 		{ MNT_NODEV, ",nodev" },
+ 		{ MNT_NOEXEC, ",noexec" },
+@@ -775,27 +785,37 @@ static int show_vfsmnt(struct seq_file *
+ 		{ MNT_RELATIME, ",relatime" },
+ 		{ 0, NULL }
+ 	};
+-	struct proc_fs_info *fs_infop;
++	const struct proc_fs_info *fs_infop;
++
++	for (fs_infop = mnt_info; fs_infop->flag; fs_infop++) {
++		if (mnt->mnt_flags & fs_infop->flag)
++			seq_puts(m, fs_infop->str);
++	}
++}
++
++static void show_type(struct seq_file *m, struct super_block *sb)
++{
++	mangle(m, sb->s_type->name);
++	if (sb->s_subtype && sb->s_subtype[0]) {
++		seq_putc(m, '.');
++		mangle(m, sb->s_subtype);
++	}
++}
++
++static int show_vfsmnt(struct seq_file *m, void *v)
++{
++	struct vfsmount *mnt = list_entry(v, struct vfsmount, mnt_list);
++	int err = 0;
+ 	struct path mnt_path = { .dentry = mnt->mnt_root, .mnt = mnt };
+ 
+ 	mangle(m, mnt->mnt_devname ? mnt->mnt_devname : "none");
+ 	seq_putc(m, ' ');
+ 	seq_path(m, &mnt_path, " \t\n\\");
+ 	seq_putc(m, ' ');
+-	mangle(m, mnt->mnt_sb->s_type->name);
+-	if (mnt->mnt_sb->s_subtype && mnt->mnt_sb->s_subtype[0]) {
+-		seq_putc(m, '.');
+-		mangle(m, mnt->mnt_sb->s_subtype);
+-	}
++	show_type(m, mnt->mnt_sb);
+ 	seq_puts(m, __mnt_is_readonly(mnt) ? " ro" : " rw");
+-	for (fs_infop = fs_info; fs_infop->flag; fs_infop++) {
+-		if (mnt->mnt_sb->s_flags & fs_infop->flag)
+-			seq_puts(m, fs_infop->str);
+-	}
+-	for (fs_infop = mnt_info; fs_infop->flag; fs_infop++) {
+-		if (mnt->mnt_flags & fs_infop->flag)
+-			seq_puts(m, fs_infop->str);
+-	}
++	show_sb_opts(m, mnt->mnt_sb);
++	show_mnt_opts(m, mnt);
+ 	if (mnt->mnt_sb->s_op->show_options)
+ 		err = mnt->mnt_sb->s_op->show_options(m, mnt);
+ 	seq_puts(m, " 0 0\n");
+@@ -809,6 +829,61 @@ const struct seq_operations mounts_op = 
+ 	.show	= show_vfsmnt
+ };
+ 
++static int show_mountinfo(struct seq_file *m, void *v)
++{
++	struct proc_mounts *p = m->private;
++	size_t count_save = m->count;
++	struct vfsmount *mnt = list_entry(v, struct vfsmount, mnt_list);
++	struct super_block *sb = mnt->mnt_sb;
++	struct path mnt_path = { .dentry = mnt->mnt_root, .mnt = mnt };
++	struct path root = p->root;
++	int err = 0;
++
++	seq_printf(m, "%i %i %u:%u ", mnt->mnt_id, mnt->mnt_parent->mnt_id,
++		   MAJOR(sb->s_dev), MINOR(sb->s_dev));
++	seq_dentry(m, mnt->mnt_root, " \t\n\\");
++	seq_putc(m, ' ');
++	seq_path_root(m, &mnt_path, &root, " \t\n\\");
++	if (root.mnt != p->root.mnt || root.dentry != p->root.dentry) {
++		/*
++		 * Mountpoint is outside root, rewind seq_file. Ugly,
++		 * but necessary for race-free detection of unreachable
++		 * mountpoints.
++		 */
++		m->count = count_save;
++		return 0;
++	}
++	seq_puts(m, mnt->mnt_flags & MNT_READONLY ? " ro" : " rw");
++	show_mnt_opts(m, mnt);
++	seq_puts(m, sb->s_flags & MS_RDONLY ? " ro" : " rw");
++	show_sb_opts(m, sb);
++
++	/* Tagged fields ("foo:X" or "bar") */
++	if (IS_MNT_SHARED(mnt))
++		seq_printf(m, " shared:%i", mnt->mnt_group_id);
++	if (IS_MNT_SLAVE(mnt))
++		seq_printf(m, " master:%i", mnt->mnt_master->mnt_group_id);
++	if (IS_MNT_UNBINDABLE(mnt))
++		seq_puts(m, " unbindable");
++
++	/* Filesystem specific data */
++	seq_puts(m, " - ");
++	show_type(m, sb);
++	seq_putc(m, ' ');
++	mangle(m, mnt->mnt_devname ? mnt->mnt_devname : "none");
++	if (sb->s_op->show_options)
++		err = sb->s_op->show_options(m, mnt);
++	seq_putc(m, '\n');
++	return err;
++}
++
++const struct seq_operations mountinfo_op = {
++	.start	= m_start,
++	.next	= m_next,
++	.stop	= m_stop,
++	.show	= show_mountinfo,
++};
++
+ static int show_vfsstat(struct seq_file *m, void *v)
+ {
+ 	struct vfsmount *mnt = list_entry(v, struct vfsmount, mnt_list);
+@@ -829,7 +904,7 @@ static int show_vfsstat(struct seq_file 
+ 
+ 	/* file system type */
+ 	seq_puts(m, "with fstype ");
+-	mangle(m, mnt->mnt_sb->s_type->name);
++	show_type(m, mnt->mnt_sb);
+ 
+ 	/* optional statistics */
+ 	if (mnt->mnt_sb->s_op->show_stats) {
+Index: vfs-2.6/fs/proc/base.c
+===================================================================
+--- vfs-2.6.orig/fs/proc/base.c	2008-03-26 21:43:03.000000000 +0100
++++ vfs-2.6/fs/proc/base.c	2008-03-26 21:43:05.000000000 +0100
+@@ -604,6 +604,19 @@ static const struct file_operations proc
  	.poll		= mounts_poll,
  };
  
--extern const struct seq_operations mountstats_op;
- static int mountstats_open(struct inode *inode, struct file *file)
- {
--	int ret = seq_open(file, &mountstats_op);
--
--	if (!ret) {
--		struct seq_file *m = file->private_data;
--		struct nsproxy *nsp;
--		struct mnt_namespace *mnt_ns = NULL;
--		struct task_struct *task = get_proc_task(inode);
--
--		if (task) {
--			rcu_read_lock();
--			nsp = task_nsproxy(task);
--			if (nsp) {
--				mnt_ns = nsp->mnt_ns;
--				if (mnt_ns)
--					get_mnt_ns(mnt_ns);
--			}
--			rcu_read_unlock();
--
--			put_task_struct(task);
--		}
--
--		if (mnt_ns)
--			m->private = mnt_ns;
--		else {
--			seq_release(inode, file);
--			ret = -EINVAL;
--		}
--	}
--	return ret;
-+	return mounts_open_common(inode, file, &mountstats_op);
- }
- 
- static const struct file_operations proc_mountstats_operations = {
-Index: vfs-2.6/include/linux/mnt_namespace.h
-===================================================================
---- vfs-2.6.orig/include/linux/mnt_namespace.h	2008-03-26 21:37:52.000000000 +0100
-+++ vfs-2.6/include/linux/mnt_namespace.h	2008-03-26 21:43:03.000000000 +0100
-@@ -5,6 +5,7 @@
- #include <linux/mount.h>
- #include <linux/sched.h>
- #include <linux/nsproxy.h>
-+#include <linux/seq_file.h>
- 
- struct mnt_namespace {
- 	atomic_t		count;
-@@ -14,6 +15,13 @@ struct mnt_namespace {
- 	int event;
- };
- 
-+struct proc_mounts {
-+	struct seq_file m; /* must be the first element */
-+	struct mnt_namespace *ns;
-+	struct path root;
-+	int event;
++static int mountinfo_open(struct inode *inode, struct file *file)
++{
++	return mounts_open_common(inode, file, &mountinfo_op);
++}
++
++static const struct file_operations proc_mountinfo_operations = {
++	.open		= mountinfo_open,
++	.read		= seq_read,
++	.llseek		= seq_lseek,
++	.release	= mounts_release,
++	.poll		= mounts_poll,
 +};
 +
- extern struct mnt_namespace *copy_mnt_ns(unsigned long, struct mnt_namespace *,
- 		struct fs_struct *);
- extern void __put_mnt_ns(struct mnt_namespace *ns);
-@@ -37,5 +45,8 @@ static inline void get_mnt_ns(struct mnt
- 	atomic_inc(&ns->count);
+ static int mountstats_open(struct inode *inode, struct file *file)
+ {
+ 	return mounts_open_common(inode, file, &mountstats_op);
+@@ -2285,6 +2298,7 @@ static const struct pid_entry tgid_base_
+ 	LNK("root",       root),
+ 	LNK("exe",        exe),
+ 	REG("mounts",     S_IRUGO, mounts),
++	REG("mountinfo",  S_IRUGO, mountinfo),
+ 	REG("mountstats", S_IRUSR, mountstats),
+ #ifdef CONFIG_PROC_PAGE_MONITOR
+ 	REG("clear_refs", S_IWUSR, clear_refs),
+@@ -2616,6 +2630,7 @@ static const struct pid_entry tid_base_s
+ 	LNK("root",      root),
+ 	LNK("exe",       exe),
+ 	REG("mounts",    S_IRUGO, mounts),
++	REG("mountinfo",  S_IRUGO, mountinfo),
+ #ifdef CONFIG_PROC_PAGE_MONITOR
+ 	REG("clear_refs", S_IWUSR, clear_refs),
+ 	REG("smaps",     S_IRUGO, smaps),
+Index: vfs-2.6/include/linux/mnt_namespace.h
+===================================================================
+--- vfs-2.6.orig/include/linux/mnt_namespace.h	2008-03-26 21:43:03.000000000 +0100
++++ vfs-2.6/include/linux/mnt_namespace.h	2008-03-26 21:43:05.000000000 +0100
+@@ -46,6 +46,7 @@ static inline void get_mnt_ns(struct mnt
  }
  
-+extern const struct seq_operations mounts_op;
-+extern const struct seq_operations mountstats_op;
-+
- #endif
+ extern const struct seq_operations mounts_op;
++extern const struct seq_operations mountinfo_op;
+ extern const struct seq_operations mountstats_op;
+ 
  #endif
 
 --
