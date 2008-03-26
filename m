@@ -1,47 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761598AbYCZSvb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761927AbYCZSwj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761598AbYCZSvb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Mar 2008 14:51:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756352AbYCZSvX
+	id S1761927AbYCZSwj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Mar 2008 14:52:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754595AbYCZSwc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Mar 2008 14:51:23 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:47989 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754960AbYCZSvX (ORCPT
+	Wed, 26 Mar 2008 14:52:32 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:12301 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754960AbYCZSwb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Mar 2008 14:51:23 -0400
-Date: Wed, 26 Mar 2008 19:54:38 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Ulrich Drepper <drepper@gmail.com>
-Cc: Andi Kleen <andi@firstfloor.org>, Nicholas Miell <nmiell@comcast.net>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [PATCH prototype] [0/8] Predictive bitmaps for ELF executables
-Message-ID: <20080326185438.GA27154@one.firstfloor.org>
-References: <20080321172644.GG2346@one.firstfloor.org> <a36005b50803212136s78dc2e4bx5ac715ebc7a6e48a@mail.gmail.com> <20080322071755.GP2346@one.firstfloor.org> <1206170695.2438.39.camel@entropy> <20080322091001.GA7264@one.firstfloor.org> <a36005b50803232120j63fb08d8p4a6cfdc8df2a3f21@mail.gmail.com> <1206335761.2438.63.camel@entropy> <a36005b50803241242r2a9b38c5s57d9ac6b084021fa@mail.gmail.com> <20080325075403.GH2170@one.firstfloor.org> <a36005b50803261115s6a3aa889w42fd4890c124ee01@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 26 Mar 2008 14:52:31 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=Cfrc3Mw6t0s7iMka31C6dYaWkJHkiWnyxq0hGPNS4R1aokb9y7+1brAMW9M3radkZ
+	/dIfE5nskhaHhhFMiTbbA==
+Message-ID: <6599ad830803261152j1973e3c8oa82181a830f89260@mail.gmail.com>
+Date: Wed, 26 Mar 2008 11:52:21 -0700
+From: "Paul Menage" <menage@google.com>
+To: "Balaji Rao" <balajirrao@gmail.com>
+Subject: Re: [RFC][-mm] [2/2] Simple stats for memory resource controller
+Cc: linux-kernel@vger.kernel.org, containers@lists.osdl.org, balbir@in.ibm.com,
+       dhaval@linux.vnet.ibm.com
+In-Reply-To: <200803262348.59785.balajirrao@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <a36005b50803261115s6a3aa889w42fd4890c124ee01@mail.gmail.com>
-User-Agent: Mutt/1.4.2.1i
+References: <200803262348.59785.balajirrao@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 26, 2008 at 11:15:49AM -0700, Ulrich Drepper wrote:
-> On Tue, Mar 25, 2008 at 12:54 AM, Andi Kleen <andi@firstfloor.org> wrote:
-> >  There is still the additional seek.
-> 
-> You've been proposing and implementing a solution which needs an
-> additional seek.  Don't use double standards.
+On Wed, Mar 26, 2008 at 11:18 AM, Balaji Rao <balajirrao@gmail.com> wrote:
+>         [MEM_CGROUP_STAT_RSS] = { "rss", PAGE_SIZE, },
+>  +       [MEM_CGROUP_STAT_PGIN_COUNT] = {"page_in_count", 1, },
+>  +       [MEM_CGROUP_STAT_PGOUT_COUNT] = {"page_out_count", 1, },
+>   };
+>
 
-You're wrong. I am implementing a solution that allows two 
-methods -- one (SHDR) that needs an seek (but an continuous one
-so it's likely served from the track buffer) but has some advantages 
-and another one (PHDR) that does not require a seek.
+Should these be called "pgpgin" and "pgpgout" for consistency with /proc/vmstat?
 
-You two are arguing a method that always requires the seek
-and has a couple of other drawbacks as earlier discussed too.
-
--Andi
-
+Paul
