@@ -1,44 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761646AbYCZARL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760053AbYCZA0e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761646AbYCZARL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Mar 2008 20:17:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757557AbYCZAQy
+	id S1760053AbYCZA0e (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Mar 2008 20:26:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755243AbYCZA0Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Mar 2008 20:16:54 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:47323
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1758077AbYCZAQy (ORCPT
+	Tue, 25 Mar 2008 20:26:24 -0400
+Received: from lemon.ertos.nicta.com.au ([203.143.174.143]:49313 "EHLO
+	lemon.gelato.unsw.edu.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754649AbYCZA0Y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Mar 2008 20:16:54 -0400
-Date: Tue, 25 Mar 2008 17:16:49 -0700 (PDT)
-Message-Id: <20080325.171649.223175755.davem@davemloft.net>
-To: tony.luck@intel.com
-Cc: paulus@samba.org, clameter@sgi.com, linux-mm@kvack.org,
+	Tue, 25 Mar 2008 20:26:24 -0400
+X-Greylist: delayed 2659 seconds by postgrey-1.27 at vger.kernel.org; Tue, 25 Mar 2008 20:26:23 EDT
+Date: Wed, 26 Mar 2008 11:25:58 +1100
+Message-ID: <87od925o15.wl%peter@chubb.wattle.id.au>
+From: Peter Chubb <peterc@gelato.unsw.edu.au>
+To: David Miller <davem@davemloft.net>
+Cc: peterc@gelato.unsw.edu.au, clameter@sgi.com, linux-mm@kvack.org,
        linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org,
-       torvalds@linux-foundation.org
+       torvalds@linux-foundation.org, ianw@gelato.unsw.edu.au
+In-Reply-To: <20080325.164927.249210766.davem@davemloft.net>
+References: <Pine.LNX.4.64.0803251045510.16206@schroedinger.engr.sgi.com>
+	<20080325.162244.61337214.davem@davemloft.net>
+	<87tziu5q37.wl%peter@chubb.wattle.id.au>
+	<20080325.164927.249210766.davem@davemloft.net>
+User-Agent: Wanderlust/2.15.6 (Almost Unreal) SEMI/1.14.6 (Maruoka) FLIM/1.14.9 (Goj~) APEL/10.7 MULE XEmacs/21.4 (patch 20) (Double Solitaire) (i486-linux-gnu)
+Organization: Gelato@UNSW
+X-SA-Exim-Connect-IP: 203.143.174.121
+X-SA-Exim-Mail-From: peterc@gelato.unsw.edu.au
 Subject: Re: larger default page sizes...
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1FE6DD409037234FAB833C420AA843ECE9E2CA@orsmsx424.amr.corp.intel.com>
-References: <18408.59112.945786.488350@cargo.ozlabs.ibm.com>
-	<20080325.163240.102401706.davem@davemloft.net>
-	<1FE6DD409037234FAB833C420AA843ECE9E2CA@orsmsx424.amr.corp.intel.com>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:39:27 +0000)
+X-SA-Exim-Scanned: Yes (on lemon.gelato.unsw.edu.au)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: "Luck, Tony" <tony.luck@intel.com>
-Date: Tue, 25 Mar 2008 16:49:23 -0700
+>>>>> "David" == David Miller <davem@davemloft.net> writes:
 
-> Making an application use huge pages as heap may be simple
-> (just link with a different library to provide with a different
-> version of malloc()) ... code, stack, mmap'd files are all
-> a lot harder to do transparently.
+David> From: Peter Chubb <peterc@gelato.unsw.edu.au> Date: Wed, 26 Mar
+David> 2008 10:41:32 +1100
 
-The kernel should be able to do this transparently, at the
-very least for the anonymous page case.  It should also
-be able to handle just fine chips that provide multiple
-page size support, as many do.
+>> It's actually harder than it looks.  Ian Wienand just finished his
+>> Master's project in this area, so we have *lots* of data.  The main
+>> issue is that, at least on Itanium, you have to turn off the
+>> hardware page table walker for hugepages if you want to mix
+>> superpages and standard pages in the same region. (The long format
+>> VHPT isn't the panacea we'd like it to be because the hash function
+>> it uses depends on the page size).  This means that although you
+>> have fewer TLB misses with larger pages, the cost of those TLB
+>> misses is three to four times higher than with the standard pages.
+
+David> If the hugepage is more than 3 to 4 times larger than the base
+David> page size, which it almost certainly is, it's still an enormous
+David> win.
+
+That depends on the access pattern.  We measured a small win for some
+workloads, and a small loss for others, using 4k base pages, and
+allowing up to 4G superpages (the actual sizes used depended on the
+size of the objects being allocated, and the amount of contiguous
+memory available).
+
+--
+Dr Peter Chubb  http://www.gelato.unsw.edu.au  peterc AT gelato.unsw.edu.au
+http://www.ertos.nicta.com.au           ERTOS within National ICT Australia
