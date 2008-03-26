@@ -1,76 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760625AbYCZQws@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759183AbYCZQxL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760625AbYCZQws (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Mar 2008 12:52:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757568AbYCZQwU
+	id S1759183AbYCZQxL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Mar 2008 12:53:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760282AbYCZQwk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Mar 2008 12:52:20 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:36624 "EHLO e4.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757203AbYCZQwN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Mar 2008 12:52:13 -0400
-Subject: Re: [kvm-devel] kvm causing memory corruption?  ~2.6.25-rc6
-From: Dave Hansen <dave@linux.vnet.ibm.com>
-To: Avi Kivity <avi@qumranet.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       kvm-devel <kvm-devel@lists.sourceforge.net>
-In-Reply-To: <47EA1C63.8010202@qumranet.com>
-References: <1206479576.7562.21.camel@nimitz.home.sr71.net>
-	 <47EA1C63.8010202@qumranet.com>
-Content-Type: text/plain
-Date: Wed, 26 Mar 2008 09:52:09 -0700
-Message-Id: <1206550329.7883.5.camel@nimitz.home.sr71.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+	Wed, 26 Mar 2008 12:52:40 -0400
+Received: from py-out-1112.google.com ([64.233.166.181]:39611 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758036AbYCZQwg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Mar 2008 12:52:36 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=aTujpfMm6qETJ2oWkhvghqk+zLX6joW8yVItr3oq4CJxxJKuprUjfzI6UTkzKCFbLweedmBhfi2oOUenKGX1lo4USX0MTPrzqLGcze77D/sYu0XJddPXf40Tv7+1yqOcB2HzVNIQ0epzi7Vm3QzmbNXUA4SxCJ43t15mUhTjX84=
+Message-ID: <bc64b4640803260952s58ad0645ve11766fdfa45e785@mail.gmail.com>
+Date: Wed, 26 Mar 2008 19:52:34 +0300
+From: Dmitry <dbaryshkov@gmail.com>
+To: "Haavard Skinnemoen" <haavard.skinnemoen@atmel.com>
+Subject: Re: [PATCH 1/3] Clocklib: add generic framework for managing clocks.
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       hskinnemoen@atmel.com, domen.puncer@telargo.com, lethal@linux-sh.org,
+       tony@atomide.com, rmk+kernel@arm.linux.org.uk, paul@pwsan.com
+In-Reply-To: <20080326170441.795fb928@hskinnemo-gx620.norway.atmel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080326154913.GA15326@doriath.ww600.siemens.net>
+	 <20080326155203.GA15405@doriath.ww600.siemens.net>
+	 <20080326170441.795fb928@hskinnemo-gx620.norway.atmel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-03-26 at 11:50 +0200, Avi Kivity wrote:
-> Dave Hansen wrote:
-> > I was getting some kvm userspace crashes trying to run a Windows guest.
-> > So, I decided to try a recent kernel (2.6.25-rc6-00333-ga4083c9)  with
-> > the kvm kernel code that shipped with that kernel.
-> >
-> 
-> This is fixed in 2.6.25-rc7.
+Hi,
 
-I just updated to -rc7 and re-tested.  Same symptoms:
+2008/3/26, Haavard Skinnemoen <haavard.skinnemoen@atmel.com>:
+> On Wed, 26 Mar 2008 18:52:03 +0300
+>  Dmitry Baryshkov <dbaryshkov@gmail.com> wrote:
+>
+>  > +struct clk {
+>  > +     struct list_head node;
+>  > +     struct clk      *parent;
+>  > +
+>  > +     const char      *name;
+>  > +     struct module   *owner;
+>  > +
+>  > +     int             users;
+>  > +     unsigned long   rate;
+>  > +     int             delay;
+>  > +
+>  > +     int (*can_get)  (struct clk *, struct device *);
+>  > +     int (*set_parent) (struct clk *, struct clk *);
+>  > +     int (*enable)   (struct clk *);
+>  > +     void (*disable) (struct clk *);
+>  > +     unsigned long (*getrate) (struct clk*);
+>  > +     int (*setrate)  (struct clk *, unsigned long);
+>  > +     long (*roundrate) (struct clk *, unsigned long);
+>  > +
+>  > +     void            *priv;
+>  > +};
+>
+>
+> Hmm...this is exactly twice as big as the struct I'm currently using,
+>  it doesn't contain all the fields I need, and it's undocumented.
 
-[  751.033545] BUG: unable to handle kernel paging request at 0096b848
-[  751.040082] IP: [<c01a0636>] d_instantiate+0x26/0x50
-[  751.048065] Oops: 0002 [#1] SMP
-[  751.052057] Modules linked in: kvm_intel kvm nls_iso8859_1 vfat fat rfcomm l2cap tun ppdev acpi_cpufreq cpufreq_ondemand cpe
-[  751.052057]
-[  751.052057] Pid: 8743, comm: evolution Not tainted (2.6.25-rc7 #146)
-[  751.052057] EIP: 0060:[<c01a0636>] EFLAGS: 00210286 CPU: 0
-[  751.052057] EIP is at d_instantiate+0x26/0x50
-[  751.052057] EAX: 0096b844 EBX: e65d7d48 ECX: 00000000 EDX: e65d7d60
-[  751.052057] ESI: e67a7d00 EDI: e67a7cc0 EBP: e802ce48 ESP: e802ce3c
-[  751.052057]  DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
-[  751.052057] Process evolution (pid: 8743, ti=e802c000 task=f3c8ce00 task.ti=e802c000)
-[  751.052057] Stack: e65d7d48 00000000 f4c191f8 e802ce60 c01e2fa4 e67a7cc0 f4c191f8 e65d7d48
-[  751.052057]        e660c280 e802ce80 c01e30c3 00008180 e67a7cc0 00000000 c03b4a00 e660c280
-[  751.052057]        00008180 e802cea0 c0197964 e802cf24 c03b4a00 e67a7cc0 e660c280 e802cf24
-[  751.052057] Call Trace:
-[  751.052057]  [<c01e2fa4>] ? ext3_add_nondir+0x34/0x60
-[  751.052057]  [<c01e30c3>] ? ext3_create+0xf3/0x100
-[  751.052057]  [<c0197964>] ? vfs_create+0x74/0x100
-[  751.052057]  [<c0197c8f>] ? open_namei_create+0x4f/0xa0
-[  751.052057]  [<c01981f3>] ? open_namei+0x513/0x560
-[  751.052057]  [<c018db2c>] ? do_filp_open+0x2c/0x60
-[  751.052057]  [<c018dd29>] ? get_unused_fd_flags+0x39/0xd0
-[  751.052057]  [<c018dec4>] ? do_sys_open+0x54/0xe0
-[  751.052057]  [<c018df6c>] ? sys_open+0x1c/0x20
-[  751.052057]  [<c0104e2c>] ? sysenter_past_esp+0x6d/0xa5
-[  751.052057]  [<c0390000>] ? quirk_vt8235_acpi+0x90/0xa0
-[  751.052057]  =======================
-[  751.052057] Code: 27 00 00 00 00 55 89 e5 57 89 c7 56 8d 70 40 53
-89 d3 39 70 40 75 37 b8 40 15 4e c0 e8 14 d1 1f 00 85 db
-[  751.052057] EIP: [<c01a0636>] d_instantiate+0x26/0x50 SS:ESP 0068:e802ce3c
-[  751.052103] ---[ end trace 514c1de750400319 ]---
+I've added a more sofisticated arch convertion patch (the clocklib for
+ARM PXA chips).
+
+Basically mode becomes enable/disable (however it may be better to merge back
+those pointers into one function). And dev and index go to priv data.
+
+The documentation will come later.
+
+>
+>  I have quite a few clocks, so the increased memory consumption is quite
+>  significant. What are the advantages of this?
+
+At maximum 55, IIUC. I counted 32 or so additional bytes in the struct
+(over avr32-specific one). That would count up to 1.5 K overhead. Is
+that really too much for current kernels?
 
 
--- Dave
+OTOH this would bring unification of platform code, allow
+configurations when a non-platform driver would provide it's own
+clocks (think about multi-function companion chips when there is a
+"core" which manages "clocks" for it's "periferal" devices. Currently
+if one tries to implement such driver, he is forced to either bind it
+to platform code, or to implement non-standard
+my_device_clock_enable()-like functions.
 
+Also you aren't forced to use this API. simply don't select
+HAVE_CLOCK_LIB and leave
+all things as they are. E.g. gpiolib is now merged, however not all
+gpio-providing platforms
+are using it.
+
+-- 
+With best wishes
+Dmitry
