@@ -1,51 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756074AbYCZOSq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755039AbYCZOYb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756074AbYCZOSq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Mar 2008 10:18:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752116AbYCZOSh
+	id S1755039AbYCZOYb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Mar 2008 10:24:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752358AbYCZOYU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Mar 2008 10:18:37 -0400
-Received: from lazybastard.de ([212.112.238.170]:51570 "EHLO
-	longford.logfs.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752107AbYCZOSg (ORCPT
+	Wed, 26 Mar 2008 10:24:20 -0400
+Received: from smtp-out003.kontent.com ([81.88.40.217]:43963 "EHLO
+	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752214AbYCZOYT convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Mar 2008 10:18:36 -0400
-Date: Wed, 26 Mar 2008 15:18:17 +0100
-From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
-To: David Miller <davem@davemloft.net>
-Cc: mingo@elte.hu, apw@shadowen.org, jirislaby@gmail.com,
-       viro@ZenIV.linux.org.uk, joe@perches.com, tglx@linutronix.de,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 109/148] include/asm-x86/serial.h: checkpatch cleanups - formatting only
-Message-ID: <20080326141817.GG22847@logfs.org>
-References: <20080326114142.GD22847@logfs.org> <20080326.044802.107678511.davem@davemloft.net> <20080326115853.GE22847@logfs.org> <20080326.050116.110367923.davem@davemloft.net>
+	Wed, 26 Mar 2008 10:24:19 -0400
+From: Oliver Neukum <oliver@neukum.org>
+Organization: Novell
+To: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [linux-pm] [RFC][PATCH] PM: Introduce new top level =?iso-8859-1?q?suspend=09and_hibernation_callbacks?= (rev. 2)
+Date: Wed, 26 Mar 2008 15:24:17 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       linux-pm@lists.linux-foundation.org,
+       Alexey Starikovskiy <astarikovskiy@suse.de>,
+       Johannes Berg <johannes@sipsolutions.net>,
+       LKML <linux-kernel@vger.kernel.org>
+References: <Pine.LNX.4.44L0.0803261003540.4755-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0803261003540.4755-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20080326.050116.110367923.davem@davemloft.net>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Message-Id: <200803261524.18300.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 26 March 2008 05:01:16 -0700, David Miller wrote:
+Am Mittwoch, 26. März 2008 15:10:01 schrieb Alan Stern:
+> > > IMO you must always keep the ordering invariant. If a parent returns an error
+> > > the PM core must not wake its children.
 > 
-> > Sure, I buy that.  What I'm arguing here is why we have to be
-> > consistently long instead of consistently short.  CodingStyle seems to
-> > be silent on the question.
-> 
-> Becauseitmoreeasilyallowsyoureyestoseethedifferentoperators.
+> Don't think of it that way.  The PM core doesn't wake anything.  It
+> merely notifies drivers that the system sleep is ending, so that the
+> drivers can wake their devices.  It's up to the driver to detect
+> whether the parent failed to resume, in which case the driver should
+> take appropriate action.
 
-How many different operators are there in a cast? ;)
+How do you propose that every driver should check the power state
+of its parent? Without locking the parent?
 
-But you seem to be arguing the i=0 case.  Took me a while to notice
-that.  Fair enough.
+> The situation is no different from what happens when the user tries to 
+> access a mounted USB disk drive after the USB cable has been unplugged.  
+> The drivers take care of everything.
 
-JÃ¶rn
+That completely throws away the reason to have a PM core. We've made
+a guarantee to drivers that they wil not be woken unless their parents are
+awake. In fact the semantics of the callbacks are defined in a way that
+adding devices to a parent can be enabled. You cannot add children to a
+dead parent. It's the very reason for this rewrite.
 
--- 
-Maintenance in other professions and of other articles is concerned with
-the return of the item to its original state; in Software, maintenance
-is concerned with moving an item away from its original state.
--- Les Belady
+	Regards
+		Oliver
