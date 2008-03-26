@@ -1,132 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761311AbYCZVIs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760451AbYCZVK2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761311AbYCZVIs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Mar 2008 17:08:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756130AbYCZVIj
+	id S1760451AbYCZVK2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Mar 2008 17:10:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754831AbYCZVKQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Mar 2008 17:08:39 -0400
-Received: from e31.co.us.ibm.com ([32.97.110.149]:43951 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756589AbYCZVIh (ORCPT
+	Wed, 26 Mar 2008 17:10:16 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:49042 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753184AbYCZVKP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Mar 2008 17:08:37 -0400
-Subject: Re: [PATCH 0/3 (RFC)](memory hotplug) freeing pages allocated by
-	bootmem for hotremove
-From: Badari Pulavarty <pbadari@us.ibm.com>
-To: Yasunori Goto <y-goto@jp.fujitsu.com>
-Cc: Linux Kernel ML <linux-kernel@vger.kernel.org>,
-       linux-mm <linux-mm@kvack.org>, Yinghai Lu <yhlu.kernel@gmail.com>,
-       Andrew Morton <akpm@osdl.org>
-In-Reply-To: <20080322090539.2B1B.E1E9C6FF@jp.fujitsu.com>
-References: <20080314231112.20D7.E1E9C6FF@jp.fujitsu.com>
-	 <1206119137.8476.1.camel@dyn9047017100.beaverton.ibm.com>
-	 <20080322090539.2B1B.E1E9C6FF@jp.fujitsu.com>
-Content-Type: text/plain
-Date: Wed, 26 Mar 2008 14:08:59 -0800
-Message-Id: <1206569339.31756.0.camel@dyn9047017100.beaverton.ibm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.0.4 (2.0.4-4) 
+	Wed, 26 Mar 2008 17:10:15 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <47EABBA5.8040508@s5r6.in-berlin.de>
+Date: Wed, 26 Mar 2008 22:09:57 +0100
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.12) Gecko/20080219 SeaMonkey/1.1.8
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+Subject: memory-barriers.txt: cache coherency vs mmio
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2008-03-22 at 09:09 +0900, Yasunori Goto wrote:
-> > 
-> > Do you have any updates to this. I am getting following boot panic while
-> > testing this. Before I debug it, I want to make sure its not already 
-> > fixed. Please let me know.
-> 
-> Hmmmm. No, I don't. Could you debug it?
-> This may come from powerpc environment.
-> 
-> Thanks.
-> 
-> 
-> > 
-> > Thanks,
-> > Badari
-> > 
-> > Linux version 2.6.25-rc5-mm1 (root@elm3b155) (gcc version 3.3.3 (SuSE Linux)) #2 SMP Fri Mar 21 07:48:29 PST 2008
-> > [boot]0012 Setup Arch
-> > NUMA associativity depth for CPU/Memory: 3
-> > adding cpu 0 to node 0
-> > node 0
-> > NODE_DATA() = c000000071fea100
-> > start_paddr = 0
-> > end_paddr = 72000000
-> > bootmap_paddr = 71fdb000
-> > reserve_bootmem 0 7cc000
-> > reserve_bootmem 23d0000 10000
-> > reserve_bootmem 77b6000 84a000
-> > reserve_bootmem 71fdb000 f000
-> > reserve_bootmem 71fea100 1e00
-> > reserve_bootmem 71febf68 14098
-> > PCI host bridge /pci@800000020000002  ranges:
-> >   IO 0x000003fe00200000..0x000003fe002fffff -> 0x0000000000000000
-> >  MEM 0x0000040080000000..0x00000400bfffffff -> 0x00000000c0000000
-> > PCI host bridge /pci@800000020000003  ranges:
-> >   IO 0x000003fe00700000..0x000003fe007fffff -> 0x0000000000000000
-> >  MEM 0x00000401c0000000..0x00000401ffffffff -> 0x00000000c0000000
-> > EEH: PCI Enhanced I/O Error Handling Enabled
-> > PPC64 nvram contains 7168 bytes
-> > Zone PFN ranges:
-> >   DMA             0 ->   466944
-> >   Normal     466944 ->   466944
-> > Movable zone start PFN for each node
-> >   Node 0: 262144
-> > early_node_map[1] active PFN ranges
-> >     0:        0 ->   466944
-> > [boot]0015 Setup Done
-> > Built 1 zonelists in Node order, mobility grouping on.  Total pages: 451440
-> > Policy zone: DMA
-> > Kernel command line: root=/dev/sda3 selinux=0 elevator=cfq numa=debug kernelcore=1024M
-> > [boot]0020 XICS Init
-> > [boot]0021 XICS Done
-> > PID hash table entries: 4096 (order: 12, 32768 bytes)
-> > clocksource: timebase mult[1352e86] shift[22] registered
-> > Console: colour dummy device 80x25
-> > console handover: boot [udbg-1] -> real [hvc0]
-> > Dentry cache hash table entries: 262144 (order: 9, 2097152 bytes)
-> > Inode-cache hash table entries: 131072 (order: 8, 1048576 bytes)
-> > freeing bootmem node 0
-> > Unable to handle kernel paging request for data at address 0xcf7f80000000000c
-> > Faulting instruction address: 0xc0000000000ce3e8
-> > Oops: Kernel access of bad area, sig: 11 [#1]
-> > SMP NR_CPUS=32 NUMA pSeries
-> > Modules linked in:
-> > NIP: c0000000000ce3e8 LR: c0000000000cf714 CTR: 800000000013f270
-> > REGS: c0000000007639f0 TRAP: 0300   Not tainted  (2.6.25-rc5-mm1)
-> > MSR: 8000000000009032 <EE,ME,IR,DR>  CR: 44002022  XER: 00000008
-> > DAR: cf7f80000000000c, DSISR: 0000000042010000
-> > TASK = c000000000689910[0] 'swapper' THREAD: c000000000760000 CPU: 0
-> > GPR00: fffffffffffffffd c000000000763c70 c000000000761be0 0000000000000000
-> > GPR04: cf7f800000000000 0000000000000000 0000000000000000 0000000000000001
-> > GPR08: 0000000000000000 fffffffffffffffe 0000000000000088 cf00000000000000
-> > GPR12: 0000000000004000 c00000000068a380 0000000000000000 0000000000000000
-> > GPR16: 0000000000000000 0000000000000000 0000000000000000 0000000000000000
-> > GPR20: 4000000001c00000 0000000000000000 0000000002241ed8 0000000000000000
-> > GPR24: 0000000002242148 0000000000000000 c000000071feb000 0000000000000000
-> > GPR28: c000000071feb000 0000000000000001 c0000000006e2bd8 cf7f800000000000
-> > NIP [c0000000000ce3e8] .set_page_bootmem_info+0x10/0x38
-> > LR [c0000000000cf714] .register_page_bootmem_info_section+0xc4/0x17c
-> > Call Trace:
-> > [c000000000763c70] [000000000000001a] 0x1a (unreliable)
-> > [c000000000763d10] [c0000000000cf8f0] .register_page_bootmem_info_node+0x124/0x158
-> > [c000000000763dc0] [c0000000006290e4] .free_all_bootmem_node+0x1c/0x3c
-> > [c000000000763e50] [c00000000061d618] .mem_init+0xbc/0x260
-> > [c000000000763ee0] [c00000000060bbcc] .start_kernel+0x2f4/0x3f4
-> > [c000000000763f90] [c000000000008594] .start_here_common+0x54/0xc0
-> > Instruction dump:
-> > eb61ffd8 eb81ffe0 eba1ffe8 7c0803a6 ebc1fff0 ebe1fff8 7d808120 4e800020
-> > 2fa50000 3920fffe 3800fffd 409e000c <9124000c> 48000008 9004000c 38000800
-> > ---[ end trace 31fd0ba7d8756001 ]---
-> > Kernel panic - not syncing: Attempted to kill the idle task!
+The subject section in memory-barriers.txt says:
 
-Okay, its an issue with CONFIG_SPARSEMEM_VMEMMAP=y
+"[...] MMIO accesses may, in effect, overtake accesses to cached memory 
+that were emitted earlier. A memory barrier isn't sufficient in such a 
+case, but rather the cache must be flushed between the cached memory 
+write and the MMIO access if the two are in any way dependent."
 
-I disabled it for now.
+And the lowly driver programmer immediately asks:
+How do I flush the cache?
+
+In particular, do I have to do anyhing between
+
+	coherent_dma_buffer->datum = something;
+
+	writel(YOU_CAN_START_DMA_NOW, register);
 
 Thanks,
-Badari
-
+-- 
+Stefan Richter
+-=====-==--- --== ==-=-
+http://arcgraph.de/sr/
