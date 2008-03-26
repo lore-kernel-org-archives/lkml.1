@@ -1,113 +1,166 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759561AbYCZQs2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760177AbYCZQsn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759561AbYCZQs2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Mar 2008 12:48:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757688AbYCZQsA
+	id S1760177AbYCZQsn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Mar 2008 12:48:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758927AbYCZQsU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Mar 2008 12:48:00 -0400
-Received: from e35.co.us.ibm.com ([32.97.110.153]:59629 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757401AbYCZQr6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Mar 2008 12:47:58 -0400
-Date: Wed, 26 Mar 2008 11:47:53 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Stephen Smalley <sds@tycho.nsa.gov>
-Cc: NeilBrown <neilb@suse.de>,
-       Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>, miklos@szeredi.hu,
-       viro@zeniv.linux.org.uk, haveblue@us.ibm.com,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, hch@infradead.org,
-       linux-security-module@vger.kernel.org, jmorris@namei.org
-Subject: Re: r-o bind in nfsd
-Message-ID: <20080326164753.GA20578@sergelap.ibm.com>
-References: <20080321155451.GU10722@ZenIV.linux.org.uk> <E1Jck2N-0001Q3-7W@pomaz-ex.szeredi.hu> <20080321163520.GV10722@ZenIV.linux.org.uk> <E1JckW9-0001Ub-Rs@pomaz-ex.szeredi.hu> <18408.26863.617591.836548@notabene.brown> <200803252045.CGB04105.HLSQFOJMtOFVOF@I-love.SAKURA.ne.jp> <57096.192.168.1.70.1206484328.squirrel@neil.brown.name> <1206533042.3302.266.camel@moss-spartans.epoch.ncsc.mil>
+	Wed, 26 Mar 2008 12:48:20 -0400
+Received: from relay2.sgi.com ([192.48.171.30]:52470 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1758777AbYCZQsR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Mar 2008 12:48:17 -0400
+Date: Wed, 26 Mar 2008 11:48:15 -0500
+From: Dean Nelson <dcn@sgi.com>
+To: jes@sgi.com, tony.luck@intel.com, linux-kernel@vger.kernel.org,
+       linux-ia64@vger.kernel.org
+Subject: [Patch 1/5] add multi-page allocation to the uncached allocator -v2
+Message-ID: <20080326164815.GB20663@sgi.com>
+References: <20080326163823.GA25653@sgi.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1206533042.3302.266.camel@moss-spartans.epoch.ncsc.mil>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Disposition: attachment; filename=uncached-pages
+In-Reply-To: <20080326163823.GA25653@sgi.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Stephen Smalley (sds@tycho.nsa.gov):
-> 
-> On Wed, 2008-03-26 at 09:32 +1100, NeilBrown wrote:
-> > On Tue, March 25, 2008 10:45 pm, Tetsuo Handa wrote:
-> > > Hello.
-> > >
-> > >> Maybe some enhancement to the 'intent' structure with a similar
-> > >> effect could be done instead.
-> > >>
-> > >> Then you could, presumably, put a security hook somewhere in
-> > >> link_path_walk for those modules (like AppArmor) which want to do
-> > >> checks based on the namespace.
-> > >
-> > > I think link_path_walk() is not a good place to insert new LSM hooks
-> > > for pathname based access control (AppArmor and TOMOYO) purpose because
-> > >
-> > >   (1) The kernel don't know what operation (open/create/truncate etc.)
-> > > will be
-> > >       done at the moment of link_path_walk().
-> > 
-> > Though the 'indent' data structure could be used to carry this information.
-> > 
-> > >
-> > >   (2) Not all operations call link_path_walk() before these operations
-> > >       are done. For example, ftruncate() doesn't call link_path_walk().
-> > 
-> > But do you want to impose path-name based controls to ftruncate?
-> > Surely once you have a file open for write (not O_APPEND), then no
-> > other permission is required to truncate the file, is it?
-> > If it is, then maybe the 'struct file' should be tagged at open time
-> > to say whether 'truncate' is allowed.
-> > 
-> > >
-> > >   (3) The rename() and link() operations handle two pathnames.
-> > >       But, it is not possible to know both pathnames at the moment of
-> > >       link_path_walk().
-> > 
-> > Not an insolvable problem.
-> > One could imagine an implementation where a TYPE_RENAME_FROM security
-> > check produced a cookie that was consumed by a TYPE_RENAME_TO security
-> > check.  The cookie could then be used by the security module to
-> > make any connection between the two names that might be appropriate.
-> > 
-> > >
-> > > I think we need to introduce new LSM hooks outside link_path_walk().
-> > > http://kerneltrap.org/mailarchive/linux-fsdevel/2008/2/17/882024
-> > >
-> > <rant>
-> > I suspect we would be much better off removing all the security hooks.
-> > Security done at that level seems to be way too complex such that most
-> > people don't really understand it.  And people who don't understand
-> > security don't use it.
-> > We'd be much better off getting rid of the whole "micro-manage security"
-> > concept and provide isolation via some sort of high level container
-> > approach.
-> > </rant>
-> 
-> Containers can be useful, but they aren't a substitute for access
-> control, and they don't solve the same problem.
+Enable the uncached allocator to allocate multiple pages of contiguous
+uncached memory.
+ 
+Signed-off-by: Dean Nelson <dcn@sgi.com>
+ 
+---
+ 
+ arch/ia64/kernel/uncached.c |   21 ++++++++++++---------
+ drivers/char/mspec.c        |   12 ++++++------
+ include/asm-ia64/uncached.h |    4 ++--
+ 3 files changed, 20 insertions(+), 17 deletions(-)
 
-Not only that, but containers require an LSM to provide user isolation
-and root containment.
-
-Hopefully at some point we'll be able to get around that for most VPSs,
-but that's a long ways off and personally I suspect I would always want
-a policy locking VPSs up nice and tight.
-
-> And SELinux does get used, and recent stats on Fedora 8 suggest that few
-> people disable it anymore.  Advances in the SELinux tools (loadable
-> modules, semanage, system-config-selinux, setroubleshoot, etc) have gone
-> a long way to enabling users to solve problems they encounter.
-> 
-> -- 
-> Stephen Smalley
-> National Security Agency
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-security-module" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Index: linux-2.6/arch/ia64/kernel/uncached.c
+===================================================================
+--- linux-2.6.orig/arch/ia64/kernel/uncached.c	2007-10-04 06:52:20.000000000 -0500
++++ linux-2.6/arch/ia64/kernel/uncached.c	2007-11-08 12:14:31.408258515 -0600
+@@ -177,12 +177,13 @@
+  * uncached_alloc_page
+  *
+  * @starting_nid: node id of node to start with, or -1
++ * @n_pages: number of contiguous pages to allocate
+  *
+- * Allocate 1 uncached page. Allocates on the requested node. If no
+- * uncached pages are available on the requested node, roundrobin starting
+- * with the next higher node.
++ * Allocate the specified number of contiguous uncached pages on the
++ * the requested node. If not enough contiguous uncached pages are available
++ * on the requested node, roundrobin starting with the next higher node.
+  */
+-unsigned long uncached_alloc_page(int starting_nid)
++unsigned long uncached_alloc_page(int starting_nid, int n_pages)
+ {
+ 	unsigned long uc_addr;
+ 	struct uncached_pool *uc_pool;
+@@ -202,7 +203,8 @@
+ 		if (uc_pool->pool == NULL)
+ 			continue;
+ 		do {
+-			uc_addr = gen_pool_alloc(uc_pool->pool, PAGE_SIZE);
++			uc_addr = gen_pool_alloc(uc_pool->pool,
++						 n_pages * PAGE_SIZE);
+ 			if (uc_addr != 0)
+ 				return uc_addr;
+ 		} while (uncached_add_chunk(uc_pool, nid) == 0);
+@@ -217,11 +219,12 @@
+ /*
+  * uncached_free_page
+  *
+- * @uc_addr: uncached address of page to free
++ * @uc_addr: uncached address of first page to free
++ * @n_pages: number of contiguous pages to free
+  *
+- * Free a single uncached page.
++ * Free the specified number of uncached pages.
+  */
+-void uncached_free_page(unsigned long uc_addr)
++void uncached_free_page(unsigned long uc_addr, int n_pages)
+ {
+ 	int nid = paddr_to_nid(uc_addr - __IA64_UNCACHED_OFFSET);
+ 	struct gen_pool *pool = uncached_pools[nid].pool;
+@@ -232,7 +235,7 @@
+ 	if ((uc_addr & (0XFUL << 60)) != __IA64_UNCACHED_OFFSET)
+ 		panic("uncached_free_page invalid address %lx\n", uc_addr);
+ 
+-	gen_pool_free(pool, uc_addr, PAGE_SIZE);
++	gen_pool_free(pool, uc_addr, n_pages * PAGE_SIZE);
+ }
+ EXPORT_SYMBOL(uncached_free_page);
+ 
+Index: linux-2.6/drivers/char/mspec.c
+===================================================================
+--- linux-2.6.orig/drivers/char/mspec.c	2007-10-04 06:52:21.000000000 -0500
++++ linux-2.6/drivers/char/mspec.c	2007-11-08 12:07:17.458415225 -0600
+@@ -180,7 +180,7 @@
+ 		my_page = vdata->maddr[index];
+ 		vdata->maddr[index] = 0;
+ 		if (!mspec_zero_block(my_page, PAGE_SIZE))
+-			uncached_free_page(my_page);
++			uncached_free_page(my_page, 1);
+ 		else
+ 			printk(KERN_WARNING "mspec_close(): "
+ 			       "failed to zero page %ld\n", my_page);
+@@ -209,7 +209,7 @@
+ 	index = (address - vdata->vm_start) >> PAGE_SHIFT;
+ 	maddr = (volatile unsigned long) vdata->maddr[index];
+ 	if (maddr == 0) {
+-		maddr = uncached_alloc_page(numa_node_id());
++		maddr = uncached_alloc_page(numa_node_id(), 1);
+ 		if (maddr == 0)
+ 			return NOPFN_OOM;
+ 
+@@ -218,7 +218,7 @@
+ 			vdata->count++;
+ 			vdata->maddr[index] = maddr;
+ 		} else {
+-			uncached_free_page(maddr);
++			uncached_free_page(maddr, 1);
+ 			maddr = vdata->maddr[index];
+ 		}
+ 		spin_unlock(&vdata->lock);
+@@ -367,7 +367,7 @@
+ 				int nasid;
+ 				unsigned long phys;
+ 
+-				scratch_page[nid] = uncached_alloc_page(nid);
++				scratch_page[nid] = uncached_alloc_page(nid, 1);
+ 				if (scratch_page[nid] == 0)
+ 					goto free_scratch_pages;
+ 				phys = __pa(scratch_page[nid]);
+@@ -414,7 +414,7 @@
+  free_scratch_pages:
+ 	for_each_node(nid) {
+ 		if (scratch_page[nid] != 0)
+-			uncached_free_page(scratch_page[nid]);
++			uncached_free_page(scratch_page[nid], 1);
+ 	}
+ 	return ret;
+ }
+@@ -431,7 +431,7 @@
+ 
+ 		for_each_node(nid) {
+ 			if (scratch_page[nid] != 0)
+-				uncached_free_page(scratch_page[nid]);
++				uncached_free_page(scratch_page[nid], 1);
+ 		}
+ 	}
+ }
+Index: linux-2.6/include/asm-ia64/uncached.h
+===================================================================
+--- linux-2.6.orig/include/asm-ia64/uncached.h	2007-10-04 06:52:25.000000000 -0500
++++ linux-2.6/include/asm-ia64/uncached.h	2007-11-08 12:05:00.633469891 -0600
+@@ -8,5 +8,5 @@
+  * Prototypes for the uncached page allocator
+  */
+ 
+-extern unsigned long uncached_alloc_page(int nid);
+-extern void uncached_free_page(unsigned long);
++extern unsigned long uncached_alloc_page(int, int);
++extern void uncached_free_page(unsigned long, int);
