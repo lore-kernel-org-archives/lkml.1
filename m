@@ -1,78 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758233AbYCZCXl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758736AbYCZC1b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758233AbYCZCXl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Mar 2008 22:23:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753770AbYCZCX3
+	id S1758736AbYCZC1b (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Mar 2008 22:27:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754018AbYCZC1X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Mar 2008 22:23:29 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:53448 "EHLO mail.dvmed.net"
+	Tue, 25 Mar 2008 22:27:23 -0400
+Received: from mail.fieldses.org ([66.93.2.214]:36657 "EHLO fieldses.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753317AbYCZCX2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Mar 2008 22:23:28 -0400
-Message-ID: <47E9B39C.5010502@pobox.com>
-Date: Tue, 25 Mar 2008 22:23:24 -0400
-From: Jeff Garzik <jgarzik@pobox.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	id S1752965AbYCZC1X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Mar 2008 22:27:23 -0400
+Date: Tue, 25 Mar 2008 22:27:19 -0400
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-nfs@vger.kernel.org,
+       Neil Brown <neilb@suse.de>, Tom Tucker <tom@opengridcomputing.com>,
+       Roland Dreier <rolandd@cisco.com>
+Subject: [PATCH] SVCRDMA: Check num_sge when setting LAST_CTXT bit
+Message-ID: <20080326022718.GA25657@fieldses.org>
 MIME-Version: 1.0
-To: yshi <yang.shi@windriver.com>
-CC: netdev@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Improvev netconsole support for RTL8139 NIC driver
-References: <47E9B115.9060109@windriver.com>
-In-Reply-To: <47E9B115.9060109@windriver.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-yshi wrote:
-> In current RTL8139 NIC driver, spin_lock()/spin_unlock() is used
-> for irq handler. But for netconsole/netpoll, it prefers
-> spin_lock_irqsave()/spin_unlcok_irqrestore(). So this patch fixed
-> this problem to improve netconsole/netpoll support.
-> 
-> Signed-off-by: Yang Shi <yang.shi@windriver.com>
-> ---
-> b/drivers/net/8139too.c |    9 +++++++++
-> 1 file changed, 9 insertions(+)
-> ---
-> 
-> --- a/drivers/net/8139too.c
-> +++ b/drivers/net/8139too.c
-> @@ -2136,8 +2136,13 @@ static irqreturn_t rtl8139_interrupt (in
->        u16 status, ackstat;
->        int link_changed = 0; /* avoid bogus "uninit" warning */
->        int handled = 0;
-> +#ifdef CONFIG_NET_POLL_CONTROLLER
-> +       unsigned long flags;
-> 
-> +       spin_lock_irqsave (&tp->lock, flags);
-> +#else
->        spin_lock (&tp->lock);
-> +#endif
->        status = RTL_R16 (IntrStatus);
-> 
->        /* shared irq? */
-> @@ -2185,7 +2190,11 @@ static irqreturn_t rtl8139_interrupt (in
->                        RTL_W16 (IntrStatus, TxErr);
->        }
->  out:
-> +#ifdef CONFIG_NET_POLL_CONTROLLER
-> +       spin_unlock_irqrestore (&tp->lock, flags);
-> +#else
->        spin_unlock (&tp->lock);
-> +#endif
+From: Tom Tucker <tom@opengridcomputing.com>
 
-This is bogus -- you should never need to slow down the hot path in such 
-a way.
+The RDMACTXT_F_LAST_CTXT bit was getting set incorrectly
+when the last chunk in the read-list spanned multiple pages. This
+resulted in a kernel panic when the wrong context was used to
+build the RPC iovec page list.
 
-Add a local_irq_save()/restore() to rtl8139_poll_controller() or a 
-similar solution, putting the burden on the netpoll/netconsole layer.
+RDMA_READ is used to fetch RPC data from the client for
+NFS_WRITE requests. A scatter-gather is used to map the
+advertised client side buffer to the server-side iovec and
+associated page list.
 
-	Jeff
+WR contexts are used to convey which scatter-gather entries are
+handled by each WR. When the write data is large, a single RPC may
+require multiple RDMA_READ requests so the contexts for a single RPC
+are chained together in a linked list. The last context in this list
+is marked with a bit RDMACTXT_F_LAST_CTXT so that when this WR completes,
+the CQ handler code can enqueue the RPC for processing.
 
+The code in rdma_read_xdr was setting this bit on the last two
+contexts on this list when the last read-list chunk spanned multiple
+pages. This caused the svc_rdma_recvfrom logic to incorrectly build
+the RPC and caused the kernel to crash because the second-to-last
+context doesn't contain the iovec page list.
 
+Modified the condition that sets this bit so that it correctly detects
+the last context for the RPC.
+
+Signed-off-by: Tom Tucker <tom@opengridcomputing.com>
+Tested-by: Roland Dreier <rolandd@cisco.com>
+Signed-off-by: J. Bruce Fields <bfields@citi.umich.edu>
+---
+ net/sunrpc/xprtrdma/svc_rdma_recvfrom.c |   21 +++++++++++----------
+ 1 files changed, 11 insertions(+), 10 deletions(-)
+
+One more server-side rdma patch for 2.6.25.
+
+--b.
+
+diff --git a/net/sunrpc/xprtrdma/svc_rdma_recvfrom.c b/net/sunrpc/xprtrdma/svc_rdma_recvfrom.c
+index 9712716..c22d6b6 100644
+--- a/net/sunrpc/xprtrdma/svc_rdma_recvfrom.c
++++ b/net/sunrpc/xprtrdma/svc_rdma_recvfrom.c
+@@ -322,15 +322,6 @@ next_sge:
+ 		ctxt->direction = DMA_FROM_DEVICE;
+ 		clear_bit(RDMACTXT_F_READ_DONE, &ctxt->flags);
+ 		clear_bit(RDMACTXT_F_LAST_CTXT, &ctxt->flags);
+-		if ((ch+1)->rc_discrim == 0) {
+-			/*
+-			 * Checked in sq_cq_reap to see if we need to
+-			 * be enqueued
+-			 */
+-			set_bit(RDMACTXT_F_LAST_CTXT, &ctxt->flags);
+-			ctxt->next = hdr_ctxt;
+-			hdr_ctxt->next = head;
+-		}
+ 
+ 		/* Prepare READ WR */
+ 		memset(&read_wr, 0, sizeof read_wr);
+@@ -348,7 +339,17 @@ next_sge:
+ 		rdma_set_ctxt_sge(ctxt, &sge[ch_sge_ary[ch_no].start],
+ 				  &sgl_offset,
+ 				  read_wr.num_sge);
+-
++		if (((ch+1)->rc_discrim == 0) &&
++		    (read_wr.num_sge == ch_sge_ary[ch_no].count)) {
++			/*
++			 * Mark the last RDMA_READ with a bit to
++			 * indicate all RPC data has been fetched from
++			 * the client and the RPC needs to be enqueued.
++			 */
++			set_bit(RDMACTXT_F_LAST_CTXT, &ctxt->flags);
++			ctxt->next = hdr_ctxt;
++			hdr_ctxt->next = head;
++		}
+ 		/* Post the read */
+ 		err = svc_rdma_send(xprt, &read_wr);
+ 		if (err) {
+-- 
+1.5.5.rc1
 
