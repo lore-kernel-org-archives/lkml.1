@@ -1,41 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755881AbYCZGeZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757423AbYCZGem@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755881AbYCZGeZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Mar 2008 02:34:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752497AbYCZGeR
+	id S1757423AbYCZGem (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Mar 2008 02:34:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753342AbYCZGeS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Wed, 26 Mar 2008 02:34:18 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:53282 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752977AbYCZGeR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 26 Mar 2008 02:34:17 -0400
-Received: from gateway08.websitewelcome.com ([67.18.36.18]:53955 "HELO
-	gateway08.websitewelcome.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752234AbYCZGeQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Mar 2008 02:34:16 -0400
-X-Greylist: delayed 398 seconds by postgrey-1.27 at vger.kernel.org; Wed, 26 Mar 2008 02:34:16 EDT
-To: linux-kernel@vger.kernel.org
-Subject: morrich wants you to check this out.
-From: morrich <s_nakcharoen@yahoo.com>
-X-Mailer: PHP 4.4.4
-X-Priority: 3
-Reply-To: morrich <s_nakcharoen@yahoo.com>
-Message-Id: <E1JeP6l-0000XQ-AP@gator229.hostgator.com>
-Date: Wed, 26 Mar 2008 01:27:35 -0500
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - gator229.hostgator.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [32390 32392] / [47 12]
-X-AntiAbuse: Sender Address Domain - gator229.hostgator.com
+Date: Wed, 26 Mar 2008 07:34:01 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Mike Travis <travis@sgi.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 00/10] NR_CPUS: third reduction of NR_CPUS memory usage
+	x86-version v2
+Message-ID: <20080326063401.GE18301@elte.hu>
+References: <20080325220650.835342000@polaris-admin.engr.sgi.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080325220650.835342000@polaris-admin.engr.sgi.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0004]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi there,
 
-morrich, wanted you to know about TheJoelMethod.com, the most boring but effective way to make fast sales and generate quick cash online. 
+* Mike Travis <travis@sgi.com> wrote:
 
-Click on the link below for more information:
+> Wii, isn't this fun...!  This is a resubmission of yesterday's patches 
+> based on the x86.git/latest tree.  Yes, it _is_ a maze of twisty litle 
+> passages. ;-)
 
-http://www.thejoelmethod.com/?taf=1&e=s_nakcharoen@yahoo.com
+just to make patch dependencies clear: most of the patches here can be 
+applied to their base trees as-is, without depending on any other patch, 
+correct?
 
-Thanks!
-Ryan
+the only undeclared dependency i found was the cpumask_scnprintf_len() 
+patch - please prominently list dependencies in the changelog like this:
 
+ [ this patch depends on "cpumask: Add cpumask_scnprintf_len function" ]
+
+	Ingo
