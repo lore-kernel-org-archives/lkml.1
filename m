@@ -1,94 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760204AbYCZLKo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760016AbYCZLMS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760204AbYCZLKo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Mar 2008 07:10:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757591AbYCZLKg
+	id S1760016AbYCZLMS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Mar 2008 07:12:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754432AbYCZLMJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Mar 2008 07:10:36 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:60827 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753849AbYCZLKg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Mar 2008 07:10:36 -0400
-Date: Wed, 26 Mar 2008 12:10:21 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Al Viro <viro@ZenIV.linux.org.uk>
-Cc: J?rn Engel <joern@logfs.org>, David Miller <davem@davemloft.net>,
-       jirislaby@gmail.com, joe@perches.com, tglx@linutronix.de,
-       linux-kernel@vger.kernel.org, Andy Whitcroft <apw@shadowen.org>
-Subject: Re: [patch] bkl2mtd: cleanup
-Message-ID: <20080326111021.GF17176@elte.hu>
-References: <20080323.051929.267232495.davem@davemloft.net> <20080325104841.GA24211@elte.hu> <20080325111129.GB11359@logfs.org> <20080325122413.GA8729@elte.hu> <20080325131258.GC11359@logfs.org> <20080325133810.GA10044@elte.hu> <20080325134556.GA10424@elte.hu> <20080325160734.GA14583@logfs.org> <20080326101452.GA17176@elte.hu> <20080326104821.GS10722@ZenIV.linux.org.uk>
+	Wed, 26 Mar 2008 07:12:09 -0400
+Received: from jurassic.park.msu.ru ([195.208.223.243]:34707 "EHLO
+	jurassic.park.msu.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754179AbYCZLMI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Mar 2008 07:12:08 -0400
+Date: Wed, 26 Mar 2008 14:12:04 +0300
+From: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Thomas Meyer <thomas@m3y3r.de>, Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       LKML <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Natalie Protasevich <protasnb@gmail.com>
+Subject: Re: ohci1394 problem (MMIO broken) (was 2.6.25-rc6-git6: Reported
+	regressions from 2.6.24)
+Message-ID: <20080326111204.GB9060@jurassic.park.msu.ru>
+References: <47E557D5.9020604@s5r6.in-berlin.de> <alpine.LFD.1.00.0803221423060.3020@woody.linux-foundation.org> <alpine.LFD.1.00.0803221558450.3020@woody.linux-foundation.org> <47E807EE.2030902@m3y3r.de> <47E8217C.9080400@s5r6.in-berlin.de> <20080325073117.GA8469@elte.hu> <20080325165007.GA7775@elte.hu> <47E94557.4030001@m3y3r.de> <20080325201125.GD15330@elte.hu> <20080325202954.GA22007@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080326104821.GS10722@ZenIV.linux.org.uk>
+In-Reply-To: <20080325202954.GA22007@elte.hu>
 User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Al Viro <viro@ZenIV.linux.org.uk> wrote:
-
-> > -static int _block2mtd_write(struct block2mtd_dev *dev, const u_char *buf,
-> > -		loff_t to, size_t len, size_t *retlen)
-> > +static int
-> > +_block2mtd_write(struct block2mtd_dev *dev, const u_char *buf, loff_t to,
-> > +		 size_t len, size_t *retlen)
+On Tue, Mar 25, 2008 at 09:29:54PM +0100, Ingo Molnar wrote:
+> OTOH, before this system worked for you before, i start to suspect that 
+> ioremap is a red herring here and that it's the code that gets to that 
+> physical address (which is ioremap-ed) is at fault here.
 > 
-> That's actually worse...  BTW, single-underscore-... for identifiers?  
-> Odd.
+> the hard hang might be your southbridge totally dumbfounded by the host 
+> OS attempting to do an MMIO access to an above-4GB address?
 
-(yep, that's odd.)
+The Intel 94x chipsets must be OK wrt >4Gb MMIO accesses, as far as I know.
+You should just get all 1s on read of non-existent MMIO address, as usual.
+Not a hard hang.
 
-> > -static int block2mtd_write(struct mtd_info *mtd, loff_t to, size_t len,
-> > +static int
-> > +block2mtd_write(struct mtd_info *mtd, loff_t to, size_t len,
-> >  		size_t *retlen, const u_char *buf)
-> 
-> Again, why split it that way?
+So I suspect something is still broken in 64-bit ioremap... It would be nice
+to sort that out, even though it seems to be unrelated to this particular
+problem.
 
-these are really nuances, so unless you are interested in such nuances 
-nowhere found in CodingStyle, stop reading here :-)
-
-i personally try to minimize the number and complexity of function 
-prototype patterns, while still trying to keep the linecount low. So if 
-a function prototype wants to be multi-line, it's not a "simple one-line 
-function prototype" anymore, so i use the same template for everything:
-
- type
- function_name(vars ...
-               more vars ...)
- {
-
-[ having the 'type' separately makes it easy to judge the return type of 
-  a function (especially with syntax highlighting active). Aligned 
-  variables are an efficient extension of the 'line' concept that does 
-  not mix the function_name with the variables. ]
-
-incidentally, a natural simplified variant of that is the following:
-
- type
- function_name(vars...)
- {
-
-which tends to stay cleanly 2-line and looks tidier and shorter than 
-the:
-
- type function_name(vars...
-                    more vars ...)
- {
-
-form. The preferred form is of course:
-
- type function_name(vars...)
-
-	Ingo
+Ivan.
