@@ -1,49 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755478AbYCZO3O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756153AbYCZObZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755478AbYCZO3O (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Mar 2008 10:29:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750717AbYCZO27
+	id S1756153AbYCZObZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Mar 2008 10:31:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751103AbYCZObS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Mar 2008 10:28:59 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:39119 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751202AbYCZO26 (ORCPT
+	Wed, 26 Mar 2008 10:31:18 -0400
+Received: from rn-out-0910.google.com ([64.233.170.191]:29023 "EHLO
+	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750745AbYCZObR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Mar 2008 10:28:58 -0400
-Date: Wed, 26 Mar 2008 10:28:57 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: David Brownell <david-b@pacbell.net>
-cc: rpurdie@rpsys.net, <gitster@pobox.com>, <corbet@lwn.net>, <mingo@elte.hu>,
-       <mb@bu3sch.de>, <linux-kernel@vger.kernel.org>, <khali@linux-fr.org>,
-       <hmh@hmh.eng.br>, <geert@linux-m68k.org>, <akpm@linux-foundation.org>
-Subject: Re: use of preempt_count instead of in_atomic() at leds-gpio.c
-In-Reply-To: <20080325232042.4EDA7346532@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
-Message-ID: <Pine.LNX.4.44L0.0803261027580.4969-100000@iolanthe.rowland.org>
+	Wed, 26 Mar 2008 10:31:17 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=SNA3J4HXKS90O97JZgx+zt6CW5sN6n8fAcpCZavlObY2H9DnhAjCgaiwNOVxeo7FZ6oESLbAD9Ln355txb/F79rnxGY0VGfIfO7WUaojY3ez1H3NRt2sPRX0WOQm1bTg9j80QpRnVjN+Mxocpap5pee/ZiAbw01nPYzm3M4yBs4=
+Message-ID: <8bd0f97a0803260731x4378c71q1e2e5598c1728e1d@mail.gmail.com>
+Date: Wed, 26 Mar 2008 10:31:15 -0400
+From: "Mike Frysinger" <vapier.adi@gmail.com>
+To: "Jiri Slaby" <jirislaby@gmail.com>
+Subject: Re: [PATCH 1/1] [Blackfin try #2] char driver for Blackfin on-chip OTP memory
+Cc: "Bryan Wu" <cooloney@kernel.org>, linux-kernel@vger.kernel.org,
+       "Wim Van Sebroeck" <wim@iguana.be>, "Sam Ravnborg" <sam@ravnborg.org>
+In-Reply-To: <47EA268F.8070006@gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1206580131-22527-1-git-send-email-cooloney@kernel.org>
+	 <47EA268F.8070006@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 25 Mar 2008, David Brownell wrote:
+On Wed, Mar 26, 2008 at 6:33 AM, Jiri Slaby <jirislaby@gmail.com> wrote:
+> On 03/27/2008 02:08 AM, Bryan Wu wrote:
+>  > From: Mike Frysinger <vapier.adi@gmail.com>
+> > +static int __init bfin_otp_init(void)
+>  > +{
+>  > +     int ret;
+>  > +
+>  > +     stampit();
+>  > +
+>  > +     ret = misc_register(&bfin_otp_misc_device);
+>  > +     if (ret) {
+>  > +             pr_init(KERN_ERR PFX "unable to register a misc device\n");
+>  > +             return ret;
+>  > +     }
+>  > +
+>  > +     pr_init(KERN_INFO PFX "initialized\n");
+>
+>  except the fact, that pr_init definition seems to be broken. Its defined __fmt
+>  is const, so it should reside in .init.rodata (__initconst), not .init.data
+>  (__initdata).
 
-> I _almost_ hate bringing this lovely flamage back onto $SUBJECT ... but
-> what's the resolution for the leds-gpio.c issue?  I've not seen a merge
-> notice for the patch I submitted a week ago now:
-> 
-> 	http://marc.info/?l=linux-kernel&m=120597839009399&w=2
-> 
-> Just a "leaning..." comment:
-> 
-> 	http://marc.info/?l=linux-kernel&m=120606104619198&w=2
-> 
-> Seems to me that by now there ought to be resolution on at least
-> one of the issues brought up on this thread.  :)
+i dont see an __initconst macro anywhere ?
 
-Is it reasonable to have two version of that subroutine: one meant to 
-be called in a sleepable context and the other to be called when 
-sleeping isn't allowed?
-
-Alan Stern
-
+also, it isnt "broken" in the sense that it "doesnt work" ;)
+-mike
