@@ -1,46 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759918AbYCZME4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758117AbYCZMIy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759918AbYCZME4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Mar 2008 08:04:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755259AbYCZMEt
+	id S1758117AbYCZMIy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Mar 2008 08:08:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753396AbYCZMIq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Mar 2008 08:04:49 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:52944 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753074AbYCZMEs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Mar 2008 08:04:48 -0400
-Message-ID: <47EA3B83.4090403@redhat.com>
-Date: Wed, 26 Mar 2008 09:03:15 -0300
-From: Glauber Costa <gcosta@redhat.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Avi Kivity <avi@qumranet.com>
-CC: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, glommer@gmail.com,
-       mingo@elte.hu, tglx@linutronix.de, kvm-devel@lists.sourceforge.net,
-       amit.shah@qumranet.com
-Subject: Re: [PATCH 0/20] dma_ops for i386
-References: <1206480999-21767-1-git-send-email-gcosta@redhat.com> <47EA1EF9.9080602@qumranet.com>
-In-Reply-To: <47EA1EF9.9080602@qumranet.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Wed, 26 Mar 2008 08:08:46 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:53001 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753088AbYCZMIq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Mar 2008 08:08:46 -0400
+Subject: Re: why so many unexported headers checking __KERNEL__?
+From: David Woodhouse <dwmw2@infradead.org>
+To: "Robert P. J. Day" <rpjday@crashcourse.ca>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <alpine.LFD.1.00.0803230229530.1203@localhost.localdomain>
+References: <alpine.LFD.1.00.0803230229530.1203@localhost.localdomain>
+Content-Type: text/plain
+Date: Wed, 26 Mar 2008 12:08:44 +0000
+Message-Id: <1206533324.9540.268.camel@pmac.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.0 (2.22.0-1.fc9) 
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Avi Kivity wrote:
-> Glauber Costa wrote:
->> Hello,
->>
->> Here there is a series of 20 patches that lays the foundations for
->> using dma_ops in i386 in the very same way x86_64, as well as many other
->> architectures already do.
->>
->> The functions themselves for i386 are placed in a pci-base_32.c, but just
->> a few among them are actually implemented. Most were no-ops anyway.
->>
->>   
+On Sun, 2008-03-23 at 02:31 -0400, Robert P. J. Day wrote:
 > 
-> I see the headers are unified, but the .c files are duplicated.  I 
-> presume unifying the implementation is deferred to later patches?
-presume correctly.
+>   as an unintended side effect of checking for proper exporting to
+> user space and unifdef'ing, i noticed that there are literally
+> hundreds of kernel header files that check the value of __KERNEL__ in
+> some way, but are never exported to user space.  what's the point of
+> that?  thanks.
+
+There's no point -- we just haven't got round to removing it yet. 
+
+We should probably make headers_check or some other automated check
+catch these two cases:
+
+If a header is exported by header-y or not exported at all, it shouldn't
+contain any #ifdef __KERNEL__.
+
+And if it's exported and doesn't contain any #ifdef __KERNEL__, it
+should be header-y not unifdef-y (and that's the case we should be
+moving towards, by cleaning up headers to have separate files for the
+user-visible parts).
+
+-- 
+dwmw2
 
