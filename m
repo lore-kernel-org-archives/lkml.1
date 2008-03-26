@@ -1,101 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758955AbYCZQNu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757958AbYCZQPZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758955AbYCZQNu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Mar 2008 12:13:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756490AbYCZQNm
+	id S1757958AbYCZQPZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Mar 2008 12:15:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752625AbYCZQPM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Mar 2008 12:13:42 -0400
-Received: from gw.goop.org ([64.81.55.164]:40836 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756455AbYCZQNl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Mar 2008 12:13:41 -0400
-Message-ID: <47EA7633.1080909@goop.org>
-Date: Wed, 26 Mar 2008 09:13:39 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	Wed, 26 Mar 2008 12:15:12 -0400
+Received: from ti-out-0910.google.com ([209.85.142.191]:61477 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755555AbYCZQPK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Mar 2008 12:15:10 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=MqsX66Jikbzmu/q5Cf+qnfYi7CswUw8tTXvEldRYNuO0N/Bx7sMgNLOd4+sGro1s0CSD0ulR6ABXijak1/G8SHH2mqD+NC4MeAtbVGKyLcZoEEuCfAGcVg8BZxgKZ6Fer/lbaEaDBHghgnwdATtN8sQhi5S+uV1NNodPuzxJxow=
+Message-ID: <386072610803260915j7e4ca889ud193457367c712d3@mail.gmail.com>
+Date: Thu, 27 Mar 2008 00:15:07 +0800
+From: "Bryan Wu" <cooloney@kernel.org>
+To: "Mike Frysinger" <vapier.adi@gmail.com>
+Subject: Re: [PATCH 1/1] Input/Joystick Driver: add support AD7142 joystick driver
+Cc: dmitry.torokhov@gmail.com, khali@linux-fr.org, linux-input@vger.kernel.org,
+       i2c@lm-sensors.org, linux-kernel@vger.kernel.org,
+       "Michael Hennerich" <michael.hennerich@analog.com>,
+       "Bryan Wu" <bryan.wu@analog.com>
+In-Reply-To: <8bd0f97a0803260736v58c11f8g8a5f740c62891174@mail.gmail.com>
 MIME-Version: 1.0
-To: Mike Travis <travis@sgi.com>
-CC: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Andi Kleen <ak@suse.de>
-Subject: Re: [PATCH 06/10] x86: reduce memory and stack usage in	intel_cacheinfo
-References: <20080325220650.835342000@polaris-admin.engr.sgi.com> <20080325220651.683748000@polaris-admin.engr.sgi.com> <20080326065023.GG18301@elte.hu> <47EA6EA3.1070609@sgi.com>
-In-Reply-To: <47EA6EA3.1070609@sgi.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1206579622-21915-1-git-send-email-cooloney@kernel.org>
+	 <8bd0f97a0803260736v58c11f8g8a5f740c62891174@mail.gmail.com>
+X-Google-Sender-Auth: afaac148957bbdd9
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mike Travis wrote:
-> Ingo Molnar wrote:
->   
->> * Mike Travis <travis@sgi.com> wrote:
->>
->>     
->>> * Change the following static arrays sized by NR_CPUS to
->>>   per_cpu data variables:
->>>
->>> 	_cpuid4_info *cpuid4_info[NR_CPUS];
->>> 	_index_kobject *index_kobject[NR_CPUS];
->>> 	kobject * cache_kobject[NR_CPUS];
->>>
->>> * Remove the local NR_CPUS array with a kmalloc'd region in
->>>   show_shared_cpu_map().
->>>       
->> thanks Travis, i've applied this to x86.git.
->>
->> one observation:
->>
->>     
->>>  static ssize_t show_shared_cpu_map(struct _cpuid4_info *this_leaf, char *buf)
->>>  {
->>> -	char mask_str[NR_CPUS];
->>> -	cpumask_scnprintf(mask_str, NR_CPUS, this_leaf->shared_cpu_map);
->>> -	return sprintf(buf, "%s\n", mask_str);
->>> +	int n = 0;
->>> +	int len = cpumask_scnprintf_len(nr_cpu_ids);
->>> +	char *mask_str = kmalloc(len, GFP_KERNEL);
->>> +
->>> +	if (mask_str) {
->>> +		cpumask_scnprintf(mask_str, len, this_leaf->shared_cpu_map);
->>> +		n = sprintf(buf, "%s\n", mask_str);
->>> +		kfree(mask_str);
->>> +	}
->>> +	return n;
->>>       
->> the other changes look good, but this one looks a bit ugly and complex. 
->> We basically want to sprintf shared_cpu_map into 'buf', but we do that 
->> by first allocating a temporary buffer, print a string into it, then 
->> print that string into another buffer ...
->>
->> this very much smells like an API bug in cpumask_scnprintf() - why dont 
->> you create a cpumask_scnprintf_ptr() API that takes a pointer to a 
->> cpumask? Then this change would become a trivial and much more readable:
->>
->>  -	char mask_str[NR_CPUS];
->>  -	cpumask_scnprintf(mask_str, NR_CPUS, this_leaf->shared_cpu_map);
->>  -	return sprintf(buf, "%s\n", mask_str);
->>  +	return cpumask_scnprintf_ptr(buf, NR_CPUS, &this_leaf->shared_cpu_map);
->>
->> 	Ingo
->>     
+On Wed, Mar 26, 2008 at 10:36 PM, Mike Frysinger <vapier.adi@gmail.com> wrote:
+> On Wed, Mar 26, 2008 at 9:00 PM, Bryan Wu <cooloney@kernel.org> wrote:
+>  >  +config JOYSTICK_AD7142
+>  >  +       tristate "Analog Devices AD7142 Joystick support"
+>  >  +       depends on BLACKFIN && I2C
+>  >  +       ---help---
+>  >  +         Say Y here if you want to support an AD7142 joystick
 >
-> The main goal was to avoid allocating 4096 bytes when only 32 would do
-> (characters needed to represent nr_cpu_ids cpus instead of NR_CPUS cpus.)
-> But I'll look at cleaning it up a bit more.  It wouldn't have to be
-> a function if CHUNKSZ in cpumask_scnprintf() were visible (or a non-changeable
-> constant.)
->   
+>  since you're going to send another patch anyways ;), this kconfig text
+>  could use a line telling you the module name if built as a module.
+>  -mike
 
-It's a pity you can't take advantage of kasprintf to handle all this.
+No problem, I am waiting you guys to give some comments and update
+this driver later.
 
-Hm, I would say that bitmap_scnprintf is a candidate for implementation 
-as a printk format specifier so you could get away from needing a 
-special function to print bitmaps...
-
-Eh?  What's the difference between snprintf and scnprintf?
-
-    J
+Thanks
+-Bryan
