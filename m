@@ -1,58 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753771AbYCZODv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754360AbYCZOJz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753771AbYCZODv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Mar 2008 10:03:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750745AbYCZODk
+	id S1754360AbYCZOJz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Mar 2008 10:09:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751219AbYCZOJr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Mar 2008 10:03:40 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:39505 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1750724AbYCZODj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Mar 2008 10:03:39 -0400
-Date: Wed, 26 Mar 2008 10:03:38 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: pm list <linux-pm@lists.linux-foundation.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Greg KH <greg@kroah.com>, Len Brown <lenb@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Alexey Starikovskiy <astarikovskiy@suse.de>,
-       David Brownell <david-b@pacbell.net>, Pavel Machek <pavel@ucw.cz>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [RFC][PATCH] PM: Introduce new top level suspend and hibernation
- callbacks (rev. 3)
-In-Reply-To: <200803252135.04247.rjw@sisk.pl>
-Message-ID: <Pine.LNX.4.44L0.0803261001080.4755-100000@iolanthe.rowland.org>
+	Wed, 26 Mar 2008 10:09:47 -0400
+Received: from mail.mev.co.uk ([62.49.15.74]:50958 "EHLO mail.mev.co.uk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751202AbYCZOJq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Mar 2008 10:09:46 -0400
+Message-ID: <47EA591F.9020507@mev.co.uk>
+Date: Wed, 26 Mar 2008 14:09:35 +0000
+From: Ian Abbott <abbotti@mev.co.uk>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080317)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Rob Landley <rob@landley.net>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Corrections to Documentation/rbtree.txt
+References: <47E282F5.6090703@mev.co.uk> <200803201339.18618.rob@landley.net> <47E8DBBE.4030607@mev.co.uk> <200803251324.08769.rob@landley.net>
+In-Reply-To: <200803251324.08769.rob@landley.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 26 Mar 2008 14:09:37.0878 (UTC) FILETIME=[06C25F60:01C88F4B]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 25 Mar 2008, Rafael J. Wysocki wrote:
-
-> > I just thought of another problem.  At the point where
-> > local_irq_disable() is called, in between device_suspend() and
-> > device_power_down(), it is possible in a preemptible kernel that
-> > another task is holding dpm_list_mtx and is in the middle of updating
-> > the list pointers.  This would mess up the traversal in
-> > device_power_down().
-> > 
-> > I'm not sure about the best way to prevent this.  Is it legal to call
-> > unlock_mutex() while interrupts or preemption are disabled?
+On 25/03/08 18:24, Rob Landley wrote:
+> On Tuesday 25 March 2008 06:02:22 Ian Abbott wrote:
+>> On 20/03/08 18:39, Rob Landley wrote:
+>>> On Thursday 20 March 2008 10:29:57 Ian Abbott wrote:
+>>>> From: Ian Abbott <abbotti@mev.co.uk>
+>>>>
+>>>> The description of the rb_entry() macro in Documentation/rbtree.txt
+>>>> seems incorrect. This patch improves it (hopefully).  Also I changed the
+>>>> example code to call the previous 'my_search()' example instead of an
+>>>> undefined 'mysearch()'.
+>>> I have no objection to the patch (and the my_search thing seems like an
+>>> obvious typo), but is there a reason to prefer rb_entry() rather than
+>>> container_of()?  If so, the rationale might be a good thing to add to the
+>>> documentation...
+>> I don't know the rationale, but all the code I can see uses rb_entry()
+>> and not container_of().
 > 
-> Well, I think it is, but I'm not sure how that can help.
-> 
-> To prevent the race from happening, we can lock dpm_list_mtx before switching
-> interrupts off in kernel/power/main.c:suspend_enter() and analogously in
-> kernel/power/disk.c .
+> Except container_of() works, which is a nice thing to know, and it already 
+> mentions rb_entry() as another way to do it.  If someone could explain _why_ 
+> to use one over the other, that would be a good thing to add.
 
-That's right.  And once interrupts are turned off you should unlock 
-dpm_list_mtx again, in case a noirq method wants to unregister a 
-device.  Hence my question: Is it legal to call unlock_mutex() while 
-interrupts are disabled?
+Let's see if Andrea Arcangeli can still remember the rationale from 9 
+years ago! :-)
 
-Alan Stern
+container_of() works just as well, but _none_ of the existing code in 
+the kernel uses it to access the container of the struct rb_node; they 
+all use rb_entry(), including the example code in include/linux/rbtree.h.
 
+> Again, I don't care much either way, I just want to know what the point is of 
+> choosing one over the other that makes changing what's there worth bothering 
+> with.  You're changing the documentation to hide the fact that rb_entry() is 
+> basically another name for container_of(), and this is supposed to be an 
+> improvement?
+
+Personally I have no preference for rb_entry() over container_of(), but 
+as all the code in the kernel uses rb_entry() it seems better if the 
+examples in the documentation use it too.
+
+-- 
+-=( Ian Abbott @ MEV Ltd.    E-mail: <abbotti@mev.co.uk>        )=-
+-=( Tel: +44 (0)161 477 1898   FAX: +44 (0)161 718 3587         )=-
