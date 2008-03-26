@@ -1,78 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759179AbYCZB2e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757461AbYCZBi1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759179AbYCZB2e (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Mar 2008 21:28:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751675AbYCZB2Z
+	id S1757461AbYCZBi1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Mar 2008 21:38:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752385AbYCZBiP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Mar 2008 21:28:25 -0400
-Received: from smtp.ustc.edu.cn ([202.38.64.16]:58270 "HELO ustc.edu.cn"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
-	id S1751938AbYCZB2Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Mar 2008 21:28:24 -0400
-Message-ID: <406494925.22846@ustc.edu.cn>
-X-EYOUMAIL-SMTPAUTH: wfg@mail.ustc.edu.cn
-Date: Wed, 26 Mar 2008 09:28:20 +0800
-From: Fengguang Wu <wfg@mail.ustc.edu.cn>
+	Tue, 25 Mar 2008 21:38:15 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:53168 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751165AbYCZBiO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Mar 2008 21:38:14 -0400
+Message-Id: <20080326013812.474773000@polaris-admin.engr.sgi.com>
+References: <20080326013811.569646000@polaris-admin.engr.sgi.com>
+User-Agent: quilt/0.46-1
+Date: Tue, 25 Mar 2008 18:38:16 -0700
+From: Mike Travis <travis@sgi.com>
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Jan Kara <jack@suse.cz>, dgc@sgi.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] vfs: Fix lock inversion in drop_pagecache_sb()
-References: <20080325181227.GE5125@duck.suse.cz> <20080325125354.5f2da108.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080325125354.5f2da108.akpm@linux-foundation.org>
-X-GPG-Fingerprint: 53D2 DDCE AB5C 8DC6 188B  1CB1 F766 DA34 8D8B 1C6D
-User-Agent: Mutt/1.5.17 (2007-11-01)
-Message-Id: <E1JeKRA-0002JM-Ot@localhost>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: [PATCH 05/12] init: move large array from stack to _initdata section
+Content-Disposition: inline; filename=numa_initmem_init
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 25, 2008 at 12:53:54PM -0700, Andrew Morton wrote:
-> On Tue, 25 Mar 2008 19:12:27 +0100
-> Jan Kara <jack@suse.cz> wrote:
-> 
-> > Fix longstanding lock inversion in drop_pagecache_sb by dropping inode_lock
-> > before calling __invalidate_mapping_pages(). We just have to make sure
-> > inode won't go away from under us by keeping reference to it and putting
-> > the reference only after we have safely resumed the scan of the inode
-> > list. A bit tricky but not too bad...
-> > 
-> > Signed-off-by: Jan Kara <jack@suse.cz>
-> > CC: Fengguang Wu <wfg@mail.ustc.edu.cn>
-> > CC: David Chinner <dgc@sgi.com>
-> > 
-> > ---
-> >  fs/drop_caches.c |    8 +++++++-
-> >  1 files changed, 7 insertions(+), 1 deletions(-)
-> > 
-> > diff --git a/fs/drop_caches.c b/fs/drop_caches.c
-> > index 59375ef..f5aae26 100644
-> > --- a/fs/drop_caches.c
-> > +++ b/fs/drop_caches.c
-> > @@ -14,15 +14,21 @@ int sysctl_drop_caches;
-> >  
-> >  static void drop_pagecache_sb(struct super_block *sb)
-> >  {
-> > -	struct inode *inode;
-> > +	struct inode *inode, *toput_inode = NULL;
-> >  
-> >  	spin_lock(&inode_lock);
-> >  	list_for_each_entry(inode, &sb->s_inodes, i_sb_list) {
-> >  		if (inode->i_state & (I_FREEING|I_WILL_FREE))
-> >  			continue;
-> 
-> OT: it might be worth having an `if (mapping->nrpages==0) continue' here.
+Move large array "struct bootnode nodes" from stack to _initdata
+section.
 
-Good catch!
+Based on:
+	git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git
+	git://git.kernel.org/pub/scm/linux/kernel/git/x86/linux-2.6-x86.git
 
-There are 25k opened inodes in my desktop, merely 10% of them has cached pages:
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: H. Peter Anvin <hpa@zytor.com>
 
-                % cat /proc/sys/fs/inode-state   
-                25395   129     0       0       0       0       0
-                # wc -l /proc/filecache 
-                2542 /proc/filecache
+Signed-off-by: Mike Travis <travis@sgi.com>
+---
+ arch/x86/mm/numa_64.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-+               if (!inode->i_mapping || !inode->i_mapping->nrpages)
-+                       continue;
+--- linux.trees.git.orig/arch/x86/mm/numa_64.c
++++ linux.trees.git/arch/x86/mm/numa_64.c
+@@ -411,9 +411,10 @@ static int __init split_nodes_by_size(st
+  * Sets up the system RAM area from start_pfn to end_pfn according to the
+  * numa=fake command-line option.
+  */
++static struct bootnode nodes[MAX_NUMNODES] __initdata;
++
+ static int __init numa_emulation(unsigned long start_pfn, unsigned long end_pfn)
+ {
+-	struct bootnode nodes[MAX_NUMNODES];
+ 	u64 size, addr = start_pfn << PAGE_SHIFT;
+ 	u64 max_addr = end_pfn << PAGE_SHIFT;
+ 	int num_nodes = 0, num = 0, coeff_flag, coeff = -1, i;
 
+-- 
