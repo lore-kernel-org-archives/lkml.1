@@ -1,71 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763824AbYCZUTy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759596AbYCZU2M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763824AbYCZUTy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Mar 2008 16:19:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763594AbYCZUS6
+	id S1759596AbYCZU2M (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Mar 2008 16:28:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756490AbYCZU1w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Mar 2008 16:18:58 -0400
-Received: from x346.tv-sign.ru ([89.108.83.215]:46991 "EHLO mail.screens.ru"
+	Wed, 26 Mar 2008 16:27:52 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:40890 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763571AbYCZUS4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Mar 2008 16:18:56 -0400
-Date: Wed, 26 Mar 2008 23:16:23 +0300
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Andi Kleen <andi@firstfloor.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Herbert Poetzl <herbert@13thfloor.at>, Krzysztof Halasa <khc@pm.waw.pl>,
-       Pavel Emelyanov <xemul@openvz.org>, Pavel Machek <pavel@ucw.cz>,
-       "Serge E. Hallyn" <serue@us.ibm.com>,
-       Stephen Smalley <sds@tycho.nsa.gov>, Roland McGrath <roland@redhat.com>,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH] ptrace: allow to ptrace /sbin/init
-Message-ID: <20080326201623.GA131@tv-sign.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1755176AbYCZU1v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Mar 2008 16:27:51 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [RFC][PATCH] PM: Introduce new top level suspend and hibernation callbacks (rev. 3)
+Date: Wed, 26 Mar 2008 21:26:56 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: pm list <linux-pm@lists.linux-foundation.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Greg KH <greg@kroah.com>, Len Brown <lenb@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Alexey Starikovskiy <astarikovskiy@suse.de>,
+       David Brownell <david-b@pacbell.net>, Pavel Machek <pavel@ucw.cz>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>
+References: <Pine.LNX.4.44L0.0803261001080.4755-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0803261001080.4755-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.11
+Message-Id: <200803262126.58357.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Afaics, currently there are no kernel problems with ptracing init, it can't
-lose SIGNAL_UNKILLABLE flag and be killed/stopped by accident.
+On Wednesday, 26 of March 2008, Alan Stern wrote:
+> On Tue, 25 Mar 2008, Rafael J. Wysocki wrote:
+> 
+> > > I just thought of another problem.  At the point where
+> > > local_irq_disable() is called, in between device_suspend() and
+> > > device_power_down(), it is possible in a preemptible kernel that
+> > > another task is holding dpm_list_mtx and is in the middle of updating
+> > > the list pointers.  This would mess up the traversal in
+> > > device_power_down().
+> > > 
+> > > I'm not sure about the best way to prevent this.  Is it legal to call
+> > > unlock_mutex() while interrupts or preemption are disabled?
+> > 
+> > Well, I think it is, but I'm not sure how that can help.
+> > 
+> > To prevent the race from happening, we can lock dpm_list_mtx before switching
+> > interrupts off in kernel/power/main.c:suspend_enter() and analogously in
+> > kernel/power/disk.c .
+> 
+> That's right.  And once interrupts are turned off you should unlock 
+> dpm_list_mtx again, in case a noirq method wants to unregister a 
+> device.
 
-The ability to strace/debug init can be very useful if you try to figure
-out why it does not work as expected.
+Why would a noirq method want to do that?  IMO, it's not a big deal if noirq
+methods are not allowed to unregister devices.
 
-However, admin should know what he does, "gdb /sbin/init 1" stops init, it
-can't reap orphaned zombies or take care of /etc/inittab until continued.
-It is even possible to crash init (and thus the whole system) if you wish,
-ptracer has full control.
+> Hence my question: Is it legal to call unlock_mutex() while interrupts are
+> disabled? 
 
-See also the long discussion: http://marc.info/?t=120628018600001
+Well, I suspect that will confuse lockdep quite a bit.  Otherwise, I don't see
+a problem with it (it's just changing the value of a shared variable after
+all).
 
-Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
-
---- 25/kernel/ptrace.c~INIT_PTRACEABLE	2008-03-26 21:31:39.000000000 +0300
-+++ 25/kernel/ptrace.c	2008-03-26 21:33:35.000000000 +0300
-@@ -168,8 +168,6 @@ int ptrace_attach(struct task_struct *ta
- 	audit_ptrace(task);
- 
- 	retval = -EPERM;
--	if (task->pid <= 1)
--		goto out;
- 	if (same_thread_group(task, current))
- 		goto out;
- 
-@@ -517,12 +515,6 @@ struct task_struct *ptrace_get_task_stru
- {
- 	struct task_struct *child;
- 
--	/*
--	 * Tracing init is not allowed.
--	 */
--	if (pid == 1)
--		return ERR_PTR(-EPERM);
--
- 	read_lock(&tasklist_lock);
- 	child = find_task_by_vpid(pid);
- 	if (child)
-
+Thanks,
+Rafael
