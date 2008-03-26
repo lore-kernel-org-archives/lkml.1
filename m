@@ -1,70 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759596AbYCZU2M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760684AbYCZU3q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759596AbYCZU2M (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Mar 2008 16:28:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756490AbYCZU1w
+	id S1760684AbYCZU3q (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Mar 2008 16:29:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757174AbYCZU3h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Mar 2008 16:27:52 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:40890 "EHLO ogre.sisk.pl"
+	Wed, 26 Mar 2008 16:29:37 -0400
+Received: from www.tglx.de ([62.245.132.106]:44069 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755176AbYCZU1v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Mar 2008 16:27:51 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [RFC][PATCH] PM: Introduce new top level suspend and hibernation callbacks (rev. 3)
-Date: Wed, 26 Mar 2008 21:26:56 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: pm list <linux-pm@lists.linux-foundation.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Greg KH <greg@kroah.com>, Len Brown <lenb@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Alexey Starikovskiy <astarikovskiy@suse.de>,
-       David Brownell <david-b@pacbell.net>, Pavel Machek <pavel@ucw.cz>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>
-References: <Pine.LNX.4.44L0.0803261001080.4755-100000@iolanthe.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0803261001080.4755-100000@iolanthe.rowland.org>
+	id S1756061AbYCZU3g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Mar 2008 16:29:36 -0400
+Date: Wed, 26 Mar 2008 21:29:13 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Christoph Lameter <clameter@sgi.com>
+cc: "Luck, Tony" <tony.luck@intel.com>, linux-arch@vger.kernel.org,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: What if a TLB flush needed to sleep?
+In-Reply-To: <Pine.LNX.4.64.0803261222090.31000@schroedinger.engr.sgi.com>
+Message-ID: <alpine.LFD.1.00.0803262121440.3781@apollo.tec.linutronix.de>
+References: <1FE6DD409037234FAB833C420AA843ECE9DF60@orsmsx424.amr.corp.intel.com> <Pine.LNX.4.64.0803261222090.31000@schroedinger.engr.sgi.com>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200803262126.58357.rjw@sisk.pl>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday, 26 of March 2008, Alan Stern wrote:
-> On Tue, 25 Mar 2008, Rafael J. Wysocki wrote:
+On Wed, 26 Mar 2008, Christoph Lameter wrote:
+
+> On Tue, 25 Mar 2008, Luck, Tony wrote:
 > 
-> > > I just thought of another problem.  At the point where
-> > > local_irq_disable() is called, in between device_suspend() and
-> > > device_power_down(), it is possible in a preemptible kernel that
-> > > another task is holding dpm_list_mtx and is in the middle of updating
-> > > the list pointers.  This would mess up the traversal in
-> > > device_power_down().
-> > > 
-> > > I'm not sure about the best way to prevent this.  Is it legal to call
-> > > unlock_mutex() while interrupts or preemption are disabled?
-> > 
-> > Well, I think it is, but I'm not sure how that can help.
-> > 
-> > To prevent the race from happening, we can lock dpm_list_mtx before switching
-> > interrupts off in kernel/power/main.c:suspend_enter() and analogously in
-> > kernel/power/disk.c .
+> > 2) Is it feasible to rearrange the MM code so that we don't
+> > hold any locks while doing a TLB flush?  Or should I implement
+> > some sort of spin_only_semaphore?
 > 
-> That's right.  And once interrupts are turned off you should unlock 
-> dpm_list_mtx again, in case a noirq method wants to unregister a 
-> device.
+> The EMM notifier V2 patchset contains two patches that 
+> convert the immap_lock and the anon_vma lock to semaphores.
 
-Why would a noirq method want to do that?  IMO, it's not a big deal if noirq
-methods are not allowed to unregister devices.
-
-> Hence my question: Is it legal to call unlock_mutex() while interrupts are
-> disabled? 
-
-Well, I suspect that will confuse lockdep quite a bit.  Otherwise, I don't see
-a problem with it (it's just changing the value of a shared variable after
-all).
+Please use a mutex, not a semaphore. semaphores should only be used
+when you need a counting sempahore.
 
 Thanks,
-Rafael
+
+	tglx
