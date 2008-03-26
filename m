@@ -1,29 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762069AbYCZUOx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760795AbYCZUP3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762069AbYCZUOx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Mar 2008 16:14:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758255AbYCZUMn
+	id S1760795AbYCZUP3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Mar 2008 16:15:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756165AbYCZUMu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Mar 2008 16:12:43 -0400
-Received: from smtp.nokia.com ([192.100.105.134]:62261 "EHLO
-	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757202AbYCZUMf (ORCPT
+	Wed, 26 Mar 2008 16:12:50 -0400
+Received: from smtp.nokia.com ([192.100.122.233]:46734 "EHLO
+	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758330AbYCZUMn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Mar 2008 16:12:35 -0400
-Message-ID: <47EAAD64.4020401@indt.org.br>
-Date: Wed, 26 Mar 2008 16:09:08 -0400
+	Wed, 26 Mar 2008 16:12:43 -0400
+Message-ID: <47EAAD76.2030608@indt.org.br>
+Date: Wed, 26 Mar 2008 16:09:26 -0400
 From: Carlos Aguiar <carlos.aguiar@indt.org.br>
 User-Agent: Thunderbird 1.5.0.12 (X11/20070604)
 MIME-Version: 1.0
 To: ext Pierre Ossman <drzeus-list@drzeus.cx>
 CC: Tony Lindgren <tony@atomide.com>, linux-kernel@vger.kernel.org
-Subject: [PATCH 06/18] MMC: OMAP: Add back cover switch support
+Subject: [PATCH 10/18] MMC: OMAP: General cleanup for MMC multislot support
 References: <47DAD39C.90405@indt.org.br> <20080324132631.1e0d2125@mjolnir.drzeus.cx>
 In-Reply-To: <20080324132631.1e0d2125@mjolnir.drzeus.cx>
 X-Enigmail-Version: 0.94.0.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 26 Mar 2008 20:11:51.0436 (UTC) FILETIME=[A0F824C0:01C88F7D]
+X-OriginalArrivalTime: 26 Mar 2008 20:12:08.0952 (UTC) FILETIME=[AB68DF80:01C88F7D]
 X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -31,151 +31,137 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Juha Yrjola <juha.yrjola@solidboot.com>
 
-This patch adds back MMC cover switch support in a way that
-supports multiple slots.
+General code cleanup, modifications at some dev_* functions and
+other hacks at mmc_omap_irq() for MMC multislot support.
 
 Signed-off-by: Juha Yrjola <juha.yrjola@solidboot.com>
-Signed-off-by: Jarkko Lavinen <jarkko.lavinen@nokia.com>
 Signed-off-by: Carlos Eduardo Aguiar <carlos.aguiar@indt.org.br>
 Signed-off-by: Tony Lindgren <tony@atomide.com>
 ---
- drivers/mmc/host/omap.c |   87 +++++++++++++++++++++++++++++++++++++++++++++--
- 1 files changed, 84 insertions(+), 3 deletions(-)
+ drivers/mmc/host/omap.c |   46 +++++++++++++++++++++++++++++-----------------
+ 1 files changed, 29 insertions(+), 17 deletions(-)
 
 diff --git a/drivers/mmc/host/omap.c b/drivers/mmc/host/omap.c
-index 6b4f040..fc46a70 100644
+index dbf831f..7858902 100644
 --- a/drivers/mmc/host/omap.c
 +++ b/drivers/mmc/host/omap.c
-@@ -106,6 +106,10 @@ struct mmc_omap_slot {
- 	unsigned int		fclk_freq;
- 	unsigned		powered:1;
+@@ -547,11 +547,12 @@ static irqreturn_t mmc_omap_irq(int irq, void *dev_id)
+ 	u16 status;
+ 	int end_command;
+ 	int end_transfer;
+-	int transfer_error;
++	int transfer_error, cmd_error;
  
-+	struct work_struct      switch_work;
-+	struct timer_list       switch_timer;
-+	unsigned		cover_open;
-+
- 	struct mmc_request      *mrq;
- 	struct mmc_omap_host    *host;
- 	struct mmc_host		*mmc;
-@@ -226,6 +230,25 @@ static void mmc_omap_release_slot(struct mmc_omap_slot *slot)
- 	spin_unlock_irqrestore(&host->slot_lock, flags);
- }
+ 	if (host->cmd == NULL && host->data == NULL) {
+ 		status = OMAP_MMC_READ(host, STAT);
+-		dev_info(mmc_dev(host->mmc),"spurious irq 0x%04x\n", status);
++		dev_info(mmc_dev(host->slots[0]->mmc),
++			 "Spurious IRQ 0x%04x\n", status);
+ 		if (status != 0) {
+ 			OMAP_MMC_WRITE(host, STAT, status);
+ 			OMAP_MMC_WRITE(host, IE, 0);
+@@ -562,12 +563,19 @@ static irqreturn_t mmc_omap_irq(int irq, void *dev_id)
+ 	end_command = 0;
+ 	end_transfer = 0;
+ 	transfer_error = 0;
++	cmd_error = 0;
  
-+static inline
-+int mmc_omap_cover_is_open(struct mmc_omap_slot *slot)
-+{
-+	return slot->pdata->get_cover_state(mmc_dev(slot->mmc), slot->id);
-+}
+ 	while ((status = OMAP_MMC_READ(host, STAT)) != 0) {
++		int cmd;
 +
-+static ssize_t
-+mmc_omap_show_cover_switch(struct device *dev, struct device_attribute *attr,
-+			   char *buf)
-+{
-+	struct mmc_host *mmc = container_of(dev, struct mmc_host, class_dev);
-+	struct mmc_omap_slot *slot = mmc_priv(mmc);
-+
-+	return sprintf(buf, "%s\n", mmc_omap_cover_is_open(slot) ? "open" :
-+		       "closed");
-+}
-+
-+static DEVICE_ATTR(cover_switch, S_IRUGO, mmc_omap_show_cover_switch, NULL);
-+
- static ssize_t
- mmc_omap_show_slot_name(struct device *dev, struct device_attribute *attr,
- 			char *buf)
-@@ -544,9 +567,10 @@ static irqreturn_t mmc_omap_irq(int irq, void *dev_id)
+ 		OMAP_MMC_WRITE(host, STAT, status);
++		if (host->cmd != NULL)
++			cmd = host->cmd->opcode;
++		else
++			cmd = -1;
+ #ifdef CONFIG_MMC_DEBUG
+ 		dev_dbg(mmc_dev(host->mmc), "MMC IRQ %04x (CMD %d): ",
+-			status, host->cmd != NULL ? host->cmd->opcode : -1);
++			status, cmd);
+ 		mmc_omap_report_irq(status);
+ 		printk("\n");
+ #endif
+@@ -579,12 +587,12 @@ static irqreturn_t mmc_omap_irq(int irq, void *dev_id)
+ 				mmc_omap_xfer_data(host, 1);
+ 		}
+ 
+-		if (status & OMAP_MMC_STAT_END_OF_DATA) {
++		if (status & OMAP_MMC_STAT_END_OF_DATA)
+ 			end_transfer = 1;
+-		}
+ 
+ 		if (status & OMAP_MMC_STAT_DATA_TOUT) {
+-			dev_dbg(mmc_dev(host->mmc), "data timeout\n");
++			dev_dbg(mmc_dev(host->mmc), "data timeout (CMD%d)\n",
++				cmd);
+ 			if (host->data) {
+ 				host->data->error = -ETIMEDOUT;
+ 				transfer_error = 1;
+@@ -608,12 +616,14 @@ static irqreturn_t mmc_omap_irq(int irq, void *dev_id)
  			if (host->cmd) {
  				struct mmc_omap_slot *slot =
  					host->current_slot;
--				dev_err(mmc_dev(host->mmc),
--					"command timeout, CMD %d\n",
--					host->cmd->opcode);
-+				if (!mmc_omap_cover_is_open(slot))
-+					dev_err(mmc_dev(host->mmc),
-+						"command timeout, CMD %d\n",
-+						host->cmd->opcode);
+-				if (!mmc_omap_cover_is_open(slot))
++				if (slot == NULL ||
++				    !mmc_omap_cover_is_open(slot))
+ 					dev_err(mmc_dev(host->mmc),
+-						"command timeout, CMD %d\n",
+-						host->cmd->opcode);
++						"command timeout (CMD%d)\n",
++						cmd);
  				host->cmd->error = -ETIMEDOUT;
  				end_command = 1;
++				cmd_error = 1;
  			}
-@@ -592,6 +616,42 @@ static irqreturn_t mmc_omap_irq(int irq, void *dev_id)
- 	return IRQ_HANDLED;
- }
+ 		}
  
-+void omap_mmc_notify_cover_event(struct device *dev, int slot, int is_closed)
-+{
-+	struct mmc_omap_host *host = dev_get_drvdata(dev);
-+
-+	BUG_ON(slot >= host->nr_slots);
-+
-+	/* Other subsystems can call in here before we're initialised. */
-+	if (host->nr_slots == 0 || !host->slots[slot])
-+		return;
-+
-+	schedule_work(&host->slots[slot]->switch_work);
-+}
-+
-+static void mmc_omap_switch_timer(unsigned long arg)
-+{
-+	struct mmc_omap_slot *slot = (struct mmc_omap_slot *) arg;
-+
-+	schedule_work(&slot->switch_work);
-+}
-+
-+static void mmc_omap_cover_handler(struct work_struct *work)
-+{
-+	struct mmc_omap_slot *slot = container_of(work, struct mmc_omap_slot,
-+						  switch_work);
-+	int cover_open;
-+
-+	cover_open = mmc_omap_cover_is_open(slot);
-+	if (cover_open != slot->cover_open) {
-+		sysfs_notify(&slot->mmc->class_dev.kobj, NULL, "cover_switch");
-+		slot->cover_open = cover_open;
-+		dev_info(mmc_dev(slot->mmc), "cover is now %s\n",
-+			 cover_open ? "open" : "closed");
-+	}
-+	mmc_detect_change(slot->mmc, slot->id);
-+}
-+
- /* Prepare to transfer the next segment of a scatterlist */
- static void
- mmc_omap_prepare_dma(struct mmc_omap_host *host, struct mmc_data *data)
-@@ -1062,8 +1122,24 @@ static int __init mmc_omap_new_slot(struct mmc_omap_host *host, int id)
- 			goto err_remove_host;
+@@ -621,9 +631,10 @@ static irqreturn_t mmc_omap_irq(int irq, void *dev_id)
+ 			if (host->cmd) {
+ 				dev_err(mmc_dev(host->mmc),
+ 					"command CRC error (CMD%d, arg 0x%08x)\n",
+-					host->cmd->opcode, host->cmd->arg);
++					cmd, host->cmd->arg);
+ 				host->cmd->error = -EILSEQ;
+ 				end_command = 1;
++				cmd_error = 1;
+ 			} else
+ 				dev_err(mmc_dev(host->mmc),
+ 					"command CRC error without cmd?\n");
+@@ -632,13 +643,13 @@ static irqreturn_t mmc_omap_irq(int irq, void *dev_id)
+ 		if (status & OMAP_MMC_STAT_CARD_ERR) {
+ 			dev_dbg(mmc_dev(host->mmc),
+ 				"ignoring card status error (CMD%d)\n",
+-				host->cmd->opcode);
++				cmd);
+ 			end_command = 1;
+ 		}
+ 
+ 		/*
+ 		 * NOTE: On 1610 the END_OF_CMD may come too early when
+-		 * starting a write 
++		 * starting a write
+ 		 */
+ 		if ((status & OMAP_MMC_STAT_END_OF_CMD) &&
+ 		    (!(status & OMAP_MMC_STAT_A_EMPTY))) {
+@@ -646,13 +657,14 @@ static irqreturn_t mmc_omap_irq(int irq, void *dev_id)
+ 		}
  	}
  
-+	if (slot->pdata->get_cover_state != NULL) {
-+		r = device_create_file(&mmc->class_dev,
-+					&dev_attr_cover_switch);
-+		if (r < 0)
-+			goto err_remove_slot_name;
-+
-+		INIT_WORK(&slot->switch_work, mmc_omap_cover_handler);
-+		init_timer(&slot->switch_timer);
-+		slot->switch_timer.function = mmc_omap_switch_timer;
-+		slot->switch_timer.data = (unsigned long) slot;
-+		schedule_work(&slot->switch_work);
-+	}
-+
- 	return 0;
+-	if (end_command) {
++	if (end_command)
+ 		mmc_omap_cmd_done(host, host->cmd);
++	if (host->data != NULL) {
++		if (transfer_error)
++			mmc_omap_xfer_done(host, host->data);
++		else if (end_transfer)
++			mmc_omap_end_of_data(host, host->data);
+ 	}
+-	if (transfer_error)
+-		mmc_omap_xfer_done(host, host->data);
+-	else if (end_transfer)
+-		mmc_omap_end_of_data(host, host->data);
  
-+err_remove_slot_name:
-+	if (slot->pdata->name != NULL)
-+		device_remove_file(&mmc->class_dev, &dev_attr_slot_name);
- err_remove_host:
- 	mmc_remove_host(mmc);
- 	mmc_free_host(mmc);
-@@ -1076,6 +1152,11 @@ static void mmc_omap_remove_slot(struct mmc_omap_slot *slot)
- 
- 	if (slot->pdata->name != NULL)
- 		device_remove_file(&mmc->class_dev, &dev_attr_slot_name);
-+	if (slot->pdata->get_cover_state != NULL)
-+		device_remove_file(&mmc->class_dev, &dev_attr_cover_switch);
-+
-+	del_timer_sync(&slot->switch_timer);
-+	flush_scheduled_work();
- 
- 	mmc_remove_host(mmc);
- 	mmc_free_host(mmc);
+ 	return IRQ_HANDLED;
+ }
 -- 1.5.3.GIT
 
