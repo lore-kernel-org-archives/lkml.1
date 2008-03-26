@@ -1,37 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758046AbYCZPlr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758517AbYCZPmj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758046AbYCZPlr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Mar 2008 11:41:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755299AbYCZPlb
+	id S1758517AbYCZPmj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Mar 2008 11:42:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753960AbYCZPma
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Mar 2008 11:41:31 -0400
-Received: from gwu.lbox.cz ([62.245.111.132]:38275 "EHLO gwu.lbox.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754729AbYCZPla (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Mar 2008 11:41:30 -0400
-Date: Wed, 26 Mar 2008 16:41:17 +0100 (CET)
-From: Nikola Ciprich <extmaillist@linuxbox.cz>
-To: linux-kernel@vger.kernel.org
-Subject: disabling MDI-X for via-rhine card?
-Message-ID: <alpine.LRH.0.9999.0803261615410.2535@linuxbox.linuxbox.cz>
+	Wed, 26 Mar 2008 11:42:30 -0400
+Received: from smtp-out003.kontent.com ([81.88.40.217]:55398 "EHLO
+	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753870AbYCZPm3 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Mar 2008 11:42:29 -0400
+From: Oliver Neukum <oliver@neukum.org>
+Organization: Novell
+To: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [linux-pm] [RFC][PATCH] PM: Introduce new top level =?iso-8859-1?q?suspend=09and_hibernation_callbacks?= (rev. 2)
+Date: Wed, 26 Mar 2008 16:42:28 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       linux-pm@lists.linux-foundation.org,
+       Alexey Starikovskiy <astarikovskiy@suse.de>,
+       Johannes Berg <johannes@sipsolutions.net>,
+       LKML <linux-kernel@vger.kernel.org>
+References: <Pine.LNX.4.44L0.0803261032140.4969-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0803261032140.4969-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
-X-Antivirus: on proxybox by Kaspersky antivirus, engine 5.5.10, data 596733 records(26-03-2008)
-X-Spam-Score: N/A (trusted relay)
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200803261642.29801.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
-is it possible to somehow disable MDI-X on via-rhine cards? I have board 
-with three VT6105M chips, and I unfortunately need to disable MDI-X. By 
-looking into source of via-rhine it doesn't seem to be possible, does 
-anybody have a tip how this could be setup? Even some tip for needed 
-register changes could help, anything....
-Thanks a lot in advance
-with best regards
-nik
+Am Mittwoch, 26. März 2008 15:40:27 schrieb Alan Stern:
+> Remember, the whole purpose of this is to let drivers know when the 
+> system is going to sleep or waking up.  Proper handling of devices is 
+> up to the drivers, not up to the core.
 
+Then declare these methods void. We cannot introduce methods that deliberately
+ignore errors. Reporting is also better done in the drivers.
 
--- 
-
+	Regards
+		Oliver
