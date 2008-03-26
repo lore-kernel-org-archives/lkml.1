@@ -1,67 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760685AbYCZAeY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761726AbYCZAei@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760685AbYCZAeY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Mar 2008 20:34:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756866AbYCZAeN
+	id S1761726AbYCZAei (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Mar 2008 20:34:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758789AbYCZAeT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Mar 2008 20:34:13 -0400
-Received: from rtr.ca ([76.10.145.34]:2876 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756661AbYCZAeM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Mar 2008 20:34:12 -0400
-Message-ID: <47E99A02.7040903@rtr.ca>
-Date: Tue, 25 Mar 2008 20:34:10 -0400
-From: Mark Lord <lkml@rtr.ca>
-Organization: Real-Time Remedies Inc.
-User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
+	Tue, 25 Mar 2008 20:34:19 -0400
+Received: from py-out-1112.google.com ([64.233.166.182]:2175 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758290AbYCZAeQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Mar 2008 20:34:16 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=Tv52kkOPuMwFLsaWqGK0BhtfV9FrBsHgMz3ZEFJaMih3MpANWc+I/Hd8JgbgDLNMSnOctgEPz4CAb6AQvZz58Qh0bhcJwhbhXOcDpKrwkTicp6KfYtrpEO6Ah21Ed+Zi9ZXUIUq/VMmU2KvAPQ+kAajLuH8IPa5ZRtB7bP6Tz9U=
+Message-ID: <ed5aea430803251734u70f199w10951bc4f0db6262@mail.gmail.com>
+Date: Tue, 25 Mar 2008 18:34:13 -0600
+From: "David Mosberger-Tang" <dmosberger@gmail.com>
+To: "Peter Chubb" <peterc@gelato.unsw.edu.au>
+Subject: Re: larger default page sizes...
+Cc: "David Miller" <davem@davemloft.net>, clameter@sgi.com, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org,
+       torvalds@linux-foundation.org, ianw@gelato.unsw.edu.au
+In-Reply-To: <87tziu5q37.wl%peter@chubb.wattle.id.au>
 MIME-Version: 1.0
-To: Greg KH <gregkh@suse.de>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Jens Axboe <axboe@kernel.dk>,
-       Jeff Garzik <jgarzik@pobox.com>, Tejun Heo <htejun@gmail.com>,
-       Linus Torvalds <torvalds@osdl.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       IDE/ATA development list <linux-ide@vger.kernel.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>
-Subject: Re: What to do about the 2TB limit on HDIO_GETGEO ?
-References: <47E875AD.1000901@rtr.ca> <47E87942.2020409@rtr.ca> <47E88A13.70808@zytor.com> <47E90019.3050006@rtr.ca> <47E90458.7030801@zytor.com> <47E9383F.3050908@rtr.ca> <20080325192515.GA24234@suse.de>
-In-Reply-To: <20080325192515.GA24234@suse.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <Pine.LNX.4.64.0803241402060.7762@schroedinger.engr.sgi.com>
+	 <20080324.144356.104645106.davem@davemloft.net>
+	 <Pine.LNX.4.64.0803251045510.16206@schroedinger.engr.sgi.com>
+	 <20080325.162244.61337214.davem@davemloft.net>
+	 <87tziu5q37.wl%peter@chubb.wattle.id.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg KH wrote:
-> On Tue, Mar 25, 2008 at 01:37:03PM -0400, Mark Lord wrote:
->> Perhaps Greg will chime in.
-> 
-> I've been waiting to see if sanity will take hold of anyone here.
-..
+On Tue, Mar 25, 2008 at 5:41 PM, Peter Chubb <peterc@gelato.unsw.edu.au> wrote:
+>  The main issue is that, at least on Itanium, you have to turn off the hardware
+>  page table walker for hugepages if you want to mix superpages and
+>  standard pages in the same region. (The long format VHPT isn't the
+>  panacea we'd like it to be because the hash function it uses depends
+>  on the page size).
 
-So have we.  sysfs is a total nightmare to extract information from
-under program / script control.  The idea presented in this thread,
-is to have it cross-index the contents with a method that actually
-makes it easy to access in many common scenarios, without requiring
-huge gobs of code in user space.  Or in kernel space.
+Why not just repeat the PTEs for super-pages?  That won't work for
+huge pages, but for superpages that are a reasonable multiple (e.g.,
+16-times) the base-page size, it should work nicely.
 
-And it's not just a few 10s of lines of code currently,
-but rather about 80-100 lines just to find the correct device subdir,
-and *then* a few more 10s of lines of code to retrieve the value.
-
-In a bulletproof fashion, that is.  Sure it can be slightly smaller
-if niceties such as error checking/handling are omitted.
-
-There's no guarantee that udev is present, and even if it were present,
-there's no guarantee that the names in /dev/ will match /sysfs/ pathnames,
-since udev is very configurable to do otherwise.
-
-So lookups are by dev_t, which sysfs has no simple or even easy way
-of accomplishing.  O(n) at a minimum.
-
-If we make it easier to access, then more programs will use it
-rather than us having to expand our tricky binary ioctl interfaces.
-
-Isn't that part of the idea of sysfs -- to limit the need for new ioctls ?
-
-Cheers
+  --david
+-- 
+Mosberger Consulting LLC, http://www.mosberger-consulting.com/
