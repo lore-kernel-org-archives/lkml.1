@@ -1,45 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761927AbYCZSwj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762075AbYCZSx3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761927AbYCZSwj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Mar 2008 14:52:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754595AbYCZSwc
+	id S1762075AbYCZSx3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Mar 2008 14:53:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758653AbYCZSxV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Mar 2008 14:52:32 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:12301 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754960AbYCZSwb (ORCPT
+	Wed, 26 Mar 2008 14:53:21 -0400
+Received: from e35.co.us.ibm.com ([32.97.110.153]:54464 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754595AbYCZSxU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Mar 2008 14:52:31 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=Cfrc3Mw6t0s7iMka31C6dYaWkJHkiWnyxq0hGPNS4R1aokb9y7+1brAMW9M3radkZ
-	/dIfE5nskhaHhhFMiTbbA==
-Message-ID: <6599ad830803261152j1973e3c8oa82181a830f89260@mail.gmail.com>
-Date: Wed, 26 Mar 2008 11:52:21 -0700
-From: "Paul Menage" <menage@google.com>
-To: "Balaji Rao" <balajirrao@gmail.com>
-Subject: Re: [RFC][-mm] [2/2] Simple stats for memory resource controller
-Cc: linux-kernel@vger.kernel.org, containers@lists.osdl.org, balbir@in.ibm.com,
-       dhaval@linux.vnet.ibm.com
-In-Reply-To: <200803262348.59785.balajirrao@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200803262348.59785.balajirrao@gmail.com>
+	Wed, 26 Mar 2008 14:53:20 -0400
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Pavel Emelianov <xemul@openvz.org>
+Cc: Hugh Dickins <hugh@veritas.com>, Sudhir Kumar <skumar@linux.vnet.ibm.com>,
+       YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
+       Paul Menage <menage@google.com>, lizf@cn.fujitsu.com,
+       linux-kernel@vger.kernel.org, taka@valinux.co.jp, linux-mm@kvack.org,
+       David Rientjes <rientjes@google.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Date: Thu, 27 Mar 2008 00:19:54 +0530
+Message-Id: <20080326184954.9465.19379.sendpatchset@localhost.localdomain>
+Subject: [RFC][0/3] Virtual address space control for cgroups (v2)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 26, 2008 at 11:18 AM, Balaji Rao <balajirrao@gmail.com> wrote:
->         [MEM_CGROUP_STAT_RSS] = { "rss", PAGE_SIZE, },
->  +       [MEM_CGROUP_STAT_PGIN_COUNT] = {"page_in_count", 1, },
->  +       [MEM_CGROUP_STAT_PGOUT_COUNT] = {"page_out_count", 1, },
->   };
->
+This is the second version of the virtual address space control patchset
+for cgroups.  The patches are against 2.6.25-rc5-mm1 and have been tested on
+top of User Mode Linux, both with and without the config enabled.
 
-Should these be called "pgpgin" and "pgpgout" for consistency with /proc/vmstat?
+The first patch adds the user interface. The second patch adds accounting
+and control. The third patch updates documentation.
 
-Paul
+The changelog in each patchset documents what has changed in version 2.
+The most important one being that virtual address space accounting is
+now a config option.
+
+Reviews, Comments?
+
+series
+
+memory-controller-virtual-address-space-control-user-interface
+memory-controller-virtual-address-space-accounting-and-control
+memory-controller-virtual-address-control-documentation
+
+
+
+-- 
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
