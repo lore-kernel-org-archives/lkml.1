@@ -1,102 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760146AbYCZPzP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759217AbYCZP5x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760146AbYCZPzP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Mar 2008 11:55:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756391AbYCZPyy
+	id S1759217AbYCZP5x (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Mar 2008 11:57:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752834AbYCZP5p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Mar 2008 11:54:54 -0400
-Received: from mu-out-0910.google.com ([209.85.134.189]:42335 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755142AbYCZPyx (ORCPT
+	Wed, 26 Mar 2008 11:57:45 -0400
+Received: from iksaif.dns26.com ([84.246.226.15]:34510 "EHLO iksaif.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752782AbYCZP5o convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Mar 2008 11:54:53 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=uKQxsMI+Kvzu1YMb3ikQn02ZumtRiIKLu9qAl6GMsGZ7Np29tfu9CXYT2sK/RgsaTy0G+pvSCYuzjL5PoIuPCM9vOnkEFOUTpgU0LGvvCbQXzqj1yql8rgMNy0OIjvBE6RF48qaKdg7qRzvBnkXrA+OwAlruGen30JRXHB2Oyak=
-Message-ID: <29495f1d0803260854j46d37eedrc0927af226b3b8c8@mail.gmail.com>
-Date: Wed, 26 Mar 2008 08:54:49 -0700
-From: "Nish Aravamudan" <nish.aravamudan@gmail.com>
-To: "Luck, Tony" <tony.luck@intel.com>
-Subject: Re: larger default page sizes...
-Cc: "David Miller" <davem@davemloft.net>, paulus@samba.org, clameter@sgi.com,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       linux-ia64@vger.kernel.org, torvalds@linux-foundation.org,
-       agl@us.ibm.com, "Mel Gorman" <mel@csn.ul.ie>
-In-Reply-To: <1FE6DD409037234FAB833C420AA843ECE9E2CA@orsmsx424.amr.corp.intel.com>
+	Wed, 26 Mar 2008 11:57:44 -0400
+X-Greylist: delayed 656 seconds by postgrey-1.27 at vger.kernel.org; Wed, 26 Mar 2008 11:57:44 EDT
+From: Corentin CHARY <corentincj@iksaif.net>
+Reply-To: corentincj@iksaif.net
+To: Len Brown <lenb@kernel.org>
+Subject: Re: ISA -> ISA_ (Re: [GIT PATCH] ACPI patches for 2.6.25-rc6)
+Date: Wed, 26 Mar 2008 16:45:00 +0100
+User-Agent: KMail/1.9.7
+Cc: Ingo Molnar <mingo@elte.hu>, Bjorn Helgaas <bjorn.helgaas@hp.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-acpi@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
+References: <200803180510.47670.lenb@kernel.org> <20080326081653.GA8247@elte.hu> <200803261132.21448.lenb@kernel.org>
+In-Reply-To: <200803261132.21448.lenb@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-References: <18408.29107.709577.374424@cargo.ozlabs.ibm.com>
-	 <20080324.211532.33163290.davem@davemloft.net>
-	 <18408.59112.945786.488350@cargo.ozlabs.ibm.com>
-	 <20080325.163240.102401706.davem@davemloft.net>
-	 <1FE6DD409037234FAB833C420AA843ECE9E2CA@orsmsx424.amr.corp.intel.com>
+Message-Id: <200803261645.01343.corentincj@iksaif.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 3/25/08, Luck, Tony <tony.luck@intel.com> wrote:
-> > > How do I get gcc to use hugepages, for instance?
->  >
->  > Implementing transparent automatic usage of hugepages has been
->  > discussed many times, it's definitely doable and other OSs have
->  > implemented this for years.
->  >
->  > This is what I was implying.
->
->
-> "large" pages, or "super" pages perhaps ... but Linux "huge" pages
->  seem pretty hard to adapt for generic use by applications.  They
->  are generally a somewhere between a bit too big (2MB on X86) to
->  way too big (64MB, 256MB, 1GB or 4GB on ia64) for general use.
->
->  Right now they also suffer from making the sysadmin pick at
->  boot time how much memory to allocate as huge pages (while it
->  is possible to break huge pages into normal pages, going in
->  the reverse direction requires a memory defragmenter that
->  doesn't exist).
+On Wednesday 26 March 2008 16:32:20 Len Brown wrote:
+> So if this is correct or not depends on what the BIOS programmer
+> for the Asus A1x choose to write.  Perhaps Corentin 'Iksaif' CHARY
+> can confirm if the driver is working properly on that system.
 
-That's not entirely true. We have a dynamic pool now, thanks to Adam
-Litke [added to Cc], which can be treated as a high watermark for the
-hugetlb pool (and the static pool value serves as a low watermark).
-Unless by hugepages you mean something other than what I think (but
-referring to a 2M size on x86 imples you are not). And with the
-antifragmentation improvements, hugepage pool changes at run-time are
-more likely to succeed [added Mel to Cc].
+Hi,
+Sorry I don't have an A1x to test that, and this was here a long time before I start working on acpi4asus.
+But, see that grep :
 
->  Making an application use huge pages as heap may be simple
->  (just link with a different library to provide with a different
->  version of malloc()) ... code, stack, mmap'd files are all
->  a lot harder to do transparently.
+chary_c@foo /usr/src/linux/drivers/misc $ grep ISA *
+asus-laptop.c:      "\\_SB.PCI0.ISA.EC0._Q10",  /* A1x */
+thinkpad_acpi.c:IBM_HANDLE(ec, root, "\\_SB.PCI0.ISA.EC0",      /* 240, 240x */
+thinkpad_acpi.c:           "\\_SB.PCI.ISA.EC",  /* 570 */
+thinkpad_acpi.c:           "\\_SB.PCI0.ISA0.EC0",       /* 600e/x, 770e, 770x */
+thinkpad_acpi.c:           "\\_SB.PCI0.ISA.EC", /* A21e, A2xm/p, T20-22, X20-21 */
+thinkpad_acpi.c:           "\\_SB.PCI.ISA.SLCE",        /* 570 */
 
-I feel like I should promote libhugetlbfs here. We're trying to make
-things easier for applications to use. You can back the heap by
-hugepages via LD_PRELOAD. But even that isn't always simple (what
-happens when something is already allocated on the heap?, which we've
-seen happen even in our constructor in the library, for instance).
-We're working on hugepage stack support. Text/BSS/Data segment
-remapping exists now, too, but does require relinking to be more
-successful. We have a mode that allows libhugetlbfs to try to fit the
-segments into hugepages, or even just those parts that might fit --
-but we have limitations on power and IA64, for instance, where
-hugepages are restricted in their placement (either depending on the
-process' existing mappings or generally). libhugetlbfs has, at least,
-been tested a bit on IA64 to validate the heap backing (IIRC) and the
-various kernel tests. We also have basic sparc support -- however, I
-don't have any boxes handy to test on (working on getting them added
-to our testing grid and then will revisit them), and then one box I
-used before gave me semi-spurious soft-lockups (old bug, unclear if it
-is software or just buggy hardware).
+So it seems to work for thinkpads.
+I think this patch isn't needed.
 
-In any case, my point is people are trying to work on this from
-various angles. Both making hugepages more available at run-time (in a
-dynamic fashion, based upon need) and making them easier to use for
-applications. Is it easy? Not necessarily. Is it guaranteed to work? I
-like to think we make a best effort. But as others have pointed out,
-it doesn't seem like we're going to get mainline transparent hugepage
-support anytime soon.
-
-Thanks,
-Nish
+-- 
+Corentin 'Iksaif' CHARY
+http://xf.iksaif.net
