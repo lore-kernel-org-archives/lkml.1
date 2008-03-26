@@ -1,75 +1,161 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757886AbYCZHx6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758091AbYCZHyY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757886AbYCZHx6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Mar 2008 03:53:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753822AbYCZHxm
+	id S1758091AbYCZHyY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Mar 2008 03:54:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757173AbYCZHxr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Mar 2008 03:53:42 -0400
-Received: from de01egw01.freescale.net ([192.88.165.102]:48308 "EHLO
-	de01egw01.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753536AbYCZHxl (ORCPT
+	Wed, 26 Mar 2008 03:53:47 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:46325 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756720AbYCZHxp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Mar 2008 03:53:41 -0400
-From: Zhang Wei <wei.zhang@freescale.com>
-To: dan.j.williams@intel.com
-Cc: linux-kernel@vger.kernel.org, Zhang Wei <wei.zhang@freescale.com>
-Subject: [PATCH] fsldma: The MPC8377MDS board device tree node for fsldma driver
-Date: Wed, 26 Mar 2008 15:42:36 +0800
-Message-Id: <1206517356-11209-2-git-send-email-wei.zhang@freescale.com>
-X-Mailer: git-send-email 1.5.4
-In-Reply-To: <1206517356-11209-1-git-send-email-wei.zhang@freescale.com>
-References: <1206517356-11209-1-git-send-email-wei.zhang@freescale.com>
-X-OriginalArrivalTime: 26 Mar 2008 07:47:39.0769 (UTC) FILETIME=[AA807690:01C88F15]
+	Wed, 26 Mar 2008 03:53:45 -0400
+Date: Wed, 26 Mar 2008 00:53:20 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Bart Van Assche" <bart.vanassche@gmail.com>
+Cc: "Ingo Molnar" <mingo@elte.hu>, "Nick Piggin" <nickpiggin@yahoo.com.au>,
+       "Christoph Lameter" <clameter@sgi.com>,
+       "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>,
+       "Thomas Gleixner" <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>
+Subject: Re: quicklists confuse meminfo
+Message-Id: <20080326005320.e6159ee1.akpm@linux-foundation.org>
+In-Reply-To: <e2e108260803260045q37792686l80ddb421f2e67c6f@mail.gmail.com>
+References: <alpine.LFD.1.00.0803090919481.3099@apollo.tec.linutronix.de>
+	<20080309114640.85c9c3eb.akpm@linux-foundation.org>
+	<Pine.LNX.4.64.0803100851560.23575@schroedinger.engr.sgi.com>
+	<200803111507.20870.nickpiggin@yahoo.com.au>
+	<e2e108260803210552i4cdef6a5qf8f5076eaac2cf03@mail.gmail.com>
+	<20080321144517.GA1545@elte.hu>
+	<e2e108260803260045q37792686l80ddb421f2e67c6f@mail.gmail.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The fsldma driver is tested on MPC8377MDS board.
-The patch adds fsldma driver support into MPC8377MDS device tree.
+On Wed, 26 Mar 2008 08:45:46 +0100 "Bart Van Assche" <bart.vanassche@gmail.com> wrote:
 
-Signed-off-by: Zhang Wei <wei.zhang@freescale.com>
----
- arch/powerpc/boot/dts/mpc8377_mds.dts |   27 +++++++++++++++++++++++++++
- 1 files changed, 27 insertions(+), 0 deletions(-)
+> On Fri, Mar 21, 2008 at 3:45 PM, Ingo Molnar <mingo@elte.hu> wrote:
+> >
+> >  * Bart Van Assche <bart.vanassche@gmail.com> wrote:
+> >
+> >  > Is anyone currently working on this
+> >  > (http://bugzilla.kernel.org/show_bug.cgi?id=9991) ? I think this
+> >  > should either be fixed or documented as a known issue.
+> >
+> >  it should be fixed in latest -git (by commit 985a34bd75cc8c9) - can you
+> >  still see it?
+> 
+> This issue is indeed fixed now, thanks (retested with kernel version
+> 2.6.25-rc6-00333-ga4083c9-dirty). Where can I find the patch that
+> fixed this issue ? A Google query for the commit ID returned only one
+> result, and that was an URL that pointed to your e-mail.
+> 
 
-diff --git a/arch/powerpc/boot/dts/mpc8377_mds.dts b/arch/powerpc/boot/dts/mpc8377_mds.dts
-index 49c05e9..ba5312e 100644
---- a/arch/powerpc/boot/dts/mpc8377_mds.dts
-+++ b/arch/powerpc/boot/dts/mpc8377_mds.dts
-@@ -268,6 +268,33 @@
- 			interrupt-parent = <&ipic>;
- 		};
+commit 985a34bd75cc8c96e43f00dcdda7c3fdb51a3026
+Author: Thomas Gleixner <tglx@linutronix.de>
+Date:   Sun Mar 9 13:14:37 2008 +0100
+
+    x86: remove quicklists
+    
+    quicklists cause a serious memory leak on 32-bit x86,
+    as documented at:
+    
+      http://bugzilla.kernel.org/show_bug.cgi?id=9991
+    
+    the reason is that the quicklist pool is a special-purpose
+    cache that grows out of proportion. It is not accounted for
+    anywhere and users have no way to even realize that it's
+    the quicklists that are causing RAM usage spikes. It was
+    supposed to be a relatively small pool, but as demonstrated
+    by KOSAKI Motohiro, they can grow as large as:
+    
+      Quicklists:    1194304 kB
+    
+    given how much trouble this code has caused historically,
+    and given that Andrew objected to its introduction on x86
+    (years ago), the best option at this point is to remove them.
+    
+    [ any performance benefits of caching constructed pgds should
+      be implemented in a more generic way (possibly within the page
+      allocator), while still allowing constructed pages to be
+      allocated by other workloads. ]
+    
+    Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+    Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+index f41c953..237fc12 100644
+--- a/arch/x86/Kconfig
++++ b/arch/x86/Kconfig
+@@ -66,9 +66,6 @@ config MMU
+ config ZONE_DMA
+ 	def_bool y
  
-+		dma@82a8 {
-+			#address-cells = <1>;
-+			#size-cells = <1>;
-+			compatible = "fsl,mpc8349-dma";
-+			reg = <0x82a8 4>;
-+			ranges = <0 0x8100 0x1a8>;
-+			interrupt-parent = <&ipic>;
-+			interrupts = <0x47 8>;
-+			cell-index = <0>;
-+			dma-channel@0 {
-+				compatible = "fsl,mpc8349-dma-channel";
-+				reg = <0 0x80>;
-+			};
-+			dma-channel@80 {
-+				compatible = "fsl,mpc8349-dma-channel";
-+				reg = <0x80 0x80>;
-+			};
-+			dma-channel@100 {
-+				compatible = "fsl,mpc8349-dma-channel";
-+				reg = <0x100 0x80>;
-+			};
-+			dma-channel@180 {
-+				compatible = "fsl,mpc8349-dma-channel";
-+				reg = <0x180 0x28>;
-+			};
-+		};
-+
- 		/* IPIC
- 		 * interrupts cell = <intr #, sense>
- 		 * sense values match linux IORESOURCE_IRQ_* defines:
--- 
-1.5.4
+-config QUICKLIST
+-	def_bool X86_32
+-
+ config SBUS
+ 	bool
+ 
+diff --git a/arch/x86/mm/pgtable_32.c b/arch/x86/mm/pgtable_32.c
+index 73aba71..2f9e9af 100644
+--- a/arch/x86/mm/pgtable_32.c
++++ b/arch/x86/mm/pgtable_32.c
+@@ -342,12 +342,16 @@ static void pgd_mop_up_pmds(struct mm_struct *mm, pgd_t *pgdp)
+ 
+ pgd_t *pgd_alloc(struct mm_struct *mm)
+ {
+-	pgd_t *pgd = quicklist_alloc(0, GFP_KERNEL, pgd_ctor);
++	pgd_t *pgd = (pgd_t *)__get_free_page(GFP_KERNEL | __GFP_ZERO);
+ 
+-	mm->pgd = pgd;		/* so that alloc_pd can use it */
++	/* so that alloc_pd can use it */
++	mm->pgd = pgd;
++	if (pgd)
++		pgd_ctor(pgd);
+ 
+ 	if (pgd && !pgd_prepopulate_pmd(mm, pgd)) {
+-		quicklist_free(0, pgd_dtor, pgd);
++		pgd_dtor(pgd);
++		free_page((unsigned long)pgd);
+ 		pgd = NULL;
+ 	}
+ 
+@@ -357,12 +361,8 @@ pgd_t *pgd_alloc(struct mm_struct *mm)
+ void pgd_free(struct mm_struct *mm, pgd_t *pgd)
+ {
+ 	pgd_mop_up_pmds(mm, pgd);
+-	quicklist_free(0, pgd_dtor, pgd);
+-}
+-
+-void check_pgt_cache(void)
+-{
+-	quicklist_trim(0, pgd_dtor, 25, 16);
++	pgd_dtor(pgd);
++	free_page((unsigned long)pgd);
+ }
+ 
+ void __pte_free_tlb(struct mmu_gather *tlb, struct page *pte)
+diff --git a/include/asm-x86/pgtable_32.h b/include/asm-x86/pgtable_32.h
+index a842c72..4e6a0fc 100644
+--- a/include/asm-x86/pgtable_32.h
++++ b/include/asm-x86/pgtable_32.h
+@@ -26,10 +26,9 @@ struct mm_struct;
+ struct vm_area_struct;
+ 
+ extern pgd_t swapper_pg_dir[1024];
+-extern struct kmem_cache *pmd_cache;
+-void check_pgt_cache(void);
+ 
+-static inline void pgtable_cache_init(void) {}
++static inline void pgtable_cache_init(void) { }
++static inline void check_pgt_cache(void) { }
+ void paging_init(void);
+ 
+ 
 
