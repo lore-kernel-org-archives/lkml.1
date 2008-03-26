@@ -1,62 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760419AbYCZSHE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761580AbYCZSH2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760419AbYCZSHE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Mar 2008 14:07:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757956AbYCZSGv
+	id S1761580AbYCZSH2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Mar 2008 14:07:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757956AbYCZSHK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Mar 2008 14:06:51 -0400
-Received: from yw-out-2324.google.com ([74.125.46.29]:10262 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757359AbYCZSGu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Mar 2008 14:06:50 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=NpjDxtHfNTWAho7kNr5jakPAkHC7zOZeVLouW3v7ItmLC8hUXc/Z83e40Hs3PJYBvCzlqfBgxV1erjtHdMCBPrOD4FsnIvWNygArIMT2QuPbG49n4xVmMhRxzAZUHPu50u/3QSvgysZhEgcLJi6VbKygy9D44Yc4qKzh23PRjKE=
-Message-ID: <a340dd0e0803261106v67bbecdaie8a3f52b47e2c84a@mail.gmail.com>
-Date: Wed, 26 Mar 2008 14:06:49 -0400
-From: "Mike Nuss" <mikenuss@gmail.com>
-To: "Richard Kennedy" <richard@rsk.demon.co.uk>
-Subject: Re: ohci : strange looking use of round_jiffies_relative. possible bug ?
-Cc: "Alan Stern" <stern@rowland.harvard.edu>, dbrownell@users.sourceforge.net,
-       linux-usb <linux-usb@vger.kernel.org>,
-       lkml <linux-kernel@vger.kernel.org>
-In-Reply-To: <1206546405.2931.20.camel@castor.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Wed, 26 Mar 2008 14:07:10 -0400
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:60416 "EHLO e3.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757033AbYCZSHI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Mar 2008 14:07:08 -0400
+Date: Wed, 26 Mar 2008 11:07:01 -0700
+From: Gary Hade <garyhade@us.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Thomas Meyer <thomas@m3y3r.de>,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       LKML <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Natalie Protasevich <protasnb@gmail.com>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Gary Hade <garyhade@us.ibm.com>, pm@debian.org
+Subject: Re: [patch] pci: revert "PCI: remove transparent bridge sizing"
+Message-ID: <20080326180701.GA6249@us.ibm.com>
+References: <47E8217C.9080400@s5r6.in-berlin.de> <20080325073117.GA8469@elte.hu> <20080325165007.GA7775@elte.hu> <47E94557.4030001@m3y3r.de> <20080325201125.GD15330@elte.hu> <20080325202954.GA22007@elte.hu> <47E969E1.6080608@m3y3r.de> <alpine.LFD.1.00.0803251445500.2775@woody.linux-foundation.org> <20080326101450.GA9060@jurassic.park.msu.ru> <20080326135458.GA27621@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <Pine.LNX.4.44L0.0803261136590.6324-100000@iolanthe.rowland.org>
-	 <1206546405.2931.20.camel@castor.localdomain>
+In-Reply-To: <20080326135458.GA27621@elte.hu>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 26, 2008 at 11:46 AM, Richard Kennedy
-<richard@rsk.demon.co.uk> wrote:
->
->  On Wed, 2008-03-26 at 11:37 -0400, Alan Stern wrote:
->  > On Wed, 26 Mar 2008, Richard Kennedy wrote:
->  >
->  > > I was looking at the uses of round_jiffies and noticed that the ohci
->  > > unlink_watchdog_func() calls
->  > > mod_timer(&ohci->unlink_watchdog, round_jiffies_relative(HZ));
->  > >
->  > > Which looks a bit strange as it will set the timer to 0 <= t < HZ.
->  > > Reading the comments I think that is really is expecting to setup timer
->  > > to (now + 1s)
->  > >
->  > > mod_timer(&ohci->unlink_watchdog, round_jiffies(jiffies + HZ));
->  > >
->  > > If this is not true then perhaps it needs a comment to explain what it
->  > > _is_ trying to do, because it's got me baffled ;)
+On Wed, Mar 26, 2008 at 02:54:58PM +0100, Ingo Molnar wrote:
+> 
+> * Ivan Kokshaysky <ink@jurassic.park.msu.ru> wrote:
+> 
+> > Thomas, can you put CONFIG_RESOURCES_64BIT=y back and either revert 
+> > commit 8fa5913d54f3b1e09948e6a0db34da887e05ff1f, or just comment out 
+> > these two lines in drivers/pci/setup-bus.c:
+> > 
+> > 		if (bus->self->transparent)
+> > 			break;
+> > 
+> > and check if it helps?
+> 
+> alternatively, try x86.git/latest which has the revert below included.
 
-Yes, my intent there was a roughly 1 second delay. You're correct, it's wrong.
+As the author of the "PCI: remove transparent bridge sizing" change,
+I apologize for the trouble it seems to have caused.  The same change
+had also exposed an issue reported by Paul Martin that has been causing
+an Oops while hotplugging ThinkPads to a ThinkPad Dock II.
+ re: http://lkml.org/lkml/2008/2/19/405
+     http://bugzilla.kernel.org/show_bug.cgi?id=9961
+I have a fix for the ThinkPad docking Oops but if the issue being
+discussed here is caused by the transparent bridge sizing removal
+change I totally agree that it should be reverted.  
 
->  > I'd say it's a bug.  Or rather a pair of bugs, since that mod_timer()
->  > call appears in two places.
+The transparent bridge sizing removal change was motivated by
+insufficient PCI memory resource for a transparent bridge window
+that was being created as a result of expansion ROM(s) being included
+in the transparent bridge sizing calculations.  A later
+"PCI: Remove default PCI expansion ROM memory allocation" change
+( re: http://lkml.org/lkml/2007/12/11/361 ) removes the expansion
+ROM(s) from the transparent bridge sizing calculations which actually
+resolves the original issue in a different manner.  So, even if the
+"PCI: remove transparent bridge sizing" is not problematic it is
+no longer needed anyway.
 
-Yup.
+Gary
 
-Mike
+-- 
+Gary Hade
+System x Enablement
+IBM Linux Technology Center
+503-578-4503  IBM T/L: 775-4503
+garyhade@us.ibm.com
+http://www.ibm.com/linux/ltc
+
