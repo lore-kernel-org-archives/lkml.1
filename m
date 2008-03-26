@@ -1,62 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759195AbYCZLtn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758573AbYCZLv4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759195AbYCZLtn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Mar 2008 07:49:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752790AbYCZLte
+	id S1758573AbYCZLv4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Mar 2008 07:51:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754153AbYCZLvp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Mar 2008 07:49:34 -0400
-Received: from wf-out-1314.google.com ([209.85.200.172]:9846 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753250AbYCZLtd (ORCPT
+	Wed, 26 Mar 2008 07:51:45 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:33934
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752790AbYCZLvo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Mar 2008 07:49:33 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=Zz9ixKrKQfSyu46k7eV9n0bGm9kAw0ocYUVxOdeG8//UzQq36ebuVIJUQbo67jIumzfXuQ5gRdAm5fpOBrLfyZf5Po0h6y3TQ8y2iIdoeHKwwQKDHcCmHJOR+BzeeqH/ScIFXL3StPiPiLcK5XvUbvadcfssA++/MvaYIvYVOgs=
-Message-ID: <5d6222a80803260449j7ca69d4dj68e5e80810afb469@mail.gmail.com>
-Date: Wed, 26 Mar 2008 08:49:29 -0300
-From: "Glauber Costa" <glommer@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [PATCH 2/2] [PATCH] move apic declarations to mach_apic.h
-Cc: "Glauber Costa" <gcosta@redhat.com>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, tglx@linutronix.de, yhlu.kernel@gmail.com
-In-Reply-To: <20080326044901.GA3121@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 26 Mar 2008 07:51:44 -0400
+Date: Wed, 26 Mar 2008 04:51:43 -0700 (PDT)
+Message-Id: <20080326.045143.218956952.davem@davemloft.net>
+To: m.kozlowski@tuxland.pl
+Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       sparclinux@vger.kernel.org
+Subject: Re: sparc64 BUG: using smp_processor_id() in preemptible
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <200803261246.53770.m.kozlowski@tuxland.pl>
+References: <20080326.041626.224135350.davem@davemloft.net>
+	<20080326.042516.261621639.davem@davemloft.net>
+	<200803261246.53770.m.kozlowski@tuxland.pl>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080325150630.GA13828@elte.hu>
-	 <1206462537-8427-1-git-send-email-gcosta@redhat.com>
-	 <1206462537-8427-2-git-send-email-gcosta@redhat.com>
-	 <1206462537-8427-3-git-send-email-gcosta@redhat.com>
-	 <20080325195818.GA12302@elte.hu> <47E96A29.4000503@redhat.com>
-	 <20080326044745.GA2918@elte.hu> <20080326044901.GA3121@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 26, 2008 at 1:49 AM, Ingo Molnar <mingo@elte.hu> wrote:
->
->
->  * Ingo Molnar <mingo@elte.hu> wrote:
->
->  > there's another build error i found:
->  >
->  >  arch/x86/kernel/setup.c: In function 'setup_per_cpu_areas':
->  >  arch/x86/kernel/setup.c:87: error: expected ',' or ';' before '__attribute__'
->  >
->  > config attached. This is with and without your second patch. (i.e.
->  > independent problem, introduced by the 1/2 patch)
->
->  sorry - this is not your build bug :-)
->
+From: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
+Date: Wed, 26 Mar 2008 12:46:53 +0100
 
-Heh. My reaction when I saw it was "Oh no, I can't believe it!"
+> Ok it worked. Now I get a bunch of these:
+> 
+> BUG: using smp_processor_id() in preemptible [00000000] code: pidof/2471
+> caller is flush_ptrace_access+0xc0/0x1a0
 
--- 
-Glauber Costa.
-"Free as in Freedom"
-http://glommer.net
+Here ya go:
 
-"The less confident you are, the more serious you have to act."
+commit f6a843d939ade435e060d580f5c56d958464f8a5
+Author: David S. Miller <davem@davemloft.net>
+Date:   Wed Mar 26 04:51:12 2008 -0700
+
+    [SPARC64]: flush_ptrace_access() needs preemption disable.
+    
+    Based upon a report by Mariusz Kozlowski.
+    
+    Signed-off-by: David S. Miller <davem@davemloft.net>
+
+diff --git a/arch/sparc64/kernel/ptrace.c b/arch/sparc64/kernel/ptrace.c
+index bcf58ec..aaae865 100644
+--- a/arch/sparc64/kernel/ptrace.c
++++ b/arch/sparc64/kernel/ptrace.c
+@@ -70,6 +70,8 @@ void flush_ptrace_access(struct vm_area_struct *vma, struct page *page,
+ 	if (tlb_type == hypervisor)
+ 		return;
+ 
++	preempt_disable();
++
+ #ifdef DCACHE_ALIASING_POSSIBLE
+ 	/* If bit 13 of the kernel address we used to access the
+ 	 * user page is the same as the virtual address that page
+@@ -108,6 +110,8 @@ void flush_ptrace_access(struct vm_area_struct *vma, struct page *page,
+ 		for (; start < end; start += icache_line_size)
+ 			flushi(start);
+ 	}
++
++	preempt_enable();
+ }
+ 
+ enum sparc_regset {
