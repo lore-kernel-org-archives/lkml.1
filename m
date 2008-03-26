@@ -1,90 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753914AbYCZN4G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753771AbYCZODv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753914AbYCZN4G (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Mar 2008 09:56:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751554AbYCZNzy
+	id S1753771AbYCZODv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Mar 2008 10:03:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750745AbYCZODk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Mar 2008 09:55:54 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:51214 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750964AbYCZNzx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Mar 2008 09:55:53 -0400
-Date: Wed, 26 Mar 2008 14:54:58 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Thomas Meyer <thomas@m3y3r.de>,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       LKML <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Natalie Protasevich <protasnb@gmail.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Gary Hade <garyhade@us.ibm.com>
-Subject: [patch] pci: revert "PCI: remove transparent bridge sizing"
-Message-ID: <20080326135458.GA27621@elte.hu>
-References: <47E807EE.2030902@m3y3r.de> <47E8217C.9080400@s5r6.in-berlin.de> <20080325073117.GA8469@elte.hu> <20080325165007.GA7775@elte.hu> <47E94557.4030001@m3y3r.de> <20080325201125.GD15330@elte.hu> <20080325202954.GA22007@elte.hu> <47E969E1.6080608@m3y3r.de> <alpine.LFD.1.00.0803251445500.2775@woody.linux-foundation.org> <20080326101450.GA9060@jurassic.park.msu.ru>
+	Wed, 26 Mar 2008 10:03:40 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:39505 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1750724AbYCZODj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Mar 2008 10:03:39 -0400
+Date: Wed, 26 Mar 2008 10:03:38 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: pm list <linux-pm@lists.linux-foundation.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Greg KH <greg@kroah.com>, Len Brown <lenb@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Alexey Starikovskiy <astarikovskiy@suse.de>,
+       David Brownell <david-b@pacbell.net>, Pavel Machek <pavel@ucw.cz>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [RFC][PATCH] PM: Introduce new top level suspend and hibernation
+ callbacks (rev. 3)
+In-Reply-To: <200803252135.04247.rjw@sisk.pl>
+Message-ID: <Pine.LNX.4.44L0.0803261001080.4755-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080326101450.GA9060@jurassic.park.msu.ru>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 25 Mar 2008, Rafael J. Wysocki wrote:
 
-* Ivan Kokshaysky <ink@jurassic.park.msu.ru> wrote:
-
-> Thomas, can you put CONFIG_RESOURCES_64BIT=y back and either revert 
-> commit 8fa5913d54f3b1e09948e6a0db34da887e05ff1f, or just comment out 
-> these two lines in drivers/pci/setup-bus.c:
+> > I just thought of another problem.  At the point where
+> > local_irq_disable() is called, in between device_suspend() and
+> > device_power_down(), it is possible in a preemptible kernel that
+> > another task is holding dpm_list_mtx and is in the middle of updating
+> > the list pointers.  This would mess up the traversal in
+> > device_power_down().
+> > 
+> > I'm not sure about the best way to prevent this.  Is it legal to call
+> > unlock_mutex() while interrupts or preemption are disabled?
 > 
-> 		if (bus->self->transparent)
-> 			break;
+> Well, I think it is, but I'm not sure how that can help.
 > 
-> and check if it helps?
+> To prevent the race from happening, we can lock dpm_list_mtx before switching
+> interrupts off in kernel/power/main.c:suspend_enter() and analogously in
+> kernel/power/disk.c .
 
-alternatively, try x86.git/latest which has the revert below included.
+That's right.  And once interrupts are turned off you should unlock 
+dpm_list_mtx again, in case a noirq method wants to unregister a 
+device.  Hence my question: Is it legal to call unlock_mutex() while 
+interrupts are disabled?
 
-	Ingo
+Alan Stern
 
------------------->
-Subject: pci: revert "PCI: remove transparent bridge sizing"
-From: Ingo Molnar <mingo@elte.hu>
-Date: Wed Mar 26 14:38:07 CET 2008
-
-revert commit 8fa5913d54f3b1e09948e6a0db34da887e05ff1f as it is wrong.
-
-Requested by Ivan Kokshaysky.
-
-Signed-off-by-if-Thomas-reports-success: Ingo Molnar <mingo@elte.hu>
----
- drivers/pci/setup-bus.c |    5 -----
- 1 file changed, 5 deletions(-)
-
-Index: linux-x86.q/drivers/pci/setup-bus.c
-===================================================================
---- linux-x86.q.orig/drivers/pci/setup-bus.c
-+++ linux-x86.q/drivers/pci/setup-bus.c
-@@ -486,12 +486,7 @@ void __ref pci_bus_size_bridges(struct p
- 		break;
- 
- 	case PCI_CLASS_BRIDGE_PCI:
--		/* don't size subtractive decoding (transparent)
--		 * PCI-to-PCI bridges */
--		if (bus->self->transparent)
--			break;
- 		pci_bridge_check_ranges(bus);
--		/* fall through */
- 	default:
- 		pbus_size_io(bus);
- 		/* If the bridge supports prefetchable range, size it
