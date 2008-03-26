@@ -1,156 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932097AbYCZV1y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759347AbYCZV2p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932097AbYCZV1y (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Mar 2008 17:27:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756832AbYCZV1o
+	id S1759347AbYCZV2p (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Mar 2008 17:28:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757461AbYCZV2g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Mar 2008 17:27:44 -0400
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:51324 "EHLO e6.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754493AbYCZV1n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Mar 2008 17:27:43 -0400
-Message-ID: <47EABFDC.4090606@linux.vnet.ibm.com>
-Date: Wed, 26 Mar 2008 16:27:56 -0500
-From: Jon Tollefson <kniht@linux.vnet.ibm.com>
-Organization: IBM
-User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
+	Wed, 26 Mar 2008 17:28:36 -0400
+Received: from ug-out-1314.google.com ([66.249.92.173]:22535 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756832AbYCZV2f (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Mar 2008 17:28:35 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=kEv3BXckaphtIqA7cEaZtVECXiyQp576EpC1jLOx2WlILY7/jaT9sVglTsOrxXdERuQIryrIuNMpRgh/Ii6XXtrGl4Zg1yawi9HDrTM0fTXuibmRB7JlfQhpjCeW0q7N0YXXBNS87NBruhzH1v2aSiKlFQACQoR2qKqUULhAqC4=
+Message-ID: <9a8748490803261428n343de33fg5773a88b9f0aa4e5@mail.gmail.com>
+Date: Wed, 26 Mar 2008 22:28:32 +0100
+From: "Jesper Juhl" <jesper.juhl@gmail.com>
+To: "David Miller" <davem@davemloft.net>
+Subject: Re: [patch 07/76] NIU: Bump driver version and release date.
+Cc: chrisw@sous-sol.org, linux-kernel@vger.kernel.org, stable@kernel.org,
+       jmforbes@linuxtx.org, zwane@arm.linux.org.uk, tytso@mit.edu,
+       rdunlap@xenotime.net, davej@redhat.com, chuckw@quantumlinux.com,
+       reviews@ml.cw.f00f.org, mkrufky@linuxtv.org, cebbert@redhat.com,
+       cavokz@gmail.com, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk, gregkh@suse.de
+In-Reply-To: <9a8748490803211716j333f40f1vdf9d1ffd0c67448c@mail.gmail.com>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       linuxppc-dev <linuxppc-dev@ozlabs.org>
-CC: Adam Litke <agl@linux.vnet.ibm.com>, Andi Kleen <andi@firstfloor.org>,
-       Paul Mackerras <paulus@samba.org>
-Subject: [PATCH 3/4] powerpc: scan device tree and save gigantic page locations
-References: <47EABE2D.7080400@linux.vnet.ibm.com>
-In-Reply-To: <47EABE2D.7080400@linux.vnet.ibm.com>
-X-Enigmail-Version: 0.95.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080321224250.144333319@sous-sol.org>
+	 <20080321224333.400857992@sous-sol.org>
+	 <9a8748490803211710u4c5d1d67x2a5a891347e0adf6@mail.gmail.com>
+	 <20080321.171401.49157146.davem@davemloft.net>
+	 <9a8748490803211716j333f40f1vdf9d1ffd0c67448c@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The 16G huge pages have to be reserved in the HMC prior to boot.  The location of
-the pages are placed in the device tree.  During very early boot these locations are
-saved for use by hugetlbfs.
+David,
 
-Signed-off-by: Jon Tollefson <kniht@linux.vnet.ibm.com>
----
+When I made the reply below I was rather tired and edgy. I would like
+to explain why I commented as I did and offer an appology for wasting
+your time and/or annoying you - that was never my intention.
 
- arch/powerpc/mm/hash_utils_64.c  |   41 ++++++++++++++++++++++++++++++++++++++-
- arch/powerpc/mm/hugetlbpage.c    |   17 ++++++++++++++++
- include/asm-powerpc/mmu-hash64.h |    2 +
- 3 files changed, 59 insertions(+), 1 deletion(-)
+I try to participate constructively where and when I can and one of
+the ways I try to do so is by reading patches that people submit. Most
+of the time I'm not qualified to comment on them and I try not to.
+In this specific case I felt I knew the -stable rules well enough and
+could understand the patch well enough to offer up a constructive
+comment, so I did.
+My Intention was simply to point out that the patch *seemed* to fall
+outside what the -stable rules allowed, and my understanding was that
+the rules were there for a reason - to keep -stable patches to the
+very minimum required to fix bugs and only that.
 
+When you replied the way you did I got rather irritated by the fact
+that you chose to see it as an attempt to waste peoples time rather
+than see it how I intended it; as an attempt to help out by reviewing
+patches and point out any oddities/guideline-deviation I observed.
 
-diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
-index a83dfa3..d3f7d92 100644
---- a/arch/powerpc/mm/hash_utils_64.c
-+++ b/arch/powerpc/mm/hash_utils_64.c
-@@ -67,6 +67,7 @@
- 
- #define KB (1024)
- #define MB (1024*KB)
-+#define GB (1024L*MB)
- 
- /*
-  * Note:  pte   --> Linux PTE
-@@ -302,6 +303,41 @@ static int __init htab_dt_scan_page_sizes(unsigned long node,
- 	return 0;
- }
- 
-+/* Scan for 16G memory blocks that have been set aside for huge pages
-+ * and reserve those blocks for 16G huge pages.
-+ */
-+static int __init htab_dt_scan_hugepage_blocks(unsigned long node,
-+					const char *uname, int depth,
-+					void *data) {
-+	char *type = of_get_flat_dt_prop(node, "device_type", NULL);
-+	unsigned long *lprop;
-+	u32 *prop;
-+
-+	/* We are scanning "memory" nodes only */
-+	if (type == NULL || strcmp(type, "memory") != 0)
-+		return 0;
-+
-+	/* This property is the log base 2 of the number of virtual pages that
-+	 * will represent this memory block. */
-+	prop = of_get_flat_dt_prop(node, "ibm,expected#pages", NULL);
-+	if (prop == NULL)
-+		return 0;
-+	unsigned int expected_pages = (1 << prop[0]);
-+	lprop = of_get_flat_dt_prop(node, "reg", NULL);
-+	if (lprop == NULL)
-+		return 0;
-+	long unsigned int phys_addr = lprop[0];
-+	long unsigned int block_size = lprop[1];
-+	if (block_size != (16 * GB))
-+		return 0;
-+	printk(KERN_INFO "Reserving huge page memory "
-+			"addr = 0x%lX size = 0x%lX pages = %d\n",
-+			phys_addr, block_size, expected_pages);
-+	lmb_reserve(phys_addr, block_size * expected_pages);
-+	add_gpage(phys_addr, block_size, expected_pages);
-+	return 0;
-+}
-+
- static void __init htab_init_page_sizes(void)
- {
- 	int rc;
-@@ -370,7 +406,10 @@ static void __init htab_init_page_sizes(void)
- 	       mmu_psize_defs[mmu_io_psize].shift);
- 
- #ifdef CONFIG_HUGETLB_PAGE
--	/* Init large page size. Currently, we pick 16M or 1M depending
-+	/* Reserve 16G huge page memory sections for huge pages */
-+	of_scan_flat_dt(htab_dt_scan_hugepage_blocks, NULL);
-+
-+/* Init large page size. Currently, we pick 16M or 1M depending
- 	 * on what is available
- 	 */
- 	if (mmu_psize_defs[MMU_PAGE_16M].shift)
-diff --git a/arch/powerpc/mm/hugetlbpage.c b/arch/powerpc/mm/hugetlbpage.c
-index 31d977b..44d3d55 100644
---- a/arch/powerpc/mm/hugetlbpage.c
-+++ b/arch/powerpc/mm/hugetlbpage.c
-@@ -108,6 +108,23 @@ pmd_t *hpmd_alloc(struct mm_struct *mm, pud_t *pud, unsigned long addr)
- }
- #endif
- 
-+/* Build list of addresses of gigantic pages.  This function is used in early
-+ * boot before the buddy allocator is setup.
-+ */
-+void add_gpage(unsigned long addr, unsigned long page_size,
-+	unsigned long number_of_pages)
-+{
-+	if (addr) {
-+		while (number_of_pages > 0) {
-+			gpage_freearray[nr_gpages] = __va(addr);
-+			nr_gpages++;
-+			number_of_pages--;
-+			addr += page_size;
-+		}
-+	}
-+}
-+
-+
- /* Put 16G page address into temporary huge page list because the mem_map
-  * is not up yet.
-  */
-diff --git a/include/asm-powerpc/mmu-hash64.h b/include/asm-powerpc/mmu-hash64.h
-index 2864fa3..db1276a 100644
---- a/include/asm-powerpc/mmu-hash64.h
-+++ b/include/asm-powerpc/mmu-hash64.h
-@@ -279,6 +279,8 @@ extern int htab_bolt_mapping(unsigned long vstart, unsigned long vend,
- 			     unsigned long pstart, unsigned long mode,
- 			     int psize, int ssize);
- extern void set_huge_psize(int psize);
-+extern void add_gpage(unsigned long addr, unsigned long page_size,
-+			  unsigned long number_of_pages);
- extern void demote_segment_4k(struct mm_struct *mm, unsigned long addr);
- 
- extern void htab_initialize(void);
+I should have waited to respond and certainly not written my response
+while still being annoyed.
+
+I realize now that patches like this are acceptable for -stable, so
+I'll refrain from commenting on them in the future.
+
+I hope you can accept an appology and see that I did not intend to
+waste anyones time.
 
 
+Kind regards,
+  Jesper Juhl
 
 
+On 22/03/2008, Jesper Juhl <jesper.juhl@gmail.com> wrote:
+> On 22/03/2008, David Miller <davem@davemloft.net> wrote:
+>  > From: "Jesper Juhl" <jesper.juhl@gmail.com>
+>  >  Date: Sat, 22 Mar 2008 01:10:40 +0100
+>  >
+>  >
+>  >  > As I see it, this patch is quite trivial and does not fix any "real problem".
+>  >  > How come this is suitable for -stable?
+>  >  >
+>  >  > I have no objections to the patch "as such", I just don't think it
+>  >  > makes sense for -stable.
+>  >
+>  >
+>  > It makes a difference for driver maintainers when users
+>  >  report bugs and we ask them for the version printed
+>  >  by the driver so that we know which fixes have been
+>  >  applied.
+>  >
+>
+> Ok, fair enough.
+>
+>
+>  >  You know, if people are going to be jerky about this,
+>  >  I'll just include the version bump in the actual bug
+>  >  fixes which I sometimes do anyways.
+>  >
+>  >  Thanks for bringing this up, it's a useful use of
+>  >  everyone's time :-/
+>  >
+>
+> Excuse me for reading patches, trying to spot problems and thinking
+>  about where they are applied and what rules apply etc.
+>
+>
+>  --
+>
+> Jesper Juhl <jesper.juhl@gmail.com>
+>
+> Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
+>  Plain text mails only, please      http://www.expita.com/nomime.html
+>
+
+
+-- 
+Jesper Juhl <jesper.juhl@gmail.com>
+Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
+Plain text mails only, please      http://www.expita.com/nomime.html
