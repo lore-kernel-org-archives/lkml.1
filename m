@@ -1,79 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761251AbYCZStU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761598AbYCZSvb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761251AbYCZStU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Mar 2008 14:49:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756352AbYCZStM
+	id S1761598AbYCZSvb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Mar 2008 14:51:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756352AbYCZSvX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Mar 2008 14:49:12 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:53507 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755497AbYCZStL (ORCPT
+	Wed, 26 Mar 2008 14:51:23 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:47989 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754960AbYCZSvX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Mar 2008 14:49:11 -0400
-Date: Wed, 26 Mar 2008 13:49:10 -0500 (CDT)
-From: Alan Mayer <ajm@sgi.com>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Alan Mayer <ajm@sgi.com>, torvalds@linux-foundation.org, mingo@elte.hu,
-       linux-kernel list <linux-kernel@vger.kernel.org>,
-       Robin Holt <holt@sgi.com>, Jack Steiner <steiner@sgi.com>,
-       Russ Anderson <rja@sgi.com>
-Subject: Re: [PATCH] x86_64: resize NR_IRQS for large machines
-In-Reply-To: <20080325231034.GA3894@ucw.cz>
-Message-ID: <Pine.SGI.3.96.1080326134839.7873204Y-100000@fergus.americas.sgi.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 26 Mar 2008 14:51:23 -0400
+Date: Wed, 26 Mar 2008 19:54:38 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Ulrich Drepper <drepper@gmail.com>
+Cc: Andi Kleen <andi@firstfloor.org>, Nicholas Miell <nmiell@comcast.net>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [PATCH prototype] [0/8] Predictive bitmaps for ELF executables
+Message-ID: <20080326185438.GA27154@one.firstfloor.org>
+References: <20080321172644.GG2346@one.firstfloor.org> <a36005b50803212136s78dc2e4bx5ac715ebc7a6e48a@mail.gmail.com> <20080322071755.GP2346@one.firstfloor.org> <1206170695.2438.39.camel@entropy> <20080322091001.GA7264@one.firstfloor.org> <a36005b50803232120j63fb08d8p4a6cfdc8df2a3f21@mail.gmail.com> <1206335761.2438.63.camel@entropy> <a36005b50803241242r2a9b38c5s57d9ac6b084021fa@mail.gmail.com> <20080325075403.GH2170@one.firstfloor.org> <a36005b50803261115s6a3aa889w42fd4890c124ee01@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <a36005b50803261115s6a3aa889w42fd4890c124ee01@mail.gmail.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Wed, 26 Mar 2008, Pavel Machek wrote:
-
-> Hi!
+On Wed, Mar 26, 2008 at 11:15:49AM -0700, Ulrich Drepper wrote:
+> On Tue, Mar 25, 2008 at 12:54 AM, Andi Kleen <andi@firstfloor.org> wrote:
+> >  There is still the additional seek.
 > 
-> > Subject: [PATCH] x86_64: resize NR_IRQS for large machines
-> > 
-> > From: Alan Mayer <ajm@sgi.com>
-> > 
-> > On machines with very large numbers of cpus, tables that are dimensioned
-> > by NR_IRQS get very large, especially the irq_desc table.  They are also
-> > very sparsely used.  When the cpu count is > MAX_IO_APICS, use MAX_IO_APICS
-> > to set NR_IRQS, otherwise use NR_CPUS.
-> > 
-> > Signed-off-by: Alan Mayer <ajm@sgi.com>
-> > 
-> > Reviewed-by: Christoph Lameter <clameter@sgi.com>
-> 
-> > ===================================================================
-> > --- v2.6.25-rc6.orig/include/asm-x86/irq_64.h	2008-03-19 16:52:52.000000000 -0500
-> > +++ v2.6.25-rc6/include/asm-x86/irq_64.h	2008-03-20 16:46:51.000000000 -0500
-> > @@ -10,6 +10,10 @@
-> >   *	<tomsoft@informatik.tu-chemnitz.de>
-> >   */
-> >  
-> > +#if !defined(MAX_IO_APICS)
-> > +#include <asm/apicdef.h>
-> > +#endif
-> > +
-> 
-> This is very ugly. Why not include it unconditionally -- with guard in
-> apicdef.h?
-> 							Pavel
+> You've been proposing and implementing a solution which needs an
+> additional seek.  Don't use double standards.
 
-Okay, I can change that.
+You're wrong. I am implementing a solution that allows two 
+methods -- one (SHDR) that needs an seek (but an continuous one
+so it's likely served from the track buffer) but has some advantages 
+and another one (PHDR) that does not require a seek.
 
-		--ajm
+You two are arguing a method that always requires the seek
+and has a couple of other drawbacks as earlier discussed too.
 
-> -- 
-> (english) http://www.livejournal.com/~pavelmachek
-> (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
-> 
-
---
-Alan J. Mayer
-SGI
-ajm@sgi.com
-WORK: 651-683-3131
-HOME: 651-407-0134
---
+-Andi
 
