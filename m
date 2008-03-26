@@ -1,90 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756204AbYCZDiV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754960AbYCZDjm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756204AbYCZDiV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Mar 2008 23:38:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754770AbYCZDiE
+	id S1754960AbYCZDjm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Mar 2008 23:39:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752394AbYCZDjd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Mar 2008 23:38:04 -0400
-Received: from relay2.sgi.com ([192.48.171.30]:33921 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754740AbYCZDiB (ORCPT
-	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
-	Tue, 25 Mar 2008 23:38:01 -0400
-Date: Wed, 26 Mar 2008 14:37:38 +1100
-From: David Chinner <dgc@sgi.com>
-To: "Josef 'Jeff' Sipek" <jeffpc@josefsipek.net>
-Cc: NeilBrown <neilb@suse.de>, "J. Bruce Fields" <bfields@fieldses.org>,
-       xfs@oss.sgi.com, Adam Schrotenboer <adam@m2000.com>,
-       Jesper Juhl <jesper.juhl@gmail.com>,
-       Trond Myklebust <trond.myklebust@netapp.com>,
-       linux-kernel@vger.kernel.org, linux-nfs@vger.kernel.org,
-       Thomas Daniel <tdaniel@m2000.com>, Frederic Revenu <frevenu@m2000.com>,
-       Jeff Doan <jdoan@m2000.com>
-Subject: Re: [opensuse] nfs_update_inode: inode X mode changed, Y to Z
-Message-ID: <20080326033738.GX103491721@sgi.com>
-References: <20080312221511.GC31632@fieldses.org> <9a8748490803121516u36395872i70cc88b0439adc74@mail.gmail.com> <18394.1501.991087.80264@notabene.brown> <47DAEFD0.9020407@m2000.com> <47E92F8E.7030504@m2000.com> <20080325190943.GF2237@fieldses.org> <32953.192.168.1.70.1206477121.squirrel@neil.brown.name> <20080325212425.GA20257@josefsipek.net> <34178.192.168.1.70.1206481102.squirrel@neil.brown.name> <20080325221321.GC20257@josefsipek.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080325221321.GC20257@josefsipek.net>
-User-Agent: Mutt/1.4.2.1i
+	Tue, 25 Mar 2008 23:39:33 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:32809 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751789AbYCZDjc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Mar 2008 23:39:32 -0400
+Message-ID: <47E9C56F.2070508@pobox.com>
+Date: Tue, 25 Mar 2008 23:39:27 -0400
+From: Jeff Garzik <jgarzik@pobox.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+MIME-Version: 1.0
+To: David Miller <davem@davemloft.net>
+CC: yang.shi@windriver.com, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Improvev netconsole support for RTL8139 NIC driver
+References: <47E9B39C.5010502@pobox.com>	<20080325.194221.16658596.davem@davemloft.net>	<47E9BF7B.3030003@pobox.com> <20080325.203043.196469543.davem@davemloft.net>
+In-Reply-To: <20080325.203043.196469543.davem@davemloft.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 25, 2008 at 06:13:21PM -0400, Josef 'Jeff' Sipek wrote:
-> On Wed, Mar 26, 2008 at 08:38:22AM +1100, NeilBrown wrote:
-> ...
-> > However you still need to do something about the generation number.  It
-> > must be set to something.
-.....
-> > Even better would be store store that 'next generation number' in the
-> > superblock so there would be even less risk of the 'random' generation
-> > producing repeats.
-> > This is what ext3 does.  It doesn't dynamically allocate inodes,
-> > but it doesn't want to pay the cost of reading an old inode from
-> > storage just to see what the generation number is.  So it has
-> > a number in the superblock which is incremented on each inode allocation
-> > and is used as the generation number.
->  
-> Something tells me that the SGI folks might not be all too happy with the
-> in-sb number...
-.....
-> Perhaps a per-ag variable would be better,
+David Miller wrote:
+> From: Jeff Garzik <jgarzik@pobox.com>
+> Date: Tue, 25 Mar 2008 23:14:03 -0400
+> 
+>> David Miller wrote:
+>>> From: Jeff Garzik <jgarzik@pobox.com>
+>>> Date: Tue, 25 Mar 2008 22:23:24 -0400
+>>>
+>>>> This is bogus -- you should never need to slow down the hot path in such 
+>>>> a way.
+>>> Slow down in what way?  Even on x86 saving the flags is just
+>>> about as expensive as a plain sti/cli.
+>> Replacing spin_lock() [current 8139too.c] with spin_lock_irqsave() 
+>> results in a larger interrupt handler... more CPU instructions for the 
+>> same result.
+> 
+> Jeff, please be realistic.
+> 
+> These interrupt handlers about to do a PIO on a status register, which
+> will consume on the order of a few hundred cpu cycles.
+> 
+> Counting an I-cache line or two, or 18 cycles here or there,
+> is immaterial by comparison.
 
-/me goes back to the bug from last year about stable inode/gen numbers
-for a HSM.
+I am being realistic...  it's
 
-dgc> Right, except the last thing we want is yet more global state needing to
-dgc> be updated in inode allocation. The best way to do this is a max generation
-dgc> number per AG (held in the AGI) so that it can be updated at the same time
-dgc> inodes are freed and not cause additional serialisation.
+* not needed
+* increases code size
+* increases number of CPU instructions executed
+* not needed
 
-Which was soundly rejected by the HSM folk because it wraps at 4 billion
-inode create/unlink cycles in an AG rather than per inode. The only thing
-they were happy with was the old behaviour and so they now mount their
-filesystems with ikeep. At that point the issue was dropped on the floor;
-the NFS side of things apparently weren't causing any problems so we didn't
-consider it urgent to fix....
+Thus applying this consistency rule across N drivers needlessly 
+increases the code size of N drivers.
 
-Given this state of affairs (i.e. HSM using ikeep), I guess we can do
-anything we want for the noikeep case. I'll cook up a patch that does
-something similar to ext3 generation numbers for the initial seeding....
+Mainly I see such a change as a violation of a basic Linux principle: 
+do what you must, and no more.
 
-> but I remember reading that parallelizing updates
-> to some inode count variable (I forget which) in the superblock
-> \cite{dchinner-ols2006} led to a rather big improvement.
+	Jeff
 
-That was for in memory counters not on disk, and the problem really was
-free block counts rather than free inode counts. Yes, I converted the
-inode counters at the same time, but that wasn't the limiting factor.
-Updates to the on disk superblock, OTOH, are a limiting factor and
-that was the lazy superblock counter modifications solve....
 
-Cheers,
 
-Dave.
--- 
-Dave Chinner
-Principal Engineer
-SGI Australian Software Group
