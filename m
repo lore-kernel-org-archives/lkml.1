@@ -1,95 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758887AbYCZKdR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759553AbYCZKeR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758887AbYCZKdR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Mar 2008 06:33:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753832AbYCZKdE
+	id S1759553AbYCZKeR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Mar 2008 06:34:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754153AbYCZKeD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Mar 2008 06:33:04 -0400
-Received: from e28smtp01.in.ibm.com ([59.145.155.1]:55210 "EHLO
-	e28smtp01.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753849AbYCZKdB (ORCPT
+	Wed, 26 Mar 2008 06:34:03 -0400
+Received: from fk-out-0910.google.com ([209.85.128.190]:20356 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753832AbYCZKeA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Mar 2008 06:33:01 -0400
-Message-ID: <47EA2592.7090600@linux.vnet.ibm.com>
-Date: Wed, 26 Mar 2008 15:59:38 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	Wed, 26 Mar 2008 06:34:00 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=rvSG98AeQCDkfLsAgizQLI+3l6q9V8MsvX94j0s/W5gYGpadx+7nt4FQQSAcQYvodD/eKq8HKBaNxRX6lFsoiCT0YPSHjOKPuCJvez1SxnLehTWWQnaBkkJGq9fVUAuu60a6RU/39bGIXpi2yfL5HQUmilgHatTPgS+QxQYFgLE=
+Message-ID: <47EA268F.8070006@gmail.com>
+Date: Wed, 26 Mar 2008 11:33:51 +0100
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
 MIME-Version: 1.0
-To: Paul Menage <menage@google.com>
-CC: balbir@linux.vnet.ibm.com, linux-mm@kvack.org,
-       Hugh Dickins <hugh@veritas.com>,
-       Sudhir Kumar <skumar@linux.vnet.ibm.com>,
-       YAMAMOTO Takashi <yamamoto@valinux.co.jp>, lizf@cn.fujitsu.com,
-       linux-kernel@vger.kernel.org, taka@valinux.co.jp,
-       David Rientjes <rientjes@google.com>,
-       Pavel Emelianov <xemul@openvz.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: Re: [RFC][-mm] Memory controller add mm->owner
-References: <20080324140142.28786.97267.sendpatchset@localhost.localdomain> <6599ad830803240803s5160101bi2bf68b36085f777f@mail.gmail.com> <47E7D51E.4050304@linux.vnet.ibm.com> <6599ad830803240934g2a70d904m1ca5548f8644c906@mail.gmail.com> <47E7E5D0.9020904@linux.vnet.ibm.com> <6599ad830803241046l61e2965t52fd28e165d5df7a@mail.gmail.com> <47E8E4F3.6090604@linux.vnet.ibm.com>
-In-Reply-To: <47E8E4F3.6090604@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Bryan Wu <cooloney@kernel.org>
+CC: linux-kernel@vger.kernel.org, Mike Frysinger <vapier.adi@gmail.com>,
+       Wim Van Sebroeck <wim@iguana.be>, "'Sam Ravnborg'" <sam@ravnborg.org>
+Subject: Re: [PATCH 1/1] [Blackfin try #2] char driver for Blackfin on-chip
+ OTP memory
+References: <> <1206580131-22527-1-git-send-email-cooloney@kernel.org>
+In-Reply-To: <1206580131-22527-1-git-send-email-cooloney@kernel.org>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Balbir Singh wrote:
-> Paul Menage wrote:
->> On Mon, Mar 24, 2008 at 10:33 AM, Balbir Singh
->> <balbir@linux.vnet.ibm.com> wrote:
->>>  > OK, so we don't need to handle this for NPTL apps - but for anything
->>>  > still using LinuxThreads or manually constructed clone() calls that
->>>  > use CLONE_VM without CLONE_PID, this could still be an issue.
->>>
->>>  CLONE_PID?? Do you mean CLONE_THREAD?
->> Yes, sorry - CLONE_THREAD.
->>
->>>  For the case you mentioned, mm->owner is a moving target and we don't want to
->>>  spend time finding the successor, that can be expensive when threads start
->>>  exiting one-by-one quickly and when the number of threads are high. I wonder if
->>>  there is an efficient way to find mm->owner in that case.
->>>
->> But:
->>
->> - running a high-threadcount LinuxThreads process is by definition
->> inefficient and expensive (hence the move to NPTL)
->>
->> - any potential performance hit is only paid at exit time
->>
->> - in the normal case, any of your children or one of your siblings
->> will be a suitable alternate owner
->>
->> - in the worst case, it's not going to be worse than doing a
->> for_each_thread() loop
->>
-
-This will have to be the common case, since you never know what combination of
-clone calls did CLONE_VM and what did CLONE_THREAD. At exit time, we need to pay
-a for_each_process() overhead. Although very unlikely, an application can call
-pthread_* functions (NPTL) and then do a clone with CLONE_VM, thus forcing
-threads in a thread group and another process to share the mm_struct. This makes
-mm->owner struct approach hard to implement.
-
->> so I don't think this would be a major problem
->>
+On 03/27/2008 02:08 AM, Bryan Wu wrote:
+> From: Mike Frysinger <vapier.adi@gmail.com>
 > 
-> I've been looking at zap_threads, I suspect we'll end up implementing a similar
-> loop, which makes me very uncomfortable. Adding code for the least possible
-> scenario. It will not get invoked for CLONE_THREAD, but will get invoked for the
-> case when CLONE_VM is set without CLONE_THREAD.
+> initial char driver for otp memory
+> (only read supported atm ... needs real examples/docs for write support)
 > 
-> I'll try and experiment a bit more and see what I come up with
+> Signed-off-by: Mike Frysinger <vapier.adi@gmail.com>
+> Signed-off-by: Bryan Wu <cooloney@kernel.org>
 
-I am yet to benchmark the cost of doing for_each_process() on every exit. I
-suspect, we'll see a big drop in performance. I am not sure anymore if mm->owner
-is worth the overhead.
+Nice,
+Acked-by: Jiri Slaby <jirislaby@gmail.com>
 
+> diff --git a/drivers/char/bfin-otp.c b/drivers/char/bfin-otp.c
+> new file mode 100644
+> index 0000000..2edc284
+> --- /dev/null
+> +++ b/drivers/char/bfin-otp.c
+[...]
+> +static int __init bfin_otp_init(void)
+> +{
+> +	int ret;
+> +
+> +	stampit();
+> +
+> +	ret = misc_register(&bfin_otp_misc_device);
+> +	if (ret) {
+> +		pr_init(KERN_ERR PFX "unable to register a misc device\n");
+> +		return ret;
+> +	}
+> +
+> +	pr_init(KERN_INFO PFX "initialized\n");
 
--- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+except the fact, that pr_init definition seems to be broken. Its defined __fmt 
+is const, so it should reside in .init.rodata (__initconst), not .init.data 
+(__initdata).
