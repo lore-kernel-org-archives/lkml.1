@@ -1,50 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758867AbYCZK7s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759429AbYCZLBV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758867AbYCZK7s (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Mar 2008 06:59:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755032AbYCZK7l
+	id S1759429AbYCZLBV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Mar 2008 07:01:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755032AbYCZLBN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Mar 2008 06:59:41 -0400
-Received: from s200aog16.obsmtp.com ([207.126.144.130]:33584 "EHLO
-	s200aog16.obsmtp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754153AbYCZK7k (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Mar 2008 06:59:40 -0400
-X-Greylist: delayed 1436 seconds by postgrey-1.27 at vger.kernel.org; Wed, 26 Mar 2008 06:59:40 EDT
-Message-ID: <47EA26E4.8060602@st.com>
-Date: Wed, 26 Mar 2008 11:35:16 +0100
-From: Richard MUSIL <richard.musil@st.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Wed, 26 Mar 2008 07:01:13 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:51004 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753879AbYCZLBN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Mar 2008 07:01:13 -0400
+Date: Wed, 26 Mar 2008 12:00:51 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Al Viro <viro@ZenIV.linux.org.uk>
+Cc: J?rn Engel <joern@logfs.org>, David Miller <davem@davemloft.net>,
+       jirislaby@gmail.com, joe@perches.com, tglx@linutronix.de,
+       linux-kernel@vger.kernel.org, Andy Whitcroft <apw@shadowen.org>
+Subject: Re: [patch] bkl2mtd: cleanup
+Message-ID: <20080326110047.GD17176@elte.hu>
+References: <20080323.051929.267232495.davem@davemloft.net> <20080325104841.GA24211@elte.hu> <20080325111129.GB11359@logfs.org> <20080325122413.GA8729@elte.hu> <20080325131258.GC11359@logfs.org> <20080325133810.GA10044@elte.hu> <20080325134556.GA10424@elte.hu> <20080325160734.GA14583@logfs.org> <20080326101452.GA17176@elte.hu> <20080326104821.GS10722@ZenIV.linux.org.uk>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Cc: Greg KH <greg@kroah.com>
-Subject: Problem with accessing stable git over http
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080326104821.GS10722@ZenIV.linux.org.uk>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-For some reason I cannot access stable kernel git branches over http
-since version 2.6.23.y.
 
-HTTP access is working for 2.6.22.y
-(http://www.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.6.22.y.git)
-- I can fetch from it. It is also working for Linus' dev branch
-(http://www.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git)
-which I clone.
-But for stable 2.6.23.y and 2.6.24.y, when I try fetch, I get in particular:
+* Al Viro <viro@ZenIV.linux.org.uk> wrote:
 
-HTTP GET
-http://www.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.6.24.y.git/info/refs
-HTTP/1.1
-HTTP HTTP/1.1 404 Not Found (text/html)
+> On Wed, Mar 26, 2008 at 11:14:52AM +0100, Ingo Molnar wrote:
+> >  /* Info for the block device */
+> >  struct block2mtd_dev {
+> > -	struct list_head list;
+> > -	struct block_device *blkdev;
+> > -	struct mtd_info mtd;
+> > -	struct mutex write_mutex;
+> > +	struct list_head	list;
+> > +	struct block_device	*blkdev;
+> > +	struct mtd_info		mtd;
+> > +	/* serializes writes with each other and also with erase: */
+> > +	struct mutex		write_mutex;
+> >  };
+> 
+> Why the hell?
 
-I am behind proxy and firewall and I cannot use git protocol.
+the vertical alignment? For the same reason some of the key VFS data 
+structures in include/linux/fs.h are aligned vertically:
 
-Does anyone know, what might be a problem? It kind of makes the sources
-unreachable for me :(.
+  struct inode
+  struct file
+  struct super_block
+  struct address_space
+  struct block_device
 
-Thanks,
-Richard
+there are several advantages of aligning structure fields vertically 
+(and the same applies to bulk initializers of structures), should i list 
+them?
+
+	Ingo
