@@ -1,84 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755212AbYCZIyY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756847AbYCZI6T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755212AbYCZIyY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Mar 2008 04:54:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752621AbYCZIyR
+	id S1756847AbYCZI6T (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Mar 2008 04:58:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753247AbYCZI6L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Mar 2008 04:54:17 -0400
-Received: from vervifontaine.sonytel.be ([80.88.33.193]:34488 "EHLO
-	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751880AbYCZIyP (ORCPT
+	Wed, 26 Mar 2008 04:58:11 -0400
+Received: from isuela.unizar.es ([155.210.1.53]:34397 "EHLO relay.unizar.es"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753233AbYCZI6K convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Mar 2008 04:54:15 -0400
-Date: Wed, 26 Mar 2008 09:54:14 +0100 (CET)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-To: Chris Snook <csnook@redhat.com>
-cc: "J.C. Pizarro" <jcpiza@gmail.com>, LKML <linux-kernel@vger.kernel.org>
-Subject: consistency: temperature versus metric bytes (was: Re: Why /proc/cpuinfo
- doesn't print L1,L2,L3 caches?)
-In-Reply-To: <47E97566.5020003@redhat.com>
-Message-ID: <Pine.LNX.4.64.0803260951100.23975@vixen.sonytel.be>
-References: <998d0e4a0803251439u4bf09fb1ye568fc1970b0200f@mail.gmail.com>
- <47E97566.5020003@redhat.com>
-MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-584349381-535557866-1206521582=:23975"
-Content-ID: <Pine.LNX.4.64.0803260953050.23975@vixen.sonytel.be>
+	Wed, 26 Mar 2008 04:58:10 -0400
+X-Greylist: delayed 1948 seconds by postgrey-1.27 at vger.kernel.org; Wed, 26 Mar 2008 04:58:09 EDT
+Cc: Linux-Kernel <linux-kernel@vger.kernel.org>
+Message-Id: <8CAC9F9E-60FE-40A5-A720-27BA63BEEADC@ono.com>
+From: "=?ISO-8859-1?Q?=22J.A._Magall=F3n=22?=" <jamagallon@ono.com>
+To: Emmanuel Florac <eflorac@intellique.com>
+In-Reply-To: <20080326090527.42286e8e@galadriel.home>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed; delsp=yes
+Content-Transfer-Encoding: 8BIT
+Mime-Version: 1.0 (Apple Message framework v919.2)
+Subject: Re: RAID-1 performance under 2.4 and 2.6
+Date: Wed, 26 Mar 2008 09:25:29 +0100
+References: <20080325194306.4ac71ff2@galadriel.home> <47E975F8.3000702@redhat.com> <47E98108.9000906@tmr.com> <47E98712.6090203@redhat.com> <47E98DE4.9000906@tmr.com> <20080326090527.42286e8e@galadriel.home>
+X-Mailer: Apple Mail (2.919.2)
+X-Mail-Scanned: Criba 2.0 + Clamd & Bogofilter
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
 
----584349381-535557866-1206521582=:23975
-Content-Type: TEXT/PLAIN; CHARSET=UTF-8
-Content-Transfer-Encoding: 8BIT
-Content-ID: <Pine.LNX.4.64.0803260953051.23975@vixen.sonytel.be>
+On 2008.03.26, at 09:05, Emmanuel Florac wrote:
+> Le Tue, 25 Mar 2008 19:42:28 -0400 vous 閏riviez:
+>
+>> And this is what I was saying earlier, there is a trend to blame the
+>> benchmark when in fact the same benchmark runs well on 2.4.
+>
+> As I mentioned, it looks like 2.4 actually buffers write data on  
+> RAID-1
+> which is inherently bad (after all if I do RAID-1 it's for the sake of
+> data integrity, and write caching just counters that).
 
-On Tue, 25 Mar 2008, Chris Snook wrote:
-> I think you want this:
-> 
-> /sys/devices/system/cpu/cpu0/cache
-> 
-> /proc/cpuinfo is intended to give a general summary of certain properties of
-> the processor that tend to be particularly interesting, and present them all
-> in one place.  It is not intended to expose everything the kernel knows about
-> every processor on the system.
+Not bad, it buffer flushing is secure. You just have 'one buffer size'
+delay. If your system crashes, think it just crashed 'one buffer size'
+before...
 
-Oh my god! My caches run at different temperatures!! ;-)
+>
+> However, how bad dd may be, it reflects broadly my problem : on small
+> systems using software RAID, IO is overall way better with 2.4 than
+> 2.6, especially NFS thruput.
+> Though I can substantially enhance 2.6 performance through tweaking
+> (playing with read ahead, disk queue length etc), it still lags behind
+> 2.4 with defaults settings by a clear margin (10% or more).
+> This isn't true - fortunately - of larger systems with 12, 24, 48  
+> disks
+> drives, hardware RAID, Fibre Channel and al.
+>
+>
 
-| anakin$ cat /sys/devices/system/cpu/cpu0/cache/index*/size 
-| 64K
-| 64K
-| 512K
+But you shouldn't have to tweak anything.
+Let's forget for a moment calling dd a 'benchmark'. The fact is that a
+certain program (in its default behaviour, dd if=xxx of=yyy) is waaay
+slower in 2.6 than in 2.4. So something has gone nuts.
+The typical question is 'who cares dd ?'. And the answer: all normal
+applications that just read and write, that do not use any *advise()
+because they tried to be portable, that are not rewritten and fancy
+optimized to take advantage of latest kernel knobs, in short, any normal
+app that just fopen()s and fread()s...
+Seriously, are people telling that I have to tweak my app to get the
+same performance that in 2.4 ? The basic performance should be the same,
+and all those knobs should let you get _better_ throughput, not just the
+same. To say anything else is to hide the head on the floor...
 
-Furthermore /proc/cpuinfo misses _more_ than 128 KiB:
+--
+J.A. Magallon <jamagallon()ono!com>     \              Software is  
+like sex:
+                                          \        It's better when  
+it's free
+Mandriva Linux release 2008.1 (Cooker) for i586
 
-| anakin$ cat /proc/cpuinfo 
 
-    [...]
 
-| cache size	: 512 KB
-                  ^^^^^^
-
-    [...]
-
-With kind regards,
-
-Geert Uytterhoeven
-Software Architect
-
-Sony Network and Software Technology Center Europe
-The Corporate Village 路 Da Vincilaan 7-D1 路 B-1935 Zaventem 路 Belgium
-
-Phone:    +32 (0)2 700 8453
-Fax:      +32 (0)2 700 8622
-E-mail:   Geert.Uytterhoeven@sonycom.com
-Internet: http://www.sony-europe.com/
-
-Sony Network and Software Technology Center Europe
-A division of Sony Service Centre (Europe) N.V.
-Registered office: Technologielaan 7 路 B-1840 Londerzeel 路 Belgium
-VAT BE 0413.825.160 路 RPR Brussels
-Fortis Bank Zaventem 路 Swift GEBABEBB08A 路 IBAN BE39001382358619
----584349381-535557866-1206521582=:23975--
