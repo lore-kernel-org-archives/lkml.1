@@ -1,63 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756430AbYCZLmr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757315AbYCZLp3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756430AbYCZLmr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Mar 2008 07:42:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751137AbYCZLmh
+	id S1757315AbYCZLp3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Mar 2008 07:45:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751295AbYCZLpV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Mar 2008 07:42:37 -0400
-Received: from lazybastard.de ([212.112.238.170]:44356 "EHLO
-	longford.logfs.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750943AbYCZLmg (ORCPT
+	Wed, 26 Mar 2008 07:45:21 -0400
+Received: from E23SMTP03.au.ibm.com ([202.81.18.172]:54296 "EHLO
+	e23smtp03.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751137AbYCZLpU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Mar 2008 07:42:36 -0400
-Date: Wed, 26 Mar 2008 12:41:42 +0100
-From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Andy Whitcroft <apw@shadowen.org>, David Miller <davem@davemloft.net>,
-       jirislaby@gmail.com, viro@ZenIV.linux.org.uk, joe@perches.com,
-       tglx@linutronix.de, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 109/148] include/asm-x86/serial.h: checkpatch cleanups - formatting only
-Message-ID: <20080326114142.GD22847@logfs.org>
-References: <20080325104841.GA24211@elte.hu> <20080325111129.GB11359@logfs.org> <20080325122413.GA8729@elte.hu> <20080325131258.GC11359@logfs.org> <20080325133810.GA10044@elte.hu> <20080325134556.GA10424@elte.hu> <20080325160734.GA14583@logfs.org> <20080326095249.GD22584@shadowen.org> <20080326102654.GB22847@logfs.org> <20080326112311.GG17176@elte.hu>
+	Wed, 26 Mar 2008 07:45:20 -0400
+Message-ID: <47EA3684.60107@linux.vnet.ibm.com>
+Date: Wed, 26 Mar 2008 17:11:56 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20080326112311.GG17176@elte.hu>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Paul Menage <menage@google.com>
+CC: linux-mm@kvack.org, Hugh Dickins <hugh@veritas.com>,
+       Sudhir Kumar <skumar@linux.vnet.ibm.com>,
+       YAMAMOTO Takashi <yamamoto@valinux.co.jp>, lizf@cn.fujitsu.com,
+       linux-kernel@vger.kernel.org, taka@valinux.co.jp,
+       David Rientjes <rientjes@google.com>,
+       Pavel Emelianov <xemul@openvz.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Subject: Re: [RFC][-mm] Memory controller add mm->owner
+References: <20080324140142.28786.97267.sendpatchset@localhost.localdomain> <6599ad830803240803s5160101bi2bf68b36085f777f@mail.gmail.com> <47E7D51E.4050304@linux.vnet.ibm.com> <6599ad830803240934g2a70d904m1ca5548f8644c906@mail.gmail.com> <47E7E5D0.9020904@linux.vnet.ibm.com> <6599ad830803241046l61e2965t52fd28e165d5df7a@mail.gmail.com> <47E8E4F3.6090604@linux.vnet.ibm.com>  <47EA2592.7090600@linux.vnet.ibm.com> <6599ad830803260420v236127cfydd8cf828fcce65bb@mail.gmail.com>
+In-Reply-To: <6599ad830803260420v236127cfydd8cf828fcce65bb@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 26 March 2008 12:23:11 +0100, Ingo Molnar wrote:
-> * Jörn Engel <joern@logfs.org> wrote:
+Paul Menage wrote:
+> On Wed, Mar 26, 2008 at 3:29 AM, Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+>>  >>
+>>  >> - in the worst case, it's not going to be worse than doing a
+>>  >> for_each_thread() loop
+>>  >>
+>>
+>>  This will have to be the common case, since you never know what combination of
+>>  clone calls did CLONE_VM and what did CLONE_THREAD. At exit time, we need to pay
+>>  a for_each_process() overhead.
 > 
-> > 
-> > Then I'll happily ignore it.  Not having the space gains me one 
-> > column. It is absolutely minimal, sure.  But when the alternative is 
-> > based on pure whim...
+> I'm not convinced of this. All we have to do is find some other
+> process p where p->mm == current->mm and make it the new owner.
+> Exactly what sequence of clone() calls was used to cause the sharing
+> isn't really relevant. I really think that a suitable candidate will
+> be found amongst your children or your first sibling in 99.9% of those
+> cases where more than one process is using an mm.
 > 
-> you seem to be confused here. Consistency is not a 'whim', and it is 
-> often just about "arbitrary" choices that also have some ergonomic 
-> component as well (but sometimes not). The following form:
 
-I have an objective reason to prefer one over the other.  Your only
-reason is consistency.  If consistency was everything, we might as well
-let the often-abused 1000 monkeys type up a coding style document and
-stick to that.
+Hmmm.. the 99.9% of the time is just guess work (not measured, could be possibly
+true). I see and understand your code below. But before I try and implement
+something like that, I was wondering why zap_threads() does not have that
+heuristic. That should explain my inhibition.
 
-But most of our rules exist for reasons beyond mere consistency.
-Following the rules, on average, makes the code better.  In particular
-the "less" rules (fewer lines, less indentation, etc.) result in more
-code fitting any arbitrary editor window.  Which means more control flow
-our mind can ponder about without scrolling.
-
-Do you have a non-consistency based reason to prefer the longer version?
-If not, then we should settle on the short version, which does have a
-minimal advantage.
-
-Jörn
+Can anyone elaborate on zap_threads further?
 
 -- 
-Joern's library part 13:
-http://www.chip-architect.com/
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
