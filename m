@@ -1,49 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753930AbYCZGFj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754896AbYCZGH0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753930AbYCZGFj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Mar 2008 02:05:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751281AbYCZGF1
+	id S1754896AbYCZGH0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Mar 2008 02:07:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751311AbYCZGHP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Mar 2008 02:05:27 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:58762 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750737AbYCZGF0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Mar 2008 02:05:26 -0400
-Message-ID: <47E9E781.4000901@zytor.com>
-Date: Tue, 25 Mar 2008 23:04:49 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	Wed, 26 Mar 2008 02:07:15 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:48230 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751281AbYCZGHO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Mar 2008 02:07:14 -0400
+Date: Wed, 26 Mar 2008 07:06:43 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Jesper Juhl <jesper.juhl@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, H Peter Anvin <hpa@zytor.com>,
+       Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Ian Molton <spyro@f2s.com>, Alain L Knaff <Alain.Knaff@lll.lu>,
+       David C Niemi <niemi@tux.org>,
+       Trivial Patch Monkey <trivial@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] x86 floppy: kill off the 'register' keyword from header
+Message-ID: <20080326060643.GA18301@elte.hu>
+References: <alpine.LNX.1.00.0803260214551.1901@dragon.funnycrock.com>
 MIME-Version: 1.0
-To: Tejun Heo <htejun@gmail.com>
-CC: Greg KH <gregkh@suse.de>, Mark Lord <lkml@rtr.ca>,
-       Jens Axboe <axboe@kernel.dk>, Jeff Garzik <jgarzik@pobox.com>,
-       Linus Torvalds <torvalds@osdl.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       IDE/ATA development list <linux-ide@vger.kernel.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>
-Subject: Re: What to do about the 2TB limit on HDIO_GETGEO ?
-References: <47E875AD.1000901@rtr.ca> <47E87942.2020409@rtr.ca> <47E88A13.70808@zytor.com> <47E90019.3050006@rtr.ca> <47E90458.7030801@zytor.com> <47E9383F.3050908@rtr.ca> <20080325192515.GA24234@suse.de> <47E99A02.7040903@rtr.ca> <47E99EBE.7010708@gmail.com> <20080326033804.GA27925@suse.de> <47E9D017.5080305@gmail.com>
-In-Reply-To: <47E9D017.5080305@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LNX.1.00.0803260214551.1901@dragon.funnycrock.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.1
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.1 required=5.9 tests=BAYES_05 autolearn=no SpamAssassin version=3.2.3
+	-1.1 BAYES_05               BODY: Bayesian spam probability is 1 to 5%
+	[score: 0.0150]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tejun Heo wrote:
-> 
->> Since when is the major:minor view of devices the "standard" one that
->> userspace uses?  Last I looked, userspace uses symlinks and lots of
->> other ways of directly accessing block devices in /dev/, and does not
->> rely on major:minor.
-> 
-> The fact that major:minor is the unique identifier of a device makes it
-> a bit special compared to other names on filesystem.
-> 
 
-In particular, stat() and friends returns the device number, not a 
-device name.
+* Jesper Juhl <jesper.juhl@gmail.com> wrote:
 
-	-hpa
+> -	register unsigned char st;
+> +	unsigned char st;
+
+> -		register int lcount;
+> -		register char *lptr;
+> +		int lcount;
+> +		char *lptr;
+
+thanks, applied.
+
+	Ingo
