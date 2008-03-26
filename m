@@ -1,68 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757428AbYCZLyu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758078AbYCZL7W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757428AbYCZLyu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Mar 2008 07:54:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752849AbYCZLym
+	id S1758078AbYCZL7W (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Mar 2008 07:59:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754153AbYCZL7O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Mar 2008 07:54:42 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:34737 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752587AbYCZLym (ORCPT
+	Wed, 26 Mar 2008 07:59:14 -0400
+Received: from lazybastard.de ([212.112.238.170]:59556 "EHLO
+	longford.logfs.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754216AbYCZL7N (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Mar 2008 07:54:42 -0400
-Date: Wed, 26 Mar 2008 11:38:06 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: akpm@osdl.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] tty: drop the BKL for driver/ldisc ioctl methods
-Message-ID: <20080326113806.79e84f6d@core>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 26 Mar 2008 07:59:13 -0400
+Date: Wed, 26 Mar 2008 12:58:53 +0100
+From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
+To: David Miller <davem@davemloft.net>
+Cc: mingo@elte.hu, apw@shadowen.org, jirislaby@gmail.com,
+       viro@ZenIV.linux.org.uk, joe@perches.com, tglx@linutronix.de,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 109/148] include/asm-x86/serial.h: checkpatch cleanups - formatting only
+Message-ID: <20080326115853.GE22847@logfs.org>
+References: <20080326102654.GB22847@logfs.org> <20080326112311.GG17176@elte.hu> <20080326114142.GD22847@logfs.org> <20080326.044802.107678511.davem@davemloft.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20080326.044802.107678511.davem@davemloft.net>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Now we have pushed the lock down we can stop wrapping the call with a
-lock in the tty layer
+On Wed, 26 March 2008 04:48:02 -0700, David Miller wrote:
+> 
+> > Do you have a non-consistency based reason to prefer the longer
+> > version?
+> 
+> Inconstent spacing fools people's eyes and leads to bugs,
+> more often than not.
+> 
+> After 15 years of kernel development, I can remember at
+> least 10 or so multi-week-debugging sessions that could
+> have been curtailed had I not mis-read a poorly spaced
+> C statement.
+> 
+> It matters in practical terms, not just consistency terms,
+> trust me.
 
-Signed-off-by: Alan Cox <alan@redhat.com>
+Sure, I buy that.  What I'm arguing here is why we have to be
+consistently long instead of consistently short.  CodingStyle seems to
+be silent on the question.  And a quick grep shows that while being in
+the minority, I seem to be in a sizeable minority:
+joern@Dublin:/usr/src/kernel/logfs$ sgrep ' \*)' .|wc
+  51687  346050 4213259
+joern@Dublin:/usr/src/kernel/logfs$ sgrep '[^ ]\*)' .|wc
+  5838   33165  472462
 
-diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.25-rc5-mm1/drivers/char/tty_io.c linux-2.6.25-rc5-mm1/drivers/char/tty_io.c
---- linux.vanilla-2.6.25-rc5-mm1/drivers/char/tty_io.c	2008-03-18 15:52:20.000000000 +0000
-+++ linux-2.6.25-rc5-mm1/drivers/char/tty_io.c	2008-03-18 15:58:26.000000000 +0000
-@@ -3459,11 +3582,8 @@
- 		switch (cmd) {
- 		case TIOCSBRK:
- 		case TIOCCBRK:
--			if (tty->driver->ioctl) {
--				lock_kernel();
-+			if (tty->driver->ioctl)
- 				retval = tty->driver->ioctl(tty, file, cmd, arg);
--				unlock_kernel();
--			}
- 			return retval;
- 
- 		/* These two ioctl's always return success; even if */
-@@ -3584,18 +3704,14 @@
- 		break;
- 	}
- 	if (tty->driver->ioctl) {
--		lock_kernel();
- 		retval = (tty->driver->ioctl)(tty, file, cmd, arg);
--		unlock_kernel();
- 		if (retval != -ENOIOCTLCMD)
- 			return retval;
- 	}
- 	ld = tty_ldisc_ref_wait(tty);
- 	retval = -EINVAL;
- 	if (ld->ioctl) {
--		lock_kernel();
- 		retval = ld->ioctl(tty, file, cmd, arg);
--		unlock_kernel();
- 		if (retval == -ENOIOCTLCMD)
- 			retval = -EINVAL;
- 	}
+What is the reason why (void *)foo is better than (void*)foo?  Just that
+fact that by random chance one them them became more common in our
+codebase and the minority always has to give in?
+
+Jörn
+
+-- 
+A victorious army first wins and then seeks battle.
+-- Sun Tzu
