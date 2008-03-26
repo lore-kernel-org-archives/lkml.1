@@ -1,191 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755648AbYCZFCo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756170AbYCZFET@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755648AbYCZFCo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Mar 2008 01:02:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751822AbYCZFCf
+	id S1756170AbYCZFET (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Mar 2008 01:04:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752545AbYCZFEI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Mar 2008 01:02:35 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:57660 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751569AbYCZFCe (ORCPT
-	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
-	Wed, 26 Mar 2008 01:02:34 -0400
-Date: Wed, 26 Mar 2008 16:02:08 +1100
-From: David Chinner <dgc@sgi.com>
-To: David Chinner <dgc@sgi.com>
-Cc: "Josef 'Jeff' Sipek" <jeffpc@josefsipek.net>, NeilBrown <neilb@suse.de>,
-       "J. Bruce Fields" <bfields@fieldses.org>, xfs@oss.sgi.com,
-       Adam Schrotenboer <adam@m2000.com>, Jesper Juhl <jesper.juhl@gmail.com>,
-       Trond Myklebust <trond.myklebust@netapp.com>,
-       linux-kernel@vger.kernel.org, linux-nfs@vger.kernel.org,
-       Thomas Daniel <tdaniel@m2000.com>, Frederic Revenu <frevenu@m2000.com>,
-       Jeff Doan <jdoan@m2000.com>
-Subject: Re: [opensuse] nfs_update_inode: inode X mode changed, Y to Z
-Message-ID: <20080326050208.GH108924158@sgi.com>
-References: <9a8748490803121516u36395872i70cc88b0439adc74@mail.gmail.com> <18394.1501.991087.80264@notabene.brown> <47DAEFD0.9020407@m2000.com> <47E92F8E.7030504@m2000.com> <20080325190943.GF2237@fieldses.org> <32953.192.168.1.70.1206477121.squirrel@neil.brown.name> <20080325212425.GA20257@josefsipek.net> <34178.192.168.1.70.1206481102.squirrel@neil.brown.name> <20080325221321.GC20257@josefsipek.net> <20080326033738.GX103491721@sgi.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 26 Mar 2008 01:04:08 -0400
+Received: from hera.kernel.org ([140.211.167.34]:39211 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751822AbYCZFEH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Mar 2008 01:04:07 -0400
+From: Len Brown <lenb@kernel.org>
+Organization: Intel Open Source Technology Center
+To: yi.y.yang@intel.com
+Subject: Re: [PATCH 2.6.25-rc3] cpuidle: fix cpuidle time and usage overflow
+Date: Wed, 26 Mar 2008 00:46:41 -0400
+User-Agent: KMail/1.9.9
+Cc: akpm@linux-foundation.org, venkatesh.pallipadi@intel.com,
+       cpufreq@lists.linux.org.uk, linux-pm@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
+References: <1199441414.19185.9.camel@yangyi-dev.bj.intel.com> <1203032921.3897.10.camel@yangyi-dev.bj.intel.com> <1203900372.4954.8.camel@yangyi-dev.bj.intel.com>
+In-Reply-To: <1203900372.4954.8.camel@yangyi-dev.bj.intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080326033738.GX103491721@sgi.com>
-User-Agent: Mutt/1.4.2.1i
+Message-Id: <200803260046.41250.lenb@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 26, 2008 at 02:37:38PM +1100, David Chinner wrote:
-> Given this state of affairs (i.e. HSM using ikeep), I guess we can do
-> anything we want for the noikeep case. I'll cook up a patch that does
-> something similar to ext3 generation numbers for the initial seeding....
+applied
 
-Patch below for comments. It passes xfsqa, but there's no userspace
-support for it yet. 2.6.26 is the likely target for this change.
+thanks,
+-len
 
-Cheers,
+On Sunday 24 February 2008, Yi Yang wrote:
+> cpuidle C-state sysfs node time and usage are very easy to overflow because
+> they are all of unsigned int type, time will overflow within about two hours,
+> usage will take longer time to overflow, but they are increasing for ever.
+> 
+> This patch will convert them to unsigned long long.
+> 
+> 
+> Signed-off-by: Yi Yang <yi.y.yang@intel.com>
+> ---
+>  drivers/cpuidle/cpuidle.c |    2 +-
+>  drivers/cpuidle/sysfs.c   |   10 ++++++++--
+>  include/linux/cpuidle.h   |    4 ++--
+> 
+> --- a/include/linux/cpuidle.h	2008-02-25 02:31:26.000000000 -0500
+> +++ b/include/linux/cpuidle.h	2008-02-25 04:30:24.000000000 -0500
+> @@ -38,8 +38,8 @@ struct cpuidle_state {
+>  	unsigned int	power_usage; /* in mW */
+>  	unsigned int	target_residency; /* in US */
+>  
+> -	unsigned int	usage;
+> -	unsigned int	time; /* in US */
+> +	unsigned long long	usage;
+> +	unsigned long long	time; /* in US */
+>  
+>  	int (*enter)	(struct cpuidle_device *dev,
+>  			 struct cpuidle_state *state);
+> --- a/drivers/cpuidle/cpuidle.c	2008-02-25 02:37:14.000000000 -0500
+> +++ b/drivers/cpuidle/cpuidle.c	2008-02-25 04:29:19.000000000 -0500
+> @@ -67,7 +67,7 @@ static void cpuidle_idle_call(void)
+>  	/* enter the state and update stats */
+>  	dev->last_residency = target_state->enter(dev, target_state);
+>  	dev->last_state = target_state;
+> -	target_state->time += dev->last_residency;
+> +	target_state->time += (unsigned long long)dev->last_residency;
+>  	target_state->usage++;
+>  
+>  	/* give the governor an opportunity to reflect on the outcome */
+> --- a/drivers/cpuidle/sysfs.c	2008-02-25 02:33:14.000000000 -0500
+> +++ b/drivers/cpuidle/sysfs.c	2008-02-25 03:10:50.000000000 -0500
+> @@ -218,6 +218,12 @@ static ssize_t show_state_##_name(struct
+>  	return sprintf(buf, "%u\n", state->_name);\
+>  }
+>  
+> +#define define_show_state_ull_function(_name) \
+> +static ssize_t show_state_##_name(struct cpuidle_state *state, char *buf) \
+> +{ \
+> +	return sprintf(buf, "%llu\n", state->_name);\
+> +}
+> +
+>  #define define_show_state_str_function(_name) \
+>  static ssize_t show_state_##_name(struct cpuidle_state *state, char *buf) \
+>  { \
+> @@ -228,8 +234,8 @@ static ssize_t show_state_##_name(struct
+>  
+>  define_show_state_function(exit_latency)
+>  define_show_state_function(power_usage)
+> -define_show_state_function(usage)
+> -define_show_state_function(time)
+> +define_show_state_ull_function(usage)
+> +define_show_state_ull_function(time)
+>  define_show_state_str_function(name)
+>  define_show_state_str_function(desc)
+>  
+> 
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
 
-Dave.
--- 
-Dave Chinner
-Principal Engineer
-SGI Australian Software Group
 
----
-
-Don't initialise new inode generation numbers to zero
-
-When we allocation new inode chunks, we initialise the generation
-numbers to zero. This works fine until we delete a chunk and then
-reallocate it, resulting in the same inode numbers but with a
-reset generation count. This can result in inode/generation
-pairs of different inodes occurring relatively close together.
-
-Given that the inode/gen pair makes up the "unique" portion of
-an NFS filehandle on XFS, this can result in file handles cached
-on clients being seen on the wire from the server but refer to
-a different file. This causes .... issues for NFS clients.
-
-Hence we need a unique generation number initialisation for
-each inode to prevent reuse of a small portion of the generation
-number space. Make this initialiser per-allocation group so
-that it is not a single point of contention in the filesystem,
-and increment it on every allocation within an AG to reduce the
-chance that a generation number is reused for a given inode number
-if the inode chunk is deleted and reallocated immediately
-afterwards.
-
-It is safe to add the agi_newinogen field to the AGI without
-using a feature bit. If an older kernel is used, it simply
-will not update the field on allocation. If the kernel is
-updated and the field has garbage in it, then it's like having a
-random seed to the generation number....
-
-Signed-off-by: Dave Chinner <dgc@sgi.com>
----
- fs/xfs/xfs_ag.h     |    4 +++-
- fs/xfs/xfs_ialloc.c |   30 ++++++++++++++++++++++--------
- 2 files changed, 25 insertions(+), 9 deletions(-)
-
-Index: 2.6.x-xfs-new/fs/xfs/xfs_ag.h
-===================================================================
---- 2.6.x-xfs-new.orig/fs/xfs/xfs_ag.h	2008-01-18 18:30:06.000000000 +1100
-+++ 2.6.x-xfs-new/fs/xfs/xfs_ag.h	2008-03-26 13:03:41.122918236 +1100
-@@ -121,6 +121,7 @@ typedef struct xfs_agi {
- 	 * still being referenced.
- 	 */
- 	__be32		agi_unlinked[XFS_AGI_UNLINKED_BUCKETS];
-+	__be32		agi_newinogen;	/* inode cluster generation */
- } xfs_agi_t;
- 
- #define	XFS_AGI_MAGICNUM	0x00000001
-@@ -134,7 +135,8 @@ typedef struct xfs_agi {
- #define	XFS_AGI_NEWINO		0x00000100
- #define	XFS_AGI_DIRINO		0x00000200
- #define	XFS_AGI_UNLINKED	0x00000400
--#define	XFS_AGI_NUM_BITS	11
-+#define	XFS_AGI_NEWINOGEN	0x00000800
-+#define	XFS_AGI_NUM_BITS	12
- #define	XFS_AGI_ALL_BITS	((1 << XFS_AGI_NUM_BITS) - 1)
- 
- /* disk block (xfs_daddr_t) in the AG */
-Index: 2.6.x-xfs-new/fs/xfs/xfs_ialloc.c
-===================================================================
---- 2.6.x-xfs-new.orig/fs/xfs/xfs_ialloc.c	2008-03-25 15:41:27.000000000 +1100
-+++ 2.6.x-xfs-new/fs/xfs/xfs_ialloc.c	2008-03-26 14:29:47.998554368 +1100
-@@ -309,6 +309,8 @@ xfs_ialloc_ag_alloc(
- 			free = XFS_MAKE_IPTR(args.mp, fbuf, i);
- 			free->di_core.di_magic = cpu_to_be16(XFS_DINODE_MAGIC);
- 			free->di_core.di_version = version;
-+			free->di_core.di_gen = agi->agi_newinogen;
-+			be32_add_cpu(&agi->agi_newinogen, 1);
- 			free->di_next_unlinked = cpu_to_be32(NULLAGINO);
- 			xfs_ialloc_log_di(tp, fbuf, i,
- 				XFS_DI_CORE_BITS | XFS_DI_NEXT_UNLINKED);
-@@ -347,7 +349,8 @@ xfs_ialloc_ag_alloc(
- 	 * Log allocation group header fields
- 	 */
- 	xfs_ialloc_log_agi(tp, agbp,
--		XFS_AGI_COUNT | XFS_AGI_FREECOUNT | XFS_AGI_NEWINO);
-+		XFS_AGI_COUNT | XFS_AGI_FREECOUNT |
-+		XFS_AGI_NEWINO | XFS_AGI_NEWINOGEN);
- 	/*
- 	 * Modify/log superblock values for inode count and inode free count.
- 	 */
-@@ -896,11 +899,12 @@ nextag:
- 	ino = XFS_AGINO_TO_INO(mp, agno, rec.ir_startino + offset);
- 	XFS_INOBT_CLR_FREE(&rec, offset);
- 	rec.ir_freecount--;
-+	be32_add_cpu(&agi->agi_newinogen, 1);
- 	if ((error = xfs_inobt_update(cur, rec.ir_startino, rec.ir_freecount,
- 			rec.ir_free)))
- 		goto error0;
- 	be32_add(&agi->agi_freecount, -1);
--	xfs_ialloc_log_agi(tp, agbp, XFS_AGI_FREECOUNT);
-+	xfs_ialloc_log_agi(tp, agbp, XFS_AGI_FREECOUNT | XFS_AGI_NEWINOGEN);
- 	down_read(&mp->m_peraglock);
- 	mp->m_perag[tagno].pagi_freecount--;
- 	up_read(&mp->m_peraglock);
-@@ -1320,6 +1324,11 @@ xfs_ialloc_compute_maxlevels(
- 
- /*
-  * Log specified fields for the ag hdr (inode section)
-+ *
-+ * We don't log the unlinked inode fields through here; they
-+ * get logged directly to the buffer. Hence we have a discontinuity
-+ * in the fields we are logging and we need two calls to map all
-+ * the dirtied parts of the agi....
-  */
- void
- xfs_ialloc_log_agi(
-@@ -1342,22 +1351,27 @@ xfs_ialloc_log_agi(
- 		offsetof(xfs_agi_t, agi_newino),
- 		offsetof(xfs_agi_t, agi_dirino),
- 		offsetof(xfs_agi_t, agi_unlinked),
-+		offsetof(xfs_agi_t, agi_newinogen),
- 		sizeof(xfs_agi_t)
- 	};
-+	int			log_newino = fields & XFS_AGI_NEWINOGEN;
-+
- #ifdef DEBUG
- 	xfs_agi_t		*agi;	/* allocation group header */
- 
- 	agi = XFS_BUF_TO_AGI(bp);
- 	ASSERT(be32_to_cpu(agi->agi_magicnum) == XFS_AGI_MAGIC);
- #endif
--	/*
--	 * Compute byte offsets for the first and last fields.
--	 */
-+	fields &= ~XFS_AGI_NEWINOGEN;
-+
-+	/* Compute byte offsets for the first and last fields.  */
- 	xfs_btree_offsets(fields, offsets, XFS_AGI_NUM_BITS, &first, &last);
--	/*
--	 * Log the allocation group inode header buffer.
--	 */
- 	xfs_trans_log_buf(tp, bp, first, last);
-+	if (log_newino) {
-+		xfs_btree_offsets(XFS_AGI_NEWINOGEN, offsets, XFS_AGI_NUM_BITS,
-+					&first, &last);
-+		xfs_trans_log_buf(tp, bp, first, last);
-+	}
- }
- 
- /*
