@@ -1,70 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759629AbYCZLZ1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758814AbYCZL3T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759629AbYCZLZ1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Mar 2008 07:25:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753387AbYCZLZR
+	id S1758814AbYCZL3T (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Mar 2008 07:29:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753387AbYCZL3J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Mar 2008 07:25:17 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:37532
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752796AbYCZLZQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Mar 2008 07:25:16 -0400
-Date: Wed, 26 Mar 2008 04:25:16 -0700 (PDT)
-Message-Id: <20080326.042516.261621639.davem@davemloft.net>
-To: m.kozlowski@tuxland.pl
-Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       sparclinux@vger.kernel.org
-Subject: Re: sparc64 BUG: using smp_processor_id() in preemptible
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20080326.041626.224135350.davem@davemloft.net>
-References: <alpine.LFD.1.00.0803251856450.2775@woody.linux-foundation.org>
-	<200803261142.07422.m.kozlowski@tuxland.pl>
-	<20080326.041626.224135350.davem@davemloft.net>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Wed, 26 Mar 2008 07:29:09 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:57660 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751137AbYCZL3I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Mar 2008 07:29:08 -0400
+Date: Wed, 26 Mar 2008 12:28:45 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: J??rn Engel <joern@logfs.org>, David Miller <davem@davemloft.net>,
+       jirislaby@gmail.com, viro@ZenIV.linux.org.uk, joe@perches.com,
+       tglx@linutronix.de, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 109/148] include/asm-x86/serial.h: checkpatch cleanups
+	- formatting only
+Message-ID: <20080326112845.GH17176@elte.hu>
+References: <20080323085210.GE10722@ZenIV.linux.org.uk> <20080323.032013.79276201.davem@davemloft.net> <47E647AC.1060906@gmail.com> <20080323.051929.267232495.davem@davemloft.net> <20080325104841.GA24211@elte.hu> <20080325111129.GB11359@logfs.org> <20080325122413.GA8729@elte.hu> <20080325131258.GC11359@logfs.org> <20080326110920.GA12272@infradead.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080326110920.GA12272@infradead.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: David Miller <davem@davemloft.net>
-Date: Wed, 26 Mar 2008 04:16:26 -0700 (PDT)
 
-> From: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
-> Date: Wed, 26 Mar 2008 11:42:07 +0100
+* Christoph Hellwig <hch@infradead.org> wrote:
+
+> On Tue, Mar 25, 2008 at 02:12:58PM +0100, J??rn Engel wrote:
+> > CodingStyle has gone too far is this:
+> > 	for (i=0; i<10; i++)
 > 
-> > I see lots of these messages on my ultra 60 box.
-> 
-> This is a sparc64 bug.
+> it's a very good argument why we need a consistant style.  The above is
+> unreadable crap that hurts my eyes.
 
-And this patch should fix it:
+same for me.
 
-commit 69072f6e8e4bd4799d2a54e4ff8771d0657512c1
-Author: David S. Miller <davem@davemloft.net>
-Date:   Wed Mar 26 04:25:00 2008 -0700
+and PLEASE, folks, even if you _dont_ find that line unreadable, and 
+even if you have full power and control over your own subsystem that you 
+maintain and can NAK cleanup patches at whim, still _PLEASE_ follow the 
+Linux coding style because it inconsistency hurts the eyes of a 
+substantial proportion of kernel developers. Other folks might have to 
+fix bugs in your code, other folks might want to reuse your code or you 
+might go into a different subsystem and give maintainership to someone 
+else, etc. etc. Consistent coding style is one of the few concepts that 
+only has advantages and no disadvantages at all.
 
-    [SPARC64]: Fix __get_cpu_var in preemption-enabled area.
-    
-    Reported by Mariusz Kozlowski.
-    
-    Signed-off-by: David S. Miller <davem@davemloft.net>
-
-diff --git a/arch/sparc64/mm/tlb.c b/arch/sparc64/mm/tlb.c
-index 3f10fc9..a0f000b 100644
---- a/arch/sparc64/mm/tlb.c
-+++ b/arch/sparc64/mm/tlb.c
-@@ -23,10 +23,11 @@ DEFINE_PER_CPU(struct mmu_gather, mmu_gathers) = { 0, };
- 
- void flush_tlb_pending(void)
- {
--	struct mmu_gather *mp = &__get_cpu_var(mmu_gathers);
-+	struct mmu_gather *mp;
- 
- 	preempt_disable();
- 
-+	mp = &__get_cpu_var(mmu_gathers);
- 	if (mp->tlb_nr) {
- 		flush_tsb_user(mp);
- 
+	Ingo
