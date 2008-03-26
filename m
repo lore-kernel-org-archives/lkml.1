@@ -1,58 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757696AbYCZXUk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757801AbYCZXVx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757696AbYCZXUk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Mar 2008 19:20:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753794AbYCZXUc
+	id S1757801AbYCZXVx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Mar 2008 19:21:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753794AbYCZXVo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Mar 2008 19:20:32 -0400
-Received: from gate.crashing.org ([63.228.1.57]:57086 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753400AbYCZXUb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Mar 2008 19:20:31 -0400
-Subject: Re: [patch] pci: revert "PCI: remove transparent bridge sizing"
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
-       Gary Hade <garyhade@us.ibm.com>, Thomas Meyer <thomas@m3y3r.de>,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       LKML <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Natalie Protasevich <protasnb@gmail.com>, pm@debian.org
-In-Reply-To: <1206572084.6926.34.camel@pasglop>
-References: <alpine.LFD.1.00.0803251445500.2775@woody.linux-foundation.org>
-	 <20080326101450.GA9060@jurassic.park.msu.ru>
-	 <20080326135458.GA27621@elte.hu> <20080326180701.GA6249@us.ibm.com>
-	 <alpine.LFD.1.00.0803261132310.2775@woody.linux-foundation.org>
-	 <20080326203012.GB6249@us.ibm.com>
-	 <alpine.LFD.1.00.0803261344430.2775@woody.linux-foundation.org>
-	 <20080326205828.GA15225@jurassic.park.msu.ru>
-	 <alpine.LFD.1.00.0803261416390.2775@woody.linux-foundation.org>
-	 <1206568675.6926.7.camel@pasglop>  <20080326221027.GA7959@elte.hu>
-	 <1206570546.6926.30.camel@pasglop>
-	 <alpine.LFD.1.00.0803261544210.2775@woody.linux-foundation.org>
-	 <1206572084.6926.34.camel@pasglop>
-Content-Type: text/plain
-Date: Thu, 27 Mar 2008 10:18:53 +1100
-Message-Id: <1206573533.6926.45.camel@pasglop>
+	Wed, 26 Mar 2008 19:21:44 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:39030
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751748AbYCZXVn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Mar 2008 19:21:43 -0400
+Date: Wed, 26 Mar 2008 16:21:43 -0700 (PDT)
+Message-Id: <20080326.162143.244048620.davem@davemloft.net>
+To: clameter@sgi.com
+Cc: paulus@samba.org, andi@firstfloor.org, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org,
+       torvalds@linux-foundation.org
+Subject: Re: larger default page sizes...
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <Pine.LNX.4.64.0803261052550.29859@schroedinger.engr.sgi.com>
+References: <87wsnrgg9q.fsf@basil.nowhere.org>
+	<18409.56843.909298.717089@cargo.ozlabs.ibm.com>
+	<Pine.LNX.4.64.0803261052550.29859@schroedinger.engr.sgi.com>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Christoph Lameter <clameter@sgi.com>
+Date: Wed, 26 Mar 2008 10:56:17 -0700 (PDT)
 
-> Anyway, doesn't matter much at this stage I suppose, but it would be
-> nice to not use 0 as meaning invalid when sizing bridge windows and I'm
-> not sure at all about using "start" as an alignment indicator neither...
-> It will be much over-aligned in some cases, adding constraints to the
-> allocator where we didn't have any before no ?
+> One should emphasize that this test was a kernel compile which is not 
+> a load that gains much from larger pages.
 
-Hrm... we use "start" today already and it hasn't choked on me so far so
-I suppose that's fine. I overlooked that ...
+Actually, ever since gcc went to a garbage collecting allocator, I've
+found it to be a TLB thrasher.
 
-Ben.
+It will repeatedly randomly walk over a GC pool of at least 8MB in
+size, which to fit fully in the TLB with 4K pages reaquires a TLB with
+2048 entries assuming gcc touches no other data which is of course a
+false assumption.
 
+For some compiles this GC pool is more than 100MB in size.
 
+GCC does not fit into any modern TLB using it's base page size.
