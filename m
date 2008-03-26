@@ -1,42 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760835AbYCZAb7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760685AbYCZAeY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760835AbYCZAb7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Mar 2008 20:31:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756927AbYCZAbv
+	id S1760685AbYCZAeY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Mar 2008 20:34:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756866AbYCZAeN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Mar 2008 20:31:51 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:55083
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1754334AbYCZAbu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Mar 2008 20:31:50 -0400
-Date: Tue, 25 Mar 2008 17:31:46 -0700 (PDT)
-Message-Id: <20080325.173146.238342309.davem@davemloft.net>
-To: peterc@gelato.unsw.edu.au
-Cc: clameter@sgi.com, linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       linux-ia64@vger.kernel.org, torvalds@linux-foundation.org,
-       ianw@gelato.unsw.edu.au
-Subject: Re: larger default page sizes...
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <87od925o15.wl%peter@chubb.wattle.id.au>
-References: <87tziu5q37.wl%peter@chubb.wattle.id.au>
-	<20080325.164927.249210766.davem@davemloft.net>
-	<87od925o15.wl%peter@chubb.wattle.id.au>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Tue, 25 Mar 2008 20:34:13 -0400
+Received: from rtr.ca ([76.10.145.34]:2876 "EHLO mail.rtr.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756661AbYCZAeM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Mar 2008 20:34:12 -0400
+Message-ID: <47E99A02.7040903@rtr.ca>
+Date: Tue, 25 Mar 2008 20:34:10 -0400
+From: Mark Lord <lkml@rtr.ca>
+Organization: Real-Time Remedies Inc.
+User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
+MIME-Version: 1.0
+To: Greg KH <gregkh@suse.de>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Jens Axboe <axboe@kernel.dk>,
+       Jeff Garzik <jgarzik@pobox.com>, Tejun Heo <htejun@gmail.com>,
+       Linus Torvalds <torvalds@osdl.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       IDE/ATA development list <linux-ide@vger.kernel.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>
+Subject: Re: What to do about the 2TB limit on HDIO_GETGEO ?
+References: <47E875AD.1000901@rtr.ca> <47E87942.2020409@rtr.ca> <47E88A13.70808@zytor.com> <47E90019.3050006@rtr.ca> <47E90458.7030801@zytor.com> <47E9383F.3050908@rtr.ca> <20080325192515.GA24234@suse.de>
+In-Reply-To: <20080325192515.GA24234@suse.de>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Peter Chubb <peterc@gelato.unsw.edu.au>
-Date: Wed, 26 Mar 2008 11:25:58 +1100
+Greg KH wrote:
+> On Tue, Mar 25, 2008 at 01:37:03PM -0400, Mark Lord wrote:
+>> Perhaps Greg will chime in.
+> 
+> I've been waiting to see if sanity will take hold of anyone here.
+..
 
-> That depends on the access pattern.
+So have we.  sysfs is a total nightmare to extract information from
+under program / script control.  The idea presented in this thread,
+is to have it cross-index the contents with a method that actually
+makes it easy to access in many common scenarios, without requiring
+huge gobs of code in user space.  Or in kernel space.
 
-Absolutely.
+And it's not just a few 10s of lines of code currently,
+but rather about 80-100 lines just to find the correct device subdir,
+and *then* a few more 10s of lines of code to retrieve the value.
 
-FWIW, I bet it helps enormously for gcc which, even for
-small compiles, swims around chaotically in an 8MB pool
-of GC'd memory.
+In a bulletproof fashion, that is.  Sure it can be slightly smaller
+if niceties such as error checking/handling are omitted.
+
+There's no guarantee that udev is present, and even if it were present,
+there's no guarantee that the names in /dev/ will match /sysfs/ pathnames,
+since udev is very configurable to do otherwise.
+
+So lookups are by dev_t, which sysfs has no simple or even easy way
+of accomplishing.  O(n) at a minimum.
+
+If we make it easier to access, then more programs will use it
+rather than us having to expand our tricky binary ioctl interfaces.
+
+Isn't that part of the idea of sysfs -- to limit the need for new ioctls ?
+
+Cheers
