@@ -1,50 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759603AbYCZMDt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759918AbYCZME4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759603AbYCZMDt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Mar 2008 08:03:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755269AbYCZMDl
+	id S1759918AbYCZME4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Mar 2008 08:04:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755259AbYCZMEt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Mar 2008 08:03:41 -0400
-Received: from py-out-1112.google.com ([64.233.166.177]:62336 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753524AbYCZMDk convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Mar 2008 08:03:40 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=Es+pBvKua+TdHcVQgMQ99A7VW8N4DZQiN7Ou71JFAlb52FgHp17zDJQFX1+UQWP1OP5qdvCrHP1h145HZRuKpi297ie5d5ApaKG7OZKbwy4deJ7zvzNDK2Ke5YIELFbSqWyyEXMvwIK7ZTTb2P/CVvrhhBP8vqvDQby3qFa0GJY=
-Message-ID: <87a5b0800803260503g3a2ab9a4t916239574cd35ddf@mail.gmail.com>
-Date: Wed, 26 Mar 2008 12:03:39 +0000
-From: "Will Newton" <will.newton@gmail.com>
-To: "=?ISO-8859-1?Q?J=F6rn_Engel?=" <joern@logfs.org>
-Subject: Re: [PATCH 109/148] include/asm-x86/serial.h: checkpatch cleanups - formatting only
-Cc: "David Miller" <davem@davemloft.net>, mingo@elte.hu, apw@shadowen.org,
-       jirislaby@gmail.com, viro@zeniv.linux.org.uk, joe@perches.com,
-       tglx@linutronix.de, linux-kernel@vger.kernel.org
-In-Reply-To: <20080326115853.GE22847@logfs.org>
+	Wed, 26 Mar 2008 08:04:49 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:52944 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753074AbYCZMEs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Mar 2008 08:04:48 -0400
+Message-ID: <47EA3B83.4090403@redhat.com>
+Date: Wed, 26 Mar 2008 09:03:15 -0300
+From: Glauber Costa <gcosta@redhat.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-References: <20080326102654.GB22847@logfs.org> <20080326112311.GG17176@elte.hu>
-	 <20080326114142.GD22847@logfs.org>
-	 <20080326.044802.107678511.davem@davemloft.net>
-	 <20080326115853.GE22847@logfs.org>
+To: Avi Kivity <avi@qumranet.com>
+CC: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, glommer@gmail.com,
+       mingo@elte.hu, tglx@linutronix.de, kvm-devel@lists.sourceforge.net,
+       amit.shah@qumranet.com
+Subject: Re: [PATCH 0/20] dma_ops for i386
+References: <1206480999-21767-1-git-send-email-gcosta@redhat.com> <47EA1EF9.9080602@qumranet.com>
+In-Reply-To: <47EA1EF9.9080602@qumranet.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 26, 2008 at 11:58 AM, Jörn Engel <joern@logfs.org> wrote:
+Avi Kivity wrote:
+> Glauber Costa wrote:
+>> Hello,
+>>
+>> Here there is a series of 20 patches that lays the foundations for
+>> using dma_ops in i386 in the very same way x86_64, as well as many other
+>> architectures already do.
+>>
+>> The functions themselves for i386 are placed in a pci-base_32.c, but just
+>> a few among them are actually implemented. Most were no-ops anyway.
+>>
+>>   
+> 
+> I see the headers are unified, but the .c files are duplicated.  I 
+> presume unifying the implementation is deferred to later patches?
+presume correctly.
 
->  What is the reason why (void *)foo is better than (void*)foo?  Just that
->  fact that by random chance one them them became more common in our
->  codebase and the minority always has to give in?
-
-It doesn't matter. This is the crux of all interminable coding style
-discussions. There is no objectively best coding style. Pick one,
-stick to it. That's all that matters.
-
-Linux happens to have a particular coding style, GNU has another. When
-I hack Linux code I use one style, when I hack GNU coee I use another.
-Arguing about it is a waste of time.
