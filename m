@@ -1,84 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760853AbYCZAot@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758941AbYCZAyv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760853AbYCZAot (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Mar 2008 20:44:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757615AbYCZAol
+	id S1758941AbYCZAyv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Mar 2008 20:54:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755354AbYCZAym
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Mar 2008 20:44:41 -0400
-Received: from smtp.ustc.edu.cn ([202.38.64.16]:48144 "HELO ustc.edu.cn"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
-	id S1757407AbYCZAol (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Mar 2008 20:44:41 -0400
-Message-ID: <406492300.07067@ustc.edu.cn>
-X-EYOUMAIL-SMTPAUTH: wfg@mail.ustc.edu.cn
-Date: Wed, 26 Mar 2008 08:44:36 +0800
-From: Fengguang Wu <wfg@mail.ustc.edu.cn>
-To: Jan Kara <jack@suse.cz>
-Cc: Andrew Morton <akpm@linux-foundation.org>, David Chinner <dgc@sgi.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] vfs: Fix lock inversion in drop_pagecache_sb()
-References: <20080325181227.GE5125@duck.suse.cz>
+	Tue, 25 Mar 2008 20:54:42 -0400
+Received: from qb-out-0506.google.com ([72.14.204.239]:7535 "EHLO
+	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755221AbYCZAyf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Mar 2008 20:54:35 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=OPiuWzBb+V8Hl63GNHBZ+h6CeputYjMUxvibx8lMFuXj1sIShJ4IL+oiXTXM1e1xlOnz//ysti6uNnjNMo4RaPeGUjN1Eyu/WK+rt+MImUxcrhRL8PdA2BjKJQnLUIgv8ECWoshpgEbv8nonfqqNHL4ScMSgvjlYD6ZQ9lfc8nE=
+Message-ID: <47E99EBE.7010708@gmail.com>
+Date: Wed, 26 Mar 2008 09:54:22 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080325181227.GE5125@duck.suse.cz>
-X-GPG-Fingerprint: 53D2 DDCE AB5C 8DC6 188B  1CB1 F766 DA34 8D8B 1C6D
-User-Agent: Mutt/1.5.17 (2007-11-01)
-Message-Id: <E1JeJkq-0001bZ-6Z@localhost>
+To: Mark Lord <lkml@rtr.ca>
+CC: Greg KH <gregkh@suse.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Jens Axboe <axboe@kernel.dk>, Jeff Garzik <jgarzik@pobox.com>,
+       Linus Torvalds <torvalds@osdl.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       IDE/ATA development list <linux-ide@vger.kernel.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>
+Subject: Re: What to do about the 2TB limit on HDIO_GETGEO ?
+References: <47E875AD.1000901@rtr.ca> <47E87942.2020409@rtr.ca> <47E88A13.70808@zytor.com> <47E90019.3050006@rtr.ca> <47E90458.7030801@zytor.com> <47E9383F.3050908@rtr.ca> <20080325192515.GA24234@suse.de> <47E99A02.7040903@rtr.ca>
+In-Reply-To: <47E99A02.7040903@rtr.ca>
+X-Enigmail-Version: 0.95.5
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 25, 2008 at 07:12:27PM +0100, Jan Kara wrote:
-> Fix longstanding lock inversion in drop_pagecache_sb by dropping inode_lock
-> before calling __invalidate_mapping_pages(). We just have to make sure
-> inode won't go away from under us by keeping reference to it and putting
-> the reference only after we have safely resumed the scan of the inode
-> list. A bit tricky but not too bad...
+Hello,
 
-Reviewed-by: Fengguang Wu <wfg@mail.ustc.edu.cn>
-
-It's a handy trick to iterate through the list_head :-)
-I have practiced this in my filecache code, and it works nice.
-
-Fengguang
-
-> Signed-off-by: Jan Kara <jack@suse.cz>
-> CC: Fengguang Wu <wfg@mail.ustc.edu.cn>
-> CC: David Chinner <dgc@sgi.com>
+Mark Lord wrote:
+> So have we.  sysfs is a total nightmare to extract information from
+> under program / script control.  The idea presented in this thread,
+> is to have it cross-index the contents with a method that actually
+> makes it easy to access in many common scenarios, without requiring
+> huge gobs of code in user space.  Or in kernel space.
 > 
-> ---
->  fs/drop_caches.c |    8 +++++++-
->  1 files changed, 7 insertions(+), 1 deletions(-)
+> And it's not just a few 10s of lines of code currently,
+> but rather about 80-100 lines just to find the correct device subdir,
+> and *then* a few more 10s of lines of code to retrieve the value.
 > 
-> diff --git a/fs/drop_caches.c b/fs/drop_caches.c
-> index 59375ef..f5aae26 100644
-> --- a/fs/drop_caches.c
-> +++ b/fs/drop_caches.c
-> @@ -14,15 +14,21 @@ int sysctl_drop_caches;
->  
->  static void drop_pagecache_sb(struct super_block *sb)
->  {
-> -	struct inode *inode;
-> +	struct inode *inode, *toput_inode = NULL;
->  
->  	spin_lock(&inode_lock);
->  	list_for_each_entry(inode, &sb->s_inodes, i_sb_list) {
->  		if (inode->i_state & (I_FREEING|I_WILL_FREE))
->  			continue;
-> +		__iget(inode);
-> +		spin_unlock(&inode_lock);
->  		__invalidate_mapping_pages(inode->i_mapping, 0, -1, true);
-> +		iput(toput_inode);
-> +		toput_inode = inode;
-> +		spin_lock(&inode_lock);
->  	}
->  	spin_unlock(&inode_lock);
-> +	iput(toput_inode);
->  }
->  
->  void drop_pagecache(void)
-> -- 
-> 1.5.2.4
+> In a bulletproof fashion, that is.  Sure it can be slightly smaller
+> if niceties such as error checking/handling are omitted.
 > 
+> There's no guarantee that udev is present, and even if it were present,
+> there's no guarantee that the names in /dev/ will match /sysfs/ pathnames,
+> since udev is very configurable to do otherwise.
+> 
+> So lookups are by dev_t, which sysfs has no simple or even easy way
+> of accomplishing.  O(n) at a minimum.
+> 
+> If we make it easier to access, then more programs will use it
+> rather than us having to expand our tricky binary ioctl interfaces.
+> 
+> Isn't that part of the idea of sysfs -- to limit the need for new ioctls ?
 
+The questions are...
+
+1. Are we gonna push sysfs as the primary interface and not provide an
+alternative interface (ioctl here) which can provide equivalent
+information?  There are people running their systems w/o sysfs but I
+think we're getting closer to this everyday.
+
+2. Is udev an essential part of all systems?  I'm not sure about this
+one.  Lots of small machines run w/o udev and I think udev is a bit too
+high level to depend on for every system.
+
+If both #1 and #2 are true, I agree with Mark that we need an easy to
+map from device number to matching sysfs nodes.  Tools which are used
+early during boot and emergency sessions need this mapping and many of
+them are minimal C program w/o much dependency for a good reason.
+Requiring each of them to implement their own way to map device node to
+sysfs node is too awkward.
+
+Probably something like /sys/class/block/MAJ:MIN or
+/sys/class/devnums/bMAJ:MIN?
+
+-- 
+tejun
