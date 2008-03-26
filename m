@@ -1,84 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757409AbYCZIRh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757487AbYCZIVX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757409AbYCZIRh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Mar 2008 04:17:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752504AbYCZIRV
+	id S1757487AbYCZIVX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Mar 2008 04:21:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752793AbYCZIVN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Mar 2008 04:17:21 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:47069 "EHLO mx2.mail.elte.hu"
+	Wed, 26 Mar 2008 04:21:13 -0400
+Received: from gate.crashing.org ([63.228.1.57]:55948 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750717AbYCZIRT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Mar 2008 04:17:19 -0400
-Date: Wed, 26 Mar 2008 09:16:53 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Len Brown <lenb@kernel.org>, Bjorn Helgaas <bjorn.helgaas@hp.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
-Subject: Re: [GIT PATCH] ACPI patches for 2.6.25-rc6
-Message-ID: <20080326081653.GA8247@elte.hu>
-References: <200803180510.47670.lenb@kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200803180510.47670.lenb@kernel.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S1751880AbYCZIVL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Mar 2008 04:21:11 -0400
+Subject: Re: [PATCH] Work around breakage introduced in pata_sil680 by
+	switching it to MMIO
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reply-To: benh@kernel.crashing.org
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Guennadi Liakhovetski <g.liakhovetski@gmx.de>,
+       Jeff Garzik <jeff@garzik.org>, Tim Ellis <tim@ngndg.com>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20080325233629.1fcc2eaa@core>
+References: <32334D99-DB01-4645-97DC-88D2E7BA2BE5@ngndg.com>
+	 <1202850129.7410.22.camel@pasglop>
+	 <Pine.LNX.4.64.0802151651340.27735@axis700.grange>
+	 <20080215155332.2b89c429@core> <1203111956.22915.24.camel@pasglop>
+	 <DD1DA785-AD9C-4EFA-94E2-FA7154EECA9F@ngndg.com>
+	 <47C347C3.40404@garzik.org> <1203987502.15052.71.camel@pasglop>
+	 <Pine.LNX.4.64.0803260023030.1539@axis700.grange>
+	 <20080325233629.1fcc2eaa@core>
+Content-Type: text/plain
+Date: Wed, 26 Mar 2008 19:20:22 +1100
+Message-Id: <1206519623.10573.39.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Len Brown <lenb@kernel.org> wrote:
-
-> Hi Linus,
+On Tue, 2008-03-25 at 23:36 +0000, Alan Cox wrote:
+> On Wed, 26 Mar 2008 00:31:19 +0100 (CET)
+> Guennadi Liakhovetski <g.liakhovetski@gmx.de> wrote:
 > 
-> please pull from: 
+> > pata_sil680 is broken on Linkstation amd Kurobox HG machines since 2.6.24. 
+> > Work around the breakage until a real fix is found.
+> > 
+> > Signed-off-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
 > 
-> git://git.kernel.org/pub/scm/linux/kernel/git/lenb/linux-acpi-2.6.git release
-> 
-> This will update the files shown below.
+> Just disable the mmio patch on all systems - we know it doesn't work, we
+> know what work needs to be done, it should remain off for everyone until
+> that work is done. It should never have been merged in the first place
+> and I think my statement to that effect has been proven nicely.
 
-btw., saw this ACPI-ish commit in rc7:
+Agreed. We did some patches to work on the possible write posting
+issues, and they didn't fix the problem, though they still should go in
+ultimately (after more testing, I need to dig them back out of my pile).
 
-| commit b97d4803400a4442b0e4ae14d0bd8e83994b9004
-| Author: Bjorn Helgaas <bjorn.helgaas@hp.com>
-| Date:   Tue Mar 25 11:21:11 2008 -0600
-|
-|    ACPI: fix Medion _PRT quirk (use "ISA_", not "ISA")
+So I think the MMIO is on standby now until we really corner what's
+going on. I hope to be able to work a bit on Guennadi's setup one of
+these days though I can't promise, I may instead get that SiL controller
+out of a cell blade and stick it in every HW I have around see if I can
+reproduce the problem. I think I have a couple different revisions even.
 
-a grep shows that we've got one other case of an "ISA" string in the 
-ACPI code - is the patch below needed too?
+We need to keep it enabled for the QS20 cell blades as it's the only way
+those will boot (and they happen to apparently not suffer from any
+adverse effect, we've tortured them pretty deeply, could be luck due to
+how the bridge works on them, or due to other workarounds we do for
+horrid breakage in the PCI host bridge that end up making everything
+else work too) but everybody else can stick with PIO.
 
-	Ingo
+Jeff, can you ask Linus to pull my patch (the one Alan just acked) that
+does that in .25 ?
 
--------------------->
-Subject: acpi: fix asus isa
-From: Ingo Molnar <mingo@elte.hu>
-Date: Wed Mar 26 09:05:07 CET 2008
+Cheers,
+Ben.
 
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- drivers/acpi/asus_acpi.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Index: linux-x86.q/drivers/acpi/asus_acpi.c
-===================================================================
---- linux-x86.q.orig/drivers/acpi/asus_acpi.c
-+++ linux-x86.q/drivers/acpi/asus_acpi.c
-@@ -149,7 +149,7 @@ struct asus_hotk {
- };
- 
- /* Here we go */
--#define A1x_PREFIX "\\_SB.PCI0.ISA.EC0."
-+#define A1x_PREFIX "\\_SB.PCI0.ISA_.EC0."
- #define L3C_PREFIX "\\_SB.PCI0.PX40.ECD0."
- #define M1A_PREFIX "\\_SB.PCI0.PX40.EC0."
- #define P30_PREFIX "\\_SB.PCI0.LPCB.EC0."
+
