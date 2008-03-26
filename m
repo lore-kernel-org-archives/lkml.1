@@ -1,72 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756430AbYCZPBl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756547AbYCZPYl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756430AbYCZPBl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Mar 2008 11:01:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753018AbYCZPBb
+	id S1756547AbYCZPYl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Mar 2008 11:24:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753417AbYCZPYe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Mar 2008 11:01:31 -0400
-Received: from khc.piap.pl ([195.187.100.11]:55223 "EHLO khc.piap.pl"
+	Wed, 26 Mar 2008 11:24:34 -0400
+Received: from lobo.ruivo.org ([66.92.68.119]:54381 "EHLO lobo.ruivo.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752976AbYCZPBa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Mar 2008 11:01:30 -0400
-To: David Miller <davem@davemloft.net>
-Cc: jeff@garzik.org, akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: [PATCH v2] Re: WAN: new PPP code for generic HDLC
-References: <m3prtzsszg.fsf@maximus.localdomain>
-	<m3tzj92xq6.fsf@maximus.localdomain>
-	<m33aqedg0a.fsf@maximus.localdomain>
-	<20080325.161427.71442171.davem@davemloft.net>
-From: Krzysztof Halasa <khc@pm.waw.pl>
-Date: Wed, 26 Mar 2008 16:01:27 +0100
-In-Reply-To: <20080325.161427.71442171.davem@davemloft.net> (David Miller's message of "Tue\, 25 Mar 2008 16\:14\:27 -0700 \(PDT\)")
-Message-ID: <m3tzitmsvs.fsf@maximus.localdomain>
+	id S1753074AbYCZPYd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Mar 2008 11:24:33 -0400
+Date: Wed, 26 Mar 2008 11:24:17 -0400
+From: Aristeu Rozanski <aris@ruivo.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
+Subject: Re: [RFC][PATCH] nmi watchdog: handle NMI_IO_APIC on nmi_watchdog
+Message-ID: <20080326152417.GE25854@cathedrallabs.org>
+References: <20080313180538.GC4620@cathedrallabs.org> <20080321114752.GA25225@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080321114752.GA25225@elte.hu>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Miller <davem@davemloft.net> writes:
+Hi Ingo,
+> > This patch includes code to handle NMI_IO_APIC enabling/disabling by
+> > nmi_watchdog proc file.
+> 
+> hm:
+> 
+> > +static void disable_ioapic_nmi_watchdog(void)
+> > +{
+> > +	on_each_cpu(stop_apic_nmi_watchdog, NULL, 0, 1);
+> > +}
+> 
+> stop_apic_nmi_watchdog() doesnt currently properly disable the 
+> generation of NMIs when they come from an IO-APIC, so this will need 
+> more fixes i believe. One approach would be to save the IO-APIC id and 
+> pin when the watchdog is set up, and use it later on to poke that 
+> IO-APIC register to disable NMI generation there.
+the patch I sent has this change:
 
-> Kyzysztof, this is the way you behave every time your
-> patches don't get looked at as quickly as you would
-> like them to.
->
-> And this behavior does not trigger us maintainers to
-> stop everything we're doing and apply your patches.
->
-> In fact it makes us want to review your patches even
-> less.
->
-> Sending a healthy ping asking if your patches need
-> to be resent, etc., is one thing.  But this isn't
-> what you're doing here.
+@@ -270,6 +270,8 @@ void stop_apic_nmi_watchdog(void *unused
+                return;
+        if (nmi_watchdog == NMI_LOCAL_APIC)
+                lapic_watchdog_stop();
++       else
++               __acpi_nmi_disable(NULL);
+        __get_cpu_var(wd_enabled) = 0;
+        atomic_dec(&nmi_active);
+ }
 
-I don't know what are you talking about.
+and:
+static void __acpi_nmi_disable(void *__unused)
+{       
+        apic_write(APIC_LVT0, APIC_DM_NMI | APIC_LVT_MASKED);
+}
 
-- someone broke my drivers, happens from time to time
-- I asked about related change and was told about some "out of tree"
-  drivers instead
-- I had two modules to fix, one took 15 minutes and for the other one
-  I had no time at the moment.
-- I finally rewrote the other module
-- got feedback, corrected it, resent.
-- asked if we are including it in 2.6.25 or if we are to make
-  temporary Kconfig change instead
+do you think this isn't enough?
 
-What exactly don't you like in my "behaviour"? I didn't invent
-synchronous serial devices. Actually, I'm doing it all in my free
-time, and I'm sure I can find better things to do in that time.
-
-I accept I may use not the best wording from time to time, I'm not
-native English writter.
-
-What is your problem about me?
-
-I'd appreciate it if you point out the precise things I'm doing
-wrong.
-
-Thanks.
 -- 
-Krzysztof Halasa
+Aristeu
+
