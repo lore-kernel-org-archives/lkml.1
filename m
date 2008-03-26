@@ -1,114 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758005AbYCZNh0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753914AbYCZN4G@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758005AbYCZNh0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Mar 2008 09:37:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753935AbYCZNhO
+	id S1753914AbYCZN4G (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Mar 2008 09:56:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751554AbYCZNzy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Mar 2008 09:37:14 -0400
-Received: from astoria.ccjclearline.com ([64.235.106.9]:55122 "EHLO
-	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752426AbYCZNhM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Mar 2008 09:37:12 -0400
-Date: Wed, 26 Mar 2008 09:37:09 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@crashcourse.ca>
-X-X-Sender: rpjday@localhost.localdomain
-To: David Woodhouse <dwmw2@infradead.org>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: why so many unexported headers checking __KERNEL__?
-In-Reply-To: <1206537586.9540.280.camel@pmac.infradead.org>
-Message-ID: <alpine.LFD.1.00.0803260935460.7900@localhost.localdomain>
-References: <alpine.LFD.1.00.0803230229530.1203@localhost.localdomain>  <1206533324.9540.268.camel@pmac.infradead.org>  <alpine.LFD.1.00.0803260846390.6148@localhost.localdomain>  <1206537022.9540.274.camel@pmac.infradead.org> 
- <alpine.LFD.1.00.0803260913350.6316@localhost.localdomain> <1206537586.9540.280.camel@pmac.infradead.org>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+	Wed, 26 Mar 2008 09:55:54 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:51214 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750964AbYCZNzx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Mar 2008 09:55:53 -0400
+Date: Wed, 26 Mar 2008 14:54:58 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Thomas Meyer <thomas@m3y3r.de>,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       LKML <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Natalie Protasevich <protasnb@gmail.com>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Gary Hade <garyhade@us.ibm.com>
+Subject: [patch] pci: revert "PCI: remove transparent bridge sizing"
+Message-ID: <20080326135458.GA27621@elte.hu>
+References: <47E807EE.2030902@m3y3r.de> <47E8217C.9080400@s5r6.in-berlin.de> <20080325073117.GA8469@elte.hu> <20080325165007.GA7775@elte.hu> <47E94557.4030001@m3y3r.de> <20080325201125.GD15330@elte.hu> <20080325202954.GA22007@elte.hu> <47E969E1.6080608@m3y3r.de> <alpine.LFD.1.00.0803251445500.2775@woody.linux-foundation.org> <20080326101450.GA9060@jurassic.park.msu.ru>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="8323328-69639996-1206538631=:7900"
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - crashcourse.ca
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080326101450.GA9060@jurassic.park.msu.ru>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
 
---8323328-69639996-1206538631=:7900
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+* Ivan Kokshaysky <ink@jurassic.park.msu.ru> wrote:
 
+> Thomas, can you put CONFIG_RESOURCES_64BIT=y back and either revert 
+> commit 8fa5913d54f3b1e09948e6a0db34da887e05ff1f, or just comment out 
+> these two lines in drivers/pci/setup-bus.c:
+> 
+> 		if (bus->self->transparent)
+> 			break;
+> 
+> and check if it helps?
 
-On Wed, 26 Mar 2008, David Woodhouse wrote:
+alternatively, try x86.git/latest which has the revert below included.
 
-> On Wed, 2008-03-26 at 09:16 -0400, Robert P. J. Day wrote:
-> > well, since i already have the output from my script, i might toss
-> > together some per-directory patches to start removing some of that.
-> > this sounds more like a one-shot thing than adding permanent checking
-> > to the build process.
->
-> Makes sense.
->
-> Remember, one of our goals is to move towards having files which are
-> just _copied_ (header-y) instead of having these ifdefs. If, in your
-> travels, you see a way you can split headers up more sensibly to
-> achieve that, it would be good.
+	Ingo
 
-just in case anyone was curious, i've attached my Kbuild checking
-script.  i'm guessing it's pretty self-explanatory -- you can get an
-idea of the condition of the header files at the moment.
+------------------>
+Subject: pci: revert "PCI: remove transparent bridge sizing"
+From: Ingo Molnar <mingo@elte.hu>
+Date: Wed Mar 26 14:38:07 CET 2008
 
-rday
---
+revert commit 8fa5913d54f3b1e09948e6a0db34da887e05ff1f as it is wrong.
 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry:
-    Have classroom, will lecture.
+Requested by Ivan Kokshaysky.
 
-http://crashcourse.ca                          Waterloo, Ontario, CANADA
-========================================================================
---8323328-69639996-1206538631=:7900
-Content-Type: APPLICATION/x-sh; name=check_kbuild.sh
-Content-Transfer-Encoding: BASE64
-Content-ID: <alpine.LFD.1.00.0803260937090.7900@localhost.localdomain>
-Content-Description: 
-Content-Disposition: attachment; filename=check_kbuild.sh
+Signed-off-by-if-Thomas-reports-success: Ingo Molnar <mingo@elte.hu>
+---
+ drivers/pci/setup-bus.c |    5 -----
+ 1 file changed, 5 deletions(-)
 
-IyEvYmluL3NoCiMKIwljaGVja19rYnVpbGQuc2gKIwojICBSdW4gdGhpcyBz
-Y3JpcHQgZnJvbSB0aGUgdG9wIG9mIHRoZSBzb3VyY2UgdHJlZSwgYW5kIHBh
-c3MgaXQKIyB0aGUgS2J1aWxkIGZpbGUgdG8gcHJvY2VzcywgYXMgaW46CiMK
-IwkkIGNoZWNrX2tidWlsZC5zaCBpbmNsdWRlL2xpbnV4L0tidWlsZAojCgoj
-CiMgIFNvbWUgY29udmVuaWVudCBzZXQgb3BlcmF0b3JzLCBzaW5jZSB0aGlz
-IGlzIHRoZSBraW5kIG9mCiMgcHJvYmxlbSB0aGF0IGp1c3QgKnNjcmVhbXMq
-IGZvciBzZXQgbWFuaXB1bGF0aW9uLgojCgpmdW5jdGlvbiBzZXRfdW5pb24K
-ewoJZWNobyAtZSAiJHsxfVxuJHsyfSIgfCBzb3J0IC11Cn0KCmZ1bmN0aW9u
-IHNldF9pbnRuCnsKCWVjaG8gLWUgIiR7MX1cbiR7Mn0iIHwgc29ydCB8IHVu
-aXEgLWQKfQoKZnVuY3Rpb24gc2V0X3N1Ygp7Cglsb2NhbCBpbnRuPSQoc2V0
-X2ludG4gIiR7MX0iICIkezJ9IikKCWVjaG8gLWUgIiQxXG4ke2ludG59IiB8
-IHNvcnQgfCB1bmlxIC11Cn0KCktGSUxFPSQxCmVjaG8gIiR7S0ZJTEV9IgpE
-SVI9JChkaXJuYW1lICR7S0ZJTEV9KQoKKGNkICR7RElSfSAmJiB7CgpIRFJT
-PSQoZ3JlcCAiXmhlYWRlci15IiBLYnVpbGQgfCBjdXQgLWQnICcgLWYzKQpV
-TklTPSQoZ3JlcCAiXnVuaWZkZWYteSIgS2J1aWxkIHwgY3V0IC1kJyAnIC1m
-MykKQUxMSD0kKGxzICouaCkKQUxMRVhQPSQoc2V0X3VuaW9uICIke0hEUlN9
-IiAiJHtVTklTfSIpCk5PVEVYUD0kKHNldF9zdWIgIiR7QUxMSH0iICIke0FM
-TEVYUH0iKQoKIyBlY2hvICJIRFJTID0gJHtIRFJTfSIKIyBlY2hvICJVTklT
-ID0gJHtVTklTfSIKIyBlY2hvICJBTExIID0gJHtBTExIfSIKIyBlY2hvICJB
-TExFWFAgPSAke0FMTEVYUH0iCiMgZWNobyAiTk9URVhQID0gJHtOT1RFWFB9
-IgoKIyAgU2ltcGx5IHVuY29tbWVudCB0aGUgcGFpciBvZiBsaW5lcyBjb3Jy
-ZXNwb25kaW5nIHRvIHRoZSBjaGVjayB5b3UKIyB3YW50IHRvIHJ1bi4KCiMg
-ZWNobyAiICAgICBBbnkgZW50cmllcyBpbiBib3RoIGxpc3RzPyIKIyBlY2hv
-ICIke0hEUlN9IiAiJHtVTklTfSIgfCBzb3J0IHwgdW5pcSAtYyB8IHNvcnQg
-LW5yIHwgZ3JlcCAtdiAiXiAgICAgIDEiCgojIGVjaG8gIiAgICAgaGVhZGVy
-LXkgZW50cnkgY2hlY2tpbmcgZm9yIF9fS0VSTkVMX18iCiMgZ3JlcCAiI2lm
-LipfX0tFUk5FTF9fIiAke0hEUlN9IC9kZXYvbnVsbAoKIyBlY2hvICIgICAg
-IHVuaWZkZWYteSBlbnRyeSBub3QgY2hlY2tpbmcgZm9yIF9fS0VSTkVMX18i
-CiMgZ3JlcCAtTCAiI2lmLipfX0tFUk5FTF9fIiAke1VOSVN9IC9kZXYvbnVs
-bAoKIyBlY2hvICIgICAgIGNoZWNraW5nIF9fS0VSTkVMX18gd2hlbiBub3Qg
-ZXZlbiBiZWluZyBleHBvcnRlZDoiCiMgZ3JlcCAiI2lmLipfX0tFUk5FTF9f
-IiAke05PVEVYUH0gL2Rldi9udWxsCn0KKQo=
-
---8323328-69639996-1206538631=:7900--
+Index: linux-x86.q/drivers/pci/setup-bus.c
+===================================================================
+--- linux-x86.q.orig/drivers/pci/setup-bus.c
++++ linux-x86.q/drivers/pci/setup-bus.c
+@@ -486,12 +486,7 @@ void __ref pci_bus_size_bridges(struct p
+ 		break;
+ 
+ 	case PCI_CLASS_BRIDGE_PCI:
+-		/* don't size subtractive decoding (transparent)
+-		 * PCI-to-PCI bridges */
+-		if (bus->self->transparent)
+-			break;
+ 		pci_bridge_check_ranges(bus);
+-		/* fall through */
+ 	default:
+ 		pbus_size_io(bus);
+ 		/* If the bridge supports prefetchable range, size it
