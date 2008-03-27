@@ -1,130 +1,149 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757502AbYC0IHE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758354AbYC0IIi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757502AbYC0IHE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Mar 2008 04:07:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755274AbYC0IGt
+	id S1758354AbYC0IIi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Mar 2008 04:08:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755376AbYC0IIa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Mar 2008 04:06:49 -0400
-Received: from styx.suse.cz ([82.119.242.94]:34893 "EHLO elijah.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755246AbYC0IGq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Mar 2008 04:06:46 -0400
-Subject: Re: [PATCH] Discard notification signals when a tracer exits
-From: Petr Tesarik <ptesarik@suse.cz>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Cc: linux-kernel@vger.kernel.org, Roland McGrath <roland@redhat.com>
-In-Reply-To: <20080326181724.GA77@tv-sign.ru>
-References: <1206455513.17227.4.camel@elijah.suse.cz>
-	 <20080325161606.GA93@tv-sign.ru> <1206521337.30244.11.camel@elijah.suse.cz>
-	 <20080326181724.GA77@tv-sign.ru>
-Content-Type: text/plain
+	Thu, 27 Mar 2008 04:08:30 -0400
+Received: from E23SMTP03.au.ibm.com ([202.81.18.172]:48638 "EHLO
+	e23smtp03.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755373AbYC0II2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Mar 2008 04:08:28 -0400
+Message-ID: <47EB5528.8070800@linux.vnet.ibm.com>
+Date: Thu, 27 Mar 2008 13:34:56 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+MIME-Version: 1.0
+To: Paul Menage <menage@google.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Pavel Emelianov <xemul@openvz.org>, Hugh Dickins <hugh@veritas.com>,
+       Sudhir Kumar <skumar@linux.vnet.ibm.com>,
+       YAMAMOTO Takashi <yamamoto@valinux.co.jp>, lizf@cn.fujitsu.com,
+       linux-kernel@vger.kernel.org, taka@valinux.co.jp, linux-mm@kvack.org,
+       David Rientjes <rientjes@google.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Subject: Re: [RFC][0/3] Virtual address space control for cgroups (v2)
+References: <20080326184954.9465.19379.sendpatchset@localhost.localdomain> <6599ad830803261522p45a9daddi8100a0635c21cf7d@mail.gmail.com>
+In-Reply-To: <6599ad830803261522p45a9daddi8100a0635c21cf7d@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Organization: SuSE CR
-Date: Thu, 27 Mar 2008 09:06:38 +0100
-Message-Id: <1206605198.30244.55.camel@elijah.suse.cz>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.0 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-03-26 at 21:17 +0300, Oleg Nesterov wrote:
-> [...]
-> > > If we really need this, _perhaps_ it is better to change do_syscall_trace(),
-> > > so that the tracee checks ->ptrace before sending the signal to itself.
-> > 
-> > You're missing the point. The child _is_ traced before sending the
-> > signal. It leaves the notification code in ->exit_code, so that the
-> > tracer can fetch it with a call to wait4(). Later, the same field is
-> > used to tell the tracee which signal the tracer delivered to it.
-> > However, if the tracer dies before it reads (and resets) the value in
-> > ->exit_code, the tracee interprets the notification code as the signal
-> > to be delivered.
+Paul Menage wrote:
+> On Wed, Mar 26, 2008 at 11:49 AM, Balbir Singh
+> <balbir@linux.vnet.ibm.com> wrote:
+>>  The changelog in each patchset documents what has changed in version 2.
+>>  The most important one being that virtual address space accounting is
+>>  now a config option.
+>>
+>>  Reviews, Comments?
+>>
 > 
-> I see! That is why I suggested to re-check ->ptrace, and if we are not
-> ptraced any longer - discard the notification. Even better, we can change
-> ptrace_stop() as Roland pointed out.
-
-That's not what you want. It's totally OK if the tracer resumes the
-tracee with a signal and immediately exits before the tracee returns
-from schedule(), so this approach won't work. Sorry.
-
-> > > But actually, I don't understand what is the problem. Ptracer has full control,
-> > > you should not kill it with SIGKILL, this may leave the child in some bad/
-> > > inconsistent change. If strace/whatever itself exits without taking care about
-> > > its tracees, then we should fix the tracer, not the kernel.
-> > 
-> > Hm, what if the tracer gets actually killed by the kernel, e.g. by the
-> > OOM killer? How would you fix that in userspace?
+> I'm still of the strong opinion that this belongs in a separate
+> subsystem. (So some of these arguments will appear familiar, but are
+> generally because they were unaddressed previously).
 > 
-> I think in that case a user has much worse problems ;)
 
-Well, there are many more cases. What about an admin who forgot a
-running strace on a system daemon and then used SAK (SysRq+K) to make
-sure the system was sane before logging in?
+I thought I addressed some of those by adding a separate config option. You
+could enable just the address space control, by letting memory.limit_in_bytes at
+the maximum value it is at (at the moment).
 
-Anyway, I have a very real bug report from a paying customer, so
-whatever their use case, I'm bound to solve it for them. And I always
-thought that pushing a fix upstreams is considered "the right
-thing" (TM).
-
-> > Anyway, if you really want to have broken behaviour on unexpected tracer
-> > exits, then we'd better not change the tracee's state from TASK_TRACED
-> > at all. That way it stays hanging in the system and the admin can decide
-> > whether they want to shoot it down with a SIGKILL or attach a debugger
-> > to it and somehow resume the process. Arranging for a delivery of a
-> > non-existent SIGTRAP seems utterly illogical to me.
 > 
-> No, I don't want to have broken behaviour on unexpected tracer exits,
-> but I don't see a "good" way to fix this relatively minor problem.
+> The basic philosophy of cgroups is that one size does not fit all
+> (either all users, or all task groups), hence the ability to
+> pick'n'mix subsystems in a hierarchy, and have multiple different
+> hierarchies. So users who want physical memory isolation but not
+> virtual address isolation shouldn't have to pay the cost (multiple
+> atomic operations on a shared structure) on every mmap/munmap or other
+> address space change.
 > 
-> But I _personally_ don't like this particular patch, sorry. And please
-> note that I said "I can't really judge".
 
-That's perfectly fine. More eyes can see more bugs. My patch was buggy,
-indeed, and I don't want to introduce new bugs.
+Yes, I agree with the overhead philosophy. I suspect that users will enable
+both. I am not against making it a separate controller. I am still hopeful of
+getting the mm->owner approach working
 
->[...]
-> > So, do you think it's a better idea to add a new flag to notify the
-> > tracee that its tracer disappeared? That way it can decide how to handle
-> > the situation in ptrace_stop(), something along these lines:
-> >
-> > --- a/kernel/signal.c
-> > +++ b/kernel/signal.c
-> > @@ -1628,6 +1628,8 @@ ptrace_stop(int exit_code, int c
-> >                 do_notify_parent_cldstop(current, CLD_TRAPPED);
-> >                 read_unlock(&tasklist_lock);
-> >                 schedule();
-> > +               if (current->flags & PF_PTRACEORPHAN & clear_code)
-> > +                       current->exit_code = 0;
-> >         } else {
-> >                 /*
-> >                  * By the time we got the lock, our tracer went away.
-> > 
-> > And then replace p->exit_code = 0 in my original patch with something
-> > like p->flags |= PF_PTRACEORPHAN. Better?
 > 
-> This is racy, and we can't modify p->flags, and I don't really understand
-> how this can help.
-
-Why is it racy? It's ugly, but where's the race condition? The tracee
-cannot get out of schedule() until the tracer lets it go. And it doesn't
-let it go, because there can only be one tracer for any given task and
-that's the task which is exiting. So AFAICS doing (almost) anything to
-the tracee is safe.
-
-To explain how my second patch is different from the previous one - the
-tracee now decides whether the signal should be discarded or not, and it
-can distinguish the self-induced tracer notification signal from a real
-one by looking at the clear_code argument to ptrace_stop().
-
-Regards,
-Petr Tesarik
-
-> I am sorry Petr, I have no idea how to fix this, but I don't agree with
-> your approach.
+> Trying to account/control physical memory or swap usage via virtual
+> address space limits is IMO a hopeless task. Taking Google's
+> production clusters and the virtual server systems that I worked on in
+> my previous job as real-life examples that I've encountered, there's
+> far too much variety of application behaviour (including Java apps
+> that have massive sparse heaps, jobs with lots of forked children
+> sharing pages but not address spaces with their parents, and multiple
+> serving processes mapping large shared data repositories from SHM
+> segments) that saying VA = RAM + swap is going to break lots of jobs.
+> But pushing up the VA limit massively makes it useless for the purpose
+> of preventing excessive swapping. If you want to prevent excessive
+> swap space usage without breaking a large class of apps, you need to
+> limit swap space, not virtual address space.
 > 
-> (Yes I know, it is very easy to blame somebody else's code ;)
+> Additionally, you suggested that VA limits provide a "soft-landing".
+> But I'm think that the number of applications that will do much other
+> than abort() if mmap() returns ENOMEM is extremely small - I'd be
+> interested to hear if you know of any.
 > 
-> Oleg.
+
+What happens if swap is completely disabled? Should the task running be OOM
+killed in the container? How does the application get to know that it is
+reaching its limit? I suspect the system administrator will consider
+vm.overcommit_ratio while setting up virtual address space limits and real page
+usage limit. As far as applications failing gracefully is concerned, my opinion is
+
+1. Lets not be dictated by bad applications to design our features
+2. Autonomic computing is forcing applications to see what resources
+applications do have access to
+3. Swapping is expensive, so most application developers, I spoken to at
+conferences, recently, state that they can manage their own memory, provided
+they are given sufficient hints from the OS. An mmap() failure, for example can
+force the application to free memory it is not currently using or trigger the
+garbage collector in a managed environment.
+
+
+> I'm not going to argue that there are no good reasons for VA limits,
+> but I think my arguments above will apply in enough cases that VA
+> limits won't be used in the majority of cases that are using the
+> memory controller, let alone all machines running kernels with the
+> memory controller configured (e.g. distro kernels). Hence it should be
+> possible to use the memory controller without paying the full overhead
+> for the virtual address space limits.
 > 
+
+Yes, the overhead part is a compelling reason to split out the controllers. But
+then again, we have a config option to disable the overhead.
+
+> 
+> And in cases that do want to use VA limits, can you be 100% sure that
+> they're going to want to use the same groupings as the memory
+> controller? I'm not sure that I can come up with a realistic example
+> of why you'd want to have VA limits and memory limits in different
+> hierarchies (maybe tracking memory leaks in subgroups of a job and
+> using physical memory control for the job as a whole?), but any such
+> example would work for free if they were two separate subsystems.
+> 
+> The only real technical argument against having them in separate
+> subsystems is that there needs to be an extra pointer from mm_struct
+> to a va_limit subsystem object if they're separate, since the VA
+> limits can no longer use mm->mem_cgroup. This is basically 8 bytes of
+> overhead per process (not per-thread) which is minimal, and even that
+> could go away if we were to implement the mm->owner concept.
+>
+
+Yes, the mm->owner patches would help split the controller out more easily. Let
+me see if I can get another revision of that working and measure the overhead of
+finding the next mm->owner.
+
+
+> 
+> Paul
+
+
+-- 
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
