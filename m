@@ -1,111 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762284AbYC0WBm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762069AbYC0WFO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762284AbYC0WBm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Mar 2008 18:01:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759251AbYC0WBe
+	id S1762069AbYC0WFO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Mar 2008 18:05:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759281AbYC0WE5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Mar 2008 18:01:34 -0400
-Received: from mail.tmr.com ([64.65.253.246]:51355 "EHLO gaimboi.tmr.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757267AbYC0WBd convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Mar 2008 18:01:33 -0400
-Message-ID: <47EC199F.4030102@tmr.com>
-Date: Thu, 27 Mar 2008 18:03:11 -0400
-From: Bill Davidsen <davidsen@tmr.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
-MIME-Version: 1.0
-To: Emmanuel Florac <eflorac@intellique.com>
-CC: Bart Van Assche <bart.vanassche@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: RAID-1 performance under 2.4 and 2.6
-References: <20080325194306.4ac71ff2@galadriel.home>	<e2e108260803260142o34c33e7ajf395d5cb62824cb4@mail.gmail.com>	<20080326120713.24cb8093@harpe.intellique.com>	<e2e108260803260415w64fa4feave44560dd7ac7cbdb@mail.gmail.com> <20080326133632.640aa0d2@harpe.intellique.com>
-In-Reply-To: <20080326133632.640aa0d2@harpe.intellique.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Thu, 27 Mar 2008 18:04:57 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:49476
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1758968AbYC0WE4 convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Mar 2008 18:04:56 -0400
+Date: Thu, 27 Mar 2008 15:04:56 -0700 (PDT)
+Message-Id: <20080327.150456.39560267.davem@davemloft.net>
+To: joe@perches.com
+Cc: ilpo.jarvinen@helsinki.fi, akpm@linux-foundation.org,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org, acme@redhat.com,
+       mpm@selenic.com
+Subject: Re: [PATCH 1/7] [NET]: uninline skb_put, de-bloats a lot
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1206645050.4849.77.camel@localhost>
+References: <1206621486-5408-1-git-send-email-ilpo.jarvinen@helsinki.fi>
+	<1206621486-5408-2-git-send-email-ilpo.jarvinen@helsinki.fi>
+	<1206645050.4849.77.camel@localhost>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=iso-8859-1
 Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Emmanuel Florac wrote:
-> Le Wed, 26 Mar 2008 12:15:57 +0100
-> "Bart Van Assche" <bart.vanassche@gmail.com> écrivait:
-> 
->> You are welcome to post the numbers you obtained with dd for direct
->> I/O on a RAID-1 setup for 2.4 versus 2.6 kernel.
-> 
-> Here we go (tested on a slightly slower hardware : Athlon64 3000+,
-> nVidia chipset) . Actually, direct IO result is identical. However, the
-> significant number for the end user in this case is the NFS thruput.
-> 
+From: Joe Perches <joe@perches.com>
+Date: Thu, 27 Mar 2008 12:10:50 -0700
 
+> On Thu, 2008-03-27 at 14:38 +0200, Ilpo Järvinen wrote:
+> > Allyesconfig (v2.6.24-mm1):
+> 
+> I think this change is only good in severely memory
+> limited uses.  This will very likely negatively impact
+> high speed networking.  It's a speed/size trade off.
 
-> 2.4 kernel (2.4.32), async write
-> --------------------------------
-> root@0[root]# ./dd if=/dev/zero of=/mnt/raid/testdd01 bs=1M count=1024 
-> 1024+0 records in
-> 1024+0 records out
-> 1073741824 bytes (1.1 GB) copied, 13.407 seconds, 80.1 MB/s
-> 
-> 2.4 kernel (2.4.32), async write thru NFS mount
-> --------------------------------
-> emmanuel[/mnt/temp]$ dd if=/dev/zero of=./testdd01 bs=1M count=1024 
-> 1024+0 enregistrements lus
-> 1024+0 enregistrements écrits
-> 1073741824 bytes (1,1 GB) copied, 15,5176 s, 69,2 MB/s
-> 
-> 2.4 kernel (2.4.32), async read
-> --------------------------------
-> root@0[root]# ./dd if=/mnt/raid/testdd01 of=/dev/null bs=1M
-> 1024+0 records in
-> 1024+0 records out
-> 1073741824 bytes (1.1 GB) copied, 15.752 seconds, 68.2 MB/s
-> 
-> 2.4 kernel (2.4.32), sync write
-> --------------------------------
-> root@0[root]# ./dd if=/dev/zero of=/mnt/raid/testdd01 bs=1M count=1024 \
-> oflag=direct,dsync 
-> 1024+0 records in
-> 1024+0 records out
-> 1073741824 bytes (1.1 GB) copied, 21.7874 seconds, 49.3 MB/s
-> 
-> 2.6 kernel (2.6.22.18), async write
-> --------------------------------
-> root@0[root]# ./dd if=/dev/zero of=/mnt/raid/testdd02 bs=1M
-> count=1024 1024+0 records in
-> 1024+0 records out
-> 1073741824 bytes (1.1 GB) copied, 17.1347 seconds, 62.7 MB/s
-> 
-> 2.6 kernel (2.6.22.18), async write thru NFS mount
-> --------------------------------
-> emmanuel[/mnt/temp]$ dd if=/dev/zero of=./testdd02 bs=1M count=1024
-> 1024+0 enregistrements lus
-> 1024+0 enregistrements écrits
-> 1073741824 bytes (1,1 GB) copied, 21,3618 s, 50,3 MB/s
-> 
-> 2.6 kernel (2.6.22.18), async read
-> --------------------------------
-> root@0[root]# ./dd if=/mnt/raid/testdd02 of=/dev/null bs=1M
-> 1024+0 records in
-> 1024+0 records out
-> 1073741824 bytes (1.1 GB) copied, 15.7599 seconds, 68.1 MB/s
-> 
-> 2.6 kernel (2.6.22.18), sync write
-> --------------------------------
-> root@0[root]# ./dd if=/dev/zero of=/mnt/raid/testdd02 bs=1M count=1024 \
-> oflag=direct,dsync 
-> 1024+0 records in
-> 1024+0 records out
-> 1073741824 bytes (1.1 GB) copied, 21.7011 seconds, 49.5 MB/s
-> 
-The time you usually want to measure is time to get all data to another 
-drive. In that case fdatasync allows typical buffering while waiting at 
-the end of the copy until all bytes are on the destination platter. That 
-doesn't change the speed, just makes the numbers more stable. That's the 
-one I use, since most simple applications just use write() to send data. 
-This may or may not provide numbers more representative of your application.
+I severely doubt this, the bulk of the overhead of
+skb_put() is the atomic operation, not whether the
+instructions get executed inline or not.
 
--- 
-Bill Davidsen <davidsen@tmr.com>
-   "We have more to fear from the bungling of the incompetent than from
-the machinations of the wicked."  - from Slashdot
-
+Please run some tests before making claims like this.
+I might give you some slack in this area if you've
+been doing networking performance tuning for 10+ years
+but you haven't.
