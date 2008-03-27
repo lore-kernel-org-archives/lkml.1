@@ -1,57 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757995AbYC0Ivt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756531AbYC0I4o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757995AbYC0Ivt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Mar 2008 04:51:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755439AbYC0Ivj
+	id S1756531AbYC0I4o (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Mar 2008 04:56:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751263AbYC0I4e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Mar 2008 04:51:39 -0400
-Received: from yw-out-2324.google.com ([74.125.46.28]:39364 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752508AbYC0Ivi (ORCPT
+	Thu, 27 Mar 2008 04:56:34 -0400
+Received: from smtp-out003.kontent.com ([81.88.40.217]:52983 "EHLO
+	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751065AbYC0I4e convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Mar 2008 04:51:38 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=Ztto6E3HoAmZfBiSPaGgoMMrsmkCGh7LCT2lKN8bIZroimv0VLq+S0e1u/ykasF9hI1Y9v5Vw01Vz6ejg+pCtSCdPDYi2gDl+DXvhuKC9ZyMrHmR/Xb6ZmyWQjKzbEgyKM1x7zTQ4KaPTjSB8rJuqlhMh2P4Rdu2kHMHRTkwRc8=
-Date: Thu, 27 Mar 2008 09:55:42 +0100
-From: Jarek Poplawski <jarkao2@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: netdev@vger.kernel.org, bugme-daemon@bugzilla.kernel.org, marcus@better.se,
-       Stephen Hemminger <shemminger@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [Bugme-new] [Bug 10326] New: inconsistent lock state in
-	net_rx_action
-Message-ID: <20080327085542.GA2778@ami.dom.local>
-References: <bug-10326-10286@http.bugzilla.kernel.org/> <20080325134320.21525479.akpm@linux-foundation.org> <47EAD8A5.3070806@gmail.com> <20080326171403.ad186037.akpm@linux-foundation.org>
+	Thu, 27 Mar 2008 04:56:34 -0400
+From: Oliver Neukum <oliver@neukum.org>
+Organization: Novell
+To: Brad Sawatzky <brad+kernel@swatter.net>
+Subject: Re: [PATCH] usb-serial: fix regression in Visor/Palm OS module for kernels >= 2.6.24
+Date: Thu, 27 Mar 2008 09:56:36 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Alan Stern <stern@rowland.harvard.edu>,
+       Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org,
+       linux-usb@vger.kernel.org
+References: <20080327001557.GA16176@enigma.swatter.net> <Pine.LNX.4.44L0.0803262252420.21714-100000@netrider.rowland.org> <20080327050725.GC11011@enigma.swatter.net>
+In-Reply-To: <20080327050725.GC11011@enigma.swatter.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <20080326171403.ad186037.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Message-Id: <200803270956.36892.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 26, 2008 at 05:14:03PM -0700, Andrew Morton wrote:
-...
-> > >> http://bugzilla.kernel.org/show_bug.cgi?id=10326
-...
-> No, it's not an irq_disable() thing, directly.
-> 
-> What lockdep is saying is that sky2_poll() is taking napi->poll_lock for
-> writing with softirqs enabled, but net_rx_action() takes the same lock from
-> within softirq context.
-> 
-> If sky2_poll() always takes napi->poll_lock under local_irq_disable() then
-> that would be a lockdep bug.
+Am Donnerstag, 27. März 2008 06:07:26 schrieb Brad Sawatzky:
+> FWIW, another option I considered was patching the test added in commit
+> 063a2da8f01806906f7d7b1a1424b9afddebc443 to use '<=' instead of '!=' in the
+> obvious places.  That is, test if the usb-serial subsystem reports at least
+> as many endpoints as the device definition "requires" rather than checking
 
-sky2_poll() doesn't take napi->poll_lock; this lock is taken by
-netpoll_poll() before calling sky2_poll(). And before this hardirqs
-are disabled in write_msg(). So, theoretically lockdep could be right
-if sky2_poll() would enable irqs after this. (If it were done in
-netpoll - lockdep should warn before or after sky2_poll() call.)
-But I really can't see any such possibility in sky2_poll().
+The problem with that is that if a device adds an endpoint we may use
+the wrong endpoints in drivers, depending on how the endpoints in devices
+are numbered. As we have no idea what the consequences would be, we rather
+fail cleanly.
 
-Regards,
-Jarek P.
+	Regards
+		Oliver
+
+
