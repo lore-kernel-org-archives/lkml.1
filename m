@@ -1,73 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760841AbYC0QbN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760578AbYC0Qd2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760841AbYC0QbN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Mar 2008 12:31:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760463AbYC0QbA
+	id S1760578AbYC0Qd2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Mar 2008 12:33:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758412AbYC0QdS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Mar 2008 12:31:00 -0400
-Received: from e31.co.us.ibm.com ([32.97.110.149]:44139 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754652AbYC0Qa7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Mar 2008 12:30:59 -0400
-Subject: Re: [kvm-devel] kvm causing memory corruption?  ~2.6.25-rc6
-From: Dave Hansen <dave@linux.vnet.ibm.com>
-To: Avi Kivity <avi@qumranet.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       kvm-devel <kvm-devel@lists.sourceforge.net>
-In-Reply-To: <47EBC2F5.90302@qumranet.com>
-References: <1206479576.7562.21.camel@nimitz.home.sr71.net>
-	 <47EA1C63.8010202@qumranet.com>
-	 <1206550329.7883.5.camel@nimitz.home.sr71.net>
-	 <47EA80AC.4070204@qumranet.com>
-	 <1206551794.7883.7.camel@nimitz.home.sr71.net>
-	 <47EB6AAC.3040607@qumranet.com>
-	 <1206633002.7883.43.camel@nimitz.home.sr71.net>
-	 <47EBC2F5.90302@qumranet.com>
-Content-Type: text/plain
-Date: Thu, 27 Mar 2008 09:30:48 -0700
-Message-Id: <1206635448.7883.78.camel@nimitz.home.sr71.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+	Thu, 27 Mar 2008 12:33:18 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:45987 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758370AbYC0QdR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Mar 2008 12:33:17 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: benh@kernel.crashing.org
+Subject: Re: [RFC][PATCH 1/3] PM: Introduce new top level suspend and hibernation callbacks (rev. 4)
+Date: Thu, 27 Mar 2008 17:33:13 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Alexey Starikovskiy <astarikovskiy@suse.de>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Alan Stern <stern@rowland.harvard.edu>, Greg KH <greg@kroah.com>,
+       Len Brown <lenb@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
+       David Brownell <david-b@pacbell.net>, Pavel Machek <pavel@ucw.cz>,
+       Oliver Neukum <oliver@neukum.org>
+References: <200803262353.30566.rjw@sisk.pl> <200803270223.06715.rjw@sisk.pl> <1206586358.6926.68.camel@pasglop>
+In-Reply-To: <1206586358.6926.68.camel@pasglop>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200803271733.14480.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-03-27 at 17:53 +0200, Avi Kivity wrote:
-> Dave Hansen wrote:
-> > On Thu, 2008-03-27 at 11:36 +0200, Avi Kivity wrote:
-> >   
-> >> I dug out my i386 install and tried it.  Doesn't reproduce for me on 
-> >> either kvm.git or -rc7.
-> >>
-> >> Do you have a working setup that we can bisect?
-> >>     
-> > I don't really have a working revision to bisect against.  I'm not sure
-> > that it ever worked.  
+On Thursday, 27 of March 2008, Benjamin Herrenschmidt wrote:
 > 
-> I'm fairly sure Windows works on kvm...
-
-Oh, I didn't mean to imply that Windows doesn't work, just that the
-particular perverted way in which I'm poking it may have never
-worked. :)
-
-> How did you generate the image?
-
-The original install was done in a kqemu-accelerated host. 
-
-> > It's also on my actual laptop, so it's a bit of a
-> > pain to get any other work done while I'm bisecting. :)
-> >
-> > I'll move the Windows image over to another machine today and see if I
-> > can reproduce elsewhere.  I'll also check some older versions of KVM to
-> > see if any of those work.  If I do that, should I keep the kvm
-> > userspace, modules and BIOSes all synchronized from each version that I
-> > test?
-> >   
+> On Thu, 2008-03-27 at 02:23 +0100, Rafael J. Wysocki wrote:
+> > On Thursday, 27 of March 2008, Benjamin Herrenschmidt wrote:
+> > > 
+> > > > > There is absolutely no point getting a second struct anymore.
+> > > > 
+> > > > I obviously disagree with that opinion, so please elaborate.
+> > > 
+> > > Well, what does it bring you ? Why can't it be one struct ? To save
+> > > space in the data area ?
+> > 
+> > Mostly, but not only that.
+> > 
+> > There are users of 'struct pm_ops' that aren't even supposed to define the
+> > _noirq callbacks (device types and device classes), so I thought it would be
+> > better to introduce a separate _noirq struct after all.
 > 
-> You can keep the userspace (qemu + bios) fixed and change the kernel, or 
-> vice versa.
-> 
--- Dave
+> Make sense... USB has no use of noirq for example.
 
+Well, FWIW, we can also do something like this:
+
+struct pm_ops {
+	int (*prepare)(struct device *dev);
+	void (*complete)(struct device *dev);
+	int (*suspend)(struct device *dev);
+	int (*resume)(struct device *dev);
+	int (*freeze)(struct device *dev);
+	int (*thaw)(struct device *dev);
+	int (*poweroff)(struct device *dev);
+	int (*restore)(struct device *dev);
+};
+
+struct pm_ext_ops {
+	struct pm_ops base;
+	int (*suspend_noirq)(struct device *dev);
+	int (*resume_noirq)(struct device *dev);
+	int (*freeze_noirq)(struct device *dev);
+	int (*thaw_noirq)(struct device *dev);
+	int (*poweroff_noirq)(struct device *dev);
+	int (*restore_noirq)(struct device *dev);
+};
+
+and use 'struct pm_ext_ops' for the entities that may need to implement the
+_noirq callbacks.  This way we'll avoid the duplication of "_noirq" in the code
+pointed to by Alex and there will be one "pm" pointer per bus type, device
+type, device class, etc.
+
+Thoughts?
+
+Thanks,
+Rafael
