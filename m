@@ -1,127 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758545AbYC0O2e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759542AbYC0OeT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758545AbYC0O2e (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Mar 2008 10:28:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757696AbYC0O20
+	id S1759542AbYC0OeT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Mar 2008 10:34:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757336AbYC0OeJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Mar 2008 10:28:26 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:2324 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757665AbYC0O2Y (ORCPT
+	Thu, 27 Mar 2008 10:34:09 -0400
+Received: from wa-out-1112.google.com ([209.85.146.181]:10395 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755461AbYC0OeI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Mar 2008 10:28:24 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=hLCuCDoVM/M+PYmeZ0vGUot0+h6mElxOyl1mQC410NTn+t7Y0QAtwlFXkbOSh86+Y
-	ryXeZY0voxM3bqx11cz2w==
-Message-ID: <6599ad830803270728y354b567s7bfe8cb7472aa065@mail.gmail.com>
-Date: Thu, 27 Mar 2008 07:28:18 -0700
-From: "Paul Menage" <menage@google.com>
-To: balbir@linux.vnet.ibm.com
-Subject: Re: [RFC][0/3] Virtual address space control for cgroups (v2)
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       "Pavel Emelianov" <xemul@openvz.org>, "Hugh Dickins" <hugh@veritas.com>,
-       "Sudhir Kumar" <skumar@linux.vnet.ibm.com>,
-       "YAMAMOTO Takashi" <yamamoto@valinux.co.jp>, lizf@cn.fujitsu.com,
-       linux-kernel@vger.kernel.org, taka@valinux.co.jp, linux-mm@kvack.org,
-       "David Rientjes" <rientjes@google.com>,
-       "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <47EB5528.8070800@linux.vnet.ibm.com>
+	Thu, 27 Mar 2008 10:34:08 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=BilHOz21507zOKVg8xuUxZT4/PfpiKjHvZCG3h/KhH0vzoAYPWHyP6YpR0bU5SJGCwe6Y+lUIJ71P+Dss+46v0RkCJk1SwTEy/XlGWuzCfmcVga8C1VoEDV6FXqP0ZeOWWlQDGg/KGRHCMIHPXzaBoWV3MGal5ZBITYqU2pR4+A=
+Message-ID: <b6c5339f0803270734x6e3d0462v40508bf66a82ba2a@mail.gmail.com>
+Date: Thu, 27 Mar 2008 10:34:07 -0400
+From: "Bob Copeland" <me@bobcopeland.com>
+To: "Sergey Vlasov" <vsu@altlinux.ru>
+Subject: Re: [PATCH 6/7] omfs: add checksumming routines
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       harvey.harrison@gmail.com
+In-Reply-To: <20080327164114.6c9fc82c.vsu@altlinux.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <20080326184954.9465.19379.sendpatchset@localhost.localdomain>
-	 <6599ad830803261522p45a9daddi8100a0635c21cf7d@mail.gmail.com>
-	 <47EB5528.8070800@linux.vnet.ibm.com>
+References: <1206578760-9050-6-git-send-email-me@bobcopeland.com>
+	 <20080327164114.6c9fc82c.vsu@altlinux.ru>
+X-Google-Sender-Auth: 8d1291eccbd48e36
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 27, 2008 at 1:04 AM, Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+On Thu, Mar 27, 2008 at 9:41 AM, Sergey Vlasov <vsu@altlinux.ru> wrote:
+> On Wed, 26 Mar 2008 20:45:59 -0400 Bob Copeland wrote:
+>  > +static u16 omfs_crc(u16 crc, unsigned char *buf, int count)
 >
->  I thought I addressed some of those by adding a separate config option. You
->  could enable just the address space control, by letting memory.limit_in_bytes at
->  the maximum value it is at (at the moment).
->
+>  Is this the same as crc_itu_t() from lib/crc-itu-t.c (also duplicated
+>  in fs/udf/crc.c)?
 
-Having a config option is better than none at all, certainly for
-people who roll their own kernels. But what config choice should a
-distro make when they're deciding what to build into their kernel
-configuration?
+Ah, thanks, that is the one.  I'll update the patch.
 
-It's much easier to decide to build in a feature that can be ignored
-by those who don't use it.
-
->
->  Yes, I agree with the overhead philosophy. I suspect that users will enable
->  both. I am not against making it a separate controller. I am still hopeful of
->  getting the mm->owner approach working
->
-
-I was thinking more about that, and I think I found a possibly fatal flaw:
-
-
->
->  >
->  > Trying to account/control physical memory or swap usage via virtual
->  > address space limits is IMO a hopeless task. Taking Google's
->  > production clusters and the virtual server systems that I worked on in
->  > my previous job as real-life examples that I've encountered, there's
->  > far too much variety of application behaviour (including Java apps
->  > that have massive sparse heaps, jobs with lots of forked children
->  > sharing pages but not address spaces with their parents, and multiple
->  > serving processes mapping large shared data repositories from SHM
->  > segments) that saying VA = RAM + swap is going to break lots of jobs.
->  > But pushing up the VA limit massively makes it useless for the purpose
->  > of preventing excessive swapping. If you want to prevent excessive
->  > swap space usage without breaking a large class of apps, you need to
->  > limit swap space, not virtual address space.
->  >
->  > Additionally, you suggested that VA limits provide a "soft-landing".
->  > But I'm think that the number of applications that will do much other
->  > than abort() if mmap() returns ENOMEM is extremely small - I'd be
->  > interested to hear if you know of any.
->  >
->
->  What happens if swap is completely disabled? Should the task running be OOM
->  killed in the container?
-
-Yes, I think so.
-
->  How does the application get to know that it is
->  reaching its limit?
-
-That's something that needs to be addressed outside of the concept of
-cgroups too.
-
-> I suspect the system administrator will consider
->  vm.overcommit_ratio while setting up virtual address space limits and real page
->  usage limit. As far as applications failing gracefully is concerned, my opinion is
->
->  1. Lets not be dictated by bad applications to design our features
->  2. Autonomic computing is forcing applications to see what resources
->  applications do have access to
-
-Yes, you're right - I shouldn't be arguing this based on current apps,
-I should be thinking of the potential for future apps.
-
->  3. Swapping is expensive, so most application developers, I spoken to at
->  conferences, recently, state that they can manage their own memory, provided
->  they are given sufficient hints from the OS. An mmap() failure, for example can
->  force the application to free memory it is not currently using or trigger the
->  garbage collector in a managed environment.
-
-But the problem that I have with this is that mmap() is only very
-loosely connected with physical memory. If we're trying to help
-applications avoid swapping, and giving them advance warning that
-they're running out of physical memory, then we should do exactly
-that, not try to treat address space as a proxy for physical memory.
-For apps where there's a close correspondence between virtual address
-space and physical memory, this should work equally well. For apps
-that use a lot more virtual address space than physical memory this
-should work much better.
-
-Paul
+-Bob
