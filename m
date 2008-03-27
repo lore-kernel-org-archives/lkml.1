@@ -1,67 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759997AbYC0MgO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759901AbYC0Mhr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759997AbYC0MgO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Mar 2008 08:36:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759393AbYC0Mf6
+	id S1759901AbYC0Mhr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Mar 2008 08:37:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757077AbYC0Mhk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Mar 2008 08:35:58 -0400
-Received: from hancock.steeleye.com ([71.30.118.248]:37394 "EHLO
-	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756799AbYC0Mf5 (ORCPT
+	Thu, 27 Mar 2008 08:37:40 -0400
+Received: from smtp-out2.tiscali.nl ([195.241.79.177]:40041 "EHLO
+	smtp-out2.tiscali.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756012AbYC0Mhj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Mar 2008 08:35:57 -0400
-Message-ID: <47EB94AB.6090608@steeleye.com>
-Date: Thu, 27 Mar 2008 08:35:55 -0400
-From: Paul Clements <paul.clements@steeleye.com>
-User-Agent: Swiftdove 2.0.0.9 (X11/20071116)
+	Thu, 27 Mar 2008 08:37:39 -0400
+Message-ID: <47EB950B.6030908@tiscali.nl>
+Date: Thu, 27 Mar 2008 13:37:31 +0100
+From: Roel Kluin <12o3l@tiscali.nl>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-To: Mike Snitzer <snitzer@gmail.com>
-CC: nbd-general@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: Re: nbd: Oops because nbd doesn't prevent NBD_CLEAR_SOCK while sock_xmit()
- is working on a receive
-References: <170fa0d20803261143s1ab258b2ra470c158ac5744a@mail.gmail.com>
-In-Reply-To: <170fa0d20803261143s1ab258b2ra470c158ac5744a@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: dwalker@mvista.com, nickpiggin@yahoo.com.au
+CC: lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH v2] likeliness accounting cleanup
+References: <47EAB608.6060204@tiscali.nl>
+In-Reply-To: <47EAB608.6060204@tiscali.nl>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mike Snitzer wrote:
-
-> In practice this looks like:
+Roel Kluin wrote:
+> Store __builtin_return_address (caller) rather than __func__ in likeliness
+> struct. 'line' and 'type' are combined in 'label'
 > 
-> nbd1: NBD_DISCONNECT
-> nbd1: Send control failed (result -32)
-> end_request: I/O error, dev nbd1, sector 0
-> end_request: I/O error, dev nbd1, sector 8032264
-> md: super_written gets error=-5, uptodate=0
-> raid1: Disk failure on nbd1, disabling device.
->         Operation continuing on 1 devices
-> Unable to handle kernel NULL pointer dereference at 0000000000000028 RIP:
->  [<ffffffff88b1e125>] :nbd:sock_xmit+0x9d/0x301
+> +/- now denotes whether expectation fails in less than 5% of the tests - rather
+> than whether more unexpected than expected were encountered. The function at
+> the displayed filename & line and the caller are not necessarily the same.
+> A few more Likely Profiling Results changes were made.
+> 
+> struct seq_operations becomes static, unsigned ints true and false (shadowed)
+> are replaced by pos and neg.
+> ---
+> New layout:
+> 
+> Likely Profiling Results
+>  --------------------------------------------------------------------
+> [+- ]Type | # True  | # False | Function@Filename:Line
+>  unlikely |        0|    32082| fget+0xd0/0x1d0@include/asm/arch/atomic_32.h:235
+> 
+> Compiles and runs here. Thanks for previous comments.
+> 
+>  include/linux/compiler.h |   16 ++++++++--------
+>  lib/likely_prof.c        |   45 +++++++++++++++++++++++++--------------------
+>  2 files changed, 33 insertions(+), 28 deletions(-)
+> 
 
-> The fact that sock_xmit() in receive mode is unprotected seems to be
-> the WHY a NULL pointer is possible; but I'm still trying to identify
-> the HOW.
+This should be applied after the -mm patches:
+http://www.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.25-rc5/2.6.25-rc5-mm1/broken-out/profile-likely-unlikely-macros.patch
+http://www.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.25-rc5/2.6.25-rc5-mm1/broken-out/profile-likely-unlikely-macros-fix.patch
 
-Do you know who is setting the socket NULL? Is it already NULL when you 
-get to this point? Is it the nbd-client -d? Is it the original 
-nbd-client/kernel that does it? Figuring that out would help narrow down 
-the cause.
+Also I forgot to add a signoff, so here it is:
 
-> But for me this begs the question:  why isn't the nbd_device's socket
-> always protected during sock_xmit() for both
-> transmits and receives; rather than just transmits (via tx_lock)!?
-
-It would deadlock if we held the lock over both. Generally we don't have 
-to worry about receives, since they're always done in the nbd-client 
-process, so we have control over when and how it exits and cleans up. 
-The odd case, as you've discovered, is when another process (nbd-client 
--d) comes along and starts mucking with the queue and socket. Would 
-"kill -9 <nbd-client-pid>" work for you instead? That is what I use to 
-break the connection, and it's safe, as it tells the original nbd-client 
-to exit (which it does cleanly and safely).
-
---
-Paul
+Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
