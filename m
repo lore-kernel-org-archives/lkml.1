@@ -1,43 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757401AbYC0BmA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756549AbYC0CSB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757401AbYC0BmA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Mar 2008 21:42:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754777AbYC0Blw
+	id S1756549AbYC0CSB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Mar 2008 22:18:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754068AbYC0CRw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Mar 2008 21:41:52 -0400
-Received: from mail6.sea5.speakeasy.net ([69.17.117.8]:42348 "EHLO
-	mail6.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754138AbYC0Blv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Mar 2008 21:41:51 -0400
-X-Greylist: delayed 399 seconds by postgrey-1.27 at vger.kernel.org; Wed, 26 Mar 2008 21:41:51 EDT
-Date: Wed, 26 Mar 2008 18:35:10 -0700 (PDT)
-From: Trent Piepho <xyzzy@speakeasy.org>
-X-X-Sender: xyzzy@shell4.speakeasy.net
-To: Jean Delvare <khali@linux-fr.org>
-cc: Ken Moffat <zarniwhoop@ntlworld.com>, Dave Airlie <airlied@gmail.com>,
-       I2C <i2c@lm-sensors.org>, lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [i2c] Regression (gdm no longer shuts down) - 2.4.24.x and	2.6.25
-In-Reply-To: <20080326201031.7c2cefb2@hyperion.delvare>
-Message-ID: <Pine.LNX.4.58.0803261832200.16692@shell4.speakeasy.net>
-References: <20080325200714.GA25487@deepthought> <20080326161934.7eae544f@hyperion.delvare>
- <20080326173701.GA16882@deepthought> <20080326201031.7c2cefb2@hyperion.delvare>
+	Wed, 26 Mar 2008 22:17:52 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:58355 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753624AbYC0CRv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Mar 2008 22:17:51 -0400
+From: Jarod Wilson <jwilson@redhat.com>
+Organization: Red Hat, Inc.
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: Re: [PATCH] firewire: fw-ohci: plug dma memory leak in AR handler
+Date: Wed, 26 Mar 2008 22:17:29 -0400
+User-Agent: KMail/1.9.9
+Cc: linux1394-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+References: <200803251647.16227.jwilson@redhat.com> <200803261737.30717.jwilson@redhat.com> <47EAE683.7010500@s5r6.in-berlin.de>
+In-Reply-To: <47EAE683.7010500@s5r6.in-berlin.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200803262217.29064.jwilson@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 26 Mar 2008, Jean Delvare wrote:
-> Totally unrelated, but FYI: the chip at 0x50 is an EDID EEPROM in your
-> display (which the radeonfb driver can use to switch to the correct
-> resolution / refresh rate.)
-[...]
-> any of these chips. So, the mysterious effect of unloading the
-> i2c-viapro driver can't be explained by an i2c chip driver detaching
-> from its device. So, again, I really can't see how i2c can be involved
-> in your problem.
+On Wednesday 26 March 2008 08:12:51 pm Stefan Richter wrote:
+> Jarod Wilson wrote:
+> > So as it turns out, while this is indeed a leak that needs to be plugged,
+> > it does NOT remedy the 'out of iommu space' issue, it just delays it a
+> > while longer. Still working on tracing the root cause of the memory
+> > exhaustion.
+>
+> Do you want to change the wording of the patch description before I
+> submit it upstream?
 
-Maybe the radeonfb driver is trying to talk to EDID EEPROMs on all I2C
-adapters it finds?  When it tries to using the i2c-viapro adapter, it
-hangs.
+Yeah, I'll whip something up in just a sec and get it out the door...
+
+-- 
+Jarod Wilson
+jwilson@redhat.com
