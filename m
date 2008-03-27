@@ -1,54 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761367AbYC0MlL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759965AbYC0Mnt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761367AbYC0MlL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Mar 2008 08:41:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760078AbYC0MjI
+	id S1759965AbYC0Mnt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Mar 2008 08:43:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756590AbYC0Mnj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Mar 2008 08:39:08 -0400
-Received: from mail.deathmatch.net ([70.167.247.36]:41226 "EHLO
-	mail.deathmatch.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760596AbYC0MjG (ORCPT
+	Thu, 27 Mar 2008 08:43:39 -0400
+Received: from ug-out-1314.google.com ([66.249.92.174]:35321 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750886AbYC0Mni (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Mar 2008 08:39:06 -0400
-Date: Thu, 27 Mar 2008 08:38:55 -0400
-From: Bob Copeland <me@bobcopeland.com>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH 2/7] omfs: add inode routines
-Message-ID: <20080327123855.GC10265@hash.localnet>
-References: <1206578760-9050-2-git-send-email-me@bobcopeland.com> <87k5jon17l.fsf@basil.nowhere.org>
+	Thu, 27 Mar 2008 08:43:38 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=tfU8di+snH50bwscNYU/cVx1+tYFZB+Gl6uXiEYDddFDVb/FU/8xF0CUEi8OkaAGTIQzm5ODLTeJdrgtdRCM3G0w2S/eB/vr66O1+LKgGiq+fvu/hNYvgktC8HxuuX5Fe0DFLGRYTqaeJ0XHY7JVny0yZ+oWPkQHOMb4l3Qn4BI=
+Date: Thu, 27 Mar 2008 13:49:28 +0100
+From: Jarek Poplawski <jarkao2@gmail.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Andrew Morton <akpm@linux-foundation.org>, netdev@vger.kernel.org,
+       bugme-daemon@bugzilla.kernel.org, marcus@better.se,
+       Stephen Hemminger <shemminger@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [Bugme-new] [Bug 10326] New: inconsistent lock state in
+	net_rx_action
+Message-ID: <20080327124928.GE2845@ami.dom.local>
+References: <bug-10326-10286@http.bugzilla.kernel.org/> <20080325134320.21525479.akpm@linux-foundation.org> <47EAD8A5.3070806@gmail.com> <20080326171403.ad186037.akpm@linux-foundation.org> <20080327085542.GA2778@ami.dom.local> <20080327021812.601776b8.akpm@linux-foundation.org> <1206615379.8514.502.camel@twins> <20080327122255.GC2845@ami.dom.local> <1206621014.8514.563.camel@twins>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <87k5jon17l.fsf@basil.nowhere.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <1206621014.8514.563.camel@twins>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 27, 2008 at 07:13:50AM +0100, Andi Kleen wrote:
-> Bob Copeland <me@bobcopeland.com> writes:
-> > +
-> > +	bitmap_size = (sbi->s_num_blocks + 7) / 8;
-> > +	array_size = (bitmap_size + sb->s_blocksize - 1) / sb->s_blocksize;
-> > +
-> > +	sbi->s_imap_size = array_size;
-> > +	sbi->s_imap = kzalloc(array_size * sizeof(unsigned long), GFP_KERNEL);
+On Thu, Mar 27, 2008 at 01:30:14PM +0100, Peter Zijlstra wrote:
+...
+> My guess is that it is a race between polling the device and irq pushing
+> the packet. That is, normally the IRQ handler wins and netpoll doesn't
+> have anything to do and it doesn't traverse this code path.
 > 
-> 
-> If the array can be really 300k you should probably have a vmalloc fallback
-> here.
+> (although I must admit to being a little out of my depth here)
 
-bitmap_size will be 300k (20G / 8192 / 8), but array_size adds another
-level of indirection so s_imap will be 300k/8192 segments, each of size 
-8192.  Hmm, I guess that should be 'sizeof(unsigned long *)' above.
+Probably you're right but there were really a lot of testing and
+stressing netconsole for misterious lockups for quite a long time
+with this new napi, so it's hard to believe this was hidden so
+well...
 
-One might wonder why we keep it in memory anyway since we can read the
-bitmap blocks on demand.  The reason is that once the tree walk is added
-for ReplayTV then it would use this same i_map.  However, I've yet to 
-hear from interested RTV folks so it is currently read-only and there is 
-no tree walk for the bitmap.
-
--- 
-Bob Copeland %% www.bobcopeland.com 
-
+Jarek P.
