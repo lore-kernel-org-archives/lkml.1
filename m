@@ -1,59 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761199AbYC0Ueo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760886AbYC0Uic@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761199AbYC0Ueo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Mar 2008 16:34:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758265AbYC0Uee
+	id S1760886AbYC0Uic (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Mar 2008 16:38:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758405AbYC0UiY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Mar 2008 16:34:34 -0400
-Received: from smtp122.sbc.mail.sp1.yahoo.com ([69.147.64.95]:24067 "HELO
-	smtp122.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1758210AbYC0Uee (ORCPT
+	Thu, 27 Mar 2008 16:38:24 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:43222 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758265AbYC0UiX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Mar 2008 16:34:34 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=ifQQnK0a8zR4M7kywucLn7EKA3LoRZITXr/81uGUecP2oWc0mewmPeL4fK018AEW4QNOALVTFunrq7nzNtFlCucfeDlMAT0xGrI5r1Xa2oawpIppOV1uRrZ+Nrk2Ea5Z71OvaVl9lzsZ9pc6OHsr40n5q29vTCJTCQ3Vo4fNWfY=  ;
-X-YMail-OSG: KhCu1p8VM1m7QdJN8ZX8qxqTT3QguaHe60xiPe6rKnif9iUfg2GzcLwhSt_vOxhBd8SzyWF_Yw--
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Andrew Morton <akpm@linux-foundation.org>, linux-mtd@lists.infradead.org
-Subject: Re: some minor issues with 2.6.25-rc6-git7-default
-Date: Thu, 27 Mar 2008 12:22:41 -0700
-User-Agent: KMail/1.9.6
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, devzero@web.de,
-       linux-kernel@vger.kernel.org,
-       ACPI Devel Mailing List <linux-acpi@vger.kernel.org>,
-       Len Brown <lenb@kernel.org>, Greg KH <greg@kroah.com>,
-       linux-ide@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>
-References: <212011377@web.de> <200803260010.25327.rjw@sisk.pl> <20080325164236.1061d403.akpm@linux-foundation.org>
-In-Reply-To: <20080325164236.1061d403.akpm@linux-foundation.org>
+	Thu, 27 Mar 2008 16:38:23 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Date: Thu, 27 Mar 2008 21:37:25 +0100 (CET)
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: [GIT PULL] FireWire update
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+cc: linux-kernel@vger.kernel.org, linux1394-devel@lists.sourceforge.net
+In-Reply-To: <tkrat.2374baeb26921d92@s5r6.in-berlin.de>
+Message-ID: <tkrat.85f36e56e03746e3@s5r6.in-berlin.de>
+References: <tkrat.459cc31de75e4149@s5r6.in-berlin.de>
+ <tkrat.68585c2b7aee00eb@s5r6.in-berlin.de>
+ <tkrat.14d846ed63cc91c2@s5r6.in-berlin.de>
+ <tkrat.948f418ebe464164@s5r6.in-berlin.de>
+ <tkrat.b05a30e97b4f9820@s5r6.in-berlin.de>
+ <tkrat.2374baeb26921d92@s5r6.in-berlin.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8bit
-Content-Disposition: inline
-Message-Id: <200803271222.41579.david-b@pacbell.net>
+Content-Type: TEXT/PLAIN; CHARSET=us-ascii
+Content-Disposition: INLINE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 25 March 2008, Andrew Morton wrote:
-> 
-> > > Mar 23 09:17:02 opensuse103 kernel: physmap-flash: probe of physmap-flash.0 failed with error -12
-> 
-> There are many physmap-flashes in the tree.  Is this one
-> drivers/mtd/maps/physmap.c?
+Linus, please pull from the for-linus branch at
 
-And there's a regression in mtd/maps/phsymap.c which should
-be resolved before 2.6.25 ships ... on some platforms it
-newly likes to oops on reboot.
+    git://git.kernel.org/pub/scm/linux/kernel/git/ieee1394/linux1394-2.6.git for-linus
 
-I don't have a URL for that patch, but ISTR it's been
-posted both to LKML and to linux-MTD.  (That doesn't
-include less-good versions I've seen too.)  If needed,
-I can dig it up, but I've been thinking this should have
-a signoff from MTD folk.
+to receive the following update for the firewire subsystem.
 
-- Dave
+ drivers/firewire/fw-ohci.c |    9 +++++----
+ 1 files changed, 5 insertions(+), 4 deletions(-)
+
+Jarod Wilson (1):
+      firewire: fw-ohci: plug dma memory leak in AR handler
+
+
+commit 6b84236d37ef602d1e4f52b27162c20394e83359
+Author: Jarod Wilson <jwilson@redhat.com>
+Date:   Tue Mar 25 16:47:16 2008 -0400
+
+    firewire: fw-ohci: plug dma memory leak in AR handler
+    
+    There's an ugly little memory leak in firewire-ohci's
+    ar_context_tasklet(), where we're not freeing up some of the memory we
+    use for each ar_buffer, due to a moving pointer. The problem has been
+    there for a while, but didn't get noticed until after converting the AR
+    routines over to use coherent DMA and I started running into I/O stall-
+    outs with the following message output repeatedly to the console:
+    
+    PCI-DMA: Out of IOMMU space for 53248 bytes at device 0000:04:09.0
+    
+    Plugging this leak is definitely necessary, but unfortunately, isn't the
+    entire answer to my problem, it only increases the amount of I/O that I
+    can do before hitting the problem. Still working on tracking down the
+    root cause..
+    
+    Signed-off-by: Jarod Wilson <jwilson@redhat.com>
+    Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
+
+diff --git a/drivers/firewire/fw-ohci.c b/drivers/firewire/fw-ohci.c
+index 996d61f..ca6d51e 100644
+--- a/drivers/firewire/fw-ohci.c
++++ b/drivers/firewire/fw-ohci.c
+@@ -401,7 +401,8 @@ static void ar_context_tasklet(unsigned long data)
+ 
+ 	if (d->res_count == 0) {
+ 		size_t size, rest, offset;
+-		dma_addr_t buffer_bus;
++		dma_addr_t start_bus;
++		void *start;
+ 
+ 		/*
+ 		 * This descriptor is finished and we may have a
+@@ -410,9 +411,9 @@ static void ar_context_tasklet(unsigned long data)
+ 		 */
+ 
+ 		offset = offsetof(struct ar_buffer, data);
+-		buffer_bus = le32_to_cpu(ab->descriptor.data_address) - offset;
++		start = buffer = ab;
++		start_bus = le32_to_cpu(ab->descriptor.data_address) - offset;
+ 
+-		buffer = ab;
+ 		ab = ab->next;
+ 		d = &ab->descriptor;
+ 		size = buffer + PAGE_SIZE - ctx->pointer;
+@@ -427,7 +428,7 @@ static void ar_context_tasklet(unsigned long data)
+ 			buffer = handle_ar_packet(ctx, buffer);
+ 
+ 		dma_free_coherent(ohci->card.device, PAGE_SIZE,
+-				  buffer, buffer_bus);
++				  start, start_bus);
+ 		ar_context_add_page(ctx);
+ 	} else {
+ 		buffer = ctx->pointer;
+
+Thanks,
+-- 
+Stefan Richter
+-=====-==--- --== ==-==
+http://arcgraph.de/sr/
 
