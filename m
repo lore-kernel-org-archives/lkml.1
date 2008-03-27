@@ -1,67 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759172AbYC0Ju2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759466AbYC0JvR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759172AbYC0Ju2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Mar 2008 05:50:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752021AbYC0JuU
+	id S1759466AbYC0JvR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Mar 2008 05:51:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755263AbYC0JvC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Mar 2008 05:50:20 -0400
-Received: from e28smtp01.in.ibm.com ([59.145.155.1]:58740 "EHLO
-	e28smtp01.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751378AbYC0JuT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Mar 2008 05:50:19 -0400
-Message-ID: <47EB6D00.5070306@linux.vnet.ibm.com>
-Date: Thu, 27 Mar 2008 15:16:40 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	Thu, 27 Mar 2008 05:51:02 -0400
+Received: from mta23.gyao.ne.jp ([125.63.38.249]:48580 "EHLO mx.gate01.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752021AbYC0JvA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Mar 2008 05:51:00 -0400
+Date: Thu, 27 Mar 2008 18:50:34 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Russell King <rmk+lkml@arm.linux.org.uk>
+Cc: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>,
+       Dmitry <dbaryshkov@gmail.com>, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, hskinnemoen@atmel.com,
+       domen.puncer@telargo.com, tony@atomide.com, paul@pwsan.com
+Subject: Re: [PATCH 1/3] Clocklib: add generic framework for managing clocks.
+Message-ID: <20080327095034.GA21168@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	Russell King <rmk+lkml@arm.linux.org.uk>,
+	Haavard Skinnemoen <haavard.skinnemoen@atmel.com>,
+	Dmitry <dbaryshkov@gmail.com>, linux-kernel@vger.kernel.org,
+	akpm@linux-foundation.org, hskinnemoen@atmel.com,
+	domen.puncer@telargo.com, tony@atomide.com, paul@pwsan.com
+References: <20080326154913.GA15326@doriath.ww600.siemens.net> <20080326155203.GA15405@doriath.ww600.siemens.net> <20080326170441.795fb928@hskinnemo-gx620.norway.atmel.com> <bc64b4640803260952s58ad0645ve11766fdfa45e785@mail.gmail.com> <20080327100623.34d92c84@hskinnemo-gx620.norway.atmel.com> <20080327091810.GA32396@flint.arm.linux.org.uk> <20080327102648.225d6b4f@hskinnemo-gx620.norway.atmel.com> <20080327093301.GB32396@flint.arm.linux.org.uk>
 MIME-Version: 1.0
-To: Pavel Emelyanov <xemul@openvz.org>
-CC: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Hugh Dickins <hugh@veritas.com>,
-       Sudhir Kumar <skumar@linux.vnet.ibm.com>,
-       YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
-       Paul Menage <menage@google.com>, lizf@cn.fujitsu.com,
-       linux-kernel@vger.kernel.org, taka@valinux.co.jp, linux-mm@kvack.org,
-       David Rientjes <rientjes@google.com>
-Subject: Re: [RFC][1/3] Add user interface for virtual address space control
- (v2)
-References: <20080326184954.9465.19379.sendpatchset@localhost.localdomain>	<20080326185006.9465.4720.sendpatchset@localhost.localdomain> <20080327181404.1e95a725.kamezawa.hiroyu@jp.fujitsu.com> <47EB6B4D.2030305@openvz.org>
-In-Reply-To: <47EB6B4D.2030305@openvz.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080327093301.GB32396@flint.arm.linux.org.uk>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Emelyanov wrote:
-> KAMEZAWA Hiroyuki wrote:
->> On Thu, 27 Mar 2008 00:20:06 +0530
->> Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
->>
->>> Add as_usage_in_bytes and as_limit_in_bytes interfaces. These provide
->>> control over the total address space that the processes combined together
->>> in the cgroup can grow upto. This functionality is analogous to
->>> the RLIMIT_AS function of the getrlimit(2) and setrlimit(2) calls.
->>> A as_res resource counter is added to the mem_cgroup structure. The
->>> as_res counter handles all the accounting associated with the virtual
->>> address space accounting and control of cgroups.
->>>
->>> Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
->> I wonder that it's better to create "rlimit cgroup" rather than enhancing
->> memory controller. (But I have no strong opinion.)
->> How do you think ?
+On Thu, Mar 27, 2008 at 09:33:01AM +0000, Russell King wrote:
+> On Thu, Mar 27, 2008 at 10:26:48AM +0100, Haavard Skinnemoen wrote:
+> > You can extend the struct, put the rate there and use the same
+> > getrate() function for all the clocks that need to keep track of the
+> > current rate this way.
 > 
-> I believe that all memory management is better to have in one controller...
+> Well, if you're really concerned about size, you could do what I did with
+> PXA and introduce a struct clk_ops to contain all the constant function
+> pointers, rather than mashing the function pointers together - which
+> saves far more than trying to combine them.
 > 
-
-Paul wants to see it in a different controller. He has been reasoning it out in
-another email thread.
-
--- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+FWIW, this is also what we've done on SH.
