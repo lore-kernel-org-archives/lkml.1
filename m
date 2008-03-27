@@ -1,66 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762164AbYC0Ndu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760475AbYC0NeK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762164AbYC0Ndu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Mar 2008 09:33:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760587AbYC0Nbe
+	id S1760475AbYC0NeK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Mar 2008 09:34:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762220AbYC0Ndy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Mar 2008 09:31:34 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:37855 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760573AbYC0Nbd (ORCPT
+	Thu, 27 Mar 2008 09:33:54 -0400
+Received: from wr-out-0506.google.com ([64.233.184.228]:5525 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762203AbYC0Ndw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Mar 2008 09:31:33 -0400
-Date: Thu, 27 Mar 2008 14:34:51 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>,
-       kernel list <linux-kernel@vger.kernel.org>, Greg KH <greg@kroah.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: iommu breaks usb after resume
-Message-ID: <20080327133451.GH29105@one.firstfloor.org>
-References: <20080320111429.GA14764@elf.ucw.cz> <20080321135418.GB2346@one.firstfloor.org> <20080326102151.GB18965@elf.ucw.cz> <20080326130052.GF2170@one.firstfloor.org> <20080326225407.GA9378@elf.ucw.cz> <20080326230017.GA21017@elte.hu> <20080327084231.GC25876@elf.ucw.cz> <20080327095949.GA5771@elf.ucw.cz> <20080327114923.GA6589@basil.nowhere.org> <20080327132923.GA12801@elf.ucw.cz>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 27 Mar 2008 09:33:52 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=GBKJ6k0CDrFxwH1owLEqRwFTsitpkaQaCB2l1vuDk92yGVzRhQ0YW9oaTXxDSJVStZ26KZ11PJRnROxYYICb6OczTcBQBxLC+RCMP1zek0W85GWVE5TzIMLoSudY3FVtrCACkei2Jykb9VJUknW2kx+5iZqH4M1XpQ3k2T4V9Pw=
+Message-ID: <bc64b4640803270633t3b862405sb2708eee25708868@mail.gmail.com>
+Date: Thu, 27 Mar 2008 16:33:51 +0300
+From: Dmitry <dbaryshkov@gmail.com>
+To: "Haavard Skinnemoen" <haavard.skinnemoen@atmel.com>
+Subject: Re: [PATCH 1/3] Clocklib: add generic framework for managing clocks.
+Cc: "Russell King" <rmk+lkml@arm.linux.org.uk>, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, hskinnemoen@atmel.com, lethal@linux-sh.org,
+       tony@atomide.com, paul@pwsan.com
+In-Reply-To: <20080327112048.014200cb@hskinnemo-gx620.norway.atmel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080327132923.GA12801@elf.ucw.cz>
-User-Agent: Mutt/1.4.2.1i
+References: <20080326154913.GA15326@doriath.ww600.siemens.net>
+	 <20080326170441.795fb928@hskinnemo-gx620.norway.atmel.com>
+	 <bc64b4640803260952s58ad0645ve11766fdfa45e785@mail.gmail.com>
+	 <20080327100623.34d92c84@hskinnemo-gx620.norway.atmel.com>
+	 <20080327091810.GA32396@flint.arm.linux.org.uk>
+	 <20080327102648.225d6b4f@hskinnemo-gx620.norway.atmel.com>
+	 <20080327093301.GB32396@flint.arm.linux.org.uk>
+	 <20080327105323.28a369fd@hskinnemo-gx620.norway.atmel.com>
+	 <bc64b4640803270308w6dc0723dr29e0ce5f20088d6d@mail.gmail.com>
+	 <20080327112048.014200cb@hskinnemo-gx620.norway.atmel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 27, 2008 at 02:29:23PM +0100, Pavel Machek wrote:
-> Hi!
-> 
-> > > ...this sounds like it needs to be done during resume, too, no?
-> > 
-> > This is only a workaround for BIOS that don't set up an aperture,
-> > but yes if they don't do that it is likely needed on resume too.
-> > 
-> > You would need to add a resume handler to aperture.c
-> 
-> Probably this needs to be redone during resume, right?
+Hi,
 
-Yes, but using the standard pci access functions to avoid races which
-the early boot code can ignore.
+2008/3/27, Haavard Skinnemoen <haavard.skinnemoen@atmel.com>:
+> On Thu, 27 Mar 2008 13:08:37 +0300
+>
+> Dmitry <dbaryshkov@gmail.com> wrote:
+>
+>
+> > I like this idea! This would also allow to cleanup the references code, etc.
+>
+>
+> Great!
+>
+>
+>  > Also after I saw such refactored struct clk, I thought that it looks
+>  > nearly like kobject. Maybe we should switch to the kobject-based
+>  > structs? What do you think?
+>
+>
+> I think that would be overkill. We should try to keep this stuff as
+>  lightweight as possible, and I'm not sure if we can give the kobject
+>  "parent" field the meaning we want it to have...or use the kref thing
+>  to do something unrelated to object lifecycle management (i.e. we don't
+>  want to destroy the object when the refcount goes to zero, we just want
+>  to stop the clock.)
 
-> 
-> 	/* Fix up the north bridges */
-> 	for (num = 24; num < 32; num++) {
-> 		if (!early_is_k8_nb(read_pci_config(0, num, 3, 0x00)))
-> 			continue;
-> 
-> 		/*
-> 		 * Don't enable translation yet. That is done later.
-> 		 * Assume this BIOS didn't initialise the GART so
-> 		 * just overwrite all previous bits
-> 		 */
-> 		write_pci_config(0, num, 3, 0x90, aper_order<<1);
-> 		write_pci_config(0, num, 3, 0x94, aper_alloc>>25);
-> 	}
-> 
-> ....plus the "enable translation" part... but where is that hiding?
+ACK. Then I'll repost the updated patchset later.
 
-Both pci-gart and the AGP driver have code for this.
-
--Andi
-
+-- 
+With best wishes
+Dmitry
