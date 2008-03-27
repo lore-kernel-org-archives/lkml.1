@@ -1,45 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756802AbYC0Hyj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757536AbYC0H50@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756802AbYC0Hyj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Mar 2008 03:54:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753816AbYC0Hya
+	id S1757536AbYC0H50 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Mar 2008 03:57:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755233AbYC0H5S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Mar 2008 03:54:30 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:46691 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753519AbYC0Hy3 (ORCPT
+	Thu, 27 Mar 2008 03:57:18 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:55989 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755232AbYC0H5R (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Mar 2008 03:54:29 -0400
-Date: Thu, 27 Mar 2008 00:54:03 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: York Sun <yorksun@freescale.com>
-Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org, galak@kernel.crashing.org,
-       a.p.zijlstra@chello.nl, Timur Tabi <timur@freescale.com>
-Subject: Re: [PATCH 1/2 v3] Driver for Freescale 8610 and 5121 DIU
-Message-Id: <20080327005403.18d6ab07.akpm@linux-foundation.org>
-In-Reply-To: <12064804383051-git-send-email-yorksun@freescale.com>
-References: <120648043867-git-send-email-yorksun@freescale.com>
-	<12064804383051-git-send-email-yorksun@freescale.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 27 Mar 2008 03:57:17 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <47EB5345.6080506@s5r6.in-berlin.de>
+Date: Thu, 27 Mar 2008 08:56:53 +0100
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.12) Gecko/20080219 SeaMonkey/1.1.8
+MIME-Version: 1.0
+To: Jarod Wilson <jwilson@redhat.com>
+CC: linux1394-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] firewire: fw-ohci: plug dma memory leak in AR handler
+References: <200803251647.16227.jwilson@redhat.com> <47E9F6BB.4010601@s5r6.in-berlin.de> <tkrat.82d28d7bc55f2a9b@s5r6.in-berlin.de>
+In-Reply-To: <tkrat.82d28d7bc55f2a9b@s5r6.in-berlin.de>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 25 Mar 2008 16:27:17 -0500 York Sun <yorksun@freescale.com> wrote:
+I wrote:
+> I wrote:
+>> On the other hand, why do we free a page + allocate a page?
+>> Why don't we re-initialize and re-add the old page?
+> 
+> Meanwhile I tried a simple modification to ar_context_add_page and its
+> callers which results in _add_page simply re-adding the old page. I must
+> do something fundamentally wrong though.
 
-> +#if defined(CONFIG_NOT_COHERENT_CACHE)
-> +unsigned int *coherence_data;
-> +phys_addr_t *coherence_data_phy;
-> +#endif
+Besides, the current code which reassembles packets that reach into the 
+next buffer is broken for packets whose total size approaches PAGE_SIZE. 
+(Remember, async packets can be sized 4kB + 1394 headers + OHCI 
+trailer.)  Reminds me of ohci1394 somehow.  :-(
 
-These identifiers are too general for use as global symbols.  I'd suggest
-renaming them to diu_coherence_data and diu_coherence_data_phy.  Or make
-them static - I didn't check.
-
-I'll duck this version of the patches, as Scott's comments looked rather
-substantial.
-
+I will attempt to fix this for post 2.6.25, unless you aspire to do so.
+-- 
+Stefan Richter
+-=====-==--- --== ==-==
+http://arcgraph.de/sr/
