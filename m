@@ -1,45 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757944AbYC0PQj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758420AbYC0PWZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757944AbYC0PQj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Mar 2008 11:16:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753706AbYC0PQ2
+	id S1758420AbYC0PWZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Mar 2008 11:22:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755382AbYC0PWS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Mar 2008 11:16:28 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:54495 "EHLO mx2.suse.de"
+	Thu, 27 Mar 2008 11:22:18 -0400
+Received: from www.tglx.de ([62.245.132.106]:35036 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753433AbYC0PQ1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Mar 2008 11:16:27 -0400
-Date: Thu, 27 Mar 2008 08:15:28 -0700
-From: Greg KH <gregkh@suse.de>
-To: Mark Lord <lkml@rtr.ca>
-Cc: Bodo Eggert <7eggert@gmx.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>, Jens Axboe <axboe@kernel.dk>,
-       Jeff Garzik <jgarzik@pobox.com>, Tejun Heo <htejun@gmail.com>,
-       Linus Torvalds <torvalds@osdl.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       IDE/ATA development list <linux-ide@vger.kernel.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>
-Subject: Re: What to do about the 2TB limit on HDIO_GETGEO ?
-Message-ID: <20080327151528.GB13661@suse.de>
-References: <abna7-7jK-3@gated-at.bofh.it> <abo6b-11J-9@gated-at.bofh.it> <aboSP-2Wf-29@gated-at.bofh.it> <aboSP-2Wf-27@gated-at.bofh.it> <abqrq-6eX-29@gated-at.bofh.it> <abqrq-6eX-27@gated-at.bofh.it> <abqKM-6Ka-13@gated-at.bofh.it> <E1JeTq5-00018y-MO@be1.7eggert.dyndns.org> <20080327035257.GB9566@suse.de> <47EBB322.6000402@rtr.ca>
+	id S1754534AbYC0PWR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Mar 2008 11:22:17 -0400
+Date: Thu, 27 Mar 2008 16:20:53 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Christian Kujau <lists@nerdbynature.de>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Markus Rehbach <markus.rehbach@gmx.de>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: 2.6.25-rc6: BUG: unable to handle kernel NULL pointer
+ dereference
+In-Reply-To: <20080325233357.17d6ac41.akpm@linux-foundation.org>
+Message-ID: <alpine.LFD.1.00.0803271615470.3781@apollo.tec.linutronix.de>
+References: <alpine.DEB.1.00.0803252358340.22105@sheep.housecafe.de> <20080325233357.17d6ac41.akpm@linux-foundation.org>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47EBB322.6000402@rtr.ca>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 27, 2008 at 10:45:54AM -0400, Mark Lord wrote:
-> Greg KH wrote:
->>
->> If sysfs is stupid, then use an ioctl, have I objected to that?
-> ..
->
-> Well, at this point it certainly seems a lot simpler
-> than trying to get the sysfs "maintainers" to improve it.
+On Tue, 25 Mar 2008, Andrew Morton wrote:
+> > Code: 53 c0 e8 20 08 fc ff c1 e3 02 8b 14 33 89 54 24 20 8b 44 24 20 85 c0 75 10 eb 51 8b 12 89 54 24 20 8b 44 24 20 85 c0 74 43 8b 02 <0f> 18 00 90 8d 5a d8 39 6b 34 75 e4 8b 7c 24 0c 39 7b 30 75 db 
 
-I'm sorry, have I missed a patch that was submitted that adds this new
-functionality?
+It faults in a prefetch.
+
+> Markus reported what looks to be the same thing here:
+> http://lkml.org/lkml/2008/3/21/202 and it's already in the regresison list.
+
+Same here. And both are AMD X2 early stepping machines.
+ 
+> I guess you've confirmed that this wasn't a mystery
+> once-off-on-that-machine.
+> 
+> I can't think what we did to cause this.
+
+I had a lengthy bug decoding session with Ingo and we found the root
+cause:
+
+A dropped workaround for the prefetch bug in early X2s and
+Opterons. Patch below.
+
+Thanks,
+
+	tglx
+
+--------------->
+Subject: x86: fix prefetch workaround
+From: Ingo Molnar <mingo@elte.hu>
+Date: Thu Mar 27 15:58:28 CET 2008
+
+some early Athlon XP's and Opterons generate bogus faults on prefetch
+instructions. The workaround for this regressed over .24 - reinstate it.
+
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+
+---
+ arch/x86/mm/fault.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+Index: linux-x86.q/arch/x86/mm/fault.c
+===================================================================
+--- linux-x86.q.orig/arch/x86/mm/fault.c
++++ linux-x86.q/arch/x86/mm/fault.c
+@@ -104,7 +104,8 @@ static int is_prefetch(struct pt_regs *r
+ 	unsigned char *max_instr;
+ 
+ #ifdef CONFIG_X86_32
+-	if (!(__supported_pte_mask & _PAGE_NX))
++	/* Catch an obscure case of prefetch inside an NX page: */
++	if ((__supported_pte_mask & _PAGE_NX) && (error_code & 16))
+ 		return 0;
+ #endif
+ 
+
+
