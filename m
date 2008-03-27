@@ -1,110 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761756AbYC0Uud@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760974AbYC0UzV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761756AbYC0Uud (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Mar 2008 16:50:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758725AbYC0UuZ
+	id S1760974AbYC0UzV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Mar 2008 16:55:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758386AbYC0UzK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Mar 2008 16:50:25 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:50420 "EHLO mx3.mail.elte.hu"
+	Thu, 27 Mar 2008 16:55:10 -0400
+Received: from gw.goop.org ([64.81.55.164]:45391 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758717AbYC0UuY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Mar 2008 16:50:24 -0400
-Date: Thu, 27 Mar 2008 21:50:12 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [git pull] x86 fixes
-Message-ID: <20080327205012.GA21431@elte.hu>
-References: <20080327200309.GA18550@elte.hu> <alpine.LFD.1.00.0803271325430.14670@woody.linux-foundation.org>
+	id S1758259AbYC0UzJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Mar 2008 16:55:09 -0400
+Message-ID: <47EC099C.9030609@goop.org>
+Date: Thu, 27 Mar 2008 13:54:52 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.00.0803271325430.14670@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+CC: Yasunori Goto <y-goto@jp.fujitsu.com>,
+       Christoph Lameter <clameter@sgi.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Anthony Liguori <anthony@codemonkey.ws>,
+       Chris Wright <chrisw@sous-sol.org>
+Subject: Re: Trying to make use of hotplug memory for xen balloon driver
+References: <47EAD83A.2000000@goop.org>	<20080327095059.5d2759a3.kamezawa.hiroyu@jp.fujitsu.com>	<47EB3765.8020702@goop.org> <20080327151115.be9f325d.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20080327151115.be9f325d.kamezawa.hiroyu@jp.fujitsu.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+KAMEZAWA Hiroyuki wrote:
+> On Wed, 26 Mar 2008 22:57:57 -0700
+> Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+>
+>   
+>> Ah, I see what it is.  I wasn't trying to add enough memory.  It adds in 
+>> units of SECTION_SIZE_BITS, which is 2^30 on 32-bit PAE.  When I 
+>> increase the initial balloon extension to PAGES_PER_SECTION pages, I 
+>> make some more progress:
+>>
+>> xen_balloon: Initialising balloon driver.
+>> trying to reserve 262144 pages (1073741824 bytes) for balloon
+>> bootmem alloc of 147456 bytes failed!
+>> Kernel panic - not syncing: Out of memory
+>> Pid: 1, comm: swapper Not tainted 2.6.25-rc7-x86-latest.git-dirty #361
+>>  [<c01299dc>] panic+0x49/0x102
+>>  [<c0647c3c>] __alloc_bootmem+0x24/0x29
+>>  [<c0647c6d>] __alloc_bootmem_node+0x2c/0x34
+>>  [<c044bd97>] zone_wait_table_init+0x45/0x95
+>>  [<c0467258>] init_currently_empty_zone+0x1d/0xaa
+>>  [<c01738ea>] __add_pages+0x88/0xdb
+>>  [<c011c1a5>] arch_add_memory+0x25/0x2b
+>>  [<c01737a9>] add_memory_resource+0x2f/0x36
+>>  [<c064e487>] balloon_init+0x1b8/0x2b9
+>>  [<c0635495>] kernel_init+0x137/0x292
+>>  [<c063535e>] ? kernel_init+0x0/0x292
+>>  [<c063535e>] ? kernel_init+0x0/0x292
+>>  [<c0108b67>] kernel_thread_helper+0x7/0x10
+>>  =======================
+>>
+>>
+>> What's the rationale for setting SECTION_SIZE_BITS to 30?  Seems like a 
+>> fairly large chunk.
+>>
+>>     
+> At first, I believe usual DIMM size is bigger than SECTION_SIZE_BITS. This is
+> designed for hardware-based hotplug.
+>
+> If you want to use memory-hotplug for virtualized enviroment, it's good to make
+> this to be smaller chunk. Powerpc/IBM lpar uses 16MB chunk.
+>
+> It's a trade-off between section mainainance cost v.s. size of plugged memory.
+> please find the best.
 
-* Linus Torvalds <torvalds@linux-foundation.org> wrote:
+Hm, I tried reducing it to 2^28 (=256M), but I get a compilation failure:
 
-> >  #ifdef CONFIG_X86_32
-> > -	if (!(__supported_pte_mask & _PAGE_NX))
-> > +	/* Catch an obscure case of prefetch inside an NX page: */
-> > +	if ((__supported_pte_mask & _PAGE_NX) && (error_code & 16))
-> >  		return 0;
-> >  #endif
-> 
-> Ingo, this patch makes no sense.
-> 
-> Two reasons:
-> 
->  - "error_code & 16" is senseless. Use PF_INSTR instead, which actually 
->    tells the reader something.
+  CC      arch/x86/kernel/asm-offsets.s
+In file included from /home/jeremy/hg/xen/paravirt/linux/include/linux/suspend.h:11,
+                 from /home/jeremy/hg/xen/paravirt/linux/arch/x86/kernel/asm-offsets_32.c:11,
+                 from /home/jeremy/hg/xen/paravirt/linux/arch/x86/kernel/asm-offsets.c:2:
+/home/jeremy/hg/xen/paravirt/linux/include/linux/mm.h:458:2: error: #error SECTIONS_WIDTH+NODES_WIDTH+ZONES_WIDTH > FLAGS_RESERVED
+make[3]: *** [arch/x86/kernel/asm-offsets.s] Error 1
 
-yeah - sorry - the '16' was a blast from the past, i just took the old 
-2.6.24 condition on the 32-bit side which didnt use PF_INSTR (PF_INSTR 
-came in as a cleanup during the unification), and when the confirmation 
-came that this fixed the crash i sent the pull request. That's how this 
-nonsensical mixing happened, and that's why i missed the 'if (error_code 
-& PF_INSTR)' branch.
 
-The patch below (ontop of the tree) is a first cut at fixing all these 
-problems - but i'd wait at least 24 hours with applying this to let it 
-be tested through - it affects both 32-bit and 64-bit. The fix further 
-cleans up this codepath and removes an #ifdef.
+2^29 works.
 
-	Ingo
+    J
 
------------------------->
-Subject: x86: prefetch fix #2
-From: Ingo Molnar <mingo@elte.hu>
-Date: Thu Mar 27 21:29:09 CET 2008
-
-Linus noticed a second bug and an uncleanliness:
-
- - we'd return on any instruction fetch fault
-
- - we'd use both the value of 16 and the PF_INSTR symbol which are
-   the same and make no sense
-
-the cleanup nicely unifies this piece of logic.
-
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- arch/x86/mm/fault.c |   12 ++++--------
- 1 file changed, 4 insertions(+), 8 deletions(-)
-
-Index: linux-x86.q/arch/x86/mm/fault.c
-===================================================================
---- linux-x86.q.orig/arch/x86/mm/fault.c
-+++ linux-x86.q/arch/x86/mm/fault.c
-@@ -103,14 +103,10 @@ static int is_prefetch(struct pt_regs *r
- 	int prefetch = 0;
- 	unsigned char *max_instr;
- 
--#ifdef CONFIG_X86_32
--	/* Catch an obscure case of prefetch inside an NX page: */
--	if ((__supported_pte_mask & _PAGE_NX) && (error_code & 16))
--		return 0;
--#endif
--
--	/* If it was a exec fault on NX page, ignore */
--	if (error_code & PF_INSTR)
-+	/*
-+	 * Catch an obscure case of prefetch inside an NX page:
-+	 */
-+	if ((__supported_pte_mask & _PAGE_NX) && (error_code & PF_INSTR))
- 		return 0;
- 
- 	instr = (unsigned char *)convert_ip_to_linear(current, regs);
