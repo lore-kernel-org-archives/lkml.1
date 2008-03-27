@@ -1,118 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757640AbYC0AQL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758125AbYC0AQ1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757640AbYC0AQL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Mar 2008 20:16:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754777AbYC0AP5
+	id S1758125AbYC0AQ1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Mar 2008 20:16:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755503AbYC0AQC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Mar 2008 20:15:57 -0400
-Received: from gw.goop.org ([64.81.55.164]:52837 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754211AbYC0AP5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Mar 2008 20:15:57 -0400
-Message-ID: <47EAE736.307@goop.org>
-Date: Wed, 26 Mar 2008 17:15:50 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	Wed, 26 Mar 2008 20:16:02 -0400
+Received: from eastrmmtao104.cox.net ([68.230.240.46]:38077 "EHLO
+	eastrmmtao104.cox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755073AbYC0AP7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Mar 2008 20:15:59 -0400
+Date: Wed, 26 Mar 2008 20:15:57 -0400
+From: Brad Sawatzky <brad+kernel@swatter.net>
+To: Oliver Neukum <oliver@neukum.org>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org,
+       linux-usb@vger.kernel.org
+Subject: Re: [PATCH] usb-serial: fix regression in Visor/Palm OS module for
+	kernels >= 2.6.24
+Message-ID: <20080327001557.GA16176@enigma.swatter.net>
+Mail-Followup-To: Oliver Neukum <oliver@neukum.org>,
+	Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org,
+	linux-usb@vger.kernel.org
+References: <20080326023243.GA25564@enigma.swatter.net> <200803260817.18330.oliver@neukum.org>
 MIME-Version: 1.0
-To: Dave Hansen <dave@linux.vnet.ibm.com>
-CC: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Yasunori Goto <y-goto@jp.fujitsu.com>,
-       Christoph Lameter <clameter@sgi.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Anthony Liguori <anthony@codemonkey.ws>,
-       Chris Wright <chrisw@sous-sol.org>
-Subject: Re: Trying to make use of hotplug memory for xen balloon driver
-References: <47EAD83A.2000000@goop.org> <1206576544.7883.21.camel@nimitz.home.sr71.net>
-In-Reply-To: <1206576544.7883.21.camel@nimitz.home.sr71.net>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <200803260817.18330.oliver@neukum.org>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dave Hansen wrote:
-> Yeah, this is your problem.  You've only allocated the iomem *resource*
-> for the memory area, which means that you've basically claimed the
-> physical addresses.
->
-> But, you don't have any 'struct page's there.
->
-> We really screwed up the memory hotplug code and ended up with some
-> incredibly arcane function names.  You might want to look at
-> add_memory().  It is hidden away in mm/memory_hotplug.c :)
->   
+On Wed, 26 Mar 2008, Oliver Neukum wrote:
 
-Sorry, I should have been clearer.  add_memory_resource() is a function 
-I added; it's effectively add_memory() with the resource-allocating part 
-factored out:
+> Am Mittwoch, 26. März 2008 03:32:43 schrieb Brad Sawatzky:
+[ . . . ]
+> > I suppose it's possible that the kernel is identifying 3 bulk endpoints
+> > when there should only be 2 and there is some issue with the lower level
+> > endpoint probe?
+> 
+> Send in "lsusb -v". Are you sure all devices have 3 endpoints?
 
---- a/include/linux/memory_hotplug.h
-+++ b/include/linux/memory_hotplug.h
-@@ -171,7 +171,10 @@
- 
- #endif /* ! CONFIG_MEMORY_HOTPLUG */
- 
-+struct resource;
-+
- extern int add_memory(int nid, u64 start, u64 size);
-+extern int add_memory_resource(int nid, struct resource *res);
- extern int arch_add_memory(int nid, u64 start, u64 size);
- extern int remove_memory(u64 start, u64 size);
- extern int sparse_add_one_section(struct zone *zone, unsigned long start_pfn,
-===================================================================
---- a/mm/memory_hotplug.c
-+++ b/mm/memory_hotplug.c
-@@ -278,14 +278,28 @@
- 
- int add_memory(int nid, u64 start, u64 size)
- {
--	pg_data_t *pgdat = NULL;
--	int new_pgdat = 0;
- 	struct resource *res;
- 	int ret;
- 
- 	res = register_memory_resource(start, size);
- 	if (!res)
- 		return -EEXIST;
-+
-+	ret = add_memory_resource(nid, res);
-+
-+	if (ret)
-+		release_memory_resource(res);
-+
-+	return ret;
-+}
-+
-+int add_memory_resource(int nid, struct resource *res)
-+{
-+	pg_data_t *pgdat = NULL;
-+	int new_pgdat = 0;
-+	int ret;
-+	u64 start = res->start;
-+	u64 size = res->end - res->start + 1;
- 
- 	if (!node_online(nid)) {
- 		pgdat = hotadd_new_pgdat(nid, start);
-@@ -320,8 +334,6 @@
- 	/* rollback pgdat allocation and others */
- 	if (new_pgdat)
- 		rollback_node_hotadd(nid, pgdat);
--	if (res)
--		release_memory_resource(res);
- 
- 	return ret;
- }
+Seems to:
 
+% sudo lsusb -v
+Bus 002 Device 016: ID 091e:0004 Garmin International 
+Device Descriptor:
+  bLength                18
+  bDescriptorType         1
+  bcdUSB               1.00
+  bDeviceClass            0 (Defined at Interface level)
+  bDeviceSubClass         0 
+  bDeviceProtocol         0 
+  bMaxPacketSize0         8
+  idVendor           0x091e Garmin International
+  idProduct          0x0004 
+  bcdDevice            1.00
+  iManufacturer           1 Palm, Inc.
+  iProduct                2 Palm Handheld
+  iSerial                 5 PalmSN12345678
+  bNumConfigurations      1
+  Configuration Descriptor:
+    bLength                 9
+    bDescriptorType         2
+    wTotalLength           53
+    bNumInterfaces          1
+    bConfigurationValue     1
+    iConfiguration          0 
+    bmAttributes         0xc0
+      Self Powered
+    MaxPower                2mA
+    Interface Descriptor:
+      bLength                 9
+      bDescriptorType         4
+      bInterfaceNumber        0
+      bAlternateSetting       0
+      bNumEndpoints           5
+      bInterfaceClass       255 Vendor Specific Class
+      bInterfaceSubClass      0 
+      bInterfaceProtocol      0 
+      iInterface              0 
+      Endpoint Descriptor:
+        bLength                 7
+        bDescriptorType         5
+        bEndpointAddress     0x01  EP 1 OUT
+        bmAttributes            2
+          Transfer Type            Bulk
+          Synch Type               None
+          Usage Type               Data
+        wMaxPacketSize     0x0040  1x 64 bytes
+        bInterval               0
+      Endpoint Descriptor:
+        bLength                 7
+        bDescriptorType         5
+        bEndpointAddress     0x82  EP 2 IN
+        bmAttributes            2
+          Transfer Type            Bulk
+          Synch Type               None
+          Usage Type               Data
+        wMaxPacketSize     0x0040  1x 64 bytes
+        bInterval               0
+      Endpoint Descriptor:
+        bLength                 7
+        bDescriptorType         5
+        bEndpointAddress     0x03  EP 3 OUT
+        bmAttributes            2
+          Transfer Type            Bulk
+          Synch Type               None
+          Usage Type               Data
+        wMaxPacketSize     0x0020  1x 32 bytes
+        bInterval               0
+      Endpoint Descriptor:
+        bLength                 7
+        bDescriptorType         5
+        bEndpointAddress     0x84  EP 4 IN
+        bmAttributes            2
+          Transfer Type            Bulk
+          Synch Type               None
+          Usage Type               Data
+        wMaxPacketSize     0x0020  1x 32 bytes
+        bInterval               0
+      Endpoint Descriptor:
+        bLength                 7
+        bDescriptorType         5
+        bEndpointAddress     0x05  EP 5 OUT
+        bmAttributes            2
+          Transfer Type            Bulk
+          Synch Type               None
+          Usage Type               Data
+        wMaxPacketSize     0x0020  1x 32 bytes
+        bInterval               0
+Device Status:     0x0001
+  Self Powered
 
-> You might also note that most of the ppc64 memory hotplug is driven by
-> userspace.  The hypervisor actually contacts a daemon on the guest to
-> tell it where its new memory is.  That daemon does the addition
-> through /sys/devices/system/memory/probe.  
->   
+[ Trimmed out other devices ]
 
-X86 Xen does it with a combination of hypervisor and userspace.  Mostly 
-it comes down to asking the hypervisor to provide a machine page to put 
-under a guest pseudo-physical page.
-
-    J
+-- Brad
