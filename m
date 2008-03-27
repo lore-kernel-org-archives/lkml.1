@@ -1,48 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759466AbYC0JvR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759592AbYC0Jv4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759466AbYC0JvR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Mar 2008 05:51:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755263AbYC0JvC
+	id S1759592AbYC0Jv4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Mar 2008 05:51:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755276AbYC0Jvs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Mar 2008 05:51:02 -0400
-Received: from mta23.gyao.ne.jp ([125.63.38.249]:48580 "EHLO mx.gate01.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752021AbYC0JvA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Mar 2008 05:51:00 -0400
-Date: Thu, 27 Mar 2008 18:50:34 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Russell King <rmk+lkml@arm.linux.org.uk>
-Cc: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>,
-       Dmitry <dbaryshkov@gmail.com>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, hskinnemoen@atmel.com,
-       domen.puncer@telargo.com, tony@atomide.com, paul@pwsan.com
-Subject: Re: [PATCH 1/3] Clocklib: add generic framework for managing clocks.
-Message-ID: <20080327095034.GA21168@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	Russell King <rmk+lkml@arm.linux.org.uk>,
-	Haavard Skinnemoen <haavard.skinnemoen@atmel.com>,
-	Dmitry <dbaryshkov@gmail.com>, linux-kernel@vger.kernel.org,
-	akpm@linux-foundation.org, hskinnemoen@atmel.com,
-	domen.puncer@telargo.com, tony@atomide.com, paul@pwsan.com
-References: <20080326154913.GA15326@doriath.ww600.siemens.net> <20080326155203.GA15405@doriath.ww600.siemens.net> <20080326170441.795fb928@hskinnemo-gx620.norway.atmel.com> <bc64b4640803260952s58ad0645ve11766fdfa45e785@mail.gmail.com> <20080327100623.34d92c84@hskinnemo-gx620.norway.atmel.com> <20080327091810.GA32396@flint.arm.linux.org.uk> <20080327102648.225d6b4f@hskinnemo-gx620.norway.atmel.com> <20080327093301.GB32396@flint.arm.linux.org.uk>
+	Thu, 27 Mar 2008 05:51:48 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:43162 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755263AbYC0Jvr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Mar 2008 05:51:47 -0400
+Date: Thu, 27 Mar 2008 10:51:32 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Marcin Slusarz <marcin.slusarz@gmail.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [PATCH] documentation: nmi_watchdog=2 works on x86_64 (was:
+	2.6.25-rc: complete lockup on boot/start of X (bisected))
+Message-ID: <20080327095132.GA15003@elte.hu>
+References: <20080302185935.GA6100@joi> <1204485071.6240.56.camel@lappy> <20080302194748.GA6005@joi> <1204487917.6240.64.camel@lappy> <20080323154416.GA6817@joi> <1206287670.6437.113.camel@lappy> <20080323184427.GA6691@joi> <1206299168.6437.119.camel@lappy> <20080323200625.GB6028@joi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080327093301.GB32396@flint.arm.linux.org.uk>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20080323200625.GB6028@joi>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: 0.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=0.5 required=5.9 tests=BAYES_40 autolearn=no SpamAssassin version=3.2.3
+	0.5 BAYES_40               BODY: Bayesian spam probability is 20 to 40%
+	[score: 0.3791]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 27, 2008 at 09:33:01AM +0000, Russell King wrote:
-> On Thu, Mar 27, 2008 at 10:26:48AM +0100, Haavard Skinnemoen wrote:
-> > You can extend the struct, put the rate there and use the same
-> > getrate() function for all the clocks that need to keep track of the
-> > current rate this way.
+
+* Marcin Slusarz <marcin.slusarz@gmail.com> wrote:
+
+> > Care to send a patch to the x86 maintainers? :-)
 > 
-> Well, if you're really concerned about size, you could do what I did with
-> PXA and introduce a struct clk_ops to contain all the constant function
-> pointers, rather than mashing the function pointers together - which
-> saves far more than trying to combine them.
-> 
-FWIW, this is also what we've done on SH.
+> ---
+> documentation: nmi_watchdog=2 works on x86_64
+
+thanks Marcin, applied.
+
+	Ingo
