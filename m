@@ -1,76 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759375AbYC0Jdj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758046AbYC0Jgz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759375AbYC0Jdj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Mar 2008 05:33:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757478AbYC0JdY
+	id S1758046AbYC0Jgz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Mar 2008 05:36:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752485AbYC0Jgr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Mar 2008 05:33:24 -0400
-Received: from mga02.intel.com ([134.134.136.20]:10660 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758301AbYC0JdX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Mar 2008 05:33:23 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,562,1199692800"; 
-   d="scan'208";a="361426688"
-Subject: Re: [PATCH -mm 0/4] x86_64 boot: Add linked listof struct
-	setup_data to boot protocol
-From: "Huang, Ying" <ying.huang@intel.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, andi@firstfloor.org, mingo@redhat.com,
-       tglx@linutronix.de, Paul Jackson <pj@sgi.com>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20080327083221.GD15626@elte.hu>
-References: <1206601743.3067.20.camel@caritas-dev.intel.com>
-	 <20080327083221.GD15626@elte.hu>
-Content-Type: text/plain
+	Thu, 27 Mar 2008 05:36:47 -0400
+Received: from bzq-179-150-194.static.bezeqint.net ([212.179.150.194]:55821
+	"EHLO il.qumranet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751939AbYC0Jgq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Mar 2008 05:36:46 -0400
+Message-ID: <47EB6AAC.3040607@qumranet.com>
+Date: Thu, 27 Mar 2008 11:36:44 +0200
+From: Avi Kivity <avi@qumranet.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+MIME-Version: 1.0
+To: Dave Hansen <dave@linux.vnet.ibm.com>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       kvm-devel <kvm-devel@lists.sourceforge.net>
+Subject: Re: [kvm-devel] kvm causing memory corruption?  ~2.6.25-rc6
+References: <1206479576.7562.21.camel@nimitz.home.sr71.net>	 <47EA1C63.8010202@qumranet.com>	 <1206550329.7883.5.camel@nimitz.home.sr71.net>	 <47EA80AC.4070204@qumranet.com> <1206551794.7883.7.camel@nimitz.home.sr71.net>
+In-Reply-To: <1206551794.7883.7.camel@nimitz.home.sr71.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Date: Thu, 27 Mar 2008 17:25:36 +0800
-Message-Id: <1206609936.13404.0.camel@caritas-dev.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 
-X-OriginalArrivalTime: 27 Mar 2008 09:22:35.0104 (UTC) FILETIME=[17995E00:01C88FEC]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-03-27 at 09:32 +0100, Ingo Molnar wrote:
-> * Huang, Ying <ying.huang@intel.com> wrote:
-> 
-> > This patchset adds the linked list of struct setup_data to boot 
-> > protocol. This is needed by EDD information and some SGI machine with 
-> > E820 entry number > 128.
-> 
-> what happens with the SGI machine - does it crash (because we overflow 
-> the e820 array) - or does it boot up with less memory available and we 
-> get this bootup warning:
-> 
->     Ooops! Too many entries in the memory map!
+Dave Hansen wrote:
+> On Wed, 2008-03-26 at 18:58 +0200, Avi Kivity wrote:
+>   
+>> Dave Hansen wrote:
+>>     
+>>> On Wed, 2008-03-26 at 11:50 +0200, Avi Kivity wrote:
+>>>       
+>>>> Dave Hansen wrote:
+>>>>     
+>>>>         
+>>>>> I was getting some kvm userspace crashes trying to run a Windows guest.
+>>>>> So, I decided to try a recent kernel (2.6.25-rc6-00333-ga4083c9)  with
+>>>>> the kvm kernel code that shipped with that kernel.
+>>>>>
+>>>>>       
+>>>>>           
+>>>> This is fixed in 2.6.25-rc7.
+>>>>     
+>>>>         
+>>> I just updated to -rc7 and re-tested.  Same symptoms:
+>>>       
+>> Bad.  Which kvm userspace are you running?
+>>     
+>
+> ~/src/kvm-userspace$ git describe
+> kvm-63-118-g52be1a1
+>
+>   
 
-SGI guys want to build machine with NUMA node number > 128, so they need
-e820 entry number > 128. In current boot protocol, this can not be
-passed by boot loader to kernel. So the boot protocol need to be
-extended. 
+I dug out my i386 install and tried it.  Doesn't reproduce for me on 
+either kvm.git or -rc7.
 
-> ?
-> 
-> I guess we should we raise E820MAX from 128 to 256 (patch below), but if 
-> we do something worse (crash), we should fix that side-effect as well.
+Do you have a working setup that we can bisect?
 
-Because the size of "zero page" is limited to 4k, the entry number of
-E820 table in "zero page" is limited too. We can not raise it to 256,
-because 20 * 256 = 5120 > 4096.
 
-> > Now, only the x86_64 is supported. The i386 can be supported after 
-> > early reservation mechanism for x86 is available.
-> 
-> could you try to do that nevertheless? We generally prefer feature 
-> patches after sensible unification has been done.
-
-I try to port reserve_early() to i386 before. But it is said that the
-reserve_early() should be replaced by e820 based early
-reservation/allocation mechanism on i386 and x86_64. So I think I should
-wait for it.
-
-Best Regards,
-Huang Ying
+-- 
+error compiling committee.c: too many arguments to function
 
