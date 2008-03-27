@@ -1,172 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760648AbYC0Rhe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761147AbYC0Rhs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760648AbYC0Rhe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Mar 2008 13:37:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755448AbYC0RhY
+	id S1761147AbYC0Rhs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Mar 2008 13:37:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760202AbYC0Rha
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Mar 2008 13:37:24 -0400
-Received: from e36.co.us.ibm.com ([32.97.110.154]:40524 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755412AbYC0RhX (ORCPT
+	Thu, 27 Mar 2008 13:37:30 -0400
+Received: from homer.mvista.com ([63.81.120.155]:15099 "EHLO
+	imap.sh.mvista.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756314AbYC0Rh1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Mar 2008 13:37:23 -0400
-Date: Thu, 27 Mar 2008 12:36:47 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: "Serge E. Hallyn" <serue@us.ibm.com>, Andrew Morton <akpm@osdl.org>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] cgroups: devices: add Documentation/ file
-Message-ID: <20080327173647.GA8169@sergelap.austin.ibm.com>
-References: <20080327151227.GA11581@sergelap.austin.ibm.com> <20080327085837.c51ebe6d.randy.dunlap@oracle.com>
+	Thu, 27 Mar 2008 13:37:27 -0400
+Message-ID: <47EBDBAA.2020308@ru.mvista.com>
+Date: Thu, 27 Mar 2008 20:38:50 +0300
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Organization: MontaVista Software Inc.
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
+X-Accept-Language: ru, en-us, en-gb
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080327085837.c51ebe6d.randy.dunlap@oracle.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: linux-ide@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 15/18] ide: remove broken/dangerous HDIO_[UNREGISTER,SCAN]_HWIF
+ ioctls
+References: <20080208004421.17746.32557.sendpatchset@localhost.localdomain> <20080208004606.17746.90799.sendpatchset@localhost.localdomain>
+In-Reply-To: <20080208004606.17746.90799.sendpatchset@localhost.localdomain>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Randy Dunlap (randy.dunlap@oracle.com):
-> On Thu, 27 Mar 2008 10:12:27 -0500 Serge E. Hallyn wrote:
-> 
-> > Fill a Documentation/controllers/devices.txt file with a
-> > modified text from the patch description.
-> > 
-> > Signed-off-by: Serge E. Hallyn <serue@us.ibm.com>
-> > ---
-> >  Documentation/controllers/devices.txt |   48 +++++++++++++++++++++++++++++++++
-> >  1 files changed, 48 insertions(+), 0 deletions(-)
-> >  create mode 100644 Documentation/controllers/devices.txt
-> > 
-> > diff --git a/Documentation/controllers/devices.txt b/Documentation/controllers/devices.txt
-> > new file mode 100644
-> > index 0000000..a157f53
-> > --- /dev/null
-> > +++ b/Documentation/controllers/devices.txt
-> > @@ -0,0 +1,48 @@
-> > +Device Whitelist Controller
-> > +
-> > +1. Description:
-> > +
-> 
-> ...
-> 
-> > +The root device cgroup starts with rwm to 'all'.  A child devices
-> 
->                                                              device's
+Bartlomiej Zolnierkiewicz wrote:
 
-That's actually not right, but 'child device cgroup' does sound better.
+> hdparm explicitely marks HDIO_[UNREGISTER,SCAN]_HWIF ioctls as DANGEROUS
+> and given the number of bugs we can assume that there are no real users:
 
-> 
-> > +cgroup gets a copy of the parent.  Administrators can then remove
-> > +devices from the whitelist or add new entries.  A child cgroup can
-> > +never receive a device access which is denied its parent.  However
-> > +when a device access is removed from a parent it will not also be
-> > +removed from the child(ren).
-> > +
-> > +2. User Interface
-> > +
-> ...
-> > +
-> > +3. Security
-> > +
-> > +Any task can move itself between cgroups.  This of clearly won't
-> 
-> s/of//
+> * DMA has no chance of working because DMA resources are released by
+>   ide_unregister() and they are never allocated again.
 
-Yup, oops.
+> * Since ide_init_hwif_ports() is used for ->io_ports[] setup the ioctls
+>   don't work for almost all hosts with "non-standard" (== non ISA-like)
+>   layout of IDE taskfile registers (there is a lot of such host drivers).
 
-New patch attached.  Thanks, Randy.
+> * ide_port_init_devices() is not called when probing IDE devices so:
+>   - drive->autotune is never set and IDE host/devices are not programmed
+>     for the correct PIO/DMA transfer modes (=> possible data corruption)
+>   - host specific I/O 32-bit and IRQ unmasking settings are not applied
+>     (=> possible data corruption)
+>   - host specific ->port_init_devs method is not called (=> no luck with
+>     ht6560b, qd65xx and opti621 host drivers)
 
--serge
+> * ->rw_disk method is not preserved (=> no HPT3xxN chipsets support).
 
-> > +suffice, but we can decide the best way to adequately restrict
-> > +movement as people get some experience with this.  We may just want
-> > +to require CAP_SYS_ADMIN, which at least is a separate bit from
-> > +CAP_MKNOD.  We may want to just refuse moving to a cgroup which
-> > +isn't a descendent of the current one.  Or we may want to use
-> > +CAP_MAC_ADMIN, since we really are trying to lock down root.
-> > +
-> > +CAP_SYS_ADMIN is needed to modify the whitelist or move another
-> > +task to a new cgroup.  (Again we'll probably want to change that).
-> > +
-> > +A cgroup may not be granted more permissions than the cgroup's
-> > +parent has.  
-> > -- 
-> 
-> ---
-> ~Randy
+> * ->serialized flag is not preserved (=> possible data corruption when
+>    using icside, aec62xx (ATP850UF chipset), cmd640, cs5530, hpt366
+>    (HPT3xxN chipsets), rz1000, sc1200, dtc2278 and ht6560b host drivers).
 
+> * ->ack_intr method is not preserved (=> needed by ide-cris, buddha,
+>   gayle and macide host drivers).
 
->From c5a7bd6599ebe47b8711ba66b1c41a81935a12af Mon Sep 17 00:00:00 2001
-From: Serge E. Hallyn <serue@us.ibm.com>
-Date: Thu, 27 Mar 2008 08:11:10 -0700
-Subject: [PATCH 1/1] cgroups: devices: add Documentation/ file
+> * ->sata_scr[] and sata_misc[] is cleared by ide_unregister() and it
+>   isn't initialized again (SiI3112 support needs them).
 
-Fill a Documentation/controllers/devices.txt file with a
-modified text from the patch description.
+> * To issue an ioctl() there need to be at least one IDE device present
+>   in the system.
 
-Signed-off-by: Serge E. Hallyn <serue@us.ibm.com>
----
- Documentation/controllers/devices.txt |   48 +++++++++++++++++++++++++++++++++
- 1 files changed, 48 insertions(+), 0 deletions(-)
- create mode 100644 Documentation/controllers/devices.txt
+> * ->cable_detect method is not preserved + it is not called when probing
+>   IDE devices so cable detection is broken (however since DMA support is
+>   also broken it doesn't really matter ;-).
 
-diff --git a/Documentation/controllers/devices.txt b/Documentation/controllers/devices.txt
-new file mode 100644
-index 0000000..a157f53
---- /dev/null
-+++ b/Documentation/controllers/devices.txt
-@@ -0,0 +1,48 @@
-+Device Whitelist Controller
-+
-+1. Description:
-+
-+Implement a cgroup to track and enforce open and mknod restrictions
-+on device files.  A device cgroup associates a device access
-+whitelist with each cgroup.  A whitelist entry has 4 fields.
-+'type' is a (all), c (char), or b (block).  'all' means it applies
-+to all types and all major and minor numbers.  Major and minor are
-+either an integer or * for all.  Access is a composition of r
-+(read), w (write), and m (mknod).
-+
-+The root device cgroup starts with rwm to 'all'.  A child device
-+cgroup gets a copy of the parent.  Administrators can then remove
-+devices from the whitelist or add new entries.  A child cgroup can
-+never receive a device access which is denied its parent.  However
-+when a device access is removed from a parent it will not also be
-+removed from the child(ren).
-+
-+2. User Interface
-+
-+An entry is added using devices.allow, and removed using
-+devices.deny.  For instance
-+
-+	echo 'c 1:3 mr' > /cgroups/1/devices.allow
-+
-+allows cgroup 1 to read and mknod the device usually known as
-+/dev/null.  Doing
-+
-+	echo a > /cgroups/1/devices.deny
-+
-+will remove the default 'a *:* mrw' entry.
-+
-+3. Security
-+
-+Any task can move itself between cgroups.  This clearly won't
-+suffice, but we can decide the best way to adequately restrict
-+movement as people get some experience with this.  We may just want
-+to require CAP_SYS_ADMIN, which at least is a separate bit from
-+CAP_MKNOD.  We may want to just refuse moving to a cgroup which
-+isn't a descendent of the current one.  Or we may want to use
-+CAP_MAC_ADMIN, since we really are trying to lock down root.
-+
-+CAP_SYS_ADMIN is needed to modify the whitelist or move another
-+task to a new cgroup.  (Again we'll probably want to change that).
-+
-+A cgroup may not be granted more permissions than the cgroup's
-+parent has.  
--- 
-1.5.1
+> * Some objects which may have already been freed in ide_unregister()
+>   are restored by ide_hwif_restore() (i.e. ->hwgroup).
 
+> * ide_register_hw() may unregister unrelated IDE ports if free ide_hwifs[]
+>   slot cannot be found.
+
+> * When IDE host drivers are modular unregistered port may be re-used by
+>   different host driver that owned it first causing subtle bugs.
+
+> Since we now have a proper warm-plug support remove these ioctls,
+> then remove no longer needed:
+> - ide_register_hw() and ide_hwif_restore() functions
+> - 'init_default' and 'restore' arguments of ide_unregister()
+> - zeroeing of hwif->{dma,extra}_* fields in ide_unregister()
+
+> As an added bonus IDE core code size shrinks by ~3kB (x86-32).
+
+> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+
+Acked-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+
+> Index: b/drivers/ide/ide-pnp.c
+> ===================================================================
+> --- a/drivers/ide/ide-pnp.c
+> +++ b/drivers/ide/ide-pnp.c
+[...]
+> @@ -655,52 +530,6 @@ void ide_init_port_hw(ide_hwif_t *hwif, 
+>  }
+>  EXPORT_SYMBOL_GPL(ide_init_port_hw);
+>  
+> -/**
+> - *	ide_register_hw		-	register IDE interface
+> - *	@hw: hardware registers
+> - *	@quirkproc: quirkproc function
+> - *	@hwifp: pointer to returned hwif
+> - *
+> - *	Register an IDE interface, specifying exactly the registers etc.
+> - *
+> - *	Returns -1 on error.
+> - */
+> -
+> -static int ide_register_hw(hw_regs_t *hw, void (*quirkproc)(ide_drive_t *),
+> -			   ide_hwif_t **hwifp)
+> -{
+> -	int index, retry = 1;
+> -	ide_hwif_t *hwif;
+> -	u8 idx[4] = { 0xff, 0xff, 0xff, 0xff };
+> -
+> -	do {
+> -		hwif = ide_find_port(hw->io_ports[IDE_DATA_OFFSET]);
+> -		index = hwif->index;
+> -		if (hwif)
+> -			goto found;
+
+    Hm, I remember there was a patch that fixed the above bug where hwif is 
+dereferenced before being checked for NULL, I wonder how come it was lost?
+
+WBR, Sergei
