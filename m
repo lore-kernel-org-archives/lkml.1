@@ -1,60 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759629AbYC0Tk3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759862AbYC0ToT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759629AbYC0Tk3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Mar 2008 15:40:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757234AbYC0TkQ
+	id S1759862AbYC0ToT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Mar 2008 15:44:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757785AbYC0ToH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Mar 2008 15:40:16 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:58895 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755859AbYC0TkO (ORCPT
+	Thu, 27 Mar 2008 15:44:07 -0400
+Received: from smtp121.sbc.mail.sp1.yahoo.com ([69.147.64.94]:32935 "HELO
+	smtp121.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1757720AbYC0ToG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Mar 2008 15:40:14 -0400
-Message-ID: <47EBF7D0.6000901@zytor.com>
-Date: Thu, 27 Mar 2008 12:38:56 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	Thu, 27 Mar 2008 15:44:06 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=bt8DyuofwiZTLRnxDIe2gC/+fZJBQ6GEjftlPOFAErg7t+vGSfTSAnGHisrfH8Ao05X4RbrF6JMZBWHtSmTfdGQO8iXgPEcDJ5wuae2MXwmpFjbXM5x7VzZ+RxqQ5yGgQw2DXgnDem5bSyquz3VnEFl0+fM/NiQi6RWVemMxuBQ=  ;
+X-YMail-OSG: zZ_Mb8gVM1kZnFpz2F90obFeMKizuVVXGrXt_fBUBzcQf26Cl7V_hLv6w8As.0SJ9rIexOrnCcJcclsA8mjJ603tk70loi9_CHciTkBOGgHOwNdctTDMhDcmrmtK
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Jesper Juhl <jesper.juhl@gmail.com>
+Subject: Re: [PATCH] test for NULL return from platform_get_resource() in ohci_hcd_sm501_drv_remove()
+Date: Thu, 27 Mar 2008 12:27:46 -0700
+User-Agent: KMail/1.9.6
+Cc: linux-usb@vger.kernel.org, Roman Weissgaerber <weissg@vienna.at>,
+       Lennert Buytenhek <kernel@wantstofly.org>, Greg KH <greg@kroah.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Magnus Damm <magnus.damm@gmail.com>
+References: <alpine.LNX.1.00.0803212250210.9597@dragon.funnycrock.com>
+In-Reply-To: <alpine.LNX.1.00.0803212250210.9597@dragon.funnycrock.com>
 MIME-Version: 1.0
-To: Kay Sievers <kay.sievers@vrfy.org>
-CC: Tejun Heo <htejun@gmail.com>, Mark Lord <lkml@rtr.ca>,
-       Greg KH <gregkh@suse.de>, Jens Axboe <axboe@kernel.dk>,
-       Jeff Garzik <jgarzik@pobox.com>, Linus Torvalds <torvalds@osdl.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       IDE/ATA development list <linux-ide@vger.kernel.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>
-Subject: Re: What to do about the 2TB limit on HDIO_GETGEO ?
-References: <47E875AD.1000901@rtr.ca> <47E87942.2020409@rtr.ca>	 <47E88A13.70808@zytor.com> <47E90019.3050006@rtr.ca>	 <47E90458.7030801@zytor.com> <47E9383F.3050908@rtr.ca>	 <20080325192515.GA24234@suse.de> <47E99A02.7040903@rtr.ca>	 <47E99EBE.7010708@gmail.com> <3ae72650803271229h6e188de1t81ccfb64e5d3a214@mail.gmail.com>
-In-Reply-To: <3ae72650803271229h6e188de1t81ccfb64e5d3a214@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200803271227.46818.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kay Sievers wrote:
->>
->>  Probably something like /sys/class/block/MAJ:MIN
+On Friday 21 March 2008, Jesper Juhl wrote:
 > 
-> "Devices directories" are not supposed to contain duplicate entries.
-> It would slow-down, or may even break things.
+> platform_get_resource() may return null, so although it seems it will never
+> do so here unless there's a bug elsewhere, it does no harm to be defensive 
+> and test.
 > 
->> or /sys/class/devnums/bMAJ:MIN?
+> Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
+
+Acked-by: David Brownell <dbrownell@users.sourceforge.net>
+
+(and cc the author of that code:  Magnus Damm <magnus.damm@gmail.com>)
+
+> ---
 > 
-> These are no devices belonging to the class "devnums", so it may
-> confuse things which crawl these directories to get "all devices".
-> Current coldplug-like setups will likely add duplicate devices with
-> the wrong subsystem. There are also bus-devices with have a dev_t, and
-> that will make them show up in /sys/class, which might confuse some
-> tools too.
+>  ohci-sm501.c |    3 ++-
+>  1 file changed, 2 insertions(+), 1 deletion(-)
 > 
-> I guess we will need to find some other solution as a /sys/class/ for
-> that. And we must prefix the links with 'c' and 'b' because dev_t is
-> not unique across char and block devices.
+> diff --git a/drivers/usb/host/ohci-sm501.c b/drivers/usb/host/ohci-sm501.c
+> index a970701..1ffc272 100644
+> --- a/drivers/usb/host/ohci-sm501.c
+> +++ b/drivers/usb/host/ohci-sm501.c
+> @@ -199,7 +199,8 @@ static int ohci_hcd_sm501_drv_remove(struct platform_device *pdev)
+>  	usb_put_hcd(hcd);
+>  	dma_release_declared_memory(&pdev->dev);
+>  	mem = platform_get_resource(pdev, IORESOURCE_MEM, 1);
+> -	release_mem_region(mem->start, mem->end - mem->start + 1);
+> +	if (mem)
+> +		release_mem_region(mem->start, mem->end - mem->start + 1);
+>  
+>  	/* mask interrupts and disable power */
+>  
+> 
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-usb" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 > 
 
-It doesn't really seem to be to belong under class at all.  I would 
-suggest /sys/dev/char/ and /sys/dev/block/, for char and block respectively.
-
-	-hpa
 
