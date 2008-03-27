@@ -1,56 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762546AbYC0NP2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761326AbYC0NPu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762546AbYC0NP2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Mar 2008 09:15:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759601AbYC0NIZ
+	id S1761326AbYC0NPu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Mar 2008 09:15:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759683AbYC0NI1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Mar 2008 09:08:25 -0400
-Received: from smtp.nokia.com ([192.100.122.230]:64525 "EHLO
-	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758311AbYC0NHm (ORCPT
+	Thu, 27 Mar 2008 09:08:27 -0400
+Received: from smtp.nokia.com ([192.100.122.233]:49536 "EHLO
+	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758559AbYC0NHo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Mar 2008 09:07:42 -0400
+	Thu, 27 Mar 2008 09:07:44 -0400
 From: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: Adrian Hunter <ext-adrian.hunter@nokia.com>,
        Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
-Subject: [RFC PATCH 18/26] UBIFS: add LEB find subsystem
-Date: Thu, 27 Mar 2008 16:55:38 +0200
-Message-Id: <1206629746-4298-19-git-send-email-Artem.Bityutskiy@nokia.com>
+Subject: [RFC PATCH 03/26] UBIFS: add flash scanning
+Date: Thu, 27 Mar 2008 16:55:23 +0200
+Message-Id: <1206629746-4298-4-git-send-email-Artem.Bityutskiy@nokia.com>
 X-Mailer: git-send-email 1.5.4.1
 In-Reply-To: <1206629746-4298-1-git-send-email-Artem.Bityutskiy@nokia.com>
 References: <1206629746-4298-1-git-send-email-Artem.Bityutskiy@nokia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=unknown-8bit
 Content-Transfer-Encoding: 8bit
-X-OriginalArrivalTime: 27 Mar 2008 13:06:44.0789 (UTC) FILETIME=[683C6E50:01C8900B]
+X-OriginalArrivalTime: 27 Mar 2008 13:06:21.0873 (UTC) FILETIME=[5A93BA10:01C8900B]
 X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The LEB find sub-system is responsible for maintaining lists of
-eraseblocks with free and dirty space. For example, when UBIFS has
-to do garbage collection, in needs to find the dirtiest eraseblock,
-because it is faster to garbage-collect it, and it asks the
-LEB find sub-system to do this, which usually has immediate answer.
+This is a small sub-system which is doing eraseblock scanning. For
+example, this is needed during journal replay, recovery, or garbage
+collection.
 
 Signed-off-by: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
 Signed-off-by: Adrian Hunter <ext-adrian.hunter@nokia.com>
 ---
- fs/ubifs/find.c |  951 +++++++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 951 insertions(+), 0 deletions(-)
+ fs/ubifs/scan.c |  368 +++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 368 insertions(+), 0 deletions(-)
 
-diff --git a/fs/ubifs/find.c b/fs/ubifs/find.c
+diff --git a/fs/ubifs/scan.c b/fs/ubifs/scan.c
 new file mode 100644
-index 0000000..fc601e5
+index 0000000..858aa94
 --- /dev/null
-+++ b/fs/ubifs/find.c
-@@ -0,0 +1,951 @@
++++ b/fs/ubifs/scan.c
+@@ -0,0 +1,368 @@
 +/*
 + * This file is part of UBIFS.
 + *
-+ * Copyright (C) 2006-2008 Nokia Corporation.
++ * Copyright (C) 2006-2008 Nokia Corporation
 + *
 + * This program is free software; you can redistribute it and/or modify it
 + * under the terms of the GNU General Public License version 2 as published by
@@ -65,938 +63,355 @@ index 0000000..fc601e5
 + * this program; if not, write to the Free Software Foundation, Inc., 51
 + * Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 + *
-+ * Authors: Artem Bityutskiy (Битюцкий Артём)
-+ *          Adrian Hunter
++ * Authors: Adrian Hunter
++ *          Artem Bityutskiy (Битюцкий Артём)
 + */
 +
 +/*
-+ * This file contains functions for finding LEBs for various purposes e.g.
-+ * garbage collection. In general, lprops category heaps and lists are used
-+ * for fast access, falling back on scanning the LPT as a last resort.
++ * This file implements the scan which is a general-purpose function for
++ * determining what nodes are in an eraseblock. The scan is used to replay the
++ * journal, to do garbage collection. for the TNC in-the-gaps method, and by
++ * debugging functions.
 + */
 +
-+#include <linux/sort.h>
 +#include "ubifs.h"
 +
 +/**
-+ * struct scan_data - data provided to scan callback functions
-+ * @min_space: minimum number of bytes for which to scan
-+ * @pick_free: whether it is OK to scan for empty LEBs
-+ * @lnum: LEB number found is returned here
-+ * @exclude_index: whether to exclude index LEBs
-+ */
-+struct scan_data {
-+	int min_space;
-+	int pick_free;
-+	int lnum;
-+	int exclude_index;
-+};
-+
-+/**
-+ * valuable - determine whether LEB properties are valuable.
-+ * @c: the UBIFS file-system description object
-+ * @lprops: LEB properties
++ * scan_padding_bytes - scan for padding bytes.
++ * @buf: buffer to scan
++ * @len: length of buffer
 + *
-+ * This function return %1 if the LEB properties should be added to the LEB
-+ * properties tree in memory. Otherwise %0 is returned.
++ * This function returns the number of padding bytes on success and
++ * %SCANNED_GARBAGE on failure.
 + */
-+static int valuable(struct ubifs_info *c, const struct ubifs_lprops *lprops)
++static int scan_padding_bytes(void *buf, int len)
 +{
-+	int n, cat = lprops->flags & LPROPS_CAT_MASK;
-+	struct ubifs_lpt_heap *heap;
++	int pad_len = 0, max_pad_len = min_t(int, UBIFS_PAD_NODE_SZ, len);
++	uint8_t *p = buf;
 +
-+	switch (cat) {
-+	case LPROPS_DIRTY:
-+	case LPROPS_DIRTY_IDX:
-+	case LPROPS_FREE:
-+		heap = &c->lpt_heap[cat - 1];
-+		if (heap->cnt < heap->max_cnt)
-+			return 1;
-+		if (lprops->free + lprops->dirty >= c->dark_wm)
-+			return 1;
-+		return 0;
-+	case LPROPS_EMPTY:
-+		n = c->lst.empty_lebs + c->freeable_cnt -
-+		    c->lst.taken_empty_lebs;
-+		if (n < c->lsave_cnt)
-+			return 1;
-+		return 0;
-+	case LPROPS_FREEABLE:
-+		return 1;
-+	case LPROPS_FRDI_IDX:
-+		return 1;
-+	}
-+	return 0;
++	dbg_scan("not a node");
++
++	while (pad_len < max_pad_len && *p++ == UBIFS_PADDING_BYTE)
++		pad_len += 1;
++
++	if (!pad_len || (pad_len & 7))
++		return SCANNED_GARBAGE;
++
++	dbg_scan("%d padding bytes", pad_len);
++
++	return pad_len;
 +}
 +
 +/**
-+ * scan_for_dirty_cb - dirty space scan callback.
-+ * @c: the UBIFS file-system description object
-+ * @lprops: LEB properties to scan
-+ * @in_tree: whether the LEB properties are in main memory
-+ * @data: information passed to and from the caller of the scan
++ * ubifs_scan_a_node - scan for a node or padding.
++ * @c: UBIFS file-system description object
++ * @buf: buffer to scan
++ * @len: length of buffer
++ * @lnum: logical eraseblock number
++ * @offs: offset within the logical eraseblock
++ * @quiet: print no messages
 + *
-+ * This function returns a code that indicates whether the scan should continue
-+ * (%LPT_SCAN_CONTINUE), whether the LEB properties should be added to the tree
-+ * in main memory (%LPT_SCAN_ADD), or whether the scan should stop
-+ * (%LPT_SCAN_STOP).
++ * This function returns a scanning code to indicate what was scanned.
 + */
-+static int scan_for_dirty_cb(struct ubifs_info *c,
-+			     const struct ubifs_lprops *lprops, int in_tree,
-+			     struct scan_data *data)
++int ubifs_scan_a_node(const struct ubifs_info *c, void *buf, int len, int lnum,
++		      int offs, int quiet)
 +{
-+	int ret = LPT_SCAN_CONTINUE;
++	struct ubifs_ch *ch = buf;
++	uint32_t magic;
 +
-+	/* Exclude LEBs that are currently in use */
-+	if (lprops->flags & LPROPS_TAKEN)
-+		return LPT_SCAN_CONTINUE;
-+	/* Determine whether to add these LEB properties to the tree */
-+	if (!in_tree && valuable(c, lprops))
-+		ret |= LPT_SCAN_ADD;
-+	/* Exclude LEBs with too little space */
-+	if (lprops->free + lprops->dirty < data->min_space)
-+		return ret;
-+	/* If specified, exclude index LEBs */
-+	if (data->exclude_index && lprops->flags & LPROPS_INDEX)
-+		return ret;
-+	/* If specified, exclude empty or freeable LEBs */
-+	if (!data->pick_free && lprops->free + lprops->dirty == c->leb_size)
-+		return ret;
-+	/* Exclude LEBs with too little dirty space (unless it is empty) */
-+	if (lprops->dirty < c->dead_wm && lprops->free != c->leb_size)
-+		return ret;
-+	/* Finally we found space */
-+	data->lnum = lprops->lnum;
-+	return LPT_SCAN_ADD | LPT_SCAN_STOP;
-+}
++	ubifs_assert(len >= 4);
 +
-+/**
-+ * scan_for_dirty - find a data LEB with free space.
-+ * @c: the UBIFS file-system description object
-+ * @min_space: minimum amount free plus dirty space the returned LEB has to
-+ *             have
-+ * @pick_free: if it is ok to return a free or freeable LEB
-+ * @exclude_index: whether to exclude index LEBs
-+ *
-+ * This function returns a pointer to the LEB properties found or a negative
-+ * error code.
-+ */
-+static const struct ubifs_lprops *scan_for_dirty(struct ubifs_info *c,
-+						 int min_space, int pick_free,
-+						 int exclude_index)
-+{
-+	const struct ubifs_lprops *lprops;
-+	struct ubifs_lpt_heap *heap;
-+	struct scan_data data;
-+	int err, i;
++	magic = le32_to_cpu(ch->magic);
 +
-+	/* There may be an LEB with enough dirty space on the free heap */
-+	heap = &c->lpt_heap[LPROPS_FREE - 1];
-+	for (i = 0; i < heap->cnt; i++) {
-+		lprops = heap->arr[i];
-+		if (lprops->free + lprops->dirty < min_space)
-+			continue;
-+		if (lprops->dirty < c->dead_wm)
-+			continue;
-+		return lprops;
++	if (magic == 0xFFFFFFFF) {
++		dbg_scan("hit empty space");
++		return SCANNED_EMPTY_SPACE;
 +	}
-+	/*
-+	 * A LEB may have fallen off of the bottom of the dirty heap, and ended
-+	 * up as uncategorized even though it has enough dirty space for us now,
-+	 * so check the uncategorized list. N.B. neither empty nor freeable LEBs
-+	 * can end up as uncategorized because they are kept on lists not
-+	 * finite-sized heaps.
-+	 */
-+	list_for_each_entry(lprops, &c->uncat_list, list) {
-+		if (lprops->flags & LPROPS_TAKEN)
-+			continue;
-+		if (lprops->free + lprops->dirty < min_space)
-+			continue;
-+		if (exclude_index && (lprops->flags & LPROPS_INDEX))
-+			continue;
-+		if (lprops->dirty < c->dead_wm)
-+			continue;
-+		return lprops;
-+	}
-+	/* We have looked everywhere in main memory, now scan the flash */
-+	if (c->pnodes_have >= c->pnode_cnt)
-+		/* All pnodes are in memory, so skip scan */
-+		return ERR_PTR(-ENOSPC);
-+	data.min_space = min_space;
-+	data.pick_free = pick_free;
-+	data.lnum = -1;
-+	data.exclude_index = exclude_index;
-+	err = ubifs_lpt_scan_nolock(c, -1, c->lscan_lnum,
-+				    (ubifs_lpt_scan_callback)scan_for_dirty_cb,
-+				    &data);
-+	if (err)
-+		return ERR_PTR(err);
-+	ubifs_assert(data.lnum >= c->main_first && data.lnum < c->leb_cnt);
-+	c->lscan_lnum = data.lnum;
-+	lprops = ubifs_lpt_lookup_dirty(c, data.lnum);
-+	if (IS_ERR(lprops))
-+		return lprops;
-+	ubifs_assert(lprops->lnum == data.lnum);
-+	ubifs_assert(lprops->free + lprops->dirty >= min_space);
-+	ubifs_assert(lprops->dirty >= c->dead_wm);
-+	ubifs_assert(!(lprops->flags & LPROPS_TAKEN));
-+	ubifs_assert(!(lprops->flags & LPROPS_INDEX));
-+	return lprops;
-+}
 +
-+/**
-+ * ubifs_find_dirty_leb - find a dirty LEB for the Garbage Collector.
-+ * @c: the UBIFS file-system description object
-+ * @ret_lp: LEB properties are returned here on exit
-+ * @min_space: minimum amount free plus dirty space the returned LEB has to
-+ *             have
-+ * @pick_free: if it is ok to return a free or freeable LEB;
-+ *
-+ * This function tries to find a dirty logical eraseblock which has at least
-+ * @min_space free and dirty space. It prefers to take an LEB from the dirty or
-+ * dirty index heap, and it falls-back to LPT scanning if the heaps are empty
-+ * or do not have an LEB which satisfies the @min_space criteria.
-+ *
-+ * Note:
-+ *   o LEBs which have less then dead watermark of dirty space are never picked
-+ *   by this function;
-+ *
-+ * Returns zero and the LEB properties of
-+ * found dirty LEB in case of success, %-ENOSPC if no dirty LEB was found and a
-+ * negative error code in case of other failures. The returned LEB is marked as
-+ * "taken".
-+ *
-+ * The additional @pick_free argument controls if this function has to return a
-+ * free or freeable LEB if one is present. E.g., is convenient for GC to set it
-+ * to %1, when GC is called from the journal space reservation function - it
-+ * has to produce find an LEB as soon as possible. Which means, if a free or
-+ * freeable LEB come in the middle of garbage collection, it has to be erased
-+ * and used.
-+ *
-+ * In opposite, if the Garbage Collector is called from the budgeting, it
-+ * should just make free space, not retuning LEBs which are already free (or
-+ * freeable, which is basically the same, but freeable will become available
-+ * only after the commit).
-+ */
-+int ubifs_find_dirty_leb(struct ubifs_info *c, struct ubifs_lprops *ret_lp,
-+			 int min_space, int pick_free)
-+{
-+	int err = 0, sum, exclude_index = 0;
-+	const struct ubifs_lprops *lp = NULL, *idx_lp = NULL;
-+	struct ubifs_lpt_heap *heap, *idx_heap;
++	if (magic != UBIFS_NODE_MAGIC)
++		return scan_padding_bytes(buf, len);
 +
-+	ubifs_get_lprops(c);
++	if (len < UBIFS_CH_SZ)
++		return SCANNED_GARBAGE;
 +
-+	if (pick_free) {
-+		int lebs, rsvd_idx_lebs = 0;
++	dbg_scan("scanning %s", dbg_ntype(ch->node_type));
 +
-+		spin_lock(&c->space_lock);
-+		lebs = c->lst.empty_lebs;
-+		lebs += c->freeable_cnt - c->lst.taken_empty_lebs;
++	if (ubifs_check_node(c, buf, lnum, offs, quiet))
++		return SCANNED_A_CORRUPT_NODE;
 +
-+		/*
-+		 * Note, the index may consume more LEBs than it has been
-+		 * reserved for it. It is OK because it might be consolidated
-+		 * by this "in-the-gaps" index commit method if needed. But if
-+		 * the index takes fewer LEBs than it is reserved for it, this
-+		 * function should anyway avoid picking those reserved LEBs.
-+		 */
-+		if (c->min_idx_lebs >= c->lst.idx_lebs) {
-+			rsvd_idx_lebs = c->min_idx_lebs -  c->lst.idx_lebs;
-+			exclude_index = 1;
++	if (ch->node_type == UBIFS_PAD_NODE) {
++		struct ubifs_pad_node *pad = buf;
++		int pad_len = le32_to_cpu(pad->pad_len);
++		int node_len = le32_to_cpu(ch->len);
++
++		/* Validate the padding node */
++		if (pad_len < 0 ||
++		    offs + node_len + pad_len > c->leb_size) {
++			if (!quiet) {
++				ubifs_err("bad pad node at LEB %d:%d",
++					  lnum, offs);
++				dbg_dump_node(c, pad);
++			}
++			return SCANNED_A_BAD_PAD_NODE;
 +		}
-+		spin_unlock(&c->space_lock);
 +
-+		/* Check if there are enough free LEBs for the index */
-+		if (rsvd_idx_lebs < lebs) {
-+			/* OK, try to find an empty LEB */
-+			lp = ubifs_fast_find_empty(c);
-+			if (lp)
-+				goto found;
-+
-+			/* Or a freeable LEB */
-+			lp = ubifs_fast_find_freeable(c);
-+			if (lp)
-+				goto found;
-+		} else
-+			/*
-+			 * We cannot pick free/freeable LEBs in the below code.
-+			 */
-+			pick_free = 0;
-+	} else {
-+		spin_lock(&c->space_lock);
-+		exclude_index = (c->min_idx_lebs >= c->lst.idx_lebs);
-+		spin_unlock(&c->space_lock);
-+	}
-+
-+	/* Look on the dirty and dirty index heaps */
-+	heap = &c->lpt_heap[LPROPS_DIRTY - 1];
-+	idx_heap = &c->lpt_heap[LPROPS_DIRTY_IDX - 1];
-+
-+	if (idx_heap->cnt && !exclude_index) {
-+		idx_lp = idx_heap->arr[0];
-+		sum = idx_lp->free + idx_lp->dirty;
-+		/*
-+		 * Since we reserve twice as more space for the index than it
-+		 * actually takes, it does not make sense to pick indexing LEBs
-+		 * with less then half LEB of dirty space.
-+		 */
-+		if (sum < min_space || sum < c->half_leb_size)
-+			idx_lp = NULL;
-+	}
-+
-+	if (heap->cnt) {
-+		lp = heap->arr[0];
-+		if (lp->dirty + lp->free < min_space)
-+			lp = NULL;
-+	}
-+
-+	/* Pick the LEB with most space */
-+	if (idx_lp && lp) {
-+		if (idx_lp->free + idx_lp->dirty >= lp->free + lp->dirty)
-+			lp = idx_lp;
-+	} else if (idx_lp && !lp)
-+		lp = idx_lp;
-+
-+	if (lp) {
-+		ubifs_assert(lp->dirty >= c->dead_wm);
-+		goto found;
-+	}
-+
-+	/* Did not find a dirty LEB on the dirty heaps, have to scan */
-+	dbg_find("scanning LPT for a dirty LEB");
-+	lp = scan_for_dirty(c, min_space, pick_free, exclude_index);
-+	if (IS_ERR(lp)) {
-+		err = PTR_ERR(lp);
-+		goto out;
-+	}
-+	ubifs_assert(lp->dirty >= c->dead_wm);
-+
-+found:
-+	dbg_find("found LEB %d, free %d, dirty %d, flags %#x",
-+		 lp->lnum, lp->free, lp->dirty, lp->flags);
-+
-+	lp = ubifs_change_lp(c, lp, -1, -1, lp->flags | LPROPS_TAKEN, 0);
-+	if (IS_ERR(lp)) {
-+		err = PTR_ERR(lp);
-+		goto out;
-+	}
-+
-+	memcpy(ret_lp, lp, sizeof(struct ubifs_lprops));
-+
-+out:
-+	ubifs_release_lprops(c);
-+	return err;
-+}
-+
-+/**
-+ * scan_for_free_cb - free space scan callback.
-+ * @c: the UBIFS file-system description object
-+ * @lprops: LEB properties to scan
-+ * @in_tree: whether the LEB properties are in main memory
-+ * @data: information passed to and from the caller of the scan
-+ *
-+ * This function returns a code that indicates whether the scan should continue
-+ * (%LPT_SCAN_CONTINUE), whether the LEB properties should be added to the tree
-+ * in main memory (%LPT_SCAN_ADD), or whether the scan should stop
-+ * (%LPT_SCAN_STOP).
-+ */
-+static int scan_for_free_cb(struct ubifs_info *c,
-+			    const struct ubifs_lprops *lprops, int in_tree,
-+			    struct scan_data *data)
-+{
-+	int ret = LPT_SCAN_CONTINUE;
-+
-+	/* Exclude LEBs that are currently in use */
-+	if (lprops->flags & LPROPS_TAKEN)
-+		return LPT_SCAN_CONTINUE;
-+	/* Determine whether to add these LEB properties to the tree */
-+	if (!in_tree && valuable(c, lprops))
-+		ret |= LPT_SCAN_ADD;
-+	/* Exclude index LEBs */
-+	if (lprops->flags & LPROPS_INDEX)
-+		return ret;
-+	/* Exclude LEBs with too little space */
-+	if (lprops->free < data->min_space)
-+		return ret;
-+	/* If specified, exclude empty LEBs */
-+	if (!data->pick_free && lprops->free == c->leb_size)
-+		return ret;
-+	/*
-+	 * LEBs that have only free and dirty space must not be allocated
-+	 * because they may have been unmapped already or they may have data
-+	 * that is obsolete only because of nodes that are still sitting in a
-+	 * wbuf.
-+	 */
-+	if (lprops->free + lprops->dirty == c->leb_size && lprops->dirty > 0)
-+		return ret;
-+	/* Finally we found space */
-+	data->lnum = lprops->lnum;
-+	return LPT_SCAN_ADD | LPT_SCAN_STOP;
-+}
-+
-+/**
-+ * do_find_free_space - find a data LEB with free space.
-+ * @c: the UBIFS file-system description object
-+ * @min_space: minimum amount of free space required
-+ * @pick_free: whether it is OK to scan for empty LEBs
-+ * @squeeze: whether to try to find space in a non-empty LEB first
-+ *
-+ * This function returns a pointer to the LEB properties found or a negative
-+ * error code.
-+ */
-+static
-+const struct ubifs_lprops *do_find_free_space(struct ubifs_info *c,
-+					      int min_space, int pick_free,
-+					      int squeeze)
-+{
-+	const struct ubifs_lprops *lprops;
-+	struct ubifs_lpt_heap *heap;
-+	struct scan_data data;
-+	int err, i;
-+
-+	if (squeeze) {
-+		lprops = ubifs_fast_find_free(c);
-+		if (lprops && lprops->free >= min_space)
-+			return lprops;
-+	}
-+	if (pick_free) {
-+		lprops = ubifs_fast_find_empty(c);
-+		if (lprops)
-+			return lprops;
-+	}
-+	if (!squeeze) {
-+		lprops = ubifs_fast_find_free(c);
-+		if (lprops && lprops->free >= min_space)
-+			return lprops;
-+	}
-+	/* There may be an LEB with enough free space on the dirty heap */
-+	heap = &c->lpt_heap[LPROPS_DIRTY - 1];
-+	for (i = 0; i < heap->cnt; i++) {
-+		lprops = heap->arr[i];
-+		if (lprops->free >= min_space)
-+			return lprops;
-+	}
-+	/*
-+	 * A LEB may have fallen off of the bottom of the free heap, and ended
-+	 * up as uncategorized even though it has enough free space for us now,
-+	 * so check the uncategorized list. N.B. neither empty nor freeable LEBs
-+	 * can end up as uncategorized because they are kept on lists not
-+	 * finite-sized heaps.
-+	 */
-+	list_for_each_entry(lprops, &c->uncat_list, list) {
-+		if (lprops->flags & LPROPS_TAKEN)
-+			continue;
-+		if (lprops->flags & LPROPS_INDEX)
-+			continue;
-+		if (lprops->free >= min_space)
-+			return lprops;
-+	}
-+	/* We have looked everywhere in main memory, now scan the flash */
-+	if (c->pnodes_have >= c->pnode_cnt)
-+		/* All pnodes are in memory, so skip scan */
-+		return ERR_PTR(-ENOSPC);
-+	data.min_space = min_space;
-+	data.pick_free = pick_free;
-+	data.lnum = -1;
-+	err = ubifs_lpt_scan_nolock(c, -1, c->lscan_lnum,
-+				    (ubifs_lpt_scan_callback)scan_for_free_cb,
-+				    &data);
-+	if (err)
-+		return ERR_PTR(err);
-+	ubifs_assert(data.lnum >= c->main_first && data.lnum < c->leb_cnt);
-+	c->lscan_lnum = data.lnum;
-+	lprops = ubifs_lpt_lookup_dirty(c, data.lnum);
-+	if (IS_ERR(lprops))
-+		return lprops;
-+	ubifs_assert(lprops->lnum == data.lnum);
-+	ubifs_assert(lprops->free >= min_space);
-+	ubifs_assert(!(lprops->flags & LPROPS_TAKEN));
-+	ubifs_assert(!(lprops->flags & LPROPS_INDEX));
-+	return lprops;
-+}
-+
-+/**
-+ * ubifs_find_free_space - find a data LEB with free space.
-+ * @c: the UBIFS file-system description object
-+ * @min_space: minimum amount of required free space
-+ * @free: contains amount of free space in the LEB on exit
-+ * @squeeze: whether to try to find space in a non-empty LEB first
-+ *
-+ * This function looks for an LEB with at least @min_space bytes of free space.
-+ * It tries to find an empty LEB if possible. If no empty LEBs are available,
-+ * this function searches for a non-empty data LEB. The returned LEB is marked
-+ * as "taken".
-+ *
-+ * This function returns found LEB number in case of success, %-ENOSPC if it
-+ * failed to find a LEB with @min_space bytes of free space and other a negative
-+ * error codes in case of failure.
-+ */
-+int ubifs_find_free_space(struct ubifs_info *c, int min_space, int *free,
-+			  int squeeze)
-+{
-+	const struct ubifs_lprops *lprops;
-+	int lebs, rsvd_idx_lebs, pick_free = 0, err, lnum, flags;
-+
-+	dbg_find("min_space %d", min_space);
-+	ubifs_assert(min_space > 0 && min_space <= c->dark_wm);
-+
-+	ubifs_get_lprops(c);
-+
-+	/* Check if there are enough empty LEBs for commit */
-+	spin_lock(&c->space_lock);
-+	if (c->min_idx_lebs > c->lst.idx_lebs)
-+		rsvd_idx_lebs = c->min_idx_lebs -  c->lst.idx_lebs;
-+	else
-+		rsvd_idx_lebs = 0;
-+	lebs = c->lst.empty_lebs + c->freeable_cnt + c->idx_gc_cnt -
-+	       c->lst.taken_empty_lebs;
-+	if (rsvd_idx_lebs < lebs)
-+		/*
-+		 * OK to allocate an empty LEB, but we still don't want to go
-+		 * looking for one if there aren't any.
-+		 */
-+		if (c->lst.empty_lebs - c->lst.taken_empty_lebs > 0) {
-+			pick_free = 1;
-+			/*
-+			 * Because we release the space lock, we must account
-+			 * for this allocation here. After the LEB properties
-+			 * flags have been updated, we subtract one.
-+			 */
-+			c->lst.taken_empty_lebs += 1;
++		/* Make the node pads to 8-byte boundary */
++		if ((node_len + pad_len) & 7) {
++			if (!quiet) {
++				dbg_err("bad padding length %d - %d",
++					offs, offs + node_len + pad_len);
++			}
++			return SCANNED_A_BAD_PAD_NODE;
 +		}
-+	spin_unlock(&c->space_lock);
 +
-+	lprops = do_find_free_space(c, min_space, pick_free, squeeze);
-+	if (IS_ERR(lprops)) {
-+		err = PTR_ERR(lprops);
-+		goto out;
++		dbg_scan("%d bytes padded, offset now %d",
++			 pad_len, ALIGN(offs + node_len + pad_len, 8));
++
++		return node_len + pad_len;
 +	}
 +
-+	lnum = lprops->lnum;
-+	flags = lprops->flags | LPROPS_TAKEN;
-+
-+	lprops = ubifs_change_lp(c, lprops, -1, -1, flags, 0);
-+	if (IS_ERR(lprops)) {
-+		err = PTR_ERR(lprops);
-+		goto out;
-+	}
-+
-+	if (pick_free) {
-+		spin_lock(&c->space_lock);
-+		c->lst.taken_empty_lebs -= 1;
-+		spin_unlock(&c->space_lock);
-+	}
-+
-+	*free = lprops->free;
-+	ubifs_release_lprops(c);
-+
-+	if (*free == c->leb_size) {
-+		/*
-+		 * Ensure that empty LEBs have been unmapped. They may not have
-+		 * been, for example, because of an unclean unmount.  Also
-+		 * LEBs that were freeable LEBs (free + dirty == leb_size) will
-+		 * not have been unmapped.
-+		 */
-+		err = ubifs_leb_unmap(c, lnum);
-+		if (err)
-+			return err;
-+	}
-+
-+	dbg_find("found LEB %d, free %d", lnum, *free);
-+	ubifs_assert(*free >= min_space);
-+	return lnum;
-+
-+out:
-+	if (pick_free) {
-+		spin_lock(&c->space_lock);
-+		c->lst.taken_empty_lebs -= 1;
-+		spin_unlock(&c->space_lock);
-+	}
-+	ubifs_release_lprops(c);
-+	return err;
++	return SCANNED_A_NODE;
 +}
 +
 +/**
-+ * scan_for_idx_cb - callback used by the scan for a free LEB for the index.
-+ * @c: the UBIFS file-system description object
-+ * @lprops: LEB properties to scan
-+ * @in_tree: whether the LEB properties are in main memory
-+ * @data: information passed to and from the caller of the scan
++ * ubifs_start_scan - create LEB scanning information at start of scan.
++ * @c: UBIFS file-system description object
++ * @lnum: logical eraseblock number
++ * @offs: offset to start at (usually zero)
++ * @sbuf: scan buffer (must be c->leb_size)
 + *
-+ * This function returns a code that indicates whether the scan should continue
-+ * (%LPT_SCAN_CONTINUE), whether the LEB properties should be added to the tree
-+ * in main memory (%LPT_SCAN_ADD), or whether the scan should stop
-+ * (%LPT_SCAN_STOP).
++ * This function returns %0 on success and a negative error code on failure.
 + */
-+static int scan_for_idx_cb(struct ubifs_info *c,
-+			   const struct ubifs_lprops *lprops, int in_tree,
-+			   struct scan_data *data)
++struct ubifs_scan_leb *ubifs_start_scan(const struct ubifs_info *c, int lnum,
++					int offs, void *sbuf)
 +{
-+	int ret = LPT_SCAN_CONTINUE;
-+
-+	/* Exclude LEBs that are currently in use */
-+	if (lprops->flags & LPROPS_TAKEN)
-+		return LPT_SCAN_CONTINUE;
-+	/* Determine whether to add these LEB properties to the tree */
-+	if (!in_tree && valuable(c, lprops))
-+		ret |= LPT_SCAN_ADD;
-+	/* Exclude index LEBS */
-+	if (lprops->flags & LPROPS_INDEX)
-+		return ret;
-+	/* Exclude LEBs that cannot be made empty */
-+	if (lprops->free + lprops->dirty != c->leb_size)
-+		return ret;
-+	/*
-+	 * We are allocating for the index so it is safe to allocate LEBs with
-+	 * only free and dirty space, because write buffers are sync'd at commit
-+	 * start.
-+	 */
-+	data->lnum = lprops->lnum;
-+	return LPT_SCAN_ADD | LPT_SCAN_STOP;
-+}
-+
-+/**
-+ * scan_for_leb_for_idx - scan for a free LEB for the index.
-+ * @c: the UBIFS file-system description object
-+ */
-+static const struct ubifs_lprops *scan_for_leb_for_idx(struct ubifs_info *c)
-+{
-+	struct ubifs_lprops *lprops;
-+	struct scan_data data;
++	struct ubifs_scan_leb *sleb;
 +	int err;
 +
-+	data.lnum = -1;
-+	err = ubifs_lpt_scan_nolock(c, -1, c->lscan_lnum,
-+				    (ubifs_lpt_scan_callback)scan_for_idx_cb,
-+				    &data);
-+	if (err)
++	ubifs_assert(lnum >= 0 && lnum < c->leb_cnt);
++	ubifs_assert((offs & 7) == 0);
++	ubifs_assert(offs % c->min_io_size == 0);
++
++	dbg_scan("scan LEB %d:%d", lnum, offs);
++
++	sleb = kzalloc(sizeof(struct ubifs_scan_leb), GFP_NOFS);
++	if (!sleb)
++		return ERR_PTR(-ENOMEM);
++
++	sleb->lnum = lnum;
++	INIT_LIST_HEAD(&sleb->nodes);
++	sleb->buf = sbuf;
++
++	err = ubi_read(c->ubi, lnum, sbuf + offs, offs, c->leb_size - offs);
++	if (err && err != -EBADMSG) {
++		ubifs_err("cannot read %d bytes from LEB %d:%d,"
++			  " error %d", c->leb_size - offs, lnum, offs, err);
++		kfree(sleb);
 +		return ERR_PTR(err);
-+	ubifs_assert(data.lnum >= c->main_first && data.lnum < c->leb_cnt);
-+	c->lscan_lnum = data.lnum;
-+	lprops = ubifs_lpt_lookup_dirty(c, data.lnum);
-+	if (IS_ERR(lprops))
-+		return lprops;
-+	ubifs_assert(lprops->lnum == data.lnum);
-+	ubifs_assert(lprops->free + lprops->dirty == c->leb_size);
-+	ubifs_assert(!(lprops->flags & LPROPS_TAKEN));
-+	ubifs_assert(!(lprops->flags & LPROPS_INDEX));
-+	return lprops;
++	}
++
++	if (err == -EBADMSG)
++		sleb->ecc = 1;
++
++	return sleb;
 +}
 +
 +/**
-+ * ubifs_find_free_leb_for_idx - find a free LEB for the index.
-+ * @c: the UBIFS file-system description object
++ * ubifs_end_scan - update LEB scanning information at end of scan.
++ * @c: UBIFS file-system description object
++ * @sleb: scanning information
++ * @lnum: logical eraseblock number
++ * @offs: offset to start at (usually zero)
 + *
-+ * This function looks for a free LEB and returns that LEB number. The returned
-+ * LEB is marked as "taken", "index".
-+ *
-+ * If no LEB is found %-ENOSPC is returned. For other failures another negative
-+ * error code is returned.
++ * This function returns %0 on success and a negative error code on failure.
 + */
-+int ubifs_find_free_leb_for_idx(struct ubifs_info *c)
++void ubifs_end_scan(const struct ubifs_info *c, struct ubifs_scan_leb *sleb,
++		    int lnum, int offs)
 +{
-+	const struct ubifs_lprops *lprops;
-+	int lnum = -1, err, flags;
++	lnum = lnum;
++	dbg_scan("stop scanning LEB %d at offset %d", lnum, offs);
++	ubifs_assert(offs % c->min_io_size == 0);
 +
-+	ubifs_get_lprops(c);
-+
-+	lprops = ubifs_fast_find_empty(c);
-+	if (!lprops) {
-+		lprops = ubifs_fast_find_freeable(c);
-+		if (!lprops) {
-+			ubifs_assert(c->freeable_cnt == 0);
-+			if (c->lst.empty_lebs - c->lst.taken_empty_lebs > 0) {
-+				lprops = scan_for_leb_for_idx(c);
-+				if (IS_ERR(lprops)) {
-+					err = PTR_ERR(lprops);
-+					goto out;
-+				}
-+			}
-+		}
-+	}
-+
-+	if (!lprops) {
-+		err = -ENOSPC;
-+		goto out;
-+	}
-+
-+	lnum = lprops->lnum;
-+
-+	dbg_find("found LEB %d, free %d, dirty %d, flags %#x",
-+		 lnum, lprops->free, lprops->dirty, lprops->flags);
-+
-+	flags = lprops->flags | LPROPS_TAKEN | LPROPS_INDEX;
-+	lprops = ubifs_change_lp(c, lprops, c->leb_size, 0, flags, 0);
-+	if (IS_ERR(lprops)) {
-+		err = PTR_ERR(lprops);
-+		goto out;
-+	}
-+
-+	ubifs_release_lprops(c);
-+
-+	/*
-+	 * Ensure that empty LEBs have been unmapped. They may not have been,
-+	 * for example, because of an unclean unmount. Also LEBs that were
-+	 * freeable LEBs (free + dirty == leb_size) will not have been unmapped.
-+	 */
-+	err = ubifs_leb_unmap(c, lnum);
-+	if (err) {
-+		ubifs_change_one_lp(c, lnum, -1, -1, 0,
-+				    LPROPS_TAKEN | LPROPS_INDEX, 0);
-+		return err;
-+	}
-+
-+	return lnum;
-+
-+out:
-+	ubifs_release_lprops(c);
-+	return err;
-+}
-+
-+static int cmp_dirty_idx(const struct ubifs_lprops **a,
-+			 const struct ubifs_lprops **b)
-+{
-+	const struct ubifs_lprops *lpa = *a;
-+	const struct ubifs_lprops *lpb = *b;
-+
-+	return lpa->dirty + lpa->free - lpb->dirty - lpb->free;
-+}
-+
-+static void swap_dirty_idx(struct ubifs_lprops **a, struct ubifs_lprops **b,
-+			   int size)
-+{
-+	struct ubifs_lprops *t = *a;
-+
-+	*a = *b;
-+	*b = t;
++	sleb->endpt = ALIGN(offs, c->min_io_size);
 +}
 +
 +/**
-+ * ubifs_save_dirty_idx_lnums - save an array of the most dirty index LEB nos.
-+ * @c: the UBIFS file-system description object
++ * ubifs_add_snod - add a scanned node to LEB scanning information.
++ * @c: UBIFS file-system description object
++ * @sleb: scanning information
++ * @buf: buffer containing node
++ * @offs: offset of node on flash
 + *
-+ * This function is called each commit to create an array of LEB numbers of
-+ * dirty index LEBs sorted in order of dirty and free space.  This is used by
-+ * the in-the-gaps method of TNC commit.
++ * This function returns %0 on success and a negative error code on failure.
 + */
-+int ubifs_save_dirty_idx_lnums(struct ubifs_info *c)
++int ubifs_add_snod(const struct ubifs_info *c, struct ubifs_scan_leb *sleb,
++		   void *buf, int offs)
 +{
-+	int i;
++	struct ubifs_ch *ch = buf;
++	struct ubifs_ino_node *ino = buf;
++	struct ubifs_scan_node *snod;
 +
-+	ubifs_get_lprops(c);
-+	/* Copy the LPROPS_DIRTY_IDX heap */
-+	c->dirty_idx.cnt = c->lpt_heap[LPROPS_DIRTY_IDX - 1].cnt;
-+	memcpy(c->dirty_idx.arr, c->lpt_heap[LPROPS_DIRTY_IDX - 1].arr,
-+	       sizeof(void *) * c->dirty_idx.cnt);
-+	/* Sort it so that the dirtiest is now at the end */
-+	sort(c->dirty_idx.arr, c->dirty_idx.cnt, sizeof(void *),
-+	     (int (*)(const void *, const void *))cmp_dirty_idx,
-+	     (void (*)(void *, void *, int))swap_dirty_idx);
-+	dbg_find("found %d dirty index LEBs", c->dirty_idx.cnt);
-+	if (c->dirty_idx.cnt)
-+		dbg_find("dirtiest index LEB is %d with dirty %d and free %d",
-+			 c->dirty_idx.arr[c->dirty_idx.cnt - 1]->lnum,
-+			 c->dirty_idx.arr[c->dirty_idx.cnt - 1]->dirty,
-+			 c->dirty_idx.arr[c->dirty_idx.cnt - 1]->free);
-+	/* Replace the lprops pointers with LEB numbers */
-+	for (i = 0; i < c->dirty_idx.cnt; i++)
-+		c->dirty_idx.arr[i] = (void *)(size_t)c->dirty_idx.arr[i]->lnum;
-+	ubifs_release_lprops(c);
-+	return 0;
-+}
++	snod = kzalloc(sizeof(struct ubifs_scan_node), GFP_NOFS);
++	if (!snod)
++		return -ENOMEM;
 +
-+/**
-+ * scan_dirty_idx_cb - callback used by the scan for a dirty index LEB.
-+ * @c: the UBIFS file-system description object
-+ * @lprops: LEB properties to scan
-+ * @in_tree: whether the LEB properties are in main memory
-+ * @data: information passed to and from the caller of the scan
-+ *
-+ * This function returns a code that indicates whether the scan should continue
-+ * (%LPT_SCAN_CONTINUE), whether the LEB properties should be added to the tree
-+ * in main memory (%LPT_SCAN_ADD), or whether the scan should stop
-+ * (%LPT_SCAN_STOP).
-+ */
-+static int scan_dirty_idx_cb(struct ubifs_info *c,
-+			   const struct ubifs_lprops *lprops, int in_tree,
-+			   struct scan_data *data)
-+{
-+	int ret = LPT_SCAN_CONTINUE;
++	snod->sqnum = le64_to_cpu(ch->sqnum);
++	snod->type = ch->node_type;
++	snod->offs = offs;
++	snod->len = le32_to_cpu(ch->len);
++	snod->node = buf;
 +
-+	/* Exclude LEBs that are currently in use */
-+	if (lprops->flags & LPROPS_TAKEN)
-+		return LPT_SCAN_CONTINUE;
-+	/* Determine whether to add these LEB properties to the tree */
-+	if (!in_tree && valuable(c, lprops))
-+		ret |= LPT_SCAN_ADD;
-+	/* Exclude non-index LEBs */
-+	if (!(lprops->flags & LPROPS_INDEX))
-+		return ret;
-+	/* Exclude LEBs with too little space */
-+	if (lprops->free + lprops->dirty < c->min_idx_node_sz)
-+		return ret;
-+	/* Finally we found space */
-+	data->lnum = lprops->lnum;
-+	return LPT_SCAN_ADD | LPT_SCAN_STOP;
-+}
-+
-+/**
-+ * find_dirty_idx_leb - find a dirty index LEB.
-+ * @c: the UBIFS file-system description object
-+ *
-+ * This function returns LEB number upon success and a negative error code upon
-+ * failure.  In particular, -ENOSPC is returned if a dirty index LEB is not
-+ * found.
-+ *
-+ * Note that this function scans the entire LPT but it is called very rarely.
-+ */
-+static int find_dirty_idx_leb(struct ubifs_info *c)
-+{
-+	const struct ubifs_lprops *lprops;
-+	struct ubifs_lpt_heap *heap;
-+	struct scan_data data;
-+	int err, i, ret;
-+
-+	/* Check all structures in memory first */
-+	data.lnum = -1;
-+	heap = &c->lpt_heap[LPROPS_DIRTY_IDX - 1];
-+	for (i = 0; i < heap->cnt; i++) {
-+		lprops = heap->arr[i];
-+		ret = scan_dirty_idx_cb(c, lprops, 1, &data);
-+		if (ret & LPT_SCAN_STOP)
-+			goto found;
-+	}
-+	list_for_each_entry(lprops, &c->frdi_idx_list, list) {
-+		ret = scan_dirty_idx_cb(c, lprops, 1, &data);
-+		if (ret & LPT_SCAN_STOP)
-+			goto found;
-+	}
-+	list_for_each_entry(lprops, &c->uncat_list, list) {
-+		ret = scan_dirty_idx_cb(c, lprops, 1, &data);
-+		if (ret & LPT_SCAN_STOP)
-+			goto found;
-+	}
-+	if (c->pnodes_have >= c->pnode_cnt)
-+		/* All pnodes are in memory, so skip scan */
-+		return -ENOSPC;
-+	err = ubifs_lpt_scan_nolock(c, -1, c->lscan_lnum,
-+				    (ubifs_lpt_scan_callback)scan_dirty_idx_cb,
-+				    &data);
-+	if (err)
-+		return err;
-+found:
-+	ubifs_assert(data.lnum >= c->main_first && data.lnum < c->leb_cnt);
-+	c->lscan_lnum = data.lnum;
-+	lprops = ubifs_lpt_lookup_dirty(c, data.lnum);
-+	if (IS_ERR(lprops))
-+		return PTR_ERR(lprops);
-+	ubifs_assert(lprops->lnum == data.lnum);
-+	ubifs_assert(lprops->free + lprops->dirty >= c->min_idx_node_sz);
-+	ubifs_assert(!(lprops->flags & LPROPS_TAKEN));
-+	ubifs_assert((lprops->flags & LPROPS_INDEX));
-+
-+	dbg_find("found dirty LEB %d, free %d, dirty %d, flags %#x",
-+		 lprops->lnum, lprops->free, lprops->dirty, lprops->flags);
-+
-+	lprops = ubifs_change_lp(c, lprops, -1, -1,
-+				 lprops->flags | LPROPS_TAKEN, 0);
-+	if (IS_ERR(lprops))
-+		return PTR_ERR(lprops);
-+
-+	return lprops->lnum;
-+}
-+
-+/**
-+ * get_idx_gc_leb - try to get a LEB number from trivial GC.
-+ * @c: the UBIFS file-system description object
-+ */
-+static int get_idx_gc_leb(struct ubifs_info *c)
-+{
-+	const struct ubifs_lprops *lp;
-+	int err, lnum;
-+
-+	err = ubifs_get_idx_gc_leb(c);
-+	if (err < 0)
-+		return err;
-+	lnum = err;
-+	/*
-+	 * The LEB was due to be unmapped after the commit but
-+	 * it is needed now for this commit.
-+	 */
-+	lp = ubifs_lpt_lookup_dirty(c, lnum);
-+	if (unlikely(IS_ERR(lp)))
-+		return PTR_ERR(lp);
-+	lp = ubifs_change_lp(c, lp, -1, -1, lp->flags | LPROPS_INDEX, -1);
-+	if (unlikely(IS_ERR(lp)))
-+		return PTR_ERR(lp);
-+	dbg_find("LEB %d, dirty %d and free %d flags %#x",
-+		 lp->lnum, lp->dirty, lp->free, lp->flags);
-+	return lnum;
-+}
-+
-+/**
-+ * find_dirtiest_idx_leb - find dirtiest index LEB from dirtiest array.
-+ * @c: the UBIFS file-system description object
-+ */
-+static int find_dirtiest_idx_leb(struct ubifs_info *c)
-+{
-+	const struct ubifs_lprops *lp;
-+	int lnum;
-+
-+	while (1) {
-+		if (!c->dirty_idx.cnt)
-+			return -ENOSPC;
-+		/* The lprops pointers were replaced by LEB numbers */
-+		lnum = (size_t)c->dirty_idx.arr[--c->dirty_idx.cnt];
-+		lp = ubifs_lpt_lookup(c, lnum);
-+		if (IS_ERR(lp))
-+			return PTR_ERR(lp);
-+		if ((lp->flags & LPROPS_TAKEN) || !(lp->flags & LPROPS_INDEX))
-+			continue;
-+		lp = ubifs_change_lp(c, lp, -1, -1,
-+				     lp->flags | LPROPS_TAKEN, 0);
-+		if (IS_ERR(lp))
-+			return PTR_ERR(lp);
++	switch (ch->node_type) {
++	case UBIFS_INO_NODE:
++	case UBIFS_DENT_NODE:
++	case UBIFS_XENT_NODE:
++	case UBIFS_DATA_NODE:
++	case UBIFS_TRUN_NODE:
++		/*
++		 * The key is in the same place in all keyed
++		 * nodes.
++		 */
++		key_read(c, &ino->key, &snod->key);
 +		break;
 +	}
-+	dbg_find("LEB %d, dirty %d and free %d flags %#x", lp->lnum, lp->dirty,
-+		 lp->free, lp->flags);
-+	ubifs_assert(lp->flags | LPROPS_TAKEN);
-+	ubifs_assert(lp->flags | LPROPS_INDEX);
-+	return lnum;
++	list_add_tail(&snod->list, &sleb->nodes);
++	sleb->nodes_cnt += 1;
++	return 0;
 +}
 +
 +/**
-+ * ubifs_find_dirty_idx_leb - try to find dirtiest index LEB as at last commit.
-+ * @c: the UBIFS file-system description object
-+ *
-+ * This function attempts to find an untaken index LEB with the most free and
-+ * dirty space that can be used without overwriting index nodes that were in the
-+ * last index committed.
++ * ubifs_scanned_corruption - print information after UBIFS scanned corruption.
++ * @c: UBIFS file-system description object
++ * @lnum: LEB number of corruption
++ * @offs: offset of corruption
++ * @buf: buffer containing corruption
 + */
-+int ubifs_find_dirty_idx_leb(struct ubifs_info *c)
++void ubifs_scanned_corruption(const struct ubifs_info *c, int lnum, int offs,
++			      void *buf)
 +{
-+	int err;
++	int len;
 +
-+	ubifs_get_lprops(c);
++	ubifs_err("corrupted data at LEB %d:%d", lnum, offs);
++	if (dbg_failure_mode)
++		return;
++	len = c->leb_size - offs;
++	if (len > 4096)
++		len = 4096;
++	dbg_err("first %d bytes from LEB %d:%d", len, lnum, offs);
++	print_hex_dump(KERN_DEBUG, "", DUMP_PREFIX_OFFSET, 32, 4, buf, len, 1);
++}
 +
-+	/*
-+	 * We made an array of the dirtiest index LEB numbers as at the start of
-+	 * last commit.  Try that array first.
-+	 */
-+	err = find_dirtiest_idx_leb(c);
++/**
++ * ubifs_scan - scan a logical eraseblock.
++ * @c: UBIFS file-system description object
++ * @lnum: logical eraseblock number
++ * @offs: offset to start at (usually zero)
++ * @sbuf: scan buffer (must be c->leb_size)
++ *
++ * This function scans LEB number @lnum and returns complete information about
++ * its contents. Returns an error code in case of failure.
++ */
++struct ubifs_scan_leb *ubifs_scan(const struct ubifs_info *c, int lnum,
++				  int offs, void *sbuf)
++{
++	void *buf = sbuf + offs;
++	int err, len = c->leb_size - offs;
++	struct ubifs_scan_leb *sleb;
 +
-+	/* Next try scanning the entire LPT */
-+	if (err == -ENOSPC)
-+		err = find_dirty_idx_leb(c);
++	sleb = ubifs_start_scan(c, lnum, offs, sbuf);
++	if (IS_ERR(sleb))
++		return sleb;
 +
-+	/* Finally take any index LEBs awaiting trivial GC */
-+	if (err == -ENOSPC)
-+		err = get_idx_gc_leb(c);
++	while (len >= 8) {
++		struct ubifs_ch *ch = buf;
++		int node_len, ret;
 +
-+	ubifs_release_lprops(c);
-+	return err;
++		dbg_scan("look at LEB %d:%d (%d bytes left)",
++			 lnum, offs, len);
++
++		cond_resched();
++
++		ret = ubifs_scan_a_node(c, buf, len, lnum, offs, 0);
++
++		if (ret > 0) {
++			/* Padding bytes or a valid padding node */
++			offs += ret;
++			buf += ret;
++			len -= ret;
++			continue;
++		}
++
++		if (ret == SCANNED_EMPTY_SPACE)
++			/* Empty space is checked later */
++			break;
++
++		switch (ret) {
++		case SCANNED_GARBAGE:
++			dbg_err("garbage");
++			goto corrupted;
++		case SCANNED_A_NODE:
++			break;
++		case SCANNED_A_CORRUPT_NODE:
++		case SCANNED_A_BAD_PAD_NODE:
++			dbg_err("bad node");
++			goto corrupted;
++		default:
++			dbg_err("unknown");
++			goto corrupted;
++		}
++
++		err = ubifs_add_snod(c, sleb, buf, offs);
++		if (err)
++			goto error;
++
++		node_len = ALIGN(le32_to_cpu(ch->len), 8);
++		offs += node_len;
++		buf += node_len;
++		len -= node_len;
++	}
++
++	if (offs % c->min_io_size)
++		goto corrupted;
++
++	ubifs_end_scan(c, sleb, lnum, offs);
++
++	for (; len > 4; offs += 4, buf = buf + 4, len -= 4)
++		if (*(uint32_t *)buf != 0xffffffff)
++			break;
++	for (; len; offs++, buf++, len--)
++		if (*(uint8_t *)buf != 0xff) {
++			ubifs_err("corrupt empty space at LEB %d:%d",
++				  lnum, offs);
++			goto corrupted;
++		}
++
++	return sleb;
++
++corrupted:
++	ubifs_scanned_corruption(c, lnum, offs, buf);
++	err = -EUCLEAN;
++error:
++	ubifs_err("LEB %d scanning failed", lnum);
++	ubifs_scan_destroy(sleb);
++	return ERR_PTR(err);
++}
++
++/**
++ * ubifs_scan_destroy - destroy LEB scanning information.
++ * @sleb: scanning information to free
++ */
++void ubifs_scan_destroy(struct ubifs_scan_leb *sleb)
++{
++	struct ubifs_scan_node *node;
++	struct list_head *head;
++
++	head = &sleb->nodes;
++	while (!list_empty(head)) {
++		node = list_entry(head->next, struct ubifs_scan_node, list);
++		list_del(&node->list);
++		kfree(node);
++	}
++	kfree(sleb);
 +}
 -- 
 1.5.4.1
