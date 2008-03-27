@@ -1,48 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752970AbYC0WfI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753426AbYC0Wgt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752970AbYC0WfI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Mar 2008 18:35:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751442AbYC0We4
+	id S1753426AbYC0Wgt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Mar 2008 18:36:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751709AbYC0Wgj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Mar 2008 18:34:56 -0400
-Received: from mu-out-0910.google.com ([209.85.134.188]:63029 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751365AbYC0Wey (ORCPT
+	Thu, 27 Mar 2008 18:36:39 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:37300 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751380AbYC0Wgj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Mar 2008 18:34:54 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=TQ6MPb1ickkI3tDTrIaXIj3oiyTp+W+5i1fyRI3B04RHm4mXeLGujkLy8UxdWdR+UCRgk6EICp42sSGoPQnGMXzi0X9wF4p6PS9pTrlU16MAB+4MmKmLj8/4hIrKln+8TgtixeBHZ/CeYeGzPQIaLojgT8AF4gVc5ralLDIr6oc=
-Date: Thu, 27 Mar 2008 23:39:13 +0100
-From: Jarek Poplawski <jarkao2@gmail.com>
-To: David Miller <davem@davemloft.net>
-Cc: rjw@sisk.pl, a.p.zijlstra@chello.nl, akpm@linux-foundation.org,
-       netdev@vger.kernel.org, bugme-daemon@bugzilla.kernel.org,
-       marcus@better.se, shemminger@linux-foundation.org,
-       linux-kernel@vger.kernel.org, mingo@elte.hu
-Subject: Re: [Bugme-new] [Bug 10326] New: inconsistent lock state in
-	net_rx_action
-Message-ID: <20080327223913.GB3596@ami.dom.local>
-References: <20080327124928.GE2845@ami.dom.local> <200803272256.50454.rjw@sisk.pl> <20080327222248.GA3596@ami.dom.local> <20080327.152218.235944668.davem@davemloft.net>
-MIME-Version: 1.0
+	Thu, 27 Mar 2008 18:36:39 -0400
+Date: Thu, 27 Mar 2008 22:36:24 +0000
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: akpm@linux-foundation.org, linuxram@us.ibm.com,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [patch 6/7] vfs: mountinfo: add /proc/<pid>/mountinfo
+Message-ID: <20080327223624.GZ10722@ZenIV.linux.org.uk>
+References: <20080327120619.031944658@szeredi.hu> <20080327122359.210920974@szeredi.hu>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080327.152218.235944668.davem@davemloft.net>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <20080327122359.210920974@szeredi.hu>
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 27, 2008 at 03:22:18PM -0700, David Miller wrote:
-...
-> Instead of going back and forth like this can someone post
-> just take it upon themselves to post such an obvious patch
-> already :-)
-> 
-> All of this "he'll do it, she'll do it" just wastes time.
+On Thu, Mar 27, 2008 at 01:06:25PM +0100, Miklos Szeredi wrote:
+> +36 35 98:0 /mnt1 /mnt2 rw,noatime master:1 - ext3 /dev/root rw,errors=continue
 
-Right! She or he should also remember to add Peter's lockup
-scenario and his signed-off-by...
+Works for me...
 
-Jarek P.
+> -static int show_vfsmnt(struct seq_file *m, void *v)
+> +struct proc_fs_info {
+
+struct flag_name would be better; will do on merge.
+
+> +static void show_type(struct seq_file *m, struct super_block *sb)
+> +{
+> +	mangle(m, sb->s_type->name);
+
+BTW, do we really want to bother with quoting?  Anyway, that can live
+for now...
+
+> +static int show_mountinfo(struct seq_file *m, void *v)
+> +{
+> +	struct proc_mounts *p = m->private;
+> +	size_t count_save = m->count;
+
+> +		/*
+> +		 * Mountpoint is outside root, rewind seq_file. Ugly,
+> +		 * but necessary for race-free detection of unreachable
+> +		 * mountpoints.
+> +		 */
+> +		m->count = count_save;
+> +		return 0;
+> +	}
+
+You know, _if_ we want to go that way, let's do it right; all callers
+of ->show() are in seq_file.c and all of them know the previous value
+of m->count.  So let's define SEQ_SKIP as 1 and teach these 3 callers
+to handle it.  And make this sucker (and anything else that might want
+the same kind of things) return SEQ_SKIP instead of playing with m->count
+directly.
+
+Again, will do on merge...
