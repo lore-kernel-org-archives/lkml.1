@@ -1,62 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756187AbYC0A0z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756873AbYC0A3R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756187AbYC0A0z (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Mar 2008 20:26:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752489AbYC0A0p
+	id S1756873AbYC0A3R (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Mar 2008 20:29:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753706AbYC0A3B
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Mar 2008 20:26:45 -0400
-Received: from e32.co.us.ibm.com ([32.97.110.150]:34371 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753797AbYC0A0p (ORCPT
+	Wed, 26 Mar 2008 20:29:01 -0400
+Received: from smtpq1.groni1.gr.home.nl ([213.51.130.200]:49334 "EHLO
+	smtpq1.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752489AbYC0A3A (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Mar 2008 20:26:45 -0400
-Subject: Re: Trying to make use of hotplug memory for xen balloon driver
-From: Dave Hansen <dave@linux.vnet.ibm.com>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Yasunori Goto <y-goto@jp.fujitsu.com>,
-       Christoph Lameter <clameter@sgi.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Anthony Liguori <anthony@codemonkey.ws>,
-       Chris Wright <chrisw@sous-sol.org>
-In-Reply-To: <47EAD83A.2000000@goop.org>
-References: <47EAD83A.2000000@goop.org>
-Content-Type: text/plain
-Date: Wed, 26 Mar 2008 17:26:35 -0700
-Message-Id: <1206577595.7883.26.camel@nimitz.home.sr71.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+	Wed, 26 Mar 2008 20:29:00 -0400
+Message-ID: <47EAEA98.7010500@keyaccess.nl>
+Date: Thu, 27 Mar 2008 01:30:16 +0100
+From: Rene Herman <rene.herman@keyaccess.nl>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
+MIME-Version: 1.0
+To: Bjorn Helgaas <bjorn.helgaas@hp.com>
+CC: Len Brown <lenb@kernel.org>, linux-acpi@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Adam Belay <ambx1@neo.rr.com>,
+       Li Shaohua <shaohua.li@intel.com>,
+       Matthieu Castet <castet.matthieu@free.fr>,
+       Thomas Renninger <trenn@suse.de>, Jaroslav Kysela <perex@perex.cz>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [patch 00/37] PNP resource_table cleanups
+References: <20080326171058.099442579@ldl.fc.hp.com> <200803261842.11023.lenb@kernel.org> <200803261713.03248.bjorn.helgaas@hp.com>
+In-Reply-To: <200803261713.03248.bjorn.helgaas@hp.com>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -1.0 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 27-03-08 00:13, Bjorn Helgaas wrote:
 
-On Wed, 2008-03-26 at 16:11 -0700, Jeremy Fitzhardinge wrote:
->       Bad page state in process 'events/0'
->       page:c16fa0cc flags:0x00000000 mapping:00000000 mapcount:1 count:0
->       Trying to fix it up, but a reboot is needed
+> Oops, sorry, I forgot to export pnp_get_resource().  I'll post an updated
+> patch as a response to the original.  Is that easy for you to handle,
+> Len?  If not, let me know what you'd prefer.
 
-The flags being all null looks highly suspicious to me.
+Works for me at least. Only had time for a quick test. After applying these, 
+my snd-cs4236 driver ISAPnP soundcard is no longer found.
 
-Once you've done an add_memory(), the new sections should show up
-in /sys.  Do you see them in there?
-
-Once they show up, you can online them with:
-
-	echo online > /sys/devices/system/memory/memoryXXX/state
-
-That's what actually goes and mucks with the 'struct zone's and the
-pgdats to expand them.  It will also call online_page() on the whole
-range.  I think you're trying to do this manually, and missing part of
-it.  
-
-There's some documentation here:
-
-http://kerneltrap.org/node/14009
-
-But, think of it this way: "add" is what the hardware does.  "online" is
-what Linux does after the memory has been added so that it can be used.
-
--- Dave
+Rene.
 
