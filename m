@@ -1,56 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762310AbYC0RNq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761190AbYC0RQS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762310AbYC0RNq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Mar 2008 13:13:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760662AbYC0RLV
+	id S1761190AbYC0RQS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Mar 2008 13:16:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757348AbYC0RQG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Mar 2008 13:11:21 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:34518 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760160AbYC0RLU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Mar 2008 13:11:20 -0400
-From: Glauber Costa <gcosta@redhat.com>
-To: linux-kernel@vger.kernel.org
-Cc: akpm@linux-foundation.org, glommer@gmail.com, mingo@elte.hu,
-       tglx@linutronix.de, Glauber Costa <gcosta@redhat.com>
-Subject: [PATCH 6/9] [PATCH] x86: split safe_smp_processor_id
-Date: Thu, 27 Mar 2008 14:06:01 -0300
-Message-Id: <1206637589786-git-send-email-gcosta@redhat.com>
-X-Mailer: git-send-email 1.5.0.6
-In-Reply-To: <12066375644061-git-send-email-gcosta@redhat.com>
-References: <12066375644061-git-send-email-gcosta@redhat.com>
+	Thu, 27 Mar 2008 13:16:06 -0400
+Received: from py-out-1112.google.com ([64.233.166.180]:17907 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756765AbYC0RQE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Mar 2008 13:16:04 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=U6JfMKBv786nrddy0zIgfK1zAkt8zfAWWrbw/08DriEm0QtK2cmRmCtBmeQCup305PJ6gwd6WcwHGgta3L+/z1MjL85HkzKT+VtvUf0pWYPgqWsh3ap3ihDAJih+fDIDL4TX0u9i1sIbU0lQdTfQA0STXtFW6qWWvOx38I5eNuw=
+Message-ID: <2f11576a0803271016x3758563fq1a90a3677e156ae1@mail.gmail.com>
+Date: Fri, 28 Mar 2008 02:16:03 +0900
+From: "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>
+To: "Pavel Machek" <pavel@suse.cz>
+Subject: Re: 2.6.25: something wrong with ^C
+Cc: "kernel list" <linux-kernel@vger.kernel.org>
+In-Reply-To: <20080327142814.GC13190@elf.ucw.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080327142814.GC13190@elf.ucw.cz>
+X-Google-Sender-Auth: d639cc842b20a33b
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This implementation in x86_64 is clean and consistent, but we
-sacrifice it for the sake of being equal to i386 (since the other
-way around would be harder).
+Hi
 
-Signed-off-by: Glauber Costa <gcosta@redhat.com>
----
- include/asm-x86/smp_64.h |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+>  Is it just me, or does ^C take longer in 2.6.25?
+>
+>  Like... one second delay between pressing ^C and seeing any effect?
+>                                                                         Pavel
 
-diff --git a/include/asm-x86/smp_64.h b/include/asm-x86/smp_64.h
-index eead92e..8ea4952 100644
---- a/include/asm-x86/smp_64.h
-+++ b/include/asm-x86/smp_64.h
-@@ -27,12 +27,12 @@ static inline int num_booting_cpus(void)
- 	return cpus_weight(cpu_callout_map);
- }
- 
-+#define safe_smp_processor_id()		smp_processor_id()
- #else /* CONFIG_SMP */
- #define stack_smp_processor_id() 0
--
-+#define safe_smp_processor_id() 0
- #endif /* !CONFIG_SMP */
- 
--#define safe_smp_processor_id()		smp_processor_id()
- 
- #endif
- 
--- 
-1.5.0.6
-
+I can't reproduce it.
