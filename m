@@ -1,54 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760066AbYC0NIs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760247AbYC0NJN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760066AbYC0NIs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Mar 2008 09:08:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757228AbYC0NHd
+	id S1760247AbYC0NJN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Mar 2008 09:09:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757791AbYC0NHh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Mar 2008 09:07:33 -0400
-Received: from smtp.nokia.com ([192.100.122.230]:64424 "EHLO
+	Thu, 27 Mar 2008 09:07:37 -0400
+Received: from smtp.nokia.com ([192.100.122.230]:64417 "EHLO
 	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755221AbYC0NHM (ORCPT
+	with ESMTP id S1754633AbYC0NHL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Mar 2008 09:07:12 -0400
+	Thu, 27 Mar 2008 09:07:11 -0400
 From: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: Adrian Hunter <ext-adrian.hunter@nokia.com>,
        Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
-Subject: [RFC PATCH 21/26] UBIFS: add budgeting
-Date: Thu, 27 Mar 2008 16:55:41 +0200
-Message-Id: <1206629746-4298-22-git-send-email-Artem.Bityutskiy@nokia.com>
+Subject: [RFC PATCH 10/26] UBIFS: add the journal
+Date: Thu, 27 Mar 2008 16:55:30 +0200
+Message-Id: <1206629746-4298-11-git-send-email-Artem.Bityutskiy@nokia.com>
 X-Mailer: git-send-email 1.5.4.1
 In-Reply-To: <1206629746-4298-1-git-send-email-Artem.Bityutskiy@nokia.com>
 References: <1206629746-4298-1-git-send-email-Artem.Bityutskiy@nokia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=unknown-8bit
 Content-Transfer-Encoding: 8bit
-X-OriginalArrivalTime: 27 Mar 2008 13:06:49.0132 (UTC) FILETIME=[6AD31EC0:01C8900B]
+X-OriginalArrivalTime: 27 Mar 2008 13:06:32.0679 (UTC) FILETIME=[61049770:01C8900B]
 X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Because of compression and space wastage (due to paddings) it is not
-always possible to know whether the cached data fits the flash space
-or not. Sometimes this problem is called "ENOSPC" problem. UBIFS
-implements the budgeting sub-system to solve the issue. All the FS
-operations have to acquire the budget. The budgeting subsystem does
-pessimistic space calculations (e.g., assumes the data is not
-compressible) and forces write-back or garbage-collection if needed.
+All the new data first goes to the journal and sits there until it
+gets committed. The journal contents does not have corresponding
+on-flash indexing information, so the journal is like a small JFFS2
+file-system. Once the journal is committed, the indexing information
+is written to the flash media.
 
 Signed-off-by: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
 Signed-off-by: Adrian Hunter <ext-adrian.hunter@nokia.com>
 ---
- fs/ubifs/budget.c |  822 +++++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 822 insertions(+), 0 deletions(-)
+ fs/ubifs/journal.c | 1230 ++++++++++++++++++++++++++++++++++++++++++++++++++++
+ fs/ubifs/log.c     |  769 ++++++++++++++++++++++++++++++++
+ 2 files changed, 1999 insertions(+), 0 deletions(-)
 
-diff --git a/fs/ubifs/budget.c b/fs/ubifs/budget.c
+diff --git a/fs/ubifs/journal.c b/fs/ubifs/journal.c
 new file mode 100644
-index 0000000..e975796
+index 0000000..e7c7aac
 --- /dev/null
-+++ b/fs/ubifs/budget.c
-@@ -0,0 +1,822 @@
++++ b/fs/ubifs/journal.c
+@@ -0,0 +1,1230 @@
 +/*
 + * This file is part of UBIFS.
 + *
@@ -67,810 +66,1993 @@ index 0000000..e975796
 + * this program; if not, write to the Free Software Foundation, Inc., 51
 + * Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 + *
-+ * Authors: Adrian Hunter
-+ *          Artem Bityutskiy (Битюцкий Артём)
++ * Authors: Artem Bityutskiy (Битюцкий Артём)
++ *          Adrian Hunter
 + */
 +
 +/*
-+ * This file implements the budgeting unit which is responsible for UBIFS space
-+ * management.
++ * This file implements UBIFS journal.
 + *
-+ * Factors such as compression, wasted space at the ends of LEBs, space in other
-+ * journal heads, the effect of updates on the index, and so on, make it
-+ * impossible to accurately predict the amount of space needed. Consequently
-+ * approximations are used.
++ * The journal consists of 2 parts - the log and bud LEBs. The log has fixed
++ * length and position, while a bud logical eraseblock is any LEB in the main
++ * area. Buds contain file system data - data nodes, inode nodes, etc. The log
++ * contains only references to buds and some other stuff like commit
++ * start node. The idea is that when we commit the journal, we do
++ * not copy the data, the buds just become indexed. Since after the commit the
++ * nodes in bud eraseblocks become leaf nodes of the file system index tree, we
++ * use term "bud". Analogy is obvious, bud eraseblocks contain nodes which will
++ * become leafs in the future.
++ *
++ * The journal is multi-headed because we want to write data to the journal as
++ * optimally as possible. It is nice to have nodes belonging to the same inode
++ * in one LEB, so we may write data owned by different inodes to different
++ * journal heads, although at present only one data head is used.
++ *
++ * For recovery reasons, the base head contains all inode nodes, all directory
++ * entry nodes and all truncate nodes.  This means that the other heads contain
++ * only data nodes.
++ *
++ * Bud LEBs may be half-indexed. For example, if the bud was not full at the
++ * time of commit, the bud is retained to continue to be used in the journal,
++ * even though the "front" of the LEB is now indexed. In that case, the log
++ * reference contains the offset where the bud starts for the purposes of the
++ * journal.
++ *
++ * The journal size has to be limited, because the larger is the journal, the
++ * longer it takes to mount UBIFS (scanning the journal) and the more memory it
++ * takes (indexing in the TNC).
++ *
++ * Note, all the journal write operations like 'ubifs_jrn_update()' here, which
++ * write multiple UBIFS nodes to the journal at one go, are atomic with respect
++ * to unclean reboots. Should the unclean reboot happen, the recovery code drops
++ * all the nodes.
 + */
 +
 +#include "ubifs.h"
-+#include <linux/writeback.h>
-+#include <asm/div64.h>
-+
-+/*
-+ * When pessimistic budget calculations say that there is no enough space,
-+ * UBIFS starts writing back dirty inodes and pages, doing garbage collection,
-+ * or committing. The below constants define maximum number of times UBIFS
-+ * repeats the operations.
-+ */
-+#define MAX_SHRINK_RETRIES 8
-+#define MAX_GC_RETRIES     4
-+#define MAX_CMT_RETRIES    2
-+#define MAX_NOSPC_RETRIES  1
-+
-+/*
-+ * The below constant defines amount of dirty pages which should be written
-+ * back at when trying to shrink the liability.
-+ */
-+#define NR_TO_WRITE 16
 +
 +/**
-+ * struct retries_info - information about re-tries while making free space.
-+ * @prev_liability: previous liability
-+ * @shrink_cnt: how many times the liability was shrinked
-+ * @shrink_retries: count of liability shrink re-tries (increased when
-+ *                  liability does not shrink)
-+ * @try_gc: GC should be tried first
-+ * @gc_retries: how many times GC was run
-+ * @cmt_retries: how many times commit has been done
-+ * @nospc_retries: how many times GC returned %-ENOSPC
-+ *
-+ * Since we consider budgeting to be the fast-path, and this structure has to
-+ * be allocated on stack and zeroed out, we make it smaller using bit-fields.
-+ */
-+struct retries_info {
-+	long long prev_liability;
-+	unsigned int shrink_cnt;
-+	unsigned int shrink_retries:5;
-+	unsigned int try_gc:1;
-+	unsigned int gc_retries:4;
-+	unsigned int cmt_retries:3;
-+	unsigned int nospc_retries:1;
-+};
-+
-+/**
-+ * shrink_liability - write-back some dirty pages/inodes.
++ * reserve_space - reserve space in the journal.
 + * @c: UBIFS file-system description object
-+ * @nr_to_write: how many dirty pages to write-back
++ * @jhead: journal head number
++ * @len: node length
 + *
-+ * This function shrinks UBIFS liability by means of writing back some amount
-+ * of dirty inodes and their pages. Returns the amount of pages which were
-+ * written back. The returned value does not include dirty inodes which were
-+ * synchronized.
-+ *
-+ * Note, this function synchronizes even VFS inodes which are locked
-+ * (@i_mutex) by the caller of the budgeting function, because write-back does
-+ * not touch @i_mutex.
++ * This function reserves space in journal head @head. If the reservation
++ * succeeded, the journal head stays locked and later has to be unlocked using
++ * 'release_head()'. 'write_node()' and 'write_head()' functions also unlock
++ * it. Returns zero in case of success, %-EAGAIN if commit has to be done, and
++ * other negative error codes in case of other failures.
 + */
-+static int shrink_liability(struct ubifs_info *c, int nr_to_write)
++static int reserve_space(struct ubifs_info *c, int jhead, int len)
 +{
-+	struct writeback_control wbc = {
-+		.sync_mode   = WB_SYNC_NONE,
-+		.range_end   = LLONG_MAX,
-+		.nr_to_write = nr_to_write,
-+	};
-+
-+	writeback_inodes_sb(c->vfs_sb, &wbc);
-+	dbg_budg("%ld pages were written back", nr_to_write - wbc.nr_to_write);
-+	return nr_to_write - wbc.nr_to_write;
-+}
-+
-+
-+/**
-+ * run_gc - run garbage collector.
-+ * @c: UBIFS file-system description object
-+ *
-+ * This function runs garbage collector to make some more free space. Returns
-+ * zero if a free LEB has been produced, %-EAGAIN if commit is required, and a
-+ * negative error code in case of failure.
-+ */
-+static int run_gc(struct ubifs_info *c)
-+{
-+	int err, lnum;
-+
-+	/* Make some free space by garbage-collecting dirty space */
-+	down_read(&c->commit_sem);
-+	lnum = ubifs_garbage_collect(c, 1);
-+	up_read(&c->commit_sem);
-+	if (lnum < 0)
-+		return lnum;
-+
-+	/* GC freed one LEB, return it to lprops */
-+	dbg_budg("GC freed LEB %d", lnum);
-+	err = ubifs_return_leb(c, lnum);
-+	if (err)
-+		return err;
-+
-+	return 0;
-+}
-+
-+/**
-+ * make_free_space - make more free space on the file-system.
-+ * @c: UBIFS file-system description object
-+ * @ri: information about previous invocations of this function
-+ *
-+ * This function is called when an operation cannot be budgeted because there
-+ * is supposedly no free space. But in most cases there is some free space:
-+ *   o budgeting is pessimistic, so it always budgets more then it is actually
-+ *     needed, so shrinking the liability is one way to make free space - the
-+ *     cached data will take less space then it was budgeted for;
-+ *   o GC may turn some dark space into free space (budgeting treats dark space
-+ *     as not available);
-+ *   o commit may free some LEB, i.e., turn freeable LEBs into free LEBs.
-+ *
-+ * So this function tries to do the above. Returns %-EAGAIN if some free space
-+ * was presumably made and the caller has to re-try budgeting the operation.
-+ * Returns %-ENOSPC if it couldn't do more free space, and other negative error
-+ * codes on failures.
-+ */
-+static int make_free_space(struct ubifs_info *c, struct retries_info *ri)
-+{
-+	int err;
++	int err = 0, err1, retries = 0, avail, lnum, offs, free, squeeze;
++	struct ubifs_wbuf *wbuf = &c->jheads[jhead].wbuf;
 +
 +	/*
-+	 * If we have some dirty pages and inodes (liability), try to write
-+	 * them back unless this was tried too many times without effect
-+	 * already.
++	 * Typically, the base head has smaller nodes written to it, so it is
++	 * better to try to allocate space at the ends of eraseblocks. This is
++	 * what the squeeze parameter does.
 +	 */
-+	if (ri->shrink_retries < MAX_SHRINK_RETRIES && !ri->try_gc) {
-+		long long liability;
++	squeeze = (jhead == BASEHD);
++again:
++	mutex_lock_nested(&wbuf->io_mutex, wbuf->jhead);
++	avail = c->leb_size - wbuf->offs - wbuf->used;
 +
-+		spin_lock(&c->space_lock);
-+		liability = c->budg_idx_growth + c->budg_data_growth +
-+			    c->budg_dd_growth;
-+		spin_unlock(&c->space_lock);
++	if (wbuf->lnum != -1 && avail >= len)
++		return 0;
 +
-+		if (ri->prev_liability >= liability) {
-+			/* Liability does not shrink, next time try GC then */
-+			ri->shrink_retries += 1;
-+			if (ri->gc_retries < MAX_GC_RETRIES)
-+				ri->try_gc = 1;
-+			dbg_budg("liability did not shrink: retries %d of %d",
-+				 ri->shrink_retries, MAX_SHRINK_RETRIES);
-+		}
-+
-+		dbg_budg("force write-back (count %d)", ri->shrink_cnt);
-+		shrink_liability(c, NR_TO_WRITE + ri->shrink_cnt);
-+
-+		ri->prev_liability = liability;
-+		ri->shrink_cnt += 1;
-+		return -EAGAIN;
++	/*
++	 * Write buffer wasn't seek'ed or there is no enough space - look for an
++	 * LEB with some empty space.
++	 */
++	lnum = ubifs_find_free_space(c, len, &free, squeeze);
++	if (lnum >= 0) {
++		/* Found an LEB, add it to the journal head */
++		offs = c->leb_size - free;
++		err = ubifs_add_bud_to_log(c, jhead, lnum, offs);
++		if (err)
++			goto out_return;
++		/* A new bud was successfully allocated and added to the log */
++		goto out;
 +	}
 +
++	err = lnum;
++	if (err != -ENOSPC)
++		goto out_unlock;
++
 +	/*
-+	 * Try to run garbage collector unless it was already tried too many
-+	 * times.
++	 * No free space, we have to run garbage collector to make
++	 * some. But the write-buffer mutex has to be unlocked because
++	 * GC have to sync write buffers, which may lead a deadlock.
 +	 */
-+	if (ri->gc_retries < MAX_GC_RETRIES) {
-+		ri->gc_retries += 1;
-+		dbg_budg("run GC, retries %d of %d",
-+			 ri->gc_retries, MAX_GC_RETRIES);
++	dbg_jrn("no free space  jhead %d, run GC", jhead);
++	mutex_unlock(&wbuf->io_mutex);
 +
-+		ri->try_gc = 0;
-+		err = run_gc(c);
-+		if (!err)
-+			return -EAGAIN;
-+
-+		if (err == -EAGAIN) {
-+			dbg_budg("GC asked to commit");
-+			err = ubifs_run_commit(c);
-+			if (err)
-+				return err;
-+			return -EAGAIN;
-+		}
-+
++	lnum = ubifs_garbage_collect(c, 0);
++	if (lnum < 0) {
++		err = lnum;
 +		if (err != -ENOSPC)
 +			return err;
 +
 +		/*
-+		 * GC could not make any progress. If this is the first time,
-+		 * then it makes sense to try to commit, because it might make
-+		 * some dirty space.
++		 * GC could not make a free LEB. But someone else may
++		 * have allocated new bud for this journal head,
++		 * because we dropped the 'io_mutex', so try once
++		 * again.
 +		 */
-+		dbg_budg("GC returned -ENOSPC, retries %d",
-+			 ri->nospc_retries);
-+		if (ri->nospc_retries >= MAX_NOSPC_RETRIES)
-+			return err;
-+		ri->nospc_retries += 1;
++		dbg_jrn("GC couldn't make a free LEB for jhead %d", jhead);
++		if (retries++ < 2) {
++			dbg_jrn("retry (%d)", retries);
++			goto again;
++		}
++
++		dbg_jrn("return -ENOSPC");
++		return err;
 +	}
 +
-+	/* Neither GC nor write-back helped, try to commit */
-+	if (ri->cmt_retries < MAX_CMT_RETRIES) {
-+		ri->cmt_retries += 1;
-+		dbg_budg("run commit, retries %d of %d",
-+			 ri->cmt_retries, MAX_CMT_RETRIES);
-+		err = ubifs_run_commit(c);
++	mutex_lock_nested(&wbuf->io_mutex, wbuf->jhead);
++	dbg_jrn("got LEB %d for jhead %d", lnum, jhead);
++	avail = c->leb_size - wbuf->offs - wbuf->used;
++
++	if (wbuf->lnum != -1 && avail >= len) {
++		/*
++		 * Someone else has switched the journal head and we have
++		 * enough space now. This happens when more then one process is
++		 * trying to write to the same journal head at the same time.
++		 */
++		dbg_jrn("return LEB %d back, already have LEB %d:%d",
++			lnum, wbuf->lnum, wbuf->offs + wbuf->used);
++		err = ubifs_return_leb(c, lnum);
 +		if (err)
-+			return err;
-+		return -EAGAIN;
++			goto out_unlock;
++		return 0;
 +	}
 +
-+	return -ENOSPC;
-+}
++	err = ubifs_add_bud_to_log(c, jhead, lnum, 0);
++	if (err)
++		goto out_return;
++	offs = 0;
 +
-+/**
-+ * ubifs_calc_min_idx_lebs - calculate amount of eraseblocks for the index.
-+ * @c: UBIFS file-system description object
-+ *
-+ * This function calculates and returns the number of eraseblocks which should
-+ * be kept for index usage.
-+ */
-+int ubifs_calc_min_idx_lebs(struct ubifs_info *c)
-+{
-+	int rem;
-+	long long idx_size;
-+
-+	idx_size = c->old_idx_sz + c->budg_idx_growth + c->budg_uncommitted_idx;
-+
-+	/* And make sure we have twice the index size of space reserved */
-+	idx_size <<= 1;
-+
-+	/*
-+	 * We do not maintain 'old_idx_size' as 'old_idx_lebs'/'old_idx_bytes'
-+	 * pair, nor similarly the two variables for the new index size, so we
-+	 * have to do this costly 64-bit division on fast-path.
-+	 */
-+	rem = do_div(idx_size, c->leb_size - c->max_idx_node_sz);
-+	return idx_size + !!rem;
-+}
-+
-+/**
-+ * ubifs_calc_available - calculate available FS space.
-+ * @c: UBIFS file-system description object
-+ *
-+ * This function calculates and returns amount of FS space available for use.
-+ */
-+long long ubifs_calc_available(const struct ubifs_info *c)
-+{
-+	long long available, subtract_lebs;
-+
-+	available = c->main_bytes - c->lst.total_used;
-+
-+	/*
-+	 * Now 'available' contains theoretically available flash space
-+	 * assuming there is no index, so we have to subtract the space which
-+	 * is reserved for the index.
-+	 */
-+	subtract_lebs = c->min_idx_lebs;
-+
-+	/* Take into account that GC reserves one LEB for its own needs */
-+	subtract_lebs += 1;
-+
-+	/*
-+	 * The GC journal head LEB is not really accessible. And since
-+	 * different write types go to different heads, we may count only on
-+	 * one head's space.
-+	 */
-+	subtract_lebs += c->jhead_cnt - 1;
-+
-+	/* We also reserve one LEB for deletions, which bypass budgeting */
-+	subtract_lebs += 1;
-+
-+	available -= subtract_lebs * c->leb_size;
-+
-+	/* Subtract the dead space which is not available for use */
-+	available -= c->lst.total_dead;
-+
-+	/*
-+	 * Subtract dark space, which might or might not be usable - it depends
-+	 * on the data which we have on the media and which will be written. If
-+	 * this is a lot of uncompressed or not-compressible data, the dark
-+	 * space cannot be used.
-+	 */
-+	available -= c->lst.total_dark;
-+
-+	return available;
-+}
-+
-+/**
-+ * rp_can_write - check whether the user is allowed to write.
-+ * @c: UBIFS file-system description object
-+ * @avail: available space on FS
-+ *
-+ * UBIFS has so-called "reserved pool" which is flash space reserved
-+ * for the superuser and for uses whose UID/GID is recorded in UBIFS superblock.
-+ * This function checks whether current user is allowed to write
-+ * to the file-system - it returns %1 if there is plenty of space or the user
-+ * is eligible to use the reserved pool and %0 otherwise.
-+ */
-+static int rp_can_write(struct ubifs_info *c, long long avail)
-+{
-+	if (avail > c->rp_size || current->fsuid == c->rp_uid ||
-+	    capable(CAP_SYS_RESOURCE) ||
-+	    (c->rp_gid != 0 && in_group_p(c->rp_gid)))
-+		return 1;
++out:
++	err = ubifs_wbuf_seek_nolock(wbuf, lnum, offs, UBI_SHORTTERM);
++	if (err)
++		goto out_unlock;
 +
 +	return 0;
++
++out_unlock:
++	mutex_unlock(&wbuf->io_mutex);
++	return err;
++
++out_return:
++	/* An error occurred and the LEB has to be returned to lprops */
++	ubifs_assert(err < 0);
++	err1 = ubifs_return_leb(c, lnum);
++	if (err1 && err == -EAGAIN)
++		/*
++		 * Return original error code 'err' only if it is not
++		 * '-EAGAIN', which is not really an error. Otherwise, return
++		 * the error code of 'ubifs_return_leb()'.
++		 */
++		err = err1;
++	mutex_unlock(&wbuf->io_mutex);
++	return err;
 +}
 +
 +/**
-+ * do_budget_space - reserve flash space for index and data growth.
++ * write_node - write node to a journal head.
 + * @c: UBIFS file-system description object
++ * @jhead: journal head
++ * @node: node to write
++ * @len: node length
++ * @lnum: LEB number written is returned here
++ * @offs: offset written is returned here
 + *
-+ * This function makes sure UBIFS has enough free eraseblocks for index growth
-+ * and data.
-+ *
-+ * When budgeting index space, UBIFS reserves twice as more LEBs as the index
-+ * would take if it was consolidated and written to the flash. This guarantees
-+ * that the "in-the-gaps" commit method always succeeds and UBIFS will always
-+ * be able to commit dirty index. So this function basically adds amount of
-+ * budgeted index space to the size of the current index, multiplies this by 2,
-+ * and makes sure this does not exceed the amount of free eraseblocks.
-+ *
-+ * Notes about @c->min_idx_lebs and @c->lst.idx_lebs variables:
-+ * o @c->lst.idx_lebs is the number of LEBs the index currently uses. It might
-+ *    be large, because UBIFS does not do any index consolidation as long as
-+ *    there is free space. IOW, the index may take a lot of LEBs, but the LEBs
-+ *    will contain a lot of dirt.
-+ * o @c->min_idx_lebs is the the index presumably takes. IOW, the index may be
-+ *   consolidated to take up to @c->min_idx_lebs LEBs.
-+ *
-+ * This function returns zero in case of success, and %-ENOSPC in case of
++ * This function writes a node to reserved space of journal head @jhead.
++ * Returns zero in case of success and a negative error code in case of
 + * failure.
 + */
-+static int do_budget_space(struct ubifs_info *c)
++static int write_node(struct ubifs_info *c, int jhead, void *node, int len,
++		      int *lnum, int *offs)
 +{
-+	long long outstanding, available;
-+	int lebs, rsvd_idx_lebs, min_idx_lebs;
++	struct ubifs_wbuf *wbuf = &c->jheads[jhead].wbuf;
 +
-+	/* First budget index space */
-+	min_idx_lebs = ubifs_calc_min_idx_lebs(c);
++	ubifs_assert(jhead != GCHD);
 +
-+	/* Now 'min_idx_lebs' contains number of LEBs to reserve */
-+	if (min_idx_lebs > c->lst.idx_lebs)
-+		rsvd_idx_lebs = min_idx_lebs - c->lst.idx_lebs;
-+	else
-+		rsvd_idx_lebs = 0;
++	*lnum = c->jheads[jhead].wbuf.lnum;
++	*offs = c->jheads[jhead].wbuf.offs + c->jheads[jhead].wbuf.used;
 +
-+	/*
-+	 * The number of LEBs that are available to be used by the index is:
-+	 *
-+	 *     c->lst.empty_lebs + c->freeable_cnt + c->idx_gc_cnt -
-+	 *     c->lst.taken_empty_lebs
-+	 *
-+	 * empty_lebs are available because they are empty. freeable_cnt are
-+	 * available because they contain only free and dirty space and the
-+	 * index allocation always occurs after wbufs are synch'ed.
-+	 * idx_gc_cnt are available because they are index LEBs that have been
-+	 * garbage collected (including trivial GC) and are awaiting the commit
-+	 * before they can be unmapped - note that the in-the-gaps method will
-+	 * grab these if it needs them. taken_empty_lebs are empty_lebs that
-+	 * have already been allocated for some purpose (also includes those
-+	 * LEBs on the idx_gc list).
-+	 */
-+	lebs = c->lst.empty_lebs + c->freeable_cnt + c->idx_gc_cnt -
-+	       c->lst.taken_empty_lebs;
-+	ubifs_assert(lebs + c->lst.idx_lebs >= c->min_idx_lebs);
-+	if (unlikely(rsvd_idx_lebs > lebs)) {
-+		dbg_budg("out of indexing space: min_idx_lebs %d (old %d), "
-+			 "rsvd_idx_lebs %d", min_idx_lebs, c->min_idx_lebs,
-+			 rsvd_idx_lebs);
-+		return -ENOSPC;
-+	}
++	dbg_jrn("jhead %d, LEB %d:%d, len %d", jhead, *lnum, *offs, len);
++	ubifs_prepare_node(c, node, len, 0);
 +
-+	available = ubifs_calc_available(c);
-+	outstanding = c->budg_data_growth + c->budg_dd_growth;
-+
-+	if (unlikely(available < outstanding)) {
-+		dbg_budg("out of data space: available %lld, outstanding %lld",
-+			 available, outstanding);
-+		return -ENOSPC;
-+	}
-+
-+	if (!rp_can_write(c, available - outstanding))
-+		return -ENOSPC;
-+
-+	c->min_idx_lebs = min_idx_lebs;
-+	return 0;
++	return ubifs_wbuf_write_nolock(wbuf, node, len);
 +}
 +
 +/**
-+ * calc_idx_growth - calculate approximate index growth from budgeting request.
++ * write_head - write data to a journal head.
 + * @c: UBIFS file-system description object
-+ * @req: budgeting request
++ * @jhead: journal head
++ * @buf: buffer to write
++ * @len: length to write
++ * @lnum: LEB number written is returned here
++ * @offs: offset written is returned here
++ * @sync: non-zero if the write-buffer has to by synchronized
 + *
-+ * For now we assume each new node adds one znode. But this is rather poor
-+ * approximation, though.
++ * This function is the same as 'write_node()' but it does not assume the
++ * buffer it is writing is a node, so it does not prepare it (which means
++ * initializing common header and calculating CRC).
 + */
-+static int calc_idx_growth(const struct ubifs_info *c,
-+			   const struct ubifs_budget_req *req)
++static int write_head(struct ubifs_info *c, int jhead, void *buf, int len,
++		      int *lnum, int *offs, int sync)
 +{
-+	int znodes;
++	int err;
++	struct ubifs_wbuf *wbuf = &c->jheads[jhead].wbuf;
 +
-+	znodes = req->new_ino + req->new_page + req->new_dent;
-+	return znodes * c->max_idx_node_sz;
++	ubifs_assert(jhead != GCHD);
++
++	*lnum = c->jheads[jhead].wbuf.lnum;
++	*offs = c->jheads[jhead].wbuf.offs + c->jheads[jhead].wbuf.used;
++	dbg_jrn("jhead %d, LEB %d:%d, len %d", jhead, *lnum, *offs, len);
++
++	err = ubifs_wbuf_write_nolock(wbuf, buf, len);
++	if (err)
++		return err;
++	if (sync)
++		err = ubifs_wbuf_sync_nolock(wbuf);
++	return err;
 +}
 +
 +/**
-+ * calc_data_growth - calculate approximate amount of new data from budgeting
-+ * request.
++ * make_reservation - reserve journal space.
 + * @c: UBIFS file-system description object
-+ * @req: budgeting request
-+ */
-+static int calc_data_growth(const struct ubifs_info *c,
-+			    const struct ubifs_budget_req *req)
-+{
-+	int data_growth;
-+
-+	data_growth = req->new_ino  ? c->inode_budget : 0;
-+	if (req->new_page)
-+		data_growth += c->page_budget;
-+	if (req->new_dent)
-+		data_growth += c->dent_budget;
-+	data_growth += req->new_ino_d;
-+
-+	return data_growth;
-+}
-+
-+/**
-+ * calc_dd_growth - calculate approximate amount of data which makes other data
-+ * dirty from budgeting request.
-+ * @c: UBIFS file-system description object
-+ * @req: budgeting request
-+ */
-+static int calc_dd_growth(const struct ubifs_info *c,
-+			  const struct ubifs_budget_req *req)
-+{
-+	int dd_growth;
-+
-+	dd_growth = req->dirtied_page ? c->page_budget : 0;
-+
-+	if (req->dirtied_ino)
-+		dd_growth += c->inode_budget << (req->dirtied_ino - 1);
-+	if (req->mod_dent)
-+		dd_growth += c->dent_budget;
-+	dd_growth += req->dirtied_ino_d;
-+
-+	return dd_growth;
-+}
-+
-+/**
-+ * ubifs_budget_space - ensure there is enough space to complete an operation.
-+ * @c: UBIFS file-system description object
-+ * @req: budget request
++ * @jhead: journal head
++ * @len: how many bytes to reserve
 + *
-+ * This function allocates budget for an operation. It uses pessimistic
-+ * approximation of how much flash space the operation needs. The goal of this
-+ * function is to make sure UBIFS always has flash space to flush all dirty
-+ * pages, dirty inodes, and dirty znodes (liability). This function may force
-+ * commit, garbage-collection or write-back. Returns zero in case of success,
-+ * %-ENOSPC if there is no free space and other negative error codes in case of
-+ * failures.
++ * This function makes space reservation in journal head @jhead. The function
++ * takes the commit lock and locks the journal head, and the caller has to
++ * unlock the head and finish the reservation with 'finish_reservation()'.
++ * Returns zero in case of success and a negative error code in case of
++ * failure.
++ *
++ * Note, the journal head may be unlocked as soon as the data is written, while
++ * the commit lock has to be released after the data has been added to the
++ * TNC.
 + */
-+int ubifs_budget_space(struct ubifs_info *c, struct ubifs_budget_req *req)
++static int make_reservation(struct ubifs_info *c, int jhead, int len)
 +{
-+	int uninitialized_var(cmt_retries), uninitialized_var(wb_retries);
-+	int err, idx_growth, data_growth, dd_growth;
-+	struct retries_info ri;
++	int err, cmt_retries = 0, nospc_retries = 0;
 +
-+	memset(&ri, 0, sizeof(struct retries_info));
-+	idx_growth = calc_idx_growth(c, req);
-+	data_growth = calc_data_growth(c, req);
-+	dd_growth = calc_dd_growth(c, req);
++	ubifs_assert(len <= c->dark_wm);
 +
 +again:
-+	spin_lock(&c->space_lock);
-+	ubifs_assert(c->budg_idx_growth >= 0);
-+	ubifs_assert(c->budg_data_growth >= 0);
-+	ubifs_assert(c->budg_dd_growth >= 0);
++	down_read(&c->commit_sem);
++	err = reserve_space(c, jhead, len);
++	if (!err)
++		return 0;
++	up_read(&c->commit_sem);
 +
-+	c->budg_idx_growth += idx_growth;
-+	c->budg_data_growth += data_growth;
-+	c->budg_dd_growth += dd_growth;
++	if (err == -ENOSPC) {
++		/*
++		 * GC could not make any progress. We should try to commit
++		 * once because it could make some dirty space and GC would
++		 * make progress, so make the error -EAGAIN so that the below
++		 * will commit and re-try.
++		 */
++		if (nospc_retries++ < 2) {
++			dbg_jrn("no space, retry");
++			err = -EAGAIN;
++		}
 +
-+	err = do_budget_space(c);
-+	if (unlikely(err)) {
-+		/* Restore the old values */
-+		c->budg_idx_growth -= idx_growth;
-+		c->budg_data_growth -= data_growth;
-+		c->budg_dd_growth -= dd_growth;
-+		spin_unlock(&c->space_lock);
-+
-+		goto make_space;
++		/*
++		 * This means that the budgeting is incorrect. We always have
++		 * to be able to write to the media, because all operations are
++		 * budgeted. Deletions are not budgeted, though, but we reserve
++		 * an extra LEB for them.
++		 */
 +	}
 +
-+	req->idx_growth = idx_growth;
-+	req->data_growth = data_growth;
-+	req->dd_growth = dd_growth;
-+	spin_unlock(&c->space_lock);
++	if (err != -EAGAIN)
++		goto out;
 +
-+	return 0;
++	/*
++	 * -EAGAIN means that the journal is full or too large, or the above
++	 * code wants to do one commit. Do this and re-try.
++	 */
++	if (cmt_retries > 128) {
++		/*
++		 * This should not happen unless the journal size limitations
++		 * are too tough.
++		 */
++		ubifs_err("stuck in space allocation");
++		err = -ENOSPC;
++		goto out;
++	} else if (cmt_retries > 32)
++		ubifs_warn("too many space allocation re-tries (%d)",
++			   cmt_retries);
 +
-+make_space:
-+	err = make_free_space(c, &ri);
-+	if (err == -EAGAIN) {
-+		dbg_budg("try again");
-+		cond_resched();
-+		goto again;
-+	} else if (err == -ENOSPC)
-+		dbg_budg("FS is full, -ENOSPC");
-+	else
-+		ubifs_err("cannot budget space, error %d", err);
++	dbg_jrn("-EAGAIN, commit and retry (retried %d times)",
++		cmt_retries);
++	cmt_retries += 1;
++
++	err = ubifs_run_commit(c);
++	if (err)
++		return err;
++	goto again;
++
++out:
++	ubifs_err("cannot reserve %d bytes in jhead %d, error %d",
++		  len, jhead, err);
++	if (err == -ENOSPC) {
++		/* This are some budgeting problems, print useful information */
++		down_write(&c->commit_sem);
++		spin_lock(&c->space_lock);
++		dbg_dump_stack();
++		dbg_dump_budg(c);
++		spin_unlock(&c->space_lock);
++		dbg_dump_lprops(c);
++		cmt_retries = dbg_check_lprops(c);
++		up_write(&c->commit_sem);
++	}
 +
 +	return err;
 +}
 +
 +/**
-+ * ubifs_release_budget - release budgeted free space.
++ * release_head - release a journal head.
 + * @c: UBIFS file-system description object
-+ * @req: budget request
++ * @jhead: journal head
 + *
-+ * This function releases the space budgeted by 'ubifs_budget_space()'. Note,
-+ * since the index changes (which were budgeted for in @req->idx_growth) will
-+ * only be written to the media on commit, this function moves the index budget
-+ * from @c->budg_idx_growth to @c->budg_uncommitted_idx. The latter will be
-+ * zeroed by the commit operation.
++ * This function releases journal head @jhead which was locked by
++ * the 'make_reservation()' function. It has to be called after each successful
++ * 'make_reservation()' invocation.
 + */
-+void ubifs_release_budget(struct ubifs_info *c, struct ubifs_budget_req *req)
++static inline void release_head(struct ubifs_info *c, int jhead)
 +{
-+	if (req->data_growth + req->dd_growth == 0)
-+		return;
-+
-+	if (req->idx_growth == -1)
-+		req->idx_growth = calc_idx_growth(c, req);
-+
-+	spin_lock(&c->space_lock);
-+	c->budg_idx_growth -= req->idx_growth;
-+	c->budg_uncommitted_idx += req->idx_growth;
-+	c->budg_data_growth -= req->data_growth;
-+	c->budg_dd_growth -= req->dd_growth;
-+	c->min_idx_lebs = ubifs_calc_min_idx_lebs(c);
-+
-+	ubifs_assert(c->budg_idx_growth >= 0);
-+	ubifs_assert(c->budg_data_growth >= 0);
-+	ubifs_assert(c->min_idx_lebs < c->main_lebs);
-+	spin_unlock(&c->space_lock);
++	mutex_unlock(&c->jheads[jhead].wbuf.io_mutex);
 +}
 +
 +/**
-+ * ubifs_convert_page_budget - convert budget of a new page.
++ * finish_reservation - finish a reservation.
 + * @c: UBIFS file-system description object
 + *
-+ * This function converts budget which was allocated for a new page of data to
-+ * the budget of changing an existing page of data. The latter is not larger
-+ * then the former, so this function only does simple re-calculation and does
-+ * not involve any write-back.
++ * This function finishes journal space reservation. It must be called after
++ * 'make_reservation()'.
 + */
-+void ubifs_convert_page_budget(struct ubifs_info *c)
++static void finish_reservation(struct ubifs_info *c)
 +{
-+	spin_lock(&c->space_lock);
-+	/* Release the index growth reservation */
-+	c->budg_idx_growth -= c->max_idx_node_sz;
-+	/* Release the data growth reservation */
-+	c->budg_data_growth -= c->page_budget;
-+	/* Increase the dirty data growth reservation instead */
-+	c->budg_dd_growth += c->page_budget;
-+	/* And re-calculate the indexing space reservation */
-+	c->min_idx_lebs = ubifs_calc_min_idx_lebs(c);
-+	spin_unlock(&c->space_lock);
++	up_read(&c->commit_sem);
 +}
 +
 +/**
-+ * ubifs_budget_inode_op - budget an operation on inode.
-+ * @c: UBIFS file-system description object
-+ * @inode: VFS inode which will be made dirty by the operation
-+ * @req: budget request of the operation
-+ *
-+ * This function is called to get budget for an operation which changes an
-+ * inode. The inode may be in dirty or clean state. The former means there is
-+ * no need to allocate the budget as it has already been allocated before. The
-+ * latter means that the inode change budget has to be allocated.
-+ *
-+ * The caller has to pass the inode which is going to be changed. This function
-+ * acquires budget the for as described in @req plus the budget for changing
-+ * the inode dirty, if needed. Returns zero in case of success, %-ENOSPC if
-+ * there is no more flash space, and other negative error codes in case of
-+ * failure.
-+ *
-+ * Note, upon exit, this function leaves the inode locked, and the
-+ * 'ubifs_release_ino_dirty()' or 'ubifs_release_ino_clean()' function has to
-+ * be called to unlock it.
++ * get_dent_type - translate VFS inode mode to UBIFS directory entry type.
++ * @mode: inode mode
 + */
-+int ubifs_budget_inode_op(struct ubifs_info *c, struct inode *inode,
-+			      struct ubifs_budget_req *req)
++static int get_dent_type(int mode)
 +{
-+	struct ubifs_inode *ui = ubifs_inode(inode);
-+	int err, old = req->dirtied_ino;
-+
-+	ubifs_assert(req->dirtied_ino <= 3);
-+	ubifs_assert(req->dirtied_ino_d <= UBIFS_MAX_INO_DATA * 3);
-+
-+again:
-+	/*
-+	 * If the inode is clean, it will be dirtied by this operation and we
-+	 * have to budget for this.
-+	 */
-+	req->dirtied_ino += !ui->dirty;
-+	if (req->dirtied_ino > old)
-+		req->dirtied_ino_d = ui->data_len;
-+
-+	err = ubifs_budget_space(c, req);
-+	if (unlikely(err))
-+		return err;
-+
-+	mutex_lock(&ui->budg_mutex);
-+
-+	if (req->dirtied_ino != old + !ui->dirty) {
-+		/* The inode has probably been written back meanwhile */
-+		ubifs_release_budget(c, req);
-+		mutex_unlock(&ui->budg_mutex);
-+		req->dirtied_ino = old;
-+		req->dirtied_ino_d -= ui->data_len;
-+		goto again;
++	switch (mode & S_IFMT) {
++	case S_IFREG:
++		return UBIFS_ITYPE_REG;
++	case S_IFDIR:
++		return UBIFS_ITYPE_DIR;
++	case S_IFLNK:
++		return UBIFS_ITYPE_LNK;
++	case S_IFBLK:
++		return UBIFS_ITYPE_BLK;
++	case S_IFCHR:
++		return UBIFS_ITYPE_CHR;
++	case S_IFIFO:
++		return UBIFS_ITYPE_FIFO;
++	case S_IFSOCK:
++		return UBIFS_ITYPE_SOCK;
++	default:
++		BUG();
 +	}
-+
-+	UBIFS_DBG(ui->budgeted = 1);
 +	return 0;
 +}
 +
 +/**
-+ * ubifs_release_ino_dirty - release budget of a "dirtying" operation.
++ * pack_inode - pack an inode node.
 + * @c: UBIFS file-system description object
-+ * @inode: VFS inode the operation worked on
-+ * @req: budget to release
-+ *
-+ * This function has to be called at the end of VFS operations which acquired
-+ * budget via 'ubifs_budget_inode_op()'. It assumes that the inode has been
-+ * marked as dirty and will be synchronized later by write-back, so it does not
-+ * release the budget of the inode.
-+ *
-+ * Note, this function also avoids releasing page budgets which are released
-+ * separately.
++ * @ino: buffer in which to pack inode node
++ * @inode: inode to pack
++ * @last: indicates the last node of the group
++ * @last_reference: non-zero if this is a deletion inode
 + */
-+void ubifs_release_ino_dirty(struct ubifs_info *c, struct inode *inode,
-+				struct ubifs_budget_req *req)
++static void pack_inode(struct ubifs_info *c, struct ubifs_ino_node *ino,
++		       const struct inode *inode, int last, int last_reference)
 +{
-+	ubifs_assert(req->dirtied_ino <= 4);
-+	ubifs_assert(req->dirtied_ino_d <= UBIFS_MAX_INO_DATA * 4);
-+	ubifs_assert(req->idx_growth >= 0);
-+	ubifs_assert(req->data_growth >= 0);
-+	ubifs_assert(req->dd_growth >= 0);
-+
-+	if (req->dirtied_ino) {
-+		req->dd_growth -= c->inode_budget;
-+		req->dd_growth -= req->dirtied_ino_d;
-+	}
-+
-+	if (req->dirtied_page) {
-+		req->dd_growth -= c->page_budget;
-+		ubifs_assert(req->new_page == 0);
-+	} else if (req->new_page) {
-+		req->idx_growth -= c->max_idx_node_sz;
-+		req->data_growth -= c->page_budget;
-+		ubifs_assert(req->dirtied_page == 0);
-+	}
-+
-+	ubifs_assert(req->dd_growth >= 0);
-+	ubifs_release_budget(c, req);
-+	mutex_unlock(&ubifs_inode(inode)->budg_mutex);
-+}
-+
-+/**
-+ * ubifs_cancel_ino_op - cancel budget of an operation on inode.
-+ * @c: UBIFS file-system description object
-+ * @inode: VFS inode the operation worked on
-+ * @req: budget to release
-+ *
-+ * This function has to be called if the operation failed and whole budget has
-+ * to be released, including the budget for inode which would had been
-+ * dirtied. It is important not to mark the inode dirty before calling this
-+ * function.
-+ */
-+void ubifs_cancel_ino_op(struct ubifs_info *c, struct inode *inode,
-+			 struct ubifs_budget_req *req)
-+{
-+	ubifs_assert(req->dirtied_ino <= 4);
-+	ubifs_assert(req->dirtied_ino_d <= UBIFS_MAX_INO_DATA * 4);
-+	ubifs_assert(req->idx_growth >= 0);
-+	ubifs_assert(req->data_growth >= 0);
-+	ubifs_assert(req->dd_growth >= 0);
-+
-+	ubifs_release_budget(c, req);
-+	mutex_unlock(&ubifs_inode(inode)->budg_mutex);
-+}
-+
-+/**
-+ * ubifs_release_ino_clean - release budget of a "cleaning" operation.
-+ * @c: UBIFS file-system description object
-+ * @inode: VFS inode the operation worked on
-+ * @req: budget to release
-+ *
-+ * This function has to be called at the end of VFS operations which acquired
-+ * budget via 'ubifs_budget_inode_op()'. It assumed the operation synchronized
-+ * the inode, so it marks the inode clean, unlocks it and releases whole budget.
-+ *
-+ * Note, this function also avoids releasing page budgets which are released
-+ * separately.
-+ */
-+void ubifs_release_ino_clean(struct ubifs_info *c, struct inode *inode,
-+			     struct ubifs_budget_req *req)
-+{
++	int data_len = 0;
 +	struct ubifs_inode *ui = ubifs_inode(inode);
 +
-+	ubifs_assert(req->dirtied_ino <= 4);
-+	ubifs_assert(req->dirtied_ino_d <= UBIFS_MAX_INO_DATA * 4);
-+	ubifs_assert(req->idx_growth >= 0);
-+	ubifs_assert(req->data_growth >= 0);
-+	ubifs_assert(req->dd_growth >= 0);
++	ino->ch.node_type = UBIFS_INO_NODE;
++	ino_key_init_flash(c, &ino->key, inode->i_ino);
++	ino->creat_sqnum = cpu_to_le64(ui->creat_sqnum);
++	ino->size  = cpu_to_le64(i_size_read(inode));
++	ino->nlink = cpu_to_le32(inode->i_nlink);
++	ino->atime = cpu_to_le32(inode->i_atime.tv_sec);
++	ino->ctime = cpu_to_le32(inode->i_ctime.tv_sec);
++	ino->mtime = cpu_to_le32(inode->i_mtime.tv_sec);
++	ino->uid   = cpu_to_le32(inode->i_uid);
++	ino->gid   = cpu_to_le32(inode->i_gid);
++	ino->mode  = cpu_to_le32(inode->i_mode);
++	ino->flags = cpu_to_le32(ui->flags);
++	ino->compr_type  = cpu_to_le16(ui->compr_type);
++	ino->xattr_cnt   = cpu_to_le32(ui->xattr_cnt);
++	ino->xattr_size  = cpu_to_le64(ui->xattr_size);
++	ino->xattr_msize = cpu_to_le64(ui->xattr_msize);
++	ino->xattr_names = cpu_to_le32(ui->xattr_names);
++	ino->data_len    = cpu_to_le32(ui->data_len);
 +
-+	ubifs_assert(!req->dirtied_page);
-+	ubifs_assert(!req->new_page);
-+	UBIFS_DBG(ui->budgeted = 0);
-+
-+	ubifs_release_budget(c, req);
-+	if (ui->dirty) {
-+		ui->dirty = 0;
-+		/*
-+		 * Note, VFS still treats the inode as dirty and
-+		 * 'ubifs_write_inode()' will be called, but it'll do nothing
-+		 * because @ui->dirty is %0.
-+		 */
-+		atomic_long_dec(&c->dirty_ino_cnt);
++	/*
++	 * Drop the attached data if this is a deletion inode, the data is not
++	 * needed anymore.
++	 */
++	if (!last_reference) {
++		memcpy(ino->data, ui->data, ui->data_len);
++		data_len = ui->data_len;
 +	}
-+	mutex_unlock(&ubifs_inode(inode)->budg_mutex);
++
++	ubifs_prep_grp_node(c, ino, UBIFS_INO_NODE_SZ + data_len, last);
 +}
 +
 +/**
-+ * ubifs_release_new_page_budget - release budget of a new page.
++ * ubifs_jrn_update - update inode.
 + * @c: UBIFS file-system description object
++ * @dir: parent inode or host inode in case of extended attributes
++ * @nm: directory entry name
++ * @inode: inode
++ * @deletion: indicates a directory entry deletion i.e unlink or rmdir
++ * @sync: non-zero if the write-buffer has to be synchronized
++ * @xent: non-zero if the directory entry is an extended attribute entry
 + *
-+ * This is a helper function which releases budget corresponding to the budget
-+ * of one new page of data.
-+ */
-+void ubifs_release_new_page_budget(struct ubifs_info *c)
-+{
-+	struct ubifs_budget_req req = { .new_page = 1,
-+					.idx_growth = -1,
-+					.data_growth = c->page_budget};
-+
-+	ubifs_release_budget(c, &req);
-+}
-+
-+/**
-+ * ubifs_budg_get_free_space - return amount of free space.
-+ * @c: UBIFS file-system description object
++ * This function updates an inode by writing a directory entry (or extended
++ * attribute entry), the inode itself, and the parent directory inode (or the
++ * host inode) to the journal.
 + *
-+ * This function returns amount of free space on the file-system.
++ * The function writes the host inode @dir last, which is important in case of
++ * extended attributes. Indeed, then we guarantee that if the host inode gets
++ * synchronized, and the write-buffer it sits in gets flushed, the extended
++ * attribute inode gets flushed too. And this is exactly what the user expects -
++ * synchronizing the host inode synchronizes its extended attributes.
++ * Similarly, this guarantees that if @dir is synchronized, its directory entry
++ * corresponding to @nm gets synchronized too.
++ *
++ * This function returns %0 on success and a negative error code on failure.
 + */
-+long long ubifs_budg_get_free_space(struct ubifs_info *c)
++int ubifs_jrn_update(struct ubifs_info *c, const struct inode *dir,
++		     const struct qstr *nm, const struct inode *inode,
++		     int deletion, int sync, int xent)
 +{
-+	int min_idx_lebs, rsvd_idx_lebs;
-+	long long available, outstanding, free;
++	int err, dlen, ilen, len, lnum, ino_offs, dent_offs;
++	int aligned_dlen, aligned_ilen;
++	int last_reference = !!(deletion && inode->i_nlink == 0);
++	struct ubifs_dent_node *dent;
++	struct ubifs_ino_node *ino;
++	union ubifs_key dent_key, ino_key;
 +
-+	/* Do exactly the same calculations as in 'do_budget_space()' */
-+	spin_lock(&c->space_lock);
-+	min_idx_lebs = ubifs_calc_min_idx_lebs(c);
++	dbg_jrn("ino %lu, dent '%.*s', data len %d in dir ino %lu",
++		inode->i_ino, nm->len, nm->name, ubifs_inode(inode)->data_len,
++		dir->i_ino);
++	ubifs_assert(ubifs_inode(dir)->data_len == 0);
 +
-+	if (min_idx_lebs > c->lst.idx_lebs)
-+		rsvd_idx_lebs = min_idx_lebs - c->lst.idx_lebs;
-+	else
-+		rsvd_idx_lebs = 0;
++	dlen = UBIFS_DENT_NODE_SZ + nm->len + 1;
++	ilen = UBIFS_INO_NODE_SZ;
 +
-+	if (rsvd_idx_lebs > c->lst.empty_lebs + c->freeable_cnt + c->idx_gc_cnt
-+	    - c->lst.taken_empty_lebs) {
-+		spin_unlock(&c->space_lock);
-+		return 0;
++	/*
++	 * If the last reference to the inode is being deleted, then there is no
++	 * need to attach and write inode data, it is being deleted anyway.
++	 */
++	if (!last_reference)
++		ilen += ubifs_inode(inode)->data_len;
++
++	aligned_dlen = ALIGN(dlen, 8);
++	aligned_ilen = ALIGN(ilen, 8);
++
++	len = aligned_dlen + aligned_ilen + UBIFS_INO_NODE_SZ;
++
++	dent = kmalloc(len, GFP_KERNEL);
++	if (!dent)
++		return -ENOMEM;
++
++	if (!xent) {
++		dent->ch.node_type = UBIFS_DENT_NODE;
++		dent_key_init(c, &dent_key, dir->i_ino, nm);
++	} else {
++		dent->ch.node_type = UBIFS_XENT_NODE;
++		xent_key_init(c, &dent_key, dir->i_ino, nm);
 +	}
 +
-+	available = ubifs_calc_available(c);
-+	outstanding = c->budg_data_growth + c->budg_dd_growth;
-+	spin_unlock(&c->space_lock);
++	key_write(c, &dent_key, dent->key);
++	dent->inum = deletion ? 0 : cpu_to_le64(inode->i_ino);
++	dent->padding = 0;
++	dent->type = get_dent_type(inode->i_mode);
++	dent->nlen = cpu_to_le16(nm->len);
++	memcpy(dent->name, nm->name, nm->len);
++	dent->name[nm->len] = '\0';
++	ubifs_prep_grp_node(c, dent, dlen, 0);
 +
-+	if (available > outstanding) {
-+		int divisor, factor;
++	ino = (void *)dent + aligned_dlen;
++	pack_inode(c, ino, inode, 0, last_reference);
 +
-+		free = available - outstanding;
-+		/*
-+		 * Assume free space is made up of uncompressed data nodes and
-+		 * full index nodes (one per data node, doubled because we
-+		 * always allow enough space to write the index twice).
-+		 */
-+		divisor = UBIFS_MAX_DATA_NODE_SZ + (c->max_idx_node_sz << 1);
-+		factor = UBIFS_MAX_DATA_NODE_SZ - UBIFS_DATA_NODE_SZ;
-+		do_div(free, divisor);
-+		free *= factor;
++	ino = (void *)ino + aligned_ilen;
++	pack_inode(c, ino, dir, 1, 0);
++
++	err = make_reservation(c, BASEHD, len);
++	if (err)
++		goto out_free;
++
++	if (last_reference) {
++		err = ubifs_add_orphan(c, inode->i_ino);
++		if (err) {
++			release_head(c, BASEHD);
++			goto out_finish;
++		}
++	}
++
++	err = write_head(c, BASEHD, dent, len, &lnum, &dent_offs, sync);
++	if (!sync && !err) {
++		struct ubifs_wbuf *wbuf = &c->jheads[BASEHD].wbuf;
++
++		ubifs_wbuf_add_ino_nolock(wbuf, inode->i_ino);
++		ubifs_wbuf_add_ino_nolock(wbuf, dir->i_ino);
++	}
++	release_head(c, BASEHD);
++	kfree(dent);
++	if (err)
++		goto out_ro;
++
++	if (deletion) {
++		err = ubifs_tnc_remove_nm(c, &dent_key, nm);
++		if (err)
++			goto out_ro;
++		err = ubifs_add_dirt(c, lnum, dlen);
 +	} else
-+		free = 0;
-+	return free;
++		err = ubifs_tnc_add_nm(c, &dent_key, lnum, dent_offs, dlen, nm);
++	if (err)
++		goto out_ro;
++
++	/*
++	 * Note, we do not remove the inode from TNC even if the last reference
++	 * to it has just been deleted, because the inode may still be opened.
++	 * Instead, the inode has been added to orphan lists and the orphan
++	 * subsystem will take further care about it.
++	 */
++	ino_key_init(c, &ino_key, inode->i_ino);
++	ino_offs = dent_offs + aligned_dlen;
++	err = ubifs_tnc_add(c, &ino_key, lnum, ino_offs, ilen);
++	if (err)
++		goto out_ro;
++
++	ino_key_init(c, &ino_key, dir->i_ino);
++	ino_offs += aligned_ilen;
++	err = ubifs_tnc_add(c, &ino_key, lnum, ino_offs, UBIFS_INO_NODE_SZ);
++	if (err)
++		goto out_ro;
++
++	finish_reservation(c);
++	return 0;
++
++out_finish:
++	finish_reservation(c);
++out_free:
++	kfree(dent);
++	return err;
++
++out_ro:
++	ubifs_ro_mode(c);
++	if (last_reference)
++		ubifs_delete_orphan(c, inode->i_ino);
++	finish_reservation(c);
++	return err;
 +}
++
++/**
++ * ubifs_jrn_write_data - write a data node to the journal.
++ * @c: UBIFS file-system description object
++ * @inode: inode the data node belongs to
++ * @key: node key
++ * @buf: buffer to write
++ * @len: data length (must not exceed %UBIFS_BLOCK_SIZE)
++ *
++ * This function writes a data node to the journal. Returns %0 if the data node
++ * was successfully written, and a negative error code in case of failure.
++ */
++int ubifs_jrn_write_data(struct ubifs_info *c, const struct inode *inode,
++			 const union ubifs_key *key, const void *buf, int len)
++{
++	int err, lnum, offs, compr_type, out_len;
++	int dlen = UBIFS_DATA_NODE_SZ + len * WORST_COMPR_FACTOR;
++	const struct ubifs_inode *ui = ubifs_inode(inode);
++	struct ubifs_data_node *data;
++
++	dbg_jrn_key(c, key, "ino %lu, blk %u, len %d, key ",
++		    key_ino(c, key), key_block(c, key), len);
++	ubifs_assert(len <= UBIFS_BLOCK_SIZE);
++
++	data = kmalloc(dlen, GFP_NOFS);
++	if (!data)
++		return -ENOMEM;
++
++	data->ch.node_type = UBIFS_DATA_NODE;
++	key_write(c, key, &data->key);
++	data->size = cpu_to_le32(len);
++
++	if (!(ui->flags && UBIFS_COMPR_FL))
++		/* Compression is disabled for this inode */
++		compr_type = UBIFS_COMPR_NONE;
++	else
++		compr_type = ui->compr_type;
++
++	out_len = dlen - UBIFS_DATA_NODE_SZ;
++	ubifs_compress(buf, len, &data->data, &out_len, &compr_type);
++	ubifs_assert(out_len <= UBIFS_BLOCK_SIZE);
++
++	dlen = UBIFS_DATA_NODE_SZ + out_len;
++	data->compr_type = cpu_to_le16(compr_type);
++
++	err = make_reservation(c, DATAHD, dlen);
++	if (err)
++		goto out_free;
++
++	err = write_node(c, DATAHD, data, dlen, &lnum, &offs);
++	if (!err)
++		ubifs_wbuf_add_ino_nolock(&c->jheads[DATAHD].wbuf,
++					  key_ino(c, key));
++	release_head(c, DATAHD);
++	if (err)
++		goto out_ro;
++
++	err = ubifs_tnc_add(c, key, lnum, offs, dlen);
++	if (err)
++		goto out_ro;
++
++	finish_reservation(c);
++	kfree(data);
++	return 0;
++
++out_ro:
++	ubifs_ro_mode(c);
++	finish_reservation(c);
++out_free:
++	kfree(data);
++	return err;
++}
++
++/**
++ * ubifs_jrn_write_inode - flush inode to the journal.
++ * @c: UBIFS file-system description object
++ * @inode: inode to flush
++ * @last_reference: inode has been deleted
++ * @sync: non-zero if the write-buffer has to be synchronized
++ *
++ * This function writes inode @inode to the journal (to the base head). Returns
++ * zero in case of success and a negative error code in case of failure.
++ */
++int ubifs_jrn_write_inode(struct ubifs_info *c, const struct inode *inode,
++			  int last_reference, int sync)
++{
++	int err, len, lnum, offs;
++	struct ubifs_ino_node *ino;
++	struct ubifs_inode *ui = ubifs_inode(inode);
++
++	dbg_jrn("ino %lu%s", inode->i_ino,
++		last_reference ? " (last reference)" : "");
++	if (last_reference)
++		ubifs_assert(inode->i_nlink == 0);
++
++	/* If the inode is deleted, do not write the attached data */
++	len = UBIFS_INO_NODE_SZ;
++	if (!last_reference)
++		len += ui->data_len;
++	ino = kmalloc(len, GFP_NOFS);
++	if (!ino)
++		return -ENOMEM;
++	pack_inode(c, ino, inode, 1, last_reference);
++
++	err = make_reservation(c, BASEHD, len);
++	if (err)
++		goto out_free;
++
++	err = write_head(c, BASEHD, ino, len, &lnum, &offs, sync);
++	if (!sync && !err)
++		ubifs_wbuf_add_ino_nolock(&c->jheads[BASEHD].wbuf,
++					  inode->i_ino);
++	release_head(c, BASEHD);
++	if (err)
++		goto out_ro;
++
++	if (last_reference) {
++		err = ubifs_tnc_remove_ino(c, inode->i_ino);
++		if (err)
++			goto out_ro;
++		ubifs_delete_orphan(c, inode->i_ino);
++		err = ubifs_add_dirt(c, lnum, len);
++	} else {
++		union ubifs_key key;
++
++		ino_key_init(c, &key, inode->i_ino);
++		err = ubifs_tnc_add(c, &key, lnum, offs, len);
++	}
++	if (err)
++		goto out_ro;
++
++	finish_reservation(c);
++	kfree(ino);
++	return 0;
++
++out_ro:
++	ubifs_ro_mode(c);
++	finish_reservation(c);
++out_free:
++	kfree(ino);
++	return err;
++}
++
++/**
++ * ubifs_jrn_rename - rename a directory entry.
++ * @c: UBIFS file-system description object
++ * @old_dir: parent inode of directory entry to rename
++ * @old_dentry: directory entry to rename
++ * @new_dir: parent inode of directory entry to rename
++ * @new_dentry: new directory entry (or directory entry to replace)
++ * @sync: non-zero if the write-buffer has to be synchronized
++ *
++ * Returns zero in case of success and a negative error code in case of failure.
++ */
++int ubifs_jrn_rename(struct ubifs_info *c, const struct inode *old_dir,
++		     const struct dentry *old_dentry,
++		     const struct inode *new_dir,
++		     const struct dentry *new_dentry, int sync)
++{
++	const struct inode *old_inode = old_dentry->d_inode;
++	const struct inode *new_inode = new_dentry->d_inode;
++	int err, dlen1, dlen2, ilen, lnum, offs, len;
++	int aligned_dlen1, aligned_dlen2, plen = UBIFS_INO_NODE_SZ;
++	int last_reference = !!(new_inode && new_inode->i_nlink == 0);
++	struct ubifs_dent_node *dent, *dent2;
++	void *p;
++	union ubifs_key key;
++
++	dbg_jrn("dent '%.*s' in dir ino %lu to dent '%.*s' in dir ino %lu",
++		old_dentry->d_name.len, old_dentry->d_name.name,
++		old_dir->i_ino, new_dentry->d_name.len,
++		new_dentry->d_name.name, new_dir->i_ino);
++
++	ubifs_assert(ubifs_inode(old_dir)->data_len == 0);
++	ubifs_assert(ubifs_inode(new_dir)->data_len == 0);
++
++	dlen1 = UBIFS_DENT_NODE_SZ + new_dentry->d_name.len + 1;
++	dlen2 = UBIFS_DENT_NODE_SZ + old_dentry->d_name.len + 1;
++	if (new_inode) {
++		ilen = UBIFS_INO_NODE_SZ;
++		if (!last_reference)
++			ilen += ubifs_inode(new_inode)->data_len;
++	} else
++		ilen = 0;
++
++	aligned_dlen1 = ALIGN(dlen1, 8);
++	aligned_dlen2 = ALIGN(dlen2, 8);
++
++	len = aligned_dlen1 + aligned_dlen2 + ALIGN(ilen, 8) + ALIGN(plen, 8);
++	if (old_dir != new_dir)
++		len += plen;
++
++	dent = kmalloc(len, GFP_NOFS);
++	if (!dent)
++		return -ENOMEM;
++
++	/* Make new dent */
++	dent->ch.node_type = UBIFS_DENT_NODE;
++	dent_key_init_flash(c, &dent->key, new_dir->i_ino, &new_dentry->d_name);
++	dent->inum = cpu_to_le64(old_inode->i_ino);
++	dent->padding = 0;
++	dent->type = get_dent_type(old_inode->i_mode);
++	dent->nlen = cpu_to_le16(new_dentry->d_name.len);
++	memcpy(dent->name, new_dentry->d_name.name, new_dentry->d_name.len);
++	dent->name[new_dentry->d_name.len] = '\0';
++	ubifs_prep_grp_node(c, dent, dlen1, 0);
++
++	dent2 = (void *)dent + aligned_dlen1;
++
++	/* Make deletion dent */
++	dent2->ch.node_type = UBIFS_DENT_NODE;
++	dent_key_init_flash(c, &dent2->key, old_dir->i_ino,
++			    &old_dentry->d_name);
++	dent2->inum = cpu_to_le64(0);
++	dent2->padding = 0;
++	dent2->type = DT_UNKNOWN;
++	dent2->nlen = cpu_to_le16(old_dentry->d_name.len);
++	memcpy(dent2->name, old_dentry->d_name.name, old_dentry->d_name.len);
++	dent2->name[old_dentry->d_name.len] = '\0';
++	ubifs_prep_grp_node(c, dent2, dlen2, 0);
++
++	p = (void *)dent2 + aligned_dlen2;
++	if (new_inode) {
++		pack_inode(c, p, new_inode, 0, last_reference);
++		p += ALIGN(ilen, 8);
++	}
++
++	if (old_dir == new_dir)
++		pack_inode(c, p, old_dir, 1, 0);
++	else {
++		pack_inode(c, p, old_dir, 0, 0);
++		p += ALIGN(plen, 8);
++		pack_inode(c, p, new_dir, 1, 0);
++	}
++
++	err = make_reservation(c, BASEHD, len);
++	if (err)
++		goto out_free;
++
++	if (last_reference) {
++		err = ubifs_add_orphan(c, new_inode->i_ino);
++		if (err) {
++			release_head(c, BASEHD);
++			goto out_finish;
++		}
++	}
++
++	err = write_head(c, BASEHD, dent, len, &lnum, &offs, sync);
++	if (!sync && !err) {
++		struct ubifs_wbuf *wbuf = &c->jheads[BASEHD].wbuf;
++
++		ubifs_wbuf_add_ino_nolock(wbuf, new_dir->i_ino);
++		ubifs_wbuf_add_ino_nolock(wbuf, old_dir->i_ino);
++	}
++	release_head(c, BASEHD);
++	if (err)
++		goto out_ro;
++	if (new_inode)
++		ubifs_wbuf_add_ino_nolock(&c->jheads[BASEHD].wbuf,
++					  new_inode->i_ino);
++
++	dent_key_init(c, &key, new_dir->i_ino, &new_dentry->d_name);
++	err = ubifs_tnc_add_nm(c, &key, lnum, offs, dlen1, &new_dentry->d_name);
++	if (err)
++		goto out_ro;
++
++	err = ubifs_add_dirt(c, lnum, dlen2);
++	if (err)
++		goto out_ro;
++
++	dent_key_init(c, &key, old_dir->i_ino, &old_dentry->d_name);
++	err = ubifs_tnc_remove_nm(c, &key, &old_dentry->d_name);
++	if (err)
++		goto out_ro;
++
++	offs += aligned_dlen1 + aligned_dlen2;
++	if (new_inode) {
++		ino_key_init(c, &key, new_inode->i_ino);
++		err = ubifs_tnc_add(c, &key, lnum, offs, ilen);
++		if (err)
++			goto out_ro;
++		offs += ALIGN(ilen, 8);
++	}
++
++	ino_key_init(c, &key, old_dir->i_ino);
++	err = ubifs_tnc_add(c, &key, lnum, offs, plen);
++	if (err)
++		goto out_ro;
++
++	if (old_dir != new_dir) {
++		offs += ALIGN(plen, 8);
++		ino_key_init(c, &key, new_dir->i_ino);
++		err = ubifs_tnc_add(c, &key, lnum, offs, plen);
++		if (err)
++			goto out_ro;
++	}
++
++	finish_reservation(c);
++	kfree(dent);
++	return 0;
++
++out_ro:
++	ubifs_ro_mode(c);
++	if (last_reference)
++		ubifs_delete_orphan(c, new_inode->i_ino);
++out_finish:
++	finish_reservation(c);
++out_free:
++	kfree(dent);
++	return err;
++}
++
++/**
++ * recomp_data_node - re-compress a truncated data node.
++ * @dn: data node to re-compress
++ * @new_len: new length
++ *
++ * This function is used when an inode is truncated and the last data node of
++ * the inode has to be re-compressed and re-written.
++ */
++static int recomp_data_node(struct ubifs_data_node *dn, int *new_len)
++{
++	void *buf;
++	int err, len, compr_type, out_len;
++
++	out_len = le32_to_cpu(dn->size);
++	buf = kmalloc(out_len * WORST_COMPR_FACTOR, GFP_NOFS);
++	if (!buf)
++		return -ENOMEM;
++
++	len = le32_to_cpu(dn->ch.len) - UBIFS_DATA_NODE_SZ;
++	compr_type = le16_to_cpu(dn->compr_type);
++	err = ubifs_decompress(&dn->data, len, buf, &out_len, compr_type);
++	if (err)
++		goto out;
++
++	ubifs_compress(buf, *new_len, &dn->data, &out_len, &compr_type);
++	ubifs_assert(out_len <= UBIFS_BLOCK_SIZE);
++	dn->compr_type = cpu_to_le16(compr_type);
++	dn->size = cpu_to_le32(*new_len);
++	*new_len = UBIFS_DATA_NODE_SZ + out_len;
++out:
++	kfree(buf);
++	return err;
++}
++
++/**
++ * ubifs_jrn_truncate - update the journal for a truncation.
++ * @c: UBIFS file-system description object
++ * @inum: inode number of inode being truncated
++ * @old_size: old size
++ * @new_size: new size
++ *
++ * When the size of a file decreases due to truncation, a truncation node is
++ * written, the journal tree is updated, and the last data block is re-written
++ * if it has been affected.
++ *
++ * This function returns %0 in the case of success, and a negative error code in
++ * case of failure.
++ */
++int ubifs_jrn_truncate(struct ubifs_info *c, ino_t inum,
++		       loff_t old_size, loff_t new_size)
++{
++	union ubifs_key key, to_key;
++	struct ubifs_trun_node *trun;
++	struct ubifs_data_node *dn;
++	int err, dlen, len, lnum, offs, bit, sz;
++	unsigned int blk;
++
++	dbg_jrn("ino %lu, size %lld -> %lld", inum, old_size, new_size);
++
++	sz = UBIFS_TRUN_NODE_SZ + UBIFS_MAX_DATA_NODE_SZ * WORST_COMPR_FACTOR;
++	trun = kmalloc(sz, GFP_NOFS);
++	if (!trun)
++		return -ENOMEM;
++
++	trun->ch.node_type = UBIFS_TRUN_NODE;
++	trun_key_init_flash(c, &trun->key, inum);
++	trun->old_size = cpu_to_le64(old_size);
++	trun->new_size = cpu_to_le64(new_size);
++	ubifs_prepare_node(c, trun, UBIFS_TRUN_NODE_SZ, 0);
++
++	dlen = new_size & (UBIFS_BLOCK_SIZE - 1);
++
++	if (dlen) {
++		/* Get last data block so it can be truncated */
++		dn = (void *)trun + ALIGN(UBIFS_TRUN_NODE_SZ, 8);
++		blk = new_size / UBIFS_BLOCK_SIZE;
++		data_key_init(c, &key, inum, blk);
++		dbg_jrn_key(c, &key, "key");
++		err = ubifs_tnc_lookup(c, &key, dn);
++		if (err == -ENOENT)
++			dlen = 0; /* Not found (so it is a hole) */
++		else if (err)
++			goto out_free;
++		else {
++			if (le32_to_cpu(dn->size) <= dlen)
++				dlen = 0; /* Nothing to do */
++			else {
++				int compr_type = le16_to_cpu(dn->compr_type);
++
++				if (compr_type != UBIFS_COMPR_NONE) {
++					err = recomp_data_node(dn, &dlen);
++					if (err)
++						goto out_free;
++				} else {
++					dn->size = cpu_to_le32(dlen);
++					dlen += UBIFS_DATA_NODE_SZ;
++				}
++				ubifs_prepare_node(c, dn, dlen, 0);
++			}
++		}
++	}
++
++	if (dlen)
++		len = ALIGN(UBIFS_TRUN_NODE_SZ, 8) + dlen;
++	else
++		len = UBIFS_TRUN_NODE_SZ;
++
++	err = make_reservation(c, BASEHD, len);
++	if (err)
++		goto out_free;
++
++	err = write_head(c, BASEHD, trun, len, &lnum, &offs, 0);
++	if (!err)
++		ubifs_wbuf_add_ino_nolock(&c->jheads[BASEHD].wbuf, inum);
++	release_head(c, BASEHD);
++	if (err)
++		goto out_ro;
++
++	if (dlen) {
++		offs += ALIGN(UBIFS_TRUN_NODE_SZ, 8);
++		err = ubifs_tnc_add(c, &key, lnum, offs, dlen);
++		if (err)
++			goto out_ro;
++	}
++
++	err = ubifs_add_dirt(c, lnum, UBIFS_TRUN_NODE_SZ);
++	if (err)
++		goto out_ro;
++
++	bit = new_size & (UBIFS_BLOCK_SIZE - 1);
++
++	blk = new_size / UBIFS_BLOCK_SIZE + (bit ? 1 : 0);
++	data_key_init(c, &key, inum, blk);
++
++	bit = old_size & (UBIFS_BLOCK_SIZE - 1);
++
++	blk = old_size / UBIFS_BLOCK_SIZE - (bit ? 0: 1);
++	data_key_init(c, &to_key, inum, blk);
++
++	err = ubifs_tnc_remove_range(c, &key, &to_key);
++	if (err)
++		goto out_ro;
++
++	finish_reservation(c);
++	kfree(trun);
++	return 0;
++
++out_ro:
++	ubifs_ro_mode(c);
++	finish_reservation(c);
++out_free:
++	kfree(trun);
++	return err;
++}
++
++#ifdef CONFIG_UBIFS_FS_XATTR
++
++int ubifs_jrn_delete_xattr(struct ubifs_info *c, const struct inode *host,
++			   const struct inode *inode, const struct qstr *nm,
++			   int sync)
++{
++	int err, xlen, hlen, len, lnum, xent_offs, aligned_xlen;
++	struct ubifs_dent_node *xent;
++	struct ubifs_ino_node *ino;
++	union ubifs_key xent_key, key1, key2;
++
++	dbg_jrn("host %lu, xattr ino %lu, name '%s', data len %d",
++		host->i_ino, inode->i_ino, nm->name,
++		ubifs_inode(inode)->data_len);
++	ubifs_assert(inode->i_nlink == 0);
++
++	/*
++	 * Since we are deleting the inode, we do not bother to attach any data
++	 * to it and assume its length is %UBIFS_INO_NODE_SZ.
++	 */
++	xlen = UBIFS_DENT_NODE_SZ + nm->len + 1;
++	aligned_xlen = ALIGN(xlen, 8);
++	hlen = ubifs_inode(host)->data_len + UBIFS_INO_NODE_SZ;
++	len = aligned_xlen + UBIFS_INO_NODE_SZ + ALIGN(hlen, 8);
++
++	xent = kmalloc(len, GFP_KERNEL);
++	if (!xent)
++		return -ENOMEM;
++
++	xent->ch.node_type = UBIFS_XENT_NODE;
++	xent_key_init(c, &xent_key, host->i_ino, nm);
++	key_write(c, &xent_key, xent->key);
++	xent->inum = 0;
++	xent->padding = 0;
++	xent->type = get_dent_type(inode->i_mode);
++	xent->nlen = cpu_to_le16(nm->len);
++	memcpy(xent->name, nm->name, nm->len);
++	xent->name[nm->len] = '\0';
++	ubifs_prep_grp_node(c, xent, xlen, 0);
++
++	ino = (void *)xent + aligned_xlen;
++	pack_inode(c, ino, inode, 0, 1);
++
++	ino = (void *)ino + UBIFS_INO_NODE_SZ;
++	pack_inode(c, ino, host, 1, 0);
++
++	err = make_reservation(c, BASEHD, len);
++	if (err) {
++		kfree(xent);
++		return err;
++	}
++
++	err = write_head(c, BASEHD, xent, len, &lnum, &xent_offs, sync);
++	if (!sync && !err)
++		ubifs_wbuf_add_ino_nolock(&c->jheads[BASEHD].wbuf, host->i_ino);
++	release_head(c, BASEHD);
++	kfree(xent);
++	if (err)
++		goto out_ro;
++
++	/* Remove the extended attribute entry from TNC */
++	err = ubifs_tnc_remove_nm(c, &xent_key, nm);
++	if (err)
++		goto out_ro;
++	err = ubifs_add_dirt(c, lnum, xlen);
++	if (err)
++		goto out_ro;
++
++	/*
++	 * Remove all nodes belonging to the extended attribute inode from TNC.
++	 * Well, there actually must be only one node - the inode itself.
++	 */
++	lowest_ino_key(c, &key1, inode->i_ino);
++	highest_ino_key(c, &key2, inode->i_ino);
++	err = ubifs_tnc_remove_range(c, &key1, &key2);
++	if (err)
++		goto out_ro;
++	err = ubifs_add_dirt(c, lnum, UBIFS_INO_NODE_SZ);
++	if (err)
++		goto out_ro;
++
++	/* And update TNC with the new host inode position */
++	ino_key_init(c, &key1, host->i_ino);
++	err = ubifs_tnc_add(c, &key1, lnum, xent_offs + len - hlen, hlen);
++	if (err)
++		goto out_ro;
++
++	finish_reservation(c);
++	return 0;
++
++out_ro:
++	ubifs_ro_mode(c);
++	finish_reservation(c);
++	return err;
++}
++
++/**
++ * ubifs_jrn_write_2_inodes - write 2 inodes to the journal.
++ * @c: UBIFS file-system description object
++ * @inode1: first inode to write
++ * @inode2: second inode to write
++ * @sync: non-zero if the write-buffer has to be synchronized
++ *
++ * This function writes 2 inodes @inode1 and @inode2 to the journal (to the
++ * base head - first @inode1, then @inode2). Returns zero in case of success
++ * and a negative error code in case of failure.
++ */
++int ubifs_jrn_write_2_inodes(struct ubifs_info *c, const struct inode *inode1,
++			     const struct inode *inode2, int sync)
++{
++	int err, len1, len2, aligned_len, aligned_len1, lnum, offs;
++	struct ubifs_ino_node *ino;
++	union ubifs_key key;
++
++	dbg_jrn("ino %lu, ino %lu", inode1->i_ino, inode2->i_ino);
++	ubifs_assert(inode1->i_nlink > 0);
++	ubifs_assert(inode2->i_nlink > 0);
++
++	len1 = UBIFS_INO_NODE_SZ + ubifs_inode(inode1)->data_len;
++	len2 = UBIFS_INO_NODE_SZ + ubifs_inode(inode2)->data_len;
++	aligned_len1 = ALIGN(len1, 8);
++	aligned_len = aligned_len1 + ALIGN(len2, 8);
++
++	ino = kmalloc(aligned_len, GFP_NOFS);
++	if (!ino)
++		return -ENOMEM;
++	pack_inode(c, ino, inode1, 0, 0);
++	pack_inode(c, (void *)ino + aligned_len1, inode2, 1, 0);
++
++	err = make_reservation(c, BASEHD, aligned_len);
++	if (err)
++		goto out_free;
++
++	err = write_head(c, BASEHD, ino, aligned_len, &lnum, &offs, 0);
++	if (!sync && !err) {
++		struct ubifs_wbuf *wbuf = &c->jheads[BASEHD].wbuf;
++
++		ubifs_wbuf_add_ino_nolock(wbuf, inode1->i_ino);
++		ubifs_wbuf_add_ino_nolock(wbuf, inode2->i_ino);
++	}
++	release_head(c, BASEHD);
++	if (err)
++		goto out_ro;
++
++	ino_key_init(c, &key, inode1->i_ino);
++	err = ubifs_tnc_add(c, &key, lnum, offs, len1);
++	if (err)
++		goto out_ro;
++
++	ino_key_init(c, &key, inode2->i_ino);
++	err = ubifs_tnc_add(c, &key, lnum, offs + aligned_len1, len2);
++	if (err)
++		goto out_ro;
++
++	finish_reservation(c);
++	kfree(ino);
++	return 0;
++
++out_ro:
++	ubifs_ro_mode(c);
++	finish_reservation(c);
++out_free:
++	kfree(ino);
++	return err;
++}
++
++#endif /* CONFIG_UBIFS_FS_XATTR */
+diff --git a/fs/ubifs/log.c b/fs/ubifs/log.c
+new file mode 100644
+index 0000000..f55e7c1
+--- /dev/null
++++ b/fs/ubifs/log.c
+@@ -0,0 +1,769 @@
++/*
++ * This file is part of UBIFS.
++ *
++ * Copyright (C) 2006-2008 Nokia Corporation.
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU General Public License version 2 as published by
++ * the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful, but WITHOUT
++ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
++ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
++ * more details.
++ *
++ * You should have received a copy of the GNU General Public License along with
++ * this program; if not, write to the Free Software Foundation, Inc., 51
++ * Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
++ *
++ * Authors: Artem Bityutskiy (Битюцкий Артём)
++ *          Adrian Hunter
++ */
++
++/*
++ * This file is a part of UBIFS journal implementation and contains various
++ * functions which manipulate the log. The log is a fixed area on the flash
++ * which does not contain any data but refers to buds. The log is a part of the
++ * journal.
++ */
++
++#include "ubifs.h"
++
++#ifdef CONFIG_UBIFS_FS_DEBUG_CHK_OTHER
++static int dbg_check_bud_bytes(struct ubifs_info *c);
++#else
++#define dbg_check_bud_bytes(c) 0
++#endif
++
++/**
++ * ubifs_search_bud - search bud LEB.
++ * @c: UBIFS file-system description object
++ * @lnum: logical eraseblock number to search
++ *
++ * This function searches bud LEB @lnum. Returns bud description object in case
++ * of success and %NULL if there is no bud with this LEB number.
++ */
++struct ubifs_bud *ubifs_search_bud(struct ubifs_info *c, int lnum)
++{
++	struct rb_node *p;
++	struct ubifs_bud *bud;
++
++	spin_lock(&c->buds_lock);
++	p = c->buds.rb_node;
++	while (p) {
++		bud = rb_entry(p, struct ubifs_bud, rb);
++		if (lnum < bud->lnum)
++			p = p->rb_left;
++		else if (lnum > bud->lnum)
++			p = p->rb_right;
++		else {
++			spin_unlock(&c->buds_lock);
++			return bud;
++		}
++	}
++	spin_unlock(&c->buds_lock);
++	return NULL;
++}
++
++/**
++ * next_log_lnum - switch to the next log LEB.
++ * @c: UBIFS file-system description object
++ * @lnum: current log LEB
++ */
++static inline int next_log_lnum(const struct ubifs_info *c, int lnum)
++{
++	lnum += 1;
++	if (lnum > c->log_last)
++		lnum = UBIFS_LOG_LNUM;
++
++	return lnum;
++}
++
++/**
++ * empty_log_bytes - calculate amount of empty space in the log.
++ * @c: UBIFS file-system description object
++ */
++static inline long long empty_log_bytes(const struct ubifs_info *c)
++{
++	long long h, t;
++
++	h = c->lhead_lnum * c->leb_size + c->lhead_offs;
++	t = c->ltail_lnum * c->leb_size;
++
++	if (h >= t)
++		return c->log_bytes - h + t;
++	else
++		return t - h;
++}
++
++/**
++ * ubifs_add_bud - add bud LEB to the tree of buds and its journal head list.
++ * @c: UBIFS file-system description object
++ * @bud: the bud to add
++ */
++void ubifs_add_bud(struct ubifs_info *c, struct ubifs_bud *bud)
++{
++	struct rb_node **p, *parent = NULL;
++	struct ubifs_bud *b;
++	struct ubifs_jhead *jhead;
++
++	spin_lock(&c->buds_lock);
++	p = &c->buds.rb_node;
++	while (*p) {
++		parent = *p;
++		b = rb_entry(parent, struct ubifs_bud, rb);
++		ubifs_assert(bud->lnum != b->lnum);
++		if (bud->lnum < b->lnum)
++			p = &(*p)->rb_left;
++		else
++			p = &(*p)->rb_right;
++	}
++
++	rb_link_node(&bud->rb, parent, p);
++	rb_insert_color(&bud->rb, &c->buds);
++	if (c->jheads) {
++		jhead = &c->jheads[bud->jhead];
++		list_add_tail(&bud->list, &jhead->buds_list);
++	} else
++		ubifs_assert(c->replaying && (c->vfs_sb->s_flags & MS_RDONLY));
++
++	/*
++	 * Note, although this is a new bud, we anyway account this space now,
++	 * before any data has been written to it, because this is about to
++	 * guarantee fixed mount time, and this bud will anyway be read and
++	 * scanned.
++	 */
++	c->bud_bytes += c->leb_size - bud->start;
++
++	dbg_log("LEB %d:%d, jhead %d, bud_bytes %lld", bud->lnum,
++		bud->start, bud->jhead, c->bud_bytes);
++	spin_unlock(&c->buds_lock);
++}
++
++/**
++ * ubifs_create_buds_lists - create journal head buds lists for remount rw.
++ * @c: UBIFS file-system description object
++ */
++void ubifs_create_buds_lists(struct ubifs_info *c)
++{
++	struct rb_node *p;
++
++	spin_lock(&c->buds_lock);
++	p = rb_first(&c->buds);
++	while (p) {
++		struct ubifs_bud *bud = rb_entry(p, struct ubifs_bud, rb);
++		struct ubifs_jhead *jhead = &c->jheads[bud->jhead];
++
++		list_add_tail(&bud->list, &jhead->buds_list);
++		p = rb_next(p);
++	}
++	spin_unlock(&c->buds_lock);
++}
++
++/**
++ * ubifs_add_bud_to_log - add a new bud to the log.
++ * @c: UBIFS file-system description object
++ * @jhead: journal head the bud belongs to
++ * @lnum: LEB number of the bud
++ * @offs: starting offset of the bud
++ *
++ * This function writes reference node for the new bud LEB @lnum it to the log,
++ * and adds it to the buds tress. It also makes sure that log size does not
++ * exceed the 'c->max_bud_bytes' limit. Returns zero in case of success,
++ * %-EAGAIN if commit is required, and a negative error codes in case of
++ * failure.
++ */
++int ubifs_add_bud_to_log(struct ubifs_info *c, int jhead, int lnum, int offs)
++{
++	int err;
++	struct ubifs_bud *bud;
++	struct ubifs_ref_node *ref;
++
++	ubifs_assert(lnum > 0);
++	ubifs_assert(offs >= 0 && offs < c->leb_size);
++	ubifs_assert(jhead >= 0 && jhead < c->jhead_cnt);
++
++	bud = kmalloc(sizeof(struct ubifs_bud), GFP_NOFS);
++	if (!bud)
++		return -ENOMEM;
++	ref = kmalloc(c->ref_node_alsz, GFP_NOFS);
++	if (!ref) {
++		kfree(bud);
++		return -ENOMEM;
++	}
++
++	mutex_lock(&c->log_mutex);
++	/* Make sure we have enough space in the log */
++	if (empty_log_bytes(c) - c->ref_node_alsz < c->min_log_bytes) {
++		dbg_log("not enough log space - %lld, required %d",
++			empty_log_bytes(c), c->min_log_bytes);
++		ubifs_commit_required(c);
++		err = -EAGAIN;
++		goto out_unlock;
++	}
++
++	/*
++	 * Make sure the the amount of space in buds will not exceed
++	 * 'c->max_bud_bytes' limit, because we want to guarantee mount time
++	 * limits.
++	 */
++	spin_lock(&c->buds_lock);
++	if (c->bud_bytes + c->leb_size - offs > c->max_bud_bytes) {
++		dbg_log("bud bytes %lld (%lld max), require commit",
++			c->bud_bytes, c->max_bud_bytes);
++		spin_unlock(&c->buds_lock);
++		ubifs_commit_required(c);
++		err = -EAGAIN;
++		goto out_unlock;
++	}
++	spin_unlock(&c->buds_lock);
++
++	/*
++	 * If the journal is full enough - start background commit. Note, it is
++	 * OK to read 'c->cmt_state' without spinlock because integer reads
++	 * are atomic in the kernel.
++	 */
++	if (c->bud_bytes >= c->bg_bud_bytes &&
++	    c->cmt_state == COMMIT_RESTING) {
++		dbg_log("bud bytes %lld (%lld max), initiate BG commit",
++			c->bud_bytes, c->max_bud_bytes);
++		ubifs_request_bg_commit(c);
++	}
++
++	bud->lnum = lnum;
++	bud->start = offs;
++	bud->jhead = jhead;
++
++	ref->ch.node_type = UBIFS_REF_NODE;
++	ref->lnum = cpu_to_le32(bud->lnum);
++	ref->offs = cpu_to_le32(bud->start);
++	ref->jhead = cpu_to_le32(jhead);
++
++	if (c->lhead_offs > c->leb_size - c->ref_node_alsz) {
++		c->lhead_lnum = next_log_lnum(c, c->lhead_lnum);
++		c->lhead_offs = 0;
++	}
++
++	if (c->lhead_offs == 0) {
++		/* Must ensure next log LEB has been unmapped */
++		err = ubifs_leb_unmap(c, c->lhead_lnum);
++		if (err)
++			goto out_unlock;
++	}
++
++	if (bud->start == 0) {
++		/*
++		 * Before writing the LEB reference which refers an empty LEB
++		 * to the log, we have to make sure it is mapped, because
++		 * otherwise we'd risk to refer an LEB with garbage in case of
++		 * an unclean reboot, because the target LEB might have been
++		 * unmapped, but not yet physically erased.
++		 */
++		err = ubi_leb_map(c->ubi, bud->lnum, UBI_SHORTTERM);
++		if (err)
++			goto out_unlock;
++	}
++
++	dbg_log("write ref LEB %d:%d",
++		c->lhead_lnum, c->lhead_offs);
++	err = ubifs_write_node(c, ref, UBIFS_REF_NODE_SZ, c->lhead_lnum,
++			       c->lhead_offs, UBI_SHORTTERM);
++	c->lhead_offs += c->ref_node_alsz;
++	if (err)
++		goto out_unlock;
++	mutex_unlock(&c->log_mutex);
++
++	kfree(ref);
++	ubifs_add_bud(c, bud);
++
++	return 0;
++
++out_unlock:
++	mutex_unlock(&c->log_mutex);
++	kfree(ref);
++	kfree(bud);
++	return err;
++}
++
++/**
++ * remove_buds - remove used buds.
++ * @c: UBIFS file-system description object
++ *
++ * This function removes use buds from the buds tree. It does not remove the
++ * buds which are pointed to by journal heads. Returns zero in case of success
++ * and a negative error code in case of failure.
++ */
++static int remove_buds(struct ubifs_info *c)
++{
++	struct rb_node *p;
++	struct ubifs_bud *bud;
++	int err = 0;
++
++	ubifs_assert(list_empty(&c->old_buds));
++	c->cmt_bud_bytes = 0;
++	spin_lock(&c->buds_lock);
++	p = rb_first(&c->buds);
++	while (p) {
++		struct rb_node *p1 = p;
++
++		p = rb_next(p);
++		bud = rb_entry(p1, struct ubifs_bud, rb);
++
++		/*
++		 * Do not remove buds which are pointed to by journal heads
++		 * (non-closed buds).
++		 */
++		if (c->jheads[bud->jhead].wbuf.lnum == bud->lnum) {
++			dbg_log("preserve LEB %d:%d (jhead %d)",
++				bud->lnum, bud->start, bud->jhead);
++			continue;
++		}
++
++		rb_erase(p1, &c->buds);
++		list_del(&bud->list);
++
++		/*
++		 * If the commit does not finish, the recovery will need to
++		 * replay the journal, in which case the old buds must be
++		 * intact.  Do not release them until post commit.
++		 */
++		list_add(&bud->list, &c->old_buds);
++
++		/*
++		 * We've removed this bud, save its size in 'c->cmt_bud_bytes'
++		 * - this value will be subtracted from 'c->bud_bytes' when
++		 * commit is done.
++		 */
++		c->cmt_bud_bytes += c->leb_size - bud->start;
++		dbg_log("LEB %d:%d, jhead %d, cmt_bud_bytes %lld",
++			bud->lnum, bud->start, bud->jhead, c->cmt_bud_bytes);
++	}
++	spin_unlock(&c->buds_lock);
++
++	return err;
++}
++
++/**
++ * ubifs_log_start_commit - start commit.
++ * @c: UBIFS file-system description object
++ * @ltail_lnum: return new log tail LEB number
++ *
++ * The commit operation starts with writing "commit start" node to the log and
++ * reference nodes for all journal heads which will define new journal after
++ * the commit has been finished. The commit start and reference nodes are
++ * written in one go to the nearest empty log LEB (hence, when commit is
++ * finished UBIFS may safely unmap all the previous log LEBs). This function
++ * returns zero in case of success and a negative error code in case of
++ * failure.
++ */
++int ubifs_log_start_commit(struct ubifs_info *c, int *ltail_lnum)
++{
++	void *buf;
++	struct ubifs_cs_node *cs;
++	struct ubifs_ref_node *ref;
++	int err, i, max_len, len;
++
++	err = dbg_check_bud_bytes(c);
++	if (err)
++		return err;
++
++	max_len = UBIFS_CS_NODE_SZ + c->jhead_cnt * UBIFS_REF_NODE_SZ;
++	max_len = ALIGN(max_len, c->min_io_size);
++	buf = cs = kmalloc(max_len, GFP_NOFS);
++	if (!buf)
++		return -ENOMEM;
++
++	cs->ch.node_type = UBIFS_CS_NODE;
++	cs->cmt_no = cpu_to_le64(c->cmt_no + 1);
++	ubifs_prepare_node(c, cs, UBIFS_CS_NODE_SZ, 0);
++
++	/*
++	 * Note, we do not lock 'c->log_mutex' because this is the commit start
++	 * phase and we are exclusively using the log. And we do not lock
++	 * write-buffer because nobody can write to the file-system at this
++	 * phase.
++	 */
++
++	len = UBIFS_CS_NODE_SZ;
++	for (i = 0; i < c->jhead_cnt; i++) {
++		int lnum = c->jheads[i].wbuf.lnum;
++		int offs = c->jheads[i].wbuf.offs;
++
++		ubifs_assert(offs <= c->leb_size);
++		if (lnum == -1 || offs == c->leb_size)
++			continue;
++
++		dbg_log("add ref to LEB %d:%d for jhead %d", lnum, offs, i);
++		ref = buf + len;
++		ref->ch.node_type = UBIFS_REF_NODE;
++		ref->lnum = cpu_to_le32(lnum);
++		ref->offs = cpu_to_le32(offs);
++		ref->jhead = cpu_to_le32(i);
++
++		ubifs_prepare_node(c, ref, UBIFS_REF_NODE_SZ, 0);
++		len += UBIFS_REF_NODE_SZ;
++	}
++
++	ubifs_assert(len <= c->leb_size);
++	ubifs_pad(c, buf + len, ALIGN(len, c->min_io_size) - len);
++
++	/* Switch to the next log LEB */
++	if (c->lhead_offs) {
++		c->lhead_lnum = next_log_lnum(c, c->lhead_lnum);
++		c->lhead_offs = 0;
++	}
++
++	if (c->lhead_offs == 0) {
++		/* Must ensure next LEB has been unmapped */
++		err = ubifs_leb_unmap(c, c->lhead_lnum);
++		if (err)
++			goto out;
++	}
++
++	len = ALIGN(len, c->min_io_size);
++	dbg_log("writing commit start at LEB %d:0, len %d", c->lhead_lnum, len);
++	err = ubifs_leb_write(c, c->lhead_lnum, cs, 0, len, UBI_SHORTTERM);
++	if (err)
++		goto out;
++
++	*ltail_lnum = c->lhead_lnum;
++
++	c->lhead_offs += len;
++	if (c->lhead_offs == c->leb_size) {
++		c->lhead_lnum = next_log_lnum(c, c->lhead_lnum);
++		c->lhead_offs = 0;
++	}
++
++	err = remove_buds(c);
++
++	/*
++	 * We have started the commit and now users may use the rest of the log
++	 * for new writes.
++	 */
++	c->min_log_bytes = 0;
++
++out:
++	kfree(buf);
++	return err;
++}
++
++/**
++ * ubifs_log_end_commit - end commit.
++ * @c: UBIFS file-system description object
++ * @ltail_lnum: new log tail LEB number
++ *
++ * This function is called on when the commit operation was finished. It
++ * moves log tail to new position and unmaps LEBs which contain obsolete data.
++ * Returns zero in case of success and a negative error code in case of
++ * failure.
++ */
++int ubifs_log_end_commit(struct ubifs_info *c, int ltail_lnum)
++{
++	int err;
++
++	/*
++	 * At this phase we have to lock 'c->log_mutex' because UBIFS allows FS
++	 * writes during commit. Its only short "commit" start phase when
++	 * writers are blocked.
++	 */
++	mutex_lock(&c->log_mutex);
++
++	dbg_log("old tail was LEB %d:0, new tail is LEB %d:0",
++		c->ltail_lnum, ltail_lnum);
++
++	c->ltail_lnum = ltail_lnum;
++	/*
++	 * The commit is finished and from now on it must be guaranteed that
++	 * there is always enough space for the next commit.
++	 */
++	c->min_log_bytes = c->leb_size;
++
++	spin_lock(&c->buds_lock);
++	c->bud_bytes -= c->cmt_bud_bytes;
++	spin_unlock(&c->buds_lock);
++
++	err = dbg_check_bud_bytes(c);
++
++	mutex_unlock(&c->log_mutex);
++	return err;
++}
++
++/**
++ * ubifs_log_post_commit - things to do after commit is completed.
++ * @c: UBIFS file-system description object
++ * @old_ltail_lnum: old log tail LEB number
++ *
++ * Release buds only after commit is completed, because they must be unchanged
++ * if recovery is needed.
++ *
++ * Unmap log LEBs only after commit is completed, because they may be needed for
++ * recovery.
++ *
++ * This function returns %0 on success and a negative error code on failure.
++ */
++int ubifs_log_post_commit(struct ubifs_info *c, int old_ltail_lnum)
++{
++	int lnum, err = 0;
++
++	while (!list_empty(&c->old_buds)) {
++		struct ubifs_bud *bud;
++
++		bud = list_entry(c->old_buds.next, struct ubifs_bud, list);
++		err = ubifs_return_leb(c, bud->lnum);
++		if (err)
++			return err;
++		list_del(&bud->list);
++		kfree(bud);
++	}
++	mutex_lock(&c->log_mutex);
++	for (lnum = old_ltail_lnum; lnum != c->ltail_lnum;
++	     lnum = next_log_lnum(c, lnum)) {
++		dbg_log("unmap log LEB %d", lnum);
++		err = ubifs_leb_unmap(c, lnum);
++		if (err)
++			goto out;
++	}
++out:
++	mutex_unlock(&c->log_mutex);
++	return err;
++}
++
++/**
++ * struct done_ref - references that have been done.
++ * @rb: rb-tree node
++ * @lnum: LEB number
++ */
++struct done_ref {
++	struct rb_node rb;
++	int lnum;
++};
++
++/**
++ * done_already - determine if a reference has been done already.
++ * @done_tree: rb-tree to store references that have been done
++ * @lnum: LEB number of reference
++ *
++ * This function returns %1 if the reference has been done, %0 if not, otherwise
++ * a negative error code is returned.
++ */
++static int done_already(struct rb_root *done_tree, int lnum)
++{
++	struct rb_node **p = &done_tree->rb_node, *parent = NULL;
++	struct done_ref *dr;
++
++	while (*p) {
++		parent = *p;
++		dr = rb_entry(parent, struct done_ref, rb);
++		if (lnum < dr->lnum)
++			p = &(*p)->rb_left;
++		else if (lnum > dr->lnum)
++			p = &(*p)->rb_right;
++		else
++			return 1;
++	}
++
++	dr = kzalloc(sizeof(struct done_ref), GFP_NOFS);
++	if (!dr)
++		return -ENOMEM;
++
++	dr->lnum = lnum;
++
++	rb_link_node(&dr->rb, parent, p);
++	rb_insert_color(&dr->rb, done_tree);
++
++	return 0;
++}
++
++/**
++ * destroy_done_tree - destroy the done tree.
++ * @done_tree: done tree to destroy
++ */
++static void destroy_done_tree(struct rb_root *done_tree)
++{
++	struct rb_node *this = done_tree->rb_node;
++	struct done_ref *dr;
++
++	while (this) {
++		if (this->rb_left) {
++			this = this->rb_left;
++			continue;
++		} else if (this->rb_right) {
++			this = this->rb_right;
++			continue;
++		}
++		dr = rb_entry(this, struct done_ref, rb);
++		this = rb_parent(this);
++		if (this) {
++			if (this->rb_left == &dr->rb)
++				this->rb_left = NULL;
++			else
++				this->rb_right = NULL;
++		}
++		kfree(dr);
++	}
++}
++
++/**
++ * add_node - add a node to the consolidated log.
++ * @c: UBIFS file-system description object
++ * @buf: buffer to which to add
++ * @lnum: LEB number to which to write is passed and returned here
++ * @offs: offset to where to write is passed and returned here
++ * @node: node to add
++ *
++ * This function returns %0 on success and a negative error code on failure.
++ */
++static int add_node(struct ubifs_info *c, void *buf, int *lnum, int *offs,
++		    void *node)
++{
++	struct ubifs_ch *ch = node;
++	int len = le32_to_cpu(ch->len), remains = c->leb_size - *offs;
++
++	if (len > remains) {
++		int sz = ALIGN(*offs, c->min_io_size), err;
++
++		ubifs_pad(c, buf + *offs, sz - *offs);
++		err = ubi_leb_change(c->ubi, *lnum, buf, sz, UBI_SHORTTERM);
++		if (err)
++			return err;
++		*lnum = next_log_lnum(c, *lnum);
++		*offs = 0;
++	}
++	memcpy(buf + *offs, node, len);
++	*offs += ALIGN(len, 8);
++	return 0;
++}
++
++/**
++ * ubifs_consolidate_log - consolidate the log.
++ * @c: UBIFS file-system description object
++ *
++ * Repeated failed commits could cause the log to be full, but at least 1 LEB is
++ * needed for commit. This function rewrites the reference nodes in the log
++ * omitting duplicates, and failed CS nodes, and leaving no gaps.
++ *
++ * This function returns %0 on success and a negative error code on failure.
++ */
++int ubifs_consolidate_log(struct ubifs_info *c)
++{
++	struct ubifs_scan_leb *sleb;
++	struct ubifs_scan_node *snod;
++	struct rb_root done_tree = RB_ROOT;
++	int lnum, err, first = 1, write_lnum, offs = 0;
++	void *buf;
++
++	dbg_mnt("log tail LEB %d, log head LEB %d", c->ltail_lnum,
++		c->lhead_lnum);
++	buf = vmalloc(c->leb_size);
++	if (!buf)
++		return -ENOMEM;
++	lnum = c->ltail_lnum;
++	write_lnum = lnum;
++	while (1) {
++		sleb = ubifs_scan(c, lnum, 0, c->sbuf);
++		if (IS_ERR(sleb)) {
++			err = PTR_ERR(sleb);
++			goto out_free;
++		}
++		list_for_each_entry(snod, &sleb->nodes, list) {
++			switch (snod->type) {
++			case UBIFS_REF_NODE: {
++				struct ubifs_ref_node *ref = snod->node;
++				int ref_lnum = le32_to_cpu(ref->lnum);
++
++				err = done_already(&done_tree, ref_lnum);
++				if (err < 0)
++					goto out_scan;
++				if (err != 1) {
++					err = add_node(c, buf, &write_lnum,
++						       &offs, snod->node);
++					if (err)
++						goto out_scan;
++				}
++				break;
++			}
++			case UBIFS_CS_NODE:
++				if (!first)
++					break;
++				err = add_node(c, buf, &write_lnum, &offs,
++					       snod->node);
++				if (err)
++					goto out_scan;
++				first = 0;
++				break;
++			}
++		}
++		ubifs_scan_destroy(sleb);
++		if (lnum == c->lhead_lnum)
++			break;
++		lnum = next_log_lnum(c, lnum);
++	}
++	if (offs) {
++		int sz = ALIGN(offs, c->min_io_size);
++
++		ubifs_pad(c, buf + offs, sz - offs);
++		err = ubi_leb_change(c->ubi, write_lnum, buf, sz,
++				     UBI_SHORTTERM);
++		if (err)
++			goto out_free;
++		offs = ALIGN(offs, c->min_io_size);
++	}
++	destroy_done_tree(&done_tree);
++	vfree(buf);
++	if (write_lnum == c->lhead_lnum) {
++		ubifs_err("log is too full");
++		return -EINVAL;
++	}
++	/* Unmap remaining LEBs */
++	lnum = write_lnum;
++	do {
++		lnum = next_log_lnum(c, lnum);
++		err = ubifs_leb_unmap(c, lnum);
++		if (err)
++			return err;
++	} while (lnum != c->lhead_lnum);
++	c->lhead_lnum = write_lnum;
++	c->lhead_offs = offs;
++	dbg_mnt("new log head at %d:%d", c->lhead_lnum, c->lhead_offs);
++	return 0;
++
++out_scan:
++	ubifs_scan_destroy(sleb);
++out_free:
++	destroy_done_tree(&done_tree);
++	vfree(buf);
++	return err;
++}
++
++#ifdef CONFIG_UBIFS_FS_DEBUG_CHK_OTHER
++
++/**
++ * dbg_check_bud_bytes - make sure bud bytes calculation are all right.
++ * @c: UBIFS file-system description object
++ *
++ * This function makes sure the amount of flash space used by closed buds
++ * ('c->bud_bytes' is correct). Returns zero in case of success and %-EINVAL in
++ * case of failure.
++ */
++static int dbg_check_bud_bytes(struct ubifs_info *c)
++{
++	int i, err = 0;
++	struct ubifs_bud *bud;
++	long long bud_bytes = 0;
++
++	spin_lock(&c->buds_lock);
++	for (i = 0; i < c->jhead_cnt; i++)
++		list_for_each_entry(bud, &c->jheads[i].buds_list, list)
++			bud_bytes += c->leb_size - bud->start;
++
++	if (c->bud_bytes != bud_bytes) {
++		ubifs_err("bad bud_bytes %lld, calculated %lld",
++			  c->bud_bytes, bud_bytes);
++		err = -EINVAL;
++	}
++	spin_unlock(&c->buds_lock);
++
++	return err;
++}
++
++#endif /* CONFIG_UBIFS_FS_DEBUG_CHK_OTHER */
 -- 
 1.5.4.1
 
