@@ -1,149 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759499AbYC0OP1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759264AbYC0OWw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759499AbYC0OP1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Mar 2008 10:15:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757355AbYC0OPM
+	id S1759264AbYC0OWw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Mar 2008 10:22:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757336AbYC0OWm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Mar 2008 10:15:12 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:33196 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756799AbYC0OPK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Mar 2008 10:15:10 -0400
-Date: Thu, 27 Mar 2008 08:15:08 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: "Luck, Tony" <tony.luck@intel.com>,
-       Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: linux-arch@vger.kernel.org, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-Subject: down_spin() implementation
-Message-ID: <20080327141508.GL16721@parisc-linux.org>
-References: <1FE6DD409037234FAB833C420AA843ECE9DF60@orsmsx424.amr.corp.intel.com> <20080326123239.GG16721@parisc-linux.org> <1FE6DD409037234FAB833C420AA843ECE9EB1C@orsmsx424.amr.corp.intel.com>
+	Thu, 27 Mar 2008 10:22:42 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:41456 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757228AbYC0OWl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Mar 2008 10:22:41 -0400
+Message-ID: <47EBADAF.6000804@garzik.org>
+Date: Thu, 27 Mar 2008 10:22:39 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1FE6DD409037234FAB833C420AA843ECE9EB1C@orsmsx424.amr.corp.intel.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Linux IDE mailing list <linux-ide@vger.kernel.org>
+CC: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Linux ATA support now has a wiki
+References: <47EB9EE6.4050505@garzik.org>
+In-Reply-To: <47EB9EE6.4050505@garzik.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 26, 2008 at 01:29:58PM -0700, Luck, Tony wrote:
-> This looks a lot cleaner than my ia64 specific code that
-> used cmpxchg() for the down() operation and fetchadd for
-> the up() ... using a brand new semaphore_spin data type.
+Jeff Garzik wrote:
+> By popular request, libata (and all other ATA-related info) has a wiki:
+> 
+>     http://ata.wiki.kernel.org/
+> 
+> The content on http://linux-ata.org/ will be moved over to the wiki as 
+> time permits.  I moved over several pages, but the big ones -- hardware 
+> and software status -- are not yet moved.
+> 
+> Contribute away!
 
-I did brifly consider creating a spinaphore data type, but it's
-significantly less code to create down_spin().
+I just moved over the rest of the linux-ata.org content, except for the 
+driver feature matrix table at 
+http://linux-ata.org/driver-status.html#matrix
 
-> It appears to work ... I tried to do some timing comparisons
-> of this generic version against my arch specific one, but the
-> hackbench test case has a run to run variation of a factor of
-> three (from 1min9sec to 3min44sec) so it is hopeless to try
-> and see some small percentage difference.
+Update info on your favorite ATA driver today!  :)
 
-Thanks for testing and putting this together in patch form.  I've fixed it
-up to address Jens' astute comment and added it to my semaphore patchset.
-
-http://git.kernel.org/?p=linux/kernel/git/willy/misc.git;a=shortlog;h=semaphore-20080327
-
-Stephen, I've updated the 'semaphore' tag to point ot the same place as
-semaphore-20080327, so please change your linux-next tree from pulling
-semaphore-20080314 to just pulling plain 'semaphore'.  I'll use this
-method of tagging from now on.
-
-Here's the edited patch.
-
-commit 517df6fedc88af3f871cf827a62ef1a1a2073645
-Author: Matthew Wilcox <matthew@wil.cx>
-Date:   Thu Mar 27 09:49:26 2008 -0400
-
-    Add down_spin()
-    
-    ia64 would like to use a semaphore in flush_tlb_all() as it can have
-    multiple tokens.  Unfortunately, it's currently nested inside a spinlock,
-    so they can't sleep.  down_spin() is the cheapest solution to implement.
-    
-    Signed-off-by: Tony Luck <tony.luck@intel.com>
-    Signed-off-by: Matthew Wilcox <willy@linux.intel.com>
-
-diff --git a/include/linux/semaphore.h b/include/linux/semaphore.h
-index a7125da..13b5f32 100644
---- a/include/linux/semaphore.h
-+++ b/include/linux/semaphore.h
-@@ -78,6 +78,14 @@ extern int __must_check down_trylock(struct semaphore *sem);
- extern int __must_check down_timeout(struct semaphore *sem, long jiffies);
- 
- /*
-+ * As down(), except this function will spin waiting for the semaphore
-+ * instead of sleeping.  It is safe to use while holding a spinlock or
-+ * with interrupts disabled.  It should not be called from interrupt
-+ * context as this may lead to deadlocks.
-+ */
-+extern void down_spin(struct semaphore *sem);
-+
-+/*
-  * Release the semaphore.  Unlike mutexes, up() may be called from any
-  * context and even by tasks which have never called down().
-  */
-diff --git a/kernel/semaphore.c b/kernel/semaphore.c
-index bef977b..a242d87 100644
---- a/kernel/semaphore.c
-+++ b/kernel/semaphore.c
-@@ -26,6 +26,7 @@ static noinline void __down(struct semaphore *sem);
- static noinline int __down_interruptible(struct semaphore *sem);
- static noinline int __down_killable(struct semaphore *sem);
- static noinline int __down_timeout(struct semaphore *sem, long jiffies);
-+static noinline void __down_spin(struct semaphore *sem, unsigned long flags);
- static noinline void __up(struct semaphore *sem);
- 
- void down(struct semaphore *sem)
-@@ -117,6 +118,20 @@ int down_timeout(struct semaphore *sem, long jiffies)
- }
- EXPORT_SYMBOL(down_timeout);
- 
-+void down_spin(struct semaphore *sem)
-+{
-+       unsigned long flags;
-+
-+       spin_lock_irqsave(&sem->lock, flags);
-+       if (likely(sem->count > 0)) {
-+               sem->count--;
-+               spin_unlock_irqrestore(&sem->lock, flags);
-+       } else {
-+               __down_spin(sem, flags);
-+       }
-+}
-+EXPORT_SYMBOL(down_spin);
-+
- void up(struct semaphore *sem)
- {
-        unsigned long flags;
-@@ -197,6 +212,20 @@ static noinline int __sched __down_timeout(struct semaphore
-        return __down_common(sem, TASK_UNINTERRUPTIBLE, jiffies);
- }
- 
-+static noinline void __sched __down_spin(struct semaphore *sem,
-+                                                       unsigned long flags)
-+{
-+       struct semaphore_waiter waiter;
-+
-+       list_add_tail(&waiter.list, &sem->wait_list);
-+       waiter.task = current;
-+       waiter.up = 0;
-+
-+       spin_unlock_irqrestore(&sem->lock, flags);
-+       while (!waiter.up)
-+               cpu_relax();
-+}
-+
- static noinline void __sched __up(struct semaphore *sem)
- {
-        struct semaphore_waiter *waiter = list_first_entry(&sem->wait_list,
+	Jeff
 
 
--- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
