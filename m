@@ -1,45 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758576AbYC0RiK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757897AbYC0Rpu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758576AbYC0RiK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Mar 2008 13:38:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759139AbYC0Rhy
+	id S1757897AbYC0Rpu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Mar 2008 13:45:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754449AbYC0Rpm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Mar 2008 13:37:54 -0400
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:45886 "EHLO e2.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757579AbYC0Rhx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Mar 2008 13:37:53 -0400
-Date: Thu, 27 Mar 2008 12:37:48 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Paul Menage <menage@google.com>
-Cc: "Serge E. Hallyn" <serue@us.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>, daniel@hozac.com,
-       lizf@cn.fujitsu.com, Pavel Emelyanov <xemul@openvz.org>,
-       Greg KH <greg@kroah.com>
-Subject: Re: [PATCH 1/1] cgroups: implement device whitelist (v6)
-Message-ID: <20080327173748.GB8169@sergelap.austin.ibm.com>
-References: <20080326180543.GA27709@sergelap.austin.ibm.com> <20080327020403.5547e43f.akpm@linux-foundation.org> <20080327162447.GA15147@sergelap.austin.ibm.com> <6599ad830803270940k261e1ae4r15f03f5014d9bec6@mail.gmail.com>
+	Thu, 27 Mar 2008 13:45:42 -0400
+Received: from nf-out-0910.google.com ([64.233.182.190]:10985 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754096AbYC0Rpl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Mar 2008 13:45:41 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=VP2OcX87pcpITN3UYfDhhR6i+JKdwryAKLOLIRQNAaqSTD26QjZzUkYUWjEepgPB2O3zvR2YBey21/cb+qZ++juRQwGSB7PabFxHSuEmNayz2Bsk9w+vKknCCnUUimf5XWyyXKKKDsM7+n5p+Y4db7O/e6amcq0UlWwqLkqafMs=
+Message-ID: <47EBDD26.3030303@gmail.com>
+Date: Thu, 27 Mar 2008 12:45:10 -0500
+From: Roger Heflin <rogerheflin@gmail.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <6599ad830803270940k261e1ae4r15f03f5014d9bec6@mail.gmail.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: Alex Bennee <kernel-hacker@bennee.com>
+CC: Robert Hancock <hancockr@shaw.ca>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: DMA not working on SATA?
+References: <fa.tM6egqVO3jg78PMZEi2Ne7NkjtI@ifi.uio.no>	 <47EB2E92.9060401@shaw.ca> <1206612034.24437.5.camel@pitcairn.cambridgebroadband.com>
+In-Reply-To: <1206612034.24437.5.camel@pitcairn.cambridgebroadband.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Paul Menage (menage@google.com):
-> On Thu, Mar 27, 2008 at 9:24 AM, Serge E. Hallyn <serue@us.ibm.com> wrote:
-> >
-> >  Paul, did you have any plans of offering some sort of cft->read_seq()
-> >  helper?
+Alex Bennee wrote:
+> On Wed, 2008-03-26 at 23:20 -0600, Robert Hancock wrote:
+>> Alex Bennee wrote:
+>>> Hi,
+>>>
+>>> Since I got my new machine I noticed it seemed to be running slower than
+>>> I expected for a duel core machine including a lot of stuttering. After
+>>> tweaking the BIOS settings from "Legacy" to "AHCI" I measured a doubling
+>>> of read performance with hdparm but heavy IO still makes the machine
+>>> sluggish, with top showing ~80% of the time in the wait state (and
+>>> loadavg shooting up). This seems like a DMA problem because I was under
+>>> the impression a task demanding IO should be able to sleep on a DMA
+>>> completion rather than blocking everything else.
+>> That's not what IOwait means. It basically means "nothing better to do 
+>> than wait for IO to complete". If you have only one running task which 
+>> is blocked waiting for IO you will always have high IOwait.
 > 
-> Yes, it's on my TODO list. It should just be a pretty simple extension
-> of the existing read_map() support.
+> So if my loadavg shoots up at the same time (indicating more than one
+> task wanting to run) does that infer that most of my tasks are IO
+> starved and waiting for the disk to catch up with them?
+> 
+> The main problem is I'm not sure if my disk subsystem is running as fast
+> as it should be. What sort of data rates should I be seeing from a
+> modern SATA type setup?
 
-Ok, cool.  I can see about getting that done next week if you don't get
-around to it, and convert the devices.allowed file to it.
+50-70MB/second per disk, if you are doing single sequential reads/writes (alone, 
+not together-if you are doing both at the same time or more than one at the sime 
+time it will be worse), if you are doing a lot of seeks it can be pretty much 
+any number below that.    The smaller the pieces of data that are being sent to 
+disk, the worse things will be.   The speed is dependent mostly on the type of 
+disk, each disk has a underlying inside/outside platter bits per second, and 
+that is the limit that you won't ever exceed.
 
-thanks,
--serge
+> 
+> As Alan pointed out (and I missed) the dmesg shows DMA is enabled, it's
+> just hdparam doesn't seem to be able to infer the fact (new IOTCLS for
+> newer disk systems?).
+> 
+> I could be I've already peaked in my performance and I'm just making
+> unrealistic demands on memory usage (I have been running cvsps after
+> all ;-).
+> 
+
