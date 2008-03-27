@@ -1,50 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757068AbYC0IjT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757995AbYC0IkT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757068AbYC0IjT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Mar 2008 04:39:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751065AbYC0IjM
+	id S1757995AbYC0IkT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Mar 2008 04:40:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751150AbYC0IkG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Mar 2008 04:39:12 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:43489 "EHLO mx3.mail.elte.hu"
+	Thu, 27 Mar 2008 04:40:06 -0400
+Received: from sacred.ru ([62.205.161.221]:35305 "EHLO sacred.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751063AbYC0IjM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Mar 2008 04:39:12 -0400
-Date: Thu, 27 Mar 2008 09:38:49 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Gurudas Pai <gurudas.pai@oracle.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [BUG]:2.6.25-rc7 memory leak with hugepages.
-Message-ID: <20080327083849.GF15626@elte.hu>
-References: <47EB4E2A.1040507@oracle.com>
+	id S1751065AbYC0IkF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Mar 2008 04:40:05 -0400
+Message-ID: <47EB5D07.9020601@openvz.org>
+Date: Thu, 27 Mar 2008 11:38:31 +0300
+From: Pavel Emelyanov <xemul@openvz.org>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47EB4E2A.1040507@oracle.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: 1.0
-X-ELTE-SpamLevel: s
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=1.0 required=5.9 tests=BAYES_50 autolearn=no SpamAssassin version=3.2.3
-	1.0 BAYES_50               BODY: Bayesian spam probability is 40 to 60%
-	[score: 0.4552]
+To: balbir@linux.vnet.ibm.com
+CC: Andrew Morton <akpm@linux-foundation.org>, Hugh Dickins <hugh@veritas.com>,
+       Sudhir Kumar <skumar@linux.vnet.ibm.com>,
+       YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
+       Paul Menage <menage@google.com>, lizf@cn.fujitsu.com,
+       linux-kernel@vger.kernel.org, taka@valinux.co.jp, linux-mm@kvack.org,
+       David Rientjes <rientjes@google.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Subject: Re: [RFC][2/3] Account and control virtual address space allocations
+ (v2)
+References: <20080326184954.9465.19379.sendpatchset@localhost.localdomain> <20080326185017.9465.29950.sendpatchset@localhost.localdomain> <47EB4A7E.6060505@openvz.org> <47EB548D.2050609@linux.vnet.ibm.com> <47EB59C3.3080803@openvz.org> <47EB5B27.2050907@linux.vnet.ibm.com>
+In-Reply-To: <47EB5B27.2050907@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Thu, 27 Mar 2008 11:38:27 +0300 (MSK)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+[snip]
 
-* Gurudas Pai <gurudas.pai@oracle.com> wrote:
-
-> Hi,
+>>>>> +	css_put(&mem->css);
+>>>> Why don't you check whether the counter is charged? This is
+>>>> bad for two reasons:
+>>>> 1. you allow for some growth above the limit (e.g. in expand_stack)
+>>> I was doing that earlier and then decided to keep the virtual address space code
+>>> in sync with the RLIMIT_AS checking code in the kernel. If you see the flow, it
+>>> closely resembles what we do with mm->total_vm and may_expand_vm().
+>>> expand_stack() in turn calls acct_stack_growth() which calls may_expand_vm()
+>> But this is racy! Look - you do expand_stack on two CPUs and the limit is
+>> almost reached - so that there's room for a single expansion. In this case 
+>> may_expand_vm will return true for both, since it only checks the limit, 
+>> while the subsequent charge will fail on one of them, since it actually 
+>> tries to raise the usage...
+>>
 > 
-> On 2.6.25-rc7 allocate hugepages and run a fio test with following 
-> jobfile,
+> Hmm... yes, possibly. Thanks for pointing this out. For a single mm_struct, the
+> check is done under mmap_sem(), so it's OK for processes. I suspect, I'll have
 
-could you try x86.git/latest:
+Sure, but this controller should work with arbitrary group of processes ;)
 
-  http://people.redhat.com/mingo/x86.git/README
+> to go back to what I had earlier. I don't want to add a mutex to mem_cgroup,
+> that will hurt parallelism badly.
 
-it has a fix that could fix such a leak.
+My opinion is that we should always perform a pure charge without any
+pre-checks, etc.
 
-	Ingo
+Thanks,
+Pavel
