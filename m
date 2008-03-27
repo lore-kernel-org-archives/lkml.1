@@ -1,55 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759794AbYC0RIz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759969AbYC0RLK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759794AbYC0RIz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Mar 2008 13:08:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756335AbYC0RIq
+	id S1759969AbYC0RLK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Mar 2008 13:11:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754802AbYC0RK4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Mar 2008 13:08:46 -0400
-Received: from py-out-1112.google.com ([64.233.166.176]:1045 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756638AbYC0RIp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Mar 2008 13:08:45 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=co/l8yDHE4THHF0DAKtop+SRJ5TV6ockQCzr3CC9ugLbHOzmZvQxi3GEYmYPwchaD+W9Z5VYcjxfJP4a1Yu1vP+bcOaVNeXKofoOdcg74Z+ebbgHF67JIRdTssWRSzZVj+9q/LWYCmJZz49ujlqzRwUpajCgmqW3AbU+Q75kBZ4=
-Message-ID: <2f11576a0803271008t7574ead1s9ea285d8df57ef1@mail.gmail.com>
-Date: Fri, 28 Mar 2008 02:08:43 +0900
-From: "KOSAKI Motohiro" <m-kosaki@ceres.dti.ne.jp>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [patch for 2.6.26 0/7] Architecture Independent Markers
-Cc: "Mathieu Desnoyers" <mathieu.desnoyers@polymtl.ca>,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       "Linus Torvalds" <torvalds@linux-foundation.org>
-In-Reply-To: <20080327154053.GA5890@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080327132057.449831367@polymtl.ca>
-	 <20080327154053.GA5890@elte.hu>
-X-Google-Sender-Auth: 7acf1e718343cd0c
+	Thu, 27 Mar 2008 13:10:56 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:34481 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755503AbYC0RKz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Mar 2008 13:10:55 -0400
+From: Glauber Costa <gcosta@redhat.com>
+To: linux-kernel@vger.kernel.org
+Cc: akpm@linux-foundation.org, glommer@gmail.com, mingo@elte.hu,
+       tglx@linutronix.de, Glauber Costa <gcosta@redhat.com>
+Subject: [PATCH 8/9] [PATCH] x86: change naming of cpu_initialized_mask for xen
+Date: Thu, 27 Mar 2008 14:06:03 -0300
+Message-Id: <12066375973688-git-send-email-gcosta@redhat.com>
+X-Mailer: git-send-email 1.5.0.6
+In-Reply-To: <12066375644061-git-send-email-gcosta@redhat.com>
+References: <12066375644061-git-send-email-gcosta@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
+xen does not use the global cpu_initialized mask, but rather,
+a specific one. So we change its name so it won't conflict with the upcoming
+movement of cpu_initialized_mask from smp_64.h to smp_32.h.
 
->      text    data     bss     dec     hex filename
->     37642    7014     384   45040    aff0 sched.o.before
->     37930    7134     384   45448    b188 sched.o.after
->
->  288 bytes for only 3 markers in the scheduler - that's 96 bytes added
->  per every marker (44 bytes of that in the fastpath).
->
->  and the tracer codepath is now slower and more complex as well.
->
->  A classic lose-lose situation, so let's apply this patch. Not!
->
->  NACK-ed-by: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: Glauber Costa <gcosta@redhat.com>
+CC: Jeremy Fitzhardinge <jeremy@goop.org>
+---
+ arch/x86/xen/smp.c |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
 
-I wonder why nobody doesn't fix this serious problem until now.
-and I am interesting to what difference to ftrace and marker.
+diff --git a/arch/x86/xen/smp.c b/arch/x86/xen/smp.c
+index 6b3c37b..92dd3db 100644
+--- a/arch/x86/xen/smp.c
++++ b/arch/x86/xen/smp.c
+@@ -35,7 +35,7 @@
+ #include "xen-ops.h"
+ #include "mmu.h"
+ 
+-static cpumask_t cpu_initialized_map;
++static cpumask_t xen_cpu_initialized_map;
+ static DEFINE_PER_CPU(int, resched_irq) = -1;
+ static DEFINE_PER_CPU(int, callfunc_irq) = -1;
+ static DEFINE_PER_CPU(int, debug_irq) = -1;
+@@ -189,7 +189,7 @@ void __init xen_smp_prepare_cpus(unsigned int max_cpus)
+ 	if (xen_smp_intr_init(0))
+ 		BUG();
+ 
+-	cpu_initialized_map = cpumask_of_cpu(0);
++	xen_cpu_initialized_map = cpumask_of_cpu(0);
+ 
+ 	/* Restrict the possible_map according to max_cpus. */
+ 	while ((num_possible_cpus() > 1) && (num_possible_cpus() > max_cpus)) {
+@@ -220,7 +220,7 @@ cpu_initialize_context(unsigned int cpu, struct task_struct *idle)
+ 	struct vcpu_guest_context *ctxt;
+ 	struct gdt_page *gdt = &per_cpu(gdt_page, cpu);
+ 
+-	if (cpu_test_and_set(cpu, cpu_initialized_map))
++	if (cpu_test_and_set(cpu, xen_cpu_initialized_map))
+ 		return 0;
+ 
+ 	ctxt = kzalloc(sizeof(*ctxt), GFP_KERNEL);
+-- 
+1.5.0.6
 
-if I have time at next week, I will investigate the marker problem.
