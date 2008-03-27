@@ -1,39 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757404AbYC0Ltl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757970AbYC0LzY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757404AbYC0Ltl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Mar 2008 07:49:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755186AbYC0Ltb
+	id S1757970AbYC0LzY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Mar 2008 07:55:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756021AbYC0LzK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Mar 2008 07:49:31 -0400
-Received: from smtp-out03.alice-dsl.net ([88.44.63.5]:42510 "EHLO
-	smtp-out03.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754633AbYC0Ltb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Mar 2008 07:49:31 -0400
-Date: Thu, 27 Mar 2008 12:49:23 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Ingo Molnar <mingo@elte.hu>, Andi Kleen <andi@firstfloor.org>,
-       kernel list <linux-kernel@vger.kernel.org>, Greg KH <greg@kroah.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: iommu breaks usb after resume
-Message-ID: <20080327114923.GA6589@basil.nowhere.org>
-References: <20080320111429.GA14764@elf.ucw.cz> <20080321135418.GB2346@one.firstfloor.org> <20080326102151.GB18965@elf.ucw.cz> <20080326130052.GF2170@one.firstfloor.org> <20080326225407.GA9378@elf.ucw.cz> <20080326230017.GA21017@elte.hu> <20080327084231.GC25876@elf.ucw.cz> <20080327095949.GA5771@elf.ucw.cz>
+	Thu, 27 Mar 2008 07:55:10 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:36626 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755893AbYC0LzJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Mar 2008 07:55:09 -0400
+Date: Thu, 27 Mar 2008 12:54:33 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Mark McLoughlin <markmc@redhat.com>
+Cc: Glauber Costa <gcosta@redhat.com>, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, glommer@gmail.com, tglx@linutronix.de,
+       kvm-devel@lists.sourceforge.net, avi@qumranet.com,
+       amit.shah@qumranet.com
+Subject: Re: [PATCH 15/20] x86: move dma_supported and dma_set_mask to
+	pci-dma_32.c
+Message-ID: <20080327115433.GA13538@elte.hu>
+References: <1206480999-21767-8-git-send-email-gcosta@redhat.com> <1206480999-21767-9-git-send-email-gcosta@redhat.com> <1206480999-21767-10-git-send-email-gcosta@redhat.com> <1206480999-21767-11-git-send-email-gcosta@redhat.com> <1206480999-21767-12-git-send-email-gcosta@redhat.com> <1206480999-21767-13-git-send-email-gcosta@redhat.com> <1206480999-21767-14-git-send-email-gcosta@redhat.com> <1206480999-21767-15-git-send-email-gcosta@redhat.com> <1206480999-21767-16-git-send-email-gcosta@redhat.com> <1206615795.31683.8.camel@muff>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080327095949.GA5771@elf.ucw.cz>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-OriginalArrivalTime: 27 Mar 2008 11:42:45.0697 (UTC) FILETIME=[ACB40310:01C88FFF]
+In-Reply-To: <1206615795.31683.8.camel@muff>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> ...this sounds like it needs to be done during resume, too, no?
 
-This is only a workaround for BIOS that don't set up an aperture,
-but yes if they don't do that it is likely needed on resume too.
+* Mark McLoughlin <markmc@redhat.com> wrote:
 
-You would need to add a resume handler to aperture.c
+> This breaks for me with:
+> 
+> ERROR: "dma_supported" [drivers/ssb/ssb.ko] undefined!
+> ERROR: "dma_set_mask" [drivers/scsi/qla2xxx/qla2xxx.ko] undefined!
+> ERROR: "dma_set_mask" [drivers/scsi/aic7xxx/aic7xxx.ko] undefined!
+> ERROR: "dma_set_mask" [drivers/scsi/aic7xxx/aic79xx.ko] undefined!
+> ERROR: "dma_supported" [drivers/net/pcnet32.ko] undefined!
+> ERROR: "dma_supported" [drivers/media/video/saa7134/saa7134.ko] undefined!
+> ERROR: "dma_set_mask" [drivers/media/video/meye.ko] undefined!
+> ERROR: "dma_supported" [drivers/media/video/cx88/cx8802.ko] undefined!
+> ERROR: "dma_supported" [drivers/media/video/cx88/cx8800.ko] undefined!
+> ERROR: "dma_supported" [drivers/media/video/cx88/cx88-alsa.ko] undefined!
+> ERROR: "dma_supported" [drivers/media/video/cx23885/cx23885.ko] undefined!
+> 
+> They just need to be exported like on x86_64.
 
--Andi
+thanks Mark, applied.
+
+	Ingo
