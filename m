@@ -1,50 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761441AbYC0VJT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761900AbYC0VJf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761441AbYC0VJT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Mar 2008 17:09:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758443AbYC0VJG
+	id S1761900AbYC0VJf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Mar 2008 17:09:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761374AbYC0VJQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Mar 2008 17:09:06 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:47231 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752775AbYC0VJE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Mar 2008 17:09:04 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: devzero@web.de
-Subject: Re: acpi_ps_execute_method OOPS (Re: some minor issues with 2.6.25-rc6-git7-default)
-Date: Thu, 27 Mar 2008 22:08:52 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Len Brown <lenb@kernel.org>, linux-acpi@vger.kernel.org,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-References: <215112960@web.de>
-In-Reply-To: <215112960@web.de>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+	Thu, 27 Mar 2008 17:09:16 -0400
+Received: from hu-out-0506.google.com ([72.14.214.233]:14674 "EHLO
+	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760960AbYC0VJO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Mar 2008 17:09:14 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=Egm/d3G6ZtxO7F/gM6ABNI7mpoJ2voi+0dSVZ+ReH4djHVWZ6P/uyBRNxiFsWkmKPns8YqTu7jJJIh2C5gbNQWo3lcXPJIAAY9al9jd/EdWlIeJROe2tWXLJQh/frtti9gQNCGk6uRn2gb5Ai2te7DuvOuZiY+RPl5Zq9Weq/Zw=
+Subject: Re: [git pull] x86 fixes
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <20080327210122.GA22823@elte.hu>
+References: <20080327200309.GA18550@elte.hu>
+	 <alpine.LFD.1.00.0803271325430.14670@woody.linux-foundation.org>
+	 <1206650939.24940.43.camel@brick> <20080327205527.GA21912@elte.hu>
+	 <20080327210122.GA22823@elte.hu>
+Content-Type: text/plain
+Date: Thu, 27 Mar 2008 14:08:53 -0700
+Message-Id: <1206652133.24940.49.camel@brick>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200803272208.53274.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, 27 of March 2008, devzero@web.de wrote:
-> > On Tuesday 25 March 2008, devzero@web.de wrote:
-> > ...
-> > > this one looks more serious (happened with modprobe -r ac),
-> > > because kernel has problems afterwards (cannot load/anload any other module afterwards) 
-> > 
-> > any idea when this started happening?
-> > Any chance you can snag the output from acpidump
-> > and attach it to a sighting here?:
-> > http://bugzilla.kernel.org/enter_bug.cgi?product=ACPI
-> > 
-> > thanks,
-> > -Len
+>  arch/x86/mm/fault.c |   11 ++++-------
+>  1 file changed, 4 insertions(+), 7 deletions(-)
 > 
-> i searched into this and found that it only happens after modprobe netsc520 ;modprobe -r netsc520.
-> so maybe this is no acpi problem at all but corruption (sort of?) introduced by netsc520 module !?
+> Index: linux-x86.q/arch/x86/mm/fault.c
+> ===================================================================
+> --- linux-x86.q.orig/arch/x86/mm/fault.c
+> +++ linux-x86.q/arch/x86/mm/fault.c
+> @@ -103,13 +103,10 @@ static int is_prefetch(struct pt_regs *r
+>  	int prefetch = 0;
+>  	unsigned char *max_instr;
+>  
+> -#ifdef CONFIG_X86_32
+> -	/* Catch an obscure case of prefetch inside an NX page: */
+> -	if ((__supported_pte_mask & _PAGE_NX) && (error_code & 16))
+> -		return 0;
+> -#endif
+> -
+> -	/* If it was a exec fault on NX page, ignore */
+> +	/*
+> +	 * If it was a exec (instruction fetch) fault on NX page, then
+> +	 * do not ignore the fault:
+> +	 */
 
-What CPU/chipset is this?
+How about:
+If it was an exec (instruction fetch) fault, it cannot be a 		prefetch
+fault.
 
-Rafael
+>  	if (error_code & PF_INSTR)
+>  		return 0;
+>  
+> 
+
+Cheers,
+
+Harvey
+
