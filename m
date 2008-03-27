@@ -1,102 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757068AbYC0HVK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757665AbYC0HYP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757068AbYC0HVK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Mar 2008 03:21:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754661AbYC0HUx
+	id S1757665AbYC0HYP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Mar 2008 03:24:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754661AbYC0HYA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Mar 2008 03:20:53 -0400
-Received: from sacred.ru ([62.205.161.221]:55516 "EHLO sacred.ru"
+	Thu, 27 Mar 2008 03:24:00 -0400
+Received: from sacred.ru ([62.205.161.221]:56396 "EHLO sacred.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754653AbYC0HUw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Mar 2008 03:20:52 -0400
-Message-ID: <47EB4A7E.6060505@openvz.org>
-Date: Thu, 27 Mar 2008 10:19:26 +0300
+	id S1751210AbYC0HX7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Mar 2008 03:23:59 -0400
+Message-ID: <47EB4AB4.7070704@openvz.org>
+Date: Thu, 27 Mar 2008 10:20:20 +0300
 From: Pavel Emelyanov <xemul@openvz.org>
 User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
 MIME-Version: 1.0
-To: Balbir Singh <balbir@linux.vnet.ibm.com>
-CC: Andrew Morton <akpm@linux-foundation.org>, Hugh Dickins <hugh@veritas.com>,
-       Sudhir Kumar <skumar@linux.vnet.ibm.com>,
-       YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
-       Paul Menage <menage@google.com>, lizf@cn.fujitsu.com,
-       linux-kernel@vger.kernel.org, taka@valinux.co.jp, linux-mm@kvack.org,
-       David Rientjes <rientjes@google.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: Re: [RFC][2/3] Account and control virtual address space allocations
- (v2)
-References: <20080326184954.9465.19379.sendpatchset@localhost.localdomain> <20080326185017.9465.29950.sendpatchset@localhost.localdomain>
-In-Reply-To: <20080326185017.9465.29950.sendpatchset@localhost.localdomain>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Andi Kleen <andi@firstfloor.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Herbert Poetzl <herbert@13thfloor.at>, Krzysztof Halasa <khc@pm.waw.pl>,
+       Pavel Machek <pavel@ucw.cz>, "Serge E. Hallyn" <serue@us.ibm.com>,
+       Stephen Smalley <sds@tycho.nsa.gov>, Roland McGrath <roland@redhat.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] ptrace: allow to ptrace /sbin/init
+References: <20080326201623.GA131@tv-sign.ru>
+In-Reply-To: <20080326201623.GA131@tv-sign.ru>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Thu, 27 Mar 2008 10:19:28 +0300 (MSK)
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Thu, 27 Mar 2008 10:20:18 +0300 (MSK)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Balbir Singh wrote:
-> Changelog v2
-> ------------
-> Change the accounting to what is already present in the kernel. Split
-> the address space accounting into mem_cgroup_charge_as and
-> mem_cgroup_uncharge_as. At the time of VM expansion, call
-> mem_cgroup_cannot_expand_as to check if the new allocation will push
-> us over the limit
+Oleg Nesterov wrote:
+> Afaics, currently there are no kernel problems with ptracing init, it can't
+> lose SIGNAL_UNKILLABLE flag and be killed/stopped by accident.
 > 
-> This patch implements accounting and control of virtual address space.
-> Accounting is done when the virtual address space of any task/mm_struct
-> belonging to the cgroup is incremented or decremented. This patch
-> fails the expansion if the cgroup goes over its limit.
+> The ability to strace/debug init can be very useful if you try to figure
+> out why it does not work as expected.
 > 
-> TODOs
+> However, admin should know what he does, "gdb /sbin/init 1" stops init, it
+> can't reap orphaned zombies or take care of /etc/inittab until continued.
+> It is even possible to crash init (and thus the whole system) if you wish,
+> ptracer has full control.
 > 
-> 1. Only when CONFIG_MMU is enabled, is the virtual address space control
->    enabled. Should we do this for nommu cases as well? My suspicion is
->    that we don't have to.
+> See also the long discussion: http://marc.info/?t=120628018600001
 > 
-> Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
-> ---
-> 
->  arch/ia64/kernel/perfmon.c  |    2 +
->  arch/x86/kernel/ptrace.c    |    7 +++
->  fs/exec.c                   |    2 +
->  include/linux/memcontrol.h  |   26 +++++++++++++
->  include/linux/res_counter.h |   19 ++++++++--
->  init/Kconfig                |    2 -
->  kernel/fork.c               |   17 +++++++--
->  mm/memcontrol.c             |   83 ++++++++++++++++++++++++++++++++++++++++++++
->  mm/mmap.c                   |   11 +++++
->  mm/mremap.c                 |    2 +
->  10 files changed, 163 insertions(+), 8 deletions(-)
-> 
-> diff -puN mm/memcontrol.c~memory-controller-virtual-address-space-accounting-and-control mm/memcontrol.c
-> --- linux-2.6.25-rc5/mm/memcontrol.c~memory-controller-virtual-address-space-accounting-and-control	2008-03-26 16:27:59.000000000 +0530
-> +++ linux-2.6.25-rc5-balbir/mm/memcontrol.c	2008-03-27 00:18:16.000000000 +0530
-> @@ -526,6 +526,76 @@ unsigned long mem_cgroup_isolate_pages(u
->  	return nr_taken;
->  }
->  
-> +#ifdef CONFIG_CGROUP_MEM_RES_CTLR_AS
-> +/*
-> + * Charge the address space usage for cgroup. This routine is most
-> + * likely to be called from places that expand the total_vm of a mm_struct.
-> + */
-> +void mem_cgroup_charge_as(struct mm_struct *mm, long nr_pages)
-> +{
-> +	struct mem_cgroup *mem;
-> +
-> +	if (mem_cgroup_subsys.disabled)
-> +		return;
-> +
-> +	rcu_read_lock();
-> +	mem = rcu_dereference(mm->mem_cgroup);
-> +	css_get(&mem->css);
-> +	rcu_read_unlock();
-> +
-> +	res_counter_charge(&mem->as_res, (nr_pages * PAGE_SIZE));
-> +	css_put(&mem->css);
+> Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
 
-Why don't you check whether the counter is charged? This is
-bad for two reasons:
-1. you allow for some growth above the limit (e.g. in expand_stack)
-2. you will undercharge it in the future when uncharging the
-   vme, whose charge was failed and thus unaccounted.
+Acked-by: Pavel Emelyanov <xemul@openvz.org>
