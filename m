@@ -1,59 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757058AbYC0CyS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757488AbYC0Cz1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757058AbYC0CyS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Mar 2008 22:54:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754653AbYC0CyE
+	id S1757488AbYC0Cz1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Mar 2008 22:55:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754932AbYC0CzP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Mar 2008 22:54:04 -0400
-Received: from gate.crashing.org ([63.228.1.57]:42770 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754309AbYC0CyD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Mar 2008 22:54:03 -0400
-Subject: Re: [RFC][PATCH 1/3] PM: Introduce new top level suspend and
-	hibernation callbacks (rev. 4)
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Alexey Starikovskiy <astarikovskiy@suse.de>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Alan Stern <stern@rowland.harvard.edu>, Greg KH <greg@kroah.com>,
-       Len Brown <lenb@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
-       David Brownell <david-b@pacbell.net>, Pavel Machek <pavel@ucw.cz>,
-       Oliver Neukum <oliver@neukum.org>
-In-Reply-To: <200803270223.06715.rjw@sisk.pl>
-References: <200803262353.30566.rjw@sisk.pl>
-	 <200803270054.58546.rjw@sisk.pl> <1206576403.6926.62.camel@pasglop>
-	 <200803270223.06715.rjw@sisk.pl>
-Content-Type: text/plain
-Date: Thu, 27 Mar 2008 13:52:38 +1100
-Message-Id: <1206586358.6926.68.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 26 Mar 2008 22:55:15 -0400
+Received: from netrider.rowland.org ([192.131.102.5]:1047 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1753701AbYC0CzO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Mar 2008 22:55:14 -0400
+Date: Wed, 26 Mar 2008 22:55:13 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@netrider.rowland.org
+To: Brad Sawatzky <brad+kernel@swatter.net>
+cc: Oliver Neukum <oliver@neukum.org>, Greg Kroah-Hartman <gregkh@suse.de>,
+       <linux-kernel@vger.kernel.org>, <linux-usb@vger.kernel.org>
+Subject: Re: [PATCH] usb-serial: fix regression in Visor/Palm OS module for
+ kernels >= 2.6.24
+In-Reply-To: <20080327001557.GA16176@enigma.swatter.net>
+Message-ID: <Pine.LNX.4.44L0.0803262252420.21714-100000@netrider.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 26 Mar 2008, Brad Sawatzky wrote:
 
-On Thu, 2008-03-27 at 02:23 +0100, Rafael J. Wysocki wrote:
-> On Thursday, 27 of March 2008, Benjamin Herrenschmidt wrote:
-> > 
-> > > > There is absolutely no point getting a second struct anymore.
-> > > 
-> > > I obviously disagree with that opinion, so please elaborate.
-> > 
-> > Well, what does it bring you ? Why can't it be one struct ? To save
-> > space in the data area ?
+> On Wed, 26 Mar 2008, Oliver Neukum wrote:
 > 
-> Mostly, but not only that.
+> > Am Mittwoch, 26. März 2008 03:32:43 schrieb Brad Sawatzky:
+> [ . . . ]
+> > > I suppose it's possible that the kernel is identifying 3 bulk endpoints
+> > > when there should only be 2 and there is some issue with the lower level
+> > > endpoint probe?
+> > 
+> > Send in "lsusb -v". Are you sure all devices have 3 endpoints?
 > 
-> There are users of 'struct pm_ops' that aren't even supposed to define the
-> _noirq callbacks (device types and device classes), so I thought it would be
-> better to introduce a separate _noirq struct after all.
+> Seems to:
 
-Make sense... USB has no use of noirq for example.
+You did not understand Oliver's question.  Yes, your device has 3
+bulk-OUT endpoints (and 2 bulk-IN).  But do you know whether _all_
+Visor/Palm OS devices do?  If they don't, your patch will cause the
+driver to stop working when someone plugs in a device with only 2
+endpoints.
 
-Ben.
-
+Alan Stern
 
