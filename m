@@ -1,112 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759495AbYC0QBL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760157AbYC0QCa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759495AbYC0QBL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Mar 2008 12:01:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755267AbYC0QA6
+	id S1760157AbYC0QCa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Mar 2008 12:02:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756721AbYC0QCX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Mar 2008 12:00:58 -0400
-Received: from smtpeu1.atmel.com ([195.65.72.27]:53290 "EHLO bagnes.atmel.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754534AbYC0QA5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Mar 2008 12:00:57 -0400
-Date: Thu, 27 Mar 2008 17:00:22 +0100
-From: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>, kernel@avr32linux.org
-Subject: [GIT PULL] Last minute avr32 fixes
-Message-ID: <20080327170022.28a445ec@hskinnemo-gx620.norway.atmel.com>
-Organization: Atmel Norway
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; i486-pc-linux-gnu)
+	Thu, 27 Mar 2008 12:02:23 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:61178 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756581AbYC0QCW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Mar 2008 12:02:22 -0400
+Date: Thu, 27 Mar 2008 08:58:37 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: "Serge E. Hallyn" <serue@us.ibm.com>
+Cc: Andrew Morton <akpm@osdl.org>, lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] cgroups: devices: add Documentation/ file
+Message-Id: <20080327085837.c51ebe6d.randy.dunlap@oracle.com>
+In-Reply-To: <20080327151227.GA11581@sergelap.austin.ibm.com>
+References: <20080327151227.GA11581@sergelap.austin.ibm.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 27 Mar 2008 16:00:22.0647 (UTC) FILETIME=[A9C36870:01C89023]
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus,
+On Thu, 27 Mar 2008 10:12:27 -0500 Serge E. Hallyn wrote:
 
-Please pull
+> Fill a Documentation/controllers/devices.txt file with a
+> modified text from the patch description.
+> 
+> Signed-off-by: Serge E. Hallyn <serue@us.ibm.com>
+> ---
+>  Documentation/controllers/devices.txt |   48 +++++++++++++++++++++++++++++++++
+>  1 files changed, 48 insertions(+), 0 deletions(-)
+>  create mode 100644 Documentation/controllers/devices.txt
+> 
+> diff --git a/Documentation/controllers/devices.txt b/Documentation/controllers/devices.txt
+> new file mode 100644
+> index 0000000..a157f53
+> --- /dev/null
+> +++ b/Documentation/controllers/devices.txt
+> @@ -0,0 +1,48 @@
+> +Device Whitelist Controller
+> +
+> +1. Description:
+> +
 
-  ssh://master.kernel.org/pub/scm/linux/kernel/git/hskinnemoen/avr32-2.6.git avr32-fixes
+...
 
-to receive the following fixes.
+> +The root device cgroup starts with rwm to 'all'.  A child devices
 
-Haavard Skinnemoen (3):
-      avr32: Work around byteswap bug in gcc < 4.2
-      avr32: Build fix for CONFIG_BUG=n
-      avr32: Fix bug in early resource allocation code
+                                                             device's
 
- arch/avr32/kernel/setup.c     |    1 +
- arch/avr32/kernel/traps.c     |    4 ++++
- include/asm-avr32/byteorder.h |    6 ++++++
- 3 files changed, 11 insertions(+), 0 deletions(-)
+> +cgroup gets a copy of the parent.  Administrators can then remove
+> +devices from the whitelist or add new entries.  A child cgroup can
+> +never receive a device access which is denied its parent.  However
+> +when a device access is removed from a parent it will not also be
+> +removed from the child(ren).
+> +
+> +2. User Interface
+> +
+...
+> +
+> +3. Security
+> +
+> +Any task can move itself between cgroups.  This of clearly won't
 
-diff --git a/arch/avr32/kernel/setup.c b/arch/avr32/kernel/setup.c
-index e66a07a..2687b73 100644
---- a/arch/avr32/kernel/setup.c
-+++ b/arch/avr32/kernel/setup.c
-@@ -163,6 +163,7 @@ add_reserved_region(resource_size_t start, resource_size_t end,
- 	new->start = start;
- 	new->end = end;
- 	new->name = name;
-+	new->sibling = next;
- 	new->flags = IORESOURCE_MEM;
- 
- 	*pprev = new;
-diff --git a/arch/avr32/kernel/traps.c b/arch/avr32/kernel/traps.c
-index cf6f686..b835c4c 100644
---- a/arch/avr32/kernel/traps.c
-+++ b/arch/avr32/kernel/traps.c
-@@ -178,6 +178,7 @@ static int do_cop_absent(u32 insn)
- 	return 0;
- }
- 
-+#ifdef CONFIG_BUG
- int is_valid_bugaddr(unsigned long pc)
- {
- 	unsigned short opcode;
-@@ -189,6 +190,7 @@ int is_valid_bugaddr(unsigned long pc)
- 
- 	return opcode == AVR32_BUG_OPCODE;
- }
-+#endif
- 
- asmlinkage void do_illegal_opcode(unsigned long ecr, struct pt_regs *regs)
- {
-@@ -197,6 +199,7 @@ asmlinkage void do_illegal_opcode(unsigned long ecr, struct pt_regs *regs)
- 	void __user *pc;
- 	long code;
- 
-+#ifdef CONFIG_BUG
- 	if (!user_mode(regs) && (ecr == ECR_ILLEGAL_OPCODE)) {
- 		enum bug_trap_type type;
- 
-@@ -211,6 +214,7 @@ asmlinkage void do_illegal_opcode(unsigned long ecr, struct pt_regs *regs)
- 			die("Kernel BUG", regs, SIGKILL);
- 		}
- 	}
-+#endif
- 
- 	local_irq_enable();
- 
-diff --git a/include/asm-avr32/byteorder.h b/include/asm-avr32/byteorder.h
-index 402ff41..d77b48b 100644
---- a/include/asm-avr32/byteorder.h
-+++ b/include/asm-avr32/byteorder.h
-@@ -12,8 +12,14 @@ extern unsigned long __builtin_bswap_32(unsigned long x);
- extern unsigned short __builtin_bswap_16(unsigned short x);
- #endif
- 
-+/*
-+ * avr32-linux-gcc versions earlier than 4.2 improperly sign-extends
-+ * the result.
-+ */
-+#if !(__GNUC__ == 4 && __GNUC_MINOR__ < 2)
- #define __arch__swab32(x) __builtin_bswap_32(x)
- #define __arch__swab16(x) __builtin_bswap_16(x)
-+#endif
- 
- #if !defined(__STRICT_ANSI__) || defined(__KERNEL__)
- # define __BYTEORDER_HAS_U64__
+s/of//
+
+> +suffice, but we can decide the best way to adequately restrict
+> +movement as people get some experience with this.  We may just want
+> +to require CAP_SYS_ADMIN, which at least is a separate bit from
+> +CAP_MKNOD.  We may want to just refuse moving to a cgroup which
+> +isn't a descendent of the current one.  Or we may want to use
+> +CAP_MAC_ADMIN, since we really are trying to lock down root.
+> +
+> +CAP_SYS_ADMIN is needed to modify the whitelist or move another
+> +task to a new cgroup.  (Again we'll probably want to change that).
+> +
+> +A cgroup may not be granted more permissions than the cgroup's
+> +parent has.  
+> -- 
+
+---
+~Randy
