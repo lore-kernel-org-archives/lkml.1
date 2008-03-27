@@ -1,59 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757291AbYC0IqX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757836AbYC0Iqw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757291AbYC0IqX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Mar 2008 04:46:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753063AbYC0IqP
+	id S1757836AbYC0Iqw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Mar 2008 04:46:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752508AbYC0Iql
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Mar 2008 04:46:15 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:57480 "EHLO mx2.mail.elte.hu"
+	Thu, 27 Mar 2008 04:46:41 -0400
+Received: from atlas.linux2go.dk ([88.198.22.52]:59665 "EHLO atlas.linux2go.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750846AbYC0IqO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Mar 2008 04:46:14 -0400
-Date: Thu, 27 Mar 2008 09:45:57 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: yhlu.kernel@gmail.com
-Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Gary Hade <garyhade@us.ibm.com>, Greg Kroah-Hartman <gregkh@suse.de>,
-       kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86/pci: add pci=skip_isa_align command lines.
-Message-ID: <20080327084557.GH15626@elte.hu>
-References: <200803270131.18885.yhlu.kernel@gmail.com>
+	id S1751386AbYC0Iqk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Mar 2008 04:46:40 -0400
+X-Greylist: delayed 481 seconds by postgrey-1.27 at vger.kernel.org; Thu, 27 Mar 2008 04:46:40 EDT
+Date: Thu, 27 Mar 2008 09:38:36 +0100
+From: Soren Hansen <soren@ubuntu.com>
+To: Jesse Barnes <jesse.barnes@intel.com>
+Cc: lkml <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Dave Airlie <airlied@linux.ie>
+Subject: Re: [PATCH] don't suspend/resume 8xx chips
+Message-ID: <20080327083835.GF30926@butch.linux2go.dk>
+References: <200803261628.12336.jesse.barnes@intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="lteA1dqeVaWQ9QQl"
 Content-Disposition: inline
-In-Reply-To: <200803270131.18885.yhlu.kernel@gmail.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <200803261628.12336.jesse.barnes@intel.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Yinghai Lu <yhlu.kernel.send@gmail.com> wrote:
+--lteA1dqeVaWQ9QQl
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> [PATCH] x86/pci: add pci=skip_isa_align command lines.
-> 
-> so we don't align the io port start address for pci cards.
-> 
-> also move out dmi check out acpi.c, because it has nothing to do with 
-> acpi. it could spare some calling when we have several peer root 
-> buses.
+On Wed, Mar 26, 2008 at 04:28:12PM -0700, Jesse Barnes wrote:
+> Recent testing has turned up some bugs in the new Intel suspend/resume co=
+de=20
+> for old, 8xx chipsets.  So for 2.6.25 it probably makes sense to apply th=
+is=20
+> patch, which should prevent the new code from getting called on those=20
+> chipsets.  We should have this fixed soon, but not in time for 2.6.25=20
+> unfortunately.  Note that this patch (along with the suspend/resume code =
+in=20
+> general) could use more testing.
 
-i like this feature, and i've applied your patch to x86.git for testing, 
-but i'd like to hear what the ACPI and PCI guys think about this.
+I've tested this patch on two different laptops: A Uniwill 223 and an
+IBM Thinkpad X40. Both have Intel 855 graphics. The former now suspends
+and hibernates just fine (it fails without the patch). The latter works
+both with and without the patch.
 
-Also, we should try as hard as possible to make it a blacklist instead 
-of a whitelist? It would be cool to support more PCI cards/devices on 
-all new(-ish) systems by default and if we didnt have to maintain the 
-DMI whitelist for eternity. (a whitelist will always be incomplete and 
-will lag behind reality)
+--=20
+Soren Hansen               |=20
+Virtualisation specialist  | Ubuntu Server Team
+Canonical Ltd.             | http://www.ubuntu.com/
 
-	Ingo
+--lteA1dqeVaWQ9QQl
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFH610LonjfXui9pOMRAoabAKCzCr7k3BwvrmSywM2A36zLgvyOEQCfTIIU
+0BpZ2K/5Ve3p+TTwCKkV4/0=
+=Bsd/
+-----END PGP SIGNATURE-----
+
+--lteA1dqeVaWQ9QQl--
