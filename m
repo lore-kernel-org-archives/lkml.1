@@ -1,50 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753846AbYC0XIY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754278AbYC0XIl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753846AbYC0XIY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Mar 2008 19:08:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752127AbYC0XIQ
+	id S1754278AbYC0XIl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Mar 2008 19:08:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752127AbYC0XIb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Mar 2008 19:08:16 -0400
-Received: from ozlabs.org ([203.10.76.45]:37340 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751682AbYC0XIP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Mar 2008 19:08:15 -0400
+	Thu, 27 Mar 2008 19:08:31 -0400
+Received: from g1t0028.austin.hp.com ([15.216.28.35]:41214 "EHLO
+	g1t0028.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751941AbYC0XIa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Mar 2008 19:08:30 -0400
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: [patch] radio-cadet: wrap PNP probe code in #ifdef CONFIG_PNP
+Date: Thu, 27 Mar 2008 17:12:33 -0600
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: linux-kernel@vger.kernel.org, v4l-dvb-maintainer@linuxtv.org,
+       linux-dvb@linuxtv.org, Fred Gleason <fredg@wava.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Message-ID: <18412.10455.702432.911134@cargo.ozlabs.ibm.com>
-Date: Fri, 28 Mar 2008 10:08:07 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: torvalds@linux-foundation.org
-CC: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Please pull powerpc.git merge branch
-X-Mailer: VM 7.19 under Emacs 21.4.1
+Content-Disposition: inline
+Message-Id: <200803271712.34818.bjorn.helgaas@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus,
+Wrap PNP probe code in #ifdef CONFIG_PNP.
 
-Olof Johansson has a defconfig update for the pasemi platform that he
-would like to have in 2.6.25, so please do:
+Without this change, we'll have unresolved references to
+pnp_get_resource() function when CONFIG_PNP=n.  (This is a
+new interface that's not in mainline yet.)
 
-git pull \
-git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git merge
+Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
 
-Thanks,
-Paul.
-
- arch/powerpc/configs/pasemi_defconfig |  142 ++++++++++++++++++++-------------
- 1 files changed, 88 insertions(+), 54 deletions(-)
-
-commit 5c29934de29ddd7ecd913d83cad28e872f2e8c78
-Author: Olof Johansson <olof@lixom.net>
-Date:   Tue Mar 25 10:28:26 2008 -0500
-
-    [POWERPC] update pasemi_defconfig
-    
-    Disable GEN_RTC since it conflicts with the i2c rtc drivers registering,
-    besides that keep most of the new defaults.
-    
-    Signed-off-by: Olof Johansson <olof@lixom.net>
+Index: work7/drivers/media/radio/radio-cadet.c
+===================================================================
+--- work7.orig/drivers/media/radio/radio-cadet.c	2008-03-27 16:10:52.000000000 -0600
++++ work7/drivers/media/radio/radio-cadet.c	2008-03-27 17:02:20.000000000 -0600
+@@ -587,6 +587,8 @@
+ 	.vidioc_s_input     = vidioc_s_input,
+ };
+ 
++#ifdef CONFIG_PNP
++
+ static struct pnp_device_id cadet_pnp_devices[] = {
+ 	/* ADS Cadet AM/FM Radio Card */
+ 	{.id = "MSM0c24", .driver_data = 0},
+@@ -621,6 +623,10 @@
+ 	.remove		= NULL,
+ };
+ 
++#else
++static struct pnp_driver cadet_pnp_driver;
++#endif
++
+ static int cadet_probe(void)
+ {
+ 	static int iovals[8]={0x330,0x332,0x334,0x336,0x338,0x33a,0x33c,0x33e};
