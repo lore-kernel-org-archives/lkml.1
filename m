@@ -1,58 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762177AbYC0WBM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762284AbYC0WBm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762177AbYC0WBM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Mar 2008 18:01:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761757AbYC0WA4
+	id S1762284AbYC0WBm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Mar 2008 18:01:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759251AbYC0WBe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Mar 2008 18:00:56 -0400
-Received: from smtp122.sbc.mail.sp1.yahoo.com ([69.147.64.95]:31682 "HELO
-	smtp122.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1758490AbYC0WAz (ORCPT
+	Thu, 27 Mar 2008 18:01:34 -0400
+Received: from mail.tmr.com ([64.65.253.246]:51355 "EHLO gaimboi.tmr.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757267AbYC0WBd convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Mar 2008 18:00:55 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=WP8RKdrTs8kkbGL0kOnzo7i6Oznpr4VDdD5Qcbv7Qm0TEU247NoqARtTcD7wDIyj5nEHWQgMyCFI/v7XfEjaDXgcIsiohCC963vEJVZ5oZXGQ57qp7CVLvq26MSbL2wCArPRjm8lfY5okN1I41ZCtYTuHfYzpJ+gqy5sl65B5xo=  ;
-X-YMail-OSG: hPQheeYVM1mshA24GzUZT0qfOJdPbwCL603J9pn1KIFyvVxC3xYUJZL7v4kIMTIoph4zFmgUCCaP6gEaqkQD4F8tq0iqYRsLP22RnuByAxLJsmEOeA--
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
-Subject: Re: Real time USB2Serial devices and behaivor
-Date: Thu, 27 Mar 2008 14:08:55 -0700
-User-Agent: KMail/1.9.6
-Cc: mgross@linux.intel.com, Greg KH <greg@kroah.com>,
-       lkml <linux-kernel@vger.kernel.org>, linux-rt-users@vger.kernel.org,
-       linux-usb@vger.kernel.org
-References: <20080326152559.GA17164@linux.intel.com> <200803271248.40519.david-b@pacbell.net> <20080327210036.GA20027@csclub.uwaterloo.ca>
-In-Reply-To: <20080327210036.GA20027@csclub.uwaterloo.ca>
+	Thu, 27 Mar 2008 18:01:33 -0400
+Message-ID: <47EC199F.4030102@tmr.com>
+Date: Thu, 27 Mar 2008 18:03:11 -0400
+From: Bill Davidsen <davidsen@tmr.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8bit
-Content-Disposition: inline
-Message-Id: <200803271408.55930.david-b@pacbell.net>
+To: Emmanuel Florac <eflorac@intellique.com>
+CC: Bart Van Assche <bart.vanassche@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: RAID-1 performance under 2.4 and 2.6
+References: <20080325194306.4ac71ff2@galadriel.home>	<e2e108260803260142o34c33e7ajf395d5cb62824cb4@mail.gmail.com>	<20080326120713.24cb8093@harpe.intellique.com>	<e2e108260803260415w64fa4feave44560dd7ac7cbdb@mail.gmail.com> <20080326133632.640aa0d2@harpe.intellique.com>
+In-Reply-To: <20080326133632.640aa0d2@harpe.intellique.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 27 March 2008, Lennart Sorensen wrote:
-> > I happened across this the other day, and saved the URL since
-> > the price was relatively sane ... $15 vs the $60 I saw at
-> > another site, although ISTR Fry's used to have them at $5:
-> > 
-> >   http://www.wrighthobbies.net/catalog/index.php?cPath=47
-> > 
-> > Yeah, I know.  "It's getting very hard to find real PCI slots
-> > any more."  :(
+Emmanuel Florac wrote:
+> Le Wed, 26 Mar 2008 12:15:57 +0100
+> "Bart Van Assche" <bart.vanassche@gmail.com> écrivait:
 > 
-> Well digi (www.digi.com) makes some nice PCI serial cards, that work
-> with the jsm driver.  Not sure how many models are supported, but
-> certainly I have used the 2 port card with DE-9 connectors.
+>> You are welcome to post the numbers you obtained with dd for direct
+>> I/O on a RAID-1 setup for 2.4 versus 2.6 kernel.
+> 
+> Here we go (tested on a slightly slower hardware : Athlon64 3000+,
+> nVidia chipset) . Actually, direct IO result is identical. However, the
+> significant number for the end user in this case is the NFS thruput.
+> 
 
-List price $117 ... 4-port for $202 ... you can buy entire
-computers for less!!  ;)
 
-I really should have stocked up on the $5 cards...
+> 2.4 kernel (2.4.32), async write
+> --------------------------------
+> root@0[root]# ./dd if=/dev/zero of=/mnt/raid/testdd01 bs=1M count=1024 
+> 1024+0 records in
+> 1024+0 records out
+> 1073741824 bytes (1.1 GB) copied, 13.407 seconds, 80.1 MB/s
+> 
+> 2.4 kernel (2.4.32), async write thru NFS mount
+> --------------------------------
+> emmanuel[/mnt/temp]$ dd if=/dev/zero of=./testdd01 bs=1M count=1024 
+> 1024+0 enregistrements lus
+> 1024+0 enregistrements écrits
+> 1073741824 bytes (1,1 GB) copied, 15,5176 s, 69,2 MB/s
+> 
+> 2.4 kernel (2.4.32), async read
+> --------------------------------
+> root@0[root]# ./dd if=/mnt/raid/testdd01 of=/dev/null bs=1M
+> 1024+0 records in
+> 1024+0 records out
+> 1073741824 bytes (1.1 GB) copied, 15.752 seconds, 68.2 MB/s
+> 
+> 2.4 kernel (2.4.32), sync write
+> --------------------------------
+> root@0[root]# ./dd if=/dev/zero of=/mnt/raid/testdd01 bs=1M count=1024 \
+> oflag=direct,dsync 
+> 1024+0 records in
+> 1024+0 records out
+> 1073741824 bytes (1.1 GB) copied, 21.7874 seconds, 49.3 MB/s
+> 
+> 2.6 kernel (2.6.22.18), async write
+> --------------------------------
+> root@0[root]# ./dd if=/dev/zero of=/mnt/raid/testdd02 bs=1M
+> count=1024 1024+0 records in
+> 1024+0 records out
+> 1073741824 bytes (1.1 GB) copied, 17.1347 seconds, 62.7 MB/s
+> 
+> 2.6 kernel (2.6.22.18), async write thru NFS mount
+> --------------------------------
+> emmanuel[/mnt/temp]$ dd if=/dev/zero of=./testdd02 bs=1M count=1024
+> 1024+0 enregistrements lus
+> 1024+0 enregistrements écrits
+> 1073741824 bytes (1,1 GB) copied, 21,3618 s, 50,3 MB/s
+> 
+> 2.6 kernel (2.6.22.18), async read
+> --------------------------------
+> root@0[root]# ./dd if=/mnt/raid/testdd02 of=/dev/null bs=1M
+> 1024+0 records in
+> 1024+0 records out
+> 1073741824 bytes (1.1 GB) copied, 15.7599 seconds, 68.1 MB/s
+> 
+> 2.6 kernel (2.6.22.18), sync write
+> --------------------------------
+> root@0[root]# ./dd if=/dev/zero of=/mnt/raid/testdd02 bs=1M count=1024 \
+> oflag=direct,dsync 
+> 1024+0 records in
+> 1024+0 records out
+> 1073741824 bytes (1.1 GB) copied, 21.7011 seconds, 49.5 MB/s
+> 
+The time you usually want to measure is time to get all data to another 
+drive. In that case fdatasync allows typical buffering while waiting at 
+the end of the copy until all bytes are on the destination platter. That 
+doesn't change the speed, just makes the numbers more stable. That's the 
+one I use, since most simple applications just use write() to send data. 
+This may or may not provide numbers more representative of your application.
 
+-- 
+Bill Davidsen <davidsen@tmr.com>
+   "We have more to fear from the bungling of the incompetent than from
+the machinations of the wicked."  - from Slashdot
 
