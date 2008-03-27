@@ -1,153 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760706AbYC0S6S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758772AbYC0TEV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760706AbYC0S6S (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Mar 2008 14:58:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755308AbYC0S6K
+	id S1758772AbYC0TEV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Mar 2008 15:04:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755448AbYC0TEE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Mar 2008 14:58:10 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:49852 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755440AbYC0S6J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Mar 2008 14:58:09 -0400
-Date: Thu, 27 Mar 2008 18:57:55 +0000
-From: Alasdair G Kergon <agk@redhat.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Heiko Carstens <heiko.carstens@de.ibm.com>, linux-kernel@vger.kernel.org,
-       dm-devel@redhat.com
-Subject: [2.6.25-rc8] dm io: write error bits form long not int
-Message-ID: <20080327185755.GL24157@agk.fab.redhat.com>
-Mail-Followup-To: Linus Torvalds <torvalds@linux-foundation.org>,
-	Heiko Carstens <heiko.carstens@de.ibm.com>,
-	linux-kernel@vger.kernel.org, dm-devel@redhat.com
-References: <20080327185315.GA26288@agk.fab.redhat.com>
+	Thu, 27 Mar 2008 15:04:04 -0400
+Received: from moutng.kundenserver.de ([212.227.126.177]:54995 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754939AbYC0TEB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Mar 2008 15:04:01 -0400
+Subject: Re: What to do about the 2TB limit on HDIO_GETGEO ?
+From: Kay Sievers <kay.sievers@vrfy.org>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Mark Lord <lkml@rtr.ca>, Greg KH <gregkh@suse.de>,
+       Jens Axboe <axboe@kernel.dk>, Jeff Garzik <jgarzik@pobox.com>,
+       Tejun Heo <htejun@gmail.com>, Linus Torvalds <torvalds@osdl.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       IDE/ATA development list <linux-ide@vger.kernel.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>
+In-Reply-To: <47EBED9B.8020706@zytor.com>
+References: <47E875AD.1000901@rtr.ca> <47E87942.2020409@rtr.ca>
+	 <47E88A13.70808@zytor.com> <47E90019.3050006@rtr.ca>
+	 <47E90458.7030801@zytor.com> <47E9383F.3050908@rtr.ca>
+	 <20080325192515.GA24234@suse.de> <47E99A02.7040903@rtr.ca>
+	 <3ae72650803271151k5a7b5c4cn5078b3bdf6a9c87a@mail.gmail.com>
+	 <47EBED9B.8020706@zytor.com>
+Content-Type: text/plain
+Date: Thu, 27 Mar 2008 20:03:05 +0100
+Message-Id: <1206644585.24291.4.camel@lov.site>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080327185315.GA26288@agk.fab.redhat.com>
-User-Agent: Mutt/1.4.1i
-Organization: Red Hat UK Ltd. Registered in England and Wales, number 03798903. Registered Office: Amberley Place, 107-111 Peascod Street, Windsor, Berkshire, SL4 1TE.
+X-Mailer: Evolution 2.22.0 
+Content-Transfer-Encoding: 7bit
+X-Provags-ID: V01U2FsdGVkX1+YzEUtyeFO+uXFUWEbdu+oIkG2tPGO9dHcR5H
+ KFEmu7OkLqwiTFTQ5EghE+M5NW3J/tyW6VA/WgXGuUodDoqOx5
+ M/qEaXST8fmVzD7Qwym1ovGFclII7cP
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Alasdair G Kergon <agk@redhat.com>
+On Thu, 2008-03-27 at 11:55 -0700, H. Peter Anvin wrote:
+> Kay Sievers wrote:
+> >>
+> >>  And it's not just a few 10s of lines of code currently,
+> >>  but rather about 80-100 lines just to find the correct device subdir,
+> >>  and *then* a few more 10s of lines of code to retrieve the value.
+> > 
+> > Hmm, 100 lines? What else do you need?
+> > 
+> >   $ grep -l 8:3 /sys/class/block/*/dev
+> >   /sys/class/block/sdc/dev
+> > 
+> 
+> That's particularly funny, because your very own example gives the wrong 
+> result -- sdc is 8:32 not 8:3 (which is sdc3, which is also excluded by 
+> your search.)
 
-write_err is an unsigned long used with set_bit() so should not
-be passed around as unsigned int.
+Very true, but I guess you get the idea, and know how to add the proper
+string match to grep. :)
 
-http://bugzilla.kernel.org/show_bug.cgi?id=10271
+> Not to mention the fact that it is still O(n).
 
-Signed-off-by: Alasdair G Kergon <agk@redhat.com>
----
- drivers/md/dm-io.c    |    2 +-
- drivers/md/dm-raid1.c |    4 ++--
- drivers/md/dm-snap.c  |    2 +-
- drivers/md/kcopyd.c   |   10 +++++-----
- drivers/md/kcopyd.h   |    4 ++--
- 5 files changed, 11 insertions(+), 11 deletions(-)
+Any real numbers from a large setup, which show that we want to have a
+reverse devnum map in sysfs?
 
-Index: linux-2.6.25-rc7/drivers/md/dm-io.c
-===================================================================
---- linux-2.6.25-rc7.orig/drivers/md/dm-io.c	2008-03-27 17:51:22.000000000 +0000
-+++ linux-2.6.25-rc7/drivers/md/dm-io.c	2008-03-27 17:51:30.000000000 +0000
-@@ -114,7 +114,7 @@ static void dec_count(struct io *io, uns
- 			wake_up_process(io->sleeper);
- 
- 		else {
--			int r = io->error;
-+			unsigned long r = io->error;
- 			io_notify_fn fn = io->callback;
- 			void *context = io->context;
- 
-Index: linux-2.6.25-rc7/drivers/md/dm-raid1.c
-===================================================================
---- linux-2.6.25-rc7.orig/drivers/md/dm-raid1.c	2008-03-27 17:51:22.000000000 +0000
-+++ linux-2.6.25-rc7/drivers/md/dm-raid1.c	2008-03-27 17:51:30.000000000 +0000
-@@ -753,7 +753,7 @@ out:
-  * are in the no-sync state.  We have to recover these by
-  * recopying from the default mirror to all the others.
-  *---------------------------------------------------------------*/
--static void recovery_complete(int read_err, unsigned int write_err,
-+static void recovery_complete(int read_err, unsigned long write_err,
- 			      void *context)
- {
- 	struct region *reg = (struct region *)context;
-@@ -767,7 +767,7 @@ static void recovery_complete(int read_e
- 	}
- 
- 	if (write_err) {
--		DMERR_LIMIT("Write error during recovery (error = 0x%x)",
-+		DMERR_LIMIT("Write error during recovery (error = 0x%lx)",
- 			    write_err);
- 		/*
- 		 * Bits correspond to devices (excluding default mirror).
-Index: linux-2.6.25-rc7/drivers/md/dm-snap.c
-===================================================================
---- linux-2.6.25-rc7.orig/drivers/md/dm-snap.c	2008-03-27 17:51:22.000000000 +0000
-+++ linux-2.6.25-rc7/drivers/md/dm-snap.c	2008-03-27 17:51:30.000000000 +0000
-@@ -804,7 +804,7 @@ static void commit_callback(void *contex
-  * Called when the copy I/O has finished.  kcopyd actually runs
-  * this code so don't block.
-  */
--static void copy_callback(int read_err, unsigned int write_err, void *context)
-+static void copy_callback(int read_err, unsigned long write_err, void *context)
- {
- 	struct dm_snap_pending_exception *pe = context;
- 	struct dm_snapshot *s = pe->snap;
-Index: linux-2.6.25-rc7/drivers/md/kcopyd.c
-===================================================================
---- linux-2.6.25-rc7.orig/drivers/md/kcopyd.c	2008-03-27 17:51:22.000000000 +0000
-+++ linux-2.6.25-rc7/drivers/md/kcopyd.c	2008-03-27 17:51:30.000000000 +0000
-@@ -169,7 +169,7 @@ struct kcopyd_job {
- 	 * Error state of the job.
- 	 */
- 	int read_err;
--	unsigned int write_err;
-+	unsigned long write_err;
- 
- 	/*
- 	 * Either READ or WRITE
-@@ -293,7 +293,7 @@ static int run_complete_job(struct kcopy
- {
- 	void *context = job->context;
- 	int read_err = job->read_err;
--	unsigned int write_err = job->write_err;
-+	unsigned long write_err = job->write_err;
- 	kcopyd_notify_fn fn = job->fn;
- 	struct kcopyd_client *kc = job->kc;
- 
-@@ -396,7 +396,7 @@ static int process_jobs(struct list_head
- 		if (r < 0) {
- 			/* error this rogue job */
- 			if (job->rw == WRITE)
--				job->write_err = (unsigned int) -1;
-+				job->write_err = (unsigned long) -1L;
- 			else
- 				job->read_err = 1;
- 			push(&_complete_jobs, job);
-@@ -448,8 +448,8 @@ static void dispatch_job(struct kcopyd_j
- }
- 
- #define SUB_JOB_SIZE 128
--static void segment_complete(int read_err,
--			     unsigned int write_err, void *context)
-+static void segment_complete(int read_err, unsigned long write_err,
-+			     void *context)
- {
- 	/* FIXME: tidy this function */
- 	sector_t progress = 0;
-Index: linux-2.6.25-rc7/drivers/md/kcopyd.h
-===================================================================
---- linux-2.6.25-rc7.orig/drivers/md/kcopyd.h	2008-03-27 17:51:22.000000000 +0000
-+++ linux-2.6.25-rc7/drivers/md/kcopyd.h	2008-03-27 17:51:30.000000000 +0000
-@@ -32,8 +32,8 @@ void kcopyd_client_destroy(struct kcopyd
-  * read_err is a boolean,
-  * write_err is a bitset, with 1 bit for each destination region
-  */
--typedef void (*kcopyd_notify_fn)(int read_err,
--				 unsigned int write_err, void *context);
-+typedef void (*kcopyd_notify_fn)(int read_err, unsigned long write_err,
-+				 void *context);
- 
- int kcopyd_copy(struct kcopyd_client *kc, struct io_region *from,
- 		unsigned int num_dests, struct io_region *dests,
+Thanks,
+Kay
+
