@@ -1,208 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758636AbYC0I32@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757338AbYC0Icx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758636AbYC0I32 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Mar 2008 04:29:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755449AbYC0I3T
+	id S1757338AbYC0Icx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Mar 2008 04:32:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753110AbYC0Ico
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Mar 2008 04:29:19 -0400
-Received: from wx-out-0506.google.com ([66.249.82.234]:9863 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755262AbYC0I3S (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Mar 2008 04:29:18 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=reply-to:to:subject:date:user-agent:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id:from;
-        b=E0aVqq58HjK4jYVhnJmZ5iVicHTWZ1Yoc+VWxuHTw9/SGetnE5m+pLfI9WqKTPF4dJSPlrUUyXVuIU4jBQE9rRNWnKn62o3Hne7zXrAox5PypL9o3xbP7g/fAxCnRAF1kr/I9ECrGmLzL9zuOp9rYdvxUzJZRe8AxGrL4KhZzdI=
-Reply-To: yhlu.kernel@gmail.com
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Gary Hade <garyhade@us.ibm.com>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH] x86/pci: add pci=skip_isa_align command lines.
-Date: Thu, 27 Mar 2008 01:31:18 -0700
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: kernel list <linux-kernel@vger.kernel.org>
+	Thu, 27 Mar 2008 04:32:44 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:58815 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751824AbYC0Icn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Mar 2008 04:32:43 -0400
+Date: Thu, 27 Mar 2008 09:32:21 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: "Huang, Ying" <ying.huang@intel.com>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, andi@firstfloor.org, mingo@redhat.com,
+       tglx@linutronix.de, Paul Jackson <pj@sgi.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH -mm 0/4] x86_64 boot: Add linked listof struct
+	setup_data to boot protocol
+Message-ID: <20080327083221.GD15626@elte.hu>
+References: <1206601743.3067.20.camel@caritas-dev.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200803270131.18885.yhlu.kernel@gmail.com>
-From: Yinghai Lu <yhlu.kernel.send@gmail.com>
+In-Reply-To: <1206601743.3067.20.camel@caritas-dev.intel.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[PATCH] x86/pci: add pci=skip_isa_align command lines.
 
-so we don't align the io port start address for pci cards.
+* Huang, Ying <ying.huang@intel.com> wrote:
 
-also move out dmi check out acpi.c, because it has nothing to do with acpi.
-it could spare some calling when we have several peer root buses.
+> This patchset adds the linked list of struct setup_data to boot 
+> protocol. This is needed by EDD information and some SGI machine with 
+> E820 entry number > 128.
 
-Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
+what happens with the SGI machine - does it crash (because we overflow 
+the e820 array) - or does it boot up with less memory available and we 
+get this bootup warning:
 
-diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
-index 1970479..d25db3b 100644
---- a/Documentation/kernel-parameters.txt
-+++ b/Documentation/kernel-parameters.txt
-@@ -1497,6 +1497,8 @@ and is between 256 and 4096 characters. It is defined in the file
- 				This is normally done in pci_enable_device(),
- 				so this option is a temporary workaround
- 				for broken drivers that don't call it.
-+		skip_isa_align	[X86] do not align io start addr, so can
-+				handle more pci cards
- 		firmware	[ARM] Do not re-enumerate the bus but instead
- 				just use the configuration from the
- 				bootloader. This is currently used on
-diff --git a/arch/x86/pci/acpi.c b/arch/x86/pci/acpi.c
-index b0e4369..850d721 100644
---- a/arch/x86/pci/acpi.c
-+++ b/arch/x86/pci/acpi.c
-@@ -6,45 +6,6 @@
- #include <asm/numa.h>
- #include "pci.h"
- 
--static int __devinit can_skip_ioresource_align(const struct dmi_system_id *d)
--{
--	pci_probe |= PCI_CAN_SKIP_ISA_ALIGN;
--	printk(KERN_INFO "PCI: %s detected, can skip ISA alignment\n", d->ident);
--	return 0;
--}
--
--static struct dmi_system_id acpi_pciprobe_dmi_table[] __devinitdata = {
--/*
-- * Systems where PCI IO resource ISA alignment can be skipped
-- * when the ISA enable bit in the bridge control is not set
-- */
--	{
--		.callback = can_skip_ioresource_align,
--		.ident = "IBM System x3800",
--		.matches = {
--			DMI_MATCH(DMI_SYS_VENDOR, "IBM"),
--			DMI_MATCH(DMI_PRODUCT_NAME, "x3800"),
--		},
--	},
--	{
--		.callback = can_skip_ioresource_align,
--		.ident = "IBM System x3850",
--		.matches = {
--			DMI_MATCH(DMI_SYS_VENDOR, "IBM"),
--			DMI_MATCH(DMI_PRODUCT_NAME, "x3850"),
--		},
--	},
--	{
--		.callback = can_skip_ioresource_align,
--		.ident = "IBM System x3950",
--		.matches = {
--			DMI_MATCH(DMI_SYS_VENDOR, "IBM"),
--			DMI_MATCH(DMI_PRODUCT_NAME, "x3950"),
--		},
--	},
--	{}
--};
--
- struct pci_root_info {
- 	char *name;
- 	unsigned int res_num;
-@@ -196,8 +157,6 @@ struct pci_bus * __devinit pci_acpi_scan_root(struct acpi_device *device, int do
- 	int pxm;
- #endif
- 
--	dmi_check_system(acpi_pciprobe_dmi_table);
--
- 	if (domain && !pci_domains_supported) {
- 		printk(KERN_WARNING "PCI: Multiple domains not supported "
- 		       "(dom %d, bus %d)\n", domain, busnum);
-diff --git a/arch/x86/pci/common.c b/arch/x86/pci/common.c
-index ae1bf52..8045a4a 100644
---- a/arch/x86/pci/common.c
-+++ b/arch/x86/pci/common.c
-@@ -77,6 +77,50 @@ int pcibios_scanned;
-  */
- DEFINE_SPINLOCK(pci_config_lock);
- 
-+static int __devinit can_skip_ioresource_align(const struct dmi_system_id *d)
-+{
-+	pci_probe |= PCI_CAN_SKIP_ISA_ALIGN;
-+	printk(KERN_INFO "PCI: %s detected, can skip ISA alignment\n", d->ident);
-+	return 0;
-+}
+    Ooops! Too many entries in the memory map!
+
+?
+
+I guess we should we raise E820MAX from 128 to 256 (patch below), but if 
+we do something worse (crash), we should fix that side-effect as well.
+
+> Now, only the x86_64 is supported. The i386 can be supported after 
+> early reservation mechanism for x86 is available.
+
+could you try to do that nevertheless? We generally prefer feature 
+patches after sensible unification has been done.
+
+	Ingo
+
+-------------->
+Subject: x86: more e820
+From: Ingo Molnar <mingo@elte.hu>
+Date: Thu Mar 27 09:18:44 CET 2008
+
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ include/asm-x86/e820.h |    7 ++++---
+ 1 file changed, 4 insertions(+), 3 deletions(-)
+
+Index: linux-x86.q/include/asm-x86/e820.h
+===================================================================
+--- linux-x86.q.orig/include/asm-x86/e820.h
++++ linux-x86.q/include/asm-x86/e820.h
+@@ -1,8 +1,9 @@
+ #ifndef __ASM_E820_H
+ #define __ASM_E820_H
+-#define E820MAP	0x2d0		/* our map */
+-#define E820MAX	128		/* number of entries in E820MAP */
+-#define E820NR	0x1e8		/* # entries in E820MAP */
 +
-+static struct dmi_system_id can_skip_pciprobe_dmi_table[] __devinitdata = {
-+/*
-+ * Systems where PCI IO resource ISA alignment can be skipped
-+ * when the ISA enable bit in the bridge control is not set
-+ */
-+	{
-+		.callback = can_skip_ioresource_align,
-+		.ident = "IBM System x3800",
-+		.matches = {
-+			DMI_MATCH(DMI_SYS_VENDOR, "IBM"),
-+			DMI_MATCH(DMI_PRODUCT_NAME, "x3800"),
-+		},
-+	},
-+	{
-+		.callback = can_skip_ioresource_align,
-+		.ident = "IBM System x3850",
-+		.matches = {
-+			DMI_MATCH(DMI_SYS_VENDOR, "IBM"),
-+			DMI_MATCH(DMI_PRODUCT_NAME, "x3850"),
-+		},
-+	},
-+	{
-+		.callback = can_skip_ioresource_align,
-+		.ident = "IBM System x3950",
-+		.matches = {
-+			DMI_MATCH(DMI_SYS_VENDOR, "IBM"),
-+			DMI_MATCH(DMI_PRODUCT_NAME, "x3950"),
-+		},
-+	},
-+	{}
-+};
-+
-+void __init dmi_check_skip_isa_align(void)
-+{
-+	dmi_check_system(can_skip_pciprobe_dmi_table);
-+}
-+
- /*
-  * Several buggy motherboards address only 16 devices and mirror
-  * them to next 16 IDs. We try to detect this `feature' on all
-@@ -519,6 +563,9 @@ char * __devinit  pcibios_setup(char *str)
- 	} else if (!strcmp(str, "routeirq")) {
- 		pci_routeirq = 1;
- 		return NULL;
-+	} else if (!strcmp(str, "skip_isa_align")) {
-+		pci_probe |= PCI_CAN_SKIP_ISA_ALIGN;
-+		return NULL;
- 	}
- 	return str;
- }
-diff --git a/arch/x86/pci/init.c b/arch/x86/pci/init.c
-index 343c363..49bb1cf 100644
---- a/arch/x86/pci/init.c
-+++ b/arch/x86/pci/init.c
-@@ -29,6 +29,8 @@ static __init int pci_access_init(void)
- 		printk(KERN_ERR
- 		"PCI: Fatal: No config space access function found\n");
++#define E820MAP		0x2d0		/* our map */
++#define E820MAX		256		/* number of entries in E820MAP */
++#define E820NR		0x1e8		/* # entries in E820MAP */
  
-+	dmi_check_skip_isa_align();
-+
- 	return 0;
- }
- arch_initcall(pci_access_init);
-diff --git a/arch/x86/pci/pci.h b/arch/x86/pci/pci.h
-index c9fb637..d338935 100644
---- a/arch/x86/pci/pci.h
-+++ b/arch/x86/pci/pci.h
-@@ -39,6 +39,8 @@ enum pci_bf_sort_state {
- 	pci_dmi_bf,
- };
- 
-+extern void __init dmi_check_skip_isa_align(void);
-+
- /* pci-i386.c */
- 
- extern unsigned int pcibios_max_latency;
+ #define E820_RAM	1
+ #define E820_RESERVED	2
