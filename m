@@ -1,67 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762069AbYC0WW3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762156AbYC0WYT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762069AbYC0WW3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Mar 2008 18:22:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758586AbYC0WWT
+	id S1762156AbYC0WYT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Mar 2008 18:24:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755826AbYC0WYI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Mar 2008 18:22:19 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:49034
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1754641AbYC0WWT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Mar 2008 18:22:19 -0400
-Date: Thu, 27 Mar 2008 15:22:18 -0700 (PDT)
-Message-Id: <20080327.152218.235944668.davem@davemloft.net>
-To: jarkao2@gmail.com
-Cc: rjw@sisk.pl, a.p.zijlstra@chello.nl, akpm@linux-foundation.org,
-       netdev@vger.kernel.org, bugme-daemon@bugzilla.kernel.org,
-       marcus@better.se, shemminger@linux-foundation.org,
-       linux-kernel@vger.kernel.org, mingo@elte.hu
-Subject: Re: [Bugme-new] [Bug 10326] New: inconsistent lock state in
- net_rx_action
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20080327222248.GA3596@ami.dom.local>
-References: <20080327124928.GE2845@ami.dom.local>
-	<200803272256.50454.rjw@sisk.pl>
-	<20080327222248.GA3596@ami.dom.local>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Thu, 27 Mar 2008 18:24:08 -0400
+Received: from gw.goop.org ([64.81.55.164]:60402 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758586AbYC0WYH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Mar 2008 18:24:07 -0400
+Message-ID: <47EC1E75.6090102@goop.org>
+Date: Thu, 27 Mar 2008 15:23:49 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+MIME-Version: 1.0
+To: Dave Hansen <dave@linux.vnet.ibm.com>
+CC: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Yasunori Goto <y-goto@jp.fujitsu.com>,
+       Christoph Lameter <clameter@sgi.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Anthony Liguori <anthony@codemonkey.ws>,
+       Chris Wright <chrisw@sous-sol.org>
+Subject: Re: Trying to make use of hotplug memory for xen balloon driver
+References: <47EAD83A.2000000@goop.org> <1206577595.7883.26.camel@nimitz.home.sr71.net>
+In-Reply-To: <1206577595.7883.26.camel@nimitz.home.sr71.net>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jarek Poplawski <jarkao2@gmail.com>
-Date: Thu, 27 Mar 2008 23:22:48 +0100
+Dave Hansen wrote:
+> The flags being all null looks highly suspicious to me.
+>
+> Once you've done an add_memory(), the new sections should show up
+> in /sys.  Do you see them in there?
+>
+> Once they show up, you can online them with:
+>
+> 	echo online > /sys/devices/system/memory/memoryXXX/state
+>
+> That's what actually goes and mucks with the 'struct zone's and the
+> pgdats to expand them.  It will also call online_page() on the whole
+> range.  I think you're trying to do this manually, and missing part of
+> it.  
 
-> On Thu, Mar 27, 2008 at 10:56:49PM +0100, Rafael J. Wysocki wrote:
-> ...
-> > I assume there will be a patch posted for this issue.  Correct?
-> 
-> I guess Peter should know the answer!
+Hm, actually this is precisely the wrong thing to do in this case.  When 
+the balloon driver adds a new section of hotplug memory, its doing it to 
+get the page structures, but there's no actual memory backing those 
+pages.  The memory only comes into existence on a page-by-page basis 
+when the balloon driver gets memory from the hypervisor and attaches it 
+to each page (the balloon driver uses online_page() on each page as its 
+ready).
 
-Instead of going back and forth like this can someone post
-just take it upon themselves to post such an obvious patch
-already :-)
+If the user does a mass online via /sys the system explodes because it 
+onlines a large number of pages which have no backing memory.  Since 
+none of those pages can be mapped, the kernel explodes in a variety of 
+interesting ways.
 
-All of this "he'll do it, she'll do it" just wastes time.
+So I'd really like to inhibit the sysfs interface on these sections.  
+Thoughts?
 
-diff --git a/include/linux/netdevice.h b/include/linux/netdevice.h
-index a2f0032..fae6a7e 100644
---- a/include/linux/netdevice.h
-+++ b/include/linux/netdevice.h
-@@ -383,9 +383,11 @@ static inline void __napi_complete(struct napi_struct *n)
- 
- static inline void napi_complete(struct napi_struct *n)
- {
--	local_irq_disable();
-+	unsigned long flags;
-+
-+	local_irq_save(flags);
- 	__napi_complete(n);
--	local_irq_enable();
-+	local_irq_restore(flags);
- }
- 
- /**
+Thanks,
+    J
