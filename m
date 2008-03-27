@@ -1,58 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760659AbYC0QZp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760561AbYC0Q1D@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760659AbYC0QZp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Mar 2008 12:25:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759465AbYC0QZg
+	id S1760561AbYC0Q1D (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Mar 2008 12:27:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754672AbYC0Q0y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Mar 2008 12:25:36 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:45938 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757109AbYC0QZf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Mar 2008 12:25:35 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [RFC][PATCH 1/3] PM: Introduce new top level suspend and hibernation callbacks (rev. 4)
-Date: Thu, 27 Mar 2008 17:24:57 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: pm list <linux-pm@lists.linux-foundation.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Greg KH <greg@kroah.com>, Len Brown <lenb@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Alexey Starikovskiy <astarikovskiy@suse.de>,
-       David Brownell <david-b@pacbell.net>, Pavel Machek <pavel@ucw.cz>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Oliver Neukum <oliver@neukum.org>
-References: <Pine.LNX.4.44L0.0803262305580.21714-100000@netrider.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0803262305580.21714-100000@netrider.rowland.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Thu, 27 Mar 2008 12:26:54 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:44168 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754619AbYC0Q0y (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Mar 2008 12:26:54 -0400
+Date: Thu, 27 Mar 2008 16:10:06 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: linux-kernel@vger.kernel.org
+Subject: Serial Roadmap
+Message-ID: <20080327161006.2db03b5a@core>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200803271724.59155.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, 27 of March 2008, Alan Stern wrote:
-> On Thu, 27 Mar 2008, Rafael J. Wysocki wrote:
-> 
-> > @@ -68,22 +75,32 @@ int device_pm_add(struct device *dev)
-> >  		 dev->bus ? dev->bus->name : "No Bus",
-> >  		 kobject_name(&dev->kobj));
-> >  	mutex_lock(&dpm_list_mtx);
-> > -	if ((dev->parent && dev->parent->power.sleeping) || all_sleeping) {
-> > -		if (dev->parent->power.sleeping)
-> > -			dev_warn(dev,
-> > -				"parent %s is sleeping, will not add\n",
-> > +	if (dev->parent) {
-> > +		if (dev->parent->power.status >= DPM_SUSPENDING) {
-> > +			dev_warn(dev, "parent %s is sleeping, will not add\n",
-> >  				dev->parent->bus_id);
-> 
-> You forgot to check for dev->parent->power.status == DPM_INVALID.
+Basic lock_kernel free serial is now pushed to the -mm tree, with a few
+more lock drops to get pushed but tested.
 
-Right, will fix.
+After that the following will be changing
 
-Thanks,
-Rafael
+- tty->driver will no longer contain a copy of all the operations methods
+but that will become tty->driver->ops and in turn tty->ops
+
+- Helpers will appear for things like write_room/put_char/chars_in_buffer
+
+These will be mandatory to use so that we can stamp out all the corner
+cases where some combinations of ldisc/driver crash the box due to bogus
+assumptions about what methods must be present.
+
+- break_ctl will become mandatory for break handling removing all the
+duplicated per driver cruft in old drivers.
+
+- put_char methods will return 0/1 if they queued the character.
+
+Alan
