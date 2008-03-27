@@ -1,49 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758420AbYC0O7U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758875AbYC0PBQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758420AbYC0O7U (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Mar 2008 10:59:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754240AbYC0O7M
+	id S1758875AbYC0PBQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Mar 2008 11:01:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754904AbYC0PBE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Mar 2008 10:59:12 -0400
-Received: from bzq-179-150-194.static.bezeqint.net ([212.179.150.194]:54425
-	"EHLO il.qumranet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751939AbYC0O7L (ORCPT
+	Thu, 27 Mar 2008 11:01:04 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:59600 "EHLO
+	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754517AbYC0PBD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Mar 2008 10:59:11 -0400
-Message-ID: <47EBB63E.2060306@qumranet.com>
-Date: Thu, 27 Mar 2008 16:59:10 +0200
-From: Avi Kivity <avi@qumranet.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	Thu, 27 Mar 2008 11:01:03 -0400
+Date: Thu, 27 Mar 2008 16:01:38 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: =?iso-8859-1?Q?P=E1draig?= Brady <P@draigBrady.com>
+Cc: kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.25: something wrong with ^C
+Message-ID: <20080327150138.GC13553@elf.ucw.cz>
+References: <20080327142814.GC13190@elf.ucw.cz> <47EBB4BC.7040509@draigBrady.com>
 MIME-Version: 1.0
-To: Dave Hansen <dave@linux.vnet.ibm.com>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       kvm-devel <kvm-devel@lists.sourceforge.net>
-Subject: Re: [kvm-devel] kvm causing memory corruption?  ~2.6.25-rc6
-References: <1206479576.7562.21.camel@nimitz.home.sr71.net>	 <47EA1C63.8010202@qumranet.com>	 <1206550329.7883.5.camel@nimitz.home.sr71.net>	 <47EA80AC.4070204@qumranet.com>	 <1206551794.7883.7.camel@nimitz.home.sr71.net>	 <47EB6AAC.3040607@qumranet.com>  <47EB7281.6070300@qumranet.com> <1206629709.7883.30.camel@nimitz.home.sr71.net>
-In-Reply-To: <1206629709.7883.30.camel@nimitz.home.sr71.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <47EBB4BC.7040509@draigBrady.com>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dave Hansen wrote:
-> On Thu, 2008-03-27 at 12:10 +0200, Avi Kivity wrote:
->   
->> btw, is this with >= 4GB RAM on the host?
->>     
->
-> Well, are you asking whether I have PAE on or not? :)
->
->   
+On Thu 2008-03-27 14:52:44, Pádraig Brady wrote:
+> Pavel Machek wrote:
+> > Hi!
+> > 
+> > Is it just me, or does ^C take longer in 2.6.25?
+> > 
+> > Like... one second delay between pressing ^C and seeing any effect?
+> 
+> It can join Ctrl-\ on ubuntu so:
+> https://bugs.launchpad.net/bugs/62511
 
-No, I'm asking whether there is a possibility of address truncation :)
-
-PAE by itself doesn't affect kvm much, as it always runs the guest in 
-pae mode.
-
-Can you try running with mem=2000M or something?
-
+No, I do not think I'm doing anything fancy with coredumps...
+								Pavel
 -- 
-error compiling committee.c: too many arguments to function
-
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+pomozte zachranit klanovicky les:  http://www.ujezdskystrom.info/
