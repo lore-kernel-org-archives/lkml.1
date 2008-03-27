@@ -1,61 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755202AbYC0SHd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761114AbYC0SIR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755202AbYC0SHd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Mar 2008 14:07:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755044AbYC0SHZ
+	id S1761114AbYC0SIR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Mar 2008 14:08:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752183AbYC0SIE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Mar 2008 14:07:25 -0400
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:50863 "EHLO smtp4.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754373AbYC0SHZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Mar 2008 14:07:25 -0400
-Date: Thu, 27 Mar 2008 20:07:13 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: Greg KH <greg@kroah.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Douglas Thompson <dougthompson@xmission.com>,
-       Tim Small <tim@buttersideup.com>, bluesmoke-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org
-Subject: Re: EDAC_I82443BXGX still depends on BROKEN
-Message-ID: <20080327180713.GC32200@cs181133002.pp.htv.fi>
-References: <20080327173610.GB32200@cs181133002.pp.htv.fi> <20080327175224.GA15887@kroah.com>
+	Thu, 27 Mar 2008 14:08:04 -0400
+Received: from ti-out-0910.google.com ([209.85.142.191]:18839 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755218AbYC0SIB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Mar 2008 14:08:01 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=ULwAfVGr1I9E6y8geC9RQCNJzsy/kaiXHRz6Y7xziFrHhDQEMTCzxX1UypMXZRc+QnpdIrl/NvLrAtmnORnBRXCnaCjwSYmH/ljb4JpmKuztkz8qO+CMvqTRnAR2R1M6/hMR7e0iKjEwJ561LMFeAer/nQXsJgZlBXzTnOgRQjM=
+Message-ID: <86802c440803271107m4327554ct688738c80748d2d7@mail.gmail.com>
+Date: Thu, 27 Mar 2008 11:07:58 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Gary Hade" <garyhade@us.ibm.com>
+Subject: Re: [PATCH] x86/pci: add pci=skip_isa_align command lines.
+Cc: "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Greg Kroah-Hartman" <gregkh@suse.de>,
+       "kernel list" <linux-kernel@vger.kernel.org>
+In-Reply-To: <20080327175912.GA9684@us.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080327175224.GA15887@kroah.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+References: <200803270131.18885.yhlu.kernel@gmail.com>
+	 <20080327084557.GH15626@elte.hu> <20080327175912.GA9684@us.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 27, 2008 at 10:52:24AM -0700, Greg KH wrote:
-> On Thu, Mar 27, 2008 at 07:36:11PM +0200, Adrian Bunk wrote:
-> > It must become very good stuff when it takes Greg more than 8 months to 
-> > brew it...  ;-)
-> 
-> Yeah, it's driver core rework, the kobject stuff was the first step to
-> try to get there...
-> 
-> It's slow going unfortunatly other things more pressing keep popping up
-> ahead of it, it's getting there...
-> 
-> No objection to this patch at all:
-> 	Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
+On Thu, Mar 27, 2008 at 10:59 AM, Gary Hade <garyhade@us.ibm.com> wrote:
+>
+> On Thu, Mar 27, 2008 at 09:45:57AM +0100, Ingo Molnar wrote:
+>  >
+>  > * Yinghai Lu <yhlu.kernel.send@gmail.com> wrote:
+>  >
+>  > > [PATCH] x86/pci: add pci=skip_isa_align command lines.
+>  > >
+>  > > so we don't align the io port start address for pci cards.
+>  > >
+>  > > also move out dmi check out acpi.c, because it has nothing to do with
+>  > > acpi. it could spare some calling when we have several peer root
+>  > > buses.
+>  >
+>  > i like this feature, and i've applied your patch to x86.git for testing,
+>  > but i'd like to hear what the ACPI and PCI guys think about this.
+>  >
+>  > Also, we should try as hard as possible to make it a blacklist instead
+>  > of a whitelist? It would be cool to support more PCI cards/devices on
+>  > all new(-ish) systems by default and if we didnt have to maintain the
+>  > DMI whitelist for eternity. (a whitelist will always be incomplete and
+>  > will lag behind reality)
+>
+>  Ingo, This is a great idea.  I was the guy that added the whitelist
+>  and ISA alignment avoidance code but have also been concerned about
+>  the headache of keeping whitelist current in mainline and Distro
+>  releases as new systems are introduced.  When I made the change I
+>  assumed (appearently incorrectly) that there were way too many
+>  existing systems requiring the alignment to even consider the
+>  blacklist approach.  Do you have any suggestions on how to identify
+>  systems to include in the blacklist? ...or would we just boldly make
+>  non-alignment the default, provide an empty blacklist, and let
+>  breakage identify those systems that need to be blacklisted?
 
-As the subject says, it is already in Linus' tree for more than
-8 months...
+at least to use blacklist with x86_64
 
-> thanks,
-> 
-> greg k-h
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+YH
