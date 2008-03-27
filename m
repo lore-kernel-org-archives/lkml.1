@@ -1,61 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760018AbYC0Pxf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759495AbYC0QBL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760018AbYC0Pxf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Mar 2008 11:53:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756370AbYC0Px1
+	id S1759495AbYC0QBL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Mar 2008 12:01:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755267AbYC0QA6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Mar 2008 11:53:27 -0400
-Received: from bzq-179-150-194.static.bezeqint.net ([212.179.150.194]:45718
-	"EHLO il.qumranet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756283AbYC0Px1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Mar 2008 11:53:27 -0400
-Message-ID: <47EBC2F5.90302@qumranet.com>
-Date: Thu, 27 Mar 2008 17:53:25 +0200
-From: Avi Kivity <avi@qumranet.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
-MIME-Version: 1.0
-To: Dave Hansen <dave@linux.vnet.ibm.com>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       kvm-devel <kvm-devel@lists.sourceforge.net>
-Subject: Re: [kvm-devel] kvm causing memory corruption?  ~2.6.25-rc6
-References: <1206479576.7562.21.camel@nimitz.home.sr71.net>	 <47EA1C63.8010202@qumranet.com>	 <1206550329.7883.5.camel@nimitz.home.sr71.net>	 <47EA80AC.4070204@qumranet.com>	 <1206551794.7883.7.camel@nimitz.home.sr71.net>	 <47EB6AAC.3040607@qumranet.com> <1206633002.7883.43.camel@nimitz.home.sr71.net>
-In-Reply-To: <1206633002.7883.43.camel@nimitz.home.sr71.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Thu, 27 Mar 2008 12:00:58 -0400
+Received: from smtpeu1.atmel.com ([195.65.72.27]:53290 "EHLO bagnes.atmel.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754534AbYC0QA5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Mar 2008 12:00:57 -0400
+Date: Thu, 27 Mar 2008 17:00:22 +0100
+From: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>, kernel@avr32linux.org
+Subject: [GIT PULL] Last minute avr32 fixes
+Message-ID: <20080327170022.28a445ec@hskinnemo-gx620.norway.atmel.com>
+Organization: Atmel Norway
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 27 Mar 2008 16:00:22.0647 (UTC) FILETIME=[A9C36870:01C89023]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dave Hansen wrote:
-> On Thu, 2008-03-27 at 11:36 +0200, Avi Kivity wrote:
->   
->> I dug out my i386 install and tried it.  Doesn't reproduce for me on 
->> either kvm.git or -rc7.
->>
->> Do you have a working setup that we can bisect?
->>     
->
-> I don't really have a working revision to bisect against.  I'm not sure
-> that it ever worked.  
+Linus,
 
-I'm fairly sure Windows works on kvm...
+Please pull
 
-How did you generate the image?
+  ssh://master.kernel.org/pub/scm/linux/kernel/git/hskinnemoen/avr32-2.6.git avr32-fixes
 
-> It's also on my actual laptop, so it's a bit of a
-> pain to get any other work done while I'm bisecting. :)
->
-> I'll move the Windows image over to another machine today and see if I
-> can reproduce elsewhere.  I'll also check some older versions of KVM to
-> see if any of those work.  If I do that, should I keep the kvm
-> userspace, modules and BIOSes all synchronized from each version that I
-> test?
->   
+to receive the following fixes.
 
-You can keep the userspace (qemu + bios) fixed and change the kernel, or 
-vice versa.
+Haavard Skinnemoen (3):
+      avr32: Work around byteswap bug in gcc < 4.2
+      avr32: Build fix for CONFIG_BUG=n
+      avr32: Fix bug in early resource allocation code
 
--- 
-error compiling committee.c: too many arguments to function
+ arch/avr32/kernel/setup.c     |    1 +
+ arch/avr32/kernel/traps.c     |    4 ++++
+ include/asm-avr32/byteorder.h |    6 ++++++
+ 3 files changed, 11 insertions(+), 0 deletions(-)
 
+diff --git a/arch/avr32/kernel/setup.c b/arch/avr32/kernel/setup.c
+index e66a07a..2687b73 100644
+--- a/arch/avr32/kernel/setup.c
++++ b/arch/avr32/kernel/setup.c
+@@ -163,6 +163,7 @@ add_reserved_region(resource_size_t start, resource_size_t end,
+ 	new->start = start;
+ 	new->end = end;
+ 	new->name = name;
++	new->sibling = next;
+ 	new->flags = IORESOURCE_MEM;
+ 
+ 	*pprev = new;
+diff --git a/arch/avr32/kernel/traps.c b/arch/avr32/kernel/traps.c
+index cf6f686..b835c4c 100644
+--- a/arch/avr32/kernel/traps.c
++++ b/arch/avr32/kernel/traps.c
+@@ -178,6 +178,7 @@ static int do_cop_absent(u32 insn)
+ 	return 0;
+ }
+ 
++#ifdef CONFIG_BUG
+ int is_valid_bugaddr(unsigned long pc)
+ {
+ 	unsigned short opcode;
+@@ -189,6 +190,7 @@ int is_valid_bugaddr(unsigned long pc)
+ 
+ 	return opcode == AVR32_BUG_OPCODE;
+ }
++#endif
+ 
+ asmlinkage void do_illegal_opcode(unsigned long ecr, struct pt_regs *regs)
+ {
+@@ -197,6 +199,7 @@ asmlinkage void do_illegal_opcode(unsigned long ecr, struct pt_regs *regs)
+ 	void __user *pc;
+ 	long code;
+ 
++#ifdef CONFIG_BUG
+ 	if (!user_mode(regs) && (ecr == ECR_ILLEGAL_OPCODE)) {
+ 		enum bug_trap_type type;
+ 
+@@ -211,6 +214,7 @@ asmlinkage void do_illegal_opcode(unsigned long ecr, struct pt_regs *regs)
+ 			die("Kernel BUG", regs, SIGKILL);
+ 		}
+ 	}
++#endif
+ 
+ 	local_irq_enable();
+ 
+diff --git a/include/asm-avr32/byteorder.h b/include/asm-avr32/byteorder.h
+index 402ff41..d77b48b 100644
+--- a/include/asm-avr32/byteorder.h
++++ b/include/asm-avr32/byteorder.h
+@@ -12,8 +12,14 @@ extern unsigned long __builtin_bswap_32(unsigned long x);
+ extern unsigned short __builtin_bswap_16(unsigned short x);
+ #endif
+ 
++/*
++ * avr32-linux-gcc versions earlier than 4.2 improperly sign-extends
++ * the result.
++ */
++#if !(__GNUC__ == 4 && __GNUC_MINOR__ < 2)
+ #define __arch__swab32(x) __builtin_bswap_32(x)
+ #define __arch__swab16(x) __builtin_bswap_16(x)
++#endif
+ 
+ #if !defined(__STRICT_ANSI__) || defined(__KERNEL__)
+ # define __BYTEORDER_HAS_U64__
