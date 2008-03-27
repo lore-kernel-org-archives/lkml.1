@@ -1,41 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757728AbYC0GOE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756883AbYC0GeM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757728AbYC0GOE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Mar 2008 02:14:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753578AbYC0GNy
+	id S1756883AbYC0GeM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Mar 2008 02:34:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753877AbYC0Gd5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Mar 2008 02:13:54 -0400
-Received: from smtp-out02.alice-dsl.net ([88.44.60.12]:12461 "EHLO
-	smtp-out02.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753519AbYC0GNy (ORCPT
+	Thu, 27 Mar 2008 02:33:57 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:48275
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1753647AbYC0Gd5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Mar 2008 02:13:54 -0400
-To: Bob Copeland <me@bobcopeland.com>
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH 2/7] omfs: add inode routines
-References: <1206578760-9050-2-git-send-email-me@bobcopeland.com>
-From: Andi Kleen <andi@firstfloor.org>
-Date: 27 Mar 2008 07:13:50 +0100
-In-Reply-To: <1206578760-9050-2-git-send-email-me@bobcopeland.com>
-Message-ID: <87k5jon17l.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 27 Mar 2008 06:07:12.0111 (UTC) FILETIME=[CC2697F0:01C88FD0]
+	Thu, 27 Mar 2008 02:33:57 -0400
+Date: Wed, 26 Mar 2008 23:33:54 -0700 (PDT)
+Message-Id: <20080326.233354.102892522.davem@davemloft.net>
+To: akpm@linux-foundation.org
+Cc: m.kozlowski@tuxland.pl, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org
+Subject: Re: sparc64 BUG: using smp_processor_id() in preemptible
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20080326202502.f06938bd.akpm@linux-foundation.org>
+References: <20080326.041626.224135350.davem@davemloft.net>
+	<20080326.042516.261621639.davem@davemloft.net>
+	<20080326202502.f06938bd.akpm@linux-foundation.org>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bob Copeland <me@bobcopeland.com> writes:
-> +
-> +	bitmap_size = (sbi->s_num_blocks + 7) / 8;
-> +	array_size = (bitmap_size + sb->s_blocksize - 1) / sb->s_blocksize;
-> +
-> +	sbi->s_imap_size = array_size;
-> +	sbi->s_imap = kzalloc(array_size * sizeof(unsigned long), GFP_KERNEL);
+From: Andrew Morton <akpm@linux-foundation.org>
+Date: Wed, 26 Mar 2008 20:25:02 -0700
 
+> On Wed, 26 Mar 2008 04:25:16 -0700 (PDT) David Miller <davem@davemloft.net> wrote:
+> 
+> >  	preempt_disable();
+> >  
+> > +	mp = &__get_cpu_var(mmu_gathers);
+> 
+> that's an open-coded get_cpu_var().
+> 
+> fwiw.  Which isn't much, IMO.  Sometimes it's nice to see things open-coded.
 
-If the array can be really 300k you should probably have a vmalloc fallback
-here.
-
--Andi
+Good point, I might restructure that to use {get,put}_cpu_var().
