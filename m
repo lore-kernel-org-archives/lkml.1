@@ -1,57 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759321AbYC0Mfj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759997AbYC0MgO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759321AbYC0Mfj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Mar 2008 08:35:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756012AbYC0Mfb
+	id S1759997AbYC0MgO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Mar 2008 08:36:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759393AbYC0Mf6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Mar 2008 08:35:31 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:21077 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755221AbYC0Mfa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Mar 2008 08:35:30 -0400
-Date: Thu, 27 Mar 2008 13:35:25 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, npiggin@suse.de, paulus@samba.org,
-       tglx@linutronix.de, mingo@redhat.com, tony.luck@intel.com,
-       Alan.Brunelle@hp.com
-Subject: Re: [PATCH 0/5] Generic smp_call_function(), improvements, and  smp_call_function_single()
-Message-ID: <20080327123525.GN12346@kernel.dk>
-References: <1205927772-31401-1-git-send-email-jens.axboe@oracle.com> <20080321095343.GA21409@elte.hu> <20080321131558.GA15355@kernel.dk> <20080327100802.GD15003@elte.hu> <20080327103707.GH12346@kernel.dk> <20080327104359.GC26725@elte.hu> <20080327120244.GL12346@kernel.dk> <20080327123213.GC21894@elte.hu>
+	Thu, 27 Mar 2008 08:35:58 -0400
+Received: from hancock.steeleye.com ([71.30.118.248]:37394 "EHLO
+	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756799AbYC0Mf5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Mar 2008 08:35:57 -0400
+Message-ID: <47EB94AB.6090608@steeleye.com>
+Date: Thu, 27 Mar 2008 08:35:55 -0400
+From: Paul Clements <paul.clements@steeleye.com>
+User-Agent: Swiftdove 2.0.0.9 (X11/20071116)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080327123213.GC21894@elte.hu>
+To: Mike Snitzer <snitzer@gmail.com>
+CC: nbd-general@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: Re: nbd: Oops because nbd doesn't prevent NBD_CLEAR_SOCK while sock_xmit()
+ is working on a receive
+References: <170fa0d20803261143s1ab258b2ra470c158ac5744a@mail.gmail.com>
+In-Reply-To: <170fa0d20803261143s1ab258b2ra470c158ac5744a@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 27 2008, Ingo Molnar wrote:
-> 
-> * Jens Axboe <jens.axboe@oracle.com> wrote:
-> 
-> > > i'd love to be able to run/pull something simple that enables me to 
-> > > replicate the measurements you did on a generic PC [without having 
-> > > to hit any real IO hardware which would put any context switching 
-> > > effects down into the noise category].
-> > 
-> > You can pull io-cpu-affinity or io-cpu-affinity-kthread from 
-> > git://git.kernel.dk/linux-2.6-block.git - or just see the two attached 
-> > patches, apply either one to current -git to test it.
-> 
-> another stupid question: what should i run in user-space to replicate 
-> your "3 usecs versus 2 usecs" result? io-affinity-ipi.patch seems to 
-> have no self-benchmarking capability at first sight. (I'd rather not try 
-> and cook up anything myself - i'd like to reproduce the workload you 
-> think is relevant for your IO affinity purposes.) Best would be to have 
-> a Kconfig based self-test that just runs during bootup if i boot a 
-> bzImage. (laziness rules - and this way i could also track performance 
-> regressions more easily, by looking at historic serial logs.)
+Mike Snitzer wrote:
 
-I didn't do those numbers - Alan, when you timed the kthread vs ipi
-"wake up", what did you use? I'm guessing some hacked in test, perhaps
-you can pass that to Ingo?
+> In practice this looks like:
+> 
+> nbd1: NBD_DISCONNECT
+> nbd1: Send control failed (result -32)
+> end_request: I/O error, dev nbd1, sector 0
+> end_request: I/O error, dev nbd1, sector 8032264
+> md: super_written gets error=-5, uptodate=0
+> raid1: Disk failure on nbd1, disabling device.
+>         Operation continuing on 1 devices
+> Unable to handle kernel NULL pointer dereference at 0000000000000028 RIP:
+>  [<ffffffff88b1e125>] :nbd:sock_xmit+0x9d/0x301
 
--- 
-Jens Axboe
+> The fact that sock_xmit() in receive mode is unprotected seems to be
+> the WHY a NULL pointer is possible; but I'm still trying to identify
+> the HOW.
 
+Do you know who is setting the socket NULL? Is it already NULL when you 
+get to this point? Is it the nbd-client -d? Is it the original 
+nbd-client/kernel that does it? Figuring that out would help narrow down 
+the cause.
+
+> But for me this begs the question:  why isn't the nbd_device's socket
+> always protected during sock_xmit() for both
+> transmits and receives; rather than just transmits (via tx_lock)!?
+
+It would deadlock if we held the lock over both. Generally we don't have 
+to worry about receives, since they're always done in the nbd-client 
+process, so we have control over when and how it exits and cleans up. 
+The odd case, as you've discovered, is when another process (nbd-client 
+-d) comes along and starts mucking with the queue and socket. Would 
+"kill -9 <nbd-client-pid>" work for you instead? That is what I use to 
+break the connection, and it's safe, as it tells the original nbd-client 
+to exit (which it does cleanly and safely).
+
+--
+Paul
