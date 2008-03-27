@@ -1,302 +1,558 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762839AbYC0NRA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762890AbYC0NR3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762839AbYC0NRA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Mar 2008 09:17:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760277AbYC0NJR
+	id S1762890AbYC0NR3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Mar 2008 09:17:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760804AbYC0NKY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Mar 2008 09:09:17 -0400
-Received: from smtp.nokia.com ([192.100.122.233]:49953 "EHLO
+	Thu, 27 Mar 2008 09:10:24 -0400
+Received: from smtp.nokia.com ([192.100.122.233]:50106 "EHLO
 	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760254AbYC0NJP (ORCPT
+	with ESMTP id S1760801AbYC0NKV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Mar 2008 09:09:15 -0400
+	Thu, 27 Mar 2008 09:10:21 -0400
 From: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: Adrian Hunter <ext-adrian.hunter@nokia.com>,
        Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
-Subject: [RFC PATCH 26/26] UBIFS: include FS to compilation
-Date: Thu, 27 Mar 2008 16:55:46 +0200
-Message-Id: <1206629746-4298-27-git-send-email-Artem.Bityutskiy@nokia.com>
+Subject: [RFC PATCH 09/26] UBIFS: add key helpers
+Date: Thu, 27 Mar 2008 16:55:29 +0200
+Message-Id: <1206629746-4298-10-git-send-email-Artem.Bityutskiy@nokia.com>
 X-Mailer: git-send-email 1.5.4.1
 In-Reply-To: <1206629746-4298-1-git-send-email-Artem.Bityutskiy@nokia.com>
 References: <1206629746-4298-1-git-send-email-Artem.Bityutskiy@nokia.com>
-X-OriginalArrivalTime: 27 Mar 2008 13:06:56.0263 (UTC) FILETIME=[6F133970:01C8900B]
+MIME-Version: 1.0
+Content-Type: text/plain; charset=unknown-8bit
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 27 Mar 2008 13:06:30.0748 (UTC) FILETIME=[5FDDF1C0:01C8900B]
 X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add UBIFS to Makefile and Kbuild.
+This file implement various helper functions to work with UBIFS keys.
+The keys are part of the UBIFS index which is a B-tree. For example,
+directory entry key consists of the parent inode number and directory
+entry hash.
 
 Signed-off-by: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
 Signed-off-by: Adrian Hunter <ext-adrian.hunter@nokia.com>
 ---
- fs/Kconfig             |    3 +
- fs/Makefile            |    1 +
- fs/ubifs/Kconfig       |   47 ++++++++++++++
- fs/ubifs/Kconfig.debug |  159 ++++++++++++++++++++++++++++++++++++++++++++++++
- fs/ubifs/Makefile      |    9 +++
- 5 files changed, 219 insertions(+), 0 deletions(-)
+ fs/ubifs/key.h |  507 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 507 insertions(+), 0 deletions(-)
 
-diff --git a/fs/Kconfig b/fs/Kconfig
-index d731282..70edf5c 100644
---- a/fs/Kconfig
-+++ b/fs/Kconfig
-@@ -1347,6 +1347,9 @@ config JFFS2_CMODE_FAVOURLZO
- 
- endchoice
- 
-+# UBIFS File system configuration
-+source "fs/ubifs/Kconfig"
-+
- config CRAMFS
- 	tristate "Compressed ROM file system support (cramfs)"
- 	depends on BLOCK
-diff --git a/fs/Makefile b/fs/Makefile
-index 1e7a11b..fcae06a 100644
---- a/fs/Makefile
-+++ b/fs/Makefile
-@@ -100,6 +100,7 @@ obj-$(CONFIG_NTFS_FS)		+= ntfs/
- obj-$(CONFIG_UFS_FS)		+= ufs/
- obj-$(CONFIG_EFS_FS)		+= efs/
- obj-$(CONFIG_JFFS2_FS)		+= jffs2/
-+obj-$(CONFIG_UBIFS_FS)		+= ubifs/
- obj-$(CONFIG_AFFS_FS)		+= affs/
- obj-$(CONFIG_ROMFS_FS)		+= romfs/
- obj-$(CONFIG_QNX4FS_FS)		+= qnx4/
-diff --git a/fs/ubifs/Kconfig b/fs/ubifs/Kconfig
+diff --git a/fs/ubifs/key.h b/fs/ubifs/key.h
 new file mode 100644
-index 0000000..21a6fae
+index 0000000..679cb80
 --- /dev/null
-+++ b/fs/ubifs/Kconfig
-@@ -0,0 +1,47 @@
-+config UBIFS_FS
-+	tristate "UBIFS file system support"
-+	select CRC16
-+	select CRC32
-+	depends on MTD_UBI
-+	help
-+	  UBIFS is a file system for flash devices which works on top of UBI.
++++ b/fs/ubifs/key.h
+@@ -0,0 +1,507 @@
++/*
++ * This file is part of UBIFS.
++ *
++ * Copyright (C) 2006-2008 Nokia Corporation.
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU General Public License version 2 as published by
++ * the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful, but WITHOUT
++ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
++ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
++ * more details.
++ *
++ * You should have received a copy of the GNU General Public License along with
++ * this program; if not, write to the Free Software Foundation, Inc., 51
++ * Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
++ *
++ * Authors: Artem Bityutskiy (Битюцкий Артём)
++ *          Adrian Hunter
++ */
 +
-+config UBIFS_FS_XATTR
-+	bool "Extended attributes support"
-+	depends on UBIFS_FS
-+	default n
-+	help
-+	  This option enables support of extended attributes.
++/*
++ * This header contains various key-related definitions and helper function.
++ * UBIFS allows several key schemes, so we access key fields only via these
++ * helpers. At the moment only one key scheme is supported.
++ *
++ * Simple key scheme
++ * ~~~~~~~~~~~~~~~~~
++ *
++ * Keys are 64-bits long. First 32-bits are inode number (parent inode number
++ * in case of direntry key). Next 3 bits are node type. The last 29 bits are
++ * 4KiB offset in case of inode node, and direntry hash in case of a direntry
++ * node. We use "r5" hash borrowed from reiserfs.
++ */
 +
-+config UBIFS_FS_ADVANCED_COMPR
-+	bool "Advanced compression options"
-+	depends on UBIFS_FS
-+	default n
-+	help
-+	  This option allows to explicitly choose which compressions, if any,
-+	  are enabled in UBIFS. Removing compressors means inbility to read
-+	  existing file systems.
++#ifndef __UBIFS_KEY_H__
++#define __UBIFS_KEY_H__
 +
-+	  If unsure, say 'N'.
++/**
++ * key_r5_hash - R5 hash function (borrowed from reiserfs).
++ * @s: direntry name
++ * @len: name length
++ */
++static inline uint32_t key_r5_hash(const char *s, int len)
++{
++	uint32_t a = 0;
++	const signed char *str = (const signed char *)s;
 +
-+config UBIFS_FS_LZO
-+	bool "LZO compression support" if UBIFS_FS_ADVANCED_COMPR
-+	select CRYPTO
-+	select CRYPTO_LZO
-+	depends on UBIFS_FS
-+	default y
-+	help
-+	   LZO compressor is generally faster then zlib but compresses worse.
-+	   Say 'Y' if unsure.
++	while (*str) {
++		a += *str << 4;
++		a += *str >> 4;
++		a *= 11;
++		str++;
++	}
 +
-+config UBIFS_FS_ZLIB
-+	bool "ZLIB compression support" if UBIFS_FS_ADVANCED_COMPR
-+	select CRYPTO
-+	select CRYPTO_DEFLATE
-+	depends on UBIFS_FS
-+	default y
-+	help
-+	  Zlib copresses better then LZO but it is slower. Say 'Y' if unsure.
++	/*
++	 * We use hash values as offset in directories, so offsets 0 and 1 are
++	 * reserved for "." and "..". Offset 2 is also reserved for readdir()
++	 * purposes.
++	 */
++	if (unlikely(a >= 0 && a <= 2))
++		a += 3;
++	return a;
++}
 +
-+# Debugging-related stuff
-+source "fs/ubifs/Kconfig.debug"
-diff --git a/fs/ubifs/Kconfig.debug b/fs/ubifs/Kconfig.debug
-new file mode 100644
-index 0000000..4bfccef
---- /dev/null
-+++ b/fs/ubifs/Kconfig.debug
-@@ -0,0 +1,159 @@
-+# UBIFS debugging configuration options, part of fs/ubifs/Kconfig
++/**
++ * key_test_hash - testing hash function.
++ * @str: direntry name
++ * @len: name length
++ */
++static inline uint32_t key_test_hash(const char *str, int len)
++{
++	uint32_t a = 0;
 +
-+config UBIFS_FS_DEBUG
-+	bool "Enable debugging"
-+	default n
-+	depends on UBIFS_FS
-+	select DEBUG_FS
-+	select KALLSYMS_ALL
-+	help
-+	  This option enables UBIFS debugging.
++	len = min_t(uint32_t, len, 4);
++	memcpy(&a, str, len);
++	if (unlikely(a >= 0 && a <= 2))
++		a += 3;
++	return a;
++}
 +
-+menu "Debugging messages"
-+	depends on UBIFS_FS_DEBUG
++/**
++ * ino_key_init - initialize inode key.
++ * @c: UBIFS file-system description object
++ * @key: key to initialize
++ * @inum: inode number
++ */
++static inline void ino_key_init(const struct ubifs_info *c,
++				union ubifs_key *key, ino_t inum)
++{
++	key->u32[0] = inum;
++	key->u32[1] = UBIFS_INO_KEY << 29;
++}
 +
-+config UBIFS_FS_DEBUG_MSG_GEN
-+	bool "General messages"
-+	default n
-+	help
-+	  This option enables general debugging messages.
++/**
++ * ino_key_init_flash - initialize on-flash inode key.
++ * @c: UBIFS file-system description object
++ * @k: key to initialize
++ * @inum: inode number
++ */
++static inline void ino_key_init_flash(const struct ubifs_info *c, void *k,
++				      ino_t inum)
++{
++	union ubifs_key *key = k;
 +
-+config UBIFS_FS_DEBUG_MSG_JRN
-+	bool "Journal messages"
-+	default n
-+	help
-+	  This option enables detailed journal debugging messages.
++	key->j32[0] = cpu_to_le32(inum);
++	key->j32[1] = cpu_to_le32(UBIFS_INO_KEY << 29);
++	memset(k + 8, 0, UBIFS_MAX_KEY_LEN - 8);
++}
 +
-+config UBIFS_FS_DEBUG_MSG_CMT
-+	bool "Commit messages"
-+	default n
-+	help
-+	  This option enables detailed journal commit debugging messages.
++/**
++ * lowest_ino_key - get the lowest possible inode key.
++ * @c: UBIFS file-system description object
++ * @key: key to initialize
++ * @inum: inode number
++ */
++static inline void lowest_ino_key(const struct ubifs_info *c,
++				union ubifs_key *key, ino_t inum)
++{
++	key->u32[0] = inum;
++	key->u32[1] = 0;
++}
 +
-+config UBIFS_FS_DEBUG_MSG_BUDG
-+	bool "Budgeting messages"
-+	default n
-+	help
-+	  This option enables detailed budgeting debugging messages.
++/**
++ * highest_ino_key - get the highest possible inode key.
++ * @c: UBIFS file-system description object
++ * @key: key to initialize
++ * @inum: inode number
++ */
++static inline void highest_ino_key(const struct ubifs_info *c,
++				union ubifs_key *key, ino_t inum)
++{
++	key->u32[0] = inum;
++	key->u32[1] = 0xffffffff;
++}
 +
-+config UBIFS_FS_DEBUG_MSG_LOG
-+	bool "Log messages"
-+	default n
-+	help
-+	  This option enables detailed journal log debugging messages.
++/**
++ * dent_key_init - initialize directory entry key.
++ * @c: UBIFS file-system description object
++ * @key: key to initialize
++ * @inum: parent inode number
++ * @nm: direntry name and length
++ */
++static inline void dent_key_init(const struct ubifs_info *c,
++				 union ubifs_key *key, ino_t inum,
++				 const struct qstr *nm)
++{
++	uint32_t hash = c->key_hash(nm->name, nm->len);
 +
-+config UBIFS_FS_DEBUG_MSG_TNC
-+	bool "Tree Node Cache (TNC) messages"
-+	default n
-+	help
-+	  This option enables detailed TNC debugging messages.
++	key->u32[0] = inum;
++	key->u32[1] = (hash & 0x01FFFFFF) | (UBIFS_DENT_KEY << 29);
++}
 +
-+config UBIFS_FS_DEBUG_MSG_LP
-+	bool "LEB properties (lprops) messages"
-+	default n
-+	help
-+	  This option enables detailed lprops debugging messages.
++/**
++ * dent_key_init_hash - initialize directory entry key without re-calculating
++ *                      hash function.
++ * @c: UBIFS file-system description object
++ * @key: key to initialize
++ * @inum: parent inode number
++ * @hash: direntry name hash
++ */
++static inline void dent_key_init_hash(const struct ubifs_info *c,
++				      union ubifs_key *key, ino_t inum,
++				      uint32_t hash)
++{
++	key->u32[0] = inum;
++	key->u32[1] = (hash & 0x01FFFFFF) | (UBIFS_DENT_KEY << 29);
++}
 +
-+config UBIFS_FS_DEBUG_MSG_FIND
-+	bool "LEB search messages"
-+	default n
-+	help
-+	  This option enables detailed LEB search debugging messages.
++/**
++ * dent_key_init_flash - initialize on-flash directory entry key.
++ * @c: UBIFS file-system description object
++ * @k: key to initialize
++ * @inum: parent inode number
++ * @nm: direntry name and length
++ */
++static inline void dent_key_init_flash(const struct ubifs_info *c, void *k,
++				       ino_t inum, const struct qstr *nm)
++{
++	union ubifs_key *key = k;
++	uint32_t hash = c->key_hash(nm->name, nm->len);
 +
-+config UBIFS_FS_DEBUG_MSG_MNT
-+	bool "Mount messages"
-+	default n
-+	help
-+	  This option enables detailed mount debugging messages, including
-+	  recovery messages.
++	key->j32[0] = cpu_to_le32(inum);
++	key->j32[1] = cpu_to_le32((hash & 0x01FFFFFF) | (UBIFS_DENT_KEY << 29));
++	memset(k + 8, 0, UBIFS_MAX_KEY_LEN - 8);
++}
 +
-+config UBIFS_FS_DEBUG_MSG_IO
-+	bool "Input/output messages"
-+	default n
-+	help
-+	  This option enables detailed I/O debugging messages.
++/**
++ * lowest_dent_key - get the lowest possible directory entry key.
++ * @c: UBIFS file-system description object
++ * @key: where to store the lowest key
++ * @inum: parent inode number
++ */
++static inline void lowest_dent_key(const struct ubifs_info *c,
++				   union ubifs_key *key, ino_t inum)
++{
++	key->u32[0] = inum;
++	key->u32[1] = UBIFS_DENT_KEY << 29;
++}
 +
-+config UBIFS_FS_DEBUG_MSG_GC
-+	bool "Garbage collection messages"
-+	default n
-+	help
-+	  This option enables detailed garbage collection debugging messages.
++/**
++ * xent_key_init - initialize extended attribute entry key.
++ * @c: UBIFS file-system description object
++ * @key: key to initialize
++ * @inum: host inode number
++ * @nm: extended attribute entry name and length
++ */
++static inline void xent_key_init(const struct ubifs_info *c,
++				 union ubifs_key *key, ino_t inum,
++				 const struct qstr *nm)
++{
++	uint32_t hash = c->key_hash(nm->name, nm->len);
 +
-+config UBIFS_FS_DEBUG_MSG_SCAN
-+	bool "Scan messages"
-+	default n
-+	help
-+	  This option enables detailed scan debugging messages.
++	key->u32[0] = inum;
++	key->u32[1] = (hash & 0x01FFFFFF) | (UBIFS_XENT_KEY << 29);
++}
 +
-+endmenu
++/**
++ * xent_key_init_hash - initialize extended attribute entry key without
++ *                      re-calculating hash function.
++ * @c: UBIFS file-system description object
++ * @key: key to initialize
++ * @inum: host inode number
++ * @hash: extended attribute entry name hash
++ */
++static inline void xent_key_init_hash(const struct ubifs_info *c,
++				      union ubifs_key *key, ino_t inum,
++				      uint32_t hash)
++{
++	key->u32[0] = inum;
++	key->u32[1] = (hash & 0x01FFFFFF) | (UBIFS_XENT_KEY << 29);
++}
 +
-+menu "Extra self-checks"
-+	depends on UBIFS_FS_DEBUG
++/**
++ * xent_key_init_flash - initialize on-flash extended attribute entry key.
++ * @c: UBIFS file-system description object
++ * @k: key to initialize
++ * @inum: host inode number
++ * @nm: extended attribute entry name and length
++ */
++static inline void xent_key_init_flash(const struct ubifs_info *c, void *k,
++				       ino_t inum, const struct qstr *nm)
++{
++	union ubifs_key *key = k;
++	uint32_t hash = c->key_hash(nm->name, nm->len);
 +
-+config UBIFS_FS_DEBUG_CHK_MEMPRESS
-+	bool "Create memory pressure"
-+	default n
-+	depends on UBIFS_FS_DEBUG
-+	help
-+	  This option causes kernel memory pressure in order to make TNC shrinker
-+	  run.
++	key->j32[0] = cpu_to_le32(inum);
++	key->j32[1] = cpu_to_le32((hash & 0x01FFFFFF) | (UBIFS_XENT_KEY << 29));
++	memset(k + 8, 0, UBIFS_MAX_KEY_LEN - 8);
++}
 +
-+config UBIFS_FS_DEBUG_CHK_LPROPS
-+	bool "Check LEB properties (lprops)"
-+	default n
-+	depends on UBIFS_FS_DEBUG
-+	help
-+	  This option enables a function which runs during journal commit and
-+	  checks that the dirty and free space is correct for every LEB.
++/**
++ * lowest_xent_key - get the lowest possible extended attribute entry key.
++ * @c: UBIFS file-system description object
++ * @key: where to store the lowest key
++ * @inum: host inode number
++ */
++static inline void lowest_xent_key(const struct ubifs_info *c,
++				   union ubifs_key *key, ino_t inum)
++{
++	key->u32[0] = inum;
++	key->u32[1] = UBIFS_XENT_KEY << 29;
++}
 +
-+config UBIFS_FS_DEBUG_CHK_TNC
-+	bool "Check Tree Node Cache (TNC)"
-+	default n
-+	depends on UBIFS_FS_DEBUG
-+	help
-+	  This option enables a function which runs after every
-+	  TNC insert / delete and checks that the TNC nodes are correct.
++/**
++ * data_key_init - initialize data key.
++ * @c: UBIFS file-system description object
++ * @key: key to initialize
++ * @inum: inode number
++ * @block: block number
++ */
++static inline void data_key_init(const struct ubifs_info *c,
++				 union ubifs_key *key, ino_t inum,
++				 unsigned int block)
++{
++	key->u32[0] = inum;
++	key->u32[1] = (block & 0x01FFFFFF) | (UBIFS_DATA_KEY << 29);
++}
 +
-+config UBIFS_FS_DEBUG_CHK_ORPH
-+	bool "Check orphan area"
-+	default n
-+	depends on UBIFS_FS_DEBUG
-+	help
-+	  This option enables a function which runs during journal commit and
-+	  checks that the orphan area is correct.
++/**
++ * data_key_init_flash - initialize on-flash data key.
++ * @c: UBIFS file-system description object
++ * @k: key to initialize
++ * @inum: inode number
++ * @block: block number
++ */
++static inline void data_key_init_flash(const struct ubifs_info *c, void *k,
++				       ino_t inum, unsigned int block)
++{
++	union ubifs_key *key = k;
 +
-+config UBIFS_FS_DEBUG_CHK_IDX_SZ
-+	bool "Check indexing tree size"
-+	default n
-+	depends on UBIFS_FS_DEBUG
-+	help
-+	  This option enables checking of the znode size accounting variables.
++	key->j32[0] = cpu_to_le32(inum);
++	key->j32[1] = cpu_to_le32((block & 0x01FFFFFF) |
++				  (UBIFS_DATA_KEY << 29));
++	memset(k + 8, 0, UBIFS_MAX_KEY_LEN - 8);
++}
 +
-+config UBIFS_FS_DEBUG_CHK_OLD_IDX
-+	bool "Check old indexing tree"
-+	default n
-+	depends on UBIFS_FS_DEBUG
-+	help
-+	  This option enables checking of the old indexing tree which must be
-+	  intact to allow recovery in the event of an unclean unmount.
++/**
++ * trun_key_init - initialize truncation node key.
++ * @c: UBIFS file-system description object
++ * @key: key to initialize
++ * @inum: inode number
++ */
++static inline void trun_key_init(const struct ubifs_info *c,
++				 union ubifs_key *key, ino_t inum)
++{
++	key->u32[0] = inum;
++	key->u32[1] = UBIFS_TRUN_KEY << 29;
++}
 +
-+config UBIFS_FS_DEBUG_CHK_OTHER
-+	bool "Other checks"
-+	default n
-+	depends on UBIFS_FS_DEBUG
-+	help
-+	  This option enables different checks which are light-weight and do not
-+	  affect file-system performance too much.
++/**
++ * trun_key_init_flash - initialize on-flash truncation node key.
++ * @c: UBIFS file-system description object
++ * @k: key to initialize
++ * @inum: inode number
++ */
++static inline void trun_key_init_flash(const struct ubifs_info *c, void *k,
++				       ino_t inum)
++{
++	union ubifs_key *key = k;
 +
-+endmenu
++	key->j32[0] = cpu_to_le32(inum);
++	key->j32[1] = cpu_to_le32(UBIFS_TRUN_KEY << 29);
++	memset(k + 8, 0, UBIFS_MAX_KEY_LEN - 8);
++}
 +
-+config UBIFS_FS_DEBUG_TEST_RCVRY
-+	bool "Simulate random device removal (recovery testing)"
-+	default n
-+	depends on UBIFS_FS_DEBUG
-+	help
-+	  This option provides the ability to test recovery from unclean
-+	  unmounts. It causes UBIFS to simulate device removal.  At a some
-+	  random point UBIFS will switch to "failure mode" after which all I/O
-+	  operations will fail. UBIFS can then be unmounted and mounted again
-+	  at which point "failure mode" is switched off and recovery ensues.
-diff --git a/fs/ubifs/Makefile b/fs/ubifs/Makefile
-new file mode 100644
-index 0000000..6b84f0f
---- /dev/null
-+++ b/fs/ubifs/Makefile
-@@ -0,0 +1,9 @@
-+obj-$(CONFIG_UBIFS_FS) += ubifs.o
++/**
++ * key_type - get key type.
++ * @c: UBIFS file-system description object
++ * @key: key to get type of
++ */
++static inline int key_type(const struct ubifs_info *c,
++			   const union ubifs_key *key)
++{
++	return key->u32[1] >> 29;
++}
 +
-+ubifs-y += shrinker.o journal.o build.o file.o dir.o super.o sb.o io.o
-+ubifs-y += tnc.o master.o scan.o replay.o log.o commit.o gc.o orphan.o
-+ubifs-y += budget.o find.o tnc_commit.o compress.o lpt.o lprops.o
-+ubifs-y += recovery.o ioctl.o lpt_commit.o
++/**
++ * key_type_flash - get type of a on-flash formatted key.
++ * @c: UBIFS file-system description object
++ * @k: key to get type of
++ */
++static inline int key_type_flash(const struct ubifs_info *c, const void *k)
++{
++	const union ubifs_key *key = k;
 +
-+ubifs-$(CONFIG_UBIFS_FS_DEBUG) += debug.o
-+ubifs-$(CONFIG_UBIFS_FS_XATTR) += xattr.o
++	return le32_to_cpu(key->u32[1]) >> 29;
++}
++
++/**
++ * key_ino - fetch inode number from key.
++ * @c: UBIFS file-system description object
++ * @k: key to fetch inode number from
++ */
++static inline ino_t key_ino(const struct ubifs_info *c, const void *k)
++{
++	const union ubifs_key *key = k;
++
++	return key->u32[0];
++}
++
++/**
++ * key_ino_flash - fetch inode number from an on-flash formatted key.
++ * @c: UBIFS file-system description object
++ * @k: key to fetch inode number from
++ */
++static inline ino_t key_ino_flash(const struct ubifs_info *c, const void *k)
++{
++	const union ubifs_key *key = k;
++
++	return le32_to_cpu(key->j32[0]);
++}
++
++/**
++ * key_hash - get directory entry hash.
++ * @c: UBIFS file-system description object
++ * @key: the key to get hash from
++ */
++static inline int key_hash(const struct ubifs_info *c,
++			   const union ubifs_key *key)
++{
++	return key->u32[1] & 0x01FFFFFF;
++}
++
++/**
++ * key_hash_flash - get directory entry hash from an on-flash formatted key.
++ * @c: UBIFS file-system description object
++ * @k: the key to get hash from
++ */
++static inline int key_hash_flash(const struct ubifs_info *c, const void *k)
++{
++	const union ubifs_key *key = k;
++
++	return le32_to_cpu(key->j32[1]) & 0x01FFFFFF;
++}
++
++/**
++ * key_block - get data block number.
++ * @c: UBIFS file-system description object
++ * @key: the key to get the block number from
++ */
++static inline unsigned int key_block(const struct ubifs_info *c,
++				     const union ubifs_key *key)
++{
++	return key->u32[1] & 0x01FFFFFF;
++}
++
++/**
++ * key_read - transform a key to in-memory format.
++ * @c: UBIFS file-system description object
++ * @from: the key to transform
++ * @to: the key to store the result
++ */
++static inline void key_read(const struct ubifs_info *c, const void *from,
++			    union ubifs_key *to)
++{
++	const union ubifs_key *f = from;
++
++	to->u32[0] = le32_to_cpu(f->j32[0]);
++	to->u32[1] = le32_to_cpu(f->j32[1]);
++}
++
++/**
++ * key_write - transform a key from in-memory format.
++ * @c: UBIFS file-system description object
++ * @from: the key to transform
++ * @to: the key to store the result
++ */
++static inline void key_write(const struct ubifs_info *c,
++			     const union ubifs_key *from, void *to)
++{
++	union ubifs_key *t = to;
++
++	t->j32[0] = cpu_to_le32(from->u32[0]);
++	t->j32[1] = cpu_to_le32(from->u32[1]);
++	memset(to + 8, 0, UBIFS_MAX_KEY_LEN - 8);
++}
++
++/**
++ * key_write_idx - transform a key from in-memory format for the index.
++ * @c: UBIFS file-system description object
++ * @from: the key to transform
++ * @to: the key to store the result
++ */
++static inline void key_write_idx(const struct ubifs_info *c,
++				 const union ubifs_key *from, void *to)
++{
++	union ubifs_key *t = to;
++
++	t->j32[0] = cpu_to_le32(from->u32[0]);
++	t->j32[1] = cpu_to_le32(from->u32[1]);
++}
++
++/**
++ * key_copy - copy a key.
++ * @c: UBIFS file-system description object
++ * @from: the key to copy from
++ * @to: the key to copy to
++ */
++static inline void key_copy(const struct ubifs_info *c,
++			    const union ubifs_key *from, union ubifs_key *to)
++{
++	to->u64[0] = from->u64[0];
++}
++
++/**
++ * keys_cmp - compare keys.
++ * @c: UBIFS file-system description object
++ * @key1: the first key to compare
++ * @key2: the second key to compare
++ *
++ * This function compares 2 keys and returns %-1 if @key1 is less then
++ * @key2, 0 if the keys are equivalent and %1 if @key1 is greater then @key2.
++ */
++static inline int keys_cmp(const struct ubifs_info *c,
++			   const union ubifs_key *key1,
++			   const union ubifs_key *key2)
++{
++	int i;
++
++	for (i = 0; i < 2; i++) {
++		if (key1->u32[i] < key2->u32[i])
++			return -1;
++		if (key1->u32[i] > key2->u32[i])
++			return 1;
++	}
++
++	return 0;
++}
++
++/**
++ * is_hash_key - is a key vulnerable to hash collisions.
++ * @c: UBIFS file-system description object
++ * @key: key
++ *
++ * This function returns %1 if @key is a hashed key or %0 otherwise.
++ */
++static inline int is_hash_key(const struct ubifs_info *c,
++			      const union ubifs_key *key)
++{
++	int type = key_type(c, key);
++
++	return type == UBIFS_DENT_KEY || type == UBIFS_XENT_KEY;
++}
++
++#endif /* !__UBIFS_KEY_H__ */
 -- 
 1.5.4.1
 
