@@ -1,87 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760360AbYC0QQT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760124AbYC0QUW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760360AbYC0QQT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Mar 2008 12:16:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757068AbYC0QQL
+	id S1760124AbYC0QUW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Mar 2008 12:20:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757384AbYC0QUL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Mar 2008 12:16:11 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:60114 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756313AbYC0QQK (ORCPT
+	Thu, 27 Mar 2008 12:20:11 -0400
+Received: from py-out-1112.google.com ([64.233.166.180]:26144 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757046AbYC0QUJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Mar 2008 12:16:10 -0400
-Date: Thu, 27 Mar 2008 11:16:09 -0500 (CDT)
-From: Alan Mayer <ajm@sgi.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Alan Mayer <ajm@sgi.com>, torvalds@linux-foundation.org,
-       linux-kernel list <linux-kernel@vger.kernel.org>,
-       Robin Holt <holt@sgi.com>, Jack Steiner <steiner@sgi.com>,
-       Russ Anderson <rja@sgi.com>
-Subject: Re: [PATCH] x86_64: resize NR_IRQS for large machines (re-submit)
-In-Reply-To: <20080326222450.GA11621@elte.hu>
-Message-ID: <Pine.SGI.3.96.1080327110732.7873204d-100000@fergus.americas.sgi.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 27 Mar 2008 12:20:09 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=Oouzz9VL1Lx8Fzy56wBh6G16lM8KmflkIMyffQTKQw89dWq4j8G6M1upjC1hfDyOuGSuJGfsG35brzxJiaGvBHlmaB09Yd68odPRuIPeHJRktPkntl0O1ZNlGTLM1xdW/wc7Bw/86j8Cl7ZShce8ES3Go/J3noG1c9xjpSOFRfI=
+Subject: Re: [RFC PATCH] UBIFS - new flash file system
+From: Josh Boyer <jwboyer@gmail.com>
+To: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Adrian Hunter <ext-adrian.hunter@nokia.com>
+In-Reply-To: <1206629746-4298-1-git-send-email-Artem.Bityutskiy@nokia.com>
+References: <1206629746-4298-1-git-send-email-Artem.Bityutskiy@nokia.com>
+Content-Type: text/plain
+Date: Thu, 27 Mar 2008 11:20:01 -0500
+Message-Id: <1206634801.4160.17.camel@vader.jdub.homelinux.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.0 (2.22.0-2.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> well, i dont it has to be (or it should be) an all or nothing patch, 
-> given the complexity and risks involved.
+On Thu, 2008-03-27 at 16:55 +0200, Artem Bityutskiy wrote:
+> Dear community,
 > 
-> - we should first introduce a nr_irqs variable and a Kconfig switch 
->   (say CONFIG_ARCH_HAS_DYNAMIC_NR_IRQS) for architectures to toggle. If 
->   the switch is toggled, nr_irqs is a variable, otherwise it's a carbon 
->   copy of NR_IRQS. Some array-definition, declaration and initialization 
->   wrappers are provided as well.
-> 
-> - then the core code, x86 and most drivers can be converted to nr_irqs.
->   The switch might initially even be user-selectable if
->   CONFIG_DEBUG_KERNEL, to ease regression testing.
-> 
-> - other architectures will follow one by one, fixing their
->   arch-dependent drivers as well in the process
-> 
-> - finally we get rid of the wrappers.
-> 
-> 	Ingo
-> 
+> here is a new flash file system developed by Nokia engineers with
+> help of the University of Szeged. The new file-system is called
+> UBIFS, which stands for UBI file system. UBI is the wear-leveling/
+> bad-block handling/volume management layer which is already in
+> mainline (see drivers/mtd/ubi).
 
-Okay, let's see if I understand this.
+As a suggestion, take everything below this paragraph and above the
+diffstat in your original email and throw it in
+Documentation/filesystems/ubifs.txt
 
-First patch introduces a config switch and a variable, nr_irqs that is
-set to NR_IRQS.  It also dynamically allocates the currently staticly
-allocated arrays that are dimensioned by NR_IRQS.  It also initializes
-these dynamically allocated data structures.  This is all done under
-the config switch, initially off by default.  
-
-Second patch changes core code, x86 and most drivers to use nr_irqs.
-This patch will also introduce a calculation of nr_irqs, based on
-interrupt sources, that is a better estimate of the number of irqs
-in the running system than just picking a guaranteed not-to-exceed
-value that may be too big.
-Is there a way to identify which drivers need to be addressed?
-
-Then, test the crap out of it.  
-
-Other architectures will follow, with the work being done by people
-familiar with those architectures.
-
-Clean up anything that's left over that's now been made unnecessary by
-the conversion by everyone.  Including the config option?
-
-Do I have the gist of it?
-
-		--ajm
-
-We are star dust,
-We are golden,
-We are caught in the Devil's bargain.
---
-Alan J. Mayer
-SGI
-ajm@sgi.com
-WORK: 651-683-3131
-HOME: 651-407-0134
---
+josh
 
