@@ -1,85 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761520AbYC0W3S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755778AbYC0W3g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761520AbYC0W3S (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Mar 2008 18:29:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757962AbYC0W3J
+	id S1755778AbYC0W3g (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Mar 2008 18:29:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757962AbYC0W3Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Mar 2008 18:29:09 -0400
-Received: from mail.tmr.com ([64.65.253.246]:51377 "EHLO gaimboi.tmr.com"
+	Thu, 27 Mar 2008 18:29:25 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:58897 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754672AbYC0W3I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Mar 2008 18:29:08 -0400
-Message-ID: <47EC1FC0.7040405@tmr.com>
-Date: Thu, 27 Mar 2008 18:29:20 -0400
-From: Bill Davidsen <davidsen@tmr.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
-MIME-Version: 1.0
-To: Mike Galbraith <efault@gmx.de>
-CC: Manfred Spraul <manfred@colorfullife.com>, paulmck@linux.vnet.ibm.com,
-       Nadia Derbey <Nadia.Derbey@bull.net>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Scalability requirements for sysv ipc
-References: <47E382DB.70503@colorfullife.com> <47E3ADE3.4030304@bull.net>	 <47E3B924.3000304@colorfullife.com>	 <20080321141339.GB9618@linux.vnet.ibm.com>	 <47E3DD8C.4000904@colorfullife.com> <1206164608.3659.11.camel@marge.simson.net>
-In-Reply-To: <1206164608.3659.11.camel@marge.simson.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	id S1759321AbYC0W3Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Mar 2008 18:29:24 -0400
+Date: Fri, 28 Mar 2008 09:29:16 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: linux-next: Tree for March 27
+Message-Id: <20080328092916.e78b1b8c.sfr@canb.auug.org.au>
+In-Reply-To: <20080327104224.2b98b561@hskinnemo-gx620.norway.atmel.com>
+References: <20080327183357.7c637aed.sfr@canb.auug.org.au>
+	<20080327104224.2b98b561@hskinnemo-gx620.norway.atmel.com>
+X-Mailer: Sylpheed 2.5.0beta1 (GTK+ 2.12.9; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Fri__28_Mar_2008_09_29_16_+1100_Cg2UmuYT9VuU22KL"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mike Galbraith wrote:
-> On Fri, 2008-03-21 at 17:08 +0100, Manfred Spraul wrote: 
->> Paul E. McKenney wrote:
->>> I could give it a spin -- though I would need to be pointed to the
->>> patch and the test.
->>>
->>>   
->> I'd just compare a recent kernel with something older, pre Fri Oct 19 
->> 11:53:44 2007
->>
->> Then download ctxbench, run one instance on each core, bound with taskset.
->> http://www.tmr.com/%7Epublic/source/
->> (I don't juse ctxbench myself, if it doesn't work then I could post my 
->> own app. It would be i386 only with RDTSCs inside)
-> 
-> (test gizmos are always welcome)
-> 
-> Results for Q6600 box don't look particularly wonderful.
-> 
-> taskset -c 3 ./ctx -s 
-> 
-> 2.6.24.3
-> 3766962 itterations in 9.999845 seconds = 376734/sec
-> 
-> 2.6.22.18-cfs-v24.1
-> 4375920 itterations in 10.006199 seconds = 437330/sec
-> 
-> for i in 0 1 2 3; do taskset -c $i ./ctx -s& done
-> 
-> 2.6.22.18-cfs-v24.1
-> 4355784 itterations in 10.005670 seconds = 435361/sec
-> 4396033 itterations in 10.005686 seconds = 439384/sec
-> 4390027 itterations in 10.006511 seconds = 438739/sec
-> 4383906 itterations in 10.006834 seconds = 438128/sec
-> 
-> 2.6.24.3
-> 1269937 itterations in 9.999757 seconds = 127006/sec
-> 1266723 itterations in 9.999663 seconds = 126685/sec
-> 1267293 itterations in 9.999348 seconds = 126742/sec
-> 1265793 itterations in 9.999766 seconds = 126592/sec
-> 
-Glad to see that ctxbench is still useful, I think there's a more recent 
-version I haven't put up, which uses threads rather than processes, but 
-there were similar values generated, so I somewhat lost interest. There 
-was a "round robin" feature to pass the token through more processes, 
-again I didn't find more use for the data.
+--Signature=_Fri__28_Mar_2008_09_29_16_+1100_Cg2UmuYT9VuU22KL
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-I never tried binding the process to a CPU, in general the affinity code 
-puts one process per CPU under light load, and limits the context switch 
-overhead. It looks as if you are testing only the single CPU (or core) case.
+Hi Haavard,
 
--- 
-Bill Davidsen <davidsen@tmr.com>
-   "We have more to fear from the bungling of the incompetent than from
-the machinations of the wicked."  - from Slashdot
+On Thu, 27 Mar 2008 10:42:24 +0100 Haavard Skinnemoen <haavard.skinnemoen@a=
+tmel.com> wrote:
+>
+> On Thu, 27 Mar 2008 18:33:57 +1100
+> Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+>=20
+> > Status of my local build tests is at
+> > http://kisskb.ellerman.id.au/linux-next.  If maintainers want to give
+> > advice about cross compilers/configs that work, we are always open to a=
+dd
+> > more builds.
+>=20
+> AVR32 allnoconfig found a bug, which I've fixed. Could you try enabling
+> it again?
+
+Done.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Fri__28_Mar_2008_09_29_16_+1100_Cg2UmuYT9VuU22KL
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFH7B/BTgG2atn1QN8RAkLYAJ9PeSGDs/m6icVXCb7nkb1uKpGYQACfcTZe
+RVZkn/BoEctMZTjncHRINiM=
+=saGA
+-----END PGP SIGNATURE-----
+
+--Signature=_Fri__28_Mar_2008_09_29_16_+1100_Cg2UmuYT9VuU22KL--
