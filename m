@@ -1,46 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761954AbYC0Vzc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761981AbYC0V5a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761954AbYC0Vzc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Mar 2008 17:55:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756482AbYC0VzW
+	id S1761981AbYC0V5a (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Mar 2008 17:57:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758314AbYC0V5T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Mar 2008 17:55:22 -0400
-Received: from smtp-out0.tiscali.nl ([195.241.79.175]:41814 "EHLO
-	smtp-out0.tiscali.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756227AbYC0VzW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Mar 2008 17:55:22 -0400
-Message-ID: <47EC17C7.8020401@tiscali.nl>
-Date: Thu, 27 Mar 2008 22:55:19 +0100
-From: Roel Kluin <12o3l@tiscali.nl>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Thu, 27 Mar 2008 17:57:19 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:47447 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756482AbYC0V5T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Mar 2008 17:57:19 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Jarek Poplawski <jarkao2@gmail.com>
+Subject: Re: [Bugme-new] [Bug 10326] New: inconsistent lock state in net_rx_action
+Date: Thu, 27 Mar 2008 22:56:49 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Andrew Morton <akpm@linux-foundation.org>, netdev@vger.kernel.org,
+       bugme-daemon@bugzilla.kernel.org, marcus@better.se,
+       Stephen Hemminger <shemminger@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
+References: <bug-10326-10286@http.bugzilla.kernel.org/> <1206621014.8514.563.camel@twins> <20080327124928.GE2845@ami.dom.local>
+In-Reply-To: <20080327124928.GE2845@ami.dom.local>
 MIME-Version: 1.0
-To: hare@suse.de
-CC: linux-scsi@vger.kernel.org, lkml <linux-kernel@vger.kernel.org>
-Subject: [PATCH 1/1 resend] aic7xxx_old: aicasm_gram.y: Test opcode in type_check()
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200803272256.50454.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-drivers/scsi/aic7xxx_old/sequencer.h:130:#define AIC_OP_JZ 0xf
---
-Test opcode, not definition
+On Thursday, 27 of March 2008, Jarek Poplawski wrote:
+> On Thu, Mar 27, 2008 at 01:30:14PM +0100, Peter Zijlstra wrote:
+> ...
+> > My guess is that it is a race between polling the device and irq pushing
+> > the packet. That is, normally the IRQ handler wins and netpoll doesn't
+> > have anything to do and it doesn't traverse this code path.
+> > 
+> > (although I must admit to being a little out of my depth here)
+> 
+> Probably you're right but there were really a lot of testing and
+> stressing netconsole for misterious lockups for quite a long time
+> with this new napi, so it's hard to believe this was hidden so
+> well...
 
-Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
----
-diff --git a/drivers/scsi/aic7xxx/aicasm/aicasm_gram.y b/drivers/scsi/aic7xxx/aicasm/aicasm_gram.y
-index 6066998..702e2db 100644
---- a/drivers/scsi/aic7xxx/aicasm/aicasm_gram.y
-+++ b/drivers/scsi/aic7xxx/aicasm/aicasm_gram.y
-@@ -1837,7 +1837,7 @@ type_check(symbol_t *symbol, expression_t *expression, int opcode)
- 	int and_op;
- 
- 	and_op = FALSE;
--	if (opcode == AIC_OP_AND || opcode == AIC_OP_JNZ || AIC_OP_JZ)
-+	if (opcode == AIC_OP_AND || opcode == AIC_OP_JNZ || opcode == AIC_OP_JZ)
- 		and_op = TRUE;
- 
- 	/*
+I assume there will be a patch posted for this issue.  Correct?
 
+Rafael
