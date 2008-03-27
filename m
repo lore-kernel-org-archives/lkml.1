@@ -1,47 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761818AbYC0Vv4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761310AbYC0VyS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761818AbYC0Vv4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Mar 2008 17:51:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757914AbYC0Vvr
+	id S1761310AbYC0VyS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Mar 2008 17:54:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757390AbYC0VyG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Mar 2008 17:51:47 -0400
-Received: from mail.tmr.com ([64.65.253.246]:51347 "EHLO gaimboi.tmr.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755332AbYC0Vvr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Mar 2008 17:51:47 -0400
-Message-ID: <47EC173F.4050309@tmr.com>
-Date: Thu, 27 Mar 2008 17:53:03 -0400
-From: Bill Davidsen <davidsen@tmr.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
-MIME-Version: 1.0
-To: Bart Van Assche <bart.vanassche@gmail.com>
-CC: Chris Snook <csnook@redhat.com>, Emmanuel Florac <eflorac@intellique.com>,
+	Thu, 27 Mar 2008 17:54:06 -0400
+Received: from testure.choralone.org ([194.9.77.134]:35978 "EHLO
+	testure.choralone.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756464AbYC0VyF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Mar 2008 17:54:05 -0400
+Date: Thu, 27 Mar 2008 17:53:40 -0400
+From: Dave Jones <davej@codemonkey.org.uk>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: sfrench@samba.org, linux-cifs-client@lists.samba.org,
        linux-kernel@vger.kernel.org
-Subject: Re: RAID-1 performance under 2.4 and 2.6
-References: <20080325194306.4ac71ff2@galadriel.home>	 <47E975F8.3000702@redhat.com> <e2e108260803260015l5e8ba4f7n4fdbac771b13cbba@mail.gmail.com>
-In-Reply-To: <e2e108260803260015l5e8ba4f7n4fdbac771b13cbba@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Subject: Re: cifs_mount() contains strange code
+Message-ID: <20080327215340.GA27219@codemonkey.org.uk>
+Mail-Followup-To: Dave Jones <davej@codemonkey.org.uk>,
+	Adrian Bunk <bunk@kernel.org>, sfrench@samba.org,
+	linux-cifs-client@lists.samba.org, linux-kernel@vger.kernel.org
+References: <20080327173458.GA32200@cs181133002.pp.htv.fi>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080327173458.GA32200@cs181133002.pp.htv.fi>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bart Van Assche wrote:
-> On Tue, Mar 25, 2008 at 11:00 PM, Chris Snook <csnook@redhat.com> wrote:
+On Thu, Mar 27, 2008 at 07:34:58PM +0200, Adrian Bunk wrote:
+ > This looks somehow fishy (note the "rc" settings):
+ > 
+ > <--  snip  -->
+ > 
+ > ...
+ > int
+ > cifs_mount(struct super_block *sb, struct cifs_sb_info *cifs_sb,
+ >            char *mount_data, const char *devname)
+ > {
+ > ...
+ >                                 /* BB check if this works for exactly length
+ >                                  * three strings */
+ >                                 if ((strchr(volume_info.UNC + 3, '\\') == NULL)
+ >                                     && (strchr(volume_info.UNC + 3, '/') ==
+ >                                         NULL)) {
+ >                                         rc = connect_to_dfs_path(xid, pSesInfo,
+ >                                                 "", cifs_sb->local_nls,
+ >                                                 cifs_sb->mnt_cifs_flags &
+ >                                                   CIFS_MOUNT_MAP_SPECIAL_CHR);
+ >                                         rc = -ENODEV;
+ >                                         goto out;
+ > 
+ > <--  snip  -->
 
->>  It means you shouldn't use dd as a benchmark.
-> 
-> If you want to benchmark write speed, you should add
-> oflag=direct,dsync to the dd command line. For benchmarking read speed
-> you should specify iflag=direct. Or, even better, you can use xdd with
-> the flags -dio -processlock.
-> 
-No, you want your benchmark to measure performance doing what the 
-application does. Do unless you have an application which has been 
-heavily Linux-ized you don't want to measure something unrelated to the 
-application requirements.
+I've noticed a bunch of things like that from time to time, and wondered
+how useful it would be to have sparse warn on double assignments of variables
+without a read inbetween.
+
+	Dave
 
 -- 
-Bill Davidsen <davidsen@tmr.com>
-   "We have more to fear from the bungling of the incompetent than from
-the machinations of the wicked."  - from Slashdot
+http://www.codemonkey.org.uk
