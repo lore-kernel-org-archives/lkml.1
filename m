@@ -1,40 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761326AbYC0WOT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761966AbYC0WSp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761326AbYC0WOT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Mar 2008 18:14:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758918AbYC0WOG
+	id S1761966AbYC0WSp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Mar 2008 18:18:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759921AbYC0WSb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Mar 2008 18:14:06 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:40346 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758537AbYC0WOF (ORCPT
+	Thu, 27 Mar 2008 18:18:31 -0400
+Received: from po-out-1718.google.com ([72.14.252.155]:37487 "EHLO
+	po-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759868AbYC0WSb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Mar 2008 18:14:05 -0400
-Date: Thu, 27 Mar 2008 22:13:58 +0000
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: akpm@linux-foundation.org, linuxram@us.ibm.com,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [patch 3/7] vfs: mountinfo: add mount ID
-Message-ID: <20080327221358.GY10722@ZenIV.linux.org.uk>
-References: <20080327120619.031944658@szeredi.hu> <20080327122355.594127612@szeredi.hu>
-Mime-Version: 1.0
+	Thu, 27 Mar 2008 18:18:31 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=Tjx9RIysO2FcscrRqV+6LzoouyvLxVWTWvE+oT3VyWUm4+50CGFVufq501RB5g82eVPQPF93d9O70grOkOjQWUHjZyFaEngAtAmjoug6Yrtc+ROcfk3VToFNq8zehkE6VFQZrEKiHrrFA+qa3nNl1fO4+kXr7U7tndmZ6yBZdnA=
+Date: Thu, 27 Mar 2008 23:22:48 +0100
+From: Jarek Poplawski <jarkao2@gmail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Andrew Morton <akpm@linux-foundation.org>, netdev@vger.kernel.org,
+       bugme-daemon@bugzilla.kernel.org, marcus@better.se,
+       Stephen Hemminger <shemminger@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [Bugme-new] [Bug 10326] New: inconsistent lock state in
+	net_rx_action
+Message-ID: <20080327222248.GA3596@ami.dom.local>
+References: <bug-10326-10286@http.bugzilla.kernel.org/> <1206621014.8514.563.camel@twins> <20080327124928.GE2845@ami.dom.local> <200803272256.50454.rjw@sisk.pl>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080327122355.594127612@szeredi.hu>
-User-Agent: Mutt/1.4.2.3i
+In-Reply-To: <200803272256.50454.rjw@sisk.pl>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 27, 2008 at 01:06:22PM +0100, Miklos Szeredi wrote:
-> From: Miklos Szeredi <mszeredi@suse.cz>
-> 
-> Add a unique ID to each vfsmount using the IDR infrastructure.  The
-> identifiers are reused after the vfsmount is freed.
+On Thu, Mar 27, 2008 at 10:56:49PM +0100, Rafael J. Wysocki wrote:
+...
+> I assume there will be a patch posted for this issue.  Correct?
 
-Er...  That would need shifting allocation to attach_recursive_mnt()
-and copy_tree()...
+I guess Peter should know the answer!
 
-Anyway, nevermind that for now; I'll pick the variant with spinlock
-from the previous patchset.
+Jarek P.
