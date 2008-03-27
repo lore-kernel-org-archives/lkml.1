@@ -1,45 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756873AbYC0Bke@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757401AbYC0BmA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756873AbYC0Bke (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Mar 2008 21:40:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754615AbYC0BkX
+	id S1757401AbYC0BmA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Mar 2008 21:42:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754777AbYC0Blw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Mar 2008 21:40:23 -0400
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:44006 "EHLO e1.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754595AbYC0BkW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Mar 2008 21:40:22 -0400
-Date: Wed, 26 Mar 2008 19:29:30 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: James Morris <jmorris@namei.org>
-Cc: "Serge E. Hallyn" <serue@us.ibm.com>, Stephen Smalley <sds@tycho.nsa.gov>,
-       NeilBrown <neilb@suse.de>,
-       Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>, miklos@szeredi.hu,
-       viro@zeniv.linux.org.uk, haveblue@us.ibm.com,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, hch@infradead.org,
-       linux-security-module@vger.kernel.org
-Subject: Re: r-o bind in nfsd
-Message-ID: <20080327002930.GA13960@sergelap.austin.ibm.com>
-References: <20080321155451.GU10722@ZenIV.linux.org.uk> <E1Jck2N-0001Q3-7W@pomaz-ex.szeredi.hu> <20080321163520.GV10722@ZenIV.linux.org.uk> <E1JckW9-0001Ub-Rs@pomaz-ex.szeredi.hu> <18408.26863.617591.836548@notabene.brown> <200803252045.CGB04105.HLSQFOJMtOFVOF@I-love.SAKURA.ne.jp> <57096.192.168.1.70.1206484328.squirrel@neil.brown.name> <1206533042.3302.266.camel@moss-spartans.epoch.ncsc.mil> <20080326164753.GA20578@sergelap.ibm.com> <Xine.LNX.4.64.0803270834070.1952@us.intercode.com.au>
+	Wed, 26 Mar 2008 21:41:52 -0400
+Received: from mail6.sea5.speakeasy.net ([69.17.117.8]:42348 "EHLO
+	mail6.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754138AbYC0Blv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Mar 2008 21:41:51 -0400
+X-Greylist: delayed 399 seconds by postgrey-1.27 at vger.kernel.org; Wed, 26 Mar 2008 21:41:51 EDT
+Date: Wed, 26 Mar 2008 18:35:10 -0700 (PDT)
+From: Trent Piepho <xyzzy@speakeasy.org>
+X-X-Sender: xyzzy@shell4.speakeasy.net
+To: Jean Delvare <khali@linux-fr.org>
+cc: Ken Moffat <zarniwhoop@ntlworld.com>, Dave Airlie <airlied@gmail.com>,
+       I2C <i2c@lm-sensors.org>, lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [i2c] Regression (gdm no longer shuts down) - 2.4.24.x and	2.6.25
+In-Reply-To: <20080326201031.7c2cefb2@hyperion.delvare>
+Message-ID: <Pine.LNX.4.58.0803261832200.16692@shell4.speakeasy.net>
+References: <20080325200714.GA25487@deepthought> <20080326161934.7eae544f@hyperion.delvare>
+ <20080326173701.GA16882@deepthought> <20080326201031.7c2cefb2@hyperion.delvare>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Xine.LNX.4.64.0803270834070.1952@us.intercode.com.au>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting James Morris (jmorris@namei.org):
-> On Wed, 26 Mar 2008, Serge E. Hallyn wrote:
-> 
-> > Not only that, but containers require an LSM to provide user isolation
-> > and root containment.
-> 
-> You mean LSM hooks, which various LSM could utilize if desired, right?
+On Wed, 26 Mar 2008, Jean Delvare wrote:
+> Totally unrelated, but FYI: the chip at 0x50 is an EDID EEPROM in your
+> display (which the radeonfb driver can use to switch to the correct
+> resolution / refresh rate.)
+[...]
+> any of these chips. So, the mysterious effect of unloading the
+> i2c-viapro driver can't be explained by an i2c chip driver detaching
+> from its device. So, again, I really can't see how i2c can be involved
+> in your problem.
 
-Yes.
-
-thanks,
--serge
+Maybe the radeonfb driver is trying to talk to EDID EEPROMs on all I2C
+adapters it finds?  When it tries to using the i2c-viapro adapter, it
+hangs.
