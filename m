@@ -1,215 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759159AbYC0UZe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760150AbYC0U1Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759159AbYC0UZe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Mar 2008 16:25:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757635AbYC0UZZ
+	id S1760150AbYC0U1Q (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Mar 2008 16:27:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757473AbYC0U1B
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Mar 2008 16:25:25 -0400
-Received: from smtp-out0.tiscali.nl ([195.241.79.175]:52858 "EHLO
-	smtp-out0.tiscali.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757478AbYC0UZZ (ORCPT
+	Thu, 27 Mar 2008 16:27:01 -0400
+Received: from fmmailgate05.web.de ([217.72.192.243]:58716 "EHLO
+	fmmailgate05.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756002AbYC0U07 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Mar 2008 16:25:25 -0400
-Message-ID: <47EC02A7.5020909@tiscali.nl>
-Date: Thu, 27 Mar 2008 21:25:11 +0100
-From: Roel Kluin <12o3l@tiscali.nl>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Thu, 27 Mar 2008 16:26:59 -0400
+Date: Thu, 27 Mar 2008 21:25:20 +0100
+Message-Id: <215112960@web.de>
 MIME-Version: 1.0
-To: Daniel Walker <dwalker@mvista.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-CC: nickpiggin@yahoo.com.au, lkml <linux-kernel@vger.kernel.org>
-Subject: [PATCH v2 -mm] likeliness accounting change and cleanup
-References: <47EAB608.6060204@tiscali.nl> <1206636313.4670.131.camel@localhost.localdomain>
-In-Reply-To: <1206636313.4670.131.camel@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1
+From: devzero@web.de
+To: Len Brown <lenb@kernel.org>, linux-acpi@vger.kernel.org
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: =?iso-8859-15?Q?Re:_acpi=5Fps=5Fexecute=5Fmethod_OOPS_(Re:_some_minor_?=
+ =?iso-8859-15?Q?issues_with_2.6.25-rc6-git7-default)?=
+Organization: http://freemail.web.de/
+X-Provags-Id: V01U2FsdGVkX1+AaXr4gTAMjeinWrCPrJXJQ0v5Tn7D3lYb2H+8o52G4llHz
+ 7DmyWmYYqExO+C7xq3b/03DyHr92y7sBkIunaFp6okpfvh4SgU=
+Content-Type: text/plain; charset=iso-8859-15
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Daniel Walker wrote:
-
-> It's looks good to me .. You'll have to send it to Andrew to get it
-> included tho ..
+> On Tuesday 25 March 2008, devzero@web.de wrote:
+> ...
+> > this one looks more serious (happened with modprobe -r ac),
+> > because kernel has problems afterwards (cannot load/anload any other module afterwards) 
 > 
-> Daniel
+> any idea when this started happening?
+> Any chance you can snag the output from acpidump
+> and attach it to a sighting here?:
+> http://bugzilla.kernel.org/enter_bug.cgi?product=ACPI
+> 
+> thanks,
+> -Len
 
-Store __builtin_return_address (caller) rather than __func__ in likeliness
-struct. 'line' and 'type' are combined in 'label'
+i searched into this and found that it only happens after modprobe netsc520 ;modprobe -r netsc520.
+so maybe this is no acpi problem at all but corruption (sort of?) introduced by netsc520 module !?
 
-+/- now denotes whether expectation fails in less than 5% of the tests - rather
-than whether more unexpected than expected were encountered. The function at
-the displayed filename & line and the caller are not necessarily the same.
-A few more Likely Profiling Results changes were made.
+regards
+roland
 
-struct seq_operations becomes static, unsigned ints true and false (shadowed)
-are replaced by pos and neg.
 
-Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
----
-This should be applied after the -mm patches:
-http://www.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.25-rc5/2.6.25-rc5-mm1/broken-out/profile-likely-unlikely-macros.patch
-http://www.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.25-rc5/2.6.25-rc5-mm1/broken-out/profile-likely-unlikely-macros-fix.patch
 
-New layout:
 
-Likely Profiling Results
- --------------------------------------------------------------------
-[+- ]Type | # True  | # False | Function@Filename:Line
- unlikely |        0|    32082| fget+0xd0/0x1d0@include/asm/arch/atomic_32.h:235
 
-Compiles and runs here. Thanks for previous comments.
 
- include/linux/compiler.h |   16 ++++++++--------
- lib/likely_prof.c        |   45 +++++++++++++++++++++++++--------------------
- 2 files changed, 33 insertions(+), 28 deletions(-)
 
-diff --git a/include/linux/compiler.h b/include/linux/compiler.h
-index d6d9efc..bd31d4c 100644
---- a/include/linux/compiler.h
-+++ b/include/linux/compiler.h
-@@ -53,25 +53,25 @@ extern void __chk_io_ptr(const volatile void __iomem *);
- 
- #if defined(CONFIG_PROFILE_LIKELY) && !(defined(CONFIG_MODULE_UNLOAD) && defined(MODULE))
- struct likeliness {
--	const char *func;
--	char *file;
--	int line;
--	int type;
-+	char *const file;
-+	unsigned long caller;
- 	unsigned int count[2];
- 	struct likeliness *next;
-+	unsigned int label;
- };
- 
--extern int do_check_likely(struct likeliness *likeliness, int exp);
-+extern int do_check_likely(struct likeliness *likeliness, unsigned int exp);
- 
-+#define LP_IS_EXPECTED	1
- #define LP_UNSEEN	4
-+#define LP_LINE_SHIFT	3
- 
- #define __check_likely(exp, is_likely)					\
- 	({								\
- 		static struct likeliness likeliness = {			\
--			.func = __func__,				\
- 			.file = __FILE__,				\
--			.line = __LINE__,				\
--			.type = is_likely | LP_UNSEEN,			\
-+			.label = __LINE__ << LP_LINE_SHIFT |		\
-+						LP_UNSEEN | is_likely,	\
- 		};							\
- 		do_check_likely(&likeliness, !!(exp));			\
- 	})
-diff --git a/lib/likely_prof.c b/lib/likely_prof.c
-index 5c6d91d..c9f5de3 100644
---- a/lib/likely_prof.c
-+++ b/lib/likely_prof.c
-@@ -15,34 +15,34 @@
- #include <linux/fs.h>
- #include <linux/seq_file.h>
- #include <linux/proc_fs.h>
-+#include <linux/kallsyms.h>
- 
- #include <asm/bug.h>
- #include <asm/atomic.h>
- 
- static struct likeliness *likeliness_head;
- 
--int do_check_likely(struct likeliness *likeliness, int ret)
-+int do_check_likely(struct likeliness *likeliness, unsigned int ret)
- {
- 	static unsigned long likely_lock;
- 
--	if (ret)
--		likeliness->count[1]++;
--	else
--		likeliness->count[0]++;
-+	likeliness->count[ret]++;
- 
--	if (likeliness->type & LP_UNSEEN) {
-+	if (likeliness->label & LP_UNSEEN) {
- 		/*
--		 * We don't simple use a spinlock because internally to the
-+		 * We don't simply use a spinlock because internally to the
- 		 * spinlock there is a call to unlikely which causes recursion.
- 		 * We opted for this method because we didn't need a preempt/irq
- 		 * disable and it was a bit cleaner then using internal __raw
- 		 * spinlock calls.
- 		 */
- 		if (!test_and_set_bit(0, &likely_lock)) {
--			if (likeliness->type & LP_UNSEEN) {
--				likeliness->type &= (~LP_UNSEEN);
-+			if (likeliness->label & LP_UNSEEN) {
-+				likeliness->label &= (~LP_UNSEEN);
- 				likeliness->next = likeliness_head;
- 				likeliness_head = likeliness;
-+				likeliness->caller = (unsigned long)
-+						__builtin_return_address(0);
- 			}
- 			smp_mb__before_clear_bit();
- 			clear_bit(0, &likely_lock);
-@@ -61,8 +61,8 @@ static void * lp_seq_start(struct seq_file *out, loff_t *pos)
- 		seq_printf(out, "Likely Profiling Results\n");
- 		seq_printf(out, " --------------------------------------------"
- 				"------------------------\n");
--		seq_printf(out, "[+- ] Type | # True | # False | Function:"
--				"Filename@Line\n");
-+		seq_printf(out, "[+- ]Type | # True  | # False | Function@"
-+				"Filename:Line\n");
- 
- 		out->private = likeliness_head;
- 	}
-@@ -86,18 +86,22 @@ static void *lp_seq_next(struct seq_file *out, void *p, loff_t *pos)
- static int lp_seq_show(struct seq_file *out, void *p)
- {
- 	struct likeliness *entry = p;
--	unsigned int true = entry->count[1];
--	unsigned int false = entry->count[0];
--
--	if (!entry->type) {
--		if (true > false)
-+	unsigned int pos = entry->count[1];
-+	unsigned int neg = entry->count[0];
-+	char function[KSYM_SYMBOL_LEN];
-+
-+	/*
-+	 * Balanced if the suggestion was false in less than 5% of the tests
-+	 */
-+	if (!(entry->label & LP_IS_EXPECTED)) {
-+		if (pos + neg < 20 * pos)
- 			seq_printf(out, "+");
- 		else
- 			seq_printf(out, " ");
- 
- 		seq_printf(out, "unlikely ");
- 	} else {
--		if (true < false)
-+		if (pos + neg < 20 * neg)
- 			seq_printf(out, "-");
- 		else
- 			seq_printf(out, " ");
-@@ -105,8 +109,9 @@ static int lp_seq_show(struct seq_file *out, void *p)
- 		seq_printf(out, "likely   ");
- 	}
- 
--	seq_printf(out, "|%9u|%9u\t%s()@:%s@%d\n", true, false,
--			entry->func, entry->file, entry->line);
-+	sprint_symbol(function, entry->caller);
-+	seq_printf(out, "|%9u|%9u|\t%s@%s:%u\n", pos, neg, function,
-+			entry->file, entry->label >> LP_LINE_SHIFT);
- 
- 	return 0;
- }
-@@ -115,7 +120,7 @@ static void lp_seq_stop(struct seq_file *m, void *p)
- {
- }
- 
--struct seq_operations likely_profiling_ops = {
-+static struct seq_operations likely_profiling_ops = {
- 	.start  = lp_seq_start,
- 	.next   = lp_seq_next,
- 	.stop   = lp_seq_stop,
 
+> 
+> > ACPI: ACPI0007:00 is registered as cooling_device0
+> > ACPI: Processor [CPU0] (supports 8 throttling states)
+> > BUG: unable to handle kernel paging request at 1b563b0c
+> > IP: [<c020000f>] acpi_ps_execute_method+0xc4/0x1f9
+> > *pde = 00000000
+> > Oops: 0002 [#1] SMP
+> > Modules linked in: ac(+) sg ahci libata dock sha1_generic michael_mic xcbc crc32c deflate zlib_deflate
+> > tgr192 wp512 sha512 seed camellia fcrypt pcbc khazad tea arc4 cast6 cast5 xts gf128mul serpent blowfish
+> > sha256_generic md4 cbc des_generic ecb crypto_blkcipher snd_seq_dummy snd_seq snd_timer snd_seq_device
+> > snd soundcore parkbd eni suni zatm uPD98402 atm lm70 hwmon ip2 ip2main parport_pc parport 8250_exar_st16c554
+> > 8250_accent 8250_hub6 8250_boca 8250_fourport ide_generic hpt366 alim15x3 jmicron pdc202xx_new cs5535 aec62xx
+> > atiixp cs5520 it821x cs5530 hpt34x opti621 trm290 amd74xx ns87415 rz1000 pdc202xx_old via82cxxx triflex cmd64x
+> > it8213 cy82c693 slc90e66 sc1200 serverworks sis5513 siimage ide_cd_mod cdrom mdacon capifs sctp libcrc32c
+> > 9pnet_fd 9pnet sunrpc decnet dccp_ipv6 dccp_ipv4 dccp ipv6 fuse ide_pci_generic pcnet32 piix mii intel_agp
+> > ide_core agpgart ext3 mbcache jbd mptspi mptscsih mptbase scsi_transport_spi sd_mod scsi_mod [last unloaded: sbshc]
+> > 
+> > Pid: 14520, comm: modprobe Tainted: P         (2.6.25-rc6-git7-default #1)
+> > EIP: 0060:[<c020000f>] EFLAGS: 00010206 CPU: 0
+> > EIP is at acpi_ps_execute_method+0xc4/0x1f9
+> > EAX: 1b563b0c EBX: 00000000 ECX: 0000ffff EDX: 00000093
+> > ESI: d41a6240 EDI: c032c726 EBP: 00000000 ESP: df881d98
+> >  DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
+> > Process modprobe (pid: 14520, ti=df880000 task=ddb458f0 task.ti=df880000)
+> > Stack: ffffffff c032d513 df020c8c df020c84 df021844 d41a6250 d41a6240 c032c726
+> >        00000000 c01fc910 00001001 d41a6240 e085f44c 00000000 c01fc44b e085f44c
+> >        df020ce8 d41a6a20 d41a6a20 00000004 e085f44c df020ce8 c01ec145 df881dfc
+> > Call Trace:
+> >  [<c01fc910>] acpi_ns_evaluate+0x104/0x1a0
+> >  [<c01fc44b>] acpi_evaluate_object+0x16f/0x244
+> >  [<c01ec145>] acpi_evaluate_integer+0x84/0x104
+> >  [<e085f038>] acpi_ac_get_state+0x22/0x53 [ac]
+> >  [<e085f20e>] acpi_ac_add+0x63/0x15a [ac]
+> >  [<c0207f4d>] acpi_device_probe+0x37/0xcd
+> >  [<c022dd2b>] driver_probe_device+0x9d/0x114
+> >  [<c022de86>] __driver_attach+0x52/0x87
+> >  [<c022d36b>] bus_for_each_dev+0x31/0x52
+> >  [<c022dbde>] driver_attach+0x11/0x13
+> >  [<c022de34>] __driver_attach+0x0/0x87
+> >  [<c022da1e>] bus_add_driver+0x91/0x193
+> >  [<c022e039>] driver_register+0x45/0x9a
+> >  [<e0863021>] acpi_ac_init+0x21/0x39 [ac]
+> >  [<c013c1de>] sys_init_module+0x16b6/0x17c9
+> >  [<c0208280>] acpi_bus_register_driver+0x0/0x38
+> >  [<c0108a6a>] sys_mmap2+0x62/0x77
+> >  [<c01059c4>] sysenter_past_esp+0x6d/0xa9
+> >  =======================
+> > Code: c0 b8 01 00 00 00 e8 f9 53 00 00 ff 76 08 8b 46 10 50 83 c0 08 50 68 13 d5 32 c0 6a ff 00 00 00 c2 2d 
+> > c0 68 b0 c2 2d c0 68 fb 00 <00> 00 6a 40 e8 82 2a 00 00 83 c4 24 e8 93 fe ff ff 85 c0 89 c5
+> > EIP: [<c020000f>] acpi_ps_execute_method+0xc4/0x1f9 SS:ESP 0068:df881d98
+> > ---[ end trace f8c13e074fc8ef52 ]---
+> > 
+> > 
+> 
+
+
+_________________________________________________________________________
+In 5 Schritten zur eigenen Homepage. Jetzt Domain sichern und gestalten! 
+Nur 3,99 EUR/Monat! http://www.maildomain.web.de/?mc=021114
 
