@@ -1,47 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758168AbYC0Jkn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758784AbYC0Jmw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758168AbYC0Jkn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Mar 2008 05:40:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751065AbYC0Jkf
+	id S1758784AbYC0Jmw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Mar 2008 05:42:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755068AbYC0Jmo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Mar 2008 05:40:35 -0400
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:33576 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752485AbYC0Jkf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Mar 2008 05:40:35 -0400
-Date: Thu, 27 Mar 2008 09:36:11 +0000
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: pHilipp Zabel <philipp.zabel@gmail.com>
-Cc: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>,
-       Dmitry <dbaryshkov@gmail.com>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, hskinnemoen@atmel.com,
-       domen.puncer@telargo.com, lethal@linux-sh.org, tony@atomide.com,
-       paul@pwsan.com
-Subject: Re: [PATCH 1/3] Clocklib: add generic framework for managing clocks.
-Message-ID: <20080327093611.GC32396@flint.arm.linux.org.uk>
-References: <20080326154913.GA15326@doriath.ww600.siemens.net> <20080326155203.GA15405@doriath.ww600.siemens.net> <20080326170441.795fb928@hskinnemo-gx620.norway.atmel.com> <bc64b4640803260952s58ad0645ve11766fdfa45e785@mail.gmail.com> <20080327100623.34d92c84@hskinnemo-gx620.norway.atmel.com> <20080327091810.GA32396@flint.arm.linux.org.uk> <74d0deb30803270229h1244c5bfr5ca521dbb87b0583@mail.gmail.com>
+	Thu, 27 Mar 2008 05:42:44 -0400
+Received: from smtpeu1.atmel.com ([195.65.72.27]:49913 "EHLO bagnes.atmel.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751065AbYC0Jmn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Mar 2008 05:42:43 -0400
+Date: Thu, 27 Mar 2008 10:42:24 +0100
+From: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: linux-next: Tree for March 27
+Message-ID: <20080327104224.2b98b561@hskinnemo-gx620.norway.atmel.com>
+In-Reply-To: <20080327183357.7c637aed.sfr@canb.auug.org.au>
+References: <20080327183357.7c637aed.sfr@canb.auug.org.au>
+Organization: Atmel Norway
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <74d0deb30803270229h1244c5bfr5ca521dbb87b0583@mail.gmail.com>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 27 Mar 2008 09:42:25.0318 (UTC) FILETIME=[DD059C60:01C88FEE]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 27, 2008 at 10:29:27AM +0100, pHilipp Zabel wrote:
-> >  The result for PXA is a tradeoff between reducing the data size and
-> >  increasing the text size, or increasing the data size and keeping
-> >  the existing data size.
-> 
-> Wouldn't something like the above work without increasing text size too much?
+On Thu, 27 Mar 2008 18:33:57 +1100
+Stephen Rothwell <sfr@canb.auug.org.au> wrote:
 
-It still increases the overall size dramatically since all these function
-pointers are replicated for each clock (which I've pointed to an existing
-solution for).
+> Status of my local build tests is at
+> http://kisskb.ellerman.id.au/linux-next.  If maintainers want to give
+> advice about cross compilers/configs that work, we are always open to add
+> more builds.
 
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+AVR32 allnoconfig found a bug, which I've fixed. Could you try enabling
+it again?
+
+Haavard
