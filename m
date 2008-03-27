@@ -1,97 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758700AbYC0Th2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760016AbYC0TiL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758700AbYC0Th2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Mar 2008 15:37:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756843AbYC0ThT
+	id S1760016AbYC0TiL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Mar 2008 15:38:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758975AbYC0Th4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Mar 2008 15:37:19 -0400
-Received: from picture.zai.com ([12.47.112.36]:46639 "EHLO york.rivers.zai.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756176AbYC0ThR convert rfc822-to-8bit (ORCPT
+	Thu, 27 Mar 2008 15:37:56 -0400
+Received: from ti-out-0910.google.com ([209.85.142.184]:38309 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758269AbYC0Thz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Mar 2008 15:37:17 -0400
-Content-class: urn:content-classes:message
+	Thu, 27 Mar 2008 15:37:55 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=PZXUZySKT9cpdc15TYp2oZBRUhL9Gfj2vHOmrf3dglMO7I3sWylw66Tt+7NCWZvaUz5tzLxPdvFPCZ7nm/ewy/NGCAK4Qa7X+V9GR4GCvI//I6OItQS+1UVojcDvjEfI/zlGHzmYh92t6FvJcjnY5fJIADT+/jOrucTlZzn1Ts8=
+Message-ID: <e9c3a7c20803271237x1b2c3a2ci6837c5e2d5288c95@mail.gmail.com>
+Date: Thu, 27 Mar 2008 12:37:52 -0700
+From: "Dan Williams" <dan.j.williams@intel.com>
+To: "Zhang Wei" <wei.zhang@freescale.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>
+Subject: Re: [PATCH] fsldma: The MPC8377MDS board device tree node for fsldma driver
+Cc: "Linux Kernel" <linux-kernel@vger.kernel.org>,
+       "Kumar Gala" <galak@kernel.crashing.org>, linuxppc-dev@ozlabs.org
+In-Reply-To: <1206517356-11209-2-git-send-email-wei.zhang@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-x-mimeole: Produced By Microsoft Exchange V6.5
-Subject: RE: Performance changes between 2.6.13 and 2.6.23
-Date: Thu, 27 Mar 2008 15:37:15 -0400
-Message-ID: <D108F32273D3044F8C7B24328CB7713701A4E1@york.rivers.zai.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: Performance changes between 2.6.13 and 2.6.23
-Thread-Index: AciOlymCeeQuivWGS0O+LQR8samsugBqgmyI
-References: <D108F32273D3044F8C7B24328CB7713701A4D1@york.rivers.zai.com> <2c0942db0803250941j65be093et718bb838a2779e9c@mail.gmail.com>
-From: "Sanders, Rob M." <sanders-rob@zai.com>
-To: "Ray Lee" <ray-lk@madrabbit.org>
-Cc: <linux-kernel@vger.kernel.org>, <bart.vanassche@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1206517356-11209-1-git-send-email-wei.zhang@freescale.com>
+	 <1206517356-11209-2-git-send-email-wei.zhang@freescale.com>
+X-Google-Sender-Auth: 93205256cb903a71
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Mar 26, 2008 at 12:42 AM, Zhang Wei <wei.zhang@freescale.com> wrote:
+> The fsldma driver is tested on MPC8377MDS board.
+>  The patch adds fsldma driver support into MPC8377MDS device tree.
+>
+>  Signed-off-by: Zhang Wei <wei.zhang@freescale.com>
+>  ---
+>   arch/powerpc/boot/dts/mpc8377_mds.dts |   27 +++++++++++++++++++++++++++
+>   1 files changed, 27 insertions(+), 0 deletions(-)
 
+I think this patch should probably go through the powerpc tree, or
+-mm.  I'll pick up the ones that touch either drivers/dma or
+crypto/async_tx.
 
-
------Original Message-----
-From: madrabbit@gmail.com on behalf of Ray Lee
-Sent: Tue 3/25/2008 12:41 PM
-To: Sanders, Rob M.
-Cc: linux-kernel@vger.kernel.org; bart.vanassche@gmail.com
-Subject: Re: Performance changes between 2.6.13 and 2.6.23
- 
-On Tue, Mar 25, 2008 at 5:34 AM, Sanders, Rob M. <sanders-rob@zai.com> wrote:
-> Hello all,
->   I've been lurking on the digest for some time (don't want to receive full lkml traffic at work) and saw the
->  posts about Wine performance regressions in 2.6.24.  Some of what I saw there, particularly Andi Kleen's
->  responses, mirror something that I see on my box at home.  I had emailed Andi directly since I only read the
->  digest, and I'm posting this here at his suggestion.  Please CC: rms@zai.com with any replies, as I'm only
->  getting the lkml digest.
->   I'm running on a dual 2GHZ G5 Powermac w/2GB ram.  I recently upgraded from YDL4.0.91 (2.6.13 kernel) to
->  YDL6 (2.6.23 kernel) and noticed that the overall performance of the box seems more sluggish after the upgrade.
->  Of more particular concern, the main application that I build has seen a 4-5X slowdown in performance.  Under
->  YDL4.0.91 I could process roughly 1e8 data points in ~2 seconds, and under YDL6.0 I now process 1e8 data points
-
-So, two processors, and multiple processes passing data back and
-forth. Key point seems to be:
-
->  in ~8 seconds.  Total CPU loading (from top) is about 5%, under both systems.  The application spawns multiple
->  processes and uses semaphores and shared memory to move data between the processes.  When I use 'vmstat 3' the
->  single biggest difference I see between YDL4.0.91 and YDL6 is that the YDL4.0.91 system is the YDL4.0.91 system is
->  context switching about 7000 per interval, whereas the YDl6 system is context switching about 1200 times per interval.
-
-Many more context switches per second, so a lot less work is getting
-done each time.
-
->   I've been talking somewhat with Owen Stampflee (works for the distro maker, TSS) and have rebuilt the kernel on
->  the 2.6 box removing some of the things that I don't need on my box (cell support, etc).  There did seem (subjectively)
->  to be a slight improvement after that.  When I get some more time to play at home I'm going to take the 2.6.13 .config
->  I use and build a 2.6.23 kernal using 'make oldconfig' and try to figure if it is a config issues.
->   I realize that going from 2.6.13 to 2.6.23 is a *huge* change, and that the problems may not be tied to the kernel
->  but to other things, but are there any other suggestions folks have for finding the cause of the performance slowdow
-
-A lot has changed between 2.6.23 and current mainline as well.
-Particularly in the scheduler, which I suspect is the issue for your
-test. If possible, could you try a 2.6.25-rc-latest kernel, both
-before and after an "echo 5 > /proc/sys/kernel/sched_features" and see
-if that makes any difference?
-
-
-=====
-
-Sorry to disappear for a few days, I just hadn't had time to do anything at home.  Finally had some time to 
-run some test, and at this point I'm thinking that the problem is not with the kernel.  Not quite sure where to look 
-next, but I've done the following tests:
-
-YDL4.0.91 with 2.6.13 kernel - normal speed
-YDL6.0    with 2.6.23 kenrel - 4-5x slowdown
-YDL4.1    with 2.6.15 kernel - 4-5x slowdown
-YDL4.0.91 with 2.6.15 kernel - *normal speed* - kernel config pulled from YDL4.1 install
-YDL4.0.91 with 2.6.23 kernel - failed boot
-
-I'm going to try and test a few other distros (Fedora 8/9, possibly OpenSuse) to see if they have similar 
-issues.  If anyone has other suggestions (including websites to read) feel free to drop me a private line 
-(at rms@zai.com).  Thanks....
-
-Rob
-
+--
+Dan
