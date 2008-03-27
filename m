@@ -1,55 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759945AbYC0NbL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760641AbYC0Nbf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759945AbYC0NbL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Mar 2008 09:31:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758371AbYC0NaW
+	id S1760641AbYC0Nbf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Mar 2008 09:31:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758723AbYC0NaX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Mar 2008 09:30:22 -0400
-Received: from smtp.polymtl.ca ([132.207.4.11]:45324 "EHLO smtp.polymtl.ca"
+	Thu, 27 Mar 2008 09:30:23 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:45325 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757974AbYC0NaU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1758093AbYC0NaU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 27 Mar 2008 09:30:20 -0400
-Message-Id: <20080327132057.449831367@polymtl.ca>
+Message-Id: <20080327133013.575499799@polymtl.ca>
+References: <20080327132057.449831367@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Thu, 27 Mar 2008 09:20:57 -0400
+Date: Thu, 27 Mar 2008 09:21:00 -0400
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: [patch for 2.6.26 0/7] Architecture Independent Markers
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Subject: [patch for 2.6.26 3/7] LTTng instrumentation ipc
+Content-Disposition: inline; filename=lttng-instrumentation-ipc.patch
 X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Thu, 27 Mar 2008 13:30:13 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Andrew,
+Interprocess communication, core events.
 
-After a few RFC rounds, I propose these markers for 2.6.26. They include
-work done after comments from the memory management community. Most of them have
-been used by the LTTng project for about 2 years.
+Added markers :
 
-The first patch in the patchset does a small addition to the markers API : it
-allows marker sites to declare a _trace_mark marker. I forces use of a marker
-which does not rely on an instruction modification mechanism to enable itself.
-It's required in some kernel code paths (lockdep, printk, some traps, __init and
-__exit code). I would prefer to get this in before the immediate values, since
-the immediate values optimization, which depends on the rework of x86
-alternatives, paravirt and kprobes currently being merged, takes longer than
-expected.
+ipc_msg_create
+ipc_sem_create
+ipc_shm_create
 
-I do not expect this marker set to cover every bits of the kernel (and this is
-not its purpose). It's just a good start that has proven to be very useful to
-the LTTng community in the past 2 years.
+Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+---
+ ipc/msg.c |    6 +++++-
+ ipc/sem.c |    6 +++++-
+ ipc/shm.c |    6 +++++-
+ 3 files changed, 15 insertions(+), 3 deletions(-)
 
-This patchset applies over 2.6.25-rc7 in this order :
-
-markers-define-non-optimized-marker.patch
-lttng-instrumentation-fs.patch
-lttng-instrumentation-ipc.patch
-lttng-instrumentation-kernel.patch
-lttng-instrumentation-mm.patch
-lttng-instrumentation-net.patch
-lttng-instrumentation-lib.patch
-
-Mathieu
+Index: linux-2.6-lttng/ipc/msg.c
+===================================================================
+--- linux-2.6-lttng.orig/ipc/msg.c	2008-03-27 07:40:09.000000000 -0400
++++ linux-2.6-lttng/ipc/msg.c	2008-03-27 07:40:12.000000000 -0400
+@@ -37,6 +37,7 @@
+ #include <linux/rwsem.h>
+ #include <linux/nsproxy.h>
+ #include <linux/ipc_namespace.h>
++#include <linux/marker.h>
+ 
+ #include <asm/current.h>
+ #include <asm/uaccess.h>
+@@ -293,6 +294,7 @@ asmlinkage long sys_msgget(key_t key, in
+ 	struct ipc_namespace *ns;
+ 	struct ipc_ops msg_ops;
+ 	struct ipc_params msg_params;
++	long ret;
+ 
+ 	ns = current->nsproxy->ipc_ns;
+ 
+@@ -303,7 +305,9 @@ asmlinkage long sys_msgget(key_t key, in
+ 	msg_params.key = key;
+ 	msg_params.flg = msgflg;
+ 
+-	return ipcget(ns, &msg_ids(ns), &msg_ops, &msg_params);
++	ret = ipcget(ns, &msg_ids(ns), &msg_ops, &msg_params);
++	trace_mark(ipc_msg_create, "id %ld flags %d", ret, msgflg);
++	return ret;
+ }
+ 
+ static inline unsigned long
+Index: linux-2.6-lttng/ipc/sem.c
+===================================================================
+--- linux-2.6-lttng.orig/ipc/sem.c	2008-03-27 07:40:09.000000000 -0400
++++ linux-2.6-lttng/ipc/sem.c	2008-03-27 07:40:12.000000000 -0400
+@@ -83,6 +83,7 @@
+ #include <linux/rwsem.h>
+ #include <linux/nsproxy.h>
+ #include <linux/ipc_namespace.h>
++#include <linux/marker.h>
+ 
+ #include <asm/uaccess.h>
+ #include "util.h"
+@@ -312,6 +313,7 @@ asmlinkage long sys_semget(key_t key, in
+ 	struct ipc_namespace *ns;
+ 	struct ipc_ops sem_ops;
+ 	struct ipc_params sem_params;
++	long err;
+ 
+ 	ns = current->nsproxy->ipc_ns;
+ 
+@@ -326,7 +328,9 @@ asmlinkage long sys_semget(key_t key, in
+ 	sem_params.flg = semflg;
+ 	sem_params.u.nsems = nsems;
+ 
+-	return ipcget(ns, &sem_ids(ns), &sem_ops, &sem_params);
++	err = ipcget(ns, &sem_ids(ns), &sem_ops, &sem_params);
++	trace_mark(ipc_sem_create, "id %ld flags %d", err, semflg);
++	return err;
+ }
+ 
+ /* Manage the doubly linked list sma->sem_pending as a FIFO:
+Index: linux-2.6-lttng/ipc/shm.c
+===================================================================
+--- linux-2.6-lttng.orig/ipc/shm.c	2008-03-27 07:40:09.000000000 -0400
++++ linux-2.6-lttng/ipc/shm.c	2008-03-27 07:40:12.000000000 -0400
+@@ -39,6 +39,7 @@
+ #include <linux/nsproxy.h>
+ #include <linux/mount.h>
+ #include <linux/ipc_namespace.h>
++#include <linux/marker.h>
+ 
+ #include <asm/uaccess.h>
+ 
+@@ -482,6 +483,7 @@ asmlinkage long sys_shmget (key_t key, s
+ 	struct ipc_namespace *ns;
+ 	struct ipc_ops shm_ops;
+ 	struct ipc_params shm_params;
++	long err;
+ 
+ 	ns = current->nsproxy->ipc_ns;
+ 
+@@ -493,7 +495,9 @@ asmlinkage long sys_shmget (key_t key, s
+ 	shm_params.flg = shmflg;
+ 	shm_params.u.size = size;
+ 
+-	return ipcget(ns, &shm_ids(ns), &shm_ops, &shm_params);
++	err = ipcget(ns, &shm_ids(ns), &shm_ops, &shm_params);
++	trace_mark(ipc_shm_create, "id %ld flags %d", err, shmflg);
++	return err;
+ }
+ 
+ static inline unsigned long copy_shmid_to_user(void __user *buf, struct shmid64_ds *in, int version)
 
 -- 
 Mathieu Desnoyers
