@@ -1,162 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757668AbYC0AOY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757640AbYC0AQL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757668AbYC0AOY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Mar 2008 20:14:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754211AbYC0AOO
+	id S1757640AbYC0AQL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Mar 2008 20:16:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754777AbYC0AP5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Mar 2008 20:14:14 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:58367 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754615AbYC0AON (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Mar 2008 20:14:13 -0400
-Date: Wed, 26 Mar 2008 17:14:03 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Jarek Poplawski <jarkao2@gmail.com>
-Cc: netdev@vger.kernel.org, bugme-daemon@bugzilla.kernel.org, marcus@better.se,
-       Stephen Hemminger <shemminger@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [Bugme-new] [Bug 10326] New: inconsistent lock state in  
- net_rx_action
-Message-Id: <20080326171403.ad186037.akpm@linux-foundation.org>
-In-Reply-To: <47EAD8A5.3070806@gmail.com>
-References: <bug-10326-10286@http.bugzilla.kernel.org/>
-	<20080325134320.21525479.akpm@linux-foundation.org>
-	<47EAD8A5.3070806@gmail.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 26 Mar 2008 20:15:57 -0400
+Received: from gw.goop.org ([64.81.55.164]:52837 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754211AbYC0AP5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Mar 2008 20:15:57 -0400
+Message-ID: <47EAE736.307@goop.org>
+Date: Wed, 26 Mar 2008 17:15:50 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+MIME-Version: 1.0
+To: Dave Hansen <dave@linux.vnet.ibm.com>
+CC: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Yasunori Goto <y-goto@jp.fujitsu.com>,
+       Christoph Lameter <clameter@sgi.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Anthony Liguori <anthony@codemonkey.ws>,
+       Chris Wright <chrisw@sous-sol.org>
+Subject: Re: Trying to make use of hotplug memory for xen balloon driver
+References: <47EAD83A.2000000@goop.org> <1206576544.7883.21.camel@nimitz.home.sr71.net>
+In-Reply-To: <1206576544.7883.21.camel@nimitz.home.sr71.net>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 27 Mar 2008 00:13:41 +0100 Jarek Poplawski <jarkao2@gmail.com> wrote:
+Dave Hansen wrote:
+> Yeah, this is your problem.  You've only allocated the iomem *resource*
+> for the memory area, which means that you've basically claimed the
+> physical addresses.
+>
+> But, you don't have any 'struct page's there.
+>
+> We really screwed up the memory hotplug code and ended up with some
+> incredibly arcane function names.  You might want to look at
+> add_memory().  It is hidden away in mm/memory_hotplug.c :)
+>   
 
-> Andrew Morton wrote, On 03/25/2008 09:43 PM:
-> 
-> > (switched to email.  Please respond via emailed reply-to-all, not via the
-> > bugzilla web interface).
-> > 
-> > On Tue, 25 Mar 2008 13:21:23 -0700 (PDT)
-> > bugme-daemon@bugzilla.kernel.org wrote:
-> > 
-> >> http://bugzilla.kernel.org/show_bug.cgi?id=10326
-> >>
-> >>            Summary: inconsistent lock state in net_rx_action
-> >>            Product: Networking
-> >>            Version: 2.5
-> >>      KernelVersion: 2.6.25-rc6 (git
-> >>                     a4083c9271e0a697278e089f2c0b9a95363ada0a)
-> >>           Platform: All
-> >>         OS/Version: Linux
-> >>               Tree: Mainline
-> >>             Status: NEW
-> >>           Severity: normal
-> >>           Priority: P1
-> >>          Component: Other
-> >>         AssignedTo: acme@ghostprotocols.net
-> >>         ReportedBy: marcus@better.se
-> >>
-> >>
-> >> Latest working kernel version: 2.6.24
-> >> Earliest failing kernel version: 2.6.25-rc6 (git
-> >> a4083c9271e0a697278e089f2c0b9a95363ada0a)
-> > 
-> > A post-2.624 regression.
-> > 
-> >> Distribution: Debian testing/unstable
-> >> Hardware Environment: LG LE50 Express laptop, i386
-> >> Software Environment: Debian i386, X.org 7.3, KDE 4
-> >>
-> >> Problem Description:
-> >>
-> >> Got this during bootup, somewhere before launching X. It only happened once, I
-> >> have rebooted a few times and didn't reproduce it.
-> >>
-> >> Mar 25 19:48:46 better kernel: =================================
-> >> Mar 25 19:48:46 better kernel: [ INFO: inconsistent lock state ]
-> >> Mar 25 19:48:46 better kernel: 2.6.25-rc6-lg #4
-> >> Mar 25 19:48:46 better kernel: ---------------------------------
-> >> Mar 25 19:48:46 better kernel: inconsistent {in-softirq-W} -> {softirq-on-W}
-> >> usage.
-> >> Mar 25 19:48:46 better kernel: syslogd/2773 [HC0[0]:SC0[0]:HE1:SE1] takes:
-> >> Mar 25 19:48:46 better kernel:  (&napi->poll_lock){-+..}, at: [<c03db11c>]
-> >> netpoll_poll+0xbc/0x390
-> >> Mar 25 19:48:46 better kernel: {in-softirq-W} state was registered at:
-> >> Mar 25 19:48:46 better kernel:   [<c024171a>] __lock_acquire+0x36a/0x1070
-> >> Mar 25 19:48:46 better kernel:   [<c024153f>] __lock_acquire+0x18f/0x1070
-> >> Mar 25 19:48:46 better kernel:   [<c024247f>] lock_acquire+0x5f/0x80
-> >> Mar 25 19:48:46 better kernel:   [<c03cfafc>] net_rx_action+0xbc/0x1d0
-> >> Mar 25 19:48:46 better kernel:   [<c044a9e4>] _spin_lock+0x34/0x40
-> >> Mar 25 19:48:46 better kernel:   [<c03cfafc>] net_rx_action+0xbc/0x1d0
-> >> Mar 25 19:48:46 better kernel:   [<c03cfafc>] net_rx_action+0xbc/0x1d0
-> >> Mar 25 19:48:46 better kernel:   [<c03cfaa0>] net_rx_action+0x60/0x1d0
-> >> Mar 25 19:48:46 better kernel:   [<c02254f2>] __do_softirq+0x62/0xc0
-> >> Mar 25 19:48:46 better kernel:   [<c0225595>] do_softirq+0x45/0x50
-> >> Mar 25 19:48:46 better kernel:   [<c0225797>] irq_exit+0x77/0x80
-> >> Mar 25 19:48:46 better kernel:   [<c0211a95>]
-> >> smp_apic_timer_interrupt+0x45/0x80
-> >> Mar 25 19:48:46 better kernel:   [<c02058ad>] apic_timer_interrupt+0x29/0x38
-> >> Mar 25 19:48:46 better kernel:   [<c02058b7>] apic_timer_interrupt+0x33/0x38
-> >> Mar 25 19:48:46 better kernel:   [<c022007b>] __set_personality+0x2b/0x240
-> >> Mar 25 19:48:46 better kernel:   [<c0220e51>] release_console_sem+0x191/0x1e0
-> >> Mar 25 19:48:46 better kernel:   [<c05751aa>] init_netconsole+0x1da/0x1f0
-> >> Mar 25 19:48:46 better kernel:   [<c0558700>] kernel_init+0x90/0x270
-> >> Mar 25 19:48:46 better kernel:   [<c0204ecf>] restore_nocheck+0x12/0x15
-> >> Mar 25 19:48:46 better kernel:   [<c0240eec>] trace_hardirqs_on+0x9c/0x110
-> >> Mar 25 19:48:46 better kernel:   [<c0558670>] kernel_init+0x0/0x270
-> >> Mar 25 19:48:46 better kernel:   [<c0558670>] kernel_init+0x0/0x270
-> >> Mar 25 19:48:46 better kernel:   [<c0205a23>] kernel_thread_helper+0x7/0x14
-> >> Mar 25 19:48:46 better kernel:   [<ffffffff>] 0xffffffff
-> >> Mar 25 19:48:46 better kernel: irq event stamp: 174638
-> >> Mar 25 19:48:46 better kernel: hardirqs last  enabled at (174637): [<c0204ecf>]
-> >> restore_nocheck+0x12/0x15
-> >> Mar 25 19:48:46 better kernel: hardirqs last disabled at (174638): [<c044ac65>]
-> >> _spin_lock_irqsave+0x15/0x60
-> >> Mar 25 19:48:46 better kernel: softirqs last  enabled at (174636): [<c0225595>]
-> >> do_softirq+0x45/0x50
-> >> Mar 25 19:48:46 better kernel: softirqs last disabled at (174629): [<c0225595>]
-> >> do_softirq+0x45/0x50
-> >> Mar 25 19:48:46 better kernel: 
-> >> Mar 25 19:48:46 better kernel: other info that might help us debug this:
-> >> Mar 25 19:48:46 better kernel: 3 locks held by syslogd/2773:
-> >> Mar 25 19:48:46 better kernel:  #0:  (&tty->atomic_write_lock){--..}, at:
-> >> [<c036c699>] tty_write_lock+0x19/0x50
-> >> Mar 25 19:48:46 better kernel:  #1:  (target_list_lock){--..}, at: [<c0399c0d>]
-> >> write_msg+0x2d/0xd0
-> >> Mar 25 19:48:46 better kernel:  #2:  (&napi->poll_lock){-+..}, at: [<c03db11c>]
-> >> netpoll_poll+0xbc/0x390
-> >> Mar 25 19:48:46 better kernel: 
-> >> Mar 25 19:48:46 better kernel: stack backtrace:
-> >> Mar 25 19:48:46 better kernel: Pid: 2773, comm: syslogd Not tainted
-> >> 2.6.25-rc6-lg #4
-> >> Mar 25 19:48:46 better kernel:  [<c023ff6f>] print_usage_bug+0x15f/0x170
-> >> Mar 25 19:48:46 better kernel:  [<c0240bd1>] mark_lock+0x401/0x590
-> >> Mar 25 19:48:46 better kernel:  [<c0240d98>] mark_held_locks+0x38/0x70
-> >> Mar 25 19:48:46 better kernel:  [<c0398a43>] sky2_poll+0x7a3/0xad0
-> >> Mar 25 19:48:46 better kernel:  [<c0240eec>] trace_hardirqs_on+0x9c/0x110
-> >> Mar 25 19:48:46 better kernel:  [<c0398a43>] sky2_poll+0x7a3/0xad0
-> >> Mar 25 19:48:46 better kernel:  [<c03db11c>] netpoll_poll+0xbc/0x390
-> >> Mar 25 19:48:46 better kernel:  [<c044adb2>] _spin_trylock+0x42/0x80
-> >> Mar 25 19:48:46 better kernel:  [<c03db0d3>] netpoll_poll+0x73/0x390
-> >> Mar 25 19:48:46 better kernel:  [<c03db51f>] netpoll_send_skb+0x12f/0x1d0
-> >> Mar 25 19:48:46 better kernel:  [<c0399c7c>] write_msg+0x9c/0xd0
-> 
-> 
-> netconsole's write_msg calls netpoll_send_udp (then netpoll_send_skb) always
-> under spin_lock_irqsave(&target_list_lock, flags), and here this lock (and 
-> afterwards napi->poll_lock) is seen taken with irqs enabled. So, IMHO, it
-> looks like some other irq (tracking?) imbalance and not networking bug.
-> 
+Sorry, I should have been clearer.  add_memory_resource() is a function 
+I added; it's effectively add_memory() with the resource-allocating part 
+factored out:
 
-No, it's not an irq_disable() thing, directly.
-
-What lockdep is saying is that sky2_poll() is taking napi->poll_lock for
-writing with softirqs enabled, but net_rx_action() takes the same lock from
-within softirq context.
-
-If sky2_poll() always takes napi->poll_lock under local_irq_disable() then
-that would be a lockdep bug.
+--- a/include/linux/memory_hotplug.h
++++ b/include/linux/memory_hotplug.h
+@@ -171,7 +171,10 @@
+ 
+ #endif /* ! CONFIG_MEMORY_HOTPLUG */
+ 
++struct resource;
++
+ extern int add_memory(int nid, u64 start, u64 size);
++extern int add_memory_resource(int nid, struct resource *res);
+ extern int arch_add_memory(int nid, u64 start, u64 size);
+ extern int remove_memory(u64 start, u64 size);
+ extern int sparse_add_one_section(struct zone *zone, unsigned long start_pfn,
+===================================================================
+--- a/mm/memory_hotplug.c
++++ b/mm/memory_hotplug.c
+@@ -278,14 +278,28 @@
+ 
+ int add_memory(int nid, u64 start, u64 size)
+ {
+-	pg_data_t *pgdat = NULL;
+-	int new_pgdat = 0;
+ 	struct resource *res;
+ 	int ret;
+ 
+ 	res = register_memory_resource(start, size);
+ 	if (!res)
+ 		return -EEXIST;
++
++	ret = add_memory_resource(nid, res);
++
++	if (ret)
++		release_memory_resource(res);
++
++	return ret;
++}
++
++int add_memory_resource(int nid, struct resource *res)
++{
++	pg_data_t *pgdat = NULL;
++	int new_pgdat = 0;
++	int ret;
++	u64 start = res->start;
++	u64 size = res->end - res->start + 1;
+ 
+ 	if (!node_online(nid)) {
+ 		pgdat = hotadd_new_pgdat(nid, start);
+@@ -320,8 +334,6 @@
+ 	/* rollback pgdat allocation and others */
+ 	if (new_pgdat)
+ 		rollback_node_hotadd(nid, pgdat);
+-	if (res)
+-		release_memory_resource(res);
+ 
+ 	return ret;
+ }
 
 
+> You might also note that most of the ppc64 memory hotplug is driven by
+> userspace.  The hypervisor actually contacts a daemon on the guest to
+> tell it where its new memory is.  That daemon does the addition
+> through /sys/devices/system/memory/probe.  
+>   
+
+X86 Xen does it with a combination of hypervisor and userspace.  Mostly 
+it comes down to asking the hypervisor to provide a machine page to put 
+under a guest pseudo-physical page.
+
+    J
