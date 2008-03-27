@@ -1,90 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758264AbYC0J3i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758883AbYC0Ja3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758264AbYC0J3i (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Mar 2008 05:29:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751023AbYC0J3a
+	id S1758883AbYC0Ja3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Mar 2008 05:30:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755274AbYC0JaU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Mar 2008 05:29:30 -0400
-Received: from fk-out-0910.google.com ([209.85.128.189]:12388 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751378AbYC0J33 (ORCPT
+	Thu, 27 Mar 2008 05:30:20 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:53458 "EHLO
+	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751023AbYC0JaT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Mar 2008 05:29:29 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=Dmty2mmxGvKVKu/rT8AekvhiktKAQ+bQON0oF0vSGRXrnWixUqGiEfT4BdsbOsozM6eMvPIjQ8QxIubbzn+mbbC3vdCfbYHFhIJqABm8LTWrUJln9pzfVwlzO0RNz5OGqUJDGMcW87e6QWidI7NgkrCkENaOTftPLDGzmQ7oAdg=
-Message-ID: <74d0deb30803270229h1244c5bfr5ca521dbb87b0583@mail.gmail.com>
-Date: Thu, 27 Mar 2008 10:29:27 +0100
-From: "pHilipp Zabel" <philipp.zabel@gmail.com>
-To: "Russell King" <rmk+lkml@arm.linux.org.uk>
-Subject: Re: [PATCH 1/3] Clocklib: add generic framework for managing clocks.
-Cc: "Haavard Skinnemoen" <haavard.skinnemoen@atmel.com>,
-       Dmitry <dbaryshkov@gmail.com>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, hskinnemoen@atmel.com,
-       domen.puncer@telargo.com, lethal@linux-sh.org, tony@atomide.com,
-       paul@pwsan.com
-In-Reply-To: <20080327091810.GA32396@flint.arm.linux.org.uk>
+	Thu, 27 Mar 2008 05:30:19 -0400
+Date: Thu, 27 Mar 2008 09:41:26 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Ingo Molnar <mingo@elte.hu>, kernel list <linux-kernel@vger.kernel.org>,
+       Greg KH <greg@kroah.com>, "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: iommu breaks usb after resume
+Message-ID: <20080327084126.GB25876@elf.ucw.cz>
+References: <20080320111429.GA14764@elf.ucw.cz> <20080321135418.GB2346@one.firstfloor.org> <20080326102151.GB18965@elf.ucw.cz> <20080326130052.GF2170@one.firstfloor.org> <20080326225407.GA9378@elf.ucw.cz> <20080326230017.GA21017@elte.hu> <20080326230500.GB9378@elf.ucw.cz> <20080327055349.GC29105@one.firstfloor.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20080326154913.GA15326@doriath.ww600.siemens.net>
-	 <20080326155203.GA15405@doriath.ww600.siemens.net>
-	 <20080326170441.795fb928@hskinnemo-gx620.norway.atmel.com>
-	 <bc64b4640803260952s58ad0645ve11766fdfa45e785@mail.gmail.com>
-	 <20080327100623.34d92c84@hskinnemo-gx620.norway.atmel.com>
-	 <20080327091810.GA32396@flint.arm.linux.org.uk>
+In-Reply-To: <20080327055349.GC29105@one.firstfloor.org>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 27, 2008 at 10:18 AM, Russell King
-<rmk+lkml@arm.linux.org.uk> wrote:
-> On Thu, Mar 27, 2008 at 10:06:23AM +0100, Haavard Skinnemoen wrote:
->  > > +   int             users;
->  >
->  > Reference counting, probably need that too.
->  >
->  > > +   unsigned long   rate;
->  >
->  > This one is redundant. Use getrate() instead.
->
->  ... which means a separate getrate() functions for every clock.  Not really
->  practical for PXA.
+Hi!
 
-struct pxa_clk {
-       struct clk generic_clk;
-       int rate;
-       int delay;
-}
+> > (it is GPLed) ...but it is totally untested, and probably same fix
+> > needs to go to all the agp drivers...?
+> 
+> No the other AGP drivers don't have IOMMU functionality.
 
-unsigned long pxa_clk_getrate (struct clk *clk)
-{
-        return container_of(clk, struct pxa_clk, generic_clk)->rate;
-}
+Ok, good.
 
->  > > +   int             delay;
->  >
->  > Huh? A delay after enabling the clock? Why can't the enable() hook do
->  > that if it's really necessary?
->
->  ... which means a separate enable() function for each clock.  The delay
->  there has not a lot to do with the actual register you're frobbing, but
->  the resy of the SoC.  So, again, not really practical for PXA.
+> Also there still need to be Kconfig changes or alternatively 
+> extracting the suspend/resume code to another file that is selected
+> by both AGP and IOMMU.
 
-int pxa_clk_mode(struct clk *clk, bool enabled)
-{
-        if (enabled)
-                udelay(container_of(clk, struct pxa_clk, generic_clk)->delay);
-        generic_clk_mode(clk, enabled);
-}
+Well, it gets weirder. Boot messages are:
 
->  The result for PXA is a tradeoff between reducing the data size and
->  increasing the text size, or increasing the data size and keeping
->  the existing data size.
+Checking aperture...
+Node 0: aperture @ 0 size 32 MB
+No AGP bridge found
+Your BIOS doesn't leave a aperture memory hole
+Please enable the IOMMU option in the BIOS setup
+This costs you 64 MB of RAM
 
-Wouldn't something like the above work without increasing text size too much?
-
-regards
-Philipp
+...who is responsible for mapping aperture back during resume? It
+seems like it is not amd64-agp: it does not find its hardware...?
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+pomozte zachranit klanovicky les:  http://www.ujezdskystrom.info/
