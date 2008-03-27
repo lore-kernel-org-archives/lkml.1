@@ -1,45 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757635AbYC0SGr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755202AbYC0SHd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757635AbYC0SGr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Mar 2008 14:06:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754373AbYC0SGi
+	id S1755202AbYC0SHd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Mar 2008 14:07:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755044AbYC0SHZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Mar 2008 14:06:38 -0400
-Received: from mailrelay001.isp.belgacom.be ([195.238.6.51]:8834 "EHLO
-	mailrelay001.isp.belgacom.be" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754096AbYC0SGh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Mar 2008 14:06:37 -0400
-X-Belgacom-Dynamic: yes
-Date: Thu, 27 Mar 2008 19:06:33 +0100
-From: Wim Van Sebroeck <wim@iguana.be>
-To: Bryan Wu <cooloney@kernel.org>
-Cc: jirislaby@gmail.com, linux-kernel@vger.kernel.org,
-       Mike Frysinger <vapier.adi@gmail.com>
-Subject: Re: [PATCH 1/1] Blackfin Watchdog Driver: split platform device/driver registering from actual watchdog device/driver registering so we can cleanly load/unload (v2)
-Message-ID: <20080327180633.GA15320@infomag.infomag.iguana.be>
-References: <1206644012-10135-1-git-send-email-cooloney@kernel.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 27 Mar 2008 14:07:25 -0400
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:50863 "EHLO smtp4.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754373AbYC0SHZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Mar 2008 14:07:25 -0400
+Date: Thu, 27 Mar 2008 20:07:13 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Greg KH <greg@kroah.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Douglas Thompson <dougthompson@xmission.com>,
+       Tim Small <tim@buttersideup.com>, bluesmoke-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org
+Subject: Re: EDAC_I82443BXGX still depends on BROKEN
+Message-ID: <20080327180713.GC32200@cs181133002.pp.htv.fi>
+References: <20080327173610.GB32200@cs181133002.pp.htv.fi> <20080327175224.GA15887@kroah.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <1206644012-10135-1-git-send-email-cooloney@kernel.org>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <20080327175224.GA15887@kroah.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi All,
-
-> From: Mike Frysinger <vapier.adi@gmail.com>
+On Thu, Mar 27, 2008 at 10:52:24AM -0700, Greg KH wrote:
+> On Thu, Mar 27, 2008 at 07:36:11PM +0200, Adrian Bunk wrote:
+> > It must become very good stuff when it takes Greg more than 8 months to 
+> > brew it...  ;-)
 > 
-> v1-v2:
->  - fixup __initdata with __initconst and __devinitdata with __devinitconst
+> Yeah, it's driver core rework, the kobject stuff was the first step to
+> try to get there...
 > 
-> Signed-off-by: Mike Frysinger <vapier.adi@gmail.com>
-> Signed-off-by: Bryan Wu <cooloney@kernel.org>
+> It's slow going unfortunatly other things more pressing keep popping up
+> ahead of it, it's getting there...
+> 
+> No objection to this patch at all:
+> 	Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
 
-Added this to the linux-2.6-watchdog-mm tree.
+As the subject says, it is already in Linus' tree for more than
+8 months...
 
-Greetings,
-Wim.
+> thanks,
+> 
+> greg k-h
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
