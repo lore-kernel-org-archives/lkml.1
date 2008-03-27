@@ -1,58 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755572AbYCZKL1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758742AbYCZKM6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755572AbYCZKL1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Mar 2008 06:11:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751586AbYCZKLT
+	id S1758742AbYCZKM6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Mar 2008 06:12:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754127AbYCZKMs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Mar 2008 06:11:19 -0400
-Received: from qb-out-0506.google.com ([72.14.204.238]:42161 "EHLO
-	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753449AbYCZKLS (ORCPT
+	Wed, 26 Mar 2008 06:12:48 -0400
+Received: from nwd2mail10.analog.com ([137.71.25.55]:51009 "EHLO
+	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751586AbYCZKMr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Mar 2008 06:11:18 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=pkabZ7a1jZ6IVpfqgXfoadYqvpZIWdoXAUEFT4mI/8byHZ7QJngY7M9WhNe9gKwb9k33JShdRVtHpli3SAhzyW6TzOO/3qZK8aJE2QNK9ZspwG4Gm/HZr4iFe5ZXIQdlxNGfmdSzxB3lq6PfDPxlDcc42cdOJGTmR0KISIn2cHg=
-Message-ID: <e1d5030b0803260311j25831caeyd9fc111a06e572e2@mail.gmail.com>
-Date: Wed, 26 Mar 2008 15:41:16 +0530
-From: "Midhun A" <midhunagni@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: Userspace - Kernel Space "Connector" test
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+	Wed, 26 Mar 2008 06:12:47 -0400
+X-IronPort-AV: E=Sophos;i="4.25,557,1199682000"; 
+   d="scan'208";a="65082082"
+From: Bryan Wu <cooloney@kernel.org>
+To: jeff@garzik.org, netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Sonic Zhang <sonic.zhang@analog.com>, Bryan Wu <cooloney@kernel.org>
+Subject: [PATCH 1/1] [NETDEV] smc91x driver: Fix bug - Print warning only in interrupt mode.
+Date: Wed, 26 Mar 2008 18:12:46 -0700
+Message-Id: <1206580366-22966-1-git-send-email-cooloney@kernel.org>
+X-Mailer: git-send-email 1.5.4.3
+In-Reply-To: <>
+References: <>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi All,
+From: Sonic Zhang <sonic.zhang@analog.com>
 
-   I want to use the Connector module (CONFIG_CONNECTOR) for Kernel
-space to User space communication.  My kernel version is 2.6.22.
-Before using it, I am trying out the example programs in the
-Documentation folder. I have cn_test.c built into the kernel (not
-loaded as a module) and I have compiled ucon.c.
+http://blackfin.uclinux.org/gf/project/uclinux-dist/tracker/?action=TrackerItemEdit&tracker_item_id=3956
 
-When I run ucon, the programs hangs at the point it polls the socket.
+Signed-off-by: Sonic Zhang <sonic.zhang@analog.com>
+Signed-off-by: Bryan Wu <cooloney@kernel.org>
+---
+ drivers/net/smc91x.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
 
-	while (!need_exit) {
-
-		printf("Entered While\n");	
-		pfd.events = POLLIN;
-		printf("1\n");
-		pfd.revents = 0;
-		printf("1.1\n");		
-->	      switch (poll(&pfd, 1, -1)) {
-
-The source code is the same as in the kernel/Documentation/Connector folder.
-
-How do I get to know whether it is listening to the same socket as
-cn_test is sending message on?
-
-Thanks,
-Midhun.
-
-
-P.S.: I am not subscribed to the list. Please CC me.
+diff --git a/drivers/net/smc91x.c b/drivers/net/smc91x.c
+index 4020e9e..63a54e2 100644
+--- a/drivers/net/smc91x.c
++++ b/drivers/net/smc91x.c
+@@ -1326,9 +1326,11 @@ static irqreturn_t smc_interrupt(int irq, void *dev_id)
+ 	SMC_SET_INT_MASK(mask);
+ 	spin_unlock(&lp->lock);
+ 
++#ifndef CONFIG_NET_POLL_CONTROLLER
+ 	if (timeout == MAX_IRQ_LOOPS)
+ 		PRINTK("%s: spurious interrupt (mask = 0x%02x)\n",
+ 		       dev->name, mask);
++#endif
+ 	DBG(3, "%s: Interrupt done (%d loops)\n",
+ 	       dev->name, MAX_IRQ_LOOPS - timeout);
+ 
+-- 
+1.5.4.3
