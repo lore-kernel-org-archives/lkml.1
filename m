@@ -1,74 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760475AbYC0NeK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760060AbYC0NhP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760475AbYC0NeK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Mar 2008 09:34:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762220AbYC0Ndy
+	id S1760060AbYC0NhP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Mar 2008 09:37:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755883AbYC0NhC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Mar 2008 09:33:54 -0400
-Received: from wr-out-0506.google.com ([64.233.184.228]:5525 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762203AbYC0Ndw (ORCPT
+	Thu, 27 Mar 2008 09:37:02 -0400
+Received: from smtp-out03.alice-dsl.net ([88.44.63.5]:53796 "EHLO
+	smtp-out03.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755035AbYC0NhA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Mar 2008 09:33:52 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=GBKJ6k0CDrFxwH1owLEqRwFTsitpkaQaCB2l1vuDk92yGVzRhQ0YW9oaTXxDSJVStZ26KZ11PJRnROxYYICb6OczTcBQBxLC+RCMP1zek0W85GWVE5TzIMLoSudY3FVtrCACkei2Jykb9VJUknW2kx+5iZqH4M1XpQ3k2T4V9Pw=
-Message-ID: <bc64b4640803270633t3b862405sb2708eee25708868@mail.gmail.com>
-Date: Thu, 27 Mar 2008 16:33:51 +0300
-From: Dmitry <dbaryshkov@gmail.com>
-To: "Haavard Skinnemoen" <haavard.skinnemoen@atmel.com>
-Subject: Re: [PATCH 1/3] Clocklib: add generic framework for managing clocks.
-Cc: "Russell King" <rmk+lkml@arm.linux.org.uk>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, hskinnemoen@atmel.com, lethal@linux-sh.org,
-       tony@atomide.com, paul@pwsan.com
-In-Reply-To: <20080327112048.014200cb@hskinnemo-gx620.norway.atmel.com>
+	Thu, 27 Mar 2008 09:37:00 -0400
+To: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Adrian Hunter <ext-adrian.hunter@nokia.com>
+Subject: Re: [RFC PATCH 20/26] UBIFS: add VFS operations
+References: <1206629746-4298-1-git-send-email-Artem.Bityutskiy@nokia.com>
+	<1206629746-4298-21-git-send-email-Artem.Bityutskiy@nokia.com>
+From: Andi Kleen <andi@firstfloor.org>
+Date: 27 Mar 2008 14:36:56 +0100
+In-Reply-To: <1206629746-4298-21-git-send-email-Artem.Bityutskiy@nokia.com>
+Message-ID: <87bq50jnk7.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080326154913.GA15326@doriath.ww600.siemens.net>
-	 <20080326170441.795fb928@hskinnemo-gx620.norway.atmel.com>
-	 <bc64b4640803260952s58ad0645ve11766fdfa45e785@mail.gmail.com>
-	 <20080327100623.34d92c84@hskinnemo-gx620.norway.atmel.com>
-	 <20080327091810.GA32396@flint.arm.linux.org.uk>
-	 <20080327102648.225d6b4f@hskinnemo-gx620.norway.atmel.com>
-	 <20080327093301.GB32396@flint.arm.linux.org.uk>
-	 <20080327105323.28a369fd@hskinnemo-gx620.norway.atmel.com>
-	 <bc64b4640803270308w6dc0723dr29e0ce5f20088d6d@mail.gmail.com>
-	 <20080327112048.014200cb@hskinnemo-gx620.norway.atmel.com>
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 27 Mar 2008 13:30:19.0066 (UTC) FILETIME=[B335F9A0:01C8900E]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Artem Bityutskiy <Artem.Bityutskiy@nokia.com> writes:
 
-2008/3/27, Haavard Skinnemoen <haavard.skinnemoen@atmel.com>:
-> On Thu, 27 Mar 2008 13:08:37 +0300
->
-> Dmitry <dbaryshkov@gmail.com> wrote:
->
->
-> > I like this idea! This would also allow to cleanup the references code, etc.
->
->
-> Great!
->
->
->  > Also after I saw such refactored struct clk, I thought that it looks
->  > nearly like kobject. Maybe we should switch to the kobject-based
->  > structs? What do you think?
->
->
-> I think that would be overkill. We should try to keep this stuff as
->  lightweight as possible, and I'm not sure if we can give the kobject
->  "parent" field the meaning we want it to have...or use the kref thing
->  to do something unrelated to object lifecycle management (i.e. we don't
->  want to destroy the object when the refcount goes to zero, we just want
->  to stop the clock.)
+(haven't read the whole thing) 
 
-ACK. Then I'll repost the updated patchset later.
+> +		inode->i_gid = current->fsgid;
+> +	inode->i_mode = mode;
+> +	inode->i_mtime = inode->i_atime = inode->i_ctime = CURRENT_TIME_SEC;
 
--- 
-With best wishes
-Dmitry
+Any specific reason you didn't implement sub second time stamp support?
+There is really no good excuse to not do that on a new file system.
+
+-Andi
