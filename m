@@ -1,48 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760559AbYC0Qxz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761280AbYC0QyS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760559AbYC0Qxz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Mar 2008 12:53:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757222AbYC0Qxq
+	id S1761280AbYC0QyS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Mar 2008 12:54:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757222AbYC0Qx7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Mar 2008 12:53:46 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:33530 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757063AbYC0Qxp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Mar 2008 12:53:45 -0400
-Date: Thu, 27 Mar 2008 09:53:13 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Linux IDE mailing list <linux-ide@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Understanding libata error messages
-Message-Id: <20080327095313.caf2a949.randy.dunlap@oracle.com>
-In-Reply-To: <47EBCD5C.1040402@garzik.org>
-References: <47EBCD5C.1040402@garzik.org>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Thu, 27 Mar 2008 12:53:59 -0400
+Received: from relay2.sgi.com ([192.48.171.30]:36008 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1760832AbYC0Qx6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Mar 2008 12:53:58 -0400
+Date: Thu, 27 Mar 2008 11:53:58 -0500 (CDT)
+From: Alan Mayer <ajm@sgi.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Alan Mayer <ajm@sgi.com>, torvalds@linux-foundation.org,
+       linux-kernel list <linux-kernel@vger.kernel.org>,
+       Robin Holt <holt@sgi.com>, Jack Steiner <steiner@sgi.com>,
+       Russ Anderson <rja@sgi.com>
+Subject: Re: [PATCH] x86_64: resize NR_IRQS for large machines (re-submit)
+In-Reply-To: <20080327163314.GA24180@elte.hu>
+Message-ID: <Pine.SGI.3.96.1080327115108.7873204e-100000@fergus.americas.sgi.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 27 Mar 2008 12:37:48 -0400 Jeff Garzik wrote:
-
-> I wrote a new wiki page that assists users in understanding the goop 
-> that libata spits out into your dmesg:
+> i think you got it right, yes. But ... this is just a quick first-look 
+> suggestion from me, YMMV. Maybe you find a way to do it much easier to 
+> just convert everything at once. I tend to do things more gradually, in 
+> my experience it's very hard and time-consuming to change the world all 
+> at once - it's hard both to you the developer (you dont know whether it 
+> works until you have a very substantial amount of code written - while 
+> in a more gradual approach it can be converted one by one perhaps) - and 
+> it's hard for users and fellow kernel hackers.
 > 
-> http://ata.wiki.kernel.org/index.php/Libata_error_messages
+> 	Ingo
+> 
 
-Good stuff, thanks.
+I think I'll take a crack at it.  Doing it in phases means I can invest
+a little less time and still give everyone a chance to see if they like
+it.  And, the initial stuff seems like the area where people will be the
+most likely to have problems and/or suggestions.  I have no idea how
+long it will take to get something out there.  Stay tuned.
 
-Should we add this URL somewhere in Documentation/ ?
-Any suggestions where?
+		--ajm
 
----
-~Randy
+
+Lately it occurs to me,
+What a long, strange trip it's been.
+--
+Alan J. Mayer
+SGI
+ajm@sgi.com
+WORK: 651-683-3131
+HOME: 651-407-0134
+--
+
