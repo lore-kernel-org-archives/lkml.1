@@ -1,108 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758617AbYC0JEq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757748AbYC0JGP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758617AbYC0JEq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Mar 2008 05:04:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753063AbYC0JEW
+	id S1757748AbYC0JGP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Mar 2008 05:06:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754390AbYC0JF6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Mar 2008 05:04:22 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:58926 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751824AbYC0JEV (ORCPT
+	Thu, 27 Mar 2008 05:05:58 -0400
+Received: from fg-out-1718.google.com ([72.14.220.157]:62447 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753730AbYC0JF5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Mar 2008 05:04:21 -0400
-Date: Thu, 27 Mar 2008 02:04:03 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-Cc: lkml <linux-kernel@vger.kernel.org>, daniel@hozac.com, lizf@cn.fujitsu.com,
-       Pavel Emelyanov <xemul@openvz.org>, Greg KH <greg@kroah.com>
-Subject: Re: [PATCH 1/1] cgroups: implement device whitelist (v6)
-Message-Id: <20080327020403.5547e43f.akpm@linux-foundation.org>
-In-Reply-To: <20080326180543.GA27709@sergelap.austin.ibm.com>
-References: <20080326180543.GA27709@sergelap.austin.ibm.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 27 Mar 2008 05:05:57 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=message-id:date:from:to:subject:cc:mime-version:content-type;
+        b=jzVJStr4Mvc4UFwTRbHS4uHBhmtoQOGGJ06y0slEVyidi59M/VcandaxkHM6P56c/PfGgWN8Y6OfgLZhic/6jrpT9xnQdA2GkZKbKmVJJ7ja2EAwJLcUY/ZujXwxFzBuL538qCQYt4prk4Nxq9GtzSyit0o3Tl86plFtqcGAhoA=
+Message-ID: <eb3ff54b0803270205n4a15a884kaa45852e510b27c6@mail.gmail.com>
+Date: Thu, 27 Mar 2008 11:05:55 +0200
+From: "Rami Rosen" <ramirose@gmail.com>
+To: "David Miller" <davem@davemloft.net>, netdev@vger.kernel.org
+Subject: [PATCH net-2.6.26] Remove three unused method declarations in include/net/ipv6.h
+Cc: linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: multipart/mixed; 
+	boundary="----=_Part_14242_33134566.1206608755587"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 26 Mar 2008 13:05:43 -0500 "Serge E. Hallyn" <serue@us.ibm.com> wrote:
+------=_Part_14242_33134566.1206608755587
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-> (This is identical to the version I sent on Mar 19 in response to
-> the comments by Daniel Hokka Zakrisson, which are the last
-> comments I've gotten.)
-> 
-> Implement a cgroup to track and enforce open and mknod restrictions on device
-> files.  A device cgroup associates a device access whitelist with each
-> cgroup.  A whitelist entry has 4 fields.  'type' is a (all), c (char), or
-> b (block).  'all' means it applies to all types and all major and minor
-> numbers.  Major and minor are either an integer or * for all.
-> Access is a composition of r (read), w (write), and m (mknod).
-> 
-> The root device cgroup starts with rwm to 'all'.  A child devcg gets
-> a copy of the parent.  Admins can then remove devices from the
-> whitelist or add new entries.  A child cgroup can never receive a
-> device access which is denied its parent.  However when a device
-> access is removed from a parent it will not also be removed from the
-> child(ren).
-> 
-> An entry is added using devices.allow, and removed using
-> devices.deny.  For instance
-> 
-> 	echo 'c 1:3 mr' > /cgroups/1/devices.allow
-> 
-> allows cgroup 1 to read and mknod the device usually known as
-> /dev/null.  Doing
-> 
-> 	echo a > /cgroups/1/devices.deny
-> 
-> will remove the default 'a *:* mrw' entry.
-> 
-> CAP_SYS_ADMIN is needed to change permissions or move another task
-> to a new cgroup.  A cgroup may not be granted more permissions than
-> the cgroup's parent has.  Any task can move itself between cgroups.
-> This won't be sufficient, but we can decide the best way to
-> adequately restrict movement later.
+Hi,
+This patch removes three unused method declarations in include/net/ipv6.h:
+inet_getfrag_t(), ipv6_build_nfrag_opts() and ipv6_build_frag_opts().
 
-The above should be in Documentation/cgroups.txt?
-
-> +static char *print_whitelist(struct dev_cgroup *devcgroup, int *len)
-> +{
-> +	char *buf, *s, acc[4];
-> +	struct dev_whitelist_item *wh;
-> +	int ret;
-> +	int count = 0;
-> +	char maj[10], min[10];
-> +
-> +	buf = kmalloc(4096, GFP_KERNEL);
-> +	if (!buf)
-> +		return ERR_PTR(-ENOMEM);
-> +	s = buf;
-> +	*s = '\0';
-> +	*len = 0;
-> +
-> +	spin_lock(&devcgroup->lock);
-> +	list_for_each_entry(wh, &devcgroup->whitelist, list) {
-> +		set_access(acc, wh->access);
-> +		set_majmin(maj, 10, wh->major);
-> +		set_majmin(min, 10, wh->minor);
-> +		ret = snprintf(s, 4095-(s-buf), "%c %s:%s %s\n",
-> +			type_to_char(wh->type), maj, min, acc);
-> +		if (s+ret >= buf+4095) {
-> +			kfree(buf);
-> +			buf = ERR_PTR(-ENOMEM);
-> +			break;
-> +		}
-> +		s += ret;
-> +		*len += ret;
-> +		count++;
-> +	}
-> +	spin_unlock(&devcgroup->lock);
-> +
-> +	return buf;
-> +}
-
-That's rather ugly-looking.  We can't use seq_file here?
+Regards,
+Rami Rosen
 
 
+Signed-off-by: Rami Rosen <ramirose@gmail.com>
+
+------=_Part_14242_33134566.1206608755587
+Content-Type: text/plain; name=patch.txt
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_feb3g0hc0
+Content-Disposition: attachment; filename=patch.txt
+
+ZGlmZiAtLWdpdCBhL2luY2x1ZGUvbmV0L2lwdjYuaCBiL2luY2x1ZGUvbmV0L2lwdjYuaAppbmRl
+eCAyOTZmNjFkLi41NzM4YzFjIDEwMDY0NAotLS0gYS9pbmNsdWRlL25ldC9pcHY2LmgKKysrIGIv
+aW5jbHVkZS9uZXQvaXB2Ni5oCkBAIC0yNTAsMTUgKzI1MCw2IEBAIGludCBpcDZfZnJhZ19tZW0o
+c3RydWN0IG5ldCAqbmV0KTsKIAogI2RlZmluZSBJUFY2X0ZSQUdfVElNRU9VVAkoNjAqSFopCQkv
+KiA2MCBzZWNvbmRzICovCiAKLS8qCi0gKglGdW5jdGlvbiBwcm90b3R5cGUgZm9yIGJ1aWxkX3ht
+aXQKLSAqLwotCi10eXBlZGVmIGludAkJKCppbmV0X2dldGZyYWdfdCkgKGNvbnN0IHZvaWQgKmRh
+dGEsCi0JCQkJCSAgIHN0cnVjdCBpbjZfYWRkciAqYWRkciwKLQkJCQkJICAgY2hhciAqLAotCQkJ
+CQkgICB1bnNpZ25lZCBpbnQsIHVuc2lnbmVkIGludCk7Ci0KIGV4dGVybiBpbnQgX19pcHY2X2Fk
+ZHJfdHlwZShjb25zdCBzdHJ1Y3QgaW42X2FkZHIgKmFkZHIpOwogc3RhdGljIGlubGluZSBpbnQg
+aXB2Nl9hZGRyX3R5cGUoY29uc3Qgc3RydWN0IGluNl9hZGRyICphZGRyKQogewpAQCAtNTEwLDE0
+ICs1MDEsNiBAQCBleHRlcm4gaW50CQkJaXA2X2xvY2FsX291dChzdHJ1Y3Qgc2tfYnVmZiAqc2ti
+KTsKICAqCUV4dGVuc2lvbiBoZWFkZXIgKG9wdGlvbnMpIHByb2Nlc3NpbmcKICAqLwogCi1leHRl
+cm4gdTggKgkJCWlwdjZfYnVpbGRfbmZyYWdfb3B0cyhzdHJ1Y3Qgc2tfYnVmZiAqc2tiLAotCQkJ
+CQkJICAgICAgdTggKnByZXZfaGRyLAotCQkJCQkJICAgICAgc3RydWN0IGlwdjZfdHhvcHRpb25z
+ICpvcHQsCi0JCQkJCQkgICAgICBzdHJ1Y3QgaW42X2FkZHIgKmRhZGRyLAotCQkJCQkJICAgICAg
+dTMyIGp1bWJvbGVuKTsKLWV4dGVybiB1OCAqCQkJaXB2Nl9idWlsZF9mcmFnX29wdHMoc3RydWN0
+IHNrX2J1ZmYgKnNrYiwKLQkJCQkJCSAgICAgdTggKnByZXZfaGRyLAotCQkJCQkJICAgICBzdHJ1
+Y3QgaXB2Nl90eG9wdGlvbnMgKm9wdCk7CiBleHRlcm4gdm9pZCAJCQlpcHY2X3B1c2hfbmZyYWdf
+b3B0cyhzdHJ1Y3Qgc2tfYnVmZiAqc2tiLAogCQkJCQkJICAgICBzdHJ1Y3QgaXB2Nl90eG9wdGlv
+bnMgKm9wdCwKIAkJCQkJCSAgICAgdTggKnByb3RvLAo=
+------=_Part_14242_33134566.1206608755587--
