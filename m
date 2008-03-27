@@ -1,461 +1,143 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759507AbYC0NNv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762288AbYC0NOi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759507AbYC0NNv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Mar 2008 09:13:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759403AbYC0NIO
+	id S1762288AbYC0NOi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Mar 2008 09:14:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758502AbYC0NIS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Mar 2008 09:08:14 -0400
-Received: from smtp.nokia.com ([192.100.122.230]:64520 "EHLO
-	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758035AbYC0NHk (ORCPT
+	Thu, 27 Mar 2008 09:08:18 -0400
+Received: from smtp.nokia.com ([192.100.105.134]:60952 "EHLO
+	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758170AbYC0NHk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 27 Mar 2008 09:07:40 -0400
 From: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: Adrian Hunter <ext-adrian.hunter@nokia.com>,
-       Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
-Subject: [RFC PATCH 14/26] UBIFS: add TNC shrinker
-Date: Thu, 27 Mar 2008 16:55:34 +0200
-Message-Id: <1206629746-4298-15-git-send-email-Artem.Bityutskiy@nokia.com>
+       "Artem Bityutskiy" <Artem.Bityutskiy@nokia.com>
+Subject: [RFC PATCH] UBIFS - new flash file system
+Date: Thu, 27 Mar 2008 16:55:20 +0200
+Message-Id: <1206629746-4298-1-git-send-email-Artem.Bityutskiy@nokia.com>
 X-Mailer: git-send-email 1.5.4.1
-In-Reply-To: <1206629746-4298-1-git-send-email-Artem.Bityutskiy@nokia.com>
-References: <1206629746-4298-1-git-send-email-Artem.Bityutskiy@nokia.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=unknown-8bit
-Content-Transfer-Encoding: 8bit
-X-OriginalArrivalTime: 27 Mar 2008 13:06:38.0773 (UTC) FILETIME=[64A67650:01C8900B]
+X-OriginalArrivalTime: 27 Mar 2008 13:06:17.0623 (UTC) FILETIME=[580B3A70:01C8900B]
 X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The TNC cache grows with time, because UBIFS caches the indexing nodes
-when the indexing B-tree is looked-up. But if the the file-system is
-large enough, the TNC may consume a lot of memory, in which UBIFS prunes
-it. Namely, it register memory shrinker for these purposes.
+Dear community,
 
-Signed-off-by: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
-Signed-off-by: Adrian Hunter <ext-adrian.hunter@nokia.com>
----
- fs/ubifs/shrinker.c |  410 +++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 410 insertions(+), 0 deletions(-)
+here is a new flash file system developed by Nokia engineers with
+help of the University of Szeged. The new file-system is called
+UBIFS, which stands for UBI file system. UBI is the wear-leveling/
+bad-block handling/volume management layer which is already in
+mainline (see drivers/mtd/ubi).
 
-diff --git a/fs/ubifs/shrinker.c b/fs/ubifs/shrinker.c
-new file mode 100644
-index 0000000..a0ea4b7
---- /dev/null
-+++ b/fs/ubifs/shrinker.c
-@@ -0,0 +1,410 @@
-+/*
-+ * This file is part of UBIFS.
-+ *
-+ * Copyright (C) 2006-2008 Nokia Corporation.
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms of the GNU General Public License version 2 as published by
-+ * the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful, but WITHOUT
-+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-+ * more details.
-+ *
-+ * You should have received a copy of the GNU General Public License along with
-+ * this program; if not, write to the Free Software Foundation, Inc., 51
-+ * Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
-+ *
-+ * Authors: Artem Bityutskiy (Битюцкий Артём)
-+ *          Adrian Hunter
-+ */
-+
-+/*
-+ * This file implements UBIFS shrinker which evicts clean znodes from the TNC
-+ * tree when Linux VM needs more RAM.
-+ *
-+ * We do not implement any LRU lists to find oldest znodes to free because it
-+ * would add additional overhead to the file system fast paths. So the shrinker
-+ * just walks the TNC tree when searching for znodes to free.
-+ *
-+ * If the root of a TNC sub-tree is clean and old enough, then the children are
-+ * also clean and old enough. So the shrinker walks the TNC in level order and
-+ * dumps entire sub-trees.
-+ *
-+ * The age of znodes is just the time-stamp when they were last looked at.
-+ * The current shrinker first tries to evict old znodes, then young ones.
-+ *
-+ * Since the shrinker is global, it has to protect against races with FS
-+ * un-mounts, which is done by the 'ubifs_infos_lock' and 'c->umount_mutex'.
-+ */
-+
-+#include "ubifs.h"
-+
-+/* List of all UBIFS file-system instances */
-+LIST_HEAD(ubifs_infos);
-+
-+/*
-+ * We number each shrinker run and record the number on the ubifs_info structure
-+ * so that we can easily work out which ubifs_info structures have already been
-+ * done by the current run.
-+ */
-+static unsigned int shrinker_run_no;
-+
-+/* Protects 'ubifs_infos' list */
-+DEFINE_SPINLOCK(ubifs_infos_lock);
-+
-+/* Global clean znode counter (for all mounted UBIFS instances) */
-+atomic_long_t ubifs_clean_zn_cnt;
-+
-+/**
-+ * tnc_levelorder_next - next TNC tree element in levelorder traversal.
-+ * @zr: root of the subtree to traverse
-+ * @znode: previous znode
-+ *
-+ * This function implements levelorder TNC traversal. The LNC is ignored.
-+ * Returns the next element or %NULL if @znode is already the last one.
-+ */
-+static struct ubifs_znode *tnc_levelorder_next(struct ubifs_znode *zr,
-+					       struct ubifs_znode *znode)
-+{
-+	int level, iip, level_search = 0;
-+	struct ubifs_znode *zn;
-+
-+	ubifs_assert(zr);
-+
-+	if (unlikely(!znode))
-+		return zr;
-+
-+	if (unlikely(znode == zr)) {
-+		if (znode->level == 0)
-+			return NULL;
-+		return ubifs_tnc_find_child(zr, 0);
-+	}
-+
-+	level = znode->level;
-+
-+	iip = znode->iip;
-+	while (1) {
-+		ubifs_assert(znode->level <= zr->level);
-+
-+		/*
-+		 * First walk up until there is a znode with next branch to
-+		 * look at.
-+		 */
-+		while (znode->parent != zr && iip >= znode->parent->child_cnt) {
-+			znode = znode->parent;
-+			iip = znode->iip;
-+		}
-+
-+		if (unlikely(znode->parent == zr &&
-+			     iip >= znode->parent->child_cnt)) {
-+			/* This level is done, switch to the lower one */
-+			level -= 1;
-+			if (level_search || level < 0)
-+				/*
-+				 * We were already looking for znode at lower
-+				 * level ('level_search'). As we are here
-+				 * again, it just does not exist. Or all levels
-+				 * were finished ('level < 0').
-+				 */
-+				return NULL;
-+
-+			level_search = 1;
-+			iip = -1;
-+			znode = ubifs_tnc_find_child(zr, 0);
-+			ubifs_assert(znode);
-+		}
-+
-+		/* Switch to the next index */
-+		zn = ubifs_tnc_find_child(znode->parent, iip + 1);
-+		if (!zn) {
-+			/* No more children to look at, we have walk up */
-+			iip = znode->parent->child_cnt;
-+			continue;
-+		}
-+
-+		/* Walk back down to the level we came from ('level') */
-+		while (zn->level != level) {
-+			znode = zn;
-+			zn = ubifs_tnc_find_child(zn, 0);
-+			if (!zn) {
-+				/*
-+				 * This path is not too deep so it does not
-+				 * reach 'level'. Try next path.
-+				 */
-+				iip = znode->iip;
-+				break;
-+			}
-+		}
-+
-+		if (zn) {
-+			ubifs_assert(zn->level >= 0);
-+			return zn;
-+		}
-+	}
-+}
-+
-+/**
-+ * shrink_tnc - shrink TNC tree.
-+ * @c: UBIFS file-system description object
-+ * @nr: number of znodes to free
-+ * @age: the age of znodes to free
-+ * @contention: if any contention, this is set to %1
-+ *
-+ * This function traverses TNC tree and frees clean znodes. It does not free
-+ * clean znodes which younger then @age. Returns number of freed znodes.
-+ */
-+static int shrink_tnc(struct ubifs_info *c, int nr, int age, int *contention)
-+{
-+	int total_freed = 0;
-+	struct ubifs_znode *znode, *zprev;
-+	int time = get_seconds();
-+
-+	ubifs_assert(mutex_is_locked(&c->umount_mutex));
-+	ubifs_assert(mutex_is_locked(&c->tnc_mutex));
-+
-+	if (!c->zroot.znode || atomic_long_read(&c->clean_zn_cnt) == 0)
-+		return 0;
-+
-+	/*
-+	 * Traverse the TNC tree in levelorder manner, so that it is possible
-+	 * to destroy large sub-trees. Indeed, if a znode is old, then all its
-+	 * children are older or of the same age.
-+	 *
-+	 * Note, we are holding 'c->tnc_mutex', so we do not have to lock the
-+	 * 'c->space_lock' when _reading_ 'c->clean_zn_cnt', because it is
-+	 * changed only when the 'c->tnc_mutex' is held.
-+	 */
-+	zprev = NULL;
-+	znode = tnc_levelorder_next(c->zroot.znode, NULL);
-+	while (znode && total_freed < nr &&
-+	       atomic_long_read(&c->clean_zn_cnt) > 0) {
-+		int freed;
-+
-+		/*
-+		 * If the znode is clean, but it is in the 'c->cnext' list, this
-+		 * means that this znode has just been written to flash as a
-+		 * part of commit and was marked clean. They will be removed
-+		 * from the list at end commit. We cannot change the list,
-+		 * because it is not protected by any mutex (design decision to
-+		 * make commit really independent and parallel to main I/O). So
-+		 * we just skip these znodes.
-+		 *
-+		 * Note, the 'clean_zn_cnt' counters are not updated until
-+		 * after the commit, so the UBIFS shrinker does not report
-+		 * the znodes which are in the 'c->cnext' list as freeable.
-+		 *
-+		 * Also note, if the root of a sub-tree is not in 'c->cnext',
-+		 * then the whole sub-tree is not in 'c->cnext' as well, so it
-+		 * is safe to dump whole sub-tree.
-+		 */
-+
-+		if (znode->cnext) {
-+			/*
-+			 * Very soon these znodes will be removed from the list
-+			 * and become freeable.
-+			 */
-+			*contention = 1;
-+		} else if (!ubifs_zn_dirty(znode) &&
-+			   abs(time - znode->time) >= age) {
-+			if (znode->parent)
-+				znode->parent->zbranch[znode->iip].znode = NULL;
-+			else
-+				c->zroot.znode = NULL;
-+
-+			freed = ubifs_destroy_tnc_subtree(znode);
-+			atomic_long_sub(freed, &ubifs_clean_zn_cnt);
-+			atomic_long_sub(freed, &c->clean_zn_cnt);
-+			ubifs_assert(atomic_long_read(&c->clean_zn_cnt) >= 0);
-+			total_freed += freed;
-+			znode = zprev;
-+		}
-+
-+		if (unlikely(!c->zroot.znode))
-+			break;
-+
-+		zprev = znode;
-+		znode = tnc_levelorder_next(c->zroot.znode, znode);
-+		cond_resched();
-+	}
-+
-+	return total_freed;
-+}
-+
-+/**
-+ * shrink_tnc_trees - shrink UBIFS TNC trees.
-+ * @nr: number of znodes to free
-+ * @age: the age of znodes to free
-+ * @contention: if any contention, this is set to %1
-+ *
-+ * This function walks the list of mounted UBIFS file-systems and frees clean
-+ * znodes which are older then @age, until at least @nr znodes are freed.
-+ * Returns the number of freed znodes.
-+ */
-+static int shrink_tnc_trees(int nr, int age, int *contention)
-+{
-+	struct ubifs_info *c;
-+	struct list_head *p;
-+	unsigned int run_no;
-+	int freed = 0;
-+
-+	spin_lock(&ubifs_infos_lock);
-+	do
-+		run_no = ++shrinker_run_no;
-+	while (run_no == 0);
-+	/* Iterate over all mounted UBIFS file-systems and try to shrink them */
-+	p = ubifs_infos.next;
-+	while (p != &ubifs_infos) {
-+		c = list_entry(p, struct ubifs_info, infos_list);
-+		/*
-+		 * We move the ones we do to the end of the list, so we stop
-+		 * when we see one we have already done.
-+		 */
-+		if (c->shrinker_run_no == run_no)
-+			break;
-+		if (!mutex_trylock(&c->umount_mutex)) {
-+			/* Some un-mount is in progress, try next FS */
-+			*contention = 1;
-+			p = p->next;
-+			continue;
-+		}
-+		/*
-+		 * We're holding 'c->umount_mutex', so the file-system won't go
-+		 * away.
-+		 */
-+		if (!mutex_trylock(&c->tnc_mutex)) {
-+			mutex_unlock(&c->umount_mutex);
-+			*contention = 1;
-+			p = p->next;
-+			continue;
-+		}
-+		spin_unlock(&ubifs_infos_lock);
-+		/*
-+		 * OK, now we have TNC locked, the file-system cannot go away -
-+		 * it is safe to reap the cache.
-+		 */
-+		c->shrinker_run_no = run_no;
-+		freed += shrink_tnc(c, nr, age, contention);
-+		mutex_unlock(&c->tnc_mutex);
-+		spin_lock(&ubifs_infos_lock);
-+		/* Get the next list element before we move this one */
-+		p = p->next;
-+		/*
-+		 * Move this one to the end of the list to provide some
-+		 * fairness.
-+		 */
-+		list_del(&c->infos_list);
-+		list_add_tail(&c->infos_list, &ubifs_infos);
-+		mutex_unlock(&c->umount_mutex);
-+		if (freed >= nr)
-+			break;
-+	}
-+	spin_unlock(&ubifs_infos_lock);
-+	return freed;
-+}
-+
-+/**
-+ * kick_a_thread - kick a background thread to start commit.
-+ *
-+ * This function kicks a background thread to start background commit. Returns
-+ * %-1 if a thread was kicked or there is another reason to assume the memory
-+ * will soon be freed or become freeable. If there are no dirty znodes, returns
-+ * %0.
-+ */
-+static int kick_a_thread(void)
-+{
-+	int i;
-+	struct ubifs_info *c;
-+
-+	/*
-+	 * Iterate over all mounted UBIFS file-systems and find out if there is
-+	 * already an ongoing commit operation there. If no, then iterate for
-+	 * the second time and initiate background commit.
-+	 */
-+	spin_lock(&ubifs_infos_lock);
-+	for (i = 0; i < 2; i++) {
-+		list_for_each_entry(c, &ubifs_infos, infos_list) {
-+			long dirty_zn_cnt;
-+
-+			if (!mutex_trylock(&c->umount_mutex)) {
-+				/*
-+				 * Some un-mount is in progress, it will
-+				 * certainly free memory, so just return.
-+				 */
-+				spin_unlock(&ubifs_infos_lock);
-+				return -1;
-+			}
-+
-+			dirty_zn_cnt = atomic_long_read(&c->dirty_zn_cnt);
-+
-+			if (!dirty_zn_cnt || c->cmt_state == COMMIT_BROKEN ||
-+			    c->ro_media) {
-+				mutex_unlock(&c->umount_mutex);
-+				continue;
-+			}
-+
-+			if (c->cmt_state != COMMIT_RESTING) {
-+				spin_unlock(&ubifs_infos_lock);
-+				mutex_unlock(&c->umount_mutex);
-+				return -1;
-+			}
-+
-+			if (i == 1) {
-+				list_del(&c->infos_list);
-+				list_add_tail(&c->infos_list, &ubifs_infos);
-+				spin_unlock(&ubifs_infos_lock);
-+
-+				ubifs_request_bg_commit(c);
-+				mutex_unlock(&c->umount_mutex);
-+				return -1;
-+			}
-+			mutex_unlock(&c->umount_mutex);
-+		}
-+	}
-+	spin_unlock(&ubifs_infos_lock);
-+
-+	return 0;
-+}
-+
-+int ubifs_shrinker(int nr, gfp_t gfp_mask)
-+{
-+	int freed, contention = 0;
-+	long clean_zn_cnt = atomic_long_read(&ubifs_clean_zn_cnt);
-+
-+	if (nr == 0)
-+		return clean_zn_cnt;
-+
-+	if (!clean_zn_cnt) {
-+		/*
-+		 * No clean znodes, nothing to reap. All we can do in this case
-+		 * is to kick background threads to start commit, which will
-+		 * probably make clean znodes which, in turn, will be freeable.
-+		 * And we return -1 which means will make VM call us again
-+		 * later.
-+		 */
-+		dbg_tnc("no clean znodes, kick a thread");
-+		return kick_a_thread();
-+	}
-+
-+	freed = shrink_tnc_trees(nr, OLD_ZNODE_AGE, &contention);
-+	if (freed >= nr)
-+		goto out;
-+
-+	dbg_tnc("not enough old znodes, try to free young ones");
-+	freed += shrink_tnc_trees(nr - freed, YOUNG_ZNODE_AGE, &contention);
-+	if (freed >= nr)
-+		goto out;
-+
-+	dbg_tnc("not enough young znodes, free all");
-+	freed += shrink_tnc_trees(nr - freed, 0, &contention);
-+
-+	if (!freed && contention) {
-+		dbg_tnc("freed nothing, but contention");
-+		return -1;
-+	}
-+
-+out:
-+	dbg_tnc("%d znodes were freed, requested %d", freed, nr);
-+	return freed;
-+}
--- 
-1.5.4.1
+The main objective of UBIFS is better performance and scalability
+comparing to JFFS2 which is achieved by
+ a) implementing write-back (JFFS2 is write-through)
+ b) storing and maintaining the indexing file-system information
+    on the media (JFFS2 maintains it in RAM and builds it on each
+    mount, which requires full media scanning).
 
+At the same time, UBIFS implements the nice features JFFS2 has -
+compression and tolerance to unclean re-boots. Although UBIFS
+borrowed basic ideas from JFFS2, it is completely different
+file-system.
+
+UBIFS is stable and very close to be production ready. It was
+tested on OLPC and N810. The development was done on flash simulator
+on a 2-way x86 machine. However, UBIFS needs a good review.
+
+Note, UBIFS works on top of UBI, not on top of bare flash devices.
+It delegates crucial things like garbage-collection and bad
+eraseblock handling to UBI. One important thing to note is MLC
+NAND flashes which tend to have very small eraseblock lifetime -
+just few thousand erase-cycles (some have even about 3000 or less).
+This makes JFFS2 random wear-leveling algorithm to be not good
+enough. In opposite, UBI provides good wear-leveling based on
+saved erase-counters.
+
+There is also mkfs.ubifs user-space utility, so it is possible to
+prepare UBIFS images. Please, see the URLs given at the end of this
+letter.
+
+UBIFS performs quite well - it gives very good write performance
+because of write-back (write tests gave us ~100 times faster
+performance which is clearly because of the caching) while giving
+about the same performance as JFFS2 gives on synchronous operations.
+Obviously, it is extremely difficult to compete with JFFS2 on
+synchronous operations because it maintains the FS index in RAM,
+while UBIFS maintains it on the flash media. However, because of
+many tricks and optimization implemented in UBIFS (wandering
+and multi-headed journal, write-while-committing, search trees,
+etc), it has very good synchronous I/O performance.
+
+UBIFS mount time is considerably faster as well. For example,
+In case of OLPC we observed 10-15 seconds faster boot time
+comparing to JFFS2 (fast mount, no full media check).
+
+UBIFS is quite complex because it is difficult to maintain
+indexing information on the flash media and be fast at the same
+time. Please, refer the UBIFS white paper for information
+about UBIFS design.
+
+UBIFS documentation and FAQ sections:
+http://www.linux-mtd.infradead.org/doc/ubifs.html
+http://www.linux-mtd.infradead.org/faq/ubifs.html
+
+UBIFS white-paper:
+http://www.linux-mtd.infradead.org/doc/ubifs_whitepaper.pdf
+
+Since UBIFS is closely related to UBI, the UBI documentation/FAQ
+is also useful:
+http://www.linux-mtd.infradead.org/doc/ubi.html
+http://www.linux-mtd.infradead.org/faq/ubi.html
+
+Adrian Hunter
+Artem Bityutskiy
+
+The overall diffstat:
+ fs/Kconfig                |    3 +
+ fs/Makefile               |    1 +
+ fs/fs-writeback.c         |    8 +
+ fs/ubifs/Kconfig          |   47 +
+ fs/ubifs/Kconfig.debug    |  159 ++
+ fs/ubifs/Makefile         |    9 +
+ fs/ubifs/budget.c         |  822 +++++++++++
+ fs/ubifs/build.c          | 1351 ++++++++++++++++++
+ fs/ubifs/commit.c         |  708 +++++++++
+ fs/ubifs/compress.c       |  264 ++++
+ fs/ubifs/debug.c          | 1125 +++++++++++++++
+ fs/ubifs/debug.h          |  343 +++++
+ fs/ubifs/dir.c            |  989 +++++++++++++
+ fs/ubifs/file.c           |  790 ++++++++++
+ fs/ubifs/find.c           |  951 +++++++++++++
+ fs/ubifs/gc.c             |  773 ++++++++++
+ fs/ubifs/io.c             |  921 ++++++++++++
+ fs/ubifs/ioctl.c          |  205 +++
+ fs/ubifs/journal.c        | 1230 ++++++++++++++++
+ fs/ubifs/key.h            |  507 +++++++
+ fs/ubifs/log.c            |  769 ++++++++++
+ fs/ubifs/lprops.c         | 1341 +++++++++++++++++
+ fs/ubifs/lpt.c            | 2239 +++++++++++++++++++++++++++++
+ fs/ubifs/lpt_commit.c     | 1628 +++++++++++++++++++++
+ fs/ubifs/master.c         |  415 ++++++
+ fs/ubifs/misc.h           |  267 ++++
+ fs/ubifs/orphan.c         |  952 +++++++++++++
+ fs/ubifs/recovery.c       | 1437 +++++++++++++++++++
+ fs/ubifs/replay.c         | 1006 +++++++++++++
+ fs/ubifs/sb.c             |  581 ++++++++
+ fs/ubifs/scan.c           |  368 +++++
+ fs/ubifs/shrinker.c       |  410 ++++++
+ fs/ubifs/super.c          |  531 +++++++
+ fs/ubifs/tnc.c            | 3483 +++++++++++++++++++++++++++++++++++++++++++++
+ fs/ubifs/tnc_commit.c     | 1088 ++++++++++++++
+ fs/ubifs/ubifs-media.h    |  701 +++++++++
+ fs/ubifs/ubifs.h          | 1519 ++++++++++++++++++++
+ fs/ubifs/xattr.c          |  587 ++++++++
+ include/linux/writeback.h |    1 +
+ 39 files changed, 30529 insertions(+), 0 deletions(-)
+
+Note, the code is quite large because of complexity and because
+of great deal of comments it has. The debugging stuff also
+introduces quite a few lines of code.
