@@ -1,61 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759901AbYC0Mhr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760173AbYC0Mia@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759901AbYC0Mhr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Mar 2008 08:37:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757077AbYC0Mhk
+	id S1760173AbYC0Mia (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Mar 2008 08:38:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759661AbYC0MiK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Mar 2008 08:37:40 -0400
-Received: from smtp-out2.tiscali.nl ([195.241.79.177]:40041 "EHLO
-	smtp-out2.tiscali.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756012AbYC0Mhj (ORCPT
+	Thu, 27 Mar 2008 08:38:10 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:42424 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757088AbYC0MiJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Mar 2008 08:37:39 -0400
-Message-ID: <47EB950B.6030908@tiscali.nl>
-Date: Thu, 27 Mar 2008 13:37:31 +0100
-From: Roel Kluin <12o3l@tiscali.nl>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Thu, 27 Mar 2008 08:38:09 -0400
+From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Cc: Arnaldo Carvalho de Melo <acme@redhat.com>,
+       "=?utf-8?q?Ilpo=20J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
+Subject: [PATCH 3/7] [NET]: uninline dev_alloc_skb, de-bloats a lot
+Date: Thu, 27 Mar 2008 14:38:02 +0200
+Message-Id: <1206621486-5408-4-git-send-email-ilpo.jarvinen@helsinki.fi>
+X-Mailer: git-send-email 1.5.4.2.156.ge3c5
+In-Reply-To: <1206621486-5408-3-git-send-email-ilpo.jarvinen@helsinki.fi>
+References: <1206621486-5408-1-git-send-email-ilpo.jarvinen@helsinki.fi>
+ <1206621486-5408-2-git-send-email-ilpo.jarvinen@helsinki.fi>
+ <1206621486-5408-3-git-send-email-ilpo.jarvinen@helsinki.fi>
 MIME-Version: 1.0
-To: dwalker@mvista.com, nickpiggin@yahoo.com.au
-CC: lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH v2] likeliness accounting cleanup
-References: <47EAB608.6060204@tiscali.nl>
-In-Reply-To: <47EAB608.6060204@tiscali.nl>
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Roel Kluin wrote:
-> Store __builtin_return_address (caller) rather than __func__ in likeliness
-> struct. 'line' and 'type' are combined in 'label'
-> 
-> +/- now denotes whether expectation fails in less than 5% of the tests - rather
-> than whether more unexpected than expected were encountered. The function at
-> the displayed filename & line and the caller are not necessarily the same.
-> A few more Likely Profiling Results changes were made.
-> 
-> struct seq_operations becomes static, unsigned ints true and false (shadowed)
-> are replaced by pos and neg.
-> ---
-> New layout:
-> 
-> Likely Profiling Results
->  --------------------------------------------------------------------
-> [+- ]Type | # True  | # False | Function@Filename:Line
->  unlikely |        0|    32082| fget+0xd0/0x1d0@include/asm/arch/atomic_32.h:235
-> 
-> Compiles and runs here. Thanks for previous comments.
-> 
->  include/linux/compiler.h |   16 ++++++++--------
->  lib/likely_prof.c        |   45 +++++++++++++++++++++++++--------------------
->  2 files changed, 33 insertions(+), 28 deletions(-)
-> 
+Allyesconfig (v2.6.24-mm1):
 
-This should be applied after the -mm patches:
-http://www.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.25-rc5/2.6.25-rc5-mm1/broken-out/profile-likely-unlikely-macros.patch
-http://www.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.25-rc5/2.6.25-rc5-mm1/broken-out/profile-likely-unlikely-macros-fix.patch
+-23668  392 funcs, 104 +, 23772 -, diff: -23668 --- dev_alloc_skb
 
-Also I forgot to add a signoff, so here it is:
+Without many debug CONFIGs (v2.6.25-rc2-mm1):
 
-Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
+-12178  382 funcs, 157 +, 12335 -, diff: -12178 --- dev_alloc_skb
+dev_alloc_skb                 |  +37
+
+Signed-off-by: Ilpo Järvinen <ilpo.jarvinen@helsinki.fi>
+---
+ include/linux/skbuff.h |   17 +----------------
+ net/core/skbuff.c      |   18 ++++++++++++++++++
+ 2 files changed, 19 insertions(+), 16 deletions(-)
+
+diff --git a/include/linux/skbuff.h b/include/linux/skbuff.h
+index 6d6cde7..01a11b0 100644
+--- a/include/linux/skbuff.h
++++ b/include/linux/skbuff.h
+@@ -1272,22 +1272,7 @@ static inline struct sk_buff *__dev_alloc_skb(unsigned int length,
+ 	return skb;
+ }
+ 
+-/**
+- *	dev_alloc_skb - allocate an skbuff for receiving
+- *	@length: length to allocate
+- *
+- *	Allocate a new &sk_buff and assign it a usage count of one. The
+- *	buffer has unspecified headroom built in. Users should allocate
+- *	the headroom they think they need without accounting for the
+- *	built in space. The built in space is used for optimisations.
+- *
+- *	%NULL is returned if there is no free memory. Although this function
+- *	allocates memory it can be called from an interrupt.
+- */
+-static inline struct sk_buff *dev_alloc_skb(unsigned int length)
+-{
+-	return __dev_alloc_skb(length, GFP_ATOMIC);
+-}
++extern struct sk_buff *dev_alloc_skb(unsigned int length);
+ 
+ extern struct sk_buff *__netdev_alloc_skb(struct net_device *dev,
+ 		unsigned int length, gfp_t gfp_mask);
+diff --git a/net/core/skbuff.c b/net/core/skbuff.c
+index cf489b6..0daf5c0 100644
+--- a/net/core/skbuff.c
++++ b/net/core/skbuff.c
+@@ -263,6 +263,24 @@ struct sk_buff *__netdev_alloc_skb(struct net_device *dev,
+ 	return skb;
+ }
+ 
++/**
++ *	dev_alloc_skb - allocate an skbuff for receiving
++ *	@length: length to allocate
++ *
++ *	Allocate a new &sk_buff and assign it a usage count of one. The
++ *	buffer has unspecified headroom built in. Users should allocate
++ *	the headroom they think they need without accounting for the
++ *	built in space. The built in space is used for optimisations.
++ *
++ *	%NULL is returned if there is no free memory. Although this function
++ *	allocates memory it can be called from an interrupt.
++ */
++struct sk_buff *dev_alloc_skb(unsigned int length)
++{
++	return __dev_alloc_skb(length, GFP_ATOMIC);
++}
++EXPORT_SYMBOL(dev_alloc_skb);
++
+ static void skb_drop_list(struct sk_buff **listp)
+ {
+ 	struct sk_buff *list = *listp;
+-- 
+1.5.2.2
+
