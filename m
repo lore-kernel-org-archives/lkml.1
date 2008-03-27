@@ -1,85 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756448AbYC0S2r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758264AbYC0Sa1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756448AbYC0S2r (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Mar 2008 14:28:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750984AbYC0S2i
+	id S1758264AbYC0Sa1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Mar 2008 14:30:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754901AbYC0SaK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Mar 2008 14:28:38 -0400
-Received: from elasmtp-kukur.atl.sa.earthlink.net ([209.86.89.65]:39437 "EHLO
-	elasmtp-kukur.atl.sa.earthlink.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751150AbYC0S2h (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Mar 2008 14:28:37 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=dk20050327; d=earthlink.net;
-  b=O+pJnBsJD9KERsB1+yOyL9HFLOTqOJv0kI1luirVfoAqEaeS7GHT0L4xrdVrTeTX;
-  h=Received:Message-ID:Date:From:Reply-To:User-Agent:MIME-Version:To:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding:X-ELNK-Trace:X-Originating-IP;
-Message-ID: <47EBE751.1090803@earthlink.net>
-Date: Thu, 27 Mar 2008 14:28:33 -0400
-From: Stephen Clark <sclark46@earthlink.net>
-Reply-To: sclark46@earthlink.net
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	Thu, 27 Mar 2008 14:30:10 -0400
+Received: from mail.gmx.net ([213.165.64.20]:47226 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1754096AbYC0SaJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Mar 2008 14:30:09 -0400
+X-Authenticated: #1946754
+X-Provags-ID: V01U2FsdGVkX19m7z4GmnpmX66L0P9lhRhldA62Un5aCeDECEQTSh
+	sohO9i09AIg4hS
+Message-ID: <47EBE7AE.5020402@gmx.de>
+Date: Thu, 27 Mar 2008 19:30:06 +0100
+From: Markus Rehbach <markus.rehbach@gmx.de>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
 MIME-Version: 1.0
-To: Wim Van Sebroeck <wim@iguana.be>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: iTCO watchdog timer
-References: <47CDAC9D.6020505@seclark.us> <20080304135548.b7b88ee4.akpm@linux-foundation.org> <20080306212820.GA2866@infomag.infomag.iguana.be>
-In-Reply-To: <20080306212820.GA2866@infomag.infomag.iguana.be>
+To: Thomas Gleixner <tglx@linutronix.de>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Christian Kujau <lists@nerdbynature.de>,
+       LKML <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: 2.6.25-rc6: BUG: unable to handle kernel NULL pointer dereference
+References: <alpine.DEB.1.00.0803252358340.22105@sheep.housecafe.de> <20080325233357.17d6ac41.akpm@linux-foundation.org> <alpine.LFD.1.00.0803271615470.3781@apollo.tec.linutronix.de>
+In-Reply-To: <alpine.LFD.1.00.0803271615470.3781@apollo.tec.linutronix.de>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-ELNK-Trace: a437fbc6971e80f61aa676d7e74259b7b3291a7d08dfec79efd0c272ce40aac2c02594fa4023b4bb350badd9bab72f9c350badd9bab72f9c350badd9bab72f9c
-X-Originating-IP: 24.144.77.185
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Wim Van Sebroeck wrote:
-> Hi All,
-> 
-> Sorry but it's quite busy at the moment...
-> 
->>> I have new Intel DG33FB mainboard.
->>>
->>>
->>> Mar  2 20:47:19 joker1 kernel: iTCO_vendor_support: vendor-support=0
->>> Mar  2 20:47:19 joker1 kernel: iTCO_wdt: Intel TCO WatchDog Timer Driver 
->>> v1.02 (26-Jul-2007)
->>> Mar  2 20:47:19 joker1 kernel: iTCO_wdt: Found a ICH9DH TCO device 
->>> (Version=2, TCOBASE=0x0460)
->>> Mar  2 20:47:19 joker1 kernel: iTCO_wdt: initialized. heartbeat=30 sec 
->>> (nowayout=0)
->>> ...
->>> Mar  4 14:22:59 joker1 kernel: iTCO_wdt: Unexpected close, not stopping 
->>> watchdog!
->>>
->>>
->>> I start watchdog.c and then kill it expecting the system to reboot - but 
->>> it doesn't.
->>>
->>> Isn't this how it is supposed to work?
-> 
-> This is indeed how it should work. It's indeed strange that the system doesn't
-> reboot. If I find some time I will give you some test code to run.
-> 
-> Greetings,
-> Wim.
-> 
-> 
+Thomas Gleixner schrieb:
+ > On Tue, 25 Mar 2008, Andrew Morton wrote:
 
-Hi Wim,
+ >> http://lkml.org/lkml/2008/3/21/202 and it's already in the regresison list.
+ >
+ > Same here. And both are AMD X2 early stepping machines.
 
-Just wondered if you had any more thoughts or if you have any test you 
-would like me to run.
+ > A dropped workaround for the prefetch bug in early X2s and
+ > Opterons. Patch below.
 
-Regards,
-Steve
+The patch cures it. Tested with rc5-git5, and it was 100%
+reproducible here.
 
--- 
-
-"They that give up essential liberty to obtain temporary safety,
-deserve neither liberty nor safety."  (Ben Franklin)
-
-"The course of history shows that as a government grows, liberty
-decreases."  (Thomas Jefferson)
-
-
+Markus
