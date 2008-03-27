@@ -1,45 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760098AbYC0Qta@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760559AbYC0Qxz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760098AbYC0Qta (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Mar 2008 12:49:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756655AbYC0QtW
+	id S1760559AbYC0Qxz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Mar 2008 12:53:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757222AbYC0Qxq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Mar 2008 12:49:22 -0400
-Received: from py-out-1112.google.com ([64.233.166.182]:25047 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756590AbYC0QtV (ORCPT
+	Thu, 27 Mar 2008 12:53:46 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:33530 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757063AbYC0Qxp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Mar 2008 12:49:21 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=I2+nTZTa3VyV2mCHF2OyQXuV0lJ7ev/cKSy2sukOy8I2JYC4ipa/EREacYFrGXa8vhGt5/kgQhQN9IjQuzmijt9mrjtAbWvD8PRgShEqrFO24aNZgQjpnWyz/WmlttsIGMsJeI0OpiMjPKthSTkZEYV0AMO+eqnyacdynbmqhe4=
-Message-ID: <2f11576a0803270949g5931445fp8410c898c3685437@mail.gmail.com>
-Date: Fri, 28 Mar 2008 01:49:20 +0900
-From: "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>
-To: "Mel Gorman" <mel@csn.ul.ie>
-Subject: Re: [PATCH] Uninline zonelist iterator helper functions
-Cc: akpm@linux-foundation.org, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, lee.schermerhorn@hp.com,
-       kosaki.motohiro@gmail.com
-In-Reply-To: <20080327155144.GA7120@csn.ul.ie>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 27 Mar 2008 12:53:45 -0400
+Date: Thu, 27 Mar 2008 09:53:13 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Linux IDE mailing list <linux-ide@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Understanding libata error messages
+Message-Id: <20080327095313.caf2a949.randy.dunlap@oracle.com>
+In-Reply-To: <47EBCD5C.1040402@garzik.org>
+References: <47EBCD5C.1040402@garzik.org>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080327155144.GA7120@csn.ul.ie>
-X-Google-Sender-Auth: 3b8823cefd01a12e
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
+On Thu, 27 Mar 2008 12:37:48 -0400 Jeff Garzik wrote:
 
-On Fri, Mar 28, 2008 at 12:51 AM, Mel Gorman <mel@csn.ul.ie> wrote:
-> for_each_zone_zonelist_nodemask() uses large inlined helpers. The number of
->  callsites using it means that the size of the text section is increased.
->  This patch uninlines the helpers to reduce the amount of text bloat.
->
->  Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+> I wrote a new wiki page that assists users in understanding the goop 
+> that libata spits out into your dmesg:
+> 
+> http://ata.wiki.kernel.org/index.php/Libata_error_messages
 
-I found no bug :)
+Good stuff, thanks.
+
+Should we add this URL somewhere in Documentation/ ?
+Any suggestions where?
+
+---
+~Randy
