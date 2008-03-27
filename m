@@ -1,50 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761981AbYC0V5a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761606AbYC0WAf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761981AbYC0V5a (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Mar 2008 17:57:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758314AbYC0V5T
+	id S1761606AbYC0WAf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Mar 2008 18:00:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758490AbYC0WA1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Mar 2008 17:57:19 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:47447 "EHLO ogre.sisk.pl"
+	Thu, 27 Mar 2008 18:00:27 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:47474 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756482AbYC0V5T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Mar 2008 17:57:19 -0400
+	id S1758342AbYC0WA1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Mar 2008 18:00:27 -0400
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Jarek Poplawski <jarkao2@gmail.com>
-Subject: Re: [Bugme-new] [Bug 10326] New: inconsistent lock state in net_rx_action
-Date: Thu, 27 Mar 2008 22:56:49 +0100
+To: Mark Lord <lkml@rtr.ca>
+Subject: Re: 2.6.25-rc7:  Ugh.
+Date: Thu, 27 Mar 2008 23:00:23 +0100
 User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Andrew Morton <akpm@linux-foundation.org>, netdev@vger.kernel.org,
-       bugme-daemon@bugzilla.kernel.org, marcus@better.se,
-       Stephen Hemminger <shemminger@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
-References: <bug-10326-10286@http.bugzilla.kernel.org/> <1206621014.8514.563.camel@twins> <20080327124928.GE2845@ami.dom.local>
-In-Reply-To: <20080327124928.GE2845@ami.dom.local>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>, Greg KH <gregkh@suse.de>,
+       Pavel Machek <pavel@suse.cz>, Andrew Morton <akpm@linux-foundation.org>
+References: <47EBBD57.30902@rtr.ca>
+In-Reply-To: <47EBBD57.30902@rtr.ca>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200803272256.50454.rjw@sisk.pl>
+Message-Id: <200803272300.24462.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, 27 of March 2008, Jarek Poplawski wrote:
-> On Thu, Mar 27, 2008 at 01:30:14PM +0100, Peter Zijlstra wrote:
-> ...
-> > My guess is that it is a race between polling the device and irq pushing
-> > the packet. That is, normally the IRQ handler wins and netpoll doesn't
-> > have anything to do and it doesn't traverse this code path.
-> > 
-> > (although I must admit to being a little out of my depth here)
+On Thursday, 27 of March 2008, Mark Lord wrote:
+> It is with great reluctance when I attempt moving my main "desktop"
+> over to a new kernel version -- because the USB subsystem seems to
+> break every single time.
 > 
-> Probably you're right but there were really a lot of testing and
-> stressing netconsole for misterious lockups for quite a long time
-> with this new napi, so it's hard to believe this was hidden so
-> well...
+> So today I tried 2.6.25-rc7 on it for the first time.
+> Not good.
+> 
+> It boots, but just a simple suspend/resume (RAM) was enough to kill it.
+> It comes back on resume, with an X desktop again,
+> but with no USB functionality -- no mouse.
 
-I assume there will be a patch posted for this issue.  Correct?
+Mark, could you try to boot with "acpi_new_pts_ordering" and retest?
 
+Perhaps the problem is caused by the suspend ordering being wrong.
+
+Thanks,
 Rafael
