@@ -1,318 +1,269 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759902AbYC0MZH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760064AbYC0MZc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759902AbYC0MZH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Mar 2008 08:25:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757400AbYC0MYO
+	id S1760064AbYC0MZc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Mar 2008 08:25:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757257AbYC0MYR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Mar 2008 08:24:14 -0400
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:33807 "EHLO
+	Thu, 27 Mar 2008 08:24:17 -0400
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:33811 "EHLO
 	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756425AbYC0MYI (ORCPT
+	with ESMTP id S1756799AbYC0MYK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Mar 2008 08:24:08 -0400
-Message-Id: <20080327122352.281788609@szeredi.hu>
+	Thu, 27 Mar 2008 08:24:10 -0400
+Message-Id: <20080327122356.534023352@szeredi.hu>
 References: <20080327120619.031944658@szeredi.hu>
 User-Agent: quilt/0.45-1
-Date: Thu, 27 Mar 2008 13:06:20 +0100
+Date: Thu, 27 Mar 2008 13:06:23 +0100
 From: Miklos Szeredi <miklos@szeredi.hu>
 To: viro@zeniv.linux.org.uk
 Cc: akpm@linux-foundation.org, linuxram@us.ibm.com,
        linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [patch 1/7] vfs: mountinfo: add dentry_path()
-Content-Disposition: inline; filename=mountinfo_dentry_path.patch
+Subject: [patch 4/7] vfs: mountinfo: add mount peer group ID
+Content-Disposition: inline; filename=mountinfo_mnt_group_id.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Ram Pai <linuxram@us.ibm.com>
+From: Miklos Szeredi <mszeredi@suse.cz>
 
-[mszeredi@suse.cz] split big patch into managable chunks
+Add a unique ID to each peer group using the IDR infrastructure.  The
+identifiers are reused after the peer group dissolves.
 
-Add the following functions:
+The IDR structures are protected by holding namepspace_sem for write
+while allocating or deallocating ID's.
 
-  dentry_path()
-  seq_dentry()
+ID's are allocated when a previously unshared vfsmount becomes the
+first member of a peer group.  When a new member is added to an
+existing group, the ID is copied from one of the old members.
 
-These are similar to d_path() and seq_path().  But instead of
-calculating the path within a mount namespace, they calculate the path
-from the root of the filesystem to a given dentry, ignoring mounts
-completely.
+ID's are freed when the last member of a peer group is unshared.
 
-Signed-off-by: Ram Pai <linuxram@us.ibm.com>
+Setting the MNT_SHARED flag on members of a subtree is done as a
+separate step, after all the ID's have been allocated.  This way an
+allocation failure can be cleaned up easilty, without affecting the
+propagation state.
+
+Based on design sketch by Al Viro.
+
 Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
 ---
- fs/dcache.c              |   88 ++++++++++++++++++++++++++++++++++-------------
- fs/seq_file.c            |   65 ++++++++++++++++++++++++++--------
- include/linux/dcache.h   |    1 
- include/linux/seq_file.h |    2 +
- 4 files changed, 117 insertions(+), 39 deletions(-)
+ fs/namespace.c        |   93 ++++++++++++++++++++++++++++++++++++++++++++++++--
+ fs/pnode.c            |    5 ++
+ fs/pnode.h            |    1 
+ include/linux/mount.h |    1 
+ 4 files changed, 96 insertions(+), 4 deletions(-)
 
-Index: vfs-2.6/fs/dcache.c
+Index: vfs-2.6/fs/namespace.c
 ===================================================================
---- vfs-2.6.orig/fs/dcache.c	2008-03-27 12:05:55.000000000 +0100
-+++ vfs-2.6/fs/dcache.c	2008-03-27 12:06:04.000000000 +0100
-@@ -1746,6 +1746,17 @@ shouldnt_be_hashed:
- 	goto shouldnt_be_hashed;
+--- vfs-2.6.orig/fs/namespace.c	2008-03-27 12:06:08.000000000 +0100
++++ vfs-2.6/fs/namespace.c	2008-03-27 12:06:10.000000000 +0100
+@@ -41,6 +41,7 @@ __cacheline_aligned_in_smp DEFINE_SPINLO
+ 
+ static int event;
+ static DEFINE_IDA(mnt_id_ida);
++static DEFINE_IDA(mnt_group_ida);
+ 
+ static struct list_head *mount_hashtable __read_mostly;
+ static struct kmem_cache *mnt_cache __read_mostly;
+@@ -68,6 +69,28 @@ static int mnt_alloc_id(struct vfsmount 
+ 	return ida_get_new_above(&mnt_id_ida, 1, &mnt->mnt_id);
  }
  
-+static int prepend(char **buffer, int *buflen, const char *str,
-+			  int namelen)
-+{
-+	*buflen -= namelen;
-+	if (*buflen < 0)
-+		return -ENAMETOOLONG;
-+	*buffer -= namelen;
-+	memcpy(*buffer, str, namelen);
-+	return 0;
-+}
-+
- /**
-  * d_path - return the path of a dentry
-  * @dentry: dentry to report
-@@ -1767,17 +1778,11 @@ static char *__d_path(struct dentry *den
- {
- 	char * end = buffer+buflen;
- 	char * retval;
--	int namelen;
- 
--	*--end = '\0';
--	buflen--;
--	if (!IS_ROOT(dentry) && d_unhashed(dentry)) {
--		buflen -= 10;
--		end -= 10;
--		if (buflen < 0)
-+	prepend(&end, &buflen, "\0", 1);
-+	if (!IS_ROOT(dentry) && d_unhashed(dentry) &&
-+		(prepend(&end, &buflen, " (deleted)", 10) != 0))
- 			goto Elong;
--		memcpy(end, " (deleted)", 10);
--	}
- 
- 	if (buflen < 1)
- 		goto Elong;
-@@ -1804,13 +1809,10 @@ static char *__d_path(struct dentry *den
- 		}
- 		parent = dentry->d_parent;
- 		prefetch(parent);
--		namelen = dentry->d_name.len;
--		buflen -= namelen + 1;
--		if (buflen < 0)
-+		if ((prepend(&end, &buflen, dentry->d_name.name,
-+				dentry->d_name.len) != 0) ||
-+		    (prepend(&end, &buflen, "/", 1) != 0))
- 			goto Elong;
--		end -= namelen;
--		memcpy(end, dentry->d_name.name, namelen);
--		*--end = '/';
- 		retval = end;
- 		dentry = parent;
- 	}
-@@ -1818,12 +1820,10 @@ static char *__d_path(struct dentry *den
- 	return retval;
- 
- global_root:
--	namelen = dentry->d_name.len;
--	buflen -= namelen;
--	if (buflen < 0)
-+	retval += 1;	/* hit the slash */
-+	if (prepend(&retval, &buflen, dentry->d_name.name,
-+		    dentry->d_name.len) != 0)
- 		goto Elong;
--	retval -= namelen-1;	/* hit the slash */
--	memcpy(retval, dentry->d_name.name, namelen);
- 	return retval;
- Elong:
- 	return ERR_PTR(-ENAMETOOLONG);
-@@ -1859,7 +1859,7 @@ char *d_path(struct path *path, char *bu
- 
- 	read_lock(&current->fs->lock);
- 	root = current->fs->root;
--	path_get(&current->fs->root);
-+	path_get(&root);
- 	read_unlock(&current->fs->lock);
- 	spin_lock(&dcache_lock);
- 	res = __d_path(path->dentry, path->mnt, &root, buf, buflen);
-@@ -1890,6 +1890,48 @@ char *dynamic_dname(struct dentry *dentr
- }
- 
- /*
-+ * Write full pathname from the root of the filesystem into the buffer.
++/*
++ * Allocate a new peer group ID
++ *
++ * mnt_group_ida is protected by namespace_sem
 + */
-+char *dentry_path(struct dentry *dentry, char *buf, int buflen)
++static int mnt_alloc_group_id(struct vfsmount *mnt)
 +{
-+	char *end = buf + buflen;
-+	char *retval;
++	if (!ida_pre_get(&mnt_group_ida, GFP_KERNEL))
++		return -ENOMEM;
 +
-+	spin_lock(&dcache_lock);
-+	prepend(&end, &buflen, "\0", 1);
-+	if (!IS_ROOT(dentry) && d_unhashed(dentry) &&
-+		(prepend(&end, &buflen, "//deleted", 9) != 0))
-+			goto Elong;
-+	if (buflen < 1)
-+		goto Elong;
-+	/* Get '/' right */
-+	retval = end-1;
-+	*retval = '/';
-+
-+	for (;;) {
-+		struct dentry *parent;
-+		if (IS_ROOT(dentry))
-+			break;
-+
-+		parent = dentry->d_parent;
-+		prefetch(parent);
-+
-+		if ((prepend(&end, &buflen, dentry->d_name.name,
-+				dentry->d_name.len) != 0) ||
-+		    (prepend(&end, &buflen, "/", 1) != 0))
-+			goto Elong;
-+
-+		retval = end;
-+		dentry = parent;
-+	}
-+	spin_unlock(&dcache_lock);
-+	return retval;
-+Elong:
-+	spin_unlock(&dcache_lock);
-+	return ERR_PTR(-ENAMETOOLONG);
++	return ida_get_new_above(&mnt_group_ida, 1, &mnt->mnt_group_id);
 +}
 +
 +/*
-  * NOTE! The user-level library version returns a
-  * character pointer. The kernel system call just
-  * returns the length of the buffer filled (which
-@@ -1918,9 +1960,9 @@ asmlinkage long sys_getcwd(char __user *
- 
- 	read_lock(&current->fs->lock);
- 	pwd = current->fs->pwd;
--	path_get(&current->fs->pwd);
-+	path_get(&pwd);
- 	root = current->fs->root;
--	path_get(&current->fs->root);
-+	path_get(&root);
- 	read_unlock(&current->fs->lock);
- 
- 	error = -ENOENT;
-Index: vfs-2.6/fs/seq_file.c
-===================================================================
---- vfs-2.6.orig/fs/seq_file.c	2008-03-27 12:05:55.000000000 +0100
-+++ vfs-2.6/fs/seq_file.c	2008-03-27 12:06:04.000000000 +0100
-@@ -342,28 +342,40 @@ int seq_printf(struct seq_file *m, const
- }
- EXPORT_SYMBOL(seq_printf);
- 
-+static char *mangle_path(char *s, char *p, char *esc)
++ * Release a peer group ID
++ */
++void mnt_release_group_id(struct vfsmount *mnt)
 +{
-+	while (s <= p) {
-+		char c = *p++;
-+		if (!c) {
-+			return s;
-+		} else if (!strchr(esc, c)) {
-+			*s++ = c;
-+		} else if (s + 4 > p) {
-+			break;
-+		} else {
-+			*s++ = '\\';
-+			*s++ = '0' + ((c & 0300) >> 6);
-+			*s++ = '0' + ((c & 070) >> 3);
-+			*s++ = '0' + (c & 07);
++	ida_remove(&mnt_group_ida, mnt->mnt_group_id);
++	mnt->mnt_group_id = 0;
++}
++
+ struct vfsmount *alloc_vfsmnt(const char *name)
+ {
+ 	struct vfsmount *mnt = kmem_cache_zalloc(mnt_cache, GFP_KERNEL);
+@@ -517,6 +540,17 @@ static struct vfsmount *clone_mnt(struct
+ 	struct vfsmount *mnt = alloc_vfsmnt(old->mnt_devname);
+ 
+ 	if (mnt) {
++		if (flag & (CL_SLAVE | CL_PRIVATE))
++			mnt->mnt_group_id = 0; /* not a peer of original */
++		else
++			mnt->mnt_group_id = old->mnt_group_id;
++
++		if ((flag & CL_MAKE_SHARED) && !mnt->mnt_group_id) {
++			int err = mnt_alloc_group_id(mnt);
++			if (err)
++				goto out_free;
 +		}
-+	}
-+	return NULL;
-+}
 +
-+/*
-+ * return the absolute path of 'dentry' residing in mount 'mnt'.
-+ */
- int seq_path(struct seq_file *m, struct path *path, char *esc)
- {
- 	if (m->count < m->size) {
- 		char *s = m->buf + m->count;
- 		char *p = d_path(path, s, m->size - m->count);
- 		if (!IS_ERR(p)) {
--			while (s <= p) {
--				char c = *p++;
--				if (!c) {
--					p = m->buf + m->count;
--					m->count = s - m->buf;
--					return s - p;
--				} else if (!strchr(esc, c)) {
--					*s++ = c;
--				} else if (s + 4 > p) {
--					break;
--				} else {
--					*s++ = '\\';
--					*s++ = '0' + ((c & 0300) >> 6);
--					*s++ = '0' + ((c & 070) >> 3);
--					*s++ = '0' + (c & 07);
--				}
-+			s = mangle_path(s, p, esc);
-+			if (s) {
-+				p = m->buf + m->count;
-+				m->count = s - m->buf;
-+				return s - p;
- 			}
+ 		mnt->mnt_flags = old->mnt_flags;
+ 		atomic_inc(&sb->s_active);
+ 		mnt->mnt_sb = sb;
+@@ -546,6 +580,10 @@ static struct vfsmount *clone_mnt(struct
  		}
  	}
-@@ -372,6 +384,27 @@ int seq_path(struct seq_file *m, struct 
+ 	return mnt;
++
++ out_free:
++	free_vfsmnt(mnt);
++	return NULL;
  }
- EXPORT_SYMBOL(seq_path);
  
-+/*
-+ * returns the path of the 'dentry' from the root of its filesystem.
-+ */
-+int seq_dentry(struct seq_file *m, struct dentry *dentry, char *esc)
+ static inline void __mntput(struct vfsmount *mnt)
+@@ -1128,6 +1166,33 @@ void drop_collected_mounts(struct vfsmou
+ 	release_mounts(&umount_list);
+ }
+ 
++static void cleanup_group_ids(struct vfsmount *mnt, struct vfsmount *end)
 +{
-+	if (m->count < m->size) {
-+		char *s = m->buf + m->count;
-+		char *p = dentry_path(dentry, s, m->size - m->count);
-+		if (!IS_ERR(p)) {
-+			s = mangle_path(s, p, esc);
-+			if (s) {
-+				p = m->buf + m->count;
-+				m->count = s - m->buf;
-+				return s - p;
++	struct vfsmount *p;
++
++	for (p = mnt; p != end; p = next_mnt(p, mnt)) {
++		if (p->mnt_group_id && !IS_MNT_SHARED(p))
++			mnt_release_group_id(p);
++	}
++}
++
++static int invent_group_ids(struct vfsmount *mnt, bool recurse)
++{
++	struct vfsmount *p;
++
++	for (p = mnt; p; p = recurse ? next_mnt(p, mnt) : NULL) {
++		if (!p->mnt_group_id && !IS_MNT_SHARED(p)) {
++			int err = mnt_alloc_group_id(p);
++			if (err) {
++				cleanup_group_ids(mnt, p);
++				return err;
 +			}
 +		}
 +	}
-+	m->count = m->size;
-+	return -1;
++
++	return 0;
 +}
 +
- static void *single_start(struct seq_file *p, loff_t *pos)
- {
- 	return NULL + (*pos == 0);
-Index: vfs-2.6/include/linux/dcache.h
+ /*
+  *  @source_mnt : mount tree to be attached
+  *  @nd         : place the mount tree @source_mnt is attached
+@@ -1198,9 +1263,16 @@ static int attach_recursive_mnt(struct v
+ 	struct vfsmount *dest_mnt = path->mnt;
+ 	struct dentry *dest_dentry = path->dentry;
+ 	struct vfsmount *child, *p;
++	int err;
+ 
+-	if (propagate_mnt(dest_mnt, dest_dentry, source_mnt, &tree_list))
+-		return -EINVAL;
++	if (IS_MNT_SHARED(dest_mnt)) {
++		err = invent_group_ids(source_mnt, true);
++		if (err)
++			goto out;
++	}
++	err = propagate_mnt(dest_mnt, dest_dentry, source_mnt, &tree_list);
++	if (err)
++		goto out_cleanup_ids;
+ 
+ 	if (IS_MNT_SHARED(dest_mnt)) {
+ 		for (p = source_mnt; p; p = next_mnt(p, source_mnt))
+@@ -1223,6 +1295,12 @@ static int attach_recursive_mnt(struct v
+ 	}
+ 	spin_unlock(&vfsmount_lock);
+ 	return 0;
++
++ out_cleanup_ids:
++	if (IS_MNT_SHARED(dest_mnt))
++		cleanup_group_ids(source_mnt, NULL);
++ out:
++	return err;
+ }
+ 
+ static int graft_tree(struct vfsmount *mnt, struct path *path)
+@@ -1263,6 +1341,7 @@ static noinline int do_change_type(struc
+ 	struct vfsmount *m, *mnt = nd->path.mnt;
+ 	int recurse = flag & MS_REC;
+ 	int type = flag & ~MS_REC;
++	int err = 0;
+ 
+ 	if (!capable(CAP_SYS_ADMIN))
+ 		return -EPERM;
+@@ -1271,12 +1350,20 @@ static noinline int do_change_type(struc
+ 		return -EINVAL;
+ 
+ 	down_write(&namespace_sem);
++	if (type == MS_SHARED) {
++		err = invent_group_ids(mnt, recurse);
++		if (err)
++			goto out_unlock;
++	}
++
+ 	spin_lock(&vfsmount_lock);
+ 	for (m = mnt; m; m = (recurse ? next_mnt(m, mnt) : NULL))
+ 		change_mnt_propagation(m, type);
+ 	spin_unlock(&vfsmount_lock);
++
++ out_unlock:
+ 	up_write(&namespace_sem);
+-	return 0;
++	return err;
+ }
+ 
+ /*
+Index: vfs-2.6/fs/pnode.c
 ===================================================================
---- vfs-2.6.orig/include/linux/dcache.h	2008-03-27 12:05:55.000000000 +0100
-+++ vfs-2.6/include/linux/dcache.h	2008-03-27 12:06:04.000000000 +0100
-@@ -302,6 +302,7 @@ extern int d_validate(struct dentry *, s
- extern char *dynamic_dname(struct dentry *, char *, int, const char *, ...);
+--- vfs-2.6.orig/fs/pnode.c	2008-03-27 12:05:55.000000000 +0100
++++ vfs-2.6/fs/pnode.c	2008-03-27 12:06:10.000000000 +0100
+@@ -46,7 +46,11 @@ static int do_make_slave(struct vfsmount
+ 		if (peer_mnt == mnt)
+ 			peer_mnt = NULL;
+ 	}
++	if (IS_MNT_SHARED(mnt) && list_empty(&mnt->mnt_share))
++		mnt_release_group_id(mnt);
++
+ 	list_del_init(&mnt->mnt_share);
++	mnt->mnt_group_id = 0;
  
- extern char *d_path(struct path *, char *, int);
-+extern char *dentry_path(struct dentry *, char *, int);
+ 	if (peer_mnt)
+ 		master = peer_mnt;
+@@ -68,7 +72,6 @@ static int do_make_slave(struct vfsmount
+ 	}
+ 	mnt->mnt_master = master;
+ 	CLEAR_MNT_SHARED(mnt);
+-	INIT_LIST_HEAD(&mnt->mnt_slave_list);
+ 	return 0;
+ }
  
- /* Allocation counts.. */
- 
-Index: vfs-2.6/include/linux/seq_file.h
+Index: vfs-2.6/fs/pnode.h
 ===================================================================
---- vfs-2.6.orig/include/linux/seq_file.h	2008-03-27 12:05:55.000000000 +0100
-+++ vfs-2.6/include/linux/seq_file.h	2008-03-27 12:06:04.000000000 +0100
-@@ -10,6 +10,7 @@ struct seq_operations;
- struct file;
- struct path;
- struct inode;
-+struct dentry;
- 
- struct seq_file {
- 	char *buf;
-@@ -42,6 +43,7 @@ int seq_printf(struct seq_file *, const 
- 	__attribute__ ((format (printf,2,3)));
- 
- int seq_path(struct seq_file *, struct path *, char *);
-+int seq_dentry(struct seq_file *, struct dentry *, char *);
- 
- int single_open(struct file *, int (*)(struct seq_file *, void *), void *);
- int single_release(struct inode *, struct file *);
+--- vfs-2.6.orig/fs/pnode.h	2008-03-27 12:05:55.000000000 +0100
++++ vfs-2.6/fs/pnode.h	2008-03-27 12:06:10.000000000 +0100
+@@ -35,4 +35,5 @@ int propagate_mnt(struct vfsmount *, str
+ 		struct list_head *);
+ int propagate_umount(struct list_head *);
+ int propagate_mount_busy(struct vfsmount *, int);
++void mnt_release_group_id(struct vfsmount *);
+ #endif /* _LINUX_PNODE_H */
+Index: vfs-2.6/include/linux/mount.h
+===================================================================
+--- vfs-2.6.orig/include/linux/mount.h	2008-03-27 12:06:08.000000000 +0100
++++ vfs-2.6/include/linux/mount.h	2008-03-27 12:06:10.000000000 +0100
+@@ -57,6 +57,7 @@ struct vfsmount {
+ 	struct vfsmount *mnt_master;	/* slave is on master->mnt_slave_list */
+ 	struct mnt_namespace *mnt_ns;	/* containing namespace */
+ 	int mnt_id;			/* mount identifier */
++	int mnt_group_id;		/* peer group identifier */
+ 	/*
+ 	 * We put mnt_count & mnt_expiry_mark at the end of struct vfsmount
+ 	 * to let these frequently modified fields in a separate cache line
 
 --
