@@ -1,58 +1,149 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759007AbYC0OOI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759499AbYC0OP1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759007AbYC0OOI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Mar 2008 10:14:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756799AbYC0ONy
+	id S1759499AbYC0OP1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Mar 2008 10:15:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757355AbYC0OPM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Mar 2008 10:13:54 -0400
-Received: from moutng.kundenserver.de ([212.227.126.186]:61888 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755306AbYC0ONx (ORCPT
+	Thu, 27 Mar 2008 10:15:12 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:33196 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756799AbYC0OPK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Mar 2008 10:13:53 -0400
-From: Bodo Eggert <7eggert@gmx.de>
-Subject: Re: [patch 0/7] vfs: mountinfo (v4)
-To: Miklos Szeredi <miklos@szeredi.hu>, viro@zeniv.linux.org.uk,
-       akpm@linux-foundation.org, linuxram@us.ibm.com,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Reply-To: 7eggert@gmx.de
-Date: Thu, 27 Mar 2008 15:10:35 +0100
-References: <abZpb-4D2-3@gated-at.bofh.it>
-User-Agent: KNode/0.10.4
+	Thu, 27 Mar 2008 10:15:10 -0400
+Date: Thu, 27 Mar 2008 08:15:08 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: "Luck, Tony" <tony.luck@intel.com>,
+       Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: linux-arch@vger.kernel.org, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: down_spin() implementation
+Message-ID: <20080327141508.GL16721@parisc-linux.org>
+References: <1FE6DD409037234FAB833C420AA843ECE9DF60@orsmsx424.amr.corp.intel.com> <20080326123239.GG16721@parisc-linux.org> <1FE6DD409037234FAB833C420AA843ECE9EB1C@orsmsx424.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7Bit
-Message-Id: <E1JesoN-0000ta-Mo@be1.7eggert.dyndns.org>
-X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
-X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
-X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
-X-Provags-ID: V01U2FsdGVkX186aYE//IRoyvssJyTXQhO5chxU2ehftH3zoO8
- taAEAQGTUxOKDtVcde8UTrRNEwgqcbB0a/2cwVMFbHBu8k+wpY
- VxKrpzKR5a7eCHFCkh1OQ==
+Content-Disposition: inline
+In-Reply-To: <1FE6DD409037234FAB833C420AA843ECE9EB1C@orsmsx424.amr.corp.intel.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Miklos Szeredi <miklos@szeredi.hu> wrote:
+On Wed, Mar 26, 2008 at 01:29:58PM -0700, Luck, Tony wrote:
+> This looks a lot cleaner than my ia64 specific code that
+> used cmpxchg() for the down() operation and fetchadd for
+> the up() ... using a brand new semaphore_spin data type.
 
-> Another update that fixes Al's latest comments:
-> 
->  - the per-sb options are merged into the fs-specific options
->  - mount source is shown as a separate field (because commas are not
->    escaped within it)
->  - group id checking before allocation/freeing: this one doesn't
->    actually make a difference for the moment (I hope) but Al's variant
->    is cleaner
->  - simplify ID allocation and freeing
->  - dominator renaming
->  - function header comment updating
+I did brifly consider creating a spinaphore data type, but it's
+significantly less code to create down_spin().
 
-Is it robust against mounting /dev/$'abc def\x0dghi'
-to ~/mnt/`perl -e 'print "a" x 4050'`?
+> It appears to work ... I tried to do some timing comparisons
+> of this generic version against my arch specific one, but the
+> hackbench test case has a run to run variation of a factor of
+> three (from 1min9sec to 3min44sec) so it is hopeless to try
+> and see some small percentage difference.
 
-Besides that, I don't like having 'none' as the mount source. Instead, I
-like to e.g. mount proc /proc -t proc, this will put the important
-information into the first column of the mount(1) output, right where I
-start reading.
+Thanks for testing and putting this together in patch form.  I've fixed it
+up to address Jens' astute comment and added it to my semaphore patchset.
+
+http://git.kernel.org/?p=linux/kernel/git/willy/misc.git;a=shortlog;h=semaphore-20080327
+
+Stephen, I've updated the 'semaphore' tag to point ot the same place as
+semaphore-20080327, so please change your linux-next tree from pulling
+semaphore-20080314 to just pulling plain 'semaphore'.  I'll use this
+method of tagging from now on.
+
+Here's the edited patch.
+
+commit 517df6fedc88af3f871cf827a62ef1a1a2073645
+Author: Matthew Wilcox <matthew@wil.cx>
+Date:   Thu Mar 27 09:49:26 2008 -0400
+
+    Add down_spin()
+    
+    ia64 would like to use a semaphore in flush_tlb_all() as it can have
+    multiple tokens.  Unfortunately, it's currently nested inside a spinlock,
+    so they can't sleep.  down_spin() is the cheapest solution to implement.
+    
+    Signed-off-by: Tony Luck <tony.luck@intel.com>
+    Signed-off-by: Matthew Wilcox <willy@linux.intel.com>
+
+diff --git a/include/linux/semaphore.h b/include/linux/semaphore.h
+index a7125da..13b5f32 100644
+--- a/include/linux/semaphore.h
++++ b/include/linux/semaphore.h
+@@ -78,6 +78,14 @@ extern int __must_check down_trylock(struct semaphore *sem);
+ extern int __must_check down_timeout(struct semaphore *sem, long jiffies);
+ 
+ /*
++ * As down(), except this function will spin waiting for the semaphore
++ * instead of sleeping.  It is safe to use while holding a spinlock or
++ * with interrupts disabled.  It should not be called from interrupt
++ * context as this may lead to deadlocks.
++ */
++extern void down_spin(struct semaphore *sem);
++
++/*
+  * Release the semaphore.  Unlike mutexes, up() may be called from any
+  * context and even by tasks which have never called down().
+  */
+diff --git a/kernel/semaphore.c b/kernel/semaphore.c
+index bef977b..a242d87 100644
+--- a/kernel/semaphore.c
++++ b/kernel/semaphore.c
+@@ -26,6 +26,7 @@ static noinline void __down(struct semaphore *sem);
+ static noinline int __down_interruptible(struct semaphore *sem);
+ static noinline int __down_killable(struct semaphore *sem);
+ static noinline int __down_timeout(struct semaphore *sem, long jiffies);
++static noinline void __down_spin(struct semaphore *sem, unsigned long flags);
+ static noinline void __up(struct semaphore *sem);
+ 
+ void down(struct semaphore *sem)
+@@ -117,6 +118,20 @@ int down_timeout(struct semaphore *sem, long jiffies)
+ }
+ EXPORT_SYMBOL(down_timeout);
+ 
++void down_spin(struct semaphore *sem)
++{
++       unsigned long flags;
++
++       spin_lock_irqsave(&sem->lock, flags);
++       if (likely(sem->count > 0)) {
++               sem->count--;
++               spin_unlock_irqrestore(&sem->lock, flags);
++       } else {
++               __down_spin(sem, flags);
++       }
++}
++EXPORT_SYMBOL(down_spin);
++
+ void up(struct semaphore *sem)
+ {
+        unsigned long flags;
+@@ -197,6 +212,20 @@ static noinline int __sched __down_timeout(struct semaphore
+        return __down_common(sem, TASK_UNINTERRUPTIBLE, jiffies);
+ }
+ 
++static noinline void __sched __down_spin(struct semaphore *sem,
++                                                       unsigned long flags)
++{
++       struct semaphore_waiter waiter;
++
++       list_add_tail(&waiter.list, &sem->wait_list);
++       waiter.task = current;
++       waiter.up = 0;
++
++       spin_unlock_irqrestore(&sem->lock, flags);
++       while (!waiter.up)
++               cpu_relax();
++}
++
+ static noinline void __sched __up(struct semaphore *sem)
+ {
+        struct semaphore_waiter *waiter = list_first_entry(&sem->wait_list,
 
 
+-- 
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
