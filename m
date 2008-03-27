@@ -1,65 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757995AbYC0IkT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758201AbYC0Ilv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757995AbYC0IkT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Mar 2008 04:40:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751150AbYC0IkG
+	id S1758201AbYC0Ilv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Mar 2008 04:41:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754633AbYC0Ilo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Mar 2008 04:40:06 -0400
-Received: from sacred.ru ([62.205.161.221]:35305 "EHLO sacred.ru"
+	Thu, 27 Mar 2008 04:41:44 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:35520 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751065AbYC0IkF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Mar 2008 04:40:05 -0400
-Message-ID: <47EB5D07.9020601@openvz.org>
-Date: Thu, 27 Mar 2008 11:38:31 +0300
-From: Pavel Emelyanov <xemul@openvz.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
+	id S1751360AbYC0Iln (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Mar 2008 04:41:43 -0400
+Date: Thu, 27 Mar 2008 09:41:30 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Jan Beulich <jbeulich@novell.com>
+Cc: tglx@linutronix.de, linux-kernel@vger.kernel.org, hpa@zytor.com
+Subject: Re: [RFC] x86: bitops asm constraint fixes
+Message-ID: <20080327084130.GG15626@elte.hu>
+References: <47EB56E0020000780004917E@public.id2-vpn.continvity.gns.novell.com>
 MIME-Version: 1.0
-To: balbir@linux.vnet.ibm.com
-CC: Andrew Morton <akpm@linux-foundation.org>, Hugh Dickins <hugh@veritas.com>,
-       Sudhir Kumar <skumar@linux.vnet.ibm.com>,
-       YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
-       Paul Menage <menage@google.com>, lizf@cn.fujitsu.com,
-       linux-kernel@vger.kernel.org, taka@valinux.co.jp, linux-mm@kvack.org,
-       David Rientjes <rientjes@google.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: Re: [RFC][2/3] Account and control virtual address space allocations
- (v2)
-References: <20080326184954.9465.19379.sendpatchset@localhost.localdomain> <20080326185017.9465.29950.sendpatchset@localhost.localdomain> <47EB4A7E.6060505@openvz.org> <47EB548D.2050609@linux.vnet.ibm.com> <47EB59C3.3080803@openvz.org> <47EB5B27.2050907@linux.vnet.ibm.com>
-In-Reply-To: <47EB5B27.2050907@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Thu, 27 Mar 2008 11:38:27 +0300 (MSK)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <47EB56E0020000780004917E@public.id2-vpn.continvity.gns.novell.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[snip]
 
->>>>> +	css_put(&mem->css);
->>>> Why don't you check whether the counter is charged? This is
->>>> bad for two reasons:
->>>> 1. you allow for some growth above the limit (e.g. in expand_stack)
->>> I was doing that earlier and then decided to keep the virtual address space code
->>> in sync with the RLIMIT_AS checking code in the kernel. If you see the flow, it
->>> closely resembles what we do with mm->total_vm and may_expand_vm().
->>> expand_stack() in turn calls acct_stack_growth() which calls may_expand_vm()
->> But this is racy! Look - you do expand_stack on two CPUs and the limit is
->> almost reached - so that there's room for a single expansion. In this case 
->> may_expand_vm will return true for both, since it only checks the limit, 
->> while the subsequent charge will fail on one of them, since it actually 
->> tries to raise the usage...
->>
-> 
-> Hmm... yes, possibly. Thanks for pointing this out. For a single mm_struct, the
-> check is done under mmap_sem(), so it's OK for processes. I suspect, I'll have
+* Jan Beulich <jbeulich@novell.com> wrote:
 
-Sure, but this controller should work with arbitrary group of processes ;)
+> Please revert it for the time being, I've got a better version (i.e. 
+> without extra dead code being generated) that I intended to submit 
+> once I know whether the other issues pointed out in the description on 
+> the original patch also should be adjusted. Of course, that could also 
+> be done incrementally, but I would think overhauling the whole file at 
+> once wouldn't be a bad thing...
 
-> to go back to what I had earlier. I don't want to add a mutex to mem_cgroup,
-> that will hurt parallelism badly.
+since it appears to cause no problems in x86.git (it passed a lot of 
+testing already) i'd prefer to keep it (so that we can see any other 
+side-effects of touching this code) - could you send your improvements 
+as a delta against x86.git/latest? [or is there any outright bug caused 
+by your changes that necessiates a revert?]
 
-My opinion is that we should always perform a pure charge without any
-pre-checks, etc.
-
-Thanks,
-Pavel
+	Ingo
