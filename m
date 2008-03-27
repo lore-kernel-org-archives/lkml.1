@@ -1,57 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761514AbYC0NMM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762185AbYC0NOU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761514AbYC0NMM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Mar 2008 09:12:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759297AbYC0NID
+	id S1762185AbYC0NOU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Mar 2008 09:14:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758691AbYC0NIR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Mar 2008 09:08:03 -0400
-Received: from smtp.nokia.com ([192.100.122.230]:64516 "EHLO
+	Thu, 27 Mar 2008 09:08:17 -0400
+Received: from smtp.nokia.com ([192.100.122.230]:64521 "EHLO
 	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757665AbYC0NHh (ORCPT
+	with ESMTP id S1758036AbYC0NHk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Mar 2008 09:07:37 -0400
+	Thu, 27 Mar 2008 09:07:40 -0400
 From: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: Adrian Hunter <ext-adrian.hunter@nokia.com>,
        Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
-Subject: [RFC PATCH 02/26] UBIFS: add I/O sub-system
-Date: Thu, 27 Mar 2008 16:55:22 +0200
-Message-Id: <1206629746-4298-3-git-send-email-Artem.Bityutskiy@nokia.com>
+Subject: [RFC PATCH 13/26] UBIFS: add TNC commit implementation
+Date: Thu, 27 Mar 2008 16:55:33 +0200
+Message-Id: <1206629746-4298-14-git-send-email-Artem.Bityutskiy@nokia.com>
 X-Mailer: git-send-email 1.5.4.1
 In-Reply-To: <1206629746-4298-1-git-send-email-Artem.Bityutskiy@nokia.com>
 References: <1206629746-4298-1-git-send-email-Artem.Bityutskiy@nokia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=unknown-8bit
 Content-Transfer-Encoding: 8bit
-X-OriginalArrivalTime: 27 Mar 2008 13:06:20.0492 (UTC) FILETIME=[59C100C0:01C8900B]
+X-OriginalArrivalTime: 27 Mar 2008 13:06:37.0351 (UTC) FILETIME=[63CD7B70:01C8900B]
 X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This sub-system is responsible for performing all the I/O-related
-low-level things like calculating and checking checksums, doing
-basic node validation, adding correct padding to the nodes and
-so on. It also implements UBIFS write-buffers and their proper
-synchronization.
+We commit the TNC from time to time, which means we update the on-flash
+indexing tree. The TNC commit basically implements journal commit.
+The UBIFS implementation allows writing while the commit is in progress.
 
 Signed-off-by: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
 Signed-off-by: Adrian Hunter <ext-adrian.hunter@nokia.com>
 ---
- fs/ubifs/io.c |  921 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 921 insertions(+), 0 deletions(-)
+ fs/ubifs/tnc_commit.c | 1088 +++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 1088 insertions(+), 0 deletions(-)
 
-diff --git a/fs/ubifs/io.c b/fs/ubifs/io.c
+diff --git a/fs/ubifs/tnc_commit.c b/fs/ubifs/tnc_commit.c
 new file mode 100644
-index 0000000..182f25c
+index 0000000..bc0ce2c
 --- /dev/null
-+++ b/fs/ubifs/io.c
-@@ -0,0 +1,921 @@
++++ b/fs/ubifs/tnc_commit.c
+@@ -0,0 +1,1088 @@
 +/*
 + * This file is part of UBIFS.
 + *
 + * Copyright (C) 2006-2008 Nokia Corporation.
-+ * Copyright (C) 2006, 2007 University of Szeged, Hungary
 + *
 + * This program is free software; you can redistribute it and/or modify it
 + * under the terms of the GNU General Public License version 2 as published by
@@ -66,907 +63,1075 @@ index 0000000..182f25c
 + * this program; if not, write to the Free Software Foundation, Inc., 51
 + * Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 + *
-+ * Authors: Artem Bityutskiy (Битюцкий Артём)
-+ *          Adrian Hunter
-+ *          Zoltan Sogor
++ * Authors: Adrian Hunter
++ *          Artem Bityutskiy (Битюцкий Артём)
 + */
 +
-+/*
-+ * This file implements UBIFS I/O subsystem which provides various I/O-related
-+ * helper functions (reading/writing/checking/validating nodes) and implements
-+ * write-buffering support. Write buffers help to save space which otherwise
-+ * would have been wasted for padding to the nearest minimal I/O unit boundary.
-+ * Instead, data first goes to the write-buffer and is flushed when the
-+ * buffer is full or when it is not used for some time (by timer). This is
-+ * similarto the mechanism is used by JFFS2.
-+ *
-+ * Write-buffers are defined by 'struct ubifs_wbuf' objects and protected by
-+ * mutexes defined inside these objects. Since sometimes upper-level code
-+ * has to lock the write-buffer (e.g. journal space reservation code), many
-+ * functions related to write-buffers have "nolock" suffix which means that the
-+ * caller has to lock the write-buffer before calling this function.
-+ *
-+ * UBIFS stores nodes at 64 bit-aligned addresses. If the node length is not
-+ * aligned, UBIFS starts the next node from the aligned address, and the padded
-+ * bytes may contain any rubbish. In other words, UBIFS does not put padding
-+ * bytes in those small gaps. Common headers of nodes store real node lengths,
-+ * not aligned lengths. Indexing nodes also store real lengths in branches.
-+ *
-+ * UBIFS uses padding when it pads to the next min. I/O unit. In this case it
-+ * uses padding nodes or padding bytes, if the padding node does not fit.
-+ *
-+ * All UBIFS nodes are protected by CRC checksums and UBIFS checks all nodes
-+ * every time they are read from the flash media.
-+ */
++/* This file implements TNC functions for committing */
 +
-+#include <linux/crc32.h>
 +#include "ubifs.h"
 +
 +/**
-+ * ubifs_check_node - check node.
++ * make_idx_node - make an index node for fill-the-gaps method of TNC commit.
 + * @c: UBIFS file-system description object
-+ * @buf: node to check
-+ * @lnum: logical eraseblock number
-+ * @offs: offset within the logical eraseblock
-+ * @quiet: print no messages
-+ *
-+ * This function checks node magic number and CRC checksum. This function also
-+ * validates node length to prevent UBIFS from becoming crazy when an attacker
-+ * feeds it a file-system image with incorrect nodes. For example, too large
-+ * node length in the common header could cause UBIFS to read memory outside of
-+ * allocated buffer when checking the CRC checksum.
-+ *
-+ * This function returns zero in case of success %-EUCLEAN in case of bad CRC
-+ * or magic.
++ * @idx: buffer in which to place new index node
++ * @znode: znode from which to make new index node
++ * @lnum: LEB number where new index node will be written
++ * @offs: offset where new index node will be written
++ * @len: length of new index node
 + */
-+int ubifs_check_node(const struct ubifs_info *c, const void *buf, int lnum,
-+		     int offs, int quiet)
++static int make_idx_node(struct ubifs_info *c, struct ubifs_idx_node *idx,
++			 struct ubifs_znode *znode, int lnum, int offs, int len)
 +{
-+	int err = -EINVAL, type, node_len;
-+	uint32_t crc, node_crc, magic;
-+	const struct ubifs_ch *ch = buf;
++	struct ubifs_znode *zp;
++	int i, err;
 +
-+	ubifs_assert(lnum >= 0 && lnum < c->leb_cnt && offs >= 0);
-+	ubifs_assert(!(offs & 7) && offs < c->leb_size);
++	/* Make index node */
++	idx->ch.node_type = UBIFS_IDX_NODE;
++	idx->child_cnt = cpu_to_le16(znode->child_cnt);
++	idx->level = cpu_to_le16(znode->level);
++	for (i = 0; i < znode->child_cnt; i++) {
++		struct ubifs_branch *br = ubifs_idx_branch(c, idx, i);
++		struct ubifs_zbranch *zbr = &znode->zbranch[i];
 +
-+	magic = le32_to_cpu(ch->magic);
-+	if (magic != UBIFS_NODE_MAGIC) {
-+		if (!quiet)
-+			ubifs_err("bad magic %#08x, expected %#08x",
-+				  magic, UBIFS_NODE_MAGIC);
-+		err = -EUCLEAN;
-+		goto out;
++		key_write_idx(c, &zbr->key, &br->key);
++		br->lnum = cpu_to_le32(zbr->lnum);
++		br->offs = cpu_to_le32(zbr->offs);
++		br->len = cpu_to_le32(zbr->len);
++		if (!zbr->lnum || !zbr->len) {
++			ubifs_err("bad ref in znode");
++			dbg_dump_znode(c, znode);
++			if (zbr->znode)
++				dbg_dump_znode(c, zbr->znode);
++		}
 +	}
++	ubifs_prepare_node(c, idx, len, 0);
 +
-+	type = ch->node_type;
-+	if (type < 0 || type >= UBIFS_NODE_TYPES_CNT) {
-+		if (!quiet)
-+			ubifs_err("bad node type %d", type);
-+		goto out;
++#ifdef CONFIG_UBIFS_FS_DEBUG
++	znode->lnum = lnum;
++	znode->offs = offs;
++	znode->len = len;
++#endif
++
++	err = insert_old_idx_znode(c, znode);
++
++	/* Update the parent */
++	zp = znode->parent;
++	if (zp) {
++		struct ubifs_zbranch *zbr;
++
++		zbr = &zp->zbranch[znode->iip];
++		zbr->lnum = lnum;
++		zbr->offs = offs;
++		zbr->len = len;
++	} else {
++		c->zroot.lnum = lnum;
++		c->zroot.offs = offs;
++		c->zroot.len = len;
 +	}
++	c->calc_idx_sz += ALIGN(len, 8);
 +
-+	node_len = le32_to_cpu(ch->len);
-+	if (node_len + offs > c->leb_size)
-+		goto out_len;
++	atomic_long_dec(&c->dirty_zn_cnt);
 +
-+	if (c->ranges[type].max_len == 0) {
-+		if (node_len != c->ranges[type].len)
-+			goto out_len;
-+	} else if (node_len < c->ranges[type].min_len ||
-+		   node_len > c->ranges[type].max_len)
-+		goto out_len;
++	ubifs_assert(ubifs_zn_dirty(znode));
++	ubifs_assert(test_bit(COW_ZNODE, &znode->flags));
 +
-+	crc = crc32(UBIFS_CRC32_INIT, buf + 8, node_len - 8);
-+	node_crc = le32_to_cpu(ch->crc);
-+	if (crc != node_crc) {
-+		if (!quiet)
-+			ubifs_err("bad CRC: calculated %#08x, read %#08x",
-+				  crc, node_crc);
-+		err = -EUCLEAN;
-+		goto out;
-+	}
++	clear_bit(DIRTY_ZNODE, &znode->flags);
++	clear_bit(COW_ZNODE, &znode->flags);
 +
-+	return 0;
-+
-+out_len:
-+	if (!quiet)
-+		ubifs_err("bad node length %d", node_len);
-+out:
-+	if (!quiet) {
-+		ubifs_err("bad node at LEB %d:%d", lnum, offs);
-+		dbg_dump_node(c, buf);
-+		dbg_dump_stack();
-+	}
 +	return err;
 +}
 +
-+/*
-+ * ubifs_pad - pad flash space.
++/**
++ * fill_gap - make index nodes in gaps in dirty index LEBs.
 + * @c: UBIFS file-system description object
-+ * @buf: buffer to put padding to
-+ * @pad: how many bytes to pad
++ * @lnum: LEB number that gap appears in
++ * @gap_start: offset of start of gap
++ * @gap_end: offset of end of gap
++ * @dirt: adds dirty space to this
 + *
-+ * The flash media obliges us to write only in chunks of %c->min_io_size and
-+ * when we have to write less data we add padding node to the write-buffer and
-+ * pad it to the next minimal I/O unit's boundary. Padding nodes help when the
-+ * media is being scanned. If the amount of wasted space is not enough to fit a
-+ * padding node which takes %UBIFS_PAD_NODE_SZ bytes, we write padding bytes
-+ * pattern (%UBIFS_PADDING_BYTE).
-+ *
-+ * Padding nodes are also used to fill gaps when the "commit-in-gaps" method is
-+ * used.
++ * This function returns the number of index nodes written into the gap.
 + */
-+void ubifs_pad(const struct ubifs_info *c, void *buf, int pad)
++static int fill_gap(struct ubifs_info *c, int lnum, int gap_start, int gap_end,
++		    int *dirt)
 +{
-+	uint32_t crc;
++	int len, gap_remains, gap_pos, written, pad_len;
 +
-+	ubifs_assert(pad >= 0 && !(pad & 7));
++	ubifs_assert((gap_start & 7) == 0);
++	ubifs_assert((gap_end & 7) == 0);
++	ubifs_assert(gap_end >= gap_start);
 +
-+	if (pad >= UBIFS_PAD_NODE_SZ) {
-+		struct ubifs_ch *ch = buf;
-+		struct ubifs_pad_node *pad_node = buf;
-+
-+		ch->magic = cpu_to_le32(UBIFS_NODE_MAGIC);
-+		ch->node_type = UBIFS_PAD_NODE;
-+		ch->group_type = UBIFS_NO_NODE_GROUP;
-+		ch->padding[0] = ch->padding[1] = 0;
-+		ch->sqnum = cpu_to_le64(0);
-+		ch->len = cpu_to_le32(UBIFS_PAD_NODE_SZ);
-+		pad -= UBIFS_PAD_NODE_SZ;
-+		pad_node->pad_len = cpu_to_le32(pad);
-+		crc = crc32(UBIFS_CRC32_INIT, buf + 8, UBIFS_PAD_NODE_SZ - 8);
-+		ch->crc = cpu_to_le32(crc);
-+		memset(buf + UBIFS_PAD_NODE_SZ, 0, pad);
-+	} else if (pad > 0)
-+		/* Too little space, padding node won't fit */
-+		memset(buf, UBIFS_PADDING_BYTE, pad);
-+}
-+
-+/**
-+ * next_sqnum - get next sequence number.
-+ * @c: UBIFS file-system description object
-+ */
-+static unsigned long long next_sqnum(struct ubifs_info *c)
-+{
-+	unsigned long long sqnum;
-+
-+	spin_lock(&c->cnt_lock);
-+	sqnum = ++c->max_sqnum;
-+	spin_unlock(&c->cnt_lock);
-+
-+	if (unlikely(sqnum >= SQNUM_WARN_WATERMARK)) {
-+		if (sqnum >= SQNUM_WATERMARK) {
-+			ubifs_err("sequence number overflow %llu, end of life",
-+				  sqnum);
-+			ubifs_ro_mode(c);
-+		}
-+		ubifs_warn("running out of sequence numbers, end of life soon");
-+	}
-+
-+	return sqnum;
-+}
-+
-+/**
-+ * ubifs_prepare_node - prepare node to be written to flash.
-+ * @c: UBIFS file-system description object
-+ * @node: the node to pad
-+ * @len: node length
-+ * @pad: if the buffer has to be padded
-+ *
-+ * This function prepares node at @node to be written to the media - it
-+ * calculates node CRC, fills the common header, and adds proper padding up to
-+ * the next minimum I/O unit if @pad is not zero.
-+ */
-+void ubifs_prepare_node(struct ubifs_info *c, void *node, int len, int pad)
-+{
-+	uint32_t crc;
-+	struct ubifs_ch *ch = node;
-+	unsigned long long sqnum = next_sqnum(c);
-+
-+	ubifs_assert(len >= UBIFS_CH_SZ);
-+
-+	ch->magic = cpu_to_le32(UBIFS_NODE_MAGIC);
-+	ch->len = cpu_to_le32(len);
-+	ch->group_type = UBIFS_NO_NODE_GROUP;
-+	ch->sqnum = cpu_to_le64(sqnum);
-+	ch->padding[0] = ch->padding[1] = 0;
-+	crc = crc32(UBIFS_CRC32_INIT, node + 8, len - 8);
-+	ch->crc = cpu_to_le32(crc);
-+
-+	if (pad) {
-+		len = ALIGN(len, 8);
-+		pad = ALIGN(len, c->min_io_size) - len;
-+		ubifs_pad(c, node + len, pad);
-+	}
-+}
-+
-+/**
-+ * ubifs_prep_grp_node - prepare node of a group to be written to flash.
-+ * @c: UBIFS file-system description object
-+ * @node: the node to pad
-+ * @len: node length
-+ * @last: indicates the last node of the group
-+ *
-+ * This function prepares node at @node to be written to the media - it
-+ * calculates node CRC and fills the common header.
-+ */
-+void ubifs_prep_grp_node(struct ubifs_info *c, void *node, int len, int last)
-+{
-+	uint32_t crc;
-+	struct ubifs_ch *ch = node;
-+	unsigned long long sqnum = next_sqnum(c);
-+
-+	ubifs_assert(len >= UBIFS_CH_SZ);
-+
-+	ch->magic = cpu_to_le32(UBIFS_NODE_MAGIC);
-+	ch->len = cpu_to_le32(len);
-+	if (last)
-+		ch->group_type = UBIFS_LAST_OF_NODE_GROUP;
-+	else
-+		ch->group_type = UBIFS_IN_NODE_GROUP;
-+	ch->sqnum = cpu_to_le64(sqnum);
-+	ch->padding[0] = ch->padding[1] = 0;
-+	crc = crc32(UBIFS_CRC32_INIT, node + 8, len - 8);
-+	ch->crc = cpu_to_le32(crc);
-+}
-+
-+/**
-+ * wbuf_timer_callback - write-buffer timer callback function.
-+ * @data: timer data (write-buffer descriptor)
-+ *
-+ * This function is called when the write-buffer timer expires.
-+ */
-+static void wbuf_timer_callback_nolock(unsigned long data)
-+{
-+	struct ubifs_wbuf *wbuf = (struct ubifs_wbuf *)data;
-+
-+	wbuf->need_sync = 1;
-+	wbuf->c->need_wbuf_sync = 1;
-+	ubifs_wake_up_bgt(wbuf->c);
-+}
-+
-+/**
-+ * new_wbuf_timer - start new write-buffer timer.
-+ * @wbuf: write-buffer descriptor
-+ */
-+static void new_wbuf_timer_nolock(struct ubifs_wbuf *wbuf)
-+{
-+	ubifs_assert(!timer_pending(&wbuf->timer));
-+
-+	if (!wbuf->timeout)
-+		return;
-+
-+	wbuf->timer.expires = jiffies + wbuf->timeout;
-+	add_timer(&wbuf->timer);
-+}
-+
-+/**
-+ * cancel_wbuf_timer - cancel write-buffer timer.
-+ * @wbuf: write-buffer descriptor
-+ */
-+static void cancel_wbuf_timer_nolock(struct ubifs_wbuf *wbuf)
-+{
-+	/*
-+	 * If the syncer is waiting for the lock (from the background thread's
-+	 * context) and another task is changing write-buffer then the syncing
-+	 * should be canceled.
-+	 */
-+	wbuf->need_sync = 0;
-+	del_timer(&wbuf->timer);
-+}
-+
-+/**
-+ * ubifs_wbuf_sync_nolock - synchronize write-buffer.
-+ * @wbuf: write-buffer to synchronize
-+ *
-+ * This function synchronizes write-buffer @buf and returns zero in case of
-+ * success or a negative error code in case of failure.
-+ */
-+int ubifs_wbuf_sync_nolock(struct ubifs_wbuf *wbuf)
-+{
-+	struct ubifs_info *c = wbuf->c;
-+	int err, dirt;
-+
-+	cancel_wbuf_timer_nolock(wbuf);
-+	if (!wbuf->used || wbuf->lnum == -1)
-+		/* Write-buffer is empty or not seeked */
++	gap_remains = gap_end - gap_start;
++	if (!gap_remains)
 +		return 0;
++	gap_pos = gap_start;
++	written = 0;
++	while (c->enext) {
++		len = ubifs_idx_node_sz(c, c->enext->child_cnt);
++		if (len < gap_remains) {
++			struct ubifs_znode *znode = c->enext;
++			const int alen = ALIGN(len, 8);
++			int err;
 +
-+	dbg_io("LEB %d:%d, %d bytes",
-+	       wbuf->lnum, wbuf->offs, wbuf->used);
-+	ubifs_assert(!(c->vfs_sb->s_flags & MS_RDONLY));
-+	ubifs_assert(!(wbuf->avail & 7));
-+	ubifs_assert(wbuf->offs + c->min_io_size <= c->leb_size);
-+
-+	if (c->ro_media)
-+		return -EROFS;
-+
-+	ubifs_pad(c, wbuf->buf + wbuf->used, wbuf->avail);
-+	err = ubi_leb_write(c->ubi, wbuf->lnum, wbuf->buf, wbuf->offs,
-+			    c->min_io_size, wbuf->dtype);
-+	if (err) {
-+		ubifs_err("cannot write %d bytes to LEB %d:%d",
-+			  c->min_io_size, wbuf->lnum, wbuf->offs);
-+		dbg_dump_stack();
-+		return err;
-+	}
-+
-+	dirt = wbuf->avail;
-+
-+	spin_lock(&wbuf->lock);
-+	wbuf->offs += c->min_io_size;
-+	wbuf->avail = c->min_io_size;
-+	wbuf->used = 0;
-+	wbuf->next_ino = 0;
-+	spin_unlock(&wbuf->lock);
-+
-+	if (wbuf->sync_callback)
-+		err = wbuf->sync_callback(c, wbuf->lnum,
-+					  c->leb_size - wbuf->offs, dirt);
-+	return err;
-+}
-+
-+/**
-+ * ubifs_wbuf_seek_nolock - seek write-buffer.
-+ * @wbuf: write-buffer
-+ * @lnum: logical eraseblock number to seek to
-+ * @offs: logical eraseblock offset to seek to
-+ * @dtype: data type
-+ *
-+ * This function targets the write buffer to logical eraseblock @lnum:@offs.
-+ * The write-buffer is synchronized if it is not empty. Returns zero in case of
-+ * success and a negative error code in case of failure.
-+ */
-+int ubifs_wbuf_seek_nolock(struct ubifs_wbuf *wbuf, int lnum, int offs,
-+			   int dtype)
-+{
-+	const struct ubifs_info *c = wbuf->c;
-+
-+	dbg_io("LEB %d:%d", lnum, offs);
-+	ubifs_assert(lnum >= 0 && lnum < c->leb_cnt);
-+	ubifs_assert(offs >= 0 && offs <= c->leb_size);
-+	ubifs_assert(offs % c->min_io_size == 0 && !(offs & 7));
-+	ubifs_assert(lnum != wbuf->lnum);
-+
-+	if (wbuf->used > 0) {
-+		int err = ubifs_wbuf_sync_nolock(wbuf);
-+
-+		if (err)
-+			return err;
-+	}
-+
-+	spin_lock(&wbuf->lock);
-+	wbuf->lnum = lnum;
-+	wbuf->offs = offs;
-+	wbuf->avail = c->min_io_size;
-+	wbuf->used = 0;
-+	spin_unlock(&wbuf->lock);
-+	wbuf->dtype = dtype;
-+
-+	return 0;
-+}
-+
-+/**
-+ * ubifs_bg_wbufs_sync - synchronize write-buffers.
-+ * @c: UBIFS file-system description object
-+ *
-+ * This function is called by background thread to synchronize write-buffers.
-+ * Returns zero in case of success and a negative error code in case of
-+ * failure.
-+ */
-+int ubifs_bg_wbufs_sync(struct ubifs_info *c)
-+{
-+	int err, i;
-+
-+	if (!c->need_wbuf_sync)
-+		return 0;
-+	c->need_wbuf_sync = 0;
-+
-+	if (c->ro_media) {
-+		err = -EROFS;
-+		goto out_timers;
-+	}
-+
-+	dbg_io("synchronize");
-+	for (i = 0; i < c->jhead_cnt; i++) {
-+		struct ubifs_wbuf *wbuf = &c->jheads[i].wbuf;
-+
-+		cond_resched();
-+
-+		/*
-+		 * If the mutex is locked then wbuf is being changed, so
-+		 * synchronization is not necessary.
-+		 */
-+		if (mutex_is_locked(&wbuf->io_mutex))
-+			continue;
-+
-+		mutex_lock_nested(&wbuf->io_mutex, wbuf->jhead);
-+		if (!wbuf->need_sync) {
-+			mutex_unlock(&wbuf->io_mutex);
-+			continue;
-+		}
-+
-+		err = ubifs_wbuf_sync_nolock(wbuf);
-+		mutex_unlock(&wbuf->io_mutex);
-+		if (err) {
-+			ubifs_err("cannot sync write-buffer, error %d", err);
-+			ubifs_ro_mode(c);
-+			goto out_timers;
-+		}
-+	}
-+
-+	return 0;
-+
-+out_timers:
-+	/* Cancel all timers to prevent repeated errors */
-+	for (i = 0; i < c->jhead_cnt; i++) {
-+		struct ubifs_wbuf *wbuf = &c->jheads[i].wbuf;
-+
-+		mutex_lock_nested(&wbuf->io_mutex, wbuf->jhead);
-+		cancel_wbuf_timer_nolock(wbuf);
-+		mutex_unlock(&wbuf->io_mutex);
-+	}
-+	return err;
-+}
-+
-+/**
-+ * ubifs_wbuf_write_nolock - write data to flash via write-buffer.
-+ * @wbuf: write-buffer
-+ * @buf: node to write
-+ * @len: node length
-+ *
-+ * This function writes data to flash via write-buffer @wbuf. This means that
-+ * the last piece of the node won't reach the flash media immediately if it
-+ * does not take whole minimal I/O unit. Instead, the node will sit in RAM
-+ * until the write-buffer is synchronized (e.g., by timer).
-+ *
-+ * This function returns zero in case of success and a negative error code in
-+ * case of failure. If the node cannot be written because there is no more
-+ * space in this logical eraseblock, %-ENOSPC is returned.
-+ */
-+int ubifs_wbuf_write_nolock(struct ubifs_wbuf *wbuf, void *buf, int len)
-+{
-+	struct ubifs_info *c = wbuf->c;
-+	int err, written, n, aligned_len = ALIGN(len, 8), offs;
-+
-+	dbg_io("%d bytes (%s) to wbuf at LEB %d:%d", len,
-+	       dbg_ntype(((struct ubifs_ch *)buf)->node_type), wbuf->lnum,
-+	       wbuf->offs + wbuf->used);
-+	ubifs_assert(len > 0 && wbuf->lnum >= 0 && wbuf->lnum < c->leb_cnt);
-+	ubifs_assert(wbuf->offs >= 0 && wbuf->offs % c->min_io_size == 0);
-+	ubifs_assert(!(wbuf->offs & 7) && wbuf->offs <= c->leb_size);
-+	ubifs_assert(wbuf->avail > 0 && wbuf->avail <= c->min_io_size);
-+	ubifs_assert(mutex_is_locked(&wbuf->io_mutex));
-+
-+	if (c->leb_size - wbuf->offs - wbuf->used < aligned_len) {
-+		err = -ENOSPC;
-+		goto out;
-+	}
-+
-+	cancel_wbuf_timer_nolock(wbuf);
-+
-+	if (c->ro_media)
-+		return -EROFS;
-+
-+	if (aligned_len <= wbuf->avail) {
-+		/*
-+		 * The node is not very large and fits entirely within
-+		 * write-buffer.
-+		 */
-+		memcpy(wbuf->buf + wbuf->used, buf, len);
-+
-+		if (aligned_len == wbuf->avail) {
-+			dbg_io("flush wbuf to LEB %d:%d", wbuf->lnum,
-+				wbuf->offs);
-+			err = ubi_leb_write(c->ubi, wbuf->lnum, wbuf->buf,
-+					    wbuf->offs, c->min_io_size,
-+					    wbuf->dtype);
++			ubifs_assert(alen <= gap_remains);
++			err = make_idx_node(c, c->ileb_buf + gap_pos, znode,
++					    lnum, gap_pos, len);
 +			if (err)
-+				goto out;
-+
-+			spin_lock(&wbuf->lock);
-+			wbuf->offs += c->min_io_size;
-+			wbuf->avail = c->min_io_size;
-+			wbuf->used = 0;
-+			wbuf->next_ino = 0;
-+			spin_unlock(&wbuf->lock);
-+		} else {
-+			spin_lock(&wbuf->lock);
-+			wbuf->avail -= aligned_len;
-+			wbuf->used += aligned_len;
-+			spin_unlock(&wbuf->lock);
-+		}
-+
-+		goto exit;
-+	}
-+
-+	/*
-+	 * The node is large enough and does not fit entirely within current
-+	 * minimal I/O unit. We have to fill and flush write-buffer and switch
-+	 * to the next min. I/O unit.
-+	 */
-+	dbg_io("flush wbuf to LEB %d:%d", wbuf->lnum, wbuf->offs);
-+	memcpy(wbuf->buf + wbuf->used, buf, wbuf->avail);
-+	err = ubi_leb_write(c->ubi, wbuf->lnum, wbuf->buf, wbuf->offs,
-+			    c->min_io_size, wbuf->dtype);
-+	if (err)
-+		goto out;
-+
-+	offs = wbuf->offs + c->min_io_size;
-+	len -= wbuf->avail;
-+	aligned_len -= wbuf->avail;
-+	written = wbuf->avail;
-+
-+	/*
-+	 * The remaining data may take more whole min. I/O units, so write the
-+	 * remains multiple to min. I/O unit size directly to the flash media.
-+	 * We align node length to 8-byte boundary because we anyway flash wbuf
-+	 * if the remaining space is less then 8 bytes.
-+	 */
-+	n = aligned_len >> c->min_io_shift;
-+	if (n) {
-+		n <<= c->min_io_shift;
-+		dbg_io("write %d bytes to LEB %d:%d", n, wbuf->lnum, offs);
-+		err = ubi_leb_write(c->ubi, wbuf->lnum, buf + written, offs, n,
-+				    wbuf->dtype);
-+		if (err)
-+			goto out;
-+		offs += n;
-+		aligned_len -= n;
-+		len -= n;
-+		written += n;
-+	}
-+
-+	spin_lock(&wbuf->lock);
-+	if (aligned_len)
-+		/*
-+		 * And now we have what's left and what does not take whole
-+		 * min. I/O unit, so write it to the write-buffer and we are
-+		 * done.
-+		 */
-+		memcpy(wbuf->buf, buf + written, len);
-+
-+	wbuf->offs = offs;
-+	wbuf->used = aligned_len;
-+	wbuf->avail = c->min_io_size - aligned_len;
-+	wbuf->next_ino = 0;
-+	spin_unlock(&wbuf->lock);
-+
-+exit:
-+	if (wbuf->sync_callback) {
-+		int free = c->leb_size - wbuf->offs - wbuf->used;
-+
-+		err = wbuf->sync_callback(c, wbuf->lnum, free, 0);
-+		if (err)
-+			goto out;
-+	}
-+
-+	if (wbuf->used)
-+		new_wbuf_timer_nolock(wbuf);
-+
-+	return 0;
-+
-+out:
-+	ubifs_err("cannot write %d bytes to LEB %d:%d, error %d",
-+		  len, wbuf->lnum, wbuf->offs, err);
-+	dbg_dump_node(c, buf);
-+	dbg_dump_stack();
-+	dbg_dump_leb(c, wbuf->lnum);
-+	return err;
-+}
-+
-+/**
-+ * ubifs_write_node - write node to the media.
-+ * @c: UBIFS file-system description object
-+ * @buf: the node to write
-+ * @len: node length
-+ * @lnum: logical eraseblock number
-+ * @offs: offset within the logical eraseblock
-+ * @dtype: node life-time hint (%UBI_LONGTERM, %UBI_SHORTTERM, %UBI_UNKNOWN)
-+ *
-+ * This function automatically fills node magic number, assigns sequence
-+ * number, and calculates node CRC checksum. The length of the @buf buffer has
-+ * to be aligned to the minimal I/O unit size. This function automatically
-+ * appends padding node and padding bytes if needed. Returns zero in case of
-+ * success and a negative error code in case of failure.
-+ */
-+int ubifs_write_node(struct ubifs_info *c, void *buf, int len, int lnum,
-+		     int offs, int dtype)
-+{
-+	int err, buf_len = ALIGN(len, c->min_io_size);
-+
-+	dbg_io("LEB %d:%d, %s, length %d (aligned %d)",
-+	       lnum, offs, dbg_ntype(((struct ubifs_ch *)buf)->node_type), len,
-+	       buf_len);
-+	ubifs_assert(lnum >= 0 && lnum < c->leb_cnt && offs >= 0);
-+	ubifs_assert(offs % c->min_io_size == 0 && offs < c->leb_size);
-+
-+	if (c->ro_media)
-+		return -EROFS;
-+
-+	ubifs_prepare_node(c, buf, len, 1);
-+	err = ubi_leb_write(c->ubi, lnum, buf, offs, buf_len, dtype);
-+	if (err) {
-+		ubifs_err("cannot write %d bytes to LEB %d:%d, error %d",
-+			  buf_len, lnum, offs, err);
-+		dbg_dump_node(c, buf);
-+		dbg_dump_stack();
-+	}
-+
-+	return err;
-+}
-+
-+/**
-+ * ubifs_read_node_wbuf - read node from the media or write-buffer.
-+ * @wbuf: wbuf to check for un-written data
-+ * @buf: buffer to read to
-+ * @type: node type
-+ * @len: node length
-+ * @lnum: logical eraseblock number
-+ * @offs: offset within the logical eraseblock
-+ *
-+ * This function reads a node of known type and length, checks it and stores
-+ * in @buf. If the node partially or fully sits in the write-buffer, this
-+ * function takes data from the buffer, otherwise it reads the flash media.
-+ * Returns zero in case of success, %-EUCLEAN if CRC mismatched and a negative
-+ * error code in case of failure.
-+ */
-+int ubifs_read_node_wbuf(struct ubifs_wbuf *wbuf, void *buf, int type, int len,
-+			 int lnum, int offs)
-+{
-+	const struct ubifs_info *c = wbuf->c;
-+	int err, rlen, overlap;
-+	struct ubifs_ch *ch = buf;
-+
-+	dbg_io("LEB %d:%d, %s, length %d", lnum, offs, dbg_ntype(type), len);
-+	ubifs_assert(wbuf && lnum >= 0 && lnum < c->leb_cnt && offs >= 0);
-+	ubifs_assert(!(offs & 7) && offs < c->leb_size);
-+	ubifs_assert(type >= 0 && type < UBIFS_NODE_TYPES_CNT);
-+
-+	spin_lock(&wbuf->lock);
-+	overlap = (lnum == wbuf->lnum && offs + len > wbuf->offs);
-+	if (!overlap) {
-+		/* We may safely unlock the write-buffer and read the data */
-+		spin_unlock(&wbuf->lock);
-+		return ubifs_read_node(c, buf, type, len, lnum, offs);
-+	}
-+
-+	/* Don't read under wbuf */
-+	rlen = wbuf->offs - offs;
-+	if (rlen < 0)
-+		rlen = 0;
-+
-+	/* Copy the rest from the write-buffer */
-+	memcpy(buf + rlen, wbuf->buf + offs + rlen - wbuf->offs, len - rlen);
-+	spin_unlock(&wbuf->lock);
-+
-+	if (rlen > 0) {
-+		/* Read everything that goes before write-buffer */
-+		err = ubi_read(c->ubi, lnum, buf, offs, rlen);
-+		if (err && err != -EBADMSG) {
-+			ubifs_err("failed to read node %d from LEB %d:%d, "
-+				  "error %d", type, lnum, offs, err);
-+			dbg_dump_stack();
-+			return err;
-+		}
-+	}
-+
-+	err = ubifs_check_node(c, buf, lnum, offs, 0);
-+	if (err) {
-+		ubifs_err("expected node type %d", type);
-+		return err;
-+	}
-+
-+	if (type != ch->node_type) {
-+		ubifs_err("bad node type (%d but expected %d)",
-+			  ch->node_type, type);
-+		goto out;
-+	}
-+
-+	rlen = le32_to_cpu(ch->len);
-+	if (rlen != len) {
-+		ubifs_err("bad node length %d, expected %d", rlen, len);
-+		goto out;
-+	}
-+
-+	return 0;
-+
-+out:
-+	ubifs_err("bad node at LEB %d:%d", lnum, offs);
-+	dbg_dump_node(c, buf);
-+	dbg_dump_stack();
-+	return -EINVAL;
-+}
-+
-+/**
-+ * ubifs_read_node - read node.
-+ * @c: UBIFS file-system description object
-+ * @buf: buffer to read to
-+ * @type: node type
-+ * @len: node length (not aligned)
-+ * @lnum: logical eraseblock number
-+ * @offs: offset within the logical eraseblock
-+ *
-+ * This function reads a node of known type and and length, checks it and
-+ * stores in @buf. Returns zero in case of success, %-EUCLEAN if CRC mismatched
-+ * and a negative error code in case of failure.
-+ */
-+int ubifs_read_node(const struct ubifs_info *c, void *buf, int type, int len,
-+		    int lnum, int offs)
-+{
-+	int err, l;
-+	struct ubifs_ch *ch = buf;
-+
-+	dbg_io("LEB %d:%d, %s, length %d", lnum, offs, dbg_ntype(type), len);
-+	ubifs_assert(lnum >= 0 && lnum < c->leb_cnt && offs >= 0);
-+	ubifs_assert(len >= UBIFS_CH_SZ && offs + len <= c->leb_size);
-+	ubifs_assert(!(offs & 7) && offs < c->leb_size);
-+	ubifs_assert(type >= 0 && type < UBIFS_NODE_TYPES_CNT);
-+
-+	err = ubi_read(c->ubi, lnum, buf, offs, len);
-+	if (err && err != -EBADMSG) {
-+		ubifs_err("cannot read node %d from LEB %d:%d, error %d",
-+			  type, lnum, offs, err);
-+		return err;
-+	}
-+
-+	err = ubifs_check_node(c, buf, lnum, offs, 0);
-+	if (err) {
-+		ubifs_err("expected node type %d", type);
-+		return err;
-+	}
-+
-+	if (type != ch->node_type) {
-+		ubifs_err("bad node type (%d but expected %d)",
-+			  ch->node_type, type);
-+		goto out;
-+	}
-+
-+	l = le32_to_cpu(ch->len);
-+	if (l != len) {
-+		ubifs_err("bad node length %d, expected %d", l, len);
-+		goto out;
-+	}
-+
-+	return 0;
-+
-+out:
-+	ubifs_err("bad node at LEB %d:%d", lnum, offs);
-+	dbg_dump_node(c, buf);
-+	dbg_dump_stack();
-+	return -EINVAL;
-+}
-+
-+/**
-+ * ubifs_wbuf_init - initialize write-buffer.
-+ * @c: UBIFS file-system description object
-+ * @wbuf: write-buffer to initialize
-+ *
-+ * This function initializes write buffer. Returns zero in case of success
-+ * %-ENOMEM in case of failure.
-+ */
-+int ubifs_wbuf_init(struct ubifs_info *c, struct ubifs_wbuf *wbuf)
-+{
-+	size_t size;
-+
-+	wbuf->buf = kmalloc(c->min_io_size, GFP_KERNEL);
-+	if (!wbuf->buf)
-+		return -ENOMEM;
-+
-+	size = (c->min_io_size / UBIFS_CH_SZ + 1) * sizeof(ino_t);
-+	wbuf->inodes = kmalloc(size, GFP_KERNEL);
-+	if (!wbuf->inodes) {
-+		kfree(wbuf->buf);
-+		wbuf->buf = NULL;
-+		return -ENOMEM;
-+	}
-+
-+	wbuf->used = 0;
-+	wbuf->lnum = wbuf->offs = -1;
-+	wbuf->avail = c->min_io_size;
-+	wbuf->dtype = UBI_UNKNOWN;
-+	wbuf->sync_callback = NULL;
-+	mutex_init(&wbuf->io_mutex);
-+	spin_lock_init(&wbuf->lock);
-+
-+	wbuf->c = c;
-+	init_timer(&wbuf->timer);
-+	wbuf->timer.function = wbuf_timer_callback_nolock;
-+	wbuf->timer.data = (unsigned long)wbuf;
-+	wbuf->timeout = DEFAULT_WBUF_TIMEOUT;
-+	wbuf->next_ino = 0;
-+
-+	return 0;
-+}
-+
-+/**
-+ * ubifs_wbuf_add_ino_nolock - add an inode number into the wbuf inode array.
-+ * @wbuf: the write-buffer whereto add
-+ * @inum: the inode number
-+ *
-+ * This function adds an inode number to the inode array of the write-buffer.
-+ */
-+void ubifs_wbuf_add_ino_nolock(struct ubifs_wbuf *wbuf, ino_t inum)
-+{
-+	if (!wbuf->buf)
-+		/* NOR flash or something similar */
-+		return;
-+
-+	spin_lock(&wbuf->lock);
-+	if (wbuf->used)
-+		wbuf->inodes[wbuf->next_ino++] = inum;
-+	spin_unlock(&wbuf->lock);
-+}
-+
-+/**
-+ * wbuf_has_ino - returns if the wbuf contains data from the inode.
-+ * @wbuf: the write-buffer
-+ * @inum: the inode number
-+ *
-+ * This function returns with %1 if the write-buffer contains some data from the
-+ * given inode otherwise it returns with %0.
-+ */
-+static int wbuf_has_ino(struct ubifs_wbuf *wbuf, ino_t inum)
-+{
-+	int i, ret = 0;
-+
-+	spin_lock(&wbuf->lock);
-+	for (i = 0; i < wbuf->next_ino; i++)
-+		if (inum == wbuf->inodes[i]) {
-+			ret = 1;
++				return err;
++			gap_remains -= alen;
++			gap_pos += alen;
++			c->enext = znode->cnext;
++			if (c->enext == c->cnext)
++				c->enext = NULL;
++			written += 1;
++		} else
 +			break;
-+		}
-+	spin_unlock(&wbuf->lock);
++	}
++	if (gap_end == c->leb_size) {
++		c->ileb_len = ALIGN(gap_pos, c->min_io_size);
++		/* Pad to end of min_io_size */
++		pad_len = c->ileb_len - gap_pos;
++	} else
++		/* Pad to end of gap */
++		pad_len = gap_remains;
++	dbg_gc("LEB %d:%d to %d len %d nodes written %d wasted bytes %d",
++	       lnum, gap_start, gap_end, gap_end - gap_start, written, pad_len);
++	ubifs_pad(c, c->ileb_buf + gap_pos, pad_len);
++	*dirt += pad_len;
++	return written;
++}
 +
++/**
++ * find_old_idx - find an index node obsoleted since the last commit start.
++ * @c: UBIFS file-system description object
++ * @lnum: LEB number of obsoleted index node
++ * @offs: offset of obsoleted index node
++ *
++ * Returns %1 if found and %0 otherwise.
++ */
++static int find_old_idx(struct ubifs_info *c, int lnum, int offs)
++{
++	struct ubifs_old_idx *o;
++	struct rb_node *p;
++
++	p = c->old_idx.rb_node;
++	while (p) {
++		o = rb_entry(p, struct ubifs_old_idx, rb);
++		if (lnum < o->lnum)
++			p = p->rb_left;
++		else if (lnum > o->lnum)
++			p = p->rb_right;
++		else if (offs < o->offs)
++			p = p->rb_left;
++		else if (offs > o->offs)
++			p = p->rb_right;
++		else
++			return 1;
++	}
++	return 0;
++}
++
++/**
++ * is_idx_node_in_use - determine if an index node can be overwritten.
++ * @c: UBIFS file-system description object
++ * @key: key of index node
++ * @level: index node level
++ * @lnum: LEB number of index node
++ * @offs: offset of index node
++ *
++ * If @key / @lnum / @offs identify an index node that was not part of the old
++ * index, then this function returns %0 (obsolete).  Else if the index node was
++ * part of the old index but is now dirty %1 is returned, else if it is clean %2
++ * is returned. A negative error code is returned on failure.
++ */
++static int is_idx_node_in_use(struct ubifs_info *c, union ubifs_key *key,
++			      int level, int lnum, int offs)
++{
++	int ret;
++
++	ret = is_idx_node_in_tnc(c, key, level, lnum, offs);
++	if (ret < 0)
++		return ret; /* Error code */
++	if (ret == 0)
++		if (find_old_idx(c, lnum, offs))
++			return 1;
 +	return ret;
 +}
 +
 +/**
-+ * ubifs_sync_wbufs_by_inodes - synchronize write-buffers which have data.
-+ * belonging to specified inodes.
++ * layout_leb_in_gaps - layout index nodes using in-the-gaps method.
 + * @c: UBIFS file-system description object
-+ * @inodes: array of inodes
-+ * @count: number of elements in @inodes
++ * @p: return LEB number here
 + *
-+ * This function synchronizes write-buffers which contain nodes belonging to
-+ * any inode specified in @inodes array. Returns zero in case of success and a
-+ * negative error code in case of failure.
++ * This function lays out new index nodes for dirty znodes using in-the-gaps
++ * method of TNC commit.
++ * This function merely puts the next znode into the next gap, making no attempt
++ * to try to maximise the number of znodes that fit.
++ * This function returns the number of index nodes written into the gaps, or a
++ * negative error code on failure.
 + */
-+int ubifs_sync_wbufs_by_inodes(struct ubifs_info *c,
-+			       struct inode * const *inodes, int count)
++static int layout_leb_in_gaps(struct ubifs_info *c, int *p)
 +{
-+	int i, j, err = 0;
++	struct ubifs_scan_leb *sleb;
++	struct ubifs_scan_node *snod;
++	int lnum, dirt = 0, gap_start, gap_end, err, written, tot_written;
 +
-+	ubifs_assert(count);
++	tot_written = 0;
++	/* Get an index LEB with lots of obsolete index nodes */
++	lnum = ubifs_find_dirty_idx_leb(c);
++	if (lnum < 0)
++		/*
++		 * There also may be dirt in the index head that could be
++		 * filled, however we do not check there at present.
++		 */
++		return lnum; /* Error code */
++	*p = lnum;
++	dbg_gc("LEB %d", lnum);
++	/*
++	 * Scan the index LEB.  We use the generic scan for this even though
++	 * it is more comprehensive and less efficient than is needed for this
++	 * purpose.
++	 */
++	sleb = ubifs_scan(c, lnum, 0, c->ileb_buf);
++	c->ileb_len = 0;
++	if (IS_ERR(sleb))
++		return PTR_ERR(sleb);
++	gap_start = 0;
++	list_for_each_entry(snod, &sleb->nodes, list) {
++		struct ubifs_idx_node *idx;
++		int in_use, level;
 +
-+	for (i = 0; i < c->jhead_cnt; i++) {
-+		struct ubifs_wbuf *wbuf = &c->jheads[i].wbuf;
-+
-+		if (i == GCHD)
++		ubifs_assert(snod->type == UBIFS_IDX_NODE);
++		idx = snod->node;
++		key_read(c, ubifs_idx_key(c, idx), &snod->key);
++		level = le16_to_cpu(idx->level);
++		/* Determine if the index node is in use (not obsolete) */
++		in_use = is_idx_node_in_use(c, &snod->key, level, lnum,
++					    snod->offs);
++		if (in_use < 0) {
++			ubifs_scan_destroy(sleb);
++			return in_use; /* Error code */
++		}
++		if (in_use) {
++			if (in_use == 1)
++				dirt += ALIGN(snod->len, 8);
 +			/*
-+			 * GC head is special, do not look at it. Even if the
-+			 * head contains something related to this inode, it is
-+			 * a _copy_ of corresponding on-flash node which sits
-+			 * somewhere else.
++			 * The obsolete index nodes form gaps that can be
++			 * overwritten.  This gap has ended because we have
++			 * found an index node that is still in use
++			 * i.e. not obsolete
 +			 */
-+			continue;
-+
-+		for (j = 0; j < count && !err; j++)
-+			if (wbuf_has_ino(wbuf, inodes[j]->i_ino)) {
-+				mutex_lock_nested(&wbuf->io_mutex, wbuf->jhead);
-+				if (wbuf_has_ino(wbuf, inodes[j]->i_ino))
-+					err = ubifs_wbuf_sync_nolock(wbuf);
-+				mutex_unlock(&wbuf->io_mutex);
-+				break;
++			gap_end = snod->offs;
++			/* Try to fill gap */
++			written = fill_gap(c, lnum, gap_start, gap_end, &dirt);
++			if (written < 0) {
++				ubifs_scan_destroy(sleb);
++				return written; /* Error code */
 +			}
-+
-+		if (err) {
-+			ubifs_ro_mode(c);
-+			break;
++			tot_written += written;
++			gap_start = ALIGN(snod->offs + snod->len, 8);
 +		}
 +	}
++	ubifs_scan_destroy(sleb);
++	c->ileb_len = c->leb_size;
++	gap_end = c->leb_size;
++	/* Try to fill gap */
++	written = fill_gap(c, lnum, gap_start, gap_end, &dirt);
++	if (written < 0)
++		return written; /* Error code */
++	tot_written += written;
++	if (tot_written == 0) {
++		struct ubifs_lprops lp;
 +
++		dbg_gc("LEB %d wrote %d index nodes", lnum, tot_written);
++		err = ubifs_read_one_lp(c, lnum, &lp);
++		if (err)
++			return err;
++		if (lp.free == c->leb_size) {
++			/*
++			 * We must have snatched this LEB from the idx_gc list
++			 * so we need to correct the free and dirty space.
++			 */
++			err = ubifs_change_one_lp(c, lnum,
++						  c->leb_size - c->ileb_len,
++						  dirt, 0, 0, 0);
++			if (err)
++				return err;
++		}
++		return 0;
++	}
++	err = ubifs_change_one_lp(c, lnum, c->leb_size - c->ileb_len, dirt,
++				  0, 0, 0);
++	if (err)
++		return err;
++	err = ubi_leb_change(c->ubi, lnum, c->ileb_buf, c->ileb_len,
++			     UBI_SHORTTERM);
++	if (err) {
++		ubifs_err("ubi_leb_change failed, error %d", err);
++		return err;
++	}
++	dbg_gc("LEB %d wrote %d index nodes", lnum, tot_written);
++	return tot_written;
++}
++
++/**
++ * get_leb_cnt - calculate the number of empty LEBs needed to commit.
++ * @c: UBIFS file-system description object
++ * @cnt: number of znodes to commit
++ *
++ * This function returns the number of empty LEBs needed to commit @cnt znodes
++ * to the current index head.  The number is not exact and may be more than
++ * needed.
++ */
++static int get_leb_cnt(struct ubifs_info *c, int cnt)
++{
++	int d;
++
++	/* Assume maximum index node size (i.e. overestimate space needed) */
++	cnt -= (c->leb_size - c->ihead_offs) / c->max_idx_node_sz;
++	if (cnt < 0)
++		cnt = 0;
++	d = c->leb_size / c->max_idx_node_sz;
++	return DIV_ROUND_UP(cnt, d);
++}
++
++/**
++ * layout_in_gaps - in-the-gaps method of committing TNC.
++ * @c: UBIFS file-system description object
++ * @cnt: number of dirty znodes to commit.
++ *
++ * This function lays out new index nodes for dirty znodes using in-the-gaps
++ * method of TNC commit.
++ *
++ * This function returns %0 on success and a negative error code on failure.
++ */
++static int layout_in_gaps(struct ubifs_info *c, int cnt)
++{
++	int err, leb_needed_cnt, written, *p;
++
++	dbg_gc("%d znodes to write", cnt);
++
++	c->gap_lebs = kmalloc(sizeof(int) * (c->lst.idx_lebs + 1), GFP_NOFS);
++	if (!c->gap_lebs)
++		return -ENOMEM;
++
++	p = c->gap_lebs;
++	do {
++		ubifs_assert(p < c->gap_lebs + sizeof(int) * c->lst.idx_lebs);
++		written = layout_leb_in_gaps(c, p);
++		if (written < 0) {
++			err = written;
++			if (err == -ENOSPC) {
++				ubifs_err("out of space");
++				spin_lock(&c->space_lock);
++				dbg_dump_budg(c);
++				spin_unlock(&c->space_lock);
++				dbg_dump_lprops(c);
++				/* Try to commit anyway */
++				err = 0;
++				break;
++			}
++			kfree(c->gap_lebs);
++			c->gap_lebs = NULL;
++			return err;
++		}
++		p++;
++		cnt -= written;
++		leb_needed_cnt = get_leb_cnt(c, cnt);
++		dbg_gc("%d znodes remaining, need %d LEBs, have %d", cnt,
++		       leb_needed_cnt, c->ileb_cnt);
++	} while (leb_needed_cnt > c->ileb_cnt);
++
++	*p = -1;
++	return 0;
++}
++
++/**
++ * layout_in_empty_space - layout index nodes in empty space.
++ * @c: UBIFS file-system description object
++ *
++ * This function lays out new index nodes for dirty znodes using empty LEBs.
++ *
++ * This function returns %0 on success and a negative error code on failure.
++ */
++static int layout_in_empty_space(struct ubifs_info *c)
++{
++	struct ubifs_znode *znode, *cnext, *zp;
++	int lnum, offs, len, next_len, buf_len, buf_offs, used, avail;
++	int wlen, blen, err;
++
++	cnext = c->enext;
++	if (cnext == NULL)
++		return 0;
++
++	lnum = c->ihead_lnum;
++	buf_offs = c->ihead_offs;
++
++	buf_len = ubifs_idx_node_sz(c, c->fanout);
++	buf_len = ALIGN(buf_len, c->min_io_size);
++	used = 0;
++	avail = buf_len;
++
++	/* Ensure there is enough room for first write */
++	next_len = ubifs_idx_node_sz(c, cnext->child_cnt);
++	if (buf_offs + next_len > c->leb_size)
++		lnum = -1;
++
++	while (1) {
++		znode = cnext;
++
++		len = ubifs_idx_node_sz(c, znode->child_cnt);
++
++		/* Determine the index node position */
++		if (lnum == -1) {
++			if (c->ileb_nxt >= c->ileb_cnt) {
++				ubifs_err("out of space");
++				return -ENOSPC;
++			}
++			lnum = c->ilebs[c->ileb_nxt++];
++			buf_offs = 0;
++			used = 0;
++			avail = buf_len;
++		}
++
++		offs = buf_offs + used;
++
++#ifdef CONFIG_UBIFS_FS_DEBUG
++		znode->lnum = lnum;
++		znode->offs = offs;
++		znode->len = len;
++#endif
++
++		/* Update the parent */
++		zp = znode->parent;
++		if (zp) {
++			struct ubifs_zbranch *zbr;
++			int i;
++
++			i = znode->iip;
++			zbr = &zp->zbranch[i];
++			zbr->lnum = lnum;
++			zbr->offs = offs;
++			zbr->len = len;
++		} else {
++			c->zroot.lnum = lnum;
++			c->zroot.offs = offs;
++			c->zroot.len = len;
++		}
++		c->calc_idx_sz += ALIGN(len, 8);
++
++		/*
++		 * Once lprops is updated, we can decrease the dirty znode count
++		 * but it is easier to just do it here.
++		 */
++		atomic_long_dec(&c->dirty_zn_cnt);
++
++		/*
++		 * Calculate the next index node length to see if there is
++		 * enough room for it
++		 */
++		cnext = znode->cnext;
++		if (cnext == c->cnext)
++			next_len = 0;
++		else
++			next_len = ubifs_idx_node_sz(c, cnext->child_cnt);
++
++		if (c->min_io_size == 1) {
++			buf_offs += ALIGN(len, 8);
++			if (next_len) {
++				if (buf_offs + next_len <= c->leb_size)
++					continue;
++				err = ubifs_update_one_lp(c, lnum, 0,
++						c->leb_size - buf_offs, 0, 0);
++				if (err)
++					return err;
++				lnum = -1;
++				continue;
++			}
++			err = ubifs_update_one_lp(c, lnum,
++					c->leb_size - buf_offs, 0, 0, 0);
++			if (err)
++				return err;
++			break;
++		}
++
++		/* Update buffer positions */
++		wlen = used + len;
++		used += ALIGN(len, 8);
++		avail -= ALIGN(len, 8);
++
++		if (next_len != 0 &&
++		    buf_offs + used + next_len <= c->leb_size &&
++		    avail > 0)
++			continue;
++
++		if (avail <= 0 && next_len &&
++		    buf_offs + used + next_len <= c->leb_size)
++			blen = buf_len;
++		else
++			blen = ALIGN(wlen, c->min_io_size);
++
++		/* The buffer is full or there are no more znodes to do */
++		buf_offs += blen;
++		if (next_len) {
++			if (buf_offs + next_len > c->leb_size) {
++				err = ubifs_update_one_lp(c, lnum,
++					c->leb_size - buf_offs, blen - used,
++					0, 0);
++				if (err)
++					return err;
++				lnum = -1;
++			}
++			used -= blen;
++			if (used < 0)
++				used = 0;
++			avail = buf_len - used;
++			continue;
++		}
++		err = ubifs_update_one_lp(c, lnum, c->leb_size - buf_offs,
++					  blen - used, 0, 0);
++		if (err)
++			return err;
++		break;
++	}
++
++#ifdef CONFIG_UBIFS_FS_DEBUG
++	c->new_ihead_lnum = lnum;
++	c->new_ihead_offs = buf_offs;
++#endif
++
++	return 0;
++}
++
++/**
++ * layout_commit - determine positions of index nodes to commit.
++ * @c: UBIFS file-system description object
++ * @no_space: indicates that insufficient empty LEBs were allocated
++ * @cnt: number of znodes to commit
++ *
++ * Calculate and update the positions of index nodes to commit.  If there were
++ * an insufficient number of empty LEBs allocated, then index nodes are placed
++ * into the gaps created by obsolete index nodes in non-empty index LEBs.  For
++ * this purpose, an obsolete index node is one that was not in the index as at
++ * the end of the last commit.  To write "in-the-gaps" requires that those index
++ * LEBs are updated atomically in-place.
++ */
++static int layout_commit(struct ubifs_info *c, int no_space, int cnt)
++{
++	int err;
++
++	if (no_space) {
++		err = layout_in_gaps(c, cnt);
++		if (err)
++			return err;
++	}
++	err = layout_in_empty_space(c);
 +	return err;
++}
++
++/**
++ * find_first_dirty - find first dirty znode.
++ * @znode: znode to begin searching from
++ */
++static struct ubifs_znode *find_first_dirty(struct ubifs_znode *znode)
++{
++	int i, cont;
++
++	if (!znode)
++		return NULL;
++
++	while (1) {
++		if (znode->level == 0) {
++			if (ubifs_zn_dirty(znode))
++				return znode;
++			return NULL;
++		}
++		cont = 0;
++		for (i = 0; i < znode->child_cnt; i++) {
++			struct ubifs_zbranch *zbr = &znode->zbranch[i];
++
++			if (zbr->znode && ubifs_zn_dirty(zbr->znode)) {
++				znode = zbr->znode;
++				cont = 1;
++				break;
++			}
++		}
++		if (!cont) {
++			if (ubifs_zn_dirty(znode))
++				return znode;
++			return NULL;
++		}
++	}
++}
++
++/**
++ * find_next_dirty - find next dirty znode.
++ * @znode: znode to begin searching from
++ */
++static struct ubifs_znode *find_next_dirty(struct ubifs_znode *znode)
++{
++	int n = znode->iip + 1;
++
++	znode = znode->parent;
++	if (!znode)
++		return NULL;
++	for (; n < znode->child_cnt; n++) {
++		struct ubifs_zbranch *zbr = &znode->zbranch[n];
++
++		if (zbr->znode && ubifs_zn_dirty(zbr->znode))
++			return find_first_dirty(zbr->znode);
++	}
++	return znode;
++}
++
++/**
++ * get_znodes_to_commit - create list of dirty znodes to commit.
++ * @c: UBIFS file-system description object
++ *
++ * This function returns the number of znodes to commit.
++ */
++static int get_znodes_to_commit(struct ubifs_info *c)
++{
++	struct ubifs_znode *znode, *cnext;
++	int cnt = 0;
++
++	c->cnext = find_first_dirty(c->zroot.znode);
++	znode = c->enext = c->cnext;
++	if (!znode) {
++		dbg_cmt("no znodes to commit");
++		return 0;
++	}
++	cnt += 1;
++	while (1) {
++		ubifs_assert(!test_bit(COW_ZNODE, &znode->flags));
++		set_bit(COW_ZNODE, &znode->flags);
++		znode->alt = 0;
++		cnext = find_next_dirty(znode);
++		if (!cnext) {
++			znode->cnext = c->cnext;
++			break;
++		}
++		znode->cnext = cnext;
++		znode = cnext;
++		cnt += 1;
++	}
++	dbg_cmt("committing %d znodes", cnt);
++	ubifs_assert(cnt == atomic_long_read(&c->dirty_zn_cnt));
++	return cnt;
++}
++
++/**
++ * alloc_idx_lebs - allocate empty LEBs to be used to commit.
++ * @c: UBIFS file-system description object
++ * @cnt: number of znodes to commit
++ *
++ * This function returns %-ENOSPC if it cannot allocate a sufficient number of
++ * empty LEBs.  %0 is returned on success, otherwise a negative error code
++ * is returned.
++ */
++static int alloc_idx_lebs(struct ubifs_info *c, int cnt)
++{
++	int i, leb_cnt, lnum;
++
++	c->ileb_cnt = 0;
++	c->ileb_nxt = 0;
++	leb_cnt = get_leb_cnt(c, cnt);
++	dbg_cmt("need about %d empty LEBS for TNC commit", leb_cnt);
++	if (!leb_cnt)
++		return 0;
++	c->ilebs = kmalloc(leb_cnt * sizeof(int), GFP_NOFS);
++	if (!c->ilebs)
++		return -ENOMEM;
++	for (i = 0; i < leb_cnt; i++) {
++		lnum = ubifs_find_free_leb_for_idx(c);
++		if (lnum < 0)
++			return lnum;
++		c->ilebs[c->ileb_cnt++] = lnum;
++		dbg_cmt("LEB %d", lnum);
++	}
++	return 0;
++}
++
++/**
++ * free_unused_idx_lebs - free unused LEBs that were allocated for the commit.
++ * @c: UBIFS file-system description object
++ *
++ * It is possible that we allocate more empty LEBs for the commit than we need.
++ * This functions frees the surplus.
++ *
++ * This function returns %0 on success and a negative error code on failure.
++ */
++static int free_unused_idx_lebs(struct ubifs_info *c)
++{
++	int i, err = 0, lnum, er;
++
++	for (i = c->ileb_nxt; i < c->ileb_cnt; i++) {
++		lnum = c->ilebs[i];
++		dbg_cmt("LEB %d", lnum);
++		er = ubifs_change_one_lp(c, lnum, -1, -1, 0,
++					 LPROPS_INDEX | LPROPS_TAKEN, 0);
++		if (!err)
++			err = er;
++	}
++	return err;
++}
++
++/**
++ * free_idx_lebs - free unused LEBs after commit end.
++ * @c: UBIFS file-system description object
++ *
++ * This function returns %0 on success and a negative error code on failure.
++ */
++static int free_idx_lebs(struct ubifs_info *c)
++{
++	int err;
++
++	err = free_unused_idx_lebs(c);
++	kfree(c->ilebs);
++	c->ilebs = NULL;
++	return err;
++}
++
++/**
++ * ubifs_tnc_start_commit - start TNC commit.
++ * @c: UBIFS file-system description object
++ * @zroot: new index root position is returned here
++ *
++ * This function prepares the list of indexing nodes to commit and lays out
++ * their positions on flash. If there is not enough free space it uses the
++ * in-gap commit method. Returns zero in case of success and a negative error
++ * code in case of failure.
++ */
++int ubifs_tnc_start_commit(struct ubifs_info *c, struct ubifs_zbranch *zroot)
++{
++	int err = 0, cnt;
++
++	mutex_lock(&c->tnc_mutex);
++	err = dbg_check_tnc(c, 1);
++	if (err)
++		goto out;
++	cnt = get_znodes_to_commit(c);
++	if (cnt != 0) {
++		int no_space = 0;
++
++		err = alloc_idx_lebs(c, cnt);
++		if (err == -ENOSPC)
++			no_space = 1;
++		else if (err)
++			goto out_free;
++		err = layout_commit(c, no_space, cnt);
++		if (err)
++			goto out_free;
++		ubifs_assert(atomic_long_read(&c->dirty_zn_cnt) == 0);
++		err = free_unused_idx_lebs(c);
++		if (err)
++			goto out;
++	}
++	destroy_old_idx(c);
++	memcpy(zroot, &c->zroot, sizeof(struct ubifs_zbranch));
++
++	err = ubifs_save_dirty_idx_lnums(c);
++	if (err)
++		goto out;
++
++	spin_lock(&c->space_lock);
++	/*
++	 * Although we have not finished committing yet, update size of the
++	 * committed index ('c->old_idx_sz') and zero out the index growth
++	 * budget. It is OK to do this now, because we've reserved all the
++	 * space which is needed to commit the index, and it is save for the
++	 * budgeting subsystem to assume the index is already committed,
++	 * even though it is not.
++	 */
++	c->old_idx_sz = c->calc_idx_sz;
++	c->budg_uncommitted_idx = 0;
++	spin_unlock(&c->space_lock);
++	mutex_unlock(&c->tnc_mutex);
++
++	dbg_cmt("number of index LEBs %d", c->lst.idx_lebs);
++	dbg_cmt("size of index %llu", c->calc_idx_sz);
++	return err;
++
++out_free:
++	free_idx_lebs(c);
++out:
++	mutex_unlock(&c->tnc_mutex);
++	return err;
++}
++
++/**
++ * write_index - write index nodes.
++ * @c: UBIFS file-system description object
++ *
++ * This function writes the index nodes whose positions were laid out in the
++ * layout_in_empty_space function.
++ */
++static int write_index(struct ubifs_info *c)
++{
++	struct ubifs_idx_node *idx;
++	struct ubifs_znode *znode, *cnext;
++	int i, lnum, offs, len, next_len, buf_len, buf_offs, used;
++	int avail, wlen, err, lnum_pos = 0;
++
++	cnext = c->enext;
++	if (!cnext)
++		return 0;
++
++	/*
++	 * Always write index nodes to the index head so that index nodes and
++	 * other types of nodes are never mixed in the same erase block.
++	 */
++	lnum = c->ihead_lnum;
++	buf_offs = c->ihead_offs;
++
++	/* Allocate commit buffer */
++	buf_len = ALIGN(c->max_idx_node_sz, c->min_io_size);
++	used = 0;
++	avail = buf_len;
++
++	/* Ensure there is enough room for first write */
++	next_len = ubifs_idx_node_sz(c, cnext->child_cnt);
++	if (buf_offs + next_len > c->leb_size) {
++		err = ubifs_update_one_lp(c, lnum, -1, -1, 0, LPROPS_TAKEN);
++		if (err)
++			return err;
++		lnum = -1;
++	}
++
++	while (1) {
++		cond_resched();
++
++		znode = cnext;
++		idx = c->cbuf + used;
++
++		/* Make index node */
++		idx->ch.node_type = UBIFS_IDX_NODE;
++		idx->child_cnt = cpu_to_le16(znode->child_cnt);
++		idx->level = cpu_to_le16(znode->level);
++		for (i = 0; i < znode->child_cnt; i++) {
++			struct ubifs_branch *br = ubifs_idx_branch(c, idx, i);
++			struct ubifs_zbranch *zbr = &znode->zbranch[i];
++
++			key_write_idx(c, &zbr->key, &br->key);
++			br->lnum = cpu_to_le32(zbr->lnum);
++			br->offs = cpu_to_le32(zbr->offs);
++			br->len = cpu_to_le32(zbr->len);
++			if (!zbr->lnum || !zbr->len) {
++				ubifs_err("bad ref in znode");
++				dbg_dump_znode(c, znode);
++				if (zbr->znode)
++					dbg_dump_znode(c, zbr->znode);
++			}
++		}
++		len = ubifs_idx_node_sz(c, znode->child_cnt);
++		ubifs_prepare_node(c, idx, len, 0);
++
++		/* Determine the index node position */
++		if (lnum == -1) {
++			lnum = c->ilebs[lnum_pos++];
++			buf_offs = 0;
++			used = 0;
++			avail = buf_len;
++		}
++		offs = buf_offs + used;
++
++#ifdef CONFIG_UBIFS_FS_DEBUG
++		if (lnum != znode->lnum || offs != znode->offs ||
++		    len != znode->len) {
++			ubifs_err("inconsistent znode posn");
++			return -EINVAL;
++		}
++#endif
++
++		/* Grab some stuff from znode while we still can */
++		cnext = znode->cnext;
++
++		ubifs_assert(ubifs_zn_dirty(znode));
++		ubifs_assert(test_bit(COW_ZNODE, &znode->flags));
++
++		clear_bit(DIRTY_ZNODE, &znode->flags);
++		smp_mb__before_clear_bit();
++		clear_bit(COW_ZNODE, &znode->flags);
++		smp_mb__after_clear_bit();
++
++		/* Do not access znode from this point on */
++
++		/* Update buffer positions */
++		wlen = used + len;
++		used += ALIGN(len, 8);
++		avail -= ALIGN(len, 8);
++
++		/*
++		 * Calculate the next index node length to see if there is
++		 * enough room for it
++		 */
++		if (cnext == c->cnext)
++			next_len = 0;
++		else
++			next_len = ubifs_idx_node_sz(c, cnext->child_cnt);
++
++		if (c->min_io_size == 1) {
++			/*
++			 * Write the prepared index node immediately if there is
++			 * no minimum IO size
++			 */
++			err = ubifs_leb_write(c, lnum, c->cbuf, buf_offs,
++					      wlen, UBI_SHORTTERM);
++			if (err)
++				return err;
++			buf_offs += ALIGN(wlen, 8);
++			if (next_len) {
++				used = 0;
++				avail = buf_len;
++				if (buf_offs + next_len > c->leb_size) {
++					err = ubifs_update_one_lp(c, lnum, -1,
++								  -1, 0,
++								  LPROPS_TAKEN);
++					if (err)
++						return err;
++					lnum = -1;
++				}
++				continue;
++			}
++		} else {
++			int blen, nxt_offs = buf_offs + used + next_len;
++
++			if (next_len && nxt_offs <= c->leb_size) {
++				if (avail > 0)
++					continue;
++				else
++					blen = buf_len;
++			} else {
++				wlen = ALIGN(wlen, 8);
++				blen = ALIGN(wlen, c->min_io_size);
++				ubifs_pad(c, c->cbuf + wlen, blen - wlen);
++			}
++			/*
++			 * The buffer is full or there are no more znodes
++			 * to do
++			 */
++			err = ubifs_leb_write(c, lnum, c->cbuf, buf_offs,
++					      blen, UBI_SHORTTERM);
++			if (err)
++				return err;
++			buf_offs += blen;
++			if (next_len) {
++				if (nxt_offs > c->leb_size) {
++					err = ubifs_update_one_lp(c, lnum, -1,
++								  -1, 0,
++								  LPROPS_TAKEN);
++					if (err)
++						return err;
++					lnum = -1;
++				}
++				used -= blen;
++				if (used < 0)
++					used = 0;
++				avail = buf_len - used;
++				memmove(c->cbuf, c->cbuf + blen, used);
++				continue;
++			}
++		}
++		break;
++	}
++
++#ifdef CONFIG_UBIFS_FS_DEBUG
++	if (lnum != c->new_ihead_lnum || buf_offs != c->new_ihead_offs) {
++		ubifs_err("inconsistent ihead");
++		return -EINVAL;
++	}
++#endif
++
++	c->ihead_lnum = lnum;
++	c->ihead_offs = buf_offs;
++
++	return 0;
++}
++
++/**
++ * free_obsolete_znodes - free obsolete znodes.
++ * @c: UBIFS file-system description object
++ *
++ * At the end of commit end, obsolete znodes are freed.
++ */
++static void free_obsolete_znodes(struct ubifs_info *c)
++{
++	struct ubifs_znode *znode, *cnext;
++
++	cnext = c->cnext;
++	do {
++		znode = cnext;
++		cnext = znode->cnext;
++		if (test_bit(OBSOLETE_ZNODE, &znode->flags))
++			kfree(znode);
++		else {
++			znode->cnext = NULL;
++			atomic_long_inc(&c->clean_zn_cnt);
++			atomic_long_inc(&ubifs_clean_zn_cnt);
++		}
++	} while (cnext != c->cnext);
++}
++
++/**
++ * return_gap_lebs - return LEBs used by the in-gap commit method.
++ * @c: UBIFS file-system description object
++ *
++ * This function clears the "taken" flag for the LEBs which were used by the
++ * "commit in-the-gaps" method.
++ */
++static int return_gap_lebs(struct ubifs_info *c)
++{
++	int *p, err;
++
++	if (!c->gap_lebs)
++		return 0;
++
++	dbg_cmt("");
++	for (p = c->gap_lebs; *p != -1; p++) {
++		err = ubifs_change_one_lp(c, *p, -1, -1, 0, LPROPS_TAKEN, 0);
++		if (err)
++			return err;
++	}
++
++	kfree(c->gap_lebs);
++	c->gap_lebs = NULL;
++	return 0;
++}
++
++/**
++ * ubifs_tnc_end_commit - update the TNC for commit end.
++ * @c: UBIFS file-system description object
++ *
++ * Write the dirty znodes.
++ */
++int ubifs_tnc_end_commit(struct ubifs_info *c)
++{
++	int err;
++
++	if (!c->cnext)
++		return 0;
++
++	err = return_gap_lebs(c);
++	if (err)
++		return err;
++
++	err = write_index(c);
++	if (err)
++		return err;
++
++	mutex_lock(&c->tnc_mutex);
++
++	dbg_cmt("TNC height is %d", c->zroot.znode->level + 1);
++
++	free_obsolete_znodes(c);
++
++	c->cnext = NULL;
++	kfree(c->ilebs);
++	c->ilebs = NULL;
++
++	mutex_unlock(&c->tnc_mutex);
++
++	return 0;
 +}
 -- 
 1.5.4.1
