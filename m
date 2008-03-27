@@ -1,49 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759669AbYC0KCh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759194AbYC0KFI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759669AbYC0KCh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Mar 2008 06:02:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756725AbYC0KC0
+	id S1759194AbYC0KFI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Mar 2008 06:05:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756664AbYC0KE5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Mar 2008 06:02:26 -0400
-Received: from ug-out-1314.google.com ([66.249.92.175]:55175 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756675AbYC0KCZ (ORCPT
+	Thu, 27 Mar 2008 06:04:57 -0400
+Received: from mis011-2.exch011.intermedia.net ([64.78.21.129]:22209 "EHLO
+	mis011-2.exch011.intermedia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756593AbYC0KE5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Mar 2008 06:02:25 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=lKfZXDa2qBHfSgeaXBc3xMdV4slEjc0qJgOTRXV2fD6AHZv+yy906JVSh0VpRrknR0dHhTz5K6OHh9u8ONe4tr1HnKhtKT5o0oSP17aW2npRCPtS2IyM3di/Usu7NcXfZGlqU+kbozMJjADgG830O2Ioo//GJLoxwIVwWCSszsU=
-Date: Thu, 27 Mar 2008 11:07:00 +0100
-From: Jarek Poplawski <jarkao2@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: netdev@vger.kernel.org, bugme-daemon@bugzilla.kernel.org, marcus@better.se,
-       Stephen Hemminger <shemminger@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [Bugme-new] [Bug 10326] New: inconsistent lock state in
-	net_rx_action
-Message-ID: <20080327100700.GA2845@ami.dom.local>
-References: <bug-10326-10286@http.bugzilla.kernel.org/> <20080325134320.21525479.akpm@linux-foundation.org> <47EAD8A5.3070806@gmail.com> <20080326171403.ad186037.akpm@linux-foundation.org> <20080327085542.GA2778@ami.dom.local> <20080327021812.601776b8.akpm@linux-foundation.org>
+	Thu, 27 Mar 2008 06:04:57 -0400
+X-Greylist: delayed 910 seconds by postgrey-1.27 at vger.kernel.org; Thu, 27 Mar 2008 06:04:57 EDT
+From: Amit Shah <amit.shah@qumranet.com>
+To: "Glauber Costa" <gcosta@redhat.com>
+Subject: Re: [PATCH 0/20] dma_ops for i386
+Date: Thu, 27 Mar 2008 15:19:44 +0530
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, glommer@gmail.com,
+       mingo@elte.hu, tglx@linutronix.de, kvm-devel@lists.sourceforge.net,
+       "Avi Kivity" <avi@qumranet.com>
+References: <1206480999-21767-1-git-send-email-gcosta@redhat.com>
+In-Reply-To: <1206480999-21767-1-git-send-email-gcosta@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080327021812.601776b8.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Message-Id: <200803271519.44871.amit.shah@qumranet.com>
+X-OriginalArrivalTime: 27 Mar 2008 09:49:46.0600 (UTC) FILETIME=[E40BE680:01C88FEF]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 27, 2008 at 02:18:12AM -0700, Andrew Morton wrote:
-...
-> Anyway, the accusation is that lockdep is busted, in that it doesn't realise that
-> local_irq_disable() blocks softirqs.
+* On Wednesday 26 March 2008 03:06:19 Glauber Costa wrote:
+> Hello,
+>
+> Here there is a series of 20 patches that lays the foundations for
+> using dma_ops in i386 in the very same way x86_64, as well as many other
+> architectures already do.
 
-Usually lockdep gets this right, so I've some doubts too. But here
-it's not only about softirqs; this:
+Thanks; Please also see Stephen Tweedie's tree at
 
-> >> Mar 25 19:48:46 better kernel:  #1:  (target_list_lock){--..}, at: [<c0399c0d>]
+http://git.et.redhat.com/?p=linux-2.6-dom0-pvops.git;a=summary
 
-means lockdep saw hardirqs enabled while acquiring/holding this lock.
-
-Jarek P.
+I guess your work would be overlapped anyway, but just to make sure there's no 
+double work.
