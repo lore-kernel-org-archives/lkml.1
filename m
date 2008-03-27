@@ -1,735 +1,215 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760056AbYC0UDp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759159AbYC0UZe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760056AbYC0UDp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Mar 2008 16:03:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756349AbYC0UDh
+	id S1759159AbYC0UZe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Mar 2008 16:25:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757635AbYC0UZZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Mar 2008 16:03:37 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:41254 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755874AbYC0UDf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Mar 2008 16:03:35 -0400
-Date: Thu, 27 Mar 2008 21:03:09 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [git pull] x86 fixes
-Message-ID: <20080327200309.GA18550@elte.hu>
+	Thu, 27 Mar 2008 16:25:25 -0400
+Received: from smtp-out0.tiscali.nl ([195.241.79.175]:52858 "EHLO
+	smtp-out0.tiscali.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757478AbYC0UZZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Mar 2008 16:25:25 -0400
+Message-ID: <47EC02A7.5020909@tiscali.nl>
+Date: Thu, 27 Mar 2008 21:25:11 +0100
+From: Roel Kluin <12o3l@tiscali.nl>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Daniel Walker <dwalker@mvista.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+CC: nickpiggin@yahoo.com.au, lkml <linux-kernel@vger.kernel.org>
+Subject: [PATCH v2 -mm] likeliness accounting change and cleanup
+References: <47EAB608.6060204@tiscali.nl> <1206636313.4670.131.camel@localhost.localdomain>
+In-Reply-To: <1206636313.4670.131.camel@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Daniel Walker wrote:
 
-Linus, please pull the latest x86 git tree from:
+> It's looks good to me .. You'll have to send it to Andrew to get it
+> included tho ..
+> 
+> Daniel
 
-   git://git.kernel.org/pub/scm/linux/kernel/git/x86/linux-2.6-x86.git for-linus
+Store __builtin_return_address (caller) rather than __func__ in likeliness
+struct. 'line' and 'type' are combined in 'label'
 
-Thanks,
++/- now denotes whether expectation fails in less than 5% of the tests - rather
+than whether more unexpected than expected were encountered. The function at
+the displayed filename & line and the caller are not necessarily the same.
+A few more Likely Profiling Results changes were made.
 
-	Ingo
+struct seq_operations becomes static, unsigned ints true and false (shadowed)
+are replaced by pos and neg.
 
------------------->
-Andrew Morton (1):
-      x86: ptrace.c: fix defined-but-unused warnings
+Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
+---
+This should be applied after the -mm patches:
+http://www.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.25-rc5/2.6.25-rc5-mm1/broken-out/profile-likely-unlikely-macros.patch
+http://www.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.25-rc5/2.6.25-rc5-mm1/broken-out/profile-likely-unlikely-macros-fix.patch
 
-Christoph Lameter (1):
-      x86: stricter check in follow_huge_addr()
+New layout:
 
-Florian Fainelli (1):
-      rdc321x: GPIO routines bugfixes
+Likely Profiling Results
+ --------------------------------------------------------------------
+[+- ]Type | # True  | # False | Function@Filename:Line
+ unlikely |        0|    32082| fget+0xd0/0x1d0@include/asm/arch/atomic_32.h:235
 
-Ingo Molnar (1):
-      x86: fix prefetch workaround
+Compiles and runs here. Thanks for previous comments.
 
-Jeremy Fitzhardinge (2):
-      xen: fix RMW when unmasking events
-      xen: fix UP setup of shared_info
+ include/linux/compiler.h |   16 ++++++++--------
+ lib/likely_prof.c        |   45 +++++++++++++++++++++++++--------------------
+ 2 files changed, 33 insertions(+), 28 deletions(-)
 
-Marcin Slusarz (1):
-      x86, documentation: nmi_watchdog=2 works on x86_64
-
- Documentation/nmi_watchdog.txt              |    3 +-
- arch/x86/kernel/ptrace.c                    |  169 ++++++++++++-----------
- arch/x86/mach-rdc321x/gpio.c                |  199 ++++++++++++++++++++-------
- arch/x86/mach-rdc321x/platform.c            |    2 +
- arch/x86/mm/fault.c                         |    3 +-
- arch/x86/mm/hugetlbpage.c                   |    2 +-
- arch/x86/xen/enlighten.c                    |   47 ++++---
- arch/x86/xen/xen-asm.S                      |    9 +-
- include/asm-x86/mach-rdc321x/gpio.h         |    9 +-
- include/asm-x86/mach-rdc321x/rdc321x_defs.h |    8 +-
- 10 files changed, 287 insertions(+), 164 deletions(-)
-
-diff --git a/Documentation/nmi_watchdog.txt b/Documentation/nmi_watchdog.txt
-index c025a45..757c729 100644
---- a/Documentation/nmi_watchdog.txt
-+++ b/Documentation/nmi_watchdog.txt
-@@ -23,8 +23,7 @@ kernel debugging options, such as Kernel Stack Meter or Kernel Tracer,
- may implicitly disable the NMI watchdog.]
+diff --git a/include/linux/compiler.h b/include/linux/compiler.h
+index d6d9efc..bd31d4c 100644
+--- a/include/linux/compiler.h
++++ b/include/linux/compiler.h
+@@ -53,25 +53,25 @@ extern void __chk_io_ptr(const volatile void __iomem *);
  
- For x86-64, the needed APIC is always compiled in, and the NMI watchdog is
--always enabled with I/O-APIC mode (nmi_watchdog=1). Currently, local APIC
--mode (nmi_watchdog=2) does not work on x86-64.
-+always enabled with I/O-APIC mode (nmi_watchdog=1).
+ #if defined(CONFIG_PROFILE_LIKELY) && !(defined(CONFIG_MODULE_UNLOAD) && defined(MODULE))
+ struct likeliness {
+-	const char *func;
+-	char *file;
+-	int line;
+-	int type;
++	char *const file;
++	unsigned long caller;
+ 	unsigned int count[2];
+ 	struct likeliness *next;
++	unsigned int label;
+ };
  
- Using local APIC (nmi_watchdog=2) needs the first performance register, so
- you can't use it for other purposes (such as high precision performance
-diff --git a/arch/x86/kernel/ptrace.c b/arch/x86/kernel/ptrace.c
-index d5904ee..eb92ccb 100644
---- a/arch/x86/kernel/ptrace.c
-+++ b/arch/x86/kernel/ptrace.c
-@@ -600,21 +600,6 @@ static int ptrace_bts_read_record(struct task_struct *child,
- 	return sizeof(ret);
- }
+-extern int do_check_likely(struct likeliness *likeliness, int exp);
++extern int do_check_likely(struct likeliness *likeliness, unsigned int exp);
  
--static int ptrace_bts_write_record(struct task_struct *child,
--				   const struct bts_struct *in)
--{
--	int retval;
--
--	if (!child->thread.ds_area_msr)
--		return -ENXIO;
--
--	retval = ds_write_bts((void *)child->thread.ds_area_msr, in);
--	if (retval)
--		return retval;
--
--	return sizeof(*in);
--}
--
- static int ptrace_bts_clear(struct task_struct *child)
++#define LP_IS_EXPECTED	1
+ #define LP_UNSEEN	4
++#define LP_LINE_SHIFT	3
+ 
+ #define __check_likely(exp, is_likely)					\
+ 	({								\
+ 		static struct likeliness likeliness = {			\
+-			.func = __func__,				\
+ 			.file = __FILE__,				\
+-			.line = __LINE__,				\
+-			.type = is_likely | LP_UNSEEN,			\
++			.label = __LINE__ << LP_LINE_SHIFT |		\
++						LP_UNSEEN | is_likely,	\
+ 		};							\
+ 		do_check_likely(&likeliness, !!(exp));			\
+ 	})
+diff --git a/lib/likely_prof.c b/lib/likely_prof.c
+index 5c6d91d..c9f5de3 100644
+--- a/lib/likely_prof.c
++++ b/lib/likely_prof.c
+@@ -15,34 +15,34 @@
+ #include <linux/fs.h>
+ #include <linux/seq_file.h>
+ #include <linux/proc_fs.h>
++#include <linux/kallsyms.h>
+ 
+ #include <asm/bug.h>
+ #include <asm/atomic.h>
+ 
+ static struct likeliness *likeliness_head;
+ 
+-int do_check_likely(struct likeliness *likeliness, int ret)
++int do_check_likely(struct likeliness *likeliness, unsigned int ret)
  {
- 	if (!child->thread.ds_area_msr)
-@@ -657,75 +642,6 @@ static int ptrace_bts_drain(struct task_struct *child,
- 	return end;
- }
+ 	static unsigned long likely_lock;
  
--static int ptrace_bts_realloc(struct task_struct *child,
--			      int size, int reduce_size)
--{
--	unsigned long rlim, vm;
--	int ret, old_size;
--
--	if (size < 0)
--		return -EINVAL;
--
--	old_size = ds_get_bts_size((void *)child->thread.ds_area_msr);
--	if (old_size < 0)
--		return old_size;
--
--	ret = ds_free((void **)&child->thread.ds_area_msr);
--	if (ret < 0)
--		goto out;
--
--	size >>= PAGE_SHIFT;
--	old_size >>= PAGE_SHIFT;
--
--	current->mm->total_vm  -= old_size;
--	current->mm->locked_vm -= old_size;
--
--	if (size == 0)
--		goto out;
--
--	rlim = current->signal->rlim[RLIMIT_AS].rlim_cur >> PAGE_SHIFT;
--	vm = current->mm->total_vm  + size;
--	if (rlim < vm) {
--		ret = -ENOMEM;
--
--		if (!reduce_size)
--			goto out;
--
--		size = rlim - current->mm->total_vm;
--		if (size <= 0)
--			goto out;
--	}
--
--	rlim = current->signal->rlim[RLIMIT_MEMLOCK].rlim_cur >> PAGE_SHIFT;
--	vm = current->mm->locked_vm  + size;
--	if (rlim < vm) {
--		ret = -ENOMEM;
--
--		if (!reduce_size)
--			goto out;
--
--		size = rlim - current->mm->locked_vm;
--		if (size <= 0)
--			goto out;
--	}
--
--	ret = ds_allocate((void **)&child->thread.ds_area_msr,
--			  size << PAGE_SHIFT);
--	if (ret < 0)
--		goto out;
--
--	current->mm->total_vm  += size;
--	current->mm->locked_vm += size;
--
--out:
--	if (child->thread.ds_area_msr)
--		set_tsk_thread_flag(child, TIF_DS_AREA_MSR);
+-	if (ret)
+-		likeliness->count[1]++;
 -	else
--		clear_tsk_thread_flag(child, TIF_DS_AREA_MSR);
--
--	return ret;
--}
--
- static int ptrace_bts_config(struct task_struct *child,
- 			     long cfg_size,
- 			     const struct ptrace_bts_config __user *ucfg)
-@@ -828,6 +744,91 @@ static int ptrace_bts_status(struct task_struct *child,
- 	return sizeof(cfg);
- }
+-		likeliness->count[0]++;
++	likeliness->count[ret]++;
  
-+
-+static int ptrace_bts_write_record(struct task_struct *child,
-+				   const struct bts_struct *in)
-+{
-+	int retval;
-+
-+	if (!child->thread.ds_area_msr)
-+		return -ENXIO;
-+
-+	retval = ds_write_bts((void *)child->thread.ds_area_msr, in);
-+	if (retval)
-+		return retval;
-+
-+	return sizeof(*in);
-+}
-+
-+static int ptrace_bts_realloc(struct task_struct *child,
-+			      int size, int reduce_size)
-+{
-+	unsigned long rlim, vm;
-+	int ret, old_size;
-+
-+	if (size < 0)
-+		return -EINVAL;
-+
-+	old_size = ds_get_bts_size((void *)child->thread.ds_area_msr);
-+	if (old_size < 0)
-+		return old_size;
-+
-+	ret = ds_free((void **)&child->thread.ds_area_msr);
-+	if (ret < 0)
-+		goto out;
-+
-+	size >>= PAGE_SHIFT;
-+	old_size >>= PAGE_SHIFT;
-+
-+	current->mm->total_vm  -= old_size;
-+	current->mm->locked_vm -= old_size;
-+
-+	if (size == 0)
-+		goto out;
-+
-+	rlim = current->signal->rlim[RLIMIT_AS].rlim_cur >> PAGE_SHIFT;
-+	vm = current->mm->total_vm  + size;
-+	if (rlim < vm) {
-+		ret = -ENOMEM;
-+
-+		if (!reduce_size)
-+			goto out;
-+
-+		size = rlim - current->mm->total_vm;
-+		if (size <= 0)
-+			goto out;
-+	}
-+
-+	rlim = current->signal->rlim[RLIMIT_MEMLOCK].rlim_cur >> PAGE_SHIFT;
-+	vm = current->mm->locked_vm  + size;
-+	if (rlim < vm) {
-+		ret = -ENOMEM;
-+
-+		if (!reduce_size)
-+			goto out;
-+
-+		size = rlim - current->mm->locked_vm;
-+		if (size <= 0)
-+			goto out;
-+	}
-+
-+	ret = ds_allocate((void **)&child->thread.ds_area_msr,
-+			  size << PAGE_SHIFT);
-+	if (ret < 0)
-+		goto out;
-+
-+	current->mm->total_vm  += size;
-+	current->mm->locked_vm += size;
-+
-+out:
-+	if (child->thread.ds_area_msr)
-+		set_tsk_thread_flag(child, TIF_DS_AREA_MSR);
-+	else
-+		clear_tsk_thread_flag(child, TIF_DS_AREA_MSR);
-+
-+	return ret;
-+}
-+
- void ptrace_bts_take_timestamp(struct task_struct *tsk,
- 			       enum bts_qualifier qualifier)
- {
-diff --git a/arch/x86/mach-rdc321x/gpio.c b/arch/x86/mach-rdc321x/gpio.c
-index 0312691..247f33d 100644
---- a/arch/x86/mach-rdc321x/gpio.c
-+++ b/arch/x86/mach-rdc321x/gpio.c
-@@ -1,91 +1,194 @@
- /*
-- *  Copyright (C) 2007, OpenWrt.org, Florian Fainelli <florian@openwrt.org>
-- *  	RDC321x architecture specific GPIO support
-+ *  GPIO support for RDC SoC R3210/R8610
-+ *
-+ *  Copyright (C) 2007, Florian Fainelli <florian@openwrt.org>
-+ *  Copyright (C) 2008, Volker Weiss <dev@tintuc.de>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-  *
-- *  This program is free software; you can redistribute  it and/or modify it
-- *  under  the terms of  the GNU General  Public License as published by the
-- *  Free Software Foundation;  either version 2 of the  License, or (at your
-- *  option) any later version.
-  */
- 
--#include <linux/autoconf.h>
--#include <linux/init.h>
-+
-+#include <linux/spinlock.h>
- #include <linux/io.h>
- #include <linux/types.h>
- #include <linux/module.h>
--#include <linux/delay.h>
- 
-+#include <asm/gpio.h>
- #include <asm/mach-rdc321x/rdc321x_defs.h>
- 
--static inline int rdc_gpio_is_valid(unsigned gpio)
-+
-+/* spin lock to protect our private copy of GPIO data register plus
-+   the access to PCI conf registers. */
-+static DEFINE_SPINLOCK(gpio_lock);
-+
-+/* copy of GPIO data registers */
-+static u32 gpio_data_reg1;
-+static u32 gpio_data_reg2;
-+
-+static u32 gpio_request_data[2];
-+
-+
-+static inline void rdc321x_conf_write(unsigned addr, u32 value)
- {
--	return (gpio <= RDC_MAX_GPIO);
-+	outl((1 << 31) | (7 << 11) | addr, RDC3210_CFGREG_ADDR);
-+	outl(value, RDC3210_CFGREG_DATA);
- }
- 
--static unsigned int rdc_gpio_read(unsigned gpio)
-+static inline void rdc321x_conf_or(unsigned addr, u32 value)
- {
--	unsigned int val;
--
--	val = 0x80000000 | (7 << 11) | ((gpio&0x20?0x84:0x48));
--	outl(val, RDC3210_CFGREG_ADDR);
--	udelay(10);
--	val = inl(RDC3210_CFGREG_DATA);
--	val |= (0x1 << (gpio & 0x1F));
--	outl(val, RDC3210_CFGREG_DATA);
--	udelay(10);
--	val = 0x80000000 | (7 << 11) | ((gpio&0x20?0x88:0x4C));
--	outl(val, RDC3210_CFGREG_ADDR);
--	udelay(10);
--	val = inl(RDC3210_CFGREG_DATA);
--
--	return val;
-+	outl((1 << 31) | (7 << 11) | addr, RDC3210_CFGREG_ADDR);
-+	value |= inl(RDC3210_CFGREG_DATA);
-+	outl(value, RDC3210_CFGREG_DATA);
- }
- 
--static void rdc_gpio_write(unsigned int val)
-+static inline u32 rdc321x_conf_read(unsigned addr)
- {
--	if (val) {
--		outl(val, RDC3210_CFGREG_DATA);
--		udelay(10);
--	}
-+	outl((1 << 31) | (7 << 11) | addr, RDC3210_CFGREG_ADDR);
-+
-+	return inl(RDC3210_CFGREG_DATA);
- }
- 
--int rdc_gpio_get_value(unsigned gpio)
-+/* configure pin as GPIO */
-+static void rdc321x_configure_gpio(unsigned gpio)
-+{
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&gpio_lock, flags);
-+	rdc321x_conf_or(gpio < 32
-+		? RDC321X_GPIO_CTRL_REG1 : RDC321X_GPIO_CTRL_REG2,
-+		1 << (gpio & 0x1f));
-+	spin_unlock_irqrestore(&gpio_lock, flags);
-+}
-+
-+/* initially setup the 2 copies of the gpio data registers.
-+   This function must be called by the platform setup code. */
-+void __init rdc321x_gpio_setup()
-+{
-+	/* this might not be, what others (BIOS, bootloader, etc.)
-+	   wrote to these registers before, but it's a good guess. Still
-+	   better than just using 0xffffffff. */
-+
-+	gpio_data_reg1 = rdc321x_conf_read(RDC321X_GPIO_DATA_REG1);
-+	gpio_data_reg2 = rdc321x_conf_read(RDC321X_GPIO_DATA_REG2);
-+}
-+
-+/* determine, if gpio number is valid */
-+static inline int rdc321x_is_gpio(unsigned gpio)
-+{
-+	return gpio <= RDC321X_MAX_GPIO;
-+}
-+
-+/* request GPIO */
-+int rdc_gpio_request(unsigned gpio, const char *label)
- {
--	if (rdc_gpio_is_valid(gpio))
--		return (int)rdc_gpio_read(gpio);
--	else
-+	unsigned long flags;
-+
-+	if (!rdc321x_is_gpio(gpio))
- 		return -EINVAL;
-+
-+	spin_lock_irqsave(&gpio_lock, flags);
-+	if (gpio_request_data[(gpio & 0x20) ? 1 : 0] & (1 << (gpio & 0x1f)))
-+		goto inuse;
-+	gpio_request_data[(gpio & 0x20) ? 1 : 0] |= (1 << (gpio & 0x1f));
-+	spin_unlock_irqrestore(&gpio_lock, flags);
-+
-+	return 0;
-+inuse:
-+	spin_unlock_irqrestore(&gpio_lock, flags);
-+	return -EINVAL;
- }
--EXPORT_SYMBOL(rdc_gpio_get_value);
-+EXPORT_SYMBOL(rdc_gpio_request);
- 
--void rdc_gpio_set_value(unsigned gpio, int value)
-+/* release previously-claimed GPIO */
-+void rdc_gpio_free(unsigned gpio)
- {
--	unsigned int val;
-+	unsigned long flags;
- 
--	if (!rdc_gpio_is_valid(gpio))
-+	if (!rdc321x_is_gpio(gpio))
- 		return;
- 
--	val = rdc_gpio_read(gpio);
-+	spin_lock_irqsave(&gpio_lock, flags);
-+	gpio_request_data[(gpio & 0x20) ? 1 : 0] &= ~(1 << (gpio & 0x1f));
-+	spin_unlock_irqrestore(&gpio_lock, flags);
-+}
-+EXPORT_SYMBOL(rdc_gpio_free);
-+
-+/* read GPIO pin */
-+int rdc_gpio_get_value(unsigned gpio)
-+{
-+	u32 reg;
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&gpio_lock, flags);
-+	reg = rdc321x_conf_read(gpio < 32
-+		? RDC321X_GPIO_DATA_REG1 : RDC321X_GPIO_DATA_REG2);
-+	spin_unlock_irqrestore(&gpio_lock, flags);
- 
--	if (value)
--		val &= ~(0x1 << (gpio & 0x1F));
--	else
--		val |= (0x1 << (gpio & 0x1F));
-+	return (1 << (gpio & 0x1f)) & reg ? 1 : 0;
-+}
-+EXPORT_SYMBOL(rdc_gpio_get_value);
- 
--	rdc_gpio_write(val);
-+/* set GPIO pin to value */
-+void rdc_gpio_set_value(unsigned gpio, int value)
-+{
-+	unsigned long flags;
-+	u32 reg;
-+
-+	reg = 1 << (gpio & 0x1f);
-+	if (gpio < 32) {
-+		spin_lock_irqsave(&gpio_lock, flags);
-+		if (value)
-+			gpio_data_reg1 |= reg;
-+		else
-+			gpio_data_reg1 &= ~reg;
-+		rdc321x_conf_write(RDC321X_GPIO_DATA_REG1, gpio_data_reg1);
-+		spin_unlock_irqrestore(&gpio_lock, flags);
-+	} else {
-+		spin_lock_irqsave(&gpio_lock, flags);
-+		if (value)
-+			gpio_data_reg2 |= reg;
-+		else
-+			gpio_data_reg2 &= ~reg;
-+		rdc321x_conf_write(RDC321X_GPIO_DATA_REG2, gpio_data_reg2);
-+		spin_unlock_irqrestore(&gpio_lock, flags);
-+	}
- }
- EXPORT_SYMBOL(rdc_gpio_set_value);
- 
-+/* configure GPIO pin as input */
- int rdc_gpio_direction_input(unsigned gpio)
- {
-+	if (!rdc321x_is_gpio(gpio))
-+		return -EINVAL;
-+
-+	rdc321x_configure_gpio(gpio);
-+
- 	return 0;
- }
- EXPORT_SYMBOL(rdc_gpio_direction_input);
- 
-+/* configure GPIO pin as output and set value */
- int rdc_gpio_direction_output(unsigned gpio, int value)
- {
-+	if (!rdc321x_is_gpio(gpio))
-+		return -EINVAL;
-+
-+	gpio_set_value(gpio, value);
-+	rdc321x_configure_gpio(gpio);
-+
- 	return 0;
- }
- EXPORT_SYMBOL(rdc_gpio_direction_output);
--
--
-diff --git a/arch/x86/mach-rdc321x/platform.c b/arch/x86/mach-rdc321x/platform.c
-index dda6024..a037041 100644
---- a/arch/x86/mach-rdc321x/platform.c
-+++ b/arch/x86/mach-rdc321x/platform.c
-@@ -62,6 +62,8 @@ static struct platform_device *rdc321x_devs[] = {
- 
- static int __init rdc_board_setup(void)
- {
-+	rdc321x_gpio_setup();
-+
- 	return platform_add_devices(rdc321x_devs, ARRAY_SIZE(rdc321x_devs));
- }
- 
-diff --git a/arch/x86/mm/fault.c b/arch/x86/mm/fault.c
-index fdc6674..c0c82bc 100644
---- a/arch/x86/mm/fault.c
-+++ b/arch/x86/mm/fault.c
-@@ -92,7 +92,8 @@ static int is_prefetch(struct pt_regs *regs, unsigned long addr,
- 	unsigned char *max_instr;
- 
- #ifdef CONFIG_X86_32
--	if (!(__supported_pte_mask & _PAGE_NX))
-+	/* Catch an obscure case of prefetch inside an NX page: */
-+	if ((__supported_pte_mask & _PAGE_NX) && (error_code & 16))
- 		return 0;
- #endif
- 
-diff --git a/arch/x86/mm/hugetlbpage.c b/arch/x86/mm/hugetlbpage.c
-index 4fbafb4..0b3d567 100644
---- a/arch/x86/mm/hugetlbpage.c
-+++ b/arch/x86/mm/hugetlbpage.c
-@@ -178,7 +178,7 @@ follow_huge_addr(struct mm_struct *mm, unsigned long address, int write)
- 
- 	page = &pte_page(*pte)[vpfn % (HPAGE_SIZE/PAGE_SIZE)];
- 
--	WARN_ON(!PageCompound(page));
-+	WARN_ON(!PageHead(page));
- 
- 	return page;
- }
-diff --git a/arch/x86/xen/enlighten.c b/arch/x86/xen/enlighten.c
-index 8b9ee27..de4e6f0 100644
---- a/arch/x86/xen/enlighten.c
-+++ b/arch/x86/xen/enlighten.c
-@@ -95,7 +95,7 @@ struct shared_info *HYPERVISOR_shared_info = (void *)&dummy_shared_info;
-  *
-  * 0: not available, 1: available
-  */
--static int have_vcpu_info_placement = 0;
-+static int have_vcpu_info_placement = 1;
- 
- static void __init xen_vcpu_setup(int cpu)
- {
-@@ -103,6 +103,7 @@ static void __init xen_vcpu_setup(int cpu)
- 	int err;
- 	struct vcpu_info *vcpup;
- 
-+	BUG_ON(HYPERVISOR_shared_info == &dummy_shared_info);
- 	per_cpu(xen_vcpu, cpu) = &HYPERVISOR_shared_info->vcpu_info[cpu];
- 
- 	if (!have_vcpu_info_placement)
-@@ -805,33 +806,43 @@ static __init void xen_pagetable_setup_start(pgd_t *base)
- 			  PFN_DOWN(__pa(xen_start_info->pt_base)));
- }
- 
--static __init void xen_pagetable_setup_done(pgd_t *base)
-+static __init void setup_shared_info(void)
- {
--	/* This will work as long as patching hasn't happened yet
--	   (which it hasn't) */
--	pv_mmu_ops.alloc_pt = xen_alloc_pt;
--	pv_mmu_ops.alloc_pd = xen_alloc_pd;
--	pv_mmu_ops.release_pt = xen_release_pt;
--	pv_mmu_ops.release_pd = xen_release_pt;
--	pv_mmu_ops.set_pte = xen_set_pte;
--
- 	if (!xen_feature(XENFEAT_auto_translated_physmap)) {
-+		unsigned long addr = fix_to_virt(FIX_PARAVIRT_BOOTMAP);
-+
+-	if (likeliness->type & LP_UNSEEN) {
++	if (likeliness->label & LP_UNSEEN) {
  		/*
- 		 * Create a mapping for the shared info page.
- 		 * Should be set_fixmap(), but shared_info is a machine
- 		 * address with no corresponding pseudo-phys address.
+-		 * We don't simple use a spinlock because internally to the
++		 * We don't simply use a spinlock because internally to the
+ 		 * spinlock there is a call to unlikely which causes recursion.
+ 		 * We opted for this method because we didn't need a preempt/irq
+ 		 * disable and it was a bit cleaner then using internal __raw
+ 		 * spinlock calls.
  		 */
--		set_pte_mfn(fix_to_virt(FIX_PARAVIRT_BOOTMAP),
-+		set_pte_mfn(addr,
- 			    PFN_DOWN(xen_start_info->shared_info),
- 			    PAGE_KERNEL);
+ 		if (!test_and_set_bit(0, &likely_lock)) {
+-			if (likeliness->type & LP_UNSEEN) {
+-				likeliness->type &= (~LP_UNSEEN);
++			if (likeliness->label & LP_UNSEEN) {
++				likeliness->label &= (~LP_UNSEEN);
+ 				likeliness->next = likeliness_head;
+ 				likeliness_head = likeliness;
++				likeliness->caller = (unsigned long)
++						__builtin_return_address(0);
+ 			}
+ 			smp_mb__before_clear_bit();
+ 			clear_bit(0, &likely_lock);
+@@ -61,8 +61,8 @@ static void * lp_seq_start(struct seq_file *out, loff_t *pos)
+ 		seq_printf(out, "Likely Profiling Results\n");
+ 		seq_printf(out, " --------------------------------------------"
+ 				"------------------------\n");
+-		seq_printf(out, "[+- ] Type | # True | # False | Function:"
+-				"Filename@Line\n");
++		seq_printf(out, "[+- ]Type | # True  | # False | Function@"
++				"Filename:Line\n");
  
--		HYPERVISOR_shared_info =
--			(struct shared_info *)fix_to_virt(FIX_PARAVIRT_BOOTMAP);
--
-+		HYPERVISOR_shared_info = (struct shared_info *)addr;
- 	} else
- 		HYPERVISOR_shared_info =
- 			(struct shared_info *)__va(xen_start_info->shared_info);
- 
-+#ifndef CONFIG_SMP
-+	/* In UP this is as good a place as any to set up shared info */
-+	xen_setup_vcpu_info_placement();
-+#endif
-+}
-+
-+static __init void xen_pagetable_setup_done(pgd_t *base)
-+{
-+	/* This will work as long as patching hasn't happened yet
-+	   (which it hasn't) */
-+	pv_mmu_ops.alloc_pt = xen_alloc_pt;
-+	pv_mmu_ops.alloc_pd = xen_alloc_pd;
-+	pv_mmu_ops.release_pt = xen_release_pt;
-+	pv_mmu_ops.release_pd = xen_release_pt;
-+	pv_mmu_ops.set_pte = xen_set_pte;
-+
-+	setup_shared_info();
-+
- 	/* Actually pin the pagetable down, but we can't set PG_pinned
- 	   yet because the page structures don't exist yet. */
- 	{
-@@ -1182,15 +1193,9 @@ asmlinkage void __init xen_start_kernel(void)
- 	x86_write_percpu(xen_cr3, __pa(pgd));
- 	x86_write_percpu(xen_current_cr3, __pa(pgd));
- 
--#ifdef CONFIG_SMP
- 	/* Don't do the full vcpu_info placement stuff until we have a
--	   possible map. */
-+	   possible map and a non-dummy shared_info. */
- 	per_cpu(xen_vcpu, 0) = &HYPERVISOR_shared_info->vcpu_info[0];
--#else
--	/* May as well do it now, since there's no good time to call
--	   it later on UP. */
--	xen_setup_vcpu_info_placement();
--#endif
- 
- 	pv_info.kernel_rpl = 1;
- 	if (xen_feature(XENFEAT_supervisor_mode_kernel))
-diff --git a/arch/x86/xen/xen-asm.S b/arch/x86/xen/xen-asm.S
-index 1a43b60..6b71904 100644
---- a/arch/x86/xen/xen-asm.S
-+++ b/arch/x86/xen/xen-asm.S
-@@ -33,12 +33,17 @@
- 	events, then enter the hypervisor to get them handled.
-  */
- ENTRY(xen_irq_enable_direct)
--	/* Clear mask and test pending */
--	andw $0x00ff, PER_CPU_VAR(xen_vcpu_info)+XEN_vcpu_info_pending
-+	/* Unmask events */
-+	movb $0, PER_CPU_VAR(xen_vcpu_info)+XEN_vcpu_info_mask
-+
- 	/* Preempt here doesn't matter because that will deal with
- 	   any pending interrupts.  The pending check may end up being
- 	   run on the wrong CPU, but that doesn't hurt. */
-+
-+	/* Test for pending */
-+	testb $0xff, PER_CPU_VAR(xen_vcpu_info)+XEN_vcpu_info_pending
- 	jz 1f
-+
- 2:	call check_events
- 1:
- ENDPATCH(xen_irq_enable_direct)
-diff --git a/include/asm-x86/mach-rdc321x/gpio.h b/include/asm-x86/mach-rdc321x/gpio.h
-index db31b92..acce0b7 100644
---- a/include/asm-x86/mach-rdc321x/gpio.h
-+++ b/include/asm-x86/mach-rdc321x/gpio.h
-@@ -5,19 +5,20 @@ extern int rdc_gpio_get_value(unsigned gpio);
- extern void rdc_gpio_set_value(unsigned gpio, int value);
- extern int rdc_gpio_direction_input(unsigned gpio);
- extern int rdc_gpio_direction_output(unsigned gpio, int value);
--
-+extern int rdc_gpio_request(unsigned gpio, const char *label);
-+extern void rdc_gpio_free(unsigned gpio);
-+extern void __init rdc321x_gpio_setup(void);
- 
- /* Wrappers for the arch-neutral GPIO API */
- 
- static inline int gpio_request(unsigned gpio, const char *label)
+ 		out->private = likeliness_head;
+ 	}
+@@ -86,18 +86,22 @@ static void *lp_seq_next(struct seq_file *out, void *p, loff_t *pos)
+ static int lp_seq_show(struct seq_file *out, void *p)
  {
--	/* Not yet implemented */
--	return 0;
-+	return rdc_gpio_request(gpio, label);
+ 	struct likeliness *entry = p;
+-	unsigned int true = entry->count[1];
+-	unsigned int false = entry->count[0];
+-
+-	if (!entry->type) {
+-		if (true > false)
++	unsigned int pos = entry->count[1];
++	unsigned int neg = entry->count[0];
++	char function[KSYM_SYMBOL_LEN];
++
++	/*
++	 * Balanced if the suggestion was false in less than 5% of the tests
++	 */
++	if (!(entry->label & LP_IS_EXPECTED)) {
++		if (pos + neg < 20 * pos)
+ 			seq_printf(out, "+");
+ 		else
+ 			seq_printf(out, " ");
+ 
+ 		seq_printf(out, "unlikely ");
+ 	} else {
+-		if (true < false)
++		if (pos + neg < 20 * neg)
+ 			seq_printf(out, "-");
+ 		else
+ 			seq_printf(out, " ");
+@@ -105,8 +109,9 @@ static int lp_seq_show(struct seq_file *out, void *p)
+ 		seq_printf(out, "likely   ");
+ 	}
+ 
+-	seq_printf(out, "|%9u|%9u\t%s()@:%s@%d\n", true, false,
+-			entry->func, entry->file, entry->line);
++	sprint_symbol(function, entry->caller);
++	seq_printf(out, "|%9u|%9u|\t%s@%s:%u\n", pos, neg, function,
++			entry->file, entry->label >> LP_LINE_SHIFT);
+ 
+ 	return 0;
+ }
+@@ -115,7 +120,7 @@ static void lp_seq_stop(struct seq_file *m, void *p)
+ {
  }
  
- static inline void gpio_free(unsigned gpio)
- {
--	/* Not yet implemented */
-+	rdc_gpio_free(gpio);
- }
- 
- static inline int gpio_direction_input(unsigned gpio)
-diff --git a/include/asm-x86/mach-rdc321x/rdc321x_defs.h b/include/asm-x86/mach-rdc321x/rdc321x_defs.h
-index 838ba8f..c8e9c8b 100644
---- a/include/asm-x86/mach-rdc321x/rdc321x_defs.h
-+++ b/include/asm-x86/mach-rdc321x/rdc321x_defs.h
-@@ -3,4 +3,10 @@
- /* General purpose configuration and data registers */
- #define RDC3210_CFGREG_ADDR     0x0CF8
- #define RDC3210_CFGREG_DATA     0x0CFC
--#define RDC_MAX_GPIO		0x3A
-+
-+#define RDC321X_GPIO_CTRL_REG1	0x48
-+#define RDC321X_GPIO_CTRL_REG2	0x84
-+#define RDC321X_GPIO_DATA_REG1	0x4c
-+#define RDC321X_GPIO_DATA_REG2	0x88
-+
-+#define RDC321X_MAX_GPIO	58
+-struct seq_operations likely_profiling_ops = {
++static struct seq_operations likely_profiling_ops = {
+ 	.start  = lp_seq_start,
+ 	.next   = lp_seq_next,
+ 	.stop   = lp_seq_stop,
+
+
