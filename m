@@ -1,69 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752836AbYC0XEs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753163AbYC0XGS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752836AbYC0XEs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Mar 2008 19:04:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751469AbYC0XEj
+	id S1753163AbYC0XGS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Mar 2008 19:06:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751469AbYC0XGK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Mar 2008 19:04:39 -0400
-Received: from testure.choralone.org ([194.9.77.134]:46848 "EHLO
-	testure.choralone.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751399AbYC0XEi (ORCPT
+	Thu, 27 Mar 2008 19:06:10 -0400
+Received: from g1t0026.austin.hp.com ([15.216.28.33]:42176 "EHLO
+	g1t0026.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751663AbYC0XGJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Mar 2008 19:04:38 -0400
-Date: Thu, 27 Mar 2008 19:04:30 -0400
-From: Dave Jones <davej@codemonkey.org.uk>
-To: Linux Kernel <linux-kernel@vger.kernel.org>
-Cc: mchehab@infradead.org
-Subject: v4l oops in 2.6.25-rc7
-Message-ID: <20080327230430.GA28795@codemonkey.org.uk>
-Mail-Followup-To: Dave Jones <davej@codemonkey.org.uk>,
-	Linux Kernel <linux-kernel@vger.kernel.org>, mchehab@infradead.org
+	Thu, 27 Mar 2008 19:06:09 -0400
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: [patch] parport_pc: wrap PNP probe code in #ifdef CONFIG_PNP
+Date: Thu, 27 Mar 2008 17:10:12 -0600
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: linux-kernel@vger.kernel.org, linux-parport@lists.infradead.org,
+       Tim Waugh <tim@cyberelk.net>, Phil Blundell <philb@gnu.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Message-Id: <200803271710.13714.bjorn.helgaas@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Booted up with an ancient bt848 card present and got this..
+Wrap PNP probe code in #ifdef CONFIG_PNP.  We already do the same
+for CONFIG_PCI.
 
+Without this change, we'll have unresolved references to
+pnp_get_resource() function when CONFIG_PNP=n.  (This is a
+new interface that's not in mainline yet.)
 
-BUG: unable to handle kernel NULL pointer dereference at 000001e0
-IP: [<c0500ba2>] strlen+0xb/0x15
-*pde = 02e0d067 *pte = 00000000 
-Oops: 0000 [#1] SMP 
-Modules linked in: sha256_generic aes_generic cbc dm_crypt crypto_blkcipher dm_emc dm_round_robin dm_multipath dm_snapshot dm_mirror dm_zero dm_mod xfs jfs reiserfs lock_nolock gfs2 msdos linear raid10 raid456 async_xor async_memcpy async_tx xor raid1 raid0 sg sr_mod cdrom sd_mod ata_generic bttv videodev v4l1_compat ir_common compat_ioctl32 i2c_algo_bit v4l2_common videobuf_dma_sg videobuf_core btcx_risc tveeprom i2c_core e100 tulip ehci_hcd mii ata_piix pata_acpi ohci_hcd libata uhci_hcd iscsi_tcp libiscsi scsi_transport_iscsi scsi_mod ext2 ext3 jbd ext4dev jbd2 mbcache crc16 squashfs pcspkr edd floppy loop nfs lockd nfs_acl sunrpc vfat fat cramfs
+Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
 
-Pid: 1513, comm: hald-probe-vide Not tainted (2.6.25-0.161.rc7.fc9.i586 #1)
-EIP: 0060:[<c0500ba2>] EFLAGS: 00010246 CPU: 0
-EIP is at strlen+0xb/0x15
-EAX: 00000000 EBX: 000001e0 ECX: ffffffff EDX: 000001e0
-ESI: 00000020 EDI: 000001e0 EBP: c2e8bdfc ESP: c2e8bdf8
- DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
-Process hald-probe-vide (pid: 1513, ti=c2e8b000 task=c2dda000 task.ti=c2e8b000)
-Stack: c2e8bf34 c2e8be14 c04ff683 c2e8bedc c2e8becc cf116a70 c2e8bf34 c2e8be24 
-       d0a7d931 d0a7d903 c2fd1500 c2e8bea4 d0a4dfc1 c2e8be40 80685600 c2fd1500 
-       cd68e050 d0a9830c c2dda6c0 c2e8be4c c040a6e2 c2e8be60 c2e8be64 c040a9b0 
-Call Trace:
- [<c04ff683>] ? strlcpy+0x17/0x48
- [<d0a7d931>] ? radio_querycap+0x2e/0x5b [bttv]
- [<d0a7d903>] ? radio_querycap+0x0/0x5b [bttv]
- [<d0a4dfc1>] ? __video_do_ioctl+0x494/0x295e [videodev]
- [<c040a6e2>] ? sched_clock+0x8/0xb
- [<c040a9b0>] ? native_sched_clock+0xb5/0xd1
- [<d0a5063b>] ? video_ioctl2+0x1b0/0x24d [videodev]
- [<c063bb4a>] ? __down_failed+0xa/0x10
- [<c0495d96>] ? vfs_ioctl+0x4e/0x67
- [<c0495fe8>] ? do_vfs_ioctl+0x239/0x24c
- [<c04dbb8d>] ? selinux_file_ioctl+0xa8/0xab
- [<c049603b>] ? sys_ioctl+0x40/0x5d
- [<c0405d52>] ? syscall_call+0x7/0xb
- =======================
-Code: 5d c3 55 89 e5 56 89 c6 89 d0 88 c4 ac 38 e0 74 09 84 c0 75 f7 be 01 00 00 00 89 f0 48 5e 5d c3 55 83 c9 ff 89 e5 57 89 c7 31 c0 <f2> ae f7 d1 49 89 c8 5f 5d c3 55 89 e5 57 31 ff 85 c9 74 0e 89 
-EIP: [<c0500ba2>] strlen+0xb/0x15 SS:ESP 0068:c2e8bdf8
----[ end trace fba34738c02be064 ]---
-
-
--- 
-http://www.codemonkey.org.uk
+Index: work7/drivers/parport/parport_pc.c
+===================================================================
+--- work7.orig/drivers/parport/parport_pc.c	2008-03-27 16:10:52.000000000 -0600
++++ work7/drivers/parport/parport_pc.c	2008-03-27 17:01:00.000000000 -0600
+@@ -3083,6 +3083,7 @@
+ static int __init parport_pc_init_superio(int autoirq, int autodma) {return 0;}
+ #endif /* CONFIG_PCI */
+ 
++#ifdef CONFIG_PNP
+ 
+ static const struct pnp_device_id parport_pc_pnp_tbl[] = {
+ 	/* Standard LPT Printer Port */
+@@ -3149,6 +3150,9 @@
+ 	.remove		= parport_pc_pnp_remove,
+ };
+ 
++#else
++static struct pnp_driver parport_pc_pnp_driver;
++#endif /* CONFIG_PNP */
+ 
+ static int __devinit parport_pc_platform_probe(struct platform_device *pdev)
+ {
