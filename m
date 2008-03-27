@@ -1,54 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758598AbYC0NNN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762015AbYC0NNc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758598AbYC0NNN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Mar 2008 09:13:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759376AbYC0NIK
+	id S1762015AbYC0NNc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Mar 2008 09:13:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757785AbYC0NIM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Mar 2008 09:08:10 -0400
-Received: from smtp.nokia.com ([192.100.122.230]:64518 "EHLO
-	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757785AbYC0NHi (ORCPT
+	Thu, 27 Mar 2008 09:08:12 -0400
+Received: from smtp.nokia.com ([192.100.105.134]:60950 "EHLO
+	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758093AbYC0NHk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Mar 2008 09:07:38 -0400
+	Thu, 27 Mar 2008 09:07:40 -0400
 From: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: Adrian Hunter <ext-adrian.hunter@nokia.com>,
        Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
-Subject: [RFC PATCH 07/26] UBIFS: add file-system recovery
-Date: Thu, 27 Mar 2008 16:55:27 +0200
-Message-Id: <1206629746-4298-8-git-send-email-Artem.Bityutskiy@nokia.com>
+Subject: [RFC PATCH 15/26] UBIFS: add LEB properties
+Date: Thu, 27 Mar 2008 16:55:35 +0200
+Message-Id: <1206629746-4298-16-git-send-email-Artem.Bityutskiy@nokia.com>
 X-Mailer: git-send-email 1.5.4.1
 In-Reply-To: <1206629746-4298-1-git-send-email-Artem.Bityutskiy@nokia.com>
 References: <1206629746-4298-1-git-send-email-Artem.Bityutskiy@nokia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=unknown-8bit
 Content-Transfer-Encoding: 8bit
-X-OriginalArrivalTime: 27 Mar 2008 13:06:27.0898 (UTC) FILETIME=[5E2B11A0:01C8900B]
+X-OriginalArrivalTime: 27 Mar 2008 13:06:40.0195 (UTC) FILETIME=[657F7130:01C8900B]
 X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The recovery sub-system is responsible for recovering from unclean
-reboots. It makes sure every-thing is consistent, rolls-back the
-last broken and un-finished FS operation, and so on.
+UBIFS keeps track of all logical eraseblock - how much data do they
+contain, how much of these data are dirty or clean. This space accounting
+information is needed all over the place - when finding an empty eraseblock
+to put new data to, when reporting amount of empty space, and so on.
+We call this subsystem "lprops" which stands for LEB properties.
 
 Signed-off-by: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
 Signed-off-by: Adrian Hunter <ext-adrian.hunter@nokia.com>
 ---
- fs/ubifs/recovery.c | 1437 +++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 1437 insertions(+), 0 deletions(-)
+ fs/ubifs/lprops.c | 1341 +++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 1341 insertions(+), 0 deletions(-)
 
-diff --git a/fs/ubifs/recovery.c b/fs/ubifs/recovery.c
+diff --git a/fs/ubifs/lprops.c b/fs/ubifs/lprops.c
 new file mode 100644
-index 0000000..e1e8916
+index 0000000..56f43f7
 --- /dev/null
-+++ b/fs/ubifs/recovery.c
-@@ -0,0 +1,1437 @@
++++ b/fs/ubifs/lprops.c
+@@ -0,0 +1,1341 @@
 +/*
 + * This file is part of UBIFS.
 + *
-+ * Copyright (C) 2006-2008 Nokia Corporation
++ * Copyright (C) 2006-2008 Nokia Corporation.
 + *
 + * This program is free software; you can redistribute it and/or modify it
 + * under the terms of the GNU General Public License version 2 as published by
@@ -68,1420 +70,1324 @@ index 0000000..e1e8916
 + */
 +
 +/*
-+ * This file implements functions needed to recover from unclean un-mounts.
-+ * When UBIFS is mounted, it checks a flag on the master node to determine if
-+ * an un-mount was completed sucessfully. If not, the process of mounting
-+ * incorparates additional checking and fixing of on-flash data structures.
-+ * UBIFS always cleans away all remnants of an unclean un-mount, so that
-+ * errors do not accumulate. However UBIFS defers recovery if it is mounted
-+ * read-only, and the flash is not modified in that case.
++ * This file implements the functions that access LEB properties and their
++ * categories. LEBs are categorized based on the needs of UBIFS, and the
++ * categories are stored as either heaps or lists to provide a fast way of
++ * finding a LEB in a particular category. For example, UBIFS may need to find
++ * an empty LEB for the journal, or a very dirty LEB for garbage collection.
 + */
 +
-+#include <linux/crc32.h>
 +#include "ubifs.h"
 +
-+/**
-+ * is_empty - determine whether a buffer is empty (contains all 0xff).
-+ * @buf: buffer to clean
-+ * @len: length of buffer
-+ *
-+ * This function returns %1 if the buffer is empty (contains all 0xff) otherwise
-+ * %0 is returned.
-+ */
-+static int is_empty(void *buf, int len)
-+{
-+	uint8_t *p = buf;
-+	int i;
++#if defined(CONFIG_UBIFS_FS_DEBUG_CHK_LPROPS) || \
++    defined(CONFIG_UBIFS_FS_DEBUG_CHK_OTHER)
++static void dbg_check_heap(struct ubifs_info *c, struct ubifs_lpt_heap *heap,
++			   int cat, int add_pos);
++#else
++#define dbg_check_heap(c, heap, cat, add_pos) ({})
++#endif
 +
-+	for (i = 0; i < len; i++)
-+		if (*p++ != 0xff)
-+			return 0;
-+	return 1;
++/**
++ * get_heap_comp_val - get the LEB properties value for heap comparisons.
++ * @lprops: LEB properties
++ * @cat: LEB category
++ */
++static int get_heap_comp_val(struct ubifs_lprops *lprops, int cat)
++{
++	switch (cat) {
++	case LPROPS_FREE:
++		return lprops->free;
++	case LPROPS_DIRTY_IDX:
++		return lprops->free + lprops->dirty;
++	default:
++		return lprops->dirty;
++	}
 +}
 +
 +/**
-+ * get_master_node - get the last valid master node allowing for corruption.
++ * move_up_lpt_heap - move a new heap entry up as far as possible.
 + * @c: UBIFS file-system description object
-+ * @lnum: LEB number
-+ * @pbuf: buffer containing the LEB read, is returned here
-+ * @mst: master node, if found, is returned here
-+ * @cor: corruption, if found, is returned here
++ * @heap: LEB category heap
++ * @lprops: LEB properties to move
++ * @cat: LEB category
 + *
-+ * This function allocates a buffer, reads the LEB into it, and finds and
-+ * returns the last valid master node allowing for one area of corruption.
-+ * The corrupt area, if there is one, must be consistent with the assumption
-+ * that it is the result of an unclean unmount while the master node was being
-+ * written. Under those circumstances, it is valid to use the previously written
-+ * master node.
-+ *
-+ * This function returns %0 on success and a negative error code on failure.
++ * New entries to a heap are added at the bottom and then moved up until the
++ * parent's value is greater.  In the case of LPT's category heaps, the value
++ * is either the amount of free space or the amount of dirty space, depending
++ * on the category.
 + */
-+static int get_master_node(const struct ubifs_info *c, int lnum, void **pbuf,
-+			   struct ubifs_mst_node **mst, void **cor)
++static void move_up_lpt_heap(struct ubifs_info *c, struct ubifs_lpt_heap *heap,
++			     struct ubifs_lprops *lprops, int cat)
 +{
-+	const int sz = c->mst_node_alsz;
-+	int err, offs, len;
-+	void *sbuf, *buf;
++	int val1, val2, hpos;
 +
-+	sbuf = vmalloc(c->leb_size);
-+	if (!sbuf)
-+		return -ENOMEM;
++	hpos = lprops->hpos;
++	if (!hpos)
++		return; /* Already top of the heap */
++	val1 = get_heap_comp_val(lprops, cat);
++	/* Compare to parent and, if greater, move up the heap */
++	do {
++		int ppos = (hpos - 1) / 2;
 +
-+	err = ubi_read(c->ubi, lnum, sbuf, 0, c->leb_size);
-+	if (err && err != -EBADMSG)
-+		goto out_free;
++		val2 = get_heap_comp_val(heap->arr[ppos], cat);
++		if (val2 >= val1)
++			return;
++		/* Greater than parent so move up */
++		heap->arr[ppos]->hpos = hpos;
++		heap->arr[hpos] = heap->arr[ppos];
++		heap->arr[ppos] = lprops;
++		lprops->hpos = ppos;
++		hpos = ppos;
++	} while (hpos);
++}
 +
-+	/* Find the first position that is definitely not a node */
-+	offs = 0;
-+	buf = sbuf;
-+	len = c->leb_size;
-+	while (offs + UBIFS_MST_NODE_SZ <= c->leb_size) {
-+		struct ubifs_ch *ch = buf;
++/**
++ * adjust_lpt_heap - move a changed heap entry up or down the heap.
++ * @c: UBIFS file-system description object
++ * @heap: LEB category heap
++ * @lprops: LEB properties to move
++ * @hpos: heap position of @lprops
++ * @cat: LEB category
++ *
++ * Changed entries in a heap are moved up or down until the parent's value is
++ * greater.  In the case of LPT's category heaps, the value is either the amount
++ * of free space or the amount of dirty space, depending on the category.
++ */
++static void adjust_lpt_heap(struct ubifs_info *c, struct ubifs_lpt_heap *heap,
++			    struct ubifs_lprops *lprops, int hpos, int cat)
++{
++	int val1, val2, val3, cpos;
 +
-+		if (le32_to_cpu(ch->magic) != UBIFS_NODE_MAGIC)
-+			break;
-+		offs += sz;
-+		buf  += sz;
-+		len  -= sz;
-+	}
-+	/* See if there was a valid master node before that */
-+	if (offs) {
-+		int ret;
++	val1 = get_heap_comp_val(lprops, cat);
++	/* Compare to parent and, if greater than parent, move up the heap */
++	if (hpos) {
++		int ppos = (hpos - 1) / 2;
 +
-+		offs -= sz;
-+		buf  -= sz;
-+		len  += sz;
-+		ret = ubifs_scan_a_node(c, buf, len, lnum, offs, 1);
-+		if (ret != SCANNED_A_NODE && offs) {
-+			/* Could have been corruption so check one place back */
-+			offs -= sz;
-+			buf  -= sz;
-+			len  += sz;
-+			ret = ubifs_scan_a_node(c, buf, len, lnum, offs, 1);
-+			if (ret != SCANNED_A_NODE)
-+				/*
-+				 * We accept only one area of corruption because
-+				 * we are assuming that it was caused while
-+				 * trying to write a master node.
-+				 */
-+				goto out_err;
++		val2 = get_heap_comp_val(heap->arr[ppos], cat);
++		if (val1 > val2) {
++			/* Greater than parent so move up */
++			while (1) {
++				heap->arr[ppos]->hpos = hpos;
++				heap->arr[hpos] = heap->arr[ppos];
++				heap->arr[ppos] = lprops;
++				lprops->hpos = ppos;
++				hpos = ppos;
++				if (!hpos)
++					return;
++				ppos = (hpos - 1) / 2;
++				val2 = get_heap_comp_val(heap->arr[ppos], cat);
++				if (val1 <= val2)
++					return;
++				/* Still greater than parent so keep going */
++			}
 +		}
-+		if (ret == SCANNED_A_NODE) {
-+			struct ubifs_ch *ch = buf;
-+
-+			if (ch->node_type != UBIFS_MST_NODE)
-+				goto out_err;
-+			dbg_mnt("found a master node at %d:%d", lnum, offs);
-+			*mst = buf;
-+			offs += sz;
-+			buf  += sz;
-+			len  -= sz;
++	}
++	/* Not greater than parent, so compare to children */
++	while (1) {
++		/* Compare to left child */
++		cpos = hpos * 2 + 1;
++		if (cpos >= heap->cnt)
++			return;
++		val2 = get_heap_comp_val(heap->arr[cpos], cat);
++		if (val1 < val2) {
++			/* Less than left child, so promote biggest child */
++			if (cpos + 1 < heap->cnt) {
++				val3 = get_heap_comp_val(heap->arr[cpos + 1],
++							 cat);
++				if (val3 > val2)
++					cpos += 1; /* Right child is bigger */
++			}
++			heap->arr[cpos]->hpos = hpos;
++			heap->arr[hpos] = heap->arr[cpos];
++			heap->arr[cpos] = lprops;
++			lprops->hpos = cpos;
++			hpos = cpos;
++			continue;
 +		}
-+	}
-+	/* Check for corruption */
-+	if (offs < c->leb_size) {
-+		if (!is_empty(buf, min_t(int, len, sz))) {
-+			*cor = buf;
-+			dbg_mnt("found corruption at %d:%d", lnum, offs);
++		/* Compare to right child */
++		cpos += 1;
++		if (cpos >= heap->cnt)
++			return;
++		val3 = get_heap_comp_val(heap->arr[cpos], cat);
++		if (val1 < val3) {
++			/* Less than right child, so promote right child */
++			heap->arr[cpos]->hpos = hpos;
++			heap->arr[hpos] = heap->arr[cpos];
++			heap->arr[cpos] = lprops;
++			lprops->hpos = cpos;
++			hpos = cpos;
++			continue;
 +		}
-+		offs += sz;
-+		buf  += sz;
-+		len  -= sz;
-+	}
-+	/* Check remaining empty space */
-+	if (offs < c->leb_size)
-+		if (!is_empty(buf, len))
-+			goto out_err;
-+	*pbuf = sbuf;
-+	return 0;
-+
-+out_err:
-+	err = -EINVAL;
-+out_free:
-+	vfree(sbuf);
-+	return err;
-+}
-+
-+/**
-+ * write_rcvrd_mst_node - write recovered master node.
-+ * @c: UBIFS file-system description object
-+ * @mst: master node
-+ *
-+ * This function returns %0 on success and a negative error code on failure.
-+ */
-+static int write_rcvrd_mst_node(struct ubifs_info *c,
-+				struct ubifs_mst_node *mst)
-+{
-+	int err = 0, lnum = UBIFS_MST_LNUM, sz = c->mst_node_alsz;
-+	uint32_t save_flags;
-+
-+	dbg_mnt("recovery");
-+
-+	save_flags = mst->flags;
-+	mst->flags = cpu_to_le32(le32_to_cpu(mst->flags) | UBIFS_MST_RCVRY);
-+
-+	ubifs_prepare_node(c, mst, UBIFS_MST_NODE_SZ, 1);
-+	err = ubi_leb_change(c->ubi, lnum, mst, sz, UBI_SHORTTERM);
-+	if (err)
-+		goto out;
-+	err = ubi_leb_change(c->ubi, lnum + 1, mst, sz, UBI_SHORTTERM);
-+	if (err)
-+		goto out;
-+out:
-+	mst->flags = save_flags;
-+	return err;
-+}
-+
-+/**
-+ * ubifs_recover_master_node - recover the master node.
-+ * @c: UBIFS file-system description object
-+ *
-+ * This function recovers the master node from corruption that may occur due to
-+ * an unclean unmount.
-+ *
-+ * This function returns %0 on success and a negative error code on failure.
-+ */
-+int ubifs_recover_master_node(struct ubifs_info *c)
-+{
-+	void *buf1 = NULL, *buf2 = NULL, *cor1 = NULL, *cor2 = NULL;
-+	struct ubifs_mst_node *mst1 = NULL, *mst2 = NULL, *mst;
-+	const int sz = c->mst_node_alsz;
-+	int err, offs1, offs2;
-+
-+	dbg_mnt("recovery");
-+
-+	err = get_master_node(c, UBIFS_MST_LNUM, &buf1, &mst1, &cor1);
-+	if (err)
-+		goto out_free;
-+
-+	err = get_master_node(c, UBIFS_MST_LNUM + 1, &buf2, &mst2, &cor2);
-+	if (err)
-+		goto out_free;
-+
-+	if (mst1) {
-+		offs1 = (void *)mst1 - buf1;
-+		if ((le32_to_cpu(mst1->flags) & UBIFS_MST_RCVRY) &&
-+		    (offs1 == 0 && !cor1)) {
-+			/*
-+			 * mst1 was written by recovery at offset 0 with no
-+			 * corruption.
-+			 */
-+			dbg_mnt("recovery recovery");
-+			mst = mst1;
-+		} else if (mst2) {
-+			offs2 = (void *)mst2 - buf2;
-+			if (offs1 == offs2) {
-+				/* Same offset, so must be the same */
-+				if (memcmp((void *)mst1 + UBIFS_CH_SZ,
-+					   (void *)mst2 + UBIFS_CH_SZ,
-+					   UBIFS_MST_NODE_SZ - UBIFS_CH_SZ))
-+					goto out_err;
-+				mst = mst1;
-+			} else if (offs2 + sz == offs1) {
-+				/* 1st LEB was written, 2nd was not */
-+				if (cor1)
-+					goto out_err;
-+				mst = mst1;
-+			} else if (offs1 == 0 && offs2 + sz >= c->leb_size) {
-+				/* 1st LEB was unmapped and written, 2nd not */
-+				if (cor1)
-+					goto out_err;
-+				mst = mst1;
-+			} else
-+				goto out_err;
-+		} else {
-+			/*
-+			 * 2nd LEB was unmapped and about to be written, so
-+			 * there must be only one master node in the first LEB
-+			 * and no corruption.
-+			 */
-+			if (offs1 != 0 || cor1)
-+				goto out_err;
-+			mst = mst1;
-+		}
-+	} else {
-+		if (!mst2)
-+			goto out_err;
-+		/*
-+		 * 1st LEB was unmapped and about to be written, so there must
-+		 * be no room left in 2nd LEB.
-+		 */
-+		offs2 = (void *)mst2 - buf2;
-+		if (offs2 + sz + sz <= c->leb_size)
-+			goto out_err;
-+		mst = mst2;
-+	}
-+
-+	dbg_mnt("recovered master node from LEB %d",
-+		(mst == mst1 ? UBIFS_MST_LNUM : UBIFS_MST_LNUM + 1));
-+
-+	memcpy(c->mst_node, mst, UBIFS_MST_NODE_SZ);
-+
-+	if ((c->vfs_sb->s_flags & MS_RDONLY)) {
-+		/* Read-only mode. Keep a copy for switching to rw mode */
-+		c->rcvrd_mst_node = kmalloc(sz, GFP_KERNEL);
-+		if (!c->rcvrd_mst_node) {
-+			err = -ENOMEM;
-+			goto out_free;
-+		}
-+		memcpy(c->rcvrd_mst_node, c->mst_node, UBIFS_MST_NODE_SZ);
-+	} else {
-+		/* Write the recovered master node */
-+		c->max_sqnum = le64_to_cpu(mst->ch.sqnum) - 1;
-+		err = write_rcvrd_mst_node(c, c->mst_node);
-+		if (err)
-+			goto out_free;
-+	}
-+
-+	vfree(buf2);
-+	vfree(buf1);
-+
-+	return 0;
-+
-+out_err:
-+	err = -EINVAL;
-+out_free:
-+	ubifs_err("failed to recover master node");
-+	if (mst1) {
-+		dbg_err("dumping first master node");
-+		dbg_dump_node(c, mst1);
-+	}
-+	if (mst2) {
-+		dbg_err("dumping second master node");
-+		dbg_dump_node(c, mst2);
-+	}
-+	vfree(buf2);
-+	vfree(buf1);
-+	return err;
-+}
-+
-+/**
-+ * ubifs_write_rcvrd_mst_node - write the recovered master node.
-+ * @c: UBIFS file-system description object
-+ *
-+ * This function writes the master node that was recovered during mounting in
-+ * read-only mode and must now be written because we are remounting rw.
-+ *
-+ * This function returns %0 on success and a negative error code on failure.
-+ */
-+int ubifs_write_rcvrd_mst_node(struct ubifs_info *c)
-+{
-+	int err;
-+
-+	if (!c->rcvrd_mst_node)
-+		return 0;
-+	c->rcvrd_mst_node->flags |= cpu_to_le32(UBIFS_MST_DIRTY);
-+	c->mst_node->flags |= cpu_to_le32(UBIFS_MST_DIRTY);
-+	err = write_rcvrd_mst_node(c, c->rcvrd_mst_node);
-+	if (err)
-+		return err;
-+	kfree(c->rcvrd_mst_node);
-+	c->rcvrd_mst_node = NULL;
-+	return 0;
-+}
-+
-+/**
-+ * is_last_write - determine if an offset was in the last write to a LEB.
-+ * @c: UBIFS file-system description object
-+ * @buf: buffer to check
-+ * @offs: offset to check
-+ *
-+ * This function returns %1 if @offs was in the last write to the LEB whose data
-+ * is in @buf, otherwise %0 is returned.  The determination is made by checking
-+ * for subsequent empty space starting from the next min_io_size boundary (or a
-+ * bit less than the common header size if min_io_size is one).
-+ */
-+static int is_last_write(const struct ubifs_info *c, void *buf, int offs)
-+{
-+	int empty_offs;
-+	int check_len;
-+	uint8_t *p;
-+
-+	if (c->min_io_size == 1) {
-+		check_len = c->leb_size - offs;
-+		p = buf + check_len;
-+		for (; check_len > 0; check_len--)
-+			if (*--p != 0xff)
-+				break;
-+		/*
-+		 * 'check_len' is the size of the corruption which cannot be
-+		 * more than the size of 1 node if it was caused by an unclean
-+		 * unmount.
-+		 */
-+		if (check_len > UBIFS_MAX_NODE_SZ)
-+			return 0;
-+		return 1;
-+	}
-+
-+	/*
-+	 * Round up to the next c->min_io_size boundary i.e. 'offs' is in the
-+	 * last wbuf written. After that should be empty space.
-+	 */
-+	empty_offs = ALIGN(offs + 1, c->min_io_size);
-+	check_len = c->leb_size - empty_offs;
-+	p = buf + empty_offs - offs;
-+
-+	for (; check_len > 0; check_len--)
-+		if (*p++ != 0xff)
-+			return 0;
-+	return 1;
-+}
-+
-+/**
-+ * clean_buf - clean the data from an LEB sitting in a buffer.
-+ * @c: UBIFS file-system description object
-+ * @buf: buffer to clean
-+ * @lnum: LEB number to clean
-+ * @offs: offset from which to clean
-+ * @len: length of buffer
-+ *
-+ * This function pads up to the next min_io_size boundary (if there is one) and
-+ * sets empty space to all 0xff. @buf, @offs and @len are updated to the next
-+ * min_io_size boundary (if there is one).
-+ */
-+static void clean_buf(const struct ubifs_info *c, void **buf, int lnum,
-+		      int *offs, int *len)
-+{
-+	int empty_offs, pad_len;
-+
-+	lnum = lnum;
-+	dbg_mnt("cleaning corruption at %d:%d", lnum, *offs);
-+
-+	if (c->min_io_size == 1) {
-+		memset(*buf, 0xff, c->leb_size - *offs);
 +		return;
 +	}
-+
-+	ubifs_assert(!(*offs & 7));
-+
-+	empty_offs = ALIGN(*offs, c->min_io_size);
-+	pad_len = empty_offs - *offs;
-+	ubifs_pad(c, *buf, pad_len);
-+	*offs += pad_len;
-+	*buf += pad_len;
-+	*len -= pad_len;
-+	memset(*buf, 0xff, c->leb_size - empty_offs);
 +}
 +
 +/**
-+ * no_more_nodes - determine if there are no more nodes in a buffer.
++ * add_to_lpt_heap - add LEB properties to a LEB category heap.
 + * @c: UBIFS file-system description object
-+ * @buf: buffer to check
-+ * @len: length of buffer
-+ * @lnum: LEB number of the LEB from which @buf was read
-+ * @offs: offset from which @buf was read
++ * @lprops: LEB properties to add
++ * @cat: LEB category
 + *
-+ * This function scans @buf for more nodes and returns %0 is a node is found and
-+ * %1 if no more nodes are found.
++ * This function returns %1 if @lprops is added to the heap for LEB category
++ * @cat, otherwise %0 is returned because the heap is full.
 + */
-+static int no_more_nodes(const struct ubifs_info *c, void *buf, int len,
-+			int lnum, int offs)
++static int add_to_lpt_heap(struct ubifs_info *c, struct ubifs_lprops *lprops,
++			   int cat)
 +{
-+	int skip, next_offs = 0;
++	struct ubifs_lpt_heap *heap = &c->lpt_heap[cat - 1];
 +
-+	if (len > UBIFS_DATA_NODE_SZ) {
-+		struct ubifs_ch *ch = buf;
-+		int dlen = le32_to_cpu(ch->len);
++	if (heap->cnt >= heap->max_cnt) {
++		const int b = LPT_HEAP_SZ / 2 - 1;
++		int cpos, val1, val2;
 +
-+		if (ch->node_type == UBIFS_DATA_NODE && dlen >= UBIFS_CH_SZ &&
-+		    dlen <= UBIFS_MAX_DATA_NODE_SZ)
-+			/* The corrupt node looks like a data node */
-+			next_offs = ALIGN(offs + dlen, 8);
-+	}
++		/* Compare to some other LEB on the bottom of heap */
++		/* Pick a position kind of randomly */
++		cpos = (((size_t)lprops >> 4) & b) + b;
++		ubifs_assert(cpos >= b);
++		ubifs_assert(cpos < LPT_HEAP_SZ);
++		ubifs_assert(cpos < heap->cnt);
 +
-+	if (c->min_io_size == 1)
-+		skip = 8;
-+	else
-+		skip = ALIGN(offs + 1, c->min_io_size) - offs;
++		val1 = get_heap_comp_val(lprops, cat);
++		val2 = get_heap_comp_val(heap->arr[cpos], cat);
++		if (val1 > val2) {
++			struct ubifs_lprops *lp;
 +
-+	offs += skip;
-+	buf += skip;
-+	len -= skip;
-+	while (len > 8) {
-+		struct ubifs_ch *ch = buf;
-+		uint32_t magic = le32_to_cpu(ch->magic);
-+		int ret;
-+
-+		if (magic == UBIFS_NODE_MAGIC) {
-+			ret = ubifs_scan_a_node(c, buf, len, lnum, offs, 1);
-+			if (ret == SCANNED_A_NODE || ret > 0) {
-+				/*
-+				 * There is a small chance this is just data in
-+				 * a data node, so check that possibility. e.g.
-+				 * this is part of a file that itself contains
-+				 * a UBIFS image.
-+				 */
-+				if (next_offs && offs + le32_to_cpu(ch->len) <=
-+				    next_offs)
-+					continue;
-+				dbg_mnt("unexpected node at %d:%d", lnum, offs);
-+				return 0;
-+			}
++			lp = heap->arr[cpos];
++			lp->flags &= ~LPROPS_CAT_MASK;
++			lp->flags |= LPROPS_UNCAT;
++			list_add(&lp->list, &c->uncat_list);
++			lprops->hpos = cpos;
++			heap->arr[cpos] = lprops;
++			move_up_lpt_heap(c, heap, lprops, cat);
++			dbg_check_heap(c, heap, cat, lprops->hpos);
++			return 1; /* Added to heap */
 +		}
-+		offs += 8;
-+		buf += 8;
-+		len -= 8;
-+	}
-+	return 1;
-+}
-+
-+/**
-+ * fix_unclean_leb - fix an unclean LEB.
-+ * @c: UBIFS file-system description object
-+ * @sleb: scanned LEB information
-+ * @start: offset where scan started
-+ */
-+static int fix_unclean_leb(struct ubifs_info *c, struct ubifs_scan_leb *sleb,
-+			   int start)
-+{
-+	int lnum = sleb->lnum, endpt = start;
-+
-+	/* Get the end offset of the last node we are keeping */
-+	if (!list_empty(&sleb->nodes)) {
-+		struct ubifs_scan_node *snod;
-+
-+		snod = list_entry(sleb->nodes.prev,
-+				  struct ubifs_scan_node, list);
-+		endpt = snod->offs + snod->len;
-+	}
-+
-+	if ((c->vfs_sb->s_flags & MS_RDONLY) && !c->remounting_rw) {
-+		/* Add to recovery list */
-+		struct ubifs_unclean_leb *ucleb;
-+
-+		dbg_mnt("need to fix LEB %d start %d endpt %d",
-+			lnum, start, sleb->endpt);
-+		ucleb = kzalloc(sizeof(struct ubifs_unclean_leb), GFP_NOFS);
-+		if (!ucleb)
-+			return -ENOMEM;
-+		ucleb->lnum = lnum;
-+		ucleb->endpt = endpt;
-+		list_add_tail(&ucleb->list, &c->unclean_leb_list);
++		dbg_check_heap(c, heap, cat, -1);
++		return 0; /* Not added to heap */
 +	} else {
-+		/* Write the fixed LEB back to flash */
-+		int err;
-+
-+		dbg_mnt("fixing LEB %d start %d endpt %d",
-+			lnum, start, sleb->endpt);
-+		if (endpt == 0) {
-+			err = ubifs_leb_unmap(c, lnum);
-+			if (err)
-+				return err;
-+		} else {
-+			int len = ALIGN(endpt, c->min_io_size);
-+
-+			if (start) {
-+				err = ubi_read(c->ubi, lnum, sleb->buf, 0,
-+					       start);
-+				if (err)
-+					return err;
-+			}
-+			/* Pad to min_io_size */
-+			if (len > endpt) {
-+				int pad_len = len - ALIGN(endpt, 8);
-+
-+				if (pad_len > 0) {
-+					void *buf = sleb->buf + len - pad_len;
-+
-+					ubifs_pad(c, buf, pad_len);
-+				}
-+			}
-+			err = ubi_leb_change(c->ubi, lnum, sleb->buf, len,
-+					     UBI_UNKNOWN);
-+			if (err)
-+				return err;
-+		}
++		lprops->hpos = heap->cnt++;
++		heap->arr[lprops->hpos] = lprops;
++		move_up_lpt_heap(c, heap, lprops, cat);
++		dbg_check_heap(c, heap, cat, lprops->hpos);
++		return 1; /* Added to heap */
 +	}
-+	return 0;
 +}
 +
 +/**
-+ * drop_incomplete_group - drop nodes from an incomplete group.
-+ * @sleb: scanned LEB information
-+ * @offs: offset of dropped nodes is returned here
-+ *
-+ * This function returns %1 if nodes are dropped and %0 otherwise.
-+ */
-+static int drop_incomplete_group(struct ubifs_scan_leb *sleb, int *offs)
-+{
-+	int dropped = 0;
-+
-+	while (!list_empty(&sleb->nodes)) {
-+		struct ubifs_scan_node *snod;
-+		struct ubifs_ch *ch;
-+
-+		snod = list_entry(sleb->nodes.prev, struct ubifs_scan_node,
-+				  list);
-+		ch = snod->node;
-+		if (ch->group_type != UBIFS_IN_NODE_GROUP)
-+			return dropped;
-+		dbg_mnt("dropping node at %d:%d", sleb->lnum, snod->offs);
-+		*offs = snod->offs;
-+		list_del(&snod->list);
-+		kfree(snod);
-+		sleb->nodes_cnt -= 1;
-+		dropped = 1;
-+	}
-+	return dropped;
-+}
-+
-+/**
-+ * ubifs_recover_leb - scan and recover a LEB.
++ * remove_from_lpt_heap - remove LEB properties from a LEB category heap.
 + * @c: UBIFS file-system description object
-+ * @lnum: LEB number
-+ * @offs: offset
-+ * @sbuf: LEB-sized buffer to use
-+ * @grouped: nodes may be grouped for recovery
-+ *
-+ * This function does a scan of a LEB, but caters for errors that might have
-+ * been caused by the unclean unmount from which we are attempting to recover.
-+ *
-+ * This function returns %0 on success and a negative error code on failure.
++ * @lprops: LEB properties to remove
++ * @cat: LEB category
 + */
-+struct ubifs_scan_leb *ubifs_recover_leb(struct ubifs_info *c, int lnum,
-+					 int offs, void *sbuf, int grouped)
++static void remove_from_lpt_heap(struct ubifs_info *c,
++				 struct ubifs_lprops *lprops, int cat)
 +{
-+	int err, len = c->leb_size - offs, need_clean = 0, quiet = 1;
-+	int empty_chkd = 0, start = offs;
-+	struct ubifs_scan_leb *sleb;
-+	void *buf = sbuf + offs;
++	struct ubifs_lpt_heap *heap;
++	int hpos = lprops->hpos;
 +
-+	dbg_mnt("%d:%d", lnum, offs);
++	heap = &c->lpt_heap[cat - 1];
++	ubifs_assert(hpos >= 0 && hpos < heap->cnt);
++	ubifs_assert(heap->arr[hpos] == lprops);
++	heap->cnt -= 1;
++	if (hpos < heap->cnt) {
++		heap->arr[hpos] = heap->arr[heap->cnt];
++		heap->arr[hpos]->hpos = hpos;
++		adjust_lpt_heap(c, heap, heap->arr[hpos], hpos, cat);
++	}
++	dbg_check_heap(c, heap, cat, -1);
++}
 +
-+	sleb = ubifs_start_scan(c, lnum, offs, sbuf);
-+	if (IS_ERR(sleb))
-+		return sleb;
++/**
++ * lpt_heap_replace - replace lprops in a category heap.
++ * @c: UBIFS file-system description object
++ * @old_lprops: LEB properties to replace
++ * @new_lprops: LEB properties with which to replace
++ * @cat: LEB category
++ *
++ * During commit it is sometimes necessary to copy a pnode (see dirty_cow_pnode)
++ * and the lprops that the pnode contains.  When that happens, references in
++ * the category heaps to those lprops must be updated to point to the new
++ * lprops.  This function does that.
++ */
++static void lpt_heap_replace(struct ubifs_info *c,
++			     struct ubifs_lprops *old_lprops,
++			     struct ubifs_lprops *new_lprops, int cat)
++{
++	struct ubifs_lpt_heap *heap;
++	int hpos = new_lprops->hpos;
 +
-+	if (sleb->ecc)
-+		need_clean = 1;
++	heap = &c->lpt_heap[cat - 1];
++	heap->arr[hpos] = new_lprops;
++}
 +
-+	while (len >= 8) {
-+		int ret;
-+
-+		dbg_scan("look at LEB %d:%d (%d bytes left)",
-+			 lnum, offs, len);
-+
-+		cond_resched();
-+
-+		/*
-+		 * Scan quietly until there is an error from which we cannot
-+		 * recover
-+		 */
-+		ret = ubifs_scan_a_node(c, buf, len, lnum, offs, quiet);
-+
-+		if (ret == SCANNED_A_NODE) {
-+			/* A valid node, and not a padding node */
-+			struct ubifs_ch *ch = buf;
-+			int node_len;
-+
-+			err = ubifs_add_snod(c, sleb, buf, offs);
-+			if (err)
-+				goto error;
-+			node_len = ALIGN(le32_to_cpu(ch->len), 8);
-+			offs += node_len;
-+			buf += node_len;
-+			len -= node_len;
-+			continue;
-+		}
-+
-+		if (ret > 0) {
-+			/* Padding bytes or a valid padding node */
-+			offs += ret;
-+			buf += ret;
-+			len -= ret;
-+			continue;
-+		}
-+
-+		if (ret == SCANNED_EMPTY_SPACE) {
-+			if (!is_empty(buf, len)) {
-+				if (!is_last_write(c, buf, offs))
-+					break;
-+				clean_buf(c, &buf, lnum, &offs, &len);
-+				need_clean = 1;
-+			}
-+			empty_chkd = 1;
++/**
++ * ubifs_add_to_cat - add LEB properties to a category list or heap.
++ * @c: UBIFS file-system description object
++ * @lprops: LEB properties to add
++ * @cat: LEB category to which to add
++ *
++ * LEB properties are categorized to enable fast find operations.
++ */
++void ubifs_add_to_cat(struct ubifs_info *c, struct ubifs_lprops *lprops,
++		      int cat)
++{
++	switch (cat) {
++	case LPROPS_DIRTY:
++	case LPROPS_DIRTY_IDX:
++	case LPROPS_FREE:
++		if (add_to_lpt_heap(c, lprops, cat))
 +			break;
-+		}
-+
-+		if (ret == SCANNED_GARBAGE || ret == SCANNED_A_BAD_PAD_NODE)
-+			if (is_last_write(c, buf, offs)) {
-+				clean_buf(c, &buf, lnum, &offs, &len);
-+				need_clean = 1;
-+				empty_chkd = 1;
-+				break;
-+			}
-+
-+		if (ret == SCANNED_A_CORRUPT_NODE)
-+			if (no_more_nodes(c, buf, len, lnum, offs)) {
-+				clean_buf(c, &buf, lnum, &offs, &len);
-+				need_clean = 1;
-+				empty_chkd = 1;
-+				break;
-+			}
-+
-+		if (quiet) {
-+			/* Redo the last scan but noisily */
-+			quiet = 0;
-+			continue;
-+		}
-+
-+		switch (ret) {
-+		case SCANNED_GARBAGE:
-+			dbg_err("garbage");
-+			goto corrupted;
-+		case SCANNED_A_CORRUPT_NODE:
-+		case SCANNED_A_BAD_PAD_NODE:
-+			dbg_err("bad node");
-+			goto corrupted;
-+		default:
-+			dbg_err("unknown");
-+			goto corrupted;
-+		}
++		/* No more room on heap so make it uncategorized */
++		cat = LPROPS_UNCAT;
++		/* Fall through */
++	case LPROPS_UNCAT:
++		list_add(&lprops->list, &c->uncat_list);
++		break;
++	case LPROPS_EMPTY:
++		list_add(&lprops->list, &c->empty_list);
++		break;
++	case LPROPS_FREEABLE:
++		list_add(&lprops->list, &c->freeable_list);
++		c->freeable_cnt += 1;
++		break;
++	case LPROPS_FRDI_IDX:
++		list_add(&lprops->list, &c->frdi_idx_list);
++		break;
++	default:
++		ubifs_assert(0);
 +	}
-+
-+	if (!empty_chkd && !is_empty(buf, len)) {
-+		if (is_last_write(c, buf, offs)) {
-+			clean_buf(c, &buf, lnum, &offs, &len);
-+			need_clean = 1;
-+		} else {
-+			ubifs_err("corrupt empty space at LEB %d:%d",
-+				  lnum, offs);
-+			goto corrupted;
-+		}
-+	}
-+
-+	/* Drop nodes from incomplete group */
-+	if (grouped && drop_incomplete_group(sleb, &offs)) {
-+		buf = sbuf + offs;
-+		len = c->leb_size - offs;
-+		clean_buf(c, &buf, lnum, &offs, &len);
-+		need_clean = 1;
-+	}
-+
-+	if (offs % c->min_io_size) {
-+		clean_buf(c, &buf, lnum, &offs, &len);
-+		need_clean = 1;
-+	}
-+
-+	ubifs_end_scan(c, sleb, lnum, offs);
-+
-+	if (need_clean) {
-+		err = fix_unclean_leb(c, sleb, start);
-+		if (err)
-+			goto error;
-+	}
-+
-+	return sleb;
-+
-+corrupted:
-+	ubifs_scanned_corruption(c, lnum, offs, buf);
-+	err = -EUCLEAN;
-+error:
-+	ubifs_err("LEB %d scanning failed", lnum);
-+	ubifs_scan_destroy(sleb);
-+	return ERR_PTR(err);
++	lprops->flags &= ~LPROPS_CAT_MASK;
++	lprops->flags |= cat;
 +}
 +
 +/**
-+ * get_cs_sqnum - get commit start sequence number.
++ * ubifs_remove_from_cat - remove LEB properties from a category list or heap.
 + * @c: UBIFS file-system description object
-+ * @lnum: LEB number of commit start node
-+ * @offs: offset of commit start node
-+ * @cs_sqnum: commit start sequence number is returned here
++ * @lprops: LEB properties to remove
++ * @cat: LEB category from which to remove
 + *
-+ * This function returns %0 on success and a negative error code on failure.
++ * LEB properties are categorized to enable fast find operations.
 + */
-+static int get_cs_sqnum(struct ubifs_info *c, int lnum, int offs,
-+			unsigned long long *cs_sqnum)
++static void ubifs_remove_from_cat(struct ubifs_info *c,
++				  struct ubifs_lprops *lprops, int cat)
 +{
-+	struct ubifs_cs_node *cs_node = NULL;
-+	int err, ret;
++	switch (cat) {
++	case LPROPS_DIRTY:
++	case LPROPS_DIRTY_IDX:
++	case LPROPS_FREE:
++		remove_from_lpt_heap(c, lprops, cat);
++		break;
++	case LPROPS_FREEABLE:
++		c->freeable_cnt -= 1;
++		ubifs_assert(c->freeable_cnt >= 0);
++		/* Fall through */
++	case LPROPS_UNCAT:
++	case LPROPS_EMPTY:
++	case LPROPS_FRDI_IDX:
++		ubifs_assert(!list_empty(&lprops->list));
++		list_del(&lprops->list);
++		break;
++	default:
++		ubifs_assert(0);
++	}
++}
 +
-+	dbg_mnt("at %d:%d", lnum, offs);
-+	cs_node = kmalloc(UBIFS_CS_NODE_SZ, GFP_KERNEL);
-+	if (!cs_node)
-+		return -ENOMEM;
-+	if (c->leb_size - offs < UBIFS_CS_NODE_SZ)
-+		goto out_err;
-+	err = ubi_read(c->ubi, lnum, (void *)cs_node, offs, UBIFS_CS_NODE_SZ);
-+	if (err && err != -EBADMSG)
-+		goto out_free;
-+	ret = ubifs_scan_a_node(c, cs_node, UBIFS_CS_NODE_SZ, lnum, offs, 0);
-+	if (ret != SCANNED_A_NODE) {
-+		dbg_err("Not a valid node");
-+		goto out_err;
-+	}
-+	if (cs_node->ch.node_type != UBIFS_CS_NODE) {
-+		dbg_err("Node a CS node, type is %d", cs_node->ch.node_type);
-+		goto out_err;
-+	}
-+	if (le64_to_cpu(cs_node->cmt_no) != c->cmt_no) {
-+		dbg_err("CS node cmt_no %llu != current cmt_no %llu",
-+			le64_to_cpu(cs_node->cmt_no), c->cmt_no);
-+		goto out_err;
-+	}
-+	*cs_sqnum = le64_to_cpu(cs_node->ch.sqnum);
-+	dbg_mnt("commit start sqnum %llu", *cs_sqnum);
-+	kfree(cs_node);
-+	return 0;
++/**
++ * ubifs_replace_cat - replace lprops in a category list or heap.
++ * @c: UBIFS file-system description object
++ * @old_lprops: LEB properties to replace
++ * @new_lprops: LEB properties with which to replace
++ *
++ * During commit it is sometimes necessary to copy a pnode (see dirty_cow_pnode)
++ * and the lprops that the pnode contains. When that happens, references in
++ * category lists and heaps must be replaced. This function does that.
++ */
++void ubifs_replace_cat(struct ubifs_info *c, struct ubifs_lprops *old_lprops,
++		       struct ubifs_lprops *new_lprops)
++{
++	int cat;
 +
-+out_err:
-+	err = -EINVAL;
-+out_free:
-+	ubifs_err("failed to get CS sqnum");
-+	kfree(cs_node);
++	cat = new_lprops->flags & LPROPS_CAT_MASK;
++	switch (cat) {
++	case LPROPS_DIRTY:
++	case LPROPS_DIRTY_IDX:
++	case LPROPS_FREE:
++		lpt_heap_replace(c, old_lprops, new_lprops, cat);
++		break;
++	case LPROPS_UNCAT:
++	case LPROPS_EMPTY:
++	case LPROPS_FREEABLE:
++	case LPROPS_FRDI_IDX:
++		list_replace(&old_lprops->list, &new_lprops->list);
++		break;
++	default:
++		ubifs_assert(0);
++	}
++}
++
++/**
++ * ubifs_ensure_cat - ensure LEB properties are categorized.
++ * @c: UBIFS file-system description object
++ * @lprops: LEB properties
++ *
++ * A LEB may have fallen off of the bottom of a heap, and ended up as
++ * uncategorized even though it has enough space for us now. If that is the case
++ * this function will put the LEB back onto a heap.
++ */
++void ubifs_ensure_cat(struct ubifs_info *c, struct ubifs_lprops *lprops)
++{
++	int cat = lprops->flags & LPROPS_CAT_MASK;
++
++	if (cat != LPROPS_UNCAT)
++		return;
++	cat = ubifs_categorize_lprops(c, lprops);
++	if (cat == LPROPS_UNCAT)
++		return;
++	ubifs_remove_from_cat(c, lprops, LPROPS_UNCAT);
++	ubifs_add_to_cat(c, lprops, cat);
++}
++
++/**
++ * ubifs_categorize_lprops - categorize LEB properties.
++ * @c: UBIFS file-system description object
++ * @lprops: LEB properties to categorize
++ *
++ * LEB properties are categorized to enable fast find operations. This function
++ * returns the LEB category to which the LEB properties belong. Note however
++ * that if the LEB category is stored as a heap and the heap is full, the
++ * LEB properties may have their category changed to %LPROPS_UNCAT.
++ */
++int ubifs_categorize_lprops(const struct ubifs_info *c,
++			    const struct ubifs_lprops *lprops)
++{
++	if (lprops->flags & LPROPS_TAKEN)
++		return LPROPS_UNCAT;
++
++	if (lprops->free == c->leb_size) {
++		ubifs_assert(!(lprops->flags & LPROPS_INDEX));
++		return LPROPS_EMPTY;
++	}
++
++	if (lprops->free + lprops->dirty == c->leb_size) {
++		if (lprops->flags & LPROPS_INDEX)
++			return LPROPS_FRDI_IDX;
++		else
++			return LPROPS_FREEABLE;
++	}
++
++	if (lprops->flags & LPROPS_INDEX) {
++		if (lprops->dirty + lprops->free >= c->min_idx_node_sz)
++			return LPROPS_DIRTY_IDX;
++	} else {
++		if (lprops->dirty >= c->dead_wm &&
++		    lprops->dirty > lprops->free)
++			return LPROPS_DIRTY;
++		if (lprops->free > 0)
++			return LPROPS_FREE;
++	}
++
++	return LPROPS_UNCAT;
++}
++
++/**
++ * change_category - change LEB properties category.
++ * @c: UBIFS file-system description object
++ * @lprops: LEB properties to recategorize
++ *
++ * LEB properties are categorized to enable fast find operations. When the LEB
++ * properties change they must be recategorized.
++ */
++static void change_category(struct ubifs_info *c, struct ubifs_lprops *lprops)
++{
++	int old_cat = lprops->flags & LPROPS_CAT_MASK;
++	int new_cat = ubifs_categorize_lprops(c, lprops);
++
++	if (old_cat == new_cat) {
++		struct ubifs_lpt_heap *heap = &c->lpt_heap[new_cat - 1];
++
++		/* lprops on a heap now must be moved up or down */
++		if (new_cat < 1 || new_cat > LPROPS_HEAP_CNT)
++			return; /* Not on a heap */
++		heap = &c->lpt_heap[new_cat - 1];
++		adjust_lpt_heap(c, heap, lprops, lprops->hpos, new_cat);
++	} else {
++		ubifs_remove_from_cat(c, lprops, old_cat);
++		ubifs_add_to_cat(c, lprops, new_cat);
++	}
++}
++
++/**
++ * ubifs_get_lprops - get reference to LEB properties.
++ * @c: the UBIFS file-system description object
++ *
++ * This function locks lprops. Lprops have to be unlocked by
++ * 'ubifs_release_lprops()'.
++ */
++void ubifs_get_lprops(struct ubifs_info *c)
++{
++	mutex_lock(&c->lp_mutex);
++}
++
++/**
++ * calc_dark - calculate LEB dark space size.
++ * @c: the UBIFS file-system description object
++ * @spc: amount of free and dirty space in the LEB
++ *
++ * This function calculates amount of dark space in an LEB which has @spc bytes
++ * of free and dirty space. Returns the calculations result.
++ *
++ * Dark space is the space which is not always usable - it depends on which
++ * nodes are written in which order. E.g., if an LEB has only 512 free bytes,
++ * it is dark space, because it cannot fit a large data node. So UBIFS cannot
++ * count on this LEB and treat these 512 bytes as usable because it is not true
++ * if, for example, only big chunks of uncompressible data will be written to
++ * the FS.
++ */
++static int calc_dark(struct ubifs_info *c, int spc)
++{
++	ubifs_assert(!(spc & 7));
++
++	if (spc < c->dark_wm)
++		return spc;
++
++	/*
++	 * If we have slightly more space then the dark space watermark, we can
++	 * anyway safely assume it we'll be able to write a node of the
++	 * smallest size there.
++	 */
++	if (spc - c->dark_wm < MIN_WRITE_SZ)
++		return spc - MIN_WRITE_SZ;
++
++	return c->dark_wm;
++}
++
++/**
++ * is_lprops_dirty - determine if LEB properties are dirty.
++ * @c: the UBIFS file-system description object
++ * @lprops: LEB properties to test
++ */
++static int is_lprops_dirty(struct ubifs_info *c, struct ubifs_lprops *lprops)
++{
++	struct ubifs_pnode *pnode;
++	void *addr;
++	int pos;
++
++	pos = (lprops->lnum - c->main_first) & (UBIFS_LPT_FANOUT - 1);
++	addr = container_of(lprops, struct ubifs_pnode, lprops[0]) -
++	       pos * sizeof(struct ubifs_lprops);
++	pnode = (struct ubifs_pnode *)addr;
++
++	return !test_bit(COW_ZNODE, &pnode->flags) &&
++	       test_bit(DIRTY_CNODE, &pnode->flags);
++}
++
++/**
++ * ubifs_change_lp - change LEB properties.
++ * @c: the UBIFS file-system description object
++ * @lp: LEB properties to change
++ * @free: new free space amount
++ * @dirty: new dirty space amount
++ * @flags: new flags
++ * @idx_gc_cnt: change to the count of idx_gc list
++ *
++ * This function changes LEB properties. This function does not change a LEB
++ * property (@free, @dirty or @flag) if the value passed is %-1.
++ *
++ * This function returns a pointer to the updated LEB properties on success
++ * and a negative error code on failure. N.B. the LEB properties may have had to
++ * be copied (due to COW) and consequently the pointer returned may not be the
++ * same as the pointer passed.
++ */
++const struct ubifs_lprops *ubifs_change_lp(struct ubifs_info *c,
++					   const struct ubifs_lprops *lp,
++					   int free, int dirty, int flags,
++					   int idx_gc_cnt)
++{
++	/*
++	 * This is the only function that is allowed to change lprops, so we
++	 * discard the const qualifier.
++	 */
++	struct ubifs_lprops *lprops = (struct ubifs_lprops *)lp;
++
++	dbg_lp("LEB %d, free %d, dirty %d, flags %d",
++	       lprops->lnum, free, dirty, flags);
++
++	ubifs_assert(mutex_is_locked(&c->lp_mutex));
++	ubifs_assert(c->lst.empty_lebs >= 0 &&
++		     c->lst.empty_lebs <= c->main_lebs);
++	ubifs_assert(c->freeable_cnt >= 0);
++	ubifs_assert(c->freeable_cnt <= c->main_lebs);
++	ubifs_assert(c->lst.taken_empty_lebs >= 0);
++	ubifs_assert(c->lst.taken_empty_lebs <= c->lst.empty_lebs);
++	ubifs_assert(!(c->lst.total_free & 7) && !(c->lst.total_dirty & 7));
++	ubifs_assert(!(c->lst.total_dead & 7) && !(c->lst.total_dark & 7));
++	ubifs_assert(!(c->lst.total_used & 7));
++
++	if (!is_lprops_dirty(c, lprops)) {
++		lprops = ubifs_lpt_lookup_dirty(c, lprops->lnum);
++		if (IS_ERR(lprops))
++			return lprops;
++	}
++
++	ubifs_assert(!(lprops->free & 7) && !(lprops->dirty & 7));
++
++	spin_lock(&c->space_lock);
++
++	if ((lprops->flags & LPROPS_TAKEN) && lprops->free == c->leb_size)
++		c->lst.taken_empty_lebs -= 1;
++
++	if (!(lprops->flags & LPROPS_INDEX)) {
++		int old_spc;
++
++		old_spc = lprops->free + lprops->dirty;
++		if (old_spc < c->dead_wm)
++			c->lst.total_dead -= old_spc;
++		else
++			c->lst.total_dark -= calc_dark(c, old_spc);
++
++		c->lst.total_used -= c->leb_size - old_spc;
++	}
++
++	if (free != -1) {
++		free = ALIGN(free, 8);
++		c->lst.total_free += free - lprops->free;
++
++		/* Increase or decrease empty LEBs counter if needed */
++		if (free == c->leb_size) {
++			if (lprops->free != c->leb_size)
++				c->lst.empty_lebs += 1;
++		} else if (lprops->free == c->leb_size)
++			c->lst.empty_lebs -= 1;
++		lprops->free = free;
++	}
++
++	if (dirty != -1) {
++		dirty = ALIGN(dirty, 8);
++		c->lst.total_dirty += dirty - lprops->dirty;
++		lprops->dirty = dirty;
++	}
++
++	if (flags != -1) {
++		/* Take care about indexing LEBs counter if needed */
++		if ((lprops->flags & LPROPS_INDEX)) {
++			if (!(flags & LPROPS_INDEX))
++				c->lst.idx_lebs -= 1;
++		} else if (flags & LPROPS_INDEX)
++			c->lst.idx_lebs += 1;
++		lprops->flags = flags;
++	}
++
++	if (!(lprops->flags & LPROPS_INDEX)) {
++		int new_spc;
++
++		new_spc = lprops->free + lprops->dirty;
++		if (new_spc < c->dead_wm)
++			c->lst.total_dead += new_spc;
++		else
++			c->lst.total_dark += calc_dark(c, new_spc);
++
++		c->lst.total_used += c->leb_size - new_spc;
++	}
++
++	if ((lprops->flags & LPROPS_TAKEN) && lprops->free == c->leb_size)
++		c->lst.taken_empty_lebs += 1;
++
++	change_category(c, lprops);
++
++	c->idx_gc_cnt += idx_gc_cnt;
++
++	spin_unlock(&c->space_lock);
++
++	return lprops;
++}
++
++/**
++ * ubifs_release_lprops - release lprops lock.
++ * @c: the UBIFS file-system description object
++ *
++ * This function has to be called after each 'ubifs_get_lprops()' call to
++ * unlock lprops.
++ */
++void ubifs_release_lprops(struct ubifs_info *c)
++{
++	ubifs_assert(mutex_is_locked(&c->lp_mutex));
++	ubifs_assert(c->lst.empty_lebs >= 0 &&
++		     c->lst.empty_lebs <= c->main_lebs);
++
++	mutex_unlock(&c->lp_mutex);
++}
++
++/**
++ * ubifs_get_lp_stats - get lprops statistics.
++ * @c: UBIFS file-system description object
++ * @st: return statistics
++ */
++void ubifs_get_lp_stats(struct ubifs_info *c, struct ubifs_lp_stats *st)
++{
++	spin_lock(&c->space_lock);
++	memcpy(st, &c->lst, sizeof(struct ubifs_lp_stats));
++	spin_unlock(&c->space_lock);
++}
++
++/**
++ * ubifs_change_one_lp - change LEB properties.
++ * @c: the UBIFS file-system description object
++ * @lnum: LEB to change properties for
++ * @free: amount of free space
++ * @dirty: amount of dirty space
++ * @flags_set: flags to set
++ * @flags_clean: flags to clean
++ * @idx_gc_cnt: change to the count of idx_gc list
++ *
++ * This function changes properties of LEB @lnum. It is a helper wrapper over
++ * 'ubifs_change_lp()' which hides lprops get/release. The arguments are the
++ * same as in case of 'ubifs_change_lp()'. Returns zero in case of success and
++ * a negative error code in case of failure.
++ */
++int ubifs_change_one_lp(struct ubifs_info *c, int lnum, int free, int dirty,
++			int flags_set, int flags_clean, int idx_gc_cnt)
++{
++	int err = 0, flags;
++	const struct ubifs_lprops *lp;
++
++	ubifs_get_lprops(c);
++
++	lp = ubifs_lpt_lookup_dirty(c, lnum);
++	if (IS_ERR(lp)) {
++		err = PTR_ERR(lp);
++		goto out;
++	}
++
++	flags = (lp->flags | flags_set) & ~flags_clean;
++	lp = ubifs_change_lp(c, lp, free, dirty, flags, idx_gc_cnt);
++	if (IS_ERR(lp))
++		err = PTR_ERR(lp);
++
++out:
++	ubifs_release_lprops(c);
 +	return err;
 +}
 +
 +/**
-+ * ubifs_recover_log_leb - scan and recover a log LEB.
-+ * @c: UBIFS file-system description object
-+ * @lnum: LEB number
-+ * @offs: offset
-+ * @sbuf: LEB-sized buffer to use
++ * ubifs_update_one_lp - update LEB properties.
++ * @c: the UBIFS file-system description object
++ * @lnum: LEB to change properties for
++ * @free: amount of free space
++ * @dirty: amount of dirty space to add
++ * @flags_set: flags to set
++ * @flags_clean: flags to clean
 + *
-+ * This function does a scan of a LEB, but caters for errors that might have
-+ * been caused by the unclean unmount from which we are attempting to recover.
-+ *
-+ * This function returns %0 on success and a negative error code on failure.
++ * This function is the same as 'ubifs_change_one_lp()' but @dirty is added to
++ * current dirty space, not substitutes it.
 + */
-+struct ubifs_scan_leb *ubifs_recover_log_leb(struct ubifs_info *c, int lnum,
-+					     int offs, void *sbuf)
++int ubifs_update_one_lp(struct ubifs_info *c, int lnum, int free, int dirty,
++			int flags_set, int flags_clean)
 +{
-+	struct ubifs_scan_leb *sleb;
-+	int next_lnum;
++	int err = 0, flags;
++	const struct ubifs_lprops *lp;
 +
-+	dbg_mnt("LEB %d", lnum);
-+	next_lnum = lnum + 1;
-+	if (next_lnum >= UBIFS_LOG_LNUM + c->log_lebs)
-+		next_lnum = UBIFS_LOG_LNUM;
-+	if (next_lnum != c->ltail_lnum) {
-+		/*
-+		 * We can only recover at the end of the log, so check that the
-+		 * next log LEB is empty or out of date.
-+		 */
-+		sleb = ubifs_scan(c, next_lnum, 0, sbuf);
-+		if (IS_ERR(sleb))
-+			return sleb;
-+		if (sleb->nodes_cnt) {
-+			struct ubifs_scan_node *snod;
-+			unsigned long long cs_sqnum = c->cs_sqnum;
++	ubifs_get_lprops(c);
 +
-+			snod = list_entry(sleb->nodes.next,
-+					  struct ubifs_scan_node, list);
-+			if (cs_sqnum == 0) {
-+				int err;
-+
-+				err = get_cs_sqnum(c, lnum, offs, &cs_sqnum);
-+				if (err) {
-+					ubifs_scan_destroy(sleb);
-+					return ERR_PTR(err);
-+				}
-+			}
-+			if (snod->sqnum > cs_sqnum) {
-+				ubifs_err("unrecoverable log corruption "
-+					  "in LEB %d", lnum);
-+				ubifs_scan_destroy(sleb);
-+				return ERR_PTR(-EUCLEAN);
-+			}
-+		}
-+		ubifs_scan_destroy(sleb);
++	lp = ubifs_lpt_lookup_dirty(c, lnum);
++	if (IS_ERR(lp)) {
++		err = PTR_ERR(lp);
++		goto out;
 +	}
-+	return ubifs_recover_leb(c, lnum, offs, sbuf, 0);
++
++	flags = (lp->flags | flags_set) & ~flags_clean;
++	lp = ubifs_change_lp(c, lp, free, lp->dirty + dirty, flags, 0);
++	if (IS_ERR(lp))
++		err = PTR_ERR(lp);
++
++out:
++	ubifs_release_lprops(c);
++	return err;
 +}
 +
 +/**
-+ * recover_head - recover a head.
-+ * @c: UBIFS file-system description object
-+ * @lnum: LEB number of head to recover
-+ * @offs: offset of head to recover
-+ * @sbuf: LEB-sized buffer to use
++ * ubifs_read_one_lp - read LEB properties.
++ * @c: the UBIFS file-system description object
++ * @lnum: LEB to read properties for
++ * @lp: where to store read properties
 + *
-+ * This function ensures that there is no data on the flash at a head location.
++ * This helper function reads properties of a LEB @lnum and stores them in @lp.
++ * Returns zero in case of success and a negative error code in case of
++ * failure.
++ */
++int ubifs_read_one_lp(struct ubifs_info *c, int lnum, struct ubifs_lprops *lp)
++{
++	int err = 0;
++	const struct ubifs_lprops *lpp;
++
++	ubifs_get_lprops(c);
++
++	lpp = ubifs_lpt_lookup(c, lnum);
++	if (IS_ERR(lpp)) {
++		err = PTR_ERR(lpp);
++		goto out;
++	}
++
++	memcpy(lp, lpp, sizeof(struct ubifs_lprops));
++
++out:
++	ubifs_release_lprops(c);
++	return err;
++}
++
++/**
++ * ubifs_fast_find_free - try to find a LEB with free space quickly.
++ * @c: the UBIFS file-system description object
++ *
++ * This function returns LEB properties for a LEB with free space or %NULL if
++ * the function is unable to find a LEB quickly.
++ */
++const struct ubifs_lprops *ubifs_fast_find_free(struct ubifs_info *c)
++{
++	struct ubifs_lprops *lprops;
++	struct ubifs_lpt_heap *heap;
++
++	ubifs_assert(mutex_is_locked(&c->lp_mutex));
++
++	heap = &c->lpt_heap[LPROPS_FREE - 1];
++	if (heap->cnt == 0)
++		return NULL;
++
++	lprops = heap->arr[0];
++	ubifs_assert(!(lprops->flags & LPROPS_TAKEN));
++	ubifs_assert(!(lprops->flags & LPROPS_INDEX));
++	return lprops;
++}
++
++/**
++ * ubifs_fast_find_empty - try to find an empty LEB quickly.
++ * @c: the UBIFS file-system description object
++ *
++ * This function returns LEB properties for an empty LEB or %NULL if the
++ * function is unable to find an empty LEB quickly.
++ */
++const struct ubifs_lprops *ubifs_fast_find_empty(struct ubifs_info *c)
++{
++	struct ubifs_lprops *lprops;
++
++	ubifs_assert(mutex_is_locked(&c->lp_mutex));
++
++	if (list_empty(&c->empty_list))
++		return NULL;
++
++	lprops = list_entry(c->empty_list.next, struct ubifs_lprops, list);
++	ubifs_assert(!(lprops->flags & LPROPS_TAKEN));
++	ubifs_assert(!(lprops->flags & LPROPS_INDEX));
++	ubifs_assert(lprops->free == c->leb_size);
++	return lprops;
++}
++
++/**
++ * ubifs_fast_find_freeable - try to find a freeable LEB quickly.
++ * @c: the UBIFS file-system description object
++ *
++ * This function returns LEB properties for a freeable LEB or %NULL if the
++ * function is unable to find a freeable LEB quickly.
++ */
++const struct ubifs_lprops *ubifs_fast_find_freeable(struct ubifs_info *c)
++{
++	struct ubifs_lprops *lprops;
++
++	ubifs_assert(mutex_is_locked(&c->lp_mutex));
++
++	if (list_empty(&c->freeable_list))
++		return NULL;
++
++	lprops = list_entry(c->freeable_list.next, struct ubifs_lprops, list);
++	ubifs_assert(!(lprops->flags & LPROPS_TAKEN));
++	ubifs_assert(!(lprops->flags & LPROPS_INDEX));
++	ubifs_assert(lprops->free + lprops->dirty == c->leb_size);
++	ubifs_assert(c->freeable_cnt > 0);
++	return lprops;
++}
++
++/**
++ * ubifs_fast_find_frdi_idx - try to find a freeable index LEB quickly.
++ * @c: the UBIFS file-system description object
++ *
++ * This function returns LEB properties for a freeable index LEB or %NULL if the
++ * function is unable to find a freeable index LEB quickly.
++ */
++const struct ubifs_lprops *ubifs_fast_find_frdi_idx(struct ubifs_info *c)
++{
++	struct ubifs_lprops *lprops;
++
++	ubifs_assert(mutex_is_locked(&c->lp_mutex));
++
++	if (list_empty(&c->frdi_idx_list))
++		return NULL;
++
++	lprops = list_entry(c->frdi_idx_list.next, struct ubifs_lprops, list);
++	ubifs_assert(!(lprops->flags & LPROPS_TAKEN));
++	ubifs_assert((lprops->flags & LPROPS_INDEX));
++	ubifs_assert(lprops->free + lprops->dirty == c->leb_size);
++	return lprops;
++}
++
++#if defined(CONFIG_UBIFS_FS_DEBUG_CHK_LPROPS) || \
++    defined(CONFIG_UBIFS_FS_DEBUG_CHK_OTHER)
++
++/**
++ * dbg_check_cats - check category heaps and lists.
++ * @c: UBIFS file-system description object
 + *
 + * This function returns %0 on success and a negative error code on failure.
 + */
-+static int recover_head(const struct ubifs_info *c, int lnum, int offs,
-+			void *sbuf)
++int dbg_check_cats(struct ubifs_info *c)
 +{
-+	int len, err, need_clean = 0;
++	struct ubifs_lprops *lprops;
++	struct list_head *pos;
++	int i, cat;
 +
-+	if (c->min_io_size > 1)
-+		len = c->min_io_size;
-+	else
-+		len = 512;
-+	if (offs + len > c->leb_size)
-+		len = c->leb_size - offs;
-+
-+	if (!len)
-+		return 0;
-+
-+	/* Read at the head location and check it is empty flash */
-+	err = ubi_read(c->ubi, lnum, sbuf, offs, len);
-+	if (err)
-+		need_clean = 1;
-+	else {
-+		uint8_t *p = sbuf;
-+
-+		while (len--)
-+			if (*p++ != 0xff) {
-+				need_clean = 1;
-+				break;
-+			}
++	list_for_each_entry(lprops, &c->empty_list, list) {
++		if (lprops->free != c->leb_size) {
++			ubifs_err("non-empty LEB %d on empty list "
++				  "(free %d dirty %d flags %d)", lprops->lnum,
++				  lprops->free, lprops->dirty, lprops->flags);
++			return -EINVAL;
++		}
++		if (lprops->flags & LPROPS_TAKEN) {
++			ubifs_err("taken LEB %d on empty list "
++				  "(free %d dirty %d flags %d)", lprops->lnum,
++				  lprops->free, lprops->dirty, lprops->flags);
++			return -EINVAL;
++		}
 +	}
 +
-+	if (need_clean) {
-+		dbg_mnt("cleaning head at %d:%d", lnum, offs);
-+		if (offs == 0)
-+			return ubifs_leb_unmap(c, lnum);
-+		err = ubi_read(c->ubi, lnum, sbuf, 0, offs);
-+		if (err)
-+			return err;
-+		return ubi_leb_change(c->ubi, lnum, sbuf, offs, UBI_UNKNOWN);
++	i = 0;
++	list_for_each_entry(lprops, &c->freeable_list, list) {
++		if (lprops->free + lprops->dirty != c->leb_size) {
++			ubifs_err("non-freeable LEB %d on freeable list "
++				  "(free %d dirty %d flags %d)", lprops->lnum,
++				  lprops->free, lprops->dirty, lprops->flags);
++			return -EINVAL;
++		}
++		if (lprops->flags & LPROPS_TAKEN) {
++			ubifs_err("taken LEB %d on freeable list "
++				  "(free %d dirty %d flags %d)", lprops->lnum,
++				  lprops->free, lprops->dirty, lprops->flags);
++			return -EINVAL;
++		}
++		i += 1;
++	}
++	if (i != c->freeable_cnt) {
++		ubifs_err("freeable list count %d expected %d", i,
++			  c->freeable_cnt);
++		return -EINVAL;
++	}
++
++	i = 0;
++	list_for_each(pos, &c->idx_gc)
++		i += 1;
++	if (i != c->idx_gc_cnt) {
++		ubifs_err("idx_gc list count %d expected %d", i,
++			  c->idx_gc_cnt);
++		return -EINVAL;
++	}
++
++	list_for_each_entry(lprops, &c->frdi_idx_list, list) {
++		if (lprops->free + lprops->dirty != c->leb_size) {
++			ubifs_err("non-freeable LEB %d on frdi_idx list "
++				  "(free %d dirty %d flags %d)", lprops->lnum,
++				  lprops->free, lprops->dirty, lprops->flags);
++			return -EINVAL;
++		}
++		if (lprops->flags & LPROPS_TAKEN) {
++			ubifs_err("taken LEB %d on frdi_idx list "
++				  "(free %d dirty %d flags %d)", lprops->lnum,
++				  lprops->free, lprops->dirty, lprops->flags);
++			return -EINVAL;
++		}
++		if (!(lprops->flags & LPROPS_INDEX)) {
++			ubifs_err("non-index LEB %d on frdi_idx list "
++				  "(free %d dirty %d flags %d)", lprops->lnum,
++				  lprops->free, lprops->dirty, lprops->flags);
++			return -EINVAL;
++		}
++	}
++
++	for (cat = 1; cat <= LPROPS_HEAP_CNT; cat++) {
++		struct ubifs_lpt_heap *heap = &c->lpt_heap[cat - 1];
++
++		for (i = 0; i < heap->cnt; i++) {
++			lprops = heap->arr[i];
++			if (lprops == NULL) {
++				ubifs_err("null ptr in LPT heap cat %d", cat);
++				return -EINVAL;
++			}
++			if (lprops->hpos != i) {
++				ubifs_err("bad ptr in LPT heap cat %d", cat);
++				return -EINVAL;
++			}
++			if (lprops->flags & LPROPS_TAKEN) {
++				ubifs_err("taken LEB in LPT heap cat %d", cat);
++				return -EINVAL;
++			}
++		}
 +	}
 +
 +	return 0;
 +}
 +
-+/**
-+ * ubifs_recover_inl_heads - recover index and LPT heads.
-+ * @c: UBIFS file-system description object
-+ * @sbuf: LEB-sized buffer to use
-+ *
-+ * This function ensures that there is no data on the flash at the index and
-+ * LPT head locations.
-+ *
-+ * This deals with the recovery of a half-completed journal commit. UBIFS is
-+ * careful never to overwrite the last version of the index or the LPT. Because
-+ * the index and LPT are wandering trees, data from a half-completed commit will
-+ * not be referenced anywhere in UBIFS. The data will be either in LEBs that are
-+ * assumed to be empty and will be unmapped anyway before use, or in the index
-+ * and LPT heads.
-+ *
-+ * This function returns %0 on success and a negative error code on failure.
-+ */
-+int ubifs_recover_inl_heads(const struct ubifs_info *c, void *sbuf)
++static void dbg_check_heap(struct ubifs_info *c, struct ubifs_lpt_heap *heap,
++			   int cat, int add_pos)
 +{
++	int i = 0, j, err = 0;
++
++	for (i = 0; i < heap->cnt; i++) {
++		struct ubifs_lprops *lprops = heap->arr[i];
++		struct ubifs_lprops *lp;
++
++		if (i != add_pos)
++			if ((lprops->flags & LPROPS_CAT_MASK) != cat) {
++				err = 1;
++				goto out;
++			}
++		if (lprops->hpos != i) {
++			err = 2;
++			goto out;
++		}
++		lp = ubifs_lpt_lookup(c, lprops->lnum);
++		if (IS_ERR(lp)) {
++			err = 3;
++			goto out;
++		}
++		if (lprops != lp) {
++			dbg_msg("lprops %zx lp %zx lprops->lnum %d lp->lnum %d",
++				(size_t)lprops, (size_t)lp, lprops->lnum,
++				lp->lnum);
++			err = 4;
++			goto out;
++		}
++		for (j = 0; j < i; j++) {
++			lp = heap->arr[j];
++			if (lp == lprops) {
++				err = 5;
++				goto out;
++			}
++			if (lp->lnum == lprops->lnum) {
++				err = 6;
++				goto out;
++			}
++		}
++	}
++out:
++	if (err) {
++		dbg_msg("failed cat %d hpos %d err %d", cat, i, err);
++		dbg_dump_stack();
++		dbg_dump_heap(c, heap, cat);
++	}
++}
++
++#endif
++
++#ifdef CONFIG_UBIFS_FS_DEBUG_CHK_LPROPS
++
++/**
++ * struct scan_check_data - data provided to scan callback function.
++ * @lst: LEB properties statistics
++ * @err: error code
++ */
++struct scan_check_data {
++	struct ubifs_lp_stats lst;
 +	int err;
-+
-+	ubifs_assert(!(c->vfs_sb->s_flags & MS_RDONLY) || c->remounting_rw);
-+
-+	dbg_mnt("checking index head at %d:%d", c->ihead_lnum, c->ihead_offs);
-+	err = recover_head(c, c->ihead_lnum, c->ihead_offs, sbuf);
-+	if (err)
-+		return err;
-+
-+	dbg_mnt("checking LPT head at %d:%d", c->nhead_lnum, c->nhead_offs);
-+	err = recover_head(c, c->nhead_lnum, c->nhead_offs, sbuf);
-+	if (err)
-+		return err;
-+
-+	return 0;
-+}
-+
-+/**
-+ *  clean_an_unclean_leb - read and write a LEB to remove corruption.
-+ * @c: UBIFS file-system description object
-+ * @ucleb: unclean LEB information
-+ * @sbuf: LEB-sized buffer to use
-+ *
-+ * This function reads a LEB up to a point pre-determined by the mount recovery,
-+ * checks the nodes, and writes the result back to the flash, thereby cleaning
-+ * off any following corruption, or non-fatal ECC errors.
-+ *
-+ * This function returns %0 on success and a negative error code on failure.
-+ */
-+static int clean_an_unclean_leb(const struct ubifs_info *c,
-+				struct ubifs_unclean_leb *ucleb, void *sbuf)
-+{
-+	int err, lnum = ucleb->lnum, offs = 0, len = ucleb->endpt, quiet = 1;
-+	void *buf = sbuf;
-+
-+	dbg_mnt("LEB %d len %d", lnum, len);
-+
-+	if (len == 0) {
-+		/* Nothing to read, just unmap it */
-+		err = ubifs_leb_unmap(c, lnum);
-+		if (err)
-+			return err;
-+		return 0;
-+	}
-+
-+	err = ubi_read(c->ubi, lnum, buf, offs, len);
-+	if (err && err != -EBADMSG)
-+		return err;
-+
-+	while (len >= 8) {
-+		int ret;
-+
-+		cond_resched();
-+
-+		/* Scan quietly until there is an error */
-+		ret = ubifs_scan_a_node(c, buf, len, lnum, offs, quiet);
-+
-+		if (ret == SCANNED_A_NODE) {
-+			/* A valid node, and not a padding node */
-+			struct ubifs_ch *ch = buf;
-+			int node_len;
-+
-+			node_len = ALIGN(le32_to_cpu(ch->len), 8);
-+			offs += node_len;
-+			buf += node_len;
-+			len -= node_len;
-+			continue;
-+		}
-+
-+		if (ret > 0) {
-+			/* Padding bytes or a valid padding node */
-+			offs += ret;
-+			buf += ret;
-+			len -= ret;
-+			continue;
-+		}
-+
-+		if (ret == SCANNED_EMPTY_SPACE) {
-+			ubifs_err("unexpected empty space at %d:%d",
-+				  lnum, offs);
-+			return -EUCLEAN;
-+		}
-+
-+		if (quiet) {
-+			/* Redo the last scan but noisily */
-+			quiet = 0;
-+			continue;
-+		}
-+
-+		ubifs_scanned_corruption(c, lnum, offs, buf);
-+		return -EUCLEAN;
-+	}
-+
-+	/* Pad to min_io_size */
-+	len = ALIGN(ucleb->endpt, c->min_io_size);
-+	if (len > ucleb->endpt) {
-+		int pad_len = len - ALIGN(ucleb->endpt, 8);
-+
-+		if (pad_len > 0) {
-+			buf = c->sbuf + len - pad_len;
-+			ubifs_pad(c, buf, pad_len);
-+		}
-+	}
-+
-+	/* Write back the LEB atomically */
-+	err = ubi_leb_change(c->ubi, lnum, sbuf, len, UBI_UNKNOWN);
-+	if (err)
-+		return err;
-+
-+	dbg_mnt("cleaned LEB %d", lnum);
-+
-+	return 0;
-+}
-+
-+/**
-+ * ubifs_clean_lebs - clean LEBs recovered during read-only mount.
-+ * @c: UBIFS file-system description object
-+ * @sbuf: LEB-sized buffer to use
-+ *
-+ * This function cleans a LEB identified during recovery that needs to be
-+ * written but was not because UBIFS was mounted read-only. This happens when
-+ * remounting to read-write mode.
-+ *
-+ * This function returns %0 on success and a negative error code on failure.
-+ */
-+int ubifs_clean_lebs(const struct ubifs_info *c, void *sbuf)
-+{
-+	dbg_mnt("recovery");
-+	while (!list_empty(&c->unclean_leb_list)) {
-+		struct ubifs_unclean_leb *ucleb;
-+		int err;
-+
-+		ucleb = list_entry(c->unclean_leb_list.next,
-+				   struct ubifs_unclean_leb, list);
-+		err = clean_an_unclean_leb(c, ucleb, sbuf);
-+		if (err)
-+			return err;
-+		list_del(&ucleb->list);
-+		kfree(ucleb);
-+	}
-+	return 0;
-+}
-+
-+/**
-+ * ubifs_recover_gc_lnum - recover the GC LEB number.
-+ * @c: UBIFS file-system description object
-+ *
-+ * Out-of-place garbage collection requires always one empty LEB with which to
-+ * start garbage collection. The LEB number is recorded in c->gc_lnum and is
-+ * written to the master node on unmounting. In the case of an unclean unmount
-+ * the value of gc_lnum recorded in the master node is out of date and cannot
-+ * be used. Instead, recovery must allocate an empty LEB for this purpose.
-+ *
-+ * This function returns %0 on success and a negative error code on failure.
-+ */
-+int ubifs_recover_gc_lnum(struct ubifs_info *c)
-+{
-+	int lnum, err;
-+
-+	c->gc_lnum = -1;
-+	/* Call 'ubifs_find_free_leb_for_idx()' so GC is not run */
-+	lnum = ubifs_find_free_leb_for_idx(c);
-+	if (lnum < 0)
-+		return lnum;
-+	/* And reset the index flag */
-+	err = ubifs_change_one_lp(c, lnum, -1, -1, 0, LPROPS_INDEX, 0);
-+	if (err)
-+		return err;
-+	c->gc_lnum = lnum;
-+	dbg_mnt("allocated LEB %d for GC", lnum);
-+	return 0;
-+}
-+
-+/**
-+ * struct size_entry - inode size information for recovery.
-+ * @rb: link in the RB-tree of sizes
-+ * @inum: inode number
-+ * @i_size: size on inode
-+ * @d_size: maximum size based on data nodes
-+ * @exists: indicates whether the inode exists
-+ * @inode: inode if pinned in memory awaiting rw mode to fix it
-+ */
-+struct size_entry {
-+	struct rb_node rb;
-+	ino_t inum;
-+	loff_t i_size;
-+	loff_t d_size;
-+	int exists;
-+	struct inode *inode;
 +};
 +
 +/**
-+ * add_ino - add an entry to the size tree.
-+ * @c: UBIFS file-system description object
-+ * @inum: inode number
-+ * @i_size: size on inode
-+ * @d_size: maximum size based on data nodes
-+ * @exists: indicates whether the inode exists
++ * scan_check_cb - scan callback.
++ * @c: the UBIFS file-system description object
++ * @lp: LEB properties to scan
++ * @in_tree: whether the LEB properties are in main memory
++ * @data: information passed to and from the caller of the scan
++ *
++ * This function returns a code that indicates whether the scan should continue
++ * (%LPT_SCAN_CONTINUE), whether the LEB properties should be added to the tree
++ * in main memory (%LPT_SCAN_ADD), or whether the scan should stop
++ * (%LPT_SCAN_STOP).
 + */
-+static int add_ino(struct ubifs_info *c, ino_t inum, loff_t i_size,
-+		   loff_t d_size, int exists)
++static int scan_check_cb(struct ubifs_info *c,
++			 const struct ubifs_lprops *lp, int in_tree,
++			 struct scan_check_data *data)
 +{
-+	struct rb_node **p = &c->size_tree.rb_node, *parent = NULL;
-+	struct size_entry *e;
++	struct ubifs_scan_leb *sleb;
++	struct ubifs_scan_node *snod;
++	struct ubifs_lp_stats *lst = &data->lst;
++	int cat, lnum = lp->lnum, is_idx = 0, used = 0, free, dirty;
 +
-+	while (*p) {
-+		parent = *p;
-+		e = rb_entry(parent, struct size_entry, rb);
-+		if (inum < e->inum)
-+			p = &(*p)->rb_left;
-+		else
-+			p = &(*p)->rb_right;
-+	}
-+
-+	e = kzalloc(sizeof(struct size_entry), GFP_KERNEL);
-+	if (!e)
-+		return -ENOMEM;
-+
-+	e->inum = inum;
-+	e->i_size = i_size;
-+	e->d_size = d_size;
-+	e->exists = exists;
-+
-+	rb_link_node(&e->rb, parent, p);
-+	rb_insert_color(&e->rb, &c->size_tree);
-+
-+	return 0;
-+}
-+
-+/**
-+ * find_ino - find an entry on the size tree.
-+ * @c: UBIFS file-system description object
-+ * @inum: inode number
-+ */
-+static struct size_entry *find_ino(struct ubifs_info *c, ino_t inum)
-+{
-+	struct rb_node *p = c->size_tree.rb_node;
-+	struct size_entry *e;
-+
-+	while (p) {
-+		e = rb_entry(p, struct size_entry, rb);
-+		if (inum < e->inum)
-+			p = p->rb_left;
-+		else if (inum > e->inum)
-+			p = p->rb_right;
-+		else
-+			return e;
-+	}
-+	return NULL;
-+}
-+
-+/**
-+ * remove_ino - remove an entry from the size tree.
-+ * @c: UBIFS file-system description object
-+ * @inum: inode number
-+ */
-+static void remove_ino(struct ubifs_info *c, ino_t inum)
-+{
-+	struct size_entry *e = find_ino(c, inum);
-+
-+	if (!e)
-+		return;
-+	rb_erase(&e->rb, &c->size_tree);
-+	kfree(e);
-+}
-+
-+/**
-+ * ubifs_destroy_size_tree - free resources related to the size tree.
-+ * @c: UBIFS file-system description object
-+ */
-+void ubifs_destroy_size_tree(struct ubifs_info *c)
-+{
-+	struct rb_node *this = c->size_tree.rb_node;
-+	struct size_entry *e;
-+
-+	while (this) {
-+		if (this->rb_left) {
-+			this = this->rb_left;
-+			continue;
-+		} else if (this->rb_right) {
-+			this = this->rb_right;
-+			continue;
++	cat = lp->flags & LPROPS_CAT_MASK;
++	if (cat != LPROPS_UNCAT) {
++		cat = ubifs_categorize_lprops(c, lp);
++		if (cat != (lp->flags & LPROPS_CAT_MASK)) {
++			ubifs_err("bad LEB category %d expected %d",
++				  (lp->flags & LPROPS_CAT_MASK), cat);
++			goto out;
 +		}
-+		e = rb_entry(this, struct size_entry, rb);
-+		if (e->inode)
-+			iput(e->inode);
-+		this = rb_parent(this);
-+		if (this) {
-+			if (this->rb_left == &e->rb)
-+				this->rb_left = NULL;
-+			else
-+				this->rb_right = NULL;
-+		}
-+		kfree(e);
 +	}
-+	c->size_tree = RB_ROOT;
-+}
 +
-+/**
-+ * ubifs_recover_size_accum - accumulate inode sizes for recovery.
-+ * @c: UBIFS file-system description object
-+ * @key: node key
-+ * @deletion: node is for a deletion
-+ * @new_size: inode size
-+ *
-+ * This function has two purposes:
-+ *     1) to ensure there are no data nodes that fall outside the inode size
-+ *     2) to ensure there are no data nodes for inodes that do not exist
-+ * To accomplish those purposes, a rb-tree is constructed containing an entry
-+ * for each inode number in the journal that has not been deleted, and recording
-+ * the size from the inode node, the maximum size of any data node (also altered
-+ * by truncations) and a flag indicating a inode number for which no inode node
-+ * was present in the journal.
-+ *
-+ * Note that there is still the possibility that there are data nodes that have
-+ * been committed that are beyond the inode size, however the only way to find
-+ * them would be to scan the entire index. Alternatively, some provision could
-+ * be made to record the size of inodes at the start of commit, which would seem
-+ * very cumbersome for a scenario that is quite unlikely and the only negative
-+ * consequence of which is wasted space.
-+ *
-+ * This functions returns %0 on success and a negative error code on failure.
-+ */
-+int ubifs_recover_size_accum(struct ubifs_info *c, union ubifs_key *key,
-+			     int deletion, loff_t new_size)
-+{
-+	ino_t inum = key_ino(c, key);
-+	struct size_entry *e;
-+	int err;
++	/* Check lp is on its category list (if it has one) */
++	if (in_tree) {
++		struct list_head *list = NULL;
 +
-+	switch (key_type(c, key)) {
-+	case UBIFS_INO_KEY:
-+		if (deletion)
-+			remove_ino(c, inum);
-+		else {
-+			e = find_ino(c, inum);
-+			if (e) {
-+				e->i_size = new_size;
-+				e->exists = 1;
-+			} else {
-+				err = add_ino(c, inum, new_size, 0, 1);
-+				if (err)
-+					return err;
++		switch (cat) {
++		case LPROPS_EMPTY:
++			list = &c->empty_list;
++			break;
++		case LPROPS_FREEABLE:
++			list = &c->freeable_list;
++			break;
++		case LPROPS_FRDI_IDX:
++			list = &c->frdi_idx_list;
++			break;
++		case LPROPS_UNCAT:
++			list = &c->uncat_list;
++			break;
++		}
++		if (list) {
++			struct ubifs_lprops *lprops;
++			int found = 0;
++
++			list_for_each_entry(lprops, list, list) {
++				if (lprops == lp) {
++					found = 1;
++					break;
++				}
++			}
++			if (!found) {
++				ubifs_err("bad LPT list (category %d)", cat);
++				goto out;
 +			}
 +		}
-+		break;
-+	case UBIFS_DATA_KEY:
-+		e = find_ino(c, inum);
-+		if (e) {
-+			if (new_size > e->d_size)
-+				e->d_size = new_size;
-+		} else {
-+			err = add_ino(c, inum, 0, new_size, 0);
-+			if (err)
-+				return err;
-+		}
-+		break;
-+	case UBIFS_TRUN_KEY:
-+		e = find_ino(c, inum);
-+		if (e)
-+			e->d_size = new_size;
-+		break;
 +	}
-+	return 0;
++
++	/* Check lp is on its category heap (if it has one) */
++	if (in_tree && cat > 0 && cat <= LPROPS_HEAP_CNT) {
++		struct ubifs_lpt_heap *heap = &c->lpt_heap[cat - 1];
++
++		if ((lp->hpos != -1 && heap->arr[lp->hpos]->lnum != lnum) ||
++		    lp != heap->arr[lp->hpos]) {
++			ubifs_err("bad LPT heap (category %d)", cat);
++			goto out;
++		}
++	}
++
++	sleb = ubifs_scan(c, lnum, 0, c->dbg_buf);
++	if (IS_ERR(sleb)) {
++		/*
++		 * After an unclean unmount, empty and freeable LEBs
++		 * may contain garbage.
++		 */
++		if (lp->free == c->leb_size) {
++			ubifs_err("scan errors were in empty LEB "
++				  "- continuing checking");
++			lst->empty_lebs += 1;
++			lst->total_free += c->leb_size;
++			lst->total_dark += calc_dark(c, c->leb_size);
++			return LPT_SCAN_CONTINUE;
++		}
++
++		if (lp->free + lp->dirty == c->leb_size &&
++		    !(lp->flags & LPROPS_INDEX)) {
++			ubifs_err("scan errors were in freeable LEB "
++				  "- continuing checking");
++			lst->total_free  += lp->free;
++			lst->total_dirty += lp->dirty;
++			lst->total_dark  +=  calc_dark(c, c->leb_size);
++			return LPT_SCAN_CONTINUE;
++		}
++		data->err = PTR_ERR(sleb);
++		return LPT_SCAN_STOP;
++	}
++
++	is_idx = -1;
++	list_for_each_entry(snod, &sleb->nodes, list) {
++		int found, level = 0;
++
++		cond_resched();
++
++		if (is_idx == -1)
++			is_idx = (snod->type == UBIFS_IDX_NODE) ? 1 : 0;
++
++		if (is_idx && snod->type != UBIFS_IDX_NODE) {
++			ubifs_err("indexing node in data LEB %d:%d",
++				  lnum, snod->offs);
++			goto out_destroy;
++		}
++
++		if (snod->type == UBIFS_IDX_NODE) {
++			struct ubifs_idx_node *idx = snod->node;
++
++			key_read(c, ubifs_idx_key(c, idx), &snod->key);
++			level = le16_to_cpu(idx->level);
++		}
++
++		found = ubifs_tnc_has_node(c, &snod->key, level, lnum,
++					   snod->offs, is_idx);
++		if (found) {
++			if (found < 0)
++				goto out_destroy;
++			used += ALIGN(snod->len, 8);
++		}
++	}
++
++	free = c->leb_size - sleb->endpt;
++	dirty = sleb->endpt - used;
++
++	if (free > c->leb_size || free < 0 || dirty > c->leb_size ||
++	    dirty < 0) {
++		ubifs_err("bad calculated accounting for LEB %d: "
++			  "free %d, dirty %d", lnum, free, dirty);
++		goto out_destroy;
++	}
++
++	if (lp->free + lp->dirty == c->leb_size &&
++	    free + dirty == c->leb_size)
++		if ((is_idx && !(lp->flags & LPROPS_INDEX)) ||
++		    (!is_idx && free == c->leb_size)) {
++			/*
++			 * Empty or freeable LEBs could contain index
++			 * nodes from an uncompleted commit due to an
++			 * unclean unmount. Or they could be empty for
++			 * the same reason.
++			 */
++			free = lp->free;
++			dirty = lp->dirty;
++			is_idx = 0;
++		    }
++
++	if (lp->free != free || lp->dirty != dirty)
++		goto out_print;
++
++	if (is_idx && !(lp->flags & LPROPS_INDEX)) {
++		if (free == c->leb_size)
++			/* Free but not unmapped LEB, it's fine */
++			is_idx = 0;
++		else {
++			ubifs_err("indexing node without indexing "
++				  "flag");
++			goto out_print;
++		}
++	}
++
++	if (!is_idx && (lp->flags & LPROPS_INDEX)) {
++		ubifs_err("data node with indexing flag");
++		goto out_print;
++	}
++
++	if (free == c->leb_size)
++		lst->empty_lebs += 1;
++
++	if (is_idx)
++		lst->idx_lebs += 1;
++
++	if (!(lp->flags & LPROPS_INDEX))
++		lst->total_used += c->leb_size - free - dirty;
++	lst->total_free += free;
++	lst->total_dirty += dirty;
++
++	if (!(lp->flags & LPROPS_INDEX)) {
++		int spc = free + dirty;
++
++		if (spc < c->dead_wm)
++			lst->total_dead += spc;
++		else
++			lst->total_dark += calc_dark(c, spc);
++	}
++
++	ubifs_scan_destroy(sleb);
++
++	return LPT_SCAN_CONTINUE;
++
++out_print:
++	ubifs_err("bad accounting of LEB %d: free %d, dirty %d flags %#x, "
++		  "should be free %d, dirty %d",
++		  lnum, lp->free, lp->dirty, lp->flags, free, dirty);
++	dbg_dump_leb(c, lnum);
++out_destroy:
++	ubifs_scan_destroy(sleb);
++out:
++	data->err = -EINVAL;
++	return LPT_SCAN_STOP;
 +}
 +
 +/**
-+ * fix_size_in_place - fix inode size in place on flash.
++ * dbg_check_lprops - check all LEB properties.
 + * @c: UBIFS file-system description object
-+ * @e: inode size information for recovery
++ *
++ * This function checks all LEB properties and makes sure they are all correct.
++ * It returns zero if everything is fine, %-EINVAL if there is an inconsistency
++ * and other negative error codes in case of other errors. This function is
++ * called while the file system is locked (because of commit start), so no
++ * additional locking is required. Note that locking the LPT mutex would cause
++ * a circular lock dependency with the TNC mutex.
 + */
-+static int fix_size_in_place(struct ubifs_info *c, struct size_entry *e)
++int dbg_check_lprops(struct ubifs_info *c)
 +{
-+	struct ubifs_ino_node *ino = c->sbuf;
-+	unsigned char *p;
-+	union ubifs_key key;
-+	int err, lnum, offs, len;
-+	loff_t i_size;
-+	uint32_t crc;
++	int i, err;
++	struct scan_check_data data;
++	struct ubifs_lp_stats *lst = &data.lst;
 +
-+	/* Locate the inode node LEB number and offset */
-+	ino_key_init(c, &key, e->inum);
-+	err = ubifs_tnc_locate(c, &key, ino, &lnum, &offs);
-+	if (err)
-+		goto out;
 +	/*
-+	 * If the size recorded on the inode node is greater than the size that
-+	 * was calculated from nodes in the journal then don't change the inode.
++	 * As we are going to scan the media, the write buffers have to be
++	 * synchronized.
 +	 */
-+	i_size = le64_to_cpu(ino->size);
-+	if (i_size >= e->d_size)
-+		return 0;
-+	/* Read the LEB */
-+	err = ubi_read(c->ubi, lnum, c->sbuf, 0, c->leb_size);
-+	if (err)
-+		goto out;
-+	/* Change the size field and recalculate the CRC */
-+	ino = c->sbuf + offs;
-+	ino->size = cpu_to_le64(e->d_size);
-+	len = le32_to_cpu(ino->ch.len);
-+	crc = crc32(UBIFS_CRC32_INIT, (void *)ino + 8, len - 8);
-+	ino->ch.crc = cpu_to_le32(crc);
-+	/* Work out where data in the LEB ends and free space begins */
-+	p = c->sbuf;
-+	len = c->leb_size - 1;
-+	while (p[len] == 0xff)
-+		len -= 1;
-+	len = ALIGN(len + 1, c->min_io_size);
-+	/* Atomically write the fixed LEB back again */
-+	err = ubi_leb_change(c->ubi, lnum, c->sbuf, len, UBI_UNKNOWN);
-+	if (err)
-+		goto out;
-+	dbg_mnt("inode %lu at %d:%d size %lld -> %lld ", e->inum, lnum, offs,
-+		i_size, e->d_size);
-+	return 0;
++	for (i = 0; i < c->jhead_cnt; i++) {
++		err = ubifs_wbuf_sync(&c->jheads[i].wbuf);
++		if (err)
++			return err;
++	}
 +
++	memset(lst, 0, sizeof(struct ubifs_lp_stats));
++
++	data.err = 0;
++	err = ubifs_lpt_scan_nolock(c, c->main_first, c->leb_cnt - 1,
++				    (ubifs_lpt_scan_callback)scan_check_cb,
++				    &data);
++	if (err && err != -ENOSPC)
++		goto out;
++	if (data.err) {
++		err = data.err;
++		goto out;
++	}
++
++	if (lst->empty_lebs != c->lst.empty_lebs ||
++	    lst->idx_lebs != c->lst.idx_lebs ||
++	    lst->total_free != c->lst.total_free ||
++	    lst->total_dirty != c->lst.total_dirty ||
++	    lst->total_used != c->lst.total_used) {
++		ubifs_err("bad overall accounting");
++		ubifs_err("calculated: empty_lebs %d, idx_lebs %d, "
++			  "total_free %lld, total_dirty %lld, total_used %lld",
++			  lst->empty_lebs, lst->idx_lebs, lst->total_free,
++			  lst->total_dirty, lst->total_used);
++		ubifs_err("read from lprops: empty_lebs %d, idx_lebs %d, "
++			  "total_free %lld, total_dirty %lld, total_used %lld",
++			  c->lst.empty_lebs, c->lst.idx_lebs, c->lst.total_free,
++			  c->lst.total_dirty, c->lst.total_used);
++		err = -EINVAL;
++		goto out;
++	}
++
++	if (lst->total_dead != c->lst.total_dead ||
++	    lst->total_dark != c->lst.total_dark) {
++		ubifs_err("bad dead/dark space accounting");
++		ubifs_err("calculated: total_dead %lld, total_dark %lld",
++			  lst->total_dead, lst->total_dark);
++		ubifs_err("read from lprops: total_dead %lld, total_dark %lld",
++			  c->lst.total_dead, c->lst.total_dark);
++		err = -EINVAL;
++		goto out;
++	}
++
++	err = dbg_check_cats(c);
 +out:
-+	ubifs_warn("inode %lu failed to fix size %lld -> %lld error %d",
-+		   e->inum, e->i_size, e->d_size, err);
 +	return err;
 +}
 +
-+/**
-+ * ubifs_recover_size - recover inode size.
-+ * @c: UBIFS file-system description object
-+ *
-+ * This function attempts to fix inode size discrepancies identified by the
-+ * 'ubifs_recover_size_accum()' function.
-+ *
-+ * This functions returns %0 on success and a negative error code on failure.
-+ */
-+int ubifs_recover_size(struct ubifs_info *c)
-+{
-+	struct rb_node *this = rb_first(&c->size_tree);
-+
-+	while (this) {
-+		struct size_entry *e;
-+		int err;
-+
-+		e = rb_entry(this, struct size_entry, rb);
-+		if (!e->exists) {
-+			union ubifs_key key;
-+
-+			ino_key_init(c, &key, e->inum);
-+			err = ubifs_tnc_lookup(c, &key, c->sbuf);
-+			if (err && err != -ENOENT)
-+				return err;
-+			if (err == -ENOENT) {
-+				/* Remove data nodes that have no inode */
-+				dbg_mnt("removing ino %lu", e->inum);
-+				err = ubifs_tnc_remove_ino(c, e->inum);
-+				if (err)
-+					return err;
-+				/*
-+				 * If we later unmount cleanly without
-+				 * committing, the TNC changes will be lost,
-+				 * hence we set a flag to ensure a commit is
-+				 * done.
-+				 */
-+				c->recovery_needs_commit = 1;
-+			} else {
-+				struct ubifs_ino_node *ino = c->sbuf;
-+
-+				e->exists = 1;
-+				e->i_size = le64_to_cpu(ino->size);
-+			}
-+		}
-+		if (e->exists && e->i_size < e->d_size) {
-+			if (e->inode == NULL &&
-+			    (c->vfs_sb->s_flags & MS_RDONLY)) {
-+				/* Fix the inode size and pin it in memory */
-+				struct inode *inode;
-+
-+				inode = ubifs_iget(c->vfs_sb, e->inum);
-+				if (IS_ERR(inode))
-+					return PTR_ERR(inode);
-+				if (inode->i_size < e->d_size) {
-+					dbg_mnt("ino %lu size %lld -> %lld",
-+						e->inum, e->d_size,
-+						inode->i_size);
-+					inode->i_size = e->d_size;
-+					e->inode = inode;
-+					this = rb_next(this);
-+					continue;
-+				}
-+				iput(inode);
-+			} else {
-+				/* Fix the size in place */
-+				err = fix_size_in_place(c, e);
-+				if (err) {
-+					if (e->inode)
-+						/*
-+						 * We have changed the inode
-+						 * size in memory but failed to
-+						 * fix it on flash. Mark it
-+						 * dirty without budgeting, and
-+						 * hope we don't run out of
-+						 * space.
-+						 */
-+						mark_inode_dirty_sync(e->inode);
-+					/*
-+					 * We consider that failing to recover
-+					 * the size is not fatal, because it
-+					 * only affects files that were being
-+					 * written without synchronization and
-+					 * the only down side is that some space
-+					 * may be wasted.
-+					 */
-+					err = 0;
-+				}
-+				if (e->inode)
-+					iput(e->inode);
-+			}
-+		}
-+		this = rb_next(this);
-+		rb_erase(&e->rb, &c->size_tree);
-+		kfree(e);
-+	}
-+	return 0;
-+}
++#endif /* CONFIG_UBIFS_FS_DEBUG_CHK_LPROPS */
 -- 
 1.5.4.1
 
