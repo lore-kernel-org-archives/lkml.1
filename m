@@ -1,293 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757801AbYC0Dtg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758604AbYC0DuS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757801AbYC0Dtg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Mar 2008 23:49:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754797AbYC0Dt1
+	id S1758604AbYC0DuS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Mar 2008 23:50:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754808AbYC0DuD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Mar 2008 23:49:27 -0400
-Received: from nwd2mail10.analog.com ([137.71.25.55]:57623 "EHLO
-	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754231AbYC0DtZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Mar 2008 23:49:25 -0400
-X-IronPort-AV: E=Sophos;i="4.25,562,1199682000"; 
-   d="scan'208";a="65143211"
-From: Bryan Wu <cooloney@kernel.org>
-To: jirislaby@gmail.com, linux-kernel@vger.kernel.org, sam@ravnborg.org
-Cc: wim@iguana.be, Mike Frysinger <vapier.adi@gmail.com>,
-       Bryan Wu <cooloney@kernel.org>
-Subject: [PATCH 1/1] Blackfin char driver for Blackfin on-chip OTP memory (v3)
-Date: Thu, 27 Mar 2008 11:49:18 -0700
-Message-Id: <1206643758-9319-1-git-send-email-cooloney@kernel.org>
-X-Mailer: git-send-email 1.5.4.3
-In-Reply-To: <>
-References: <>
+	Wed, 26 Mar 2008 23:50:03 -0400
+Received: from gate.crashing.org ([63.228.1.57]:47618 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754797AbYC0DuA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Mar 2008 23:50:00 -0400
+Subject: Re: + futex-runtime-enable-pi-and-robust-functionality.patch added
+	to -mm tree
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reply-To: benh@kernel.crashing.org
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Heiko Carstens <heiko.carstens@de.ibm.com>, linux-kernel@vger.kernel.org,
+       mm-commits@vger.kernel.org, buytenh@wantstofly.org, mingo@elte.hu,
+       riku.voipio@movial.fi, stable@kernel.org, schwidefsky@de.ibm.com
+In-Reply-To: <1206588739.6926.79.camel@pasglop>
+References: <200802150149.m1F1n8Gx013909@imap1.linux-foundation.org>
+	 <20080216124248.GA4900@osiris.boeblingen.de.ibm.com>
+	 <alpine.LFD.1.00.0802161346350.7583@apollo.tec.linutronix.de>
+	 <20080216134155.GB4900@osiris.boeblingen.de.ibm.com>
+	 <alpine.LFD.1.00.0802161444510.7583@apollo.tec.linutronix.de>
+	 <20080216140444.GC4900@osiris.boeblingen.de.ibm.com>
+	 <alpine.LFD.1.00.0802161525530.7583@apollo.tec.linutronix.de>
+	 <1206588739.6926.79.camel@pasglop>
+Content-Type: text/plain
+Date: Thu, 27 Mar 2008 14:48:39 +1100
+Message-Id: <1206589719.6926.81.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Mike Frysinger <vapier.adi@gmail.com>
 
-initial char driver for otp memory
-(only read supported atm ... needs real examples/docs for write support)
+On Thu, 2008-03-27 at 14:32 +1100, Benjamin Herrenschmidt wrote:
+> > Hmm, not sure whether there is such code, but then it would be not too bad
+> > to add
+> > 
+> >    if (!p)
+> >       return -EFAULT;
+> > 
+> > to the S390 implementations which only read data and have an exception
+> > fixup.
+> 
+> I have a different problem on some embedded powerpc's where the TLB miss
+> code isn't checking for the cached pgdir pointer being NULL (which
+> happens because we are early at boot and haven't activated an mm). So we
+> end up either taking recursive faults or going into lalaland walking
+> the page tables.
+> 
+> It happens on some unreleased code, I'll verify if it happens on
+> 8xx/4xx/etc... in a minute, and will cook a patch if it does.
 
-v2-v3:
- - fixup __initdata with __initconst, as we are heading for 2.6.26
+Ok, so everything released seems to be fine. It will use swapper_pg_dir
+which on 32 bits will do the right thing. Pfiew ! So only some stuff I'm
+still working on breaks, I'll fix it.
 
-Signed-off-by: Mike Frysinger <vapier.adi@gmail.com>
-Signed-off-by: Bryan Wu <cooloney@kernel.org>
----
- drivers/char/Kconfig    |   28 +++++++
- drivers/char/Makefile   |    1 +
- drivers/char/bfin-otp.c |  189 +++++++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 218 insertions(+), 0 deletions(-)
- create mode 100644 drivers/char/bfin-otp.c
+Cheers,
+Ben.
 
-diff --git a/drivers/char/Kconfig b/drivers/char/Kconfig
-index dd17d06..989dade 100644
---- a/drivers/char/Kconfig
-+++ b/drivers/char/Kconfig
-@@ -495,6 +495,34 @@ config BRIQ_PANEL
- 
- 	  It's safe to say N here.
- 
-+config BFIN_OTP
-+	tristate "Blackfin On-Chip OTP Memory Support"
-+	depends on BLACKFIN && (BF52x || BF54x)
-+	default y
-+	help
-+	  If you say Y here, you will get support for a character device
-+	  interface into the One Time Programmable memory pages that are
-+	  stored on the Blackfin processor.  This will not get you access
-+	  to the secure memory pages however.  You will need to write your
-+	  own secure code and reader for that.
-+
-+	  To compile this driver as a module, choose M here: the module
-+	  will be called bfin-otp.
-+
-+	  If unsure, it is safe to say Y.
-+
-+config BFIN_OTP_WRITE_ENABLE
-+	bool "Enable writing support of OTP pages"
-+	depends on BFIN_OTP
-+	default n
-+	help
-+	  If you say Y here, you will enable support for writing of the
-+	  OTP pages.  This is dangerous by nature as you can only program
-+	  the pages once, so only enable this option when you actually
-+	  need it so as to not inadvertently clobber data.
-+
-+	  If unsure, say N.
-+
- config PRINTER
- 	tristate "Parallel printer support"
- 	depends on PARPORT
-diff --git a/drivers/char/Makefile b/drivers/char/Makefile
-index e087ec1..06e6754 100644
---- a/drivers/char/Makefile
-+++ b/drivers/char/Makefile
-@@ -59,6 +59,7 @@ obj-$(CONFIG_VIOTAPE)		+= viotape.o
- obj-$(CONFIG_HVCS)		+= hvcs.o
- obj-$(CONFIG_SGI_MBCS)		+= mbcs.o
- obj-$(CONFIG_BRIQ_PANEL)	+= briq_panel.o
-+obj-$(CONFIG_BFIN_OTP)		+= bfin-otp.o
- 
- obj-$(CONFIG_PRINTER)		+= lp.o
- obj-$(CONFIG_TIPAR)		+= tipar.o
-diff --git a/drivers/char/bfin-otp.c b/drivers/char/bfin-otp.c
-new file mode 100644
-index 0000000..0a01329
---- /dev/null
-+++ b/drivers/char/bfin-otp.c
-@@ -0,0 +1,189 @@
-+/*
-+ * Blackfin On-Chip OTP Memory Interface
-+ *  Supports BF52x/BF54x
-+ *
-+ * Copyright 2007-2008 Analog Devices Inc.
-+ *
-+ * Enter bugs at http://blackfin.uclinux.org/
-+ *
-+ * Licensed under the GPL-2 or later.
-+ */
-+
-+#include <linux/device.h>
-+#include <linux/errno.h>
-+#include <linux/fs.h>
-+#include <linux/init.h>
-+#include <linux/miscdevice.h>
-+#include <linux/module.h>
-+#include <linux/mutex.h>
-+#include <linux/types.h>
-+
-+#include <asm/blackfin.h>
-+#include <asm/uaccess.h>
-+
-+#define stamp(fmt, args...) pr_debug("%s:%i: " fmt "\n", __func__, __LINE__, ## args)
-+#define stampit() stamp("here i am")
-+#define pr_init(fmt, args...) ({ static const __initconst char __fmt[] = fmt; printk(__fmt, ## args); })
-+
-+#define DRIVER_NAME "bfin-otp"
-+#define PFX DRIVER_NAME ": "
-+
-+static DEFINE_MUTEX(bfin_otp_lock);
-+
-+/* OTP Boot ROM functions */
-+#define _BOOTROM_OTP_COMMAND           0xEF000018
-+#define _BOOTROM_OTP_READ              0xEF00001A
-+#define _BOOTROM_OTP_WRITE             0xEF00001C
-+
-+static u32 (* const otp_command)(u32 command, u32 value) = (void *)_BOOTROM_OTP_COMMAND;
-+static u32 (* const otp_read)(u32 page, u32 flags, u64 *page_content) = (void *)_BOOTROM_OTP_READ;
-+static u32 (* const otp_write)(u32 page, u32 flags, u64 *page_content) = (void *)_BOOTROM_OTP_WRITE;
-+
-+/* otp_command(): defines for "command" */
-+#define OTP_INIT             0x00000001
-+#define OTP_CLOSE            0x00000002
-+
-+/* otp_{read,write}(): defines for "flags" */
-+#define OTP_LOWER_HALF       0x00000000 /* select upper/lower 64-bit half (bit 0) */
-+#define OTP_UPPER_HALF       0x00000001
-+#define OTP_NO_ECC           0x00000010 /* do not use ECC */
-+#define OTP_LOCK             0x00000020 /* sets page protection bit for page */
-+#define OTP_ACCESS_READ      0x00001000
-+#define OTP_ACCESS_READWRITE 0x00002000
-+
-+/* Return values for all functions */
-+#define OTP_SUCCESS          0x00000000
-+#define OTP_MASTER_ERROR     0x001
-+#define OTP_WRITE_ERROR      0x003
-+#define OTP_READ_ERROR       0x005
-+#define OTP_ACC_VIO_ERROR    0x009
-+#define OTP_DATA_MULT_ERROR  0x011
-+#define OTP_ECC_MULT_ERROR   0x021
-+#define OTP_PREV_WR_ERROR    0x041
-+#define OTP_DATA_SB_WARN     0x100
-+#define OTP_ECC_SB_WARN      0x200
-+
-+/**
-+ *	bfin_otp_read - Read OTP pages
-+ *
-+ *	All reads must be in half page chunks (half page == 64 bits).
-+ */
-+static ssize_t bfin_otp_read(struct file *file, char __user *buff, size_t count, loff_t *pos)
-+{
-+	ssize_t bytes_done;
-+	u32 page, flags, ret;
-+	u64 content;
-+
-+	stampit();
-+
-+	if (count % sizeof(u64))
-+		return -EMSGSIZE;
-+
-+	if (mutex_lock_interruptible(&bfin_otp_lock))
-+		return -ERESTARTSYS;
-+
-+	bytes_done = 0;
-+	page = *pos / (sizeof(u64) * 2);
-+	while (bytes_done < count) {
-+		flags = (*pos % (sizeof(u64) * 2) ? OTP_UPPER_HALF : OTP_LOWER_HALF);
-+		stamp("processing page %i (%s)", page, (flags == OTP_UPPER_HALF ? "upper" : "lower"));
-+		ret = otp_read(page, flags, &content);
-+		if (ret & OTP_MASTER_ERROR) {
-+			bytes_done = -EIO;
-+			break;
-+		}
-+		if (copy_to_user(buff + bytes_done, &content, sizeof(content))) {
-+			bytes_done = -EFAULT;
-+			break;
-+		}
-+		if (flags == OTP_UPPER_HALF)
-+			++page;
-+		bytes_done += sizeof(content);
-+		*pos += sizeof(content);
-+	}
-+
-+	mutex_unlock(&bfin_otp_lock);
-+
-+	return bytes_done;
-+}
-+
-+#ifdef CONFIG_BFIN_OTP_WRITE_ENABLE
-+/**
-+ *	bfin_otp_write - Write OTP pages
-+ *
-+ *	All writes must be in half page chunks (half page == 64 bits).
-+ */
-+static ssize_t bfin_otp_write(struct file *filp, const char __user *buff, size_t count, loff_t *pos)
-+{
-+	stampit();
-+
-+	if (count % sizeof(u64))
-+		return -EMSGSIZE;
-+
-+	if (mutex_lock_interruptible(&bfin_otp_lock))
-+		return -ERESTARTSYS;
-+
-+	/* need otp_init() documentation before this can be implemented */
-+
-+	mutex_unlock(&bfin_otp_lock);
-+
-+	return -EINVAL;
-+}
-+#else
-+# define bfin_otp_write NULL
-+#endif
-+
-+static struct file_operations bfin_otp_fops = {
-+	.owner    = THIS_MODULE,
-+	.read     = bfin_otp_read,
-+	.write    = bfin_otp_write,
-+};
-+
-+static struct miscdevice bfin_otp_misc_device = {
-+	.minor    = MISC_DYNAMIC_MINOR,
-+	.name     = DRIVER_NAME,
-+	.fops     = &bfin_otp_fops,
-+};
-+
-+/**
-+ *	bfin_otp_init - Initialize module
-+ *
-+ *	Registers the device and notifier handler. Actual device
-+ *	initialization is handled by bfin_otp_open().
-+ */
-+static int __init bfin_otp_init(void)
-+{
-+	int ret;
-+
-+	stampit();
-+
-+	ret = misc_register(&bfin_otp_misc_device);
-+	if (ret) {
-+		pr_init(KERN_ERR PFX "unable to register a misc device\n");
-+		return ret;
-+	}
-+
-+	pr_init(KERN_INFO PFX "initialized\n");
-+
-+	return 0;
-+}
-+
-+/**
-+ *	bfin_otp_exit - Deinitialize module
-+ *
-+ *	Unregisters the device and notifier handler. Actual device
-+ *	deinitialization is handled by bfin_otp_close().
-+ */
-+static void __exit bfin_otp_exit(void)
-+{
-+	stampit();
-+
-+	misc_deregister(&bfin_otp_misc_device);
-+}
-+
-+module_init(bfin_otp_init);
-+module_exit(bfin_otp_exit);
-+
-+MODULE_AUTHOR("Mike Frysinger <vapier@gentoo.org>");
-+MODULE_DESCRIPTION("Blackfin OTP Memory Interface");
-+MODULE_LICENSE("GPL");
--- 
-1.5.4.3
+
