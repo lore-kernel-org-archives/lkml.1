@@ -1,71 +1,166 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757748AbYC0JGP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758124AbYC0JHk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757748AbYC0JGP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Mar 2008 05:06:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754390AbYC0JF6
+	id S1758124AbYC0JHk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Mar 2008 05:07:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753964AbYC0JHc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Mar 2008 05:05:58 -0400
-Received: from fg-out-1718.google.com ([72.14.220.157]:62447 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753730AbYC0JF5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Mar 2008 05:05:57 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=message-id:date:from:to:subject:cc:mime-version:content-type;
-        b=jzVJStr4Mvc4UFwTRbHS4uHBhmtoQOGGJ06y0slEVyidi59M/VcandaxkHM6P56c/PfGgWN8Y6OfgLZhic/6jrpT9xnQdA2GkZKbKmVJJ7ja2EAwJLcUY/ZujXwxFzBuL538qCQYt4prk4Nxq9GtzSyit0o3Tl86plFtqcGAhoA=
-Message-ID: <eb3ff54b0803270205n4a15a884kaa45852e510b27c6@mail.gmail.com>
-Date: Thu, 27 Mar 2008 11:05:55 +0200
-From: "Rami Rosen" <ramirose@gmail.com>
-To: "David Miller" <davem@davemloft.net>, netdev@vger.kernel.org
-Subject: [PATCH net-2.6.26] Remove three unused method declarations in include/net/ipv6.h
-Cc: linux-kernel@vger.kernel.org
-MIME-Version: 1.0
-Content-Type: multipart/mixed; 
-	boundary="----=_Part_14242_33134566.1206608755587"
+	Thu, 27 Mar 2008 05:07:32 -0400
+Received: from smtpeu1.atmel.com ([195.65.72.27]:49398 "EHLO bagnes.atmel.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753692AbYC0JHb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Mar 2008 05:07:31 -0400
+Date: Thu, 27 Mar 2008 10:06:23 +0100
+From: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
+To: Dmitry <dbaryshkov@gmail.com>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       hskinnemoen@atmel.com, domen.puncer@telargo.com, lethal@linux-sh.org,
+       tony@atomide.com, rmk+kernel@arm.linux.org.uk, paul@pwsan.com
+Subject: Re: [PATCH 1/3] Clocklib: add generic framework for managing
+ clocks.
+Message-ID: <20080327100623.34d92c84@hskinnemo-gx620.norway.atmel.com>
+In-Reply-To: <bc64b4640803260952s58ad0645ve11766fdfa45e785@mail.gmail.com>
+References: <20080326154913.GA15326@doriath.ww600.siemens.net>
+	<20080326155203.GA15405@doriath.ww600.siemens.net>
+	<20080326170441.795fb928@hskinnemo-gx620.norway.atmel.com>
+	<bc64b4640803260952s58ad0645ve11766fdfa45e785@mail.gmail.com>
+Organization: Atmel Norway
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 27 Mar 2008 09:06:24.0133 (UTC) FILETIME=[D4DAF350:01C88FE9]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-------=_Part_14242_33134566.1206608755587
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+On Wed, 26 Mar 2008 19:52:34 +0300
+Dmitry <dbaryshkov@gmail.com> wrote:
 
-Hi,
-This patch removes three unused method declarations in include/net/ipv6.h:
-inet_getfrag_t(), ipv6_build_nfrag_opts() and ipv6_build_frag_opts().
+> Basically mode becomes enable/disable (however it may be better to merge back
+> those pointers into one function). And dev and index go to priv data.
 
-Regards,
-Rami Rosen
+I think it would definitely help to combine some hooks into one.
+enable/disable is one example, set_rate/round_rate is another.
 
+> The documentation will come later.
 
-Signed-off-by: Rami Rosen <ramirose@gmail.com>
+Hmm. Missing documentation makes it harder to review this stuff...
 
-------=_Part_14242_33134566.1206608755587
-Content-Type: text/plain; name=patch.txt
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_feb3g0hc0
-Content-Disposition: attachment; filename=patch.txt
+> >  I have quite a few clocks, so the increased memory consumption is quite
+> >  significant. What are the advantages of this?  
+> 
+> At maximum 55, IIUC. I counted 32 or so additional bytes in the struct
+> (over avr32-specific one). That would count up to 1.5 K overhead. Is
+> that really too much for current kernels?
 
-ZGlmZiAtLWdpdCBhL2luY2x1ZGUvbmV0L2lwdjYuaCBiL2luY2x1ZGUvbmV0L2lwdjYuaAppbmRl
-eCAyOTZmNjFkLi41NzM4YzFjIDEwMDY0NAotLS0gYS9pbmNsdWRlL25ldC9pcHY2LmgKKysrIGIv
-aW5jbHVkZS9uZXQvaXB2Ni5oCkBAIC0yNTAsMTUgKzI1MCw2IEBAIGludCBpcDZfZnJhZ19tZW0o
-c3RydWN0IG5ldCAqbmV0KTsKIAogI2RlZmluZSBJUFY2X0ZSQUdfVElNRU9VVAkoNjAqSFopCQkv
-KiA2MCBzZWNvbmRzICovCiAKLS8qCi0gKglGdW5jdGlvbiBwcm90b3R5cGUgZm9yIGJ1aWxkX3ht
-aXQKLSAqLwotCi10eXBlZGVmIGludAkJKCppbmV0X2dldGZyYWdfdCkgKGNvbnN0IHZvaWQgKmRh
-dGEsCi0JCQkJCSAgIHN0cnVjdCBpbjZfYWRkciAqYWRkciwKLQkJCQkJICAgY2hhciAqLAotCQkJ
-CQkgICB1bnNpZ25lZCBpbnQsIHVuc2lnbmVkIGludCk7Ci0KIGV4dGVybiBpbnQgX19pcHY2X2Fk
-ZHJfdHlwZShjb25zdCBzdHJ1Y3QgaW42X2FkZHIgKmFkZHIpOwogc3RhdGljIGlubGluZSBpbnQg
-aXB2Nl9hZGRyX3R5cGUoY29uc3Qgc3RydWN0IGluNl9hZGRyICphZGRyKQogewpAQCAtNTEwLDE0
-ICs1MDEsNiBAQCBleHRlcm4gaW50CQkJaXA2X2xvY2FsX291dChzdHJ1Y3Qgc2tfYnVmZiAqc2ti
-KTsKICAqCUV4dGVuc2lvbiBoZWFkZXIgKG9wdGlvbnMpIHByb2Nlc3NpbmcKICAqLwogCi1leHRl
-cm4gdTggKgkJCWlwdjZfYnVpbGRfbmZyYWdfb3B0cyhzdHJ1Y3Qgc2tfYnVmZiAqc2tiLAotCQkJ
-CQkJICAgICAgdTggKnByZXZfaGRyLAotCQkJCQkJICAgICAgc3RydWN0IGlwdjZfdHhvcHRpb25z
-ICpvcHQsCi0JCQkJCQkgICAgICBzdHJ1Y3QgaW42X2FkZHIgKmRhZGRyLAotCQkJCQkJICAgICAg
-dTMyIGp1bWJvbGVuKTsKLWV4dGVybiB1OCAqCQkJaXB2Nl9idWlsZF9mcmFnX29wdHMoc3RydWN0
-IHNrX2J1ZmYgKnNrYiwKLQkJCQkJCSAgICAgdTggKnByZXZfaGRyLAotCQkJCQkJICAgICBzdHJ1
-Y3QgaXB2Nl90eG9wdGlvbnMgKm9wdCk7CiBleHRlcm4gdm9pZCAJCQlpcHY2X3B1c2hfbmZyYWdf
-b3B0cyhzdHJ1Y3Qgc2tfYnVmZiAqc2tiLAogCQkJCQkJICAgICBzdHJ1Y3QgaXB2Nl90eG9wdGlv
-bnMgKm9wdCwKIAkJCQkJCSAgICAgdTggKnByb3RvLAo=
-------=_Part_14242_33134566.1206608755587--
+If the only advantage is less code duplication, I'd say it's too much.
+However...
+
+> OTOH this would bring unification of platform code, allow
+> configurations when a non-platform driver would provide it's own
+> clocks (think about multi-function companion chips when there is a
+> "core" which manages "clocks" for it's "periferal" devices. Currently
+> if one tries to implement such driver, he is forced to either bind it
+> to platform code, or to implement non-standard
+> my_device_clock_enable()-like functions.
+
+...that is a good argument. External clock generators come to
+mind...they can even be parents for other clocks.
+
+> Also you aren't forced to use this API. simply don't select
+> HAVE_CLOCK_LIB and leave
+> all things as they are. E.g. gpiolib is now merged, however not all
+> gpio-providing platforms
+> are using it.
+
+Sure, but then I won't be able to use the suggested drivers that
+depend on this stuff.
+
+How about we try to slim things down a bit? Let's see...
+
+> +struct clk {
+> +	struct list_head node;
+> +	struct clk	*parent;
+> +
+> +	const char	*name;
+
+I guess these are always required if we're going to do dynamic
+registration...
+
+> +	struct module	*owner;
+
+This will probably be unused for most platforms, but I guess we need it
+to get the advantage you're talking about.
+
+> +	int		users;
+
+Reference counting, probably need that too.
+
+> +	unsigned long	rate;
+
+This one is redundant. Use getrate() instead.
+
+> +	int		delay;
+
+Huh? A delay after enabling the clock? Why can't the enable() hook do
+that if it's really necessary?
+
+> +	int (*can_get)	(struct clk *, struct device *);
+
+What's this for? I'm assuming it's necessary to couple clocks to
+specific devices?
+
+> +	int (*set_parent) (struct clk *, struct clk *);
+
+We probably need this.
+
+> +	int (*enable)	(struct clk *);
+> +	void (*disable)	(struct clk *);
+
+Combine these into "mode" or something (with an extra parameter)
+
+> +	unsigned long (*getrate) (struct clk*);
+
+We need this one.
+
+> +	int (*setrate)	(struct clk *, unsigned long);
+> +	long (*roundrate) (struct clk *, unsigned long);
+
+Combine these into one call with an extra "apply" parameter or
+something. The underlying logic is pretty much the same apart from the
+"actually write stuff to registers" step.
+
+> +	void		*priv;
+
+Remove this and let platforms extend the struct instead. They can use
+container_of() to access the extra fields, which is faster too.
+
+> +};
+
+The result is something like this:
+
+struct clk {
+	struct list_head node;
+	struct clk	*parent;
+
+	const char	*name;
+	struct module	*owner;
+
+	int		users;
+
+	int (*can_get)	(struct clk *, struct device *);
+	int (*set_parent) (struct clk *, struct clk *);
+	int (*mode)	(struct clk *, bool enabled);
+	unsigned long (*getrate) (struct clk*);
+	int (*setrate)	(struct clk *, unsigned long, bool apply);
+};
+
+which is 44 bytes, 12 bytes more than the avr32 version. That can
+probably be explained by the "node" and "owner" fields, which really
+are necessary in order to support dynamic registration of clocks.
+
+Adding the "dev" and "index" fields takes us to 52 bytes, or 20 bytes
+more. That's about 1.1K extra in total for 55 clocks, which is still a
+bit much, but I can probably live with that.
+
+Haavard
