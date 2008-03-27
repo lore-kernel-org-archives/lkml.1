@@ -1,49 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762683AbYC0NQS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762756AbYC0NQh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762683AbYC0NQS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Mar 2008 09:16:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759781AbYC0NIa
+	id S1762756AbYC0NQh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Mar 2008 09:16:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759836AbYC0NIb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Mar 2008 09:08:30 -0400
-Received: from smtp.nokia.com ([192.100.105.134]:60955 "EHLO
-	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758504AbYC0NHn (ORCPT
+	Thu, 27 Mar 2008 09:08:31 -0400
+Received: from smtp.nokia.com ([192.100.122.233]:49580 "EHLO
+	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758887AbYC0NHx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Mar 2008 09:07:43 -0400
+	Thu, 27 Mar 2008 09:07:53 -0400
 From: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: Adrian Hunter <ext-adrian.hunter@nokia.com>,
        Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
-Subject: [RFC PATCH 04/26] UBIFS: add journal replay
-Date: Thu, 27 Mar 2008 16:55:24 +0200
-Message-Id: <1206629746-4298-5-git-send-email-Artem.Bityutskiy@nokia.com>
+Subject: [RFC PATCH 22/26] UBIFS: add extended attribute support
+Date: Thu, 27 Mar 2008 16:55:42 +0200
+Message-Id: <1206629746-4298-23-git-send-email-Artem.Bityutskiy@nokia.com>
 X-Mailer: git-send-email 1.5.4.1
 In-Reply-To: <1206629746-4298-1-git-send-email-Artem.Bityutskiy@nokia.com>
 References: <1206629746-4298-1-git-send-email-Artem.Bityutskiy@nokia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=unknown-8bit
 Content-Transfer-Encoding: 8bit
-X-OriginalArrivalTime: 27 Mar 2008 13:06:23.0357 (UTC) FILETIME=[5B762AD0:01C8900B]
+X-OriginalArrivalTime: 27 Mar 2008 13:06:50.0513 (UTC) FILETIME=[6BA5D810:01C8900B]
 X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The journal re-play subsystem is responsible for replaying the
-journal during mount if it was not committed before last un-mount.
+Extended attributes are implemented as separate inodes. This makes
+it very easy to implement them and to re-use nearly all the existing
+code. This might be not the fastest implementation, though. ACL support
+is not implemented.
 
 Signed-off-by: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
 Signed-off-by: Adrian Hunter <ext-adrian.hunter@nokia.com>
 ---
- fs/ubifs/replay.c | 1006 +++++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 1006 insertions(+), 0 deletions(-)
+ fs/ubifs/xattr.c |  587 ++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 587 insertions(+), 0 deletions(-)
 
-diff --git a/fs/ubifs/replay.c b/fs/ubifs/replay.c
+diff --git a/fs/ubifs/xattr.c b/fs/ubifs/xattr.c
 new file mode 100644
-index 0000000..f627053
+index 0000000..85b1088
 --- /dev/null
-+++ b/fs/ubifs/replay.c
-@@ -0,0 +1,1006 @@
++++ b/fs/ubifs/xattr.c
+@@ -0,0 +1,587 @@
 +/*
 + * This file is part of UBIFS.
 + *
@@ -62,992 +64,573 @@ index 0000000..f627053
 + * this program; if not, write to the Free Software Foundation, Inc., 51
 + * Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 + *
-+ * Authors: Adrian Hunter
-+ *          Artem Bityutskiy (Битюцкий Артём)
++ * Authors: Artem Bityutskiy (Битюцкий Артём)
++ *          Adrian Hunter
 + */
 +
 +/*
-+ * This file contains journal replay code. It runs when the file-system is being
-+ * mounted and requires no locking.
++ * This file implements UBIFS extended attributes support.
 + *
-+ * The larger is the journal, the longer it takes to scan it, so the longer it
-+ * takes to mount UBIFS. This is why the journal has limited size which may be
-+ * changed depending on the system requirements. But a larger journal gives
-+ * faster I/O speed because it writes the index less frequently. So this is a
-+ * trade-off. Also, the journal is indexed by the in-memory index (TNC), so the
-+ * larger is the journal, the more memory its index may consume.
++ * Extended attributes are implemented as regular inodes with attached data,
++ * which limits extended attribute size to UBIFS block size (4KiB). Names of
++ * extended attributes are described by extended attribute entries (xentries),
++ * which are almost identical to directory entries, but have different key type.
++ *
++ * In other words, the situation with extended attributes is very similar to
++ * directories. Indeed, any inode (but of course not xattr inodes) may have a
++ * number of associated xentries, just like directory inodes have associated
++ * directory entries. Extended attribute entries store the name of the extended
++ * attribute, the host inode number, and the extended attribute inode number.
++ * Similarly, direntries store the name, the parent and the target inode
++ * numbers. Thus, most of the common UBIFS mechanisms may be re-used for
++ * extended attributes.
++ *
++ * The number of extended attributes is not limited, but there is Linux
++ * limitation on the maximum possible size of the list of all extended
++ * attributes associated with an inode (%XATTR_LIST_MAX), so UBIFS makes sure
++ * the sum of all extended attribute names of the inode does not exceed that
++ * limit.
++ *
++ * Extended attributes are synchronous, which means they are written to the
++ * flash media synchronously and there is no write-back for extended attribute
++ * inodes. The extended attribute values are not stored in compressed form on
++ * the media.
++ *
++ * Since extended attributes are represented by regular inodes, they are cached
++ * in the VFS inode cache. The xentries are cached in the LNC cache (see
++ * tnc.c).
++ *
++ * ACL support is not implemented.
 + */
 +
++#include <linux/xattr.h>
++#include <linux/posix_acl_xattr.h>
 +#include "ubifs.h"
 +
++/* How many bytes an extended attribute adds to the host inode */
++#define CALC_XATTR_BYTES(data_len) ALIGN(UBIFS_INO_NODE_SZ + (data_len) + 1, 8)
++
 +/*
-+ * Replay flags.
++ * Extended attribute type constants.
 + *
-+ * REPLAY_DELETION: node was deleted
-+ * REPLAY_REF: node is a reference node
++ * USER_XATTR: user extended attribute ("user.*")
++ * TRUSTED_XATTR: trusted extended attribute ("trusted.*)
++ * SECURITY_XATTR: security extended attribute ("security.*")
 + */
 +enum {
-+	REPLAY_DELETION = 1,
-+	REPLAY_REF = 2,
++	USER_XATTR,
++	TRUSTED_XATTR,
++	SECURITY_XATTR,
 +};
 +
++static struct inode_operations none_inode_operations;
++static struct address_space_operations none_address_operations;
++static struct file_operations none_file_operations;
++
 +/**
-+ * struct replay_entry - replay tree entry.
-+ * @lnum: logical eraseblock number of the node
-+ * @offs: node offset
-+ * @len: node length
-+ * @sqnum: node sequence number
-+ * @flags: replay flags
-+ * @rb: links the replay tree
-+ * @key: node key
-+ * @nm: directory entry name
-+ * @old_size: truncation old size
-+ * @new_size: truncation new size
-+ * @free: amount of free space in a bud
-+ * @dirty: amount of dirty space in a bud from padding and deletion nodes
++ * create_xattr - create an extended attribute.
++ * @c: UBIFS file-system description object
++ * @host: host inode
++ * @nm: extended attribute name
++ * @value: extended attribute value
++ * @size: size of extended attribute value
 + *
-+ * UBIFS journal replay must compare node sequence numbers, which means it must
-+ * build a tree of node information to insert into the TNC.
++ * This is a helper function which creates an extended attribute of name @nm
++ * and value @value for inode @host. The host inode is also updated on flash
++ * because the ctime and extended attribute accounting data changes. This
++ * function returns zero in case of success and a negative error code in case
++ * of failure.
 + */
-+struct replay_entry {
-+	int lnum;
-+	int offs;
-+	int len;
-+	unsigned long long sqnum;
-+	int flags;
-+	struct rb_node rb;
-+	union ubifs_key key;
-+	union {
-+		struct qstr nm;
-+		struct {
-+			loff_t old_size;
-+			loff_t new_size;
-+		};
-+		struct {
-+			int free;
-+			int dirty;
-+		};
-+	};
-+};
-+
-+/**
-+ * struct bud_entry - entry in the list of buds to replay.
-+ * @list: next bud in the list
-+ * @bud: bud description object
-+ * @free: free bytes in the bud
-+ * @sqnum: reference node sequence number
-+ */
-+struct bud_entry {
-+	struct list_head list;
-+	struct ubifs_bud *bud;
-+	int free;
-+	unsigned long long sqnum;
-+};
-+
-+/**
-+ * set_bud_lprops - set free and dirty space used by a bud.
-+ * @c: UBIFS file-system description object
-+ * @r: replay entry of bud
-+ */
-+static int set_bud_lprops(struct ubifs_info *c, struct replay_entry *r)
++static int create_xattr(struct ubifs_info *c, struct inode *host,
++			const struct qstr *nm, const void *value, int size)
 +{
-+	const struct ubifs_lprops *lp;
-+	int err = 0, dirty;
-+
-+	ubifs_get_lprops(c);
-+
-+	lp = ubifs_lpt_lookup_dirty(c, r->lnum);
-+	if (IS_ERR(lp)) {
-+		err = PTR_ERR(lp);
-+		goto out;
-+	}
-+
-+	dirty = lp->dirty;
-+	if (r->offs == 0 && (lp->free != c->leb_size || lp->dirty != 0)) {
-+		dbg_mnt("bud LEB %d was GC'd (%d free, %d dirty)", r->lnum,
-+			lp->free, lp->dirty);
-+		dbg_gc("bud LEB %d was GC'd (%d free, %d dirty)", r->lnum,
-+			lp->free, lp->dirty);
-+		dirty -= c->leb_size - lp->free;
-+		if (dirty != 0)
-+			dbg_msg("LEB %d lp: %d free %d dirty "
-+				"replay: %d free %d dirty", r->lnum, lp->free,
-+				lp->dirty, r->free, r->dirty);
-+	}
-+	lp = ubifs_change_lp(c, lp, r->free, dirty + r->dirty,
-+			     lp->flags | LPROPS_TAKEN, 0);
-+	if (IS_ERR(lp)) {
-+		err = PTR_ERR(lp);
-+		goto out;
-+	}
-+out:
-+	ubifs_release_lprops(c);
-+	return err;
-+}
-+
-+/**
-+ * trun_remove_range - apply a replay entry for a truncation to the TNC.
-+ * @c: UBIFS file-system description object
-+ * @r: replay entry of truncation
-+ */
-+static int trun_remove_range(struct ubifs_info *c, struct replay_entry *r)
-+{
-+	unsigned min_blk, max_blk;
-+	union ubifs_key min_key, max_key;
-+	ino_t ino;
-+
-+	min_blk = r->new_size / UBIFS_BLOCK_SIZE;
-+	if (r->new_size & (UBIFS_BLOCK_SIZE - 1))
-+		min_blk += 1;
-+
-+	max_blk = r->old_size / UBIFS_BLOCK_SIZE;
-+	if ((r->old_size & (UBIFS_BLOCK_SIZE - 1)) == 0)
-+		max_blk -= 1;
-+
-+	ino = key_ino(c, &r->key);
-+
-+	data_key_init(c, &min_key, ino, min_blk);
-+	data_key_init(c, &max_key, ino, max_blk);
-+
-+	return ubifs_tnc_remove_range(c, &min_key, &max_key);
-+}
-+
-+/**
-+ * apply_replay_entry - apply a replay entry to the TNC.
-+ * @c: UBIFS file-system description object
-+ * @r: replay entry to apply
-+ *
-+ * Apply a replay entry to the TNC.
-+ */
-+static int apply_replay_entry(struct ubifs_info *c, struct replay_entry *r)
-+{
-+	int err, deletion = ((r->flags & REPLAY_DELETION) != 0);
-+
-+	dbg_mnt_key(c, &r->key, "LEB %d:%d len %d flgs %d sqnum %llu", r->lnum,
-+		    r->offs, r->len, r->flags, r->sqnum);
-+	if (r->flags & REPLAY_REF)
-+		err = set_bud_lprops(c, r);
-+	else if (is_hash_key(c, &r->key)) {
-+		if (deletion)
-+			err = ubifs_tnc_remove_nm(c, &r->key, &r->nm);
-+		else
-+			err = ubifs_tnc_add_nm(c, &r->key, r->lnum, r->offs,
-+					       r->len, &r->nm);
-+	} else {
-+		if (deletion)
-+			switch (key_type(c, &r->key)) {
-+			case UBIFS_INO_KEY:
-+			{
-+				ino_t inum = key_ino(c, &r->key);
-+
-+				err = ubifs_tnc_remove_ino(c, inum);
-+				break;
-+			}
-+			case UBIFS_TRUN_KEY:
-+				err = trun_remove_range(c, r);
-+				break;
-+			default:
-+				err = ubifs_tnc_remove(c, &r->key);
-+				break;
-+			}
-+		else
-+			err = ubifs_tnc_add(c, &r->key, r->lnum, r->offs,
-+					    r->len);
-+		if (err)
-+			return err;
-+
-+		if (c->need_recovery)
-+			err = ubifs_recover_size_accum(c, &r->key, deletion,
-+						       r->new_size);
-+	}
-+
-+	return err;
-+}
-+
-+/**
-+ * destroy_replay_tree - destroy the replay.
-+ * @c: UBIFS file-system description object
-+ *
-+ * Destroy the replay tree.
-+ */
-+static void destroy_replay_tree(struct ubifs_info *c)
-+{
-+	struct rb_node *this = c->replay_tree.rb_node;
-+	struct replay_entry *r;
-+
-+	while (this) {
-+		if (this->rb_left) {
-+			this = this->rb_left;
-+			continue;
-+		} else if (this->rb_right) {
-+			this = this->rb_right;
-+			continue;
-+		}
-+		r = rb_entry(this, struct replay_entry, rb);
-+		this = rb_parent(this);
-+		if (this) {
-+			if (this->rb_left == &r->rb)
-+				this->rb_left = NULL;
-+			else
-+				this->rb_right = NULL;
-+		}
-+		if (key_type(c, &r->key) == UBIFS_DENT_KEY)
-+			kfree(r->nm.name);
-+		kfree(r);
-+	}
-+	c->replay_tree = RB_ROOT;
-+}
-+
-+/**
-+ * apply_replay_tree - apply the replay tree to the TNC.
-+ * @c: UBIFS file-system description object
-+ *
-+ * Apply the replay tree.
-+ * Returns zero in case of success and a negative error code in case of
-+ * failure.
-+ */
-+static int apply_replay_tree(struct ubifs_info *c)
-+{
-+	struct rb_node *this = rb_first(&c->replay_tree);
-+
-+	while (this) {
-+		struct replay_entry *r;
-+		int err;
-+
-+		cond_resched();
-+
-+		r = rb_entry(this, struct replay_entry, rb);
-+		err = apply_replay_entry(c, r);
-+		if (err)
-+			return err;
-+		this = rb_next(this);
-+	}
-+	return 0;
-+}
-+
-+/**
-+ * insert_node - insert a node to the replay tree.
-+ * @c: UBIFS file-system description object
-+ * @lnum: node logical eraseblock number
-+ * @offs: node offset
-+ * @len: node length
-+ * @key: node key
-+ * @sqnum: sequence number
-+ * @deletion: non-zero if this is a deletion
-+ * @used: number of bytes in use in a LEB
-+ * @old_size: truncation old size
-+ * @new_size: truncation new size
-+ *
-+ * This function inserts a scanned non-direntry node to the replay tree.
-+ * Returns zero in case of success and a negative error code in case of
-+ * failure.
-+ */
-+static int insert_node(struct ubifs_info *c, int lnum, int offs, int len,
-+		       union ubifs_key *key, unsigned long long sqnum,
-+		       int deletion, int *used, loff_t old_size,
-+		       loff_t new_size)
-+{
-+	struct rb_node **p = &c->replay_tree.rb_node, *parent = NULL;
-+	struct replay_entry *r;
-+
-+	if (key_ino(c, key) >= c->highest_inum)
-+		c->highest_inum = key_ino(c, key);
-+
-+	dbg_mnt_key(c, key, "add LEB %d:%d, key ", lnum, offs);
-+	while (*p) {
-+		parent = *p;
-+		r = rb_entry(parent, struct replay_entry, rb);
-+		if (sqnum < r->sqnum) {
-+			p = &(*p)->rb_left;
-+			continue;
-+		} else if (sqnum > r->sqnum) {
-+			p = &(*p)->rb_right;
-+			continue;
-+		}
-+		ubifs_err("duplicate sqnum in replay");
-+		return -EINVAL;
-+	}
-+
-+	r = kzalloc(sizeof(struct replay_entry), GFP_KERNEL);
-+	if (!r)
-+		return -ENOMEM;
-+
-+	if (!deletion)
-+		*used += ALIGN(len, 8);
-+	r->lnum = lnum;
-+	r->offs = offs;
-+	r->len = len;
-+	r->sqnum = sqnum;
-+	r->flags = (deletion ? REPLAY_DELETION : 0);
-+	r->old_size = old_size;
-+	r->new_size = new_size;
-+	key_copy(c, key, &r->key);
-+
-+	rb_link_node(&r->rb, parent, p);
-+	rb_insert_color(&r->rb, &c->replay_tree);
-+	return 0;
-+}
-+
-+/**
-+ * insert_dent - insert a directory entry node into the replay tree.
-+ * @c: UBIFS file-system description object
-+ * @lnum: node logical eraseblock number
-+ * @offs: node offset
-+ * @len: node length
-+ * @key: node key
-+ * @name: directory entry name
-+ * @nlen: directory entry name length
-+ * @sqnum: sequence number
-+ * @deletion: non-zero if this is a deletion
-+ * @used: number of bytes in use in a LEB
-+ *
-+ * This function inserts a scanned directory entry node to the replay tree.
-+ * Returns zero in case of success and a negative error code in case of
-+ * failure.
-+ *
-+ * This function is also used for extended attribute entries because they are
-+ * implemented as directory entry nodes.
-+ */
-+static int insert_dent(struct ubifs_info *c, int lnum, int offs, int len,
-+		       union ubifs_key *key, const char *name, int nlen,
-+		       unsigned long long sqnum, int deletion, int *used)
-+{
-+	struct rb_node **p = &c->replay_tree.rb_node, *parent = NULL;
-+	struct replay_entry *r;
-+	char *nbuf;
-+
-+	if (key_ino(c, key) >= c->highest_inum)
-+		c->highest_inum = key_ino(c, key);
-+
-+	dbg_mnt_key(c, key, "add LEB %d:%d, key ", lnum, offs);
-+	while (*p) {
-+		parent = *p;
-+		r = rb_entry(parent, struct replay_entry, rb);
-+		if (sqnum < r->sqnum) {
-+			p = &(*p)->rb_left;
-+			continue;
-+		}
-+		if (sqnum > r->sqnum) {
-+			p = &(*p)->rb_right;
-+			continue;
-+		}
-+		ubifs_err("duplicate sqnum in replay");
-+		return -EINVAL;
-+	}
-+
-+	r = kzalloc(sizeof(struct replay_entry), GFP_KERNEL);
-+	if (!r)
-+		return -ENOMEM;
-+	nbuf = kmalloc(nlen + 1, GFP_KERNEL);
-+	if (!nbuf) {
-+		kfree(r);
-+		return -ENOMEM;
-+	}
-+
-+	if (!deletion)
-+		*used += ALIGN(len, 8);
-+	r->lnum = lnum;
-+	r->offs = offs;
-+	r->len = len;
-+	r->sqnum = sqnum;
-+	r->nm.len = nlen;
-+	memcpy(nbuf, name, nlen);
-+	nbuf[nlen] = '\0';
-+	r->nm.name = nbuf;
-+	r->flags = (deletion ? REPLAY_DELETION : 0);
-+	key_copy(c, key, &r->key);
-+
-+	ubifs_assert(!*p);
-+	rb_link_node(&r->rb, parent, p);
-+	rb_insert_color(&r->rb, &c->replay_tree);
-+	return 0;
-+}
-+
-+/**
-+ * replay_bud - replay a bud logical eraseblock.
-+ * @c: UBIFS file-system description object
-+ * @lnum: bud logical eraseblock number to replay
-+ * @offs: bud start offset
-+ * @jhead: journal head to which this bud belongs
-+ * @free: amount of free space in the bud is returned here
-+ * @dirty: amount of dirty space from padding and deletion nodes is returned
-+ * here
-+ *
-+ * This function returns zero in case of success and a negative error code in
-+ * case of failure.
-+ */
-+static int replay_bud(struct ubifs_info *c, int lnum, int offs, int jhead,
-+		      int *free, int *dirty)
-+{
-+	int err = 0, used = 0;
-+	struct ubifs_scan_leb *sleb;
-+	struct ubifs_scan_node *snod;
-+	struct ubifs_bud *bud;
-+
-+	dbg_mnt("replay bud LEB %d, head %d", lnum, jhead);
-+	if (c->need_recovery)
-+		sleb = ubifs_recover_leb(c, lnum, offs, c->sbuf, jhead != GCHD);
-+	else
-+		sleb = ubifs_scan(c, lnum, offs, c->sbuf);
-+	if (IS_ERR(sleb))
-+		return PTR_ERR(sleb);
-+
-+	/*
-+	 * The bud does not have to start from offset zero - the beginning of
-+	 * the 'lnum' LEB may contain previously committed data. One of the
-+	 * things we have to do in replay is to correctly update lprops with
-+	 * newer information about this LEB.
-+	 *
-+	 * At this point lprops thinks that this LEB has 'c->leb_size - offs'
-+	 * bytes of free space because it only contain information about
-+	 * committed data.
-+	 *
-+	 * But we know that real amount of free space is 'c->leb_size -
-+	 * sleb->endpt', and the space in the 'lnum' LEB between 'offs' and
-+	 * 'sleb->endpt' is used by bud data. We have to correctly calculate
-+	 * how much of these data are dirty and update lprops with this
-+	 * information.
-+	 *
-+	 * The dirt in that LEB region is comprised of padding nodes, deletion
-+	 * nodes, truncation nodes and nodes which are obsoleted by subsequent
-+	 * nodes in this LEB. So instead of calculating clean space, we
-+	 * calculate used space ('used' variable).
-+	 */
-+
-+	list_for_each_entry(snod, &sleb->nodes, list) {
-+		int deletion = 0;
-+
-+		cond_resched();
-+
-+		if (snod->sqnum >= SQNUM_WATERMARK) {
-+			ubifs_err("file system's life ended");
-+			goto out_dump;
-+		}
-+
-+		if (snod->sqnum > c->max_sqnum)
-+			c->max_sqnum = snod->sqnum;
-+
-+		switch (snod->type) {
-+		case UBIFS_INO_NODE:
-+		{
-+			struct ubifs_ino_node *ino = snod->node;
-+			loff_t new_size = le64_to_cpu(ino->size);
-+
-+			if (le32_to_cpu(ino->nlink) == 0)
-+				deletion = 1;
-+			err = insert_node(c, lnum, snod->offs, snod->len,
-+					  &snod->key, snod->sqnum, deletion,
-+					  &used, 0, new_size);
-+			break;
-+		}
-+		case UBIFS_DATA_NODE:
-+		{
-+			struct ubifs_data_node *dn = snod->node;
-+			loff_t new_size = le32_to_cpu(dn->size) +
-+					  key_block(c, &snod->key) *
-+					  UBIFS_BLOCK_SIZE;
-+
-+			err = insert_node(c, lnum, snod->offs, snod->len,
-+					  &snod->key, snod->sqnum, deletion,
-+					  &used, 0, new_size);
-+			break;
-+		}
-+		case UBIFS_DENT_NODE:
-+		case UBIFS_XENT_NODE:
-+		{
-+			struct ubifs_dent_node *dent = snod->node;
-+
-+			err = ubifs_validate_entry(c, dent);
-+			if (err)
-+				goto out_dump;
-+
-+			err = insert_dent(c, lnum, snod->offs, snod->len,
-+					  &snod->key, dent->name,
-+					  le16_to_cpu(dent->nlen), snod->sqnum,
-+					  !le64_to_cpu(dent->inum), &used);
-+			break;
-+		}
-+		case UBIFS_TRUN_NODE:
-+		{
-+			struct ubifs_trun_node *trun = snod->node;
-+			loff_t old_size = le64_to_cpu(trun->old_size);
-+			loff_t new_size = le64_to_cpu(trun->new_size);
-+
-+			/* Validate truncation node */
-+			if (old_size < 0 || old_size > c->max_inode_sz ||
-+			    new_size < 0 || new_size > c->max_inode_sz ||
-+			    old_size <= new_size) {
-+				ubifs_err("bad truncation node");
-+				goto out_dump;
-+			}
-+
-+			err = insert_node(c, lnum, snod->offs, snod->len,
-+					  &snod->key, snod->sqnum, 1, &used,
-+					  old_size, new_size);
-+			break;
-+		}
-+		default:
-+			ubifs_err("unexpected node type %d in bud LEB %d:%d",
-+				  snod->type, lnum, snod->offs);
-+			err = -EINVAL;
-+			goto out_dump;
-+		}
-+		if (err)
-+			goto out;
-+	}
-+
-+	bud = ubifs_search_bud(c, lnum);
-+	if (!bud)
-+		BUG();
-+
-+	ubifs_assert(bud->lnum == lnum);
-+	ubifs_assert(bud->start == offs);
-+	ubifs_assert(bud->jhead == jhead);
-+	ubifs_assert(sleb->endpt - offs >= used);
-+	ubifs_assert(sleb->endpt % c->min_io_size == 0);
-+
-+	if (sleb->endpt + c->min_io_size <= c->leb_size &&
-+	    !(c->vfs_sb->s_flags & MS_RDONLY))
-+		err = ubifs_wbuf_seek_nolock(&c->jheads[jhead].wbuf, lnum,
-+					     sleb->endpt, UBI_SHORTTERM);
-+
-+	*dirty = sleb->endpt - offs - used;
-+	*free = c->leb_size - sleb->endpt;
-+
-+out:
-+	ubifs_scan_destroy(sleb);
-+	return err;
-+
-+out_dump:
-+	ubifs_err("bad node is at LEB %d:%d", lnum, snod->offs);
-+	dbg_dump_node(c, snod->node);
-+	ubifs_scan_destroy(sleb);
-+	return -EINVAL;
-+}
-+
-+/**
-+ * insert_ref_node - insert a ref node to the replay tree.
-+ * @c: UBIFS file-system description object
-+ * @lnum: node logical eraseblock number
-+ * @offs: node offset
-+ * @sqnum: sequence number
-+ * @free: amount of free space in bud
-+ * @dirty: amount of dirty space from padding and deletion nodes
-+ */
-+static int insert_ref_node(struct ubifs_info *c, int lnum, int offs,
-+			   unsigned long long sqnum, int free, int dirty)
-+{
-+	struct rb_node **p = &c->replay_tree.rb_node, *parent = NULL;
-+	struct replay_entry *r;
-+	union ubifs_key key;
-+	int cmp;
-+
-+	dbg_mnt("add ref LEB %d:%d", lnum, offs);
-+	highest_ino_key(c, &key, -1);
-+	while (*p) {
-+		parent = *p;
-+		r = rb_entry(parent, struct replay_entry, rb);
-+		cmp = keys_cmp(c, &key, &r->key);
-+		if (sqnum < r->sqnum) {
-+			p = &(*p)->rb_left;
-+			continue;
-+		} else if (sqnum > r->sqnum) {
-+			p = &(*p)->rb_right;
-+			continue;
-+		}
-+		ubifs_err("duplicate sqnum in r");
-+		return -EINVAL;
-+	}
-+
-+	r = kzalloc(sizeof(struct replay_entry), GFP_KERNEL);
-+	if (!r)
-+		return -ENOMEM;
-+
-+	r->lnum = lnum;
-+	r->offs = offs;
-+	r->sqnum = sqnum;
-+	r->flags = REPLAY_REF;
-+	r->free = free;
-+	r->dirty = dirty;
-+	key_copy(c, &key, &r->key);
-+
-+	rb_link_node(&r->rb, parent, p);
-+	rb_insert_color(&r->rb, &c->replay_tree);
-+	return 0;
-+}
-+
-+/**
-+ * replay_buds - replay all buds.
-+ * @c: UBIFS file-system description object
-+ *
-+ * This function returns zero in case of success and a negative error code in
-+ * case of failure.
-+ */
-+static int replay_buds(struct ubifs_info *c)
-+{
-+	struct bud_entry *b;
-+	int err, uninitialized_var(free), uninitialized_var(dirty);
-+
-+	list_for_each_entry(b, &c->replay_buds, list) {
-+		err = replay_bud(c, b->bud->lnum, b->bud->start, b->bud->jhead,
-+				 &free, &dirty);
-+		if (err)
-+			return err;
-+		err = insert_ref_node(c, b->bud->lnum, b->bud->start, b->sqnum,
-+				      free, dirty);
-+		if (err)
-+			return err;
-+	}
-+
-+	return 0;
-+}
-+
-+/**
-+ * destroy_bud_list - destroy the list of buds to replay.
-+ * @c: UBIFS file-system description object
-+ */
-+static void destroy_bud_list(struct ubifs_info *c)
-+{
-+	struct bud_entry *b;
-+
-+	while (!list_empty(&c->replay_buds)) {
-+		b = list_entry(c->replay_buds.next, struct bud_entry, list);
-+		list_del(&b->list);
-+		kfree(b);
-+	}
-+}
-+
-+/**
-+ * add_replay_bud - add a bud to the list of buds to replay.
-+ * @c: UBIFS file-system description object
-+ * @lnum: bud logical eraseblock number to replay
-+ * @offs: bud start offset
-+ * @jhead: journal head to which this bud belongs
-+ * @sqnum: reference node sequence number
-+ *
-+ * This function returns zero in case of success and a negative error code in
-+ * case of failure.
-+ */
-+static int add_replay_bud(struct ubifs_info *c, int lnum, int offs, int jhead,
-+			  unsigned long long sqnum)
-+{
-+	struct ubifs_bud *bud;
-+	struct bud_entry *b;
-+
-+	dbg_mnt("add replay bud LEB %d:%d, head %d", lnum, offs, jhead);
-+
-+	bud = kmalloc(sizeof(struct ubifs_bud), GFP_KERNEL);
-+	if (!bud)
-+		return -ENOMEM;
-+
-+	b = kmalloc(sizeof(struct bud_entry), GFP_KERNEL);
-+	if (!b) {
-+		kfree(bud);
-+		return -ENOMEM;
-+	}
-+
-+	bud->lnum = lnum;
-+	bud->start = offs;
-+	bud->jhead = jhead;
-+	ubifs_add_bud(c, bud);
-+
-+	b->bud = bud;
-+	b->sqnum = sqnum;
-+	list_add_tail(&b->list, &c->replay_buds);
-+
-+	return 0;
-+}
-+
-+/**
-+ * validate_ref - validate a reference node.
-+ * @c: UBIFS file-system description object
-+ * @ref: the reference node to validate
-+ * @ref_lnum: LEB number of the reference node
-+ * @ref_offs: reference node offset
-+ *
-+ * This function returns %1 if a bud reference already exists for the LEB. %0 is
-+ * returned if the reference node is new, otherwise %-EINVAL is returned if
-+ * validation failed.
-+ */
-+static int validate_ref(struct ubifs_info *c, const struct ubifs_ref_node *ref)
-+{
-+	struct ubifs_bud *bud;
-+	int lnum = le32_to_cpu(ref->lnum);
-+	unsigned int offs = le32_to_cpu(ref->offs);
-+	unsigned int jhead = le32_to_cpu(ref->jhead);
-+
-+	/*
-+	 * ref->offs may point to the end of LEB when the journal head points
-+	 * to the end of LEB and we write reference node for it during commit.
-+	 * So this is why we require 'offs > c->leb_size'.
-+	 */
-+	if (jhead >= c->jhead_cnt || lnum >= c->leb_cnt ||
-+	    lnum < c->main_first || offs > c->leb_size ||
-+	    offs & (c->min_io_size - 1))
-+		return -EINVAL;
-+
-+	/* Make sure we have not already looked at this bud */
-+	bud = ubifs_search_bud(c, lnum);
-+	if (bud) {
-+		if (bud->jhead == jhead && bud->start <= offs)
-+			return 1;
-+		ubifs_err("bud at LEB %d:%d was already referred", lnum, offs);
-+		return -EINVAL;
-+	}
-+
-+	return 0;
-+}
-+
-+/**
-+ * replay_log_leb - replay a log logical eraseblock.
-+ * @c: UBIFS file-system description object
-+ * @lnum: log logical eraseblock to replay
-+ * @offs: offset to start replaying from
-+ * @sbuf: scan buffer
-+ *
-+ * This function replays a log LEB and returns zero in case of success, %1 if
-+ * this is the last LEB in the log, and a negative error code in case of
-+ * failure.
-+ */
-+static int replay_log_leb(struct ubifs_info *c, int lnum, int offs, void *sbuf)
-+{
++	struct ubifs_inode *ui, *host_ui = ubifs_inode(host);
++	struct ubifs_budget_req req = { .new_ino = 1, .new_dent = 1,
++					.new_ino_d = size };
++	struct inode *inode;
 +	int err;
-+	struct ubifs_scan_leb *sleb;
-+	struct ubifs_scan_node *snod;
-+	const struct ubifs_cs_node *node;
 +
-+	dbg_mnt("replay log LEB %d:%d", lnum, offs);
-+	sleb = ubifs_scan(c, lnum, offs, sbuf);
-+	if (IS_ERR(sleb)) {
-+		if (c->need_recovery)
-+			sleb = ubifs_recover_log_leb(c, lnum, offs, sbuf);
-+		if (IS_ERR(sleb))
-+			return PTR_ERR(sleb);
++	/*
++	 * Linux limits the maximum size of the extended attribute names list
++	 * to %XATTR_LIST_MAX. This means we should not allow creating more*
++	 * extended attributes if the name list becomes larger. This limitation
++	 * is artificial for UBIFS, though.
++	 */
++	if (host_ui->xattr_names + host_ui->xattr_cnt +
++					nm->len + 1 > XATTR_LIST_MAX)
++		return -ENOSPC;
++
++	err = ubifs_budget_inode_op(c, host, &req);
++	if (err)
++		return err;
++
++	inode = ubifs_new_inode(c, host, S_IFREG | S_IRWXUGO);
++	if (IS_ERR(inode)) {
++		err = PTR_ERR(inode);
++		goto out_budg;
 +	}
 +
-+	if (sleb->nodes_cnt == 0) {
-+		err = 1;
-+		goto out;
++	/* Re-define all operations to be "nothing" */
++	inode->i_mapping->a_ops = &none_address_operations;
++	inode->i_op = &none_inode_operations;
++	inode->i_fop = &none_file_operations;
++
++	inode->i_flags |= S_SYNC | S_NOATIME | S_NOCMTIME | S_NOQUOTA;
++	ui = ubifs_inode(inode);
++	ui->xattr = 1;
++	ui->data = kmalloc(size, GFP_KERNEL);
++	if (!ui->data) {
++		err = -ENOMEM;
++		goto out_inode;
 +	}
 +
-+	node = sleb->buf;
++	memcpy(ui->data, value, size);
++	host->i_ctime = CURRENT_TIME_SEC;
++	host_ui->xattr_cnt += 1;
++	spin_lock(&host->i_lock);
++	host_ui->xattr_size += CALC_DENT_SIZE(nm->len);
++	host_ui->xattr_size += CALC_XATTR_BYTES(size);
++	spin_unlock(&host->i_lock);
++	host_ui->xattr_names += nm->len;
 +
-+	snod = list_entry(sleb->nodes.next, struct ubifs_scan_node, list);
-+	if (c->cs_sqnum == 0) {
-+		/*
-+		 * This is the first log LEB we are looking at, make sure that
-+		 * the first node is a commit start node. Also record its
-+		 * sequence number so that UBIFS can determine where the log
-+		 * ends, because all nodes which were have higher sequence
-+		 * numbers.
-+		 */
-+		if (snod->type != UBIFS_CS_NODE) {
-+			dbg_err("first log node at LEB %d:%d is not CS node",
-+				lnum, offs);
-+			goto out_dump;
-+		}
-+		if (le64_to_cpu(node->cmt_no) != c->cmt_no) {
-+			dbg_err("first CS node at LEB %d:%d has wrong "
-+				"commit number %llu expected %llu",
-+				lnum, offs, le64_to_cpu(node->cmt_no),
-+				c->cmt_no);
-+			goto out_dump;
-+		}
++	/*
++	 * We do not use i_size_write() because nobody can race with us as we
++	 * are holding host @host->i_mutex - every xattr operation for this
++	 * inode is serialized by it.
++	 */
++	inode->i_size = size;
++	ui->data_len = size;
 +
-+		c->cs_sqnum = le64_to_cpu(node->ch.sqnum);
-+		dbg_mnt("commit start sqnum %llu", c->cs_sqnum);
-+	}
++	/*
++	 * Note, it is important that 'ubifs_jrn_update()' writes the @host
++	 * inode last, so when it gets synchronized and the write-buffer is
++	 * flushed, the extended attribute is flushed as well.
++	 */
++	err = ubifs_jrn_update(c, host, nm, inode, 0, IS_DIRSYNC(host), 1);
++	if (err)
++		goto out_cancel;
 +
-+	if (snod->sqnum < c->cs_sqnum) {
-+		/*
-+		 * This means that we reached end of log and now
-+		 * look to the older log data, which was already
-+		 * committed but the eraseblock was not erased (UBIFS
-+		 * only unmaps it). So this basically means we have to
-+		 * exit with "end of log" code.
-+		 */
-+		err = 1;
-+		goto out;
-+	}
++	ubifs_release_ino_clean(c, host, &req);
++	insert_inode_hash(inode);
++	iput(inode);
++	return 0;
 +
-+	/* Make sure the first node sits at offset zero of the LEB */
-+	if (snod->offs != 0) {
-+		dbg_err("first node is not at zero offset");
-+		goto out_dump;
-+	}
-+
-+	list_for_each_entry(snod, &sleb->nodes, list) {
-+
-+		cond_resched();
-+
-+		if (snod->sqnum >= SQNUM_WATERMARK) {
-+			ubifs_err("file system's life ended");
-+			goto out_dump;
-+		}
-+
-+		if (snod->sqnum < c->cs_sqnum) {
-+			dbg_err("bad sqnum %llu, commit sqnum %llu",
-+				snod->sqnum, c->cs_sqnum);
-+			goto out_dump;
-+		}
-+
-+		if (snod->sqnum > c->max_sqnum)
-+			c->max_sqnum = snod->sqnum;
-+
-+		switch (snod->type) {
-+		case UBIFS_REF_NODE: {
-+			const struct ubifs_ref_node *ref = snod->node;
-+
-+			err = validate_ref(c, ref);
-+			if (err == 1)
-+				break; /* Already have this bud */
-+			if (err)
-+				goto out_dump;
-+
-+			err = add_replay_bud(c, le32_to_cpu(ref->lnum),
-+					     le32_to_cpu(ref->offs),
-+					     le32_to_cpu(ref->jhead),
-+					     snod->sqnum);
-+			if (err)
-+				goto out;
-+
-+			break;
-+		}
-+		case UBIFS_CS_NODE:
-+			/* Make sure it sits at the beginning of LEB */
-+			if (snod->offs != 0) {
-+				ubifs_err("unexpected node in log");
-+				goto out_dump;
-+			}
-+			break;
-+		default:
-+			ubifs_err("unexpected node in log");
-+			goto out_dump;
-+		}
-+	}
-+
-+	if (sleb->endpt || c->lhead_offs >= c->leb_size) {
-+		c->lhead_lnum = lnum;
-+		c->lhead_offs = sleb->endpt;
-+	}
-+
-+	err = !sleb->endpt;
-+out:
-+	ubifs_scan_destroy(sleb);
-+	return err;
-+
-+out_dump:
-+	ubifs_err("log error detected while replying the log at LEB %d:%d",
-+		  lnum, offs + snod->offs);
-+	dbg_dump_node(c, snod->node);
-+	ubifs_scan_destroy(sleb);
-+	return -EINVAL;
-+}
-+
-+/**
-+ * take_ihead - update the status of the index head in lprops to 'taken'.
-+ * @c: UBIFS file-system description object
-+ *
-+ * This function returns the amount of free space in the index head LEB or a
-+ * negative error code.
-+ */
-+static int take_ihead(struct ubifs_info *c)
-+{
-+	const struct ubifs_lprops *lp;
-+	int err, free;
-+
-+	ubifs_get_lprops(c);
-+
-+	lp = ubifs_lpt_lookup_dirty(c, c->ihead_lnum);
-+	if (IS_ERR(lp)) {
-+		err = PTR_ERR(lp);
-+		goto out;
-+	}
-+
-+	free = lp->free;
-+
-+	lp = ubifs_change_lp(c, lp, -1, -1, lp->flags | LPROPS_TAKEN, 0);
-+	if (IS_ERR(lp)) {
-+		err = PTR_ERR(lp);
-+		goto out;
-+	}
-+
-+	err = free;
-+out:
-+	ubifs_release_lprops(c);
++out_cancel:
++	host_ui->xattr_cnt -= 1;
++	spin_lock(&host->i_lock);
++	host_ui->xattr_size -= CALC_DENT_SIZE(nm->len);
++	host_ui->xattr_size -= CALC_XATTR_BYTES(size);
++	spin_unlock(&host->i_lock);
++out_inode:
++	make_bad_inode(inode);
++	iput(inode);
++out_budg:
++	ubifs_cancel_ino_op(c, host, &req);
 +	return err;
 +}
 +
 +/**
-+ * ubifs_replay_journal - replay journal.
++ * change_xattr - change an extended attribute.
 + * @c: UBIFS file-system description object
++ * @host: host inode
++ * @inode: extended attribute inode
++ * @value: extended attribute value
++ * @size: size of extended attribute value
 + *
-+ * This function scans the journal, replays and cleans it up. It makes sure all
-+ * memory data structures related to uncommitted journal are built (dirty TNC
-+ * tree, tree of buds, modified lprops, etc).
++ * This helper function changes the value of extended attribute @inode with new
++ * data from @value. Returns zero in case of success and a negative error code
++ * in case of failure.
 + */
-+int ubifs_replay_journal(struct ubifs_info *c)
++static int change_xattr(struct ubifs_info *c, struct inode *host,
++			struct inode *inode, const void *value, int size)
 +{
-+	int err, i, lnum, offs, free;
-+	void *sbuf = NULL;
++	struct ubifs_inode *host_ui = ubifs_inode(host);
++	struct ubifs_inode *ui = ubifs_inode(inode);
++	struct ubifs_budget_req req = { .dirtied_ino = 1,
++					.dirtied_ino_d = ui->data_len };
++	int err;
 +
-+	/* Update the status of the index head in lprops to 'taken' */
-+	free = take_ihead(c);
-+	if (free < 0)
-+		return free; /* Error code */
++	ubifs_assert(ui->data_len == inode->i_size);
 +
-+	if (c->ihead_offs != c->leb_size - free) {
-+		ubifs_err("bad index head LEB %d:%d", c->ihead_lnum,
-+			  c->ihead_offs);
-+		return -EINVAL;
++	err = ubifs_budget_inode_op(c, host, &req);
++	if (err)
++		return err;
++
++	host->i_ctime = CURRENT_TIME_SEC;
++	spin_lock(&host->i_lock);
++	host_ui->xattr_size -= CALC_XATTR_BYTES(ui->data_len);
++	host_ui->xattr_size += CALC_XATTR_BYTES(size);
++	spin_unlock(&host->i_lock);
++
++	kfree(ui->data);
++	ui->data = kmalloc(size, GFP_KERNEL);
++	if (!ui->data) {
++		err = -ENOMEM;
++		goto out_budg;
 +	}
 +
-+	sbuf = vmalloc(c->leb_size);
-+	if (!sbuf)
++	memcpy(ui->data, value, size);
++	inode->i_size = size;
++	ui->data_len = size;
++
++	/*
++	 * It is important to write the host inode after the xattr inode
++	 * because if the host inode gets synchronized, then the extended
++	 * attribute inode gets synchronized, because it goes before the host
++	 * inode in the write-buffer.
++	 */
++	err = ubifs_jrn_write_2_inodes(c, inode, host, IS_DIRSYNC(host));
++	if (err)
++		goto out_cancel;
++
++	ubifs_release_ino_clean(c, host, &req);
++	return 0;
++
++out_cancel:
++	spin_lock(&host->i_lock);
++	host_ui->xattr_size -= CALC_XATTR_BYTES(size);
++	host_ui->xattr_size += CALC_XATTR_BYTES(ui->data_len);
++	spin_unlock(&host->i_lock);
++	make_bad_inode(inode);
++out_budg:
++	ubifs_cancel_ino_op(c, host, &req);
++	return err;
++}
++
++/**
++ * check_namespace - check extended attribute name-space.
++ * @nm: extended attribute name
++ *
++ * This function makes sure the extended attribute name belongs to one of the
++ * supported extended attribute name-spaces. Returns name-space index in case
++ * of success and a negative error code in case of failure.
++ */
++static int check_namespace(const struct qstr *nm)
++{
++	int type;
++
++	if (nm->len > UBIFS_MAX_NLEN)
++		return -ENAMETOOLONG;
++
++	if (!strncmp(nm->name, XATTR_TRUSTED_PREFIX,
++		     XATTR_TRUSTED_PREFIX_LEN)) {
++		if (nm->name[sizeof(XATTR_TRUSTED_PREFIX) - 1] == '\0')
++			return -EINVAL;
++		type = TRUSTED_XATTR;
++	} else if (!strncmp(nm->name, XATTR_USER_PREFIX,
++				      XATTR_USER_PREFIX_LEN)) {
++		if (nm->name[XATTR_USER_PREFIX_LEN] == '\0')
++			return -EINVAL;
++		type = USER_XATTR;
++	} else if (!strncmp(nm->name, XATTR_SECURITY_PREFIX,
++				     XATTR_SECURITY_PREFIX_LEN)) {
++		if (nm->name[sizeof(XATTR_SECURITY_PREFIX) - 1] == '\0')
++			return -EINVAL;
++		type = SECURITY_XATTR;
++	} else
++		return -EOPNOTSUPP;
++
++	return type;
++}
++
++int ubifs_setxattr(struct dentry *dentry, const char *name,
++		   const void *value, size_t size, int flags)
++{
++	struct inode *inode, *host = dentry->d_inode;
++	struct ubifs_info *c = host->i_sb->s_fs_info;
++	struct qstr nm = { .name = name, .len = strlen(name) };
++	struct ubifs_dent_node *xent;
++	union ubifs_key key;
++	int err, type;
++
++	dbg_gen("xattr '%s', host ino %lu ('%.*s'), size %d", name,
++		host->i_ino, dentry->d_name.len, dentry->d_name.name, size);
++	ubifs_assert(mutex_is_locked(&host->i_mutex));
++	ubifs_assert(ubifs_inode(host)->xattr_cnt >= 0);
++	ubifs_assert(ubifs_inode(host)->xattr_size >= 0);
++	ubifs_assert(ubifs_inode(host)->xattr_msize >= 0);
++	ubifs_assert(ubifs_inode(host)->xattr_names >= 0);
++
++	if (size > UBIFS_MAX_INO_DATA)
++		return -ERANGE;
++
++	type = check_namespace(&nm);
++	if (type < 0)
++		return type;
++
++	xent = kmalloc(UBIFS_MAX_XENT_NODE_SZ, GFP_NOFS);
++	if (!xent)
 +		return -ENOMEM;
 +
-+	dbg_mnt("start replaying the journal");
++	/*
++	 * The extended attribute entries are stored in LNC, so multiple
++	 * look-ups do not involve reading the flash.
++	 */
++	xent_key_init(c, &key, host->i_ino, &nm);
++	err = ubifs_tnc_lookup_nm(c, &key, xent, &nm);
++	if (err) {
++		if (err != -ENOENT)
++			goto out_free;
 +
-+	c->replaying = 1;
-+
-+	lnum = c->ltail_lnum = c->lhead_lnum;
-+	offs = c->lhead_offs;
-+
-+	for (i = 0; i < c->log_lebs; i++, lnum++) {
-+		if (lnum >= UBIFS_LOG_LNUM + c->log_lebs) {
-+			/*
-+			 * The log is logically circular, we reached the last
-+			 * LEB, switch to the first one.
-+			 */
-+			lnum = UBIFS_LOG_LNUM;
-+			offs = 0;
-+		}
-+		err = replay_log_leb(c, lnum, offs, sbuf);
-+		if (err == 1)
-+			/* We hit the end of the log */
-+			break;
-+		if (err)
-+			goto out;
-+		offs = 0;
++		if (flags & XATTR_REPLACE)
++			/* We are asked not to create the xattr */
++			err = -ENODATA;
++		else
++			err = create_xattr(c, host, &nm, value, size);
++		goto out_free;
 +	}
 +
-+	err = replay_buds(c);
-+	if (err)
-+		goto out;
++	if (flags & XATTR_CREATE) {
++		/* We are asked not to replace the xattr */
++		err = -EEXIST;
++		goto out_free;
++	}
 +
-+	err = apply_replay_tree(c);
-+	if (err)
-+		goto out;
++	inode = ubifs_iget(c->vfs_sb, le64_to_cpu(xent->inum));
++	if (IS_ERR(inode)) {
++		ubifs_err("dead extended attribute node entry");
++		ubifs_ro_mode(c);
++		err = PTR_ERR(inode);
++		goto out_free;
++	}
 +
-+	ubifs_assert(c->bud_bytes <= c->max_bud_bytes || c->need_recovery);
-+	dbg_mnt("finished, log head LEB %d:%d, max_sqnum %llu, "
-+		"highest_inum %lu", c->lhead_lnum, c->lhead_offs, c->max_sqnum,
-+		c->highest_inum);
-+out:
-+	destroy_replay_tree(c);
-+	destroy_bud_list(c);
-+	vfree(sbuf);
-+	c->replaying = 0;
++	err = change_xattr(c, host, inode, value, size);
++	iput(inode);
++
++out_free:
++	kfree(xent);
++	return err;
++}
++
++ssize_t ubifs_getxattr(struct dentry *dentry, const char *name, void *buf,
++		       size_t size)
++{
++	struct inode *inode, *host = dentry->d_inode;
++	struct ubifs_info *c = host->i_sb->s_fs_info;
++	struct qstr nm = { .name = name, .len = strlen(name) };
++	struct ubifs_inode *ui;
++	struct ubifs_dent_node *xent;
++	union ubifs_key key;
++	int err;
++
++	dbg_gen("xattr '%s', ino %lu ('%.*s'), buf size %d", name,
++		host->i_ino, dentry->d_name.len, dentry->d_name.name, size);
++	ubifs_assert(ubifs_inode(host)->xattr_cnt >= 0);
++	ubifs_assert(ubifs_inode(host)->xattr_size >= 0);
++	ubifs_assert(ubifs_inode(host)->xattr_msize >= 0);
++	ubifs_assert(ubifs_inode(host)->xattr_names >= 0);
++
++	err = check_namespace(&nm);
++	if (err < 0)
++		return err;
++
++	xent = kmalloc(UBIFS_MAX_XENT_NODE_SZ, GFP_NOFS);
++	if (!xent)
++		return -ENOMEM;
++
++	mutex_lock(&host->i_mutex);
++	xent_key_init(c, &key, host->i_ino, &nm);
++	err = ubifs_tnc_lookup_nm(c, &key, xent, &nm);
++	if (err) {
++		if (err == -ENOENT)
++			err = -ENODATA;
++		goto out_unlock;
++	}
++
++	inode = ubifs_iget(c->vfs_sb, le64_to_cpu(xent->inum));
++	if (IS_ERR(inode)) {
++		ubifs_err("dead extended attribute node entry");
++		ubifs_ro_mode(c);
++		err = PTR_ERR(inode);
++		goto out_unlock;
++	}
++
++	ui = ubifs_inode(inode);
++	ubifs_assert(inode->i_size == ui->data_len);
++	ubifs_assert(ubifs_inode(host)->xattr_size > ui->data_len);
++
++	if (buf) {
++		/* If @buf is %NULL we are supposed to return the length */
++		if (ui->data_len > size) {
++			dbg_err("buffer size %d, xattr len %d",
++				size, ui->data_len);
++			err = -ERANGE;
++			goto out_iput;
++		}
++
++		memcpy(buf, ui->data, ui->data_len);
++	}
++	err = ui->data_len;
++
++out_iput:
++	iput(inode);
++out_unlock:
++	mutex_unlock(&host->i_mutex);
++	kfree(xent);
++	return err;
++}
++
++ssize_t ubifs_listxattr(struct dentry *dentry, char *buffer, size_t size)
++{
++	struct inode *host = dentry->d_inode;
++	struct ubifs_info *c = host->i_sb->s_fs_info;
++	struct ubifs_inode *host_ui = ubifs_inode(host);
++	union ubifs_key key;
++	struct ubifs_dent_node *xent, *pxent = NULL;
++	int err, len, written = 0;
++	struct qstr nm = { .name = NULL };
++
++	dbg_gen("ino %lu ('%.*s'), buffer size %zd", host->i_ino,
++		dentry->d_name.len, dentry->d_name.name, size);
++	ubifs_assert(host_ui->xattr_cnt >= 0);
++	ubifs_assert(host_ui->xattr_size >= 0);
++	ubifs_assert(host_ui->xattr_msize >= 0);
++	ubifs_assert(host_ui->xattr_names >= 0);
++
++	len = host_ui->xattr_names + host_ui->xattr_cnt;
++	if (!buffer)
++		/*
++		 * We should return the minimum buffer size which will fit a
++		 * null-terminated list of all the extended attribute names.
++		 */
++		return len;
++
++	if (len > size)
++		return -ERANGE;
++
++	lowest_xent_key(c, &key, host->i_ino);
++
++	mutex_lock(&host->i_mutex);
++	while (1) {
++		int type;
++
++		xent = ubifs_tnc_next_ent(c, &key, &nm);
++		if (unlikely(IS_ERR(xent))) {
++			err = PTR_ERR(xent);
++			break;
++		}
++
++		nm.name = xent->name;
++		nm.len = le16_to_cpu(xent->nlen);
++
++		type = check_namespace(&nm);
++		if (unlikely(type < 0)) {
++			err = type;
++			break;
++		}
++
++		/* Show trusted namespace only for "power" users */
++		if (type != TRUSTED_XATTR || capable(CAP_SYS_ADMIN)) {
++			memcpy(buffer + written, nm.name, nm.len + 1);
++			written += nm.len + 1;
++		}
++
++		kfree(pxent);
++		pxent = xent;
++		key_read(c, &xent->key, &key);
++	}
++	mutex_unlock(&host->i_mutex);
++
++	kfree(pxent);
++	if (err != -ENOENT) {
++		ubifs_err("cannot find next direntry, error %d", err);
++		return err;
++	}
++
++	ubifs_assert(written <= size);
++	return written;
++}
++
++static int remove_xattr(struct ubifs_info *c, struct inode *host,
++			struct inode *inode, const struct qstr *nm)
++{
++	struct ubifs_inode *host_ui = ubifs_inode(host);
++	struct ubifs_inode *ui = ubifs_inode(inode);
++	struct ubifs_budget_req req = { .dirtied_ino = 1, .mod_dent = 1 };
++	int err;
++
++	ubifs_assert(ui->data_len == inode->i_size);
++
++	err = ubifs_budget_inode_op(c, host, &req);
++	if (err)
++		return err;
++
++	host->i_ctime = CURRENT_TIME_SEC;
++	host_ui->xattr_cnt -= 1;
++	spin_lock(&host->i_lock);
++	host_ui->xattr_size -= CALC_XATTR_BYTES(ui->data_len);
++	spin_unlock(&host->i_lock);
++	host_ui->xattr_names -= nm->len;
++
++	err = ubifs_jrn_delete_xattr(c, host, inode, nm, IS_DIRSYNC(host));
++	if (err)
++		goto out_cancel;
++
++	ubifs_release_ino_clean(c, host, &req);
++	return 0;
++
++out_cancel:
++	ubifs_cancel_ino_op(c, host, &req);
++	host_ui->xattr_cnt += 1;
++	spin_lock(&host->i_lock);
++	host_ui->xattr_size += CALC_XATTR_BYTES(ui->data_len);
++	spin_unlock(&host->i_lock);
++	make_bad_inode(inode);
++	return err;
++}
++
++int ubifs_removexattr(struct dentry *dentry, const char *name)
++{
++	struct inode *inode, *host = dentry->d_inode;
++	struct ubifs_info *c = host->i_sb->s_fs_info;
++	struct qstr nm = { .name = name, .len = strlen(name) };
++	struct ubifs_dent_node *xent;
++	union ubifs_key key;
++	int err;
++
++	dbg_gen("xattr '%s', ino %lu ('%.*s')", name,
++		host->i_ino, dentry->d_name.len, dentry->d_name.name);
++	ubifs_assert(mutex_is_locked(&host->i_mutex));
++	ubifs_assert(ubifs_inode(host)->xattr_cnt >= 0);
++	ubifs_assert(ubifs_inode(host)->xattr_size >= 0);
++	ubifs_assert(ubifs_inode(host)->xattr_msize >= 0);
++	ubifs_assert(ubifs_inode(host)->xattr_names >= 0);
++
++	err = check_namespace(&nm);
++	if (err < 0)
++		return err;
++
++	xent = kmalloc(UBIFS_MAX_XENT_NODE_SZ, GFP_NOFS);
++	if (!xent)
++		return -ENOMEM;
++
++	xent_key_init(c, &key, host->i_ino, &nm);
++	err = ubifs_tnc_lookup_nm(c, &key, xent, &nm);
++	if (err) {
++		if (err == -ENOENT)
++			err = -ENODATA;
++		goto out_free;
++	}
++
++	inode = ubifs_iget(c->vfs_sb, le64_to_cpu(xent->inum));
++	if (IS_ERR(inode)) {
++		ubifs_err("dead extended attribute node entry");
++		ubifs_ro_mode(c);
++		err = PTR_ERR(inode);
++		goto out_free;
++	}
++
++	ubifs_assert(inode->i_nlink == 1);
++	inode->i_nlink = 0;
++	err = remove_xattr(c, host, inode, &nm);
++	if (err)
++		inode->i_nlink = 1;
++
++	/* If @i_nlink is 0, 'iput()' will delete the inode */
++	iput(inode);
++
++out_free:
++	kfree(xent);
 +	return err;
 +}
 -- 
