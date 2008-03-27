@@ -1,41 +1,250 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757850AbYC0D0S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758067AbYC0Dcx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757850AbYC0D0S (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Mar 2008 23:26:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755813AbYC0D0D
+	id S1758067AbYC0Dcx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Mar 2008 23:32:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755094AbYC0Dcn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Mar 2008 23:26:03 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:48101 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755075AbYC0D0B (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Mar 2008 23:26:01 -0400
-Date: Wed, 26 Mar 2008 20:25:02 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: David Miller <davem@davemloft.net>
-Cc: m.kozlowski@tuxland.pl, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org
-Subject: Re: sparc64 BUG: using smp_processor_id() in preemptible
-Message-Id: <20080326202502.f06938bd.akpm@linux-foundation.org>
-In-Reply-To: <20080326.042516.261621639.davem@davemloft.net>
-References: <alpine.LFD.1.00.0803251856450.2775@woody.linux-foundation.org>
-	<200803261142.07422.m.kozlowski@tuxland.pl>
-	<20080326.041626.224135350.davem@davemloft.net>
-	<20080326.042516.261621639.davem@davemloft.net>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+	Wed, 26 Mar 2008 23:32:43 -0400
+Received: from gate.crashing.org ([63.228.1.57]:51040 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753624AbYC0Dcm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Mar 2008 23:32:42 -0400
+Subject: Re: [patch 33/76] futex: runtime enable pi and robust functionality
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reply-To: benh@kernel.crashing.org
+To: Chris Wright <chrisw@sous-sol.org>
+Cc: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org,
+       Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       Lennert Buytenhek <buytenh@wantstofly.org>,
+       Riku Voipio <riku.voipio@movial.fi>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+In-Reply-To: <20080321224400.674465387@sous-sol.org>
+References: <20080321224250.144333319@sous-sol.org>
+	 <20080321224400.674465387@sous-sol.org>
+Content-Type: text/plain
+Date: Thu, 27 Mar 2008 14:28:33 +1100
+Message-Id: <1206588514.6926.76.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 26 Mar 2008 04:25:16 -0700 (PDT) David Miller <davem@davemloft.net> wrote:
 
->  	preempt_disable();
+On Fri, 2008-03-21 at 15:43 -0700, Chris Wright wrote:
+> plain text document attachment
+> (futex-runtime-enable-pi-and-robust-functionality.patch)
+> -stable review patch.  If anyone has any objections, please let us know.
+> ---------------------
+> 
+> From: Thomas Gleixner <tglx@linutronix.de>
+> 
+> Not all architectures implement futex_atomic_cmpxchg_inatomic().  The default
+> implementation returns -ENOSYS, which is currently not handled inside of the
+> futex guts.
+
+I think that breaks some embedded PowerPC platforms. It's also very
+fishy... So early, we haven't activated an mm yet, it's like trying
+to access user memory from a kernel thread... might happen to give
+you -EFAULT on x86 but you are making pretty big assumptions on how
+low level mm works in architectures...
+
+Ben.
+
+> Futex PI calls and robust list exits with a held futex result in an endless
+> loop in the futex code on architectures which have no support.
+> 
+> Fixing up every place where futex_atomic_cmpxchg_inatomic() is called would
+> add a fair amount of extra if/else constructs to the already complex code.  It
+> is also not possible to disable the robust feature before user space tries to
+> register robust lists.
+> 
+> Compile time disabling is not a good idea either, as there are already
+> architectures with runtime detection of futex_atomic_cmpxchg_inatomic support.
+> 
+> Detect the functionality at runtime instead by calling
+> cmpxchg_futex_value_locked() with a NULL pointer from the futex initialization
+> code.  This is guaranteed to fail, but the call of
+> futex_atomic_cmpxchg_inatomic() happens with pagefaults disabled.
+> 
+> On architectures, which use the asm-generic implementation or have a runtime
+> CPU feature detection, a -ENOSYS return value disables the PI/robust features.
+> 
+> On architectures with a working implementation the call returns -EFAULT and
+> the PI/robust features are enabled.
+> 
+> The relevant syscalls return -ENOSYS and the robust list exit code is blocked,
+> when the detection fails.
+> 
+> Fixes http://lkml.org/lkml/2008/2/11/149
+> Originally reported by: Lennart Buytenhek
+> 
+> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+> Acked-by: Ingo Molnar <mingo@elte.hu>
+> Cc: Lennert Buytenhek <buytenh@wantstofly.org>
+> Cc: Riku Voipio <riku.voipio@movial.fi>
+> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+> Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+> Signed-off-by: Chris Wright <chrisw@sous-sol.org>
+> Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+> ---
+>  include/linux/futex.h |    1 +
+>  kernel/futex.c        |   38 ++++++++++++++++++++++++++++++++++----
+>  kernel/futex_compat.c |    9 +++++++++
+>  3 files changed, 44 insertions(+), 4 deletions(-)
+> 
+> --- a/include/linux/futex.h
+> +++ b/include/linux/futex.h
+> @@ -153,6 +153,7 @@ union futex_key {
+>  #ifdef CONFIG_FUTEX
+>  extern void exit_robust_list(struct task_struct *curr);
+>  extern void exit_pi_state_list(struct task_struct *curr);
+> +extern int futex_cmpxchg_enabled;
+>  #else
+>  static inline void exit_robust_list(struct task_struct *curr)
+>  {
+> --- a/kernel/futex.c
+> +++ b/kernel/futex.c
+> @@ -60,6 +60,8 @@
 >  
-> +	mp = &__get_cpu_var(mmu_gathers);
+>  #include "rtmutex_common.h"
+>  
+> +int __read_mostly futex_cmpxchg_enabled;
+> +
+>  #define FUTEX_HASHBITS (CONFIG_BASE_SMALL ? 4 : 8)
+>  
+>  /*
+> @@ -466,6 +468,8 @@ void exit_pi_state_list(struct task_stru
+>  	struct futex_hash_bucket *hb;
+>  	union futex_key key;
+>  
+> +	if (!futex_cmpxchg_enabled)
+> +		return;
+>  	/*
+>  	 * We are a ZOMBIE and nobody can enqueue itself on
+>  	 * pi_state_list anymore, but we have to be careful
+> @@ -1854,6 +1858,8 @@ asmlinkage long
+>  sys_set_robust_list(struct robust_list_head __user *head,
+>  		    size_t len)
+>  {
+> +	if (!futex_cmpxchg_enabled)
+> +		return -ENOSYS;
+>  	/*
+>  	 * The kernel knows only one size for now:
+>  	 */
+> @@ -1878,6 +1884,9 @@ sys_get_robust_list(int pid, struct robu
+>  	struct robust_list_head __user *head;
+>  	unsigned long ret;
+>  
+> +	if (!futex_cmpxchg_enabled)
+> +		return -ENOSYS;
+> +
+>  	if (!pid)
+>  		head = current->robust_list;
+>  	else {
+> @@ -1980,6 +1989,9 @@ void exit_robust_list(struct task_struct
+>  	unsigned long futex_offset;
+>  	int rc;
+>  
+> +	if (!futex_cmpxchg_enabled)
+> +		return;
+> +
+>  	/*
+>  	 * Fetch the list head (which was registered earlier, via
+>  	 * sys_set_robust_list()):
+> @@ -2034,7 +2046,7 @@ void exit_robust_list(struct task_struct
+>  long do_futex(u32 __user *uaddr, int op, u32 val, ktime_t *timeout,
+>  		u32 __user *uaddr2, u32 val2, u32 val3)
+>  {
+> -	int ret;
+> +	int ret = -ENOSYS;
+>  	int cmd = op & FUTEX_CMD_MASK;
+>  	struct rw_semaphore *fshared = NULL;
+>  
+> @@ -2062,13 +2074,16 @@ long do_futex(u32 __user *uaddr, int op,
+>  		ret = futex_wake_op(uaddr, fshared, uaddr2, val, val2, val3);
+>  		break;
+>  	case FUTEX_LOCK_PI:
+> -		ret = futex_lock_pi(uaddr, fshared, val, timeout, 0);
+> +		if (futex_cmpxchg_enabled)
+> +			ret = futex_lock_pi(uaddr, fshared, val, timeout, 0);
+>  		break;
+>  	case FUTEX_UNLOCK_PI:
+> -		ret = futex_unlock_pi(uaddr, fshared);
+> +		if (futex_cmpxchg_enabled)
+> +			ret = futex_unlock_pi(uaddr, fshared);
+>  		break;
+>  	case FUTEX_TRYLOCK_PI:
+> -		ret = futex_lock_pi(uaddr, fshared, 0, timeout, 1);
+> +		if (futex_cmpxchg_enabled)
+> +			ret = futex_lock_pi(uaddr, fshared, 0, timeout, 1);
+>  		break;
+>  	default:
+>  		ret = -ENOSYS;
+> @@ -2123,8 +2138,23 @@ static struct file_system_type futex_fs_
+>  
+>  static int __init init(void)
+>  {
+> +	u32 curval;
+>  	int i;
+>  
+> +	/*
+> +	 * This will fail and we want it. Some arch implementations do
+> +	 * runtime detection of the futex_atomic_cmpxchg_inatomic()
+> +	 * functionality. We want to know that before we call in any
+> +	 * of the complex code paths. Also we want to prevent
+> +	 * registration of robust lists in that case. NULL is
+> +	 * guaranteed to fault and we get -EFAULT on functional
+> +	 * implementation, the non functional ones will return
+> +	 * -ENOSYS.
+> +	 */
+> +	curval = cmpxchg_futex_value_locked(NULL, 0, 0);
+> +	if (curval == -EFAULT)
+> +		futex_cmpxchg_enabled = 1;
+> +
+>  	for (i = 0; i < ARRAY_SIZE(futex_queues); i++) {
+>  		plist_head_init(&futex_queues[i].chain, &futex_queues[i].lock);
+>  		spin_lock_init(&futex_queues[i].lock);
+> --- a/kernel/futex_compat.c
+> +++ b/kernel/futex_compat.c
+> @@ -54,6 +54,9 @@ void compat_exit_robust_list(struct task
+>  	compat_long_t futex_offset;
+>  	int rc;
+>  
+> +	if (!futex_cmpxchg_enabled)
+> +		return;
+> +
+>  	/*
+>  	 * Fetch the list head (which was registered earlier, via
+>  	 * sys_set_robust_list()):
+> @@ -115,6 +118,9 @@ asmlinkage long
+>  compat_sys_set_robust_list(struct compat_robust_list_head __user *head,
+>  			   compat_size_t len)
+>  {
+> +	if (!futex_cmpxchg_enabled)
+> +		return -ENOSYS;
+> +
+>  	if (unlikely(len != sizeof(*head)))
+>  		return -EINVAL;
+>  
+> @@ -130,6 +136,9 @@ compat_sys_get_robust_list(int pid, comp
+>  	struct compat_robust_list_head __user *head;
+>  	unsigned long ret;
+>  
+> +	if (!futex_cmpxchg_enabled)
+> +		return -ENOSYS;
+> +
+>  	if (!pid)
+>  		head = current->compat_robust_list;
+>  	else {
+> 
 
-that's an open-coded get_cpu_var().
-
-fwiw.  Which isn't much, IMO.  Sometimes it's nice to see things open-coded.
