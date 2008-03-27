@@ -1,91 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757338AbYC0Icx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758313AbYC0IeC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757338AbYC0Icx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Mar 2008 04:32:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753110AbYC0Ico
+	id S1758313AbYC0IeC (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Mar 2008 04:34:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755276AbYC0Idv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Mar 2008 04:32:44 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:58815 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751824AbYC0Icn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Mar 2008 04:32:43 -0400
-Date: Thu, 27 Mar 2008 09:32:21 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: "Huang, Ying" <ying.huang@intel.com>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, andi@firstfloor.org, mingo@redhat.com,
-       tglx@linutronix.de, Paul Jackson <pj@sgi.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH -mm 0/4] x86_64 boot: Add linked listof struct
-	setup_data to boot protocol
-Message-ID: <20080327083221.GD15626@elte.hu>
-References: <1206601743.3067.20.camel@caritas-dev.intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1206601743.3067.20.camel@caritas-dev.intel.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Thu, 27 Mar 2008 04:33:51 -0400
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:51740 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753110AbYC0Idu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Mar 2008 04:33:50 -0400
+To: viro@ZenIV.linux.org.uk
+CC: miklos@szeredi.hu, akpm@linux-foundation.org, linuxram@us.ibm.com,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+In-reply-to: <20080326224455.GV10722@ZenIV.linux.org.uk> (message from Al Viro
+	on Wed, 26 Mar 2008 22:44:55 +0000)
+Subject: Re: [patch 6/7] vfs: mountinfo: add /proc/<pid>/mountinfo
+References: <20080326211131.705321084@szeredi.hu> <20080326212143.479034123@szeredi.hu> <20080326224455.GV10722@ZenIV.linux.org.uk>
+Message-Id: <E1JenXl-0006x4-Po@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Thu, 27 Mar 2008 09:33:05 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> > +This file contains lines of the form:
+> > +
+> > +36 35 98:0 /mnt1 /mnt2 rw,noatime rw master:1 - ext3 /dev/root,errors=continue
+> > +(1)(2)(3)   (4)   (5)      (6)    (7)  (8)   (9) (10)   (11)      (12)
+> > +
+> > +(1) mount ID:  unique identifier of the mount (may be reused after umount)
+> > +(2) parent ID:  ID of parent (or of self for the top of the mount tree)
+> > +(3) major:minor:  value of st_dev for files on filesystem
+> > +(4) root:  root of the mount within the filesystem
+> > +(5) mount point:  mount point relative to the process's root
+> > +(6) mount options:  per mount options
+> 
+> > +(7) super options:  filesystem type independent, per super block options
+> 
+> Move that one past fs type, please.
 
-* Huang, Ying <ying.huang@intel.com> wrote:
+Can you please be a bit more specific?  Because getting this right
+iteratively is going to be tiring.
 
-> This patchset adds the linked list of struct setup_data to boot 
-> protocol. This is needed by EDD information and some SGI machine with 
-> E820 entry number > 128.
+36 35 98:0 /mnt1 /mnt2 rw,noatime master:1 - ext3 rw /dev/root,errors=continue
 
-what happens with the SGI machine - does it crash (because we overflow 
-the e820 array) - or does it boot up with less memory available and we 
-get this bootup warning:
+or
 
-    Ooops! Too many entries in the memory map!
+36 35 98:0 /mnt1 /mnt2 rw,noatime master:1 - ext3 /dev/root,rw,errors=continue
 
-?
+or perhaps
 
-I guess we should we raise E820MAX from 128 to 256 (patch below), but if 
-we do something worse (crash), we should fix that side-effect as well.
+36 35 98:0 /mnt1 /mnt2 rw,noatime master:1 - ext3 /dev/root rw,errors=continue
 
-> Now, only the x86_64 is supported. The i386 can be supported after 
-> early reservation mechanism for x86 is available.
+or something else?
 
-could you try to do that nevertheless? We generally prefer feature 
-patches after sensible unification has been done.
-
-	Ingo
-
--------------->
-Subject: x86: more e820
-From: Ingo Molnar <mingo@elte.hu>
-Date: Thu Mar 27 09:18:44 CET 2008
-
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- include/asm-x86/e820.h |    7 ++++---
- 1 file changed, 4 insertions(+), 3 deletions(-)
-
-Index: linux-x86.q/include/asm-x86/e820.h
-===================================================================
---- linux-x86.q.orig/include/asm-x86/e820.h
-+++ linux-x86.q/include/asm-x86/e820.h
-@@ -1,8 +1,9 @@
- #ifndef __ASM_E820_H
- #define __ASM_E820_H
--#define E820MAP	0x2d0		/* our map */
--#define E820MAX	128		/* number of entries in E820MAP */
--#define E820NR	0x1e8		/* # entries in E820MAP */
-+
-+#define E820MAP		0x2d0		/* our map */
-+#define E820MAX		256		/* number of entries in E820MAP */
-+#define E820NR		0x1e8		/* # entries in E820MAP */
- 
- #define E820_RAM	1
- #define E820_RESERVED	2
+Miklos
