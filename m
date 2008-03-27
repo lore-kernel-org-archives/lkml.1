@@ -1,65 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761310AbYC0VyS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761954AbYC0Vzc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761310AbYC0VyS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Mar 2008 17:54:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757390AbYC0VyG
+	id S1761954AbYC0Vzc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Mar 2008 17:55:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756482AbYC0VzW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Mar 2008 17:54:06 -0400
-Received: from testure.choralone.org ([194.9.77.134]:35978 "EHLO
-	testure.choralone.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756464AbYC0VyF (ORCPT
+	Thu, 27 Mar 2008 17:55:22 -0400
+Received: from smtp-out0.tiscali.nl ([195.241.79.175]:41814 "EHLO
+	smtp-out0.tiscali.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756227AbYC0VzW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Mar 2008 17:54:05 -0400
-Date: Thu, 27 Mar 2008 17:53:40 -0400
-From: Dave Jones <davej@codemonkey.org.uk>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: sfrench@samba.org, linux-cifs-client@lists.samba.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: cifs_mount() contains strange code
-Message-ID: <20080327215340.GA27219@codemonkey.org.uk>
-Mail-Followup-To: Dave Jones <davej@codemonkey.org.uk>,
-	Adrian Bunk <bunk@kernel.org>, sfrench@samba.org,
-	linux-cifs-client@lists.samba.org, linux-kernel@vger.kernel.org
-References: <20080327173458.GA32200@cs181133002.pp.htv.fi>
+	Thu, 27 Mar 2008 17:55:22 -0400
+Message-ID: <47EC17C7.8020401@tiscali.nl>
+Date: Thu, 27 Mar 2008 22:55:19 +0100
+From: Roel Kluin <12o3l@tiscali.nl>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080327173458.GA32200@cs181133002.pp.htv.fi>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: hare@suse.de
+CC: linux-scsi@vger.kernel.org, lkml <linux-kernel@vger.kernel.org>
+Subject: [PATCH 1/1 resend] aic7xxx_old: aicasm_gram.y: Test opcode in type_check()
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 27, 2008 at 07:34:58PM +0200, Adrian Bunk wrote:
- > This looks somehow fishy (note the "rc" settings):
- > 
- > <--  snip  -->
- > 
- > ...
- > int
- > cifs_mount(struct super_block *sb, struct cifs_sb_info *cifs_sb,
- >            char *mount_data, const char *devname)
- > {
- > ...
- >                                 /* BB check if this works for exactly length
- >                                  * three strings */
- >                                 if ((strchr(volume_info.UNC + 3, '\\') == NULL)
- >                                     && (strchr(volume_info.UNC + 3, '/') ==
- >                                         NULL)) {
- >                                         rc = connect_to_dfs_path(xid, pSesInfo,
- >                                                 "", cifs_sb->local_nls,
- >                                                 cifs_sb->mnt_cifs_flags &
- >                                                   CIFS_MOUNT_MAP_SPECIAL_CHR);
- >                                         rc = -ENODEV;
- >                                         goto out;
- > 
- > <--  snip  -->
+drivers/scsi/aic7xxx_old/sequencer.h:130:#define AIC_OP_JZ 0xf
+--
+Test opcode, not definition
 
-I've noticed a bunch of things like that from time to time, and wondered
-how useful it would be to have sparse warn on double assignments of variables
-without a read inbetween.
+Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
+---
+diff --git a/drivers/scsi/aic7xxx/aicasm/aicasm_gram.y b/drivers/scsi/aic7xxx/aicasm/aicasm_gram.y
+index 6066998..702e2db 100644
+--- a/drivers/scsi/aic7xxx/aicasm/aicasm_gram.y
++++ b/drivers/scsi/aic7xxx/aicasm/aicasm_gram.y
+@@ -1837,7 +1837,7 @@ type_check(symbol_t *symbol, expression_t *expression, int opcode)
+ 	int and_op;
+ 
+ 	and_op = FALSE;
+-	if (opcode == AIC_OP_AND || opcode == AIC_OP_JNZ || AIC_OP_JZ)
++	if (opcode == AIC_OP_AND || opcode == AIC_OP_JNZ || opcode == AIC_OP_JZ)
+ 		and_op = TRUE;
+ 
+ 	/*
 
-	Dave
-
--- 
-http://www.codemonkey.org.uk
