@@ -1,235 +1,665 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759279AbYC0P3i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758503AbYC0Plc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759279AbYC0P3i (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Mar 2008 11:29:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754534AbYC0P3a
+	id S1758503AbYC0Plc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Mar 2008 11:41:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754156AbYC0PlX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Mar 2008 11:29:30 -0400
-Received: from rtr.ca ([76.10.145.34]:1377 "EHLO mail.rtr.ca"
+	Thu, 27 Mar 2008 11:41:23 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:55183 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752029AbYC0P33 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Mar 2008 11:29:29 -0400
-Message-ID: <47EBBD57.30902@rtr.ca>
-Date: Thu, 27 Mar 2008 11:29:27 -0400
-From: Mark Lord <lkml@rtr.ca>
-Organization: Real-Time Remedies Inc.
-User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
+	id S1752029AbYC0PlV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Mar 2008 11:41:21 -0400
+Date: Thu, 27 Mar 2008 16:40:53 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [patch for 2.6.26 0/7] Architecture Independent Markers
+Message-ID: <20080327154053.GA5890@elte.hu>
+References: <20080327132057.449831367@polymtl.ca>
 MIME-Version: 1.0
-To: Linux Kernel <linux-kernel@vger.kernel.org>, Greg KH <gregkh@suse.de>,
-       Pavel Machek <pavel@suse.cz>, Andrew Morton <akpm@linux-foundation.org>
-Subject: 2.6.25-rc7:  Ugh.  
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080327132057.449831367@polymtl.ca>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-It is with great reluctance when I attempt moving my main "desktop"
-over to a new kernel version -- because the USB subsystem seems to
-break every single time.
 
-So today I tried 2.6.25-rc7 on it for the first time.
-Not good.
+* Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
 
-It boots, but just a simple suspend/resume (RAM) was enough to kill it.
-It comes back on resume, with an X desktop again,
-but with no USB functionality -- no mouse.
+> Hi Andrew,
+> 
+> After a few RFC rounds, I propose these markers for 2.6.26. They 
+> include work done after comments from the memory management community. 
+> Most of them have been used by the LTTng project for about 2 years.
 
-The keyboard still works, so I dropped to a console and tried:
+very strong NACK. When markers went into 2.6.24 i initially believed 
+your claims that my earlier objections about markers have been resolved 
+and that it's a lightweight, useful facility.
 
-   rmmod usbhid
-   insmod usbhid
+so we optimistically used markers in ftrace (see sched-devel.git) for 
+the scheduler, and i was shocked about marker impact:
 
-And the console hung at 100% CPU on the insmod.
-Back to 2.6.24.3 again, for now -- I've got work to do.
+just 3 ftrace markers in the scheduler plus their support code bloated 
+the kernel by 5k (!), 288 bytes for only 3 markers in the scheduler 
+itself, the rest in support code to manage the markers - that's 96 bytes 
+added per every marker (44 (!) bytes of that in the fastpath!).
 
-The specs of this machine have been posted with great regularity
-in the past, every new kernel revision it seems.   So here we go again:
+44 bytes per marker per fastpast is _NOT_ acceptable in any way, shape 
+or form. Those 3 limited markers have the same cache cost as adding 
+mcount callbacks for dyn-ftrace to the _whole_ scheduler ...
 
-Dell Inspiron 9400 notebook, Intel Core2Duo T7400, 2GB SDRAM.
+as i told you many, many moons ago, repeatedly: acceptable cost is a 5 
+bytes callout that is patched to a NOP, and _maybe_ a little bit more to 
+prepare parameters for the function calls. Not 44 bytes. Not 96 bytes. 
+Not 5K total cost. Paravirt ops are super-lightweight in comparison.
 
-Suspend/Resume have worked perfectly (after kernel fixes, mostly USB)
-for all kernels in the past since 2.6.20 or so.
+and this stuff _can_ be done sanely and cheaply and in fact we have done 
+it: see ftrace in sched-devel.git, and compare its cost.
 
-Here's the /var/log/messages from the suspend/resume.
-That's it for now.  I've got work to do, and I'm tired of
-seeing this break with each new revision.
+see further details in the tongue-in-cheek commit below.
 
+	Ingo
 
-logger: /usr/local/bin/suspend.sh 
-kernel: [  107.491762] PM: Syncing filesystems ... done.
-kernel: [  107.492274] Freezing user space processes ... (elapsed 0.00 seconds) done.
-kernel: [  107.493016] Freezing remaining freezable tasks ... (elapsed 0.00 seconds) done.
-kernel: [  107.499129] ACPI: Preparing to enter system sleep state S3
-kernel: [  107.499656] Suspending console(s)
-kernel: [  107.524879] b44: eth0: powering down PHY
-kernel: [  108.011326] sd 0:0:0:0: [sda] Synchronizing SCSI cache
-kernel: [  108.011473] sd 0:0:0:0: [sda] Stopping disk
-kernel: [  110.058446] pciehp_suspend ENTRY
-last message repeated 2 times
-kernel: [  110.058446] ricoh-mmc: Suspending.
-kernel: [  110.058446] ricoh-mmc: Controller is now re-enabled.
-kernel: [  110.058446] ACPI handle has no context!
-kernel: [  110.058446] ACPI: PCI interrupt for device 0000:03:01.1 disabled
-kernel: [  110.058446] ACPI handle has no context!
-kernel: [  110.089544] ACPI: PCI interrupt for device 0000:03:00.0 disabled
-kernel: [  110.089554] ACPI handle has no context!
-kernel: [  110.102988] ACPI: PCI interrupt for device 0000:00:1f.2 disabled
-kernel: [  110.116231] ACPI: PCI interrupt for device 0000:00:1d.7 disabled
-kernel: [  110.129385] ACPI: PCI interrupt for device 0000:00:1d.3 disabled
-kernel: [  110.129433] ACPI: PCI interrupt for device 0000:00:1d.2 disabled
-kernel: [  110.129480] ACPI: PCI interrupt for device 0000:00:1d.1 disabled
-kernel: [  110.129526] ACPI: PCI interrupt for device 0000:00:1d.0 disabled
-kernel: [  110.129533] pciehp_suspend ENTRY
-kernel: [  110.129601] pciehp_suspend ENTRY
-kernel: [  110.129668] pciehp_suspend ENTRY
-kernel: [  110.142697] ACPI: PCI interrupt for device 0000:00:1b.0 disabled
-kernel: [  110.155936] Disabling non-boot CPUs ...
-kernel: [  110.159155] CPU 1 is now offline
-kernel: [  110.159159] SMP alternatives: switching to UP code
-kernel: [  110.161085] CPU1 is down
-kernel: [  110.161085] Back to C!
-kernel: [  110.161498] Enabling non-boot CPUs ...
-kernel: [  110.161854] SMP alternatives: switching to SMP code
-kernel: [  110.162467] Booting processor 1/1 ip 4000
-kernel: [  110.162471] CPU 1 irqstacks, hard=c037f000 soft=c037d000
-kernel: [  111.314889] Initializing CPU#1
-kernel: [  111.314889] Calibrating delay using timer specific routine.. 4321.52 BogoMIPS (lpj=7199246)
-kernel: [  111.314889] CPU: L1 I cache: 32K, L1 D cache: 32K
-kernel: [  111.314889] CPU: L2 cache: 4096K
-kernel: [  111.314889] CPU: Physical Processor ID: 0
-kernel: [  111.314889] CPU: Processor Core ID: 1
-kernel: [  110.256366] CPU1: Intel(R) Core(TM)2 CPU         T7400  @ 2.16GHz stepping 06
-kernel: [  111.314889] CPU1 is up
-kernel: [  111.314896] Switched to high resolution mode on CPU 1
-kernel: [  111.349610] PM: Writing back config space on device 0000:00:01.0 at offset a (was f, writing 0)
-kernel: [  111.349618] PM: Writing back config space on device 0000:00:01.0 at offset 3 (was 10000, writing 10010)
-kernel: [  111.349629] PCI: Setting latency timer of device 0000:00:01.0 to 64
-kernel: [  111.360769] PM: Writing back config space on device 0000:00:1b.0 at offset f (was 100, writing 10b)
-kernel: [  111.360795] PM: Writing back config space on device 0000:00:1b.0 at offset 4 (was ffa7c004, writing efffc004)
-kernel: [  111.360804] PM: Writing back config space on device 0000:00:1b.0 at offset 3 (was 0, writing 10)
-kernel: [  111.360814] PM: Writing back config space on device 0000:00:1b.0 at offset 1 (was 100000, writing 100102)
-kernel: [  111.360845] ACPI: PCI Interrupt 0000:00:1b.0[A] -> GSI 21 (level, low) -> IRQ 21
-kernel: [  111.360856] PCI: Setting latency timer of device 0000:00:1b.0 to 64
-kernel: [  111.360892] PM: Writing back config space on device 0000:00:1c.0 at offset f (was 100, writing 20100)
-kernel: [  111.360910] PM: Writing back config space on device 0000:00:1c.0 at offset 9 (was 10001, writing 1fff1)
-kernel: [  111.360917] PM: Writing back config space on device 0000:00:1c.0 at offset 8 (was 0, writing fff0)
-kernel: [  111.360925] PM: Writing back config space on device 0000:00:1c.0 at offset 7 (was 0, writing 200000f0)
-kernel: [  111.360932] PM: Writing back config space on device 0000:00:1c.0 at offset 6 (was 0, writing b0b00)
-kernel: [  111.360944] PM: Writing back config space on device 0000:00:1c.0 at offset 3 (was 810000, writing 810010)
-kernel: [  111.360954] PM: Writing back config space on device 0000:00:1c.0 at offset 1 (was 100000, writing 100007)
-kernel: [  111.360982] PCI: Setting latency timer of device 0000:00:1c.0 to 64
-kernel: [  111.360989] pciehp_resume ENTRY
-kernel: [  111.361035] PM: Writing back config space on device 0000:00:1c.1 at offset f (was 200, writing 20200)
-kernel: [  111.361047] PM: Writing back config space on device 0000:00:1c.1 at offset 9 (was 10001, writing 1fff1)
-kernel: [  111.361052] PM: Writing back config space on device 0000:00:1c.1 at offset 8 (was 0, writing efc0efc0)
-kernel: [  111.361056] PM: Writing back config space on device 0000:00:1c.1 at offset 7 (was 20000000, writing 200000f0)
-kernel: [  111.361061] PM: Writing back config space on device 0000:00:1c.1 at offset 6 (was 0, writing c0c00)
-kernel: [  111.361068] PM: Writing back config space on device 0000:00:1c.1 at offset 3 (was 810000, writing 810010)
-kernel: [  111.361075] PM: Writing back config space on device 0000:00:1c.1 at offset 1 (was 100000, writing 100107)
-kernel: [  111.361095] PCI: Setting latency timer of device 0000:00:1c.1 to 64
-kernel: [  111.361099] pciehp_resume ENTRY
-kernel: [  112.362047] pciehp: Device 0000:0c:00.0 already exists at c:0, cannot hot-add
-kernel: [  112.362052] pciehp: Cannot add device 0xc:0
-kernel: [  112.362085] PM: Writing back config space on device 0000:00:1c.3 at offset f (was 400, writing 20400)
-kernel: [  112.362102] PM: Writing back config space on device 0000:00:1c.3 at offset 9 (was 10001, writing e011e001)
-kernel: [  112.362110] PM: Writing back config space on device 0000:00:1c.3 at offset 8 (was 0, writing efb0efa0)
-kernel: [  112.362117] PM: Writing back config space on device 0000:00:1c.3 at offset 7 (was 0, writing d0d0)
-kernel: [  112.362125] PM: Writing back config space on device 0000:00:1c.3 at offset 6 (was 0, writing e0d00)
-kernel: [  112.362136] PM: Writing back config space on device 0000:00:1c.3 at offset 3 (was 810000, writing 810010)
-kernel: [  112.362146] PM: Writing back config space on device 0000:00:1c.3 at offset 1 (was 100000, writing 100007)
-kernel: [  112.362174] PCI: Setting latency timer of device 0000:00:1c.3 to 64
-kernel: [  112.362181] pciehp_resume ENTRY
-kernel: [  112.362213] ACPI: PCI Interrupt 0000:00:1d.0[A] -> GSI 20 (level, low) -> IRQ 20
-kernel: [  112.362222] PCI: Setting latency timer of device 0000:00:1d.0 to 64
-kernel: [  112.362287] usb usb1: root hub lost power or was reset
-kernel: [  112.362311] PCI: Enabling device 0000:00:1d.1 (0000 -> 0001)
-kernel: [  112.362316] ACPI: PCI Interrupt 0000:00:1d.1[B] -> GSI 21 (level, low) -> IRQ 21
-kernel: [  112.362326] PCI: Setting latency timer of device 0000:00:1d.1 to 64
-kernel: [  112.362335] PM: Writing back config space on device 0000:00:1d.1 at offset f (was 200, writing 20b)
-kernel: [  112.362353] PM: Writing back config space on device 0000:00:1d.1 at offset 8 (was 1, writing bf61)
-kernel: [  112.362399] usb usb2: root hub lost power or was reset
-kernel: [  112.362421] PCI: Enabling device 0000:00:1d.2 (0000 -> 0001)
-kernel: [  112.362426] ACPI: PCI Interrupt 0000:00:1d.2[C] -> GSI 22 (level, low) -> IRQ 22
-kernel: [  112.362436] PCI: Setting latency timer of device 0000:00:1d.2 to 64
-kernel: [  112.362445] PM: Writing back config space on device 0000:00:1d.2 at offset f (was 300, writing 309)
-kernel: [  112.362464] PM: Writing back config space on device 0000:00:1d.2 at offset 8 (was 1, writing bf41)
-kernel: [  112.362509] usb usb3: root hub lost power or was reset
-kernel: [  112.362532] PCI: Enabling device 0000:00:1d.3 (0000 -> 0001)
-kernel: [  112.362537] ACPI: PCI Interrupt 0000:00:1d.3[D] -> GSI 23 (level, low) -> IRQ 23
-kernel: [  112.362547] PCI: Setting latency timer of device 0000:00:1d.3 to 64
-kernel: [  112.362556] PM: Writing back config space on device 0000:00:1d.3 at offset f (was 400, writing 407)
-kernel: [  112.362574] PM: Writing back config space on device 0000:00:1d.3 at offset 8 (was 1, writing bf21)
-kernel: [  112.362619] usb usb4: root hub lost power or was reset
-kernel: [  112.375278] ACPI: PCI Interrupt 0000:00:1d.7[A] -> GSI 20 (level, low) -> IRQ 20
-kernel: [  112.375286] PCI: Setting latency timer of device 0000:00:1d.7 to 64
-kernel: [  112.375379] PM: Writing back config space on device 0000:00:1e.0 at offset 9 (was 100f1, writing 1fff1)
-kernel: [  112.375390] PM: Writing back config space on device 0000:00:1e.0 at offset 8 (was 90, writing ef90ef90)
-kernel: [  112.375400] PM: Writing back config space on device 0000:00:1e.0 at offset 7 (was 2280e0f0, writing 228000f0)
-kernel: [  112.375418] PM: Writing back config space on device 0000:00:1e.0 at offset 1 (was 100007, writing 100107)
-kernel: [  112.375446] PCI: Setting latency timer of device 0000:00:1e.0 to 64
-kernel: [  112.375495] PM: Writing back config space on device 0000:00:1f.0 at offset 1 (was 2100007, writing 2100107)
-kernel: [  112.388552] PM: Writing back config space on device 0000:00:1f.2 at offset f (was 200, writing 205)
-kernel: [  112.388602] ACPI: PCI Interrupt 0000:00:1f.2[B] -> GSI 17 (level, low) -> IRQ 17
-kernel: [  112.388610] PCI: Setting latency timer of device 0000:00:1f.2 to 64
-kernel: [  112.388636] PM: Writing back config space on device 0000:00:1f.3 at offset f (was 200, writing 205)
-kernel: [  111.330331] ata2.00: _GTF evaluation failed (AE 0x1001)
-kernel: [  111.330331] ata2.01: _GTF evaluation failed (AE 0x1001)
-kernel: [  112.388678] PM: Writing back config space on device 0000:00:1f.3 at offset 1 (was 2800001, writing 2800101)
-kernel: [  112.388751] PM: Writing back config space on device 0000:01:00.0 at offset f (was 1ff, writing 104)
-kernel: [  112.388838] PM: Writing back config space on device 0000:01:00.0 at offset 3 (was 0, writing 10)
-kernel: [  111.330331] ata1.01: _GTF evaluation failed (AE 0x1001)
-kernel: [  112.417656] PCI: Enabling device 0000:03:00.0 (0000 -> 0002)
-kernel: [  112.417662] ACPI: PCI Interrupt 0000:03:00.0[A] -> GSI 17 (level, low) -> IRQ 17
-kernel: [  112.417677] PM: Writing back config space on device 0000:03:00.0 at offset f (was 100, writing 105)
-kernel: [  112.417702] PM: Writing back config space on device 0000:03:00.0 at offset 4 (was 0, writing ef9fe000)
-kernel: [  112.417710] PM: Writing back config space on device 0000:03:00.0 at offset 3 (was 0, writing 4000)
-kernel: [  112.417720] PM: Writing back config space on device 0000:03:00.0 at offset 1 (was 100002, writing 100106)
-kernel: [  112.431706] PM: Writing back config space on device 0000:03:01.0 at offset f (was 4020100, writing 4020103)
-kernel: [  112.431734] PM: Writing back config space on device 0000:03:01.0 at offset 4 (was 0, writing ef9fd800)
-kernel: [  112.431742] PM: Writing back config space on device 0000:03:01.0 at offset 3 (was 800000, writing 804000)
-kernel: [  112.431751] PM: Writing back config space on device 0000:03:01.0 at offset 1 (was 2100000, writing 2100106)
-kernel: [  112.517139] PM: Writing back config space on device 0000:03:01.1 at offset f (was 200, writing 209)
-kernel: [  112.517168] PM: Writing back config space on device 0000:03:01.1 at offset 4 (was 0, writing ef9fd400)
-kernel: [  112.517176] PM: Writing back config space on device 0000:03:01.1 at offset 3 (was 800000, writing 804000)
-kernel: [  112.517186] PM: Writing back config space on device 0000:03:01.1 at offset 1 (was 2100000, writing 2100106)
-kernel: [  112.517211] ACPI: PCI Interrupt 0000:03:01.1[B] -> GSI 18 (level, low) -> IRQ 18
-kernel: [  112.517234] ricoh-mmc: Resuming.
-kernel: [  112.517245] ricoh-mmc: Controller is now disabled.
-kernel: [  112.517259] PM: Writing back config space on device 0000:03:01.3 at offset f (was 200, writing 209)
-kernel: [  112.517286] PM: Writing back config space on device 0000:03:01.3 at offset 4 (was 0, writing ef9fd700)
-kernel: [  112.517298] PM: Writing back config space on device 0000:03:01.3 at offset 1 (was 2100000, writing 2100102)
-kernel: [  112.517382] pciehp_resume ENTRY
-kernel: [  112.517410] pciehp_resume ENTRY
-kernel: [  111.839425] ata2.00: configured for UDMA/33
-kernel: [  113.520191] pciehp: Device 0000:0c:00.0 already exists at c:0, cannot hot-add
-kernel: [  113.520197] pciehp: Cannot add device 0xc:0
-kernel: [  113.520214] pciehp_resume ENTRY
-kernel: [  113.520461] sd 0:0:0:0: [sda] Starting disk
-kernel: [  113.727280] ata1.00: ACPI cmd ef/10:03:00:00:00:a0 succeeded
-kernel: [  113.746993] ata1.00: configured for UDMA/133
-kernel: [  113.770650] sd 0:0:0:0: [sda] 312581808 512-byte hardware sectors (160042 MB)
-kernel: [  113.770650] sd 0:0:0:0: [sda] Write Protect is off
-kernel: [  113.770650] sd 0:0:0:0: [sda] Mode Sense: 00 3a 00 00
-kernel: [  113.770650] sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
-kernel: [  114.901667] Restarting tasks ... <6>usb 5-1: USB disconnect, address 2
-kernel: [  114.933424] done.
-kernel: [  115.128131] usb 5-1: new high speed USB device using ehci_hcd and address 5
+--------------------->
+Subject: sched: reintroduce markers
+From: Ingo Molnar <mingo@elte.hu>
 
-## Note: these are "normal" and harmless on this machine,
-## and the reason for them has never been tracked down:
-kernel: [  115.198514] Uhhuh. NMI received for unknown reason 90 on CPU 0.
-kernel: [  115.198519] You have some hardware problem, likely on the PCI bus.
-kernel: [  115.198521] Dazed and confused, but trying to continue
+Scheduler markers are seriously bloated - so lets add them:
 
-kernel: [  117.690742] b44: eth0: Link is up at 100 Mbps, full duplex.
-kernel: [  117.690750] b44: eth0: Flow control is off for TX and off for RX.
-login[3020]: (pam_unix) session opened for user root by (uid=0)
-login[4507]: ROOT LOGIN  on 'tty1'
-root: reloading usbhid module
-kernel: [  225.955054] usbcore: deregistering interface driver usbhid
-kernel: [  225.966118] usbcore: deregistering interface driver hiddev
-root: session hung on insmod
-kernel: [  248.875843] SysRq : Emergency Sync
-kernel: [  248.876629] Emergency Sync complete
-kernel: [  249.535815] SysRq : Emergency Remount R/O
+      text    data     bss     dec     hex filename
+   7209664  852020 1634872 9696556  93f52c vmlinux.before
+   7214679  852188 1634872 9701739  94096b vmlinux.after
+
+5K more bloat!
+
+but that's not just bloat in the slowpath and tracer bloat, it's
+also fastpath bloat:
+
+     text    data     bss     dec     hex filename
+    37642    7014     384   45040    aff0 sched.o.before
+    37930    7134     384   45448    b188 sched.o.after
+
+288 bytes for only 3 markers in the scheduler - that's 96 bytes added
+per every marker (44 bytes of that in the fastpath).
+
+and the tracer codepath is now slower and more complex as well.
+
+A classic lose-lose situation, so let's apply this patch. Not!
+
+NACK-ed-by: Ingo Molnar <mingo@elte.hu>
+---
+ include/linux/sched.h             |   36 --------
+ kernel/sched.c                    |   11 +-
+ kernel/trace/trace.h              |   12 --
+ kernel/trace/trace_functions.c    |    2 
+ kernel/trace/trace_sched_switch.c |  163 +++++++++++++++++++++++++++++++++++---
+ kernel/trace/trace_sched_wakeup.c |  146 +++++++++++++++++++++++++++++++---
+ 6 files changed, 299 insertions(+), 71 deletions(-)
+
+Index: linux/include/linux/sched.h
+===================================================================
+--- linux.orig/include/linux/sched.h
++++ linux/include/linux/sched.h
+@@ -2031,42 +2031,6 @@ extern int sched_mc_power_savings, sched
+ 
+ extern void normalize_rt_tasks(void);
+ 
+-#ifdef CONFIG_CONTEXT_SWITCH_TRACER
+-extern void
+-ftrace_ctx_switch(struct task_struct *prev, struct task_struct *next);
+-#else
+-static inline void
+-ftrace_ctx_switch(struct task_struct *prev, struct task_struct *next)
+-{
+-}
+-#endif
+-
+-#ifdef CONFIG_SCHED_TRACER
+-extern void
+-ftrace_wake_up_task(struct task_struct *wakee, struct task_struct *curr);
+-extern void
+-ftrace_wake_up_new_task(struct task_struct *wakee, struct task_struct *curr);
+-#else
+-static inline void
+-ftrace_wake_up_task(struct task_struct *wakee, struct task_struct *curr)
+-{
+-}
+-static inline void
+-ftrace_wake_up_new_task(struct task_struct *wakee, struct task_struct *curr)
+-{
+-}
+-#endif
+-
+-#ifdef CONFIG_CONTEXT_SWITCH_TRACER
+-extern void
+-ftrace_ctx_switch(struct task_struct *prev, struct task_struct *next);
+-#else
+-static inline void
+-ftrace_ctx_switch(struct task_struct *prev, struct task_struct *next)
+-{
+-}
+-#endif
+-
+ #ifdef CONFIG_FAIR_GROUP_SCHED
+ 
+ extern struct task_group init_task_group;
+Index: linux/kernel/sched.c
+===================================================================
+--- linux.orig/kernel/sched.c
++++ linux/kernel/sched.c
+@@ -1886,7 +1886,9 @@ static int try_to_wake_up(struct task_st
+ 
+ out_activate:
+ #endif /* CONFIG_SMP */
+-	ftrace_wake_up_task(p, rq->curr);
++	trace_mark(kernel_sched_wakeup,
++		   "p %p rq->curr %p",
++		   p, rq->curr);
+ 
+ 	schedstat_inc(p, se.nr_wakeups);
+ 	if (sync)
+@@ -2028,7 +2030,9 @@ void fastcall wake_up_new_task(struct ta
+ 		p->sched_class->task_new(rq, p);
+ 		inc_nr_running(rq);
+ 	}
+-	ftrace_wake_up_new_task(p, rq->curr);
++	trace_mark(kernel_sched_wakeup_new,
++		   "p %p rq->curr %p",
++		   p, rq->curr);
+ 
+ 	check_preempt_curr(rq, p);
+ #ifdef CONFIG_SMP
+@@ -2202,7 +2206,8 @@ context_switch(struct rq *rq, struct tas
+ 	struct mm_struct *mm, *oldmm;
+ 
+ 	prepare_task_switch(rq, prev, next);
+-	ftrace_ctx_switch(prev, next);
++	trace_mark(kernel_sched_schedule,
++		   "prev %p next %p", prev, next);
+ 	mm = next->mm;
+ 	oldmm = prev->active_mm;
+ 	/*
+Index: linux/kernel/trace/trace.h
+===================================================================
+--- linux.orig/kernel/trace/trace.h
++++ linux/kernel/trace/trace.h
+@@ -134,6 +134,8 @@ void tracing_start_function_trace(void);
+ void tracing_stop_function_trace(void);
+ int register_tracer(struct tracer *type);
+ void unregister_tracer(struct tracer *type);
++void tracing_start_sched_switch(void);
++void tracing_stop_sched_switch(void);
+ 
+ extern int tracing_sched_switch_enabled;
+ extern unsigned long tracing_max_latency;
+@@ -148,16 +150,6 @@ static inline notrace cycle_t now(int cp
+ 	return cpu_clock(cpu);
+ }
+ 
+-#ifdef CONFIG_SCHED_TRACER
+-extern void notrace
+-wakeup_sched_switch(struct task_struct *prev, struct task_struct *next);
+-#else
+-static inline void
+-wakeup_sched_switch(struct task_struct *prev, struct task_struct *next)
+-{
+-}
+-#endif
+-
+ #ifdef CONFIG_CONTEXT_SWITCH_TRACER
+ typedef void
+ (*tracer_switch_func_t)(void *private,
+Index: linux/kernel/trace/trace_functions.c
+===================================================================
+--- linux.orig/kernel/trace/trace_functions.c
++++ linux/kernel/trace/trace_functions.c
+@@ -30,10 +30,12 @@ static notrace void start_function_trace
+ {
+ 	function_reset(tr);
+ 	tracing_start_function_trace();
++	tracing_start_sched_switch();
+ }
+ 
+ static notrace void stop_function_trace(struct trace_array *tr)
+ {
++	tracing_stop_sched_switch();
+ 	tracing_stop_function_trace();
+ }
+ 
+Index: linux/kernel/trace/trace_sched_switch.c
+===================================================================
+--- linux.orig/kernel/trace/trace_sched_switch.c
++++ linux/kernel/trace/trace_sched_switch.c
+@@ -16,12 +16,17 @@
+ 
+ static struct trace_array	*ctx_trace;
+ static int __read_mostly	tracer_enabled;
++static atomic_t			sched_ref;
+ int __read_mostly		tracing_sched_switch_enabled;
+ 
++static DEFINE_SPINLOCK(sched_switch_func_lock);
++
+ static void notrace
+-ctx_switch_func(struct task_struct *prev, struct task_struct *next)
++sched_switch_func(void *private, struct task_struct *prev,
++		  struct task_struct *next)
+ {
+-	struct trace_array *tr = ctx_trace;
++	struct trace_array **ptr = private;
++	struct trace_array *tr = *ptr;
+ 	struct trace_array_cpu *data;
+ 	unsigned long flags;
+ 	long disabled;
+@@ -42,20 +47,115 @@ ctx_switch_func(struct task_struct *prev
+ 	raw_local_irq_restore(flags);
+ }
+ 
+-void ftrace_ctx_switch(struct task_struct *prev, struct task_struct *next)
++static struct tracer_switch_ops sched_switch_ops __read_mostly =
++{
++	.func		= sched_switch_func,
++	.private	= &ctx_trace,
++};
++
++static tracer_switch_func_t __read_mostly
++	tracer_switch_func = sched_switch_func;
++
++static struct tracer_switch_ops __read_mostly
++	*tracer_switch_func_ops = &sched_switch_ops;
++
++static void notrace
++sched_switch_func_loop(void *private, struct task_struct *prev,
++		       struct task_struct *next)
+ {
+-	tracing_record_cmdline(prev);
++	struct tracer_switch_ops *ops = tracer_switch_func_ops;
++
++	/* take care of alpha acting funny */
++	read_barrier_depends();
+ 
++	for (; ops != NULL; ops = ops->next) {
++		/* silly alpha */
++		read_barrier_depends();
++		ops->func(ops->private, prev, next);
++	}
++}
++
++notrace int register_tracer_switch(struct tracer_switch_ops *ops)
++{
++	unsigned long flags;
++
++	spin_lock_irqsave(&sched_switch_func_lock, flags);
++	ops->next = tracer_switch_func_ops;
+ 	/*
+-	 * If tracer_switch_func only points to the local
+-	 * switch func, it still needs the ptr passed to it.
++	 * We are entering ops into the switch list but another
++	 * CPU might be walking that list. We need to make sure
++	 * the ops->next pointer is valid before another CPU sees
++	 * the ops pointer included into the switch list.
+ 	 */
+-	ctx_switch_func(prev, next);
++	smp_wmb();
++	tracer_switch_func_ops = ops;
++
++	if (ops->next == &sched_switch_ops)
++		tracer_switch_func = sched_switch_func_loop;
++
++	spin_unlock_irqrestore(&sched_switch_func_lock, flags);
++
++	return 0;
++}
++
++notrace int unregister_tracer_switch(struct tracer_switch_ops *ops)
++{
++	unsigned long flags;
++	struct tracer_switch_ops **p = &tracer_switch_func_ops;
++	int ret;
++
++	spin_lock_irqsave(&sched_switch_func_lock, flags);
+ 
+ 	/*
+-	 * Chain to the wakeup tracer (this is a NOP if disabled):
++	 * If the sched_switch is the only one left, then
++	 *  only call that function.
+ 	 */
+-	wakeup_sched_switch(prev, next);
++	if (*p == ops && ops->next == &sched_switch_ops) {
++		tracer_switch_func = sched_switch_func;
++		tracer_switch_func_ops = &sched_switch_ops;
++		goto out;
++	}
++
++	for (; *p != &sched_switch_ops; p = &(*p)->next)
++		if (*p == ops)
++			break;
++
++	if (*p != ops) {
++		ret = -1;
++		goto out;
++	}
++
++	*p = (*p)->next;
++
++ out:
++	spin_unlock_irqrestore(&sched_switch_func_lock, flags);
++
++	return 0;
++}
++
++static notrace void
++sched_switch_callback(const struct marker *mdata, void *private_data,
++		      const char *format, ...)
++{
++	struct task_struct *prev;
++	struct task_struct *next;
++	va_list ap;
++
++	if (!atomic_read(&sched_ref))
++		return;
++
++	tracing_record_cmdline(current);
++
++	va_start(ap, format);
++	prev = va_arg(ap, typeof(prev));
++	next = va_arg(ap, typeof(next));
++	va_end(ap);
++
++	/*
++	 * If tracer_switch_func only points to the local
++	 * switch func, it still needs the ptr passed to it.
++	 */
++	tracer_switch_func(mdata->private, prev, next);
+ }
+ 
+ static notrace void sched_switch_reset(struct trace_array *tr)
+@@ -72,10 +172,12 @@ static notrace void start_sched_trace(st
+ {
+ 	sched_switch_reset(tr);
+ 	tracer_enabled = 1;
++	tracing_start_sched_switch();
+ }
+ 
+ static notrace void stop_sched_trace(struct trace_array *tr)
+ {
++	tracing_stop_sched_switch();
+ 	tracer_enabled = 0;
+ }
+ 
+@@ -110,6 +212,35 @@ static struct tracer sched_switch_trace 
+ 	.ctrl_update	= sched_switch_trace_ctrl_update,
+ };
+ 
++static int tracing_sched_arm(void)
++{
++	int ret;
++
++	ret = marker_arm("kernel_sched_schedule");
++	if (ret)
++		pr_info("sched trace: Couldn't arm probe switch_to\n");
++
++	return ret;
++}
++
++void tracing_start_sched_switch(void)
++{
++	long ref;
++
++	ref = atomic_inc_return(&sched_ref);
++	if (tracing_sched_switch_enabled && ref == 1)
++		tracing_sched_arm();
++}
++
++void tracing_stop_sched_switch(void)
++{
++	long ref;
++
++	ref = atomic_dec_and_test(&sched_ref);
++	if (tracing_sched_switch_enabled && ref)
++		marker_disarm("kernel_sched_schedule");
++}
++
+ __init static int init_sched_switch_trace(void)
+ {
+ 	int ret;
+@@ -118,8 +249,22 @@ __init static int init_sched_switch_trac
+ 	if (ret)
+ 		return ret;
+ 
++	ret = marker_probe_register("kernel_sched_schedule",
++				    "prev %p next %p",
++				    sched_switch_callback,
++				    &ctx_trace);
++	if (ret) {
++		pr_info("sched trace: Couldn't add marker"
++			" probe to switch_to\n");
++		goto out;
++	}
++
++	if (atomic_read(&sched_ref))
++		ret = tracing_sched_arm();
++
+ 	tracing_sched_switch_enabled = 1;
+ 
++out:
+ 	return ret;
+ }
+ device_initcall(init_sched_switch_trace);
+Index: linux/kernel/trace/trace_sched_wakeup.c
+===================================================================
+--- linux.orig/kernel/trace/trace_sched_wakeup.c
++++ linux/kernel/trace/trace_sched_wakeup.c
+@@ -44,12 +44,66 @@ static int notrace report_latency(cycle_
+ 	return 1;
+ }
+ 
+-void notrace
+-wakeup_sched_switch(struct task_struct *prev, struct task_struct *next)
++#ifdef CONFIG_FTRACE
++/* irqsoff uses its own function trace to keep the overhead down */
++static void notrace
++wakeup_tracer_call(unsigned long ip, unsigned long parent_ip)
+ {
+-	unsigned long latency = 0, t0 = 0, t1 = 0;
+ 	struct trace_array *tr = wakeup_trace;
+ 	struct trace_array_cpu *data;
++	unsigned long flags;
++	long disabled;
++	int resched;
++	int tcpu;
++	int cpu;
++
++	if (likely(!tracer_enabled) || !tr)
++		return;
++
++	resched = need_resched();
++	preempt_disable_notrace();
++
++	cpu = raw_smp_processor_id();
++
++	data = tr->data[cpu];
++	disabled = atomic_inc_return(&data->disabled);
++	if (likely(disabled != 1))
++		goto out;
++
++	spin_lock_irqsave(&wakeup_lock, flags);
++	if (wakeup_task)
++		tcpu = task_cpu(wakeup_task);
++	else
++		tcpu = -1;
++	spin_unlock_irqrestore(&wakeup_lock, flags);
++
++	if (cpu == tcpu)
++		ftrace(tr, data, ip, parent_ip, flags);
++
++out:
++	atomic_dec(&data->disabled);
++
++	/* prevent recursion with scheduler */
++	if (resched)
++		preempt_enable_no_resched_notrace();
++	else
++		preempt_enable_notrace();
++}
++
++static struct ftrace_ops trace_ops __read_mostly =
++{
++	.func		= wakeup_tracer_call,
++};
++#endif /* CONFIG_FTRACE */
++
++static void notrace
++wakeup_sched_switch(void *private, struct task_struct *prev,
++		    struct task_struct *next)
++{
++	unsigned long latency = 0, t0 = 0, t1 = 0;
++	struct trace_array **ptr = private;
++	struct trace_array *tr = *ptr;
++	struct trace_array_cpu *data;
+ 	cycle_t T0, T1, delta;
+ 	unsigned long flags;
+ 	long disabled;
+@@ -130,8 +184,14 @@ out_unlock:
+ 	spin_unlock_irqrestore(&wakeup_lock, flags);
+ out:
+ 	atomic_dec(&tr->data[cpu]->disabled);
++
+ }
+ 
++static struct tracer_switch_ops switch_ops __read_mostly = {
++	.func		= wakeup_sched_switch,
++	.private	= &wakeup_trace,
++};
++
+ static void notrace __wakeup_reset(struct trace_array *tr)
+ {
+ 	struct trace_array_cpu *data;
+@@ -206,26 +266,51 @@ out:
+ 	atomic_dec(&tr->data[cpu]->disabled);
+ }
+ 
+-notrace void
+-ftrace_wake_up_task(struct task_struct *wakee, struct task_struct *curr)
++static notrace void
++wake_up_callback(const struct marker *mdata, void *private_data,
++		 const char *format, ...)
+ {
++	struct trace_array **ptr = mdata->private;
++	struct trace_array *tr = *ptr;
++	struct task_struct *curr;
++	struct task_struct *p;
++	va_list ap;
++
+ 	if (likely(!tracer_enabled))
+ 		return;
+ 
+-	wakeup_check_start(wakeup_trace, wakee, curr);
+-}
++	va_start(ap, format);
+ 
+-notrace void
+-ftrace_wake_up_new_task(struct task_struct *wakee, struct task_struct *curr)
+-{
+-	if (likely(!tracer_enabled))
+-		return;
++	/* now get the meat: "p %p rq->curr %p" */
++	p = va_arg(ap, typeof(p));
++	curr = va_arg(ap, typeof(curr));
++
++	va_end(ap);
+ 
+-	wakeup_check_start(wakeup_trace, wakee, curr);
++	wakeup_check_start(tr, p, curr);
+ }
+ 
+ static notrace void start_wakeup_tracer(struct trace_array *tr)
+ {
++	int ret;
++
++	ret = marker_arm("kernel_sched_wakeup");
++	if (ret) {
++		pr_info("wakeup trace: Couldn't arm probe"
++			" kernel_sched_wakeup\n");
++		return;
++	}
++
++	ret = marker_arm("kernel_sched_wakeup_new");
++	if (ret) {
++		pr_info("wakeup trace: Couldn't arm probe"
++			" kernel_sched_wakeup_new\n");
++		goto out;
++	}
++
++	register_tracer_switch(&switch_ops);
++	tracing_start_sched_switch();
++
+ 	wakeup_reset(tr);
+ 
+ 	/*
+@@ -238,13 +323,22 @@ static notrace void start_wakeup_tracer(
+ 	smp_wmb();
+ 
+ 	tracer_enabled = 1;
++	register_ftrace_function(&trace_ops);
+ 
+ 	return;
++
++out:
++	marker_disarm("kernel_sched_wakeup");
+ }
+ 
+ static notrace void stop_wakeup_tracer(struct trace_array *tr)
+ {
+ 	tracer_enabled = 0;
++	tracing_stop_sched_switch();
++	unregister_tracer_switch(&switch_ops);
++	marker_disarm("kernel_sched_wakeup");
++	marker_disarm("kernel_sched_wakeup_new");
++	unregister_ftrace_function(&trace_ops);
+ }
+ 
+ static notrace void wakeup_tracer_init(struct trace_array *tr)
+@@ -305,6 +399,32 @@ __init static int init_wakeup_tracer(voi
+ 	if (ret)
+ 		return ret;
+ 
++	ret = marker_probe_register("kernel_sched_wakeup",
++				    "p %p rq->curr %p",
++				    wake_up_callback,
++				    &wakeup_trace);
++	if (ret) {
++		pr_info("wakeup trace: Couldn't add marker"
++			" probe to kernel_sched_wakeup\n");
++		goto fail;
++	}
++
++	ret = marker_probe_register("kernel_sched_wakeup_new",
++				    "p %p rq->curr %p",
++				    wake_up_callback,
++				    &wakeup_trace);
++	if (ret) {
++		pr_info("wakeup trace: Couldn't add marker"
++			" probe to kernel_sched_wakeup_new\n");
++		goto fail_deprobe;
++	}
++
++	return 0;
++
++fail_deprobe:
++	marker_probe_unregister("kernel_sched_wakeup");
++fail:
++	unregister_tracer(&wakeup_tracer);
+ 	return 0;
+ }
+ device_initcall(init_wakeup_tracer);
