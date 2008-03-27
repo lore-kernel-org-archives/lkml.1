@@ -1,69 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759308AbYC0JtO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759172AbYC0Ju2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759308AbYC0JtO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Mar 2008 05:49:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755813AbYC0Js6
+	id S1759172AbYC0Ju2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Mar 2008 05:50:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752021AbYC0JuU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Mar 2008 05:48:58 -0400
-Received: from fg-out-1718.google.com ([72.14.220.154]:19389 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754060AbYC0Js5 (ORCPT
+	Thu, 27 Mar 2008 05:50:20 -0400
+Received: from e28smtp01.in.ibm.com ([59.145.155.1]:58740 "EHLO
+	e28smtp01.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751378AbYC0JuT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Mar 2008 05:48:57 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=Al26mmc07Ckr4RozvMJN02Y6Wj5u7pqInZZ4FH9VmuJDoU3tkWZPpjjRERwoD907GpFBBvg/RvYiBYpfHDvZFbp0tHEhBKR8JDZiZIOlYR7CMwucbhVzhe2VWL1aKrWQaCP5imNjda+O9IkylF/lgJTnDYlWcqfjDXg/4IAnSaY=
-Message-ID: <e2e108260803270248w6a9abf42hc68b0b5397543eaf@mail.gmail.com>
-Date: Thu, 27 Mar 2008 10:48:55 +0100
-From: "Bart Van Assche" <bart.vanassche@gmail.com>
-To: "Christoph Lameter" <clameter@sgi.com>
-Subject: Re: quicklists confuse meminfo
-Cc: "Ingo Molnar" <mingo@elte.hu>, "Nick Piggin" <nickpiggin@yahoo.com.au>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>,
-       "Thomas Gleixner" <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Albert Cahalan" <acahalan@cs.uml.edu>
-In-Reply-To: <Pine.LNX.4.64.0803260929350.27909@schroedinger.engr.sgi.com>
+	Thu, 27 Mar 2008 05:50:19 -0400
+Message-ID: <47EB6D00.5070306@linux.vnet.ibm.com>
+Date: Thu, 27 Mar 2008 15:16:40 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
+To: Pavel Emelyanov <xemul@openvz.org>
+CC: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Hugh Dickins <hugh@veritas.com>,
+       Sudhir Kumar <skumar@linux.vnet.ibm.com>,
+       YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
+       Paul Menage <menage@google.com>, lizf@cn.fujitsu.com,
+       linux-kernel@vger.kernel.org, taka@valinux.co.jp, linux-mm@kvack.org,
+       David Rientjes <rientjes@google.com>
+Subject: Re: [RFC][1/3] Add user interface for virtual address space control
+ (v2)
+References: <20080326184954.9465.19379.sendpatchset@localhost.localdomain>	<20080326185006.9465.4720.sendpatchset@localhost.localdomain> <20080327181404.1e95a725.kamezawa.hiroyu@jp.fujitsu.com> <47EB6B4D.2030305@openvz.org>
+In-Reply-To: <47EB6B4D.2030305@openvz.org>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <alpine.LFD.1.00.0803090919481.3099@apollo.tec.linutronix.de>
-	 <20080309114640.85c9c3eb.akpm@linux-foundation.org>
-	 <Pine.LNX.4.64.0803100851560.23575@schroedinger.engr.sgi.com>
-	 <200803111507.20870.nickpiggin@yahoo.com.au>
-	 <e2e108260803210552i4cdef6a5qf8f5076eaac2cf03@mail.gmail.com>
-	 <20080321144517.GA1545@elte.hu>
-	 <e2e108260803260045q37792686l80ddb421f2e67c6f@mail.gmail.com>
-	 <20080326081349.GA8159@elte.hu>
-	 <e2e108260803260337j4175b3emc3304b67b8314bea@mail.gmail.com>
-	 <Pine.LNX.4.64.0803260929350.27909@schroedinger.engr.sgi.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 26, 2008 at 5:34 PM, Christoph Lameter <clameter@sgi.com> wrote:
-> On Wed, 26 Mar 2008, Bart Van Assche wrote:
->
->  > Thanks to everyone who worked on this. By the way, I have asked Albert
->  > Calahan, the procps maintainer, to fix the free/top/vmstat tools such
->  > that these take recently added /proc/meminfo fields into account and
->  > display correct values on recent 2.6 kernels. See also
->  > http://bugzilla.kernel.org/show_bug.cgi?id=9991 and
->  > http://marc.info/?l=linux-mm&m=120496901605830&w=2.
->
->  Be aware that some distros have hacked their meminfo (proc and
->  /sys/devices/system/node/node*/meminfo) output to be more compatible with
->  recent 2.6 kernels but not updated to the new ZVC counter scheme. On those
->  kernels (<2.6.17) counters may show weird values and the sum of the per
->  node counters in sysfs may not yield the same amount shown in
->  /proc/meminfo.
+Pavel Emelyanov wrote:
+> KAMEZAWA Hiroyuki wrote:
+>> On Thu, 27 Mar 2008 00:20:06 +0530
+>> Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+>>
+>>> Add as_usage_in_bytes and as_limit_in_bytes interfaces. These provide
+>>> control over the total address space that the processes combined together
+>>> in the cgroup can grow upto. This functionality is analogous to
+>>> the RLIMIT_AS function of the getrlimit(2) and setrlimit(2) calls.
+>>> A as_res resource counter is added to the mem_cgroup structure. The
+>>> as_res counter handles all the accounting associated with the virtual
+>>> address space accounting and control of cgroups.
+>>>
+>>> Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
+>> I wonder that it's better to create "rlimit cgroup" rather than enhancing
+>> memory controller. (But I have no strong opinion.)
+>> How do you think ?
+> 
+> I believe that all memory management is better to have in one controller...
+> 
 
-In my opinion /proc/meminfo is part of the kernelspace - userspace
-API, and any Linux distributor that modifies /proc/meminfo is
-responsible for modifying the tools that rely on this information.
+Paul wants to see it in a different controller. He has been reasoning it out in
+another email thread.
 
-Bart.
+-- 
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
