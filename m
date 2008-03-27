@@ -1,152 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757757AbYC0Seu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757817AbYC0SpT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757757AbYC0Seu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Mar 2008 14:34:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754559AbYC0Sej
+	id S1757817AbYC0SpT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Mar 2008 14:45:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755133AbYC0SpG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Mar 2008 14:34:39 -0400
-Received: from mailrelay001.isp.belgacom.be ([195.238.6.51]:35095 "EHLO
-	mailrelay001.isp.belgacom.be" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753703AbYC0Sei (ORCPT
+	Thu, 27 Mar 2008 14:45:06 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:52718 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754439AbYC0SpE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Mar 2008 14:34:38 -0400
-X-Belgacom-Dynamic: yes
-Date: Thu, 27 Mar 2008 19:34:37 +0100
-From: Wim Van Sebroeck <wim@iguana.be>
-To: Stephen Clark <sclark46@earthlink.net>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: iTCO watchdog timer
-Message-ID: <20080327183437.GA15490@infomag.infomag.iguana.be>
-References: <47CDAC9D.6020505@seclark.us> <20080304135548.b7b88ee4.akpm@linux-foundation.org> <20080306212820.GA2866@infomag.infomag.iguana.be> <47EBE751.1090803@earthlink.net>
-Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="opJtzjQTFsWo+cga"
+	Thu, 27 Mar 2008 14:45:04 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=Kdl4x9Xvd/NIDJeJ0kZAy9+UxQqsDCERktrDm4J4VNkXgHIdpKWTtSjgdCEfZiqdN
+	PIv2eMYCFJ30PjrVEg9/Q==
+Message-ID: <6599ad830803271144k635da1d8y106710152bb9c3be@mail.gmail.com>
+Date: Thu, 27 Mar 2008 11:44:52 -0700
+From: "Paul Menage" <menage@google.com>
+To: balbir@linux.vnet.ibm.com
+Subject: Re: [RFC][0/3] Virtual address space control for cgroups (v2)
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       "Pavel Emelianov" <xemul@openvz.org>, "Hugh Dickins" <hugh@veritas.com>,
+       "Sudhir Kumar" <skumar@linux.vnet.ibm.com>,
+       "YAMAMOTO Takashi" <yamamoto@valinux.co.jp>, lizf@cn.fujitsu.com,
+       linux-kernel@vger.kernel.org, taka@valinux.co.jp, linux-mm@kvack.org,
+       "David Rientjes" <rientjes@google.com>,
+       "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <47EBDE7B.4090002@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <47EBE751.1090803@earthlink.net>
-User-Agent: Mutt/1.4.2.1i
+References: <20080326184954.9465.19379.sendpatchset@localhost.localdomain>
+	 <6599ad830803261522p45a9daddi8100a0635c21cf7d@mail.gmail.com>
+	 <47EB5528.8070800@linux.vnet.ibm.com>
+	 <6599ad830803270728y354b567s7bfe8cb7472aa065@mail.gmail.com>
+	 <47EBDE7B.4090002@linux.vnet.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Mar 27, 2008 at 10:50 AM, Balbir Singh
+<balbir@linux.vnet.ibm.com> wrote:
+>  >
+>  > I was thinking more about that, and I think I found a possibly fatal flaw:
+>  >
+>
+>  What is the critical flaw?
+>
 
---opJtzjQTFsWo+cga
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Oops, after I'd written that I decided while describing it that maybe
+it wasn't that fatal after all, just fiddly, and so deleted the
+description but forgot to delete the preceding sentence. :-)
 
-Hi Steve,
+There were a couple of issues. The first was that if the new owner is
+in a different cgroup, we might have to fix up the address space
+charges when we pass off the ownership, which would be a bit of a
+layer violation but maybe manageable.
 
-> Just wondered if you had any more thoughts or if you have any test you 
-> would like me to run.
+The other was to do with ensuring that mm->owner remains valid until
+after exit_mmap() has been called (so the va limit controller can
+deduct from the va usage).
+>
+>  Yes, I've seen some patches there as well. As far as sparse virtual addresses
+>  are concerned, I find it hard to understand why applications would use sparse
+>  physical memory and large virtual addresses. Please see my comment on overcommit
+>  below.
 
-Didn't had any time yet. Could you run the following watchdog test-program first and sent me the output?
-Just compile it with: gcc -o watchdog watchdog.c and then run the watchdog program.
+Java (or at least, Sun's JRE) is an example of a common application
+that does this. It creates a huge heap mapping at startup, and faults
+it in as necessary.
 
-Thanks,
-Wim.
+>  > But the problem that I have with this is that mmap() is only very
+>  > loosely connected with physical memory. If we're trying to help
+>  > applications avoid swapping, and giving them advance warning that
+>  > they're running out of physical memory, then we should do exactly
+>  > that, not try to treat address space as a proxy for physical memory.
+>
+>  Consider why we have the overcommit feature in the Linux kernel. Virtual memory
+>  limits (decided by the administrator) help us prevent from excessively over
+>  committing the system.
 
+Well if I don't believe in per-container virtual address space limits,
+I'm unlikely to be a big fan of system-wide virtual address space
+limits either. So running with vm.overcommit_memory=2 is right out ...
 
---opJtzjQTFsWo+cga
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: attachment; filename="watchdog.c"
-Content-Transfer-Encoding: 8bit
+I'm certainly not disputing that it's possible to avoid excessive
+overcommit by using virtual address space limits.
 
-#include <stdio.h>
-#include <unistd.h>
-#include <fcntl.h>
-#include "linux/ioctl.h"
+It's just for that both of the real-world large-scale production
+systems I've worked with (a virtual server system for ISPs, and
+Google's production datacenters) there were enough cases of apps/jobs
+that used far more virtual address space than actual physical memory
+that picking a virtual address space ratio/limit that would be useful
+for preventing dangerous overcommit while not breaking lots of apps
+would be pretty much impossible to do automatically. And specifying
+them manually requires either unusually clueful users (most of whom
+have enough trouble figuring out how much physical memory they'll
+need, and would just set very high virtual address space limits) or
+sysadmins with way too much time on their hands ...
 
-struct watchdog_info {
-	unsigned long options;		/* Options the card/driver supports */
-	unsigned long firmware_version;	/* Firmware version of the card */
-	unsigned char identity[32];	/* Identity of the board */
-};
+As I said, I think focussing on ways to tell apps that they're running
+low on physical memory would be much more productive.
 
-#define	WATCHDOG_IOCTL_BASE     'W'
-
-#define	WDIOC_GETSUPPORT	_IOR(WATCHDOG_IOCTL_BASE, 0, struct watchdog_info)
-#define	WDIOC_GETSTATUS		_IOR(WATCHDOG_IOCTL_BASE, 1, int)
-#define	WDIOC_GETBOOTSTATUS	_IOR(WATCHDOG_IOCTL_BASE, 2, int)
-#define	WDIOC_GETTEMP		_IOR(WATCHDOG_IOCTL_BASE, 3, int)
-#define	WDIOC_SETOPTIONS	_IOR(WATCHDOG_IOCTL_BASE, 4, int)
-#define	WDIOC_KEEPALIVE		_IOR(WATCHDOG_IOCTL_BASE, 5, int)
-#define	WDIOC_SETTIMEOUT	_IOWR(WATCHDOG_IOCTL_BASE, 6, int)
-#define	WDIOC_GETTIMEOUT	_IOR(WATCHDOG_IOCTL_BASE, 7, int)
-#define	WDIOC_GETTIMELEFT	_IOR(WATCHDOG_IOCTL_BASE, 10, int)
-
-#define	WDIOS_DISABLECARD	0x0001	/* Turn off the watchdog timer */
-#define	WDIOS_ENABLECARD	0x0002	/* Turn on the watchdog timer */
-
-int main(int argc, const char *argv[]) {
-	int i = 5;
-	int c;
-	int temperature;
-	int timeout = 34;
-	int timervalue;
-	int flags;
-	int options;
-	int ret;
-	struct watchdog_info wdinfo;
-	int fd=open("/dev/watchdog",O_WRONLY);
-	if (fd==-1) {
-		perror("watchdog");
-		return 1;
-	}
-	ret = ioctl(fd, WDIOC_GETSUPPORT, &wdinfo);
-	printf("The GETSUPPORT call reported (%d):\n", ret);
-	if (ret) {
-		printf("  options         : ?\n");
-		printf("  firmware_version: ?\n");
-		printf("  identity        : ?\n");
-	} else {
-		printf("  options         : 0x%04x\n", wdinfo.options);
-		printf("  firmware_version: %d\n", wdinfo.firmware_version);
-		printf("  identity        : %s\n", wdinfo.identity);
-	}
-	ret = ioctl(fd, WDIOC_GETSTATUS, &flags);
-	if (ret) flags=0;
-	printf("The GETSTATUS call reported %x (%d)\n", flags, ret);
-	ret = ioctl(fd, WDIOC_GETBOOTSTATUS, &flags);
-	if (ret) flags=0;
-	printf("The GETBOOTSTATUS call reported %x (%d)\n", flags, ret);
-
-	ret = ioctl(fd, WDIOC_GETTEMP, &temperature);
-	if (ret) temperature=0;
-	printf("The GETTEMP call reported %d°F = %d°C (ret=%d)\n", temperature, ((temperature - 32) * 5 / 9), ret);
-
-	options = WDIOS_DISABLECARD;
-	ret = ioctl(fd, WDIOC_SETOPTIONS, &options);
-	if (ret) options=0;
-	printf("The SETOPTIONS (DISABLECARD) call returned=%d\n", ret);
-	options = WDIOS_ENABLECARD;
-	ret = ioctl(fd, WDIOC_SETOPTIONS, &options);
-	if (ret) options=0;
-	printf("The SETOPTIONS (ENABLECARD) call returned=%d\n", ret);
-
-	ret = ioctl(fd, WDIOC_GETTIMEOUT, &flags);
-	if (ret) flags=0;
-	printf("The timeout is %d seconds (%d)\n", flags, ret);
-	ret = ioctl(fd, WDIOC_SETTIMEOUT, &timeout);
-	if (ret) timeout=0;
-	printf("The timeout is now set to %d seconds (%d)\n", timeout, ret);
-	ret = ioctl(fd, WDIOC_GETTIMEOUT, &flags);
-	if (ret) flags=0;
-	printf("The timeout is %d seconds (%d)\n", flags, ret);
-	ret = ioctl(fd, WDIOC_GETTIMELEFT, &timervalue);
-	if (ret) timervalue=0;
-	printf("The GETTIMELEFT call reported %d seconds (0x%04x) (%d)\n", timervalue ,timervalue,ret);
-	while(i--) {
-		ioctl(fd, WDIOC_KEEPALIVE, 0);
-		sleep(10 + i);
-		ret = ioctl(fd, WDIOC_GETTIMELEFT, &timervalue);
-		if (ret) timervalue=0;
-		printf("The GETTIMELEFT call reported %d seconds (0x%04x) (%d)\n", timervalue,timervalue,ret);
-	}
-	write(fd, "V", 1);
-	fsync(fd);
-	close(fd);
-
-	return 0;
-}
-
-
---opJtzjQTFsWo+cga--
+Paul
