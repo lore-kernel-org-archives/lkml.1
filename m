@@ -1,129 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758565AbYC0IJr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758158AbYC0IMj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758565AbYC0IJr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Mar 2008 04:09:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755402AbYC0IJc
+	id S1758158AbYC0IMj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Mar 2008 04:12:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755309AbYC0IMY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Mar 2008 04:09:32 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:15780 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755485AbYC0IJa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Mar 2008 04:09:30 -0400
-Date: Thu, 27 Mar 2008 09:09:26 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: "Luck, Tony" <tony.luck@intel.com>
-Cc: Matthew Wilcox <matthew@wil.cx>, linux-arch@vger.kernel.org,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: What if a TLB flush needed to sleep?
-Message-ID: <20080327080926.GE12346@kernel.dk>
-References: <1FE6DD409037234FAB833C420AA843ECE9DF60@orsmsx424.amr.corp.intel.com> <20080326123239.GG16721@parisc-linux.org> <1FE6DD409037234FAB833C420AA843ECE9EB1C@orsmsx424.amr.corp.intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 27 Mar 2008 04:12:24 -0400
+Received: from public.id2-vpn.continvity.gns.novell.com ([195.33.99.129]:42088
+	"EHLO public.id2-vpn.continvity.gns.novell.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755402AbYC0IMX convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Mar 2008 04:12:23 -0400
+Message-Id: <47EB56E0020000780004917E@public.id2-vpn.continvity.gns.novell.com>
+X-Mailer: Novell GroupWise Internet Agent 7.0.3 
+Date: Thu, 27 Mar 2008 08:12:16 +0000
+From: "Jan Beulich" <jbeulich@novell.com>
+To: <mingo@elte.hu>
+Cc: <tglx@linutronix.de>, <linux-kernel@vger.kernel.org>, <hpa@zytor.com>
+Subject: Re: [RFC] x86: bitops asm constraint fixes
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <1FE6DD409037234FAB833C420AA843ECE9EB1C@orsmsx424.amr.corp.intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 26 2008, Luck, Tony wrote:
-> > Of course, someone who wrote it could do better ;-)
-> 
-> Here is Willy's code in patch format (against linux-next
-> tree tag next-20080326 which includes his re-write of the
-> semaphore code).
-> 
-> This looks a lot cleaner than my ia64 specific code that
-> used cmpxchg() for the down() operation and fetchadd for
-> the up() ... using a brand new semaphore_spin data type.
-> 
-> It appears to work ... I tried to do some timing comparisons
-> of this generic version against my arch specific one, but the
-> hackbench test case has a run to run variation of a factor of
-> three (from 1min9sec to 3min44sec) so it is hopeless to try
-> and see some small percentage difference.
-> 
-> commit 0359fbb64297d44328f26ec5fda3a3c26f1c5ba7
-> Author: Matthew Wilcox <matthew@wil.cx>
-> Date:   Wed Mar 26 11:08:18 2008 -0700
-> 
->     Add "down_spin()" API for semaphores
->     
->     For those places that need semaphore semantics but cannot sleep
->     
->     Signed-off-by: Tony Luck <tony.luck@intel.com>
-> 
-> diff --git a/include/linux/semaphore.h b/include/linux/semaphore.h
-> index a7125da..3404ce5 100644
-> --- a/include/linux/semaphore.h
-> +++ b/include/linux/semaphore.h
-> @@ -53,6 +53,12 @@ static inline void sema_init(struct semaphore *sem, int val)
->  extern void down(struct semaphore *sem);
->  
->  /*
-> + * Attempt to acquire the semaphore.  If another task is already holding the
-> + * semaphore, spin until the semaphore is released.
-> + */
-> +extern void down_spin(struct semaphore *sem);
-> +
-> +/*
->   * As down(), except the sleep may be interrupted by a signal.  If it is,
->   * this function will return -EINTR.
->   */
-> diff --git a/kernel/semaphore.c b/kernel/semaphore.c
-> index bef977b..d3eb559 100644
-> --- a/kernel/semaphore.c
-> +++ b/kernel/semaphore.c
-> @@ -23,6 +23,7 @@
->   */
->  
->  static noinline void __down(struct semaphore *sem);
-> +static noinline void __down_spin(struct semaphore *sem);
->  static noinline int __down_interruptible(struct semaphore *sem);
->  static noinline int __down_killable(struct semaphore *sem);
->  static noinline int __down_timeout(struct semaphore *sem, long jiffies);
-> @@ -41,6 +42,21 @@ void down(struct semaphore *sem)
->  }
->  EXPORT_SYMBOL(down);
->  
-> +void down_spin(struct semaphore *sem)
-> +{
-> +	unsigned long flags;
-> +	int count;
-> +
-> +	spin_lock_irqsave(&sem->lock, flags);
-> +	count = sem->count - 1;
-> +	if (likely(count >= 0))
-> +		sem->count = count;
-> +	else
-> +		__down_spin(sem);
-> +	spin_unlock_irqrestore(&sem->lock, flags);
-> +}
-> +EXPORT_SYMBOL(down_spin);
-> +
->  int down_interruptible(struct semaphore *sem)
->  {
->  	unsigned long flags;
-> @@ -197,6 +213,20 @@ static noinline int __sched __down_timeout(struct semaphore *sem, long jiffies)
->  	return __down_common(sem, TASK_UNINTERRUPTIBLE, jiffies);
->  }
->  
-> +static noinline void __sched __down_spin(struct semaphore *sem)
-> +{
-> +	struct semaphore_waiter waiter;
-> +
-> +	list_add_tail(&waiter.list, &sem->wait_list);
-> +	waiter.task = current;
-> +	waiter.up = 0;
-> +
-> +	spin_unlock_irq(&sem->lock);
-> +	while (!waiter.up)
-> +		cpu_relax();
-> +	spin_lock_irq(&sem->lock);
-> +}
+Please revert it for the time being, I've got a better version (i.e.
+without extra dead code being generated) that I intended to
+submit once I know whether the other issues pointed out in the
+description on the original patch also should be adjusted. Of
+course, that could also be done incrementally, but I would think
+overhauling the whole file at once wouldn't be a bad thing...
 
-This doesn't look very nice - if down_spin() is called with interrupts
-disabled, __down_spin() enables them.
+Jan
 
--- 
-Jens Axboe
+>>> Ingo Molnar <mingo@elte.hu> 03/21/08 2:54 PM >>>
+
+thanks Jan, i've applied your patch.
+
+	Ingo
 
