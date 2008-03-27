@@ -1,49 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757536AbYC0H50@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757126AbYC0IGK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757536AbYC0H50 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Mar 2008 03:57:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755233AbYC0H5S
+	id S1757126AbYC0IGK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Mar 2008 04:06:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755246AbYC0IF6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Mar 2008 03:57:18 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:55989 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755232AbYC0H5R (ORCPT
+	Thu, 27 Mar 2008 04:05:58 -0400
+Received: from E23SMTP01.au.ibm.com ([202.81.18.162]:53012 "EHLO
+	e23smtp01.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754676AbYC0IF4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Mar 2008 03:57:17 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <47EB5345.6080506@s5r6.in-berlin.de>
-Date: Thu, 27 Mar 2008 08:56:53 +0100
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.12) Gecko/20080219 SeaMonkey/1.1.8
+	Thu, 27 Mar 2008 04:05:56 -0400
+Message-ID: <47EB548D.2050609@linux.vnet.ibm.com>
+Date: Thu, 27 Mar 2008 13:32:21 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-To: Jarod Wilson <jwilson@redhat.com>
-CC: linux1394-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] firewire: fw-ohci: plug dma memory leak in AR handler
-References: <200803251647.16227.jwilson@redhat.com> <47E9F6BB.4010601@s5r6.in-berlin.de> <tkrat.82d28d7bc55f2a9b@s5r6.in-berlin.de>
-In-Reply-To: <tkrat.82d28d7bc55f2a9b@s5r6.in-berlin.de>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Pavel Emelyanov <xemul@openvz.org>
+CC: Andrew Morton <akpm@linux-foundation.org>, Hugh Dickins <hugh@veritas.com>,
+       Sudhir Kumar <skumar@linux.vnet.ibm.com>,
+       YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
+       Paul Menage <menage@google.com>, lizf@cn.fujitsu.com,
+       linux-kernel@vger.kernel.org, taka@valinux.co.jp, linux-mm@kvack.org,
+       David Rientjes <rientjes@google.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Subject: Re: [RFC][2/3] Account and control virtual address space allocations
+ (v2)
+References: <20080326184954.9465.19379.sendpatchset@localhost.localdomain> <20080326185017.9465.29950.sendpatchset@localhost.localdomain> <47EB4A7E.6060505@openvz.org>
+In-Reply-To: <47EB4A7E.6060505@openvz.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I wrote:
-> I wrote:
->> On the other hand, why do we free a page + allocate a page?
->> Why don't we re-initialize and re-add the old page?
+Pavel Emelyanov wrote:
+> Balbir Singh wrote:
+>> Changelog v2
+>> ------------
+>> Change the accounting to what is already present in the kernel. Split
+>> the address space accounting into mem_cgroup_charge_as and
+>> mem_cgroup_uncharge_as. At the time of VM expansion, call
+>> mem_cgroup_cannot_expand_as to check if the new allocation will push
+>> us over the limit
+>>
+>> This patch implements accounting and control of virtual address space.
+>> Accounting is done when the virtual address space of any task/mm_struct
+>> belonging to the cgroup is incremented or decremented. This patch
+>> fails the expansion if the cgroup goes over its limit.
+>>
+>> TODOs
+>>
+>> 1. Only when CONFIG_MMU is enabled, is the virtual address space control
+>>    enabled. Should we do this for nommu cases as well? My suspicion is
+>>    that we don't have to.
+>>
+>> Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
+>> ---
+>>
+>>  arch/ia64/kernel/perfmon.c  |    2 +
+>>  arch/x86/kernel/ptrace.c    |    7 +++
+>>  fs/exec.c                   |    2 +
+>>  include/linux/memcontrol.h  |   26 +++++++++++++
+>>  include/linux/res_counter.h |   19 ++++++++--
+>>  init/Kconfig                |    2 -
+>>  kernel/fork.c               |   17 +++++++--
+>>  mm/memcontrol.c             |   83 ++++++++++++++++++++++++++++++++++++++++++++
+>>  mm/mmap.c                   |   11 +++++
+>>  mm/mremap.c                 |    2 +
+>>  10 files changed, 163 insertions(+), 8 deletions(-)
+>>
+>> diff -puN mm/memcontrol.c~memory-controller-virtual-address-space-accounting-and-control mm/memcontrol.c
+>> --- linux-2.6.25-rc5/mm/memcontrol.c~memory-controller-virtual-address-space-accounting-and-control	2008-03-26 16:27:59.000000000 +0530
+>> +++ linux-2.6.25-rc5-balbir/mm/memcontrol.c	2008-03-27 00:18:16.000000000 +0530
+>> @@ -526,6 +526,76 @@ unsigned long mem_cgroup_isolate_pages(u
+>>  	return nr_taken;
+>>  }
+>>  
+>> +#ifdef CONFIG_CGROUP_MEM_RES_CTLR_AS
+>> +/*
+>> + * Charge the address space usage for cgroup. This routine is most
+>> + * likely to be called from places that expand the total_vm of a mm_struct.
+>> + */
+>> +void mem_cgroup_charge_as(struct mm_struct *mm, long nr_pages)
+>> +{
+>> +	struct mem_cgroup *mem;
+>> +
+>> +	if (mem_cgroup_subsys.disabled)
+>> +		return;
+>> +
+>> +	rcu_read_lock();
+>> +	mem = rcu_dereference(mm->mem_cgroup);
+>> +	css_get(&mem->css);
+>> +	rcu_read_unlock();
+>> +
+>> +	res_counter_charge(&mem->as_res, (nr_pages * PAGE_SIZE));
+>> +	css_put(&mem->css);
 > 
-> Meanwhile I tried a simple modification to ar_context_add_page and its
-> callers which results in _add_page simply re-adding the old page. I must
-> do something fundamentally wrong though.
+> Why don't you check whether the counter is charged? This is
+> bad for two reasons:
+> 1. you allow for some growth above the limit (e.g. in expand_stack)
 
-Besides, the current code which reassembles packets that reach into the 
-next buffer is broken for packets whose total size approaches PAGE_SIZE. 
-(Remember, async packets can be sized 4kB + 1394 headers + OHCI 
-trailer.)  Reminds me of ohci1394 somehow.  :-(
+I was doing that earlier and then decided to keep the virtual address space code
+in sync with the RLIMIT_AS checking code in the kernel. If you see the flow, it
+closely resembles what we do with mm->total_vm and may_expand_vm().
+expand_stack() in turn calls acct_stack_growth() which calls may_expand_vm()
 
-I will attempt to fix this for post 2.6.25, unless you aspire to do so.
+> 2. you will undercharge it in the future when uncharging the
+>    vme, whose charge was failed and thus unaccounted.
+
+Hmmm...  This should ideally never happen, since we do a may_expand_vm() before
+expanding the VM and in our case the virtual address space usage. I've not seen
+it during my runs either. But it is something to keep in mind.
+
 -- 
-Stefan Richter
--=====-==--- --== ==-==
-http://arcgraph.de/sr/
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
