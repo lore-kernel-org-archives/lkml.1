@@ -1,50 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762069AbYC0WFO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761326AbYC0WOT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762069AbYC0WFO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Mar 2008 18:05:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759281AbYC0WE5
+	id S1761326AbYC0WOT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Mar 2008 18:14:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758918AbYC0WOG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Mar 2008 18:04:57 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:49476
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1758968AbYC0WE4 convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Mar 2008 18:04:56 -0400
-Date: Thu, 27 Mar 2008 15:04:56 -0700 (PDT)
-Message-Id: <20080327.150456.39560267.davem@davemloft.net>
-To: joe@perches.com
-Cc: ilpo.jarvinen@helsinki.fi, akpm@linux-foundation.org,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org, acme@redhat.com,
-       mpm@selenic.com
-Subject: Re: [PATCH 1/7] [NET]: uninline skb_put, de-bloats a lot
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1206645050.4849.77.camel@localhost>
-References: <1206621486-5408-1-git-send-email-ilpo.jarvinen@helsinki.fi>
-	<1206621486-5408-2-git-send-email-ilpo.jarvinen@helsinki.fi>
-	<1206645050.4849.77.camel@localhost>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Thu, 27 Mar 2008 18:14:06 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:40346 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758537AbYC0WOF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Mar 2008 18:14:05 -0400
+Date: Thu, 27 Mar 2008 22:13:58 +0000
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: akpm@linux-foundation.org, linuxram@us.ibm.com,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [patch 3/7] vfs: mountinfo: add mount ID
+Message-ID: <20080327221358.GY10722@ZenIV.linux.org.uk>
+References: <20080327120619.031944658@szeredi.hu> <20080327122355.594127612@szeredi.hu>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080327122355.594127612@szeredi.hu>
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Joe Perches <joe@perches.com>
-Date: Thu, 27 Mar 2008 12:10:50 -0700
-
-> On Thu, 2008-03-27 at 14:38 +0200, Ilpo Järvinen wrote:
-> > Allyesconfig (v2.6.24-mm1):
+On Thu, Mar 27, 2008 at 01:06:22PM +0100, Miklos Szeredi wrote:
+> From: Miklos Szeredi <mszeredi@suse.cz>
 > 
-> I think this change is only good in severely memory
-> limited uses.  This will very likely negatively impact
-> high speed networking.  It's a speed/size trade off.
+> Add a unique ID to each vfsmount using the IDR infrastructure.  The
+> identifiers are reused after the vfsmount is freed.
 
-I severely doubt this, the bulk of the overhead of
-skb_put() is the atomic operation, not whether the
-instructions get executed inline or not.
+Er...  That would need shifting allocation to attach_recursive_mnt()
+and copy_tree()...
 
-Please run some tests before making claims like this.
-I might give you some slack in this area if you've
-been doing networking performance tuning for 10+ years
-but you haven't.
+Anyway, nevermind that for now; I'll pick the variant with spinlock
+from the previous patchset.
