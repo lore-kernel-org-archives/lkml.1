@@ -1,70 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755778AbYC0W3g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752970AbYC0WfI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755778AbYC0W3g (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Mar 2008 18:29:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757962AbYC0W3Z
+	id S1752970AbYC0WfI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Mar 2008 18:35:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751442AbYC0We4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Mar 2008 18:29:25 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:58897 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759321AbYC0W3Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Mar 2008 18:29:24 -0400
-Date: Fri, 28 Mar 2008 09:29:16 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: linux-next: Tree for March 27
-Message-Id: <20080328092916.e78b1b8c.sfr@canb.auug.org.au>
-In-Reply-To: <20080327104224.2b98b561@hskinnemo-gx620.norway.atmel.com>
-References: <20080327183357.7c637aed.sfr@canb.auug.org.au>
-	<20080327104224.2b98b561@hskinnemo-gx620.norway.atmel.com>
-X-Mailer: Sylpheed 2.5.0beta1 (GTK+ 2.12.9; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Fri__28_Mar_2008_09_29_16_+1100_Cg2UmuYT9VuU22KL"
+	Thu, 27 Mar 2008 18:34:56 -0400
+Received: from mu-out-0910.google.com ([209.85.134.188]:63029 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751365AbYC0Wey (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Mar 2008 18:34:54 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=TQ6MPb1ickkI3tDTrIaXIj3oiyTp+W+5i1fyRI3B04RHm4mXeLGujkLy8UxdWdR+UCRgk6EICp42sSGoPQnGMXzi0X9wF4p6PS9pTrlU16MAB+4MmKmLj8/4hIrKln+8TgtixeBHZ/CeYeGzPQIaLojgT8AF4gVc5ralLDIr6oc=
+Date: Thu, 27 Mar 2008 23:39:13 +0100
+From: Jarek Poplawski <jarkao2@gmail.com>
+To: David Miller <davem@davemloft.net>
+Cc: rjw@sisk.pl, a.p.zijlstra@chello.nl, akpm@linux-foundation.org,
+       netdev@vger.kernel.org, bugme-daemon@bugzilla.kernel.org,
+       marcus@better.se, shemminger@linux-foundation.org,
+       linux-kernel@vger.kernel.org, mingo@elte.hu
+Subject: Re: [Bugme-new] [Bug 10326] New: inconsistent lock state in
+	net_rx_action
+Message-ID: <20080327223913.GB3596@ami.dom.local>
+References: <20080327124928.GE2845@ami.dom.local> <200803272256.50454.rjw@sisk.pl> <20080327222248.GA3596@ami.dom.local> <20080327.152218.235944668.davem@davemloft.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080327.152218.235944668.davem@davemloft.net>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Fri__28_Mar_2008_09_29_16_+1100_Cg2UmuYT9VuU22KL
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Thu, Mar 27, 2008 at 03:22:18PM -0700, David Miller wrote:
+...
+> Instead of going back and forth like this can someone post
+> just take it upon themselves to post such an obvious patch
+> already :-)
+> 
+> All of this "he'll do it, she'll do it" just wastes time.
 
-Hi Haavard,
+Right! She or he should also remember to add Peter's lockup
+scenario and his signed-off-by...
 
-On Thu, 27 Mar 2008 10:42:24 +0100 Haavard Skinnemoen <haavard.skinnemoen@a=
-tmel.com> wrote:
->
-> On Thu, 27 Mar 2008 18:33:57 +1100
-> Stephen Rothwell <sfr@canb.auug.org.au> wrote:
->=20
-> > Status of my local build tests is at
-> > http://kisskb.ellerman.id.au/linux-next.  If maintainers want to give
-> > advice about cross compilers/configs that work, we are always open to a=
-dd
-> > more builds.
->=20
-> AVR32 allnoconfig found a bug, which I've fixed. Could you try enabling
-> it again?
-
-Done.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Fri__28_Mar_2008_09_29_16_+1100_Cg2UmuYT9VuU22KL
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFH7B/BTgG2atn1QN8RAkLYAJ9PeSGDs/m6icVXCb7nkb1uKpGYQACfcTZe
-RVZkn/BoEctMZTjncHRINiM=
-=saGA
------END PGP SIGNATURE-----
-
---Signature=_Fri__28_Mar_2008_09_29_16_+1100_Cg2UmuYT9VuU22KL--
+Jarek P.
