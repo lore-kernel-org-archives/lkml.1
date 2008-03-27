@@ -1,64 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754852AbYC0Xie@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753552AbYC0Xi5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754852AbYC0Xie (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Mar 2008 19:38:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752977AbYC0XiY
+	id S1753552AbYC0Xi5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Mar 2008 19:38:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752655AbYC0Xip
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Mar 2008 19:38:24 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:33811 "EHLO
-	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752487AbYC0XiX (ORCPT
+	Thu, 27 Mar 2008 19:38:45 -0400
+Received: from fg-out-1718.google.com ([72.14.220.157]:14510 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752614AbYC0Xio convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Mar 2008 19:38:23 -0400
-Date: Fri, 28 Mar 2008 00:38:52 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: what's the incompatibility between hibernation and
-	hotplug?memory
-Message-ID: <20080327233852.GA32617@elf.ucw.cz>
-References: <47EAD9A7.6020609@goop.org> <20080327084936.GD25876@elf.ucw.cz> <47EC0842.3020109@goop.org> <200803272155.01463.rjw@sisk.pl>
+	Thu, 27 Mar 2008 19:38:44 -0400
+From: Denys Vlasenko <vda.linux@googlemail.com>
+To: "Ilpo =?iso-8859-1?q?J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
+Subject: Re: [PATCH 3/7] [NET]: uninline dev_alloc_skb, de-bloats a lot
+Date: Fri, 28 Mar 2008 00:36:59 +0100
+User-Agent: KMail/1.8.2
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org,
+       Arnaldo Carvalho de Melo <acme@redhat.com>
+References: <1206621486-5408-1-git-send-email-ilpo.jarvinen@helsinki.fi> <1206621486-5408-3-git-send-email-ilpo.jarvinen@helsinki.fi> <1206621486-5408-4-git-send-email-ilpo.jarvinen@helsinki.fi>
+In-Reply-To: <1206621486-5408-4-git-send-email-ilpo.jarvinen@helsinki.fi>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <200803272155.01463.rjw@sisk.pl>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Message-Id: <200803280036.59311.vda.linux@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu 2008-03-27 21:55:01, Rafael J. Wysocki wrote:
-> On Thursday, 27 of March 2008, Jeremy Fitzhardinge wrote:
-> > Pavel Machek wrote:
-> > > Hi!
-> > >
-> > >   
-> > >>> I noticed that Kconfig warns that hibernation and hotplug memory are not 
-> > >>> compatible.  What's the issue?
-> > >>>       
-> > >> Generally, we might not be able to handle memory unplugged at a wrong time
-> > >> (eg. after we've created the image).
-> > >>
-> > >> Which part of Kconfig says that exactly?
-> > >>     
-> > >
-> > > Actually I believe it is simpler than that. We were not prepared to
-> > > deal with memory holes in hibernation code, so we just disabled it in
-> > > Kconfig...
-> > 
-> > Doesn't that mean its generally incompatible with non-flatmem memory 
-> > arrangements rather than hotplug memory specifically?
+On Thursday 27 March 2008 13:38, Ilpo Järvinen wrote:
+> Allyesconfig (v2.6.24-mm1):
 > 
-> No, it should work with NUMA nowadays, actually.
+> -23668  392 funcs, 104 +, 23772 -, diff: -23668 --- dev_alloc_skb
 > 
-> Perhaps it's worth trying it with hotplug memory and see what problems arise?
+> Without many debug CONFIGs (v2.6.25-rc2-mm1):
+> 
+> -12178  382 funcs, 157 +, 12335 -, diff: -12178 --- dev_alloc_skb
+> dev_alloc_skb                 |  +37
 
-Good. I believe it is good chance it will work with hotplug, too... as
-long as memory is not inserted/removed during suspend/resume.
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
-pomozte zachranit klanovicky les:  http://www.ujezdskystrom.info/
+
+This will be very confusing for casual reader:
+
+> +struct sk_buff *dev_alloc_skb(unsigned int length)
+> +{
+> +	return __dev_alloc_skb(length, GFP_ATOMIC);
+> +}
+> +EXPORT_SYMBOL(dev_alloc_skb);
+
+"what, they want to save one push instruction per callsite??".
+
+Can you add a comment which explains the intent?
+
++struct sk_buff *dev_alloc_skb(unsigned int length)
++{
++       /* There is more code here than it seems:
++        * __dev_alloc_skb is an inline */
++	return __dev_alloc_skb(length, GFP_ATOMIC);
++}
++EXPORT_SYMBOL(dev_alloc_skb);
+
+
+Another good chunk of code size saving can be achieved
+by introducing dev_alloc_skb_or_warn(), and using it
+in places like these:
+
+drivers/net/irda/nsc-ircc.c:
+
+                        skb = dev_alloc_skb(len+1);
+                        if (skb == NULL)  {
+                                IRDA_WARNING("%s(), memory squeeze, "
+                                             "dropping frame.\n",
+                                             __FUNCTION__);
+
+drivers/net/appletalk/ltpc.c:
+
+        skb = dev_alloc_skb(3+sklen);
+        if (skb == NULL)
+        {
+                printk("%s: dropping packet due to memory squeeze.\n",
+
+net/econet/af_econet.c:
+
+        newskb = alloc_skb((len - sizeof(struct aunhdr) + 15) & ~15,
+                           GFP_ATOMIC);
+        if (newskb == NULL)
+        {
+                printk(KERN_DEBUG "AUN: memory squeeze, dropping packet.\n");
+                /* Send nack and hope sender tries again */
+                goto bad;
+        }
+
+(hmm, this last one also wants s/alloc_skb(GFP_ATOMIC)/dev_alloc_skb/)
+
+--
+vda
