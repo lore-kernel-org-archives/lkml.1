@@ -1,108 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758841AbYC0T31@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758700AbYC0Th2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758841AbYC0T31 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Mar 2008 15:29:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756712AbYC0T3Q
+	id S1758700AbYC0Th2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Mar 2008 15:37:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756843AbYC0ThT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Mar 2008 15:29:16 -0400
-Received: from ug-out-1314.google.com ([66.249.92.173]:26031 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756193AbYC0T3O (ORCPT
+	Thu, 27 Mar 2008 15:37:19 -0400
+Received: from picture.zai.com ([12.47.112.36]:46639 "EHLO york.rivers.zai.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1756176AbYC0ThR convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Mar 2008 15:29:14 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=W2m9cCn5CCViJlSP+S5jOv/zcJbYr5j7kPXL0QqQtZ3Vqj3V2/V1k7jOUqKBGmqsqNAO4x5+AIZeji4p485bBEmROOW/fJxesoVEQxb+5ICuJYgI16qNEbBEmq/6VIH2xxO8Ezw3cbmdHeLm+3CI6pP+JorzkVDDRNFhCWMJnbY=
-Message-ID: <3ae72650803271229h6e188de1t81ccfb64e5d3a214@mail.gmail.com>
-Date: Thu, 27 Mar 2008 20:29:11 +0100
-From: "Kay Sievers" <kay.sievers@vrfy.org>
-To: "Tejun Heo" <htejun@gmail.com>
-Subject: Re: What to do about the 2TB limit on HDIO_GETGEO ?
-Cc: "Mark Lord" <lkml@rtr.ca>, "Greg KH" <gregkh@suse.de>,
-       "H. Peter Anvin" <hpa@zytor.com>, "Jens Axboe" <axboe@kernel.dk>,
-       "Jeff Garzik" <jgarzik@pobox.com>, "Linus Torvalds" <torvalds@osdl.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Linux Kernel" <linux-kernel@vger.kernel.org>,
-       "IDE/ATA development list" <linux-ide@vger.kernel.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>
-In-Reply-To: <47E99EBE.7010708@gmail.com>
+	Thu, 27 Mar 2008 15:37:17 -0400
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <47E875AD.1000901@rtr.ca> <47E87942.2020409@rtr.ca>
-	 <47E88A13.70808@zytor.com> <47E90019.3050006@rtr.ca>
-	 <47E90458.7030801@zytor.com> <47E9383F.3050908@rtr.ca>
-	 <20080325192515.GA24234@suse.de> <47E99A02.7040903@rtr.ca>
-	 <47E99EBE.7010708@gmail.com>
-X-Google-Sender-Auth: d897b1e8c2f76a32
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+x-mimeole: Produced By Microsoft Exchange V6.5
+Subject: RE: Performance changes between 2.6.13 and 2.6.23
+Date: Thu, 27 Mar 2008 15:37:15 -0400
+Message-ID: <D108F32273D3044F8C7B24328CB7713701A4E1@york.rivers.zai.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: Performance changes between 2.6.13 and 2.6.23
+Thread-Index: AciOlymCeeQuivWGS0O+LQR8samsugBqgmyI
+References: <D108F32273D3044F8C7B24328CB7713701A4D1@york.rivers.zai.com> <2c0942db0803250941j65be093et718bb838a2779e9c@mail.gmail.com>
+From: "Sanders, Rob M." <sanders-rob@zai.com>
+To: "Ray Lee" <ray-lk@madrabbit.org>
+Cc: <linux-kernel@vger.kernel.org>, <bart.vanassche@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 26, 2008 at 1:54 AM, Tejun Heo <htejun@gmail.com> wrote:
->  Mark Lord wrote:
->  > So have we.  sysfs is a total nightmare to extract information from
->  > under program / script control.  The idea presented in this thread,
->  > is to have it cross-index the contents with a method that actually
->  > makes it easy to access in many common scenarios, without requiring
->  > huge gobs of code in user space.  Or in kernel space.
->  >
->  > And it's not just a few 10s of lines of code currently,
->  > but rather about 80-100 lines just to find the correct device subdir,
->  > and *then* a few more 10s of lines of code to retrieve the value.
->  >
->  > In a bulletproof fashion, that is.  Sure it can be slightly smaller
->  > if niceties such as error checking/handling are omitted.
->  >
->  > There's no guarantee that udev is present, and even if it were present,
->  > there's no guarantee that the names in /dev/ will match /sysfs/ pathnames,
->  > since udev is very configurable to do otherwise.
->  >
->  > So lookups are by dev_t, which sysfs has no simple or even easy way
->  > of accomplishing.  O(n) at a minimum.
->  >
->  > If we make it easier to access, then more programs will use it
->  > rather than us having to expand our tricky binary ioctl interfaces.
->  >
->  > Isn't that part of the idea of sysfs -- to limit the need for new ioctls ?
->
->  The questions are...
->
->  1. Are we gonna push sysfs as the primary interface and not provide an
->  alternative interface (ioctl here) which can provide equivalent
->  information?  There are people running their systems w/o sysfs but I
->  think we're getting closer to this everyday.
->
->  2. Is udev an essential part of all systems?  I'm not sure about this
->  one.  Lots of small machines run w/o udev and I think udev is a bit too
->  high level to depend on for every system.
->
->  If both #1 and #2 are true, I agree with Mark that we need an easy to
->  map from device number to matching sysfs nodes.  Tools which are used
->  early during boot and emergency sessions need this mapping and many of
->  them are minimal C program w/o much dependency for a good reason.
->  Requiring each of them to implement their own way to map device node to
->  sysfs node is too awkward.
->
->  Probably something like /sys/class/block/MAJ:MIN
 
-"Devices directories" are not supposed to contain duplicate entries.
-It would slow-down, or may even break things.
 
-> or /sys/class/devnums/bMAJ:MIN?
 
-These are no devices belonging to the class "devnums", so it may
-confuse things which crawl these directories to get "all devices".
-Current coldplug-like setups will likely add duplicate devices with
-the wrong subsystem. There are also bus-devices with have a dev_t, and
-that will make them show up in /sys/class, which might confuse some
-tools too.
+-----Original Message-----
+From: madrabbit@gmail.com on behalf of Ray Lee
+Sent: Tue 3/25/2008 12:41 PM
+To: Sanders, Rob M.
+Cc: linux-kernel@vger.kernel.org; bart.vanassche@gmail.com
+Subject: Re: Performance changes between 2.6.13 and 2.6.23
+ 
+On Tue, Mar 25, 2008 at 5:34 AM, Sanders, Rob M. <sanders-rob@zai.com> wrote:
+> Hello all,
+>   I've been lurking on the digest for some time (don't want to receive full lkml traffic at work) and saw the
+>  posts about Wine performance regressions in 2.6.24.  Some of what I saw there, particularly Andi Kleen's
+>  responses, mirror something that I see on my box at home.  I had emailed Andi directly since I only read the
+>  digest, and I'm posting this here at his suggestion.  Please CC: rms@zai.com with any replies, as I'm only
+>  getting the lkml digest.
+>   I'm running on a dual 2GHZ G5 Powermac w/2GB ram.  I recently upgraded from YDL4.0.91 (2.6.13 kernel) to
+>  YDL6 (2.6.23 kernel) and noticed that the overall performance of the box seems more sluggish after the upgrade.
+>  Of more particular concern, the main application that I build has seen a 4-5X slowdown in performance.  Under
+>  YDL4.0.91 I could process roughly 1e8 data points in ~2 seconds, and under YDL6.0 I now process 1e8 data points
 
-I guess we will need to find some other solution as a /sys/class/ for
-that. And we must prefix the links with 'c' and 'b' because dev_t is
-not unique across char and block devices.
+So, two processors, and multiple processes passing data back and
+forth. Key point seems to be:
 
-Thanks,
-Kay
+>  in ~8 seconds.  Total CPU loading (from top) is about 5%, under both systems.  The application spawns multiple
+>  processes and uses semaphores and shared memory to move data between the processes.  When I use 'vmstat 3' the
+>  single biggest difference I see between YDL4.0.91 and YDL6 is that the YDL4.0.91 system is the YDL4.0.91 system is
+>  context switching about 7000 per interval, whereas the YDl6 system is context switching about 1200 times per interval.
+
+Many more context switches per second, so a lot less work is getting
+done each time.
+
+>   I've been talking somewhat with Owen Stampflee (works for the distro maker, TSS) and have rebuilt the kernel on
+>  the 2.6 box removing some of the things that I don't need on my box (cell support, etc).  There did seem (subjectively)
+>  to be a slight improvement after that.  When I get some more time to play at home I'm going to take the 2.6.13 .config
+>  I use and build a 2.6.23 kernal using 'make oldconfig' and try to figure if it is a config issues.
+>   I realize that going from 2.6.13 to 2.6.23 is a *huge* change, and that the problems may not be tied to the kernel
+>  but to other things, but are there any other suggestions folks have for finding the cause of the performance slowdow
+
+A lot has changed between 2.6.23 and current mainline as well.
+Particularly in the scheduler, which I suspect is the issue for your
+test. If possible, could you try a 2.6.25-rc-latest kernel, both
+before and after an "echo 5 > /proc/sys/kernel/sched_features" and see
+if that makes any difference?
+
+
+=====
+
+Sorry to disappear for a few days, I just hadn't had time to do anything at home.  Finally had some time to 
+run some test, and at this point I'm thinking that the problem is not with the kernel.  Not quite sure where to look 
+next, but I've done the following tests:
+
+YDL4.0.91 with 2.6.13 kernel - normal speed
+YDL6.0    with 2.6.23 kenrel - 4-5x slowdown
+YDL4.1    with 2.6.15 kernel - 4-5x slowdown
+YDL4.0.91 with 2.6.15 kernel - *normal speed* - kernel config pulled from YDL4.1 install
+YDL4.0.91 with 2.6.23 kernel - failed boot
+
+I'm going to try and test a few other distros (Fedora 8/9, possibly OpenSuse) to see if they have similar 
+issues.  If anyone has other suggestions (including websites to read) feel free to drop me a private line 
+(at rms@zai.com).  Thanks....
+
+Rob
+
