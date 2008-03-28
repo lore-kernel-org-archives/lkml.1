@@ -1,47 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757196AbYC1CaG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757834AbYC1Cac@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757196AbYC1CaG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Mar 2008 22:30:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755069AbYC1C3z
+	id S1757834AbYC1Cac (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Mar 2008 22:30:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757373AbYC1CaU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Mar 2008 22:29:55 -0400
-Received: from relay2.sgi.com ([192.48.171.30]:32879 "EHLO relay.sgi.com"
+	Thu, 27 Mar 2008 22:30:20 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:39153 "EHLO relay.sgi.com"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754737AbYC1C3y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Mar 2008 22:29:54 -0400
-Date: Thu, 27 Mar 2008 19:27:50 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Yasunori Goto <y-goto@jp.fujitsu.com>,
-       Dave Hansen <dave@linux.vnet.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 3 of 4] sparsemem: reduce i386 PAE section size
-In-Reply-To: <47EC574C.10006@goop.org>
-Message-ID: <Pine.LNX.4.64.0803271926520.11576@schroedinger.engr.sgi.com>
-References: <b7d0773c79887ca98d6c.1206664119@localhost>
- <Pine.LNX.4.64.0803271734450.10635@schroedinger.engr.sgi.com>
- <47EC574C.10006@goop.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	id S1754737AbYC1CaT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Mar 2008 22:30:19 -0400
+Message-Id: <20080328023018.264203000@polaris-admin.engr.sgi.com>
+User-Agent: quilt/0.46-1
+Date: Thu, 27 Mar 2008 19:30:18 -0700
+From: Mike Travis <travis@sgi.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH 0/2] generic: simplify setup_nr_cpu_ids and add set_cpus_allowed_ptr
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 27 Mar 2008, Jeremy Fitzhardinge wrote:
 
-> Christoph Lameter wrote:
-> > 
-> > There are patches in mm which changes that situation. You should have 5 or 6
-> > more flags to play with.
-> >   
-> 
-> Oh, good.  We can play with it some more when everything gets merged together.
+Two simple patches to simplify setup_nr_cpu_ids and add a new function,
+set_cpus_allowed_ptr().
 
-Only works on i386 if you either use sparsemem / vmemmap or not sparsemem 
-though. Is there any need for the other sparsemem memory models? Or could 
-we disable them like on x86_64?
+Based on:
+	git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git
+	git://git.kernel.org/pub/scm/linux/kernel/git/x86/linux-2.6-x86.git
 
+
+Signed-off-by: Mike Travis <travis@sgi.com>
+---
+v2: fixed the EXPORT_SYMBOL for set_cpus_allowed_ptr()
+
+-- 
