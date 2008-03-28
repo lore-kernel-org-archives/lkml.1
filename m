@@ -1,75 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755849AbYC1B6K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756042AbYC1CHh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755849AbYC1B6K (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Mar 2008 21:58:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753876AbYC1B55
+	id S1756042AbYC1CHh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Mar 2008 22:07:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754174AbYC1CH2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Mar 2008 21:57:57 -0400
-Received: from rtr.ca ([76.10.145.34]:3049 "EHLO mail.rtr.ca"
+	Thu, 27 Mar 2008 22:07:28 -0400
+Received: from mga11.intel.com ([192.55.52.93]:20319 "EHLO mga11.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752929AbYC1B54 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Mar 2008 21:57:56 -0400
-Message-ID: <47EC50A3.5070304@rtr.ca>
-Date: Thu, 27 Mar 2008 21:57:55 -0400
-From: Mark Lord <lkml@rtr.ca>
-Organization: Real-Time Remedies Inc.
-User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
-MIME-Version: 1.0
-To: Jiri Kosina <jkosina@suse.cz>
-Cc: Greg KH <gregkh@suse.de>, Linux Kernel <linux-kernel@vger.kernel.org>,
-       linux-usb@vger.kernel.org, Pavel Machek <pavel@suse.cz>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: 2.6.25-rc7:  Ugh.
-References: <47EBBD57.30902@rtr.ca> <20080327160700.GB828@suse.de> <Pine.LNX.4.64.0803280126550.5541@jikos.suse.cz>
-In-Reply-To: <Pine.LNX.4.64.0803280126550.5541@jikos.suse.cz>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	id S1753863AbYC1CH1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Mar 2008 22:07:27 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,566,1199692800"; 
+   d="scan'208";a="541358140"
+Subject: Re: [PATCH -mm 2/4] x86_64 boot: Add linked list of struct
+	setup_data
+From: "Huang, Ying" <ying.huang@intel.com>
+To: Paul Jackson <pj@sgi.com>
+Cc: hpa@zytor.com, andi@firstfloor.org, mingo@redhat.com, tglx@linutronix.de,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20080327062539.5cbcb925.pj@sgi.com>
+References: <1206601748.3067.22.camel@caritas-dev.intel.com>
+	 <20080327062539.5cbcb925.pj@sgi.com>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
+Date: Fri, 28 Mar 2008 10:08:37 +0800
+Message-Id: <1206670117.13404.6.camel@caritas-dev.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 
+X-OriginalArrivalTime: 28 Mar 2008 02:05:33.0967 (UTC) FILETIME=[34FF21F0:01C89078]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jiri Kosina wrote:
-> On Thu, 27 Mar 2008, Greg KH wrote:
+On Thu, 2008-03-27 at 06:25 -0500, Paul Jackson wrote:
+> Huang wrote:
+> +	while (pa_data) {
+> +		data = early_ioremap(pa_data, PAGE_SIZE);
+> +		switch (data->type) {
+> +		default:
+> +			break;
+> +		}
 > 
->>> It boots, but just a simple suspend/resume (RAM) was enough to kill 
->>> it. It comes back on resume, with an X desktop again, but with no USB 
->>> functionality -- no mouse.
->>> The keyboard still works, so I dropped to a console and tried:
->>>   rmmod usbhid
->>>   insmod usbhid
->>> And the console hung at 100% CPU on the insmod.
->> Haven't heard of this one before sorry.  Jiri, have you?
+> Isn't that switch statement equivalent to -always- breaking, as in:
 > 
-> No, haven't heard anything similar either. Mark, are you able to collect 
-> the stacktraces via alt-sysrq-t at the time the system goes crazy?
-..
-
-No where practical to capture them to.
-I don't know if the machine was entirely dead,
-or just the console at that point.
-
-> Also, as you seem to be able to easily reproduce the bug, git-bisect might 
-> reveal the culprit easily. For start, you can try to bisect only let's say 
-> usb, hid and acpi code probably ... ?
-..
-
-I don't have the XX days necessary for git-bisect right now.
-But if there were some likely candidates, I could probably try a couple.
-Mostly I just wanted to give a heads-up that all is not well with 2.6.25
-for now, and I'll get round to debugging it when I have time to do so.
-
-I haven't yet tried -rc7 on my *other* dissimilar notebook,
-but back at -rc2 it also had serious issues with suspend/resume not working.
-This is my first look at 2.6.25 (on notebooks) since then.
-
-.. 
->>> kernel: [  111.361099] pciehp_resume ENTRY
->>> kernel: [  112.362047] pciehp: Device 0000:0c:00.0 already exists at c:0, 
->>> cannot hot-add
->>> kernel: [  112.362052] pciehp: Cannot add device 0xc:0
+> +	while (pa_data) {
+> +		data = early_ioremap(pa_data, PAGE_SIZE);
+> +		break;
 > 
-> Hmm, what device is this?
-..
+> I doubt you want to do that.  I suppose what you want to do is check for
+> data == NULL instead, as in:
+> 
+> +	while (pa_data) {
+> +		data = early_ioremap(pa_data, PAGE_SIZE);
+> +		if (!data)
+> +			break;
 
-Wireless PCIe card on internal slot -- Intel 3945ABG.
+This break will break the switch instead of while. When setup_data
+processing code is added, the code will looks like:
 
+#define SETUP_DATA_E820_EXT	1
+
+while (pa_data) {
+	data = early_ioremap(pa_data, PAGE_SIZE);
+	switch (data->type) {
+	case SETUP_DATA_E820_EXT:
+		parse_e820_ext(data, pa_data);
+		break;
+	default:
+		break;
+	}
+...
+
+Best Regards,
+Huang Ying
