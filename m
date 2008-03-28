@@ -1,52 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756245AbYC1Qp1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756376AbYC1QsW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756245AbYC1Qp1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Mar 2008 12:45:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753576AbYC1QpQ
+	id S1756376AbYC1QsW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Mar 2008 12:48:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752375AbYC1QsG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Mar 2008 12:45:16 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:43879 "EHLO e4.ny.us.ibm.com"
+	Fri, 28 Mar 2008 12:48:06 -0400
+Received: from mms1.broadcom.com ([216.31.210.17]:3391 "EHLO mms1.broadcom.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752152AbYC1QpP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Mar 2008 12:45:15 -0400
-Subject: Re: [PATCH 3 of 4] sparsemem: reduce i386 PAE section size
-From: Dave Hansen <dave@linux.vnet.ibm.com>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Yasunori Goto <y-goto@jp.fujitsu.com>,
-       Christoph Lameter <clameter@sgi.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Andy Whitcroft <apw@shadowen.org>
-In-Reply-To: <b7d0773c79887ca98d6c.1206664119@localhost>
-References: <b7d0773c79887ca98d6c.1206664119@localhost>
+	id S1751822AbYC1QsF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Mar 2008 12:48:05 -0400
+X-Server-Uuid: 02CED230-5797-4B57-9875-D5D2FEE4708A
+Subject: Re: tg3 bad performance, lots of hardware interrupts
+From: "Michael Chan" <mchan@broadcom.com>
+To: "Harald Hannelius" <harald@iki.fi>
+cc: "David Miller" <davem@davemloft.net>, linux-kernel@vger.kernel.org,
+       netdev <netdev@vger.kernel.org>
+In-Reply-To: <alpine.DEB.1.00.0803281440460.23558@penti.org>
+References: <alpine.DEB.1.00.0803271532570.30549@penti.org>
+ <20080327.144925.196529669.davem@davemloft.net>
+ <1206666100.5368.6.camel@dell>
+ <alpine.DEB.1.00.0803281440460.23558@penti.org>
+Date: Fri, 28 Mar 2008 09:49:20 -0800
+Message-ID: <1206726560.6866.5.camel@dell>
+MIME-Version: 1.0
+X-Mailer: Evolution 2.0.2 (2.0.2-8)
+X-WSS-ID: 6BF3FEBE60W18467764-05-01
 Content-Type: text/plain
-Date: Fri, 28 Mar 2008 09:45:08 -0700
-Message-Id: <1206722708.7883.122.camel@nimitz.home.sr71.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-03-27 at 17:28 -0700, Jeremy Fitzhardinge wrote:
-> diff --git a/include/asm-x86/sparsemem.h b/include/asm-x86/sparsemem.h
-> --- a/include/asm-x86/sparsemem.h
-> +++ b/include/asm-x86/sparsemem.h
-> @@ -16,7 +16,7 @@
-> 
->  #ifdef CONFIG_X86_32
->  # ifdef CONFIG_X86_PAE
-> -#  define SECTION_SIZE_BITS    30
-> +#  define SECTION_SIZE_BITS    29
->  #  define MAX_PHYSADDR_BITS    36
->  #  define MAX_PHYSMEM_BITS     36
->  # else
+On Fri, 2008-03-28 at 15:04 +0200, Harald Hannelius wrote:
+> Phew, I thought that running ethtool -t was like doing stop-A-sync on
+> a 
+> Sun. It took almost half an hour to run that ethtool -t command;
 
-This is fine with me as long as we have the room in page->flags.  I
-probably need to look at Christoph's new patches, too.
+Something is very wrong.  ethtool -t should only take a few seconds to
+complete.  You can try ethtool -t eth0 online to reduce the number of
+tests to see if it makes a difference.
 
--- Dave
+How many of these NICs do you have?  If you have more than one, do they
+all behave the same way?  Have they ever worked well before?
 
