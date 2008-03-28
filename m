@@ -1,59 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757345AbYC1T0z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758000AbYC1T1Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757345AbYC1T0z (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Mar 2008 15:26:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754255AbYC1T0r
+	id S1758000AbYC1T1Q (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Mar 2008 15:27:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754233AbYC1T06
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Mar 2008 15:26:47 -0400
-Received: from wa-out-1112.google.com ([209.85.146.180]:24483 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753254AbYC1T0q (ORCPT
+	Fri, 28 Mar 2008 15:26:58 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:51906 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757512AbYC1T05 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Mar 2008 15:26:46 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=NVD/YCLL1EoJH3TFwusV84bDdgOtZsrNqHpBFHLiH0IpEutGjrGUj1XEsuxKdLfwMYZBcC0E4Pdinv1brcTj9TzF70VyjFw0lrCM3uJ/zSLHq1gy4Dc7oH11IQ2UAZuGlLxH925/I+GJmsPDPBcxKo2jWgORxVAqblvhag9XUq8=
-From: Mike Snitzer <snitzer@gmail.com>
-To: linux-kernel@vger.kernel.org
-Cc: nbd-general@lists.sourceforge.net, Mike Snitzer <snitzer@gmail.com>,
-       Paul Clements <paul.clements@steeleye.com>
-Subject: [PATCH] nbd: prevent sock_xmit from attempting to use a NULL socket
-Date: Fri, 28 Mar 2008 15:26:40 -0400
-Message-Id: <1206732400-23715-1-git-send-email-snitzer@gmail.com>
-X-Mailer: git-send-email 1.5.3.4
+	Fri, 28 Mar 2008 15:26:57 -0400
+Date: Fri, 28 Mar 2008 12:25:57 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Christoph Lameter <clameter@sgi.com>
+cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Pawel Staszewski <pstaszewski@artcom.pl>,
+       LKML <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Natalie Protasevich <protasnb@gmail.com>
+Subject: Re: 2.6.25-rc7-git2: Reported regressions from 2.6.24
+In-Reply-To: <Pine.LNX.4.64.0803281128480.17805@schroedinger.engr.sgi.com>
+Message-ID: <alpine.LFD.1.00.0803281214580.14670@woody.linux-foundation.org>
+References: <200803272353.51901.rjw@sisk.pl> <alpine.LFD.1.00.0803271859280.14670@woody.linux-foundation.org> <Pine.LNX.4.64.0803272002090.11979@schroedinger.engr.sgi.com> <alpine.LFD.1.00.0803272050290.14670@woody.linux-foundation.org>
+ <Pine.LNX.4.64.0803281128480.17805@schroedinger.engr.sgi.com>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-NBD does not protect the nbd_device's socket from becoming NULL during receives.
 
-This closes a race with the NBD_CLEAR_SOCK ioctl (nbd-client -d) setting
-the nbd_device's socket to NULL right before NBD calls sock_xmit.
 
-Signed-off-by: Mike Snitzer <snitzer@gmail.com>
-Cc: Paul Clements <paul.clements@steeleye.com>
----
- drivers/block/nbd.c |    6 ++++++
- 1 files changed, 6 insertions(+), 0 deletions(-)
+On Fri, 28 Mar 2008, Christoph Lameter wrote:
+> 
+> prep_zero_page does:
+> 
+> static inline void prep_zero_page(struct page *page, int order, gfp_t  gfp_flags)
+> {
+>         int i;
+> 
+>         /*
+>          * clear_highpage() will use KM_USER0, so it's a bug to use __GFP_ZERO
+>          * and __GFP_HIGHMEM from hard or soft interrupt context.
+>          */
+>         VM_BUG_ON((gfp_flags & __GFP_HIGHMEM) && in_interrupt());
+>         for (i = 0; i < (1 << order); i++)
+>                 clear_highpage(page + i);
 
-diff --git a/drivers/block/nbd.c b/drivers/block/nbd.c
-index b53fdb0..bd3c50b 100644
---- a/drivers/block/nbd.c
-+++ b/drivers/block/nbd.c
-@@ -153,6 +153,12 @@ static int sock_xmit(struct nbd_device *lo, int send, void *buf, int size,
- 	struct kvec iov;
- 	sigset_t blocked, oldset;
- 
-+	if (unlikely(!sock)) {
-+		printk(KERN_ERR "%s: Attempted %s on closed socket in sock_xmit\n",
-+		       lo->disk->disk_name, (send ? "send" : "recv"));
-+		return -EINVAL;
-+	}
-+
- 	/* Allow interception of SIGKILL only
- 	 * Don't allow other signals to interrupt the transmission */
- 	siginitsetinv(&blocked, sigmask(SIGKILL));
--- 
-1.5.3.4
+.. and clear_highpage() does:
 
+	void *kaddr = kmap_atomic(page, KM_USER0);
+	clear_page(kaddr);
+
+.. where kmap_atomic() on x86 does:
+
+	kmap_atomic() ->
+	  kmap_atomic_prot() ->
+	    debug_kmap_atomic_prot() ->
+	      if (in_irq())
+	        WARN_ON_ONCE()
+
+none of which are at all conditional on __GFP_HIGHMEM.
+
+But none of this is relevant. The warning possibly didn't even come from 
+slub, it just made me look at it - because *something* is doing GFP_ATOMIC 
+together with __GFP_ZERO, and it became obvious that SLUB is one potential 
+cause of that.
+
+And the SLUB case simply isn't valid!
+
+> Then clear_highpage calls additional checking functions that have 
+> the effect of generally forbiding zeroing in interrupt context if 
+> CONFIG_HIGHMEM is set. This is wrong and needs to be fixed.
+
+No. Dammit, the bug is in SLUB.
+
+If SLUB *ever* calls the page allocator with __GFP_ZERO set, it's a 
+bug, and that has nothing to do with GFP_ATOMIC or anything else. Because 
+SLUB uses its own logic for clearing the result.
+
+Why cannot you just admit it?
+
+Now, _outside_ of SLUB there appear to be other users too, and those users 
+need to either be fixed or we need to allow __GFP_ZERO togethe with 
+GFP_ATOMIC. But the fact is, SLUB had a really stupid bug that it 
+shouldn't have had.
+
+		Linus
