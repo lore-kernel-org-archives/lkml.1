@@ -1,54 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758196AbYC1VS3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758666AbYC1VTo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758196AbYC1VS3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Mar 2008 17:18:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755379AbYC1VSU
+	id S1758666AbYC1VTo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Mar 2008 17:19:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755686AbYC1VTe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Mar 2008 17:18:20 -0400
-Received: from mga03.intel.com ([143.182.124.21]:14877 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755114AbYC1VST convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Mar 2008 17:18:19 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,572,1199692800"; 
-   d="scan'208";a="224566205"
-X-MIMEOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Subject: RE: down_spin() implementation
-Date: Fri, 28 Mar 2008 14:16:55 -0700
-Message-ID: <1FE6DD409037234FAB833C420AA843ECF237C0@orsmsx424.amr.corp.intel.com>
-In-reply-to: <20080328124517.GQ16721@parisc-linux.org>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: down_spin() implementation
-Thread-Index: AciQ0e6kxa7LTjy/SOKC9+7juddiHQARnOog
-References: <1FE6DD409037234FAB833C420AA843ECE9DF60@orsmsx424.amr.corp.intel.com> <1FE6DD409037234FAB833C420AA843ECE9EB1C@orsmsx424.amr.corp.intel.com> <20080327141508.GL16721@parisc-linux.org> <200803281101.25037.nickpiggin@yahoo.com.au> <20080328124517.GQ16721@parisc-linux.org>
-From: "Luck, Tony" <tony.luck@intel.com>
-To: "Matthew Wilcox" <matthew@wil.cx>, "Nick Piggin" <nickpiggin@yahoo.com.au>
-Cc: "Stephen Rothwell" <sfr@canb.auug.org.au>, <linux-arch@vger.kernel.org>,
-       <linux-mm@kvack.org>, <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 28 Mar 2008 21:16:56.0768 (UTC) FILETIME=[0D8E0400:01C89119]
+	Fri, 28 Mar 2008 17:19:34 -0400
+Received: from smtp.wellnetcz.com ([212.24.148.102]:49315 "EHLO WNmonitoring"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755621AbYC1VTd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Mar 2008 17:19:33 -0400
+From: Jiri Slaby <jirislaby@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Jiri Slaby <jirislaby@gmail.com>
+Subject: [PATCH 4/4] Char: rio, fix sparse warnings
+Date: Fri, 28 Mar 2008 22:18:44 +0100
+Message-Id: <1206739124-3875-4-git-send-email-jirislaby@gmail.com>
+X-Mailer: git-send-email 1.5.4.4
+In-Reply-To: <20080328032449.cbc09f3b.akpm@linux-foundation.org>
+References: <20080328032449.cbc09f3b.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> So it makes little sense to add this to semaphores.  Better to introduce
-> a spinaphore, as you say.
+Add some locks and unlocks to some code paths.
 
-> struct {
->   atomic_t cur;
->   int max;
-> } ss_t;
+Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+---
+ drivers/char/rio/riotable.c |    4 +++-
+ drivers/char/rio/riotty.c   |    4 ++++
+ 2 files changed, 7 insertions(+), 1 deletions(-)
 
-Could this API sneak into the bottom of one or the other of
-linux/include/{spinlock,semaphore}.h ... or should it get its own
-spinaphore.h file?
+diff --git a/drivers/char/rio/riotable.c b/drivers/char/rio/riotable.c
+index dfce405..2b24488 100644
+--- a/drivers/char/rio/riotable.c
++++ b/drivers/char/rio/riotable.c
+@@ -424,8 +424,10 @@ int RIOApel(struct rio_info *p)
+ 
+ 		MapP = &p->RIOConnectTable[Next++];
+ 		MapP->HostUniqueNum = HostP->UniqueNum;
+-		if ((HostP->Flags & RUN_STATE) != RC_RUNNING)
++		if ((HostP->Flags & RUN_STATE) != RC_RUNNING) {
++			rio_spin_unlock_irqrestore(&HostP->HostLock, flags);
+ 			continue;
++		}
+ 		MapP->RtaUniqueNum = 0;
+ 		MapP->ID = 0;
+ 		MapP->Flags = SLOT_IN_USE;
+diff --git a/drivers/char/rio/riotty.c b/drivers/char/rio/riotty.c
+index 047531f..c993548 100644
+--- a/drivers/char/rio/riotty.c
++++ b/drivers/char/rio/riotty.c
+@@ -319,6 +319,7 @@ int riotopen(struct tty_struct *tty, struct file *filp)
+ 			PortP->State |= RIO_WOPEN;
+ 			rio_spin_unlock_irqrestore(&PortP->portSem, flags);
+ 			if (RIODelay(PortP, HUNDRED_MS) == RIO_FAIL) {
++				rio_spin_lock_irqsave(&PortP->portSem, flags);
+ 				/*
+ 				 ** ACTION: verify that this is a good thing
+ 				 ** to do here. -- ???
+@@ -334,6 +335,7 @@ int riotopen(struct tty_struct *tty, struct file *filp)
+ 				func_exit();
+ 				return -EINTR;
+ 			}
++			rio_spin_lock_irqsave(&PortP->portSem, flags);
+ 		}
+ 		PortP->State &= ~RIO_WOPEN;
+ 	}
+@@ -493,6 +495,7 @@ int riotclose(void *ptr)
+ 
+ 	if (RIOShortCommand(p, PortP, RIOC_CLOSE, 1, 0) == RIO_FAIL) {
+ 		RIOPreemptiveCmd(p, PortP, RIOC_FCLOSE);
++		rio_spin_lock_irqsave(&PortP->portSem, flags);
+ 		goto close_end;
+ 	}
+ 
+@@ -508,6 +511,7 @@ int riotclose(void *ptr)
+ 
+ 			if (p->RIOHalted) {
+ 				RIOClearUp(PortP);
++				rio_spin_lock_irqsave(&PortP->portSem, flags);
+ 				goto close_end;
+ 			}
+ 			if (RIODelay(PortP, HUNDRED_MS) == RIO_FAIL) {
+-- 
+1.5.4.4
 
-Or should I follow Alan's earlier advice and keep this as an ia64
-only thing (since I'll be the only user).
-
--Tony
