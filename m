@@ -1,96 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756565AbYC1Quq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755936AbYC1Qwn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756565AbYC1Quq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Mar 2008 12:50:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753280AbYC1Qui
+	id S1755936AbYC1Qwn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Mar 2008 12:52:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753344AbYC1Qwf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Mar 2008 12:50:38 -0400
-Received: from g5t0009.atlanta.hp.com ([15.192.0.46]:34790 "EHLO
-	g5t0009.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752038AbYC1Quh (ORCPT
+	Fri, 28 Mar 2008 12:52:35 -0400
+Received: from e35.co.us.ibm.com ([32.97.110.153]:38236 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752284AbYC1Qwe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Mar 2008 12:50:37 -0400
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-Subject: [patch] nsc-ircc: wrap PNP probe code in #ifdef CONFIG_PNP
-Date: Fri, 28 Mar 2008 10:54:43 -0600
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
-       Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
-       linux-kernel@vger.kernel.org, Samuel Ortiz <samuel@sortiz.org>,
-       irda-users@lists.sourceforge.net, linux-next@vger.kernel.org
+	Fri, 28 Mar 2008 12:52:34 -0400
+Message-ID: <47ED2249.3070602@us.ibm.com>
+Date: Fri, 28 Mar 2008 09:52:25 -0700
+From: Badari Pulavarty <pbadari@us.ibm.com>
+User-Agent: Thunderbird 2.0.0.12 (Windows/20080213)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+To: Kumar Gala <galak@kernel.crashing.org>
+CC: lkml <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org,
+       Andrew Morton <akpm@linux-foundation.org>, paulus@samba.org,
+       Yasunori Goto <y-goto@jp.fujitsu.com>
+Subject: Re: [PATCH 4/5] [PPC] update lmb for hotplug memory add/remove
+References: <1206664406.19368.2.camel@dyn9047017100.beaverton.ibm.com> <1206664759.19368.11.camel@dyn9047017100.beaverton.ibm.com> <EA08C942-E156-410D-8ADA-7A4812B20221@kernel.crashing.org>
+In-Reply-To: <EA08C942-E156-410D-8ADA-7A4812B20221@kernel.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-To: "Undisclosed.Recipients:"@smtp1.fc.hp.com
-Message-Id: <200803281054.44836.bjorn.helgaas@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Wrap PNP probe code in #ifdef CONFIG_PNP.
+Kumar Gala wrote:
+>
+> On Mar 27, 2008, at 7:39 PM, Badari Pulavarty wrote:
+>> ppc kernel maintains information about logical memory blocks in
+>> lmb.memory structure at the boot time. Its not updated for
+>> hotplug memory add/remove. hotplug memory notifier for memory
+>> add/remove now updates lmb.memory.
+>>
+>> This information is useful for eHEA driver to find out the memory
+>> layout and holes.
+>>
+>> NOTE: No special locking is needed for lmb_add() and lmb_remove().
+>> Calls to these are serialized by caller. (pSeries_reconfig_chain).
+>>
+>> Signed-off-by: Badari Pulavarty <pbadari@us.ibm.com>
+>> ---
+>> arch/powerpc/platforms/pseries/hotplug-memory.c |   43 +++++++++++++++
+>> include/linux/lmb.h                             |    3 -
+>> lib/lmb.c                                       |   66 
+>> ++++++++++++++++++++----
+>> 3 files changed, 102 insertions(+), 10 deletions(-)
+>
+> How is lmb_remove different than lmb_alloc?
+>
+> - k
+lmb_remove() can be used to punch a hole in to the existing memory block.
+lmb_alloc() tries to allocate for a given alignment, I don't think it can
+adjust the current entries. Isn't it ?
 
-Without this change, we'll have unresolved references to
-pnp_get_resource() function when CONFIG_PNP=n.  (This is a
-new interface that's not in mainline yet.)
+Thanks,
+Badari
 
-Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
-
-Index: work7/drivers/net/irda/nsc-ircc.c
-===================================================================
---- work7.orig/drivers/net/irda/nsc-ircc.c	2008-03-28 10:47:07.000000000 -0600
-+++ work7/drivers/net/irda/nsc-ircc.c	2008-03-28 10:47:12.000000000 -0600
-@@ -100,7 +100,6 @@
- static int nsc_ircc_init_108(nsc_chip_t *chip, chipio_t *info);
- static int nsc_ircc_init_338(nsc_chip_t *chip, chipio_t *info);
- static int nsc_ircc_init_39x(nsc_chip_t *chip, chipio_t *info);
--static int nsc_ircc_pnp_probe(struct pnp_dev *dev, const struct pnp_device_id *id);
- 
- /* These are the known NSC chips */
- static nsc_chip_t chips[] = {
-@@ -145,8 +144,10 @@
- 	"No dongle connected",
- };
- 
--/* PNP probing */
- static chipio_t pnp_info;
-+
-+#ifdef CONFIG_PNP
-+/* PNP probing */
- static const struct pnp_device_id nsc_ircc_pnp_table[] = {
- 	{ .id = "NSC6001", .driver_data = 0 },
- 	{ .id = "IBM0071", .driver_data = 0 },
-@@ -155,11 +156,16 @@
- 
- MODULE_DEVICE_TABLE(pnp, nsc_ircc_pnp_table);
- 
-+static int nsc_ircc_pnp_probe(struct pnp_dev *dev, const struct pnp_device_id *id);
-+
- static struct pnp_driver nsc_ircc_pnp_driver = {
- 	.name = "nsc-ircc",
- 	.id_table = nsc_ircc_pnp_table,
- 	.probe = nsc_ircc_pnp_probe,
- };
-+#else
-+static struct pnp_driver nsc_ircc_pnp_driver;
-+#endif
- 
- /* Some prototypes */
- static int  nsc_ircc_open(chipio_t *info);
-@@ -916,6 +922,7 @@
- 	return 0;
- }
- 
-+#ifdef CONFIG_PNP
- /* PNP probing */
- static int nsc_ircc_pnp_probe(struct pnp_dev *dev, const struct pnp_device_id *id)
- {
-@@ -952,6 +959,7 @@
- 
- 	return 0;
- }
-+#endif
- 
- /*
-  * Function nsc_ircc_setup (info)
