@@ -1,53 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758637AbYC1CmX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758915AbYC1Cmg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758637AbYC1CmX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Mar 2008 22:42:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755462AbYC1Clr
+	id S1758915AbYC1Cmg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Mar 2008 22:42:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758275AbYC1Cly
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Mar 2008 22:41:47 -0400
-Received: from gate.crashing.org ([63.228.1.57]:57156 "EHLO gate.crashing.org"
+	Thu, 27 Mar 2008 22:41:54 -0400
+Received: from ozlabs.org ([203.10.76.45]:34826 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757936AbYC1Cln (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Mar 2008 22:41:43 -0400
-Cc: lkml <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org,
-       Andrew Morton <akpm@linux-foundation.org>, paulus@samba.org,
-       Yasunori Goto <y-goto@jp.fujitsu.com>
-Message-Id: <EA08C942-E156-410D-8ADA-7A4812B20221@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Badari Pulavarty <pbadari@us.ibm.com>
-In-Reply-To: <1206664759.19368.11.camel@dyn9047017100.beaverton.ibm.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+	id S1758233AbYC1Clx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Mar 2008 22:41:53 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: Re: [PATCH 4 of 4] paravirt_ops: don't steal memory resources in paravirt_disable_iospace
+Date: Fri, 28 Mar 2008 13:41:13 +1100
+User-Agent: KMail/1.9.9
+Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Yasunori Goto <y-goto@jp.fujitsu.com>,
+       Christoph Lameter <clameter@sgi.com>,
+       Dave Hansen <dave@linux.vnet.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+References: <9befcae155388f3f0e71.1206664120@localhost>
+In-Reply-To: <9befcae155388f3f0e71.1206664120@localhost>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Mime-Version: 1.0 (Apple Message framework v919.2)
-Subject: Re: [PATCH 4/5] [PPC] update lmb for hotplug memory add/remove
-Date: Thu, 27 Mar 2008 21:40:52 -0500
-References: <1206664406.19368.2.camel@dyn9047017100.beaverton.ibm.com> <1206664759.19368.11.camel@dyn9047017100.beaverton.ibm.com>
-X-Mailer: Apple Mail (2.919.2)
+Content-Disposition: inline
+Message-Id: <200803281341.14031.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Friday 28 March 2008 11:28:40 Jeremy Fitzhardinge wrote:
+> The memory resource is also used for main memory, and we need it to
+> allocate physical addresses for memory hotplug.  Knobbling io space is
+> enough to get the job done anyway.
 
-On Mar 27, 2008, at 7:39 PM, Badari Pulavarty wrote:
-> ppc kernel maintains information about logical memory blocks in
-> lmb.memory structure at the boot time. Its not updated for
-> hotplug memory add/remove. hotplug memory notifier for memory
-> add/remove now updates lmb.memory.
->
-> This information is useful for eHEA driver to find out the memory
-> layout and holes.
->
-> NOTE: No special locking is needed for lmb_add() and lmb_remove().
-> Calls to these are serialized by caller. (pSeries_reconfig_chain).
->
-> Signed-off-by: Badari Pulavarty <pbadari@us.ibm.com>
-> ---
-> arch/powerpc/platforms/pseries/hotplug-memory.c |   43 +++++++++++++++
-> include/linux/lmb.h                             |    3 -
-> lib/lmb.c                                       |   66 ++++++++++++++ 
-> ++++++----
-> 3 files changed, 102 insertions(+), 10 deletions(-)
+Indeed, tested with lguest and it works for me.  I've put this in my 
+patchqueue, but if it all gets taken by someone else I can easily drop it.
 
-How is lmb_remove different than lmb_alloc?
-
-- k
+Thanks,
+Rusty.
