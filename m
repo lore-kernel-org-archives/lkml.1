@@ -1,59 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756184AbYC1Ld1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756378AbYC1Lds@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756184AbYC1Ld1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Mar 2008 07:33:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753625AbYC1LdS
+	id S1756378AbYC1Lds (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Mar 2008 07:33:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754904AbYC1Ldh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Mar 2008 07:33:18 -0400
-Received: from smtpeu1.atmel.com ([195.65.72.27]:61914 "EHLO bagnes.atmel.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753433AbYC1LdR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Mar 2008 07:33:17 -0400
-Date: Fri, 28 Mar 2008 12:29:25 +0100
-From: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Pawel Staszewski <pstaszewski@artcom.pl>,
-       Christoph Lameter <clameter@sgi.com>,
-       LKML <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Natalie Protasevich <protasnb@gmail.com>,
-       Ben Nizette <bn@niasdigital.com>
-Subject: Re: 2.6.25-rc7-git2: Reported regressions from 2.6.24
-Message-ID: <20080328122925.3131484c@hskinnemo-gx620.norway.atmel.com>
-In-Reply-To: <alpine.LFD.1.00.0803271859280.14670@woody.linux-foundation.org>
-References: <200803272353.51901.rjw@sisk.pl>
-	<alpine.LFD.1.00.0803271859280.14670@woody.linux-foundation.org>
-Organization: Atmel Norway
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 28 Mar 2008 07:33:37 -0400
+Received: from orion.ambsoft.pl ([212.109.144.130]:33802 "EHLO
+	orion.ambsoft.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753625AbYC1Ldg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Mar 2008 07:33:36 -0400
+From: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
+To: David Miller <davem@davemloft.net>
+Subject: Re: Linux 2.6.25-rc7 sparc64 loops forever on cat /proc/<pid>/pagemap
+Date: Fri, 28 Mar 2008 12:33:32 +0100
+User-Agent: KMail/1.9.7
+Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       sparclinux@vger.kernel.org
+References: <alpine.LFD.1.00.0803251856450.2775@woody.linux-foundation.org> <200803261302.46313.m.kozlowski@tuxland.pl> <20080326.173527.193701097.davem@davemloft.net>
+In-Reply-To: <20080326.173527.193701097.davem@davemloft.net>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 28 Mar 2008 11:29:25.0866 (UTC) FILETIME=[FA613CA0:01C890C6]
+Content-Disposition: inline
+Message-Id: <200803281233.32917.m.kozlowski@tuxland.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds <torvalds@linux-foundation.org> wrote:
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=9976
-> > Subject		: BUG: 2.6.25-rc1: iptables postrouting setup causes oops
-> > Submitter	: Ben Nizette <bn@niasdigital.com>
-> > Date		: 2008-02-12 12:46 (45 days old)
-> > References	: http://lkml.org/lkml/2008/2/12/148
-> > Handled-By	: Haavard Skinnemoen <hskinnemoen@atmel.com>  
+Hello David,
+
+> > cat /proc/<pid>/pagemap 
+> > 
+> > and 
+> > 
+> > cat /proc/<pid>/task/<pid>/pagemap
+> > 
+> > eats up to 100% of CPU while looping forever somewhere. On the other
+> > hand on my old x86 the same commands take well below 1s so I
+> > guess that is the expected behaviour.
 > 
-> This one seems gone (and was apparently AVR-only):
+> The patch below will speed this up for 32-bit processes but for 64-bit
+> ones it's still going to take a long time.
 > 
-> http://lkml.org/lkml/2008/2/13/607:
->   "What ever the problem is it isn't immediately apparent in latest git so
->    I guess we'll just have to keep our eyes peeled."
+> Cat'ing this file writes a 64-bit value for every possible page in the
+> task's address space, which for 64-bit is an enormous number of
+> entries.
+> 
+> This is not how this file is supposed to be used.  Programs are
+> supposed to inspect /proc/${PID}/maps, and use those ranges to lseek()
+> around the pagemap file and fish out the values they need.
 
-Yes, I haven't been able to reproduce it, so I was going to ask for it
-to be removed. I suspect it must be some sort of -rc1 weirdness that
-has been fixed by a later commit.
+I see. Sorry for the noise then 8-) I've got a couple of scripts for testing
+/proc and /sys and I just noticed that some of processes started by them
+would run for a couple hours eating 100% CPU which doesn't happen on other
+arch'es I have around - hence my report. Thanks for clarification.
 
-I don't feel good about closing it without knowing what it was, but
-since neither Ben nor I can reproduce it anymore, I don't have any
-better suggestions.
+> This expensive operation is quite harmless, the process can still be
+> killed, it is not unstoppable.
 
-Haavard
+That's true.
+ 
+> commit c101b088ba0ed16d7109b2f3c2d16798d162a535
+> Author: David S. Miller <davem@davemloft.net>
+> Date:   Wed Mar 26 17:32:33 2008 -0700
+> 
+>     [SPARC64]: Define TASK_SIZE_OF()
+>     
+>     This make "cat /proc/${PID}/pagemap" more efficient for
+>     32-bit tasks.
+
+This patch certainly helps in my case. Tested here:
+
+sparc64 # time cat /proc/1/pagemap > /dev/null
+real    0m0.046s
+user    0m0.000s
+sys     0m0.047s
+
+Thanks,
+
+	Mariusz
