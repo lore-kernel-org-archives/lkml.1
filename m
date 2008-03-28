@@ -1,134 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755245AbYC1K3R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754940AbYC1KeT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755245AbYC1K3R (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Mar 2008 06:29:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753182AbYC1K3E
+	id S1754940AbYC1KeT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Mar 2008 06:34:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753124AbYC1KeK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Mar 2008 06:29:04 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:51775 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752826AbYC1K3B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Mar 2008 06:29:01 -0400
-Date: Fri, 28 Mar 2008 11:28:44 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Frank Mayhar <fmayhar@google.com>
-Cc: Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH 2.6.25-rc6] Fix itimer/many thread hang.
-Message-ID: <20080328102844.GE633@elte.hu>
-References: <20080305040826.D0E6127010A@magilla.localdomain> <1204830243.20004.31.camel@bobble.smo.corp.google.com> <20080311075020.A93DB26F991@magilla.localdomain> <1205269507.23124.57.camel@bobble.smo.corp.google.com> <20080311213507.5BCDF26F991@magilla.localdomain> <1205455050.19551.16.camel@bobble.smo.corp.google.com> <20080321071846.1B22B26F9A7@magilla.localdomain> <1206122240.14638.31.camel@bobble.smo.corp.google.com> <20080322215829.D69D026F9A7@magilla.localdomain> <1206665568.426.24.camel@bobble.smo.corp.google.com>
+	Fri, 28 Mar 2008 06:34:10 -0400
+Received: from picture.zai.com ([12.47.112.36]:38678 "EHLO york.rivers.zai.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752955AbYC1KeJ convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Mar 2008 06:34:09 -0400
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1206665568.426.24.camel@bobble.smo.corp.google.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+x-mimeole: Produced By Microsoft Exchange V6.5
+Subject: RE: Performance changes between 2.6.13 and 2.6.23
+Date: Fri, 28 Mar 2008 06:32:48 -0400
+Message-ID: <D108F32273D3044F8C7B24328CB7713701A4E2@york.rivers.zai.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: Performance changes between 2.6.13 and 2.6.23
+Thread-Index: AciQtjK5SSlYPE5sTlKmpM600PCjSgACN7Vy
+References: <D108F32273D3044F8C7B24328CB7713701A4D1@york.rivers.zai.com> <2c0942db0803250941j65be093et718bb838a2779e9c@mail.gmail.com> <D108F32273D3044F8C7B24328CB7713701A4E1@york.rivers.zai.com> <20080328092856.GC30863@elte.hu>
+From: "Sanders, Rob M." <sanders-rob@zai.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Cc: "Ray Lee" <ray-lk@madrabbit.org>, <linux-kernel@vger.kernel.org>,
+       <bart.vanassche@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Frank Mayhar <fmayhar@google.com> wrote:
+* Sanders, Rob M. <sanders-rob@zai.com> wrote:
 
-> +static inline void thread_group_times_init(struct signal_struct *sig)
-> +{
-> +	sig->thread_group_times = NULL;
-> +}
-> +
-> +static inline void thread_group_times_free(struct signal_struct *sig)
-> +{
-> +	if (sig->thread_group_times)
-> +		free_percpu(sig->thread_group_times);
-> +}
-> +
-> +/*
-> + * Allocate the thread_group_cputime struct appropriately and fill in the current
-> + * values of the fields.  Called from do_setitimer() when setting an interval
-> + * timer (ITIMER_PROF or ITIMER_VIRTUAL).  Assumes interrupts are enabled when
-> + * it's called.  Note that there is no corresponding deallocation done from
-> + * do_setitimer(); the structure is freed at process exit.
-> + */
-> +static inline int thread_group_times_alloc(struct task_struct *tsk)
-> +{
-> +	struct signal_struct *sig = tsk->signal;
-> +	struct thread_group_cputime *thread_group_times;
-> +	struct task_struct *t;
-> +	cputime_t utime, stime;
-> +	unsigned long long sum_exec_runtime;
-> +
-> +	/*
-> +	 * If we don't already have a thread_group_cputime struct, allocate
-> +	 * one and fill it in with the accumulated times.
-> +	 */
-> +	if (sig->thread_group_times)
-> +		return 0;
-> +	thread_group_times = alloc_percpu(struct thread_group_cputime);
-> +	if (thread_group_times == NULL)
-> +		return -ENOMEM;
-> +	read_lock(&tasklist_lock);
-> +	spin_lock_irq(&tsk->sighand->siglock);
-> +	if (sig->thread_group_times) {
-> +		spin_unlock_irq(&tsk->sighand->siglock);
-> +		read_unlock(&tasklist_lock);
-> +		free_percpu(thread_group_times);
-> +		return 0;
-> +	}
-> +	sig->thread_group_times = thread_group_times;
-> +	utime = sig->utime;
-> +	stime = sig->stime;
-> +	sum_exec_runtime = tsk->se.sum_exec_runtime;
-> +	t = tsk;
-> +	do {
-> +		utime = cputime_add(utime, t->utime);
-> +		stime = cputime_add(stime, t->stime);
-> +		sum_exec_runtime += t->se.sum_exec_runtime;
-> +	} while_each_thread(tsk, t);
-> +	thread_group_times = per_cpu_ptr(sig->thread_group_times, get_cpu());
-> +	thread_group_times->utime = utime;
-> +	thread_group_times->stime = stime;
-> +	thread_group_times->sum_exec_runtime = sum_exec_runtime;
-> +	put_cpu_no_resched();
-> +	spin_unlock_irq(&tsk->sighand->siglock);
-> +	read_unlock(&tasklist_lock);
-> +	return 0;
-> +}
+> Sorry to disappear for a few days, I just hadn't had time to do 
+> anything at home.  Finally had some time to run some test, and at this 
+> point I'm thinking that the problem is not with the kernel.  Not quite 
+> sure where to look next, but I've done the following tests:
+> 
+> YDL4.0.91 with 2.6.13 kernel - normal speed
+> YDL6.0    with 2.6.23 kenrel - 4-5x slowdown
+> YDL4.1    with 2.6.15 kernel - 4-5x slowdown
+> YDL4.0.91 with 2.6.15 kernel - *normal speed* - kernel config pulled from YDL4.1 install
+> YDL4.0.91 with 2.6.23 kernel - failed boot
 
-please dont put such a huge inline into a header.
+if you suspect the scheduler then please try the following suggestions i 
+made in another thread:
 
-> +
-> +#define thread_group_update(sig, field, val, op) ({ \
-> +	if (sig && sig->thread_group_times) {				\
-> +		int cpu;						\
-> +		struct thread_group_cputime *thread_group_times;	\
-> +									\
-> +		cpu = get_cpu();					\
-> +		thread_group_times =					\
-> +			per_cpu_ptr(sig->thread_group_times, cpu);	\
-> +		thread_group_times->field =				\
-> +			op(thread_group_times->field, val);		\
-> +		put_cpu_no_resched();					\
-> +	}								\
-> +})
+---------->
+could you run this script while such a slowdown is really prominent:
 
-nor use any macros that includes code.
+  http://people.redhat.com/mingo/cfs-scheduler/tools/cfs-debug-info.sh
 
-> +static inline int thread_group_cputime(struct thread_group_cputime *thread_group_times,
-> +	struct signal_struct *sig)
+and send me the output it generates? The output is the most useful if
+you do this on a kernel that has CONFIG_SCHED_DEBUG=y and
+CONFIG_SCHEDSTATS=y enabled.
 
-ditto, line length as well.
+on the off chance that this issue has been fixed in the soon-to-be
+2.6.25 kernel, you might also want to try x86.git/latest, which is based
+on the latest Linus tree and has all relevant x86 fixes and improvements
+added as well:
+  http://people.redhat.com/mingo/x86.git/README
 
-> +	if (!sig->thread_group_times)
-> +		return(0);
+several of the changes can affect performance.
 
-return 0 is the proper form - please run your patch through 
-scripts/checkpatch.pl.
+a third (and most comprehensive) way to debug this would be to send me a
+scheduler trace of such a slowdown, you can generate a scheduler trace
+the following way:
+
+  http://people.redhat.com/mingo/sched-devel.git/readme-tracer.txt
+
+but we can probably give a first estimation based on the cfs-debug-info
+output already. Btw., you can combine the scheduler and the x86 git tree
+into a temporary unified tree by doing these two commands:
+
+  git-checkout -b tmp x86/latest
+  git-merge sched-devel/latest
+
+(run "make oldconfig" to pick up the new config options.)
 
 	Ingo
+
+======
+Ingo,
+  Thanks.  I'll try this over the weekend if I get some free time, but it might not happen. 
+This is a busy weekend....
+
+Rob
