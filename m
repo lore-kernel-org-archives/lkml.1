@@ -1,106 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755849AbYC1PLp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755405AbYC1Pdy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755849AbYC1PLp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Mar 2008 11:11:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753631AbYC1PLf
+	id S1755405AbYC1Pdy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Mar 2008 11:33:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752813AbYC1Pdo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Mar 2008 11:11:35 -0400
-Received: from fg-out-1718.google.com ([72.14.220.155]:30462 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751000AbYC1PLe (ORCPT
+	Fri, 28 Mar 2008 11:33:44 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:35482 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752424AbYC1Pdo convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Mar 2008 11:11:34 -0400
-From: Denys Vlasenko <vda.linux@googlemail.com>
-To: Al Viro <viro@zeniv.linux.org.uk>
-Subject: [PATCH] reuse xxx_fifo_fops for xxx_pipe_fops
-Date: Fri, 28 Mar 2008 16:09:54 +0100
-User-Agent: KMail/1.8.2
-Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-MIME-Version: 1.0
-Content-Type: Multipart/Mixed;
-  boundary="Boundary-00=_CpQ7H24Jz/h9Zrd"
-Message-Id: <200803281609.54601.vda.linux@googlemail.com>
+	Fri, 28 Mar 2008 11:33:44 -0400
+Date: Fri, 28 Mar 2008 11:31:52 -0400
+From: "Frank Ch. Eigler" <fche@redhat.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: KOSAKI Motohiro <m-kosaki@ceres.dti.ne.jp>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [patch for 2.6.26 0/7] Architecture Independent Markers
+Message-ID: <20080328153152.GA23249@redhat.com>
+References: <20080327132057.449831367@polymtl.ca> <20080327154053.GA5890@elte.hu> <2f11576a0803271008t7574ead1s9ea285d8df57ef1@mail.gmail.com> <20080328101500.GF30863@elte.hu> <y0mabkjvufd.fsf@ton.toronto.redhat.com> <20080328144116.GG29218@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: 8BIT
+In-Reply-To: <20080328144116.GG29218@elte.hu>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Boundary-00=_CpQ7H24Jz/h9Zrd
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Hi -
 
-Hi Al,
+On Fri, Mar 28, 2008 at 03:41:16PM +0100, Ingo Molnar wrote:
+> > > [...]  furthermore, and because it's Friday again, let me remind 
+> > > folks that SystemTap has an even more significant bloat problem: the 
+> > > fact that it needs a huge download: [...the dwarf debugging 
+> > > information...]
+> > 
+> > It's a problem, and there are a few improvements under way or being 
+> > contemplated: [...]
+> 
+> it's been the primary usability problem ever since SystemTap has been 
+> incepted 3 years ago. [...]
 
-I noticed that read/write/rdwr_pipe_fops are (1) const and
-(2) exactly identical to xxx_fifo_fops, which are also const.
+This complaint is particularly rich, seeing how you constantly try to
+shoot down patches that would reduce systemtap's need for this, such
+as markers.  And no, dyn-ftrace is not a complete substitute.  See how
+many of the markers in mathieu's lttng suite occur at places *other*
+than function entry points.  See how many require parameters other
+than what may already sit in registers.
 
-Attached patch #defines xxx_pipe_fops as aliases to xxx_fifo_fops.
-Size difference:
+We in systemtap land have always had to make do with whatever was in
+the kernel.  There was very little other than kprobes 3 years ago.  Of
+newer facilities such as markers, ftrace, perfmon2 (I hope), and a
+bunch of other little tracer thingies, all those that provide a usable
+callback style interface can be exposed to systemtap.  The more the
+merrier, and the less we'd have to resort to the lowest-level
+kprobes/dwarf stuff.  Please help rather than obstruct.
 
-# size linux-2.6.25-rc6*/*/pipe.o
-   text    data     bss     dec     hex filename
-   6534     144       0    6678    1a16 linux-2.6.25-rc6/fs/pipe.o
-   5862     144       0    6006    1776 linux-2.6.25-rc6-pt/fs/pipe.o
 
---
-vda
-
---Boundary-00=_CpQ7H24Jz/h9Zrd
-Content-Type: text/x-diff;
-  charset="us-ascii";
-  name="reuse_fifo_ops_for_pipe_ops.diff"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
-	filename="reuse_fifo_ops_for_pipe_ops.diff"
-
---- linux-2.6.25-rc6.src/fs/pipe.c	Sat Mar 22 23:00:34 2008
-+++ linux-2.6.25-rc6.pipe/fs/pipe.c	Fri Mar 28 15:52:00 2008
-@@ -814,42 +814,9 @@
- 	.fasync		= pipe_rdwr_fasync,
- };
- 
--static const struct file_operations read_pipe_fops = {
--	.llseek		= no_llseek,
--	.read		= do_sync_read,
--	.aio_read	= pipe_read,
--	.write		= bad_pipe_w,
--	.poll		= pipe_poll,
--	.unlocked_ioctl	= pipe_ioctl,
--	.open		= pipe_read_open,
--	.release	= pipe_read_release,
--	.fasync		= pipe_read_fasync,
--};
--
--static const struct file_operations write_pipe_fops = {
--	.llseek		= no_llseek,
--	.read		= bad_pipe_r,
--	.write		= do_sync_write,
--	.aio_write	= pipe_write,
--	.poll		= pipe_poll,
--	.unlocked_ioctl	= pipe_ioctl,
--	.open		= pipe_write_open,
--	.release	= pipe_write_release,
--	.fasync		= pipe_write_fasync,
--};
--
--static const struct file_operations rdwr_pipe_fops = {
--	.llseek		= no_llseek,
--	.read		= do_sync_read,
--	.aio_read	= pipe_read,
--	.write		= do_sync_write,
--	.aio_write	= pipe_write,
--	.poll		= pipe_poll,
--	.unlocked_ioctl	= pipe_ioctl,
--	.open		= pipe_rdwr_open,
--	.release	= pipe_rdwr_release,
--	.fasync		= pipe_rdwr_fasync,
--};
-+#define read_pipe_fops  read_fifo_fops
-+#define write_pipe_fops write_fifo_fops
-+#define rdwr_pipe_fops  rdwr_fifo_fops
- 
- struct pipe_inode_info * alloc_pipe_info(struct inode *inode)
- {
-
---Boundary-00=_CpQ7H24Jz/h9Zrd--
+- FChE
