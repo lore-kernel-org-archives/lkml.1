@@ -1,28 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756678AbYC1Ofw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756802AbYC1Og2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756678AbYC1Ofw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Mar 2008 10:35:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756182AbYC1OeA
+	id S1756802AbYC1Og2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Mar 2008 10:36:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756183AbYC1OeD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Mar 2008 10:34:00 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:49165 "EHLO mx1.redhat.com"
+	Fri, 28 Mar 2008 10:34:03 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:49179 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754700AbYC1Od6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Mar 2008 10:33:58 -0400
+	id S1756178AbYC1OeA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Mar 2008 10:34:00 -0400
 Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
 	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
 	Kingdom.
 	Registered in England and Wales under Company Registration No. 3798903
 From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 38/45] NFS: Add some new I/O counters for FS-Cache doing
-	things for NFS [ver #35]
+Subject: [PATCH 04/45] KEYS: Allow clients to set key perms in
+	key_create_or_update() [ver #35]
 To: torvalds@osdl.org, akpm@linux-foundation.org, trond.myklebust@fys.uio.no,
        chuck.lever@oracle.com
 Cc: nfsv4@linux-nfs.org, linux-kernel@vger.kernel.org,
        linux-fsdevel@vger.kernel.org, selinux@tycho.nsa.gov,
        linux-security-module@vger.kernel.org, dhowells@redhat.com
-Date: Fri, 28 Mar 2008 14:33:26 +0000
-Message-ID: <20080328143325.3483.43820.stgit@warthog.procyon.org.uk>
+Date: Fri, 28 Mar 2008 14:30:31 +0000
+Message-ID: <20080328143031.3483.6520.stgit@warthog.procyon.org.uk>
 In-Reply-To: <20080328143010.3483.99079.stgit@warthog.procyon.org.uk>
 References: <20080328143010.3483.99079.stgit@warthog.procyon.org.uk>
 User-Agent: StGIT/0.14.1
@@ -33,107 +33,100 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add some new NFS I/O counters for FS-Cache doing things for NFS.  A new line is
-emitted into /proc/pid/mountstats if caching is enabled that looks like:
+From: Arun Raghavan <arunsr@cse.iitk.ac.in>
 
-	fsc: <rok> <rfl> <wok> <wfl> <unc>
+The key_create_or_update() function provided by the keyring code has a default
+set of permissions that are always applied to the key when created. This might
+not be desirable to all clients.
 
-Where <rok> is the number of pages read successfully from the cache, <rfl> is
-the number of failed page reads against the cache, <wok> is the number of
-successful page writes to the cache, <wfl> is the number of failed page writes
-to the cache, and <unc> is the number of NFS pages that have been disconnected
-from the cache.
+Here's a patch that adds a "perm" parameter to the function to address this,
+which can be set to KEY_PERM_UNDEF to revert to the current behaviour.
 
-Signed-off-by: David Howells <dhowells@redhat.com>
+Signed-off-by: Arun Raghavan <arunsr@cse.iitk.ac.in>
+Acked-by: David Howells <dhowells@redhat.com>
 ---
 
- fs/nfs/iostat.h |   30 ++++++++++++++++++++++++++++++
- fs/nfs/super.c  |   11 +++++++++++
- 2 files changed, 41 insertions(+), 0 deletions(-)
+ include/linux/key.h    |    3 +++
+ security/keys/key.c    |   18 ++++++++++--------
+ security/keys/keyctl.c |    3 ++-
+ 3 files changed, 15 insertions(+), 9 deletions(-)
 
 
-diff --git a/fs/nfs/iostat.h b/fs/nfs/iostat.h
-index 6350ecb..20dbc4f 100644
---- a/fs/nfs/iostat.h
-+++ b/fs/nfs/iostat.h
-@@ -107,6 +107,18 @@ enum nfs_stat_eventcounters {
- 	__NFSIOS_COUNTSMAX,
- };
+diff --git a/include/linux/key.h b/include/linux/key.h
+index 163f864..8b0bd33 100644
+--- a/include/linux/key.h
++++ b/include/linux/key.h
+@@ -67,6 +67,8 @@ struct key;
+ #define KEY_OTH_SETATTR	0x00000020
+ #define KEY_OTH_ALL	0x0000003f
  
-+/*
-+ * NFS local caching servicing counters
-+ */
-+enum nfs_stat_fscachecounters {
-+	NFSIOS_FSCACHE_PAGES_READ_OK,
-+	NFSIOS_FSCACHE_PAGES_READ_FAIL,
-+	NFSIOS_FSCACHE_PAGES_WRITTEN_OK,
-+	NFSIOS_FSCACHE_PAGES_WRITTEN_FAIL,
-+	NFSIOS_FSCACHE_PAGES_UNCACHED,
-+	__NFSIOS_FSCACHEMAX,
-+};
++#define KEY_PERM_UNDEF	0xffffffff
 +
- #ifdef __KERNEL__
+ struct seq_file;
+ struct user_struct;
+ struct signal_struct;
+@@ -232,6 +234,7 @@ extern key_ref_t key_create_or_update(key_ref_t keyring,
+ 				      const char *description,
+ 				      const void *payload,
+ 				      size_t plen,
++				      key_perm_t perm,
+ 				      unsigned long flags);
  
- #include <linux/percpu.h>
-@@ -114,6 +126,9 @@ enum nfs_stat_eventcounters {
- 
- struct nfs_iostats {
- 	unsigned long long	bytes[__NFSIOS_BYTESMAX];
-+#ifdef CONFIG_NFS_FSCACHE
-+	unsigned long long	fscache[__NFSIOS_FSCACHEMAX];
-+#endif
- 	unsigned long		events[__NFSIOS_COUNTSMAX];
- } ____cacheline_aligned;
- 
-@@ -149,6 +164,21 @@ static inline void nfs_add_stats(struct inode *inode, enum nfs_stat_bytecounters
- 	nfs_add_server_stats(NFS_SERVER(inode), stat, addend);
- }
- 
-+#ifdef CONFIG_NFS_FSCACHE
-+static inline void nfs_add_fscache_stats(struct inode *inode,
-+					 enum nfs_stat_fscachecounters stat,
-+					 unsigned long addend)
-+{
-+	struct nfs_iostats *iostats;
-+	int cpu;
-+
-+	cpu = get_cpu();
-+	iostats = per_cpu_ptr(NFS_SERVER(inode)->io_stats, cpu);
-+	iostats->fscache[stat] += addend;
-+	put_cpu_no_resched();
-+}
-+#endif
-+
- static inline struct nfs_iostats *nfs_alloc_iostats(void)
+ extern int key_update(key_ref_t key,
+diff --git a/security/keys/key.c b/security/keys/key.c
+index 654d23b..d98c619 100644
+--- a/security/keys/key.c
++++ b/security/keys/key.c
+@@ -757,11 +757,11 @@ key_ref_t key_create_or_update(key_ref_t keyring_ref,
+ 			       const char *description,
+ 			       const void *payload,
+ 			       size_t plen,
++			       key_perm_t perm,
+ 			       unsigned long flags)
  {
- 	return alloc_percpu(struct nfs_iostats);
-diff --git a/fs/nfs/super.c b/fs/nfs/super.c
-index 70604b9..7cd9e41 100644
---- a/fs/nfs/super.c
-+++ b/fs/nfs/super.c
-@@ -564,6 +564,10 @@ static int nfs_show_stats(struct seq_file *m, struct vfsmount *mnt)
- 			totals.events[i] += stats->events[i];
- 		for (i = 0; i < __NFSIOS_BYTESMAX; i++)
- 			totals.bytes[i] += stats->bytes[i];
-+#ifdef CONFIG_NFS_FSCACHE
-+		for (i = 0; i < __NFSIOS_FSCACHEMAX; i++)
-+			totals.fscache[i] += stats->fscache[i];
-+#endif
+ 	struct key_type *ktype;
+ 	struct key *keyring, *key = NULL;
+-	key_perm_t perm;
+ 	key_ref_t key_ref;
+ 	int ret;
  
- 		preempt_enable();
+@@ -806,15 +806,17 @@ key_ref_t key_create_or_update(key_ref_t keyring_ref,
+ 			goto found_matching_key;
  	}
-@@ -574,6 +578,13 @@ static int nfs_show_stats(struct seq_file *m, struct vfsmount *mnt)
- 	seq_printf(m, "\n\tbytes:\t");
- 	for (i = 0; i < __NFSIOS_BYTESMAX; i++)
- 		seq_printf(m, "%Lu ", totals.bytes[i]);
-+#ifdef CONFIG_NFS_FSCACHE
-+	if (nfss->options & NFS_OPTION_FSCACHE) {
-+		seq_printf(m, "\n\tfsc:\t");
-+		for (i = 0; i < __NFSIOS_FSCACHEMAX; i++)
-+			seq_printf(m, "%Lu ", totals.bytes[i]);
-+	}
-+#endif
- 	seq_printf(m, "\n");
  
- 	rpc_print_iostats(m, nfss->client);
+-	/* decide on the permissions we want */
+-	perm = KEY_POS_VIEW | KEY_POS_SEARCH | KEY_POS_LINK | KEY_POS_SETATTR;
+-	perm |= KEY_USR_VIEW | KEY_USR_SEARCH | KEY_USR_LINK | KEY_USR_SETATTR;
++	/* if the client doesn't provide, decide on the permissions we want */
++	if (perm == KEY_PERM_UNDEF) {
++		perm = KEY_POS_VIEW | KEY_POS_SEARCH | KEY_POS_LINK | KEY_POS_SETATTR;
++		perm |= KEY_USR_VIEW | KEY_USR_SEARCH | KEY_USR_LINK | KEY_USR_SETATTR;
+ 
+-	if (ktype->read)
+-		perm |= KEY_POS_READ | KEY_USR_READ;
++		if (ktype->read)
++			perm |= KEY_POS_READ | KEY_USR_READ;
+ 
+-	if (ktype == &key_type_keyring || ktype->update)
+-		perm |= KEY_USR_WRITE;
++		if (ktype == &key_type_keyring || ktype->update)
++			perm |= KEY_USR_WRITE;
++	}
+ 
+ 	/* allocate a new key */
+ 	key = key_alloc(ktype, description, current->fsuid, current->fsgid,
+diff --git a/security/keys/keyctl.c b/security/keys/keyctl.c
+index 1698bf9..5f0d85b 100644
+--- a/security/keys/keyctl.c
++++ b/security/keys/keyctl.c
+@@ -111,7 +111,8 @@ asmlinkage long sys_add_key(const char __user *_type,
+ 	/* create or update the requested key and add it to the target
+ 	 * keyring */
+ 	key_ref = key_create_or_update(keyring_ref, type, description,
+-				       payload, plen, KEY_ALLOC_IN_QUOTA);
++				       payload, plen, KEY_PERM_UNDEF,
++				       KEY_ALLOC_IN_QUOTA);
+ 	if (!IS_ERR(key_ref)) {
+ 		ret = key_ref_to_ptr(key_ref)->serial;
+ 		key_ref_put(key_ref);
 
