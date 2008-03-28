@@ -1,120 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757997AbYC1D1Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756702AbYC1Dbx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757997AbYC1D1Z (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Mar 2008 23:27:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752331AbYC1D1R
+	id S1756702AbYC1Dbx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Mar 2008 23:31:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753237AbYC1Dbo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Mar 2008 23:27:17 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:36909 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751800AbYC1D1Q (ORCPT
+	Thu, 27 Mar 2008 23:31:44 -0400
+Received: from rv-out-0910.google.com ([209.85.198.191]:55773 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752563AbYC1Dbo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Mar 2008 23:27:16 -0400
-Date: Thu, 27 Mar 2008 20:25:31 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Rodolfo Giometti <giometti@enneenne.com>
-Cc: linux-kernel@vger.kernel.org, dwmw2@infradead.org, davej@redhat.com,
-       sam@ravnborg.org, greg@kroah.com, randy.dunlap@oracle.com
-Subject: Re: [PATCH 1/7] LinuxPPS core support.
-Message-Id: <20080327202531.a924e5d9.akpm@linux-foundation.org>
-In-Reply-To: <20080325144400.GG8959@enneenne.com>
-References: <12048053463198-git-send-email-giometti@linux.it>
-	<12048053473401-git-send-email-giometti@linux.it>
-	<20080320130356.69ab65fe.akpm@linux-foundation.org>
-	<20080325144400.GG8959@enneenne.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 27 Mar 2008 23:31:44 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=C0FfBRkusBTsVSr7hpNvHMMAdJsr8QUAF+gwwMA4rnm9csHsca9YZ3BoVS4vpl/dO2lsC7Ad69k8FsQkqPvzVIRSeA0pAKhJqw/aJpAo1lNLo+xytkVWaVtzln+Zl3jMf9dWa4zKUD2deqwLCebA8jR9+6r1FAsOOIAzkqlOMWs=
+Message-ID: <86802c440803272031o2d3c1d3aw4f03e60883a8716e@mail.gmail.com>
+Date: Thu, 27 Mar 2008 20:31:43 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Kamalesh Babulal" <kamalesh@linux.vnet.ibm.com>,
+       "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: 2.6.25-rc7-git2: Reported regressions from 2.6.24
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "Pawel Staszewski" <pstaszewski@artcom.pl>,
+       "Christoph Lameter" <clameter@sgi.com>,
+       LKML <linux-kernel@vger.kernel.org>, "Adrian Bunk" <bunk@kernel.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Natalie Protasevich" <protasnb@gmail.com>
+In-Reply-To: <alpine.LFD.1.00.0803271859280.14670@woody.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <200803272353.51901.rjw@sisk.pl>
+	 <alpine.LFD.1.00.0803271859280.14670@woody.linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 25 Mar 2008 15:44:00 +0100 Rodolfo Giometti <giometti@enneenne.com> wrote:
+On Thu, Mar 27, 2008 at 7:30 PM, Linus Torvalds
+<torvalds@linux-foundation.org> wrote:
+>
+>
+>  On Thu, 27 Mar 2008, Rafael J. Wysocki wrote:
+>  >
+...
+>
+>  > Bug-Entry     : http://bugzilla.kernel.org/show_bug.cgi?id=9962
+>  > Subject               : mount: could not find filesystem
+>  > Submitter     : Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+>  > Date          : 2008-02-12 14:34 (45 days old)
+>  > References    : http://lkml.org/lkml/2008/2/12/91
+>  > Handled-By    : Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+>  >                 Yinghai Lu <yhlu.kernel@gmail.com>
+>
+>  Needs more info. The original oops that opened it is fixed, but..
+>
+Kamalesh,
+can you check that?
 
-> > > +void pps_unregister_source(int source)
-> > > +{
-> > > +	struct pps_device *pps;
-> > > +
-> > > +	spin_lock_irq(&idr_lock);
-> > > +	pps = idr_find(&pps_idr, source);
-> > > +
-> > > +	if (!pps) {
-> > > +		spin_unlock_irq(&idr_lock);
-> > > +		return;
-> > > +	}
-> > > +
-> > > +	/* This should be done first in order to deny IRQ handlers
-> > > +	 * to access PPS structs
-> > > +	 */
-> > > +
-> > > +	idr_remove(&pps_idr, pps->id);
-> > > +	spin_unlock_irq(&idr_lock);
-> > > +
-> > > +	wait_event(pps->usage_queue, atomic_read(&pps->usage) == 0);
-> > > +
-> > > +	pps_sysfs_remove_source_entry(pps);
-> > > +	pps_unregister_cdev(pps);
-> > > +	kfree(pps);
-> > > +}
-> > > +EXPORT_SYMBOL(pps_unregister_source);
-> > 
-> > The wait_event() stuff really shouldn't be here: it should be integral to
-> > the refcounting:
-> > 
-> > void pps_dev_put(struct pps_device *pps)
-> > {
-> > 	spin_lock_irq(&pps_lock);
-> > 	if (atomic_dec_and_test(&pps->usage))
-> > 		idr_remove(&pps_idr, pps->id);
-> > 	else
-> > 		pps = NULL;
-> > 	spin_unlock_irq(&pps_lock);
-> > 	if (pps) {
-> > 		/*
-> > 		 * Might need to do the below via schedule_work() if
-> > 		 * pps_dev_put() is to be callable from atomic context
-> > 		 */
-> > 		pps_sysfs_remove_source_entry(pps);
-> > 		pps_unregister_cdev(pps);
-> > 		kfree(pps);
-> > 	}
-> > }
-> 
-> I don't understand where I should use this function... :'(
-
-This is boilerplate standard linux kernel reference counting.
-
-> > 
-> > As it stands, there might be deadlocks such as when a process which itself
-> > holds a ref on the pps_device (with an open fd?) calls
-> > pps_unregister_source.
-> 
-> I can add a wait_event_interruptible in order to allow userland to
-> continue by receiving a signal. It could be acceptable?
-
-There should be no need to "wait" for anything.  When the final reference
-to an object is released, that object is cleaned up.  Just like we do for
-inodes, dentries, pages, files, and 100 other kernel objects.
-
-The need to wait for something else to go away is a big red flag with
-"busted refcounting" written on it.
-
-> > Also, we need to take care that all processes which were waiting in
-> > pps_unregister_source() get to finish their cleanup before we permit rmmod
-> > to proceed.  Is that handled somewhere?
-> 
-> I don't understand the problem... this code as been added in order to
-> avoid the case where a pps_event() is called while a process executes
-> the pps_unregister_source(). If more processes try to execute this
-> code the first which enters will execute idr_remove() which prevents
-> another process to reach the wait_event()... is that wrong? =:-o
-
-I was asking you!
-
-We should get the reference counting and object lifetimes sorted out first. 
-There should be no "wait for <object> to be released" code.  Once that is
-in place, things like rmmod will also sort themselves out: it just won't be
-possible to remove the module while there are live references to objects.
-
-
+YH
