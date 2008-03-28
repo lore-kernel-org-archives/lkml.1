@@ -1,102 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757820AbYC1W2y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758079AbYC1Wan@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757820AbYC1W2y (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Mar 2008 18:28:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755092AbYC1W2p
+	id S1758079AbYC1Wan (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Mar 2008 18:30:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755774AbYC1Wag
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Mar 2008 18:28:45 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:54846 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754348AbYC1W2p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Mar 2008 18:28:45 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: 2.6.25-rc7-git2: Reported regressions from 2.6.24
-Date: Fri, 28 Mar 2008 23:28:33 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Pawel Staszewski <pstaszewski@artcom.pl>,
-       Christoph Lameter <clameter@sgi.com>,
-       LKML <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Natalie Protasevich <protasnb@gmail.com>
-References: <200803272353.51901.rjw@sisk.pl> <200803281710.44576.rjw@sisk.pl> <alpine.LFD.1.00.0803280938430.14670@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.1.00.0803280938430.14670@woody.linux-foundation.org>
+	Fri, 28 Mar 2008 18:30:36 -0400
+Received: from n61.bullet.mail.sp1.yahoo.com ([98.136.44.37]:42922 "HELO
+	n61.bullet.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1754348AbYC1Waf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Mar 2008 18:30:35 -0400
+X-Greylist: delayed 346 seconds by postgrey-1.27 at vger.kernel.org; Fri, 28 Mar 2008 18:30:35 EDT
+X-Yahoo-Newman-Property: ymail-5
+X-Yahoo-Newman-Id: 991999.21756.bm@omp400.mail.sp1.yahoo.com
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.br;
+  h=X-YMail-OSG:Received:Date:From:Subject:To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=bdD+SJzDteLLOH8A7gM9tYOP3Yjw3aMsu9EAghhTIHn+NZ+Br8w1GcFQs82BTRSzN/KWi6OoUlAwOSJTLbplxnPDMzk+61m4qtfRatfInHOPkOkk7ECcxV72G8po5qbT/ih403i4g4PmI4V++5kxDPwg1Ads7M3HVJnY+47/WXM=;
+X-YMail-OSG: HYBXKckVM1mLcZ0ZLE2WY6SSVRCKXaD2AQZ8hhEU
+Date: Fri, 28 Mar 2008 19:24:48 -0300 (ART)
+From: Luis Sousa <ls.luis_sousa@yahoo.com.br>
+Subject: sata io freeze, 2.6.18 and also 2.6.24
+To: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200803282328.34172.rjw@sisk.pl>
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
+Message-ID: <739784.81690.qm@web46009.mail.sp1.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday, 28 of March 2008, Linus Torvalds wrote:
-> 
-> On Fri, 28 Mar 2008, Rafael J. Wysocki wrote:
-> > > 
-> > > Also, Rafael - do these reminder emails also go to the people who are 
-> > > mentioned in the regressions (especially people who are set up as being 
-> > > "handled-by" or having patches for the problem)? 
-> > 
-> > No, they don't.  I need to do some scriptwork to make that happen.
-> 
-> It would be good. Right now I know for a fact that a lot of people read 
-> LKML with various filters in place (or just very spottily), so I have a 
-> feeling that while people try to track regressions, many people are 
-> probably less aware of these things than they should be. And sometimes the 
-> "handled-by" ends up being inaccurate (maybe somebody replied to the 
-> original problem, but it became obvious that it was somewhere else, and 
-> they remain "handled-by" even though the person doesn't actually handle 
-> it).
+Hello,
 
-I generally agree, but OTOH I don't think that sending one message with
-50+ addresses on the CC list will actually help a lot.  I personally don't like
-to receive messages like that and tend to filter them out.
+I've been having consistent hard system freezes for a
+long time, every 2 days or so, and finally decided to
+move to the most recent stable kernel. Unfortunatelly
+that didn't fix it. The freezes seem to be io-related;
+they started since I moved my drive to sata. They seem
+to happen mostly when there's an io-intensive operation,
+like extracting a big archive; a reboot is needed.
 
-I'd prefer people to receive information regarding those regression reports in
-which they are directly involved, but it will take some time to arrange that in
-a reliable way.
+Nothing ever shows up in the logs.
 
-> It would probably also make sense to add some of the bigger subsystem 
-> maintainers to the Cc (and/or with a mailing list for regressions?)
+I'm using the following drive:
 
-Tell that to davem. ;-)
+ATA device, with non-removable media
+        Model Number:       MAXTOR STM3160215AS                     
+        Serial Number:      6RA2TMJ4
+        Firmware Revision:  3.AAD   
 
-Seriously, it often is difficult to say who's the right maintainer and what
-list is appropriate.
- 
-> I think the regression list is _extremely_ valuable, but the problem I 
-> see is that it's not necessarily reaching all the involved people.
-> 
-> The other problem is that I think the old reports (especially the ones 
-> that haven't had reporter feedback in the last two weeks) end up being not 
-> just stale, but they sort at the top, so when the right people _do_ look 
-> at the list, the natural way to do so with email is to look at the first 
-> ones first, and they *all* tend to be stale.
+Linux localhost 2.6.24.4 #4 SMP Fri Mar 28 14:51:50 BRT 2008 i686 GNU/Linux
 
-Well, I can sort them in the reverse order just fine, if you prefer.
+This is a 2-processor CPU:
 
-As far as closing the older ones is concerned, I'm a bit reluctant to do
-that, because (1) some reporters reappear after a long period of silence (like
-more than two weeks) and (2) it would create an impression that we _fixed_
-more regressions than we actually did.
+# cat /proc/cpuinfo 
+processor       : 0
+vendor_id       : GenuineIntel
+cpu family      : 15
+model           : 4
+model name      : Intel(R) Pentium(R) 4 CPU 3.00GHz
+stepping        : 9
+cpu MHz         : 3013.697
+cache size      : 1024 KB
 
-> So the reaction is often "need more info" or "I think this was fixed 
-> already two weeks ago, but there hasn't been any reply". Which is 
-> psychologically really bad, because after you've seen three or four of 
-> those, you just dismiss the rest (even if the later ones then may be much 
-> more relevant!)
+(same goes for processor : 1)
 
-Well, you shouldn't. :-)
+Sincerely,
+--
+Luis Sousa
 
-> This is why I have always been advocating so aggressive culling of 
-> regressions and bug-reports - stale bug-reports are worse than useless, 
-> they actually _hurt_.
 
-I don't quite agree here.  At least, they indicate that we may have an unfixed
-problem and the fact that no one has taken care of it doesn't really mean we
-should generally ignore it.
+      Abra sua conta no Yahoo! Mail, o único sem limite de espaço para armazenamento!
+http://br.mail.yahoo.com/
 
-Thanks,
-Rafael
