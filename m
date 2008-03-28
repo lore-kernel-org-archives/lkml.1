@@ -1,68 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757182AbYC1XTJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757819AbYC1X1U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757182AbYC1XTJ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Mar 2008 19:19:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754781AbYC1XSy
+	id S1757819AbYC1X1U (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Mar 2008 19:27:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756141AbYC1X1E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Mar 2008 19:18:54 -0400
-Received: from mail.deathmatch.net ([70.167.247.36]:34458 "EHLO
-	mail.deathmatch.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753820AbYC1XSx (ORCPT
+	Fri, 28 Mar 2008 19:27:04 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:41801 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754417AbYC1X1C (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Mar 2008 19:18:53 -0400
-Date: Fri, 28 Mar 2008 19:18:33 -0400
-From: Bob Copeland <me@bobcopeland.com>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH 1/7] omfs: define filesystem structures
-Message-ID: <20080328231833.GA16515@hash.localnet>
-References: <1206578760-9050-1-git-send-email-me@bobcopeland.com> <20080328201940.GA3974@ucw.cz>
+	Fri, 28 Mar 2008 19:27:02 -0400
+Message-ID: <47ED7EBD.8070009@zytor.com>
+Date: Fri, 28 Mar 2008 16:26:53 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080328201940.GA3974@ucw.cz>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Jan Engelhardt <jengelh@computergmbh.de>
+CC: "John T." <j.thomast@yahoo.com>, linux-kernel@vger.kernel.org
+Subject: Re: UTF-8 and Alt key in the console
+References: <205509.99433.qm@web45710.mail.sp1.yahoo.com> <alpine.LNX.1.00.0803231942380.3157@fbirervta.pbzchgretzou.qr>
+In-Reply-To: <alpine.LNX.1.00.0803231942380.3157@fbirervta.pbzchgretzou.qr>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 28, 2008 at 09:19:40PM +0100, Pavel Machek wrote:
-> On Wed 2008-03-26 20:45:54, Bob Copeland wrote:
-> > OMFS is a proprietary filesystem created for the ReplayTV and
-> > also used by the Rio Karma.  It uses hash tables with unordered,
-> > unbounded lists in each bucket for directories, extents for
+Jan Engelhardt wrote:
+>>> The best probably would be to introduce an escape code, along the lines
+>>> of other escape codes in the terminal interfae.
+>>
+>> You're right.
+>>
+>> Many say Unix is also broken compared to Plan 9.. sometimes it's
+>> too late. The real fix for this issue seems like it'd be very
+>> hard to accomplish.
 > 
-> Why did they create such beast?
-
-Heh, I wish I knew.  Good old NIH.  There were so many "interesting"
-decisions here, like requiring seeks all over the place for dir
-traversal, picking a hash function that has collisions in almost every
-bucket even when the table is half empty, wasting large amounts of space
-by not even using 3/4s of certain blocks -- it's hard to pick a favorite.
-
-Oh, on ReplayTV 4/5xxx they also byte-swapped the block layer such that
-every 4 bytes were written backwards (even data).  So a be64 would
-be written out as 'le32_high le32_low'.  This patch doesn't support that 
-brain damage, but I did cook up a bswap dm target to test with one of 
-those disk images.
-
-> > +struct omfs_header {
-> > +	__be64 h_self;
-> > +	__be32 h_body_size;
-> > +	__be16 h_crc;
-> > +	char h_fill1[2];
-> > +	u8 h_version;
-> > +	char h_type;
-> > +	u8 h_magic;
-> > +	u8 h_check_xor;
-> > +	__be32 h_fill2;
-> > +};
+> The idea of revamping the escape codes is not all that bad.
 > 
-> attribute packed or something? Some strange machine (alpha?) may
-> decide to align u8s at 32bit boundaries...
+> Thanks to terminfo, this should be easy. Change vt.c,
+> add corresponding terminfo entry and set TERM to something
+> that has not previously existed.
+> 
+> About the ESC key, I thought, would it suffice to replace its
+> current output of ^[ with ^[^[?
 
-Thanks, I guess this applies for all the on disk structs.
+It would be better to assign a CSI (ESC [) code to it, like other 
+function keys.  Unfortunately, the terminal everyone tries to emulate 
+(Linux does so quite poorly due to its broken implementation of ISO 
+2022, but that's less of an issue with UTF-8), VT 220, had ESC on the 
+F11 key, so the CSI 2 3 ~ sequence it uses we use for the F11 key. 
+Doesn't mean we can't assign another one.
 
--- 
-Bob Copeland %% www.bobcopeland.com 
+One would also like to distinguish, say, Backspace from Ctrl-H.  This is 
+trickier, because the termios settings don't permit compound keys.  The 
+most obvious way to deal with that is an escape code for Ctrl-H, but 
+that has the risk of breaking a lot of other things.
 
+	-hpa
