@@ -1,129 +1,284 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758769AbYC1M4g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758854AbYC1M4x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758769AbYC1M4g (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Mar 2008 08:56:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756567AbYC1MyD
+	id S1758854AbYC1M4x (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Mar 2008 08:56:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758133AbYC1Mye
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Mar 2008 08:54:03 -0400
-Received: from SpacedOut.fries.net ([67.64.210.234]:34537 "EHLO
+	Fri, 28 Mar 2008 08:54:34 -0400
+Received: from SpacedOut.fries.net ([67.64.210.234]:34539 "EHLO
 	SpacedOut.fries.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758000AbYC1MyA (ORCPT
+	with ESMTP id S1758119AbYC1Myc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Mar 2008 08:54:00 -0400
-Date: Fri, 28 Mar 2008 07:27:59 -0500
+	Fri, 28 Mar 2008 08:54:32 -0400
+Date: Fri, 28 Mar 2008 07:27:10 -0500
 From: David Fries <david@fries.net>
 To: linux-kernel@vger.kernel.org
 Cc: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-Subject: [PATCH 34/35] W1: Documentation/w1/masters/ds2490 update
-Message-ID: <20080328122758.GI3613@spacedout.fries.net>
+Subject: [PATCH 24/35] W1: ds2490.c add support for strong pullup
+Message-ID: <20080328122710.GY3613@spacedout.fries.net>
 References: <200803272343.m2RNhDac017650@SpacedOut.fries.net>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="McTFpSeH7KqpdXA3"
+	protocol="application/pgp-signature"; boundary="I2k41U2G4dq8LTBU"
 Content-Disposition: inline
 In-Reply-To: <200803272343.m2RNhDac017650@SpacedOut.fries.net>
 User-Agent: Mutt/1.5.4i
-X-Greylist: Sender is SPF-compliant, not delayed by milter-greylist-3.0 (SpacedOut.fries.net [127.0.0.1]); Fri, 28 Mar 2008 07:27:59 -0500 (CDT)
+X-Greylist: Sender is SPF-compliant, not delayed by milter-greylist-3.0 (SpacedOut.fries.net [127.0.0.1]); Fri, 28 Mar 2008 07:27:11 -0500 (CDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---McTFpSeH7KqpdXA3
+--I2k41U2G4dq8LTBU
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-Provide some additional details about the status of the driver.
+ds2490.c had ds_start_pulse, but I think I decided that the pulse
+wasn't being enabled, as the strong pullup wasn't enabled.  If it was
+working it was being called some time after every byte or block was
+written.  It should have been enabled in the write command instead of
+some time later to benefit any device needing it.
+
+ds_start_pulse was also calling mdelay(750), which would effectively
+lock up the computer for 3/4 of a second four times per temperature
+conversion.  This was immediately noticable just typing at a virtual
+terminal.
+
+The new set_pullup will only enable the strong pullup when requested,
+which is expected to be the only write operation that will benefit
+=66rom a strong pullup.  Now msleep will be used for delays, resulting
+in the reads and writes taking minimal system overhead.
+
+ds2490.c 1.3
+Add set_pullup.
+
+ds2490.c 1.4
+Enable existing ds_send_control to send the control command enable
+strong pullup.
+
+ds2490.c 1.6
+Remove strong pullup enable bit when reading a byte.
+
+ds2490.c 1.7
+Add spu_sleep to avoid pulling the device status for the duration of
+the strong pullup.
+
+ds2490.c 1.17
+Remove PULLUP_PULSE_DURATION macro, it is the delay used for a
+temperature conversion which shouldn't be in the master driver anyway.
 
 Signed-off-by: David Fries <david@fries.net>
 ---
- Documentation/w1/masters/ds2490 |   60 +++++++++++++++++++++++++++++++++++=
-++++
- 1 files changed, 60 insertions(+), 0 deletions(-)
+ drivers/w1/masters/ds2490.c |   76 +++++++++++++++++++++------------------=
+---
+ 1 files changed, 38 insertions(+), 38 deletions(-)
 
-diff --git a/Documentation/w1/masters/ds2490 b/Documentation/w1/masters/ds2=
-490
-index 239f9ae..4b7b8ee 100644
---- a/Documentation/w1/masters/ds2490
-+++ b/Documentation/w1/masters/ds2490
-@@ -16,3 +16,63 @@ which allows to build USB <-> W1 bridges.
- DS9490(R) is a USB <-> W1 bus master device
- which has 0x81 family ID integrated chip and DS2490
- low-level operational chip.
+diff --git a/drivers/w1/masters/ds2490.c b/drivers/w1/masters/ds2490.c
+index 67a7f42..ac27f89 100644
+--- a/drivers/w1/masters/ds2490.c
++++ b/drivers/w1/masters/ds2490.c
+@@ -98,11 +98,6 @@
+ #define BRANCH_MAIN			0xCC
+ #define BRANCH_AUX			0x33
+=20
+-/*
+- * Duration of the strong pull-up pulse in milliseconds.
+- */
+-#define PULLUP_PULSE_DURATION		750
+-
+ /* Status flags */
+ #define ST_SPUA				0x01  /* Strong Pull-up is active */
+ #define ST_PRGA				0x02  /* 12V programming pulse is being generated */
+@@ -131,6 +126,11 @@ struct ds_device
+=20
+ 	int			ep[NUM_EP];
+=20
++	/* Strong PullUp
++	 * 0: pullup not active, else duration in milliseconds
++	 */
++	int			spu_sleep;
 +
-+Notes and limitations.
-+- The 5V strong pullup is supported.
-+- While the ds2490 supports a hardware search the code doesn't take
-+  advantage of it.
-+- The hardware will detect when devices are attached to the bus on the
-+  next bus (reset?) operation, however only a message is printed as
-+  the core w1 code doesn't make use of the information.  Connecting
-+  one device tends to give multiple new device notifications.
-+- The number of USB bus transactions could be reduced if w1_reset_send
-+  was added to the API.  The name is just a suggestion.  It would take
-+  a write buffer and a read buffer (along with sizes) as arguments.
-+  It would add match rom and rom to the send buffer, reset the bus,
-+  and read the result.  The ds2490 block I/O command supports reset,
-+  write, read, and strong pullup all in one command.  That would
-+  reduce the time and overhead for a set of commands.
+ 	struct w1_bus_master	master;
+ };
+=20
+@@ -192,7 +192,7 @@ static int ds_send_control_cmd(struct ds_device *dev, u=
+16 value, u16 index)
+=20
+ 	return err;
+ }
+-#if 0
 +
-+  The core w1 functions required to do a temperature conversion are,
-+  w1_reset_select_slave, w1_next_pullup, and w1_write_8, which turn
-+  around and execute the master functions, reset_bus, write_block,
-+  set_pullup, write_byte, set_pullup.  Each ds2490 function will have
-+  multiple USB bus transactions, except set_pullup where it only
-+  requires transactions if the if the time value is different.  The
-+  conversion could be reduced to w1_next_pullup, w1_reset_send which
-+  would call set_pullup, reset_send. The reset_send would enable reset
-+  and strong pullup (if enabled), write the data buffer, execute the
-+  block I/O command, read status, and get data.  Currently I count 11
-+  transactions required, this would reduce it to 4.
-+- The hardware supports normal, flexable, and overdrive bus
-+  communication speeds, but only the normal is supported.
-+- The registered w1_bus_master functions don't define error
-+  conditions.  If a bus search is in progress and the ds2490 is
-+  removed it can produce a good amount of error output before the bus
-+  search finishes.
-+- The hardware supports detecting some error conditions, such as
-+  short, alarming presence on reset, and no presence on reset, but the
-+  driver doesn't query those values.
-+- The ds2490 specification doesn't cover short bulk in reads in
-+  detail, but my observation is if fewer bytes are requested than are
-+  available, the bulk read will return an error and the hardware will
-+  clear the entire bulk in buffer.  It would be possible to read the
-+  maximum buffer size to not run into this error condition, only extra
-+  bytes in the buffer is a logic error in the driver.  The code should
-+  should match reads and writes as well as data sizes.  Reads and
-+  writes are serialized and the status verifies that the chip is idle
-+  (and data is available) before the read is executed, so it should
-+  not happen.
-+- Running x86_64 2.6.24 UHCI under qemu 0.9.0 under x86_64 2.6.22-rc6
-+  with a OHCI controller, ds2490 running in the guest would operate
-+  normally the first time the module was loaded after qemu attached
-+  the ds2490 hardware, but if the module was unloaded, then reloaded
-+  most of the time one of the bulk out or in, and usually the bulk in
-+  would fail.  qemu sets a 50ms timeout and the bulk in would timeout
-+  even when the status shows data available.  A bulk out write would
-+  show a successful completion, but the ds2490 status register would
-+  show 0 bytes written.  Detaching qemu from the ds2490 hardware and
-+  reattaching would clear the problem.  usbmon output in the guest and
-+  host did not explain the problem.  My guess is a bug in either qemu
-+  or the host OS and more likely the host OS.
-+-- 03-06-2008 David Fries <David@Fries.net>
+ static int ds_send_control_mode(struct ds_device *dev, u16 value, u16 inde=
+x)
+ {
+ 	int err;
+@@ -207,7 +207,7 @@ static int ds_send_control_mode(struct ds_device *dev, =
+u16 value, u16 index)
+=20
+ 	return err;
+ }
+-#endif
++
+ static int ds_send_control(struct ds_device *dev, u16 value, u16 index)
+ {
+ 	int err;
+@@ -294,14 +294,6 @@ static int ds_recv_status(struct ds_device *dev, struc=
+t ds_status *st)
+ 		if (count < 0)
+ 			return err;
+ 	}
+-#if 0
+-	if (st->status & ST_IDLE) {
+-		printk(KERN_INFO "Resetting pulse after ST_IDLE.\n");
+-		err =3D ds_start_pulse(dev, PULLUP_PULSE_DURATION);
+-		if (err)
+-			return err;
+-	}
+-#endif
+=20
+ 	return err;
+ }
+@@ -472,32 +464,26 @@ static int ds_set_speed(struct ds_device *dev, int sp=
+eed)
+ }
+ #endif  /*  0  */
+=20
+-static int ds_start_pulse(struct ds_device *dev, int delay)
++static int ds_set_pullup(struct ds_device *dev, int delay)
+ {
+ 	int err;
+ 	u8 del =3D 1 + (u8)(delay >> 4);
+-	struct ds_status st;
+-
+-#if 0
+-	err =3D ds_stop_pulse(dev, 10);
+-	if (err)
+-		return err;
+-
+-	err =3D ds_send_control_mode(dev, MOD_PULSE_EN, PULSE_SPUE);
+-	if (err)
+-		return err;
+-#endif
+-	err =3D ds_send_control(dev, COMM_SET_DURATION | COMM_IM, del);
+-	if (err)
+-		return err;
+=20
+-	err =3D ds_send_control(dev, COMM_PULSE | COMM_IM | COMM_F, 0);
++	dev->spu_sleep =3D 0;
++	err =3D ds_send_control_mode(dev, MOD_PULSE_EN, delay?PULSE_SPUE:0);
+ 	if (err)
+ 		return err;
+=20
+-	mdelay(delay);
++	if(delay) {
++		err =3D ds_send_control(dev, COMM_SET_DURATION | COMM_IM, del);
++		if (err)
++			return err;
+=20
+-	ds_wait_status(dev, &st);
++		/* Just storing delay would not get the trunication and
++		 * roundup.
++		 */
++		dev->spu_sleep =3D del<<4;
++	}
+=20
+ 	return err;
+ }
+@@ -558,6 +544,9 @@ static int ds_write_byte(struct ds_device *dev, u8 byte)
+ 	if (err)
+ 		return err;
+=20
++	if(dev->spu_sleep)
++		msleep(dev->spu_sleep);
++
+ 	err =3D ds_wait_status(dev, &st);
+ 	if (err)
+ 		return err;
+@@ -566,8 +555,6 @@ static int ds_write_byte(struct ds_device *dev, u8 byte)
+ 	if (err < 0)
+ 		return err;
+=20
+-	ds_start_pulse(dev, PULLUP_PULSE_DURATION);
+-
+ 	return !(byte =3D=3D rbyte);
+ }
+=20
+@@ -603,7 +590,7 @@ static int ds_read_block(struct ds_device *dev, u8 *buf=
+, int len)
+ 	if (err < 0)
+ 		return err;
+=20
+-	err =3D ds_send_control(dev, COMM_BLOCK_IO | COMM_IM | COMM_SPU, len);
++	err =3D ds_send_control(dev, COMM_BLOCK_IO | COMM_IM, len);
+ 	if (err)
+ 		return err;
+=20
+@@ -630,14 +617,15 @@ static int ds_write_block(struct ds_device *dev, u8 *=
+buf, int len)
+ 	if (err)
+ 		return err;
+=20
++	if(dev->spu_sleep)
++		msleep(dev->spu_sleep);
++
+ 	ds_wait_status(dev, &st);
+=20
+ 	err =3D ds_recv_data(dev, buf, len);
+ 	if (err < 0)
+ 		return err;
+=20
+-	ds_start_pulse(dev, PULLUP_PULSE_DURATION);
+-
+ 	return !(err =3D=3D len);
+ }
+=20
+@@ -803,6 +791,16 @@ static u8 ds9490r_reset(void *data)
+ 	return 0;
+ }
+=20
++static u8 ds9490r_set_pullup(void *data, int delay)
++{
++	struct ds_device *dev =3D data;
++
++	if (ds_set_pullup(dev, delay))
++		return 1;
++
++	return 0;
++}
++
+ static int ds_w1_init(struct ds_device *dev)
+ {
+ 	memset(&dev->master, 0, sizeof(struct w1_bus_master));
+@@ -816,6 +814,7 @@ static int ds_w1_init(struct ds_device *dev)
+ 	dev->master.read_block	=3D &ds9490r_read_block;
+ 	dev->master.write_block	=3D &ds9490r_write_block;
+ 	dev->master.reset_bus	=3D &ds9490r_reset;
++	dev->master.set_pullup	=3D &ds9490r_set_pullup;
+=20
+ 	return w1_add_master_device(&dev->master);
+ }
+@@ -839,6 +838,7 @@ static int ds_probe(struct usb_interface *intf,
+ 		printk(KERN_INFO "Failed to allocate new DS9490R structure.\n");
+ 		return -ENOMEM;
+ 	}
++	dev->spu_sleep=3D0;
+ 	dev->udev =3D usb_get_dev(udev);
+ 	if (!dev->udev) {
+ 		err =3D -ENOMEM;
 --=20
 1.4.4.4
 
---McTFpSeH7KqpdXA3
+--I2k41U2G4dq8LTBU
 Content-Type: application/pgp-signature
 Content-Disposition: inline
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.1 (GNU/Linux)
 
-iD8DBQFH7OROAI852cse6PARAn7NAJ405oUcBnWM/RocoDxnfBjsjmBK2ACgmESd
-NhU+5TibU/Irp3lGEkTUMJE=
-=oaV3
+iD8DBQFH7OQeAI852cse6PARAv6gAKCBInBkyIFJBh7OnYWWWGJN4jTewwCcCSIB
+4EplBRUN5LmOJ2Fiahbg7/I=
+=m8ZQ
 -----END PGP SIGNATURE-----
 
---McTFpSeH7KqpdXA3--
+--I2k41U2G4dq8LTBU--
