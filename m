@@ -1,27 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760837AbYC1OtV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760913AbYC1Oto@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760837AbYC1OtV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Mar 2008 10:49:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756978AbYC1OhK
+	id S1760913AbYC1Oto (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Mar 2008 10:49:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756996AbYC1OhQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Mar 2008 10:37:10 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:49369 "EHLO mx1.redhat.com"
+	Fri, 28 Mar 2008 10:37:16 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:49411 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755753AbYC1Ofv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Mar 2008 10:35:51 -0400
+	id S1756775AbYC1OgV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Mar 2008 10:36:21 -0400
 Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
 	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
 	Kingdom.
 	Registered in England and Wales under Company Registration No. 3798903
 From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 39/45] NFS: FS-Cache page management [ver #35]
+Subject: [PATCH 32/45] NFS: Register NFS for caching and retrieve the
+	top-level index [ver #35]
 To: torvalds@osdl.org, akpm@linux-foundation.org, trond.myklebust@fys.uio.no,
        chuck.lever@oracle.com
 Cc: nfsv4@linux-nfs.org, linux-kernel@vger.kernel.org,
        linux-fsdevel@vger.kernel.org, selinux@tycho.nsa.gov,
        linux-security-module@vger.kernel.org, dhowells@redhat.com
-Date: Fri, 28 Mar 2008 14:33:31 +0000
-Message-ID: <20080328143331.3483.59928.stgit@warthog.procyon.org.uk>
+Date: Fri, 28 Mar 2008 14:32:55 +0000
+Message-ID: <20080328143255.3483.59150.stgit@warthog.procyon.org.uk>
 In-Reply-To: <20080328143010.3483.99079.stgit@warthog.procyon.org.uk>
 References: <20080328143010.3483.99079.stgit@warthog.procyon.org.uk>
 User-Agent: StGIT/0.14.1
@@ -32,192 +33,167 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-FS-Cache page management for NFS.  This includes hooking the releasing and
-invalidation of pages marked with PG_fscache (aka PG_private_2) and waiting for
-completion of the write-to-cache flag (PG_fscache_write aka PG_owner_priv_2).
+Register NFS for caching and retrieve the top-level cache index object cookie.
 
 Signed-off-by: David Howells <dhowells@redhat.com>
 ---
 
- fs/nfs/file.c    |   17 +++++++++++++----
- fs/nfs/fscache.c |   51 +++++++++++++++++++++++++++++++++++++++++++++++++++
- fs/nfs/fscache.h |   22 ++++++++++++++++++++++
- 3 files changed, 86 insertions(+), 4 deletions(-)
+ fs/nfs/Makefile        |    1 +
+ fs/nfs/fscache-index.c |   53 ++++++++++++++++++++++++++++++++++++++++++++++++
+ fs/nfs/fscache.h       |   35 ++++++++++++++++++++++++++++++++
+ fs/nfs/inode.c         |    8 +++++++
+ 4 files changed, 97 insertions(+), 0 deletions(-)
+ create mode 100644 fs/nfs/fscache-index.c
+ create mode 100644 fs/nfs/fscache.h
 
 
-diff --git a/fs/nfs/file.c b/fs/nfs/file.c
-index 26a073b..60db3ea 100644
---- a/fs/nfs/file.c
-+++ b/fs/nfs/file.c
-@@ -35,6 +35,7 @@
- #include "delegation.h"
- #include "internal.h"
- #include "iostat.h"
+diff --git a/fs/nfs/Makefile b/fs/nfs/Makefile
+index df0f41e..6d7176d 100644
+--- a/fs/nfs/Makefile
++++ b/fs/nfs/Makefile
+@@ -16,3 +16,4 @@ nfs-$(CONFIG_NFS_V4)	+= nfs4proc.o nfs4xdr.o nfs4state.o nfs4renewd.o \
+ 			   nfs4namespace.o
+ nfs-$(CONFIG_NFS_DIRECTIO) += direct.o
+ nfs-$(CONFIG_SYSCTL) += sysctl.o
++nfs-$(CONFIG_NFS_FSCACHE) += fscache-index.o
+diff --git a/fs/nfs/fscache-index.c b/fs/nfs/fscache-index.c
+new file mode 100644
+index 0000000..d696c06
+--- /dev/null
++++ b/fs/nfs/fscache-index.c
+@@ -0,0 +1,53 @@
++/* NFS FS-Cache index structure definition
++ *
++ * Copyright (C) 2008 Red Hat, Inc. All Rights Reserved.
++ * Written by David Howells (dhowells@redhat.com)
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public Licence
++ * as published by the Free Software Foundation; either version
++ * 2 of the Licence, or (at your option) any later version.
++ */
++
++#include <linux/init.h>
++#include <linux/kernel.h>
++#include <linux/sched.h>
++#include <linux/mm.h>
++#include <linux/nfs_fs.h>
++#include <linux/nfs_fs_sb.h>
++#include <linux/in6.h>
++
++#include "internal.h"
 +#include "fscache.h"
- 
- #define NFSDBG_FACILITY		NFSDBG_FILE
- 
-@@ -358,7 +359,7 @@ static int nfs_write_end(struct file *file, struct address_space *mapping,
-  * Partially or wholly invalidate a page
-  * - Release the private state associated with a page if undergoing complete
-  *   page invalidation
-- * - Called if either PG_private or PG_private_2 is set on the page
-+ * - Called if either PG_private or PG_fscache is set on the page
-  * - Caller holds page lock
-  */
- static void nfs_invalidate_page(struct page *page, unsigned long offset)
-@@ -367,30 +368,35 @@ static void nfs_invalidate_page(struct page *page, unsigned long offset)
- 		return;
- 	/* Cancel any unstarted writes on this page */
- 	nfs_wb_page_cancel(page->mapping->host, page);
 +
-+	nfs_fscache_invalidate_page(page, page->mapping->host);
- }
- 
- /*
-  * Attempt to release the private state associated with a page
-- * - Called if either PG_private or PG_private_2 is set on the page
-+ * - Called if either PG_private or PG_fscache is set on the page
-  * - Caller holds page lock
-  * - Return true (may release page) or false (may not)
-  */
- static int nfs_release_page(struct page *page, gfp_t gfp)
- {
- 	/* If PagePrivate() is set, then the page is not freeable */
--	return 0;
-+	if (PagePrivate(page))
-+		return 0;
-+	return nfs_fscache_release_page(page, gfp);
- }
- 
- /*
-  * Attempt to clear the private state associated with a page when an error
-  * occurs that requires the cached contents of an inode to be written back or
-  * destroyed
-- * - Called if either PG_private or PG_private_2 is set on the page
-+ * - Called if either PG_private or fscache is set on the page
-  * - Caller holds page lock
-  * - Return 0 if successful, -error otherwise
-  */
- static int nfs_launder_page(struct page *page)
- {
-+	wait_on_page_fscache_write(page);
- 	return nfs_wb_page(page->mapping->host, page);
- }
- 
-@@ -422,6 +428,9 @@ static int nfs_vm_page_mkwrite(struct vm_area_struct *vma, struct page *page)
- 	int ret = -EINVAL;
- 	struct address_space *mapping;
- 
-+	/* make sure the cache has finished storing the page */
-+	wait_on_page_fscache_write(page);
++#define NFSDBG_FACILITY		NFSDBG_FSCACHE
 +
- 	lock_page(page);
- 	mapping = page->mapping;
- 	if (mapping != vma->vm_file->f_path.dentry->d_inode->i_mapping)
-diff --git a/fs/nfs/fscache.c b/fs/nfs/fscache.c
-index 0c71bae..d06f837 100644
---- a/fs/nfs/fscache.c
-+++ b/fs/nfs/fscache.c
-@@ -19,6 +19,7 @@
- #include <linux/seq_file.h>
- 
- #include "internal.h"
-+#include "iostat.h"
- #include "fscache.h"
- 
- #define NFSDBG_FACILITY		NFSDBG_FSCACHE
-@@ -340,3 +341,53 @@ void nfs_fscache_attr_changed(struct inode *inode)
- 	fscache_attr_changed(NFS_I(inode)->fscache);
- 	nfs_fscache_inode_unlock(inode);
- }
++static const struct fscache_netfs_operations nfs_fscache_ops = {
++};
 +
 +/*
-+ * Release the caching state associated with a page, if the page isn't busy
-+ * interacting with the cache.
-+ * - Returns true (can release page) or false (page busy).
++ * Define the NFS filesystem for FS-Cache.  Upon registration FS-Cache sticks
++ * the cookie for the top-level index object for NFS into here.  The top-level
++ * index can than have other cache objects inserted into it.
 + */
-+int nfs_fscache_release_page(struct page *page, gfp_t gfp)
++struct fscache_netfs nfs_fscache_netfs = {
++	.name		= "nfs",
++	.version	= 0,
++	.ops		= &nfs_fscache_ops,
++};
++
++/*
++ * Register NFS for caching
++ */
++int nfs_fscache_register(void)
 +{
-+	if (PageFsCacheWrite(page)) {
-+		if (!(gfp & __GFP_WAIT))
-+			return 0;
-+		wait_on_page_fscache_write(page);
-+	}
-+
-+	if (PageFsCache(page)) {
-+		struct nfs_inode *nfsi = NFS_I(page->mapping->host);
-+
-+		BUG_ON(!nfsi->fscache);
-+
-+		dfprintk(FSCACHE, "NFS: fscache releasepage (0x%p/0x%p/0x%p)\n",
-+			 nfsi->fscache, page, nfsi);
-+
-+		fscache_uncache_page(nfsi->fscache, page);
-+		nfs_add_fscache_stats(page->mapping->host,
-+				      NFSIOS_FSCACHE_PAGES_UNCACHED, 1);
-+	}
-+
-+	return 1;
++	return fscache_register_netfs(&nfs_fscache_netfs);
 +}
 +
 +/*
-+ * Release the caching state associated with a page if undergoing complete page
-+ * invalidation.
++ * Unregister NFS for caching
 + */
-+void __nfs_fscache_invalidate_page(struct page *page, struct inode *inode)
++void nfs_fscache_unregister(void)
 +{
-+	struct nfs_inode *nfsi = NFS_I(inode);
-+
-+	BUG_ON(!nfsi->fscache);
-+
-+	dfprintk(FSCACHE, "NFS: fscache invalidatepage (0x%p/0x%p/0x%p)\n",
-+		 nfsi->fscache, page, nfsi);
-+
-+	wait_on_page_fscache_write(page);
-+
-+	BUG_ON(!PageLocked(page));
-+	fscache_uncache_page(nfsi->fscache, page);
-+	nfs_add_fscache_stats(page->mapping->host,
-+			      NFSIOS_FSCACHE_PAGES_UNCACHED, 1);
++	fscache_unregister_netfs(&nfs_fscache_netfs);
 +}
 diff --git a/fs/nfs/fscache.h b/fs/nfs/fscache.h
-index 595f7e7..e17cc1b 100644
---- a/fs/nfs/fscache.h
+new file mode 100644
+index 0000000..ccfcdc5
+--- /dev/null
 +++ b/fs/nfs/fscache.h
-@@ -84,6 +84,21 @@ extern void nfs_fscache_set_inode_cookie(struct inode *, struct file *);
- extern void nfs_fscache_renew_inode_cookie(struct inode *);
- extern void nfs_fscache_attr_changed(struct inode *);
- 
-+extern void __nfs_fscache_invalidate_page(struct page *, struct inode *);
-+extern int nfs_fscache_release_page(struct page *, gfp_t);
+@@ -0,0 +1,35 @@
++/* NFS filesystem cache interface definitions
++ *
++ * Copyright (C) 2008 Red Hat, Inc. All Rights Reserved.
++ * Written by David Howells (dhowells@redhat.com)
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public Licence
++ * as published by the Free Software Foundation; either version
++ * 2 of the Licence, or (at your option) any later version.
++ */
++
++#ifndef _NFS_FSCACHE_H
++#define _NFS_FSCACHE_H
++
++#include <linux/nfs_fs.h>
++#include <linux/nfs_mount.h>
++#include <linux/nfs4_mount.h>
++#include <linux/fscache.h>
++
++#ifdef CONFIG_NFS_FSCACHE
 +
 +/*
-+ * release the caching state associated with a page if undergoing complete page
-+ * invalidation
++ * fscache-index.c
 + */
-+static inline void nfs_fscache_invalidate_page(struct page *page,
-+					       struct inode *inode)
-+{
-+	if (PageFsCache(page))
-+		__nfs_fscache_invalidate_page(page, inode);
-+}
++extern struct fscache_netfs nfs_fscache_netfs;
 +
++extern int nfs_fscache_register(void);
++extern void nfs_fscache_unregister(void);
 +
- #else /* CONFIG_NFS_FSCACHE */
- static inline int nfs_fscache_register(void) { return 0; }
- static inline void nfs_fscache_unregister(void) {}
-@@ -106,5 +121,12 @@ static inline void nfs_fscache_set_inode_cookie(struct inode *inode,
- 					     struct file *filp) {}
- static inline void nfs_fscache_attr_changed(struct inode *inode) {}
++#else /* CONFIG_NFS_FSCACHE */
++static inline int nfs_fscache_register(void) { return 0; }
++static inline void nfs_fscache_unregister(void) {}
++
++#endif /* CONFIG_NFS_FSCACHE */
++#endif /* _NFS_FSCACHE_H */
+diff --git a/fs/nfs/inode.c b/fs/nfs/inode.c
+index a4c7cf2..702315a 100644
+--- a/fs/nfs/inode.c
++++ b/fs/nfs/inode.c
+@@ -46,6 +46,7 @@
+ #include "delegation.h"
+ #include "iostat.h"
+ #include "internal.h"
++#include "fscache.h"
  
-+static inline int nfs_fscache_release_page(struct page *page, gfp_t gfp)
-+{
-+	return 1; /* True: may release page */
-+}
-+static inline void nfs_fscache_invalidate_page(struct page *page,
-+					       struct inode *inode) {}
+ #define NFSDBG_FACILITY		NFSDBG_VFS
+ 
+@@ -1224,6 +1225,10 @@ static int __init init_nfs_fs(void)
+ {
+ 	int err;
+ 
++	err = nfs_fscache_register();
++	if (err < 0)
++		goto out6;
 +
- #endif /* CONFIG_NFS_FSCACHE */
- #endif /* _NFS_FSCACHE_H */
+ 	err = nfs_fs_proc_init();
+ 	if (err)
+ 		goto out5;
+@@ -1270,6 +1275,8 @@ out3:
+ out4:
+ 	nfs_fs_proc_exit();
+ out5:
++	nfs_fscache_unregister();
++out6:
+ 	return err;
+ }
+ 
+@@ -1280,6 +1287,7 @@ static void __exit exit_nfs_fs(void)
+ 	nfs_destroy_readpagecache();
+ 	nfs_destroy_inodecache();
+ 	nfs_destroy_nfspagecache();
++	nfs_fscache_unregister();
+ #ifdef CONFIG_PROC_FS
+ 	rpc_proc_unregister("nfs");
+ #endif
 
