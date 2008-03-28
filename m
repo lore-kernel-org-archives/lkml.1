@@ -1,90 +1,635 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756056AbYC1StW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756870AbYC1Su0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756056AbYC1StW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Mar 2008 14:49:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751354AbYC1StQ
+	id S1756870AbYC1Su0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Mar 2008 14:50:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753167AbYC1SuN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Mar 2008 14:49:16 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:45170 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751080AbYC1StP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Mar 2008 14:49:15 -0400
-Date: Fri, 28 Mar 2008 11:47:34 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: penberg@cs.helsinki.fi, clameter@sgi.com, rjw@sisk.pl,
-       pstaszewski@artcom.pl, linux-kernel@vger.kernel.org, bunk@kernel.org,
-       protasnb@gmail.com
-Subject: Re: 2.6.25-rc7-git2: Reported regressions from 2.6.24
-Message-Id: <20080328114734.13607172.akpm@linux-foundation.org>
-In-Reply-To: <alpine.LFD.1.00.0803281116460.14670@woody.linux-foundation.org>
-References: <200803272353.51901.rjw@sisk.pl>
-	<alpine.LFD.1.00.0803271859280.14670@woody.linux-foundation.org>
-	<Pine.LNX.4.64.0803272002090.11979@schroedinger.engr.sgi.com>
-	<alpine.LFD.1.00.0803272050290.14670@woody.linux-foundation.org>
-	<84144f020803281015s60370d9dpec0913c33004b6c2@mail.gmail.com>
-	<alpine.LFD.1.00.0803281017500.14670@woody.linux-foundation.org>
-	<84144f020803281108o178bf62cp48dcd4f43ec59b74@mail.gmail.com>
-	<alpine.LFD.1.00.0803281116460.14670@woody.linux-foundation.org>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 28 Mar 2008 14:50:13 -0400
+Received: from rtr.ca ([76.10.145.34]:3982 "EHLO mail.rtr.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751091AbYC1SuK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Mar 2008 14:50:10 -0400
+Message-ID: <47ED3DDE.3030201@rtr.ca>
+Date: Fri, 28 Mar 2008 14:50:06 -0400
+From: Mark Lord <lkml@rtr.ca>
+Organization: Real-Time Remedies Inc.
+User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
+MIME-Version: 1.0
+To: Greg KH <gregkh@suse.de>, Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: 2.6.25-rc7: udevd compatibility issue?
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 28 Mar 2008 11:20:52 -0700 (PDT)
-Linus Torvalds <torvalds@linux-foundation.org> wrote:
+Having coerced 2.6.25-rc7 onto one notebook here,
+we're now working on the other one.
 
-> The code in question is __slab_alloc().
+This one is the Dell Lattitude X1 sub-notebook, with Intel everything and 2GB.
 
-The bug we're discussing is http://bugzilla.kernel.org/show_bug.cgi?id=10318
+On boot, syslog is flooded with "uevent: unsupported action-string;" messages.
+The messages claim "this will be ignored in a future kernel", but this is not
+a "future kernel".
 
-It's a driver call stright into the page allocator - slab is not involved.
+So, what purpose do they have in 2.6.25-rc7 ?
 
-I was planning on plugging it this way:
+The system is using udev-079, which came with the distro 2 years ago.
 
+* * * *
 
-From: Andrew Morton <akpm@linux-foundation.org>
-
-I believe http://bugzilla.kernel.org/show_bug.cgi?id=10318 is a false
-positive.  There's no way in which networking will be using highmem pages
-here, so it won't be taking the KM_USER0 kmap slot, so there's no point in
-performing these checks.
-
-Cc: Pawel Staszewski <pstaszewski@artcom.pl>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Christoph Lameter <clameter@sgi.com>
-Cc: "David S. Miller" <davem@davemloft.net>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
----
-
- arch/x86/mm/highmem_32.c |    6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
-
-diff -puN arch/x86/mm/highmem_32.c~x86-kmap_atomic-debugging-only-run-debug_kmap_atomic_prot-for-highmem-pages arch/x86/mm/highmem_32.c
---- a/arch/x86/mm/highmem_32.c~x86-kmap_atomic-debugging-only-run-debug_kmap_atomic_prot-for-highmem-pages
-+++ a/arch/x86/mm/highmem_32.c
-@@ -73,15 +73,15 @@ void *kmap_atomic_prot(struct page *page
- {
- 	enum fixed_addresses idx;
- 	unsigned long vaddr;
--	/* even !CONFIG_PREEMPT needs this, for in_atomic in do_page_fault */
--
--	debug_kmap_atomic_prot(type);
- 
-+	/* even !CONFIG_PREEMPT needs this, for in_atomic in do_page_fault */
- 	pagefault_disable();
- 
- 	if (!PageHighMem(page))
- 		return page_address(page);
- 
-+	debug_kmap_atomic_prot(type);
-+
- 	idx = type + KM_TYPE_NR*smp_processor_id();
- 	vaddr = __fix_to_virt(FIX_KMAP_BEGIN + idx);
- 	BUG_ON(!pte_none(*(kmap_pte-idx)));
-_
-
+Mar 28 14:43:29 shrimp syslogd 1.4.1#17ubuntu7.1: restart.
+Mar 28 14:43:29 shrimp kernel: Inspecting /boot/System.map-2.6.25-rc7-git3
+Mar 28 14:43:29 shrimp kernel: Loaded 25545 symbols from /boot/System.map-2.6.25-rc7-git3.
+Mar 28 14:43:29 shrimp kernel: Symbols match kernel version 2.6.25.
+Mar 28 14:43:29 shrimp kernel: No module symbols loaded - kernel modules not enabled. 
+Mar 28 14:43:29 shrimp kernel: upported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptyqd: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptyqe: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptyqf: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptyr0: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptyr1: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptyr2: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptyr3: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptyr4: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptyr5: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptyr6: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptyr7: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptyr8: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptyr9: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptyra: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptyrb: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptyrc: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptyrd: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptyre: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptyrf: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptys0: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptys1: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptys2: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptys3: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptys4: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptys5: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptys6: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptys7: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptys8: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptys9: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptysa: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptysb: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptysc: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptysd: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptyse: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptysf: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptyt0: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptyt1: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptyt2: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptyt3: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptyt4: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptyt5: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptyt6: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptyt7: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptyt8: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptyt9: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptyta: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptytb: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptytc: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptytd: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptyte: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptytf: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptyu0: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptyu1: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptyu2: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptyu3: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptyu4: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptyu5: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptyu6: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptyu7: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptyu8: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptyu9: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptyua: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptyub: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptyuc: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptyud: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptyue: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptyuf: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptyv0: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptyv1: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptyv2: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptyv3: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptyv4: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptyv5: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptyv6: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptyv7: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptyv8: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptyv9: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptyva: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptyvb: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptyvc: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptyvd: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptyve: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptyvf: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptyw0: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptyw1: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptyw2: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptyw3: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptyw4: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptyw5: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptyw6: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptyw7: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptyw8: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptyw9: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptywa: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptywb: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptywc: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptywd: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptywe: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptywf: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptyx0: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptyx1: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptyx2: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptyx3: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptyx4: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptyx5: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptyx6: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptyx7: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptyx8: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptyx9: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptyxa: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptyxb: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptyxc: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptyxd: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptyxe: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptyxf: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptyy0: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptyy1: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptyy2: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptyy3: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptyy4: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptyy5: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptyy6: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptyy7: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptyy8: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptyy9: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptyya: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptyyb: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptyyc: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptyyd: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptyye: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptyyf: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptyz0: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptyz1: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptyz2: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptyz3: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptyz4: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptyz5: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptyz6: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptyz7: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptyz8: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptyz9: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptyza: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptyzb: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptyzc: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptyzd: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptyze: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ptyzf: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty tty: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty tty0: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty tty1: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty tty10: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty tty11: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty tty12: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty tty13: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty tty14: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty tty15: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty tty16: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty tty17: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty tty18: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty tty19: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty tty2: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty tty20: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty tty21: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty tty22: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty tty23: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty tty24: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty tty25: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty tty26: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty tty27: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty tty28: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty tty29: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty tty3: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty tty30: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty tty31: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty tty32: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty tty33: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty tty34: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty tty35: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty tty36: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty tty37: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty tty38: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty tty39: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty tty4: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty tty40: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty tty41: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty tty42: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty tty43: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty tty44: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty tty45: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty tty46: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty tty47: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty tty48: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty tty49: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty tty5: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty tty50: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty tty51: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty tty52: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty tty53: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty tty54: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty tty55: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty tty56: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty tty57: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty tty58: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty tty59: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty tty6: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty tty60: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty tty61: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty tty62: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty tty63: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty tty7: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty tty8: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty tty9: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ttyS0: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ttyS1: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ttyS2: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ttyS3: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ttya0: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ttya1: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ttya2: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ttya3: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ttya4: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ttya5: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ttya6: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ttya7: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ttya8: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ttya9: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ttyaa: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ttyab: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ttyac: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ttyad: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ttyae: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ttyaf: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ttyb0: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ttyb1: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ttyb2: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ttyb3: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ttyb4: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ttyb5: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ttyb6: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ttyb7: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ttyb8: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ttyb9: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ttyba: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ttybb: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ttybc: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ttybd: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ttybe: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ttybf: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ttyc0: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ttyc1: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ttyc2: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ttyc3: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ttyc4: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ttyc5: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ttyc6: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ttyc7: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ttyc8: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ttyc9: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ttyca: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ttycb: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ttycc: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ttycd: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ttyce: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ttycf: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ttyd0: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ttyd1: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ttyd2: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ttyd3: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ttyd4: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ttyd5: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ttyd6: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ttyd7: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ttyd8: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ttyd9: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ttyda: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ttydb: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ttydc: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ttydd: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ttyde: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ttydf: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ttye0: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ttye1: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ttye2: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ttye3: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ttye4: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ttye5: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ttye6: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ttye7: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ttye8: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ttye9: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ttyea: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ttyeb: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ttyec: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ttyed: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ttyee: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ttyef: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ttyp0: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ttyp1: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ttyp2: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ttyp3: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ttyp4: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ttyp5: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ttyp6: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ttyp7: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ttyp8: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ttyp9: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ttypa: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ttypb: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ttypc: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ttypd: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ttype: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ttypf: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ttyq0: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ttyq1: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ttyq2: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ttyq3: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ttyq4: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ttyq5: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ttyq6: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ttyq7: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ttyq8: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ttyq9: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ttyqa: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ttyqb: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ttyqc: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ttyqd: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ttyqe: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ttyqf: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ttyr0: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ttyr1: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ttyr2: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ttyr3: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ttyr4: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ttyr5: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ttyr6: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:29 shrimp kernel: tty ttyr7: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: tty ttyr8: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: tty ttyr9: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: tty ttyra: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: tty ttyrb: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: tty ttyrc: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: tty ttyrd: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: tty ttyre: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: tty ttyrf: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: tty ttys0: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: tty ttys1: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: tty ttys2: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: tty ttys3: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: tty ttys4: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: tty ttys5: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: tty ttys6: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: tty ttys7: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: tty ttys8: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: tty ttys9: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: tty ttysa: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: tty ttysb: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: tty ttysc: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: tty ttysd: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: tty ttyse: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: tty ttysf: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: tty ttyt0: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: tty ttyt1: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: tty ttyt2: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: tty ttyt3: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: tty ttyt4: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: tty ttyt5: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: tty ttyt6: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: tty ttyt7: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: tty ttyt8: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: tty ttyt9: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: tty ttyta: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: tty ttytb: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: tty ttytc: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: tty ttytd: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: tty ttyte: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: tty ttytf: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: tty ttyu0: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: tty ttyu1: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: tty ttyu2: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: tty ttyu3: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: tty ttyu4: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: tty ttyu5: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: tty ttyu6: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: tty ttyu7: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: tty ttyu8: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: tty ttyu9: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: tty ttyua: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: tty ttyub: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: tty ttyuc: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: tty ttyud: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: tty ttyue: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: tty ttyuf: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: tty ttyv0: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: tty ttyv1: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: tty ttyv2: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: tty ttyv3: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: tty ttyv4: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: tty ttyv5: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: tty ttyv6: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: tty ttyv7: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: tty ttyv8: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: tty ttyv9: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: tty ttyva: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: tty ttyvb: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: tty ttyvc: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: tty ttyvd: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: tty ttyve: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: tty ttyvf: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: tty ttyw0: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: tty ttyw1: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: tty ttyw2: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: tty ttyw3: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: tty ttyw4: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: tty ttyw5: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: tty ttyw6: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: tty ttyw7: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: tty ttyw8: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: tty ttyw9: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: tty ttywa: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: tty ttywb: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: tty ttywc: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: tty ttywd: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: tty ttywe: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: tty ttywf: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: tty ttyx0: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: tty ttyx1: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: tty ttyx2: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: tty ttyx3: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: tty ttyx4: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: tty ttyx5: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: tty ttyx6: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: tty ttyx7: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: tty ttyx8: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: tty ttyx9: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: tty ttyxa: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: tty ttyxb: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: tty ttyxc: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: tty ttyxd: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: tty ttyxe: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: tty ttyxf: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: tty ttyy0: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: tty ttyy1: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: tty ttyy2: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: tty ttyy3: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: tty ttyy4: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: tty ttyy5: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: tty ttyy6: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: tty ttyy7: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: tty ttyy8: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: tty ttyy9: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: tty ttyya: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: tty ttyyb: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: tty ttyyc: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: tty ttyyd: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: tty ttyye: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: tty ttyyf: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: tty ttyz0: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: tty ttyz1: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: tty ttyz2: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: tty ttyz3: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: tty ttyz4: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: tty ttyz5: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: tty ttyz6: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: tty ttyz7: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: tty ttyz8: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: tty ttyz9: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: tty ttyza: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: tty ttyzb: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: tty ttyzc: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: tty ttyzd: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: tty ttyze: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: tty ttyzf: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: vc vcs: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: vc vcs1: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: vc vcsa: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: vc vcsa1: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: vtconsole vtcon0: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: acpi LNXSYSTM:00: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: acpi ACPI0007:00: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: acpi ACPI0007:01: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: acpi LNXTHERM:00: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: acpi LNXTHERM:01: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: acpi device:00: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: acpi ACPI0003:00: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: pci_root PNP0A03:00: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: acpi PNP0C01:01: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: acpi PNP0C01:02: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: acpi PNP0C01:05: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: pci_link PNP0C0F:00: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: pci_link PNP0C0F:01: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: pci_link PNP0C0F:02: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: pci_link PNP0C0F:03: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: pci_link PNP0C0F:04: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: pci_link PNP0C0F:05: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: pci_link PNP0C0F:06: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: acpi device:01: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: acpi PNP0000:00: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: acpi PNP0100:00: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: acpi PNP0200:00: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: acpi PNP0303:00: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: acpi PNP0800:00: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: acpi PNP0B00:00: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: acpi PNP0C01:03: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: acpi PNP0C01:04: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: acpi PNP0C04:00: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: acpi PNP0F13:00: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: acpi device:02: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: acpi device:03: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: acpi device:04: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: acpi device:05: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: acpi device:06: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: acpi device:07: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: acpi device:08: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: acpi device:09: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: acpi device:0a: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: acpi device:0b: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: acpi device:0c: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: acpi device:0d: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: acpi device:0e: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: acpi device:0f: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: acpi device:10: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: acpi device:11: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: acpi device:12: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: acpi device:13: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: acpi device:14: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: acpi device:15: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: acpi device:16: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: acpi device:17: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: acpi device:18: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: acpi device:19: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: acpi device:1a: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: acpi device:1b: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: acpi device:1c: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: acpi device:1d: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: acpi device:1e: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: acpi device:1f: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: acpi device:20: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: acpi device:21: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: acpi device:22: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: acpi PNP0C01:00: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: acpi PNP0C0A:00: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: acpi PNP0C0C:00: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: acpi PNP0C0D:00: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: acpi PNP0C0E:00: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel:  pci0000:00: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: pci 0000:00:00.0: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: pci 0000:00:02.0: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: pci 0000:00:02.1: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: pci 0000:00:1c.0: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: pci 0000:01:00.0: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: pci 0000:00:1d.0: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: pci 0000:00:1d.1: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: pci 0000:00:1d.2: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: pci 0000:00:1d.3: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: pci 0000:00:1d.7: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: pci 0000:00:1e.0: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: pci 0000:02:01.0: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: pci 0000:02:01.1: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: pci 0000:02:01.2: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: pci 0000:02:03.0: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: pci 0000:00:1e.2: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: pci 0000:00:1f.0: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: ata_piix 0000:00:1f.1: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel:  host0: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel:  target0:0:0: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: sd 0:0:0:0: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: sd 0:0:0:0: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel:  host1: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel:  platform: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: i8042 i8042: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: atkbd serio0: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: serio serio1: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: platform pcspkr: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: serial8250 serial8250: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: platform vesafb.0: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel:  pnp0: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: system 00:00: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: pnp 00:01: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: system 00:02: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: system 00:03: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: i8042 aux 00:04: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: i8042 kbd 00:05: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: pnp 00:06: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: pnp 00:07: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: system 00:08: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: pnp 00:09: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: pnp 00:0a: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: system 00:0b: uevent: unsupported action-string; this will be ignored in a future kernel version
+Mar 28 14:43:30 shrimp kernel: system 00:0c: uevent: unsupported action-string; this will be ignored in a future kernel version
