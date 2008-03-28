@@ -1,130 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756787AbYC1D0g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757997AbYC1D1Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756787AbYC1D0g (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Mar 2008 23:26:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751800AbYC1D02
+	id S1757997AbYC1D1Z (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Mar 2008 23:27:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752331AbYC1D1R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Mar 2008 23:26:28 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:53370 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752003AbYC1D01 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Mar 2008 23:26:27 -0400
-Date: Thu, 27 Mar 2008 20:24:22 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Pawel Staszewski <pstaszewski@artcom.pl>,
-       LKML <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Natalie Protasevich <protasnb@gmail.com>
-Subject: Re: 2.6.25-rc7-git2: Reported regressions from 2.6.24
-In-Reply-To: <alpine.LFD.1.00.0803271859280.14670@woody.linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0803272002090.11979@schroedinger.engr.sgi.com>
-References: <200803272353.51901.rjw@sisk.pl>
- <alpine.LFD.1.00.0803271859280.14670@woody.linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 27 Mar 2008 23:27:17 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:36909 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751800AbYC1D1Q (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Mar 2008 23:27:16 -0400
+Date: Thu, 27 Mar 2008 20:25:31 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Rodolfo Giometti <giometti@enneenne.com>
+Cc: linux-kernel@vger.kernel.org, dwmw2@infradead.org, davej@redhat.com,
+       sam@ravnborg.org, greg@kroah.com, randy.dunlap@oracle.com
+Subject: Re: [PATCH 1/7] LinuxPPS core support.
+Message-Id: <20080327202531.a924e5d9.akpm@linux-foundation.org>
+In-Reply-To: <20080325144400.GG8959@enneenne.com>
+References: <12048053463198-git-send-email-giometti@linux.it>
+	<12048053473401-git-send-email-giometti@linux.it>
+	<20080320130356.69ab65fe.akpm@linux-foundation.org>
+	<20080325144400.GG8959@enneenne.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 27 Mar 2008, Linus Torvalds wrote:
+On Tue, 25 Mar 2008 15:44:00 +0100 Rodolfo Giometti <giometti@enneenne.com> wrote:
 
+> > > +void pps_unregister_source(int source)
+> > > +{
+> > > +	struct pps_device *pps;
+> > > +
+> > > +	spin_lock_irq(&idr_lock);
+> > > +	pps = idr_find(&pps_idr, source);
+> > > +
+> > > +	if (!pps) {
+> > > +		spin_unlock_irq(&idr_lock);
+> > > +		return;
+> > > +	}
+> > > +
+> > > +	/* This should be done first in order to deny IRQ handlers
+> > > +	 * to access PPS structs
+> > > +	 */
+> > > +
+> > > +	idr_remove(&pps_idr, pps->id);
+> > > +	spin_unlock_irq(&idr_lock);
+> > > +
+> > > +	wait_event(pps->usage_queue, atomic_read(&pps->usage) == 0);
+> > > +
+> > > +	pps_sysfs_remove_source_entry(pps);
+> > > +	pps_unregister_cdev(pps);
+> > > +	kfree(pps);
+> > > +}
+> > > +EXPORT_SYMBOL(pps_unregister_source);
+> > 
+> > The wait_event() stuff really shouldn't be here: it should be integral to
+> > the refcounting:
+> > 
+> > void pps_dev_put(struct pps_device *pps)
+> > {
+> > 	spin_lock_irq(&pps_lock);
+> > 	if (atomic_dec_and_test(&pps->usage))
+> > 		idr_remove(&pps_idr, pps->id);
+> > 	else
+> > 		pps = NULL;
+> > 	spin_unlock_irq(&pps_lock);
+> > 	if (pps) {
+> > 		/*
+> > 		 * Might need to do the below via schedule_work() if
+> > 		 * pps_dev_put() is to be callable from atomic context
+> > 		 */
+> > 		pps_sysfs_remove_source_entry(pps);
+> > 		pps_unregister_cdev(pps);
+> > 		kfree(pps);
+> > 	}
+> > }
 > 
+> I don't understand where I should use this function... :'(
+
+This is boilerplate standard linux kernel reference counting.
+
+> > 
+> > As it stands, there might be deadlocks such as when a process which itself
+> > holds a ref on the pps_device (with an open fd?) calls
+> > pps_unregister_source.
 > 
-> On Thu, 27 Mar 2008, Rafael J. Wysocki wrote:
-> >
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=9412
-> > Subject		: commit a878539ef994787c447a98c2e3ba0fe3dad984ec breaks boot on SB600 AHCI
-> > Submitter	: Srihari Vijayaraghavan <sriharivijayaraghavan@yahoo.com.au>
-> > Date		: 2008-03-12 17:15 (16 days old)
-> > Handled-By	: Jeff Garzik <jgarzik@pobox.com>
-> > 		  Richard Zhao <richard.zhao@amd.com>
+> I can add a wait_event_interruptible in order to allow userland to
+> continue by receiving a signal. It could be acceptable?
+
+There should be no need to "wait" for anything.  When the final reference
+to an object is released, that object is cleaned up.  Just like we do for
+inodes, dentries, pages, files, and 100 other kernel objects.
+
+The need to wait for something else to go away is a big red flag with
+"busted refcounting" written on it.
+
+> > Also, we need to take care that all processes which were waiting in
+> > pps_unregister_source() get to finish their cleanup before we permit rmmod
+> > to proceed.  Is that handled somewhere?
 > 
-> Fixed by 4cde32fc4b32e96a99063af3183acdfd54c563f0, methinks.
-> 
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=9962
-> > Subject		: mount: could not find filesystem
-> > Submitter	: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-> > Date		: 2008-02-12 14:34 (45 days old)
-> > References	: http://lkml.org/lkml/2008/2/12/91
-> > Handled-By	: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> > 		  Yinghai Lu <yhlu.kernel@gmail.com>
-> 
-> Needs more info. The original oops that opened it is fixed, but..
-> 
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=9976
-> > Subject		: BUG: 2.6.25-rc1: iptables postrouting setup causes oops
-> > Submitter	: Ben Nizette <bn@niasdigital.com>
-> > Date		: 2008-02-12 12:46 (45 days old)
-> > References	: http://lkml.org/lkml/2008/2/12/148
-> > Handled-By	: Haavard Skinnemoen <hskinnemoen@atmel.com>
-> 
-> This one seems gone (and was apparently AVR-only):
-> 
-> http://lkml.org/lkml/2008/2/13/607:
->   "What ever the problem is it isn't immediately apparent in latest git so
->    I guess we'll just have to keep our eyes peeled."
-> 
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=9978
-> > Subject		: 2.6.25-rc1: volanoMark regression
-> > Submitter	: Zhang, Yanmin <yanmin_zhang@linux.intel.com>
-> > Date		: 2008-02-13 10:30 (44 days old)
-> > References	: http://lkml.org/lkml/2008/2/13/128
-> > 		  http://lkml.org/lkml/2008/3/12/52
-> > 		  http://lkml.org/lkml/2008/3/18/81
-> > Handled-By	: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
-> > 		  Balbir Singh <balbir@linux.vnet.ibm.com>
-> 
-> Hmm. It is a regression on one machine (2x quad-core stoakley), but not 
-> another (4x quad-core tigerton).
-> 
-> Interestingly, the stoakley box numbers have apparently been all over the 
-> map.
-> 
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10318
-> > Subject		: WARNING: at arch/x86/mm/highmem_32.c:43 kmap_atomic_prot+0x87/0x184()
-> > Submitter	: Pawel Staszewski <pstaszewski@artcom.pl>
-> > Date		: 2008-03-25 02:50 (3 days old)
-> 
-> Andrew and seems to have debugged this down to a kzalloc(GFP_ATOMIC) or 
-> similar.
+> I don't understand the problem... this code as been added in order to
+> avoid the case where a pps_event() is called while a process executes
+> the pps_unregister_source(). If more processes try to execute this
+> code the first which enters will execute idr_remove() which prevents
+> another process to reach the wait_event()... is that wrong? =:-o
 
-Slab allocations can never use GFP_HIGHMEM. Slab allocators BUG 
-if either of these bits are set (checks on the slowpaths):
+I was asking you!
 
-#define GFP_SLAB_BUG_MASK (__GFP_DMA32|__GFP_HIGHMEM|~__GFP_BITS_MASK)
-
-GFP flags are not masked/checked if either inline fallback to the page 
-allocator occurs (SLUB for >4k allocs) or if an allocation is forwarded
-to the page allocator (SLOB, SLUB). They are also not checked on the 
-fastpaths.
+We should get the reference counting and object lifetimes sorted out first. 
+There should be no "wait for <object> to be released" code.  Once that is
+in place, things like rmmod will also sort themselves out: it just won't be
+possible to remove the module while there are live references to objects.
 
 
-AFAICT the check in kmap_atomic_prot is simply too strict.
-
-void *kmap_atomic_prot(struct page *page, enum km_type type, pgprot_t 
-prot)
-{
-        enum fixed_addresses idx;
-        unsigned long vaddr;
-        /* even !CONFIG_PREEMPT needs this, for in_atomic in do_page_fault */
-
-        debug_kmap_atomic_prot(type);
-
-        pagefault_disable();
-
-        if (!PageHighMem(page))
-                return page_address(page);
-
-
-The check for PageHighMem(page) needs to either come before the 
-debug_kmap_atomic_prot() or kmap_atomic_prot should only be called for 
-HIGHMEM allocations. Otherwise any get_zeroed_page() alloc from an 
-interrupt context may cause a false positive here.
-
-Seems to be a reoccurrence of something that I discussed with Andrew a 
-while back.
-
-http://marc.info/?t=118790336700011&r=1&w=2
