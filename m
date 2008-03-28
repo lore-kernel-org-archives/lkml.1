@@ -1,86 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755628AbYC1LYe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755891AbYC1LYw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755628AbYC1LYe (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Mar 2008 07:24:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752956AbYC1LY0
+	id S1755891AbYC1LYw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Mar 2008 07:24:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755408AbYC1LYm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Mar 2008 07:24:26 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:44492 "EHLO
-	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752508AbYC1LYZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Mar 2008 07:24:25 -0400
-Date: Fri, 28 Mar 2008 12:25:07 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>,
-       kernel list <linux-kernel@vger.kernel.org>
-Subject: agpgart: when telling user you'll corrupt his data, at least do it
-	at KERN_CRIT
-Message-ID: <20080328112507.GA10774@elf.ucw.cz>
+	Fri, 28 Mar 2008 07:24:42 -0400
+Received: from styx.suse.cz ([82.119.242.94]:53979 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752987AbYC1LYl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Mar 2008 07:24:41 -0400
+Date: Fri, 28 Mar 2008 12:24:39 +0100 (CET)
+From: Jiri Kosina <jkosina@suse.cz>
+To: Chris Holvenstot <cholvenstot@comcast.net>
+cc: Thomas Gleixner <tglx@linutronix.de>,
+       Kernel <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: 2.6.24-git15 Keyboard Issue?
+In-Reply-To: <1206703226.7112.43.camel@popeye>
+Message-ID: <Pine.LNX.4.64.0803281223360.5541@jikos.suse.cz>
+References: <1202302978.9058.13.camel@popeye>  <Pine.LNX.4.64.0802061427410.30873@twin.jikos.cz>
+  <1202305740.9058.22.camel@popeye>  <Pine.LNX.4.64.0802061452210.30873@twin.jikos.cz>
+  <1202318666.6406.13.camel@popeye>  <Pine.LNX.4.64.0802071016220.30873@twin.jikos.cz>
+  <1202381094.6179.0.camel@popeye>  <Pine.LNX.4.64.0802071149260.30955@jikos.suse.cz>
+  <alpine.LFD.1.00.0802071324410.9204@apollo.tec.linutronix.de> 
+ <1202396868.6087.8.camel@popeye>  <alpine.LFD.1.00.0802071629350.9204@apollo.tec.linutronix.de>
+  <1202402704.6087.12.camel@popeye>  <alpine.LFD.1.00.0802071838110.9204@apollo.tec.linutronix.de>
+  <1202448975.6538.2.camel@popeye>  <alpine.LFD.1.00.0802091053350.3145@apollo.tec.linutronix.de>
+  <1202553464.6386.7.camel@popeye>  <alpine.LFD.1.00.0802091255190.3145@apollo.tec.linutronix.de>
+  <alpine.LFD.1.00.0803281114300.3781@apollo.tec.linutronix.de>
+ <1206703226.7112.43.camel@popeye>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 28 Mar 2008, Chris Holvenstot wrote:
 
-IOMMU off means very bad stuff may happen, like data corruption on
-your hard drives. At least tells users this is serious...
+> I have not see the problem with "repeating keys" for a while now - since 
+> it was a "soft" failure I can not specify exactly which build was the 
+> last I saw it on.
+> I am currently running 2.6.25-rc7-git2
+> If you have questions abount the configuration of my kernel my config
+> file is attached.
 
-Plus, agp_amd64_init should go into .h file.
+Hi,
 
-Signed-off-by: Pavel Machek <pavel@suse.cz>
+I think that this was one of the issues that were caused by 
+CONFIG_GROUP_SCHED, which were fixed a few weeks ago.
 
-diff --git a/arch/x86/kernel/pci-gart_64.c b/arch/x86/kernel/pci-gart_64.c
-index faf3229..19e4f74 100644
---- a/arch/x86/kernel/pci-gart_64.c
-+++ b/arch/x86/kernel/pci-gart_64.c
-@@ -615,13 +615,11 @@ static __init int init_k8_gatt(struct ag
- 
-  nommu:
- 	/* Should not happen anymore */
--	printk(KERN_ERR "PCI-DMA: More than 4GB of RAM and no IOMMU\n"
--	       KERN_ERR "PCI-DMA: 32bit PCI IO may malfunction.\n");
-+	printk(KERN_CRIT "PCI-DMA: More than 4GB of RAM and no IOMMU\n"
-+	       KERN_CRIT "PCI-DMA: 32bit PCI IO may malfunction.\n");
- 	return -1;
- }
- 
--extern int agp_amd64_init(void);
--
- static const struct dma_mapping_ops gart_dma_ops = {
- 	.mapping_error			= NULL,
- 	.map_single			= gart_map_single,
-@@ -692,9 +690,9 @@ #endif
- 	    !gart_iommu_aperture ||
- 	    (no_agp && init_k8_gatt(&info) < 0)) {
- 		if (end_pfn > MAX_DMA32_PFN) {
--			printk(KERN_ERR "WARNING more than 4GB of memory "
--					"but GART IOMMU not available.\n"
--			       KERN_ERR "WARNING 32bit PCI may malfunction.\n");
-+			printk(KERN_CRIT "More than 4GB of memory "
-+			       	          "but GART IOMMU not available.\n"
-+			       KERN_CRIT "32bit PCI may malfunction.\n");
- 		}
- 		return;
- 	}
-diff --git a/include/asm-x86/agp.h b/include/asm-x86/agp.h
-index e4004a9..657c25b 100644
---- a/include/asm-x86/agp.h
-+++ b/include/asm-x86/agp.h
-@@ -32,4 +32,7 @@ #define alloc_gatt_pages(order)		\
- #define free_gatt_pages(table, order)	\
- 	free_pages((unsigned long)(table), (order))
- 
-+/* Only available in certain configs */
-+extern int agp_amd64_init(void);
-+
- #endif
+Still, the real issue is in Xorg, that their autorepeat code is very 
+unhappy when X process doesn't get scheduled often enough.
+
+Thanks,
 
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
-pomozte zachranit klanovicky les:  http://www.ujezdskystrom.info/
+Jiri Kosina
+SUSE Labs
