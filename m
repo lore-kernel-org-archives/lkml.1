@@ -1,41 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756783AbYC1Qmv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756933AbYC1QnY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756783AbYC1Qmv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Mar 2008 12:42:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753782AbYC1Qlz
+	id S1756933AbYC1QnY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Mar 2008 12:43:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752398AbYC1QnG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Mar 2008 12:41:55 -0400
-Received: from mail04.svc.cra.dublin.eircom.net ([159.134.118.20]:43614 "HELO
-	mail04.svc.cra.dublin.eircom.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753423AbYC1Qlz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Mar 2008 12:41:55 -0400
-From: Mark McLoughlin <markmc@redhat.com>
-To: jeremy@goop.org
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, xen-devel@lists.xensource.com
-Subject: [PATCH 0/3] xen: Fix oops when mapping/unmapping addr above 1Gb
-Date: Fri, 28 Mar 2008 16:38:14 +0000
-Message-Id: <1206722297-11763-1-git-send-email-markmc@redhat.com>
-X-Mailer: git-send-email 1.5.4.1
+	Fri, 28 Mar 2008 12:43:06 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:51065 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752665AbYC1QnF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Mar 2008 12:43:05 -0400
+Date: Fri, 28 Mar 2008 17:42:47 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: gorcunov@gmail.com
+Cc: hpa@zytor.com, tglx@linutronix.de, linux-kernel@vger.kernel.org
+Subject: Re: [patch 0/2] x86 flags cleanup
+Message-ID: <20080328164247.GA19247@elte.hu>
+References: <20080328145655.076024373@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080328145655.076024373@gmail.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -0.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-0.5 required=5.9 tests=BAYES_20 autolearn=no SpamAssassin version=3.2.3
+	-0.5 BAYES_20               BODY: Bayesian spam probability is 5 to 20%
+	[score: 0.1777]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Hi,
-        In Fedora rawhide we're currently seeing oopses whenever
-a processes dlopen()s a library which prelink() has previously
-relocated above 1Gb. Some more details at:
+* gorcunov@gmail.com <gorcunov@gmail.com> wrote:
 
-  https://bugzilla.redhat.com/436453
+> This patch series does remove some flags from x86.h. We should better
+> use ones from processor-flags.h
 
-        The issue seems to be that during xen_pgd_pin(), we only
-pin PTE pages, but xen's release_pmd() tries to unpin PMD pages
-too.
+thanks Cyrill, applied.
 
-        The following series of patches is against the latest
-x86 tree.
-
-Cheers,
-Mark.
-
+	Ingo
