@@ -1,64 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754226AbYC1Jc5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753491AbYC1Jlx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754226AbYC1Jc5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Mar 2008 05:32:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752284AbYC1Jct
+	id S1753491AbYC1Jlx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Mar 2008 05:41:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750810AbYC1Jln
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Mar 2008 05:32:49 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:57803 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752224AbYC1Jct (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Mar 2008 05:32:49 -0400
-Date: Fri, 28 Mar 2008 10:32:34 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Alan Mayer <ajm@sgi.com>
-Cc: torvalds@linux-foundation.org,
-       linux-kernel list <linux-kernel@vger.kernel.org>,
-       Robin Holt <holt@sgi.com>, Jack Steiner <steiner@sgi.com>,
-       Russ Anderson <rja@sgi.com>
-Subject: Re: [PATCH] x86_64: resize NR_IRQS for large machines (re-submit)
-Message-ID: <20080328093234.GD30863@elte.hu>
-References: <20080327163314.GA24180@elte.hu> <Pine.SGI.3.96.1080327115108.7873204e-100000@fergus.americas.sgi.com>
+	Fri, 28 Mar 2008 05:41:43 -0400
+Received: from nf-out-0910.google.com ([64.233.182.185]:36207 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750802AbYC1Jlm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Mar 2008 05:41:42 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=EeQnwjwCe2iad+q5gJ7lsvcHssBt3y2+mSUAuyw+dEk0TZ17gF72lpmicO5bSEbPSPEywZ4R3civxVjOmn8HxlG0/fKZXHMvXl4Nj1gAyZajmigZHlyYCmQd+UXsPShjbCm62SB9pAgztZa2uSlkGFSgPswF9DpIMLuMc3xkU54=
+Message-ID: <47ECBD4A.8080908@gmail.com>
+Date: Fri, 28 Mar 2008 10:41:30 +0100
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.SGI.3.96.1080327115108.7873204e-100000@fergus.americas.sgi.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0029]
+To: Balbir Singh <balbir@linux.vnet.ibm.com>
+CC: Paul Menage <menage@google.com>, Pavel Emelianov <xemul@openvz.org>,
+       Hugh Dickins <hugh@veritas.com>,
+       Sudhir Kumar <skumar@linux.vnet.ibm.com>,
+       YAMAMOTO Takashi <yamamoto@valinux.co.jp>, lizf@cn.fujitsu.com,
+       linux-kernel@vger.kernel.org, taka@valinux.co.jp, linux-mm@kvack.org,
+       David Rientjes <rientjes@google.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Subject: Re: [-mm] Add an owner to the mm_struct (v2)
+References: <20080328082316.6961.29044.sendpatchset@localhost.localdomain>
+In-Reply-To: <20080328082316.6961.29044.sendpatchset@localhost.localdomain>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-2; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Alan Mayer <ajm@sgi.com> wrote:
-
-> > i think you got it right, yes. But ... this is just a quick 
-> > first-look suggestion from me, YMMV. Maybe you find a way to do it 
-> > much easier to just convert everything at once. I tend to do things 
-> > more gradually, in my experience it's very hard and time-consuming 
-> > to change the world all at once - it's hard both to you the 
-> > developer (you dont know whether it works until you have a very 
-> > substantial amount of code written - while in a more gradual 
-> > approach it can be converted one by one perhaps) - and it's hard for 
-> > users and fellow kernel hackers.
+On 03/28/2008 09:23 AM, Balbir Singh wrote:
+> This patch removes the mem_cgroup member from mm_struct and instead adds
+> an owner. This approach was suggested by Paul Menage. The advantage of
+> this approach is that, once the mm->owner is known, using the subsystem
+> id, the cgroup can be determined. It also allows several control groups
+> that are virtually grouped by mm_struct, to exist independent of the memory
+> controller i.e., without adding mem_cgroup's for each controller,
+> to mm_struct.
 > 
-> I think I'll take a crack at it.  Doing it in phases means I can 
-> invest a little less time and still give everyone a chance to see if 
-> they like it.  And, the initial stuff seems like the area where people 
-> will be the most likely to have problems and/or suggestions.  I have 
-> no idea how long it will take to get something out there.  Stay tuned.
+> The code initially assigns mm->owner to the task and then after the
+> thread group leader is identified. The mm->owner is changed to the thread
+> group leader of the task later at the end of copy_process.
+> 
+> A new config option CONFIG_MM_OWNER is added and the memory resource
+> controller now depends on this config option.
+> 
+> NOTE: This patch was developed on top of 2.6.25-rc5-mm1 and is applied on top
+> of the memory-controller-move-to-own-slab patch (which is already present
+> in the Andrew's patchset).
+> 
+> These patches have been tested on a powerpc 64 bit box and on x86_64 box with
+> several microbenchmarks and some simple memory controller testing.
+> 
+> Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
+> ---
+> 
+>  include/linux/memcontrol.h |   14 ++++++++-
+>  include/linux/mm_types.h   |    6 ++--
+>  include/linux/sched.h      |   19 ++++++++++++
+>  init/Kconfig               |   13 ++++++++
+>  kernel/exit.c              |   66 +++++++++++++++++++++++++++++++++++++++++++++
+>  kernel/fork.c              |   26 +++++++++++++++++
+>  mm/memcontrol.c            |   19 +++++++-----
+>  7 files changed, 151 insertions(+), 12 deletions(-)
+> 
+> diff -puN include/linux/mm_types.h~memory-controller-add-mm-owner include/linux/mm_types.h
+> --- linux-2.6.25-rc5/include/linux/mm_types.h~memory-controller-add-mm-owner	2008-03-28 09:30:47.000000000 +0530
+> +++ linux-2.6.25-rc5-balbir/include/linux/mm_types.h	2008-03-28 12:26:59.000000000 +0530
+> @@ -227,8 +227,10 @@ struct mm_struct {
+>  	/* aio bits */
+>  	rwlock_t		ioctx_list_lock;
+>  	struct kioctx		*ioctx_list;
+> -#ifdef CONFIG_CGROUP_MEM_RES_CTLR
+> -	struct mem_cgroup *mem_cgroup;
+> +#ifdef CONFIG_MM_OWNER
+> +	spinlock_t owner_lock;
+> +	struct task_struct *owner;	/* The thread group leader that */
 
-great! If your initial target for this is x86 (which has certainly the 
-most twisted IRQ architecture of all architectures) then we'd be glad to 
-host and test your patches in x86.git/latest - even if they touch 
-drivers and other core code. Once it's proven enough it could be 
-rehosted to -mm.
-
-	Ingo
+Doesn't make sense to switch them (spinlock is unsigned int on x86, what's 
+sizeof between and after?)?
