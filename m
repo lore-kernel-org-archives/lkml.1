@@ -1,121 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756483AbYC1AR3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757010AbYC1ASc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756483AbYC1AR3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Mar 2008 20:17:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753744AbYC1ART
+	id S1757010AbYC1ASc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Mar 2008 20:18:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753817AbYC1ASZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Mar 2008 20:17:19 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:40855 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753531AbYC1ARS (ORCPT
+	Thu, 27 Mar 2008 20:18:25 -0400
+Received: from an-out-0708.google.com ([209.85.132.251]:9304 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753744AbYC1ASY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Mar 2008 20:17:18 -0400
-Date: Fri, 28 Mar 2008 09:20:57 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Yasunori Goto <y-goto@jp.fujitsu.com>,
-       Christoph Lameter <clameter@sgi.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Anthony Liguori <anthony@codemonkey.ws>,
-       Chris Wright <chrisw@sous-sol.org>
-Subject: Re: Trying to make use of hotplug memory for xen balloon driver
-Message-Id: <20080328092057.82864a58.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <47EC099C.9030609@goop.org>
-References: <47EAD83A.2000000@goop.org>
-	<20080327095059.5d2759a3.kamezawa.hiroyu@jp.fujitsu.com>
-	<47EB3765.8020702@goop.org>
-	<20080327151115.be9f325d.kamezawa.hiroyu@jp.fujitsu.com>
-	<47EC099C.9030609@goop.org>
-Organization: Fujitsu
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 27 Mar 2008 20:18:24 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:content-transfer-encoding:in-reply-to:user-agent;
+        b=je+EunjzosySSIBIB0oMwkj4pfLpg8j5ghWSVpG9gqoPN5+kP6ZA3X9Ome+jWff3WUhHeUanr66FhijViZNrX82sBo1aU+K65KaFe24ClQSv0o1RQCSNU1yZPkW+k0pSW6e5Cd3NT51RkG/xIZbEYdWhxn2SvYdXCdeKmhj/0ZI=
+Date: Thu, 27 Mar 2008 21:18:04 -0300
+From: "Carlos R. Mafra" <crmafra2@gmail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: LKML <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Natalie Protasevich <protasnb@gmail.com>
+Subject: Re: 2.6.25-rc7-git2: Reported regressions from 2.6.24
+Message-ID: <20080328001804.GA11075@localhost.ift.unesp.br>
+References: <200803272353.51901.rjw@sisk.pl>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <200803272353.51901.rjw@sisk.pl>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 27 Mar 2008 13:54:52 -0700
-Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+On Thu 27.Mar'08 at 23:53:50 +0100, Rafael J. Wysocki wrote:
+> This message contains a list of some regressions from 2.6.24 reported since
+> 2.6.25-rc1 was released, for which there are no fixes in the mainline I know
+> of.  If any of them have been fixed already, please let me know.
+> [...]
+ 
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10343
+> Subject		: 103 sec. latency: sync_page() with TASK_UNINTERRUPTIBLE (?) (bisected)
+> Submitter	: Carlos R. Mafra <crmafra2@gmail.com>
+> Date		: 2008-03-23 00:47 (5 days old)
+> References	: http://lkml.org/lkml/2008/3/22/211
+> Handled-By	: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
 
-> KAMEZAWA Hiroyuki wrote:
-> > On Wed, 26 Mar 2008 22:57:57 -0700
-> > Jeremy Fitzhardinge <jeremy@goop.org> wrote:
-> >
-> >   
-> >> Ah, I see what it is.  I wasn't trying to add enough memory.  It adds in 
-> >> units of SECTION_SIZE_BITS, which is 2^30 on 32-bit PAE.  When I 
-> >> increase the initial balloon extension to PAGES_PER_SECTION pages, I 
-> >> make some more progress:
-> >>
-> >> xen_balloon: Initialising balloon driver.
-> >> trying to reserve 262144 pages (1073741824 bytes) for balloon
-> >> bootmem alloc of 147456 bytes failed!
-> >> Kernel panic - not syncing: Out of memory
-> >> Pid: 1, comm: swapper Not tainted 2.6.25-rc7-x86-latest.git-dirty #361
-> >>  [<c01299dc>] panic+0x49/0x102
-> >>  [<c0647c3c>] __alloc_bootmem+0x24/0x29
-> >>  [<c0647c6d>] __alloc_bootmem_node+0x2c/0x34
-> >>  [<c044bd97>] zone_wait_table_init+0x45/0x95
-> >>  [<c0467258>] init_currently_empty_zone+0x1d/0xaa
-> >>  [<c01738ea>] __add_pages+0x88/0xdb
-> >>  [<c011c1a5>] arch_add_memory+0x25/0x2b
-> >>  [<c01737a9>] add_memory_resource+0x2f/0x36
-> >>  [<c064e487>] balloon_init+0x1b8/0x2b9
-> >>  [<c0635495>] kernel_init+0x137/0x292
-> >>  [<c063535e>] ? kernel_init+0x0/0x292
-> >>  [<c063535e>] ? kernel_init+0x0/0x292
-> >>  [<c0108b67>] kernel_thread_helper+0x7/0x10
-> >>  =======================
-> >>
-> >>
-> >> What's the rationale for setting SECTION_SIZE_BITS to 30?  Seems like a 
-> >> fairly large chunk.
-> >>
-> >>     
-> > At first, I believe usual DIMM size is bigger than SECTION_SIZE_BITS. This is
-> > designed for hardware-based hotplug.
-> >
-> > If you want to use memory-hotplug for virtualized enviroment, it's good to make
-> > this to be smaller chunk. Powerpc/IBM lpar uses 16MB chunk.
-> >
-> > It's a trade-off between section mainainance cost v.s. size of plugged memory.
-> > please find the best.
-> 
-> Hm, I tried reducing it to 2^28 (=256M), but I get a compilation failure:
-> 
->   CC      arch/x86/kernel/asm-offsets.s
-> In file included from /home/jeremy/hg/xen/paravirt/linux/include/linux/suspend.h:11,
->                  from /home/jeremy/hg/xen/paravirt/linux/arch/x86/kernel/asm-offsets_32.c:11,
->                  from /home/jeremy/hg/xen/paravirt/linux/arch/x86/kernel/asm-offsets.c:2:
-> /home/jeremy/hg/xen/paravirt/linux/include/linux/mm.h:458:2: error: #error SECTIONS_WIDTH+NODES_WIDTH+ZONES_WIDTH > FLAGS_RESERVED
-> make[3]: *** [arch/x86/kernel/asm-offsets.s] Error 1
-> 
-Ah, Now, section number of the page is encoded in page->flags.
-(Sorry, I'm usually working on 64bit memory-hotplug...)
-see mm.h
-==
- 371  * There are three possibilities for how page->flags get
- 372  * laid out.  The first is for the normal case, without
- 373  * sparsemem.  The second is for sparsemem when there is
- 374  * plenty of space for node and section.  The last is when
- 375  * we have run out of space and have to fall back to an
- 376  * alternate (slower) way of determining the node.
- 377  *
- 378  *        No sparsemem: |       NODE     | ZONE | ... | FLAGS |
- 379  * with space for node: | SECTION | NODE | ZONE | ... | FLAGS |
- 380  *   no space for node: | SECTION |     ZONE    | ... | FLAGS |
-==
-
-Hmm, in other archs, sparsemem-vmemmap allows us to remove bits for section
-(recent Christoph's work.) But for x86-32, kernel's NORMAL area seems to be
-not enough to maintain vmemmap.
-
-I have no good idea against this, now.
-
-Thanks,
--Kame
-
-
-
-
+This regression is already solved. The patch which caused this problem 
+was reverted by Andrew Morton in 4dd4b920218326231156c7991ce5b94afad841c3.
