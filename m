@@ -1,57 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757959AbYC1XKb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759214AbYC1XKn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757959AbYC1XKb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Mar 2008 19:10:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755696AbYC1XKT
+	id S1759214AbYC1XKn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Mar 2008 19:10:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756075AbYC1XKV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Mar 2008 19:10:19 -0400
-Received: from mga05.intel.com ([192.55.52.89]:50614 "EHLO
-	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754525AbYC1XKS (ORCPT
+	Fri, 28 Mar 2008 19:10:21 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:48915
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1755602AbYC1XKS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 28 Mar 2008 19:10:18 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,572,1199692800"; 
-   d="scan'208";a="541904206"
-Message-ID: <47ED7832.5050702@linux.intel.com>
-Date: Fri, 28 Mar 2008 15:58:58 -0700
-From: Arjan van de Ven <arjan@linux.intel.com>
-User-Agent: Thunderbird 2.0.0.12 (Windows/20080213)
-MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       NetDev <netdev@vger.kernel.org>
-Subject: Re: Oops/Warning report for the week of March 28th 2008
-References: <47ED3F1A.1090101@linux.intel.com> <alpine.LFD.1.00.0803281310480.14670@woody.linux-foundation.org> <47ED7247.3020203@linux.intel.com>
-In-Reply-To: <47ED7247.3020203@linux.intel.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Date: Fri, 28 Mar 2008 16:10:11 -0700 (PDT)
+Message-Id: <20080328.161011.08762096.davem@davemloft.net>
+To: m.kozlowski@tuxland.pl
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org, greg@kroah.com,
+       sparclinux@vger.kernel.org
+Subject: Re: 2.6.25-rc5-mm1 sparc64 boot problems due to generic
+ pci_enable_resources()
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <200803282352.10780.m.kozlowski@tuxland.pl>
+References: <20080311011434.ad8c8d7d.akpm@linux-foundation.org>
+	<200803282352.10780.m.kozlowski@tuxland.pl>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arjan van de Ven wrote:
-> Linus Torvalds wrote:
->>
->>> http://www.kerneloops.org/searchweek.php?search=input_release_device
->>
->> The problem with kerneloops is that it seems to be really hard to 
->> figure out the *source* of the oops. I can find the oopses (and it's 
->> really good with the whole search-and-clump-together-by-version 
->> thing), but then when some oops like this is found, it's hard to see 
->> where your kerneloops scripts found the oops from, so the context of 
->> the oops is all gone.
+From: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
+Date: Fri, 28 Mar 2008 23:52:10 +0100
 
-> I can try doing some sorting tricks in the grouping, so that those 
-> oopses who have more data than this, show
-> up on top... (and maybe a direct link on the search page)
+> 	The gregkh-pci-pci-sparc64-use-generic-pci_enable_resources.patch which
+> replaces arch-specific code with generic pci_enable_resources() makes my sparc64
+> box unable to boot (that's what quilt bisection says). At first I see these messages:
 
-I just implemented this; below are two examples of this:
+Yes, that generic code won't work because of the NULL
+r->parent check.
 
-http://www.kerneloops.org/searchweek.php?search=tcp_mark_head_lost
-http://www.kerneloops.org/search.php?search=input_release_device
+Alpha, ARM, V32, FRV, IA64, MIPS, MN10300, PARISC, PPC,
+SH, V850, X86, and Xtensa are all likely to run into
+problems because of this change.
 
-The ratio of automatic versus mailinglist/bugzilla mails is quite high in favor
-of the automatic ones so there's not all THAT many of these at this point,
-especially in the "searchweek" version, which only shows the last 7 days of
-reports.
+The only platform that did the check as a test of r->parent
+being NULL is Powerpc.
+
+The rest either didn't check (like sparc64), or tested it by going:
+
+	if (!r->start && r->end)
+
+So the amount of potential breakage from this change is enormous.
