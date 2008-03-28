@@ -1,84 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756137AbYC1VBh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756516AbYC1VEO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756137AbYC1VBh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Mar 2008 17:01:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754279AbYC1VB0
+	id S1756516AbYC1VEO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Mar 2008 17:04:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754478AbYC1VD6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Mar 2008 17:01:26 -0400
-Received: from crystal.sipsolutions.net ([195.210.38.204]:35995 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754191AbYC1VBZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Mar 2008 17:01:25 -0400
-Subject: Re: Oops/Warning report for the week of March 28th 2008
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Arjan van de Ven <arjan@linux.intel.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       NetDev <netdev@vger.kernel.org>, Dmitry Torokhov <dtor@mail.ru>
-In-Reply-To: <alpine.LFD.1.00.0803281329340.14670@woody.linux-foundation.org> (sfid-20080328_205203_254278_BF9EB41F)
-References: <47ED3F1A.1090101@linux.intel.com>
-	 <alpine.LFD.1.00.0803281310480.14670@woody.linux-foundation.org>
-	 <alpine.LFD.1.00.0803281329340.14670@woody.linux-foundation.org>
-	 (sfid-20080328_205203_254278_BF9EB41F)
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-zqqsyyNKmcZl1QiQ/AFF"
-Date: Fri, 28 Mar 2008 22:01:11 +0100
-Message-Id: <1206738071.22530.80.camel@johannes.berg>
+	Fri, 28 Mar 2008 17:03:58 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:36796 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754474AbYC1VD6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Mar 2008 17:03:58 -0400
+Date: Fri, 28 Mar 2008 22:04:22 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: use of volatile in iounmap()?
+Message-ID: <20080328210422.GA14484@uranus.ravnborg.org>
+References: <20080328203427.GA14256@uranus.ravnborg.org> <47ED5A40.9020307@zytor.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <47ED5A40.9020307@zytor.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Mar 28, 2008 at 01:51:12PM -0700, H. Peter Anvin wrote:
+> Sam Ravnborg wrote:
+> >While reviewing some CAN driver I stumbled on iounmap
+> >which has following prototype on x86:
+> >
+> >extern void iounmap(volatile void __iomem *addr);
+> >
+> >I argued that the driver should not use volatile
+> >but then I cannot explain why the argument to
+> >iounmap takes a volatile.
+> >
+> >The same goes for many other functions in
+> >the io*.h headers.
+> >
+> >Grepping the other archs they mostly follow
+> >same pattern.
+> >
+> >Can anyone explain the rational for volatile in this case.
+> >
+> 
+> Yes.  The use of volatile in a function prototype like this means that 
+> it is valid to pass a volatile pointer to that function -- in other 
+> words, we're telling gcc that we're not going to do anything with the 
+> pointer that is invalid for a volatile pointer.
+If I understand you correct then it is then not wrong to say
+that we have the argument volatile to avoid warnings from gcc
+when we pass a volatile pointer.
 
---=-zqqsyyNKmcZl1QiQ/AFF
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+And then having the pointer marked volatile put a few restrictions
+on iounmap().
 
+> 
+> A lot of the "volatile considered harmful" stuff that has been bandied 
+> about is explicitly about marking *data* items volatile (it does have 
+> its uses, but it's easy to get wrong); Linus has explicitly made the 
+> distinction between volatile *data* and volatile *operations*.
 
-> Hmm. Definitely not from the kernel mailing list. I'm intrigued, where di=
-d=20
-> that oops #5814 come from (picked a recent one at random)?
+Yes - but unfortunately the volatile-considered-harmful.txt
+does many deal with the data part.
 
-Can't tell you this, but
-
-> The thing is recent, and oopses on "mutex_lock(dev->mutex)" in=20
-> input_release_device. In particular, the path *seems* to be this one:
->=20
->   evdev_release ->
->     evdev_ungrab ->
->       input_release_device ->
->         mutex_lock ->
->           mutex_lock_nested ->
->             __mutex_lock_common ->
->               list_add_tail(&waiter.list, &lock->wait_list)
-
-That I've seen before, analysed a bit and posted:
-http://permalink.gmane.org/gmane.linux.kernel.input/4281
-
-johannes
-
---=-zqqsyyNKmcZl1QiQ/AFF
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iQIVAwUAR+1clqVg1VMiehFYAQKalRAAsL+CGxIvsoqw03G2gmdGyPGIzcIGD0Dx
-1HI9nNwxTWbKFriXLDMY/gbjuJIzSvMboNoMptMFY60WeBGV9uixClEq1gpmBBPf
-2iDQD58wFaKRJvmVhKDx01vziaExGCE36C2Vjrvgnwyri2Qw4PdA6JZIGv/FnZXb
-FC3ALXs9TuYUJUZL0+UyKzE8LBT7NumQ7rvBYfSwn+bKeQ9ntk+0WLgeDZMuUvYr
-3K+fnqA5GaouFD6I0nelPFOBFvqm89IMVuLILluFPGdErA0eSvvk1U8foCG4p+jk
-i9rMYTJBY5qqgH06ZhBUkIo29r7Xpc16iVKEbxO8JVKxbCJDnB9/9n/AFUtbStjB
-vaq6QB+rpyLxkXqHEOrZwniM7FQRS6lFMa2T9w2lma30Z+LKaBXOFtFpxT1wA3Ds
-HcsQbyY3l51ojfxq6FZVCXe5gRl5TEYPf7fOaHam1xm474NLpT1T470ox2wf6DQG
-3GZBzfsxZNKlan/87kA2E1cza3w7z7Lq3hLuc0BHbKlGm4Yc/E7PeK6mIcmvqr2b
-7pb36jNxxXENNyAXQxywHo0QF1oEsgHywYiQvE8xr1/pLuBaz6ychXAs8IrbGH0H
-/yGeeANSj1DO1mB81uod2kPMS/L3j3RpUUjKeBgBRVVJGPjUt+7POP7rLtZsymhE
-eXVw3cptLSk=
-=ZZhr
------END PGP SIGNATURE-----
-
---=-zqqsyyNKmcZl1QiQ/AFF--
-
+Thanks,
+	Sam
