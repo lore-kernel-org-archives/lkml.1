@@ -1,31 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753261AbYC1Ko3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753884AbYC1Kqg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753261AbYC1Ko3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Mar 2008 06:44:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751345AbYC1KoX
+	id S1753884AbYC1Kqg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Mar 2008 06:46:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751421AbYC1Kq1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Mar 2008 06:44:23 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:46270 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751100AbYC1KoW (ORCPT
+	Fri, 28 Mar 2008 06:46:27 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:59911 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751345AbYC1Kq0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Mar 2008 06:44:22 -0400
-Date: Fri, 28 Mar 2008 19:48:39 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Balbir Singh <balbir@linux.vnet.ibm.com>
-Cc: Paul Menage <menage@google.com>, Pavel Emelianov <xemul@openvz.org>,
-       Hugh Dickins <hugh@veritas.com>,
-       Sudhir Kumar <skumar@linux.vnet.ibm.com>,
-       YAMAMOTO Takashi <yamamoto@valinux.co.jp>, lizf@cn.fujitsu.com,
-       linux-kernel@vger.kernel.org, taka@valinux.co.jp, linux-mm@kvack.org,
-       David Rientjes <rientjes@google.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [-mm] Add an owner to the mm_struct (v2)
-Message-Id: <20080328194839.fe6ffa52.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20080328082316.6961.29044.sendpatchset@localhost.localdomain>
-References: <20080328082316.6961.29044.sendpatchset@localhost.localdomain>
-Organization: Fujitsu
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
+	Fri, 28 Mar 2008 06:46:26 -0400
+Date: Fri, 28 Mar 2008 03:39:39 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Alex Chiang <achiang@hp.com>
+Cc: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>, Greg KH <gregkh@suse.de>,
+       Gary Hade <garyhade@us.ibm.com>,
+       Kristen Carlson Accardi <kristen.c.accardi@intel.com>,
+       Matthew Wilcox <matthew@wil.cx>, warthog19@eaglescrag.net,
+       rick.jones2@hp.com, linux-kernel@vger.kernel.org,
+       linux-pci@atrey.karlin.mff.cuni.cz, linux-acpi@vger.kernel.org
+Subject: Re: [PATCH 3/4] Introduce pci_slot
+Message-Id: <20080328033939.5ef5ab7b.akpm@linux-foundation.org>
+In-Reply-To: <20080325041700.GD29666@ldl.fc.hp.com>
+References: <20080325041314.GA29666@ldl.fc.hp.com>
+	<20080325041700.GD29666@ldl.fc.hp.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -33,35 +32,27 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 28 Mar 2008 13:53:16 +0530
-Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+On Mon, 24 Mar 2008 22:17:00 -0600 Alex Chiang <achiang@hp.com> wrote:
 
+> Currently, /sys/bus/pci/slots/ only exposes hotplug attributes
+> when a hotplug driver is loaded, but PCI slots have attributes
+> such as address, speed, width, etc. that are not related to
+> hotplug at all.
 > 
+> Introduce pci_slot as the primary data structure and kobject
+> model. Hotplug attributes described in hotplug_slot become a
+> secondary structure associated with the pci_slot.
 > 
-> This patch removes the mem_cgroup member from mm_struct and instead adds
-> an owner. This approach was suggested by Paul Menage. The advantage of
-> this approach is that, once the mm->owner is known, using the subsystem
-> id, the cgroup can be determined. It also allows several control groups
-> that are virtually grouped by mm_struct, to exist independent of the memory
-> controller i.e., without adding mem_cgroup's for each controller,
-> to mm_struct.
+> This patch only creates the infrastructure that allows the
+> separation of PCI slot attributes and hotplug attributes.
+> In this patch, the PCI hotplug core remains the only user of this
+> infrastructure, and thus, /sys/bus/pci/slots/ will still only
+> become populated when a hotplug driver is loaded.
 > 
-> The code initially assigns mm->owner to the task and then after the
-> thread group leader is identified. The mm->owner is changed to the thread
-> group leader of the task later at the end of copy_process.
-> 
-Hmm, I like this approach. 
 
--a bit off topic-
-BTW, could you move mem_cgroup_from_task() to include/linux/memcontrol.h ?
+I've so far fixed four compile errors in this patch.  It's your turn:
 
-Then, I'll add an interface like
-mem_cgroup_charge_xxx(struct page *page, struct mem_cgroup *mem, gfp_mask mask)
-
-This can be called in following way:
-mem_cgroup_charge_xxx(page, mem_cgroup_from_task(current), GFP_XXX);
-and I don't have to access mm_struct's member in this case.
-
-Thanks,
--Kame
-
+drivers/pci/hotplug/rpaphp_slot.c: In function 'rpaphp_deregister_slot':
+drivers/pci/hotplug/rpaphp_slot.c:139: error: 'struct hotplug_slot' has no member named 'kobj'
+drivers/pci/hotplug/rpaphp_slot.c: In function 'rpaphp_register_slot':
+drivers/pci/hotplug/rpaphp_slot.c:173: error: 'struct hotplug_slot' has no member named 'kobj'
