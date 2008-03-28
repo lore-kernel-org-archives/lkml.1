@@ -1,54 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757947AbYC1SUc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757767AbYC1SVb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757947AbYC1SUc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Mar 2008 14:20:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757651AbYC1SUP
+	id S1757767AbYC1SVb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Mar 2008 14:21:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755336AbYC1SVX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Mar 2008 14:20:15 -0400
-Received: from vena.lwn.net ([206.168.112.25]:41308 "EHLO vena.lwn.net"
+	Fri, 28 Mar 2008 14:21:23 -0400
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:35909 "EHLO e4.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755812AbYC1SUO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Mar 2008 14:20:14 -0400
-To: linux-kernel@vger.kernel.org
-Subject: [Pull] Some documentation patches
-cc: torvalds@linux-foundation.org, Randy Dunlap <randy.dunlap@oracle.com>
-From: Jonathan Corbet <corbet@lwn.net>
-Date: Fri, 28 Mar 2008 12:20:12 -0600
-Message-ID: <13387.1206728412@vena.lwn.net>
+	id S1754900AbYC1SVW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Mar 2008 14:21:22 -0400
+Subject: Re: Trying to make use of hotplug memory for xen balloon driver
+From: Dave Hansen <dave@linux.vnet.ibm.com>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Yasunori Goto <y-goto@jp.fujitsu.com>,
+       Christoph Lameter <clameter@sgi.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Anthony Liguori <anthony@codemonkey.ws>,
+       Chris Wright <chrisw@sous-sol.org>
+In-Reply-To: <47EC1E75.6090102@goop.org>
+References: <47EAD83A.2000000@goop.org>
+	 <1206577595.7883.26.camel@nimitz.home.sr71.net> <47EC1E75.6090102@goop.org>
+Content-Type: text/plain
+Date: Fri, 28 Mar 2008 11:21:16 -0700
+Message-Id: <1206728476.7883.133.camel@nimitz.home.sr71.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I've noticed that getting documentation patches merged seems to be a
-slower and more uncertain process than it was a while back.  So I
-figured I'd try to be one of the cool folks with their own git tree and
-see if that works better.  Linus, if you agree, could you please pull:
+On Thu, 2008-03-27 at 15:23 -0700, Jeremy Fitzhardinge wrote:
+> If the user does a mass online via /sys the system explodes because it
+> onlines a large number of pages which have no backing memory.  Since 
+> none of those pages can be mapped, the kernel explodes in a variety of
+> interesting ways.
 
-  git://git.lwn.net/linux-2.6.git docs
+Yeah, it does look like you need some kind of partial onlining.
 
-To get the following:
+> So I'd really like to inhibit the sysfs interface on these sections.  
+> Thoughts?
 
-Jonathan Corbet (3):
-      Add the seq_file documentation
-      Fill out information on patch tags in SubmittingPatches
-      Add a comment discouraging use of in_atomic()
+The balloon driver isn't an exact fit for memory hotplug as it stands,
+so there are going to be a few growing pains here. :)
 
- Documentation/SubmittingPatches        |   54 ++++++-
- Documentation/filesystems/00-INDEX     |    2 +
- Documentation/filesystems/seq_file.txt |  283 ++++++++++++++++++++++++++++++++
- include/linux/hardirq.h                |    8 +
- 4 files changed, 344 insertions(+), 3 deletions(-)
- create mode 100644 Documentation/filesystems/seq_file.txt
+I'm not sure just inhibiting sysfs is the best thing.  What would you
+think about adding partial sections, initializing the 'struct page's,
+but just not touching the memory?
 
-These changes are (1) an updated version of the seq_file document first
-posted in 2003, (2) the much-reviewed patch tags documentation, and
-(3) a comment warning developers that in_atomic() doesn't mean what they
-think it means.  No code changes.
+-- Dave
 
-If this works out, and nobody objects, I'll try to run this tree into
-the future as a collection point for documentation patches which don't
-have a more obvious tree to travel through.
-
-Thanks,
-
-jon
