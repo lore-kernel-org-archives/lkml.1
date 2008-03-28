@@ -1,54 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757996AbYC1XgT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757927AbYC1XrP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757996AbYC1XgT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Mar 2008 19:36:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756351AbYC1XgI
+	id S1757927AbYC1XrP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Mar 2008 19:47:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756330AbYC1XrA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Mar 2008 19:36:08 -0400
-Received: from smtp113.sbc.mail.mud.yahoo.com ([68.142.198.212]:44413 "HELO
-	smtp113.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1756361AbYC1XgH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Mar 2008 19:36:07 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=NIH3gYupUtgqj3Y8yCoPOWBPNy2mGBuWVYLL6YfjgLSdj41ww6DA14JnLkHzWIYDMOHgOZGwKVC5qjxV48lwWMxSwDJZsiGpR7MoJwJqxQJ3xrlS+9R4YcPq+ElqlePPHJI1t1wafdhgo1vZFLvxEq5N7S10GDIbEijiN2GfuBo=  ;
-X-YMail-OSG: Q0ObWTQVM1nEPI4TtouprGy7ZHzzMFIzsR30KborghFVnc1mbKMR9clkpusD.E4zNrwDYwlrYw--
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Venki Pallipadi <venkatesh.pallipadi@intel.com>
-Subject: Re: 2.6.25 regression: powertop says 120K wakeups/sec
-Date: Fri, 28 Mar 2008 16:36:03 -0700
-User-Agent: KMail/1.9.6
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, linux-acpi@vger.kernel.org,
-       Len Brown <lenb@kernel.org>
-References: <20080322202454.9D69DCC0EF@adsl-69-226-248-13.dsl.pltn13.pacbell.net> <200803281509.23107.david-b@pacbell.net> <20080328225604.GA7136@linux-os.sc.intel.com>
-In-Reply-To: <20080328225604.GA7136@linux-os.sc.intel.com>
+	Fri, 28 Mar 2008 19:47:00 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:35107 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755364AbYC1Xq7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Mar 2008 19:46:59 -0400
+Date: Sat, 29 Mar 2008 00:46:28 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Jeff Garzik <jeff@garzik.org>, David Miller <davem@davemloft.net>,
+       netdev@vger.kernel.org, aabdulla@nvidia.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch 20/21] forcedeth: fix locking bug with netconsole
+Message-ID: <20080328234628.GA8459@elte.hu>
+References: <200803282141.m2SLfUwU011858@imap1.linux-foundation.org> <20080328.154353.43255092.davem@davemloft.net> <47ED75CE.1080400@garzik.org> <20080328164209.e8b723d8.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200803281636.04029.david-b@pacbell.net>
+In-Reply-To: <20080328164209.e8b723d8.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 28 March 2008, Venki Pallipadi wrote:
 
-> I think I figured out the bug...
+* Andrew Morton <akpm@linux-foundation.org> wrote:
+
+> > > Please do not mix device driver changes with core networking 
+> > > changes.
+> > 
+> > FWIW my plan was to snip the net/* stuff and only apply the 
+> > forcedeth portion.
+> > 
+> > (leaving <whomever> to pick up the pieces, should they so desire)
+> > 
 > 
-> Can you try the below patch and confirm that it works (over upstream - ignore
-> the earlier revert patch I sent to you).
+> Just drop 'em completely I'd say.
 
-That seems to do the job ... thanks!  One more regression
-fixed, it feels like RC7 is almost done. :)
+you mean the netpoll.c bits? sure.
 
-It still says odd things about C0 vs C1 though:  powertop
-says 100% of the time is in C0, but this patch would seem
-to be irrelevant if that were true.
+> otoh, drivers do seem a bit flakey in the netpoll-support area, so a 
+> bit of extra debug wouldn't hurt.  But checking irqs_disabled() either 
+> side of a udelay() was a bit paranoid ;)
 
-- Dave
+yeah. i completely forgot about those bits. But lets make sure the 
+forcedeth.c fix gets into .25 - it's obvious and it fixes a nasty bug. 
+Without that fix netconsole is unusable on forcedeth.
 
+	Ingo
