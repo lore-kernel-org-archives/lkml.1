@@ -1,47 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755074AbYC1Ng0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753994AbYC1Nib@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755074AbYC1Ng0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Mar 2008 09:36:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752237AbYC1NgT
+	id S1753994AbYC1Nib (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Mar 2008 09:38:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752315AbYC1NiW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Mar 2008 09:36:19 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:39344 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752109AbYC1NgS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Mar 2008 09:36:18 -0400
-Date: Fri, 28 Mar 2008 08:36:13 -0500
-From: Paul Jackson <pj@sgi.com>
-To: "Yinghai Lu" <yhlu.kernel@gmail.com>
-Cc: ying.huang@intel.com, hpa@zytor.com, andi@firstfloor.org, mingo@redhat.com,
-       tglx@linutronix.de, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/4] x86_64 boot -v2: Add linked listof struct
- setup_data to boot protocol
-Message-Id: <20080328083613.f058172f.pj@sgi.com>
-In-Reply-To: <86802c440803272233ved9c1d6w44f8722c85cf4c62@mail.gmail.com>
-References: <1206672578.13404.21.camel@caritas-dev.intel.com>
-	<86802c440803272233ved9c1d6w44f8722c85cf4c62@mail.gmail.com>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 28 Mar 2008 09:38:22 -0400
+Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:49036 "EHLO
+	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752063AbYC1NiV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Mar 2008 09:38:21 -0400
+Date: Fri, 28 Mar 2008 09:38:20 -0400
+To: David Brownell <david-b@pacbell.net>
+Cc: mgross@linux.intel.com, Greg KH <greg@kroah.com>,
+       lkml <linux-kernel@vger.kernel.org>, linux-rt-users@vger.kernel.org,
+       linux-usb@vger.kernel.org
+Subject: Re: Real time USB2Serial devices and behaivor
+Message-ID: <20080328133820.GH20025@csclub.uwaterloo.ca>
+References: <20080326152559.GA17164@linux.intel.com> <200803271248.40519.david-b@pacbell.net> <20080327210036.GA20027@csclub.uwaterloo.ca> <200803271408.55930.david-b@pacbell.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200803271408.55930.david-b@pacbell.net>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-YH wrote:
-> interesting, that 512nodes/4096 box physics memory is not continuous?
+On Thu, Mar 27, 2008 at 02:08:55PM -0700, David Brownell wrote:
+> List price $117 ... 4-port for $202 ... you can buy entire
+> computers for less!!  ;)
+> 
+> I really should have stocked up on the $5 cards...
 
-If each node board is stuffed with the same amount of RAM,
-and that amount of RAM is a power of two size, then you
-are correct that it would be continuous.
+Well the digi cards can run 460Kbps, which the $5 cards could not, and
+they have 64byte FIFOs, not 16, and are more efficient to manage from
+software.
 
-But if the nodes are stuffed with unequal amounts of RAM,
-or if its not a power of two, then, because we are doing
-what Andi figures (breaking the addr into bit fields, for
-efficient implementation) then we can end up with many holes.
+Basically plain serial is dying out for the majority of users
+(unfortunate for those of us that use plain serial a lot).
+
+I didn't realize the digi cards cost that much.  We get our own serial
+PCI cards made at work for less than that and they are industrial
+temperature and we don't exactly do large volumes.  Of course by the
+time the sales people add markup and all that they would cost at least
+what the digi cards do.  :)
 
 -- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.940.382.4214
+Len Sorensen
