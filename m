@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757286AbYC1Lmr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757414AbYC1LnE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757286AbYC1Lmr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Mar 2008 07:42:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754598AbYC1LkZ
+	id S1757414AbYC1LnE (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Mar 2008 07:43:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754721AbYC1Lk0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Mar 2008 07:40:25 -0400
-Received: from fms-01.valinux.co.jp ([210.128.90.1]:44550 "EHLO
+	Fri, 28 Mar 2008 07:40:26 -0400
+Received: from fms-01.valinux.co.jp ([210.128.90.1]:44552 "EHLO
 	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753752AbYC1LkU (ORCPT
+	with ESMTP id S1753774AbYC1LkV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Mar 2008 07:40:20 -0400
+	Fri, 28 Mar 2008 07:40:21 -0400
 From: Isaku Yamahata <yamahata@valinux.co.jp>
 To: jeremy@goop.org
 Cc: chrisw@sous-sol.org, sct@redhat.com,
        virtualization@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
        xen-ia64-devel@lists.xensource.com, eddie.dong@intel.com,
        yamahata@valinux.co.jp
-Subject: [PATCH 07/12] Xen: Make events.c portable for ia64/xen support.
-Date: Fri, 28 Mar 2008 20:40:13 +0900
-Message-Id: <12067044180-git-send-email-yamahata@valinux.co.jp>
+Subject: [PATCH 09/12] xen: make include/xen/page.h portable moving those definitions under asm dir.
+Date: Fri, 28 Mar 2008 20:40:15 +0900
+Message-Id: <12067044183655-git-send-email-yamahata@valinux.co.jp>
 X-Mailer: git-send-email 1.5.3
 In-Reply-To: <12067044183207-git-send-email-yamahata@valinux.co.jp>
 References: <12067044183207-git-send-email-yamahata@valinux.co.jp>
@@ -26,76 +26,195 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Remove x86 dependency in drivers/xen/events.c for ia64/xen support.
-Introduce xen_irqs_disabled() to hide regs->flags
-Introduce xen_do_IRQ() to hide regs->orig_ax.
-Add one rmb() because on ia64 xchg() isn't barrier.
+The definitions in include/asm/xen/page.h are arch specific.
+ia64/xen wants to define its own version. So move them to arch specific
+directory and keep include/xen/page.h in order not to break compilation.
 
 Signed-off-by: Isaku Yamahata <yamahata@valinux.co.jp>
 ---
- drivers/xen/events.c             |   13 +++++++------
- include/asm-x86/xen/hypervisor.h |   10 ++++++++++
- 2 files changed, 17 insertions(+), 6 deletions(-)
+ include/{ => asm-x86}/xen/page.h |    0 
+ include/xen/page.h               |  169 +-------------------------------------
+ 2 files changed, 1 insertions(+), 168 deletions(-)
+ copy include/{ => asm-x86}/xen/page.h (100%)
 
-diff --git a/drivers/xen/events.c b/drivers/xen/events.c
-index c50d499..2396b44 100644
---- a/drivers/xen/events.c
-+++ b/drivers/xen/events.c
-@@ -469,7 +469,7 @@ irqreturn_t xen_debug_interrupt(int irq, void *dev_id)
- 	for_each_online_cpu(i) {
- 		struct vcpu_info *v = per_cpu(xen_vcpu, i);
- 		printk("%d: masked=%d pending=%d event_sel %08lx\n  ", i,
--			(get_irq_regs() && i == cpu) ? !(get_irq_regs()->flags & X86_EFLAGS_IF) : v->evtchn_upcall_mask,
-+			(get_irq_regs() && i == cpu) ? xen_irqs_disabled(get_irq_regs()) : v->evtchn_upcall_mask,
- 			v->evtchn_upcall_pending,
- 			v->evtchn_pending_sel);
- 	}
-@@ -527,7 +527,10 @@ void xen_evtchn_do_upcall(struct pt_regs *regs)
- 		if (__get_cpu_var(nesting_count)++)
- 			goto out;
- 
--		/* NB. No need for a barrier here -- XCHG is a barrier on x86. */
-+#ifndef CONFIG_X86 /* No need for a barrier -- XCHG is a barrier on x86. */
-+		/* Clear master flag /before/ clearing selector flag. */
-+		rmb();
-+#endif
- 		pending_words = xchg(&vcpu_info->evtchn_pending_sel, 0);
- 		while (pending_words != 0) {
- 			unsigned long pending_bits;
-@@ -539,10 +542,8 @@ void xen_evtchn_do_upcall(struct pt_regs *regs)
- 				int port = (word_idx * BITS_PER_LONG) + bit_idx;
- 				int irq = evtchn_to_irq[port];
- 
--				if (irq != -1) {
--					regs->orig_ax = ~irq;
--					do_IRQ(regs);
--				}
-+				if (irq != -1)
-+					xen_do_IRQ(irq, regs);
- 			}
- 		}
- 
-diff --git a/include/asm-x86/xen/hypervisor.h b/include/asm-x86/xen/hypervisor.h
-index 8e15dd2..767a361 100644
---- a/include/asm-x86/xen/hypervisor.h
-+++ b/include/asm-x86/xen/hypervisor.h
-@@ -61,6 +61,16 @@ extern struct start_info *xen_start_info;
- /* Force a proper event-channel callback from Xen. */
- extern void force_evtchn_callback(void);
- 
-+/* macro to avoid header inclusion dependncy hell */
-+#define xen_irqs_disabled(regs)	(!((regs)->flags & X86_EFLAGS_IF))
-+
-+/* macro to avoid header inclusion dependncy hell */
-+#define xen_do_IRQ(irq, regs)			\
-+	do {					\
-+		(regs)->orig_ax = ~(irq);	\
-+		do_IRQ(regs);			\
-+	} while (0)
-+
- /* Turn jiffies into Xen system time. */
- u64 jiffies_to_st(unsigned long jiffies);
- 
+diff --git a/include/xen/page.h b/include/asm-x86/xen/page.h
+similarity index 100%
+copy from include/xen/page.h
+copy to include/asm-x86/xen/page.h
+diff --git a/include/xen/page.h b/include/xen/page.h
+index 0179930..eaf85fa 100644
+--- a/include/xen/page.h
++++ b/include/xen/page.h
+@@ -1,168 +1 @@
+-#ifndef __XEN_PAGE_H
+-#define __XEN_PAGE_H
+-
+-#include <linux/pfn.h>
+-
+-#include <asm/uaccess.h>
+-#include <asm/pgtable.h>
+-
+-#include <xen/features.h>
+-
+-/* Xen machine address */
+-typedef struct xmaddr {
+-	phys_addr_t maddr;
+-} xmaddr_t;
+-
+-/* Xen pseudo-physical address */
+-typedef struct xpaddr {
+-	phys_addr_t paddr;
+-} xpaddr_t;
+-
+-#define XMADDR(x)	((xmaddr_t) { .maddr = (x) })
+-#define XPADDR(x)	((xpaddr_t) { .paddr = (x) })
+-
+-/**** MACHINE <-> PHYSICAL CONVERSION MACROS ****/
+-#define INVALID_P2M_ENTRY	(~0UL)
+-#define FOREIGN_FRAME_BIT	(1UL<<31)
+-#define FOREIGN_FRAME(m)	((m) | FOREIGN_FRAME_BIT)
+-
+-extern unsigned long *phys_to_machine_mapping;
+-
+-static inline unsigned long pfn_to_mfn(unsigned long pfn)
+-{
+-	if (xen_feature(XENFEAT_auto_translated_physmap))
+-		return pfn;
+-
+-	return phys_to_machine_mapping[(unsigned int)(pfn)] &
+-		~FOREIGN_FRAME_BIT;
+-}
+-
+-static inline int phys_to_machine_mapping_valid(unsigned long pfn)
+-{
+-	if (xen_feature(XENFEAT_auto_translated_physmap))
+-		return 1;
+-
+-	return (phys_to_machine_mapping[pfn] != INVALID_P2M_ENTRY);
+-}
+-
+-static inline unsigned long mfn_to_pfn(unsigned long mfn)
+-{
+-	unsigned long pfn;
+-
+-	if (xen_feature(XENFEAT_auto_translated_physmap))
+-		return mfn;
+-
+-#if 0
+-	if (unlikely((mfn >> machine_to_phys_order) != 0))
+-		return max_mapnr;
+-#endif
+-
+-	pfn = 0;
+-	/*
+-	 * The array access can fail (e.g., device space beyond end of RAM).
+-	 * In such cases it doesn't matter what we return (we return garbage),
+-	 * but we must handle the fault without crashing!
+-	 */
+-	__get_user(pfn, &machine_to_phys_mapping[mfn]);
+-
+-	return pfn;
+-}
+-
+-static inline xmaddr_t phys_to_machine(xpaddr_t phys)
+-{
+-	unsigned offset = phys.paddr & ~PAGE_MASK;
+-	return XMADDR(PFN_PHYS((u64)pfn_to_mfn(PFN_DOWN(phys.paddr))) | offset);
+-}
+-
+-static inline xpaddr_t machine_to_phys(xmaddr_t machine)
+-{
+-	unsigned offset = machine.maddr & ~PAGE_MASK;
+-	return XPADDR(PFN_PHYS((u64)mfn_to_pfn(PFN_DOWN(machine.maddr))) | offset);
+-}
+-
+-/*
+- * We detect special mappings in one of two ways:
+- *  1. If the MFN is an I/O page then Xen will set the m2p entry
+- *     to be outside our maximum possible pseudophys range.
+- *  2. If the MFN belongs to a different domain then we will certainly
+- *     not have MFN in our p2m table. Conversely, if the page is ours,
+- *     then we'll have p2m(m2p(MFN))==MFN.
+- * If we detect a special mapping then it doesn't have a 'struct page'.
+- * We force !pfn_valid() by returning an out-of-range pointer.
+- *
+- * NB. These checks require that, for any MFN that is not in our reservation,
+- * there is no PFN such that p2m(PFN) == MFN. Otherwise we can get confused if
+- * we are foreign-mapping the MFN, and the other domain as m2p(MFN) == PFN.
+- * Yikes! Various places must poke in INVALID_P2M_ENTRY for safety.
+- *
+- * NB2. When deliberately mapping foreign pages into the p2m table, you *must*
+- *      use FOREIGN_FRAME(). This will cause pte_pfn() to choke on it, as we
+- *      require. In all the cases we care about, the FOREIGN_FRAME bit is
+- *      masked (e.g., pfn_to_mfn()) so behaviour there is correct.
+- */
+-static inline unsigned long mfn_to_local_pfn(unsigned long mfn)
+-{
+-	extern unsigned long max_mapnr;
+-	unsigned long pfn = mfn_to_pfn(mfn);
+-	if ((pfn < max_mapnr)
+-	    && !xen_feature(XENFEAT_auto_translated_physmap)
+-	    && (phys_to_machine_mapping[pfn] != mfn))
+-		return max_mapnr; /* force !pfn_valid() */
+-	return pfn;
+-}
+-
+-static inline void set_phys_to_machine(unsigned long pfn, unsigned long mfn)
+-{
+-	if (xen_feature(XENFEAT_auto_translated_physmap)) {
+-		BUG_ON(pfn != mfn && mfn != INVALID_P2M_ENTRY);
+-		return;
+-	}
+-	phys_to_machine_mapping[pfn] = mfn;
+-}
+-
+-/* VIRT <-> MACHINE conversion */
+-#define virt_to_machine(v)	(phys_to_machine(XPADDR(__pa(v))))
+-#define virt_to_mfn(v)		(pfn_to_mfn(PFN_DOWN(__pa(v))))
+-#define mfn_to_virt(m)		(__va(mfn_to_pfn(m) << PAGE_SHIFT))
+-
+-static inline unsigned long pte_mfn(pte_t pte)
+-{
+-	return (pte.pte & ~_PAGE_NX) >> PAGE_SHIFT;
+-}
+-
+-static inline pte_t mfn_pte(unsigned long page_nr, pgprot_t pgprot)
+-{
+-	pte_t pte;
+-
+-	pte.pte = ((phys_addr_t)page_nr << PAGE_SHIFT) |
+-		(pgprot_val(pgprot) & __supported_pte_mask);
+-
+-	return pte;
+-}
+-
+-static inline pteval_t pte_val_ma(pte_t pte)
+-{
+-	return pte.pte;
+-}
+-
+-static inline pte_t __pte_ma(pteval_t x)
+-{
+-	return (pte_t) { .pte = x };
+-}
+-
+-#ifdef CONFIG_X86_PAE
+-#define pmd_val_ma(v) ((v).pmd)
+-#define pud_val_ma(v) ((v).pgd.pgd)
+-#define __pmd_ma(x)	((pmd_t) { (x) } )
+-#else  /* !X86_PAE */
+-#define pmd_val_ma(v)	((v).pud.pgd.pgd)
+-#endif	/* CONFIG_X86_PAE */
+-
+-#define pgd_val_ma(x)	((x).pgd)
+-
+-
+-xmaddr_t arbitrary_virt_to_machine(unsigned long address);
+-void make_lowmem_page_readonly(void *vaddr);
+-void make_lowmem_page_readwrite(void *vaddr);
+-
+-#endif /* __XEN_PAGE_H */
++#include <asm/xen/page.h>
 -- 
 1.5.3
 
