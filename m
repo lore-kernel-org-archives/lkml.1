@@ -1,28 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758632AbYC1Olk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758736AbYC1Ol6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758632AbYC1Olk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Mar 2008 10:41:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755793AbYC1OfZ
+	id S1758736AbYC1Ol6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Mar 2008 10:41:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756577AbYC1Of3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Mar 2008 10:35:25 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:49285 "EHLO mx1.redhat.com"
+	Fri, 28 Mar 2008 10:35:29 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:49291 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756359AbYC1Oel (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Mar 2008 10:34:41 -0400
+	id S1753601AbYC1Oes (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Mar 2008 10:34:48 -0400
 Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
 	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
 	Kingdom.
 	Registered in England and Wales under Company Registration No. 3798903
 From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 05/45] KEYS: Don't generate user and user session keyrings
-	unless they're accessed [ver #35]
+Subject: [PATCH 16/45] FS-Cache: Recruit a couple of page flags for cache
+	management [ver #35]
 To: torvalds@osdl.org, akpm@linux-foundation.org, trond.myklebust@fys.uio.no,
        chuck.lever@oracle.com
 Cc: nfsv4@linux-nfs.org, linux-kernel@vger.kernel.org,
        linux-fsdevel@vger.kernel.org, selinux@tycho.nsa.gov,
        linux-security-module@vger.kernel.org, dhowells@redhat.com
-Date: Fri, 28 Mar 2008 14:30:36 +0000
-Message-ID: <20080328143036.3483.82270.stgit@warthog.procyon.org.uk>
+Date: Fri, 28 Mar 2008 14:31:33 +0000
+Message-ID: <20080328143133.3483.78845.stgit@warthog.procyon.org.uk>
 In-Reply-To: <20080328143010.3483.99079.stgit@warthog.procyon.org.uk>
 References: <20080328143010.3483.99079.stgit@warthog.procyon.org.uk>
 User-Agent: StGIT/0.14.1
@@ -33,483 +33,352 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Don't generate the per-UID user and user session keyrings unless they're
-explicitly accessed.  This solves a problem during a login process whereby
-set*uid() is called before the SELinux PAM module, resulting in the per-UID
-keyrings having the wrong security labels.
+Recruit a couple of page flags to aid in cache management.  The following extra
+flags are defined:
 
-This also cures the problem of multiple per-UID keyrings sometimes appearing
-due to PAM modules (including pam_keyinit) setuiding and causing user_structs
-to come into and go out of existence whilst the session keyring pins the user
-keyring.  This is achieved by first searching for extant per-UID keyrings before
-inventing new ones.
+ (1) PG_fscache (PG_private_2)
 
-The serial bound argument is also dropped from find_keyring_by_name() as it's
-not currently made use of (setting it to 0 disables the feature).
+     The marked page is backed by a local cache and is pinning resources in the
+     cache driver.
+
+ (2) PG_fscache_write (PG_owner_priv_2)
+
+     The marked page is being written to the local cache.  The page may not be
+     modified whilst this is in progress.
+
+If PG_fscache is set, then things that checked for PG_private will now also
+check for that.  This includes things like truncation and page invalidation.
+The function page_has_private() had been added to make the checks for both
+PG_private and PG_private_2 at the same time.
 
 Signed-off-by: David Howells <dhowells@redhat.com>
 ---
 
- include/linux/key.h          |    8 --
- kernel/user.c                |   15 +---
- security/keys/internal.h     |    4 -
- security/keys/key.c          |   45 -------------
- security/keys/keyring.c      |   19 ++----
- security/keys/process_keys.c |  142 +++++++++++++++++++++++++-----------------
- security/selinux/hooks.c     |    8 --
- 7 files changed, 96 insertions(+), 145 deletions(-)
+ fs/splice.c                |    2 +-
+ include/linux/page-flags.h |   39 +++++++++++++++++++++++++++++++++++++--
+ include/linux/pagemap.h    |   11 +++++++++++
+ mm/filemap.c               |   18 ++++++++++++++++++
+ mm/migrate.c               |    2 +-
+ mm/page_alloc.c            |    3 +++
+ mm/readahead.c             |    9 +++++----
+ mm/swap.c                  |    4 ++--
+ mm/swap_state.c            |    4 ++--
+ mm/truncate.c              |   10 +++++-----
+ mm/vmscan.c                |    2 +-
+ 11 files changed, 86 insertions(+), 18 deletions(-)
 
 
-diff --git a/include/linux/key.h b/include/linux/key.h
-index 8b0bd33..2effd03 100644
---- a/include/linux/key.h
-+++ b/include/linux/key.h
-@@ -268,9 +268,6 @@ extern struct key *key_lookup(key_serial_t id);
+diff --git a/fs/splice.c b/fs/splice.c
+index 0670c91..40fdc28 100644
+--- a/fs/splice.c
++++ b/fs/splice.c
+@@ -58,7 +58,7 @@ static int page_cache_pipe_buf_steal(struct pipe_inode_info *pipe,
+ 		 */
+ 		wait_on_page_writeback(page);
+ 
+-		if (PagePrivate(page))
++		if (page_has_private(page))
+ 			try_to_release_page(page, GFP_KERNEL);
+ 
+ 		/*
+diff --git a/include/linux/page-flags.h b/include/linux/page-flags.h
+index b5b30f1..3c16772 100644
+--- a/include/linux/page-flags.h
++++ b/include/linux/page-flags.h
+@@ -77,25 +77,32 @@
+ #define PG_active		 6
+ #define PG_slab			 7	/* slab debug (Suparna wants this) */
+ 
+-#define PG_owner_priv_1		 8	/* Owner use. If pagecache, fs may use*/
++#define PG_owner_priv_1		 8	/* Owner use. fs may use in pagecache */
+ #define PG_arch_1		 9
+ #define PG_reserved		10
+ #define PG_private		11	/* If pagecache, has fs-private data */
+ 
+ #define PG_writeback		12	/* Page is under writeback */
++#define PG_private_2		13	/* If pagecache, has fs aux data */
+ #define PG_compound		14	/* Part of a compound page */
+ #define PG_swapcache		15	/* Swap page: swp_entry_t in private */
+ 
+ #define PG_mappedtodisk		16	/* Has blocks allocated on-disk */
+ #define PG_reclaim		17	/* To be reclaimed asap */
++#define PG_owner_priv_2		18	/* Owner use. fs may use in pagecache */
+ #define PG_buddy		19	/* Page is free, on buddy lists */
+ 
+ /* PG_readahead is only used for file reads; PG_reclaim is only for writes */
+ #define PG_readahead		PG_reclaim /* Reminder to do async read-ahead */
+ 
+-/* PG_owner_priv_1 users should have descriptive aliases */
++/* PG_owner_priv_1/2 users should have descriptive aliases */
+ #define PG_checked		PG_owner_priv_1 /* Used by some filesystems */
+ #define PG_pinned		PG_owner_priv_1	/* Xen pinned pagetable */
++#define PG_fscache_write	PG_owner_priv_2	/* Writing to local cache */
++
++/* PG_private_2 causes releasepage() and co to be invoked */
++#define PG_fscache		PG_private_2	/* Backed by local cache */
++
+ 
+ #if (BITS_PER_LONG > 32)
  /*
-  * the userspace interface
-  */
--extern struct key root_user_keyring, root_session_keyring;
--extern int alloc_uid_keyring(struct user_struct *user,
--			     struct task_struct *ctx);
- extern void switch_uid_keyring(struct user_struct *new_user);
- extern int copy_keys(unsigned long clone_flags, struct task_struct *tsk);
- extern int copy_thread_group_keys(struct task_struct *tsk);
-@@ -299,7 +296,6 @@ extern void key_init(void);
- #define make_key_ref(k, p)			({ NULL; })
- #define key_ref_to_ptr(k)		({ NULL; })
- #define is_key_possessed(k)		0
--#define alloc_uid_keyring(u,c)		0
- #define switch_uid_keyring(u)		do { } while(0)
- #define __install_session_keyring(t, k)	({ NULL; })
- #define copy_keys(f,t)			0
-@@ -312,10 +308,6 @@ extern void key_init(void);
- #define key_fsgid_changed(t)		do { } while(0)
- #define key_init()			do { } while(0)
+@@ -235,6 +242,23 @@ static inline void SetPageUptodate(struct page *page)
+ #define TestClearPageWriteback(page) test_and_clear_bit(PG_writeback,	\
+ 							&(page)->flags)
  
--/* Initial keyrings */
--extern struct key root_user_keyring;
--extern struct key root_session_keyring;
--
- #endif /* CONFIG_KEYS */
- #endif /* __KERNEL__ */
- #endif /* _LINUX_KEY_H */
-diff --git a/kernel/user.c b/kernel/user.c
-index 7132022..2df1211 100644
---- a/kernel/user.c
-+++ b/kernel/user.c
-@@ -53,10 +53,6 @@ struct user_struct root_user = {
- 	.files		= ATOMIC_INIT(0),
- 	.sigpending	= ATOMIC_INIT(0),
- 	.locked_shm     = 0,
--#ifdef CONFIG_KEYS
--	.uid_keyring	= &root_user_keyring,
--	.session_keyring = &root_session_keyring,
--#endif
- #ifdef CONFIG_USER_SCHED
- 	.tg		= &init_task_group,
- #endif
-@@ -392,12 +388,12 @@ struct user_struct * alloc_uid(struct user_namespace *ns, uid_t uid)
- 		new->mq_bytes = 0;
- #endif
- 		new->locked_shm = 0;
--
--		if (alloc_uid_keyring(new, current) < 0)
--			goto out_free_user;
-+#ifdef CONFIG_KEYS
-+		new->uid_keyring = new->session_keyring = NULL;
-+#endif
- 
- 		if (sched_create_user(new) < 0)
--			goto out_put_keys;
-+			goto out_free_user;
- 
- 		if (uids_user_create(new))
- 			goto out_destoy_sched;
-@@ -431,9 +427,6 @@ struct user_struct * alloc_uid(struct user_namespace *ns, uid_t uid)
- 
- out_destoy_sched:
- 	sched_destroy_user(new);
--out_put_keys:
--	key_put(new->uid_keyring);
--	key_put(new->session_keyring);
- out_free_user:
- 	kmem_cache_free(uid_cachep, new);
- out_unlock:
-diff --git a/security/keys/internal.h b/security/keys/internal.h
-index f004835..b84f04a 100644
---- a/security/keys/internal.h
-+++ b/security/keys/internal.h
-@@ -77,8 +77,6 @@ extern struct mutex key_construction_mutex;
- extern wait_queue_head_t request_key_conswq;
- 
- 
--extern void keyring_publish_name(struct key *keyring);
--
- extern int __key_link(struct key *keyring, struct key *key);
- 
- extern key_ref_t __keyring_search_one(key_ref_t keyring_ref,
-@@ -102,7 +100,7 @@ extern key_ref_t search_process_keyrings(struct key_type *type,
- 					 key_match_func_t match,
- 					 struct task_struct *tsk);
- 
--extern struct key *find_keyring_by_name(const char *name, key_serial_t bound);
-+extern struct key *find_keyring_by_name(const char *name, bool skip_perm_check);
- 
- extern int install_thread_keyring(struct task_struct *tsk);
- extern int install_process_keyring(struct task_struct *tsk);
-diff --git a/security/keys/key.c b/security/keys/key.c
-index d98c619..46f125a 100644
---- a/security/keys/key.c
-+++ b/security/keys/key.c
-@@ -1,6 +1,6 @@
- /* Basic authentication token and access key management
-  *
-- * Copyright (C) 2004-2007 Red Hat, Inc. All Rights Reserved.
-+ * Copyright (C) 2004-2008 Red Hat, Inc. All Rights Reserved.
-  * Written by David Howells (dhowells@redhat.com)
-  *
-  * This program is free software; you can redistribute it and/or
-@@ -139,36 +139,6 @@ void key_user_put(struct key_user *user)
- 
- /*****************************************************************************/
- /*
-- * insert a key with a fixed serial number
-- */
--static void __init __key_insert_serial(struct key *key)
--{
--	struct rb_node *parent, **p;
--	struct key *xkey;
--
--	parent = NULL;
--	p = &key_serial_tree.rb_node;
--
--	while (*p) {
--		parent = *p;
--		xkey = rb_entry(parent, struct key, serial_node);
--
--		if (key->serial < xkey->serial)
--			p = &(*p)->rb_left;
--		else if (key->serial > xkey->serial)
--			p = &(*p)->rb_right;
--		else
--			BUG();
--	}
--
--	/* we've found a suitable hole - arrange for this key to occupy it */
--	rb_link_node(&key->serial_node, parent, p);
--	rb_insert_color(&key->serial_node, &key_serial_tree);
--
--} /* end __key_insert_serial() */
--
--/*****************************************************************************/
--/*
-  * assign a key the next unique serial number
-  * - these are assigned randomly to avoid security issues through covert
-  *   channel problems
-@@ -1020,17 +990,4 @@ void __init key_init(void)
- 	rb_insert_color(&root_key_user.node,
- 			&key_user_tree);
- 
--	/* record root's user standard keyrings */
--	key_check(&root_user_keyring);
--	key_check(&root_session_keyring);
--
--	__key_insert_serial(&root_user_keyring);
--	__key_insert_serial(&root_session_keyring);
--
--	keyring_publish_name(&root_user_keyring);
--	keyring_publish_name(&root_session_keyring);
--
--	/* link the two root keyrings together */
--	key_link(&root_session_keyring, &root_user_keyring);
--
- } /* end key_init() */
-diff --git a/security/keys/keyring.c b/security/keys/keyring.c
-index 76b89b2..8c1373b 100644
---- a/security/keys/keyring.c
-+++ b/security/keys/keyring.c
-@@ -1,6 +1,6 @@
--/* keyring.c: keyring handling
-+/* Keyring handling
-  *
-- * Copyright (C) 2004-5 Red Hat, Inc. All Rights Reserved.
-+ * Copyright (C) 2004-2005, 2008 Red Hat, Inc. All Rights Reserved.
-  * Written by David Howells (dhowells@redhat.com)
-  *
-  * This program is free software; you can redistribute it and/or
-@@ -79,7 +79,7 @@ static DECLARE_RWSEM(keyring_serialise_link_sem);
-  * publish the name of a keyring so that it can be found by name (if it has
-  * one)
-  */
--void keyring_publish_name(struct key *keyring)
-+static void keyring_publish_name(struct key *keyring)
- {
- 	int bucket;
- 
-@@ -516,10 +516,9 @@ key_ref_t __keyring_search_one(key_ref_t keyring_ref,
- /*
-  * find a keyring with the specified name
-  * - all named keyrings are searched
-- * - only find keyrings with search permission for the process
-- * - only find keyrings with a serial number greater than the one specified
-+ * - normally only finds keyrings with search permission for the current process
-  */
--struct key *find_keyring_by_name(const char *name, key_serial_t bound)
-+struct key *find_keyring_by_name(const char *name, bool skip_perm_check)
- {
- 	struct key *keyring;
- 	int bucket;
-@@ -545,15 +544,11 @@ struct key *find_keyring_by_name(const char *name, key_serial_t bound)
- 			if (strcmp(keyring->description, name) != 0)
- 				continue;
- 
--			if (key_permission(make_key_ref(keyring, 0),
-+			if (!skip_perm_check &&
-+			    key_permission(make_key_ref(keyring, 0),
- 					   KEY_SEARCH) < 0)
- 				continue;
- 
--			/* found a potential candidate, but we still need to
--			 * check the serial number */
--			if (keyring->serial <= bound)
--				continue;
--
- 			/* we've got a match */
- 			atomic_inc(&keyring->usage);
- 			read_unlock(&keyring_name_lock);
-diff --git a/security/keys/process_keys.c b/security/keys/process_keys.c
-index c886a2b..5be6d01 100644
---- a/security/keys/process_keys.c
-+++ b/security/keys/process_keys.c
-@@ -1,6 +1,6 @@
--/* process_keys.c: management of a process's keyrings
-+/* Management of a process's keyrings
-  *
-- * Copyright (C) 2004-5 Red Hat, Inc. All Rights Reserved.
-+ * Copyright (C) 2004-2005, 2008 Red Hat, Inc. All Rights Reserved.
-  * Written by David Howells (dhowells@redhat.com)
-  *
-  * This program is free software; you can redistribute it and/or
-@@ -23,6 +23,9 @@
- /* session keyring create vs join semaphore */
- static DEFINE_MUTEX(key_session_mutex);
- 
-+/* user keyring creation semaphore */
-+static DEFINE_MUTEX(key_user_keyring_mutex);
++#define PagePrivate2(page)	test_bit(PG_private_2, &(page)->flags)
++#define SetPagePrivate2(page)	set_bit(PG_private_2, &(page)->flags)
++#define ClearPagePrivate2(page)	clear_bit(PG_private_2, &(page)->flags)
++#define TestSetPagePrivate2(page) test_and_set_bit(PG_private_2, &(page)->flags)
++#define TestClearPagePrivate2(page) test_and_clear_bit(PG_private_2, \
++						      &(page)->flags)
 +
- /* the root user's tracking struct */
- struct key_user root_key_user = {
- 	.usage		= ATOMIC_INIT(3),
-@@ -33,78 +36,84 @@ struct key_user root_key_user = {
- 	.uid		= 0,
- };
- 
--/* the root user's UID keyring */
--struct key root_user_keyring = {
--	.usage		= ATOMIC_INIT(1),
--	.serial		= 2,
--	.type		= &key_type_keyring,
--	.user		= &root_key_user,
--	.sem		= __RWSEM_INITIALIZER(root_user_keyring.sem),
--	.perm		= (KEY_POS_ALL & ~KEY_POS_SETATTR) | KEY_USR_ALL,
--	.flags		= 1 << KEY_FLAG_INSTANTIATED,
--	.description	= "_uid.0",
--#ifdef KEY_DEBUGGING
--	.magic		= KEY_DEBUG_MAGIC,
--#endif
--};
--
--/* the root user's default session keyring */
--struct key root_session_keyring = {
--	.usage		= ATOMIC_INIT(1),
--	.serial		= 1,
--	.type		= &key_type_keyring,
--	.user		= &root_key_user,
--	.sem		= __RWSEM_INITIALIZER(root_session_keyring.sem),
--	.perm		= (KEY_POS_ALL & ~KEY_POS_SETATTR) | KEY_USR_ALL,
--	.flags		= 1 << KEY_FLAG_INSTANTIATED,
--	.description	= "_uid_ses.0",
--#ifdef KEY_DEBUGGING
--	.magic		= KEY_DEBUG_MAGIC,
--#endif
--};
--
- /*****************************************************************************/
- /*
-- * allocate the keyrings to be associated with a UID
-+ * install user and user session keyrings for a particular UID
-  */
--int alloc_uid_keyring(struct user_struct *user,
--		      struct task_struct *ctx)
-+static int install_user_keyrings(struct task_struct *tsk)
- {
-+	struct user_struct *user = tsk->user;
- 	struct key *uid_keyring, *session_keyring;
- 	char buf[20];
- 	int ret;
- 
--	/* concoct a default session keyring */
--	sprintf(buf, "_uid_ses.%u", user->uid);
-+	kenter("%p{%u}", user, user->uid);
- 
--	session_keyring = keyring_alloc(buf, user->uid, (gid_t) -1, ctx,
--					KEY_ALLOC_IN_QUOTA, NULL);
--	if (IS_ERR(session_keyring)) {
--		ret = PTR_ERR(session_keyring);
--		goto error;
-+	if (user->uid_keyring) {
-+		kleave(" = 0 [exist]");
-+		return 0;
- 	}
- 
--	/* and a UID specific keyring, pointed to by the default session
--	 * keyring */
--	sprintf(buf, "_uid.%u", user->uid);
-+	mutex_lock(&key_user_keyring_mutex);
-+	ret = 0;
- 
--	uid_keyring = keyring_alloc(buf, user->uid, (gid_t) -1, ctx,
--				    KEY_ALLOC_IN_QUOTA, session_keyring);
--	if (IS_ERR(uid_keyring)) {
--		key_put(session_keyring);
--		ret = PTR_ERR(uid_keyring);
--		goto error;
-+	if (!user->uid_keyring) {
-+		/* get the UID-specific keyring
-+		 * - there may be one in existence already as it may have been
-+		 *   pinned by a session, but the user_struct pointing to it
-+		 *   may have been destroyed by setuid */
-+		sprintf(buf, "_uid.%u", user->uid);
++#define PageOwnerPriv2(page)		test_bit(PG_owner_priv_2, \
++						 &(page)->flags)
++#define SetPageOwnerPriv2(page)		set_bit(PG_owner_priv_2, &(page)->flags)
++#define ClearPageOwnerPriv2(page)	clear_bit(PG_owner_priv_2, \
++						  &(page)->flags)
++#define TestSetPageOwnerPriv2(page)	test_and_set_bit(PG_owner_priv_2, \
++							 &(page)->flags)
++#define TestClearPageOwnerPriv2(page)	test_and_clear_bit(PG_owner_priv_2, \
++							   &(page)->flags)
 +
-+		uid_keyring = find_keyring_by_name(buf, true);
-+		if (IS_ERR(uid_keyring)) {
-+			uid_keyring = keyring_alloc(buf, user->uid, (gid_t) -1,
-+						    tsk, KEY_ALLOC_IN_QUOTA,
-+						    NULL);
-+			if (IS_ERR(uid_keyring)) {
-+				ret = PTR_ERR(uid_keyring);
-+				goto error;
-+			}
-+		}
-+
-+		/* get a default session keyring (which might also exist
-+		 * already) */
-+		sprintf(buf, "_uid_ses.%u", user->uid);
-+
-+		session_keyring = find_keyring_by_name(buf, true);
-+		if (IS_ERR(session_keyring)) {
-+			session_keyring =
-+				keyring_alloc(buf, user->uid, (gid_t) -1,
-+					      tsk, KEY_ALLOC_IN_QUOTA, NULL);
-+			if (IS_ERR(session_keyring)) {
-+				ret = PTR_ERR(session_keyring);
-+				goto error_release;
-+			}
-+
-+			/* we install a link from the user session keyring to
-+			 * the user keyring */
-+			ret = key_link(session_keyring, uid_keyring);
-+			if (ret < 0)
-+				goto error_release_both;
-+		}
-+
-+		/* install the keyrings */
-+		user->uid_keyring = uid_keyring;
-+		user->session_keyring = session_keyring;
- 	}
- 
--	/* install the keyrings */
--	user->uid_keyring = uid_keyring;
--	user->session_keyring = session_keyring;
--	ret = 0;
-+	mutex_unlock(&key_user_keyring_mutex);
-+	kleave(" = 0");
-+	return 0;
- 
-+error_release_both:
-+	key_put(session_keyring);
-+error_release:
-+	key_put(uid_keyring);
- error:
-+	mutex_unlock(&key_user_keyring_mutex);
-+	kleave(" = %d", ret);
- 	return ret;
--
--} /* end alloc_uid_keyring() */
-+}
- 
- /*****************************************************************************/
- /*
-@@ -481,7 +490,7 @@ key_ref_t search_process_keyrings(struct key_type *type,
- 		}
- 	}
- 	/* or search the user-session keyring */
--	else {
-+	else if (context->user->session_keyring) {
- 		key_ref = keyring_search_aux(
- 			make_key_ref(context->user->session_keyring, 1),
- 			context, type, description, match);
-@@ -614,6 +623,9 @@ key_ref_t lookup_user_key(struct task_struct *context, key_serial_t id,
- 		if (!context->signal->session_keyring) {
- 			/* always install a session keyring upon access if one
- 			 * doesn't exist yet */
-+			ret = install_user_keyrings(context);
-+			if (ret < 0)
-+				goto error;
- 			ret = install_session_keyring(
- 				context, context->user->session_keyring);
- 			if (ret < 0)
-@@ -628,12 +640,24 @@ key_ref_t lookup_user_key(struct task_struct *context, key_serial_t id,
- 		break;
- 
- 	case KEY_SPEC_USER_KEYRING:
-+		if (!context->user->uid_keyring) {
-+			ret = install_user_keyrings(context);
-+			if (ret < 0)
-+				goto error;
-+		}
-+
- 		key = context->user->uid_keyring;
- 		atomic_inc(&key->usage);
- 		key_ref = make_key_ref(key, 1);
- 		break;
- 
- 	case KEY_SPEC_USER_SESSION_KEYRING:
-+		if (!context->user->session_keyring) {
-+			ret = install_user_keyrings(context);
-+			if (ret < 0)
-+				goto error;
-+		}
-+
- 		key = context->user->session_keyring;
- 		atomic_inc(&key->usage);
- 		key_ref = make_key_ref(key, 1);
-@@ -744,7 +768,7 @@ long join_session_keyring(const char *name)
- 	mutex_lock(&key_session_mutex);
- 
- 	/* look for an existing keyring of this name */
--	keyring = find_keyring_by_name(name, 0);
-+	keyring = find_keyring_by_name(name, false);
- 	if (PTR_ERR(keyring) == -ENOKEY) {
- 		/* not found - try and create a new one */
- 		keyring = keyring_alloc(name, tsk->uid, tsk->gid, tsk,
-diff --git a/security/selinux/hooks.c b/security/selinux/hooks.c
-index 41a049f..e3dabb1 100644
---- a/security/selinux/hooks.c
-+++ b/security/selinux/hooks.c
-@@ -5449,14 +5449,6 @@ static __init int selinux_init(void)
- 		printk(KERN_DEBUG "SELinux:  Starting in permissive mode\n");
- 	}
- 
--#ifdef CONFIG_KEYS
--	/* Add security information to initial keyrings */
--	selinux_key_alloc(&root_user_keyring, current,
--			  KEY_ALLOC_NOT_IN_QUOTA);
--	selinux_key_alloc(&root_session_keyring, current,
--			  KEY_ALLOC_NOT_IN_QUOTA);
--#endif
--
- 	return 0;
+ #define PageBuddy(page)		test_bit(PG_buddy, &(page)->flags)
+ #define __SetPageBuddy(page)	__set_bit(PG_buddy, &(page)->flags)
+ #define __ClearPageBuddy(page)	__clear_bit(PG_buddy, &(page)->flags)
+@@ -308,4 +332,15 @@ static inline void set_page_writeback(struct page *page)
+ 	test_set_page_writeback(page);
  }
  
++/**
++ * page_has_private - Determine if page has private stuff
++ * @page: The page to be checked
++ *
++ * Determine if a page has private stuff, indicating that release routines
++ * should be invoked upon it.
++ */
++#define page_has_private(page)			\
++	((page)->flags & ((1 << PG_private) |	\
++			  (1 << PG_private_2)))
++
+ #endif	/* PAGE_FLAGS_H */
+diff --git a/include/linux/pagemap.h b/include/linux/pagemap.h
+index d2fca80..c5df3ae 100644
+--- a/include/linux/pagemap.h
++++ b/include/linux/pagemap.h
+@@ -226,6 +226,17 @@ static inline void wait_on_page_writeback(struct page *page)
+ extern void end_page_writeback(struct page *page);
+ 
+ /*
++ * Wait for a PG_owner_priv_2 to become clear
++ */
++static inline void wait_on_page_owner_priv_2(struct page *page)
++{
++	if (PageOwnerPriv2(page))
++		wait_on_page_bit(page, PG_owner_priv_2);
++}
++
++extern void end_page_owner_priv_2(struct page *page);
++
++/*
+  * Fault a userspace page into pagetables.  Return non-zero on a fault.
+  *
+  * This assumes that two userspace pages are always sufficient.  That's
+diff --git a/mm/filemap.c b/mm/filemap.c
+index 07e9d92..636adf2 100644
+--- a/mm/filemap.c
++++ b/mm/filemap.c
+@@ -586,6 +586,21 @@ void end_page_writeback(struct page *page)
+ EXPORT_SYMBOL(end_page_writeback);
+ 
+ /**
++ * end_page_own - Clear PG_owner_priv_2 and wake up any waiters
++ * @page: the page
++ *
++ * Clear PG_owner_priv_2 and wake up any processes waiting for that event.
++ */
++void end_page_owner_priv_2(struct page *page)
++{
++	if (!TestClearPageOwnerPriv2(page))
++		BUG();
++	smp_mb__after_clear_bit();
++	wake_up_page(page, PG_owner_priv_2);
++}
++EXPORT_SYMBOL(end_page_owner_priv_2);
++
++/**
+  * __lock_page - get a lock on the page, assuming we need to sleep to get it
+  * @page: the page to lock
+  *
+@@ -2573,6 +2588,9 @@ out:
+  * (presumably at page->private).  If the release was successful, return `1'.
+  * Otherwise return zero.
+  *
++ * This may also be called if PG_fscache is set on a page, indicating that the
++ * page is known to the local caching routines.
++ *
+  * The @gfp_mask argument specifies whether I/O may be performed to release
+  * this page (__GFP_IO), and whether the call may block (__GFP_WAIT).
+  *
+diff --git a/mm/migrate.c b/mm/migrate.c
+index 9f0e5a9..92877ab 100644
+--- a/mm/migrate.c
++++ b/mm/migrate.c
+@@ -555,7 +555,7 @@ static int fallback_migrate_page(struct address_space *mapping,
+ 	 * Buffers may be managed in a filesystem specific way.
+ 	 * We must have no buffers or drop them.
+ 	 */
+-	if (PagePrivate(page) &&
++	if (page_has_private(page) &&
+ 	    !try_to_release_page(page, GFP_KERNEL))
+ 		return -EAGAIN;
+ 
+diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+index 402a504..9627c97 100644
+--- a/mm/page_alloc.c
++++ b/mm/page_alloc.c
+@@ -238,6 +238,7 @@ static void bad_page(struct page *page)
+ 	dump_stack();
+ 	page->flags &= ~(1 << PG_lru	|
+ 			1 << PG_private |
++			1 << PG_fscache	|
+ 			1 << PG_locked	|
+ 			1 << PG_active	|
+ 			1 << PG_dirty	|
+@@ -465,6 +466,7 @@ static inline int free_pages_check(struct page *page)
+ 		(page->flags & (
+ 			1 << PG_lru	|
+ 			1 << PG_private |
++			1 << PG_fscache	|
+ 			1 << PG_locked	|
+ 			1 << PG_active	|
+ 			1 << PG_slab	|
+@@ -615,6 +617,7 @@ static int prep_new_page(struct page *page, int order, gfp_t gfp_flags)
+ 		(page->flags & (
+ 			1 << PG_lru	|
+ 			1 << PG_private	|
++			1 << PG_fscache	|
+ 			1 << PG_locked	|
+ 			1 << PG_active	|
+ 			1 << PG_dirty	|
+diff --git a/mm/readahead.c b/mm/readahead.c
+index d6b14c1..9444024 100644
+--- a/mm/readahead.c
++++ b/mm/readahead.c
+@@ -46,14 +46,15 @@ EXPORT_SYMBOL_GPL(file_ra_state_init);
+ 
+ /*
+  * see if a page needs releasing upon read_cache_pages() failure
+- * - the caller of read_cache_pages() may have set PG_private before calling,
+- *   such as the NFS fs marking pages that are cached locally on disk, thus we
+- *   need to give the fs a chance to clean up in the event of an error
++ * - the caller of read_cache_pages() may have set PG_private or PG_fscache
++ *   before calling, such as the NFS fs marking pages that are cached locally
++ *   on disk, thus we need to give the fs a chance to clean up in the event of
++ *   an error
+  */
+ static void read_cache_pages_invalidate_page(struct address_space *mapping,
+ 					     struct page *page)
+ {
+-	if (PagePrivate(page)) {
++	if (page_has_private(page)) {
+ 		if (TestSetPageLocked(page))
+ 			BUG();
+ 		page->mapping = mapping;
+diff --git a/mm/swap.c b/mm/swap.c
+index aa1139c..ebb90dc 100644
+--- a/mm/swap.c
++++ b/mm/swap.c
+@@ -456,8 +456,8 @@ void pagevec_strip(struct pagevec *pvec)
+ 	for (i = 0; i < pagevec_count(pvec); i++) {
+ 		struct page *page = pvec->pages[i];
+ 
+-		if (PagePrivate(page) && !TestSetPageLocked(page)) {
+-			if (PagePrivate(page))
++		if (page_has_private(page) && !TestSetPageLocked(page)) {
++			if (page_has_private(page))
+ 				try_to_release_page(page, 0);
+ 			unlock_page(page);
+ 		}
+diff --git a/mm/swap_state.c b/mm/swap_state.c
+index 50757ee..0d40b56 100644
+--- a/mm/swap_state.c
++++ b/mm/swap_state.c
+@@ -73,7 +73,7 @@ int add_to_swap_cache(struct page *page, swp_entry_t entry, gfp_t gfp_mask)
+ 
+ 	BUG_ON(!PageLocked(page));
+ 	BUG_ON(PageSwapCache(page));
+-	BUG_ON(PagePrivate(page));
++	BUG_ON(page_has_private(page));
+ 	error = radix_tree_preload(gfp_mask);
+ 	if (!error) {
+ 		write_lock_irq(&swapper_space.tree_lock);
+@@ -102,7 +102,7 @@ void __delete_from_swap_cache(struct page *page)
+ 	BUG_ON(!PageLocked(page));
+ 	BUG_ON(!PageSwapCache(page));
+ 	BUG_ON(PageWriteback(page));
+-	BUG_ON(PagePrivate(page));
++	BUG_ON(page_has_private(page));
+ 
+ 	radix_tree_delete(&swapper_space.page_tree, page_private(page));
+ 	set_page_private(page, 0);
+diff --git a/mm/truncate.c b/mm/truncate.c
+index 7d20ce4..126096c 100644
+--- a/mm/truncate.c
++++ b/mm/truncate.c
+@@ -49,7 +49,7 @@ void do_invalidatepage(struct page *page, unsigned long offset)
+ static inline void truncate_partial_page(struct page *page, unsigned partial)
+ {
+ 	zero_user_segment(page, partial, PAGE_CACHE_SIZE);
+-	if (PagePrivate(page))
++	if (page_has_private(page))
+ 		do_invalidatepage(page, partial);
+ }
+ 
+@@ -98,7 +98,7 @@ truncate_complete_page(struct address_space *mapping, struct page *page)
+ 	if (page->mapping != mapping)
+ 		return;
+ 
+-	if (PagePrivate(page))
++	if (page_has_private(page))
+ 		do_invalidatepage(page, 0);
+ 
+ 	cancel_dirty_page(page, PAGE_CACHE_SIZE);
+@@ -125,7 +125,7 @@ invalidate_complete_page(struct address_space *mapping, struct page *page)
+ 	if (page->mapping != mapping)
+ 		return 0;
+ 
+-	if (PagePrivate(page) && !try_to_release_page(page, 0))
++	if (page_has_private(page) && !try_to_release_page(page, 0))
+ 		return 0;
+ 
+ 	ret = remove_mapping(mapping, page);
+@@ -346,14 +346,14 @@ invalidate_complete_page2(struct address_space *mapping, struct page *page)
+ 	if (page->mapping != mapping)
+ 		return 0;
+ 
+-	if (PagePrivate(page) && !try_to_release_page(page, GFP_KERNEL))
++	if (page_has_private(page) && !try_to_release_page(page, GFP_KERNEL))
+ 		return 0;
+ 
+ 	write_lock_irq(&mapping->tree_lock);
+ 	if (PageDirty(page))
+ 		goto failed;
+ 
+-	BUG_ON(PagePrivate(page));
++	BUG_ON(page_has_private(page));
+ 	__remove_from_page_cache(page);
+ 	write_unlock_irq(&mapping->tree_lock);
+ 	ClearPageUptodate(page);
+diff --git a/mm/vmscan.c b/mm/vmscan.c
+index 4046434..99f9852 100644
+--- a/mm/vmscan.c
++++ b/mm/vmscan.c
+@@ -594,7 +594,7 @@ static unsigned long shrink_page_list(struct list_head *page_list,
+ 		 * process address space (page_count == 1) it can be freed.
+ 		 * Otherwise, leave the page on the LRU so it is swappable.
+ 		 */
+-		if (PagePrivate(page)) {
++		if (page_has_private(page)) {
+ 			if (!try_to_release_page(page, sc->gfp_mask))
+ 				goto activate_locked;
+ 			if (!mapping && page_count(page) == 1)
 
