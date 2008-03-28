@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760691AbYC1Os2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760837AbYC1OtV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760691AbYC1Os2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Mar 2008 10:48:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756965AbYC1OhC
+	id S1760837AbYC1OtV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Mar 2008 10:49:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756978AbYC1OhK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Mar 2008 10:37:02 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:49364 "EHLO mx1.redhat.com"
+	Fri, 28 Mar 2008 10:37:10 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:49369 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756624AbYC1Ofm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Mar 2008 10:35:42 -0400
+	id S1755753AbYC1Ofv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Mar 2008 10:35:51 -0400
 Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
 	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
 	Kingdom.
 	Registered in England and Wales under Company Registration No. 3798903
 From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 36/45] NFS: Use local disk inode cache [ver #35]
+Subject: [PATCH 39/45] NFS: FS-Cache page management [ver #35]
 To: torvalds@osdl.org, akpm@linux-foundation.org, trond.myklebust@fys.uio.no,
        chuck.lever@oracle.com
 Cc: nfsv4@linux-nfs.org, linux-kernel@vger.kernel.org,
        linux-fsdevel@vger.kernel.org, selinux@tycho.nsa.gov,
        linux-security-module@vger.kernel.org, dhowells@redhat.com
-Date: Fri, 28 Mar 2008 14:33:15 +0000
-Message-ID: <20080328143315.3483.4685.stgit@warthog.procyon.org.uk>
+Date: Fri, 28 Mar 2008 14:33:31 +0000
+Message-ID: <20080328143331.3483.59928.stgit@warthog.procyon.org.uk>
 In-Reply-To: <20080328143010.3483.99079.stgit@warthog.procyon.org.uk>
 References: <20080328143010.3483.99079.stgit@warthog.procyon.org.uk>
 User-Agent: StGIT/0.14.1
@@ -32,397 +32,192 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bind data storage objects in the local cache to NFS inodes.
+FS-Cache page management for NFS.  This includes hooking the releasing and
+invalidation of pages marked with PG_fscache (aka PG_private_2) and waiting for
+completion of the write-to-cache flag (PG_fscache_write aka PG_owner_priv_2).
 
 Signed-off-by: David Howells <dhowells@redhat.com>
 ---
 
- fs/nfs/fscache.c       |  174 ++++++++++++++++++++++++++++++++++++++++++++++++
- fs/nfs/fscache.h       |   15 ++++
- fs/nfs/inode.c         |   39 +++++++++--
- include/linux/nfs_fs.h |   11 +++
- 4 files changed, 233 insertions(+), 6 deletions(-)
+ fs/nfs/file.c    |   17 +++++++++++++----
+ fs/nfs/fscache.c |   51 +++++++++++++++++++++++++++++++++++++++++++++++++++
+ fs/nfs/fscache.h |   22 ++++++++++++++++++++++
+ 3 files changed, 86 insertions(+), 4 deletions(-)
 
 
+diff --git a/fs/nfs/file.c b/fs/nfs/file.c
+index 26a073b..60db3ea 100644
+--- a/fs/nfs/file.c
++++ b/fs/nfs/file.c
+@@ -35,6 +35,7 @@
+ #include "delegation.h"
+ #include "internal.h"
+ #include "iostat.h"
++#include "fscache.h"
+ 
+ #define NFSDBG_FACILITY		NFSDBG_FILE
+ 
+@@ -358,7 +359,7 @@ static int nfs_write_end(struct file *file, struct address_space *mapping,
+  * Partially or wholly invalidate a page
+  * - Release the private state associated with a page if undergoing complete
+  *   page invalidation
+- * - Called if either PG_private or PG_private_2 is set on the page
++ * - Called if either PG_private or PG_fscache is set on the page
+  * - Caller holds page lock
+  */
+ static void nfs_invalidate_page(struct page *page, unsigned long offset)
+@@ -367,30 +368,35 @@ static void nfs_invalidate_page(struct page *page, unsigned long offset)
+ 		return;
+ 	/* Cancel any unstarted writes on this page */
+ 	nfs_wb_page_cancel(page->mapping->host, page);
++
++	nfs_fscache_invalidate_page(page, page->mapping->host);
+ }
+ 
+ /*
+  * Attempt to release the private state associated with a page
+- * - Called if either PG_private or PG_private_2 is set on the page
++ * - Called if either PG_private or PG_fscache is set on the page
+  * - Caller holds page lock
+  * - Return true (may release page) or false (may not)
+  */
+ static int nfs_release_page(struct page *page, gfp_t gfp)
+ {
+ 	/* If PagePrivate() is set, then the page is not freeable */
+-	return 0;
++	if (PagePrivate(page))
++		return 0;
++	return nfs_fscache_release_page(page, gfp);
+ }
+ 
+ /*
+  * Attempt to clear the private state associated with a page when an error
+  * occurs that requires the cached contents of an inode to be written back or
+  * destroyed
+- * - Called if either PG_private or PG_private_2 is set on the page
++ * - Called if either PG_private or fscache is set on the page
+  * - Caller holds page lock
+  * - Return 0 if successful, -error otherwise
+  */
+ static int nfs_launder_page(struct page *page)
+ {
++	wait_on_page_fscache_write(page);
+ 	return nfs_wb_page(page->mapping->host, page);
+ }
+ 
+@@ -422,6 +428,9 @@ static int nfs_vm_page_mkwrite(struct vm_area_struct *vma, struct page *page)
+ 	int ret = -EINVAL;
+ 	struct address_space *mapping;
+ 
++	/* make sure the cache has finished storing the page */
++	wait_on_page_fscache_write(page);
++
+ 	lock_page(page);
+ 	mapping = page->mapping;
+ 	if (mapping != vma->vm_file->f_path.dentry->d_inode->i_mapping)
 diff --git a/fs/nfs/fscache.c b/fs/nfs/fscache.c
-index ab2de2c..0c71bae 100644
+index 0c71bae..d06f837 100644
 --- a/fs/nfs/fscache.c
 +++ b/fs/nfs/fscache.c
-@@ -166,3 +166,177 @@ void nfs_fscache_release_super_cookie(struct super_block *sb)
- 		nfss->fscache_key = NULL;
- 	}
+@@ -19,6 +19,7 @@
+ #include <linux/seq_file.h>
+ 
+ #include "internal.h"
++#include "iostat.h"
+ #include "fscache.h"
+ 
+ #define NFSDBG_FACILITY		NFSDBG_FSCACHE
+@@ -340,3 +341,53 @@ void nfs_fscache_attr_changed(struct inode *inode)
+ 	fscache_attr_changed(NFS_I(inode)->fscache);
+ 	nfs_fscache_inode_unlock(inode);
  }
 +
 +/*
-+ * Initialise the per-inode cache cookie pointer for an NFS inode.
++ * Release the caching state associated with a page, if the page isn't busy
++ * interacting with the cache.
++ * - Returns true (can release page) or false (page busy).
 + */
-+void nfs_fscache_init_inode_cookie(struct inode *inode)
++int nfs_fscache_release_page(struct page *page, gfp_t gfp)
 +{
-+	NFS_I(inode)->fscache = NULL;
-+	if (S_ISREG(inode->i_mode))
-+		set_bit(NFS_INO_FSCACHE, &NFS_I(inode)->flags);
-+}
-+
-+/*
-+ * Get the per-inode cache cookie for an NFS inode.
-+ */
-+static void nfs_fscache_enable_inode_cookie(struct inode *inode)
-+{
-+	struct super_block *sb = inode->i_sb;
-+	struct nfs_inode *nfsi = NFS_I(inode);
-+
-+	if (nfsi->fscache || !NFS_FSCACHE(inode))
-+		return;
-+
-+	if ((NFS_SB(sb)->options & NFS_OPTION_FSCACHE)) {
-+		nfsi->fscache = fscache_acquire_cookie(
-+			NFS_SB(sb)->fscache,
-+			&nfs_fscache_inode_object_def,
-+			nfsi);
-+
-+		dfprintk(FSCACHE, "NFS: get FH cookie (0x%p/0x%p/0x%p)\n",
-+			 sb, nfsi, nfsi->fscache);
++	if (PageFsCacheWrite(page)) {
++		if (!(gfp & __GFP_WAIT))
++			return 0;
++		wait_on_page_fscache_write(page);
 +	}
-+}
 +
-+/*
-+ * Release a per-inode cookie.
-+ */
-+void nfs_fscache_release_inode_cookie(struct inode *inode)
-+{
-+	struct nfs_inode *nfsi = NFS_I(inode);
++	if (PageFsCache(page)) {
++		struct nfs_inode *nfsi = NFS_I(page->mapping->host);
 +
-+	dfprintk(FSCACHE, "NFS: clear cookie (0x%p/0x%p)\n",
-+		 nfsi, nfsi->fscache);
++		BUG_ON(!nfsi->fscache);
 +
-+	fscache_relinquish_cookie(nfsi->fscache, 0);
-+	nfsi->fscache = NULL;
-+}
++		dfprintk(FSCACHE, "NFS: fscache releasepage (0x%p/0x%p/0x%p)\n",
++			 nfsi->fscache, page, nfsi);
 +
-+/*
-+ * Retire a per-inode cookie, destroying the data attached to it.
-+ */
-+void nfs_fscache_zap_inode_cookie(struct inode *inode)
-+{
-+	struct nfs_inode *nfsi = NFS_I(inode);
-+
-+	dfprintk(FSCACHE, "NFS: zapping cookie (0x%p/0x%p)\n",
-+		 nfsi, nfsi->fscache);
-+
-+	fscache_relinquish_cookie(nfsi->fscache, 1);
-+	nfsi->fscache = NULL;
-+}
-+
-+/*
-+ * Turn off the cache with regard to a per-inode cookie if opened for writing,
-+ * invalidating all the pages in the page cache relating to the associated
-+ * inode to clear the per-page caching.
-+ */
-+static void nfs_fscache_disable_inode_cookie(struct inode *inode)
-+{
-+	clear_bit(NFS_INO_FSCACHE, &NFS_I(inode)->flags);
-+
-+	if (NFS_I(inode)->fscache) {
-+		dfprintk(FSCACHE,
-+			 "NFS: nfsi 0x%p turning cache off\n", NFS_I(inode));
-+
-+		/* Need to invalidate any mapped pages that were read in before
-+		 * turning off the cache.
-+		 */
-+		if (inode->i_mapping && inode->i_mapping->nrpages)
-+			invalidate_inode_pages2(inode->i_mapping);
-+
-+		nfs_fscache_zap_inode_cookie(inode);
++		fscache_uncache_page(nfsi->fscache, page);
++		nfs_add_fscache_stats(page->mapping->host,
++				      NFSIOS_FSCACHE_PAGES_UNCACHED, 1);
 +	}
++
++	return 1;
 +}
 +
 +/*
-+ * wait_on_bit() sleep function for uninterruptible waiting
++ * Release the caching state associated with a page if undergoing complete page
++ * invalidation.
 + */
-+static int nfs_fscache_wait_bit(void *flags)
-+{
-+	schedule();
-+	return 0;
-+}
-+
-+/*
-+ * Lock against someone else trying to also acquire or relinquish a cookie
-+ */
-+static inline void nfs_fscache_inode_lock(struct inode *inode)
++void __nfs_fscache_invalidate_page(struct page *page, struct inode *inode)
 +{
 +	struct nfs_inode *nfsi = NFS_I(inode);
 +
-+	if (test_and_set_bit(NFS_INO_FSCACHE_LOCK, &nfsi->flags)) {
-+		printk(KERN_WARNING "NFS:"
-+		       " Inode already locked for cache management\n");
-+		wait_on_bit(&nfsi->flags, NFS_INO_FSCACHE_LOCK,
-+			    nfs_fscache_wait_bit, TASK_UNINTERRUPTIBLE);
-+	}
-+}
++	BUG_ON(!nfsi->fscache);
 +
-+/*
-+ * Unlock cookie management lock
-+ */
-+static inline void nfs_fscache_inode_unlock(struct inode *inode)
-+{
-+	struct nfs_inode *nfsi = NFS_I(inode);
++	dfprintk(FSCACHE, "NFS: fscache invalidatepage (0x%p/0x%p/0x%p)\n",
++		 nfsi->fscache, page, nfsi);
 +
-+	smp_mb__before_clear_bit();
-+	clear_bit(NFS_INO_FSCACHE_LOCK, &nfsi->flags);
-+	smp_mb__after_clear_bit();
-+	wake_up_bit(&nfsi->flags, NFS_INO_FSCACHE_LOCK);
-+}
++	wait_on_page_fscache_write(page);
 +
-+/*
-+ * Decide if we should enable or disable local caching for this inode.
-+ * - For now, with NFS, only regular files that are open read-only will be able
-+ *   to use the cache.
-+ */
-+void nfs_fscache_set_inode_cookie(struct inode *inode, struct file *filp)
-+{
-+	if (NFS_FSCACHE(inode)) {
-+		nfs_fscache_inode_lock(inode);
-+		if ((filp->f_flags & O_ACCMODE) != O_RDONLY)
-+			nfs_fscache_disable_inode_cookie(inode);
-+		else
-+			nfs_fscache_enable_inode_cookie(inode);
-+		nfs_fscache_inode_unlock(inode);
-+	}
-+}
-+
-+/*
-+ * Replace a per-inode cookie due to revalidation detecting a file having
-+ * changed on the server.
-+ */
-+void nfs_fscache_renew_inode_cookie(struct inode *inode)
-+{
-+	struct nfs_inode *nfsi = NFS_I(inode);
-+	struct nfs_server *nfss = NFS_SERVER(inode);
-+	struct fscache_cookie *old = nfsi->fscache;
-+
-+	nfs_fscache_inode_lock(inode);
-+	if (nfsi->fscache) {
-+		/* retire the current fscache cache and get a new one */
-+		fscache_relinquish_cookie(nfsi->fscache, 1);
-+
-+		nfsi->fscache = fscache_acquire_cookie(
-+			nfss->nfs_client->fscache,
-+			&nfs_fscache_inode_object_def,
-+			nfsi);
-+
-+		dfprintk(FSCACHE,
-+			 "NFS: revalidation new cookie (0x%p/0x%p/0x%p/0x%p)\n",
-+			 nfss, nfsi, old, nfsi->fscache);
-+	}
-+	nfs_fscache_inode_unlock(inode);
-+}
-+
-+/*
-+ * Update the filesize associated with a per-inode cookie.
-+ */
-+void nfs_fscache_attr_changed(struct inode *inode)
-+{
-+	nfs_fscache_inode_lock(inode);
-+	fscache_attr_changed(NFS_I(inode)->fscache);
-+	nfs_fscache_inode_unlock(inode);
++	BUG_ON(!PageLocked(page));
++	fscache_uncache_page(nfsi->fscache, page);
++	nfs_add_fscache_stats(page->mapping->host,
++			      NFSIOS_FSCACHE_PAGES_UNCACHED, 1);
 +}
 diff --git a/fs/nfs/fscache.h b/fs/nfs/fscache.h
-index d21b590..595f7e7 100644
+index 595f7e7..e17cc1b 100644
 --- a/fs/nfs/fscache.h
 +++ b/fs/nfs/fscache.h
-@@ -77,6 +77,13 @@ extern void nfs_fscache_get_super_cookie(struct super_block *,
- 					 struct nfs_parsed_mount_data *);
- extern void nfs_fscache_release_super_cookie(struct super_block *);
+@@ -84,6 +84,21 @@ extern void nfs_fscache_set_inode_cookie(struct inode *, struct file *);
+ extern void nfs_fscache_renew_inode_cookie(struct inode *);
+ extern void nfs_fscache_attr_changed(struct inode *);
  
-+extern void nfs_fscache_init_inode_cookie(struct inode *);
-+extern void nfs_fscache_release_inode_cookie(struct inode *);
-+extern void nfs_fscache_zap_inode_cookie(struct inode *);
-+extern void nfs_fscache_set_inode_cookie(struct inode *, struct file *);
-+extern void nfs_fscache_renew_inode_cookie(struct inode *);
-+extern void nfs_fscache_attr_changed(struct inode *);
++extern void __nfs_fscache_invalidate_page(struct page *, struct inode *);
++extern int nfs_fscache_release_page(struct page *, gfp_t);
++
++/*
++ * release the caching state associated with a page if undergoing complete page
++ * invalidation
++ */
++static inline void nfs_fscache_invalidate_page(struct page *page,
++					       struct inode *inode)
++{
++	if (PageFsCache(page))
++		__nfs_fscache_invalidate_page(page, inode);
++}
++
 +
  #else /* CONFIG_NFS_FSCACHE */
  static inline int nfs_fscache_register(void) { return 0; }
  static inline void nfs_fscache_unregister(void) {}
-@@ -91,5 +98,13 @@ static inline void nfs_fscache_get_super_cookie(
- }
- static inline void nfs_fscache_release_super_cookie(struct super_block *sb) {}
+@@ -106,5 +121,12 @@ static inline void nfs_fscache_set_inode_cookie(struct inode *inode,
+ 					     struct file *filp) {}
+ static inline void nfs_fscache_attr_changed(struct inode *inode) {}
  
-+static inline void nfs_fscache_init_inode_cookie(struct inode *inode) {}
-+static inline void nfs_fscache_release_inode_cookie(struct inode *inode) {}
-+static inline void nfs_fscache_zap_inode_cookie(struct inode *inode) {}
-+static inline void nfs_fscache_renew_inode_cookie(struct inode *inode) {}
-+static inline void nfs_fscache_set_inode_cookie(struct inode *inode,
-+					     struct file *filp) {}
-+static inline void nfs_fscache_attr_changed(struct inode *inode) {}
++static inline int nfs_fscache_release_page(struct page *page, gfp_t gfp)
++{
++	return 1; /* True: may release page */
++}
++static inline void nfs_fscache_invalidate_page(struct page *page,
++					       struct inode *inode) {}
 +
  #endif /* CONFIG_NFS_FSCACHE */
  #endif /* _NFS_FSCACHE_H */
-diff --git a/fs/nfs/inode.c b/fs/nfs/inode.c
-index 702315a..7223252 100644
---- a/fs/nfs/inode.c
-+++ b/fs/nfs/inode.c
-@@ -112,6 +112,7 @@ void nfs_clear_inode(struct inode *inode)
- 	BUG_ON(!list_empty(&NFS_I(inode)->open_files));
- 	nfs_zap_acl_cache(inode);
- 	nfs_access_zap_cache(inode);
-+	nfs_fscache_release_inode_cookie(inode);
- }
- 
- /**
-@@ -332,6 +333,8 @@ nfs_fhget(struct super_block *sb, struct nfs_fh *fh, struct nfs_fattr *fattr)
- 		memset(nfsi->cookieverf, 0, sizeof(nfsi->cookieverf));
- 		nfsi->access_cache = RB_ROOT;
- 
-+		nfs_fscache_init_inode_cookie(inode);
-+
- 		unlock_new_inode(inode);
- 	} else
- 		nfs_refresh_inode(inode, fattr);
-@@ -620,6 +623,7 @@ int nfs_open(struct inode *inode, struct file *filp)
- 	ctx->mode = filp->f_mode;
- 	nfs_file_set_open_context(filp, ctx);
- 	put_nfs_open_context(ctx);
-+	nfs_fscache_set_inode_cookie(inode, filp);
- 	return 0;
- }
- 
-@@ -680,7 +684,13 @@ __nfs_revalidate_inode(struct nfs_server *server, struct inode *inode)
- 			 (long long)NFS_FILEID(inode), status);
- 		goto out;
- 	}
--	spin_unlock(&inode->i_lock);
-+	if (nfsi->cache_validity & NFS_INO_INVALID_FSCACHE_ATTR) {
-+		nfsi->cache_validity &= ~NFS_INO_INVALID_FSCACHE_ATTR;
-+		spin_unlock(&inode->i_lock);
-+		nfs_fscache_attr_changed(inode);
-+	} else {
-+		spin_unlock(&inode->i_lock);
-+	}
- 
- 	if (nfsi->cache_validity & NFS_INO_INVALID_ACL)
- 		nfs_zap_acl_cache(inode);
-@@ -736,6 +746,7 @@ static int nfs_invalidate_mapping_nolock(struct inode *inode, struct address_spa
- 		memset(nfsi->cookieverf, 0, sizeof(nfsi->cookieverf));
- 	spin_unlock(&inode->i_lock);
- 	nfs_inc_stats(inode, NFSIOS_DATAINVALIDATE);
-+	nfs_fscache_renew_inode_cookie(inode);
- 	dfprintk(PAGECACHE, "NFS: (%s/%Ld) data cache invalidated\n",
- 			inode->i_sb->s_id, (long long)NFS_FILEID(inode));
- 	return 0;
-@@ -912,7 +923,13 @@ int nfs_refresh_inode(struct inode *inode, struct nfs_fattr *fattr)
- 	else
- 		status = nfs_check_inode_attributes(inode, fattr);
- 
--	spin_unlock(&inode->i_lock);
-+	if (nfsi->cache_validity & NFS_INO_INVALID_FSCACHE_ATTR) {
-+		nfsi->cache_validity &= ~NFS_INO_INVALID_FSCACHE_ATTR;
-+		spin_unlock(&inode->i_lock);
-+		nfs_fscache_attr_changed(inode);
-+	} else {
-+		spin_unlock(&inode->i_lock);
-+	}
- 	return status;
- }
- 
-@@ -933,12 +950,19 @@ int nfs_refresh_inode(struct inode *inode, struct nfs_fattr *fattr)
- int nfs_post_op_update_inode(struct inode *inode, struct nfs_fattr *fattr)
- {
- 	struct nfs_inode *nfsi = NFS_I(inode);
-+	bool update_fscache = false;
- 
- 	spin_lock(&inode->i_lock);
- 	nfsi->cache_validity |= NFS_INO_INVALID_ATTR|NFS_INO_REVAL_PAGECACHE;
- 	if (S_ISDIR(inode->i_mode))
- 		nfsi->cache_validity |= NFS_INO_INVALID_DATA;
-+	if (nfsi->cache_validity & NFS_INO_INVALID_FSCACHE_ATTR) {
-+		nfsi->cache_validity &= ~NFS_INO_INVALID_FSCACHE_ATTR;
-+		update_fscache = true;
-+	}
- 	spin_unlock(&inode->i_lock);
-+	if (update_fscache)
-+		nfs_fscache_attr_changed(inode);
- 	return nfs_refresh_inode(inode, fattr);
- }
- 
-@@ -1027,7 +1051,8 @@ static int nfs_update_inode(struct inode *inode, struct nfs_fattr *fattr)
- 		if (!timespec_equal(&inode->i_mtime, &fattr->mtime)) {
- 			dprintk("NFS: mtime change on server for file %s/%ld\n",
- 					inode->i_sb->s_id, inode->i_ino);
--			invalid |= NFS_INO_INVALID_ATTR|NFS_INO_INVALID_DATA;
-+			invalid |= NFS_INO_INVALID_ATTR|NFS_INO_INVALID_DATA |
-+				NFS_INO_INVALID_FSCACHE_ATTR;
- 			if (S_ISDIR(inode->i_mode))
- 				nfs_force_lookup_revalidate(inode);
- 		}
-@@ -1037,7 +1062,9 @@ static int nfs_update_inode(struct inode *inode, struct nfs_fattr *fattr)
- 	} else if (nfsi->change_attr != fattr->change_attr) {
- 		dprintk("NFS: change_attr change on server for file %s/%ld\n",
- 				inode->i_sb->s_id, inode->i_ino);
--		invalid |= NFS_INO_INVALID_ATTR|NFS_INO_INVALID_DATA|NFS_INO_INVALID_ACCESS|NFS_INO_INVALID_ACL;
-+		invalid |= NFS_INO_INVALID_ATTR|NFS_INO_INVALID_DATA |
-+			NFS_INO_INVALID_ACCESS|NFS_INO_INVALID_ACL |
-+			NFS_INO_INVALID_FSCACHE_ATTR;
- 		if (S_ISDIR(inode->i_mode))
- 			nfs_force_lookup_revalidate(inode);
- 	}
-@@ -1050,13 +1077,13 @@ static int nfs_update_inode(struct inode *inode, struct nfs_fattr *fattr)
- 		 * the file grown beyond our last write? */
- 		if (nfsi->npages == 0 || new_isize > cur_isize) {
- 			inode->i_size = new_isize;
--			invalid |= NFS_INO_INVALID_ATTR|NFS_INO_INVALID_DATA;
-+			invalid |= NFS_INO_INVALID_ATTR|NFS_INO_INVALID_DATA |
-+				NFS_INO_INVALID_FSCACHE_ATTR;
- 		}
- 		dprintk("NFS: isize change on server for file %s/%ld\n",
- 				inode->i_sb->s_id, inode->i_ino);
- 	}
- 
--
- 	memcpy(&inode->i_mtime, &fattr->mtime, sizeof(inode->i_mtime));
- 	memcpy(&inode->i_ctime, &fattr->ctime, sizeof(inode->i_ctime));
- 	memcpy(&inode->i_atime, &fattr->atime, sizeof(inode->i_atime));
-diff --git a/include/linux/nfs_fs.h b/include/linux/nfs_fs.h
-index 720cdad..b41806b 100644
---- a/include/linux/nfs_fs.h
-+++ b/include/linux/nfs_fs.h
-@@ -174,6 +174,9 @@ struct nfs_inode {
- 	int			 delegation_state;
- 	struct rw_semaphore	rwsem;
- #endif /* CONFIG_NFS_V4*/
-+#ifdef CONFIG_NFS_FSCACHE
-+	struct fscache_cookie	*fscache;
-+#endif
- 	struct inode		vfs_inode;
- };
- 
-@@ -187,6 +190,7 @@ struct nfs_inode {
- #define NFS_INO_INVALID_ACL	0x0010		/* cached acls are invalid */
- #define NFS_INO_REVAL_PAGECACHE	0x0020		/* must revalidate pagecache */
- #define NFS_INO_REVAL_FORCED	0x0040		/* force revalidation ignoring a delegation */
-+#define NFS_INO_INVALID_FSCACHE_ATTR	0x0080	/* local cache attributes are invalid */
- 
- /*
-  * Bit offsets in flags field
-@@ -196,6 +200,8 @@ struct nfs_inode {
- #define NFS_INO_STALE		(2)		/* possible stale inode */
- #define NFS_INO_ACL_LRU_SET	(3)		/* Inode is on the LRU list */
- #define NFS_INO_MOUNTPOINT	(4)		/* inode is remote mountpoint */
-+#define NFS_INO_FSCACHE		(5)		/* inode can be cached by FS-Cache */
-+#define NFS_INO_FSCACHE_LOCK	(6)		/* FS-Cache cookie management lock */
- 
- static inline struct nfs_inode *NFS_I(const struct inode *inode)
- {
-@@ -249,6 +255,11 @@ static inline int NFS_STALE(const struct inode *inode)
- 	return test_bit(NFS_INO_STALE, &NFS_I(inode)->flags);
- }
- 
-+static inline int NFS_FSCACHE(const struct inode *inode)
-+{
-+	return test_bit(NFS_INO_FSCACHE, &NFS_I(inode)->flags);
-+}
-+
- static inline __u64 NFS_FILEID(const struct inode *inode)
- {
- 	return NFS_I(inode)->fileid;
 
