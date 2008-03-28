@@ -1,139 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757446AbYC1NBo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760240AbYC1NCA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757446AbYC1NBo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Mar 2008 09:01:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758581AbYC1Mzs
+	id S1760240AbYC1NCA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Mar 2008 09:02:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758590AbYC1Mzt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Mar 2008 08:55:48 -0400
+	Fri, 28 Mar 2008 08:55:49 -0400
 Received: from SpacedOut.fries.net ([67.64.210.234]:34541 "EHLO
 	SpacedOut.fries.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758542AbYC1Mzp (ORCPT
+	with ESMTP id S1758574AbYC1Mzq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Mar 2008 08:55:45 -0400
-Date: Fri, 28 Mar 2008 07:26:43 -0500
+	Fri, 28 Mar 2008 08:55:46 -0400
+Date: Fri, 28 Mar 2008 07:26:21 -0500
 From: David Fries <david@fries.net>
 To: linux-kernel@vger.kernel.org
 Cc: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-Subject: [PATCH 19/35] W1: w1_int.c use first available master number
-Message-ID: <20080328122643.GT3613@spacedout.fries.net>
+Subject: [PATCH 15/35] W1: w1_slave_read_id from bin_attribute to device_attribute
+Message-ID: <20080328122621.GP3613@spacedout.fries.net>
 References: <200803272343.m2RNhDac017650@SpacedOut.fries.net>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="2wYUONsACSj9OMJp"
+	protocol="application/pgp-signature"; boundary="8G1nIWD3RY794FAy"
 Content-Disposition: inline
 In-Reply-To: <200803272343.m2RNhDac017650@SpacedOut.fries.net>
 User-Agent: Mutt/1.5.4i
-X-Greylist: Sender is SPF-compliant, not delayed by milter-greylist-3.0 (SpacedOut.fries.net [127.0.0.1]); Fri, 28 Mar 2008 07:26:43 -0500 (CDT)
+X-Greylist: Sender is SPF-compliant, not delayed by milter-greylist-3.0 (SpacedOut.fries.net [127.0.0.1]); Fri, 28 Mar 2008 07:26:22 -0500 (CDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---2wYUONsACSj9OMJp
+--8G1nIWD3RY794FAy
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-w1_int.c 1.8
-Follow the example of other devices (like the joystick device).  Pick      =
-     the first available id for each detected device.  For a one device
-system suspending and resuming would at least keep the 1 id.  It would
-at least make it easier on the user program.  That and it would reduce
-holes, plugin master, plugin master, remove 2nd master, plug in
-master, then you have 1, 2 intead of 1, 3.
+w1.c 1.16
+Switching w1_slave_read_id from being a bin_attribute to a
+device_attribute.  It only has to return 8 bytes per read and lets         =
+     kobject handle the buffering.  That simplifies the logic in
+w1_slave_read_id.
 
 Signed-off-by: David Fries <david@fries.net>
 ---
- drivers/w1/w1_int.c |   31 +++++++++++++++++++++++++------
- 1 files changed, 25 insertions(+), 6 deletions(-)
+ drivers/w1/w1.c |   35 ++++++++++-------------------------
+ 1 files changed, 10 insertions(+), 25 deletions(-)
 
-diff --git a/drivers/w1/w1_int.c b/drivers/w1/w1_int.c
-index f1806e2..9ec468a 100644
---- a/drivers/w1/w1_int.c
-+++ b/drivers/w1/w1_int.c
-@@ -29,7 +29,6 @@
- #include "w1_netlink.h"
- #include "w1_int.h"
+diff --git a/drivers/w1/w1.c b/drivers/w1/w1.c
+index dbd9930..32cfb6a 100644
+--- a/drivers/w1/w1.c
++++ b/drivers/w1/w1.c
+@@ -104,35 +104,20 @@ static ssize_t w1_slave_read_name(struct device *dev,=
+ struct device_attribute *a
+ 	return sprintf(buf, "%s\n", sl->name);
+ }
 =20
--static u32 w1_ids =3D 1;
- static int w1_search_count =3D -1; /* Default is continual scan */
- module_param_named(search_count, w1_search_count, int, 0);
-=20
-@@ -98,9 +97,10 @@ static void w1_free_dev(struct w1_master *dev)
-=20
- int w1_add_master_device(struct w1_bus_master *master)
+-static ssize_t w1_slave_read_id(struct kobject *kobj,
+-				struct bin_attribute *bin_attr,
+-				char *buf, loff_t off, size_t count)
++static ssize_t w1_slave_read_id(struct device *dev,
++	struct device_attribute *attr, char *buf)
  {
--	struct w1_master *dev;
-+	struct w1_master *dev, *entry;
- 	int retval =3D 0;
- 	struct w1_netlink_msg msg;
-+	int id, found;
+-	struct w1_slave *sl =3D kobj_to_w1_slave(kobj);
+-
+-	if (off >=3D 8) {
+-		count =3D 0;
+-	} else {
+-		if (off + count > 8)
+-			count =3D 8 - off;
+-
+-		memcpy(buf, (u8 *)&sl->reg_num+off, count);
+-	}
++	struct w1_slave *sl =3D dev_to_w1_slave(dev);
++	ssize_t count=3Dsizeof(sl->reg_num);
 =20
-         /* validate minimum functionality */
-         if (!(master->touch_bit && master->reset_bus) &&
-@@ -122,13 +122,32 @@ int w1_add_master_device(struct w1_bus_master *master)
- 		master->set_pullup=3DNULL;
++	memcpy(buf, (u8 *)&sl->reg_num, count);
+ 	return count;
+ }
+=20
+ static struct device_attribute w1_slave_attr_name =3D
+ 	__ATTR(name, S_IRUGO, w1_slave_read_name, NULL);
+-
+-static struct bin_attribute w1_slave_attr_bin_id =3D {
+-      .attr =3D {
+-              .name =3D "id",
+-              .mode =3D S_IRUGO,
+-      },
+-      .size =3D 8,
+-      .read =3D w1_slave_read_id,
+-};
++static struct device_attribute w1_slave_attr_id =3D
++	__ATTR(id, S_IRUGO, w1_slave_read_id, NULL);
+=20
+ /* Default family */
+=20
+@@ -612,7 +597,7 @@ static int __w1_attach_slave_device(struct w1_slave *sl)
  	}
 =20
--	dev =3D w1_alloc_dev(w1_ids++, w1_max_slave_count, w1_max_slave_ttl, &w1_=
-master_driver, &w1_master_device);
--	if (!dev)
-+	/* Lock until the device is added (or not) to w1_masters. */
-+	mutex_lock(&w1_mlock);
-+	/* Search for the first available id (starting at 1). */
-+	id=3D0;
-+	do {
-+		++id;
-+		found=3D0;
-+		list_for_each_entry(entry, &w1_masters, w1_master_entry) {
-+			if(entry->id=3D=3Did) {
-+				found=3D1;
-+				break;
-+			}
-+		}
-+	}while(found);
-+
-+	dev =3D w1_alloc_dev(id, w1_max_slave_count, w1_max_slave_ttl, &w1_master=
-_driver, &w1_master_device);
-+	if (!dev) {
-+		mutex_unlock(&w1_mlock);
- 		return -ENOMEM;
-+	}
+ 	/* Create "id" entry */
+-	err =3D sysfs_create_bin_file(&sl->dev.kobj, &w1_slave_attr_bin_id);
++	err =3D device_create_file(&sl->dev, &w1_slave_attr_id);
+ 	if (err < 0) {
+ 		dev_err(&sl->dev,
+ 			"sysfs file creation for [%s] failed. err=3D%d\n",
+@@ -634,7 +619,7 @@ static int __w1_attach_slave_device(struct w1_slave *sl)
+ 	return 0;
 =20
- 	retval =3D  w1_create_master_attributes(dev);
--	if (retval)
-+	if (retval) {
-+		mutex_unlock(&w1_mlock);
- 		goto err_out_free_dev;
-+	}
+ out_rem2:
+-	sysfs_remove_bin_file(&sl->dev.kobj, &w1_slave_attr_bin_id);
++	device_remove_file(&sl->dev, &w1_slave_attr_id);
+ out_rem1:
+ 	device_remove_file(&sl->dev, &w1_slave_attr_name);
+ out_unreg:
+@@ -716,7 +701,7 @@ void w1_slave_detach(struct w1_slave *sl)
+ 	msg.type =3D W1_SLAVE_REMOVE;
+ 	w1_netlink_send(sl->master, &msg);
 =20
- 	memcpy(dev->bus_master, master, sizeof(struct w1_bus_master));
-=20
-@@ -140,10 +159,10 @@ int w1_add_master_device(struct w1_bus_master *master)
- 		dev_err(&dev->dev,
- 			 "Failed to create new kernel thread. err=3D%d\n",
- 			 retval);
-+		mutex_unlock(&w1_mlock);
- 		goto err_out_rm_attr;
- 	}
-=20
--	mutex_lock(&w1_mlock);
- 	list_add(&dev->w1_master_entry, &w1_masters);
- 	mutex_unlock(&w1_mlock);
+-	sysfs_remove_bin_file(&sl->dev.kobj, &w1_slave_attr_bin_id);
++	device_remove_file(&sl->dev, &w1_slave_attr_id);
+ 	device_remove_file(&sl->dev, &w1_slave_attr_name);
+ 	device_unregister(&sl->dev);
 =20
 --=20
 1.4.4.4
 
---2wYUONsACSj9OMJp
+--8G1nIWD3RY794FAy
 Content-Type: application/pgp-signature
 Content-Disposition: inline
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.1 (GNU/Linux)
 
-iD8DBQFH7OQDAI852cse6PARAvTUAJ9/0BmxXzzRMUGYHF5KGn4M0SP4+wCgnW4N
-2kqJr+VrHb79qS8irt50a/Q=
-=gxJ2
+iD8DBQFH7OPtAI852cse6PARAt5dAJ9zAFz+57LBhx26wUMVssJ6KgW3iwCgjLW6
+NcIfoe5x/99GhE+vpubr5cQ=
+=ueam
 -----END PGP SIGNATURE-----
 
---2wYUONsACSj9OMJp--
+--8G1nIWD3RY794FAy--
