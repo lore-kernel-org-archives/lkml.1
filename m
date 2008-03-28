@@ -1,97 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757919AbYC1XFV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759075AbYC1XFm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757919AbYC1XFV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Mar 2008 19:05:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755112AbYC1XFG
+	id S1759075AbYC1XFm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Mar 2008 19:05:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758159AbYC1XFa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Mar 2008 19:05:06 -0400
-Received: from mga02.intel.com ([134.134.136.20]:62446 "EHLO mga02.intel.com"
+	Fri, 28 Mar 2008 19:05:30 -0400
+Received: from rtr.ca ([76.10.145.34]:1819 "EHLO mail.rtr.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755353AbYC1XFF convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Mar 2008 19:05:05 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,572,1199692800"; 
-   d="scan'208";a="362432325"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	id S1758154AbYC1XF2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Mar 2008 19:05:28 -0400
+Message-ID: <47ED79B5.6040205@rtr.ca>
+Date: Fri, 28 Mar 2008 19:05:25 -0400
+From: Mark Lord <lkml@rtr.ca>
+Organization: Real-Time Remedies Inc.
+User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: 2.6.25 regression: powertop says 120K wakeups/sec
-Date: Fri, 28 Mar 2008 16:07:07 -0700
-Message-ID: <924EFEDD5F540B4284297C4DC59F3DEEC83E9A@orsmsx423.amr.corp.intel.com>
-In-Reply-To: <200803290001.18912.rjw@sisk.pl>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: 2.6.25 regression: powertop says 120K wakeups/sec
-Thread-Index: AciRJ8N+bWoBADKBQiiWqTYzodxLgwAAG0/A
-References: <20080322202454.9D69DCC0EF@adsl-69-226-248-13.dsl.pltn13.pacbell.net> <200803281509.23107.david-b@pacbell.net> <20080328225604.GA7136@linux-os.sc.intel.com> <200803290001.18912.rjw@sisk.pl>
-From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: "David Brownell" <david-b@pacbell.net>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       <linux-kernel@vger.kernel.org>, <linux-acpi@vger.kernel.org>,
-       "Len Brown" <lenb@kernel.org>
-X-OriginalArrivalTime: 28 Mar 2008 23:05:04.0331 (UTC) FILETIME=[287191B0:01C89128]
+To: Greg KH <gregkh@suse.de>, Linux Kernel <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@osdl.org>
+Subject: [PATCH 2.6.25-rc7] fix uevent action-string regression
+References: <47ED3DDE.3030201@rtr.ca>
+In-Reply-To: <47ED3DDE.3030201@rtr.ca>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Mark Lord wrote:
+> 
+> On boot, syslog is flooded with "uevent: unsupported action-string;" messages.
+..
+> Mar 28 14:43:29 shrimp kernel: tty ptyqd: uevent: unsupported 
+> action-string; this will be ignored in a future kernel version
+> Mar 28 14:43:29 shrimp kernel: tty ptyqe: uevent: unsupported 
+> action-string; this will be ignored in a future kernel version
+> Mar 28 14:43:29 shrimp kernel: tty ptyqf: uevent: unsupported 
+> action-string; this will be ignored in a future kernel version
+> Mar 28 14:43:29 shrimp kernel: tty ptyr0: uevent: unsupported 
+> action-string; this will be ignored in a future kernel version
+..
+
+These messages are a regression compared with 2.6.24,
+which did not flood the syslog with them.
+
+The actual underlying problem was introduced in 2.6.23,
+when somebody made the string parsing no longer accept nul-terminated
+strings as a valid input to store_uevent().
+
+Eg. "add\0" was valid prior to 2.6.23, where the code regressed
+to require "add" without the '\0'.
+
+This patch fixes the 2.6.23 / 2.6.24 regressions, by having the code
+once again tolerate the trailing '\0', if present.
+
+According to GregKH, this mainly affects older Ubuntu systems,
+such as the one I have here that requires this fix.
+
+Signed-off-by: Mark Lord <mlord@pobox.com>
+
+--- old/lib/kobject_uevent.c	2008-03-28 14:03:46.000000000 -0400
++++ linux/lib/kobject_uevent.c	2008-03-28 18:53:11.000000000 -0400
+@@ -55,7 +55,7 @@
+ 	enum kobject_action action;
+ 	int ret = -EINVAL;
  
-
->-----Original Message-----
->From: linux-acpi-owner@vger.kernel.org 
->[mailto:linux-acpi-owner@vger.kernel.org] On Behalf Of Rafael 
->J. Wysocki
->Sent: Friday, March 28, 2008 4:01 PM
->To: Pallipadi, Venkatesh
->Cc: David Brownell; Andrew Morton; 
->linux-kernel@vger.kernel.org; linux-acpi@vger.kernel.org; Len Brown
->Subject: Re: 2.6.25 regression: powertop says 120K wakeups/sec
->
->On Friday, 28 of March 2008, Venki Pallipadi wrote:
->> On Fri, Mar 28, 2008 at 03:09:22PM -0700, David Brownell wrote:
->> > On Friday 28 March 2008, Pallipadi, Venkatesh wrote:
->> > > You should have a dmesg line which looks like
->> > > ACPI: CPU0 (power states: C1[C1] C2[C2]
->> > > Do you see C2 in such line?
->> > 
->> > Yes:
->> > 
->> > ACPI: CPU0 (power states: C1[C1] C2[C2])
->> 
->> 
->> David,
->> 
->> I think I figured out the bug...
->> 
->> Can you try the below patch and confirm that it works (over 
->upstream - ignore
->> the earlier revert patch I sent to you).
->> 
->> Thanks,
->> Venki
->> 
->> ----
->> 
->> 
->> Patch to fix huge number of wakeups reported due to recent changes in
->> processor_idle.c. The problem was that the entry_method 
->determination was
->> broken due to one of the recent commits (bc71bec91f987) causing
->> C1 entry to not to go to halt. This should also fix the hang 
->reported here.
->> http://bugzilla.kernel.org/show_bug.cgi?id=10093
->
->Ah, thanks for figuring that out.  As a regression fix, it 
->should go upstream
->ASAP, I think.
->
-
-Lets just wait for confirmation from either David or in bug #10093. Yes.
-Once we get that confirmation this should go upstream.
-
-Thanks,
-Venki
+-	if (count && buf[count-1] == '\n')
++	if (count && (buf[count-1] == '\n' || buf[count-1] == '\0'))
+ 		count--;
+ 
+ 	if (!count)
