@@ -1,121 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757770AbYC1Ubf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758564AbYC1Ucb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757770AbYC1Ubf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Mar 2008 16:31:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754904AbYC1Ub0
+	id S1758564AbYC1Ucb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Mar 2008 16:32:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754932AbYC1UcX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Mar 2008 16:31:26 -0400
-Received: from mga02.intel.com ([134.134.136.20]:21531 "EHLO mga02.intel.com"
+	Fri, 28 Mar 2008 16:32:23 -0400
+Received: from gw.goop.org ([64.81.55.164]:49485 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754177AbYC1UbZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Mar 2008 16:31:25 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,572,1199692800"; 
-   d="scan'208";a="362365639"
-Date: Fri, 28 Mar 2008 13:30:15 -0700
-From: Venki Pallipadi <venkatesh.pallipadi@intel.com>
-To: David Brownell <david-b@pacbell.net>
-Cc: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, linux-acpi@vger.kernel.org,
-       Len Brown <lenb@kernel.org>
-Subject: Re: 2.6.25 regression: powertop says 120K wakeups/sec
-Message-ID: <20080328203014.GA16105@linux-os.sc.intel.com>
-References: <20080322202454.9D69DCC0EF@adsl-69-226-248-13.dsl.pltn13.pacbell.net> <200803281201.54380.david-b@pacbell.net> <924EFEDD5F540B4284297C4DC59F3DEEC83CDD@orsmsx423.amr.corp.intel.com> <200803281244.27012.david-b@pacbell.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200803281244.27012.david-b@pacbell.net>
-User-Agent: Mutt/1.4.1i
+	id S1754268AbYC1UcX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Mar 2008 16:32:23 -0400
+Message-ID: <47ED55BB.6050101@goop.org>
+Date: Fri, 28 Mar 2008 13:31:55 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+MIME-Version: 1.0
+To: Isaku Yamahata <yamahata@valinux.co.jp>
+CC: chrisw@sous-sol.org, sct@redhat.com,
+       virtualization@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       xen-ia64-devel@lists.xensource.com, eddie.dong@intel.com
+Subject: Re: [PATCH 10/12] xen: replace callers of alloc_vm_area()/free_vm_area()
+ with xen_ prefixed one.
+References: <12067044183207-git-send-email-yamahata@valinux.co.jp> <1206704418191-git-send-email-yamahata@valinux.co.jp>
+In-Reply-To: <1206704418191-git-send-email-yamahata@valinux.co.jp>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 28, 2008 at 12:44:26PM -0700, David Brownell wrote:
-> On Friday 28 March 2008, Pallipadi, Venkatesh wrote:
-> 
-> > >> > I noticed this with 2.6.25-rc2 (if not before), and the problem
-> > >> > is still there with 2.6.25-rc6-git (as of this AM).
-> > >
-> > >A 2.6.24 kernel I still had stashed away didn't act odd; the
-> > >problem joined us before 2.6.25-rc1 was tagged.
-> > >
-> > 
-> > There was a fix that went in recently (one or two days back) that should
-> > have fixed this.
-> > Commit 8e92b6605da989
-> > 
-> > Can you check with latest git to see whether this is still a problem?
-> 
-> The problem is still there in GIT as of this morning, which
-> includes 8e92b6605da989 ...
-> 
-> Comments on why bc71bec91f9875ef825d12104acf3bf4ca215fa4 seems
-> to be causing this?  I think it's just bad reports getting to
-> userspace, rather than an actual 120K wakeups/second.  (The
-> report is of course not always 120K, but it's usually in that
-> range.)
+Isaku Yamahata wrote:
+> Don't use alloc_vm_area()/free_vm_area() directly, instead define
+> xen_alloc_vm_area()/xen_free_vm_area() and use them.
+>
+> alloc_vm_area()/free_vm_area() are used to allocate/free area which
+> are for grant table mapping. Xen/x86 grant table is based on virtual
+> address so that alloc_vm_area()/free_vm_area() are suitable.
+> On the other hand Xen/ia64 (and Xen/powerpc) grant table is based on
+> pseudo physical address (guest physical address) so that allocation
+> should be done differently.
+> The original version of xenified Linux/IA64 have its own
+> allocate_vm_area()/free_vm_area() definitions which don't allocate vm area
+> contradictory to those names.
+> Now vanilla Linux already has its definitions so that it's impossible
+> to have IA64 definitions of allocate_vm_area()/free_vm_area().
+> Instead introduce xen_allocate_vm_area()/xen_free_vm_area() and use them.
+>
+> Signed-off-by: Isaku Yamahata <yamahata@valinux.co.jp>
+> ---
+>  drivers/xen/grant-table.c          |    2 +-
+>  drivers/xen/xenbus/xenbus_client.c |    6 +++---
+>  include/asm-x86/xen/hypervisor.h   |    3 +++
+>  3 files changed, 7 insertions(+), 4 deletions(-)
+>
+> diff --git a/drivers/xen/grant-table.c b/drivers/xen/grant-table.c
+> index 95016fd..9fcde20 100644
+> --- a/drivers/xen/grant-table.c
+> +++ b/drivers/xen/grant-table.c
+> @@ -478,7 +478,7 @@ static int gnttab_map(unsigned int start_idx, unsigned int end_idx)
+>  
+>  	if (shared == NULL) {
+>  		struct vm_struct *area;
+> -		area = alloc_vm_area(PAGE_SIZE * max_nr_grant_frames());
+> +		area = xen_alloc_vm_area(PAGE_SIZE * max_nr_grant_frames());
+>  		BUG_ON(area == NULL);
+>  		shared = area->addr;
+>  	}
+> diff --git a/drivers/xen/xenbus/xenbus_client.c b/drivers/xen/xenbus/xenbus_client.c
+> index 9fd2f70..0f86b0f 100644
+> --- a/drivers/xen/xenbus/xenbus_client.c
+> +++ b/drivers/xen/xenbus/xenbus_client.c
+> @@ -399,7 +399,7 @@ int xenbus_map_ring_valloc(struct xenbus_device *dev, int gnt_ref, void **vaddr)
+>  
+>  	*vaddr = NULL;
+>  
+> -	area = alloc_vm_area(PAGE_SIZE);
+> +	area = xen_alloc_vm_area(PAGE_SIZE);
+>  	if (!area)
+>  		return -ENOMEM;
+>  
+> @@ -409,7 +409,7 @@ int xenbus_map_ring_valloc(struct xenbus_device *dev, int gnt_ref, void **vaddr)
+>  		BUG();
+>  
+>  	if (op.status != GNTST_okay) {
+> -		free_vm_area(area);
+> +		xen_free_vm_area(area);
+>  		xenbus_dev_fatal(dev, op.status,
+>  				 "mapping in shared page %d from domain %d",
+>  				 gnt_ref, dev->otherend_id);
+> @@ -508,7 +508,7 @@ int xenbus_unmap_ring_vfree(struct xenbus_device *dev, void *vaddr)
+>  		BUG();
+>  
+>  	if (op.status == GNTST_okay)
+> -		free_vm_area(area);
+> +		xen_free_vm_area(area);
+>  	else
+>  		xenbus_dev_error(dev, op.status,
+>  				 "unmapping page at handle %d error %d",
+> diff --git a/include/asm-x86/xen/hypervisor.h b/include/asm-x86/xen/hypervisor.h
+> index 767a361..31e526d 100644
+> --- a/include/asm-x86/xen/hypervisor.h
+> +++ b/include/asm-x86/xen/hypervisor.h
+> @@ -57,6 +57,9 @@ extern struct shared_info *HYPERVISOR_shared_info;
+>  extern struct start_info *xen_start_info;
+>  #define is_initial_xendomain() (xen_start_info->flags & SIF_INITDOMAIN)
+>  
+> +#define xen_alloc_vm_area(size)	alloc_vm_area(size)
+> +#define xen_free_vm_area(area)	free_vm_area(area)
+> +
+>   
 
-No. If powertop is reporting that many wakeups, there should be that many as
-powertop gets wakeups from usage in /proc/acpi/processor/CPU*/power
+This change looks fine overall, but asm/xen/hypervisor.h seems to be 
+turning into a bit of a dumping-ground.  I wonder if we can't come up 
+with a better-named header...
 
-Can you send me the output of
-# grep . /sys/devices/system/cpu/cpu*/cpuidle/*/*
-with upstream kernel.
-
-Below is a test patch which should effectively revert commit bc71bec91f987
-Can you check with this patch on latest git and see whether things come back
-to normal.
-
-Also, it will help if you can send the output of acpidump from this system.
-
-Thanks,
-Venki
-
-
----
- drivers/acpi/processor_idle.c |   11 ++++-------
- 1 file changed, 4 insertions(+), 7 deletions(-)
-
-Index: linux-2.6/drivers/acpi/processor_idle.c
-===================================================================
---- linux-2.6.orig/drivers/acpi/processor_idle.c	2008-03-28 12:07:23.000000000 -0700
-+++ linux-2.6/drivers/acpi/processor_idle.c	2008-03-28 13:17:31.000000000 -0700
-@@ -943,16 +943,15 @@ static int acpi_processor_get_power_info
- 			if (acpi_processor_ffh_cstate_probe
- 					(pr->id, &cx, reg) == 0) {
- 				cx.entry_method = ACPI_CSTATE_FFH;
--			} else if (cx.type == ACPI_STATE_C1) {
-+			} else if (cx.type != ACPI_STATE_C1) {
- 				/*
- 				 * C1 is a special case where FIXED_HARDWARE
- 				 * can be handled in non-MWAIT way as well.
- 				 * In that case, save this _CST entry info.
-+				 * That is, we retain space_id of SYSTEM_IO for
-+				 * halt based C1.
- 				 * Otherwise, ignore this info and continue.
- 				 */
--				cx.entry_method = ACPI_CSTATE_HALT;
--				snprintf(cx.desc, ACPI_CX_DESC_LEN, "ACPI HLT");
--			} else {
- 				continue;
- 			}
- 		} else {
-@@ -1398,8 +1397,6 @@ static inline void acpi_idle_do_entry(st
- 	if (cx->entry_method == ACPI_CSTATE_FFH) {
- 		/* Call into architectural FFH based C-state */
- 		acpi_processor_ffh_cstate_enter(cx);
--	} else if (cx->entry_method == ACPI_CSTATE_HALT) {
--		acpi_safe_halt();
- 	} else {
- 		int unused;
- 		/* IO port based C-state */
-@@ -1443,7 +1440,7 @@ static int acpi_idle_enter_c1(struct cpu
- 		acpi_idle_update_bm_rld(pr, cx);
- 
- 	t1 = inl(acpi_gbl_FADT.xpm_timer_block.address);
--	acpi_idle_do_entry(cx);
-+	acpi_safe_halt();
- 	t2 = inl(acpi_gbl_FADT.xpm_timer_block.address);
- 
- 	local_irq_enable();
+    J
