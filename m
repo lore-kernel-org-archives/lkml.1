@@ -1,23 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756962AbYC1OhA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757271AbYC1OiO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756962AbYC1OhA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Mar 2008 10:37:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756214AbYC1OeL
+	id S1757271AbYC1OiO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Mar 2008 10:38:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756232AbYC1OeQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Mar 2008 10:34:11 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:49203 "EHLO mx1.redhat.com"
+	Fri, 28 Mar 2008 10:34:16 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:49235 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754807AbYC1OeF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Mar 2008 10:34:05 -0400
+	id S1756200AbYC1OeK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Mar 2008 10:34:10 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
 From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 00/45] Permit filesystem local caching [ver #35]
+Subject: [PATCH 07/45] KEYS: Make key_serial() a function if CONFIG_KEYS=y
+	[ver #35]
 To: torvalds@osdl.org, akpm@linux-foundation.org, trond.myklebust@fys.uio.no,
        chuck.lever@oracle.com
 Cc: nfsv4@linux-nfs.org, linux-kernel@vger.kernel.org,
        linux-fsdevel@vger.kernel.org, selinux@tycho.nsa.gov,
        linux-security-module@vger.kernel.org, dhowells@redhat.com
-Date: Fri, 28 Mar 2008 14:30:10 +0000
-Message-ID: <20080328143010.3483.99079.stgit@warthog.procyon.org.uk>
+Date: Fri, 28 Mar 2008 14:30:46 +0000
+Message-ID: <20080328143046.3483.46994.stgit@warthog.procyon.org.uk>
+In-Reply-To: <20080328143010.3483.99079.stgit@warthog.procyon.org.uk>
+References: <20080328143010.3483.99079.stgit@warthog.procyon.org.uk>
 User-Agent: StGIT/0.14.1
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -26,304 +33,31 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Make key_serial() an inline function rather than a macro if CONFIG_KEYS=y.
+This prevents double evaluation of the key pointer and also provides better
+type checking.
+
+Signed-off-by: David Howells <dhowells@redhat.com>
+---
+
+ include/linux/key.h |    5 ++++-
+ 1 files changed, 4 insertions(+), 1 deletions(-)
+
+
+diff --git a/include/linux/key.h b/include/linux/key.h
+index ad02d9c..c45c962 100644
+--- a/include/linux/key.h
++++ b/include/linux/key.h
+@@ -264,7 +264,10 @@ extern int keyring_add_key(struct key *keyring,
+ 
+ extern struct key *key_lookup(key_serial_t id);
+ 
+-#define key_serial(key) ((key) ? (key)->serial : 0)
++static inline key_serial_t key_serial(struct key *key)
++{
++	return key ? key->serial : 0;
++}
+ 
+ #ifdef CONFIG_SYSCTL
+ extern ctl_table key_sysctls[];
 
-
-These patches add local caching for network filesystems such as NFS.  To give a
-really quick overview of the way the facility works:
-
-	+---------+
-	|         |
-	|   NFS   |--+
-	|         |  |
-	+---------+  |   +----------+
-	             |   |          |
-	+---------+  +-->|          |
-	|         |      |          |
-	|   AFS   |----->| FS-Cache |
-	|         |      |          |--+
-	+---------+  +-->|          |  |
-	             |   |          |  |   +--------------+   +--------------+
-	+---------+  |   +----------+  |   |              |   |              |
-	|         |  |                 +-->|  CacheFiles  |-->|  Ext3        |
-	|  ISOFS  |--+                     |  /var/cache  |   |  /dev/sda6   |
-	|         |                        +--------------+   +--------------+
-	+---------+
-
-
- (1) NFS, say, asks FS-Cache to store/retrieve data for it;
-
- (2) FS-Cache asks the cache backend, in this case CacheFiles to honour the
-     operation;
-
- (3) CacheFiles 'opens' a file in a mounted filesystem, say Ext3, and does read
-     and write operations of a sort on it;
-
- (4) Ext3 decides how the cache data is laid out on disk - CacheFiles just
-     attempts to use one sparse file per netfs inode.
-
- (5) If NFS asks for data from the cache, but the file has a hole in it, NFS
-     falls back to asking the server.  The data obtained from the server is
-     then written over the hole in the file.
-
-To look at it another way:
-
-	+---------+
-	|         |
-	| Server  |
-	|         |
-	+---------+
-	     |                  NETWORK
-	~~~~~|~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-	     |
-	     |           +----------+
-	     V           |          |
-	+---------+      |          |
-	|         |      |          |
-	|   NFS   |----->| FS-Cache |
-	|         |      |          |--+
-	+---------+      |          |  |   +--------------+   +--------------+
-	     |           |          |  |   |              |   |              |
-	     V           +----------+  +-->|  CacheFiles  |-->|  Ext3        |
-	+---------+                        |  /var/cache  |   |  /dev/sda6   |
-	|         |                        +--------------+   +--------------+
-	|   VFS   |                                ^                     ^
-	|         |                                |                     |
-	+---------+                                +--------------+      |
-	     |                  KERNEL SPACE                      |      |
-	~~~~~|~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~|~~~~~~|~~~~
-	     |                  USER SPACE                        |      |
-	     V                                                    |      |
-	+---------+                                           +--------------+
-	|         |                                           |              |
-	| Process |                                           | cachefilesd  |
-	|         |                                           |              |
-	+---------+                                           +--------------+
-
-FS-Cache attempts to provide a caching facility to a network filesystem such
-that it's transparent to the users of that network filesystem.
-
-
-The patches can roughly be broken down into a number of sets:
-
-  (*) 01-keys-inc-payload.diff
-  (*) 02-keys-search-keyring.diff
-  (*) 03-keys-callout-blob.diff
-  (*) 04-keys-add-perm-param.diff
-  (*) 05-keys-user-jit.diff
-  (*) 06-keys-quota.diff
-  (*) 07-keys-key_serial.diff
-
-      A set of patches to the keyring code that make changes that affect the
-      later security patches.
-
-  (*) 08-keys-get-label.diff
-
-      A patch to allow the security label of a key to be retrieved.
-      Included because the security modify the same code.
-
-  (*) 09-security-current-fsugid.diff
-  (*) 10-security-separate-task-bits.diff
-  (*) 11-security-subjective.diff
-  (*) 12-security-kernel_service-class.diff
-  (*) 13-security-kernel-service.diff
-  (*) 14-security-nfsd.diff
-
-      Patches to permit the subjective security of a task to be overridden.
-      All the security details in task_struct are decanted into a new struct
-      that task_struct then has two pointers two: one that defines the
-      objective security of that task (how other tasks may affect it) and one
-      that defines the subjective security (how it may affect other objects).
-
-      Note that I have dropped the idea of struct cred for the moment.  With
-      the amount of stuff that was excluded from it, it wasn't actually any
-      use to me.  However, it can be added later.
-
-      This is required for CacheFiles and potentially other cache backends:
-
-	It has been required that I call vfs_mkdir() and suchlike rather than
-	bypassing security and calling inode ops directly.  Therefore the VFS
-	and LSM get to deny the cache backend access to the cache data because
-	under some circumstances the caching code is running in the security
-	context of whatever process issued the original syscall on the netfs.
-
-	Furthermore, the security parameters with which a file is created (UID,
-	GID, security label) would be derived from that process that issued the
-	system call, thus potentially preventing other processes from accessing
-	the cache, including cache management daemons such as cachefilesd.
-
-	What is required is to temporarily override the security of the process
-	that issued the system call.  We can't, however, just do an in-place
-	change of the security data as that affects the process as an object,
-	not just as a subject.  This means it may lose signals or ptrace events
-	for example, and affects what the process looks like in /proc.
-
-	So what I've done is to make a logical split in the security between
-	the objective security (task->sec) and the subjective security
-	(task->act_as).  The objective security holds the intrinsic security
-	properties of a process and is never overridden.  This is what appears
-	in /proc, and is what is used when a process is the target of an
-	operation by some other process (SIGKILL for example).
-
-	The subjective security holds the active security properties of a
-	process, and may be overridden.  This is not seen externally, and is
-	used whan a process acts upon another object, for example SIGKILLing
-	another process or opening a file.
-
-	The new hooks allow SELinux (or Smack or whatever) to reject a request
-	for a kernel service (such as cachefiles) to run in a context of a
-	specific security label or to create files and directories with another
-	security label.
-
-      These hooks may also be useful for NFSd.
-
-
-  (*) 15-release-page.diff
-  (*) 16-fscache-page-flags.diff
-  (*) 17-add_wait_queue_tail.diff
-  (*) 18-fscache.diff
-
-      Patches to provide a local caching facility for network filesystems.
-
-      FS-Cache is a layer that takes requests from any one of a number of
-      netfs's and passes them to an appropriate cache, if there is one.
-      FS-Cache makes operations requested by the netfs transparently
-      asynchronous where possible.
-
-      FS-Cache also protects the netfs against (a) there being no cache, (b)
-      the cache suffering a fatal I/O error and (c) the cache being removed;
-      and protects the cache against (d) the netfs uncaching pages that the
-      cache is using and (e) conflicting operations from the netfs, some of
-      which may be queued for asynchronous processing.
-
-      A number of documents in text file format that describe the FS-Cache
-      interface are added by the latter patch
-
-      Documentation/filesystems/caching/fscache.txt gives an overview of the
-      facility and describes the statistical data it makes available.
-
-      Documentation/filesystems/caching/netfs-api.txt describes the API by
-      which a network filesystem would make use of the FS-Cache facility.
-
-      Documentation/filesystems/caching/backend-api.txt describes the API that
-      a cache backend must implement to provide caching services through
-      FS-Cache.
-
-      The second of the above patches adds two extra page flags that FS-Cache
-      then uses to keep track of two bits of per-cached-page information:
-
-	 (1) This page is known by the cache, and that the cache must be
-	     informed if the page is going to go away.  It's an indication to
-	     the netfs that the cache has an interest in this page, where an
-	     interest may be a pointer to it, resources allocated or reserved
-	     for it, or I/O in progress upon it.
-
-	 (2) This page is being written to disk by the cache, and that it
-	     cannot be released until completion.  Ideally it shouldn't be
-	     changed until completion either so as to maintain the known state
-	     of the cache.  This cannot be unified with PG_writeback as the
-	     page may be being written to both the server and the cache at the
-	     same time or at different times.
-
-      To avoid using extra page bits, I could, for example, set up a radix tree
-      per data storage object to keep track of both these bits, however this
-      would mean that the netfs would have to do a call, spinlock, conditional
-      jumps, etc to find out either state.
-
-      On the other hand, if we can spare two page flags, those are sufficient.
-
-      Note that the cache doesn't necessarily need to be able to find the netfs
-      pages, but may have to allocate/pin resources for backing them.
-
-      Further note that PG_private may not be used as I want to be able to use
-      caching with ISOFS eventually, and PG_private is owned by the block
-      buffer code.
-
-      These bits can be otherwise used by any filesystem that doesn't want to
-      use FS-Cache.
-
-  (*) 19-cachefiles-xattr-const.diff
-  (*) 20-cachefiles-ia64.diff
-  (*) 21-cachefiles-ext3-f_mapping.diff
-  (*) 22-cachefiles-write.diff
-  (*) 23-cachefiles-monitor.diff
-  (*) 24-cachefiles-export.diff
-  (*) 25-cachefiles.diff
-
-      Patches to provide a local cache in a directory of an already mounted
-      filesystem.
-
-      The latter patch adds a document in text file format that describes the
-      CacheFiles cache backend and gives instructions on how it is set up and
-      used.  This will be Documentation/filesystems/caching/cachefiles.txt when
-      the patch is applied.
-
-  (*) 26-afs-maintainers.diff
-  (*) 27-afs-double-cell.diff
-
-      A couple of fixes for AFS.
-
-  (*) 28-afs-fscache.diff
-
-      Patches to provide AFS with local caching.
-
-  (*) 29-nfs-comment.diff
-  (*) 30-nfs-fscache-option.diff
-  (*) 31-nfs-fscache-kconfig.diff
-  (*) 32-nfs-fscache-top-index.diff
-  (*) 33-nfs-fscache-server-obj.diff
-  (*) 34-nfs-fscache-super-obj.diff
-  (*) 35-nfs-fscache-inode-obj.diff
-  (*) 36-nfs-fscache-use-inode.diff
-  (*) 37-nfs-fscache-invalidate-pages.diff
-  (*) 38-nfs-fscache-iostats.diff
-  (*) 39-nfs-fscache-page-management.diff
-  (*) 40-nfs-fscache-read-context.diff
-  (*) 41-nfs-fscache-read-fallback.diff
-  (*) 42-nfs-fscache-read-from-cache.diff
-  (*) 43-nfs-fscache-store-to-cache.diff
-  (*) 44-nfs-fscache-mount.diff
-  (*) 45-nfs-fscache-display.diff
-
-      Patches to provide NFS with local caching.
-
-
-I've updated the patches to track Linus's upstream GIT tree.
-
-I've added a patch to stop cachefiles generating errors about passing const
-data to non-const xattr function arguments by making the xattr functions take
-const pointers as appropriate.
-
-I've added a couple of pending upstream patches for AFS.
-
-I've fixed the NFS fscache iostats so that the extra numbers appear on their
-own line in /proc/pid/mountstats.
-
-I've been testing these patches by throwing batches of eight parallel "tar cf"
-commands across three different 350MB NFS-based kernel trees (3 tars on first
-tree, 3 on second, 2 on third), sometimes with one or more of the trees
-preloaded into the cache.  The complete working data set does not fit into the
-RAM of my test machine, so even three tars that can be entirely satisfied from
-the cache may have to reread everything from disk.
-
---
-A tarball of the patches is available at:
-
-	http://people.redhat.com/~dhowells/fscache/patches/nfs+fscache-35.tar.bz2
-
-
-To use this version of CacheFiles, the cachefilesd-0.9 is also required.  It
-is available as an SRPM:
-
-	http://people.redhat.com/~dhowells/fscache/cachefilesd-0.9-1.fc7.src.rpm
-
-Or as individual bits:
-
-	http://people.redhat.com/~dhowells/fscache/cachefilesd-0.9.tar.bz2
-	http://people.redhat.com/~dhowells/fscache/cachefilesd.fc
-	http://people.redhat.com/~dhowells/fscache/cachefilesd.if
-	http://people.redhat.com/~dhowells/fscache/cachefilesd.te
-	http://people.redhat.com/~dhowells/fscache/cachefilesd.spec
-
-The .fc, .if and .te files are for manipulating SELinux.
-
-David
