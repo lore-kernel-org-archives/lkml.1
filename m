@@ -1,116 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758055AbYC1OvM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757350AbYC1Oqi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758055AbYC1OvM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Mar 2008 10:51:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755547AbYC1Ohp
+	id S1757350AbYC1Oqi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Mar 2008 10:46:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756888AbYC1Ogr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Mar 2008 10:37:45 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:13874 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757084AbYC1Ohf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Mar 2008 10:37:35 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=AR6Zm1E/AzudZpKVQfkFxvrcrr/6bQPxu/XL+DI47uNsvkVj62ppjaS08LuFgkF43
-	XuaD2Uk+crQ8QTqe0EZkw==
-Message-ID: <6599ad830803280737lf6882bapd9707c02bf26ef12@mail.gmail.com>
-Date: Fri, 28 Mar 2008 07:37:21 -0700
-From: "Paul Menage" <menage@google.com>
-To: balbir@linux.vnet.ibm.com
-Subject: Re: [RFC][0/3] Virtual address space control for cgroups (v2)
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       "Pavel Emelianov" <xemul@openvz.org>, "Hugh Dickins" <hugh@veritas.com>,
-       "Sudhir Kumar" <skumar@linux.vnet.ibm.com>,
-       "YAMAMOTO Takashi" <yamamoto@valinux.co.jp>, lizf@cn.fujitsu.com,
-       linux-kernel@vger.kernel.org, taka@valinux.co.jp, linux-mm@kvack.org,
-       "David Rientjes" <rientjes@google.com>,
-       "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <47EC6D29.1080201@linux.vnet.ibm.com>
+	Fri, 28 Mar 2008 10:36:47 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:49340 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756544AbYC1OfQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Mar 2008 10:35:16 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+Subject: [PATCH 44/45] NFS: Display local caching state [ver #35]
+To: torvalds@osdl.org, akpm@linux-foundation.org, trond.myklebust@fys.uio.no,
+       chuck.lever@oracle.com
+Cc: nfsv4@linux-nfs.org, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, selinux@tycho.nsa.gov,
+       linux-security-module@vger.kernel.org, dhowells@redhat.com
+Date: Fri, 28 Mar 2008 14:33:56 +0000
+Message-ID: <20080328143356.3483.8208.stgit@warthog.procyon.org.uk>
+In-Reply-To: <20080328143010.3483.99079.stgit@warthog.procyon.org.uk>
+References: <20080328143010.3483.99079.stgit@warthog.procyon.org.uk>
+User-Agent: StGIT/0.14.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080326184954.9465.19379.sendpatchset@localhost.localdomain>
-	 <6599ad830803261522p45a9daddi8100a0635c21cf7d@mail.gmail.com>
-	 <47EB5528.8070800@linux.vnet.ibm.com>
-	 <6599ad830803270728y354b567s7bfe8cb7472aa065@mail.gmail.com>
-	 <47EBDE7B.4090002@linux.vnet.ibm.com>
-	 <6599ad830803271144k635da1d8y106710152bb9c3be@mail.gmail.com>
-	 <47EC6D29.1080201@linux.vnet.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 27, 2008 at 8:59 PM, Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
->  > Java (or at least, Sun's JRE) is an example of a common application
->  > that does this. It creates a huge heap mapping at startup, and faults
->  > it in as necessary.
->  >
->
->  Isn't this controlled by the java -Xm options?
->
+Display the local caching state in /proc/fs/nfsfs/volumes.
 
-Probably - that was just an example, and the behaviour of Java isn't
-exactly unreasonable. A different example would be an app that maps a
-massive database file, but only pages small amounts of it in at any
-one time.
+Signed-off-by: David Howells <dhowells@redhat.com>
+---
 
->
->  I understand, but
->
->  1. The system by default enforces overcommit on most distros, so why should we
->  not have something similar and that flexible for cgroups.
+ fs/nfs/client.c  |    7 ++++---
+ fs/nfs/fscache.h |   15 +++++++++++++++
+ 2 files changed, 19 insertions(+), 3 deletions(-)
 
-Right, I guess I should make it clear that I'm *not* arguing that we
-shouldn't have a virtual address space limit subsystem.
 
-My main arguments in this and my previous email were to back up my
-assertion that there are a significant set of real-world cases where
-it doesn't help, and hence it should be a separate subsystem that can
-be turned on or off as desired.
+diff --git a/fs/nfs/client.c b/fs/nfs/client.c
+index 51e9346..d67d52f 100644
+--- a/fs/nfs/client.c
++++ b/fs/nfs/client.c
+@@ -1451,7 +1451,7 @@ static int nfs_volume_list_show(struct seq_file *m, void *v)
+ 
+ 	/* display header on line 1 */
+ 	if (v == &nfs_volume_list) {
+-		seq_puts(m, "NV SERVER   PORT DEV     FSID\n");
++		seq_puts(m, "NV SERVER   PORT DEV     FSID              FSC\n");
+ 		return 0;
+ 	}
+ 	/* display one transport per line on subsequent lines */
+@@ -1465,12 +1465,13 @@ static int nfs_volume_list_show(struct seq_file *m, void *v)
+ 		 (unsigned long long) server->fsid.major,
+ 		 (unsigned long long) server->fsid.minor);
+ 
+-	seq_printf(m, "v%u %s %s %-7s %-17s\n",
++	seq_printf(m, "v%u %s %s %-7s %-17s %s\n",
+ 		   clp->rpc_ops->version,
+ 		   rpc_peeraddr2str(clp->cl_rpcclient, RPC_DISPLAY_HEX_ADDR),
+ 		   rpc_peeraddr2str(clp->cl_rpcclient, RPC_DISPLAY_HEX_PORT),
+ 		   dev,
+-		   fsid);
++		   fsid,
++		   nfs_server_fscache_state(server));
+ 
+ 	return 0;
+ }
+diff --git a/fs/nfs/fscache.h b/fs/nfs/fscache.h
+index 2f71d7e..027a4ca 100644
+--- a/fs/nfs/fscache.h
++++ b/fs/nfs/fscache.h
+@@ -144,6 +144,16 @@ static inline void nfs_readpage_to_fscache(struct inode *inode,
+ 		__nfs_readpage_to_fscache(inode, page, sync);
+ }
+ 
++/*
++ * indicate the client caching state as readable text
++ */
++static inline const char *nfs_server_fscache_state(struct nfs_server *server)
++{
++	if (server->fscache && (server->options & NFS_OPTION_FSCACHE))
++		return "yes";
++	return "no ";
++}
++
+ 
+ #else /* CONFIG_NFS_FSCACHE */
+ static inline int nfs_fscache_register(void) { return 0; }
+@@ -191,5 +201,10 @@ static inline int nfs_readpages_from_fscache(struct nfs_open_context *ctx,
+ static inline void nfs_readpage_to_fscache(struct inode *inode,
+ 					   struct page *page, int sync) {}
+ 
++static inline const char *nfs_server_fscache_state(struct nfs_server *server)
++{
++	return "no ";
++}
++
+ #endif /* CONFIG_NFS_FSCACHE */
+ #endif /* _NFS_FSCACHE_H */
 
-It strikes me that when split into its own subsystem, this is going to
-be very simple - basically just a resource counter and some file
-handlers. We should probably have something like
-include/linux/rescounter_subsys_template.h, so you can do:
-
-#define SUBSYS_NAME va
-#define SUBSYS_UNIT_SUFFIX in_bytes
-#include <linux/rescounter_subsys_template.h>
-
-then all you have to add are the hooks to call the rescounter
-charge/uncharge functions and you're done. It would be nice to have a
-separate trivial subsystem like this for each of the rlimit types, not
-just virtual address space.
-
->   And specifying
->  > them manually requires either unusually clueful users (most of whom
->  > have enough trouble figuring out how much physical memory they'll
->  > need, and would just set very high virtual address space limits) or
->  > sysadmins with way too much time on their hands ...
->  >
->
->  It's a one time thing to setup for sysadmins
->
-
-Sure, it's a one-time thing to setup *if* your cluster workload is
-completely static.
-
->
->  > As I said, I think focussing on ways to tell apps that they're running
->  > low on physical memory would be much more productive.
->  >
->
->  We intend to do that as well. We intend to have user space OOM notification.
-
-We've been playing with a user-space OOM notification system at Google
-- it's on my TODO list to push it to mainline (as an independent
-subsystem, since either cpusets or the memory controller can be used
-to cause OOMs that are localized to a cgroup). What we have works
-pretty well but I think our interface is a bit too much of a kludge at
-this point.
-
-Paul
