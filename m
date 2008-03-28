@@ -1,96 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755945AbYC1TJv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756755AbYC1TMS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755945AbYC1TJv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Mar 2008 15:09:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754222AbYC1TJm
+	id S1756755AbYC1TMS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Mar 2008 15:12:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752327AbYC1TMF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Mar 2008 15:09:42 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:37654 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754085AbYC1TJl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Mar 2008 15:09:41 -0400
-Date: Fri, 28 Mar 2008 20:09:39 +0100 (CET)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Jonathan Corbet <corbet@lwn.net>
-cc: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
-       Randy Dunlap <randy.dunlap@oracle.com>
-Subject: Re: [Pull] Some documentation patches
-In-Reply-To: <13387.1206728412@vena.lwn.net>
-Message-ID: <alpine.LNX.1.10.0803282005440.27567@fbirervta.pbzchgretzou.qr>
-References: <13387.1206728412@vena.lwn.net>
-User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+	Fri, 28 Mar 2008 15:12:05 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:49883 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750999AbYC1TMC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Mar 2008 15:12:02 -0400
+Date: Fri, 28 Mar 2008 14:11:56 -0500
+From: Jack Steiner <steiner@sgi.com>
+To: mingo@elte.hu, tglx@linutronix.de
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: [PATCH 0/8] - Support for UV platform
+Message-ID: <20080328191156.GA16415@sgi.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Friday 2008-03-28 19:20, Jonathan Corbet wrote:
->commit 9756ccfda31b4c4544aa010aacf71b6672d668e8
->Date:   Fri Mar 28 11:19:56 2008 -0600
->
->    Add the seq_file documentation
+This series of patches add x86_64 support for the SGI "UV" platform.
+Most of the changes are related to support for larger apic IDs and
+new chipset hardware that is used for sending IPIs, etc.
 
-patch on top:
+UV supports really big systems. So big, in fact, that the APICID register
+does not contain enough bits to contain an APICID that is unique across all
+cpus.
 
-  - add const qualifiers
-  - remove void* casts
-  - use proper specifier (%Ld is not valid)
+The UV BIOS supports 3 APICID modes:
 
-Signed-off-by: Jan Engelhardt <jengelh@computergmbh.de>
+        - legacy mode. This mode uses the old APIC mode where
+          APICID is in bits [31:24] of the APICID register.
 
-diff --git a/Documentation/filesystems/seq_file.txt b/Documentation/filesystems/seq_file.txt
-index 92975ee..cc6cdb9 100644
---- a/Documentation/filesystems/seq_file.txt
-+++ b/Documentation/filesystems/seq_file.txt
-@@ -107,8 +107,8 @@ complete. Here's the example version:
+        - x2apic mode. This mode is whitebox-compatible. APICIDs
+          are unique across all cpus. Standard x2apic APIC operations
+          (Intel-defined) can be used for IPIs. The node identifier
+          fits within the Intel-defined portion of the APICID register.
 
-  	static void *ct_seq_next(struct seq_file *s, void *v, loff_t *pos)
-  	{
--	        loff_t *spos = (loff_t *) v;
--	        *pos = ++(*spos);
-+	        loff_t *spos = v;
-+	        *pos = ++*spos;
-  	        return spos;
-  	}
+        - x2apic-uv mode. In this mode, the APICIDs on each node have
+          unique IDs, but IDs on different node are not unique. For example,
+          if each mode has 32 cpus, the APICIDs on each node might be
+          0 - 31. Every node has the same set of IDs.
+          The UV hub is used to route IPIs/interrupts to the correct node.
+          Traditional APIC IPI operations WILL NOT WORK.
 
-@@ -127,8 +127,8 @@ something goes wrong. The example module's show() function is:
 
-  	static int ct_seq_show(struct seq_file *s, void *v)
-  	{
--	        loff_t *spos = (loff_t *) v;
--	        seq_printf(s, "%Ld\n", *spos);
-+	        loff_t *spos = v;
-+	        seq_printf(s, "%lld\n", (long long)*spos);
-  	        return 0;
-  	}
+In x2apic-uv mode, the ACPI tables all contain a full unique ID:
+        nnnnnnnnnnlc0cch
+                n = unique node number
+                l = socket number on board
+                c = core
+                h = hyperthread
 
-@@ -136,7 +136,7 @@ We will look at seq_printf() in a moment. But first, the definition of the
-  seq_file iterator is finished by creating a seq_operations structure with
-  the four functions we have just defined:
+Only the "c0cch" bits are written to the APICID register. The remaining bits are
+supplied by having the get_apic_id() function "OR" the extra bits into the value
+read from the APICID register. 
 
--	static struct seq_operations ct_seq_ops = {
-+	static const struct seq_operations ct_seq_ops = {
-  	        .start = ct_seq_start,
-  	        .next  = ct_seq_next,
-  	        .stop  = ct_seq_stop,
-@@ -204,7 +204,7 @@ line, as in the example module:
-  	static int ct_open(struct inode *inode, struct file *file)
-  	{
-  		return seq_open(file, &ct_seq_ops);
--	};
-+	}
+The x2apic-uv mode is recognized by <oem_id> & <oem_table_id> fields of
+the MADT table.
 
-  Here, the call to seq_open() takes the seq_operations structure we created
-  before, and gets set up to iterate through the virtual file.
-@@ -219,7 +219,7 @@ The other operations of interest - read(), llseek(), and release() - are
-  all implemented by the seq_file code itself. So a virtual file's
-  file_operations structure will look like:
 
--	static struct file_operations ct_file_ops = {
-+	static const struct file_operations ct_file_ops = {
-  	        .owner   = THIS_MODULE,
-  	        .open    = ct_open,
-  	        .read    = seq_read,
+Significant changes from V1:
+	- fixed issues raised in review of the first patch
+		- move uv header files to asm-x86/uv
+		- deleted support for using UV header files in BIOS
+		- Add WARN if reading apicid w/o disabling preemption (& fixed
+		  places that hit the WARN)
+		- added _GPL to exports
+		- deleted some debug code
+	- reworked the macros/functions for reading the APIC_ID. This was necessary
+	  because several of the apic-related files that use to be separate for -32
+	  and -64 have been combined.
+	- added null macros for -32 for is_uv_system() - fixed a couple of compile
+	  bugs for 32-bit kernels
+
+Remaining issues that will be addressed later
+	- smpboot_32.c & smpboot_64.c were recently combined. I pulled the code
+	  from this patch that is needed to start slave cpus when running in 
+	  x2apic-uv mode because it collided to too much 32-bit code. I'll
+	  add this again in a subsequent patch. The current code fully supports
+	  legacy (& x2apic mode once the Intel x2apic patch is available) - that
+	  is good enough for now.
