@@ -1,57 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753776AbYC1Iuz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754202AbYC1IvT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753776AbYC1Iuz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Mar 2008 04:50:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752324AbYC1Iur
+	id S1754202AbYC1IvT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Mar 2008 04:51:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752354AbYC1IvA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Mar 2008 04:50:47 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:60815 "EHLO mx3.mail.elte.hu"
+	Fri, 28 Mar 2008 04:51:00 -0400
+Received: from ns2.g-housing.de ([81.169.133.75]:34942 "EHLO mail.g-house.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750911AbYC1Iuq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Mar 2008 04:50:46 -0400
-Date: Fri, 28 Mar 2008 09:50:15 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: "Huang, Ying" <ying.huang@intel.com>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, andi@firstfloor.org, mingo@redhat.com,
-       tglx@linutronix.de, Paul Jackson <pj@sgi.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/4] x86_64 boot -v2: Add linked listof struct
-	setup_data to boot protocol
-Message-ID: <20080328085015.GA21413@elte.hu>
-References: <1206672578.13404.21.camel@caritas-dev.intel.com>
+	id S1752324AbYC1Iu6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Mar 2008 04:50:58 -0400
+Date: Fri, 28 Mar 2008 09:50:45 +0100 (CET)
+From: Christian Kujau <lists@nerdbynature.de>
+X-X-Sender: evil@sheep.housecafe.de
+To: =?UTF-8?Q?Bj=C3=B6rn_Steinbrink?= <B.Steinbrink@gmx.de>
+cc: Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Markus Rehbach <markus.rehbach@gmx.de>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: 2.6.25-rc6: BUG: unable to handle kernel NULL pointer
+ dereference
+In-Reply-To: <20080327235039.GA26291@atjola.homenet>
+Message-ID: <alpine.DEB.1.10.0803280947410.19746@sheep.housecafe.de>
+References: <alpine.DEB.1.00.0803252358340.22105@sheep.housecafe.de> <20080325233357.17d6ac41.akpm@linux-foundation.org> <alpine.LFD.1.00.0803271615470.3781@apollo.tec.linutronix.de> <20080327235039.GA26291@atjola.homenet>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1206672578.13404.21.camel@caritas-dev.intel.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 28 Mar 2008, Björn Steinbrink wrote:
+>> Subject: x86: fix prefetch workaround
+>> From: Ingo Molnar <mingo@elte.hu>
+>> Date: Thu Mar 27 15:58:28 CET 2008
+>>
+>> some early Athlon XP's and Opterons generate bogus faults on prefetch
+>                    ^^
+>
+> Umh, XP? Didn't you say X2 above? And looking at the patch, X2 seems
+> more plausible as well, I don't think that the XP supported the NX bit,
+> did it?
 
-* Huang, Ying <ying.huang@intel.com> wrote:
+Hm, would be a shame because I have an XP 2600+. /proc/cpuinfo tells me:
 
-> This patchset adds the linked list of struct setup_data to boot 
-> protocol. This is needed by EDD information and some SGI machine with 
-> E820 entry number > 128.
-> 
-> Now, only the x86_64 is supported. The i386 can be supported after 
-> early reservation mechanism for x86 is available.
-> 
-> This patchset is based x86.git latest branch and has been tested on 
-> Intel x86_64 machine.
+flags: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr mca cmov pat pse36 
+mmx fxsr sse syscall mmxext 3dnowext 3dnow ts
 
-thanks, applied. Note: as i mentioned, this code needs to be unified, 
-and we can only merge this upstream into 2.6.26 once 32-bit support has 
-been added too. The last thing we need is 64-bit only boot protocol 
-extensions.
+...no NX in there. I wonder why this (already applied) patch should do 
+anything on my box at all.
 
-	Ingo
+Thanks,
+C.
+-- 
+BOFH excuse #216:
+
+What office are you in? Oh, that one.  Did you know that your building was built over the universities first nuclear research site? And wow, aren't you the lucky one, your office is right over where the core is buried!
