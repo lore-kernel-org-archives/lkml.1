@@ -1,54 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759275AbYC1WPp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759356AbYC1WQg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759275AbYC1WPp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Mar 2008 18:15:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758932AbYC1WPa
+	id S1759356AbYC1WQg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Mar 2008 18:16:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756517AbYC1WQ3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Mar 2008 18:15:30 -0400
-Received: from twin.jikos.cz ([213.151.79.26]:54723 "EHLO twin.jikos.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758713AbYC1WP2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Mar 2008 18:15:28 -0400
-Date: Fri, 28 Mar 2008 23:14:58 +0100 (CET)
-From: Jiri Kosina <jkosina@suse.cz>
-X-X-Sender: jikos@twin.jikos.cz
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Johannes Berg <johannes@sipsolutions.net>
-cc: Arjan van de Ven <arjan@linux.intel.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       NetDev <netdev@vger.kernel.org>, Dmitry Torokhov <dtor@mail.ru>
-Subject: Re: Oops/Warning report for the week of March 28th 2008
-In-Reply-To: <alpine.LFD.1.00.0803281500100.14670@woody.linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0803282309040.32241@twin.jikos.cz>
-References: <47ED3F1A.1090101@linux.intel.com> 
- <alpine.LFD.1.00.0803281310480.14670@woody.linux-foundation.org> 
- <alpine.LFD.1.00.0803281329340.14670@woody.linux-foundation.org> 
- (sfid-20080328_205203_254278_BF9EB41F) <1206738071.22530.80.camel@johannes.berg>
-  <alpine.LFD.1.00.0803281418570.14670@woody.linux-foundation.org>
- <1206740581.22530.83.camel@johannes.berg> <alpine.LFD.1.00.0803281500100.14670@woody.linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 28 Mar 2008 18:16:29 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:38182 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757251AbYC1WQ2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Mar 2008 18:16:28 -0400
+Date: Fri, 28 Mar 2008 22:16:27 +0000
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: [git pull] more vfs fixes
+Message-ID: <20080328221627.GG10722@ZenIV.linux.org.uk>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 28 Mar 2008, Linus Torvalds wrote:
+Sanitized locking for ->mnt_expiry, race fixes for shrink_submounts(),
+some stack footprint reduction on using struct path instead of struct
+nameidata in several places in namespace.c (more will be possible once
+we sanitize prototypes of several LSM hooks, but that's post-25).
 
-> > I tend to think it's actually a regression, I've done exactly what I 
-> > described there dozens of times before on older kernels and it doesn't 
-> > seem to be a race condition, X always locks the input device and I 
-> > never had trouble with that before.
-> Ahh. So it's easily repeatable for you.. Do you think you could bisect it? 
-> At least a few runs? Even a partial bisection will give a nice (== much 
-> smaller) range of commits to be blamed, and might tell us why it started 
-> happening..
+Please, pull from
+git://git.kernel.org/pub/scm/linux/kernel/git/viro/vfs-2.6.git/ for-linus
 
-... and if bisecting the whole tree isn't the way for you to go right now, 
-maybe restricting to drivers/input/ and drivers/base/ (as I think this 
-might be some broken driver core refcounting) and possibly drivers/hid/ 
-(if you are using any HID input device) might also be sufficient.
+Shortlog:
+Al Viro (5):
+      reduce stack footprint in namespace.c
+      count ghost references to vfsmounts
+      sanitize locking in mark_mounts_for_expiry() and shrink_submounts()
+      do shrink_submounts() for all fs types
+      mnt_expire is protected by namespace_sem, no need for vfsmount_lock
 
--- 
-Jiri Kosina
-SUSE Labs
+Diffstat:
+ fs/afs/internal.h      |    1 -
+ fs/afs/mntpt.c         |    8 --
+ fs/afs/super.c         |    1 -
+ fs/cifs/cifs_dfs_ref.c |    1 -
+ fs/namespace.c         |  200 +++++++++++++++++-------------------------------
+ fs/nfs/super.c         |    2 -
+ fs/pnode.c             |    2 +-
+ include/linux/mount.h  |    2 +-
+ 8 files changed, 71 insertions(+), 146 deletions(-)
 
