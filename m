@@ -1,64 +1,146 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754130AbYC1Obv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755227AbYC1OcW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754130AbYC1Obv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Mar 2008 10:31:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753211AbYC1Obl
+	id S1755227AbYC1OcW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Mar 2008 10:32:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754555AbYC1OcG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Mar 2008 10:31:41 -0400
-Received: from mtagate7.uk.ibm.com ([195.212.29.140]:38102 "EHLO
-	mtagate7.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753185AbYC1Obk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Mar 2008 10:31:40 -0400
-Subject: Re: [patch 09/10] Hugetlb common code update for System z.
-From: Gerald Schaefer <gerald.schaefer@de.ibm.com>
-Reply-To: gerald.schaefer@de.ibm.com
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Andrew Morton <akpm@linux-foundation.org>, haveblue@us.ibm.com,
-       schwidefsky@de.ibm.com, linux-kernel@vger.kernel.org,
-       linux-s390@vger.kernel.org, "David S. Miller" <davem@davemloft.net>,
-       Tony Luck <tony.luck@intel.com>, Paul Mackerras <paulus@samba.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Paul Mundt <lethal@linux-sh.org>
-In-Reply-To: <20080328140634.GA29218@elte.hu>
-References: <20080312173155.703966894@de.ibm.com>
-	 <20080312173218.186436562@de.ibm.com>
-	 <1205344286.9828.91.camel@nimitz.home.sr71.net>
-	 <1205363937.5237.60.camel@localhost.localdomain>
-	 <20080312164303.cac9cab5.akpm@linux-foundation.org>
-	 <1206713119.5186.52.camel@localhost.localdomain>
-	 <20080328140634.GA29218@elte.hu>
-Content-Type: text/plain
-Date: Fri, 28 Mar 2008 15:33:28 +0100
-Message-Id: <1206714808.5186.68.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.0 (2.8.0-40.el5) 
+	Fri, 28 Mar 2008 10:32:06 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:58323 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753211AbYC1OcE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Mar 2008 10:32:04 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+Subject: [PATCH 01/45] KEYS: Increase the payload size when instantiating a
+	key [ver #35]
+To: torvalds@osdl.org, akpm@linux-foundation.org, trond.myklebust@fys.uio.no,
+       chuck.lever@oracle.com
+Cc: nfsv4@linux-nfs.org, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, selinux@tycho.nsa.gov,
+       linux-security-module@vger.kernel.org, dhowells@redhat.com
+Date: Fri, 28 Mar 2008 14:30:16 +0000
+Message-ID: <20080328143015.3483.31881.stgit@warthog.procyon.org.uk>
+In-Reply-To: <20080328143010.3483.99079.stgit@warthog.procyon.org.uk>
+References: <20080328143010.3483.99079.stgit@warthog.procyon.org.uk>
+User-Agent: StGIT/0.14.1
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-03-28 at 15:06 +0100, Ingo Molnar wrote:
-> * Gerald Schaefer <gerald.schaefer@de.ibm.com> wrote:
-> 
-> >  include/asm-sh/hugetlb.h      |   28 +++++++++++++++++++++++++
-> >  include/asm-sparc64/hugetlb.h |   30 +++++++++++++++++++++++++++
-> >  include/asm-x86/hugetlb.h     |   28 +++++++++++++++++++++++++
-> 
-> these seem largely duplicated - shouldnt there be an 
-> asm-generic/hugetlb.h instead, which asm/hugetlb.h could include to get 
-> default behavior? It would probably reduce the linecount of your patch 
-> as well.
+Increase the size of a payload that can be used to instantiate a key in
+add_key() and keyctl_instantiate_key().  This permits huge CIFS SPNEGO blobs to
+be passed around.  The limit is raised to 1MB.  If kmalloc() can't allocate a
+buffer of sufficient size, vmalloc() will be tried instead.
 
-Right, asm-generic was also suggested by Andrew as a first step, before
-getting rid of the ARCH_HAS_xxx stuff, and it would also reduce the loc.
-But it would make things complicated if one architecture later wants to
-take out some of the generic stuff to define it on their own, then they'd
-need to touch all architecture headers again.
+Signed-off-by: David Howells <dhowells@redhat.com>
+---
 
-So I thought I'd rather not introduce the asm-generic header at all but
-let all architectures have their own headers, risking code duplication
-but hopefully making future updates easier.
+ security/keys/keyctl.c |   38 ++++++++++++++++++++++++++++++--------
+ 1 files changed, 30 insertions(+), 8 deletions(-)
 
---
-Gerald Schaefer
+
+diff --git a/security/keys/keyctl.c b/security/keys/keyctl.c
+index d9ca15c..8ec8432 100644
+--- a/security/keys/keyctl.c
++++ b/security/keys/keyctl.c
+@@ -19,6 +19,7 @@
+ #include <linux/capability.h>
+ #include <linux/string.h>
+ #include <linux/err.h>
++#include <linux/vmalloc.h>
+ #include <asm/uaccess.h>
+ #include "internal.h"
+ 
+@@ -62,9 +63,10 @@ asmlinkage long sys_add_key(const char __user *_type,
+ 	char type[32], *description;
+ 	void *payload;
+ 	long ret;
++	bool vm;
+ 
+ 	ret = -EINVAL;
+-	if (plen > 32767)
++	if (plen > 1024 * 1024 - 1)
+ 		goto error;
+ 
+ 	/* draw all the data into kernel space */
+@@ -81,11 +83,18 @@ asmlinkage long sys_add_key(const char __user *_type,
+ 	/* pull the payload in if one was supplied */
+ 	payload = NULL;
+ 
++	vm = false;
+ 	if (_payload) {
+ 		ret = -ENOMEM;
+ 		payload = kmalloc(plen, GFP_KERNEL);
+-		if (!payload)
+-			goto error2;
++		if (!payload) {
++			if (plen <= PAGE_SIZE)
++				goto error2;
++			vm = true;
++			payload = vmalloc(plen);
++			if (!payload)
++				goto error2;
++		}
+ 
+ 		ret = -EFAULT;
+ 		if (copy_from_user(payload, _payload, plen) != 0)
+@@ -113,7 +122,10 @@ asmlinkage long sys_add_key(const char __user *_type,
+ 
+ 	key_ref_put(keyring_ref);
+  error3:
+-	kfree(payload);
++	if (!vm)
++		kfree(payload);
++	else
++		vfree(payload);
+  error2:
+ 	kfree(description);
+  error:
+@@ -821,9 +833,10 @@ long keyctl_instantiate_key(key_serial_t id,
+ 	key_ref_t keyring_ref;
+ 	void *payload;
+ 	long ret;
++	bool vm = false;
+ 
+ 	ret = -EINVAL;
+-	if (plen > 32767)
++	if (plen > 1024 * 1024 - 1)
+ 		goto error;
+ 
+ 	/* the appropriate instantiation authorisation key must have been
+@@ -843,8 +856,14 @@ long keyctl_instantiate_key(key_serial_t id,
+ 	if (_payload) {
+ 		ret = -ENOMEM;
+ 		payload = kmalloc(plen, GFP_KERNEL);
+-		if (!payload)
+-			goto error;
++		if (!payload) {
++			if (plen <= PAGE_SIZE)
++				goto error;
++			vm = true;
++			payload = vmalloc(plen);
++			if (!payload)
++				goto error;
++		}
+ 
+ 		ret = -EFAULT;
+ 		if (copy_from_user(payload, _payload, plen) != 0)
+@@ -877,7 +896,10 @@ long keyctl_instantiate_key(key_serial_t id,
+ 	}
+ 
+ error2:
+-	kfree(payload);
++	if (!vm)
++		kfree(payload);
++	else
++		vfree(payload);
+ error:
+ 	return ret;
+ 
 
