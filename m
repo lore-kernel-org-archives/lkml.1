@@ -1,53 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759214AbYC1XKn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757182AbYC1XTJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759214AbYC1XKn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Mar 2008 19:10:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756075AbYC1XKV
+	id S1757182AbYC1XTJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Mar 2008 19:19:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754781AbYC1XSy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Mar 2008 19:10:21 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:48915
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1755602AbYC1XKS (ORCPT
+	Fri, 28 Mar 2008 19:18:54 -0400
+Received: from mail.deathmatch.net ([70.167.247.36]:34458 "EHLO
+	mail.deathmatch.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753820AbYC1XSx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Mar 2008 19:10:18 -0400
-Date: Fri, 28 Mar 2008 16:10:11 -0700 (PDT)
-Message-Id: <20080328.161011.08762096.davem@davemloft.net>
-To: m.kozlowski@tuxland.pl
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org, greg@kroah.com,
-       sparclinux@vger.kernel.org
-Subject: Re: 2.6.25-rc5-mm1 sparc64 boot problems due to generic
- pci_enable_resources()
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <200803282352.10780.m.kozlowski@tuxland.pl>
-References: <20080311011434.ad8c8d7d.akpm@linux-foundation.org>
-	<200803282352.10780.m.kozlowski@tuxland.pl>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Fri, 28 Mar 2008 19:18:53 -0400
+Date: Fri, 28 Mar 2008 19:18:33 -0400
+From: Bob Copeland <me@bobcopeland.com>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH 1/7] omfs: define filesystem structures
+Message-ID: <20080328231833.GA16515@hash.localnet>
+References: <1206578760-9050-1-git-send-email-me@bobcopeland.com> <20080328201940.GA3974@ucw.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080328201940.GA3974@ucw.cz>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
-Date: Fri, 28 Mar 2008 23:52:10 +0100
+On Fri, Mar 28, 2008 at 09:19:40PM +0100, Pavel Machek wrote:
+> On Wed 2008-03-26 20:45:54, Bob Copeland wrote:
+> > OMFS is a proprietary filesystem created for the ReplayTV and
+> > also used by the Rio Karma.  It uses hash tables with unordered,
+> > unbounded lists in each bucket for directories, extents for
+> 
+> Why did they create such beast?
 
-> 	The gregkh-pci-pci-sparc64-use-generic-pci_enable_resources.patch which
-> replaces arch-specific code with generic pci_enable_resources() makes my sparc64
-> box unable to boot (that's what quilt bisection says). At first I see these messages:
+Heh, I wish I knew.  Good old NIH.  There were so many "interesting"
+decisions here, like requiring seeks all over the place for dir
+traversal, picking a hash function that has collisions in almost every
+bucket even when the table is half empty, wasting large amounts of space
+by not even using 3/4s of certain blocks -- it's hard to pick a favorite.
 
-Yes, that generic code won't work because of the NULL
-r->parent check.
+Oh, on ReplayTV 4/5xxx they also byte-swapped the block layer such that
+every 4 bytes were written backwards (even data).  So a be64 would
+be written out as 'le32_high le32_low'.  This patch doesn't support that 
+brain damage, but I did cook up a bswap dm target to test with one of 
+those disk images.
 
-Alpha, ARM, V32, FRV, IA64, MIPS, MN10300, PARISC, PPC,
-SH, V850, X86, and Xtensa are all likely to run into
-problems because of this change.
+> > +struct omfs_header {
+> > +	__be64 h_self;
+> > +	__be32 h_body_size;
+> > +	__be16 h_crc;
+> > +	char h_fill1[2];
+> > +	u8 h_version;
+> > +	char h_type;
+> > +	u8 h_magic;
+> > +	u8 h_check_xor;
+> > +	__be32 h_fill2;
+> > +};
+> 
+> attribute packed or something? Some strange machine (alpha?) may
+> decide to align u8s at 32bit boundaries...
 
-The only platform that did the check as a test of r->parent
-being NULL is Powerpc.
+Thanks, I guess this applies for all the on disk structs.
 
-The rest either didn't check (like sparc64), or tested it by going:
+-- 
+Bob Copeland %% www.bobcopeland.com 
 
-	if (!r->start && r->end)
-
-So the amount of potential breakage from this change is enormous.
