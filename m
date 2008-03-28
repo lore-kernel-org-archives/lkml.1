@@ -1,63 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757680AbYC1SVn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757848AbYC1SWe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757680AbYC1SVn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Mar 2008 14:21:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757532AbYC1SVa
+	id S1757848AbYC1SWe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Mar 2008 14:22:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756022AbYC1SWY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Mar 2008 14:21:30 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:58273 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757525AbYC1SV3 (ORCPT
+	Fri, 28 Mar 2008 14:22:24 -0400
+Received: from ug-out-1314.google.com ([66.249.92.169]:43301 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754337AbYC1SWX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Mar 2008 14:21:29 -0400
-Date: Fri, 28 Mar 2008 11:20:52 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-cc: Christoph Lameter <clameter@sgi.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Pawel Staszewski <pstaszewski@artcom.pl>,
-       LKML <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Natalie Protasevich <protasnb@gmail.com>
-Subject: Re: 2.6.25-rc7-git2: Reported regressions from 2.6.24
-In-Reply-To: <84144f020803281108o178bf62cp48dcd4f43ec59b74@mail.gmail.com>
-Message-ID: <alpine.LFD.1.00.0803281116460.14670@woody.linux-foundation.org>
-References: <200803272353.51901.rjw@sisk.pl>  <alpine.LFD.1.00.0803271859280.14670@woody.linux-foundation.org>  <Pine.LNX.4.64.0803272002090.11979@schroedinger.engr.sgi.com>  <alpine.LFD.1.00.0803272050290.14670@woody.linux-foundation.org> 
- <84144f020803281015s60370d9dpec0913c33004b6c2@mail.gmail.com>  <alpine.LFD.1.00.0803281017500.14670@woody.linux-foundation.org> <84144f020803281108o178bf62cp48dcd4f43ec59b74@mail.gmail.com>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+	Fri, 28 Mar 2008 14:22:23 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=Ho1RzgAwsM+zVfbzxf6OfPM2IZeNXyXtgHrXPbtDramclVsyLTHfUS1XM9WGIPiLZUqM8IiaLEWM8JR6ZPJWWuYdDWp6dRIO+M+qJK5PKJmUosd/dq69B/exfLp3tcqjh/LghivLmpOozhGsIUFE9iaZMqAwetnykUNtmsMoLCQ=
+Message-ID: <e2e108260803281122y422db7f8te1f9ffa5d54e6f71@mail.gmail.com>
+Date: Fri, 28 Mar 2008 19:22:21 +0100
+From: bart.vanassche@gmail.com
+To: "Olivier Cornu" <o.cornu@gmail.com>
+Subject: Re: What would your perfect language for Linux development look like?
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <7b4bf7ff0803281052j3e5d57c9xf6d1f308c9d9cdb9@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <7b4bf7ff0803281052j3e5d57c9xf6d1f308c9d9cdb9@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 3/28/08, Olivier Cornu <o.cornu@gmail.com> wrote:
+> I've recently started a toy project: a programming language aimed at
+> OS development only.
+> It's nothing revolutionary really and it will very likely never be
+> used by anyone - except perhaps me: the main intent is to learn more
+> about programming languages and OS specific needs in this regard (the
+> idea grew while playing with Linux and Minix C sources and reading
+> about OS design issues).
+>
+> I would be glad to hear you share your experience about C as a
+> programming language in OS development context, like:
+> - what missing feature would you like C to have?
+> - what feature should be removed?
+> - what kind of language cleanup would you like to see?
+> In other words, what would your perfect language for Linux development
+> look like?
 
+The following web site might contain interesting background
+information for you: http://www.osdev.org/
 
-On Fri, 28 Mar 2008, Pekka Enberg wrote:
-> 
-> On Fri, Mar 28, 2008 at 7:27 PM, Linus Torvalds
-> <torvalds@linux-foundation.org> wrote:
-> >  So the *last* thing we want to do is to clear GFP_ZERO in multiple subtle
-> >  places based on new random code being added. We want to clear it at the
-> >  top level, so that no other code never ever even has to _think_ about it!
-> 
-> We are clearing it in one place, just before calling alloc_pages.
-
-BUT THAT IS TOTALLY IRRELEVANT.
-
-We're not clearing it in kmalloc_large()!
-
-What's so hard to understand?
-
-> [Yes, it's hard to spot, it's in new_slab() where we call
-> allocate_slab().] I'm okay with moving it to top level but I don't see
-> how that fixes any of the bugs mentioned here.
-
-That stupid clearing in new_slab() is totally and utterly irrelevant (in 
-addition to the fact that it's hard to spot).
-
-The point was never new_slab(). So why do you even mention it?
-
-The code in question is __slab_alloc(). It did *not* clear it correctly 
-before its uses (__slab_alloc -> kmalloc_large -> __get_free_pages).
-
-			Linus
+Bart.
