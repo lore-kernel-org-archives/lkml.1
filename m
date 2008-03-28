@@ -1,96 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756201AbYC1RbW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755976AbYC1Rbg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756201AbYC1RbW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Mar 2008 13:31:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754050AbYC1RbK
+	id S1755976AbYC1Rbg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Mar 2008 13:31:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754391AbYC1RbQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Mar 2008 13:31:10 -0400
-Received: from penti.org ([193.167.33.200]:60288 "EHLO penti.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753680AbYC1RbJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Mar 2008 13:31:09 -0400
-Date: Fri, 28 Mar 2008 19:31:01 +0200 (EET)
-From: Harald Hannelius <harald@iki.fi>
-X-X-Sender: harald@penti.org
-To: Michael Chan <mchan@broadcom.com>
-cc: David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
-       netdev <netdev@vger.kernel.org>
-Subject: Re: tg3 bad performance, lots of hardware interrupts
-In-Reply-To: <1206726560.6866.5.camel@dell>
-Message-ID: <alpine.DEB.1.00.0803281925500.5286@penti.org>
-References: <alpine.DEB.1.00.0803271532570.30549@penti.org> <20080327.144925.196529669.davem@davemloft.net> <1206666100.5368.6.camel@dell> <alpine.DEB.1.00.0803281440460.23558@penti.org> <1206726560.6866.5.camel@dell>
-User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
+	Fri, 28 Mar 2008 13:31:16 -0400
+Received: from az33egw02.freescale.net ([192.88.158.103]:47558 "EHLO
+	az33egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754304AbYC1RbP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Mar 2008 13:31:15 -0400
+Message-ID: <47ED2B35.4030601@freescale.com>
+Date: Fri, 28 Mar 2008 12:30:29 -0500
+From: Scott Wood <scottwood@freescale.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.9 (X11/20080110)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+To: York Sun <yorksun@freescale.com>
+CC: linux-fbdev-devel@lists.sourceforge.net, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       galak@kernel.crashing.org, a.p.zijlstra@chello.nl,
+       Timur Tabi <timur@freescale.com>
+Subject: Re: [PATCH 1/2 v4] Driver for Freescale 8610 and 5121 DIU
+References: <12066720572512-git-send-email-yorksun@freescale.com> <12066720572314-git-send-email-yorksun@freescale.com>
+In-Reply-To: <12066720572314-git-send-email-yorksun@freescale.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+York Sun wrote:
+> +static int fsl_diu_ioctl(struct fb_info *info, unsigned int cmd,
+> +		       unsigned long arg)
+> +{
+> +	struct mfb_info *mfbi = info->par;
+> +	struct diu_ad *ad = mfbi->ad;
+> +	struct mfb_chroma_key ck;
+> +	unsigned char global_alpha;
+> +	struct aoi_display_offset aoi_d;
+> +	__u32 pix_fmt;
+> +
+> +	switch (cmd) {
+> +	case MFB_SET_PIXFMT:
+> +		if (!arg)
+> +			return -EINVAL;
+> +		if (copy_from_user(&pix_fmt, (void __user *)arg,
+> +				sizeof(pix_fmt)))
 
-On Fri, 28 Mar 2008, Michael Chan wrote:
-> On Fri, 2008-03-28 at 15:04 +0200, Harald Hannelius wrote:
+OK, you fixed the cast here...
 
->> Phew, I thought that running ethtool -t was like doing stop-A-sync on
->> a
->> Sun. It took almost half an hour to run that ethtool -t command;
->
-> Something is very wrong.  ethtool -t should only take a few seconds to
-> complete.  You can try ethtool -t eth0 online to reduce the number of
-> tests to see if it makes a difference.
+> +			return -EFAULT;
+> +		ad->pix_fmt = pix_fmt;
+> +		pr_debug("Set pixel format to 0x%08x\n", ad->pix_fmt);
+> +		break;
+> +	case MFB_GET_PIXFMT:
+> +		if (!arg)
+> +			return -EINVAL;
+> +		pix_fmt = ad->pix_fmt;
+> +		if (copy_to_user((void *)arg, &pix_fmt, sizeof(pix_fmt)))
+> +			return -EFAULT;
+> +		pr_debug("get pixel format 0x%08x\n", ad->pix_fmt);
+> +		break;
+> +	case MFB_SET_AOID:
+> +		if (!arg)
+> +			return -EINVAL;
+> +		if (copy_from_user(&aoi_d, (void *)arg, sizeof(aoi_d)))
+> +			return -EFAULT;
 
-Here's the output of ethtool -t eth2:
+...but not anywhere else.  All user pointers should have a __user 
+annotation.
 
-The test result is PASS
-The test extra info:
-nvram test     (online)          0
-link test      (online)          0
-register test  (offline)         0
-memory test    (offline)         0
-loopback test  (offline)         0
-interrupt test (offline)         0
+> +	default:
+> +		printk(KERN_ERR "Unknown ioctl command (0x%08X)\n", cmd);
+> +		return 0;
 
-I just started a 'ethtool -t eth2 online' and that one took just some 10 
-seconds or so.
+return -ENOIOCTLCMD;
 
-# ethtool -t eth2 online 2>&1 | tee ethtool-output.log
-The test result is PASS
-The test extra info:
-nvram test     (online) 	 0
-link test      (online) 	 0
-register test  (offline)	 0
-memory test    (offline)	 0
-loopback test  (offline)	 0
-interrupt test (offline)	 0
-# mpstat 2 2>&1 | tee ethtool2.log
-Linux 2.6.24.4 (mauer) 	03/28/2008
+> +	/* Read to clear the status */
+> +	status = in_be32(&(hw->int_status));
+> +
+> +	ret = request_irq(irq, fsl_diu_isr, 0, "diu", 0);
+> +	if (ret)
+> +		pr_info("Request diu IRQ failed.\n");
+> +	else {
+> +		ints = INT_PARERR | INT_LS_BF_VS;
+> +#if !defined(CONFIG_NOT_COHERENT_CACHE)
+> +		ints |=	INT_VSYNC;
+> +#endif
+> +		if (dr.mode == MFB_MODE2 || dr.mode == MFB_MODE3)
+> +			ints |= INT_VSYNC_WB;
+> +
+> +		/* Read to clear the status */
+> +		status = in_be32(&(hw->int_status));
+> +		out_be32(&(hw->int_mask), ints);
 
-05:22:42 PM  CPU   %user   %nice    %sys %iowait    %irq   %soft  %steal   %idle    intr/s
-05:22:44 PM  all    0.00    0.00    0.00    0.00   11.63    7.56    0.00   80.81    102.99
-05:22:46 PM  all    0.00    0.00    0.27    0.00    8.33    4.84    0.00   86.56    123.00
-05:22:48 PM  all    0.00    0.00    0.00    0.00   12.03    7.16    0.00   80.80    108.46
-05:22:50 PM  all    0.00    0.00    0.00    0.00   10.47    5.23    0.00   84.30    113.93
-05:22:52 PM  all    0.00    0.00    0.00    0.00   12.93   10.06    0.00   77.01    135.00
-05:22:55 PM  all    0.00    0.00   18.11    0.00   24.25   12.62    0.00   45.02    158.28
-05:22:57 PM  all    0.00    0.00    0.82    0.00   13.11   10.38    0.00   75.68    146.04
-05:22:59 PM  all    0.00    0.00    0.29    0.00   18.77   12.61    0.00   68.33    136.32
-05:23:01 PM  all    0.00    0.00    0.00    0.00   13.64    7.67    0.00   78.69    112.50
-05:23:03 PM  all    0.00    0.00    0.00    0.00    9.19    4.86    0.00   85.95    110.50
-05:23:05 PM  all    0.00    0.00    0.00    0.00   13.64    7.67    0.00   78.69    108.00
+These parentheses are unnecessary; just do &hw->int_mask, etc.
 
-> How many of these NICs do you have?  If you have more than one, do they
-> all behave the same way?  Have they ever worked well before?
-
-It's a brand spanking new computer, equipped with three of these BCM5751 
-NICs made by HP. I have ripped out all but one, and I have also tested the 
-NIC in all three available PCIe slots. Same result.
-
-When all three NIC's where plugged in they didn't work. All three behave 
-the same one-by-one.
-
-I don't know if they have worked before.
-
--- 
-A: Top Posters!                                      |  s/y Charlotta |
-Q: What is the most annoying thing on mailing lists? |    FIN-2674    |
-   http://www.fe83.org/ Finn Express Purjehtijat ry   |  ============= |
-Harald H Hannelius | harald (At) iki (dot) fi | GSM +358 50 594 1020
+-Scott
