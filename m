@@ -1,81 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753550AbYC1Ekq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754765AbYC1EnR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753550AbYC1Ekq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Mar 2008 00:40:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750855AbYC1Ekg
+	id S1754765AbYC1EnR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Mar 2008 00:43:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750940AbYC1EnG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Mar 2008 00:40:36 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:52689 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750836AbYC1Ekf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Mar 2008 00:40:35 -0400
-Date: Fri, 28 Mar 2008 13:39:40 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Yasunori Goto <y-goto@jp.fujitsu.com>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Christoph Lameter <clameter@sgi.com>,
-       Dave Hansen <dave@linux.vnet.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 2 of 4] hotplug-memory: adding non-section-aligned
- memory is bad
-Message-Id: <20080328133940.dc3be13d.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <47EC7202.3040009@goop.org>
-References: <e0b16cc8349b38a5f3f9.1206664118@localhost>
-	<20080328102719.3ab9162b.kamezawa.hiroyu@jp.fujitsu.com>
-	<20080328102342.B0BF.E1E9C6FF@jp.fujitsu.com>
-	<20080328105406.5dc61c6c.kamezawa.hiroyu@jp.fujitsu.com>
-	<47EC5440.5020107@goop.org>
-	<20080328113312.65cca8b5.kamezawa.hiroyu@jp.fujitsu.com>
-	<47EC5D2E.8060001@goop.org>
-	<20080328121758.7f355925.kamezawa.hiroyu@jp.fujitsu.com>
-	<47EC7202.3040009@goop.org>
-Organization: Fujitsu
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 28 Mar 2008 00:43:06 -0400
+Received: from gherkin.frus.com ([192.158.254.49]:37150 "EHLO gherkin.frus.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750855AbYC1EnF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Mar 2008 00:43:05 -0400
+Subject: Re: 2.6.25-rc7: Ugh.
+In-Reply-To: <20080327.201202.163153963.davem@davemloft.net> "from David Miller
+ at Mar 27, 2008 08:12:02 pm"
+To: David Miller <davem@davemloft.net>
+Date: Thu, 27 Mar 2008 23:42:58 -0500 (CDT)
+CC: lkml@rtr.ca, jkosina@suse.cz, gregkh@suse.de, linux-kernel@vger.kernel.org,
+       linux-usb@vger.kernel.org, pavel@suse.cz, akpm@linux-foundation.org
+X-Mailer: ELM [version 2.4ME+ PL82 (25)]
+MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=US-ASCII
+Message-Id: <20080328044258.7AA98DBA2@gherkin.frus.com>
+From: rct@frus.com (Bob Tracy)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 27 Mar 2008 21:20:18 -0700
-Jeremy Fitzhardinge <jeremy@goop.org> wrote:
-> > How about capturing online_page() by balloon ?
-> >   
+David Miller wrote:
+> From: Mark Lord <lkml@rtr.ca>
+> Date: Thu, 27 Mar 2008 21:57:55 -0400
 > 
-> You're saying that using online_page() on each page on its own is not 
-> sufficient?
+> > I don't have the XX days necessary for git-bisect right now.
 > 
-online_page() just remove PG_reserved flags and free it. 
-Not dealing with global data, like total pages, zonelist, etc.
-
-> > ex.)
-> > ==
-> > call add_memory() to create mem_map
-> > call online_pages() against the whole section. <=== call this without sysfs.
-> >      online_pages() do misc. jobs
-> >         call online_page() one by one (arch dependent) called by walk_memory_resource.
-> >             online_page() will finally call free_page(page).
-> >             <=========== Xen capture here.
-> >             Don't free onlined page and swallow them into baloon driver.
-> > ==
-> >   
+> I wish people would say stuff like this.
 > 
-> I'm not sure what you mean by "capture" here.  Do you mean a hook?  I'd 
-> rather not have to put some Xen-specific hook in here.
+> It takes 20 to 40 minutes, tops, to do this.
 > 
-ok.
+> The bulk of it can run in the background while you perform other
+> tasks.
 
-> What would happen if I did online_pages(pfn, 1) on each page as I 
-> populate it?
-> 
-I think (hope) it works well. But it seems no one tries to do that.
+I don't understand this claim.  On what incredibly fast piece of iron
+can you possibly do between 8 and 16 kernel builds (the range I've
+encountered when I do the "git bisect" dance), boot each one, and
+evaluate the results in so small a period of time?  An Alpha kernel
+build takes me between 5 and 10 minutes for minor changes, closer to
+four *hours* for a "from scratch" (make clean) build.  Even worse: for
+those of us who don't have access to the console of the test machine
+continuously (e.g., the machine is at home and you normally work outside
+the home), the whole bisection process can take several days to complete.
 
-Thanks,
--Kame
+Yes, Mark's problem is with a laptop, and maybe he's allowed to take
+it with him into his workplace, but still...
 
+If your claim is 20 to 40 minutes "per iteration", I could believe that.
 
-
+-- 
+------------------------------------------------------------------------
+Bob Tracy          |  "I was a beta tester for dirt.  They never did
+rct@frus.com       |   get all the bugs out." - Steve McGrew on /.
+------------------------------------------------------------------------
