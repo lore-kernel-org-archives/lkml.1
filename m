@@ -1,44 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756933AbYC1QnY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757246AbYC1Qnl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756933AbYC1QnY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Mar 2008 12:43:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752398AbYC1QnG
+	id S1757246AbYC1Qnl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Mar 2008 12:43:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757071AbYC1Qn3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Mar 2008 12:43:06 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:51065 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752665AbYC1QnF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Mar 2008 12:43:05 -0400
-Date: Fri, 28 Mar 2008 17:42:47 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: gorcunov@gmail.com
-Cc: hpa@zytor.com, tglx@linutronix.de, linux-kernel@vger.kernel.org
-Subject: Re: [patch 0/2] x86 flags cleanup
-Message-ID: <20080328164247.GA19247@elte.hu>
-References: <20080328145655.076024373@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080328145655.076024373@gmail.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -0.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-0.5 required=5.9 tests=BAYES_20 autolearn=no SpamAssassin version=3.2.3
-	-0.5 BAYES_20               BODY: Bayesian spam probability is 5 to 20%
-	[score: 0.1777]
+	Fri, 28 Mar 2008 12:43:29 -0400
+Received: from e36.co.us.ibm.com ([32.97.110.154]:41236 "EHLO
+	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753423AbYC1Qn2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Mar 2008 12:43:28 -0400
+Subject: Re: [PATCH 3 of 4] sparsemem: reduce i386 PAE section size
+From: Dave Hansen <dave@linux.vnet.ibm.com>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Christoph Lameter <clameter@sgi.com>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Yasunori Goto <y-goto@jp.fujitsu.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <47EC8DD0.4090401@goop.org>
+References: <b7d0773c79887ca98d6c.1206664119@localhost>
+	 <Pine.LNX.4.64.0803271734450.10635@schroedinger.engr.sgi.com>
+	 <47EC574C.10006@goop.org>
+	 <Pine.LNX.4.64.0803271926520.11576@schroedinger.engr.sgi.com>
+	 <47EC8DD0.4090401@goop.org>
+Content-Type: text/plain
+Date: Fri, 28 Mar 2008 09:43:19 -0700
+Message-Id: <1206722599.7883.119.camel@nimitz.home.sr71.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 2008-03-27 at 23:18 -0700, Jeremy Fitzhardinge wrote:
+> Christoph Lameter wrote:
+> > Only works on i386 if you either use sparsemem / vmemmap or not sparsemem 
+> > though. Is there any need for the other sparsemem memory models? Or could 
+> > we disable them like on x86_64?
+> 
+> Probably, but I don't know what the tradeoffs are.  All I want is 
+> hotplug memory.
 
-* gorcunov@gmail.com <gorcunov@gmail.com> wrote:
+Developers should probably learn the tradeoffs before they go start
+poking around in code and sending patches. ;)
 
-> This patch series does remove some flags from x86.h. We should better
-> use ones from processor-flags.h
+Maybe Christoph has a good idea what the tradeoffs are for the vmemmap
+variant, but the table-based one is pretty simple.  Smaller sections
+mean that it costs you larger sparsemem structures and more bits in
+page->flags.  But, the smaller the section, the more mem_map[] you might
+waste.
 
-thanks Cyrill, applied.
+BTW, the current 1G sections were picked because all the hardware we
+knew of at the time had 512MB dimms that had to be added in pairs.  So,
+we didn't ever have physical hotplug of less than that.
 
-	Ingo
+-- Dave
+
