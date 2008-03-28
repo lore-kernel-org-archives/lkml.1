@@ -1,51 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754227AbYC1LIR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754637AbYC1LL2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754227AbYC1LIR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Mar 2008 07:08:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752656AbYC1LID
+	id S1754637AbYC1LL2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Mar 2008 07:11:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752109AbYC1LLU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Mar 2008 07:08:03 -0400
-Received: from smtp.nokia.com ([192.100.105.134]:31141 "EHLO
-	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752544AbYC1LIB (ORCPT
+	Fri, 28 Mar 2008 07:11:20 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:41324 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751661AbYC1LLU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Mar 2008 07:08:01 -0400
-Message-ID: <47ECD0AE.4020301@nokia.com>
-Date: Fri, 28 Mar 2008 13:04:14 +0200
-From: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
-Reply-To: Artem.Bityutskiy@nokia.com
-Organization: Nokia OYJ
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: LKML <linux-kernel@vger.kernel.org>,
-       Adrian Hunter <ext-adrian.hunter@nokia.com>
-Subject: Re: [RFC PATCH 05/26] UBIFS: add file-system build
-References: <1206629746-4298-1-git-send-email-Artem.Bityutskiy@nokia.com>	<1206629746-4298-6-git-send-email-Artem.Bityutskiy@nokia.com> <20080328031246.8c7e849b.akpm@linux-foundation.org>
-In-Reply-To: <20080328031246.8c7e849b.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-OriginalArrivalTime: 28 Mar 2008 11:07:08.0049 (UTC) FILETIME=[DCFA9010:01C890C3]
-X-Nokia-AV: Clean
+	Fri, 28 Mar 2008 07:11:20 -0400
+Date: Fri, 28 Mar 2008 20:15:28 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: balbir@linux.vnet.ibm.com
+Cc: Paul Menage <menage@google.com>, Pavel Emelianov <xemul@openvz.org>,
+       Hugh Dickins <hugh@veritas.com>,
+       Sudhir Kumar <skumar@linux.vnet.ibm.com>,
+       YAMAMOTO Takashi <yamamoto@valinux.co.jp>, lizf@cn.fujitsu.com,
+       linux-kernel@vger.kernel.org, taka@valinux.co.jp, linux-mm@kvack.org,
+       David Rientjes <rientjes@google.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [-mm] Add an owner to the mm_struct (v2)
+Message-Id: <20080328201528.55b22fba.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <47ECCE00.70803@linux.vnet.ibm.com>
+References: <20080328082316.6961.29044.sendpatchset@localhost.localdomain>
+	<20080328195516.494edde3.kamezawa.hiroyu@jp.fujitsu.com>
+	<47ECCE00.70803@linux.vnet.ibm.com>
+Organization: Fujitsu
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Thu, 27 Mar 2008 16:55:25 +0200 Artem Bityutskiy <Artem.Bityutskiy@nokia.com> wrote:
-> 
->> +	/*
->> +	 * Make sure that the log is large enough to fit reference nodes for
->> +	 * all buds plus one reserved LEB.
->> +	 */
->> +	tmp64 = c->max_bud_bytes;
->> +	tmp = do_div(tmp64, c->leb_size);
-> 
-> do_div() operates on u64, not signed long long.  This will warn on several
-> architectures.
+On Fri, 28 Mar 2008 16:22:48 +0530
+Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
 
-Will be fixed, thank you!
+> > How about changing this css_get()/css_put() from accounting against mm_struct
+> > to accouting against task_struct ?
+> > It seems simpler way after this mm->owner change.
+> 
+> But the reason why we account the mem_cgroup is that we don't want the
+> mem_cgroup to be deleted. I hope you meant mem_cgroup instead of mm_struct.
+> 
+Ah, my text was complicated.
 
--- 
-Best Regards,
-Artem Bityutskiy (Артём Битюцкий)
+Now,
+- css_get(memcgrp) is called at mm_struct initialization.
+- css_put(memcgrp) is called at mm_struct freeing.
+
+How about
+- css_get(memcgrp) is called at task_struct initialization.
+- css_put(memcgrp) is called at task_struct freeing.
+
+Because
+1. we find mem_cgroup by mm->owner, after this.
+2. generic group interface have exit() and clone() callback interface.
+
+mem_cgroup will not be freed until rmdir(), anyway.
+
+Thanks,
+-Kame
+
