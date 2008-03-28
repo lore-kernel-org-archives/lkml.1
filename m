@@ -1,117 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758564AbYC1Ucb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758274AbYC1UeF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758564AbYC1Ucb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Mar 2008 16:32:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754932AbYC1UcX
+	id S1758274AbYC1UeF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Mar 2008 16:34:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755051AbYC1Udz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Mar 2008 16:32:23 -0400
-Received: from gw.goop.org ([64.81.55.164]:49485 "EHLO mail.goop.org"
+	Fri, 28 Mar 2008 16:33:55 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:43574 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754268AbYC1UcX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Mar 2008 16:32:23 -0400
-Message-ID: <47ED55BB.6050101@goop.org>
-Date: Fri, 28 Mar 2008 13:31:55 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	id S1754951AbYC1Udy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Mar 2008 16:33:54 -0400
+Date: Fri, 28 Mar 2008 21:33:14 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Pawel Staszewski <pstaszewski@artcom.pl>,
+       Christoph Lameter <clameter@sgi.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Natalie Protasevich <protasnb@gmail.com>
+Subject: Re: 2.6.25-rc7-git2: Reported regressions from 2.6.24
+Message-ID: <20080328203314.GC26555@elte.hu>
+References: <200803272353.51901.rjw@sisk.pl> <alpine.LFD.1.00.0803271859280.14670@woody.linux-foundation.org> <200803281710.44576.rjw@sisk.pl> <alpine.LFD.1.00.0803280938430.14670@woody.linux-foundation.org> <20080328173642.GG32200@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
-To: Isaku Yamahata <yamahata@valinux.co.jp>
-CC: chrisw@sous-sol.org, sct@redhat.com,
-       virtualization@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       xen-ia64-devel@lists.xensource.com, eddie.dong@intel.com
-Subject: Re: [PATCH 10/12] xen: replace callers of alloc_vm_area()/free_vm_area()
- with xen_ prefixed one.
-References: <12067044183207-git-send-email-yamahata@valinux.co.jp> <1206704418191-git-send-email-yamahata@valinux.co.jp>
-In-Reply-To: <1206704418191-git-send-email-yamahata@valinux.co.jp>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080328173642.GG32200@cs181133002.pp.htv.fi>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Isaku Yamahata wrote:
-> Don't use alloc_vm_area()/free_vm_area() directly, instead define
-> xen_alloc_vm_area()/xen_free_vm_area() and use them.
->
-> alloc_vm_area()/free_vm_area() are used to allocate/free area which
-> are for grant table mapping. Xen/x86 grant table is based on virtual
-> address so that alloc_vm_area()/free_vm_area() are suitable.
-> On the other hand Xen/ia64 (and Xen/powerpc) grant table is based on
-> pseudo physical address (guest physical address) so that allocation
-> should be done differently.
-> The original version of xenified Linux/IA64 have its own
-> allocate_vm_area()/free_vm_area() definitions which don't allocate vm area
-> contradictory to those names.
-> Now vanilla Linux already has its definitions so that it's impossible
-> to have IA64 definitions of allocate_vm_area()/free_vm_area().
-> Instead introduce xen_allocate_vm_area()/xen_free_vm_area() and use them.
->
-> Signed-off-by: Isaku Yamahata <yamahata@valinux.co.jp>
-> ---
->  drivers/xen/grant-table.c          |    2 +-
->  drivers/xen/xenbus/xenbus_client.c |    6 +++---
->  include/asm-x86/xen/hypervisor.h   |    3 +++
->  3 files changed, 7 insertions(+), 4 deletions(-)
->
-> diff --git a/drivers/xen/grant-table.c b/drivers/xen/grant-table.c
-> index 95016fd..9fcde20 100644
-> --- a/drivers/xen/grant-table.c
-> +++ b/drivers/xen/grant-table.c
-> @@ -478,7 +478,7 @@ static int gnttab_map(unsigned int start_idx, unsigned int end_idx)
->  
->  	if (shared == NULL) {
->  		struct vm_struct *area;
-> -		area = alloc_vm_area(PAGE_SIZE * max_nr_grant_frames());
-> +		area = xen_alloc_vm_area(PAGE_SIZE * max_nr_grant_frames());
->  		BUG_ON(area == NULL);
->  		shared = area->addr;
->  	}
-> diff --git a/drivers/xen/xenbus/xenbus_client.c b/drivers/xen/xenbus/xenbus_client.c
-> index 9fd2f70..0f86b0f 100644
-> --- a/drivers/xen/xenbus/xenbus_client.c
-> +++ b/drivers/xen/xenbus/xenbus_client.c
-> @@ -399,7 +399,7 @@ int xenbus_map_ring_valloc(struct xenbus_device *dev, int gnt_ref, void **vaddr)
->  
->  	*vaddr = NULL;
->  
-> -	area = alloc_vm_area(PAGE_SIZE);
-> +	area = xen_alloc_vm_area(PAGE_SIZE);
->  	if (!area)
->  		return -ENOMEM;
->  
-> @@ -409,7 +409,7 @@ int xenbus_map_ring_valloc(struct xenbus_device *dev, int gnt_ref, void **vaddr)
->  		BUG();
->  
->  	if (op.status != GNTST_okay) {
-> -		free_vm_area(area);
-> +		xen_free_vm_area(area);
->  		xenbus_dev_fatal(dev, op.status,
->  				 "mapping in shared page %d from domain %d",
->  				 gnt_ref, dev->otherend_id);
-> @@ -508,7 +508,7 @@ int xenbus_unmap_ring_vfree(struct xenbus_device *dev, void *vaddr)
->  		BUG();
->  
->  	if (op.status == GNTST_okay)
-> -		free_vm_area(area);
-> +		xen_free_vm_area(area);
->  	else
->  		xenbus_dev_error(dev, op.status,
->  				 "unmapping page at handle %d error %d",
-> diff --git a/include/asm-x86/xen/hypervisor.h b/include/asm-x86/xen/hypervisor.h
-> index 767a361..31e526d 100644
-> --- a/include/asm-x86/xen/hypervisor.h
-> +++ b/include/asm-x86/xen/hypervisor.h
-> @@ -57,6 +57,9 @@ extern struct shared_info *HYPERVISOR_shared_info;
->  extern struct start_info *xen_start_info;
->  #define is_initial_xendomain() (xen_start_info->flags & SIF_INITDOMAIN)
->  
-> +#define xen_alloc_vm_area(size)	alloc_vm_area(size)
-> +#define xen_free_vm_area(area)	free_vm_area(area)
-> +
->   
 
-This change looks fine overall, but asm/xen/hypervisor.h seems to be 
-turning into a bit of a dumping-ground.  I wonder if we can't come up 
-with a better-named header...
+* Adrian Bunk <bunk@kernel.org> wrote:
 
-    J
+> But that was one year ago when we had only half as many regressions 
+> per release as they do now, with 2.6.25 we had a peak of 66 pending 
+> regressions...
+
+we have twice as many commits, and we have better test coverage. I get 
+the impression that user trust is coming back as well: regressions are 
+being reported sooner and more persistently - because we are handling 
+them in a more structured and more dependable way. We also seem to have 
+more users of latest -git.
+
+so it _appears_ to be an increase in bugginess but i believe it's an 
+increase of activity and it's all good IMO, we close 90% of the 
+regressions within a week or two, and most of the regressions are for 
+obscure cases.
+
+I had 2.6.25 running on most of my boxes from -rc1 on without any 
+unprovoked crash. (provoked bugs were another matter) Bisection became 
+more practical and more widespread as well. And i periodically find bugs 
+that came from ancient kernels so we are fixing bugs faster than we put 
+them in i think. I didnt have that feeling in the .18-.19 kernels.
+
+also, now that the kerneloops.org client is in Fedora 9 by default, 
+we'll start to have really objective long-term statistics about how our 
+users react to the bugs we put into the kernel.
+
+	Ingo
