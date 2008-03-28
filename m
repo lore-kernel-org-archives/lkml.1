@@ -1,66 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757025AbYC1U6B@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757529AbYC1U7t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757025AbYC1U6B (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Mar 2008 16:58:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754427AbYC1U5u
+	id S1757529AbYC1U7t (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Mar 2008 16:59:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753901AbYC1U7l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Mar 2008 16:57:50 -0400
-Received: from mail.gmx.net ([213.165.64.20]:35796 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1753870AbYC1U5t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Mar 2008 16:57:49 -0400
-X-Authenticated: #5039886
-X-Provags-ID: V01U2FsdGVkX19ek6dAZiJeIyd5dvFB+xeSbHaLl8+hfIeFzfBMYg
-	O0sYDxgU/lscIU
-Date: Fri, 28 Mar 2008 21:57:46 +0100
-From: =?iso-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Arjan van de Ven <arjan@linux.intel.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       NetDev <netdev@vger.kernel.org>
-Subject: Re: Oops/Warning report for the week of March 28th 2008
-Message-ID: <20080328205746.GA31237@atjola.homenet>
-References: <47ED3F1A.1090101@linux.intel.com> <alpine.LFD.1.00.0803281310480.14670@woody.linux-foundation.org>
+	Fri, 28 Mar 2008 16:59:41 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:64889 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753648AbYC1U7l (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Mar 2008 16:59:41 -0400
+Message-ID: <47ED5BF5.4000809@oracle.com>
+Date: Fri, 28 Mar 2008 13:58:29 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+User-Agent: Thunderbird 1.5.0.5 (X11/20060719)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <alpine.LFD.1.00.0803281310480.14670@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-Y-GMX-Trusted: 0
+To: Dmitri Vorobiev <dmitri.vorobiev@gmail.com>
+CC: Sebastien Dugue <sebastien.dugue@bull.net>, dsd@gentoo.org,
+       trivial@kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/1] Fix typos in Documentation/unaligned-memory-access.txt
+References: <1206699042-1334-1-git-send-email-dmitri.vorobiev@gmail.com> <20080328132354.2a3b766e@bull.net> <47ED5B3F.7040401@gmail.com>
+In-Reply-To: <47ED5B3F.7040401@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2008.03.28 13:21:38 -0700, Linus Torvalds wrote:
-> On Fri, 28 Mar 2008, Arjan van de Ven wrote:
-> > 
-> > Rank 1: input_release_device
-> > 	This appears to be a regression in 2.6.25; the first reports show up
-> > in 2.6.25-rc2		Often a warning at kernel/mutex.c:134
-> > (mutex_lock_nested), but some oopses too
+Dmitri Vorobiev wrote:
+> Sebastien Dugue wrote:
+>>   Hi Dmitri,
+>>
+>>   one more typo I guess:
+>>
+>> On Fri, 28 Mar 2008 13:10:42 +0300 Dmitri Vorobiev <dmitri.vorobiev@gmail.com> wrote:
+>>
+>>> This patch deletes a couple of superfluous word occurrences in the
+>>> document Documentation/unaligned-memory-access.txt.
+>>> ---
+>>> Sorry for a duplicate email, I forgot to Cc LKML when sending the patch.
+>>>
+>>>  Documentation/unaligned-memory-access.txt |    4 ++--
+>>>  1 files changed, 2 insertions(+), 2 deletions(-)
+>>>
+>>> diff --git a/Documentation/unaligned-memory-access.txt b/Documentation/unaligned-memory-access.txt
+>>> index 6223eac..ed57b53 100644
+>>> --- a/Documentation/unaligned-memory-access.txt
+>>> +++ b/Documentation/unaligned-memory-access.txt
+>>> @@ -57,7 +57,7 @@ here; a summary of the common scenarios is presented below:
+>>>     unaligned access to be corrected.
+>>>   - Some architectures are not capable of unaligned memory access, but will
+>>>     silently perform a different memory access to the one that was requested,
+>>> -   resulting a a subtle code bug that is hard to detect!
+>>> +   resulting a subtle code bug that is hard to detect!
+>>                 ^
+>>                in a
 > 
-> The oopses (at least some of them) seem to be a use-after-free where we 
-> seem to do a list_add() on an already-released list head (or we didn't 
-> remove the previous/next entry from a list before we free'd it, and then 
-> the next list_add() will follow a bogus pointer).
+> Although those English dictionaries that I have consulted do indicate that
+> "result" is an intransitive verb, there are many occurrences reported by Google
+> when this verb takes a direct object like in the following phrase: "However,
+> inner space of the stand 2 of the drum washing machine 1 is not used,
+> resulting a problem of wasting space."
 > 
-> > http://www.kerneloops.org/searchweek.php?search=input_release_device
-> 
-> The problem with kerneloops is that it seems to be really hard to figure 
-> out the *source* of the oops. I can find the oopses (and it's really good 
-> with the whole search-and-clump-together-by-version thing), but then when 
-> some oops like this is found, it's hard to see where your kerneloops 
-> scripts found the oops from, so the context of the oops is all gone.
-> 
-> Is there something obvious that I'm missing? I'd really like to see the 
-> whole posting that the oops came from. Do you save the originals or even 
-> just message ID's from the ones you pick from emails?
+> English is not my mother tongue so I can't claim I have a good ear for the
+> language. Are there any native speakers who could help, please?
 
-The oops for that one seem to be all coming from fc9 systems, which
-(IIRC) include the automatic kerneloops reporting tool, so there
-probably is no mail for them. Those that come from a mailing list
-usually have a link at the top, for example this one:
-http://www.kerneloops.org/raw.php?rawid=5735&msgid=http://mid.gmane.org/20080327230430.GA28795@codemonkey.org.uk
+I'll ack the "in a" change.
 
-Björn
+> Dmitri
+> 
+>>   Sebastien.
+>>
+>>>  
+>>>  It should be obvious from the above that if your code causes unaligned
+>>>  memory accesses to happen, your code will not work correctly on certain
+>>> @@ -209,7 +209,7 @@ memory and you wish to avoid unaligned access, its usage is as follows:
+>>>  
+>>>  	u32 value = get_unaligned((u32 *) data);
+>>>  
+>>> -These macros work work for memory accesses of any length (not just 32 bits as
+>>> +These macros work for memory accesses of any length (not just 32 bits as
+>>>  in the examples above). Be aware that when compared to standard access of
+>>>  aligned memory, using these macros to access unaligned memory can be costly in
+>>>  terms of performance.
+> 
+
+
+-- 
+~Randy
