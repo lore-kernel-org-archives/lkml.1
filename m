@@ -1,40 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754872AbYC1Ah4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754798AbYC1Ajy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754872AbYC1Ah4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Mar 2008 20:37:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753205AbYC1Ahr
+	id S1754798AbYC1Ajy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Mar 2008 20:39:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752536AbYC1Ajo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Mar 2008 20:37:47 -0400
-Received: from relay2.sgi.com ([192.48.171.30]:38767 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753105AbYC1Ahr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Mar 2008 20:37:47 -0400
-Date: Thu, 27 Mar 2008 17:35:42 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Yasunori Goto <y-goto@jp.fujitsu.com>,
-       Dave Hansen <dave@linux.vnet.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 3 of 4] sparsemem: reduce i386 PAE section size
-In-Reply-To: <b7d0773c79887ca98d6c.1206664119@localhost>
-Message-ID: <Pine.LNX.4.64.0803271734450.10635@schroedinger.engr.sgi.com>
-References: <b7d0773c79887ca98d6c.1206664119@localhost>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 27 Mar 2008 20:39:44 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:39580
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752225AbYC1Ajn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Mar 2008 20:39:43 -0400
+Date: Thu, 27 Mar 2008 17:39:43 -0700 (PDT)
+Message-Id: <20080327.173943.232327282.davem@davemloft.net>
+To: ramirose@gmail.com
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH net-2.6.26] Remove three unused method declarations in
+ include/net/ipv6.h
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <eb3ff54b0803270205n4a15a884kaa45852e510b27c6@mail.gmail.com>
+References: <eb3ff54b0803270205n4a15a884kaa45852e510b27c6@mail.gmail.com>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 27 Mar 2008, Jeremy Fitzhardinge wrote:
+From: "Rami Rosen" <ramirose@gmail.com>
+Date: Thu, 27 Mar 2008 11:05:55 +0200
 
-> A 1G section size makes memory hotplug too coarse in a virtual
-> environment.  Retuce it by a factor of 2 to 512M.  I would have liked
-> to make it smaller, but it runs out of reserved flags in the page flags.
+> This patch removes three unused method declarations in include/net/ipv6.h:
+> inet_getfrag_t(), ipv6_build_nfrag_opts() and ipv6_build_frag_opts().
+> 
+> Signed-off-by: Rami Rosen <ramirose@gmail.com>
 
-There are patches in mm which changes that situation. You should have 5 or 
-6 more flags to play with.
-
+Applied, thanks.
