@@ -1,165 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756824AbYC1SwY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756219AbYC1Szf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756824AbYC1SwY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Mar 2008 14:52:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751964AbYC1SwQ
+	id S1756219AbYC1Szf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Mar 2008 14:55:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752534AbYC1SzY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Mar 2008 14:52:16 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:31815 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751897AbYC1SwP (ORCPT
+	Fri, 28 Mar 2008 14:55:24 -0400
+Received: from mga06.intel.com ([134.134.136.21]:42257 "EHLO
+	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751554AbYC1SzX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Mar 2008 14:52:15 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=poKFSIyj/PQZTHgPxsMfOT6fZ7jCRuoE1VFyGVo+st6yqQPErJol9cCBjQfqHlB30
-	MdD/3AgQuxXD1GcsErw9Q==
-Message-ID: <6599ad830803281152g33e693f5s4c7090a503d2751d@mail.gmail.com>
-Date: Fri, 28 Mar 2008 11:52:04 -0700
-From: "Paul Menage" <menage@google.com>
-To: balbir@linux.vnet.ibm.com
-Subject: Re: [-mm] Add an owner to the mm_struct (v2)
-Cc: "Pavel Emelianov" <xemul@openvz.org>, "Hugh Dickins" <hugh@veritas.com>,
-       "Sudhir Kumar" <skumar@linux.vnet.ibm.com>,
-       "YAMAMOTO Takashi" <yamamoto@valinux.co.jp>, lizf@cn.fujitsu.com,
-       linux-kernel@vger.kernel.org, taka@valinux.co.jp, linux-mm@kvack.org,
-       "David Rientjes" <rientjes@google.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <47ED34A4.70604@linux.vnet.ibm.com>
+	Fri, 28 Mar 2008 14:55:23 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,572,1199692800"; 
+   d="scan'208";a="265626843"
+Message-ID: <47ED3F1A.1090101@linux.intel.com>
+Date: Fri, 28 Mar 2008 11:55:22 -0700
+From: Arjan van de Ven <arjan@linux.intel.com>
+User-Agent: Thunderbird 2.0.0.12 (Windows/20080213)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       NetDev <netdev@vger.kernel.org>
+Subject: Oops/Warning report for the week of March 28th 2008
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080328082316.6961.29044.sendpatchset@localhost.localdomain>
-	 <6599ad830803280401r68d30e91waaea8eb1de36eb52@mail.gmail.com>
-	 <47ECE662.3060506@linux.vnet.ibm.com>
-	 <6599ad830803280705o4213c448r991cbf9da6ffe2f1@mail.gmail.com>
-	 <47ED0621.4050304@linux.vnet.ibm.com>
-	 <6599ad830803280838s19ffc366w1a950ebb12e2907b@mail.gmail.com>
-	 <47ED34A4.70604@linux.vnet.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Balbir,
+The http://www.kerneloops.org website collects kernel oops and
+warning reports from various mailing lists and bugzillas as well as
+with a client users can install to auto-submit oopses.
+Below is a top 10 list of the oopses collected in the last 7 days.
+(Reports prior to 2.6.23 have been omitted in collecting the top 10)
 
-Could you send out the latest version of your patch? I suspect it's
-changed a bit based on on this review and it would be good to make
-sure we're both on the same page.
-
-On Fri, Mar 28, 2008 at 11:10 AM, Balbir Singh
-<balbir@linux.vnet.ibm.com> wrote:
->
->  At fork time, we can have do_fork() run in parallel and we need to protect
->  mm->owner, if several threads are created at the same time. We don't want to
->  overwrite mm->owner for each thread that is created.
-
-Why would you want to overwrite mm->owner for any of the threads? If
-they're sharing an existing mm, then that mm must already have an
-owner, so no need to update it.
-
->  > No, I think we need to call it later - after we've cleared current->mm
->  > (from within task_lock(current)) - so we can't rely on p->mm in this
->  > function, we have to pass it in. If we call it before while
->  > current->mm == mm, then we risk a race where the (new or existing)
->  > owner exits and passes it back to us *after* we've done a check to see
->  > if we need to find a new owner. If we ensure that current->mm != mm
->  > before we call mm_update_next_owner(), then we know we're not a
->  > candidate for receiving the ownership if we don't have it already.
->  >
->
->  Yes and we could also check for flags & PF_EXITING
->
-
-A couple of issues with that:
-
-- I'm not sure how that handles the exec case
-
-- assume two users; the owner exits and wants to pass the ownership to
-the other user. It finds it, but sees that it's PF_EXITING. What
-should it do? If it waits for that other user to exit, it could take a
-long time (e.g. core dumps can take many seconds). If it exits
-immediately, then it will leave mm->owner pointing to an invalid task.
-If it passes ownership to the other task, it might pass it after the
-other task had done its mm_update_next_owner() check, which would be
-too late.
-
-- assume three users; the owner exits and wants to pass the ownership
-to one of the other two users. it searches through the candidates and
-finds one of the other users, which is in PF_EXITING, so it skips it.
-Just after this it sees that the user count has fallen to two users.
-How does it know whether the user that dropped the count was the
-PF_EXITING process that it saw previously (in which case it should
-keep searching) or the third user that it's not encountered yet (in
-which case it's not going to find the other user anywhere in its
-search).
-
->
->  >>  But there is no way to guarantee that, what is the new_owner exec's after we've
->  >>  done the check and assigned. Won't we end up breaking the invariant? How about
->  >>  we have mm_update_new_owner() call in exec_mmap() as well? That way, we can
->  >>  still use owner_lock and keep the invariant.
->  >>
->  >
->  > Oops, I thought that exit_mm() already got called in the execve()
->  > path, but you're right, it doesn't.
->  >
->  > Yes, exit_mmap() should call mm_update_next_owner() after the call to
->  > task_unlock(), i.e. after it's set its new mm.
->  >
->  > So I need to express the invariant more carefully.
->  >
->  > What we need to preserve is that, for every mm at all times, mm->owner
->  > points to a valid task. So either:
->  >
->  > 1) mm->owner->mm == mm AND mm->owner will check to see whether it
->  > needs to pass ownership before it exits or execs.
->  >
->  > OR
->  >
->  > 2) mm->owner is the last user of mm and is about to free mm.
->  >
->  > OR
->  >
->  > 3) mm->owner is currently searching for another user of mm to pass the
->  > ownership to.
->  >
->  > In order to get from state 3 to state 1 safely we have to hold
->  > task_lock(new_owner). Otherwise we can race with an exit or exec in
->  > new_owner, resulting in a process that has already passed the point of
->  > checking current->mm->owner.
->  >
->
->  No.. like you said if we do it after current->mm has changed and is different
->  from mm, then it's safe to find a new owner. I still don't see why we need
->  task_lock(new_owner).
-
-How about the following sequence: A is old owner, B is new owner
-
-A gets to the task_unlock() in exit_mm(): A->mm is now NULL, mm->owner == A
-B starts to execve()
-A calls mm_update_next_owner()
-B gets to the "active_mm = tsk->active_mm" in exec_mmap()
-A finds that B->mm == mm
-B continues through the critical section, gets past the point where it
-needs to check for ownership
-A sets mm->owner = B
-B finishes its exec, and carries on with its new mmap
+This week, a total of 538 oopses and warnings have been reported,
+compared to 169 reports in the previous week.
 
 
-> Even if we have task_lock(new_owner), it can still exit or
->  exec later.
+Rank 1: input_release_device
+	This appears to be a regression in 2.6.25; the first reports show up in 2.6.25-rc2	
+	Often a warning at kernel/mutex.c:134 (mutex_lock_nested), but some oopses too
+	Reported 161 times (261 total reports)... this is 30% of the total reports this week!
+	The reports are all in the fput() path via ev_release
+	More info: http://www.kerneloops.org/searchweek.php?search=input_release_device
 
-Yes, but once we've set mm->owner to the other task and released its
-task_lock, the new owner is responsible for handing off the mm to yet
-another owner if necessary.
+Rank 2: set_dentry_child_flags
+	The standard inotify warning... only seen upto 2.6.24
+	Assumed fixed in 2.6.25
+	Reported 49 times (493 total reports)
+	More info: http://www.kerneloops.org/searchweek.php?search=set_dentry_child_flags
 
->
->  Why mix task_lock() to protect mm->owner?
+Rank 3: __ieee80211_rx
+	Warning at net/mac80211/rx.c:2184 __ieee80211_rx  (newer-than-mainline mac80211)
+	Reported 29 times (73 total reports)
+	More info: http://www.kerneloops.org/searchweek.php?search=__ieee80211_rx
 
-We're not protecting mm->owner - we're protecting new_owner->mm
+Rank 4: radeon_vblank_crtc_set
+	This is probably a Fedora-special experimental Radeon driver
+	Reported 23 times (28 total reports)
+	More info: http://www.kerneloops.org/searchweek.php?search=radeon_vblank_crtc_set
 
-Paul
+Rank 5: do_sys_open
+	Oops because a driver returns "1" and not "-1" as error code
+	Seen with the nouveau driver, not in mainline yet.
+	Reported 21 times (39 total reports)
+	More info: http://www.kerneloops.org/searchweek.php?search=do_sys_open
+
+Rank 6: uvc_get_video_ctrl
+	The uvc driver is not in mainline
+	Reported 19 times (84 total reports)
+	More info: http://www.kerneloops.org/searchweek.php?search=uvc_get_video_ctrl
+
+Rank 7: __register_sysctl_paths
+	Seen with proprietary drivers only
+	Reported 16 times (186 total reports)
+	More info: http://www.kerneloops.org/searchweek.php?search=__register_sysctl_paths
+
+Rank 8: tcp_ack
+	Warning at net/ipv4/tcp_input.c:2532 tcp_ack
+	Reported 15 times (87 total reports)
+	More info: http://www.kerneloops.org/searchweek.php?search=tcp_ack
+
+Rank 9: sysctl_check_lookup
+	This seems to be a bug in parport_device_proc_register()
+	Reported 14 times (62 total reports)
+	More info: http://www.kerneloops.org/searchweek.php?search=sysctl_check_lookup
+
+Rank 10: mark_buffer_dirty
+	This is an old friend, started in 2.6.24 and is still with us today.
+	Often but not exclusively during unmounting of a filesystem
+	Reported 12 times (39 total reports)
+	More info: http://www.kerneloops.org/searchweek.php?search=mark_buffer_dirty
+
+
