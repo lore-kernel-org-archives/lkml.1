@@ -1,52 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758006AbYC1UUr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758300AbYC1UVw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758006AbYC1UUr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Mar 2008 16:20:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754608AbYC1UUi
+	id S1758300AbYC1UVw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Mar 2008 16:21:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754608AbYC1UVm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Mar 2008 16:20:38 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:4701 "EHLO spitz.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753938AbYC1UUh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Mar 2008 16:20:37 -0400
-Date: Fri, 28 Mar 2008 21:20:33 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Bob Copeland <me@bobcopeland.com>
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH 2/7] omfs: add inode routines
-Message-ID: <20080328202032.GB3974@ucw.cz>
-References: <1206578760-9050-2-git-send-email-me@bobcopeland.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1206578760-9050-2-git-send-email-me@bobcopeland.com>
-User-Agent: Mutt/1.5.9i
+	Fri, 28 Mar 2008 16:21:42 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:38843 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753930AbYC1UVm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Mar 2008 16:21:42 -0400
+Date: Fri, 28 Mar 2008 13:21:38 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Arjan van de Ven <arjan@linux.intel.com>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       NetDev <netdev@vger.kernel.org>
+Subject: Re: Oops/Warning report for the week of March 28th 2008
+In-Reply-To: <47ED3F1A.1090101@linux.intel.com>
+Message-ID: <alpine.LFD.1.00.0803281310480.14670@woody.linux-foundation.org>
+References: <47ED3F1A.1090101@linux.intel.com>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed 2008-03-26 20:45:55, Bob Copeland wrote:
-> Add basic superblock and inode handling routines for OMFS
-> 
-> Signed-off-by: Bob Copeland <me@bobcopeland.com>
-> ---
->  fs/omfs/inode.c |  496 +++++++++++++++++++++++++++++++++++++++++++++++++++++++
->  1 files changed, 496 insertions(+), 0 deletions(-)
->  create mode 100644 fs/omfs/inode.c
-> 
-> diff --git a/fs/omfs/inode.c b/fs/omfs/inode.c
-> new file mode 100644
-> index 0000000..b1cad5e
-> --- /dev/null
-> +++ b/fs/omfs/inode.c
-> @@ -0,0 +1,496 @@
-> +/*
-> + * Optimized MPEG FS - inode and super operations.
-> + * Copyright (C) 2006 Bob Copeland <me@bobcopeland.com>
-> + */
 
-If you have copyright, add GPL notice, too.
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+On Fri, 28 Mar 2008, Arjan van de Ven wrote:
+> 
+> Rank 1: input_release_device
+> 	This appears to be a regression in 2.6.25; the first reports show up
+> in 2.6.25-rc2		Often a warning at kernel/mutex.c:134
+> (mutex_lock_nested), but some oopses too
+
+The oopses (at least some of them) seem to be a use-after-free where we 
+seem to do a list_add() on an already-released list head (or we didn't 
+remove the previous/next entry from a list before we free'd it, and then 
+the next list_add() will follow a bogus pointer).
+
+> http://www.kerneloops.org/searchweek.php?search=input_release_device
+
+The problem with kerneloops is that it seems to be really hard to figure 
+out the *source* of the oops. I can find the oopses (and it's really good 
+with the whole search-and-clump-together-by-version thing), but then when 
+some oops like this is found, it's hard to see where your kerneloops 
+scripts found the oops from, so the context of the oops is all gone.
+
+Is there something obvious that I'm missing? I'd really like to see the 
+whole posting that the oops came from. Do you save the originals or even 
+just message ID's from the ones you pick from emails?
+
+		Linus
