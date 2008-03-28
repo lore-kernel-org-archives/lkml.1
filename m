@@ -1,44 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757512AbYC1Szt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757283AbYC1S5g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757512AbYC1Szt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Mar 2008 14:55:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756730AbYC1Szg
+	id S1757283AbYC1S5g (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Mar 2008 14:57:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753440AbYC1S53
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Mar 2008 14:55:36 -0400
-Received: from relay2.sgi.com ([192.48.171.30]:52737 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756518AbYC1Szf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Mar 2008 14:55:35 -0400
-Date: Fri, 28 Mar 2008 11:53:27 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Linus Torvalds <torvalds@linux-foundation.org>, penberg@cs.helsinki.fi,
-       rjw@sisk.pl, pstaszewski@artcom.pl, linux-kernel@vger.kernel.org,
-       bunk@kernel.org, protasnb@gmail.com
-Subject: Re: 2.6.25-rc7-git2: Reported regressions from 2.6.24
-In-Reply-To: <20080328114734.13607172.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0803281152440.17920@schroedinger.engr.sgi.com>
-References: <200803272353.51901.rjw@sisk.pl>
- <alpine.LFD.1.00.0803271859280.14670@woody.linux-foundation.org>
- <Pine.LNX.4.64.0803272002090.11979@schroedinger.engr.sgi.com>
- <alpine.LFD.1.00.0803272050290.14670@woody.linux-foundation.org>
- <84144f020803281015s60370d9dpec0913c33004b6c2@mail.gmail.com>
- <alpine.LFD.1.00.0803281017500.14670@woody.linux-foundation.org>
- <84144f020803281108o178bf62cp48dcd4f43ec59b74@mail.gmail.com>
- <alpine.LFD.1.00.0803281116460.14670@woody.linux-foundation.org>
- <20080328114734.13607172.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 28 Mar 2008 14:57:29 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:51929 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750739AbYC1S53 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Mar 2008 14:57:29 -0400
+Date: Fri, 28 Mar 2008 19:57:53 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Etienne Lorrain <etienne_lorrain@yahoo.fr>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: PATCH one line: "vmlinux*.lds*" is in Documentation/dontdiff
+Message-ID: <20080328185753.GA13229@uranus.ravnborg.org>
+References: <219221.75156.qm@web28604.mail.ukl.yahoo.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <219221.75156.qm@web28604.mail.ukl.yahoo.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 28 Mar 2008, Andrew Morton wrote:
+On Fri, Mar 28, 2008 at 05:20:07PM +0100, Etienne Lorrain wrote:
+>  Hi,
+> 
+>  Please can you remove vmlinux*.lds* of Documentation/dontdiff from linux-2.6.24-rc7,
+> because a command like:
+> diff -urN -X linux-2.6.24/Documentation/dontdiff linux-2.6.24 linux-2.6.24-gujin
+>  does not include modifications of file "arch/x86/kernel/vmlinux_32.lds.S".
+> 
+>  Note also that the two files vmlinux_32.lds.S and vmlinux_64.lds.S have few lines
+> which begin by "space space tab", but I do not want to start a flamewar in between
+> vi, emacs and this other text editor...
+Both these files are in a need for a consistency cleanup.
+Have done so a few times but then lost the patch again.
 
-> I believe http://bugzilla.kernel.org/show_bug.cgi?id=10318 is a false
-> positive.  There's no way in which networking will be using highmem pages
-> here, so it won't be taking the KM_USER0 kmap slot, so there's no point in
-> performing these checks.
+Other like for example sparc64 have had such a cleanup.
 
-Reviewed-by: Christoph Lameter <clameter@sgi.com>
+	Sam
