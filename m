@@ -1,44 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756203AbYC1SA0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756586AbYC1SDP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756203AbYC1SA0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Mar 2008 14:00:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754277AbYC1SAN
+	id S1756586AbYC1SDP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Mar 2008 14:03:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754053AbYC1SDA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Mar 2008 14:00:13 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:37147 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753813AbYC1SAL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Mar 2008 14:00:11 -0400
-Date: Fri, 28 Mar 2008 10:56:49 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Alex Chiang <achiang@hp.com>
-Cc: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>, Greg KH <gregkh@suse.de>,
-       Gary Hade <garyhade@us.ibm.com>,
-       Kristen Carlson Accardi <kristen.c.accardi@intel.com>,
-       Matthew Wilcox <matthew@wil.cx>, warthog19@eaglescrag.net,
-       rick.jones2@hp.com, linux-kernel@vger.kernel.org,
-       linux-pci@atrey.karlin.mff.cuni.cz, linux-acpi@vger.kernel.org
-Subject: Re: [PATCH 3/4] Introduce pci_slot
-Message-Id: <20080328105649.dd716d06.akpm@linux-foundation.org>
-In-Reply-To: <20080328154139.GE17862@ldl.fc.hp.com>
-References: <20080325041314.GA29666@ldl.fc.hp.com>
-	<20080325041700.GD29666@ldl.fc.hp.com>
-	<20080328033939.5ef5ab7b.akpm@linux-foundation.org>
-	<20080328154139.GE17862@ldl.fc.hp.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 28 Mar 2008 14:03:00 -0400
+Received: from gw.goop.org ([64.81.55.164]:33153 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753396AbYC1SDA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Mar 2008 14:03:00 -0400
+Message-ID: <47ED32BA.1070008@goop.org>
+Date: Fri, 28 Mar 2008 11:02:34 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+MIME-Version: 1.0
+To: Mark McLoughlin <markmc@redhat.com>
+CC: linux-kernel@vger.kernel.org, mingo@elte.hu, xen-devel@lists.xensource.com
+Subject: Re: [PATCH 0/3] xen: Fix oops when mapping/unmapping addr above 1Gb
+References: <1206722297-11763-1-git-send-email-markmc@redhat.com>
+In-Reply-To: <1206722297-11763-1-git-send-email-markmc@redhat.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 28 Mar 2008 09:41:39 -0600 Alex Chiang <achiang@hp.com> wrote:
+Mark McLoughlin wrote:
+> Hi,
+>         In Fedora rawhide we're currently seeing oopses whenever
+> a processes dlopen()s a library which prelink() has previously
+> relocated above 1Gb. Some more details at:
+>
+>   https://bugzilla.redhat.com/436453
+>
+>         The issue seems to be that during xen_pgd_pin(), we only
+> pin PTE pages, but xen's release_pmd() tries to unpin PMD pages
+> too.
+>
+>         The following series of patches is against the latest
+> x86 tree.
+>   
 
-> In the future, do you have a better suggestion on how to do large
-> sweeps on code for hardware that one might not own? Is there an
-> easier way other than setting up a cross-compiler environment?
+Hm, OK.  I'm trying to work out what happened here.  I guess its a 
+latent bug which is only visible now that its possible to incrementally 
+free pmds.
 
-Setting up a cross-compile environment is easy -
-http://userweb.kernel.org/~akpm/cross-compilers/ has several.
+A side note is that I'm planning on pinning pmds in the future, so that 
+we can get away replace the full pgd page per mm with a pgd page per cpu.
+
+    J
