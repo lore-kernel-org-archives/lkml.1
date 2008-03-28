@@ -1,94 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756248AbYC1TCL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755945AbYC1TJv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756248AbYC1TCL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Mar 2008 15:02:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753931AbYC1TB6
+	id S1755945AbYC1TJv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Mar 2008 15:09:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754222AbYC1TJm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Mar 2008 15:01:58 -0400
-Received: from smtp116.sbc.mail.sp1.yahoo.com ([69.147.64.89]:28675 "HELO
-	smtp116.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753406AbYC1TB5 (ORCPT
+	Fri, 28 Mar 2008 15:09:42 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:37654 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754085AbYC1TJl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Mar 2008 15:01:57 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=jPyIL0AROSBAVQ5snl1OU7POZHovhdkWj9TfYxHYCPzDDII/2eqqen1qZhB9btlDcvZMmG7FwTSNFIjxuRKpne/KuaWnwhqBGgl4/Zqp41e5YLK11DINqUo/Yg2CHJELeIMYyd6uS1iKArehiMjXWwXEYMZ9bZD46bshx15CrJo=  ;
-X-YMail-OSG: 60vct0AVM1nfQGPyXspt.x4o6khrDi712Mokid.3pfzI4WOQqgez6fVWYa0VeCEa2glJNYQWhw--
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Andrew Morton <akpm@linux-foundation.org>, venkatesh.pallipadi@intel.com
-Subject: Re: 2.6.25 regression: powertop says 120K wakeups/sec
-Date: Fri, 28 Mar 2008 12:01:53 -0700
-User-Agent: KMail/1.9.6
-Cc: linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       linux-acpi@vger.kernel.org
-References: <20080322202454.9D69DCC0EF@adsl-69-226-248-13.dsl.pltn13.pacbell.net> <20080322173500.7b8b6751.akpm@linux-foundation.org>
-In-Reply-To: <20080322173500.7b8b6751.akpm@linux-foundation.org>
+	Fri, 28 Mar 2008 15:09:41 -0400
+Date: Fri, 28 Mar 2008 20:09:39 +0100 (CET)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: Jonathan Corbet <corbet@lwn.net>
+cc: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
+       Randy Dunlap <randy.dunlap@oracle.com>
+Subject: Re: [Pull] Some documentation patches
+In-Reply-To: <13387.1206728412@vena.lwn.net>
+Message-ID: <alpine.LNX.1.10.0803282005440.27567@fbirervta.pbzchgretzou.qr>
+References: <13387.1206728412@vena.lwn.net>
+User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200803281201.54380.david-b@pacbell.net>
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 22 March 2008, Andrew Morton wrote:
-> On Sat, 22 Mar 2008 13:24:54 -0700 David Brownell <david-b@pacbell.net> wrote:
-> 
-> > I noticed this with 2.6.25-rc2 (if not before), and the problem
-> > is still there with 2.6.25-rc6-git (as of this AM).
 
-A 2.6.24 kernel I still had stashed away didn't act odd; the
-problem joined us before 2.6.25-rc1 was tagged.
+On Friday 2008-03-28 19:20, Jonathan Corbet wrote:
+>commit 9756ccfda31b4c4544aa010aacf71b6672d668e8
+>Date:   Fri Mar 28 11:19:56 2008 -0600
+>
+>    Add the seq_file documentation
 
- 
-> > System is an Athlon64 single CPU laptop, and instead of reading a
-> > few dozen wakeups per second, it says a many tens of thousands...
-> > clearly wrong.  In previous kernels it gave more plausible counts;
-> > unfortunately high because of various un-evolved desktop tools in
-> > this Ubuntu system (Feisty).
-> > 
-> > Possibly more truthful, it says that the system never enters
-> > C1 or C2, and spends all its time in C0.  Though if I look at
-> > /sys/devices/system/cpu/cpu0/cpuidle/state[01]/usage, that
-> > seems to tell a different story ... it's C0 that's never used.
-> > In previous kernels it reported time in both C0 and C2.  ISTR
-> > some patch to avoid C2, which would explain part of this.
-> > 
-> > Comments or fixes, anyone?
-> 
-> This is likely to be an acpi regression, isn't it?
-> 
-> A git-bisect would be nice, please.
+patch on top:
 
-The git-bisect says the 120K wakeups/second comes from a patch
-which unfortunately can't be directly reverted, so I didn't
-verify that reverting it resolves that problem.  I've not tried
-to do anything with the other C0/C1/C2 stuff.
+  - add const qualifiers
+  - remove void* casts
+  - use proper specifier (%Ld is not valid)
 
+Signed-off-by: Jan Engelhardt <jengelh@computergmbh.de>
 
-$ git bisect good
-bc71bec91f9875ef825d12104acf3bf4ca215fa4 is first bad commit
-commit bc71bec91f9875ef825d12104acf3bf4ca215fa4
-Author: venkatesh.pallipadi@intel.com <venkatesh.pallipadi@intel.com>
-Date:   Thu Jan 31 17:35:04 2008 -0800
+diff --git a/Documentation/filesystems/seq_file.txt b/Documentation/filesystems/seq_file.txt
+index 92975ee..cc6cdb9 100644
+--- a/Documentation/filesystems/seq_file.txt
++++ b/Documentation/filesystems/seq_file.txt
+@@ -107,8 +107,8 @@ complete. Here's the example version:
 
-    ACPI: enable MWAIT for C1 idle
-    
-    Add MWAIT idle for C1 state instead of halt, on platforms that support
-    C1 state with MWAIT.
-    
-    Renames cx->space_id to something more appropriate.
-    
-    Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-    Signed-off-by: Len Brown <len.brown@intel.com>
+  	static void *ct_seq_next(struct seq_file *s, void *v, loff_t *pos)
+  	{
+-	        loff_t *spos = (loff_t *) v;
+-	        *pos = ++(*spos);
++	        loff_t *spos = v;
++	        *pos = ++*spos;
+  	        return spos;
+  	}
 
-:040000 040000 88ebe48d024f7fb21237cd75dbc9c681c43252b1 8af87317facbd018b47e717ede6907d9a831f92c M	drivers
-:040000 040000 ecd73d87c1b7b7004e06ffa3a2b3e7260c045543 934c38290353186cbaaaf27094d5c1712e548fcc M	include
-$
+@@ -127,8 +127,8 @@ something goes wrong. The example module's show() function is:
 
+  	static int ct_seq_show(struct seq_file *s, void *v)
+  	{
+-	        loff_t *spos = (loff_t *) v;
+-	        seq_printf(s, "%Ld\n", *spos);
++	        loff_t *spos = v;
++	        seq_printf(s, "%lld\n", (long long)*spos);
+  	        return 0;
+  	}
 
+@@ -136,7 +136,7 @@ We will look at seq_printf() in a moment. But first, the definition of the
+  seq_file iterator is finished by creating a seq_operations structure with
+  the four functions we have just defined:
 
+-	static struct seq_operations ct_seq_ops = {
++	static const struct seq_operations ct_seq_ops = {
+  	        .start = ct_seq_start,
+  	        .next  = ct_seq_next,
+  	        .stop  = ct_seq_stop,
+@@ -204,7 +204,7 @@ line, as in the example module:
+  	static int ct_open(struct inode *inode, struct file *file)
+  	{
+  		return seq_open(file, &ct_seq_ops);
+-	};
++	}
+
+  Here, the call to seq_open() takes the seq_operations structure we created
+  before, and gets set up to iterate through the virtual file.
+@@ -219,7 +219,7 @@ The other operations of interest - read(), llseek(), and release() - are
+  all implemented by the seq_file code itself. So a virtual file's
+  file_operations structure will look like:
+
+-	static struct file_operations ct_file_ops = {
++	static const struct file_operations ct_file_ops = {
+  	        .owner   = THIS_MODULE,
+  	        .open    = ct_open,
+  	        .read    = seq_read,
