@@ -1,46 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754946AbYC1RMy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755070AbYC1RTt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754946AbYC1RMy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Mar 2008 13:12:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753680AbYC1RMn
+	id S1755070AbYC1RTt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Mar 2008 13:19:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753829AbYC1RTk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Mar 2008 13:12:43 -0400
-Received: from twin.jikos.cz ([213.151.79.26]:34056 "EHLO twin.jikos.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753558AbYC1RMm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Mar 2008 13:12:42 -0400
-Date: Fri, 28 Mar 2008 18:12:22 +0100 (CET)
-From: Jiri Kosina <jkosina@suse.cz>
-X-X-Sender: jikos@twin.jikos.cz
-To: Michael Chan <mchan@broadcom.com>
-cc: Harald Hannelius <harald@iki.fi>, David Miller <davem@davemloft.net>,
-       linux-kernel@vger.kernel.org, netdev <netdev@vger.kernel.org>
-Subject: Re: tg3 bad performance, lots of hardware interrupts
-In-Reply-To: <1206726560.6866.5.camel@dell>
-Message-ID: <Pine.LNX.4.64.0803281811420.32241@twin.jikos.cz>
-References: <alpine.DEB.1.00.0803271532570.30549@penti.org>
- <20080327.144925.196529669.davem@davemloft.net> <1206666100.5368.6.camel@dell>
- <alpine.DEB.1.00.0803281440460.23558@penti.org> <1206726560.6866.5.camel@dell>
+	Fri, 28 Mar 2008 13:19:40 -0400
+Received: from az33egw02.freescale.net ([192.88.158.103]:40260 "EHLO
+	az33egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753719AbYC1RTk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Mar 2008 13:19:40 -0400
+Message-ID: <47ED289D.3020607@freescale.com>
+Date: Fri, 28 Mar 2008 12:19:25 -0500
+From: Scott Wood <scottwood@freescale.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.9 (X11/20080110)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: York Sun <yorksun@freescale.com>
+CC: linux-fbdev-devel@lists.sourceforge.net, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       galak@kernel.crashing.org, a.p.zijlstra@chello.nl,
+       Timur Tabi <timur@freescale.com>
+Subject: Re: [PATCH 2/2 v4] Add DIU platform code for MPC8610HPCD
+References: <12066720572512-git-send-email-yorksun@freescale.com> <12066720572314-git-send-email-yorksun@freescale.com> <1206672058321-git-send-email-yorksun@freescale.com>
+In-Reply-To: <1206672058321-git-send-email-yorksun@freescale.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 28 Mar 2008, Michael Chan wrote:
+York Sun wrote:
+> +	np = of_find_compatible_node(NULL, NULL, "fsl,fpga-pixis");
+> +	if (np) {
+> +		of_address_to_resource(np, 0, &r);
+> +		of_node_put(np);
+> +		pixis_bdcfg0 = ioremap(r.start + 0x00000008, sizeof(u8));
+> +		if (!pixis_bdcfg0) {
+> +			printk(KERN_ERR "Err: can't map FPGA cfg register!\n");
+> +			return;
+> +		}
+> +		pixis_arch = ioremap(r.start + 0x00000001, sizeof(u8));
+> +		if (!pixis_arch) {
+> +			printk(KERN_ERR "Err: can't map FPGA arch register!\n");
+> +			return;
+> +		}
 
-> > Phew, I thought that running ethtool -t was like doing stop-A-sync on 
-> > a Sun. It took almost half an hour to run that ethtool -t command;
-> Something is very wrong.  ethtool -t should only take a few seconds to
-> complete.  You can try ethtool -t eth0 online to reduce the number of
-> tests to see if it makes a difference.
-> How many of these NICs do you have?  If you have more than one, do they
-> all behave the same way?  Have they ever worked well before?
+Just of_iomap() the whole resource, rather than doing it a byte at a time.
 
-Harald, is the IRQ of eth0 shared with any other device? (cat 
-/proc/interrupts will show).
+> +int __init preallocate_diu_videomemory(void)
+> +{
+> +	pr_debug("diu_size=%lu\n", diu_ops.diu_size);
+> +
+> +	diu_ops.diu_mem = __alloc_bootmem(diu_ops.diu_size, 8, 0);
+> +	if (!diu_ops.diu_mem) {
+> +		printk(KERN_ERR "fsl-diu: cannot allocate %lu bytes\n",
+> +			diu_ops.diu_size);
+> +		return -ENOMEM;
+> +	}
+> +
+> +	printk(KERN_INFO "%s: diu_mem=%p\n", __func__, diu_ops.diu_mem);
 
--- 
-Jiri Kosina
-SUSE Labs
+The pr_debug line is more useful information than the KERN_INFO line...
 
+-Scott
