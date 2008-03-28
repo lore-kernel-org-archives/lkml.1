@@ -1,64 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759035AbYC1WSu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757820AbYC1W2y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759035AbYC1WSu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Mar 2008 18:18:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757615AbYC1WSn
+	id S1757820AbYC1W2y (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Mar 2008 18:28:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755092AbYC1W2p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Mar 2008 18:18:43 -0400
-Received: from smtp120.sbc.mail.sp1.yahoo.com ([69.147.64.93]:37231 "HELO
-	smtp120.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1757284AbYC1WSm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Mar 2008 18:18:42 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=E54W4PHp6FO+gmcZm3OOozypn8/7QccxZbQB+5OxBXuVqsCJx1BqFRyvwMQkmsn5ZpfiFtNN/3lKpGe68ilHm8yK5n+vdzuvuKx2OcIhuBnf1k4IBNrOVuywcQNQZGZ9E+4srBGm+UgwgjzsRYsNyXoU3ygkbv+rSrSS4Tb0yQU=  ;
-X-YMail-OSG: qQYlBl0VM1kVtE1zuqrGyh9VDWMmnFoIsIfrQ4cZ.GzxhH5jN4EJOq3qO6O8ujYSYaOLpi23Fg--
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Adrian Bunk <bunk@kernel.org>
-Subject: Re: Kconfig RTC selection (was: 2.6.25-rc7: Ugh.)
-Date: Fri, 28 Mar 2008 15:18:35 -0700
-User-Agent: KMail/1.9.6
-Cc: Mark Lord <lkml@rtr.ca>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, rtc-linux@googlegroups.com,
-       David Miller <davem@davemloft.net>
-References: <20080327160700.GB828@suse.de> <200803281445.08025.david-b@pacbell.net> <20080328215913.GL32200@cs181133002.pp.htv.fi>
-In-Reply-To: <20080328215913.GL32200@cs181133002.pp.htv.fi>
+	Fri, 28 Mar 2008 18:28:45 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:54846 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754348AbYC1W2p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Mar 2008 18:28:45 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: 2.6.25-rc7-git2: Reported regressions from 2.6.24
+Date: Fri, 28 Mar 2008 23:28:33 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Pawel Staszewski <pstaszewski@artcom.pl>,
+       Christoph Lameter <clameter@sgi.com>,
+       LKML <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Natalie Protasevich <protasnb@gmail.com>
+References: <200803272353.51901.rjw@sisk.pl> <200803281710.44576.rjw@sisk.pl> <alpine.LFD.1.00.0803280938430.14670@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.1.00.0803280938430.14670@woody.linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="us-ascii"
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200803281518.36139.david-b@pacbell.net>
+Message-Id: <200803282328.34172.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 28 March 2008, Adrian Bunk wrote:
-
-> > > grep for CONFIG_SUN_MOSTEK_RTC and you'll get the point.
+On Friday, 28 of March 2008, Linus Torvalds wrote:
+> 
+> On Fri, 28 Mar 2008, Rafael J. Wysocki wrote:
+> > > 
+> > > Also, Rafael - do these reminder emails also go to the people who are 
+> > > mentioned in the regressions (especially people who are set up as being 
+> > > "handled-by" or having patches for the problem)? 
 > > 
-> > Right:  it doesn't mention JS_RTC at all.  Whatever is up
-> > with that stuff, it's broken.
+> > No, they don't.  I need to do some scriptwork to make that happen.
 > 
-> You miss the point, the point is:
->   drivers/sbus/char/Makefile:obj-$(CONFIG_SUN_MOSTEK_RTC) += rtc.o
+> It would be good. Right now I know for a fact that a lot of people read 
+> LKML with various filters in place (or just very spottily), so I have a 
+> feeling that while people try to track regressions, many people are 
+> probably less aware of these things than they should be. And sometimes the 
+> "handled-by" ends up being inaccurate (maybe somebody replied to the 
+> original problem, but it became obvious that it was somewhere else, and 
+> they remain "handled-by" even though the person doesn't actually handle 
+> it).
+
+I generally agree, but OTOH I don't think that sending one message with
+50+ addresses on the CC list will actually help a lot.  I personally don't like
+to receive messages like that and tend to filter them out.
+
+I'd prefer people to receive information regarding those regression reports in
+which they are directly involved, but it will take some time to arrange that in
+a reliable way.
+
+> It would probably also make sense to add some of the bigger subsystem 
+> maintainers to the Cc (and/or with a mailing list for regressions?)
+
+Tell that to davem. ;-)
+
+Seriously, it often is difficult to say who's the right maintainer and what
+list is appropriate.
+ 
+> I think the regression list is _extremely_ valuable, but the problem I 
+> see is that it's not necessarily reaching all the involved people.
 > 
-> Two modules with the same name in one build are not allowed.
+> The other problem is that I think the old reports (especially the ones 
+> that haven't had reporter feedback in the last two weeks) end up being not 
+> just stale, but they sort at the top, so when the right people _do_ look 
+> at the list, the natural way to do so with email is to look at the first 
+> ones first, and they *all* tend to be stale.
 
-It gets uglier and uglier.  So if that abortion is really
-needed, it'd make more sense to rename the MOSTEK code.
-If that's not fixed, its Kconfig should mention needing
-the JS_RTC thing instead of the "real" legacy rtc.c ...
+Well, I can sort them in the reverse order just fine, if you prefer.
 
-Glad I got rid of my JavaStation ages ago, but I liked
-the idea of having a real builtin coffee cup holder.  :)
+As far as closing the older ones is concerned, I'm a bit reluctant to do
+that, because (1) some reporters reappear after a long period of silence (like
+more than two weeks) and (2) it would create an impression that we _fixed_
+more regressions than we actually did.
 
+> So the reaction is often "need more info" or "I think this was fixed 
+> already two weeks ago, but there hasn't been any reply". Which is 
+> psychologically really bad, because after you've seen three or four of 
+> those, you just dismiss the rest (even if the later ones then may be much 
+> more relevant!)
 
-You see why nobody wants to touch the legacy RTC stuff?
-Some of it is broken *BY DESIGN* instead of just by
-pure happenstance of evolution.
+Well, you shouldn't. :-)
 
-- Dave
+> This is why I have always been advocating so aggressive culling of 
+> regressions and bug-reports - stale bug-reports are worse than useless, 
+> they actually _hurt_.
+
+I don't quite agree here.  At least, they indicate that we may have an unfixed
+problem and the fact that no one has taken care of it doesn't really mean we
+should generally ignore it.
+
+Thanks,
+Rafael
