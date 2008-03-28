@@ -1,94 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757529AbYC1U7t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756137AbYC1VBh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757529AbYC1U7t (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Mar 2008 16:59:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753901AbYC1U7l
+	id S1756137AbYC1VBh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Mar 2008 17:01:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754279AbYC1VB0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Mar 2008 16:59:41 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:64889 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753648AbYC1U7l (ORCPT
+	Fri, 28 Mar 2008 17:01:26 -0400
+Received: from crystal.sipsolutions.net ([195.210.38.204]:35995 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754191AbYC1VBZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Mar 2008 16:59:41 -0400
-Message-ID: <47ED5BF5.4000809@oracle.com>
-Date: Fri, 28 Mar 2008 13:58:29 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-User-Agent: Thunderbird 1.5.0.5 (X11/20060719)
-MIME-Version: 1.0
-To: Dmitri Vorobiev <dmitri.vorobiev@gmail.com>
-CC: Sebastien Dugue <sebastien.dugue@bull.net>, dsd@gentoo.org,
-       trivial@kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/1] Fix typos in Documentation/unaligned-memory-access.txt
-References: <1206699042-1334-1-git-send-email-dmitri.vorobiev@gmail.com> <20080328132354.2a3b766e@bull.net> <47ED5B3F.7040401@gmail.com>
-In-Reply-To: <47ED5B3F.7040401@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Fri, 28 Mar 2008 17:01:25 -0400
+Subject: Re: Oops/Warning report for the week of March 28th 2008
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Arjan van de Ven <arjan@linux.intel.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       NetDev <netdev@vger.kernel.org>, Dmitry Torokhov <dtor@mail.ru>
+In-Reply-To: <alpine.LFD.1.00.0803281329340.14670@woody.linux-foundation.org> (sfid-20080328_205203_254278_BF9EB41F)
+References: <47ED3F1A.1090101@linux.intel.com>
+	 <alpine.LFD.1.00.0803281310480.14670@woody.linux-foundation.org>
+	 <alpine.LFD.1.00.0803281329340.14670@woody.linux-foundation.org>
+	 (sfid-20080328_205203_254278_BF9EB41F)
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-zqqsyyNKmcZl1QiQ/AFF"
+Date: Fri, 28 Mar 2008 22:01:11 +0100
+Message-Id: <1206738071.22530.80.camel@johannes.berg>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dmitri Vorobiev wrote:
-> Sebastien Dugue wrote:
->>   Hi Dmitri,
->>
->>   one more typo I guess:
->>
->> On Fri, 28 Mar 2008 13:10:42 +0300 Dmitri Vorobiev <dmitri.vorobiev@gmail.com> wrote:
->>
->>> This patch deletes a couple of superfluous word occurrences in the
->>> document Documentation/unaligned-memory-access.txt.
->>> ---
->>> Sorry for a duplicate email, I forgot to Cc LKML when sending the patch.
->>>
->>>  Documentation/unaligned-memory-access.txt |    4 ++--
->>>  1 files changed, 2 insertions(+), 2 deletions(-)
->>>
->>> diff --git a/Documentation/unaligned-memory-access.txt b/Documentation/unaligned-memory-access.txt
->>> index 6223eac..ed57b53 100644
->>> --- a/Documentation/unaligned-memory-access.txt
->>> +++ b/Documentation/unaligned-memory-access.txt
->>> @@ -57,7 +57,7 @@ here; a summary of the common scenarios is presented below:
->>>     unaligned access to be corrected.
->>>   - Some architectures are not capable of unaligned memory access, but will
->>>     silently perform a different memory access to the one that was requested,
->>> -   resulting a a subtle code bug that is hard to detect!
->>> +   resulting a subtle code bug that is hard to detect!
->>                 ^
->>                in a
-> 
-> Although those English dictionaries that I have consulted do indicate that
-> "result" is an intransitive verb, there are many occurrences reported by Google
-> when this verb takes a direct object like in the following phrase: "However,
-> inner space of the stand 2 of the drum washing machine 1 is not used,
-> resulting a problem of wasting space."
-> 
-> English is not my mother tongue so I can't claim I have a good ear for the
-> language. Are there any native speakers who could help, please?
 
-I'll ack the "in a" change.
-
-> Dmitri
-> 
->>   Sebastien.
->>
->>>  
->>>  It should be obvious from the above that if your code causes unaligned
->>>  memory accesses to happen, your code will not work correctly on certain
->>> @@ -209,7 +209,7 @@ memory and you wish to avoid unaligned access, its usage is as follows:
->>>  
->>>  	u32 value = get_unaligned((u32 *) data);
->>>  
->>> -These macros work work for memory accesses of any length (not just 32 bits as
->>> +These macros work for memory accesses of any length (not just 32 bits as
->>>  in the examples above). Be aware that when compared to standard access of
->>>  aligned memory, using these macros to access unaligned memory can be costly in
->>>  terms of performance.
-> 
+--=-zqqsyyNKmcZl1QiQ/AFF
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
 
--- 
-~Randy
+> Hmm. Definitely not from the kernel mailing list. I'm intrigued, where di=
+d=20
+> that oops #5814 come from (picked a recent one at random)?
+
+Can't tell you this, but
+
+> The thing is recent, and oopses on "mutex_lock(dev->mutex)" in=20
+> input_release_device. In particular, the path *seems* to be this one:
+>=20
+>   evdev_release ->
+>     evdev_ungrab ->
+>       input_release_device ->
+>         mutex_lock ->
+>           mutex_lock_nested ->
+>             __mutex_lock_common ->
+>               list_add_tail(&waiter.list, &lock->wait_list)
+
+That I've seen before, analysed a bit and posted:
+http://permalink.gmane.org/gmane.linux.kernel.input/4281
+
+johannes
+
+--=-zqqsyyNKmcZl1QiQ/AFF
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iQIVAwUAR+1clqVg1VMiehFYAQKalRAAsL+CGxIvsoqw03G2gmdGyPGIzcIGD0Dx
+1HI9nNwxTWbKFriXLDMY/gbjuJIzSvMboNoMptMFY60WeBGV9uixClEq1gpmBBPf
+2iDQD58wFaKRJvmVhKDx01vziaExGCE36C2Vjrvgnwyri2Qw4PdA6JZIGv/FnZXb
+FC3ALXs9TuYUJUZL0+UyKzE8LBT7NumQ7rvBYfSwn+bKeQ9ntk+0WLgeDZMuUvYr
+3K+fnqA5GaouFD6I0nelPFOBFvqm89IMVuLILluFPGdErA0eSvvk1U8foCG4p+jk
+i9rMYTJBY5qqgH06ZhBUkIo29r7Xpc16iVKEbxO8JVKxbCJDnB9/9n/AFUtbStjB
+vaq6QB+rpyLxkXqHEOrZwniM7FQRS6lFMa2T9w2lma30Z+LKaBXOFtFpxT1wA3Ds
+HcsQbyY3l51ojfxq6FZVCXe5gRl5TEYPf7fOaHam1xm474NLpT1T470ox2wf6DQG
+3GZBzfsxZNKlan/87kA2E1cza3w7z7Lq3hLuc0BHbKlGm4Yc/E7PeK6mIcmvqr2b
+7pb36jNxxXENNyAXQxywHo0QF1oEsgHywYiQvE8xr1/pLuBaz6ychXAs8IrbGH0H
+/yGeeANSj1DO1mB81uod2kPMS/L3j3RpUUjKeBgBRVVJGPjUt+7POP7rLtZsymhE
+eXVw3cptLSk=
+=ZZhr
+-----END PGP SIGNATURE-----
+
+--=-zqqsyyNKmcZl1QiQ/AFF--
+
