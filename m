@@ -1,50 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755643AbYC1G6h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752527AbYC1Hl4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755643AbYC1G6h (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Mar 2008 02:58:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754122AbYC1G61
+	id S1752527AbYC1Hl4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Mar 2008 03:41:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751432AbYC1Hlr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Mar 2008 02:58:27 -0400
-Received: from smtp118.sbc.mail.sp1.yahoo.com ([69.147.64.91]:22745 "HELO
-	smtp118.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754121AbYC1G60 (ORCPT
+	Fri, 28 Mar 2008 03:41:47 -0400
+Received: from n2.bullet.mail.re3.yahoo.com ([68.142.237.109]:33276 "HELO
+	n2.bullet.mail.re3.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751430AbYC1Hlq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Mar 2008 02:58:26 -0400
+	Fri, 28 Mar 2008 03:41:46 -0400
+X-Yahoo-Newman-Id: 665660.74294.bm@omp206.mail.re3.yahoo.com
 DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=08Z4IzMlD3G1oCs1Z+BQg4DAokJMaYKu8Su2TBVGo3MMs+oveOCG5gYrxfJ5cUSJIZi5c+FsNZu20aVz35hphAeDD8Z1XNduHKCTph9ddcZiu7XqOn/g7801po5WylLQZWSPCnLSUJ4v0A86EerTUqcJFm4Eo0tK/KxzICI9LD4=  ;
-X-YMail-OSG: N0wY26QVM1kGKFvZMHShQKnexcIn6eZWdVWHv5MqL1Auqxxu4NM.o6.aufaDpPs0usC9If.f.g--
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=5dQyjyi3SJxz1FQiY2/SEewJA7xBs0F/v7Yaz9/OawMxNnMnOweXE9q5JqujBzXeItokodbtBT35GvwnKFR3JSKVNU1v9ZgjOOLiocDoIEFSfG3hDf7pHl+QxYXXs3XZfaxfYOOYUHgdFYmPArHKJGQF0QbSkwejaNwDeBINDeM=  ;
 X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Mark Lord <lkml@rtr.ca>
-Subject: Re: 2.6.25-rc7: Ugh.
-Date: Thu, 27 Mar 2008 23:58:19 -0700
-User-Agent: KMail/1.9.6
-Cc: David Miller <davem@davemloft.net>, jkosina@suse.cz, gregkh@suse.de,
-       linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org, pavel@suse.cz,
-       akpm@linux-foundation.org, rtc-linux@googlegroups.com
-References: <20080327160700.GB828@suse.de> <47EC8793.2040508@rtr.ca> <47EC8AC3.7080002@rtr.ca>
-In-Reply-To: <47EC8AC3.7080002@rtr.ca>
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Roel Kluin <12o3l@tiscali.nl>
+Subject: Re: [PATCH v2 -mm] likeliness accounting change and cleanup
+Date: Fri, 28 Mar 2008 16:09:32 +1100
+User-Agent: KMail/1.9.5
+Cc: Daniel Walker <dwalker@mvista.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       lkml <linux-kernel@vger.kernel.org>
+References: <47EAB608.6060204@tiscali.nl> <1206636313.4670.131.camel@localhost.localdomain> <47EC02A7.5020909@tiscali.nl>
+In-Reply-To: <47EC02A7.5020909@tiscali.nl>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="us-ascii"
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200803272358.20081.david-b@pacbell.net>
+Message-Id: <200803281609.32961.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 27 March 2008, Mark Lord wrote:
-> Could somebody please fix the RTC mess in kconfig now ?
+On Friday 28 March 2008 07:25, Roel Kluin wrote:
+> Daniel Walker wrote:
+> > It's looks good to me .. You'll have to send it to Andrew to get it
+> > included tho ..
+> >
+> > Daniel
+>
+> Store __builtin_return_address (caller) rather than __func__ in likeliness
+> struct. 'line' and 'type' are combined in 'label'
+>
+> +/- now denotes whether expectation fails in less than 5% of the tests -
+> rather than whether more unexpected than expected were encountered. The
+> function at the displayed filename & line and the caller are not
+> necessarily the same. A few more Likely Profiling Results changes were
+> made.
+>
+> struct seq_operations becomes static, unsigned ints true and false
+> (shadowed) are replaced by pos and neg.
+>
+> Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
 
-My version has been sitting in MM for a while now.
-I'll forward it to you off-list, in case you want
-to verify that it resolves that specific issue.
+Patch looks fine to me.
 
-It would have prevented your broken initial config,
-which statically linked both the new framework plus
-some incompatible legacy stuff.
+Acked-by: Nick Piggin <npiggin@suse.de>
 
-- Dave
+>  		if (!test_and_set_bit(0, &likely_lock)) {
+> -			if (likeliness->type & LP_UNSEEN) {
+> -				likeliness->type &= (~LP_UNSEEN);
+> +			if (likeliness->label & LP_UNSEEN) {
+> +				likeliness->label &= (~LP_UNSEEN);
+>  				likeliness->next = likeliness_head;
+>  				likeliness_head = likeliness;
+> +				likeliness->caller = (unsigned long)
+> +						__builtin_return_address(0);
+>  			}
+>  			smp_mb__before_clear_bit();
+>  			clear_bit(0, &likely_lock);
+
+While you're cleaning up this code, any chance you'd like to
+change this to test_and_set_bit_lock() / clear_bit_unlock() ?
+(in a 2nd patch).
+
+The current usage is not wrong as such, but the _lock routines are
+faster and provide a better example to follow...
+
