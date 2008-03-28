@@ -1,54 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757951AbYC1Vax@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758215AbYC1VeE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757951AbYC1Vax (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Mar 2008 17:30:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755929AbYC1Vap
+	id S1758215AbYC1VeE (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Mar 2008 17:34:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755157AbYC1Vdv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Mar 2008 17:30:45 -0400
-Received: from gw.goop.org ([64.81.55.164]:35183 "EHLO mail.goop.org"
+	Fri, 28 Mar 2008 17:33:51 -0400
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:56848 "EHLO smtp6.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755904AbYC1Vao (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Mar 2008 17:30:44 -0400
-Message-ID: <47ED6368.3070708@goop.org>
-Date: Fri, 28 Mar 2008 14:30:16 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	id S1753550AbYC1Vdu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Mar 2008 17:33:50 -0400
+Date: Fri, 28 Mar 2008 23:33:49 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: David Brownell <david-b@pacbell.net>
+Cc: Mark Lord <lkml@rtr.ca>, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, rtc-linux@googlegroups.com,
+       David Miller <davem@davemloft.net>
+Subject: Re: Kconfig RTC selection (was: 2.6.25-rc7: Ugh.)
+Message-ID: <20080328213349.GK32200@cs181133002.pp.htv.fi>
+References: <20080327160700.GB828@suse.de> <200803281304.39022.david-b@pacbell.net> <20080328210643.GJ32200@cs181133002.pp.htv.fi> <200803281423.46981.david-b@pacbell.net>
 MIME-Version: 1.0
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-CC: Yasunori Goto <y-goto@jp.fujitsu.com>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Christoph Lameter <clameter@sgi.com>,
-       Dave Hansen <dave@linux.vnet.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 2 of 4] hotplug-memory: adding non-section-aligned memory
- is bad
-References: <e0b16cc8349b38a5f3f9.1206664118@localhost>	<20080328102719.3ab9162b.kamezawa.hiroyu@jp.fujitsu.com>	<20080328102342.B0BF.E1E9C6FF@jp.fujitsu.com>	<20080328105406.5dc61c6c.kamezawa.hiroyu@jp.fujitsu.com>	<47EC5440.5020107@goop.org> <20080328113312.65cca8b5.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20080328113312.65cca8b5.kamezawa.hiroyu@jp.fujitsu.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <200803281423.46981.david-b@pacbell.net>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-KAMEZAWA Hiroyuki wrote:
-> For example, mem_notify() in online_pages() will be called several times against
-> a section.
->   
+On Fri, Mar 28, 2008 at 02:23:45PM -0700, David Brownell wrote:
+> On Friday 28 March 2008, Adrian Bunk wrote:
+> > >   "JS_RTC" ... a SPARC32 thing
+> > >       --> bug?? no "js-rtc.c" in the tree!  patch sent
+> > 
+> > Where's the bug?
+> > js-rtc is built from rtc.c
+> 
+> In which case, just enable rtc.c ... a "egrep -r 'JS_RTC|js-rtc'"
+> shows that it looks pretty pointless.
+>...
 
-It seems the only in-tree user of the notifier is mm/slub.c, and it only 
-cares about MEM_GOING_ONLINE, GOING_OFFLINE, OFFLINE and CANCEL_ONLINE 
-(not ONLINE or CANCEL_OFFLINE).
+grep for CONFIG_SUN_MOSTEK_RTC and you'll get the point.
 
-Also,
+> - Dave
 
-	if (onlined_pages)
-		memory_notify(MEM_ONLINE, &arg);
+cu
+Adrian
 
-doesn't seem correct, because arg.nr_pages still has the original 
-nr_pages, and not the number of pages actually onlined (onlined_pages).  
-Also arg.start_pfn isn't terribly meaningful if a discontiguous set of 
-pages can be actually onlined.
+-- 
 
-    J
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
