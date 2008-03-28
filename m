@@ -1,28 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755543AbYC1Ocn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755982AbYC1Odc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755543AbYC1Ocn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Mar 2008 10:32:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753352AbYC1Oca
+	id S1755982AbYC1Odc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Mar 2008 10:33:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755742AbYC1Ocv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Mar 2008 10:32:30 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:58410 "EHLO mx1.redhat.com"
+	Fri, 28 Mar 2008 10:32:51 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:48997 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753310AbYC1Oc3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Mar 2008 10:32:29 -0400
+	id S1755703AbYC1Ocu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Mar 2008 10:32:50 -0400
 Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
 	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
 	Kingdom.
 	Registered in England and Wales under Company Registration No. 3798903
 From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 17/45] FS-Cache: Provide an add_wait_queue_tail() function
+Subject: [PATCH 15/45] FS-Cache: Release page->private after failed readahead
 	[ver #35]
 To: torvalds@osdl.org, akpm@linux-foundation.org, trond.myklebust@fys.uio.no,
        chuck.lever@oracle.com
 Cc: nfsv4@linux-nfs.org, linux-kernel@vger.kernel.org,
        linux-fsdevel@vger.kernel.org, selinux@tycho.nsa.gov,
        linux-security-module@vger.kernel.org, dhowells@redhat.com
-Date: Fri, 28 Mar 2008 14:31:38 +0000
-Message-ID: <20080328143138.3483.84659.stgit@warthog.procyon.org.uk>
+Date: Fri, 28 Mar 2008 14:31:28 +0000
+Message-ID: <20080328143128.3483.73249.stgit@warthog.procyon.org.uk>
 In-Reply-To: <20080328143010.3483.99079.stgit@warthog.procyon.org.uk>
 References: <20080328143010.3483.99079.stgit@warthog.procyon.org.uk>
 User-Agent: StGIT/0.14.1
@@ -33,89 +33,80 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Provide an add_wait_queue_tail() function to add a waiter to the back of a
-wait queue instead of the front.
+The attached patch causes read_cache_pages() to release page-private data on a
+page for which add_to_page_cache() fails or the filler function fails. This
+permits pages with caching references associated with them to be cleaned up.
+
+The invalidatepage() address space op is called (indirectly) to do the honours.
 
 Signed-off-by: David Howells <dhowells@redhat.com>
 ---
 
- include/linux/pagemap.h |    7 +++++--
- include/linux/wait.h    |    1 +
- kernel/wait.c           |   18 ++++++++++++++++++
- mm/filemap.c            |    2 +-
- 4 files changed, 25 insertions(+), 3 deletions(-)
+ mm/readahead.c |   39 +++++++++++++++++++++++++++++++++++++--
+ 1 files changed, 37 insertions(+), 2 deletions(-)
 
 
-diff --git a/include/linux/pagemap.h b/include/linux/pagemap.h
-index c5df3ae..ad9484f 100644
---- a/include/linux/pagemap.h
-+++ b/include/linux/pagemap.h
-@@ -225,8 +225,11 @@ static inline void wait_on_page_writeback(struct page *page)
+diff --git a/mm/readahead.c b/mm/readahead.c
+index 8762e89..d6b14c1 100644
+--- a/mm/readahead.c
++++ b/mm/readahead.c
+@@ -44,6 +44,41 @@ EXPORT_SYMBOL_GPL(file_ra_state_init);
  
- extern void end_page_writeback(struct page *page);
+ #define list_to_page(head) (list_entry((head)->prev, struct page, lru))
  
--/*
-- * Wait for a PG_owner_priv_2 to become clear
-+/**
-+ * wait_on_page_owner_priv_2 - Wait for PG_owner_priv_2 to become clear
-+ * @page: The page to monitor
-+ *
-+ * Wait for a PG_owner_priv_2 to become clear on the specified page.
-  */
- static inline void wait_on_page_owner_priv_2(struct page *page)
- {
-diff --git a/include/linux/wait.h b/include/linux/wait.h
-index 0081147..a6a6607 100644
---- a/include/linux/wait.h
-+++ b/include/linux/wait.h
-@@ -118,6 +118,7 @@ static inline int waitqueue_active(wait_queue_head_t *q)
- #define is_sync_wait(wait)	(!(wait) || ((wait)->private))
- 
- extern void add_wait_queue(wait_queue_head_t *q, wait_queue_t *wait);
-+extern void add_wait_queue_tail(wait_queue_head_t *q, wait_queue_t *wait);
- extern void add_wait_queue_exclusive(wait_queue_head_t *q, wait_queue_t *wait);
- extern void remove_wait_queue(wait_queue_head_t *q, wait_queue_t *wait);
- 
-diff --git a/kernel/wait.c b/kernel/wait.c
-index c275c56..191df0d 100644
---- a/kernel/wait.c
-+++ b/kernel/wait.c
-@@ -29,6 +29,24 @@ void add_wait_queue(wait_queue_head_t *q, wait_queue_t *wait)
- }
- EXPORT_SYMBOL(add_wait_queue);
- 
-+/**
-+ * add_wait_queue_tail - Add a waiter to the back of a waitqueue
-+ * @q: the wait queue to append the waiter to
-+ * @wait: the waiter to be queued
-+ *
-+ * Add a waiter to the back of a waitqueue so that it gets woken up last.
++/*
++ * see if a page needs releasing upon read_cache_pages() failure
++ * - the caller of read_cache_pages() may have set PG_private before calling,
++ *   such as the NFS fs marking pages that are cached locally on disk, thus we
++ *   need to give the fs a chance to clean up in the event of an error
 + */
-+void add_wait_queue_tail(wait_queue_head_t *q, wait_queue_t *wait)
++static void read_cache_pages_invalidate_page(struct address_space *mapping,
++					     struct page *page)
 +{
-+	unsigned long flags;
-+
-+	wait->flags &= ~WQ_FLAG_EXCLUSIVE;
-+	spin_lock_irqsave(&q->lock, flags);
-+	__add_wait_queue_tail(q, wait);
-+	spin_unlock_irqrestore(&q->lock, flags);
++	if (PagePrivate(page)) {
++		if (TestSetPageLocked(page))
++			BUG();
++		page->mapping = mapping;
++		do_invalidatepage(page, 0);
++		page->mapping = NULL;
++		unlock_page(page);
++	}
++	page_cache_release(page);
 +}
-+EXPORT_SYMBOL(add_wait_queue_tail);
 +
- void add_wait_queue_exclusive(wait_queue_head_t *q, wait_queue_t *wait)
- {
- 	unsigned long flags;
-diff --git a/mm/filemap.c b/mm/filemap.c
-index 636adf2..9a0c803 100644
---- a/mm/filemap.c
-+++ b/mm/filemap.c
-@@ -586,7 +586,7 @@ void end_page_writeback(struct page *page)
- EXPORT_SYMBOL(end_page_writeback);
- 
++/*
++ * release a list of pages, invalidating them first if need be
++ */
++static void read_cache_pages_invalidate_pages(struct address_space *mapping,
++					      struct list_head *pages)
++{
++	struct page *victim;
++
++	while (!list_empty(pages)) {
++		victim = list_to_page(pages);
++		list_del(&victim->lru);
++		read_cache_pages_invalidate_page(mapping, victim);
++	}
++}
++
  /**
-- * end_page_own - Clear PG_owner_priv_2 and wake up any waiters
-+ * end_page_owner_priv_2 - Clear PG_owner_priv_2 and wake up any waiters
-  * @page: the page
-  *
-  * Clear PG_owner_priv_2 and wake up any processes waiting for that event.
+  * read_cache_pages - populate an address space with some pages & start reads against them
+  * @mapping: the address_space
+@@ -65,14 +100,14 @@ int read_cache_pages(struct address_space *mapping, struct list_head *pages,
+ 		list_del(&page->lru);
+ 		if (add_to_page_cache_lru(page, mapping,
+ 					page->index, GFP_KERNEL)) {
+-			page_cache_release(page);
++			read_cache_pages_invalidate_page(mapping, page);
+ 			continue;
+ 		}
+ 		page_cache_release(page);
+ 
+ 		ret = filler(data, page);
+ 		if (unlikely(ret)) {
+-			put_pages_list(pages);
++			read_cache_pages_invalidate_pages(mapping, pages);
+ 			break;
+ 		}
+ 		task_io_account_read(PAGE_CACHE_SIZE);
 
