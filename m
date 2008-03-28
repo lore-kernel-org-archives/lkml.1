@@ -1,13 +1,13 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756633AbYC1Lma@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757286AbYC1Lmr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756633AbYC1Lma (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Mar 2008 07:42:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754551AbYC1LkZ
+	id S1757286AbYC1Lmr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Mar 2008 07:42:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754598AbYC1LkZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Fri, 28 Mar 2008 07:40:25 -0400
-Received: from fms-01.valinux.co.jp ([210.128.90.1]:44551 "EHLO
+Received: from fms-01.valinux.co.jp ([210.128.90.1]:44550 "EHLO
 	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753755AbYC1LkU (ORCPT
+	with ESMTP id S1753752AbYC1LkU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 28 Mar 2008 07:40:20 -0400
 From: Isaku Yamahata <yamahata@valinux.co.jp>
@@ -16,9 +16,9 @@ Cc: chrisw@sous-sol.org, sct@redhat.com,
        virtualization@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
        xen-ia64-devel@lists.xensource.com, eddie.dong@intel.com,
        yamahata@valinux.co.jp
-Subject: [PATCH 08/12] xen: add resend_irq_on_evtchn() definition into events.c.
-Date: Fri, 28 Mar 2008 20:40:14 +0900
-Message-Id: <1206704418876-git-send-email-yamahata@valinux.co.jp>
+Subject: [PATCH 07/12] Xen: Make events.c portable for ia64/xen support.
+Date: Fri, 28 Mar 2008 20:40:13 +0900
+Message-Id: <12067044180-git-send-email-yamahata@valinux.co.jp>
 X-Mailer: git-send-email 1.5.3
 In-Reply-To: <12067044183207-git-send-email-yamahata@valinux.co.jp>
 References: <12067044183207-git-send-email-yamahata@valinux.co.jp>
@@ -26,66 +26,76 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Define resend_irq_on_evtchn() which ia64/xen uses.
-Although it isn't used by current x86/xen code, it's arch generic
-so that put it into common code.
-make ipi_to_irq[] visible removing static because
-ia64/xen needs to access the variable from ia64 specific code
+Remove x86 dependency in drivers/xen/events.c for ia64/xen support.
+Introduce xen_irqs_disabled() to hide regs->flags
+Introduce xen_do_IRQ() to hide regs->orig_ax.
+Add one rmb() because on ia64 xchg() isn't barrier.
 
 Signed-off-by: Isaku Yamahata <yamahata@valinux.co.jp>
 ---
- drivers/xen/events.c |   18 +++++++++++++++++-
- include/xen/events.h |    1 +
- 2 files changed, 18 insertions(+), 1 deletions(-)
+ drivers/xen/events.c             |   13 +++++++------
+ include/asm-x86/xen/hypervisor.h |   10 ++++++++++
+ 2 files changed, 17 insertions(+), 6 deletions(-)
 
 diff --git a/drivers/xen/events.c b/drivers/xen/events.c
-index 2396b44..1c2c193 100644
+index c50d499..2396b44 100644
 --- a/drivers/xen/events.c
 +++ b/drivers/xen/events.c
-@@ -48,7 +48,7 @@ static DEFINE_SPINLOCK(irq_mapping_update_lock);
- static DEFINE_PER_CPU(int, virq_to_irq[NR_VIRQS]) = {[0 ... NR_VIRQS-1] = -1};
+@@ -469,7 +469,7 @@ irqreturn_t xen_debug_interrupt(int irq, void *dev_id)
+ 	for_each_online_cpu(i) {
+ 		struct vcpu_info *v = per_cpu(xen_vcpu, i);
+ 		printk("%d: masked=%d pending=%d event_sel %08lx\n  ", i,
+-			(get_irq_regs() && i == cpu) ? !(get_irq_regs()->flags & X86_EFLAGS_IF) : v->evtchn_upcall_mask,
++			(get_irq_regs() && i == cpu) ? xen_irqs_disabled(get_irq_regs()) : v->evtchn_upcall_mask,
+ 			v->evtchn_upcall_pending,
+ 			v->evtchn_pending_sel);
+ 	}
+@@ -527,7 +527,10 @@ void xen_evtchn_do_upcall(struct pt_regs *regs)
+ 		if (__get_cpu_var(nesting_count)++)
+ 			goto out;
  
- /* IRQ <-> IPI mapping */
--static DEFINE_PER_CPU(int, ipi_to_irq[XEN_NR_IPIS]) = {[0 ... XEN_NR_IPIS-1] = -1};
-+DEFINE_PER_CPU(int, ipi_to_irq[XEN_NR_IPIS]) = {[0 ... XEN_NR_IPIS-1] = -1};
+-		/* NB. No need for a barrier here -- XCHG is a barrier on x86. */
++#ifndef CONFIG_X86 /* No need for a barrier -- XCHG is a barrier on x86. */
++		/* Clear master flag /before/ clearing selector flag. */
++		rmb();
++#endif
+ 		pending_words = xchg(&vcpu_info->evtchn_pending_sel, 0);
+ 		while (pending_words != 0) {
+ 			unsigned long pending_bits;
+@@ -539,10 +542,8 @@ void xen_evtchn_do_upcall(struct pt_regs *regs)
+ 				int port = (word_idx * BITS_PER_LONG) + bit_idx;
+ 				int irq = evtchn_to_irq[port];
  
- /* Packed IRQ information: binding type, sub-type index, and event channel. */
- struct packed_irq
-@@ -586,6 +586,22 @@ static void set_affinity_irq(unsigned irq, cpumask_t dest)
- 	rebind_irq_to_cpu(irq, tcpu);
- }
+-				if (irq != -1) {
+-					regs->orig_ax = ~irq;
+-					do_IRQ(regs);
+-				}
++				if (irq != -1)
++					xen_do_IRQ(irq, regs);
+ 			}
+ 		}
  
-+int resend_irq_on_evtchn(unsigned int irq)
-+{
-+	int masked, evtchn = evtchn_from_irq(irq);
-+	struct shared_info *s = HYPERVISOR_shared_info;
+diff --git a/include/asm-x86/xen/hypervisor.h b/include/asm-x86/xen/hypervisor.h
+index 8e15dd2..767a361 100644
+--- a/include/asm-x86/xen/hypervisor.h
++++ b/include/asm-x86/xen/hypervisor.h
+@@ -61,6 +61,16 @@ extern struct start_info *xen_start_info;
+ /* Force a proper event-channel callback from Xen. */
+ extern void force_evtchn_callback(void);
+ 
++/* macro to avoid header inclusion dependncy hell */
++#define xen_irqs_disabled(regs)	(!((regs)->flags & X86_EFLAGS_IF))
 +
-+	if (!VALID_EVTCHN(evtchn))
-+		return 1;
++/* macro to avoid header inclusion dependncy hell */
++#define xen_do_IRQ(irq, regs)			\
++	do {					\
++		(regs)->orig_ax = ~(irq);	\
++		do_IRQ(regs);			\
++	} while (0)
 +
-+	masked = sync_test_and_set_bit(evtchn, s->evtchn_mask);
-+	sync_set_bit(evtchn, s->evtchn_pending);
-+	if (!masked)
-+		unmask_evtchn(evtchn);
-+
-+	return 1;
-+}
-+
- static void enable_dynirq(unsigned int irq)
- {
- 	int evtchn = evtchn_from_irq(irq);
-diff --git a/include/xen/events.h b/include/xen/events.h
-index 2bde54d..574cfa4 100644
---- a/include/xen/events.h
-+++ b/include/xen/events.h
-@@ -37,6 +37,7 @@ int bind_ipi_to_irqhandler(enum ipi_vector ipi,
- void unbind_from_irqhandler(unsigned int irq, void *dev_id);
+ /* Turn jiffies into Xen system time. */
+ u64 jiffies_to_st(unsigned long jiffies);
  
- void xen_send_IPI_one(unsigned int cpu, enum ipi_vector vector);
-+int resend_irq_on_evtchn(unsigned int irq);
- 
- static inline void notify_remote_via_evtchn(int port)
- {
 -- 
 1.5.3
 
