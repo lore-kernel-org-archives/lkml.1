@@ -1,38 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758892AbYC1X1e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757996AbYC1XgT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758892AbYC1X1e (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Mar 2008 19:27:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756190AbYC1X1F
+	id S1757996AbYC1XgT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Mar 2008 19:36:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756351AbYC1XgI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Mar 2008 19:27:05 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:35530
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1756124AbYC1X1D (ORCPT
+	Fri, 28 Mar 2008 19:36:08 -0400
+Received: from smtp113.sbc.mail.mud.yahoo.com ([68.142.198.212]:44413 "HELO
+	smtp113.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1756361AbYC1XgH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Mar 2008 19:27:03 -0400
-Date: Fri, 28 Mar 2008 16:26:55 -0700 (PDT)
-Message-Id: <20080328.162655.120723646.davem@davemloft.net>
-To: ramirose@gmail.com
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] [net-2.6.26] [IPV6] [CLEANUP] Remove unused method
- declaration in include/net/addrconf.h.
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <eb3ff54b0803280323w3b87f3fdy1ecfdb6424e62795@mail.gmail.com>
-References: <eb3ff54b0803280323w3b87f3fdy1ecfdb6424e62795@mail.gmail.com>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Fri, 28 Mar 2008 19:36:07 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=NIH3gYupUtgqj3Y8yCoPOWBPNy2mGBuWVYLL6YfjgLSdj41ww6DA14JnLkHzWIYDMOHgOZGwKVC5qjxV48lwWMxSwDJZsiGpR7MoJwJqxQJ3xrlS+9R4YcPq+ElqlePPHJI1t1wafdhgo1vZFLvxEq5N7S10GDIbEijiN2GfuBo=  ;
+X-YMail-OSG: Q0ObWTQVM1nEPI4TtouprGy7ZHzzMFIzsR30KborghFVnc1mbKMR9clkpusD.E4zNrwDYwlrYw--
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Venki Pallipadi <venkatesh.pallipadi@intel.com>
+Subject: Re: 2.6.25 regression: powertop says 120K wakeups/sec
+Date: Fri, 28 Mar 2008 16:36:03 -0700
+User-Agent: KMail/1.9.6
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, linux-acpi@vger.kernel.org,
+       Len Brown <lenb@kernel.org>
+References: <20080322202454.9D69DCC0EF@adsl-69-226-248-13.dsl.pltn13.pacbell.net> <200803281509.23107.david-b@pacbell.net> <20080328225604.GA7136@linux-os.sc.intel.com>
+In-Reply-To: <20080328225604.GA7136@linux-os.sc.intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200803281636.04029.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: "Rami Rosen" <ramirose@gmail.com>
-Date: Fri, 28 Mar 2008 13:23:53 +0300
+On Friday 28 March 2008, Venki Pallipadi wrote:
 
->   This patches removes unused declaration of addrconf_forwarding_on() method
->   in include/net/addrconf.h.
+> I think I figured out the bug...
 > 
-> Signed-off-by: Rami Rosen <ramirose@gmail.com>
+> Can you try the below patch and confirm that it works (over upstream - ignore
+> the earlier revert patch I sent to you).
 
-Applied, thanks.
+That seems to do the job ... thanks!  One more regression
+fixed, it feels like RC7 is almost done. :)
+
+It still says odd things about C0 vs C1 though:  powertop
+says 100% of the time is in C0, but this patch would seem
+to be irrelevant if that were true.
+
+- Dave
+
