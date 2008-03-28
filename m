@@ -1,56 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755435AbYC1NtU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755542AbYC1Nuz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755435AbYC1NtU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Mar 2008 09:49:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753260AbYC1NtJ
+	id S1755542AbYC1Nuz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Mar 2008 09:50:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752956AbYC1Nur
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Mar 2008 09:49:09 -0400
-Received: from rtr.ca ([76.10.145.34]:2670 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753254AbYC1NtI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Mar 2008 09:49:08 -0400
-Message-ID: <47ECF753.1070804@rtr.ca>
-Date: Fri, 28 Mar 2008 09:49:07 -0400
-From: Mark Lord <lkml@rtr.ca>
-Organization: Real-Time Remedies Inc.
-User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
-MIME-Version: 1.0
-To: Tilman Schmidt <tilman@imap.cc>
-Cc: David Brownell <david-b@pacbell.net>, Ingo Molnar <mingo@elte.hu>,
-       David Miller <davem@davemloft.net>, jkosina@suse.cz, gregkh@suse.de,
-       linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org, pavel@suse.cz,
-       akpm@linux-foundation.org, rtc-linux@googlegroups.com
-Subject: Re: Kconfig RTC selection
-References: <20080327160700.GB828@suse.de> <200803272358.20081.david-b@pacbell.net> <20080328091645.GI21413@elte.hu> <200803280249.42193.david-b@pacbell.net> <47ECE9BB.3050006@imap.cc>
-In-Reply-To: <47ECE9BB.3050006@imap.cc>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+	Fri, 28 Mar 2008 09:50:47 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:1390 "EHLO spitz.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752541AbYC1Nuq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Mar 2008 09:50:46 -0400
+Date: Fri, 28 Mar 2008 14:50:38 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>,
+       kernel list <linux-kernel@vger.kernel.org>, Greg KH <greg@kroah.com>
+Subject: Re: iommu breaks usb after resume
+Message-ID: <20080328135038.GD4544@ucw.cz>
+References: <20080320111429.GA14764@elf.ucw.cz> <200803272130.38375.rjw@sisk.pl> <20080327234055.GB32617@elf.ucw.cz> <200803280052.01250.rjw@sisk.pl>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200803280052.01250.rjw@sisk.pl>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tilman Schmidt wrote:
-> On Fri, 28 Mar 2008 02:49:41 -0700, David Brownell wrote:
->> It seems too many people are used to enabling a legacy RTC despite the 
->> Kconfig help/comments; the gentle approach hasn't worked.
-> 
-> Gentleness is not the point. The Kconfig help/comments where just
-> not clear at all.
-> 
-> FWIW, it's still confusing to have an option "Enhanced Real Time
-> Clock Support" under "Character Devices", then later an option
-> "Real Time Clock" one level higher, none of the two in any way
-> acknowledging the existence of the other one, and only after
-> naively selecting both, you are told that there is some sort of
-> conflict. Couldn't this be made more explicit, such as:
-> - mentioning in both options' help text that the other one
->   shouldn't be selected at the same time (if that's true)
-> - noting explicitly which of the two RTC options is the "legacy"
->   one (is it RTC_CLASS?)
-> - enhancing the conflict message, which reads, in git-current:
->        *** Conflicting RTC option has been selected, check GEN_RTC
->        *** RTC interfaces ***
-..
+Hi!
 
-Exactly the issue.  Mod++++++++++++++++++++++
+> > > > diff --git a/drivers/char/agp/amd64-agp.c b/drivers/char/agp/amd64-agp.c
+> > > > index d8200ac..4e85178 100644
+> > > > --- a/drivers/char/agp/amd64-agp.c
+> > > > +++ b/drivers/char/agp/amd64-agp.c
+> > > > @@ -594,12 +594,14 @@ static int agp_amd64_suspend(struct pci_
+> > > >  
+> > > >  static int agp_amd64_resume(struct pci_dev *pdev)
+> > > >  {
+> > > > +	printk("agp_amd64: resume\n");
+> > > >  	pci_set_power_state(pdev, PCI_D0);
+> > > >  	pci_restore_state(pdev);
+> > > >  
+> > > >  	if (pdev->vendor == PCI_VENDOR_ID_NVIDIA)
+> > > >  		nforce3_agp_init(pdev);
+> > > >  
+> > > > +	printk("agp_amd64: 8151 configure\n");
+> > > >  	return amd_8151_configure();
+> > > >  }
+> > > >  
+> > > > @@ -733,8 +735,8 @@ static struct pci_driver agp_amd64_pci_d
+> > > >  	.probe		= agp_amd64_probe,
+> > > >  	.remove		= agp_amd64_remove,
+> > > >  #ifdef CONFIG_PM
+> > > > -	.suspend	= agp_amd64_suspend,
+> > > > -	.resume		= agp_amd64_resume,
+> > > > +	.suspend_late	= agp_amd64_suspend,
+> > > > +	.resume_early	= agp_amd64_resume,
+> > > >  #endif
+> > > >  };
+> > > 
+> > > Okay, a couple of questions:
+> > > 
+> > > (1) Are you sure that the .suspend() and .resume() callbacks will just work
+> > >     with interrupts disabled?
+> > 
+> > I have not really checked -- it turned out this is not "my" problem
+> > after all. My machine (called leet) uses different setup. If they will
+> > not, I guess lockdep will tell us ;-).
+> 
+> Lockdep need not tell us about it, I think.  OTOH, I don't really see a
+> scenario in which having interrupts disabled while executing ->suspend() and
+> ->resume() might hurt.
 
+Ok.
+
+> > > (2) Even if they work, is it sufficient to just move them to the "late" and
+> > >     "early" parts?  That is, isn't there anything using the iommu in the
+> > >     "early" and "late" callbacks of the other devices?
+> > 
+> > We definitely have iommu users in "normal" callbacks: USB.
+> 
+> Oh, there may be more.  You never know what appears in future systems. :-)
+
+Well, we'll catch them during code review, right?
+
+> > I do not think we have iommu users in early/late callbacks...
+> 
+> Perhaps not at the moment, but what's the guarantee there won't be any in the
+> future?
+
+That's why we review changes... ok, maybe documenting it somewhere
+would be nice...?
+
+							Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
