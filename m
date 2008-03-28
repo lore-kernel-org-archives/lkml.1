@@ -1,254 +1,398 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754044AbYC1OAR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754325AbYC1ODl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754044AbYC1OAR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Mar 2008 10:00:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752281AbYC1OAE
+	id S1754325AbYC1ODl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Mar 2008 10:03:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752379AbYC1ODd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Mar 2008 10:00:04 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:33608 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750778AbYC1OAA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Mar 2008 10:00:00 -0400
-Date: Fri, 28 Mar 2008 14:59:37 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Len Brown <lenb@kernel.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org,
-       Julia Lawall <julia@diku.dk>
-Subject: [patch] revert: "ACPI: drivers/acpi: elide a non-zero test on a
-	result that is never 0"
-Message-ID: <20080328135937.GA26179@elte.hu>
-References: <200803270251.14446.lenb@kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200803270251.14446.lenb@kernel.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Fri, 28 Mar 2008 10:03:33 -0400
+Received: from mtagate7.de.ibm.com ([195.212.29.156]:45118 "EHLO
+	mtagate7.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751358AbYC1ODb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Mar 2008 10:03:31 -0400
+Subject: Re: [patch 09/10] Hugetlb common code update for System z.
+From: Gerald Schaefer <gerald.schaefer@de.ibm.com>
+Reply-To: gerald.schaefer@de.ibm.com
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: haveblue@us.ibm.com, schwidefsky@de.ibm.com, linux-kernel@vger.kernel.org,
+       linux-s390@vger.kernel.org, "David S. Miller" <davem@davemloft.net>,
+       Tony Luck <tony.luck@intel.com>, Paul Mackerras <paulus@samba.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Paul Mundt <lethal@linux-sh.org>
+In-Reply-To: <20080312164303.cac9cab5.akpm@linux-foundation.org>
+References: <20080312173155.703966894@de.ibm.com>
+	 <20080312173218.186436562@de.ibm.com>
+	 <1205344286.9828.91.camel@nimitz.home.sr71.net>
+	 <1205363937.5237.60.camel@localhost.localdomain>
+	 <20080312164303.cac9cab5.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Fri, 28 Mar 2008 15:05:19 +0100
+Message-Id: <1206713119.5186.52.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.0 (2.8.0-40.el5) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 2008-03-12 at 16:43 -0700, Andrew Morton wrote:
+> > There are already several ARCH_HAS_xxx defines which are being used in
+> > inlude/linux/hugetlb.h. All of them are defined in
+> > include/asm-<arch>/page.h for every architecture that needs them (with
+> > the exception of powerpc, where it is include/asm-powerpc/page_64.h).
+> 
+> Yes, but that's fugly and it would be better to put in place the
+> infrastructure for cleaning it up, rather than worsening it.
+> 
+> So...
+> 
+> Put this:
+> 
+> +#define huge_pte_none(pte)			pte_none(pte)
+> +#define huge_pte_wrprotect(pte)			pte_wrprotect(pte)
+> +#define huge_ptep_set_wrprotect(mm, addr, ptep)	\
+> +	ptep_set_wrprotect(mm, addr, ptep)
+> +#define huge_ptep_set_access_flags(vma, addr, ptep, pte, dirty)	\
+> +	ptep_set_access_flags(vma, addr, ptep, pte, dirty)
+> +#define huge_ptep_get(ptep)			(*ptep)
+> 
+> into include/asm-generic/hugetlb.h
+> 
+> then for each architecture except s390 add an include/asm-foo/hugetlb.h
+> which does
+> 
+> #include <asm-generic/hugetlb.h>
+> 
+> then in include/linux/hugetlb.h add
+> 
+> #include <asm/hugetlb.h>
+> 
+> and then in include/asm-s390/hugetlb.h, add your s390-specific versions of
+> huge_pte_none() and friends.
+> 
+> later, someone can hopefully use this new infrastructure to rid us of
+> ARCH_HAS_HUGEPAGE_ONLY_RANGE, ARCH_HAS_HUGETLB_FREE_PGD_RANGE,
+> ARCH_HAS_PREPARE_HUGEPAGE_RANGE, ARCH_HAS_SETCLEAR_HUGE_PTE and
+> ARCH_HAS_HUGETLB_PREFAULT_HOOK.
 
-* Len Brown <lenb@kernel.org> wrote:
+This patch moves all architecture functions for hugetlb to architecture
+header files (include/asm-foo/hugetlb.h). It also removes (!)
+ARCH_HAS_HUGEPAGE_ONLY_RANGE, ARCH_HAS_HUGETLB_FREE_PGD_RANGE,
+ARCH_HAS_PREPARE_HUGEPAGE_RANGE, ARCH_HAS_SETCLEAR_HUGE_PTE and
+ARCH_HAS_HUGETLB_PREFAULT_HOOK.
 
-> I've not used "-b" until now.  I added it because Julia's patch was 
-> simple, but since it changed indenting of a couple of blocks its 
-> diffstat was otherwise large.
+Cross-Compile tests on the affected architectures (and one unaffected)
+worked fine, but I had no cross-compiler for sh.
 
-> Julia Lawall (1):
->       ACPI: drivers/acpi: elide a non-zero test on a result that is never 0
+If this patch is accepted, we will resend the s390 large page patches
+so that they will use/extend this new infrastructure.
 
-overnight randconfig qa on x86.git/latest triggered a bootup crash after 
-just 7 iterations, which i bisected down to the commit above. Find the 
-revert below.
+--
+Gerald Schaefer
 
-Observation: the patch was just 3 days old when it went upstream and 
-given that it touches 50 lines of code executed on most PC hardware 
-during bootup so i dont think it was in the trivial category.
-
-Even if the fix is right (which is does look to be at first sight), 
-there's clearly some side-effect here and the whitespace changes mixed 
-into the functional changes make it hard to validate this change.
-
-now that i had a second look, one side-effect seems to be:
-
-+		acpi_driver_data(device) = cdev;
-
-this used to be executed before even with a NULL cdev and isnt executed 
-now. (In any case, the revert below is the right thing to do i believe, 
-the patch should have its clock reset and should restart its testing 
-cycle at the tail of the development queue.)
-
-	Ingo
-
----------------------->
-Subject: revert "ACPI: drivers/acpi: elide a non-zero test on a result that is never 0"
-From: Ingo Molnar <mingo@elte.hu>
-Date: Fri Mar 28 14:28:03 CET 2008
-
-revert:
-
-    ACPI: drivers/acpi: elide a non-zero test on a result that is never 0
-
-as randconfig testing found that it causes a crash during bootup:
-
-initcall 0x78878534 ran for 13 msecs: acpi_button_init+0x0/0x51()
-Calling initcall 0x78878585: acpi_fan_init+0x0/0x2c()
-BUG: unable to handle kernel NULL pointer dereference at 00000000
-IP: [<782b8ad0>] acpi_fan_add+0x7d/0xfd
-*pde = 00000000
-Oops: 0000 [#1]
-Modules linked in:
-
-Pid: 1, comm: swapper Not tainted (2.6.25-rc7-sched-devel.git-x86-latest.git #14)
-EIP: 0060:[<782b8ad0>] EFLAGS: 00010246 CPU: 0
-EIP is at acpi_fan_add+0x7d/0xfd
-EAX: b787c718 EBX: b787c400 ECX: b782ceb4 EDX: 00000007
-ESI: 00000000 EDI: b787c6f4 EBP: b782cee0 ESP: b782cecc
- DS: 007b ES: 007b FS: 0000 GS: 0000 SS: 0068
-Process swapper (pid: 1, ti=b782c000 task=b7846000 task.ti=b782c000)
-Stack: b787c459 00000000 b787c400 78790888 b787c60c b782cef8 782b6fb8 ffffffda
-       b787c60c 00000000 78790958 b782cf0c 783005d7 b787c60c 78790958 78790584
-       b782cf1c 783007f6 b782cf28 00000000 b782cf40 782ffc4a 78790958 b794d558
-Call Trace:
- [<782b6fb8>] ? acpi_device_probe+0x3e/0xdb
- [<783005d7>] ? driver_probe_device+0x82/0xfc
- [<783007f6>] ? __driver_attach+0x3a/0x70
- [<782ffc4a>] ? bus_for_each_dev+0x3e/0x60
- [<7830048c>] ? driver_attach+0x14/0x16
- [<783007bc>] ? __driver_attach+0x0/0x70
- [<7830006a>] ? bus_add_driver+0x9d/0x1b0
- [<783008c3>] ? driver_register+0x47/0xa3
- [<7813db00>] ? timespec_to_ktime+0x9/0xc
- [<782b7331>] ? acpi_bus_register_driver+0x3a/0x3c
- [<78878592>] ? acpi_fan_init+0xd/0x2c
- [<78863656>] ? kernel_init+0xac/0x1f9
- [<788635aa>] ? kernel_init+0x0/0x1f9
- [<78114563>] ? kernel_thread_helper+0x7/0x10
- =======================
-Code: 6e 78 e8 57 44 e7 ff 58 e9 93 00 00 00 8b 55 f0 8d bb f4 02 00 00 80 4b 2d 10 8b 03 e8 87 cb ff ff 8d 83 18 03 00 00 80 63 2d ef <ff> 35 00 00 00 00 50 68 e8 9c 6e 78 e8 22 44 e7 ff b9 b6 9c 6e
-EIP: [<782b8ad0>] acpi_fan_add+0x7d/0xfd SS:ESP 0068:b782cecc
----[ end trace 778e504de7e3b1e3 ]---
-Kernel panic - not syncing: Attempted to kill init!
-
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
- drivers/acpi/fan.c            |   34 ++++++++++++++++++----------------
- drivers/acpi/processor_core.c |   30 ++++++++++++++++--------------
- drivers/acpi/video.c          |   28 +++++++++++++++-------------
- 3 files changed, 49 insertions(+), 43 deletions(-)
+ include/asm-ia64/hugetlb.h    |   21 +++++++++++++++++++
+ include/asm-ia64/page.h       |    6 -----
+ include/asm-powerpc/hugetlb.h |   35 +++++++++++++++++++++++++++++++
+ include/asm-powerpc/page_64.h |    7 ------
+ include/asm-sh/hugetlb.h      |   28 +++++++++++++++++++++++++
+ include/asm-sparc64/hugetlb.h |   30 +++++++++++++++++++++++++++
+ include/asm-sparc64/page.h    |    2 -
+ include/asm-x86/hugetlb.h     |   28 +++++++++++++++++++++++++
+ include/linux/hugetlb.h       |   46 ------------------------------------------
+ 9 files changed, 143 insertions(+), 60 deletions(-)
 
-Index: linux-x86.q/drivers/acpi/fan.c
+Index: linux-2.6.25-rc7/include/asm-ia64/hugetlb.h
 ===================================================================
---- linux-x86.q.orig/drivers/acpi/fan.c
-+++ linux-x86.q/drivers/acpi/fan.c
-@@ -260,22 +260,24 @@ static int acpi_fan_add(struct acpi_devi
- 		result = PTR_ERR(cdev);
- 		goto end;
- 	}
--	printk(KERN_INFO PREFIX
--		"%s is registered as cooling_device%d\n",
--		device->dev.bus_id, cdev->id);
--
--	acpi_driver_data(device) = cdev;
--	result = sysfs_create_link(&device->dev.kobj,
--				   &cdev->device.kobj,
--				   "thermal_cooling");
--	if (result)
--		return result;
--
--	result = sysfs_create_link(&cdev->device.kobj,
--				   &device->dev.kobj,
--				   "device");
--	if (result)
--		return result;
-+	if (cdev) {
-+		printk(KERN_INFO PREFIX
-+			"%s is registered as cooling_device%d\n",
-+			device->dev.bus_id, cdev->id);
+--- /dev/null
++++ linux-2.6.25-rc7/include/asm-ia64/hugetlb.h
+@@ -0,0 +1,21 @@
++#ifndef _ASM_IA64_HUGETLB_H
++#define _ASM_IA64_HUGETLB_H
 +
-+		acpi_driver_data(device) = cdev;
-+		result = sysfs_create_link(&device->dev.kobj,
-+					   &cdev->device.kobj,
-+					   "thermal_cooling");
-+		if (result)
-+			return result;
++#include <asm/page.h>
 +
-+		result = sysfs_create_link(&cdev->device.kobj,
-+					   &device->dev.kobj,
-+					   "device");
-+		if (result)
-+			return result;
-+	}
- 
- 	result = acpi_fan_add_fs(device);
- 	if (result)
-Index: linux-x86.q/drivers/acpi/processor_core.c
++
++#define is_hugepage_only_range(mm, addr, len)		\
++	(REGION_NUMBER(addr) == RGN_HPAGE ||	\
++	 REGION_NUMBER((addr)+(len)-1) == RGN_HPAGE)
++
++void hugetlb_free_pgd_range(struct mmu_gather **tlb, unsigned long addr,
++			    unsigned long end, unsigned long floor,
++			    unsigned long ceiling);
++int prepare_hugepage_range(unsigned long addr, unsigned long len);
++
++#define set_huge_pte_at(mm, addr, ptep, pte)	set_pte_at(mm, addr, ptep, pte)
++#define huge_ptep_get_and_clear(mm, addr, ptep) ptep_get_and_clear(mm, addr, ptep)
++
++#define hugetlb_prefault_arch_hook(mm)		do { } while (0)
++
++#endif /* _ASM_IA64_HUGETLB_H */
+Index: linux-2.6.25-rc7/include/asm-sh/hugetlb.h
 ===================================================================
---- linux-x86.q.orig/drivers/acpi/processor_core.c
-+++ linux-x86.q/drivers/acpi/processor_core.c
-@@ -674,20 +674,22 @@ static int __cpuinit acpi_processor_star
- 		result = PTR_ERR(pr->cdev);
- 		goto end;
- 	}
--	printk(KERN_INFO PREFIX
--		"%s is registered as cooling_device%d\n",
--		device->dev.bus_id, pr->cdev->id);
--
--	result = sysfs_create_link(&device->dev.kobj,
--				   &pr->cdev->device.kobj,
--				   "thermal_cooling");
--	if (result)
--		return result;
--	result = sysfs_create_link(&pr->cdev->device.kobj,
--				   &device->dev.kobj,
--				   "device");
--	if (result)
--		return result;
-+	if (pr->cdev) {
-+		printk(KERN_INFO PREFIX
-+			"%s is registered as cooling_device%d\n",
-+			device->dev.bus_id, pr->cdev->id);
+--- /dev/null
++++ linux-2.6.25-rc7/include/asm-sh/hugetlb.h
+@@ -0,0 +1,28 @@
++#ifndef _ASM_SH_HUGETLB_H
++#define _ASM_SH_HUGETLB_H
 +
-+		result = sysfs_create_link(&device->dev.kobj,
-+					   &pr->cdev->device.kobj,
-+					   "thermal_cooling");
-+		if (result)
-+			return result;
-+		result = sysfs_create_link(&pr->cdev->device.kobj,
-+					   &device->dev.kobj,
-+					   "device");
-+		if (result)
-+			return result;
-+	}
- 
- 	if (pr->flags.throttling) {
- 		printk(KERN_INFO PREFIX "%s [%s] (supports",
-Index: linux-x86.q/drivers/acpi/video.c
++#include <asm/page.h>
++
++
++#define is_hugepage_only_range(mm, addr, len)	0
++#define hugetlb_free_pgd_range			free_pgd_range
++
++/*
++ * If the arch doesn't supply something else, assume that hugepage
++ * size aligned regions are ok without further preparation.
++ */
++static inline int prepare_hugepage_range(unsigned long addr, unsigned long len)
++{
++	if (len & ~HPAGE_MASK)
++		return -EINVAL;
++	if (addr & ~HPAGE_MASK)
++		return -EINVAL;
++	return 0;
++}
++
++#define set_huge_pte_at(mm, addr, ptep, pte)	set_pte_at(mm, addr, ptep, pte)
++#define huge_ptep_get_and_clear(mm, addr, ptep) ptep_get_and_clear(mm, addr, ptep)
++
++#define hugetlb_prefault_arch_hook(mm)		do { } while (0)
++
++#endif /* _ASM_SH_HUGETLB_H */
+Index: linux-2.6.25-rc7/include/asm-sparc64/hugetlb.h
 ===================================================================
---- linux-x86.q.orig/drivers/acpi/video.c
-+++ linux-x86.q/drivers/acpi/video.c
-@@ -734,19 +734,21 @@ static void acpi_video_device_find_cap(s
- 		if (IS_ERR(device->cdev))
- 			return;
+--- /dev/null
++++ linux-2.6.25-rc7/include/asm-sparc64/hugetlb.h
+@@ -0,0 +1,30 @@
++#ifndef _ASM_SPARC64_HUGETLB_H
++#define _ASM_SPARC64_HUGETLB_H
++
++#include <asm/page.h>
++
++
++#define is_hugepage_only_range(mm, addr, len)	0
++#define hugetlb_free_pgd_range			free_pgd_range
++
++/*
++ * If the arch doesn't supply something else, assume that hugepage
++ * size aligned regions are ok without further preparation.
++ */
++static inline int prepare_hugepage_range(unsigned long addr, unsigned long len)
++{
++	if (len & ~HPAGE_MASK)
++		return -EINVAL;
++	if (addr & ~HPAGE_MASK)
++		return -EINVAL;
++	return 0;
++}
++
++void set_huge_pte_at(struct mm_struct *mm, unsigned long addr,
++		     pte_t *ptep, pte_t pte);
++pte_t huge_ptep_get_and_clear(struct mm_struct *mm, unsigned long addr,
++			      pte_t *ptep);
++
++void hugetlb_prefault_arch_hook(struct mm_struct *mm);
++
++#endif /* _ASM_SPARC64_HUGETLB_H */
+Index: linux-2.6.25-rc7/include/asm-x86/hugetlb.h
+===================================================================
+--- /dev/null
++++ linux-2.6.25-rc7/include/asm-x86/hugetlb.h
+@@ -0,0 +1,28 @@
++#ifndef _ASM_X86_HUGETLB_H
++#define _ASM_X86_HUGETLB_H
++
++#include <asm/page.h>
++
++
++#define is_hugepage_only_range(mm, addr, len)	0
++#define hugetlb_free_pgd_range			free_pgd_range
++
++/*
++ * If the arch doesn't supply something else, assume that hugepage
++ * size aligned regions are ok without further preparation.
++ */
++static inline int prepare_hugepage_range(unsigned long addr, unsigned long len)
++{
++	if (len & ~HPAGE_MASK)
++		return -EINVAL;
++	if (addr & ~HPAGE_MASK)
++		return -EINVAL;
++	return 0;
++}
++
++#define set_huge_pte_at(mm, addr, ptep, pte)	set_pte_at(mm, addr, ptep, pte)
++#define huge_ptep_get_and_clear(mm, addr, ptep) ptep_get_and_clear(mm, addr, ptep)
++
++#define hugetlb_prefault_arch_hook(mm)		do { } while (0)
++
++#endif /* _ASM_X86_HUGETLB_H */
+Index: linux-2.6.25-rc7/include/linux/hugetlb.h
+===================================================================
+--- linux-2.6.25-rc7.orig/include/linux/hugetlb.h
++++ linux-2.6.25-rc7/include/linux/hugetlb.h
+@@ -8,6 +8,7 @@
+ #include <linux/mempolicy.h>
+ #include <linux/shm.h>
+ #include <asm/tlbflush.h>
++#include <asm/hugetlb.h>
  
--		printk(KERN_INFO PREFIX
--			"%s is registered as cooling_device%d\n",
--			device->dev->dev.bus_id, device->cdev->id);
--		result = sysfs_create_link(&device->dev->dev.kobj,
--				  &device->cdev->device.kobj,
--				  "thermal_cooling");
--		if (result)
--			printk(KERN_ERR PREFIX "Create sysfs link\n");
--		result = sysfs_create_link(&device->cdev->device.kobj,
--				  &device->dev->dev.kobj,
--				  "device");
--		if (result)
--			printk(KERN_ERR PREFIX "Create sysfs link\n");
-+		if (device->cdev) {
-+			printk(KERN_INFO PREFIX
-+				"%s is registered as cooling_device%d\n",
-+				device->dev->dev.bus_id, device->cdev->id);
-+			result = sysfs_create_link(&device->dev->dev.kobj,
-+					  &device->cdev->device.kobj,
-+					  "thermal_cooling");
-+			if (result)
-+				printk(KERN_ERR PREFIX "Create sysfs link\n");
-+			result = sysfs_create_link(&device->cdev->device.kobj,
-+					  &device->dev->dev.kobj,
-+					  "device");
-+                        if (result)
-+				printk(KERN_ERR PREFIX "Create sysfs link\n");
-+		}
- 	}
- 	if (device->cap._DCS && device->cap._DSS){
- 		static int count = 0;
+ struct ctl_table;
+ 
+@@ -51,51 +52,6 @@ int pmd_huge(pmd_t pmd);
+ void hugetlb_change_protection(struct vm_area_struct *vma,
+ 		unsigned long address, unsigned long end, pgprot_t newprot);
+ 
+-#ifndef ARCH_HAS_HUGEPAGE_ONLY_RANGE
+-#define is_hugepage_only_range(mm, addr, len)	0
+-#endif
+-
+-#ifndef ARCH_HAS_HUGETLB_FREE_PGD_RANGE
+-#define hugetlb_free_pgd_range	free_pgd_range
+-#else
+-void hugetlb_free_pgd_range(struct mmu_gather **tlb, unsigned long addr,
+-			    unsigned long end, unsigned long floor,
+-			    unsigned long ceiling);
+-#endif
+-
+-#ifndef ARCH_HAS_PREPARE_HUGEPAGE_RANGE
+-/*
+- * If the arch doesn't supply something else, assume that hugepage
+- * size aligned regions are ok without further preparation.
+- */
+-static inline int prepare_hugepage_range(unsigned long addr, unsigned long len)
+-{
+-	if (len & ~HPAGE_MASK)
+-		return -EINVAL;
+-	if (addr & ~HPAGE_MASK)
+-		return -EINVAL;
+-	return 0;
+-}
+-#else
+-int prepare_hugepage_range(unsigned long addr, unsigned long len);
+-#endif
+-
+-#ifndef ARCH_HAS_SETCLEAR_HUGE_PTE
+-#define set_huge_pte_at(mm, addr, ptep, pte)	set_pte_at(mm, addr, ptep, pte)
+-#define huge_ptep_get_and_clear(mm, addr, ptep) ptep_get_and_clear(mm, addr, ptep)
+-#else
+-void set_huge_pte_at(struct mm_struct *mm, unsigned long addr,
+-		     pte_t *ptep, pte_t pte);
+-pte_t huge_ptep_get_and_clear(struct mm_struct *mm, unsigned long addr,
+-			      pte_t *ptep);
+-#endif
+-
+-#ifndef ARCH_HAS_HUGETLB_PREFAULT_HOOK
+-#define hugetlb_prefault_arch_hook(mm)		do { } while (0)
+-#else
+-void hugetlb_prefault_arch_hook(struct mm_struct *mm);
+-#endif
+-
+ #else /* !CONFIG_HUGETLB_PAGE */
+ 
+ static inline int is_vm_hugetlb_page(struct vm_area_struct *vma)
+Index: linux-2.6.25-rc7/include/asm-powerpc/hugetlb.h
+===================================================================
+--- /dev/null
++++ linux-2.6.25-rc7/include/asm-powerpc/hugetlb.h
+@@ -0,0 +1,35 @@
++#ifndef _ASM_POWERPC_HUGETLB_H
++#define _ASM_POWERPC_HUGETLB_H
++
++#include <asm/page.h>
++
++
++extern int is_hugepage_only_range(struct mm_struct *m,
++				  unsigned long addr,
++				  unsigned long len);
++
++void hugetlb_free_pgd_range(struct mmu_gather **tlb, unsigned long addr,
++			    unsigned long end, unsigned long floor,
++			    unsigned long ceiling);
++
++/*
++ * If the arch doesn't supply something else, assume that hugepage
++ * size aligned regions are ok without further preparation.
++ */
++static inline int prepare_hugepage_range(unsigned long addr, unsigned long len)
++{
++	if (len & ~HPAGE_MASK)
++		return -EINVAL;
++	if (addr & ~HPAGE_MASK)
++		return -EINVAL;
++	return 0;
++}
++
++void set_huge_pte_at(struct mm_struct *mm, unsigned long addr,
++		     pte_t *ptep, pte_t pte);
++pte_t huge_ptep_get_and_clear(struct mm_struct *mm, unsigned long addr,
++			      pte_t *ptep);
++
++#define hugetlb_prefault_arch_hook(mm)		do { } while (0)
++
++#endif /* _ASM_POWERPC_HUGETLB_H */
+Index: linux-2.6.25-rc7/include/asm-ia64/page.h
+===================================================================
+--- linux-2.6.25-rc7.orig/include/asm-ia64/page.h
++++ linux-2.6.25-rc7/include/asm-ia64/page.h
+@@ -54,9 +54,6 @@
+ # define HPAGE_MASK		(~(HPAGE_SIZE - 1))
+ 
+ # define HAVE_ARCH_HUGETLB_UNMAPPED_AREA
+-# define ARCH_HAS_HUGEPAGE_ONLY_RANGE
+-# define ARCH_HAS_PREPARE_HUGEPAGE_RANGE
+-# define ARCH_HAS_HUGETLB_FREE_PGD_RANGE
+ #endif /* CONFIG_HUGETLB_PAGE */
+ 
+ #ifdef __ASSEMBLY__
+@@ -153,9 +150,6 @@ typedef union ia64_va {
+ # define htlbpage_to_page(x)	(((unsigned long) REGION_NUMBER(x) << 61)			\
+ 				 | (REGION_OFFSET(x) >> (HPAGE_SHIFT-PAGE_SHIFT)))
+ # define HUGETLB_PAGE_ORDER	(HPAGE_SHIFT - PAGE_SHIFT)
+-# define is_hugepage_only_range(mm, addr, len)		\
+-	 (REGION_NUMBER(addr) == RGN_HPAGE ||	\
+-	  REGION_NUMBER((addr)+(len)-1) == RGN_HPAGE)
+ extern unsigned int hpage_shift;
+ #endif
+ 
+Index: linux-2.6.25-rc7/include/asm-powerpc/page_64.h
+===================================================================
+--- linux-2.6.25-rc7.orig/include/asm-powerpc/page_64.h
++++ linux-2.6.25-rc7/include/asm-powerpc/page_64.h
+@@ -128,11 +128,6 @@ extern void slice_init_context(struct mm
+ extern void slice_set_user_psize(struct mm_struct *mm, unsigned int psize);
+ #define slice_mm_new_context(mm)	((mm)->context.id == 0)
+ 
+-#define ARCH_HAS_HUGEPAGE_ONLY_RANGE
+-extern int is_hugepage_only_range(struct mm_struct *m,
+-				  unsigned long addr,
+-				  unsigned long len);
+-
+ #endif /* __ASSEMBLY__ */
+ #else
+ #define slice_init()
+@@ -146,8 +141,6 @@ do {						\
+ 
+ #ifdef CONFIG_HUGETLB_PAGE
+ 
+-#define ARCH_HAS_HUGETLB_FREE_PGD_RANGE
+-#define ARCH_HAS_SETCLEAR_HUGE_PTE
+ #define HAVE_ARCH_HUGETLB_UNMAPPED_AREA
+ 
+ #endif /* !CONFIG_HUGETLB_PAGE */
+Index: linux-2.6.25-rc7/include/asm-sparc64/page.h
+===================================================================
+--- linux-2.6.25-rc7.orig/include/asm-sparc64/page.h
++++ linux-2.6.25-rc7/include/asm-sparc64/page.h
+@@ -39,8 +39,6 @@
+ #define HPAGE_SIZE		(_AC(1,UL) << HPAGE_SHIFT)
+ #define HPAGE_MASK		(~(HPAGE_SIZE - 1UL))
+ #define HUGETLB_PAGE_ORDER	(HPAGE_SHIFT - PAGE_SHIFT)
+-#define ARCH_HAS_SETCLEAR_HUGE_PTE
+-#define ARCH_HAS_HUGETLB_PREFAULT_HOOK
+ #define HAVE_ARCH_HUGETLB_UNMAPPED_AREA
+ #endif
+ 
+
+
