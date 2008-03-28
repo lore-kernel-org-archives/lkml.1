@@ -1,112 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754360AbYC1Rhw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755843AbYC1Rpu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754360AbYC1Rhw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Mar 2008 13:37:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754814AbYC1Rhj
+	id S1755843AbYC1Rpu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Mar 2008 13:45:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754064AbYC1Rpl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Mar 2008 13:37:39 -0400
-Received: from penti.org ([193.167.33.200]:54122 "EHLO penti.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752337AbYC1Rhi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Mar 2008 13:37:38 -0400
-Date: Fri, 28 Mar 2008 19:37:29 +0200 (EET)
-From: Harald Hannelius <harald@iki.fi>
-X-X-Sender: harald@penti.org
-To: Jiri Kosina <jkosina@suse.cz>
-cc: Michael Chan <mchan@broadcom.com>, David Miller <davem@davemloft.net>,
-       linux-kernel@vger.kernel.org, netdev <netdev@vger.kernel.org>
-Subject: Re: tg3 bad performance, lots of hardware interrupts
-In-Reply-To: <Pine.LNX.4.64.0803281811420.32241@twin.jikos.cz>
-Message-ID: <alpine.DEB.1.00.0803281931060.5286@penti.org>
-References: <alpine.DEB.1.00.0803271532570.30549@penti.org> <20080327.144925.196529669.davem@davemloft.net> <1206666100.5368.6.camel@dell> <alpine.DEB.1.00.0803281440460.23558@penti.org> <1206726560.6866.5.camel@dell>
- <Pine.LNX.4.64.0803281811420.32241@twin.jikos.cz>
-User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
+	Fri, 28 Mar 2008 13:45:41 -0400
+Received: from rv-out-0910.google.com ([209.85.198.187]:63999 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754092AbYC1Rpl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Mar 2008 13:45:41 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=prs7rTm5SYXcXWUubblEwXr3lcvs5xD3fHLdGTopvHTgew/A8Z5kefcujW7mvGTb3UgCPP6h2I3Z4erbzCIfzO7qdyxZ+507MBGkBB4yaisKCW65soHPhH4gc0fnhwTQ8EAfFvf7AI1aJErwsi3UCnYHppaISyKCixOoL8QsHas=
+Message-ID: <42212ce70803281039s4465051ag4cc908f7e857bed5@mail.gmail.com>
+Date: Fri, 28 Mar 2008 18:39:03 +0100
+From: "Marco Mangiante" <marco.mangiante@gmail.com>
+To: "Alan Stern" <stern@rowland.harvard.edu>, linux-kernel@vger.kernel.org,
+       linux-usb@vger.kernel.org, akpm@linux-foundation.org
+Subject: Re: [PROBLEM]: onda h600 express card don't work inside the elan u132 usb adapter
+In-Reply-To: <Pine.LNX.4.44L0.0803231849550.6631-100000@netrider.rowland.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <42212ce70803230310l446bff1cs33740a43d81eeb96@mail.gmail.com>
+	 <Pine.LNX.4.44L0.0803231849550.6631-100000@netrider.rowland.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello Alan,
 
-On Fri, 28 Mar 2008, Jiri Kosina wrote:
-> On Fri, 28 Mar 2008, Michael Chan wrote:
+> I have no idea, sorry.  Maybe someone at Elan Digital Systems can help
+> you.
 
->>> Phew, I thought that running ethtool -t was like doing stop-A-sync on
->>> a Sun. It took almost half an hour to run that ethtool -t command;
->> Something is very wrong.  ethtool -t should only take a few seconds to
->> complete.  You can try ethtool -t eth0 online to reduce the number of
->> tests to see if it makes a difference.
->> How many of these NICs do you have?  If you have more than one, do they
->> all behave the same way?  Have they ever worked well before?
->
-> Harald, is the IRQ of eth0 shared with any other device? (cat
-> /proc/interrupts will show).
+do you think it is possible to contact the creator and maintainer of
+the driver, Tony Olech? Can you suggest me in what mode I can do it?
 
-# cat /proc/interrupts
-            CPU0       CPU1
-   0:        111          1   IO-APIC-edge      timer
-   1:          0          2   IO-APIC-edge      i8042
-   2:          0          0    XT-PIC-XT        cascade
-   5:          0          0   IO-APIC-fasteoi   sata_nv
-   7:        856         51   IO-APIC-fasteoi   ohci_hcd:usb2
-  10:          0          3   IO-APIC-fasteoi   sata_nv, ehci_hcd:usb1
-  11:       4305          7   IO-APIC-fasteoi   sata_nv
-  12:          0          4   IO-APIC-edge      i8042
-216:       4217     128932   PCI-MSI-edge      eth2
-217:     161107     685351   PCI-MSI-edge      eth0
-NMI:          0          0   Non-maskable interrupts
-LOC:    2380762    2619917   Local timer interrupts
-RES:       3000       3269   Rescheduling interrupts
-CAL:         16         31   function call interrupts
-TLB:         64        111   TLB shootdowns
-TRM:          0          0   Thermal event interrupts
-SPU:          0          0   Spurious interrupts
-ERR:          1
-MIS:          0
-
-Well, shared or not, yes and no. I think that /proc/interrupts contains 
-soft-interrupts. The problem child is interface eth2.
-
-As rapported by ifconfig the interface is on IRQ 5:
-
-# ifconfig eth2
-eth2      Link encap:Ethernet  HWaddr 00:10:18:30:E6:D6
-           UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
-           RX packets:196898 errors:0 dropped:0 overruns:0 frame:0
-           TX packets:19 errors:0 dropped:0 overruns:0 carrier:0
-           collisions:0 txqueuelen:1000
-           RX bytes:69887991 (66.6 MiB)  TX bytes:1216 (1.1 KiB)
-           Interrupt:5
-
-That'd be the same as sata_nv.
-
-# ifconfig eth2
-eth2      Link encap:Ethernet  HWaddr 00:10:18:30:E6:D6
-           UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
-           RX packets:196898 errors:0 dropped:0 overruns:0 frame:0
-           TX packets:19 errors:0 dropped:0 overruns:0 carrier:0
-           collisions:0 txqueuelen:1000
-           RX bytes:69887991 (66.6 MiB)  TX bytes:1216 (1.1 KiB)
-           Interrupt:5
-
-I changed the settings "PnP OS" in the BIOS (acpi on/off?) and tried 
-booting with both pci=routeirq (or smth like that, see original post) on 
-and off to no avail.
-
-I'm stumped. I have never experienced anything quite like this before. 
-Usually an IRQ-conflict has crashed my computers, not just slowed them 
-down (or maybe these dual-core opterons are just that incredibly fast 
-nowadays that the do nothing incredibly fast :) ). Then again, I haven't 
-had an IRQ-conflict on my boxen in years.
-
-Buggy motherboard? Buggy NIC? The motherboard has the latest available 
-BIOS as per supermicro's webpage.
-
-I'm getting three PCIe e1000's next week, I'll try with these instead.
+Ah, I see with google that some people touched the u132-hcd driver, so
+maybe it is supported.
 
 
 -- 
-A: Top Posters!                                      |  s/y Charlotta |
-Q: What is the most annoying thing on mailing lists? |    FIN-2674    |
-   http://www.fe83.org/ Finn Express Purjehtijat ry   |  ============= |
-Harald H Hannelius | harald (At) iki (dot) fi | GSM +358 50 594 1020
+Regards,
+
+Marco Mangiante
