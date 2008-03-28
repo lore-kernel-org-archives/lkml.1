@@ -1,72 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759075AbYC1XFm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757959AbYC1XKb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759075AbYC1XFm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Mar 2008 19:05:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758159AbYC1XFa
+	id S1757959AbYC1XKb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Mar 2008 19:10:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755696AbYC1XKT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Mar 2008 19:05:30 -0400
-Received: from rtr.ca ([76.10.145.34]:1819 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758154AbYC1XF2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Mar 2008 19:05:28 -0400
-Message-ID: <47ED79B5.6040205@rtr.ca>
-Date: Fri, 28 Mar 2008 19:05:25 -0400
-From: Mark Lord <lkml@rtr.ca>
-Organization: Real-Time Remedies Inc.
-User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
+	Fri, 28 Mar 2008 19:10:19 -0400
+Received: from mga05.intel.com ([192.55.52.89]:50614 "EHLO
+	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754525AbYC1XKS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Mar 2008 19:10:18 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,572,1199692800"; 
+   d="scan'208";a="541904206"
+Message-ID: <47ED7832.5050702@linux.intel.com>
+Date: Fri, 28 Mar 2008 15:58:58 -0700
+From: Arjan van de Ven <arjan@linux.intel.com>
+User-Agent: Thunderbird 2.0.0.12 (Windows/20080213)
 MIME-Version: 1.0
-To: Greg KH <gregkh@suse.de>, Linux Kernel <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@osdl.org>
-Subject: [PATCH 2.6.25-rc7] fix uevent action-string regression
-References: <47ED3DDE.3030201@rtr.ca>
-In-Reply-To: <47ED3DDE.3030201@rtr.ca>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       NetDev <netdev@vger.kernel.org>
+Subject: Re: Oops/Warning report for the week of March 28th 2008
+References: <47ED3F1A.1090101@linux.intel.com> <alpine.LFD.1.00.0803281310480.14670@woody.linux-foundation.org> <47ED7247.3020203@linux.intel.com>
+In-Reply-To: <47ED7247.3020203@linux.intel.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mark Lord wrote:
-> 
-> On boot, syslog is flooded with "uevent: unsupported action-string;" messages.
-..
-> Mar 28 14:43:29 shrimp kernel: tty ptyqd: uevent: unsupported 
-> action-string; this will be ignored in a future kernel version
-> Mar 28 14:43:29 shrimp kernel: tty ptyqe: uevent: unsupported 
-> action-string; this will be ignored in a future kernel version
-> Mar 28 14:43:29 shrimp kernel: tty ptyqf: uevent: unsupported 
-> action-string; this will be ignored in a future kernel version
-> Mar 28 14:43:29 shrimp kernel: tty ptyr0: uevent: unsupported 
-> action-string; this will be ignored in a future kernel version
-..
+Arjan van de Ven wrote:
+> Linus Torvalds wrote:
+>>
+>>> http://www.kerneloops.org/searchweek.php?search=input_release_device
+>>
+>> The problem with kerneloops is that it seems to be really hard to 
+>> figure out the *source* of the oops. I can find the oopses (and it's 
+>> really good with the whole search-and-clump-together-by-version 
+>> thing), but then when some oops like this is found, it's hard to see 
+>> where your kerneloops scripts found the oops from, so the context of 
+>> the oops is all gone.
 
-These messages are a regression compared with 2.6.24,
-which did not flood the syslog with them.
+> I can try doing some sorting tricks in the grouping, so that those 
+> oopses who have more data than this, show
+> up on top... (and maybe a direct link on the search page)
 
-The actual underlying problem was introduced in 2.6.23,
-when somebody made the string parsing no longer accept nul-terminated
-strings as a valid input to store_uevent().
+I just implemented this; below are two examples of this:
 
-Eg. "add\0" was valid prior to 2.6.23, where the code regressed
-to require "add" without the '\0'.
+http://www.kerneloops.org/searchweek.php?search=tcp_mark_head_lost
+http://www.kerneloops.org/search.php?search=input_release_device
 
-This patch fixes the 2.6.23 / 2.6.24 regressions, by having the code
-once again tolerate the trailing '\0', if present.
-
-According to GregKH, this mainly affects older Ubuntu systems,
-such as the one I have here that requires this fix.
-
-Signed-off-by: Mark Lord <mlord@pobox.com>
-
---- old/lib/kobject_uevent.c	2008-03-28 14:03:46.000000000 -0400
-+++ linux/lib/kobject_uevent.c	2008-03-28 18:53:11.000000000 -0400
-@@ -55,7 +55,7 @@
- 	enum kobject_action action;
- 	int ret = -EINVAL;
- 
--	if (count && buf[count-1] == '\n')
-+	if (count && (buf[count-1] == '\n' || buf[count-1] == '\0'))
- 		count--;
- 
- 	if (!count)
+The ratio of automatic versus mailinglist/bugzilla mails is quite high in favor
+of the automatic ones so there's not all THAT many of these at this point,
+especially in the "searchweek" version, which only shows the last 7 days of
+reports.
