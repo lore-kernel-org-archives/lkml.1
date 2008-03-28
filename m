@@ -1,59 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755537AbYC1BKq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754988AbYC1BUR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755537AbYC1BKq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Mar 2008 21:10:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755363AbYC1BJe
+	id S1754988AbYC1BUR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Mar 2008 21:20:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753330AbYC1BUA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Mar 2008 21:09:34 -0400
-Received: from zrnetservice.com ([209.133.52.163]:58083 "EHLO
-	www.zrnetservice.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755144AbYC1BJb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Mar 2008 21:09:31 -0400
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
+	Thu, 27 Mar 2008 21:20:00 -0400
+Received: from waste.org ([66.93.16.53]:47651 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752477AbYC1BT7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Mar 2008 21:19:59 -0400
+Subject: Re: [PATCH 1/7] [NET]: uninline skb_put, de-bloats a lot
+From: Matt Mackall <mpm@selenic.com>
+To: Joe Perches <joe@perches.com>
+Cc: David Miller <davem@davemloft.net>, ilpo.jarvinen@helsinki.fi,
+       akpm@linux-foundation.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, acme@redhat.com
+In-Reply-To: <1206665680.4849.137.camel@localhost>
+References: <1206621486-5408-1-git-send-email-ilpo.jarvinen@helsinki.fi>
+	 <1206621486-5408-2-git-send-email-ilpo.jarvinen@helsinki.fi>
+	 <1206645050.4849.77.camel@localhost>
+	 <20080327.150456.39560267.davem@davemloft.net>
+	 <1206663095.4122.82.camel@calx>  <1206665680.4849.137.camel@localhost>
+Content-Type: text/plain
+Date: Thu, 27 Mar 2008 20:18:47 -0500
+Message-Id: <1206667127.4122.94.camel@calx>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 
 Content-Transfer-Encoding: 7bit
-Subject: [PATCH 3 of 4] sparsemem: reduce i386 PAE section size
-X-Mercurial-Node: b7d0773c79887ca98d6c9830a5a3ef1b585c4278
-Message-Id: <b7d0773c79887ca98d6c.1206664119@localhost>
-In-Reply-To: <patchbomb.1206664116@localhost>
-Date: Thu, 27 Mar 2008 17:28:39 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: LKML <linux-kernel@vger.kernel.org>, Rusty Russell <rusty@rustcorp.com.au>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Yasunori Goto <y-goto@jp.fujitsu.com>,
-       Christoph Lameter <clameter@sgi.com>,
-       Dave Hansen <dave@linux.vnet.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A 1G section size makes memory hotplug too coarse in a virtual
-environment.  Retuce it by a factor of 2 to 512M.  I would have liked
-to make it smaller, but it runs out of reserved flags in the page flags.
 
-Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Yasunori Goto <y-goto@jp.fujitsu.com>
-Cc: Christoph Lameter <clameter@sgi.com>
-Cc: Dave Hansen <dave@linux.vnet.ibm.com>
----
- include/asm-x86/sparsemem.h |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+On Thu, 2008-03-27 at 17:54 -0700, Joe Perches wrote:
+> On Thu, 2008-03-27 at 19:11 -0500, Matt Mackall wrote:
+> > In the 486 era, when CPU performance was close to 1:1 with memory,
+> > branches were more expensive than sequential memory fetches, and
+> > registers were scarce, inlining made a fair amount of sense.
+> > 
+> > But now we've moved very far away from that indeed:
+> 
+> Systems have certainly improved but Linux is used in a
+> wide variety of CPU Hz, memory & register architectures.
+> 
+> Some of those systems haven't changed at all.
 
-diff --git a/include/asm-x86/sparsemem.h b/include/asm-x86/sparsemem.h
---- a/include/asm-x86/sparsemem.h
-+++ b/include/asm-x86/sparsemem.h
-@@ -16,7 +16,7 @@
- 
- #ifdef CONFIG_X86_32
- # ifdef CONFIG_X86_PAE
--#  define SECTION_SIZE_BITS	30
-+#  define SECTION_SIZE_BITS	29
- #  define MAX_PHYSADDR_BITS	36
- #  define MAX_PHYSMEM_BITS	36
- # else
+It's true. In particular, 486s haven't changed at all since the 486 era.
+What's changed is that people no longer run 486s to go fast, they run
+them to save money. Saving memory is a win for those people.
 
+The same goes for embedded systems. Saving memory is much higher on the
+priority scale than performance. And the fact that saving memory on the
+low end aligns very nicely with increasing performance on the high end
+means that's the direction we're going.
+
+-- 
+Mathematics is the supreme nostalgia of our time.
 
