@@ -1,49 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754206AbYC1N0b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754279AbYC1NcV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754206AbYC1N0b (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Mar 2008 09:26:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752386AbYC1N0V
+	id S1754279AbYC1NcV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Mar 2008 09:32:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752570AbYC1NcO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Mar 2008 09:26:21 -0400
-Received: from wa-out-1112.google.com ([209.85.146.176]:10864 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751548AbYC1N0U (ORCPT
+	Fri, 28 Mar 2008 09:32:14 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:40556 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752191AbYC1NcN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Mar 2008 09:26:20 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=TMS79l3ntyS19s17UMFlGULiqJ0waiCYTzdZOhrwdCndao/oXqZ9FoH70hGbKcRRPg5PuKQ3Hnh3MSBrW0r9j58+4ldetPs63uICgj5tntzD5/nGIGwqPA+aQf94o5nnlxYwK2V5taDZppulcW3lZgy5ly9EtcBoR0bL/WDOQ/A=
-Message-ID: <b6c5339f0803280626p221872b6t15f9b6fc9bc480f3@mail.gmail.com>
-Date: Fri, 28 Mar 2008 09:26:19 -0400
-From: "Bob Copeland" <me@bobcopeland.com>
-To: "Arnd Bergmann" <arnd@arndb.de>
-Subject: Re: [PATCH 5/7] omfs: add bitmap routines
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-In-Reply-To: <200803280451.11216.arnd@arndb.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Fri, 28 Mar 2008 09:32:13 -0400
+Date: Fri, 28 Mar 2008 14:35:37 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: Andi Kleen <andi@firstfloor.org>,
+       Mauro Carvalho Chehab <mchehab@infradead.org>,
+       Linux and Kernel Video <video4linux-list@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: v4l & compat_ioctl
+Message-ID: <20080328133537.GS29105@one.firstfloor.org>
+References: <47ECD0CF.1020003@gmail.com> <87y783jdjo.fsf@basil.nowhere.org> <47ECD715.90507@gmail.com> <20080328113803.GQ29105@one.firstfloor.org> <47ECE318.1030809@gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <1206578760-9050-5-git-send-email-me@bobcopeland.com>
-	 <200803280451.11216.arnd@arndb.de>
-X-Google-Sender-Auth: e193ec81b06b9400
+In-Reply-To: <47ECE318.1030809@gmail.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 27, 2008 at 11:51 PM, Arnd Bergmann <arnd@arndb.de> wrote:
-> On Thursday 27 March 2008, Bob Copeland wrote:
->
->  > +static int nibblemap[] = {4, 3, 3, 2, 3, 2, 2, 1, 3, 2, 2, 1, 2, 1, 1, 0};
->  > +
->  > +unsigned long omfs_count_free(struct super_block *sb)
->
->  I think it would be helpful to express this using hweight64.
+On Fri, Mar 28, 2008 at 01:22:48PM +0100, Jiri Slaby wrote:
+> On 03/28/2008 12:38 PM, Andi Kleen wrote:
+> >BTW i haven't audited them, but if there is u64 or similar in there 
+> >anywhere
+> >be careful about alignment.
+> 
+> Well, not good, some ioctls have different numbers on 32 and 64 bit:
 
-Thanks for the review.
+Then you need compat handlers to translate the numbers.
 
-Yes, that would probably be cleaner.  FWIW minix and affs both have
-this sort of code too.
+> struct v4l2_ext_controls {
+>         __u32 ctrl_class;
+>         __u32 count;
+>         __u32 error_idx;
+>         __u32 reserved[2];
+>         struct v4l2_ext_control *controls;
 
--Bob
+Definitely conversion needed for the pointer too.
+
+> };
+> #define VIDIOC_G_EXT_CTRLS      _IOWR ('V', 71, struct v4l2_ext_controls)
+> as an example.
+> 
+> And alignment is a problem here (v4l2_std_id is u64):
+
+Yes needs conversion for the structure too.
+
+> struct v4l2_standard {
+>         __u32                index;
+>         v4l2_std_id          id;
+>         __u8                 name[24];
+>         struct v4l2_fract    frameperiod; /* Frames, not fields */
+>         __u32                framelines;
+>         __u32                reserved[4];
+> };
+> which results in different ioctl numbers too.
+
+-andi
+
+> 
