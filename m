@@ -1,62 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758394AbYC1Xsv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758433AbYC1X4l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758394AbYC1Xsv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Mar 2008 19:48:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756509AbYC1Xso
+	id S1758433AbYC1X4l (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Mar 2008 19:56:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756526AbYC1X4c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Mar 2008 19:48:44 -0400
-Received: from moutng.kundenserver.de ([212.227.126.183]:55572 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756330AbYC1Xsn convert rfc822-to-8bit (ORCPT
+	Fri, 28 Mar 2008 19:56:32 -0400
+Received: from mga02.intel.com ([134.134.136.20]:16634 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756330AbYC1X4b convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Mar 2008 19:48:43 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: "Luck, Tony" <tony.luck@intel.com>
-Subject: Re: down_spin() implementation
-Date: Sat, 29 Mar 2008 00:48:21 +0100
-User-Agent: KMail/1.9.9
-Cc: "Matthew Wilcox" <matthew@wil.cx>, "Nick Piggin" <nickpiggin@yahoo.com.au>,
-       "Stephen Rothwell" <sfr@canb.auug.org.au>, linux-arch@vger.kernel.org,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org
-References: <1FE6DD409037234FAB833C420AA843ECE9DF60@orsmsx424.amr.corp.intel.com> <20080328124517.GQ16721@parisc-linux.org> <1FE6DD409037234FAB833C420AA843ECF237C0@orsmsx424.amr.corp.intel.com>
-In-Reply-To: <1FE6DD409037234FAB833C420AA843ECF237C0@orsmsx424.amr.corp.intel.com>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Fri, 28 Mar 2008 19:56:31 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,573,1199692800"; 
+   d="scan'208";a="362450953"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
+	charset="us-ascii"
 Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200803290048.22931.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX18TisiY6fXaVOITfUNuU41qu63XM64BYPdnkyS
- qPrvyy0PJrLjj9M9MDzq6g37wg2iZXgVY9KrS6a1FAuFGXFT2k
- J7UE1S0taHSZjxRfwO5Iw==
+Subject: RE: 2.6.25 regression: powertop says 120K wakeups/sec
+Date: Fri, 28 Mar 2008 16:51:57 -0700
+Message-ID: <924EFEDD5F540B4284297C4DC59F3DEEC83EF5@orsmsx423.amr.corp.intel.com>
+In-Reply-To: <200803281636.04029.david-b@pacbell.net>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: 2.6.25 regression: powertop says 120K wakeups/sec
+Thread-Index: AciRLTiSpX2UrFAkSNqRNHbqThyYbQAANYAQ
+References: <20080322202454.9D69DCC0EF@adsl-69-226-248-13.dsl.pltn13.pacbell.net> <200803281509.23107.david-b@pacbell.net> <20080328225604.GA7136@linux-os.sc.intel.com> <200803281636.04029.david-b@pacbell.net>
+From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+To: "David Brownell" <david-b@pacbell.net>
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       <linux-acpi@vger.kernel.org>, "Len Brown" <lenb@kernel.org>
+X-OriginalArrivalTime: 28 Mar 2008 23:49:54.0268 (UTC) FILETIME=[6BC561C0:01C8912E]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 28 March 2008, Luck, Tony wrote:
-> > So it makes little sense to add this to semaphores.  Better to introduce
-> > a spinaphore, as you say.
-> 
-> > struct {
-> >   atomic_t cur;
-> >   int max;
-> > } ss_t;
-> 
-> Could this API sneak into the bottom of one or the other of
-> linux/include/{spinlock,semaphore}.h ... or should it get its own
-> spinaphore.h file?
+ 
+
+>-----Original Message-----
+>From: David Brownell [mailto:david-b@pacbell.net] 
+>Sent: Friday, March 28, 2008 4:36 PM
+>To: Pallipadi, Venkatesh
+>Cc: Andrew Morton; linux-kernel@vger.kernel.org; Rafael J. 
+>Wysocki; linux-acpi@vger.kernel.org; Len Brown
+>Subject: Re: 2.6.25 regression: powertop says 120K wakeups/sec
 >
-> Or should I follow Alan's earlier advice and keep this as an ia64
-> only thing (since I'll be the only user).
+>On Friday 28 March 2008, Venki Pallipadi wrote:
+>
+>> I think I figured out the bug...
+>> 
+>> Can you try the below patch and confirm that it works (over 
+>upstream - ignore
+>> the earlier revert patch I sent to you).
+>
+>That seems to do the job ... thanks!  One more regression
+>fixed, it feels like RC7 is almost done. :)
+>
+>It still says odd things about C0 vs C1 though:  powertop
+>says 100% of the time is in C0, but this patch would seem
+>to be irrelevant if that were true.
+>
 
-If you use the simple version suggested last by Willy, I think it
-could even be open-coded in your TLB management code.
+Great!
 
-Should we decided to make it an official interface, I'd suggest
-putting it into atomic.h, because it operates on a plain atomic_t.
+100% C0 is not real reading. The problem behind that is there is no wat
+to measure exact C1 idle time with halt based C1s. So, we always used to
+report 0 time in acpi and that's what is reported by powertop.
+This should be fixed in future, as we now export approx time (even
+though not exact) in cpuidle and powertop is about to start using it.
 
-	Arnd <><
+Thanks,
+Venki
