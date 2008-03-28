@@ -1,71 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758599AbYC1Uqe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757943AbYC1Uvs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758599AbYC1Uqe (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Mar 2008 16:46:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755057AbYC1UqZ
+	id S1757943AbYC1Uvs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Mar 2008 16:51:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755044AbYC1Uvj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Mar 2008 16:46:25 -0400
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:36422 "EHLO e2.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752886AbYC1UqY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Mar 2008 16:46:24 -0400
-Date: Fri, 28 Mar 2008 13:46:16 -0700
-From: Gary Hade <garyhade@us.ibm.com>
-To: Gary Hade <garyhade@us.ibm.com>
-Cc: Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Meyer <thomas@m3y3r.de>,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       LKML <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Natalie Protasevich <protasnb@gmail.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>, pm@debian.org
-Subject: Re: [patch] pci: revert "PCI: remove transparent bridge sizing"
-Message-ID: <20080328204616.GB6233@us.ibm.com>
-References: <alpine.LFD.1.00.0803261132310.2775@woody.linux-foundation.org> <20080326203012.GB6249@us.ibm.com> <alpine.LFD.1.00.0803261344430.2775@woody.linux-foundation.org> <20080326205828.GA15225@jurassic.park.msu.ru> <alpine.LFD.1.00.0803261416390.2775@woody.linux-foundation.org> <20080326232922.GA15784@jurassic.park.msu.ru> <alpine.LFD.1.00.0803261638350.2775@woody.linux-foundation.org> <alpine.LFD.1.00.0803271004380.2775@woody.linux-foundation.org> <20080327221851.GA9675@jurassic.park.msu.ru> <20080328192402.GA6233@us.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080328192402.GA6233@us.ibm.com>
-User-Agent: Mutt/1.4.1i
+	Fri, 28 Mar 2008 16:51:39 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:41890 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754583AbYC1Uvj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Mar 2008 16:51:39 -0400
+Message-ID: <47ED5A40.9020307@zytor.com>
+Date: Fri, 28 Mar 2008 13:51:12 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+MIME-Version: 1.0
+To: Sam Ravnborg <sam@ravnborg.org>
+CC: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: use of volatile in iounmap()?
+References: <20080328203427.GA14256@uranus.ravnborg.org>
+In-Reply-To: <20080328203427.GA14256@uranus.ravnborg.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 28, 2008 at 12:24:02PM -0700, Gary Hade wrote:
-> On Fri, Mar 28, 2008 at 01:18:51AM +0300, Ivan Kokshaysky wrote:
-> > On Thu, Mar 27, 2008 at 10:12:10AM -0700, Linus Torvalds wrote:
-> > > Actually, before we go any further, there might be a less intrusive 
-> > > alternative: add just a couple of flags to the resource flags field (we 
-> > > still have something like 8 unused bits on 32-bit), and use those to 
-> > > implement a generic "resource_alignment()" routine.
-> > > 
-> > > Two flags would do it:
-> > > 
-> > >  - IORESOURCE_SIZEALIGN: size indicates alignment (regular PCI device 
-> > >    resources)
-> > > 
-> > >  - IORESOURCE_STARTALIGN: start field is alignment (PCI bus resources 
-> > >    during probing)
-> > 
-> > Sounds good to me. So here we go (completely untested, just for review).
+Sam Ravnborg wrote:
+> While reviewing some CAN driver I stumbled on iounmap
+> which has following prototype on x86:
 > 
-> Ivan, After adding a resource_alignment() prototype to
-                 < snip >
-> Will now try on one of our servers that I am the most concerned
-> about.
+> extern void iounmap(volatile void __iomem *addr);
+> 
+> I argued that the driver should not use volatile
+> but then I cannot explain why the argument to
+> iounmap takes a volatile.
+> 
+> The same goes for many other functions in
+> the io*.h headers.
+> 
+> Grepping the other archs they mostly follow
+> same pattern.
+> 
+> Can anyone explain the rational for volatile in this case.
+> 
 
-Just tried it on an IBM x3850.  No obvious problems or unexpected
-messages spotted during/following boot or during/following hotplug
-of PCI-X and PCIe cards.
+Yes.  The use of volatile in a function prototype like this means that 
+it is valid to pass a volatile pointer to that function -- in other 
+words, we're telling gcc that we're not going to do anything with the 
+pointer that is invalid for a volatile pointer.
 
-Gary
+A lot of the "volatile considered harmful" stuff that has been bandied 
+about is explicitly about marking *data* items volatile (it does have 
+its uses, but it's easy to get wrong); Linus has explicitly made the 
+distinction between volatile *data* and volatile *operations*.
 
--- 
-Gary Hade
-System x Enablement
-IBM Linux Technology Center
-503-578-4503  IBM T/L: 775-4503
-garyhade@us.ibm.com
-http://www.ibm.com/linux/ltc
+	-hpa
