@@ -1,81 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755404AbYC1QR3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755968AbYC1QTF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755404AbYC1QR3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Mar 2008 12:17:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753849AbYC1QRS
+	id S1755968AbYC1QTF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Mar 2008 12:19:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753285AbYC1QSy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Mar 2008 12:17:18 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:53050 "EHLO ogre.sisk.pl"
+	Fri, 28 Mar 2008 12:18:54 -0400
+Received: from www.tglx.de ([62.245.132.106]:36164 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752863AbYC1QRS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Mar 2008 12:17:18 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Adrian Bunk <bunk@kernel.org>
-Subject: Re: 2.6.25-rc7-git2: Reported regressions from 2.6.24
-Date: Fri, 28 Mar 2008 17:17:17 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       LKML <linux-kernel@vger.kernel.org>,
+	id S1752863AbYC1QSx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Mar 2008 12:18:53 -0400
+Date: Fri, 28 Mar 2008 17:18:11 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: LKML <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@kernel.org>,
        Andrew Morton <akpm@linux-foundation.org>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       Natalie Protasevich <protasnb@gmail.com>
-References: <200803272353.51901.rjw@sisk.pl> <alpine.LFD.1.00.0803281215120.3781@apollo.tec.linutronix.de> <20080328113112.GE32200@cs181133002.pp.htv.fi>
-In-Reply-To: <20080328113112.GE32200@cs181133002.pp.htv.fi>
+       Natalie Protasevich <protasnb@gmail.com>,
+       Yinghai Lu <yhlu.kernel@gmail.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Venkatesch Pallipadi <venkatesh.pallipadi@intel.com>
+Subject: Re: 2.6.25-rc7-git2: Reported regressions from 2.6.24
+In-Reply-To: <200803281712.05432.rjw@sisk.pl>
+Message-ID: <alpine.LFD.1.00.0803281714470.3781@apollo.tec.linutronix.de>
+References: <200803272353.51901.rjw@sisk.pl> <alpine.LFD.1.00.0803281004440.3781@apollo.tec.linutronix.de> <200803281712.05432.rjw@sisk.pl>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200803281717.17962.rjw@sisk.pl>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday, 28 of March 2008, Adrian Bunk wrote:
-> On Fri, Mar 28, 2008 at 12:16:03PM +0100, Thomas Gleixner wrote:
-> > On Fri, 28 Mar 2008, Adrian Bunk wrote:
-> > > On Fri, Mar 28, 2008 at 12:00:25PM +0100, Peter Zijlstra wrote:
-> > > > On Fri, 2008-03-28 at 11:58 +0100, Thomas Gleixner wrote:
-> > > > > On Fri, 28 Mar 2008, Thomas Gleixner wrote:
-> > > > > > > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=9969
-> > > > > > > Subject		: 2.6.24-git15 Keyboard Issue?
-> > > > > > > Submitter	: Chris Holvenstot <cholvenstot@comcast.net>
-> > > > > > > Date		: 2008-02-06 14:02 (51 days old)
-> > > > > > > References	: http://lkml.org/lkml/2008/2/6/100
-> > > > > > > 		  http://lkml.org/lkml/2008/2/13/82
-> > > > > > > Handled-By	: Thomas Gleixner <tglx@linutronix.de>
-> > > > > > > Patch		: http://lkml.org/lkml/2008/2/15/343
-> > > > > >  
-> > > > > > asked the bug reporter for an update.
-> > > > > 
-> > > > > Now that lkml.org is working again, I checked the patch which is
-> > > > > referenced above and I have a hard time to connect it even remotely to
-> > > > > that bug.
-> > > > > 
-> > > > > As far as I can tell the discussion on lkml identified GROUP_SCHED=y
-> > > > > as the culprit, but I have no idea whether there was any resolution
-> > > > > other than disabling GROUP_SCHED.
-> > > > > 
-> > > > > Peter ??
-> > > > 
-> > > > Correct, I am working on the issue but that's not going to be .25 stuff.
-> > > 
-> > > How are we going to get 2.6.25 working no worse than 2.6.24?
-> > > 
-> > > Letting GROUP_SCHED depend on BROKEN would sound logical, but that would 
-> > > also kill FAIR_GROUP_SCHED.
+On Fri, 28 Mar 2008, Rafael J. Wysocki wrote:
+> > > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10153
+> > > Subject		: (regression) kernel/timeconst.h bugs with HZ=128
+> > > Submitter	: David Brownell <david-b@pacbell.net>
+> > > Date		: 2008-02-26 19:32 (31 days old)
+> > > References	: http://lkml.org/lkml/2008/2/26/294
+> > > Handled-By	: H. Peter Anvin <hpa@zytor.com>
+> > > Patch		: http://bugzilla.kernel.org/attachment.cgi?id=15114&amp;action=view
+> > > 		  http://bugzilla.kernel.org/attachment.cgi?id=15115&amp;action=view
 > > 
-> > I think default it to off should be sufficient.
+> > Have those patches made it somewhere else than into the bugzilla ?
 > 
-> A system administrator saying yes to GROUP_SCHED when running
-> "make oldconfig" can hardly be blamed for doing so, and "makes your 
-> mouse and keyboard unusable" mustn't be the result.
-> 
-> Avoiding unexpected breakages when toggling an option is _much_ more 
-> important than e.g. whether some exotic randconfig configuration 
-> compiles.
+> I don't think so.
 
-Perhaps add something like "(UNRELIABLE)" to the Kconfig option?
+They touch a bunch of files but they are pretty straight forward and
+obvious. OTOH HZ=128 is not really anyway near to a default config and
+I think we can safely postpone that one to .26
 
-Rafael
+@hpa: can you please post them on LKML so they don't settle dust in
+the bugzilla ?
+
+Thanks,
+	tglx
