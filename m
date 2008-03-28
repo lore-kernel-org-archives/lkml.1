@@ -1,42 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754406AbYC1Nkz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755273AbYC1Nl0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754406AbYC1Nkz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Mar 2008 09:40:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752446AbYC1Nks
+	id S1755273AbYC1Nl0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Mar 2008 09:41:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754517AbYC1NlT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Mar 2008 09:40:48 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:46743 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752431AbYC1Nkr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Mar 2008 09:40:47 -0400
-Date: Fri, 28 Mar 2008 14:44:13 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Paul Jackson <pj@sgi.com>
-Cc: Yinghai Lu <yhlu.kernel@gmail.com>, ying.huang@intel.com, hpa@zytor.com,
-       andi@firstfloor.org, mingo@redhat.com, tglx@linutronix.de,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/4] x86_64 boot -v2: Add linked listof struct setup_data to boot protocol
-Message-ID: <20080328134413.GT29105@one.firstfloor.org>
-References: <1206672578.13404.21.camel@caritas-dev.intel.com> <86802c440803272233ved9c1d6w44f8722c85cf4c62@mail.gmail.com> <20080328083613.f058172f.pj@sgi.com>
+	Fri, 28 Mar 2008 09:41:19 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:4728 "EHLO spitz.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754108AbYC1NlS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Mar 2008 09:41:18 -0400
+Date: Fri, 28 Mar 2008 14:41:02 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: yhlu.kernel@gmail.com
+Cc: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: pat cpu feature bit setting for known cpus
+Message-ID: <20080328134102.GA4404@ucw.cz>
+References: <200803242324.35357.yhlu.kernel@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080328083613.f058172f.pj@sgi.com>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <200803242324.35357.yhlu.kernel@gmail.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 28, 2008 at 08:36:13AM -0500, Paul Jackson wrote:
-> YH wrote:
-> > interesting, that 512nodes/4096 box physics memory is not continuous?
+
+On Mon 2008-03-24 23:24:34, Yinghai Lu wrote:
+> [PATCH] x86: pat cpu feature bit setting for known cpus
 > 
-> If each node board is stuffed with the same amount of RAM,
-> and that amount of RAM is a power of two size, then you
+> Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
+> 
+> diff --git a/arch/x86/kernel/cpu/common.c b/arch/x86/kernel/cpu/common.c
+> index eb94460..b186047 100644
+> --- a/arch/x86/kernel/cpu/common.c
+> +++ b/arch/x86/kernel/cpu/common.c
+> @@ -309,6 +309,19 @@ static void __cpuinit early_get_cap(struct cpuinfo_x86 *c)
+>  
+>  	}
+>  
+> +	clear_cpu_cap(c, X86_FEATURE_PAT);
+> +
+> +	switch (c->x86_vendor) {
+> +	case X86_VENDOR_AMD:
+> +		if (c->x86 >= 0xf && c->x86 <= 0x11)
+> +			set_cpu_cap(c, X86_FEATURE_PAT);
+> +		break;
+> +	case X86_VENDOR_INTEL:
+> +		if (c->x86 == 0xF || (c->x86 == 6 && c->x86_model >= 15))
+> +			set_cpu_cap(c, X86_FEATURE_PAT);
+> +		break;
+> +	}
+> +
+>  }
+>  
+>  /*
+> @@ -397,6 +410,18 @@ static void __cpuinit generic_identify(struct cpuinfo_x86 *c)
+>  		init_scattered_cpuid_features(c);
+>  	}
+>  
+> +	clear_cpu_cap(c, X86_FEATURE_PAT);
+> +
+> +	switch (c->x86_vendor) {
+> +	case X86_VENDOR_AMD:
+> +		if (c->x86 >= 0xf && c->x86 <= 0x11)
+> +			set_cpu_cap(c, X86_FEATURE_PAT);
+> +		break;
+> +	case X86_VENDOR_INTEL:
+> +		if (c->x86 == 0xF || (c->x86 == 6 && c->x86_model >= 15))
+> +			set_cpu_cap(c, X86_FEATURE_PAT);
+> +		break;
+> +	}
+>  }
+>  
 
-There are likely per node memory holes too, right?
+Cut&paste programming? Can you make it a function?
 
-So even in that scenario it would be not continuous.
+> diff --git a/arch/x86/kernel/setup_64.c b/arch/x86/kernel/setup_64.c
+> index 3f1dc97..ddaaaaa 100644
+> --- a/arch/x86/kernel/setup_64.c
+> +++ b/arch/x86/kernel/setup_64.c
+> @@ -979,12 +979,19 @@ static void __cpuinit early_identify_cpu(struct cpuinfo_x86 *c)
+>  	if (c->extended_cpuid_level >= 0x80000007)
+>  		c->x86_power = cpuid_edx(0x80000007);
+>  
+> +
+> +	clear_cpu_cap(c, X86_FEATURE_PAT);
 
--Andi
+
+
+>  	switch (c->x86_vendor) {
+>  	case X86_VENDOR_AMD:
+>  		early_init_amd(c);
+> +		if (c->x86 >= 0xf && c->x86 <= 0x11)
+> +			set_cpu_cap(c, X86_FEATURE_PAT);
+>  		break;
+>  	case X86_VENDOR_INTEL:
+>  		early_init_intel(c);
+> +		if (c->x86 == 0xF || (c->x86 == 6 && c->x86_model >= 15))
+> +			set_cpu_cap(c, X86_FEATURE_PAT);
+>  		break;
+>  	}
+
+one more copy...
+							Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
