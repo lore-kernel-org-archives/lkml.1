@@ -1,48 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755778AbYC1LZu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754637AbYC1Lbh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755778AbYC1LZu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Mar 2008 07:25:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753312AbYC1LZm
+	id S1754637AbYC1Lbh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Mar 2008 07:31:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753278AbYC1Lb3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Mar 2008 07:25:42 -0400
-Received: from smtp-out04.alice-dsl.net ([88.44.63.6]:43777 "EHLO
-	smtp-out04.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752656AbYC1LZm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Mar 2008 07:25:42 -0400
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: Mauro Carvalho Chehab <mchehab@infradead.org>,
-       Linux and Kernel Video <video4linux-list@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: v4l & compat_ioctl
-References: <47ECD0CF.1020003@gmail.com>
-From: Andi Kleen <andi@firstfloor.org>
-Date: 28 Mar 2008 12:25:31 +0100
-In-Reply-To: <47ECD0CF.1020003@gmail.com>
-Message-ID: <87y783jdjo.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
+	Fri, 28 Mar 2008 07:31:29 -0400
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:52435 "EHLO smtp6.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753257AbYC1Lb2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Mar 2008 07:31:28 -0400
+Date: Fri, 28 Mar 2008 13:31:12 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Peter Zijlstra <peterz@infradead.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Natalie Protasevich <protasnb@gmail.com>
+Subject: Re: 2.6.25-rc7-git2: Reported regressions from 2.6.24
+Message-ID: <20080328113112.GE32200@cs181133002.pp.htv.fi>
+References: <200803272353.51901.rjw@sisk.pl> <alpine.LFD.1.00.0803281004440.3781@apollo.tec.linutronix.de> <alpine.LFD.1.00.0803281155350.3781@apollo.tec.linutronix.de> <1206702025.8514.624.camel@twins> <20080328111334.GD32200@cs181133002.pp.htv.fi> <alpine.LFD.1.00.0803281215120.3781@apollo.tec.linutronix.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 28 Mar 2008 11:18:53.0205 (UTC) FILETIME=[8148D450:01C890C5]
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.1.00.0803281215120.3781@apollo.tec.linutronix.de>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jiri Slaby <jirislaby@gmail.com> writes:
+On Fri, Mar 28, 2008 at 12:16:03PM +0100, Thomas Gleixner wrote:
+> On Fri, 28 Mar 2008, Adrian Bunk wrote:
+> > On Fri, Mar 28, 2008 at 12:00:25PM +0100, Peter Zijlstra wrote:
+> > > On Fri, 2008-03-28 at 11:58 +0100, Thomas Gleixner wrote:
+> > > > On Fri, 28 Mar 2008, Thomas Gleixner wrote:
+> > > > > > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=9969
+> > > > > > Subject		: 2.6.24-git15 Keyboard Issue?
+> > > > > > Submitter	: Chris Holvenstot <cholvenstot@comcast.net>
+> > > > > > Date		: 2008-02-06 14:02 (51 days old)
+> > > > > > References	: http://lkml.org/lkml/2008/2/6/100
+> > > > > > 		  http://lkml.org/lkml/2008/2/13/82
+> > > > > > Handled-By	: Thomas Gleixner <tglx@linutronix.de>
+> > > > > > Patch		: http://lkml.org/lkml/2008/2/15/343
+> > > > >  
+> > > > > asked the bug reporter for an update.
+> > > > 
+> > > > Now that lkml.org is working again, I checked the patch which is
+> > > > referenced above and I have a hard time to connect it even remotely to
+> > > > that bug.
+> > > > 
+> > > > As far as I can tell the discussion on lkml identified GROUP_SCHED=y
+> > > > as the culprit, but I have no idea whether there was any resolution
+> > > > other than disabling GROUP_SCHED.
+> > > > 
+> > > > Peter ??
+> > > 
+> > > Correct, I am working on the issue but that's not going to be .25 stuff.
+> > 
+> > How are we going to get 2.6.25 working no worse than 2.6.24?
+> > 
+> > Letting GROUP_SCHED depend on BROKEN would sound logical, but that would 
+> > also kill FAIR_GROUP_SCHED.
+> 
+> I think default it to off should be sufficient.
 
-> wouldn't make sense to add v4l ioctls to ioctl_start
-> (fs/compat_ioctl.c) table to allow i386 stuff such as skype to run
-> video on x86_64?
+A system administrator saying yes to GROUP_SCHED when running
+"make oldconfig" can hardly be blamed for doing so, and "makes your 
+mouse and keyboard unusable" mustn't be the result.
 
-Don't make it a question.
+Avoiding unexpected breakages when toggling an option is _much_ more 
+important than e.g. whether some exotic randconfig configuration 
+compiles.
 
-In general any ioctl in any driver runnable on any 64bit
-architecture that has a 32bit compat layer should have compat 
-support. Not having it is a bug.
+> Thanks,
+> 	tglx
 
-However the new standard way to do this is to not 
-add new stuff into compat_ioctl.c, but define ->compat_ioctl
-entry points in the low level drivers (and ideally converted
-them to ->unlocked_ioctl too while you're at it)
+cu
+Adrian
 
--Andi
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
