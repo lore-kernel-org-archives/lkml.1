@@ -1,80 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756215AbYC1R3a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756201AbYC1RbW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756215AbYC1R3a (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Mar 2008 13:29:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753999AbYC1R3W
+	id S1756201AbYC1RbW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Mar 2008 13:31:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754050AbYC1RbK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Mar 2008 13:29:22 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:39791 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754086AbYC1R3V (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Mar 2008 13:29:21 -0400
-Date: Fri, 28 Mar 2008 10:27:44 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-cc: Christoph Lameter <clameter@sgi.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Pawel Staszewski <pstaszewski@artcom.pl>,
-       LKML <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Natalie Protasevich <protasnb@gmail.com>
-Subject: Re: 2.6.25-rc7-git2: Reported regressions from 2.6.24
-In-Reply-To: <84144f020803281015s60370d9dpec0913c33004b6c2@mail.gmail.com>
-Message-ID: <alpine.LFD.1.00.0803281017500.14670@woody.linux-foundation.org>
-References: <200803272353.51901.rjw@sisk.pl>  <alpine.LFD.1.00.0803271859280.14670@woody.linux-foundation.org>  <Pine.LNX.4.64.0803272002090.11979@schroedinger.engr.sgi.com>  <alpine.LFD.1.00.0803272050290.14670@woody.linux-foundation.org>
- <84144f020803281015s60370d9dpec0913c33004b6c2@mail.gmail.com>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+	Fri, 28 Mar 2008 13:31:10 -0400
+Received: from penti.org ([193.167.33.200]:60288 "EHLO penti.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753680AbYC1RbJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Mar 2008 13:31:09 -0400
+Date: Fri, 28 Mar 2008 19:31:01 +0200 (EET)
+From: Harald Hannelius <harald@iki.fi>
+X-X-Sender: harald@penti.org
+To: Michael Chan <mchan@broadcom.com>
+cc: David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
+       netdev <netdev@vger.kernel.org>
+Subject: Re: tg3 bad performance, lots of hardware interrupts
+In-Reply-To: <1206726560.6866.5.camel@dell>
+Message-ID: <alpine.DEB.1.00.0803281925500.5286@penti.org>
+References: <alpine.DEB.1.00.0803271532570.30549@penti.org> <20080327.144925.196529669.davem@davemloft.net> <1206666100.5368.6.camel@dell> <alpine.DEB.1.00.0803281440460.23558@penti.org> <1206726560.6866.5.camel@dell>
+User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
+On Fri, 28 Mar 2008, Michael Chan wrote:
+> On Fri, 2008-03-28 at 15:04 +0200, Harald Hannelius wrote:
 
-On Fri, 28 Mar 2008, Pekka Enberg wrote:
-> 
-> On Fri, Mar 28, 2008 at 6:00 AM, Linus Torvalds
-> <torvalds@linux-foundation.org> wrote:
-> >  And the fact is, passing in GFP_ZERO from the SLUB code is a bug
-> >  regardless, because it unnecessarily does the dual memset().
-> 
-> We clear GFP_ZERO in new_slab() so the normal kmalloc()/kzalloc() path
-> should be fine but don't do it for kmalloc_large() nor
-> kmalloc_large_node(). Is that the bug here?
+>> Phew, I thought that running ethtool -t was like doing stop-A-sync on
+>> a
+>> Sun. It took almost half an hour to run that ethtool -t command;
+>
+> Something is very wrong.  ethtool -t should only take a few seconds to
+> complete.  You can try ethtool -t eth0 online to reduce the number of
+> tests to see if it makes a difference.
 
-Dammit, NO.
+Here's the output of ethtool -t eth2:
 
-The bug was that the commit I made (which was correct and robust) was then 
-partially reverted by Christoph for no good reason. At that point, 
-kmalloc_large() didn't even exist, so at that point the change was 
-"technically correct" (since the only user of gfpflags really did end up 
-clearing it somewhere deep in its callchain).
+The test result is PASS
+The test extra info:
+nvram test     (online)          0
+link test      (online)          0
+register test  (offline)         0
+memory test    (offline)         0
+loopback test  (offline)         0
+interrupt test (offline)         0
 
-So when that original 3811dbf67162bd08412f1b0e02e554f353e93bdb happened, 
-it wasn't an outright bug - but that doesn't make it right. That commit 
-was always just a bug waiting to happen, because it just set things up for 
-later problems by retaining that bit when it really shouldn't have been 
-retained, and forcing all future callers to be careful. Which they 
-obviously were not!
+I just started a 'ethtool -t eth2 online' and that one took just some 10 
+seconds or so.
 
-Yes, you can clear GFP_ZERO in multiple illogical places, and it will fix 
-the bug. Or you can clear it in *one* place, that is in on the direct 
-callchain from the person who actually does the memset(0), and even add a 
-comment that says exactly what is going on.
+# ethtool -t eth2 online 2>&1 | tee ethtool-output.log
+The test result is PASS
+The test extra info:
+nvram test     (online) 	 0
+link test      (online) 	 0
+register test  (offline)	 0
+memory test    (offline)	 0
+loopback test  (offline)	 0
+interrupt test (offline)	 0
+# mpstat 2 2>&1 | tee ethtool2.log
+Linux 2.6.24.4 (mauer) 	03/28/2008
 
-So the fact is, commit 3811dbf67162bd08412f1b0e02e554f353e93bdb is and was 
-total and utter crap. I've reverted it in my tree. It's crap not because 
-it was buggy when it was put in, but because it was *fragile* when it was 
-put in. And that fragility ended up causing a bug later.
+05:22:42 PM  CPU   %user   %nice    %sys %iowait    %irq   %soft  %steal   %idle    intr/s
+05:22:44 PM  all    0.00    0.00    0.00    0.00   11.63    7.56    0.00   80.81    102.99
+05:22:46 PM  all    0.00    0.00    0.27    0.00    8.33    4.84    0.00   86.56    123.00
+05:22:48 PM  all    0.00    0.00    0.00    0.00   12.03    7.16    0.00   80.80    108.46
+05:22:50 PM  all    0.00    0.00    0.00    0.00   10.47    5.23    0.00   84.30    113.93
+05:22:52 PM  all    0.00    0.00    0.00    0.00   12.93   10.06    0.00   77.01    135.00
+05:22:55 PM  all    0.00    0.00   18.11    0.00   24.25   12.62    0.00   45.02    158.28
+05:22:57 PM  all    0.00    0.00    0.82    0.00   13.11   10.38    0.00   75.68    146.04
+05:22:59 PM  all    0.00    0.00    0.29    0.00   18.77   12.61    0.00   68.33    136.32
+05:23:01 PM  all    0.00    0.00    0.00    0.00   13.64    7.67    0.00   78.69    112.50
+05:23:03 PM  all    0.00    0.00    0.00    0.00    9.19    4.86    0.00   85.95    110.50
+05:23:05 PM  all    0.00    0.00    0.00    0.00   13.64    7.67    0.00   78.69    108.00
 
-I'm getting really tired of slub. It was supposed to be simpler code than 
-slab, and yes, it's simpler, but it has been buggy as hell, and part of it 
-has been that people just haven't been careful enough, and haven't written 
-code to be defensive and easy-to-follow.
+> How many of these NICs do you have?  If you have more than one, do they
+> all behave the same way?  Have they ever worked well before?
 
-So the *last* thing we want to do is to clear GFP_ZERO in multiple subtle 
-places based on new random code being added. We want to clear it at the 
-top level, so that no other code never ever even has to _think_ about it!
+It's a brand spanking new computer, equipped with three of these BCM5751 
+NICs made by HP. I have ripped out all but one, and I have also tested the 
+NIC in all three available PCIe slots. Same result.
 
-			Linus
+When all three NIC's where plugged in they didn't work. All three behave 
+the same one-by-one.
+
+I don't know if they have worked before.
+
+-- 
+A: Top Posters!                                      |  s/y Charlotta |
+Q: What is the most annoying thing on mailing lists? |    FIN-2674    |
+   http://www.fe83.org/ Finn Express Purjehtijat ry   |  ============= |
+Harald H Hannelius | harald (At) iki (dot) fi | GSM +358 50 594 1020
