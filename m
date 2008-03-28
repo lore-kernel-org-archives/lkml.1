@@ -1,48 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755000AbYC1KWt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755253AbYC1KYM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755000AbYC1KWt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Mar 2008 06:22:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752826AbYC1KWm
+	id S1755253AbYC1KYM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Mar 2008 06:24:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753294AbYC1KX4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Mar 2008 06:22:42 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:52612 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752471AbYC1KWl (ORCPT
+	Fri, 28 Mar 2008 06:23:56 -0400
+Received: from fg-out-1718.google.com ([72.14.220.157]:25452 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752553AbYC1KXz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Mar 2008 06:22:41 -0400
-Date: Fri, 28 Mar 2008 03:21:39 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Rodolfo Giometti <giometti@linux.it>
-Cc: linux-kernel@vger.kernel.org, David Woodhouse <dwmw2@infradead.org>,
-       Dave Jones <davej@redhat.com>, Sam Ravnborg <sam@ravnborg.org>,
-       Greg KH <greg@kroah.com>, Randy Dunlap <randy.dunlap@oracle.com>
-Subject: Re: [PATCH 1/7] LinuxPPS core support.
-Message-Id: <20080328032139.7af69ff9.akpm@linux-foundation.org>
-In-Reply-To: <12048053473401-git-send-email-giometti@linux.it>
-References: <12048053463198-git-send-email-giometti@linux.it>
-	<12048053473401-git-send-email-giometti@linux.it>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 28 Mar 2008 06:23:55 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=message-id:date:from:to:subject:cc:mime-version:content-type;
+        b=jNv8VopqPw3BainRccGAgt2HNMNdSrfbbhC/DWce0ueSlzGNJgSRB/cw+53gergf0KLsqRvo/88WHGq5gHuooVlxW9TbHlO4D0QfTzR9YDTcvfp/BPA9orTyAvfUgIDnsIt/1D/zZRRxW6UIvrBOsvXB6ulRvQldNm5vbKYTI68=
+Message-ID: <eb3ff54b0803280323w3b87f3fdy1ecfdb6424e62795@mail.gmail.com>
+Date: Fri, 28 Mar 2008 13:23:53 +0300
+From: "Rami Rosen" <ramirose@gmail.com>
+To: "David Miller" <davem@davemloft.net>, netdev@vger.kernel.org
+Subject: [PATCH] [net-2.6.26] [IPV6] [CLEANUP] Remove unused method declaration in include/net/addrconf.h.
+Cc: linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: multipart/mixed; 
+	boundary="----=_Part_3286_20348528.1206699833583"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu,  6 Mar 2008 13:09:00 +0100 Rodolfo Giometti <giometti@linux.it> wrote:
+------=_Part_3286_20348528.1206699833583
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-> This patch adds the kernel side of the PPS support currently named
-> "LinuxPPS".
+Hi,
+  This patches removes unused declaration of addrconf_forwarding_on() method
+  in include/net/addrconf.h.
 
-powerpc:
+Regards,
+Rami Rosen
 
-drivers/pps/pps.c: In function 'pps_cdev_ioctl':
-drivers/pps/pps.c:166: warning: format '%lld' expects type 'long long int', but argument 2 has type '__s64'
-drivers/pps/kapi.c: In function 'pps_event':
-drivers/pps/kapi.c:225: warning: format '%llu' expects type 'long long unsigned int', but argument 3 has type '__s64'
-drivers/pps/sysfs.c: In function 'pps_show_assert':
-drivers/pps/sysfs.c:42: warning: format '%lld' expects type 'long long int', but argument 3 has type '__s64'
-drivers/pps/sysfs.c:42: warning: format '%lld' expects type 'long long int', but argument 3 has type '__s64'
-drivers/pps/sysfs.c: In function 'pps_show_clear':
-drivers/pps/sysfs.c:56: warning: format '%lld' expects type 'long long int', but argument 3 has type '__s64'
-drivers/pps/sysfs.c:56: warning: format '%lld' expects type 'long long int', but argument 3 has type '__s64'
+
+Signed-off-by: Rami Rosen <ramirose@gmail.com>
+
+------=_Part_3286_20348528.1206699833583
+Content-Type: text/plain; name=patch.txt
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_fecltz9p0
+Content-Disposition: attachment; filename=patch.txt
+
+ZGlmZiAtLWdpdCBhL2luY2x1ZGUvbmV0L2FkZHJjb25mLmggYi9pbmNsdWRlL25ldC9hZGRyY29u
+Zi5oCmluZGV4IGQwYzQ3YzMuLmQ4OWIwYmMgMTAwNjQ0Ci0tLSBhL2luY2x1ZGUvbmV0L2FkZHJj
+b25mLmgKKysrIGIvaW5jbHVkZS9uZXQvYWRkcmNvbmYuaApAQCAtMTg1LDcgKzE4NSw2IEBAIHN0
+YXRpYyBpbmxpbmUgdm9pZCBpbjZfaWZhX3B1dChzdHJ1Y3QgaW5ldDZfaWZhZGRyICppZnApCiAj
+ZGVmaW5lIGluNl9pZmFfaG9sZChpZnApCWF0b21pY19pbmMoJihpZnApLT5yZWZjbnQpCiAKIAot
+ZXh0ZXJuIHZvaWQJCQlhZGRyY29uZl9mb3J3YXJkaW5nX29uKHZvaWQpOwogLyoKICAqCUhhc2gg
+ZnVuY3Rpb24gdGFrZW4gZnJvbSBuZXRfYWxpYXMuYwogICovCg==
+------=_Part_3286_20348528.1206699833583--
