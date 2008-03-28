@@ -1,76 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756653AbYC1SRS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757481AbYC1SRd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756653AbYC1SRS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Mar 2008 14:17:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754391AbYC1SRI
+	id S1757481AbYC1SRd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Mar 2008 14:17:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755015AbYC1SRX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Mar 2008 14:17:08 -0400
-Received: from wf-out-1314.google.com ([209.85.200.174]:47101 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754252AbYC1SRG (ORCPT
+	Fri, 28 Mar 2008 14:17:23 -0400
+Received: from E23SMTP02.au.ibm.com ([202.81.18.163]:46206 "EHLO
+	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754391AbYC1SRW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Mar 2008 14:17:06 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=bh2TwAD6ttO8lEDY69JwVtqwwLPy5q+stHD4kVhN4bLfIR9YnNiYtgXapCKXaTFULW4fdYah/F7fkz+JPihXRP3pYePL10OkcSENbQrt+Ig2Gf/S0lsvUchgidxtSgnAxf1d6l6cqtxEuh4DKblmEz8b7WDALhxvMRHXPl15KhM=
-Message-ID: <84144f020803281108o178bf62cp48dcd4f43ec59b74@mail.gmail.com>
-Date: Fri, 28 Mar 2008 20:08:33 +0200
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: "Linus Torvalds" <torvalds@linux-foundation.org>
-Subject: Re: 2.6.25-rc7-git2: Reported regressions from 2.6.24
-Cc: "Christoph Lameter" <clameter@sgi.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       "Pawel Staszewski" <pstaszewski@artcom.pl>,
-       LKML <linux-kernel@vger.kernel.org>, "Adrian Bunk" <bunk@kernel.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Natalie Protasevich" <protasnb@gmail.com>
-In-Reply-To: <alpine.LFD.1.00.0803281017500.14670@woody.linux-foundation.org>
+	Fri, 28 Mar 2008 14:17:22 -0400
+Message-ID: <47ED354C.2040502@linux.vnet.ibm.com>
+Date: Fri, 28 Mar 2008 23:43:32 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
+To: Paul Menage <menage@google.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Pavel Emelianov <xemul@openvz.org>, Hugh Dickins <hugh@veritas.com>,
+       Sudhir Kumar <skumar@linux.vnet.ibm.com>,
+       YAMAMOTO Takashi <yamamoto@valinux.co.jp>, lizf@cn.fujitsu.com,
+       linux-kernel@vger.kernel.org, taka@valinux.co.jp, linux-mm@kvack.org,
+       David Rientjes <rientjes@google.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Subject: Re: [RFC][0/3] Virtual address space control for cgroups (v2)
+References: <20080326184954.9465.19379.sendpatchset@localhost.localdomain> <6599ad830803261522p45a9daddi8100a0635c21cf7d@mail.gmail.com> <47EB5528.8070800@linux.vnet.ibm.com> <6599ad830803270728y354b567s7bfe8cb7472aa065@mail.gmail.com> <47EBDE7B.4090002@linux.vnet.ibm.com> <6599ad830803271144k635da1d8y106710152bb9c3be@mail.gmail.com> <47EC6D29.1080201@linux.vnet.ibm.com> <6599ad830803280737lf6882bapd9707c02bf26ef12@mail.gmail.com>
+In-Reply-To: <6599ad830803280737lf6882bapd9707c02bf26ef12@mail.gmail.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200803272353.51901.rjw@sisk.pl>
-	 <alpine.LFD.1.00.0803271859280.14670@woody.linux-foundation.org>
-	 <Pine.LNX.4.64.0803272002090.11979@schroedinger.engr.sgi.com>
-	 <alpine.LFD.1.00.0803272050290.14670@woody.linux-foundation.org>
-	 <84144f020803281015s60370d9dpec0913c33004b6c2@mail.gmail.com>
-	 <alpine.LFD.1.00.0803281017500.14670@woody.linux-foundation.org>
-X-Google-Sender-Auth: a4e6d5971e532799
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+Paul Menage wrote:
+> On Thu, Mar 27, 2008 at 8:59 PM, Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+>>  > Java (or at least, Sun's JRE) is an example of a common application
+>>  > that does this. It creates a huge heap mapping at startup, and faults
+>>  > it in as necessary.
+>>  >
+>>
+>>  Isn't this controlled by the java -Xm options?
+>>
+> 
+> Probably - that was just an example, and the behaviour of Java isn't
+> exactly unreasonable. A different example would be an app that maps a
+> massive database file, but only pages small amounts of it in at any
+> one time.
+> 
+>>  I understand, but
+>>
+>>  1. The system by default enforces overcommit on most distros, so why should we
+>>  not have something similar and that flexible for cgroups.
+> 
+> Right, I guess I should make it clear that I'm *not* arguing that we
+> shouldn't have a virtual address space limit subsystem.
+> 
+> My main arguments in this and my previous email were to back up my
+> assertion that there are a significant set of real-world cases where
+> it doesn't help, and hence it should be a separate subsystem that can
+> be turned on or off as desired.
+> 
+> It strikes me that when split into its own subsystem, this is going to
+> be very simple - basically just a resource counter and some file
+> handlers. We should probably have something like
+> include/linux/rescounter_subsys_template.h, so you can do:
+> 
+> #define SUBSYS_NAME va
+> #define SUBSYS_UNIT_SUFFIX in_bytes
+> #include <linux/rescounter_subsys_template.h>
+> 
+> then all you have to add are the hooks to call the rescounter
+> charge/uncharge functions and you're done. It would be nice to have a
+> separate trivial subsystem like this for each of the rlimit types, not
+> just virtual address space.
+> 
 
-On Fri, 28 Mar 2008, Pekka Enberg wrote:
-> > We clear GFP_ZERO in new_slab() so the normal kmalloc()/kzalloc() path
-> > should be fine but don't do it for kmalloc_large() nor
-> > kmalloc_large_node(). Is that the bug here?
+OK, I'll consider doing a separate controller, once we get the mm->owner issue
+sorted out.
 
-On Fri, Mar 28, 2008 at 7:27 PM, Linus Torvalds
-<torvalds@linux-foundation.org> wrote:
->  Dammit, NO.
->
->  The bug was that the commit I made (which was correct and robust) was then
->  partially reverted by Christoph for no good reason. At that point,
->  kmalloc_large() didn't even exist, so at that point the change was
->  "technically correct" (since the only user of gfpflags really did end up
->  clearing it somewhere deep in its callchain).
+>>   And specifying
+>>  > them manually requires either unusually clueful users (most of whom
+>>  > have enough trouble figuring out how much physical memory they'll
+>>  > need, and would just set very high virtual address space limits) or
+>>  > sysadmins with way too much time on their hands ...
+>>  >
+>>
+>>  It's a one time thing to setup for sysadmins
+>>
+> 
+> Sure, it's a one-time thing to setup *if* your cluster workload is
+> completely static.
+> 
+>>  > As I said, I think focussing on ways to tell apps that they're running
+>>  > low on physical memory would be much more productive.
+>>  >
+>>
+>>  We intend to do that as well. We intend to have user space OOM notification.
+> 
+> We've been playing with a user-space OOM notification system at Google
+> - it's on my TODO list to push it to mainline (as an independent
+> subsystem, since either cpusets or the memory controller can be used
+> to cause OOMs that are localized to a cgroup). What we have works
+> pretty well but I think our interface is a bit too much of a kludge at
+> this point.
 
-I was not implying that we should clear GFP_ZERO in kmalloc_large()
-but that we can hit the page allocator with GFP_ZERO via kmalloc() and
-kzalloc() for size > PAGE_SIZE allocations. And asking Christoph if
-that's the bug we're seeing here.
+It's good to know you have something generic working. I was planning to start
+work on it later.
 
-On Fri, Mar 28, 2008 at 7:27 PM, Linus Torvalds
-<torvalds@linux-foundation.org> wrote:
->  So the *last* thing we want to do is to clear GFP_ZERO in multiple subtle
->  places based on new random code being added. We want to clear it at the
->  top level, so that no other code never ever even has to _think_ about it!
-
-We are clearing it in one place, just before calling alloc_pages.
-[Yes, it's hard to spot, it's in new_slab() where we call
-allocate_slab().] I'm okay with moving it to top level but I don't see
-how that fixes any of the bugs mentioned here.
-
-                        Pekka
+-- 
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
