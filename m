@@ -1,59 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756653AbYC1UIr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757998AbYC1UJD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756653AbYC1UIr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Mar 2008 16:08:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754238AbYC1UIj
+	id S1757998AbYC1UJD (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Mar 2008 16:09:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754153AbYC1UIj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Fri, 28 Mar 2008 16:08:39 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:1323 "EHLO spitz.ucw.cz"
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:1322 "EHLO spitz.ucw.cz"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753700AbYC1UIi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Mar 2008 16:08:38 -0400
-Date: Fri, 28 Mar 2008 14:59:47 +0100
+	id S1753938AbYC1UIj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Mar 2008 16:08:39 -0400
+Date: Fri, 28 Mar 2008 15:23:40 +0100
 From: Pavel Machek <pavel@ucw.cz>
-To: Michael Meyer <mike65134@yahoo.de>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: performance differences: "maxcpus=1" vs. "echo 0 > /sys/devices/system/cpu/cpu1/online"
-Message-ID: <20080328135946.GB4404@ucw.cz>
-References: <16336.23884.qm@web25814.mail.ukl.yahoo.com>
+To: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
+Cc: Dmitry Baryshkov <dbaryshkov@gmail.com>, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, hskinnemoen@atmel.com,
+       domen.puncer@telargo.com, lethal@linux-sh.org, tony@atomide.com,
+       rmk+kernel@arm.linux.org.uk, paul@pwsan.com
+Subject: Re: [PATCH 1/3] Clocklib: add generic framework for managing clocks.
+Message-ID: <20080328142340.GE4404@ucw.cz>
+References: <20080326154913.GA15326@doriath.ww600.siemens.net> <20080326155203.GA15405@doriath.ww600.siemens.net> <20080326170441.795fb928@hskinnemo-gx620.norway.atmel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <16336.23884.qm@web25814.mail.ukl.yahoo.com>
+In-Reply-To: <20080326170441.795fb928@hskinnemo-gx620.norway.atmel.com>
 User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue 2008-03-25 14:47:50, Michael Meyer wrote:
-> Hi, 
+On Wed 2008-03-26 17:04:41, Haavard Skinnemoen wrote:
+> On Wed, 26 Mar 2008 18:52:03 +0300
+> Dmitry Baryshkov <dbaryshkov@gmail.com> wrote:
 > 
-> what is the difference between booting a dual core
-> machine with "maxcpus=1" or by deactivating the second
-> core at run time with "echo 0 >
-> /sys/devices/system/cpu/cpu1/online"?
+> > +struct clk {
+> > +	struct list_head node;
+> > +	struct clk	*parent;
+> > +
+> > +	const char	*name;
+> > +	struct module	*owner;
+> > +
+> > +	int		users;
+> > +	unsigned long	rate;
+> > +	int		delay;
+> > +
+> > +	int (*can_get)	(struct clk *, struct device *);
+> > +	int (*set_parent) (struct clk *, struct clk *);
+> > +	int (*enable)	(struct clk *);
+> > +	void (*disable)	(struct clk *);
+> > +	unsigned long (*getrate) (struct clk*);
+> > +	int (*setrate)	(struct clk *, unsigned long);
+> > +	long (*roundrate) (struct clk *, unsigned long);
+> > +
+> > +	void		*priv;
+> > +};
+> 
+> Hmm...this is exactly twice as big as the struct I'm currently using,
+> it doesn't contain all the fields I need, and it's undocumented.
 
-maxcpus=1 : core stays powered off
-0 > online : core enters halt.
+Like unifying 15-or-so versions of clock framework that are out there?
 
-> I observed a funny behaviour of apache ant: although
-> it uses javac which is single threaded, a compile run
-> with "maxcpus=1" is actually faster than a compile run
-> with both cores activated. But with the second core
-> deactivated using "echo 0 >
-> /sys/devices/system/cpu/cpu1/online" it is even slower
-> than with both cores.
+> I have quite a few clocks, so the increased memory consumption is quite
+> significant. What are the advantages of this?
 
-Thermal fun? Check cooling.
+How many clocks do you have?
 
 
-> Is here any method to get the exact same behaviour of
-> "maxcpus=1" with disabling the second core only
-> temporarily? So that the second core could be disabled
-> before the ant execution and enabled after the ant
-> execution?
 
-Patch pushing 0 > online cores into C4 would be nice.
 -- 
 (english) http://www.livejournal.com/~pavelmachek
 (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
