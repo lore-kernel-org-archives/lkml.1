@@ -1,40 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754419AbYC1Qe2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755017AbYC1QhR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754419AbYC1Qe2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Mar 2008 12:34:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750918AbYC1QeT
+	id S1755017AbYC1QhR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Mar 2008 12:37:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750937AbYC1QhE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Mar 2008 12:34:19 -0400
-Received: from gherkin.frus.com ([192.158.254.49]:37574 "EHLO gherkin.frus.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750854AbYC1QeS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Mar 2008 12:34:18 -0400
-Subject: Re: 2.6.25-rc7: Ugh.
-In-Reply-To: <20080327.215622.103233305.davem@davemloft.net> "from David Miller
- at Mar 27, 2008 09:56:22 pm"
-To: David Miller <davem@davemloft.net>
-Date: Fri, 28 Mar 2008 11:34:15 -0500 (CDT)
-CC: rct@frus.com, lkml@rtr.ca, jkosina@suse.cz, gregkh@suse.de,
-       linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org, pavel@suse.cz,
-       akpm@linux-foundation.org
-X-Mailer: ELM [version 2.4ME+ PL82 (25)]
+	Fri, 28 Mar 2008 12:37:04 -0400
+Received: from komodo.mcnabbs.org ([67.207.145.27]:38724 "EHLO
+	mail.mcnabbs.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750918AbYC1QhD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Mar 2008 12:37:03 -0400
+X-Greylist: delayed 1675 seconds by postgrey-1.27 at vger.kernel.org; Fri, 28 Mar 2008 12:37:03 EDT
+Date: Fri, 28 Mar 2008 10:09:06 -0600
+From: Andrew McNabb <amcnabb@mcnabbs.org>
+To: Pavel Machek <pavel@suse.cz>
+Cc: Rodney Lorrimar <rodney@rodney.id.au>, jikos@suse.cz,
+       linux-kernel@vger.kernel.org,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] Input: adbhid - fix capslock key state after suspend
+Message-ID: <20080328160906.GA16187@mcnabbs.org>
+References: <20080328001556.GA30148@solaria.local> <20080328105855.GA1686@elf.ucw.cz>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset=US-ASCII
-Message-Id: <20080328163415.0B263DBA2@gherkin.frus.com>
-From: rct@frus.com (Bob Tracy)
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="ReaqsoxgOBHFXBhH"
+Content-Disposition: inline
+In-Reply-To: <20080328105855.GA1686@elf.ucw.cz>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Miller wrote:
-> Builds are just over a minute on my box.  I can do a full
-> kernel build plus reboot cycle in under 2 minutes.
 
-I've gotta get me some of that :-).
+--ReaqsoxgOBHFXBhH
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
--- 
-------------------------------------------------------------------------
-Bob Tracy          |  "I was a beta tester for dirt.  They never did
-rct@frus.com       |   get all the bugs out." - Steve McGrew on /.
-------------------------------------------------------------------------
+On Fri, Mar 28, 2008 at 11:58:55AM +0100, Pavel Machek wrote:
+> On Fri 2008-03-28 01:15:56, Rodney Lorrimar wrote:
+> > If the adbhid module parameter restore_capslock_events is used,
+> > sometimes capslock will get stuck down after resuming.
+>=20
+> Hmmm, why does that need to be a parameter? I mean... can we just do
+> the right thing?
+
+I agree.  There really don't seem to be any drawbacks to keeping track
+of capslock state.  The worst thing that can happen is that it somehow
+occasionally fails to do the right thing.
+
+--=20
+Andrew McNabb
+http://www.mcnabbs.org/andrew/
+PGP Fingerprint: 8A17 B57C 6879 1863 DE55  8012 AB4D 6098 8826 6868
+
+--ReaqsoxgOBHFXBhH
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFH7Rgiq01gmIgmaGgRAglDAKCFrF9fKhGLGW6azKSvxfVr/wIGKQCgjOYq
+BCAMB86mqwoC4j7ZXim7jVE=
+=CrGZ
+-----END PGP SIGNATURE-----
+
+--ReaqsoxgOBHFXBhH--
