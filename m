@@ -1,54 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758904AbYC1Vp0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758323AbYC1V62@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758904AbYC1Vp0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Mar 2008 17:45:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755430AbYC1VpP
+	id S1758323AbYC1V62 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Mar 2008 17:58:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756516AbYC1V6S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Mar 2008 17:45:15 -0400
-Received: from smtp117.sbc.mail.sp1.yahoo.com ([69.147.64.90]:29939 "HELO
-	smtp117.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754921AbYC1VpO (ORCPT
+	Fri, 28 Mar 2008 17:58:18 -0400
+Received: from mga11.intel.com ([192.55.52.93]:20226 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756189AbYC1V6R convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Mar 2008 17:45:14 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=0ISouotvHmZXwWb9Ea/UZPkSCn1bR9xslCn8Hi/ppJFIdE8vwQG0W9zsd54wErvAY5s/5KqT/0oibJ8rLJMq7IwE/axpVmInN5LOVuxoBJbli1ro5dj77Jgbi5/4nozzML/jrAJNR2rG+Cn3w2hdI7GlzbfggBKXlFWqz53uJNw=  ;
-X-YMail-OSG: HvJFYsYVM1kAzAiB.nyIppZRW7HJ1YtMzzwnMYsXdCby3oda__MK3zrA9VOHXa6bl7Y2GgMvvQ--
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Adrian Bunk <bunk@kernel.org>
-Subject: Re: Kconfig RTC selection (was: 2.6.25-rc7: Ugh.)
-Date: Fri, 28 Mar 2008 14:45:07 -0700
-User-Agent: KMail/1.9.6
-Cc: Mark Lord <lkml@rtr.ca>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, rtc-linux@googlegroups.com,
-       David Miller <davem@davemloft.net>
-References: <20080327160700.GB828@suse.de> <200803281423.46981.david-b@pacbell.net> <20080328213349.GK32200@cs181133002.pp.htv.fi>
-In-Reply-To: <20080328213349.GK32200@cs181133002.pp.htv.fi>
+	Fri, 28 Mar 2008 17:58:17 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,572,1199692800"; 
+   d="scan'208";a="541879182"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8bit
-Content-Disposition: inline
-Message-Id: <200803281445.08025.david-b@pacbell.net>
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: 2.6.25 regression: powertop says 120K wakeups/sec
+Date: Fri, 28 Mar 2008 14:55:57 -0700
+Message-ID: <924EFEDD5F540B4284297C4DC59F3DEEC83E08@orsmsx423.amr.corp.intel.com>
+In-Reply-To: <200803281409.09622.david-b@pacbell.net>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: 2.6.25 regression: powertop says 120K wakeups/sec
+Thread-Index: AciRGnC/0WCq1ZaaQ6ix0UXSJEIPPQAAajwA
+References: <20080322202454.9D69DCC0EF@adsl-69-226-248-13.dsl.pltn13.pacbell.net> <200803281244.27012.david-b@pacbell.net> <20080328203014.GA16105@linux-os.sc.intel.com> <200803281409.09622.david-b@pacbell.net>
+From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+To: "David Brownell" <david-b@pacbell.net>
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       <linux-acpi@vger.kernel.org>, "Len Brown" <lenb@kernel.org>
+X-OriginalArrivalTime: 28 Mar 2008 21:53:54.0550 (UTC) FILETIME=[3774B160:01C8911E]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 28 March 2008, Adrian Bunk wrote:
-> > > >   "JS_RTC" ... a SPARC32 thing
-> > > >       --> bug?? no "js-rtc.c" in the tree!  patch sent
-> > > 
-> > > Where's the bug?
-> > > js-rtc is built from rtc.c
-> > 
-> > In which case, just enable rtc.c ... a "egrep -r 'JS_RTC|js-rtc'"
-> > shows that it looks pretty pointless.
-> >...
-> 
-> grep for CONFIG_SUN_MOSTEK_RTC and you'll get the point.
+ 
 
-Right:  it doesn't mention JS_RTC at all.  Whatever is up
-with that stuff, it's broken.
+>-----Original Message-----
+>From: David Brownell [mailto:david-b@pacbell.net] 
+>Sent: Friday, March 28, 2008 2:09 PM
+>To: Pallipadi, Venkatesh
+>Cc: Andrew Morton; linux-kernel@vger.kernel.org; Rafael J. 
+>Wysocki; linux-acpi@vger.kernel.org; Len Brown
+>Subject: Re: 2.6.25 regression: powertop says 120K wakeups/sec
+>
+>On Friday 28 March 2008, Venki Pallipadi wrote:
+>> Can you send me the output of
+>> # grep . /sys/devices/system/cpu/cpu*/cpuidle/*/*
+>> with upstream kernel.
+>
+>This is "upstream" to 3085354de635179d70c240e6d942bcbd1d93056c:
+>
+>/sys/devices/system/cpu/cpu0/cpuidle/state0/desc:CPUIDLE CORE POLL IDLE
+>/sys/devices/system/cpu/cpu0/cpuidle/state0/latency:0
+>/sys/devices/system/cpu/cpu0/cpuidle/state0/name:C0
+>/sys/devices/system/cpu/cpu0/cpuidle/state0/power:4294967295
+>/sys/devices/system/cpu/cpu0/cpuidle/state0/time:0
+>/sys/devices/system/cpu/cpu0/cpuidle/state0/usage:0
+>/sys/devices/system/cpu/cpu0/cpuidle/state1/desc:<null>
+>/sys/devices/system/cpu/cpu0/cpuidle/state1/latency:0
+>/sys/devices/system/cpu/cpu0/cpuidle/state1/name:C1
+>/sys/devices/system/cpu/cpu0/cpuidle/state1/power:0
+>/sys/devices/system/cpu/cpu0/cpuidle/state1/time:2781727265
+>/sys/devices/system/cpu/cpu0/cpuidle/state1/usage:927242422
+>
+>... as I mentioned, powertop says C2 doesn't get used any more,
+>moreover that only C0 ever gets used.  The "usage" seems to be
+>saying otherwise.
+>
 
+Looks like C2 state detection got broken somehow..
+There was new state0 (polling) that was added recently which should
+never get used.
+state1 is actually C1 which for some reason is not staying idle and
+waking up immediately (that is the reason for high usage). And C2 is
+missing. I do see, in acpidump that you sent, there is a C2 state info
+there.
+You should have a dmesg line which looks like
+ACPI: CPU0 (power states: C1[C1] C2[C2]
+Do you see C2 in such line?
+
+Thanks,
+Venki
