@@ -1,53 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755245AbYC1AXs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754765AbYC1AcT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755245AbYC1AXs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Mar 2008 20:23:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753025AbYC1AXl
+	id S1754765AbYC1AcT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Mar 2008 20:32:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752511AbYC1AcE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Mar 2008 20:23:41 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:48064 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753023AbYC1AXk convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Mar 2008 20:23:40 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: "Carlos R. Mafra" <crmafra2@gmail.com>
-Subject: Re: 2.6.25-rc7-git2: Reported regressions from 2.6.24
-Date: Fri, 28 Mar 2008 01:23:27 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: LKML <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Natalie Protasevich <protasnb@gmail.com>
-References: <200803272353.51901.rjw@sisk.pl> <20080328001804.GA11075@localhost.ift.unesp.br>
-In-Reply-To: <20080328001804.GA11075@localhost.ift.unesp.br>
+	Thu, 27 Mar 2008 20:32:04 -0400
+Received: from styx.suse.cz ([82.119.242.94]:37753 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752394AbYC1AcC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Mar 2008 20:32:02 -0400
+Date: Fri, 28 Mar 2008 01:32:00 +0100 (CET)
+From: Jiri Kosina <jkosina@suse.cz>
+To: Greg KH <gregkh@suse.de>, Mark Lord <lkml@rtr.ca>
+cc: Linux Kernel <linux-kernel@vger.kernel.org>, linux-usb@vger.kernel.org,
+       Pavel Machek <pavel@suse.cz>, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: 2.6.25-rc7:  Ugh.
+In-Reply-To: <20080327160700.GB828@suse.de>
+Message-ID: <Pine.LNX.4.64.0803280126550.5541@jikos.suse.cz>
+References: <47EBBD57.30902@rtr.ca> <20080327160700.GB828@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200803280123.28207.rjw@sisk.pl>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday, 28 of March 2008, Carlos R. Mafra wrote:
-> On Thu 27.Mar'08 at 23:53:50 +0100, Rafael J. Wysocki wrote:
-> > This message contains a list of some regressions from 2.6.24 reported since
-> > 2.6.25-rc1 was released, for which there are no fixes in the mainline I know
-> > of.  If any of them have been fixed already, please let me know.
-> > [...]
->  
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10343
-> > Subject		: 103 sec. latency: sync_page() with TASK_UNINTERRUPTIBLE (?) (bisected)
-> > Submitter	: Carlos R. Mafra <crmafra2@gmail.com>
-> > Date		: 2008-03-23 00:47 (5 days old)
-> > References	: http://lkml.org/lkml/2008/3/22/211
-> > Handled-By	: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> 
-> This regression is already solved. The patch which caused this problem 
-> was reverted by Andrew Morton in 4dd4b920218326231156c7991ce5b94afad841c3.
+On Thu, 27 Mar 2008, Greg KH wrote:
 
-Thanks, closed.
+> > It boots, but just a simple suspend/resume (RAM) was enough to kill 
+> > it. It comes back on resume, with an X desktop again, but with no USB 
+> > functionality -- no mouse.
+> > The keyboard still works, so I dropped to a console and tried:
+> >   rmmod usbhid
+> >   insmod usbhid
+> > And the console hung at 100% CPU on the insmod.
+> Haven't heard of this one before sorry.  Jiri, have you?
 
-Rafael
+No, haven't heard anything similar either. Mark, are you able to collect 
+the stacktraces via alt-sysrq-t at the time the system goes crazy?
+
+Also, as you seem to be able to easily reproduce the bug, git-bisect might 
+reveal the culprit easily. For start, you can try to bisect only let's say 
+usb, hid and acpi code probably ... ?
+
+> > kernel: [  111.361099] pciehp_resume ENTRY
+> > kernel: [  112.362047] pciehp: Device 0000:0c:00.0 already exists at c:0, 
+> > cannot hot-add
+> > kernel: [  112.362052] pciehp: Cannot add device 0xc:0
+
+Hmm, what device is this?
+
+-- 
+Jiri Kosina
+SUSE Labs
