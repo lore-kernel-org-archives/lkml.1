@@ -1,28 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760622AbYC1OsA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760691AbYC1Os2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760622AbYC1OsA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Mar 2008 10:48:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756928AbYC1Og6
+	id S1760691AbYC1Os2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Mar 2008 10:48:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756965AbYC1OhC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Mar 2008 10:36:58 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:49361 "EHLO mx1.redhat.com"
+	Fri, 28 Mar 2008 10:37:02 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:49364 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756595AbYC1Ofk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Mar 2008 10:35:40 -0400
+	id S1756624AbYC1Ofm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Mar 2008 10:35:42 -0400
 Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
 	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
 	Kingdom.
 	Registered in England and Wales under Company Registration No. 3798903
 From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 34/45] NFS: Define and create superblock-level objects [ver
-	#35]
+Subject: [PATCH 36/45] NFS: Use local disk inode cache [ver #35]
 To: torvalds@osdl.org, akpm@linux-foundation.org, trond.myklebust@fys.uio.no,
        chuck.lever@oracle.com
 Cc: nfsv4@linux-nfs.org, linux-kernel@vger.kernel.org,
        linux-fsdevel@vger.kernel.org, selinux@tycho.nsa.gov,
        linux-security-module@vger.kernel.org, dhowells@redhat.com
-Date: Fri, 28 Mar 2008 14:33:05 +0000
-Message-ID: <20080328143305.3483.99532.stgit@warthog.procyon.org.uk>
+Date: Fri, 28 Mar 2008 14:33:15 +0000
+Message-ID: <20080328143315.3483.4685.stgit@warthog.procyon.org.uk>
 In-Reply-To: <20080328143010.3483.99079.stgit@warthog.procyon.org.uk>
 References: <20080328143010.3483.99079.stgit@warthog.procyon.org.uk>
 User-Agent: StGIT/0.14.1
@@ -33,402 +32,397 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Define and create superblock-level cache index objects (as managed by
-nfs_server structs).
-
-Each superblock object is created in a server level index object and is itself
-an index into which inode-level objects are inserted.
-
-Ideally there would be one superblock-level object per server, and the former
-would be folded into the latter; however, since the "nosharecache" option
-exists this isn't possible.
-
-The superblock object key is a sequence consisting of:
-
- (1) Certain superblock s_flags.
-
- (2) Various connection parameters that serve to distinguish superblocks for
-     sget().
-
- (3) The volume FSID.
-
- (4) The security flavour.
-
- (5) The uniquifier length.
-
- (6) The uniquifier text.  This is normally an empty string, unless the fsc=xyz
-     mount option was used to explicitly specify a uniquifier.
-
-The key blob is of variable length, depending on the length of (6).
-
-The superblock object is given no coherency data to carry in the auxiliary data
-permitted by the cache.  It is assumed that the superblock is always coherent.
-
-
-This patch also adds uniquification handling such that two otherwise identical
-superblocks, at least one of which is marked "nosharecache", won't end up
-trying to share the on-disk cache.  It will be possible to manually provide a
-uniquifier through a mount option with a later patch to avoid the error
-otherwise produced.
+Bind data storage objects in the local cache to NFS inodes.
 
 Signed-off-by: David Howells <dhowells@redhat.com>
 ---
 
- fs/nfs/fscache-index.c    |   34 +++++++++++++
- fs/nfs/fscache.c          |  116 +++++++++++++++++++++++++++++++++++++++++++++
- fs/nfs/fscache.h          |   49 +++++++++++++++++++
- fs/nfs/internal.h         |    3 +
- fs/nfs/super.c            |    8 ++-
- include/linux/nfs_fs_sb.h |    5 ++
- 6 files changed, 213 insertions(+), 2 deletions(-)
+ fs/nfs/fscache.c       |  174 ++++++++++++++++++++++++++++++++++++++++++++++++
+ fs/nfs/fscache.h       |   15 ++++
+ fs/nfs/inode.c         |   39 +++++++++--
+ include/linux/nfs_fs.h |   11 +++
+ 4 files changed, 233 insertions(+), 6 deletions(-)
 
 
-diff --git a/fs/nfs/fscache-index.c b/fs/nfs/fscache-index.c
-index 01f0f41..e092a73 100644
---- a/fs/nfs/fscache-index.c
-+++ b/fs/nfs/fscache-index.c
-@@ -116,3 +116,37 @@ const struct fscache_cookie_def nfs_fscache_server_index_def = {
- 	.type 		= FSCACHE_COOKIE_TYPE_INDEX,
- 	.get_key	= nfs_server_get_key,
- };
-+
-+/*
-+ * Generate a key to describe a superblock key in the main NFS index
-+ */
-+static uint16_t nfs_super_get_key(const void *cookie_netfs_data,
-+				  void *buffer, uint16_t bufmax)
-+{
-+	const struct nfs_fscache_key *key;
-+	const struct nfs_server *nfss = cookie_netfs_data;
-+	uint16_t len;
-+
-+	key = nfss->fscache_key;
-+	len = sizeof(key->key) + key->key.uniq_len;
-+	if (len > bufmax) {
-+		len = 0;
-+	} else {
-+		memcpy(buffer, &key->key, sizeof(key->key));
-+		memcpy(buffer + sizeof(key->key),
-+		       key->key.uniquifier, key->key.uniq_len);
-+	}
-+
-+	return len;
-+}
-+
-+/*
-+ * Define the superblock object for FS-Cache.  This is used to describe a
-+ * superblock object to fscache_acquire_cookie().  It is keyed by all the NFS
-+ * parameters that might cause a separate superblock.
-+ */
-+const struct fscache_cookie_def nfs_fscache_super_index_def = {
-+	.name		= "NFS.super",
-+	.type 		= FSCACHE_COOKIE_TYPE_INDEX,
-+	.get_key	= nfs_super_get_key,
-+};
 diff --git a/fs/nfs/fscache.c b/fs/nfs/fscache.c
-index c3f056f..ab2de2c 100644
+index ab2de2c..0c71bae 100644
 --- a/fs/nfs/fscache.c
 +++ b/fs/nfs/fscache.c
-@@ -23,6 +23,9 @@
- 
- #define NFSDBG_FACILITY		NFSDBG_FSCACHE
- 
-+static struct rb_root nfs_fscache_keys = RB_ROOT;
-+static DEFINE_SPINLOCK(nfs_fscache_keys_lock);
-+
- /*
-  * Get the per-client index cookie for an NFS client if the appropriate mount
-  * flag was set
-@@ -50,3 +53,116 @@ void nfs_fscache_release_client_cookie(struct nfs_client *clp)
- 	fscache_relinquish_cookie(clp->fscache, 0);
- 	clp->fscache = NULL;
+@@ -166,3 +166,177 @@ void nfs_fscache_release_super_cookie(struct super_block *sb)
+ 		nfss->fscache_key = NULL;
+ 	}
  }
 +
 +/*
-+ * Get the cache cookie for an NFS superblock.  We have to handle
-+ * uniquification here because the cache doesn't do it for us.
++ * Initialise the per-inode cache cookie pointer for an NFS inode.
 + */
-+void nfs_fscache_get_super_cookie(struct super_block *sb,
-+				  struct nfs_parsed_mount_data *data)
++void nfs_fscache_init_inode_cookie(struct inode *inode)
 +{
-+	struct nfs_fscache_key *key, *xkey;
-+	struct nfs_server *nfss = NFS_SB(sb);
-+	struct rb_node **p, *parent;
-+	const char *uniq = data->fscache_uniq ?: "";
-+	int diff, ulen;
++	NFS_I(inode)->fscache = NULL;
++	if (S_ISREG(inode->i_mode))
++		set_bit(NFS_INO_FSCACHE, &NFS_I(inode)->flags);
++}
 +
-+	ulen = strlen(uniq);
-+	key = kzalloc(sizeof(*key) + ulen, GFP_KERNEL);
-+	if (!key)
++/*
++ * Get the per-inode cache cookie for an NFS inode.
++ */
++static void nfs_fscache_enable_inode_cookie(struct inode *inode)
++{
++	struct super_block *sb = inode->i_sb;
++	struct nfs_inode *nfsi = NFS_I(inode);
++
++	if (nfsi->fscache || !NFS_FSCACHE(inode))
 +		return;
 +
-+	key->nfs_client = nfss->nfs_client;
-+	key->key.super.s_flags = sb->s_flags & NFS_MS_MASK;
-+	key->key.nfs_server.flags = nfss->flags;
-+	key->key.nfs_server.rsize = nfss->rsize;
-+	key->key.nfs_server.wsize = nfss->wsize;
-+	key->key.nfs_server.acregmin = nfss->acregmin;
-+	key->key.nfs_server.acregmax = nfss->acregmax;
-+	key->key.nfs_server.acdirmin = nfss->acdirmin;
-+	key->key.nfs_server.acdirmax = nfss->acdirmax;
-+	key->key.nfs_server.fsid = nfss->fsid;
-+	key->key.rpc_auth.au_flavor = nfss->client->cl_auth->au_flavor;
++	if ((NFS_SB(sb)->options & NFS_OPTION_FSCACHE)) {
++		nfsi->fscache = fscache_acquire_cookie(
++			NFS_SB(sb)->fscache,
++			&nfs_fscache_inode_object_def,
++			nfsi);
 +
-+	key->key.uniq_len = ulen;
-+	memcpy(key->key.uniquifier, uniq, ulen);
-+
-+	spin_lock(&nfs_fscache_keys_lock);
-+	p = &nfs_fscache_keys.rb_node;
-+	parent = NULL;
-+	while (*p) {
-+		parent = *p;
-+		xkey = rb_entry(parent, struct nfs_fscache_key, node);
-+
-+		if (key->nfs_client < xkey->nfs_client)
-+			goto go_left;
-+		if (key->nfs_client > xkey->nfs_client)
-+			goto go_right;
-+
-+		diff = memcmp(&key->key, &xkey->key, sizeof(key->key));
-+		if (diff < 0)
-+			goto go_left;
-+		if (diff > 0)
-+			goto go_right;
-+
-+		if (key->key.uniq_len == 0)
-+			goto non_unique;
-+		diff = memcmp(key->key.uniquifier,
-+			      xkey->key.uniquifier,
-+			      key->key.uniq_len);
-+		if (diff < 0)
-+			goto go_left;
-+		if (diff > 0)
-+			goto go_right;
-+		goto non_unique;
-+
-+	go_left:
-+		p = &(*p)->rb_left;
-+		continue;
-+	go_right:
-+		p = &(*p)->rb_right;
++		dfprintk(FSCACHE, "NFS: get FH cookie (0x%p/0x%p/0x%p)\n",
++			 sb, nfsi, nfsi->fscache);
 +	}
-+
-+	rb_link_node(&key->node, parent, p);
-+	rb_insert_color(&key->node, &nfs_fscache_keys);
-+	spin_unlock(&nfs_fscache_keys_lock);
-+	nfss->fscache_key = key;
-+
-+	/* create a cache index for looking up filehandles */
-+	nfss->fscache = fscache_acquire_cookie(nfss->nfs_client->fscache,
-+					       &nfs_fscache_super_index_def,
-+					       nfss);
-+	dfprintk(FSCACHE, "NFS: get superblock cookie (0x%p/0x%p)\n",
-+		 nfss, nfss->fscache);
-+	return;
-+
-+non_unique:
-+	spin_unlock(&nfs_fscache_keys_lock);
-+	kfree(key);
-+	nfss->fscache_key = NULL;
-+	nfss->fscache = NULL;
-+	printk(KERN_WARNING "NFS:"
-+	       " Cache request denied due to non-unique superblock keys\n");
 +}
 +
 +/*
-+ * release a per-superblock cookie
++ * Release a per-inode cookie.
 + */
-+void nfs_fscache_release_super_cookie(struct super_block *sb)
++void nfs_fscache_release_inode_cookie(struct inode *inode)
 +{
-+	struct nfs_server *nfss = NFS_SB(sb);
++	struct nfs_inode *nfsi = NFS_I(inode);
 +
-+	dfprintk(FSCACHE, "NFS: releasing superblock cookie (0x%p/0x%p)\n",
-+		 nfss, nfss->fscache);
++	dfprintk(FSCACHE, "NFS: clear cookie (0x%p/0x%p)\n",
++		 nfsi, nfsi->fscache);
 +
-+	fscache_relinquish_cookie(nfss->fscache, 0);
-+	nfss->fscache = NULL;
++	fscache_relinquish_cookie(nfsi->fscache, 0);
++	nfsi->fscache = NULL;
++}
 +
-+	if (nfss->fscache_key) {
-+		spin_lock(&nfs_fscache_keys_lock);
-+		rb_erase(&nfss->fscache_key->node, &nfs_fscache_keys);
-+		spin_unlock(&nfs_fscache_keys_lock);
-+		kfree(nfss->fscache_key);
-+		nfss->fscache_key = NULL;
++/*
++ * Retire a per-inode cookie, destroying the data attached to it.
++ */
++void nfs_fscache_zap_inode_cookie(struct inode *inode)
++{
++	struct nfs_inode *nfsi = NFS_I(inode);
++
++	dfprintk(FSCACHE, "NFS: zapping cookie (0x%p/0x%p)\n",
++		 nfsi, nfsi->fscache);
++
++	fscache_relinquish_cookie(nfsi->fscache, 1);
++	nfsi->fscache = NULL;
++}
++
++/*
++ * Turn off the cache with regard to a per-inode cookie if opened for writing,
++ * invalidating all the pages in the page cache relating to the associated
++ * inode to clear the per-page caching.
++ */
++static void nfs_fscache_disable_inode_cookie(struct inode *inode)
++{
++	clear_bit(NFS_INO_FSCACHE, &NFS_I(inode)->flags);
++
++	if (NFS_I(inode)->fscache) {
++		dfprintk(FSCACHE,
++			 "NFS: nfsi 0x%p turning cache off\n", NFS_I(inode));
++
++		/* Need to invalidate any mapped pages that were read in before
++		 * turning off the cache.
++		 */
++		if (inode->i_mapping && inode->i_mapping->nrpages)
++			invalidate_inode_pages2(inode->i_mapping);
++
++		nfs_fscache_zap_inode_cookie(inode);
 +	}
++}
++
++/*
++ * wait_on_bit() sleep function for uninterruptible waiting
++ */
++static int nfs_fscache_wait_bit(void *flags)
++{
++	schedule();
++	return 0;
++}
++
++/*
++ * Lock against someone else trying to also acquire or relinquish a cookie
++ */
++static inline void nfs_fscache_inode_lock(struct inode *inode)
++{
++	struct nfs_inode *nfsi = NFS_I(inode);
++
++	if (test_and_set_bit(NFS_INO_FSCACHE_LOCK, &nfsi->flags)) {
++		printk(KERN_WARNING "NFS:"
++		       " Inode already locked for cache management\n");
++		wait_on_bit(&nfsi->flags, NFS_INO_FSCACHE_LOCK,
++			    nfs_fscache_wait_bit, TASK_UNINTERRUPTIBLE);
++	}
++}
++
++/*
++ * Unlock cookie management lock
++ */
++static inline void nfs_fscache_inode_unlock(struct inode *inode)
++{
++	struct nfs_inode *nfsi = NFS_I(inode);
++
++	smp_mb__before_clear_bit();
++	clear_bit(NFS_INO_FSCACHE_LOCK, &nfsi->flags);
++	smp_mb__after_clear_bit();
++	wake_up_bit(&nfsi->flags, NFS_INO_FSCACHE_LOCK);
++}
++
++/*
++ * Decide if we should enable or disable local caching for this inode.
++ * - For now, with NFS, only regular files that are open read-only will be able
++ *   to use the cache.
++ */
++void nfs_fscache_set_inode_cookie(struct inode *inode, struct file *filp)
++{
++	if (NFS_FSCACHE(inode)) {
++		nfs_fscache_inode_lock(inode);
++		if ((filp->f_flags & O_ACCMODE) != O_RDONLY)
++			nfs_fscache_disable_inode_cookie(inode);
++		else
++			nfs_fscache_enable_inode_cookie(inode);
++		nfs_fscache_inode_unlock(inode);
++	}
++}
++
++/*
++ * Replace a per-inode cookie due to revalidation detecting a file having
++ * changed on the server.
++ */
++void nfs_fscache_renew_inode_cookie(struct inode *inode)
++{
++	struct nfs_inode *nfsi = NFS_I(inode);
++	struct nfs_server *nfss = NFS_SERVER(inode);
++	struct fscache_cookie *old = nfsi->fscache;
++
++	nfs_fscache_inode_lock(inode);
++	if (nfsi->fscache) {
++		/* retire the current fscache cache and get a new one */
++		fscache_relinquish_cookie(nfsi->fscache, 1);
++
++		nfsi->fscache = fscache_acquire_cookie(
++			nfss->nfs_client->fscache,
++			&nfs_fscache_inode_object_def,
++			nfsi);
++
++		dfprintk(FSCACHE,
++			 "NFS: revalidation new cookie (0x%p/0x%p/0x%p/0x%p)\n",
++			 nfss, nfsi, old, nfsi->fscache);
++	}
++	nfs_fscache_inode_unlock(inode);
++}
++
++/*
++ * Update the filesize associated with a per-inode cookie.
++ */
++void nfs_fscache_attr_changed(struct inode *inode)
++{
++	nfs_fscache_inode_lock(inode);
++	fscache_attr_changed(NFS_I(inode)->fscache);
++	nfs_fscache_inode_unlock(inode);
 +}
 diff --git a/fs/nfs/fscache.h b/fs/nfs/fscache.h
-index 1d864be..22b971e 100644
+index d21b590..595f7e7 100644
 --- a/fs/nfs/fscache.h
 +++ b/fs/nfs/fscache.h
-@@ -20,10 +20,48 @@
- #ifdef CONFIG_NFS_FSCACHE
+@@ -77,6 +77,13 @@ extern void nfs_fscache_get_super_cookie(struct super_block *,
+ 					 struct nfs_parsed_mount_data *);
+ extern void nfs_fscache_release_super_cookie(struct super_block *);
  
- /*
-+ * set of NFS FS-Cache objects that form a superblock key
-+ */
-+struct nfs_fscache_key {
-+	struct rb_node		node;
-+	struct nfs_client	*nfs_client;	/* the server */
-+
-+	/* the elements of the unique key - as used by nfs_compare_super() and
-+	 * nfs_compare_mount_options() to distinguish superblocks */
-+	struct {
-+		struct {
-+			unsigned long	s_flags;	/* various flags
-+							 * (& NFS_MS_MASK) */
-+		} super;
-+
-+		struct {
-+			struct nfs_fsid fsid;
-+			int		flags;
-+			unsigned int	rsize;		/* read size */
-+			unsigned int	wsize;		/* write size */
-+			unsigned int	acregmin;	/* attr cache timeouts */
-+			unsigned int	acregmax;
-+			unsigned int	acdirmin;
-+			unsigned int	acdirmax;
-+		} nfs_server;
-+
-+		struct {
-+			rpc_authflavor_t au_flavor;
-+		} rpc_auth;
-+
-+		/* uniquifier - can be used if nfs_server.flags includes
-+		 * NFS_MOUNT_UNSHARED  */
-+		u8 uniq_len;
-+		char uniquifier[0];
-+	} key;
-+};
-+
-+/*
-  * fscache-index.c
-  */
- extern struct fscache_netfs nfs_fscache_netfs;
- extern const struct fscache_cookie_def nfs_fscache_server_index_def;
-+extern const struct fscache_cookie_def nfs_fscache_super_index_def;
- 
- extern int nfs_fscache_register(void);
- extern void nfs_fscache_unregister(void);
-@@ -34,6 +72,10 @@ extern void nfs_fscache_unregister(void);
- extern void nfs_fscache_get_client_cookie(struct nfs_client *);
- extern void nfs_fscache_release_client_cookie(struct nfs_client *);
- 
-+extern void nfs_fscache_get_super_cookie(struct super_block *,
-+					 struct nfs_parsed_mount_data *);
-+extern void nfs_fscache_release_super_cookie(struct super_block *);
++extern void nfs_fscache_init_inode_cookie(struct inode *);
++extern void nfs_fscache_release_inode_cookie(struct inode *);
++extern void nfs_fscache_zap_inode_cookie(struct inode *);
++extern void nfs_fscache_set_inode_cookie(struct inode *, struct file *);
++extern void nfs_fscache_renew_inode_cookie(struct inode *);
++extern void nfs_fscache_attr_changed(struct inode *);
 +
  #else /* CONFIG_NFS_FSCACHE */
  static inline int nfs_fscache_register(void) { return 0; }
  static inline void nfs_fscache_unregister(void) {}
-@@ -41,5 +83,12 @@ static inline void nfs_fscache_unregister(void) {}
- static inline void nfs_fscache_get_client_cookie(struct nfs_client *clp) {}
- static inline void nfs_fscache_release_client_cookie(struct nfs_client *clp) {}
+@@ -91,5 +98,13 @@ static inline void nfs_fscache_get_super_cookie(
+ }
+ static inline void nfs_fscache_release_super_cookie(struct super_block *sb) {}
  
-+static inline void nfs_fscache_get_super_cookie(
-+	struct super_block *sb,
-+	struct nfs_parsed_mount_data *data)
-+{
-+}
-+static inline void nfs_fscache_release_super_cookie(struct super_block *sb) {}
++static inline void nfs_fscache_init_inode_cookie(struct inode *inode) {}
++static inline void nfs_fscache_release_inode_cookie(struct inode *inode) {}
++static inline void nfs_fscache_zap_inode_cookie(struct inode *inode) {}
++static inline void nfs_fscache_renew_inode_cookie(struct inode *inode) {}
++static inline void nfs_fscache_set_inode_cookie(struct inode *inode,
++					     struct file *filp) {}
++static inline void nfs_fscache_attr_changed(struct inode *inode) {}
 +
  #endif /* CONFIG_NFS_FSCACHE */
  #endif /* _NFS_FSCACHE_H */
-diff --git a/fs/nfs/internal.h b/fs/nfs/internal.h
-index 9319927..ab23769 100644
---- a/fs/nfs/internal.h
-+++ b/fs/nfs/internal.h
-@@ -5,6 +5,8 @@
- #include <linux/mount.h>
- #include <linux/security.h>
+diff --git a/fs/nfs/inode.c b/fs/nfs/inode.c
+index 702315a..7223252 100644
+--- a/fs/nfs/inode.c
++++ b/fs/nfs/inode.c
+@@ -112,6 +112,7 @@ void nfs_clear_inode(struct inode *inode)
+ 	BUG_ON(!list_empty(&NFS_I(inode)->open_files));
+ 	nfs_zap_acl_cache(inode);
+ 	nfs_access_zap_cache(inode);
++	nfs_fscache_release_inode_cookie(inode);
+ }
  
-+#define NFS_MS_MASK (MS_RDONLY|MS_NOSUID|MS_NODEV|MS_NOEXEC|MS_SYNCHRONOUS)
+ /**
+@@ -332,6 +333,8 @@ nfs_fhget(struct super_block *sb, struct nfs_fh *fh, struct nfs_fattr *fattr)
+ 		memset(nfsi->cookieverf, 0, sizeof(nfsi->cookieverf));
+ 		nfsi->access_cache = RB_ROOT;
+ 
++		nfs_fscache_init_inode_cookie(inode);
 +
- struct nfs_string;
- 
- /* Maximum number of readahead requests
-@@ -41,6 +43,7 @@ struct nfs_parsed_mount_data {
- 	unsigned int		auth_flavor_len;
- 	rpc_authflavor_t	auth_flavors[1];
- 	char			*client_address;
-+	char			*fscache_uniq;
- 
- 	struct {
- 		struct sockaddr_storage	address;
-diff --git a/fs/nfs/super.c b/fs/nfs/super.c
-index dd4dfcd..70604b9 100644
---- a/fs/nfs/super.c
-+++ b/fs/nfs/super.c
-@@ -59,6 +59,7 @@
- #include "delegation.h"
- #include "iostat.h"
- #include "internal.h"
-+#include "fscache.h"
- 
- #define NFSDBG_FACILITY		NFSDBG_VFS
- 
-@@ -1402,8 +1403,6 @@ static void nfs_clone_super(struct super_block *sb,
-  	nfs_initialise_sb(sb);
+ 		unlock_new_inode(inode);
+ 	} else
+ 		nfs_refresh_inode(inode, fattr);
+@@ -620,6 +623,7 @@ int nfs_open(struct inode *inode, struct file *filp)
+ 	ctx->mode = filp->f_mode;
+ 	nfs_file_set_open_context(filp, ctx);
+ 	put_nfs_open_context(ctx);
++	nfs_fscache_set_inode_cookie(inode, filp);
+ 	return 0;
  }
  
--#define NFS_MS_MASK (MS_RDONLY|MS_NOSUID|MS_NODEV|MS_NOEXEC|MS_SYNCHRONOUS)
--
- static int nfs_compare_mount_options(const struct super_block *s, const struct nfs_server *b, int flags)
+@@ -680,7 +684,13 @@ __nfs_revalidate_inode(struct nfs_server *server, struct inode *inode)
+ 			 (long long)NFS_FILEID(inode), status);
+ 		goto out;
+ 	}
+-	spin_unlock(&inode->i_lock);
++	if (nfsi->cache_validity & NFS_INO_INVALID_FSCACHE_ATTR) {
++		nfsi->cache_validity &= ~NFS_INO_INVALID_FSCACHE_ATTR;
++		spin_unlock(&inode->i_lock);
++		nfs_fscache_attr_changed(inode);
++	} else {
++		spin_unlock(&inode->i_lock);
++	}
+ 
+ 	if (nfsi->cache_validity & NFS_INO_INVALID_ACL)
+ 		nfs_zap_acl_cache(inode);
+@@ -736,6 +746,7 @@ static int nfs_invalidate_mapping_nolock(struct inode *inode, struct address_spa
+ 		memset(nfsi->cookieverf, 0, sizeof(nfsi->cookieverf));
+ 	spin_unlock(&inode->i_lock);
+ 	nfs_inc_stats(inode, NFSIOS_DATAINVALIDATE);
++	nfs_fscache_renew_inode_cookie(inode);
+ 	dfprintk(PAGECACHE, "NFS: (%s/%Ld) data cache invalidated\n",
+ 			inode->i_sb->s_id, (long long)NFS_FILEID(inode));
+ 	return 0;
+@@ -912,7 +923,13 @@ int nfs_refresh_inode(struct inode *inode, struct nfs_fattr *fattr)
+ 	else
+ 		status = nfs_check_inode_attributes(inode, fattr);
+ 
+-	spin_unlock(&inode->i_lock);
++	if (nfsi->cache_validity & NFS_INO_INVALID_FSCACHE_ATTR) {
++		nfsi->cache_validity &= ~NFS_INO_INVALID_FSCACHE_ATTR;
++		spin_unlock(&inode->i_lock);
++		nfs_fscache_attr_changed(inode);
++	} else {
++		spin_unlock(&inode->i_lock);
++	}
+ 	return status;
+ }
+ 
+@@ -933,12 +950,19 @@ int nfs_refresh_inode(struct inode *inode, struct nfs_fattr *fattr)
+ int nfs_post_op_update_inode(struct inode *inode, struct nfs_fattr *fattr)
  {
- 	const struct nfs_server *a = s->s_fs_info;
-@@ -1554,6 +1553,7 @@ static int nfs_get_sb(struct file_system_type *fs_type,
- 	if (!s->s_root) {
- 		/* initial superblock/root creation */
- 		nfs_fill_super(s, &data);
-+		nfs_fscache_get_super_cookie(s, &data);
- 	}
+ 	struct nfs_inode *nfsi = NFS_I(inode);
++	bool update_fscache = false;
  
- 	mntroot = nfs_get_root(s, &mntfh);
-@@ -1574,6 +1574,7 @@ static int nfs_get_sb(struct file_system_type *fs_type,
- out:
- 	kfree(data.nfs_server.hostname);
- 	kfree(data.mount_server.hostname);
-+	kfree(data.fscache_uniq);
- 	security_free_mnt_opts(&data.lsm_opts);
- 	return error;
- 
-@@ -1597,6 +1598,7 @@ static void nfs_kill_super(struct super_block *s)
- 	struct nfs_server *server = NFS_SB(s);
- 
- 	kill_anon_super(s);
-+	nfs_fscache_release_super_cookie(s);
- 	nfs_free_server(server);
+ 	spin_lock(&inode->i_lock);
+ 	nfsi->cache_validity |= NFS_INO_INVALID_ATTR|NFS_INO_REVAL_PAGECACHE;
+ 	if (S_ISDIR(inode->i_mode))
+ 		nfsi->cache_validity |= NFS_INO_INVALID_DATA;
++	if (nfsi->cache_validity & NFS_INO_INVALID_FSCACHE_ATTR) {
++		nfsi->cache_validity &= ~NFS_INO_INVALID_FSCACHE_ATTR;
++		update_fscache = true;
++	}
+ 	spin_unlock(&inode->i_lock);
++	if (update_fscache)
++		nfs_fscache_attr_changed(inode);
+ 	return nfs_refresh_inode(inode, fattr);
  }
  
-@@ -1940,6 +1942,7 @@ static int nfs4_get_sb(struct file_system_type *fs_type,
- 	if (!s->s_root) {
- 		/* initial superblock/root creation */
- 		nfs4_fill_super(s);
-+		nfs_fscache_get_super_cookie(s, &data);
+@@ -1027,7 +1051,8 @@ static int nfs_update_inode(struct inode *inode, struct nfs_fattr *fattr)
+ 		if (!timespec_equal(&inode->i_mtime, &fattr->mtime)) {
+ 			dprintk("NFS: mtime change on server for file %s/%ld\n",
+ 					inode->i_sb->s_id, inode->i_ino);
+-			invalid |= NFS_INO_INVALID_ATTR|NFS_INO_INVALID_DATA;
++			invalid |= NFS_INO_INVALID_ATTR|NFS_INO_INVALID_DATA |
++				NFS_INO_INVALID_FSCACHE_ATTR;
+ 			if (S_ISDIR(inode->i_mode))
+ 				nfs_force_lookup_revalidate(inode);
+ 		}
+@@ -1037,7 +1062,9 @@ static int nfs_update_inode(struct inode *inode, struct nfs_fattr *fattr)
+ 	} else if (nfsi->change_attr != fattr->change_attr) {
+ 		dprintk("NFS: change_attr change on server for file %s/%ld\n",
+ 				inode->i_sb->s_id, inode->i_ino);
+-		invalid |= NFS_INO_INVALID_ATTR|NFS_INO_INVALID_DATA|NFS_INO_INVALID_ACCESS|NFS_INO_INVALID_ACL;
++		invalid |= NFS_INO_INVALID_ATTR|NFS_INO_INVALID_DATA |
++			NFS_INO_INVALID_ACCESS|NFS_INO_INVALID_ACL |
++			NFS_INO_INVALID_FSCACHE_ATTR;
+ 		if (S_ISDIR(inode->i_mode))
+ 			nfs_force_lookup_revalidate(inode);
+ 	}
+@@ -1050,13 +1077,13 @@ static int nfs_update_inode(struct inode *inode, struct nfs_fattr *fattr)
+ 		 * the file grown beyond our last write? */
+ 		if (nfsi->npages == 0 || new_isize > cur_isize) {
+ 			inode->i_size = new_isize;
+-			invalid |= NFS_INO_INVALID_ATTR|NFS_INO_INVALID_DATA;
++			invalid |= NFS_INO_INVALID_ATTR|NFS_INO_INVALID_DATA |
++				NFS_INO_INVALID_FSCACHE_ATTR;
+ 		}
+ 		dprintk("NFS: isize change on server for file %s/%ld\n",
+ 				inode->i_sb->s_id, inode->i_ino);
  	}
  
- 	mntroot = nfs4_get_root(s, &mntfh);
-@@ -1957,6 +1960,7 @@ out:
- 	kfree(data.client_address);
- 	kfree(data.nfs_server.export_path);
- 	kfree(data.nfs_server.hostname);
-+	kfree(data.fscache_uniq);
- 	security_free_mnt_opts(&data.lsm_opts);
- 	return error;
- 
-diff --git a/include/linux/nfs_fs_sb.h b/include/linux/nfs_fs_sb.h
-index 8d23dcb..fd592cc 100644
---- a/include/linux/nfs_fs_sb.h
-+++ b/include/linux/nfs_fs_sb.h
-@@ -110,6 +110,11 @@ struct nfs_server {
- 	__u64			maxfilesize;	/* maximum file size */
- 	unsigned long		mount_time;	/* when this fs was mounted */
- 	dev_t			s_dev;		/* superblock dev numbers */
-+ 
+-
+ 	memcpy(&inode->i_mtime, &fattr->mtime, sizeof(inode->i_mtime));
+ 	memcpy(&inode->i_ctime, &fattr->ctime, sizeof(inode->i_ctime));
+ 	memcpy(&inode->i_atime, &fattr->atime, sizeof(inode->i_atime));
+diff --git a/include/linux/nfs_fs.h b/include/linux/nfs_fs.h
+index 720cdad..b41806b 100644
+--- a/include/linux/nfs_fs.h
++++ b/include/linux/nfs_fs.h
+@@ -174,6 +174,9 @@ struct nfs_inode {
+ 	int			 delegation_state;
+ 	struct rw_semaphore	rwsem;
+ #endif /* CONFIG_NFS_V4*/
 +#ifdef CONFIG_NFS_FSCACHE
-+	struct nfs_fscache_key	*fscache_key;	/* unique key for superblock */
-+	struct fscache_cookie	*fscache;	/* superblock cookie */
++	struct fscache_cookie	*fscache;
 +#endif
+ 	struct inode		vfs_inode;
+ };
  
- #ifdef CONFIG_NFS_V4
- 	u32			attr_bitmask[2];/* V4 bitmask representing the set
+@@ -187,6 +190,7 @@ struct nfs_inode {
+ #define NFS_INO_INVALID_ACL	0x0010		/* cached acls are invalid */
+ #define NFS_INO_REVAL_PAGECACHE	0x0020		/* must revalidate pagecache */
+ #define NFS_INO_REVAL_FORCED	0x0040		/* force revalidation ignoring a delegation */
++#define NFS_INO_INVALID_FSCACHE_ATTR	0x0080	/* local cache attributes are invalid */
+ 
+ /*
+  * Bit offsets in flags field
+@@ -196,6 +200,8 @@ struct nfs_inode {
+ #define NFS_INO_STALE		(2)		/* possible stale inode */
+ #define NFS_INO_ACL_LRU_SET	(3)		/* Inode is on the LRU list */
+ #define NFS_INO_MOUNTPOINT	(4)		/* inode is remote mountpoint */
++#define NFS_INO_FSCACHE		(5)		/* inode can be cached by FS-Cache */
++#define NFS_INO_FSCACHE_LOCK	(6)		/* FS-Cache cookie management lock */
+ 
+ static inline struct nfs_inode *NFS_I(const struct inode *inode)
+ {
+@@ -249,6 +255,11 @@ static inline int NFS_STALE(const struct inode *inode)
+ 	return test_bit(NFS_INO_STALE, &NFS_I(inode)->flags);
+ }
+ 
++static inline int NFS_FSCACHE(const struct inode *inode)
++{
++	return test_bit(NFS_INO_FSCACHE, &NFS_I(inode)->flags);
++}
++
+ static inline __u64 NFS_FILEID(const struct inode *inode)
+ {
+ 	return NFS_I(inode)->fileid;
 
