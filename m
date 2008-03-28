@@ -1,49 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758760AbYC1VZY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757951AbYC1Vax@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758760AbYC1VZY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Mar 2008 17:25:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755673AbYC1VZI
+	id S1757951AbYC1Vax (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Mar 2008 17:30:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755929AbYC1Vap
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Mar 2008 17:25:08 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:35790 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753491AbYC1VZH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Mar 2008 17:25:07 -0400
-Date: Fri, 28 Mar 2008 14:24:30 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Johannes Berg <johannes@sipsolutions.net>
-cc: Arjan van de Ven <arjan@linux.intel.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       NetDev <netdev@vger.kernel.org>, Dmitry Torokhov <dtor@mail.ru>
-Subject: Re: Oops/Warning report for the week of March 28th 2008
-In-Reply-To: <1206738071.22530.80.camel@johannes.berg>
-Message-ID: <alpine.LFD.1.00.0803281418570.14670@woody.linux-foundation.org>
-References: <47ED3F1A.1090101@linux.intel.com>  <alpine.LFD.1.00.0803281310480.14670@woody.linux-foundation.org>  <alpine.LFD.1.00.0803281329340.14670@woody.linux-foundation.org>  (sfid-20080328_205203_254278_BF9EB41F)
- <1206738071.22530.80.camel@johannes.berg>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+	Fri, 28 Mar 2008 17:30:45 -0400
+Received: from gw.goop.org ([64.81.55.164]:35183 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755904AbYC1Vao (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Mar 2008 17:30:44 -0400
+Message-ID: <47ED6368.3070708@goop.org>
+Date: Fri, 28 Mar 2008 14:30:16 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+CC: Yasunori Goto <y-goto@jp.fujitsu.com>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Christoph Lameter <clameter@sgi.com>,
+       Dave Hansen <dave@linux.vnet.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 2 of 4] hotplug-memory: adding non-section-aligned memory
+ is bad
+References: <e0b16cc8349b38a5f3f9.1206664118@localhost>	<20080328102719.3ab9162b.kamezawa.hiroyu@jp.fujitsu.com>	<20080328102342.B0BF.E1E9C6FF@jp.fujitsu.com>	<20080328105406.5dc61c6c.kamezawa.hiroyu@jp.fujitsu.com>	<47EC5440.5020107@goop.org> <20080328113312.65cca8b5.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20080328113312.65cca8b5.kamezawa.hiroyu@jp.fujitsu.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+KAMEZAWA Hiroyuki wrote:
+> For example, mem_notify() in online_pages() will be called several times against
+> a section.
+>   
 
+It seems the only in-tree user of the notifier is mm/slub.c, and it only 
+cares about MEM_GOING_ONLINE, GOING_OFFLINE, OFFLINE and CANCEL_ONLINE 
+(not ONLINE or CANCEL_OFFLINE).
 
-On Fri, 28 Mar 2008, Johannes Berg wrote:
-> 
-> That I've seen before, analysed a bit and posted:
-> http://permalink.gmane.org/gmane.linux.kernel.input/4281
+Also,
 
-Ahh.. And this is presumably triggered either by some new Xorg behavior in 
-fc9 or just the scheduler timing changes that caused other things too?
+	if (onlined_pages)
+		memory_notify(MEM_ONLINE, &arg);
 
-Your suggested solution sounds ok, but I'm also wondering why those things 
-aren't properly refcounted? It does sound like a bug to free the thing 
-before all users are gone - regardless of anything else. Hmm?
+doesn't seem correct, because arg.nr_pages still has the original 
+nr_pages, and not the number of pages actually onlined (onlined_pages).  
+Also arg.start_pfn isn't terribly meaningful if a discontiguous set of 
+pages can be actually onlined.
 
-But the ungrab sounds like the best short-term fix. Do we have a patch for 
-testing? Please? It's pretty late in the 2.6.25 cycle for these kinds of 
-things..
-
-		Linus
+    J
