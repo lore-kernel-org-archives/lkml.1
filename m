@@ -1,178 +1,213 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757399AbYC1CrS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758015AbYC1Crc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757399AbYC1CrS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Mar 2008 22:47:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755596AbYC1CrH
+	id S1758015AbYC1Crc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Mar 2008 22:47:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755905AbYC1CrI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Mar 2008 22:47:07 -0400
+	Thu, 27 Mar 2008 22:47:08 -0400
 Received: from mga02.intel.com ([134.134.136.20]:7191 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755518AbYC1CrF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Mar 2008 22:47:05 -0400
+	id S1755574AbYC1CrG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Mar 2008 22:47:06 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.25,567,1199692800"; 
-   d="scan'208";a="265462606"
-Subject: [PATCH 2/4] x86_64 boot -v2: Add linked list of struct setup_data
+   d="scan'208";a="265462609"
+Subject: [PATCH 3/4] x86_64 boot -v2: export linked list of struct
+	setup_data via debugfs
 From: "Huang, Ying" <ying.huang@intel.com>
 To: "H. Peter Anvin" <hpa@zytor.com>, andi@firstfloor.org, mingo@redhat.com,
        tglx@linutronix.de, Paul Jackson <pj@sgi.com>
 Cc: linux-kernel@vger.kernel.org
 Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
-Date: Fri, 28 Mar 2008 10:49:44 +0800
-Message-Id: <1206672584.13404.25.camel@caritas-dev.intel.com>
+Date: Fri, 28 Mar 2008 10:49:48 +0800
+Message-Id: <1206672588.13404.27.camel@caritas-dev.intel.com>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.12.3 
-X-OriginalArrivalTime: 28 Mar 2008 02:46:41.0169 (UTC) FILETIME=[F3904810:01C8907D]
+X-OriginalArrivalTime: 28 Mar 2008 02:46:45.0176 (UTC) FILETIME=[F5F3B380:01C8907D]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch add a field of 64-bit physical pointer to NULL terminated
-single linked list of struct setup_data to real-mode kernel
-header. This is used as a more extensible boot parameters passing
-mechanism.
+Export linked list of struct setup_data via debugfs.
 
 Signed-off-by: Huang Ying <ying.huang@intel.com>
 
 ---
- arch/x86/boot/header.S      |    6 +++++-
- arch/x86/kernel/head64.c    |   20 ++++++++++++++++++++
- arch/x86/kernel/setup_64.c  |   22 ++++++++++++++++++++++
- include/asm-x86/bootparam.h |   14 ++++++++++++++
- 4 files changed, 61 insertions(+), 1 deletion(-)
+ arch/x86/kernel/kdebugfs.c |  139 +++++++++++++++++++++++++++++++++++++++++++++
+ arch/x86/kernel/setup_64.c |    2 
+ 2 files changed, 141 insertions(+)
 
---- a/include/asm-x86/bootparam.h
-+++ b/include/asm-x86/bootparam.h
-@@ -9,6 +9,17 @@
- #include <asm/ist.h>
- #include <video/edid.h>
+--- a/arch/x86/kernel/kdebugfs.c
++++ b/arch/x86/kernel/kdebugfs.c
+@@ -10,10 +10,144 @@
+ #include <linux/debugfs.h>
+ #include <linux/stat.h>
+ #include <linux/init.h>
++#include <linux/io.h>
++#include <linux/mm.h>
++#include <linux/uaccess.h>
  
-+/* setup data types */
-+#define SETUP_NONE			0
-+
-+/* extensible setup data list node */
-+struct setup_data {
-+	u64 next;
+ #include <asm/setup.h>
+ 
+ #ifdef CONFIG_DEBUG_BOOT_PARAMS
++struct setup_data_node {
++	u64 paddr;
 +	u32 type;
 +	u32 len;
-+	u8 data[0];
 +};
 +
- struct setup_header {
- 	__u8	setup_sects;
- 	__u16	root_flags;
-@@ -46,6 +57,9 @@ struct setup_header {
- 	__u32	cmdline_size;
- 	__u32	hardware_subarch;
- 	__u64	hardware_subarch_data;
-+	__u32	payload_offset;
-+	__u32	payload_length;
-+	__u64	setup_data;
- } __attribute__((packed));
- 
- struct sys_desc_table {
---- a/arch/x86/boot/header.S
-+++ b/arch/x86/boot/header.S
-@@ -120,7 +120,7 @@ _start:
- 	# Part 2 of the header, from the old setup.S
- 
- 		.ascii	"HdrS"		# header signature
--		.word	0x0208		# header version number (>= 0x0105)
-+		.word	0x0209		# header version number (>= 0x0105)
- 					# or else old loadlin-1.5 will fail)
- 		.globl realmode_swtch
- realmode_swtch:	.word	0, 0		# default_switch, SETUPSEG
-@@ -227,6 +227,10 @@ hardware_subarch_data:	.quad 0
- payload_offset:		.long input_data
- payload_length:		.long input_data_end-input_data
- 
-+setup_data:		.quad 0			# 64-bit physical pointer to
-+						# single linked list of
-+						# struct setup_data
++static ssize_t setup_data_read(struct file *file, char __user *user_buf,
++				    size_t count, loff_t *ppos)
++{
++	struct setup_data_node *node = file->private_data;
++	loff_t pos = *ppos;
++	unsigned long remain;
++	struct page *pg;
++	void *p;
++	u64 pa;
 +
- # End of setup header #####################################################
- 
- 	.section ".inittext", "ax"
++	if (pos < 0)
++		return -EINVAL;
++	if (pos >= node->len)
++		return 0;
++	if (count > node->len - pos)
++		count = node->len - pos;
++	pa = node->paddr + sizeof(struct setup_data) + pos;
++	pg = pfn_to_page((pa + count - 1) >> PAGE_SHIFT);
++	if (PageHighMem(pg)) {
++		p = ioremap_cache(pa, count);
++		if (!p)
++			return -ENXIO;
++	} else
++		p = __va(pa);
++	remain = copy_to_user(user_buf, p, count);
++	if (PageHighMem(pg))
++		iounmap(p);
++	if (remain)
++		return -EFAULT;
++	*ppos = pos + count;
++	return count;
++}
++
++static int setup_data_open(struct inode *inode, struct file *file)
++{
++	file->private_data = inode->i_private;
++	return 0;
++}
++
++static const struct file_operations fops_setup_data = {
++	.read =		setup_data_read,
++	.open =		setup_data_open,
++};
++
++static int __init create_setup_data_node(struct dentry *parent,
++					 int no,
++					 struct setup_data_node *node)
++{
++	int error;
++	struct dentry *d, *type, *data;
++	char buf[16];
++
++	sprintf(buf, "%d", no);
++	d = debugfs_create_dir(buf, parent);
++	if (!d) {
++		error = -ENOMEM;
++		goto err_return;
++	}
++	type = debugfs_create_x32("type", S_IRUGO, d, &node->type);
++	if (!type) {
++		error = -ENOMEM;
++		goto err_dir;
++	}
++	data = debugfs_create_file("data", S_IRUGO, d, node, &fops_setup_data);
++	if (!data) {
++		error = -ENOMEM;
++		goto err_type;
++	}
++	return 0;
++err_type:
++	debugfs_remove(type);
++err_dir:
++	debugfs_remove(d);
++err_return:
++	return error;
++}
++
++static int __init create_setup_data_nodes(struct dentry *parent)
++{
++	int error, no = 0;
++	struct dentry *d;
++	struct setup_data *data;
++	u64 pa_data;
++	struct page *pg;
++	struct setup_data_node *node;
++
++	d = debugfs_create_dir("setup_data", parent);
++	if (!d) {
++		error = -ENOMEM;
++		goto err_return;
++	}
++	pa_data = boot_params.hdr.setup_data;
++	while (pa_data) {
++		node = kmalloc(sizeof(*node), GFP_KERNEL);
++		if (!node) {
++			error = -ENOMEM;
++			goto err_dir;
++		}
++		pg = pfn_to_page((pa_data+sizeof(*data)-1) >> PAGE_SHIFT);
++		if (PageHighMem(pg)) {
++			data = ioremap_cache(pa_data, sizeof(*data));
++			if (!data) {
++				error = -ENXIO;
++				goto err_dir;
++			}
++		} else
++			data = __va(pa_data);
++		node->paddr = pa_data;
++		node->type = data->type;
++		node->len = data->len;
++		error = create_setup_data_node(d, no, node);
++		pa_data = data->next;
++		if (PageHighMem(pg))
++			iounmap(data);
++		if (error)
++			goto err_dir;
++		no++;
++	}
++	return 0;
++err_dir:
++	debugfs_remove(d);
++err_return:
++	return error;
++}
++
+ static struct debugfs_blob_wrapper boot_params_blob = {
+ 	.data = &boot_params,
+ 	.size = sizeof(boot_params),
+@@ -41,7 +175,12 @@ static int __init boot_params_kdebugfs_i
+ 		error = -ENOMEM;
+ 		goto err_version;
+ 	}
++	error = create_setup_data_nodes(dbp);
++	if (error)
++		goto err_data;
+ 	return 0;
++err_data:
++	debugfs_remove(data);
+ err_version:
+ 	debugfs_remove(version);
+ err_dir:
 --- a/arch/x86/kernel/setup_64.c
 +++ b/arch/x86/kernel/setup_64.c
-@@ -265,6 +265,26 @@ void __attribute__((weak)) __init memory
-        machine_specific_memory_setup();
- }
- 
-+static void __init parse_setup_data(void)
-+{
-+	struct setup_data *data;
-+	unsigned long pa_data;
-+
-+	if (boot_params.hdr.version < 0x0209)
-+		return;
-+	pa_data = boot_params.hdr.setup_data;
-+	while (pa_data) {
-+		data = early_ioremap(pa_data, PAGE_SIZE);
-+		switch (data->type) {
-+		default:
-+			break;
-+		}
-+		free_early(pa_data, pa_data+sizeof(*data)+data->len);
-+		pa_data = data->next;
-+		early_iounmap(data, PAGE_SIZE);
-+	}
-+}
-+
- /*
-  * setup_arch - architecture-specific boot-time initializations
-  *
-@@ -317,6 +337,8 @@ void __init setup_arch(char **cmdline_p)
- 	strlcpy(command_line, boot_command_line, COMMAND_LINE_SIZE);
- 	*cmdline_p = command_line;
- 
-+	parse_setup_data();
-+
- 	parse_early_param();
- 
- #ifdef CONFIG_PROVIDE_OHCI1394_DMA_INIT
---- a/arch/x86/kernel/head64.c
-+++ b/arch/x86/kernel/head64.c
-@@ -11,6 +11,7 @@
- #include <linux/string.h>
- #include <linux/percpu.h>
- #include <linux/start_kernel.h>
-+#include <linux/io.h>
- 
- #include <asm/processor.h>
- #include <asm/proto.h>
-@@ -101,6 +102,24 @@ static void __init reserve_ebda_region(v
- 	reserve_early(lowmem, 0x100000, "BIOS reserved");
- }
- 
-+static void __init reserve_setup_data(void)
-+{
-+	struct setup_data *data;
-+	unsigned long pa_data;
-+	char buf[32];
-+
-+	if (boot_params.hdr.version < 0x0209)
-+		return;
-+	pa_data = boot_params.hdr.setup_data;
-+	while (pa_data) {
-+		data = early_ioremap(pa_data, sizeof(*data));
-+		sprintf(buf, "setup data %x", data->type);
-+		reserve_early(pa_data, pa_data+sizeof(*data)+data->len, buf);
-+		pa_data = data->next;
-+		early_iounmap(data, sizeof(*data));
-+	}
-+}
-+
- void __init x86_64_start_kernel(char * real_mode_data)
- {
- 	int i;
-@@ -157,6 +176,7 @@ void __init x86_64_start_kernel(char * r
- #endif
- 
- 	reserve_ebda_region();
-+	reserve_setup_data();
- 
- 	/*
- 	 * At this point everything still needed from the boot loader
+@@ -279,7 +279,9 @@ static void __init parse_setup_data(void
+ 		default:
+ 			break;
+ 		}
++#ifndef CONFIG_DEBUG_BOOT_PARAMS
+ 		free_early(pa_data, pa_data+sizeof(*data)+data->len);
++#endif
+ 		pa_data = data->next;
+ 		early_iounmap(data, PAGE_SIZE);
+ 	}
 
