@@ -1,89 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758155AbYC1VGz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758249AbYC1VIA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758155AbYC1VGz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Mar 2008 17:06:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755090AbYC1VGq
+	id S1758249AbYC1VIA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Mar 2008 17:08:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755181AbYC1VHw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Mar 2008 17:06:46 -0400
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:52146 "EHLO smtp4.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755046AbYC1VGp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Mar 2008 17:06:45 -0400
-Date: Fri, 28 Mar 2008 23:06:43 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: David Brownell <david-b@pacbell.net>
-Cc: Mark Lord <lkml@rtr.ca>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       rtc-linux@googlegroups.com, David Miller <davem@davemloft.net>
-Subject: Re: Kconfig RTC selection (was: 2.6.25-rc7: Ugh.)
-Message-ID: <20080328210643.GJ32200@cs181133002.pp.htv.fi>
-References: <20080327160700.GB828@suse.de> <200803280249.42193.david-b@pacbell.net> <47ECF70A.2060600@rtr.ca> <200803281304.39022.david-b@pacbell.net>
+	Fri, 28 Mar 2008 17:07:52 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:36617 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755169AbYC1VHw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Mar 2008 17:07:52 -0400
+Message-ID: <47ED5E16.4080806@zytor.com>
+Date: Fri, 28 Mar 2008 14:07:34 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <200803281304.39022.david-b@pacbell.net>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: Sam Ravnborg <sam@ravnborg.org>
+CC: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: use of volatile in iounmap()?
+References: <20080328203427.GA14256@uranus.ravnborg.org> <47ED5A40.9020307@zytor.com> <20080328210422.GA14484@uranus.ravnborg.org>
+In-Reply-To: <20080328210422.GA14484@uranus.ravnborg.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 28, 2008 at 01:04:38PM -0700, David Brownell wrote:
-> [ CC's trimmed a bit ]
+Sam Ravnborg wrote:
+>>>
+>> Yes.  The use of volatile in a function prototype like this means that 
+>> it is valid to pass a volatile pointer to that function -- in other 
+>> words, we're telling gcc that we're not going to do anything with the 
+>> pointer that is invalid for a volatile pointer.
+
+> If I understand you correct then it is then not wrong to say
+> that we have the argument volatile to avoid warnings from gcc
+> when we pass a volatile pointer.
 > 
-> On Friday 28 March 2008, Mark Lord wrote:
-> > > +# These legacy RTC drivers just cause too many conflicts with the generic
-> > > +# RTC framework ... let's not even try to coexist any more.
-> > ...
-> > 
-> > Thanks, David.  Could you perhaps also update the option descriptions
-> > to clearly indicate which set of RTCs are the new ones, and which are
-> > the old ones that are going away someday?
+> And then having the pointer marked volatile put a few restrictions
+> on iounmap().
+
+Correct.
+
+>> A lot of the "volatile considered harmful" stuff that has been bandied 
+>> about is explicitly about marking *data* items volatile (it does have 
+>> its uses, but it's easy to get wrong); Linus has explicitly made the 
+>> distinction between volatile *data* and volatile *operations*.
 > 
-> Hmm, I thought that would be clear from context.
-> "These" (drivers/char) legacy RTC drivers (old),
-> vs generic RTC framework (toplevel driver Kconfig).
-> 
-> Admittedly the *previous* Kconfig was troublesome,
-> at the UI level (vs. those comments outside the GUI).
-> 
-> 
-> A more general issue seems to be what to do with
-> those legacy RTC drivers.  Few of them seem to
-> have maintainers.  I don't want to own them, and
-> I doubt Alessandro does either.  If their Kconfig
-> is going to change, I'd rather just see them all
-> flagged as deprecated ... with plans to delete them.
-> 
-> The RTCs in question being:
-> 
->   "RTC" ... replaced by new "rtc-cmos"
-> 	--> ready to deprecate now ?
+> Yes - but unfortunately the volatile-considered-harmful.txt
+> does many deal with the data part.
 
-The only reason against killing it immediately seems to be SND_RTCTIMER.
+Yes, it does.
 
->   "JS_RTC" ... a SPARC32 thing
-> 	--> bug?? no "js-rtc.c" in the tree!  patch sent
-
-Where's the bug?
-js-rtc is built from rtc.c
-
->...
->   "DS1302" ... M32R-specific, "rtc-ds1302" should replace it
-> 	--> ready to deprecate now?
->...
-
-Kconfig currently offers rtc-ds1302 only for an sh platform...
-
-> - Dave
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+	-hpa
 
