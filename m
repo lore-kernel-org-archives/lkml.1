@@ -1,66 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757120AbYC1VYZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758760AbYC1VZY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757120AbYC1VYZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Mar 2008 17:24:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756925AbYC1VX5
+	id S1758760AbYC1VZY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Mar 2008 17:25:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755673AbYC1VZI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Mar 2008 17:23:57 -0400
-Received: from smtp117.sbc.mail.sp1.yahoo.com ([69.147.64.90]:21527 "HELO
-	smtp117.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1756574AbYC1VX4 (ORCPT
+	Fri, 28 Mar 2008 17:25:08 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:35790 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753491AbYC1VZH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Mar 2008 17:23:56 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=W1xVVDvf5igrqr9xA2iVoMGhpl/Ju08vWZ4BBaVwbnrd5cZR3jLuUHzVooXTWpCOFmA9d7Z0IiXUyfEnoQQ+CWniBlGjmRdv6SEAlLtZQ5dOTumT70HlG2ylTxVgNwtkMSLXcF5X4ybIIya7u/bnKoaq+GaOCcOxxxh8wQGqNNM=  ;
-X-YMail-OSG: cwV3xB0VM1mYWp3v6gB3IPnp1NbvGJKSBPnMaRJfLPhHWVB4NjH2a9CgiK7raMVuYWmLH.9Ypg--
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Adrian Bunk <bunk@kernel.org>
-Subject: Re: Kconfig RTC selection (was: 2.6.25-rc7: Ugh.)
-Date: Fri, 28 Mar 2008 14:23:45 -0700
-User-Agent: KMail/1.9.6
-Cc: Mark Lord <lkml@rtr.ca>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       rtc-linux@googlegroups.com, David Miller <davem@davemloft.net>
-References: <20080327160700.GB828@suse.de> <200803281304.39022.david-b@pacbell.net> <20080328210643.GJ32200@cs181133002.pp.htv.fi>
-In-Reply-To: <20080328210643.GJ32200@cs181133002.pp.htv.fi>
+	Fri, 28 Mar 2008 17:25:07 -0400
+Date: Fri, 28 Mar 2008 14:24:30 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Johannes Berg <johannes@sipsolutions.net>
+cc: Arjan van de Ven <arjan@linux.intel.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       NetDev <netdev@vger.kernel.org>, Dmitry Torokhov <dtor@mail.ru>
+Subject: Re: Oops/Warning report for the week of March 28th 2008
+In-Reply-To: <1206738071.22530.80.camel@johannes.berg>
+Message-ID: <alpine.LFD.1.00.0803281418570.14670@woody.linux-foundation.org>
+References: <47ED3F1A.1090101@linux.intel.com>  <alpine.LFD.1.00.0803281310480.14670@woody.linux-foundation.org>  <alpine.LFD.1.00.0803281329340.14670@woody.linux-foundation.org>  (sfid-20080328_205203_254278_BF9EB41F)
+ <1206738071.22530.80.camel@johannes.berg>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8bit
-Content-Disposition: inline
-Message-Id: <200803281423.46981.david-b@pacbell.net>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 28 March 2008, Adrian Bunk wrote:
-> >   "JS_RTC" ... a SPARC32 thing
-> >       --> bug?? no "js-rtc.c" in the tree!  patch sent
+
+
+On Fri, 28 Mar 2008, Johannes Berg wrote:
 > 
-> Where's the bug?
-> js-rtc is built from rtc.c
+> That I've seen before, analysed a bit and posted:
+> http://permalink.gmane.org/gmane.linux.kernel.input/4281
 
-In which case, just enable rtc.c ... a "egrep -r 'JS_RTC|js-rtc'"
-shows that it looks pretty pointless.
+Ahh.. And this is presumably triggered either by some new Xorg behavior in 
+fc9 or just the scheduler timing changes that caused other things too?
 
+Your suggested solution sounds ok, but I'm also wondering why those things 
+aren't properly refcounted? It does sound like a bug to free the thing 
+before all users are gone - regardless of anything else. Hmm?
 
-> >...
-> >   "DS1302" ... M32R-specific, "rtc-ds1302" should replace it
-> >       --> ready to deprecate now?
-> >...
-> 
-> Kconfig currently offers rtc-ds1302 only for an sh platform...
+But the ungrab sounds like the best short-term fix. Do we have a patch for 
+testing? Please? It's pretty late in the 2.6.25 cycle for these kinds of 
+things..
 
-Right, I looked at that a bit more.  The rtc-ds1302 code was
-not written portably.   If it were updated to get addresses
-from platform resources -- like *normal* platform drivers do,
-since the addresses are platform specific -- and if those two
-M32R platforms got updated ... *then* this could be deprecated.
-
-- Dave
-
-
-
+		Linus
