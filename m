@@ -1,232 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757573AbYC1Lnu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757834AbYC1Lov@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757573AbYC1Lnu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Mar 2008 07:43:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754853AbYC1Lk1
+	id S1757834AbYC1Lov (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Mar 2008 07:44:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754601AbYC1Lom
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Mar 2008 07:40:27 -0400
-Received: from fms-01.valinux.co.jp ([210.128.90.1]:44555 "EHLO
-	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752742AbYC1LkV (ORCPT
+	Fri, 28 Mar 2008 07:44:42 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:58470 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753099AbYC1Lol (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Mar 2008 07:40:21 -0400
-From: Isaku Yamahata <yamahata@valinux.co.jp>
-To: jeremy@goop.org
-Cc: chrisw@sous-sol.org, sct@redhat.com,
-       virtualization@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       xen-ia64-devel@lists.xensource.com, eddie.dong@intel.com,
-       yamahata@valinux.co.jp
-Subject: [PATCH 11/12] xen: make grant table arch portable.
-Date: Fri, 28 Mar 2008 20:40:17 +0900
-Message-Id: <12067044182586-git-send-email-yamahata@valinux.co.jp>
-X-Mailer: git-send-email 1.5.3
-In-Reply-To: <12067044183207-git-send-email-yamahata@valinux.co.jp>
-References: <12067044183207-git-send-email-yamahata@valinux.co.jp>
+	Fri, 28 Mar 2008 07:44:41 -0400
+Subject: Re: 2.6.25-rc7-git2: Reported regressions from 2.6.24
+From: Peter Zijlstra <peterz@infradead.org>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Natalie Protasevich <protasnb@gmail.com>
+In-Reply-To: <20080328111334.GD32200@cs181133002.pp.htv.fi>
+References: <200803272353.51901.rjw@sisk.pl>
+	 <alpine.LFD.1.00.0803281004440.3781@apollo.tec.linutronix.de>
+	 <alpine.LFD.1.00.0803281155350.3781@apollo.tec.linutronix.de>
+	 <1206702025.8514.624.camel@twins>
+	 <20080328111334.GD32200@cs181133002.pp.htv.fi>
+Content-Type: text/plain
+Date: Fri, 28 Mar 2008 12:44:20 +0100
+Message-Id: <1206704661.8514.627.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.21.92 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-split out x86 specific part from grant-table.c and
-allow ia64/xen specific initialization.
-ia64/xen grant table is based on pseudo physical address
-(guest physical address) unlike x86/xen. On ia64 init_mm
-doesn't map identity straight mapped area.
-ia64/xen specific grant table initialization is necessary.
+On Fri, 2008-03-28 at 13:13 +0200, Adrian Bunk wrote:
+> On Fri, Mar 28, 2008 at 12:00:25PM +0100, Peter Zijlstra wrote:
+> > On Fri, 2008-03-28 at 11:58 +0100, Thomas Gleixner wrote:
+> > > On Fri, 28 Mar 2008, Thomas Gleixner wrote:
+> > > > > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=9969
+> > > > > Subject		: 2.6.24-git15 Keyboard Issue?
+> > > > > Submitter	: Chris Holvenstot <cholvenstot@comcast.net>
+> > > > > Date		: 2008-02-06 14:02 (51 days old)
+> > > > > References	: http://lkml.org/lkml/2008/2/6/100
+> > > > > 		  http://lkml.org/lkml/2008/2/13/82
+> > > > > Handled-By	: Thomas Gleixner <tglx@linutronix.de>
+> > > > > Patch		: http://lkml.org/lkml/2008/2/15/343
+> > > >  
+> > > > asked the bug reporter for an update.
+> > > 
+> > > Now that lkml.org is working again, I checked the patch which is
+> > > referenced above and I have a hard time to connect it even remotely to
+> > > that bug.
+> > > 
+> > > As far as I can tell the discussion on lkml identified GROUP_SCHED=y
+> > > as the culprit, but I have no idea whether there was any resolution
+> > > other than disabling GROUP_SCHED.
+> > > 
+> > > Peter ??
+> > 
+> > Correct, I am working on the issue but that's not going to be .25 stuff.
+> 
+> How are we going to get 2.6.25 working no worse than 2.6.24?
+> 
+> Letting GROUP_SCHED depend on BROKEN would sound logical, but that would 
+> also kill FAIR_GROUP_SCHED.
 
-Signed-off-by: Isaku Yamahata <yamahata@valinux.co.jp>
----
- arch/x86/xen/Makefile      |    2 +-
- arch/x86/xen/grant-table.c |   91 ++++++++++++++++++++++++++++++++++++++++++++
- drivers/xen/grant-table.c  |   35 +---------------
- include/xen/grant_table.h  |    6 +++
- 4 files changed, 101 insertions(+), 33 deletions(-)
- create mode 100644 arch/x86/xen/grant-table.c
+Are we actually worse off than .24?
 
-diff --git a/arch/x86/xen/Makefile b/arch/x86/xen/Makefile
-index 95c5926..3d8df98 100644
---- a/arch/x86/xen/Makefile
-+++ b/arch/x86/xen/Makefile
-@@ -1,4 +1,4 @@
- obj-y		:= enlighten.o setup.o multicalls.o mmu.o \
--			time.o manage.o xen-asm.o
-+			time.o manage.o xen-asm.o grant-table.o
- 
- obj-$(CONFIG_SMP)	+= smp.o
-diff --git a/arch/x86/xen/grant-table.c b/arch/x86/xen/grant-table.c
-new file mode 100644
-index 0000000..49ba9b5
---- /dev/null
-+++ b/arch/x86/xen/grant-table.c
-@@ -0,0 +1,91 @@
-+/******************************************************************************
-+ * grant_table.c
-+ * x86 specific part
-+ *
-+ * Granting foreign access to our memory reservation.
-+ *
-+ * Copyright (c) 2005-2006, Christopher Clark
-+ * Copyright (c) 2004-2005, K A Fraser
-+ * Copyright (c) 2008 Isaku Yamahata <yamahata at valinux co jp>
-+ *                    VA Linux Systems Japan. Split out x86 specific part.
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License version 2
-+ * as published by the Free Software Foundation; or, when distributed
-+ * separately from the Linux kernel or incorporated into other
-+ * software packages, subject to the following license:
-+ *
-+ * Permission is hereby granted, free of charge, to any person obtaining a copy
-+ * of this source file (the "Software"), to deal in the Software without
-+ * restriction, including without limitation the rights to use, copy, modify,
-+ * merge, publish, distribute, sublicense, and/or sell copies of the Software,
-+ * and to permit persons to whom the Software is furnished to do so, subject to
-+ * the following conditions:
-+ *
-+ * The above copyright notice and this permission notice shall be included in
-+ * all copies or substantial portions of the Software.
-+ *
-+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
-+ * IN THE SOFTWARE.
-+ */
-+
-+#include <linux/sched.h>
-+#include <linux/mm.h>
-+#include <linux/vmalloc.h>
-+
-+#include <xen/interface/xen.h>
-+#include <xen/page.h>
-+#include <xen/grant_table.h>
-+
-+#include <asm/pgtable.h>
-+
-+static int map_pte_fn(pte_t *pte, struct page *pmd_page,
-+		      unsigned long addr, void *data)
-+{
-+	unsigned long **frames = (unsigned long **)data;
-+
-+	set_pte_at(&init_mm, addr, pte, mfn_pte((*frames)[0], PAGE_KERNEL));
-+	(*frames)++;
-+	return 0;
-+}
-+
-+static int unmap_pte_fn(pte_t *pte, struct page *pmd_page,
-+			unsigned long addr, void *data)
-+{
-+
-+	set_pte_at(&init_mm, addr, pte, __pte(0));
-+	return 0;
-+}
-+
-+int arch_gnttab_map_shared(unsigned long *frames, unsigned long nr_gframes,
-+			   unsigned long max_nr_gframes,
-+			   struct grant_entry **__shared)
-+{
-+	int rc;
-+	struct grant_entry *shared = *__shared;
-+
-+	if (shared == NULL) {
-+		struct vm_struct *area =
-+			xen_alloc_vm_area(PAGE_SIZE * max_nr_gframes);
-+		BUG_ON(area == NULL);
-+		shared = area->addr;
-+		*__shared = shared;
-+	}
-+
-+	rc = apply_to_page_range(&init_mm, (unsigned long)shared,
-+				 PAGE_SIZE * nr_gframes,
-+				 map_pte_fn, &frames);
-+	return rc;
-+}
-+
-+void arch_gnttab_unmap_shared(struct grant_entry *shared,
-+			      unsigned long nr_gframes)
-+{
-+	apply_to_page_range(&init_mm, (unsigned long)shared,
-+			    PAGE_SIZE * nr_gframes, unmap_pte_fn, NULL);
-+}
-diff --git a/drivers/xen/grant-table.c b/drivers/xen/grant-table.c
-index 9fcde20..22f5104 100644
---- a/drivers/xen/grant-table.c
-+++ b/drivers/xen/grant-table.c
-@@ -435,24 +435,6 @@ static inline unsigned int max_nr_grant_frames(void)
- 	return xen_max;
- }
- 
--static int map_pte_fn(pte_t *pte, struct page *pmd_page,
--		      unsigned long addr, void *data)
--{
--	unsigned long **frames = (unsigned long **)data;
--
--	set_pte_at(&init_mm, addr, pte, mfn_pte((*frames)[0], PAGE_KERNEL));
--	(*frames)++;
--	return 0;
--}
--
--static int unmap_pte_fn(pte_t *pte, struct page *pmd_page,
--			unsigned long addr, void *data)
--{
--
--	set_pte_at(&init_mm, addr, pte, __pte(0));
--	return 0;
--}
--
- static int gnttab_map(unsigned int start_idx, unsigned int end_idx)
- {
- 	struct gnttab_setup_table setup;
-@@ -476,17 +458,9 @@ static int gnttab_map(unsigned int start_idx, unsigned int end_idx)
- 
- 	BUG_ON(rc || setup.status);
- 
--	if (shared == NULL) {
--		struct vm_struct *area;
--		area = xen_alloc_vm_area(PAGE_SIZE * max_nr_grant_frames());
--		BUG_ON(area == NULL);
--		shared = area->addr;
--	}
--	rc = apply_to_page_range(&init_mm, (unsigned long)shared,
--				 PAGE_SIZE * nr_gframes,
--				 map_pte_fn, &frames);
-+	rc = arch_gnttab_map_shared(frames, nr_gframes, max_nr_grant_frames(),
-+				    &shared);
- 	BUG_ON(rc);
--	frames -= nr_gframes; /* adjust after map_pte_fn() */
- 
- 	kfree(frames);
- 
-@@ -502,10 +476,7 @@ static int gnttab_resume(void)
- 
- static int gnttab_suspend(void)
- {
--	apply_to_page_range(&init_mm, (unsigned long)shared,
--			    PAGE_SIZE * nr_grant_frames,
--			    unmap_pte_fn, NULL);
--
-+	arch_gnttab_unmap_shared(shared, nr_grant_frames);
- 	return 0;
- }
- 
-diff --git a/include/xen/grant_table.h b/include/xen/grant_table.h
-index 761c834..50ca16e 100644
---- a/include/xen/grant_table.h
-+++ b/include/xen/grant_table.h
-@@ -102,6 +102,12 @@ void gnttab_grant_foreign_access_ref(grant_ref_t ref, domid_t domid,
- void gnttab_grant_foreign_transfer_ref(grant_ref_t, domid_t domid,
- 				       unsigned long pfn);
- 
-+int arch_gnttab_map_shared(unsigned long *frames, unsigned long nr_gframes,
-+			   unsigned long max_nr_gframes,
-+			   struct grant_entry **__shared);
-+void arch_gnttab_unmap_shared(struct grant_entry *shared,
-+			      unsigned long nr_gframes);
-+
- #define gnttab_map_vaddr(map) ((void *)(map.host_virt_addr))
- 
- #endif /* __ASM_GNTTAB_H__ */
--- 
-1.5.3
+I thought group scheduling has been performing less than expected ever
+since it got merged.
 
