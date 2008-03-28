@@ -1,96 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756219AbYC1Szf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757512AbYC1Szt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756219AbYC1Szf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Mar 2008 14:55:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752534AbYC1SzY
+	id S1757512AbYC1Szt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Mar 2008 14:55:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756730AbYC1Szg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Mar 2008 14:55:24 -0400
-Received: from mga06.intel.com ([134.134.136.21]:42257 "EHLO
-	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751554AbYC1SzX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Mar 2008 14:55:23 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,572,1199692800"; 
-   d="scan'208";a="265626843"
-Message-ID: <47ED3F1A.1090101@linux.intel.com>
-Date: Fri, 28 Mar 2008 11:55:22 -0700
-From: Arjan van de Ven <arjan@linux.intel.com>
-User-Agent: Thunderbird 2.0.0.12 (Windows/20080213)
+	Fri, 28 Mar 2008 14:55:36 -0400
+Received: from relay2.sgi.com ([192.48.171.30]:52737 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1756518AbYC1Szf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Mar 2008 14:55:35 -0400
+Date: Fri, 28 Mar 2008 11:53:27 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Linus Torvalds <torvalds@linux-foundation.org>, penberg@cs.helsinki.fi,
+       rjw@sisk.pl, pstaszewski@artcom.pl, linux-kernel@vger.kernel.org,
+       bunk@kernel.org, protasnb@gmail.com
+Subject: Re: 2.6.25-rc7-git2: Reported regressions from 2.6.24
+In-Reply-To: <20080328114734.13607172.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0803281152440.17920@schroedinger.engr.sgi.com>
+References: <200803272353.51901.rjw@sisk.pl>
+ <alpine.LFD.1.00.0803271859280.14670@woody.linux-foundation.org>
+ <Pine.LNX.4.64.0803272002090.11979@schroedinger.engr.sgi.com>
+ <alpine.LFD.1.00.0803272050290.14670@woody.linux-foundation.org>
+ <84144f020803281015s60370d9dpec0913c33004b6c2@mail.gmail.com>
+ <alpine.LFD.1.00.0803281017500.14670@woody.linux-foundation.org>
+ <84144f020803281108o178bf62cp48dcd4f43ec59b74@mail.gmail.com>
+ <alpine.LFD.1.00.0803281116460.14670@woody.linux-foundation.org>
+ <20080328114734.13607172.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       NetDev <netdev@vger.kernel.org>
-Subject: Oops/Warning report for the week of March 28th 2008
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The http://www.kerneloops.org website collects kernel oops and
-warning reports from various mailing lists and bugzillas as well as
-with a client users can install to auto-submit oopses.
-Below is a top 10 list of the oopses collected in the last 7 days.
-(Reports prior to 2.6.23 have been omitted in collecting the top 10)
+On Fri, 28 Mar 2008, Andrew Morton wrote:
 
-This week, a total of 538 oopses and warnings have been reported,
-compared to 169 reports in the previous week.
+> I believe http://bugzilla.kernel.org/show_bug.cgi?id=10318 is a false
+> positive.  There's no way in which networking will be using highmem pages
+> here, so it won't be taking the KM_USER0 kmap slot, so there's no point in
+> performing these checks.
 
-
-Rank 1: input_release_device
-	This appears to be a regression in 2.6.25; the first reports show up in 2.6.25-rc2	
-	Often a warning at kernel/mutex.c:134 (mutex_lock_nested), but some oopses too
-	Reported 161 times (261 total reports)... this is 30% of the total reports this week!
-	The reports are all in the fput() path via ev_release
-	More info: http://www.kerneloops.org/searchweek.php?search=input_release_device
-
-Rank 2: set_dentry_child_flags
-	The standard inotify warning... only seen upto 2.6.24
-	Assumed fixed in 2.6.25
-	Reported 49 times (493 total reports)
-	More info: http://www.kerneloops.org/searchweek.php?search=set_dentry_child_flags
-
-Rank 3: __ieee80211_rx
-	Warning at net/mac80211/rx.c:2184 __ieee80211_rx  (newer-than-mainline mac80211)
-	Reported 29 times (73 total reports)
-	More info: http://www.kerneloops.org/searchweek.php?search=__ieee80211_rx
-
-Rank 4: radeon_vblank_crtc_set
-	This is probably a Fedora-special experimental Radeon driver
-	Reported 23 times (28 total reports)
-	More info: http://www.kerneloops.org/searchweek.php?search=radeon_vblank_crtc_set
-
-Rank 5: do_sys_open
-	Oops because a driver returns "1" and not "-1" as error code
-	Seen with the nouveau driver, not in mainline yet.
-	Reported 21 times (39 total reports)
-	More info: http://www.kerneloops.org/searchweek.php?search=do_sys_open
-
-Rank 6: uvc_get_video_ctrl
-	The uvc driver is not in mainline
-	Reported 19 times (84 total reports)
-	More info: http://www.kerneloops.org/searchweek.php?search=uvc_get_video_ctrl
-
-Rank 7: __register_sysctl_paths
-	Seen with proprietary drivers only
-	Reported 16 times (186 total reports)
-	More info: http://www.kerneloops.org/searchweek.php?search=__register_sysctl_paths
-
-Rank 8: tcp_ack
-	Warning at net/ipv4/tcp_input.c:2532 tcp_ack
-	Reported 15 times (87 total reports)
-	More info: http://www.kerneloops.org/searchweek.php?search=tcp_ack
-
-Rank 9: sysctl_check_lookup
-	This seems to be a bug in parport_device_proc_register()
-	Reported 14 times (62 total reports)
-	More info: http://www.kerneloops.org/searchweek.php?search=sysctl_check_lookup
-
-Rank 10: mark_buffer_dirty
-	This is an old friend, started in 2.6.24 and is still with us today.
-	Often but not exclusively during unmounting of a filesystem
-	Reported 12 times (39 total reports)
-	More info: http://www.kerneloops.org/searchweek.php?search=mark_buffer_dirty
-
-
+Reviewed-by: Christoph Lameter <clameter@sgi.com>
