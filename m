@@ -1,27 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760362AbYC1OrV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760502AbYC1Orm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760362AbYC1OrV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Mar 2008 10:47:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756904AbYC1Ogx
+	id S1760502AbYC1Orm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Mar 2008 10:47:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756498AbYC1Ogz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Mar 2008 10:36:53 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:49354 "EHLO mx1.redhat.com"
+	Fri, 28 Mar 2008 10:36:55 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:49353 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755894AbYC1Of1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1756368AbYC1Of1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 28 Mar 2008 10:35:27 -0400
 Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
 	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
 	Kingdom.
 	Registered in England and Wales under Company Registration No. 3798903
 From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 33/45] NFS: Define and create server-level objects [ver #35]
+Subject: [PATCH 45/45] NFS: Add mount options to enable local caching on NFS
+	[ver #35]
 To: torvalds@osdl.org, akpm@linux-foundation.org, trond.myklebust@fys.uio.no,
        chuck.lever@oracle.com
 Cc: nfsv4@linux-nfs.org, linux-kernel@vger.kernel.org,
        linux-fsdevel@vger.kernel.org, selinux@tycho.nsa.gov,
        linux-security-module@vger.kernel.org, dhowells@redhat.com
-Date: Fri, 28 Mar 2008 14:33:00 +0000
-Message-ID: <20080328143300.3483.84565.stgit@warthog.procyon.org.uk>
+Date: Fri, 28 Mar 2008 14:34:01 +0000
+Message-ID: <20080328143401.3483.55053.stgit@warthog.procyon.org.uk>
 In-Reply-To: <20080328143010.3483.99079.stgit@warthog.procyon.org.uk>
 References: <20080328143010.3483.99079.stgit@warthog.procyon.org.uk>
 User-Agent: StGIT/0.14.1
@@ -32,256 +33,143 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Define and create server-level cache index objects (as managed by nfs_client
-structs).
+Add NFS mount options to allow the local caching support to be enabled.
 
-Each server object is created in the NFS top-level index object and is itself
-an index into which superblock-level objects are inserted.
+The attached patch makes it possible for the NFS filesystem to be told to make
+use of the network filesystem local caching service (FS-Cache).
 
-Ideally there would be one superblock-level object per server, and the former
-would be folded into the latter; however, since the "nosharecache" option
-exists this isn't possible.
+To be able to use this, a recent nfsutils package is required.
 
-The server object key is a sequence consisting of:
+There are three variant NFS mount options that can be added to a mount command
+to control caching for a mount.  Only the last one specified takes effect:
 
- (1) NFS version
+ (*) Adding "fsc" will request caching.
 
- (2) Server address family (eg: AF_INET or AF_INET6)
+ (*) Adding "fsc=<string>" will request caching and also specify a uniquifier.
 
- (3) Server port.
+ (*) Adding "nofsc" will disable caching.
 
- (4) Server IP address.
+For example:
 
-The key blob is of variable length, depending on the length of (4).
+	mount warthog:/ /a -o fsc
 
-The server object is given no coherency data to carry in the auxiliary data
-permitted by the cache.
+
+The cache of a particular superblock (NFS FSID) will be shared between all
+mounts of that volume, provided they have the same connection parameters and
+are not marked 'nosharecache'.
+
+Where it is otherwise impossible to distinguish superblocks because all the
+parameters are identical, but the 'nosharecache' option is supplied, a
+uniquifying string must be supplied, else only the first mount will be
+permitted to use the cache.
+
+If there's a key collision, then the second mount will disable caching and give
+a warning into the kernel log.
+
 
 Signed-off-by: David Howells <dhowells@redhat.com>
 ---
 
- fs/nfs/Makefile           |    2 +
- fs/nfs/client.c           |    5 +++
- fs/nfs/fscache-index.c    |   65 +++++++++++++++++++++++++++++++++++++++++++++
- fs/nfs/fscache.c          |   52 ++++++++++++++++++++++++++++++++++++
- fs/nfs/fscache.h          |   10 +++++++
- include/linux/nfs_fs_sb.h |    4 +++
- 6 files changed, 137 insertions(+), 1 deletions(-)
- create mode 100644 fs/nfs/fscache.c
+ fs/nfs/client.c   |    2 ++
+ fs/nfs/internal.h |    1 +
+ fs/nfs/super.c    |   25 +++++++++++++++++++++++++
+ 3 files changed, 28 insertions(+), 0 deletions(-)
 
 
-diff --git a/fs/nfs/Makefile b/fs/nfs/Makefile
-index 6d7176d..d848c97 100644
---- a/fs/nfs/Makefile
-+++ b/fs/nfs/Makefile
-@@ -16,4 +16,4 @@ nfs-$(CONFIG_NFS_V4)	+= nfs4proc.o nfs4xdr.o nfs4state.o nfs4renewd.o \
- 			   nfs4namespace.o
- nfs-$(CONFIG_NFS_DIRECTIO) += direct.o
- nfs-$(CONFIG_SYSCTL) += sysctl.o
--nfs-$(CONFIG_NFS_FSCACHE) += fscache-index.o
-+nfs-$(CONFIG_NFS_FSCACHE) += fscache.o fscache-index.o
 diff --git a/fs/nfs/client.c b/fs/nfs/client.c
-index c5c0175..51e9346 100644
+index d67d52f..8357f68 100644
 --- a/fs/nfs/client.c
 +++ b/fs/nfs/client.c
-@@ -45,6 +45,7 @@
- #include "delegation.h"
- #include "iostat.h"
- #include "internal.h"
-+#include "fscache.h"
+@@ -669,6 +669,7 @@ static int nfs_init_server(struct nfs_server *server,
  
- #define NFSDBG_FACILITY		NFSDBG_CLIENT
+ 	/* Initialise the client representation from the mount data */
+ 	server->flags = data->flags & NFS_MOUNT_FLAGMASK;
++	server->options = data->options;
  
-@@ -151,6 +152,8 @@ static struct nfs_client *nfs_alloc_client(const struct nfs_client_initdata *cl_
- 	clp->cl_state = 1 << NFS4CLNT_LEASE_EXPIRED;
- #endif
+ 	if (data->rsize)
+ 		server->rsize = nfs_block_size(data->rsize, NULL);
+@@ -1056,6 +1057,7 @@ static int nfs4_init_server(struct nfs_server *server,
+ 	/* Initialise the client representation from the mount data */
+ 	server->flags = data->flags & NFS_MOUNT_FLAGMASK;
+ 	server->caps |= NFS_CAP_ATOMIC_OPEN;
++	server->options = data->options;
  
-+	nfs_fscache_get_client_cookie(clp);
-+
- 	return clp;
+ 	if (data->rsize)
+ 		server->rsize = nfs_block_size(data->rsize, NULL);
+diff --git a/fs/nfs/internal.h b/fs/nfs/internal.h
+index ab23769..dac9eea 100644
+--- a/fs/nfs/internal.h
++++ b/fs/nfs/internal.h
+@@ -39,6 +39,7 @@ struct nfs_parsed_mount_data {
+ 	int			acregmin, acregmax,
+ 				acdirmin, acdirmax;
+ 	int			namlen;
++	unsigned int		options;
+ 	unsigned int		bsize;
+ 	unsigned int		auth_flavor_len;
+ 	rpc_authflavor_t	auth_flavors[1];
+diff --git a/fs/nfs/super.c b/fs/nfs/super.c
+index 7cd9e41..6215f54 100644
+--- a/fs/nfs/super.c
++++ b/fs/nfs/super.c
+@@ -76,6 +76,7 @@ enum {
+ 	Opt_acl, Opt_noacl,
+ 	Opt_rdirplus, Opt_nordirplus,
+ 	Opt_sharecache, Opt_nosharecache,
++	Opt_fscache, Opt_nofscache,
  
- error_3:
-@@ -182,6 +185,8 @@ static void nfs_free_client(struct nfs_client *clp)
+ 	/* Mount options that take integer arguments */
+ 	Opt_port,
+@@ -92,6 +93,7 @@ enum {
+ 	/* Mount options that take string arguments */
+ 	Opt_sec, Opt_proto, Opt_mountproto, Opt_mounthost,
+ 	Opt_addr, Opt_mountaddr, Opt_clientaddr,
++	Opt_fscache_uniq,
  
- 	nfs4_shutdown_client(clp);
+ 	/* Mount options that are ignored */
+ 	Opt_userspace, Opt_deprecated,
+@@ -125,6 +127,9 @@ static match_table_t nfs_mount_option_tokens = {
+ 	{ Opt_nordirplus, "nordirplus" },
+ 	{ Opt_sharecache, "sharecache" },
+ 	{ Opt_nosharecache, "nosharecache" },
++	{ Opt_fscache, "fsc" },
++	{ Opt_fscache_uniq, "fsc=%s" },
++	{ Opt_nofscache, "nofsc" },
  
-+	nfs_fscache_release_client_cookie(clp);
-+
- 	/* -EIO all pending I/O */
- 	if (!IS_ERR(clp->cl_rpcclient))
- 		rpc_shutdown_client(clp->cl_rpcclient);
-diff --git a/fs/nfs/fscache-index.c b/fs/nfs/fscache-index.c
-index d696c06..01f0f41 100644
---- a/fs/nfs/fscache-index.c
-+++ b/fs/nfs/fscache-index.c
-@@ -51,3 +51,68 @@ void nfs_fscache_unregister(void)
- {
- 	fscache_unregister_netfs(&nfs_fscache_netfs);
+ 	{ Opt_port, "port=%u" },
+ 	{ Opt_rsize, "rsize=%u" },
+@@ -486,6 +491,8 @@ static void nfs_show_mount_options(struct seq_file *m, struct nfs_server *nfss,
+ 	seq_printf(m, ",timeo=%lu", 10U * nfss->client->cl_timeout->to_initval / HZ);
+ 	seq_printf(m, ",retrans=%u", nfss->client->cl_timeout->to_retries);
+ 	seq_printf(m, ",sec=%s", nfs_pseudoflavour_to_name(nfss->client->cl_auth->au_flavor));
++	if (nfss->options & NFS_OPTION_FSCACHE)
++		seq_printf(m, ",fsc");
  }
-+
-+/*
-+ * Layout of the key for an NFS server cache object.
-+ */
-+struct nfs_server_key {
-+	uint16_t	nfsversion;		/* NFS protocol version */
-+	uint16_t	family;			/* address family */
-+	uint16_t	port;			/* IP port */
-+	union {
-+		struct in_addr	ipv4_addr;	/* IPv4 address */
-+		struct in6_addr ipv6_addr;	/* IPv6 address */
-+	} addr[0];
-+};
-+
-+/*
-+ * Generate a key to describe a server in the main NFS index
-+ * - We return the length of the key, or 0 if we can't generate one
-+ */
-+static uint16_t nfs_server_get_key(const void *cookie_netfs_data,
-+				   void *buffer, uint16_t bufmax)
-+{
-+	const struct nfs_client *clp = cookie_netfs_data;
-+	const struct sockaddr_in6 *sin6 = (struct sockaddr_in6 *) &clp->cl_addr;
-+	const struct sockaddr_in *sin = (struct sockaddr_in *) &clp->cl_addr;
-+	struct nfs_server_key *key = buffer;
-+	uint16_t len = 0;
-+
-+	key->nfsversion = clp->rpc_ops->version;
-+	key->family = clp->cl_addr.ss_family;
-+
-+	len = sizeof(struct nfs_server_key);
-+
-+	switch (clp->cl_addr.ss_family) {
-+	case AF_INET:
-+		key->port = sin->sin_port;
-+		key->addr[0].ipv4_addr = sin->sin_addr;
-+		len += sizeof(key->addr[0].ipv4_addr);
-+		break;
-+
-+	case AF_INET6:
-+		key->port = sin6->sin6_port;
-+		key->addr[0].ipv6_addr = sin6->sin6_addr;
-+		len += sizeof(key->addr[0].ipv6_addr);
-+		break;
-+
-+	default:
-+		printk(KERN_WARNING "NFS: Unknown network family '%d'\n",
-+		       clp->cl_addr.ss_family);
-+		len = 0;
-+		break;
-+	}
-+
-+	return len;
-+}
-+
-+/*
-+ * Define the server object for FS-Cache.  This is used to describe a server
-+ * object to fscache_acquire_cookie().  It is keyed by the NFS protocol and
-+ * server address parameters.
-+ */
-+const struct fscache_cookie_def nfs_fscache_server_index_def = {
-+	.name		= "NFS.server",
-+	.type 		= FSCACHE_COOKIE_TYPE_INDEX,
-+	.get_key	= nfs_server_get_key,
-+};
-diff --git a/fs/nfs/fscache.c b/fs/nfs/fscache.c
-new file mode 100644
-index 0000000..c3f056f
---- /dev/null
-+++ b/fs/nfs/fscache.c
-@@ -0,0 +1,52 @@
-+/* NFS filesystem cache interface
-+ *
-+ * Copyright (C) 2008 Red Hat, Inc. All Rights Reserved.
-+ * Written by David Howells (dhowells@redhat.com)
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public Licence
-+ * as published by the Free Software Foundation; either version
-+ * 2 of the Licence, or (at your option) any later version.
-+ */
-+
-+#include <linux/init.h>
-+#include <linux/kernel.h>
-+#include <linux/sched.h>
-+#include <linux/mm.h>
-+#include <linux/nfs_fs.h>
-+#include <linux/nfs_fs_sb.h>
-+#include <linux/in6.h>
-+#include <linux/seq_file.h>
-+
-+#include "internal.h"
-+#include "fscache.h"
-+
-+#define NFSDBG_FACILITY		NFSDBG_FSCACHE
-+
-+/*
-+ * Get the per-client index cookie for an NFS client if the appropriate mount
-+ * flag was set
-+ * - We always try and get an index cookie for the client, but get filehandle
-+ *   cookies on a per-superblock basis, depending on the mount flags
-+ */
-+void nfs_fscache_get_client_cookie(struct nfs_client *clp)
-+{
-+	/* create a cache index for looking up filehandles */
-+	clp->fscache = fscache_acquire_cookie(nfs_fscache_netfs.primary_index,
-+					      &nfs_fscache_server_index_def,
-+					      clp);
-+	dfprintk(FSCACHE, "NFS: get client cookie (0x%p/0x%p)\n",
-+		 clp, clp->fscache);
-+}
-+
-+/*
-+ * Dispose of a per-client cookie
-+ */
-+void nfs_fscache_release_client_cookie(struct nfs_client *clp)
-+{
-+	dfprintk(FSCACHE, "NFS: releasing client cookie (0x%p/0x%p)\n",
-+		 clp, clp->fscache);
-+
-+	fscache_relinquish_cookie(clp->fscache, 0);
-+	clp->fscache = NULL;
-+}
-diff --git a/fs/nfs/fscache.h b/fs/nfs/fscache.h
-index ccfcdc5..1d864be 100644
---- a/fs/nfs/fscache.h
-+++ b/fs/nfs/fscache.h
-@@ -23,13 +23,23 @@
-  * fscache-index.c
-  */
- extern struct fscache_netfs nfs_fscache_netfs;
-+extern const struct fscache_cookie_def nfs_fscache_server_index_def;
- 
- extern int nfs_fscache_register(void);
- extern void nfs_fscache_unregister(void);
- 
-+/*
-+ * fscache.c
-+ */
-+extern void nfs_fscache_get_client_cookie(struct nfs_client *);
-+extern void nfs_fscache_release_client_cookie(struct nfs_client *);
-+
- #else /* CONFIG_NFS_FSCACHE */
- static inline int nfs_fscache_register(void) { return 0; }
- static inline void nfs_fscache_unregister(void) {}
- 
-+static inline void nfs_fscache_get_client_cookie(struct nfs_client *clp) {}
-+static inline void nfs_fscache_release_client_cookie(struct nfs_client *clp) {}
-+
- #endif /* CONFIG_NFS_FSCACHE */
- #endif /* _NFS_FSCACHE_H */
-diff --git a/include/linux/nfs_fs_sb.h b/include/linux/nfs_fs_sb.h
-index e7c4cdd..8d23dcb 100644
---- a/include/linux/nfs_fs_sb.h
-+++ b/include/linux/nfs_fs_sb.h
-@@ -68,6 +68,10 @@ struct nfs_client {
- 	char			cl_ipaddr[48];
- 	unsigned char		cl_id_uniquifier;
- #endif
-+
-+#ifdef CONFIG_NFS_FSCACHE
-+	struct fscache_cookie	*fscache;	/* client index cache cookie */
-+#endif
- };
  
  /*
+@@ -806,6 +813,24 @@ static int nfs_parse_mount_options(char *raw,
+ 		case Opt_nosharecache:
+ 			mnt->flags |= NFS_MOUNT_UNSHARED;
+ 			break;
++		case Opt_fscache:
++			mnt->options |= NFS_OPTION_FSCACHE;
++			kfree(mnt->fscache_uniq);
++			mnt->fscache_uniq = NULL;
++			break;
++		case Opt_nofscache:
++			mnt->options &= ~NFS_OPTION_FSCACHE;
++			kfree(mnt->fscache_uniq);
++			mnt->fscache_uniq = NULL;
++			break;
++		case Opt_fscache_uniq:
++			string = match_strdup(args);
++			if (!string)
++				goto out_nomem;
++			kfree(mnt->fscache_uniq);
++			mnt->fscache_uniq = string;
++			mnt->options |= NFS_OPTION_FSCACHE;
++			break;
+ 
+ 		case Opt_port:
+ 			if (match_int(args, &option))
 
