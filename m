@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755208AbYC1AJR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756075AbYC1AK0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755208AbYC1AJR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Mar 2008 20:09:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752986AbYC1AJE
+	id S1756075AbYC1AK0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Mar 2008 20:10:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753408AbYC1AKM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Mar 2008 20:09:04 -0400
-Received: from mail.queued.net ([207.210.101.209]:1588 "EHLO mail.queued.net"
+	Thu, 27 Mar 2008 20:10:12 -0400
+Received: from mail.queued.net ([207.210.101.209]:1595 "EHLO mail.queued.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752921AbYC1AJD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Mar 2008 20:09:03 -0400
-Date: Thu, 27 Mar 2008 20:09:43 -0400
+	id S1752910AbYC1AKJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Mar 2008 20:10:09 -0400
+Date: Thu, 27 Mar 2008 20:10:50 -0400
 From: Andres Salomon <dilinger@queued.net>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: adaplas@gmail.com, linux-kernel@vger.kernel.org,
        linux-fbdev-devel@lists.sourceforge.net, info-linux@geode.amd.com,
        jordan.crouse@amd.com
-Subject: [PATCH 4/7] lxfb: rearrange/rename MSR bitfields
-Message-ID: <20080327200943.32c41bb1@ephemeral>
+Subject: [PATCH 5/7] lxfb: add power management functionality
+Message-ID: <20080327201050.34a8ffdd@ephemeral>
 X-Mailer: Claws Mail 2.10.0 (GTK+ 2.12.0; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -26,172 +26,462 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Finally, move the MSR bitfields around in lxfb.h, and rename them.
-Alas, most of that crap appears to be undocumented.
+This adds the ability to suspend/resume the lxfb driver, which includes:
+  - Register and palette saving code; registers are stored in lxfb_par.
+    A few MSR values are saved as well.
+  - lx_powerup and lx_powerdown functions which restore/save registers and
+    enable/disable graphic engines.
+  - lxfb_suspend/lxfb_resume
+
+Originally based on a patch by Jordan Crouse.
 
 Signed-off-by: Andres Salomon <dilinger@debian.org>
 ---
- drivers/video/geode/lxfb.h     |   52 ++++++++++++++++++++-------------------
- drivers/video/geode/lxfb_ops.c |   37 ++++++++++++++--------------
- 2 files changed, 46 insertions(+), 43 deletions(-)
+ drivers/video/geode/lxfb.h      |   45 +++++++
+ drivers/video/geode/lxfb_core.c |   46 +++++++
+ drivers/video/geode/lxfb_ops.c  |  263 +++++++++++++++++++++++++++++++++++++--
+ 3 files changed, 345 insertions(+), 9 deletions(-)
 
 diff --git a/drivers/video/geode/lxfb.h b/drivers/video/geode/lxfb.h
-index 0e3cb91..b3fbc56 100644
+index b3fbc56..3b9416f 100644
 --- a/drivers/video/geode/lxfb.h
 +++ b/drivers/video/geode/lxfb.h
-@@ -27,31 +27,6 @@ int lx_blank_display(struct fb_info *, int);
+@@ -3,6 +3,16 @@
+ 
+ #include <linux/fb.h>
+ 
++#define GP_REG_COUNT	(0x7c / 4)
++#define DC_REG_COUNT	(0xf0 / 4)
++#define VP_REG_COUNT	(0x158 / 8)
++#define FP_REG_COUNT	(0x60 / 8)
++
++#define DC_PAL_COUNT	0x104
++#define DC_HFILT_COUNT	0x100
++#define DC_VFILT_COUNT	0x100
++#define VP_COEFF_SIZE	0x1000
++
+ #define OUTPUT_CRT   0x01
+ #define OUTPUT_PANEL 0x02
+ 
+@@ -12,6 +22,27 @@ struct lxfb_par {
+ 	void __iomem *gp_regs;
+ 	void __iomem *dc_regs;
+ 	void __iomem *vp_regs;
++#ifdef CONFIG_PM
++	int powered_down;
++
++	/* register state, for power mgmt functionality */
++	struct {
++		uint64_t padsel;
++		uint64_t dotpll;
++		uint64_t dfglcfg;
++		uint64_t dcspare;
++	} msr;
++
++	uint32_t gp[GP_REG_COUNT];
++	uint32_t dc[DC_REG_COUNT];
++	uint64_t vp[VP_REG_COUNT];
++	uint64_t fp[FP_REG_COUNT];
++
++	uint32_t pal[DC_PAL_COUNT];
++	uint32_t hcoeff[DC_HFILT_COUNT * 2];
++	uint32_t vcoeff[DC_VFILT_COUNT];
++	uint32_t vp_coeff[VP_COEFF_SIZE / 4];
++#endif
+ };
+ 
+ static inline unsigned int lx_get_pitch(unsigned int xres, int bpp)
+@@ -27,6 +58,11 @@ int lx_blank_display(struct fb_info *, int);
  void lx_set_palette_reg(struct fb_info *, unsigned int, unsigned int,
  			unsigned int, unsigned int);
  
--/* MSRS */
--
--#define GLCP_DOTPLL_RESET    (1 << 0)
--#define GLCP_DOTPLL_BYPASS   (1 << 15)
--#define GLCP_DOTPLL_HALFPIX  (1 << 24)
--#define GLCP_DOTPLL_LOCK     (1 << 25)
--
--#define DF_CONFIG_OUTPUT_MASK       0x38
--#define DF_OUTPUT_PANEL             0x08
--#define DF_OUTPUT_CRT               0x00
--#define DF_SIMULTANEOUS_CRT_AND_FP  (1 << 15)
--
--#define DF_DEFAULT_TFT_PAD_SEL_LOW  0xDFFFFFFF
--#define DF_DEFAULT_TFT_PAD_SEL_HIGH 0x0000003F
--
--#define DC_SPARE_DISABLE_CFIFO_HGO         0x00000800
--#define DC_SPARE_VFIFO_ARB_SELECT          0x00000400
--#define DC_SPARE_WM_LPEN_OVRD              0x00000200
--#define DC_SPARE_LOAD_WM_LPEN_MASK         0x00000100
--#define DC_SPARE_DISABLE_INIT_VID_PRI      0x00000080
--#define DC_SPARE_DISABLE_VFIFO_WM          0x00000040
--#define DC_SPARE_DISABLE_CWD_CHECK         0x00000020
--#define DC_SPARE_PIX8_PAN_FIX              0x00000010
--#define DC_SPARE_FIRST_REQ_MASK            0x00000002
--
++#ifdef CONFIG_PM
++int lx_powerdown(struct fb_info *info);
++int lx_powerup(struct fb_info *info);
++#endif
++
  
  /* Graphics Processor registers (table 6-29 from the data book) */
  enum gp_registers {
-@@ -390,4 +365,31 @@ static inline void write_fp(struct lxfb_par *par, int reg, uint32_t val)
- 	writel(val, par->vp_regs + 8*reg + VP_FP_START);
+@@ -182,6 +218,9 @@ enum dc_registers {
+ #define DC_DV_CTL_DV_LINE_SIZE_2K	(1 << 10)
+ #define DC_DV_CTL_DV_LINE_SIZE_4K	(1 << 11)
+ #define DC_DV_CTL_DV_LINE_SIZE_8K	((1 << 10) | (1 << 11))
++#define DC_DV_CTL_CLEAR_DV_RAM		(1 << 0)
++
++#define DC_IRQ_FILT_CTL_H_FILT_SEL	(1 << 10)
+ 
+ #define DC_CLR_KEY_CLR_KEY_EN		(1 << 24)
+ 
+@@ -267,6 +306,8 @@ enum vp_registers {
+ 	VP_A2YE,
+ 
+ 	VP_A3YE,	/* 0x150 */
++
++	VP_VCR = 0x1000, /* 0x1000 - 0x1fff */
+ };
+ 
+ #define VP_VCFG_VID_EN			(1 << 0)
+@@ -319,6 +360,10 @@ enum fp_registers {
+ #define FP_PT2_SCRC			(1 << 27)	/* shfclk free */
+ 
+ #define FP_PM_P				(1 << 24)	/* panel power ctl */
++#define FP_PM_PANEL_PWR_UP		(1 << 3)	/* r/o */
++#define FP_PM_PANEL_PWR_DOWN		(1 << 2)	/* r/o */
++#define FP_PM_PANEL_OFF			(1 << 1)	/* r/o */
++#define FP_PM_PANEL_ON			(1 << 0)	/* r/o */
+ 
+ #define FP_DFC_BC			((1 << 4) | (1 << 5) | (1 << 6))
+ 
+diff --git a/drivers/video/geode/lxfb_core.c b/drivers/video/geode/lxfb_core.c
+index 19eabef..d6a2aea 100644
+--- a/drivers/video/geode/lxfb_core.c
++++ b/drivers/video/geode/lxfb_core.c
+@@ -428,6 +428,48 @@ static struct fb_info * __init lxfb_init_fbinfo(struct device *dev)
+ 	return info;
  }
  
++#ifdef CONFIG_PM
++static int lxfb_suspend(struct pci_dev *pdev, pm_message_t state)
++{
++	struct fb_info *info = pci_get_drvdata(pdev);
 +
-+/* MSRs are defined in asm/geode.h; their bitfields are here */
++	if (pdev->dev.power.power_state.event == state.event)
++		return 0;
 +
-+#define MSR_GLCP_DOTPLL_LOCK		(1 << 25)	/* r/o */
-+#define MSR_GLCP_DOTPLL_HALFPIX		(1 << 24)
-+#define MSR_GLCP_DOTPLL_BYPASS		(1 << 15)
-+#define MSR_GLCP_DOTPLL_DOTRESET	(1 << 0)
++	if (state.event == PM_EVENT_SUSPEND) {
++		acquire_console_sem();
++		lx_powerdown(info);
++		fb_set_suspend(info, 1);
++		release_console_sem();
++	}
 +
-+/* note: this is actually the VP's GLD_MSR_CONFIG */
-+#define MSR_LX_GLD_MSR_CONFIG_FMT	((1 << 3) | (1 << 4) | (1 << 5))
-+#define MSR_LX_GLD_MSR_CONFIG_FMT_FP	(1 << 3)
-+#define MSR_LX_GLD_MSR_CONFIG_FMT_CRT	(0)
-+#define MSR_LX_GLD_MSR_CONFIG_FPC	(1 << 15)	/* FP *and* CRT */
++	/* there's no point in setting PCI states; we emulate PCI, so
++	 * we don't end up getting power savings anyways */
 +
-+#define MSR_LX_MSR_PADSEL_TFT_SEL_LOW	0xDFFFFFFF	/* ??? */
-+#define MSR_LX_MSR_PADSEL_TFT_SEL_HIGH	0x0000003F	/* ??? */
++	pdev->dev.power.power_state = state;
++	return 0;
++}
 +
-+#define MSR_LX_SPARE_MSR_DIS_CFIFO_HGO	(1 << 11)	/* undocumented */
-+#define MSR_LX_SPARE_MSR_VFIFO_ARB_SEL	(1 << 10)	/* undocumented */
-+#define MSR_LX_SPARE_MSR_WM_LPEN_OVRD	(1 << 9)	/* undocumented */
-+#define MSR_LX_SPARE_MSR_LOAD_WM_LPEN_M	(1 << 8)	/* undocumented */
-+#define MSR_LX_SPARE_MSR_DIS_INIT_V_PRI	(1 << 7)	/* undocumented */
-+#define MSR_LX_SPARE_MSR_DIS_VIFO_WM	(1 << 6)
-+#define MSR_LX_SPARE_MSR_DIS_CWD_CHECK	(1 << 5)	/* undocumented */
-+#define MSR_LX_SPARE_MSR_PIX8_PAN_FIX	(1 << 4)	/* undocumented */
-+#define MSR_LX_SPARE_MSR_FIRST_REQ_MASK	(1 << 1)	/* undocumented */
++static int lxfb_resume(struct pci_dev *pdev)
++{
++	struct fb_info *info = pci_get_drvdata(pdev);
++	int ret;
 +
- #endif
++	acquire_console_sem();
++	ret = lx_powerup(info);
++	if (ret) {
++		printk(KERN_ERR "lxfb:  power up failed!\n");
++		return ret;
++	}
++
++	fb_set_suspend(info, 0);
++	release_console_sem();
++
++	pdev->dev.power.power_state = PMSG_ON;
++	return 0;
++}
++#endif
++
+ static int __init lxfb_probe(struct pci_dev *pdev,
+ 			     const struct pci_device_id *id)
+ {
+@@ -553,6 +595,10 @@ static struct pci_driver lxfb_driver = {
+ 	.id_table	= lxfb_id_table,
+ 	.probe		= lxfb_probe,
+ 	.remove		= lxfb_remove,
++#ifdef CONFIG_PM
++	.suspend	= lxfb_suspend,
++	.resume		= lxfb_resume,
++#endif
+ };
+ 
+ #ifndef MODULE
 diff --git a/drivers/video/geode/lxfb_ops.c b/drivers/video/geode/lxfb_ops.c
-index 6659df7..e042ae7 100644
+index e042ae7..cf8007c 100644
 --- a/drivers/video/geode/lxfb_ops.c
 +++ b/drivers/video/geode/lxfb_ops.c
-@@ -104,12 +104,12 @@ static void lx_set_dotpll(u32 pllval)
+@@ -182,8 +182,8 @@ static void lx_graphics_disable(struct fb_info *info)
+ 	val = read_dc(par, DC_CLR_KEY);
+ 	write_dc(par, DC_CLR_KEY, val & ~DC_CLR_KEY_CLR_KEY_EN);
  
- 	rdmsr(MSR_GLCP_DOTPLL, dotpll_lo, dotpll_hi);
+-	/* We don't actually blank the panel, due to the long latency
+-	   involved with bringing it back */
++	/* turn off the panel */
++	write_fp(par, FP_PM, read_fp(par, FP_PM) & ~FP_PM_P);
  
--	if ((dotpll_lo & GLCP_DOTPLL_LOCK) && (dotpll_hi == pllval))
-+	if ((dotpll_lo & MSR_GLCP_DOTPLL_LOCK) && (dotpll_hi == pllval))
- 		return;
- 
- 	dotpll_hi = pllval;
--	dotpll_lo &= ~(GLCP_DOTPLL_BYPASS | GLCP_DOTPLL_HALFPIX);
--	dotpll_lo |= GLCP_DOTPLL_RESET;
-+	dotpll_lo &= ~(MSR_GLCP_DOTPLL_BYPASS | MSR_GLCP_DOTPLL_HALFPIX);
-+	dotpll_lo |= MSR_GLCP_DOTPLL_DOTRESET;
- 
- 	wrmsr(MSR_GLCP_DOTPLL, dotpll_lo, dotpll_hi);
- 
-@@ -121,13 +121,13 @@ static void lx_set_dotpll(u32 pllval)
- 
- 	for (i = 0; i < 1000; i++) {
- 		rdmsr(MSR_GLCP_DOTPLL, dotpll_lo, dotpll_hi);
--		if (dotpll_lo & GLCP_DOTPLL_LOCK)
-+		if (dotpll_lo & MSR_GLCP_DOTPLL_LOCK)
- 			break;
+ 	val = read_vp(par, VP_MISC) | VP_MISC_DACPWRDN;
+ 	write_vp(par, VP_MISC, val);
+@@ -271,13 +271,8 @@ static void lx_graphics_enable(struct fb_info *info)
  	}
  
- 	/* Clear the reset bit */
- 
--	dotpll_lo &= ~GLCP_DOTPLL_RESET;
-+	dotpll_lo &= ~MSR_GLCP_DOTPLL_DOTRESET;
- 	wrmsr(MSR_GLCP_DOTPLL, dotpll_lo, dotpll_hi);
+ 	/* Turn the panel on (if it isn't already) */
+-
+-	if (par->output & OUTPUT_PANEL) {
+-		temp = read_fp(par, FP_PM);
+-
+-		if (!(temp & 0x09))
+-			write_fp(par, FP_PM, temp | FP_PM_P);
+-	}
++	if (par->output & OUTPUT_PANEL)
++		write_fp(par, FP_PM, read_fp(par, FP_PM) | FP_PM_P);
  }
  
-@@ -249,8 +249,8 @@ static void lx_graphics_enable(struct fb_info *info)
- 		write_fp(par, FP_PT2, FP_PT2_SCRC);
- 		write_fp(par, FP_DFC, FP_DFC_BC);
+ unsigned int lx_framebuffer_size(void)
+@@ -525,3 +520,253 @@ int lx_blank_display(struct fb_info *info, int blank_mode)
  
--		msrlo = DF_DEFAULT_TFT_PAD_SEL_LOW;
--		msrhi = DF_DEFAULT_TFT_PAD_SEL_HIGH;
-+		msrlo = MSR_LX_MSR_PADSEL_TFT_SEL_LOW;
-+		msrhi = MSR_LX_MSR_PADSEL_TFT_SEL_HIGH;
- 
- 		wrmsr(MSR_LX_MSR_PADSEL, msrlo, msrhi);
- 	}
-@@ -316,18 +316,17 @@ void lx_set_mode(struct fb_info *info)
- 	/* Set output mode */
- 
- 	rdmsrl(MSR_LX_GLD_MSR_CONFIG, msrval);
--	msrval &= ~DF_CONFIG_OUTPUT_MASK;
-+	msrval &= ~MSR_LX_GLD_MSR_CONFIG_FMT;
- 
- 	if (par->output & OUTPUT_PANEL) {
--		msrval |= DF_OUTPUT_PANEL;
-+		msrval |= MSR_LX_GLD_MSR_CONFIG_FMT_FP;
- 
- 		if (par->output & OUTPUT_CRT)
--			msrval |= DF_SIMULTANEOUS_CRT_AND_FP;
-+			msrval |= MSR_LX_GLD_MSR_CONFIG_FPC;
- 		else
--			msrval &= ~DF_SIMULTANEOUS_CRT_AND_FP;
--	} else {
--		msrval |= DF_OUTPUT_CRT;
--	}
-+			msrval &= ~MSR_LX_GLD_MSR_CONFIG_FPC;
-+	} else
-+		msrval |= MSR_LX_GLD_MSR_CONFIG_FMT_CRT;
- 
- 	wrmsrl(MSR_LX_GLD_MSR_CONFIG, msrval);
- 
-@@ -379,10 +378,12 @@ void lx_set_mode(struct fb_info *info)
- 
- 	rdmsrl(MSR_LX_SPARE_MSR, msrval);
- 
--	msrval &= ~(DC_SPARE_DISABLE_CFIFO_HGO | DC_SPARE_VFIFO_ARB_SELECT |
--		    DC_SPARE_LOAD_WM_LPEN_MASK | DC_SPARE_WM_LPEN_OVRD |
--		    DC_SPARE_DISABLE_INIT_VID_PRI | DC_SPARE_DISABLE_VFIFO_WM);
--	msrval |= DC_SPARE_DISABLE_VFIFO_WM | DC_SPARE_DISABLE_INIT_VID_PRI;
-+	msrval &= ~(MSR_LX_SPARE_MSR_DIS_CFIFO_HGO
-+			| MSR_LX_SPARE_MSR_VFIFO_ARB_SEL
-+			| MSR_LX_SPARE_MSR_LOAD_WM_LPEN_M
-+			| MSR_LX_SPARE_MSR_WM_LPEN_OVRD);
-+	msrval |= MSR_LX_SPARE_MSR_DIS_VIFO_WM |
-+			MSR_LX_SPARE_MSR_DIS_INIT_V_PRI;
- 	wrmsrl(MSR_LX_SPARE_MSR, msrval);
- 
- 	gcfg = DC_GENERAL_CFG_DFLE;   /* Display fifo enable */
+ 	return 0;
+ }
++
++#ifdef CONFIG_PM
++
++static void lx_save_regs(struct lxfb_par *par)
++{
++	uint32_t filt;
++	int i;
++
++	/* wait for the BLT engine to stop being busy */
++	do {
++		i = read_gp(par, GP_BLT_STATUS);
++	} while ((i & GP_BLT_STATUS_PB) || !(i & GP_BLT_STATUS_CE));
++
++	/* save MSRs */
++	rdmsrl(MSR_LX_MSR_PADSEL, par->msr.padsel);
++	rdmsrl(MSR_GLCP_DOTPLL, par->msr.dotpll);
++	rdmsrl(MSR_LX_GLD_MSR_CONFIG, par->msr.dfglcfg);
++	rdmsrl(MSR_LX_SPARE_MSR, par->msr.dcspare);
++
++	write_dc(par, DC_UNLOCK, DC_UNLOCK_UNLOCK);
++
++	/* save registers */
++	memcpy(par->gp, par->gp_regs, sizeof(par->gp));
++	memcpy(par->dc, par->dc_regs, sizeof(par->dc));
++	memcpy(par->vp, par->vp_regs, sizeof(par->vp));
++	memcpy(par->fp, par->vp_regs + VP_FP_START, sizeof(par->fp));
++
++	/* save the palette */
++	write_dc(par, DC_PAL_ADDRESS, 0);
++	for (i = 0; i < ARRAY_SIZE(par->pal); i++)
++		par->pal[i] = read_dc(par, DC_PAL_DATA);
++
++	/* save the horizontal filter coefficients */
++	filt = par->dc[DC_IRQ_FILT_CTL] | DC_IRQ_FILT_CTL_H_FILT_SEL;
++	for (i = 0; i < ARRAY_SIZE(par->hcoeff); i += 2) {
++		write_dc(par, DC_IRQ_FILT_CTL, (filt & 0xffffff00) | i);
++		par->hcoeff[i] = read_dc(par, DC_FILT_COEFF1);
++		par->hcoeff[i + 1] = read_dc(par, DC_FILT_COEFF2);
++	}
++
++	/* save the vertical filter coefficients */
++	filt &= ~DC_IRQ_FILT_CTL_H_FILT_SEL;
++	for (i = 0; i < ARRAY_SIZE(par->vcoeff); i++) {
++		write_dc(par, DC_IRQ_FILT_CTL, (filt & 0xffffff00) | i);
++		par->vcoeff[i] = read_dc(par, DC_FILT_COEFF1);
++	}
++
++	/* save video coeff ram */
++	memcpy(par->vp_coeff, par->vp_regs + VP_VCR, sizeof(par->vp_coeff));
++}
++
++static void lx_restore_gfx_proc(struct lxfb_par *par)
++{
++	int i;
++
++	/* a bunch of registers require GP_RASTER_MODE to be set first */
++	write_gp(par, GP_RASTER_MODE, par->gp[GP_RASTER_MODE]);
++
++	for (i = 0; i < ARRAY_SIZE(par->gp); i++) {
++		switch (i) {
++		case GP_RASTER_MODE:
++		case GP_VECTOR_MODE:
++		case GP_BLT_MODE:
++		case GP_BLT_STATUS:
++		case GP_HST_SRC:
++			/* FIXME: restore LUT data */
++		case GP_LUT_INDEX:
++		case GP_LUT_DATA:
++			/* don't restore these registers */
++			break;
++
++		default:
++			write_gp(par, i, par->gp[i]);
++		}
++	}
++}
++
++static void lx_restore_display_ctlr(struct lxfb_par *par)
++{
++	uint32_t filt;
++	int i;
++
++	wrmsrl(MSR_LX_SPARE_MSR, par->msr.dcspare);
++
++	for (i = 0; i < ARRAY_SIZE(par->dc); i++) {
++		switch (i) {
++		case DC_UNLOCK:
++			/* unlock the DC; runs first */
++			write_dc(par, DC_UNLOCK, DC_UNLOCK_UNLOCK);
++			break;
++
++		case DC_GENERAL_CFG:
++		case DC_DISPLAY_CFG:
++			/* disable all while restoring */
++			write_dc(par, i, 0);
++			break;
++
++		case DC_DV_CTL:
++			/* set all ram to dirty */
++			write_dc(par, i, par->dc[i] | DC_DV_CTL_CLEAR_DV_RAM);
++
++		case DC_RSVD_1:
++		case DC_RSVD_2:
++		case DC_RSVD_3:
++		case DC_LINE_CNT:
++		case DC_PAL_ADDRESS:
++		case DC_PAL_DATA:
++		case DC_DFIFO_DIAG:
++		case DC_CFIFO_DIAG:
++		case DC_FILT_COEFF1:
++		case DC_FILT_COEFF2:
++		case DC_RSVD_4:
++		case DC_RSVD_5:
++			/* don't restore these registers */
++			break;
++
++		default:
++			write_dc(par, i, par->dc[i]);
++		}
++	}
++
++	/* restore the palette */
++	write_dc(par, DC_PAL_ADDRESS, 0);
++	for (i = 0; i < ARRAY_SIZE(par->pal); i++)
++		write_dc(par, DC_PAL_DATA, par->pal[i]);
++
++	/* restore the horizontal filter coefficients */
++	filt = par->dc[DC_IRQ_FILT_CTL] | DC_IRQ_FILT_CTL_H_FILT_SEL;
++	for (i = 0; i < ARRAY_SIZE(par->hcoeff); i += 2) {
++		write_dc(par, DC_IRQ_FILT_CTL, (filt & 0xffffff00) | i);
++		write_dc(par, DC_FILT_COEFF1, par->hcoeff[i]);
++		write_dc(par, DC_FILT_COEFF2, par->hcoeff[i + 1]);
++	}
++
++	/* restore the vertical filter coefficients */
++	filt &= ~DC_IRQ_FILT_CTL_H_FILT_SEL;
++	for (i = 0; i < ARRAY_SIZE(par->vcoeff); i++) {
++		write_dc(par, DC_IRQ_FILT_CTL, (filt & 0xffffff00) | i);
++		write_dc(par, DC_FILT_COEFF1, par->vcoeff[i]);
++	}
++}
++
++static void lx_restore_video_proc(struct lxfb_par *par)
++{
++	int i;
++
++	wrmsrl(MSR_LX_GLD_MSR_CONFIG, par->msr.dfglcfg);
++	wrmsrl(MSR_LX_MSR_PADSEL, par->msr.padsel);
++
++	for (i = 0; i < ARRAY_SIZE(par->vp); i++) {
++		switch (i) {
++		case VP_VCFG:
++		case VP_DCFG:
++		case VP_PAR:
++		case VP_PDR:
++		case VP_CCS:
++		case VP_RSVD_0:
++		/* case VP_VDC: */ /* why should this not be restored? */
++		case VP_RSVD_1:
++		case VP_CRC32:
++			/* don't restore these registers */
++			break;
++
++		default:
++			write_vp(par, i, par->vp[i]);
++		}
++	}
++
++	/* restore video coeff ram */
++	memcpy(par->vp_regs + VP_VCR, par->vp_coeff, sizeof(par->vp_coeff));
++}
++
++static void lx_restore_regs(struct lxfb_par *par)
++{
++	int i;
++
++	lx_set_dotpll((u32) (par->msr.dotpll >> 32));
++	lx_restore_gfx_proc(par);
++	lx_restore_display_ctlr(par);
++	lx_restore_video_proc(par);
++
++	/* Flat Panel */
++	for (i = 0; i < ARRAY_SIZE(par->fp); i++) {
++		switch (i) {
++		case FP_PM:
++		case FP_RSVD_0:
++		case FP_RSVD_1:
++		case FP_RSVD_2:
++		case FP_RSVD_3:
++		case FP_RSVD_4:
++			/* don't restore these registers */
++			break;
++
++		default:
++			write_fp(par, i, par->fp[i]);
++		}
++	}
++
++	/* control the panel */
++	if (par->fp[FP_PM] & FP_PM_P) {
++		/* power on the panel if not already power{ed,ing} on */
++		if (!(read_fp(par, FP_PM) &
++				(FP_PM_PANEL_ON|FP_PM_PANEL_PWR_UP)))
++			write_fp(par, FP_PM, par->fp[FP_PM]);
++	} else {
++		/* power down the panel if not already power{ed,ing} down */
++		if (!(read_fp(par, FP_PM) &
++				(FP_PM_PANEL_OFF|FP_PM_PANEL_PWR_DOWN)))
++			write_fp(par, FP_PM, par->fp[FP_PM]);
++	}
++
++	/* turn everything on */
++	write_vp(par, VP_VCFG, par->vp[VP_VCFG]);
++	write_vp(par, VP_DCFG, par->vp[VP_DCFG]);
++	write_dc(par, DC_DISPLAY_CFG, par->dc[DC_DISPLAY_CFG]);
++	/* do this last; it will enable the FIFO load */
++	write_dc(par, DC_GENERAL_CFG, par->dc[DC_GENERAL_CFG]);
++
++	/* lock the door behind us */
++	write_dc(par, DC_UNLOCK, DC_UNLOCK_LOCK);
++}
++
++int lx_powerdown(struct fb_info *info)
++{
++	struct lxfb_par *par = info->par;
++
++	if (par->powered_down)
++		return 0;
++
++	lx_save_regs(par);
++	lx_graphics_disable(info);
++
++	par->powered_down = 1;
++	return 0;
++}
++
++int lx_powerup(struct fb_info *info)
++{
++	struct lxfb_par *par = info->par;
++
++	if (!par->powered_down)
++		return 0;
++
++	lx_restore_regs(par);
++
++	par->powered_down = 0;
++	return 0;
++}
++
++#endif
 -- 
 1.5.3.7
 
