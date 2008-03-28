@@ -1,27 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755057AbYC1OOP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754268AbYC1OTo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755057AbYC1OOP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Mar 2008 10:14:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753154AbYC1OOA
+	id S1754268AbYC1OTo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Mar 2008 10:19:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753208AbYC1OTg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Mar 2008 10:14:00 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:57388 "EHLO mx3.mail.elte.hu"
+	Fri, 28 Mar 2008 10:19:36 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:55932 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752993AbYC1ON7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Mar 2008 10:13:59 -0400
-Date: Fri, 28 Mar 2008 15:13:48 +0100
+	id S1753009AbYC1OTg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Mar 2008 10:19:36 -0400
+Date: Fri, 28 Mar 2008 15:18:47 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Andi Kleen <andi@firstfloor.org>,
-       kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: agpgart: when telling user you'll corrupt his data, at least
-	do it at KERN_CRIT
-Message-ID: <20080328141348.GE29218@elte.hu>
-References: <20080328112507.GA10774@elf.ucw.cz> <20080328113528.GA8077@elte.hu> <20080328134451.GB4544@ucw.cz>
+To: "Frank Ch. Eigler" <fche@redhat.com>
+Cc: KOSAKI Motohiro <m-kosaki@ceres.dti.ne.jp>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [patch for 2.6.26 0/7] Architecture Independent Markers
+Message-ID: <20080328141845.GF29218@elte.hu>
+References: <20080327132057.449831367@polymtl.ca> <20080327154053.GA5890@elte.hu> <2f11576a0803271008t7574ead1s9ea285d8df57ef1@mail.gmail.com> <20080328101500.GF30863@elte.hu> <y0mabkjvufd.fsf@ton.toronto.redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080328134451.GB4544@ucw.cz>
+In-Reply-To: <y0mabkjvufd.fsf@ton.toronto.redhat.com>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -36,22 +37,20 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Pavel Machek <pavel@ucw.cz> wrote:
+* Frank Ch. Eigler <fche@redhat.com> wrote:
 
-> On Fri 2008-03-28 12:35:28, Ingo Molnar wrote:
-> > 
-> > * Pavel Machek <pavel@ucw.cz> wrote:
-> > 
-> > > IOMMU off means very bad stuff may happen, like data corruption on 
-> > > your hard drives. At least tells users this is serious...
-> > 
-> > ouch. Please at minimum lets turn this into a panic(), but best would be 
-> > to trim memory in this case, hm?
 > 
-> Andi tells me we already fallback to swiotlb, so messages are not on 
-> wrong loglevel; they contain confusing/obsolete text.
+> >> >  NACK-ed-by: Ingo Molnar <mingo@elte.hu>
+> >> [...]
+> >> I wonder why nobody doesn't fix this serious problem until now. [...]
+> 
+> Frankly, the "problem" has not yet been established.  Ingo has failed 
+> to respond to Mathieu's analysis of the actual instruction streams, 
+> which cast doubt on Ingo's technique of simply counting bytes. [...]
 
-yes that is the theory - but how did your disk get corrupted in 
-practice? ;-)
+uhm no. The "difference" is due to Matthieu counting on the platform 
+that is most favorable to his argument: 32-bit, while i counted on 
+64-bit where most servers operate (and where instrumentation micro-cost 
+actually matters).
 
 	Ingo
