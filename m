@@ -1,92 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755087AbYC1Mp3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755528AbYC1MqT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755087AbYC1Mp3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Mar 2008 08:45:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753858AbYC1MpU
+	id S1755528AbYC1MqT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Mar 2008 08:46:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753931AbYC1MqH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Mar 2008 08:45:20 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:49666 "EHLO
+	Fri, 28 Mar 2008 08:46:07 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:49674 "EHLO
 	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753600AbYC1MpT (ORCPT
+	with ESMTP id S1752511AbYC1MqE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Mar 2008 08:45:19 -0400
-Date: Fri, 28 Mar 2008 06:45:17 -0600
+	Fri, 28 Mar 2008 08:46:04 -0400
+Date: Fri, 28 Mar 2008 06:46:03 -0600
 From: Matthew Wilcox <matthew@wil.cx>
 To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: "Luck, Tony" <tony.luck@intel.com>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-arch@vger.kernel.org,
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
+       "Luck, Tony" <tony.luck@intel.com>, linux-arch@vger.kernel.org,
        linux-mm@kvack.org, linux-kernel@vger.kernel.org
 Subject: Re: down_spin() implementation
-Message-ID: <20080328124517.GQ16721@parisc-linux.org>
-References: <1FE6DD409037234FAB833C420AA843ECE9DF60@orsmsx424.amr.corp.intel.com> <1FE6DD409037234FAB833C420AA843ECE9EB1C@orsmsx424.amr.corp.intel.com> <20080327141508.GL16721@parisc-linux.org> <200803281101.25037.nickpiggin@yahoo.com.au>
+Message-ID: <20080328124603.GR16721@parisc-linux.org>
+References: <1FE6DD409037234FAB833C420AA843ECE9DF60@orsmsx424.amr.corp.intel.com> <20080327141508.GL16721@parisc-linux.org> <20080328155107.e9d8866c.sfr@canb.auug.org.au> <200803281603.34134.nickpiggin@yahoo.com.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200803281101.25037.nickpiggin@yahoo.com.au>
+In-Reply-To: <200803281603.34134.nickpiggin@yahoo.com.au>
 User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 28, 2008 at 11:01:24AM +1100, Nick Piggin wrote:
-> Uhm, how do you use this exactly? All other holders of this
-> semaphore must have preempt disabled and not sleep, right? (and
-> so you need a new down() that disables preempt too)
-
-Ah, I see what you're saying.  The deadlock would be (on a single CPU
-machine), task A holding the semaphore, being preempted, task B taking
-a spinlock (thus non-preemptable), then calling down_spin() which will
-never succeed.
-
-That hadn't occurred to me -- I'm not used to thinking about preemption.
-I considered interrupt context and saw how that would deadlock, so just
-put a note in the documentation that it wasn't usable from interrupts.
-
-So it makes little sense to add this to semaphores.  Better to introduce
-a spinaphore, as you say.
-
-> struct {
->   atomic_t cur;
->   int max;
-> } ss_t;
+On Fri, Mar 28, 2008 at 04:03:33PM +1100, Nick Piggin wrote:
+> On Friday 28 March 2008 15:51, Stephen Rothwell wrote:
+> > Hi Willy,
+> >
+> > On Thu, 27 Mar 2008 08:15:08 -0600 Matthew Wilcox <matthew@wil.cx> wrote:
+> > > Stephen, I've updated the 'semaphore' tag to point ot the same place as
+> > > semaphore-20080327, so please change your linux-next tree from pulling
+> > > semaphore-20080314 to just pulling plain 'semaphore'.  I'll use this
+> > > method of tagging from now on.
+> >
+> > Thanks. I read this to late for today's tree, but I will fix it up for
+> > the next one.
 > 
-> void spin_init(ss_t *ss, int max)
-> {
-> 	&ss->cur = ATOMIC_INIT(0);
-> 	&ss->max = max;
-> }
+> Please don't add this nasty code to semaphore.
 > 
-> void spin_take(ss_t *ss)
-> {
->   preempt_disable();
->   while (unlikely(!atomic_add_unless(&ss->cur, 1, &ss->max))) {
->     while (atomic_read(&ss->cur) == ss->max)
->       cpu_relax();
->   }
-> }
+> Did my previous message to the thread get eaten by spam filters?
 
-I think we can do better here with:
-
-	atomic_set(max);
-
-and
-
-	while (unlikely(!atomic_add_unless(&ss->cur, -1, 0)))
-		while (atomic_read(&ss->cur) == 0)
-			cpu_relax();
-
-It still spins on the spinaphore itself rather than on a local cacheline,
-so there's room for improvement.  But it's not clear whether it'd be
-worth it.
-
-> About the same number as down_spin(). And it is much harder to
-> misuse. So LOC isn't such a great argument for this kind of thing.
-
-LOC wasn't really my argument -- I didn't want to introduce a new data
-structure unnecessarily.  But the pitfalls (that I hadn't seen) of
-mixing down_spin() into semaphores are just too awful.
-
-I'll pop this patch off the stack of semaphore patches.  Thanks.
+It didn't arrive until after Stephen's message (but it did arrive before
+this one).
 
 -- 
 Intel are signing my paycheques ... these opinions are still mine
