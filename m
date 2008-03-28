@@ -1,27 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757414AbYC1Oi0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757174AbYC1Ohv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757414AbYC1Oi0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Mar 2008 10:38:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756247AbYC1OeW
+	id S1757174AbYC1Ohv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Mar 2008 10:37:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756222AbYC1OeO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Mar 2008 10:34:22 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:49248 "EHLO mx1.redhat.com"
+	Fri, 28 Mar 2008 10:34:14 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:49230 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756224AbYC1OeR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Mar 2008 10:34:17 -0400
+	id S1753830AbYC1OeI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Mar 2008 10:34:08 -0400
 Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
 	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
 	Kingdom.
 	Registered in England and Wales under Company Registration No. 3798903
 From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 02/45] KEYS: Check starting keyring as part of search [ver #35]
+Subject: [PATCH 12/45] Security: Add a kernel_service object class to SELinux
+	[ver #35]
 To: torvalds@osdl.org, akpm@linux-foundation.org, trond.myklebust@fys.uio.no,
        chuck.lever@oracle.com
 Cc: nfsv4@linux-nfs.org, linux-kernel@vger.kernel.org,
        linux-fsdevel@vger.kernel.org, selinux@tycho.nsa.gov,
        linux-security-module@vger.kernel.org, dhowells@redhat.com
-Date: Fri, 28 Mar 2008 14:30:21 +0000
-Message-ID: <20080328143021.3483.17742.stgit@warthog.procyon.org.uk>
+Date: Fri, 28 Mar 2008 14:31:12 +0000
+Message-ID: <20080328143112.3483.93367.stgit@warthog.procyon.org.uk>
 In-Reply-To: <20080328143010.3483.99079.stgit@warthog.procyon.org.uk>
 References: <20080328143010.3483.99079.stgit@warthog.procyon.org.uk>
 User-Agent: StGIT/0.14.1
@@ -32,115 +33,70 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Check the starting keyring as part of the search to (a) see if that is what
-we're searching for, and (b) to check it is still valid for searching.
+Add a 'kernel_service' object class to SELinux and give this object class two
+access vectors: 'use_as_override' and 'create_files_as'.
 
-The scenario:  User in process A does things that cause things to be
-created in its process session keyring.  The user then does an su to
-another user and starts a new process, B.  The two processes now
-share the same process session keyring.
+The first vector is used to grant a process the right to nominate an alternate
+process security ID for the kernel to use as an override for the SELinux
+subjective security when accessing stuff on behalf of another process.
 
-Process B does an NFS access which results in an upcall to gssd.
-When gssd attempts to instantiate the context key (to be linked
-into the process session keyring), it is denied access even though it
-has an authorization key.
+For example, CacheFiles when accessing the cache on behalf on a process
+accessing an NFS file needs to use a subjective security ID appropriate to the
+cache rather then the one the calling process is using.  The cachefilesd
+daemon will nominate the security ID to be used.
 
-The order of calls is:
+The second vector is used to grant a process the right to nominate a file
+creation label for a kernel service to use.
 
-   keyctl_instantiate_key()
-      lookup_user_key()				    (the default: case)
-         search_process_keyrings(current)
-	    search_process_keyrings(rka->context)   (recursive call)
-	       keyring_search_aux()
-
-keyring_search_aux() verifies the keys and keyrings underneath the
-top-level keyring it is given, but that top-level keyring is neither
-fully validated nor checked to see if it is the thing being searched for.
-
-This patch changes keyring_search_aux() to:
-1) do more validation on the top keyring it is given and
-2) check whether that top-level keyring is the thing being searched for
-
-
-Signed-off-by: Kevin Coffman <kwc@citi.umich.edu>
 Signed-off-by: David Howells <dhowells@redhat.com>
 ---
 
- security/keys/keyring.c |   35 +++++++++++++++++++++++++++++++----
- 1 files changed, 31 insertions(+), 4 deletions(-)
+ security/selinux/include/av_perm_to_string.h |    2 ++
+ security/selinux/include/av_permissions.h    |    2 ++
+ security/selinux/include/class_to_string.h   |    1 +
+ security/selinux/include/flask.h             |    1 +
+ 4 files changed, 6 insertions(+), 0 deletions(-)
 
 
-diff --git a/security/keys/keyring.c b/security/keys/keyring.c
-index 88292e3..76b89b2 100644
---- a/security/keys/keyring.c
-+++ b/security/keys/keyring.c
-@@ -292,7 +292,7 @@ key_ref_t keyring_search_aux(key_ref_t keyring_ref,
+diff --git a/security/selinux/include/av_perm_to_string.h b/security/selinux/include/av_perm_to_string.h
+index d569669..fd6bef7 100644
+--- a/security/selinux/include/av_perm_to_string.h
++++ b/security/selinux/include/av_perm_to_string.h
+@@ -171,3 +171,5 @@
+    S_(SECCLASS_DCCP_SOCKET, DCCP_SOCKET__NAME_CONNECT, "name_connect")
+    S_(SECCLASS_MEMPROTECT, MEMPROTECT__MMAP_ZERO, "mmap_zero")
+    S_(SECCLASS_PEER, PEER__RECV, "recv")
++   S_(SECCLASS_KERNEL_SERVICE, KERNEL_SERVICE__USE_AS_OVERRIDE, "use_as_override")
++   S_(SECCLASS_KERNEL_SERVICE, KERNEL_SERVICE__CREATE_FILES_AS, "create_files_as")
+diff --git a/security/selinux/include/av_permissions.h b/security/selinux/include/av_permissions.h
+index 75b4131..02ddf8d 100644
+--- a/security/selinux/include/av_permissions.h
++++ b/security/selinux/include/av_permissions.h
+@@ -836,3 +836,5 @@
+ #define DCCP_SOCKET__NAME_CONNECT                 0x00800000UL
+ #define MEMPROTECT__MMAP_ZERO                     0x00000001UL
+ #define PEER__RECV                                0x00000001UL
++#define KERNEL_SERVICE__USE_AS_OVERRIDE           0x00000001UL
++#define KERNEL_SERVICE__CREATE_FILES_AS           0x00000002UL
+diff --git a/security/selinux/include/class_to_string.h b/security/selinux/include/class_to_string.h
+index bd813c3..373b191 100644
+--- a/security/selinux/include/class_to_string.h
++++ b/security/selinux/include/class_to_string.h
+@@ -72,3 +72,4 @@
+     S_(NULL)
+     S_("peer")
+     S_("capability2")
++    S_("kernel_service")
+diff --git a/security/selinux/include/flask.h b/security/selinux/include/flask.h
+index febf886..f3c5166 100644
+--- a/security/selinux/include/flask.h
++++ b/security/selinux/include/flask.h
+@@ -52,6 +52,7 @@
+ #define SECCLASS_MEMPROTECT                              61
+ #define SECCLASS_PEER                                    68
+ #define SECCLASS_CAPABILITY2                             69
++#define SECCLASS_KERNEL_SERVICE                          70
  
- 	struct keyring_list *keylist;
- 	struct timespec now;
--	unsigned long possessed;
-+	unsigned long possessed, kflags;
- 	struct key *keyring, *key;
- 	key_ref_t key_ref;
- 	long err;
-@@ -318,6 +318,32 @@ key_ref_t keyring_search_aux(key_ref_t keyring_ref,
- 	now = current_kernel_time();
- 	err = -EAGAIN;
- 	sp = 0;
-+	
-+	/* firstly we should check to see if this top-level keyring is what we
-+	 * are looking for */
-+	key_ref = ERR_PTR(-EAGAIN);
-+	kflags = keyring->flags;
-+	if (keyring->type == type && match(keyring, description)) {
-+		key = keyring;
-+
-+		/* check it isn't negative and hasn't expired or been
-+		 * revoked */
-+		if (kflags & (1 << KEY_FLAG_REVOKED))
-+			goto error_2;
-+		if (key->expiry && now.tv_sec >= key->expiry)
-+			goto error_2;
-+		key_ref = ERR_PTR(-ENOKEY);
-+		if (kflags & (1 << KEY_FLAG_NEGATIVE))
-+			goto error_2;
-+		goto found;
-+	}
-+
-+	/* otherwise, the top keyring must not be revoked, expired, or
-+	 * negatively instantiated if we are to search it */
-+	key_ref = ERR_PTR(-EAGAIN);
-+	if (kflags & ((1 << KEY_FLAG_REVOKED) | (1 << KEY_FLAG_NEGATIVE)) ||
-+	    (keyring->expiry && now.tv_sec >= keyring->expiry))
-+		goto error_2;
- 
- 	/* start processing a new keyring */
- descend:
-@@ -331,13 +357,14 @@ descend:
- 	/* iterate through the keys in this keyring first */
- 	for (kix = 0; kix < keylist->nkeys; kix++) {
- 		key = keylist->keys[kix];
-+		kflags = key->flags;
- 
- 		/* ignore keys not of this type */
- 		if (key->type != type)
- 			continue;
- 
- 		/* skip revoked keys and expired keys */
--		if (test_bit(KEY_FLAG_REVOKED, &key->flags))
-+		if (kflags & (1 << KEY_FLAG_REVOKED))
- 			continue;
- 
- 		if (key->expiry && now.tv_sec >= key->expiry)
-@@ -352,8 +379,8 @@ descend:
- 					context, KEY_SEARCH) < 0)
- 			continue;
- 
--		/* we set a different error code if we find a negative key */
--		if (test_bit(KEY_FLAG_NEGATIVE, &key->flags)) {
-+		/* we set a different error code if we pass a negative key */
-+		if (kflags & (1 << KEY_FLAG_NEGATIVE)) {
- 			err = -ENOKEY;
- 			continue;
- 		}
+ /*
+  * Security identifier indices for initial entities
 
