@@ -1,262 +1,300 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759065AbYC1M5g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757359AbYC1M5x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759065AbYC1M5g (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Mar 2008 08:57:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758459AbYC1Mza
+	id S1757359AbYC1M5x (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Mar 2008 08:57:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758472AbYC1Mzd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Mar 2008 08:55:30 -0400
+	Fri, 28 Mar 2008 08:55:33 -0400
 Received: from SpacedOut.fries.net ([67.64.210.234]:34541 "EHLO
 	SpacedOut.fries.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756925AbYC1Mz2 (ORCPT
+	with ESMTP id S1758446AbYC1Mza (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Mar 2008 08:55:28 -0400
-Date: Fri, 28 Mar 2008 07:25:04 -0500
+	Fri, 28 Mar 2008 08:55:30 -0400
+Date: Fri, 28 Mar 2008 07:27:34 -0500
 From: David Fries <david@fries.net>
 To: linux-kernel@vger.kernel.org
 Cc: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-Subject: [PATCH 7/35] W1: feature, enable hardware strong pullup
-Message-ID: <20080328122504.GH3613@spacedout.fries.net>
+Subject: [PATCH 29/35] W1: ds2490.c ds_dump_status rework
+Message-ID: <20080328122734.GD3613@spacedout.fries.net>
 References: <200803272343.m2RNhDac017650@SpacedOut.fries.net>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="NzX0AQGjRQPusK/O"
+	protocol="application/pgp-signature"; boundary="h+CsNYkJBPxpZ+B/"
 Content-Disposition: inline
 In-Reply-To: <200803272343.m2RNhDac017650@SpacedOut.fries.net>
 User-Agent: Mutt/1.5.4i
-X-Greylist: Sender is SPF-compliant, not delayed by milter-greylist-3.0 (SpacedOut.fries.net [127.0.0.1]); Fri, 28 Mar 2008 07:25:04 -0500 (CDT)
+X-Greylist: Sender is SPF-compliant, not delayed by milter-greylist-3.0 (SpacedOut.fries.net [127.0.0.1]); Fri, 28 Mar 2008 07:27:34 -0500 (CDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---NzX0AQGjRQPusK/O
+--h+CsNYkJBPxpZ+B/
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-Add a strong pullup option to the w1 system.  This supplies extra
-power for parasite powered devices.
+add result register #defines
+rename ds_dump_status to ds_print_msg
+rename ds_recv_status to ds_dump_status
+ds_dump_status prints the requested status and no longer reads the
+status
 
-The one wire bus requires at a minimum one wire and ground.  The
-common wire is used for sending and receiving data as well as
-supplying power to devices that are parasite powered.  Temperature
-sensors are one device that can be parasite powered and require no bus
-transactions while the temperature conversion is progress.  A bus
-transaction would pull the common wire down.  In addition to the
-normal pullup resistor, which allows a device to pull the bus line
-down to send data, some devices support a strong pullup mechanism to
-deliver more power.  The documentation lists this as useful for larger
-networks and when temperature sensors are exposed to higher
-temperatures they can exceed the current supplied by a simple pullup
-resistor.  This patch adds a mechanism to support a strong pullup, and
-fall back to sleeping with the line high otherwise.  This patch
-doesn't enable the strong pullup for any master or slave device, those
-will follow as they require this patch.
+ds_2490.c 1.16
+rename ds_dump_status to ds_print_msg
+ds_print_msg is more appropriate, it is only a wrapper around printk
+rename ds_recv_status to ds_dump_status
 
-The hardware USB 2490 one wire bus master has a bit on a few commands
-which will enable the strong pullup as soon as the command finishes
-executing.  That requires the ds2490 driver to be notified if it
-should be set before the command is executed.  That's why I added the
-w1_next_pullup.  That will call the master set_pullup just before the
-next write, and reset the value to zero after it has completed.  If
-the master driver doesn't support the set_pullup, it will delay the
-appropriate amount of time after the write returns.
+ds_recv_status would first read a new status message, then print it.
+The problem is ds_recv_status was only being called if there was an
+error, so it could print the error status.  If the error was cleared,
+then the good status message was dumped instead of the one in error.
+ds_dump_status now is passed a status value to print.
 
-w1.h 1.2 1.3 1.4
-Add set_pullup to w1_bus_master, and add pullup_duration to w1_master
-to hold the strong pullup duration for the next write operation.
+ds_dump_status now will print the result register in addition to the
+status buffer.  For now that will be limited to detecting new devices.
+It could include detecting a short and other status indicators, but
+the reset command would need to enable generating the result
+information and more logic to only print the useful bits.  Printing
+the extended result register also required being passed the status, as
+a second status read would loose these bytes.
 
-w1_int.c 1.3
-Add a check to disable set_pullup and print a warning message when the
-operation isn't supported.
+Resetting ST_EPOF was moved to ds_wait_status so it could be cleared
+sooner as under normal operation there is never so many commands as to
+fill up the command buffer.
 
-w1_io.c 1.2 1.3 1.4 1.6
-Add w1_next_pullup, call w1_pre_write and w1_post_write to call
-set_pullup before and after, or just sleep after if set_pullup isn't
-supported.
+ds_wait_status will not treat extra data in the status request as an
+error, it will call ds_dump_status when there is extra data though.
 
 Signed-off-by: David Fries <david@fries.net>
 ---
- drivers/w1/w1.h     |   10 +++++++
- drivers/w1/w1_int.c |   12 +++++++++
- drivers/w1/w1_io.c  |   66 +++++++++++++++++++++++++++++++++++++++++++++++=
----
- 3 files changed, 84 insertions(+), 4 deletions(-)
+ drivers/w1/masters/ds2490.c |  129 +++++++++++++++++++++++++++------------=
+----
+ 1 files changed, 81 insertions(+), 48 deletions(-)
 
-diff --git a/drivers/w1/w1.h b/drivers/w1/w1.h
-index c47ca1e..bad7c7c 100644
---- a/drivers/w1/w1.h
-+++ b/drivers/w1/w1.h
-@@ -142,6 +142,12 @@ struct w1_bus_master
- 	 */
- 	u8		(*reset_bus)(void *);
+diff --git a/drivers/w1/masters/ds2490.c b/drivers/w1/masters/ds2490.c
+index 45e7f10..1e04ee4 100644
+--- a/drivers/w1/masters/ds2490.c
++++ b/drivers/w1/masters/ds2490.c
+@@ -107,6 +107,17 @@
+ #define ST_IDLE				0x20  /* DS2490 is currently idle */
+ #define ST_EPOF				0x80
 =20
-+	/**
-+	 * Put out a strong pull-up pulse of the specified duration.
-+	 * @return -1=3DError, 0=3Dcompleted
-+	 */
-+	u8		(*set_pullup)(void *, int);
++/* Result Register flags */
++#define RR_DETECT			0xA5 /* New device detected */
++#define RR_NRS				0x01 /* Reset no presence or ... */
++#define RR_SH				0x02 /* short on reset or set path */
++#define RR_APP				0x04 /* alarming presence on reset */
++#define RR_VPP				0x08 /* 12V expected not seen */
++#define RR_CMP				0x10 /* compare error */
++#define RR_CRC				0x20 /* CRC error detected */
++#define RR_RDP				0x40 /* redirected page */
++#define RR_EOS				0x80 /* end of search error */
 +
- 	/** Really nice hardware can handles the different types of ROM search
- 	 *  w1_master* is passed to the slave found callback.
- 	 */
-@@ -167,6 +173,9 @@ struct w1_master
- 	void			*priv;
- 	int			priv_size;
+ #define SPEED_NORMAL			0x00
+ #define SPEED_FLEXIBLE			0x01
+ #define SPEED_OVERDRIVE			0x02
+@@ -164,7 +175,6 @@ MODULE_DEVICE_TABLE(usb, ds_id_table);
+ static int ds_probe(struct usb_interface *, const struct usb_device_id *);
+ static void ds_disconnect(struct usb_interface *);
 =20
-+	/** Strong pullup duration in milliseconds, zero disabled. */
-+	int			pullup_duration;
-+
- 	struct task_struct	*thread;
- 	struct mutex		mutex;
+-static inline void ds_dump_status(unsigned char *, unsigned char *, int);
+ static int ds_send_control(struct ds_device *, u16, u16);
+ static int ds_send_control_cmd(struct ds_device *, u16, u16);
 =20
-@@ -201,6 +210,7 @@ u8 w1_calc_crc8(u8 *, int);
- void w1_write_block(struct w1_master *, const u8 *, int);
- u8 w1_read_block(struct w1_master *, u8 *, int);
- int w1_reset_select_slave(struct w1_slave *sl);
-+void w1_next_pullup(struct w1_master *, int);
-=20
- static inline struct w1_slave* dev_to_w1_slave(struct device *dev)
- {
-diff --git a/drivers/w1/w1_int.c b/drivers/w1/w1_int.c
-index 3388d8f..932a242 100644
---- a/drivers/w1/w1_int.c
-+++ b/drivers/w1/w1_int.c
-@@ -107,6 +107,18 @@ int w1_add_master_device(struct w1_bus_master *master)
- 		printk(KERN_ERR "w1_add_master_device: invalid function set\n");
- 		return(-EINVAL);
-         }
-+	/* While it would be electrically possible to make a device that
-+	 * generated a strong pullup in bit bang mode, only hardare that
-+	 * controls 1-wire time frames are even expected to support a strong
-+	 * pullup.  w1_io.c would need to support calling set_pullup before
-+	 * the last write_bit operation of a w1_write_8 which it currently
-+	 * doesn't.
-+	 */
-+	if(!master->write_byte && !master->touch_bit && master->set_pullup) {
-+		printk(KERN_ERR "w1_add_master_device: set_pullup requires "
-+			"write_byte or touch_bit, disabling\n");
-+		master->set_pullup=3DNULL;
-+	}
-=20
- 	dev =3D w1_alloc_dev(w1_ids++, w1_max_slave_count, w1_max_slave_ttl, &w1_=
-master_driver, &w1_master_device);
- 	if (!dev)
-diff --git a/drivers/w1/w1_io.c b/drivers/w1/w1_io.c
-index 0056ef6..46c6994 100644
---- a/drivers/w1/w1_io.c
-+++ b/drivers/w1/w1_io.c
-@@ -93,6 +93,38 @@ static void w1_write_bit(struct w1_master *dev, int bit)
+@@ -223,11 +233,6 @@ static int ds_send_control(struct ds_device *dev, u16 =
+value, u16 index)
+ 	return err;
  }
 =20
- /**
-+ * Pre-write operation, currently only supporting strong pullups.
-+ * Program the hardware for a strong pullup, if one has been requested and
-+ * the hardware supports it.
-+ *
-+ * @param dev     the master device
-+ */
-+static void w1_pre_write(struct w1_master *dev)
-+{
-+	if(dev->pullup_duration && dev->bus_master->set_pullup)
-+		dev->bus_master->set_pullup(dev->bus_master->data,
-+			dev->pullup_duration);
-+}
-+
-+/**
-+ * Post-write operation, currently only supporting strong pullups.
-+ * If a strong pullup was requested, clear it if the hardware supports
-+ * them, or execute the delay otherwise, in either case clear the request.
-+ *
-+ * @param dev     the master device
-+ */
-+static void w1_post_write(struct w1_master *dev)
-+{
-+	if(dev->pullup_duration) {
-+		if(dev->bus_master->set_pullup)
-+			dev->bus_master->set_pullup(dev->bus_master->data, 0);
-+		else
-+			msleep(dev->pullup_duration);
-+		dev->pullup_duration=3D0;
-+	}
-+}
-+
-+/**
-  * Writes 8 bits.
-  *
-  * @param dev     the master device
-@@ -102,11 +134,17 @@ void w1_write_8(struct w1_master *dev, u8 byte)
+-static inline void ds_dump_status(unsigned char *buf, unsigned char *str, =
+int off)
+-{
+-	printk("%45s: %8x\n", str, buf[off]);
+-}
+-
+ static int ds_recv_status_nodump(struct ds_device *dev, struct ds_status *=
+st,
+ 				 unsigned char *buf, int size)
  {
- 	int i;
+@@ -248,16 +253,14 @@ static int ds_recv_status_nodump(struct ds_device *de=
+v, struct ds_status *st,
+ 	return count;
+ }
 =20
--	if (dev->bus_master->write_byte)
-+	if (dev->bus_master->write_byte) {
-+		w1_pre_write(dev);
- 		dev->bus_master->write_byte(dev->bus_master->data, byte);
-+	}
- 	else
--		for (i =3D 0; i < 8; ++i)
-+		for (i =3D 0; i < 8; ++i) {
-+			if(i=3D=3D7)
-+				w1_pre_write(dev);
- 			w1_touch_bit(dev, (byte >> i) & 0x1);
+-static int ds_recv_status(struct ds_device *dev, struct ds_status *st)
++static inline void ds_print_msg(unsigned char *buf, unsigned char *str, in=
+t off)
+ {
+-	unsigned char buf[64];
+-	int count, err =3D 0, i;
+-
+-	memcpy(st, buf, sizeof(*st));
++	printk("%45s: %8x\n", str, buf[off]);
++}
+=20
+-	count =3D ds_recv_status_nodump(dev, st, buf, sizeof(buf));
+-	if (count < 0)
+-		return err;
++static void ds_dump_status(struct ds_device *dev, unsigned char *buf, int =
+count)
++{
++	int i;
+=20
+ 	printk("0x%x: count=3D%d, status: ", dev->ep[EP_STATUS], count);
+ 	for (i=3D0; i<count; ++i)
+@@ -265,37 +268,46 @@ static int ds_recv_status(struct ds_device *dev, stru=
+ct ds_status *st)
+ 	printk("\n");
+=20
+ 	if (count >=3D 16) {
+-		ds_dump_status(buf, "enable flag", 0);
+-		ds_dump_status(buf, "1-wire speed", 1);
+-		ds_dump_status(buf, "strong pullup duration", 2);
+-		ds_dump_status(buf, "programming pulse duration", 3);
+-		ds_dump_status(buf, "pulldown slew rate control", 4);
+-		ds_dump_status(buf, "write-1 low time", 5);
+-		ds_dump_status(buf, "data sample offset/write-0 recovery time", 6);
+-		ds_dump_status(buf, "reserved (test register)", 7);
+-		ds_dump_status(buf, "device status flags", 8);
+-		ds_dump_status(buf, "communication command byte 1", 9);
+-		ds_dump_status(buf, "communication command byte 2", 10);
+-		ds_dump_status(buf, "communication command buffer status", 11);
+-		ds_dump_status(buf, "1-wire data output buffer status", 12);
+-		ds_dump_status(buf, "1-wire data input buffer status", 13);
+-		ds_dump_status(buf, "reserved", 14);
+-		ds_dump_status(buf, "reserved", 15);
++		ds_print_msg(buf, "enable flag", 0);
++		ds_print_msg(buf, "1-wire speed", 1);
++		ds_print_msg(buf, "strong pullup duration", 2);
++		ds_print_msg(buf, "programming pulse duration", 3);
++		ds_print_msg(buf, "pulldown slew rate control", 4);
++		ds_print_msg(buf, "write-1 low time", 5);
++		ds_print_msg(buf, "data sample offset/write-0 recovery time", 6);
++		ds_print_msg(buf, "reserved (test register)", 7);
++		ds_print_msg(buf, "device status flags", 8);
++		ds_print_msg(buf, "communication command byte 1", 9);
++		ds_print_msg(buf, "communication command byte 2", 10);
++		ds_print_msg(buf, "communication command buffer status", 11);
++		ds_print_msg(buf, "1-wire data output buffer status", 12);
++		ds_print_msg(buf, "1-wire data input buffer status", 13);
++		ds_print_msg(buf, "reserved", 14);
++		ds_print_msg(buf, "reserved", 15);
+ 	}
+-
+-	memcpy(st, buf, sizeof(*st));
+-
+-	if (st->status & ST_EPOF) {
+-		printk(KERN_INFO "Resetting device after ST_EPOF.\n");
+-		err =3D ds_send_control_cmd(dev, CTL_RESET_DEVICE, 0);
+-		if (err)
+-			return err;
+-		count =3D ds_recv_status_nodump(dev, st, buf, sizeof(buf));
+-		if (count < 0)
+-			return err;
++	for(i=3D16; i<count; ++i) {
++		if(buf[i]=3D=3DRR_DETECT) {
++			ds_print_msg(buf, "new device detect", i);
++			continue;
 +		}
-+	w1_post_write(dev);
++		ds_print_msg(buf, "Result Register Value: ", i);
++		if(buf[i] & RR_NRS)
++			printk("NRS: Reset no presence or ...\n");
++		if(buf[i] & RR_SH)
++			printk("SH: short on reset or set path\n");
++		if(buf[i] & RR_APP)
++			printk("APP: alarming presence on reset\n");
++		if(buf[i] & RR_VPP)
++			printk("VPP: 12V expected not seen\n");
++		if(buf[i] & RR_CMP)
++			printk("CMP: compare error\n");
++		if(buf[i] & RR_CRC)
++			printk("CRC: CRC error detected\n");
++		if(buf[i] & RR_RDP)
++			printk("RDP: redirected page\n");
++		if(buf[i] & RR_EOS)
++			printk("EOS: end of search error\n");
+ 	}
+-
+-	return err;
  }
- EXPORT_SYMBOL_GPL(w1_write_8);
 =20
-@@ -203,11 +241,14 @@ void w1_write_block(struct w1_master *dev, const u8 *=
-buf, int len)
- {
- 	int i;
-=20
--	if (dev->bus_master->write_block)
-+	if (dev->bus_master->write_block) {
-+		w1_pre_write(dev);
- 		dev->bus_master->write_block(dev->bus_master->data, buf, len);
-+	}
- 	else
- 		for (i =3D 0; i < len; ++i)
--			w1_write_8(dev, buf[i]);
-+			w1_write_8(dev, buf[i]); // calls w1_pre_write
-+	w1_post_write(dev);
- }
- EXPORT_SYMBOL_GPL(w1_write_block);
-=20
-@@ -306,3 +347,20 @@ int w1_reset_select_slave(struct w1_slave *sl)
- 	return 0;
- }
- EXPORT_SYMBOL_GPL(w1_reset_select_slave);
+ static int ds_recv_data(struct ds_device *dev, unsigned char *buf, int siz=
+e)
+@@ -307,9 +319,14 @@ static int ds_recv_data(struct ds_device *dev, unsigne=
+d char *buf, int size)
+ 	err =3D usb_bulk_msg(dev->udev, usb_rcvbulkpipe(dev->udev, dev->ep[EP_DAT=
+A_IN]),
+ 				buf, size, &count, 1000);
+ 	if (err < 0) {
++		u8 buf[0x20];
++		int count;
 +
-+/**
-+ * Put out a strong pull-up of the specified duration after the next write
-+ * operation.  Not all hardware supports strong pullups.  Hardware that
-+ * doesn't support strong pullups will sleep for the given time after the
-+ * write operation without a strong pullup.  This is a one shot request for
-+ * the next write, specifying zero will clear a previous request.
-+ * The w1 master lock must be held.
-+ *
-+ * @param delay	time in milliseconds
-+ * @return	0=3Dsuccess, anything else=3Derror
-+ */
-+void w1_next_pullup(struct w1_master *dev, int delay)
-+{
-+	dev->pullup_duration=3Ddelay;
-+}
-+EXPORT_SYMBOL_GPL(w1_next_pullup);
+ 		printk(KERN_INFO "Clearing ep0x%x.\n", dev->ep[EP_DATA_IN]);
+ 		usb_clear_halt(dev->udev, usb_rcvbulkpipe(dev->udev, dev->ep[EP_DATA_IN]=
+));
+-		ds_recv_status(dev, &st);
++
++		count=3Dds_recv_status_nodump(dev, &st, buf, sizeof(buf));
++		ds_dump_status(dev, buf, count);
+ 		return err;
+ 	}
+=20
+@@ -390,7 +407,7 @@ int ds_detect(struct ds_device *dev, struct ds_status *=
+st)
+ 	if (err)
+ 		return err;
+=20
+-	err =3D ds_recv_status(dev, st);
++	err =3D ds_dump_status(dev, st);
+=20
+ 	return err;
+ }
+@@ -415,11 +432,27 @@ static int ds_wait_status(struct ds_device *dev, stru=
+ct ds_status *st)
+ #endif
+ 	} while(!(buf[0x08] & 0x20) && !(err < 0) && ++count < 100);
+=20
++	if(err>=3D16 && st->status & ST_EPOF) {
++		printk(KERN_INFO "Resetting device after ST_EPOF.\n");
++		ds_send_control_cmd(dev, CTL_RESET_DEVICE, 0);
++		/* Always dump the device status. */
++		count=3D101;
++	}
++
++	/* Dump the status for errors or if there is extended return data.
++	 * The extended status includes new device detection (maybe someone
++	 * can do something with it).
++	 */
++	if(err > 16 || count >=3D 100 || err < 0)
++		ds_dump_status(dev, buf, err);
+=20
+-	if (((err > 16) && (buf[0x10] & 0x01)) || count >=3D 100 || err < 0) {
+-		ds_recv_status(dev, st);
++	/* Extended data isn't an error.  Well, a short is, but the dump
++	 * would have already told the user that and we can't do anything
++	 * about it in software anyway.
++	 */
++	if(count >=3D 100 || err < 0)
+ 		return -1;
+-	} else
++	else
+ 		return 0;
+ }
+=20
 --=20
 1.4.4.4
 
---NzX0AQGjRQPusK/O
+--h+CsNYkJBPxpZ+B/
 Content-Type: application/pgp-signature
 Content-Disposition: inline
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.1 (GNU/Linux)
 
-iD8DBQFH7OOgAI852cse6PARAgKAAJ9jTzVgjnnnlbJ38WdludaEZiGbFQCeOxSi
-q6h7qaoU5XAcx3J8cvKwHd8=
-=aqF1
+iD8DBQFH7OQ2AI852cse6PARAjG9AJ9+0sziSq0iDI6+01MnWtoOeMBdfwCfaedc
+IXSvcjaeE6SuVFIMubFT8Ao=
+=3a9D
 -----END PGP SIGNATURE-----
 
---NzX0AQGjRQPusK/O--
+--h+CsNYkJBPxpZ+B/--
