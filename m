@@ -1,51 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759585AbYC2APr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759330AbYC2ARg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759585AbYC2APr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Mar 2008 20:15:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759463AbYC2APY
+	id S1759330AbYC2ARg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Mar 2008 20:17:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754641AbYC2AR2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Mar 2008 20:15:24 -0400
-Received: from smtp120.sbc.mail.sp1.yahoo.com ([69.147.64.93]:44295 "HELO
-	smtp120.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1759454AbYC2APW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Mar 2008 20:15:22 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=21VZlGbJ2zqjoC/Qd4ZsOGOSJZWzTUNznfQz77jDzMJaEl+6ixsIvz3zkHTYMZ21osZQ4qGJeN2I1WzYeuLKffzolw9BOR9kuCoUki65uJsjtAxJPd9Fke4KSJ3RxyvJZRDnl57uVfHv2gFK0eGLW+i3W7FpLqPUJpYMiIfjo7M=  ;
-X-YMail-OSG: ljDUVtcVM1lqZ7nu2NU6SLN6_wwNO_O6FsSYlgQsxJQ7Izp8rXB1yX25P1MjCbuFRr7JoNxtBw--
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-Subject: Re: 2.6.25 regression: powertop says 120K wakeups/sec
-Date: Fri, 28 Mar 2008 17:15:19 -0700
-User-Agent: KMail/1.9.6
-Cc: "Andrew Morton" <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, linux-acpi@vger.kernel.org,
-       "Len Brown" <lenb@kernel.org>
-References: <20080322202454.9D69DCC0EF@adsl-69-226-248-13.dsl.pltn13.pacbell.net> <200803281636.04029.david-b@pacbell.net> <924EFEDD5F540B4284297C4DC59F3DEEC83EF5@orsmsx423.amr.corp.intel.com>
-In-Reply-To: <924EFEDD5F540B4284297C4DC59F3DEEC83EF5@orsmsx423.amr.corp.intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+	Fri, 28 Mar 2008 20:17:28 -0400
+Received: from smtp.ono.com ([62.42.230.12]:6534 "EHLO resmaa03.ono.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753629AbYC2AR1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Mar 2008 20:17:27 -0400
+Date: Sat, 29 Mar 2008 01:16:56 +0100
+From: "J.A. =?UTF-8?B?TWFnYWxsw7Nu?=" <jamagallon@ono.com>
+To: Ketil Froyn <ketil@froyn.name>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: unexpected rename() behaviour
+Message-ID: <20080329011656.7c38265a@werewolf>
+In-Reply-To: <47ED8858.9000401@froyn.name>
+References: <47ED8858.9000401@froyn.name>
+X-Mailer: Claws Mail 3.3.1cvs44 (GTK+ 2.12.9; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200803281715.19973.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 28 March 2008, Pallipadi, Venkatesh wrote:
-> 100% C0 is not real reading. The problem behind that is there is no wat
-> to measure exact C1 idle time with halt based C1s. So, we always used to
-> report 0 time in acpi and that's what is reported by powertop.
-> This should be fixed in future, as we now export approx time (even
-> though not exact) in cpuidle and powertop is about to start using it.
+On Sat, 29 Mar 2008 01:07:52 +0100, Ketil Froyn <ketil@froyn.name> wrote:
 
-I just pulled the latest powertop SVN and see it's smarter now.
-It says over 90% in C1 (doing normal desktop stuff), with nasty
-IRQ rates but that's the fault of silly desktop code.  ;)
+> Hi,
+> 
+> The following behaviour was unexpected (tested on Debian/ext3):
+> 
+> $ echo 1 > 1
+> $ ln 1 2
+> $ cat 2
+> 1
+> $ ./rename 2 1
+> $ echo $?
+> 0
+> $ cat 2
+> 1
+> 
+> The code for ./rename is simple:
+> 
+> ---
+> /* compile: gcc -o rename rename.c */
+> #include <stdio.h>
+> int main(int argc, char *argv[]) { return rename(argv[1], argv[2]); }
+> ---
+> 
+> I thought this must be wrong behaviour, but I have been unable to 
+> confirm what the correct result should be in this special case. rename() 
+> returns success, but the source file is intact, which seems odd. The 
+> "mv" command specifically checks for cases like this and calls 
+> unlink("2") instead of rename("2", "1"). Are all applications meant to 
+> do this? What standards describe what rename() should do in cases like this?
+> 
 
-- Dave
+man 2 rename:
 
+       If  oldpath  and  newpath are existing hard links referring to the same
+       file, then rename() does nothing, and returns a success status.
+
+That's why mv checks the special case.
+
+-- 
+J.A. Magallon <jamagallon()ono!com>     \               Software is like sex:
+                                         \         It's better when it's free
+Mandriva Linux release 2008.1 (Cooker) for i586
+Linux 2.6.23-jam05 (gcc 4.2.2 20071128 (4.2.2-2mdv2008.1)) SMP PREEMPT
