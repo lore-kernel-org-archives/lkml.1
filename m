@@ -1,28 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756085AbYC2GUY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756812AbYC2GWR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756085AbYC2GUY (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Mar 2008 02:20:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751366AbYC2GUM
+	id S1756812AbYC2GWR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Mar 2008 02:22:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751379AbYC2GWI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Mar 2008 02:20:12 -0400
-Received: from relay2.sgi.com ([192.48.171.30]:51485 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750854AbYC2GUL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Mar 2008 02:20:11 -0400
-Date: Sat, 29 Mar 2008 01:20:03 -0500
-From: Paul Jackson <pj@sgi.com>
-To: "Huang, Ying" <ying.huang@intel.com>
-Cc: hpa@zytor.com, andi@firstfloor.org, mingo@redhat.com, tglx@linutronix.de,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH -mm 2/4] x86_64 boot: Add linked list of struct
- setup_data
-Message-Id: <20080329012003.54172e04.pj@sgi.com>
-In-Reply-To: <1206670117.13404.6.camel@caritas-dev.intel.com>
-References: <1206601748.3067.22.camel@caritas-dev.intel.com>
-	<20080327062539.5cbcb925.pj@sgi.com>
-	<1206670117.13404.6.camel@caritas-dev.intel.com>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
+	Sat, 29 Mar 2008 02:22:08 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:46546 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751366AbYC2GWH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 29 Mar 2008 02:22:07 -0400
+Date: Sat, 29 Mar 2008 15:26:51 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Yasunori Goto <y-goto@jp.fujitsu.com>,
+       Christoph Lameter <clameter@sgi.com>,
+       Dave Hansen <dave@linux.vnet.ibm.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH RFC] hotplug-memory: refactor online_pages to separate
+ zone growth from page onlining
+Message-Id: <20080329152651.e2c40a0c.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <47EDD825.20501@goop.org>
+References: <47ED8685.9040409@goop.org>
+	<20080329133820.e692245d.kamezawa.hiroyu@jp.fujitsu.com>
+	<47EDD825.20501@goop.org>
+Organization: Fujitsu
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -30,12 +33,38 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Huang wrote:
-> This break will break the switch instead of while.
+On Fri, 28 Mar 2008 22:48:21 -0700
+Jeremy Fitzhardinge <jeremy@goop.org> wrote:
 
-Right you are ... sorry for my confusion.
+> >> -	if (onlined_pages)
+> >> +	if (onlined_pages) {
+> >> +		struct memory_notify arg;
+> >> +
+> >> +		arg.start_pfn = pfn;  /* ? */
+> >> +		arg.nr_pages = onlined_pages;
+> >> +		arg.status_change_nid = -1;  /* ? */
+> >> +
+> >>  		memory_notify(MEM_ONLINE, &arg);
+> >> +	}
+> >>     
+> > I think you should add "onlined" member instead of reusing nr_pages.
+> >   
+> 
+> I suppose.  What would I put into nr_pages?  And anyway, there are no 
+> users for this notification...
+> 
+My point is "Notifier" is expexted to work correctly and include precise
+information regardless of users.
 
--- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.940.382.4214
+> > But, in general, I have no objection to this way.
+> >   
+> 
+> The refactoring in general?
+> 
+
+Separating online_pages() into some meaningful blocks. Then, you can
+reuse some parts and avoid dupilication.
+
+Thanks,
+-Kame
+
