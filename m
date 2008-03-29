@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759541AbYC2DId@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759676AbYC2DIp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759541AbYC2DId (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Mar 2008 23:08:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759367AbYC2DIA
+	id S1759676AbYC2DIp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Mar 2008 23:08:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756699AbYC2DIK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Mar 2008 23:08:00 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:49764 "EHLO
+	Fri, 28 Mar 2008 23:08:10 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:49798 "EHLO
 	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759358AbYC2DH7 (ORCPT
+	with ESMTP id S1756500AbYC2DIJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Mar 2008 23:07:59 -0400
+	Fri, 28 Mar 2008 23:08:09 -0400
 To: torvalds@linux-foundation.org
-Subject: [PATCH] futex_compat __user annotation
-Cc: linux-kernel@vger.kernel.org
-Message-Id: <E1JfRQE-0002bB-IL@ZenIV.linux.org.uk>
+Subject: [PATCH] ioat_dca __iomem annotations
+Cc: shannon.nelson@intel.com, linux-kernel@vger.kernel.org
+Message-Id: <E1JfRQO-0002cZ-J4@ZenIV.linux.org.uk>
 From: Al Viro <viro@ftp.linux.org.uk>
-Date: Sat, 29 Mar 2008 03:07:58 +0000
+Date: Sat, 29 Mar 2008 03:08:08 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -23,22 +23,31 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
 ---
- kernel/futex_compat.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ drivers/dma/ioat_dca.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/kernel/futex_compat.c b/kernel/futex_compat.c
-index ff90f04..04ac3a9 100644
---- a/kernel/futex_compat.c
-+++ b/kernel/futex_compat.c
-@@ -30,7 +30,7 @@ fetch_robust_entry(compat_uptr_t *uentry, struct robust_list __user **entry,
- 	return 0;
- }
+diff --git a/drivers/dma/ioat_dca.c b/drivers/dma/ioat_dca.c
+index 0fa8a98..9e92276 100644
+--- a/drivers/dma/ioat_dca.c
++++ b/drivers/dma/ioat_dca.c
+@@ -98,7 +98,7 @@ struct ioat_dca_slot {
  
--static void __user *futex_uaddr(struct robust_list *entry,
-+static void __user *futex_uaddr(struct robust_list __user *entry,
- 				compat_long_t futex_offset)
+ struct ioat_dca_priv {
+ 	void __iomem		*iobase;
+-	void			*dca_base;
++	void __iomem		*dca_base;
+ 	int			 max_requesters;
+ 	int			 requester_count;
+ 	u8			 tag_map[IOAT_TAG_MAP_LEN];
+@@ -338,7 +338,7 @@ static struct dca_ops ioat2_dca_ops = {
+ 	.get_tag		= ioat2_dca_get_tag,
+ };
+ 
+-static int ioat2_dca_count_dca_slots(void *iobase, u16 dca_offset)
++static int ioat2_dca_count_dca_slots(void __iomem *iobase, u16 dca_offset)
  {
- 	compat_uptr_t base = ptr_to_compat(entry);
+ 	int slots = 0;
+ 	u32 req;
 -- 
 1.5.3.GIT
 
