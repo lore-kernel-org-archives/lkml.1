@@ -1,83 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754251AbYC2Qo1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754216AbYC2Q6U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754251AbYC2Qo1 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Mar 2008 12:44:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752775AbYC2QoR
+	id S1754216AbYC2Q6U (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Mar 2008 12:58:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752803AbYC2Q6K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Mar 2008 12:44:17 -0400
-Received: from pat.uio.no ([129.240.10.15]:40596 "EHLO pat.uio.no"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752708AbYC2QoQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Mar 2008 12:44:16 -0400
-Subject: Re: [PATCH] SUNRPC: have soft RPC tasks return -ETIMEDOUT instead
-	of -EIO on major connect timeout
-From: Trond Myklebust <trond.myklebust@fys.uio.no>
-To: Jeff Layton <jlayton@redhat.com>
-Cc: linux-nfs@vger.kernel.org, nfsv4@linux-nfs.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <1206794957-17010-1-git-send-email-jlayton@redhat.com>
-References: <1206794957-17010-1-git-send-email-jlayton@redhat.com>
-Content-Type: text/plain
-Date: Sat, 29 Mar 2008 12:44:11 -0400
-Message-Id: <1206809051.8480.33.camel@heimdal.trondhjem.org>
+	Sat, 29 Mar 2008 12:58:10 -0400
+Received: from smtpeu1.atmel.com ([195.65.72.27]:35274 "EHLO bagnes.atmel.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752715AbYC2Q6J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 29 Mar 2008 12:58:09 -0400
+Date: Sat, 29 Mar 2008 17:56:51 +0100
+From: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
+To: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+Cc: David Brownell <david-b@pacbell.net>,
+       spi-devel-general@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, marc.pignat@hevs.ch, nforrester@whoi.edu
+Subject: Re: [PATCH] atmel_spi: support zero length transfer (resend)
+Message-ID: <20080329175651.311b4f6d@hskinnemo-gx620.norway.atmel.com>
+In-Reply-To: <20080330.001133.108307862.anemo@mba.ocn.ne.jp>
+References: <20080330.001133.108307862.anemo@mba.ocn.ne.jp>
+Organization: Atmel Norway
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-UiO-Resend: resent
-X-UiO-Spam-info: not spam, SpamAssassin (score=0.0, required=5.0, autolearn=disabled, none)
-X-UiO-Scanned: 8630A5A520A4EB108ACE803641520D3BB3FBE750
-X-UiO-SR-test: F4B8A7D3D6EB606DC075C72C9BD532EA4F5F077E
-X-UiO-SPAM-Test: remote_host: 129.240.10.9 spam_score: 0 maxlevel 200 minaction 2 bait 0 mail/h: 317 total 7590428 max/h 8345 blacklist 0 greylist 0 ratelimit 0
+X-OriginalArrivalTime: 29 Mar 2008 16:56:51.0623 (UTC) FILETIME=[E2939B70:01C891BD]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Sat, 2008-03-29 at 08:49 -0400, Jeff Layton wrote:
-> NFSv4 background mounts do not currently work correctly. While we could
-> try to fix this in userspace, I think it's really a kernel problem...
+Atsushi Nemoto <anemo@mba.ocn.ne.jp> wrote:
+> A spi transfer with zero length is not invalid.  For example, such
+> transfer (len == 0 && delay_usecs != 0) can be used to achieve delay
+> before first CLK edge after chipselect assertion.
 > 
-> When a soft RPC tasks experiences a major timeout during a connection
-> attempt, it does an rpc_exit with a return code of -EIO. For NFSv4
-> mounts, this makes the mount() syscall return -EIO. mount.nfs4 then
-> interprets that as a "permanent" error, and won't attempt a background
-> mount when bg is specified. Fix this by making call_timeout() do the
-> rpc_exit() with an error of -ETIMEDOUT.
-> 
-> This fixes the background mount issue, but does make other syscalls
-> on soft mounts return ETIMEDOUT instead of EIO in this situation.
-> 
-> Comments welcome.
-> 
-> Signed-off-by: Jeff Layton <jlayton@redhat.com>
+> Signed-off-by: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
 > ---
->  net/sunrpc/clnt.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/net/sunrpc/clnt.c b/net/sunrpc/clnt.c
-> index 8c6a7f1..b6d409e 100644
-> --- a/net/sunrpc/clnt.c
-> +++ b/net/sunrpc/clnt.c
-> @@ -1162,7 +1162,7 @@ call_timeout(struct rpc_task *task)
->  	if (RPC_IS_SOFT(task)) {
->  		printk(KERN_NOTICE "%s: server %s not responding, timed out\n",
->  				clnt->cl_protname, clnt->cl_server);
-> -		rpc_exit(task, -EIO);
-> +		rpc_exit(task, -ETIMEDOUT);
->  		return;
->  	}
+> Though some discussion about zero length transfer were raised by this
+> patch last time, I think there were no explicit objection to this
+> patch itself.
 
-While that may be acceptable for the mount() syscall, I don't think
-POSIX applications are quite ready to deal with ETIMEDOUT as an error
-for stat() or chdir().
+Well, the patch doesn't seem to do any harm, but I can't see much of a
+point to it either if zero-length transfers aren't going to be
+allowed...
 
-Userland has the clnt_geterr() function that returns more detailed 'RPC
-level' errors. While that 'error function call' approach doesn't work in
-a multi-threaded environment, we might still be able to add the
-equivalent of a pointer to an 'rpc_err' structure to the rpc_task, and
-then have functions like call_timeout() (and especially call_verify()!)
-fill in more detailed error info if that pointer is non-zero?
+Also, if the length is zero, the driver will end up doing a memset with
+length zero at some point. Is that allowed?
 
-Cheers
-  Trond
-
+Haavard
