@@ -1,209 +1,287 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756983AbYC2VG3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756871AbYC2VJG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756983AbYC2VG3 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Mar 2008 17:06:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754627AbYC2VGW
+	id S1756871AbYC2VJG (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Mar 2008 17:09:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754627AbYC2VI4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Mar 2008 17:06:22 -0400
-Received: from fg-out-1718.google.com ([72.14.220.152]:21305 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754607AbYC2VGV (ORCPT
+	Sat, 29 Mar 2008 17:08:56 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:59448 "EHLO
+	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752066AbYC2VIz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Mar 2008 17:06:21 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
-        b=ix03vm9UYlC1s6zVleHchoue0Mt6orvP4mTsW4wVEk80ncoNgUOOUGg8fBCDQVAGr+lE1QnVcT8tazAOPh56fP5APJ1Y2hv3G/L/OkF3XkxhQv2rY0UA+9ioQmfuAtslBUjTQ1Pm3YHlBvTNkRerEtfdYol8GhJYH3ov0e8DpcA=
-Date: Sun, 30 Mar 2008 00:02:57 +0300
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: akpm@osdl.org
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH -mm 3/3] proc: drop several "PDE valid/invalid" checks
-Message-ID: <20080329210257.GC16275@martell.zuzino.mipt.ru>
+	Sat, 29 Mar 2008 17:08:55 -0400
+Date: Sat, 29 Mar 2008 22:09:28 +0100
+From: Pavel Machek <pavel@suse.cz>
+To: perex@perex.cz, kernel list <linux-kernel@vger.kernel.org>,
+       Trivial patch monkey <trivial@kernel.org>, tiwai@suse.de
+Subject: sound/usb/usbaudio.c: coding style
+Message-ID: <20080329210927.GA12239@elf.ucw.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-09)
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-proc-misc code is noticeably full of "if (de)" checks when PDE passed
-is always valid. Remove them.
 
-Addition of such check in proc_lookup_de() is for failed lookup case.
+Putting space between ! and variable is a strange coding style, fix
+that, also make it fit into 80 columns where that is easy.
 
-Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
----
+Signed-off-by: Pavel Machek <pavel@suse.cz>
 
- fs/proc/generic.c |   33 ++++++++++---------------
- fs/proc/inode.c   |   69 +++++++++++++++++++++++++-----------------------------
- 2 files changed, 46 insertions(+), 56 deletions(-)
-
---- a/fs/proc/generic.c
-+++ b/fs/proc/generic.c
-@@ -388,20 +388,18 @@ struct dentry *proc_lookup_de(struct proc_dir_entry *de, struct inode *dir,
+diff --git a/sound/usb/usbaudio.c b/sound/usb/usbaudio.c
+index f48838a..8056d8a 100644
+--- a/sound/usb/usbaudio.c
++++ b/sound/usb/usbaudio.c
+@@ -64,9 +67,10 @@ MODULE_SUPPORTED_DEVICE("{{Generic,USB A
  
- 	lock_kernel();
- 	spin_lock(&proc_subdir_lock);
--	if (de) {
--		for (de = de->subdir; de ; de = de->next) {
--			if (de->namelen != dentry->d_name.len)
--				continue;
--			if (!memcmp(dentry->d_name.name, de->name, de->namelen)) {
--				unsigned int ino;
--
--				ino = de->low_ino;
--				de_get(de);
--				spin_unlock(&proc_subdir_lock);
--				error = -EINVAL;
--				inode = proc_get_inode(dir->i_sb, ino, de);
--				goto out_unlock;
--			}
-+	for (de = de->subdir; de ; de = de->next) {
-+		if (de->namelen != dentry->d_name.len)
-+			continue;
-+		if (!memcmp(dentry->d_name.name, de->name, de->namelen)) {
-+			unsigned int ino;
-+
-+			ino = de->low_ino;
-+			de_get(de);
-+			spin_unlock(&proc_subdir_lock);
-+			error = -EINVAL;
-+			inode = proc_get_inode(dir->i_sb, ino, de);
-+			goto out_unlock;
+ static int index[SNDRV_CARDS] = SNDRV_DEFAULT_IDX;	/* Index 0-MAX */
+ static char *id[SNDRV_CARDS] = SNDRV_DEFAULT_STR;	/* ID for this card */
+-static int enable[SNDRV_CARDS] = SNDRV_DEFAULT_ENABLE_PNP;	/* Enable this card */
+-static int vid[SNDRV_CARDS] = { [0 ... (SNDRV_CARDS-1)] = -1 }; /* Vendor ID for this card */
+-static int pid[SNDRV_CARDS] = { [0 ... (SNDRV_CARDS-1)] = -1 }; /* Product ID for this card */
++static int enable[SNDRV_CARDS] = SNDRV_DEFAULT_ENABLE_PNP;/* Enable this card */
++/* Vendor/product IDs for this card */
++static int vid[SNDRV_CARDS] = { [0 ... (SNDRV_CARDS-1)] = -1 };
++static int pid[SNDRV_CARDS] = { [0 ... (SNDRV_CARDS-1)] = -1 };
+ static int nrpacks = 8;		/* max. number of packets per urb */
+ static int async_unlink = 1;
+ static int device_setup[SNDRV_CARDS]; /* device parameter for this card*/
+@@ -687,7 +691,7 @@ static void snd_complete_urb(struct urb 
+ 	int err = 0;
+ 
+ 	if ((subs->running && subs->ops.retire(subs, substream->runtime, urb)) ||
+-	    ! subs->running || /* can be stopped during retire callback */
++	    !subs->running || /* can be stopped during retire callback */
+ 	    (err = subs->ops.prepare(subs, substream->runtime, urb)) < 0 ||
+ 	    (err = usb_submit_urb(urb, GFP_ATOMIC)) < 0) {
+ 		clear_bit(ctx->index, &subs->active_mask);
+@@ -710,7 +714,7 @@ static void snd_complete_sync_urb(struct
+ 	int err = 0;
+ 
+ 	if ((subs->running && subs->ops.retire_sync(subs, substream->runtime, urb)) ||
+-	    ! subs->running || /* can be stopped during retire callback */
++	    !subs->running || /* can be stopped during retire callback */
+ 	    (err = subs->ops.prepare_sync(subs, substream->runtime, urb)) < 0 ||
+ 	    (err = usb_submit_urb(urb, GFP_ATOMIC)) < 0) {
+ 		clear_bit(ctx->index + 16, &subs->active_mask);
+@@ -740,7 +744,7 @@ static int snd_pcm_alloc_vmalloc_buffer(
+ 		vfree(runtime->dma_area);
+ 	}
+ 	runtime->dma_area = vmalloc(size);
+-	if (! runtime->dma_area)
++	if (!runtime->dma_area)
+ 		return -ENOMEM;
+ 	runtime->dma_bytes = size;
+ 	return 0;
+@@ -772,12 +776,12 @@ static int deactivate_urbs(struct snd_us
+ 
+ 	async = !can_sleep && async_unlink;
+ 
+-	if (! async && in_interrupt())
++	if (!async && in_interrupt())
+ 		return 0;
+ 
+ 	for (i = 0; i < subs->nurbs; i++) {
+ 		if (test_bit(i, &subs->active_mask)) {
+-			if (! test_and_set_bit(i, &subs->unlink_mask)) {
++			if (!test_and_set_bit(i, &subs->unlink_mask)) {
+ 				struct urb *u = subs->dataurb[i].urb;
+ 				if (async)
+ 					usb_unlink_urb(u);
+@@ -789,7 +793,7 @@ static int deactivate_urbs(struct snd_us
+ 	if (subs->syncpipe) {
+ 		for (i = 0; i < SYNC_URBS; i++) {
+ 			if (test_bit(i+16, &subs->active_mask)) {
+- 				if (! test_and_set_bit(i+16, &subs->unlink_mask)) {
++ 				if (!test_and_set_bit(i+16, &subs->unlink_mask)) {
+ 					struct urb *u = subs->syncurb[i].urb;
+ 					if (async)
+ 						usb_unlink_urb(u);
+@@ -1137,12 +1141,12 @@ static int init_substream_urbs(struct sn
+ 		if (subs->fmt_type == USB_FORMAT_TYPE_II)
+ 			u->packets++; /* for transfer delimiter */
+ 		u->urb = usb_alloc_urb(u->packets, GFP_KERNEL);
+-		if (! u->urb)
++		if (!u->urb)
+ 			goto out_of_memory;
+ 		u->urb->transfer_buffer =
+ 			usb_buffer_alloc(subs->dev, u->buffer_size, GFP_KERNEL,
+ 					 &u->urb->transfer_dma);
+-		if (! u->urb->transfer_buffer)
++		if (!u->urb->transfer_buffer)
+ 			goto out_of_memory;
+ 		u->urb->pipe = subs->datapipe;
+ 		u->urb->transfer_flags = URB_ISO_ASAP | URB_NO_TRANSFER_DMA_MAP;
+@@ -1155,7 +1159,7 @@ static int init_substream_urbs(struct sn
+ 		/* allocate and initialize sync urbs */
+ 		subs->syncbuf = usb_buffer_alloc(subs->dev, SYNC_URBS * 4,
+ 						 GFP_KERNEL, &subs->sync_dma);
+-		if (! subs->syncbuf)
++		if (!subs->syncbuf)
+ 			goto out_of_memory;
+ 		for (i = 0; i < SYNC_URBS; i++) {
+ 			struct snd_urb_ctx *u = &subs->syncurb[i];
+@@ -1163,7 +1167,7 @@ static int init_substream_urbs(struct sn
+ 			u->subs = subs;
+ 			u->packets = 1;
+ 			u->urb = usb_alloc_urb(1, GFP_KERNEL);
+-			if (! u->urb)
++			if (!u->urb)
+ 				goto out_of_memory;
+ 			u->urb->transfer_buffer = subs->syncbuf + i * 4;
+ 			u->urb->transfer_dma = subs->sync_dma + i * 4;
+@@ -1463,7 +1486,7 @@ static int snd_usb_hw_params(struct snd_
+ 	rate = params_rate(hw_params);
+ 	channels = params_channels(hw_params);
+ 	fmt = find_format(subs, format, rate, channels);
+-	if (! fmt) {
++	if (!fmt) {
+ 		snd_printd(KERN_DEBUG "cannot set format: format = 0x%x, rate = %d, channels = %d\n",
+ 			   format, rate, channels);
+ 		return -EINVAL;
+@@ -1584,7 +1607,7 @@ static int hw_check_valid_format(struct 
+ 	struct snd_mask *fmts = hw_param_mask(params, SNDRV_PCM_HW_PARAM_FORMAT);
+ 
+ 	/* check the format */
+-	if (! snd_mask_test(fmts, fp->format)) {
++	if (!snd_mask_test(fmts, fp->format)) {
+ 		hwc_debug("   > check: no supported format %d\n", fp->format);
+ 		return 0;
+ 	}
+@@ -1620,7 +1643,7 @@ static int hw_rule_rate(struct snd_pcm_h
+ 	list_for_each(p, &subs->fmt_list) {
+ 		struct audioformat *fp;
+ 		fp = list_entry(p, struct audioformat, list);
+-		if (! hw_check_valid_format(params, fp))
++		if (!hw_check_valid_format(params, fp))
+ 			continue;
+ 		if (changed++) {
+ 			if (rmin > fp->rate_min)
+@@ -1633,7 +1656,7 @@ static int hw_rule_rate(struct snd_pcm_h
  		}
  	}
- 	spin_unlock(&proc_subdir_lock);
-@@ -413,7 +411,8 @@ out_unlock:
- 		d_add(dentry, inode);
- 		return NULL;
+ 
+-	if (! changed) {
++	if (!changed) {
+ 		hwc_debug("  --> get empty\n");
+ 		it->empty = 1;
+ 		return -EINVAL;
+@@ -1674,7 +1697,7 @@ static int hw_rule_channels(struct snd_p
+ 	list_for_each(p, &subs->fmt_list) {
+ 		struct audioformat *fp;
+ 		fp = list_entry(p, struct audioformat, list);
+-		if (! hw_check_valid_format(params, fp))
++		if (!hw_check_valid_format(params, fp))
+ 			continue;
+ 		if (changed++) {
+ 			if (rmin > fp->channels)
+@@ -1687,7 +1710,7 @@ static int hw_rule_channels(struct snd_p
+ 		}
  	}
--	de_put(de);
-+	if (de)
-+		de_put(de);
- 	return ERR_PTR(error);
- }
  
-@@ -443,10 +442,6 @@ int proc_readdir_de(struct proc_dir_entry *de, struct file *filp, void *dirent,
- 	lock_kernel();
- 
- 	ino = inode->i_ino;
--	if (!de) {
--		ret = -EINVAL;
--		goto out;
--	}
- 	i = filp->f_pos;
- 	switch (i) {
- 		case 0:
---- a/fs/proc/inode.c
-+++ b/fs/proc/inode.c
-@@ -25,8 +25,7 @@
- 
- struct proc_dir_entry *de_get(struct proc_dir_entry *de)
- {
--	if (de)
--		atomic_inc(&de->count);
-+	atomic_inc(&de->count);
- 	return de;
- }
- 
-@@ -35,18 +34,16 @@ struct proc_dir_entry *de_get(struct proc_dir_entry *de)
-  */
- void de_put(struct proc_dir_entry *de)
- {
--	if (de) {	
--		lock_kernel();		
--		if (!atomic_read(&de->count)) {
--			printk("de_put: entry %s already free!\n", de->name);
--			unlock_kernel();
--			return;
--		}
--
--		if (atomic_dec_and_test(&de->count))
--			free_proc_entry(de);
-+	lock_kernel();		
-+	if (!atomic_read(&de->count)) {
-+		printk("de_put: entry %s already free!\n", de->name);
- 		unlock_kernel();
-+		return;
+-	if (! changed) {
++	if (!changed) {
+ 		hwc_debug("  --> get empty\n");
+ 		it->empty = 1;
+ 		return -EINVAL;
+@@ -1727,7 +1750,7 @@ static int hw_rule_format(struct snd_pcm
+ 	list_for_each(p, &subs->fmt_list) {
+ 		struct audioformat *fp;
+ 		fp = list_entry(p, struct audioformat, list);
+-		if (! hw_check_valid_format(params, fp))
++		if (!hw_check_valid_format(params, fp))
+ 			continue;
+ 		fbits |= (1ULL << fp->format);
  	}
-+
-+	if (atomic_dec_and_test(&de->count))
-+		free_proc_entry(de);
-+	unlock_kernel();
+@@ -1736,7 +1759,7 @@ static int hw_rule_format(struct snd_pcm
+ 	oldbits[1] = fmt->bits[1];
+ 	fmt->bits[0] &= (u32)fbits;
+ 	fmt->bits[1] &= (u32)(fbits >> 32);
+-	if (! fmt->bits[0] && ! fmt->bits[1]) {
++	if (!fmt->bits[0] && !fmt->bits[1]) {
+ 		hwc_debug("  --> get empty\n");
+ 		return -EINVAL;
+ 	}
+@@ -2222,7 +2245,7 @@ static void proc_pcm_format_add(struct s
+ 	struct snd_card *card = stream->chip->card;
+ 
+ 	sprintf(name, "stream%d", stream->pcm_index);
+-	if (! snd_card_proc_new(card, name, &entry))
++	if (!snd_card_proc_new(card, name, &entry))
+ 		snd_info_set_text_ops(entry, stream, proc_pcm_format_read);
  }
  
- /*
-@@ -392,7 +389,7 @@ struct inode *proc_get_inode(struct super_block *sb, unsigned int ino,
+@@ -2278,7 +2301,7 @@ static void free_substream(struct snd_us
  {
- 	struct inode * inode;
+ 	struct list_head *p, *n;
  
--	if (de != NULL && !try_module_get(de->owner))
-+	if (!try_module_get(de->owner))
- 		goto out_mod;
+-	if (! subs->num_formats)
++	if (!subs->num_formats)
+ 		return; /* not initialized */
+ 	list_for_each_safe(p, n, &subs->fmt_list) {
+ 		struct audioformat *fp = list_entry(p, struct audioformat, list);
+@@ -2328,7 +2351,7 @@ static int add_audio_endpoint(struct snd
+ 		if (as->fmt_type != fp->fmt_type)
+ 			continue;
+ 		subs = &as->substream[stream];
+-		if (! subs->endpoint)
++		if (!subs->endpoint)
+ 			continue;
+ 		if (subs->endpoint == fp->endpoint) {
+ 			list_add_tail(&fp->list, &subs->fmt_list);
+@@ -2354,7 +2377,7 @@ static int add_audio_endpoint(struct snd
  
- 	inode = iget_locked(sb, ino);
-@@ -402,30 +399,29 @@ struct inode *proc_get_inode(struct super_block *sb, unsigned int ino,
- 		inode->i_mtime = inode->i_atime = inode->i_ctime = CURRENT_TIME;
- 		PROC_I(inode)->fd = 0;
- 		PROC_I(inode)->pde = de;
--		if (de) {
--			if (de->mode) {
--				inode->i_mode = de->mode;
--				inode->i_uid = de->uid;
--				inode->i_gid = de->gid;
--			}
--			if (de->size)
--				inode->i_size = de->size;
--			if (de->nlink)
--				inode->i_nlink = de->nlink;
--			if (de->proc_iops)
--				inode->i_op = de->proc_iops;
--			if (de->proc_fops) {
--				if (S_ISREG(inode->i_mode)) {
-+
-+		if (de->mode) {
-+			inode->i_mode = de->mode;
-+			inode->i_uid = de->uid;
-+			inode->i_gid = de->gid;
-+		}
-+		if (de->size)
-+			inode->i_size = de->size;
-+		if (de->nlink)
-+			inode->i_nlink = de->nlink;
-+		if (de->proc_iops)
-+			inode->i_op = de->proc_iops;
-+		if (de->proc_fops) {
-+			if (S_ISREG(inode->i_mode)) {
- #ifdef CONFIG_COMPAT
--					if (!de->proc_fops->compat_ioctl)
--						inode->i_fop =
--							&proc_reg_file_ops_no_compat;
--					else
-+				if (!de->proc_fops->compat_ioctl)
-+					inode->i_fop =
-+						&proc_reg_file_ops_no_compat;
-+				else
- #endif
--						inode->i_fop = &proc_reg_file_ops;
--				} else {
--					inode->i_fop = de->proc_fops;
--				}
-+					inode->i_fop = &proc_reg_file_ops;
-+			} else {
-+				inode->i_fop = de->proc_fops;
+ 	/* create a new pcm */
+ 	as = kzalloc(sizeof(*as), GFP_KERNEL);
+-	if (! as)
++	if (!as)
+ 		return -ENOMEM;
+ 	as->pcm_index = chip->pcm_devs;
+ 	as->chip = chip;
+@@ -3375,14 +3398,14 @@ static int snd_usb_create_quirk(struct s
+ static void proc_audio_usbbus_read(struct snd_info_entry *entry, struct snd_info_buffer *buffer)
+ {
+ 	struct snd_usb_audio *chip = entry->private_data;
+-	if (! chip->shutdown)
++	if (!chip->shutdown)
+ 		snd_iprintf(buffer, "%03d/%03d\n", chip->dev->bus->busnum, chip->dev->devnum);
+ }
+ 
+ static void proc_audio_usbid_read(struct snd_info_entry *entry, struct snd_info_buffer *buffer)
+ {
+ 	struct snd_usb_audio *chip = entry->private_data;
+-	if (! chip->shutdown)
++	if (!chip->shutdown)
+ 		snd_iprintf(buffer, "%04x:%04x\n", 
+ 			    USB_ID_VENDOR(chip->usb_id),
+ 			    USB_ID_PRODUCT(chip->usb_id));
+@@ -3391,9 +3414,9 @@ static void proc_audio_usbid_read(struct
+ static void snd_usb_audio_create_proc(struct snd_usb_audio *chip)
+ {
+ 	struct snd_info_entry *entry;
+-	if (! snd_card_proc_new(chip->card, "usbbus", &entry))
++	if (!snd_card_proc_new(chip->card, "usbbus", &entry))
+ 		snd_info_set_text_ops(entry, chip, proc_audio_usbbus_read);
+-	if (! snd_card_proc_new(chip->card, "usbid", &entry))
++	if (!snd_card_proc_new(chip->card, "usbid", &entry))
+ 		snd_info_set_text_ops(entry, chip, proc_audio_usbid_read);
+ }
+ 
+@@ -3600,8 +3623,8 @@ static void *snd_usb_audio_probe(struct 
+ 				snd_card_set_dev(chip->card, &intf->dev);
+ 				break;
  			}
+-		if (! chip) {
+-			snd_printk(KERN_ERR "no available usb audio device\n");
++		if (!chip) {
++			printk(KERN_ERR "no available usb audio device\n");
+ 			goto __error;
  		}
- 		unlock_new_inode(inode);
-@@ -433,8 +429,7 @@ struct inode *proc_get_inode(struct super_block *sb, unsigned int ino,
- 	return inode;
- 
- out_ino:
--	if (de != NULL)
--		module_put(de->owner);
-+	module_put(de->owner);
- out_mod:
- 	return NULL;
- }			
+ 	}
 
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
