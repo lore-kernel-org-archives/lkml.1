@@ -1,83 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755726AbYC2IT1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755768AbYC2I7i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755726AbYC2IT1 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Mar 2008 04:19:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753246AbYC2ITN
+	id S1755768AbYC2I7i (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Mar 2008 04:59:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751702AbYC2I72
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Mar 2008 04:19:13 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:4083 "EHLO spitz.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753087AbYC2ITK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Mar 2008 04:19:10 -0400
-Date: Sat, 29 Mar 2008 09:18:40 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-Cc: lkml <linux-kernel@vger.kernel.org>, daniel@hozac.com, lizf@cn.fujitsu.com,
-       Pavel Emelyanov <xemul@openvz.org>, Greg KH <greg@kroah.com>,
-       Andrew Morton <akpm@osdl.org>
-Subject: Re: [PATCH 1/1] cgroups: implement device whitelist (v6)
-Message-ID: <20080329081839.GA4423@ucw.cz>
-References: <20080326180543.GA27709@sergelap.austin.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sat, 29 Mar 2008 04:59:28 -0400
+Received: from py-out-1112.google.com ([64.233.166.181]:20644 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751620AbYC2I71 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 29 Mar 2008 04:59:27 -0400
+Message-ID: <36ca99e90803290159v33ab43cbu5acd4bc2b0cd0262@mail.gmail.com>
+Date: Sat, 29 Mar 2008 09:59:26 +0100
+From: "Bert Wesarg" <bert.wesarg@googlemail.com>
+To: "Mike Travis" <travis@sgi.com>
+Subject: Re: [PATCH 2/2] x86: modify show_shared_cpu_map in intel_cacheinfo
+Cc: "Ingo Molnar" <mingo@elte.hu>, linux-kernel@vger.kernel.org
+In-Reply-To: <47ED36B9.6000508@sgi.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080326180543.GA27709@sergelap.austin.ibm.com>
-User-Agent: Mutt/1.5.9i
+References: <20080327231654.284673000@polaris-admin.engr.sgi.com>
+	 <20080327231654.599276000@polaris-admin.engr.sgi.com>
+	 <36ca99e90803280201i708ce9b7y293a2c68e733f088@mail.gmail.com>
+	 <47ED0343.1070708@sgi.com>
+	 <36ca99e90803280754p1fbedbccp366366f0240fe5cc@mail.gmail.com>
+	 <47ED36B9.6000508@sgi.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed 2008-03-26 13:05:43, Serge E. Hallyn wrote:
-> (This is identical to the version I sent on Mar 19 in response to
-> the comments by Daniel Hokka Zakrisson, which are the last
-> comments I've gotten.)
-> 
-> Implement a cgroup to track and enforce open and mknod restrictions on device
-> files.  A device cgroup associates a device access whitelist with each
-> cgroup.  A whitelist entry has 4 fields.  'type' is a (all), c (char), or
-> b (block).  'all' means it applies to all types and all major and minor
-> numbers.  Major and minor are either an integer or * for all.
-> Access is a composition of r (read), w (write), and m (mknod).
-> 
-> The root device cgroup starts with rwm to 'all'.  A child devcg gets
-> a copy of the parent.  Admins can then remove devices from the
-> whitelist or add new entries.  A child cgroup can never receive a
-> device access which is denied its parent.  However when a device
-> access is removed from a parent it will not also be removed from the
-> child(ren).
-> 
-> An entry is added using devices.allow, and removed using
-> devices.deny.  For instance
-> 
-> 	echo 'c 1:3 mr' > /cgroups/1/devices.allow
-> 
-> allows cgroup 1 to read and mknod the device usually known as
-> /dev/null.  Doing
-> 
-> 	echo a > /cgroups/1/devices.deny
+On Fri, Mar 28, 2008 at 7:19 PM, Mike Travis <travis@sgi.com> wrote:
+>  > Aren't the most cpumaps (like cpu/cpu*/topology/*_siblings or
+>  > node/node*/cpumap) bitmasks?
+>
+>  I did an informal survey and you are right, the majority of references do use
+>  cpumask_scnprintf instead of cpulist_scnprintf.  Maybe the later function was
+>  added later?
+>
+>  To me though, it would seem that:
+>
+>  240-255
+>
+>  is more readable than:
+>
+>  00000000,00000000,00000000,00000000,00000000,00000000,00000000,0000ffff
+>
+>  And as I mentioned, bitmask_parselist() [libbitmask(3)] does parse the output.
+But libbitmask has a bitmask_parsehex() too. (but thanks for the
+pointer to this code).
 
-Can't you use selinux or something?
+Anyway, your above example is wrong, the most significant bits comes first:
 
-Or just fix the userland as this is for old-udev compatibility, only?
-The interface is ugly...
+ffff0000,00000000,00000000,00000000,00000000,00000000,00000000,00000000
 
-> diff --git a/include/linux/cgroup_subsys.h b/include/linux/cgroup_subsys.h
-> index 1ddebfc..e287745 100644
-> --- a/include/linux/cgroup_subsys.h
-> +++ b/include/linux/cgroup_subsys.h
-> @@ -42,3 +42,9 @@ SUBSYS(mem_cgroup)
->  #endif
->  
->  /* */
-> +
-> +#ifdef CONFIG_CGROUP_DEVICE
-> +SUBSYS(devices)
-> +#endif
-> +
-> +/* */
+This makes it not more readable, but I think readability isn't in this
+case of that much importance.
 
-I don't know what this is, but it does not look like C...
+I further think, this problem could be easily solved, if NR_CPUS and
+possibly your nr_cpus_ids is somehow exported to user space.
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+With this information, the user is not surprised to see more that 1024
+bits (=CPU_SETSIZE, which is currently the glibc constant for the
+sched_{set,get}affinity() API). Also the glibc has the new variable
+cpu_set_t size API (since 2.7).
+
+Bert
+>
+>  Thanks,
+>  Mike
+>
