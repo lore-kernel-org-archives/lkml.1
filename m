@@ -1,73 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755717AbYC2UGJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756022AbYC2UKF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755717AbYC2UGJ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Mar 2008 16:06:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754277AbYC2UFy
+	id S1756022AbYC2UKF (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Mar 2008 16:10:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754234AbYC2UJx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Mar 2008 16:05:54 -0400
-Received: from pat.uio.no ([129.240.10.15]:49183 "EHLO pat.uio.no"
+	Sat, 29 Mar 2008 16:09:53 -0400
+Received: from havoc.gtf.org ([69.61.125.42]:53741 "EHLO havoc.gtf.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754251AbYC2UFx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Mar 2008 16:05:53 -0400
-Subject: Re: [PATCH] SUNRPC: have soft RPC tasks return -ETIMEDOUT instead
-	of -EIO on major connect timeout
-From: Trond Myklebust <trond.myklebust@fys.uio.no>
-To: Jeff Layton <jlayton@redhat.com>
-Cc: linux-nfs@vger.kernel.org, nfsv4@linux-nfs.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20080329152424.6857ee86@tleilax.poochiereds.net>
-References: <1206794957-17010-1-git-send-email-jlayton@redhat.com>
-	 <1206809051.8480.33.camel@heimdal.trondhjem.org>
-	 <20080329152424.6857ee86@tleilax.poochiereds.net>
-Content-Type: text/plain
-Date: Sat, 29 Mar 2008 16:05:49 -0400
-Message-Id: <1206821149.8455.13.camel@heimdal.trondhjem.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
-X-UiO-Resend: resent
-X-UiO-Spam-info: not spam, SpamAssassin (score=0.0, required=5.0, autolearn=disabled, none)
-X-UiO-Scanned: F29E64605B983F863B8F3EB01132E2518CF3683B
-X-UiO-SR-test: 6086ADDA04983661EA44F8BADCF5874191F827DF
-X-UiO-SPAM-Test: remote_host: 129.240.10.9 spam_score: 0 maxlevel 200 minaction 2 bait 0 mail/h: 31 total 7591356 max/h 8345 blacklist 0 greylist 0 ratelimit 0
+	id S1754168AbYC2UJx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 29 Mar 2008 16:09:53 -0400
+Date: Sat, 29 Mar 2008 16:09:52 -0400
+From: Jeff Garzik <jeff@garzik.org>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-ide@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: [git patches] libata fixes
+Message-ID: <20080329200952.GA5206@havoc.gtf.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Sat, 2008-03-29 at 15:24 -0400, Jeff Layton wrote:
-> On Sat, 29 Mar 2008 12:44:11 -0400
-> Trond Myklebust <trond.myklebust@fys.uio.no> wrote:
-> > Userland has the clnt_geterr() function that returns more detailed 'RPC
-> > level' errors. While that 'error function call' approach doesn't work in
-> > a multi-threaded environment, we might still be able to add the
-> > equivalent of a pointer to an 'rpc_err' structure to the rpc_task, and
-> > then have functions like call_timeout() (and especially call_verify()!)
-> > fill in more detailed error info if that pointer is non-zero?
-> >
-> 
-> I'm not sure we really need this, do we?
-> 
-> Should it really be the business of the RPC layer to sanitize the
-> tk_status like this? It seems like the NFS layer ought to be
-> translating "illegal" errors from the RPC layer into more generic ones
-> where needed rather than relying on the RPC layer to do it, though
-> maybe I'm not thinking about the RPC layer in the right way here...
+Please pull from 'upstream-linus' branch of
+master.kernel.org:/pub/scm/linux/kernel/git/jgarzik/libata-dev.git upstream-linus
 
-Yes and no. The RPC error reports are sometimes more complex than what
-we can fit into a single 32-bit error code. I'm thinking in particular
-of the RPC_AUTH_* errors (EACCESS just doesn't do them justice), and
-RPC_PROG_MISMATCH error.
+to receive the following updates:
 
-In the case of RPC_PROG_MISMATCH, it would, for instance, be really
-useful for the in-kernel mount code to be able to also retrieve the
-'mismatch_info' structure (see RFC1831), which tells you exactly which
-program versions are actually supported on that port.
+ drivers/ata/libata-core.c |    2 +-
+ drivers/ata/libata-eh.c   |    2 +-
+ drivers/ata/pata_sil680.c |    6 +++++-
+ include/linux/libata.h    |    2 +-
+ 4 files changed, 8 insertions(+), 4 deletions(-)
 
-An extra optional pointer to a structure in the rpc_task won't cost us
-much, but could possibly provide a lot of interesting information that
-we are currently ignoring.
+Benjamin Herrenschmidt (1):
+      pata_sil680: only enable MMIO on Cell blades
 
-Cheers
-  Trond
+Tejun Heo (1):
+      libata: ATA_EHI_LPM should be ATA_EH_LPM
 
+diff --git a/drivers/ata/libata-core.c b/drivers/ata/libata-core.c
+index c4248b3..4851988 100644
+--- a/drivers/ata/libata-core.c
++++ b/drivers/ata/libata-core.c
+@@ -972,7 +972,7 @@ static void ata_dev_disable_pm(struct ata_device *dev)
+ void ata_lpm_schedule(struct ata_port *ap, enum link_pm policy)
+ {
+ 	ap->pm_policy = policy;
+-	ap->link.eh_info.action |= ATA_EHI_LPM;
++	ap->link.eh_info.action |= ATA_EH_LPM;
+ 	ap->link.eh_info.flags |= ATA_EHI_NO_AUTOPSY;
+ 	ata_port_schedule_eh(ap);
+ }
+diff --git a/drivers/ata/libata-eh.c b/drivers/ata/libata-eh.c
+index 681252f..a583032 100644
+--- a/drivers/ata/libata-eh.c
++++ b/drivers/ata/libata-eh.c
+@@ -2748,7 +2748,7 @@ int ata_eh_recover(struct ata_port *ap, ata_prereset_fn_t prereset,
+ 			ehc->i.flags &= ~ATA_EHI_SETMODE;
+ 		}
+ 
+-		if (ehc->i.action & ATA_EHI_LPM)
++		if (ehc->i.action & ATA_EH_LPM)
+ 			ata_link_for_each_dev(dev, link)
+ 				ata_dev_enable_pm(dev, ap->pm_policy);
+ 
+diff --git a/drivers/ata/pata_sil680.c b/drivers/ata/pata_sil680.c
+index 503245a..3988e44 100644
+--- a/drivers/ata/pata_sil680.c
++++ b/drivers/ata/pata_sil680.c
+@@ -269,7 +269,11 @@ static u8 sil680_init_chip(struct pci_dev *pdev, int *try_mmio)
+ 	dev_dbg(&pdev->dev, "sil680: BA5_EN = %d clock = %02X\n",
+ 		tmpbyte & 1, tmpbyte & 0x30);
+ 
+-	*try_mmio = (tmpbyte & 1) || pci_resource_start(pdev, 5);
++	*try_mmio = 0;
++#ifdef CONFIG_PPC
++	if (machine_is(cell))
++		*try_mmio = (tmpbyte & 1) || pci_resource_start(pdev, 5);
++#endif
+ 
+ 	switch(tmpbyte & 0x30) {
+ 		case 0x00:
+diff --git a/include/linux/libata.h b/include/linux/libata.h
+index 269cdba..b064bfe 100644
+--- a/include/linux/libata.h
++++ b/include/linux/libata.h
+@@ -295,6 +295,7 @@ enum {
+ 	ATA_EH_SOFTRESET	= (1 << 1),
+ 	ATA_EH_HARDRESET	= (1 << 2),
+ 	ATA_EH_ENABLE_LINK	= (1 << 3),
++	ATA_EH_LPM		= (1 << 4),  /* link power management action */
+ 
+ 	ATA_EH_RESET_MASK	= ATA_EH_SOFTRESET | ATA_EH_HARDRESET,
+ 	ATA_EH_PERDEV_MASK	= ATA_EH_REVALIDATE,
+@@ -304,7 +305,6 @@ enum {
+ 	ATA_EHI_RESUME_LINK	= (1 << 1),  /* resume link (reset modifier) */
+ 	ATA_EHI_NO_AUTOPSY	= (1 << 2),  /* no autopsy */
+ 	ATA_EHI_QUIET		= (1 << 3),  /* be quiet */
+-	ATA_EHI_LPM		= (1 << 4),  /* link power management action */
+ 
+ 	ATA_EHI_DID_SOFTRESET	= (1 << 16), /* already soft-reset this port */
+ 	ATA_EHI_DID_HARDRESET	= (1 << 17), /* already soft-reset this port */
