@@ -1,169 +1,362 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756591AbYC2VP1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756835AbYC2VT6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756591AbYC2VP1 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Mar 2008 17:15:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754598AbYC2VPM
+	id S1756835AbYC2VT6 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Mar 2008 17:19:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754758AbYC2VTv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Mar 2008 17:15:12 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:36417 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754588AbYC2VPK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Mar 2008 17:15:10 -0400
-Message-ID: <47EEB154.9060605@garzik.org>
-Date: Sat, 29 Mar 2008 17:15:00 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	Sat, 29 Mar 2008 17:19:51 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:59978 "EHLO
+	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754649AbYC2VTu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 29 Mar 2008 17:19:50 -0400
+Date: Sat, 29 Mar 2008 22:20:23 +0100
+From: Pavel Machek <pavel@suse.cz>
+To: perex@perex.cz, kernel list <linux-kernel@vger.kernel.org>,
+       Trivial patch monkey <trivial@kernel.org>, tiwai@suse.de
+Subject: sound/usb/usbaudio.c: printk() is fine
+Message-ID: <20080329212023.GA13329@elf.ucw.cz>
 MIME-Version: 1.0
-To: yhlu.kernel@gmail.com
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, Greg KH <greg@kroah.com>,
-       Ingo Molnar <mingo@elte.hu>, kernel list <linux-kernel@vger.kernel.org>,
-       netdev@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz
-Subject: Re: [PATCH] e1000: fix IRQx nobody cared for shared irq with INTx
-References: <200803291403.23479.yhlu.kernel@gmail.com>
-In-Reply-To: <200803291403.23479.yhlu.kernel@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Yinghai Lu wrote:
-> when try to kexec one latest kernel from kernel.org from RHEL 5.1 got
-> 
-> ACPI: PCI Interrupt 0000:02:00.0[A] -> Link [LNKA] -> GSI 19 (level, low) -> IRQ 19
-> acpi->mptable 2 : Int: type 0, pol 1, trig 1, bus 02, IRQ 00, APIC ID 0, APIC INT 13
-> PCI: Setting latency timer of device 0000:02:00.0 to 64
-> PCI: Enabling Mem-Wr-Inval for device 0000:02:00.0
-> scsi0 :  on PCI bus 02 device 00 irq 19
-> irq 19: nobody cared (try booting with the "irqpoll" option)
-> Pid: 1, comm: swapper Not tainted 2.6.24-smp-07682-g551e4fb-dirty #19
-> 
-> Call Trace:
->  <IRQ>  [<ffffffff8026a3eb>] __report_bad_irq+0x30/0x72
->  [<ffffffff8026a651>] note_interrupt+0x224/0x26f
->  [<ffffffff8026ae78>] handle_fasteoi_irq+0xa5/0xc8
->  [<ffffffff8021ffdc>] call_softirq+0x1c/0x28
->  [<ffffffff802218e2>] do_IRQ+0xf1/0x15f
->  [<ffffffff8021f361>] ret_from_intr+0x0/0xa
->  <EOI>  [<ffffffff80785bd6>] pci_mmcfg_write+0x0/0xb0
->  [<ffffffff80224dd9>] native_read_tsc+0xd/0x1d
->  [<ffffffff804681e7>] __delay+0x17/0x22
->  [<ffffffff805cb1a9>] lpfc_sli_brdrestart+0x14c/0x16b
->  [<ffffffff805cb264>] lpfc_do_config_port+0x9c/0x3e4
->  [<ffffffff802d77a9>] sysfs_link_sibling+0x17/0x31
->  [<ffffffff805cb674>] lpfc_sli_hba_setup+0xc8/0x4a2
->  [<ffffffff80825397>] lpfc_pci_probe_one+0x750/0x914
->  [<ffffffff804728f3>] pci_device_probe+0xb3/0xfb
->  [<ffffffff804d958c>] driver_probe_device+0xb5/0x132
->  [<ffffffff804d96ab>] __driver_attach+0x0/0x93
->  [<ffffffff804d9705>] __driver_attach+0x5a/0x93
->  [<ffffffff804d89bc>] bus_for_each_dev+0x44/0x6f
->  [<ffffffff804d91b9>] bus_add_driver+0xae/0x1f5
->  [<ffffffff804d990e>] driver_register+0x59/0xce
->  [<ffffffff80472b56>] __pci_register_driver+0x4a/0x7c
->  [<ffffffff80c2d78a>] lpfc_init+0x98/0xba
->  [<ffffffff80c0d6e7>] kernel_init+0x175/0x2e1
->  [<ffffffff8021fc68>] child_rip+0xa/0x12
->  [<ffffffff80c0d572>] kernel_init+0x0/0x2e1
->  [<ffffffff8021fc5e>] child_rip+0x0/0x12
-> 
-> handlers:
-> [<ffffffff805cdbce>] (lpfc_intr_handler+0x0/0x4c6)
-> Disabling IRQ #19
-> 
-> root caused that there is one Intel card that shared io apic pin and irq with
->  lpfc
-> 
-> e1000_probe path only use pci_enable_device to setup irq entry but masked, and
-> will use e1000_open to use request_irq/setup_irq to install action and
-> enable/unmask that io apic entry.
-> 
-> but lpfc driver will call it's probe and request_irq/setup_irq. so it
-> enable/umask that io apic entry. and only lpfc's action the lpfc_intr_handler
-> is installed.
-> 
-> and some case, the e1000 sent out irq (hw bug or first kernel doesn't call
-> e1000_irq_disable?)
-> that irq will confuse the hanlder ... it is not for lpfc_intr_handler...
-> 
-> So try to call pci_intx(dev, 0) in e1000_probe,
-> and later call pci_intx(dev, 1) after request_irq in e1000_open patch, if the
-> irq is using INTx
-> 
-> even e1000 is using MSI, still need this patch. Because even pci_enable_msi in
-> e1000_open path will call pci_intx(dev, 0), that is too late. when we have lpfc
-> driver loaded before use ifconfig to set network connection.
-> 
-> othe drivers may need to be updated in the same way, if they have same problem
-> like nobody cared irq with shared INTx irq.
-> 
-> Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
-> 
-> Index: linux-2.6/drivers/net/e1000/e1000_main.c
-> ===================================================================
-> --- linux-2.6.orig/drivers/net/e1000/e1000_main.c
-> +++ linux-2.6/drivers/net/e1000/e1000_main.c
-> @@ -324,6 +324,9 @@ static int e1000_request_irq(struct e100
->  			pci_disable_msi(adapter->pdev);
->  		DPRINTK(PROBE, ERR,
->  		        "Unable to allocate interrupt Error: %d\n", err);
-> +	} else if (!adapter->have_msi) {
-> +		/* enable INTx before if not using MSI */
-> +		pci_intx(adapter->pdev, 1);
->  	}
->  
->  	return err;
-> @@ -934,6 +937,8 @@ e1000_probe(struct pci_dev *pdev,
->  	uint16_t eeprom_apme_mask = E1000_EEPROM_APME;
->  	DECLARE_MAC_BUF(mac);
->  
-> +	/* disable INTx at first */
-> +	pci_intx(pdev, 0);
->  	if ((err = pci_enable_device(pdev)))
->  		return err;
->  
-> Index: linux-2.6/drivers/net/e1000e/netdev.c
-> ===================================================================
-> --- linux-2.6.orig/drivers/net/e1000e/netdev.c
-> +++ linux-2.6/drivers/net/e1000e/netdev.c
-> @@ -960,6 +960,9 @@ static int e1000_request_irq(struct e100
->  			err);
->  		if (adapter->flags & FLAG_MSI_ENABLED)
->  			pci_disable_msi(adapter->pdev);
-> +	} else if (!(adapter->flags & FLAG_MSI_ENABLED)) {
-> +		/* enable INTx before if not using MSI */
-> +		pci_intx(adapter->pdev, 1);
->  	}
->  
->  	return err;
 
-These seem sane.
+printk() works perfectly fine, no need to obfuscate code with
+snd_printk().
 
+Signed-off-by: Pavel Machek <pavel@suse.cz>
 
-> @@ -3726,6 +3729,8 @@ static int __devinit e1000_probe(struct 
->  	u16 eeprom_apme_mask = E1000_EEPROM_APME;
->  
->  	e1000e_disable_l1aspm(pdev);
-> +	/* disable INTx at first */
-> +	pci_intx(pdev, 0);
->  	err = pci_enable_device(pdev);
->  	if (err)
->  		return err;
+diff --git a/sound/usb/usbaudio.c b/sound/usb/usbaudio.c
+index f48838a..8056d8a 100644
+--- a/sound/usb/usbaudio.c
++++ b/sound/usb/usbaudio.c
+@@ -846,7 +850,7 @@ static int start_urbs(struct snd_usb_sub
+ 	for (i = 0; i < subs->nurbs; i++) {
+ 		snd_assert(subs->dataurb[i].urb, return -EINVAL);
+ 		if (subs->ops.prepare(subs, runtime, subs->dataurb[i].urb) < 0) {
+-			snd_printk(KERN_ERR "cannot prepare datapipe for urb %d\n", i);
++			printk(KERN_ERR "cannot prepare datapipe for urb %d\n", i);
+ 			goto __error;
+ 		}
+ 	}
+@@ -854,7 +858,7 @@ static int start_urbs(struct snd_usb_sub
+ 		for (i = 0; i < SYNC_URBS; i++) {
+ 			snd_assert(subs->syncurb[i].urb, return -EINVAL);
+ 			if (subs->ops.prepare_sync(subs, runtime, subs->syncurb[i].urb) < 0) {
+-				snd_printk(KERN_ERR "cannot prepare syncpipe for urb %d\n", i);
++				printk(KERN_ERR "cannot prepare syncpipe for urb %d\n", i);
+ 				goto __error;
+ 			}
+ 		}
+@@ -866,7 +870,7 @@ static int start_urbs(struct snd_usb_sub
+ 	for (i = 0; i < subs->nurbs; i++) {
+ 		err = usb_submit_urb(subs->dataurb[i].urb, GFP_ATOMIC);
+ 		if (err < 0) {
+-			snd_printk(KERN_ERR "cannot submit datapipe "
++			printk(KERN_ERR "cannot submit datapipe "
+ 				   "for urb %d, error %d: %s\n",
+ 				   i, err, usb_error_string(err));
+ 			goto __error;
+@@ -877,7 +881,7 @@ static int start_urbs(struct snd_usb_sub
+ 		for (i = 0; i < SYNC_URBS; i++) {
+ 			err = usb_submit_urb(subs->syncurb[i].urb, GFP_ATOMIC);
+ 			if (err < 0) {
+-				snd_printk(KERN_ERR "cannot submit syncpipe "
++				printk(KERN_ERR "cannot submit syncpipe "
+ 					   "for urb %d, error %d: %s\n",
+ 					   i, err, usb_error_string(err));
+ 				goto __error;
+@@ -915,12 +919,12 @@ static int wait_clear_urbs(struct snd_us
+ 					alive++;
+ 			}
+ 		}
+-		if (! alive)
++		if (!alive)
+ 			break;
+ 		schedule_timeout_uninterruptible(1);
+ 	} while (time_before(jiffies, end_time));
+ 	if (alive)
+-		snd_printk(KERN_ERR "timeout: still %d active urbs..\n", alive);
++		printk(KERN_ERR "timeout: still %d active urbs..\n", alive);
+ 	return 0;
+ }
+ 
+@@ -1264,7 +1280,7 @@ static int init_usb_pitch(struct usb_dev
+ 		if ((err = snd_usb_ctl_msg(dev, usb_sndctrlpipe(dev, 0), SET_CUR,
+ 					   USB_TYPE_CLASS|USB_RECIP_ENDPOINT|USB_DIR_OUT,
+ 					   PITCH_CONTROL << 8, ep, data, 1, 1000)) < 0) {
+-			snd_printk(KERN_ERR "%d:%d:%d: cannot set enable PITCH\n",
++			printk(KERN_ERR "%d:%d:%d: cannot set enable PITCH\n",
+ 				   dev->devnum, iface, ep);
+ 			return err;
+ 		}
+@@ -1290,14 +1306,14 @@ static int init_usb_sample_rate(struct u
+ 		if ((err = snd_usb_ctl_msg(dev, usb_sndctrlpipe(dev, 0), SET_CUR,
+ 					   USB_TYPE_CLASS|USB_RECIP_ENDPOINT|USB_DIR_OUT,
+ 					   SAMPLING_FREQ_CONTROL << 8, ep, data, 3, 1000)) < 0) {
+-			snd_printk(KERN_ERR "%d:%d:%d: cannot set freq %d to ep 0x%x\n",
++			printk(KERN_ERR "%d:%d:%d: cannot set freq %d to ep 0x%x\n",
+ 				   dev->devnum, iface, fmt->altsetting, rate, ep);
+ 			return err;
+ 		}
+ 		if ((err = snd_usb_ctl_msg(dev, usb_rcvctrlpipe(dev, 0), GET_CUR,
+ 					   USB_TYPE_CLASS|USB_RECIP_ENDPOINT|USB_DIR_IN,
+ 					   SAMPLING_FREQ_CONTROL << 8, ep, data, 3, 1000)) < 0) {
+-			snd_printk(KERN_WARNING "%d:%d:%d: cannot get freq at ep 0x%x\n",
++			printk(KERN_WARNING "%d:%d:%d: cannot get freq at ep 0x%x\n",
+ 				   dev->devnum, iface, fmt->altsetting, ep);
+ 			return 0; /* some devices don't support reading */
+ 		}
+@@ -1335,7 +1351,7 @@ static int set_format(struct snd_usb_sub
+ 	/* close the old interface */
+ 	if (subs->interface >= 0 && subs->interface != fmt->iface) {
+ 		if (usb_set_interface(subs->dev, subs->interface, 0) < 0) {
+-			snd_printk(KERN_ERR "%d:%d:%d: return to setting 0 failed\n",
++			printk(KERN_ERR "%d:%d:%d: return to setting 0 failed\n",
+ 				dev->devnum, fmt->iface, fmt->altsetting);
+ 			return -EIO;
+ 		}
+@@ -1525,8 +1548,8 @@ static int snd_usb_pcm_prepare(struct sn
+ 	struct snd_pcm_runtime *runtime = substream->runtime;
+ 	struct snd_usb_substream *subs = runtime->private_data;
+ 
+-	if (! subs->cur_audiofmt) {
+-		snd_printk(KERN_ERR "usbaudio: no format is specified!\n");
++	if (!subs->cur_audiofmt) {
++		printk(KERN_ERR "usbaudio: no format is specified!\n");
+ 		return -ENXIO;
+ 	}
+ 
+@@ -2431,7 +2454,7 @@ static int parse_audio_format_i_type(str
+ 		/* fall-through */
+ 	case USB_AUDIO_FORMAT_PCM:
+ 		if (sample_width > sample_bytes * 8) {
+-			snd_printk(KERN_INFO "%d:%u:%d : sample bitwidth %d in over sample bytes %d\n",
++			printk(KERN_INFO "%d:%u:%d : sample bitwidth %d in over sample bytes %d\n",
+ 				   chip->dev->devnum, fp->iface, fp->altsetting,
+ 				   sample_width, sample_bytes);
+ 		}
+@@ -2456,7 +2479,7 @@ static int parse_audio_format_i_type(str
+ 			pcm_format = SNDRV_PCM_FORMAT_S32_LE;
+ 			break;
+ 		default:
+-			snd_printk(KERN_INFO "%d:%u:%d : unsupported sample bitwidth %d in %d bytes\n",
++			printk(KERN_ERR "%d:%u:%d : unsupported sample bitwidth %d in %d bytes\n",
+ 				   chip->dev->devnum, fp->iface,
+ 				   fp->altsetting, sample_width, sample_bytes);
+ 			break;
+@@ -2479,7 +2502,7 @@ static int parse_audio_format_i_type(str
+ 		pcm_format = SNDRV_PCM_FORMAT_MU_LAW;
+ 		break;
+ 	default:
+-		snd_printk(KERN_INFO "%d:%u:%d : unsupported format type %d\n",
++		printk(KERN_ERR "%d:%u:%d : unsupported format type %d\n",
+ 			   chip->dev->devnum, fp->iface, fp->altsetting, format);
+ 		break;
+ 	}
+@@ -2503,7 +2526,7 @@ static int parse_audio_format_rates(stru
+ 	int nr_rates = fmt[offset];
+ 
+ 	if (fmt[0] < offset + 1 + 3 * (nr_rates ? nr_rates : 2)) {
+-		snd_printk(KERN_ERR "%d:%u:%d : invalid FORMAT_TYPE desc\n",
++		printk(KERN_ERR "%d:%u:%d : invalid FORMAT_TYPE desc\n",
+ 				   chip->dev->devnum, fp->iface, fp->altsetting);
+ 		return -1;
+ 	}
+@@ -2517,7 +2540,7 @@ static int parse_audio_format_rates(stru
+ 
+ 		fp->rate_table = kmalloc(sizeof(int) * nr_rates, GFP_KERNEL);
+ 		if (fp->rate_table == NULL) {
+-			snd_printk(KERN_ERR "cannot malloc\n");
++			printk(KERN_ERR "cannot malloc\n");
+ 			return -1;
+ 		}
+ 
+@@ -2584,7 +2607,7 @@ static int parse_audio_format_i(struct s
+ 	fp->format = pcm_format;
+ 	fp->channels = fmt[4];
+ 	if (fp->channels < 1) {
+-		snd_printk(KERN_ERR "%d:%u:%d : invalid channels %d\n",
++		printk(KERN_ERR "%d:%u:%d : invalid channels %d\n",
+ 			   chip->dev->devnum, fp->iface, fp->altsetting, fp->channels);
+ 		return -1;
+ 	}
+@@ -2705,13 +2728,13 @@ static int parse_audio_endpoints(struct 
+ 		/* get audio formats */
+ 		fmt = snd_usb_find_csint_desc(alts->extra, alts->extralen, NULL, AS_GENERAL);
+ 		if (!fmt) {
+-			snd_printk(KERN_ERR "%d:%u:%d : AS_GENERAL descriptor not found\n",
++			printk(KERN_ERR "%d:%u:%d : AS_GENERAL descriptor not found\n",
+ 				   dev->devnum, iface_no, altno);
+ 			continue;
+ 		}
+ 
+ 		if (fmt[0] < 7) {
+-			snd_printk(KERN_ERR "%d:%u:%d : invalid AS_GENERAL desc\n",
++			printk(KERN_ERR "%d:%u:%d : invalid AS_GENERAL desc\n",
+ 				   dev->devnum, iface_no, altno);
+ 			continue;
+ 		}
+@@ -2721,12 +2744,12 @@ static int parse_audio_endpoints(struct 
+ 		/* get format type */
+ 		fmt = snd_usb_find_csint_desc(alts->extra, alts->extralen, NULL, FORMAT_TYPE);
+ 		if (!fmt) {
+-			snd_printk(KERN_ERR "%d:%u:%d : no FORMAT_TYPE desc\n",
++			printk(KERN_ERR "%d:%u:%d : no FORMAT_TYPE desc\n",
+ 				   dev->devnum, iface_no, altno);
+ 			continue;
+ 		}
+ 		if (fmt[0] < 8) {
+-			snd_printk(KERN_ERR "%d:%u:%d : invalid FORMAT_TYPE desc\n",
++			printk(KERN_ERR "%d:%u:%d : invalid FORMAT_TYPE desc\n",
+ 				   dev->devnum, iface_no, altno);
+ 			continue;
+ 		}
+@@ -2736,15 +2759,15 @@ static int parse_audio_endpoints(struct 
+ 		if (!csep && altsd->bNumEndpoints >= 2)
+ 			csep = snd_usb_find_desc(alts->endpoint[1].extra, alts->endpoint[1].extralen, NULL, USB_DT_CS_ENDPOINT);
+ 		if (!csep || csep[0] < 7 || csep[2] != EP_GENERAL) {
+-			snd_printk(KERN_WARNING "%d:%u:%d : no or invalid"
++			printk(KERN_WARNING "%d:%u:%d : no or invalid"
+ 				   " class specific endpoint descriptor\n",
+ 				   dev->devnum, iface_no, altno);
+ 			csep = NULL;
+ 		}
+ 
+ 		fp = kzalloc(sizeof(*fp), GFP_KERNEL);
+-		if (! fp) {
+-			snd_printk(KERN_ERR "cannot malloc\n");
++		if (!fp) {
++			printk(KERN_ERR "cannot malloc\n");
+ 			return -ENOMEM;
+ 		}
+ 
+@@ -2845,11 +2868,11 @@ static int snd_usb_create_streams(struct
+ 	/* find audiocontrol interface */
+ 	host_iface = &usb_ifnum_to_if(dev, ctrlif)->altsetting[0];
+ 	if (!(p1 = snd_usb_find_csint_desc(host_iface->extra, host_iface->extralen, NULL, HEADER))) {
+-		snd_printk(KERN_ERR "cannot find HEADER\n");
++		printk(KERN_ERR "cannot find HEADER\n");
+ 		return -EINVAL;
+ 	}
+-	if (! p1[7] || p1[0] < 8 + p1[7]) {
+-		snd_printk(KERN_ERR "invalid HEADER\n");
++	if (!p1[7] || p1[0] < 8 + p1[7]) {
++		printk(KERN_ERR "invalid HEADER\n");
+ 		return -EINVAL;
+ 	}
+ 
+@@ -2862,7 +2885,7 @@ static int snd_usb_create_streams(struct
+ 		j = p1[8 + i];
+ 		iface = usb_ifnum_to_if(dev, j);
+ 		if (!iface) {
+-			snd_printk(KERN_ERR "%d:%u:%d : does not exist\n",
++			printk(KERN_ERR "%d:%u:%d : does not exist\n",
+ 				   dev->devnum, ctrlif, j);
+ 			continue;
+ 		}
+@@ -2876,7 +2899,7 @@ static int snd_usb_create_streams(struct
+ 		     altsd->bInterfaceClass == USB_CLASS_VENDOR_SPEC) &&
+ 		    altsd->bInterfaceSubClass == USB_SUBCLASS_MIDI_STREAMING) {
+ 			if (snd_usb_create_midi_interface(chip, iface, NULL) < 0) {
+-				snd_printk(KERN_ERR "%d:%u:%d: cannot create sequencer device\n", dev->devnum, ctrlif, j);
++				printk(KERN_ERR "%d:%u:%d: cannot create sequencer device\n", dev->devnum, ctrlif, j);
+ 				continue;
+ 			}
+ 			usb_driver_claim_interface(&usb_audio_driver, iface, (void *)-1L);
+@@ -2890,10 +2913,10 @@ static int snd_usb_create_streams(struct
+ 			continue;
+ 		}
+ 		if (snd_usb_get_speed(dev) == USB_SPEED_LOW) {
+-			snd_printk(KERN_ERR "low speed audio streaming not supported\n");
++			printk(KERN_ERR "low speed audio streaming not supported\n");
+ 			continue;
+ 		}
+-		if (! parse_audio_endpoints(chip, j)) {
++		if (!parse_audio_endpoints(chip, j)) {
+ 			usb_set_interface(dev, j, 0); /* reset the current interface */
+ 			usb_driver_claim_interface(&usb_audio_driver, iface, (void *)-1L);
+ 		}
+@@ -2915,8 +2938,8 @@ static int create_fixed_stream_quirk(str
+ 	unsigned *rate_table = NULL;
+ 
+ 	fp = kmemdup(quirk->data, sizeof(*fp), GFP_KERNEL);
+-	if (! fp) {
+-		snd_printk(KERN_ERR "cannot memdup\n");
++	if (!fp) {
++		printk(KERN_ERR "cannot memdup\n");
+ 		return -ENOMEM;
+ 	}
+ 	if (fp->nr_rates > 0) {
+@@ -2965,7 +2988,7 @@ static int create_standard_audio_quirk(s
+ 	altsd = get_iface_desc(alts);
+ 	err = parse_audio_endpoints(chip, altsd->bInterfaceNumber);
+ 	if (err < 0) {
+-		snd_printk(KERN_ERR "cannot setup if %d: error %d\n",
++		printk(KERN_ERR "cannot setup if %d: error %d\n",
+ 			   altsd->bInterfaceNumber, err);
+ 		return err;
+ 	}
+@@ -3052,7 +3075,7 @@ static int create_ua700_ua25_quirk(struc
+ 		fp->rate_max = fp->rate_min = 96000;
+ 		break;
+ 	default:
+-		snd_printk(KERN_ERR "unknown sample rate\n");
++		printk(KERN_ERR "unknown sample rate\n");
+ 		kfree(fp);
+ 		return -ENXIO;
+ 	}
+@@ -3438,18 +3461,18 @@ static int snd_usb_audio_create(struct u
+ 	if (snd_usb_get_speed(dev) != USB_SPEED_LOW &&
+ 	    snd_usb_get_speed(dev) != USB_SPEED_FULL &&
+ 	    snd_usb_get_speed(dev) != USB_SPEED_HIGH) {
+-		snd_printk(KERN_ERR "unknown device speed %d\n", snd_usb_get_speed(dev));
++		printk(KERN_ERR "unknown device speed %d\n", snd_usb_get_speed(dev));
+ 		return -ENXIO;
+ 	}
+ 
+ 	card = snd_card_new(index[idx], id[idx], THIS_MODULE, 0);
+ 	if (card == NULL) {
+-		snd_printk(KERN_ERR "cannot create card instance %d\n", idx);
++		printk(KERN_ERR "cannot create card instance %d\n", idx);
+ 		return -ENOMEM;
+ 	}
+ 
+ 	chip = kzalloc(sizeof(*chip), GFP_KERNEL);
+-	if (! chip) {
++	if (!chip) {
+ 		snd_card_free(card);
+ 		return -ENOMEM;
+ 	}
+@@ -3579,19 +3602,19 @@ static void *snd_usb_audio_probe(struct 
+ 	for (i = 0; i < SNDRV_CARDS; i++) {
+ 		if (usb_chip[i] && usb_chip[i]->dev == dev) {
+ 			if (usb_chip[i]->shutdown) {
+-				snd_printk(KERN_ERR "USB device is in the shutdown state, cannot create a card instance\n");
++				printk(KERN_ERR "USB device is in the shutdown state, cannot create a card instance\n");
+ 				goto __error;
+ 			}
+ 			chip = usb_chip[i];
+ 			break;
+ 		}
+ 	}
+-	if (! chip) {
++	if (!chip) {
+ 		/* it's a fresh one.
+ 		 * now look for an empty slot and create a new card instance
+ 		 */
+ 		for (i = 0; i < SNDRV_CARDS; i++)
+-			if (enable[i] && ! usb_chip[i] &&
++			if (enable[i] && !usb_chip[i] &&
+ 			    (vid[i] == -1 || vid[i] == USB_ID_VENDOR(id)) &&
+ 			    (pid[i] == -1 || pid[i] == USB_ID_PRODUCT(id))) {
+ 				if (snd_usb_audio_create(dev, i, quirk, &chip) < 0) {
 
-Any pci_* call before pci_enable_device() is questionable.  I would put 
-it after pci_enable_device(), unless there is a _strong_ reason.
-
-PCI devices are not considered available, with resources assigned, until 
-pci_enable_device()
-
-I am also curious what irq events are being raised?  That seems like 
-another problem area to address, since pci_intx() is just a band-aid 
-hiding that behavior.
-
-	Jeff
-
-
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
