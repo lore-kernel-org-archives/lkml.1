@@ -1,46 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753706AbYC2WWj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754443AbYC2W1p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753706AbYC2WWj (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Mar 2008 18:22:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750855AbYC2WWb
+	id S1754443AbYC2W1p (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Mar 2008 18:27:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750906AbYC2W1g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Mar 2008 18:22:31 -0400
-Received: from smtpq2.groni1.gr.home.nl ([213.51.130.201]:47302 "EHLO
-	smtpq2.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750810AbYC2WWa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Mar 2008 18:22:30 -0400
-Message-ID: <47EEC187.1020707@keyaccess.nl>
-Date: Sat, 29 Mar 2008 23:24:07 +0100
-From: Rene Herman <rene.herman@keyaccess.nl>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
+	Sat, 29 Mar 2008 18:27:36 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:60560 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750810AbYC2W1g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 29 Mar 2008 18:27:36 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: pm list <linux-pm@lists.linux-foundation.org>
+Subject: [RFC][PATCH 0/3] PM: Rework suspend and hibernation code for devices (rev. 3)
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Alan Stern <stern@rowland.harvard.edu>, Greg KH <greg@kroah.com>,
+       Len Brown <lenb@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
+       Alexey Starikovskiy <astarikovskiy@suse.de>,
+       David Brownell <david-b@pacbell.net>, Pavel Machek <pavel@ucw.cz>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Oliver Neukum <oliver@neukum.org>
 MIME-Version: 1.0
-To: Richard Jonsson <richie@coderworld.net>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: Keyboard weirdness: keys get stuck
-References: <47EEA097.5000701@coderworld.net> <47EEB2F8.40907@keyaccess.nl> <47EEBE9F.6080605@coderworld.net>
-In-Reply-To: <47EEBE9F.6080605@coderworld.net>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Disposition: inline
+Date: Sat, 29 Mar 2008 23:17:49 +0100
+Content-Type: text/plain;
+  charset="iso-8859-2"
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -1.0 (-)
+Message-Id: <200803292317.50218.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 29-03-08 23:11, Richard Jonsson wrote:
+Hi,
 
->> Does the weirdness persist if you boot with "io_delay=0x80" as a 
->> kernel parameter? (it should if -rc3 really was fine, but...)
-> 
-> I'm testing that param at the moment, and while writing this response it 
-> happened again, meaning it didn't change anything..
+The following three patches are intended to start the redesign of the suspend
+and hibernation framework for devices.
 
-Okay, expected, but the "HP dvXXXX" triggered the reply.
+The first one is the 5th revision of the patch introducing new callbacks for
+suspend and hibernation.
 
-> I can't say for sure rc3 wasn't affected, I just never noticed the 
-> behavior during the 2-3 weeks I used it.
+The other two patches implement the new suspend and hibernation callbacks
+for the platform and PCI bus types (3rd revision of both).
 
-Haven't been following the list lately, but I believe I read something about 
-a scheduler / X.org interaction problem. Afraid that's all from me though...
+The main differences between these patches and the previous revision:
+* Dropped 'struct pm_noirq_ops' and introduced 'struct pm_ext_ops' that is a
+  derivative of 'struct pm_ops' (adds the _noirq operations).
+* Made device_pm_add() refuse to add devices for which
+  dev->parent->power.status == DPM_INVALID
+* Clarified (hopefully) the new platform and pci driver code
 
-Rene.
+Please review.
+
+Thanks,
+Rafael
+
