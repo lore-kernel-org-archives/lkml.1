@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756086AbYC2DOF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761483AbYC2DOX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756086AbYC2DOF (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Mar 2008 23:14:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760403AbYC2DLA
+	id S1761483AbYC2DOX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Mar 2008 23:14:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759641AbYC2DLL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Mar 2008 23:11:00 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:58365 "EHLO
+	Fri, 28 Mar 2008 23:11:11 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:58370 "EHLO
 	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760396AbYC2DK7 (ORCPT
+	with ESMTP id S1756738AbYC2DLJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Mar 2008 23:10:59 -0400
+	Fri, 28 Mar 2008 23:11:09 -0400
 To: torvalds@linux-foundation.org
-Subject: [PATCH] mfd/asic3: ioread/iowrite take pointer, not unsigned long
-Cc: linux-kernel@vger.kernel.org
-Message-Id: <E1JfRT8-00032E-Lp@ZenIV.linux.org.uk>
+Subject: [PATCH] dm9000 trivial annotation
+Cc: jgarzik@pobox.com, linux-kernel@vger.kernel.org
+Message-Id: <E1JfRTI-000332-Lx@ZenIV.linux.org.uk>
 From: Al Viro <viro@ftp.linux.org.uk>
-Date: Sat, 29 Mar 2008 03:10:58 +0000
+Date: Sat, 29 Mar 2008 03:11:08 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -23,31 +23,22 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
 ---
- drivers/mfd/asic3.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ drivers/net/dm9000.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/mfd/asic3.c b/drivers/mfd/asic3.c
-index 63fb1ff..f6f2d96 100644
---- a/drivers/mfd/asic3.c
-+++ b/drivers/mfd/asic3.c
-@@ -28,14 +28,14 @@
- static inline void asic3_write_register(struct asic3 *asic,
- 				 unsigned int reg, u32 value)
- {
--	iowrite16(value, (unsigned long)asic->mapping +
-+	iowrite16(value, asic->mapping +
- 		  (reg >> asic->bus_shift));
- }
+diff --git a/drivers/net/dm9000.c b/drivers/net/dm9000.c
+index b09a53d..d63cc93 100644
+--- a/drivers/net/dm9000.c
++++ b/drivers/net/dm9000.c
+@@ -968,7 +968,7 @@ dm9000_interrupt(int irq, void *dev_id)
+ struct dm9000_rxhdr {
+ 	u8	RxPktReady;
+ 	u8	RxStatus;
+-	u16	RxLen;
++	__le16	RxLen;
+ } __attribute__((__packed__));
  
- static inline u32 asic3_read_register(struct asic3 *asic,
- 			       unsigned int reg)
- {
--	return ioread16((unsigned long)asic->mapping +
-+	return ioread16(asic->mapping +
- 			(reg >> asic->bus_shift));
- }
- 
+ /*
 -- 
 1.5.3.GIT
-
 
