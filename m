@@ -1,287 +1,169 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756871AbYC2VJG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756591AbYC2VP1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756871AbYC2VJG (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Mar 2008 17:09:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754627AbYC2VI4
+	id S1756591AbYC2VP1 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Mar 2008 17:15:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754598AbYC2VPM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Mar 2008 17:08:56 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:59448 "EHLO
-	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752066AbYC2VIz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Mar 2008 17:08:55 -0400
-Date: Sat, 29 Mar 2008 22:09:28 +0100
-From: Pavel Machek <pavel@suse.cz>
-To: perex@perex.cz, kernel list <linux-kernel@vger.kernel.org>,
-       Trivial patch monkey <trivial@kernel.org>, tiwai@suse.de
-Subject: sound/usb/usbaudio.c: coding style
-Message-ID: <20080329210927.GA12239@elf.ucw.cz>
+	Sat, 29 Mar 2008 17:15:12 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:36417 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754588AbYC2VPK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 29 Mar 2008 17:15:10 -0400
+Message-ID: <47EEB154.9060605@garzik.org>
+Date: Sat, 29 Mar 2008 17:15:00 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: yhlu.kernel@gmail.com
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, Greg KH <greg@kroah.com>,
+       Ingo Molnar <mingo@elte.hu>, kernel list <linux-kernel@vger.kernel.org>,
+       netdev@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz
+Subject: Re: [PATCH] e1000: fix IRQx nobody cared for shared irq with INTx
+References: <200803291403.23479.yhlu.kernel@gmail.com>
+In-Reply-To: <200803291403.23479.yhlu.kernel@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Yinghai Lu wrote:
+> when try to kexec one latest kernel from kernel.org from RHEL 5.1 got
+> 
+> ACPI: PCI Interrupt 0000:02:00.0[A] -> Link [LNKA] -> GSI 19 (level, low) -> IRQ 19
+> acpi->mptable 2 : Int: type 0, pol 1, trig 1, bus 02, IRQ 00, APIC ID 0, APIC INT 13
+> PCI: Setting latency timer of device 0000:02:00.0 to 64
+> PCI: Enabling Mem-Wr-Inval for device 0000:02:00.0
+> scsi0 :  on PCI bus 02 device 00 irq 19
+> irq 19: nobody cared (try booting with the "irqpoll" option)
+> Pid: 1, comm: swapper Not tainted 2.6.24-smp-07682-g551e4fb-dirty #19
+> 
+> Call Trace:
+>  <IRQ>  [<ffffffff8026a3eb>] __report_bad_irq+0x30/0x72
+>  [<ffffffff8026a651>] note_interrupt+0x224/0x26f
+>  [<ffffffff8026ae78>] handle_fasteoi_irq+0xa5/0xc8
+>  [<ffffffff8021ffdc>] call_softirq+0x1c/0x28
+>  [<ffffffff802218e2>] do_IRQ+0xf1/0x15f
+>  [<ffffffff8021f361>] ret_from_intr+0x0/0xa
+>  <EOI>  [<ffffffff80785bd6>] pci_mmcfg_write+0x0/0xb0
+>  [<ffffffff80224dd9>] native_read_tsc+0xd/0x1d
+>  [<ffffffff804681e7>] __delay+0x17/0x22
+>  [<ffffffff805cb1a9>] lpfc_sli_brdrestart+0x14c/0x16b
+>  [<ffffffff805cb264>] lpfc_do_config_port+0x9c/0x3e4
+>  [<ffffffff802d77a9>] sysfs_link_sibling+0x17/0x31
+>  [<ffffffff805cb674>] lpfc_sli_hba_setup+0xc8/0x4a2
+>  [<ffffffff80825397>] lpfc_pci_probe_one+0x750/0x914
+>  [<ffffffff804728f3>] pci_device_probe+0xb3/0xfb
+>  [<ffffffff804d958c>] driver_probe_device+0xb5/0x132
+>  [<ffffffff804d96ab>] __driver_attach+0x0/0x93
+>  [<ffffffff804d9705>] __driver_attach+0x5a/0x93
+>  [<ffffffff804d89bc>] bus_for_each_dev+0x44/0x6f
+>  [<ffffffff804d91b9>] bus_add_driver+0xae/0x1f5
+>  [<ffffffff804d990e>] driver_register+0x59/0xce
+>  [<ffffffff80472b56>] __pci_register_driver+0x4a/0x7c
+>  [<ffffffff80c2d78a>] lpfc_init+0x98/0xba
+>  [<ffffffff80c0d6e7>] kernel_init+0x175/0x2e1
+>  [<ffffffff8021fc68>] child_rip+0xa/0x12
+>  [<ffffffff80c0d572>] kernel_init+0x0/0x2e1
+>  [<ffffffff8021fc5e>] child_rip+0x0/0x12
+> 
+> handlers:
+> [<ffffffff805cdbce>] (lpfc_intr_handler+0x0/0x4c6)
+> Disabling IRQ #19
+> 
+> root caused that there is one Intel card that shared io apic pin and irq with
+>  lpfc
+> 
+> e1000_probe path only use pci_enable_device to setup irq entry but masked, and
+> will use e1000_open to use request_irq/setup_irq to install action and
+> enable/unmask that io apic entry.
+> 
+> but lpfc driver will call it's probe and request_irq/setup_irq. so it
+> enable/umask that io apic entry. and only lpfc's action the lpfc_intr_handler
+> is installed.
+> 
+> and some case, the e1000 sent out irq (hw bug or first kernel doesn't call
+> e1000_irq_disable?)
+> that irq will confuse the hanlder ... it is not for lpfc_intr_handler...
+> 
+> So try to call pci_intx(dev, 0) in e1000_probe,
+> and later call pci_intx(dev, 1) after request_irq in e1000_open patch, if the
+> irq is using INTx
+> 
+> even e1000 is using MSI, still need this patch. Because even pci_enable_msi in
+> e1000_open path will call pci_intx(dev, 0), that is too late. when we have lpfc
+> driver loaded before use ifconfig to set network connection.
+> 
+> othe drivers may need to be updated in the same way, if they have same problem
+> like nobody cared irq with shared INTx irq.
+> 
+> Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
+> 
+> Index: linux-2.6/drivers/net/e1000/e1000_main.c
+> ===================================================================
+> --- linux-2.6.orig/drivers/net/e1000/e1000_main.c
+> +++ linux-2.6/drivers/net/e1000/e1000_main.c
+> @@ -324,6 +324,9 @@ static int e1000_request_irq(struct e100
+>  			pci_disable_msi(adapter->pdev);
+>  		DPRINTK(PROBE, ERR,
+>  		        "Unable to allocate interrupt Error: %d\n", err);
+> +	} else if (!adapter->have_msi) {
+> +		/* enable INTx before if not using MSI */
+> +		pci_intx(adapter->pdev, 1);
+>  	}
+>  
+>  	return err;
+> @@ -934,6 +937,8 @@ e1000_probe(struct pci_dev *pdev,
+>  	uint16_t eeprom_apme_mask = E1000_EEPROM_APME;
+>  	DECLARE_MAC_BUF(mac);
+>  
+> +	/* disable INTx at first */
+> +	pci_intx(pdev, 0);
+>  	if ((err = pci_enable_device(pdev)))
+>  		return err;
+>  
+> Index: linux-2.6/drivers/net/e1000e/netdev.c
+> ===================================================================
+> --- linux-2.6.orig/drivers/net/e1000e/netdev.c
+> +++ linux-2.6/drivers/net/e1000e/netdev.c
+> @@ -960,6 +960,9 @@ static int e1000_request_irq(struct e100
+>  			err);
+>  		if (adapter->flags & FLAG_MSI_ENABLED)
+>  			pci_disable_msi(adapter->pdev);
+> +	} else if (!(adapter->flags & FLAG_MSI_ENABLED)) {
+> +		/* enable INTx before if not using MSI */
+> +		pci_intx(adapter->pdev, 1);
+>  	}
+>  
+>  	return err;
 
-Putting space between ! and variable is a strange coding style, fix
-that, also make it fit into 80 columns where that is easy.
+These seem sane.
 
-Signed-off-by: Pavel Machek <pavel@suse.cz>
 
-diff --git a/sound/usb/usbaudio.c b/sound/usb/usbaudio.c
-index f48838a..8056d8a 100644
---- a/sound/usb/usbaudio.c
-+++ b/sound/usb/usbaudio.c
-@@ -64,9 +67,10 @@ MODULE_SUPPORTED_DEVICE("{{Generic,USB A
- 
- static int index[SNDRV_CARDS] = SNDRV_DEFAULT_IDX;	/* Index 0-MAX */
- static char *id[SNDRV_CARDS] = SNDRV_DEFAULT_STR;	/* ID for this card */
--static int enable[SNDRV_CARDS] = SNDRV_DEFAULT_ENABLE_PNP;	/* Enable this card */
--static int vid[SNDRV_CARDS] = { [0 ... (SNDRV_CARDS-1)] = -1 }; /* Vendor ID for this card */
--static int pid[SNDRV_CARDS] = { [0 ... (SNDRV_CARDS-1)] = -1 }; /* Product ID for this card */
-+static int enable[SNDRV_CARDS] = SNDRV_DEFAULT_ENABLE_PNP;/* Enable this card */
-+/* Vendor/product IDs for this card */
-+static int vid[SNDRV_CARDS] = { [0 ... (SNDRV_CARDS-1)] = -1 };
-+static int pid[SNDRV_CARDS] = { [0 ... (SNDRV_CARDS-1)] = -1 };
- static int nrpacks = 8;		/* max. number of packets per urb */
- static int async_unlink = 1;
- static int device_setup[SNDRV_CARDS]; /* device parameter for this card*/
-@@ -687,7 +691,7 @@ static void snd_complete_urb(struct urb 
- 	int err = 0;
- 
- 	if ((subs->running && subs->ops.retire(subs, substream->runtime, urb)) ||
--	    ! subs->running || /* can be stopped during retire callback */
-+	    !subs->running || /* can be stopped during retire callback */
- 	    (err = subs->ops.prepare(subs, substream->runtime, urb)) < 0 ||
- 	    (err = usb_submit_urb(urb, GFP_ATOMIC)) < 0) {
- 		clear_bit(ctx->index, &subs->active_mask);
-@@ -710,7 +714,7 @@ static void snd_complete_sync_urb(struct
- 	int err = 0;
- 
- 	if ((subs->running && subs->ops.retire_sync(subs, substream->runtime, urb)) ||
--	    ! subs->running || /* can be stopped during retire callback */
-+	    !subs->running || /* can be stopped during retire callback */
- 	    (err = subs->ops.prepare_sync(subs, substream->runtime, urb)) < 0 ||
- 	    (err = usb_submit_urb(urb, GFP_ATOMIC)) < 0) {
- 		clear_bit(ctx->index + 16, &subs->active_mask);
-@@ -740,7 +744,7 @@ static int snd_pcm_alloc_vmalloc_buffer(
- 		vfree(runtime->dma_area);
- 	}
- 	runtime->dma_area = vmalloc(size);
--	if (! runtime->dma_area)
-+	if (!runtime->dma_area)
- 		return -ENOMEM;
- 	runtime->dma_bytes = size;
- 	return 0;
-@@ -772,12 +776,12 @@ static int deactivate_urbs(struct snd_us
- 
- 	async = !can_sleep && async_unlink;
- 
--	if (! async && in_interrupt())
-+	if (!async && in_interrupt())
- 		return 0;
- 
- 	for (i = 0; i < subs->nurbs; i++) {
- 		if (test_bit(i, &subs->active_mask)) {
--			if (! test_and_set_bit(i, &subs->unlink_mask)) {
-+			if (!test_and_set_bit(i, &subs->unlink_mask)) {
- 				struct urb *u = subs->dataurb[i].urb;
- 				if (async)
- 					usb_unlink_urb(u);
-@@ -789,7 +793,7 @@ static int deactivate_urbs(struct snd_us
- 	if (subs->syncpipe) {
- 		for (i = 0; i < SYNC_URBS; i++) {
- 			if (test_bit(i+16, &subs->active_mask)) {
-- 				if (! test_and_set_bit(i+16, &subs->unlink_mask)) {
-+ 				if (!test_and_set_bit(i+16, &subs->unlink_mask)) {
- 					struct urb *u = subs->syncurb[i].urb;
- 					if (async)
- 						usb_unlink_urb(u);
-@@ -1137,12 +1141,12 @@ static int init_substream_urbs(struct sn
- 		if (subs->fmt_type == USB_FORMAT_TYPE_II)
- 			u->packets++; /* for transfer delimiter */
- 		u->urb = usb_alloc_urb(u->packets, GFP_KERNEL);
--		if (! u->urb)
-+		if (!u->urb)
- 			goto out_of_memory;
- 		u->urb->transfer_buffer =
- 			usb_buffer_alloc(subs->dev, u->buffer_size, GFP_KERNEL,
- 					 &u->urb->transfer_dma);
--		if (! u->urb->transfer_buffer)
-+		if (!u->urb->transfer_buffer)
- 			goto out_of_memory;
- 		u->urb->pipe = subs->datapipe;
- 		u->urb->transfer_flags = URB_ISO_ASAP | URB_NO_TRANSFER_DMA_MAP;
-@@ -1155,7 +1159,7 @@ static int init_substream_urbs(struct sn
- 		/* allocate and initialize sync urbs */
- 		subs->syncbuf = usb_buffer_alloc(subs->dev, SYNC_URBS * 4,
- 						 GFP_KERNEL, &subs->sync_dma);
--		if (! subs->syncbuf)
-+		if (!subs->syncbuf)
- 			goto out_of_memory;
- 		for (i = 0; i < SYNC_URBS; i++) {
- 			struct snd_urb_ctx *u = &subs->syncurb[i];
-@@ -1163,7 +1167,7 @@ static int init_substream_urbs(struct sn
- 			u->subs = subs;
- 			u->packets = 1;
- 			u->urb = usb_alloc_urb(1, GFP_KERNEL);
--			if (! u->urb)
-+			if (!u->urb)
- 				goto out_of_memory;
- 			u->urb->transfer_buffer = subs->syncbuf + i * 4;
- 			u->urb->transfer_dma = subs->sync_dma + i * 4;
-@@ -1463,7 +1486,7 @@ static int snd_usb_hw_params(struct snd_
- 	rate = params_rate(hw_params);
- 	channels = params_channels(hw_params);
- 	fmt = find_format(subs, format, rate, channels);
--	if (! fmt) {
-+	if (!fmt) {
- 		snd_printd(KERN_DEBUG "cannot set format: format = 0x%x, rate = %d, channels = %d\n",
- 			   format, rate, channels);
- 		return -EINVAL;
-@@ -1584,7 +1607,7 @@ static int hw_check_valid_format(struct 
- 	struct snd_mask *fmts = hw_param_mask(params, SNDRV_PCM_HW_PARAM_FORMAT);
- 
- 	/* check the format */
--	if (! snd_mask_test(fmts, fp->format)) {
-+	if (!snd_mask_test(fmts, fp->format)) {
- 		hwc_debug("   > check: no supported format %d\n", fp->format);
- 		return 0;
- 	}
-@@ -1620,7 +1643,7 @@ static int hw_rule_rate(struct snd_pcm_h
- 	list_for_each(p, &subs->fmt_list) {
- 		struct audioformat *fp;
- 		fp = list_entry(p, struct audioformat, list);
--		if (! hw_check_valid_format(params, fp))
-+		if (!hw_check_valid_format(params, fp))
- 			continue;
- 		if (changed++) {
- 			if (rmin > fp->rate_min)
-@@ -1633,7 +1656,7 @@ static int hw_rule_rate(struct snd_pcm_h
- 		}
- 	}
- 
--	if (! changed) {
-+	if (!changed) {
- 		hwc_debug("  --> get empty\n");
- 		it->empty = 1;
- 		return -EINVAL;
-@@ -1674,7 +1697,7 @@ static int hw_rule_channels(struct snd_p
- 	list_for_each(p, &subs->fmt_list) {
- 		struct audioformat *fp;
- 		fp = list_entry(p, struct audioformat, list);
--		if (! hw_check_valid_format(params, fp))
-+		if (!hw_check_valid_format(params, fp))
- 			continue;
- 		if (changed++) {
- 			if (rmin > fp->channels)
-@@ -1687,7 +1710,7 @@ static int hw_rule_channels(struct snd_p
- 		}
- 	}
- 
--	if (! changed) {
-+	if (!changed) {
- 		hwc_debug("  --> get empty\n");
- 		it->empty = 1;
- 		return -EINVAL;
-@@ -1727,7 +1750,7 @@ static int hw_rule_format(struct snd_pcm
- 	list_for_each(p, &subs->fmt_list) {
- 		struct audioformat *fp;
- 		fp = list_entry(p, struct audioformat, list);
--		if (! hw_check_valid_format(params, fp))
-+		if (!hw_check_valid_format(params, fp))
- 			continue;
- 		fbits |= (1ULL << fp->format);
- 	}
-@@ -1736,7 +1759,7 @@ static int hw_rule_format(struct snd_pcm
- 	oldbits[1] = fmt->bits[1];
- 	fmt->bits[0] &= (u32)fbits;
- 	fmt->bits[1] &= (u32)(fbits >> 32);
--	if (! fmt->bits[0] && ! fmt->bits[1]) {
-+	if (!fmt->bits[0] && !fmt->bits[1]) {
- 		hwc_debug("  --> get empty\n");
- 		return -EINVAL;
- 	}
-@@ -2222,7 +2245,7 @@ static void proc_pcm_format_add(struct s
- 	struct snd_card *card = stream->chip->card;
- 
- 	sprintf(name, "stream%d", stream->pcm_index);
--	if (! snd_card_proc_new(card, name, &entry))
-+	if (!snd_card_proc_new(card, name, &entry))
- 		snd_info_set_text_ops(entry, stream, proc_pcm_format_read);
- }
- 
-@@ -2278,7 +2301,7 @@ static void free_substream(struct snd_us
- {
- 	struct list_head *p, *n;
- 
--	if (! subs->num_formats)
-+	if (!subs->num_formats)
- 		return; /* not initialized */
- 	list_for_each_safe(p, n, &subs->fmt_list) {
- 		struct audioformat *fp = list_entry(p, struct audioformat, list);
-@@ -2328,7 +2351,7 @@ static int add_audio_endpoint(struct snd
- 		if (as->fmt_type != fp->fmt_type)
- 			continue;
- 		subs = &as->substream[stream];
--		if (! subs->endpoint)
-+		if (!subs->endpoint)
- 			continue;
- 		if (subs->endpoint == fp->endpoint) {
- 			list_add_tail(&fp->list, &subs->fmt_list);
-@@ -2354,7 +2377,7 @@ static int add_audio_endpoint(struct snd
- 
- 	/* create a new pcm */
- 	as = kzalloc(sizeof(*as), GFP_KERNEL);
--	if (! as)
-+	if (!as)
- 		return -ENOMEM;
- 	as->pcm_index = chip->pcm_devs;
- 	as->chip = chip;
-@@ -3375,14 +3398,14 @@ static int snd_usb_create_quirk(struct s
- static void proc_audio_usbbus_read(struct snd_info_entry *entry, struct snd_info_buffer *buffer)
- {
- 	struct snd_usb_audio *chip = entry->private_data;
--	if (! chip->shutdown)
-+	if (!chip->shutdown)
- 		snd_iprintf(buffer, "%03d/%03d\n", chip->dev->bus->busnum, chip->dev->devnum);
- }
- 
- static void proc_audio_usbid_read(struct snd_info_entry *entry, struct snd_info_buffer *buffer)
- {
- 	struct snd_usb_audio *chip = entry->private_data;
--	if (! chip->shutdown)
-+	if (!chip->shutdown)
- 		snd_iprintf(buffer, "%04x:%04x\n", 
- 			    USB_ID_VENDOR(chip->usb_id),
- 			    USB_ID_PRODUCT(chip->usb_id));
-@@ -3391,9 +3414,9 @@ static void proc_audio_usbid_read(struct
- static void snd_usb_audio_create_proc(struct snd_usb_audio *chip)
- {
- 	struct snd_info_entry *entry;
--	if (! snd_card_proc_new(chip->card, "usbbus", &entry))
-+	if (!snd_card_proc_new(chip->card, "usbbus", &entry))
- 		snd_info_set_text_ops(entry, chip, proc_audio_usbbus_read);
--	if (! snd_card_proc_new(chip->card, "usbid", &entry))
-+	if (!snd_card_proc_new(chip->card, "usbid", &entry))
- 		snd_info_set_text_ops(entry, chip, proc_audio_usbid_read);
- }
- 
-@@ -3600,8 +3623,8 @@ static void *snd_usb_audio_probe(struct 
- 				snd_card_set_dev(chip->card, &intf->dev);
- 				break;
- 			}
--		if (! chip) {
--			snd_printk(KERN_ERR "no available usb audio device\n");
-+		if (!chip) {
-+			printk(KERN_ERR "no available usb audio device\n");
- 			goto __error;
- 		}
- 	}
+> @@ -3726,6 +3729,8 @@ static int __devinit e1000_probe(struct 
+>  	u16 eeprom_apme_mask = E1000_EEPROM_APME;
+>  
+>  	e1000e_disable_l1aspm(pdev);
+> +	/* disable INTx at first */
+> +	pci_intx(pdev, 0);
+>  	err = pci_enable_device(pdev);
+>  	if (err)
+>  		return err;
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Any pci_* call before pci_enable_device() is questionable.  I would put 
+it after pci_enable_device(), unless there is a _strong_ reason.
+
+PCI devices are not considered available, with resources assigned, until 
+pci_enable_device()
+
+I am also curious what irq events are being raised?  That seems like 
+another problem area to address, since pci_intx() is just a band-aid 
+hiding that behavior.
+
+	Jeff
+
+
