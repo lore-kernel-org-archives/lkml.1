@@ -1,85 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754988AbYC2Ewr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756094AbYC2E4p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754988AbYC2Ewr (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Mar 2008 00:52:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751014AbYC2Ewh
+	id S1756094AbYC2E4p (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Mar 2008 00:56:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751101AbYC2E4i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Mar 2008 00:52:37 -0400
-Received: from elasmtp-mealy.atl.sa.earthlink.net ([209.86.89.69]:57692 "EHLO
-	elasmtp-mealy.atl.sa.earthlink.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750966AbYC2Ewg (ORCPT
+	Sat, 29 Mar 2008 00:56:38 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:52644 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751079AbYC2E4h (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Mar 2008 00:52:36 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=dk20050327; d=mindspring.com;
-  b=LjjzEP9Cwx8s4e5NSXWZcqo4EaD/gHADYFP39Guy8WPZAA7BNPbxGSeNaQFcl63y;
-  h=Received:Date:From:To:Cc:Subject:Message-Id:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-ELNK-Trace:X-Originating-IP;
-Date: Sat, 29 Mar 2008 00:52:26 -0400
-From: Bill Fink <billfink@mindspring.com>
-To: Denys Vlasenko <vda.linux@googlemail.com>
-Cc: David Miller <davem@davemloft.net>, ilpo.jarvinen@helsinki.fi,
-       akpm@linux-foundation.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, acme@redhat.com
-Subject: Re: [PATCH 3/7] [NET]: uninline dev_alloc_skb, de-bloats a lot
-Message-Id: <20080329005226.3fe0ea85.billfink@mindspring.com>
-In-Reply-To: <200803282334.29975.vda.linux@googlemail.com>
-References: <1206621486-5408-3-git-send-email-ilpo.jarvinen@helsinki.fi>
-	<200803280036.59311.vda.linux@googlemail.com>
-	<20080327.175212.119805454.davem@davemloft.net>
-	<200803282334.29975.vda.linux@googlemail.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; powerpc-yellowdog-linux-gnu)
+	Sat, 29 Mar 2008 00:56:37 -0400
+Date: Sat, 29 Mar 2008 04:56:34 +0000
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Harvey Harrison <harvey.harrison@gmail.com>
+Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] jbd/jbd2 NULL noise
+Message-ID: <20080329045634.GM10722@ZenIV.linux.org.uk>
+References: <E1JfRPa-0002U9-J5@ZenIV.linux.org.uk> <1206760526.6543.0.camel@brick> <20080329031843.GJ10722@ZenIV.linux.org.uk> <1206761196.6543.2.camel@brick> <20080329034228.GK10722@ZenIV.linux.org.uk> <20080329035431.GL10722@ZenIV.linux.org.uk> <1206763312.6543.4.camel@brick>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-ELNK-Trace: c598f748b88b6fd49c7f779228e2f6aeda0071232e20db4d264abe436e4951ab085bad153732cb96350badd9bab72f9c350badd9bab72f9c350badd9bab72f9c
-X-Originating-IP: 68.48.212.104
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1206763312.6543.4.camel@brick>
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Typo in patch (see below):
-
-On Fri, 28 Mar 2008, Denys Vlasenko wrote:
-
-> On Friday 28 March 2008 01:52, David Miller wrote:
-> > From: Denys Vlasenko <vda.linux@googlemail.com>
-> > Date: Fri, 28 Mar 2008 00:36:59 +0100
+On Fri, Mar 28, 2008 at 09:01:52PM -0700, Harvey Harrison wrote:
+> > > > I did, it went into -mm and on Mar 5 it was taken into the subsystem
 > > 
-> > > Can you add a comment which explains the intent?
-> > > 
-> > > +struct sk_buff *dev_alloc_skb(unsigned int length)
-> > > +{
-> > > +       /* There is more code here than it seems:
-> > > +        * __dev_alloc_skb is an inline */
-> > > +	return __dev_alloc_skb(length, GFP_ATOMIC);
-> > > +}
-> > > +EXPORT_SYMBOL(dev_alloc_skb);
-> > 
-> > I've applied his patch already, if you want this comment
-> > please submit the patch to add it and also please use
-> > the correct formatting of the comment.
+> > Al, still morbidly curious about the akpm's scripts and aforementioned
+> > message...
 > 
-> Here it is.
+> Not sure which tree, but received this on Feb 27:
 > 
-> Signed-off-by: Denys Vlasenko <vda.linux@googlemail.com>
-> --
-> vda
 > 
-> --- net-2.6.26/net/core/skbuff.c	Fri Mar 28 23:31:05 2008
-> +++ net-2.6.26.comment/net/core/skbuff.c	Fri Mar 28 23:33:03 2008
-> @@ -277,6 +277,10 @@
->   */
->  struct sk_buff *dev_alloc_skb(unsigned int length)
->  {
-> +	/*
-> +	 * There is more code here than it seems:
-> +	 * __def_alloc_skb is an inline
-               ^
-               v
+> The patch titled
+>      jbd2: sparse warnings in revoke.c, journal.c
+> has been removed from the -mm tree.  Its filename was
+>      jbd2-sparse-warnings-in-revokec-journalc.patch
+> 
+> This patch was dropped because it was merged into mainline or a
+> subsystem tree
+> 
+> The current -mm tree may be found at
+> http://userweb.kernel.org/~akpm/mmotm/
 
-> +	 */
->  	return __dev_alloc_skb(length, GFP_ATOMIC);
->  }
->  EXPORT_SYMBOL(dev_alloc_skb);
+Ah...  jbd part of it is still there, jbd2 is *also* there, but it's got
+ext4-mm- prefix to filename.  And looking at ext4.git, jbd2 side of that
+stuff *is* merged, so what the hell is it doing in a separate file?
+Looks like -mm has ext4 stuff not as a single patch (like it does for
+many other git trees) but split into individual changesets for some
+reason...
 
-						-Bill
+Anyway, as long as this stuff gets eventually merged...
