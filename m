@@ -1,129 +1,173 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760949AbYC2DMu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759003AbYC2DNN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760949AbYC2DMu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Mar 2008 23:12:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759871AbYC2DKY
+	id S1759003AbYC2DNN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Mar 2008 23:13:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759397AbYC2DKc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Mar 2008 23:10:24 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:50224 "EHLO
+	Fri, 28 Mar 2008 23:10:32 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:50234 "EHLO
 	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755551AbYC2DKX (ORCPT
+	with ESMTP id S1760220AbYC2DKa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Mar 2008 23:10:23 -0400
+	Fri, 28 Mar 2008 23:10:30 -0400
 To: torvalds@linux-foundation.org
-Subject: [PATCH] fix the broken annotations in fsldma
-Cc: wei.zhang@freescale.com, linux-kernel@vger.kernel.org
-Message-Id: <E1JfRSU-0002xg-LA@ZenIV.linux.org.uk>
+Subject: [PATCH] trivial endianness annotations: infiniband core
+Cc: rolandd@cisco.com, linux-kernel@vger.kernel.org
+Message-Id: <E1JfRSe-0002z3-LI@ZenIV.linux.org.uk>
 From: Al Viro <viro@ftp.linux.org.uk>
-Date: Sat, 29 Mar 2008 03:10:18 +0000
+Date: Sat, 29 Mar 2008 03:10:28 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-a) every bitwise declaration will give a unique type; use typedefs.
-b) no need to bother with the stuff pointed to by iomem pointers, unless
-it's accessed directly.  noderef will force us to use helpers anyway.
-
 Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
 ---
- drivers/dma/fsldma.h |   47 +++++++++++++++++++++++++++--------------------
- 1 files changed, 27 insertions(+), 20 deletions(-)
+ drivers/infiniband/core/addr.c |    8 ++++----
+ drivers/infiniband/core/cm.c   |    2 +-
+ drivers/infiniband/core/cma.c  |   24 ++++++++++++------------
+ 3 files changed, 17 insertions(+), 17 deletions(-)
 
-diff --git a/drivers/dma/fsldma.h b/drivers/dma/fsldma.h
-index fddd6ae..6faf07b 100644
---- a/drivers/dma/fsldma.h
-+++ b/drivers/dma/fsldma.h
-@@ -75,12 +75,15 @@
- #define FSL_DMA_DGSR_EOSI	0x02
- #define FSL_DMA_DGSR_EOLSI	0x01
+diff --git a/drivers/infiniband/core/addr.c b/drivers/infiniband/core/addr.c
+index a58ad8a..781ea59 100644
+--- a/drivers/infiniband/core/addr.c
++++ b/drivers/infiniband/core/addr.c
+@@ -154,7 +154,7 @@ static void addr_send_arp(struct sockaddr_in *dst_in)
+ {
+ 	struct rtable *rt;
+ 	struct flowi fl;
+-	u32 dst_ip = dst_in->sin_addr.s_addr;
++	__be32 dst_ip = dst_in->sin_addr.s_addr;
  
-+typedef u64 __bitwise v64;
-+typedef u32 __bitwise v32;
-+
- struct fsl_dma_ld_hw {
--	u64 __bitwise	src_addr;
--	u64 __bitwise	dst_addr;
--	u64 __bitwise	next_ln_addr;
--	u32 __bitwise	count;
--	u32 __bitwise	reserve;
-+	v64 src_addr;
-+	v64 dst_addr;
-+	v64 next_ln_addr;
-+	v32 count;
-+	v32 reserve;
- } __attribute__((aligned(32)));
+ 	memset(&fl, 0, sizeof fl);
+ 	fl.nl_u.ip4_u.daddr = dst_ip;
+@@ -169,8 +169,8 @@ static int addr_resolve_remote(struct sockaddr_in *src_in,
+ 			       struct sockaddr_in *dst_in,
+ 			       struct rdma_dev_addr *addr)
+ {
+-	u32 src_ip = src_in->sin_addr.s_addr;
+-	u32 dst_ip = dst_in->sin_addr.s_addr;
++	__be32 src_ip = src_in->sin_addr.s_addr;
++	__be32 dst_ip = dst_in->sin_addr.s_addr;
+ 	struct flowi fl;
+ 	struct rtable *rt;
+ 	struct neighbour *neigh;
+@@ -257,7 +257,7 @@ static int addr_resolve_local(struct sockaddr_in *src_in,
+ 			      struct rdma_dev_addr *addr)
+ {
+ 	struct net_device *dev;
+-	u32 src_ip = src_in->sin_addr.s_addr;
++	__be32 src_ip = src_in->sin_addr.s_addr;
+ 	__be32 dst_ip = dst_in->sin_addr.s_addr;
+ 	int ret;
  
- struct fsl_desc_sw {
-@@ -92,13 +95,13 @@ struct fsl_desc_sw {
- } __attribute__((aligned(32)));
+diff --git a/drivers/infiniband/core/cm.c b/drivers/infiniband/core/cm.c
+index 4df4051..faa7ce3 100644
+--- a/drivers/infiniband/core/cm.c
++++ b/drivers/infiniband/core/cm.c
+@@ -393,7 +393,7 @@ static int cm_alloc_id(struct cm_id_private *cm_id_priv)
+ 		spin_unlock_irqrestore(&cm.lock, flags);
+ 	} while( (ret == -EAGAIN) && idr_pre_get(&cm.local_id_table, GFP_KERNEL) );
  
- struct fsl_dma_chan_regs {
--	u32 __bitwise	mr;	/* 0x00 - Mode Register */
--	u32 __bitwise	sr;	/* 0x04 - Status Register */
--	u64 __bitwise	cdar;	/* 0x08 - Current descriptor address register */
--	u64 __bitwise	sar;	/* 0x10 - Source Address Register */
--	u64 __bitwise	dar;	/* 0x18 - Destination Address Register */
--	u32 __bitwise	bcr;	/* 0x20 - Byte Count Register */
--	u64 __bitwise	ndar;	/* 0x24 - Next Descriptor Address Register */
-+	u32 mr;	/* 0x00 - Mode Register */
-+	u32 sr;	/* 0x04 - Status Register */
-+	u64 cdar;	/* 0x08 - Current descriptor address register */
-+	u64 sar;	/* 0x10 - Source Address Register */
-+	u64 dar;	/* 0x18 - Destination Address Register */
-+	u32 bcr;	/* 0x20 - Byte Count Register */
-+	u64 ndar;	/* 0x24 - Next Descriptor Address Register */
+-	cm_id_priv->id.local_id = (__force __be32) (id ^ cm.random_id_operand);
++	cm_id_priv->id.local_id = (__force __be32)id ^ cm.random_id_operand;
+ 	return ret;
+ }
+ 
+diff --git a/drivers/infiniband/core/cma.c b/drivers/infiniband/core/cma.c
+index 34507da..d81c156 100644
+--- a/drivers/infiniband/core/cma.c
++++ b/drivers/infiniband/core/cma.c
+@@ -168,15 +168,15 @@ struct cma_work {
+ union cma_ip_addr {
+ 	struct in6_addr ip6;
+ 	struct {
+-		__u32 pad[3];
+-		__u32 addr;
++		__be32 pad[3];
++		__be32 addr;
+ 	} ip4;
  };
  
- struct fsl_dma_chan;
-@@ -151,25 +154,27 @@ struct fsl_dma_chan {
- #ifndef __powerpc64__
- static u64 in_be64(const u64 __iomem *addr)
- {
--	return ((u64)in_be32((u32 *)addr) << 32) | (in_be32((u32 *)addr + 1));
-+	return ((u64)in_be32((u32 __iomem *)addr) << 32) |
-+		(in_be32((u32 __iomem *)addr + 1));
+ struct cma_hdr {
+ 	u8 cma_version;
+ 	u8 ip_version;	/* IP version: 7:4 */
+-	__u16 port;
++	__be16 port;
+ 	union cma_ip_addr src_addr;
+ 	union cma_ip_addr dst_addr;
+ };
+@@ -186,8 +186,8 @@ struct sdp_hh {
+ 	u8 sdp_version; /* Major version: 7:4 */
+ 	u8 ip_version;	/* IP version: 7:4 */
+ 	u8 sdp_specific1[10];
+-	__u16 port;
+-	__u16 sdp_specific2;
++	__be16 port;
++	__be16 sdp_specific2;
+ 	union cma_ip_addr src_addr;
+ 	union cma_ip_addr dst_addr;
+ };
+@@ -663,7 +663,7 @@ static inline int cma_any_port(struct sockaddr *addr)
  }
  
- static void out_be64(u64 __iomem *addr, u64 val)
+ static int cma_get_net_info(void *hdr, enum rdma_port_space ps,
+-			    u8 *ip_ver, __u16 *port,
++			    u8 *ip_ver, __be16 *port,
+ 			    union cma_ip_addr **src, union cma_ip_addr **dst)
  {
--	out_be32((u32 *)addr, val >> 32);
--	out_be32((u32 *)addr + 1, (u32)val);
-+	out_be32((u32 __iomem *)addr, val >> 32);
-+	out_be32((u32 __iomem *)addr + 1, (u32)val);
- }
+ 	switch (ps) {
+@@ -695,7 +695,7 @@ static int cma_get_net_info(void *hdr, enum rdma_port_space ps,
  
- /* There is no asm instructions for 64 bits reverse loads and stores */
- static u64 in_le64(const u64 __iomem *addr)
+ static void cma_save_net_info(struct rdma_addr *addr,
+ 			      struct rdma_addr *listen_addr,
+-			      u8 ip_ver, __u16 port,
++			      u8 ip_ver, __be16 port,
+ 			      union cma_ip_addr *src, union cma_ip_addr *dst)
  {
--	return ((u64)in_le32((u32 *)addr + 1) << 32) | (in_le32((u32 *)addr));
-+	return ((u64)in_le32((u32 __iomem *)addr + 1) << 32) |
-+		(in_le32((u32 __iomem *)addr));
- }
+ 	struct sockaddr_in *listen4, *ip4;
+@@ -996,7 +996,7 @@ static struct rdma_id_private *cma_new_conn_id(struct rdma_cm_id *listen_id,
+ 	struct rdma_cm_id *id;
+ 	struct rdma_route *rt;
+ 	union cma_ip_addr *src, *dst;
+-	__u16 port;
++	__be16 port;
+ 	u8 ip_ver;
  
- static void out_le64(u64 __iomem *addr, u64 val)
+ 	if (cma_get_net_info(ib_event->private_data, listen_id->ps,
+@@ -1043,7 +1043,7 @@ static struct rdma_id_private *cma_new_udp_id(struct rdma_cm_id *listen_id,
+ 	struct rdma_id_private *id_priv;
+ 	struct rdma_cm_id *id;
+ 	union cma_ip_addr *src, *dst;
+-	__u16 port;
++	__be16 port;
+ 	u8 ip_ver;
+ 	int ret;
+ 
+@@ -1165,7 +1165,7 @@ static void cma_set_compare_data(enum rdma_port_space ps, struct sockaddr *addr,
  {
--	out_le32((u32 *)addr + 1, val >> 32);
--	out_le32((u32 *)addr, (u32)val);
-+	out_le32((u32 __iomem *)addr + 1, val >> 32);
-+	out_le32((u32 __iomem *)addr, (u32)val);
- }
- #endif
+ 	struct cma_hdr *cma_data, *cma_mask;
+ 	struct sdp_hh *sdp_data, *sdp_mask;
+-	__u32 ip4_addr;
++	__be32 ip4_addr;
+ 	struct in6_addr ip6_addr;
  
-@@ -182,9 +187,11 @@ static void out_le64(u64 __iomem *addr, u64 val)
- 
- #define DMA_TO_CPU(fsl_chan, d, width)					\
- 		(((fsl_chan)->feature & FSL_DMA_BIG_ENDIAN) ?		\
--			be##width##_to_cpu(d) :	le##width##_to_cpu(d))
-+			be##width##_to_cpu((__force __be##width)(v##width)d) : \
-+			le##width##_to_cpu((__force __le##width)(v##width)d))
- #define CPU_TO_DMA(fsl_chan, c, width)					\
- 		(((fsl_chan)->feature & FSL_DMA_BIG_ENDIAN) ?		\
--			cpu_to_be##width(c) : cpu_to_le##width(c))
-+			(__force v##width)cpu_to_be##width(c) :		\
-+			(__force v##width)cpu_to_le##width(c))
- 
- #endif	/* __DMA_FSLDMA_H */
+ 	memset(compare, 0, sizeof *compare);
+@@ -1181,12 +1181,12 @@ static void cma_set_compare_data(enum rdma_port_space ps, struct sockaddr *addr,
+ 			sdp_set_ip_ver(sdp_data, 4);
+ 			sdp_set_ip_ver(sdp_mask, 0xF);
+ 			sdp_data->dst_addr.ip4.addr = ip4_addr;
+-			sdp_mask->dst_addr.ip4.addr = ~0;
++			sdp_mask->dst_addr.ip4.addr = htonl(~0);
+ 		} else {
+ 			cma_set_ip_ver(cma_data, 4);
+ 			cma_set_ip_ver(cma_mask, 0xF);
+ 			cma_data->dst_addr.ip4.addr = ip4_addr;
+-			cma_mask->dst_addr.ip4.addr = ~0;
++			cma_mask->dst_addr.ip4.addr = htonl(~0);
+ 		}
+ 		break;
+ 	case AF_INET6:
 -- 
 1.5.3.GIT
 
