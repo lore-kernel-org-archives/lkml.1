@@ -1,70 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754681AbYC2RZt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755670AbYC2R0O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754681AbYC2RZt (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Mar 2008 13:25:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752531AbYC2RZm
+	id S1755670AbYC2R0O (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Mar 2008 13:26:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754743AbYC2RZ5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Mar 2008 13:25:42 -0400
-Received: from mu-out-0910.google.com ([209.85.134.186]:53103 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752258AbYC2RZl (ORCPT
+	Sat, 29 Mar 2008 13:25:57 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:46731 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754610AbYC2RZ4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Mar 2008 13:25:41 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=W3AfnlLiwaPO3iu05VYxSSIQjgASyb1gSRQSk56EU6q/03L20XMJ7rmQ2Uuw8VLfJqt7PMOdqyWSnzaVU2jjsgrr5mW3pLtCJQGo1QKAAEfzHZ+llM0eHXrHQkDgr8aC9IBPuMNsPIoz3+4KQol8hYXv48aR6Lnot7FuCvAjPLY=
-Message-ID: <47EE7AF0.5070306@gmail.com>
-Date: Sat, 29 Mar 2008 18:22:56 +0100
-From: Jacek Luczak <difrost.kernel@gmail.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
-MIME-Version: 1.0
-To: Mikael Pettersson <mikpe@it.uu.se>
-CC: linux-kernel@vger.kernel.org
+	Sat, 29 Mar 2008 13:25:56 -0400
+Date: Sat, 29 Mar 2008 17:25:51 +0000
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Jacek Luczak <difrost.kernel@gmail.com>, linux-kernel@vger.kernel.org
 Subject: Re: Comma at end of enum lists
-References: <47EE75A0.8070705@gmail.com> <18414.31274.514325.238985@harpo.it.uu.se>
-In-Reply-To: <18414.31274.514325.238985@harpo.it.uu.se>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Message-ID: <20080329172551.GA9785@ZenIV.linux.org.uk>
+References: <47EE75A0.8070705@gmail.com> <47EE7A66.30905@zytor.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <47EE7A66.30905@zytor.com>
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mikael Pettersson pisze:
-> Jacek Luczak writes:
->  > Hi All,
->  > 
->  > I've found that in many enum lists, there's a comma at the end, e.g. 
->  > (arch/x86/kernel/early_printk.c):
->  > 
->  > enum {
->  >          MAGIC1 = 0xBACCD00A,
->  >          MAGIC2 = 0xCA110000,
->  >          XOPEN = 5,
->  >          XWRITE = 4,
->  > };
->  > 
->  > Just out of curiosity, is there any particular reason here (no word in 
->  > CodingStyle about that).
+On Sat, Mar 29, 2008 at 10:20:38AM -0700, H. Peter Anvin wrote:
+> Jacek Luczak wrote:
+> >Hi All,
+> >
+> >I've found that in many enum lists, there's a comma at the end, e.g. 
+> >(arch/x86/kernel/early_printk.c):
+> >
+> >enum {
+> >        MAGIC1 = 0xBACCD00A,
+> >        MAGIC2 = 0xCA110000,
+> >        XOPEN = 5,
+> >        XWRITE = 4,
+> >};
+> >
+> >Just out of curiosity, is there any particular reason here (no word in 
+> >CodingStyle about that).
+> >
 > 
-> Yes. This idiom allows you to add or remove items without
-> changing adjacent lines.
+> Yes, it's so you can add a line without affecting the line before it, 
+> making a one-line patch into a two-line patch that's more likely to 
+> conflict.
 
-Yep, that's obvious, one line less in diff after every enum change  :)
-
-> In a language with strict a comma-as-separator rule you can
-> get this benefit by placing the comma before new items rather
-> than after existing items:
-> 
-> enum {	FOO
-> 	,FIE
-> 	,FUM
-> };
-> 
-> but luckily C doesn't need this perversion.
-> 
-
-I was just curious, because it's not common schema (some miss extra comma).
-
-Thanks,
-	-Jacek
+Note that doing that makes sense only when you can expect additions to
+the end and even then it's a matter of taste.
