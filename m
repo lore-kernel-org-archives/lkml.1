@@ -1,44 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754697AbYC2RKH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754716AbYC2RPv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754697AbYC2RKH (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Mar 2008 13:10:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752936AbYC2RJ4
+	id S1754716AbYC2RPv (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Mar 2008 13:15:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753257AbYC2RPm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Mar 2008 13:09:56 -0400
-Received: from main.gmane.org ([80.91.229.2]:43025 "EHLO ciao.gmane.org"
+	Sat, 29 Mar 2008 13:15:42 -0400
+Received: from rtr.ca ([76.10.145.34]:3644 "EHLO mail.rtr.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752715AbYC2RJ4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Mar 2008 13:09:56 -0400
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Parag Warudkar <parag.warudkar@gmail.com>
-Subject: Re: sata io freeze, 2.6.18 and also 2.6.24
-Date: Sat, 29 Mar 2008 17:09:46 +0000 (UTC)
-Message-ID: <loom.20080329T170802-485@post.gmane.org>
-References: <610674.43534.qm@web46002.mail.sp1.yahoo.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1753223AbYC2RPl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 29 Mar 2008 13:15:41 -0400
+Message-ID: <47EE793C.5070105@rtr.ca>
+Date: Sat, 29 Mar 2008 13:15:40 -0400
+From: Mark Lord <lkml@rtr.ca>
+Organization: Real-Time Remedies Inc.
+User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
+MIME-Version: 1.0
+To: bugme-daemon@bugzilla.kernel.org
+Cc: rjw@sisk.pl, bunk@kernel.org, Linux Kernel <linux-kernel@vger.kernel.org>,
+       linux-usb@vger.kernel.org
+Subject: Re: [Bug 10345] USB HID problems after resume
+References: <20080328223544.A61F711D10C@picon.linux-foundation.org> <47EE78C9.5090006@rtr.ca>
+In-Reply-To: <47EE78C9.5090006@rtr.ca>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Complaints-To: usenet@ger.gmane.org
-X-Gmane-NNTP-Posting-Host: main.gmane.org
-User-Agent: Loom/3.14 (http://gmane.org/)
-X-Loom-IP: 68.60.34.230 (Mozilla/5.0 (Windows; U; Windows NT 6.0; en-US; rv:1.9pre) Gecko/2008032904 Mozilla/5.01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Luis Sousa <ls.luis_sousa <at> yahoo.com.br> writes:
+bugme-daemon@bugzilla.kernel.org wrote:
+> http://bugzilla.kernel.org/show_bug.cgi?id=10345
+>
+>
+> rjw@sisk.pl changed:
+>
+>            What    |Removed                     |Added
+> ----------------------------------------------------------------------------
+>              Status|NEW                         |REJECTED
+>          Resolution|                            |UNREPRODUCIBLE
+>
+>
+>
+>
+> ------- Comment #2 from rjw@sisk.pl  2008-03-28 15:35 -------
+> Handled-By : Mark Lord <lkml@rtr.ca>
+> References : http://lkml.org/lkml/2008/3/28/346
+>
+> Mark said:
+>
+> "Also, for now it seems to be "resolved" via a seemingly-unrelated
+> change in the .config file on that machine.  If it dies again,
+> I'll re-post and investigate further."
+..
 
-> 
-> Oops. My bad. I seem to actually be running the "nv" driver in xorg.conf. 
-> I had searched for "nvidia" before and so thought I had cleared that.
-> I didn't recall manually installing it this time. I'll try not using it.
+Just happened again.  The machine resumed from RAM with no functioning USB.
+Still running the exact same 2.6.25-rc7 kernel as before, with the RTC conflict fixed.
 
-The "nv" driver is open source and it does not load any proprietary kernel
-module - so no need to avoid using that. It comes with Xorg and is loaded
-automatically if you have nvidia card.
-
-Parag
-
-
+WTF?
 
