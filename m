@@ -1,225 +1,453 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758778AbYC2DHk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759277AbYC2DHv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758778AbYC2DHk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Mar 2008 23:07:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753710AbYC2DHa
+	id S1759277AbYC2DHv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Mar 2008 23:07:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758844AbYC2DHl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Mar 2008 23:07:30 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:49674 "EHLO
+	Fri, 28 Mar 2008 23:07:41 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:49709 "EHLO
 	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758092AbYC2DH3 (ORCPT
+	with ESMTP id S1758740AbYC2DHj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Mar 2008 23:07:29 -0400
+	Fri, 28 Mar 2008 23:07:39 -0400
 To: torvalds@linux-foundation.org
-Subject: [PATCH] NULL noise: fs/*, mm/*, kernel/*
-Cc: linux-kernel@vger.kernel.org
-Message-Id: <E1JfRPk-0002Vz-Hp@ZenIV.linux.org.uk>
+Subject: [PATCH] NULL noise: drivers/media
+Cc: mchehab@infradead.org, linux-kernel@vger.kernel.org
+Message-Id: <E1JfRPu-0002Xh-I3@ZenIV.linux.org.uk>
 From: Al Viro <viro@ftp.linux.org.uk>
-Date: Sat, 29 Mar 2008 03:07:28 +0000
+Date: Sat, 29 Mar 2008 03:07:38 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
 ---
- fs/reiserfs/do_balan.c |    8 ++++----
- fs/reiserfs/fix_node.c |    8 +++++---
- fs/reiserfs/lbalance.c |    2 +-
- fs/reiserfs/namei.c    |    2 +-
- fs/smbfs/smbiod.c      |    2 +-
- kernel/cgroup.c        |    4 ++--
- kernel/futex.c         |    2 +-
- mm/sparse-vmemmap.c    |    8 ++++----
- 8 files changed, 19 insertions(+), 17 deletions(-)
+ drivers/media/common/saa7146_core.c          |   13 +++++--------
+ drivers/media/common/saa7146_fops.c          |    2 +-
+ drivers/media/dvb/dvb-core/dvb_net.c         |    4 ++--
+ drivers/media/video/adv7170.c                |    2 +-
+ drivers/media/video/adv7175.c                |    2 +-
+ drivers/media/video/bt819.c                  |    2 +-
+ drivers/media/video/bt856.c                  |    2 +-
+ drivers/media/video/dpc7146.c                |    2 +-
+ drivers/media/video/mt20xx.c                 |    2 +-
+ drivers/media/video/mxb.c                    |    5 ++---
+ drivers/media/video/pvrusb2/pvrusb2-ctrl.c   |    4 ++--
+ drivers/media/video/pvrusb2/pvrusb2-hdw.c    |    6 +++---
+ drivers/media/video/pvrusb2/pvrusb2-io.c     |    2 +-
+ drivers/media/video/pvrusb2/pvrusb2-ioread.c |    2 +-
+ drivers/media/video/pwc/pwc-if.c             |    7 +++----
+ drivers/media/video/saa7110.c                |    4 ++--
+ drivers/media/video/saa7111.c                |    2 +-
+ drivers/media/video/saa7114.c                |    2 +-
+ drivers/media/video/saa7185.c                |    2 +-
+ drivers/media/video/tda9840.c                |    2 +-
+ drivers/media/video/tea6415c.c               |    2 +-
+ drivers/media/video/tea6420.c                |    2 +-
+ drivers/media/video/tvp5150.c                |    4 ++--
+ drivers/media/video/zoran_driver.c           |    2 +-
+ 24 files changed, 37 insertions(+), 42 deletions(-)
 
-diff --git a/fs/reiserfs/do_balan.c b/fs/reiserfs/do_balan.c
-index f85c5cf..7ee4208 100644
---- a/fs/reiserfs/do_balan.c
-+++ b/fs/reiserfs/do_balan.c
-@@ -283,7 +283,7 @@ static int balance_leaf(struct tree_balance *tb, struct item_head *ih,	/* item h
- 		return balance_leaf_when_delete(tb, flag);
+diff --git a/drivers/media/common/saa7146_core.c b/drivers/media/common/saa7146_core.c
+index 168a8d3..7707b8c 100644
+--- a/drivers/media/common/saa7146_core.c
++++ b/drivers/media/common/saa7146_core.c
+@@ -306,25 +306,22 @@ static irqreturn_t interrupt_hw(int irq, void *dev_id)
+ 		return IRQ_NONE;
+ 	}
  
- 	zeros_num = 0;
--	if (flag == M_INSERT && body == 0)
-+	if (flag == M_INSERT && !body)
- 		zeros_num = ih_item_len(ih);
+-	if( 0 != (dev->ext)) {
+-		if( 0 != (dev->ext->irq_mask & isr )) {
+-			if( 0 != dev->ext->irq_func ) {
++	if (dev->ext) {
++		if (dev->ext->irq_mask & isr) {
++			if (dev->ext->irq_func)
+ 				dev->ext->irq_func(dev, &isr);
+-			}
+ 			isr &= ~dev->ext->irq_mask;
+ 		}
+ 	}
+ 	if (0 != (isr & (MASK_27))) {
+ 		DEB_INT(("irq: RPS0 (0x%08x).\n",isr));
+-		if( 0 != dev->vv_data && 0 != dev->vv_callback) {
++		if (dev->vv_data && dev->vv_callback)
+ 			dev->vv_callback(dev,isr);
+-		}
+ 		isr &= ~MASK_27;
+ 	}
+ 	if (0 != (isr & (MASK_28))) {
+-		if( 0 != dev->vv_data && 0 != dev->vv_callback) {
++		if (dev->vv_data && dev->vv_callback)
+ 			dev->vv_callback(dev,isr);
+-		}
+ 		isr &= ~MASK_28;
+ 	}
+ 	if (0 != (isr & (MASK_16|MASK_17))) {
+diff --git a/drivers/media/common/saa7146_fops.c b/drivers/media/common/saa7146_fops.c
+index f0703d8..171afe7 100644
+--- a/drivers/media/common/saa7146_fops.c
++++ b/drivers/media/common/saa7146_fops.c
+@@ -272,7 +272,7 @@ static int fops_open(struct inode *inode, struct file *file)
  
- 	pos_in_item = tb->tb_path->pos_in_item;
-@@ -1728,7 +1728,7 @@ struct buffer_head *get_FEB(struct tree_balance *tb)
- 	struct buffer_info bi;
- 
- 	for (i = 0; i < MAX_FEB_SIZE; i++)
--		if (tb->FEB[i] != 0)
-+		if (tb->FEB[i] != NULL)
- 			break;
- 
- 	if (i == MAX_FEB_SIZE)
-@@ -1827,7 +1827,7 @@ int get_left_neighbor_position(struct tree_balance *tb, int h)
+ 	result = 0;
+ out:
+-	if( fh != 0 && result != 0 ) {
++	if (fh && result != 0) {
+ 		kfree(fh);
+ 		file->private_data = NULL;
+ 	}
+diff --git a/drivers/media/dvb/dvb-core/dvb_net.c b/drivers/media/dvb/dvb-core/dvb_net.c
+index ed3f826..4c8b62e 100644
+--- a/drivers/media/dvb/dvb-core/dvb_net.c
++++ b/drivers/media/dvb/dvb-core/dvb_net.c
+@@ -784,8 +784,8 @@ static int dvb_net_ts_callback(const u8 *buffer1, size_t buffer1_len,
  {
- 	int Sh_position = PATH_H_POSITION(tb->tb_path, h + 1);
+ 	struct net_device *dev = feed->priv;
  
--	RFALSE(PATH_H_PPARENT(tb->tb_path, h) == 0 || tb->FL[h] == 0,
-+	RFALSE(PATH_H_PPARENT(tb->tb_path, h) == NULL || tb->FL[h] == NULL,
- 	       "vs-12325: FL[%d](%p) or F[%d](%p) does not exist",
- 	       h, tb->FL[h], h, PATH_H_PPARENT(tb->tb_path, h));
- 
-@@ -1841,7 +1841,7 @@ int get_right_neighbor_position(struct tree_balance *tb, int h)
- {
- 	int Sh_position = PATH_H_POSITION(tb->tb_path, h + 1);
- 
--	RFALSE(PATH_H_PPARENT(tb->tb_path, h) == 0 || tb->FR[h] == 0,
-+	RFALSE(PATH_H_PPARENT(tb->tb_path, h) == NULL || tb->FR[h] == NULL,
- 	       "vs-12330: F[%d](%p) or FR[%d](%p) does not exist",
- 	       h, PATH_H_PPARENT(tb->tb_path, h), h, tb->FR[h]);
- 
-diff --git a/fs/reiserfs/fix_node.c b/fs/reiserfs/fix_node.c
-index 0ee35c6..07d05e0 100644
---- a/fs/reiserfs/fix_node.c
-+++ b/fs/reiserfs/fix_node.c
-@@ -153,7 +153,7 @@ static void create_virtual_node(struct tree_balance *tb, int h)
- 	if (vn->vn_mode == M_INSERT) {
- 		struct virtual_item *vi = vn->vn_vi + vn->vn_affected_item_num;
- 
--		RFALSE(vn->vn_ins_ih == 0,
-+		RFALSE(vn->vn_ins_ih == NULL,
- 		       "vs-8040: item header of inserted item is not specified");
- 		vi->vi_item_len = tb->insert_size[0];
- 		vi->vi_ih = vn->vn_ins_ih;
-@@ -857,7 +857,8 @@ static int get_lfree(struct tree_balance *tb, int h)
- 	struct buffer_head *l, *f;
- 	int order;
- 
--	if ((f = PATH_H_PPARENT(tb->tb_path, h)) == 0 || (l = tb->FL[h]) == 0)
-+	if ((f = PATH_H_PPARENT(tb->tb_path, h)) == NULL ||
-+	    (l = tb->FL[h]) == NULL)
+-	if (buffer2 != 0)
+-		printk(KERN_WARNING "buffer2 not 0: %p.\n", buffer2);
++	if (buffer2)
++		printk(KERN_WARNING "buffer2 not NULL: %p.\n", buffer2);
+ 	if (buffer1_len > 32768)
+ 		printk(KERN_WARNING "length > 32k: %zu.\n", buffer1_len);
+ 	/* printk("TS callback: %u bytes, %u TS cells @ %p.\n",
+diff --git a/drivers/media/video/adv7170.c b/drivers/media/video/adv7170.c
+index cbab53f..fea2e72 100644
+--- a/drivers/media/video/adv7170.c
++++ b/drivers/media/video/adv7170.c
+@@ -408,7 +408,7 @@ adv7170_detect_client (struct i2c_adapter *adapter,
  		return 0;
  
- 	if (f == l)
-@@ -878,7 +879,8 @@ static int get_rfree(struct tree_balance *tb, int h)
- 	struct buffer_head *r, *f;
- 	int order;
- 
--	if ((f = PATH_H_PPARENT(tb->tb_path, h)) == 0 || (r = tb->FR[h]) == 0)
-+	if ((f = PATH_H_PPARENT(tb->tb_path, h)) == NULL ||
-+	    (r = tb->FR[h]) == NULL)
+ 	client = kzalloc(sizeof(struct i2c_client), GFP_KERNEL);
+-	if (client == 0)
++	if (!client)
+ 		return -ENOMEM;
+ 	client->addr = address;
+ 	client->adapter = adapter;
+diff --git a/drivers/media/video/adv7175.c b/drivers/media/video/adv7175.c
+index 0d0c554..10d4d89 100644
+--- a/drivers/media/video/adv7175.c
++++ b/drivers/media/video/adv7175.c
+@@ -426,7 +426,7 @@ adv7175_detect_client (struct i2c_adapter *adapter,
  		return 0;
  
- 	if (f == r)
-diff --git a/fs/reiserfs/lbalance.c b/fs/reiserfs/lbalance.c
-index 281f806..6de060a 100644
---- a/fs/reiserfs/lbalance.c
-+++ b/fs/reiserfs/lbalance.c
-@@ -626,7 +626,7 @@ static void leaf_define_dest_src_infos(int shift_mode, struct tree_balance *tb,
- 			       "vs-10250: leaf_define_dest_src_infos: shift type is unknown (%d)",
- 			       shift_mode);
+ 	client = kzalloc(sizeof(struct i2c_client), GFP_KERNEL);
+-	if (client == 0)
++	if (!client)
+ 		return -ENOMEM;
+ 	client->addr = address;
+ 	client->adapter = adapter;
+diff --git a/drivers/media/video/bt819.c b/drivers/media/video/bt819.c
+index 12d1b92..e663cc0 100644
+--- a/drivers/media/video/bt819.c
++++ b/drivers/media/video/bt819.c
+@@ -524,7 +524,7 @@ bt819_detect_client (struct i2c_adapter *adapter,
+ 		return 0;
+ 
+ 	client = kzalloc(sizeof(struct i2c_client), GFP_KERNEL);
+-	if (client == 0)
++	if (!client)
+ 		return -ENOMEM;
+ 	client->addr = address;
+ 	client->adapter = adapter;
+diff --git a/drivers/media/video/bt856.c b/drivers/media/video/bt856.c
+index e1028a7..7dee2e3 100644
+--- a/drivers/media/video/bt856.c
++++ b/drivers/media/video/bt856.c
+@@ -311,7 +311,7 @@ bt856_detect_client (struct i2c_adapter *adapter,
+ 		return 0;
+ 
+ 	client = kzalloc(sizeof(struct i2c_client), GFP_KERNEL);
+-	if (client == 0)
++	if (!client)
+ 		return -ENOMEM;
+ 	client->addr = address;
+ 	client->adapter = adapter;
+diff --git a/drivers/media/video/dpc7146.c b/drivers/media/video/dpc7146.c
+index 566e479..9ceb6b2 100644
+--- a/drivers/media/video/dpc7146.c
++++ b/drivers/media/video/dpc7146.c
+@@ -131,7 +131,7 @@ static int dpc_probe(struct saa7146_dev* dev)
+ 	device_for_each_child(&dpc->i2c_adapter.dev, dpc, dpc_check_clients);
+ 
+ 	/* check if all devices are present */
+-	if( 0 == dpc->saa7111a ) {
++	if (!dpc->saa7111a) {
+ 		DEB_D(("dpc_v4l2.o: dpc_attach failed for this device.\n"));
+ 		i2c_del_adapter(&dpc->i2c_adapter);
+ 		kfree(dpc);
+diff --git a/drivers/media/video/mt20xx.c b/drivers/media/video/mt20xx.c
+index 58bab65..74fd6a0 100644
+--- a/drivers/media/video/mt20xx.c
++++ b/drivers/media/video/mt20xx.c
+@@ -647,7 +647,7 @@ struct dvb_frontend *microtune_attach(struct dvb_frontend *fe,
+ 	default:
+ 		tuner_info("microtune %s found, not (yet?) supported, sorry :-/\n",
+ 			   name);
+-		return 0;
++		return NULL;
  	}
--	RFALSE(src_bi->bi_bh == 0 || dest_bi->bi_bh == 0,
-+	RFALSE(!src_bi->bi_bh || !dest_bi->bi_bh,
- 	       "vs-10260: mode==%d, source (%p) or dest (%p) buffer is initialized incorrectly",
- 	       shift_mode, src_bi->bi_bh, dest_bi->bi_bh);
- }
-diff --git a/fs/reiserfs/namei.c b/fs/reiserfs/namei.c
-index b378eea..8867533 100644
---- a/fs/reiserfs/namei.c
-+++ b/fs/reiserfs/namei.c
-@@ -452,7 +452,7 @@ static int reiserfs_add_entry(struct reiserfs_transaction_handle *th,
- 	buflen = DEH_SIZE + ROUND_UP(namelen);
- 	if (buflen > sizeof(small_buf)) {
- 		buffer = kmalloc(buflen, GFP_NOFS);
--		if (buffer == 0)
-+		if (!buffer)
- 			return -ENOMEM;
- 	} else
- 		buffer = small_buf;
-diff --git a/fs/smbfs/smbiod.c b/fs/smbfs/smbiod.c
-index fae8e85..6bd9b69 100644
---- a/fs/smbfs/smbiod.c
-+++ b/fs/smbfs/smbiod.c
-@@ -206,7 +206,7 @@ int smbiod_retry(struct smb_sb_info *server)
  
- 	smb_close_socket(server);
+ 	strlcpy(fe->ops.tuner_ops.info.name, name,
+diff --git a/drivers/media/video/mxb.c b/drivers/media/video/mxb.c
+index add6d0d..cb5a510 100644
+--- a/drivers/media/video/mxb.c
++++ b/drivers/media/video/mxb.c
+@@ -221,9 +221,8 @@ static int mxb_probe(struct saa7146_dev* dev)
+ 	device_for_each_child(&mxb->i2c_adapter.dev, mxb, mxb_check_clients);
  
--	if (pid == 0) {
-+	if (!pid) {
- 		/* FIXME: this is fatal, umount? */
- 		printk(KERN_ERR "smb_retry: no connection process\n");
- 		server->state = CONN_RETRIED;
-diff --git a/kernel/cgroup.c b/kernel/cgroup.c
-index e9c2fb0..53d86b4 100644
---- a/kernel/cgroup.c
-+++ b/kernel/cgroup.c
-@@ -2082,7 +2082,7 @@ static int cgroup_tasks_open(struct inode *unused, struct file *file)
- 
- 		kfree(pidarray);
- 	} else {
--		ctr->buf = 0;
-+		ctr->buf = NULL;
- 		ctr->bufsz = 0;
- 	}
- 	file->private_data = ctr;
-@@ -2614,7 +2614,7 @@ static int proc_cgroupstats_show(struct seq_file *m, void *v)
- 
- static int cgroupstats_open(struct inode *inode, struct file *file)
+ 	/* check if all devices are present */
+-	if(    0 == mxb->tea6420_1	|| 0 == mxb->tea6420_2	|| 0 == mxb->tea6415c
+-	    || 0 == mxb->tda9840	|| 0 == mxb->saa7111a	|| 0 == mxb->tuner ) {
+-
++	if (!mxb->tea6420_1 || !mxb->tea6420_2 || !mxb->tea6415c ||
++	    !mxb->tda9840 || !mxb->saa7111a || !mxb->tuner) {
+ 		printk("mxb: did not find all i2c devices. aborting\n");
+ 		i2c_del_adapter(&mxb->i2c_adapter);
+ 		kfree(mxb);
+diff --git a/drivers/media/video/pvrusb2/pvrusb2-ctrl.c b/drivers/media/video/pvrusb2/pvrusb2-ctrl.c
+index 46f156f..5a3e8d2 100644
+--- a/drivers/media/video/pvrusb2/pvrusb2-ctrl.c
++++ b/drivers/media/video/pvrusb2/pvrusb2-ctrl.c
+@@ -60,7 +60,7 @@ int pvr2_ctrl_set_mask_value(struct pvr2_ctrl *cptr,int mask,int val)
+ 	int ret = 0;
+ 	if (!cptr) return -EINVAL;
+ 	LOCK_TAKE(cptr->hdw->big_lock); do {
+-		if (cptr->info->set_value != 0) {
++		if (cptr->info->set_value) {
+ 			if (cptr->info->type == pvr2_ctl_bitmask) {
+ 				mask &= cptr->info->def.type_bitmask.valid_bits;
+ 			} else if (cptr->info->type == pvr2_ctl_int) {
+@@ -265,7 +265,7 @@ unsigned int pvr2_ctrl_get_v4lflags(struct pvr2_ctrl *cptr)
+ int pvr2_ctrl_is_writable(struct pvr2_ctrl *cptr)
  {
--	return single_open(file, proc_cgroupstats_show, 0);
-+	return single_open(file, proc_cgroupstats_show, NULL);
+ 	if (!cptr) return 0;
+-	return cptr->info->set_value != 0;
++	return cptr->info->set_value != NULL;
  }
  
- static struct file_operations proc_cgroupstats_operations = {
-diff --git a/kernel/futex.c b/kernel/futex.c
-index 87a6428..e43945e 100644
---- a/kernel/futex.c
-+++ b/kernel/futex.c
-@@ -281,7 +281,7 @@ static int get_futex_key(u32 __user *uaddr, struct rw_semaphore *fshared,
-  */
- static void get_futex_key_refs(union futex_key *key)
+ 
+diff --git a/drivers/media/video/pvrusb2/pvrusb2-hdw.c b/drivers/media/video/pvrusb2/pvrusb2-hdw.c
+index 41ae980..d6955fa 100644
+--- a/drivers/media/video/pvrusb2/pvrusb2-hdw.c
++++ b/drivers/media/video/pvrusb2/pvrusb2-hdw.c
+@@ -2291,7 +2291,7 @@ static int pvr2_hdw_commit_setup(struct pvr2_hdw *hdw)
+ 
+ 	for (idx = 0; idx < hdw->control_cnt; idx++) {
+ 		cptr = hdw->controls + idx;
+-		if (cptr->info->is_dirty == 0) continue;
++		if (!cptr->info->is_dirty) continue;
+ 		if (!cptr->info->is_dirty(cptr)) continue;
+ 		commit_flag = !0;
+ 
+@@ -2646,7 +2646,7 @@ void pvr2_hdw_cpufw_set_enabled(struct pvr2_hdw *hdw,
+ 	u16 address;
+ 	unsigned int pipe;
+ 	LOCK_TAKE(hdw->big_lock); do {
+-		if ((hdw->fw_buffer == 0) == !enable_flag) break;
++		if ((hdw->fw_buffer == NULL) == !enable_flag) break;
+ 
+ 		if (!enable_flag) {
+ 			pvr2_trace(PVR2_TRACE_FIRMWARE,
+@@ -2715,7 +2715,7 @@ void pvr2_hdw_cpufw_set_enabled(struct pvr2_hdw *hdw,
+ /* Return true if we're in a mode for retrieval CPU firmware */
+ int pvr2_hdw_cpufw_get_enabled(struct pvr2_hdw *hdw)
  {
--	if (key->both.ptr == 0)
-+	if (key->both.ptr == NULL)
- 		return;
- 	switch (key->both.offset & (FUT_OFF_INODE|FUT_OFF_MMSHARED)) {
- 		case FUT_OFF_INODE:
-diff --git a/mm/sparse-vmemmap.c b/mm/sparse-vmemmap.c
-index cd75b21..99c4f36 100644
---- a/mm/sparse-vmemmap.c
-+++ b/mm/sparse-vmemmap.c
-@@ -76,7 +76,7 @@ pte_t * __meminit vmemmap_pte_populate(pmd_t *pmd, unsigned long addr, int node)
- 		pte_t entry;
- 		void *p = vmemmap_alloc_block(PAGE_SIZE, node);
- 		if (!p)
--			return 0;
-+			return NULL;
- 		entry = pfn_pte(__pa(p) >> PAGE_SHIFT, PAGE_KERNEL);
- 		set_pte_at(&init_mm, addr, pte, entry);
+-	return hdw->fw_buffer != 0;
++	return hdw->fw_buffer != NULL;
+ }
+ 
+ 
+diff --git a/drivers/media/video/pvrusb2/pvrusb2-io.c b/drivers/media/video/pvrusb2/pvrusb2-io.c
+index ce3c898..a9889ff 100644
+--- a/drivers/media/video/pvrusb2/pvrusb2-io.c
++++ b/drivers/media/video/pvrusb2/pvrusb2-io.c
+@@ -563,7 +563,7 @@ void pvr2_stream_kill(struct pvr2_stream *sp)
+ 	struct pvr2_buffer *bp;
+ 	mutex_lock(&sp->mutex); do {
+ 		pvr2_stream_internal_flush(sp);
+-		while ((bp = pvr2_stream_get_ready_buffer(sp)) != 0) {
++		while ((bp = pvr2_stream_get_ready_buffer(sp)) != NULL) {
+ 			pvr2_buffer_set_idle(bp);
+ 		}
+ 		if (sp->buffer_total_count != sp->buffer_target_count) {
+diff --git a/drivers/media/video/pvrusb2/pvrusb2-ioread.c b/drivers/media/video/pvrusb2/pvrusb2-ioread.c
+index f782418..c572212 100644
+--- a/drivers/media/video/pvrusb2/pvrusb2-ioread.c
++++ b/drivers/media/video/pvrusb2/pvrusb2-ioread.c
+@@ -165,7 +165,7 @@ static int pvr2_ioread_start(struct pvr2_ioread *cp)
+ 	if (!(cp->stream)) return 0;
+ 	pvr2_trace(PVR2_TRACE_START_STOP,
+ 		   "/*---TRACE_READ---*/ pvr2_ioread_start id=%p",cp);
+-	while ((bp = pvr2_stream_get_idle_buffer(cp->stream)) != 0) {
++	while ((bp = pvr2_stream_get_idle_buffer(cp->stream)) != NULL) {
+ 		stat = pvr2_buffer_queue(bp);
+ 		if (stat < 0) {
+ 			pvr2_trace(PVR2_TRACE_DATA_FLOW,
+diff --git a/drivers/media/video/pwc/pwc-if.c b/drivers/media/video/pwc/pwc-if.c
+index f991d72..e0a453a 100644
+--- a/drivers/media/video/pwc/pwc-if.c
++++ b/drivers/media/video/pwc/pwc-if.c
+@@ -915,7 +915,7 @@ static void pwc_iso_stop(struct pwc_device *pdev)
+ 		struct urb *urb;
+ 
+ 		urb = pdev->sbuf[i].urb;
+-		if (urb != 0) {
++		if (urb) {
+ 			PWC_DEBUG_MEMORY("Unlinking URB %p\n", urb);
+ 			usb_kill_urb(urb);
+ 		}
+@@ -931,7 +931,7 @@ static void pwc_iso_free(struct pwc_device *pdev)
+ 		struct urb *urb;
+ 
+ 		urb = pdev->sbuf[i].urb;
+-		if (urb != 0) {
++		if (urb) {
+ 			PWC_DEBUG_MEMORY("Freeing URB\n");
+ 			usb_free_urb(urb);
+ 			pdev->sbuf[i].urb = NULL;
+@@ -1759,8 +1759,7 @@ static int usb_pwc_probe(struct usb_interface *intf, const struct usb_device_id
+ 
+ 	/* Allocate video_device structure */
+ 	pdev->vdev = video_device_alloc();
+-	if (pdev->vdev == 0)
+-	{
++	if (!pdev->vdev) {
+ 		PWC_ERROR("Err, cannot allocate video_device struture. Failing probe.");
+ 		kfree(pdev);
+ 		return -ENOMEM;
+diff --git a/drivers/media/video/saa7110.c b/drivers/media/video/saa7110.c
+index 061134a..1df2602 100644
+--- a/drivers/media/video/saa7110.c
++++ b/drivers/media/video/saa7110.c
+@@ -488,7 +488,7 @@ saa7110_detect_client (struct i2c_adapter *adapter,
+ 		return 0;
+ 
+ 	client = kzalloc(sizeof(struct i2c_client), GFP_KERNEL);
+-	if (client == 0)
++	if (!client)
+ 		return -ENOMEM;
+ 	client->addr = address;
+ 	client->adapter = adapter;
+@@ -496,7 +496,7 @@ saa7110_detect_client (struct i2c_adapter *adapter,
+ 	strlcpy(I2C_NAME(client), "saa7110", sizeof(I2C_NAME(client)));
+ 
+ 	decoder = kzalloc(sizeof(struct saa7110), GFP_KERNEL);
+-	if (decoder == 0) {
++	if (!decoder) {
+ 		kfree(client);
+ 		return -ENOMEM;
  	}
-@@ -89,7 +89,7 @@ pmd_t * __meminit vmemmap_pmd_populate(pud_t *pud, unsigned long addr, int node)
- 	if (pmd_none(*pmd)) {
- 		void *p = vmemmap_alloc_block(PAGE_SIZE, node);
- 		if (!p)
--			return 0;
-+			return NULL;
- 		pmd_populate_kernel(&init_mm, pmd, p);
+diff --git a/drivers/media/video/saa7111.c b/drivers/media/video/saa7111.c
+index 7ae2d64..a0772c5 100644
+--- a/drivers/media/video/saa7111.c
++++ b/drivers/media/video/saa7111.c
+@@ -502,7 +502,7 @@ saa7111_detect_client (struct i2c_adapter *adapter,
+ 		return 0;
+ 
+ 	client = kzalloc(sizeof(struct i2c_client), GFP_KERNEL);
+-	if (client == 0)
++	if (!client)
+ 		return -ENOMEM;
+ 	client->addr = address;
+ 	client->adapter = adapter;
+diff --git a/drivers/media/video/saa7114.c b/drivers/media/video/saa7114.c
+index 677df51..bf91a4f 100644
+--- a/drivers/media/video/saa7114.c
++++ b/drivers/media/video/saa7114.c
+@@ -841,7 +841,7 @@ saa7114_detect_client (struct i2c_adapter *adapter,
+ 		return 0;
+ 
+ 	client = kzalloc(sizeof(struct i2c_client), GFP_KERNEL);
+-	if (client == 0)
++	if (!client)
+ 		return -ENOMEM;
+ 	client->addr = address;
+ 	client->adapter = adapter;
+diff --git a/drivers/media/video/saa7185.c b/drivers/media/video/saa7185.c
+index 66cc92c..41f7044 100644
+--- a/drivers/media/video/saa7185.c
++++ b/drivers/media/video/saa7185.c
+@@ -403,7 +403,7 @@ saa7185_detect_client (struct i2c_adapter *adapter,
+ 		return 0;
+ 
+ 	client = kzalloc(sizeof(struct i2c_client), GFP_KERNEL);
+-	if (client == 0)
++	if (!client)
+ 		return -ENOMEM;
+ 	client->addr = address;
+ 	client->adapter = adapter;
+diff --git a/drivers/media/video/tda9840.c b/drivers/media/video/tda9840.c
+index ef494fe..bdca5d2 100644
+--- a/drivers/media/video/tda9840.c
++++ b/drivers/media/video/tda9840.c
+@@ -172,7 +172,7 @@ static int detect(struct i2c_adapter *adapter, int address, int kind)
+ 
+ 	/* allocate memory for client structure */
+ 	client = kmalloc(sizeof(struct i2c_client), GFP_KERNEL);
+-	if (0 == client) {
++	if (!client) {
+ 		printk("not enough kernel memory\n");
+ 		return -ENOMEM;
  	}
- 	return pmd;
-@@ -101,7 +101,7 @@ pud_t * __meminit vmemmap_pud_populate(pgd_t *pgd, unsigned long addr, int node)
- 	if (pud_none(*pud)) {
- 		void *p = vmemmap_alloc_block(PAGE_SIZE, node);
- 		if (!p)
--			return 0;
-+			return NULL;
- 		pud_populate(&init_mm, pud, p);
+diff --git a/drivers/media/video/tea6415c.c b/drivers/media/video/tea6415c.c
+index 523df0b..df2fad9 100644
+--- a/drivers/media/video/tea6415c.c
++++ b/drivers/media/video/tea6415c.c
+@@ -64,7 +64,7 @@ static int detect(struct i2c_adapter *adapter, int address, int kind)
+ 
+ 	/* allocate memory for client structure */
+ 	client = kmalloc(sizeof(struct i2c_client), GFP_KERNEL);
+-	if (0 == client) {
++	if (!client) {
+ 		return -ENOMEM;
  	}
- 	return pud;
-@@ -113,7 +113,7 @@ pgd_t * __meminit vmemmap_pgd_populate(unsigned long addr, int node)
- 	if (pgd_none(*pgd)) {
- 		void *p = vmemmap_alloc_block(PAGE_SIZE, node);
- 		if (!p)
--			return 0;
-+			return NULL;
- 		pgd_populate(&init_mm, pgd, p);
+ 
+diff --git a/drivers/media/video/tea6420.c b/drivers/media/video/tea6420.c
+index ca05cd6..4ff6c63 100644
+--- a/drivers/media/video/tea6420.c
++++ b/drivers/media/video/tea6420.c
+@@ -101,7 +101,7 @@ static int tea6420_detect(struct i2c_adapter *adapter, int address, int kind)
+ 
+ 	/* allocate memory for client structure */
+ 	client = kzalloc(sizeof(struct i2c_client), GFP_KERNEL);
+-	if (0 == client) {
++	if (!client) {
+ 		return -ENOMEM;
  	}
- 	return pgd;
+ 
+diff --git a/drivers/media/video/tvp5150.c b/drivers/media/video/tvp5150.c
+index d28318c..b6e24e7 100644
+--- a/drivers/media/video/tvp5150.c
++++ b/drivers/media/video/tvp5150.c
+@@ -1072,12 +1072,12 @@ static int tvp5150_detect_client(struct i2c_adapter *adapter,
+ 		return 0;
+ 
+ 	c = kmalloc(sizeof(struct i2c_client), GFP_KERNEL);
+-	if (c == 0)
++	if (!c)
+ 		return -ENOMEM;
+ 	memcpy(c, &client_template, sizeof(struct i2c_client));
+ 
+ 	core = kzalloc(sizeof(struct tvp5150), GFP_KERNEL);
+-	if (core == 0) {
++	if (!core) {
+ 		kfree(c);
+ 		return -ENOMEM;
+ 	}
+diff --git a/drivers/media/video/zoran_driver.c b/drivers/media/video/zoran_driver.c
+index dd3d7d2..fea4946 100644
+--- a/drivers/media/video/zoran_driver.c
++++ b/drivers/media/video/zoran_driver.c
+@@ -339,7 +339,7 @@ v4l_fbuffer_alloc (struct file *file)
+ 			/* Use kmalloc */
+ 
+ 			mem = kmalloc(fh->v4l_buffers.buffer_size, GFP_KERNEL);
+-			if (mem == 0) {
++			if (!mem) {
+ 				dprintk(1,
+ 					KERN_ERR
+ 					"%s: v4l_fbuffer_alloc() - kmalloc for V4L buf %d failed\n",
 -- 
 1.5.3.GIT
 
