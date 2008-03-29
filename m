@@ -1,84 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752408AbYC2K5R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751950AbYC2LeU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752408AbYC2K5R (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Mar 2008 06:57:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750778AbYC2K5F
+	id S1751950AbYC2LeU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Mar 2008 07:34:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750802AbYC2LeM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Mar 2008 06:57:05 -0400
-Received: from lax-green-bigip-5.dreamhost.com ([208.113.200.5]:56012 "EHLO
-	spaceymail-a6.g.dreamhost.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1750777AbYC2K5E (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Mar 2008 06:57:04 -0400
-Message-ID: <47EE2072.7000504@froyn.name>
-Date: Sat, 29 Mar 2008 11:56:50 +0100
-From: Ketil Froyn <ketil@froyn.name>
-User-Agent: Thunderbird 2.0.0.12 (Windows/20080213)
-MIME-Version: 1.0
-To: =?ISO-8859-1?Q?=22J=2EA=2E_Magall=F3n=22?= <jamagallon@ono.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: unexpected rename() behaviour
-References: <47ED8858.9000401@froyn.name> <20080329011656.7c38265a@werewolf>
-In-Reply-To: <20080329011656.7c38265a@werewolf>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
+	Sat, 29 Mar 2008 07:34:12 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:34154 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750793AbYC2LeK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 29 Mar 2008 07:34:10 -0400
+Date: Sat, 29 Mar 2008 22:33:54 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: linux-next@vger.kernel.org
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: linux-next: Tree for March 29
+Message-Id: <20080329223354.304e2722.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.5.0beta1 (GTK+ 2.12.9; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Sat__29_Mar_2008_22_33_54_+1100_Yki+4N4gxZB/52Eo"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-J.A. Magallón skrev:
-> On Sat, 29 Mar 2008 01:07:52 +0100, Ketil Froyn <ketil@froyn.name> wrote:
-> 
->> Hi,
->>
->> The following behaviour was unexpected (tested on Debian/ext3):
->>
->> $ echo 1 > 1
->> $ ln 1 2
->> $ cat 2
->> 1
->> $ ./rename 2 1
->> $ echo $?
->> 0
->> $ cat 2
->> 1
->>
->> The code for ./rename is simple:
->>
->> ---
->> /* compile: gcc -o rename rename.c */
->> #include <stdio.h>
->> int main(int argc, char *argv[]) { return rename(argv[1], argv[2]); }
->> ---
->>
->> I thought this must be wrong behaviour, but I have been unable to 
->> confirm what the correct result should be in this special case. rename() 
->> returns success, but the source file is intact, which seems odd. The 
->> "mv" command specifically checks for cases like this and calls 
->> unlink("2") instead of rename("2", "1"). Are all applications meant to 
->> do this? What standards describe what rename() should do in cases like this?
->>
-> 
-> man 2 rename:
-> 
->        If  oldpath  and  newpath are existing hard links referring to the same
->        file, then rename() does nothing, and returns a success status.
-> 
-> That's why mv checks the special case.
+--Signature=_Sat__29_Mar_2008_22_33_54_+1100_Yki+4N4gxZB/52Eo
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-This was not in my (Debian 4.0) version of the man page. I assume it is 
-listed in the DESCRIPTION section and not the BUGS section.
+Hi all,
 
-Is this a corner case undefined by POSIX, for instance, or does POSIX 
-explicitly say that this is the correct behaviour? I have verified that 
-the same happens on BSD, but I still find it odd that a successful 
-rename(oldpath,newpath) should leave oldpath in place.
+I have created today's linux-next tree at
+git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git
+(tar balls at
+http://www.kernel.org/pub/linux/kernel/people/sfr/linux-next/).
 
-So given the case that it is a requirement that oldpath should be 
-removed after the rename(), does all software need to check whether 
-oldpath and newpath are existing hard links referring to the same file, 
-and if so, call unlink(oldpath) instead? I would guess that lots of 
-existing software doesn't.
+You can see which trees have been included by looking in the Next/Trees
+file in the source.  There are also quilt-import.log and merge.log files
+in the Next directory.  Between each merge, the tree was built with
+a ppc64_defconfig for powerpc and an allmodconfig for x86_64.
 
-Regards,
-Ketil Froyn
+There were a few merge conflicts (fairly trivial).
+
+People might like to check up in the (post-creation) build failures at
+http://kisskb.ellerman.id.au/linux-next, there are quite a few more than
+usual.  I'll try to figure out what went wrong tomorrow unless you all
+beat me to it.
+
+We are up to 50 trees, more are welcome (even if they are currently
+empty).  Thanks to those who have contributed, and to those who haven't,
+please do.
+
+In particular, I have very few of the architecture trees ....
+
+Status of my local build tests is at
+http://kisskb.ellerman.id.au/linux-next.  If maintainers want to give
+advice about cross compilers/configs that work, we are always open to add
+more builds.
+
+Thanks to Jan Dittmer for adding the linux-next tree to his build tests
+at http://l4x.org/k/ and the guys at http://test.kernel.org/.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+--Signature=_Sat__29_Mar_2008_22_33_54_+1100_Yki+4N4gxZB/52Eo
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFH7ikwTgG2atn1QN8RAgSGAJsHYSsdmn+OTIx/9RjJ/ciO4NwRSQCghyYz
+BTov9GwzBgZ8HJgklMj0SRs=
+=KPbA
+-----END PGP SIGNATURE-----
+
+--Signature=_Sat__29_Mar_2008_22_33_54_+1100_Yki+4N4gxZB/52Eo--
