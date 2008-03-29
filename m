@@ -1,63 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753979AbYC2QGi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753999AbYC2QQk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753979AbYC2QGi (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Mar 2008 12:06:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752200AbYC2QG3
+	id S1753999AbYC2QQk (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Mar 2008 12:16:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752523AbYC2QQd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Mar 2008 12:06:29 -0400
-Received: from e32.co.us.ibm.com ([32.97.110.150]:56799 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752138AbYC2QG2 (ORCPT
+	Sat, 29 Mar 2008 12:16:33 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:33978 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752490AbYC2QQc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Mar 2008 12:06:28 -0400
-Subject: Re: [PATCH RFC] hotplug-memory: refactor online_pages to separate
-	zone growth from page onlining
-From: Dave Hansen <dave@linux.vnet.ibm.com>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Yasunori Goto <y-goto@jp.fujitsu.com>,
-       Christoph Lameter <clameter@sgi.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <47EDA4B9.6030801@goop.org>
-References: <47ED8685.9040409@goop.org>
-	 <1206751622.27091.20.camel@nimitz.home.sr71.net>
-	 <47EDA4B9.6030801@goop.org>
-Content-Type: text/plain
-Date: Sat, 29 Mar 2008 09:06:14 -0700
-Message-Id: <1206806774.31896.27.camel@nimitz.home.sr71.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+	Sat, 29 Mar 2008 12:16:32 -0400
+Date: Sat, 29 Mar 2008 09:16:02 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Roland McGrath <roland@redhat.com>
+cc: Andrew Morton <akpm@linux-foundation.org>, Oleg Nesterov <oleg@tv-sign.ru>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2] do_wait reorganization
+In-Reply-To: <20080329033412.120EE26FA1D@magilla.localdomain>
+Message-ID: <alpine.LFD.1.00.0803290906050.14670@woody.linux-foundation.org>
+References: <20080329033412.120EE26FA1D@magilla.localdomain>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-03-28 at 19:08 -0700, Jeremy Fitzhardinge wrote:
-> My big remaining problem is how to disable the sysfs interface for this 
-> memory.  I need to prevent any onlining via /sys/device/system/memory.
 
-I've been thinking about this some more, and I wish that you wouldn't
-just throw this interface away or completely disable it.  It actually
-does *exactly* what you want in a way. :)
 
-When the /memoryXX/ directory appears, that means that the hardware has
-found the memory, and that the 'struct page' is allocated and ready to
-be initialized.
+On Fri, 28 Mar 2008, Roland McGrath wrote:
+>
+> The control flow is less nonobvious without so much goto.
 
-When the OS actually wants to use the memory (initialize the 'struct
-page', and free_page() it), it does the 'echo online > /sys...'.  Both
-the 'struct page' and the memory represented by it are untouched until
-the "online".  This was originally in place to avoid fragmenting it
-immediately in the case that the system did not need it.
+How about a further non-obviousness?
 
-To me, it sounds like the only different thing that you want is to make
-sure that only partial sections are onlined.  So, shall we work with the
-existing interfaces to online partial sections, or will we just disable
-it entirely when we see Xen?
+> +static int wait_consider_task(struct task_struct *parent,
+> +			      struct task_struct *p, int *retval,
+> +			      enum pid_type type, struct pid *pid, int options,
+> +			      struct siginfo __user *infop,
+> +			      int __user *stat_addr, struct rusage __user *ru)
+> +{
+...
+> +	if (task_is_stopped_or_traced(p)) {
+> +		/*
+> +		 * It's stopped now, so it might later
+> +		 * continue, exit, or stop again.
+> +		 */
+> +		*retval = 0;
+> +		if ((p->ptrace & PT_PTRACED) ||
+> +		    (options & WUNTRACED)) {
+> +			*retval = wait_task_stopped(p, (options & WNOWAIT),
+> +						    infop, stat_addr, ru);
+> +			if (*retval)
+> +				return 1;
+> +		}
+> +	} else if (p->exit_state == EXIT_ZOMBIE && !delay_group_leader(p)) {
+...
+> +	return 0;
 
-For Xen and KVM, how does it get decided that the guest needs more
-memory?  Is this guest or host driven?  Both?  How is the guest
-notified?  Is guest userspace involved at all?
+I think it would be even more obvious (or, to use your phrase, "less 
+nonobvious") if this was written like so:
 
--- Dave
+	if (task_is_stopped_or_traced(p)) {
+		...
+		....
+			if (*retval}
+				return 1;
+		}
+		return 0;
+	}
 
+	if (p->exit_state == EXIT_ZOMBIE && !delay_group_leader(p)) {
+		...
+		return 0;
+	}
+
+	if (...)
+
+because then you can clearly see that smething like the
+"task_is_stopped_or_traced(p)" case is complete in itself, and only has 
+its own local stuff going on.
+
+(And at some point I'd also almost make each case a trivial small inline 
+function of its on, but in this case there are so many arguments to pass 
+around that it probably becomes _less_ readable that way).
+
+I also wonder if you really need both "int *retval" and the return value. 
+Isn't "retval" always going to be zero or a negative errno? And the return 
+value is going to be either true of false? Why not just fold them into one 
+single thing:
+
+ - negative: all done, with error
+ - zero: this didn't trigger, continue with the next one in caller
+ - positive: this thread triggered, all done, return 0 in the caller.
+
+which is (I think) close to what we already do in eligible_child() (so 
+this would not be a new calling convention for this particular code).
+
+		Linus
