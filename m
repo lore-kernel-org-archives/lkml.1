@@ -1,50 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754672AbYC2RF1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754868AbYC2RGx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754672AbYC2RF1 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Mar 2008 13:05:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753104AbYC2RFT
+	id S1754868AbYC2RGx (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Mar 2008 13:06:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753104AbYC2RGp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Mar 2008 13:05:19 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:33925 "EHLO
+	Sat, 29 Mar 2008 13:06:45 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:33936 "EHLO
 	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752715AbYC2RFS (ORCPT
+	with ESMTP id S1752936AbYC2RGp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Mar 2008 13:05:18 -0400
-Message-ID: <47EE76BD.2000708@zytor.com>
-Date: Sat, 29 Mar 2008 10:05:01 -0700
+	Sat, 29 Mar 2008 13:06:45 -0400
+Message-ID: <47EE7704.9030301@zytor.com>
+Date: Sat, 29 Mar 2008 10:06:12 -0700
 From: "H. Peter Anvin" <hpa@zytor.com>
 User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-To: David Newall <davidn@davidnewall.com>
-CC: Jan Engelhardt <jengelh@computergmbh.de>, "John T." <j.thomast@yahoo.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: UTF-8 and Alt key in the console
-References: <205509.99433.qm@web45710.mail.sp1.yahoo.com> <alpine.LNX.1.00.0803231942380.3157@fbirervta.pbzchgretzou.qr> <47ED7EBD.8070009@zytor.com> <alpine.LNX.1.10.0803290055270.18418@fbirervta.pbzchgretzou.qr> <47ED8C13.5060509@zytor.com> <alpine.LNX.1.10.0803290143180.18418@fbirervta.pbzchgretzou.qr> <47EDE2A4.8080702@davidnewall.com>
-In-Reply-To: <47EDE2A4.8080702@davidnewall.com>
+To: Paul Jackson <pj@sgi.com>
+CC: "Huang, Ying" <ying.huang@intel.com>, andi@firstfloor.org,
+       mingo@redhat.com, tglx@linutronix.de, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH -mm 2/4] x86_64 boot: Add linked list of struct setup_data
+References: <1206601748.3067.22.camel@caritas-dev.intel.com>	<20080327063307.ac323913.pj@sgi.com>	<1206670181.13404.7.camel@caritas-dev.intel.com> <20080329012423.0c1d693e.pj@sgi.com>
+In-Reply-To: <20080329012423.0c1d693e.pj@sgi.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Newall wrote:
-> Jan Engelhardt wrote:
->> What do you mean by self-terminating? There is no easy
->> synchronization like in UTF-8, given you are anywhere inside
->> a text stream, how do you know (a) you are already in an
->> escape sequence and (b) how to figure out the rebegin of
->> normal text.
+Paul Jackson wrote:
+> Huang wrote:
+>> The setup_data will not only be used for E820 extension.
 > 
-> It's not very useful being able to tell you are inside a escape sequence
-> unless you see that sequence from the start.  You do need the complete
-> sequence to make sense of it.
+> I'm still unsure of your meaning.
+> 
+> Are you saying that 'setup_data' is not used in your current patch set?
+> 
+> Are you also saying that 'setup_data' will be used in the future?
+> 
 
-I think what Jan is alluding to is the property of UTF-8 text that you 
-can start in the middle of a string and either skip an incomplete 
-character or find the beginning of it.  If you can search backwards, you 
-can find the beginning of an escape sequence, too; the "skip incomplete" 
-  functionality is missing, though, but as you say, isn't actually all 
-that useful in real life *for the applications which use these kinds of 
-escape sequences.*
+They will be used for other things in the future.  EDD extension is one 
+we already know about -- the current EDD code doesn't carry as much 
+information as we want.
 
 	-hpa
