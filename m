@@ -1,27 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755155AbYC2F0U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755958AbYC2FdX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755155AbYC2F0U (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Mar 2008 01:26:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751157AbYC2F0J
+	id S1755958AbYC2FdX (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Mar 2008 01:33:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751199AbYC2FdO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Mar 2008 01:26:09 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:34945 "EHLO
+	Sat, 29 Mar 2008 01:33:14 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:59433 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751148AbYC2F0I (ORCPT
+	by vger.kernel.org with ESMTP id S1751157AbYC2FdN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Mar 2008 01:26:08 -0400
-Date: Fri, 28 Mar 2008 22:25:59 -0700
+	Sat, 29 Mar 2008 01:33:13 -0400
+Date: Fri, 28 Mar 2008 22:33:10 -0700
 From: Andrew Morton <akpm@linux-foundation.org>
 To: Al Viro <viro@ZenIV.linux.org.uk>
-Cc: Harvey Harrison <harvey.harrison@gmail.com>,
-       Al Viro <viro@ftp.linux.org.uk>, torvalds@linux-foundation.org,
+Cc: Harvey Harrison <harvey.harrison@gmail.com>, torvalds@linux-foundation.org,
        linux-kernel@vger.kernel.org
 Subject: Re: [PATCH] jbd/jbd2 NULL noise
-Message-Id: <20080328222559.96fb9691.akpm@linux-foundation.org>
-In-Reply-To: <20080329031843.GJ10722@ZenIV.linux.org.uk>
+Message-Id: <20080328223310.9a677e70.akpm@linux-foundation.org>
+In-Reply-To: <20080329045634.GM10722@ZenIV.linux.org.uk>
 References: <E1JfRPa-0002U9-J5@ZenIV.linux.org.uk>
 	<1206760526.6543.0.camel@brick>
 	<20080329031843.GJ10722@ZenIV.linux.org.uk>
+	<1206761196.6543.2.camel@brick>
+	<20080329034228.GK10722@ZenIV.linux.org.uk>
+	<20080329035431.GL10722@ZenIV.linux.org.uk>
+	<1206763312.6543.4.camel@brick>
+	<20080329045634.GM10722@ZenIV.linux.org.uk>
 X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -30,56 +34,60 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 29 Mar 2008 03:18:43 +0000 Al Viro <viro@ZenIV.linux.org.uk> wrote:
+On Sat, 29 Mar 2008 04:56:34 +0000 Al Viro <viro@ZenIV.linux.org.uk> wrote:
 
-> On Fri, Mar 28, 2008 at 08:15:26PM -0700, Harvey Harrison wrote:
-> > On Sat, 2008-03-29 at 03:07 +0000, Al Viro wrote:
-> > > Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
-> > > ---
-> > >  fs/jbd/journal.c  |    4 ++--
-> > >  fs/jbd/revoke.c   |    4 ++--
-> > >  fs/jbd2/journal.c |   12 ++++++------
-> > >  fs/jbd2/revoke.c  |    4 ++--
-> > >  4 files changed, 12 insertions(+), 12 deletions(-)
+> On Fri, Mar 28, 2008 at 09:01:52PM -0700, Harvey Harrison wrote:
+> > > > > I did, it went into -mm and on Mar 5 it was taken into the subsystem
 > > > 
+> > > Al, still morbidly curious about the akpm's scripts and aforementioned
+> > > message...
 > > 
-> > I had just about all of fs/ done for this sitting in mm.
+> > Not sure which tree, but received this on Feb 27:
+> > 
+> > 
+> > The patch titled
+> >      jbd2: sparse warnings in revoke.c, journal.c
+> > has been removed from the -mm tree.  Its filename was
+> >      jbd2-sparse-warnings-in-revokec-journalc.patch
+> > 
+> > This patch was dropped because it was merged into mainline or a
+> > subsystem tree
+> > 
+> > The current -mm tree may be found at
+> > http://userweb.kernel.org/~akpm/mmotm/
 > 
-> So send it?  I mean, that hardly has a potential to cause breakage - anything
-> wrong will be immediately seen on build.
-
-Still, it didn't meet my (and apparently Ted's) is-it-needed-in-late-rc
-criteria.
-
->From a later email:
-
-> You've really got me curious.  The latest -mm I can find is 2.6.25-rc5-mm1,
-> it's dated Mar 11 and the patches are very much there -
-> broken-out/jbd-sparse-warnings-in-revokec-journalc.patch and
-> broken-out/jbd2-sparse-warnings-in-revokec-journalc.patch
-> resp., all by themselves and not as a part of any subsystem tree.
-
-The jbd2 one went into the ext4 tree.
-
-Alas, -mm's are slow nowadays.  Due to a combination of a) the difficulty
-of getting it all to compile, let alone boot on sevenish machines, and b)
-waning motivation due to me wondering why we merge so much new stuff when
-we've just written so many bugs.
-
-My tree is always available at http://userweb.kernel.org/~akpm/mmotm/ -
-it's updated multiple times per day.
-
+> Ah...  jbd part of it is still there, jbd2 is *also* there, but it's got
+> ext4-mm- prefix to filename.  And looking at ext4.git, jbd2 side of that
+> stuff *is* merged, so what the hell is it doing in a separate file?
+> Looks like -mm has ext4 stuff not as a single patch (like it does for
+> many other git trees) but split into individual changesets for some
+> reason...
 > 
-> Al, still morbidly curious about the akpm's scripts and aforementioned
-> message...
 
-The jbd2 changes got moved into the ext4 tree at
+Yup, -mm consists of
+
+- 71 git trees (origin.patch plus 70 git-foo.patch) (some may be empty)
+
+  - The URL for each of these can be obtained from the first line of
+    git-foo.patch, in http://userweb.kernel.org/~akpm/mmotm/
+
+- Nine quilt trees, pulled from various opendirs
+
+  Sekkrit locations:
+
+http://ozlabs.org/~rusty/kernel/rr-latest
+http://www.kernel.org/pub/linux/kernel/people/kristen/pci-hotplug
 ftp://ftp.kernel.org/pub/linux/kernel/people/tytso/ext4-patches/LATEST/broken-out/
-hence I dropped them from the mm-specific patches.  I still have the patch,
-but it's now known as
-ext4-mm-jbd2-sparse-warnings-in-revokec-journalc.patch because Ted now owns
-it.  
+http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/gregkh-01-driver-core
+http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/gregkh-03-usb
+http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/gregkh-02-pci
+http://khali.linux-fr.org/devel/linux-2.6/jdelvare-i2c/
+http://kernel.org/pub/linux/kernel/people/bart/pata-2.6/patches/
+ftp://ftp.kernel.org/pub/linux/kernel/people/agk/patches/2.6/editing/
 
-> Linus, consider the patch upthread withdrawn.
+- squillions of other patches which are only in -mm.
 
-Whatever.  As long as it got merged.
+
+Interesting factoid: -mm's series file was started on 1 Dec 2002 and is at
+its 16,231st revision.  I'm surprised it hasn't worn out.
+
