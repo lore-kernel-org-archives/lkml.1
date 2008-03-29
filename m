@@ -1,73 +1,34 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755768AbYC2I7i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754594AbYC2KdJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755768AbYC2I7i (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Mar 2008 04:59:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751702AbYC2I72
+	id S1754594AbYC2KdJ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Mar 2008 06:33:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751825AbYC2Kc6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Mar 2008 04:59:28 -0400
-Received: from py-out-1112.google.com ([64.233.166.181]:20644 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751620AbYC2I71 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Mar 2008 04:59:27 -0400
-Message-ID: <36ca99e90803290159v33ab43cbu5acd4bc2b0cd0262@mail.gmail.com>
-Date: Sat, 29 Mar 2008 09:59:26 +0100
-From: "Bert Wesarg" <bert.wesarg@googlemail.com>
-To: "Mike Travis" <travis@sgi.com>
-Subject: Re: [PATCH 2/2] x86: modify show_shared_cpu_map in intel_cacheinfo
-Cc: "Ingo Molnar" <mingo@elte.hu>, linux-kernel@vger.kernel.org
-In-Reply-To: <47ED36B9.6000508@sgi.com>
+	Sat, 29 Mar 2008 06:32:58 -0400
+Received: from smtp2.it.da.ut.ee ([193.40.5.67]:48899 "EHLO smtp2.it.da.ut.ee"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751620AbYC2Kc5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 29 Mar 2008 06:32:57 -0400
+Date: Sat, 29 Mar 2008 12:32:56 +0200 (EET)
+From: Meelis Roos <mroos@linux.ee>
+To: Linux Kernel list <linux-kernel@vger.kernel.org>
+Subject: PPC: 'xchg_u32' is static but used in inline function 'xchg_ptr'
+ which is not static
+Message-ID: <Pine.SOC.4.64.0803291231160.5386@math.ut.ee>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080327231654.284673000@polaris-admin.engr.sgi.com>
-	 <20080327231654.599276000@polaris-admin.engr.sgi.com>
-	 <36ca99e90803280201i708ce9b7y293a2c68e733f088@mail.gmail.com>
-	 <47ED0343.1070708@sgi.com>
-	 <36ca99e90803280754p1fbedbccp366366f0240fe5cc@mail.gmail.com>
-	 <47ED36B9.6000508@sgi.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 28, 2008 at 7:19 PM, Mike Travis <travis@sgi.com> wrote:
->  > Aren't the most cpumaps (like cpu/cpu*/topology/*_siblings or
->  > node/node*/cpumap) bitmasks?
->
->  I did an informal survey and you are right, the majority of references do use
->  cpumask_scnprintf instead of cpulist_scnprintf.  Maybe the later function was
->  added later?
->
->  To me though, it would seem that:
->
->  240-255
->
->  is more readable than:
->
->  00000000,00000000,00000000,00000000,00000000,00000000,00000000,0000ffff
->
->  And as I mentioned, bitmask_parselist() [libbitmask(3)] does parse the output.
-But libbitmask has a bitmask_parsehex() too. (but thanks for the
-pointer to this code).
+While compiling yesterdays 2.6.25-rc7+git on ppc (ppc subarch, not 
+powerpc), most files give this warning:
 
-Anyway, your above example is wrong, the most significant bits comes first:
+In file included from include/linux/list.h:9,
+                 from include/linux/module.h:9,
+                 from init/version.c:10:
+include/asm/system.h: In function 'xchg_ptr':
+include/asm/system.h:183: warning: 'xchg_u32' is static but used in inline function 'xchg_ptr' which is not static
 
-ffff0000,00000000,00000000,00000000,00000000,00000000,00000000,00000000
-
-This makes it not more readable, but I think readability isn't in this
-case of that much importance.
-
-I further think, this problem could be easily solved, if NR_CPUS and
-possibly your nr_cpus_ids is somehow exported to user space.
-
-With this information, the user is not surprised to see more that 1024
-bits (=CPU_SETSIZE, which is currently the glibc constant for the
-sched_{set,get}affinity() API). Also the glibc has the new variable
-cpu_set_t size API (since 2.7).
-
-Bert
->
->  Thanks,
->  Mike
->
+-- 
+Meelis Roos (mroos@linux.ee)
