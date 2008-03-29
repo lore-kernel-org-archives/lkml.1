@@ -1,55 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757878AbYC2Ax7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757985AbYC2BA3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757878AbYC2Ax7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Mar 2008 20:53:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754108AbYC2Axt
+	id S1757985AbYC2BA3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Mar 2008 21:00:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755406AbYC2BAV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Mar 2008 20:53:49 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:39551 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753911AbYC2Axs (ORCPT
+	Fri, 28 Mar 2008 21:00:21 -0400
+Received: from compunauta.com ([69.36.170.169]:36156 "EHLO compunauta.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755373AbYC2BAU convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Mar 2008 20:53:48 -0400
-Date: Fri, 28 Mar 2008 17:53:16 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Roland McGrath <roland@redhat.com>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>, linux-s390@vger.kernel.org,
-       tony.luck@intel.com, linux-ia64@vger.kernel.org,
-       linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/4] set_restore_sigmask TIF_SIGPENDING
-In-Reply-To: <20080329001341.7F93826FA1D@magilla.localdomain>
-Message-ID: <alpine.LFD.1.00.0803281746480.14670@woody.linux-foundation.org>
-References: <20080329001230.D013726FA1D@magilla.localdomain> <20080329001341.7F93826FA1D@magilla.localdomain>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+	Fri, 28 Mar 2008 21:00:20 -0400
+X-Greylist: delayed 1898 seconds by postgrey-1.27 at vger.kernel.org; Fri, 28 Mar 2008 21:00:20 EDT
+From: Gustavo Guillermo =?iso-8859-1?q?P=E9rez?= 
+	<gustavo@compunauta.com>
+Organization: www.compunauta.com
+To: linux-kernel@vger.kernel.org
+Subject: tulip driver receive but not send 2.6.25-rc6-git7
+Date: Fri, 28 Mar 2008 18:28:39 -0600
+User-Agent: KMail/1.9.7
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Disposition: inline
+Message-Id: <200803281828.39948.gustavo@compunauta.com>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+I'm putting all wires on the same swirch for testing.
+eth0 is a sis embedded card (good one).
+dealing with dhcp I see that request arrives to the board but the offers never 
+appears on client. system clean no iptables rules, just dhcpd.
 
+00:04.0 Ethernet controller: Silicon Integrated Systems [SiS] SiS900 PCI Fast 
+Ethernet (rev 91)
+00:09.0 Ethernet controller: Davicom Semiconductor, Inc. 21x4x DEC-Tulip 
+compatible 10/100 Ethernet (rev 40)
+00:0a.0 Ethernet controller: Davicom Semiconductor, Inc. 21x4x DEC-Tulip 
+compatible 10/100 Ethernet (rev 40)
 
-On Fri, 28 Mar 2008, Roland McGrath wrote:
->
-> Set TIF_SIGPENDING in set_restore_sigmask.  This lets arch code take
-> TIF_RESTORE_SIGMASK out of the set of bits that will be noticed on
-> return to user mode.  On some machines those bits are scarce, and we
-> can free this unneeded one up for other uses.
+uLinuxIV ~ # ifconfig eth0 192.168.3.1
+uLinuxIV ~ # ping -c 1 192.168.3.3
+PING 192.168.3.3 (192.168.3.3) 56(84) bytes of data.
+64 bytes from 192.168.3.3: icmp_seq=1 ttl=64 time=1.14 ms
 
-Hmm. That probably means that TIF_RESTORE_SIGMASK shouldn't be a "TIF" 
-flag at all, but a "TS" ("thread status") flag.
+--- 192.168.3.3 ping statistics ---
+1 packets transmitted, 1 received, 0% packet loss, time 0ms
+rtt min/avg/max/mdev = 1.141/1.141/1.141/0.000 ms
+uLinuxIV ~ # ifconfig eth0 down
+uLinuxIV ~ # modprobe tulip
+uLinuxIV ~ # dmesg | tail -n 10
+Linux Tulip driver version 1.1.15 (Feb 27, 2007)
+tulip0:  MII transceiver #1 config 1000 status 782d advertising 01e1.
+eth1: Davicom DM9102/DM9102A rev 64 at Port 0xe400, 00:60:6e:70:1f:b1, IRQ 17.
+tulip1:  MII transceiver #1 config 1000 status 782d advertising 01e1.
+eth2: Davicom DM9102/DM9102A rev 64 at Port 0xe800, 00:60:6e:70:1f:d5, IRQ 18.
+uLinuxIV ~ # ifconfig eth1 192.168.3.1
+uLinuxIV ~ # ping -c 1 192.168.3.3
+PING 192.168.3.3 (192.168.3.3) 56(84) bytes of data.
+Aborted
+uLinuxIV ~ # ifconfig eth1 down
+uLinuxIV ~ # ifconfig eth2 192.168.3.1
+uLinuxIV ~ # ping -c 1 192.168.3.3
+PING 192.168.3.3 (192.168.3.3) 56(84) bytes of data.
+Aborted
+uLinuxIV ~ #
 
-The TS flags are faster, because they are thread-synchronous and do not 
-need atomic accesses (ie they are purely thread-local in setting, testing 
-and clearing).
-
-Of course, it may well not be worth it. Unlike the TIF flags, the TS flags 
-have been architecture-specific and I don't think all architectures even 
-do them (x86 uses them for FP state bits and stuff like that).
-
-I guess TIF_RESTORE_SIGMASK is never *so* performance-critical that we'd 
-care about the difference between a single cycle (approx) for a non-atomic 
-"or" into memory and an atomic bitop (~50 cycles or so). 
-
-			Linus
+I'm gonna try with rc7-git4 and 2.6.24
+-- 
+Gustavo Guillermo Pérez
+Compunauta uLinux
+www.compunauta.com
