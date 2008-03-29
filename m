@@ -1,44 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756880AbYC2Srb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755880AbYC2Srs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756880AbYC2Srb (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Mar 2008 14:47:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753979AbYC2SrY
+	id S1755880AbYC2Srs (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Mar 2008 14:47:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753979AbYC2Srg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Mar 2008 14:47:24 -0400
-Received: from hs-out-0708.google.com ([64.233.178.244]:26784 "EHLO
-	hs-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754038AbYC2SrX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Mar 2008 14:47:23 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=sEO2FG4Sd0FvXJ2Ib0vwmSdSq5Lxmb4plwuv3iS7fQC6MBlFKoWIRQFrKo9QckdlKNHfYIAsbKmK8Z+bbBrvMC9C2zj112ZKJNN6uFhQa576TVWEyoRDigChntN8QrN34QO1/LsvliT0Vx7X2ZfJK5oIi+jA9q6lWG3fcbOLiig=
-Subject: Re: [PATCH] NULL noise: frv cmpxchg()
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Al Viro <viro@ftp.linux.org.uk>
-Cc: torvalds@linux-foundation.org, dhowells@redhat.com,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <E1JfRQY-0002dr-JG@ZenIV.linux.org.uk>
-References: <E1JfRQY-0002dr-JG@ZenIV.linux.org.uk>
-Content-Type: text/plain
-Date: Sat, 29 Mar 2008 11:47:27 -0700
-Message-Id: <1206816447.6543.23.camel@brick>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+	Sat, 29 Mar 2008 14:47:36 -0400
+Received: from cantor.suse.de ([195.135.220.2]:43249 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754117AbYC2Srg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 29 Mar 2008 14:47:36 -0400
+From: Andreas Schwab <schwab@suse.de>
+To: Jan Engelhardt <jengelh@computergmbh.de>
+Cc: Mikael Pettersson <mikpe@it.uu.se>,
+       Jacek Luczak <difrost.kernel@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: Comma at end of enum lists
+References: <47EE75A0.8070705@gmail.com>
+	<18414.31274.514325.238985@harpo.it.uu.se>
+	<jezlshe6u7.fsf@sykes.suse.de>
+	<alpine.LNX.1.10.0803291923350.28605@fbirervta.pbzchgretzou.qr>
+X-Yow: Is it FUN to be a MIDGET?
+Date: Sat, 29 Mar 2008 19:47:34 +0100
+In-Reply-To: <alpine.LNX.1.10.0803291923350.28605@fbirervta.pbzchgretzou.qr>
+	(Jan Engelhardt's message of "Sat\, 29 Mar 2008 19\:24\:27 +0100 \(CET\)")
+Message-ID: <jeprtde5a1.fsf@sykes.suse.de>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/22.1 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2008-03-29 at 03:08 +0000, Al Viro wrote:
-> Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
-> ---
->  include/asm-frv/system.h |    4 ++--
->  1 files changed, 2 insertions(+), 2 deletions(-)
-> 
+Jan Engelhardt <jengelh@computergmbh.de> writes:
 
-Not in -mm, please apply.
+> On Saturday 2008-03-29 19:13, Andreas Schwab wrote:
+>>> In a language with strict a comma-as-separator rule you can
+>>> get this benefit by placing the comma before new items rather
+>>> than after existing items:
+>>>
+>>> enum {	FOO
+>>> 	,FIE
+>>> 	,FUM
+>>> };
+>>>
+>>> but luckily C doesn't need this perversion.
+>>
+>> Only since C99 (but GNU C never needed it either).
+>
+> C had this for much longer than 99. Borland Turbo C from around 1990
+> (which you can expect to be C89 if you have luck) also allows , at the end.
 
-Harvey
+C89 definitely does not allow a comma at the end of the enumerator list
+(only at the end of the initializer list).  If Borland C allows it in
+its strict C89 mode (if it has such a thing) then it is buggy.
 
+Andreas.
+
+-- 
+Andreas Schwab, SuSE Labs, schwab@suse.de
+SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
+PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
