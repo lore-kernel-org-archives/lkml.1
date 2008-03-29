@@ -1,66 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759306AbYC2AWn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758874AbYC2AYA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759306AbYC2AWn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Mar 2008 20:22:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755676AbYC2AWf
+	id S1758874AbYC2AYA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Mar 2008 20:24:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754641AbYC2AXx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Mar 2008 20:22:35 -0400
-Received: from n72.bullet.mail.sp1.yahoo.com ([98.136.44.34]:44935 "HELO
-	n72.bullet.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1755572AbYC2AWe (ORCPT
+	Fri, 28 Mar 2008 20:23:53 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:43290 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754779AbYC2AXw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Mar 2008 20:22:34 -0400
-X-Yahoo-Newman-Property: ymail-5
-X-Yahoo-Newman-Id: 883912.76616.bm@omp209.mail.sp1.yahoo.com
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.br;
-  h=X-YMail-OSG:Received:Date:From:Subject:To:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=3ZhpY4v7k+SdJuvJaYgKBgOWIdtxNP9tE7CMOt5l3tfgligWa+8okBVTr+MJnGoLxgzzCh3XLjXaSl3/Tb1CoYfFpdUXOlCqF/QOI5t5vC7zjv7aYM6iSjdFSU0t0tUjkcEVSi00LNMCxOn9y8AVquNSohQuGBxHkCsO+TfxTzo=;
-X-YMail-OSG: klBdGnAVM1lDvbr0d.fSuXAMne8lzx_xJwiagZduhkJu3LUg5fTEVL67wqbVi3VgLQ--
-Date: Fri, 28 Mar 2008 21:22:30 -0300 (ART)
-From: Luis Sousa <ls.luis_sousa@yahoo.com.br>
-Subject: Re: sata io freeze, 2.6.18 and also 2.6.24
-To: Jeff Garzik <jeff@garzik.org>
-Cc: linux-kernel@vger.kernel.org
+	Fri, 28 Mar 2008 20:23:52 -0400
+Message-ID: <47ED8C13.5060509@zytor.com>
+Date: Fri, 28 Mar 2008 17:23:47 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
-Message-ID: <610674.43534.qm@web46002.mail.sp1.yahoo.com>
+To: Jan Engelhardt <jengelh@computergmbh.de>
+CC: "John T." <j.thomast@yahoo.com>, linux-kernel@vger.kernel.org
+Subject: Re: UTF-8 and Alt key in the console
+References: <205509.99433.qm@web45710.mail.sp1.yahoo.com> <alpine.LNX.1.00.0803231942380.3157@fbirervta.pbzchgretzou.qr> <47ED7EBD.8070009@zytor.com> <alpine.LNX.1.10.0803290055270.18418@fbirervta.pbzchgretzou.qr>
+In-Reply-To: <alpine.LNX.1.10.0803290055270.18418@fbirervta.pbzchgretzou.qr>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Jan Engelhardt wrote:
+> And while we are at it, I'd suggest a whole new set of escape
+> codes, the current sequences are particularly... bad for
+> stream synchronization. Right now one has to parse strings for
+> end-of-escape.. which is awkward. I'd just be able to
+> strchr(s, '^]') for example and know when the escape code
+> ends. (Compat should of course be honored where necessary.)
 
---- Luis Sousa <ls.luis_sousa@yahoo.com.br> escreveu:
+I think it would be a major lose to move away from ISO 6429 format; the 
+format is self-terminating and really isn't all that complex.
 
-> --- Jeff Garzik <jeff@garzik.org> escreveu:
-> 
-> > Luis Sousa wrote:
-> > > I've been having consistent hard system freezes for a
-> > > long time, every 2 days or so, and finally decided to
-> > > move to the most recent stable kernel. Unfortunatelly
-> > > that didn't fix it. The freezes seem to be io-related;
-> > > they started since I moved my drive to sata. They seem
-> > > to happen mostly when there's an io-intensive operation,
-> > > like extracting a big archive; a reboot is needed.
-> > 
-> > We need more info, namely full 'dmesg', 'lspci -v', and your kernel config.
-> > 
-> > Also, make /sure/ you are not running closed-source modules known to 
-> > crash the system, like ndiswrapper or nvidia graphics driver.
-> > 
-> > 	Jeff
-> 
-> I'm quite sure.
-
-Oops. My bad. I seem to actually be running the "nv" driver in xorg.conf. 
-I had searched for "nvidia" before and so thought I had cleared that.
-I didn't recall manually installing it this time. I'll try not using it.
-
---
-Luis
-
-
-      Abra sua conta no Yahoo! Mail, o único sem limite de espaço para armazenamento!
-http://br.mail.yahoo.com/
-
+	-hpa
