@@ -1,74 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757985AbYC2BA3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758771AbYC2BGz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757985AbYC2BA3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Mar 2008 21:00:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755406AbYC2BAV
+	id S1758771AbYC2BGz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Mar 2008 21:06:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755987AbYC2BGq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Mar 2008 21:00:21 -0400
-Received: from compunauta.com ([69.36.170.169]:36156 "EHLO compunauta.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755373AbYC2BAU convert rfc822-to-8bit (ORCPT
+	Fri, 28 Mar 2008 21:06:46 -0400
+Received: from E23SMTP01.au.ibm.com ([202.81.18.162]:34662 "EHLO
+	e23smtp01.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755976AbYC2BGq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Mar 2008 21:00:20 -0400
-X-Greylist: delayed 1898 seconds by postgrey-1.27 at vger.kernel.org; Fri, 28 Mar 2008 21:00:20 EDT
-From: Gustavo Guillermo =?iso-8859-1?q?P=E9rez?= 
-	<gustavo@compunauta.com>
-Organization: www.compunauta.com
-To: linux-kernel@vger.kernel.org
-Subject: tulip driver receive but not send 2.6.25-rc6-git7
-Date: Fri, 28 Mar 2008 18:28:39 -0600
-User-Agent: KMail/1.9.7
+	Fri, 28 Mar 2008 21:06:46 -0400
+Message-ID: <47ED953A.1050906@linux.vnet.ibm.com>
+Date: Sat, 29 Mar 2008 06:32:50 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200803281828.39948.gustavo@compunauta.com>
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
+To: Paul Menage <menage@google.com>
+CC: Pavel Emelianov <xemul@openvz.org>, Hugh Dickins <hugh@veritas.com>,
+       Sudhir Kumar <skumar@linux.vnet.ibm.com>,
+       YAMAMOTO Takashi <yamamoto@valinux.co.jp>, lizf@cn.fujitsu.com,
+       linux-kernel@vger.kernel.org, taka@valinux.co.jp, linux-mm@kvack.org,
+       David Rientjes <rientjes@google.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Subject: Re: [-mm] Add an owner to the mm_struct (v2)
+References: <20080328082316.6961.29044.sendpatchset@localhost.localdomain> <6599ad830803280401r68d30e91waaea8eb1de36eb52@mail.gmail.com> <47ECE662.3060506@linux.vnet.ibm.com> <6599ad830803280705o4213c448r991cbf9da6ffe2f1@mail.gmail.com> <47ED0621.4050304@linux.vnet.ibm.com> <6599ad830803280838s19ffc366w1a950ebb12e2907b@mail.gmail.com> <47ED34A4.70604@linux.vnet.ibm.com> <6599ad830803281152g33e693f5s4c7090a503d2751d@mail.gmail.com>
+In-Reply-To: <6599ad830803281152g33e693f5s4c7090a503d2751d@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I'm putting all wires on the same swirch for testing.
-eth0 is a sis embedded card (good one).
-dealing with dhcp I see that request arrives to the board but the offers never 
-appears on client. system clean no iptables rules, just dhcpd.
+Paul Menage wrote:
+> Hi Balbir,
+> 
+> Could you send out the latest version of your patch? I suspect it's
+> changed a bit based on on this review and it would be good to make
+> sure we're both on the same page.
 
-00:04.0 Ethernet controller: Silicon Integrated Systems [SiS] SiS900 PCI Fast 
-Ethernet (rev 91)
-00:09.0 Ethernet controller: Davicom Semiconductor, Inc. 21x4x DEC-Tulip 
-compatible 10/100 Ethernet (rev 40)
-00:0a.0 Ethernet controller: Davicom Semiconductor, Inc. 21x4x DEC-Tulip 
-compatible 10/100 Ethernet (rev 40)
+Sure, let me rework that and send it across.
 
-uLinuxIV ~ # ifconfig eth0 192.168.3.1
-uLinuxIV ~ # ping -c 1 192.168.3.3
-PING 192.168.3.3 (192.168.3.3) 56(84) bytes of data.
-64 bytes from 192.168.3.3: icmp_seq=1 ttl=64 time=1.14 ms
-
---- 192.168.3.3 ping statistics ---
-1 packets transmitted, 1 received, 0% packet loss, time 0ms
-rtt min/avg/max/mdev = 1.141/1.141/1.141/0.000 ms
-uLinuxIV ~ # ifconfig eth0 down
-uLinuxIV ~ # modprobe tulip
-uLinuxIV ~ # dmesg | tail -n 10
-Linux Tulip driver version 1.1.15 (Feb 27, 2007)
-tulip0:  MII transceiver #1 config 1000 status 782d advertising 01e1.
-eth1: Davicom DM9102/DM9102A rev 64 at Port 0xe400, 00:60:6e:70:1f:b1, IRQ 17.
-tulip1:  MII transceiver #1 config 1000 status 782d advertising 01e1.
-eth2: Davicom DM9102/DM9102A rev 64 at Port 0xe800, 00:60:6e:70:1f:d5, IRQ 18.
-uLinuxIV ~ # ifconfig eth1 192.168.3.1
-uLinuxIV ~ # ping -c 1 192.168.3.3
-PING 192.168.3.3 (192.168.3.3) 56(84) bytes of data.
-Aborted
-uLinuxIV ~ # ifconfig eth1 down
-uLinuxIV ~ # ifconfig eth2 192.168.3.1
-uLinuxIV ~ # ping -c 1 192.168.3.3
-PING 192.168.3.3 (192.168.3.3) 56(84) bytes of data.
-Aborted
-uLinuxIV ~ #
-
-I'm gonna try with rc7-git4 and 2.6.24
 -- 
-Gustavo Guillermo Pérez
-Compunauta uLinux
-www.compunauta.com
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
