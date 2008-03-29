@@ -1,57 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752921AbYC2MiZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752821AbYC2Mtb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752921AbYC2MiZ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Mar 2008 08:38:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751155AbYC2MiR
+	id S1752821AbYC2Mtb (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Mar 2008 08:49:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751295AbYC2MtV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Mar 2008 08:38:17 -0400
-Received: from smtpeu1.atmel.com ([195.65.72.27]:34821 "EHLO bagnes.atmel.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750918AbYC2MiQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Mar 2008 08:38:16 -0400
-Date: Sat, 29 Mar 2008 13:36:47 +0100
-From: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Dmitry Baryshkov <dbaryshkov@gmail.com>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, hskinnemoen@atmel.com,
-       domen.puncer@telargo.com, lethal@linux-sh.org, tony@atomide.com,
-       rmk+kernel@arm.linux.org.uk, paul@pwsan.com
-Subject: Re: [PATCH 1/3] Clocklib: add generic framework for managing
- clocks.
-Message-ID: <20080329133647.3799e792@hskinnemo-gx620.norway.atmel.com>
-In-Reply-To: <20080328142340.GE4404@ucw.cz>
-References: <20080326154913.GA15326@doriath.ww600.siemens.net>
-	<20080326155203.GA15405@doriath.ww600.siemens.net>
-	<20080326170441.795fb928@hskinnemo-gx620.norway.atmel.com>
-	<20080328142340.GE4404@ucw.cz>
-Organization: Atmel Norway
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 29 Mar 2008 12:36:48.0402 (UTC) FILETIME=[8E550720:01C89199]
+	Sat, 29 Mar 2008 08:49:21 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:39844 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751000AbYC2MtU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 29 Mar 2008 08:49:20 -0400
+From: Jeff Layton <jlayton@redhat.com>
+To: linux-nfs@vger.kernel.org, nfsv4@linux-nfs.org
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] SUNRPC: have soft RPC tasks return -ETIMEDOUT instead of -EIO on major connect timeout
+Date: Sat, 29 Mar 2008 08:49:17 -0400
+Message-Id: <1206794957-17010-1-git-send-email-jlayton@redhat.com>
+X-Mailer: git-send-email 1.5.3.6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Machek <pavel@ucw.cz> wrote:
-> > Hmm...this is exactly twice as big as the struct I'm currently using,
-> > it doesn't contain all the fields I need, and it's undocumented.  
-> 
-> Like unifying 15-or-so versions of clock framework that are out there?
+NFSv4 background mounts do not currently work correctly. While we could
+try to fix this in userspace, I think it's really a kernel problem...
 
-I'm not complaining about the goal of this patchset, I'm just arguing
-about the price. And I do think we managed to come to an agreement
-later in the thread (which is actually cheaper than what I currently
-have!)
+When a soft RPC tasks experiences a major timeout during a connection
+attempt, it does an rpc_exit with a return code of -EIO. For NFSv4
+mounts, this makes the mount() syscall return -EIO. mount.nfs4 then
+interprets that as a "permanent" error, and won't attempt a background
+mount when bg is specified. Fix this by making call_timeout() do the
+rpc_exit() with an error of -ETIMEDOUT.
 
-> > I have quite a few clocks, so the increased memory consumption is quite
-> > significant. What are the advantages of this?  
-> 
-> How many clocks do you have?
+This fixes the background mount issue, but does make other syscalls
+on soft mounts return ETIMEDOUT instead of EIO in this situation.
 
-55 currently, and there are still a few clocks that haven't been wired
-up yet. So shaving off a few bytes can make a big difference, and other
-platforms have even more clocks.
+Comments welcome.
 
-Haavard
+Signed-off-by: Jeff Layton <jlayton@redhat.com>
+---
+ net/sunrpc/clnt.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/net/sunrpc/clnt.c b/net/sunrpc/clnt.c
+index 8c6a7f1..b6d409e 100644
+--- a/net/sunrpc/clnt.c
++++ b/net/sunrpc/clnt.c
+@@ -1162,7 +1162,7 @@ call_timeout(struct rpc_task *task)
+ 	if (RPC_IS_SOFT(task)) {
+ 		printk(KERN_NOTICE "%s: server %s not responding, timed out\n",
+ 				clnt->cl_protname, clnt->cl_server);
+-		rpc_exit(task, -EIO);
++		rpc_exit(task, -ETIMEDOUT);
+ 		return;
+ 	}
+ 
+-- 
+1.5.3.6
+
