@@ -1,122 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758890AbYC2ArS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757878AbYC2Ax7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758890AbYC2ArS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Mar 2008 20:47:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754628AbYC2ArI
+	id S1757878AbYC2Ax7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Mar 2008 20:53:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754108AbYC2Axt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Mar 2008 20:47:08 -0400
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:53890 "EHLO e5.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754579AbYC2ArH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Mar 2008 20:47:07 -0400
-Subject: Re: [PATCH RFC] hotplug-memory: refactor online_pages to separate
-	zone growth from page onlining
-From: Dave Hansen <dave@linux.vnet.ibm.com>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Yasunori Goto <y-goto@jp.fujitsu.com>,
-       Christoph Lameter <clameter@sgi.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <47ED8685.9040409@goop.org>
-References: <47ED8685.9040409@goop.org>
-Content-Type: text/plain
-Date: Fri, 28 Mar 2008 17:47:02 -0700
-Message-Id: <1206751622.27091.20.camel@nimitz.home.sr71.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+	Fri, 28 Mar 2008 20:53:49 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:39551 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753911AbYC2Axs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Mar 2008 20:53:48 -0400
+Date: Fri, 28 Mar 2008 17:53:16 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Roland McGrath <roland@redhat.com>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>, linux-s390@vger.kernel.org,
+       tony.luck@intel.com, linux-ia64@vger.kernel.org,
+       linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/4] set_restore_sigmask TIF_SIGPENDING
+In-Reply-To: <20080329001341.7F93826FA1D@magilla.localdomain>
+Message-ID: <alpine.LFD.1.00.0803281746480.14670@woody.linux-foundation.org>
+References: <20080329001230.D013726FA1D@magilla.localdomain> <20080329001341.7F93826FA1D@magilla.localdomain>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-03-28 at 17:00 -0700, Jeremy Fitzhardinge wrote:
-> The Xen balloon driver needs to separate the process of hot-installing
-> memory into two phases: one to allocate the page structures and
-> configure the zones, and another to actually online the pages of newly
-> installed memory.
-> 
-> This patch splits up the innards of online_pages() into two pieces which
-> correspond to these two phases.  The behaviour of online_pages() itself
-> is unchanged.
-...
-> --- a/mm/memory_hotplug.c
-> +++ b/mm/memory_hotplug.c
-> @@ -180,31 +180,35 @@
->         return 0;
->  }
-> 
-> -
-> -int online_pages(unsigned long pfn, unsigned long nr_pages)
-> +/* Tell anyone who's interested that we're onlining some memory */
-> +static int notify_going_online(unsigned long pfn, unsigned long nr_pages)
->  {
-> -       unsigned long flags;
-> -       unsigned long onlined_pages = 0;
-> -       struct zone *zone;
-> -       int need_zonelists_rebuild = 0;
-> +       struct memory_notify arg;
->         int nid;
->         int ret;
-> -       struct memory_notify arg;
-> 
->         arg.start_pfn = pfn;
->         arg.nr_pages = nr_pages;
->         arg.status_change_nid = -1;
-> -
-> +
->         nid = page_to_nid(pfn_to_page(pfn));
->         if (node_present_pages(nid) == 0)
->                 arg.status_change_nid = nid;
 
-That's kind a weird line in the patch.  How'd that get there?  Why are
-you moving 'arg'?
 
-This look OK, but it does add ~45 lines of code, and I'm not immediately
-sure how you're going to use it.  Could you address that a bit?
+On Fri, 28 Mar 2008, Roland McGrath wrote:
+>
+> Set TIF_SIGPENDING in set_restore_sigmask.  This lets arch code take
+> TIF_RESTORE_SIGMASK out of the set of bits that will be noticed on
+> return to user mode.  On some machines those bits are scarce, and we
+> can free this unneeded one up for other uses.
 
-I do kinda wish you'd take a real hard look at what the new functions
-are doing now.  I'm not sure their current names are very good.
+Hmm. That probably means that TIF_RESTORE_SIGMASK shouldn't be a "TIF" 
+flag at all, but a "TS" ("thread status") flag.
 
-> +/* Grow the zone to fit the expected amount of memory being added */
-> +static struct zone *online_pages_zone(unsigned long pfn, unsigned long nr_pages)
+The TS flags are faster, because they are thread-synchronous and do not 
+need atomic accesses (ie they are purely thread-local in setting, testing 
+and clearing).
 
-The comment is good, but the function name is not. :)  How about
-grow_zone_span() or something?
+Of course, it may well not be worth it. Unlike the TIF flags, the TS flags 
+have been architecture-specific and I don't think all architectures even 
+do them (x86 uses them for FP state bits and stuff like that).
 
-> +/* Mark a set of pages as online */
-> +unsigned long mark_pages_onlined(unsigned long pfn, unsigned long nr_pages)
+I guess TIF_RESTORE_SIGMASK is never *so* performance-critical that we'd 
+care about the difference between a single cycle (approx) for a non-atomic 
+"or" into memory and an atomic bitop (~50 cycles or so). 
 
-Isn't the comment on this one a bit redundant? :)
-
-This looks to me to have become the real online_pages() now.  This
-function is what goes and individually onlines pages.  If someone was
-trying to figure out whether to call online_pages() or
-mark_pages_onlined(), which one would they know to call?
-
-> -       if (onlined_pages)
-> +       if (onlined_pages) {
-> +               struct memory_notify arg;
-> +
-> +               arg.start_pfn = pfn;  /* ? */
-> +               arg.nr_pages = onlined_pages;
-> +               arg.status_change_nid = -1;  /* ? */
-> +
->                 memory_notify(MEM_ONLINE, &arg);
-> +       }
-
-We should really wrap up memory notify:
-
-static void memory_notify(int state, unsigned long start_pfn,
-			  unsigned long nr_pages, int status_change_nid)
-{
-	struct memory_notify arg;
-	arg.start_pfn = start_pfn;
-	arg.nr_pages = nr_pages;
-	arg.status_change_nid = status_change_nid;
-	return the_current_memory_notify(state, &arg);
-}
-
-We can use that in a couple of spots, right?
-
--- Dave
-
+			Linus
