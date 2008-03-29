@@ -1,45 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755412AbYC2SYg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755085AbYC2Sio@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755412AbYC2SYg (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Mar 2008 14:24:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753113AbYC2SY3
+	id S1755085AbYC2Sio (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Mar 2008 14:38:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753560AbYC2Sif
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Mar 2008 14:24:29 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:50497 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752429AbYC2SY2 (ORCPT
+	Sat, 29 Mar 2008 14:38:35 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:49746 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753371AbYC2Sif (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Mar 2008 14:24:28 -0400
-Date: Sat, 29 Mar 2008 19:24:27 +0100 (CET)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Andreas Schwab <schwab@suse.de>
-cc: Mikael Pettersson <mikpe@it.uu.se>,
-       Jacek Luczak <difrost.kernel@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: Comma at end of enum lists
-In-Reply-To: <jezlshe6u7.fsf@sykes.suse.de>
-Message-ID: <alpine.LNX.1.10.0803291923350.28605@fbirervta.pbzchgretzou.qr>
-References: <47EE75A0.8070705@gmail.com> <18414.31274.514325.238985@harpo.it.uu.se> <jezlshe6u7.fsf@sykes.suse.de>
-User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+	Sat, 29 Mar 2008 14:38:35 -0400
+Date: Sat, 29 Mar 2008 18:38:28 +0000
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Josh Boyer <jwboyer@gmail.com>
+Cc: Al Viro <viro@ftp.linux.org.uk>, torvalds@linux-foundation.org,
+       wei.zhang@freescale.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] fix the broken annotations in fsldma
+Message-ID: <20080329183828.GD9785@ZenIV.linux.org.uk>
+References: <E1JfRSU-0002xg-LA@ZenIV.linux.org.uk> <1206799322.12155.10.camel@vader.jdub.homelinux.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1206799322.12155.10.camel@vader.jdub.homelinux.org>
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, Mar 29, 2008 at 09:02:02AM -0500, Josh Boyer wrote:
+> On Sat, 2008-03-29 at 03:10 +0000, Al Viro wrote:
+> > a) every bitwise declaration will give a unique type; use typedefs.
+> > b) no need to bother with the stuff pointed to by iomem pointers, unless
+> > it's accessed directly.  noderef will force us to use helpers anyway.
 
-On Saturday 2008-03-29 19:13, Andreas Schwab wrote:
->> In a language with strict a comma-as-separator rule you can
->> get this benefit by placing the comma before new items rather
->> than after existing items:
->>
->> enum {	FOO
->> 	,FIE
->> 	,FUM
->> };
->>
->> but luckily C doesn't need this perversion.
->
-> Only since C99 (but GNU C never needed it either).
+> Did you forget to do the s/u{32,64}/v{32,64}/ conversion for this
+> struct, or am I just a moron?
 
-C had this for much longer than 99. Borland Turbo C from around 1990
-(which you can expect to be C89 if you have luck) also allows , at the end.
+See (b) above.
