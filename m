@@ -1,53 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754729AbYC2SNS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755988AbYC2SOF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754729AbYC2SNS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Mar 2008 14:13:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753406AbYC2SNG
+	id S1755988AbYC2SOF (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Mar 2008 14:14:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753461AbYC2SNy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Mar 2008 14:13:06 -0400
-Received: from smtpeu1.atmel.com ([195.65.72.27]:35402 "EHLO bagnes.atmel.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753113AbYC2SNF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Mar 2008 14:13:05 -0400
-Date: Sat, 29 Mar 2008 19:12:55 +0100
-From: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       linux-ide@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: linux-next: Tree for March 29
-Message-ID: <20080329191255.7312e036@hskinnemo-gx620.norway.atmel.com>
-In-Reply-To: <20080329223354.304e2722.sfr@canb.auug.org.au>
-References: <20080329223354.304e2722.sfr@canb.auug.org.au>
-Organization: Atmel Norway
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 29 Mar 2008 18:12:55.0418 (UTC) FILETIME=[82CF75A0:01C891C8]
+	Sat, 29 Mar 2008 14:13:54 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:55019 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753406AbYC2SNx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 29 Mar 2008 14:13:53 -0400
+From: Andreas Schwab <schwab@suse.de>
+To: Mikael Pettersson <mikpe@it.uu.se>
+Cc: Jacek Luczak <difrost.kernel@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: Comma at end of enum lists
+References: <47EE75A0.8070705@gmail.com>
+	<18414.31274.514325.238985@harpo.it.uu.se>
+X-Yow: NATHAN...  your PARENTS were in a CARCRASH!!
+ They're VOIDED - They COLLAPSED
+ They had no CHAINSAWS...  They had no MONEY MACHINES...
+ They did PILLS in SKIMPY GRASS SKIRTS...
+ Nathan, I EMULATED them...  but they were OFF-KEY...
+Date: Sat, 29 Mar 2008 19:13:52 +0100
+In-Reply-To: <18414.31274.514325.238985@harpo.it.uu.se> (Mikael Pettersson's
+	message of "Sat\, 29 Mar 2008 18\:19\:38 +0100")
+Message-ID: <jezlshe6u7.fsf@sykes.suse.de>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/22.1 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stephen Rothwell <sfr@canb.auug.org.au> wrote:
-> Status of my local build tests is at
-> http://kisskb.ellerman.id.au/linux-next.  If maintainers want to give
-> advice about cross compilers/configs that work, we are always open to add
-> more builds.
+Mikael Pettersson <mikpe@it.uu.se> writes:
 
-I see both avr32 builds currently fail, but for different
-reasons...none of which is avr32-specific as far as I can tell.
+> In a language with strict a comma-as-separator rule you can
+> get this benefit by placing the comma before new items rather
+> than after existing items:
+>
+> enum {	FOO
+> 	,FIE
+> 	,FUM
+> };
+>
+> but luckily C doesn't need this perversion.
 
-defconfig fails with
+Only since C99 (but GNU C never needed it either).
 
-drivers/ata/libata-core.c:127: error: 'ata_pci_default_filter' undeclared here (not in a function)
+Andreas.
 
-which seems to be due to CONFIG_ATA && !CONFIG_PCI
-
-allnoconfig fails with
-
-include/linux/netdevice.h:843: error: implicit declaration of function 'dev_net'
-
-which seems to be because the definition of dev_net is inside #ifdef
-CONFIG_NET, while next_net_device, which calls it, is not.
-
-Haavard
+-- 
+Andreas Schwab, SuSE Labs, schwab@suse.de
+SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
+PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
