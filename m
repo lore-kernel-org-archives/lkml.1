@@ -1,59 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755953AbYC2VjT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755765AbYC2WCT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755953AbYC2VjT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Mar 2008 17:39:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752327AbYC2VjI
+	id S1755765AbYC2WCT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Mar 2008 18:02:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753184AbYC2WCF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Mar 2008 17:39:08 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:40875 "EHLO
-	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752274AbYC2VjF (ORCPT
+	Sat, 29 Mar 2008 18:02:05 -0400
+Received: from netrider.rowland.org ([192.131.102.5]:2501 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1753053AbYC2WCE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Mar 2008 17:39:05 -0400
-Date: Sat, 29 Mar 2008 22:39:43 +0100
-From: Pavel Machek <pavel@suse.cz>
-To: Harvey Harrison <harvey.harrison@gmail.com>
-Cc: perex@perex.cz, kernel list <linux-kernel@vger.kernel.org>,
-       Trivial patch monkey <trivial@kernel.org>, tiwai@suse.de
-Subject: Re: sound/core.h: evil #ifdefs
-Message-ID: <20080329213943.GA15507@elf.ucw.cz>
-References: <20080329205700.GA11295@elf.ucw.cz> <1206824425.6543.28.camel@brick>
+	Sat, 29 Mar 2008 18:02:04 -0400
+Date: Sat, 29 Mar 2008 18:02:00 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@netrider.rowland.org
+To: Mark Lord <lkml@rtr.ca>
+cc: bugme-daemon@bugzilla.kernel.org, <rjw@sisk.pl>, <bunk@kernel.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       <linux-usb@vger.kernel.org>
+Subject: Re: [Bug 10345] USB HID problems after resume
+In-Reply-To: <47EE793C.5070105@rtr.ca>
+Message-ID: <Pine.LNX.4.44L0.0803291759030.21236-100000@netrider.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1206824425.6543.28.camel@brick>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On Sat, 29 Mar 2008, Mark Lord wrote:
 
-> > snd_minor_info_oss_* is an function returning int _or_ comment,
-> > depending on config parameters. That is truly evil, fix it.
-> > 
-> > Signed-off-by: Pavel Machek <pavel@suse.cz>
-> > 
-> > diff --git a/include/sound/core.h b/include/sound/core.h
-> > index 4fc0235..452000d 100644
-> > --- a/include/sound/core.h
-> > +++ b/include/sound/core.h
-> > @@ -277,8 +277,8 @@ #ifdef CONFIG_SND_OSSEMUL
-> >  int snd_minor_info_oss_init(void);
-> >  int snd_minor_info_oss_done(void);
-> >  #else
-> > -#define snd_minor_info_oss_init() /*NOP*/
-> > -#define snd_minor_info_oss_done() /*NOP*/
-> > +static inline snd_minor_info_oss_init(void) { return 0; }
->    static inline int snd_minor_info_oss_init(void) { return 0; }
+> Just happened again.  The machine resumed from RAM with no functioning USB.
+> Still running the exact same 2.6.25-rc7 kernel as before, with the RTC conflict fixed.
 > 
-> > +static inline snd_minor_info_oss_done(void) { return 0; }
->    static inline int snd_minor_info_oss_done(void) { return 0; }
-> >  #endif
+> WTF?
 
-yep, thanks, scratch that patch.
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+The first step in debugging this is to build a kernel with
+CONFIG_USB_DEBUG and send the dmesg log following an unsuccessful
+resume.  Include events from before the suspend; don't strip them out.  
+If the symptoms are the same as before then you should also get a stack
+dump for the ksuspend_usbd task.
+
+Alan Stern
+
