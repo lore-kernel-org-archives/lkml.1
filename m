@@ -1,254 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762030AbYC2DQC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762103AbYC2DQh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762030AbYC2DQC (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Mar 2008 23:16:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761209AbYC2DPa
+	id S1762103AbYC2DQh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Mar 2008 23:16:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758607AbYC2DQ0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Mar 2008 23:15:30 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:38797 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761777AbYC2DP1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Mar 2008 23:15:27 -0400
+	Fri, 28 Mar 2008 23:16:26 -0400
+Received: from moutng.kundenserver.de ([212.227.126.187]:63782 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757083AbYC2DQZ convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Mar 2008 23:16:25 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: Bob Copeland <me@bobcopeland.com>
+Subject: Re: [PATCH 1/7] omfs: define filesystem structures
+Date: Sat, 29 Mar 2008 04:15:41 +0100
+User-Agent: KMail/1.9.9
+Cc: Pavel Machek <pavel@ucw.cz>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+References: <1206578760-9050-1-git-send-email-me@bobcopeland.com> <20080328201940.GA3974@ucw.cz> <20080328231833.GA16515@hash.localnet>
+In-Reply-To: <20080328231833.GA16515@hash.localnet>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>, linux-s390@vger.kernel.org,
-       tony.luck@intel.com, linux-ia64@vger.kernel.org,
-       linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org
-X-Fcc: ~/Mail/linus
-Subject: [PATCH 2/2] x86 TS_RESTORE_SIGMASK
-In-Reply-To: Roland McGrath's message of  Friday, 28 March 2008 20:14:13 -0700 <20080329031413.EA38926FA1D@magilla.localdomain>
-References: <20080329001230.D013726FA1D@magilla.localdomain>
-	<20080329001341.7F93826FA1D@magilla.localdomain>
-	<alpine.LFD.1.00.0803281746480.14670@woody.linux-foundation.org>
-	<20080329022408.0DD4726FA1D@magilla.localdomain>
-	<20080329031413.EA38926FA1D@magilla.localdomain>
-X-Windows: more than enough rope.
-Message-Id: <20080329031451.D2E1226FA1D@magilla.localdomain>
-Date: Fri, 28 Mar 2008 20:14:51 -0700 (PDT)
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200803290415.43189.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX18U8oxgSzVYjBTJh2ZYISLfpFKup2miSwuPqp5
+ 0qAMDzk82s8v8XO7a7Pu2ZIKo7BTYqH31HnEC3bkWtUp/8kKMx
+ MflJuXnP3QWgvkIeItqeA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Replace TIF_RESTORE_SIGMASK with TS_RESTORE_SIGMASK and define
-our own set_restore_sigmask() function.  This saves the costly
-SMP-safe set_bit operation, which we do not need for the sigmask
-flag since TIF_SIGPENDING always has to be set too.
+On Saturday 29 March 2008, Bob Copeland wrote:
+> On Fri, Mar 28, 2008 at 09:19:40PM +0100, Pavel Machek wrote:
+> > On Wed 2008-03-26 20:45:54, Bob Copeland wrote:
+> > > +struct omfs_header {
+> > > +   __be64 h_self;
+> > > +   __be32 h_body_size;
+> > > +   __be16 h_crc;
+> > > +   char h_fill1[2];
+> > > +   u8 h_version;
+> > > +   char h_type;
+> > > +   u8 h_magic;
+> > > +   u8 h_check_xor;
+> > > +   __be32 h_fill2;
+> > > +};
+> > 
+> > attribute packed or something? Some strange machine (alpha?) may
+> > decide to align u8s at 32bit boundaries...
+> 
+> Thanks, I guess this applies for all the on disk structs.
 
-Signed-off-by: Roland McGrath <roland@redhat.com>
----
- arch/x86/ia32/ia32_signal.c      |    2 +-
- arch/x86/kernel/signal_32.c      |   19 ++++++++++---------
- arch/x86/kernel/signal_64.c      |   16 +++++++++-------
- include/asm-x86/thread_info_32.h |   13 +++++++++++--
- include/asm-x86/thread_info_64.h |   13 +++++++++++--
- 5 files changed, 42 insertions(+), 21 deletions(-)
+Actually, we don't normally add the attribute((packed)) in cases like
+this one, where you already have manual padding in it. Marking this
+structure packed would only cause a small performance loss on accesses
+of its members on certain architectures, but not have an impact on
+correctness.
 
-diff --git a/arch/x86/ia32/ia32_signal.c b/arch/x86/ia32/ia32_signal.c
-index 101b4b8..b7a531f 100644
---- a/arch/x86/ia32/ia32_signal.c
-+++ b/arch/x86/ia32/ia32_signal.c
-@@ -128,7 +128,7 @@ asmlinkage long sys32_sigsuspend(int history0, int history1, old_sigset_t mask)
- 
- 	current->state = TASK_INTERRUPTIBLE;
- 	schedule();
--	set_thread_flag(TIF_RESTORE_SIGMASK);
-+	set_restore_sigmask();
- 	return -ERESTARTNOHAND;
- }
- 
-diff --git a/arch/x86/kernel/signal_32.c b/arch/x86/kernel/signal_32.c
-index a06fa55..f8fbc20 100644
---- a/arch/x86/kernel/signal_32.c
-+++ b/arch/x86/kernel/signal_32.c
-@@ -45,7 +45,7 @@ sys_sigsuspend(int history0, int history1, old_sigset_t mask)
- 
- 	current->state = TASK_INTERRUPTIBLE;
- 	schedule();
--	set_thread_flag(TIF_RESTORE_SIGMASK);
-+	set_restore_sigmask();
- 	return -ERESTARTNOHAND;
- }
- 
-@@ -591,7 +591,7 @@ static void do_signal(struct pt_regs *regs)
- 	if (!user_mode(regs))
- 		return;
- 
--	if (test_thread_flag(TIF_RESTORE_SIGMASK))
-+	if (current_thread_info()->status & TS_RESTORE_SIGMASK)
- 		oldset = &current->saved_sigmask;
- 	else
- 		oldset = &current->blocked;
-@@ -608,12 +608,13 @@ static void do_signal(struct pt_regs *regs)
- 
- 		/* Whee!  Actually deliver the signal.  */
- 		if (handle_signal(signr, &info, &ka, oldset, regs) == 0) {
--			/* a signal was successfully delivered; the saved
-+			/*
-+			 * A signal was successfully delivered; the saved
- 			 * sigmask will have been stored in the signal frame,
- 			 * and will be restored by sigreturn, so we can simply
--			 * clear the TIF_RESTORE_SIGMASK flag */
--			if (test_thread_flag(TIF_RESTORE_SIGMASK))
--				clear_thread_flag(TIF_RESTORE_SIGMASK);
-+			 * clear the TS_RESTORE_SIGMASK flag.
-+			 */
-+			current_thread_info()->status &= ~TS_RESTORE_SIGMASK;
- 		}
- 
- 		return;
-@@ -639,8 +640,8 @@ static void do_signal(struct pt_regs *regs)
- 
- 	/* if there's no signal to deliver, we just put the saved sigmask
- 	 * back */
--	if (test_thread_flag(TIF_RESTORE_SIGMASK)) {
--		clear_thread_flag(TIF_RESTORE_SIGMASK);
-+	if (current_thread_info()->status & TS_RESTORE_SIGMASK) {
-+		current_thread_info()->status &= ~TS_RESTORE_SIGMASK;
- 		sigprocmask(SIG_SETMASK, &current->saved_sigmask, NULL);
- 	}
- }
-@@ -660,7 +661,7 @@ void do_notify_resume(struct pt_regs *regs, void *_unused,
- 	}
- 
- 	/* deal with pending signal delivery */
--	if (thread_info_flags & (_TIF_SIGPENDING | _TIF_RESTORE_SIGMASK))
-+	if (thread_info_flags & _TIF_SIGPENDING)
- 		do_signal(regs);
- 
- 	if (thread_info_flags & _TIF_HRTICK_RESCHED)
-diff --git a/arch/x86/kernel/signal_64.c b/arch/x86/kernel/signal_64.c
-index 016413b..fc97dec 100644
---- a/arch/x86/kernel/signal_64.c
-+++ b/arch/x86/kernel/signal_64.c
-@@ -443,7 +443,7 @@ static void do_signal(struct pt_regs *regs)
- 	if (!user_mode(regs))
- 		return;
- 
--	if (test_thread_flag(TIF_RESTORE_SIGMASK))
-+	if (current_thread_info()->status & TS_RESTORE_SIGMASK)
- 		oldset = &current->saved_sigmask;
- 	else
- 		oldset = &current->blocked;
-@@ -460,11 +460,13 @@ static void do_signal(struct pt_regs *regs)
- 
- 		/* Whee!  Actually deliver the signal.  */
- 		if (handle_signal(signr, &info, &ka, oldset, regs) == 0) {
--			/* a signal was successfully delivered; the saved
-+			/*
-+			 * A signal was successfully delivered; the saved
- 			 * sigmask will have been stored in the signal frame,
- 			 * and will be restored by sigreturn, so we can simply
--			 * clear the TIF_RESTORE_SIGMASK flag */
--			clear_thread_flag(TIF_RESTORE_SIGMASK);
-+			 * clear the TS_RESTORE_SIGMASK flag.
-+			 */
-+			current_thread_info()->status &= ~TS_RESTORE_SIGMASK;
- 		}
- 		return;
- 	}
-@@ -490,8 +492,8 @@ static void do_signal(struct pt_regs *regs)
- 
- 	/* if there's no signal to deliver, we just put the saved sigmask
- 	   back. */
--	if (test_thread_flag(TIF_RESTORE_SIGMASK)) {
--		clear_thread_flag(TIF_RESTORE_SIGMASK);
-+	if (current_thread_info()->status & TS_RESTORE_SIGMASK) {
-+		current_thread_info()->status &= ~TS_RESTORE_SIGMASK;
- 		sigprocmask(SIG_SETMASK, &current->saved_sigmask, NULL);
- 	}
- }
-@@ -517,7 +519,7 @@ do_notify_resume(struct pt_regs *regs, void *unused, __u32 thread_info_flags)
- #endif /* CONFIG_X86_MCE */
- 
- 	/* deal with pending signal delivery */
--	if (thread_info_flags & (_TIF_SIGPENDING|_TIF_RESTORE_SIGMASK))
-+	if (thread_info_flags & _TIF_SIGPENDING)
- 		do_signal(regs);
- 
- 	if (thread_info_flags & _TIF_HRTICK_RESCHED)
-diff --git a/include/asm-x86/thread_info_32.h b/include/asm-x86/thread_info_32.h
-index 5bd5082..4c4fd4e 100644
---- a/include/asm-x86/thread_info_32.h
-+++ b/include/asm-x86/thread_info_32.h
-@@ -131,7 +131,6 @@ static inline struct thread_info *current_thread_info(void)
- #define TIF_SYSCALL_EMU		5	/* syscall emulation active */
- #define TIF_SYSCALL_AUDIT	6	/* syscall auditing active */
- #define TIF_SECCOMP		7	/* secure computing */
--#define TIF_RESTORE_SIGMASK	8	/* restore signal mask in do_signal() */
- #define TIF_HRTICK_RESCHED	9	/* reprogram hrtick timer */
- #define TIF_MEMDIE		16
- #define TIF_DEBUG		17	/* uses debug registers */
-@@ -151,7 +150,6 @@ static inline struct thread_info *current_thread_info(void)
- #define _TIF_SYSCALL_EMU	(1<<TIF_SYSCALL_EMU)
- #define _TIF_SYSCALL_AUDIT	(1<<TIF_SYSCALL_AUDIT)
- #define _TIF_SECCOMP		(1<<TIF_SECCOMP)
--#define _TIF_RESTORE_SIGMASK	(1<<TIF_RESTORE_SIGMASK)
- #define _TIF_HRTICK_RESCHED	(1<<TIF_HRTICK_RESCHED)
- #define _TIF_DEBUG		(1<<TIF_DEBUG)
- #define _TIF_IO_BITMAP		(1<<TIF_IO_BITMAP)
-@@ -186,9 +184,20 @@ static inline struct thread_info *current_thread_info(void)
-  */
- #define TS_USEDFPU		0x0001	/* FPU was used by this task this quantum (SMP) */
- #define TS_POLLING		0x0002	/* True if in idle loop and not sleeping */
-+#define TS_RESTORE_SIGMASK	0x0004	/* restore signal mask in do_signal() */
- 
- #define tsk_is_polling(t) (task_thread_info(t)->status & TS_POLLING)
- 
-+#ifndef __ASSEMBLY__
-+#define HAVE_SET_RESTORE_SIGMASK	1
-+static inline void set_restore_sigmask(void)
-+{
-+	struct thread_info *ti = current_thread_info();
-+	ti->status |= TS_RESTORE_SIGMASK;
-+	set_bit(TIF_SIGPENDING, &ti->flags);
-+}
-+#endif	/* !__ASSEMBLY__ */
-+
- #endif /* __KERNEL__ */
- 
- #endif /* _ASM_THREAD_INFO_H */
-diff --git a/include/asm-x86/thread_info_64.h b/include/asm-x86/thread_info_64.h
-index 6c9b214..ead94d5 100644
---- a/include/asm-x86/thread_info_64.h
-+++ b/include/asm-x86/thread_info_64.h
-@@ -110,7 +110,6 @@ static inline struct thread_info *stack_thread_info(void)
- #define TIF_IRET		5	/* force IRET */
- #define TIF_SYSCALL_AUDIT	7	/* syscall auditing active */
- #define TIF_SECCOMP		8	/* secure computing */
--#define TIF_RESTORE_SIGMASK	9	/* restore signal mask in do_signal */
- #define TIF_MCE_NOTIFY		10	/* notify userspace of an MCE */
- #define TIF_HRTICK_RESCHED	11	/* reprogram hrtick timer */
- /* 16 free */
-@@ -133,7 +132,6 @@ static inline struct thread_info *stack_thread_info(void)
- #define _TIF_IRET		(1<<TIF_IRET)
- #define _TIF_SYSCALL_AUDIT	(1<<TIF_SYSCALL_AUDIT)
- #define _TIF_SECCOMP		(1<<TIF_SECCOMP)
--#define _TIF_RESTORE_SIGMASK	(1<<TIF_RESTORE_SIGMASK)
- #define _TIF_MCE_NOTIFY		(1<<TIF_MCE_NOTIFY)
- #define _TIF_HRTICK_RESCHED	(1<<TIF_HRTICK_RESCHED)
- #define _TIF_IA32		(1<<TIF_IA32)
-@@ -174,9 +172,20 @@ static inline struct thread_info *stack_thread_info(void)
- #define TS_USEDFPU		0x0001	/* FPU was used by this task this quantum (SMP) */
- #define TS_COMPAT		0x0002	/* 32bit syscall active */
- #define TS_POLLING		0x0004	/* true if in idle loop and not sleeping */
-+#define TS_RESTORE_SIGMASK	0x0008	/* restore signal mask in do_signal() */
- 
- #define tsk_is_polling(t) (task_thread_info(t)->status & TS_POLLING)
- 
-+#ifndef __ASSEMBLY__
-+#define HAVE_SET_RESTORE_SIGMASK	1
-+static inline void set_restore_sigmask(void)
-+{
-+	struct thread_info *ti = current_thread_info();
-+	ti->status |= TS_RESTORE_SIGMASK;
-+	set_bit(TIF_SIGPENDING, &ti->flags);
-+}
-+#endif	/* !__ASSEMBLY__ */
-+
- #endif /* __KERNEL__ */
- 
- #endif /* _ASM_THREAD_INFO_H */
+No architecture supported by Linux requires higher than natural alignment
+for any integer types, and a lot of other code would break otherwise.
+
+	Arnd <><
