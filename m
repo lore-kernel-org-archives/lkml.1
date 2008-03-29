@@ -1,75 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755208AbYC2WaJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754096AbYC2Wjl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755208AbYC2WaJ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Mar 2008 18:30:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750999AbYC2W36
+	id S1754096AbYC2Wjl (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Mar 2008 18:39:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751238AbYC2Wjc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Mar 2008 18:29:58 -0400
-Received: from gherkin.frus.com ([192.158.254.49]:47328 "EHLO gherkin.frus.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750931AbYC2W35 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Mar 2008 18:29:57 -0400
-Subject: 2.6.25-rc7: warn_on_slowpath triggered
-To: linux-kernel@vger.kernel.org
-Date: Sat, 29 Mar 2008 17:29:55 -0500 (CDT)
-X-Mailer: ELM [version 2.4ME+ PL82 (25)]
+	Sat, 29 Mar 2008 18:39:32 -0400
+Received: from proxy3.bredband.net ([195.54.101.73]:47089 "EHLO
+	proxy3.bredband.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750999AbYC2Wjb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 29 Mar 2008 18:39:31 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AqdlAB9i7kdT48OPPGdsb2JhbACBWoZViQkBAQEBMJcd
+Message-ID: <47EEC51C.2060806@coderworld.net>
+Date: Sat, 29 Mar 2008 23:39:24 +0100
+From: Richard Jonsson <richie@coderworld.net>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
 MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+Subject: Re: Keyboard weirdness: keys get stuck
+References: <47EEA097.5000701@coderworld.net>
+In-Reply-To: <47EEA097.5000701@coderworld.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset=US-ASCII
-Message-Id: <20080329222955.036CCDBA2@gherkin.frus.com>
-From: rct@frus.com (Bob Tracy)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-System is a AMD K6-III/450.  This is actually a 2.6.25-rcX issue
-that I'm just getting around to reporting.  Sorry about that...
+Richard Jonsson skrev:
+> With 2.6.25-rc6-git-something I have experienced stuck keys. When typing 
+> a  sentence a character repeats aboooooooout 10 times, or as 'about' 
+> above ;). I tested with a new kernel today, 2.6.25-rc7-git-something and 
+> the problem is still present.
+> 
+> With 2.6.25-rc3 the keyboard is fine, and I've not tried with any kernel 
+> in between.
+> 
+> As a side note, timestamps gets mixed up in dmesg output in a 1-2 second 
+> span. Maybe related?
+> 
+> This is on a HP dv2140eu laptop, x86_64 SMP. Please cc me if you want 
+> configuration details or testing to be done.
+> 
 
-------------[ cut here ]------------
-WARNING: at arch/x86/pci/irq.c:263 pirq_via586_get+0x23/0x42()
-Modules linked in: snd_emu10k1(+) snd_rawmidi firmware_class snd_ac97_codec ac97_bus snd_pcm snd_seq_device snd_timer snd_page_alloc snd_util_mem snd_hwdep snd soundcore ipv6 usbmouse usbhid ff_memless uhci_hcd ehci_hcd usbcore binfmt_misc
-Pid: 1784, comm: modprobe Not tainted 2.6.25-rc7 #1
- [<c0115b43>] warn_on_slowpath+0x40/0x4f
- [<c012755b>] run_hrtimer_pending+0xac/0xc5
- [<c011cc32>] run_timer_softirq+0x152/0x16b
- [<c0119b8c>] __do_softirq+0x59/0x85
- [<c027246b>] pci_conf1_read+0xac/0xc5
- [<c027334f>] raw_pci_read+0x3f/0x47
- [<c027246b>] pci_conf1_read+0xac/0xc5
- [<c027334f>] raw_pci_read+0x3f/0x47
- [<c0273421>] pci_read+0x1c/0x23
- [<c01f5bce>] pci_bus_read_config_byte+0x37/0x6c
- [<c01f5be8>] pci_bus_read_config_byte+0x51/0x6c
- [<c0272cef>] pirq_via586_get+0x23/0x42
- [<c0272ccc>] pirq_via586_get+0x0/0x42
- [<c0272fa7>] pcibios_lookup_irq+0x1da/0x355
- [<c0273152>] pirq_enable_irq+0x30/0x91
- [<c0273403>] pcibios_enable_device+0x21/0x23
- [<c01f798b>] do_pci_enable_device+0x1f/0x34
- [<c01f79f8>] __pci_enable_device_flags+0x58/0x64
- [<d8c51bb6>] snd_emu10k1_create+0x2f/0x5fb [snd_emu10k1]
- [<d8b87f5b>] snd_card_new+0x1f6/0x24a [snd]
- [<d8c5196e>] snd_card_emu10k1_probe+0xd2/0x2eb [snd_emu10k1]
- [<c01f8d59>] pci_device_probe+0x36/0x57
- [<c022f7d7>] driver_probe_device+0xb7/0x128
- [<c022f8d5>] __driver_attach+0x0/0x75
- [<c022f919>] __driver_attach+0x44/0x75
- [<c022ede5>] bus_for_each_dev+0x38/0x5a
- [<c022f670>] driver_attach+0x11/0x13
- [<c022f8d5>] __driver_attach+0x0/0x75
- [<c022f493>] bus_add_driver+0x8f/0x1ac
- [<c022fae2>] driver_register+0x45/0x99
- [<c01f8f46>] __pci_register_driver+0x2b/0x59
- [<c01316c2>] sys_init_module+0x14cc/0x1624
- [<c01584af>] do_sync_read+0xbe/0xfd
- [<d8c00552>] snd_pcm_format_width+0x0/0x1c [snd_pcm]
- [<c0158edb>] sys_read+0x3e/0x65
- [<c0102a42>] syscall_call+0x7/0xb
- =======================
----[ end trace 2f9d040b1fc63cd8 ]---
-
--- 
-------------------------------------------------------------------------
-Bob Tracy          |  "I was a beta tester for dirt.  They never did
-rct@frus.com       |   get all the bugs out." - Steve McGrew on /.
-------------------------------------------------------------------------
+I should add that while watching a movie I noticed that video stutters 
+every now and then, on an irregular basis. It lasts for approx a second 
+each time.
