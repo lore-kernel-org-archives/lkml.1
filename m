@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756350AbYC3WoA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757583AbYC3WoW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756350AbYC3WoA (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Mar 2008 18:44:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756004AbYC3WlH
+	id S1757583AbYC3WoW (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Mar 2008 18:44:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756014AbYC3WlL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Mar 2008 18:41:07 -0400
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:57873 "EHLO smtp6.pp.htv.fi"
+	Sun, 30 Mar 2008 18:41:11 -0400
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:53047 "EHLO smtp5.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755996AbYC3WlF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Mar 2008 18:41:05 -0400
-Date: Mon, 31 Mar 2008 01:40:53 +0300
+	id S1755996AbYC3WlK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 30 Mar 2008 18:41:10 -0400
+Date: Mon, 31 Mar 2008 01:40:57 +0300
 From: Adrian Bunk <bunk@kernel.org>
 To: linux-kernel@vger.kernel.org
-Subject: [2.6 patch] proper pid{hash,map}_init() prototypes
-Message-ID: <20080330224053.GM28445@cs181133002.pp.htv.fi>
+Subject: [2.6 patch] make struct mempolicy.c:default_policy static
+Message-ID: <20080330224057.GN28445@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -22,8 +22,7 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds proper prototypes for pid{hash,map}_init() in 
-include/linux/pid_namespace.h
+This patch makes the needlessly global struct default_policy static.
 
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
@@ -32,33 +31,29 @@ Signed-off-by: Adrian Bunk <bunk@kernel.org>
 This patch has been sent on:
 - 22 Feb 2008
 
- include/linux/pid_namespace.h |    3 +++
- init/main.c                   |    2 --
- 2 files changed, 3 insertions(+), 2 deletions(-)
-
-279d377cacc55d031230ed98370726dbd8c82602 diff --git a/include/linux/pid_namespace.h b/include/linux/pid_namespace.h
-index fcd61fa..2ce9521 100644
---- a/include/linux/pid_namespace.h
-+++ b/include/linux/pid_namespace.h
-@@ -85,4 +85,7 @@ static inline struct task_struct *task_child_reaper(struct task_struct *tsk)
- 	return tsk->nsproxy->pid_ns->child_reaper;
- }
+4a69fc08292ebe8b7d202436a71926950a980c21 diff --git a/include/linux/mempolicy.h b/include/linux/mempolicy.h
+index 59c4865..fd20b03 100644
+--- a/include/linux/mempolicy.h
++++ b/include/linux/mempolicy.h
+@@ -149,7 +149,6 @@ extern void mpol_rebind_task(struct task_struct *tsk,
+ extern void mpol_rebind_mm(struct mm_struct *mm, nodemask_t *new);
+ extern void mpol_fix_fork_child_flag(struct task_struct *p);
  
-+void pidhash_init(void);
-+void pidmap_init(void);
-+
- #endif /* _LINUX_PID_NS_H */
-diff --git a/init/main.c b/init/main.c
-index 7dd9916..696e5f1 100644
---- a/init/main.c
-+++ b/init/main.c
-@@ -84,8 +84,6 @@ extern void init_IRQ(void);
- extern void fork_init(unsigned long);
- extern void mca_init(void);
- extern void sbus_init(void);
--extern void pidhash_init(void);
--extern void pidmap_init(void);
- extern void prio_tree_init(void);
- extern void radix_tree_init(void);
- extern void free_initmem(void);
+-extern struct mempolicy default_policy;
+ extern struct zonelist *huge_zonelist(struct vm_area_struct *vma,
+ 		unsigned long addr, gfp_t gfp_flags, struct mempolicy **mpol);
+ extern unsigned slab_node(struct mempolicy *policy);
+diff --git a/mm/mempolicy.c b/mm/mempolicy.c
+index 6c7ba1a..f3118a8 100644
+--- a/mm/mempolicy.c
++++ b/mm/mempolicy.c
+@@ -105,7 +105,7 @@ static struct kmem_cache *sn_cache;
+    policied. */
+ enum zone_type policy_zone = 0;
+ 
+-struct mempolicy default_policy = {
++static struct mempolicy default_policy = {
+ 	.refcnt = ATOMIC_INIT(1), /* never free it */
+ 	.policy = MPOL_DEFAULT,
+ };
 
