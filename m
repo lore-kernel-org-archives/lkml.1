@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755153AbYC3X3D@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757987AbYC3X3Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755153AbYC3X3D (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Mar 2008 19:29:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756719AbYC3X2p
+	id S1757987AbYC3X3Y (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Mar 2008 19:29:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756857AbYC3X2v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Mar 2008 19:28:45 -0400
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:55262 "EHLO smtp4.pp.htv.fi"
+	Sun, 30 Mar 2008 19:28:51 -0400
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:59145 "EHLO smtp6.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756660AbYC3X2o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Mar 2008 19:28:44 -0400
-Date: Mon, 31 Mar 2008 02:28:31 +0300
+	id S1756838AbYC3X2u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 30 Mar 2008 19:28:50 -0400
+Date: Mon, 31 Mar 2008 02:28:36 +0300
 From: Adrian Bunk <bunk@kernel.org>
 To: dm-devel@redhat.com
 Cc: linux-kernel@vger.kernel.org
-Subject: [2.6 patch] remove dm_create_error_table()
-Message-ID: <20080330232831.GW28445@cs181133002.pp.htv.fi>
+Subject: [2.6 patch] make dm_set_device_limits() static
+Message-ID: <20080330232836.GX28445@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -23,79 +23,52 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-dm_create_error_table() was added in kernel 2.6.18 and never used...
+This patch makes the needlessly global dm_set_device_limits() static.
 
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
 
- drivers/md/dm-table.c         |   38 ----------------------------------
- include/linux/device-mapper.h |    6 -----
- 2 files changed, 44 deletions(-)
+ drivers/md/dm-table.c         |    4 ++--
+ include/linux/device-mapper.h |    5 -----
+ 2 files changed, 2 insertions(+), 7 deletions(-)
 
-644f0b957bf64a4c86b944166a48fe7bad3d1724 diff --git a/drivers/md/dm-table.c b/drivers/md/dm-table.c
-index e75b143..a999211 100644
+bb081f9ddde6ca766b8c1cd1077f203d0a082cdb diff --git a/drivers/md/dm-table.c b/drivers/md/dm-table.c
+index a999211..ce27283 100644
 --- a/drivers/md/dm-table.c
 +++ b/drivers/md/dm-table.c
-@@ -245,44 +245,6 @@ int dm_table_create(struct dm_table **result, int mode,
+@@ -491,7 +491,8 @@ static int __table_get_device(struct dm_table *t, struct dm_target *ti,
  	return 0;
  }
  
--int dm_create_error_table(struct dm_table **result, struct mapped_device *md)
--{
--	struct dm_table *t;
--	sector_t dev_size = 1;
--	int r;
--
--	/*
--	 * Find current size of device.
--	 * Default to 1 sector if inactive.
--	 */
--	t = dm_get_table(md);
--	if (t) {
--		dev_size = dm_table_get_size(t);
--		dm_table_put(t);
--	}
--
--	r = dm_table_create(&t, FMODE_READ, 1, md);
--	if (r)
--		return r;
--
--	r = dm_table_add_target(t, "error", 0, dev_size, NULL);
--	if (r)
--		goto out;
--
--	r = dm_table_complete(t);
--	if (r)
--		goto out;
--
--	*result = t;
--
--out:
--	if (r)
--		dm_table_put(t);
--
--	return r;
--}
--EXPORT_SYMBOL_GPL(dm_create_error_table);
--
- static void free_devices(struct list_head *devices)
+-void dm_set_device_limits(struct dm_target *ti, struct block_device *bdev)
++static void dm_set_device_limits(struct dm_target *ti,
++				 struct block_device *bdev)
  {
- 	struct list_head *tmp, *next;
+ 	struct request_queue *q = bdev_get_queue(bdev);
+ 	struct io_restrictions *rs = &ti->limits;
+@@ -541,7 +542,6 @@ void dm_set_device_limits(struct dm_target *ti, struct block_device *bdev)
+ 
+ 	rs->no_cluster |= !test_bit(QUEUE_FLAG_CLUSTER, &q->queue_flags);
+ }
+-EXPORT_SYMBOL_GPL(dm_set_device_limits);
+ 
+ int dm_get_device(struct dm_target *ti, const char *path, sector_t start,
+ 		  sector_t len, int mode, struct dm_dev **result)
 diff --git a/include/linux/device-mapper.h b/include/linux/device-mapper.h
-index cb78457..8fc199b 100644
+index 8fc199b..4c4b3a6 100644
 --- a/include/linux/device-mapper.h
 +++ b/include/linux/device-mapper.h
-@@ -250,11 +250,5 @@ void dm_table_event(struct dm_table *t);
-  */
- int dm_swap_table(struct mapped_device *md, struct dm_table *t);
+@@ -75,11 +75,6 @@ typedef int (*dm_ioctl_fn) (struct dm_target *ti, struct inode *inode,
+ void dm_error(const char *message);
  
--/*
-- * Prepare a table for a device that will error all I/O.
-- * To make it active, call dm_suspend(), dm_swap_table() then dm_resume().
+ /*
+- * Combine device limits.
 - */
--int dm_create_error_table(struct dm_table **result, struct mapped_device *md);
+-void dm_set_device_limits(struct dm_target *ti, struct block_device *bdev);
 -
- #endif	/* __KERNEL__ */
- #endif	/* _LINUX_DEVICE_MAPPER_H */
+-/*
+  * Constructors should call these functions to ensure destination devices
+  * are opened/closed correctly.
+  * FIXME: too many arguments.
 
