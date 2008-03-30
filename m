@@ -1,62 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754725AbYC3UUT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754687AbYC3UWR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754725AbYC3UUT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Mar 2008 16:20:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753209AbYC3UUH
+	id S1754687AbYC3UWR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Mar 2008 16:22:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753173AbYC3UWM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Mar 2008 16:20:07 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:46660 "EHLO
-	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752971AbYC3UUG (ORCPT
+	Sun, 30 Mar 2008 16:22:12 -0400
+Received: from mail-07.jhb.wbs.co.za ([196.2.97.4]:30244 "EHLO
+	mail-07.jhb.wbs.co.za" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753056AbYC3UWL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Mar 2008 16:20:06 -0400
-Date: Sun, 30 Mar 2008 22:20:47 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Mark Lord <lkml@rtr.ca>
-Cc: bugme-daemon@bugzilla.kernel.org, rjw@sisk.pl, bunk@kernel.org,
-       Linux Kernel <linux-kernel@vger.kernel.org>, linux-usb@vger.kernel.org
-Subject: Re: [Bug 10345] USB HID problems after resume
-Message-ID: <20080330202047.GE11839@elf.ucw.cz>
-References: <20080328223544.A61F711D10C@picon.linux-foundation.org> <47EE78C9.5090006@rtr.ca> <47EE793C.5070105@rtr.ca> <20080330114834.GA6510@elf.ucw.cz> <47EFD1F1.8010501@rtr.ca> <20080330182243.GA11839@elf.ucw.cz> <47EFF4F6.1050302@rtr.ca>
+	Sun, 30 Mar 2008 16:22:11 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AoICAMCT70fEAmHGgWdsb2JhbACRQgEBECaVMw
+From: Bongani Hlope <bonganilinux@mweb.co.za>
+To: Marcin Slusarz <marcin.slusarz@gmail.com>
+Subject: Re: 2.6.25-rc regression: bttv: oops on radio access (bisected)
+Date: Sun, 30 Mar 2008 22:22:20 +0200
+User-Agent: KMail/1.9.9
+Cc: Douglas Schilling Landgraf <dougsland@gmail.com>,
+       Mauro Carvalho Chehab <mchehab@infradead.org>,
+       video4linux-list@redhat.com, linux-kernel@vger.kernel.org
+References: <20080330162006.GA6048@joi>
+In-Reply-To: <20080330162006.GA6048@joi>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <47EFF4F6.1050302@rtr.ca>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Message-Id: <200803302222.20457.bonganilinux@mweb.co.za>
+X-Original-Subject: Re: 2.6.25-rc regression: bttv: oops on radio access (bisected)
+X-Spam-Score: 0.1 (/)
+X-Spam-Score-Int: 1
+X-Spam-Report: Spam detection software, running on the system "wbs-smtp-out-03.jhb.wbs.co.za", has
+	identified this incoming email as possible spam.  The original message
+	has been attached to this so you can view it (if it isn't spam) or label
+	similar future email.  If you have any questions, see
+	Postmaster for details.
+	Content preview:  On Sunday 30 March 2008 18:20:49 Marcin Slusarz wrote: > >
+	ps: note that offending patch introduced build breakage and the fix was >
+	commited 90 revisions later Does 2.6.25-rc1 work for you? That's the first
+	broken kernel I've reported for the radio application? [...] 
+	Content analysis details:   (0.1 points, 5.0 required)
+	pts rule name              description
+	---- ---------------------- --------------------------------------------------
+	0.0 BAYES_50               BODY: Bayesian spam probability is 40 to 60%
+	[score: 0.5000]
+	0.1 RDNS_DYNAMIC           Delivered to trusted network by host with
+	dynamic-looking rDNS
+X-Scan-Signature: 934cdb2dba742a9e2c19c05a5bdf244e
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun 2008-03-30 16:15:50, Mark Lord wrote:
-> Pavel Machek wrote:
->> On Sun 2008-03-30 13:46:25, Mark Lord wrote:
->>> Pavel Machek wrote:
->>>> On Sat 2008-03-29 13:15:40, Mark Lord wrote:
->>>> ..
->>>>> Just happened again.  The machine resumed from RAM with no functioning USB.
->>>>> Still running the exact same 2.6.25-rc7 kernel as before, with the RTC conflict fixed.
->>>>>
->>>>> WTF?
->>>>> 3GB of RAM? Try iommu=soft.
->>> ..
->>>
->>> What does that option do (it is not in Documentation/kernel-parameters.txt),
->>> and why do you suspect it may make a difference here?
->>
->> See x86_64/boot-options.txt . Yes, that should be fixed.
->>
->> I had strange problems, and it looks like iommu does not have proper
->> suspend/resume support. > 3GB machines hit that. Do you have one?
-> ..
+On Sunday 30 March 2008 18:20:49 Marcin Slusarz wrote:
 >
-> This is a 32-bit system / kernel, so I'm guessing that this option is not applicable.
->
-> Right?  (it does have 3GB of RAM, though).
+> ps: note that offending patch introduced build breakage and the fix was
+>     commited 90 revisions later
 
-Not 100% sure... I've seen strangeness on 32-bit systems, too. Can you
-simply pass mem=2G and see what happens?
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Does 2.6.25-rc1 work for you? That's the first broken kernel I've reported for 
+the radio application?
+
+>
+> ps2: i couldn't revert it on top of rc7 because there are many patches
+>      which depend on this one
