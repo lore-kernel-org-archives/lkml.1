@@ -1,66 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752103AbYC3Hti@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751895AbYC3IPj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752103AbYC3Hti (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Mar 2008 03:49:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751250AbYC3Htb
+	id S1751895AbYC3IPj (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Mar 2008 04:15:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751261AbYC3IP1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Mar 2008 03:49:31 -0400
-Received: from fg-out-1718.google.com ([72.14.220.156]:62260 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751207AbYC3Ht3 (ORCPT
+	Sun, 30 Mar 2008 04:15:27 -0400
+Received: from wf-out-1314.google.com ([209.85.200.172]:44787 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751247AbYC3IPY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Mar 2008 03:49:29 -0400
+	Sun, 30 Mar 2008 04:15:24 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=date:from:to:subject:message-id:mime-version:content-type:content-disposition:user-agent;
-        b=cprZo7mAQeeoXPtr/s4IBickHDg6c57IWbUcxpYYfOCwMPaBe318LL/veahso8iw3DhPU7Xqm5cOZuobBtYKnWNTqPngnu4s7oBfNXk9ezCYkbMZqPtDqgScbHD/nDksbp8T0d/lvawuZPp6c2SwmXzH37+b27BTY7Jnhl/9dbg=
-Date: Sun, 30 Mar 2008 11:49:27 +0400
-From: Sergey Dolgov <solkaa@gmail.com>
-To: linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
-Subject: usb-storage, error reading the last 8 sectors, regression in
-	2.6.25-rc7
-Message-ID: <20080330074927.GA8178@slk.laptop>
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=XuiOL8kcwzmwINGrXUpS7Y476uBHdG4feHrKE9DCmojvaSWvagyFMGrCmhQukqYKSLF5snSfoOcdzS77udlXzfnHPtVtt+r2NlJIMLeIlOQOKa7+iIP9dhjFGmXppvqM8IIC+zgneYCbQBd3U+Mswoaz92fWuglQFJ9H9ZUvbwg=
+Message-ID: <86802c440803300115w6f3cc08cha72d3dc20bc4ec8e@mail.gmail.com>
+Date: Sun, 30 Mar 2008 01:15:21 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Huang, Ying" <ying.huang@intel.com>
+Subject: Re: [PATCH 2/4] x86_64 boot -v2: Add linked list of struct setup_data
+Cc: "H. Peter Anvin" <hpa@zytor.com>, andi@firstfloor.org, mingo@redhat.com,
+       tglx@linutronix.de, "Paul Jackson" <pj@sgi.com>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <1206672584.13404.25.camel@caritas-dev.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+References: <1206672584.13404.25.camel@caritas-dev.intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On Thu, Mar 27, 2008 at 7:49 PM, Huang, Ying <ying.huang@intel.com> wrote:
+> This patch add a field of 64-bit physical pointer to NULL terminated
+>  single linked list of struct setup_data to real-mode kernel
+>  header. This is used as a more extensible boot parameters passing
+>  mechanism.
+>
+>  Signed-off-by: Huang Ying <ying.huang@intel.com>
+>
+>  ---
+>   arch/x86/boot/header.S      |    6 +++++-
+>   arch/x86/kernel/head64.c    |   20 ++++++++++++++++++++
+>   arch/x86/kernel/setup_64.c  |   22 ++++++++++++++++++++++
+>   include/asm-x86/bootparam.h |   14 ++++++++++++++
+>   4 files changed, 61 insertions(+), 1 deletion(-)
+>
+...
+>  +static void __init reserve_setup_data(void)
+>  +{
+>  +       struct setup_data *data;
+>  +       unsigned long pa_data;
+>  +       char buf[32];
+>  +
+>  +       if (boot_params.hdr.version < 0x0209)
+>  +               return;
+>  +       pa_data = boot_params.hdr.setup_data;
+>  +       while (pa_data) {
+>  +               data = early_ioremap(pa_data, sizeof(*data));
+>  +               sprintf(buf, "setup data %x", data->type);
+>  +               reserve_early(pa_data, pa_data+sizeof(*data)+data->len, buf);
+>  +               pa_data = data->next;
+>  +               early_iounmap(data, sizeof(*data));
+>  +       }
 
-If I boot Asus Eee PC with 8 Gb Transcend SDHC card inserted into the
-internal card reader, 2.6.25-rc7 prints the following:
+current reserve_early will have limitation with 20 entries.
 
-   [    9.914968] scsi 2:0:0:0: Direct-Access     USB2.0   CardReader SD0   0100 PQ: 0 ANSI: 0
-   [   10.248951] sd 2:0:0:0: [sdb] 15660032 512-byte hardware sectors (8018 MB)
-   [   10.249695] sd 2:0:0:0: [sdb] Write Protect is off
-   [   10.249928] sd 2:0:0:0: [sdb] Mode Sense: 03 00 00 00
-   [   10.249935] sd 2:0:0:0: [sdb] Assuming drive cache: write through
-   [   10.256632] sd 2:0:0:0: [sdb] 15660032 512-byte hardware sectors (8018 MB)
-   [   10.257440] sd 2:0:0:0: [sdb] Write Protect is off
-   [   10.257546] sd 2:0:0:0: [sdb] Mode Sense: 03 00 00 00
-   [   10.257552] sd 2:0:0:0: [sdb] Assuming drive cache: write through
-   [   10.257657]  sdb: sdb1 sdb2 sdb3
-   [   10.259560] sd 2:0:0:0: [sdb] Attached SCSI removable disk
-   [   10.260489] usb-storage: device scan complete
-   [   10.380590] sd 2:0:0:0: [sdb] Result: hostbyte=0x00 driverbyte=0x08
-   [   10.380590] sd 2:0:0:0: [sdb] Sense Key : 0x4 [current] 
-   [   10.380590] sd 2:0:0:0: [sdb] ASC=0x11 ASCQ=0x0
-   [   10.380590] end_request: I/O error, dev sdb, sector 15660024
+/*
+ * Early reserved memory areas.
+ */
 
-As a result, no sdb device is created by udev.
+#define MAX_EARLY_RES 20
 
-If the card is inserted after the boot, it sometimes works fine (I've
-tested with "dd if=/dev/sdb of=/dev/null bs=512 skip=15660000"), and
-sometimes fails in the same way (the same I/O error message, dd
-hangs).
+or we need to make reserve_early a little bit smart, so it could merge
+continuous region...
+and then your free_early need to be updated too.
 
-2.6.24.4 is fine (no problems at boot, always can dd read the whole
-card, all 15660032 sectors of it).
-
-The other SD card I've got, 2 Gb, also works ok even with 2.6.25-rc7.
-
--- 
-Sergey
+YH
