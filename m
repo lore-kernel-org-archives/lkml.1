@@ -1,20 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756863AbYC3Wmp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757200AbYC3Wn1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756863AbYC3Wmp (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Mar 2008 18:42:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755910AbYC3Wkv
+	id S1757200AbYC3Wn1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Mar 2008 18:43:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754674AbYC3Wk6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Mar 2008 18:40:51 -0400
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:57864 "EHLO smtp6.pp.htv.fi"
+	Sun, 30 Mar 2008 18:40:58 -0400
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:53780 "EHLO smtp4.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755908AbYC3Wku (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Mar 2008 18:40:50 -0400
-Date: Mon, 31 Mar 2008 01:40:37 +0300
+	id S1755967AbYC3Wk5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 30 Mar 2008 18:40:57 -0400
+Date: Mon, 31 Mar 2008 01:40:45 +0300
 From: Adrian Bunk <bunk@kernel.org>
-To: Nick Piggin <npiggin@suse.de>
-Cc: linux-kernel@vger.kernel.org
-Subject: [2.6 patch] make printk_recursion_bug_msg[] static
-Message-ID: <20080330224037.GI28445@cs181133002.pp.htv.fi>
+To: linux-kernel@vger.kernel.org
+Subject: [2.6 patch] fs/proc/kmsg.c should #include <linux/proc_fs.h>
+Message-ID: <20080330224045.GK28445@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -23,28 +22,26 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-printk_recursion_bug_msg[] can become static.
+Every file should include the headers containing the externs its global 
+code.
 
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
 
 This patch has been sent on:
-- 13 Feb 2008
-- 29 Jan 2008
+- 17 Feb 2008
 
-77c15a78b65e014c00b533e4c5eeee98a71853fc 
-diff --git a/kernel/printk.c b/kernel/printk.c
-index 3b7c968..f8e4229 100644
---- a/kernel/printk.c
-+++ b/kernel/printk.c
-@@ -623,7 +623,7 @@ asmlinkage int printk(const char *fmt, ...)
- /* cpu currently holding logbuf_lock */
- static volatile unsigned int printk_cpu = UINT_MAX;
+b6f818ea9e2dd76d3fd7dbec2382240cabe66a6b diff --git a/fs/proc/kmsg.c b/fs/proc/kmsg.c
+index ff3b90b..9fa3a3d 100644
+--- a/fs/proc/kmsg.c
++++ b/fs/proc/kmsg.c
+@@ -11,6 +11,7 @@
+ #include <linux/kernel.h>
+ #include <linux/poll.h>
+ #include <linux/fs.h>
++#include <linux/proc_fs.h>
  
--const char printk_recursion_bug_msg [] =
-+static const char printk_recursion_bug_msg[] =
- 			KERN_CRIT "BUG: recent printk recursion!\n";
- static int printk_recursion_bug;
- 
+ #include <asm/uaccess.h>
+ #include <asm/io.h>
 
