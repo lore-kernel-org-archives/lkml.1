@@ -1,44 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753682AbYC3Rqg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753559AbYC3SBl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753682AbYC3Rqg (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Mar 2008 13:46:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751688AbYC3Rq2
+	id S1753559AbYC3SBl (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Mar 2008 14:01:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751753AbYC3SBc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Mar 2008 13:46:28 -0400
-Received: from rtr.ca ([76.10.145.34]:4294 "EHLO mail.rtr.ca"
+	Sun, 30 Mar 2008 14:01:32 -0400
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:45269 "EHLO smtp6.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751554AbYC3Rq1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Mar 2008 13:46:27 -0400
-Message-ID: <47EFD1F1.8010501@rtr.ca>
-Date: Sun, 30 Mar 2008 13:46:25 -0400
-From: Mark Lord <lkml@rtr.ca>
-Organization: Real-Time Remedies Inc.
-User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
+	id S1751554AbYC3SBb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 30 Mar 2008 14:01:31 -0400
+Date: Sun, 30 Mar 2008 21:01:19 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: rusty@rustcorp.com.au, sam@ravnborg.org
+Cc: linux-kbuild@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: wish: build time warning for missing MODULE_LICENSE
+Message-ID: <20080330180119.GC1575@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
-To: Pavel Machek <pavel@ucw.cz>
-Cc: bugme-daemon@bugzilla.kernel.org, rjw@sisk.pl, bunk@kernel.org,
-       Linux Kernel <linux-kernel@vger.kernel.org>, linux-usb@vger.kernel.org
-Subject: Re: [Bug 10345] USB HID problems after resume
-References: <20080328223544.A61F711D10C@picon.linux-foundation.org> <47EE78C9.5090006@rtr.ca> <47EE793C.5070105@rtr.ca> <20080330114834.GA6510@elf.ucw.cz>
-In-Reply-To: <20080330114834.GA6510@elf.ucw.cz>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Machek wrote:
-> On Sat 2008-03-29 13:15:40, Mark Lord wrote:
->..
->> Just happened again.  The machine resumed from RAM with no functioning USB.
->> Still running the exact same 2.6.25-rc7 kernel as before, with the RTC conflict fixed.
->>
->> WTF?
-> 
->> 3GB of RAM? Try iommu=soft.
-..
+I just fixed a bug where I had accidentally removed a MODULE_LICENSE() 
+from a file.
 
-What does that option do (it is not in Documentation/kernel-parameters.txt),
-and why do you suspect it may make a difference here?
+The problem is that such bugs are currently not discovered until someone 
+actually runs a kernel with this module loaded.
 
-Thanks
+Could we get a build time warning/error for a missing MODULE_LICENSE?
+
+TIA
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
