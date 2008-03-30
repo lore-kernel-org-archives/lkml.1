@@ -1,102 +1,247 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751894AbYC3BGs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751857AbYC3BTl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751894AbYC3BGs (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Mar 2008 21:06:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750983AbYC3BGi
+	id S1751857AbYC3BTl (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Mar 2008 21:19:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751011AbYC3BTf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Mar 2008 21:06:38 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:32781 "EHLO ogre.sisk.pl"
+	Sat, 29 Mar 2008 21:19:35 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:32822 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750969AbYC3BGi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Mar 2008 21:06:38 -0400
+	id S1750983AbYC3BTd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 29 Mar 2008 21:19:33 -0400
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Olver Eduardo Ramos <olver.ramos@gmail.com>
-Subject: Re: kernel bug
-Date: Sun, 30 Mar 2008 02:06:05 +0100
+To: Len Brown <lenb@kernel.org>
+Subject: [PATCH] ACPI PM: Restore the 2.6.24 suspend ordering
+Date: Sun, 30 Mar 2008 02:19:07 +0100
 User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: linux-kernel@vger.kernel.org, "John W. Linville" <linville@tuxdriver.com>,
-       linux-wireless@vger.kernel.org, ipw3945-devel@lists.sourceforge.net,
-       Reinette Chatre <reinette.chatre@intel.com>, Zhu Yi <yi.zhu@intel.com>
-References: <47EE063D.3050000@gmail.com>
-In-Reply-To: <47EE063D.3050000@gmail.com>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Carlos Corbacho <carlos@strangeworlds.co.uk>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Shaohua Li <shaohua.li@intel.com>,
+       Felix =?iso-8859-2?q?M=F6ller?= <fm@opensuse.org>,
+       Arthur Erhardt <erhardt@pit.physik.uni-tuebingen.de>,
+       Matthew Garrett <mjg59@srcf.ucam.org>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
+  charset="iso-8859-2"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200803300306.06256.rjw@sisk.pl>
+Message-Id: <200803300319.08398.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[CCing wierless developers.]
+Hi Len,
 
-A couple of questions:
-(1) Which kernel is this?
-(2) Did that happen on any previous kernels?
-(3) What was the last kernel on which it didn't happen?
+Please consider pushing the appended patch for 2.6.25.
 
-On Saturday, 29 of March 2008, Olver Eduardo Ramos wrote:
-> ------------[ cut here ]------------
-> kernel BUG at net/mac80211/ieee80211.c:966!
-> invalid opcode: 0000 [#1] SMP
-> Modules linked in: iwl3945 mac80211 cfg80211 cryptomgr ecb arc4
-> blkcipher crypto_algapi snd_seq_oss snd_seq_device snd_seq_midi_event
-> snd_seq snd_pcm_oss snd_mixer_oss nvidia(P) snd_hda_intel snd_pcm
-> snd_timer snd snd_page_alloc
-> 
-> Pid: 4472, comm: insmod Tainted: P        (2.6.24 #4)
-> EIP: 0060:[<f9982867>] EFLAGS: 00210246 CPU: 1
-> EIP is at ieee80211_alloc_hw+0x5a/0x2af [mac80211]
-> EAX: f3ea8d80 EBX: fc226d60 ECX: c029cd19 EDX: f3ea8040
-> ESI: fc226c80 EDI: f3ea8180 EBP: f7cc58e4 ESP: f3ea5dbc
->  DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
-> Process insmod (pid: 4472, ti=f3ea4000 task=f3c8d110 task.ti=f3ea4000)
-> Stack: f78583d8 f3ea8040 fc226cb0 fc226c80 f7cc5800 f7cc58e4 fc2110cc
-> f5772180
->        00000000 f7ccdc90 c019c69e f3c81780 f3c81780 00200296 c03eb51d
-> f7ccdc90
->        f7cc5800 f7cc58c4 c021fb2d fc226cb0 fc226c80 f7cc5800 f7cc58e4
-> c022d84d
-> Call Trace:
->  [<fc2110cc>] iwl3945_pci_probe+0x9e/0xcfd [iwl3945]
->  [<c019c69e>] sysfs_create_link+0xb7/0xf9
->  [<c03eb51d>] netlink_broadcast+0x261/0x2a1
->  [<c021fb2d>] kobject_get+0xf/0x13
->  [<c022d84d>] pci_device_probe+0x36/0x57
->  [<c029f010>] driver_probe_device+0xde/0x15c
->  [<c02205ff>] kobject_uevent_env+0x350/0x374
->  [<c029f125>] __driver_attach+0x0/0x87
->  [<c029f177>] __driver_attach+0x52/0x87
->  [<c029e5c5>] bus_for_each_dev+0x33/0x55
->  [<c029ee77>] driver_attach+0x16/0x18
->  [<c029f125>] __driver_attach+0x0/0x87
->  [<c029e8ab>] bus_add_driver+0x6d/0x197
->  [<c022d989>] __pci_register_driver+0x48/0x74
->  [<f93c9030>] iwl3945_init+0x30/0x74 [iwl3945]
->  [<c014229f>] sys_init_module+0x14bd/0x15e0
->  [<c0169f8d>] do_sync_read+0xc7/0x10a
->  [<c0150936>] __alloc_pages+0x61/0x2cf
->  [<f998d2d1>] ieee80211_rx_irqsafe+0x0/0x4f [mac80211]
->  [<c017b7e4>] mntput_no_expire+0x11/0x56
->  [<c0104e5a>] syscall_call+0x7/0xb
->  [<c0450000>] rpc_sleep_on+0x11d/0x224
->  =======================
-> Code: 4c 9f 99 f9 89 d7 89 42 08 89 d0 81 c7 40 01 00 00 05 40 0d 00 00
-> 89 57 2c 89 47 38 83 3b 00 75 04 0f 0b eb fe 83 7b 04 00 75 04 <0f> 0b
-> eb fe 83 7b 08 00 75 04 0f 0b eb fe 83 7b 14 00 75 04 0f
-> EIP: [<f9982867>] ieee80211_alloc_hw+0x5a/0x2af [mac80211] SS:ESP
-> 0068:f3ea5dbc
-> ---[ end trace 0378acc020bdab15 ]---
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
-> 
+It fixed the regression described at:
+https://bugzilla.novell.com/show_bug.cgi?id=374217
+http://bugzilla.kernel.org/show_bug.cgi?id=10340
+
+details in the changelog.
+
+Thanks,
+Rafael
 
 
+---
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
--- 
-"Premature optimization is the root of all evil." - Donald Knuth
+Some time ago it turned out that our suspend code ordering broke
+some NVidia-based systems that hung if _PTS was executed with one of
+the PCI devices, specifically a USB controller, in a low power state.
+Then, it was noticed that the suspend code ordering was not compliant
+with ACPI 1.0, although it was compliant with ACPI 2.0 (and later),
+and it was argued that the code had to be changed for that reason
+(ref. http://bugzilla.kernel.org/show_bug.cgi?id=9528).  So we did,
+but evidently we did wrong, because it's now turning out that some
+systems have been broken by this change (refs.
+http://bugzilla.kernel.org/show_bug.cgi?id=10340 ,
+https://bugzilla.novell.com/show_bug.cgi?id=374217#c16).  [I said
+at that time that something like this might happend, but the majority
+of people involved thought that it was improbable due to the
+necessity to preserve the compliance of hardware with ACPI 1.0.]
+This actually is a quite serious regression from 2.6.24.
+
+Moreover, the ACPI 1.0 ordering of suspend code introduced another
+issue that I have only noticed recently.  Namely, if the suspend of
+one of devices fails, the already suspended devices will be resumed
+without executing _WAK before, which leads to problems on some
+systems (for example, in such situations thermal management is
+broken on my HP nx6325).  Consequently, it also breaks suspend
+debugging on the affected systems.
+
+Note also, that the requirement to execute _PTS before suspending
+devices does not really make sense, because the device in question
+may be put into a low power state at run time for a reason unrelated
+to a system-wide suspend.
+
+For the reasons outlined above, the change of the suspend ordering
+should be reverted, which is done by the patch below.
+
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ Documentation/kernel-parameters.txt |    5 --
+ drivers/acpi/sleep/main.c           |   71 +++++++-----------------------------
+ 2 files changed, 14 insertions(+), 62 deletions(-)
+
+Index: linux-2.6/drivers/acpi/sleep/main.c
+===================================================================
+--- linux-2.6.orig/drivers/acpi/sleep/main.c
++++ linux-2.6/drivers/acpi/sleep/main.c
+@@ -26,21 +26,6 @@ u8 sleep_states[ACPI_S_STATE_COUNT];
+ 
+ #ifdef CONFIG_PM_SLEEP
+ static u32 acpi_target_sleep_state = ACPI_STATE_S0;
+-static bool acpi_sleep_finish_wake_up;
+-
+-/*
+- * ACPI 2.0 and later want us to execute _PTS after suspending devices, so we
+- * allow the user to request that behavior by using the 'acpi_new_pts_ordering'
+- * kernel command line option that causes the following variable to be set.
+- */
+-static bool new_pts_ordering;
+-
+-static int __init acpi_new_pts_ordering(char *str)
+-{
+-	new_pts_ordering = true;
+-	return 1;
+-}
+-__setup("acpi_new_pts_ordering", acpi_new_pts_ordering);
+ #endif
+ 
+ static int acpi_sleep_prepare(u32 acpi_state)
+@@ -91,14 +76,6 @@ static int acpi_pm_begin(suspend_state_t
+ 
+ 	if (sleep_states[acpi_state]) {
+ 		acpi_target_sleep_state = acpi_state;
+-		if (new_pts_ordering)
+-			return 0;
+-
+-		error = acpi_sleep_prepare(acpi_state);
+-		if (error)
+-			acpi_target_sleep_state = ACPI_STATE_S0;
+-		else
+-			acpi_sleep_finish_wake_up = true;
+ 	} else {
+ 		printk(KERN_ERR "ACPI does not support this state: %d\n",
+ 			pm_state);
+@@ -116,14 +93,11 @@ static int acpi_pm_begin(suspend_state_t
+ 
+ static int acpi_pm_prepare(void)
+ {
+-	if (new_pts_ordering) {
+-		int error = acpi_sleep_prepare(acpi_target_sleep_state);
++	int error = acpi_sleep_prepare(acpi_target_sleep_state);
+ 
+-		if (error) {
+-			acpi_target_sleep_state = ACPI_STATE_S0;
+-			return error;
+-		}
+-		acpi_sleep_finish_wake_up = true;
++	if (error) {
++		acpi_target_sleep_state = ACPI_STATE_S0;
++		return error;
+ 	}
+ 
+ 	return ACPI_SUCCESS(acpi_hw_disable_all_gpes()) ? 0 : -EFAULT;
+@@ -212,7 +186,6 @@ static void acpi_pm_finish(void)
+ 	acpi_set_firmware_waking_vector((acpi_physical_address) 0);
+ 
+ 	acpi_target_sleep_state = ACPI_STATE_S0;
+-	acpi_sleep_finish_wake_up = false;
+ 
+ #ifdef CONFIG_X86
+ 	if (init_8259A_after_S1) {
+@@ -229,11 +202,10 @@ static void acpi_pm_finish(void)
+ static void acpi_pm_end(void)
+ {
+ 	/*
+-	 * This is necessary in case acpi_pm_finish() is not called directly
+-	 * during a failing transition to a sleep state.
++	 * This is necessary in case acpi_pm_finish() is not called during a
++	 * failing transition to a sleep state.
+ 	 */
+-	if (acpi_sleep_finish_wake_up)
+-		acpi_pm_finish();
++	acpi_target_sleep_state = ACPI_STATE_S0;
+ }
+ 
+ static int acpi_pm_state_valid(suspend_state_t pm_state)
+@@ -296,31 +268,18 @@ __setup("acpi_s4_nosigcheck", acpi_s4_no
+ 
+ static int acpi_hibernation_begin(void)
+ {
+-	int error;
+-
+ 	acpi_target_sleep_state = ACPI_STATE_S4;
+-	if (new_pts_ordering)
+-		return 0;
+ 
+-	error = acpi_sleep_prepare(ACPI_STATE_S4);
+-	if (error)
+-		acpi_target_sleep_state = ACPI_STATE_S0;
+-	else
+-		acpi_sleep_finish_wake_up = true;
+-
+-	return error;
++	return 0;
+ }
+ 
+ static int acpi_hibernation_prepare(void)
+ {
+-	if (new_pts_ordering) {
+-		int error = acpi_sleep_prepare(ACPI_STATE_S4);
++	int error = acpi_sleep_prepare(ACPI_STATE_S4);
+ 
+-		if (error) {
+-			acpi_target_sleep_state = ACPI_STATE_S0;
+-			return error;
+-		}
+-		acpi_sleep_finish_wake_up = true;
++	if (error) {
++		acpi_target_sleep_state = ACPI_STATE_S0;
++		return error;
+ 	}
+ 
+ 	return ACPI_SUCCESS(acpi_hw_disable_all_gpes()) ? 0 : -EFAULT;
+@@ -370,17 +329,15 @@ static void acpi_hibernation_finish(void
+ 	acpi_set_firmware_waking_vector((acpi_physical_address) 0);
+ 
+ 	acpi_target_sleep_state = ACPI_STATE_S0;
+-	acpi_sleep_finish_wake_up = false;
+ }
+ 
+ static void acpi_hibernation_end(void)
+ {
+ 	/*
+ 	 * This is necessary in case acpi_hibernation_finish() is not called
+-	 * directly during a failing transition to the sleep state.
++	 * during a failing transition to the sleep state.
+ 	 */
+-	if (acpi_sleep_finish_wake_up)
+-		acpi_hibernation_finish();
++	acpi_target_sleep_state = ACPI_STATE_S0;
+ }
+ 
+ static int acpi_hibernation_pre_restore(void)
+Index: linux-2.6/Documentation/kernel-parameters.txt
+===================================================================
+--- linux-2.6.orig/Documentation/kernel-parameters.txt
++++ linux-2.6/Documentation/kernel-parameters.txt
+@@ -170,11 +170,6 @@ and is between 256 and 4096 characters. 
+ 	acpi_irq_isa=	[HW,ACPI] If irq_balance, mark listed IRQs used by ISA
+ 			Format: <irq>,<irq>...
+ 
+-	acpi_new_pts_ordering [HW,ACPI]
+-			Enforce the ACPI 2.0 ordering of the _PTS control
+-			method wrt putting devices into low power states
+-			default: pre ACPI 2.0 ordering of _PTS
+-
+ 	acpi_no_auto_ssdt	[HW,ACPI] Disable automatic loading of SSDT
+ 
+ 	acpi_os_name=	[HW,ACPI] Tell ACPI BIOS the name of the OS
