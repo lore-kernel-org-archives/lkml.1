@@ -1,58 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754270AbYC3ULJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754584AbYC3UQJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754270AbYC3ULJ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Mar 2008 16:11:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752988AbYC3ULB
+	id S1754584AbYC3UQJ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Mar 2008 16:16:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752988AbYC3UPz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Mar 2008 16:11:01 -0400
-Received: from www.tglx.de ([62.245.132.106]:59281 "EHLO www.tglx.de"
+	Sun, 30 Mar 2008 16:15:55 -0400
+Received: from rtr.ca ([76.10.145.34]:3500 "EHLO mail.rtr.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752632AbYC3ULB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Mar 2008 16:11:01 -0400
-Date: Sun, 30 Mar 2008 22:10:00 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-cc: Martin Michlmayr <tbm@cyrius.com>, linux1394-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: nobody cared about IRQ 19 (firewire, on a HP 2510p notebook)
-In-Reply-To: <47EFD09D.3020906@s5r6.in-berlin.de>
-Message-ID: <alpine.LFD.1.10.0803302201110.3219@apollo.tec.linutronix.de>
-References: <20080321153952.GA26354@deprecation.cyrius.com> <47E3E2CF.5070408@s5r6.in-berlin.de> <47EF757F.9080501@s5r6.in-berlin.de> <20080330161339.GC28821@deprecation.cyrius.com> <47EFD09D.3020906@s5r6.in-berlin.de>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	id S1753117AbYC3UPz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 30 Mar 2008 16:15:55 -0400
+Message-ID: <47EFF4F6.1050302@rtr.ca>
+Date: Sun, 30 Mar 2008 16:15:50 -0400
+From: Mark Lord <lkml@rtr.ca>
+Organization: Real-Time Remedies Inc.
+User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Pavel Machek <pavel@ucw.cz>
+Cc: bugme-daemon@bugzilla.kernel.org, rjw@sisk.pl, bunk@kernel.org,
+       Linux Kernel <linux-kernel@vger.kernel.org>, linux-usb@vger.kernel.org
+Subject: Re: [Bug 10345] USB HID problems after resume
+References: <20080328223544.A61F711D10C@picon.linux-foundation.org> <47EE78C9.5090006@rtr.ca> <47EE793C.5070105@rtr.ca> <20080330114834.GA6510@elf.ucw.cz> <47EFD1F1.8010501@rtr.ca> <20080330182243.GA11839@elf.ucw.cz>
+In-Reply-To: <20080330182243.GA11839@elf.ucw.cz>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 30 Mar 2008, Stefan Richter wrote:
-> I tend to believe it is a problem to be addressed in the x86 platform support,
-> not a driver problem.
-
-Depends. It might be unfixable.
-
-> I Cc'd some random x86 folk...  To rehash the issue:
+Pavel Machek wrote:
+> On Sun 2008-03-30 13:46:25, Mark Lord wrote:
+>> Pavel Machek wrote:
+>>> On Sat 2008-03-29 13:15:40, Mark Lord wrote:
+>>> ..
+>>>> Just happened again.  The machine resumed from RAM with no functioning USB.
+>>>> Still running the exact same 2.6.25-rc7 kernel as before, with the RTC conflict fixed.
+>>>>
+>>>> WTF?
+>>>> 3GB of RAM? Try iommu=soft.
+>> ..
+>>
+>> What does that option do (it is not in Documentation/kernel-parameters.txt),
+>> and why do you suspect it may make a difference here?
 > 
->   - Controller: Ricoh Co Ltd R5C832 IEEE 1394 Controller (rev 04)
->     Board: PM965/GM965/GL960 based
->     The R5C832 is known to work with ohci1394 according to
->     http://hardware4linux.info/component/14348/ and other reports.
+> See x86_64/boot-options.txt . Yes, that should be fixed.
 > 
->   - Martin also saw it happen with Linux 2.6.22.
-> 
->   - firewire-ohci + firewire-core as well as ohci1394 + ieee1394
->     appear to initialize the controller on Martin's laptop just fine.
->     Among else this means that a number of register reads and writes
->     succeed.
-> 
->   - Some time later, without having actually used the FireWire
->     controller, "irq 19: nobody cared"/ "Disabling IRQ #19" occurs.
->     AFAIU the code, this is apparently because firewire-ohci's or
->     ohci1394's IRQ handler was called repeatedly but got either 0 or ~0
->     when reading the chip's interrupt event register.
+> I had strange problems, and it looks like iommu does not have proper
+> suspend/resume support. > 3GB machines hit that. Do you have one?
+..
 
-Can we please have a full boot log (dmesg) and the output of /proc/interrupts and "lspci -vvv"
+This is a 32-bit system / kernel, so I'm guessing that this option is not applicable.
 
-Thanks,
-	tglx
+Right?  (it does have 3GB of RAM, though).
+
+Cheers
