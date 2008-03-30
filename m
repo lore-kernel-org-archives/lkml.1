@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756034AbYC3X20@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756780AbYC3X2s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756034AbYC3X20 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Mar 2008 19:28:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751610AbYC3X2R
+	id S1756780AbYC3X2s (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Mar 2008 19:28:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755283AbYC3X2h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Mar 2008 19:28:17 -0400
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:55245 "EHLO smtp4.pp.htv.fi"
+	Sun, 30 Mar 2008 19:28:37 -0400
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:59139 "EHLO smtp6.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751019AbYC3X2Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Mar 2008 19:28:16 -0400
-Date: Mon, 31 Mar 2008 02:28:04 +0300
+	id S1751610AbYC3X2g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 30 Mar 2008 19:28:36 -0400
+Date: Mon, 31 Mar 2008 02:28:24 +0300
 From: Adrian Bunk <bunk@kernel.org>
-To: Al Viro <viro@zeniv.linux.org.uk>, Trond.Myklebust@netapp.com
-Cc: linux-nfs@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [2.6 patch] make nfs_automount_list static
-Message-ID: <20080330232804.GT28445@cs181133002.pp.htv.fi>
+To: dm-devel@redhat.com
+Cc: linux-kernel@vger.kernel.org
+Subject: [2.6 patch] make dm_{,un}register_dirty_log_type() static
+Message-ID: <20080330232824.GV28445@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -23,39 +23,59 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-nfs_automount_list can now become static.
+This patch makes the needlessly global dm_{,un}register_dirty_log_type() 
+static.
 
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
 
- fs/nfs/namespace.c     |    2 +-
- include/linux/nfs_fs.h |    1 -
- 2 files changed, 1 insertion(+), 2 deletions(-)
+ drivers/md/dm-log.c |    6 ++----
+ drivers/md/dm-log.h |    3 ---
+ 2 files changed, 2 insertions(+), 7 deletions(-)
 
-7620c6ff4cdf4975d02158361f85e7d881f55ec3 diff --git a/fs/nfs/namespace.c b/fs/nfs/namespace.c
-index 607f6eb..af4d0f1 100644
---- a/fs/nfs/namespace.c
-+++ b/fs/nfs/namespace.c
-@@ -20,7 +20,7 @@
+5d0ca5f52a1c756246411406890c10b2d5cdd081 diff --git a/drivers/md/dm-log.c b/drivers/md/dm-log.c
+index 2a74b21..0d65cc7 100644
+--- a/drivers/md/dm-log.c
++++ b/drivers/md/dm-log.c
+@@ -17,7 +17,7 @@
+ static LIST_HEAD(_log_types);
+ static DEFINE_SPINLOCK(_lock);
  
- static void nfs_expire_automounts(struct work_struct *work);
+-int dm_register_dirty_log_type(struct dirty_log_type *type)
++static int dm_register_dirty_log_type(struct dirty_log_type *type)
+ {
+ 	spin_lock(&_lock);
+ 	type->use_count = 0;
+@@ -27,7 +27,7 @@ int dm_register_dirty_log_type(struct dirty_log_type *type)
+ 	return 0;
+ }
  
--LIST_HEAD(nfs_automount_list);
-+static LIST_HEAD(nfs_automount_list);
- static DECLARE_DELAYED_WORK(nfs_automount_task, nfs_expire_automounts);
- int nfs_mountpoint_expiry_timeout = 500 * HZ;
+-int dm_unregister_dirty_log_type(struct dirty_log_type *type)
++static int dm_unregister_dirty_log_type(struct dirty_log_type *type)
+ {
+ 	spin_lock(&_lock);
  
-diff --git a/include/linux/nfs_fs.h b/include/linux/nfs_fs.h
-index f4a0e4c..13f7c75 100644
---- a/include/linux/nfs_fs.h
-+++ b/include/linux/nfs_fs.h
-@@ -430,7 +430,6 @@ extern void nfs_unregister_sysctl(void);
+@@ -782,7 +782,5 @@ void dm_dirty_log_exit(void)
+ 	dm_unregister_dirty_log_type(&_core_type);
+ }
+ 
+-EXPORT_SYMBOL(dm_register_dirty_log_type);
+-EXPORT_SYMBOL(dm_unregister_dirty_log_type);
+ EXPORT_SYMBOL(dm_create_dirty_log);
+ EXPORT_SYMBOL(dm_destroy_dirty_log);
+diff --git a/drivers/md/dm-log.h b/drivers/md/dm-log.h
+index 3fae87e..c45fc25 100644
+--- a/drivers/md/dm-log.h
++++ b/drivers/md/dm-log.h
+@@ -110,9 +110,6 @@ struct dirty_log_type {
+ 		      char *result, unsigned int maxlen);
+ };
+ 
+-int dm_register_dirty_log_type(struct dirty_log_type *type);
+-int dm_unregister_dirty_log_type(struct dirty_log_type *type);
+-
+ 
  /*
-  * linux/fs/nfs/namespace.c
-  */
--extern struct list_head nfs_automount_list;
- extern const struct inode_operations nfs_mountpoint_inode_operations;
- extern const struct inode_operations nfs_referral_inode_operations;
- extern int nfs_mountpoint_expiry_timeout;
+  * Make sure you use these two functions, rather than calling
 
