@@ -1,55 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753830AbYC3PVu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753990AbYC3Pcm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753830AbYC3PVu (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Mar 2008 11:21:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752623AbYC3PVk
+	id S1753990AbYC3Pcm (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Mar 2008 11:32:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752870AbYC3Pcb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Mar 2008 11:21:40 -0400
-Received: from eth7959.sa.adsl.internode.on.net ([150.101.82.22]:35216 "EHLO
-	hawking.rebel.net.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752386AbYC3PVk (ORCPT
+	Sun, 30 Mar 2008 11:32:31 -0400
+Received: from ug-out-1314.google.com ([66.249.92.171]:13349 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752623AbYC3Pca (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Mar 2008 11:21:40 -0400
-Message-ID: <47EFB008.5080706@davidnewall.com>
-Date: Mon, 31 Mar 2008 01:51:44 +1030
-From: David Newall <davidn@davidnewall.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
+	Sun, 30 Mar 2008 11:32:30 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=S/ShvPGLnn6XemCoeUk4OWPwEncqs+2AQklLW2j05cFCK5Q5yCfGJb+RcsUnJWwDXvw0DeEiZwd8ZR98HBmCo4m2ucXM+MTKfz12je1VBIdKxS9k8qu6BvFCx/erofSVztsztvigUP+f3C7mV9nJScyCTEYNCSG42UZ5DaNY2vU=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: linux-ide@vger.kernel.org
+Subject: [PATCH 1/5] ide-h8300: 32-bit I/O is unsupported
+Date: Sun, 30 Mar 2008 17:10:45 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-To: Manfred Spraul <manfred@colorfullife.com>
-CC: Mike Galbraith <efault@gmx.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       paulmck@linux.vnet.ibm.com, Nadia Derbey <Nadia.Derbey@bull.net>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Pavel Emelianov <xemul@openvz.org>
-Subject: Re: Scalability requirements for sysv ipc (+namespaces broken with
- SEM_UNDO)
-References: <47E382DB.70503@colorfullife.com> <47E3ADE3.4030304@bull.net> <47E3B924.3000304@colorfullife.com> <20080321141339.GB9618@linux.vnet.ibm.com> <47E3DD8C.4000904@colorfullife.com> <1206164608.3659.11.camel@marge.simson.net> <47E4DB06.3020003@colorfullife.com> <1206186832.4545.1.camel@marge.simson.net> <47E51637.8060102@colorfullife.com>  <47E55945.10109@colorfullife.com> <1206460206.4414.21.camel@marge.simson.net> <47EF9FC2.3050901@colorfullife.com>
-In-Reply-To: <47EF9FC2.3050901@colorfullife.com>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200803301710.45286.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Manfred Spraul wrote:
-> Mike Galbraith wrote:
->> On Sat, 2008-03-22 at 20:08 +0100, Manfred Spraul wrote:
->>> just the normal performance of 2.6.25-rc3 is abyssimal, 55 to 60%
->>> slower than 2.6.18.8:
->>>     
->>
->> After manually reverting 3e148c79938aa39035669c1cfa3ff60722134535,
->> 2.6.25.git scaled linearly
-> We can't just revert that patch: with IDR, a global lock is mandatory :-(
-> We must either revert the whole idea of using IDR or live with the
-> reduced scalability.
->
-> Actually, there are further bugs: the undo structures are not
-> namespace-aware, thus semop with SEM_UNDO, unshare, create new array
-> with same id, but more semaphores, another semop with SEM_UNDO will
-> corrupt kernel memory :-(
+This host driver doesn't support 32-bit I/O (it sets hwif->INSL/OUTSL
+to NULL) so IDE_HFLAG_NO_IO_32BIT host flag needs to be set.
 
-You should revert it all.  The scalability problem isn't good, but from
-what you're saying, the idea isn't ready yet.  Revert it all, fix the
-problems at your leisure, and submit new patches then.
+Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+---
+ drivers/ide/h8300/ide-h8300.c |    1 +
+ 1 file changed, 1 insertion(+)
+
+Index: b/drivers/ide/h8300/ide-h8300.c
+===================================================================
+--- a/drivers/ide/h8300/ide-h8300.c
++++ b/drivers/ide/h8300/ide-h8300.c
+@@ -107,6 +107,7 @@ static int __init h8300_ide_init(void)
+ 	index = hwif->index;
+ 	ide_init_port_hw(hwif, &hw);
+ 	hwif_setup(hwif);
++	hwif->host_flags = IDE_HFLAG_NO_IO_32BIT;
+ 	printk(KERN_INFO "ide%d: H8/300 generic IDE interface\n", index);
+ 
+ 	idx[0] = index;
