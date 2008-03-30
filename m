@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754427AbYC3PdR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754670AbYC3Pdb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754427AbYC3PdR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Mar 2008 11:33:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752971AbYC3Pcd
+	id S1754670AbYC3Pdb (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Mar 2008 11:33:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752977AbYC3Pcz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Mar 2008 11:32:33 -0400
-Received: from py-out-1112.google.com ([64.233.166.176]:11240 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752762AbYC3Pcb (ORCPT
+	Sun, 30 Mar 2008 11:32:55 -0400
+Received: from ug-out-1314.google.com ([66.249.92.171]:13349 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752932AbYC3Pcd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Mar 2008 11:32:31 -0400
+	Sun, 30 Mar 2008 11:32:33 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
+        d=gmail.com; s=gamma;
         h=from:to:subject:date:user-agent:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=s8ZkVoSbVLRqtPpMhRio0W3OhnpHOgJPHzqeqHCdaI8WNdMOi8JiJXpUOuLQlDtxA/kNMlY6CkotzP3VxF46AbKTbc0L5GXM8x0OrNnzHFGClakFO3pLYckhWEmfbiAGn7WPmI9yhBY5iz8mVe64dftMqxVkCfpRQBpw0lgFPZQ=
+        b=Eg0fH3UjvwTG0RYRwZ8aVRgQSZ4N9cSs0l9envq+I7GANhi0HXoEERj2zxSXfTbfTYmgyGm5aaV/8vauEWcGEkdQ5C4XKfsLYaPv5eEzN4dgVDQK1+KTqWKBmRwN5tSdbF/P/v5fTNwujI0IQBOaXONoiYDvcRn/siS19on2OWc=
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 To: linux-ide@vger.kernel.org
-Subject: [PATCH 2/5] ide: use ->ata_input_data in ide_driveid_update()
-Date: Sun, 30 Mar 2008 17:11:19 +0200
+Subject: [PATCH 3/5] ide: make 32-bit I/O support for IDE VLB available only when it makes sense
+Date: Sun, 30 Mar 2008 17:12:05 +0200
 User-Agent: KMail/1.9.9
 Cc: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
@@ -25,31 +25,35 @@ Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200803301711.19315.bzolnier@gmail.com>
+Message-Id: <200803301712.05711.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use ->ata_input_data method instead of calling ata_input_data() directly.
-
-Currently it matters only for (broken) ide-cris host driver but it may
-change in the future.
+IDE VLB host drivers depend on ISA && (ALPHA || X86 || MIPS) so only then it
+makes sense to support "VLB sync" (controlled by SUPPORT_VLB_SYNC define).
 
 Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 ---
- drivers/ide/ide-iops.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ include/linux/ide.h |    7 ++++---
+ 1 file changed, 4 insertions(+), 3 deletions(-)
 
-Index: b/drivers/ide/ide-iops.c
+Index: b/include/linux/ide.h
 ===================================================================
---- a/drivers/ide/ide-iops.c
-+++ b/drivers/ide/ide-iops.c
-@@ -674,7 +674,7 @@ int ide_driveid_update(ide_drive_t *driv
- 		local_irq_restore(flags);
- 		return 0;
- 	}
--	ata_input_data(drive, id, SECTOR_WORDS);
-+	hwif->ata_input_data(drive, id, SECTOR_WORDS);
- 	(void)ide_read_status(drive);	/* clear drive IRQ */
- 	local_irq_enable();
- 	local_irq_restore(flags);
+--- a/include/linux/ide.h
++++ b/include/linux/ide.h
+@@ -26,10 +26,11 @@
+ #include <asm/semaphore.h>
+ #include <asm/mutex.h>
+ 
+-#if defined(CONFIG_CRIS) || defined(CONFIG_FRV)
+-# define SUPPORT_VLB_SYNC 0
+-#else
++#if defined(CONFIG_ISA) && \
++    (defined(CONFIG_ALPHA) || defined(CONFIG_X86) || defined(CONFIG_MIPS))
+ # define SUPPORT_VLB_SYNC 1
++#else
++# define SUPPORT_VLB_SYNC 0
+ #endif
+ 
+ /*
