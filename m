@@ -1,94 +1,144 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754633AbYC3XXA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757519AbYC3XXZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754633AbYC3XXA (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Mar 2008 19:23:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754988AbYC3XWd
+	id S1757519AbYC3XXZ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Mar 2008 19:23:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755337AbYC3XWf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Mar 2008 19:22:33 -0400
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:55098 "EHLO smtp4.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753581AbYC3XWb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 30 Mar 2008 19:22:35 -0400
+Received: from rv-out-0910.google.com ([209.85.198.189]:47316 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753904AbYC3XWb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Sun, 30 Mar 2008 19:22:31 -0400
-Date: Mon, 31 Mar 2008 02:22:18 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Dhananjay Phadke <dhananjay@netxen.com>, jgarzik@pobox.com
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [2.6 patch] make netxen_workq static
-Message-ID: <20080330232218.GP28445@cs181133002.pp.htv.fi>
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=MS7QuYEEoV7DAngsGgoZag8WYvwsYne30SdHJbUvlrfMiwGpmW/u6W8D1Vg+qhrj4bo7IKW22PcH9y/hL/tezt4YO2st1tzI9DZJNC8kR2J7aolSSz2z+XURlanr4JUTAgdWuZg/7q8I+xOto3xgxwMJEER5T+Qig6TTOs01VTg=
+Message-ID: <86802c440803301622j2874ca56t51b52a54920a233b@mail.gmail.com>
+Date: Sun, 30 Mar 2008 16:22:28 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Jack Steiner" <steiner@sgi.com>, "Andi Kleen" <ak@suse.de>
+Subject: Re: [PATCH 8/8] x86_64: Support for new UV apic
+Cc: mingo@elte.hu, tglx@linutronix.de, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20080328191216.GA16455@sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+References: <20080328191216.GA16455@sgi.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-netxen_workq can now become static.
+On Fri, Mar 28, 2008 at 12:12 PM, Jack Steiner <steiner@sgi.com> wrote:
+>
+>  UV supports really big systems. So big, in fact, that the APICID register
+>  does not contain enough bits to contain an APICID that is unique across all
+>  cpus.
+>
+>  The UV BIOS supports 3 APICID modes:
+>
+>         - legacy mode. This mode uses the old APIC mode where
+>           APICID is in bits [31:24] of the APICID register.
+>
+>         - x2apic mode. This mode is whitebox-compatible. APICIDs
+>           are unique across all cpus. Standard x2apic APIC operations
+>           (Intel-defined) can be used for IPIs. The node identifier
+>           fits within the Intel-defined portion of the APICID register.
+>
+>         - x2apic-uv mode. In this mode, the APICIDs on each node have
+>           unique IDs, but IDs on different node are not unique. For example,
+>           if each mode has 32 cpus, the APICIDs on each node might be
+>           0 - 31. Every node has the same set of IDs.
+>           The UV hub is used to route IPIs/interrupts to the correct node.
+>           Traditional APIC operations WILL NOT WORK.
+>
+>  In x2apic-uv mode, the ACPI tables all contain a full unique ID (note:
+>  exact bit layout still changing but the following is close):
+>
+>         nnnnnnnnnnlc0cch
+>                 n = unique node number
+>                 l = socket number on board
+>                 c = core
+>                 h = hyperthread
+>
+>  Only the "lc0cch" bits are written to the APICID register. The remaining bits are
+>  supplied by having the get_apic_id() function "OR" the extra bits into the value
+>  read from the APICID register. (Hmmm.. why not keep the ENTIRE APICID register
+>  in per-cpu data....)
+>
+>  The x2apic-uv mode is recognized by the MADT table containing:
+>           oem_id = "SGI"
+>           oem_table_id = "UV-X"
+>
+>  Based on:
+>         git://git.kernel.org/pub/scm/linux/kernel/git/x86/linux-2.6-x86.git
+>
+>  Signed-off-by: Jack Steiner <steiner@sgi.com>
+>
+>  ---
+>   arch/x86/kernel/Makefile         |    2
+>   arch/x86/kernel/apic_64.c        |    2
+>   arch/x86/kernel/genapic_64.c     |   18 ++
+>   arch/x86/kernel/genx2apic_uv_x.c |  245 +++++++++++++++++++++++++++++++++++++++
+>   arch/x86/kernel/setup64.c        |    4
+>   arch/x86/kernel/smpboot.c        |    5
+>   include/asm-x86/genapic_64.h     |    5
+>   include/asm-x86/smp.h            |    5
+>   8 files changed, 285 insertions(+), 1 deletion(-)
+>
+>  Index: linux/arch/x86/kernel/genapic_64.c
+>  ===================================================================
+>  --- linux.orig/arch/x86/kernel/genapic_64.c     2008-03-28 13:06:07.000000000 -0500
+>  +++ linux/arch/x86/kernel/genapic_64.c  2008-03-28 13:06:12.000000000 -0500
+>  @@ -15,6 +15,7 @@
+>   #include <linux/kernel.h>
+>   #include <linux/ctype.h>
+>   #include <linux/init.h>
+>  +#include <linux/hardirq.h>
+>
+>   #include <asm/smp.h>
+>   #include <asm/ipi.h>
+>  @@ -32,6 +33,7 @@ void *x86_cpu_to_apicid_early_ptr;
+>   #endif
+>   DEFINE_PER_CPU(u16, x86_cpu_to_apicid) = BAD_APICID;
+>   EXPORT_PER_CPU_SYMBOL(x86_cpu_to_apicid);
+>  +DEFINE_PER_CPU(int, x2apic_extra_bits);
+>
+>   struct genapic __read_mostly *genapic = &apic_flat;
+>
+>  @@ -42,6 +44,9 @@ static enum uv_system_type uv_system_typ
+>   */
+>   void __init setup_apic_routing(void)
+>   {
+>  +       if (uv_system_type == UV_NON_UNIQUE_APIC)
+>  +               genapic = &apic_x2apic_uv_x;
+>  +       else
+>   #ifdef CONFIG_ACPI
+>         /*
+>          * Quirk: some x86_64 machines can only use physical APIC mode
+>  @@ -82,6 +87,19 @@ int __init acpi_madt_oem_check(char *oem
+>         return 0;
+>   }
+>
+>  +unsigned int read_apic_id(void)
+>  +{
+>  +       unsigned int id;
+>  +
+>  +       WARN_ON(preemptible());
+>  +       id = apic_read(APIC_ID);
+>  +       if (uv_system_type >= UV_X2APIC)
+>  +               id  |= __get_cpu_var(x2apic_extra_bits);
+>  +       else
+>  +               id = (id >> 24) & 0xFFu;;
+>  +       return id;
+>  +}
 
-Signed-off-by: Adrian Bunk <bunk@kernel.org>
+so this is "the new one of Friday"?
 
----
+it still wrong. you can not shit id here. ot broke all x86_64 smp.
 
- drivers/net/netxen/netxen_nic.h      |   17 -----------------
- drivers/net/netxen/netxen_nic_main.c |   20 +++++++++++++++++++-
- 2 files changed, 19 insertions(+), 18 deletions(-)
+Did you test it on non UV_X2APIC box?
 
-725b949974133f14ecf29807ae9605b1a84d43e3 diff --git a/drivers/net/netxen/netxen_nic.h b/drivers/net/netxen/netxen_nic.h
-index ca339cf..8cb29f5 100644
---- a/drivers/net/netxen/netxen_nic.h
-+++ b/drivers/net/netxen/netxen_nic.h
-@@ -95,23 +95,6 @@
- 
- #define ADDR_IN_WINDOW1(off)	\
- 	((off > NETXEN_CRB_PCIX_HOST2) && (off < NETXEN_CRB_MAX)) ? 1 : 0
--/*
-- * In netxen_nic_down(), we must wait for any pending callback requests into
-- * netxen_watchdog_task() to complete; eg otherwise the watchdog_timer could be
-- * reenabled right after it is deleted in netxen_nic_down(). FLUSH_SCHEDULED_WORK()
-- * does this synchronization.
-- *
-- * Normally, schedule_work()/flush_scheduled_work() could have worked, but
-- * netxen_nic_close() is invoked with kernel rtnl lock held. netif_carrier_off()
-- * call in netxen_nic_close() triggers a schedule_work(&linkwatch_work), and a
-- * subsequent call to flush_scheduled_work() in netxen_nic_down() would cause
-- * linkwatch_event() to be executed which also attempts to acquire the rtnl
-- * lock thus causing a deadlock.
-- */
--
--#define SCHEDULE_WORK(tp)	queue_work(netxen_workq, tp)
--#define FLUSH_SCHEDULED_WORK()	flush_workqueue(netxen_workq)
--extern struct workqueue_struct *netxen_workq;
- 
- /*
-  * normalize a 64MB crb address to 32MB PCI window
-diff --git a/drivers/net/netxen/netxen_nic_main.c b/drivers/net/netxen/netxen_nic_main.c
-index a8fb439..c3be3ef 100644
---- a/drivers/net/netxen/netxen_nic_main.c
-+++ b/drivers/net/netxen/netxen_nic_main.c
-@@ -86,7 +86,24 @@ static struct pci_device_id netxen_pci_tbl[] __devinitdata = {
- 
- MODULE_DEVICE_TABLE(pci, netxen_pci_tbl);
- 
--struct workqueue_struct *netxen_workq;
-+/*
-+ * In netxen_nic_down(), we must wait for any pending callback requests into
-+ * netxen_watchdog_task() to complete; eg otherwise the watchdog_timer could be
-+ * reenabled right after it is deleted in netxen_nic_down().
-+ * FLUSH_SCHEDULED_WORK()  does this synchronization.
-+ *
-+ * Normally, schedule_work()/flush_scheduled_work() could have worked, but
-+ * netxen_nic_close() is invoked with kernel rtnl lock held. netif_carrier_off()
-+ * call in netxen_nic_close() triggers a schedule_work(&linkwatch_work), and a
-+ * subsequent call to flush_scheduled_work() in netxen_nic_down() would cause
-+ * linkwatch_event() to be executed which also attempts to acquire the rtnl
-+ * lock thus causing a deadlock.
-+ */
-+
-+static struct workqueue_struct *netxen_workq;
-+#define SCHEDULE_WORK(tp)	queue_work(netxen_workq, tp)
-+#define FLUSH_SCHEDULED_WORK()	flush_workqueue(netxen_workq)
-+
- static void netxen_watchdog(unsigned long);
- 
- static void netxen_nic_update_cmd_producer(struct netxen_adapter *adapter,
-
+YH
