@@ -1,96 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752002AbYC3Ayj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751894AbYC3BGs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752002AbYC3Ayj (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Mar 2008 20:54:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750983AbYC3Ay3
+	id S1751894AbYC3BGs (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Mar 2008 21:06:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750983AbYC3BGi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Mar 2008 20:54:29 -0400
-Received: from rv-out-0910.google.com ([209.85.198.186]:55024 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750962AbYC3Ay2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Mar 2008 20:54:28 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=QeYASX4WiGMF1Wh4HHPksRBW+HQ4Zpa2SU4D7pchvIkNXExLY8yuQUl9RDI0r49/8MUOxh47Ol5biTSJQOObgyeyPqLszfkRlBzHYLme1yGnm/TTfWfcXiJv1QJ1X/PRAXcxT779DoTPnJVqS/bfVVZxp6K8i8h9LEUeOvmw9NI=
-Message-ID: <47EEE4BF.5080609@gmail.com>
-Date: Sun, 30 Mar 2008 09:54:23 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	Sat, 29 Mar 2008 21:06:38 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:32781 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750969AbYC3BGi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 29 Mar 2008 21:06:38 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Olver Eduardo Ramos <olver.ramos@gmail.com>
+Subject: Re: kernel bug
+Date: Sun, 30 Mar 2008 02:06:05 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: linux-kernel@vger.kernel.org, "John W. Linville" <linville@tuxdriver.com>,
+       linux-wireless@vger.kernel.org, ipw3945-devel@lists.sourceforge.net,
+       Reinette Chatre <reinette.chatre@intel.com>, Zhu Yi <yi.zhu@intel.com>
+References: <47EE063D.3050000@gmail.com>
+In-Reply-To: <47EE063D.3050000@gmail.com>
 MIME-Version: 1.0
-To: Hans-Peter Jansen <hpj@urpla.net>
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org
-Subject: Re: 2.6.24.3: regular sata drive resets - worrisome?
-References: <200803201518.32109.hpj@urpla.net> <20080320214830.6d39876d.akpm@linux-foundation.org> <47EE3CFA.2000707@gmail.com> <200803300114.40096.hpj@urpla.net>
-In-Reply-To: <200803300114.40096.hpj@urpla.net>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200803300306.06256.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+[CCing wierless developers.]
 
-Hans-Peter Jansen wrote:
->>>> Should I be worried? smartd doesn't show anything suspicious on those.
->> Can you please post the result of "smartctl -a /dev/sdX"?
+A couple of questions:
+(1) Which kernel is this?
+(2) Did that happen on any previous kernels?
+(3) What was the last kernel on which it didn't happen?
+
+On Saturday, 29 of March 2008, Olver Eduardo Ramos wrote:
+> ------------[ cut here ]------------
+> kernel BUG at net/mac80211/ieee80211.c:966!
+> invalid opcode: 0000 [#1] SMP
+> Modules linked in: iwl3945 mac80211 cfg80211 cryptomgr ecb arc4
+> blkcipher crypto_algapi snd_seq_oss snd_seq_device snd_seq_midi_event
+> snd_seq snd_pcm_oss snd_mixer_oss nvidia(P) snd_hda_intel snd_pcm
+> snd_timer snd snd_page_alloc
 > 
-> Here's the last smart report from two of the offending drives. As noted 
-> before, I did the hardware reorganization, replaced the dog slow 3ware 
-> 9500S-8 and the SiI 3124 with a single Areca 1130 and retired the drives 
-> for now, but a nephew already showed interest. What do you think, can I 
-> cede those drives with a clear conscience? The Hardware_ECC_Recovered
-> values are really worrisome, aren't they?
-
-Different vendors use different scales for the raw values.  The value is 
-still pegged at the highest so it could be those raw values are okay or 
-that the vendor just doesn't update value field accordingly.  My P120 
-says 0 for the raw value and 904635 for hardware ECC recovered so there 
-is some difference.  What do other non-failing drives say about those 
-values?
-
-> SMART Attributes Data Structure revision number: 16
-> Vendor Specific SMART Attributes with Thresholds:
-> ID# ATTRIBUTE_NAME          FLAG     VALUE WORST THRESH TYPE      UPDATED  WHEN_FAILED RAW_VALUE
->   1 Raw_Read_Error_Rate     0x000f   100   100   051    Pre-fail  Always       -       82
->   3 Spin_Up_Time            0x0007   100   100   025    Pre-fail  Always       -       5952
->   4 Start_Stop_Count        0x0032   100   100   000    Old_age   Always       -       23
->   5 Reallocated_Sector_Ct   0x0033   253   253   010    Pre-fail  Always       -       0
->   7 Seek_Error_Rate         0x000f   253   253   051    Pre-fail  Always       -       0
->   8 Seek_Time_Performance   0x0025   253   253   015    Pre-fail  Offline      -       0
->   9 Power_On_Hours          0x0032   100   100   000    Old_age   Always       -       17647
->  10 Spin_Retry_Count        0x0033   253   253   051    Pre-fail  Always       -       0
->  11 Calibration_Retry_Count 0x0012   253   002   000    Old_age   Always       -       0
->  12 Power_Cycle_Count       0x0032   100   100   000    Old_age   Always       -       19
-> 190 Airflow_Temperature_Cel 0x0022   124   124   000    Old_age   Always       -       38
-> 194 Temperature_Celsius     0x0022   124   124   000    Old_age   Always       -       38
-> 195 Hardware_ECC_Recovered  0x001a   100   100   000    Old_age   Always       -       162956700
-> 196 Reallocated_Event_Count 0x0032   253   253   000    Old_age   Always       -       0
-> 197 Current_Pending_Sector  0x0012   253   253   000    Old_age   Always       -       0
-> 198 Offline_Uncorrectable   0x0030   253   253   000    Old_age   Offline      -       0
-> 199 UDMA_CRC_Error_Count    0x003e   200   200   000    Old_age   Always       -       0
-> 200 Multi_Zone_Error_Rate   0x000a   253   100   000    Old_age   Always       -       0
-> 201 Soft_Read_Error_Rate    0x000a   100   100   000    Old_age   Always       -       0
-> 202 TA_Increase_Count       0x0032   253   253   000    Old_age   Always       -       0
-
-Hmmm... If the drive is failing FLUSHs, I would expect to see elevated 
-reallocation counters and maybe some pending counts.  Aieee.. weird.
-
->>>> It's been 4 samsung drives at all hanging on a sata sil 3124:
->> FLUSH_EXT timing out usually indicates that the drive is having problem
->> writing out what it has in its cache to the media.  There was one case
->> where FLUSH_EXT timeout was caused by the driver failing to switch
->> controller back from NCQ mode before issuing FLUSH_EXT but that was on
->> sata_nv.  There hasn't been any similar problem on sata_sil24.
+> Pid: 4472, comm: insmod Tainted: P        (2.6.24 #4)
+> EIP: 0060:[<f9982867>] EFLAGS: 00210246 CPU: 1
+> EIP is at ieee80211_alloc_hw+0x5a/0x2af [mac80211]
+> EAX: f3ea8d80 EBX: fc226d60 ECX: c029cd19 EDX: f3ea8040
+> ESI: fc226c80 EDI: f3ea8180 EBP: f7cc58e4 ESP: f3ea5dbc
+>  DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
+> Process insmod (pid: 4472, ti=f3ea4000 task=f3c8d110 task.ti=f3ea4000)
+> Stack: f78583d8 f3ea8040 fc226cb0 fc226c80 f7cc5800 f7cc58e4 fc2110cc
+> f5772180
+>        00000000 f7ccdc90 c019c69e f3c81780 f3c81780 00200296 c03eb51d
+> f7ccdc90
+>        f7cc5800 f7cc58c4 c021fb2d fc226cb0 fc226c80 f7cc5800 f7cc58e4
+> c022d84d
+> Call Trace:
+>  [<fc2110cc>] iwl3945_pci_probe+0x9e/0xcfd [iwl3945]
+>  [<c019c69e>] sysfs_create_link+0xb7/0xf9
+>  [<c03eb51d>] netlink_broadcast+0x261/0x2a1
+>  [<c021fb2d>] kobject_get+0xf/0x13
+>  [<c022d84d>] pci_device_probe+0x36/0x57
+>  [<c029f010>] driver_probe_device+0xde/0x15c
+>  [<c02205ff>] kobject_uevent_env+0x350/0x374
+>  [<c029f125>] __driver_attach+0x0/0x87
+>  [<c029f177>] __driver_attach+0x52/0x87
+>  [<c029e5c5>] bus_for_each_dev+0x33/0x55
+>  [<c029ee77>] driver_attach+0x16/0x18
+>  [<c029f125>] __driver_attach+0x0/0x87
+>  [<c029e8ab>] bus_add_driver+0x6d/0x197
+>  [<c022d989>] __pci_register_driver+0x48/0x74
+>  [<f93c9030>] iwl3945_init+0x30/0x74 [iwl3945]
+>  [<c014229f>] sys_init_module+0x14bd/0x15e0
+>  [<c0169f8d>] do_sync_read+0xc7/0x10a
+>  [<c0150936>] __alloc_pages+0x61/0x2cf
+>  [<f998d2d1>] ieee80211_rx_irqsafe+0x0/0x4f [mac80211]
+>  [<c017b7e4>] mntput_no_expire+0x11/0x56
+>  [<c0104e5a>] syscall_call+0x7/0xb
+>  [<c0450000>] rpc_sleep_on+0x11d/0x224
+>  =======================
+> Code: 4c 9f 99 f9 89 d7 89 42 08 89 d0 81 c7 40 01 00 00 05 40 0d 00 00
+> 89 57 2c 89 47 38 83 3b 00 75 04 0f 0b eb fe 83 7b 04 00 75 04 <0f> 0b
+> eb fe 83 7b 08 00 75 04 0f 0b eb fe 83 7b 14 00 75 04 0f
+> EIP: [<f9982867>] ieee80211_alloc_hw+0x5a/0x2af [mac80211] SS:ESP
+> 0068:f3ea5dbc
+> ---[ end trace 0378acc020bdab15 ]---
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 > 
-> Hmm, I didn't noticed any data distortions, and if there where, they live
-> on as copies in their new home.. 
+> 
 
-It should have appeared as read errors.  Maybe the drive successfully 
-wrote those sectors after 30+ secs timeout.
+
 
 -- 
-tejun
+"Premature optimization is the root of all evil." - Donald Knuth
