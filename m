@@ -1,71 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755446AbYC3VJU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755531AbYC3VKE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755446AbYC3VJU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Mar 2008 17:09:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753771AbYC3VJK
+	id S1755531AbYC3VKE (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Mar 2008 17:10:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753771AbYC3VJz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Mar 2008 17:09:10 -0400
-Received: from rtr.ca ([76.10.145.34]:2229 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753247AbYC3VJJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Mar 2008 17:09:09 -0400
-Message-ID: <47F00173.40106@rtr.ca>
-Date: Sun, 30 Mar 2008 17:09:07 -0400
-From: Mark Lord <lkml@rtr.ca>
-Organization: Real-Time Remedies Inc.
-User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
+	Sun, 30 Mar 2008 17:09:55 -0400
+Received: from fmmailgate02.web.de ([217.72.192.227]:44077 "EHLO
+	fmmailgate02.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753674AbYC3VJy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 30 Mar 2008 17:09:54 -0400
+From: Chr <chunkeey@web.de>
+To: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: The never ending BEEEEP/__smp_call_function_mask with 2.6.25-rc7
+Date: Sun, 30 Mar 2008 23:09:52 +0200
+User-Agent: KMail/1.9.9
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org,
+       Andi Kleen <andi-suse@firstfloor.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
+References: <200803302109.22219.chunkeey@web.de> <200803302218.52549.chunkeey@web.de> <alpine.LFD.1.10.0803302236180.3219@apollo.tec.linutronix.de>
+In-Reply-To: <alpine.LFD.1.10.0803302236180.3219@apollo.tec.linutronix.de>
 MIME-Version: 1.0
-To: Pavel Machek <pavel@suse.cz>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>, Greg KH <gregkh@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>, jikos@suse.cz
-Subject: Re: 2.6.25-rc7:  Ugh.
-References: <47EBBD57.30902@rtr.ca> <47EC549D.6090705@rtr.ca> <20080328092428.GA2081@elf.ucw.cz> <47F00059.1010108@rtr.ca>
-In-Reply-To: <47F00059.1010108@rtr.ca>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200803302309.52493.chunkeey@web.de>
+X-Provags-ID: V01U2FsdGVkX1+czcmYn07nO9507hqzNtqJlGG5tYjJIyAQ9F3U
+	yeTjhZwbn2Bj98gDxvxx1/C5Yp9uUaBo6NWjDs55bRT4TZ/0MS
+	5LcJoNpRg=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mark Lord wrote:
-> Pavel Machek wrote:
->> Hi!
->>
->>>> It is with great reluctance when I attempt moving my main "desktop"
->>>> over to a new kernel version -- because the USB subsystem seems to
->>>> break every single time.
->>>>
->>>> So today I tried 2.6.25-rc7 on it for the first time.
->>>> Not good.
->>>>
->>>> It boots, but just a simple suspend/resume (RAM) was enough to kill it.
->>>> It comes back on resume, with an X desktop again,
->>>> but with no USB functionality -- no mouse.
->>>>
->>>> The keyboard still works, so I dropped to a console and tried:
->>>>
->>>>   rmmod usbhid
->>>>   insmod usbhid
->>>>
->>>> And the console hung at 100% CPU on the insmod.
->>>> Back to 2.6.24.3 again, for now -- I've got work to do.
->>>>
->>>> The specs of this machine have been posted with great regularity
->>>> in the past, every new kernel revision it seems.   So here we go again:
->>>>
->>>> Dell Inspiron 9400 notebook, Intel Core2Duo T7400, 2GB SDRAM.
->>> ..
->>>
->>> Correction there:  3GB of RAM, not 2.
->>
->> 3GB of RAM can be a problem. Try iommu=soft. .. but in such case
->> rmmod/insmod of usbhid would not help...
-> ..
-> 
-> Booted with mem=2GB, and USB hung again on the first suspend/resume cycle.
-..
+On Sunday 30 March 2008 22:37:29 Thomas Gleixner wrote:
+> On Sun, 30 Mar 2008, Chr wrote:
+> > On Sunday 30 March 2008 21:59:51 Thomas Gleixner wrote:
+> > > On Sun, 30 Mar 2008, Rafael J. Wysocki wrote:
+> > > > > So. take a look at stuck_task... that's best backtrace I could
+> > > > > get... (I have other logs too. (Task-list / Lockdep / ... ) but
+> > > > > it's too much and I hope the _logs_ are already enough.
+> > >
+> > > The cores of those AMD beasts are never in sync. That's a chip feature
+> > > :)
+> > >
+> > > Can you please provide the output of:
+> > >   /sys/devices/system/clocksource/clocksource0/current_clocksource
+> > >
+> > > for both 2.6.24 and 2.6.25-rc7
+> >
+> > it's "hpet" (in both cases...)
+>
+> Hmm. That should be stable. Which clock is jumping back and forth ?
+> The one in the logs or the system clock ?
+The one in the logs... (but it's because of the TSC, right?)
 
-And booting with iommu=soft is worse:  video comes back with bizarre timings
-after suspend/resume -- totally unsynced display afterwards.
-
-Cheers
+Regards,
+	Chr
