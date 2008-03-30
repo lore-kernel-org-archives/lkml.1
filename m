@@ -1,21 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758301AbYC3XIS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755874AbYC3XIe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758301AbYC3XIS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Mar 2008 19:08:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756471AbYC3XGH
+	id S1755874AbYC3XIe (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Mar 2008 19:08:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756528AbYC3XGK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Mar 2008 19:06:07 -0400
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:58510 "EHLO smtp6.pp.htv.fi"
+	Sun, 30 Mar 2008 19:06:10 -0400
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:54563 "EHLO smtp4.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756398AbYC3XGF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Mar 2008 19:06:05 -0400
-Date: Mon, 31 Mar 2008 02:05:52 +0300
+	id S1756496AbYC3XGI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 30 Mar 2008 19:06:08 -0400
+Date: Mon, 31 Mar 2008 02:05:56 +0300
 From: Adrian Bunk <bunk@kernel.org>
-To: kkeil@suse.de
-Cc: isdn4linux@listserv.isdn4linux.de, linux-kernel@vger.kernel.org,
-       "Robert P. J. Day" <rpjday@crashcourse.ca>
-Subject: [2.6 patch] include/linux/isdn.h: remove dead code
-Message-ID: <20080330230552.GU28445@cs181133002.pp.htv.fi>
+To: jgarzik@pobox.com
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [RFC: 2.6 patch] make ata_eh_qc_retry() static
+Message-ID: <20080330230556.GV28445@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -24,9 +23,8 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch remove the usage of a nonexisting kconfig variable.
+This patch makes the needlessly global ata_eh_qc_retry() static.
 
-Reported-by: Robert P. J. Day <rpjday@crashcourse.ca>
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
@@ -34,27 +32,47 @@ Signed-off-by: Adrian Bunk <bunk@kernel.org>
 This patch has been sent on:
 - 1 Mar 2008
 
- include/linux/isdn.h |    6 ------
- 1 file changed, 6 deletions(-)
+ drivers/ata/libata-core.c |    1 -
+ drivers/ata/libata-eh.c   |    2 +-
+ include/linux/libata.h    |    1 -
+ 3 files changed, 1 insertion(+), 3 deletions(-)
 
-68dcdff8287b565d34ba8b3bb1a608a0a0b3a3fd foobar
-diff --git a/include/linux/isdn.h b/include/linux/isdn.h
-index 9cb2855..44cd663 100644
---- a/include/linux/isdn.h
-+++ b/include/linux/isdn.h
-@@ -16,14 +16,8 @@
+cc00162dc4939d15b078f4cc2e8827b2d70a90db foobar
+diff --git a/drivers/ata/libata-core.c b/drivers/ata/libata-core.c
+index b3d01c5..774ca30 100644
+--- a/drivers/ata/libata-core.c
++++ b/drivers/ata/libata-core.c
+@@ -7882,7 +7882,6 @@ EXPORT_SYMBOL_GPL(sata_async_notification);
+ EXPORT_SYMBOL_GPL(ata_eh_freeze_port);
+ EXPORT_SYMBOL_GPL(ata_eh_thaw_port);
+ EXPORT_SYMBOL_GPL(ata_eh_qc_complete);
+-EXPORT_SYMBOL_GPL(ata_eh_qc_retry);
+ EXPORT_SYMBOL_GPL(ata_do_eh);
+ EXPORT_SYMBOL_GPL(ata_irq_on);
+ EXPORT_SYMBOL_GPL(ata_dev_try_classify);
+diff --git a/drivers/ata/libata-eh.c b/drivers/ata/libata-eh.c
+index 698ce2c..90caf08 100644
+--- a/drivers/ata/libata-eh.c
++++ b/drivers/ata/libata-eh.c
+@@ -1015,7 +1015,7 @@ void ata_eh_qc_complete(struct ata_queued_cmd *qc)
+  *	scmd->retries is decremented for commands which get retried
+  *	due to unrelated failures (qc->err_mask is zero).
+  */
+-void ata_eh_qc_retry(struct ata_queued_cmd *qc)
++static void ata_eh_qc_retry(struct ata_queued_cmd *qc)
+ {
+ 	struct scsi_cmnd *scmd = qc->scsicmd;
+ 	if (!qc->err_mask && scmd->retries)
+diff --git a/include/linux/libata.h b/include/linux/libata.h
+index a05f600..b626f27 100644
+--- a/include/linux/libata.h
++++ b/include/linux/libata.h
+@@ -1058,7 +1058,6 @@ extern void ata_eh_freeze_port(struct ata_port *ap);
+ extern void ata_eh_thaw_port(struct ata_port *ap);
  
- #include <linux/ioctl.h>
+ extern void ata_eh_qc_complete(struct ata_queued_cmd *qc);
+-extern void ata_eh_qc_retry(struct ata_queued_cmd *qc);
  
--#ifdef CONFIG_COBALT_MICRO_SERVER
--/* Save memory */
--#define ISDN_MAX_DRIVERS    2
--#define ISDN_MAX_CHANNELS   8
--#else
- #define ISDN_MAX_DRIVERS    32
- #define ISDN_MAX_CHANNELS   64
--#endif
- 
- /* New ioctl-codes */
- #define IIOCNETAIF  _IO('I',1)
+ extern void ata_do_eh(struct ata_port *ap, ata_prereset_fn_t prereset,
+ 		      ata_reset_fn_t softreset, ata_reset_fn_t hardreset,
 
