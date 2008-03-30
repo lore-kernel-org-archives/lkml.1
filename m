@@ -1,66 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751827AbYC3JJ4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752471AbYC3JNX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751827AbYC3JJ4 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Mar 2008 05:09:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751266AbYC3JJr
+	id S1752471AbYC3JNX (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Mar 2008 05:13:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751295AbYC3JNO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Mar 2008 05:09:47 -0400
-Received: from proxy3.bredband.net ([195.54.101.73]:51366 "EHLO
-	proxy3.bredband.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751264AbYC3JJq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Mar 2008 05:09:46 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Ajg+AMb17kdT48OPPGdsb2JhbACBWoZViQkBAQEBMJY2
-Message-ID: <47EF66DE.8030302@coderworld.net>
-Date: Sun, 30 Mar 2008 11:09:34 +0100
-From: Richard Jonsson <richie@coderworld.net>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
+	Sun, 30 Mar 2008 05:13:14 -0400
+Received: from mx4.orcon.net.nz ([219.88.242.54]:54837 "EHLO mx4.orcon.net.nz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751289AbYC3JNN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 30 Mar 2008 05:13:13 -0400
+Message-ID: <47EF59A4.4070300@orcon.net.nz>
+Date: Sun, 30 Mar 2008 22:13:08 +1300
+From: Michael Cree <mcree@orcon.net.nz>
+User-Agent: Mozilla-Thunderbird 2.0.0.9 (X11/20080110)
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Re: Keyboard weirdness: keys get stuck
-References: <47EEA097.5000701@coderworld.net> <47EEC51C.2060806@coderworld.net>
-In-Reply-To: <47EEC51C.2060806@coderworld.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Rene Herman <rene.herman@keyaccess.nl>
+CC: Bob Tracy <rct@frus.com>, Takashi Iwai <tiwai@suse.de>,
+       ALSA devel <alsa-devel@alsa-project.org>, linux-kernel@vger.kernel.org,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>, linux-alpha@vger.kernel.org,
+       Krzysztof Helt <krzysztof.h1@wp.pl>
+Subject: Re: [alsa-devel] [regression] 2.6.25-rc4 snd-es18xx broken on Alpha
+References: <20080318032427.298BCDBA2@gherkin.frus.com> <546A47FE-F98E-49E2-A250-41F65C2D482B@orcon.net.nz> <47E6338E.8030001@orcon.net.nz> <47E7EFDF.2070706@keyaccess.nl> <47E83F94.8010409@orcon.net.nz> <47E8475E.4080705@keyaccess.nl> <47E853F2.7020608@orcon.net.nz> <47E86203.5090805@keyaccess.nl>
+In-Reply-To: <47E86203.5090805@keyaccess.nl>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
+X-DSPAM-Check: by mx4.orcon.net.nz on Sun, 30 Mar 2008 22:13:10 +1300
+X-DSPAM-Result: Innocent
+X-DSPAM-Processed: Sun Mar 30 22:13:10 2008
+X-DSPAM-Confidence: 0.7577
+X-DSPAM-Improbability: 1 in 314 chance of being spam
+X-DSPAM-Probability: 0.0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Richard Jonsson skrev:
-> Richard Jonsson skrev:
->> With 2.6.25-rc6-git-something I have experienced stuck keys. When 
->> typing a  sentence a character repeats aboooooooout 10 times, or as 
->> 'about' above ;). I tested with a new kernel today, 
->> 2.6.25-rc7-git-something and the problem is still present.
->>
->> With 2.6.25-rc3 the keyboard is fine, and I've not tried with any 
->> kernel in between.
->>
->> As a side note, timestamps gets mixed up in dmesg output in a 1-2 
->> second span. Maybe related?
->>
->> This is on a HP dv2140eu laptop, x86_64 SMP. Please cc me if you want 
->> configuration details or testing to be done.
->>
+Rene Herman wrote:
+> On 25-03-08 02:22, Michael Cree wrote:
 > 
-> I should add that while watching a movie I noticed that video stutters 
-> every now and then, on an irregular basis. It lasts for approx a second 
-> each time.
+>>> should do it. Here's a file Bob passed me as a problematic one. 
+>>> 8-bit, 11025, mono:
+>>>
+>>> http://members.home.nl/rene.herman/asskickd.wav
+>>
+>> Right, got that.  On the PWS600au it shows the same problems that Bob 
+>> describes!  When I play it with aplay (through the es1887) I get the 
+>> last "pal" repeated at the end.  When I play it with sox (also through 
+>> the es1887) I get the words "current event" repeated at the end.
+>> 
+> Lovely, so different problem between you and Bob. When you (either of 
+> you) have some time for it again, could you try:
+> 
+> $ sox asskickd.wav -w -t alsa hw
 
-Update
+Exactly the same as without the -w option.  (BTW, I would've never have 
+guessed the -w option; my man file has -2 for conversion to 16 bit.)
 
-I've been trying to reproduce this bug all morning, and could not 
-reproduce it without firefox running. I then saw with dmesg that the 
-flash plugin had crashed:
+> $ sox asskickd.wav -w -r 44100 -t alsa hw
 
-[ 2170.872049] npviewer.bin[9053]: segfault at 0 ip f6dc9348 sp ffd3e788 
-error 4 in libflashplayer.so[f6d2c000+66b000]
+The words "current event" are no longer repeated at the end of playing. 
+  There is a click at the end of playing - hard to know whether it 
+started to repeat something or whether it is truly at the end of the 
+sound file.
 
-This would explain why it can take several days between me experiencing 
-the bug, but it doesn't explain the mixed up timestamps in kern.log
+> $ sox asskickd.wav -w -r 44100 -c 2 -t alsa hw
 
-Even if flash/npviewer is at fault, IMHO it shouldn't cause microlockups 
-that I experience
+Repeats the "al" bit of the last word "pal" at the end of playing.
 
-regards, Richard
+>> I suspect you are right - the symptoms I have observed (complete 
+>> system crashes) are separate from what Bob observes.  One question I 
+>> have is what is different about Bob's set up that enables the sound to 
+>> work with mmap?
+> 
+> Not a clue. Takashi -- is it possible that Bob wasn't using mmap to 
+> being with if he didn't do anything specific to not do so?
+> 
+> And perhaps you guys have firmware settable options that touch that area 
+> of coherent DMA? Maybe even a specific chipset bug on his machine? No 
+> idea how different/similar your machines are...
+
+I have another PWS600au - a little older than the one I was testing on. 
+  It is slightly different in that its scsi controller is a separate 
+board in a PCI slot, rather than on the motherboard.  Also has an 
+ESS1888 rather than an ESS1887.  Just installed the same OS and kernel 
+on it.
+
+Tried playing sound.  What a mess. Crashes with mmap on.  Installed the 
+patch turning off mmap.   Just produces buzzes and fart noises whatever 
+sound file I try to play; both with aplay and sox.
+
+Michael.
+
