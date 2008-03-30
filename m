@@ -1,438 +1,166 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753168AbYC3MYH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753305AbYC3M2P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753168AbYC3MYH (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Mar 2008 08:24:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751474AbYC3MXz
+	id S1753305AbYC3M2P (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Mar 2008 08:28:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751490AbYC3M16
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Mar 2008 08:23:55 -0400
-Received: from mail2.hosting.nl ([62.129.139.44]:38874 "HELO mail2.hosting.nl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751419AbYC3MXy convert rfc822-to-8bit (ORCPT
+	Sun, 30 Mar 2008 08:27:58 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:60623 "EHLO
+	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751474AbYC3M15 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Mar 2008 08:23:54 -0400
-X-Greylist: delayed 399 seconds by postgrey-1.27 at vger.kernel.org; Sun, 30 Mar 2008 08:23:53 EDT
-Message-ID: <20080330140948.0cqmtqb9us880cw8@62.129.139.44>
-Date: Sun, 30 Mar 2008 14:09:48 +0200
-From: postmaster@van-ginkel.eu
-To: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] ptmx: adding handshake support
-References: <20080311212830.5f4apfr4uqs884cc@62.129.139.44>
-In-Reply-To: <20080311212830.5f4apfr4uqs884cc@62.129.139.44>
+	Sun, 30 Mar 2008 08:27:57 -0400
+Date: Sun, 30 Mar 2008 14:28:38 +0200
+From: Pavel Machek <pavel@suse.cz>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Len Brown <lenb@kernel.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Carlos Corbacho <carlos@strangeworlds.co.uk>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Shaohua Li <shaohua.li@intel.com>,
+       Felix =?iso-8859-1?Q?M=F6ller?= <fm@opensuse.org>,
+       Arthur Erhardt <erhardt@pit.physik.uni-tuebingen.de>,
+       Matthew Garrett <mjg59@srcf.ucam.org>
+Subject: Re: [PATCH] ACPI PM: Restore the 2.6.24 suspend ordering
+Message-ID: <20080330122838.GA7093@elf.ucw.cz>
+References: <200803300319.08398.rjw@sisk.pl> <20080330111844.GA6247@elf.ucw.cz> <200803301358.39831.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII;
-	DelSp=Yes	format=flowed
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 7BIT
-User-Agent: Internet Messaging Program (IMP) H3 (4.1.3)
+In-Reply-To: <200803301358.39831.rjw@sisk.pl>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This weekend I upgraded my kernel to 2.6.22.5 and tried my patch.
-Unfortunately pty.c seems to be a slightly different, so generated a new
-patch:
+Hi!
 
-  Signed-off-by: Sander van Ginkel <sander@van-ginkel.eu>
+> > > From: Rafael J. Wysocki <rjw@sisk.pl>
+> > > 
+> > > Some time ago it turned out that our suspend code ordering broke
+> > > some NVidia-based systems that hung if _PTS was executed with one of
+> > > the PCI devices, specifically a USB controller, in a low power state.
+> > > Then, it was noticed that the suspend code ordering was not compliant
+> > > with ACPI 1.0, although it was compliant with ACPI 2.0 (and later),
+> > > and it was argued that the code had to be changed for that reason
+> > > (ref. http://bugzilla.kernel.org/show_bug.cgi?id=9528).  So we did,
+> > > but evidently we did wrong, because it's now turning out that some
+> > > systems have been broken by this change (refs.
+> > > http://bugzilla.kernel.org/show_bug.cgi?id=10340 ,
+> > > https://bugzilla.novell.com/show_bug.cgi?id=374217#c16).  [I said
+> > > at that time that something like this might happend, but the majority
+> > > of people involved thought that it was improbable due to the
+> > > necessity to preserve the compliance of hardware with ACPI 1.0.]
+> > > This actually is a quite serious regression from 2.6.24.
+> > > 
+> > > Moreover, the ACPI 1.0 ordering of suspend code introduced another
+> > > issue that I have only noticed recently.  Namely, if the suspend of
+> > > one of devices fails, the already suspended devices will be resumed
+> > > without executing _WAK before, which leads to problems on some
+> > > systems (for example, in such situations thermal management is
+> > > broken on my HP nx6325).  Consequently, it also breaks suspend
+> > > debugging on the affected systems.
+> > > 
+> > > Note also, that the requirement to execute _PTS before suspending
+> > > devices does not really make sense, because the device in question
+> > > may be put into a low power state at run time for a reason unrelated
+> > > to a system-wide suspend.
 
-===================================================================
---- linux-2.6.22.5.orig/drivers/char/pty.c	2007-08-23 01:23:54.000000000 +0200
-+++ linux-2.6.22.5.new/drivers/char/pty.c	2008-03-23 15:25:24.000000000 +0100
-@@ -7,6 +7,8 @@
-   *    -- C. Scott Ananian <cananian@alumni.princeton.edu>, 14-Jan-1998
-   *  Added TTY_DO_WRITE_WAKEUP to enable n_tty to send POLL_OUT to
-   *      waiting writers -- Sapan Bhatia <sapan@corewars.org>
-+ *  Added support for MCR/MSR, used for serial over ethernet
-+ *    -- Sander van Ginkel <sander@van-ginkel.eu>
-   *
-   *
-   */
-@@ -29,6 +31,16 @@
-  #include <linux/bitops.h>
-  #include <linux/devpts_fs.h>
+Yes, but if we are putting them into lowpower state ourselves, we
+should probably be doing that "by hand", without calling acpi
+methods. _PTS may prepare something for acpi methods (which tell us
+which PCI Dx state to put the device in at the very least).
 
-+struct pty_mcrmsr {
-+
-+	struct semaphore        sem;            /* locks this structure */
-+
-+	/* for tiocmget and tiocmset functions */
-+
-+	int                     msr;            /* MSR shadow */
-+	int                     mcr;            /* MCR shadow */
-+};
-+
-  /* These are global because they are accessed in tty_io.c */
-  #ifdef CONFIG_UNIX98_PTYS
-  struct tty_driver *ptm_driver;
-@@ -196,6 +208,7 @@
+> > > For the reasons outlined above, the change of the suspend ordering
+> > > should be reverted, which is done by the patch below.
+> > 
+> > But this will break those few nvidia-based systems, no?
+> > 
+> > this may have been a good idea in -rc1 days, but we are in -rc7
+> > now... and the patch is slightly big.
+> 
+> It's quite obvious, though.
 
-  static int pty_open(struct tty_struct *tty, struct file * filp)
-  {
-+        struct pty_mcrmsr *mcrmsr;
-  	int	retval = -ENODEV;
+Yes, but breaking systems between -rc7 and final is _very_ unnice.
 
-  	if (!tty || !tty->link)
-@@ -213,10 +226,90 @@
-  	set_bit(TTY_THROTTLED, &tty->flags);
-  	set_bit(TTY_DO_WRITE_WAKEUP, &tty->flags);
-  	retval = 0;
-+
-+	/* initialize the pointer in case something fails */
-+
-+	tty->driver_data = NULL;
-+	tty->link->driver_data = NULL;
-+
-+	/* first time accessing this device, let's create it */
-+
-+	mcrmsr = kmalloc(sizeof(*mcrmsr), GFP_KERNEL);
-+
-+	init_MUTEX(&mcrmsr->sem);
-+
-+	if (mcrmsr != NULL) {
-+		down(&mcrmsr->sem);
-+
-+		/* save our structure within the tty structure */
-+
-+		mcrmsr->mcr=0;
-+		mcrmsr->msr=0;
-+
-+		tty->driver_data = mcrmsr;
-+		tty->link->driver_data = mcrmsr;
-+
-+		up(&mcrmsr->sem);
-+
-+	}
-+
-  out:
-  	return retval;
-  }
+> > What about something like: (hand-edited patch, sorry)
+> 
+> Well, I think that would be confusing.
+> 
+> The NVidia systems are broken anyway on 2.6.24.x, so we just don't fix them
+> rather than break them and there are more reasons to do what the patch does
+> (as pointed out in the changelog).  For example, your suggested patch doesn't
+>  fix the error paths/debugging breakage described in the changelog.
 
-+static int pty_tiocmget(struct tty_struct *tty, struct file *file)
-+{
-+	struct pty_mcrmsr *mcrmsr = tty->driver_data;
-+	unsigned int result = 0;
-+	unsigned int msr=0;
-+	unsigned int mcr=0;
-+
-+	if (tty->driver_data != NULL) {
-+		msr = mcrmsr->msr;
-+		mcr = mcrmsr->mcr;
-+	}
-+
-+	result = ((mcr & 0x01)  ? TIOCM_DTR  : 0) |  /* DTR is set */
-+		((mcr & 0x02)  ? TIOCM_RTS  : 0) |  /* RTS is set */
-+		((mcr & 0x04)  ? TIOCM_LOOP : 0) |  /* LOOP is set */
-+		((msr & 0x08)  ? TIOCM_CTS  : 0) |  /* CTS is set */
-+		((msr & 0x10)  ? TIOCM_CAR  : 0) |  /* Carrier detect is set*/
-+		((msr & 0x20)  ? TIOCM_RI   : 0) |  /* Ring Indicator is set */
-+		((msr & 0x40)  ? TIOCM_DSR  : 0);   /* DSR is set */
-+
-+	return result;
-+}
-+
-+static int pty_tiocmset(struct tty_struct *tty, struct file  
-*file,unsigned int set, unsigned int clear)
-+{
-+	struct pty_mcrmsr *mcrmsr = tty->driver_data;
-+	unsigned int mcr=0;
-+
-+	if (tty->driver_data != NULL)
-+		mcr = mcrmsr->mcr;
-+
-+	if (set & TIOCM_DTR)
-+		mcr |= 0x01;
-+	if (set & TIOCM_RTS)
-+		mcr |= 0x02;
-+	if (set & TIOCM_LOOP)
-+		mcr |= 0x04;
-+
-+	if (clear & TIOCM_DTR)
-+		mcr &= ~0x01;
-+	if (clear & TIOCM_RTS)
-+		mcr &= ~0x02;
-+	if (clear & TIOCM_LOOP)
-+		mcr &= ~0x04;
-+
-+	/* set the new MCR value in the device */
-+
-+	if (tty->driver_data != NULL)
-+		mcrmsr->mcr=mcr;
-+
-+	return 0;
-+}
-+
-  static void pty_set_termios(struct tty_struct *tty, struct ktermios  
-*old_termios)
-  {
-          tty->termios->c_cflag &= ~(CSIZE | PARENB);
-@@ -232,6 +325,8 @@
-  	.chars_in_buffer = pty_chars_in_buffer,
-  	.unthrottle = pty_unthrottle,
-  	.set_termios = pty_set_termios,
-+	.tiocmget = pty_tiocmget,
-+	.tiocmset = pty_tiocmset,
-  };
+But that should not be impossible to fix, right?
 
-  /* Traditional BSD devices */
-@@ -338,11 +433,44 @@
-  static int pty_unix98_ioctl(struct tty_struct *tty, struct file *file,
-  			    unsigned int cmd, unsigned long arg)
-  {
-+	unsigned int value;
-+	struct pty_mcrmsr *mcrmsr = tty->driver_data;
-+	unsigned int msr=0;
-+	unsigned int mcr=0;
-+
-  	switch (cmd) {
-  	case TIOCSPTLCK: /* Set PT Lock (disallow slave open) */
-  		return pty_set_lock(tty, (int __user *)arg);
-  	case TIOCGPTN: /* Get PT Number */
-  		return put_user(tty->index, (unsigned int __user *)arg);
-+
-+	case 0x5426: /* Set all of the handshake line, even the normally  
-read only */
-+		{
-+		if (copy_from_user(&value,(unsigned int *)arg,sizeof(unsigned int)))
-+			return -EFAULT;
-+
-+		if (value & 0x0002) /* DTR set */
-+			mcr|=0x01;
-+		if (value & 0x0004) /* RTS set */
-+			mcr|=0x02;
-+		if (value & 0x8000) /* LOOP set */
-+			mcr|=0x04;
-+		if (value & 0x0020) /* CTS set */
-+			msr|=0x08;
-+		if (value & 0x0040) /* DCD set */
-+			msr|=0x10;
-+		if (value & 0x0080) /* RI set */
-+			msr|=0x20;
-+		if (value & 0x0100) /* DSR set */
-+			msr|=0x40;
-+
-+		if (tty->driver_data != NULL)
-+			{
-+			mcrmsr->msr=msr;
-+			mcrmsr->mcr=mcr;
-+			}
-+		return 0;
-+		}
-  	}
+> I think we _can_ do something about the failing NVidia systems in the 2.6.26
+> time frame, but that will require some more consideration.
 
-  	return -ENOIOCTLCMD;
+We could simply blacklist them, no?
+								Pavel
 
+> >  Index: linux-2.6/drivers/acpi/sleep/main.c
+> >  ===================================================================
+> >  --- linux-2.6.orig/drivers/acpi/sleep/main.c
+> >  +++ linux-2.6/drivers/acpi/sleep/main.c
+> >  @@ -26,21 +26,6 @@ u8 sleep_states[ACPI_S_STATE_COUNT];
+> >   
+> >   #ifdef CONFIG_PM_SLEEP
+> >   static u32 acpi_target_sleep_state = ACPI_STATE_S0;
+> >  static bool acpi_sleep_finish_wake_up;
+> >  
+> > - /*
+> > -  * ACPI 2.0 and later want us to execute _PTS after suspending devices, so we
+> > -  * allow the user to request that behavior by using the 'acpi_new_pts_ordering'
+> > -  * kernel command line option that causes the following variable to be set.
+> > -  */
+> >  static bool new_pts_ordering = true;
+> >  
+> >  -static int __init acpi_new_pts_ordering(char *str)
+> >  +static int __init acpi_old_pts_ordering(char *str)
+> >  {
+> >  	new_pts_ordering = false;
+> >  	return 1;
+> >  }
+> >  -__setup("acpi_old_pts_ordering", acpi_old_pts_ordering);
+> >  +__setup("acpi_new_pts_ordering", acpi_new_pts_ordering);
+> >   #endif
+> >  
+> >   static int acpi_sleep_prepare(u32 acpi_state)
+> >  Index: linux-2.6/Documentation/kernel-parameters.txt
+> >  ===================================================================
+> >  --- linux-2.6.orig/Documentation/kernel-parameters.txt
+> >  +++ linux-2.6/Documentation/kernel-parameters.txt
+> >  @@ -170,11 +170,6 @@ and is between 256 and 4096 characters. 
+> >   	acpi_irq_isa=	[HW,ACPI] If irq_balance, mark listed IRQs used by ISA
+> >   			Format: <irq>,<irq>...
+> >   
+> >  -	acpi_new_pts_ordering [HW,ACPI]
+> >  +	acpi_old_pts_ordering [HW,ACPI]
+> >  -			Enforce the ACPI 2.0 ordering of the _PTS control
+> >  +			Enforce the ACPI 1.0 ordering of the _PTS control
+> >  			method wrt putting devices into low power states
+> >  -			default: pre ACPI 2.0 ordering of _PTS
+> >  +			default: ACPI 2.0 ordering of _PTS
+> >  
+> >   	acpi_no_auto_ssdt	[HW,ACPI] Disable automatic loading of SSDT
+> >   
+> >   	acpi_os_name=	[HW,ACPI] Tell ACPI BIOS the name of the OS
+> > 
+> 
+> Thanks,
+> Rafael
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
-Quoting sander van ginkel <sander@van-ginkel.eu>:
-
-> For serial over ethernet communication, /dev/ptmx will be used to
-> create a virtual device.
-> Due to the lack of a modem status register and a modem control register
-> in the ptmx driver,
-> it won't be possible to transfer handshake signaling.
->
-> I wrote this patch to add these registers to the ptmx driver.
-> The modem status register, which controls CD,CTS,DSR,RI is normally
-> read-only. To be able to
-> pass these signals from the remote port to the local ptmx device, I've
-> added an IOCTL routine.
-> The result of a remote TIOCMGET IOCTL call , can be passed directly
-> through this IOCTL routine.
-> The IOCTL value I used for this is, 0x5426 which was formerly known as
-> TIOCTTYGSTRUCT.
->
-> I've tested this patch at an 2.6.16.27 kernel.
->
-> Suggestions and/or other test results are welcome.
->
-> Sander
->
->
-> Signed-off-by: Sander van Ginkel <sander@van-ginkel.eu>
->
-> ===================================================================
-> --- drivers/char/pty.c	2008-03-03 20:02:09.000000000 +0100
-> +++ drivers/char/pty-new.c	2008-03-02 21:55:53.000000000 +0100
-> @@ -7,6 +7,8 @@
->   *    -- C. Scott Ananian <cananian@alumni.princeton.edu>, 14-Jan-1998
->   *  Added TTY_DO_WRITE_WAKEUP to enable n_tty to send POLL_OUT to
->   *      waiting writers -- Sapan Bhatia <sapan@corewars.org>
-> + *  Added support for MCR/MSR, used for serial over ethernet
-> + *    -- Sander van Ginkel <sander@van-ginkel.eu>
->   *
->   *
->   */
-> @@ -32,6 +34,16 @@
->  #include <linux/bitops.h>
->  #include <linux/devpts_fs.h>
->
-> +struct pty_mcrmsr {
-> +
-> +	struct semaphore        sem;            /* locks this structure */
-> +
-> +	/* for tiocmget and tiocmset functions */
-> +
-> +	int                     msr;            /* MSR shadow */
-> +	int                     mcr;            /* MCR shadow */
-> +};
-> +
->  /* These are global because they are accessed in tty_io.c */
->  #ifdef CONFIG_UNIX98_PTYS
->  struct tty_driver *ptm_driver;
-> @@ -199,6 +211,7 @@
->
->  static int pty_open(struct tty_struct *tty, struct file * filp)
->  {
-> +        struct pty_mcrmsr *mcrmsr;
->  	int	retval = -ENODEV;
->
->  	if (!tty || !tty->link)
-> @@ -216,10 +229,90 @@
->  	set_bit(TTY_THROTTLED, &tty->flags);
->  	set_bit(TTY_DO_WRITE_WAKEUP, &tty->flags);
->  	retval = 0;
-> +
-> +	/* initialize the pointer in case something fails */
-> +
-> +	tty->driver_data = NULL;
-> +	tty->link->driver_data = NULL;
-> +
-> +	/* first time accessing this device, let's create it */
-> +
-> +	mcrmsr = kmalloc(sizeof(*mcrmsr), GFP_KERNEL);
-> +
-> +	init_MUTEX(&mcrmsr->sem);
-> +
-> +	if (mcrmsr != NULL) {
-> +		down(&mcrmsr->sem);
-> +
-> +		/* save our structure within the tty structure */
-> +
-> +		mcrmsr->mcr=0;
-> +		mcrmsr->msr=0;
-> +
-> +		tty->driver_data = mcrmsr;
-> +		tty->link->driver_data = mcrmsr;
-> +
-> +		up(&mcrmsr->sem);
-> +
-> +	}
-> +
->  out:
->  	return retval;
->  }
->
-> +static int pty_tiocmget(struct tty_struct *tty, struct file *file)
-> +{
-> +	struct pty_mcrmsr *mcrmsr = tty->driver_data;
-> +	unsigned int result = 0;
-> +	unsigned int msr=0;
-> +	unsigned int mcr=0;
-> +
-> +	if (tty->driver_data != NULL) {
-> +		msr = mcrmsr->msr;
-> +		mcr = mcrmsr->mcr;
-> +	}
-> +
-> +	result = ((mcr & 0x01)  ? TIOCM_DTR  : 0) |  /* DTR is set */
-> +		((mcr & 0x02)  ? TIOCM_RTS  : 0) |  /* RTS is set */
-> +		((mcr & 0x04)  ? TIOCM_LOOP : 0) |  /* LOOP is set */
-> +		((msr & 0x08)  ? TIOCM_CTS  : 0) |  /* CTS is set */
-> +		((msr & 0x10)  ? TIOCM_CAR  : 0) |  /* Carrier detect is set*/
-> +		((msr & 0x20)  ? TIOCM_RI   : 0) |  /* Ring Indicator is set */
-> +		((msr & 0x40)  ? TIOCM_DSR  : 0);   /* DSR is set */
-> +
-> +	return result;
-> +}
-> +
-> +static int pty_tiocmset(struct tty_struct *tty, struct file
-> *file,unsigned int set, unsigned int clear)
-> +{
-> +	struct pty_mcrmsr *mcrmsr = tty->driver_data;
-> +	unsigned int mcr=0;
-> +
-> +	if (tty->driver_data != NULL)
-> +		mcr = mcrmsr->mcr;
-> +
-> +	if (set & TIOCM_DTR)
-> +		mcr |= 0x01;
-> +	if (set & TIOCM_RTS)
-> +		mcr |= 0x02;
-> +	if (set & TIOCM_LOOP)
-> +		mcr |= 0x04;
-> +
-> +	if (clear & TIOCM_DTR)
-> +		mcr &= ~0x01;
-> +	if (clear & TIOCM_RTS)
-> +		mcr &= ~0x02;
-> +	if (clear & TIOCM_LOOP)
-> +		mcr &= ~0x04;
-> +
-> +	/* set the new MCR value in the device */
-> +
-> +	if (tty->driver_data != NULL)
-> +		mcrmsr->mcr=mcr;
-> +
-> +	return 0;
-> +}
-> +
->  static void pty_set_termios(struct tty_struct *tty, struct termios
-> *old_termios)
->  {
->          tty->termios->c_cflag &= ~(CSIZE | PARENB);
-> @@ -235,6 +328,8 @@
->  	.chars_in_buffer = pty_chars_in_buffer,
->  	.unthrottle = pty_unthrottle,
->  	.set_termios = pty_set_termios,
-> +	.tiocmget = pty_tiocmget,
-> +	.tiocmset = pty_tiocmset,
->  };
->
->  /* Traditional BSD devices */
-> @@ -339,11 +434,44 @@
->  static int pty_unix98_ioctl(struct tty_struct *tty, struct file *file,
->  			    unsigned int cmd, unsigned long arg)
->  {
-> +	unsigned int value;
-> +	struct pty_mcrmsr *mcrmsr = tty->driver_data;
-> +	unsigned int msr=0;
-> +	unsigned int mcr=0;
-> +
->  	switch (cmd) {
->  	case TIOCSPTLCK: /* Set PT Lock (disallow slave open) */
->  		return pty_set_lock(tty, (int __user *)arg);
->  	case TIOCGPTN: /* Get PT Number */
->  		return put_user(tty->index, (unsigned int __user *)arg);
-> +
-> +	case 0x5426: /* Set all of the handshake line, even the normally read
-> only */
-> +		{
-> +		if (copy_from_user(&value,(unsigned int *)arg,sizeof(unsigned int)))
-> +			return -EFAULT;
-> +
-> +		if (value & 0x0002) /* DTR set */
-> +			mcr|=0x01;
-> +		if (value & 0x0004) /* RTS set */
-> +			mcr|=0x02;
-> +		if (value & 0x8000) /* LOOP set */
-> +			mcr|=0x04;
-> +		if (value & 0x0020) /* CTS set */
-> +			msr|=0x08;
-> +		if (value & 0x0040) /* DCD set */
-> +			msr|=0x10;
-> +		if (value & 0x0080) /* RI set */
-> +			msr|=0x20;
-> +		if (value & 0x0100) /* DSR set */
-> +			msr|=0x40;
-> +
-> +		if (tty->driver_data != NULL)
-> +			{
-> +			mcrmsr->msr=msr;
-> +			mcrmsr->mcr=mcr;
-> +			}
-> +		return 0;
-> +		}
->  	}
->
->  	return -ENOIOCTLCMD;
-
-
-
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
