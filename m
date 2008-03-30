@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759307AbYC3WzN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759373AbYC3Wzj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759307AbYC3WzN (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Mar 2008 18:55:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755099AbYC3Wx6
+	id S1759373AbYC3Wzj (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Mar 2008 18:55:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756550AbYC3WyE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Mar 2008 18:53:58 -0400
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:53410 "EHLO smtp5.pp.htv.fi"
+	Sun, 30 Mar 2008 18:54:04 -0400
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:54155 "EHLO smtp4.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756900AbYC3Wx4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Mar 2008 18:53:56 -0400
-Date: Mon, 31 Mar 2008 01:53:43 +0300
+	id S1758802AbYC3WyB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 30 Mar 2008 18:54:01 -0400
+Date: Mon, 31 Mar 2008 01:53:49 +0300
 From: Adrian Bunk <bunk@kernel.org>
-To: lethal@linux-sh.org
-Cc: linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [2.6 patch] remove include/asm-sh/floppy.h
-Message-ID: <20080330225343.GI28445@cs181133002.pp.htv.fi>
+To: p_gortmaker@yahoo.com
+Cc: linux-kernel@vger.kernel.org, Bernhard Walle <bwalle@suse.de>
+Subject: [2.6 patch] drivers/char/rtc.c: make 2 functions static
+Message-ID: <20080330225349.GJ28445@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -23,303 +23,65 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch removes the unused include/asm-sh/floppy.h 
-(ARCH_MAY_HAVE_PC_FDC was not enabled).
+The following functions can now become static:
+- rtc_interrupt()
+- rtc_get_rtc_time()
 
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
+Acked-by: Bernhard Walle <bwalle@suse.de>
 
 ---
 
- arch/sh/Kconfig         |    3 
- include/asm-sh/floppy.h |  268 ----------------------------------------
- 2 files changed, 271 deletions(-)
+This patch has been sent on:
+- 27 Feb 2008
+- 13 Feb 2008
 
-c72c53045d5977b5df3fa5a73e0210ea06db5c89 diff --git a/arch/sh/Kconfig b/arch/sh/Kconfig
-index 1eeff2e..ba61ba7 100644
---- a/arch/sh/Kconfig
-+++ b/arch/sh/Kconfig
-@@ -72,9 +72,6 @@ config SYS_SUPPORTS_NUMA
- config SYS_SUPPORTS_PCI
- 	bool
+ drivers/char/rtc.c  |    5 +++--
+ include/linux/rtc.h |    2 --
+ 2 files changed, 3 insertions(+), 4 deletions(-)
+
+e642155f0065ec03a83ed95eef2a78f272e73e01 
+diff --git a/drivers/char/rtc.c b/drivers/char/rtc.c
+index 78b151c..39aba90 100644
+--- a/drivers/char/rtc.c
++++ b/drivers/char/rtc.c
+@@ -144,6 +144,7 @@ static ssize_t rtc_read(struct file *file, char __user *buf,
  
--config ARCH_MAY_HAVE_PC_FDC
--	bool
--
- config STACKTRACE_SUPPORT
- 	def_bool y
+ static int rtc_ioctl(struct inode *inode, struct file *file,
+ 		     unsigned int cmd, unsigned long arg);
++static void rtc_get_rtc_time(struct rtc_time *rtc_tm);
  
-diff --git a/include/asm-sh/floppy.h b/include/asm-sh/floppy.h
-deleted file mode 100644
-index 59fbfdc..0000000
---- a/include/asm-sh/floppy.h
-+++ /dev/null
-@@ -1,268 +0,0 @@
--/*
-- * Architecture specific parts of the Floppy driver
-- *   include/asm-i386/floppy.h
-- *
-- * This file is subject to the terms and conditions of the GNU General Public
-- * License.  See the file "COPYING" in the main directory of this archive
-- * for more details.
-- *
-- * Copyright (C) 1995
-- */
--#ifndef __ASM_SH_FLOPPY_H
--#define __ASM_SH_FLOPPY_H
--
--#include <linux/vmalloc.h>
--
--
--/*
-- * The DMA channel used by the floppy controller cannot access data at
-- * addresses >= 16MB
-- *
-- * Went back to the 1MB limit, as some people had problems with the floppy
-- * driver otherwise. It doesn't matter much for performance anyway, as most
-- * floppy accesses go through the track buffer.
-- */
--#define _CROSS_64KB(a,s,vdma) \
--(!vdma && ((unsigned long)(a)/K_64 != ((unsigned long)(a) + (s) - 1) / K_64))
--
--#define CROSS_64KB(a,s) _CROSS_64KB(a,s,use_virtual_dma & 1)
--
--
--#define SW fd_routine[use_virtual_dma&1]
--#define CSW fd_routine[can_use_virtual_dma & 1]
--
--
--#define fd_inb(port)			inb_p(port)
--#define fd_outb(value,port)		outb_p(value,port)
--
--#define fd_request_dma()        CSW._request_dma(FLOPPY_DMA,"floppy")
--#define fd_free_dma()           CSW._free_dma(FLOPPY_DMA)
--#define fd_enable_irq()         enable_irq(FLOPPY_IRQ)
--#define fd_disable_irq()        disable_irq(FLOPPY_IRQ)
--#define fd_free_irq()		free_irq(FLOPPY_IRQ, NULL)
--#define fd_get_dma_residue()    SW._get_dma_residue(FLOPPY_DMA)
--#define fd_dma_mem_alloc(size)	SW._dma_mem_alloc(size)
--#define fd_dma_setup(addr, size, mode, io) SW._dma_setup(addr, size, mode, io)
--
--#define FLOPPY_CAN_FALLBACK_ON_NODMA
--
--static int virtual_dma_count;
--static int virtual_dma_residue;
--static char *virtual_dma_addr;
--static int virtual_dma_mode;
--static int doing_pdma;
--
--static void floppy_hardint(int irq, void *dev_id, struct pt_regs * regs)
--{
--	register unsigned char st;
--
--#undef TRACE_FLPY_INT
--
--#ifdef TRACE_FLPY_INT
--	static int calls=0;
--	static int bytes=0;
--	static int dma_wait=0;
--#endif
--	if(!doing_pdma) {
--		floppy_interrupt(irq, dev_id, regs);
--		return;
--	}
--
--#ifdef TRACE_FLPY_INT
--	if(!calls)
--		bytes = virtual_dma_count;
--#endif
--
--	{
--		register int lcount;
--		register char *lptr;
--
--		st = 1;
--		for(lcount=virtual_dma_count, lptr=virtual_dma_addr; 
--		    lcount; lcount--, lptr++) {
--			st=inb(virtual_dma_port+4) & 0xa0 ;
--			if(st != 0xa0) 
--				break;
--			if(virtual_dma_mode)
--				outb_p(*lptr, virtual_dma_port+5);
--			else
--				*lptr = inb_p(virtual_dma_port+5);
--		}
--		virtual_dma_count = lcount;
--		virtual_dma_addr = lptr;
--		st = inb(virtual_dma_port+4);
--	}
--
--#ifdef TRACE_FLPY_INT
--	calls++;
--#endif
--	if(st == 0x20)
--		return;
--	if(!(st & 0x20)) {
--		virtual_dma_residue += virtual_dma_count;
--		virtual_dma_count=0;
--#ifdef TRACE_FLPY_INT
--		printk("count=%x, residue=%x calls=%d bytes=%d dma_wait=%d\n", 
--		       virtual_dma_count, virtual_dma_residue, calls, bytes,
--		       dma_wait);
--		calls = 0;
--		dma_wait=0;
--#endif
--		doing_pdma = 0;
--		floppy_interrupt(irq, dev_id, regs);
--		return;
--	}
--#ifdef TRACE_FLPY_INT
--	if(!virtual_dma_count)
--		dma_wait++;
--#endif
--}
--
--static void fd_disable_dma(void)
--{
--	if(! (can_use_virtual_dma & 1))
--		disable_dma(FLOPPY_DMA);
--	doing_pdma = 0;
--	virtual_dma_residue += virtual_dma_count;
--	virtual_dma_count=0;
--}
--
--static int vdma_request_dma(unsigned int dmanr, const char * device_id)
--{
--	return 0;
--}
--
--static void vdma_nop(unsigned int dummy)
--{
--}
--
--
--static int vdma_get_dma_residue(unsigned int dummy)
--{
--	return virtual_dma_count + virtual_dma_residue;
--}
--
--
--static int fd_request_irq(void)
--{
--	if(can_use_virtual_dma)
--		return request_irq(FLOPPY_IRQ, floppy_hardint,
--				   IRQF_DISABLED, "floppy", NULL);
--	else
--		return request_irq(FLOPPY_IRQ, floppy_interrupt,
--				   IRQF_DISABLED, "floppy", NULL);
--}
--
--static unsigned long dma_mem_alloc(unsigned long size)
--{
--	return __get_dma_pages(GFP_KERNEL,get_order(size));
--}
--
--
--static unsigned long vdma_mem_alloc(unsigned long size)
--{
--	return (unsigned long) vmalloc(size);
--
--}
--
--#define nodma_mem_alloc(size) vdma_mem_alloc(size)
--
--static void _fd_dma_mem_free(unsigned long addr, unsigned long size)
--{
--	if((unsigned int) addr >= (unsigned int) high_memory)
--		return vfree((void *)addr);
--	else
--		free_pages(addr, get_order(size));		
--}
--
--#define fd_dma_mem_free(addr, size)  _fd_dma_mem_free(addr, size) 
--
--static void _fd_chose_dma_mode(char *addr, unsigned long size)
--{
--	if(can_use_virtual_dma == 2) {
--		if((unsigned int) addr >= (unsigned int) high_memory ||
--		   virt_to_phys(addr) >= 0x10000000)
--			use_virtual_dma = 1;
--		else
--			use_virtual_dma = 0;
--	} else {
--		use_virtual_dma = can_use_virtual_dma & 1;
--	}
--}
--
--#define fd_chose_dma_mode(addr, size) _fd_chose_dma_mode(addr, size)
--
--
--static int vdma_dma_setup(char *addr, unsigned long size, int mode, int io)
--{
--	doing_pdma = 1;
--	virtual_dma_port = io;
--	virtual_dma_mode = (mode  == DMA_MODE_WRITE);
--	virtual_dma_addr = addr;
--	virtual_dma_count = size;
--	virtual_dma_residue = 0;
--	return 0;
--}
--
--static int hard_dma_setup(char *addr, unsigned long size, int mode, int io)
--{
--#ifdef FLOPPY_SANITY_CHECK
--	if (CROSS_64KB(addr, size)) {
--		printk("DMA crossing 64-K boundary %p-%p\n", addr, addr+size);
--		return -1;
--	}
--#endif
--
--	__flush_purge_region(addr, size);
--
--	/* actual, physical DMA */
--	doing_pdma = 0;
--	clear_dma_ff(FLOPPY_DMA);
--	set_dma_mode(FLOPPY_DMA,mode);
--	set_dma_addr(FLOPPY_DMA,virt_to_phys(addr));
--	set_dma_count(FLOPPY_DMA,size);
--	enable_dma(FLOPPY_DMA);
--	return 0;
--}
--
--static struct fd_routine_l {
--	int (*_request_dma)(unsigned int dmanr, const char * device_id);
--	void (*_free_dma)(unsigned int dmanr);
--	int (*_get_dma_residue)(unsigned int dummy);
--	unsigned long (*_dma_mem_alloc) (unsigned long size);
--	int (*_dma_setup)(char *addr, unsigned long size, int mode, int io);
--} fd_routine[] = {
--	{
--		request_dma,
--		free_dma,
--		get_dma_residue,
--		dma_mem_alloc,
--		hard_dma_setup
--	},
--	{
--		vdma_request_dma,
--		vdma_nop,
--		vdma_get_dma_residue,
--		vdma_mem_alloc,
--		vdma_dma_setup
--	}
--};
--
--
--static int FDC1 = 0x3f0;
--static int FDC2 = -1;
--
--/*
-- * Floppy types are stored in the rtc's CMOS RAM and so rtc_lock
-- * is needed to prevent corrupted CMOS RAM in case "insmod floppy"
-- * coincides with another rtc CMOS user.		Paul G.
-- */
--#define FLOPPY0_TYPE	(4)
--#define FLOPPY1_TYPE	(0)
--
--#define N_FDC 2
--#define N_DRIVE 8
--
--#define EXTRA_FLOPPY_PARAMS
--
--#endif /* __ASM_SH_FLOPPY_H */
+ #ifdef RTC_IRQ
+ static unsigned int rtc_poll(struct file *file, poll_table *wait);
+@@ -235,7 +236,7 @@ static inline unsigned char rtc_is_updating(void)
+  *	(See ./arch/XXXX/kernel/time.c for the set_rtc_mmss() function.)
+  */
+ 
+-irqreturn_t rtc_interrupt(int irq, void *dev_id)
++static irqreturn_t rtc_interrupt(int irq, void *dev_id)
+ {
+ 	/*
+ 	 *	Can be an alarm interrupt, update complete interrupt,
+@@ -1298,7 +1299,7 @@ static int rtc_proc_open(struct inode *inode, struct file *file)
+ }
+ #endif
+ 
+-void rtc_get_rtc_time(struct rtc_time *rtc_tm)
++static void rtc_get_rtc_time(struct rtc_time *rtc_tm)
+ {
+ 	unsigned long uip_watchdog = jiffies, flags;
+ 	unsigned char ctrl;
+diff --git a/include/linux/rtc.h b/include/linux/rtc.h
+index f2d0d15..1fc4f60 100644
+--- a/include/linux/rtc.h
++++ b/include/linux/rtc.h
+@@ -208,8 +208,6 @@ typedef struct rtc_task {
+ int rtc_register(rtc_task_t *task);
+ int rtc_unregister(rtc_task_t *task);
+ int rtc_control(rtc_task_t *t, unsigned int cmd, unsigned long arg);
+-void rtc_get_rtc_time(struct rtc_time *rtc_tm);
+-irqreturn_t rtc_interrupt(int irq, void *dev_id);
+ 
+ #endif /* __KERNEL__ */
+ 
 
