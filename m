@@ -1,111 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753895AbYC3TWa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754382AbYC3TZi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753895AbYC3TWa (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Mar 2008 15:22:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752632AbYC3TWU
+	id S1754382AbYC3TZi (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Mar 2008 15:25:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752511AbYC3TZb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Mar 2008 15:22:20 -0400
-Received: from fg-out-1718.google.com ([72.14.220.155]:13225 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752349AbYC3TWK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Mar 2008 15:22:10 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-disposition:message-id:content-type:content-transfer-encoding;
-        b=YkyS2bKADk6VE3yT0+ZuWsSMw5WVSsjwtEJlx0jI3mh9w0X8sn1dh1X9lRg+gEuyWjNDMFx3GLou5lRu50MfQ5thTXznN3GWe4DMnyrKOcqDFZbihgT0dh2Hp2TUYZ9JMnyI54tGC92Q4j7IjQE0CgGq/RCosyxmBYOw0JMGlaA=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH 5/5] falconide/q40ide: add ->atapi_*put_bytes and ->ata_*put_data methods
-Date: Sun, 30 Mar 2008 21:34:42 +0200
-User-Agent: KMail/1.9.9
-Cc: linux-ide@vger.kernel.org,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       Linux/m68k <linux-m68k@vger.kernel.org>,
-       Michael Schmitz <schmitz@debian.org>
-References: <200803301714.04527.bzolnier@gmail.com> <Pine.LNX.4.64.0803302012560.16372@anakin>
-In-Reply-To: <Pine.LNX.4.64.0803302012560.16372@anakin>
+	Sun, 30 Mar 2008 15:25:31 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:35705 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752813AbYC3TZa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 30 Mar 2008 15:25:30 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Chr <chunkeey@web.de>
+Subject: Re: The never ending BEEEEP/__smp_call_function_mask with 2.6.25-rc7
+Date: Sun, 30 Mar 2008 21:25:10 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: linux-kernel@vger.kernel.org, Andi Kleen <ak@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>
+References: <200803302109.22219.chunkeey@web.de>
+In-Reply-To: <200803302109.22219.chunkeey@web.de>
 MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200803302134.42569.bzolnier@gmail.com>
 Content-Type: text/plain;
-  charset="iso-8859-1"
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200803302125.10817.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+[Added some CCs]
 
-Hi,
-
-On Sunday 30 March 2008, Geert Uytterhoeven wrote:
-> 	Hi Bart,
+On Sunday, 30 of March 2008, Chr wrote:
+> Hi,
 > 
-> On Sun, 30 Mar 2008, Bartlomiej Zolnierkiewicz wrote:
-> > * Add ->atapi_{in,out}put_bytes and ->ata_{in,out}put_data methods to
-> >   falconide and q40ide host drivers (->ata_* methods are implemented on
-> >   top of ->atapi_* methods so they also do byte-swapping now).
-> > 
-> > * Cleanup atapi_{in,out}put_bytes().
+> Ever since I went to the new 2.6.25-rcX, I encountered lots of random
+> system freezes after about 2 or 3 hours of uptime... but until now, 
+> I couldn't _catch_ them, since the system
+> (AMD Athlon 4200+ X2 (Manchester) / nforce 4 SLI / x86_64) went
+> straight into oblivion (nothing on the serial console or anywhere else,
+> heck I couldn't even hit reset, It didn't POST anymore)
 > 
-> Thanks!
+> So. take a look at stuck_task... that's best backtrace I could get...
+> (I have other logs too. (Task-list / Lockdep / ... ) but it's too much
+> and I hope the _logs_ are already enough.
 > 
-> One remaining issue (for which the fix has never been submitted upstream so
-> far) with Atari and Q40 is that due to the byteswapped interface, the driveid
-> is also byteswapped, so it has to be unswapped again in ide_fix_driveid().
-
-My patch causes unswapping for _all_ data coming from the device so I wonder
-whether the ide_fix_driveid() fix is still needed?
-
-[ I now recall some discussion that we shouldn't un-swap fs requests because
-  of how the things were done in the past fs itself is stored byte-swapped on
-  the disk - if this is the case I will recast the patch to pass rq to
-  ->ata_*put_data in ide_pio_sector() and check rq->cmd_type == REQ_TYPE_FS
-  in falconide/q40ide_*put_data() to decide whether to unswap data or not ]
-
-Thanks,
-Bart
-
-> Here's a very old and unclean but working patch:
+> BTW: I noticed that the clock seems to jump forward and backwards.
+> Is this because the CPU-Cores aren't syncronized? (And why are they
+> out of sync?)
 > 
-> --- a/drivers/ide/ide-iops.c
-> +++ b/drivers/ide/ide-iops.c
-> @@ -284,6 +284,23 @@ void ide_fix_driveid (struct hd_driveid 
->  	int i;
->  	u16 *stringcast;
->  
-> +#ifdef __mc68000__
-> +	if (!MACH_IS_AMIGA && !MACH_IS_MAC && !MACH_IS_Q40 && !MACH_IS_ATARI)
-> +		return;
-> +
-> +#ifdef M68K_IDE_SWAPW
-> +	if (M68K_IDE_SWAPW) {	/* fix bus byteorder first */
-> +		u_char *p = (u_char *)id;
-> +		u_char t;
-> +		for (i = 0; i < 512; i += 2) {
-> +			t = p[i];
-> +			p[i] = p[i+1];
-> +			p[i+1] = t;
-> +		}
-> +	}
-> +#endif
-> +#endif /* __mc68000__ */
-> +
->  	id->config         = __le16_to_cpu(id->config);
->  	id->cyls           = __le16_to_cpu(id->cyls);
->  	id->reserved2      = __le16_to_cpu(id->reserved2);
+> (And yes, 2.6.24.4 is fine... even hpet works there without any
+> rtc: lost 14 interrupts)
 > 
-> Note that include/asm-m68k/ide.h has
+> cat /proc/interrupts
+>            CPU0       CPU1
+>   0:         51          0    XT-PIC-XT        timer
+>   1:         43      22170   IO-APIC-edge      i8042
+>   4:          0          1   IO-APIC-edge
+>   6:          0          5   IO-APIC-edge      floppy
+>   7:          1          0   IO-APIC-edge      parport0
+>   8:          0        199   IO-APIC-edge      rtc
+>   9:          0          0   IO-APIC-fasteoi   acpi
+>  14:          0          0   IO-APIC-edge      pata_amd
+>  15:          0          0   IO-APIC-edge      pata_amd
+>  16:         82      51311   IO-APIC-fasteoi   firewire_ohci, EMU10K1
+>  17:          0         50   IO-APIC-fasteoi   firewire_ohci, eth1
+>  18:         12       4862   IO-APIC-fasteoi   nvidia
+>  20:        421     304857   IO-APIC-fasteoi   eth0
+>  21:         57      33025   IO-APIC-fasteoi   ohci_hcd:usb1
+>  22:        185      12275   IO-APIC-fasteoi   sata_nv
+>  23:        276      83270   IO-APIC-fasteoi   sata_nv, ehci_hcd:usb2
+> NMI:          0          0   Non-maskable interrupts
+> LOC:     339847     307599   Local timer interrupts
+> RES:     126709      38837   Rescheduling interrupts
+> CAL:        605       1054   function call interrupts
+> TLB:       1513       3813   TLB shootdowns
+> TRM:          0          0   Thermal event interrupts
+> THR:          0          0   Threshold APIC interrupts
+> SPU:          0          0   Spurious interrupts
+> ERR:          1
 > 
->     #define M68K_IDE_SWAPW  (MACH_IS_Q40 || MACH_IS_ATARI)
-> 
-> Gr{oetje,eeting}s,
-> 
-> 						Geert
-> 
-> --
-> Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-> 
-> In personal conversations with technical people, I call myself a hacker. But
-> when I'm talking to journalists I just say "programmer" or something like that.
-> 							    -- Linus Torvalds
