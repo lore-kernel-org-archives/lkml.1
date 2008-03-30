@@ -1,46 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755026AbYC3UWo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754645AbYC3UXY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755026AbYC3UWo (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Mar 2008 16:22:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754480AbYC3UWg
+	id S1754645AbYC3UXY (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Mar 2008 16:23:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753316AbYC3UXQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Mar 2008 16:22:36 -0400
-Received: from rtr.ca ([76.10.145.34]:2582 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753305AbYC3UWf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Mar 2008 16:22:35 -0400
-Message-ID: <47EFF689.5030506@rtr.ca>
-Date: Sun, 30 Mar 2008 16:22:33 -0400
-From: Mark Lord <lkml@rtr.ca>
-Organization: Real-Time Remedies Inc.
-User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
+	Sun, 30 Mar 2008 16:23:16 -0400
+Received: from rv-out-0910.google.com ([209.85.198.189]:65308 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753302AbYC3UXP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 30 Mar 2008 16:23:15 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=DMvRNX2lqzl8KbXoziABdY+5f1UVX2uctlrPCwv5tRhPfCDmyiXo2oYIvgfvxjidSryaraxyIeibv1QKkHRG91VyQC3x4P4fuVef6LVYH4bpluYDV5BssfvZYqeimT80C9X2VO1zzyZNnIaxl7dqGHEC7gapz26HZyt8vqZZGr4=
+Message-ID: <86802c440803301323q5c4bd4f4k1f9bdc1d6b1a0a7b@mail.gmail.com>
+Date: Sun, 30 Mar 2008 13:23:12 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: [RFC 8/8] x86_64: Support for new UV apic
+Cc: "Jack Steiner" <steiner@sgi.com>, "Andi Kleen" <andi@firstfloor.org>,
+       tglx@linutronix.de, linux-mm@kvack.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20080326073823.GD3442@elte.hu>
 MIME-Version: 1.0
-To: Pavel Machek <pavel@ucw.cz>
-Cc: bugme-daemon@bugzilla.kernel.org, rjw@sisk.pl, bunk@kernel.org,
-       Linux Kernel <linux-kernel@vger.kernel.org>, linux-usb@vger.kernel.org
-Subject: Re: [Bug 10345] USB HID problems after resume
-References: <20080328223544.A61F711D10C@picon.linux-foundation.org> <47EE78C9.5090006@rtr.ca> <47EE793C.5070105@rtr.ca> <20080330114834.GA6510@elf.ucw.cz> <47EFD1F1.8010501@rtr.ca> <20080330182243.GA11839@elf.ucw.cz> <47EFF4F6.1050302@rtr.ca> <20080330202047.GE11839@elf.ucw.cz>
-In-Reply-To: <20080330202047.GE11839@elf.ucw.cz>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080324182122.GA28327@sgi.com> <87abknhzhd.fsf@basil.nowhere.org>
+	 <20080325175657.GA6262@sgi.com> <20080326073823.GD3442@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>>>>> 3GB of RAM? Try iommu=soft.
-..
->>
->> This is a 32-bit system / kernel, so I'm guessing that this option is not applicable.
->>
->> Right?  (it does have 3GB of RAM, though).
-> 
-> Not 100% sure... I've seen strangeness on 32-bit systems, too. Can you
-> simply pass mem=2G and see what happens?
-..
+On Wed, Mar 26, 2008 at 12:38 AM, Ingo Molnar <mingo@elte.hu> wrote:
+>
+>  * Jack Steiner <steiner@sgi.com> wrote:
+>
+>  > > > -        obj-y                            += genapic_64.o genapic_flat_64.o
+>  > > > +        obj-y                            += genapic_64.o genapic_flat_64.o genx2apic_uv_x.o
+>  > >
+>  > > Definitely should be a CONFIG
+>  >
+>  > Not sure that I understand why. The overhead of UV is minimal & we
+>  > want UV enabled in all distro kernels. OTOH, small embedded systems
+>  > probably want to eliminate every last bit of unneeded code.
+>  >
+>  > Might make sense to have a config option. Thoughts????
+>
+>  i wouldnt mind having UV enabled by default (it can be a config option
+>  but default-enabled on generic kernels so all distros will pick this hw
+>  support up), but we definitely need the genapic unification before we
+>  can add more features.
 
-Sure, after I finish collecting data on the problem, I'll give that a try.
-It will be somewhat inconclusive, though, since the problem does not happen
-on every resume.  
+config option would be reasonable.
+for x86_64
+subarch already have X86_PC, X86_VSMP.
+we have X86_UVSMP
 
-cheers
-
+YH
