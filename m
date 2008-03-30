@@ -1,52 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752841AbYC3KCz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752573AbYC3Kxc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752841AbYC3KCz (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Mar 2008 06:02:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751362AbYC3KCp
+	id S1752573AbYC3Kxc (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Mar 2008 06:53:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751385AbYC3KxQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Mar 2008 06:02:45 -0400
-Received: from mx4.orcon.net.nz ([219.88.242.54]:38644 "EHLO mx4.orcon.net.nz"
+	Sun, 30 Mar 2008 06:53:16 -0400
+Received: from ozlabs.org ([203.10.76.45]:41819 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751294AbYC3KCo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Mar 2008 06:02:44 -0400
-Message-ID: <47EF6540.1020808@orcon.net.nz>
-Date: Sun, 30 Mar 2008 23:02:40 +1300
-From: Michael Cree <mcree@orcon.net.nz>
-User-Agent: Mozilla-Thunderbird 2.0.0.9 (X11/20080110)
+	id S1750913AbYC3KxP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 30 Mar 2008 06:53:15 -0400
 MIME-Version: 1.0
-To: Bob Tracy <rct@frus.com>
-CC: Rene Herman <rene.herman@keyaccess.nl>, Takashi Iwai <tiwai@suse.de>,
-       ALSA devel <alsa-devel@alsa-project.org>, linux-kernel@vger.kernel.org,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>, linux-alpha@vger.kernel.org,
-       Krzysztof Helt <krzysztof.h1@wp.pl>
-Subject: Re: [alsa-devel] [regression] 2.6.25-rc4 snd-es18xx broken on Alpha
-References: <20080330051814.5D9CCDBA2@gherkin.frus.com>
-In-Reply-To: <20080330051814.5D9CCDBA2@gherkin.frus.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-DSPAM-Check: by mx4.orcon.net.nz on Sun, 30 Mar 2008 23:02:42 +1300
-X-DSPAM-Result: Innocent
-X-DSPAM-Processed: Sun Mar 30 23:02:43 2008
-X-DSPAM-Confidence: 0.6157
-X-DSPAM-Improbability: 1 in 161 chance of being spam
-X-DSPAM-Probability: 0.0000
+Message-ID: <18415.28947.208842.304790@cargo.ozlabs.ibm.com>
+Date: Sun, 30 Mar 2008 21:53:07 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Roland McGrath <roland@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>, linux-s390@vger.kernel.org,
+       tony.luck@intel.com, linux-ia64@vger.kernel.org,
+       linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/4] set_restore_sigmask TIF_SIGPENDING
+In-Reply-To: <alpine.LFD.1.00.0803281746480.14670@woody.linux-foundation.org>
+References: <20080329001230.D013726FA1D@magilla.localdomain>
+	<20080329001341.7F93826FA1D@magilla.localdomain>
+	<alpine.LFD.1.00.0803281746480.14670@woody.linux-foundation.org>
+X-Mailer: VM 7.19 under Emacs 21.4.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bob Tracy wrote:
-> Rene Herman wrote:
->> $ sox asskickd.wav -w -r 44100 -t alsa hw
-> 
-> Several seconds of silence, followed by what sounded like continuous pitched
-> machine-gun fire.  Each <ctrl>C advanced through the file (the pitch of the
-> machine-gun fire changed slightly).  Still had to type <ctrl>\ to kill sox.
+Linus Torvalds writes:
 
-Right, that sounds just like the older PWS600au I have - the one with 
-the ESS1888 - except that what Bob describes as machine gun fire, I 
-thought was, ahem, flatulence.
+> Of course, it may well not be worth it. Unlike the TIF flags, the TS flags 
+> have been architecture-specific and I don't think all architectures even 
+> do them (x86 uses them for FP state bits and stuff like that).
 
-The newer PWS600au (with the ESS1887) plays the sound files correctly, 
-except for the repeated bits at the end.
+Powerpc has a "local_flags" field.  I don't mind changing it if we are
+going to have a consistent name across architectures, but "status" (as
+x86 uses) seems a bit nondescript to me.
 
-Michael.
+Paul.
