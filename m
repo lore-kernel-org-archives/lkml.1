@@ -1,118 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754479AbYC3QOR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754097AbYC3QSX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754479AbYC3QOR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Mar 2008 12:14:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752988AbYC3QOF
+	id S1754097AbYC3QSX (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Mar 2008 12:18:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753007AbYC3QSP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Mar 2008 12:14:05 -0400
-Received: from jurassic.park.msu.ru ([195.208.223.243]:45765 "EHLO
-	jurassic.park.msu.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752960AbYC3QOE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Mar 2008 12:14:04 -0400
-Date: Sun, 30 Mar 2008 20:14:00 +0400
-From: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Rene Herman <rene.herman@keyaccess.nl>
-Cc: Bob Tracy <rct@frus.com>, Tyson Whitehead <twhitehe@uwo.ca>,
-       Takashi Iwai <tiwai@suse.de>, ALSA devel <alsa-devel@alsa-project.org>,
-       Michael Cree <mcree@orcon.net.nz>, Krzysztof Helt <krzysztof.h1@wp.pl>,
-       linux-kernel@vger.kernel.org, linux-alpha@vger.kernel.org
-Subject: Re: [alsa-devel] [regression] 2.6.25-rc4 snd-es18xx broken on Alpha
-Message-ID: <20080330161400.GA24443@jurassic.park.msu.ru>
-References: <20080329064227.58074DBA2@gherkin.frus.com> <47EE317E.9030807@keyaccess.nl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47EE317E.9030807@keyaccess.nl>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Sun, 30 Mar 2008 12:18:15 -0400
+Received: from mail.gmx.net ([213.165.64.20]:59905 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752971AbYC3QSO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 30 Mar 2008 12:18:14 -0400
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX185xA0ZPiw5fLxDWzISy53zh43hKSa33xweuJcX//
+	JDvzHGMpkBcbLH
+Subject: Re: Scalability requirements for sysv ipc (+namespaces broken with
+	SEM_UNDO)
+From: Mike Galbraith <efault@gmx.de>
+To: Manfred Spraul <manfred@colorfullife.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       paulmck@linux.vnet.ibm.com, Nadia Derbey <Nadia.Derbey@bull.net>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Pavel Emelianov <xemul@openvz.org>
+In-Reply-To: <47EF9FC2.3050901@colorfullife.com>
+References: <47E382DB.70503@colorfullife.com> <47E3ADE3.4030304@bull.net>
+	 <47E3B924.3000304@colorfullife.com>
+	 <20080321141339.GB9618@linux.vnet.ibm.com>
+	 <47E3DD8C.4000904@colorfullife.com>
+	 <1206164608.3659.11.camel@marge.simson.net>
+	 <47E4DB06.3020003@colorfullife.com>
+	 <1206186832.4545.1.camel@marge.simson.net>
+	 <47E51637.8060102@colorfullife.com>  <47E55945.10109@colorfullife.com>
+	 <1206460206.4414.21.camel@marge.simson.net>
+	 <47EF9FC2.3050901@colorfullife.com>
+Content-Type: text/plain
+Date: Sun, 30 Mar 2008 19:18:08 +0200
+Message-Id: <1206897488.4593.11.camel@marge.simson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0 
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Mar 29, 2008 at 01:09:34PM +0100, Rene Herman wrote:
-> Okay. The thing that "fixed" Tyson was disabling mmap from the driver:
->
-> http://mailman.alsa-project.org/pipermail/alsa-devel/2008-March/006911.html
 
-Weird - I was sure the mmap problem has been fixed, but obviously
-the patch didn't go in...
+On Sun, 2008-03-30 at 16:12 +0200, Manfred Spraul wrote:
+> Mike Galbraith wrote:
+> > On Sat, 2008-03-22 at 20:08 +0100, Manfred Spraul wrote:
+> >
+> >   
+> >> just the normal performance of 2.6.25-rc3 is abyssimal, 55 to 60% slower 
+> >> than 2.6.18.8:
+> >>     
+> >
+> > After manually reverting 3e148c79938aa39035669c1cfa3ff60722134535,
+> > 2.6.25.git scaled linearly
+> We can't just revert that patch: with IDR, a global lock is mandatory :-(
+> We must either revert the whole idea of using IDR or live with the 
+> reduced scalability.
 
-Andrew, could you please queue this up for 2.6.26?
+Yeah, I looked at the problem, but didn't know what the heck to do about
+it, so just grabbed my axe to verify/quantify.
 
-Ivan.
+> Actually, there are further bugs: the undo structures are not 
+> namespace-aware, thus semop with SEM_UNDO, unshare, create new array 
+> with same id, but more semaphores, another semop with SEM_UNDO will 
+> corrupt kernel memory :-(
+> I'll try to clean up the bugs first, then I'll look at the scalability 
+> again.
 
---
-alpha: fix ALSA DMA mmap crash
+Great!
 
-Make dma_alloc_coherent respect gfp flags (__GFP_COMP is one that
-matters).
+	-Mike
 
-Signed-off-by: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
----
- arch/alpha/kernel/pci_iommu.c   |    8 +++++---
- include/asm-alpha/dma-mapping.h |    2 +-
- include/asm-alpha/pci.h         |    8 +++++++-
- 3 files changed, 13 insertions(+), 5 deletions(-)
 
-diff --git a/arch/alpha/kernel/pci_iommu.c b/arch/alpha/kernel/pci_iommu.c
-index 4e1c086..dd6e334 100644
---- a/arch/alpha/kernel/pci_iommu.c
-+++ b/arch/alpha/kernel/pci_iommu.c
-@@ -424,11 +424,13 @@ EXPORT_SYMBOL(pci_unmap_page);
-    else DMA_ADDRP is undefined.  */
- 
- void *
--pci_alloc_consistent(struct pci_dev *pdev, size_t size, dma_addr_t *dma_addrp)
-+__pci_alloc_consistent(struct pci_dev *pdev, size_t size,
-+		       dma_addr_t *dma_addrp, gfp_t gfp)
- {
- 	void *cpu_addr;
- 	long order = get_order(size);
--	gfp_t gfp = GFP_ATOMIC;
-+
-+	gfp &= ~GFP_DMA;
- 
- try_again:
- 	cpu_addr = (void *)__get_free_pages(gfp, order);
-@@ -458,7 +460,7 @@ try_again:
- 
- 	return cpu_addr;
- }
--EXPORT_SYMBOL(pci_alloc_consistent);
-+EXPORT_SYMBOL(__pci_alloc_consistent);
- 
- /* Free and unmap a consistent DMA buffer.  CPU_ADDR and DMA_ADDR must
-    be values that were returned from pci_alloc_consistent.  SIZE must
-diff --git a/include/asm-alpha/dma-mapping.h b/include/asm-alpha/dma-mapping.h
-index 75a1aff..db351d1 100644
---- a/include/asm-alpha/dma-mapping.h
-+++ b/include/asm-alpha/dma-mapping.h
-@@ -11,7 +11,7 @@
- #define dma_unmap_single(dev, addr, size, dir)		\
- 		pci_unmap_single(alpha_gendev_to_pci(dev), addr, size, dir)
- #define dma_alloc_coherent(dev, size, addr, gfp)	\
--		pci_alloc_consistent(alpha_gendev_to_pci(dev), size, addr)
-+	      __pci_alloc_consistent(alpha_gendev_to_pci(dev), size, addr, gfp)
- #define dma_free_coherent(dev, size, va, addr)		\
- 		pci_free_consistent(alpha_gendev_to_pci(dev), size, va, addr)
- #define dma_map_page(dev, page, off, size, dir)		\
-diff --git a/include/asm-alpha/pci.h b/include/asm-alpha/pci.h
-index d5b10ef..d31fd49 100644
---- a/include/asm-alpha/pci.h
-+++ b/include/asm-alpha/pci.h
-@@ -76,7 +76,13 @@ extern inline void pcibios_penalize_isa_irq(int irq, int active)
-    successful and sets *DMA_ADDRP to the pci side dma address as well,
-    else DMA_ADDRP is undefined.  */
- 
--extern void *pci_alloc_consistent(struct pci_dev *, size_t, dma_addr_t *);
-+extern void *__pci_alloc_consistent(struct pci_dev *, size_t,
-+				    dma_addr_t *, gfp_t);
-+static inline void *
-+pci_alloc_consistent(struct pci_dev *dev, size_t size, dma_addr_t *dma)
-+{
-+	return __pci_alloc_consistent(dev, size, dma, GFP_ATOMIC);
-+}
- 
- /* Free and unmap a consistent DMA buffer.  CPU_ADDR and DMA_ADDR must
-    be values that were returned from pci_alloc_consistent.  SIZE must
