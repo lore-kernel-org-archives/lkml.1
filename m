@@ -1,66 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755373AbYC3WW5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755216AbYC3Wbm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755373AbYC3WW5 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Mar 2008 18:22:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751087AbYC3WWu
+	id S1755216AbYC3Wbm (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Mar 2008 18:31:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753605AbYC3Wba
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Mar 2008 18:22:50 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:49357 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750857AbYC3WWt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Mar 2008 18:22:49 -0400
-Date: Sun, 30 Mar 2008 15:22:28 -0700
-From: Greg KH <greg@kroah.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Bj?rn Steinbrink <B.Steinbrink@gmx.de>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Arjan van de Ven <arjan@linux.intel.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Johannes Berg <johannes@sipsolutions.net>,
-       Jiri Kosina <jkosina@suse.cz>
-Subject: Re: [PATCH] evdev: Release eventual input device grabs when
-	getting disconnected
-Message-ID: <20080330222228.GA2419@kroah.com>
-References: <20080330184259.GB21375@atjola.homenet> <alpine.LFD.1.00.0803301448190.14670@woody.linux-foundation.org>
-MIME-Version: 1.0
+	Sun, 30 Mar 2008 18:31:30 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:55091 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751087AbYC3Wb2 (ORCPT
+	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
+	Sun, 30 Mar 2008 18:31:28 -0400
+Date: Mon, 31 Mar 2008 08:31:02 +1000
+From: David Chinner <dgc@sgi.com>
+To: Takashi Sato <t-sato@yk.jp.nec.com>
+Cc: David Chinner <dgc@sgi.com>,
+       "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
+       "xfs@oss.sgi.com" <xfs@oss.sgi.com>,
+       "dm-devel@redhat.com" <dm-devel@redhat.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC PATCH] freeze feature ver 1.0
+Message-ID: <20080330223102.GE103491721@sgi.com>
+References: <20080328180145t-sato@mail.jp.nec.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.00.0803301448190.14670@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <20080328180145t-sato@mail.jp.nec.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Mar 30, 2008 at 02:51:02PM -0700, Linus Torvalds wrote:
+On Fri, Mar 28, 2008 at 06:01:45PM +0900, Takashi Sato wrote:
+> Hi,
 > 
+> David Chinner wrote:
+> > Can you please split this into two patches - one which introduces the
+> > generic functionality *without* the timeout stuff, and a second patch
+> > that introduces the timeouts.
 > 
-> On Sun, 30 Mar 2008, Bj?rn Steinbrink wrote:
-> >
-> > I can't reproduce the bug on my UP box and currently can't afford
-> > crashing my SMP box (all the oopses seem to come from SMP kernels, so I
-> > guess it needs SMP to crash), so while this doesn't show any new
-> > problems, I can't tell whether it actually fixes anything. Testers
-> > welcome!
+> OK.
+> I will send the split patches in subsequent mails. 
+>  
+> > I think this timeout stuff is dangerous - it adds significant
+> > complexity and really does not protect against anything that can't
+> > be done in userspace.  i.e. If your system is running well enough
+> > for the timer to fire and unfreeze the filesystem, it's running well
+> > enough for you to do "freeze X; sleep Y; unfreeze X".  
 > 
-> Ok, I applied this because I will do an -rc8 today or tomorrow, but I 
-> really really hope somebody can figure out what made this all start to 
-> trigger. It does smell like some core device layer change, because we do 
-> not seem to have a lot of changes since 2.6.24 in evdev.c and input.c that 
-> seem relevant.
+> If the process is terminated at "sleep Y" by an unexpected
+> accident (e.g. signals),  the filesystem will be left frozen.
+
+At which point you run "unfreeze /mnt/fs" and unfreeze it.
+
+If you've got a script that fails in the middle of an operation that
+freezes the filesystem, then the error handling of that script
+needs to unfreeze the filesystem. The kernel does not need to do
+this.
+
+> So, I think the timeout is needed to unfreeze more definitely.
+
+No, it can be handled by userspace perfectly well.
+
+> > FWIW, there is nothing to guarantee that the filesystem has finished
+> > freezing when the timeout fires (it's not uncommon to see
+> > freeze_bdev() taking *minutes*) and unfreezing in the middle of a
+> > freeze operation will cause problems - either for the filesystem
+> > in the middle of a freeze operation, or for whatever is freezing the
+> > filesystem to get a consistent image.....
 > 
-> Greg, are there any refcounting changes that would cause the input devices 
-> to be free'd earlier or something?
+> Do you mention the freeze_bdev()'s hang?
 
-Earlier?  No, not that I know of at all, as long as the reference
-counting logic was correct originally.  All of the problems we have been
-fixing were ones where we accidentally were grabbing too many references
-and then wondering why things were not getting cleaned up properly as
-the kobject rework exposed these problems making them more obvious.
+If freeze_bdev() hangs, then you've got a buggy filesystem and far
+more problems to worry about than undoing the freeze. It's likely
+you're going to need a reboot to unwedge then hung filesystem.....
 
-I haven't heard of the opposite happening.  Anything that I can try to
-test for here, I have a lot of removable input devices to test with.
+> The salvage target of my timeout is freeze process's accident as below.
+> - It is killed before calling the unfreeze ioctl
 
-thanks,
+Can be fixed from userspace.
 
-greg k-h
+> - It causes a deadlock by accessing the frozen filesystem
+
+Application bug. Undeadlock it by running "unfreeze /mnt/fs"....
+
+FWIW, DM is quite capable of freezing the filesystem, snapshotting
+it and then unfreezing it without hanging, crashing or having nasty
+stuff in general happen. We've used 'xfs_freeze -f /mnt/fs;
+do_something; xfs_freeze -u /mnt/fs' for years without having
+problems with freeze hanging, application deadlocks, etc.....
+
+... And if something has gone wrong during the freeze, it is far,
+far better to leave the filesystem stuck in a frozen state than to
+unfreeze it and allow it to be damaged further. If you get stuck or
+a script gets killed in the middle of execution, then an admin needs
+to look at the problem immediately. Just timing out and unfreezing
+is about the worst thing you can do because it allows problems
+(corruptions, errors, etc) to be propagated and potentially make
+things worse before an admin can intervene and fix things up....
+
+Basically, I don't want to have to deal with the "snapshot
+image corrupt" bug reports that will come from user
+misuse/misunderstanding of the "freeze timeout". It's hard enough
+tracking down these sorts of problems without throwing in the
+"freeze timed out before completion" possibility that guarantees
+a non-consistent snapshot image.....
+
+/me points to the ASSERT_ALWAYS() in xfs_attr_quiesce() that ensures
+we get bug reports when the filesystem is still being actively
+modified when the freeze "completes".
+
+> So the delayed work for the timeout is set after all of freeze operations
+> in freeze_bdev() in my patches.
+> I think the filesystem dependent code (write_super_lockfs operation)
+> should be implemented not to cause a hang.
+
+And that should already be the case. If write_super_lockfs() hangs,
+then you've got a filesystem bug ;)
+
+Cheers,
+
+Dave.
+-- 
+Dave Chinner
+Principal Engineer
+SGI Australian Software Group
