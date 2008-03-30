@@ -1,56 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753831AbYC3M2f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753342AbYC3Mec@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753831AbYC3M2f (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Mar 2008 08:28:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753342AbYC3M20
+	id S1753342AbYC3Mec (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Mar 2008 08:34:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751490AbYC3MeY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Mar 2008 08:28:26 -0400
-Received: from mba.ocn.ne.jp ([122.1.235.107]:52560 "EHLO smtp.mba.ocn.ne.jp"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751490AbYC3M2Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Mar 2008 08:28:25 -0400
-Date: Sun, 30 Mar 2008 21:29:06 +0900 (JST)
-Message-Id: <20080330.212906.75185185.anemo@mba.ocn.ne.jp>
-To: haavard.skinnemoen@atmel.com
-Cc: david-b@pacbell.net, spi-devel-general@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       marc.pignat@hevs.ch, nforrester@whoi.edu
-Subject: Re: [PATCH] atmel_spi: support zero length transfer (resend)
-From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-In-Reply-To: <20080329175651.311b4f6d@hskinnemo-gx620.norway.atmel.com>
-References: <20080330.001133.108307862.anemo@mba.ocn.ne.jp>
-	<20080329175651.311b4f6d@hskinnemo-gx620.norway.atmel.com>
-X-Fingerprint: 6ACA 1623 39BD 9A94 9B1A  B746 CA77 FE94 2874 D52F
-X-Pgp-Public-Key: http://wwwkeys.pgp.net/pks/lookup?op=get&search=0x2874D52F
-X-Mailer: Mew version 5.2 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+	Sun, 30 Mar 2008 08:34:24 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:55327 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751419AbYC3MeX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 30 Mar 2008 08:34:23 -0400
+Date: Sun, 30 Mar 2008 13:16:52 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: postmaster@van-ginkel.eu
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] ptmx: adding handshake support
+Message-ID: <20080330131652.7073589c@core>
+In-Reply-To: <20080330140948.0cqmtqb9us880cw8@62.129.139.44>
+References: <20080311212830.5f4apfr4uqs884cc@62.129.139.44>
+	<20080330140948.0cqmtqb9us880cw8@62.129.139.44>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 29 Mar 2008 17:56:51 +0100, Haavard Skinnemoen <haavard.skinnemoen@atmel.com> wrote:
-> > Though some discussion about zero length transfer were raised by this
-> > patch last time, I think there were no explicit objection to this
-> > patch itself.
-> 
-> Well, the patch doesn't seem to do any harm, but I can't see much of a
-> point to it either if zero-length transfers aren't going to be
-> allowed...
+On Sun, 30 Mar 2008 14:09:48 +0200
+postmaster@van-ginkel.eu wrote:
 
-Well, some wired device might want long delay before first CLK edge.
-I think most device do not have such constraint, but ...
+> This weekend I upgraded my kernel to 2.6.22.5 and tried my patch.
+> Unfortunately pty.c seems to be a slightly different, so generated a new
+> patch:
 
-Anyway, SPI framework does not reject it.  So I think the controller
-driver should accept it unless it is hard to support on that hardware.
+Really you want to be working against 2.6.25-rc5-mm1 or later as there
+are big changes in the tty layer pending, some of which affect the
+locking on stuff like this.
 
-> Also, if the length is zero, the driver will end up doing a memset with
-> length zero at some point. Is that allowed?
+> +struct pty_mcrmsr {
+> +
+> +	struct semaphore        sem;            /* locks this structure */
 
-I believe memset() with zero length should be allowed.  It seems
-ambiguous that dma_sync_single_for_device() with zero length is legal
-or not.  Actually, it seems OK on ARM and AVR32.
+You create a lock but don't use it. Also btw the -mm tty layer has a
+ctrl_lock you could use instead.
 
----
-Atsushi Nemoto
+> +	/* for tiocmget and tiocmset functions */
+> +
+> +	int                     msr;            /* MSR shadow */
+> +	int                     mcr;            /* MCR shadow */
+
+Could be one value using the existing bit masks.
+
+> +	mcrmsr = kmalloc(sizeof(*mcrmsr), GFP_KERNEL);
+> +
+> +	init_MUTEX(&mcrmsr->sem);
+
+Crashes on allocation failure
+
+> +	if (tty->driver_data != NULL) {
+> +		msr = mcrmsr->msr;
+> +		mcr = mcrmsr->mcr;
+> +	}
+
+Always true
+
+> +
+> +	result = ((mcr & 0x01)  ? TIOCM_DTR  : 0) |  /* DTR is set */
+> +		((mcr & 0x02)  ? TIOCM_RTS  : 0) |  /* RTS is set */
+> +		((mcr & 0x04)  ? TIOCM_LOOP : 0) |  /* LOOP is set */
+> +		((msr & 0x08)  ? TIOCM_CTS  : 0) |  /* CTS is set */
+> +		((msr & 0x10)  ? TIOCM_CAR  : 0) |  /* Carrier detect is set*/
+> +		((msr & 0x20)  ? TIOCM_RI   : 0) |  /* Ring Indicator is set */
+> +		((msr & 0x40)  ? TIOCM_DSR  : 0);   /* DSR is set */
+
+Use the mcr/msr bits as is and you don't need this mess
+
+> +	if (set & TIOCM_DTR)
+> +		mcr |= 0x01;
+> +	if (set & TIOCM_RTS)
+> +		mcr |= 0x02;
+> +	if (set & TIOCM_LOOP)
+
+Ditto
+
+> +	/* set the new MCR value in the device */
+> +
+> +	if (tty->driver_data != NULL)
+> +		mcrmsr->mcr=mcr;
+
+That may cause wakeups, open, hangup etc to occur - does that need to be
+considered here.
+
+> +	case 0x5426: /* Set all of the handshake line, even the normally  
+> read only */
+
+Use a proper value as I said before.
+
+
+
