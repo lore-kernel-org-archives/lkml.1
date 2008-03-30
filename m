@@ -1,59 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752507AbYC3JXe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752656AbYC3Jat@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752507AbYC3JXe (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Mar 2008 05:23:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751274AbYC3JXY
+	id S1752656AbYC3Jat (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Mar 2008 05:30:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751274AbYC3Jaj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Mar 2008 05:23:24 -0400
-Received: from e28smtp06.in.ibm.com ([59.145.155.6]:58180 "EHLO
-	e28smtp06.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751066AbYC3JXX (ORCPT
+	Sun, 30 Mar 2008 05:30:39 -0400
+Received: from smtp-out003.kontent.com ([81.88.40.217]:59509 "EHLO
+	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751266AbYC3Jah convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Mar 2008 05:23:23 -0400
-Date: Sun, 30 Mar 2008 14:53:17 +0530
-From: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-To: Jiri Kosina <jkosina@suse.cz>
-Cc: Richard Jonsson <richie@coderworld.net>, linux-kernel@vger.kernel.org
-Subject: Re: Keyboard weirdness: keys get stuck
-Message-ID: <20080330092317.GD30270@linux.vnet.ibm.com>
-Reply-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-References: <47EEA097.5000701@coderworld.net> <47EEC51C.2060806@coderworld.net> <Pine.LNX.4.64.0803300603110.32241@twin.jikos.cz>
+	Sun, 30 Mar 2008 05:30:37 -0400
+From: Oliver Neukum <oliver@neukum.org>
+Organization: Novell
+To: Mark Lord <lkml@rtr.ca>
+Subject: Re: [Bug 10345] USB HID problems after resume
+Date: Sun, 30 Mar 2008 10:30:46 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: bugme-daemon@bugzilla.kernel.org, rjw@sisk.pl, bunk@kernel.org,
+       Linux Kernel <linux-kernel@vger.kernel.org>, linux-usb@vger.kernel.org
+References: <20080328223544.A61F711D10C@picon.linux-foundation.org> <47EE78C9.5090006@rtr.ca> <47EE793C.5070105@rtr.ca>
+In-Reply-To: <47EE793C.5070105@rtr.ca>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0803300603110.32241@twin.jikos.cz>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Message-Id: <200803301130.47607.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Mar 30, 2008 at 06:04:52AM +0200, Jiri Kosina wrote:
-> On Sat, 29 Mar 2008, Richard Jonsson wrote:
+Am Samstag, 29. März 2008 18:15:40 schrieb Mark Lord:
+> bugme-daemon@bugzilla.kernel.org wrote:
+> > http://bugzilla.kernel.org/show_bug.cgi?id=10345
+> >
+> >
+> > rjw@sisk.pl changed:
+> >
+> >            What    |Removed                     |Added
+> > ----------------------------------------------------------------------------
+> >              Status|NEW                         |REJECTED
+> >          Resolution|                            |UNREPRODUCIBLE
+> >
+> >
+> >
+> >
+> > ------- Comment #2 from rjw@sisk.pl  2008-03-28 15:35 -------
+> > Handled-By : Mark Lord <lkml@rtr.ca>
+> > References : http://lkml.org/lkml/2008/3/28/346
+> >
+> > Mark said:
+> >
+> > "Also, for now it seems to be "resolved" via a seemingly-unrelated
+> > change in the .config file on that machine.  If it dies again,
+> > I'll re-post and investigate further."
+> ..
 > 
-> > > With 2.6.25-rc6-git-something I have experienced stuck keys. When typing a
-> > > sentence a character repeats aboooooooout 10 times, or as 'about' above ;).
-> > > I tested with a new kernel today, 2.6.25-rc7-git-something and the problem
-> > > is still present.
-> > > With 2.6.25-rc3 the keyboard is fine, and I've not tried with any kernel in
-> > > between.
-> > > As a side note, timestamps gets mixed up in dmesg output in a 1-2 second
-> > > span. Maybe related?
-> > > This is on a HP dv2140eu laptop, x86_64 SMP. Please cc me if you want
-> > > configuration details or testing to be done.
-> > I should add that while watching a movie I noticed that video stutters every
-> > now and then, on an irregular basis. It lasts for approx a second each time.
+> Just happened again.  The machine resumed from RAM with no functioning USB.
+> Still running the exact same 2.6.25-rc7 kernel as before, with the RTC conflict fixed.
 > 
-> Hi Richard,
-> 
-> what does your .config look like? Do you have CONFIG_GCGROUP_SCHED 
-> enabled? (please note that this is different from CONFIG_GROUP_SCHED). If 
-> so, please try to reproduce without it.
-> 
+> WTF?
 
-CGROUP_SCHED depends on GROUP_SCHED. The stutters are not due to the
-group scheduling extensions. (or the scheduler AFAICT).
+Is khubd stuck in D state?
 
-Thanks,
--- 
-regards,
-Dhaval
+	Regards
+		Oliver
