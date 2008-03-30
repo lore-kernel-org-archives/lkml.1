@@ -1,20 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758789AbYC3X3x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758997AbYC3XaS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758789AbYC3X3x (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Mar 2008 19:29:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757483AbYC3X3F
+	id S1758997AbYC3XaS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Mar 2008 19:30:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757572AbYC3X3K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Mar 2008 19:29:05 -0400
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:54357 "EHLO smtp5.pp.htv.fi"
+	Sun, 30 Mar 2008 19:29:10 -0400
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:55278 "EHLO smtp4.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757429AbYC3X3E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Mar 2008 19:29:04 -0400
-Date: Mon, 31 Mar 2008 02:28:51 +0300
+	id S1757567AbYC3X3I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 30 Mar 2008 19:29:08 -0400
+Date: Mon, 31 Mar 2008 02:28:55 +0300
 From: Adrian Bunk <bunk@kernel.org>
-To: dm-devel@redhat.com
-Cc: linux-kernel@vger.kernel.org
-Subject: [2.6 patch] proper extern for mdp_major
-Message-ID: <20080330232851.GZ28445@cs181133002.pp.htv.fi>
+To: Mike Isely <isely@pobox.com>,
+       Mauro Carvalho Chehab <mchehab@infradead.org>
+Cc: video4linux-list@redhat.com, linux-kernel@vger.kernel.org
+Subject: [2.6 patch] video/pvrusb2/pvrusb2-hdw.c cleanups
+Message-ID: <20080330232855.GA28445@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -23,39 +24,77 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds a proper extern for mdp_major in include/linux/raid/md.h
+This patch contains the following cleanups:
+- make the following needlessly global function static:
+  - pvr2_hdw_set_cur_freq()
+- #if 0 the following unused global functions:
+  - pvr2_hdw_get_state_name()
+  - pvr2_hdw_get_debug_info_unlocked()
+  - pvr2_hdw_get_debug_info_locked()
 
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
 
- include/linux/raid/md.h |    2 ++
- init/do_mounts_md.c     |    1 -
- 2 files changed, 2 insertions(+), 1 deletion(-)
+ drivers/media/video/pvrusb2/pvrusb2-hdw.c |    6 +++++-
+ drivers/media/video/pvrusb2/pvrusb2-hdw.h |    3 ---
+ 2 files changed, 5 insertions(+), 4 deletions(-)
 
-1eeb5848dc2a1c4ecb179fba4ac3db377c35ef40 diff --git a/include/linux/raid/md.h b/include/linux/raid/md.h
-index fbaeda7..20b694f 100644
---- a/include/linux/raid/md.h
-+++ b/include/linux/raid/md.h
-@@ -73,6 +73,8 @@
-  */
- #define MD_PATCHLEVEL_VERSION           3
+5446a1c0b050259bf276f1d365ca151afa276887 diff --git a/drivers/media/video/pvrusb2/pvrusb2-hdw.c b/drivers/media/video/pvrusb2/pvrusb2-hdw.c
+index d6955fa..77c3c2d 100644
+--- a/drivers/media/video/pvrusb2/pvrusb2-hdw.c
++++ b/drivers/media/video/pvrusb2/pvrusb2-hdw.c
+@@ -983,7 +983,7 @@ unsigned long pvr2_hdw_get_cur_freq(struct pvr2_hdw *hdw)
  
-+extern int mdp_major;
-+
- extern int register_md_personality (struct mdk_personality *p);
- extern int unregister_md_personality (struct mdk_personality *p);
- extern mdk_thread_t * md_register_thread (void (*run) (mddev_t *mddev),
-diff --git a/init/do_mounts_md.c b/init/do_mounts_md.c
-index 753dc54..9589e99 100644
---- a/init/do_mounts_md.c
-+++ b/init/do_mounts_md.c
-@@ -24,7 +24,6 @@ static struct {
+ /* Set the currently tuned frequency and account for all possible
+    driver-core side effects of this action. */
+-void pvr2_hdw_set_cur_freq(struct pvr2_hdw *hdw,unsigned long val)
++static void pvr2_hdw_set_cur_freq(struct pvr2_hdw *hdw,unsigned long val)
+ {
+ 	if (hdw->input_val == PVR2_CVAL_INPUT_RADIO) {
+ 		if (hdw->freqSelector) {
+@@ -1365,11 +1365,13 @@ int pvr2_hdw_untrip(struct pvr2_hdw *hdw)
+ }
  
- static int md_setup_ents __initdata;
  
--extern int mdp_major;
- /*
-  * Parse the command-line parameters given our kernel, but do not
-  * actually try to invoke the MD device now; that is handled by
++#if 0
+ const char *pvr2_hdw_get_state_name(unsigned int id)
+ {
+ 	if (id >= ARRAY_SIZE(pvr2_state_names)) return NULL;
+ 	return pvr2_state_names[id];
+ }
++#endif  /*  0  */
+ 
+ 
+ int pvr2_hdw_get_streaming(struct pvr2_hdw *hdw)
+@@ -3656,6 +3658,7 @@ static void pvr2_hdw_state_sched(struct pvr2_hdw *hdw)
+ 	queue_work(hdw->workqueue,&hdw->workpoll);
+ }
+ 
++#if 0
+ 
+ void pvr2_hdw_get_debug_info_unlocked(const struct pvr2_hdw *hdw,
+ 				      struct pvr2_hdw_debug_info *ptr)
+@@ -3697,6 +3700,7 @@ void pvr2_hdw_get_debug_info_locked(struct pvr2_hdw *hdw,
+ 	} while(0); LOCK_GIVE(hdw->ctl_lock);
+ }
+ 
++#endif  /*  0  */
+ 
+ int pvr2_hdw_gpio_get_dir(struct pvr2_hdw *hdw,u32 *dp)
+ {
+diff --git a/drivers/media/video/pvrusb2/pvrusb2-hdw.h b/drivers/media/video/pvrusb2/pvrusb2-hdw.h
+index 3ad7a13..1b4e5e3 100644
+--- a/drivers/media/video/pvrusb2/pvrusb2-hdw.h
++++ b/drivers/media/video/pvrusb2/pvrusb2-hdw.h
+@@ -90,9 +90,6 @@ enum pvr2_v4l_type {
+ /* Translate configuration enum to a string label */
+ const char *pvr2_config_get_name(enum pvr2_config);
+ 
+-/* Translate a master state enum to a string label */
+-const char *pvr2_hdw_get_state_name(unsigned int);
+-
+ struct pvr2_hdw;
+ 
+ /* Create and return a structure for interacting with the underlying
 
