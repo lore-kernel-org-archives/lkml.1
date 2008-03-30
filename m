@@ -1,66 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754712AbYC3VEQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755201AbYC3VEj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754712AbYC3VEQ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Mar 2008 17:04:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753458AbYC3VEB
+	id S1755201AbYC3VEj (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Mar 2008 17:04:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754861AbYC3VE2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Mar 2008 17:04:01 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:52683 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753343AbYC3VEB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Mar 2008 17:04:01 -0400
-Date: Sun, 30 Mar 2008 16:03:56 -0500
-From: Jack Steiner <steiner@sgi.com>
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Andi Kleen <andi@firstfloor.org>,
-       tglx@linutronix.de, linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: [RFC 8/8] x86_64: Support for new UV apic
-Message-ID: <20080330210356.GA13383@sgi.com>
-References: <20080324182122.GA28327@sgi.com> <87abknhzhd.fsf@basil.nowhere.org> <20080325175657.GA6262@sgi.com> <20080326073823.GD3442@elte.hu> <86802c440803301323q5c4bd4f4k1f9bdc1d6b1a0a7b@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <86802c440803301323q5c4bd4f4k1f9bdc1d6b1a0a7b@mail.gmail.com>
-User-Agent: Mutt/1.4.2.2i
+	Sun, 30 Mar 2008 17:04:28 -0400
+Received: from rtr.ca ([76.10.145.34]:2090 "EHLO mail.rtr.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753593AbYC3VE1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 30 Mar 2008 17:04:27 -0400
+Message-ID: <47F00059.1010108@rtr.ca>
+Date: Sun, 30 Mar 2008 17:04:25 -0400
+From: Mark Lord <lkml@rtr.ca>
+Organization: Real-Time Remedies Inc.
+User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
+MIME-Version: 1.0
+To: Pavel Machek <pavel@suse.cz>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>, Greg KH <gregkh@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>, jikos@suse.cz
+Subject: Re: 2.6.25-rc7:  Ugh.
+References: <47EBBD57.30902@rtr.ca> <47EC549D.6090705@rtr.ca> <20080328092428.GA2081@elf.ucw.cz>
+In-Reply-To: <20080328092428.GA2081@elf.ucw.cz>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Mar 30, 2008 at 01:23:12PM -0700, Yinghai Lu wrote:
-> On Wed, Mar 26, 2008 at 12:38 AM, Ingo Molnar <mingo@elte.hu> wrote:
-> >
-> >  * Jack Steiner <steiner@sgi.com> wrote:
-> >
-> >  > > > -        obj-y                            += genapic_64.o genapic_flat_64.o
-> >  > > > +        obj-y                            += genapic_64.o genapic_flat_64.o genx2apic_uv_x.o
-> >  > >
-> >  > > Definitely should be a CONFIG
-> >  >
-> >  > Not sure that I understand why. The overhead of UV is minimal & we
-> >  > want UV enabled in all distro kernels. OTOH, small embedded systems
-> >  > probably want to eliminate every last bit of unneeded code.
-> >  >
-> >  > Might make sense to have a config option. Thoughts????
-> >
-> >  i wouldnt mind having UV enabled by default (it can be a config option
-> >  but default-enabled on generic kernels so all distros will pick this hw
-> >  support up), but we definitely need the genapic unification before we
-> >  can add more features.
+Pavel Machek wrote:
+> Hi!
 > 
-> config option would be reasonable.
-> for x86_64
-> subarch already have X86_PC, X86_VSMP.
-> we have X86_UVSMP
+>>> It is with great reluctance when I attempt moving my main "desktop"
+>>> over to a new kernel version -- because the USB subsystem seems to
+>>> break every single time.
+>>>
+>>> So today I tried 2.6.25-rc7 on it for the first time.
+>>> Not good.
+>>>
+>>> It boots, but just a simple suspend/resume (RAM) was enough to kill it.
+>>> It comes back on resume, with an X desktop again,
+>>> but with no USB functionality -- no mouse.
+>>>
+>>> The keyboard still works, so I dropped to a console and tried:
+>>>
+>>>   rmmod usbhid
+>>>   insmod usbhid
+>>>
+>>> And the console hung at 100% CPU on the insmod.
+>>> Back to 2.6.24.3 again, for now -- I've got work to do.
+>>>
+>>> The specs of this machine have been posted with great regularity
+>>> in the past, every new kernel revision it seems.   So here we go again:
+>>>
+>>> Dell Inspiron 9400 notebook, Intel Core2Duo T7400, 2GB SDRAM.
+>> ..
+>>
+>> Correction there:  3GB of RAM, not 2.
+> 
+> 3GB of RAM can be a problem. Try iommu=soft. .. but in such case
+> rmmod/insmod of usbhid would not help...
+..
 
-If there was a significant differece between UV and generic kernels
-(or hardware), then I would agree. However, the only significant
-difference is the APIC model on large systems. Small systems are
-exactly compatible.
+Booted with mem=2GB, and USB hung again on the first suspend/resume cycle.
 
-The problem with subarch is that we want 1 binary kernel to support
-both generic hardware AND uv hardware. This restriction is desirable
-for the distros and software vendors. Otherwise, additional kernel
-images would have to be built, released, & certified.
-
---- jack
-
+-ml
