@@ -1,56 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754342AbYC3UTA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754725AbYC3UUT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754342AbYC3UTA (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Mar 2008 16:19:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752813AbYC3USz
+	id S1754725AbYC3UUT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Mar 2008 16:20:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753209AbYC3UUH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Mar 2008 16:18:55 -0400
-Received: from fmmailgate01.web.de ([217.72.192.221]:57038 "EHLO
-	fmmailgate01.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752799AbYC3USz (ORCPT
+	Sun, 30 Mar 2008 16:20:07 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:46660 "EHLO
+	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752971AbYC3UUG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Mar 2008 16:18:55 -0400
-From: Chr <chunkeey@web.de>
-To: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: The never ending BEEEEP/__smp_call_function_mask with 2.6.25-rc7
-Date: Sun, 30 Mar 2008 22:18:51 +0200
-User-Agent: KMail/1.9.9
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org,
-       Andi Kleen <ak@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>
-References: <200803302109.22219.chunkeey@web.de> <200803302125.10817.rjw@sisk.pl> <alpine.LFD.1.10.0803302156210.3219@apollo.tec.linutronix.de>
-In-Reply-To: <alpine.LFD.1.10.0803302156210.3219@apollo.tec.linutronix.de>
+	Sun, 30 Mar 2008 16:20:06 -0400
+Date: Sun, 30 Mar 2008 22:20:47 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Mark Lord <lkml@rtr.ca>
+Cc: bugme-daemon@bugzilla.kernel.org, rjw@sisk.pl, bunk@kernel.org,
+       Linux Kernel <linux-kernel@vger.kernel.org>, linux-usb@vger.kernel.org
+Subject: Re: [Bug 10345] USB HID problems after resume
+Message-ID: <20080330202047.GE11839@elf.ucw.cz>
+References: <20080328223544.A61F711D10C@picon.linux-foundation.org> <47EE78C9.5090006@rtr.ca> <47EE793C.5070105@rtr.ca> <20080330114834.GA6510@elf.ucw.cz> <47EFD1F1.8010501@rtr.ca> <20080330182243.GA11839@elf.ucw.cz> <47EFF4F6.1050302@rtr.ca>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200803302218.52549.chunkeey@web.de>
-X-Provags-ID: V01U2FsdGVkX1/kNM40BqLsDPcQd1+Os5JJjniupo1YOS/qSKq/
-	cJUVq6s/bUczOWjp1JxQbHmWZ2iJa5T33X2tqbuEYV0ZEuFR4q
-	hcmSwv+8I=
+In-Reply-To: <47EFF4F6.1050302@rtr.ca>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 30 March 2008 21:59:51 Thomas Gleixner wrote:
-> On Sun, 30 Mar 2008, Rafael J. Wysocki wrote:
-> > > So. take a look at stuck_task... that's best backtrace I could get...
-> > > (I have other logs too. (Task-list / Lockdep / ... ) but it's too much
-> > > and I hope the _logs_ are already enough.
-> > >
-> > > BTW: I noticed that the clock seems to jump forward and backwards.
-> > > Is this because the CPU-Cores aren't syncronized? (And why are they
-> > > out of sync?)
+On Sun 2008-03-30 16:15:50, Mark Lord wrote:
+> Pavel Machek wrote:
+>> On Sun 2008-03-30 13:46:25, Mark Lord wrote:
+>>> Pavel Machek wrote:
+>>>> On Sat 2008-03-29 13:15:40, Mark Lord wrote:
+>>>> ..
+>>>>> Just happened again.  The machine resumed from RAM with no functioning USB.
+>>>>> Still running the exact same 2.6.25-rc7 kernel as before, with the RTC conflict fixed.
+>>>>>
+>>>>> WTF?
+>>>>> 3GB of RAM? Try iommu=soft.
+>>> ..
+>>>
+>>> What does that option do (it is not in Documentation/kernel-parameters.txt),
+>>> and why do you suspect it may make a difference here?
+>>
+>> See x86_64/boot-options.txt . Yes, that should be fixed.
+>>
+>> I had strange problems, and it looks like iommu does not have proper
+>> suspend/resume support. > 3GB machines hit that. Do you have one?
+> ..
 >
-> The cores of those AMD beasts are never in sync. That's a chip feature :)
+> This is a 32-bit system / kernel, so I'm guessing that this option is not applicable.
 >
-> Can you please provide the output of:
->   /sys/devices/system/clocksource/clocksource0/current_clocksource
->
-> for both 2.6.24 and 2.6.25-rc7
-it's "hpet" (in both cases...)
+> Right?  (it does have 3GB of RAM, though).
 
-Regards,
-	Chr
-
+Not 100% sure... I've seen strangeness on 32-bit systems, too. Can you
+simply pass mem=2G and see what happens?
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
