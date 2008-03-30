@@ -1,158 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753163AbYC3L7Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753589AbYC3MAb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753163AbYC3L7Z (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Mar 2008 07:59:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751463AbYC3L7N
+	id S1753589AbYC3MAb (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Mar 2008 08:00:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751518AbYC3MAW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Mar 2008 07:59:13 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:34263 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751419AbYC3L7M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Mar 2008 07:59:12 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Pavel Machek <pavel@suse.cz>
-Subject: Re: [PATCH] ACPI PM: Restore the 2.6.24 suspend ordering
-Date: Sun, 30 Mar 2008 13:58:38 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Len Brown <lenb@kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Carlos Corbacho <carlos@strangeworlds.co.uk>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Shaohua Li <shaohua.li@intel.com>,
-       Felix =?iso-8859-1?q?M=F6ller?= <fm@opensuse.org>,
-       Arthur Erhardt <erhardt@pit.physik.uni-tuebingen.de>,
-       Matthew Garrett <mjg59@srcf.ucam.org>
-References: <200803300319.08398.rjw@sisk.pl> <20080330111844.GA6247@elf.ucw.cz>
-In-Reply-To: <20080330111844.GA6247@elf.ucw.cz>
+	Sun, 30 Mar 2008 08:00:22 -0400
+Received: from moutng.kundenserver.de ([212.227.126.186]:62906 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751463AbYC3MAV convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 30 Mar 2008 08:00:21 -0400
+From: Hans-Peter Jansen <hpj@urpla.net>
+To: Tejun Heo <htejun@gmail.com>
+Subject: Re: 2.6.24.3: regular sata drive resets - worrisome?
+Date: Sun, 30 Mar 2008 13:00:09 +0100
+User-Agent: KMail/1.9.9
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org, Roger Heflin <rogerheflin@gmail.com>
+References: <200803201518.32109.hpj@urpla.net> <200803300114.40096.hpj@urpla.net> <47EEE4BF.5080609@gmail.com>
+In-Reply-To: <47EEE4BF.5080609@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-Message-Id: <200803301358.39831.rjw@sisk.pl>
+Message-Id: <200803301400.10766.hpj@urpla.net>
+X-Provags-ID: V01U2FsdGVkX1+4WN+v7JdNNdbR2+pXJGu4i0lfB6KsRR6q4CF
+ hkXgfo8HicmSdnAHady6vi5TgwsNtpXzbL7xjtKqsid6Gm3Vyc
+ icGw9+abbCfyvXCqd+vEQ==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday, 30 of March 2008, Pavel Machek wrote:
-> Hi!
+Am Sonntag, 30. März 2008 schrieb Tejun Heo:
+> Hello,
+>
+> Hans-Peter Jansen wrote:
+> >>>> Should I be worried? smartd doesn't show anything suspicious on
+> >>>> those.
+> >>
+> >> Can you please post the result of "smartctl -a /dev/sdX"?
+> >
+> > Here's the last smart report from two of the offending drives. As noted
+> > before, I did the hardware reorganization, replaced the dog slow 3ware
+> > 9500S-8 and the SiI 3124 with a single Areca 1130 and retired the
+> > drives for now, but a nephew already showed interest. What do you
+> > think, can I cede those drives with a clear conscience? The
+> > Hardware_ECC_Recovered values are really worrisome, aren't they?
+>
+> Different vendors use different scales for the raw values.  The value is
+> still pegged at the highest so it could be those raw values are okay or
+> that the vendor just doesn't update value field accordingly.  My P120
+> says 0 for the raw value and 904635 for hardware ECC recovered so there
+> is some difference.  What do other non-failing drives say about those
+> values?
 
-Hi,
+The only non-failing drive was sdf as it was running in standby mode in this 
+md raid 5 ensemble:
 
-> > Please consider pushing the appended patch for 2.6.25.
-> > 
-> > It fixed the regression described at:
-> > https://bugzilla.novell.com/show_bug.cgi?id=374217
-> > http://bugzilla.kernel.org/show_bug.cgi?id=10340
-> > 
-> > details in the changelog.
-> 
-> > 
-> > ---
-> > From: Rafael J. Wysocki <rjw@sisk.pl>
-> > 
-> > Some time ago it turned out that our suspend code ordering broke
-> > some NVidia-based systems that hung if _PTS was executed with one of
-> > the PCI devices, specifically a USB controller, in a low power state.
-> > Then, it was noticed that the suspend code ordering was not compliant
-> > with ACPI 1.0, although it was compliant with ACPI 2.0 (and later),
-> > and it was argued that the code had to be changed for that reason
-> > (ref. http://bugzilla.kernel.org/show_bug.cgi?id=9528).  So we did,
-> > but evidently we did wrong, because it's now turning out that some
-> > systems have been broken by this change (refs.
-> > http://bugzilla.kernel.org/show_bug.cgi?id=10340 ,
-> > https://bugzilla.novell.com/show_bug.cgi?id=374217#c16).  [I said
-> > at that time that something like this might happend, but the majority
-> > of people involved thought that it was improbable due to the
-> > necessity to preserve the compliance of hardware with ACPI 1.0.]
-> > This actually is a quite serious regression from 2.6.24.
-> > 
-> > Moreover, the ACPI 1.0 ordering of suspend code introduced another
-> > issue that I have only noticed recently.  Namely, if the suspend of
-> > one of devices fails, the already suspended devices will be resumed
-> > without executing _WAK before, which leads to problems on some
-> > systems (for example, in such situations thermal management is
-> > broken on my HP nx6325).  Consequently, it also breaks suspend
-> > debugging on the affected systems.
-> > 
-> > Note also, that the requirement to execute _PTS before suspending
-> > devices does not really make sense, because the device in question
-> > may be put into a low power state at run time for a reason unrelated
-> > to a system-wide suspend.
-> > 
-> > For the reasons outlined above, the change of the suspend ordering
-> > should be reverted, which is done by the patch below.
-> 
-> But this will break those few nvidia-based systems, no?
-> 
-> this may have been a good idea in -rc1 days, but we are in -rc7
-> now... and the patch is slightly big.
+20080323-011337-sdc.log:195 Hardware_ECC_Recovered  0x001a   100   100   000    Old_age   Always       -       162956700
+20080323-011337-sdc.log:196 Reallocated_Event_Count 0x0032   253   253   000    Old_age   Always       -       0
+20080323-011337-sdc.log:197 Current_Pending_Sector  0x0012   253   253   000    Old_age   Always       -       0
+20080323-011337-sdc.log:198 Offline_Uncorrectable   0x0030   253   253   000    Old_age   Offline      -       0
+20080323-011337-sdc.log:199 UDMA_CRC_Error_Count    0x003e   200   200   000    Old_age   Always       -       0
+20080323-011338-sdd.log:195 Hardware_ECC_Recovered  0x001a   100   100   000    Old_age   Always       -       162520674
+20080323-011338-sdd.log:196 Reallocated_Event_Count 0x0032   253   253   000    Old_age   Always       -       0
+20080323-011338-sdd.log:197 Current_Pending_Sector  0x0012   253   253   000    Old_age   Always       -       0
+20080323-011338-sdd.log:198 Offline_Uncorrectable   0x0030   253   253   000    Old_age   Offline      -       0
+20080323-011338-sdd.log:199 UDMA_CRC_Error_Count    0x003e   200   200   000    Old_age   Always       -       0
+20080323-011338-sde.log:195 Hardware_ECC_Recovered  0x001a   100   100   000    Old_age   Always       -       148429049
+20080323-011338-sde.log:196 Reallocated_Event_Count 0x0032   253   253   000    Old_age   Always       -       0
+20080323-011338-sde.log:197 Current_Pending_Sector  0x0012   253   253   000    Old_age   Always       -       0
+20080323-011338-sde.log:198 Offline_Uncorrectable   0x0030   253   253   000    Old_age   Offline      -       0
+20080323-011338-sde.log:199 UDMA_CRC_Error_Count    0x003e   200   200   000    Old_age   Always       -       0
+20080323-011339-sdf.log:195 Hardware_ECC_Recovered  0x001a   100   100   000    Old_age   Always       -       1559
+20080323-011339-sdf.log:196 Reallocated_Event_Count 0x0032   253   253   000    Old_age   Always       -       0
+20080323-011339-sdf.log:197 Current_Pending_Sector  0x0012   253   253   000    Old_age   Always       -       0
+20080323-011339-sdf.log:198 Offline_Uncorrectable   0x0030   253   253   000    Old_age   Offline      -       0
+20080323-011339-sdf.log:199 UDMA_CRC_Error_Count    0x003e   200   200   000    Old_age   Always       -       0
 
-It's quite obvious, though.
+> Hmmm... If the drive is failing FLUSHs, I would expect to see elevated
+> reallocation counters and maybe some pending counts.  Aieee.. weird.
 
-> What about something like: (hand-edited patch, sorry)
+But there are no reallocations nor any pending sectors on any of them.
 
-Well, I think that would be confusing.
+> >>>> It's been 4 samsung drives at all hanging on a sata sil 3124:
+> >>
+> >> FLUSH_EXT timing out usually indicates that the drive is having
+> >> problem writing out what it has in its cache to the media.  There was
+> >> one case where FLUSH_EXT timeout was caused by the driver failing to
+> >> switch controller back from NCQ mode before issuing FLUSH_EXT but that
+> >> was on sata_nv.  There hasn't been any similar problem on sata_sil24.
+> >
+> > Hmm, I didn't noticed any data distortions, and if there where, they
+> > live on as copies in their new home..
+>
+> It should have appeared as read errors.  Maybe the drive successfully
+                             ^^^^
+                             write (I guess)
+> wrote those sectors after 30+ secs timeout.
 
-The NVidia systems are broken anyway on 2.6.24.x, so we just don't fix them
-rather than break them and there are more reasons to do what the patch does
-(as pointed out in the changelog).  For example, your suggested patch doesn't
- fix the error paths/debugging breakage described in the changelog.
+That would point to some driver issue, wouldn't it? Roger Heflin also
+experienced similar behavior with that controller, which wasn't 
+reproducible with another. 
 
-I think we _can_ do something about the failing NVidia systems in the 2.6.26
-time frame, but that will require some more consideration.
+I can offer to you rebuilding that md in a test environment, and giving 
+you access to it, if you're interested.
 
->  Index: linux-2.6/drivers/acpi/sleep/main.c
->  ===================================================================
->  --- linux-2.6.orig/drivers/acpi/sleep/main.c
->  +++ linux-2.6/drivers/acpi/sleep/main.c
->  @@ -26,21 +26,6 @@ u8 sleep_states[ACPI_S_STATE_COUNT];
->   
->   #ifdef CONFIG_PM_SLEEP
->   static u32 acpi_target_sleep_state = ACPI_STATE_S0;
->  static bool acpi_sleep_finish_wake_up;
->  
-> - /*
-> -  * ACPI 2.0 and later want us to execute _PTS after suspending devices, so we
-> -  * allow the user to request that behavior by using the 'acpi_new_pts_ordering'
-> -  * kernel command line option that causes the following variable to be set.
-> -  */
->  static bool new_pts_ordering = true;
->  
->  -static int __init acpi_new_pts_ordering(char *str)
->  +static int __init acpi_old_pts_ordering(char *str)
->  {
->  	new_pts_ordering = false;
->  	return 1;
->  }
->  -__setup("acpi_old_pts_ordering", acpi_old_pts_ordering);
->  +__setup("acpi_new_pts_ordering", acpi_new_pts_ordering);
->   #endif
->  
->   static int acpi_sleep_prepare(u32 acpi_state)
->  Index: linux-2.6/Documentation/kernel-parameters.txt
->  ===================================================================
->  --- linux-2.6.orig/Documentation/kernel-parameters.txt
->  +++ linux-2.6/Documentation/kernel-parameters.txt
->  @@ -170,11 +170,6 @@ and is between 256 and 4096 characters. 
->   	acpi_irq_isa=	[HW,ACPI] If irq_balance, mark listed IRQs used by ISA
->   			Format: <irq>,<irq>...
->   
->  -	acpi_new_pts_ordering [HW,ACPI]
->  +	acpi_old_pts_ordering [HW,ACPI]
->  -			Enforce the ACPI 2.0 ordering of the _PTS control
->  +			Enforce the ACPI 1.0 ordering of the _PTS control
->  			method wrt putting devices into low power states
->  -			default: pre ACPI 2.0 ordering of _PTS
->  +			default: ACPI 2.0 ordering of _PTS
->  
->   	acpi_no_auto_ssdt	[HW,ACPI] Disable automatic loading of SSDT
->   
->   	acpi_os_name=	[HW,ACPI] Tell ACPI BIOS the name of the OS
-> 
-
-Thanks,
-Rafael
+Anyway, thanks for caring Tejun,
+Pete
