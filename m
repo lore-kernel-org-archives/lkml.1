@@ -1,54 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755139AbYC3VLx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755381AbYC3VM7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755139AbYC3VLx (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Mar 2008 17:11:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753674AbYC3VLp
+	id S1755381AbYC3VM7 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Mar 2008 17:12:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753674AbYC3VMw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Mar 2008 17:11:45 -0400
-Received: from mx3.orcon.net.nz ([219.88.242.53]:50313 "EHLO mx3.orcon.net.nz"
+	Sun, 30 Mar 2008 17:12:52 -0400
+Received: from compunauta.com ([69.36.170.169]:47174 "EHLO compunauta.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753603AbYC3VLo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Mar 2008 17:11:44 -0400
-Cc: Rene Herman <rene.herman@keyaccess.nl>, Takashi Iwai <tiwai@suse.de>,
-       ALSA devel <alsa-devel@alsa-project.org>, linux-kernel@vger.kernel.org,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>, linux-alpha@vger.kernel.org,
-       Krzysztof Helt <krzysztof.h1@wp.pl>
-Message-Id: <2C0A0DF6-7FD6-4444-A485-C0828E40F427@orcon.net.nz>
-From: Michael Cree <mcree@orcon.net.nz>
-To: rct@frus.com (Bob Tracy)
-In-Reply-To: <20080330210759.6B20DDBA2@gherkin.frus.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Content-Transfer-Encoding: 7bit
-Mime-Version: 1.0 (Apple Message framework v919.2)
-Subject: Re: [alsa-devel] [regression] 2.6.25-rc4 snd-es18xx broken on Alpha
-Date: Mon, 31 Mar 2008 10:11:38 +1300
-References: <20080330210759.6B20DDBA2@gherkin.frus.com>
-X-Mailer: Apple Mail (2.919.2)
-X-DSPAM-Check: by mx3.orcon.net.nz on Mon, 31 Mar 2008 10:11:41 +1300
-X-DSPAM-Result: Innocent
-X-DSPAM-Processed: Mon Mar 31 10:11:42 2008
-X-DSPAM-Confidence: 0.7997
-X-DSPAM-Improbability: 1 in 400 chance of being spam
-X-DSPAM-Probability: 0.0000
+	id S1753188AbYC3VMv convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 30 Mar 2008 17:12:51 -0400
+From: Gustavo Guillermo =?iso-8859-1?q?P=E9rez?= 
+	<gustavo@compunauta.com>
+Organization: www.compunauta.com
+To: Jeff Garzik <jeff@garzik.org>, linux-kernel@vger.kernel.org
+Subject: Re: tulip driver receive but not send 2.6.25-rc6-git7
+Date: Sun, 30 Mar 2008 15:10:24 -0600
+User-Agent: KMail/1.9.7
+References: <200803281828.39948.gustavo@compunauta.com> <47ED9CB4.7010603@garzik.org>
+In-Reply-To: <47ED9CB4.7010603@garzik.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200803301510.24472.gustavo@compunauta.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bob
->> (miata_no_mmap.diff patch)
+El Viernes, 28 de Marzo de 2008, escribió:
+> Gustavo Guillermo Pérez wrote:
+> > I'm putting all wires on the same swirch for testing.
+> > eth0 is a sis embedded card (good one).
+> > dealing with dhcp I see that request arrives to the board but the offers
+> > never appears on client. system clean no iptables rules, just dhcpd.
+> >
+> > I'm gonna try with rc7-git4 and 2.6.24
 >
-> Made no difference for any of the "sox" tests, and "play" is still
-> broken in the way it always has been.  However, "aplay" generated an
-> interesting error I haven't seen before:
+> Please do.
 >
-> $ aplay asskickd.wav
-> Playing WAVE 'asskickd.wav' : Unsigned 8 bit, Rate 11025 Hz, Mono
-> ALSA lib pcm_plug.c:773:(snd_pcm_plug_hw_refine_schange) Unable to  
-> find an usable access for 'default'
-> aplay: aplay.c:919: set_params: Assertion `err >= 0' failed.
+> Also, try the 'dmfe' driver, as it was written specifically for these
+> chips.
+So, with dmfe driver went fine [rc7-g4] same with tulip nothing
+uLinuxIV ~ # rmmod tulip
+uLinuxIV ~ # modprobe dmfe
+uLinuxIV ~ # dmesg | tail -n 3
+dmfe: Davicom DM9xxx net driver, version 1.36.4 (2002-01-17)
+eth1: Davicom DM9102 at pci0000:00:09.0, 00:60:6e:70:1f:b1, irq 17.
+eth2: Davicom DM9102 at pci0000:00:0a.0, 00:60:6e:70:1f:d5, irq 18.
+uLinuxIV ~ # ifconfig eth0 192.168.1.1
+uLinuxIV ~ # ping -c 1 192.168.1.2
+PING 192.168.1.2 (192.168.1.2) 56(84) bytes of data.
+64 bytes from 192.168.1.2: icmp_seq=1 ttl=64 time=0.176 ms
 
-Add in the "-D hw" option to the aplay command when using the mmap  
-disabled alsa sound.
+--- 192.168.1.2 ping statistics ---
+1 packets transmitted, 1 received, 0% packet loss, time 0ms
+rtt min/avg/max/mdev = 0.176/0.176/0.176/0.000 ms
+uLinuxIV ~ # ifconfig eth0 down
+uLinuxIV ~ # ifconfig eth1 192.168.1.1
+uLinuxIV ~ # ping -c 1 192.168.1.2
+PING 192.168.1.2 (192.168.1.2) 56(84) bytes of data.
+64 bytes from 192.168.1.2: icmp_seq=1 ttl=64 time=0.176 ms
 
-Michael.
+--- 192.168.1.2 ping statistics ---
+1 packets transmitted, 1 received, 0% packet loss, time 0ms
+rtt min/avg/max/mdev = 0.176/0.176/0.176/0.000 ms
+uLinuxIV ~ # ifconfig eth1 down
+uLinuxIV ~ # ifconfig eth2 192.168.1.1
+uLinuxIV ~ # ping -c 1 192.168.1.2
+PING 192.168.1.2 (192.168.1.2) 56(84) bytes of data.
+64 bytes from 192.168.1.2: icmp_seq=1 ttl=64 time=0.176 ms
 
+--- 192.168.1.2 ping statistics ---
+1 packets transmitted, 1 received, 0% packet loss, time 0ms
+rtt min/avg/max/mdev = 0.176/0.176/0.176/0.000 ms
+
+
+I'll gonna try now with 2.6.24.4 
+
+> 	Jeff
+>
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+
+
+
+-- 
+Gustavo Guillermo Pérez
+Compunauta uLinux
+www.compunauta.com
