@@ -1,111 +1,438 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753589AbYC3MAb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753168AbYC3MYH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753589AbYC3MAb (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Mar 2008 08:00:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751518AbYC3MAW
+	id S1753168AbYC3MYH (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Mar 2008 08:24:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751474AbYC3MXz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Mar 2008 08:00:22 -0400
-Received: from moutng.kundenserver.de ([212.227.126.186]:62906 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751463AbYC3MAV convert rfc822-to-8bit (ORCPT
+	Sun, 30 Mar 2008 08:23:55 -0400
+Received: from mail2.hosting.nl ([62.129.139.44]:38874 "HELO mail2.hosting.nl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751419AbYC3MXy convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Mar 2008 08:00:21 -0400
-From: Hans-Peter Jansen <hpj@urpla.net>
-To: Tejun Heo <htejun@gmail.com>
-Subject: Re: 2.6.24.3: regular sata drive resets - worrisome?
-Date: Sun, 30 Mar 2008 13:00:09 +0100
-User-Agent: KMail/1.9.9
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org, Roger Heflin <rogerheflin@gmail.com>
-References: <200803201518.32109.hpj@urpla.net> <200803300114.40096.hpj@urpla.net> <47EEE4BF.5080609@gmail.com>
-In-Reply-To: <47EEE4BF.5080609@gmail.com>
+	Sun, 30 Mar 2008 08:23:54 -0400
+X-Greylist: delayed 399 seconds by postgrey-1.27 at vger.kernel.org; Sun, 30 Mar 2008 08:23:53 EDT
+Message-ID: <20080330140948.0cqmtqb9us880cw8@62.129.139.44>
+Date: Sun, 30 Mar 2008 14:09:48 +0200
+From: postmaster@van-ginkel.eu
+To: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] ptmx: adding handshake support
+References: <20080311212830.5f4apfr4uqs884cc@62.129.139.44>
+In-Reply-To: <20080311212830.5f4apfr4uqs884cc@62.129.139.44>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=US-ASCII;
+	DelSp=Yes	format=flowed
 Content-Disposition: inline
-Message-Id: <200803301400.10766.hpj@urpla.net>
-X-Provags-ID: V01U2FsdGVkX1+4WN+v7JdNNdbR2+pXJGu4i0lfB6KsRR6q4CF
- hkXgfo8HicmSdnAHady6vi5TgwsNtpXzbL7xjtKqsid6Gm3Vyc
- icGw9+abbCfyvXCqd+vEQ==
+Content-Transfer-Encoding: 7BIT
+User-Agent: Internet Messaging Program (IMP) H3 (4.1.3)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Sonntag, 30. März 2008 schrieb Tejun Heo:
-> Hello,
+This weekend I upgraded my kernel to 2.6.22.5 and tried my patch.
+Unfortunately pty.c seems to be a slightly different, so generated a new
+patch:
+
+  Signed-off-by: Sander van Ginkel <sander@van-ginkel.eu>
+
+===================================================================
+--- linux-2.6.22.5.orig/drivers/char/pty.c	2007-08-23 01:23:54.000000000 +0200
++++ linux-2.6.22.5.new/drivers/char/pty.c	2008-03-23 15:25:24.000000000 +0100
+@@ -7,6 +7,8 @@
+   *    -- C. Scott Ananian <cananian@alumni.princeton.edu>, 14-Jan-1998
+   *  Added TTY_DO_WRITE_WAKEUP to enable n_tty to send POLL_OUT to
+   *      waiting writers -- Sapan Bhatia <sapan@corewars.org>
++ *  Added support for MCR/MSR, used for serial over ethernet
++ *    -- Sander van Ginkel <sander@van-ginkel.eu>
+   *
+   *
+   */
+@@ -29,6 +31,16 @@
+  #include <linux/bitops.h>
+  #include <linux/devpts_fs.h>
+
++struct pty_mcrmsr {
++
++	struct semaphore        sem;            /* locks this structure */
++
++	/* for tiocmget and tiocmset functions */
++
++	int                     msr;            /* MSR shadow */
++	int                     mcr;            /* MCR shadow */
++};
++
+  /* These are global because they are accessed in tty_io.c */
+  #ifdef CONFIG_UNIX98_PTYS
+  struct tty_driver *ptm_driver;
+@@ -196,6 +208,7 @@
+
+  static int pty_open(struct tty_struct *tty, struct file * filp)
+  {
++        struct pty_mcrmsr *mcrmsr;
+  	int	retval = -ENODEV;
+
+  	if (!tty || !tty->link)
+@@ -213,10 +226,90 @@
+  	set_bit(TTY_THROTTLED, &tty->flags);
+  	set_bit(TTY_DO_WRITE_WAKEUP, &tty->flags);
+  	retval = 0;
++
++	/* initialize the pointer in case something fails */
++
++	tty->driver_data = NULL;
++	tty->link->driver_data = NULL;
++
++	/* first time accessing this device, let's create it */
++
++	mcrmsr = kmalloc(sizeof(*mcrmsr), GFP_KERNEL);
++
++	init_MUTEX(&mcrmsr->sem);
++
++	if (mcrmsr != NULL) {
++		down(&mcrmsr->sem);
++
++		/* save our structure within the tty structure */
++
++		mcrmsr->mcr=0;
++		mcrmsr->msr=0;
++
++		tty->driver_data = mcrmsr;
++		tty->link->driver_data = mcrmsr;
++
++		up(&mcrmsr->sem);
++
++	}
++
+  out:
+  	return retval;
+  }
+
++static int pty_tiocmget(struct tty_struct *tty, struct file *file)
++{
++	struct pty_mcrmsr *mcrmsr = tty->driver_data;
++	unsigned int result = 0;
++	unsigned int msr=0;
++	unsigned int mcr=0;
++
++	if (tty->driver_data != NULL) {
++		msr = mcrmsr->msr;
++		mcr = mcrmsr->mcr;
++	}
++
++	result = ((mcr & 0x01)  ? TIOCM_DTR  : 0) |  /* DTR is set */
++		((mcr & 0x02)  ? TIOCM_RTS  : 0) |  /* RTS is set */
++		((mcr & 0x04)  ? TIOCM_LOOP : 0) |  /* LOOP is set */
++		((msr & 0x08)  ? TIOCM_CTS  : 0) |  /* CTS is set */
++		((msr & 0x10)  ? TIOCM_CAR  : 0) |  /* Carrier detect is set*/
++		((msr & 0x20)  ? TIOCM_RI   : 0) |  /* Ring Indicator is set */
++		((msr & 0x40)  ? TIOCM_DSR  : 0);   /* DSR is set */
++
++	return result;
++}
++
++static int pty_tiocmset(struct tty_struct *tty, struct file  
+*file,unsigned int set, unsigned int clear)
++{
++	struct pty_mcrmsr *mcrmsr = tty->driver_data;
++	unsigned int mcr=0;
++
++	if (tty->driver_data != NULL)
++		mcr = mcrmsr->mcr;
++
++	if (set & TIOCM_DTR)
++		mcr |= 0x01;
++	if (set & TIOCM_RTS)
++		mcr |= 0x02;
++	if (set & TIOCM_LOOP)
++		mcr |= 0x04;
++
++	if (clear & TIOCM_DTR)
++		mcr &= ~0x01;
++	if (clear & TIOCM_RTS)
++		mcr &= ~0x02;
++	if (clear & TIOCM_LOOP)
++		mcr &= ~0x04;
++
++	/* set the new MCR value in the device */
++
++	if (tty->driver_data != NULL)
++		mcrmsr->mcr=mcr;
++
++	return 0;
++}
++
+  static void pty_set_termios(struct tty_struct *tty, struct ktermios  
+*old_termios)
+  {
+          tty->termios->c_cflag &= ~(CSIZE | PARENB);
+@@ -232,6 +325,8 @@
+  	.chars_in_buffer = pty_chars_in_buffer,
+  	.unthrottle = pty_unthrottle,
+  	.set_termios = pty_set_termios,
++	.tiocmget = pty_tiocmget,
++	.tiocmset = pty_tiocmset,
+  };
+
+  /* Traditional BSD devices */
+@@ -338,11 +433,44 @@
+  static int pty_unix98_ioctl(struct tty_struct *tty, struct file *file,
+  			    unsigned int cmd, unsigned long arg)
+  {
++	unsigned int value;
++	struct pty_mcrmsr *mcrmsr = tty->driver_data;
++	unsigned int msr=0;
++	unsigned int mcr=0;
++
+  	switch (cmd) {
+  	case TIOCSPTLCK: /* Set PT Lock (disallow slave open) */
+  		return pty_set_lock(tty, (int __user *)arg);
+  	case TIOCGPTN: /* Get PT Number */
+  		return put_user(tty->index, (unsigned int __user *)arg);
++
++	case 0x5426: /* Set all of the handshake line, even the normally  
+read only */
++		{
++		if (copy_from_user(&value,(unsigned int *)arg,sizeof(unsigned int)))
++			return -EFAULT;
++
++		if (value & 0x0002) /* DTR set */
++			mcr|=0x01;
++		if (value & 0x0004) /* RTS set */
++			mcr|=0x02;
++		if (value & 0x8000) /* LOOP set */
++			mcr|=0x04;
++		if (value & 0x0020) /* CTS set */
++			msr|=0x08;
++		if (value & 0x0040) /* DCD set */
++			msr|=0x10;
++		if (value & 0x0080) /* RI set */
++			msr|=0x20;
++		if (value & 0x0100) /* DSR set */
++			msr|=0x40;
++
++		if (tty->driver_data != NULL)
++			{
++			mcrmsr->msr=msr;
++			mcrmsr->mcr=mcr;
++			}
++		return 0;
++		}
+  	}
+
+  	return -ENOIOCTLCMD;
+
+
+Quoting sander van ginkel <sander@van-ginkel.eu>:
+
+> For serial over ethernet communication, /dev/ptmx will be used to
+> create a virtual device.
+> Due to the lack of a modem status register and a modem control register
+> in the ptmx driver,
+> it won't be possible to transfer handshake signaling.
 >
-> Hans-Peter Jansen wrote:
-> >>>> Should I be worried? smartd doesn't show anything suspicious on
-> >>>> those.
-> >>
-> >> Can you please post the result of "smartctl -a /dev/sdX"?
-> >
-> > Here's the last smart report from two of the offending drives. As noted
-> > before, I did the hardware reorganization, replaced the dog slow 3ware
-> > 9500S-8 and the SiI 3124 with a single Areca 1130 and retired the
-> > drives for now, but a nephew already showed interest. What do you
-> > think, can I cede those drives with a clear conscience? The
-> > Hardware_ECC_Recovered values are really worrisome, aren't they?
+> I wrote this patch to add these registers to the ptmx driver.
+> The modem status register, which controls CD,CTS,DSR,RI is normally
+> read-only. To be able to
+> pass these signals from the remote port to the local ptmx device, I've
+> added an IOCTL routine.
+> The result of a remote TIOCMGET IOCTL call , can be passed directly
+> through this IOCTL routine.
+> The IOCTL value I used for this is, 0x5426 which was formerly known as
+> TIOCTTYGSTRUCT.
 >
-> Different vendors use different scales for the raw values.  The value is
-> still pegged at the highest so it could be those raw values are okay or
-> that the vendor just doesn't update value field accordingly.  My P120
-> says 0 for the raw value and 904635 for hardware ECC recovered so there
-> is some difference.  What do other non-failing drives say about those
-> values?
-
-The only non-failing drive was sdf as it was running in standby mode in this 
-md raid 5 ensemble:
-
-20080323-011337-sdc.log:195 Hardware_ECC_Recovered  0x001a   100   100   000    Old_age   Always       -       162956700
-20080323-011337-sdc.log:196 Reallocated_Event_Count 0x0032   253   253   000    Old_age   Always       -       0
-20080323-011337-sdc.log:197 Current_Pending_Sector  0x0012   253   253   000    Old_age   Always       -       0
-20080323-011337-sdc.log:198 Offline_Uncorrectable   0x0030   253   253   000    Old_age   Offline      -       0
-20080323-011337-sdc.log:199 UDMA_CRC_Error_Count    0x003e   200   200   000    Old_age   Always       -       0
-20080323-011338-sdd.log:195 Hardware_ECC_Recovered  0x001a   100   100   000    Old_age   Always       -       162520674
-20080323-011338-sdd.log:196 Reallocated_Event_Count 0x0032   253   253   000    Old_age   Always       -       0
-20080323-011338-sdd.log:197 Current_Pending_Sector  0x0012   253   253   000    Old_age   Always       -       0
-20080323-011338-sdd.log:198 Offline_Uncorrectable   0x0030   253   253   000    Old_age   Offline      -       0
-20080323-011338-sdd.log:199 UDMA_CRC_Error_Count    0x003e   200   200   000    Old_age   Always       -       0
-20080323-011338-sde.log:195 Hardware_ECC_Recovered  0x001a   100   100   000    Old_age   Always       -       148429049
-20080323-011338-sde.log:196 Reallocated_Event_Count 0x0032   253   253   000    Old_age   Always       -       0
-20080323-011338-sde.log:197 Current_Pending_Sector  0x0012   253   253   000    Old_age   Always       -       0
-20080323-011338-sde.log:198 Offline_Uncorrectable   0x0030   253   253   000    Old_age   Offline      -       0
-20080323-011338-sde.log:199 UDMA_CRC_Error_Count    0x003e   200   200   000    Old_age   Always       -       0
-20080323-011339-sdf.log:195 Hardware_ECC_Recovered  0x001a   100   100   000    Old_age   Always       -       1559
-20080323-011339-sdf.log:196 Reallocated_Event_Count 0x0032   253   253   000    Old_age   Always       -       0
-20080323-011339-sdf.log:197 Current_Pending_Sector  0x0012   253   253   000    Old_age   Always       -       0
-20080323-011339-sdf.log:198 Offline_Uncorrectable   0x0030   253   253   000    Old_age   Offline      -       0
-20080323-011339-sdf.log:199 UDMA_CRC_Error_Count    0x003e   200   200   000    Old_age   Always       -       0
-
-> Hmmm... If the drive is failing FLUSHs, I would expect to see elevated
-> reallocation counters and maybe some pending counts.  Aieee.. weird.
-
-But there are no reallocations nor any pending sectors on any of them.
-
-> >>>> It's been 4 samsung drives at all hanging on a sata sil 3124:
-> >>
-> >> FLUSH_EXT timing out usually indicates that the drive is having
-> >> problem writing out what it has in its cache to the media.  There was
-> >> one case where FLUSH_EXT timeout was caused by the driver failing to
-> >> switch controller back from NCQ mode before issuing FLUSH_EXT but that
-> >> was on sata_nv.  There hasn't been any similar problem on sata_sil24.
-> >
-> > Hmm, I didn't noticed any data distortions, and if there where, they
-> > live on as copies in their new home..
+> I've tested this patch at an 2.6.16.27 kernel.
 >
-> It should have appeared as read errors.  Maybe the drive successfully
-                             ^^^^
-                             write (I guess)
-> wrote those sectors after 30+ secs timeout.
+> Suggestions and/or other test results are welcome.
+>
+> Sander
+>
+>
+> Signed-off-by: Sander van Ginkel <sander@van-ginkel.eu>
+>
+> ===================================================================
+> --- drivers/char/pty.c	2008-03-03 20:02:09.000000000 +0100
+> +++ drivers/char/pty-new.c	2008-03-02 21:55:53.000000000 +0100
+> @@ -7,6 +7,8 @@
+>   *    -- C. Scott Ananian <cananian@alumni.princeton.edu>, 14-Jan-1998
+>   *  Added TTY_DO_WRITE_WAKEUP to enable n_tty to send POLL_OUT to
+>   *      waiting writers -- Sapan Bhatia <sapan@corewars.org>
+> + *  Added support for MCR/MSR, used for serial over ethernet
+> + *    -- Sander van Ginkel <sander@van-ginkel.eu>
+>   *
+>   *
+>   */
+> @@ -32,6 +34,16 @@
+>  #include <linux/bitops.h>
+>  #include <linux/devpts_fs.h>
+>
+> +struct pty_mcrmsr {
+> +
+> +	struct semaphore        sem;            /* locks this structure */
+> +
+> +	/* for tiocmget and tiocmset functions */
+> +
+> +	int                     msr;            /* MSR shadow */
+> +	int                     mcr;            /* MCR shadow */
+> +};
+> +
+>  /* These are global because they are accessed in tty_io.c */
+>  #ifdef CONFIG_UNIX98_PTYS
+>  struct tty_driver *ptm_driver;
+> @@ -199,6 +211,7 @@
+>
+>  static int pty_open(struct tty_struct *tty, struct file * filp)
+>  {
+> +        struct pty_mcrmsr *mcrmsr;
+>  	int	retval = -ENODEV;
+>
+>  	if (!tty || !tty->link)
+> @@ -216,10 +229,90 @@
+>  	set_bit(TTY_THROTTLED, &tty->flags);
+>  	set_bit(TTY_DO_WRITE_WAKEUP, &tty->flags);
+>  	retval = 0;
+> +
+> +	/* initialize the pointer in case something fails */
+> +
+> +	tty->driver_data = NULL;
+> +	tty->link->driver_data = NULL;
+> +
+> +	/* first time accessing this device, let's create it */
+> +
+> +	mcrmsr = kmalloc(sizeof(*mcrmsr), GFP_KERNEL);
+> +
+> +	init_MUTEX(&mcrmsr->sem);
+> +
+> +	if (mcrmsr != NULL) {
+> +		down(&mcrmsr->sem);
+> +
+> +		/* save our structure within the tty structure */
+> +
+> +		mcrmsr->mcr=0;
+> +		mcrmsr->msr=0;
+> +
+> +		tty->driver_data = mcrmsr;
+> +		tty->link->driver_data = mcrmsr;
+> +
+> +		up(&mcrmsr->sem);
+> +
+> +	}
+> +
+>  out:
+>  	return retval;
+>  }
+>
+> +static int pty_tiocmget(struct tty_struct *tty, struct file *file)
+> +{
+> +	struct pty_mcrmsr *mcrmsr = tty->driver_data;
+> +	unsigned int result = 0;
+> +	unsigned int msr=0;
+> +	unsigned int mcr=0;
+> +
+> +	if (tty->driver_data != NULL) {
+> +		msr = mcrmsr->msr;
+> +		mcr = mcrmsr->mcr;
+> +	}
+> +
+> +	result = ((mcr & 0x01)  ? TIOCM_DTR  : 0) |  /* DTR is set */
+> +		((mcr & 0x02)  ? TIOCM_RTS  : 0) |  /* RTS is set */
+> +		((mcr & 0x04)  ? TIOCM_LOOP : 0) |  /* LOOP is set */
+> +		((msr & 0x08)  ? TIOCM_CTS  : 0) |  /* CTS is set */
+> +		((msr & 0x10)  ? TIOCM_CAR  : 0) |  /* Carrier detect is set*/
+> +		((msr & 0x20)  ? TIOCM_RI   : 0) |  /* Ring Indicator is set */
+> +		((msr & 0x40)  ? TIOCM_DSR  : 0);   /* DSR is set */
+> +
+> +	return result;
+> +}
+> +
+> +static int pty_tiocmset(struct tty_struct *tty, struct file
+> *file,unsigned int set, unsigned int clear)
+> +{
+> +	struct pty_mcrmsr *mcrmsr = tty->driver_data;
+> +	unsigned int mcr=0;
+> +
+> +	if (tty->driver_data != NULL)
+> +		mcr = mcrmsr->mcr;
+> +
+> +	if (set & TIOCM_DTR)
+> +		mcr |= 0x01;
+> +	if (set & TIOCM_RTS)
+> +		mcr |= 0x02;
+> +	if (set & TIOCM_LOOP)
+> +		mcr |= 0x04;
+> +
+> +	if (clear & TIOCM_DTR)
+> +		mcr &= ~0x01;
+> +	if (clear & TIOCM_RTS)
+> +		mcr &= ~0x02;
+> +	if (clear & TIOCM_LOOP)
+> +		mcr &= ~0x04;
+> +
+> +	/* set the new MCR value in the device */
+> +
+> +	if (tty->driver_data != NULL)
+> +		mcrmsr->mcr=mcr;
+> +
+> +	return 0;
+> +}
+> +
+>  static void pty_set_termios(struct tty_struct *tty, struct termios
+> *old_termios)
+>  {
+>          tty->termios->c_cflag &= ~(CSIZE | PARENB);
+> @@ -235,6 +328,8 @@
+>  	.chars_in_buffer = pty_chars_in_buffer,
+>  	.unthrottle = pty_unthrottle,
+>  	.set_termios = pty_set_termios,
+> +	.tiocmget = pty_tiocmget,
+> +	.tiocmset = pty_tiocmset,
+>  };
+>
+>  /* Traditional BSD devices */
+> @@ -339,11 +434,44 @@
+>  static int pty_unix98_ioctl(struct tty_struct *tty, struct file *file,
+>  			    unsigned int cmd, unsigned long arg)
+>  {
+> +	unsigned int value;
+> +	struct pty_mcrmsr *mcrmsr = tty->driver_data;
+> +	unsigned int msr=0;
+> +	unsigned int mcr=0;
+> +
+>  	switch (cmd) {
+>  	case TIOCSPTLCK: /* Set PT Lock (disallow slave open) */
+>  		return pty_set_lock(tty, (int __user *)arg);
+>  	case TIOCGPTN: /* Get PT Number */
+>  		return put_user(tty->index, (unsigned int __user *)arg);
+> +
+> +	case 0x5426: /* Set all of the handshake line, even the normally read
+> only */
+> +		{
+> +		if (copy_from_user(&value,(unsigned int *)arg,sizeof(unsigned int)))
+> +			return -EFAULT;
+> +
+> +		if (value & 0x0002) /* DTR set */
+> +			mcr|=0x01;
+> +		if (value & 0x0004) /* RTS set */
+> +			mcr|=0x02;
+> +		if (value & 0x8000) /* LOOP set */
+> +			mcr|=0x04;
+> +		if (value & 0x0020) /* CTS set */
+> +			msr|=0x08;
+> +		if (value & 0x0040) /* DCD set */
+> +			msr|=0x10;
+> +		if (value & 0x0080) /* RI set */
+> +			msr|=0x20;
+> +		if (value & 0x0100) /* DSR set */
+> +			msr|=0x40;
+> +
+> +		if (tty->driver_data != NULL)
+> +			{
+> +			mcrmsr->msr=msr;
+> +			mcrmsr->mcr=mcr;
+> +			}
+> +		return 0;
+> +		}
+>  	}
+>
+>  	return -ENOIOCTLCMD;
 
-That would point to some driver issue, wouldn't it? Roger Heflin also
-experienced similar behavior with that controller, which wasn't 
-reproducible with another. 
 
-I can offer to you rebuilding that md in a test environment, and giving 
-you access to it, if you're interested.
 
-Anyway, thanks for caring Tejun,
-Pete
