@@ -1,20 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757426AbYC3XH5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758301AbYC3XIS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757426AbYC3XH5 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Mar 2008 19:07:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756439AbYC3XGG
+	id S1758301AbYC3XIS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Mar 2008 19:08:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756471AbYC3XGH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Mar 2008 19:06:06 -0400
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:53718 "EHLO smtp5.pp.htv.fi"
+	Sun, 30 Mar 2008 19:06:07 -0400
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:58510 "EHLO smtp6.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756375AbYC3XGD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Mar 2008 19:06:03 -0400
-Date: Mon, 31 Mar 2008 02:05:50 +0300
+	id S1756398AbYC3XGF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 30 Mar 2008 19:06:05 -0400
+Date: Mon, 31 Mar 2008 02:05:52 +0300
 From: Adrian Bunk <bunk@kernel.org>
-To: linux-kernel@vger.kernel.org
-Cc: "Robert P. J. Day" <rpjday@crashcourse.ca>
-Subject: [2.6 patch] fs/partitions/acorn.c: remove dead code
-Message-ID: <20080330230550.GT28445@cs181133002.pp.htv.fi>
+To: kkeil@suse.de
+Cc: isdn4linux@listserv.isdn4linux.de, linux-kernel@vger.kernel.org,
+       "Robert P. J. Day" <rpjday@crashcourse.ca>
+Subject: [2.6 patch] include/linux/isdn.h: remove dead code
+Message-ID: <20080330230552.GU28445@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -23,7 +24,7 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I missed this when I did the arm26 removal.
+This patch remove the usage of a nonexisting kconfig variable.
 
 Reported-by: Robert P. J. Day <rpjday@crashcourse.ca>
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
@@ -33,29 +34,27 @@ Signed-off-by: Adrian Bunk <bunk@kernel.org>
 This patch has been sent on:
 - 1 Mar 2008
 
- fs/partitions/acorn.c |   10 ----------
- 1 file changed, 10 deletions(-)
+ include/linux/isdn.h |    6 ------
+ 1 file changed, 6 deletions(-)
 
-f7dc697bb2d04227b2f41a9d56f626fbd65c3d9d foobar
-diff --git a/fs/partitions/acorn.c b/fs/partitions/acorn.c
-index 3d3e166..a97b477 100644
---- a/fs/partitions/acorn.c
-+++ b/fs/partitions/acorn.c
-@@ -275,16 +275,6 @@ adfspart_check_ADFS(struct parsed_partitions *state, struct block_device *bdev)
- 	id = data[0x1fc] & 15;
- 	put_dev_sector(sect);
+68dcdff8287b565d34ba8b3bb1a608a0a0b3a3fd foobar
+diff --git a/include/linux/isdn.h b/include/linux/isdn.h
+index 9cb2855..44cd663 100644
+--- a/include/linux/isdn.h
++++ b/include/linux/isdn.h
+@@ -16,14 +16,8 @@
  
--#ifdef CONFIG_BLK_DEV_MFM
--	if (MAJOR(bdev->bd_dev) == MFM_ACORN_MAJOR) {
--		extern void xd_set_geometry(struct block_device *,
--			unsigned char, unsigned char, unsigned int);
--		xd_set_geometry(bdev, dr->secspertrack, heads, 1);
--		invalidate_bh_lrus();
--		truncate_inode_pages(bdev->bd_inode->i_mapping, 0);
--	}
+ #include <linux/ioctl.h>
+ 
+-#ifdef CONFIG_COBALT_MICRO_SERVER
+-/* Save memory */
+-#define ISDN_MAX_DRIVERS    2
+-#define ISDN_MAX_CHANNELS   8
+-#else
+ #define ISDN_MAX_DRIVERS    32
+ #define ISDN_MAX_CHANNELS   64
 -#endif
--
- 	/*
- 	 * Work out start of non-adfs partition.
- 	 */
+ 
+ /* New ioctl-codes */
+ #define IIOCNETAIF  _IO('I',1)
 
