@@ -1,73 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755381AbYC3XbO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756127AbYC3XuK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755381AbYC3XbO (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Mar 2008 19:31:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757761AbYC3X3S
+	id S1756127AbYC3XuK (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Mar 2008 19:50:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755094AbYC3Xt7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Mar 2008 19:29:18 -0400
-Received: from wf-out-1314.google.com ([209.85.200.174]:1629 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757693AbYC3X3Q (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Mar 2008 19:29:16 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=jboAUzwiTsxQEUAyjsYEe4Wg8tJRLCZZ035vw/1WzBRLGqFDkhFenjlLcpWGjtx9ncmRDSgoZNuImH73ZcocXLnrWB8rfOMNP9UKE0B+P9jw2E3as+JzbRXi0Le5xlgzxxe/dk5ZZSaxEhwmGYuyj78gYEiNmdGsUqVBe74nhss=
-Message-ID: <86802c440803301629g6d1b896o27e12ef3c84ded2c@mail.gmail.com>
-Date: Sun, 30 Mar 2008 16:29:15 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Andi Kleen" <andi@firstfloor.org>
-Subject: Re: [RFC 8/8] x86_64: Support for new UV apic
-Cc: "Jack Steiner" <steiner@sgi.com>, "Ingo Molnar" <mingo@elte.hu>,
-       tglx@linutronix.de, linux-mm@kvack.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20080330211848.GA29105@one.firstfloor.org>
+	Sun, 30 Mar 2008 19:49:59 -0400
+Received: from twin.jikos.cz ([213.151.79.26]:50570 "EHLO twin.jikos.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755073AbYC3Xt6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 30 Mar 2008 19:49:58 -0400
+Date: Mon, 31 Mar 2008 01:49:54 +0200 (CEST)
+From: Jiri Kosina <jkosina@suse.cz>
+X-X-Sender: jikos@twin.jikos.cz
+To: Gene Heskett <gene.heskett@gmail.com>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: MCE going wild, 14 megs of this in the logs
+In-Reply-To: <200803301657.53232.gene.heskett@gmail.com>
+Message-ID: <Pine.LNX.4.64.0803310148540.32241@twin.jikos.cz>
+References: <200803301657.53232.gene.heskett@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080324182122.GA28327@sgi.com> <87abknhzhd.fsf@basil.nowhere.org>
-	 <20080325175657.GA6262@sgi.com> <20080326073823.GD3442@elte.hu>
-	 <86802c440803301323q5c4bd4f4k1f9bdc1d6b1a0a7b@mail.gmail.com>
-	 <20080330210356.GA13383@sgi.com>
-	 <20080330211848.GA29105@one.firstfloor.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Mar 30, 2008 at 2:18 PM, Andi Kleen <andi@firstfloor.org> wrote:
-> > If there was a significant differece between UV and generic kernels
->  > (or hardware), then I would agree. However, the only significant
->  > difference is the APIC model on large systems. Small systems are
->  > exactly compatible.
->  >
->  > The problem with subarch is that we want 1 binary kernel to support
->
->  x86-64 subarchs are more options than true subarchs. They generally
->  do not prevent the kernel from running on other systems, just
->  control addition of some additional code or special data layout. They are
->  quite different from the i386 subarchs or those of other architectures.
->
->  The main reason vSMP is called a subarch is that it pads a lot
->  of data structures to 4K and you don't really want that on your
->  normal kernel, but there isn't anything in there that would
->  prevent booting on a normal system.
->
->  The UV option certainly doesn't have this issue.
->
->
->  > both generic hardware AND uv hardware. This restriction is desirable
->  > for the distros and software vendors. Otherwise, additional kernel
->  > images would have to be built, released, & certified.
->
->  I think an option would be fine, just don't call it a subarch. I don't
->  feel strongly about it, as you point out it is not really very much
->  code.
+On Sun, 30 Mar 2008, Gene Heskett wrote:
 
-if the calling path like GET_APIC_ID is keeping checking if it is UV
-box after boot time, that may not good.
+> Mar 30 16:46:42 coyote kernel: [469249.031832] MCE: The hardware reports a non 
+> fatal, correctable incident occurred on CPU 0.
+> Mar 30 16:46:42 coyote kernel: [469249.031838] Bank 1: d400400000000152
+> Mar 30 16:46:42 coyote kernel: [469249.031841] MCE: The hardware reports a non 
+> fatal, correctable incident occurred on CPU 0.
+> Mar 30 16:46:42 coyote kernel: [469249.031844] Bank 2: d40040000000017a
+> Its always the same 2 addresses reported, and every 15 seconds.  So I have the 
+> non-fatal part of MCE now turned off, & 2.6.24.4 rebuilding.
 
-don't need make other hundreds of machine keep running the code only
-for several big box all the time.
+Hi,
 
-YH
+you possible have some buggy hardware. I'd suggest running this through 
+mcelog, which should decode the MCE reason.
+
+-- 
+Jiri Kosina
+SUSE Labs
+
