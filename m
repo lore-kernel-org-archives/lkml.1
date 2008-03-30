@@ -1,20 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755996AbYC3XFw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756595AbYC3XGQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755996AbYC3XFw (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Mar 2008 19:05:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753766AbYC3XFn
+	id S1756595AbYC3XGQ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Mar 2008 19:06:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755873AbYC3XFs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Mar 2008 19:05:43 -0400
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:54552 "EHLO smtp4.pp.htv.fi"
+	Sun, 30 Mar 2008 19:05:48 -0400
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:53706 "EHLO smtp5.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751661AbYC3XFm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Mar 2008 19:05:42 -0400
-Date: Mon, 31 Mar 2008 02:05:30 +0300
+	id S1755833AbYC3XFs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 30 Mar 2008 19:05:48 -0400
+Date: Mon, 31 Mar 2008 02:05:35 +0300
 From: Adrian Bunk <bunk@kernel.org>
-To: Tejun Heo <htejun@gmail.com>, Jeff Garzik <jeff@garzik.org>
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [2.6 patch] libata-acpi.c: remove unneeded #if's
-Message-ID: <20080330230530.GN28445@cs181133002.pp.htv.fi>
+To: linux-kernel@vger.kernel.org
+Subject: [2.6 patch] make init/do_mounts.c:root_device_name static
+Message-ID: <20080330230535.GO28445@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -23,44 +22,43 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-These #if's are unneeded since they:
-- did anyway not handle the CONFIG_ACPI_DOCK_MODULE case correctly and
-- this is already handled in include/acpi/acpi_drivers.h and
-- it's now correctly handled in kconfig.
+This patch makes the needlessly global root_device_name static.
 
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
 
- drivers/ata/libata-acpi.c |    4 ----
- 1 file changed, 4 deletions(-)
+This patch has been sent on:
+- 1 Mar 2008
 
-2a7326b50cd80e6570803d4efb7bc15e029e61e3 diff --git a/drivers/ata/libata-acpi.c b/drivers/ata/libata-acpi.c
-index bf98a56..1db912e 100644
---- a/drivers/ata/libata-acpi.c
-+++ b/drivers/ata/libata-acpi.c
-@@ -227,11 +227,9 @@ void ata_acpi_associate(struct ata_host *host)
- 			acpi_install_notify_handler(ap->acpi_handle,
- 						    ACPI_SYSTEM_NOTIFY,
- 						    ata_acpi_ap_notify, ap);
--#if defined(CONFIG_ACPI_DOCK) || defined(CONFIG_ACPI_DOCK_MODULE)
- 			/* we might be on a docking station */
- 			register_hotplug_dock_device(ap->acpi_handle,
- 						     ata_acpi_ap_notify, ap);
--#endif
- 		}
+ init/do_mounts.c |    2 +-
+ init/do_mounts.h |    1 -
+ 2 files changed, 1 insertion(+), 2 deletions(-)
+
+eab4ea6c40eb148a52a4cbbb8523b203a379c20c foobar
+diff --git a/init/do_mounts.c b/init/do_mounts.c
+index 3885e70..56e3b17 100644
+--- a/init/do_mounts.c
++++ b/init/do_mounts.c
+@@ -22,7 +22,7 @@
+ int __initdata rd_doload;	/* 1 = load RAM disk, 0 = don't load */
  
- 		for (j = 0; j < ata_link_max_devices(&ap->link); j++) {
-@@ -241,11 +239,9 @@ void ata_acpi_associate(struct ata_host *host)
- 				acpi_install_notify_handler(dev->acpi_handle,
- 						ACPI_SYSTEM_NOTIFY,
- 						ata_acpi_dev_notify, dev);
--#if defined(CONFIG_ACPI_DOCK) || defined(CONFIG_ACPI_DOCK_MODULE)
- 				/* we might be on a docking station */
- 				register_hotplug_dock_device(dev->acpi_handle,
- 						ata_acpi_dev_notify, dev);
--#endif
- 			}
- 		}
- 	}
+ int root_mountflags = MS_RDONLY | MS_SILENT;
+-char * __initdata root_device_name;
++static char * __initdata root_device_name;
+ static char __initdata saved_root_name[64];
+ static int __initdata root_wait;
+ 
+diff --git a/init/do_mounts.h b/init/do_mounts.h
+index 735705d..9aa968d 100644
+--- a/init/do_mounts.h
++++ b/init/do_mounts.h
+@@ -11,7 +11,6 @@ void  change_floppy(char *fmt, ...);
+ void  mount_block_root(char *name, int flags);
+ void  mount_root(void);
+ extern int root_mountflags;
+-extern char *root_device_name;
+ 
+ static inline int create_dev(char *name, dev_t dev)
+ {
 
