@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755901AbYC3WmP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756748AbYC3Wma@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755901AbYC3WmP (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Mar 2008 18:42:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755507AbYC3Wko
+	id S1756748AbYC3Wma (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Mar 2008 18:42:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755888AbYC3Wks
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Mar 2008 18:40:44 -0400
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:57860 "EHLO smtp6.pp.htv.fi"
+	Sun, 30 Mar 2008 18:40:48 -0400
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:53026 "EHLO smtp5.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755821AbYC3Wkn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Mar 2008 18:40:43 -0400
-Date: Mon, 31 Mar 2008 01:40:31 +0300
+	id S1755873AbYC3Wkr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 30 Mar 2008 18:40:47 -0400
+Date: Mon, 31 Mar 2008 01:40:35 +0300
 From: Adrian Bunk <bunk@kernel.org>
-To: jdike@addtoit.com
-Cc: user-mode-linux-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: [2.6 patch] remove include/asm-um/keyboard.h
-Message-ID: <20080330224031.GG28445@cs181133002.pp.htv.fi>
+To: ysato@users.sourceforge.jp
+Cc: linux-kernel@vger.kernel.org
+Subject: [2.6 patch] remove include/asm-h8300/keyboard.h
+Message-ID: <20080330224035.GH28445@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -23,26 +23,43 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch removes the unused and broken (the normal asm/keyboard.h 
-files no longer exists) include/asm-um/keyboard.h
+This patch removes the unused include/asm-h8300/keyboard.h
 
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
 
- include/asm-um/keyboard.h |    6 ------
- 1 file changed, 6 deletions(-)
+ include/asm-h8300/keyboard.h |   24 ------------------------
+ 1 file changed, 24 deletions(-)
 
-bd6cdb1ee8faecc525ce49b25115f2ca21be8981 diff --git a/include/asm-um/keyboard.h b/include/asm-um/keyboard.h
+372be646df287c70971a0a5a8a1e2ee5dbc5a47f diff --git a/include/asm-h8300/keyboard.h b/include/asm-h8300/keyboard.h
 deleted file mode 100644
-index ee2e230..0000000
---- a/include/asm-um/keyboard.h
+index 90efbd6..0000000
+--- a/include/asm-h8300/keyboard.h
 +++ /dev/null
-@@ -1,6 +0,0 @@
--#ifndef __UM_KEYBOARD_H
--#define __UM_KEYBOARD_H
+@@ -1,24 +0,0 @@
+-/*
+- *  linux/include/asm-h8300/keyboard.h
+- *  Created 04 Dec 2001 by Khaled Hassounah <khassounah@mediumware.net>
+- *  This file contains the Dragonball architecture specific keyboard definitions
+- */
 -
--#include "asm/arch/keyboard.h"
+-#ifndef _H8300_KEYBOARD_H
+-#define _H8300_KEYBOARD_H
 -
--#endif
+-
+-/* dummy i.e. no real keyboard */
+-#define kbd_setkeycode(x...)	(-ENOSYS)
+-#define kbd_getkeycode(x...)	(-ENOSYS)
+-#define kbd_translate(x...)	(0)
+-#define kbd_unexpected_up(x...)	(1)
+-#define kbd_leds(x...)		do {;} while (0)
+-#define kbd_init_hw(x...)	do {;} while (0)
+-#define kbd_enable_irq(x...)	do {;} while (0)
+-#define kbd_disable_irq(x...)	do {;} while (0)
+-
+-#endif  /* _H8300_KEYBOARD_H */
+-
+-
+-
 
