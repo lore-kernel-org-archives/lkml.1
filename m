@@ -1,20 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753715AbYC3Wug@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755486AbYC3Wuv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753715AbYC3Wug (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Mar 2008 18:50:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756156AbYC3WtI
+	id S1755486AbYC3Wuv (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Mar 2008 18:50:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756211AbYC3WtL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Mar 2008 18:49:08 -0400
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:53253 "EHLO smtp5.pp.htv.fi"
+	Sun, 30 Mar 2008 18:49:11 -0400
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:54037 "EHLO smtp4.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756135AbYC3WtG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Mar 2008 18:49:06 -0400
-Date: Mon, 31 Mar 2008 01:48:54 +0300
+	id S1756179AbYC3WtK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 30 Mar 2008 18:49:10 -0400
+Date: Mon, 31 Mar 2008 01:48:57 +0300
 From: Adrian Bunk <bunk@kernel.org>
-To: Rik van Riel <riel@redhat.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: [2.6 patch] make mm/rmap.c:anon_vma_cachep static
-Message-ID: <20080330224853.GU28445@cs181133002.pp.htv.fi>
+To: linux-kernel@vger.kernel.org
+Subject: [2.6 patch] proper prototypes for vread/vwrite
+Message-ID: <20080330224857.GV28445@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -23,7 +22,8 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch makes the needlessly global anon_vma_cachep static.
+This patch adds proper prototypes for vread/vwrite in 
+include/linux/vmalloc.h 
 
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
@@ -32,54 +32,36 @@ Signed-off-by: Adrian Bunk <bunk@kernel.org>
 This patch has been sent on:
 - 25 Feb 2008
 
- include/linux/rmap.h |   12 ------------
- mm/rmap.c            |   12 +++++++++++-
- 2 files changed, 11 insertions(+), 13 deletions(-)
+ drivers/char/mem.c      |    3 ---
+ include/linux/vmalloc.h |    3 +++
+ 2 files changed, 3 insertions(+), 3 deletions(-)
 
-8d2d63d71ecbf2db78f31025acb136c9dd4db6a2 diff --git a/include/linux/rmap.h b/include/linux/rmap.h
-index 1383692..8a8dbb9 100644
---- a/include/linux/rmap.h
-+++ b/include/linux/rmap.h
-@@ -31,18 +31,6 @@ struct anon_vma {
+ce4fe62358ed9369d3ff4e67d621164b381234ab diff --git a/drivers/char/mem.c b/drivers/char/mem.c
+index 20070b7..da6319f 100644
+--- a/drivers/char/mem.c
++++ b/drivers/char/mem.c
+@@ -350,9 +350,6 @@ static ssize_t read_oldmem(struct file *file, char __user *buf,
+ }
+ #endif
  
- #ifdef CONFIG_MMU
- 
--extern struct kmem_cache *anon_vma_cachep;
+-extern long vread(char *buf, char *addr, unsigned long count);
+-extern long vwrite(char *buf, char *addr, unsigned long count);
 -
--static inline struct anon_vma *anon_vma_alloc(void)
--{
--	return kmem_cache_alloc(anon_vma_cachep, GFP_KERNEL);
--}
--
--static inline void anon_vma_free(struct anon_vma *anon_vma)
--{
--	kmem_cache_free(anon_vma_cachep, anon_vma);
--}
--
- static inline void anon_vma_lock(struct vm_area_struct *vma)
- {
- 	struct anon_vma *anon_vma = vma->anon_vma;
-diff --git a/mm/rmap.c b/mm/rmap.c
-index 8fd527c..ef6bb36 100644
---- a/mm/rmap.c
-+++ b/mm/rmap.c
-@@ -52,7 +52,17 @@
- 
- #include <asm/tlbflush.h>
- 
--struct kmem_cache *anon_vma_cachep;
-+static struct kmem_cache *anon_vma_cachep;
+ /*
+  * This function reads the *virtual* memory as seen by the kernel.
+  */
+diff --git a/include/linux/vmalloc.h b/include/linux/vmalloc.h
+index ce8e7da..7bdd809 100644
+--- a/include/linux/vmalloc.h
++++ b/include/linux/vmalloc.h
+@@ -55,6 +55,9 @@ extern int remap_vmalloc_range(struct vm_area_struct *vma, void *addr,
+ 							unsigned long pgoff);
+ void vmalloc_sync_all(void);
+  
++long vread(char *buf, char *addr, unsigned long count);
++long vwrite(char *buf, char *addr, unsigned long count);
 +
-+static inline struct anon_vma *anon_vma_alloc(void)
-+{
-+	return kmem_cache_alloc(anon_vma_cachep, GFP_KERNEL);
-+}
-+
-+static inline void anon_vma_free(struct anon_vma *anon_vma)
-+{
-+	kmem_cache_free(anon_vma_cachep, anon_vma);
-+}
- 
- /* This must be called under the mmap_sem. */
- int anon_vma_prepare(struct vm_area_struct *vma)
+ /*
+  *	Lowlevel-APIs (not for driver use!)
+  */
 
