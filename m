@@ -1,108 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751723AbYC3A03@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751639AbYC3Ans@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751723AbYC3A03 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Mar 2008 20:26:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750850AbYC3A0U
+	id S1751639AbYC3Ans (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Mar 2008 20:43:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750962AbYC3Ani
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Mar 2008 20:26:20 -0400
-Received: from an-out-0708.google.com ([209.85.132.250]:46325 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750839AbYC3A0T (ORCPT
+	Sat, 29 Mar 2008 20:43:38 -0400
+Received: from rv-out-0910.google.com ([209.85.198.189]:36426 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750918AbYC3Anh convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Mar 2008 20:26:19 -0400
-Message-ID: <47EEDE27.2020809@codemonkey.ws>
-Date: Sat, 29 Mar 2008 19:26:15 -0500
-From: Anthony Liguori <anthony@codemonkey.ws>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
+	Sat, 29 Mar 2008 20:43:37 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=RDxOhjIdTu6rzMiZXi0jYp+Rp/bxsptHh8fXRA5P/+rKDUUSmzfYeWA2liZflzFf6DMJ/jPYkaO7p9z2FyVbPL10YdMJl4CMxs1yK58R0nVpXel86ppy58hmZESfHjyVvaGwNVCQFwmKmr99PdkxO+RK6xS7enNNwHIugA5oXus=
+Message-ID: <86802c440803291743i596678cem4f8ff727f208d2d3@mail.gmail.com>
+Date: Sat, 29 Mar 2008 17:43:35 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "=?ISO-8859-1?Q?N=E9meth_M=E1rton?=" <nm127@freemail.hu>
+Subject: Re: [PATCH 3/3] [2.6.25-rc5] Warn user about a BIOS bug in recent asus boards
+Cc: "Zhang, Rui" <rui.zhang@intel.com>, "Len Brown" <lenb@kernel.org>,
+       trenn@suse.de, linux-acpi <linux-acpi@vger.kernel.org>,
+       "kernel list" <linux-kernel@vger.kernel.org>
+In-Reply-To: <47D99970.4010906@freemail.hu>
 MIME-Version: 1.0
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-CC: Dave Hansen <dave@linux.vnet.ibm.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Yasunori Goto <y-goto@jp.fujitsu.com>,
-       Christoph Lameter <clameter@sgi.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Mel Gorman <mel@csn.ul.ie>
-Subject: Re: [PATCH RFC] hotplug-memory: refactor online_pages to separate
- zone growth from page onlining
-References: <47ED8685.9040409@goop.org>	 <1206751622.27091.20.camel@nimitz.home.sr71.net>	 <47EDA4B9.6030801@goop.org> <1206806774.31896.27.camel@nimitz.home.sr71.net> <47EED683.5030200@goop.org>
-In-Reply-To: <47EED683.5030200@goop.org>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+References: <1205280392.8194.46.camel@linux-2bdv.site>
+	 <200803120010.41373.lenb@kernel.org>
+	 <200803120140.14243.lenb@kernel.org>
+	 <1205300688.2240.47.camel@acpi-hp-zz.sh.intel.com>
+	 <1205305945.2240.56.camel@acpi-hp-zz.sh.intel.com>
+	 <1205391787.2240.71.camel@acpi-hp-zz.sh.intel.com>
+	 <47D99970.4010906@freemail.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Fitzhardinge wrote:
-> Dave Hansen wrote:
->>
->> To me, it sounds like the only different thing that you want is to make
->> sure that only partial sections are onlined.  So, shall we work with the
->> existing interfaces to online partial sections, or will we just disable
->> it entirely when we see Xen?
->>   
+2008/3/13 Németh Márton <nm127@freemail.hu>:
 >
-> Well, yes and no.
->
-> For the current balloon driver, it doesn't make much sense.  It would 
-> add a fair amount of complexity without any real gain.  It's currently 
-> based around alloc_page/free_page.  When it wants to shrink the domain 
-> and give memory back to the host, it allocates pages, adds the page 
-> structures to a ballooned pages list, and strips off the backing 
-> memory and gives it to the host.  Growing the domain is the converse: 
-> it gets pages from the host, pulls page structures off the list, binds 
-> them together and frees them back to the kernel.  If it runs out of 
-> ballooned page structures, it hotplugs in some memory to add more.
->
-> That said, if (partial-)sections were much smaller - say 2-4 meg - and 
-> page migration/defrag worked reliably, then we could probably do 
-> without the balloon driver and do it all in terms of memory hot 
-> plug/unplug.  That would give us a general mechanism which could 
-> either be driven from userspace, and/or have in-kernel 
-> Xen/kvm/s390/etc policy modules.  Aside from small sections, the only 
-> additional requirement would be an online hook which can actually 
-> attach backing memory to the pages being onlined, rather than just 
-> assuming an underlying DIMM as current code does.
+>  [    0.715787] ACPI: PCI Interrupt 0000:00:0c.0[A] -> GSI 16 (level, low) -> IRQ 16
+...
+>  [   25.037202] ACPI: PCI Interrupt 0000:01:00.0[A] -> GSI 16 (level, low) -> IRQ 16
+...
+>  [   86.320860] irq 16: nobody cared (try booting with the "irqpoll" option)
+>  [   86.320860] Pid: 0, comm: swapper Not tainted 2.6.25-rc5 #1
+>  [   86.320860]  [<c01578f7>] __report_bad_irq+0x27/0x90
+>  [   86.320860]  [<c0157b96>] note_interrupt+0x236/0x270
+>  [   86.320860]  [<c0156fa3>] ? handle_IRQ_event+0x53/0x60
+>  [   86.320860]  [<c015823a>] handle_fasteoi_irq+0x7a/0xd0
+>  [   86.320860]  [<c0106174>] do_IRQ+0x44/0xa0
+>  [   86.320860]  [<c0104c66>] common_interrupt+0x2e/0x34
+>  [   86.320860]  [<c0119039>] ? finish_task_switch+0x59/0xc0
+>  [   86.320860]  [<c0118fe0>] ? finish_task_switch+0x0/0xc0
+>  [   86.320860]  [<c03080d6>] schedule+0x2b6/0x470
+>  [   86.320860]  [<f892fdae>] ? acpi_processor_idle+0x0/0x436 [processor]
+>  [   86.320860]  [<c0102b65>] cpu_idle+0xb5/0xd0
+>  [   86.320860]  [<c030343c>] rest_init+0x5c/0x60
+>  [   86.320860]  =======================
+>  [   86.320860] handlers:
+>  [   86.320860] [<f8915830>] (yenta_interrupt+0x0/0xe0 [yenta_socket])
+>  [   86.320860] [<f8afd3f0>] (via_driver_irq_handler+0x0/0x1c0 [via])
+>  [   86.320860] Disabling IRQ #16
 
-Ballooning on KVM (and s390) is very much a different beast from Xen.  
-With Xen, ballooning is very similar to hotplug in that you're adding 
-and removing physical memory from the guest.  The use of alloc_page() to 
-implement it instead of hotplug is for the reasons Jeremy's outlined 
-above.  Logically though, it's hotplug.
+wonder if other device is using IRQ #16 too.
 
-For KVM and s390, ballooning is really a primitive form of guest page 
-hinting.  The host asks the guest to allocate some memory and the guest 
-allocates what it can, and then tells the host which pages they were.  
-It's basically saying the pages are Unused and then the host may move 
-those pages from Up=>Uz which reduces the resident size of the guest.  
-The virtual size stays the same though.  We can enforce limits on the 
-resident size of the guest via the new cgroup memory controller.
+can you boot with pci=routeirq to check that?
 
-The guest is free to reclaim those pages at any time it wants without 
-informing the host.  In fact, we plan to utilize this by implementing a 
-shrinker and OOM handler in the virtio balloon driver.
-
-Hotplug is still useful for us as it's more efficient to hot-add 1gb of 
-memory instead of starting out with an extra 1gb and ballooning down.  
-We wouldn't want to hotplug away every page we balloon though as we want 
-to be able to reclaim them if necessary without the hosts intervention 
-(like on an OOM condition).
-
->> For Xen and KVM, how does it get decided that the guest needs more
->> memory?  Is this guest or host driven?  Both?  How is the guest
->> notified?  Is guest userspace involved at all?
->
-> In Xen, either the host or the guest can set the target size for the 
-> domain, which is capped by the host-set limit.  Aside from possibly 
-> setting the target size, there's no usermode involvement in managing 
-> ballooning.  The virtio balloon driver is similar, though from a quick 
-> look it seems to be entirely driven by the host side.
-
-The host support for KVM ballooning is entirely in userspace, but that's 
-orthogonal to the discussion at hand really.
-
-Regards,
-
-Anthony Liguori
-
->    J
-
+YH
