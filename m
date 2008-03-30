@@ -1,20 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755724AbYC3Wsu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756152AbYC3WtH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755724AbYC3Wsu (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Mar 2008 18:48:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751106AbYC3Wsm
+	id S1756152AbYC3WtH (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Mar 2008 18:49:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754980AbYC3Wsp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Mar 2008 18:48:42 -0400
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:54021 "EHLO smtp4.pp.htv.fi"
+	Sun, 30 Mar 2008 18:48:45 -0400
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:53249 "EHLO smtp5.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751037AbYC3Wsl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Mar 2008 18:48:41 -0400
-Date: Mon, 31 Mar 2008 01:48:28 +0300
+	id S1754739AbYC3Wso (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 30 Mar 2008 18:48:44 -0400
+Date: Mon, 31 Mar 2008 01:48:32 +0300
 From: Adrian Bunk <bunk@kernel.org>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: [2.6 patch] mm/migrate.c should #include <linux/syscalls.h>
-Message-ID: <20080330224828.GP28445@cs181133002.pp.htv.fi>
+To: linux-kernel@vger.kernel.org
+Subject: [2.6 patch] make mm/sparse.c: make a function static
+Message-ID: <20080330224832.GQ28445@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -23,26 +22,28 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Every file should include the headers containing the externs for its 
-global functions (in this case for sys_move_pages()).
+This patch makes the needlessly global sparse_early_mem_map_alloc() 
+static.
 
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
 
 This patch has been sent on:
-- 22 Feb 2008
+- 25 Feb 2008
 
-5624ee2189a0b767e8e474cdd53d8a536dd8f262 diff --git a/mm/migrate.c b/mm/migrate.c
-index a73504f..36e1820 100644
---- a/mm/migrate.c
-+++ b/mm/migrate.c
-@@ -30,6 +30,7 @@
- #include <linux/vmalloc.h>
- #include <linux/security.h>
- #include <linux/memcontrol.h>
-+#include <linux/syscalls.h>
+47e8f879748b0e89a465a50626ae93dd55844a15 diff --git a/mm/sparse.c b/mm/sparse.c
+index f6a43c0..99cd810 100644
+--- a/mm/sparse.c
++++ b/mm/sparse.c
+@@ -269,7 +269,7 @@ struct page __init *sparse_mem_map_populate(unsigned long pnum, int nid)
+ }
+ #endif /* !CONFIG_SPARSEMEM_VMEMMAP */
  
- #include "internal.h"
- 
+-struct page __init *sparse_early_mem_map_alloc(unsigned long pnum)
++static struct page __init *sparse_early_mem_map_alloc(unsigned long pnum)
+ {
+ 	struct page *map;
+ 	struct mem_section *ms = __nr_to_section(pnum);
+
 
