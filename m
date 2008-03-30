@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756748AbYC3XM7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757259AbYC3XNU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756748AbYC3XM7 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Mar 2008 19:12:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752111AbYC3XMq
+	id S1757259AbYC3XNU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Mar 2008 19:13:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756187AbYC3XMv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Mar 2008 19:12:46 -0400
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:54778 "EHLO smtp4.pp.htv.fi"
+	Sun, 30 Mar 2008 19:12:51 -0400
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:54781 "EHLO smtp4.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751626AbYC3XMp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Mar 2008 19:12:45 -0400
-Date: Mon, 31 Mar 2008 02:12:16 +0300
+	id S1756310AbYC3XMv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 30 Mar 2008 19:12:51 -0400
+Date: Mon, 31 Mar 2008 02:12:38 +0300
 From: Adrian Bunk <bunk@kernel.org>
-To: chas@cmf.nrl.navy.mil, jgarzik@pobox.com
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [2.6 patch] atm/idt77252.c: make 2 functions static
-Message-ID: <20080330231216.GA28445@cs181133002.pp.htv.fi>
+To: linux-kernel@vger.kernel.org
+Cc: Clemens Ladisch <clemens@ladisch.de>
+Subject: [2.6 patch] #if 0 hpet_unregister()
+Message-ID: <20080330231238.GB28445@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -23,43 +23,38 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch makes the following needlessly global functions static:
-- idt77252_send()
-- idt77252_dev_close()
+This patch #if 0's the unused hpet_unregister().
 
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
+Acked-by: Clemens Ladisch <clemens@ladisch.de>
 
 ---
 
 This patch has been sent on:
 - 1 Mar 2008
 
- drivers/atm/idt77252.c |    6 ++----
- 1 file changed, 2 insertions(+), 4 deletions(-)
+ drivers/char/hpet.c |    2 ++
+ 1 file changed, 2 insertions(+)
 
-36dff5da01d6548a345e7d9a115ee3121df95591 foobar
-diff --git a/drivers/atm/idt77252.c b/drivers/atm/idt77252.c
-index eee54c0..9e94b64 100644
---- a/drivers/atm/idt77252.c
-+++ b/drivers/atm/idt77252.c
-@@ -2016,8 +2016,7 @@ idt77252_send_skb(struct atm_vcc *vcc, struct sk_buff *skb, int oam)
- 	return 0;
+addfb1ea425cb7e01ddd99fd921c6ca42cc6840b foobar
+diff --git a/drivers/char/hpet.c b/drivers/char/hpet.c
+index 465ad35..98ffdcc 100644
+--- a/drivers/char/hpet.c
++++ b/drivers/char/hpet.c
+@@ -619,6 +619,7 @@ static inline int hpet_tpcheck(struct hpet_task *tp)
+ 	return -ENXIO;
  }
  
--int
--idt77252_send(struct atm_vcc *vcc, struct sk_buff *skb)
-+static int idt77252_send(struct atm_vcc *vcc, struct sk_buff *skb)
++#if 0
+ int hpet_unregister(struct hpet_task *tp)
  {
- 	return idt77252_send_skb(vcc, skb, 0);
- }
-@@ -3072,8 +3071,7 @@ idt77252_dev_open(struct idt77252_dev *card)
+ 	struct hpet_dev *devp;
+@@ -648,6 +649,7 @@ int hpet_unregister(struct hpet_task *tp)
+ 
  	return 0;
  }
++#endif  /*  0  */
  
--void
--idt77252_dev_close(struct atm_dev *dev)
-+static void idt77252_dev_close(struct atm_dev *dev)
- {
- 	struct idt77252_dev *card = dev->dev_data;
- 	u32 conf;
+ static ctl_table hpet_table[] = {
+ 	{
 
