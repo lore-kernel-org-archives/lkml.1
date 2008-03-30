@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758898AbYC3XOf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759263AbYC3XPN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758898AbYC3XOf (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Mar 2008 19:14:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756815AbYC3XNF
+	id S1759263AbYC3XPN (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Mar 2008 19:15:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755811AbYC3XNJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Mar 2008 19:13:05 -0400
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:53920 "EHLO smtp5.pp.htv.fi"
+	Sun, 30 Mar 2008 19:13:09 -0400
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:53922 "EHLO smtp5.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755587AbYC3XND (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Mar 2008 19:13:03 -0400
-Date: Mon, 31 Mar 2008 02:12:50 +0300
+	id S1756836AbYC3XNI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 30 Mar 2008 19:13:08 -0400
+Date: Mon, 31 Mar 2008 02:12:56 +0300
 From: Adrian Bunk <bunk@kernel.org>
 To: linux-kernel@vger.kernel.org
-Subject: [2.6 patch] proper extern for mwave_s_mdd
-Message-ID: <20080330231250.GF28445@cs181133002.pp.htv.fi>
+Subject: [2.6 patch] char/cs5535_gpio.c: don't use 0 as NULL pointer
+Message-ID: <20080330231256.GH28445@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -22,39 +22,24 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds a proper extern for mwave_s_mdd in 
-drivers/char/mwave/mwavedd.h
+Don't use 0 as NULL pointer.
+
+Spotted by sparse.
 
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
-
- drivers/char/mwave/mwavedd.h |    2 ++
- drivers/char/mwave/tp3780i.c |    2 --
- 2 files changed, 2 insertions(+), 2 deletions(-)
-
-5bb7b6d25cce1a8515e448c6dd64bd4da6525c64 diff --git a/drivers/char/mwave/mwavedd.h b/drivers/char/mwave/mwavedd.h
-index 8eca61e..7e0d530 100644
---- a/drivers/char/mwave/mwavedd.h
-+++ b/drivers/char/mwave/mwavedd.h
-@@ -147,4 +147,6 @@ typedef struct _MWAVE_DEVICE_DATA {
+222d75d575dcc142dedce63ffc5d7addc5567ec9 diff --git a/drivers/char/cs5535_gpio.c b/drivers/char/cs5535_gpio.c
+index c2d23ca..c0a4a0b 100644
+--- a/drivers/char/cs5535_gpio.c
++++ b/drivers/char/cs5535_gpio.c
+@@ -215,7 +215,7 @@ static int __init cs5535_gpio_init(void)
+ 	else
+ 		mask = 0x0b003c66;
  
- } MWAVE_DEVICE_DATA, *pMWAVE_DEVICE_DATA;
- 
-+extern MWAVE_DEVICE_DATA mwave_s_mdd;
-+
- #endif
-diff --git a/drivers/char/mwave/tp3780i.c b/drivers/char/mwave/tp3780i.c
-index f282976..c689697 100644
---- a/drivers/char/mwave/tp3780i.c
-+++ b/drivers/char/mwave/tp3780i.c
-@@ -57,8 +57,6 @@
- #include "3780i.h"
- #include "mwavepub.h"
- 
--extern MWAVE_DEVICE_DATA mwave_s_mdd;
--
- static unsigned short s_ausThinkpadIrqToField[16] =
- 	{ 0xFFFF, 0xFFFF, 0xFFFF, 0x0001, 0x0002, 0x0003, 0xFFFF, 0x0004,
- 	0xFFFF, 0xFFFF, 0x0005, 0x0006, 0xFFFF, 0xFFFF, 0xFFFF, 0x0007 };
+-	if (request_region(gpio_base, CS5535_GPIO_SIZE, NAME) == 0) {
++	if (!request_region(gpio_base, CS5535_GPIO_SIZE, NAME)) {
+ 		printk(KERN_ERR NAME ": can't allocate I/O for GPIO\n");
+ 		return -ENODEV;
+ 	}
 
