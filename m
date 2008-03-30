@@ -1,77 +1,421 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752309AbYC3Cz3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752624AbYC3C5U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752309AbYC3Cz3 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Mar 2008 22:55:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751211AbYC3CzQ
+	id S1752624AbYC3C5U (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Mar 2008 22:57:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751214AbYC3C5E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Mar 2008 22:55:16 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:44974 "EHLO smtps.tip.net.au"
+	Sat, 29 Mar 2008 22:57:04 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:33055 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751125AbYC3CzO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Mar 2008 22:55:14 -0400
-Date: Sun, 30 Mar 2008 13:55:02 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       linux-ide@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: linux-next: Tree for March 29
-Message-Id: <20080330135502.ee27f8a4.sfr@canb.auug.org.au>
-In-Reply-To: <20080329191255.7312e036@hskinnemo-gx620.norway.atmel.com>
-References: <20080329223354.304e2722.sfr@canb.auug.org.au>
-	<20080329191255.7312e036@hskinnemo-gx620.norway.atmel.com>
-X-Mailer: Sylpheed 2.5.0beta1 (GTK+ 2.12.9; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Sun__30_Mar_2008_13_55_02_+1100_lge9CGjU60uTTxuw"
+	id S1751212AbYC3C5C (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 29 Mar 2008 22:57:02 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: pm list <linux-pm@lists.linux-foundation.org>
+Subject: Re: [RFC][PATCH 2/3] PM: New suspend and hibernation callbacks for platform bus type (rev. 3)
+Date: Sun, 30 Mar 2008 04:56:29 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Alan Stern <stern@rowland.harvard.edu>, Greg KH <greg@kroah.com>,
+       Len Brown <lenb@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
+       Alexey Starikovskiy <astarikovskiy@suse.de>,
+       David Brownell <david-b@pacbell.net>, Pavel Machek <pavel@ucw.cz>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Oliver Neukum <oliver@neukum.org>
+References: <200803292317.50218.rjw@sisk.pl> <200803292322.05051.rjw@sisk.pl>
+In-Reply-To: <200803292322.05051.rjw@sisk.pl>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-2"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200803300456.30687.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Sun__30_Mar_2008_13_55_02_+1100_lge9CGjU60uTTxuw
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Saturday, 29 of March 2008, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rjw@sisk.pl>
+> 
+> Implement new suspend and hibernation callbacks for the platform bus
+> type.
 
-Hi Haavard,
+I found a bug in this patch.  Namely, platform_legacy_suspend_late() was used
+instead of platform_legacy_suspend() and vice versa in platform_pm_freeze() and
+platform_pm_freeze_noirq().
 
-On Sat, 29 Mar 2008 19:12:55 +0100 Haavard Skinnemoen <haavard.skinnemoen@a=
-tmel.com> wrote:
->
-> I see both avr32 builds currently fail, but for different
-> reasons...none of which is avr32-specific as far as I can tell.
->=20
-> defconfig fails with
->=20
-> drivers/ata/libata-core.c:127: error: 'ata_pci_default_filter' undeclared=
- here (not in a function)
->=20
-> which seems to be due to CONFIG_ATA && !CONFIG_PCI
->=20
-> allnoconfig fails with
->=20
-> include/linux/netdevice.h:843: error: implicit declaration of function 'd=
-ev_net'
->=20
-> which seems to be because the definition of dev_net is inside #ifdef
-> CONFIG_NET, while next_net_device, which calls it, is not.
+Corrected patch follows.
 
-Thanks for tracking these down.
+Thanks,
+Rafael
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+---
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
---Signature=_Sun__30_Mar_2008_13_55_02_+1100_lge9CGjU60uTTxuw
-Content-Type: application/pgp-signature
+Implement new suspend and hibernation callbacks for the platform bus
+type.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ drivers/base/platform.c         |  296 ++++++++++++++++++++++++++++++++++++++--
+ include/linux/platform_device.h |    1 
+ 2 files changed, 289 insertions(+), 8 deletions(-)
 
-iD8DBQFH7wEQTgG2atn1QN8RAitvAKCXVKAM/HHlTiUOCfZjflNSKzmQSwCfYHZy
-RsQXX1qG5JSnx0lYZxfZ7qQ=
-=mrWe
------END PGP SIGNATURE-----
-
---Signature=_Sun__30_Mar_2008_13_55_02_+1100_lge9CGjU60uTTxuw--
+Index: linux-2.6/include/linux/platform_device.h
+===================================================================
+--- linux-2.6.orig/include/linux/platform_device.h
++++ linux-2.6/include/linux/platform_device.h
+@@ -53,6 +53,7 @@ struct platform_driver {
+ 	int (*suspend_late)(struct platform_device *, pm_message_t state);
+ 	int (*resume_early)(struct platform_device *);
+ 	int (*resume)(struct platform_device *);
++	struct pm_ext_ops *pm;
+ 	struct device_driver driver;
+ };
+ 
+Index: linux-2.6/drivers/base/platform.c
+===================================================================
+--- linux-2.6.orig/drivers/base/platform.c
++++ linux-2.6/drivers/base/platform.c
+@@ -453,6 +453,8 @@ int platform_driver_register(struct plat
+ 		drv->driver.suspend = platform_drv_suspend;
+ 	if (drv->resume)
+ 		drv->driver.resume = platform_drv_resume;
++	if (drv->pm)
++		drv->driver.pm = &drv->pm->base;
+ 	return driver_register(&drv->driver);
+ }
+ EXPORT_SYMBOL_GPL(platform_driver_register);
+@@ -560,7 +562,9 @@ static int platform_match(struct device 
+ 	return (strncmp(pdev->name, drv->name, BUS_ID_SIZE) == 0);
+ }
+ 
+-static int platform_suspend(struct device *dev, pm_message_t mesg)
++#ifdef CONFIG_PM_SLEEP
++
++static int platform_legacy_suspend(struct device *dev, pm_message_t mesg)
+ {
+ 	int ret = 0;
+ 
+@@ -570,7 +574,7 @@ static int platform_suspend(struct devic
+ 	return ret;
+ }
+ 
+-static int platform_suspend_late(struct device *dev, pm_message_t mesg)
++static int platform_legacy_suspend_late(struct device *dev, pm_message_t mesg)
+ {
+ 	struct platform_driver *drv = to_platform_driver(dev->driver);
+ 	struct platform_device *pdev;
+@@ -583,7 +587,7 @@ static int platform_suspend_late(struct 
+ 	return ret;
+ }
+ 
+-static int platform_resume_early(struct device *dev)
++static int platform_legacy_resume_early(struct device *dev)
+ {
+ 	struct platform_driver *drv = to_platform_driver(dev->driver);
+ 	struct platform_device *pdev;
+@@ -596,7 +600,7 @@ static int platform_resume_early(struct 
+ 	return ret;
+ }
+ 
+-static int platform_resume(struct device *dev)
++static int platform_legacy_resume(struct device *dev)
+ {
+ 	int ret = 0;
+ 
+@@ -606,15 +610,291 @@ static int platform_resume(struct device
+ 	return ret;
+ }
+ 
++static int platform_pm_prepare(struct device *dev)
++{
++	struct device_driver *drv = dev->driver;
++	int ret = 0;
++
++	if (drv && drv->pm && drv->pm->prepare)
++		ret = drv->pm->prepare(dev);
++
++	return ret;
++}
++
++static void platform_pm_complete(struct device *dev)
++{
++	struct device_driver *drv = dev->driver;
++
++	if (drv && drv->pm && drv->pm->complete)
++		drv->pm->complete(dev);
++}
++
++#ifdef CONFIG_SUSPEND
++
++static int platform_pm_suspend(struct device *dev)
++{
++	struct device_driver *drv = dev->driver;
++	int ret = 0;
++
++	if (drv && drv->pm) {
++		if (drv->pm->suspend)
++			ret = drv->pm->suspend(dev);
++	} else {
++		ret = platform_legacy_suspend(dev, PMSG_SUSPEND);
++	}
++
++	return ret;
++}
++
++static int platform_pm_suspend_noirq(struct device *dev)
++{
++	struct platform_driver *pdrv;
++	int ret = 0;
++
++	if (!dev->driver)
++		return 0;
++
++	pdrv = to_platform_driver(dev->driver);
++	if (pdrv->pm) {
++		if (pdrv->pm->suspend_noirq)
++			ret = pdrv->pm->suspend_noirq(dev);
++	} else {
++		ret = platform_legacy_suspend_late(dev, PMSG_SUSPEND);
++	}
++
++	return ret;
++}
++
++static int platform_pm_resume(struct device *dev)
++{
++	struct device_driver *drv = dev->driver;
++	int ret = 0;
++
++	if (drv && drv->pm) {
++		if (drv->pm->resume)
++			ret = drv->pm->resume(dev);
++	} else {
++		ret = platform_legacy_resume(dev);
++	}
++
++	return ret;
++}
++
++static int platform_pm_resume_noirq(struct device *dev)
++{
++	struct platform_driver *pdrv;
++	int ret = 0;
++
++	if (!dev->driver)
++		return 0;
++
++	pdrv = to_platform_driver(dev->driver);
++	if (pdrv->pm) {
++		if (pdrv->pm->resume_noirq)
++			ret = pdrv->pm->resume_noirq(dev);
++	} else {
++		ret = platform_legacy_resume_early(dev);
++	}
++
++	return ret;
++}
++
++#else /* !CONFIG_SUSPEND */
++
++#define platform_pm_suspend		NULL
++#define platform_pm_resume		NULL
++#define platform_pm_suspend_noirq	NULL
++#define platform_pm_resume_noirq	NULL
++
++#endif /* !CONFIG_SUSPEND */
++
++#ifdef CONFIG_HIBERNATION
++
++static int platform_pm_freeze(struct device *dev)
++{
++	struct device_driver *drv = dev->driver;
++	int ret = 0;
++
++	if (!drv)
++		return 0;
++
++	if (drv->pm) {
++		if (drv->pm->freeze)
++			ret = drv->pm->freeze(dev);
++	} else {
++		ret = platform_legacy_suspend(dev, PMSG_FREEZE);
++	}
++
++	return ret;
++}
++
++static int platform_pm_freeze_noirq(struct device *dev)
++{
++	struct platform_driver *pdrv;
++	int ret = 0;
++
++	if (!dev->driver)
++		return 0;
++
++	pdrv = to_platform_driver(dev->driver);
++	if (pdrv->pm) {
++		if (pdrv->pm->freeze_noirq)
++			ret = pdrv->pm->freeze_noirq(dev);
++	} else {
++		ret = platform_legacy_suspend_late(dev, PMSG_FREEZE);
++	}
++
++	return ret;
++}
++
++static int platform_pm_thaw(struct device *dev)
++{
++	struct device_driver *drv = dev->driver;
++	int ret = 0;
++
++	if (drv && drv->pm) {
++		if (drv->pm->thaw)
++			ret = drv->pm->thaw(dev);
++	} else {
++		ret = platform_legacy_resume(dev);
++	}
++
++	return ret;
++}
++
++static int platform_pm_thaw_noirq(struct device *dev)
++{
++	struct platform_driver *pdrv;
++	int ret = 0;
++
++	if (!dev->driver)
++		return 0;
++
++	pdrv = to_platform_driver(dev->driver);
++	if (pdrv->pm) {
++		if (pdrv->pm->thaw_noirq)
++			ret = pdrv->pm->thaw_noirq(dev);
++	} else {
++		ret = platform_legacy_resume_early(dev);
++	}
++
++	return ret;
++}
++
++static int platform_pm_poweroff(struct device *dev)
++{
++	struct device_driver *drv = dev->driver;
++	int ret = 0;
++
++	if (drv && drv->pm) {
++		if (drv->pm->poweroff)
++			ret = drv->pm->poweroff(dev);
++	} else {
++		ret = platform_legacy_suspend(dev, PMSG_HIBERNATE);
++	}
++
++	return ret;
++}
++
++static int platform_pm_poweroff_noirq(struct device *dev)
++{
++	struct platform_driver *pdrv;
++	int ret = 0;
++
++	if (!dev->driver)
++		return 0;
++
++	pdrv = to_platform_driver(dev->driver);
++	if (pdrv->pm) {
++		if (pdrv->pm->poweroff_noirq)
++			ret = pdrv->pm->poweroff_noirq(dev);
++	} else {
++		ret = platform_legacy_suspend_late(dev, PMSG_HIBERNATE);
++	}
++
++	return ret;
++}
++
++static int platform_pm_restore(struct device *dev)
++{
++	struct device_driver *drv = dev->driver;
++	int ret = 0;
++
++	if (drv && drv->pm) {
++		if (drv->pm->restore)
++			ret = drv->pm->restore(dev);
++	} else {
++		ret = platform_legacy_resume(dev);
++	}
++
++	return ret;
++}
++
++static int platform_pm_restore_noirq(struct device *dev)
++{
++	struct platform_driver *pdrv;
++	int ret = 0;
++
++	if (!dev->driver)
++		return 0;
++
++	pdrv = to_platform_driver(dev->driver);
++	if (pdrv->pm) {
++		if (pdrv->pm->restore_noirq)
++			ret = pdrv->pm->restore_noirq(dev);
++	} else {
++		ret = platform_legacy_resume_early(dev);
++	}
++
++	return ret;
++}
++
++#else /* !CONFIG_HIBERNATION */
++
++#define platform_pm_freeze		NULL
++#define platform_pm_thaw		NULL
++#define platform_pm_poweroff		NULL
++#define platform_pm_restore		NULL
++#define platform_pm_freeze_noirq	NULL
++#define platform_pm_thaw_noirq		NULL
++#define platform_pm_poweroff_noirq	NULL
++#define platform_pm_restore_noirq	NULL
++
++#endif /* !CONFIG_HIBERNATION */
++
++struct pm_ext_ops platform_pm_ops = {
++	.base = {
++		.prepare = platform_pm_prepare,
++		.complete = platform_pm_complete,
++		.suspend = platform_pm_suspend,
++		.resume = platform_pm_resume,
++		.freeze = platform_pm_freeze,
++		.thaw = platform_pm_thaw,
++		.poweroff = platform_pm_poweroff,
++		.restore = platform_pm_restore,
++	},
++	.suspend_noirq = platform_pm_suspend_noirq,
++	.resume_noirq = platform_pm_resume_noirq,
++	.freeze_noirq = platform_pm_freeze_noirq,
++	.thaw_noirq = platform_pm_thaw_noirq,
++	.poweroff_noirq = platform_pm_poweroff_noirq,
++	.restore_noirq = platform_pm_restore_noirq,
++};
++
++#define PLATFORM_PM_OPS_PTR	&platform_pm_ops
++
++#else /* !CONFIG_PM_SLEEP */
++
++#define PLATFORM_PM_OPS_PTR	NULL
++
++#endif /* !CONFIG_PM_SLEEP */
++
+ struct bus_type platform_bus_type = {
+ 	.name		= "platform",
+ 	.dev_attrs	= platform_dev_attrs,
+ 	.match		= platform_match,
+ 	.uevent		= platform_uevent,
+-	.suspend	= platform_suspend,
+-	.suspend_late	= platform_suspend_late,
+-	.resume_early	= platform_resume_early,
+-	.resume		= platform_resume,
++	.pm		= PLATFORM_PM_OPS_PTR,
+ };
+ EXPORT_SYMBOL_GPL(platform_bus_type);
+ 
