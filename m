@@ -1,19 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757583AbYC3WoW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757809AbYC3Woi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757583AbYC3WoW (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Mar 2008 18:44:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756014AbYC3WlL
+	id S1757809AbYC3Woi (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Mar 2008 18:44:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754731AbYC3WlP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Mar 2008 18:41:11 -0400
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:53047 "EHLO smtp5.pp.htv.fi"
+	Sun, 30 Mar 2008 18:41:15 -0400
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:57876 "EHLO smtp6.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755996AbYC3WlK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Mar 2008 18:41:10 -0400
-Date: Mon, 31 Mar 2008 01:40:57 +0300
+	id S1756028AbYC3WlO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 30 Mar 2008 18:41:14 -0400
+Date: Mon, 31 Mar 2008 01:41:01 +0300
 From: Adrian Bunk <bunk@kernel.org>
-To: linux-kernel@vger.kernel.org
-Subject: [2.6 patch] make struct mempolicy.c:default_policy static
-Message-ID: <20080330224057.GN28445@cs181133002.pp.htv.fi>
+To: Greg KH <greg@kroah.com>
+Cc: Andrew Patterson <andrew.patterson@hp.com>, linux-kernel@vger.kernel.org,
+       linux-pci@atrey.karlin.mff.cuni.cz
+Subject: [2.6 patch] pci/pcie/aer/aerdrv_acpi.c: remove unneeded NULL check
+Message-ID: <20080330224101.GO28445@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -22,7 +24,8 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch makes the needlessly global struct default_policy static.
+There's no reason for checking pdev->bus for being NULL here (and we'd 
+anyway Oops 3 lines below if it was).
 
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
@@ -31,29 +34,17 @@ Signed-off-by: Adrian Bunk <bunk@kernel.org>
 This patch has been sent on:
 - 22 Feb 2008
 
-4a69fc08292ebe8b7d202436a71926950a980c21 diff --git a/include/linux/mempolicy.h b/include/linux/mempolicy.h
-index 59c4865..fd20b03 100644
---- a/include/linux/mempolicy.h
-+++ b/include/linux/mempolicy.h
-@@ -149,7 +149,6 @@ extern void mpol_rebind_task(struct task_struct *tsk,
- extern void mpol_rebind_mm(struct mm_struct *mm, nodemask_t *new);
- extern void mpol_fix_fork_child_flag(struct task_struct *p);
+74832021c82be6e2ed6055f4f25dbf152df67cf5 diff --git a/drivers/pci/pcie/aer/aerdrv_acpi.c b/drivers/pci/pcie/aer/aerdrv_acpi.c
+index 8c199ae..1e2a858 100644
+--- a/drivers/pci/pcie/aer/aerdrv_acpi.c
++++ b/drivers/pci/pcie/aer/aerdrv_acpi.c
+@@ -34,7 +34,7 @@ int aer_osc_setup(struct pcie_device *pciedev)
+ 	acpi_handle handle = 0;
  
--extern struct mempolicy default_policy;
- extern struct zonelist *huge_zonelist(struct vm_area_struct *vma,
- 		unsigned long addr, gfp_t gfp_flags, struct mempolicy **mpol);
- extern unsigned slab_node(struct mempolicy *policy);
-diff --git a/mm/mempolicy.c b/mm/mempolicy.c
-index 6c7ba1a..f3118a8 100644
---- a/mm/mempolicy.c
-+++ b/mm/mempolicy.c
-@@ -105,7 +105,7 @@ static struct kmem_cache *sn_cache;
-    policied. */
- enum zone_type policy_zone = 0;
- 
--struct mempolicy default_policy = {
-+static struct mempolicy default_policy = {
- 	.refcnt = ATOMIC_INIT(1), /* never free it */
- 	.policy = MPOL_DEFAULT,
- };
+ 	/* Find root host bridge */
+-	while (pdev->bus && pdev->bus->self)
++	while (pdev->bus->self)
+ 		pdev = pdev->bus->self;
+ 	handle = acpi_get_pci_rootbridge_handle(
+ 		pci_domain_nr(pdev->bus), pdev->bus->number);
 
