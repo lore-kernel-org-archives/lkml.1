@@ -1,273 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754391AbYC3Qy5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753305AbYC3R03@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754391AbYC3Qy5 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Mar 2008 12:54:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753113AbYC3Qys
+	id S1753305AbYC3R03 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Mar 2008 13:26:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751422AbYC3R0U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Mar 2008 12:54:48 -0400
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:40634 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752904AbYC3Qyq (ORCPT
+	Sun, 30 Mar 2008 13:26:20 -0400
+Received: from pne-smtpout4-sn2.hy.skanova.net ([81.228.8.154]:57028 "EHLO
+	pne-smtpout4-sn2.hy.skanova.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751458AbYC3R0T (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Mar 2008 12:54:46 -0400
-Subject: Re: [PATCH 1/2] sysfs: allow the group is_visible() method to
-	return a mode and add an update API
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Greg KH <greg@kroah.com>
-Cc: Hannes Reinecke <hare@suse.de>, Kay Sievers <kay.sievers@vrfy.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <1206208949.4393.25.camel@localhost.localdomain>
-References: <1206134832.2961.64.camel@localhost.localdomain>
-	 <20080321222635.GA2674@kroah.com>
-	 <1206208949.4393.25.camel@localhost.localdomain>
-Content-Type: text/plain
-Date: Sun, 30 Mar 2008 11:54:42 -0500
-Message-Id: <1206896083.4224.40.camel@localhost.localdomain>
+	Sun, 30 Mar 2008 13:26:19 -0400
+Date: Sun, 30 Mar 2008 20:26:08 +0300
+From: Pekka Paalanen <pq@iki.fi>
+To: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
+Cc: Pekka Paalanen <pq@iki.fi>, Christoph Hellwig <hch@infradead.org>,
+       Arjan van de Ven <arjan@infradead.org>, Pavel Roskin <proski@gnu.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, penberg@cs.helsinki.fi,
+       vegard.nossum@gmail.com
+Subject: Re: mmiotrace bug: recursive probe hit
+Message-ID: <20080330202608.054702a4@daedalus.pq.iki.fi>
+In-Reply-To: <20080328222500.21863a44@daedalus.pq.iki.fi>
+References: <20080309164050.2194461e@daedalus.pq.iki.fi>
+	<20080328222500.21863a44@daedalus.pq.iki.fi>
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.8; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-3.fc8) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2008-03-22 at 13:02 -0500, James Bottomley wrote:
-> On Fri, 2008-03-21 at 15:26 -0700, Greg KH wrote:
-> > On Fri, Mar 21, 2008 at 04:27:12PM -0500, James Bottomley wrote:
-> > > We have a problem in scsi_transport_spi in that we need to customise
-> > > not only the visibility of the attributes, but also their mode.  Fix
-> > > this by making the is_visible() callback return a mode, with 0
-> > > indicating is not visible.
-> > > 
-> > > Also add a sysfs_update_group() API to allow us to change either the
-> > > visibility or mode of the files at any time on the fly.
-> > > 
-> > > Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
-> > > ---
-> > > 
-> > > Greg, can I take this through SCSI, please ... assuming it's OK?  We
-> > > need this to fix up the SPI transport class.
-> > 
-> > Sure.  But can you document that "update" field a bit more so we can
-> > remember what it means in the future?
-> 
-> How about this?  I also added docbook for create and update attribute
-> group.
+On Fri, 28 Mar 2008 22:25:00 +0200
+Pekka Paalanen <pq@iki.fi> wrote:
 
-Can I get an ACK from someone from sysfs for this, please?
+> A recursive probe hit means that kmmio_handler() is called twice without a
+> a call to post_kmmio_handler() in between. This situation is explicitly
+> checked for (if (ctx->active)), and the current solution is to ignore the
+> fault and fall through to do_page_fault() triggering an error there.
+> According to experience, this does not happen on a uniprocessor machine.
+> 
+> However, on an SMP machine this can occasionally occur. I have reproduced
+> it on my Core 2 Duo laptop while tracing the blob. Recursive probe hit
+> is very rare compared to the events logged, I can run two glxgears at the
+> same time for half an hour generating at least millions of events and never
+> hit it. Repeatedly start and stop a single glxgears, and I have a fairly
+> good chance of hitting it. It is random, but reproducible.
 
-James
+It appears this happens:
 
-> James
-> 
-> ---
-> 
-> From: James Bottomley <James.Bottomley@HansenPartnership.com>
-> Date: Thu, 20 Mar 2008 20:47:52 -0500
-> Subject: [SCSI] sysfs: make group is_valid return a mode_t
-> 
-> We have a problem in scsi_transport_spi in that we need to customise
-> not only the visibility of the attributes, but also their mode.  Fix
-> this by making the is_visible() callback return a mode, with 0
-> indicating is not visible.
-> 
-> Also add a sysfs_update_group() API to allow us to change either the
-> visibility or mode of the files at any time on the fly.
-> 
-> Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
-> ---
->  fs/sysfs/file.c       |   14 ++++++--
->  fs/sysfs/group.c      |   77 +++++++++++++++++++++++++++++++++++++++++-------
->  fs/sysfs/sysfs.h      |    2 +
->  include/linux/sysfs.h |    4 ++-
->  4 files changed, 80 insertions(+), 17 deletions(-)
-> 
-> diff --git a/fs/sysfs/file.c b/fs/sysfs/file.c
-> index 6f5954a..8f7ee10 100644
-> --- a/fs/sysfs/file.c
-> +++ b/fs/sysfs/file.c
-> @@ -490,11 +490,10 @@ const struct file_operations sysfs_file_operations = {
->  	.poll		= sysfs_poll,
->  };
->  
-> -
-> -int sysfs_add_file(struct sysfs_dirent *dir_sd, const struct attribute *attr,
-> -		   int type)
-> +int sysfs_add_file_mode(struct sysfs_dirent *dir_sd,
-> +			const struct attribute *attr, int type, mode_t amode)
->  {
-> -	umode_t mode = (attr->mode & S_IALLUGO) | S_IFREG;
-> +	umode_t mode = (amode & S_IALLUGO) | S_IFREG;
->  	struct sysfs_addrm_cxt acxt;
->  	struct sysfs_dirent *sd;
->  	int rc;
-> @@ -515,6 +514,13 @@ int sysfs_add_file(struct sysfs_dirent *dir_sd, const struct attribute *attr,
->  }
->  
-> 
-> +int sysfs_add_file(struct sysfs_dirent *dir_sd, const struct attribute *attr,
-> +		   int type)
-> +{
-> +	return sysfs_add_file_mode(dir_sd, attr, type, attr->mode);
-> +}
-> +
-> +
->  /**
->   *	sysfs_create_file - create an attribute file for an object.
->   *	@kobj:	object we're creating for. 
-> diff --git a/fs/sysfs/group.c b/fs/sysfs/group.c
-> index 4779049..dac9383 100644
-> --- a/fs/sysfs/group.c
-> +++ b/fs/sysfs/group.c
-> @@ -23,30 +23,41 @@ static void remove_files(struct sysfs_dirent *dir_sd, struct kobject *kobj,
->  	int i;
->  
->  	for (i = 0, attr = grp->attrs; *attr; i++, attr++)
-> -		if (!grp->is_visible ||
-> -		    grp->is_visible(kobj, *attr, i))
-> -			sysfs_hash_and_remove(dir_sd, (*attr)->name);
-> +		sysfs_hash_and_remove(dir_sd, (*attr)->name);
->  }
->  
->  static int create_files(struct sysfs_dirent *dir_sd, struct kobject *kobj,
-> -			const struct attribute_group *grp)
-> +			const struct attribute_group *grp, int update)
->  {
->  	struct attribute *const* attr;
->  	int error = 0, i;
->  
-> -	for (i = 0, attr = grp->attrs; *attr && !error; i++, attr++)
-> -		if (!grp->is_visible ||
-> -		    grp->is_visible(kobj, *attr, i))
-> -			error |=
-> -				sysfs_add_file(dir_sd, *attr, SYSFS_KOBJ_ATTR);
-> +	for (i = 0, attr = grp->attrs; *attr && !error; i++, attr++) {
-> +		mode_t mode = 0;
-> +
-> +		/* in update mode, we're changing the permissions or
-> +		 * visibility.  Do this by first removing then
-> +		 * re-adding (if required) the file */
-> +		if (update)
-> +			sysfs_hash_and_remove(dir_sd, (*attr)->name);
-> +		if (grp->is_visible) {
-> +			mode = grp->is_visible(kobj, *attr, i);
-> +			if (!mode)
-> +				continue;
-> +		}
-> +		error = sysfs_add_file_mode(dir_sd, *attr, SYSFS_KOBJ_ATTR,
-> +					    (*attr)->mode | mode);
-> +		if (unlikely(error))
-> +			break;
-> +	}
->  	if (error)
->  		remove_files(dir_sd, kobj, grp);
->  	return error;
->  }
->  
-> 
-> -int sysfs_create_group(struct kobject * kobj, 
-> -		       const struct attribute_group * grp)
-> +static int internal_create_group(struct kobject *kobj, int update,
-> +				 const struct attribute_group *grp)
->  {
->  	struct sysfs_dirent *sd;
->  	int error;
-> @@ -60,7 +71,7 @@ int sysfs_create_group(struct kobject * kobj,
->  	} else
->  		sd = kobj->sd;
->  	sysfs_get(sd);
-> -	error = create_files(sd, kobj, grp);
-> +	error = create_files(sd, kobj, grp, update);
->  	if (error) {
->  		if (grp->name)
->  			sysfs_remove_subdir(sd);
-> @@ -69,6 +80,47 @@ int sysfs_create_group(struct kobject * kobj,
->  	return error;
->  }
->  
-> +/**
-> + * sysfs_create_group - given a directory kobject, create an attribute group
-> + * @kobj:	The kobject to create the group on
-> + * @grp:	The attribute group to create
-> + *
-> + * This function creates a group for the first time.  It will explicitly
-> + * warn and error if any of the attribute files being created already exist.
-> + *
-> + * Returns 0 on success or error.
-> + */
-> +int sysfs_create_group(struct kobject *kobj,
-> +		       const struct attribute_group *grp)
-> +{
-> +	return internal_create_group(kobj, 0, grp);
-> +}
-> +
-> +/**
-> + * sysfs_update_group - given a directory kobject, create an attribute group
-> + * @kobj:	The kobject to create the group on
-> + * @grp:	The attribute group to create
-> + *
-> + * This function updates an attribute group.  Unlike
-> + * sysfs_create_group(), it will explicitly not warn or error if any
-> + * of the attribute files being created already exist.  Furthermore,
-> + * if the visibility of the files has changed through the is_visible()
-> + * callback, it will update the permissions and add or remove the
-> + * relevant files.
-> + *
-> + * The primary use for this function is to call it after making a change
-> + * that affects group visibility.
-> + *
-> + * Returns 0 on success or error.
-> + */
-> +int sysfs_update_group(struct kobject *kobj,
-> +		       const struct attribute_group *grp)
-> +{
-> +	return internal_create_group(kobj, 1, grp);
-> +}
-> +
-> +
-> +
->  void sysfs_remove_group(struct kobject * kobj, 
->  			const struct attribute_group * grp)
->  {
-> @@ -95,4 +147,5 @@ void sysfs_remove_group(struct kobject * kobj,
->  
-> 
->  EXPORT_SYMBOL_GPL(sysfs_create_group);
-> +EXPORT_SYMBOL_GPL(sysfs_update_group);
->  EXPORT_SYMBOL_GPL(sysfs_remove_group);
-> diff --git a/fs/sysfs/sysfs.h b/fs/sysfs/sysfs.h
-> index 52aaa8c..2915959 100644
-> --- a/fs/sysfs/sysfs.h
-> +++ b/fs/sysfs/sysfs.h
-> @@ -155,6 +155,8 @@ extern const struct file_operations sysfs_file_operations;
->  int sysfs_add_file(struct sysfs_dirent *dir_sd,
->  		   const struct attribute *attr, int type);
->  
-> +int sysfs_add_file_mode(struct sysfs_dirent *dir_sd,
-> +			const struct attribute *attr, int type, mode_t amode);
->  /*
->   * bin.c
->   */
-> diff --git a/include/linux/sysfs.h b/include/linux/sysfs.h
-> index 0f388af..07d9c12 100644
-> --- a/include/linux/sysfs.h
-> +++ b/include/linux/sysfs.h
-> @@ -32,7 +32,7 @@ struct attribute {
->  
->  struct attribute_group {
->  	const char		*name;
-> -	int			(*is_visible)(struct kobject *,
-> +	mode_t			(*is_visible)(struct kobject *,
->  					      struct attribute *, int);
->  	struct attribute	**attrs;
->  };
-> @@ -105,6 +105,8 @@ void sysfs_remove_link(struct kobject *kobj, const char *name);
->  
->  int __must_check sysfs_create_group(struct kobject *kobj,
->  				    const struct attribute_group *grp);
-> +int sysfs_update_group(struct kobject *kobj,
-> +		       const struct attribute_group *grp);
->  void sysfs_remove_group(struct kobject *kobj,
->  			const struct attribute_group *grp);
->  int sysfs_add_file_to_group(struct kobject *kobj,
+          CPU 0           CPU 1
+ ,--->  fault           fault
+ |      disarm          disarm
+ |                      single step
+ |                      arm
+ |      single step
+ '--------'
+        arm
 
+and the both cpus are faulting on the same page. I guess one cpu is running
+an nvidia interrupt service.
+I see three possible solutions:
+
+A) Like in this patch, just disarm again and hope for the best.
+Seems to work ok. I also compare the fault address to the saved address
+ctx->addr. If they are equal, it is a "double probe hit" and harmless.
+If they are not equal, it is a real "recursive probe hit" and something
+more is wrong. With these definitions, recursive probe hits are gone in
+my experiments on Intel Core 2 Duo.
+
+> Next, after discussion with Enberg and Nossum, I tried the following patch:
+> 
+> @@ -272,6 +272,9 @@ int kmmio_handler(struct pt_regs *regs, unsigned long addr)
+>                 pr_emerg("kmmio: recursive probe hit on CPU %d, "
+>                                         "for address 0x%08lx. Ignoring.\n",
+>                                         smp_processor_id(), addr);
+> +               pr_emerg("kmmio: previous hit was at 0x%08lx.\n",
+> +                                       ctx->addr);
+> +               disarm_kmmio_fault_page(faultpage->page, NULL);
+>                 goto no_kmmio_ctx;
+>         }
+>         ctx->active++;
+
+B) Acquire a spinlock in kmmio_handler() and release it in
+post_kmmio_handler(). I don't like this one since I spent some effort
+making the fault path spinlockless, but at least this would be a
+completely separate spinlock. Or we could use per-page spinlocks.
+
+C) Vegard mentioned something about per-cpu page tables for kmemcheck.
+This would be the ultimate solution, because it would solve two problems:
+- recursive probe hits
+- missed events due to another cpu disarming the page for single stepping
+Would it be possible to have a single temporary per-cpu pte?
+
+I understood kmemcheck has similar issues. Of course, one could force the
+system down to a single running CPU, but that feels nasty.
+
+Which way to go?
+I choose A) as the current workaround, keeping in mind that I will loose
+events on SMP. C) would be the only reliable SMP solution on tracing point
+of view.
+
+
+Thanks.
+
+-- 
+Pekka Paalanen
+http://www.iki.fi/pq/
