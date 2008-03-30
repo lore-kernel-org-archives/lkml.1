@@ -1,92 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752471AbYC3JNX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752507AbYC3JXe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752471AbYC3JNX (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Mar 2008 05:13:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751295AbYC3JNO
+	id S1752507AbYC3JXe (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Mar 2008 05:23:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751274AbYC3JXY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Mar 2008 05:13:14 -0400
-Received: from mx4.orcon.net.nz ([219.88.242.54]:54837 "EHLO mx4.orcon.net.nz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751289AbYC3JNN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Mar 2008 05:13:13 -0400
-Message-ID: <47EF59A4.4070300@orcon.net.nz>
-Date: Sun, 30 Mar 2008 22:13:08 +1300
-From: Michael Cree <mcree@orcon.net.nz>
-User-Agent: Mozilla-Thunderbird 2.0.0.9 (X11/20080110)
+	Sun, 30 Mar 2008 05:23:24 -0400
+Received: from e28smtp06.in.ibm.com ([59.145.155.6]:58180 "EHLO
+	e28smtp06.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751066AbYC3JXX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 30 Mar 2008 05:23:23 -0400
+Date: Sun, 30 Mar 2008 14:53:17 +0530
+From: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+To: Jiri Kosina <jkosina@suse.cz>
+Cc: Richard Jonsson <richie@coderworld.net>, linux-kernel@vger.kernel.org
+Subject: Re: Keyboard weirdness: keys get stuck
+Message-ID: <20080330092317.GD30270@linux.vnet.ibm.com>
+Reply-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+References: <47EEA097.5000701@coderworld.net> <47EEC51C.2060806@coderworld.net> <Pine.LNX.4.64.0803300603110.32241@twin.jikos.cz>
 MIME-Version: 1.0
-To: Rene Herman <rene.herman@keyaccess.nl>
-CC: Bob Tracy <rct@frus.com>, Takashi Iwai <tiwai@suse.de>,
-       ALSA devel <alsa-devel@alsa-project.org>, linux-kernel@vger.kernel.org,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>, linux-alpha@vger.kernel.org,
-       Krzysztof Helt <krzysztof.h1@wp.pl>
-Subject: Re: [alsa-devel] [regression] 2.6.25-rc4 snd-es18xx broken on Alpha
-References: <20080318032427.298BCDBA2@gherkin.frus.com> <546A47FE-F98E-49E2-A250-41F65C2D482B@orcon.net.nz> <47E6338E.8030001@orcon.net.nz> <47E7EFDF.2070706@keyaccess.nl> <47E83F94.8010409@orcon.net.nz> <47E8475E.4080705@keyaccess.nl> <47E853F2.7020608@orcon.net.nz> <47E86203.5090805@keyaccess.nl>
-In-Reply-To: <47E86203.5090805@keyaccess.nl>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
-X-DSPAM-Check: by mx4.orcon.net.nz on Sun, 30 Mar 2008 22:13:10 +1300
-X-DSPAM-Result: Innocent
-X-DSPAM-Processed: Sun Mar 30 22:13:10 2008
-X-DSPAM-Confidence: 0.7577
-X-DSPAM-Improbability: 1 in 314 chance of being spam
-X-DSPAM-Probability: 0.0000
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0803300603110.32241@twin.jikos.cz>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rene Herman wrote:
-> On 25-03-08 02:22, Michael Cree wrote:
+On Sun, Mar 30, 2008 at 06:04:52AM +0200, Jiri Kosina wrote:
+> On Sat, 29 Mar 2008, Richard Jonsson wrote:
 > 
->>> should do it. Here's a file Bob passed me as a problematic one. 
->>> 8-bit, 11025, mono:
->>>
->>> http://members.home.nl/rene.herman/asskickd.wav
->>
->> Right, got that.  On the PWS600au it shows the same problems that Bob 
->> describes!  When I play it with aplay (through the es1887) I get the 
->> last "pal" repeated at the end.  When I play it with sox (also through 
->> the es1887) I get the words "current event" repeated at the end.
->> 
-> Lovely, so different problem between you and Bob. When you (either of 
-> you) have some time for it again, could you try:
+> > > With 2.6.25-rc6-git-something I have experienced stuck keys. When typing a
+> > > sentence a character repeats aboooooooout 10 times, or as 'about' above ;).
+> > > I tested with a new kernel today, 2.6.25-rc7-git-something and the problem
+> > > is still present.
+> > > With 2.6.25-rc3 the keyboard is fine, and I've not tried with any kernel in
+> > > between.
+> > > As a side note, timestamps gets mixed up in dmesg output in a 1-2 second
+> > > span. Maybe related?
+> > > This is on a HP dv2140eu laptop, x86_64 SMP. Please cc me if you want
+> > > configuration details or testing to be done.
+> > I should add that while watching a movie I noticed that video stutters every
+> > now and then, on an irregular basis. It lasts for approx a second each time.
 > 
-> $ sox asskickd.wav -w -t alsa hw
-
-Exactly the same as without the -w option.  (BTW, I would've never have 
-guessed the -w option; my man file has -2 for conversion to 16 bit.)
-
-> $ sox asskickd.wav -w -r 44100 -t alsa hw
-
-The words "current event" are no longer repeated at the end of playing. 
-  There is a click at the end of playing - hard to know whether it 
-started to repeat something or whether it is truly at the end of the 
-sound file.
-
-> $ sox asskickd.wav -w -r 44100 -c 2 -t alsa hw
-
-Repeats the "al" bit of the last word "pal" at the end of playing.
-
->> I suspect you are right - the symptoms I have observed (complete 
->> system crashes) are separate from what Bob observes.  One question I 
->> have is what is different about Bob's set up that enables the sound to 
->> work with mmap?
+> Hi Richard,
 > 
-> Not a clue. Takashi -- is it possible that Bob wasn't using mmap to 
-> being with if he didn't do anything specific to not do so?
+> what does your .config look like? Do you have CONFIG_GCGROUP_SCHED 
+> enabled? (please note that this is different from CONFIG_GROUP_SCHED). If 
+> so, please try to reproduce without it.
 > 
-> And perhaps you guys have firmware settable options that touch that area 
-> of coherent DMA? Maybe even a specific chipset bug on his machine? No 
-> idea how different/similar your machines are...
 
-I have another PWS600au - a little older than the one I was testing on. 
-  It is slightly different in that its scsi controller is a separate 
-board in a PCI slot, rather than on the motherboard.  Also has an 
-ESS1888 rather than an ESS1887.  Just installed the same OS and kernel 
-on it.
+CGROUP_SCHED depends on GROUP_SCHED. The stutters are not due to the
+group scheduling extensions. (or the scheduler AFAICT).
 
-Tried playing sound.  What a mess. Crashes with mmap on.  Installed the 
-patch turning off mmap.   Just produces buzzes and fart noises whatever 
-sound file I try to play; both with aplay and sox.
-
-Michael.
-
+Thanks,
+-- 
+regards,
+Dhaval
