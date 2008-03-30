@@ -1,94 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753378AbYC2Xyy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751663AbYC3ABu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753378AbYC2Xyy (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Mar 2008 19:54:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751787AbYC2Xyp
+	id S1751663AbYC3ABu (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Mar 2008 20:01:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750822AbYC3ABk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Mar 2008 19:54:45 -0400
-Received: from smtprelay07.ispgateway.de ([80.67.29.7]:49871 "EHLO
-	smtprelay07.ispgateway.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751211AbYC2Xyp (ORCPT
+	Sat, 29 Mar 2008 20:01:40 -0400
+Received: from proxy1.bredband.net ([195.54.101.71]:51751 "EHLO
+	proxy1.bredband.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750909AbYC3ABk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Mar 2008 19:54:45 -0400
-X-Greylist: delayed 327 seconds by postgrey-1.27 at vger.kernel.org; Sat, 29 Mar 2008 19:54:44 EDT
-Date: Sun, 30 Mar 2008 00:49:44 +0100
-From: Andreas Mueller <andreas@stapelspeicher.org>
-To: linux-kernel@vger.kernel.org
-Cc: MatzeBraun@gmx.de, tiwai@suse.de
-Subject: [PATCH] es1968: fix jitter on some maestro cards
-Message-ID: <20080329234943.GA2899@slappy>
+	Sat, 29 Mar 2008 20:01:40 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AqdlAFZ17kdT48OPPGdsb2JhbACBWoZViQkBAQEBMJZ8
+Message-ID: <47EED858.7010605@coderworld.net>
+Date: Sun, 30 Mar 2008 01:01:28 +0100
+From: Richard Jonsson <richie@coderworld.net>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="CE+1k2dSO48ffgeK"
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-Df-Sender: 399301
+To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+CC: linux-kernel@vger.kernel.org,
+       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: Keyboard weirdness: keys get stuck
+References: <47EEA097.5000701@coderworld.net> <47EEC51C.2060806@coderworld.net> <20080329234358.GA28667@linux.vnet.ibm.com>
+In-Reply-To: <20080329234358.GA28667@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Dhaval Giani skrev:
+> On Sat, Mar 29, 2008 at 11:39:24PM +0100, Richard Jonsson wrote:
+>> Richard Jonsson skrev:
+>>> With 2.6.25-rc6-git-something I have experienced stuck keys. When typing a 
+>>>  sentence a character repeats aboooooooout 10 times, or as 'about' above 
+>>> ;). I tested with a new kernel today, 2.6.25-rc7-git-something and the 
+>>> problem is still present.
+>>>
+>>> With 2.6.25-rc3 the keyboard is fine, and I've not tried with any kernel 
+>>> in between.
+>>>
+>>> As a side note, timestamps gets mixed up in dmesg output in a 1-2 second 
+>>> span. Maybe related?
+>>>
+>>> This is on a HP dv2140eu laptop, x86_64 SMP. Please cc me if you want 
+>>> configuration details or testing to be done.
+>>>
+>> I should add that while watching a movie I noticed that video stutters 
+>> every now and then, on an irregular basis. It lasts for approx a second 
+>> each time.
+> 
+> Can you check if you have CONFIG_GROUP_SCHED enabled? If so, can you
+> disable and test?
+> 
 
---CE+1k2dSO48ffgeK
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Yes it's enabled, will try without groupsched.
 
-This patch suppresses jitter on several Maestro cards in stereo mode
-(ALSA of course).
-
-The patch is also incorporated in the *BSD drivers where I "ported" it from.
-I am barely used to driver-development so please take a look (esp. the channel
-parameters), nevertheless it completely works for me.
-
-Without this patch most of the stereo audio gets out of sync and really
-distorted (oss-emulation with mplayer at 48000khz worked somehow).
-
-CCed to those listed in the .c file.
-
-Yours sincerely,
-Andreas Mueller.
-
---CE+1k2dSO48ffgeK
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="es1968_jitter.patch"
-
---- sound/pci/es1968.c.old	2008-03-29 19:17:16.771116317 +0100
-+++ sound/pci/es1968.c	2008-03-30 00:14:35.363057160 +0100
-@@ -1816,7 +1816,24 @@
- 
- 	return 0;
- }
-+/*
-+ * suppress jitter on some maestros when playing stereo
-+ */
-+static void snd_es1968_suppress_jitter(struct es1968 *chip, struct esschan *es)
-+{
-+	unsigned int cp1;
-+	unsigned int cp2;
-+	unsigned int diff;
- 
-+	cp1 = __apu_get_register(chip, 0, 5);
-+	cp2 = __apu_get_register(chip, 1, 5);
-+	diff = (cp1 > cp2 ? cp1 - cp2 : cp2 - cp1);
-+	
-+	if (diff > 1) {
-+		__maestro_write(chip, IDR0_DATA_PORT, cp1);
-+	}
-+}
-+	
- /*
-  * update pointer
-  */
-@@ -1937,8 +1954,11 @@
- 		struct esschan *es;
- 		spin_lock(&chip->substream_lock);
- 		list_for_each_entry(es, &chip->substream_list, list) {
--			if (es->running)
-+			if (es->running) {
- 				snd_es1968_update_pcm(chip, es);
-+				if (es->fmt & ESS_FMT_STEREO)
-+					snd_es1968_suppress_jitter(chip, es);
-+			}
- 		}
- 		spin_unlock(&chip->substream_lock);
- 		if (chip->in_measurement) {
-
---CE+1k2dSO48ffgeK--
+regards, Richard
