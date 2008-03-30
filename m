@@ -1,246 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753940AbYC3Pu1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753830AbYC3QK0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753940AbYC3Pu1 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Mar 2008 11:50:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752781AbYC3PuT
+	id S1753830AbYC3QK0 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Mar 2008 12:10:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752560AbYC3QKO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Mar 2008 11:50:19 -0400
-Received: from jurassic.park.msu.ru ([195.208.223.243]:46002 "EHLO
-	jurassic.park.msu.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752762AbYC3PuS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Mar 2008 11:50:18 -0400
-Date: Sun, 30 Mar 2008 19:50:14 +0400
-From: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-To: Greg KH <gregkh@suse.de>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Gary Hade <garyhade@us.ibm.com>, linux-kernel@vger.kernel.org
-Subject: [PATCH] PCI: clean up resource alignment management
-Message-ID: <20080330155014.GB24201@jurassic.park.msu.ru>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Sun, 30 Mar 2008 12:10:14 -0400
+Received: from gateway.drzeus.cx ([85.8.24.16]:60318 "EHLO smtp.drzeus.cx"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752550AbYC3QKN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 30 Mar 2008 12:10:13 -0400
+Date: Sun, 30 Mar 2008 18:10:05 +0200
+From: Pierre Ossman <drzeus-list@drzeus.cx>
+To: Carlos Aguiar <carlos.aguiar@indt.org.br>
+Cc: Tony Lindgren <tony@atomide.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 00/18] MMC: OMAP: Sync MMC OMAP driver with mainline
+ tree
+Message-ID: <20080330181005.04603a8a@mjolnir.drzeus.cx>
+In-Reply-To: <47EAAD44.8000908@indt.org.br>
+References: <47DAD39C.90405@indt.org.br>
+	<20080324132631.1e0d2125@mjolnir.drzeus.cx>
+	<47EAAD44.8000908@indt.org.br>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Done per Linus' request and suggestions. Linus has explained that
-better than I'll be able to explain:
+On Wed, 26 Mar 2008 16:08:36 -0400
+Carlos Aguiar <carlos.aguiar@indt.org.br> wrote:
 
-On Thu, Mar 27, 2008 at 10:12:10AM -0700, Linus Torvalds wrote:
-> Actually, before we go any further, there might be a less intrusive
-> alternative: add just a couple of flags to the resource flags field (we
-> still have something like 8 unused bits on 32-bit), and use those to
-> implement a generic "resource_alignment()" routine.
->
-> Two flags would do it:
->
->  - IORESOURCE_SIZEALIGN: size indicates alignment (regular PCI device
->    resources)
->
->  - IORESOURCE_STARTALIGN: start field is alignment (PCI bus resources
->    during probing)
->
-> and then the case of both flags zero (or both bits set) would actually be
-> "invalid", and we would also clear the IORESOURCE_STARTALIGN flag when we
-> actually allocate the resource (so that we don't use the "start" field as
-> alignment incorrectly when it no longer indicates alignment).
->
-> That wouldn't be totally generic, but it would have the nice property of
-> automatically at least add sanity checking for that whole "res->start has
-> the odd meaning of 'alignment' during probing" and remove the need for a
-> new field, and it would allow us to have a generic "resource_alignment()"
-> routine that just gets a resource pointer.
+> 
+> So, feel free to queue it up.
+> 
 
-Besides, I removed IORESOURCE_BUS_HAS_VGA flag which was unused for ages.
+All done. Will be in 2.6.26.
 
-Signed-off-by: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
----
- drivers/pci/probe.c     |    5 +++--
- drivers/pci/setup-bus.c |    3 +++
- drivers/pci/setup-res.c |   42 +++++++++++++++++++++++-------------------
- include/linux/ioport.h  |    5 ++++-
- kernel/resource.c       |   18 ++++++++++++++++++
- 5 files changed, 51 insertions(+), 22 deletions(-)
 
-diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
-index 2db2e4b..152ffa2 100644
---- a/drivers/pci/probe.c
-+++ b/drivers/pci/probe.c
-@@ -225,7 +225,7 @@ static void pci_read_bases(struct pci_dev *dev, unsigned int howmany, int rom)
- 			res->flags |= l & ~PCI_BASE_ADDRESS_IO_MASK;
- 		}
- 		res->end = res->start + (unsigned long) sz;
--		res->flags |= pci_calc_resource_flags(l);
-+		res->flags |= pci_calc_resource_flags(l) | IORESOURCE_SIZEALIGN;
- 		if (is_64bit_memory(l)) {
- 			u32 szhi, lhi;
- 
-@@ -278,7 +278,8 @@ static void pci_read_bases(struct pci_dev *dev, unsigned int howmany, int rom)
- 			if (sz) {
- 				res->flags = (l & IORESOURCE_ROM_ENABLE) |
- 				  IORESOURCE_MEM | IORESOURCE_PREFETCH |
--				  IORESOURCE_READONLY | IORESOURCE_CACHEABLE;
-+				  IORESOURCE_READONLY | IORESOURCE_CACHEABLE |
-+				  IORESOURCE_SIZEALIGN;
- 				res->start = l & PCI_ROM_ADDRESS_MASK;
- 				res->end = res->start + (unsigned long) sz;
- 			}
-diff --git a/drivers/pci/setup-bus.c b/drivers/pci/setup-bus.c
-index f7cb8e0..5cf8456 100644
---- a/drivers/pci/setup-bus.c
-+++ b/drivers/pci/setup-bus.c
-@@ -65,6 +65,7 @@ static void pbus_assign_resources_sorted(struct pci_bus *bus)
- 		res = list->res;
- 		idx = res - &list->dev->resource[0];
- 		if (pci_assign_resource(list->dev, idx)) {
-+			/* FIXME: get rid of this */
- 			res->start = 0;
- 			res->end = 0;
- 			res->flags = 0;
-@@ -327,6 +328,7 @@ static void pbus_size_io(struct pci_bus *bus)
- 	/* Alignment of the IO window is always 4K */
- 	b_res->start = 4096;
- 	b_res->end = b_res->start + size - 1;
-+	b_res->flags |= IORESOURCE_STARTALIGN;
- }
- 
- /* Calculate the size of the bus and minimal alignment which
-@@ -401,6 +403,7 @@ static int pbus_size_mem(struct pci_bus *bus, unsigned long mask, unsigned long
- 	}
- 	b_res->start = min_align;
- 	b_res->end = size + min_align - 1;
-+	b_res->flags |= IORESOURCE_STARTALIGN;
- 	return 1;
- }
- 
-diff --git a/drivers/pci/setup-res.c b/drivers/pci/setup-res.c
-index 4be7ccf..99f8659 100644
---- a/drivers/pci/setup-res.c
-+++ b/drivers/pci/setup-res.c
-@@ -137,10 +137,16 @@ int pci_assign_resource(struct pci_dev *dev, int resno)
- 
- 	size = res->end - res->start + 1;
- 	min = (res->flags & IORESOURCE_IO) ? PCIBIOS_MIN_IO : PCIBIOS_MIN_MEM;
--	/* The bridge resources are special, as their
--	   size != alignment. Sizing routines return
--	   required alignment in the "start" field. */
--	align = (resno < PCI_BRIDGE_RESOURCES) ? size : res->start;
-+
-+	align = resource_alignment(res);
-+	if (!align) {
-+		printk(KERN_ERR "PCI: Cannot allocate resource (bogus "
-+			"alignment) %d [%llx:%llx] (flags %lx) of %s\n",
-+			resno, (unsigned long long)res->start,
-+			(unsigned long long)res->end, res->flags,
-+			pci_name(dev));
-+		return -EINVAL;
-+	}
- 
- 	/* First, try exact prefetching match.. */
- 	ret = pci_bus_alloc_resource(bus, res, size, align, min,
-@@ -164,8 +170,10 @@ int pci_assign_resource(struct pci_dev *dev, int resno)
- 			res->flags & IORESOURCE_IO ? "I/O" : "mem",
- 			resno, (unsigned long long)size,
- 			(unsigned long long)res->start, pci_name(dev));
--	} else if (resno < PCI_BRIDGE_RESOURCES) {
--		pci_update_resource(dev, res, resno);
-+	} else {
-+		res->flags &= ~IORESOURCE_STARTALIGN;
-+		if (resno < PCI_BRIDGE_RESOURCES)
-+			pci_update_resource(dev, res, resno);
- 	}
- 
- 	return ret;
-@@ -226,29 +234,25 @@ void pdev_sort_resources(struct pci_dev *dev, struct resource_list *head)
- 		if (r->flags & IORESOURCE_PCI_FIXED)
- 			continue;
- 
--		r_align = r->end - r->start;
--		
- 		if (!(r->flags) || r->parent)
- 			continue;
-+
-+		r_align = resource_alignment(r);
- 		if (!r_align) {
--			printk(KERN_WARNING "PCI: Ignore bogus resource %d "
--				"[%llx:%llx] of %s\n",
-+			printk(KERN_WARNING "PCI: bogus alignment of resource "
-+				"%d [%llx:%llx] (flags %lx) of %s\n",
- 				i, (unsigned long long)r->start,
--				(unsigned long long)r->end, pci_name(dev));
-+				(unsigned long long)r->end, r->flags,
-+				pci_name(dev));
- 			continue;
- 		}
--		r_align = (i < PCI_BRIDGE_RESOURCES) ? r_align + 1 : r->start;
- 		for (list = head; ; list = list->next) {
- 			resource_size_t align = 0;
- 			struct resource_list *ln = list->next;
--			int idx;
- 
--			if (ln) {
--				idx = ln->res - &ln->dev->resource[0];
--				align = (idx < PCI_BRIDGE_RESOURCES) ?
--					ln->res->end - ln->res->start + 1 :
--					ln->res->start;
--			}
-+			if (ln)
-+				align = resource_alignment(ln->res);
-+
- 			if (r_align > align) {
- 				tmp = kmalloc(sizeof(*tmp), GFP_KERNEL);
- 				if (!tmp)
-diff --git a/include/linux/ioport.h b/include/linux/ioport.h
-index 605d237..d5d40a9 100644
---- a/include/linux/ioport.h
-+++ b/include/linux/ioport.h
-@@ -44,7 +44,9 @@ struct resource_list {
- #define IORESOURCE_CACHEABLE	0x00004000
- #define IORESOURCE_RANGELENGTH	0x00008000
- #define IORESOURCE_SHADOWABLE	0x00010000
--#define IORESOURCE_BUS_HAS_VGA	0x00080000
-+
-+#define IORESOURCE_SIZEALIGN	0x00020000	/* size indicates alignment */
-+#define IORESOURCE_STARTALIGN	0x00040000	/* start field is alignment */
- 
- #define IORESOURCE_DISABLED	0x10000000
- #define IORESOURCE_UNSET	0x20000000
-@@ -110,6 +112,7 @@ extern int allocate_resource(struct resource *root, struct resource *new,
- 			     void *alignf_data);
- int adjust_resource(struct resource *res, resource_size_t start,
- 		    resource_size_t size);
-+resource_size_t resource_alignment(struct resource *res);
- 
- /* Convenience shorthand with allocation */
- #define request_region(start,n,name)	__request_region(&ioport_resource, (start), (n), (name))
-diff --git a/kernel/resource.c b/kernel/resource.c
-index 82aea81..cee12cc 100644
---- a/kernel/resource.c
-+++ b/kernel/resource.c
-@@ -486,6 +486,24 @@ int adjust_resource(struct resource *res, resource_size_t start, resource_size_t
- 
- EXPORT_SYMBOL(adjust_resource);
- 
-+/**
-+ * resource_alignment - calculate resource's alignment
-+ * @res: resource pointer
-+ *
-+ * Returns alignment on success, 0 (invalid alignment) on failure.
-+ */
-+resource_size_t resource_alignment(struct resource *res)
-+{
-+	switch (res->flags & (IORESOURCE_SIZEALIGN | IORESOURCE_STARTALIGN)) {
-+	case IORESOURCE_SIZEALIGN:
-+		return res->end - res->start + 1;
-+	case IORESOURCE_STARTALIGN:
-+		return res->start;
-+	default:
-+		return 0;
-+	}
-+}
-+
- /*
-  * This is compatibility stuff for IO resources.
-  *
+-- 
+     -- Pierre Ossman
+
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  PulseAudio, core developer          http://pulseaudio.org
+  rdesktop, core developer          http://www.rdesktop.org
