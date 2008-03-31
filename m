@@ -1,60 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760562AbYCaOtq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760993AbYCaOvq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760562AbYCaOtq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Mar 2008 10:49:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753497AbYCaOh4
+	id S1760993AbYCaOvq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Mar 2008 10:51:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756069AbYCaOml
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Mar 2008 10:37:56 -0400
-Received: from bzq-179-150-194.static.bezeqint.net ([212.179.150.194]:51318
-	"EHLO il.qumranet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751992AbYCaOhh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Mar 2008 10:37:37 -0400
-From: Avi Kivity <avi@qumranet.com>
-To: kvm-devel@lists.sourceforge.net
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 37/40] KVM: Add API to retrieve the number of supported vcpus per vm
-Date: Mon, 31 Mar 2008 17:37:21 +0300
-Message-Id: <1206974244-9716-38-git-send-email-avi@qumranet.com>
-X-Mailer: git-send-email 1.5.4.5
-In-Reply-To: <1206974244-9716-1-git-send-email-avi@qumranet.com>
-References: <1206974244-9716-1-git-send-email-avi@qumranet.com>
+	Mon, 31 Mar 2008 10:42:41 -0400
+Received: from sorrow.cyrius.com ([65.19.161.204]:3416 "EHLO sorrow.cyrius.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758240AbYCaOmk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 31 Mar 2008 10:42:40 -0400
+Date: Mon, 31 Mar 2008 16:44:15 +0200
+From: Martin Michlmayr <tbm@cyrius.com>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       linux1394-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: nobody cared about IRQ 19 (firewire, on a HP 2510p notebook)
+Message-ID: <20080331144415.GA2604@deprecation.cyrius.com>
+References: <20080321153952.GA26354@deprecation.cyrius.com> <47E3E2CF.5070408@s5r6.in-berlin.de> <47EF757F.9080501@s5r6.in-berlin.de> <20080330161339.GC28821@deprecation.cyrius.com> <47EFD09D.3020906@s5r6.in-berlin.de> <alpine.LFD.1.10.0803302201110.3219@apollo.tec.linutronix.de> <20080331095729.GI28821@deprecation.cyrius.com> <alpine.LFD.1.10.0803311213020.3219@apollo.tec.linutronix.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.1.10.0803311213020.3219@apollo.tec.linutronix.de>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Avi Kivity <avi@qumranet.com>
----
- arch/x86/kvm/x86.c  |    3 +++
- include/linux/kvm.h |    1 +
- 2 files changed, 4 insertions(+), 0 deletions(-)
+* Thomas Gleixner <tglx@linutronix.de> [2008-03-31 12:17]:
+> > I've attached all of that information.
+> 
+> Do you have CONFIG_NET_POLL_CONTROLLER enabled in your .config ? If
+> yes, can you please disable it and check whether the problem persists ?
 
-diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
-index 256c0fc..955d2ee 100644
---- a/arch/x86/kvm/x86.c
-+++ b/arch/x86/kvm/x86.c
-@@ -811,6 +811,9 @@ int kvm_dev_ioctl_check_extension(long ext)
- 	case KVM_CAP_VAPIC:
- 		r = !kvm_x86_ops->cpu_has_accelerated_tpr();
- 		break;
-+	case KVM_CAP_NR_VCPUS:
-+		r = KVM_MAX_VCPUS;
-+		break;
- 	default:
- 		r = 0;
- 		break;
-diff --git a/include/linux/kvm.h b/include/linux/kvm.h
-index 94540b3..deb9c38 100644
---- a/include/linux/kvm.h
-+++ b/include/linux/kvm.h
-@@ -234,6 +234,7 @@ struct kvm_vapic_addr {
- #define KVM_CAP_VAPIC 6
- #define KVM_CAP_EXT_CPUID 7
- #define KVM_CAP_CLOCKSOURCE 8
-+#define KVM_CAP_NR_VCPUS 9       /* returns max vcpus per vm */
- 
- /*
-  * ioctls for VM fds
+CONFIG_NET_POLL_CONTROLLER was indeed set.  When I disable it, the
+problem goes away.
+
+What does that mean?
 -- 
-1.5.4.5
-
+Martin Michlmayr
+http://www.cyrius.com/
