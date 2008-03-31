@@ -1,30 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756684AbYDALsS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758563AbYDALtU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756684AbYDALsS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Apr 2008 07:48:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752306AbYDALsF
+	id S1758563AbYDALtU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Apr 2008 07:49:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754290AbYDALtF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Apr 2008 07:48:05 -0400
-Received: from crystal.sipsolutions.net ([195.210.38.204]:45193 "EHLO
+	Tue, 1 Apr 2008 07:49:05 -0400
+Received: from crystal.sipsolutions.net ([195.210.38.204]:45258 "EHLO
 	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751858AbYDALsD (ORCPT
+	with ESMTP id S1754202AbYDALtD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Apr 2008 07:48:03 -0400
+	Tue, 1 Apr 2008 07:49:03 -0400
 Subject: Re: [PATCH] evdev: Release eventual input device grabs when
 	getting disconnected
 From: Johannes Berg <johannes@sipsolutions.net>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: =?ISO-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+To: =?ISO-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
        Arjan van de Ven <arjan@linux.intel.com>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jiri Kosina <jkosina@suse.cz>, Greg KH <greg@kroah.com>
-In-Reply-To: <alpine.LFD.1.00.0803301448190.14670@woody.linux-foundation.org>
+       Jiri Kosina <jkosina@suse.cz>
+In-Reply-To: <20080330184259.GB21375@atjola.homenet> (sfid-20080330_194343_420194_2EBEE846)
 References: <20080330184259.GB21375@atjola.homenet>
-	 <alpine.LFD.1.00.0803301448190.14670@woody.linux-foundation.org>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-EmMXLMfqXt3ymICB5xwi"
-Date: Mon, 31 Mar 2008 22:21:10 +0200
-Message-Id: <1206994870.5143.7.camel@johannes.berg>
+	 (sfid-20080330_194343_420194_2EBEE846)
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-HhBTK+aeCtr3r4R7ndhR"
+Date: Mon, 31 Mar 2008 23:02:46 +0200
+Message-Id: <1206997366.5143.36.camel@johannes.berg>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.12.3 
 Sender: linux-kernel-owner@vger.kernel.org
@@ -32,92 +32,50 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---=-EmMXLMfqXt3ymICB5xwi
-Content-Type: text/plain; charset=utf-8
+--=-HhBTK+aeCtr3r4R7ndhR
+Content-Type: text/plain
 Content-Transfer-Encoding: quoted-printable
 
-On Sun, 2008-03-30 at 14:51 -0700, Linus Torvalds wrote:
 
-> On Sun, 30 Mar 2008, Bj=C3=B6rn Steinbrink wrote:
-> >
-> > I can't reproduce the bug on my UP box and currently can't afford
-> > crashing my SMP box (all the oopses seem to come from SMP kernels, so I
-> > guess it needs SMP to crash), so while this doesn't show any new
-> > problems, I can't tell whether it actually fixes anything. Testers
-> > welcome!
+> --- a/drivers/input/evdev.c
+> +++ b/drivers/input/evdev.c
+> @@ -853,6 +853,9 @@ static void evdev_cleanup(struct evdev *evdev)
+>  	evdev_hangup(evdev);
+>  	evdev_remove_chrdev(evdev);
+> =20
+> +	if (evdev->grab)
+> +		evdev_ungrab(evdev, evdev->grab);
+> +
 
-Odd, I can reproduce trivially on UP. The patch definitely helps.
-
-> Ok, I applied this because I will do an -rc8 today or tomorrow, but I=20
-> really really hope somebody can figure out what made this all start to=20
-> trigger.
-
-Unfortunately, I can't even bisect, I just tried compiling 2.6.25-rc1
-and it failed to link because of __udivi3, __umodi3 and another one (or
-similar). A quick look failed to tell me why I get that with -rc1 and
--rc2 but not -rc7.
-
-Below is a simple test program. Run it on any event device, then rmmod
-the module the device belongs to and abort the program with ctrl-c.
+You might want to insert a comment about why this is safe and doesn't
+race since it's not entirely trivial to see because everything else that
+manipulates the grab needs to take the mutex. In fact, I'm not entirely
+sure it's race-free but at least it can't race against the ioctl handler
+because by this time ->exist will be 0.
 
 johannes
 
-#include <stdlib.h>
-#include <unistd.h>
-#include <stdio.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <linux/input.h>
-
-int main (int argc, char **argv)
-{
-	int fd;
-
-	if (argc < 2) {
-		printf("Usage: grab /dev/input/eventX\n");
-		printf("Where X =3D input device number\n");
-		exit(1);
-	}
-
-	if ((fd =3D open(argv[argc - 1], O_RDONLY)) < 0) {
-		perror("grab[open]");
-		exit(1);
-	}
-
-	if (ioctl(fd, EVIOCGRAB, 1)) {
-		perror("grab[EVIOCGRAB]");
-		exit(1);
-	}
-
-	printf("interrupt to exit\n");
-
-	while (1)
-		sleep(1000);
-}
-
-
---=-EmMXLMfqXt3ymICB5xwi
+--=-HhBTK+aeCtr3r4R7ndhR
 Content-Type: application/pgp-signature; name=signature.asc
 Content-Description: This is a digitally signed message part
 
 -----BEGIN PGP SIGNATURE-----
 Comment: Johannes Berg (powerbook)
 
-iQIVAwUAR/FHtaVg1VMiehFYAQL8sQ/+NAqcpPdG5HeAo7KbyIIKBpGt3FVgUSmE
-k8ezDp60emlwyKG33sYNfx+qOYkEZkTMMSUY0LHjBD3N0d1rGeB0LubB2yqoacxT
-+y2yqUStRYejZZzErOXGeZRWiARYqNIOrlfLbPIbXOB28pgbwrAnO0bULgYxK7Sq
-tXsF+p52oOmyV+C/SoCOpczzL84R3yxkJck/yWvMaAssI/1nr/yEaJ2IAYK9WpYc
-Co+73aaoJKA8yt1qPAMosmCmZKJyfcutldxrO3WkoYrdqf+iKeZVaq6aPBRFfHOW
-U+aD+NqlJJA126781e/1vGdUm3Io69zi8VnGT4/9YWL2EJUWUmKiDUVWPHMu7QaG
-UaMGUoAb9NAT0IFyHfNqiWjkRxudXy/FB4abijnWg8gn5D1eyGPJ58KVkt1tWhZL
-NknN1d9naGCkBYjy0Vtqey+Gh465DvLjZFtz8Y2184Ce/OkERCe1OEDsXiLt7tGx
-AiYg5Nr4eFF1SQqXmRqvp8eKSj9y9RNvodSYuBagnoLhdaY7Suwku42CIsxfNZ7X
-CUTi+v5sYa6WdDzpodvl5hb+gDDObU7stIobLbKkUk46XUqFM8zKA+0hDKjWgs64
-RrtBmCBbkdDFKtCYSwDgnVvWLhfbfYaLpKiQn05e7ABaCmnxX8uPubQcqcJvryla
-Ns0+vqMNxXE=
-=2RG4
+iQIVAwUAR/FRdaVg1VMiehFYAQI22g//TJwROVhWFi6xWtRML1Q3e+b2eI2wJO09
+EsghH5znwmZ6tb+IIRWvGRbzIe1upHS+saC5YQnFwPq70z+A1stQILUSycfoRxmu
+Ak1zolM1GBCaI81QGMCafhYuM4mI5GTdoXl/XTxNC0VtxHoOwoO+XHdi+5IPW3A/
+gq4gPEqdqdKo3xEvMZkVUJb/kyTl5oxqblf0J4cH9AHAFmByhg7PAPb2psY+6DYW
+Tgp9xJ+3oyILhO4i1aDwxmW/r2WDGXWWra3t3KUCOgRUxFl/rUxfNKD9H7xjffOL
+uYKO5bvnG2w5yeI/nOwonsLOj5XPGtvfSyA1Mfr9h3hVm0xCQN6HWMG0vhPNcJXS
+islVSjA0jwiB4K00uwBKxY5TnnHtFZmf5jsxtmohKA+pNXJjEVuUuN3VeDIH7eRd
+ZO0BdxxvbpaGzYFZjJyK9goJNB2Pc7ZrGDi+gdhaS5Zv/HhV8F47Fld5y2Ng+7lF
+62fpNOQcRLHVZ52gpp6DC+vEr88rwrznl/j39qbw8usJ0SqtwnnHXvfjXARUFrQR
+ISLa38MxN59vbpnc++mywiEfK00RfdfR/SHLzZtV4opcrOl9SIQggopkwWLG4yyT
+QinGB/tyrGNOFJq/0SmTVgma4e+J7N53MJv+yqvo7/bdXKQAHvwgr1SHUOaTZNwJ
+oR+96FMu7xE=
+=Llkd
 -----END PGP SIGNATURE-----
 
---=-EmMXLMfqXt3ymICB5xwi--
+--=-HhBTK+aeCtr3r4R7ndhR--
 
