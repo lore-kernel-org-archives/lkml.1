@@ -1,39 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755629AbYCaApo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755948AbYCaAuP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755629AbYCaApo (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Mar 2008 20:45:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751309AbYCaApk
+	id S1755948AbYCaAuP (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Mar 2008 20:50:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754023AbYCaAuD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Mar 2008 20:45:40 -0400
-Received: from ozlabs.org ([203.10.76.45]:53295 "EHLO ozlabs.org"
+	Sun, 30 Mar 2008 20:50:03 -0400
+Received: from mga02.intel.com ([134.134.136.20]:32353 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751199AbYCaApk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Mar 2008 20:45:40 -0400
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1752960AbYCaAuC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 30 Mar 2008 20:50:02 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,580,1199692800"; 
+   d="scan'208";a="363098727"
+Subject: Re: [PATCH 2/4] x86_64 boot -v2: Add linked list of struct
+	setup_data
+From: "Huang, Ying" <ying.huang@intel.com>
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, andi@firstfloor.org, mingo@redhat.com,
+       tglx@linutronix.de, Paul Jackson <pj@sgi.com>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <86802c440803300115w6f3cc08cha72d3dc20bc4ec8e@mail.gmail.com>
+References: <1206672584.13404.25.camel@caritas-dev.intel.com>
+	 <86802c440803300115w6f3cc08cha72d3dc20bc4ec8e@mail.gmail.com>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
-Message-ID: <18416.13294.32343.345798@cargo.ozlabs.ibm.com>
-Date: Mon, 31 Mar 2008 11:44:30 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [2.6 patch] powerpc: remove the non-functional PPC_PREP bits
-In-Reply-To: <20080330224012.GD28445@cs181133002.pp.htv.fi>
-References: <20080330224012.GD28445@cs181133002.pp.htv.fi>
-X-Mailer: VM 7.19 under Emacs 21.4.1
+Date: Mon, 31 Mar 2008 08:52:48 +0800
+Message-Id: <1206924768.21451.3.camel@caritas-dev.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 
+X-OriginalArrivalTime: 31 Mar 2008 00:49:36.0888 (UTC) FILETIME=[18014F80:01C892C9]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adrian Bunk writes:
-
-> Back in November 2005, the PPC_PREP bits under arch/powerpc/ were marked 
-> as BROKEN due to not being working.
+On Sun, 2008-03-30 at 01:15 -0700, Yinghai Lu wrote:
+[...]
+> current reserve_early will have limitation with 20 entries.
 > 
-> It doesn't seem to make much sense to keep this rudimentary support even 
-> longer.
+> /*
+>  * Early reserved memory areas.
+>  */
+> 
+> #define MAX_EARLY_RES 20
+> 
+> or we need to make reserve_early a little bit smart, so it could merge
+> continuous region...
+> and then your free_early need to be updated too.
 
-NAK - I have some patches that get ARCH=powerpc working on at least
-some PRePs, and I plan to get them in before arch/ppc goes away.
+It is planned that the reserve_early code be replaced by e820 based
+memory reservation code. So I think we can stay with current
+implementation and wait for the new infrastructure.
 
-Paul.
+Best Regards,
+Huang Ying
+
