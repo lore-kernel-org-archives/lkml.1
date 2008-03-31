@@ -1,54 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755923AbYCaQeH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756134AbYCaQfZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755923AbYCaQeH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Mar 2008 12:34:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752515AbYCaQd4
+	id S1756134AbYCaQfZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Mar 2008 12:35:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753013AbYCaQfN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Mar 2008 12:33:56 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:40201 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752448AbYCaQdz convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Mar 2008 12:33:55 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Didier Raboud <didier@raboud.com>
-Subject: Re: =?iso-8859-15?q?2=2E6=2E25-rc7=A0=3A_hibernation_sometimes_not_resuming_on?=
- =?iso-8859-15?q?_Dell_Latitude?= D630
-Date: Mon, 31 Mar 2008 18:33:19 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: linux-kernel@vger.kernel.org, debian-kernel@lists.debian.org
-References: <200803311823.36693.didier@raboud.com>
-In-Reply-To: <200803311823.36693.didier@raboud.com>
+	Mon, 31 Mar 2008 12:35:13 -0400
+Received: from relay2.sgi.com ([192.48.171.30]:45508 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753060AbYCaQfL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 31 Mar 2008 12:35:11 -0400
+Message-ID: <47F112BD.4050801@sgi.com>
+Date: Mon, 31 Mar 2008 09:35:09 -0700
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200803311833.19730.rjw@sisk.pl>
+To: Bert Wesarg <bert.wesarg@googlemail.com>
+CC: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Paul Jackson <pj@sgi.com>
+Subject: Re: [PATCH 2/2] x86: modify show_shared_cpu_map in intel_cacheinfo
+References: <20080327231654.284673000@polaris-admin.engr.sgi.com>	 <20080327231654.599276000@polaris-admin.engr.sgi.com>	 <36ca99e90803280201i708ce9b7y293a2c68e733f088@mail.gmail.com>	 <47ED0343.1070708@sgi.com>	 <36ca99e90803280754p1fbedbccp366366f0240fe5cc@mail.gmail.com>	 <47ED36B9.6000508@sgi.com> <36ca99e90803290159v33ab43cbu5acd4bc2b0cd0262@mail.gmail.com>
+In-Reply-To: <36ca99e90803290159v33ab43cbu5acd4bc2b0cd0262@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, 31 of March 2008, Didier Raboud wrote:
-> Hi, 
+Bert Wesarg wrote:
+> On Fri, Mar 28, 2008 at 7:19 PM, Mike Travis <travis@sgi.com> wrote:
+>>  > Aren't the most cpumaps (like cpu/cpu*/topology/*_siblings or
+>>  > node/node*/cpumap) bitmasks?
+>>
+>>  I did an informal survey and you are right, the majority of references do use
+>>  cpumask_scnprintf instead of cpulist_scnprintf.  Maybe the later function was
+>>  added later?
+>>
+>>  To me though, it would seem that:
+>>
+>>  240-255
+>>
+>>  is more readable than:
+>>
+>>  00000000,00000000,00000000,00000000,00000000,00000000,00000000,0000ffff
+>>
+>>  And as I mentioned, bitmask_parselist() [libbitmask(3)] does parse the output.
+> But libbitmask has a bitmask_parsehex() too. (but thanks for the
+> pointer to this code).
+> 
+> Anyway, your above example is wrong, the most significant bits comes first:
+> 
+> ffff0000,00000000,00000000,00000000,00000000,00000000,00000000,00000000
+> 
+> This makes it not more readable, but I think readability isn't in this
+> case of that much importance.
 
-Hi,
- 
-> I'm using the latest Debian 2.6.25-rc7 kernel [0] and I have big troubles with 
-> hibernation. With this version, the hibernation (suspend on disk) is 
-> sometimes not resuming correctly. The only thing I get is a blinking cursor 
-> at the top-left of the screen. The problem is that it is not easily 
-> reproducible : sometimes it works, sometimes not.
-> 
-> AFAIK, 2.6.24 is not affected, but 2.6.25-rc6 and -rc7 (at least) are.
-> 
-> I'm using a Dell Latitude D630. (lspci attached).
-> 
-> Attached are a 2.6.25-rc7 and a 2.6.24 dmesg's after two successful 
-> hibernate/resume cycles.
+The original problem was how to avoid allocating a large stack space to display
+cpu ids.  By using cpulist_scnprintf, it accomplishes this without, what I think
+is too much pain.  If it's really that much of a problem, I will rework this patch.
+But the length of the line with 4096 cpus will be 1152 bytes  Is this really
+better?
 
-Could you please check if the problem is still present if you boot with
-acpi_new_pts_ordering kernel command line argument?
+> 
+> I further think, this problem could be easily solved, if NR_CPUS and
+> possibly your nr_cpus_ids is somehow exported to user space.
+> 
+> With this information, the user is not surprised to see more that 1024
+> bits (=CPU_SETSIZE, which is currently the glibc constant for the
+> sched_{set,get}affinity() API). Also the glibc has the new variable
+> cpu_set_t size API (since 2.7).
+
+Yes, thanks.  That is being dealt with in another task.
 
 Thanks,
-Rafael
+Mike
