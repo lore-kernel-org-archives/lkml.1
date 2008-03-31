@@ -1,168 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757499AbYCaU56@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757792AbYCaVBP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757499AbYCaU56 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Mar 2008 16:57:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752335AbYCaU5u
+	id S1757792AbYCaVBP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Mar 2008 17:01:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755427AbYCaVBA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Mar 2008 16:57:50 -0400
-Received: from nf-out-0910.google.com ([64.233.182.187]:33495 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752139AbYCaU5t (ORCPT
+	Mon, 31 Mar 2008 17:01:00 -0400
+Received: from el-out-1112.google.com ([209.85.162.178]:24907 "EHLO
+	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754327AbYCaVA7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Mar 2008 16:57:49 -0400
+	Mon, 31 Mar 2008 17:00:59 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=gPVFPE8/Lf+SLb7KKuvku4HsGID3n0fSX6pfOrJntAEalTh0JN/5VkQzv/+385j8tqd3yA4JKALTRoEIidZP7zvXzDpJyLzoHxuH8FSGAz/ADms8U7/3vA6Wg16rzcRuXkBd1J2UQw31CpZGce9m5Uo/HhgTS4iy3mzRr7lxKPw=
-Date: Mon, 31 Mar 2008 16:57:36 -0400
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Greg KH <greg@kroah.com>
-Cc: Kay Sievers <kay.sievers@vrfy.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Bj?rn Steinbrink <B.Steinbrink@gmx.de>,
-       Arjan van de Ven <arjan@linux.intel.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Johannes Berg <johannes@sipsolutions.net>,
-       Jiri Kosina <jkosina@suse.cz>
-Subject: Re: [PATCH] evdev: Release eventual input device grabs when getting
-	disconnected
-Message-ID: <20080331165456.ZZRA012@mailhub.coreip.homeip.net>
-References: <20080330184259.GB21375@atjola.homenet> <alpine.LFD.1.00.0803301448190.14670@woody.linux-foundation.org> <200803310215.39414.dtor@insightbb.com> <20080331172813.GA11583@kroah.com> <20080331135653.ZZRA012@mailhub.coreip.homeip.net> <20080331204221.GA19953@kroah.com>
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=FYdwBB1/T7lsGFFoHgBQSquN0+mye1KkYr4QH3ZMQZrbsHxgZUcFMwePpLlkv/FgAq1jO7wL4GAWZWMLq5S2Q+K+RTr8/VArLQED6xoZ/rs5Hdk4vKca6+YhQfskAJTH3ZP1m3EeOJay0M0GuUbRst0SWekc02KU8BK1pYZSSco=
+Message-ID: <84144f020803311400s1f34420dx153d197f4752c65e@mail.gmail.com>
+Date: Tue, 1 Apr 2008 00:00:55 +0300
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+To: "Artem Bityutskiy" <Artem.Bityutskiy@nokia.com>
+Subject: Re: [RFC PATCH 25/26] UBIFS: add debugging stuff
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       "Adrian Hunter" <ext-adrian.hunter@nokia.com>
+In-Reply-To: <1206629746-4298-26-git-send-email-Artem.Bityutskiy@nokia.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080331204221.GA19953@kroah.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+References: <1206629746-4298-1-git-send-email-Artem.Bityutskiy@nokia.com>
+	 <1206629746-4298-26-git-send-email-Artem.Bityutskiy@nokia.com>
+X-Google-Sender-Auth: 9e00a2b44b4bafea
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 31, 2008 at 01:42:21PM -0700, Greg KH wrote:
-> On Mon, Mar 31, 2008 at 02:01:20PM -0400, Dmitry Torokhov wrote:
-> > On Mon, Mar 31, 2008 at 10:28:13AM -0700, Greg KH wrote:
-> > > On Mon, Mar 31, 2008 at 02:15:39AM -0400, Dmitry Torokhov wrote:
-> > > > Hi Linus,
-> > > > 
-> > > > On Sunday 30 March 2008, Linus Torvalds wrote:
-> > > > > 
-> > > > > On Sun, 30 Mar 2008, Bj?rn Steinbrink wrote:
-> > > > > >
-> > > > > > I can't reproduce the bug on my UP box and currently can't afford
-> > > > > > crashing my SMP box (all the oopses seem to come from SMP kernels, so I
-> > > > > > guess it needs SMP to crash), so while this doesn't show any new
-> > > > > > problems, I can't tell whether it actually fixes anything. Testers
-> > > > > > welcome!
-> > > > > 
-> > > > > Ok, I applied this because I will do an -rc8 today or tomorrow, but I 
-> > > > > really really hope somebody can figure out what made this all start to 
-> > > > > trigger. It does smell like some core device layer change, because we do 
-> > > > > not seem to have a lot of changes since 2.6.24 in evdev.c and input.c that 
-> > > > > seem relevant.
-> > > > > 
-> > > > > Greg, are there any refcounting changes that would cause the input devices 
-> > > > > to be free'd earlier or something?
-> > > > > 
-> > > > 
-> > > > The following commit changed lifetime runes on kobjects breaking input:
-> > > > 
-> > > > commit 0f4dafc0563c6c49e17fe14b3f5f356e4c4b8806
-> > > > Author: Kay Sievers <kay.sievers@vrfy.org>
-> > > > Date:   Wed Dec 19 01:40:42 2007 +0100
-> > > > 
-> > > >     Kobject: auto-cleanup on final unref
-> > > > 
-> > > >     We save the current state in the object itself, so we can do proper
-> > > >     cleanup when the last reference is dropped.
-> > > > 
-> > > >     If the initial reference is dropped, the object will be removed from
-> > > >     sysfs if needed, if an "add" event was sent, "remove" will be send, and
-> > > >     the allocated resources are released.
-> > > > 
-> > > >     This allows us to clean up some driver core usage as well as allowing us
-> > > >     to do other such changes to the rest of the kernel.
-> > > > 
-> > > >     Signed-off-by: Kay Sievers <kay.sievers@vrfy.org>
-> > > >     Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-> > > > 
-> > > > Before we dropped reference to kobject's parent only when child kobject
-> > > > was released (in kobject_cleanup). The changeset above moves the release
-> > > > to kobject_del() which is way too early in my opinion. The kobject is only
-> > > > marked for deletion at that time, not really deleted.
-> > > 
-> > > It was "deleted" from sysfs, and should have never been used again by
-> > > any callers.  If the reference count was dropped to zero with this call,
-> > > it would be cleaned up as well, it seems that you were assuming that it
-> > > would not be?  Perhaps you just need to grab another reference as this
-> > > would have caused you problems without this change anyway, but without
-> > > slab debugging, you never saw it.
-> > > 
-> > 
-> > Greg, please look at the change again. Before kobject_put(kobj->parent)
-> > was done in kobject_cleanup() and so the parent would only be freed when
-> > all its children are gone. Now parent is deleted early, even if its
-> > children are still referenced by other users. This is lifetime rule
-> > change and should really be announced as such.
-> 
-> Ugh, this was done because of scsi, they required that if you really
-> were deleting the parent, you wanted it gone.
-> 
+Hi Artem,
 
-Gone from sysfs or gone from memory?
+On Thu, Mar 27, 2008 at 5:55 PM, Artem Bityutskiy
+<Artem.Bityutskiy@nokia.com> wrote:
+> The UBIFS code is large, and we have a plenty of debugging stuff
+>  in there which helps to catch bugs. Some of the debugging stuff
+>  will be deleted later.
 
-> > If this change it intentional and is here to stay then I will just grab
-> > the references myself, although I wonder what else might be broken by
-> > it.
-> 
-> Yes, if you need those references, you are going to have to hold on for
-> them, the kobject layer will not keep them around.  It now is a "does
-> what you ask for" type model :)
-> 
-> I fail to see where this affects the input code though, in glancing at
-> it, it looks like you are doing things properly.  Kay, any thoughts
-> here, I think you looked at the kobject input layer interaction in the
-> past.
->
+Yes please. The code is somewhat noisy on the debugging side.
 
-Ok, I really liked the old behavior better, but if it is to stay then
-we need something like this (not for inclusion yet as mousedev and joydev
-need to be adjusted as well):
+On Thu, Mar 27, 2008 at 5:55 PM, Artem Bityutskiy
+<Artem.Bityutskiy@nokia.com> wrote:
+>  +void *dbg_kmalloc(size_t size, gfp_t flags)
+>  +
+>  +void *dbg_kzalloc(size_t size, gfp_t flags)
+>  +
+>  +void dbg_kfree(const void *addr)
+>  +
+>  +void *dbg_vmalloc(size_t size)
+>  +
+>  +void dbg_vfree(void *addr)
+>  +
+>  +void dbg_leak_report(void)
 
-Signed-off-by: Dmitry Torokhov <dtor@mail.ru>
----
- drivers/input/evdev.c |    6 ++----
- 1 file changed, 2 insertions(+), 4 deletions(-)
+Not acceptable for mainline kernel. SLAB already provides leak
+detection and it should be straight-forward to port over to SLUB too.
 
-Index: linux/drivers/input/evdev.c
-===================================================================
---- linux.orig/drivers/input/evdev.c
-+++ linux/drivers/input/evdev.c
-@@ -124,6 +124,7 @@ static void evdev_free(struct device *de
- {
- 	struct evdev *evdev = container_of(dev, struct evdev, dev);
- 
-+	input_put_device(evdev->handle.dev);
- 	kfree(evdev);
- }
- 
-@@ -853,9 +854,6 @@ static void evdev_cleanup(struct evdev *
- 	evdev_hangup(evdev);
- 	evdev_remove_chrdev(evdev);
- 
--	if (evdev->grab)
--		evdev_ungrab(evdev, evdev->grab);
--
- 	/* evdev is marked dead so no one else accesses evdev->open */
- 	if (evdev->open) {
- 		input_flush_device(handle, NULL);
-@@ -896,7 +894,7 @@ static int evdev_connect(struct input_ha
- 	evdev->exist = 1;
- 	evdev->minor = minor;
- 
--	evdev->handle.dev = dev;
-+	evdev->handle.dev = input_get_device(dev);
- 	evdev->handle.name = evdev->name;
- 	evdev->handle.handler = handler;
- 	evdev->handle.private = evdev;
+>  +/*
+>  + * struct eaten_memory - memory object eaten by UBIFS to cause memory pressure.
+>  + * @list: link in the list of eaten memory objects
+>  + * @pad: just pads to memory page size
+>  + */
+>  +struct eaten_memory {
+>  +       struct list_head list;
+>  +       uint8_t pad[PAGE_CACHE_SIZE - sizeof(struct list_head)];
+>  +};
 
--- 
-Dmitry
+If you need this, please make it a standalone module in mm/.
+
+>  +void dbg_eat_memory(void)
+>  +{
+>  +       struct eaten_memory *em;
+>  +
+>  +       em = kmalloc(sizeof(struct eaten_memory), GFP_NOFS);
+
+It's probably better to use the page allocator for this.
+
+>  +#ifdef CONFIG_UBIFS_FS_DEBUG
+>  +#define UBIFS_DBG(op) op
+>  +#define ubifs_assert(expr)  do {                                               \
+>  +
+>  +/* Generic debugging message */
+>  +#define dbg_msg(fmt, ...) do {                                                 \
+>  +
+>  +/* Debugging message which prints UBIFS key */
+>  +#define dbg_key(c, key, fmt, ...) do {                                         \
+>  +
+>  +#define dbg_err(fmt, ...) ubifs_err(fmt, ##__VA_ARGS__)
+>  +#define dbg_dump_stack() dump_stack()
+
+Please kill these wrappers and use BUG_ON, WARN_ON, and printk() where
+appropriate.
