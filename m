@@ -1,59 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756750AbYCaNVO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756741AbYCaNYN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756750AbYCaNVO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Mar 2008 09:21:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754387AbYCaNVA
+	id S1756741AbYCaNYN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Mar 2008 09:24:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755352AbYCaNX7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Mar 2008 09:21:00 -0400
-Received: from lazybastard.de ([212.112.238.170]:51038 "EHLO
-	longford.logfs.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753470AbYCaNU7 (ORCPT
+	Mon, 31 Mar 2008 09:23:59 -0400
+Received: from fmmailgate01.web.de ([217.72.192.221]:36256 "EHLO
+	fmmailgate01.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755132AbYCaNX6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Mar 2008 09:20:59 -0400
-Date: Mon, 31 Mar 2008 15:20:47 +0200
-From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
-To: Adrian Hunter <ext-adrian.hunter@nokia.com>
-Cc: ext Jan Engelhardt <jengelh@computergmbh.de>,
-       Artem Bityutskiy <Artem.Bityutskiy@nokia.com>,
-       LKML <linux-kernel@vger.kernel.org>, joern@lazybastard.org
-Subject: Re: [RFC PATCH] UBIFS - new flash file system
-Message-ID: <20080331132047.GA31660@logfs.org>
-References: <1206629746-4298-1-git-send-email-Artem.Bityutskiy@nokia.com> <alpine.LNX.1.10.0803311428270.2554@fbirervta.pbzchgretzou.qr> <47F0DD49.7010302@nokia.com>
+	Mon, 31 Mar 2008 09:23:58 -0400
+From: Chr <chunkeey@web.de>
+To: Adrian Bunk <bunk@kernel.org>
+Subject: Re: The never ending BEEEEP/__smp_call_function_mask with 2.6.25-rc7
+Date: Mon, 31 Mar 2008 15:23:54 +0200
+User-Agent: KMail/1.9.9
+Cc: Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       linux-kernel@vger.kernel.org, Andi Kleen <andi-suse@firstfloor.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+References: <200803302109.22219.chunkeey@web.de> <alpine.LFD.1.10.0803302315270.3219@apollo.tec.linutronix.de> <20080331125653.GA32334@cs181133002.pp.htv.fi>
+In-Reply-To: <20080331125653.GA32334@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <47F0DD49.7010302@nokia.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Message-Id: <200803311523.55490.chunkeey@web.de>
+X-Provags-ID: V01U2FsdGVkX18PJTRI86YD3msq0Ij+QkxV4GVkTB6ikLvIZXGM
+	Rkci+uPDvSjeGQCLPjaWn0LrMicLGdtr5AzpPXTOIcollJr7KY
+	3EMKrw8PU=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 31 March 2008 15:47:05 +0300, Adrian Hunter wrote:
-> >
-> >And how does it compare to logfs?
-> 
-> We don't know a lot about logfs, so you will really have to make
-> your own comparison.  However our general impressions are as follows:
-> 
-> 1. In our testing logfs file operations seem to be much slower,
-> see http://osl.sed.hu/wiki/ubifs/index.php/IOzone
+On Monday 31 March 2008 14:56:53 Adrian Bunk wrote:
+> On Sun, Mar 30, 2008 at 11:36:40PM +0200, Thomas Gleixner wrote:
+> > On Sun, 30 Mar 2008, Chr wrote:
+> >...
+> > You mentioned that you have tons of other logs. Can you please
+> > upload those to some place? If you don't have a possiblity, please
+> > contact me private and I'll provide you one.
+>
+> The logical place would be
+>   http://bugzilla.kernel.org/show_bug.cgi?id=10369
 
-Shiny numbers!  Performance has improved significantly in the last six
-month.  Still worth a closer look.
+Done! The log is about 200KBs (~ 2MBs untarbz2ed)
 
-> 3. logfs does not seem to have bad-block handling.
-
-Bad blocks at mkfs time are handled, blocks turning bad later on aren't
-yet.
-
-> 4. logfs does not seem to have wear-leveling.
-
-It does.
-
-Jörn
-
--- 
-Fools ignore complexity.  Pragmatists suffer it.
-Some can avoid it.  Geniuses remove it.
--- Perlis's Programming Proverb #58, SIGPLAN Notices, Sept.  1982
+Regards
+	Chr
