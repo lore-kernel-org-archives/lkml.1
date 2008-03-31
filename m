@@ -1,56 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756812AbYCaSZu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756853AbYCaSfm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756812AbYCaSZu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Mar 2008 14:25:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753910AbYCaSZn
+	id S1756853AbYCaSfm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Mar 2008 14:35:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753371AbYCaSfd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Mar 2008 14:25:43 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:49255 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752274AbYCaSZm (ORCPT
+	Mon, 31 Mar 2008 14:35:33 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:38623 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753788AbYCaSfd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Mar 2008 14:25:42 -0400
-Date: Mon, 31 Mar 2008 11:24:20 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-cc: Greg KH <greg@kroah.com>, Bj?rn Steinbrink <B.Steinbrink@gmx.de>,
-       Arjan van de Ven <arjan@linux.intel.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Johannes Berg <johannes@sipsolutions.net>,
-       Jiri Kosina <jkosina@suse.cz>
-Subject: Re: [PATCH] evdev: Release eventual input device grabs when getting
- disconnected
-In-Reply-To: <20080331135653.ZZRA012@mailhub.coreip.homeip.net>
-Message-ID: <alpine.LFD.1.00.0803311122040.14670@woody.linux-foundation.org>
-References: <20080330184259.GB21375@atjola.homenet> <alpine.LFD.1.00.0803301448190.14670@woody.linux-foundation.org> <200803310215.39414.dtor@insightbb.com> <20080331172813.GA11583@kroah.com> <20080331135653.ZZRA012@mailhub.coreip.homeip.net>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 31 Mar 2008 14:35:33 -0400
+Date: Mon, 31 Mar 2008 11:34:32 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Stefan Hellermann <stefan@the2masters.de>, linux-kernel@vger.kernel.org
+Subject: Re: make O=dir fails with current git
+Message-Id: <20080331113432.b9a153b9.randy.dunlap@oracle.com>
+In-Reply-To: <20080331180022.GA4833@uranus.ravnborg.org>
+References: <47EE8829.10409@the2masters.de>
+	<20080331180022.GA4833@uranus.ravnborg.org>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 31 Mar 2008 20:00:22 +0200 Sam Ravnborg wrote:
 
-
-On Mon, 31 Mar 2008, Dmitry Torokhov wrote:
+> On Sat, Mar 29, 2008 at 07:19:21PM +0100, Stefan Hellermann wrote:
+> > Hi,
+> > 
+> > I'm using "make O=machinename" for building different kernels from one tree. About 15 days
+> > ago it was okay, with current git it fails:
+> > $ make O=client1
+> > scripts/kconfig/conf -s arch/x86/Kconfig
+> >   Using /srv/devel/kernel as source for kernel
+> >   /srv/devel/kernel is not clean, please run 'make mrproper'
+> >   in the '/srv/devel/kernel' directory.
+> > make[1]: *** [prepare3] Error 1
+> > make: *** [sub-make] Error 2
+> > 
+> > running "make mrproper" (without O=dir) doesn't help.
+> > I've not changed anything, I only made a "git-pull".
+> > Now I'm at home, tried "mkdir test; make O=test defconfig all" with current git-head, it
+> > doesn't work too.
 > 
-> Greg, please look at the change again. Before kobject_put(kobj->parent)
-> was done in kobject_cleanup() and so the parent would only be freed when
-> all its children are gone. Now parent is deleted early, even if its
-> children are still referenced by other users. This is lifetime rule
-> change and should really be announced as such.
+> I tried to reproduce this here without luck.
+> The tests performed by kbuild to dertermine if the
+> source directory is clean are very basic.
+> If the file .config exist or the directory
+> include/config exists then the source tree is considered clean.
+> Otherwise you get the above message.
 > 
-> If this change it intentional and is here to stay then I will just grab
-> the references myself, although I wonder what else might be broken by
-> it.
+> Can you please try to run: make mrproper
+> and then manually check if the .config file
+> or the include/config directory exists.
+> 
+> If they exists after make mrproper then
+> check your permissions.
+> 
+> In any case let me know the result.
 
-I do agree that this might want reverting, unless there is some rally good 
-reason for it. People may have pefectly valid reasons to expect topology 
-and reachability to remain valid - it's certainly what we guarantee in the 
-VFS code for similar rules (ie the parent of a dentry is only free'd after 
-all children have gone away).
+I have no trouble reproducing it.
 
-Greg, is it possible to get the old lifetime rules back wrt his? They seem 
-valid and sane..
+mkdir X64
+make O=X64 ARCH=x86_64 defconfig all
 
-			Linus
+and it prints:
+make[2]: Nothing to be done for `/tester/linsrc/linux-2.6.25-rc7-git6/Makefile'.
+make[1]: Nothing to be done for `all'.
+
+before it does the defconfig part.
+
+There is no $topdir/.config or $topdir/include/config.
+Those do exist in the O=X64 directory, however.
+
+---
+~Randy
