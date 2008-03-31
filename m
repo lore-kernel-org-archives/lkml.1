@@ -1,26 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756510AbYCaNIL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756069AbYCaNPZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756510AbYCaNIL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Mar 2008 09:08:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754792AbYCaNH6
+	id S1756069AbYCaNPZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Mar 2008 09:15:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754699AbYCaNPN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Mar 2008 09:07:58 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:47308 "EHLO mx3.mail.elte.hu"
+	Mon, 31 Mar 2008 09:15:13 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:42529 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754387AbYCaNH5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Mar 2008 09:07:57 -0400
-Date: Mon, 31 Mar 2008 15:07:39 +0200
+	id S1753631AbYCaNPM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 31 Mar 2008 09:15:12 -0400
+Date: Mon, 31 Mar 2008 15:14:42 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Jack Steiner <steiner@sgi.com>
-Cc: tglx@linutronix.de, yhlu.kernel@gmail.com, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 8/8] x86_64: V2 Support for new UV apic
-Message-ID: <20080331130739.GE14636@elte.hu>
-References: <20080328191216.GA16455@sgi.com> <20080331020207.GA20605@sgi.com>
+To: Mark McLoughlin <markmc@redhat.com>
+Cc: jeremy@goop.org, linux-kernel@vger.kernel.org,
+       xen-devel@lists.xensource.com, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH 0/3] xen: Fix oops when mapping/unmapping addr above 1Gb
+Message-ID: <20080331131442.GF14636@elte.hu>
+References: <1206722297-11763-1-git-send-email-markmc@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080331020207.GA20605@sgi.com>
+In-Reply-To: <1206722297-11763-1-git-send-email-markmc@redhat.com>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -35,15 +36,22 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Jack Steiner <steiner@sgi.com> wrote:
+* Mark McLoughlin <markmc@redhat.com> wrote:
 
-> Fix double-shift of apicid in previous patch.
+>         In Fedora rawhide we're currently seeing oopses whenever a 
+> processes dlopen()s a library which prelink() has previously relocated 
+> above 1Gb. Some more details at:
+> 
+>   https://bugzilla.redhat.com/436453
+> 
+>         The issue seems to be that during xen_pgd_pin(), we only pin 
+> PTE pages, but xen's release_pmd() tries to unpin PMD pages too.
+> 
+>         The following series of patches is against the latest x86 
+> tree.
 
-> The code is clearly wrong.  I booted on an 8p AMD box and had no 
-> problems. Apparently the kernel (at least basic booting) is not too 
-> sensitive to incorrect apicids being returned. Most critical-to-boot 
-> code must use apicids from the ACPI tables.
-
-yeah - patch added. Thanks Yinghai for persisting on this.
+thanks, i've picked them up to get them tested - but it would be nice to 
+have an ack from Jeremy as well. This seems like v2.6.25 material as 
+well, right?
 
 	Ingo
