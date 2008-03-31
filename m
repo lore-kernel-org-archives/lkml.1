@@ -1,66 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755664AbYCaHMr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755227AbYCaHSZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755664AbYCaHMr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Mar 2008 03:12:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753135AbYCaHMk
+	id S1755227AbYCaHSZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Mar 2008 03:18:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752832AbYCaHSS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Mar 2008 03:12:40 -0400
-Received: from sacred.ru ([62.205.161.221]:50408 "EHLO sacred.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753008AbYCaHMj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Mar 2008 03:12:39 -0400
-Message-ID: <47F08ED6.1090103@openvz.org>
-Date: Mon, 31 Mar 2008 11:12:22 +0400
-From: Pavel Emelyanov <xemul@openvz.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
+	Mon, 31 Mar 2008 03:18:18 -0400
+Received: from smtp-out01.alice-dsl.net ([88.44.60.11]:48167 "EHLO
+	smtp-out01.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752556AbYCaHSR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 31 Mar 2008 03:18:17 -0400
+To: Tim Ricketts <tr@earth.li>
+Cc: Michael Smith <msmith@xiph.org>, linux-kernel@vger.kernel.org,
+       Andy Wingo <wingo@fluendo.com>, tglx@linutronix.de
+Subject: Re: gettimeofday() jumping into the future
+References: <3c1737210708230408i7a8049a9m5db49e6c4d89ab62@mail.gmail.com>
+	<Pine.LNX.4.64.0803302210060.3056@falcon.foo>
+From: Andi Kleen <andi@firstfloor.org>
+Date: 31 Mar 2008 09:18:12 +0200
+In-Reply-To: <Pine.LNX.4.64.0803302210060.3056@falcon.foo>
+Message-ID: <87r6dr8iq3.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
 MIME-Version: 1.0
-To: Manfred Spraul <manfred@colorfullife.com>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [RFC, PATCH] fix SEM_UNDO with namespaces
-References: <47EFFD1C.5020204@colorfullife.com>
-In-Reply-To: <47EFFD1C.5020204@colorfullife.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Mon, 31 Mar 2008 11:12:15 +0400 (MSD)
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 31 Mar 2008 07:11:35.0223 (UTC) FILETIME=[7465B470:01C892FE]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Manfred Spraul wrote:
-> Hi,
+Tim Ricketts <tr@earth.li> writes:
+
+[adding right people to cc just in case it slipped past their filters,
+keeping enough quote for context]
+
+> On Thu, 23 Aug 2007, Michael Smith wrote:
 > 
-> the attached patch should fix the combination of CLONE_NEWIPC with 
-> shared sysv undo structures (the common case, just 
-> sys_unshare(CLONE_NEWIPC)):
-> lookup_undo() now locates the undo array based on both semid and the 
-> namespace pointer.
-
-If you start using any IPC object and then call unshare with CLONE_NEWIPC,
-then it's your problem, but not the kernel. There are many issues that can
-become broken from the user-level POV.
-
-What's the problem with undo list? Does it become irrelevant and no undos
-happen after the task dies?
-
-I agree, that we should probably destroy this one when the task calls 
-unshare, but trying to keep this list relevant is useless.
-
-> Additionally, the patch tries to clean the code up by using the linked 
-> list macros from <linux/list.h> instead of single linked lists.
-
-May I ask you to split the patch into atomic parts, rather than
-mixing fixes, reworks and cleanups together?
-
-> The patch passes a few quick tests, I'm interested in feedback. Are 
-> there test apps for testing the IPC namespace code?
-
-This code is a part of OpenVZ kernels, so it passes some internal
-tests we perform.
-
-> --
->     Manfred
+> > We've been seeing some strange behaviour on some of our applications
+> > recently. I've tracked this down to gettimeofday() returning spurious
+> > values occasionally.
+> >
+> > Specifically, gettimeofday() will suddenly, for a single call, return
+> > a value about 4398 seconds (~1 hour 13 minutes) in the future. The
+> > following call goes back to a normal value.
 > 
+> I have also seen this.
+> 
+> > This seems to be occurring when the clock source goes slightly
+> > backwards for a single call. In
+> > kernel/time/timekeeping.c:__get_nsec_offset(), we have this:
+> > cycle_delta = (cycle_now - clock->cycle_last) & clock->mask;
+> >
+> > So a small decrease in time here will (this is all unsigned
+> > arithmetic) give us a very large cycle_delta. cyc2ns() then multiplies
+> > this by some value, then right shifts by 22. The resulting value (in
+> > nanoseconds) is approximately 4398 seconds; this gets added on to the
+> > xtime value, giving us our jump into the future. The next call to
+> > gettimeofday() returns to normal as we don't have this huge nanosecond
+> > offset.
+> 
+> Indeed.  I don't know where the suggestion of off by 2^32us came in
+> later in this thread.  As you've already pointed out, it's off by
+> 2^42ns.
 
-Thanks,
-Pavel
+[...]
+> +static inline u64 __get_nsec_offset(void)
+>   {
+>   	cycle_t cycle_now, cycle_delta;
+> -	s64 ns_offset;
+> +	u64 ns_offset;
+> 
+>   	/* read clocksource: */
+>   	cycle_now = clocksource_read(clock);
+> 
+> +	if (cycle_now < clock->cycle_last)
+> +		return 0;
+
+The old x86-64 pre-clocksource gettimeofday() implementation had a similar
+check. It came from painful experience.
+
+-Andi
