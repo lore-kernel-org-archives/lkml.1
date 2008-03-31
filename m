@@ -1,63 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756432AbYCaSSU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756853AbYCaSVz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756432AbYCaSSU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Mar 2008 14:18:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752518AbYCaSSM
+	id S1756853AbYCaSVz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Mar 2008 14:21:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753682AbYCaSVs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Mar 2008 14:18:12 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:37510 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753431AbYCaSSL (ORCPT
+	Mon, 31 Mar 2008 14:21:48 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:39078 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752274AbYCaSVs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Mar 2008 14:18:11 -0400
-Date: Mon, 31 Mar 2008 13:18:08 -0500
-From: Paul Jackson <pj@sgi.com>
-To: "Bert Wesarg" <bert.wesarg@googlemail.com>
-Cc: travis@sgi.com, mingo@elte.hu, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/2] x86: modify show_shared_cpu_map in intel_cacheinfo
-Message-Id: <20080331131808.e21d494f.pj@sgi.com>
-In-Reply-To: <36ca99e90803311024h6aeb89beyd72f73c3763c0a9c@mail.gmail.com>
-References: <20080327231654.284673000@polaris-admin.engr.sgi.com>
-	<20080327231654.599276000@polaris-admin.engr.sgi.com>
-	<36ca99e90803280201i708ce9b7y293a2c68e733f088@mail.gmail.com>
-	<47ED0343.1070708@sgi.com>
-	<36ca99e90803280754p1fbedbccp366366f0240fe5cc@mail.gmail.com>
-	<47ED36B9.6000508@sgi.com>
-	<36ca99e90803290159v33ab43cbu5acd4bc2b0cd0262@mail.gmail.com>
-	<47F112BD.4050801@sgi.com>
-	<36ca99e90803311024h6aeb89beyd72f73c3763c0a9c@mail.gmail.com>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 31 Mar 2008 14:21:48 -0400
+Date: Mon, 31 Mar 2008 11:21:09 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: LKML <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Natalie Protasevich <protasnb@gmail.com>,
+       Tino Keitel <tino.keitel@gmx.de>
+Subject: Re: 2.6.25-rc6-git6: Reported regressions from 2.6.24
+In-Reply-To: <200803220259.48534.rjw@sisk.pl>
+Message-ID: <alpine.LFD.1.00.0803311118120.14670@woody.linux-foundation.org>
+References: <200803220259.48534.rjw@sisk.pl>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bert wrote:
-> Sure your list is mostly shorter than a hex mask
 
-"mostly" -- yup.
 
-The masks always take 9 chars per 32 bits of the full mask size
-(whether zeros or ones.)
+On Sat, 22 Mar 2008, Rafael J. Wysocki wrote:
 
-The lists can take up to approx one to three chars per bit, for the
-worst case lists of every other bit, depending on the log base 10 of
-the highest included bit.
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10291
+> Subject		: 2.6.25-rc6 hangs at resume after suspend to RAM on Mac mini Core Duo
+> Submitter	: Tino Keitel <tino.keitel@gmx.de>
+> Date		: 2008-03-20 07:05 (2 days old)
+> References	: http://lkml.org/lkml/2008/3/20/23
 
-Consider for example:
+Hmm. I just tested mine, and it still works fine (current -git, 
+obviously). But as usual, I tend to run different kernel configs than most 
+people (no modules, only drivers that are actually useful). So I think 
+this needs bisecting or something.
 
-  97,99,101,103,105,107,109,111,113,115,117,119,121,123,125,127
-
-vs.
-
-  AAAAAAAA,00000000,00000000,00000000
-
-which, if I did my math right, are the same value.
-
--- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.940.382.4214
+		Linus
