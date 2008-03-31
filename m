@@ -1,76 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757443AbYCaRV3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757325AbYCaRWy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757443AbYCaRV3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Mar 2008 13:21:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756922AbYCaRVV
+	id S1757325AbYCaRWy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Mar 2008 13:22:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752507AbYCaRWr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Mar 2008 13:21:21 -0400
-Received: from rtr.ca ([76.10.145.34]:3190 "EHLO mail.rtr.ca"
+	Mon, 31 Mar 2008 13:22:47 -0400
+Received: from mail.vyatta.com ([216.93.170.194]:53392 "EHLO mail.vyatta.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753184AbYCaRVU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Mar 2008 13:21:20 -0400
-Message-ID: <47F11D8F.4020209@rtr.ca>
-Date: Mon, 31 Mar 2008 13:21:19 -0400
-From: Mark Lord <lkml@rtr.ca>
-Organization: Real-Time Remedies Inc.
-User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
-MIME-Version: 1.0
-To: Oliver Neukum <oliver@neukum.org>
-Cc: Pavel Machek <pavel@suse.cz>, Linux Kernel <linux-kernel@vger.kernel.org>,
-       Greg KH <gregkh@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
-       jikos@suse.cz
-Subject: Re: 2.6.25-rc7:  Ugh.
-References: <47EBBD57.30902@rtr.ca> <200803311704.37256.oliver@neukum.org> <47F0FD8E.4090005@rtr.ca> <200803311837.30129.oliver@neukum.org> <47F1196E.9090509@rtr.ca> <47F11C3D.9080704@rtr.ca>
-In-Reply-To: <47F11C3D.9080704@rtr.ca>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+	id S1751742AbYCaRWq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 31 Mar 2008 13:22:46 -0400
+X-Spam-Flag: NO
+X-Spam-Score: -2.499
+Date: Mon, 31 Mar 2008 10:22:40 -0700
+From: Stephen Hemminger <shemminger@vyatta.com>
+To: Alexander van Heukelum <heukelum@mailshack.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86: generic versions of find_first_(zero_)bit, convert
+ i386
+Message-ID: <20080331102240.086a93e4@extreme>
+In-Reply-To: <20080331171506.GA24017@mailshack.com>
+References: <20080331171506.GA24017@mailshack.com>
+Organization: Vyatta
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mark Lord wrote:
-> Mark Lord wrote:
->> Oliver Neukum wrote:
->>> Am Montag, 31. März 2008 17:04:46 schrieb Mark Lord:
->>>> Oliver Neukum wrote:
->>>>> Am Montag, 31. März 2008 16:39:33 schrieb Mark Lord:
-> ..
->>>>>> Still want USB_SUSPEND=n ?  Please explain.
->>>>> It looks like you are hanging in the kthread for autosuspending.
->>>>> Compiling that out should confirm it.
->>>> ..
->>>>
->>>> Okay, and once we see that it works fine:  then what?
->>>
->>> We'll combine that information with the result of only removing usbhid
->>> and arrive at a pretty good idea where in the kernel the hang occurs.
->>> There are only two functions that touch autosuspend in the usbhid code.
->>> So if it works with usbhid unloaded, either of them should be to blame.
->> ..
->> It does still hang with *usbhid* unloaded,
->> but not if all USB stuff is unloaded.
-> ..
-> 
-> And it does *not* hang with # CONFIG_USB_SUSPEND is not set.
-> 
->> I have figured out a way to make this much more reproducible now:
->> When suspended, the notebook does not supply +5V over USB.
->> But with a voltmeter, I discovered that there is sufficient capacitance
->> on the USB +5V, that it takes many minutes for the voltage to decay
->> from 5.1V down to near 0V.
->>
->> Resuming while the voltage is still relatively high, generally works.
->> Resuming after the voltage drops to near zero, always fails (with USB 
->> modules loaded).
->>
->> So I've put a 2Kohm resistor across the USB +5V lines,
->> forcing it to decay to zero within about 5 seconds.
->> This helps a lot for debugging here.
->>
->> It probably also provides a vital clue as to what is wrong.
->> Resume seems to generally work when the USB devices maintain
->> some amount of standby power, and always fails when they don't.
-..
+On Mon, 31 Mar 2008 19:15:06 +0200
+Alexander van Heukelum <heukelum@mailshack.com> wrote:
 
-Note that it makes no difference whether I unplug all external USB devices
-prior to suspend or not.  The failure patterns remain the same.
+> Generic versions of __find_first_bit and __find_first_zero_bit
+> are introduced as simplified versions of __find_next_bit and
+> __find_next_zero_bit. Their compilation and use are guarded by
+> a new config variable GENERIC_FIND_FIRST_BIT.
+> 
+> The generic versions of find_first_bit and find_first_zero_bit
+> are implemented in terms of the newly introduced __find_first_bit
+> and __find_first_zero_bit.
+> 
+> This patch also converts i386 to the generic functions. The text
+> size shrinks slightly due to uninlining of the find_*_bit functions.
+> 
+>    text    data     bss     dec     hex filename
+> 4764939  480324  622592 5867855  59894f vmlinux  (i386 defconfig before)
+> 4764645  480324  622592 5867561  598829 vmlinux  (i386 defconfig after)
+> 
+> Signed-off-by: Alexander van Heukelum <heukelum@fastmail.fm>
+> 
+
+Size isn't everything, what is the performance difference?
