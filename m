@@ -1,46 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756847AbYCaTrG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755552AbYCaT4V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756847AbYCaTrG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Mar 2008 15:47:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752534AbYCaTqx
+	id S1755552AbYCaT4V (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Mar 2008 15:56:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751791AbYCaT4I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Mar 2008 15:46:53 -0400
-Received: from smtpq2.groni1.gr.home.nl ([213.51.130.201]:55554 "EHLO
-	smtpq2.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752449AbYCaTqw (ORCPT
+	Mon, 31 Mar 2008 15:56:08 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:13311 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750961AbYCaT4G (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Mar 2008 15:46:52 -0400
-Message-ID: <47F14008.7050100@keyaccess.nl>
-Date: Mon, 31 Mar 2008 21:48:24 +0200
-From: Rene Herman <rene.herman@keyaccess.nl>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
-MIME-Version: 1.0
-To: Bjorn Helgaas <bjorn.helgaas@hp.com>
-CC: Len Brown <lenb@kernel.org>, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Adam Belay <ambx1@neo.rr.com>,
-       Li Shaohua <shaohua.li@intel.com>,
-       Matthieu Castet <castet.matthieu@free.fr>,
-       Thomas Renninger <trenn@suse.de>, Jaroslav Kysela <perex@perex.cz>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [patch 00/37] PNP resource_table cleanups
-References: <20080326171058.099442579@ldl.fc.hp.com> <200803261713.03248.bjorn.helgaas@hp.com> <47EAEA98.7010500@keyaccess.nl> <200803271150.30512.bjorn.helgaas@hp.com> <47F13E13.7090608@keyaccess.nl>
-In-Reply-To: <47F13E13.7090608@keyaccess.nl>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+	Mon, 31 Mar 2008 15:56:06 -0400
+In-Reply-To: <1206809051.8480.33.camel@heimdal.trondhjem.org>
+References: <1206794957-17010-1-git-send-email-jlayton@redhat.com> <1206809051.8480.33.camel@heimdal.trondhjem.org>
+Mime-Version: 1.0 (Apple Message framework v753)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <D69D5ED0-F0B9-4E18-B3E2-F7AF2EC3E55F@oracle.com>
+Cc: Jeff Layton <jlayton@redhat.com>, linux-nfs@vger.kernel.org,
+       nfsv4@linux-nfs.org, linux-kernel@vger.kernel.org
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -1.0 (-)
+From: Chuck Lever <chuck.lever@oracle.com>
+Subject: Re: [PATCH] SUNRPC: have soft RPC tasks return -ETIMEDOUT instead of -EIO on major connect timeout
+Date: Mon, 31 Mar 2008 15:53:58 -0400
+To: Trond Myklebust <trond.myklebust@fys.uio.no>
+X-Mailer: Apple Mail (2.753)
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 31-03-08 21:40, Rene Herman wrote:
+On Mar 29, 2008, at 12:44 PM, Trond Myklebust wrote:
+> On Sat, 2008-03-29 at 08:49 -0400, Jeff Layton wrote:
+>> NFSv4 background mounts do not currently work correctly. While we  
+>> could
+>> try to fix this in userspace, I think it's really a kernel problem...
+>>
+>> When a soft RPC tasks experiences a major timeout during a connection
+>> attempt, it does an rpc_exit with a return code of -EIO. For NFSv4
+>> mounts, this makes the mount() syscall return -EIO. mount.nfs4 then
+>> interprets that as a "permanent" error, and won't attempt a  
+>> background
+>> mount when bg is specified. Fix this by making call_timeout() do the
+>> rpc_exit() with an error of -ETIMEDOUT.
+>>
+>> This fixes the background mount issue, but does make other syscalls
+>> on soft mounts return ETIMEDOUT instead of EIO in this situation.
+>>
+>> Comments welcome.
+>>
+>> Signed-off-by: Jeff Layton <jlayton@redhat.com>
+>> ---
+>>  net/sunrpc/clnt.c |    2 +-
+>>  1 files changed, 1 insertions(+), 1 deletions(-)
+>>
+>> diff --git a/net/sunrpc/clnt.c b/net/sunrpc/clnt.c
+>> index 8c6a7f1..b6d409e 100644
+>> --- a/net/sunrpc/clnt.c
+>> +++ b/net/sunrpc/clnt.c
+>> @@ -1162,7 +1162,7 @@ call_timeout(struct rpc_task *task)
+>>  	if (RPC_IS_SOFT(task)) {
+>>  		printk(KERN_NOTICE "%s: server %s not responding, timed out\n",
+>>  				clnt->cl_protname, clnt->cl_server);
+>> -		rpc_exit(task, -EIO);
+>> +		rpc_exit(task, -ETIMEDOUT);
+>>  		return;
+>>  	}
+>
+> While that may be acceptable for the mount() syscall, I don't think
+> POSIX applications are quite ready to deal with ETIMEDOUT as an error
+> for stat() or chdir().
 
-> On 27-03-08 18:50, Bjorn Helgaas wrote:
-> 
->> Are any ISAPNP devices at all found?
-> 
-> Yes, but at most 100 * 10^4 / 2^16 percent of them. Trouble is in 04/37:
+Having the RPC client throw -EIO on a timeout always seemed a little  
+crude to me.  EIO is quite overloaded -- the same error is returned  
+if there's a XDR decoding error, for example.  Clearly other  
+consumers of RPC (mount, for example) would like a distinction  
+between a timeout and an outright I/O error.
 
-Well, that should read "Yes, no less than 100 * 10^4 / 2^16 percent of them 
-even" but you get the point...
+The fact that applications using NFS files can't deal with -ETIMEDOUT  
+should probably be managed in the NFS client, not in the RPC client.   
+Perhaps it could be handled with a wrapper function, like the NFS  
+client handles EJUKEBOX.
 
-Rene.
+So I agree that Jeff's patch is insufficient as it stands, but the  
+underlying idea is probably a good one.
+
+> Userland has the clnt_geterr() function that returns more detailed  
+> 'RPC
+> level' errors. While that 'error function call' approach doesn't  
+> work in
+> a multi-threaded environment, we might still be able to add the
+> equivalent of a pointer to an 'rpc_err' structure to the rpc_task, and
+> then have functions like call_timeout() (and especially call_verify 
+> ()!)
+> fill in more detailed error info if that pointer is non-zero?
+
+
+That's not a bad idea either.
+
+--
+Chuck Lever
+chuck[dot]lever[at]oracle[dot]com
