@@ -1,52 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756499AbYCaQUw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756911AbYCaQVs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756499AbYCaQUw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Mar 2008 12:20:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752858AbYCaQUp
+	id S1756911AbYCaQVs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Mar 2008 12:21:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753095AbYCaQVl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Mar 2008 12:20:45 -0400
-Received: from ti-out-0910.google.com ([209.85.142.186]:34408 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751684AbYCaQUo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Mar 2008 12:20:44 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=pFTUEzOC1lwsIKw6oCUFY5/gRGENvpQiV8Jv+JknbEspUVfsbmW7pO0MeLE9F7/VX+j4z3JfLbXHc5xmZ9cODsCjKMTfLGo3BKOnI0EuxpkxzYct+rhzJ3m1n9hUVLXGGiFMUd5FB1M32xD6z9jvmsqI3sTKRQKBXXpdicl35G0=
-Message-ID: <df47b87a0803310920uc375226x1c0399e4cdef060@mail.gmail.com>
-Date: Mon, 31 Mar 2008 19:20:42 +0300
-From: "Ioan Ionita" <opslynx@gmail.com>
-To: "Peter Teoh" <htmldeveloper@gmail.com>
-Subject: Re: RFC: Writing Solaris Device Drivers in Java
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <804dabb00803310852k507bd6b8ka2eac9a0f070d4ab@mail.gmail.com>
+	Mon, 31 Mar 2008 12:21:41 -0400
+Received: from gate.crashing.org ([63.228.1.57]:42308 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753052AbYCaQVk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 31 Mar 2008 12:21:40 -0400
+Date: Mon, 31 Mar 2008 11:17:22 -0500 (CDT)
+From: Kumar Gala <galak@kernel.crashing.org>
+X-X-Sender: galak@blarg.am.freescale.net
+To: linuxppc-dev@ozlabs.org
+cc: linux-kernel@vger.kernel.org, dan.j.williams@intel.com,
+       wei.zhang@freescale.com
+Subject: [PATCH] [POWERPC] fsldma: Use compatiable binding as spec
+Message-ID: <Pine.LNX.4.64.0803311115540.5470@blarg.am.freescale.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <47F0491F.4050804@gmail.com>
-	 <E1JgAEe-0006hb-00@calista.eckenfels.net>
-	 <804dabb00803310818u36b29ea3hf10ec0e44fdf7d8c@mail.gmail.com>
-	 <804dabb00803310852k507bd6b8ka2eac9a0f070d4ab@mail.gmail.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 31, 2008 at 6:52 PM, Peter Teoh <htmldeveloper@gmail.com> wrote:
+Documentation/powerpc/booting-without-of.txt specifies the
+compatiables we should bind to for this driver (elo, eloplus).
+Use these instead of the extremely specific 'mpc8540' and 'mpc8349'
+compatiables.
 
->  Just would like to comment further:   analogous to the trend that with
->  the huge increase in storage space availability, size of storage
->  required is of minimal concerns, in comparison with other more serious
->  bottlenecks,  the future CPU may have so much spare execution cycles,
->  that emulation (like what Java or AMD Pacifica or Intel VMX is doing)
->  is a much needed feature instead, as it provide other feature like
->  security assurance etc, without affecting interactivity on the users,
->  or perhaps being overshadowed by other bottleneck (like network I/O,
->  or harddisk I/O etc).
+Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+---
 
-Sure, let's all develop power-hungry applications cause the technology
-and infrastructure can support it. And to hell with increasing energy
-prices, energy crisis and global warming.  Only thing that matters to
-me is figuring out how to set the CLASSPATH properly! The world, may
-it crumble for all I care!
+Dan, if you don't have any issue with this I'll sent it via the powerpc
+tree (since its not really about functionality).
+
+- k
+
+ drivers/dma/fsldma.c |    8 ++++----
+ 1 files changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/dma/fsldma.c b/drivers/dma/fsldma.c
+index 7269230..df16368 100644
+--- a/drivers/dma/fsldma.c
++++ b/drivers/dma/fsldma.c
+@@ -1021,11 +1021,11 @@ const u32 mpc8349_dma_ip_feature = FSL_DMA_IP_83XX | FSL_DMA_LITTLE_ENDIAN;
+
+ static struct of_device_id of_fsl_dma_chan_ids[] = {
+ 	{
+-		.compatible = "fsl,mpc8540-dma-channel",
++		.compatible = "fsl,eloplus-dma-channel",
+ 		.data = (void *)&mpc8540_dma_ip_feature,
+ 	},
+ 	{
+-		.compatible = "fsl,mpc8349-dma-channel",
++		.compatible = "fsl,elo-dma-channel",
+ 		.data = (void *)&mpc8349_dma_ip_feature,
+ 	},
+ 	{}
+@@ -1107,8 +1107,8 @@ err:
+ }
+
+ static struct of_device_id of_fsl_dma_ids[] = {
+-	{ .compatible = "fsl,mpc8540-dma", },
+-	{ .compatible = "fsl,mpc8349-dma", },
++	{ .compatible = "fsl,eloplus-dma", },
++	{ .compatible = "fsl,elo-dma", },
+ 	{}
+ };
+
+-- 
+1.5.4.1
+
