@@ -1,63 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758154AbYCaVBq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758263AbYCaVCW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758154AbYCaVBq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Mar 2008 17:01:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756812AbYCaVBi
+	id S1758263AbYCaVCW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Mar 2008 17:02:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755543AbYCaVCP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Mar 2008 17:01:38 -0400
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:44942 "EHLO e2.ny.us.ibm.com"
+	Mon, 31 Mar 2008 17:02:15 -0400
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:46369 "EHLO smtp4.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755427AbYCaVBh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Mar 2008 17:01:37 -0400
-Date: Mon, 31 Mar 2008 14:01:35 -0700
-From: "Darrick J. Wong" <djwong@us.ibm.com>
-To: Jean Delvare <khali@linux-fr.org>
-Cc: "Mark M. Hoffman" <mhoffman@lightlink.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       lm-sensors <lm-sensors@lm-sensors.org>
-Subject: Re: [PATCH 1/2] Define sysfs interfaces for ibmaem driver
-Message-ID: <20080331210135.GC7183@tree.beaverton.ibm.com>
-References: <20080328213646.GC7191@tree.beaverton.ibm.com> <20080329145603.7e47418f@hyperion.delvare>
+	id S1756020AbYCaVCO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 31 Mar 2008 17:02:14 -0400
+Date: Tue, 1 Apr 2008 00:02:12 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: linux-kernel@vger.kernel.org
+Subject: [2.6 patch] the scheduled i386/x86_64 bzImage symlinks removal
+Message-ID: <20080331210212.GD23259@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20080329145603.7e47418f@hyperion.delvare>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Mar 29, 2008 at 02:56:03PM +0100, Jean Delvare wrote:
-> > +energy[1-*]_input		Instantaneous energy use
-> 
-> This doesn't make sense to me. Energy is a quantity, it exists
-> independently of time. An "instantaneous energy use" only makes sense
-> if you tell in what (presumably very small) amount of time the energy
-> was used... and then what you are measuring is not an energy but a
-> power, for which we already have an interface. Please clarify.
+This patch contains the scheduled removal of the i386/x86_64 bzImage 
+symlinks.
 
-Wes Felter suggested "Cumulative energy use", and I'll go with that.
+Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
-> > +power[1-*]_interval		Power use averaging interval
-> 
-> Wouldn't power[1-*]_average_interval be clearer?
+---
 
-Given that power is energy used over a period of time, I wonder if it
-might be more accurate to remove powerX_input and leave this name alone.
-That said, it does seem to be the case that interval names take the
-format "${sensorfile}_interval", so I suppose it makes more sense the
-way that you suggest.
+ Documentation/feature-removal-schedule.txt |   12 ------------
+ arch/x86/Makefile                          |    2 --
+ 2 files changed, 14 deletions(-)
 
-> > +				Unit: milliseconds
-> 
-> Nitpicking for consistency: millisecond (no trailing s).
-> 
-> What values do you expect for this entry? I am wondering if it's safe
-> to use millisecond as a unit. Is it unlikely that a future chip will
-> support averaging intervals below the millisecond?
+8f683fe014e1897c09cedb0b39078ba3f85a47f4 diff --git a/Documentation/feature-removal-schedule.txt b/Documentation/feature-removal-schedule.txt
+index bf0e3df..1092b2e 100644
+--- a/Documentation/feature-removal-schedule.txt
++++ b/Documentation/feature-removal-schedule.txt
+@@ -211,18 +211,6 @@ Who:    Stephen Hemminger <shemminger@linux-foundation.org>
+ 
+ ---------------------------
+ 
+-What:	i386/x86_64 bzImage symlinks
+-When:	April 2008
+-
+-Why:	The i386/x86_64 merge provides a symlink to the old bzImage
+-	location so not yet updated user space tools, e.g. package
+-	scripts, do not break.
+-Who:	Thomas Gleixner <tglx@linutronix.de>
+-
+----------------------------
+-
+----------------------------
+-
+ What:	i2c-i810, i2c-prosavage and i2c-savage4
+ When:	May 2008
+ Why:	These drivers are superseded by i810fb, intelfb and savagefb.
+diff --git a/arch/x86/Makefile b/arch/x86/Makefile
+index f1e739a..50d3e99 100644
+--- a/arch/x86/Makefile
++++ b/arch/x86/Makefile
+@@ -215,8 +215,6 @@ zImage zlilo zdisk: KBUILD_IMAGE := arch/x86/boot/zImage
+ 
+ zImage bzImage: vmlinux
+ 	$(Q)$(MAKE) $(build)=$(boot) $(KBUILD_IMAGE)
+-	$(Q)mkdir -p $(objtree)/arch/$(UTS_MACHINE)/boot
+-	$(Q)ln -fsn ../../x86/boot/bzImage $(objtree)/arch/$(UTS_MACHINE)/boot/bzImage
+ 
+ compressed: zImage
+ 
 
-It's possible that a future chip could do this, though today we only
-support intervals in the hundreds of milliseconds.  The default for the
-ibmaem driver is currently 1s.
-
---D
