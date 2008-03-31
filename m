@@ -1,47 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755425AbYCaKic@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754003AbYCaKo3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755425AbYCaKic (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Mar 2008 06:38:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752614AbYCaKiW
+	id S1754003AbYCaKo3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Mar 2008 06:44:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751542AbYCaKoS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Mar 2008 06:38:22 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:43973 "EHLO mx1.redhat.com"
+	Mon, 31 Mar 2008 06:44:18 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:60398 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752431AbYCaKiV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Mar 2008 06:38:21 -0400
-Subject: Re: [PATCH 1/5] fs/gfs2: test for IS_ERR rather than 0
-From: Steven Whitehouse <swhiteho@redhat.com>
-To: Julia Lawall <julia@diku.dk>
-Cc: cluster-devel@redhat.com, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org, akpm@linux-foundation.org
-In-Reply-To: <Pine.LNX.4.64.0803241908210.32740@ask.diku.dk>
-References: <Pine.LNX.4.64.0803241908210.32740@ask.diku.dk>
-Content-Type: text/plain
-Organization: Red Hat (UK) Ltd (Registered in England and Wales, No.
-	3798903) Registered office: Red Hat UK Ltd, Amberley Place, 107-111 Peascod
-	Street, Windsor, Berkshire, SL4 ITE
-Date: Mon, 31 Mar 2008 11:35:43 +0100
-Message-Id: <1206959743.3635.123.camel@quoit>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
-Content-Transfer-Encoding: 7bit
+	id S1751484AbYCaKoR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 31 Mar 2008 06:44:17 -0400
+Date: Mon, 31 Mar 2008 12:44:03 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: David Miller <davem@davemloft.net>
+Cc: dada1@cosmosbay.com, netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       a.p.zijlstra@chello.nl
+Subject: Re: [RFC,PATCH] loopback: calls netif_receive_skb() instead of
+	netif_rx()
+Message-ID: <20080331104403.GA12681@elte.hu>
+References: <20080323.032949.194309002.davem@davemloft.net> <47E6A5FD.6060407@cosmosbay.com> <20080331094823.GA11651@elte.hu> <20080331.030848.175668431.davem@davemloft.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080331.030848.175668431.davem@davemloft.net>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
 
-On Mon, 2008-03-24 at 19:08 +0100, Julia Lawall wrote:
-> From: Julia Lawall <julia@diku.dk>
+* David Miller <davem@davemloft.net> wrote:
+
+> I don't think it's safe.
 > 
-> The function gfs2_inode_lookup always returns either a valid pointer or a
-> value made with ERR_PTR, so its result should be tested with IS_ERR, not
-> with a test for 0.
+> Every packet you receive can result in a sent packet, which in turn 
+> can result in a full packet receive path being taken, and yet again 
+> another sent packet.
 > 
-Sorry for the delay - I've just got back from holiday. Its now in the
-GFS2 -nmw git tree. Also I updated the tree to the latest Linus git tree
-at the same time. Thanks,
+> And so on and so forth.
+> 
+> Some cases like this would be stack bugs, but wouldn't you like that 
+> bug to be a very busy cpu instead of a crash from overrunning the 
+> current stack?
 
-Steve.
+sure.
 
+But the core problem remains: our loopback networking scalability is 
+poor. For plain localhost<->localhost connected sockets we hit the 
+loopback device lock for every packet, and this very much shows up on 
+real workloads on a quad already: the lock instruction in netif_rx is 
+the most expensive instruction in a sysbench DB workload.
 
+and it's not just about scalability, the plain algorithmic overhead is 
+way too high as well:
+
+ $ taskset 1 ./bw_tcp -s
+ $ taskset 1 ./bw_tcp localhost
+ Socket bandwidth using localhost: 2607.09 MB/sec
+ $ taskset 1 ./bw_pipe
+ Pipe bandwidth: 3680.44 MB/sec
+
+i dont think this is acceptable. Either we should fix loopback TCP 
+performance or we should transparently switch to VFS pipes as a 
+transport method when an app establishes a plain loopback connection (as 
+long as there are no frills like content-modifying component in the 
+delivery path of packets after a connection has been established - which 
+covers 99.9% of the real-life loopback cases).
+
+I'm not suggesting we shouldnt use TCP for connection establishing - but 
+if the TCP loopback packet transport is too slow we should use the VFS 
+transport which is both more scalable, less cache-intense and has lower 
+straight overhead as well.
+
+	Ingo
