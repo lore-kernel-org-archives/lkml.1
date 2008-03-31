@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754220AbYCaLFw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754432AbYCaLLf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754220AbYCaLFw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Mar 2008 07:05:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752372AbYCaLFo
+	id S1754432AbYCaLLf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Mar 2008 07:11:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752447AbYCaLL1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Mar 2008 07:05:44 -0400
-Received: from ns2.gothnet.se ([82.193.160.251]:2307 "EHLO
+	Mon, 31 Mar 2008 07:11:27 -0400
+Received: from ns2.gothnet.se ([82.193.160.251]:8298 "EHLO
 	GOTHNET-SMTP2.gothnet.se" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752266AbYCaLFo convert rfc822-to-8bit
+	by vger.kernel.org with ESMTP id S1752266AbYCaLL0 convert rfc822-to-8bit
 	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Mar 2008 07:05:44 -0400
-Message-ID: <47F0C554.1060408@tungstengraphics.com>
-Date: Mon, 31 Mar 2008 13:04:52 +0200
+	Mon, 31 Mar 2008 07:11:26 -0400
+Message-ID: <47F0C6C2.2000004@tungstengraphics.com>
+Date: Mon, 31 Mar 2008 13:10:58 +0200
 From: =?ISO-8859-1?Q?Thomas_Hellstr=F6m?= <thomas@tungstengraphics.com>
 User-Agent: Thunderbird 1.5.0.7 (X11/20060921)
 MIME-Version: 1.0
-To: Arjan van de Ven <arjan@linux.intel.com>
+To: Andi Kleen <andi@firstfloor.org>
 CC: Dave Airlie <airlied@redhat.com>, linux-kernel@vger.kernel.org,
-       tglx@linutronix.de, mingo@redhat.com
+       tglx@linutronix.de, mingo@redhat.com, arjan@linux.intel.com
 Subject: Re: [PATCH] x86: create array based interface to change page attribute
-References: <1206940788.7250.13.camel@clockmaker.usersys.redhat.com> <47F08AC1.6010406@tungstengraphics.com> <47F0AFD7.5080307@linux.intel.com>
-In-Reply-To: <47F0AFD7.5080307@linux.intel.com>
+References: <1206940788.7250.13.camel@clockmaker.usersys.redhat.com> <87myof8ief.fsf@basil.nowhere.org> <47F098E8.1050605@tungstengraphics.com> <20080331083816.GC29105@one.firstfloor.org> <47F0A988.7010707@tungstengraphics.com> <20080331091829.GD29105@one.firstfloor.org>
+In-Reply-To: <20080331091829.GD29105@one.firstfloor.org>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 X-BitDefender-Scanner: Mail not scanned due to license constraints
 Content-Transfer-Encoding: 8BIT
@@ -28,76 +28,61 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arjan van de Ven wrote:
-> Thomas Hellström wrote:
->> Dave Airlie wrote:
->>> When cpa was refactored to the new set_memory_ interfaces, it removed
->>> a special case fast path for AGP systems, which did a lot of page by 
->>> page
->>> attribute changing and held the flushes until they were finished. The
->>> DRM memory manager also required this to get useable speeds.
+Andi Kleen wrote:
+> On Mon, Mar 31, 2008 at 11:06:16AM +0200, Thomas Hellström wrote:
+>   
+>> Andi Kleen wrote:
+>>     
+>>>> Also I think we need to clarify the semantics of the c_p_a 
+>>>> functionality. Right now both AGP and DRM relies on c_p_a  doing an 
+>>>> explicit cache flush. Otherwise the data won't appear on the device side 
+>>>> of the aperture.
+>>>>    
+>>>>         
+>>> But surely not in cpa I hope ? Or are you saying you first write data
+>>> and then do cpa? If true that would be quite an abuse of CPA 
+>>> I would say and you should fix it ASAP.
 >>>
->>> This introduces a new interface, which accepts an array of memory 
->>> addresses
->>> to have attributes changed on and to flush once finished.
->>>
->>> Further changes to the AGP stack to actually use this interface will be
->>> published later.
->>>
->>> Signed-off-by: Dave Airlie <airlied@redhat.com>
->>> ---
->>>  arch/x86/mm/pageattr-test.c  |   12 ++-
->>>  arch/x86/mm/pageattr.c       |  164 
->>> +++++++++++++++++++++++++++++++-----------
->>>  include/asm-x86/cacheflush.h |    3 +
->>>  3 files changed, 132 insertions(+), 47 deletions(-)
->>>   
->> ...
->> Dave,
->> Nice work, but how do we handle highmem pages? 
+>>>  
+>>>       
+>> As AGP buffers are moved in- and out of AGP, the caching policy changes, 
+>> so yes, there may be writes to cache coherent memory that needs to be 
+>> flushed at some point. Since CPA has been doing that up to now, and the 
+>> codepaths involved are quite time-critical, a double cache-flush is a 
+>>     
 >
-> Cache attributes fundamentally work on a mapping and not on physical 
-> memory.
-> (MTRR's are special there, they do work on physical memory, but that's 
-> a special case and not relevant here)
+> That doesn't make sense. You shouldn't be using CPA in any 
+> time critical code path. It will always be slow. 
 >
-> So to be honest, your question doesn't make sense;  because all I can 
-> do is ask "which mapping of these pages".
+> For anything time critical you should keep a pool of uncached pages 
+> once set up using CPA and reuse them.
 >
-> Even the old interfaces prior to 2.6.24 only managed to deal with SOME 
-> of the mappings of a page.
-> And if/when future CPUs don't require all mappings to be in sync, 
-> clearly the kernel will only change
-> the mapping that is requested as well.
+> CPA really should only be used on initialization or for
+> larger setup changes which are ok to go somewhat slower.
+>   
+Let me rehprase. Not really time-critical but it is of some importance 
+that CPA is done quickly.
+We're dealing with the tradeoff of reading from uncached device memory 
+vs taking the pages out of
+AGP, setting up a cache-coherent mapping, read and then change back. 
+What we'd really would like to set up is a pool of completely unmapped 
+(like highmem) pages. Then we could, to a large extent, avoid the CPA calls.
+
 >
 >
+> The cache must be flushed in CPA, there is no way around it.
 >
->> Since this is an AGPgart and DRM fastpath, the interface should 
->> ideally be adapted to match the data structures used by those callers. 
+> If you write data into the buffers before you do CPA on them
+> you could avoid it, but I don't think you should do that anywhere
+> near time critical code, so it actually shouldn't matter.
 >
-> Actually, the interface has to make sense conceptually convey the 
-> right information,
-> the implementation should not have to second guess internals of 
-> AGP/DRM because that
-> would just be a recipe for disaster.
->> The AGPgart module uses an array of addresses, which effectively 
->> stops it from using pages beyond the DMA32 limit. The DRM memory 
->> manager uses an array of struct page pointers, but using that was, If 
->> I understand things correctly, rejected.
->
-> yes because simply put, if you pass a struct page to such a function, 
-> you're not telling it which
-> mapping or mappings you want changed....
-> (And if you say "only the 1:1 mapping, so why doesn't the other side 
-> calculate that"... there's no speed gain in doing
-> the calculation for that on the other side of an interface, and that 
-> makes it zero reason to misdesign the interface
-> to only have the "which mapping" information implicit)
->
-Hmm. I get the point. There should be ways to do reasonably efficient 
-workarounds in the drivers.
+> -Andi
+>   
+But then we wouldn't really be discussing SS either? For DRM purposes, 
+the more performance we can squeeze out of CPA, the better.
 
 /Thomas
+
 
 
 
