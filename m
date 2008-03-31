@@ -1,56 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756853AbYCaSfm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755693AbYCaSia@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756853AbYCaSfm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Mar 2008 14:35:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753371AbYCaSfd
+	id S1755693AbYCaSia (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Mar 2008 14:38:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753371AbYCaSiX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Mar 2008 14:35:33 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:38623 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753788AbYCaSfd (ORCPT
+	Mon, 31 Mar 2008 14:38:23 -0400
+Received: from smtp10.unit.tiscali.de ([213.205.33.46]:46889 "EHLO
+	smtp10.unit.tiscali.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751752AbYCaSiX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Mar 2008 14:35:33 -0400
-Date: Mon, 31 Mar 2008 11:34:32 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
+	Mon, 31 Mar 2008 14:38:23 -0400
+Message-ID: <47F12CE9.1090202@the2masters.de>
+Date: Mon, 31 Mar 2008 20:26:49 +0200
+From: Stefan Hellermann <stefan@the2masters.de>
+User-Agent: Thunderbird 2.0.0.9 (X11/20080218)
+MIME-Version: 1.0
 To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Stefan Hellermann <stefan@the2masters.de>, linux-kernel@vger.kernel.org
+CC: linux-kernel@vger.kernel.org
 Subject: Re: make O=dir fails with current git
-Message-Id: <20080331113432.b9a153b9.randy.dunlap@oracle.com>
+References: <47EE8829.10409@the2masters.de> <20080331180022.GA4833@uranus.ravnborg.org>
 In-Reply-To: <20080331180022.GA4833@uranus.ravnborg.org>
-References: <47EE8829.10409@the2masters.de>
-	<20080331180022.GA4833@uranus.ravnborg.org>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 31 Mar 2008 20:00:22 +0200 Sam Ravnborg wrote:
-
+Sam Ravnborg schrieb:
 > On Sat, Mar 29, 2008 at 07:19:21PM +0100, Stefan Hellermann wrote:
-> > Hi,
-> > 
-> > I'm using "make O=machinename" for building different kernels from one tree. About 15 days
-> > ago it was okay, with current git it fails:
-> > $ make O=client1
-> > scripts/kconfig/conf -s arch/x86/Kconfig
-> >   Using /srv/devel/kernel as source for kernel
-> >   /srv/devel/kernel is not clean, please run 'make mrproper'
-> >   in the '/srv/devel/kernel' directory.
-> > make[1]: *** [prepare3] Error 1
-> > make: *** [sub-make] Error 2
-> > 
-> > running "make mrproper" (without O=dir) doesn't help.
-> > I've not changed anything, I only made a "git-pull".
-> > Now I'm at home, tried "mkdir test; make O=test defconfig all" with current git-head, it
-> > doesn't work too.
+>> Hi,
+>>
+>> I'm using "make O=machinename" for building different kernels from one tree. About 15 days
+>> ago it was okay, with current git it fails:
+>> $ make O=client1
+>> scripts/kconfig/conf -s arch/x86/Kconfig
+>>   Using /srv/devel/kernel as source for kernel
+>>   /srv/devel/kernel is not clean, please run 'make mrproper'
+>>   in the '/srv/devel/kernel' directory.
+>> make[1]: *** [prepare3] Error 1
+>> make: *** [sub-make] Error 2
+>>
+>> running "make mrproper" (without O=dir) doesn't help.
+>> I've not changed anything, I only made a "git-pull".
+>> Now I'm at home, tried "mkdir test; make O=test defconfig all" with current git-head, it
+>> doesn't work too.
 > 
 > I tried to reproduce this here without luck.
 > The tests performed by kbuild to dertermine if the
@@ -58,6 +52,18 @@ On Mon, 31 Mar 2008 20:00:22 +0200 Sam Ravnborg wrote:
 > If the file .config exist or the directory
 > include/config exists then the source tree is considered clean.
 > Otherwise you get the above message.
+
+Hi, damn, it's that easy!
+It was the .config file, I added (as root) a symlink to dir/.config to let some other
+application check if some Kernel-options are set, then the permissions of this symlink
+prevented make mrproper from removing it.
+
+For what purpose is this check? I can't point the other application to kerneldir/dir
+because it also greps in kerneldir/Makefile for the kernel-version.
+
+Thanks
+Stefan
+
 > 
 > Can you please try to run: make mrproper
 > and then manually check if the .config file
@@ -67,20 +73,5 @@ On Mon, 31 Mar 2008 20:00:22 +0200 Sam Ravnborg wrote:
 > check your permissions.
 > 
 > In any case let me know the result.
-
-I have no trouble reproducing it.
-
-mkdir X64
-make O=X64 ARCH=x86_64 defconfig all
-
-and it prints:
-make[2]: Nothing to be done for `/tester/linsrc/linux-2.6.25-rc7-git6/Makefile'.
-make[1]: Nothing to be done for `all'.
-
-before it does the defconfig part.
-
-There is no $topdir/.config or $topdir/include/config.
-Those do exist in the O=X64 directory, however.
-
----
-~Randy
+> 
+> 	Sam
