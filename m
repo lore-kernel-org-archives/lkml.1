@@ -1,55 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754504AbYCaLTf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754818AbYCaLV2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754504AbYCaLTf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Mar 2008 07:19:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752485AbYCaLTZ
+	id S1754818AbYCaLV2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Mar 2008 07:21:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752485AbYCaLVV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Mar 2008 07:19:25 -0400
-Received: from e28smtp02.in.ibm.com ([59.145.155.2]:56672 "EHLO
-	e28smtp02.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752353AbYCaLTY (ORCPT
+	Mon, 31 Mar 2008 07:21:21 -0400
+Received: from fg-out-1718.google.com ([72.14.220.156]:44508 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752447AbYCaLVU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Mar 2008 07:19:24 -0400
-Message-ID: <47F0C8B6.7020808@linux.vnet.ibm.com>
-Date: Mon, 31 Mar 2008 16:49:18 +0530
-From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-User-Agent: Thunderbird 1.5.0.14ubu (X11/20080306)
+	Mon, 31 Mar 2008 07:21:20 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=nzmdNFUm06o1qFCBPTlqSJWEfaEpzVBoKH5QNTlLZJFDQBLvAIhIH7SUka7DLcYjXls7c8nCGN/YTYy0t3kI8/uRlgpSoVede14c7DgWmcGf/xFhZazjirzcVn1sdJeFXhsTpl+FkTX1FUeTM+qeYD/Zl0zYm2I4ZzyMFnXvcUA=
+Message-ID: <21d7e9970803310421k67f1a697s8ffb5a4eef71c605@mail.gmail.com>
+Date: Mon, 31 Mar 2008 21:21:19 +1000
+From: "Dave Airlie" <airlied@gmail.com>
+To: "Andi Kleen" <andi@firstfloor.org>
+Subject: Re: [PATCH] x86: create array based interface to change page attribute
+Cc: "Dave Airlie" <airlied@redhat.com>, linux-kernel@vger.kernel.org,
+       tglx@linutronix.de, mingo@redhat.com, arjan@linux.intel.com,
+       thomas@tungstengraphics.com
+In-Reply-To: <87myof8ief.fsf@basil.nowhere.org>
 MIME-Version: 1.0
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-CC: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       Andy Whitcroft <apw@shadowen.org>
-Subject: [BUILD_FAILURE] linux-next: Tree for March 31 build fails on fs/novfs
- sys_flistxattr()
-References: <20080331181118.7964d4a9.sfr@canb.auug.org.au>
-In-Reply-To: <20080331181118.7964d4a9.sfr@canb.auug.org.au>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1206940788.7250.13.camel@clockmaker.usersys.redhat.com>
+	 <87myof8ief.fsf@basil.nowhere.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Stephen,
+On Mon, Mar 31, 2008 at 5:25 PM, Andi Kleen <andi@firstfloor.org> wrote:
+> Dave Airlie <airlied@redhat.com> writes:
+>  >
+>  > +#define CPA_FLUSHTLB 1
+>  > +#define CPA_ARRAY 2
+>
+>  I don't think CPA_ARRAY should be a separate case. Rather single
+>  page flushing should be an array with only a single entry. pageattr
+>  is already very complex, no need to make add more special cases.
 
-The next-20080331 allyesconfig, build fails on x86_64 machine
+I thought about this but the current interface takes a start address
+and number of pages from that point to cpa,
+the array interface takes an array of page sized pages.
 
-fs/novfs/built-in.o: In function `sys_flistxattr':
-/root/kernels/linux-2.6.25-rc7/fs/novfs/inode.c:4658: multiple definition of `sys_flistxattr'
-fs/xattr.o:/root/kernels/linux-2.6.25-rc7/fs/xattr.c:457: first defined here
-ld: Warning: size of symbol `sys_flistxattr' changed from 112 in fs/xattr.o to 75 in fs/novfs/built-in.o
-fs/novfs/built-in.o: In function `sys_fsetxattr':
-/root/kernels/linux-2.6.25-rc7/fs/novfs/inode.c:4672: multiple definition of `sys_fsetxattr'
-fs/xattr.o:/root/kernels/linux-2.6.25-rc7/fs/xattr.c:295: first defined here
-ld: Warning: size of symbol `sys_fsetxattr' changed from 164 in fs/xattr.o to 97 in fs/novfs/built-in.o
-fs/novfs/built-in.o: In function `sys_fgetxattr':
-/root/kernels/linux-2.6.25-rc7/fs/novfs/inode.c:4645: multiple definition of `sys_fgetxattr'
-fs/xattr.o:/root/kernels/linux-2.6.25-rc7/fs/xattr.c:384: first defined here
-ld: Warning: size of symbol `sys_fgetxattr' changed from 128 in fs/xattr.o to 91 in fs/novfs/built-in.o
-make[1]: *** [fs/built-in.o] Error 1
-make: *** [fs] Error 2
+I don't really think we need to generate an array in the first case
+with all the pages in it..
 
-
--- 
-Thanks & Regards,
-Kamalesh Babulal,
-Linux Technology Center,
-IBM, ISTL.
+Dave.
