@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759815AbYCaOrP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757671AbYCaOra@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759815AbYCaOrP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Mar 2008 10:47:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753305AbYCaOht
+	id S1757671AbYCaOra (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Mar 2008 10:47:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752290AbYCaOhu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Mar 2008 10:37:49 -0400
-Received: from bzq-179-150-194.static.bezeqint.net ([212.179.150.194]:51319
+	Mon, 31 Mar 2008 10:37:50 -0400
+Received: from bzq-179-150-194.static.bezeqint.net ([212.179.150.194]:51325
 	"EHLO il.qumranet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751647AbYCaOhf (ORCPT
+	with ESMTP id S1751612AbYCaOhf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 31 Mar 2008 10:37:35 -0400
 From: Avi Kivity <avi@qumranet.com>
 To: kvm-devel@lists.sourceforge.net
 Cc: linux-kernel@vger.kernel.org, Joerg Roedel <joerg.roedel@amd.com>
-Subject: [PATCH 31/40] KVM: SVM: enable LBR virtualization
-Date: Mon, 31 Mar 2008 17:37:15 +0300
-Message-Id: <1206974244-9716-32-git-send-email-avi@qumranet.com>
+Subject: [PATCH 26/40] KVM: MMU: add TDP support to the KVM MMU
+Date: Mon, 31 Mar 2008 17:37:10 +0300
+Message-Id: <1206974244-9716-27-git-send-email-avi@qumranet.com>
 X-Mailer: git-send-email 1.5.4.5
 In-Reply-To: <1206974244-9716-1-git-send-email-avi@qumranet.com>
 References: <1206974244-9716-1-git-send-email-avi@qumranet.com>
@@ -25,83 +25,165 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Joerg Roedel <joerg.roedel@amd.com>
 
-This patch implements the Last Branch Record Virtualization (LBRV) feature of
-the AMD Barcelona and Phenom processors into the kvm-amd module. It will only
-be enabled if the guest enables last branch recording in the DEBUG_CTL MSR. So
-there is no increased world switch overhead when the guest doesn't use these
-MSRs.
+This patch contains the changes to the KVM MMU necessary for support of the
+Nested Paging feature in AMD Barcelona and Phenom Processors.
 
 Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
-Signed-off-by: Markus Rechberger <markus.rechberger@amd.com>
 Signed-off-by: Avi Kivity <avi@qumranet.com>
 ---
- arch/x86/kvm/svm.c |   39 +++++++++++++++++++++++++++++++++++++--
- 1 files changed, 37 insertions(+), 2 deletions(-)
+ arch/x86/kvm/mmu.c |   79 ++++++++++++++++++++++++++++++++++++++++++++++++++--
+ arch/x86/kvm/mmu.h |    6 ++++
+ 2 files changed, 82 insertions(+), 3 deletions(-)
 
-diff --git a/arch/x86/kvm/svm.c b/arch/x86/kvm/svm.c
-index 281a2ff..7d73e93 100644
---- a/arch/x86/kvm/svm.c
-+++ b/arch/x86/kvm/svm.c
-@@ -47,6 +47,8 @@ MODULE_LICENSE("GPL");
- #define SVM_FEATURE_LBRV (1 << 1)
- #define SVM_DEATURE_SVML (1 << 2)
+diff --git a/arch/x86/kvm/mmu.c b/arch/x86/kvm/mmu.c
+index 33cd7c9..f7541fe 100644
+--- a/arch/x86/kvm/mmu.c
++++ b/arch/x86/kvm/mmu.c
+@@ -1097,6 +1097,7 @@ static void mmu_alloc_roots(struct kvm_vcpu *vcpu)
+ 	int i;
+ 	gfn_t root_gfn;
+ 	struct kvm_mmu_page *sp;
++	int metaphysical = 0;
  
-+#define DEBUGCTL_RESERVED_BITS (~(0x3fULL))
-+
- /* enable NPT for AMD64 and X86 with PAE */
- #if defined(CONFIG_X86_64) || defined(CONFIG_X86_PAE)
- static bool npt_enabled = true;
-@@ -387,6 +389,28 @@ static void svm_vcpu_init_msrpm(u32 *msrpm)
- 	set_msr_interception(msrpm, MSR_IA32_SYSENTER_EIP, 1, 1);
+ 	root_gfn = vcpu->arch.cr3 >> PAGE_SHIFT;
+ 
+@@ -1105,14 +1106,20 @@ static void mmu_alloc_roots(struct kvm_vcpu *vcpu)
+ 		hpa_t root = vcpu->arch.mmu.root_hpa;
+ 
+ 		ASSERT(!VALID_PAGE(root));
++		if (tdp_enabled)
++			metaphysical = 1;
+ 		sp = kvm_mmu_get_page(vcpu, root_gfn, 0,
+-				      PT64_ROOT_LEVEL, 0, ACC_ALL, NULL);
++				      PT64_ROOT_LEVEL, metaphysical,
++				      ACC_ALL, NULL);
+ 		root = __pa(sp->spt);
+ 		++sp->root_count;
+ 		vcpu->arch.mmu.root_hpa = root;
+ 		return;
+ 	}
+ #endif
++	metaphysical = !is_paging(vcpu);
++	if (tdp_enabled)
++		metaphysical = 1;
+ 	for (i = 0; i < 4; ++i) {
+ 		hpa_t root = vcpu->arch.mmu.pae_root[i];
+ 
+@@ -1126,7 +1133,7 @@ static void mmu_alloc_roots(struct kvm_vcpu *vcpu)
+ 		} else if (vcpu->arch.mmu.root_level == 0)
+ 			root_gfn = 0;
+ 		sp = kvm_mmu_get_page(vcpu, root_gfn, i << 30,
+-				      PT32_ROOT_LEVEL, !is_paging(vcpu),
++				      PT32_ROOT_LEVEL, metaphysical,
+ 				      ACC_ALL, NULL);
+ 		root = __pa(sp->spt);
+ 		++sp->root_count;
+@@ -1160,6 +1167,36 @@ static int nonpaging_page_fault(struct kvm_vcpu *vcpu, gva_t gva,
+ 			     error_code & PFERR_WRITE_MASK, gfn);
  }
  
-+static void svm_enable_lbrv(struct vcpu_svm *svm)
++static int tdp_page_fault(struct kvm_vcpu *vcpu, gva_t gpa,
++				u32 error_code)
 +{
-+	u32 *msrpm = svm->msrpm;
++	struct page *page;
++	int r;
 +
-+	svm->vmcb->control.lbr_ctl = 1;
-+	set_msr_interception(msrpm, MSR_IA32_LASTBRANCHFROMIP, 1, 1);
-+	set_msr_interception(msrpm, MSR_IA32_LASTBRANCHTOIP, 1, 1);
-+	set_msr_interception(msrpm, MSR_IA32_LASTINTFROMIP, 1, 1);
-+	set_msr_interception(msrpm, MSR_IA32_LASTINTTOIP, 1, 1);
++	ASSERT(vcpu);
++	ASSERT(VALID_PAGE(vcpu->arch.mmu.root_hpa));
++
++	r = mmu_topup_memory_caches(vcpu);
++	if (r)
++		return r;
++
++	down_read(&current->mm->mmap_sem);
++	page = gfn_to_page(vcpu->kvm, gpa >> PAGE_SHIFT);
++	if (is_error_page(page)) {
++		kvm_release_page_clean(page);
++		up_read(&current->mm->mmap_sem);
++		return 1;
++	}
++	spin_lock(&vcpu->kvm->mmu_lock);
++	kvm_mmu_free_some_pages(vcpu);
++	r = __direct_map(vcpu, gpa, error_code & PFERR_WRITE_MASK,
++			 gpa >> PAGE_SHIFT, page, TDP_ROOT_LEVEL);
++	spin_unlock(&vcpu->kvm->mmu_lock);
++	up_read(&current->mm->mmap_sem);
++
++	return r;
 +}
 +
-+static void svm_disable_lbrv(struct vcpu_svm *svm)
-+{
-+	u32 *msrpm = svm->msrpm;
-+
-+	svm->vmcb->control.lbr_ctl = 0;
-+	set_msr_interception(msrpm, MSR_IA32_LASTBRANCHFROMIP, 0, 0);
-+	set_msr_interception(msrpm, MSR_IA32_LASTBRANCHTOIP, 0, 0);
-+	set_msr_interception(msrpm, MSR_IA32_LASTINTFROMIP, 0, 0);
-+	set_msr_interception(msrpm, MSR_IA32_LASTINTTOIP, 0, 0);
-+}
-+
- static __init int svm_hardware_setup(void)
+ static void nonpaging_free(struct kvm_vcpu *vcpu)
  {
- 	int cpu;
-@@ -1231,8 +1255,19 @@ static int svm_set_msr(struct kvm_vcpu *vcpu, unsigned ecx, u64 data)
- 		svm->vmcb->save.sysenter_esp = data;
- 		break;
- 	case MSR_IA32_DEBUGCTLMSR:
--		pr_unimpl(vcpu, "%s: MSR_IA32_DEBUGCTLMSR 0x%llx, nop\n",
--				__FUNCTION__, data);
-+		if (!svm_has(SVM_FEATURE_LBRV)) {
-+			pr_unimpl(vcpu, "%s: MSR_IA32_DEBUGCTL 0x%llx, nop\n",
-+					__FUNCTION__, data);
-+			break;
-+		}
-+		if (data & DEBUGCTL_RESERVED_BITS)
-+			return 1;
+ 	mmu_free_roots(vcpu);
+@@ -1253,7 +1290,35 @@ static int paging32E_init_context(struct kvm_vcpu *vcpu)
+ 	return paging64_init_context_common(vcpu, PT32E_ROOT_LEVEL);
+ }
+ 
+-static int init_kvm_mmu(struct kvm_vcpu *vcpu)
++static int init_kvm_tdp_mmu(struct kvm_vcpu *vcpu)
++{
++	struct kvm_mmu *context = &vcpu->arch.mmu;
 +
-+		svm->vmcb->save.dbgctl = data;
-+		if (data & (1ULL<<0))
-+			svm_enable_lbrv(svm);
-+		else
-+			svm_disable_lbrv(svm);
- 		break;
- 	case MSR_K7_EVNTSEL0:
- 	case MSR_K7_EVNTSEL1:
++	context->new_cr3 = nonpaging_new_cr3;
++	context->page_fault = tdp_page_fault;
++	context->free = nonpaging_free;
++	context->prefetch_page = nonpaging_prefetch_page;
++	context->shadow_root_level = TDP_ROOT_LEVEL;
++	context->root_hpa = INVALID_PAGE;
++
++	if (!is_paging(vcpu)) {
++		context->gva_to_gpa = nonpaging_gva_to_gpa;
++		context->root_level = 0;
++	} else if (is_long_mode(vcpu)) {
++		context->gva_to_gpa = paging64_gva_to_gpa;
++		context->root_level = PT64_ROOT_LEVEL;
++	} else if (is_pae(vcpu)) {
++		context->gva_to_gpa = paging64_gva_to_gpa;
++		context->root_level = PT32E_ROOT_LEVEL;
++	} else {
++		context->gva_to_gpa = paging32_gva_to_gpa;
++		context->root_level = PT32_ROOT_LEVEL;
++	}
++
++	return 0;
++}
++
++static int init_kvm_softmmu(struct kvm_vcpu *vcpu)
+ {
+ 	ASSERT(vcpu);
+ 	ASSERT(!VALID_PAGE(vcpu->arch.mmu.root_hpa));
+@@ -1268,6 +1333,14 @@ static int init_kvm_mmu(struct kvm_vcpu *vcpu)
+ 		return paging32_init_context(vcpu);
+ }
+ 
++static int init_kvm_mmu(struct kvm_vcpu *vcpu)
++{
++	if (tdp_enabled)
++		return init_kvm_tdp_mmu(vcpu);
++	else
++		return init_kvm_softmmu(vcpu);
++}
++
+ static void destroy_kvm_mmu(struct kvm_vcpu *vcpu)
+ {
+ 	ASSERT(vcpu);
+diff --git a/arch/x86/kvm/mmu.h b/arch/x86/kvm/mmu.h
+index 1fce19e..e64e9f5 100644
+--- a/arch/x86/kvm/mmu.h
++++ b/arch/x86/kvm/mmu.h
+@@ -3,6 +3,12 @@
+ 
+ #include <linux/kvm_host.h>
+ 
++#ifdef CONFIG_X86_64
++#define TDP_ROOT_LEVEL PT64_ROOT_LEVEL
++#else
++#define TDP_ROOT_LEVEL PT32E_ROOT_LEVEL
++#endif
++
+ static inline void kvm_mmu_free_some_pages(struct kvm_vcpu *vcpu)
+ {
+ 	if (unlikely(vcpu->kvm->arch.n_free_mmu_pages < KVM_MIN_FREE_MMU_PAGES))
 -- 
 1.5.4.5
 
