@@ -1,51 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755991AbYCaBB1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756172AbYCaBH1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755991AbYCaBB1 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Mar 2008 21:01:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751666AbYCaBBT
+	id S1756172AbYCaBH1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Mar 2008 21:07:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754649AbYCaBHR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Mar 2008 21:01:19 -0400
-Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:13836 "EHLO
-	pd4mo3so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751019AbYCaBBS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Mar 2008 21:01:18 -0400
-Date: Sun, 30 Mar 2008 18:59:13 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: Again... DMA speed too slow
-In-reply-to: <fa.kS8AgwgGnOORqOO36Liq2hSrgfI@ifi.uio.no>
-To: =?ISO-8859-1?Q?=22J=2EA=2E_Magall=F3n=22?= <jamagallon@ono.com>
-Cc: "Linux-Kernel, " <linux-kernel@vger.kernel.org>
-Message-id: <47F03761.4090801@shaw.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 8BIT
-References: <fa.kS8AgwgGnOORqOO36Liq2hSrgfI@ifi.uio.no>
-User-Agent: Thunderbird 2.0.0.12 (Windows/20080213)
+	Sun, 30 Mar 2008 21:07:17 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:36904 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754422AbYCaBHP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 30 Mar 2008 21:07:15 -0400
+From: Jarod Wilson <jwilson@redhat.com>
+Organization: Red Hat, Inc.
+To: linux1394-devel@lists.sourceforge.net
+Subject: Re: nobody cared about IRQ 19 (firewire, on a HP 2510p notebook)
+Date: Sun, 30 Mar 2008 21:06:41 -0400
+User-Agent: KMail/1.9.9
+Cc: Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Martin Michlmayr <tbm@cyrius.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@redhat.com>, linux-kernel@vger.kernel.org,
+       "H. Peter Anvin" <hpa@zytor.com>
+References: <20080321153952.GA26354@deprecation.cyrius.com> <20080330161339.GC28821@deprecation.cyrius.com> <47EFD09D.3020906@s5r6.in-berlin.de>
+In-Reply-To: <47EFD09D.3020906@s5r6.in-berlin.de>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200803302106.42624.jwilson@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-J.A. Magallón wrote:
-> Hi all...
-> 
-> I have tried to burn some data from the commandline with wodim (since time
-> ago I just used beasero...), and I have noticed this (media is CD, not DVD):
-> 
-> Vendor_info    : 'HL-DT-ST'
-> Identification : 'DVDRAM GSA-H10N '
-> Revision       : 'JL12'
-> Device seems to be: Generic mmc2 DVD-R/DVD-RW.
-> Using generic SCSI-3/mmc   CD-R/CD-RW driver (mmc_cdr).
-> Driver flags   : MMC-3 SWABAUDIO BURNFREE
-> Supported modes: TAO PACKET SAO SAO/R96P SAO/R96R RAW/R16 RAW/R96P RAW/R96R
-> Speed set to 8467 KB/s
-> wodim: DMA speed too slow (OK for 5x). Cannot write at speed 48x.
-> Starting to write CD/DVD at speed  48.0 in real TAO mode for single session.
-> 
-> I just can burn CDs at 5x ??
-> But then the program tries to write at 48x.
-> It the DMA message really true ?
+On Sunday 30 March 2008 01:40:45 pm Stefan Richter wrote:
+> Martin Michlmayr wrote:
+> > * Stefan Richter <stefanr@s5r6.in-berlin.de> [2008-03-30 13:11]:
+> >> Martin, please check whether the same happens if you disable
+> >> firewire-ohci in the kernel config (or blacklist it in the modprobe
+> >> config) and use the ohci1394 driver instead.
+> >
+> > Yes, I get essentially the same message with the ohci1394 driver:
+> >
+> > [  895.455783] irq 19: nobody cared (try booting with the "irqpoll"
+> > option) [  895.455783] Pid: 0, comm: swapper Not tainted 2.6.25-rc7-amd64
+> > #1 [  895.455783]
+> > [  895.455783] Call Trace:
+> > [  895.455783]  <IRQ>  [<ffffffff88078155>]
+> > :ohci1394:ohci_irq_handler+0x4b/0x76e [  895.455783] 
+> > [<ffffffff8026c883>] __report_bad_irq+0x30/0x72
+> > [  895.455783]  [<ffffffff8026cac2>] note_interrupt+0x1fd/0x23f
+> > [  895.455783]  [<ffffffff8026d34f>] handle_fasteoi_irq+0xa5/0xc8
+> > [  895.455783]  [<ffffffff8020f53c>] do_IRQ+0x6d/0xd9
+> > [  895.455783]  [<ffffffff8020c46d>] ret_from_intr+0x0/0x19
+> > [  895.455783]  <EOI>  [<ffffffff803a25a4>] menu_reflect+0x0/0x75
+> > [  895.455783]  [<ffffffff8800642b>]
+> > :processor:acpi_idle_enter_simple+0x18d/0x1fe [  895.455783] 
+> > [<ffffffff803a1b2b>] cpuidle_idle_call+0x7a/0xb3 [  895.455783] 
+> > [<ffffffff803a1ab1>] cpuidle_idle_call+0x0/0xb3
+> > [  895.455783]  [<ffffffff8020b06c>] cpu_idle+0xa9/0xd3
+> > [  895.455783]
+> > [  895.455783] handlers:
+> > [  895.455783] [<ffffffff8807810a>] (ohci_irq_handler+0x0/0x76e
+> > [ohci1394]) [  895.455783] Disabling IRQ #19
+> >
+> > dmesg is attached.
+>
+> Thanks.
+>
+> I tend to believe it is a problem to be addressed in the x86 platform
+> support, not a driver problem.
+>
+> I Cc'd some random x86 folk...  To rehash the issue:
+>
+>    - Controller: Ricoh Co Ltd R5C832 IEEE 1394 Controller (rev 04)
+>      Board: PM965/GM965/GL960 based
+>      The R5C832 is known to work with ohci1394 according to
+>      http://hardware4linux.info/component/14348/ and other reports.
 
-No, UDMA33 should be more than fast enough. My guess is that wodim is 
-determining the DMA speed using some unreliable mechanism.
+Its also known to work with the juju firewire stack -- that's the controller 
+in my own laptop, as well as a few other folks here in the office, all 
+running the new stack.
+
+
+
+-- 
+Jarod Wilson
+jwilson@redhat.com
