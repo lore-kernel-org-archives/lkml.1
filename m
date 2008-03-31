@@ -1,104 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754528AbYCaWXM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754842AbYCaW0t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754528AbYCaWXM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Mar 2008 18:23:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751760AbYCaWW6
+	id S1754842AbYCaW0t (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Mar 2008 18:26:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752230AbYCaW0m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Mar 2008 18:22:58 -0400
-Received: from smtpq1.tilbu1.nb.home.nl ([213.51.146.200]:46100 "EHLO
-	smtpq1.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751212AbYCaWW5 (ORCPT
+	Mon, 31 Mar 2008 18:26:42 -0400
+Received: from wr-out-0506.google.com ([64.233.184.230]:59127 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752253AbYCaW0l (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Mar 2008 18:22:57 -0400
-Message-ID: <47F164AB.5040009@keyaccess.nl>
-Date: Tue, 01 Apr 2008 00:24:43 +0200
-From: Rene Herman <rene.herman@keyaccess.nl>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
-MIME-Version: 1.0
-To: Andreas Mueller <andreas@stapelspeicher.org>
-CC: linux-kernel@vger.kernel.org, MatzeBraun@gmx.de, tiwai@suse.de,
-       ALSA devel <alsa-devel@alsa-project.org>
-Subject: Re: [PATCH] es1968: fix jitter on some maestro cards
-References: <20080329234943.GA2899@slappy>
-In-Reply-To: <20080329234943.GA2899@slappy>
-Content-Type: multipart/mixed;
- boundary="------------010102030003060405030903"
-X-Spam-Score: -1.0 (-)
+	Mon, 31 Mar 2008 18:26:41 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=YDtS9KMJmE40XJL0c5o3bE7FFjgcTVOgnMCrf2g9ZAaPwTJi294foLd/xZOyR+gPHxUP7t3wMOa82WJGwCPS5dm2fF06pRqXHTnq+2rxWGUWF8zis8MxiK0d9A97lHsfd+Fr1LIG3O2sP89LAWcwuBXn8PFdbXDIFsCXHaz7Dlc=
+Subject: [PATCH] asm-generic: suppress sparse warning in ioctl.h
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Al Viro <viro@ZenIV.linux.org.uk>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20080331215835.GM9785@ZenIV.linux.org.uk>
+References: <1206998108.6543.74.camel@brick>
+	 <1206999598.6543.76.camel@brick> <20080331215835.GM9785@ZenIV.linux.org.uk>
+Content-Type: text/plain
+Date: Mon, 31 Mar 2008 15:26:39 -0700
+Message-Id: <1207002399.6543.83.camel@brick>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------010102030003060405030903
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+1 ? 0 : x
 
-On 30-03-08 00:49, Andreas Mueller wrote:
+is not valid in contexts where C requires integer constant expressions.
+Index in static array initializer is one of those.
 
-> This patch suppresses jitter on several Maestro cards in stereo mode
-> (ALSA of course).
-> 
-> The patch is also incorporated in the *BSD drivers where I "ported" it from.
-> I am barely used to driver-development so please take a look (esp. the channel
-> parameters), nevertheless it completely works for me.
-> 
-> Without this patch most of the stereo audio gets out of sync and really
-> distorted (oss-emulation with mplayer at 48000khz worked somehow).
-> 
-> CCed to those listed in the .c file.
+Instead of using a non-existant extern function, use 1/0 as the guard
+expression to avoid using a gcc-ism.  IOC_TYPECHECK gets pulled into
+some static array initializations where this is not valid.
 
-Added the alsa-devel list (and re-attached the patch). My TerraTec DMX (ESS 
-Canyon3D, ES1970MS-3D) doesn't need this but doesn't seem to suffer from it 
-either. Otherwise no idea about this.
+Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+---
+I've confirmed this patch 'fixes' the large blocks of sparse warnings in
+static array initializers.
 
-Rene.
+ include/asm-generic/ioctl.h |    4 +---
+ 1 files changed, 1 insertions(+), 3 deletions(-)
 
---------------010102030003060405030903
-Content-Type: text/plain;
- name="es1968_jitter.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="es1968_jitter.patch"
-
---- sound/pci/es1968.c.old	2008-03-29 19:17:16.771116317 +0100
-+++ sound/pci/es1968.c	2008-03-30 00:14:35.363057160 +0100
-@@ -1816,7 +1816,24 @@
+diff --git a/include/asm-generic/ioctl.h b/include/asm-generic/ioctl.h
+index cd02729..f5ae529 100644
+--- a/include/asm-generic/ioctl.h
++++ b/include/asm-generic/ioctl.h
+@@ -47,12 +47,10 @@
+ 	 ((nr)   << _IOC_NRSHIFT) | \
+ 	 ((size) << _IOC_SIZESHIFT))
  
- 	return 0;
- }
-+/*
-+ * suppress jitter on some maestros when playing stereo
-+ */
-+static void snd_es1968_suppress_jitter(struct es1968 *chip, struct esschan *es)
-+{
-+	unsigned int cp1;
-+	unsigned int cp2;
-+	unsigned int diff;
+-/* provoke compile error for invalid uses of size argument */
+-extern unsigned int __invalid_size_argument_for_IOC;
+ #define _IOC_TYPECHECK(t) \
+ 	((sizeof(t) == sizeof(t[1]) && \
+ 	  sizeof(t) < (1 << _IOC_SIZEBITS)) ? \
+-	  sizeof(t) : __invalid_size_argument_for_IOC)
++	  sizeof(t) : 1/0)
  
-+	cp1 = __apu_get_register(chip, 0, 5);
-+	cp2 = __apu_get_register(chip, 1, 5);
-+	diff = (cp1 > cp2 ? cp1 - cp2 : cp2 - cp1);
-+	
-+	if (diff > 1) {
-+		__maestro_write(chip, IDR0_DATA_PORT, cp1);
-+	}
-+}
-+	
- /*
-  * update pointer
-  */
-@@ -1937,8 +1954,11 @@
- 		struct esschan *es;
- 		spin_lock(&chip->substream_lock);
- 		list_for_each_entry(es, &chip->substream_list, list) {
--			if (es->running)
-+			if (es->running) {
- 				snd_es1968_update_pcm(chip, es);
-+				if (es->fmt & ESS_FMT_STEREO)
-+					snd_es1968_suppress_jitter(chip, es);
-+			}
- 		}
- 		spin_unlock(&chip->substream_lock);
- 		if (chip->in_measurement) {
+ /* used to create numbers */
+ #define _IO(type,nr)		_IOC(_IOC_NONE,(type),(nr),0)
+-- 
+1.5.5.rc1.135.g8527
 
---------------010102030003060405030903--
+
+
