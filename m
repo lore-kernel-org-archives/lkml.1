@@ -1,22 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760010AbYCaOrp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757636AbYCaOsD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760010AbYCaOrp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Mar 2008 10:47:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753352AbYCaOhw
+	id S1757636AbYCaOsD (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Mar 2008 10:48:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753343AbYCaOhw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Mon, 31 Mar 2008 10:37:52 -0400
-Received: from bzq-179-150-194.static.bezeqint.net ([212.179.150.194]:51309
+Received: from bzq-179-150-194.static.bezeqint.net ([212.179.150.194]:51327
 	"EHLO il.qumranet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751644AbYCaOhf (ORCPT
+	with ESMTP id S1751660AbYCaOhf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 31 Mar 2008 10:37:35 -0400
 From: Avi Kivity <avi@qumranet.com>
 To: kvm-devel@lists.sourceforge.net
-Cc: linux-kernel@vger.kernel.org,
-       Glauber de Oliveira Costa <gcosta@redhat.com>
-Subject: [PATCH 33/40] x86: KVM guest: paravirtualized clocksource
-Date: Mon, 31 Mar 2008 17:37:17 +0300
-Message-Id: <1206974244-9716-34-git-send-email-avi@qumranet.com>
+Cc: linux-kernel@vger.kernel.org, Joerg Roedel <joerg.roedel@amd.com>
+Subject: [PATCH 30/40] KVM: SVM: allocate the MSR permission map per VCPU
+Date: Mon, 31 Mar 2008 17:37:14 +0300
+Message-Id: <1206974244-9716-31-git-send-email-avi@qumranet.com>
 X-Mailer: git-send-email 1.5.4.5
 In-Reply-To: <1206974244-9716-1-git-send-email-avi@qumranet.com>
 References: <1206974244-9716-1-git-send-email-avi@qumranet.com>
@@ -24,278 +23,179 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Glauber de Oliveira Costa <gcosta@redhat.com>
+From: Joerg Roedel <joerg.roedel@amd.com>
 
-This is the guest part of kvm clock implementation
-It does not do tsc-only timing, as tsc can have deltas
-between cpus, and it did not seem worthy to me to keep
-adjusting them.
+This patch changes the kvm-amd module to allocate the SVM MSR permission map
+per VCPU instead of a global map for all VCPUs. With this we have more
+flexibility allowing specific guests to access virtualized MSRs. This is
+required for LBR virtualization.
 
-We do use it, however, for fine-grained adjustment.
-
-Other than that, time comes from the host.
-
-[randy dunlap: add missing include]
-[randy dunlap: disallow on Voyager or Visual WS]
-
-Signed-off-by: Glauber de Oliveira Costa <gcosta@redhat.com>
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
+Signed-off-by: Markus Rechberger <markus.rechberger@amd.com>
 Signed-off-by: Avi Kivity <avi@qumranet.com>
 ---
- arch/x86/Kconfig           |   11 +++
- arch/x86/kernel/Makefile   |    1 +
- arch/x86/kernel/kvmclock.c |  160 ++++++++++++++++++++++++++++++++++++++++++++
- arch/x86/kernel/setup_32.c |    5 ++
- arch/x86/kernel/setup_64.c |    5 ++
- 5 files changed, 182 insertions(+), 0 deletions(-)
- create mode 100644 arch/x86/kernel/kvmclock.c
+ arch/x86/kvm/kvm_svm.h |    2 +
+ arch/x86/kvm/svm.c     |   67 +++++++++++++++++++++++-------------------------
+ 2 files changed, 34 insertions(+), 35 deletions(-)
 
-diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-index 6c70fed..e59ea05 100644
---- a/arch/x86/Kconfig
-+++ b/arch/x86/Kconfig
-@@ -370,6 +370,17 @@ config VMI
- 	  at the moment), by linking the kernel to a GPL-ed ROM module
- 	  provided by the hypervisor.
+diff --git a/arch/x86/kvm/kvm_svm.h b/arch/x86/kvm/kvm_svm.h
+index ecdfe97..65ef0fc 100644
+--- a/arch/x86/kvm/kvm_svm.h
++++ b/arch/x86/kvm/kvm_svm.h
+@@ -39,6 +39,8 @@ struct vcpu_svm {
+ 	unsigned long host_db_regs[NUM_DB_REGS];
+ 	unsigned long host_dr6;
+ 	unsigned long host_dr7;
++
++	u32 *msrpm;
+ };
  
-+config KVM_CLOCK
-+	bool "KVM paravirtualized clock"
-+	select PARAVIRT
-+	depends on !(X86_VISWS || X86_VOYAGER)
-+	help
-+	  Turning on this option will allow you to run a paravirtualized clock
-+	  when running over the KVM hypervisor. Instead of relying on a PIT
-+	  (or probably other) emulation by the underlying device model, the host
-+	  provides the guest with timing infrastructure such as time of day, and
-+	  system time
-+
- source "arch/x86/lguest/Kconfig"
+ #endif
+diff --git a/arch/x86/kvm/svm.c b/arch/x86/kvm/svm.c
+index d934819..281a2ff 100644
+--- a/arch/x86/kvm/svm.c
++++ b/arch/x86/kvm/svm.c
+@@ -65,7 +65,6 @@ static inline struct vcpu_svm *to_svm(struct kvm_vcpu *vcpu)
+ }
  
- config PARAVIRT
-diff --git a/arch/x86/kernel/Makefile b/arch/x86/kernel/Makefile
-index 4eb5ce8..a3379a3 100644
---- a/arch/x86/kernel/Makefile
-+++ b/arch/x86/kernel/Makefile
-@@ -77,6 +77,7 @@ obj-$(CONFIG_DEBUG_RODATA_TEST)	+= test_rodata.o
- obj-$(CONFIG_DEBUG_NX_TEST)	+= test_nx.o
+ unsigned long iopm_base;
+-unsigned long msrpm_base;
  
- obj-$(CONFIG_VMI)		+= vmi_32.o vmiclock_32.o
-+obj-$(CONFIG_KVM_CLOCK)		+= kvmclock.o
- obj-$(CONFIG_PARAVIRT)		+= paravirt.o paravirt_patch_$(BITS).o
+ struct kvm_ldttss_desc {
+ 	u16 limit0;
+@@ -370,12 +369,29 @@ static void set_msr_interception(u32 *msrpm, unsigned msr,
+ 	BUG();
+ }
  
- ifdef CONFIG_INPUT_PCSPKR
-diff --git a/arch/x86/kernel/kvmclock.c b/arch/x86/kernel/kvmclock.c
-new file mode 100644
-index 0000000..b999f5e
---- /dev/null
-+++ b/arch/x86/kernel/kvmclock.c
-@@ -0,0 +1,160 @@
-+/*  KVM paravirtual clock driver. A clocksource implementation
-+    Copyright (C) 2008 Glauber de Oliveira Costa, Red Hat Inc.
-+
-+    This program is free software; you can redistribute it and/or modify
-+    it under the terms of the GNU General Public License as published by
-+    the Free Software Foundation; either version 2 of the License, or
-+    (at your option) any later version.
-+
-+    This program is distributed in the hope that it will be useful,
-+    but WITHOUT ANY WARRANTY; without even the implied warranty of
-+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+    GNU General Public License for more details.
-+
-+    You should have received a copy of the GNU General Public License
-+    along with this program; if not, write to the Free Software
-+    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-+*/
-+
-+#include <linux/clocksource.h>
-+#include <linux/kvm_para.h>
-+#include <asm/arch_hooks.h>
-+#include <asm/msr.h>
-+#include <asm/apic.h>
-+#include <linux/percpu.h>
-+
-+#define KVM_SCALE 22
-+
-+static int kvmclock = 1;
-+
-+static int parse_no_kvmclock(char *arg)
++static void svm_vcpu_init_msrpm(u32 *msrpm)
 +{
-+	kvmclock = 0;
-+	return 0;
-+}
-+early_param("no-kvmclock", parse_no_kvmclock);
++	memset(msrpm, 0xff, PAGE_SIZE * (1 << MSRPM_ALLOC_ORDER));
 +
-+/* The hypervisor will put information about time periodically here */
-+static DEFINE_PER_CPU_SHARED_ALIGNED(struct kvm_vcpu_time_info, hv_clock);
-+#define get_clock(cpu, field) per_cpu(hv_clock, cpu).field
-+
-+static inline u64 kvm_get_delta(u64 last_tsc)
-+{
-+	int cpu = smp_processor_id();
-+	u64 delta = native_read_tsc() - last_tsc;
-+	return (delta * get_clock(cpu, tsc_to_system_mul)) >> KVM_SCALE;
-+}
-+
-+static struct kvm_wall_clock wall_clock;
-+static cycle_t kvm_clock_read(void);
-+/*
-+ * The wallclock is the time of day when we booted. Since then, some time may
-+ * have elapsed since the hypervisor wrote the data. So we try to account for
-+ * that with system time
-+ */
-+unsigned long kvm_get_wallclock(void)
-+{
-+	u32 wc_sec, wc_nsec;
-+	u64 delta;
-+	struct timespec ts;
-+	int version, nsec;
-+	int low, high;
-+
-+	low = (int)__pa(&wall_clock);
-+	high = ((u64)__pa(&wall_clock) >> 32);
-+
-+	delta = kvm_clock_read();
-+
-+	native_write_msr(MSR_KVM_WALL_CLOCK, low, high);
-+	do {
-+		version = wall_clock.wc_version;
-+		rmb();
-+		wc_sec = wall_clock.wc_sec;
-+		wc_nsec = wall_clock.wc_nsec;
-+		rmb();
-+	} while ((wall_clock.wc_version != version) || (version & 1));
-+
-+	delta = kvm_clock_read() - delta;
-+	delta += wc_nsec;
-+	nsec = do_div(delta, NSEC_PER_SEC);
-+	set_normalized_timespec(&ts, wc_sec + delta, nsec);
-+	/*
-+	 * Of all mechanisms of time adjustment I've tested, this one
-+	 * was the champion!
-+	 */
-+	return ts.tv_sec + 1;
-+}
-+
-+int kvm_set_wallclock(unsigned long now)
-+{
-+	return 0;
-+}
-+
-+/*
-+ * This is our read_clock function. The host puts an tsc timestamp each time
-+ * it updates a new time. Without the tsc adjustment, we can have a situation
-+ * in which a vcpu starts to run earlier (smaller system_time), but probes
-+ * time later (compared to another vcpu), leading to backwards time
-+ */
-+static cycle_t kvm_clock_read(void)
-+{
-+	u64 last_tsc, now;
-+	int cpu;
-+
-+	preempt_disable();
-+	cpu = smp_processor_id();
-+
-+	last_tsc = get_clock(cpu, tsc_timestamp);
-+	now = get_clock(cpu, system_time);
-+
-+	now += kvm_get_delta(last_tsc);
-+	preempt_enable();
-+
-+	return now;
-+}
-+static struct clocksource kvm_clock = {
-+	.name = "kvm-clock",
-+	.read = kvm_clock_read,
-+	.rating = 400,
-+	.mask = CLOCKSOURCE_MASK(64),
-+	.mult = 1 << KVM_SCALE,
-+	.shift = KVM_SCALE,
-+	.flags = CLOCK_SOURCE_IS_CONTINUOUS,
-+};
-+
-+static int kvm_register_clock(void)
-+{
-+	int cpu = smp_processor_id();
-+	int low, high;
-+	low = (int)__pa(&per_cpu(hv_clock, cpu)) | 1;
-+	high = ((u64)__pa(&per_cpu(hv_clock, cpu)) >> 32);
-+
-+	return native_write_msr_safe(MSR_KVM_SYSTEM_TIME, low, high);
-+}
-+
-+static void kvm_setup_secondary_clock(void)
-+{
-+	/*
-+	 * Now that the first cpu already had this clocksource initialized,
-+	 * we shouldn't fail.
-+	 */
-+	WARN_ON(kvm_register_clock());
-+	/* ok, done with our trickery, call native */
-+	setup_secondary_APIC_clock();
-+}
-+
-+void __init kvmclock_init(void)
-+{
-+	if (!kvm_para_available())
-+		return;
-+
-+	if (kvmclock && kvm_para_has_feature(KVM_FEATURE_CLOCKSOURCE)) {
-+		if (kvm_register_clock())
-+			return;
-+		pv_time_ops.get_wallclock = kvm_get_wallclock;
-+		pv_time_ops.set_wallclock = kvm_set_wallclock;
-+		pv_time_ops.sched_clock = kvm_clock_read;
-+		pv_apic_ops.setup_secondary_clock = kvm_setup_secondary_clock;
-+		clocksource_register(&kvm_clock);
-+	}
-+}
-diff --git a/arch/x86/kernel/setup_32.c b/arch/x86/kernel/setup_32.c
-index 2b3e5d4..3ef92a2 100644
---- a/arch/x86/kernel/setup_32.c
-+++ b/arch/x86/kernel/setup_32.c
-@@ -46,6 +46,7 @@
- #include <linux/pfn.h>
- #include <linux/pci.h>
- #include <linux/init_ohci1394_dma.h>
-+#include <linux/kvm_para.h>
- 
- #include <video/edid.h>
- 
-@@ -770,6 +771,10 @@ void __init setup_arch(char **cmdline_p)
- 
- 	max_low_pfn = setup_memory();
- 
-+#ifdef CONFIG_KVM_CLOCK
-+	kvmclock_init();
++#ifdef CONFIG_X86_64
++	set_msr_interception(msrpm, MSR_GS_BASE, 1, 1);
++	set_msr_interception(msrpm, MSR_FS_BASE, 1, 1);
++	set_msr_interception(msrpm, MSR_KERNEL_GS_BASE, 1, 1);
++	set_msr_interception(msrpm, MSR_LSTAR, 1, 1);
++	set_msr_interception(msrpm, MSR_CSTAR, 1, 1);
++	set_msr_interception(msrpm, MSR_SYSCALL_MASK, 1, 1);
 +#endif
++	set_msr_interception(msrpm, MSR_K6_STAR, 1, 1);
++	set_msr_interception(msrpm, MSR_IA32_SYSENTER_CS, 1, 1);
++	set_msr_interception(msrpm, MSR_IA32_SYSENTER_ESP, 1, 1);
++	set_msr_interception(msrpm, MSR_IA32_SYSENTER_EIP, 1, 1);
++}
 +
- #ifdef CONFIG_VMI
- 	/*
- 	 * Must be after max_low_pfn is determined, and before kernel
-diff --git a/arch/x86/kernel/setup_64.c b/arch/x86/kernel/setup_64.c
-index f4f7ecf..26b676f 100644
---- a/arch/x86/kernel/setup_64.c
-+++ b/arch/x86/kernel/setup_64.c
-@@ -41,6 +41,7 @@
- #include <linux/ctype.h>
- #include <linux/uaccess.h>
- #include <linux/init_ohci1394_dma.h>
-+#include <linux/kvm_para.h>
+ static __init int svm_hardware_setup(void)
+ {
+ 	int cpu;
+ 	struct page *iopm_pages;
+-	struct page *msrpm_pages;
+-	void *iopm_va, *msrpm_va;
++	void *iopm_va;
+ 	int r;
  
- #include <asm/mtrr.h>
- #include <asm/uaccess.h>
-@@ -349,6 +350,10 @@ void __init setup_arch(char **cmdline_p)
+ 	iopm_pages = alloc_pages(GFP_KERNEL, IOPM_ALLOC_ORDER);
+@@ -388,37 +404,13 @@ static __init int svm_hardware_setup(void)
+ 	clear_bit(0x80, iopm_va); /* allow direct access to PC debug port */
+ 	iopm_base = page_to_pfn(iopm_pages) << PAGE_SHIFT;
  
- 	io_delay_init();
+-
+-	msrpm_pages = alloc_pages(GFP_KERNEL, MSRPM_ALLOC_ORDER);
+-
+-	r = -ENOMEM;
+-	if (!msrpm_pages)
+-		goto err_1;
+-
+-	msrpm_va = page_address(msrpm_pages);
+-	memset(msrpm_va, 0xff, PAGE_SIZE * (1 << MSRPM_ALLOC_ORDER));
+-	msrpm_base = page_to_pfn(msrpm_pages) << PAGE_SHIFT;
+-
+-#ifdef CONFIG_X86_64
+-	set_msr_interception(msrpm_va, MSR_GS_BASE, 1, 1);
+-	set_msr_interception(msrpm_va, MSR_FS_BASE, 1, 1);
+-	set_msr_interception(msrpm_va, MSR_KERNEL_GS_BASE, 1, 1);
+-	set_msr_interception(msrpm_va, MSR_LSTAR, 1, 1);
+-	set_msr_interception(msrpm_va, MSR_CSTAR, 1, 1);
+-	set_msr_interception(msrpm_va, MSR_SYSCALL_MASK, 1, 1);
+-#endif
+-	set_msr_interception(msrpm_va, MSR_K6_STAR, 1, 1);
+-	set_msr_interception(msrpm_va, MSR_IA32_SYSENTER_CS, 1, 1);
+-	set_msr_interception(msrpm_va, MSR_IA32_SYSENTER_ESP, 1, 1);
+-	set_msr_interception(msrpm_va, MSR_IA32_SYSENTER_EIP, 1, 1);
+-
+ 	if (boot_cpu_has(X86_FEATURE_NX))
+ 		kvm_enable_efer_bits(EFER_NX);
  
-+#ifdef CONFIG_KVM_CLOCK
-+	kvmclock_init();
-+#endif
+ 	for_each_online_cpu(cpu) {
+ 		r = svm_cpu_init(cpu);
+ 		if (r)
+-			goto err_2;
++			goto err;
+ 	}
+ 
+ 	svm_features = cpuid_edx(SVM_CPUID_FUNC);
+@@ -438,10 +430,7 @@ static __init int svm_hardware_setup(void)
+ 
+ 	return 0;
+ 
+-err_2:
+-	__free_pages(msrpm_pages, MSRPM_ALLOC_ORDER);
+-	msrpm_base = 0;
+-err_1:
++err:
+ 	__free_pages(iopm_pages, IOPM_ALLOC_ORDER);
+ 	iopm_base = 0;
+ 	return r;
+@@ -449,9 +438,8 @@ err_1:
+ 
+ static __exit void svm_hardware_unsetup(void)
+ {
+-	__free_pages(pfn_to_page(msrpm_base >> PAGE_SHIFT), MSRPM_ALLOC_ORDER);
+ 	__free_pages(pfn_to_page(iopm_base >> PAGE_SHIFT), IOPM_ALLOC_ORDER);
+-	iopm_base = msrpm_base = 0;
++	iopm_base = 0;
+ }
+ 
+ static void init_seg(struct vmcb_seg *seg)
+@@ -536,7 +524,7 @@ static void init_vmcb(struct vcpu_svm *svm)
+ 				(1ULL << INTERCEPT_MWAIT);
+ 
+ 	control->iopm_base_pa = iopm_base;
+-	control->msrpm_base_pa = msrpm_base;
++	control->msrpm_base_pa = __pa(svm->msrpm);
+ 	control->tsc_offset = 0;
+ 	control->int_ctl = V_INTR_MASKING_MASK;
+ 
+@@ -615,6 +603,7 @@ static struct kvm_vcpu *svm_create_vcpu(struct kvm *kvm, unsigned int id)
+ {
+ 	struct vcpu_svm *svm;
+ 	struct page *page;
++	struct page *msrpm_pages;
+ 	int err;
+ 
+ 	svm = kmem_cache_zalloc(kvm_vcpu_cache, GFP_KERNEL);
+@@ -633,6 +622,13 @@ static struct kvm_vcpu *svm_create_vcpu(struct kvm *kvm, unsigned int id)
+ 		goto uninit;
+ 	}
+ 
++	err = -ENOMEM;
++	msrpm_pages = alloc_pages(GFP_KERNEL, MSRPM_ALLOC_ORDER);
++	if (!msrpm_pages)
++		goto uninit;
++	svm->msrpm = page_address(msrpm_pages);
++	svm_vcpu_init_msrpm(svm->msrpm);
 +
- #ifdef CONFIG_SMP
- 	/* setup to use the early static init tables during kernel startup */
- 	x86_cpu_to_apicid_early_ptr = (void *)x86_cpu_to_apicid_init;
+ 	svm->vmcb = page_address(page);
+ 	clear_page(svm->vmcb);
+ 	svm->vmcb_pa = page_to_pfn(page) << PAGE_SHIFT;
+@@ -661,6 +657,7 @@ static void svm_free_vcpu(struct kvm_vcpu *vcpu)
+ 	struct vcpu_svm *svm = to_svm(vcpu);
+ 
+ 	__free_page(pfn_to_page(svm->vmcb_pa >> PAGE_SHIFT));
++	__free_pages(virt_to_page(svm->msrpm), MSRPM_ALLOC_ORDER);
+ 	kvm_vcpu_uninit(vcpu);
+ 	kmem_cache_free(kvm_vcpu_cache, svm);
+ }
 -- 
 1.5.4.5
 
