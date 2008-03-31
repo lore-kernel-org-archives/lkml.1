@@ -1,60 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755909AbYCaTqX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756847AbYCaTrG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755909AbYCaTqX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Mar 2008 15:46:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752515AbYCaTqQ
+	id S1756847AbYCaTrG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Mar 2008 15:47:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752534AbYCaTqx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Mar 2008 15:46:16 -0400
-Received: from py-out-1112.google.com ([64.233.166.181]:58100 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752308AbYCaTqQ (ORCPT
+	Mon, 31 Mar 2008 15:46:53 -0400
+Received: from smtpq2.groni1.gr.home.nl ([213.51.130.201]:55554 "EHLO
+	smtpq2.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752449AbYCaTqw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Mar 2008 15:46:16 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
-        b=WsZll6HBYq0JxBXHU2OMOmvgteVfYDjIodWBjMr4kCXMaJw0ZNEZkyIllJQuFqcCSo7VzlCseiIIP/PWwC5rqTvD1PZ1+PP/CuBwAShnnzdttVXGhkRAWqNU9l9Ps0EOmtN6HFBJEyVegZIQdnTIcVwydvv9pBjMnqQogz7zDBE=
-Date: Mon, 31 Mar 2008 15:46:10 -0400
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: [git pull] Input updates for 2.6.25-rc7
-Message-ID: <20080331194610.GA11913@anvil.corenet.prv>
+	Mon, 31 Mar 2008 15:46:52 -0400
+Message-ID: <47F14008.7050100@keyaccess.nl>
+Date: Mon, 31 Mar 2008 21:48:24 +0200
+From: Rene Herman <rene.herman@keyaccess.nl>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: Bjorn Helgaas <bjorn.helgaas@hp.com>
+CC: Len Brown <lenb@kernel.org>, linux-acpi@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Adam Belay <ambx1@neo.rr.com>,
+       Li Shaohua <shaohua.li@intel.com>,
+       Matthieu Castet <castet.matthieu@free.fr>,
+       Thomas Renninger <trenn@suse.de>, Jaroslav Kysela <perex@perex.cz>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [patch 00/37] PNP resource_table cleanups
+References: <20080326171058.099442579@ldl.fc.hp.com> <200803261713.03248.bjorn.helgaas@hp.com> <47EAEA98.7010500@keyaccess.nl> <200803271150.30512.bjorn.helgaas@hp.com> <47F13E13.7090608@keyaccess.nl>
+In-Reply-To: <47F13E13.7090608@keyaccess.nl>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -1.0 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+On 31-03-08 21:40, Rene Herman wrote:
 
-Please pull from:
+> On 27-03-08 18:50, Bjorn Helgaas wrote:
+> 
+>> Are any ISAPNP devices at all found?
+> 
+> Yes, but at most 100 * 10^4 / 2^16 percent of them. Trouble is in 04/37:
 
-	git://git.kernel.org/pub/scm/linux/kernel/git/dtor/input.git for-linus
-or
-	master.kernel.org:/pub/scm/linux/kernel/git/dtor/input.git for-linus
+Well, that should read "Yes, no less than 100 * 10^4 / 2^16 percent of them 
+even" but you get the point...
 
-to receive updates for the input subsystem. This does not contain the fix for
-evdev crash since it is yet undecided which way we should go with regard to
-lifetime rule change.
-
-Changelog:
----------
-
-Helge Deller (1):
-      Input: apm-power - fix crash when unloading modules
-
-Samuel Ortiz (1):
-      Input: pxa27x - fix keypad KPC macros
-
-Diffstat:
---------
-
- drivers/input/apm-power.c              |    7 ++-----
- drivers/input/keyboard/pxa27x_keypad.c |    6 +++---
- 2 files changed, 5 insertions(+), 8 deletions(-)
-
--- 
-Dmitry
+Rene.
