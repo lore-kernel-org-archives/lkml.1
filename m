@@ -1,60 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754717AbYCaXW3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755693AbYCaXW4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754717AbYCaXW3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Mar 2008 19:22:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751350AbYCaXWR
+	id S1755693AbYCaXW4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Mar 2008 19:22:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752832AbYCaXWr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Mar 2008 19:22:17 -0400
-Received: from relay2.sgi.com ([192.48.171.30]:52057 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750863AbYCaXWQ (ORCPT
-	<rfc822;@sgi.com:linux-kernel@vger.kernel.org>);
-	Mon, 31 Mar 2008 19:22:16 -0400
-Date: Tue, 1 Apr 2008 09:21:37 +1000
-From: David Chinner <dgc@sgi.com>
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: Stefan Priebe - allied internet ag <s.priebe@allied-internet.ag>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Christian Kujau <lists@nerdbynature.de>,
-       LKML <linux-kernel@vger.kernel.org>, xfs-masters@oss.sgi.com,
-       xfs@oss.sgi.com, Al Viro <viro@zeniv.linux.org.uk>,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: getting uninterruptible sleep processes after upgrade from 2.6.20.20 to 2.6.24.2
-Message-ID: <20080331232137.GI103491721@sgi.com>
-References: <47B892B9.7060205@allied-internet.ag> <alpine.DEB.1.00.0802172133470.6469@sheep.housecafe.de> <47B89DC6.4070906@allied-internet.ag> <20080217125407.5b76a052@laptopd505.fenrus.org> <47BD5B30.103@allied-internet.ag> <47BD7958.5080203@gmail.com> <47BD7E7F.2030603@allied-internet.ag> <47C141B9.7050001@gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47C141B9.7050001@gmail.com>
-User-Agent: Mutt/1.4.2.1i
+	Mon, 31 Mar 2008 19:22:47 -0400
+Received: from artax.karlin.mff.cuni.cz ([195.113.31.125]:57314 "EHLO
+	artax.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750727AbYCaXWq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 31 Mar 2008 19:22:46 -0400
+Date: Tue, 1 Apr 2008 01:22:45 +0200 (CEST)
+From: Mikulas Patocka <mikulas@artax.karlin.mff.cuni.cz>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] plip: replace spin_lock_irq with spin_lock_irqsave in irq
+ context
+Message-ID: <Pine.LNX.4.64.0804010113040.29068@artax.karlin.mff.cuni.cz>
+X-Personality-Disorder: Schizoid
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Feb 24, 2008 at 11:06:49AM +0100, Jiri Slaby wrote:
-> Ccing xfs team
-> 
-> On 02/21/2008 02:37 PM, Stefan Priebe - allied internet ag wrote:
-> >Hello!
-> >
-> >I'm using XFS. dmesg -s32000 does not help - no more output. In messages 
-> >there is also no relevant output. Other than what I've posted here:
-> >http://lkml.org/lkml/2008/2/21/76
-> 
-> http://lkml.org/lkml/2008/2/21/86
-> 
-> Some kind of borkage in readdir, probably either in xfs or vfs?
+Hi
 
-Fixed in 2.6.24.3.
+Plip uses spin_lock_irq/spin_unlock_irq in its IRQ handler (called from 
+parport IRQ handler), the latter enables interrupts without parport 
+subsystem IRQ handler expecting it.
 
-http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=450790a2c51e6d9d47ed30dbdcf486656b8e186f
+The bug can be seen if you compile kernel with lock dependency checking 
+and use plip --- it produces a warning.
 
-Please upgrade.
+This patch changes it to spin_lock_irqsave/spin_lock_irqrestore, so that 
+it doesn't enable interrupts when already disabled.
 
-Cheers,
+Mikulas
 
-Dave.
--- 
-Dave Chinner
-Principal Engineer
-SGI Australian Software Group
+--- linux-2.6.24.4/drivers/net/plip.c_	2008-03-31 23:47:27.000000000 +0200
++++ linux-2.6.24.4/drivers/net/plip.c	2008-03-31 23:48:06.000000000 +0200
+@@ -903,17 +903,18 @@ plip_interrupt(void *dev_id)
+ 	struct net_local *nl;
+ 	struct plip_local *rcv;
+ 	unsigned char c0;
++	unsigned long flags;
+ 
+ 	nl = netdev_priv(dev);
+ 	rcv = &nl->rcv_data;
+ 
+-	spin_lock_irq (&nl->lock);
++	spin_lock_irqsave (&nl->lock, flags);
+ 
+ 	c0 = read_status(dev);
+ 	if ((c0 & 0xf8) != 0xc0) {
+ 		if ((dev->irq != -1) && (net_debug > 1))
+ 			printk(KERN_DEBUG "%s: spurious interrupt\n", dev->name);
+-		spin_unlock_irq (&nl->lock);
++		spin_unlock_irqrestore (&nl->lock, flags);
+ 		return;
+ 	}
+ 
+@@ -942,7 +943,7 @@ plip_interrupt(void *dev_id)
+ 		break;
+ 	}
+ 
+-	spin_unlock_irq(&nl->lock);
++	spin_unlock_irqrestore(&nl->lock, flags);
+ }
+ 
+ static int
