@@ -1,64 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752832AbYCaXO5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754717AbYCaXW3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752832AbYCaXO5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Mar 2008 19:14:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752385AbYCaXOs
+	id S1754717AbYCaXW3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Mar 2008 19:22:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751350AbYCaXWR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Mar 2008 19:14:48 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:41997 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751480AbYCaXOs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Mar 2008 19:14:48 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Chr <chunkeey@web.de>
-Subject: Re: The never ending BEEEEP/__smp_call_function_mask with 2.6.25-rc7
-Date: Tue, 1 Apr 2008 01:14:24 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
-       Andi Kleen <andi-suse@firstfloor.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
-References: <200803302109.22219.chunkeey@web.de> <alpine.LFD.1.10.0803302315270.3219@apollo.tec.linutronix.de> <200804010001.51288.chunkeey@web.de>
-In-Reply-To: <200804010001.51288.chunkeey@web.de>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	Mon, 31 Mar 2008 19:22:17 -0400
+Received: from relay2.sgi.com ([192.48.171.30]:52057 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750863AbYCaXWQ (ORCPT
+	<rfc822;@sgi.com:linux-kernel@vger.kernel.org>);
+	Mon, 31 Mar 2008 19:22:16 -0400
+Date: Tue, 1 Apr 2008 09:21:37 +1000
+From: David Chinner <dgc@sgi.com>
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: Stefan Priebe - allied internet ag <s.priebe@allied-internet.ag>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Christian Kujau <lists@nerdbynature.de>,
+       LKML <linux-kernel@vger.kernel.org>, xfs-masters@oss.sgi.com,
+       xfs@oss.sgi.com, Al Viro <viro@zeniv.linux.org.uk>,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: getting uninterruptible sleep processes after upgrade from 2.6.20.20 to 2.6.24.2
+Message-ID: <20080331232137.GI103491721@sgi.com>
+References: <47B892B9.7060205@allied-internet.ag> <alpine.DEB.1.00.0802172133470.6469@sheep.housecafe.de> <47B89DC6.4070906@allied-internet.ag> <20080217125407.5b76a052@laptopd505.fenrus.org> <47BD5B30.103@allied-internet.ag> <47BD7958.5080203@gmail.com> <47BD7E7F.2030603@allied-internet.ag> <47C141B9.7050001@gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200804010114.25810.rjw@sisk.pl>
+In-Reply-To: <47C141B9.7050001@gmail.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday, 1 of April 2008, Chr wrote:
-> On Sunday 30 March 2008 23:36:40 Thomas Gleixner wrote:
-> > On Sun, 30 Mar 2008, Chr wrote:
+On Sun, Feb 24, 2008 at 11:06:49AM +0100, Jiri Slaby wrote:
+> Ccing xfs team
+> 
+> On 02/21/2008 02:37 PM, Stefan Priebe - allied internet ag wrote:
+> >Hello!
 > >
-> > You mentioned that you have tons of other logs. Can you please
-> > upload those to some place? If you don't have a possiblity, please
-> > contact me private and I'll provide you one.
-> >
-> Ahhm it happend again (well, actually it's the fifth time today, but this time
-> I _hopefully_ found something)
+> >I'm using XFS. dmesg -s32000 does not help - no more output. In messages 
+> >there is also no relevant output. Other than what I've posted here:
+> >http://lkml.org/lkml/2008/2/21/76
 > 
-> I made a new log: (check out bugzilla)
-> http://bugzilla.kernel.org/show_bug.cgi?id=10369
+> http://lkml.org/lkml/2008/2/21/86
 > 
-> (direct link)
-> http://bugzilla.kernel.org/attachment.cgi?id=15542
-> 
-> so, this log was made from a _working_ machine over the serial
-> console... I put some _real_ "date" marks here and there... 
-> to explain a bit, how the time STALLS... (well, it seems like
-> it goes a bit backward and forward and backwards again...  it loops?!
-> whatever..!??!?!!)
-> 
-> just take a look at the jiffies (grep for them... it takes "minutes"
-> until jiffies+1 comes)
-> 
-> Maybe there's a "signed" problem somewhere in the timekeeping
-> code? Or does 2.6.25-rcX have a general problem with NTP-daemons
-> like chrony?
+> Some kind of borkage in readdir, probably either in xfs or vfs?
 
-Have you posted the .config already?
+Fixed in 2.6.24.3.
 
-Rafael
+http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=450790a2c51e6d9d47ed30dbdcf486656b8e186f
+
+Please upgrade.
+
+Cheers,
+
+Dave.
+-- 
+Dave Chinner
+Principal Engineer
+SGI Australian Software Group
