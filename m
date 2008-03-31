@@ -1,585 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751942AbYCaEBD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751934AbYCaEBW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751942AbYCaEBD (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Mar 2008 00:01:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750930AbYCaEAx
+	id S1751934AbYCaEBW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Mar 2008 00:01:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751098AbYCaEAy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Mar 2008 00:00:53 -0400
-Received: from py-out-1112.google.com ([64.233.166.180]:22453 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750894AbYCaEAv (ORCPT
+	Mon, 31 Mar 2008 00:00:54 -0400
+Received: from fg-out-1718.google.com ([72.14.220.154]:3113 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750764AbYCaEAv convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 31 Mar 2008 00:00:51 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=AEB5IH5AdoO4A4FGCAtu2EFKVmOBu050kwrBThRXdD00HfnWOcnvFW3XtbftzbxAyMh59LQiz/ZjjrNWrW6TmmRMnk1yn8ocnrd5dh9Ha2usoGiaNKbuutV2y4CXwm9osHH4WWEMxLbiINr1MFUHjFkkpCX/pBVQKhAsfseiHY8=
-Message-ID: <5681ec900803302100v4cf40520led5c66aa96c6cc03@mail.gmail.com>
-Date: Mon, 31 Mar 2008 09:30:49 +0530
-From: "Sanjeev Aditya Naga" <sanjeev.kernel@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: Re: [>=2.6.23][BUG] Oops on power disconnection
-In-Reply-To: <5681ec900803300651m6e5f38deke1b7746236e5bb9@mail.gmail.com>
+        h=message-id:date:from:sender:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=PfEpwbqphDPwvyjMPT2kLcPQFshwN4QWnSVo50ftcsBkHewzQcBNxI3FOhys/KE7VW6DP+qXWIcTYeilZfOkspnbllTeYCW3kDj6Ve8CpLrar2unsIBSmfeoFN6UQGFJLvoXE6EJOukNEhMpTYRIISX2v0uEyBALJAx5HRvoMhI=
+Message-ID: <517f3f820803302100sdd50d71m4a990993f45e746c@mail.gmail.com>
+Date: Mon, 31 Mar 2008 06:00:50 +0200
+From: "Michael Kerrisk" <mtk.manpages@gmail.com>
+To: "Samuel Thibault" <samuel.thibault@ens-lyon.org>,
+       "Andi Kleen" <andi@firstfloor.org>,
+       "David Miller" <davem@davemloft.net>, linux-kernel@vger.kernel.org,
+       mtk.manpages@gmail.com
+Subject: Re: [PATCH,TRIVIAL] AF_UNIX, accept() and addrlen
+In-Reply-To: <20080324122700.GK4434@implementation.uk.xensource.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-References: <5681ec900803300645l5369cda4g119957a4b7f05d17@mail.gmail.com>
-	 <5681ec900803300651m6e5f38deke1b7746236e5bb9@mail.gmail.com>
+References: <20080308022321.GC5853@implementation>
+	 <20080323.215641.192753003.davem@davemloft.net>
+	 <20080324104330.GF4434@implementation.uk.xensource.com>
+	 <87abko734d.fsf@basil.nowhere.org>
+	 <20080324121719.GJ4434@implementation.uk.xensource.com>
+	 <20080324122700.GK4434@implementation.uk.xensource.com>
+X-Google-Sender-Auth: 96e668d8ae57bd30
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Samuel,
 
-Please find the dmesg below:
-BTW, I tried basically with kernels after 2.6.21 and I get the
-same result.
+It would really be much more useful if you CCed me, rather than hoping
+that I'd find this patch by trawling LKML...
 
-Kind Regards,
-Sanjeev
+David, Andi,
 
-Initializing cgroup subsys cpuset
-Linux version 2.6.24.3 (root@draksha.cultuzz.in) (gcc version 4.3.0
-20080222 (Red Hat 4.3.0-0.11) (GCC) ) #5 SMP Tue Apr 1 00:04:55 IST
-2008
-BIOS-provided physical RAM map:
- BIOS-e820: 0000000000000000 - 000000000009dc00 (usable)
- BIOS-e820: 000000000009dc00 - 00000000000a0000 (reserved)
- BIOS-e820: 00000000000ce000 - 00000000000d0000 (reserved)
- BIOS-e820: 00000000000dc000 - 00000000000e0000 (reserved)
- BIOS-e820: 00000000000e4000 - 0000000000100000 (reserved)
- BIOS-e820: 0000000000100000 - 0000000057e80000 (usable)
- BIOS-e820: 0000000057e80000 - 0000000057e96000 (ACPI data)
- BIOS-e820: 0000000057e96000 - 0000000057f00000 (ACPI NVS)
- BIOS-e820: 0000000057f00000 - 0000000058000000 (reserved)
- BIOS-e820: 00000000e0000000 - 00000000f0000000 (reserved)
- BIOS-e820: 00000000fec00000 - 00000000fec10000 (reserved)
- BIOS-e820: 00000000fee00000 - 00000000fee01000 (reserved)
- BIOS-e820: 00000000fff80000 - 0000000100000000 (reserved)
-510MB HIGHMEM available.
-896MB LOWMEM available.
-found SMP MP-table at 000f7130
-Using x86 segment limits to approximate NX protection
-Entering add_active_range(0, 0, 360064) 0 entries of 256 used
-Zone PFN ranges:
-  DMA             0 ->     4096
-  Normal       4096 ->   229376
-  HighMem    229376 ->   360064
-Movable zone start PFN for each node
-early_node_map[1] active PFN ranges
-    0:        0 ->   360064
-On node 0 totalpages: 360064
-  DMA zone: 32 pages used for memmap
-  DMA zone: 0 pages reserved
-  DMA zone: 4064 pages, LIFO batch:0
-  Normal zone: 1760 pages used for memmap
-  Normal zone: 223520 pages, LIFO batch:31
-  HighMem zone: 1021 pages used for memmap
-  HighMem zone: 129667 pages, LIFO batch:31
-  Movable zone: 0 pages used for memmap
-DMI present.
-Using APIC driver default
-ACPI: RSDP 000F7070, 0014 (r0 TOSQCI)
-ACPI: RSDT 57E8F4EF, 0038 (r1 TOSQCI TOSQCI00  6040000  LTP        0)
-ACPI: FACP 57E95D7C, 0074 (r1 ATI    Bonefish  6040000 ATI     F4240)
-ACPI: DSDT 57E8FF4C, 5E30 (r1 TOSQCI L10       6040000 MSFT  2000002)
-ACPI: FACS 57E96FC0, 0040
-ACPI: APIC 57E95DF0, 005E (r1 PTLTD  	 APIC    6040000  LTP        0)
-ACPI: MCFG 57E95E4E, 003C (r1 PTLTD    MCFG    6040000  LTP        0)
-ACPI: SLIC 57E95E8A, 0176 (r1 TOSQCI TOSQCI00  6040000  LTP        0)
-ACPI: SSDT 57E8F527, 0535 (r1  PmRef    CpuPm     3000 INTL 20050228)
-ACPI: DMI detected: Toshiba
-ATI board detected. Disabling timer routing over 8254.
-ACPI: PM-Timer IO Port: 0x8008
-ACPI: Local APIC address 0xfee00000
-ACPI: LAPIC (acpi_id[0x00] lapic_id[0x00] enabled)
-Processor #0 6:14 APIC version 20
-ACPI: LAPIC (acpi_id[0x01] lapic_id[0x01] enabled)
-Processor #1 6:14 APIC version 20
-ACPI: LAPIC_NMI (acpi_id[0x00] high edge lint[0x1])
-ACPI: LAPIC_NMI (acpi_id[0x01] high edge lint[0x1])
-ACPI: IOAPIC (id[0x02] address[0xfec00000] gsi_base[0])
-IOAPIC[0]: apic_id 2, version 33, address 0xfec00000, GSI 0-23
-ACPI: INT_SRC_OVR (bus 0 bus_irq 9 global_irq 21 low level)
-Enabling APIC mode:  Flat.  Using 1 I/O APICs
-Using ACPI (MADT) for SMP configuration information
-Allocating PCI resources starting at 60000000 (gap: 58000000:88000000)
-swsusp: Registered nosave memory region: 000000000009d000 - 000000000009e000
-swsusp: Registered nosave memory region: 000000000009e000 - 00000000000a0000
-swsusp: Registered nosave memory region: 00000000000a0000 - 00000000000ce000
-swsusp: Registered nosave memory region: 00000000000ce000 - 00000000000d0000
-swsusp: Registered nosave memory region: 00000000000d0000 - 00000000000dc000
-swsusp: Registered nosave memory region: 00000000000dc000 - 00000000000e0000
-swsusp: Registered nosave memory region: 00000000000e0000 - 00000000000e4000
-swsusp: Registered nosave memory region: 00000000000e4000 - 0000000000100000
-Built 1 zonelists in Zone order, mobility grouping on.  Total pages: 357251
-Kernel command line: ro root=LABEL=/1 rhgb quiet
-mapped APIC to ffffb000 (fee00000)
-mapped IOAPIC to ffffa000 (fec00000)
-Enabling fast FPU save and restore... done.
-Enabling unmasked SIMD FPU exception support... done.
-Initializing CPU#0
-CPU 0 irqstacks, hard=c07bd000 soft=c079d000
-PID hash table entries: 4096 (order: 12, 16384 bytes)
-Detected 1600.026 MHz processor.
-Console: colour VGA+ 80x25
-console [tty0] enabled
-Dentry cache hash table entries: 131072 (order: 7, 524288 bytes)
-Inode-cache hash table entries: 65536 (order: 6, 262144 bytes)
-Memory: 1419592k/1440256k available (2263k kernel code, 19312k
-reserved, 1109k data, 292k init, 522752k highmem)
-virtual kernel memory layout:
-    fixmap  : 0xffc52000 - 0xfffff000   (3764 kB)
-    pkmap   : 0xff800000 - 0xffc00000   (4096 kB)
-    vmalloc : 0xf8800000 - 0xff7fe000   ( 111 MB)
-    lowmem  : 0xc0000000 - 0xf8000000   ( 896 MB)
-      .init : 0xc0751000 - 0xc079a000   ( 292 kB)
-      .data : 0xc0635db8 - 0xc074b56c   (1109 kB)
-      .text : 0xc0400000 - 0xc0635db8   (2263 kB)
-Checking if this processor honours the WP bit even in supervisor mode... Ok.
-SLUB: Genslabs=11, HWalign=64, Order=0-1, MinObjects=4, CPUs=2, Nodes=1
-Calibrating delay using timer specific routine.. 3202.37 BogoMIPS (lpj=1601186)
-Security Framework initialized
-SELinux:  Initializing.
-SELinux:  Starting in permissive mode
-selinux_register_security:  Registering secondary module capability
-Capability LSM initialized as secondary
-Mount-cache hash table entries: 512
-Initializing cgroup subsys ns
-Initializing cgroup subsys cpuacct
-CPU: After generic identify, caps: bfe9fbff 00000000 00000000 00000000
-0000c189 00000000 00000000 00000000
-monitor/mwait feature present.
-using mwait in idle threads.
-CPU: L1 I cache: 32K, L1 D cache: 32K
-CPU: L2 cache: 1024K
-CPU: Physical Processor ID: 0
-CPU: Processor Core ID: 0
-CPU: After all inits, caps: bfe9f3ff 00000000 00000000 00002940
-0000c189 00000000 00000000 00000000
-Intel machine check architecture supported.
-Intel machine check reporting enabled on CPU#0.
-Compat vDSO mapped to ffffe000.
-Checking 'hlt' instruction... OK.
-SMP alternatives: switching to UP code
-Early unpacking initramfs... done
-ACPI: Core revision 20070126
-ACPI: Looking for DSDT in initramfs... successfully read 21669 bytes
-from /DSDT.aml.
-ACPI: Table DSDT replaced by host OS
-ACPI: DSDT 00000000, 54A5 (r1 TOSQCI L10       6040000 INTL 20061109)
-ACPI: DSDT override uses original SSDTs unless
-"acpi_no_auto_ssdt"CPU0: Intel Genuine Intel(R) CPU           T2060  @
-1.60GHz stepping 0c
-SMP alternatives: switching to SMP code
-Booting processor 1/1 eip 3000
-CPU 1 irqstacks, hard=c07be000 soft=c079e000
-Initializing CPU#1
-Calibrating delay using timer specific routine.. 3199.52 BogoMIPS (lpj=1599764)
-CPU: After generic identify, caps: bfe9fbff 00000000 00000000 00000000
-0000c189 00000000 00000000 00000000
-monitor/mwait feature present.
-CPU: L1 I cache: 32K, L1 D cache: 32K
-CPU: L2 cache: 1024K
-CPU: Physical Processor ID: 0
-CPU: Processor Core ID: 1
-CPU: After all inits, caps: bfe9f3ff 00000000 00000000 00002940
-0000c189 00000000 00000000 00000000
-Intel machine check architecture supported.
-Intel machine check reporting enabled on CPU#1.
-CPU1: Intel Genuine Intel(R) CPU           T2060  @ 1.60GHz stepping 0c
-Total of 2 processors activated (6401.90 BogoMIPS).
-ENABLING IO-APIC IRQs
-..TIMER: vector=0x31 apic1=0 pin1=0 apic2=-1 pin2=-1
-checking TSC synchronization [CPU#0 -> CPU#1]: passed.
-Brought up 2 CPUs
-sizeof(vma)=84 bytes
-sizeof(page)=32 bytes
-sizeof(inode)=336 bytes
-sizeof(dentry)=132 bytes
-sizeof(ext3inode)=488 bytes
-sizeof(buffer_head)=56 bytes
-sizeof(skbuff)=176 bytes
-sizeof(task_struct)=1680 bytes
-CPU0 attaching sched-domain:
- domain 0: span 00000003
-  groups: 00000001 00000002
-CPU1 attaching sched-domain:
- domain 0: span 00000003
-  groups: 00000002 00000001
-net_namespace: 64 bytes
-Booting paravirtualized kernel on bare hardware
-Time:  2:11:42  Date: 04/02/08
-NET: Registered protocol family 16
-No dock devices found.
-ACPI: bus type pci registered
-PCI: PCI BIOS revision 2.10 entry at 0xfd494, last bus=14
-PCI: Using configuration type 1
-Setting up standard PCI resources
-ACPI: EC: Look up EC in DSDT
-ACPI Error (dswload-0664): [\___] Namespace lookup failure, AE_NOT_FOUND
-ACPI Exception (psloop-0225): AE_NOT_FOUND, During name lookup/catalog
-[20070126]
-ACPI Error (psparse-0537): Method parse/execution failed
-[\_SB_.PCI0._INI] (Node f781a6c0), AE_NOT_FOUND
-ACPI: Interpreter enabled
-ACPI: (supports S0 S3 S4 S5)
-ACPI: Using IOAPIC for interrupt routing
-ACPI: EC: GPE = 0x10, I/O: command/status = 0x66, data = 0x62
-ACPI: EC: driver started in poll mode
-ACPI: EC: non-query interrupt received, switching to interrupt mode
-ACPI: PCI Root Bridge [PCI0] (0000:00)
-PCI: Transparent bridge - 0000:00:14.4
-ACPI: PCI Interrupt Routing Table [\_SB_.PCI0._PRT]
-ACPI: PCI Interrupt Routing Table [\_SB_.PCI0.P2P_._PRT]
-ACPI: PCI Interrupt Routing Table [\_SB_.PCI0.AGP_._PRT]
-ACPI: PCI Interrupt Link [LNKA] (IRQs 10 11) *0, disabled.
-ACPI: PCI Interrupt Link [LNKB] (IRQs 10 11) *0, disabled.
-ACPI: PCI Interrupt Link [LNKC] (IRQs 10 11) *0, disabled.
-ACPI: PCI Interrupt Link [LNKD] (IRQs 10 11) *0, disabled.
-ACPI: PCI Interrupt Link [LNKE] (IRQs 10 11) *0, disabled.
-ACPI: PCI Interrupt Link [LNKF] (IRQs 10 11) *0, disabled.
-ACPI: PCI Interrupt Link [LNKG] (IRQs 10 11) *0, disabled.
-ACPI: PCI Interrupt Link [LNKH] (IRQs 10 11) *0, disabled.
-Linux Plug and Play Support v0.97 (c) Adam Belay
-pnp: PnP ACPI init
-ACPI: bus type pnp registered
-pnp: PnP ACPI: found 10 devices
-ACPI: ACPI bus type pnp unregistered
-usbcore: registered new interface driver usbfs
-usbcore: registered new interface driver hub
-usbcore: registered new device driver usb
-PCI: Using ACPI for IRQ routing
-PCI: If a device doesn't work, try "pci=routeirq".  If it helps, post a report
-NetLabel: Initializing
-NetLabel:  domain hash size = 128
-NetLabel:  protocols = UNLABELED CIPSOv4
-NetLabel:  unlabeled traffic allowed by default
-Time: tsc clocksource has been installed.
-system 00:01: iomem range 0xe0000000-0xefffffff could not be reserved
-system 00:08: ioport range 0x1080-0x1080 has been reserved
-system 00:08: ioport range 0x200-0x20f has been reserved
-system 00:08: ioport range 0x40b-0x40b has been reserved
-system 00:08: ioport range 0x4d0-0x4d1 has been reserved
-system 00:08: ioport range 0x4d6-0x4d6 has been reserved
-system 00:08: ioport range 0x530-0x537 has been reserved
-system 00:08: ioport range 0xc00-0xc01 has been reserved
-system 00:08: ioport range 0xc14-0xc14 has been reserved
-system 00:08: ioport range 0xc50-0xc52 has been reserved
-system 00:08: ioport range 0xc6c-0xc6c has been reserved
-system 00:08: ioport range 0xc6f-0xc6f has been reserved
-system 00:08: ioport range 0xcd4-0xcd5 has been reserved
-system 00:08: ioport range 0xcd6-0xcd7 has been reserved
-system 00:08: ioport range 0xcd8-0xcdf has been reserved
-system 00:08: ioport range 0x8000-0x805f could not be reserved
-system 00:08: ioport range 0x8210-0x821f has been reserved
-system 00:08: ioport range 0xf40-0xf47 has been reserved
-system 00:08: ioport range 0x280-0x293 has been reserved
-system 00:08: ioport range 0x87f-0x87f has been reserved
-system 00:09: iomem range 0xe0000-0xfffff could not be reserved
-system 00:09: iomem range 0xfff00000-0xffffffff could not be reserved
-system 00:09: iomem range 0xc0004800-0xc00057ff has been reserved
-system 00:09: iomem range 0x0-0xfff could not be reserved
-PCI: Bridge: 0000:00:01.0
-  IO window: 9000-9fff
-  MEM window: c0000000-c00fffff
-  PREFETCH window: d0000000-dfffffff
-PCI: Bus 10, cardbus bridge: 0000:09:01.0
-  IO window: 0000a400-0000a4ff
-  IO window: 0000a800-0000a8ff
-  PREFETCH window: 64000000-67ffffff
-  MEM window: 68000000-6bffffff
-PCI: Bridge: 0000:00:14.4
-  IO window: a000-afff
-  MEM window: c0100000-c01fffff
-  PREFETCH window: disabled.
-PCI: Enabling device 0000:09:01.0 (0000 -> 0003)
-ACPI: PCI Interrupt 0000:09:01.0[A] -> GSI 20 (level, low) -> IRQ 16
-NET: Registered protocol family 2
-IP route cache hash table entries: 32768 (order: 5, 131072 bytes)
-TCP established hash table entries: 131072 (order: 8, 1048576 bytes)
-TCP bind hash table entries: 65536 (order: 7, 524288 bytes)
-TCP: Hash tables configured (established 131072 bind 65536)
-TCP reno registered
-checking if image is initramfs... it is
-Freeing initrd memory: 2639k freed
-apm: BIOS not found.
-audit: initializing netlink socket (disabled)
-audit(1207102301.744:1): initialized
-highmem bounce pool size: 64 pages
-Total HugeTLB memory allocated, 0
-VFS: Disk quotas dquot_6.5.1
-Dquot-cache hash table entries: 1024 (order 0, 4096 bytes)
-SELinux:  Registering netfilter hooks
-ksign: Installing public key data
-Loading keyring
-Block layer SCSI generic (bsg) driver version 0.4 loaded (major 253)
-io scheduler noop registered
-io scheduler anticipatory registered
-io scheduler deadline registered
-io scheduler cfq registered (default)
-Boot video device is 0000:01:05.0
-pci_hotplug: PCI Hot Plug PCI Core version: 0.5
-ACPI: SSDT 57E8FCDD, 01E8 (r1  PmRef  Cpu0Ist     3000 INTL 20050228)
-ACPI: SSDT 57E8FA5C, 01FC (r1  PmRef  Cpu0Cst     3001 INTL 20050228)
-ACPI: Processor [CPU0] (supports 8 throttling states)
-ACPI: SSDT 57E8FEC5, 0087 (r1  PmRef  Cpu1Ist     3000 INTL 20050228)
-ACPI: SSDT 57E8FC58, 0085 (r1  PmRef  Cpu1Cst     3000 INTL 20050228)
-ACPI: Processor [CPU1] (supports 8 throttling states)
-ACPI: Thermal Zone [THRM] (60 C)
-isapnp: Scanning for PnP cards...
-Switched to high resolution mode on CPU 0
-Switched to high resolution mode on CPU 1
-isapnp: No Plug & Play device found
-Real Time Clock Driver v1.12ac
-Non-volatile memory driver v1.2
-Linux agpgart interface v0.102
-Serial: 8250/16550 driver $Revision: 1.90 $ 4 ports, IRQ sharing enabled
-RAMDISK driver initialized: 16 RAM disks of 16384K size 4096 blocksize
-input: Macintosh mouse button emulation as /class/input/input0
-Yenta: CardBus bridge found at 0000:09:01.0 [1179:ff31]
-Yenta: Using CSCINT to route CSC interrupts to PCI
-Yenta: Routing CardBus interrupts to PCI
-Yenta TI: socket 0000:09:01.0, mfunc 0x00001002, devctl 0x44
-Yenta: ISA IRQ mask 0x0cf8, PCI irq 16
-Socket status: 30000006
-pcmcia: parent PCI bridge I/O window: 0xa000 - 0xafff
-cs: IO port probe 0xa000-0xafff: clean.
-pcmcia: parent PCI bridge Memory window: 0xc0100000 - 0xc01fffff
-PNP: PS/2 Controller [PNP0303:KBC0,PNP0f13:MSE0] at 0x60,0x64 irq 1,12
-serio: i8042 KBD port at 0x60,0x64 irq 1
-serio: i8042 AUX port at 0x60,0x64 irq 12
-mice: PS/2 mouse device common for all mice
-input: AT Translated Set 2 keyboard as /class/input/input1
-cpuidle: using governor ladder
-cpuidle: using governor menu
-usbcore: registered new interface driver hiddev
-usbcore: registered new interface driver usbhid
-drivers/hid/usbhid/hid-core.c: v2.6:USB HID core driver
-TCP cubic registered
-Initializing XFRM netlink socket
-NET: Registered protocol family 1
-NET: Registered protocol family 17
-Using IPI No-Shortcut mode
-registered taskstats version 1
-  Magic number: 4:959:155
-Freeing unused kernel memory: 292k freed
-Write protecting the kernel read-only data: 880k
-ACPI: PCI Interrupt 0000:00:13.2[A] -> GSI 19 (level, low) -> IRQ 17
-ehci_hcd 0000:00:13.2: EHCI Host Controller
-ehci_hcd 0000:00:13.2: new USB bus registered, assigned bus number 1
-ehci_hcd 0000:00:13.2: irq 17, io mem 0xc0406000
-ehci_hcd 0000:00:13.2: USB 2.0 started, EHCI 1.00, driver 10 Dec 2004
-usb usb1: configuration #1 chosen from 1 choice
-hub 1-0:1.0: USB hub found
-hub 1-0:1.0: 8 ports detected
-ohci_hcd: 2006 August 04 USB 1.1 'Open' Host Controller (OHCI) Driver
-ACPI: PCI Interrupt 0000:00:13.0[A] -> GSI 19 (level, low) -> IRQ 17
-ohci_hcd 0000:00:13.0: OHCI Host Controller
-ohci_hcd 0000:00:13.0: new USB bus registered, assigned bus number 2
-ohci_hcd 0000:00:13.0: irq 17, io mem 0xc0404000
-usb usb2: configuration #1 chosen from 1 choice
-hub 2-0:1.0: USB hub found
-hub 2-0:1.0: 4 ports detected
-ACPI: PCI Interrupt 0000:00:13.1[A] -> GSI 19 (level, low) -> IRQ 17
-ohci_hcd 0000:00:13.1: OHCI Host Controller
-ohci_hcd 0000:00:13.1: new USB bus registered, assigned bus number 3
-ohci_hcd 0000:00:13.1: irq 17, io mem 0xc0405000
-usb usb3: configuration #1 chosen from 1 choice
-hub 3-0:1.0: USB hub found
-hub 3-0:1.0: 4 ports detected
-Synaptics Touchpad, model: 1, fw: 6.2, id: 0x25a0b1, caps: 0xa04713/0x0
-synaptics: Toshiba Satellite L35 detected, limiting rate to 40pps.
-input: SynPS/2 Synaptics TouchPad as /class/input/input2
-USB Universal Host Controller Interface driver v3.0
-SCSI subsystem initialized
-Driver 'sd' needs updating - please use bus_type methods
-libata version 3.00 loaded.
-sata_sil 0000:00:12.0: version 2.3
-PCI: Enabling device 0000:00:12.0 (0005 -> 0007)
-ACPI: PCI Interrupt 0000:00:12.0[A] -> GSI 22 (level, low) -> IRQ 18
-scsi0 : sata_sil
-scsi1 : sata_sil
-ata1: SATA max UDMA/100 mmio m512@0xc0407000 tf 0xc0407080 irq 18
-ata2: SATA max UDMA/100 mmio m512@0xc0407000 tf 0xc04070c0 irq 18
-ata1: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
-ata1.00: ATA-7: TOSHIBA MK8037GSX, DL230M, max UDMA/100
-ata1.00: 156301488 sectors, multi 16: LBA48 NCQ (depth 0/32)
-ata1.00: configured for UDMA/100
-ata2: SATA link down (SStatus 0 SControl 300)
-scsi 0:0:0:0: Direct-Access     ATA      TOSHIBA MK8037GS DL23 PQ: 0 ANSI: 5
-sd 0:0:0:0: [sda] 156301488 512-byte hardware sectors (80026 MB)
-sd 0:0:0:0: [sda] Write Protect is off
-sd 0:0:0:0: [sda] Mode Sense: 00 3a 00 00
-sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't
-support DPO or FUA
-sd 0:0:0:0: [sda] 156301488 512-byte hardware sectors (80026 MB)
-sd 0:0:0:0: [sda] Write Protect is off
-sd 0:0:0:0: [sda] Mode Sense: 00 3a 00 00
-sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't
-support DPO or FUA
- sda: sda1 sda2 sda3 sda4
-sd 0:0:0:0: [sda] Attached SCSI disk
-ACPI: PCI Interrupt 0000:00:14.1[A] -> GSI 16 (level, low) -> IRQ 19
-PCI: Setting latency timer of device 0000:00:14.1 to 64
-ACPI: PCI interrupt for device 0000:00:14.1 disabled
-ACPI: PCI Interrupt 0000:00:14.1[A] -> GSI 16 (level, low) -> IRQ 19
-scsi2 : pata_atiixp
-scsi3 : pata_atiixp
-ata3: PATA max UDMA/100 cmd 0x1f0 ctl 0x3f6 bmdma 0x8460 irq 14
-ata4: PATA max UDMA/100 cmd 0x170 ctl 0x376 bmdma 0x8468 irq 15
-ata3: port disabled. ignoring.
-ata4.00: ATAPI: MATSHITADVD-RAM UJ-850S, 1.10, max UDMA/33
-ata4.00: configured for UDMA/33
-scsi 3:0:0:0: CD-ROM            MATSHITA DVD-RAM UJ-850S  1.10 PQ: 0 ANSI: 5
-EXT3-fs: INFO: recovery required on readonly filesystem.
-EXT3-fs: write access will be enabled during recovery.
-kjournald starting.  Commit interval 5 seconds
-EXT3-fs: recovery complete.
-EXT3-fs: mounted filesystem with ordered data mode.
-SELinux:  Disabled at runtime.
-SELinux:  Unregistering netfilter hooks
-audit(1207102314.976:2): selinux=0 auid=4294967295
-sd 0:0:0:0: Attached scsi generic sg0 type 0
-scsi 3:0:0:0: Attached scsi generic sg1 type 5
-piix4_smbus 0000:00:14.0: Found 0000:00:14.0 device
-input: PC Speaker as /class/input/input3
-cs: IO port probe 0x100-0x3af: clean.
-cs: IO port probe 0x3e0-0x4ff: clean.
-cs: IO port probe 0x820-0x8ff: clean.
-cs: IO port probe 0xc00-0xcf7: clean.
-cs: IO port probe 0xa00-0xaff: clean.
-ACPI: Battery Slot [BAT1] (battery present)
-ACPI: AC Adapter [ACAD] (on-line)
-input: Video Bus as /class/input/input4
-ACPI: Video Device [VGA] (multi-head: yes  rom: no  post: no)
-8139too Fast Ethernet driver 0.9.28
-ACPI: PCI Interrupt 0000:09:02.0[A] -> GSI 21 (level, low) -> IRQ 21
-eth0: RealTek RTL8139 at 0xf8918000, 00:1b:24:1e:9a:57, IRQ 21
-eth0:  Identified 8139 chip type 'RTL-8100B/8139D'
-input: Power Button (FF) as /class/input/input5
-ACPI: Power Button (FF) [PWRF]
-input: Lid Switch as /class/input/input6
-ACPI: Lid Switch [LID]
-input: Power Button (CM) as /class/input/input7
-ACPI: Power Button (CM) [PWRB]
-8139cp: 10/100 PCI Ethernet driver v1.3 (Mar 22, 2004)
-Driver 'sr' needs updating - please use bus_type methods
-sr0: scsi3-mmc drive: 24x/24x writer dvd-ram cd/rw xa/form2 cdda tray
-Uniform CD-ROM driver Revision: 3.20
-sr 3:0:0:0: Attached scsi CD-ROM sr0
-ACPI: PCI Interrupt 0000:00:14.2[A] -> GSI 16 (level, low) -> IRQ 19
-ALSA sound/pci/hda/hda_intel.c:732: codec_mask = 0xb
-ALSA sound/pci/hda/hda_codec.c:2137: hda_codec: model '3stack' is selected
-ALSA sound/pci/hda/patch_si3054.c:238: si3054: cannot initialize. EXT MID = 0000
-ALSA sound/pci/hda/patch_si3054.c:250: Link Frame Detect(FDT) is not
-ready (line status: 0000)
-NET: Registered protocol family 10
-lo: Disabled Privacy Extensions
-device-mapper: uevent: version 1.0.3
-device-mapper: ioctl: 4.12.0-ioctl (2007-10-02) initialised: dm-devel@redhat.com
-device-mapper: multipath: version 1.0.5 loaded
-loop: module loaded
-EXT3 FS on sda4, internal journal
-fuse init (API version 7.9)
-Adding 3116600k swap on /dev/sda3.  Priority:-1 extents:1 across:3116600k
-IA-32 Microcode Update Driver: v1.14a <tigran@aivazian.fsnet.co.uk>
-ip_tables: (C) 2000-2006 Netfilter Core Team
-nf_conntrack version 0.5.0 (16384 buckets, 65536 max)
-openser[1699]: segfault at 00000009 eip 0045a625 esp bf9347fc error 4
-Bridge firewalling registered
-virbr0: Dropping NETIF_F_UFO since no NETIF_F_HW_CSUM feature.
-virbr0: starting userspace STP failed, starting kernel STP
-virbr0: no IPv6 routers present
-kjournald starting.  Commit interval 5 seconds
-EXT3-fs warning: maximal mount count reached, running e2fsck is recommended
-EXT3 FS on dm-0, internal journal
-EXT3-fs: mounted filesystem with ordered data mode.
-hda-intel: Invalid position buffer, using LPIB read method instead.
-eth0: link up, 100Mbps, full-duplex, lpa 0x45E1
-eth0: no IPv6 routers present
-WARNING: at lib/kref.c:33 kref_get() (Not tainted)
-Pid: 69, comm: kacpi_notify Not tainted 2.6.24.3 #5
- [<c04ff274>] kref_get+0x3d/0x45
- [<c04fe65d>] kobject_get+0xf/0x13
- [<c04fe84d>] kobject_add+0x82/0x176
- [<c04fe9eb>] kobject_register+0x19/0x2d
- [<c05b0ad0>] cpuidle_add_state_sysfs+0x7b/0xe4
- [<c052660e>] acpi_os_execute_notify+0x0/0x2b
- [<c05b03fd>] cpuidle_enable_device+0x31/0x9b
- [<c0545923>] acpi_processor_cst_has_changed+0x40/0x55
- [<c0543ae2>] acpi_processor_notify+0x8b/0xf4
- [<c052bcbb>] acpi_ev_notify_dispatch+0x4c/0x55
- [<c0526630>] acpi_os_execute_notify+0x22/0x2b
- [<c052660e>] acpi_os_execute_notify+0x0/0x2b
- [<c043c212>] run_workqueue+0x7d/0x107
- [<c043fa5b>] prepare_to_wait+0x28/0x45
- [<c043c35a>] worker_thread+0xbe/0xca
- [<c043f8ff>] autoremove_wake_function+0x0/0x35
- [<c043c29c>] worker_thread+0x0/0xca
- [<c043f679>] kthread+0x38/0x5d
- [<c043f641>] kthread+0x0/0x5d
- [<c0406477>] kernel_thread_helper+0x7/0x10
- =======================
-BUG: unable to handle kernel NULL pointer dereference at virtual
-address 00000020
-printing eip: c04c4716 *pde = 578c2067
-Oops: 0000 [#1] SMP
-Modules linked in: cbc(U) geode_aes(U) blkcipher(U) aes_i586(U)
-aes_generic(U) dm_crypt(U) ipt_MASQUERADE(U) iptable_nat(U) nf_nat(U)
-bridge(U) autofs4(U) nf_conntrack_ipv4(U) xt_state(U) nf_conntrack(U)
-xt_tcpudp(U) ipt_REJECT(U) iptable_filter(U) ip_tables(U) x_tables(U)
-cpufreq_ondemand(U) acpi_cpufreq(U) fuse(U) loop(U) dm_mirror(U)
-dm_multipath(U) dm_mod(U) ipv6(U) snd_hda_intel(U) snd_seq_dummy(U)
-snd_seq_oss(U) snd_seq_midi_event(U) snd_seq(U) snd_seq_device(U)
-snd_pcm_oss(U) sr_mod(U) snd_mixer_oss(U) snd_pcm(U) 8139cp(U)
-snd_timer(U) button(U) 8139too(U) mii(U) snd_page_alloc(U) cdrom(U)
-video(U) output(U) snd_hwdep(U) ac(U) snd(U) pcspkr(U) i2c_piix4(U)
-i2c_core(U) battery(U) joydev(U) soundcore(U) sg(U) pata_atiixp(U)
-pata_acpi(U) sata_sil(U) ata_generic(U) libata(U) sd_mod(U)
-scsi_mod(U) ext3(U) jbd(U) mbcache(U) uhci_hcd(U) ohci_hcd(U)
-ehci_hcd(U)
+My understanding about abstract namespace sockets (what Samuel calls
+unnamed sockets) is that the indicator that the address is for an
+unnamed socket is that the sun_path starts with a zero byte -- and the
+*entire* remainder of the sun_path constitutes the name of the socket.
+ As such, information about the size returned by accept() etc. is
+redundant. (I've happily written programs that use abstract namespace
+sockets without even knowing what is returned by a succesful
+accept().)
 
-Pid: 69, comm: kacpi_notify Not tainted (2.6.24.3 #5)
-EIP: 0060:[<c04c4716>] EFLAGS: 00010246 CPU: 0
-EIP is at sysfs_addrm_start+0x21/0x81
-EAX: c04c47d7 EBX: 00000000 ECX: 00000000 EDX: f78b8000
-ESI: f78b8eb8 EDI: f78b8ec8 EBP: 00000000 ESP: f78b8ea4
- DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
-Process kacpi_notify (pid: 69, ti=f78b8000 task=f78d8000 task.ti=f78b8000)
-Stack: f229ff54 f229ff54 f5b8d390 fffffff4 c04c4b45 00000000 00000000 00000000
-       00000000 f229ff54 00000000 00000000 f782601c c04c4bab f78b8ee0 c04fe65d
-       f229ff54 c04fe8a8 f722e67f ffffffff ffffffff 00000007 f722e678 f78261d8
-Call Trace:
- [<c04c4b45>] create_dir+0x33/0x6c
- [<c04c4bab>] sysfs_create_dir+0x2d/0x40
- [<c04fe65d>] kobject_get+0xf/0x13
- [<c04fe8a8>] kobject_add+0xdd/0x176
- [<c04fe9eb>] kobject_register+0x19/0x2d
- [<c05b0ad0>] cpuidle_add_state_sysfs+0x7b/0xe4
- [<c052660e>] acpi_os_execute_notify+0x0/0x2b
- [<c05b03fd>] cpuidle_enable_device+0x31/0x9b
- [<c0545923>] acpi_processor_cst_has_changed+0x40/0x55
- [<c0543ae2>] acpi_processor_notify+0x8b/0xf4
- [<c052bcbb>] acpi_ev_notify_dispatch+0x4c/0x55
- [<c0526630>] acpi_os_execute_notify+0x22/0x2b
- [<c052660e>] acpi_os_execute_notify+0x0/0x2b
- [<c043c212>] run_workqueue+0x7d/0x107
- [<c043fa5b>] prepare_to_wait+0x28/0x45
- [<c043c35a>] worker_thread+0xbe/0xca
- [<c043f8ff>] autoremove_wake_function+0x0/0x35
- [<c043c29c>] worker_thread+0x0/0xca
- [<c043f679>] kthread+0x38/0x5d
- [<c043f641>] kthread+0x0/0x5d
- [<c0406477>] kernel_thread_helper+0x7/0x10
- =======================
-Code: c0 89 31 83 c4 14 5b 5e 5f c3 57 b9 04 00 00 00 56 89 c7 53 89
-c6 83 ec 04 89 d3 31 c0 f3 ab b8 90 3f 72 c0 89 16 e8 6a cf 16 00 <8b>
-53 20 b9 ec 42 4c c0 a1 84 e4 83 c0 89 1c 24 e8 44 6e fd ff
-EIP: [<c04c4716>] sysfs_addrm_start+0x21/0x81 SS:ESP 0068:f78b8ea4
----[ end trace 863306c7f7bb36f7 ]---
-atkbd.c: Unknown key pressed (translated set 2, code 0x55 on isa0060/serio0).
-atkbd.c: Use 'setkeycodes 55 <keycode>' to make it known.
-atkbd.c: Unknown key released (translated set 2, code 0x55 on isa0060/serio0).
-atkbd.c: Use 'setkeycodes 55 <keycode>' to make it known.
+I agree with Samuel that there should be some documentation of the
+return value of accept() etc, for abstract sockets but my inclination
+would be to document that the indicator that this is an abstract
+socket is the initial null byte in sun_path, and mention the returned
+length as an after word.  Does this seem reasonable?
+
+Cheers,
+
+Michael
+
+On 3/24/08, Samuel Thibault <samuel.thibault@ens-lyon.org> wrote:
+> Samuel Thibault, le Mon 24 Mar 2008 12:17:19 +0000, a écrit :
+>
+> > Andi Kleen, le Mon 24 Mar 2008 12:50:10 +0100, a écrit :
+>  > > Samuel Thibault <samuel.thibault@ens-lyon.org> writes:
+>  > > > David Miller, le Sun 23 Mar 2008 21:56:41 -0700, a écrit :
+>  > > > > From: Samuel Thibault <samuel.thibault@ens-lyon.org>
+>  > > > > Date: Sat, 8 Mar 2008 02:23:21 +0000
+>  > > > >
+>  > > > > > Accept and getpeername are supposed to return the amount of bytes
+>  > > > > > written in the returned address.  However, on unnamed sockets, only
+>  > > > > > sizeof(short) is returned, while a 0 is put in the sun_path member.
+>  > > > > > This patch adds 1 for that additional byte.
+>  > > > > >
+>  > > > > > Signed-off-by: Samuel Thibault <samuel.thibault@ens-lyon.org>
+>  > > > >
+>  > > > > This change isn't correct.  It's the fact that the
+>  > > > > length returned is sizeof(short) that tells the caller
+>  > > > > that the unix socket is unnamed.
+>  > > >
+>  > > > Mmm, where that is documented?
+>  > > >
+>  > > > I can't find any details about that in SUS, and man 7 unix says
+>  > > >
+>  > > > `If sun_path starts with a null byte ('' '), then it refers to the
+>  > > > abstract namespace main- tained by the Unix protocol module.'
+>  > >
+>  > > [I wrote unix(7) originally]. The abstract name space is a Linux
+>  > > extension and there is no written standard and whatever the kernel
+>  > > implements is the de-facto standard. If unix(7) differs in anything
+>  > > from what the code does please send patches to the manpages
+>  > > maintainer.
+>  >
+>  > Oops, sorry, we are not talking about abstract namespace actually (their
+>  > sockaddr length are necessarily bigger than sizeof(sa_family_t) since
+>  > they need some data), but unamed sockets.  So the Address Format
+>  > paragraph just misses description of unnamed sockets.
+>
+>
+> How about this?
+>
+>  --- unix.7.orig 2008-03-24 12:24:37.000000000 +0000
+>  +++ unix.7      2008-03-24 12:24:56.000000000 +0000
+>  @@ -87,6 +87,15 @@
+>   bytes in
+>   .IR sun_path .
+>   Note that names in the abstract namespace are not zero-terminated.
+>  +If the size returned by
+>  +.BR accept
+>  +or
+>  +.BR getpeername
+>  +is
+>  +.IR sizeof(sa_family_t) ,
+>  +then it refers to a unnamed socket and
+>  +.I sun_path
+>  +should not be read.
+>   .SS Socket Options
+>   For historical reasons these socket options are specified with a
+>   .B SOL_SOCKET
+>
+>
+>  Samuel
+>  --
+>  To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+>  the body of a message to majordomo@vger.kernel.org
+>  More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>  Please read the FAQ at  http://www.tux.org/lkml/
+>
+
+
+-- 
+I'll likely only see replies if they are CCed to mtk.manpages at gmail dot com
