@@ -1,82 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754003AbYCaKo3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752992AbYCaKpo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754003AbYCaKo3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Mar 2008 06:44:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751542AbYCaKoS
+	id S1752992AbYCaKpo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Mar 2008 06:45:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752102AbYCaKph
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Mar 2008 06:44:18 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:60398 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751484AbYCaKoR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Mar 2008 06:44:17 -0400
-Date: Mon, 31 Mar 2008 12:44:03 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: David Miller <davem@davemloft.net>
-Cc: dada1@cosmosbay.com, netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       a.p.zijlstra@chello.nl
-Subject: Re: [RFC,PATCH] loopback: calls netif_receive_skb() instead of
-	netif_rx()
-Message-ID: <20080331104403.GA12681@elte.hu>
-References: <20080323.032949.194309002.davem@davemloft.net> <47E6A5FD.6060407@cosmosbay.com> <20080331094823.GA11651@elte.hu> <20080331.030848.175668431.davem@davemloft.net>
+	Mon, 31 Mar 2008 06:45:37 -0400
+Received: from wf-out-1314.google.com ([209.85.200.173]:17373 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751830AbYCaKpg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 31 Mar 2008 06:45:36 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=KLAjpxh0Sm0+2IVI1tcvj11/uN5WTPXJNZ9LWZqrrWi/cxZsTvqbDv1sM4PvRh9p/ularH1pN80H0g7lgMO7AYEfV6Z6ce+Aw8VUzTKvZyCYI5zVRzcoFVTeA3DD8rP17KRLPNzhBpU4WTuBV3V1COV+PBISE6Imwoqc4u7ePlk=
+Message-ID: <5699f8f00803310345i30e64e95m6543b5ec99243a7f@mail.gmail.com>
+Date: Mon, 31 Mar 2008 11:45:35 +0100
+From: "Wander Winkelhorst" <w.winkelhorst@gmail.com>
+To: "Peter Zijlstra" <peterz@infradead.org>
+Subject: Re: RFC: Writing Solaris Device Drivers in Java
+Cc: "Peter Teoh" <htmldeveloper@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       kernelnewbies <kernelnewbies@nl.linux.org>
+In-Reply-To: <1206959293.8514.636.camel@twins>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080331.030848.175668431.davem@davemloft.net>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+References: <47F0491F.4050804@gmail.com> <1206959293.8514.636.camel@twins>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Mar 31, 2008 at 11:28 AM, Peter Zijlstra <peterz@infradead.org> wrote:
+> On Mon, 2008-03-31 at 10:14 +0800, Peter Teoh wrote:
+>
+> > Interesting read:
+>  >
+>  > http://research.sun.com/techrep/2006/smli_tr-2006-156.pdf
+>  >
+>  > Personal comments:
+>  >
+>  > Since KVM and Xen/OpenVZ etc other virtual machines are beginning to pop
+>  > up - I don't see why it inhibits (in spite of the many initial
+>  > difficulties as mentioned in the paper) the growth of using Java for
+>  > device drivers development.   Contrast it against udev - esp in terms of
+>  > usability/supportability/extensibility etc.   udev is a Linux thing,
+>  > whereas Java is at industry level.   If everyone write applications
+>  > device drivers using Java (minus the extreme hardware arch specific
+>  > stuff, but supports all the low level protocol specific stuff like
+>  > TCP/IP, NFS, USB etc) then I think it has potential to compete against C
+>  > lang - the monopolizer till today in the kernel world
+>  > (Windows/MacOS/Linux/BSD etc).   Ie, imagine using a drivers written for
+>  > the Solaris in Linux, won't it be cool?
+>
+>
+>  LOL.. good joke!
+>
+>  But as others have pointed out, you missed April's fools by 1 day.
 
-* David Miller <davem@davemloft.net> wrote:
-
-> I don't think it's safe.
-> 
-> Every packet you receive can result in a sent packet, which in turn 
-> can result in a full packet receive path being taken, and yet again 
-> another sent packet.
-> 
-> And so on and so forth.
-> 
-> Some cases like this would be stack bugs, but wouldn't you like that 
-> bug to be a very busy cpu instead of a crash from overrunning the 
-> current stack?
-
-sure.
-
-But the core problem remains: our loopback networking scalability is 
-poor. For plain localhost<->localhost connected sockets we hit the 
-loopback device lock for every packet, and this very much shows up on 
-real workloads on a quad already: the lock instruction in netif_rx is 
-the most expensive instruction in a sysbench DB workload.
-
-and it's not just about scalability, the plain algorithmic overhead is 
-way too high as well:
-
- $ taskset 1 ./bw_tcp -s
- $ taskset 1 ./bw_tcp localhost
- Socket bandwidth using localhost: 2607.09 MB/sec
- $ taskset 1 ./bw_pipe
- Pipe bandwidth: 3680.44 MB/sec
-
-i dont think this is acceptable. Either we should fix loopback TCP 
-performance or we should transparently switch to VFS pipes as a 
-transport method when an app establishes a plain loopback connection (as 
-long as there are no frills like content-modifying component in the 
-delivery path of packets after a connection has been established - which 
-covers 99.9% of the real-life loopback cases).
-
-I'm not suggesting we shouldnt use TCP for connection establishing - but 
-if the TCP loopback packet transport is too slow we should use the VFS 
-transport which is both more scalable, less cache-intense and has lower 
-straight overhead as well.
-
-	Ingo
+It is actually 1st of april in Kiritimati for about 45 minutes at the
+time of this writing.
+http://www.timeanddate.com/worldclock/city.html?n=274
