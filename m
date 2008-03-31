@@ -1,58 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754979AbYCaCUZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755107AbYCaCXK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754979AbYCaCUZ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Mar 2008 22:20:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751286AbYCaCUN
+	id S1755107AbYCaCXK (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Mar 2008 22:23:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751446AbYCaCW5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Mar 2008 22:20:13 -0400
-Received: from rv-out-0910.google.com ([209.85.198.191]:13461 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750923AbYCaCUM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Mar 2008 22:20:12 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=nmZy2o2LjZkddFRw471CXUxYOnPjdu7hlWSWwtDR9mt0mY4MoCNFtIST+n8YzN4+DFaid46Z0xaVCu+796Ix/GwtlIXuOLHLAsiujrXCGMXARJwpsWiFQyyyUgrMUuBN3/vts1tcmNS1SSBTxj3qMTzwbJfPiZsxoZhEcHbr/II=
-Message-ID: <86802c440803301920o47335876yac12a5a09d1a8cc9@mail.gmail.com>
-Date: Sun, 30 Mar 2008 19:20:11 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Jack Steiner" <steiner@sgi.com>
-Subject: Re: [RFC 8/8] x86_64: Support for new UV apic
-Cc: "Andi Kleen" <andi@firstfloor.org>, "Ingo Molnar" <mingo@elte.hu>,
-       tglx@linutronix.de, linux-mm@kvack.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20080331021821.GC20619@sgi.com>
+	Sun, 30 Mar 2008 22:22:57 -0400
+Received: from mail.gmx.net ([213.165.64.20]:44193 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751286AbYCaCW5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 30 Mar 2008 22:22:57 -0400
+X-Authenticated: #5039886
+X-Provags-ID: V01U2FsdGVkX19/mTcGKnJ/GVbp5CDLOC+BXSQBX+04fBI8moNA5m
+	uLtK7JcpKF4jPu
+Date: Mon, 31 Mar 2008 04:22:53 +0200
+From: =?iso-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Thomas Gleixner <tglx@linutronix.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Bob Tracy <rct@frus.com>, linux-kernel@vger.kernel.org
+Subject: [PATCH] Fix off-by-one errors in some pirq warnings
+Message-ID: <20080331022253.GA24987@atjola.homenet>
+Reply-To: 20080331020341.GB24702@atjola.homenet
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-References: <20080324182122.GA28327@sgi.com> <87abknhzhd.fsf@basil.nowhere.org>
-	 <20080325175657.GA6262@sgi.com> <20080326073823.GD3442@elte.hu>
-	 <86802c440803301323q5c4bd4f4k1f9bdc1d6b1a0a7b@mail.gmail.com>
-	 <20080330210356.GA13383@sgi.com>
-	 <20080330211848.GA29105@one.firstfloor.org>
-	 <86802c440803301629g6d1b896o27e12ef3c84ded2c@mail.gmail.com>
-	 <20080331021821.GC20619@sgi.com>
+Content-Transfer-Encoding: 8bit
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Mar 30, 2008 at 7:18 PM, Jack Steiner <steiner@sgi.com> wrote:
-> >
->  > if the calling path like GET_APIC_ID is keeping checking if it is UV
->  > box after boot time, that may not good.
->  >
->  > don't need make other hundreds of machine keep running the code only
->  > for several big box all the time.
->  >
->  > YH
->
->
->  I added trace code to see how often GET_APIC_ID() is called. For
->  my 8p AMD box, the  function is called 6 times per cpu during boot.
->  I have not seen any other calls to the function after early boot
->  although I'm they occur under some circumstances.
+The conditions for the warnings simply ignored the fact that we later actually
+use the original value minus 1, so the warning triggered even for valid values.
 
-then it is ok.
+Signed-off-by: Björn Steinbrink <B.Steinbrink@gmx.de>
+---
+> In pirq_ali_{get,set} there's probably the same problem, but I can't
+> really tell for sure, because pirq isn't used to index the array
+> directly, and the comment above that functions tells me not to guess
+> anything.
 
-YH
+OK, so I made a guess anyway, the new condition at least makes more
+sense to me.
+
+ arch/x86/pci/irq.c |   12 ++++++------
+ 1 files changed, 6 insertions(+), 6 deletions(-)
+
+diff --git a/arch/x86/pci/irq.c b/arch/x86/pci/irq.c
+index a871586..579745c 100644
+--- a/arch/x86/pci/irq.c
++++ b/arch/x86/pci/irq.c
+@@ -200,7 +200,7 @@ static int pirq_ali_get(struct pci_dev *router, struct pci_dev *dev, int pirq)
+ {
+ 	static const unsigned char irqmap[16] = { 0, 9, 3, 10, 4, 5, 7, 6, 1, 11, 0, 12, 0, 14, 0, 15 };
+ 
+-	WARN_ON_ONCE(pirq >= 16);
++	WARN_ON_ONCE(pirq > 16);
+ 	return irqmap[read_config_nybble(router, 0x48, pirq-1)];
+ }
+ 
+@@ -209,7 +209,7 @@ static int pirq_ali_set(struct pci_dev *router, struct pci_dev *dev, int pirq, i
+ 	static const unsigned char irqmap[16] = { 0, 8, 0, 2, 4, 5, 7, 6, 0, 1, 3, 9, 11, 0, 13, 15 };
+ 	unsigned int val = irqmap[irq];
+ 
+-	WARN_ON_ONCE(pirq >= 16);
++	WARN_ON_ONCE(pirq > 16);
+ 	if (val) {
+ 		write_config_nybble(router, 0x48, pirq-1, val);
+ 		return 1;
+@@ -260,7 +260,7 @@ static int pirq_via586_get(struct pci_dev *router, struct pci_dev *dev, int pirq
+ {
+ 	static const unsigned int pirqmap[5] = { 3, 2, 5, 1, 1 };
+ 
+-	WARN_ON_ONCE(pirq >= 5);
++	WARN_ON_ONCE(pirq > 5);
+ 	return read_config_nybble(router, 0x55, pirqmap[pirq-1]);
+ }
+ 
+@@ -268,7 +268,7 @@ static int pirq_via586_set(struct pci_dev *router, struct pci_dev *dev, int pirq
+ {
+ 	static const unsigned int pirqmap[5] = { 3, 2, 5, 1, 1 };
+ 
+-	WARN_ON_ONCE(pirq >= 5);
++	WARN_ON_ONCE(pirq > 5);
+ 	write_config_nybble(router, 0x55, pirqmap[pirq-1], irq);
+ 	return 1;
+ }
+@@ -282,7 +282,7 @@ static int pirq_ite_get(struct pci_dev *router, struct pci_dev *dev, int pirq)
+ {
+ 	static const unsigned char pirqmap[4] = { 1, 0, 2, 3 };
+ 
+-	WARN_ON_ONCE(pirq >= 4);
++	WARN_ON_ONCE(pirq > 4);
+ 	return read_config_nybble(router,0x43, pirqmap[pirq-1]);
+ }
+ 
+@@ -290,7 +290,7 @@ static int pirq_ite_set(struct pci_dev *router, struct pci_dev *dev, int pirq, i
+ {
+ 	static const unsigned char pirqmap[4] = { 1, 0, 2, 3 };
+ 
+-	WARN_ON_ONCE(pirq >= 4);
++	WARN_ON_ONCE(pirq > 4);
+ 	write_config_nybble(router, 0x43, pirqmap[pirq-1], irq);
+ 	return 1;
+ }
+-- 
+1.5.5.rc2
