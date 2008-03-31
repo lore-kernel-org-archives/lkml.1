@@ -1,123 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753844AbYCaEdb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753838AbYCaEjQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753844AbYCaEdb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Mar 2008 00:33:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751610AbYCaEdU
+	id S1753838AbYCaEjQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Mar 2008 00:39:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751610AbYCaEjA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Mar 2008 00:33:20 -0400
-Received: from wa-out-1112.google.com ([209.85.146.181]:3441 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751468AbYCaEdT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Mar 2008 00:33:19 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=kBbpAUr0kyC02QtPoLZG48Kn4vtLA4yY/QCmW+zH67/pozDsBeo9AWJiyngvfQ1D0IGfA6ieyjbExdDYF3UVJdOOHXojKU3hpZhGHN40zhrf918ynCjAtq9Eu+Xv41K37Z847uGwAq6hX23mJWokYXcHGOT+fGaoXo765TIjEdQ=
-Message-ID: <47F06987.2060208@gmail.com>
-Date: Mon, 31 Mar 2008 13:33:11 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	Mon, 31 Mar 2008 00:39:00 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:33880 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750864AbYCaEi7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 31 Mar 2008 00:38:59 -0400
+X-Greylist: delayed 2233 seconds by postgrey-1.27 at vger.kernel.org; Mon, 31 Mar 2008 00:38:39 EDT
 MIME-Version: 1.0
-To: Roger Heflin <rogerheflin@gmail.com>
-CC: Hans-Peter Jansen <hpj@urpla.net>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org
-Subject: Re: 2.6.24.3: regular sata drive resets - worrisome?
-References: <200803201518.32109.hpj@urpla.net> <200803300114.40096.hpj@urpla.net> <47EEE4BF.5080609@gmail.com> <200803301400.10766.hpj@urpla.net> <47EF8A65.1010005@gmail.com>
-In-Reply-To: <47EF8A65.1010005@gmail.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: Oleg Nesterov <oleg@tv-sign.ru>, linux-kernel@vger.kernel.org
+Subject: [PATCH 3/3] do_wait: return security_task_wait() error code in place of -ECHILD
+In-Reply-To: Roland McGrath's message of  Sunday, 30 March 2008 20:57:01 -0700 <20080331035701.3926726F8E9@magilla.localdomain>
+X-Fcc: ~/Mail/linus
+References: <20080329033412.120EE26FA1D@magilla.localdomain>
+	<alpine.LFD.1.00.0803290906050.14670@woody.linux-foundation.org>
+	<20080331035701.3926726F8E9@magilla.localdomain>
+Emacs: well, why *shouldn't* you pay property taxes on your editor?
+Message-Id: <20080331035949.608A226F8E9@magilla.localdomain>
+Date: Sun, 30 Mar 2008 20:59:49 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Roger Heflin wrote:
->> The only non-failing drive was sdf as it was running in standby mode 
->> in this md raid 5 ensemble:
->>
->> 20080323-011337-sdc.log:195 Hardware_ECC_Recovered  0x001a   100   
->> 100   000    Old_age   Always       -       162956700
->> 20080323-011338-sde.log:195 Hardware_ECC_Recovered  0x001a   100   
->> 100   000    Old_age   Always       -       148429049
+This reverts the effect of commit f2cc3eb133baa2e9dc8efd40f417106b2ee520f3
+"do_wait: fix security checks".  That change reverted the effect of commit
+73243284463a761e04d69d22c7516b2be7de096c.  The rationale for the original
+commit still stands.  The inconsistent treatment of children hidden by
+ptrace was an unintended omission in the original change and in no way
+invalidates its purpose.
 
-Hmmm... looks similar.
+This makes do_wait return the error returned by security_task_wait()
+(usually -EACCES) in place of -ECHILD when there are some children the
+caller would be able to wait for if not for the permission failure.  A
+permission error will give the user a clue to look for security policy
+problems, rather than for mysterious wait bugs.
 
->>> Hmmm... If the drive is failing FLUSHs, I would expect to see elevated
->>> reallocation counters and maybe some pending counts.  Aieee.. weird.
->>
->> But there are no reallocations nor any pending sectors on any of them.
+Signed-off-by: Roland McGrath <roland@redhat.com>
+---
+ kernel/exit.c |   31 +++++++++++++++++++++----------
+ 1 files changed, 21 insertions(+), 10 deletions(-)
 
-Yeah, indded.
-
->>>>>>> It's been 4 samsung drives at all hanging on a sata sil 3124:
->>>>> FLUSH_EXT timing out usually indicates that the drive is having
->>>>> problem writing out what it has in its cache to the media.  There was
->>>>> one case where FLUSH_EXT timeout was caused by the driver failing to
->>>>> switch controller back from NCQ mode before issuing FLUSH_EXT but that
->>>>> was on sata_nv.  There hasn't been any similar problem on sata_sil24.
->>>> Hmm, I didn't noticed any data distortions, and if there where, they
->>>> live on as copies in their new home..
->>> It should have appeared as read errors.  Maybe the drive successfully
->>                              ^^^^
->>                              write (I guess)
-
-I actually meant read.  For the corrupted data to get transferred to 
-other disks, it should have been read as wrong values but such things 
-should never happen as ECC checks would fail.
-
->>> wrote those sectors after 30+ secs timeout.
->>
->> That would point to some driver issue, wouldn't it? Roger Heflin also
->> experienced similar behavior with that controller, which wasn't 
->> reproducible with another.
-
-Roger's problem is different one.  I'll talk about it below.
-
->> I can offer to you rebuilding that md in a test environment, and 
->> giving you access to it, if you're interested.
-
-Can you hook up those failed drives to a different controller?  Say, 
-ahci or ata_piix and put them under write load (ext3 w/ barrier=1 and 
-copying lots of files into it should work) and see whether the problem 
-reproduces?
-
-> Here are the errors I get, though look at it closer, I am don't appear 
-> to be getting the reset, just this error from time to time:
-> 
-> sd 9:0:0:0: [sde] 976773168 512-byte hardware sectors (500108 MB)
-> sd 9:0:0:0: [sde] Write Protect is off
-> sd 9:0:0:0: [sde] Mode Sense: 00 3a 00 00
-> sd 9:0:0:0: [sde] Write cache: enabled, read cache: enabled, doesn't 
-> support DPO or FUA
-> ata8.00: exception Emask 0x0 SAct 0x0 SErr 0x280000 action 0x0
-> ata8.00: BMDMA2 stat 0x687d8009
-> ata8.00: cmd 25/00:80:a7:00:1d/00:01:1d:00:00/e0 tag 0 cdb 0x0 data 
-> 196608 in
->          res 51/04:8f:98:01:1d/00:00:1d:00:00/f0 Emask 0x1 (device error)
-> ata8.00: configured for UDMA/100
-
-That's device abort error on read.  The drive just can't read sector one 
-of the requested sectors and it's not sata_sil24.  It's a bmdma one.
-
-> I have 4 identical disks, with all 4 connected to the SIL controller all 
-> give some errors, moving 2 of the disks to a promise controller makes 
-> the errors go away on the 2 connected to the promise controller.   All 
-> drives are part of a software raid5 array.
-
-Ah.. okay, sata_sil.  Roger, the moving and errors are not very likely 
-to have anything to do with each other.  The only possibility is 
-transmission problems but the drive didn't report transport error (ICRC) 
-and it's more likely that the drive was experiencing temporary failures. 
-  It's also possible that the drive set ABRT although there was some 
-problem with the transport tho.
-
-If you move the drive back to the sata_sil, do those problems appear 
-again?  Anyways, this doesn't really have anything to do with what Hans 
-is seeing.
-
-Thanks.
-
--- 
-tejun
+diff --git a/kernel/exit.c b/kernel/exit.c
+index b5057ce..2f0392d 100644
+--- a/kernel/exit.c
++++ b/kernel/exit.c
+@@ -1116,14 +1116,10 @@ static int eligible_child(enum pid_type type, struct pid *pid, int options,
+ 		return 0;
+ 
+ 	err = security_task_wait(p);
+-	if (likely(!err))
+-		return 1;
++	if (err)
++		return err;
+ 
+-	if (type != PIDTYPE_PID)
+-		return 0;
+-	/* This child was explicitly requested, abort */
+-	read_unlock(&tasklist_lock);
+-	return err;
++	return 1;
+ }
+ 
+ static int wait_noreap_copyout(struct task_struct *p, pid_t pid, uid_t uid,
+@@ -1454,7 +1450,8 @@ static int wait_task_continued(struct task_struct *p, int options,
+  * -ECHILD should be in *@retval before the first call.
+  * Returns nonzero for a final return, when we have unlocked tasklist_lock.
+  * Returns zero if the search for a child should continue; then *@retval is
+- * 0 if @p is an eligible child, or still -ECHILD.
++ * 0 if @p is an eligible child, or another error from security_task_wait(),
++ * or still -ECHILD.
+  */
+ static int wait_consider_task(struct task_struct *parent,
+ 			      struct task_struct *p, int *retval,
+@@ -1463,9 +1460,22 @@ static int wait_consider_task(struct task_struct *parent,
+ 			      int __user *stat_addr, struct rusage __user *ru)
+ {
+ 	int ret = eligible_child(type, pid, options, p);
+-	if (ret <= 0)
++	if (!ret)
+ 		return ret;
+ 
++	if (unlikely(ret < 0)) {
++		/*
++		 * If we have not yet seen any eligible child,
++		 * then let this error code replace -ECHILD.
++		 * A permission error will give the user a clue
++		 * to look for security policy problems, rather
++		 * than for mysterious wait bugs.
++		 */
++		if (*retval)
++			*retval = ret;
++		return 0;
++	}
++
+ 	/*
+ 	 * We don't reap group leaders with subthreads.
+ 	 */
+@@ -1502,7 +1512,8 @@ static int wait_consider_task(struct task_struct *parent,
+  * -ECHILD should be in *@retval before the first call.
+  * Returns nonzero for a final return, when we have unlocked tasklist_lock.
+  * Returns zero if the search for a child should continue; then *@retval is
+- * 0 if there were any eligible children, or still -ECHILD.
++ * 0 if there were any eligible children, or another error from
++ * security_task_wait(), or still -ECHILD.
+  */
+ static int do_wait_thread(struct task_struct *tsk, int *retval,
+ 			  enum pid_type type, struct pid *pid, int options,
