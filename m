@@ -1,29 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755629AbYCaNBd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756510AbYCaNIL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755629AbYCaNBd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Mar 2008 09:01:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755266AbYCaNBY
+	id S1756510AbYCaNIL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Mar 2008 09:08:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754792AbYCaNH6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Mar 2008 09:01:24 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:34616 "EHLO mx2.mail.elte.hu"
+	Mon, 31 Mar 2008 09:07:58 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:47308 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754829AbYCaNBW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Mar 2008 09:01:22 -0400
-Date: Mon, 31 Mar 2008 15:01:06 +0200
+	id S1754387AbYCaNH5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 31 Mar 2008 09:07:57 -0400
+Date: Mon, 31 Mar 2008 15:07:39 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Roland McGrath <roland@redhat.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>, linux-s390@vger.kernel.org,
-       tony.luck@intel.com, linux-ia64@vger.kernel.org,
-       linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/2] x86 TS_RESTORE_SIGMASK
-Message-ID: <20080331130106.GA15198@elte.hu>
-References: <20080329001230.D013726FA1D@magilla.localdomain> <20080329001341.7F93826FA1D@magilla.localdomain> <alpine.LFD.1.00.0803281746480.14670@woody.linux-foundation.org> <20080329022408.0DD4726FA1D@magilla.localdomain> <20080329031413.EA38926FA1D@magilla.localdomain> <20080329031451.D2E1226FA1D@magilla.localdomain>
+To: Jack Steiner <steiner@sgi.com>
+Cc: tglx@linutronix.de, yhlu.kernel@gmail.com, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 8/8] x86_64: V2 Support for new UV apic
+Message-ID: <20080331130739.GE14636@elte.hu>
+References: <20080328191216.GA16455@sgi.com> <20080331020207.GA20605@sgi.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080329031451.D2E1226FA1D@magilla.localdomain>
+In-Reply-To: <20080331020207.GA20605@sgi.com>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -38,23 +35,15 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Roland McGrath <roland@redhat.com> wrote:
+* Jack Steiner <steiner@sgi.com> wrote:
 
-> Replace TIF_RESTORE_SIGMASK with TS_RESTORE_SIGMASK and define our own 
-> set_restore_sigmask() function.  This saves the costly SMP-safe 
-> set_bit operation, which we do not need for the sigmask flag since 
-> TIF_SIGPENDING always has to be set too.
-> 
-> Signed-off-by: Roland McGrath <roland@redhat.com>
-> ---
->  arch/x86/ia32/ia32_signal.c      |    2 +-
->  arch/x86/kernel/signal_32.c      |   19 ++++++++++---------
->  arch/x86/kernel/signal_64.c      |   16 +++++++++-------
->  include/asm-x86/thread_info_32.h |   13 +++++++++++--
->  include/asm-x86/thread_info_64.h |   13 +++++++++++--
->  5 files changed, 42 insertions(+), 21 deletions(-)
+> Fix double-shift of apicid in previous patch.
 
-the x86 bits look nice - but i guess this all wants to go into 2.6.26 
-via -mm (or linux-next), due to its cross-arch nature?
+> The code is clearly wrong.  I booted on an 8p AMD box and had no 
+> problems. Apparently the kernel (at least basic booting) is not too 
+> sensitive to incorrect apicids being returned. Most critical-to-boot 
+> code must use apicids from the ACPI tables.
+
+yeah - patch added. Thanks Yinghai for persisting on this.
 
 	Ingo
