@@ -1,72 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757765AbYCaSme@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757471AbYCaSoS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757765AbYCaSme (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Mar 2008 14:42:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754115AbYCaSmY
+	id S1757471AbYCaSoS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Mar 2008 14:44:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753327AbYCaSoF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Mar 2008 14:42:24 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:38036 "EHLO pasmtpA.tele.dk"
+	Mon, 31 Mar 2008 14:44:05 -0400
+Received: from mga01.intel.com ([192.55.52.88]:2538 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756973AbYCaSmW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Mar 2008 14:42:22 -0400
-Date: Mon, 31 Mar 2008 20:42:47 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Stefan Hellermann <stefan@the2masters.de>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: make O=dir fails with current git
-Message-ID: <20080331184247.GC4833@uranus.ravnborg.org>
-References: <47EE8829.10409@the2masters.de> <20080331180022.GA4833@uranus.ravnborg.org> <47F12CE9.1090202@the2masters.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47F12CE9.1090202@the2masters.de>
-User-Agent: Mutt/1.4.2.1i
+	id S1751787AbYCaSoD convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 31 Mar 2008 14:44:03 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,583,1199692800"; 
+   d="scan'208";a="543044092"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: 2.6.25 regression: powertop says 120K wakeups/sec
+Date: Mon, 31 Mar 2008 11:34:01 -0700
+Message-ID: <924EFEDD5F540B4284297C4DC59F3DEEC84342@orsmsx423.amr.corp.intel.com>
+In-Reply-To: <47F12289.4030300@rtr.ca>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: 2.6.25 regression: powertop says 120K wakeups/sec
+Thread-Index: AciTVq7uBVZDejioT5u1FijfU8wYcAABujmw
+References: <20080322202454.9D69DCC0EF@adsl-69-226-248-13.dsl.pltn13.pacbell.net> <200803281509.23107.david-b@pacbell.net> <20080328225604.GA7136@linux-os.sc.intel.com> <200803290001.18912.rjw@sisk.pl> <47F12289.4030300@rtr.ca>
+From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+To: "Mark Lord" <lkml@rtr.ca>, "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: "David Brownell" <david-b@pacbell.net>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       <linux-kernel@vger.kernel.org>, <linux-acpi@vger.kernel.org>,
+       "Len Brown" <lenb@kernel.org>
+X-OriginalArrivalTime: 31 Mar 2008 18:31:57.0609 (UTC) FILETIME=[806F7990:01C8935D]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 31, 2008 at 08:26:49PM +0200, Stefan Hellermann wrote:
-> Sam Ravnborg schrieb:
-> > On Sat, Mar 29, 2008 at 07:19:21PM +0100, Stefan Hellermann wrote:
-> >> Hi,
-> >>
-> >> I'm using "make O=machinename" for building different kernels from one tree. About 15 days
-> >> ago it was okay, with current git it fails:
-> >> $ make O=client1
-> >> scripts/kconfig/conf -s arch/x86/Kconfig
-> >>   Using /srv/devel/kernel as source for kernel
-> >>   /srv/devel/kernel is not clean, please run 'make mrproper'
-> >>   in the '/srv/devel/kernel' directory.
-> >> make[1]: *** [prepare3] Error 1
-> >> make: *** [sub-make] Error 2
-> >>
-> >> running "make mrproper" (without O=dir) doesn't help.
-> >> I've not changed anything, I only made a "git-pull".
-> >> Now I'm at home, tried "mkdir test; make O=test defconfig all" with current git-head, it
-> >> doesn't work too.
-> > 
-> > I tried to reproduce this here without luck.
-> > The tests performed by kbuild to dertermine if the
-> > source directory is clean are very basic.
-> > If the file .config exist or the directory
-> > include/config exists then the source tree is considered clean.
-> > Otherwise you get the above message.
-> 
-> Hi, damn, it's that easy!
-> It was the .config file, I added (as root) a symlink to dir/.config to let some other
-> application check if some Kernel-options are set, then the permissions of this symlink
-> prevented make mrproper from removing it.
-> 
-> For what purpose is this check?
-The O= build will use the wrong files if the source tree is not clean.
-There are several special cases which goes wrong under the wrong circumstances
-and therefore this consistency check.
+ 
 
-> I can't point the other application to kerneldir/dir
-> because it also greps in kerneldir/Makefile for the kernel-version.
-They could use:
-make kernelversion
+>-----Original Message-----
+>From: Mark Lord [mailto:lkml@rtr.ca] 
+>Sent: Monday, March 31, 2008 10:43 AM
+>To: Rafael J. Wysocki
+>Cc: Pallipadi, Venkatesh; David Brownell; Andrew Morton; 
+>linux-kernel@vger.kernel.org; linux-acpi@vger.kernel.org; Len Brown
+>Subject: Re: 2.6.25 regression: powertop says 120K wakeups/sec
+>
+>Rafael J. Wysocki wrote:
+>> On Friday, 28 of March 2008, Venki Pallipadi wrote:
+>>> On Fri, Mar 28, 2008 at 03:09:22PM -0700, David Brownell wrote:
+>>>> On Friday 28 March 2008, Pallipadi, Venkatesh wrote:
+>>>>> You should have a dmesg line which looks like
+>>>>> ACPI: CPU0 (power states: C1[C1] C2[C2]
+>>>>> Do you see C2 in such line?
+>>>> Yes:
+>>>>
+>>>> ACPI: CPU0 (power states: C1[C1] C2[C2])
+>>>
+>>> David,
+>>>
+>>> I think I figured out the bug...
+>>>
+>>> Can you try the below patch and confirm that it works (over 
+>upstream - ignore
+>>> the earlier revert patch I sent to you).
+>>>
+>>> Thanks,
+>>> Venki
+>>>
+>>> ----
+>>>
+>>>
+>>> Patch to fix huge number of wakeups reported due to recent 
+>changes in
+>>> processor_idle.c. The problem was that the entry_method 
+>determination was
+>>> broken due to one of the recent commits (bc71bec91f987) causing
+>>> C1 entry to not to go to halt. This should also fix the 
+>hang reported here.
+>>> http://bugzilla.kernel.org/show_bug.cgi?id=10093
+>> 
+>> Ah, thanks for figuring that out.  As a regression fix, it 
+>should go upstream
+>> ASAP, I think.
+>..
+>
+>Would this have any applicability to 2.6.24 as well?
+>
 
-and this could be used in the output directory too.
+No. This patch is for a regression that happened post .24.
+pre .24 will be a different problem.
 
-	Sam
+Thanks,
+Venki
