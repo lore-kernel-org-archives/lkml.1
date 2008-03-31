@@ -1,138 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751934AbYCaEBW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753844AbYCaEdb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751934AbYCaEBW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Mar 2008 00:01:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751098AbYCaEAy
+	id S1753844AbYCaEdb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Mar 2008 00:33:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751610AbYCaEdU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Mar 2008 00:00:54 -0400
-Received: from fg-out-1718.google.com ([72.14.220.154]:3113 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750764AbYCaEAv convert rfc822-to-8bit (ORCPT
+	Mon, 31 Mar 2008 00:33:20 -0400
+Received: from wa-out-1112.google.com ([209.85.146.181]:3441 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751468AbYCaEdT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Mar 2008 00:00:51 -0400
+	Mon, 31 Mar 2008 00:33:19 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=message-id:date:from:sender:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=PfEpwbqphDPwvyjMPT2kLcPQFshwN4QWnSVo50ftcsBkHewzQcBNxI3FOhys/KE7VW6DP+qXWIcTYeilZfOkspnbllTeYCW3kDj6Ve8CpLrar2unsIBSmfeoFN6UQGFJLvoXE6EJOukNEhMpTYRIISX2v0uEyBALJAx5HRvoMhI=
-Message-ID: <517f3f820803302100sdd50d71m4a990993f45e746c@mail.gmail.com>
-Date: Mon, 31 Mar 2008 06:00:50 +0200
-From: "Michael Kerrisk" <mtk.manpages@gmail.com>
-To: "Samuel Thibault" <samuel.thibault@ens-lyon.org>,
-       "Andi Kleen" <andi@firstfloor.org>,
-       "David Miller" <davem@davemloft.net>, linux-kernel@vger.kernel.org,
-       mtk.manpages@gmail.com
-Subject: Re: [PATCH,TRIVIAL] AF_UNIX, accept() and addrlen
-In-Reply-To: <20080324122700.GK4434@implementation.uk.xensource.com>
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=kBbpAUr0kyC02QtPoLZG48Kn4vtLA4yY/QCmW+zH67/pozDsBeo9AWJiyngvfQ1D0IGfA6ieyjbExdDYF3UVJdOOHXojKU3hpZhGHN40zhrf918ynCjAtq9Eu+Xv41K37Z847uGwAq6hX23mJWokYXcHGOT+fGaoXo765TIjEdQ=
+Message-ID: <47F06987.2060208@gmail.com>
+Date: Mon, 31 Mar 2008 13:33:11 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-References: <20080308022321.GC5853@implementation>
-	 <20080323.215641.192753003.davem@davemloft.net>
-	 <20080324104330.GF4434@implementation.uk.xensource.com>
-	 <87abko734d.fsf@basil.nowhere.org>
-	 <20080324121719.GJ4434@implementation.uk.xensource.com>
-	 <20080324122700.GK4434@implementation.uk.xensource.com>
-X-Google-Sender-Auth: 96e668d8ae57bd30
+To: Roger Heflin <rogerheflin@gmail.com>
+CC: Hans-Peter Jansen <hpj@urpla.net>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org
+Subject: Re: 2.6.24.3: regular sata drive resets - worrisome?
+References: <200803201518.32109.hpj@urpla.net> <200803300114.40096.hpj@urpla.net> <47EEE4BF.5080609@gmail.com> <200803301400.10766.hpj@urpla.net> <47EF8A65.1010005@gmail.com>
+In-Reply-To: <47EF8A65.1010005@gmail.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Samuel,
+Roger Heflin wrote:
+>> The only non-failing drive was sdf as it was running in standby mode 
+>> in this md raid 5 ensemble:
+>>
+>> 20080323-011337-sdc.log:195 Hardware_ECC_Recovered  0x001a   100   
+>> 100   000    Old_age   Always       -       162956700
+>> 20080323-011338-sde.log:195 Hardware_ECC_Recovered  0x001a   100   
+>> 100   000    Old_age   Always       -       148429049
 
-It would really be much more useful if you CCed me, rather than hoping
-that I'd find this patch by trawling LKML...
+Hmmm... looks similar.
 
-David, Andi,
+>>> Hmmm... If the drive is failing FLUSHs, I would expect to see elevated
+>>> reallocation counters and maybe some pending counts.  Aieee.. weird.
+>>
+>> But there are no reallocations nor any pending sectors on any of them.
 
-My understanding about abstract namespace sockets (what Samuel calls
-unnamed sockets) is that the indicator that the address is for an
-unnamed socket is that the sun_path starts with a zero byte -- and the
-*entire* remainder of the sun_path constitutes the name of the socket.
- As such, information about the size returned by accept() etc. is
-redundant. (I've happily written programs that use abstract namespace
-sockets without even knowing what is returned by a succesful
-accept().)
+Yeah, indded.
 
-I agree with Samuel that there should be some documentation of the
-return value of accept() etc, for abstract sockets but my inclination
-would be to document that the indicator that this is an abstract
-socket is the initial null byte in sun_path, and mention the returned
-length as an after word.  Does this seem reasonable?
+>>>>>>> It's been 4 samsung drives at all hanging on a sata sil 3124:
+>>>>> FLUSH_EXT timing out usually indicates that the drive is having
+>>>>> problem writing out what it has in its cache to the media.  There was
+>>>>> one case where FLUSH_EXT timeout was caused by the driver failing to
+>>>>> switch controller back from NCQ mode before issuing FLUSH_EXT but that
+>>>>> was on sata_nv.  There hasn't been any similar problem on sata_sil24.
+>>>> Hmm, I didn't noticed any data distortions, and if there where, they
+>>>> live on as copies in their new home..
+>>> It should have appeared as read errors.  Maybe the drive successfully
+>>                              ^^^^
+>>                              write (I guess)
 
-Cheers,
+I actually meant read.  For the corrupted data to get transferred to 
+other disks, it should have been read as wrong values but such things 
+should never happen as ECC checks would fail.
 
-Michael
+>>> wrote those sectors after 30+ secs timeout.
+>>
+>> That would point to some driver issue, wouldn't it? Roger Heflin also
+>> experienced similar behavior with that controller, which wasn't 
+>> reproducible with another.
 
-On 3/24/08, Samuel Thibault <samuel.thibault@ens-lyon.org> wrote:
-> Samuel Thibault, le Mon 24 Mar 2008 12:17:19 +0000, a écrit :
->
-> > Andi Kleen, le Mon 24 Mar 2008 12:50:10 +0100, a écrit :
->  > > Samuel Thibault <samuel.thibault@ens-lyon.org> writes:
->  > > > David Miller, le Sun 23 Mar 2008 21:56:41 -0700, a écrit :
->  > > > > From: Samuel Thibault <samuel.thibault@ens-lyon.org>
->  > > > > Date: Sat, 8 Mar 2008 02:23:21 +0000
->  > > > >
->  > > > > > Accept and getpeername are supposed to return the amount of bytes
->  > > > > > written in the returned address.  However, on unnamed sockets, only
->  > > > > > sizeof(short) is returned, while a 0 is put in the sun_path member.
->  > > > > > This patch adds 1 for that additional byte.
->  > > > > >
->  > > > > > Signed-off-by: Samuel Thibault <samuel.thibault@ens-lyon.org>
->  > > > >
->  > > > > This change isn't correct.  It's the fact that the
->  > > > > length returned is sizeof(short) that tells the caller
->  > > > > that the unix socket is unnamed.
->  > > >
->  > > > Mmm, where that is documented?
->  > > >
->  > > > I can't find any details about that in SUS, and man 7 unix says
->  > > >
->  > > > `If sun_path starts with a null byte ('' '), then it refers to the
->  > > > abstract namespace main- tained by the Unix protocol module.'
->  > >
->  > > [I wrote unix(7) originally]. The abstract name space is a Linux
->  > > extension and there is no written standard and whatever the kernel
->  > > implements is the de-facto standard. If unix(7) differs in anything
->  > > from what the code does please send patches to the manpages
->  > > maintainer.
->  >
->  > Oops, sorry, we are not talking about abstract namespace actually (their
->  > sockaddr length are necessarily bigger than sizeof(sa_family_t) since
->  > they need some data), but unamed sockets.  So the Address Format
->  > paragraph just misses description of unnamed sockets.
->
->
-> How about this?
->
->  --- unix.7.orig 2008-03-24 12:24:37.000000000 +0000
->  +++ unix.7      2008-03-24 12:24:56.000000000 +0000
->  @@ -87,6 +87,15 @@
->   bytes in
->   .IR sun_path .
->   Note that names in the abstract namespace are not zero-terminated.
->  +If the size returned by
->  +.BR accept
->  +or
->  +.BR getpeername
->  +is
->  +.IR sizeof(sa_family_t) ,
->  +then it refers to a unnamed socket and
->  +.I sun_path
->  +should not be read.
->   .SS Socket Options
->   For historical reasons these socket options are specified with a
->   .B SOL_SOCKET
->
->
->  Samuel
->  --
->  To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
->  the body of a message to majordomo@vger.kernel.org
->  More majordomo info at  http://vger.kernel.org/majordomo-info.html
->  Please read the FAQ at  http://www.tux.org/lkml/
->
+Roger's problem is different one.  I'll talk about it below.
 
+>> I can offer to you rebuilding that md in a test environment, and 
+>> giving you access to it, if you're interested.
+
+Can you hook up those failed drives to a different controller?  Say, 
+ahci or ata_piix and put them under write load (ext3 w/ barrier=1 and 
+copying lots of files into it should work) and see whether the problem 
+reproduces?
+
+> Here are the errors I get, though look at it closer, I am don't appear 
+> to be getting the reset, just this error from time to time:
+> 
+> sd 9:0:0:0: [sde] 976773168 512-byte hardware sectors (500108 MB)
+> sd 9:0:0:0: [sde] Write Protect is off
+> sd 9:0:0:0: [sde] Mode Sense: 00 3a 00 00
+> sd 9:0:0:0: [sde] Write cache: enabled, read cache: enabled, doesn't 
+> support DPO or FUA
+> ata8.00: exception Emask 0x0 SAct 0x0 SErr 0x280000 action 0x0
+> ata8.00: BMDMA2 stat 0x687d8009
+> ata8.00: cmd 25/00:80:a7:00:1d/00:01:1d:00:00/e0 tag 0 cdb 0x0 data 
+> 196608 in
+>          res 51/04:8f:98:01:1d/00:00:1d:00:00/f0 Emask 0x1 (device error)
+> ata8.00: configured for UDMA/100
+
+That's device abort error on read.  The drive just can't read sector one 
+of the requested sectors and it's not sata_sil24.  It's a bmdma one.
+
+> I have 4 identical disks, with all 4 connected to the SIL controller all 
+> give some errors, moving 2 of the disks to a promise controller makes 
+> the errors go away on the 2 connected to the promise controller.   All 
+> drives are part of a software raid5 array.
+
+Ah.. okay, sata_sil.  Roger, the moving and errors are not very likely 
+to have anything to do with each other.  The only possibility is 
+transmission problems but the drive didn't report transport error (ICRC) 
+and it's more likely that the drive was experiencing temporary failures. 
+  It's also possible that the drive set ABRT although there was some 
+problem with the transport tho.
+
+If you move the drive back to the sata_sil, do those problems appear 
+again?  Anyways, this doesn't really have anything to do with what Hans 
+is seeing.
+
+Thanks.
 
 -- 
-I'll likely only see replies if they are CCed to mtk.manpages at gmail dot com
+tejun
