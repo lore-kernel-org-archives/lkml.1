@@ -1,44 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754888AbYCaHKs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755487AbYCaHLk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754888AbYCaHKs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Mar 2008 03:10:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752842AbYCaHKk
+	id S1755487AbYCaHLk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Mar 2008 03:11:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753008AbYCaHLd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Mar 2008 03:10:40 -0400
-Received: from smtp-out01.alice-dsl.net ([88.44.60.11]:47821 "EHLO
-	smtp-out01.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752556AbYCaHKj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Mar 2008 03:10:39 -0400
-To: Chr <chunkeey@web.de>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: The never ending BEEEEP/__smp_call_function_mask with 2.6.25-rc7
-References: <200803302109.22219.chunkeey@web.de>
-From: Andi Kleen <andi@firstfloor.org>
-Date: 31 Mar 2008 09:10:34 +0200
-In-Reply-To: <200803302109.22219.chunkeey@web.de>
-Message-ID: <87wsnj8j2t.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 31 Mar 2008 07:03:57.0351 (UTC) FILETIME=[637BFB70:01C892FD]
+	Mon, 31 Mar 2008 03:11:33 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:39055 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752832AbYCaHLc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 31 Mar 2008 03:11:32 -0400
+Date: Mon, 31 Mar 2008 18:11:18 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: linux-next@vger.kernel.org
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: linux-next: Tree for March 31
+Message-Id: <20080331181118.7964d4a9.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.5.0beta1 (GTK+ 2.12.9; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Mon__31_Mar_2008_18_11_18_+1100_DEBKN0meFgDbjRlc"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Chr <chunkeey@web.de> writes:
+--Signature=_Mon__31_Mar_2008_18_11_18_+1100_DEBKN0meFgDbjRlc
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> Ever since I went to the new 2.6.25-rcX, I encountered lots of random
-> system freezes after about 2 or 3 hours of uptime... but until now, 
-> I couldn't _catch_ them, since the system
-> (AMD Athlon 4200+ X2 (Manchester) / nforce 4 SLI / x86_64) went
-> straight into oblivion (nothing on the serial console or anywhere else,
-> heck I couldn't even hit reset, It didn't POST anymore)
+Hi all,
 
-Not POSTing would point to some kind of hardware problem. Normally
-the kernel shouldn't be able to cause that.
+I have created today's linux-next tree at
+git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git
+(tar balls at
+http://www.kernel.org/pub/linux/kernel/people/sfr/linux-next/).
 
-I would recommend you double check if the problem is really not
-there with an older kernel by going back there and testing.
+You can see which trees have been included by looking in the Next/Trees
+file in the source.  There are also quilt-import.log and merge.log files
+in the Next directory.  Between each merge, the tree was built with
+a ppc64_defconfig for powerpc and an allmodconfig for x86_64.
 
--Andi
+There were a few merge conflicts (fairly trivial).  Most new ones were
+from Al Viro's NULL sparse complaint cleanups.
+
+We are up to 50 trees, more are welcome (even if they are currently
+empty).  Thanks to those who have contributed, and to those who haven't,
+please do.
+
+In particular, I have very few of the architecture trees ....
+
+Status of my local build tests is at
+http://kisskb.ellerman.id.au/linux-next.  If maintainers want to give
+advice about cross compilers/configs that work, we are always open to add
+more builds.
+
+Thanks to Jan Dittmer for adding the linux-next tree to his build tests
+at http://l4x.org/k/ and the guys at http://test.kernel.org/.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+--Signature=_Mon__31_Mar_2008_18_11_18_+1100_DEBKN0meFgDbjRlc
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFH8I6fTgG2atn1QN8RAoApAJ0TigedZLpZix5LDmVmfviwfoeFRwCgianb
+RVT0LZ5og9JVSBHMPMkRR6Y=
+=aEPs
+-----END PGP SIGNATURE-----
+
+--Signature=_Mon__31_Mar_2008_18_11_18_+1100_DEBKN0meFgDbjRlc--
