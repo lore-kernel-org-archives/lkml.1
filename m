@@ -1,89 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751723AbYCaNhb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751992AbYCaNka@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751723AbYCaNhb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Mar 2008 09:37:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750921AbYCaNhX
+	id S1751992AbYCaNka (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Mar 2008 09:40:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750978AbYCaNkX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Mar 2008 09:37:23 -0400
-Received: from charybdis-ext.suse.de ([195.135.221.2]:53553 "EHLO
-	emea5-mh.id5.novell.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750863AbYCaNhW (ORCPT
+	Mon, 31 Mar 2008 09:40:23 -0400
+Received: from lazybastard.de ([212.112.238.170]:45931 "EHLO
+	longford.logfs.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750947AbYCaNkX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Mar 2008 09:37:22 -0400
-Subject: Re: [PATCH 1/2] sysfs: allow the group is_visible() method to
-	return a mode and add an update API
-From: Kay Sievers <kay.sievers@vrfy.org>
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: Greg KH <greg@kroah.com>, Hannes Reinecke <hare@suse.de>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <1206896083.4224.40.camel@localhost.localdomain>
-References: <1206134832.2961.64.camel@localhost.localdomain>
-	 <20080321222635.GA2674@kroah.com>
-	 <1206208949.4393.25.camel@localhost.localdomain>
-	 <1206896083.4224.40.camel@localhost.localdomain>
+	Mon, 31 Mar 2008 09:40:23 -0400
+Date: Mon, 31 Mar 2008 15:40:04 +0200
+From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
+To: Jan Engelhardt <jengelh@computergmbh.de>
+Cc: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Adrian Hunter <ext-adrian.hunter@nokia.com>, joern@lazybastard.org
+Subject: Re: [RFC PATCH] UBIFS - new flash file system
+Message-ID: <20080331134004.GA465@logfs.org>
+References: <1206629746-4298-1-git-send-email-Artem.Bityutskiy@nokia.com> <alpine.LNX.1.10.0803311428270.2554@fbirervta.pbzchgretzou.qr>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
-Date: Mon, 31 Mar 2008 15:42:09 +0200
-Message-Id: <1206970929.20492.27.camel@lov.site>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.0 
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
+In-Reply-To: <alpine.LNX.1.10.0803311428270.2554@fbirervta.pbzchgretzou.qr>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2008-03-30 at 11:54 -0500, James Bottomley wrote:
-> On Sat, 2008-03-22 at 13:02 -0500, James Bottomley wrote:
-> > On Fri, 2008-03-21 at 15:26 -0700, Greg KH wrote:
-> > > On Fri, Mar 21, 2008 at 04:27:12PM -0500, James Bottomley wrote:
-> > > > We have a problem in scsi_transport_spi in that we need to customise
-> > > > not only the visibility of the attributes, but also their mode.  Fix
-> > > > this by making the is_visible() callback return a mode, with 0
-> > > > indicating is not visible.
-> > > > 
-> > > > Also add a sysfs_update_group() API to allow us to change either the
-> > > > visibility or mode of the files at any time on the fly.
-> > > > 
-> > > > Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
-> > > > ---
-> > > > 
-> > > > Greg, can I take this through SCSI, please ... assuming it's OK?  We
-> > > > need this to fix up the SPI transport class.
-> > > 
-> > > Sure.  But can you document that "update" field a bit more so we can
-> > > remember what it means in the future?
-> > 
-> > How about this?  I also added docbook for create and update attribute
-> > group.
+On Mon, 31 March 2008 14:29:59 +0200, Jan Engelhardt wrote:
+> On Thursday 2008-03-27 15:55, Artem Bityutskiy wrote:
+> >
+> >here is a new flash file system developed by Nokia engineers with
+> >help of the University of Szeged. The new file-system is called
+> >UBIFS, which stands for UBI file system. UBI is the wear-leveling/
+> >bad-block handling/volume management layer which is already in
+> >mainline (see drivers/mtd/ubi).
+> >[...]
+> 
+> And how does it compare to logfs?
 
-Looks good to me.
+Both share similar design goals.  Biggest difference is that ubifs works
+on top of ubi and depends on ubi support, while logfs works on plain mtd
+(or block devices) and does everything itself.
 
-I think with the "visible" stuff for attribute groups, will be able to
-fix the USB event timing problem, by moving the creation of the device
-attributes to default attributes. So I'm looking forward to have this in
-the tree.
+Code size difference is huge.  Ubi weighs some 11kloc, ubifs some 30,
+logfs some 8.
 
-> Can I get an ACK from someone from sysfs for this, please?
+Ubi scales linearly, as it does a large scan at init time.  It is still
+reasonably fast, as it reads just a few bytes worth of header per block.
+Logfs mounts in O(1) but will currently become mindbogglingly slow when
+the filesystem nears 100% full and write are purely random.  Not that
+any other flash filesystem would perform well under these conditions -
+it is the known worst case scenario.
 
-> > ---
-> > 
-> > From: James Bottomley <James.Bottomley@HansenPartnership.com>
-> > Date: Thu, 20 Mar 2008 20:47:52 -0500
-> > Subject: [SCSI] sysfs: make group is_valid return a mode_t
-> > 
-> > We have a problem in scsi_transport_spi in that we need to customise
-> > not only the visibility of the attributes, but also their mode.  Fix
-> > this by making the is_visible() callback return a mode, with 0
-> > indicating is not visible.
-> > 
-> > Also add a sysfs_update_group() API to allow us to change either the
-> > visibility or mode of the files at any time on the fly.
+Jörn
 
-Acked-by: Kay Sievers <kay.sievers@vrfy.org>
-
-> > Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
-
-﻿Thanks for doing this,
-Kay
-
-
+-- 
+Victory in war is not repetitious.
+-- Sun Tzu
