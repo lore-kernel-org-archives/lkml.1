@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755746AbYCaIp5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756851AbYCaIqW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755746AbYCaIp5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Mar 2008 04:45:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756118AbYCaIpH
+	id S1756851AbYCaIqW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Mar 2008 04:46:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754332AbYCaIpR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Mar 2008 04:45:07 -0400
-Received: from nf-out-0910.google.com ([64.233.182.190]:35645 "EHLO
+	Mon, 31 Mar 2008 04:45:17 -0400
+Received: from nf-out-0910.google.com ([64.233.182.186]:35092 "EHLO
 	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756083AbYCaIpD (ORCPT
+	with ESMTP id S1756288AbYCaIpP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Mar 2008 04:45:03 -0400
+	Mon, 31 Mar 2008 04:45:15 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
         h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=IP5cnjlZ3/dys9yuE6ZETTuMegEszHyeB1yrpibz8KoQt/JGbQo39BOKPPeXx6fhXtOH/jdAzWCVzJa/KET7Lq2WfIoYuBH97M5o+aADb9iKnbl1OaCskiVU+2UuJkKfYJpo24JE78j4z81V8zn8Fr10jMGNo0yGOcNR/Og8xog=
-Date: Mon, 31 Mar 2008 12:44:55 +0400
+        b=pLSXN8N0CsP/OZ7JdogAFx58564X4PYrhJ03i9GSFudoKsIJqzZIct5r4lxAXzvpnptKYc3+lc9bjUHBYMH6TK9DkUj2s9pYDPprYe1ctd94Ld3FPYIpfXRvO4YBr573FJY02QgbPxnGuNSO8rg7/E+xUSwb1RbeD24sdJ87wZY=
+Date: Mon, 31 Mar 2008 12:45:04 +0400
 From: Dmitry Baryshkov <dbaryshkov@gmail.com>
 To: linux-kernel@vger.kernel.org
 Cc: akpm@linux-foundation.org,
@@ -23,8 +23,8 @@ Cc: akpm@linux-foundation.org,
        Paul Mundt <lethal@linux-sh.org>,
        pHilipp Zabel <philipp.zabel@gmail.com>, Pavel Machek <pavel@ucw.cz>,
        tony@atomide.com, paul@pwsan.com
-Subject: [PATCH 5/6] Clocklib: Use correct clock for IrDA on pxa
-Message-ID: <20080331084455.GA11657@doriath.ww600.siemens.net>
+Subject: [PATCH 6/6] Clocklib: use correct name for 3,6MHz clock
+Message-ID: <20080331084504.GA11671@doriath.ww600.siemens.net>
 References: <20080331083947.GA11282@doriath.ww600.siemens.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -37,22 +37,22 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Dmitry Baryshkov <dbaryshkov@gmail.com>
 ---
- drivers/net/irda/pxaficp_ir.c |    2 +-
+ arch/arm/common/sa1111.c |    2 +-
  1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/net/irda/pxaficp_ir.c b/drivers/net/irda/pxaficp_ir.c
-index 8c09344..36d2ec0 100644
---- a/drivers/net/irda/pxaficp_ir.c
-+++ b/drivers/net/irda/pxaficp_ir.c
-@@ -814,7 +814,7 @@ static int pxa_irda_probe(struct platform_device *pdev)
- 	si->dev = &pdev->dev;
- 	si->pdata = pdev->dev.platform_data;
+diff --git a/arch/arm/common/sa1111.c b/arch/arm/common/sa1111.c
+index eb06d0b..282a4d9 100644
+--- a/arch/arm/common/sa1111.c
++++ b/arch/arm/common/sa1111.c
+@@ -627,7 +627,7 @@ __sa1111_probe(struct device *me, struct resource *mem, int irq)
+ 	if (!sachip)
+ 		return -ENOMEM;
  
--	si->sir_clk = clk_get(&pdev->dev, "UARTCLK");
-+	si->sir_clk = clk_get(&pdev->dev, "SIRCLK");
- 	si->fir_clk = clk_get(&pdev->dev, "FICPCLK");
- 	if (IS_ERR(si->sir_clk) || IS_ERR(si->fir_clk)) {
- 		err = PTR_ERR(IS_ERR(si->sir_clk) ? si->sir_clk : si->fir_clk);
+-	sachip->clk = clk_get(me, "GPIO27_CLK");
++	sachip->clk = clk_get(me, "3_6MHz_CLK");
+ 	if (!sachip->clk) {
+ 		ret = PTR_ERR(sachip->clk);
+ 		goto err_free;
 -- 
 1.5.4.4
 
