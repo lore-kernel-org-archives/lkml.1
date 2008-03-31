@@ -1,85 +1,141 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757263AbYCaWIY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754257AbYCaWJj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757263AbYCaWIY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Mar 2008 18:08:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756880AbYCaWIC
+	id S1754257AbYCaWJj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Mar 2008 18:09:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752047AbYCaWJb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Mar 2008 18:08:02 -0400
-Received: from wr-out-0506.google.com ([64.233.184.227]:41490 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756789AbYCaWIA (ORCPT
+	Mon, 31 Mar 2008 18:09:31 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:52860 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751844AbYCaWJa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Mar 2008 18:08:00 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=XsHUieUnudkrfzBPJ/f458H3UFuwIanLmPK5sZWY2DKJPDOnnK6iFpWfuWlIjEhIDQ2SwnwcWaVAQGSzIvt2ZYku7yvTRiG/om4iARKbXFYdf9/9OFSDgtnErCboTl5Oi9/kR6xOeuf2NeJ3TDeUUaEGl4WEOWm9nI6a5QACZyA=
-Subject: Re: Sparse Question
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Al Viro <viro@ZenIV.linux.org.uk>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20080331215835.GM9785@ZenIV.linux.org.uk>
-References: <1206998108.6543.74.camel@brick>
-	 <1206999598.6543.76.camel@brick> <20080331215835.GM9785@ZenIV.linux.org.uk>
-Content-Type: text/plain
-Date: Mon, 31 Mar 2008 15:07:58 -0700
-Message-Id: <1207001278.6543.78.camel@brick>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 31 Mar 2008 18:09:30 -0400
+Date: Mon, 31 Mar 2008 15:09:06 -0700
+From: Greg KH <greg@kroah.com>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: Kay Sievers <kay.sievers@vrfy.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Bj?rn Steinbrink <B.Steinbrink@gmx.de>,
+       Arjan van de Ven <arjan@linux.intel.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Johannes Berg <johannes@sipsolutions.net>,
+       Jiri Kosina <jkosina@suse.cz>
+Subject: Re: [PATCH] evdev: Release eventual input device grabs when
+	getting disconnected
+Message-ID: <20080331220906.GA28171@kroah.com>
+References: <20080330184259.GB21375@atjola.homenet> <alpine.LFD.1.00.0803301448190.14670@woody.linux-foundation.org> <200803310215.39414.dtor@insightbb.com> <20080331172813.GA11583@kroah.com> <20080331135653.ZZRA012@mailhub.coreip.homeip.net> <20080331204221.GA19953@kroah.com> <20080331165456.ZZRA012@mailhub.coreip.homeip.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080331165456.ZZRA012@mailhub.coreip.homeip.net>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-03-31 at 22:58 +0100, Al Viro wrote:
-> On Mon, Mar 31, 2008 at 02:39:58PM -0700, Harvey Harrison wrote:
-> > On Mon, 2008-03-31 at 14:15 -0700, Harvey Harrison wrote:
-> > > Hi Al,
+On Mon, Mar 31, 2008 at 04:57:36PM -0400, Dmitry Torokhov wrote:
+> On Mon, Mar 31, 2008 at 01:42:21PM -0700, Greg KH wrote:
+> > On Mon, Mar 31, 2008 at 02:01:20PM -0400, Dmitry Torokhov wrote:
+> > > On Mon, Mar 31, 2008 at 10:28:13AM -0700, Greg KH wrote:
+> > > > On Mon, Mar 31, 2008 at 02:15:39AM -0400, Dmitry Torokhov wrote:
+> > > > > Hi Linus,
+> > > > > 
+> > > > > On Sunday 30 March 2008, Linus Torvalds wrote:
+> > > > > > 
+> > > > > > On Sun, 30 Mar 2008, Bj?rn Steinbrink wrote:
+> > > > > > >
+> > > > > > > I can't reproduce the bug on my UP box and currently can't afford
+> > > > > > > crashing my SMP box (all the oopses seem to come from SMP kernels, so I
+> > > > > > > guess it needs SMP to crash), so while this doesn't show any new
+> > > > > > > problems, I can't tell whether it actually fixes anything. Testers
+> > > > > > > welcome!
+> > > > > > 
+> > > > > > Ok, I applied this because I will do an -rc8 today or tomorrow, but I 
+> > > > > > really really hope somebody can figure out what made this all start to 
+> > > > > > trigger. It does smell like some core device layer change, because we do 
+> > > > > > not seem to have a lot of changes since 2.6.24 in evdev.c and input.c that 
+> > > > > > seem relevant.
+> > > > > > 
+> > > > > > Greg, are there any refcounting changes that would cause the input devices 
+> > > > > > to be free'd earlier or something?
+> > > > > > 
+> > > > > 
+> > > > > The following commit changed lifetime runes on kobjects breaking input:
+> > > > > 
+> > > > > commit 0f4dafc0563c6c49e17fe14b3f5f356e4c4b8806
+> > > > > Author: Kay Sievers <kay.sievers@vrfy.org>
+> > > > > Date:   Wed Dec 19 01:40:42 2007 +0100
+> > > > > 
+> > > > >     Kobject: auto-cleanup on final unref
+> > > > > 
+> > > > >     We save the current state in the object itself, so we can do proper
+> > > > >     cleanup when the last reference is dropped.
+> > > > > 
+> > > > >     If the initial reference is dropped, the object will be removed from
+> > > > >     sysfs if needed, if an "add" event was sent, "remove" will be send, and
+> > > > >     the allocated resources are released.
+> > > > > 
+> > > > >     This allows us to clean up some driver core usage as well as allowing us
+> > > > >     to do other such changes to the rest of the kernel.
+> > > > > 
+> > > > >     Signed-off-by: Kay Sievers <kay.sievers@vrfy.org>
+> > > > >     Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+> > > > > 
+> > > > > Before we dropped reference to kobject's parent only when child kobject
+> > > > > was released (in kobject_cleanup). The changeset above moves the release
+> > > > > to kobject_del() which is way too early in my opinion. The kobject is only
+> > > > > marked for deletion at that time, not really deleted.
+> > > > 
+> > > > It was "deleted" from sysfs, and should have never been used again by
+> > > > any callers.  If the reference count was dropped to zero with this call,
+> > > > it would be cleaned up as well, it seems that you were assuming that it
+> > > > would not be?  Perhaps you just need to grab another reference as this
+> > > > would have caused you problems without this change anyway, but without
+> > > > slab debugging, you never saw it.
+> > > > 
 > > > 
-> > > Further to eliminating some of the trivial sparse noise in a kernel
-> > > build, I just can't seem to understand what sparse is warning about:
-> > > 
+> > > Greg, please look at the change again. Before kobject_put(kobj->parent)
+> > > was done in kobject_cleanup() and so the parent would only be freed when
+> > > all its children are gone. Now parent is deleted early, even if its
+> > > children are still referenced by other users. This is lifetime rule
+> > > change and should really be announced as such.
 > > 
-> > I should have mentioned, the other block of warnings comes from
-> > drivers/media/video/videodev.c....again initializing arrays of IOCTLs
+> > Ugh, this was done because of scsi, they required that if you really
+> > were deleting the parent, you wanted it gone.
+> > 
 > 
-> 1 ? 0 : x
+> Gone from sysfs or gone from memory?
 > 
-> is not valid in contexts where C requires integer constant expressions.
-> Index in static array initializer is one of those.
+> > > If this change it intentional and is here to stay then I will just grab
+> > > the references myself, although I wonder what else might be broken by
+> > > it.
+> > 
+> > Yes, if you need those references, you are going to have to hold on for
+> > them, the kobject layer will not keep them around.  It now is a "does
+> > what you ask for" type model :)
+> > 
+> > I fail to see where this affects the input code though, in glancing at
+> > it, it looks like you are doing things properly.  Kay, any thoughts
+> > here, I think you looked at the kobject input layer interaction in the
+> > past.
+> >
 > 
-> gcc allows it, but its extensions in that area are inconsistent, to say
-> the least - basically, it goes with "if optimizer can fold that into
-> constant with this set of options, it will be accepted".  With very weird
-> boundary between accepted and not accepted (as in "reorder arguments of +,
-> and what had been recognized as constant is not recognized anymore").
-> 
-> sparse doesn't even try to duplicate that set of bugs.  We _could_ try
-> to go for a more or less reasonable subset (e.g. ?: with integer constant
-> expression as the first argument and integer constant expression as
-> the second or the third resp., depending on the value of the first one,
-> similar for && and ||), but I'm not all that sure that it's worth doing.
-> 
-> The fact is, use of what we have for _IOC in such contexts is not just
-> a gccism, it's ill-defined one.  I suspect that the right solution is
-> to sanitize _that_...
-> 
-> FWIW, why not simply put division by 0 into the branch that shouldn't
-> be reached instead of using a variable that doesn't exist and would
-> blow at ld(1) time?  I.e. go with
-> #define _IOC_TYPECHECK(t) \
->         ((sizeof(t) == sizeof(t[1]) && \
->           sizeof(t) < (1 << _IOC_SIZEBITS)) ? \
->           sizeof(t) : 1/0)
-> instead.  I'd say that trading a pretty name in linker stderr for
-> compiler error that shows exact location in the source would be
-> a good bargain...
-> 
-> Linus, would you object against that in post-2.6.25?
+> Ok, I really liked the old behavior better, but if it is to stay then
+> we need something like this (not for inclusion yet as mousedev and joydev
+> need to be adjusted as well):
 
-Sorry, maybe I'm thick, but how does _IOC_TYPECHECK get pulled
-into the _IOC_NR use?
+Yes, that's the proper behavior anyway, as you are passing off a pointer
+to a device, you need to keep the reference to that device around until
+you are finished with it.
 
-Harvey
+I'm amazed that this wasn't causing a problem before the kobject change,
+as this should have been needed there as well.  Would running with slab
+debugging cause it to hit then?
 
+> Signed-off-by: Dmitry Torokhov <dtor@mail.ru>
+
+Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
+
+thanks,
+
+greg k-h
