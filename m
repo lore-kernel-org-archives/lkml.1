@@ -1,72 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757200AbYCaPOn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754818AbYCaPS6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757200AbYCaPOn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Mar 2008 11:14:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751400AbYCaPOg
+	id S1754818AbYCaPS6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Mar 2008 11:18:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751427AbYCaPSu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Mar 2008 11:14:36 -0400
-Received: from rtr.ca ([76.10.145.34]:4442 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750991AbYCaPOf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Mar 2008 11:14:35 -0400
-Message-ID: <47F0FFD9.5030005@rtr.ca>
-Date: Mon, 31 Mar 2008 11:14:33 -0400
-From: Mark Lord <lkml@rtr.ca>
-Organization: Real-Time Remedies Inc.
-User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
+	Mon, 31 Mar 2008 11:18:50 -0400
+Received: from wr-out-0506.google.com ([64.233.184.237]:63703 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751377AbYCaPSt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 31 Mar 2008 11:18:49 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=YJ/1O4XCNZkkrWTjTrc0Y0ivB/xOeptOG3thhgu+xXhuIZMfdKu7KAlp+uXG8vvvITh5JvE+M/sNWOkhy6U2F3XvBdlU0Hm2ScwIUw2fByJG+n6fHa23HE1IqUdRiEQos5WBgF4Qk709lFNwPD2wG7fI9FTCb9RpJsDu1NAPZns=
+Message-ID: <804dabb00803310818u36b29ea3hf10ec0e44fdf7d8c@mail.gmail.com>
+Date: Mon, 31 Mar 2008 23:18:47 +0800
+From: "Peter Teoh" <htmldeveloper@gmail.com>
+To: "Bernd Eckenfels" <ecki@lina.inka.de>
+Subject: Re: RFC: Writing Solaris Device Drivers in Java
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <E1JgAEe-0006hb-00@calista.eckenfels.net>
 MIME-Version: 1.0
-To: Oliver Neukum <oliver@neukum.org>
-Cc: Pavel Machek <pavel@suse.cz>, Linux Kernel <linux-kernel@vger.kernel.org>,
-       Greg KH <gregkh@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
-       jikos@suse.cz
-Subject: Re: 2.6.25-rc7:  Ugh.
-References: <47EBBD57.30902@rtr.ca> <200803311355.06487.oliver@neukum.org> <47F0F7A5.10604@rtr.ca> <200803311704.37256.oliver@neukum.org> <47F0FD8E.4090005@rtr.ca>
-In-Reply-To: <47F0FD8E.4090005@rtr.ca>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <47F0491F.4050804@gmail.com>
+	 <E1JgAEe-0006hb-00@calista.eckenfels.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mark Lord wrote:
-> Oliver Neukum wrote:
->> Am Montag, 31. März 2008 16:39:33 schrieb Mark Lord:
->>
->>> One thing I just tried, was to unload all USB stuff before suspend,
->>> and reload on resume -- just stuck the commands into my 
->>> suspend/resume script.
->>>
->>> The machine has been 100% rock solid since then.
->>> So I think that definitely implicates USB.
->>
->> Yes. What happens if you unload only usbhid at that time?
-> ..
-> 
-> Mmm.. interesting choice, there.  I'll try that.
-> 
-> There is another quirk on this machine that might confuse
-> software that's not robust:  the internal Bluetooth adapter
-> is USB connected, and I normally have it disabled (BIOS hotkey).
-> So it normally is "not present".
-> 
-> But on any power-on / resume, it briefly powers up and becomes "present",
-> and, after a second or two, the BIOS powers it down again, "not present".
-> 
-> Just long enough for software to notice it and try talking to it.
-> If that software is not carefully coded, it might get confused.
-> 
-> This has not been a problem before, but perhaps with the new USB 
-> autosuspend code?
-..
+Thank you for the comments.
 
-Speaking of which.. what's with this "broken" message?
-I wonder if it could be at all related ?
+>
+>  I think the device driver reuse between the various C-kernels is pretty big.
+>  For efficiency and since the low level stuff is a major part of device
+>  drivers, I cant see a Java solution. I guess we would see drivers in Forth before :)
 
-kobject: 'hci_usb' (f89d2948): kobject_cleanup
-kobject: 'hci_usb' (f89d2948): does not have a release() function, it is broken and must be fixed.
-kobject: 'hci_usb' (f89d2948): auto cleanup 'remove' event
-kobject: 'hci_usb' (f89d2948): kobject_uevent_env
-kobject: 'hci_usb' (f89d2948): fill_kobj_path: path = '/module/hci_usb'
-kobject: 'hci_usb' (f89d2948): auto cleanup kobject_del
-kobject: 'hci_usb': free name
+not sure about forth, but fortran is claimed to be faster than C,
+based on ease of optimization reason:
 
+http://www.idiom.com/~zilla/Computer/javaCbenchmark.html
+
+For a surprising benchmark dated Oct2007, this guy started off without
+knowing who will win:
+
+http://www.stefankrause.net/wp/?p=4
+http://www.stefankrause.net/wp/?p=6
+
+Looking at all those number, unbelivebly Java performed better than
+gcc in several ways. To quote the author:
+
+"# Saying that C is generally several times faster than java is -
+according to those benchmarks - simply wrong."
+
+but he also cautioned:
+
+"# Saying that Java is faster than C can also be pretty wrong,
+especially if you have to stick with one JVM."
+
+http://www.freewebs.com/godaves/javabench_revisited/
+http://kano.net/javabench/
+
+well, performance of speed is one thing, but other stuff like (for
+desktop computing) ease of support, enhancement, and ease of use need
+to be considered as well.   That's why .Net, with its huge overheads,
+still has a huge followers, even though its predecessor is much more
+efficient and faster, and delivering the same level of GUI programming
+feature.
+
+For embedded and server-based computing performance will still be
+king.    But won't you be enticed to a new world of programming where
+one or two liners can replaced 10 lines in C? With the complexity in
+locking and irq handling all taken care of underneath you?   Ie,
+automatic synchronization done by some other components in the kernel,
+thus reducing the lines of codes?
+
+Well.....the future is uncertain....i cannot predict it :-).   Happy
+April Fool's Day (I like that joke!!!! LOL...)
+
+-
+Regards,
+Peter Teoh
