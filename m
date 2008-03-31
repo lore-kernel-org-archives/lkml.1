@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755383AbYCaImT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755542AbYCaIol@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755383AbYCaImT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Mar 2008 04:42:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753470AbYCaImK
+	id S1755542AbYCaIol (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Mar 2008 04:44:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753364AbYCaIoe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Mar 2008 04:42:10 -0400
-Received: from mu-out-0910.google.com ([209.85.134.185]:17782 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751919AbYCaImI (ORCPT
+	Mon, 31 Mar 2008 04:44:34 -0400
+Received: from fk-out-0910.google.com ([209.85.128.191]:10383 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752904AbYCaIod (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Mar 2008 04:42:08 -0400
+	Mon, 31 Mar 2008 04:44:33 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
-        b=DOWX9hvwnzGDKlW+lrdVBAMK7RYGw1lnNCGl8xs7eavlWzL+pgT6agBNQAUsFmnvYwuvKt9/QthHZzllnyn0JGRH7O/ceV94wU5m7k/7xFJ9GJjGX6m7q6ryh8xRj4Aqg7wteCWq1rpyoy+A04BLYHkVXeVRDRsUXl5rV90WptE=
-Date: Mon, 31 Mar 2008 12:42:00 +0400
+        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=qf7AcwuTbYgGds/y1LgEtoUvXY/HGLgbpNLFGtlhkZGJwfSyKBe/FsWrMRKBoiLhkX37m1HsIl9Qi29Eron6aTXPa7EVf0+MTcR4to1mkSZ6r1hZAOJBof+Kk5ngTq33UPc4BdAf4bQfATaGz+WoB1Ykm1O9nOgipuUfU/OkFR0=
+Date: Mon, 31 Mar 2008 12:44:20 +0400
 From: Dmitry Baryshkov <dbaryshkov@gmail.com>
 To: linux-kernel@vger.kernel.org
 Cc: akpm@linux-foundation.org,
@@ -24,10 +24,12 @@ Cc: akpm@linux-foundation.org,
        pHilipp Zabel <philipp.zabel@gmail.com>, Pavel Machek <pavel@ucw.cz>,
        tony@atomide.com, paul@pwsan.com
 Subject: [PATCH 1/6] Clocklib: add generic framework for managing clocks.
-Message-ID: <20080331084200.GA11574@doriath.ww600.siemens.net>
+Message-ID: <20080331084420.GA11617@doriath.ww600.siemens.net>
+References: <20080331083947.GA11282@doriath.ww600.siemens.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20080331083947.GA11282@doriath.ww600.siemens.net>
 User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
