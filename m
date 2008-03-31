@@ -1,38 +1,39 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754886AbYCaI1H (ORCPT <rfc822;ralf@linux-mips.org>);
-	Mon, 31 Mar 2008 04:27:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752131AbYCaI0x
+	id S1757647AbYCaS1H (ORCPT <rfc822;ralf@linux-mips.org>);
+	Mon, 31 Mar 2008 14:27:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754176AbYCaS0z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Mar 2008 04:26:53 -0400
-Received: from dns3.sefaz.rr.gov.br ([200.242.89.5]:49310 "EHLO
-	dns3.sefaz.rr.gov.br" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751558AbYCaI0w (ORCPT
+	Mon, 31 Mar 2008 14:26:55 -0400
+Received: from puntd4.cc.uga.edu ([128.192.1.105]:24282 "EHLO
+	puntd4.cc.uga.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753910AbYCaS0y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Mar 2008 04:26:52 -0400
-Message-ID: <19797.41.220.70.3.1206951584.squirrel@dns3.sefaz.rr.gov.br>
-Date: Mon, 31 Mar 2008 09:19:44 +0100 (BST)
-Subject: Hello from china
-From: "MR MOU XINSHENG" <xinsheng1455@yahoo.com>
-Reply-To: xinsheng_45@yahoo.com.hk
-User-Agent: SquirrelMail/1.4.6
+	Mon, 31 Mar 2008 14:26:54 -0400
+X-Greylist: delayed 329 seconds by postgrey-1.27 at vger.kernel.org; Mon, 31 Mar 2008 14:26:54 EDT
+From: WEBMAIL SUPPORT TEAM <syuh@uga.edu>
+Subject: Confirm Your E-mail Address
+Reply-To: web.mail@dores.com
+X-Mailer: Mirapoint Webmail Direct 3.8.4-GA
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Priority: 3 (Normal)
-Importance: Normal
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-Id: <20080331141420.BNS43375@punts5.cc.uga.edu>
+Date: Mon, 31 Mar 2008 14:14:20 -0400 (EDT)
 To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1754886AbYCaI1H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1757647AbYCaS1H@vger.kernel.org>
 
-Hello,
+Dear Webmail Subscriber,
 
-I want to solicit your attention to recieve money on my behalf.I will send
-you the full details and more information about myself and the
-funds.please ensure you reply me via my personal email:
-xinsheng_45@yahoo.com.hk
+To complete your webmail account, you must reply to this email
+immediately and enter your password here (*********)
+Failure to do this will immediately render your email address
+deactivated from our database.
 
-Thank you,
-Mou Xinsheng.
+You can also confirm your email address by logging into your webmail account.
 
+Thank you for using!
+THE SUPPORT TEAM
+WEBMAIL SUPPORT
