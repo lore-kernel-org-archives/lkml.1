@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759464AbYCaOqR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759551AbYCaOqf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759464AbYCaOqR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Mar 2008 10:46:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753241AbYCaOhq
+	id S1759551AbYCaOqf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Mar 2008 10:46:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753286AbYCaOhs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Mar 2008 10:37:46 -0400
-Received: from bzq-179-150-194.static.bezeqint.net ([212.179.150.194]:51323
+	Mon, 31 Mar 2008 10:37:48 -0400
+Received: from bzq-179-150-194.static.bezeqint.net ([212.179.150.194]:51313
 	"EHLO il.qumranet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751548AbYCaOhe (ORCPT
+	with ESMTP id S1751373AbYCaOhe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 31 Mar 2008 10:37:34 -0400
 From: Avi Kivity <avi@qumranet.com>
 To: kvm-devel@lists.sourceforge.net
 Cc: linux-kernel@vger.kernel.org, Joerg Roedel <joerg.roedel@amd.com>
-Subject: [PATCH 22/40] KVM: SVM: add module parameter to disable Nested Paging
-Date: Mon, 31 Mar 2008 17:37:06 +0300
-Message-Id: <1206974244-9716-23-git-send-email-avi@qumranet.com>
+Subject: [PATCH 29/40] KVM: SVM: let init_vmcb() take struct vcpu_svm as parameter
+Date: Mon, 31 Mar 2008 17:37:13 +0300
+Message-Id: <1206974244-9716-30-git-send-email-avi@qumranet.com>
 X-Mailer: git-send-email 1.5.4.5
 In-Reply-To: <1206974244-9716-1-git-send-email-avi@qumranet.com>
 References: <1206974244-9716-1-git-send-email-avi@qumranet.com>
@@ -25,42 +25,61 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Joerg Roedel <joerg.roedel@amd.com>
 
-To disable the use of the Nested Paging feature even if it is available in
-hardware this patch adds a module parameter. Nested Paging can be disabled by
-passing npt=0 to the kvm_amd module.
+Change the parameter of the init_vmcb() function in the kvm-amd module from
+struct vmcb to struct vcpu_svm.
 
 Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
+Signed-off-by: Markus Rechberger <markus.rechberger@amd.com>
 Signed-off-by: Avi Kivity <avi@qumranet.com>
 ---
- arch/x86/kvm/svm.c |    8 ++++++++
- 1 files changed, 8 insertions(+), 0 deletions(-)
+ arch/x86/kvm/svm.c |   12 ++++++------
+ 1 files changed, 6 insertions(+), 6 deletions(-)
 
 diff --git a/arch/x86/kvm/svm.c b/arch/x86/kvm/svm.c
-index c12a759..fb5d6c2 100644
+index 8e9d4a5..d934819 100644
 --- a/arch/x86/kvm/svm.c
 +++ b/arch/x86/kvm/svm.c
-@@ -48,6 +48,9 @@ MODULE_LICENSE("GPL");
- #define SVM_DEATURE_SVML (1 << 2)
+@@ -471,10 +471,10 @@ static void init_sys_seg(struct vmcb_seg *seg, uint32_t type)
+ 	seg->base = 0;
+ }
  
- static bool npt_enabled = false;
-+static int npt = 1;
-+
-+module_param(npt, int, S_IRUGO);
+-static void init_vmcb(struct vmcb *vmcb)
++static void init_vmcb(struct vcpu_svm *svm)
+ {
+-	struct vmcb_control_area *control = &vmcb->control;
+-	struct vmcb_save_area *save = &vmcb->save;
++	struct vmcb_control_area *control = &svm->vmcb->control;
++	struct vmcb_save_area *save = &svm->vmcb->save;
  
- static void kvm_reput_irq(struct vcpu_svm *svm);
+ 	control->intercept_cr_read = 	INTERCEPT_CR0_MASK |
+ 					INTERCEPT_CR3_MASK |
+@@ -600,7 +600,7 @@ static int svm_vcpu_reset(struct kvm_vcpu *vcpu)
+ {
+ 	struct vcpu_svm *svm = to_svm(vcpu);
  
-@@ -418,6 +421,11 @@ static __init int svm_hardware_setup(void)
- 	if (!svm_has(SVM_FEATURE_NPT))
- 		npt_enabled = false;
+-	init_vmcb(svm->vmcb);
++	init_vmcb(svm);
  
-+	if (npt_enabled && !npt) {
-+		printk(KERN_INFO "kvm: Nested Paging disabled\n");
-+		npt_enabled = false;
-+	}
-+
- 	if (npt_enabled)
- 		printk(KERN_INFO "kvm: Nested Paging enabled\n");
+ 	if (vcpu->vcpu_id != 0) {
+ 		svm->vmcb->save.rip = 0;
+@@ -638,7 +638,7 @@ static struct kvm_vcpu *svm_create_vcpu(struct kvm *kvm, unsigned int id)
+ 	svm->vmcb_pa = page_to_pfn(page) << PAGE_SHIFT;
+ 	svm->asid_generation = 0;
+ 	memset(svm->db_regs, 0, sizeof(svm->db_regs));
+-	init_vmcb(svm->vmcb);
++	init_vmcb(svm);
  
+ 	fx_init(&svm->vcpu);
+ 	svm->vcpu.fpu_active = 1;
+@@ -1024,7 +1024,7 @@ static int shutdown_interception(struct vcpu_svm *svm, struct kvm_run *kvm_run)
+ 	 * so reinitialize it.
+ 	 */
+ 	clear_page(svm->vmcb);
+-	init_vmcb(svm->vmcb);
++	init_vmcb(svm);
+ 
+ 	kvm_run->exit_reason = KVM_EXIT_SHUTDOWN;
+ 	return 0;
 -- 
 1.5.4.5
 
