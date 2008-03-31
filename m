@@ -1,80 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753942AbYCaNfZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751723AbYCaNhb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753942AbYCaNfZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Mar 2008 09:35:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750978AbYCaNfM
+	id S1751723AbYCaNhb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Mar 2008 09:37:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750921AbYCaNhX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Mar 2008 09:35:12 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:42317 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750788AbYCaNfL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Mar 2008 09:35:11 -0400
-Date: Mon, 31 Mar 2008 15:34:29 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Pawel Staszewski <pstaszewski@artcom.pl>,
-       Christoph Lameter <clameter@sgi.com>,
-       LKML <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Natalie Protasevich <protasnb@gmail.com>
-Subject: Re: 2.6.25-rc7-git2: Reported regressions from 2.6.24
-Message-ID: <20080331133429.GG14636@elte.hu>
-References: <200803272353.51901.rjw@sisk.pl> <200803281710.44576.rjw@sisk.pl> <alpine.LFD.1.00.0803280938430.14670@woody.linux-foundation.org> <200803282328.34172.rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200803282328.34172.rjw@sisk.pl>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Mon, 31 Mar 2008 09:37:23 -0400
+Received: from charybdis-ext.suse.de ([195.135.221.2]:53553 "EHLO
+	emea5-mh.id5.novell.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750863AbYCaNhW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 31 Mar 2008 09:37:22 -0400
+Subject: Re: [PATCH 1/2] sysfs: allow the group is_visible() method to
+	return a mode and add an update API
+From: Kay Sievers <kay.sievers@vrfy.org>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: Greg KH <greg@kroah.com>, Hannes Reinecke <hare@suse.de>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <1206896083.4224.40.camel@localhost.localdomain>
+References: <1206134832.2961.64.camel@localhost.localdomain>
+	 <20080321222635.GA2674@kroah.com>
+	 <1206208949.4393.25.camel@localhost.localdomain>
+	 <1206896083.4224.40.camel@localhost.localdomain>
+Content-Type: text/plain; charset=utf-8
+Date: Mon, 31 Mar 2008 15:42:09 +0200
+Message-Id: <1206970929.20492.27.camel@lov.site>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.0 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, 2008-03-30 at 11:54 -0500, James Bottomley wrote:
+> On Sat, 2008-03-22 at 13:02 -0500, James Bottomley wrote:
+> > On Fri, 2008-03-21 at 15:26 -0700, Greg KH wrote:
+> > > On Fri, Mar 21, 2008 at 04:27:12PM -0500, James Bottomley wrote:
+> > > > We have a problem in scsi_transport_spi in that we need to customise
+> > > > not only the visibility of the attributes, but also their mode.  Fix
+> > > > this by making the is_visible() callback return a mode, with 0
+> > > > indicating is not visible.
+> > > > 
+> > > > Also add a sysfs_update_group() API to allow us to change either the
+> > > > visibility or mode of the files at any time on the fly.
+> > > > 
+> > > > Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
+> > > > ---
+> > > > 
+> > > > Greg, can I take this through SCSI, please ... assuming it's OK?  We
+> > > > need this to fix up the SPI transport class.
+> > > 
+> > > Sure.  But can you document that "update" field a bit more so we can
+> > > remember what it means in the future?
+> > 
+> > How about this?  I also added docbook for create and update attribute
+> > group.
 
-* Rafael J. Wysocki <rjw@sisk.pl> wrote:
+Looks good to me.
 
-> > This is why I have always been advocating so aggressive culling of 
-> > regressions and bug-reports - stale bug-reports are worse than 
-> > useless, they actually _hurt_.
-> 
-> I don't quite agree here.  At least, they indicate that we may have an 
-> unfixed problem and the fact that no one has taken care of it doesn't 
-> really mean we should generally ignore it.
+I think with the "visible" stuff for attribute groups, will be able to
+fix the USB event timing problem, by moving the creation of the device
+attributes to default attributes. So I'm looking forward to have this in
+the tree.
 
-culling doesnt mean ignoring - it just means de-prioritizing. There's 
-four basic bug categories:
+> Can I get an ACK from someone from sysfs for this, please?
 
-1- bugs where there's inactivity on the reporter side. This we should
-   de-prioritize - and reactivate them once their activity changes.
+> > ---
+> > 
+> > From: James Bottomley <James.Bottomley@HansenPartnership.com>
+> > Date: Thu, 20 Mar 2008 20:47:52 -0500
+> > Subject: [SCSI] sysfs: make group is_valid return a mode_t
+> > 
+> > We have a problem in scsi_transport_spi in that we need to customise
+> > not only the visibility of the attributes, but also their mode.  Fix
+> > this by making the is_visible() callback return a mode, with 0
+> > indicating is not visible.
+> > 
+> > Also add a sysfs_update_group() API to allow us to change either the
+> > visibility or mode of the files at any time on the fly.
 
-2- bugs where there's inactivity on the _maintainer_ side show bad bugs 
-   in our process.
+Acked-by: Kay Sievers <kay.sievers@vrfy.org>
 
-3- bugs that are old but have lots of activity are usually the most 
-   difficult bugs where both side try their best to get it resolved.
+> > Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
 
-4- bugs that are relatively new can be in any of the above 3 categories, 
-   we dont know yet.
+﻿Thanks for doing this,
+Kay
 
-so i think we should list bugs in category #3 first: the hardest bugs, 
-which need the most eyes. Then should we list #2 - the embarrasing bugs 
-where our pocess failed. Then should we list #4 - new, not yet resolved 
-bugs which need more eyes - especially in late -rc's. Then comes #1 - 
-inactive bugs.
 
-the problem for your scripting is to efficiently parse lkml activity for 
-these bugs: which replies are from the "maintainer", and how "active" is 
-a thread. So i guess a good heuristic is what you did in your latest 
-mail: to reverse sort by age of the bug - but i'd also suggest to list 
-too old entries where the bugzilla is not in NEEDINFO state - those 
-indicate inactive (or unaware) maintainers.
-
-	Ingo
