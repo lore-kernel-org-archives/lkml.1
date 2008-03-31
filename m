@@ -1,48 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756659AbYCaMvc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756356AbYCaMwv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756659AbYCaMvc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Mar 2008 08:51:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756112AbYCaMvS
+	id S1756356AbYCaMwv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Mar 2008 08:52:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753819AbYCaMwo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Mar 2008 08:51:18 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:48107 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756069AbYCaMvR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Mar 2008 08:51:17 -0400
-Date: Mon, 31 Mar 2008 14:50:57 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: 20080331020341.GB24702@atjola.homenet
-Cc: Thomas Gleixner <tglx@linutronix.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Bob Tracy <rct@frus.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Fix off-by-one errors in some pirq warnings
-Message-ID: <20080331125057.GD14636@elte.hu>
-References: <20080331022253.GA24987@atjola.homenet>
+	Mon, 31 Mar 2008 08:52:44 -0400
+Received: from smtp.nokia.com ([192.100.105.134]:27893 "EHLO
+	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753462AbYCaMwn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 31 Mar 2008 08:52:43 -0400
+Message-ID: <47F0DD49.7010302@nokia.com>
+Date: Mon, 31 Mar 2008 15:47:05 +0300
+From: Adrian Hunter <ext-adrian.hunter@nokia.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20080331022253.GA24987@atjola.homenet>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: ext Jan Engelhardt <jengelh@computergmbh.de>
+CC: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>,
+       LKML <linux-kernel@vger.kernel.org>, joern@lazybastard.org
+Subject: Re: [RFC PATCH] UBIFS - new flash file system
+References: <1206629746-4298-1-git-send-email-Artem.Bityutskiy@nokia.com> <alpine.LNX.1.10.0803311428270.2554@fbirervta.pbzchgretzou.qr>
+In-Reply-To: <alpine.LNX.1.10.0803311428270.2554@fbirervta.pbzchgretzou.qr>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 31 Mar 2008 12:52:23.0571 (UTC) FILETIME=[108FFE30:01C8932E]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Jan Engelhardt wrote:
+> 
+> On Thursday 2008-03-27 15:55, Artem Bityutskiy wrote:
+>>
+>> here is a new flash file system developed by Nokia engineers with
+>> help of the University of Szeged. The new file-system is called
+>> UBIFS, which stands for UBI file system. UBI is the wear-leveling/
+>> bad-block handling/volume management layer which is already in
+>> mainline (see drivers/mtd/ubi).
+>> [...]
+> 
+> And how does it compare to logfs?
 
-* Björn Steinbrink <B.Steinbrink@gmx.de> wrote:
+We don't know a lot about logfs, so you will really have to make
+your own comparison.  However our general impressions are as follows:
 
-> The conditions for the warnings simply ignored the fact that we later 
-> actually use the original value minus 1, so the warning triggered even 
-> for valid values.
+1. In our testing logfs file operations seem to be much slower,
+see http://osl.sed.hu/wiki/ubifs/index.php/IOzone
 
-thanks Björn, applied.
+2. logfs code base is much smaller i.e.  UBIFS has 3-4 times as many
+lines of code.
 
-	Ingo
+3. logfs does not seem to have bad-block handling.
+
+4. logfs does not seem to have wear-leveling.
+
+5. We are not certain how scalable logfs is.
+
+We could be wrong about those things - don't flame us if we are.
+Ask us about UBIFS, not logfs.
