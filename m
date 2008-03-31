@@ -1,60 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755983AbYCaKI5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756550AbYCaKKW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755983AbYCaKI5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Mar 2008 06:08:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753721AbYCaKIt
+	id S1756550AbYCaKKW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Mar 2008 06:10:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754915AbYCaKKK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Mar 2008 06:08:49 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:37664
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751713AbYCaKIs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Mar 2008 06:08:48 -0400
-Date: Mon, 31 Mar 2008 03:08:48 -0700 (PDT)
-Message-Id: <20080331.030848.175668431.davem@davemloft.net>
-To: mingo@elte.hu
-Cc: dada1@cosmosbay.com, netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       a.p.zijlstra@chello.nl
-Subject: Re: [RFC,PATCH] loopback: calls netif_receive_skb() instead of
- netif_rx()
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20080331094823.GA11651@elte.hu>
-References: <20080323.032949.194309002.davem@davemloft.net>
-	<47E6A5FD.6060407@cosmosbay.com>
-	<20080331094823.GA11651@elte.hu>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Mon, 31 Mar 2008 06:10:10 -0400
+Received: from smtp02.citrix.com ([66.165.176.63]:1399 "EHLO SMTP02.CITRIX.COM"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753077AbYCaKKJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 31 Mar 2008 06:10:09 -0400
+X-SBRS: 3.6
+X-MesageID: 48140151
+X-Ironport-Server: ftlpip02.citrite.net
+X-Remote-IP: 216.142.71.134
+X-Policy: $Relay
+X-IronPort-AV: E=Sophos;i="4.25,581,1199682000"; 
+   d="scan'208";a="48140151"
+Date: Mon, 31 Mar 2008 10:44:40 +0100
+From: Samuel Thibault <samuel.thibault@ens-lyon.org>
+To: Michael Kerrisk <mtk.manpages@gmail.com>
+Cc: Andi Kleen <andi@firstfloor.org>, David Miller <davem@davemloft.net>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH,TRIVIAL] AF_UNIX, accept() and addrlen
+Message-ID: <20080331094440.GA4406@implementation>
+Mail-Followup-To: Samuel Thibault <samuel.thibault@ens-lyon.org>,
+	Michael Kerrisk <mtk.manpages@gmail.com>,
+	Andi Kleen <andi@firstfloor.org>,
+	David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org
+References: <20080308022321.GC5853@implementation> <20080323.215641.192753003.davem@davemloft.net> <20080324104330.GF4434@implementation.uk.xensource.com> <87abko734d.fsf@basil.nowhere.org> <20080324121719.GJ4434@implementation.uk.xensource.com> <20080324122700.GK4434@implementation.uk.xensource.com> <517f3f820803302100sdd50d71m4a990993f45e746c@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <517f3f820803302100sdd50d71m4a990993f45e746c@mail.gmail.com>
+User-Agent: Mutt/1.5.12-2006-07-14
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Ingo Molnar <mingo@elte.hu>
-Date: Mon, 31 Mar 2008 11:48:23 +0200
+Michael Kerrisk, le Mon 31 Mar 2008 06:00:50 +0200, a écrit :
+> My understanding about abstract namespace sockets (what Samuel calls
+> unnamed sockets)
 
-> 
-> * Eric Dumazet <dada1@cosmosbay.com> wrote:
-> 
-> > I noticed some paths in kernel are very stack aggressive, and on i386 
-> > with CONFIG_4KSTACKS we were really in a dangerous land, even without 
-> > my patch.
-> >
-> > What we call 4K stacks is in fact 4K - sizeof(struct task_struct), so 
-> > a litle bit more than 2K. [...]
-> 
-> that's just wrong - 4K stacks on x86 are 4K-sizeof(thread_info) - the 
-> task struct is allocated elsewhere. The patch below runs just fine on 
-> 4K-stack x86.
+No, unnamed sockets are not in the abstract namespace sockets.  They
+really have _no_ name.
 
-I don't think it's safe.
-
-Every packet you receive can result in a sent packet, which
-in turn can result in a full packet receive path being
-taken, and yet again another sent packet.
-
-And so on and so forth.
-
-Some cases like this would be stack bugs, but wouldn't
-you like that bug to be a very busy cpu instead of a
-crash from overrunning the current stack?
+Samuel
