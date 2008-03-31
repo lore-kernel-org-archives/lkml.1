@@ -1,47 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754841AbYCaIeq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755055AbYCaIkE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754841AbYCaIeq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Mar 2008 04:34:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752627AbYCaIeh
+	id S1755055AbYCaIkE (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Mar 2008 04:40:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753581AbYCaIjz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Mar 2008 04:34:37 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:40372 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751195AbYCaIeg (ORCPT
+	Mon, 31 Mar 2008 04:39:55 -0400
+Received: from fg-out-1718.google.com ([72.14.220.155]:11625 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753187AbYCaIjy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Mar 2008 04:34:36 -0400
-Date: Mon, 31 Mar 2008 10:38:16 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Thomas =?iso-8859-1?Q?Hellstr=F6m?= <thomas@tungstengraphics.com>
-Cc: Andi Kleen <andi@firstfloor.org>, Dave Airlie <airlied@redhat.com>,
-       linux-kernel@vger.kernel.org, tglx@linutronix.de, mingo@redhat.com,
-       arjan@linux.intel.com
-Subject: Re: [PATCH] x86: create array based interface to change page attribute
-Message-ID: <20080331083816.GC29105@one.firstfloor.org>
-References: <1206940788.7250.13.camel@clockmaker.usersys.redhat.com> <87myof8ief.fsf@basil.nowhere.org> <47F098E8.1050605@tungstengraphics.com>
-Mime-Version: 1.0
+	Mon, 31 Mar 2008 04:39:54 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
+        b=iUtQzqlHfnGRdquibHQJrA738mCq7FW9XDtfvE2QAKwb1czY6xB5QhmfNKyxUr5Hz2cqPEGCU/UWT50WFdsdHOb0K56ZYaPuMk3g9wjzkCzvH/rZMtif18OjI/GnDXk1ZaxsaTk5H8o2A7JaeG8xfFCDFUZHevRJ5eoquLOYAww=
+Date: Mon, 31 Mar 2008 12:39:47 +0400
+From: Dmitry Baryshkov <dbaryshkov@gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: akpm@linux-foundation.org,
+       Haavard Skinnemoen <haavard.skinnemoen@atmel.com>,
+       Russell King <rmk+lkml@arm.linux.org.uk>,
+       Paul Mundt <lethal@linux-sh.org>,
+       pHilipp Zabel <philipp.zabel@gmail.com>, Pavel Machek <pavel@ucw.cz>,
+       tony@atomide.com, paul@pwsan.com
+Subject: [PATCH 0/6] Clocklib: generic clocks framework
+Message-ID: <20080331083947.GA11282@doriath.ww600.siemens.net>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <47F098E8.1050605@tungstengraphics.com>
-User-Agent: Mutt/1.4.2.1i
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Also I think we need to clarify the semantics of the c_p_a 
-> functionality. Right now both AGP and DRM relies on c_p_a  doing an 
-> explicit cache flush. Otherwise the data won't appear on the device side 
-> of the aperture.
+Hi,
 
-But surely not in cpa I hope ? Or are you saying you first write data
-and then do cpa? If true that would be quite an abuse of CPA 
-I would say and you should fix it ASAP.
+Here is a new version based upon suggestions from Haavard and Russell.
 
-> If we use self-snoop, the AGP and DRM drivers can't rely on this flush 
-> being performed, and they have to do the flush themselves, and for 
+Changes since last post:
+* Split struct clk into clk and clk_ops
+* Hide most non-generic things into clock type specific structs wrapping
+  struct clk.
+* Provide at least partial documentation for structures and fields.
+* Better /sys/kernel/debug/clock formatting
+* Incorporates sa1100 and PXA patches.
 
-They definitely should flush themselves if they want data to reach
-the device. That is obviously required any time they reuse a page
-too.
+-- 
+With best wishes
+Dmitry
 
--Andi
