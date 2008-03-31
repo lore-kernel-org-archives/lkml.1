@@ -1,52 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755955AbYCaIsf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756453AbYCaIsz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755955AbYCaIsf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Mar 2008 04:48:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752904AbYCaIs0
+	id S1756453AbYCaIsz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Mar 2008 04:48:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753658AbYCaIsq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Mar 2008 04:48:26 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:44367 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751195AbYCaIsZ (ORCPT
+	Mon, 31 Mar 2008 04:48:46 -0400
+Received: from eth7959.sa.adsl.internode.on.net ([150.101.82.22]:35362 "EHLO
+	hawking.rebel.net.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752904AbYCaIsp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Mar 2008 04:48:25 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <47F0A4FD.7040502@s5r6.in-berlin.de>
-Date: Mon, 31 Mar 2008 10:46:53 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.12) Gecko/20080219 SeaMonkey/1.1.8
+	Mon, 31 Mar 2008 04:48:45 -0400
+Message-ID: <47F0A575.3040605@davidnewall.com>
+Date: Mon, 31 Mar 2008 19:18:53 +1030
+From: David Newall <davidn@davidnewall.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux1394-devel@lists.sourceforge.net
-Subject: Re: [GIT PULL] FireWire update
-References: <tkrat.459cc31de75e4149@s5r6.in-berlin.de> <tkrat.68585c2b7aee00eb@s5r6.in-berlin.de> <tkrat.14d846ed63cc91c2@s5r6.in-berlin.de> <tkrat.948f418ebe464164@s5r6.in-berlin.de> <tkrat.b05a30e97b4f9820@s5r6.in-berlin.de> <tkrat.2374baeb26921d92@s5r6.in-berlin.de> <tkrat.85f36e56e03746e3@s5r6.in-berlin.de>
-In-Reply-To: <tkrat.85f36e56e03746e3@s5r6.in-berlin.de>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Willy Tarreau <w@1wt.eu>
+CC: Peter Teoh <htmldeveloper@gmail.com>, LKML <linux-kernel@vger.kernel.org>,
+       kernelnewbies <kernelnewbies@nl.linux.org>
+Subject: Re: RFC:   Writing Solaris Device Drivers in Java
+References: <47F0491F.4050804@gmail.com> <20080331055618.GC23796@1wt.eu>
+In-Reply-To: <20080331055618.GC23796@1wt.eu>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I wrote:
-> Linus, please pull from the for-linus branch at
-> 
->     git://git.kernel.org/pub/scm/linux/kernel/git/ieee1394/linux1394-2.6.git for-linus
-> 
-> to receive the following update for the firewire subsystem.
-> 
->  drivers/firewire/fw-ohci.c |    9 +++++----
->  1 files changed, 5 insertions(+), 4 deletions(-)
-> 
-> Jarod Wilson (1):
->       firewire: fw-ohci: plug dma memory leak in AR handler
+Willy Tarreau wrote:
+> On Mon, Mar 31, 2008 at 10:14:55AM +0800, Peter Teoh wrote:
+>   
+[snip]
+>> imagine using a drivers written [in java] for 
+>> the Solaris in Linux, won't it be cool?
+>>     
+> [...]
+>
+> So please keep these technologies for sucking your nearby powerplant's
+> power and justifying your boss that you need a monster machine which
+> would make HPC people jealous, but I would hate it to make it easier
+> for the people I described above to pollute the kernel with their crap.
 
-Ping.
+Perhaps somebody will argue that Java runs on quite small, even
+low-power. machines; but all of that would still miss the point, I
+think, that it's the differences between operating systems which prevent
+drivers written for one platform from "just working" on another.  Look
+at the effort that NDISwrapper has to go through to make a mere subset
+of Windows drivers work on Linux: It wouldn't be any easier if those
+drivers were written in Java.  Platforms are different and drivers
+reflect those differences and that's the way it is.
 
-This stops firewire-ohci from feeding random arguments to 
-dma_free_coherent().
--- 
-Stefan Richter
--=====-==--- --== =====
-http://arcgraph.de/sr/
+And it's *still* not April 1.  This thread would have been quite clever
+if it were.
