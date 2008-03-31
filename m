@@ -1,85 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756664AbYCaNQW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756895AbYCaNRh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756664AbYCaNQW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Mar 2008 09:16:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754948AbYCaNQN
+	id S1756895AbYCaNRh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Mar 2008 09:17:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755417AbYCaNRU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Mar 2008 09:16:13 -0400
-Received: from tomts10.bellnexxia.net ([209.226.175.54]:63815 "EHLO
-	tomts10-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753582AbYCaNQM (ORCPT
+	Mon, 31 Mar 2008 09:17:20 -0400
+Received: from E23SMTP05.au.ibm.com ([202.81.18.174]:60013 "EHLO
+	e23smtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755530AbYCaNRR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Mar 2008 09:16:12 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AvoEACqB8EdMQWoK/2dsb2JhbACBWqdMghw
-Date: Mon, 31 Mar 2008 09:16:09 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: [PATCH for 2.6.25] Markers - use synchronize_sched()
-Message-ID: <20080331131609.GA22207@Krystal>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 09:13:43 up 31 days,  9:24,  6 users,  load average: 1.36, 0.75,
-	0.56
-User-Agent: Mutt/1.5.16 (2007-06-11)
+	Mon, 31 Mar 2008 09:17:17 -0400
+Message-ID: <47F0E456.5080201@linux.vnet.ibm.com>
+Date: Mon, 31 Mar 2008 18:47:10 +0530
+From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+User-Agent: Thunderbird 1.5.0.14ubu (X11/20080306)
+MIME-Version: 1.0
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+CC: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       netdev@vger.kernel.org, Andy Whitcroft <apw@shadowen.org>
+Subject: [BUILD_FAILURE] linux-next: Tree for March 31 build fails with CONFIG_SLICOSS=y
+References: <20080331181118.7964d4a9.sfr@canb.auug.org.au>
+In-Reply-To: <20080331181118.7964d4a9.sfr@canb.auug.org.au>
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use synchronize_sched before calling call_rcu in CONFIG_PREEMPT_RCU until we
-have call_rcu_sched and rcu_barrier_sched in mainline. It will slow down the
-marker operations in CONFIG_PREEMPT_RCU, but it fixes the current race against
-the preempt_disable/enable() protected code paths.
+Hi Stephen,
 
-Paul, is this ok ? It would be good to get this in for 2.6.25 final.
+The kernel next-20080331 kernel build fails with Alacritech's IS-NIC gigabit ethernet
+driver on powerpc with allyesconfig (with # CONFIG_NOVFS is not set)
 
-Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
----
- kernel/marker.c |    9 +++++++++
- 1 file changed, 9 insertions(+)
+  CC      drivers/net/slicoss/slicoss.o
+drivers/net/slicoss/slicoss.c: In function ‘slic_xmit_build_request’:
+drivers/net/slicoss/slicoss.c:933: error: ‘Stop’ undeclared (first use in this function)
+drivers/net/slicoss/slicoss.c:933: error: (Each undeclared identifier is reported only once
+drivers/net/slicoss/slicoss.c:933: error: for each function it appears in.)
+drivers/net/slicoss/slicoss.c:933: error: expected ‘;’ before ‘Compilation’
+drivers/net/slicoss/slicoss.c: In function ‘slic_link_event_handler’:
+drivers/net/slicoss/slicoss.c:1420: error: ‘Stop’ undeclared (first use in this function)
+drivers/net/slicoss/slicoss.c:1420: error: expected ‘;’ before ‘compilation’
+drivers/net/slicoss/slicoss.c: In function ‘slic_if_init’:
+drivers/net/slicoss/slicoss.c:1848: error: ‘Stop’ undeclared (first use in this function)
+drivers/net/slicoss/slicoss.c:1848: error: expected ‘;’ before ‘Compilations’
+drivers/net/slicoss/slicoss.c: In function ‘slic_card_init’:
+drivers/net/slicoss/slicoss.c:2518: warning: cast from pointer to integer of different size
+drivers/net/slicoss/slicoss.c: In function ‘slic_timer_get_stats’:
+drivers/net/slicoss/slicoss.c:3269: error: ‘Stop’ undeclared (first use in this function)
+drivers/net/slicoss/slicoss.c:3269: error: expected ‘;’ before ‘compilation’
+drivers/net/slicoss/slicoss.c: In function ‘slic_link_upr_complete’:
+drivers/net/slicoss/slicoss.c:3683: error: ‘Stop’ undeclared (first use in this function)
+drivers/net/slicoss/slicoss.c:3683: error: expected ‘;’ before ‘Compilation’
+drivers/net/slicoss/slicoss.c: In function ‘slic_eeprom_cksum’:
+drivers/net/slicoss/slicoss.c:3806: warning: cast from pointer to integer of different size
+drivers/net/slicoss/slicoss.c: In function ‘slic_rspqueue_init’:
+drivers/net/slicoss/slicoss.c:3901: warning: cast from pointer to integer of different size
+drivers/net/slicoss/slicoss.c:3901: warning: cast from pointer to integer of different size
+drivers/net/slicoss/slicoss.c: In function ‘slic_rspqueue_getnext’:
+drivers/net/slicoss/slicoss.c:3990: warning: cast from pointer to integer of different size
+drivers/net/slicoss/slicoss.c:3990: warning: cast from pointer to integer of different size
+drivers/net/slicoss/slicoss.c:4004: warning: cast from pointer to integer of different size
+drivers/net/slicoss/slicoss.c:4004: warning: cast from pointer to integer of different size
+drivers/net/slicoss/slicoss.c:4009: warning: cast from pointer to integer of different size
+drivers/net/slicoss/slicoss.c:4009: warning: cast from pointer to integer of different size
+drivers/net/slicoss/slicoss.c: In function ‘slic_cmdqmem_addpage’:
+drivers/net/slicoss/slicoss.c:4056: warning: cast from pointer to integer of different size
+drivers/net/slicoss/slicoss.c:4056: warning: cast from pointer to integer of different size
+drivers/net/slicoss/slicoss.c: In function ‘slic_cmdq_init’:
+drivers/net/slicoss/slicoss.c:4081: warning: cast from pointer to integer of different size
+drivers/net/slicoss/slicoss.c:4081: warning: cast from pointer to integer of different size
+drivers/net/slicoss/slicoss.c: In function ‘slic_cmdq_addcmdpage’:
+drivers/net/slicoss/slicoss.c:4184: error: implicit declaration of function ‘virt_to_bus’
+drivers/net/slicoss/slicoss.c:4224: warning: cast from pointer to integer of different size
+drivers/net/slicoss/slicoss.c:4224: warning: cast from pointer to integer of different size
+drivers/net/slicoss/slicoss.c:4230: warning: cast from pointer to integer of different size
+drivers/net/slicoss/slicoss.c:4230: warning: cast from pointer to integer of different size
+drivers/net/slicoss/slicoss.c: In function ‘slic_cmdq_getdone’:
+drivers/net/slicoss/slicoss.c:4271: warning: cast from pointer to integer of different size
+drivers/net/slicoss/slicoss.c:4271: warning: cast from pointer to integer of different size
+drivers/net/slicoss/slicoss.c: In function ‘slic_cmdq_putdone’:
+drivers/net/slicoss/slicoss.c:4287: warning: cast from pointer to integer of different size
+drivers/net/slicoss/slicoss.c:4287: warning: cast from pointer to integer of different size
+drivers/net/slicoss/slicoss.c:4289: warning: cast from pointer to integer of different size
+drivers/net/slicoss/slicoss.c:4289: warning: cast from pointer to integer of different size
+drivers/net/slicoss/slicoss.c: In function ‘slic_cmdq_putdone_irq’:
+drivers/net/slicoss/slicoss.c:4301: warning: cast from pointer to integer of different size
+drivers/net/slicoss/slicoss.c:4301: warning: cast from pointer to integer of different size
+drivers/net/slicoss/slicoss.c:4303: warning: cast from pointer to integer of different size
+drivers/net/slicoss/slicoss.c:4303: warning: cast from pointer to integer of different size
+drivers/net/slicoss/slicoss.c: In function ‘slic_rcvqueue_fill’:
+drivers/net/slicoss/slicoss.c:4425: warning: cast from pointer to integer of different size
+drivers/net/slicoss/slicoss.c: In function ‘slic_rcvqueue_reinsert’:
+drivers/net/slicoss/slicoss.c:4504: warning: cast from pointer to integer of different size
+make[3]: *** [drivers/net/slicoss/slicoss.o] Error 1
+make[2]: *** [drivers/net/slicoss] Error 2
+make[1]: *** [drivers/net] Error 2
+make: *** [drivers] Error 2
 
-Index: linux-2.6-lttng/kernel/marker.c
-===================================================================
---- linux-2.6-lttng.orig/kernel/marker.c	2008-03-31 08:22:24.000000000 -0400
-+++ linux-2.6-lttng/kernel/marker.c	2008-03-31 08:43:30.000000000 -0400
-@@ -671,6 +671,9 @@ int marker_probe_register(const char *na
- 	entry->rcu_pending = 1;
- 	/* write rcu_pending before calling the RCU callback */
- 	smp_wmb();
-+#ifdef CONFIG_PREEMPT_RCU
-+	synchronize_sched();	/* Until we have the call_rcu_sched() */
-+#endif
- 	call_rcu(&entry->rcu, free_old_closure);
- end:
- 	mutex_unlock(&markers_mutex);
-@@ -714,6 +717,9 @@ int marker_probe_unregister(const char *
- 	entry->rcu_pending = 1;
- 	/* write rcu_pending before calling the RCU callback */
- 	smp_wmb();
-+#ifdef CONFIG_PREEMPT_RCU
-+	synchronize_sched();	/* Until we have the call_rcu_sched() */
-+#endif
- 	call_rcu(&entry->rcu, free_old_closure);
- 	remove_marker(name);	/* Ignore busy error message */
- 	ret = 0;
-@@ -792,6 +798,9 @@ int marker_probe_unregister_private_data
- 	entry->rcu_pending = 1;
- 	/* write rcu_pending before calling the RCU callback */
- 	smp_wmb();
-+#ifdef CONFIG_PREEMPT_RCU
-+	synchronize_sched();	/* Until we have the call_rcu_sched() */
-+#endif
- 	call_rcu(&entry->rcu, free_old_closure);
- 	remove_marker(entry->name);	/* Ignore busy error message */
- end:
+
+
 -- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Thanks & Regards,
+Kamalesh Babulal,
+Linux Technology Center,
+IBM, ISTL.
