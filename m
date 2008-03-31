@@ -1,98 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757471AbYCaSoS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757434AbYCaSrw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757471AbYCaSoS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Mar 2008 14:44:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753327AbYCaSoF
+	id S1757434AbYCaSrw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Mar 2008 14:47:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754266AbYCaSrp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Mar 2008 14:44:05 -0400
-Received: from mga01.intel.com ([192.55.52.88]:2538 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751787AbYCaSoD convert rfc822-to-8bit (ORCPT
+	Mon, 31 Mar 2008 14:47:45 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:38525 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754115AbYCaSro (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Mar 2008 14:44:03 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,583,1199692800"; 
-   d="scan'208";a="543044092"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Mon, 31 Mar 2008 14:47:44 -0400
+Date: Mon, 31 Mar 2008 11:45:20 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Pawel Staszewski <pstaszewski@artcom.pl>,
+       LKML <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Natalie Protasevich <protasnb@gmail.com>
+Subject: Re: 2.6.25-rc7-git2: Reported regressions from 2.6.24
+In-Reply-To: <alpine.LFD.1.00.0803291422160.14670@woody.linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0803311123180.6510@schroedinger.engr.sgi.com>
+References: <200803272353.51901.rjw@sisk.pl>
+ <alpine.LFD.1.00.0803271859280.14670@woody.linux-foundation.org>
+ <Pine.LNX.4.64.0803272002090.11979@schroedinger.engr.sgi.com>
+ <alpine.LFD.1.00.0803272050290.14670@woody.linux-foundation.org>
+ <Pine.LNX.4.64.0803281128480.17805@schroedinger.engr.sgi.com>
+ <alpine.LFD.1.00.0803281214580.14670@woody.linux-foundation.org>
+ <Pine.LNX.4.64.0803291330190.26394@schroedinger.engr.sgi.com>
+ <alpine.LFD.1.00.0803291422160.14670@woody.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: 2.6.25 regression: powertop says 120K wakeups/sec
-Date: Mon, 31 Mar 2008 11:34:01 -0700
-Message-ID: <924EFEDD5F540B4284297C4DC59F3DEEC84342@orsmsx423.amr.corp.intel.com>
-In-Reply-To: <47F12289.4030300@rtr.ca>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: 2.6.25 regression: powertop says 120K wakeups/sec
-Thread-Index: AciTVq7uBVZDejioT5u1FijfU8wYcAABujmw
-References: <20080322202454.9D69DCC0EF@adsl-69-226-248-13.dsl.pltn13.pacbell.net> <200803281509.23107.david-b@pacbell.net> <20080328225604.GA7136@linux-os.sc.intel.com> <200803290001.18912.rjw@sisk.pl> <47F12289.4030300@rtr.ca>
-From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-To: "Mark Lord" <lkml@rtr.ca>, "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: "David Brownell" <david-b@pacbell.net>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       <linux-kernel@vger.kernel.org>, <linux-acpi@vger.kernel.org>,
-       "Len Brown" <lenb@kernel.org>
-X-OriginalArrivalTime: 31 Mar 2008 18:31:57.0609 (UTC) FILETIME=[806F7990:01C8935D]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- 
+On Sat, 29 Mar 2008, Linus Torvalds wrote:
 
->-----Original Message-----
->From: Mark Lord [mailto:lkml@rtr.ca] 
->Sent: Monday, March 31, 2008 10:43 AM
->To: Rafael J. Wysocki
->Cc: Pallipadi, Venkatesh; David Brownell; Andrew Morton; 
->linux-kernel@vger.kernel.org; linux-acpi@vger.kernel.org; Len Brown
->Subject: Re: 2.6.25 regression: powertop says 120K wakeups/sec
->
->Rafael J. Wysocki wrote:
->> On Friday, 28 of March 2008, Venki Pallipadi wrote:
->>> On Fri, Mar 28, 2008 at 03:09:22PM -0700, David Brownell wrote:
->>>> On Friday 28 March 2008, Pallipadi, Venkatesh wrote:
->>>>> You should have a dmesg line which looks like
->>>>> ACPI: CPU0 (power states: C1[C1] C2[C2]
->>>>> Do you see C2 in such line?
->>>> Yes:
->>>>
->>>> ACPI: CPU0 (power states: C1[C1] C2[C2])
->>>
->>> David,
->>>
->>> I think I figured out the bug...
->>>
->>> Can you try the below patch and confirm that it works (over 
->upstream - ignore
->>> the earlier revert patch I sent to you).
->>>
->>> Thanks,
->>> Venki
->>>
->>> ----
->>>
->>>
->>> Patch to fix huge number of wakeups reported due to recent 
->changes in
->>> processor_idle.c. The problem was that the entry_method 
->determination was
->>> broken due to one of the recent commits (bc71bec91f987) causing
->>> C1 entry to not to go to halt. This should also fix the 
->hang reported here.
->>> http://bugzilla.kernel.org/show_bug.cgi?id=10093
->> 
->> Ah, thanks for figuring that out.  As a regression fix, it 
->should go upstream
->> ASAP, I think.
->..
->
->Would this have any applicability to 2.6.24 as well?
->
+> 
+> You don't have a f*cking clue about this cocde that you're supposed to be 
+> maintaining, do you?
+> 
+> See "slab_alloc()". See the code:
+> 
+> 	if (unlikely((gfpflags & __GFP_ZERO) && object))
+> 		memset(object, 0, c->objsize);
+> 
+> and see how it does it regardless of anything else.
 
-No. This patch is for a regression that happened post .24.
-pre .24 will be a different problem.
+Yes I am very aware of that.
 
-Thanks,
-Venki
+> In short, if *any* code-path calls down to any allocator from that routine 
+> with GFP_ZERO set, it's a bug. No ifs, buts or maybes about it. It 
+> shouldn't do that, because the actual memset() is done by slab_alloc(), 
+> and should not be done ANYWHERE ELSE.
+> 
+> It has *nothing* to do with "object is too big" or anything else.
+
+It has to do how large objects are allocated through kmalloc_large().
+kmalloc_large() is elsewhere called with unfiltered gfpflags and relies 
+on zeroing being handled by the page allocator. It can take unfiltered gfp 
+flags.
+
+The filtering of __GFP_ZERO that you added avoids the double zeroing for 
+the fallback path (which is only called if all the partial lists are empty 
+and after the page allocator went through reclaim and did not get the 
+large sized memory we wanted). So okay the patch could be a performance 
+enhancement. But then it adds the filtering to the hot path instead of the 
+code path that containts the kmalloc_large that is executed once in a blue 
+moon. The hot path should only filter when we actually decide that we need 
+to allocate a new slab from the page allocator.
+
+It seemed to me that the reason for inserting the filtering of __GFP_ZERO 
+there was the belief that the page allocator cannot take __GFP_ZERO 
+through kmalloc_large() if we are in an interrupt.
+
+The use of kmalloc_large() in __slab_alloc() is a bit strange at this 
+point. The cleanup work in 2.6.26 will make this all nice again.
