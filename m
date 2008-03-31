@@ -1,54 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756453AbYCaIsz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755778AbYCaIwd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756453AbYCaIsz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Mar 2008 04:48:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753658AbYCaIsq
+	id S1755778AbYCaIwd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Mar 2008 04:52:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754078AbYCaIwZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Mar 2008 04:48:46 -0400
-Received: from eth7959.sa.adsl.internode.on.net ([150.101.82.22]:35362 "EHLO
-	hawking.rebel.net.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752904AbYCaIsp (ORCPT
+	Mon, 31 Mar 2008 04:52:25 -0400
+Received: from zone0.gcu-squad.org ([212.85.147.21]:3319 "EHLO
+	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754057AbYCaIwY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Mar 2008 04:48:45 -0400
-Message-ID: <47F0A575.3040605@davidnewall.com>
-Date: Mon, 31 Mar 2008 19:18:53 +1030
-From: David Newall <davidn@davidnewall.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
-MIME-Version: 1.0
-To: Willy Tarreau <w@1wt.eu>
-CC: Peter Teoh <htmldeveloper@gmail.com>, LKML <linux-kernel@vger.kernel.org>,
-       kernelnewbies <kernelnewbies@nl.linux.org>
-Subject: Re: RFC:   Writing Solaris Device Drivers in Java
-References: <47F0491F.4050804@gmail.com> <20080331055618.GC23796@1wt.eu>
-In-Reply-To: <20080331055618.GC23796@1wt.eu>
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 31 Mar 2008 04:52:24 -0400
+Date: Mon, 31 Mar 2008 10:51:54 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: i2c@lm-sensors.org, linux-kernel@vger.kernel.org
+Subject: Re: [2.6 patch] i2c/busses/scx200_acb.c: don't use 0 as NULL
+ pointer
+Message-ID: <20080331105154.0a38ebf7@hyperion.delvare>
+In-Reply-To: <20080330232228.GR28445@cs181133002.pp.htv.fi>
+References: <20080330232228.GR28445@cs181133002.pp.htv.fi>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Willy Tarreau wrote:
-> On Mon, Mar 31, 2008 at 10:14:55AM +0800, Peter Teoh wrote:
->   
-[snip]
->> imagine using a drivers written [in java] for 
->> the Solaris in Linux, won't it be cool?
->>     
-> [...]
->
-> So please keep these technologies for sucking your nearby powerplant's
-> power and justifying your boss that you need a monster machine which
-> would make HPC people jealous, but I would hate it to make it easier
-> for the people I described above to pollute the kernel with their crap.
+On Mon, 31 Mar 2008 02:22:28 +0300, Adrian Bunk wrote:
+> Don't use 0 as NULL pointer.
+> 
+> Spotted by sparse.
+> 
+> Signed-off-by: Adrian Bunk <bunk@kernel.org>
+> 
+> ---
+> 4a2495930cc9bc83f4302de3b73ebf3e8849dc1a diff --git a/drivers/i2c/busses/scx200_acb.c b/drivers/i2c/busses/scx200_acb.c
+> index f5e7a70..61abe0f 100644
+> --- a/drivers/i2c/busses/scx200_acb.c
+> +++ b/drivers/i2c/busses/scx200_acb.c
+> @@ -527,7 +527,7 @@ static int __init scx200_create_isa(const char *text, unsigned long base,
+>  	if (iface == NULL)
+>  		return -ENOMEM;
+>  
+> -	if (request_region(base, 8, iface->adapter.name) == 0) {
+> +	if (!request_region(base, 8, iface->adapter.name)) {
+>  		printk(KERN_ERR NAME ": can't allocate io 0x%lx-0x%lx\n",
+>  		       base, base + 8 - 1);
+>  		rc = -EBUSY;
+> 
 
-Perhaps somebody will argue that Java runs on quite small, even
-low-power. machines; but all of that would still miss the point, I
-think, that it's the differences between operating systems which prevent
-drivers written for one platform from "just working" on another.  Look
-at the effort that NDISwrapper has to go through to make a mere subset
-of Windows drivers work on Linux: It wouldn't be any easier if those
-drivers were written in Java.  Platforms are different and drivers
-reflect those differences and that's the way it is.
+Applied, thanks.
 
-And it's *still* not April 1.  This thread would have been quite clever
-if it were.
+-- 
+Jean Delvare
