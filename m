@@ -1,102 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754914AbYCaTin@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755427AbYCaTla@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754914AbYCaTin (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Mar 2008 15:38:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750961AbYCaTie
+	id S1755427AbYCaTla (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Mar 2008 15:41:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751521AbYCaTlW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Mar 2008 15:38:34 -0400
-Received: from smtpq2.groni1.gr.home.nl ([213.51.130.201]:44200 "EHLO
-	smtpq2.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750943AbYCaTid (ORCPT
+	Mon, 31 Mar 2008 15:41:22 -0400
+Received: from theia.rz.uni-saarland.de ([134.96.7.31]:19014 "EHLO
+	theia.rz.uni-saarland.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751267AbYCaTlW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Mar 2008 15:38:33 -0400
-Message-ID: <47F13E13.7090608@keyaccess.nl>
-Date: Mon, 31 Mar 2008 21:40:03 +0200
-From: Rene Herman <rene.herman@keyaccess.nl>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
-MIME-Version: 1.0
-To: Bjorn Helgaas <bjorn.helgaas@hp.com>
-CC: Len Brown <lenb@kernel.org>, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Adam Belay <ambx1@neo.rr.com>,
-       Li Shaohua <shaohua.li@intel.com>,
-       Matthieu Castet <castet.matthieu@free.fr>,
-       Thomas Renninger <trenn@suse.de>, Jaroslav Kysela <perex@perex.cz>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [patch 00/37] PNP resource_table cleanups
-References: <20080326171058.099442579@ldl.fc.hp.com> <200803261713.03248.bjorn.helgaas@hp.com> <47EAEA98.7010500@keyaccess.nl> <200803271150.30512.bjorn.helgaas@hp.com>
-In-Reply-To: <200803271150.30512.bjorn.helgaas@hp.com>
-Content-Type: multipart/mixed;
- boundary="------------070404000105080104060607"
-X-Spam-Score: -1.0 (-)
+	Mon, 31 Mar 2008 15:41:22 -0400
+Date: Mon, 31 Mar 2008 21:38:31 +0200
+From: Alexander van Heukelum <heukelum@mailshack.com>
+To: Stephen Hemminger <shemminger@vyatta.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86: generic versions of find_first_(zero_)bit, convert i386
+Message-ID: <20080331193830.GA24156@mailshack.com>
+References: <20080331171506.GA24017@mailshack.com> <20080331102240.086a93e4@extreme>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080331102240.086a93e4@extreme>
+User-Agent: Mutt/1.5.9i
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (theia.rz.uni-saarland.de [134.96.7.31]); Mon, 31 Mar 2008 21:41:19 +0200 (CEST)
+X-AntiVirus: checked by AntiVir MailGate (version: 2.1.2-14; AVE: 7.6.0.78; VDF: 7.0.3.98; host: AntiVir1)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------070404000105080104060607
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+On Mon, Mar 31, 2008 at 10:22:40AM -0700, Stephen Hemminger wrote:
+> On Mon, 31 Mar 2008 19:15:06 +0200
+> Alexander van Heukelum <heukelum@mailshack.com> wrote:
+> 
+> > Generic versions of __find_first_bit and __find_first_zero_bit
+> > are introduced as simplified versions of __find_next_bit and
+> > __find_next_zero_bit. Their compilation and use are guarded by
+> > a new config variable GENERIC_FIND_FIRST_BIT.
+> > 
+> > The generic versions of find_first_bit and find_first_zero_bit
+> > are implemented in terms of the newly introduced __find_first_bit
+> > and __find_first_zero_bit.
+> > 
+> > This patch also converts i386 to the generic functions. The text
+> > size shrinks slightly due to uninlining of the find_*_bit functions.
+> > 
+> >    text    data     bss     dec     hex filename
+> > 4764939  480324  622592 5867855  59894f vmlinux  (i386 defconfig before)
+> > 4764645  480324  622592 5867561  598829 vmlinux  (i386 defconfig after)
+> > 
+> > Signed-off-by: Alexander van Heukelum <heukelum@fastmail.fm>
+> > 
+> 
+> Size isn't everything, what is the performance difference?
 
-On 27-03-08 18:50, Bjorn Helgaas wrote:
+Hi,
 
-> Are any ISAPNP devices at all found?
+Performance should not change too much. Uninlining of the functions has
+some impact, of course, but this should be visible only for small bitmap
+sizes. Measuring the performance impact by doing artificial benchmarks
+is a bit problematic too, because it is hard to guess what patterns are
+important. Anyhow, I hacked together a program (in userspace) that
+searches for a bit in a bitmap. In pseudo code:
 
-Yes, but at most 100 * 10^4 / 2^16 percent of them. Trouble is in 04/37:
+bitmap <- [0...]
+for bitmapsize=1 to 512
+	for bitposition=0 to bitmapsize-1
+		find_first_bit in bitmap
+		bitmap[bitposition] <- 1
+		find_first_bit in bitmap
+		bitmap[bitposition] <- 0
 
-http://lkml.org/lkml/2008/3/26/273
+After each find_first_bit, the result is checked against the expected result.
+A similar test is done for searching zero bits. The two tests are performed
+1000 times in a loop. On a 2.4GHz (P-IV-type) Xeon, I get the following
+results:
 
-The numeric part of the ID is a 4-digit hexadecimal value, not just decimal, 
-so '0'+ don't work. Unfortunately, that one has a few dependents, so you'll 
-probably want to restructure things yourself. If I just place the attached 
-on top, the card's found again.
+$ gcc -DNEW -fomit-frame-pointer -Os find_first_bit.c && time ./a.out
+real    0m15.006s
+$ nm -nStd
+0000000134513492 0000000000000065 T find_first_bit
+0000000134513557 0000000000000062 T find_first_zero_bit
+0000000134513619 0000000000000190 T testzerobit
+0000000134513809 0000000000000187 T testonebit
+0000000134513996 0000000000000045 T main
 
-Not too much avail unfortunately, as I then get a resource assignment 
-problem with your patches:
+and
 
-pnp: the driver 'cs4236_isapnp' has been registered
-cs4236_isapnp 01:01.00: driver attached
-cs4236_isapnp 01:01.02: driver attached
-cs4236_isapnp 01:01.03: driver attached
-cs4236_isapnp 01:01.00: unable to assign resources
-CS4236+ WSS PnP configure failed for WSS (out of resources?)
-isapnp detection failed and probing for CS4236+ is not supported
+$ gcc -fomit-frame-pointer -Os find_first_bit.c && time ./a.out
+real    0m17.617s
+0000000134513492 0000000000000293 T testzerobit
+0000000134513785 0000000000000240 T testonebit
+0000000134514025 0000000000000045 T main
 
-(and exact same thing for snd-es18xx) which I'll try to look at next, but 
-this ID thing will certainly need a fix first.
+So in this particular case, on this particular machine, with this
+particular mix of searches, the new code is somewhat faster, even
+though it is out-of-line.
 
-Rene.
+A similar, but more convincing, change was seen when the assembly
+versions for find_next_bit and find_next_zero_bit where replaced
+by the generic ones.
 
---------------070404000105080104060607
-Content-Type: text/plain;
- name="isapnp_to_pnpid.diff"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="isapnp_to_pnpid.diff"
-
-diff --git a/drivers/pnp/isapnp/core.c b/drivers/pnp/isapnp/core.c
-index c4b95b5..0a41e05 100644
---- a/drivers/pnp/isapnp/core.c
-+++ b/drivers/pnp/isapnp/core.c
-@@ -403,14 +403,12 @@ static void __init isapnp_skip_bytes(int count)
- static void isapnp_to_pnpid(unsigned short vendor, unsigned short device,
- 			    char *id)
- {
--	id[0] = 'A' + ((vendor >> 2) & 0x3f) - 1;
--	id[1] = 'A' + (((vendor & 3) << 3) | ((vendor >> 13) & 7)) - 1;
--	id[2] = 'A' + ((vendor >> 8) & 0x1f) - 1;
--	id[3] = '0' + ((device >> 4) & 0x0f);
--	id[4] = '0' + (device & 0x0f);
--	id[5] = '0' + ((device >> 12) & 0x0f);
--	id[6] = '0' + ((device >> 8) & 0x0f);
--	id[7] = '\0';
-+	sprintf(id, "%c%c%c%x%x%x%x",
-+		'A' + ((vendor >> 2) & 0x3f) - 1,
-+		'A' + (((vendor & 3) << 3) | ((vendor >> 13) & 7)) - 1,
-+		'A' + ((vendor >> 8) & 0x1f) - 1,
-+		(device >> 4) & 0x0f, device & 0x0f,
-+		(device >> 12) & 0x0f, (device >> 8) & 0x0f);
- }
- 
- /*
-
---------------070404000105080104060607--
+Greetings,
+	Alexander
