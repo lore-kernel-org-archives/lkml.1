@@ -1,54 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760914AbYCaOvb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760562AbYCaOtq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760914AbYCaOvb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Mar 2008 10:51:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757196AbYCaOkG
+	id S1760562AbYCaOtq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Mar 2008 10:49:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753497AbYCaOh4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Mar 2008 10:40:06 -0400
-Received: from mtagate6.de.ibm.com ([195.212.29.155]:15325 "EHLO
-	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753447AbYCaOkE (ORCPT
+	Mon, 31 Mar 2008 10:37:56 -0400
+Received: from bzq-179-150-194.static.bezeqint.net ([212.179.150.194]:51318
+	"EHLO il.qumranet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751992AbYCaOhh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Mar 2008 10:40:04 -0400
-Subject: Re: [patch 2/2] zcrypt: add support for large random numbers
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Reply-To: schwidefsky@de.ibm.com
-To: Herbert Xu <herbert@gondor.apana.org.au>
-Cc: linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-s390@vger.kernel.org, Ralph Wuerthner <rwuerthn@de.ibm.com>
-In-Reply-To: <20080331142111.GB14688@gondor.apana.org.au>
-References: <20080314092523.147382820@de.ibm.com>
-	 <20080314093046.914555041@de.ibm.com>
-	 <20080331142111.GB14688@gondor.apana.org.au>
-Content-Type: text/plain
-Organization: IBM Corporation
-Date: Mon, 31 Mar 2008 16:39:23 +0200
-Message-Id: <1206974363.26149.2.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 
-Content-Transfer-Encoding: 7bit
+	Mon, 31 Mar 2008 10:37:37 -0400
+From: Avi Kivity <avi@qumranet.com>
+To: kvm-devel@lists.sourceforge.net
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH 37/40] KVM: Add API to retrieve the number of supported vcpus per vm
+Date: Mon, 31 Mar 2008 17:37:21 +0300
+Message-Id: <1206974244-9716-38-git-send-email-avi@qumranet.com>
+X-Mailer: git-send-email 1.5.4.5
+In-Reply-To: <1206974244-9716-1-git-send-email-avi@qumranet.com>
+References: <1206974244-9716-1-git-send-email-avi@qumranet.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-03-31 at 22:21 +0800, Herbert Xu wrote:
-> > This patch allows user space applications to access large amounts of 
-> > truly random data. The random data source is the build-in hardware 
-> > random number generator on the CEX2C cards.
-> > 
-> > Signed-off-by: Ralph Wuerthner <rwuerthn@de.ibm.com>
-> > Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
-> 
-> The patch looks OK.
-> 
-> Are you guys going to carry this patch in the s390 tree?
+Signed-off-by: Avi Kivity <avi@qumranet.com>
+---
+ arch/x86/kvm/x86.c  |    3 +++
+ include/linux/kvm.h |    1 +
+ 2 files changed, 4 insertions(+), 0 deletions(-)
 
-Yes, this patch should go in over git390.
-
+diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
+index 256c0fc..955d2ee 100644
+--- a/arch/x86/kvm/x86.c
++++ b/arch/x86/kvm/x86.c
+@@ -811,6 +811,9 @@ int kvm_dev_ioctl_check_extension(long ext)
+ 	case KVM_CAP_VAPIC:
+ 		r = !kvm_x86_ops->cpu_has_accelerated_tpr();
+ 		break;
++	case KVM_CAP_NR_VCPUS:
++		r = KVM_MAX_VCPUS;
++		break;
+ 	default:
+ 		r = 0;
+ 		break;
+diff --git a/include/linux/kvm.h b/include/linux/kvm.h
+index 94540b3..deb9c38 100644
+--- a/include/linux/kvm.h
++++ b/include/linux/kvm.h
+@@ -234,6 +234,7 @@ struct kvm_vapic_addr {
+ #define KVM_CAP_VAPIC 6
+ #define KVM_CAP_EXT_CPUID 7
+ #define KVM_CAP_CLOCKSOURCE 8
++#define KVM_CAP_NR_VCPUS 9       /* returns max vcpus per vm */
+ 
+ /*
+  * ioctls for VM fds
 -- 
-blue skies,
-  Martin.
-
-"Reality continues to ruin my life." - Calvin.
-
+1.5.4.5
 
