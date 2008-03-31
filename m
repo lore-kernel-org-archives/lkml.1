@@ -1,76 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755363AbYCaPCT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756522AbYCaPE5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755363AbYCaPCT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Mar 2008 11:02:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751282AbYCaPCH
+	id S1756522AbYCaPE5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Mar 2008 11:04:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752409AbYCaPEu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Mar 2008 11:02:07 -0400
-Received: from gw.goop.org ([64.81.55.164]:60069 "EHLO mail.goop.org"
+	Mon, 31 Mar 2008 11:04:50 -0400
+Received: from rtr.ca ([76.10.145.34]:1868 "EHLO mail.rtr.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751373AbYCaPCG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Mar 2008 11:02:06 -0400
-Message-ID: <47F0FCB9.8050407@goop.org>
-Date: Mon, 31 Mar 2008 08:01:13 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080315)
+	id S1752086AbYCaPEt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 31 Mar 2008 11:04:49 -0400
+Message-ID: <47F0FD8E.4090005@rtr.ca>
+Date: Mon, 31 Mar 2008 11:04:46 -0400
+From: Mark Lord <lkml@rtr.ca>
+Organization: Real-Time Remedies Inc.
+User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
 MIME-Version: 1.0
-To: Isaku Yamahata <yamahata@valinux.co.jp>
-CC: chrisw@sous-sol.org, sct@redhat.com,
-       virtualization@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       xen-ia64-devel@lists.xensource.com, eddie.dong@intel.com
-Subject: Re: [PATCH 12/12] xen: import arch generic part of xencomm.
-References: <12067044183207-git-send-email-yamahata@valinux.co.jp> <12067044184070-git-send-email-yamahata@valinux.co.jp> <47ED508C.2000608@goop.org> <20080331094927.GI17609%yamahata@valinux.co.jp>
-In-Reply-To: <20080331094927.GI17609%yamahata@valinux.co.jp>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+To: Oliver Neukum <oliver@neukum.org>
+Cc: Pavel Machek <pavel@suse.cz>, Linux Kernel <linux-kernel@vger.kernel.org>,
+       Greg KH <gregkh@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
+       jikos@suse.cz
+Subject: Re: 2.6.25-rc7:  Ugh.
+References: <47EBBD57.30902@rtr.ca> <200803311355.06487.oliver@neukum.org> <47F0F7A5.10604@rtr.ca> <200803311704.37256.oliver@neukum.org>
+In-Reply-To: <200803311704.37256.oliver@neukum.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Isaku Yamahata wrote:
-> On Fri, Mar 28, 2008 at 01:09:48PM -0700, Jeremy Fitzhardinge wrote:
->   
->> Isaku Yamahata wrote:
->>     
->>> On xen/ia64 and xen/powerpc hypercall arguments are passed by pseudo
->>> physical address (guest physical address) so that it's necessary to
->>> convert from virtual address into pseudo physical address. The frame
->>> work is called xencomm.
->>> Import arch generic part of xencomm.
->>>
->>> Signed-off-by: Isaku Yamahata <yamahata@valinux.co.jp>
->>> ---
->>> drivers/xen/Makefile            |    1 +
->>> drivers/xen/xencomm.c           |  232 
->>> +++++++++++++++++++++++++++++++++++++++
->>> include/xen/interface/xencomm.h |   41 +++++++
->>> include/xen/xencomm.h           |   77 +++++++++++++
->>>  
->>>       
->> There's no Kconfig for this.
+Oliver Neukum wrote:
+> Am Montag, 31. März 2008 16:39:33 schrieb Mark Lord:
+>
+>> One thing I just tried, was to unload all USB stuff before suspend,
+>> and reload on resume -- just stuck the commands into my suspend/resume script.
 >>
->> What ends up using xencomm?  Could we defer adding it until there's an 
->> in-tree user?
->>     
->
-> We are in a dilemma.
-> ia64/xen needs xencomm so that it needs common xencomm code.
-> However merging common xencomm code needs the real user i.e. ia64/xen.
->
-> Another user of xencomm is powerpc/xen which isn't merged into
-> upstream. So another choice would be
-> - put the file into ia64 specific directory and
->   merge the file through linux-ia64.
->   When another user appears (possibly powerpc/xen),
->   move the file into common place (drivers/xen).
->
-> We're now struggling for ia64/xen domU merge, so we want to make
-> ia64/xen domU patch series as small as possible.
-> Putting the file into drivers/xen is desirable for that.
-> However either way is ok.
-> Which way do you want (putting common dir or ia64 specfic dir)?
+>> The machine has been 100% rock solid since then.
+>> So I think that definitely implicates USB.
+> 
+> Yes. What happens if you unload only usbhid at that time?
+..
 
-No, it's fine as-is.
+Mmm.. interesting choice, there.  I'll try that.
 
-    J
+There is another quirk on this machine that might confuse
+software that's not robust:  the internal Bluetooth adapter
+is USB connected, and I normally have it disabled (BIOS hotkey).
+So it normally is "not present".
+
+But on any power-on / resume, it briefly powers up and becomes "present",
+and, after a second or two, the BIOS powers it down again, "not present".
+
+Just long enough for software to notice it and try talking to it.
+If that software is not carefully coded, it might get confused.
+
+This has not been a problem before, but perhaps with the new USB autosuspend code?
+
+>> Still want USB_SUSPEND=n ?  Please explain.
+> 
+> It looks like you are hanging in the kthread for autosuspending.
+> Compiling that out should confirm it.
+..
+
+Okay, and once we see that it works fine:  then what?
