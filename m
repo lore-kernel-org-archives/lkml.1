@@ -1,50 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755141AbYCaHZ1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755433AbYCaH2t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755141AbYCaHZ1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Mar 2008 03:25:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752832AbYCaHZT
+	id S1755433AbYCaH2t (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Mar 2008 03:28:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752832AbYCaH2i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Mar 2008 03:25:19 -0400
-Received: from smtp-out04.alice-dsl.net ([88.44.63.6]:8596 "EHLO
-	smtp-out04.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752526AbYCaHZS (ORCPT
+	Mon, 31 Mar 2008 03:28:38 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:46896
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752556AbYCaH2h (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Mar 2008 03:25:18 -0400
-To: Dave Airlie <airlied@redhat.com>
-Cc: linux-kernel@vger.kernel.org, tglx@linutronix.de, mingo@redhat.com,
-       arjan@linux.intel.com, thomas@tungstengraphics.com
-Subject: Re: [PATCH] x86: create array based interface to change page attribute
-References: <1206940788.7250.13.camel@clockmaker.usersys.redhat.com>
-From: Andi Kleen <andi@firstfloor.org>
-Date: 31 Mar 2008 09:25:12 +0200
-In-Reply-To: <1206940788.7250.13.camel@clockmaker.usersys.redhat.com>
-Message-ID: <87myof8ief.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 31 Mar 2008 07:18:35.0638 (UTC) FILETIME=[6EFBF160:01C892FF]
+	Mon, 31 Mar 2008 03:28:37 -0400
+Date: Mon, 31 Mar 2008 00:28:36 -0700 (PDT)
+Message-Id: <20080331.002836.159833482.davem@davemloft.net>
+To: sfr@canb.auug.org.au
+Cc: haavard.skinnemoen@atmel.com, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: linux-next: Tree for March 29
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20080330135502.ee27f8a4.sfr@canb.auug.org.au>
+References: <20080329223354.304e2722.sfr@canb.auug.org.au>
+	<20080329191255.7312e036@hskinnemo-gx620.norway.atmel.com>
+	<20080330135502.ee27f8a4.sfr@canb.auug.org.au>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dave Airlie <airlied@redhat.com> writes:
->  
-> +#define CPA_FLUSHTLB 1
-> +#define CPA_ARRAY 2
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+Date: Sun, 30 Mar 2008 13:55:02 +1100
 
-I don't think CPA_ARRAY should be a separate case. Rather single
-page flushing should be an array with only a single entry. pageattr
-is already very complex, no need to make add more special cases.
-> +
-> +		/*
-> +		 * Only flush present addresses:
-> +		 */
-> +		if (pte && (pte_val(*pte) & _PAGE_PRESENT))
-> +			clflush_cache_range((void *) *addr, PAGE_SIZE);
+> Hi Haavard,
+> 
+> On Sat, 29 Mar 2008 19:12:55 +0100 Haavard Skinnemoen <haavard.skinnemoen@atmel.com> wrote:
+> >
+> > allnoconfig fails with
+> > 
+> > include/linux/netdevice.h:843: error: implicit declaration of function 'dev_net'
+> > 
+> > which seems to be because the definition of dev_net is inside #ifdef
+> > CONFIG_NET, while next_net_device, which calls it, is not.
+> 
+> Thanks for tracking these down.
 
-Also it is doubtful clflush really makes sense on a large array. Just
-doing wbinvd might be faster then. Or perhaps better supporting Self-Snoop
-should be revisited, that would at least eliminate it on most Intel 
-CPUs.
+I've checked in the following to net-2.6.26 to fix this, thanks:
 
--Andi
+commit 3edf8fa5ccf10688a9280b5cbca8ed3947c42866
+Author: David S. Miller <davem@davemloft.net>
+Date:   Mon Mar 31 00:28:14 2008 -0700
+
+    [NET]: Fix allnoconfig build on powerpc and avr32
+    
+    As reported by Haavard Skinnemoen and Stephen Rothwell:
+    
+    > allnoconfig fails with
+    >
+    > include/linux/netdevice.h:843: error: implicit declaration of function 'dev_net'
+    >
+    > which seems to be because the definition of dev_net is inside #ifdef
+    > CONFIG_NET, while next_net_device, which calls it, is not.
+    
+    Signed-off-by: David S. Miller <davem@davemloft.net>
+
+diff --git a/include/linux/netdevice.h b/include/linux/netdevice.h
+index 8576ca9..993758f 100644
+--- a/include/linux/netdevice.h
++++ b/include/linux/netdevice.h
+@@ -827,6 +827,7 @@ struct packet_type {
+ extern rwlock_t				dev_base_lock;		/* Device list lock */
+ 
+ 
++#ifdef CONFIG_NET
+ #define for_each_netdev(net, d)		\
+ 		list_for_each_entry(d, &(net)->dev_base_head, dev_list)
+ #define for_each_netdev_safe(net, d, n)	\
+@@ -850,6 +851,7 @@ static inline struct net_device *first_net_device(struct net *net)
+ 	return list_empty(&net->dev_base_head) ? NULL :
+ 		net_device_entry(net->dev_base_head.next);
+ }
++#endif
+ 
+ extern int 			netdev_boot_setup_check(struct net_device *dev);
+ extern unsigned long		netdev_boot_base(const char *prefix, int unit);
