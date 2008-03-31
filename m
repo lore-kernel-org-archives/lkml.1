@@ -1,83 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756912AbYCaRgU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756726AbYCaRmq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756912AbYCaRgU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Mar 2008 13:36:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753144AbYCaRgN
+	id S1756726AbYCaRmq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Mar 2008 13:42:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753817AbYCaRmg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Mar 2008 13:36:13 -0400
-Received: from smtp2.infomaniak.ch ([84.16.68.90]:41023 "EHLO
-	smtp2.infomaniak.ch" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752372AbYCaRgM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Mar 2008 13:36:12 -0400
-From: Didier Raboud <didier@raboud.com>
-To: linux-kernel@vger.kernel.org
-Subject: Re: =?iso-8859-1?q?2=2E6=2E25-rc7=A0=3A_hibernation_sometimes_not_resuming_on?=
- =?iso-8859-1?q?_Dell_Latitude?= D630
-Date: Mon, 31 Mar 2008 19:36:00 +0200
-User-Agent: KMail/1.9.9
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, debian-kernel@lists.debian.org
-References: <200803311823.36693.didier@raboud.com> <200803311903.16011.didier@raboud.com> <20080331172455.GV17874@baikonur.stro.at>
-In-Reply-To: <20080331172455.GV17874@baikonur.stro.at>
+	Mon, 31 Mar 2008 13:42:36 -0400
+Received: from rtr.ca ([76.10.145.34]:2581 "EHLO mail.rtr.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753144AbYCaRme (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 31 Mar 2008 13:42:34 -0400
+Message-ID: <47F12289.4030300@rtr.ca>
+Date: Mon, 31 Mar 2008 13:42:33 -0400
+From: Mark Lord <lkml@rtr.ca>
+Organization: Real-Time Remedies Inc.
+User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart1738733.5t0Tiokqkd";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Venki Pallipadi <venkatesh.pallipadi@intel.com>,
+       David Brownell <david-b@pacbell.net>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-acpi@vger.kernel.org, Len Brown <lenb@kernel.org>
+Subject: Re: 2.6.25 regression: powertop says 120K wakeups/sec
+References: <20080322202454.9D69DCC0EF@adsl-69-226-248-13.dsl.pltn13.pacbell.net> <200803281509.23107.david-b@pacbell.net> <20080328225604.GA7136@linux-os.sc.intel.com> <200803290001.18912.rjw@sisk.pl>
+In-Reply-To: <200803290001.18912.rjw@sisk.pl>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-Id: <200803311936.02517.didier@raboud.com>
-X-Antivirus: Dr.Web (R) for Mail Servers on smtp2 host
-X-Antivirus-Code: 100000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart1738733.5t0Tiokqkd
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+Rafael J. Wysocki wrote:
+> On Friday, 28 of March 2008, Venki Pallipadi wrote:
+>> On Fri, Mar 28, 2008 at 03:09:22PM -0700, David Brownell wrote:
+>>> On Friday 28 March 2008, Pallipadi, Venkatesh wrote:
+>>>> You should have a dmesg line which looks like
+>>>> ACPI: CPU0 (power states: C1[C1] C2[C2]
+>>>> Do you see C2 in such line?
+>>> Yes:
+>>>
+>>> ACPI: CPU0 (power states: C1[C1] C2[C2])
+>>
+>> David,
+>>
+>> I think I figured out the bug...
+>>
+>> Can you try the below patch and confirm that it works (over upstream - ignore
+>> the earlier revert patch I sent to you).
+>>
+>> Thanks,
+>> Venki
+>>
+>> ----
+>>
+>>
+>> Patch to fix huge number of wakeups reported due to recent changes in
+>> processor_idle.c. The problem was that the entry_method determination was
+>> broken due to one of the recent commits (bc71bec91f987) causing
+>> C1 entry to not to go to halt. This should also fix the hang reported here.
+>> http://bugzilla.kernel.org/show_bug.cgi?id=10093
+> 
+> Ah, thanks for figuring that out.  As a regression fix, it should go upstream
+> ASAP, I think.
+..
 
-Le lundi, 31 mars 2008 19.24:55 maximilian attems, vous avez =E9crit=A0:
-> On Mon, Mar 31, 2008 at 07:03:13PM +0200, Didier Raboud wrote:
-> <snipp>
->
-> > > > Attached are a 2.6.25-rc7 and a 2.6.24 dmesg's after two successful
-> > > > hibernate/resume cycles.
-> > >
-> > > Could you please check if the problem is still present if you boot wi=
-th
-> > > acpi_new_pts_ordering kernel command line argument?
-> >
-> > By the way, I just added acp_new_pts_ordering at the end of the Grub li=
-ne
-> > beginning by "linux (hd0,1)/vmlinuz(...)". Is that correct=A0?
->
-> seems strange you should add it to the kopt line and then kick as root
-> update-grub
->
-> # kopt=3Droot=3D/dev/sda1 ro
-> it should land
-> kernel          /boot/vmlinuz-2.6.25-rc7-amd64 root=3D/dev/sda1 ro
+Would this have any applicability to 2.6.24 as well?
 
-Well... I'm using Grub2 (grub-pc). I altered the boot option at boot time b=
-ut=20
-forgot to check /proc/cmdline. Will try again and report back.
+I have seen/reported a similar bug there many times in the past,
+with no resolution.  There's even a bugzilla entry for it somewhere.
+???
 
-Regards,=20
 
-Didier
+>> Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+>>
+>> ---
+>>  drivers/acpi/processor_idle.c |    4 ++++
+>>  1 file changed, 4 insertions(+)
+>>
+>> Index: linux-2.6/drivers/acpi/processor_idle.c
+>> ===================================================================
+>> --- linux-2.6.orig/drivers/acpi/processor_idle.c	2008-03-28 15:31:13.000000000 -0700
+>> +++ linux-2.6/drivers/acpi/processor_idle.c	2008-03-28 15:40:50.000000000 -0700
+>> @@ -848,6 +848,7 @@ static int acpi_processor_get_power_info
+>>  		/* all processors need to support C1 */
+>>  		pr->power.states[ACPI_STATE_C1].type = ACPI_STATE_C1;
+>>  		pr->power.states[ACPI_STATE_C1].valid = 1;
+>> +		pr->power.states[ACPI_STATE_C1].entry_method = ACPI_CSTATE_HALT;
+>>  	}
+>>  	/* the C0 state only exists as a filler in our array */
+>>  	pr->power.states[ACPI_STATE_C0].valid = 1;
+>> @@ -960,6 +961,9 @@ static int acpi_processor_get_power_info
+>>  				 cx.address);
+>>  		}
+>>  
+>> +		if (cx.type == ACPI_STATE_C1) {
+>> +			cx.valid = 1;
+>> +		}
+>>  
+>>  		obj = &(element->package.elements[2]);
+>>  		if (obj->type != ACPI_TYPE_INTEGER)
+>>
+>>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
---nextPart1738733.5t0Tiokqkd
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBH8SECwW1nnOmiePARAsRSAKCOx3cNW+bzMnN23cfMGPud0A3ufwCfSnRW
-ooj8dJFVoAiHEfAXkBgP4Zw=
-=8LNf
------END PGP SIGNATURE-----
-
---nextPart1738733.5t0Tiokqkd--
