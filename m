@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759072AbYCaOoi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759226AbYCaOoz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759072AbYCaOoi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Mar 2008 10:44:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753117AbYCaOhp
+	id S1759226AbYCaOoz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Mar 2008 10:44:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753218AbYCaOhq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Mar 2008 10:37:45 -0400
-Received: from bzq-179-150-194.static.bezeqint.net ([212.179.150.194]:51322
+	Mon, 31 Mar 2008 10:37:46 -0400
+Received: from bzq-179-150-194.static.bezeqint.net ([212.179.150.194]:51324
 	"EHLO il.qumranet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751520AbYCaOhe (ORCPT
+	with ESMTP id S1751523AbYCaOhe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 31 Mar 2008 10:37:34 -0400
 From: Avi Kivity <avi@qumranet.com>
 To: kvm-devel@lists.sourceforge.net
 Cc: linux-kernel@vger.kernel.org, Joerg Roedel <joerg.roedel@amd.com>
-Subject: [PATCH 20/40] KVM: SVM: move feature detection to hardware setup code
-Date: Mon, 31 Mar 2008 17:37:04 +0300
-Message-Id: <1206974244-9716-21-git-send-email-avi@qumranet.com>
+Subject: [PATCH 24/40] KVM: MMU: make the __nonpaging_map function generic
+Date: Mon, 31 Mar 2008 17:37:08 +0300
+Message-Id: <1206974244-9716-25-git-send-email-avi@qumranet.com>
 X-Mailer: git-send-email 1.5.4.5
 In-Reply-To: <1206974244-9716-1-git-send-email-avi@qumranet.com>
 References: <1206974244-9716-1-git-send-email-avi@qumranet.com>
@@ -25,38 +25,42 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Joerg Roedel <joerg.roedel@amd.com>
 
-By moving the SVM feature detection from the each_cpu code to the hardware
-setup code it runs only once. As an additional advance the feature check is now
-available earlier in the module setup process.
+The mapping function for the nonpaging case in the softmmu does basically the
+same as required for Nested Paging. Make this function generic so it can be
+used for both.
 
 Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
 Signed-off-by: Avi Kivity <avi@qumranet.com>
 ---
- arch/x86/kvm/svm.c |    4 +++-
- 1 files changed, 3 insertions(+), 1 deletions(-)
+ arch/x86/kvm/mmu.c |    7 +++----
+ 1 files changed, 3 insertions(+), 4 deletions(-)
 
-diff --git a/arch/x86/kvm/svm.c b/arch/x86/kvm/svm.c
-index ff3bc74..5f527dc 100644
---- a/arch/x86/kvm/svm.c
-+++ b/arch/x86/kvm/svm.c
-@@ -302,7 +302,6 @@ static void svm_hardware_enable(void *garbage)
- 	svm_data->asid_generation = 1;
- 	svm_data->max_asid = cpuid_ebx(SVM_CPUID_FUNC) - 1;
- 	svm_data->next_asid = svm_data->max_asid + 1;
--	svm_features = cpuid_edx(SVM_CPUID_FUNC);
+diff --git a/arch/x86/kvm/mmu.c b/arch/x86/kvm/mmu.c
+index 21cfa28..33cd7c9 100644
+--- a/arch/x86/kvm/mmu.c
++++ b/arch/x86/kvm/mmu.c
+@@ -979,10 +979,9 @@ static void nonpaging_new_cr3(struct kvm_vcpu *vcpu)
+ {
+ }
  
- 	asm volatile ("sgdt %0" : "=m"(gdt_descr));
- 	gdt = (struct desc_struct *)gdt_descr.address;
-@@ -411,6 +410,9 @@ static __init int svm_hardware_setup(void)
- 		if (r)
- 			goto err_2;
- 	}
-+
-+	svm_features = cpuid_edx(SVM_CPUID_FUNC);
-+
- 	return 0;
+-static int __nonpaging_map(struct kvm_vcpu *vcpu, gva_t v, int write,
+-			   gfn_t gfn, struct page *page)
++static int __direct_map(struct kvm_vcpu *vcpu, gpa_t v, int write,
++			   gfn_t gfn, struct page *page, int level)
+ {
+-	int level = PT32E_ROOT_LEVEL;
+ 	hpa_t table_addr = vcpu->arch.mmu.root_hpa;
+ 	int pt_write = 0;
  
- err_2:
+@@ -1042,7 +1041,7 @@ static int nonpaging_map(struct kvm_vcpu *vcpu, gva_t v, int write, gfn_t gfn)
+ 
+ 	spin_lock(&vcpu->kvm->mmu_lock);
+ 	kvm_mmu_free_some_pages(vcpu);
+-	r = __nonpaging_map(vcpu, v, write, gfn, page);
++	r = __direct_map(vcpu, v, write, gfn, page, PT32E_ROOT_LEVEL);
+ 	spin_unlock(&vcpu->kvm->mmu_lock);
+ 
+ 	up_read(&vcpu->kvm->slots_lock);
 -- 
 1.5.4.5
 
