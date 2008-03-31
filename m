@@ -1,192 +1,212 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754926AbYCaXZd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753581AbYCaXa2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754926AbYCaXZd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Mar 2008 19:25:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751758AbYCaXZY
+	id S1753581AbYCaXa2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Mar 2008 19:30:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751245AbYCaXaV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Mar 2008 19:25:24 -0400
-Received: from g5t0006.atlanta.hp.com ([15.192.0.43]:40114 "EHLO
-	g5t0006.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751293AbYCaXZX (ORCPT
+	Mon, 31 Mar 2008 19:30:21 -0400
+Received: from fmmailgate03.web.de ([217.72.192.234]:39936 "EHLO
+	fmmailgate03.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750765AbYCaXaU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Mar 2008 19:25:23 -0400
-Date: Mon, 31 Mar 2008 17:25:19 -0600
-From: Alex Chiang <achiang@hp.com>
-To: David Miller <davem@davemloft.net>, chris.mason@oracle.com,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       btrfs-devel@oss.oracle.com
-Subject: Re: [ANNOUNCE] Btrfs v0.13
-Message-ID: <20080331232519.GD2362@ldl.fc.hp.com>
-Mail-Followup-To: Alex Chiang <achiang@hp.com>,
-	David Miller <davem@davemloft.net>, chris.mason@oracle.com,
-	linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-	btrfs-devel@oss.oracle.com
-References: <200802211609.50563.chris.mason@oracle.com> <20080331202633.GA341@ldl.fc.hp.com> <20080331.134510.126138884.davem@davemloft.net> <20080331224344.GB2362@ldl.fc.hp.com>
+	Mon, 31 Mar 2008 19:30:20 -0400
+From: Chr <chunkeey@web.de>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: The never ending BEEEEP/__smp_call_function_mask with 2.6.25-rc7
+Date: Tue, 1 Apr 2008 01:30:16 +0200
+User-Agent: KMail/1.9.9
+Cc: Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
+       Andi Kleen <andi-suse@firstfloor.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
+References: <200803302109.22219.chunkeey@web.de> <200804010001.51288.chunkeey@web.de> <200804010114.25810.rjw@sisk.pl>
+In-Reply-To: <200804010114.25810.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080331224344.GB2362@ldl.fc.hp.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Message-Id: <200804010130.17453.chunkeey@web.de>
+X-Provags-ID: V01U2FsdGVkX18vOmcFCi20xNrI4IidufTV/CkNR/Ek7lS/GSfA
+	b3GqzNlIQ6KcL7JmK5M52w/4zj1o9u725u8gG9sO/DfPwCz8ng
+	mCg5EamuY=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Alex Chiang <achiang@hp.com>:
-> * David Miller <davem@davemloft.net>:
-> > From: Alex Chiang <achiang@hp.com>
-> > Date: Mon, 31 Mar 2008 14:26:33 -0600
-> > 
-> > > I've gotten as far as successfully creating a btrfs filesystem
-> > > (at least that's what btrfsck tells me), but haven't been able to
-> > > mount it yet, probably because of the sector size issue.
-> > 
-> > You should be able to make a filesystem with a sector
-> > size >= PAGE_SIZE and it should work just fine.  Please
-> > give it a try.
-> 
-> Hrm, I'm having issues still. First, here's a patch for
-> mkfs.btrfs to allow the user to pass in a different sector size.
+On Tuesday 01 April 2008 01:14:24 Rafael J. Wysocki wrote:
+> On Tuesday, 1 of April 2008, Chr wrote:
+>
+> Have you posted the .config already?
+Done!
 
-Whoops, whitespace was screwed up on that patch. Here's try #2.
+BTW:
+[ 5074.308547]   .jiffies                       : 4296102117
+[ 5074.308547]   .jiffies                       : 4296102117
+[ 5105.659185]   .idle_jiffies   : 4296102113
+[ 5105.659185]   .last_jiffies   : 4296102117
+[ 5105.659185]   .next_jiffies   : 4296102118
+[ 5105.659185] jiffies: 4296102117
+[ 5105.659185]   .idle_jiffies   : 4296102114
+[ 5105.659185]   .last_jiffies   : 4296102113
+[ 5105.659185]   .next_jiffies   : 4296102116
+[ 5105.659185] jiffies: 4296102117
+[ 5044.543918]   .jiffies                       : 4296102117
+[ 5044.640998]   .jiffies                       : 4296102117
+[ 4979.215327]   .idle_jiffies   : 4296102113
+[ 4979.229471]   .last_jiffies   : 4296102117
+[ 4979.231334]   .next_jiffies   : 4296102118
+[ 4979.235415] jiffies: 4296102117
+[ 4979.298216]   .idle_jiffies   : 4296102114
+[ 4979.312360]   .last_jiffies   : 4296102113
+[ 4979.314223]   .next_jiffies   : 4296102116
+[ 4979.318303] jiffies: 4296102117
+[ 5040.749212]   .idle_jiffies   : 4296102113
+[ 5040.763356]   .last_jiffies   : 4296102117
+[ 5040.765219]   .next_jiffies   : 4296102118
+[ 5040.769299] jiffies: 4296102117
+[ 5040.832119]   .idle_jiffies   : 4296102114
+[ 5040.846264]   .last_jiffies   : 4296102113
+[ 5040.848127]   .next_jiffies   : 4296102116
+[ 5040.852206] jiffies: 4296102117
+-OUCH - going backwards?
+[ 4956.514210]   .idle_jiffies   : 4296102113
+[ 4956.528354]   .last_jiffies   : 4296102117
+[ 4956.530217]   .next_jiffies   : 4296102118
+[ 4956.534298] jiffies: 4296102117
+[ 4956.597024]   .idle_jiffies   : 4296102114
+[ 4956.611168]   .last_jiffies   : 4296102113
+[ 4956.613031]   .next_jiffies   : 4296102116
+[ 4956.617111] jiffies: 4296102117
+[ 5063.325509]   .idle_jiffies   : 4296102113
+[ 5063.339653]   .last_jiffies   : 4296102117
+[ 5063.341517]   .next_jiffies   : 4296102118
+[ 5063.345597] jiffies: 4296102117
+[ 5063.408519]   .idle_jiffies   : 4296102114
+[ 5063.422664]   .last_jiffies   : 4296102113
+[ 5063.424526]   .next_jiffies   : 4296102116
+[ 5063.428607] jiffies: 4296102117
+[ 5116.186763]   .idle_jiffies   : 4296102113
+[ 5116.186764]   .last_jiffies   : 4296102117
+[ 5116.186764]   .next_jiffies   : 4296102118
+[ 5116.186764] jiffies: 4296102117
+[ 5116.186764]   .idle_jiffies   : 4296102114
+[ 5116.186764]   .last_jiffies   : 4296102113
+[ 5116.186764]   .next_jiffies   : 4296102116
+[ 5116.186764] jiffies: 4296102117
+[ 5012.429020]   .idle_jiffies   : 4296102113
+[ 5012.443164]   .last_jiffies   : 4296102117
+[ 5012.445027]   .next_jiffies   : 4296102118
+[ 5012.449107] jiffies: 4296102117
+[ 5012.511908]   .idle_jiffies   : 4296102114
+[ 5012.526052]   .last_jiffies   : 4296102113
+[ 5012.527915]   .next_jiffies   : 4296102116
+[ 5012.531995] jiffies: 4296102117
+[ 5048.890792]   .idle_jiffies   : 4296102113
+[ 5048.904936]   .last_jiffies   : 4296102117
+[ 5048.906800]   .next_jiffies   : 4296102118
+[ 5048.910880] jiffies: 4296102117
+[ 5048.973842]   .idle_jiffies   : 4296102114
+[ 5048.987987]   .last_jiffies   : 4296102113
+[ 5048.989850]   .next_jiffies   : 4296102116
+[ 5048.993930] jiffies: 4296102117
+[ 5069.025049]   .idle_jiffies   : 4296102113
+[ 5069.039194]   .last_jiffies   : 4296102117
+[ 5069.041056]   .next_jiffies   : 4296102118
+[ 5069.045136] jiffies: 4296102117
+[ 5069.107874]   .idle_jiffies   : 4296102114
+[ 5069.122019]   .last_jiffies   : 4296102113
+[ 5069.123881]   .next_jiffies   : 4296102116
+[ 5069.127962] jiffies: 4296102117
+[ 5095.978692]   .idle_jiffies   : 4296102113
+[ 5095.992836]   .last_jiffies   : 4296102117
+[ 5095.994699]   .next_jiffies   : 4296102118
+[ 5095.998780] jiffies: 4296102117
+[ 5096.061623]   .idle_jiffies   : 4296102114
+[ 5096.075768]   .last_jiffies   : 4296102113
+[ 5096.077631]   .next_jiffies   : 4296102116
+[ 5096.081711] jiffies: 4296102117
+[ 5108.211902]   .idle_jiffies   : 4296102113
+[ 5108.211902]   .last_jiffies   : 4296102117
+[ 5108.211902]   .next_jiffies   : 4296102118
+[ 5108.211902] jiffies: 4296102117
+[ 5108.211903]   .idle_jiffies   : 4296102114
+[ 5108.211903]   .last_jiffies   : 4296102113
+[ 5108.211903]   .next_jiffies   : 4296102116
+[ 5108.211903] jiffies: 4296102117
+[ 5108.211903]   .idle_jiffies   : 4296102113
+[ 5108.211903]   .last_jiffies   : 4296102117
+[ 5108.211903]   .next_jiffies   : 4296102118
+[ 5108.211903] jiffies: 4296102117
+[ 5108.211903]   .idle_jiffies   : 4296102114
+[ 5108.211903]   .last_jiffies   : 4296102113
+[ 5108.211903]   .next_jiffies   : 4296102116
+[ 5108.211903] jiffies: 4296102117
+[ 5108.211903]   .idle_jiffies   : 4296102113
+[ 5108.211903]   .last_jiffies   : 4296102117
+[ 5108.211903]   .next_jiffies   : 4296102118
+[ 5108.211903] jiffies: 4296102117
+[ 5108.211903]   .idle_jiffies   : 4296102114
+[ 5108.211903]   .last_jiffies   : 4296102113
+[ 5108.211903]   .next_jiffies   : 4296102116
+[ 5108.211903] jiffies: 4296102117
+[ 5108.211904]   .idle_jiffies   : 4296102113
+[ 5108.211904]   .last_jiffies   : 4296102117
+[ 5108.211904]   .next_jiffies   : 4296102118
+[ 5108.211904] jiffies: 4296102117
+[ 5108.211904]   .idle_jiffies   : 4296102114
+[ 5108.211904]   .last_jiffies   : 4296102113
+[ 5108.211904]   .next_jiffies   : 4296102116
+[ 5108.211904] jiffies: 4296102117
+[ 5108.211904]   .idle_jiffies   : 4296102113
+[ 5108.211904]   .last_jiffies   : 4296102117
+[ 5108.211904]   .next_jiffies   : 4296102118
+[ 5108.211904] jiffies: 4296102117
+[ 5108.211904]   .idle_jiffies   : 4296102114
+[ 5108.211904]   .last_jiffies   : 4296102113
+[ 5108.211904]   .next_jiffies   : 4296102116
+[ 5108.211904] jiffies: 4296102117
+[ 5108.211905]   .idle_jiffies   : 4296102113
+[ 5108.211905]   .last_jiffies   : 4296102117
+[ 5108.211905]   .next_jiffies   : 4296102118
+[ 5108.211905] jiffies: 4296102117
+[ 5108.211905]   .idle_jiffies   : 4296102114
+[ 5108.211905]   .last_jiffies   : 4296102113
+[ 5108.211905]   .next_jiffies   : 4296102116
+[ 5108.211905] jiffies: 4296102117
+[ 5108.211905]   .idle_jiffies   : 4296102113
+[ 5108.211905]   .last_jiffies   : 4296102117
+[ 5108.211905]   .next_jiffies   : 4296102118
+[ 5108.211905] jiffies: 4296102117
+[ 5108.211905]   .idle_jiffies   : 4296102114
+[ 5108.211905]   .last_jiffies   : 4296102113
+[ 5108.211905]   .next_jiffies   : 4296102116
+[ 5108.211905] jiffies: 4296102117
+[ 5108.211905]   .idle_jiffies   : 4296102113
+[ 5108.211905]   .last_jiffies   : 4296102117
+[ 5108.211905]   .next_jiffies   : 4296102118
+[ 5108.211905] jiffies: 4296102117
+[ 5108.211906]   .idle_jiffies   : 4296102114
+[ 5108.211906]   .last_jiffies   : 4296102113
+[ 5108.211906]   .next_jiffies   : 4296102116
+[ 5108.211906] jiffies: 4296102117
+[ 5108.211906]   .idle_jiffies   : 4296102113
+[ 5108.211906]   .last_jiffies   : 4296102117
+[ 5108.211906]   .next_jiffies   : 4296102118
+[ 5108.211906] jiffies: 4296102117
+[ 5108.211906]   .idle_jiffies   : 4296102114
+[ 5108.211906]   .last_jiffies   : 4296102113
+[ 5108.211906]   .next_jiffies   : 4296102116
+[ 5108.211906] jiffies: 4296102117
+[ 5108.211906]   .idle_jiffies   : 4296102113
+[ 5108.211906]   .last_jiffies   : 4296102117
+[ 5108.211906]   .next_jiffies   : 4296102118
+[ 5108.211906] jiffies: 4296102117
+[ 5108.211906]   .idle_jiffies   : 4296102114
+[ 5108.211906]   .last_jiffies   : 4296102113
+[ 5108.211906]   .next_jiffies   : 4296102116
+[ 5108.211906] jiffies: 4296102117
+[ 5108.211924]   .jiffies                       : 4296102117
+[ 5108.211925]   .jiffies                       : 4296102117
 
-/ac
-
-From: Alex Chiang <achiang@hp.com>
-Subject: [PATCH] Teach mkfs.btrfs about configurable sectorsizes
-
-Currently, btrfs assumes PAGE_SIZE <= sectorsize, and sectorsize
-is hardcoded to 4K in mkfs.btrfs.
-
-Give mkfs.btrfs a new command line option to specify a different
-sector size. The syntax follows mke2fs's -E extended-options syntax,
-and the code is taken from mke2fs.
----
- mkfs.c |   76 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-
- 1 files changed, 74 insertions(+), 2 deletions(-)
-
-diff --git a/mkfs.c b/mkfs.c
-index 49f7308..874a41e 100644
---- a/mkfs.c
-+++ b/mkfs.c
-@@ -137,15 +137,76 @@ err:
- 	return ret;
- }
- 
-+struct btrfs_params {
-+	u32 sectorsize;
-+};
-+
-+/*
-+ * Shameless ripped from mke2fs
-+ */
-+static void parse_extended_opts(struct btrfs_params *param, const char *opts)
-+{
-+	char    *buf, *token, *next, *p, *arg;
-+	int     len;
-+	int     r_usage = 0;
-+
-+	len = strlen(opts);
-+	buf = malloc(len+1);
-+	if (!buf) {
-+		fprintf(stderr, "Couldn't allocate memory to parse options!\n");
-+		exit(1);
-+	}
-+	strcpy(buf, opts);
-+	for (token = buf; token && *token; token = next) {
-+		p = strchr(token, ',');
-+		next = 0;
-+		if (p) {
-+			*p = 0;
-+			next = p+1;
-+		}
-+		arg = strchr(token, '=');
-+		if (arg) {
-+			*arg = 0;
-+			arg++;
-+		}
-+		if (strcmp(token, "sectorsize") == 0) {
-+			if (!arg) {
-+				r_usage++;
-+				continue;
-+			}
-+			param->sectorsize = strtoul(arg, &p, 0);
-+			if (*p || (param->sectorsize == 0)) {
-+				fprintf(stderr,
-+					"Invalid sectorsize parameter: %s\n",
-+					arg);
-+				r_usage++;
-+				continue;
-+			}
-+		} else {
-+			r_usage++;
-+		}
-+	}
-+	if (r_usage) {
-+		fprintf(stderr, "\nBad options specified.\n\n"
-+			"Extended options are separated by commas, "
-+			"and may take an argument which\n"
-+			"\tis set off by an equals ('=') sign.\n\n"
-+			"Valid extended options are:\n"
-+			"\tsectorsize=<sector size in bytes>\n\n");
-+		exit(1);
-+	}
-+}
-+
- static void print_usage(void)
- {
--	fprintf(stderr, "usage: mkfs.btrfs [ -l leafsize ] [ -n nodesize] dev [ blocks ]\n");
-+	fprintf(stderr, "usage: mkfs.btrfs [ -l leafsize ] [ -n nodesize] [ -E sectorsize=<sectorsize> ] dev [ blocks ]\n");
- 	exit(1);
- }
- 
- int main(int ac, char **av)
- {
- 	char *file;
-+	char *extended_opts = 0;
- 	u64 block_count = 0;
- 	u64 dev_block_count = 0;
- 	int fd;
-@@ -160,10 +221,11 @@ int main(int ac, char **av)
- 	int zero_end = 1;
- 	struct btrfs_root *root;
- 	struct btrfs_trans_handle *trans;
-+	struct btrfs_params fs_params;
- 
- 	while(1) {
- 		int c;
--		c = getopt(ac, av, "b:l:n:s:");
-+		c = getopt(ac, av, "b:l:n:s:E:");
- 		if (c < 0)
- 			break;
- 		switch(c) {
-@@ -180,10 +242,19 @@ int main(int ac, char **av)
- 				block_count = parse_size(optarg);
- 				zero_end = 0;
- 				break;
-+			case 'E':
-+				memset(&fs_params, 0,
-+					sizeof(struct btrfs_params));
-+				extended_opts = optarg;
-+				break;
- 			default:
- 				print_usage();
- 		}
- 	}
-+	if (extended_opts) {
-+		parse_extended_opts(&fs_params, extended_opts);
-+		sectorsize = fs_params.sectorsize;
-+	}
- 	if (leafsize < sectorsize || (leafsize & (sectorsize - 1))) {
- 		fprintf(stderr, "Illegal leafsize %u\n", leafsize);
- 		exit(1);
-@@ -192,6 +263,7 @@ int main(int ac, char **av)
- 		fprintf(stderr, "Illegal nodesize %u\n", nodesize);
- 		exit(1);
- 	}
-+
- 	ac = ac - optind;
- 	if (ac == 0)
- 		print_usage();
--- 
-1.5.3.1.g1e61
-
+Regards,
+	Chr
