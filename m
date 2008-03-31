@@ -1,52 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758393AbYCaOyv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758751AbYCaOza@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758393AbYCaOyv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Mar 2008 10:54:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750872AbYCaOyn
+	id S1758751AbYCaOza (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Mar 2008 10:55:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750872AbYCaOzS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Mar 2008 10:54:43 -0400
-Received: from wf-out-1314.google.com ([209.85.200.168]:51387 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751384AbYCaOym (ORCPT
+	Mon, 31 Mar 2008 10:55:18 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:35441 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750983AbYCaOzR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Mar 2008 10:54:42 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=ggWSQJiaprSprF/sCHtvj9zHNj2b4qsYh0+KcwErLIOi24sMzQF5LKLIcARt8KjZ+RmQBOqCJNxF/riqw6WxWGtmQxTvmja2OZgPYjn4T9gMcQfXFnvGL9V5K4wMA6Lu5ViY0/q2twqUAzuKt9fBZVlVn6VEcnzdeYDIjfGtr7k=
-Message-ID: <804dabb00803310754q40eaca5ai8b9faacecef0edef@mail.gmail.com>
-Date: Mon, 31 Mar 2008 22:54:41 +0800
-From: "Peter Teoh" <htmldeveloper@gmail.com>
-To: "Jacek Luczak" <difrost.kernel@gmail.com>
-Subject: Re: RFC: Writing Solaris Device Drivers in Java
-Cc: "Peter Zijlstra" <peterz@infradead.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       kernelnewbies <kernelnewbies@nl.linux.org>
-In-Reply-To: <47F0D201.6030102@gmail.com>
+	Mon, 31 Mar 2008 10:55:17 -0400
+Date: Mon, 31 Mar 2008 16:55:16 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Dmitry Baryshkov <dbaryshkov@gmail.com>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       Haavard Skinnemoen <haavard.skinnemoen@atmel.com>,
+       Russell King <rmk+lkml@arm.linux.org.uk>,
+       Paul Mundt <lethal@linux-sh.org>,
+       pHilipp Zabel <philipp.zabel@gmail.com>, tony@atomide.com,
+       paul@pwsan.com
+Subject: Re: [PATCH 1/6] Clocklib: add generic framework for managing clocks.
+Message-ID: <20080331145515.GA10969@atrey.karlin.mff.cuni.cz>
+References: <20080331083947.GA11282@doriath.ww600.siemens.net> <20080331084420.GA11617@doriath.ww600.siemens.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <47F0491F.4050804@gmail.com> <1206959293.8514.636.camel@twins>
-	 <47F0D201.6030102@gmail.com>
+In-Reply-To: <20080331084420.GA11617@doriath.ww600.siemens.net>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 31, 2008 at 7:58 PM, Jacek Luczak <difrost.kernel@gmail.com> wrote:
-> Peter Zijlstra pisze:
->  >
->  Java? Compete against C? Don't scare embedded devs.
->
 
-The future is always uncertain for us.   Embedded development usually
-emphasizes on performance, unlike those of the desktop.   So which
-language will be king tomorrow in embedded, it boils down to
-performance + optimization + ease of development.   Just imagine:
-from 10 lines of C reduced to 2 lines of XXX-based language software -
-I think the 10 lines will scare off the embedded developers of
-tomorrow.    I may be wrong :-).
+> +int __must_check clk_register(struct clk *clk);
+> +void clk_unregister(struct clk *clk);
+> +static void __maybe_unused clks_unregister(struct clk **clks, size_t num)
+> +{
+> +	int i;
+> +	for (i = num - 1; i >= 0;  i++) {
+> +		clk_unregister(clks[i]);
+> +	}
+> +}
+> +
+> +static int __must_check __maybe_unused clks_register(struct clk **clks, size_t num)
+> +{
+> +	int i;
+> +	int ret;
+> +	for (i = 0; i < num; i++) {
+> +		ret = clk_register(clks[i]);
+> +		if (ret != 0)
+> +			goto cleanup;
+> +	}
+> +
+> +	return 0;
+> +
+> +cleanup:
+> +	clks_unregister(clks, i);
+> +
+> +	for (i -- ; i >= 0; i--) {
 
--
-Regards,
-Peter Teoh
+"for (i--;"
+> +		clk_unregister(clks[i]);
+> +	}
+> +
+> +	return ret;
+
+Hmm, clk_unregister is _very_ similar to clks_unregister....
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
