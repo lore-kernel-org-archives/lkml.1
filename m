@@ -1,73 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756215AbYCaQzy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756886AbYCaQ5O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756215AbYCaQzy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Mar 2008 12:55:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751245AbYCaQzr
+	id S1756886AbYCaQ5O (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Mar 2008 12:57:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753431AbYCaQ47
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Mar 2008 12:55:47 -0400
-Received: from mga06.intel.com ([134.134.136.21]:28444 "EHLO
-	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750765AbYCaQzq (ORCPT
+	Mon, 31 Mar 2008 12:56:59 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:46274 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752901AbYCaQ46 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Mar 2008 12:55:46 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,583,1199692800"; 
-   d="scan'208";a="363477327"
-Message-ID: <47F11616.3020403@linux.intel.com>
-Date: Mon, 31 Mar 2008 09:49:26 -0700
-From: Arjan van de Ven <arjan@linux.intel.com>
-User-Agent: Thunderbird 2.0.0.12 (Windows/20080213)
+	Mon, 31 Mar 2008 12:56:58 -0400
+Date: Mon, 31 Mar 2008 09:50:27 -0700
+From: Greg KH <greg@kroah.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       Andy Whitcroft <apw@shadowen.org>,
+       Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
+       Lonnie Iverson <ldiverson@novell.com>
+Subject: Re: [BUILD_FAILURE] linux-next: Tree for March 31 build fails on
+	fs/novfs sys_flistxattr()
+Message-ID: <20080331165027.GA8073@kroah.com>
+References: <20080331181118.7964d4a9.sfr@canb.auug.org.au> <47F0C8B6.7020808@linux.vnet.ibm.com> <20080331224125.cc030176.sfr@canb.auug.org.au>
 MIME-Version: 1.0
-To: =?ISO-8859-1?Q?Thomas_Hellstr=F6m?= <thomas@tungstengraphics.com>
-CC: Andi Kleen <andi@firstfloor.org>, Dave Airlie <airlied@redhat.com>,
-       linux-kernel@vger.kernel.org, tglx@linutronix.de, mingo@redhat.com
-Subject: Re: [PATCH] x86: create array based interface to change page attribute
-References: <1206940788.7250.13.camel@clockmaker.usersys.redhat.com> <87myof8ief.fsf@basil.nowhere.org> <47F098E8.1050605@tungstengraphics.com> <20080331083816.GC29105@one.firstfloor.org> <47F0A988.7010707@tungstengraphics.com> <20080331091829.GD29105@one.firstfloor.org> <47F0C6C2.2000004@tungstengraphics.com> <47F10C62.7040500@linux.intel.com> <47F11443.7050302@tungstengraphics.com>
-In-Reply-To: <47F11443.7050302@tungstengraphics.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080331224125.cc030176.sfr@canb.auug.org.au>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thomas Hellström wrote:
-> Arjan van de Ven wrote:
->> Thomas Hellström wrote:
->>
->>> Let me rehprase. Not really time-critical but it is of some 
->>> importance that CPA is done quickly.
->>> We're dealing with the tradeoff of reading from uncached device memory 
->>
->> uncached or write combining ?
-> The user-space mappings (the ones that we really use) are usually 
-> write-combined, whereas the kernel mappings are uncached. (I think this 
-> is OK since both mapping types implies no cache coherency). 
+On Mon, Mar 31, 2008 at 10:41:25PM +1100, Stephen Rothwell wrote:
+> On Mon, 31 Mar 2008 16:49:18 +0530 Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
+> >
+> > Hi Stephen,
+> > 
+> > The next-20080331 allyesconfig, build fails on x86_64 machine
+> > 
+> > fs/novfs/built-in.o: In function `sys_flistxattr':
+> > /root/kernels/linux-2.6.25-rc7/fs/novfs/inode.c:4658: multiple definition of `sys_flistxattr'
+> > fs/xattr.o:/root/kernels/linux-2.6.25-rc7/fs/xattr.c:457: first defined here
+> > ld: Warning: size of symbol `sys_flistxattr' changed from 112 in fs/xattr.o to 75 in fs/novfs/built-in.o
+> > fs/novfs/built-in.o: In function `sys_fsetxattr':
+> > /root/kernels/linux-2.6.25-rc7/fs/novfs/inode.c:4672: multiple definition of `sys_fsetxattr'
+> > fs/xattr.o:/root/kernels/linux-2.6.25-rc7/fs/xattr.c:295: first defined here
+> > ld: Warning: size of symbol `sys_fsetxattr' changed from 164 in fs/xattr.o to 97 in fs/novfs/built-in.o
+> > fs/novfs/built-in.o: In function `sys_fgetxattr':
+> > /root/kernels/linux-2.6.25-rc7/fs/novfs/inode.c:4645: multiple definition of `sys_fgetxattr'
+> > fs/xattr.o:/root/kernels/linux-2.6.25-rc7/fs/xattr.c:384: first defined here
+> > ld: Warning: size of symbol `sys_fgetxattr' changed from 128 in fs/xattr.o to 91 in fs/novfs/built-in.o
+> > make[1]: *** [fs/built-in.o] Error 1
+> > make: *** [fs] Error 2
+> 
+> Yes, well this from fs/novfs/inode.c was asking for it really :-)
+> 
+> asmlinkage ssize_t sys_flistxattr(int fd, char __user * list, size_t size)
+> {
+> .
 
-This is not officially allowed and may tripple fault your cpu..
-To comply with the spec one needs to have ALL mappings the same unfortunately.
-(And yes, this is a hard problem)
+Now fixed up, sorry for the noise.  Why it was ever declaring it's own
+system calls for extended attributes, I'll never know...
 
->Even if 
-> (IIRC) write combining is theoretically prefetchable, some devices give 
-> read speeds around 9MB/s.
->>
->>> vs taking the pages out of
->>> AGP, setting up a cache-coherent mapping, read and then change back. 
->>> What we'd really would like to set up is a pool of completely 
->>> unmapped (like highmem) pages. Then we could, to a large extent, 
->>> avoid the CPA calls.
->>
->> changing attributes by nature means a tlb flush and a bunch of 
->> expensive cache work.
->> That's never going to be cheap, I guess it all depends on how much 
->> work you do
->> on the memory for it to pay off or not...
-> Indeed. Actually with the new non-wbinvd() CPA, We seem to benefit 
-> already if the buffer is a single page, though it's probably hard to 
-> measure the impact of repopulating the tlb.
-> 
-> /Thomas
-> 
-> 
-> 
+thanks,
 
+greg k-h
