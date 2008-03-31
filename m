@@ -1,60 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756652AbYCaCDy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755800AbYCaCGB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756652AbYCaCDy (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Mar 2008 22:03:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753710AbYCaCDp
+	id S1755800AbYCaCGB (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Mar 2008 22:06:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752904AbYCaCFy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Mar 2008 22:03:45 -0400
-Received: from mail.gmx.net ([213.165.64.20]:55981 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1755140AbYCaCDo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Mar 2008 22:03:44 -0400
-X-Authenticated: #5039886
-X-Provags-ID: V01U2FsdGVkX18wM84j9YYwYyDJ2ruF5/jcsFdynY2tZ08wBItp52
-	ADOH3IYCsps0X7
-Date: Mon, 31 Mar 2008 04:03:41 +0200
-From: =?iso-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>
-To: Bob Tracy <rct@frus.com>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: 2.6.25-rc7: warn_on_slowpath triggered
-Message-ID: <20080331020341.GB24702@atjola.homenet>
-References: <20080329222955.036CCDBA2@gherkin.frus.com> <20080331014037.GA24702@atjola.homenet>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20080331014037.GA24702@atjola.homenet>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-Y-GMX-Trusted: 0
+	Sun, 30 Mar 2008 22:05:54 -0400
+Received: from intmailgate.algonquincollege.com ([205.211.52.150]:43062 "EHLO
+	mailgate4.algonquincollege.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752644AbYCaCFx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 30 Mar 2008 22:05:53 -0400
+X-Greylist: delayed 1202 seconds by postgrey-1.27 at vger.kernel.org; Sun, 30 Mar 2008 22:05:53 EDT
+MIME-version: 1.0
+Content-transfer-encoding: 7BIT
+Content-disposition: inline
+Content-type: text/plain; charset=us-ascii
+From: Eric Descourtis <desc0068@algonquincollege.com>
+To: linux-kernel@vger.kernel.org
+Cc: eric.des.courtis@gmail.com
+Message-id: <fbb49c58d56e.47f0403c@algonquincollege.com>
+Date: Mon, 31 Mar 2008 01:37:00 +0000 (GMT)
+X-Mailer: Sun Java(tm) System Messenger Express 6.3-4.01 (built Aug  3 2007;
+ 32bit)
+Content-language: en
+Subject: Limiting CPU usage for processes in linux 2.6.18.8
+X-Accept-Language: en
+X-Canit-CHI2: 0.00
+X-Bayes-Prob: 0.0001 (Score 0, tokens from: @@RPTN, Outgoing)
+X-Spam-Score: 0.00 () [Hold at 12.00] 
+X-CanItPRO-Stream: Outgoing (inherits from default)
+X-Canit-Stats-ID: 65212591 - 57b888ff0ad5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2008.03.31 03:40:37 +0200, Björn Steinbrink wrote:
-> [Added Ingo and Thomas to Cc:]
-> 
-> On 2008.03.29 17:29:55 -0500, Bob Tracy wrote:
-> > System is a AMD K6-III/450.  This is actually a 2.6.25-rcX issue
-> > that I'm just getting around to reporting.  Sorry about that...
-> 
-> Not necessarily a regression, it's just that the WARN_ON_ONCE didn't
-> exist yet in 2.6.24.
+Hello,
 
-Hm, the warnings seem to be a bit broken. They were added in
-7d409d6057c7244f8757ce15245f6df27271be0c "x86: add some pirq debugging".
+I would like to implement a patch to the scheduler that limits the CPU usage of individual 
+processes to a percentage in Linux 2.6.18.8 (Can't be any other version). 
+I would just like some feedback on the following questions:
+ 
+1. How can I ensure that limited processes get their CPU time percentage allocation?
+2. Are there mechanisms in place that would simplify this process?
 
-In pirq_via586_{get,set} and pirq_ite_{get,set}, they're missing the
-fact that we're using pirq-1 to index the array. So it's spitting out
-warnings for valid cases. So Bob's warning can very well be completely
-bogus.
+I have been hitting my head against the wall for a long time now, any help would be appreciated. 
+ 
+Thank you.
 
-In pirq_ali_{get,set} there's probably the same problem, but I can't
-really tell for sure, because pirq isn't used to index the array
-directly, and the comment above that functions tells me not to guess
-anything.
-
-For pirq_vlsi_{get,set} I just wondered why that ">= 9" instead of "> 8"
-as it is on the next line, but well, that's just style nit-picking...
-
-Björn
+Eric des Courtis
+CC: eric.des.courtis@gmail.com
