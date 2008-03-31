@@ -1,56 +1,168 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757980AbYCaUxs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757499AbYCaU56@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757980AbYCaUxs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Mar 2008 16:53:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755209AbYCaUxj
+	id S1757499AbYCaU56 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Mar 2008 16:57:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752335AbYCaU5u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Mar 2008 16:53:39 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:55608 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754877AbYCaUxi (ORCPT
+	Mon, 31 Mar 2008 16:57:50 -0400
+Received: from nf-out-0910.google.com ([64.233.182.187]:33495 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752139AbYCaU5t (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Mar 2008 16:53:38 -0400
-From: Chris Mason <chris.mason@oracle.com>
-To: Alex Chiang <achiang@hp.com>
-Subject: Re: [ANNOUNCE] Btrfs v0.13
-Date: Mon, 31 Mar 2008 16:52:16 -0400
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       btrfs-devel@oss.oracle.com
-References: <200802211609.50563.chris.mason@oracle.com> <20080331202633.GA341@ldl.fc.hp.com>
-In-Reply-To: <20080331202633.GA341@ldl.fc.hp.com>
+	Mon, 31 Mar 2008 16:57:49 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=gPVFPE8/Lf+SLb7KKuvku4HsGID3n0fSX6pfOrJntAEalTh0JN/5VkQzv/+385j8tqd3yA4JKALTRoEIidZP7zvXzDpJyLzoHxuH8FSGAz/ADms8U7/3vA6Wg16rzcRuXkBd1J2UQw31CpZGce9m5Uo/HhgTS4iy3mzRr7lxKPw=
+Date: Mon, 31 Mar 2008 16:57:36 -0400
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Greg KH <greg@kroah.com>
+Cc: Kay Sievers <kay.sievers@vrfy.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Bj?rn Steinbrink <B.Steinbrink@gmx.de>,
+       Arjan van de Ven <arjan@linux.intel.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Johannes Berg <johannes@sipsolutions.net>,
+       Jiri Kosina <jkosina@suse.cz>
+Subject: Re: [PATCH] evdev: Release eventual input device grabs when getting
+	disconnected
+Message-ID: <20080331165456.ZZRA012@mailhub.coreip.homeip.net>
+References: <20080330184259.GB21375@atjola.homenet> <alpine.LFD.1.00.0803301448190.14670@woody.linux-foundation.org> <200803310215.39414.dtor@insightbb.com> <20080331172813.GA11583@kroah.com> <20080331135653.ZZRA012@mailhub.coreip.homeip.net> <20080331204221.GA19953@kroah.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200803311652.17234.chris.mason@oracle.com>
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+In-Reply-To: <20080331204221.GA19953@kroah.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 31 March 2008, Alex Chiang wrote:
-> * Chris Mason <chris.mason@oracle.com>:
-> > Hello everyone,
-> >
-> > Btrfs v0.13 is now available for download from:
->
-> Hi Chris,
->
-> Following are two patches that allow btrfs-progs to build on
-> ia64, and prevent a SEGV when trying to do a mkfs.btrfs.
->
-> I've gotten as far as successfully creating a btrfs filesystem
-> (at least that's what btrfsck tells me), but haven't been able to
-> mount it yet, probably because of the sector size issue.
+On Mon, Mar 31, 2008 at 01:42:21PM -0700, Greg KH wrote:
+> On Mon, Mar 31, 2008 at 02:01:20PM -0400, Dmitry Torokhov wrote:
+> > On Mon, Mar 31, 2008 at 10:28:13AM -0700, Greg KH wrote:
+> > > On Mon, Mar 31, 2008 at 02:15:39AM -0400, Dmitry Torokhov wrote:
+> > > > Hi Linus,
+> > > > 
+> > > > On Sunday 30 March 2008, Linus Torvalds wrote:
+> > > > > 
+> > > > > On Sun, 30 Mar 2008, Bj?rn Steinbrink wrote:
+> > > > > >
+> > > > > > I can't reproduce the bug on my UP box and currently can't afford
+> > > > > > crashing my SMP box (all the oopses seem to come from SMP kernels, so I
+> > > > > > guess it needs SMP to crash), so while this doesn't show any new
+> > > > > > problems, I can't tell whether it actually fixes anything. Testers
+> > > > > > welcome!
+> > > > > 
+> > > > > Ok, I applied this because I will do an -rc8 today or tomorrow, but I 
+> > > > > really really hope somebody can figure out what made this all start to 
+> > > > > trigger. It does smell like some core device layer change, because we do 
+> > > > > not seem to have a lot of changes since 2.6.24 in evdev.c and input.c that 
+> > > > > seem relevant.
+> > > > > 
+> > > > > Greg, are there any refcounting changes that would cause the input devices 
+> > > > > to be free'd earlier or something?
+> > > > > 
+> > > > 
+> > > > The following commit changed lifetime runes on kobjects breaking input:
+> > > > 
+> > > > commit 0f4dafc0563c6c49e17fe14b3f5f356e4c4b8806
+> > > > Author: Kay Sievers <kay.sievers@vrfy.org>
+> > > > Date:   Wed Dec 19 01:40:42 2007 +0100
+> > > > 
+> > > >     Kobject: auto-cleanup on final unref
+> > > > 
+> > > >     We save the current state in the object itself, so we can do proper
+> > > >     cleanup when the last reference is dropped.
+> > > > 
+> > > >     If the initial reference is dropped, the object will be removed from
+> > > >     sysfs if needed, if an "add" event was sent, "remove" will be send, and
+> > > >     the allocated resources are released.
+> > > > 
+> > > >     This allows us to clean up some driver core usage as well as allowing us
+> > > >     to do other such changes to the rest of the kernel.
+> > > > 
+> > > >     Signed-off-by: Kay Sievers <kay.sievers@vrfy.org>
+> > > >     Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+> > > > 
+> > > > Before we dropped reference to kobject's parent only when child kobject
+> > > > was released (in kobject_cleanup). The changeset above moves the release
+> > > > to kobject_del() which is way too early in my opinion. The kobject is only
+> > > > marked for deletion at that time, not really deleted.
+> > > 
+> > > It was "deleted" from sysfs, and should have never been used again by
+> > > any callers.  If the reference count was dropped to zero with this call,
+> > > it would be cleaned up as well, it seems that you were assuming that it
+> > > would not be?  Perhaps you just need to grab another reference as this
+> > > would have caused you problems without this change anyway, but without
+> > > slab debugging, you never saw it.
+> > > 
+> > 
+> > Greg, please look at the change again. Before kobject_put(kobj->parent)
+> > was done in kobject_cleanup() and so the parent would only be freed when
+> > all its children are gone. Now parent is deleted early, even if its
+> > children are still referenced by other users. This is lifetime rule
+> > change and should really be announced as such.
+> 
+> Ugh, this was done because of scsi, they required that if you really
+> were deleting the parent, you wanted it gone.
+> 
+
+Gone from sysfs or gone from memory?
+
+> > If this change it intentional and is here to stay then I will just grab
+> > the references myself, although I wonder what else might be broken by
+> > it.
+> 
+> Yes, if you need those references, you are going to have to hold on for
+> them, the kobject layer will not keep them around.  It now is a "does
+> what you ask for" type model :)
+> 
+> I fail to see where this affects the input code though, in glancing at
+> it, it looks like you are doing things properly.  Kay, any thoughts
+> here, I think you looked at the kobject input layer interaction in the
+> past.
 >
 
-Great, thanks I'll take these two.  The kernel side needs the same hash.c fix, 
-but I've already got that change made locally.
+Ok, I really liked the old behavior better, but if it is to stay then
+we need something like this (not for inclusion yet as mousedev and joydev
+need to be adjusted as well):
 
--chris
+Signed-off-by: Dmitry Torokhov <dtor@mail.ru>
+---
+ drivers/input/evdev.c |    6 ++----
+ 1 file changed, 2 insertions(+), 4 deletions(-)
 
+Index: linux/drivers/input/evdev.c
+===================================================================
+--- linux.orig/drivers/input/evdev.c
++++ linux/drivers/input/evdev.c
+@@ -124,6 +124,7 @@ static void evdev_free(struct device *de
+ {
+ 	struct evdev *evdev = container_of(dev, struct evdev, dev);
+ 
++	input_put_device(evdev->handle.dev);
+ 	kfree(evdev);
+ }
+ 
+@@ -853,9 +854,6 @@ static void evdev_cleanup(struct evdev *
+ 	evdev_hangup(evdev);
+ 	evdev_remove_chrdev(evdev);
+ 
+-	if (evdev->grab)
+-		evdev_ungrab(evdev, evdev->grab);
+-
+ 	/* evdev is marked dead so no one else accesses evdev->open */
+ 	if (evdev->open) {
+ 		input_flush_device(handle, NULL);
+@@ -896,7 +894,7 @@ static int evdev_connect(struct input_ha
+ 	evdev->exist = 1;
+ 	evdev->minor = minor;
+ 
+-	evdev->handle.dev = dev;
++	evdev->handle.dev = input_get_device(dev);
+ 	evdev->handle.name = evdev->name;
+ 	evdev->handle.handler = handler;
+ 	evdev->handle.private = evdev;
+
+-- 
+Dmitry
