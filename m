@@ -1,44 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754394AbYCaWRM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755060AbYCaWS2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754394AbYCaWRM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Mar 2008 18:17:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752351AbYCaWQ5
+	id S1755060AbYCaWS2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Mar 2008 18:18:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751212AbYCaWSV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Mar 2008 18:16:57 -0400
-Received: from wa-out-1112.google.com ([209.85.146.180]:9954 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752285AbYCaWQ4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Mar 2008 18:16:56 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=FHFX0UHL+dPChEVnI0hWM4C0fQp1iHsxcXWcGC2Dh8CsImB6lQFsB++Ww4ZjuT+Eiyu2gtBOQf/9RZU+VEHw1WPFxiXPmJs3mfd2o6VzitWlxwLeZbWnEnmY0sMavVbsVHd1xfQb69uPwDqJVvFi3g+o1eXyzYldGJTjNyr62m8=
-Subject: Re: Sparse Question
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Al Viro <viro@ZenIV.linux.org.uk>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <1207001278.6543.78.camel@brick>
-References: <1206998108.6543.74.camel@brick>
-	 <1206999598.6543.76.camel@brick> <20080331215835.GM9785@ZenIV.linux.org.uk>
-	 <1207001278.6543.78.camel@brick>
-Content-Type: text/plain
-Date: Mon, 31 Mar 2008 15:16:57 -0700
-Message-Id: <1207001817.6543.80.camel@brick>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+	Mon, 31 Mar 2008 18:18:21 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:41786 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752183AbYCaWSU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 31 Mar 2008 18:18:20 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Tino Keitel <tino.keitel@gmx.de>
+Subject: Re: 2.6.25-rc6 hangs at resume after suspend to RAM on Mac mini Core Duo
+Date: Tue, 1 Apr 2008 00:17:53 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Pavel Machek <pavel@ucw.cz>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Len Brown <lenb@kernel.org>
+References: <20080320060550.GA13200@dose.home.local> <20080331215027.GC3714@elf.ucw.cz> <20080331220151.GA5580@dose.home.local>
+In-Reply-To: <20080331220151.GA5580@dose.home.local>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200804010017.54799.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-03-31 at 15:07 -0700, Harvey Harrison wrote:
-> Sorry, maybe I'm thick, but how does _IOC_TYPECHECK get pulled
-> into the _IOC_NR use?
+On Tuesday, 1 of April 2008, Tino Keitel wrote:
+> On Mon, Mar 31, 2008 at 23:50:27 +0200, Pavel Machek wrote:
+> > On Mon 2008-03-31 23:28:12, Tino Keitel wrote:
+> > > On Sat, Mar 29, 2008 at 00:03:15 +0100, Rafael J. Wysocki wrote:
+> > > 
+> > > [...]
+> > > 
+> > > > Can you please try to boot with acpi_new_pts_ordering and retest?
+> > > 
+> > > I just tried current -git (a9edadbf790d72adf6ebed476cb5caf7743e7e4a),
+> > > without success. I still got the same hand at resume.
+> > 
+> > You should put "acpi_new_pts_ordering" on kernel command line.
 > 
+> I did, just forgot to mention it.
 
-Nevermind, I see it now, I was just hung up on the IOC_NR part.
+OK, thanks.
 
-Harvey
+Have you tried to do:
 
+# echo core > /sys/power/pm_test
+# echo mem > /sys/power/state
+
+(it's good to boot the kernel with no_console_suspend and do
+"echo 8 > /proc/sys/kernel/printk" before that to see the messages)?
+
+Rafael
