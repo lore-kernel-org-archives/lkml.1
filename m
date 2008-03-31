@@ -1,108 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756726AbYCaRmq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757409AbYCaRny@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756726AbYCaRmq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Mar 2008 13:42:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753817AbYCaRmg
+	id S1757409AbYCaRny (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Mar 2008 13:43:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753686AbYCaRnq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Mar 2008 13:42:36 -0400
-Received: from rtr.ca ([76.10.145.34]:2581 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753144AbYCaRme (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Mar 2008 13:42:34 -0400
-Message-ID: <47F12289.4030300@rtr.ca>
-Date: Mon, 31 Mar 2008 13:42:33 -0400
-From: Mark Lord <lkml@rtr.ca>
-Organization: Real-Time Remedies Inc.
-User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
+	Mon, 31 Mar 2008 13:43:46 -0400
+Received: from E23SMTP01.au.ibm.com ([202.81.18.162]:54314 "EHLO
+	e23smtp01.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753093AbYCaRnq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 31 Mar 2008 13:43:46 -0400
+Message-ID: <47F122CB.4000702@linux.vnet.ibm.com>
+Date: Mon, 31 Mar 2008 23:13:39 +0530
+From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+User-Agent: Thunderbird 1.5.0.14ubu (X11/20080306)
 MIME-Version: 1.0
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Venki Pallipadi <venkatesh.pallipadi@intel.com>,
-       David Brownell <david-b@pacbell.net>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-acpi@vger.kernel.org, Len Brown <lenb@kernel.org>
-Subject: Re: 2.6.25 regression: powertop says 120K wakeups/sec
-References: <20080322202454.9D69DCC0EF@adsl-69-226-248-13.dsl.pltn13.pacbell.net> <200803281509.23107.david-b@pacbell.net> <20080328225604.GA7136@linux-os.sc.intel.com> <200803290001.18912.rjw@sisk.pl>
-In-Reply-To: <200803290001.18912.rjw@sisk.pl>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: kernel list <linux-kernel@vger.kernel.org>
+CC: Ingo Molnar <mingo@elte.hu>, stable@kernel.org, greg@kroah.com,
+       Andy Whitcroft <apw@shadowen.org>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>
+Subject: [BUG] 2.6.24.4 kernel warning at kernel/lockdep.c:2662 check_flags()
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rafael J. Wysocki wrote:
-> On Friday, 28 of March 2008, Venki Pallipadi wrote:
->> On Fri, Mar 28, 2008 at 03:09:22PM -0700, David Brownell wrote:
->>> On Friday 28 March 2008, Pallipadi, Venkatesh wrote:
->>>> You should have a dmesg line which looks like
->>>> ACPI: CPU0 (power states: C1[C1] C2[C2]
->>>> Do you see C2 in such line?
->>> Yes:
->>>
->>> ACPI: CPU0 (power states: C1[C1] C2[C2])
->>
->> David,
->>
->> I think I figured out the bug...
->>
->> Can you try the below patch and confirm that it works (over upstream - ignore
->> the earlier revert patch I sent to you).
->>
->> Thanks,
->> Venki
->>
->> ----
->>
->>
->> Patch to fix huge number of wakeups reported due to recent changes in
->> processor_idle.c. The problem was that the entry_method determination was
->> broken due to one of the recent commits (bc71bec91f987) causing
->> C1 entry to not to go to halt. This should also fix the hang reported here.
->> http://bugzilla.kernel.org/show_bug.cgi?id=10093
-> 
-> Ah, thanks for figuring that out.  As a regression fix, it should go upstream
-> ASAP, I think.
-..
+Hi,
 
-Would this have any applicability to 2.6.24 as well?
+Kernel warning is seen while booting up 2.6.24.4 kernel on x86_64 box
+with the CONFIG_DEBUG_LOCKDEP enabled.
 
-I have seen/reported a similar bug there many times in the past,
-with no resolution.  There's even a bugzilla entry for it somewhere.
-???
+WARNING: at kernel/lockdep.c:2662 check_flags()
+Pid: 0, comm: swapper Not tainted 2.6.24.4 #1
 
+Call Trace:
+ [<ffffffff8025b02a>] check_flags+0xc6/0x19e
+ [<ffffffff8025eb82>] lock_acquire+0x53/0xb2
+ [<ffffffff804b51ac>] __atomic_notifier_call_chain+0x50/0xaf
+ [<ffffffff8020af14>] mwait_idle+0x0/0x50
+ [<ffffffff804b521a>] atomic_notifier_call_chain+0xf/0x11
+ [<ffffffff8020ab7e>] __exit_idle+0x27/0x29
+ [<ffffffff8020ae90>] cpu_idle+0xa8/0xe2
+ [<ffffffff80220679>] start_secondary+0x3c6/0x3d5
 
->> Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
->>
->> ---
->>  drivers/acpi/processor_idle.c |    4 ++++
->>  1 file changed, 4 insertions(+)
->>
->> Index: linux-2.6/drivers/acpi/processor_idle.c
->> ===================================================================
->> --- linux-2.6.orig/drivers/acpi/processor_idle.c	2008-03-28 15:31:13.000000000 -0700
->> +++ linux-2.6/drivers/acpi/processor_idle.c	2008-03-28 15:40:50.000000000 -0700
->> @@ -848,6 +848,7 @@ static int acpi_processor_get_power_info
->>  		/* all processors need to support C1 */
->>  		pr->power.states[ACPI_STATE_C1].type = ACPI_STATE_C1;
->>  		pr->power.states[ACPI_STATE_C1].valid = 1;
->> +		pr->power.states[ACPI_STATE_C1].entry_method = ACPI_CSTATE_HALT;
->>  	}
->>  	/* the C0 state only exists as a filler in our array */
->>  	pr->power.states[ACPI_STATE_C0].valid = 1;
->> @@ -960,6 +961,9 @@ static int acpi_processor_get_power_info
->>  				 cx.address);
->>  		}
->>  
->> +		if (cx.type == ACPI_STATE_C1) {
->> +			cx.valid = 1;
->> +		}
->>  
->>  		obj = &(element->package.elements[2]);
->>  		if (obj->type != ACPI_TYPE_INTEGER)
->>
->>
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+possible reason: unannotated irqs-on.
+irq event stamp: 720
+hardirqs last  enabled at (719): [<ffffffff804b1f6a>] trace_hardirqs_on_thunk+0x35/0x3a
+hardirqs last disabled at (720): [<ffffffff8020ae84>] cpu_idle+0x9c/0xe2
+softirqs last  enabled at (718): [<ffffffff80241b40>] __do_softirq+0xd9/0xe2
+softirqs last disabled at (713): [<ffffffff8020d49c>] call_softirq+0x1c/0x28
 
+-- 
+Thanks & Regards,
+Kamalesh Babulal,
+Linux Technology Center,
+IBM, ISTL.
