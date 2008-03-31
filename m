@@ -1,135 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756708AbYCaTYT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757858AbYCaTYw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756708AbYCaTYT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Mar 2008 15:24:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751558AbYCaTYM
+	id S1757858AbYCaTYw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Mar 2008 15:24:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754940AbYCaTYl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Mar 2008 15:24:12 -0400
-Received: from rtr.ca ([76.10.145.34]:4278 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752831AbYCaTYL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Mar 2008 15:24:11 -0400
-Message-ID: <47F13A5A.7040305@rtr.ca>
-Date: Mon, 31 Mar 2008 15:24:10 -0400
-From: Mark Lord <lkml@rtr.ca>
-Organization: Real-Time Remedies Inc.
-User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
+	Mon, 31 Mar 2008 15:24:41 -0400
+Received: from mail9.dslextreme.com ([66.51.199.94]:51831 "HELO
+	mail9.dslextreme.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1753227AbYCaTYk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 31 Mar 2008 15:24:40 -0400
+Message-ID: <47F13A74.8010206@gawab.com>
+Date: Mon, 31 Mar 2008 12:24:36 -0700
+From: Justin Madru <jdm64@gawab.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080228)
 MIME-Version: 1.0
-To: Adrian Bunk <bunk@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Natalie Protasevich <protasnb@gmail.com>
-Subject: Re: 2.6.25-rc7-git5: Reported regressions from 2.6.24
-References: <200803310228.11027.rjw@sisk.pl> <47F123DF.10204@rtr.ca> <20080331191733.GB23259@cs181133002.pp.htv.fi>
-In-Reply-To: <20080331191733.GB23259@cs181133002.pp.htv.fi>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+CC: lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [Regression: 2.6.25-rc5: Blank Screen: Intel 945]
+References: <47D828BB.2000702@gawab.com> <200803191648.59400.jbarnes@virtuousgeek.org> <47E86C60.5040706@gawab.com> <200803251308.43830.jbarnes@virtuousgeek.org>
+In-Reply-To: <200803251308.43830.jbarnes@virtuousgeek.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adrian Bunk wrote:
-> On Mon, Mar 31, 2008 at 01:48:15PM -0400, Mark Lord wrote:
->> Rafael,
->>
->> Add this one to the list?
-> 
-> 
-> That's not a regression from 2.6.24
-..
+Jesse Barnes wrote:
+> So somehow both pipes are getting disabled, and your LCD is getting turned
+> off and things never get re-enabled.  The X driver should have turned things
+> back on though, after detecting what's available.  Do you have your X logs
+> from the working & broken cases?  Also, did you try reproducing the blank
+> screen problem w/o gdm enabled as Bryce suggested?  That could help narrow
+> down if it's just an intelfb problem vs. a new intelfb/X driver interaction
+> bug.
 
-2.6.24 does not flood my syslog with those messages.
-2.6.25-rc* does.   Looks like a regression.
+Well, I disabled gdm and tryed to trigger the blank screen. I did about ~16 reboots and it blanked out on me only 2 times.
+I was using a script to reboot and/or startx. One time I'm not exactly sure if X was started, so it might have blanked out on a "startx".
+The other time I'm fairly sure X wasn't started, so it blanked out on a terminal login.
 
-The original bug was a hidden regression in 2.6.23,
-which nobody bothered to identify until now.
+Both of the blank outs were different than the ones with gdm started. Pressing ctrl+alt+f# changed nothing on the screen;
+the screen seemed almost completely off (no or little backlight). A few seconds after pressing the power button the shutdown splash screen would show, but this time it was _very_ faint.
 
-Just because some code "gets away with" a regression
-for a kernel or two, doesn't mean that regression shouldn't be fixed.
+Usually, when gdm is enabled, pressing ctrl+alt+f# would "refresh" (or mode/resolution change) the screen, but it would still be blank.
+Also the backlight still seamed to be on and at full brightness (although, still displaying black).
 
-Cheers
+Well, I don't know what to say, it's the strangest of problems.
 
-
-
-> 
-> 
->> * * * * *
->>
->> Subject: + driver-core-fix-uevent-action-string-regression.patch added to -mm tree
->> From: akpm
->> To: mm-commits
->> Date: 28/03/08 07:51 PM
->>
->> The patch titled
->>     driver core: fix uevent action-string regression
->> has been added to the -mm tree.  Its filename is
->>     driver-core-fix-uevent-action-string-regression.patch
->> ...
->>
->> The current -mm tree may be found at http://userweb.kernel.org/~akpm/mmotm/
->>
->> ------------------------------------------------------
->> Subject: driver core: fix uevent action-string regression
->> From: Mark Lord <lkml@rtr.ca>
->>
->> On boot, syslog is flooded with "uevent: unsupported action-string;" messages.
->> ..
->> Mar 28 14:43:29 shrimp kernel: tty ptyqd: uevent: unsupported
->> action-string; this will be ignored in a future kernel version
->> Mar 28 14:43:29 shrimp kernel: tty ptyqe: uevent: unsupported
->> action-string; this will be ignored in a future kernel version
->> Mar 28 14:43:29 shrimp kernel: tty ptyqf: uevent: unsupported
->> action-string; this will be ignored in a future kernel version
->> Mar 28 14:43:29 shrimp kernel: tty ptyr0: uevent: unsupported
->> action-string; this will be ignored in a future kernel version
->>
->>
->> These messages are a regression compared with 2.6.24, which did not flood the
->> syslog with them.
->>
->> The actual underlying problem was introduced in 2.6.23, when somebody made the
->> string parsing no longer accept nul-terminated strings as a valid input to
->> store_uevent().
->>
->> Eg.  "add\0" was valid prior to 2.6.23, where the code regressed to require
->> "add" without the '\0'.
->>
->> This patch fixes the 2.6.23 / 2.6.24 regressions, by having the code once
->> again tolerate the trailing '\0', if present.
->>
->> According to GregKH, this mainly affects older Ubuntu systems, such as the one
->> I have here that requires this fix.
->>
->> Signed-off-by: Mark Lord <mlord@pobox.com>
->> Cc: Greg KH <greg@kroah.com>
->> Cc: Kay Sievers <kay.sievers@vrfy.org>
->> Cc: <stable@kernel.org>
->> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
->> ---
->>
->> lib/kobject_uevent.c |    2 +-
->> 1 file changed, 1 insertion(+), 1 deletion(-)
->>
->> diff -puN lib/kobject_uevent.c~driver-core-fix-uevent-action-string-regression lib/kobject_uevent.c
->> --- a/lib/kobject_uevent.c~driver-core-fix-uevent-action-string-regression
->> +++ a/lib/kobject_uevent.c
->> @@ -59,7 +59,7 @@ int kobject_action_type(const char *buf,
->> 	enum kobject_action action;
->> 	int ret = -EINVAL;
->>
->> -	if (count && buf[count-1] == '\n')
->> +	if (count && (buf[count-1] == '\n' || buf[count-1] == '\0'))
->> 		count--;
->>
->> 	if (!count)
->> _
->>
->> Patches currently in -mm which might be from lkml@rtr.ca are
->>
->> driver-core-fix-uevent-action-string-regression.patch
-> 
-> cu
-> Adrian
-> 
+Justin
 
