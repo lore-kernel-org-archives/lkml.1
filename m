@@ -1,110 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757200AbYCaRsY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756364AbYCaR4Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757200AbYCaRsY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Mar 2008 13:48:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754181AbYCaRsR
+	id S1756364AbYCaR4Y (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Mar 2008 13:56:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753312AbYCaR4P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Mar 2008 13:48:17 -0400
-Received: from rtr.ca ([76.10.145.34]:1844 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751554AbYCaRsQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Mar 2008 13:48:16 -0400
-Message-ID: <47F123DF.10204@rtr.ca>
-Date: Mon, 31 Mar 2008 13:48:15 -0400
-From: Mark Lord <lkml@rtr.ca>
-Organization: Real-Time Remedies Inc.
-User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
-MIME-Version: 1.0
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: LKML <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Natalie Protasevich <protasnb@gmail.com>
-Subject: Re: 2.6.25-rc7-git5: Reported regressions from 2.6.24
-References: <200803310228.11027.rjw@sisk.pl>
-In-Reply-To: <200803310228.11027.rjw@sisk.pl>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Mon, 31 Mar 2008 13:56:15 -0400
+Received: from relay2.sgi.com ([192.48.171.30]:35688 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753235AbYCaR4O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 31 Mar 2008 13:56:14 -0400
+Date: Mon, 31 Mar 2008 12:56:11 -0500
+From: Paul Jackson <pj@sgi.com>
+To: Mike Travis <travis@sgi.com>
+Cc: bert.wesarg@googlemail.com, mingo@elte.hu, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/2] x86: modify show_shared_cpu_map in intel_cacheinfo
+Message-Id: <20080331125611.9ad42e8f.pj@sgi.com>
+In-Reply-To: <47F112BD.4050801@sgi.com>
+References: <20080327231654.284673000@polaris-admin.engr.sgi.com>
+	<20080327231654.599276000@polaris-admin.engr.sgi.com>
+	<36ca99e90803280201i708ce9b7y293a2c68e733f088@mail.gmail.com>
+	<47ED0343.1070708@sgi.com>
+	<36ca99e90803280754p1fbedbccp366366f0240fe5cc@mail.gmail.com>
+	<47ED36B9.6000508@sgi.com>
+	<36ca99e90803290159v33ab43cbu5acd4bc2b0cd0262@mail.gmail.com>
+	<47F112BD.4050801@sgi.com>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rafael,
+>>  I did an informal survey and you are right, the majority of references do use
+>>  cpumask_scnprintf instead of cpulist_scnprintf.  Maybe the later function was
+>>  added later?
 
-Add this one to the list?
+My recollection is that I added cpulist_scnprintf later, yes.
+Looking at my email archives, I see the mask versions mentioned
+starting Feb 2004, and the list versions starting Aug 2004.
 
+My rule of thumb has been to use the mask style (00000000,0000ffff)
+for lower level interfaces, and the list style (0-15) for higher level
+interfaces.
 
-* * * * *
+For long lists, the list style is easier for humans to read, but for
+one word masks, the mask style can be easier to read for -some-
+purposes and are more commonly used.
 
-Subject: + driver-core-fix-uevent-action-string-regression.patch added to -mm tree
-From: akpm
-To: mm-commits
-Date: 28/03/08 07:51 PM
+If you throw enough user level software at them, the lists are no more
+or less difficult to form or parse.  Hand coded C parsers are probably
+easier to write for the mask style, and might be closer to what low
+level (closer to the hardware) programmers expect.
 
-The patch titled
-     driver core: fix uevent action-string regression
-has been added to the -mm tree.  Its filename is
-     driver-core-fix-uevent-action-string-regression.patch
-...
+Certainly, a particular interface should not change once it goes public.
 
-The current -mm tree may be found at http://userweb.kernel.org/~akpm/mmotm/
+Once picked for a new interface, I don't recall ever seeing any significant
+controversy over which one was picked.  So another of my rules of thumb
+might apply here -- coders choice.  He who writes the code gets to make
+the open choices.
 
-------------------------------------------------------
-Subject: driver core: fix uevent action-string regression
-From: Mark Lord <lkml@rtr.ca>
-
-On boot, syslog is flooded with "uevent: unsupported action-string;" messages.
-..
-Mar 28 14:43:29 shrimp kernel: tty ptyqd: uevent: unsupported
-action-string; this will be ignored in a future kernel version
-Mar 28 14:43:29 shrimp kernel: tty ptyqe: uevent: unsupported
-action-string; this will be ignored in a future kernel version
-Mar 28 14:43:29 shrimp kernel: tty ptyqf: uevent: unsupported
-action-string; this will be ignored in a future kernel version
-Mar 28 14:43:29 shrimp kernel: tty ptyr0: uevent: unsupported
-action-string; this will be ignored in a future kernel version
-
-
-These messages are a regression compared with 2.6.24, which did not flood the
-syslog with them.
-
-The actual underlying problem was introduced in 2.6.23, when somebody made the
-string parsing no longer accept nul-terminated strings as a valid input to
-store_uevent().
-
-Eg.  "add\0" was valid prior to 2.6.23, where the code regressed to require
-"add" without the '\0'.
-
-This patch fixes the 2.6.23 / 2.6.24 regressions, by having the code once
-again tolerate the trailing '\0', if present.
-
-According to GregKH, this mainly affects older Ubuntu systems, such as the one
-I have here that requires this fix.
-
-Signed-off-by: Mark Lord <mlord@pobox.com>
-Cc: Greg KH <greg@kroah.com>
-Cc: Kay Sievers <kay.sievers@vrfy.org>
-Cc: <stable@kernel.org>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
----
-
- lib/kobject_uevent.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff -puN lib/kobject_uevent.c~driver-core-fix-uevent-action-string-regression lib/kobject_uevent.c
---- a/lib/kobject_uevent.c~driver-core-fix-uevent-action-string-regression
-+++ a/lib/kobject_uevent.c
-@@ -59,7 +59,7 @@ int kobject_action_type(const char *buf,
- 	enum kobject_action action;
- 	int ret = -EINVAL;
- 
--	if (count && buf[count-1] == '\n')
-+	if (count && (buf[count-1] == '\n' || buf[count-1] == '\0'))
- 		count--;
- 
- 	if (!count)
-_
-
-Patches currently in -mm which might be from lkml@rtr.ca are
-
-driver-core-fix-uevent-action-string-regression.patch
+-- 
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.940.382.4214
