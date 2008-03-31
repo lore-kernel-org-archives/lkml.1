@@ -1,65 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758019AbYCaVIb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755821AbYCaVWL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758019AbYCaVIb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Mar 2008 17:08:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755313AbYCaVIX
+	id S1755821AbYCaVWL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Mar 2008 17:22:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755843AbYCaVV4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Mar 2008 17:08:23 -0400
-Received: from x346.tv-sign.ru ([89.108.83.215]:57122 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755143AbYCaVIX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Mar 2008 17:08:23 -0400
-Date: Tue, 1 Apr 2008 00:07:58 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Roland McGrath <roland@redhat.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/3] do_wait reorganization
-Message-ID: <20080331200758.GA115@tv-sign.ru>
-References: <20080329033412.120EE26FA1D@magilla.localdomain> <alpine.LFD.1.00.0803290906050.14670@woody.linux-foundation.org> <20080331035701.3926726F8E9@magilla.localdomain> <20080331085110.GA400@tv-sign.ru> <20080331202910.5C4C926F8E9@magilla.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 31 Mar 2008 17:21:56 -0400
+Received: from lazybastard.de ([212.112.238.170]:35832 "EHLO
+	longford.logfs.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755649AbYCaVVz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 31 Mar 2008 17:21:55 -0400
+Date: Mon, 31 Mar 2008 23:21:34 +0200
+From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>,
+       Adrian Hunter <ext-adrian.hunter@nokia.com>,
+       Jan Engelhardt <jengelh@computergmbh.de>,
+       LKML <linux-kernel@vger.kernel.org>, joern@lazybastard.org
+Subject: Re: [RFC PATCH] UBIFS - new flash file system
+Message-ID: <20080331212133.GA2388@logfs.org>
+References: <1206629746-4298-1-git-send-email-Artem.Bityutskiy@nokia.com> <alpine.LNX.1.10.0803311428270.2554@fbirervta.pbzchgretzou.qr> <47F0DD49.7010302@nokia.com> <20080331132047.GA31660@logfs.org> <47F0EE63.3060401@nokia.com> <20080331171757.GA2077@logfs.org> <84144f020803311349w7f1b83e8x174ada25ffc85215@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20080331202910.5C4C926F8E9@magilla.localdomain>
-User-Agent: Mutt/1.5.11
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <84144f020803311349w7f1b83e8x174ada25ffc85215@mail.gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 03/31, Roland McGrath wrote:
->
-> I think it should look like this:
+On Mon, 31 March 2008 23:49:16 +0300, Pekka Enberg wrote:
 > 
->     {
-> 	    int ret = eligible_child(type, pid, options, p);
-> 	    if (ret <= 0)
-> 		    return ret;
-> 
-> 	    if (p->exit_state == EXIT_DEAD)
-> 		    return 0;
-> 
-> 	    /*
-> 	     * We don't reap group leaders with subthreads.
-> 	     */
-> 	    if (p->exit_state == EXIT_ZOMBIE && !delay_group_leader(p))
-> 		    return wait_task_zombie(p, options, infop, stat_addr, ru);
-> 
-> 	    /*
-> 	     * It's stopped or running now, so it might
-> 	     * later continue, exit, or stop again.
-> 	     */
-> 	    *retval = 0;
-> 
-> 	    if (task_is_stopped_or_traced(p))
-> 		    return wait_task_stopped(p, options, infop, stat_addr, ru);
-> 
-> 	    return wait_task_continued(p, options, infop, stat_addr, ru);
->     }
+> There are some of us that are interested to know why we want UBIFS in
+> the mainline rather than wait for LogFS or some other variant to
+> appear though.
 
-I think you are right.
+You don't have to wait long.  I was thinking about sending a patch out
+tomorrow.
 
-(BTW, you moved the "options & WHATEVER" checks into wait_task_xxx(),
- I think this really makes the code more readable and maintainable).
+And I don't believe it has to be a choice.  There is little reason
+against merging both - apart from any problems found in the review.
 
-Oleg.
+Also, competition is a good thing.  There's nothing like a flurry of
+patches following an unfavorable benchmark for one side or the other. ;)
 
+Jörn
+
+-- 
+Fancy algorithms are slow when n is small, and n is usually small.
+Fancy algorithms have big constants. Until you know that n is
+frequently going to be big, don't get fancy.
+-- Rob Pike
