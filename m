@@ -1,21 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757671AbYCaOra@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760010AbYCaOrp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757671AbYCaOra (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Mar 2008 10:47:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752290AbYCaOhu
+	id S1760010AbYCaOrp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Mar 2008 10:47:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753352AbYCaOhw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Mar 2008 10:37:50 -0400
-Received: from bzq-179-150-194.static.bezeqint.net ([212.179.150.194]:51325
+	Mon, 31 Mar 2008 10:37:52 -0400
+Received: from bzq-179-150-194.static.bezeqint.net ([212.179.150.194]:51309
 	"EHLO il.qumranet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751612AbYCaOhf (ORCPT
+	with ESMTP id S1751644AbYCaOhf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 31 Mar 2008 10:37:35 -0400
 From: Avi Kivity <avi@qumranet.com>
 To: kvm-devel@lists.sourceforge.net
-Cc: linux-kernel@vger.kernel.org, Joerg Roedel <joerg.roedel@amd.com>
-Subject: [PATCH 26/40] KVM: MMU: add TDP support to the KVM MMU
-Date: Mon, 31 Mar 2008 17:37:10 +0300
-Message-Id: <1206974244-9716-27-git-send-email-avi@qumranet.com>
+Cc: linux-kernel@vger.kernel.org,
+       Glauber de Oliveira Costa <gcosta@redhat.com>
+Subject: [PATCH 33/40] x86: KVM guest: paravirtualized clocksource
+Date: Mon, 31 Mar 2008 17:37:17 +0300
+Message-Id: <1206974244-9716-34-git-send-email-avi@qumranet.com>
 X-Mailer: git-send-email 1.5.4.5
 In-Reply-To: <1206974244-9716-1-git-send-email-avi@qumranet.com>
 References: <1206974244-9716-1-git-send-email-avi@qumranet.com>
@@ -23,167 +24,278 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Joerg Roedel <joerg.roedel@amd.com>
+From: Glauber de Oliveira Costa <gcosta@redhat.com>
 
-This patch contains the changes to the KVM MMU necessary for support of the
-Nested Paging feature in AMD Barcelona and Phenom Processors.
+This is the guest part of kvm clock implementation
+It does not do tsc-only timing, as tsc can have deltas
+between cpus, and it did not seem worthy to me to keep
+adjusting them.
 
-Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
+We do use it, however, for fine-grained adjustment.
+
+Other than that, time comes from the host.
+
+[randy dunlap: add missing include]
+[randy dunlap: disallow on Voyager or Visual WS]
+
+Signed-off-by: Glauber de Oliveira Costa <gcosta@redhat.com>
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
 Signed-off-by: Avi Kivity <avi@qumranet.com>
 ---
- arch/x86/kvm/mmu.c |   79 ++++++++++++++++++++++++++++++++++++++++++++++++++--
- arch/x86/kvm/mmu.h |    6 ++++
- 2 files changed, 82 insertions(+), 3 deletions(-)
+ arch/x86/Kconfig           |   11 +++
+ arch/x86/kernel/Makefile   |    1 +
+ arch/x86/kernel/kvmclock.c |  160 ++++++++++++++++++++++++++++++++++++++++++++
+ arch/x86/kernel/setup_32.c |    5 ++
+ arch/x86/kernel/setup_64.c |    5 ++
+ 5 files changed, 182 insertions(+), 0 deletions(-)
+ create mode 100644 arch/x86/kernel/kvmclock.c
 
-diff --git a/arch/x86/kvm/mmu.c b/arch/x86/kvm/mmu.c
-index 33cd7c9..f7541fe 100644
---- a/arch/x86/kvm/mmu.c
-+++ b/arch/x86/kvm/mmu.c
-@@ -1097,6 +1097,7 @@ static void mmu_alloc_roots(struct kvm_vcpu *vcpu)
- 	int i;
- 	gfn_t root_gfn;
- 	struct kvm_mmu_page *sp;
-+	int metaphysical = 0;
+diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+index 6c70fed..e59ea05 100644
+--- a/arch/x86/Kconfig
++++ b/arch/x86/Kconfig
+@@ -370,6 +370,17 @@ config VMI
+ 	  at the moment), by linking the kernel to a GPL-ed ROM module
+ 	  provided by the hypervisor.
  
- 	root_gfn = vcpu->arch.cr3 >> PAGE_SHIFT;
++config KVM_CLOCK
++	bool "KVM paravirtualized clock"
++	select PARAVIRT
++	depends on !(X86_VISWS || X86_VOYAGER)
++	help
++	  Turning on this option will allow you to run a paravirtualized clock
++	  when running over the KVM hypervisor. Instead of relying on a PIT
++	  (or probably other) emulation by the underlying device model, the host
++	  provides the guest with timing infrastructure such as time of day, and
++	  system time
++
+ source "arch/x86/lguest/Kconfig"
  
-@@ -1105,14 +1106,20 @@ static void mmu_alloc_roots(struct kvm_vcpu *vcpu)
- 		hpa_t root = vcpu->arch.mmu.root_hpa;
+ config PARAVIRT
+diff --git a/arch/x86/kernel/Makefile b/arch/x86/kernel/Makefile
+index 4eb5ce8..a3379a3 100644
+--- a/arch/x86/kernel/Makefile
++++ b/arch/x86/kernel/Makefile
+@@ -77,6 +77,7 @@ obj-$(CONFIG_DEBUG_RODATA_TEST)	+= test_rodata.o
+ obj-$(CONFIG_DEBUG_NX_TEST)	+= test_nx.o
  
- 		ASSERT(!VALID_PAGE(root));
-+		if (tdp_enabled)
-+			metaphysical = 1;
- 		sp = kvm_mmu_get_page(vcpu, root_gfn, 0,
--				      PT64_ROOT_LEVEL, 0, ACC_ALL, NULL);
-+				      PT64_ROOT_LEVEL, metaphysical,
-+				      ACC_ALL, NULL);
- 		root = __pa(sp->spt);
- 		++sp->root_count;
- 		vcpu->arch.mmu.root_hpa = root;
- 		return;
- 	}
- #endif
-+	metaphysical = !is_paging(vcpu);
-+	if (tdp_enabled)
-+		metaphysical = 1;
- 	for (i = 0; i < 4; ++i) {
- 		hpa_t root = vcpu->arch.mmu.pae_root[i];
+ obj-$(CONFIG_VMI)		+= vmi_32.o vmiclock_32.o
++obj-$(CONFIG_KVM_CLOCK)		+= kvmclock.o
+ obj-$(CONFIG_PARAVIRT)		+= paravirt.o paravirt_patch_$(BITS).o
  
-@@ -1126,7 +1133,7 @@ static void mmu_alloc_roots(struct kvm_vcpu *vcpu)
- 		} else if (vcpu->arch.mmu.root_level == 0)
- 			root_gfn = 0;
- 		sp = kvm_mmu_get_page(vcpu, root_gfn, i << 30,
--				      PT32_ROOT_LEVEL, !is_paging(vcpu),
-+				      PT32_ROOT_LEVEL, metaphysical,
- 				      ACC_ALL, NULL);
- 		root = __pa(sp->spt);
- 		++sp->root_count;
-@@ -1160,6 +1167,36 @@ static int nonpaging_page_fault(struct kvm_vcpu *vcpu, gva_t gva,
- 			     error_code & PFERR_WRITE_MASK, gfn);
- }
- 
-+static int tdp_page_fault(struct kvm_vcpu *vcpu, gva_t gpa,
-+				u32 error_code)
+ ifdef CONFIG_INPUT_PCSPKR
+diff --git a/arch/x86/kernel/kvmclock.c b/arch/x86/kernel/kvmclock.c
+new file mode 100644
+index 0000000..b999f5e
+--- /dev/null
++++ b/arch/x86/kernel/kvmclock.c
+@@ -0,0 +1,160 @@
++/*  KVM paravirtual clock driver. A clocksource implementation
++    Copyright (C) 2008 Glauber de Oliveira Costa, Red Hat Inc.
++
++    This program is free software; you can redistribute it and/or modify
++    it under the terms of the GNU General Public License as published by
++    the Free Software Foundation; either version 2 of the License, or
++    (at your option) any later version.
++
++    This program is distributed in the hope that it will be useful,
++    but WITHOUT ANY WARRANTY; without even the implied warranty of
++    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++    GNU General Public License for more details.
++
++    You should have received a copy of the GNU General Public License
++    along with this program; if not, write to the Free Software
++    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
++*/
++
++#include <linux/clocksource.h>
++#include <linux/kvm_para.h>
++#include <asm/arch_hooks.h>
++#include <asm/msr.h>
++#include <asm/apic.h>
++#include <linux/percpu.h>
++
++#define KVM_SCALE 22
++
++static int kvmclock = 1;
++
++static int parse_no_kvmclock(char *arg)
 +{
-+	struct page *page;
-+	int r;
++	kvmclock = 0;
++	return 0;
++}
++early_param("no-kvmclock", parse_no_kvmclock);
 +
-+	ASSERT(vcpu);
-+	ASSERT(VALID_PAGE(vcpu->arch.mmu.root_hpa));
++/* The hypervisor will put information about time periodically here */
++static DEFINE_PER_CPU_SHARED_ALIGNED(struct kvm_vcpu_time_info, hv_clock);
++#define get_clock(cpu, field) per_cpu(hv_clock, cpu).field
 +
-+	r = mmu_topup_memory_caches(vcpu);
-+	if (r)
-+		return r;
-+
-+	down_read(&current->mm->mmap_sem);
-+	page = gfn_to_page(vcpu->kvm, gpa >> PAGE_SHIFT);
-+	if (is_error_page(page)) {
-+		kvm_release_page_clean(page);
-+		up_read(&current->mm->mmap_sem);
-+		return 1;
-+	}
-+	spin_lock(&vcpu->kvm->mmu_lock);
-+	kvm_mmu_free_some_pages(vcpu);
-+	r = __direct_map(vcpu, gpa, error_code & PFERR_WRITE_MASK,
-+			 gpa >> PAGE_SHIFT, page, TDP_ROOT_LEVEL);
-+	spin_unlock(&vcpu->kvm->mmu_lock);
-+	up_read(&current->mm->mmap_sem);
-+
-+	return r;
++static inline u64 kvm_get_delta(u64 last_tsc)
++{
++	int cpu = smp_processor_id();
++	u64 delta = native_read_tsc() - last_tsc;
++	return (delta * get_clock(cpu, tsc_to_system_mul)) >> KVM_SCALE;
 +}
 +
- static void nonpaging_free(struct kvm_vcpu *vcpu)
- {
- 	mmu_free_roots(vcpu);
-@@ -1253,7 +1290,35 @@ static int paging32E_init_context(struct kvm_vcpu *vcpu)
- 	return paging64_init_context_common(vcpu, PT32E_ROOT_LEVEL);
- }
- 
--static int init_kvm_mmu(struct kvm_vcpu *vcpu)
-+static int init_kvm_tdp_mmu(struct kvm_vcpu *vcpu)
++static struct kvm_wall_clock wall_clock;
++static cycle_t kvm_clock_read(void);
++/*
++ * The wallclock is the time of day when we booted. Since then, some time may
++ * have elapsed since the hypervisor wrote the data. So we try to account for
++ * that with system time
++ */
++unsigned long kvm_get_wallclock(void)
 +{
-+	struct kvm_mmu *context = &vcpu->arch.mmu;
++	u32 wc_sec, wc_nsec;
++	u64 delta;
++	struct timespec ts;
++	int version, nsec;
++	int low, high;
 +
-+	context->new_cr3 = nonpaging_new_cr3;
-+	context->page_fault = tdp_page_fault;
-+	context->free = nonpaging_free;
-+	context->prefetch_page = nonpaging_prefetch_page;
-+	context->shadow_root_level = TDP_ROOT_LEVEL;
-+	context->root_hpa = INVALID_PAGE;
++	low = (int)__pa(&wall_clock);
++	high = ((u64)__pa(&wall_clock) >> 32);
 +
-+	if (!is_paging(vcpu)) {
-+		context->gva_to_gpa = nonpaging_gva_to_gpa;
-+		context->root_level = 0;
-+	} else if (is_long_mode(vcpu)) {
-+		context->gva_to_gpa = paging64_gva_to_gpa;
-+		context->root_level = PT64_ROOT_LEVEL;
-+	} else if (is_pae(vcpu)) {
-+		context->gva_to_gpa = paging64_gva_to_gpa;
-+		context->root_level = PT32E_ROOT_LEVEL;
-+	} else {
-+		context->gva_to_gpa = paging32_gva_to_gpa;
-+		context->root_level = PT32_ROOT_LEVEL;
-+	}
++	delta = kvm_clock_read();
 +
++	native_write_msr(MSR_KVM_WALL_CLOCK, low, high);
++	do {
++		version = wall_clock.wc_version;
++		rmb();
++		wc_sec = wall_clock.wc_sec;
++		wc_nsec = wall_clock.wc_nsec;
++		rmb();
++	} while ((wall_clock.wc_version != version) || (version & 1));
++
++	delta = kvm_clock_read() - delta;
++	delta += wc_nsec;
++	nsec = do_div(delta, NSEC_PER_SEC);
++	set_normalized_timespec(&ts, wc_sec + delta, nsec);
++	/*
++	 * Of all mechanisms of time adjustment I've tested, this one
++	 * was the champion!
++	 */
++	return ts.tv_sec + 1;
++}
++
++int kvm_set_wallclock(unsigned long now)
++{
 +	return 0;
 +}
 +
-+static int init_kvm_softmmu(struct kvm_vcpu *vcpu)
- {
- 	ASSERT(vcpu);
- 	ASSERT(!VALID_PAGE(vcpu->arch.mmu.root_hpa));
-@@ -1268,6 +1333,14 @@ static int init_kvm_mmu(struct kvm_vcpu *vcpu)
- 		return paging32_init_context(vcpu);
- }
- 
-+static int init_kvm_mmu(struct kvm_vcpu *vcpu)
++/*
++ * This is our read_clock function. The host puts an tsc timestamp each time
++ * it updates a new time. Without the tsc adjustment, we can have a situation
++ * in which a vcpu starts to run earlier (smaller system_time), but probes
++ * time later (compared to another vcpu), leading to backwards time
++ */
++static cycle_t kvm_clock_read(void)
 +{
-+	if (tdp_enabled)
-+		return init_kvm_tdp_mmu(vcpu);
-+	else
-+		return init_kvm_softmmu(vcpu);
++	u64 last_tsc, now;
++	int cpu;
++
++	preempt_disable();
++	cpu = smp_processor_id();
++
++	last_tsc = get_clock(cpu, tsc_timestamp);
++	now = get_clock(cpu, system_time);
++
++	now += kvm_get_delta(last_tsc);
++	preempt_enable();
++
++	return now;
++}
++static struct clocksource kvm_clock = {
++	.name = "kvm-clock",
++	.read = kvm_clock_read,
++	.rating = 400,
++	.mask = CLOCKSOURCE_MASK(64),
++	.mult = 1 << KVM_SCALE,
++	.shift = KVM_SCALE,
++	.flags = CLOCK_SOURCE_IS_CONTINUOUS,
++};
++
++static int kvm_register_clock(void)
++{
++	int cpu = smp_processor_id();
++	int low, high;
++	low = (int)__pa(&per_cpu(hv_clock, cpu)) | 1;
++	high = ((u64)__pa(&per_cpu(hv_clock, cpu)) >> 32);
++
++	return native_write_msr_safe(MSR_KVM_SYSTEM_TIME, low, high);
 +}
 +
- static void destroy_kvm_mmu(struct kvm_vcpu *vcpu)
- {
- 	ASSERT(vcpu);
-diff --git a/arch/x86/kvm/mmu.h b/arch/x86/kvm/mmu.h
-index 1fce19e..e64e9f5 100644
---- a/arch/x86/kvm/mmu.h
-+++ b/arch/x86/kvm/mmu.h
-@@ -3,6 +3,12 @@
++static void kvm_setup_secondary_clock(void)
++{
++	/*
++	 * Now that the first cpu already had this clocksource initialized,
++	 * we shouldn't fail.
++	 */
++	WARN_ON(kvm_register_clock());
++	/* ok, done with our trickery, call native */
++	setup_secondary_APIC_clock();
++}
++
++void __init kvmclock_init(void)
++{
++	if (!kvm_para_available())
++		return;
++
++	if (kvmclock && kvm_para_has_feature(KVM_FEATURE_CLOCKSOURCE)) {
++		if (kvm_register_clock())
++			return;
++		pv_time_ops.get_wallclock = kvm_get_wallclock;
++		pv_time_ops.set_wallclock = kvm_set_wallclock;
++		pv_time_ops.sched_clock = kvm_clock_read;
++		pv_apic_ops.setup_secondary_clock = kvm_setup_secondary_clock;
++		clocksource_register(&kvm_clock);
++	}
++}
+diff --git a/arch/x86/kernel/setup_32.c b/arch/x86/kernel/setup_32.c
+index 2b3e5d4..3ef92a2 100644
+--- a/arch/x86/kernel/setup_32.c
++++ b/arch/x86/kernel/setup_32.c
+@@ -46,6 +46,7 @@
+ #include <linux/pfn.h>
+ #include <linux/pci.h>
+ #include <linux/init_ohci1394_dma.h>
++#include <linux/kvm_para.h>
  
- #include <linux/kvm_host.h>
+ #include <video/edid.h>
  
-+#ifdef CONFIG_X86_64
-+#define TDP_ROOT_LEVEL PT64_ROOT_LEVEL
-+#else
-+#define TDP_ROOT_LEVEL PT32E_ROOT_LEVEL
+@@ -770,6 +771,10 @@ void __init setup_arch(char **cmdline_p)
+ 
+ 	max_low_pfn = setup_memory();
+ 
++#ifdef CONFIG_KVM_CLOCK
++	kvmclock_init();
 +#endif
 +
- static inline void kvm_mmu_free_some_pages(struct kvm_vcpu *vcpu)
- {
- 	if (unlikely(vcpu->kvm->arch.n_free_mmu_pages < KVM_MIN_FREE_MMU_PAGES))
+ #ifdef CONFIG_VMI
+ 	/*
+ 	 * Must be after max_low_pfn is determined, and before kernel
+diff --git a/arch/x86/kernel/setup_64.c b/arch/x86/kernel/setup_64.c
+index f4f7ecf..26b676f 100644
+--- a/arch/x86/kernel/setup_64.c
++++ b/arch/x86/kernel/setup_64.c
+@@ -41,6 +41,7 @@
+ #include <linux/ctype.h>
+ #include <linux/uaccess.h>
+ #include <linux/init_ohci1394_dma.h>
++#include <linux/kvm_para.h>
+ 
+ #include <asm/mtrr.h>
+ #include <asm/uaccess.h>
+@@ -349,6 +350,10 @@ void __init setup_arch(char **cmdline_p)
+ 
+ 	io_delay_init();
+ 
++#ifdef CONFIG_KVM_CLOCK
++	kvmclock_init();
++#endif
++
+ #ifdef CONFIG_SMP
+ 	/* setup to use the early static init tables during kernel startup */
+ 	x86_cpu_to_apicid_early_ptr = (void *)x86_cpu_to_apicid_init;
 -- 
 1.5.4.5
 
