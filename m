@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759666AbYCaOqu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759815AbYCaOrP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759666AbYCaOqu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Mar 2008 10:46:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753298AbYCaOht
+	id S1759815AbYCaOrP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Mar 2008 10:47:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753305AbYCaOht
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Mon, 31 Mar 2008 10:37:49 -0400
-Received: from bzq-179-150-194.static.bezeqint.net ([212.179.150.194]:51326
+Received: from bzq-179-150-194.static.bezeqint.net ([212.179.150.194]:51319
 	"EHLO il.qumranet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751617AbYCaOhf (ORCPT
+	with ESMTP id S1751647AbYCaOhf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 31 Mar 2008 10:37:35 -0400
 From: Avi Kivity <avi@qumranet.com>
 To: kvm-devel@lists.sourceforge.net
-Cc: linux-kernel@vger.kernel.org, Ryan Harper <ryanh@us.ibm.com>
-Subject: [PATCH 28/40] KVM: VMX: fix typo in VMX header define
-Date: Mon, 31 Mar 2008 17:37:12 +0300
-Message-Id: <1206974244-9716-29-git-send-email-avi@qumranet.com>
+Cc: linux-kernel@vger.kernel.org, Joerg Roedel <joerg.roedel@amd.com>
+Subject: [PATCH 31/40] KVM: SVM: enable LBR virtualization
+Date: Mon, 31 Mar 2008 17:37:15 +0300
+Message-Id: <1206974244-9716-32-git-send-email-avi@qumranet.com>
 X-Mailer: git-send-email 1.5.4.5
 In-Reply-To: <1206974244-9716-1-git-send-email-avi@qumranet.com>
 References: <1206974244-9716-1-git-send-email-avi@qumranet.com>
@@ -23,69 +23,85 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Ryan Harper <ryanh@us.ibm.com>
+From: Joerg Roedel <joerg.roedel@amd.com>
 
-Looking at Intel Volume 3b, page 148, table 20-11 and noticed
-that the field name is 'Deliver' not 'Deliever'.  Attached patch changes
-the define name and its user in vmx.c
+This patch implements the Last Branch Record Virtualization (LBRV) feature of
+the AMD Barcelona and Phenom processors into the kvm-amd module. It will only
+be enabled if the guest enables last branch recording in the DEBUG_CTL MSR. So
+there is no increased world switch overhead when the guest doesn't use these
+MSRs.
 
-Signed-off-by: Ryan Harper <ryanh@us.ibm.com>
+Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
+Signed-off-by: Markus Rechberger <markus.rechberger@amd.com>
 Signed-off-by: Avi Kivity <avi@qumranet.com>
 ---
- arch/x86/kvm/vmx.c |    6 +++---
- arch/x86/kvm/vmx.h |    4 ++--
- 2 files changed, 5 insertions(+), 5 deletions(-)
+ arch/x86/kvm/svm.c |   39 +++++++++++++++++++++++++++++++++++++--
+ 1 files changed, 37 insertions(+), 2 deletions(-)
 
-diff --git a/arch/x86/kvm/vmx.c b/arch/x86/kvm/vmx.c
-index 76944f2..2d5ccec 100644
---- a/arch/x86/kvm/vmx.c
-+++ b/arch/x86/kvm/vmx.c
-@@ -632,7 +632,7 @@ static void vmx_queue_exception(struct kvm_vcpu *vcpu, unsigned nr,
+diff --git a/arch/x86/kvm/svm.c b/arch/x86/kvm/svm.c
+index 281a2ff..7d73e93 100644
+--- a/arch/x86/kvm/svm.c
++++ b/arch/x86/kvm/svm.c
+@@ -47,6 +47,8 @@ MODULE_LICENSE("GPL");
+ #define SVM_FEATURE_LBRV (1 << 1)
+ #define SVM_DEATURE_SVML (1 << 2)
+ 
++#define DEBUGCTL_RESERVED_BITS (~(0x3fULL))
++
+ /* enable NPT for AMD64 and X86 with PAE */
+ #if defined(CONFIG_X86_64) || defined(CONFIG_X86_PAE)
+ static bool npt_enabled = true;
+@@ -387,6 +389,28 @@ static void svm_vcpu_init_msrpm(u32 *msrpm)
+ 	set_msr_interception(msrpm, MSR_IA32_SYSENTER_EIP, 1, 1);
+ }
+ 
++static void svm_enable_lbrv(struct vcpu_svm *svm)
++{
++	u32 *msrpm = svm->msrpm;
++
++	svm->vmcb->control.lbr_ctl = 1;
++	set_msr_interception(msrpm, MSR_IA32_LASTBRANCHFROMIP, 1, 1);
++	set_msr_interception(msrpm, MSR_IA32_LASTBRANCHTOIP, 1, 1);
++	set_msr_interception(msrpm, MSR_IA32_LASTINTFROMIP, 1, 1);
++	set_msr_interception(msrpm, MSR_IA32_LASTINTTOIP, 1, 1);
++}
++
++static void svm_disable_lbrv(struct vcpu_svm *svm)
++{
++	u32 *msrpm = svm->msrpm;
++
++	svm->vmcb->control.lbr_ctl = 0;
++	set_msr_interception(msrpm, MSR_IA32_LASTBRANCHFROMIP, 0, 0);
++	set_msr_interception(msrpm, MSR_IA32_LASTBRANCHTOIP, 0, 0);
++	set_msr_interception(msrpm, MSR_IA32_LASTINTFROMIP, 0, 0);
++	set_msr_interception(msrpm, MSR_IA32_LASTINTTOIP, 0, 0);
++}
++
+ static __init int svm_hardware_setup(void)
  {
- 	vmcs_write32(VM_ENTRY_INTR_INFO_FIELD,
- 		     nr | INTR_TYPE_EXCEPTION
--		     | (has_error_code ? INTR_INFO_DELIEVER_CODE_MASK : 0)
-+		     | (has_error_code ? INTR_INFO_DELIVER_CODE_MASK : 0)
- 		     | INTR_INFO_VALID_MASK);
- 	if (has_error_code)
- 		vmcs_write32(VM_ENTRY_EXCEPTION_ERROR_CODE, error_code);
-@@ -1935,7 +1935,7 @@ static int handle_exception(struct kvm_vcpu *vcpu, struct kvm_run *kvm_run)
- 
- 	error_code = 0;
- 	rip = vmcs_readl(GUEST_RIP);
--	if (intr_info & INTR_INFO_DELIEVER_CODE_MASK)
-+	if (intr_info & INTR_INFO_DELIVER_CODE_MASK)
- 		error_code = vmcs_read32(VM_EXIT_INTR_ERROR_CODE);
- 	if (is_page_fault(intr_info)) {
- 		cr2 = vmcs_readl(EXIT_QUALIFICATION);
-@@ -2351,7 +2351,7 @@ static void vmx_intr_assist(struct kvm_vcpu *vcpu)
- 		vmcs_write32(VM_ENTRY_INSTRUCTION_LEN,
- 				vmcs_read32(VM_EXIT_INSTRUCTION_LEN));
- 
--		if (unlikely(idtv_info_field & INTR_INFO_DELIEVER_CODE_MASK))
-+		if (unlikely(idtv_info_field & INTR_INFO_DELIVER_CODE_MASK))
- 			vmcs_write32(VM_ENTRY_EXCEPTION_ERROR_CODE,
- 				vmcs_read32(IDT_VECTORING_ERROR_CODE));
- 		if (unlikely(has_ext_irq))
-diff --git a/arch/x86/kvm/vmx.h b/arch/x86/kvm/vmx.h
-index 436ce0f..5dff460 100644
---- a/arch/x86/kvm/vmx.h
-+++ b/arch/x86/kvm/vmx.h
-@@ -233,12 +233,12 @@ enum vmcs_field {
-  */
- #define INTR_INFO_VECTOR_MASK           0xff            /* 7:0 */
- #define INTR_INFO_INTR_TYPE_MASK        0x700           /* 10:8 */
--#define INTR_INFO_DELIEVER_CODE_MASK    0x800           /* 11 */
-+#define INTR_INFO_DELIVER_CODE_MASK     0x800           /* 11 */
- #define INTR_INFO_VALID_MASK            0x80000000      /* 31 */
- 
- #define VECTORING_INFO_VECTOR_MASK           	INTR_INFO_VECTOR_MASK
- #define VECTORING_INFO_TYPE_MASK        	INTR_INFO_INTR_TYPE_MASK
--#define VECTORING_INFO_DELIEVER_CODE_MASK    	INTR_INFO_DELIEVER_CODE_MASK
-+#define VECTORING_INFO_DELIVER_CODE_MASK    	INTR_INFO_DELIVER_CODE_MASK
- #define VECTORING_INFO_VALID_MASK       	INTR_INFO_VALID_MASK
- 
- #define INTR_TYPE_EXT_INTR              (0 << 8) /* external interrupt */
+ 	int cpu;
+@@ -1231,8 +1255,19 @@ static int svm_set_msr(struct kvm_vcpu *vcpu, unsigned ecx, u64 data)
+ 		svm->vmcb->save.sysenter_esp = data;
+ 		break;
+ 	case MSR_IA32_DEBUGCTLMSR:
+-		pr_unimpl(vcpu, "%s: MSR_IA32_DEBUGCTLMSR 0x%llx, nop\n",
+-				__FUNCTION__, data);
++		if (!svm_has(SVM_FEATURE_LBRV)) {
++			pr_unimpl(vcpu, "%s: MSR_IA32_DEBUGCTL 0x%llx, nop\n",
++					__FUNCTION__, data);
++			break;
++		}
++		if (data & DEBUGCTL_RESERVED_BITS)
++			return 1;
++
++		svm->vmcb->save.dbgctl = data;
++		if (data & (1ULL<<0))
++			svm_enable_lbrv(svm);
++		else
++			svm_disable_lbrv(svm);
+ 		break;
+ 	case MSR_K7_EVNTSEL0:
+ 	case MSR_K7_EVNTSEL1:
 -- 
 1.5.4.5
 
