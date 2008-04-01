@@ -1,60 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759192AbYDAOnJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758914AbYDAOwh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759192AbYDAOnJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Apr 2008 10:43:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758225AbYDAOmx
+	id S1758914AbYDAOwh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Apr 2008 10:52:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757184AbYDAOw1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Apr 2008 10:42:53 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:54639 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1755533AbYDAOmw (ORCPT
+	Tue, 1 Apr 2008 10:52:27 -0400
+Received: from g1t0029.austin.hp.com ([15.216.28.36]:39158 "EHLO
+	g1t0029.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756978AbYDAOw0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Apr 2008 10:42:52 -0400
-Date: Tue, 1 Apr 2008 10:42:51 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Matthew Dharm <mdharm-kernel@one-eyed-alien.net>
-cc: Oliver Neukum <oliver@neukum.org>, Sergey Dolgov <solkaa@gmail.com>,
-       <linux-kernel@vger.kernel.org>, <linux-usb@vger.kernel.org>
-Subject: Re: usb-storage, error reading the last 8 sectors, regression in
- 2.6.25-rc7
-In-Reply-To: <20080401143420.GB20920@one-eyed-alien.net>
-Message-ID: <Pine.LNX.4.44L0.0804011040260.4253-100000@iolanthe.rowland.org>
+	Tue, 1 Apr 2008 10:52:26 -0400
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+To: Rene Herman <rene.herman@keyaccess.nl>
+Subject: Re: [patch 00/37] PNP resource_table cleanups
+Date: Tue, 1 Apr 2008 08:52:22 -0600
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: Len Brown <lenb@kernel.org>, linux-acpi@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Adam Belay <ambx1@neo.rr.com>,
+       Li Shaohua <shaohua.li@intel.com>,
+       Matthieu Castet <castet.matthieu@free.fr>,
+       Thomas Renninger <trenn@suse.de>, Jaroslav Kysela <perex@perex.cz>,
+       Andrew Morton <akpm@linux-foundation.org>
+References: <20080326171058.099442579@ldl.fc.hp.com> <47F159BE.7050201@keyaccess.nl> <47F20B6A.1000609@keyaccess.nl>
+In-Reply-To: <47F20B6A.1000609@keyaccess.nl>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200804010852.22785.bjorn.helgaas@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 1 Apr 2008, Matthew Dharm wrote:
-
-> On Tue, Apr 01, 2008 at 10:28:52AM -0400, Alan Stern wrote:
-> > On Tue, 1 Apr 2008, Oliver Neukum wrote:
+On Tuesday 01 April 2008 04:16:10 am Rene Herman wrote:
+> On 31-03-08 23:38, Rene Herman wrote:
+> > On 31-03-08 22:51, Bjorn Helgaas wrote:
 > > 
-> > > Am Dienstag, 1. April 2008 03:58:31 schrieb Alan Stern:
-> > > > Nevertheless, it's clear that the problem has nothing to do with the 
-> > > > USB stack.  The real source of the problem lies in the device itself, 
-> > > > for reporting a bogus error when in fact nothing went wrong.  That may 
-> > > > also explain why you don't always see the problem -- sometimes the 
-> > > > device works the way it ought to.
-> > > 
-> > > Reminds me of the devices that can read the last sector but only if it is read
-> > > by itself. Do you reckon this device may have the "opposite" quirk?
+> >> Ah, right.  Thanks for tracking that down.  I forgot to factor out
+> >> isapnp_to_pnpid() and pnpid32_to_pnpid() (and acpi_ex_eisa_id_to_string()
+> >> for that matter, though that's buried in the ACPI CA)-- they're really
+> >> doing the same thing and we should only need one copy (plus the CA
+> >> one).
 > > 
-> > Could be something like that.
+> > I'll wait for another round then, before reviewing this further.
 > 
-> Didn't I see some SCSI patches go by to implement exactly this change?
-> That is, only read the last sector by itself?
+> There's actually a hex_asc() helper in kernel.h, so before you overlook it 
+> as well, this is a somewhat nicer ID fix.
 
-You are getting the two problems mixed up.  The older problem, which
-the SCSI patche addressed, was that the device would fail when
-accessing the last sector unless the transfer was 1 sector long.
+Thanks, I didn't know about hex_asc()!  I'll post v2 of the series today.
+And thanks a lot for finding those typos in resource.c.  I never would
+have found those...
 
-This problem is different.  When performing an 8-sector read that 
-includes the last sector, the device succeeds.  When performing a 
-7-sector read starting from the same place (so not including the last 
-sector), the device fails.
-
-Alan Stern
-
+Bjorn
