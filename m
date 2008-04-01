@@ -1,58 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759193AbYDAX01@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759427AbYDAXaH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759193AbYDAX01 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Apr 2008 19:26:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755100AbYDAX0R
+	id S1759427AbYDAXaH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Apr 2008 19:30:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755687AbYDAX34
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Apr 2008 19:26:17 -0400
-Received: from fk-out-0910.google.com ([209.85.128.189]:25616 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753429AbYDAX0Q (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Apr 2008 19:26:16 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=cPsf2bjUR1DjgMOhViyiJkUZNWfTA9DC3uEVX27tMACFMA5gM8PcJiV3yWEmbCXbd+7JgTV8C8K9CWxjyj+R1rtGMsZrmXC9nU1bnZ/uO9Etx5e/GnQ79+yYr59NNoIo+kwI485SEjj9JxpmdzBHf7A3FguDsvoobSwMes1uASk=
-Message-ID: <29495f1d0804011626n2399d69aj7566df7f78953458@mail.gmail.com>
-Date: Tue, 1 Apr 2008 16:26:14 -0700
-From: "Nish Aravamudan" <nish.aravamudan@gmail.com>
-To: "Adrian Bunk" <bunk@kernel.org>
-Subject: Re: HugeTLB vs. SH3 cpu
-Cc: wli@holomorphy.com, lethal@linux-sh.org, linux-sh@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20080401225809.GC32269@cs181133002.pp.htv.fi>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080401225809.GC32269@cs181133002.pp.htv.fi>
+	Tue, 1 Apr 2008 19:29:56 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:57235 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755657AbYDAX3z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Apr 2008 19:29:55 -0400
+Date: Wed, 2 Apr 2008 10:29:49 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Herbert Xu <herbert@gondor.apana.org.au>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: linux-next: Tree for April 1
+Message-Id: <20080402102949.7590f566.sfr@canb.auug.org.au>
+In-Reply-To: <E1Jghhe-0006is-00@gondolin.me.apana.org.au>
+References: <20080401175230.9ffe75cf.sfr@canb.auug.org.au>
+	<E1Jghhe-0006is-00@gondolin.me.apana.org.au>
+X-Mailer: Sylpheed 2.5.0beta1 (GTK+ 2.12.9; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Wed__2_Apr_2008_10_29_49_+1100_aP6FBG_mQPdl+6Gj"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 4/1/08, Adrian Bunk <bunk@kernel.org> wrote:
-> fs/Kconfig says:
->
->  config HUGETLBFS
->         bool "HugeTLB file system support"
->         depends on X86 || IA64 || PPC64 || SPARC64 || (SUPERH && MMU) || BROKEN
->
->
->  arch/sh/mm/Kconfig says:
->
->  choice
->         prompt "HugeTLB page size"
->         depends on HUGETLB_PAGE && (CPU_SH4 || CPU_SH5) && MMU
+--Signature=_Wed__2_Apr_2008_10_29_49_+1100_aP6FBG_mQPdl+6Gj
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-So the problem is that SH3 is allowed to enable
-HUGETLB_PAGE/HUGETLBFS, but only SH4/5 define the HPAGE_SHIFT macro,
-due to some #ifdeffery on the hugepage size. So either the choice
-needs to be extended to include CPU_SH3 (which builds here, when
-changed) or the HUGETLBFS conditional needs to depend more
-specifically on SH4/5 and not just SUPERH. I think the arch maintainer
-has to make that call, as I don't know the hardware to say if SH3
-actually supports multiple hugepage sizes.
+Hi Herbert,
 
-Thanks,
-Nish
+On Tue, 01 Apr 2008 22:43:10 +0800 Herbert Xu <herbert@gondor.apana.org.au>=
+ wrote:
+>
+> Could you please include the crypto tree at
+>=20
+> git://git.kernel.org/pub/scm/linux/kernel/git/herbert/cryptodev-2.6
+
+Added, thanks.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Wed__2_Apr_2008_10_29_49_+1100_aP6FBG_mQPdl+6Gj
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFH8sVxTgG2atn1QN8RArhSAJ99oNT5w9QMSBShsoKyoCvCDiCdVgCfVzFi
+sG2Uwn3O5O7nGgTLXOXSW2w=
+=yrzX
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__2_Apr_2008_10_29_49_+1100_aP6FBG_mQPdl+6Gj--
