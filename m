@@ -1,60 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754036AbYDAGDj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754859AbYDAGET@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754036AbYDAGDj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Apr 2008 02:03:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751430AbYDAGDc
+	id S1754859AbYDAGET (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Apr 2008 02:04:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751350AbYDAGEK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Apr 2008 02:03:32 -0400
-Received: from fms-01.valinux.co.jp ([210.128.90.1]:37041 "EHLO
-	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751398AbYDAGDb (ORCPT
+	Tue, 1 Apr 2008 02:04:10 -0400
+Received: from smtp.nokia.com ([192.100.122.233]:28772 "EHLO
+	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751430AbYDAGEJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Apr 2008 02:03:31 -0400
-To: balbir@linux.vnet.ibm.com
-Cc: menage@google.com, xemul@openvz.org, hugh@veritas.com,
-       skumar@linux.vnet.ibm.com, lizf@cn.fujitsu.com,
-       linux-kernel@vger.kernel.org, taka@valinux.co.jp, linux-mm@kvack.org,
-       rientjes@google.com, akpm@linux-foundation.org,
-       kamezawa.hiroyu@jp.fujitsu.com
-Subject: Re: [RFC][-mm] Add an owner to the mm_struct (v3)
-In-Reply-To: Your message of "Tue, 01 Apr 2008 11:13:24 +0530"
-	<20080401054324.829.4517.sendpatchset@localhost.localdomain>
-References: <20080401054324.829.4517.sendpatchset@localhost.localdomain>
-X-Mailer: Cue version 0.8 (080303-0742/takashi)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Message-Id: <20080401060330.743815A02@siro.lan>
-Date: Tue,  1 Apr 2008 15:03:30 +0900 (JST)
-From: yamamoto@valinux.co.jp (YAMAMOTO Takashi)
+	Tue, 1 Apr 2008 02:04:09 -0400
+Message-ID: <47F1CF62.6010808@yandex.ru>
+Date: Tue, 01 Apr 2008 09:00:02 +0300
+From: Artem Bityutskiy <dedekind@yandex.ru>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+MIME-Version: 1.0
+To: =?UTF-8?B?SsO2cm4gRW5nZWw=?= <joern@logfs.org>
+CC: Pekka Enberg <penberg@cs.helsinki.fi>,
+       Artem Bityutskiy <Artem.Bityutskiy@nokia.com>,
+       Adrian Hunter <ext-adrian.hunter@nokia.com>,
+       Jan Engelhardt <jengelh@computergmbh.de>,
+       LKML <linux-kernel@vger.kernel.org>, joern@lazybastard.org
+Subject: Re: [RFC PATCH] UBIFS - new flash file system
+References: <1206629746-4298-1-git-send-email-Artem.Bityutskiy@nokia.com> <alpine.LNX.1.10.0803311428270.2554@fbirervta.pbzchgretzou.qr> <47F0DD49.7010302@nokia.com> <20080331132047.GA31660@logfs.org> <47F0EE63.3060401@nokia.com> <20080331171757.GA2077@logfs.org> <84144f020803311349w7f1b83e8x174ada25ffc85215@mail.gmail.com> <20080331212133.GA2388@logfs.org>
+In-Reply-To: <20080331212133.GA2388@logfs.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 01 Apr 2008 06:03:50.0679 (UTC) FILETIME=[28274270:01C893BE]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> This patch removes the mem_cgroup member from mm_struct and instead adds
-> an owner. This approach was suggested by Paul Menage. The advantage of
-> this approach is that, once the mm->owner is known, using the subsystem
-> id, the cgroup can be determined. It also allows several control groups
-> that are virtually grouped by mm_struct, to exist independent of the memory
-> controller i.e., without adding mem_cgroup's for each controller,
-> to mm_struct.
-> 
-> A new config option CONFIG_MM_OWNER is added and the memory resource
-> controller selects this config option.
-> 
-> NOTE: This patch was developed on top of 2.6.25-rc5-mm1 and is applied on top
-> of the memory-controller-move-to-own-slab patch (which is already present
-> in the Andrew's patchset).
-> 
-> I am indebted to Paul Menage for the several reviews of this patchset
-> and helping me make it lighter and simpler.
-> 
-> This patch was tested on a powerpc box, by running a task under the memory
-> resource controller and moving it across groups at a constant interval.
-> 
-> Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
-> ---
+Jörn Engel wrote:
+ > You don't have to wait long.  I was thinking about sending a patch out
+> tomorrow.
+If you do not mind, could you please tell about all crucial features which
+are not implemented (but have to) like bad eraseblock handling when you
+send the patch-set?
 
-changing mm->owner without notifying controllers makes it difficult to use.
-can you provide a notification mechanism?
-
-YAMAMOTO Takashi
+-- 
+Best Regards,
+Artem Bityutskiy (Артём Битюцкий)
