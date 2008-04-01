@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760032AbYDAP31@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762401AbYDAP3q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760032AbYDAP31 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Apr 2008 11:29:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759565AbYDAPTR
+	id S1762401AbYDAP3q (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Apr 2008 11:29:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753768AbYDAPTS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Apr 2008 11:19:17 -0400
-Received: from g4t0014.houston.hp.com ([15.201.24.17]:27528 "EHLO
+	Tue, 1 Apr 2008 11:19:18 -0400
+Received: from g4t0014.houston.hp.com ([15.201.24.17]:27558 "EHLO
 	g4t0014.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753609AbYDAPSx (ORCPT
+	with ESMTP id S1756743AbYDAPS4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Apr 2008 11:18:53 -0400
-Message-Id: <20080401151741.862705956@ldl.fc.hp.com>
+	Tue, 1 Apr 2008 11:18:56 -0400
+Message-Id: <20080401151742.855390122@ldl.fc.hp.com>
 References: <20080401151634.730901933@ldl.fc.hp.com>
 User-Agent: quilt/0.46-1
-Date: Tue, 01 Apr 2008 09:17:05 -0600
+Date: Tue, 01 Apr 2008 09:17:10 -0600
 From: Bjorn Helgaas <bjorn.helgaas@hp.com>
 To: Len Brown <lenb@kernel.org>
 Cc: linux-acpi@vger.kernel.org
@@ -25,219 +25,192 @@ Cc: Thomas Renninger <trenn@suse.de>
 Cc: Rene Herman <rene.herman@keyaccess.nl>
 Cc: Jaroslav Kysela <perex@perex.cz>
 Cc: Andrew Morton <akpm@linux-foundation.org>
-Subject: [patch 31/37] PNP: convert resource checks to use pnp_get_resource(), not pnp_resource_table
-Content-Disposition: inline; filename=pnp-convert-checks-to-pnp_get_resource
+Subject: [patch 36/37] PNP: make pnp_resource_table private to PNP core
+Content-Disposition: inline; filename=pnp-private-resource-table
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This removes more direct references to pnp_resource_table.
+There are no remaining references to the PNP_MAX_* constants or
+the pnp_resource_table structure outside of the PNP core.  Make
+them private to the PNP core.
 
 Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
 
+---
+ drivers/pnp/base.h     |   12 ++++++++++++
+ drivers/pnp/core.c     |    8 ++++++++
+ drivers/pnp/manager.c  |    4 ++--
+ drivers/pnp/resource.c |   10 +++++-----
+ include/linux/pnp.h    |   14 ++------------
+ 5 files changed, 29 insertions(+), 19 deletions(-)
+
+Index: work7/include/linux/pnp.h
+===================================================================
+--- work7.orig/include/linux/pnp.h	2008-03-31 16:51:19.000000000 -0600
++++ work7/include/linux/pnp.h	2008-03-31 16:51:21.000000000 -0600
+@@ -13,14 +13,11 @@
+ #include <linux/errno.h>
+ #include <linux/mod_devicetable.h>
+ 
+-#define PNP_MAX_PORT		40
+-#define PNP_MAX_MEM		24
+-#define PNP_MAX_IRQ		2
+-#define PNP_MAX_DMA		2
+ #define PNP_NAME_LEN		50
+ 
+ struct pnp_protocol;
+ struct pnp_dev;
++struct pnp_resource_table;
+ 
+ /*
+  * Resource Management
+@@ -160,13 +157,6 @@
+ 	struct pnp_option *next;	/* used to chain dependent resources */
+ };
+ 
+-struct pnp_resource_table {
+-	struct resource port_resource[PNP_MAX_PORT];
+-	struct resource mem_resource[PNP_MAX_MEM];
+-	struct resource dma_resource[PNP_MAX_DMA];
+-	struct resource irq_resource[PNP_MAX_IRQ];
+-};
+-
+ /*
+  * Device Management
+  */
+@@ -236,7 +226,7 @@
+ 	int capabilities;
+ 	struct pnp_option *independent;
+ 	struct pnp_option *dependent;
+-	struct pnp_resource_table res;
++	struct pnp_resource_table *res;
+ 
+ 	char name[PNP_NAME_LEN];	/* contains a human-readable name */
+ 	unsigned short regs;		/* ISAPnP: supported registers */
+Index: work7/drivers/pnp/base.h
+===================================================================
+--- work7.orig/drivers/pnp/base.h	2008-03-31 16:50:58.000000000 -0600
++++ work7/drivers/pnp/base.h	2008-03-31 16:51:21.000000000 -0600
+@@ -20,3 +20,15 @@
+ int pnp_add_dma_resource(struct pnp_dev *dev, int dma, int flags);
+ int pnp_add_io_resource(struct pnp_dev *dev, resource_size_t start, resource_size_t len, int flags);
+ int pnp_add_mem_resource(struct pnp_dev *dev, resource_size_t start, resource_size_t len, int flags);
++
++#define PNP_MAX_PORT		40
++#define PNP_MAX_MEM		24
++#define PNP_MAX_IRQ		2
++#define PNP_MAX_DMA		2
++
++struct pnp_resource_table {
++	struct resource port_resource[PNP_MAX_PORT];
++	struct resource mem_resource[PNP_MAX_MEM];
++	struct resource dma_resource[PNP_MAX_DMA];
++	struct resource irq_resource[PNP_MAX_IRQ];
++};
+Index: work7/drivers/pnp/manager.c
+===================================================================
+--- work7.orig/drivers/pnp/manager.c	2008-03-31 16:51:19.000000000 -0600
++++ work7/drivers/pnp/manager.c	2008-03-31 16:51:21.000000000 -0600
+@@ -218,7 +218,7 @@
+  */
+ void pnp_init_resources(struct pnp_dev *dev)
+ {
+-	struct pnp_resource_table *table = &dev->res;
++	struct pnp_resource_table *table = dev->res;
+ 	int idx;
+ 
+ 	for (idx = 0; idx < PNP_MAX_IRQ; idx++) {
+@@ -257,7 +257,7 @@
+  */
+ static void pnp_clean_resource_table(struct pnp_dev *dev)
+ {
+-	struct pnp_resource_table *res = &dev->res;
++	struct pnp_resource_table *res = dev->res;
+ 	int idx;
+ 
+ 	for (idx = 0; idx < PNP_MAX_IRQ; idx++) {
 Index: work7/drivers/pnp/resource.c
 ===================================================================
---- work7.orig/drivers/pnp/resource.c	2008-03-31 17:12:25.000000000 -0600
-+++ work7/drivers/pnp/resource.c	2008-03-31 17:15:31.000000000 -0600
-@@ -216,14 +216,17 @@
- int pnp_check_port(struct pnp_dev *dev, int idx)
+--- work7.orig/drivers/pnp/resource.c	2008-03-31 16:51:17.000000000 -0600
++++ work7/drivers/pnp/resource.c	2008-03-31 16:51:21.000000000 -0600
+@@ -493,7 +493,7 @@
+ 
+ int pnp_add_irq_resource(struct pnp_dev *dev, int irq, int flags)
  {
- 	int i;
-+	struct resource *res, *tres;
- 	struct pnp_dev *tdev;
- 	resource_size_t *port, *end, *tport, *tend;
+-	struct pnp_resource_table *res = &dev->res;
++	struct pnp_resource_table *res = dev->res;
+ 	int i = 0;
+ 	static unsigned char warned;
  
--	port = &dev->res.port_resource[idx].start;
--	end = &dev->res.port_resource[idx].end;
-+	res = pnp_get_resource(dev, IORESOURCE_IO, idx);
-+
-+	port = &res->start;
-+	end = &res->end;
+@@ -517,7 +517,7 @@
  
- 	/* if the resource doesn't exist, don't complain about it */
--	if (cannot_compare(dev->res.port_resource[idx].flags))
-+	if (cannot_compare(res->flags))
- 		return 1;
- 
- 	/* check if the resource is already in use, skip if the
-@@ -243,9 +246,10 @@
- 
- 	/* check for internal conflicts */
- 	for (i = 0; i < PNP_MAX_PORT && i != idx; i++) {
--		if (dev->res.port_resource[i].flags & IORESOURCE_IO) {
--			tport = &dev->res.port_resource[i].start;
--			tend = &dev->res.port_resource[i].end;
-+		tres = pnp_get_resource(dev, IORESOURCE_IO, i);
-+		if (tres->flags & IORESOURCE_IO) {
-+			tport = &tres->start;
-+			tend = &tres->end;
- 			if (ranged_conflict(port, end, tport, tend))
- 				return 0;
- 		}
-@@ -256,12 +260,12 @@
- 		if (tdev == dev)
- 			continue;
- 		for (i = 0; i < PNP_MAX_PORT; i++) {
--			if (tdev->res.port_resource[i].flags & IORESOURCE_IO) {
--				if (cannot_compare
--				    (tdev->res.port_resource[i].flags))
-+			tres = pnp_get_resource(tdev, IORESOURCE_IO, i);
-+			if (tres->flags & IORESOURCE_IO) {
-+				if (cannot_compare(tres->flags))
- 					continue;
--				tport = &tdev->res.port_resource[i].start;
--				tend = &tdev->res.port_resource[i].end;
-+				tport = &tres->start;
-+				tend = &tres->end;
- 				if (ranged_conflict(port, end, tport, tend))
- 					return 0;
- 			}
-@@ -274,14 +278,17 @@
- int pnp_check_mem(struct pnp_dev *dev, int idx)
+ int pnp_add_dma_resource(struct pnp_dev *dev, int dma, int flags)
  {
- 	int i;
-+	struct resource *res, *tres;
- 	struct pnp_dev *tdev;
- 	resource_size_t *addr, *end, *taddr, *tend;
+-	struct pnp_resource_table *res = &dev->res;
++	struct pnp_resource_table *res = dev->res;
+ 	int i = 0;
+ 	static unsigned char warned;
  
--	addr = &dev->res.mem_resource[idx].start;
--	end = &dev->res.mem_resource[idx].end;
-+	res = pnp_get_resource(dev, IORESOURCE_MEM, idx);
-+
-+	addr = &res->start;
-+	end = &res->end;
+@@ -541,7 +541,7 @@
  
- 	/* if the resource doesn't exist, don't complain about it */
--	if (cannot_compare(dev->res.mem_resource[idx].flags))
-+	if (cannot_compare(res->flags))
- 		return 1;
- 
- 	/* check if the resource is already in use, skip if the
-@@ -301,9 +308,10 @@
- 
- 	/* check for internal conflicts */
- 	for (i = 0; i < PNP_MAX_MEM && i != idx; i++) {
--		if (dev->res.mem_resource[i].flags & IORESOURCE_MEM) {
--			taddr = &dev->res.mem_resource[i].start;
--			tend = &dev->res.mem_resource[i].end;
-+		tres = pnp_get_resource(dev, IORESOURCE_MEM, i);
-+		if (tres->flags & IORESOURCE_MEM) {
-+			taddr = &tres->start;
-+			tend = &tres->end;
- 			if (ranged_conflict(addr, end, taddr, tend))
- 				return 0;
- 		}
-@@ -314,12 +322,12 @@
- 		if (tdev == dev)
- 			continue;
- 		for (i = 0; i < PNP_MAX_MEM; i++) {
--			if (tdev->res.mem_resource[i].flags & IORESOURCE_MEM) {
--				if (cannot_compare
--				    (tdev->res.mem_resource[i].flags))
-+			tres = pnp_get_resource(tdev, IORESOURCE_MEM, i);
-+			if (tres->flags & IORESOURCE_MEM) {
-+				if (cannot_compare(tres->flags))
- 					continue;
--				taddr = &tdev->res.mem_resource[i].start;
--				tend = &tdev->res.mem_resource[i].end;
-+				taddr = &tres->start;
-+				tend = &tres->end;
- 				if (ranged_conflict(addr, end, taddr, tend))
- 					return 0;
- 			}
-@@ -337,11 +345,16 @@
- int pnp_check_irq(struct pnp_dev *dev, int idx)
+ int pnp_add_io_resource(struct pnp_dev *dev, resource_size_t start, resource_size_t len, int flags)
  {
- 	int i;
-+	struct resource *res, *tres;
- 	struct pnp_dev *tdev;
--	resource_size_t *irq = &dev->res.irq_resource[idx].start;
-+	resource_size_t *irq;
+-	struct pnp_resource_table *res = &dev->res;
++	struct pnp_resource_table *res = dev->res;
+ 	resource_size_t end = start + len - 1;
+ 	int i = 0;
+ 	static unsigned char warned;
+@@ -566,7 +566,7 @@
+ 
+ int pnp_add_mem_resource(struct pnp_dev *dev, resource_size_t start, resource_size_t len, int flags)
+ {
+-	struct pnp_resource_table *res = &dev->res;
++	struct pnp_resource_table *res = dev->res;
+ 	int i = 0;
+ 	static unsigned char warned;
+ 
+@@ -591,7 +591,7 @@
+ struct resource *pnp_get_resource(struct pnp_dev *dev,
+ 				  unsigned int type, unsigned int num)
+ {
+-	struct pnp_resource_table *res = &dev->res;
++	struct pnp_resource_table *res = dev->res;
+ 
+ 	switch (type) {
+ 	case IORESOURCE_IO:
+Index: work7/drivers/pnp/core.c
+===================================================================
+--- work7.orig/drivers/pnp/core.c	2008-03-31 16:45:10.000000000 -0600
++++ work7/drivers/pnp/core.c	2008-03-31 16:51:21.000000000 -0600
+@@ -106,6 +106,7 @@
+ 	pnp_free_option(dev->independent);
+ 	pnp_free_option(dev->dependent);
+ 	pnp_free_ids(dev);
++	kfree(dev->res);
+ 	kfree(dev);
+ }
+ 
+@@ -118,6 +119,12 @@
+ 	if (!dev)
+ 		return NULL;
+ 
++	dev->res = kzalloc(sizeof(struct pnp_resource_table), GFP_KERNEL);
++	if (!dev->res) {
++		kfree(dev);
++		return NULL;
++	}
 +
-+	res = pnp_get_resource(dev, IORESOURCE_IRQ, idx);
-+
-+	irq = &res->start;
+ 	dev->protocol = protocol;
+ 	dev->number = id;
  
- 	/* if the resource doesn't exist, don't complain about it */
--	if (cannot_compare(dev->res.irq_resource[idx].flags))
-+	if (cannot_compare(res->flags))
- 		return 1;
+@@ -127,6 +134,7 @@
  
- 	/* check if the resource is valid */
-@@ -356,8 +369,9 @@
- 
- 	/* check for internal conflicts */
- 	for (i = 0; i < PNP_MAX_IRQ && i != idx; i++) {
--		if (dev->res.irq_resource[i].flags & IORESOURCE_IRQ) {
--			if (dev->res.irq_resource[i].start == *irq)
-+		tres = pnp_get_resource(dev, IORESOURCE_IRQ, i);
-+		if (tres->flags & IORESOURCE_IRQ) {
-+			if (tres->start == *irq)
- 				return 0;
- 		}
+ 	dev_id = pnp_add_id(dev, pnpid);
+ 	if (!dev_id) {
++		kfree(dev->res);
+ 		kfree(dev);
+ 		return NULL;
  	}
-@@ -389,11 +403,11 @@
- 		if (tdev == dev)
- 			continue;
- 		for (i = 0; i < PNP_MAX_IRQ; i++) {
--			if (tdev->res.irq_resource[i].flags & IORESOURCE_IRQ) {
--				if (cannot_compare
--				    (tdev->res.irq_resource[i].flags))
-+			tres = pnp_get_resource(tdev, IORESOURCE_IRQ, i);
-+			if (tres->flags & IORESOURCE_IRQ) {
-+				if (cannot_compare(tres->flags))
- 					continue;
--				if ((tdev->res.irq_resource[i].start == *irq))
-+				if (tres->start == *irq)
- 					return 0;
- 			}
- 		}
-@@ -406,11 +420,16 @@
- {
- #ifndef CONFIG_IA64
- 	int i;
-+	struct resource *res, *tres;
- 	struct pnp_dev *tdev;
--	resource_size_t *dma = &dev->res.dma_resource[idx].start;
-+	resource_size_t *dma;
-+
-+	res = pnp_get_resource(dev, IORESOURCE_DMA, idx);
-+
-+	dma = &res->start;
- 
- 	/* if the resource doesn't exist, don't complain about it */
--	if (cannot_compare(dev->res.dma_resource[idx].flags))
-+	if (cannot_compare(res->flags))
- 		return 1;
- 
- 	/* check if the resource is valid */
-@@ -425,8 +444,9 @@
- 
- 	/* check for internal conflicts */
- 	for (i = 0; i < PNP_MAX_DMA && i != idx; i++) {
--		if (dev->res.dma_resource[i].flags & IORESOURCE_DMA) {
--			if (dev->res.dma_resource[i].start == *dma)
-+		tres = pnp_get_resource(dev, IORESOURCE_DMA, i);
-+		if (tres->flags & IORESOURCE_DMA) {
-+			if (tres->start == *dma)
- 				return 0;
- 		}
- 	}
-@@ -444,11 +464,11 @@
- 		if (tdev == dev)
- 			continue;
- 		for (i = 0; i < PNP_MAX_DMA; i++) {
--			if (tdev->res.dma_resource[i].flags & IORESOURCE_DMA) {
--				if (cannot_compare
--				    (tdev->res.dma_resource[i].flags))
-+			tres = pnp_get_resource(tdev, IORESOURCE_DMA, i);
-+			if (tres->flags & IORESOURCE_DMA) {
-+				if (cannot_compare(tres->flags))
- 					continue;
--				if ((tdev->res.dma_resource[i].start == *dma))
-+				if (tres->start == *dma)
- 					return 0;
- 			}
- 		}
 
 -- 
