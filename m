@@ -1,91 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751927AbYDAGZN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755353AbYDAG1A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751927AbYDAGZN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Apr 2008 02:25:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751574AbYDAGYz
+	id S1755353AbYDAG1A (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Apr 2008 02:27:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751662AbYDAG0x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Apr 2008 02:24:55 -0400
-Received: from smtp.nokia.com ([192.100.105.134]:17385 "EHLO
-	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751350AbYDAGYy (ORCPT
+	Tue, 1 Apr 2008 02:26:53 -0400
+Received: from eazy.amigager.de ([213.239.192.238]:37488 "EHLO
+	eazy.amigager.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751591AbYDAG0w (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Apr 2008 02:24:54 -0400
-Message-ID: <47F1D44A.8010908@yandex.ru>
-Date: Tue, 01 Apr 2008 09:20:58 +0300
-From: Artem Bityutskiy <dedekind@yandex.ru>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	Tue, 1 Apr 2008 02:26:52 -0400
+Date: Tue, 1 Apr 2008 08:27:34 +0200
+From: Tino Keitel <tino.keitel@gmx.de>
+To: Soeren Sonnenburg <sonne@nn7.de>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Len Brown <lenb@kernel.org>, Pavel Machek <pavel@ucw.cz>
+Subject: Re: 2.6.25-rc6 hangs at resume after suspend to RAM on Mac mini
+	Core Duo
+Message-ID: <20080401062734.GA8824@dose.home.local>
+Mail-Followup-To: Soeren Sonnenburg <sonne@nn7.de>,
+	"Rafael J. Wysocki" <rjw@sisk.pl>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	linux-kernel@vger.kernel.org, Len Brown <lenb@kernel.org>,
+	Pavel Machek <pavel@ucw.cz>
+References: <20080320060550.GA13200@dose.home.local> <20080320105432.GA13404@dose.home.local> <20080325231300.GA10641@thinkpad.home.local> <200803290003.16199.rjw@sisk.pl> <20080331212812.GB5313@dose.home.local> <1207030991.11035.35.camel@localhost>
 MIME-Version: 1.0
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-CC: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Adrian Hunter <ext-adrian.hunter@nokia.com>
-Subject: Re: [RFC PATCH 25/26] UBIFS: add debugging stuff
-References: <1206629746-4298-1-git-send-email-Artem.Bityutskiy@nokia.com>       <1206629746-4298-26-git-send-email-Artem.Bityutskiy@nokia.com> <84144f020803311400s1f34420dx153d197f4752c65e@mail.gmail.com>
-In-Reply-To: <84144f020803311400s1f34420dx153d197f4752c65e@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-OriginalArrivalTime: 01 Apr 2008 06:24:47.0632 (UTC) FILETIME=[155B1100:01C893C1]
-X-Nokia-AV: Clean
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1207030991.11035.35.camel@localhost>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Good day Pekka
+On Tue, Apr 01, 2008 at 06:23:11 +0000, Soeren Sonnenburg wrote:
+> On Mon, 2008-03-31 at 23:28 +0200, Tino Keitel wrote:
+> > On Sat, Mar 29, 2008 at 00:03:15 +0100, Rafael J. Wysocki wrote:
+> > 
+> > [...]
+> > 
+> > > Can you please try to boot with acpi_new_pts_ordering and retest?
+> > 
+> > I just tried current -git (a9edadbf790d72adf6ebed476cb5caf7743e7e4a),
+> > without success. I still got the same hand at resume.
+> 
+> I am having the hang on resume problem too (macbook pro), cf.
+> http://bugzilla.kernel.org/show_bug.cgi?id=10319, 2.6.24 was fine.
 
->>  +void *dbg_vmalloc(size_t size)
->>  +
->>  +void dbg_vfree(void *addr)
->>  +
->>  +void dbg_leak_report(void)
->
-> Not acceptable for mainline kernel. SLAB already provides leak
-> detection and it should be straight-forward to port over to SLUB too.
+What about 2.6.25-rc5? Up to this, resume works for me. -rc6 is broken.
 
-Yeah, we will remove this later, keep it for now because it is very
-convenient. I guess you refer the /proc/slab_allocations feature.
-We found it less appropriate because it needs additional scripts to
-be run to detect leaks, while this simple just hack makes UBIFS print
-a message if there is a leak, which is just easier for us.
-
->>  +/*
->>  + * struct eaten_memory - memory object eaten by UBIFS to cause memory pressure.
->>  + * @list: link in the list of eaten memory objects
->>  + * @pad: just pads to memory page size
->>  + */
->>  +struct eaten_memory {
->>  +       struct list_head list;
->>  +       uint8_t pad[PAGE_CACHE_SIZE - sizeof(struct list_head)];
->>  +};
->
-> If you need this, please make it a standalone module in mm/.
-
-That was introduced to test the UBIFS shrinker, and to make sure
-there are no races and everything works fine. Yes, will be removed
-later.
-
->>  +#ifdef CONFIG_UBIFS_FS_DEBUG
->>  +#define UBIFS_DBG(op) op
->>  +#define ubifs_assert(expr)  do {                                               \
->>  +
->>  +/* Generic debugging message */
->>  +#define dbg_msg(fmt, ...) do {                                                 \
->>  +
->>  +/* Debugging message which prints UBIFS key */
->>  +#define dbg_key(c, key, fmt, ...) do {                                         \
->>  +
->>  +#define dbg_err(fmt, ...) ubifs_err(fmt, ##__VA_ARGS__)
->>  +#define dbg_dump_stack() dump_stack()
->
-> Please kill these wrappers and use BUG_ON, WARN_ON, and printk() where
-> appropriate.
-
-Well, I do not see a big reason not to get rid of this harmless stuff.
-Many kernel subsystems have their debugging, why not? Using BUG_ON() is
-OK in few most important places. But we want to have more assertions
-which are compiled-out by default, why can't we?. Similar is for prints.
-
-Thanks for the feed-back. 
-
--- 
-Best Regards,
-Artem Bityutskiy (Артём Битюцкий)
+Regards,
+Tino
