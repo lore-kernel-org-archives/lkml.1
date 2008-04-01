@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756611AbYDAP0k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932244AbYDAP1A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756611AbYDAP0k (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Apr 2008 11:26:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754370AbYDAPSu
+	id S932244AbYDAP1A (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Apr 2008 11:27:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754989AbYDAPSx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Apr 2008 11:18:50 -0400
-Received: from g4t0016.houston.hp.com ([15.201.24.19]:35162 "EHLO
+	Tue, 1 Apr 2008 11:18:53 -0400
+Received: from g4t0016.houston.hp.com ([15.201.24.19]:35173 "EHLO
 	g4t0016.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754989AbYDAPSe (ORCPT
+	with ESMTP id S1752831AbYDAPSe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 1 Apr 2008 11:18:34 -0400
-Message-Id: <20080401151742.258947655@ldl.fc.hp.com>
+Message-Id: <20080401151742.463201261@ldl.fc.hp.com>
 References: <20080401151634.730901933@ldl.fc.hp.com>
 User-Agent: quilt/0.46-1
-Date: Tue, 01 Apr 2008 09:17:07 -0600
+Date: Tue, 01 Apr 2008 09:17:08 -0600
 From: Bjorn Helgaas <bjorn.helgaas@hp.com>
 To: Len Brown <lenb@kernel.org>
 Cc: linux-acpi@vger.kernel.org
@@ -25,303 +25,190 @@ Cc: Thomas Renninger <trenn@suse.de>
 Cc: Rene Herman <rene.herman@keyaccess.nl>
 Cc: Jaroslav Kysela <perex@perex.cz>
 Cc: Andrew Morton <akpm@linux-foundation.org>
-Subject: [patch 33/37] PNP: remove PNP_MAX_* uses
-Content-Disposition: inline; filename=pnp-remove-max-uses
+Subject: [patch 34/37] PNP: remove unused interfaces using pnp_resource_table
+Content-Disposition: inline; filename=pnp-remove-unused-interfaces
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Remove some PNP_MAX_* uses.  The pnp_resource_table isn't
-dynamic yet, but with pnp_get_resource(), we can start moving
-away from the table size constants.
+Rene Herman <rene.herman@gmail.com> recently removed the only in-tree
+driver uses of:
+
+    pnp_init_resource_table()
+    pnp_manual_config_dev()
+    pnp_resource_change()
+
+in this change:
+
+    http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=109c53f840e551d6e99ecfd8b0131a968332c89f
+
+These are no longer used in the PNP core either, so we can just remove
+them completely.
+
+It's possible that there are out-of-tree drivers that use these
+interfaces.  They should be changed to either (1) use PNP quirks
+to work around broken hardware or firmware, or (2) use the sysfs
+interfaces to control resource usage from userspace.
 
 Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
 
 ---
- drivers/pnp/interface.c |   43 +++++++++++++++++++++----------------------
- drivers/pnp/quirks.c    |   15 +++++++++------
- drivers/pnp/resource.c  |   40 ++++++++++++++++++++++++----------------
- drivers/pnp/system.c    |   21 ++++++++++-----------
- 4 files changed, 64 insertions(+), 55 deletions(-)
+ drivers/pnp/manager.c |   78 +-------------------------------------------------
+ include/linux/pnp.h   |    9 -----
+ 2 files changed, 3 insertions(+), 84 deletions(-)
 
-Index: work7/drivers/pnp/interface.c
+Index: work7/include/linux/pnp.h
 ===================================================================
---- work7.orig/drivers/pnp/interface.c	2008-03-31 17:14:33.000000000 -0600
-+++ work7/drivers/pnp/interface.c	2008-03-31 17:16:42.000000000 -0600
-@@ -243,11 +243,14 @@
- 
- static DEVICE_ATTR(options, S_IRUGO, pnp_show_options, NULL);
- 
-+#define set(flags)      ((flags & IORESOURCE_UNSET) == 0)
+--- work7.orig/include/linux/pnp.h	2008-03-25 14:49:10.000000000 -0600
++++ work7/include/linux/pnp.h	2008-03-25 14:49:13.000000000 -0600
+@@ -429,18 +429,14 @@
+ int pnp_register_port_resource(struct pnp_option *option,
+ 			       struct pnp_port *data);
+ int pnp_register_mem_resource(struct pnp_option *option, struct pnp_mem *data);
+-void pnp_init_resource_table(struct pnp_resource_table *table);
+ void pnp_init_resources(struct pnp_dev *dev);
+-int pnp_manual_config_dev(struct pnp_dev *dev, struct pnp_resource_table *res,
+-			  int mode);
+ int pnp_auto_config_dev(struct pnp_dev *dev);
+ int pnp_validate_config(struct pnp_dev *dev);
+ int pnp_start_dev(struct pnp_dev *dev);
+ int pnp_stop_dev(struct pnp_dev *dev);
+ int pnp_activate_dev(struct pnp_dev *dev);
+ int pnp_disable_dev(struct pnp_dev *dev);
+-void pnp_resource_change(struct resource *resource, resource_size_t start,
+-			 resource_size_t size);
 +
- static ssize_t pnp_show_current_resources(struct device *dmdev,
- 					  struct device_attribute *attr,
- 					  char *buf)
- {
- 	struct pnp_dev *dev = to_pnp_dev(dmdev);
-+	struct resource *res;
- 	int i, ret;
- 	pnp_info_buffer_t *buffer;
  
-@@ -267,50 +270,46 @@
- 	else
- 		pnp_printf(buffer, "disabled\n");
+ /* protocol helpers */
+ int pnp_is_active(struct pnp_dev *dev);
+@@ -477,16 +473,13 @@
+ static inline int pnp_register_dma_resource(struct pnp_option *option, struct pnp_dma *data) { return -ENODEV; }
+ static inline int pnp_register_port_resource(struct pnp_option *option, struct pnp_port *data) { return -ENODEV; }
+ static inline int pnp_register_mem_resource(struct pnp_option *option, struct pnp_mem *data) { return -ENODEV; }
+-static inline void pnp_init_resource_table(struct pnp_resource_table *table) { }
+ static inline void pnp_init_resources(struct pnp_dev *dev) { }
+-static inline int pnp_manual_config_dev(struct pnp_dev *dev, struct pnp_resource_table *res, int mode) { return -ENODEV; }
+ static inline int pnp_auto_config_dev(struct pnp_dev *dev) { return -ENODEV; }
+ static inline int pnp_validate_config(struct pnp_dev *dev) { return -ENODEV; }
+ static inline int pnp_start_dev(struct pnp_dev *dev) { return -ENODEV; }
+ static inline int pnp_stop_dev(struct pnp_dev *dev) { return -ENODEV; }
+ static inline int pnp_activate_dev(struct pnp_dev *dev) { return -ENODEV; }
+ static inline int pnp_disable_dev(struct pnp_dev *dev) { return -ENODEV; }
+-static inline void pnp_resource_change(struct resource *resource, resource_size_t start, resource_size_t size) { }
  
--	for (i = 0; i < PNP_MAX_PORT; i++) {
--		if (pnp_port_valid(dev, i)) {
-+	for (i = 0; (res = pnp_get_resource(dev, IORESOURCE_IO, i)); i++) {
-+		if (set(res->flags)) {
- 			pnp_printf(buffer, "io");
--			if (pnp_port_flags(dev, i) & IORESOURCE_DISABLED)
-+			if (res->flags & IORESOURCE_DISABLED)
- 				pnp_printf(buffer, " disabled\n");
- 			else
- 				pnp_printf(buffer, " 0x%llx-0x%llx\n",
--					   (unsigned long long)
--					   pnp_port_start(dev, i),
--					   (unsigned long long)pnp_port_end(dev,
--									    i));
-+					   (unsigned long long) res->start,
-+					   (unsigned long long) res->end);
- 		}
- 	}
--	for (i = 0; i < PNP_MAX_MEM; i++) {
--		if (pnp_mem_valid(dev, i)) {
-+	for (i = 0; (res = pnp_get_resource(dev, IORESOURCE_MEM, i)); i++) {
-+		if (set(res->flags)) {
- 			pnp_printf(buffer, "mem");
--			if (pnp_mem_flags(dev, i) & IORESOURCE_DISABLED)
-+			if (res->flags & IORESOURCE_DISABLED)
- 				pnp_printf(buffer, " disabled\n");
- 			else
- 				pnp_printf(buffer, " 0x%llx-0x%llx\n",
--					   (unsigned long long)
--					   pnp_mem_start(dev, i),
--					   (unsigned long long)pnp_mem_end(dev,
--									   i));
-+					   (unsigned long long) res->start,
-+					   (unsigned long long) res->end);
- 		}
- 	}
--	for (i = 0; i < PNP_MAX_IRQ; i++) {
--		if (pnp_irq_valid(dev, i)) {
-+	for (i = 0; (res = pnp_get_resource(dev, IORESOURCE_IRQ, i)); i++) {
-+		if (set(res->flags)) {
- 			pnp_printf(buffer, "irq");
--			if (pnp_irq_flags(dev, i) & IORESOURCE_DISABLED)
-+			if (res->flags & IORESOURCE_DISABLED)
- 				pnp_printf(buffer, " disabled\n");
- 			else
- 				pnp_printf(buffer, " %lld\n",
--					   (unsigned long long)pnp_irq(dev, i));
-+					   (unsigned long long) res->start);
- 		}
- 	}
--	for (i = 0; i < PNP_MAX_DMA; i++) {
--		if (pnp_dma_valid(dev, i)) {
-+	for (i = 0; (res = pnp_get_resource(dev, IORESOURCE_DMA, i)); i++) {
-+		if (set(res->flags)) {
- 			pnp_printf(buffer, "dma");
--			if (pnp_dma_flags(dev, i) & IORESOURCE_DISABLED)
-+			if (res->flags & IORESOURCE_DISABLED)
- 				pnp_printf(buffer, " disabled\n");
- 			else
- 				pnp_printf(buffer, " %lld\n",
--					   (unsigned long long)pnp_dma(dev, i));
-+					   (unsigned long long) res->start);
- 		}
- 	}
- 	ret = (buffer->curr - buf);
-Index: work7/drivers/pnp/quirks.c
+ /* protocol helpers */
+ static inline int pnp_is_active(struct pnp_dev *dev) { return 0; }
+Index: work7/drivers/pnp/manager.c
 ===================================================================
---- work7.orig/drivers/pnp/quirks.c	2008-03-31 17:14:33.000000000 -0600
-+++ work7/drivers/pnp/quirks.c	2008-03-31 17:16:42.000000000 -0600
-@@ -114,6 +114,7 @@
- static void quirk_system_pci_resources(struct pnp_dev *dev)
+--- work7.orig/drivers/pnp/manager.c	2008-03-25 14:49:12.000000000 -0600
++++ work7/drivers/pnp/manager.c	2008-03-25 14:49:13.000000000 -0600
+@@ -216,8 +216,9 @@
+  * pnp_init_resources - Resets a resource table to default values.
+  * @table: pointer to the desired resource table
+  */
+-void pnp_init_resource_table(struct pnp_resource_table *table)
++void pnp_init_resources(struct pnp_dev *dev)
  {
- 	struct pci_dev *pdev = NULL;
-+	struct resource *res;
- 	resource_size_t pnp_start, pnp_end, pci_start, pci_end;
- 	int i, j;
++	struct pnp_resource_table *table = &dev->res;
+ 	int idx;
  
-@@ -134,13 +135,15 @@
- 
- 			pci_start = pci_resource_start(pdev, i);
- 			pci_end = pci_resource_end(pdev, i);
--			for (j = 0; j < PNP_MAX_MEM; j++) {
--				if (!pnp_mem_valid(dev, j) ||
--				    pnp_mem_len(dev, j) == 0)
-+			for (j = 0;
-+			     (res = pnp_get_resource(dev, IORESOURCE_MEM, j));
-+			     j++) {
-+				if (res->flags & IORESOURCE_UNSET ||
-+				    (res->start == 0 && res->end == 0))
- 					continue;
- 
--				pnp_start = pnp_mem_start(dev, j);
--				pnp_end = pnp_mem_end(dev, j);
-+				pnp_start = res->start;
-+				pnp_end = res->end;
- 
- 				/*
- 				 * If the PNP region doesn't overlap the PCI
-@@ -173,7 +176,7 @@
- 					pci_name(pdev), i,
- 					(unsigned long long) pci_start,
- 					(unsigned long long) pci_end);
--				pnp_mem_flags(dev, j) = 0;
-+				res->flags = 0;
- 			}
- 		}
- 	}
-Index: work7/drivers/pnp/resource.c
-===================================================================
---- work7.orig/drivers/pnp/resource.c	2008-03-31 17:15:31.000000000 -0600
-+++ work7/drivers/pnp/resource.c	2008-03-31 17:19:31.000000000 -0600
-@@ -245,8 +245,9 @@
- 	}
- 
- 	/* check for internal conflicts */
--	for (i = 0; i < PNP_MAX_PORT && i != idx; i++) {
--		tres = pnp_get_resource(dev, IORESOURCE_IO, i);
-+	for (i = 0;
-+	     i != idx && (tres = pnp_get_resource(dev, IORESOURCE_IO, i));
-+	     i++) {
- 		if (tres->flags & IORESOURCE_IO) {
- 			tport = &tres->start;
- 			tend = &tres->end;
-@@ -259,8 +260,9 @@
- 	pnp_for_each_dev(tdev) {
- 		if (tdev == dev)
- 			continue;
--		for (i = 0; i < PNP_MAX_PORT; i++) {
--			tres = pnp_get_resource(tdev, IORESOURCE_IO, i);
-+		for (i = 0;
-+		     (tres = pnp_get_resource(tdev, IORESOURCE_IO, i));
-+		     i++) {
- 			if (tres->flags & IORESOURCE_IO) {
- 				if (cannot_compare(tres->flags))
- 					continue;
-@@ -307,8 +309,9 @@
- 	}
- 
- 	/* check for internal conflicts */
--	for (i = 0; i < PNP_MAX_MEM && i != idx; i++) {
--		tres = pnp_get_resource(dev, IORESOURCE_MEM, i);
-+	for (i = 0;
-+	     i != idx && (tres = pnp_get_resource(dev, IORESOURCE_MEM, i));
-+	     i++) {
- 		if (tres->flags & IORESOURCE_MEM) {
- 			taddr = &tres->start;
- 			tend = &tres->end;
-@@ -321,8 +324,9 @@
- 	pnp_for_each_dev(tdev) {
- 		if (tdev == dev)
- 			continue;
--		for (i = 0; i < PNP_MAX_MEM; i++) {
--			tres = pnp_get_resource(tdev, IORESOURCE_MEM, i);
-+		for (i = 0;
-+		     (tres = pnp_get_resource(tdev, IORESOURCE_MEM, i));
-+		     i++) {
- 			if (tres->flags & IORESOURCE_MEM) {
- 				if (cannot_compare(tres->flags))
- 					continue;
-@@ -368,8 +372,9 @@
- 	}
- 
- 	/* check for internal conflicts */
--	for (i = 0; i < PNP_MAX_IRQ && i != idx; i++) {
--		tres = pnp_get_resource(dev, IORESOURCE_IRQ, i);
-+	for (i = 0;
-+	     i != idx && (tres = pnp_get_resource(dev, IORESOURCE_IRQ, i));
-+	     i++) {
- 		if (tres->flags & IORESOURCE_IRQ) {
- 			if (tres->start == *irq)
- 				return 0;
-@@ -402,8 +407,9 @@
- 	pnp_for_each_dev(tdev) {
- 		if (tdev == dev)
- 			continue;
--		for (i = 0; i < PNP_MAX_IRQ; i++) {
--			tres = pnp_get_resource(tdev, IORESOURCE_IRQ, i);
-+		for (i = 0;
-+		     (tres = pnp_get_resource(tdev, IORESOURCE_IRQ, i));
-+		     i++) {
- 			if (tres->flags & IORESOURCE_IRQ) {
- 				if (cannot_compare(tres->flags))
- 					continue;
-@@ -443,8 +449,9 @@
- 	}
- 
- 	/* check for internal conflicts */
--	for (i = 0; i < PNP_MAX_DMA && i != idx; i++) {
--		tres = pnp_get_resource(dev, IORESOURCE_DMA, i);
-+	for (i = 0;
-+	     i != idx && (tres = pnp_get_resource(dev, IORESOURCE_DMA, i));
-+	     i++) {
- 		if (tres->flags & IORESOURCE_DMA) {
- 			if (tres->start == *dma)
- 				return 0;
-@@ -463,8 +470,9 @@
- 	pnp_for_each_dev(tdev) {
- 		if (tdev == dev)
- 			continue;
--		for (i = 0; i < PNP_MAX_DMA; i++) {
--			tres = pnp_get_resource(tdev, IORESOURCE_DMA, i);
-+		for (i = 0;
-+		     (tres = pnp_get_resource(tdev, IORESOURCE_DMA, i));
-+		     i++) {
- 			if (tres->flags & IORESOURCE_DMA) {
- 				if (cannot_compare(tres->flags))
- 					continue;
-Index: work7/drivers/pnp/system.c
-===================================================================
---- work7.orig/drivers/pnp/system.c	2008-03-31 17:14:33.000000000 -0600
-+++ work7/drivers/pnp/system.c	2008-03-31 17:16:42.000000000 -0600
-@@ -56,14 +56,15 @@
- 
- static void reserve_resources_of_dev(struct pnp_dev *dev)
- {
-+	struct resource *res;
- 	int i;
- 
--	for (i = 0; i < PNP_MAX_PORT; i++) {
--		if (!pnp_port_valid(dev, i))
-+	for (i = 0; (res = pnp_get_resource(dev, IORESOURCE_IO, i)); i++) {
-+		if (res->flags & IORESOURCE_UNSET)
- 			continue;
--		if (pnp_port_start(dev, i) == 0)
-+		if (res->start == 0)
- 			continue;	/* disabled */
--		if (pnp_port_start(dev, i) < 0x100)
-+		if (res->start < 0x100)
- 			/*
- 			 * Below 0x100 is only standard PC hardware
- 			 * (pics, kbd, timer, dma, ...)
-@@ -73,19 +74,17 @@
- 			 * So, do nothing
- 			 */
- 			continue;
--		if (pnp_port_end(dev, i) < pnp_port_start(dev, i))
-+		if (res->end < res->start)
- 			continue;	/* invalid */
- 
--		reserve_range(dev, pnp_port_start(dev, i),
--			      pnp_port_end(dev, i), 1);
-+		reserve_range(dev, res->start, res->end, 1);
- 	}
- 
--	for (i = 0; i < PNP_MAX_MEM; i++) {
--		if (!pnp_mem_valid(dev, i))
-+	for (i = 0; (res = pnp_get_resource(dev, IORESOURCE_MEM, i)); i++) {
-+		if (res->flags & IORESOURCE_UNSET)
- 			continue;
- 
--		reserve_range(dev, pnp_mem_start(dev, i),
--			      pnp_mem_end(dev, i), 0);
-+		reserve_range(dev, res->start, res->end, 0);
+ 	for (idx = 0; idx < PNP_MAX_IRQ; idx++) {
+@@ -250,11 +251,6 @@
  	}
  }
  
+-void pnp_init_resources(struct pnp_dev *dev)
+-{
+-	pnp_init_resource_table(&dev->res);
+-}
+-
+ /**
+  * pnp_clean_resources - clears resources that were not manually set
+  * @res: the resources to clean
+@@ -395,59 +391,6 @@
+ }
+ 
+ /**
+- * pnp_manual_config_dev - Disables Auto Config and Manually sets the resource table
+- * @dev: pointer to the desired device
+- * @res: pointer to the new resource config
+- * @mode: 0 or PNP_CONFIG_FORCE
+- *
+- * This function can be used by drivers that want to manually set thier resources.
+- */
+-int pnp_manual_config_dev(struct pnp_dev *dev, struct pnp_resource_table *res,
+-			  int mode)
+-{
+-	int i;
+-	struct pnp_resource_table *bak;
+-
+-	if (!pnp_can_configure(dev))
+-		return -ENODEV;
+-	bak = pnp_alloc(sizeof(struct pnp_resource_table));
+-	if (!bak)
+-		return -ENOMEM;
+-	*bak = dev->res;
+-
+-	mutex_lock(&pnp_res_mutex);
+-	dev->res = *res;
+-	if (!(mode & PNP_CONFIG_FORCE)) {
+-		for (i = 0; i < PNP_MAX_PORT; i++) {
+-			if (!pnp_check_port(dev, i))
+-				goto fail;
+-		}
+-		for (i = 0; i < PNP_MAX_MEM; i++) {
+-			if (!pnp_check_mem(dev, i))
+-				goto fail;
+-		}
+-		for (i = 0; i < PNP_MAX_IRQ; i++) {
+-			if (!pnp_check_irq(dev, i))
+-				goto fail;
+-		}
+-		for (i = 0; i < PNP_MAX_DMA; i++) {
+-			if (!pnp_check_dma(dev, i))
+-				goto fail;
+-		}
+-	}
+-	mutex_unlock(&pnp_res_mutex);
+-
+-	kfree(bak);
+-	return 0;
+-
+-fail:
+-	dev->res = *bak;
+-	mutex_unlock(&pnp_res_mutex);
+-	kfree(bak);
+-	return -EINVAL;
+-}
+-
+-/**
+  * pnp_auto_config_dev - automatically assigns resources to a device
+  * @dev: pointer to the desired device
+  */
+@@ -573,24 +516,7 @@
+ 	return 0;
+ }
+ 
+-/**
+- * pnp_resource_change - change one resource
+- * @resource: pointer to resource to be changed
+- * @start: start of region
+- * @size: size of region
+- */
+-void pnp_resource_change(struct resource *resource, resource_size_t start,
+-			 resource_size_t size)
+-{
+-	resource->flags &= ~(IORESOURCE_AUTO | IORESOURCE_UNSET);
+-	resource->start = start;
+-	resource->end = start + size - 1;
+-}
+-
+-EXPORT_SYMBOL(pnp_manual_config_dev);
+ EXPORT_SYMBOL(pnp_start_dev);
+ EXPORT_SYMBOL(pnp_stop_dev);
+ EXPORT_SYMBOL(pnp_activate_dev);
+ EXPORT_SYMBOL(pnp_disable_dev);
+-EXPORT_SYMBOL(pnp_resource_change);
+-EXPORT_SYMBOL(pnp_init_resource_table);
 
 -- 
