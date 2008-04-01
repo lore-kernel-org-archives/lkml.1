@@ -1,166 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759537AbYDAP5b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760044AbYDAP7p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759537AbYDAP5b (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Apr 2008 11:57:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752904AbYDAP5X
+	id S1760044AbYDAP7p (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Apr 2008 11:59:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752904AbYDAP7i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Apr 2008 11:57:23 -0400
-Received: from g4t0015.houston.hp.com ([15.201.24.18]:38767 "EHLO
-	g4t0015.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752831AbYDAP5V (ORCPT
+	Tue, 1 Apr 2008 11:59:38 -0400
+Received: from c-24-130-11-78.hsd1.ca.comcast.net ([24.130.11.78]:32794 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752374AbYDAP7h (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Apr 2008 11:57:21 -0400
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: akpm@linux-foundation.org
-Subject: Re: + revert-gregkh-pci-pci-x86-use-generic-pci_enable_resources.patch added to -mm tree
-Date: Tue, 1 Apr 2008 09:57:15 -0600
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: mm-commits@vger.kernel.org, davem@davemloft.net, greg@kroah.com,
-       m.kozlowski@tuxland.pl,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       linux-kernel@vger.kernel.org, Tony Luck <tony.luck@intel.com>,
-       linux-ia64@vger.kernel.org, Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-References: <200803282348.m2SNmleP016847@imap1.linux-foundation.org>
-In-Reply-To: <200803282348.m2SNmleP016847@imap1.linux-foundation.org>
+	Tue, 1 Apr 2008 11:59:37 -0400
+X-Greylist: delayed 764 seconds by postgrey-1.27 at vger.kernel.org; Tue, 01 Apr 2008 11:59:37 EDT
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Pavel Emelyanov <xemul@openvz.org>
+Cc: Manfred Spraul <manfred@colorfullife.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Serge Hallyn <serue@us.ibm.com>,
+       Sukadev Bhattiprolu <sukadev@us.ibm.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: [RFC, PATCH] fix SEM_UNDO with namespaces
+References: <47EFFD1C.5020204@colorfullife.com> <47F08ED6.1090103@openvz.org>
+	<47F10DF7.5010702@colorfullife.com> <47F203EC.7090806@openvz.org>
+Date: Tue, 01 Apr 2008 09:25:20 -0600
+In-Reply-To: <47F203EC.7090806@openvz.org> (Pavel Emelyanov's message of "Tue,
+	01 Apr 2008 13:44:12 +0400")
+Message-ID: <m1od8tiom7.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200804010957.16459.bjorn.helgaas@hp.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 28 March 2008 05:48:47 pm akpm@linux-foundation.org wrote:
-> 
-> The patch titled
->      revert gregkh-pci-pci-x86-use-generic-pci_enable_resources
-> has been added to the -mm tree.  Its filename is
->      revert-gregkh-pci-pci-x86-use-generic-pci_enable_resources.patch
+Pavel Emelyanov <xemul@openvz.org> writes:
+>>> I agree, that we should probably destroy this one when the task calls 
+>>> unshare, but trying to keep this list relevant is useless.
+>>>   
+>> A very tricky question: Let's assume we have a process with two threads.
+>> The undo structure is shared, as per opengroup standard.
+>> Now one thread calls unshare(CLONE_NEWIPC). What should happen? We 
+>> cannot destroy the undo structure, the other thread might be still 
+>> interested in it.
+>> If we allow sys_unshare() for multithreaded processes with CLONE_NEWIPC 
+>> and without CLONE_SYSVSEM, then we must handle this case.
+>
+> Hm... I'd simply disable creating any new namespaces for threads.
+> I think other namespaces developers agree with me. Serge, Suka, Eric
+> what do you think?
 
-OK, I'm not sure where we are with this.  Ben listed arches where
-the generic pci_enable_resources() should be safe: x86, alpha, and
-powerpc.  I think we should also include ia64, since I work on that.
+I almost agree.  sys_unshare() in a multithreaded process breaks
+all kinds of user space libs.  So you can only reasonably look at
+the problem as what we do with linux tasks that share some things
+and not others.  The posix/opengroup notion of processes and threads
+are a distraction.
 
-If there's no objection to those arches, how should we move forward?
-Since Andrew put in "revert gregkh-pci" patches rather than just
-dropping things, I assume the original patches are in Greg KH's tree.
+In this case requiring it appears that to require unsharing both
+CLONE_SYSVSEM and CLONE_NEWIPC at the same time.  (i.e. unshare
+of CLONE_SYSVSEM should fail if CLONE_NEWIPC is not also specified).
 
-Can we just drop the "revert gregkh" patches for x86, alpha, powerpc,
-and ia64?
+Then to make it work we make unshare of SYSVSEM succeed when it is
+not shared.
 
-Bjorn
+This looks like about a 5 line patch or two.
 
-> ------------------------------------------------------
-> Subject: revert gregkh-pci-pci-x86-use-generic-pci_enable_resources
-> From: Andrew Morton <akpm@linux-foundation.org>
-> 
-> On Fri, 28 Mar 2008 16:10:11 -0700 (PDT) David Miller <davem@davemloft.net> wrote:
-> 
-> > From: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
-> > Date: Fri, 28 Mar 2008 23:52:10 +0100
-> > 
-> > > 	The gregkh-pci-pci-sparc64-use-generic-pci_enable_resources.patch which
-> > > replaces arch-specific code with generic pci_enable_resources() makes my sparc64
-> > > box unable to boot (that's what quilt bisection says). At first I see these messages:
-> > 
-> > Yes, that generic code won't work because of the NULL
-> > r->parent check.
-> > 
-> > Alpha, ARM, V32, FRV, IA64, MIPS, MN10300, PARISC, PPC,
-> > SH, V850, X86, and Xtensa are all likely to run into
-> > problems because of this change.
-> > 
-> > The only platform that did the check as a test of r->parent
-> > being NULL is Powerpc.
-> > 
-> > The rest either didn't check (like sparc64), or tested it by going:
-> > 
-> > 	if (!r->start && r->end)
-> > 
-> > So the amount of potential breakage from this change is enormous.
-> 
-> Cc: Bjorn Helgaas <bjorn.helgaas@hp.com>
-> Cc: Greg KH <greg@kroah.com>
-> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-> ---
-> 
->  arch/x86/pci/common.c |    2 +-
->  arch/x86/pci/i386.c   |   38 ++++++++++++++++++++++++++++++++++++++
->  arch/x86/pci/pci.h    |    1 +
->  3 files changed, 40 insertions(+), 1 deletion(-)
-> 
-> diff -puN arch/x86/pci/common.c~revert-gregkh-pci-pci-x86-use-generic-pci_enable_resources arch/x86/pci/common.c
-> --- a/arch/x86/pci/common.c~revert-gregkh-pci-pci-x86-use-generic-pci_enable_resources
-> +++ a/arch/x86/pci/common.c
-> @@ -466,7 +466,7 @@ int pcibios_enable_device(struct pci_dev
->  {
->  	int err;
->  
-> -	if ((err = pci_enable_resources(dev, mask)) < 0)
-> +	if ((err = pcibios_enable_resources(dev, mask)) < 0)
->  		return err;
->  
->  	if (!dev->msi_enabled)
-> diff -puN arch/x86/pci/i386.c~revert-gregkh-pci-pci-x86-use-generic-pci_enable_resources arch/x86/pci/i386.c
-> --- a/arch/x86/pci/i386.c~revert-gregkh-pci-pci-x86-use-generic-pci_enable_resources
-> +++ a/arch/x86/pci/i386.c
-> @@ -238,6 +238,44 @@ void __init pcibios_resource_survey(void
->   */
->  fs_initcall(pcibios_assign_resources);
->  
-> +int pcibios_enable_resources(struct pci_dev *dev, int mask)
-> +{
-> +	u16 cmd, old_cmd;
-> +	int idx;
-> +	struct resource *r;
-> +
-> +	pci_read_config_word(dev, PCI_COMMAND, &cmd);
-> +	old_cmd = cmd;
-> +	for (idx = 0; idx < PCI_NUM_RESOURCES; idx++) {
-> +		/* Only set up the requested stuff */
-> +		if (!(mask & (1 << idx)))
-> +			continue;
-> +
-> +		r = &dev->resource[idx];
-> +		if (!(r->flags & (IORESOURCE_IO | IORESOURCE_MEM)))
-> +			continue;
-> +		if ((idx == PCI_ROM_RESOURCE) &&
-> +				(!(r->flags & IORESOURCE_ROM_ENABLE)))
-> +			continue;
-> +		if (!r->start && r->end) {
-> +			printk(KERN_ERR "PCI: Device %s not available "
-> +				"because of resource %d collisions\n",
-> +				pci_name(dev), idx);
-> +			return -EINVAL;
-> +		}
-> +		if (r->flags & IORESOURCE_IO)
-> +			cmd |= PCI_COMMAND_IO;
-> +		if (r->flags & IORESOURCE_MEM)
-> +			cmd |= PCI_COMMAND_MEMORY;
-> +	}
-> +	if (cmd != old_cmd) {
-> +		printk("PCI: Enabling device %s (%04x -> %04x)\n",
-> +			pci_name(dev), old_cmd, cmd);
-> +		pci_write_config_word(dev, PCI_COMMAND, cmd);
-> +	}
-> +	return 0;
-> +}
-> +
->  /*
->   *  If we set up a device for bus mastering, we need to check the latency
->   *  timer as certain crappy BIOSes forget to set it properly.
-> diff -puN arch/x86/pci/pci.h~revert-gregkh-pci-pci-x86-use-generic-pci_enable_resources arch/x86/pci/pci.h
-> --- a/arch/x86/pci/pci.h~revert-gregkh-pci-pci-x86-use-generic-pci_enable_resources
-> +++ a/arch/x86/pci/pci.h
-> @@ -42,6 +42,7 @@ enum pci_bf_sort_state {
->  extern unsigned int pcibios_max_latency;
->  
->  void pcibios_resource_survey(void);
-> +int pcibios_enable_resources(struct pci_dev *, int);
->  
->  /* pci-pc.c */
->  
-> _
+The effect is because we don't support unsharing of SYSVSEM currently
+we don't support a threaded process unsharing the ipc namespace.
 
+Eric
