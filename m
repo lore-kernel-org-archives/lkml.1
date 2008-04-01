@@ -1,75 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761456AbYDAVi0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761609AbYDAVil@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761456AbYDAVi0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Apr 2008 17:38:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760987AbYDAVhn
+	id S1761609AbYDAVil (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Apr 2008 17:38:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760655AbYDAViQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Apr 2008 17:37:43 -0400
-Received: from mail.crca.org.au ([67.207.131.56]:37792 "EHLO crca.org.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760241AbYDAVhl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Apr 2008 17:37:41 -0400
-X-Bogosity: Ham, spamicity=0.000000
-Subject: Re: [RFC][PATCH] PM: Introduce new top level suspend and
-	hibernation callbacks (rev. 6)
-From: Nigel Cunningham <ncunningham@crca.org.au>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Greg KH <greg@kroah.com>, Len Brown <lenb@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Alexey Starikovskiy <astarikovskiy@suse.de>,
-       David Brownell <david-b@pacbell.net>, Pavel Machek <pavel@ucw.cz>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Oliver Neukum <oliver@neukum.org>
-In-Reply-To: <Pine.LNX.4.44L0.0804011653140.9362-100000@netrider.rowland.org>
-References: <Pine.LNX.4.44L0.0804011653140.9362-100000@netrider.rowland.org>
-Content-Type: text/plain
-Organization: Christian Reformed Churches of Australia
-Date: Wed, 02 Apr 2008 08:38:06 +1100
-Message-Id: <1207085886.23143.114.camel@nigel-laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.0 
-Content-Transfer-Encoding: 7bit
+	Tue, 1 Apr 2008 17:38:16 -0400
+Received: from e31.co.us.ibm.com ([32.97.110.149]:40978 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761319AbYDAViO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Apr 2008 17:38:14 -0400
+Date: Tue, 1 Apr 2008 14:38:11 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Christoph Lameter <clameter@sgi.com>, Hugh Dickins <hugh@veritas.com>,
+       Andrea Arcangeli <andrea@qumranet.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [patch 1/9] EMM Notifier: The notifier calls
+Message-ID: <20080401213811.GD8558@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20080401205531.986291575@sgi.com> <20080401205635.793766935@sgi.com> <1207084480.29991.2.camel@lappy>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1207084480.29991.2.camel@lappy>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi.
-
-On Tue, 2008-04-01 at 16:56 -0400, Alan Stern wrote:
-> On Tue, 1 Apr 2008, Rafael J. Wysocki wrote:
+On Tue, Apr 01, 2008 at 11:14:40PM +0200, Peter Zijlstra wrote:
+> (Christoph, why are your CCs so often messed up?)
 > 
-> > > Does ..._ext_... mean extended? (external?) If 'extended' (or if not),
-> > > does that imply that they're mutually exclusive alternatives for drivers
-> > > to use?
-> > 
-> > 'ext' means 'extended'.  The idea is that the 'extended' version will be used
-> > by bus types / driver types that don't need to implement the _noirq callbacks.
+> On Tue, 2008-04-01 at 13:55 -0700, Christoph Lameter wrote:
+> > plain text document attachment (emm_notifier)
 > 
-> Something's wrong here.  This seems to say that the "extended" version
-> has _fewer_ method pointers -- in which case it should be called 
-> "restricted" instead.
-
-Agreed.
-
-> > > So drivers can never validly fail to resume. That sounds fair enough. If
-> > > the hardware has gone away while in lower power mode (USB, say), should
-> > > the driver then just printk an error and return success?
-> > 
-> > I think so.
-> > 
-> > IMO, an error code returned by a driver's ->resume() should mean "the device
-> > hasn't resumed and is presumably dead".  Otherwise, ->resume() should return
-> > success.
+> > +/* Register a notifier */
+> > +void emm_notifier_register(struct emm_notifier *e, struct mm_struct *mm)
+> > +{
+> > +	e->next = mm->emm_notifier;
+> > +	/*
+> > +	 * The update to emm_notifier (e->next) must be visible
+> > +	 * before the pointer becomes visible.
+> > +	 * rcu_assign_pointer() does exactly what we need.
+> > +	 */
+> > +	rcu_assign_pointer(mm->emm_notifier, e);
+> > +}
+> > +EXPORT_SYMBOL_GPL(emm_notifier_register);
+> > +
+> > +/* Perform a callback */
+> > +int __emm_notify(struct mm_struct *mm, enum emm_operation op,
+> > +		unsigned long start, unsigned long end)
+> > +{
+> > +	struct emm_notifier *e = rcu_dereference(mm)->emm_notifier;
+> > +	int x;
+> > +
+> > +	while (e) {
+> > +
+> > +		if (e->callback) {
+> > +			x = e->callback(e, mm, op, start, end);
+> > +			if (x)
+> > +				return x;
+> > +		}
+> > +		/*
+> > +		 * emm_notifier contents (e) must be fetched after
+> > +		 * the retrival of the pointer to the notifier.
+> > +		 */
+> > +		e = rcu_dereference(e)->next;
+> > +	}
+> > +	return 0;
+> > +}
+> > +EXPORT_SYMBOL_GPL(__emm_notify);
+> > +#endif
 > 
-> If the device is gone, it doesn't much matter what resume() returns.
+> Those rcu_dereference()s are wrong. They should read:
+> 
+>   e = rcu_dereference(mm->emm_notifier);
+> 
+> and
+> 
+>   e = rcu_dereference(e->next);
 
-What if the same driver is handling multiple instances and only some of
-them fail to resume?
+Peter has it right.  You need to rcu_dereference() the same thing that
+you rcu_assign_pointer() to.
 
-Regards,
-
-Nigel
-
+							Thanx, Paul
