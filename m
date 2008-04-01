@@ -1,106 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754479AbYDADF4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754859AbYDADPJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754479AbYDADF4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Mar 2008 23:05:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751895AbYDADFq
+	id S1754859AbYDADPJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Mar 2008 23:15:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752372AbYDADOy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Mar 2008 23:05:46 -0400
-Received: from an-out-0708.google.com ([209.85.132.242]:38407 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751784AbYDADFq (ORCPT
+	Mon, 31 Mar 2008 23:14:54 -0400
+Received: from astoria.ccjclearline.com ([64.235.106.9]:33463 "EHLO
+	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752166AbYDADOx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Mar 2008 23:05:46 -0400
-Message-ID: <47F1A675.3050204@codemonkey.ws>
-Date: Mon, 31 Mar 2008 22:05:25 -0500
-From: Anthony Liguori <anthony@codemonkey.ws>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
+	Mon, 31 Mar 2008 23:14:53 -0400
+Date: Mon, 31 Mar 2008 23:14:46 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@crashcourse.ca>
+X-X-Sender: rpjday@localhost.localdomain
+To: David Miller <davem@davemloft.net>
+cc: bunk@kernel.org, netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [2.6 patch] forgotten bits of Sangoma drivers removal
+In-Reply-To: <20080331.193329.195976331.davem@davemloft.net>
+Message-ID: <alpine.LFD.1.00.0803312313210.21490@localhost.localdomain>
+References: <20080330224901.GW28445@cs181133002.pp.htv.fi> <20080331.193329.195976331.davem@davemloft.net>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
 MIME-Version: 1.0
-Newsgroups: gmane.linux.kernel,gmane.linux.drivers.sensors
-To: "Darrick J. Wong" <djwong@us.ibm.com>
-CC: "Mark M. Hoffman" <mhoffman@lightlink.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       lm-sensors <lm-sensors@lm-sensors.org>
-Subject: Re: [PATCH 2/2] ibmaem: New driver for power/energy meters in IBM
-   System X hardware
-References: <20080328213805.GB7183@tree.beaverton.ibm.com>
-In-Reply-To: <20080328213805.GB7183@tree.beaverton.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - crashcourse.ca
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Darrick J. Wong wrote:
-> New driver to read energy, power, and temperature meters in various
-> IBM System X hardware.
+On Mon, 31 Mar 2008, David Miller wrote:
 
-<snip>
+> From: Adrian Bunk <bunk@kernel.org>
+> Date: Mon, 31 Mar 2008 01:49:01 +0300
+>
+> > Robert P. J. Day spotted that my removal of the Sangoma drivers missed a
+> > few bits.
+> >
+> > Signed-off-by: Adrian Bunk <bunk@kernel.org>
+>
+> I must have missed some context or another patch, but
+> linux/if_wanpipe.h is still there, so I can't see why
+> we can remove it from linux/Kbuild
 
-> +/* sysfs support functions */
-> +/* Discover sensors on an AEM device */
-> +#define AEM_FIND_SENSORS(type) \
-> +static int type##_find_sensors(struct type##_data *data) \
-> +{ \
-> +	struct aem_ro_sensor_template *ro; \
-> +	struct aem_rw_sensor_template *rw; \
-> +	int err, idx; \
-> +\
-> +	/* Set up read-only sensors */ \
-> +	ro = type##_ro_sensors; \
-> +	idx = 0; \
-> +	while (ro->label) { \
-> +		data->sensors[idx].dev_attr.attr.name = ro->label; \
-> +		data->sensors[idx].dev_attr.attr.mode = S_IRUGO; \
-> +		data->sensors[idx].dev_attr.show = ro->show; \
-> +		data->sensors[idx].index = ro->index; \
-> +\
-> +		err = device_create_file(&data->fw.pdev->dev, \
-> +					 &data->sensors[idx].dev_attr); \
-> +		if (err) { \
-> +			data->sensors[idx].dev_attr.attr.name = NULL; \
-> +			goto exit_remove; \
-> +		} \
-> +		idx++; \
-> +		ro++; \
-> +	} \
-> +\
-> +	/* Set up read-write sensors */ \
-> +	rw = type##_rw_sensors; \
-> +	while (rw->label) { \
-> +		data->sensors[idx].dev_attr.attr.name = rw->label; \
-> +		data->sensors[idx].dev_attr.attr.mode = S_IRUGO | S_IWUSR; \
-> +		data->sensors[idx].dev_attr.show = rw->show; \
-> +		data->sensors[idx].dev_attr.store = rw->set; \
-> +		data->sensors[idx].index = rw->index; \
-> +\
-> +		err = device_create_file(&data->fw.pdev->dev, \
-> +					 &data->sensors[idx].dev_attr); \
-> +		if (err) { \
-> +			data->sensors[idx].dev_attr.attr.name = NULL; \
-> +			goto exit_remove; \
-> +		} \
-> +		idx++; \
-> +		rw++; \
-> +	} \
-> +\
-> +	err = device_create_file(&data->fw.pdev->dev, \
-> +			&sensor_dev_attr_name.dev_attr); \
-> +	if (err) \
-> +		goto exit_remove; \
-> +\
-> +	return 0; \
-> +\
-> +exit_remove: \
-> +	type##_remove_sensors(data); \
-> +	return err; \
-> +} 
+AFAICT, nothing in the source tree includes that header file, so i'm
+guessing that the patch should also include simply deleting it if it
+has no further value.
 
-It really shouldn't be necessary to have all of these macro functions. 
-In this above macro, you would just have to pass the ro and rw 
-structures along with a remove function pointer.  Since all of your 
-types have common members, you could just have a common substructure and 
-pass that around.
+rday
+--
 
-Regards,
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry:
+    Have classroom, will lecture.
 
-Anthony Liguori
+http://crashcourse.ca                          Waterloo, Ontario, CANADA
+========================================================================
