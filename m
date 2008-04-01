@@ -1,287 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758638AbYDAJjc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757107AbYDAJkF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758638AbYDAJjc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Apr 2008 05:39:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756893AbYDAJjI
+	id S1757107AbYDAJkF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Apr 2008 05:40:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756921AbYDAJjv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Apr 2008 05:39:08 -0400
-Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:57765 "EHLO
-	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756789AbYDAJjG (ORCPT
+	Tue, 1 Apr 2008 05:39:51 -0400
+Received: from mail.syneticon.net ([213.239.212.131]:53732 "EHLO
+	mail2.syneticon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756069AbYDAJju (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Apr 2008 05:39:06 -0400
-From: "Satoshi UCHIDA" <s-uchida@ap.jp.nec.com>
-To: <linux-kernel@vger.kernel.org>, <containers@lists.linux-foundation.org>,
-       <axboe@kernel.dk>, <menage@google.com>
-Cc: <s-uchida@ap.jp.nec.com>, <tom-sugawara@ap.jp.nec.com>,
-       <m-takahashi@ex.jp.nec.com>
-References: <007801c893d9$d89726f0$89c574d0$@jp.nec.com>
-In-Reply-To: <007801c893d9$d89726f0$89c574d0$@jp.nec.com>
-Subject: [RFC][patch 8/11][CFQ-cgroup] Control cfq_data per cgroup
-Date: Tue, 1 Apr 2008 18:38:52 +0900
-Message-Id: <008501c893dc$3206e520$9614af60$@jp.nec.com>
+	Tue, 1 Apr 2008 05:39:50 -0400
+Message-ID: <47F202D9.20405@wpkg.org>
+Date: Tue, 01 Apr 2008 11:39:37 +0200
+From: Tomasz Chmielewski <mangoo@wpkg.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061110 Mandriva/1.5.0.8-1mdv2007.1 (2007.1) Thunderbird/1.5.0.8 Mnenhy/0.7.4.666
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
+To: Artem Bityutskiy <dedekind@yandex.ru>
+Cc: LKML <linux-kernel@vger.kernel.org>, penberg@cs.helsinki.fi,
+       =?UTF-8?B?SsO2cm4gRW5nZWw=?= <joern@logfs.org>,
+       ext-adrian.hunter@nokia.com, jwboyer@gmail.com
+Subject: Re: UBIFS vs Logfs (was [RFC PATCH] UBIFS - new flash file system)
+References: <47F1EC20.6050600@wpkg.org> <47F1F644.4060000@yandex.ru>
+In-Reply-To: <47F1F644.4060000@yandex.ru>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Mailer: Microsoft Office Outlook 12.0
-Thread-Index: AciT2dazsgoxpK4vQk6Hf026phpfBAAAjPFA
-Content-Language: ja
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch expands cfq data to handling multi cfq_data in group.
-This control is used rb_tree and the key is used a pointer of cfq_meta_data.
+Artem Bityutskiy schrieb:
 
-   Signed-off-by: Satoshi UCHIDA <uchida@ap.jp.nec.com>
+> Tomasz Chmielewski wrote:
+>> For me, the motivators to wait for LogFS are mainly the facts that it
+>> can work on traditional block devices, and not only on pure flash:
+> 
+> Sorry Thomasz, for me this makes zero sense. There are _much_ better file
+> systems for block devices.
 
-diff --git a/block/cfq-cgroup.c b/block/cfq-cgroup.c
-index 55090dc..4110ab7 100644
---- a/block/cfq-cgroup.c
-+++ b/block/cfq-cgroup.c
-@@ -23,6 +23,9 @@ static const int cfq_cgroup_slice_idle = HZ / 125;
- struct cfq_cgroup {
- 	struct cgroup_subsys_state css;
- 	unsigned int ioprio;
-+
-+	struct rb_root sibling_tree;
-+	unsigned int siblings;
- };
- 
- 
-@@ -35,6 +38,8 @@ static inline struct cfq_cgroup *cgroup_to_cfq_cgroup(struct cgroup *cont)
- /*
-  * Add device or cgroup data functions.
-  */
-+struct cfq_data *__cfq_cgroup_init_queue(struct request_queue *q, void *data);
-+
- static struct cfq_meta_data *cfq_cgroup_init_meta_data(struct cfq_data *cfqd, struct request_queue *q)
- {
- 	struct cfq_meta_data *cfqmd;
-@@ -90,16 +95,75 @@ static void cfq_meta_data_sibling_tree_add(struct cfq_meta_data *cfqmd,
- 	cfqmd->siblings++;
- 	cfqd->cfqmd = cfqmd;
- }
-- 
-+
-+static void cfq_cgroup_sibling_tree_add(struct cfq_cgroup *cfqc,
-+					struct cfq_data *cfqd)
-+{
-+	struct rb_node **p;
-+	struct rb_node *parent = NULL;
-+
-+	BUG_ON(!RB_EMPTY_NODE(&cfqd->group_node));
-+
-+	p = &cfqc->sibling_tree.rb_node;
-+
-+	while (*p) {
-+		struct cfq_data *__cfqd;
-+		struct rb_node **n;
-+
-+		parent = *p;
-+		__cfqd = rb_entry(parent, struct cfq_data, group_node);
-+
-+		if (cfqd->cfqmd < __cfqd->cfqmd) {
-+			n = &(*p)->rb_left;
-+		} else {
-+			n = &(*p)->rb_right;
-+		}
-+		p = n;
-+	}
-+		
-+	rb_link_node(&cfqd->group_node, parent, p);
-+	rb_insert_color(&cfqd->group_node, &cfqc->sibling_tree);
-+	cfqc->siblings++;
-+	cfqd->cfqc = cfqc;
-+}
-+
-+static void *cfq_cgroup_init_cfq_data(struct cfq_cgroup *cfqc, struct cfq_data *cfqd)
-+{
-+	struct cgroup *child;
-+
-+	/* setting cfq_data for cfq_cgroup */
-+	if (!cfqc) {
-+		cfqc = cgroup_to_cfq_cgroup(get_root_subsys(&cfq_cgroup_subsys));	
-+		cfq_cgroup_sibling_tree_add(cfqc, cfqd);
-+	} else {
-+		struct cfq_data *__cfqd;
-+		__cfqd = __cfq_cgroup_init_queue(CFQ_DRV_UNIQ_DATA(cfqd).queue, cfqd->cfqmd);
-+		if (!__cfqd)
-+			return NULL;
-+		cfq_cgroup_sibling_tree_add(cfqc, __cfqd);
-+	}
-+
-+	/* check and create cfq_data for children */
-+	if (cfqc->css.cgroup)
-+		list_for_each_entry(child, &cfqc->css.cgroup->children, children){
-+			cfq_cgroup_init_cfq_data(cgroup_to_cfq_cgroup(child), cfqd);
-+		}
-+
-+	return cfqc;
-+}
-+
-+
- struct cfq_data *__cfq_cgroup_init_queue(struct request_queue *q, void *data)
- {
- 	struct cfq_meta_data *cfqmd = (struct cfq_meta_data *)data;
- 	struct cfq_data *cfqd = __cfq_init_cfq_data(q);
-+	int root = 0;
- 
- 	if (!cfqd)
- 		return NULL;
- 
- 	RB_CLEAR_NODE(&cfqd->sib_node);
-+  	RB_CLEAR_NODE(&cfqd->group_node);
- 
- 	if (!cfqmd) {
-        		cfqmd = cfq_cgroup_init_meta_data(cfqd, q);
-@@ -107,12 +171,35 @@ struct cfq_data *__cfq_cgroup_init_queue(struct request_queue *q, void *data)
- 			kfree(cfqd);
- 			return NULL;
- 		}
-+		root = 1;
- 	}
- 	cfq_meta_data_sibling_tree_add(cfqmd, cfqd);
- 
-+	if (root)
-+		cfq_cgroup_init_cfq_data(NULL, cfqd);
-+
- 	return cfqd;
- }
- 
-+static void *cfq_cgroup_init_cgroup(struct cfq_cgroup *cfqc, struct cgroup *parent)
-+{
-+	struct rb_node *p;
-+	if (parent) {
-+		struct cfq_cgroup *cfqc_p = cgroup_to_cfq_cgroup(parent);
-+
-+		p = rb_first(&cfqc_p->sibling_tree);
-+		while (p != NULL) {
-+			struct cfq_data *__cfqd;
-+			__cfqd = rb_entry(p, struct cfq_data, group_node);
-+
-+			cfq_cgroup_init_cfq_data(cfqc, __cfqd);
-+
-+			p = rb_next(p);		
-+		}		
-+	}
-+
-+	return cfqc;
-+}
- 
- static struct cgroup_subsys_state *
- cfq_cgroup_create(struct cgroup_subsys *ss, struct cgroup *cont)
-@@ -130,6 +217,11 @@ cfq_cgroup_create(struct cgroup_subsys *ss, struct cgroup *cont)
- 		return ERR_PTR(-ENOMEM);
- 
- 	cfqc->ioprio = 3;
-+	cfqc->sibling_tree = RB_ROOT;
-+	cfqc->siblings = 0;
-+
-+	if (!cfq_cgroup_init_cgroup(cfqc, cont->parent))
-+		return ERR_PTR(-ENOMEM);
- 
- 	return &cfqc->css;	
- }
-@@ -144,6 +236,12 @@ static void cfq_cgroup_erase_meta_data_siblings(struct cfq_meta_data *cfqmd, str
- 	cfqmd->siblings--;
- }
- 
-+static void cfq_cgroup_erase_cgroup_siblings(struct cfq_cgroup *cfqc, struct cfq_data *cfqd)
-+{
-+	rb_erase(&cfqd->group_node, &cfqc->sibling_tree);
-+	cfqc->siblings--;	
-+}
-+
- static void cfq_exit_device_group(struct cfq_meta_data *cfqmd)
- {
- 	struct rb_node *p, *n;
-@@ -156,6 +254,7 @@ static void cfq_exit_device_group(struct cfq_meta_data *cfqmd)
- 		cfqd = rb_entry(p, struct cfq_data, sib_node);
- 
- 		cfq_cgroup_erase_meta_data_siblings(cfqmd, cfqd);
-+		cfq_cgroup_erase_cgroup_siblings(cfqd->cfqc, cfqd);
- 		__cfq_exit_data(cfqd);
- 
- 		p = n;
-@@ -170,8 +269,28 @@ static void __cfq_cgroup_exit_data(struct cfq_data *cfqd)
- 	kfree(cfqmd);
- }
- 
-+static void cfq_exit_cgroup(struct cfq_cgroup *cfqc)
-+{
-+	struct rb_node *p, *n;
-+	struct cfq_data *cfqd;
-+
-+	p =  rb_first(&cfqc->sibling_tree);
-+
-+	while (p) {
-+		n = rb_next(p);
-+		cfqd = rb_entry(p, struct cfq_data, group_node);
-+
-+		cfq_cgroup_erase_meta_data_siblings(cfqd->cfqmd, cfqd);
-+		cfq_cgroup_erase_cgroup_siblings(cfqc, cfqd);
-+		__cfq_exit_data(cfqd);			
-+
-+		p = n;
-+	}
-+}
-+
- static void cfq_cgroup_destroy(struct cgroup_subsys *ss, struct cgroup *cont)
- {
-+	cfq_exit_cgroup(cgroup_to_cfq_cgroup(cont));
- 	kfree(cgroup_to_cfq_cgroup(cont));
- }
- 
-diff --git a/include/linux/cfq-iosched.h b/include/linux/cfq-iosched.h
-index c8879a7..93256ce 100644
---- a/include/linux/cfq-iosched.h
-+++ b/include/linux/cfq-iosched.h
-@@ -94,10 +94,16 @@ struct cfq_data {
- 	struct list_head cic_list;
- 
- #ifdef CONFIG_CGROUP_CFQ
-+	/* device unique attribute */
- 	struct cfq_meta_data *cfqmd;
- 	/* sibling_tree member for cfq_meta_data */
- 	struct rb_node sib_node;
- 
-+	/* cfq_cgroup attribute */
-+	struct cfq_cgroup *cfqc;
-+	/* group_tree member for cfq_cgroup */
-+	struct rb_node group_node;
-+
- #else
- 	struct cfq_driver_data cfq_driv_d;
- #endif
-diff --git a/include/linux/cgroup.h b/include/linux/cgroup.h
-index 785a01c..6423951 100644
---- a/include/linux/cgroup.h
-+++ b/include/linux/cgroup.h
-@@ -356,6 +356,7 @@ struct task_struct *cgroup_iter_next(struct cgroup *cgrp,
- void cgroup_iter_end(struct cgroup *cgrp, struct cgroup_iter *it);
- int cgroup_scan_tasks(struct cgroup_scanner *scan);
- int cgroup_attach_task(struct cgroup *, struct task_struct *);
-+struct cgroup* get_root_subsys(struct cgroup_subsys *css);
- 
- #else /* !CONFIG_CGROUPS */
- 
-diff --git a/kernel/cgroup.c b/kernel/cgroup.c
-index e8e8ec4..1ef1de7 100644
---- a/kernel/cgroup.c
-+++ b/kernel/cgroup.c
-@@ -1290,6 +1290,12 @@ static int attach_task_by_pid(struct cgroup *cgrp, char *pidbuf)
- 	return ret;
- }
- 
-+
-+struct cgroup* get_root_subsys(struct cgroup_subsys *css)
-+{
-+	return &css->root->top_cgroup;
-+}
-+
- /* The various types of files and directories in a cgroup file system */
- enum cgroup_filetype {
- 	FILE_ROOT,
+Such as?
+Flash (also on block devices) is slow and expensive (when compared to 
+modern hard disks) and therefore compression is *very* useful here.
+Not only it can potentially save you money; reads and writes will be 
+smaller/faster (unless you're editing music and videos, where one won't 
+use flash anyway), flash will wear out slower etc.
+
+Is there a filesystem for Linux which can provide transparent 
+compression and works for block devices (other than user-space NTFS or 
+some outdated ext2 patches)? I don't think so.
+
+
+> UBIFS may work on top of a block device as
+> well (just needs few hacks to make it possible) - it is not a problem
+> at all, it is just _senseless_.
+
+Do you mean using hacks like block2mtd? It's hacky, and pretty hard to 
+boot a system this way (need to build own initramfs, with a static 
+block2mtd or loads of libraries - not something an average user would 
+like to do; no distro supports it; updating a kernel would be a pain etc.).
+
+
+> JFFS2/UBIFS/LogFS is a separate _class_ of file-systems. The are designed
+> for _flash_, which has completely different work model then block device.
+> They are _native_ flash file systems.
+> Here are more details: 
+> http://www.linux-mtd.infradead.org/faq/general.html#L_mtd_vs_hdd
+
+It's a good comparison, but it doesn't show disadvantages of using 
+traditional filesystems on flash-based block devices.
+
+I just mentioned the reasons why a filesystem like LogFS would be useful 
+on block devices: there are valid reasons to do it.
+
+
+(...)
+
+> The whole _point_ of this separate class of FSes is because we believe
+> we may do much _better_ job if we use flash _natively_, instead of using
+> FTL. FTL is the place where you loose performance, reliability, and so on.
+
+True.
+Unfortunately, there is no way to access flash directly on flash-based 
+block devices (USB-sticks, IDE-flash disks, SSD disks etc.).
+
+Therefore, could an answer be: use a traditional filesystem?
+
+Unfortunately, traditional filesystems were rather designed for rotating 
+media / cheap disks (no transparent compression; tend to accumulate 
+writes in one area of the disk - more on that - below).
+
+
+> And you are saying about using a native flash FS on top of a block device
+> like an SD card. This is just not sane: SD card first emulates a block 
+> device
+> for you, looses performance at this point, then you again emulate a flash
+> on top of this, and suffer from this again.
+
+Performance is only one factor in the equation. Other factors are: cost 
+and reliability.
+
+I speak from experience: flash-based block devices tend to have poor 
+wear-levelling (at least Transcend IDE-flash disks).
+To reproduce:
+- format a 2 GB Transcend IDE-flash disk with ext3
+- write a small file (50-100 kB)
+- update that file ~several hundred thousand times - as you finish, 
+IDE-flash disk will have 200-300 badblocks
+
+If wear-levelling on the underlying IDE-flash device was any decent, 
+writes would be spread on the whole ~2GB surface, totalling in many more 
+successful writes.
+
+
+Again: this is my experience, although it may contradict the theory 
+underlined in the link you gave earlier.
+You have much more experience with flash file systems: correct me where 
+I'm wrong.
+
+
+-- 
+Tomasz Chmielewski
+http://wpkg.org
 
