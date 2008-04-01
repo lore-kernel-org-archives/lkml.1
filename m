@@ -1,34 +1,33 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757063AbYDANgp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758020AbYDANjQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757063AbYDANgp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Apr 2008 09:36:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752937AbYDANgg
+	id S1758020AbYDANjQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Apr 2008 09:39:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754829AbYDANjE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Apr 2008 09:36:36 -0400
-Received: from mga01.intel.com ([192.55.52.88]:18374 "EHLO mga01.intel.com"
+	Tue, 1 Apr 2008 09:39:04 -0400
+Received: from mga03.intel.com ([143.182.124.21]:48944 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752047AbYDANgf convert rfc822-to-8bit (ORCPT
+	id S1754286AbYDANjD convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Apr 2008 09:36:35 -0400
+	Tue, 1 Apr 2008 09:39:03 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.25,587,1199692800"; 
-   d="scan'208";a="543585493"
+   d="scan'208";a="225931086"
 X-MimeOLE: Produced By Microsoft Exchange V6.5
 Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Subject: RE: [PATCH] ioat_dca __iomem annotations
-Date: Tue, 1 Apr 2008 14:34:51 +0100
-Message-ID: <7F38996F7185A24AB9071ED4950AD8C101667B1F@swsmsx413.ger.corp.intel.com>
-In-Reply-To: <f12847240803310920r5854444fid9022cd705e54847@mail.gmail.com>
+Subject: RE: [PATCH] dma_page_list ->base_address is a userland pointer
+Date: Tue, 1 Apr 2008 14:34:59 +0100
+Message-ID: <7F38996F7185A24AB9071ED4950AD8C101667B20@swsmsx413.ger.corp.intel.com>
+In-Reply-To: <f12847240803310922i628ab6c6r44e89f6b841fdf79@mail.gmail.com>
 X-MS-Has-Attach: 
 X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH] ioat_dca __iomem annotations
-Thread-Index: AciTS1euFqlFZbiISBW1YxcAppmN7gAsR42A
+Thread-Topic: [PATCH] dma_page_list ->base_address is a userland pointer
+Thread-Index: AciTS15zUMMVIKdwRte4qTrNVRKD2AAsYCPw
 From: "Sosnowski, Maciej" <maciej.sosnowski@intel.com>
 To: <viro@ftp.linux.org.uk>, <torvalds@linux-foundation.org>
-Cc: "Nelson, Shannon" <shannon.nelson@intel.com>,
-       <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 01 Apr 2008 13:34:53.0165 (UTC) FILETIME=[2AA6E9D0:01C893FD]
+Cc: <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 01 Apr 2008 13:35:01.0319 (UTC) FILETIME=[2F831D70:01C893FD]
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
@@ -37,41 +36,31 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 > ---------- Original message ----------
 > From: Al Viro <viro@ftp.linux.org.uk>
-> Date: Mar 29, 2008 5:08 AM
-> Subject: [PATCH] ioat_dca __iomem annotations
+> Date: Mar 29, 2008 5:09 AM
+> Subject: [PATCH] dma_page_list ->base_address is a userland pointer
 > To: torvalds@linux-foundation.org
-> Cc: shannon.nelson@intel.com, linux-kernel@vger.kernel.org
+> Cc: linux-kernel@vger.kernel.org
 > 
 > 
 > 
 > Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
 > ---
->  drivers/dma/ioat_dca.c |    4 ++--
->  1 files changed, 2 insertions(+), 2 deletions(-)
+>  include/linux/dmaengine.h |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
 > 
-> diff --git a/drivers/dma/ioat_dca.c b/drivers/dma/ioat_dca.c
-> index 0fa8a98..9e92276 100644
-> --- a/drivers/dma/ioat_dca.c
-> +++ b/drivers/dma/ioat_dca.c
-> @@ -98,7 +98,7 @@ struct ioat_dca_slot {
+> diff --git a/include/linux/dmaengine.h b/include/linux/dmaengine.h
+> index 261e43a..34d4406 100644
+> --- a/include/linux/dmaengine.h
+> +++ b/include/linux/dmaengine.h
+> @@ -423,7 +423,7 @@ void dma_async_device_unregister(struct dma_device
+>  *device); /* --- Helper iov-locking functions --- */
 > 
->  struct ioat_dca_priv {
->        void __iomem            *iobase;
-> -       void                    *dca_base;
-> +       void __iomem            *dca_base;
->        int                      max_requesters;
->        int                      requester_count;
->        u8                       tag_map[IOAT_TAG_MAP_LEN];
-> @@ -338,7 +338,7 @@ static struct dca_ops ioat2_dca_ops = {
->        .get_tag                = ioat2_dca_get_tag,
+>  struct dma_page_list {
+> -       char *base_address;
+> +       char __user *base_address;
+>        int nr_pages;
+>        struct page **pages;
 >  };
-> 
-> -static int ioat2_dca_count_dca_slots(void *iobase, u16 dca_offset)
-> +static int ioat2_dca_count_dca_slots(void __iomem *iobase, u16
-dca_offset)
->  {
->        int slots = 0;
->        u32 req;
 > --
 > 1.5.3.GIT
 
