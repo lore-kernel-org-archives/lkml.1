@@ -1,187 +1,188 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761380AbYDAV1h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761618AbYDAV1v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761380AbYDAV1h (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Apr 2008 17:27:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760202AbYDAV1R
+	id S1761618AbYDAV1v (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Apr 2008 17:27:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760779AbYDAV10
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Apr 2008 17:27:17 -0400
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:47393 "EHLO
-	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759726AbYDAV1O (ORCPT
+	Tue, 1 Apr 2008 17:27:26 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:33896 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760724AbYDAV1Y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Apr 2008 17:27:14 -0400
-Date: Tue, 1 Apr 2008 17:23:34 -0400
-Message-Id: <200804012123.m31LNY3T012962@agora.fsl.cs.sunysb.edu>
-From: Erez Zadok <ezk@cs.sunysb.edu>
-To: Jan Kara <jack@suse.cz>
-Cc: Erez Zadok <ezk@cs.sunysb.edu>, sct@redhat.com, akpm@linux-foundation.org,
-       adilger@clusterfs.com, linux-ext4@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: ext3 lockdep warning in 2.6.25-rc6 
-In-reply-to: Your message of "Tue, 25 Mar 2008 19:29:09 BST."
-             <20080325182909.GD21732@atrey.karlin.mff.cuni.cz> 
-X-MailKey: Erez_Zadok
+	Tue, 1 Apr 2008 17:27:24 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Date: Tue, 1 Apr 2008 23:21:31 +0200 (CEST)
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: [PATCH upate] iso transmit cycle skip patch
+To: Pieter Palmers <pieterp@joow.be>
+cc: linux1394-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+In-Reply-To: <47E18163.1080200@joow.be>
+Message-ID: <tkrat.0d0791eae8f1fc6c@s5r6.in-berlin.de>
+References: <47E18163.1080200@joow.be>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; CHARSET=us-ascii
+Content-Disposition: INLINE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In message <20080325182909.GD21732@atrey.karlin.mff.cuni.cz>, Jan Kara writes:
-> 
-> --sdtB3X0nJg68CQEu
-> Content-Type: text/plain; charset=us-ascii
-> Content-Disposition: inline
-> 
-> > I was building a kernel using "make -j 4" inside a unionfs, mounted on top
-> > of ext3.  The kernel is vanilla 2.6.25-rc6 plus unionfs patches.  At some
-> > point I forced a cache flush using "echo 3 > /proc/sys/vm/drop_caches" and I
-> > got the lockdep warning below.  Note that unionfs doesn't appear to be
-> > involved in this lockdep warning at all, so I suspect this is probably an
-> > issue between jbd and ext3 directly.
-> > 
-> > Let me know if I can be of more help.
->   Actually, I have a fix for that - attached. Can you try it? Thanks.
-> 									Honza
-> 
-> > [31270.749254] =======================================================
-> > [31270.749473] [ INFO: possible circular locking dependency detected ]
-> > [31270.749720] 2.6.25-rc6-unionfs2 #69
-> > [31270.749831] -------------------------------------------------------
-> > [31270.749958] flush-caches.sh/9702 is trying to acquire lock:
-> > [31270.750171]  (&journal->j_list_lock){--..}, at: [<c029ef6a>] journal_try_to_free_buffers+0xa5/0x158
-> > [31270.751607] 
-> > [31270.751607] but task is already holding lock:
-> > [31270.751607]  (inode_lock){--..}, at: [<c02718bb>] drop_pagecache+0x45/0xd3
-> > [31270.751607] 
-> > [31270.751607] which lock already depends on the new lock.
-> > [31270.751607] 
-> > [31270.751607] 
-> > [31270.751607] the existing dependency chain (in reverse order) is:
-> > [31270.751607] 
-> > [31270.751607] -> #1 (inode_lock){--..}:
-> > [31270.751607]        [<c0231e01>] __lock_acquire+0x934/0xab8
-> > [31270.751607]        [<c0232307>] lock_acquire+0x4e/0x6a
-> > [31270.751607]        [<c0395e33>] _spin_lock+0x23/0x32
-> > [31270.751607]        [<c02713d2>] __mark_inode_dirty+0xbe/0x134
-> > [31270.751607]        [<c0274b3a>] __set_page_dirty+0xdd/0xec
-> > [31270.751607]        [<c0274ba9>] mark_buffer_dirty+0x60/0x63
-> > [31270.751607]        [<c029d2f6>] __journal_temp_unlink_buffer+0xc9/0xce
-> > [31270.751607]        [<c029d43b>] __journal_unfile_buffer+0xb/0x15
-> > [31270.751607]        [<c029d487>] __journal_refile_buffer+0x42/0x8c
-> > [31270.751607]        [<c029fdd1>] journal_commit_transaction+0xc59/0xe64
-> > [31270.751607]        [<c02a29f1>] kjournald+0xae/0x1b0
-> > [31270.751607]        [<c0228833>] kthread+0x3b/0x64
-> > [31270.751607]        [<c02039d3>] kernel_thread_helper+0x7/0x10
-> > [31270.751607]        [<ffffffff>] 0xffffffff
-> > [31270.751607] 
-> > [31270.751607] -> #0 (&journal->j_list_lock){--..}:
-> > [31270.751607]        [<c0231d28>] __lock_acquire+0x85b/0xab8
-> > [31270.751607]        [<c0232307>] lock_acquire+0x4e/0x6a
-> > [31270.751607]        [<c0395e33>] _spin_lock+0x23/0x32
-> > [31270.751607]        [<c029ef6a>] journal_try_to_free_buffers+0xa5/0x158
-> > [31270.751607]        [<c02925fe>] ext3_releasepage+0x53/0x5c
-> > [31270.751607]        [<c023e4bd>] try_to_release_page+0x32/0x3f
-> > [31270.751607]        [<c0243f59>] __invalidate_mapping_pages+0x69/0xc6
-> > [31270.751607]        [<c02718de>] drop_pagecache+0x68/0xd3
-> > [31270.751607]        [<c0271972>] drop_caches_sysctl_handler+0x29/0x3f
-> > [31270.751607]        [<c0289383>] proc_sys_write+0x61/0x7e
-> > [31270.751607]        [<c02594a1>] vfs_write+0x8c/0x108
-> > [31270.751607]        [<c0259a2b>] sys_write+0x3b/0x60
-> > [31270.751607]        [<c0202cee>] sysenter_past_esp+0x5f/0xa5
-> > [31270.751607]        [<ffffffff>] 0xffffffff
-> > [31270.751607] 
-> > [31270.751607] other info that might help us debug this:
-> > [31270.751607] 
-> > [31270.751607] 2 locks held by flush-caches.sh/9702:
-> > [31270.751607]  #0:  (&type->s_umount_key#12){----}, at: [<c02718ab>] drop_pagecache+0x35/0xd3
-> > [31270.751607]  #1:  (inode_lock){--..}, at: [<c02718bb>] drop_pagecache+0x45/0xd3
-> > [31270.751608] 
-> > [31270.751608] stack backtrace:
-> > [31270.751608] Pid: 9702, comm: flush-caches.sh Not tainted 2.6.25-rc6-unionfs2 #69
-> > [31270.751608]  [<c0230687>] print_circular_bug_tail+0x5b/0x66
-> > [31270.751608]  [<c0231d28>] __lock_acquire+0x85b/0xab8
-> > [31270.751608]  [<c0232307>] lock_acquire+0x4e/0x6a
-> > [31270.751608]  [<c029ef6a>] ? journal_try_to_free_buffers+0xa5/0x158
-> > [31270.751608]  [<c0395e33>] _spin_lock+0x23/0x32
-> > [31270.751608]  [<c029ef6a>] ? journal_try_to_free_buffers+0xa5/0x158
-> > [31270.751608]  [<c029ef6a>] journal_try_to_free_buffers+0xa5/0x158
-> > [31270.751608]  [<c02925fe>] ext3_releasepage+0x53/0x5c
-> > [31270.751608]  [<c023e4bd>] try_to_release_page+0x32/0x3f
-> > [31270.751608]  [<c0243f59>] __invalidate_mapping_pages+0x69/0xc6
-> > [31270.751608]  [<c02718de>] drop_pagecache+0x68/0xd3
-> > [31270.751608]  [<c0271972>] drop_caches_sysctl_handler+0x29/0x3f
-> > [31270.751608]  [<c0289383>] proc_sys_write+0x61/0x7e
-> > [31270.751608]  [<c0289322>] ? proc_sys_write+0x0/0x7e
-> > [31270.751608]  [<c02594a1>] vfs_write+0x8c/0x108
-> > [31270.751608]  [<c0259a2b>] sys_write+0x3b/0x60
-> > [31270.751608]  [<c0202cee>] sysenter_past_esp+0x5f/0xa5
-> > [31270.751608]  =======================
-> > --
-> > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> > the body of a message to majordomo@vger.kernel.org
-> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> > Please read the FAQ at  http://www.tux.org/lkml/
-> -- 
-> Jan Kara <jack@suse.cz>
-> SuSE CR Labs
-> 
-> --sdtB3X0nJg68CQEu
-> Content-Type: text/x-diff; charset=us-ascii
-> Content-Disposition: attachment; filename="vfs-2.6.25-drop_pagecache_sb_fix.diff"
-> 
-> From f5e41087e345fa5c3b46ac36e6e4a654d2f7f624 Mon Sep 17 00:00:00 2001
-> From: Jan Kara <jack@suse.cz>
-> Date: Tue, 18 Mar 2008 14:38:06 +0100
-> Subject: [PATCH] Fix drop_pagecache_sb() to not call __invalidate_mapping_pages() under
-> inode_lock.
-> 
-> Signed-off-by: Jan Kara <jack@suse.cz>
-> ---
->  fs/drop_caches.c |    8 +++++++-
->  1 files changed, 7 insertions(+), 1 deletions(-)
-> 
-> diff --git a/fs/drop_caches.c b/fs/drop_caches.c
-> index 59375ef..f5aae26 100644
-> --- a/fs/drop_caches.c
-> +++ b/fs/drop_caches.c
-> @@ -14,15 +14,21 @@ int sysctl_drop_caches;
->  
->  static void drop_pagecache_sb(struct super_block *sb)
->  {
-> -	struct inode *inode;
-> +	struct inode *inode, *toput_inode = NULL;
->  
->  	spin_lock(&inode_lock);
->  	list_for_each_entry(inode, &sb->s_inodes, i_sb_list) {
->  		if (inode->i_state & (I_FREEING|I_WILL_FREE))
->  			continue;
-> +		__iget(inode);
-> +		spin_unlock(&inode_lock);
->  		__invalidate_mapping_pages(inode->i_mapping, 0, -1, true);
-> +		iput(toput_inode);
-> +		toput_inode = inode;
-> +		spin_lock(&inode_lock);
->  	}
->  	spin_unlock(&inode_lock);
-> +	iput(toput_inode);
->  }
+Date: Wed, 19 Mar 2008 22:10:59 +0100
+From: Pieter Palmers <pieterp@joow.be>
+Subject: ieee1394: rawiso: requeue packet for transmission after skipped cycle
 
-Jan, I'll be happy to test this, but I don't understand two things about
-this patch:
+As it seems, some host controllers have issues that can cause them to 
+skip cycles now and then when using large packets. I suspect that this 
+is due to DMA not succeeding in time. If the transmit fifo can't contain 
+more than one packet (big packets), the DMA should provide a new packet 
+each cycle (125us). I am under the impression that my current PCI 
+express test system can't guarantee this.
 
-1. Is it safe to unlock and re-lock inode_lock temporarily within the loop?
+In any case, the patch tries to provide a workaround as follows:
+The DMA program descriptors are modified such that when an error occurs, 
+the DMA engine retries the descriptor the next cycle instead of 
+stalling. This way no data is lost. The side effect of this is that 
+packets are sent with one cycle delay. This however might not be that 
+much of a problem for certain protocols (e.g. AM824). If they use 
+padding packets for e.g. rate matching they can drop one of those to 
+resync the streams.
 
-2. What's the motivation behind having the second toput_inode pointer?  It
-   appears that the first iteration through the loop, toput_inode will be
-   NULL, so we'll be iput'ing a NULL pointer (which is ok).  So you're
-   trying to iput the previous inode pointer that the list iterated over,
-   right?  Is that intended?
+The amount of skips between two userspace wakeups is counted. This 
+number is then propagated to userspace through the upper 16 bits of the 
+'dropped' parameter. This allows unmodified userspace applications due 
+to the following:
+1) libraw simply passes this dropped parameter to the user application
+2) the meaning of the dropped parameter is: if it's nonzero, something 
+bad has happened. The actual value of the parameter at this moment does 
+not have a specific meaning.
 
-Peter's post:
+A libraw client can then retrieve the number of skipped cycles and 
+account for them if needed.
+---
 
-	http://lkml.org/lkml/2008/3/23/202
+Update by Stefan R:  Changed patch title (is it OK?) and whitespace.
 
-includes a reference to a mail by Andrew which implies that the fix may be
-much more involved than what you outlined above, no?
+Pieter, please reply with a Signed-off-by line if the update is OK for
+commit.  See linux/Documentation/SubmittingPatches for implications of
+the sign-off.
 
-Thanks,
-Erez.
+ drivers/ieee1394/iso.h      |    2 ++
+ drivers/ieee1394/ohci1394.c |   34 ++++++++++++++++++++++++++++++++++
+ drivers/ieee1394/raw1394.c  |    7 ++++++-
+ 3 files changed, 42 insertions(+), 1 deletion(-)
+
+Index: linux/drivers/ieee1394/iso.h
+===================================================================
+--- linux.orig/drivers/ieee1394/iso.h
++++ linux/drivers/ieee1394/iso.h
+@@ -123,6 +123,8 @@ struct hpsb_iso {
+ 
+ 	/* how many times the buffer has overflowed or underflowed */
+ 	atomic_t overflows;
++	/* how many cycles were skipped for a given context */
++	atomic_t skips;
+ 
+ 	/* Current number of bytes lost in discarded packets */
+ 	int bytes_discarded;
+Index: linux/drivers/ieee1394/ohci1394.c
+===================================================================
+--- linux.orig/drivers/ieee1394/ohci1394.c
++++ linux/drivers/ieee1394/ohci1394.c
+@@ -1723,6 +1723,8 @@ struct ohci_iso_xmit {
+ 	struct dma_prog_region prog;
+ 	struct ohci1394_iso_tasklet task;
+ 	int task_active;
++	int last_cycle;
++	atomic_t skips;
+ 
+ 	u32 ContextControlSet;
+ 	u32 ContextControlClear;
+@@ -1759,6 +1761,8 @@ static int ohci_iso_xmit_init(struct hps
+ 	iso->hostdata = xmit;
+ 	xmit->ohci = iso->host->hostdata;
+ 	xmit->task_active = 0;
++	xmit->last_cycle = -1;
++	atomic_set(&iso->skips, 0);
+ 
+ 	dma_prog_region_init(&xmit->prog);
+ 
+@@ -1856,6 +1860,26 @@ static void ohci_iso_xmit_task(unsigned 
+ 		/* parse cycle */
+ 		cycle = le32_to_cpu(cmd->output_last.status) & 0x1FFF;
+ 
++		if (xmit->last_cycle > -1) {
++			int cycle_diff = cycle - xmit->last_cycle;
++			int skip;
++
++			/* unwrap */
++			if (cycle_diff < 0) {
++				cycle_diff += 8000;
++				if (cycle_diff < 0)
++					PRINT(KERN_ERR, "bogus cycle diff %d\n",
++					      cycle_diff);
++			}
++
++			skip = cycle_diff - 1;
++			if (skip > 0) {
++				DBGMSG("skipped %d cycles without packet loss", skip);
++				atomic_add(skip, &iso->skips);
++			}
++		}
++		xmit->last_cycle = cycle;
++
+ 		/* tell the subsystem the packet has gone out */
+ 		hpsb_iso_packet_sent(iso, cycle, event != 0x11);
+ 
+@@ -1943,6 +1967,16 @@ static int ohci_iso_xmit_queue(struct hp
+ 	prev->output_last.branchAddress = cpu_to_le32(
+ 		dma_prog_region_offset_to_bus(&xmit->prog, sizeof(struct iso_xmit_cmd) * next_i) | 3);
+ 
++	/*
++	 * Link the skip address to this descriptor itself. This causes a
++	 * context to skip a cycle whenever lost cycles or FIFO overruns occur,
++	 * without dropping the data at that point the application should then
++	 * decide whether this is an error condition or not. Some protocols
++	 * can deal with this by dropping some rate-matching padding packets.
++	 */
++	next->output_more_immediate.branchAddress =
++			prev->output_last.branchAddress;
++
+ 	/* disable interrupt, unless required by the IRQ interval */
+ 	if (prev_i % iso->irq_interval) {
+ 		prev->output_last.control &= cpu_to_le32(~(3 << 20)); /* no interrupt */
+Index: linux/drivers/ieee1394/raw1394.c
+===================================================================
+--- linux.orig/drivers/ieee1394/raw1394.c
++++ linux/drivers/ieee1394/raw1394.c
+@@ -2356,13 +2356,16 @@ static void rawiso_activity_cb(struct hp
+ static void raw1394_iso_fill_status(struct hpsb_iso *iso,
+ 				    struct raw1394_iso_status *stat)
+ {
++	int overflows = atomic_read(&iso->overflows);
++	int skips = atomic_read(&iso->skips);
++
+ 	stat->config.data_buf_size = iso->buf_size;
+ 	stat->config.buf_packets = iso->buf_packets;
+ 	stat->config.channel = iso->channel;
+ 	stat->config.speed = iso->speed;
+ 	stat->config.irq_interval = iso->irq_interval;
+ 	stat->n_packets = hpsb_iso_n_ready(iso);
+-	stat->overflows = atomic_read(&iso->overflows);
++	stat->overflows = ((skips & 0xFFFF) << 16) | ((overflows & 0xFFFF));
+ 	stat->xmit_cycle = iso->xmit_cycle;
+ }
+ 
+@@ -2437,6 +2440,8 @@ static int raw1394_iso_get_status(struct
+ 
+ 	/* reset overflow counter */
+ 	atomic_set(&iso->overflows, 0);
++	/* reset skip counter */
++	atomic_set(&iso->skips, 0);
+ 
+ 	return 0;
+ }
+
+-- 
+Stefan Richter
+-=====-==--- -=-- ----=
+http://arcgraph.de/sr/
+
