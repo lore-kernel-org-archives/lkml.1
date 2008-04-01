@@ -1,104 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758701AbYDALdq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758997AbYDALeR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758701AbYDALdq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Apr 2008 07:33:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756962AbYDALdi
+	id S1758997AbYDALeR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Apr 2008 07:34:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758477AbYDALd5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Apr 2008 07:33:38 -0400
-Received: from rv-out-0910.google.com ([209.85.198.191]:2879 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756399AbYDALdh (ORCPT
+	Tue, 1 Apr 2008 07:33:57 -0400
+Received: from fg-out-1718.google.com ([72.14.220.155]:62361 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756399AbYDALd4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Apr 2008 07:33:37 -0400
+	Tue, 1 Apr 2008 07:33:56 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=TJjQ0XqkF8tErjpxdzN+ILRoxxP+FLsJH9eHkahQ1Sn3oZrim3tztA/bri6Vga8IkT5sgLLS2jqCtFaw0M/KJ75jrEaRWD6Y4FTvqJEXQcFozKc28izVh8g2wifCINFB7/tiidja9cwD8JlknsftXwNhjvCkOYCK4SsO4a3uZV8=
-Message-ID: <84144f020804010433xafc6f28o5a5375ce82903a7a@mail.gmail.com>
-Date: Tue, 1 Apr 2008 14:33:37 +0300
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: Artem.Bityutskiy@nokia.com
-Subject: Re: [RFC PATCH 26/26] UBIFS: include FS to compilation
-Cc: "Artem Bityutskiy" <dedekind@yandex.ru>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "Adrian Hunter" <ext-adrian.hunter@nokia.com>,
-       "David Woodhouse" <dwmw2@infradead.org>
-In-Reply-To: <47F20DEE.7090105@nokia.com>
+        h=message-id:date:from:to:subject:cc:mime-version:content-type;
+        b=hwB5dCf4If3p94IMhHlMllsp/QOdu9QJpuGVWUrrFfGs5KBXg4MOJ71eHumjKwRXQmE4htnD6pbpTr2WvPCl6VvCd//1qRMgRsvLk6xo37dEQvzufUWGDfK8Ntdurfav3yFeQGFYeXXjzarOF+DpEf/k2SR7OVA84OZnfqwhuck=
+Message-ID: <eb3ff54b0804010433v67f0ea60w4681b3a3400c3484@mail.gmail.com>
+Date: Tue, 1 Apr 2008 14:33:54 +0300
+From: "Rami Rosen" <ramirose@gmail.com>
+To: "David Miller" <davem@davemloft.net>, netdev@vger.kernel.org
+Subject: [PATCH net-2.6.26] [IPV6] Remove three method declarations in include/net/ndisc.h.
+Cc: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1206629746-4298-1-git-send-email-Artem.Bityutskiy@nokia.com>
-	 <1206629746-4298-27-git-send-email-Artem.Bityutskiy@nokia.com>
-	 <84144f020804010039n47133bd3l63f02258a2670e72@mail.gmail.com>
-	 <47F1F7A6.5020105@yandex.ru>
-	 <84144f020804010215o209fbed8gf629dc6557fcd091@mail.gmail.com>
-	 <47F1FF98.9020809@nokia.com>
-	 <84144f020804010304w7057a68cqa5b9a7a5364b9489@mail.gmail.com>
-	 <47F20DEE.7090105@nokia.com>
-X-Google-Sender-Auth: 670716bc72f7bb6b
+Content-Type: multipart/mixed; 
+	boundary="----=_Part_13238_10317193.1207049634727"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Artem,
+------=_Part_13238_10317193.1207049634727
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-Pekka Enberg wrote:
-> > First and foremost, JFFS2 uses BUG_ON and doesn't invent it's own
-> > assert.
+Hi,
+This patch removes two unused method declarations in include/net/ndisc.h:
+ndisc_forwarding_on(void) and  ndisc_forwarding_off(void);
+Also igmp6_cleanup(void) appears twice in this header, so one
+igmp6_cleanup(void)
+declaration is removed.
 
-On Tue, Apr 1, 2008 at 1:26 PM, Artem Bityutskiy
-<Artem.Bityutskiy@nokia.com> wrote:
->  True. But it has checking code which may be enabled or disable.
->  An assert is just a special case of this. You do not say why
->  it hurts. For me it looks like your personal taste.
+Regards,
+Rami Rosen
 
-I don't know how many times I have to say this: you're doing it at the
-wrong level! The reason you want to compile them out is because you've
-added crap like this all over your code paths:
 
-        ubifs_assert(PageLocked(page));
-        ubifs_assert(!PageChecked(page));
-        ubifs_assert(!PagePrivate(page));
+Signed-off-by: Rami Rosen <ramirose@gmail.com>
 
-So instead of arguing about this you really ought to look at what
-SLUB, for example, does. It's perfectly okay to have _debugging
-checks_ compiled out (stuff like verify_inode and such) but at the
-assertion level it makes no sense whatsoever!
+------=_Part_13238_10317193.1207049634727
+Content-Type: text/plain; name=patch.txt
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_feicv8ac0
+Content-Disposition: attachment; filename=patch.txt
 
-Pekka Enberg wrote:
-> > But perhaps the problem will go away after you inject some sanity to
-> > stuff like this:
-> >
-> > fs/ubifs/dir.c: dbg_gen("dent '%.*s' to ino %lu (nlink %d) in dir ino %lu",
-> > fs/ubifs/dir.c: dbg_gen("dent '%.*s' from ino %lu (nlink %d) in dir ino %lu",
-> > fs/ubifs/dir.c: dbg_gen("directory '%.*s', ino %lu in dir ino %lu",
-> > dentry->d_name.len,
-> > fs/ubifs/dir.c: dbg_gen("dent '%.*s', mode %#x in dir ino %lu",
-> > fs/ubifs/dir.c: dbg_gen("dent '%.*s' in dir ino %lu",
-
-On Tue, Apr 1, 2008 at 1:26 PM, Artem Bityutskiy
-<Artem.Bityutskiy@nokia.com> wrote:
-> This means that when debugging is enabled, you'll have prints like:
-> UBIFS DBG (pid 28398): ubifs_create: dent 'file', mode 0x81a4 in dir ino 1
-> or
-> UBIFS DBG (pid 28398): ubifs_setattr: ino 65, ia_valid 0x70
-
-So what? It's still an ad hoc debugging printout with no particular
-meaning whatsoever.
-
-But this discussion is getting nowhere and I have better things to do
-than argue about this over and over again. So to reiterate my review
-comments on this:
-
-  - Kill your home-grown assert
-  - Fix up your logging messages to actually make sense
-  - Perhaps introduce a ubifs_error() thingy and convert as much code
-to use that
-  - Reduce the amount of debug Kconfig options
-
-You can ignore these comments as my personal preferences all you want
-in which case I can only wish you good luck with merging this thing
-upstream.
-
-                        Pekka
+ZGlmZiAtLWdpdCBhL2luY2x1ZGUvbmV0L25kaXNjLmggYi9pbmNsdWRlL25ldC9uZGlzYy5oCmlu
+ZGV4IDVhZWRmMzIuLjBjMzJkNDMgMTAwNjQ0Ci0tLSBhL2luY2x1ZGUvbmV0L25kaXNjLmgKKysr
+IGIvaW5jbHVkZS9uZXQvbmRpc2MuaApAQCAtOTMsOSArOTMsNiBAQCBleHRlcm4gdm9pZAkJCW5k
+aXNjX3NlbmRfcnMoc3RydWN0IG5ldF9kZXZpY2UgKmRldiwKIAkJCQkJICAgICAgc3RydWN0IGlu
+Nl9hZGRyICpzYWRkciwKIAkJCQkJICAgICAgc3RydWN0IGluNl9hZGRyICpkYWRkcik7CiAKLWV4
+dGVybiB2b2lkCQkJbmRpc2NfZm9yd2FyZGluZ19vbih2b2lkKTsKLWV4dGVybiB2b2lkCQkJbmRp
+c2NfZm9yd2FyZGluZ19vZmYodm9pZCk7Ci0KIGV4dGVybiB2b2lkCQkJbmRpc2Nfc2VuZF9yZWRp
+cmVjdChzdHJ1Y3Qgc2tfYnVmZiAqc2tiLAogCQkJCQkJICAgIHN0cnVjdCBuZWlnaGJvdXIgKm5l
+aWdoLAogCQkJCQkJICAgIHN0cnVjdCBpbjZfYWRkciAqdGFyZ2V0KTsKQEAgLTExNSw3ICsxMTIs
+NiBAQCBleHRlcm4gaW50CQkJaWdtcDZfZXZlbnRfcXVlcnkoc3RydWN0IHNrX2J1ZmYgKnNrYik7
+CiAKIGV4dGVybiBpbnQJCQlpZ21wNl9ldmVudF9yZXBvcnQoc3RydWN0IHNrX2J1ZmYgKnNrYik7
+CiAKLWV4dGVybiB2b2lkCQkJaWdtcDZfY2xlYW51cCh2b2lkKTsKIAogI2lmZGVmIENPTkZJR19T
+WVNDVEwKIGV4dGVybiBpbnQgCQkJbmRpc2NfaWZpbmZvX3N5c2N0bF9jaGFuZ2Uoc3RydWN0IGN0
+bF90YWJsZSAqY3RsLAo=
+------=_Part_13238_10317193.1207049634727--
