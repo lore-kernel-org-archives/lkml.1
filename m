@@ -1,110 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759587AbYDCRBR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758271AbYDCRKA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759587AbYDCRBR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Apr 2008 13:01:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756113AbYDCRBC
+	id S1758271AbYDCRKA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Apr 2008 13:10:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753798AbYDCRJt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Apr 2008 13:01:02 -0400
-Received: from E23SMTP04.au.ibm.com ([202.81.18.173]:44213 "EHLO
-	e23smtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756287AbYDCRBA (ORCPT
+	Thu, 3 Apr 2008 13:09:49 -0400
+Received: from lazybastard.de ([212.112.238.170]:35967 "EHLO
+	longford.logfs.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753466AbYDCRJs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Apr 2008 13:01:00 -0400
-Message-ID: <47F50D40.80204@linux.vnet.ibm.com>
-Date: Thu, 03 Apr 2008 22:30:48 +0530
-From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-User-Agent: Thunderbird 1.5.0.14ubu (X11/20080306)
-MIME-Version: 1.0
-To: Nick Piggin <npiggin@suse.de>
-CC: Jan Kara <jack@suse.cz>, kernel list <linux-kernel@vger.kernel.org>,
-       stable@kernel.org, Andy Whitcroft <apw@shadowen.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>
-Subject: Re: [BUG] 2.6.24.4 kernel bug while running ftest03
-References: <47F48DD3.8070103@linux.vnet.ibm.com> <20080403124615.GA4214@atrey.karlin.mff.cuni.cz> <20080403125344.GA18609@atrey.karlin.mff.cuni.cz> <20080403131846.GA3323@wotan.suse.de>
-In-Reply-To: <20080403131846.GA3323@wotan.suse.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Thu, 3 Apr 2008 13:09:48 -0400
+Message-Id: <20080401181308.512473173@logfs.org>
+Date: Tue, 01 Apr 2008 20:13:08 +0200
+To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       linux-mtd@lists.infradead.org
+Cc: Nick Piggin <npiggin@suse.de>, Jens Axboe <jens.axboe@oracle.com>,
+       David Woodhouse <dwmw2@infradead.org>
+Subject: [patch 0/15] LogFS take five
+From: joern@logfs.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nick Piggin wrote:
-> On Thu, Apr 03, 2008 at 02:53:44PM +0200, Jan Kara wrote:
->>   Hello,
->>
->>   I've just found that Nick has been recently fixing this function,
->> Nick?
-> 
-> Hmm, yes it looks like an earlier oops but that should be fixed in
-> 2.6.24.4... I can't see a way it could advance off the end of the
-> iovec now. Sigh.
-> 
-> Is the problem easy to reproduce (preferably without the gov patch
-> but even with the patch...).
-> 
-> I couldn't reproduce the bug with ftest03.
+Add LogFS, a scalable flash filesystem.
 
-I tried without the gcov patch and I am not able to reproduce it,
-> 
->>                    
->> 								Honza
->>
->>>> The kernel panic's, while running the LTP ftest03 on the 2.6.24.4 kernel
->>>> compiled with the gcov patches from LTP.
->>>> (http://ltp.cvs.sourceforge.net/ltp/utils/analysis/gcov-kernel/linux-2.6.24-gcov.patch?view=markup) 
->>>   Are you able to reproduce the problem without this patch? The patch is
->>> nontrivial...
->>>
->>>> BUG: unable to handle kernel paging request at virtual address f8000004
->>>   The address is a bit strange. Looks like we have advanced iov beyond
->>> the area we have allocated. Can you send me disassembly of the function
->>> iov_iter_advance() of your kernel? Thanks.
+Patch is split into individual files for review.  Several details
+will surely raise eyebrows and likely require changes:
+- Using two page flags where only one is generally available for
+  filesystems.  One of the flags is necessary to deal with a deadlock
+  when writepage() sends a locked page for writing.  Details can be
+  found in readwrite.c, around the definition of PG_pre_locked.
+  Added Nick Piggin to Cc: for that detail.
+- Caching in the mtd layer.  This should likely be moved into
+  drivers/mtd/mtdcore.c.
+  David Woodhouse on Cc: for this.
+- An not-quite-polished btree library that should get some more polish
+  and move to lib/btree.c.  Unless someone else has better code
+  already.
 
-Sorry, I do not have the kernel, i will try reproducing the get it.
->>>
->>>> printing eip: c01c2836 *pdpt = 0000000000004001 *pde = 0000000000000000 
->>>> Oops: 0000 [#1] SMP 
->>>>
->>>> Modules linked in: hidp rfcomm l2cap bluetooth dm_multipath nvram via686a hwmon i2c_viapro pcspkr mptsas scsi_transport_sas floppy tg3 parport_pc ac battery button dm_mirror dm_mod joydev sunrpc i2c_dev i2c_core autofs4 lp parport ipv6 md5 sg mptspi mptscsih mptbase scsi_transport_spi sd_mod scsi_mod ehci_hcd ohci_hcd uhci_hcdPid: 24160, comm: ftest03 Not tainted (2.6.24.4-gcov-autokern1 #1) 
->>>>
->>>> EIP: 0060:[<c01c2836>] EFLAGS: 00010246 CPU: 1
->>>> EIP is at iov_iter_advance+0xe9/0x155
->>>> EAX: 00000000 EBX: f3457d98 ECX: 00000080 EDX: 00000000
->>>> ESI: 00000000 EDI: f8000000 EBP: f33f6d30 ESP: f3457d24
->>>>  DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
->>>> Process ftest03 (pid: 24160, ti=f3457000 task=f6544590 task.ti=f3457000)
->>>> Stack: 00000800 0006b800 00000000 c01c5e79 0006b800 00000000 00000800 00000800 
->>>>        c7209030 c015cdea f3457e8c f7fb9180 f33f6d30 c07b1600 f33f6c68 00000000 
->>>>        00000800 00000800 00000000 c07b1600 00000000 0000006b f3457da8 c02f11cd 
->>>> Call Trace:
->>>>  [<c01c5e79>] generic_file_buffered_write+0x29f/0xc05
->>>>  [<c015cdea>] current_fs_time+0x4e/0x6f
->>>>  [<c02f11cd>] ext3_readpages+0x0/0x35
->>>>  [<c02f11cd>] ext3_readpages+0x0/0x35
->>>>  [<c01d1da4>] __do_page_cache_readahead+0x268/0x386
->>>>  [<c015cdea>] current_fs_time+0x4e/0x6f
->>>>  [<c01c6f97>] __generic_file_aio_write_nolock+0x7b8/0x852
->>>>  [<c01c70be>] generic_file_aio_write+0x8d/0x162
->>>>  [<c01c7bfd>] generic_file_aio_read+0x292/0x31a
->>>>  [<c02ecfc2>] ext3_file_write+0x32/0x17c
->>>>  [<c020b830>] do_sync_readv_writev+0xcf/0x152
->>>>  [<c01c5163>] wait_on_page_writeback_range+0x153/0x1e7
->>>>  [<c017d0f7>] autoremove_wake_function+0x0/0x5f
->>>>  [<c04f21b9>] copy_from_user+0xb1/0x135
->>>>  [<c020b602>] rw_copy_check_uvector+0xd2/0x19f
->>>>  [<c020c4f6>] do_readv_writev+0x152/0x328
->>>>  [<c02ecf90>] ext3_file_write+0x0/0x17c
->>>>  [<c079c11d>] _spin_unlock+0x13/0x22
->>>>  [<c01b427e>] audit_syscall_entry+0x2eb/0x323
->>>>  [<c020c758>] vfs_writev+0x8c/0x9e
->>>>  [<c020cf6c>] sys_writev+0x8b/0x1a5
->>>>  [<c0108a76>] syscall_call+0x7/0xb
->>>>  =======================
->>>> Code: c0 00 29 c8 01 ce 89 43 0c 39 77 04 75 13 83 c7 08 83 05 98 63 a6 c0 01 83 15 9c 63 a6 c0 00 31 f6 29 ca 85 d2 0f 85 78 ff ff ff <83> 7f 04 00 75 29 83 05 a0 63 a6 c0 01 83 15 a4 63 a6 c0 00 83 EIP: [<c01c2836>] iov_iter_advance+0xe9/0x155 SS:ESP 0068:f3457d24---[ end trace af3ae442124c3d18 ]---
+Checkpatch.pl spits out two errors.  Neither of these looks like a
+clear-cut case to me.  If someone has a good suggestion for either
+one, I'll happily follow that.
+
+And it is currently reasonably simple to run into a deadlock when
+using logfs on a block device.  The problem appears to be the block
+layer allocating memory for its cache without GFP_NOFS, so that under
+memory pressure logfs writes through block layer may recurse back to
+logfs writes.  Not entirely sure who is to blame for this bug and how to
+solve it.
+
+Added Jens Axboe for this detail.
 
 
--- 
-Thanks & Regards,
-Kamalesh Babulal,
-Linux Technology Center,
-IBM, ISTL.
+Motivation 1:
+
+Linux currently has 1-2 flash filesystems to choose from, JFFS2 and
+YAFFS.  The latter has never made a serious attempt of kernel
+integration, which may disqualify it to some.
+
+The two main problems of JFFS2 are memory consumption and mount time.
+Unlike most filesystems, there is no tree structure of any sorts on
+the medium, so the complete medium needs to be scanned at mount time
+and a tree structure kept in-memory while the filesystem is mounted.
+With bigger devices, both mount time and memory consumption increase
+linearly.
+
+JFFS2 has recently gained summary support, which helps reduce mount
+time by a constant factor.  Linear scalability remains.  YAFFS
+appears to be better by a constant factor, yet still scales linearly.
+
+LogFS has an on-medium tree, fairly similar to Ext2 in structure, so
+mount times are O(1).  In absolute terms, the OLPC system has mount
+times of ~3.3s for JFFS2 and ~60ms for LogFS.
+
+
+Motivation 2:
+
+Flash is becoming increasingly common in standard PC hardware.  Nearly
+a dozen different manufacturers have announced Solid State Disks
+(SSDs), the OLPC and the Intel Classmate no longer contain hard disks
+and ASUS announced a flash-only Laptop series for regular consumers.
+And that doesn't even mention the ubiquitous USB-Sticks, SD-Cards,
+etc.
+
+Flash behaves significantly different to hard disks.  In order to use
+flash, the current standard practice is to add an emulation layer and
+an old-fashioned hard disk filesystem.  As can be expected, this is
+eating up some of the benefits flash can offer over hard disks.
+
+In principle it is possible to achieve better performance with a flash
+filesystem than with the current emulated approach.  In practice our
+current flash filesystems are not even near that theoretical goal.
+LogFS in its current state is already closer.
+
+
+Signed-off-by: Joern Engel <joern@logfs.org>
+
+ fs/Kconfig           |   17 
+ fs/Makefile          |    1 
+ fs/logfs/Makefile    |   14 
+ fs/logfs/compr.c     |   95 ++
+ fs/logfs/dev_bdev.c  |  146 ++++
+ fs/logfs/dev_mtd.c   |  406 ++++++++++++
+ fs/logfs/dir.c       |  765 ++++++++++++++++++++++++
+ fs/logfs/file.c      |  236 +++++++
+ fs/logfs/gc.c        |  729 ++++++++++++++++++++++
+ fs/logfs/inode.c     |  575 ++++++++++++++++++
+ fs/logfs/journal.c   |  805 +++++++++++++++++++++++++
+ fs/logfs/logfs.h     |  555 +++++++++++++++++
+ fs/logfs/logfs_abi.h |  523 ++++++++++++++++
+ fs/logfs/memtree.c   |  405 ++++++++++++
+ fs/logfs/readwrite.c | 1618 +++++++++++++++++++++++++++++++++++++++++++++++++++
+ fs/logfs/segment.c   |  595 ++++++++++++++++++
+ fs/logfs/super.c     |  375 +++++++++++
+ 17 files changed, 7860 insertions(+)
+
