@@ -1,94 +1,163 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757533AbYDAI6F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756591AbYDAI67@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757533AbYDAI6F (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Apr 2008 04:58:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755629AbYDAI5y
+	id S1756591AbYDAI67 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Apr 2008 04:58:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755629AbYDAI6t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Apr 2008 04:57:54 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:47829 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754505AbYDAI5x (ORCPT
+	Tue, 1 Apr 2008 04:58:49 -0400
+Received: from wr-out-0506.google.com ([64.233.184.239]:64399 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756084AbYDAI6r (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Apr 2008 04:57:53 -0400
-Date: Tue, 1 Apr 2008 01:55:55 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Rodolfo Giometti <giometti@enneenne.com>
-Cc: linux-kernel@vger.kernel.org, dwmw2@infradead.org, davej@redhat.com,
-       sam@ravnborg.org, greg@kroah.com, randy.dunlap@oracle.com
-Subject: Re: [PATCH 1/7] LinuxPPS core support.
-Message-Id: <20080401015555.f267d970.akpm@linux-foundation.org>
-In-Reply-To: <20080401084214.GY7279@enneenne.com>
-References: <12048053463198-git-send-email-giometti@linux.it>
-	<12048053473401-git-send-email-giometti@linux.it>
-	<20080320130356.69ab65fe.akpm@linux-foundation.org>
-	<20080325144400.GG8959@enneenne.com>
-	<20080327202531.a924e5d9.akpm@linux-foundation.org>
-	<20080401084214.GY7279@enneenne.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 1 Apr 2008 04:58:47 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=Cd8rYJRT8QCbwKrHKYcquWQyCZmwjdeGSoDeeL31nFUINxEV49lIyiwSBaP0hZb4Sm4kQUuVxDbLDQT5Nezr4BiLsJprVGQUfiSNdXdoy82nhIQlkV3h18yFp4fuMNA/xtLp0tEsp98AF4R93Fov9LtDVVnmiu7cHWH4+ZXLppU=
+Message-ID: <a8e1da0804010158u26d8b2f6pcf18face16a60714@mail.gmail.com>
+Date: Tue, 1 Apr 2008 16:58:46 +0800
+From: "Dave Young" <hidave.darkstar@gmail.com>
+To: "David Miller" <davem@davemloft.net>
+Subject: Re: bluetooth lockdep trace. (.25rc5-git4)
+Cc: davej@codemonkey.org.uk, netdev@vger.kernel.org,
+       linux-bluetooth@vger.kernel.org, linux-kernel@vger.kernel.org,
+       "Marcel Holtmann" <marcel@holtmann.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 1 Apr 2008 10:42:14 +0200 Rodolfo Giometti <giometti@enneenne.com> wrote:
+On Tue, Apr 1, 2008 at 4:59 PM, Dave Young <hidave.darkstar@gmail.com> wrote:
+> marcel@holtmann.org
+>  Bcc:
+>  Subject: Re: bluetooth lockdep trace. (.25rc5-git4)
+>  Reply-To:
+>  In-Reply-To: <20080328.182021.46780895.davem@davemloft.net>
+>
+>  On Fri, Mar 28, 2008 at 06:20:21PM -0700, David Miller wrote:
+>  > From: Dave Jones <davej@codemonkey.org.uk>
+>  > Date: Thu, 27 Mar 2008 12:21:56 -0400
+>  >
+>  > > Mar 27 08:10:57 localhost kernel: Pid: 3611, comm: obex-data-serve Not tainted 2.6.25-0.121.rc5.git4.fc9 #1
+>  > > Mar 27 08:10:57 localhost kernel:  [__lock_acquire+2287/3089] __lock_acquire+0x8ef/0xc11
+>  > > Mar 27 08:10:57 localhost kernel:  [sched_clock+8/11] ? sched_clock+0x8/0xb
+>  > > Mar 27 08:10:57 localhost kernel:  [lock_acquire+106/144] lock_acquire+0x6a/0x90
+>  > > Mar 27 08:10:57 localhost kernel:  [<f8bd9321>] ? l2cap_sock_bind+0x29/0x108 [l2cap]
+>  > > Mar 27 08:10:57 localhost kernel:  [lock_sock_nested+182/198] lock_sock_nested+0xb6/0xc6
+>  > > Mar 27 08:10:57 localhost kernel:  [<f8bd9321>] ? l2cap_sock_bind+0x29/0x108 [l2cap]
+>  > > Mar 27 08:10:57 localhost kernel:  [security_socket_post_create+22/27] ? security_socket_post_create+0x16/0x1b
+>  > > Mar 27 08:10:57 localhost kernel:  [__sock_create+388/472] ? __sock_create+0x184/0x1d8
+>  > > Mar 27 08:10:57 localhost kernel:  [<f8bd9321>] l2cap_sock_bind+0x29/0x108 [l2cap]
+>  > > Mar 27 08:10:57 localhost kernel:  [kernel_bind+10/13] kernel_bind+0xa/0xd
+>  > > Mar 27 08:10:57 localhost kernel:  [<f8dad3d7>] rfcomm_dlc_open+0xc8/0x294 [rfcomm]
+>  > > Mar 27 08:10:57 localhost kernel:  [lock_sock_nested+187/198] ? lock_sock_nested+0xbb/0xc6
+>  > > Mar 27 08:10:57 localhost kernel:  [<f8dae18c>] rfcomm_sock_connect+0x8b/0xc2 [rfcomm]
+>  > > Mar 27 08:10:57 localhost kernel:  [sys_connect+96/125] sys_connect+0x60/0x7d
+>  > > Mar 27 08:10:57 localhost kernel:  [__lock_acquire+1370/3089] ? __lock_acquire+0x55a/0xc11
+>  > > Mar 27 08:10:57 localhost kernel:  [sys_socketcall+140/392] sys_socketcall+0x8c/0x188
+>  > > Mar 27 08:10:57 localhost kernel:  [syscall_call+7/11] syscall_call+0x7/0xb
+>  >
+>  > rfcomm connect locks the socket, then does rfcomm_dlc_open which in
+>  > turn can do a l2cap_sock_bind on a seperate second socket which in
+>  > turn locks that second socket.
+>  >
+>  > Both of these sockets are AF_BLUETOOTH family, so lockdep thinks there
+>  > is a locking conflict, even though what is happening here is perfectly
+>  > fine since the two sockets are totally different AF_BLUETOOTH
+>  > sub-types.
+>  >
+>  > Bluetooth will need to use sock_lock_init_class_and_name() and
+>  > lock sub-classes per AF_BLUETOOTH socket sub-type.
+>  >
+>  > David, could you or someone else work on this?
+>
+>  Does this fix the problem?
+>
+>  ---
+>  'rfcomm connect' will trigger lockdep warnings which is caused by
+>  locking diffrent kinds of bluetooth sockets at the same time.
+>
+>  So using sub-classes per AF_BLUETOOTH sub-type for lockdep.
+>
+>  Thanks for the hints from dave jones.
+>
+>
+>  Signed-off-by: Dave Young <hidave.darkstar@gmail.com>
+>
+>  ---
+>  net/bluetooth/af_bluetooth.c |   40 ++++++++++++++++++++++++++++++++++++++++
+>  1 file changed, 40 insertions(+)
+>
+>  diff -upr linux/net/bluetooth/af_bluetooth.c linux.new/net/bluetooth/af_bluetooth.c
+>  --- linux/net/bluetooth/af_bluetooth.c  2008-04-01 16:09:17.000000000 +0800
+>  +++ linux.new/net/bluetooth/af_bluetooth.c      2008-04-01 16:08:52.000000000 +0800
+>  @@ -53,6 +53,30 @@
+>   /* Bluetooth sockets */
+>   #define BT_MAX_PROTO   8
+>   static struct net_proto_family *bt_proto[BT_MAX_PROTO];
+>  +
+>  +static struct lock_class_key bt_slock_key[BT_MAX_PROTO];
+>  +static struct lock_class_key bt_lock_key[BT_MAX_PROTO];
+>  +static const char *bt_key_strings[BT_MAX_PROTO] = {
+>  +       "sk_lock-AF_BLUETOOTH-BTPROTO_L2CAP",
+>  +       "sk_lock-AF_BLUETOOTH-BTPROTO_HCI",
+>  +       "sk_lock-AF_BLUETOOTH-BTPROTO_SCO",
+>  +       "sk_lock-AF_BLUETOOTH-BTPROTO_RFCOMM",
+>  +       "sk_lock-AF_BLUETOOTH-BTPROTO_BNEP",
+>  +       "sk_lock-AF_BLUETOOTH-BTPROTO_CMTP",
+>  +       "sk_lock-AF_BLUETOOTH-BTPROTO_HIDP",
+>  +       "sk_lock-AF_BLUETOOTH-BTPROTO_AVDTP",
+>  +};
+>  +
+>  +static const char *bt_slock_key_strings[BT_MAX_PROTO] = {
+>  +       "slock-AF_BLUETOOTH-BTPROTO_L2CAP",
+>  +       "slock-AF_BLUETOOTH-BTPROTO_HCI",
+>  +       "slock-AF_BLUETOOTH-BTPROTO_SCO",
+>  +       "slock-AF_BLUETOOTH-BTPROTO_RFCOMM",
+>  +       "slock-AF_BLUETOOTH-BTPROTO_BNEP",
+>  +       "slock-AF_BLUETOOTH-BTPROTO_CMTP",
+>  +       "slock-AF_BLUETOOTH-BTPROTO_HIDP",
+>  +       "slock-AF_BLUETOOTH-BTPROTO_AVDTP",
+>  +};
+>   static DEFINE_RWLOCK(bt_proto_lock);
+>
+>   int bt_sock_register(int proto, struct net_proto_family *ops)
+>  @@ -95,6 +119,21 @@ int bt_sock_unregister(int proto)
+>   }
+>   EXPORT_SYMBOL(bt_sock_unregister);
+>
+>  +static void bt_reclassify_sock_lock(struct socket *sock, int proto)
+>  +{
+>  +       struct sock *sk = sock->sk;
+>  +
+>  +       if (!sk)
+>  +               return;
+>  +       BUG_ON(sock_owned_by_user(sk));
+>  +
+>  +       sock_lock_init_class_and_name(sk,
+>  +                       bt_slock_key_strings[proto],
+>  +                       &bt_slock_key[proto],
+>  +                       bt_key_strings[proto],
+>  +                       &bt_lock_key[proto]);
+>  +}
+>  +
+>   static int bt_sock_create(struct net *net, struct socket *sock, int proto)
+>   {
+>         int err;
+>  @@ -117,6 +156,7 @@ static int bt_sock_create(struct net *ne
+>
+>         if (bt_proto[proto] && try_module_get(bt_proto[proto]->owner)) {
+>                 err = bt_proto[proto]->create(net, sock, proto);
+>  +               bt_reclassify_sock_lock(sock, proto);
+>                 module_put(bt_proto[proto]->owner);
+>         }
+>
+>
 
-> On Thu, Mar 27, 2008 at 08:25:31PM -0700, Andrew Morton wrote:
-> > On Tue, 25 Mar 2008 15:44:00 +0100 Rodolfo Giometti <giometti@enneenne.com> wrote:
-> > > > 
-> > > > As it stands, there might be deadlocks such as when a process which itself
-> > > > holds a ref on the pps_device (with an open fd?) calls
-> > > > pps_unregister_source.
-> > > 
-> > > I can add a wait_event_interruptible in order to allow userland to
-> > > continue by receiving a signal. It could be acceptable?
-> > 
-> > There should be no need to "wait" for anything.  When the final reference
-> > to an object is released, that object is cleaned up.  Just like we do for
-> > inodes, dentries, pages, files, and 100 other kernel objects.
-> > 
-> > The need to wait for something else to go away is a big red flag with
-> > "busted refcounting" written on it.
-> > 
-> > > > Also, we need to take care that all processes which were waiting in
-> > > > pps_unregister_source() get to finish their cleanup before we permit rmmod
-> > > > to proceed.  Is that handled somewhere?
-> > > 
-> > > I don't understand the problem... this code as been added in order to
-> > > avoid the case where a pps_event() is called while a process executes
-> > > the pps_unregister_source(). If more processes try to execute this
-> > > code the first which enters will execute idr_remove() which prevents
-> > > another process to reach the wait_event()... is that wrong? =:-o
-> > 
-> > I was asking you!
-> > 
-> > We should get the reference counting and object lifetimes sorted out first. 
-> > There should be no "wait for <object> to be released" code.  Once that is
-> > in place, things like rmmod will also sort themselves out: it just won't be
-> > possible to remove the module while there are live references to objects.
-> 
-> The problem is related to serial and parallel clients.
-> 
-> The PPS source related to a serial port (or a parallel one) uses the
-> serial (or parallel) IRQ to get PPS timestamps and it could be
-> possible that a process tries to close the PPS source while another
-> CPU is runnig the serial IRQ, so I cannot remove the PPS object until
-> the IRQ handler is finished its job on the PPS object.
-> 
-> For clients (currently none :) which define their own IRQ handler for
-> PPS timestamps managing the problem doesn't arise at all.
+Sorry, the subject was cut by my mistake, please don't mind.
 
-This can all be handled with suitable locking and refcounting.  The device
-which is delivering PPS interrupts has a reference on the PPS data
-structures.  If userspace has PPS open then it also has a reference.
-
-The thread of control which releases the last reference to the PPS data
-structures also frees them all up.  This may require a schedule_work() if
-we need to support release-from-interrupt (as it appears that we do), but
-that's OK - we just need to be able to make the PPS data structures
-ineligible for new lookups while the schedule_work() is pending.
-
-There should be no need for any thread of control to wait for any other thread
-of control to do anything.  Get the refcounting right and everything
-can be done synchronously.
+Regards
+dave
