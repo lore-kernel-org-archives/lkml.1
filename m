@@ -1,79 +1,190 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757681AbYDAJPb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757280AbYDAJT3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757681AbYDAJPb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Apr 2008 05:15:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754968AbYDAJPX
+	id S1757280AbYDAJT3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Apr 2008 05:19:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754563AbYDAJTT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Apr 2008 05:15:23 -0400
-Received: from py-out-1112.google.com ([64.233.166.176]:52448 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756124AbYDAJPW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Apr 2008 05:15:22 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=n0cV5hCqsDg821sNuxFvliLctIaHsPd2fiZNWhlvQgNCHOebdriECmxxFXfazHcl5Rb7a5lJv0lcOPWd0NvU53UZmhLDkp91vtkAtaRK6HvyM58pptEFJYZ6ODpM/MD/ZxhZ1UtEJn1Juft36ApRADycniusMjd90suQMt/U5nU=
-Message-ID: <84144f020804010215o209fbed8gf629dc6557fcd091@mail.gmail.com>
-Date: Tue, 1 Apr 2008 12:15:21 +0300
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: "Artem Bityutskiy" <dedekind@yandex.ru>
-Subject: Re: [RFC PATCH 26/26] UBIFS: include FS to compilation
-Cc: "Artem Bityutskiy" <Artem.Bityutskiy@nokia.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "Adrian Hunter" <ext-adrian.hunter@nokia.com>
-In-Reply-To: <47F1F7A6.5020105@yandex.ru>
+	Tue, 1 Apr 2008 05:19:19 -0400
+Received: from smtp2f.orange.fr ([80.12.242.152]:53789 "EHLO smtp2f.orange.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753882AbYDAJTS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Apr 2008 05:19:18 -0400
+X-ME-UUID: 20080401091910729.B202A70000B3@mwinf2f16.orange.fr
+Message-ID: <47F1FE0A.9090501@cosmosbay.com>
+Date: Tue, 01 Apr 2008 11:19:06 +0200
+From: Eric Dumazet <dada1@cosmosbay.com>
+User-Agent: Thunderbird 1.5.0.14 (Windows/20071210)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1206629746-4298-1-git-send-email-Artem.Bityutskiy@nokia.com>
-	 <1206629746-4298-27-git-send-email-Artem.Bityutskiy@nokia.com>
-	 <84144f020804010039n47133bd3l63f02258a2670e72@mail.gmail.com>
-	 <47F1F7A6.5020105@yandex.ru>
-X-Google-Sender-Auth: 74f2d5158650b28e
+To: Ingo Molnar <mingo@elte.hu>
+Cc: David Miller <davem@davemloft.net>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [RFC,PATCH] loopback: calls netif_receive_skb() instead of	netif_rx()
+References: <47BDC848.50607@cosmosbay.com> <20080226.182120.183405235.davem@davemloft.net> <47C92F49.4070100@cosmosbay.com> <20080323.032949.194309002.davem@davemloft.net> <47E6A5FD.6060407@cosmosbay.com> <20080331094823.GA11651@elte.hu> <47F0B66C.6080404@cosmosbay.com> <20080331101237.GA12324@elte.hu>
+In-Reply-To: <20080331101237.GA12324@elte.hu>
+Content-Type: multipart/mixed;
+ boundary="------------020607020203040007000907"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Artem,
+This is a multi-part message in MIME format.
+--------------020607020203040007000907
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: quoted-printable
 
-Pekka Enberg wrote:
-> > But these don't make much sense to me. Why would you want to be able
-> > to compile out printks at this granularity? Why not enable all of them
-> > when CONFIG_UBIFS_FS_DEBUG is enabled?
+Ingo Molnar a =E9crit :
+> * Eric Dumazet <dada1@cosmosbay.com> wrote:
+>
+>  =20
+>> Problem is to check available space :
+>>
+>> It depends on stack growing UP or DOWN, and depends on caller running =
 
-On Tue, Apr 1, 2008 at 11:51 AM, Artem Bityutskiy <dedekind@yandex.ru> wrote:
->  Well, its just more convenient for us. If I know the bug is somewhere in
->  the journal, I enable the journal messages - less flooding. We may
->  lessen the amount, but it is still handy to have some classes of
->  prints separate.
+>> on process stack, or softirq stack, or even hardirq stack.
+>>    =20
+>
+> ok - i wish such threads were on lkml so that everyone not just the=20
+> netdev kabal can read it. It's quite ugly, but if we want to check stac=
+k=20
+> free space i'd suggest for you to put a stack_can_recurse() call into=20
+> arch/x86/kernel/process.c and offer a default __weak implementation in =
 
-Yeah, perhaps that's a sign that you're doing it wrong? You currently
-have 430 separate debug printks sprinkled around in UBIFS. The way to
-reduce that is to move as much logging as possible higher up the call
-chain and dump as much information as you can there. That's what
-ext2_error() does, for example. So I'm not opposed to a ubifs_error()
-or ubifs_warning() even if that's used in a controlled fashion. The
-way you do debugging checks now is totally ad hoc and IMHO not
-acceptable to the mainline kernel.
+> kernel/fork.c that always returns 0.
+>
+> the rule on x86 should be something like this: on 4K stacks and 64-bit =
 
-And like I said, if you need _tracing_ you might want to look at
-Ingo's ftrace or some other similar tracing infrastructure and use
-that. The upside of it is that you can basically have it enabled at
-run-time too.
+> [which have irqstacks] free stack space can go as low as 25%. On 8K=20
+> stacks [which doesnt have irqstacks but nests irqs] it should not go=20
+> below 50% before falling back to the explicitly queued packet branch.
+>
+> this way other pieces of kernel code code can choose between on-stack=20
+> fast recursion and explicit iterators. Although i'm not sure i like the=
+=20
+> whole concept to begin with ...
+>
+>  =20
 
-Pekka Enberg wrote:
-> > Why would you not want to enable all of these for development kernels?
+Hi Ingo
 
-On Tue, Apr 1, 2008 at 11:51 AM, Artem Bityutskiy <dedekind@yandex.ru> wrote:
->  Some of the checks are very heavy-weight. For example, the tree checking
->  functions scan the whole TNC/LPT B-tree, which means they read it from
->  flash, they check CRC, and they make sure the tree is consistent and
->  has sane data. They are very useful when hunting bugs, but they are too
->  slow to be always enabled.
+I took the time to prepare a patch to implement =20
+arch_stack_can_recurse() as you suggested.
 
-So perhaps you could just separate those heavy-weight options and have
-all others under CONFIG_UBIFS_DEBUG?
+Thank you
 
-                        Pekka
+[PATCH] x86 : arch_stack_can_recurse() introduction
+
+Some paths in kernel would like to chose between on-stack fast recursion =
+
+and explicit iterators.
+
+One identified spot is in net loopback driver, where we can avoid=20
+netif_rx() and its slowdown if
+sufficient stack space is available.
+
+We introduce a generic arch_stack_can_recurse() which default to a weak=20
+function returning 0.
+
+ On x86 arch, we implement following logic :
+
+   32 bits and 4K stacks (separate irq stacks) : can use up to 25% of sta=
+ck
+   64 bits, 8K stacks (separate irq stacks)    : can use up to 25% of sta=
+ck
+   32 bits and 8K stacks (no irq stacks)       : can use up to 50% of sta=
+ck
+
+Example of use in drivers/net/loopback.c, function  loopback_xmit()
+
+if (arch_stack_can_recurse())
+    netif_receive_skb(skb); /* immediate delivery to stack */
+else
+    netif_rx(skb); /* defer to softirq handling */
+
+Signed-off-by: Eric Dumazet <dada1@cosmosbay.com>
+
+
+
+--------------020607020203040007000907
+Content-Type: text/plain;
+ name="can_recurse.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="can_recurse.patch"
+
+diff --git a/arch/x86/kernel/process.c b/arch/x86/kernel/process.c
+index 0e613e7..6edc1d3 100644
+--- a/arch/x86/kernel/process.c
++++ b/arch/x86/kernel/process.c
+@@ -43,3 +43,25 @@ void arch_task_cache_init(void)
+ 				  __alignof__(union thread_xstate),
+ 				  SLAB_PANIC, NULL);
+ }
++
++
++/*
++ * Used to check if we can recurse without risking stack overflow
++ * Rules are :
++ *   32 bits and 4K stacks (separate irq stacks) : can use up to 25% of stack
++ *   64 bits, 8K stacks (separate irq stacks)    : can use up to 25% of stack
++ *   32 bits and 8K stacks (no irq stacks)       : can use up to 50% of stack
++ */
++#if defined(CONFIG_4KSTACKS) || defined(CONFIG_X86_64)
++# define STACK_RECURSE_LIMIT (THREAD_SIZE/4)
++#else
++# define STACK_RECURSE_LIMIT (THREAD_SIZE/2)
++#endif
++
++int arch_stack_can_recurse()
++{
++	unsigned long offset_stack = current_stack_pointer & (THREAD_SIZE - 1);
++	unsigned long avail_stack = offset_stack - sizeof(struct thread_info);
++
++	return avail_stack >= STACK_RECURSE_LIMIT;
++}
+diff --git a/include/asm-x86/thread_info_64.h b/include/asm-x86/thread_info_64.h
+index f23fefc..9a913c4 100644
+--- a/include/asm-x86/thread_info_64.h
++++ b/include/asm-x86/thread_info_64.h
+@@ -60,6 +60,9 @@ struct thread_info {
+ #define init_thread_info	(init_thread_union.thread_info)
+ #define init_stack		(init_thread_union.stack)
+ 
++/* how to get the current stack pointer from C */
++register unsigned long current_stack_pointer asm("rsp") __used;
++
+ static inline struct thread_info *current_thread_info(void)
+ {
+ 	struct thread_info *ti;
+diff --git a/include/linux/sched.h b/include/linux/sched.h
+index ca720f0..445b8da 100644
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -1600,6 +1600,8 @@ union thread_union {
+ 	unsigned long stack[THREAD_SIZE/sizeof(long)];
+ };
+ 
++extern int arch_stack_can_recurse(void);
++
+ #ifndef __HAVE_ARCH_KSTACK_END
+ static inline int kstack_end(void *addr)
+ {
+diff --git a/kernel/fork.c b/kernel/fork.c
+index a19df75..cd5d1e1 100644
+--- a/kernel/fork.c
++++ b/kernel/fork.c
+@@ -136,6 +136,11 @@ void __attribute__((weak)) arch_task_cache_init(void)
+ {
+ }
+ 
++int __attribute__((weak)) arch_stack_can_recurse(void)
++{
++	return 0;
++}
++
+ void __init fork_init(unsigned long mempages)
+ {
+ #ifndef __HAVE_ARCH_TASK_STRUCT_ALLOCATOR
+
+--------------020607020203040007000907--
+
+
