@@ -1,87 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761912AbYDAVFI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759161AbYDAVFm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761912AbYDAVFI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Apr 2008 17:05:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761352AbYDAVD2
+	id S1759161AbYDAVFm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Apr 2008 17:05:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761543AbYDAVEF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Apr 2008 17:03:28 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:47558 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1761346AbYDAVD1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Apr 2008 17:03:27 -0400
-Date: Tue, 1 Apr 2008 13:52:04 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: ebmunson@us.ibm.com
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org, agl@us.ibm.com
-Subject: Re: [PATCH] hugetlb: vmstat events for huge page allocations
-Message-Id: <20080401135204.d3aff907.akpm@linux-foundation.org>
-In-Reply-To: <1206978548.8042.7.camel@grover.beaverton.ibm.com>
-References: <1206978548.8042.7.camel@grover.beaverton.ibm.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 1 Apr 2008 17:04:05 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:48438 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760531AbYDAVEE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Apr 2008 17:04:04 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Tino Keitel <tino.keitel@gmx.de>
+Subject: Re: 2.6.25-rc6 hangs at resume after suspend to RAM on Mac mini Core Duo
+Date: Tue, 1 Apr 2008 23:03:37 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Pavel Machek <pavel@ucw.cz>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Len Brown <lenb@kernel.org>
+References: <20080320060550.GA13200@dose.home.local> <200804010017.54799.rjw@sisk.pl> <20080401080438.GA9906@dose.home.local>
+In-Reply-To: <20080401080438.GA9906@dose.home.local>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200804012303.37860.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 31 Mar 2008 23:49:08 +0800
-Eric B Munson <ebmunson@us.ibm.com> wrote:
+On Tuesday, 1 of April 2008, Tino Keitel wrote:
+> On Tue, Apr 01, 2008 at 00:17:53 +0200, Rafael J. Wysocki wrote:
+> > On Tuesday, 1 of April 2008, Tino Keitel wrote:
+> > > On Mon, Mar 31, 2008 at 23:50:27 +0200, Pavel Machek wrote:
+> > > > On Mon 2008-03-31 23:28:12, Tino Keitel wrote:
+> > > > > On Sat, Mar 29, 2008 at 00:03:15 +0100, Rafael J. Wysocki wrote:
+> > > > > 
+> > > > > [...]
+> > > > > 
+> > > > > > Can you please try to boot with acpi_new_pts_ordering and retest?
+> > > > > 
+> > > > > I just tried current -git (a9edadbf790d72adf6ebed476cb5caf7743e7e4a),
+> > > > > without success. I still got the same hand at resume.
+> > > > 
+> > > > You should put "acpi_new_pts_ordering" on kernel command line.
+> > > 
+> > > I did, just forgot to mention it.
+> > 
+> > OK, thanks.
+> > 
+> > Have you tried to do:
+> > 
+> > # echo core > /sys/power/pm_test
+> > # echo mem > /sys/power/state
+> > 
+> > (it's good to boot the kernel with no_console_suspend and do
+> > "echo 8 > /proc/sys/kernel/printk" before that to see the messages)?
+> 
+> Thanks, I'll try this evening. What should I look for in the kernel
+> messages?
 
-> --- a/include/linux/vmstat.h
-> +++ b/include/linux/vmstat.h
-> @@ -25,6 +25,12 @@
->  #define HIGHMEM_ZONE(xx)
->  #endif
->  
-> +#ifdef CONFIG_HUGETLB_PAGE
-> +#define HTLB_STATS	HTLB_BUDDY_PGALLOC, HTLB_BUDDY_PGALLOC_FAIL,
-> +#else
-> +#define HTLB_STATS
-> +#endif
-> +
->  #define FOR_ALL_ZONES(xx) DMA_ZONE(xx) DMA32_ZONE(xx) xx##_NORMAL HIGHMEM_ZONE(xx) , xx##_MOVABLE
->  
->  enum vm_event_item { PGPGIN, PGPGOUT, PSWPIN, PSWPOUT,
-> @@ -36,7 +42,7 @@ enum vm_event_item { PGPGIN, PGPGOUT, PSWPIN, PSWPOUT,
->  		FOR_ALL_ZONES(PGSCAN_KSWAPD),
->  		FOR_ALL_ZONES(PGSCAN_DIRECT),
->  		PGINODESTEAL, SLABS_SCANNED, KSWAPD_STEAL, KSWAPD_INODESTEAL,
-> -		PAGEOUTRUN, ALLOCSTALL, PGROTATED,
-> +		PAGEOUTRUN, ALLOCSTALL, PGROTATED, HTLB_STATS
->  		NR_VM_EVENT_ITEMS
->  };
+Any irregularities.  Please just post the dmesg output if the system survives.
 
-The requirement that HTLB_STATS not have a comma after it is just a bit too
-weird, methinks.
+If there are any oopes etc., you should see them. :-)
 
-I did this:
-
---- a/include/linux/vmstat.h
-+++ a/include/linux/vmstat.h
-@@ -25,11 +25,6 @@
- #define HIGHMEM_ZONE(xx)
- #endif
- 
--#ifdef CONFIG_HUGETLB_PAGE
--#define HTLB_STATS	HTLB_BUDDY_PGALLOC, HTLB_BUDDY_PGALLOC_FAIL,
--#else
--#define HTLB_STATS
--#endif
- 
- #define FOR_ALL_ZONES(xx) DMA_ZONE(xx) DMA32_ZONE(xx) xx##_NORMAL HIGHMEM_ZONE(xx) , xx##_MOVABLE
- 
-@@ -42,7 +37,10 @@ enum vm_event_item { PGPGIN, PGPGOUT, PS
- 		FOR_ALL_ZONES(PGSCAN_KSWAPD),
- 		FOR_ALL_ZONES(PGSCAN_DIRECT),
- 		PGINODESTEAL, SLABS_SCANNED, KSWAPD_STEAL, KSWAPD_INODESTEAL,
--		PAGEOUTRUN, ALLOCSTALL, PGROTATED, HTLB_STATS
-+		PAGEOUTRUN, ALLOCSTALL, PGROTATED,
-+#ifdef CONFIG_HUGETLB_PAGE
-+		HTLB_BUDDY_PGALLOC, HTLB_BUDDY_PGALLOC_FAIL,
-+#endif
- 		NR_VM_EVENT_ITEMS
- };
- 
-
+Thanks,
+Rafael
