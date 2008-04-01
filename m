@@ -1,69 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756428AbYDAHvT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756132AbYDAIDO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756428AbYDAHvT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Apr 2008 03:51:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753623AbYDAHvD
+	id S1756132AbYDAIDO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Apr 2008 04:03:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753466AbYDAICx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Apr 2008 03:51:03 -0400
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:43934 "EHLO smtp6.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753253AbYDAHvB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Apr 2008 03:51:01 -0400
-Date: Tue, 1 Apr 2008 10:50:58 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: David Miller <davem@davemloft.net>
-Cc: rpjday@crashcourse.ca, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [2.6 patch] forgotten bits of Sangoma drivers removal
-Message-ID: <20080401075058.GF23259@cs181133002.pp.htv.fi>
-References: <20080330224901.GW28445@cs181133002.pp.htv.fi> <20080331.193329.195976331.davem@davemloft.net> <alpine.LFD.1.00.0803312313210.21490@localhost.localdomain> <20080331.201702.119420148.davem@davemloft.net>
+	Tue, 1 Apr 2008 04:02:53 -0400
+Received: from mail.syneticon.net ([213.239.212.131]:53089 "EHLO
+	mail2.syneticon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752610AbYDAICu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Apr 2008 04:02:50 -0400
+Message-ID: <47F1EC20.6050600@wpkg.org>
+Date: Tue, 01 Apr 2008 10:02:40 +0200
+From: Tomasz Chmielewski <mangoo@wpkg.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061110 Mandriva/1.5.0.8-1mdv2007.1 (2007.1) Thunderbird/1.5.0.8 Mnenhy/0.7.4.666
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20080331.201702.119420148.davem@davemloft.net>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: LKML <linux-kernel@vger.kernel.org>, penberg@cs.helsinki.fi,
+       =?UTF-8?B?SsO2cm4gRW5nZWw=?= <joern@logfs.org>,
+       ext-adrian.hunter@nokia.com, jwboyer@gmail.com,
+       "Artem B. Bityutskiy" <dedekind@yandex.ru>
+Subject: UBIFS vs Logfs (was [RFC PATCH] UBIFS - new flash file system)
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 31, 2008 at 08:17:02PM -0700, David Miller wrote:
-> From: "Robert P. J. Day" <rpjday@crashcourse.ca>
-> Date: Mon, 31 Mar 2008 23:14:46 -0400 (EDT)
-> 
-> > On Mon, 31 Mar 2008, David Miller wrote:
-> > 
-> > > From: Adrian Bunk <bunk@kernel.org>
-> > > Date: Mon, 31 Mar 2008 01:49:01 +0300
-> > >
-> > > > Robert P. J. Day spotted that my removal of the Sangoma drivers missed a
-> > > > few bits.
-> > > >
-> > > > Signed-off-by: Adrian Bunk <bunk@kernel.org>
-> > >
-> > > I must have missed some context or another patch, but
-> > > linux/if_wanpipe.h is still there, so I can't see why
-> > > we can remove it from linux/Kbuild
-> > 
-> > AFAICT, nothing in the source tree includes that header file, so i'm
-> > guessing that the patch should also include simply deleting it if it
-> > has no further value.
-> 
-> Ok, that makes sense.
-> 
-> Adrian, if you agree, please respin your patch with that
-> modification.
+Artem Bityutskiy wrote:
 
-My patch already removes include/linux/if_wanpipe.h
+> I've renamed the thread because I do not like this flamish discussion
+> to me mixed with the technical one.
+> 
+> JÃ¶rn Engel wrote:
+>> Shiny numbers!  Performance has improved significantly in the last six
+>> month.  Still worth a closer look.
+> We'll re-run them. Does logfs support write-back? Does it support compression?
 
-> Thanks.
+For me, the motivators to wait for LogFS are mainly the facts that it
+can work on traditional block devices, and not only on pure flash:
 
-cu
-Adrian
+1. It works on normal block devices and it supports transparent compression
+
+Today, a 64 GB SSD/flash-based media costs ~about the same as a 1 TB
+hard disk. This makes flash very expensive to use; compression can
+compensate that cost a bit (will depend on the usage, of course).
+
+I believe there is no other Linux filesystem which can do transparent
+compression on block devices.
+
+
+2. It does wear-levelling also on normal block devices
+
+Although it doesn't sound normal to do wear-levelling twice (most
+flash-based block devices do wear-levelling on their own), I had a flash
+corruption after just ~one month of using RAID bitmap on a IDE-flash
+disk formatted with ext3. Apparently, device-level wear-levelling wasn't
+spreading updates of RAID bitmap file well enough.
+
+(...)
+
+> This basically means it is unfinished. Handling dynamic bad blocks is a *must*
+> if you are going to work on NAND, especially on MLC NAND which are not as
+> reliable as SLC.
+> I think you should bluntly say about this when you submit patches to prevent
+> people from starting using it in production.
+
+I too wouldn't use LogFS today in a production environment - it is still 
+not feature complete and not widely tested.
+I wouldn't use btrfs or ext4 today for the very same reason.
+
 
 -- 
+Tomasz Chmielewski
+http://wpkg.org
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
 
