@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760347AbYDAPaL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932439AbYDAPak@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760347AbYDAPaL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Apr 2008 11:30:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759535AbYDAPTM
+	id S932439AbYDAPak (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Apr 2008 11:30:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758503AbYDAPTG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Apr 2008 11:19:12 -0400
-Received: from g4t0016.houston.hp.com ([15.201.24.19]:35256 "EHLO
-	g4t0016.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759446AbYDAPSq (ORCPT
+	Tue, 1 Apr 2008 11:19:06 -0400
+Received: from g4t0017.houston.hp.com ([15.201.24.20]:12043 "EHLO
+	g4t0017.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759491AbYDAPSk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Apr 2008 11:18:46 -0400
-Message-Id: <20080401151742.059355078@ldl.fc.hp.com>
+	Tue, 1 Apr 2008 11:18:40 -0400
+Message-Id: <20080401151741.667456204@ldl.fc.hp.com>
 References: <20080401151634.730901933@ldl.fc.hp.com>
 User-Agent: quilt/0.46-1
-Date: Tue, 01 Apr 2008 09:17:06 -0600
+Date: Tue, 01 Apr 2008 09:17:04 -0600
 From: Bjorn Helgaas <bjorn.helgaas@hp.com>
 To: Len Brown <lenb@kernel.org>
 Cc: linux-acpi@vger.kernel.org
@@ -25,8 +25,8 @@ Cc: Thomas Renninger <trenn@suse.de>
 Cc: Rene Herman <rene.herman@keyaccess.nl>
 Cc: Jaroslav Kysela <perex@perex.cz>
 Cc: Andrew Morton <akpm@linux-foundation.org>
-Subject: [patch 32/37] PNP: convert resource assign functions to use pnp_get_resource(), not pnp_resource_table
-Content-Disposition: inline; filename=pnp-convert-assign-to-pnp_get_resource
+Subject: [patch 30/37] PNP: convert resource accessors to use pnp_get_resource(), not pnp_resource_table
+Content-Disposition: inline; filename=pnp-convert-accessors-to-pnp_get_resource
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -35,121 +35,117 @@ This removes more direct references to pnp_resource_table.
 
 Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
 
-Index: work7/drivers/pnp/manager.c
+Index: work7/include/linux/pnp.h
 ===================================================================
---- work7.orig/drivers/pnp/manager.c	2008-03-25 09:11:25.000000000 -0600
-+++ work7/drivers/pnp/manager.c	2008-03-25 09:18:54.000000000 -0600
-@@ -19,6 +19,7 @@
+--- work7.orig/include/linux/pnp.h	2008-03-24 15:19:46.000000000 -0600
++++ work7/include/linux/pnp.h	2008-03-24 15:19:47.000000000 -0600
+@@ -28,12 +28,24 @@
+ struct resource *pnp_get_resource(struct pnp_dev *, unsigned int, unsigned int);
  
- static int pnp_assign_port(struct pnp_dev *dev, struct pnp_port *rule, int idx)
- {
-+	struct resource *res;
- 	resource_size_t *start, *end;
- 	unsigned long *flags;
- 
-@@ -28,13 +29,15 @@
- 		return 1;
- 	}
- 
-+	res = pnp_get_resource(dev, IORESOURCE_IO, idx);
+ /* Use these instead of directly reading pnp_dev to get resource information */
+-#define pnp_port_start(dev,bar)   ((dev)->res.port_resource[(bar)].start)
+-#define pnp_port_end(dev,bar)     ((dev)->res.port_resource[(bar)].end)
+-#define pnp_port_flags(dev,bar)   ((dev)->res.port_resource[(bar)].flags)
+-#define pnp_port_valid(dev,bar) \
+-	((pnp_port_flags((dev),(bar)) & (IORESOURCE_IO | IORESOURCE_UNSET)) \
+-		== IORESOURCE_IO)
 +
- 	/* check if this resource has been manually set, if so skip */
--	if (!(dev->res.port_resource[idx].flags & IORESOURCE_AUTO))
-+	if (!(res->flags & IORESOURCE_AUTO))
- 		return 1;
- 
--	start = &dev->res.port_resource[idx].start;
--	end = &dev->res.port_resource[idx].end;
--	flags = &dev->res.port_resource[idx].flags;
-+	start = &res->start;
-+	end = &res->end;
-+	flags = &res->flags;
- 
- 	/* set the initial values */
- 	*flags |= rule->flags | IORESOURCE_IO;
-@@ -60,6 +63,7 @@
- 
- static int pnp_assign_mem(struct pnp_dev *dev, struct pnp_mem *rule, int idx)
- {
-+	struct resource *res;
- 	resource_size_t *start, *end;
- 	unsigned long *flags;
- 
-@@ -69,13 +73,15 @@
- 		return 1;
- 	}
- 
-+	res = pnp_get_resource(dev, IORESOURCE_MEM, idx);
++#define pnp_port_start(dev,bar)	\
++	pnp_get_resource(dev, IORESOURCE_IO, bar)->start
++#define pnp_port_end(dev,bar)	\
++	pnp_get_resource(dev, IORESOURCE_IO, bar)->end
++#define pnp_port_flags(dev,bar)	\
++	pnp_get_resource(dev, IORESOURCE_IO, bar)->flags
 +
- 	/* check if this resource has been manually set, if so skip */
--	if (!(dev->res.mem_resource[idx].flags & IORESOURCE_AUTO))
-+	if (!(res->flags & IORESOURCE_AUTO))
- 		return 1;
- 
--	start = &dev->res.mem_resource[idx].start;
--	end = &dev->res.mem_resource[idx].end;
--	flags = &dev->res.mem_resource[idx].flags;
-+	start = &res->start;
-+	end = &res->end;
-+	flags = &res->flags;
- 
- 	/* set the initial values */
- 	*flags |= rule->flags | IORESOURCE_MEM;
-@@ -111,6 +117,7 @@
- 
- static int pnp_assign_irq(struct pnp_dev *dev, struct pnp_irq *rule, int idx)
- {
-+	struct resource *res;
- 	resource_size_t *start, *end;
- 	unsigned long *flags;
- 	int i;
-@@ -126,13 +133,15 @@
- 		return 1;
- 	}
- 
-+	res = pnp_get_resource(dev, IORESOURCE_IRQ, idx);
++static inline resource_size_t pnp_port_valid(struct pnp_dev *dev,
++					     unsigned int bar)
++{
++	struct resource *res = pnp_get_resource(dev, IORESOURCE_IO, bar);
 +
- 	/* check if this resource has been manually set, if so skip */
--	if (!(dev->res.irq_resource[idx].flags & IORESOURCE_AUTO))
-+	if (!(res->flags & IORESOURCE_AUTO))
- 		return 1;
- 
--	start = &dev->res.irq_resource[idx].start;
--	end = &dev->res.irq_resource[idx].end;
--	flags = &dev->res.irq_resource[idx].flags;
-+	start = &res->start;
-+	end = &res->end;
-+	flags = &res->flags;
- 
- 	/* set the initial values */
- 	*flags |= rule->flags | IORESOURCE_IRQ;
-@@ -161,6 +170,7 @@
- 
- static void pnp_assign_dma(struct pnp_dev *dev, struct pnp_dma *rule, int idx)
- {
-+	struct resource *res;
- 	resource_size_t *start, *end;
- 	unsigned long *flags;
- 	int i;
-@@ -175,13 +185,15 @@
- 		return;
- 	}
- 
-+	res = pnp_get_resource(dev, IORESOURCE_DMA, idx);
++	if (res && !(res->flags & IORESOURCE_UNSET))
++		return 1;
++	return 0;
++}
 +
- 	/* check if this resource has been manually set, if so skip */
--	if (!(dev->res.dma_resource[idx].flags & IORESOURCE_AUTO))
-+	if (!(res->flags & IORESOURCE_AUTO))
- 		return;
+ #define pnp_port_len(dev,bar) \
+ 	((pnp_port_start((dev),(bar)) == 0 &&	\
+ 	  pnp_port_end((dev),(bar)) ==		\
+@@ -42,12 +54,23 @@
+ 	 (pnp_port_end((dev),(bar)) -		\
+ 	  pnp_port_start((dev),(bar)) + 1))
  
--	start = &dev->res.dma_resource[idx].start;
--	end = &dev->res.dma_resource[idx].end;
--	flags = &dev->res.dma_resource[idx].flags;
-+	start = &res->start;
-+	end = &res->end;
-+	flags = &res->flags;
+-#define pnp_mem_start(dev,bar)   ((dev)->res.mem_resource[(bar)].start)
+-#define pnp_mem_end(dev,bar)     ((dev)->res.mem_resource[(bar)].end)
+-#define pnp_mem_flags(dev,bar)   ((dev)->res.mem_resource[(bar)].flags)
+-#define pnp_mem_valid(dev,bar) \
+-	((pnp_mem_flags((dev),(bar)) & (IORESOURCE_MEM | IORESOURCE_UNSET)) \
+-		== IORESOURCE_MEM)
++#define pnp_mem_start(dev,bar)	\
++	pnp_get_resource(dev, IORESOURCE_MEM, bar)->start
++#define pnp_mem_end(dev,bar)	\
++	pnp_get_resource(dev, IORESOURCE_MEM, bar)->end
++#define pnp_mem_flags(dev,bar)	\
++	pnp_get_resource(dev, IORESOURCE_MEM, bar)->flags
++
++static inline resource_size_t pnp_mem_valid(struct pnp_dev *dev,
++					    unsigned int bar)
++{
++	struct resource *res = pnp_get_resource(dev, IORESOURCE_MEM, bar);
++
++	if (res && !(res->flags & IORESOURCE_UNSET))
++		return 1;
++	return 0;
++}
++
+ #define pnp_mem_len(dev,bar) \
+ 	((pnp_mem_start((dev),(bar)) == 0 &&	\
+ 	  pnp_mem_end((dev),(bar)) ==		\
+@@ -56,17 +79,35 @@
+ 	 (pnp_mem_end((dev),(bar)) -		\
+ 	  pnp_mem_start((dev),(bar)) + 1))
  
- 	/* set the initial values */
- 	*flags |= rule->flags | IORESOURCE_DMA;
+-#define pnp_irq(dev,bar)	 ((dev)->res.irq_resource[(bar)].start)
+-#define pnp_irq_flags(dev,bar)	 ((dev)->res.irq_resource[(bar)].flags)
+-#define pnp_irq_valid(dev,bar) \
+-	((pnp_irq_flags((dev),(bar)) & (IORESOURCE_IRQ | IORESOURCE_UNSET)) \
+-		== IORESOURCE_IRQ)
+-
+-#define pnp_dma(dev,bar)	 ((dev)->res.dma_resource[(bar)].start)
+-#define pnp_dma_flags(dev,bar)	 ((dev)->res.dma_resource[(bar)].flags)
+-#define pnp_dma_valid(dev,bar) \
+-	((pnp_dma_flags((dev),(bar)) & (IORESOURCE_DMA | IORESOURCE_UNSET)) \
+-		== IORESOURCE_DMA)
++#define pnp_irq(dev,bar)	\
++	pnp_get_resource(dev, IORESOURCE_IRQ, bar)->start
++#define pnp_irq_flags(dev,bar)	\
++	pnp_get_resource(dev, IORESOURCE_IRQ, bar)->flags
++
++static inline resource_size_t pnp_irq_valid(struct pnp_dev *dev,
++					    unsigned int bar)
++{
++	struct resource *res = pnp_get_resource(dev, IORESOURCE_IRQ, bar);
++
++	if (res && !(res->flags & IORESOURCE_UNSET))
++		return 1;
++	return 0;
++}
++
++#define pnp_dma(dev,bar)	\
++	pnp_get_resource(dev, IORESOURCE_DMA, bar)->start
++#define pnp_dma_flags(dev,bar)	\
++	pnp_get_resource(dev, IORESOURCE_DMA, bar)->flags
++
++static inline resource_size_t pnp_dma_valid(struct pnp_dev *dev,
++					    unsigned int bar)
++{
++	struct resource *res = pnp_get_resource(dev, IORESOURCE_DMA, bar);
++
++	if (res && !(res->flags & IORESOURCE_UNSET))
++		return 1;
++	return 0;
++}
+ 
+ #define PNP_PORT_FLAG_16BITADDR	(1<<0)
+ #define PNP_PORT_FLAG_FIXED	(1<<1)
 
 -- 
