@@ -1,47 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759386AbYDATGd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756756AbYDATHH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759386AbYDATGd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Apr 2008 15:06:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755768AbYDATGH
+	id S1756756AbYDATHH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Apr 2008 15:07:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756129AbYDATGy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Apr 2008 15:06:07 -0400
-Received: from fk-out-0910.google.com ([209.85.128.191]:53323 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755446AbYDATGG (ORCPT
+	Tue, 1 Apr 2008 15:06:54 -0400
+Received: from netrider.rowland.org ([192.131.102.5]:3612 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1755768AbYDATGx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Apr 2008 15:06:06 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=nrU/PldDAZNu4G8sJSuqKdRxErlXvJuAW4nS2qjwwGng80UDFp7Cg8ca04vdKJJQH8N/5T6Gb992XqJt6bw/dtwy/nYnLqFa98TS0LHqHtOmJF4C3gZzHB7ANxKB9djiULh8aLKGe9lj8MIE/lvnounMMWZOs3TrdroTYLWlVSM=
-Message-ID: <47F28805.8030502@gmail.com>
-Date: Tue, 01 Apr 2008 21:07:49 +0200
-From: Rene Herman <rene.herman@gmail.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
+	Tue, 1 Apr 2008 15:06:53 -0400
+Date: Tue, 1 Apr 2008 15:06:51 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@netrider.rowland.org
+To: Tino Keitel <tino.keitel@gmx.de>
+cc: Pavel Machek <pavel@ucw.cz>, <linux-usb@vger.kernel.org>,
+       Soeren Sonnenburg <sonne@nn7.de>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       <linux-kernel@vger.kernel.org>, Len Brown <lenb@kernel.org>
+Subject: Re: 2.6.25-rc6 hangs at resume after suspend to RAM on Mac mini Core
+ Duo
+In-Reply-To: <20080401183732.GA5043@dose.home.local>
+Message-ID: <Pine.LNX.4.44L0.0804011505050.1397-100000@netrider.rowland.org>
 MIME-Version: 1.0
-To: Tyson Whitehead <twhitehe@uwo.ca>
-CC: Bob Tracy <rct@frus.com>, Michael Cree <mcree@orcon.net.nz>,
-       Takashi Iwai <tiwai@suse.de>, ALSA devel <alsa-devel@alsa-project.org>,
-       linux-kernel@vger.kernel.org,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>, linux-alpha@vger.kernel.org,
-       Krzysztof Helt <krzysztof.h1@wp.pl>
-Subject: Re: [alsa-devel] [regression] 2.6.25-rc4 snd-es18xx broken on Alpha
-References: <20080314233357.5223BDBA2@gherkin.frus.com> <47F279E7.60801@uwo.ca> <47F28032.9060206@gmail.com>
-In-Reply-To: <47F28032.9060206@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01-04-08 20:34, Rene Herman wrote:
+On Tue, 1 Apr 2008, Tino Keitel wrote:
 
-> On 01-04-08 20:07, Tyson Whitehead wrote:
+> git-bisect revealed this:
 > 
->> Hope this helps.
+> $ git bisect good
+> e82cc1288fa57857c6af8c57f3d07096d4bcd9d9 is first bad commit
+> commit e82cc1288fa57857c6af8c57f3d07096d4bcd9d9
+> Author: David Brownell <david-b@pacbell.net>
+> Date:   Fri Mar 7 13:49:42 2008 -0800
 > 
-> Not really no.
+>     USB: fix ehci unlink regressions
 
-Sorry for the multiple copies; my ISP is crashing again.
+> For the linux-usb people: this commit breaks resume from suspend to RAM
+> on my Mac mini Core Duo. It worked with 2.6.24, 2.6.25-rc5, and was
+> broken since 2.6.25-rc6 (also with -rc7 and later). See
+> http://lkml.org/lkml/2008/3/20/23 for more information.
 
-Rene.
+Can you get any information out of the computer after the hang?  It 
+would help to see the dmesg log (with CONFIG_USB_DEBUG enabled) and an 
+Alt-SysRq-T stack dump.
+
+Alan Stern
+
