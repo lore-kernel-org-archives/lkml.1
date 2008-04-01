@@ -1,61 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757874AbYDAPmk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759353AbYDAPou@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757874AbYDAPmk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Apr 2008 11:42:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752326AbYDAPmb
+	id S1759353AbYDAPou (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Apr 2008 11:44:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757064AbYDAPom
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Apr 2008 11:42:31 -0400
-Received: from ug-out-1314.google.com ([66.249.92.174]:63944 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752290AbYDAPma (ORCPT
+	Tue, 1 Apr 2008 11:44:42 -0400
+Received: from theia.rz.uni-saarland.de ([134.96.7.31]:21992 "EHLO
+	theia.rz.uni-saarland.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751447AbYDAPol (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Apr 2008 11:42:30 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
-        b=WzanT4lJoaUOf+efpTLoTQ0DxEU3MA9QVxEwJeREM7vOCF3UJpeuL9vbKQKYxH2YBcMW3pRwhcm99Dq6LzXYt8YPmeYkwp0QtEvs8XN14au7KJ4047BKFotNdcMJeI5kD5vsbJ+JVSVHv9qJf5MQ0dgmjH2UnzGTChSampI+TPg=
-Date: Tue, 1 Apr 2008 19:41:50 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>, Markus Metzger <markus.t.metzger@intel.com>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] x86: Debug Store - call kfree if only we really need it
-Message-ID: <20080401154150.GA7654@cvg>
-MIME-Version: 1.0
+	Tue, 1 Apr 2008 11:44:41 -0400
+Date: Tue, 1 Apr 2008 17:41:26 +0200
+From: Alexander van Heukelum <heukelum@mailshack.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Andi Kleen <andi@firstfloor.org>, LKML <linux-kernel@vger.kernel.org>,
+       Alexander van Heukelum <heukelum@fastmail.fm>
+Subject: [PATCH] x86: switch x86_64 to generic find_first_bit
+Message-ID: <20080401154126.GA26062@mailshack.com>
+References: <20080331171506.GA24017@mailshack.com> <20080401084710.GB4787@elte.hu> <20080401094618.GA24862@mailshack.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <20080401094618.GA24862@mailshack.com>
+User-Agent: Mutt/1.5.9i
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (theia.rz.uni-saarland.de [134.96.7.31]); Tue, 01 Apr 2008 17:44:21 +0200 (CEST)
+X-AntiVirus: checked by AntiVir MailGate (version: 2.1.2-14; AVE: 7.6.0.78; VDF: 7.0.3.103; host: AntiVir1)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We should call for kfree if only we really need it.
-Though it's safe to call kfree with NULL pointer passed
-in this code we've already tested the pointer and can
-eliminate the call
+[PATCH] x86: switch x86_64 to generic find_first_bit
 
-Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
+Switch x86_64 to generic find_first_bit. The x86_64-specific
+implementation is not removed.
+
+Signed-off-by: Alexander van Heukelum <heukelum@fastmail.fm>
+
 ---
+ arch/x86/Kconfig            |    2 +-
+ arch/x86/lib/bitops_64.c    |    2 ++
+ include/asm-x86/bitops_64.h |    2 ++
+ 3 files changed, 5 insertions(+), 1 deletions(-)
 
- ds.c |    8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+index fa7d16d..e37e286 100644
+--- a/arch/x86/Kconfig
++++ b/arch/x86/Kconfig
+@@ -81,7 +81,7 @@ config GENERIC_BUG
+ 	depends on BUG
+ 
+ config GENERIC_FIND_FIRST_BIT
+-	def_bool X86_32
++	def_bool y
+ 
+ config GENERIC_FIND_NEXT_BIT
+ 	def_bool y
+diff --git a/arch/x86/lib/bitops_64.c b/arch/x86/lib/bitops_64.c
+index 0eeb704..568467d 100644
+--- a/arch/x86/lib/bitops_64.c
++++ b/arch/x86/lib/bitops_64.c
+@@ -1,3 +1,4 @@
++#ifndef CONFIG_GENERIC_FIND_FIRST_BIT
+ #include <linux/bitops.h>
+ 
+ #undef find_first_zero_bit
+@@ -105,3 +106,4 @@ long find_first_bit(const unsigned long * addr, unsigned long size)
+ 
+ EXPORT_SYMBOL(find_first_bit);
+ EXPORT_SYMBOL(find_first_zero_bit);
++#endif
+diff --git a/include/asm-x86/bitops_64.h b/include/asm-x86/bitops_64.h
+index d133520..4081d7e 100644
+--- a/include/asm-x86/bitops_64.h
++++ b/include/asm-x86/bitops_64.h
+@@ -5,6 +5,7 @@
+  * Copyright 1992, Linus Torvalds.
+  */
+ 
++#ifndef CONFIG_GENERIC_FIND_FIRST_BIT
+ extern long find_first_zero_bit(const unsigned long *addr, unsigned long size);
+ extern long find_first_bit(const unsigned long *addr, unsigned long size);
+ 
+@@ -24,6 +25,7 @@ static inline long __scanbit(unsigned long val, unsigned long max)
+ 	((__builtin_constant_p((size)) && (size) <= BITS_PER_LONG	\
+ 	  ? (__scanbit(~*(unsigned long *)(addr), (size)))		\
+ 	  : find_first_zero_bit((addr), (size))))
++#endif
+ 
+ static inline void set_bit_string(unsigned long *bitmap, unsigned long i,
+ 				  int len)
+-- 
+1.5.2.5
 
-Index: linux-2.6.git/arch/x86/kernel/ds.c
-===================================================================
---- linux-2.6.git.orig/arch/x86/kernel/ds.c	2008-03-30 15:05:50.000000000 +0400
-+++ linux-2.6.git/arch/x86/kernel/ds.c	2008-04-01 19:20:20.000000000 +0400
-@@ -220,11 +220,11 @@ int ds_allocate(void **dsp, size_t bts_s
- 
- int ds_free(void **dsp)
- {
--	if (*dsp)
-+	if (*dsp) {
- 		kfree((void *)get_bts_buffer_base(*dsp));
--	kfree(*dsp);
--	*dsp = NULL;
--
-+		kfree(*dsp);
-+		*dsp = NULL;
-+	}
- 	return 0;
- }
- 
+
