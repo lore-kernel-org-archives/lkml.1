@@ -1,86 +1,150 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757763AbYDAKb0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758062AbYDAKga@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757763AbYDAKb0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Apr 2008 06:31:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753882AbYDAKbS
+	id S1758062AbYDAKga (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Apr 2008 06:36:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756399AbYDAKgR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Apr 2008 06:31:18 -0400
-Received: from smtp.nokia.com ([192.100.122.233]:56475 "EHLO
-	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753253AbYDAKbR (ORCPT
+	Tue, 1 Apr 2008 06:36:17 -0400
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:46329 "EHLO
+	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1754506AbYDAKgQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Apr 2008 06:31:17 -0400
-Message-ID: <47F20DEE.7090105@nokia.com>
-Date: Tue, 01 Apr 2008 13:26:54 +0300
-From: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
-Reply-To: Artem.Bityutskiy@nokia.com
-Organization: Nokia OYJ
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
-MIME-Version: 1.0
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-CC: Artem Bityutskiy <dedekind@yandex.ru>, LKML <linux-kernel@vger.kernel.org>,
-       Adrian Hunter <ext-adrian.hunter@nokia.com>,
-       David Woodhouse <dwmw2@infradead.org>
-Subject: Re: [RFC PATCH 26/26] UBIFS: include FS to compilation
-References: <1206629746-4298-1-git-send-email-Artem.Bityutskiy@nokia.com>	 <1206629746-4298-27-git-send-email-Artem.Bityutskiy@nokia.com>	 <84144f020804010039n47133bd3l63f02258a2670e72@mail.gmail.com>	 <47F1F7A6.5020105@yandex.ru>	 <84144f020804010215o209fbed8gf629dc6557fcd091@mail.gmail.com>	 <47F1FF98.9020809@nokia.com> <84144f020804010304w7057a68cqa5b9a7a5364b9489@mail.gmail.com>
-In-Reply-To: <84144f020804010304w7057a68cqa5b9a7a5364b9489@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-OriginalArrivalTime: 01 Apr 2008 10:30:46.0089 (UTC) FILETIME=[7214E390:01C893E3]
-X-Nokia-AV: Clean
+	Tue, 1 Apr 2008 06:36:16 -0400
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Dmitry Torokhov <dtor@mail.ru>, Andrew Morton <akpm@linux-foundation.org>,
+       Jiri Kosina <jkosina@suse.cz>
+Cc: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>,
+       Liam Girdwood <liam.girdwood@wolfsonmicro.com>
+Subject: [PATCH 6/6] Build system and MAINTAINERS entry for WM97xx touchscreen drivers
+Date: Tue,  1 Apr 2008 11:36:09 +0100
+Message-Id: <1207046169-2152-6-git-send-email-broonie@opensource.wolfsonmicro.com>
+X-Mailer: git-send-email 1.5.4.5
+In-Reply-To: <1207046169-2152-5-git-send-email-broonie@opensource.wolfsonmicro.com>
+References: <20080401102825.GA30868@rakim.wolfsonmicro.main>
+ <1207046169-2152-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+ <1207046169-2152-2-git-send-email-broonie@opensource.wolfsonmicro.com>
+ <1207046169-2152-3-git-send-email-broonie@opensource.wolfsonmicro.com>
+ <1207046169-2152-4-git-send-email-broonie@opensource.wolfsonmicro.com>
+ <1207046169-2152-5-git-send-email-broonie@opensource.wolfsonmicro.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pekka Enberg wrote:
-> On Tue, Apr 1, 2008 at 12:25 PM, Artem Bityutskiy
-> <Artem.Bityutskiy@nokia.com> wrote:
->> JFFS2 has the similar thing. I myself fixed bugs just by asking people
->> enabling them and sending the log. Very useful. This is why we also added
->> them to UBIFS - good JFFS2 experience.
->>
->> Why? What is wrong with this? As I said, we found it very useful in JFFS2,
->> because I has been working with JFFS2 for _long_ time. Talk to David
->> Woodhouse and ask how many times that made him fix a bug just by having
->> people send a log. Why do you want to prevent us from having this?
-> 
-> First and foremost, JFFS2 uses BUG_ON and doesn't invent it's own
-> assert.
-True. But it has checking code which may be enabled or disable.
-An assert is just a special case of this. You do not say why
-it hurts. For me it looks like your personal taste.
+Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Signed-off-by: Liam Girdwood <liam.girdwood@wolfsonmicro.com>
+---
+ MAINTAINERS                        |   10 +++++++
+ drivers/input/touchscreen/Kconfig  |   52 ++++++++++++++++++++++++++++++++++++
+ drivers/input/touchscreen/Makefile |    7 +++++
+ 3 files changed, 69 insertions(+), 0 deletions(-)
 
-We well try to lessen the amount of asserts.
-
-> Furthermore, the debug tracing code prints out human-readable
-> text in well-thought of places.
-The same is with UBIFS. We will make the amount of messages less,
-and the granularity less, that it would be more "well-thought".
-
-> But there simply is no
-> comparison between JFFS2 and UBIFS debug logging code. The former is
-> cleanly structured whereas yours looks to be totally ad hoc.
-What exactly you think is not-structured, we'll fix this.
-
-> But perhaps the problem will go away after you inject some sanity to
-> stuff like this:
-> 
-> fs/ubifs/dir.c: dbg_gen("dent '%.*s' to ino %lu (nlink %d) in dir ino %lu",
-> fs/ubifs/dir.c: dbg_gen("dent '%.*s' from ino %lu (nlink %d) in dir ino %lu",
-> fs/ubifs/dir.c: dbg_gen("directory '%.*s', ino %lu in dir ino %lu",
-> dentry->d_name.len,
-> fs/ubifs/dir.c: dbg_gen("dent '%.*s', mode %#x in dir ino %lu",
-> fs/ubifs/dir.c: dbg_gen("dent '%.*s' in dir ino %lu",
-This means that when debugging is enabled, you'll have prints like:
-UBIFS DBG (pid 28398): ubifs_create: dent 'file', mode 0x81a4 in dir ino 1
-or
-UBIFS DBG (pid 28398): ubifs_setattr: ino 65, ia_valid 0x70
-
-We tried to keep messages shorter because logging takes time and long
-messages make it slower to debug the code.
-
-Anyway, we will lessen and re-view this, and make it nicer.
-
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 6d628fb..f3ba69a 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -4337,6 +4337,16 @@ L:	linux-wireless@vger.kernel.org
+ W:	http://oops.ghostprotocols.net:81/blog
+ S:	Maintained
+ 
++WM97XX TOUCHSCREEN DRIVERS
++P:	Mark Brown
++M:	broonie@opensource.wolfsonmicro.com
++P:	Liam Girdwood
++M:	liam.girdwood@wolfsonmicro.com
++L:	linux-input@vger.kernel.org
++T:	git git://opensource.wolfsonmicro.com/linux-2.6-touch
++W:	http://opensource.wolfsonmicro.com/node/7
++S:	Supported
++
+ X.25 NETWORK LAYER
+ P:	Henner Eisen
+ M:	eis@baty.hanse.de
+diff --git a/drivers/input/touchscreen/Kconfig b/drivers/input/touchscreen/Kconfig
+index 90e8e92..0be05a2 100644
+--- a/drivers/input/touchscreen/Kconfig
++++ b/drivers/input/touchscreen/Kconfig
+@@ -158,6 +158,58 @@ config TOUCHSCREEN_TOUCHRIGHT
+ 	  To compile this driver as a module, choose M here: the
+ 	  module will be called touchright.
+ 
++config TOUCHSCREEN_WM97XX
++	tristate "Support for WM97xx AC97 touchscreen controllers"
++	depends on AC97_BUS
++
++config TOUCHSCREEN_WM9705
++	bool "WM9705 Touchscreen interface support"
++	depends on TOUCHSCREEN_WM97XX
++	help
++	  Say Y here if you have a Wolfson Microelectronics WM9705 touchscreen
++	  controller connected to your system.
++
++	  If unsure, say N.
++
++	  To compile this driver as a module, choose M here: the
++	  module will be called wm9705.
++
++config TOUCHSCREEN_WM9712
++	bool "WM9712 Touchscreen interface support"
++	depends on TOUCHSCREEN_WM97XX
++	help
++	  Say Y here if you have a Wolfson Microelectronics WM9712 touchscreen
++	  controller connected to your system.
++
++	  If unsure, say N.
++
++	  To compile this driver as a module, choose M here: the
++	  module will be called wm9712.
++
++config TOUCHSCREEN_WM9713
++	bool "WM9713 Touchscreen interface support"
++	depends on TOUCHSCREEN_WM97XX
++	help
++	  Say Y here if you have a Wolfson Microelectronics WM9713 touchscreen
++	  controller connected to your system.
++
++	  If unsure, say N.
++
++	  To compile this driver as a module, choose M here: the
++	  module will be called wm9713.
++
++config TOUCHSCREEN_WM97XX_MAINSTONE
++	tristate "WM97xx Mainstone accelerated touch"
++	depends on TOUCHSCREEN_WM97XX && ARCH_PXA
++	help
++	  Say Y here for support for streaming mode with WM97xx touchscreens
++	  on Mainstone systems.
++
++	  If unsure, say N
++
++	  To compile this driver as a module, choose M here: the
++	  module will be called mainstone-wm97xx
++
+ config TOUCHSCREEN_TOUCHWIN
+ 	tristate "Touchwin serial touchscreen"
+ 	select SERIO
+diff --git a/drivers/input/touchscreen/Makefile b/drivers/input/touchscreen/Makefile
+index 35d4097..d38156e 100644
+--- a/drivers/input/touchscreen/Makefile
++++ b/drivers/input/touchscreen/Makefile
+@@ -4,6 +4,8 @@
+ 
+ # Each configuration option enables a list of files.
+ 
++wm97xx-ts-y := wm97xx-core.o
++
+ obj-$(CONFIG_TOUCHSCREEN_ADS7846)	+= ads7846.o
+ obj-$(CONFIG_TOUCHSCREEN_BITSY)		+= h3600_ts_input.o
+ obj-$(CONFIG_TOUCHSCREEN_CORGI)		+= corgi_ts.o
+@@ -19,3 +21,8 @@ obj-$(CONFIG_TOUCHSCREEN_PENMOUNT)	+= penmount.o
+ obj-$(CONFIG_TOUCHSCREEN_TOUCHRIGHT)	+= touchright.o
+ obj-$(CONFIG_TOUCHSCREEN_TOUCHWIN)	+= touchwin.o
+ obj-$(CONFIG_TOUCHSCREEN_UCB1400)	+= ucb1400_ts.o
++obj-$(CONFIG_TOUCHSCREEN_WM97XX)	+= wm97xx-ts.o
++obj-$(CONFIG_TOUCHSCREEN_WM97XX_MAINSTONE)	+= mainstone-wm97xx.o
++wm97xx-ts-$(CONFIG_TOUCHSCREEN_WM9705)  += wm9705.o
++wm97xx-ts-$(CONFIG_TOUCHSCREEN_WM9712)  += wm9712.o
++wm97xx-ts-$(CONFIG_TOUCHSCREEN_WM9713)  += wm9713.o
 -- 
-Best Regards,
-Artem Bityutskiy (Артём Битюцкий)
+1.5.4.5
+
