@@ -1,85 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758020AbYDANjQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758757AbYDANj3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758020AbYDANjQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Apr 2008 09:39:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754829AbYDANjE
+	id S1758757AbYDANj3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Apr 2008 09:39:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754989AbYDANjG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Apr 2008 09:39:04 -0400
-Received: from mga03.intel.com ([143.182.124.21]:48944 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754286AbYDANjD convert rfc822-to-8bit (ORCPT
+	Tue, 1 Apr 2008 09:39:06 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:42805 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754860AbYDANjF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Apr 2008 09:39:03 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,587,1199692800"; 
-   d="scan'208";a="225931086"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Subject: RE: [PATCH] dma_page_list ->base_address is a userland pointer
-Date: Tue, 1 Apr 2008 14:34:59 +0100
-Message-ID: <7F38996F7185A24AB9071ED4950AD8C101667B20@swsmsx413.ger.corp.intel.com>
-In-Reply-To: <f12847240803310922i628ab6c6r44e89f6b841fdf79@mail.gmail.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH] dma_page_list ->base_address is a userland pointer
-Thread-Index: AciTS15zUMMVIKdwRte4qTrNVRKD2AAsYCPw
-From: "Sosnowski, Maciej" <maciej.sosnowski@intel.com>
-To: <viro@ftp.linux.org.uk>, <torvalds@linux-foundation.org>
-Cc: <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 01 Apr 2008 13:35:01.0319 (UTC) FILETIME=[2F831D70:01C893FD]
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Tue, 1 Apr 2008 09:39:05 -0400
+Subject: Re: [PATCH 1/2] Customize sched domain via cpuset
+From: Peter Zijlstra <peterz@infradead.org>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>,
+       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Paul Jackson <pj@sgi.com>
+In-Reply-To: <20080401132924.GI29105@one.firstfloor.org>
+References: <47F21BE3.5030705@jp.fujitsu.com>
+	 <87zlsdzttp.fsf@basil.nowhere.org> <1207050968.8514.721.camel@twins>
+	 <20080401132924.GI29105@one.firstfloor.org>
+Content-Type: text/plain
+Date: Tue, 01 Apr 2008 15:38:51 +0200
+Message-Id: <1207057131.8514.736.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.21.92 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> ---------- Original message ----------
-> From: Al Viro <viro@ftp.linux.org.uk>
-> Date: Mar 29, 2008 5:09 AM
-> Subject: [PATCH] dma_page_list ->base_address is a userland pointer
-> To: torvalds@linux-foundation.org
-> Cc: linux-kernel@vger.kernel.org
+On Tue, 2008-04-01 at 15:29 +0200, Andi Kleen wrote:
+> On Tue, Apr 01, 2008 at 01:56:08PM +0200, Peter Zijlstra wrote:
+> > On Tue, 2008-04-01 at 13:40 +0200, Andi Kleen wrote:
+> > > Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com> writes:
+> > > 
+> > > > Using cpuset, now we can partition the system into multiple sched domains.
+> > > > Then, how about providing different characteristics for each domains?
+> > > 
+> > > Did you actually see much improvement in any relevant workload
+> > > from tweaking these parameters?  If yes what did you change?
+> > > And how much did it gain?
+> > > 
+> > > Ideally the kernel should perform well without much tweaking
+> > > out of the box, simply because most users won't tweak. Adding a 
+> > > lot of such parameters would imply giving up on good defaults which 
+> > > is not a good thing.
+> > 
+> > >From what I understand they need very aggressive idle balancing; much
+> > more so than what is normally healty.
+> > 
+> > I can see how something like that can be useful when you have a lot of
+> > very short running tasks. These could pile up on a few cpus and leave
+> > others idle.
 > 
+> Could the scheduler auto tune itself to this situation?
 > 
-> 
-> Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
-> ---
->  include/linux/dmaengine.h |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/include/linux/dmaengine.h b/include/linux/dmaengine.h
-> index 261e43a..34d4406 100644
-> --- a/include/linux/dmaengine.h
-> +++ b/include/linux/dmaengine.h
-> @@ -423,7 +423,7 @@ void dma_async_device_unregister(struct dma_device
->  *device); /* --- Helper iov-locking functions --- */
-> 
->  struct dma_page_list {
-> -       char *base_address;
-> +       char __user *base_address;
->        int nr_pages;
->        struct page **pages;
->  };
-> --
-> 1.5.3.GIT
+> e.g. when it sees a row of very high run queue inbalances increase the
+> frequency of the idle balancer?
 
-Acked-by: Maciej Sosnowski <maciej.sosnowski@intel.com>
----------------------------------------------------------------------
-Intel Technology Poland sp. z o.o.
-z siedziba w Gdansku
-ul. Slowackiego 173
-80-298 Gdansk
+Its not actually the idle balancer that's addressed here, but that runs
+at 1/HZ, so no we can't do that faster unless you tie it to a hrtimer.
 
-Sad Rejonowy Gdansk Polnoc w Gdansku, 
-VII Wydzial Gospodarczy Krajowego Rejestru Sadowego, 
-numer KRS 101882
+What it does do is more aggresively look for idle cpus on newidle and
+fork. Normally we only consider the socket for these lookups, they want
+a wider view.
 
-NIP 957-07-52-316
-Kapital zakladowy 200.000 zl
+Auto-tune, perhaps although I'm a bit skeptical of heuristics. We'd need
+data on the avg 'atom' length of the tasks and idle-ness of remote cpus
+and so on.
 
-This e-mail and any attachments may contain confidential material for
-the sole use of the intended recipient(s). Any review or distribution
-by others is strictly prohibited. If you are not the intended
-recipient, please contact the sender and delete all copies.
+The thing is, even then it depends on the data footprint of these tasks
+and the cost/benefit for your application.
+
+By more aggresively migrating tasks you penalize through-put but get a
+better worst case response time.
+
+I'm just not sure we can make that decision for the user.
 
