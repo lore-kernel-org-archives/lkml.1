@@ -1,78 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757911AbYDAKEX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757362AbYDAKOm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757911AbYDAKEX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Apr 2008 06:04:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756211AbYDAKEO
+	id S1757362AbYDAKOm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Apr 2008 06:14:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755976AbYDAKOe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Apr 2008 06:04:14 -0400
-Received: from rv-out-0910.google.com ([209.85.198.185]:56507 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756035AbYDAKEO (ORCPT
+	Tue, 1 Apr 2008 06:14:34 -0400
+Received: from smtpq2.groni1.gr.home.nl ([213.51.130.201]:39062 "EHLO
+	smtpq2.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755940AbYDAKOd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Apr 2008 06:04:14 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=gCGeTTx93gPXE1oVyCDUO5yMAOjor4t2yOkwmeSzJst7lTNUicUuzS3HAWsAn4sTcqj5sFT/U2jBebgwvLAe59OPeObdWTqJ1FyxqZPSEI5FRNBfpvuYW/IIWts73nmZFuSjpC9UqS9DsxDdz4ELciiUU9sehMROi+NR19YI6WY=
-Message-ID: <84144f020804010304w7057a68cqa5b9a7a5364b9489@mail.gmail.com>
-Date: Tue, 1 Apr 2008 13:04:11 +0300
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: Artem.Bityutskiy@nokia.com
-Subject: Re: [RFC PATCH 26/26] UBIFS: include FS to compilation
-Cc: "Artem Bityutskiy" <dedekind@yandex.ru>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "Adrian Hunter" <ext-adrian.hunter@nokia.com>,
-       "David Woodhouse" <dwmw2@infradead.org>
-In-Reply-To: <47F1FF98.9020809@nokia.com>
+	Tue, 1 Apr 2008 06:14:33 -0400
+Message-ID: <47F20B6A.1000609@keyaccess.nl>
+Date: Tue, 01 Apr 2008 12:16:10 +0200
+From: Rene Herman <rene.herman@keyaccess.nl>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1206629746-4298-1-git-send-email-Artem.Bityutskiy@nokia.com>
-	 <1206629746-4298-27-git-send-email-Artem.Bityutskiy@nokia.com>
-	 <84144f020804010039n47133bd3l63f02258a2670e72@mail.gmail.com>
-	 <47F1F7A6.5020105@yandex.ru>
-	 <84144f020804010215o209fbed8gf629dc6557fcd091@mail.gmail.com>
-	 <47F1FF98.9020809@nokia.com>
-X-Google-Sender-Auth: 2fff74b4f75ea259
+To: Bjorn Helgaas <bjorn.helgaas@hp.com>
+CC: Len Brown <lenb@kernel.org>, linux-acpi@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Adam Belay <ambx1@neo.rr.com>,
+       Li Shaohua <shaohua.li@intel.com>,
+       Matthieu Castet <castet.matthieu@free.fr>,
+       Thomas Renninger <trenn@suse.de>, Jaroslav Kysela <perex@perex.cz>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [patch 00/37] PNP resource_table cleanups
+References: <20080326171058.099442579@ldl.fc.hp.com> <200803271150.30512.bjorn.helgaas@hp.com> <47F13E13.7090608@keyaccess.nl> <200803311451.54499.bjorn.helgaas@hp.com> <47F159BE.7050201@keyaccess.nl>
+In-Reply-To: <47F159BE.7050201@keyaccess.nl>
+Content-Type: multipart/mixed;
+ boundary="------------080600080009020902050601"
+X-Spam-Score: -1.0 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Artem,
+This is a multi-part message in MIME format.
+--------------080600080009020902050601
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 
-Pekka Enberg wrote:
-> > Yeah, perhaps that's a sign that you're doing it wrong? You currently
-> > have 430 separate debug printks sprinkled around in UBIFS.
+On 31-03-08 23:38, Rene Herman wrote:
+> On 31-03-08 22:51, Bjorn Helgaas wrote:
+> 
+>> Ah, right.  Thanks for tracking that down.  I forgot to factor out
+>> isapnp_to_pnpid() and pnpid32_to_pnpid() (and acpi_ex_eisa_id_to_string()
+>> for that matter, though that's buried in the ACPI CA)-- they're really
+>> doing the same thing and we should only need one copy (plus the CA
+>> one).
+> 
+> I'll wait for another round then, before reviewing this further.
 
-On Tue, Apr 1, 2008 at 12:25 PM, Artem Bityutskiy
-<Artem.Bityutskiy@nokia.com> wrote:
-> JFFS2 has the similar thing. I myself fixed bugs just by asking people
-> enabling them and sending the log. Very useful. This is why we also added
-> them to UBIFS - good JFFS2 experience.
->
-> Why? What is wrong with this? As I said, we found it very useful in JFFS2,
-> because I has been working with JFFS2 for _long_ time. Talk to David
-> Woodhouse and ask how many times that made him fix a bug just by having
-> people send a log. Why do you want to prevent us from having this?
+There's actually a hex_asc() helper in kernel.h, so before you overlook it 
+as well, this is a somewhat nicer ID fix.
 
-First and foremost, JFFS2 uses BUG_ON and doesn't invent it's own
-assert. Furthermore, the debug tracing code prints out human-readable
-text in well-thought of places. It's looks bit excessive to me and I
-don't see a good reason why the different logging levels are not
-run-time configurable (if you're going to invent a logging
-infrastructure, why not do it properly). But there simply is no
-comparison between JFFS2 and UBIFS debug logging code. The former is
-cleanly structured whereas yours looks to be totally ad hoc.
+Rene.
 
-But perhaps the problem will go away after you inject some sanity to
-stuff like this:
+--------------080600080009020902050601
+Content-Type: text/plain;
+ name="isapnp_to_pnpid2.diff"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="isapnp_to_pnpid2.diff"
 
-fs/ubifs/dir.c: dbg_gen("dent '%.*s' to ino %lu (nlink %d) in dir ino %lu",
-fs/ubifs/dir.c: dbg_gen("dent '%.*s' from ino %lu (nlink %d) in dir ino %lu",
-fs/ubifs/dir.c: dbg_gen("directory '%.*s', ino %lu in dir ino %lu",
-dentry->d_name.len,
-fs/ubifs/dir.c: dbg_gen("dent '%.*s', mode %#x in dir ino %lu",
-fs/ubifs/dir.c: dbg_gen("dent '%.*s' in dir ino %lu",
+commit cfed76bc2a76f2094338bc43dae55aa814017b5f
+Author: Rene Herman <rene.herman@gmail.com>
+Date:   Tue Apr 1 12:03:15 2008 +0200
 
-                        Pekka
+    [ISAPNP] fix isapnp_to_pnpid
+
+diff --git a/drivers/pnp/isapnp/core.c b/drivers/pnp/isapnp/core.c
+index c4b95b5..9727050 100644
+--- a/drivers/pnp/isapnp/core.c
++++ b/drivers/pnp/isapnp/core.c
+@@ -406,11 +406,11 @@ static void isapnp_to_pnpid(unsigned short vendor, unsigned short device,
+ 	id[0] = 'A' + ((vendor >> 2) & 0x3f) - 1;
+ 	id[1] = 'A' + (((vendor & 3) << 3) | ((vendor >> 13) & 7)) - 1;
+ 	id[2] = 'A' + ((vendor >> 8) & 0x1f) - 1;
+-	id[3] = '0' + ((device >> 4) & 0x0f);
+-	id[4] = '0' + (device & 0x0f);
+-	id[5] = '0' + ((device >> 12) & 0x0f);
+-	id[6] = '0' + ((device >> 8) & 0x0f);
+-	id[7] = '\0';
++	id[3] = hex_asc((device >> 4) & 0x0f);
++	id[4] = hex_asc(device & 0x0f);
++	id[5] = hex_asc((device >> 12) & 0x0f);
++	id[6] = hex_asc((device >> 8) & 0x0f);
++	id[7] = 0;
+ }
+ 
+ /*
+
+--------------080600080009020902050601--
