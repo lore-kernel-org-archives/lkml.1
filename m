@@ -1,69 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757963AbYDAIsA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757197AbYDAIuP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757963AbYDAIsA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Apr 2008 04:48:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757756AbYDAIru
+	id S1757197AbYDAIuP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Apr 2008 04:50:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754685AbYDAIuD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Apr 2008 04:47:50 -0400
-Received: from e36.co.us.ibm.com ([32.97.110.154]:60230 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757704AbYDAIrt (ORCPT
+	Tue, 1 Apr 2008 04:50:03 -0400
+Received: from smtp.nokia.com ([192.100.122.230]:60555 "EHLO
+	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754506AbYDAIuC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Apr 2008 04:47:49 -0400
-Date: Tue, 1 Apr 2008 01:47:47 -0700
-From: "Darrick J. Wong" <djwong@us.ibm.com>
-To: Jean Delvare <khali@linux-fr.org>
-Cc: "Mark M. Hoffman" <mhoffman@lightlink.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       lm-sensors <lm-sensors@lm-sensors.org>
-Subject: Re: [PATCH 1/2] Define sysfs interfaces for ibmaem driver
-Message-ID: <20080401084747.GE7183@tree.beaverton.ibm.com>
-References: <20080328213646.GC7191@tree.beaverton.ibm.com> <20080329145603.7e47418f@hyperion.delvare> <20080331210135.GC7183@tree.beaverton.ibm.com> <20080401102228.712acbb5@hyperion.delvare>
+	Tue, 1 Apr 2008 04:50:02 -0400
+Message-ID: <47F1F644.4060000@yandex.ru>
+Date: Tue, 01 Apr 2008 11:45:56 +0300
+From: Artem Bityutskiy <dedekind@yandex.ru>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080401102228.712acbb5@hyperion.delvare>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+To: Tomasz Chmielewski <mangoo@wpkg.org>
+CC: LKML <linux-kernel@vger.kernel.org>, penberg@cs.helsinki.fi,
+       =?UTF-8?B?SsO2cm4gRW5nZWw=?= <joern@logfs.org>,
+       ext-adrian.hunter@nokia.com, jwboyer@gmail.com
+Subject: Re: UBIFS vs Logfs (was [RFC PATCH] UBIFS - new flash file system)
+References: <47F1EC20.6050600@wpkg.org>
+In-Reply-To: <47F1EC20.6050600@wpkg.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 01 Apr 2008 08:49:46.0400 (UTC) FILETIME=[5639BA00:01C893D5]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Got in a car accident tonight; replies will be scarce for the next week
-or two.... :(]
+Tomasz Chmielewski wrote:
+> For me, the motivators to wait for LogFS are mainly the facts that it
+> can work on traditional block devices, and not only on pure flash:
 
-On Tue, Apr 01, 2008 at 10:22:28AM +0200, Jean Delvare wrote:
+Sorry Thomasz, for me this makes zero sense. There are _much_ better file
+systems for block devices. UBIFS may work on top of a block device as
+well (just needs few hacks to make it possible) - it is not a problem
+at all, it is just _senseless_.
 
-> OK. Another question that comes to my mind now is the unit... Do the
-> chips express the value in Joules internally? I would have expected
-> Watt-hours. Of course we can convert as needed, but if all known chips
-> use the same unit then I think we should that unit too, to minimize the
-> required conversions.
+JFFS2/UBIFS/LogFS is a separate _class_ of file-systems. The are designed
+for _flash_, which has completely different work model then block device.
+They are _native_ flash file systems.
+Here are more details: http://www.linux-mtd.infradead.org/faq/general.html#L_mtd_vs_hdd
 
-The IBM chips report some form of Joules, not Wh.
+The traditional FSes _cannot_ work on top of flash. The solution for this
+is using FTL, which emulates a block device on top of flash. It _hides_ the
+real device, and fakes a block device for you. And you can use traditional
+FSes on top of that fake block device.
 
-> It really depends on what the chips report. Typically the drivers
-> should report the values from the chip without too much tinkering
-> (other than conversion to standard units). If some chips can report
-> both "instantaneous" and "average" power uses, it makes sense to have
-> both sets of filenames in the standard interface. If not then I am fine
-> getting rid of one set.
+The whole _point_ of this separate class of FSes is because we believe
+we may do much _better_ job if we use flash _natively_, instead of using
+FTL. FTL is the place where you loose performance, reliability, and so on.
 
-Hmm, I'll think about what I want to do with this.  Probably just leave
-them.
+And you are saying about using a native flash FS on top of a block device
+like an SD card. This is just not sane: SD card first emulates a block device
+for you, looses performance at this point, then you again emulate a flash
+on top of this, and suffer from this again.
 
-> I don't think there is any precedent yet. I suggested this for
-> unambiguity rather than consistency.
-
-Ok.
-
-> Oh well, I guess that anything shorter than 1 ms can be considered
-> "instantaneous power use", so we can go with millisecond.
-
-Ok.
-
-> Out of curiosity, what are the values supported by the ibmaem chip?
-
-I don't know what the lower limits are; it depends on how often the BMC
-decides to update the counters, and that seems to vary by machine.
-
---D
+-- 
+Best Regards,
+Artem Bityutskiy (Артём Битюцкий)
