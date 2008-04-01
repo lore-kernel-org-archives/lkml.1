@@ -1,77 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757587AbYDAOno@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759226AbYDAPJh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757587AbYDAOno (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Apr 2008 10:43:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756920AbYDAOn3
+	id S1759226AbYDAPJh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Apr 2008 11:09:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758621AbYDAPJ2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Apr 2008 10:43:29 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:58534 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755772AbYDAOn2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Apr 2008 10:43:28 -0400
-Message-ID: <47F24720.4020101@redhat.com>
-Date: Tue, 01 Apr 2008 10:30:56 -0400
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
-MIME-Version: 1.0
-To: Denys Vlasenko <vda.linux@googlemail.com>
-CC: Ingo Molnar <mingo@elte.hu>, KOSAKI Motohiro <m-kosaki@ceres.dti.ne.jp>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>,
-       systemtap-ml <systemtap@sources.redhat.com>,
-       Jim Keniston <jkenisto@us.ibm.com>
-Subject: Re: [OT] Re: [patch for 2.6.26 0/7] Architecture Independent Markers
-References: <20080327132057.449831367@polymtl.ca> <20080328101500.GF30863@elte.hu> <47ECF3F9.4040906@redhat.com> <200804010343.07657.vda.linux@googlemail.com>
-In-Reply-To: <200804010343.07657.vda.linux@googlemail.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 1 Apr 2008 11:09:28 -0400
+Received: from po-out-1718.google.com ([72.14.252.158]:5911 "EHLO
+	po-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758620AbYDAPJ1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Apr 2008 11:09:27 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=date:message-id:to:cc:subject:from:x-mailer:mime-version:content-type:content-transfer-encoding;
+        b=SsnZlMW4ZlQnNv0K5+VCn+TIMzXfu1n4pcUVGnJeLxsJyaTGN2SxS0PMUS4/2DPVfjY/s835MjX+1sqFaxyOecxmOVSG9RuPIFpYuRMSWp/j8glpocbWiLM7wtZoKN3EkAyAeEFLouWURWiw82MM8rSRWJvGpwgiyKEXBdJWVfQ=
+Date: Tue, 01 Apr 2008 23:06:41 +0800 (CST)
+Message-Id: <20080401.230641.146239754.xiyou.wangcong@gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: akpm@osdl.org, jdike@addtoit.com,
+       user-mode-linux-devel@lists.sourceforge.net
+Subject: [Patch] arch/um/os-Linux/main.c: Fix memory leaks.
+From: WANG Cong <xiyou.wangcong@gmail.com>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Denys,
 
-Denys Vlasenko wrote:
-> On Friday 28 March 2008 14:34, Masami Hiramatsu wrote:
->>> for heaven's sake, we can have 3 years of _full Linux kernel history_, 
->>> with all 87875 commits, with full changelog and dependencies and full 
->>> source code included, packed into a rather tight, 180 MB git repository 
->>> ...
->>>
->>> [ and then i havent even begun about the on-disk footprint of this 
->>>   monstrum, after the packages have been installed: an additional 850 MB.
->>>   Puh-lease ... ]
->> Thank for Moore's law and all storage engineers, nowadays we can buy
->> an 1TB(=1000GB!) HDD with less than $300!(I also surprised...)
->> And many other compressed filesystem can be used for saving disk space.
-> 
-> This is not a valid technical reason for creating bloatware.
-> 
-> Bloatware's main problem is not a cost of storing it or
-> downloading it. The main problem that over time it becomes
-> an unmaintainable monstrosity nobody is willing to deal with.
->
-> I would rather try to find and fix a bug in 2000 lines of C code
-> than in 200 000 lines.
+This patch fixes possible memory leaks in the main() function of
+arch/um/os-Linux/main.c.
 
-If it is a program code, you're right.
-However, the debuginfo is just a set of data files generated from
-c-source code by the compiler, so you don't need to maintain it.
+Cc: jdike@addtoit.com
+Signed-off-by: WANG Cong <wangcong@zeuux.org>
 
-Thank you,
+---
 
-> --
-> vda
-
--- 
-Masami Hiramatsu
-
-Software Engineer
-Hitachi Computer Products (America) Inc.
-Software Solutions Division
-
-e-mail: mhiramat@redhat.com
-
+Index: linux-2.6/arch/um/os-Linux/main.c
+===================================================================
+--- linux-2.6.orig/arch/um/os-Linux/main.c
++++ linux-2.6/arch/um/os-Linux/main.c
+@@ -113,14 +113,10 @@ static void setup_env_path(void)
+ 
+ extern void scan_elf_aux( char **envp);
+ 
+-int __init main(int argc, char **argv, char **envp)
++static char** dup_argv(int argc, char **argv)
+ {
++	int i;
+ 	char **new_argv;
+-	int ret, i, err;
+-
+-	set_stklim();
+-
+-	setup_env_path();
+ 
+ 	new_argv = malloc((argc + 1) * sizeof(char *));
+ 	if (new_argv == NULL) {
+@@ -135,6 +131,28 @@ int __init main(int argc, char **argv, c
+ 		}
+ 	}
+ 	new_argv[argc] = NULL;
++	return new_argv;
++}
++
++static void free_argv(int argc, char **argv)
++{
++	int i;
++	for (i = 0; i < argc; i++) {
++		free(argv[i]);
++	}
++	free(argv);
++}
++
++int __init main(int argc, char **argv, char **envp)
++{
++	char **new_argv;
++	int ret, i, err;
++
++	set_stklim();
++
++	setup_env_path();
++
++	new_argv = dup_argv(argc, argv);
+ 
+ 	/*
+ 	 * Allow these signals to bring down a UML if all other
+@@ -185,6 +203,7 @@ int __init main(int argc, char **argv, c
+ 		perror("Failed to exec kernel");
+ 		ret = 1;
+ 	}
++	free_argv(argc, new_argv);
+ 	printf("\n");
+ 	return uml_exitcode;
+ }
