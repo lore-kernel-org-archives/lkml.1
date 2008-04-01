@@ -1,220 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757636AbYDAJWg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757368AbYDAJ0Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757636AbYDAJWg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Apr 2008 05:22:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756013AbYDAJW2
+	id S1757368AbYDAJ0Q (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Apr 2008 05:26:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755890AbYDAJ0E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Apr 2008 05:22:28 -0400
-Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:49405 "EHLO
-	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755942AbYDAJW1 (ORCPT
+	Tue, 1 Apr 2008 05:26:04 -0400
+Received: from lazybastard.de ([212.112.238.170]:45504 "EHLO
+	longford.logfs.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755829AbYDAJ0C (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Apr 2008 05:22:27 -0400
-From: "Satoshi UCHIDA" <s-uchida@ap.jp.nec.com>
-To: <linux-kernel@vger.kernel.org>, <containers@lists.linux-foundation.org>,
-       <axboe@kernel.dk>, <menage@google.com>
-Cc: <s-uchida@ap.jp.nec.com>,
-       "'Tomoyoshi Sugawara'" <tom-sugawara@ap.jp.nec.com>,
-       <m-takahashi@ex.jp.nec.com>
-Subject: [RFC][patch 0/11][CFQ-cgroup]Yet another I/O bandwidth controlling subsystem for CGroups based on CFQ
-Date: Tue, 1 Apr 2008 18:22:00 +0900
-Message-Id: <007801c893d9$d89726f0$89c574d0$@jp.nec.com>
+	Tue, 1 Apr 2008 05:26:02 -0400
+Date: Tue, 1 Apr 2008 11:25:48 +0200
+From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
+To: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
+Cc: Adrian Hunter <ext-adrian.hunter@nokia.com>,
+       Jan Engelhardt <jengelh@computergmbh.de>,
+       LKML <linux-kernel@vger.kernel.org>, joern@lazybastard.org
+Subject: Re: UBIFS vs Logfs (was [RFC PATCH] UBIFS - new flash file system)
+Message-ID: <20080401092548.GC7465@logfs.org>
+References: <1206629746-4298-1-git-send-email-Artem.Bityutskiy@nokia.com> <alpine.LNX.1.10.0803311428270.2554@fbirervta.pbzchgretzou.qr> <47F0DD49.7010302@nokia.com> <20080331132047.GA31660@logfs.org> <47F1C78D.2050300@yandex.ru> <47F1CE9D.4080709@nokia.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-2022-jp"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Microsoft Office Outlook 12.0
-Thread-Index: AciT2dazsgoxpK4vQk6Hf026phpfBA==
-Content-Language: ja
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <47F1CE9D.4080709@nokia.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patchset introduce "Yet Another" I/O bandwidth controlling
-subsystem for cgroups based on CFQ (called 2 layer CFQ).
+On Tue, 1 April 2008 08:56:45 +0300, Artem Bityutskiy wrote:
+>
+> I asked you some time ago to describe how you maintain per-eraseblock
+> space accounting [1]. E.g., how you select an eraseblock for garbage
+> collection, how do you store the accounting information.
+> 
+> You said you find eraseblocks by scanning. This means logfs is not
+> really scalable because you may spend ages before you find anything
+> appropriate. When the FS is almost full, yo need to scan nearly
+> whole flash to find an eraseblock? So if I mount a nearly full 
+> FS, and start writing, I'll get my request handled when nearly whole
+> media is scanned?
 
-The idea of 2 layer CFQ is to build fairness control per group on the top of existing CFQ control.
-We add a new data structure called CFQ meta-data on the top of
-cfqd in order to control I/O bandwidth for cgroups.
-CFQ meta-data control cfq_datas by service tree (rb-tree) and
-CFQ algorithm when synchronous I/O.
-An active cfqd controls queue for cfq by service tree.
-Namely, the CFQ meta-data control traditional CFQ data.
-the CFQ data runs conventionally.
+Correct.  I have a patch that caches this information in RAM, so the
+worst-case scenario is to do the full scan once - if the filesystem is
+near 100% full and performance is down the drain anyway.  The goal is
+obviously to store that information on the medium.
 
-           cfqmd     cfqmd     (cfqmd = cfq meta-data)
-            |          |
-  cfqc  -- cfqd ----- cfqd     (cfqd = cfq data,
-            |          |        cfqc = cfq cgroup data)
-  cfqc  --[cfqd]----- cfqd
-            $B",(B
-$B!!!!!!!!!!(Bconventional control.
+And you get the obvious catch-22.  When writing out how much free space
+exists in which blocks, you occupy some free space in one of those
+blocks and obsolete some in another.  So by writing the data you have
+just written changes and should be written again.
 
+Takes a bit of thought to solve.
 
-This patchset is gainst 2.6.25-rc2-mm1.
+> UBIFS stores per-eraseblock information on the media in a B-tree, and
+> it also has lists of empty/dirty eraseblocks, which allow to very quickly
+> find the best eraseblock to garbage-collect or to write to.
 
+So how do you solve the catch-22?
 
-Last week, we found a patchset from Vasily Tarasov (Open VZ) that
-posted to LKML.
-   [RFC][PATCH 0/9] cgroups: block: cfq: I/O bandwidth controlling subsystem for CGroups based on CFQ
-  http://lwn.net/Articles/274652/
+Jörn
 
-Our subsystem and  Vasily's one are similar on the point of modifying
-the CFQ subsystem, but they are different on the point of the layer of
-implementation. Vasily's subsystem add a new layer for cgroup between
-cfqd and cfqq, but our subsystem add a new layer for cgroup on the top
-of cfqd.
-
-The different of implementation from OpenVZ's one are:
-   * top layer algorithm is also based on service tree, and
-   * top layer program is stored in the different file (block/cfq-cgroup.c).
-
-We hope to discuss not which is better implementation, but what is the
-best way to implement I/O bandwidth control based on CFQ here.
-
-Please give us your comments, questions and suggestions.
-
-
-
-Finally, we introduce a usage of our implementation.
-
-* Preparation for using 2 layer CFQ
-
- 1. Adopt this patchset to kernel 2.6.25-rc2-mm1.
-
- 2. Build kernel with CFQ-CGROUP option.
-
- 3. Restart new kernel.
-
- 4. Mount cfq_cgroup special device to device directory.
-    ex.
-      mkdir /dev/cgroup
-      mount -t cgroup -o cfq_cgroup cfq_cgroup /dev/cgroup
-
-
-* Usage of grouping control.
- - Create New group
-      Make new directory under /dev/cgroup.
-      For example, the following command genrerates a 'test1' group.
-          mkdir /dev/cgroup/test1
-
- - Insert task to group
-      Write process id(pid) on "tasks" entry in the corresponding group.
-      For example, the following command sets task with pid 1100 into test1 group.
-         echo 1100 > /dev/cgroup/test1/tasks
-      Child tasks of this tasks is also inserted into test1 group.
-
- - Change I/O priority of group
-     Write priority on "cfq_cgroup.io_prio" entry in corresponding group.
-     For example, the following command sets priority of rank 2 to 'test1' group.
-         echo 2 > /dev/cgroup/test1/tasks
-     I/O priority for cgroups takes the value from 0 to 7. It is same as
-     existing per-task CFQ.
-
-     
- - Change I/O priority of task
-     Use existing "ionice" command.
-
-
-* Example
- Two I/O load (dd command) runs some conditions.
-  
- - When they are same group and same priority,
-
-   program
-     #!/bin/sh
-     echo $$ > /dev/cgroup/tasks
-     echo $$ > /dev/cgroup/test/tasks
-     ionice -c 2 -n 3 dd if=/internal/data1 of=/dev/null bs=1M count=1K &
-     ionice -c 2 -n 3 dd if=/internal/data2 of=/dev/null bs=1M count=1K &
-     echo $$ > /dev/cgroup/test2/tasks
-     echo $$ > /dev/cgroup/tasks
-    
-   result
-     1024+0 records in
-     1024+0 records out
-     1073741824 bytes (1.1 GB) copied, 27.7676 s, 38.7 MB/s
-     1024+0 records in
-     1024+0 records out
-     1073741824 bytes (1.1 GB) copied, 28.8482 s, 37.2 MB/s
-
-    These tasks was fair, therefore they finished at similar time.
-
-
- - When they are same group and different priorities (0 and 7),
-
-    program
-      #!/bin/sh
-      echo $$ > /dev/cgroup/tasks
-      echo $$ > /dev/cgroup/test/tasks
-      ionice -c 2 -n 0 dd if=/internal/data1 of=/dev/null bs=1M count=1K &
-      ionice -c 2 -n 7 dd if=/internal/data2 of=/dev/null bs=1M count=1K &
-      echo $$ > /dev/cgroup/test2/tasks
-      echo $$ > /dev/cgroup/tasks
-
-    result
-      1024+0 records in
-      1024+0 records out
-      1073741824 bytes (1.1 GB) copied, 18.8373 s, 57.0 MB/s
-      1024+0 records in
-      1024+0 records out
-      1073741824 bytes (1.1 GB) copied, 28.108 s, 38.2 MB/s
-
-
-     The first task (copy data1) had high priority, therefore it finished at fast.
- 
- - When they are different groups and different priorities (0 and 7),
-
-    program
-      #!/bin/sh
-      echo $$ > /dev/cgroup/tasks
-      echo $$ > /dev/cgroup/test/tasks
-      ionice -c 2 -n 0 dd if=/internal/data1 of=/dev/null bs=1M count=1K 
-      echo $$ > /dev/cgroup/test2/tasks
-      ionice -c 2 -n 7 dd if=/internal/data2 of=/dev/null bs=1M count=1K 
-      echo $$ > /dev/cgroup/tasks
-
-    result
-      1024+0 records in
-      1024+0 records out
-      1073741824 bytes (1.1 GB) copied, 28.1661 s, 38.1 MB/s
-      1024+0 records in
-      1024+0 records out
-      1073741824 bytes (1.1 GB) copied, 28.8486 s, 37.2 MB/s
-
-     The first task (copy data1) had  high priority, but they finished at similar time.
-     Because their groups had same priority.
-
- - When they are different groups with different priorities (7 and 0)
-   and same priority,
-
-    program
-      #!/bin/sh
-      echo $$ > /dev/cgroup/tasks
-      echo 7 > /dev/cgroup/test/cfq_cgroup.ioprio
-      echo $$ > /dev/cgroup/test/tasks
-      ionice -c 2 -n 0 dd if=/internal/data1 of=/dev/null bs=1M count=1K >& test1.log &
-      echo 0 > /dev/cgroup/test2/cfq_cgroup.ioprio
-      echo $$ > /dev/cgroup/test2/tasks
-      ionice -c 2 -n 7 dd if=/internal/data2 of=/dev/null bs=1M count=1K >& test2.log &
-      echo $$ > /dev/cgroup/tasks
-
-    result
-      === test1.log ===
-        1024+0 records in
-        1024+0 records out
-        1073741824 bytes (1.1 GB) copied, 27.3971 s, 39.2 MB/s
-      === test2.log ===
-        1024+0 records inmorre
-        1024+0 records out
-        1073741824 bytes (1.1 GB) copied, 17.3837 s, 61.8 MB/s
-
-     This first task (copy data1) had high priority, but they finished at late.
-     Because its group had low priority.
-
-
-Regards,
-==========================
-Satoshi UCHIDA <s-uchida@ap.jp.nec.com>
-     NEC Coropration.
-
+-- 
+Debugging is twice as hard as writing the code in the first place.
+Therefore, if you write the code as cleverly as possible, you are,
+by definition, not smart enough to debug it.
+-- Brian W. Kernighan
