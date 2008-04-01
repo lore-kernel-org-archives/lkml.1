@@ -1,60 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754794AbYDAGqf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755844AbYDAGrs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754794AbYDAGqf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Apr 2008 02:46:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751430AbYDAGq0
+	id S1755844AbYDAGrs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Apr 2008 02:47:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751350AbYDAGrj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Apr 2008 02:46:26 -0400
-Received: from nn7.de ([85.214.94.156]:56729 "EHLO nn7.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751350AbYDAGq0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Apr 2008 02:46:26 -0400
-X-Greylist: delayed 476 seconds by postgrey-1.27 at vger.kernel.org; Tue, 01 Apr 2008 02:46:25 EDT
-Subject: Re: 2.6.25-rc6 hangs at resume after suspend to RAM on Mac mini
-	Core Duo
-From: Soeren Sonnenburg <kernel@nn7.de>
-To: Tino Keitel <tino.keitel@gmx.de>
-Cc: "Rafael J\. Wysocki" <rjw@sisk.pl>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Len Brown <lenb@kernel.org>, Pavel Machek <pavel@ucw.cz>
-In-Reply-To: <20080401062734.GA8824@dose.home.local>
-References: <20080320060550.GA13200@dose.home.local>
-	 <20080320105432.GA13404@dose.home.local>
-	 <20080325231300.GA10641@thinkpad.home.local>
-	 <200803290003.16199.rjw@sisk.pl> <20080331212812.GB5313@dose.home.local>
-	 <1207030991.11035.35.camel@localhost>
-	 <20080401062734.GA8824@dose.home.local>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Tue, 01 Apr 2008 06:38:18 +0000
-Message-Id: <1207031898.11035.38.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.0 
+	Tue, 1 Apr 2008 02:47:39 -0400
+Received: from mail.rz.uni-duesseldorf.de ([134.99.128.30]:33633 "EHLO
+	mail.rz.uni-duesseldorf.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751922AbYDAGri (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Apr 2008 02:47:38 -0400
+X-Greylist: delayed 12399 seconds by postgrey-1.27 at vger.kernel.org; Tue, 01 Apr 2008 02:47:37 EDT
+Date: Tue, 01 Apr 2008 05:20:56 +0200 (CEST)
+From: Michael Schmitz <schmitz@smaragd.biophys.uni-duesseldorf.de>
+Subject: Re: [PATCH 5/5] falconide/q40ide: add ->atapi_*put_bytes and
+ ->ata_*put_data methods
+In-reply-to: <20080331224318.4768c050@core>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Roman Zippel <zippel@linux-m68k.org>,
+       Geert Uytterhoeven <geert@linux-m68k.org>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       linux-ide@vger.kernel.org,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>,
+       Linux/m68k <linux-m68k@vger.kernel.org>,
+       Michael Schmitz <schmitz@debian.org>
+Message-id: <Pine.LNX.4.44.0804010512010.22211-100000@smaragd.biophys.uni-duesseldorf.de>
+MIME-version: 1.0
+Content-type: TEXT/PLAIN; charset=US-ASCII
+Content-transfer-encoding: 7BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-04-01 at 08:27 +0200, Tino Keitel wrote:
-> On Tue, Apr 01, 2008 at 06:23:11 +0000, Soeren Sonnenburg wrote:
-> > On Mon, 2008-03-31 at 23:28 +0200, Tino Keitel wrote:
-> > > On Sat, Mar 29, 2008 at 00:03:15 +0100, Rafael J. Wysocki wrote:
-> > > 
-> > > [...]
-> > > 
-> > > > Can you please try to boot with acpi_new_pts_ordering and retest?
-> > > 
-> > > I just tried current -git (a9edadbf790d72adf6ebed476cb5caf7743e7e4a),
-> > > without success. I still got the same hand at resume.
-> > 
-> > I am having the hang on resume problem too (macbook pro), cf.
-> > http://bugzilla.kernel.org/show_bug.cgi?id=10319, 2.6.24 was fine.
-> 
-> What about 2.6.25-rc5? Up to this, resume works for me. -rc6 is broken.
+Hi,
 
-No never worked in 2.6.25 (at least from rc2 on) and still does not in
-rc7-current-git. But note that on console I could suspend to ram and
-resume but the display is not anymore coming back with s2ram - from
-within X it freezes though.
+> > That would require an additional data copy and a double byteswap on machines
+> > which are not that fast in first place...
+>
+> So use the blitter ;)
+>
+> At this point the future is not Commode Amiga or Atari TT and we risk
+> mess in core code for obscure platforms ?
 
-Soeren
+The Amiga isn't affected by this. Only Falcon and Q40 (Atari) are.
+
+Sorry for the mess in core code - ist there any other way for only driveid
+and packet data getting swapped? And can we actually use the device mapper
+to byte-swap the root partition?
+
+	Michael
+
 
