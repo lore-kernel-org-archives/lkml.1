@@ -1,58 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762043AbYDAVF5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760114AbYDAVGU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762043AbYDAVF5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Apr 2008 17:05:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761872AbYDAVE7
+	id S1760114AbYDAVGU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Apr 2008 17:06:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761950AbYDAVFg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Apr 2008 17:04:59 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:48453 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760846AbYDAVE6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Apr 2008 17:04:58 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Soeren Sonnenburg <kernel@nn7.de>
-Subject: Re: 2.6.25-rc6 hangs at resume after suspend to RAM on Mac mini Core Duo
-Date: Tue, 1 Apr 2008 23:05:03 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Tino Keitel <tino.keitel@gmx.de>,
+	Tue, 1 Apr 2008 17:05:36 -0400
+Received: from eazy.amigager.de ([213.239.192.238]:48960 "EHLO
+	eazy.amigager.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761941AbYDAVFe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Apr 2008 17:05:34 -0400
+Date: Tue, 1 Apr 2008 23:06:17 +0200
+From: Tino Keitel <tino.keitel@gmx.de>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Pavel Machek <pavel@ucw.cz>, linux-usb@vger.kernel.org,
+       Soeren Sonnenburg <sonne@nn7.de>, "Rafael J. Wysocki" <rjw@sisk.pl>,
        Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Len Brown <lenb@kernel.org>, Pavel Machek <pavel@ucw.cz>
-References: <20080320060550.GA13200@dose.home.local> <20080401062734.GA8824@dose.home.local> <1207031898.11035.38.camel@localhost>
-In-Reply-To: <1207031898.11035.38.camel@localhost>
+       Len Brown <lenb@kernel.org>
+Subject: Re: 2.6.25-rc6 hangs at resume after suspend to RAM on Mac mini
+	Core Duo
+Message-ID: <20080401210617.GA7346@dose.home.local>
+Mail-Followup-To: Alan Stern <stern@rowland.harvard.edu>,
+	Pavel Machek <pavel@ucw.cz>, linux-usb@vger.kernel.org,
+	Soeren Sonnenburg <sonne@nn7.de>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	linux-kernel@vger.kernel.org, Len Brown <lenb@kernel.org>
+References: <20080401202557.GA6617@dose.home.local> <Pine.LNX.4.44L0.0804011701340.9362-100000@netrider.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200804012305.04250.rjw@sisk.pl>
+In-Reply-To: <Pine.LNX.4.44L0.0804011701340.9362-100000@netrider.rowland.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday, 1 of April 2008, Soeren Sonnenburg wrote:
-> On Tue, 2008-04-01 at 08:27 +0200, Tino Keitel wrote:
-> > On Tue, Apr 01, 2008 at 06:23:11 +0000, Soeren Sonnenburg wrote:
-> > > On Mon, 2008-03-31 at 23:28 +0200, Tino Keitel wrote:
-> > > > On Sat, Mar 29, 2008 at 00:03:15 +0100, Rafael J. Wysocki wrote:
-> > > > 
-> > > > [...]
-> > > > 
-> > > > > Can you please try to boot with acpi_new_pts_ordering and retest?
-> > > > 
-> > > > I just tried current -git (a9edadbf790d72adf6ebed476cb5caf7743e7e4a),
-> > > > without success. I still got the same hand at resume.
-> > > 
-> > > I am having the hang on resume problem too (macbook pro), cf.
-> > > http://bugzilla.kernel.org/show_bug.cgi?id=10319, 2.6.24 was fine.
-> > 
-> > What about 2.6.25-rc5? Up to this, resume works for me. -rc6 is broken.
+On Tue, Apr 01, 2008 at 17:02:36 -0400, Alan Stern wrote:
+> On Tue, 1 Apr 2008, Tino Keitel wrote:
 > 
-> No never worked in 2.6.25 (at least from rc2 on) and still does not in
-> rc7-current-git. But note that on console I could suspend to ram and
-> resume but the display is not anymore coming back with s2ram - from
-> within X it freezes though.
+> > On Tue, Apr 01, 2008 at 15:06:51 -0400, Alan Stern wrote:
+> > 
+> > [...]
+> > 
+> > > Can you get any information out of the computer after the hang?  It 
+> > > would help to see the dmesg log (with CONFIG_USB_DEBUG enabled) and an 
+> > > Alt-SysRq-T stack dump.
+> > 
+> > Looks difficult. The text console stays black after resume, and there
+> > is no serial interface.
+> 
+> Network console?  SSH?  Or even telnet?
 
-Please try -rc8.
+Network is dead, too.
 
-Thanks,
-Rafael
+Regards,
+Tino
