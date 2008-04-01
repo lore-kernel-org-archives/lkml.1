@@ -1,143 +1,292 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753705AbYDABOq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754498AbYDABP1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753705AbYDABOq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Mar 2008 21:14:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751891AbYDABOg
+	id S1754498AbYDABP1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Mar 2008 21:15:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753847AbYDABPN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Mar 2008 21:14:36 -0400
-Received: from wf-out-1314.google.com ([209.85.200.171]:28979 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751770AbYDABOf (ORCPT
+	Mon, 31 Mar 2008 21:15:13 -0400
+Received: from fg-out-1718.google.com ([72.14.220.156]:47918 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752918AbYDABPL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Mar 2008 21:14:35 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=jcjmWsoTJP2M19JhYb/HoPWdjxObuCDral58hxkl4WENgliAhrZ8vKLoxLZQDLVI5EBJ5rEK5eXfoKR+GxyB2gCYS8i+YfzhP4VYW3A4VjSY1cnELpIywyigOosp+avA3nhWAPJn723LZUihm78Y9z7EGxsCqT/llvq1+f/JyL0=
-Message-ID: <45a44e480803311814q22bc85dbx9a7d128d84b7db08@mail.gmail.com>
-Date: Mon, 31 Mar 2008 21:14:35 -0400
-From: "Jaya Kumar" <jayakumar.lkml@gmail.com>
-To: "Linux Kernel Development" <linux-kernel@vger.kernel.org>
-Subject: Clarifying platform_device_unregister
+	Mon, 31 Mar 2008 21:15:11 -0400
+From: Denys Vlasenko <vda.linux@googlemail.com>
+To: Chas Williams <chas@cmf.nrl.navy.mil>
+Subject: [PATCH] drivers/atm/ambassador.c: stop inlining largish static functions
+Date: Tue, 1 Apr 2008 03:14:58 +0200
+User-Agent: KMail/1.8.2
+Cc: kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Content-Type: Multipart/Mixed;
+  boundary="Boundary-00=_SyY8H2N+EQZIBwC"
+Message-Id: <200804010314.58117.vda.linux@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+--Boundary-00=_SyY8H2N+EQZIBwC
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-I'm trying to figure out a problem I'm experiencing with
-platform_device_unregister. Here's what I'm seeing with a piece of
-test code based on corgi_pm.c:
+Hi John,
 
-static int mydata;
-static struct platform_device *mytest_device;
-static int __devinit mytest_init(void)
-{
-        int ret;
+Can you please take a look at this patch?
 
-        mytest_device = platform_device_alloc("no_such_driver", -1);
+drivers/atm/ambassador.c has unusually large number
+of static inline functions - 22.
 
-// no_such_driver intentionally doesn't exist. i want to test this
-mytest module being insmod-ed/rmmod-ed without ever being bound to a
-platform driver.
+I looked through them and half of them seem to be too big
+to warrant inlining.
 
-        if (!mytest_device)
-                return -ENOMEM;
+This patch removes "inline" from these static functions
+(regardless of number of callsites - gcc nowadays auto-inlines
+statics with one callsite).
 
+Size difference for 32bit x86:
+   text    data     bss     dec     hex filename
+  10209    8488       4   18701    490d linux-2.6-ALLYES/drivers/atm/ambassador.o
+   9462    8488       4   17954    4622 linux-2.6.inline-ALLYES/drivers/atm/ambassador.o
 
-        mytest_device->dev.platform_data = &mydata;
-        ret = platform_device_add(mytest_device);
+Signed-off-by: Denys Vlasenko <vda.linux@googlemail.com>
+--
+vda
 
-        if (ret)
-                platform_device_put(mytest_device);
+--Boundary-00=_SyY8H2N+EQZIBwC
+Content-Type: text/x-diff;
+  charset="us-ascii";
+  name="deinline_ambassador.diff"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+	filename="deinline_ambassador.diff"
 
-        return ret;
-}
+diff -urp -U 10 linux-2.6/drivers/atm/ambassador.c linux-2.6.inline/drivers/atm/ambassador.c
+--- linux-2.6/drivers/atm/ambassador.c	2008-03-30 03:27:42.000000000 +0200
++++ linux-2.6.inline/drivers/atm/ambassador.c	2008-04-01 03:09:12.000000000 +0200
+@@ -430,50 +430,50 @@ static inline void dump_skb (char * pref
+   (void) vc;
+   (void) skb;
+ #endif
+   return;
+ }
+ 
+ /********** check memory areas for use by Ambassador **********/
+ 
+ /* see limitations under Hardware Features */
+ 
+-static inline int check_area (void * start, size_t length) {
++static int check_area (void * start, size_t length) {
+   // assumes length > 0
+   const u32 fourmegmask = -1 << 22;
+   const u32 twofivesixmask = -1 << 8;
+   const u32 starthole = 0xE0000000;
+   u32 startaddress = virt_to_bus (start);
+   u32 lastaddress = startaddress+length-1;
+   if ((startaddress ^ lastaddress) & fourmegmask ||
+       (startaddress & twofivesixmask) == starthole) {
+     PRINTK (KERN_ERR, "check_area failure: [%x,%x] - mail maintainer!",
+ 	    startaddress, lastaddress);
+     return -1;
+   } else {
+     return 0;
+   }
+ }
+ 
+ /********** free an skb (as per ATM device driver documentation) **********/
+ 
+-static inline void amb_kfree_skb (struct sk_buff * skb) {
++static void amb_kfree_skb (struct sk_buff * skb) {
+   if (ATM_SKB(skb)->vcc->pop) {
+     ATM_SKB(skb)->vcc->pop (ATM_SKB(skb)->vcc, skb);
+   } else {
+     dev_kfree_skb_any (skb);
+   }
+ }
+ 
+ /********** TX completion **********/
+ 
+-static inline void tx_complete (amb_dev * dev, tx_out * tx) {
++static void tx_complete (amb_dev * dev, tx_out * tx) {
+   tx_simple * tx_descr = bus_to_virt (tx->handle);
+   struct sk_buff * skb = tx_descr->skb;
+   
+   PRINTD (DBG_FLOW|DBG_TX, "tx_complete %p %p", dev, tx);
+   
+   // VC layer stats
+   atomic_inc(&ATM_SKB(skb)->vcc->stats->tx);
+   
+   // free the descriptor
+   kfree (tx_descr);
+@@ -636,21 +636,21 @@ static int command_do (amb_dev * dev, co
+   } else {
+     cq->filled++;
+     spin_unlock (&cq->lock);
+     return -EAGAIN;
+   }
+   
+ }
+ 
+ /********** TX queue pair **********/
+ 
+-static inline int tx_give (amb_dev * dev, tx_in * tx) {
++static int tx_give (amb_dev * dev, tx_in * tx) {
+   amb_txq * txq = &dev->txq;
+   unsigned long flags;
+   
+   PRINTD (DBG_FLOW|DBG_TX, "tx_give %p", dev);
+ 
+   if (test_bit (dead, &dev->flags))
+     return 0;
+   
+   spin_lock_irqsave (&txq->lock, flags);
+   
+@@ -668,21 +668,21 @@ static inline int tx_give (amb_dev * dev
+       txq->high = txq->pending;
+     spin_unlock_irqrestore (&txq->lock, flags);
+     return 0;
+   } else {
+     txq->filled++;
+     spin_unlock_irqrestore (&txq->lock, flags);
+     return -EAGAIN;
+   }
+ }
+ 
+-static inline int tx_take (amb_dev * dev) {
++static int tx_take (amb_dev * dev) {
+   amb_txq * txq = &dev->txq;
+   unsigned long flags;
+   
+   PRINTD (DBG_FLOW|DBG_TX, "tx_take %p", dev);
+   
+   spin_lock_irqsave (&txq->lock, flags);
+   
+   if (txq->pending && txq->out.ptr->handle) {
+     // deal with TX completion
+     tx_complete (dev, txq->out.ptr);
+@@ -696,21 +696,21 @@ static inline int tx_take (amb_dev * dev
+     return 0;
+   } else {
+     
+     spin_unlock_irqrestore (&txq->lock, flags);
+     return -1;
+   }
+ }
+ 
+ /********** RX queue pairs **********/
+ 
+-static inline int rx_give (amb_dev * dev, rx_in * rx, unsigned char pool) {
++static int rx_give (amb_dev * dev, rx_in * rx, unsigned char pool) {
+   amb_rxq * rxq = &dev->rxq[pool];
+   unsigned long flags;
+   
+   PRINTD (DBG_FLOW|DBG_RX, "rx_give %p[%hu]", dev, pool);
+   
+   spin_lock_irqsave (&rxq->lock, flags);
+   
+   if (rxq->pending < rxq->maximum) {
+     PRINTD (DBG_RX, "RX in slot %p", rxq->in.ptr);
+ 
+@@ -721,21 +721,21 @@ static inline int rx_give (amb_dev * dev
+     wr_mem (dev, offsetof(amb_mem, mb.adapter.rx_address[pool]), virt_to_bus (rxq->in.ptr));
+     
+     spin_unlock_irqrestore (&rxq->lock, flags);
+     return 0;
+   } else {
+     spin_unlock_irqrestore (&rxq->lock, flags);
+     return -1;
+   }
+ }
+ 
+-static inline int rx_take (amb_dev * dev, unsigned char pool) {
++static int rx_take (amb_dev * dev, unsigned char pool) {
+   amb_rxq * rxq = &dev->rxq[pool];
+   unsigned long flags;
+   
+   PRINTD (DBG_FLOW|DBG_RX, "rx_take %p[%hu]", dev, pool);
+   
+   spin_lock_irqsave (&rxq->lock, flags);
+   
+   if (rxq->pending && (rxq->out.ptr->status || rxq->out.ptr->length)) {
+     // deal with RX completion
+     rx_complete (dev, rxq->out.ptr);
+@@ -754,21 +754,21 @@ static inline int rx_take (amb_dev * dev
+     if (!rxq->pending && rxq->buffers_wanted)
+       rxq->emptied++;
+     spin_unlock_irqrestore (&rxq->lock, flags);
+     return -1;
+   }
+ }
+ 
+ /********** RX Pool handling **********/
+ 
+ /* pre: buffers_wanted = 0, post: pending = 0 */
+-static inline void drain_rx_pool (amb_dev * dev, unsigned char pool) {
++static void drain_rx_pool (amb_dev * dev, unsigned char pool) {
+   amb_rxq * rxq = &dev->rxq[pool];
+   
+   PRINTD (DBG_FLOW|DBG_POOL, "drain_rx_pool %p %hu", dev, pool);
+   
+   if (test_bit (dead, &dev->flags))
+     return;
+   
+   /* we are not quite like the fill pool routines as we cannot just
+      remove one buffer, we have to remove all of them, but we might as
+      well pretend... */
+@@ -789,21 +789,21 @@ static inline void drain_rx_pool (amb_de
+ 
+ static void drain_rx_pools (amb_dev * dev) {
+   unsigned char pool;
+   
+   PRINTD (DBG_FLOW|DBG_POOL, "drain_rx_pools %p", dev);
+   
+   for (pool = 0; pool < NUM_RX_POOLS; ++pool)
+     drain_rx_pool (dev, pool);
+ }
+ 
+-static inline void fill_rx_pool (amb_dev * dev, unsigned char pool,
++static void fill_rx_pool (amb_dev * dev, unsigned char pool,
+                                  gfp_t priority)
+ {
+   rx_in rx;
+   amb_rxq * rxq;
+   
+   PRINTD (DBG_FLOW|DBG_POOL, "fill_rx_pool %p %hu %x", dev, pool, priority);
+   
+   if (test_bit (dead, &dev->flags))
+     return;
+   
+@@ -839,29 +839,29 @@ static void fill_rx_pools (amb_dev * dev
+   PRINTD (DBG_FLOW|DBG_POOL, "fill_rx_pools %p", dev);
+   
+   for (pool = 0; pool < NUM_RX_POOLS; ++pool)
+     fill_rx_pool (dev, pool, GFP_ATOMIC);
+   
+   return;
+ }
+ 
+ /********** enable host interrupts **********/
+ 
+-static inline void interrupts_on (amb_dev * dev) {
++static void interrupts_on (amb_dev * dev) {
+   wr_plain (dev, offsetof(amb_mem, interrupt_control),
+ 	    rd_plain (dev, offsetof(amb_mem, interrupt_control))
+ 	    | AMB_INTERRUPT_BITS);
+ }
+ 
+ /********** disable host interrupts **********/
+ 
+-static inline void interrupts_off (amb_dev * dev) {
++static void interrupts_off (amb_dev * dev) {
+   wr_plain (dev, offsetof(amb_mem, interrupt_control),
+ 	    rd_plain (dev, offsetof(amb_mem, interrupt_control))
+ 	    &~ AMB_INTERRUPT_BITS);
+ }
+ 
+ /********** interrupt handling **********/
+ 
+ static irqreturn_t interrupt_handler(int irq, void *dev_id) {
+   amb_dev * dev = dev_id;
+   
 
-static void mytest_exit(void)
-{
-        platform_device_unregister(mytest_device);
-}
-
-
-# insmod mytest.ko
-# rmmod mytest
-
-When I do that, I see a panic, appended below. I was wondering if this
-is due to a mistake in my understanding of how the platform code is
-intended to be used. The other related question I have is, when a
-platform device uses a platform driver through p_d_alloc or
-p_add_devices or _register, who is supposed to manage module
-refcounting? Should the platform device code call request_module and
-try_module_get to manage the counts for platform drivers that they
-use? I assumed that the platform support code should do that, since it
-knows when the platform drivers get bound to the platform devices.
-
-Thanks,
-jaya
-
-Unable to handle kernel NULL pointer dereference at virtual address 00000000
-pgd = c3dcc000
-[00000000] *pgd=a3e8c031, *pte=00000000, *ppte=00000000
-Internal error: Oops: 817 [#1] PREEMPT
-Modules linked in: mytest(-)
-CPU: 0    Not tainted  (2.6.25-rc6gum-00000-gd14ba55-dirty #23)
-PC is at kfree+0x6c/0xc4
-LR is at platform_device_release+0x1c/0x30
-pc : [<c00722e0>]    lr : [<c0123ad0>]    psr: 40000093
-sp : c3e3fe60  ip : c3e3fe80  fp : c3e3fe7c
-r10: 00000000  r9 : c3e3e000  r8 : c001ac84
-r7 : 00000880  r6 : bf000540  r5 : a0000013  r4 : c3e4bc00
-r3 : 00000000  r2 : 0009f000  r1 : 00000001  r0 : c0247000
-Flags: nZcv  IRQs off  FIQs on  Mode SVC_32  ISA ARM  Segment user
-Control: 0000397f  Table: a3dcc000  DAC: 00000015
-Process rmmod (pid: 346, stack limit = 0xc3e3e268)
-Stack: (0xc3e3fe60 to 0xc3e40000)
-fe60: c3c0f338 c3e4bc00 c0235e6c c3db98a0 c3e3fe94 c3e3fe80 c0123ad0 c0072280
-fe80: c00b8e50 c3e4bc70 c3e3fea4 c3e3fe98 c011e8ac c0123ac0 c3e3fec4 c3e3fea8
-fea0: c00ebae0 c011e858 c3e4bc70 c3e4bc74 c00ebaf0 c3e3ff48 c3e3fed4 c3e3fec8
-fec0: c00ebb04 c00eba88 c3e3feec c3e3fed8 c00ec96c c00ebafc c3e4bc00 00000000
-fee0: c3e3fefc c3e3fef0 c00eb994 c00ec90c c3e3ff0c c3e3ff00 c011ea50 c00eb980
-ff00: c3e3ff1c c3e3ff10 c0123b00 c011ea40 c3e3ff34 c3e3ff20 c0123b84 c0123af0
-ff20: c004ff08 bf0003e0 c3e3ff44 c3e3ff38 bf000018 c0123b70 c3e3ffa4 c3e3ff48
-ff40: c00535a0 bf00000c 30326d61 64706530 c0077600 c00771c0 c3e3ff84 c3e3ff68
-ff60: c0074188 c0077658 0000000a c3e3e000 c3d9c180 c3c27120 c3e3ffa4 c3e3ff88
-ff80: 00075728 00000000 be9c0cb0 be9be498 be9be4b0 00000081 00000000 c3e3ffa8
-ffa0: c001ab00 c0053464 be9c0cb0 be9be498 be9be498 00000880 d6d6f735 00000000
-ffc0: be9c0cb0 be9be498 be9be4b0 00000081 00000880 00000000 00000000 be9c0d24
-ffe0: 40018a4c be9be488 00008e6c 40018a58 20000010 be9be498 00000000 00000000
-Backtrace:
-[<c0072274>] (kfree+0x0/0xc4) from [<c0123ad0>]
-(platform_device_release+0x1c/0x30)
- r6:c3db98a0 r5:c0235e6c r4:c3e4bc00
-[<c0123ab4>] (platform_device_release+0x0/0x30) from [<c011e8ac>]
-(device_release+0x60/0x80)
- r4:c3e4bc70
-[<c011e84c>] (device_release+0x0/0x80) from [<c00ebae0>]
-(kobject_cleanup+0x64/0x74)
-[<c00eba7c>] (kobject_cleanup+0x0/0x74) from [<c00ebb04>]
-(kobject_release+0x14/0x18)
- r6:c3e3ff48 r5:c00ebaf0 r4:c3e4bc74
-[<c00ebaf0>] (kobject_release+0x0/0x18) from [<c00ec96c>] (kref_put+0x6c/0x80)
-[<c00ec900>] (kref_put+0x0/0x80) from [<c00eb994>] (kobject_put+0x20/0x28)
- r5:00000000 r4:c3e4bc00
-[<c00eb974>] (kobject_put+0x0/0x28) from [<c011ea50>] (put_device+0x1c/0x20)
-[<c011ea34>] (put_device+0x0/0x20) from [<c0123b00>]
-(platform_device_put+0x1c/0x20)
-[<c0123ae4>] (platform_device_put+0x0/0x20) from [<c0123b84>]
-(platform_device_unregister+0x20/0x24)
-[<c0123b64>] (platform_device_unregister+0x0/0x24) from [<bf000018>]
-(mytest_exit+0x18/0x20 [am200epd])
- r4:bf0003e0
-[<bf000000>] (mytest_exit+0x0/0x20 [am200epd]) from [<c00535a0>]
-(sys_delete_module+0x148/0x18c)
-[<c0053458>] (sys_delete_module+0x0/0x18c) from [<c001ab00>]
-(ret_fast_syscall+0x0/0x2c)
- r7:00000081 r6:be9be4b0 r5:be9be498 r4:be9c0cb0
-Code: e3530909 0590000c e5903000 e2133080 (05833000)
----[ end trace eb1de0e70e5a62af ]---
-Segmentation fault
+--Boundary-00=_SyY8H2N+EQZIBwC--
