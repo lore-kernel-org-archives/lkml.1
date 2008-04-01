@@ -1,42 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758865AbYDAXNx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759193AbYDAX01@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758865AbYDAXNx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Apr 2008 19:13:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753555AbYDAXNo
+	id S1759193AbYDAX01 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Apr 2008 19:26:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755100AbYDAX0R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Apr 2008 19:13:44 -0400
-Received: from ozlabs.org ([203.10.76.45]:39572 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753431AbYDAXNo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Apr 2008 19:13:44 -0400
+	Tue, 1 Apr 2008 19:26:17 -0400
+Received: from fk-out-0910.google.com ([209.85.128.189]:25616 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753429AbYDAX0Q (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Apr 2008 19:26:16 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=cPsf2bjUR1DjgMOhViyiJkUZNWfTA9DC3uEVX27tMACFMA5gM8PcJiV3yWEmbCXbd+7JgTV8C8K9CWxjyj+R1rtGMsZrmXC9nU1bnZ/uO9Etx5e/GnQ79+yYr59NNoIo+kwI485SEjj9JxpmdzBHf7A3FguDsvoobSwMes1uASk=
+Message-ID: <29495f1d0804011626n2399d69aj7566df7f78953458@mail.gmail.com>
+Date: Tue, 1 Apr 2008 16:26:14 -0700
+From: "Nish Aravamudan" <nish.aravamudan@gmail.com>
+To: "Adrian Bunk" <bunk@kernel.org>
+Subject: Re: HugeTLB vs. SH3 cpu
+Cc: wli@holomorphy.com, lethal@linux-sh.org, linux-sh@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20080401225809.GC32269@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Message-ID: <18418.49494.457893.866627@cargo.ozlabs.ibm.com>
-Date: Wed, 2 Apr 2008 10:12:22 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: Bartlomiej Sieka <tur@semihalf.com>
-Cc: torvalds@linux-foundation.org, linuxppc-dev@ozlabs.org,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: Please pull powerpc.git merge branch
-In-Reply-To: <47ED6BE5.9060807@semihalf.com>
-References: <18412.58902.189124.391104@cargo.ozlabs.ibm.com>
-	<47ED6BE5.9060807@semihalf.com>
-X-Mailer: VM 7.19 under Emacs 21.4.1
+Content-Disposition: inline
+References: <20080401225809.GC32269@cs181133002.pp.htv.fi>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bartlomiej Sieka writes:
+On 4/1/08, Adrian Bunk <bunk@kernel.org> wrote:
+> fs/Kconfig says:
+>
+>  config HUGETLBFS
+>         bool "HugeTLB file system support"
+>         depends on X86 || IA64 || PPC64 || SPARC64 || (SUPERH && MMU) || BROKEN
+>
+>
+>  arch/sh/mm/Kconfig says:
+>
+>  choice
+>         prompt "HugeTLB page size"
+>         depends on HUGETLB_PAGE && (CPU_SH4 || CPU_SH5) && MMU
 
-> What about http://patchwork.ozlabs.org/linuxppc/patch?id=17525 ? I don't
-> see it in the merge branch of your repository, and it would be nice to
-> get it upstream as it fixes boot problems on some MPC5200-based boards.
+So the problem is that SH3 is allowed to enable
+HUGETLB_PAGE/HUGETLBFS, but only SH4/5 define the HPAGE_SHIFT macro,
+due to some #ifdeffery on the hugepage size. So either the choice
+needs to be extended to include CPU_SH3 (which builds here, when
+changed) or the HUGETLBFS conditional needs to depend more
+specifically on SH4/5 and not just SUPERH. I think the arch maintainer
+has to make that call, as I don't know the hardware to say if SH3
+actually supports multiple hugepage sizes.
 
-It needs a proper stand-alone commit message and an acked-by from
-Grant.  The commit message should explain why you are making the
-changes you are making rather than just saying "the bulk of this patch
-is taken from http://...".
-
-Paul.
+Thanks,
+Nish
