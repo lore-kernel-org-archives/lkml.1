@@ -1,99 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757422AbYDAMbz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757849AbYDAMfM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757422AbYDAMbz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Apr 2008 08:31:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753462AbYDAMbq
+	id S1757849AbYDAMfM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Apr 2008 08:35:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753191AbYDAMfA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Apr 2008 08:31:46 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:43032 "EHLO
-	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752805AbYDAMbo (ORCPT
+	Tue, 1 Apr 2008 08:35:00 -0400
+Received: from ug-out-1314.google.com ([66.249.92.168]:53064 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753173AbYDAMfA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Apr 2008 08:31:44 -0400
-Date: Tue, 1 Apr 2008 14:32:18 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-Cc: lkml <linux-kernel@vger.kernel.org>, daniel@hozac.com, lizf@cn.fujitsu.com,
-       Pavel Emelyanov <xemul@openvz.org>, Greg KH <greg@kroah.com>,
-       Andrew Morton <akpm@osdl.org>
+	Tue, 1 Apr 2008 08:35:00 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=nbQ7T+cpzpo+ROhsjq4OMz9Bv8JkUEjb1JDl+XHJc2OC0IxO6PGCRFe6dzjDFa9yAEUdDR8c1UZgZa8vTsL/IVp+9Xeq2Gc8SgudZKAlNiBBGEj2sSSlIW/py/AXHCc4LfBPKZ4pOAgizcjOWyMoHA59SFW6unjVlayakY0qK9M=
+Message-ID: <b6fcc0a0804010534w729c277cr76294b13aeb69080@mail.gmail.com>
+Date: Tue, 1 Apr 2008 15:34:58 +0300
+From: "Alexey Dobriyan" <adobriyan@gmail.com>
+To: "Pavel Machek" <pavel@ucw.cz>
 Subject: Re: [PATCH 1/1] cgroups: implement device whitelist (v6)
-Message-ID: <20080401123218.GE12129@elf.ucw.cz>
-References: <20080326180543.GA27709@sergelap.austin.ibm.com> <20080329081839.GA4423@ucw.cz> <20080331140053.GA9909@sergelap.austin.ibm.com>
+Cc: "Serge E. Hallyn" <serue@us.ibm.com>, lkml <linux-kernel@vger.kernel.org>,
+       daniel@hozac.com, lizf@cn.fujitsu.com,
+       "Pavel Emelyanov" <xemul@openvz.org>, "Greg KH" <greg@kroah.com>,
+       "Andrew Morton" <akpm@osdl.org>
+In-Reply-To: <20080401123218.GE12129@elf.ucw.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080331140053.GA9909@sergelap.austin.ibm.com>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.17 (2007-11-01)
+References: <20080326180543.GA27709@sergelap.austin.ibm.com>
+	 <20080329081839.GA4423@ucw.cz>
+	 <20080331140053.GA9909@sergelap.austin.ibm.com>
+	 <20080401123218.GE12129@elf.ucw.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon 2008-03-31 09:00:53, Serge E. Hallyn wrote:
-> Quoting Pavel Machek (pavel@ucw.cz):
-> > On Wed 2008-03-26 13:05:43, Serge E. Hallyn wrote:
-> > > (This is identical to the version I sent on Mar 19 in response to
-> > > the comments by Daniel Hokka Zakrisson, which are the last
-> > > comments I've gotten.)
-> > > 
-> > > Implement a cgroup to track and enforce open and mknod restrictions on device
-> > > files.  A device cgroup associates a device access whitelist with each
-> > > cgroup.  A whitelist entry has 4 fields.  'type' is a (all), c (char), or
-> > > b (block).  'all' means it applies to all types and all major and minor
-> > > numbers.  Major and minor are either an integer or * for all.
-> > > Access is a composition of r (read), w (write), and m (mknod).
-> > > 
-> > > The root device cgroup starts with rwm to 'all'.  A child devcg gets
-> > > a copy of the parent.  Admins can then remove devices from the
-> > > whitelist or add new entries.  A child cgroup can never receive a
-> > > device access which is denied its parent.  However when a device
-> > > access is removed from a parent it will not also be removed from the
-> > > child(ren).
-> > > 
-> > > An entry is added using devices.allow, and removed using
-> > > devices.deny.  For instance
-> > > 
-> > > 	echo 'c 1:3 mr' > /cgroups/1/devices.allow
-> > > 
-> > > allows cgroup 1 to read and mknod the device usually known as
-> > > /dev/null.  Doing
-> > > 
-> > > 	echo a > /cgroups/1/devices.deny
-> > 
-> > Can't you use selinux or something?
-> 
-> No.  At the moment SELinux can't authorize based on type/major:minor.  I
-> would like to add that support later on, but even when I do, folks such
-> as the openvz folks do not want to rely on any security modules.
+On 4/1/08, Pavel Machek <pavel@ucw.cz> wrote:
+> > > > --- a/include/linux/cgroup_subsys.h
+> > > > +++ b/include/linux/cgroup_subsys.h
+> > > > @@ -42,3 +42,9 @@ SUBSYS(mem_cgroup)
+> > > > #endif
+> > > >
+> > > > /* */
+> > > > +
+> > > > +#ifdef CONFIG_CGROUP_DEVICE
+> > > > +SUBSYS(devices)
+> > > > +#endif
+> > > > +
+> > > > +/* */
+> > >
+> > > I don't know what this is, but it does not look like C...
+> >
+> > Huh?
+>
+> Empty comments as separators?
 
-Yep, it looks like openvz folks do not want to rely on any security
-modules, do not want to fix their userland, and do not have a taste
-when implementing new features.
-
-IMO that means openvz folks should be kept off mainline.
-
-Implementing SELinux extension that can authorize based on
-type/major:minor seems like a way to go to me....
-
-> > > --- a/include/linux/cgroup_subsys.h
-> > > +++ b/include/linux/cgroup_subsys.h
-> > > @@ -42,3 +42,9 @@ SUBSYS(mem_cgroup)
-> > >  #endif
-> > >  
-> > >  /* */
-> > > +
-> > > +#ifdef CONFIG_CGROUP_DEVICE
-> > > +SUBSYS(devices)
-> > > +#endif
-> > > +
-> > > +/* */
-> > 
-> > I don't know what this is, but it does not look like C...
-> 
-> Huh?
-
-Empty comments as separators? What does magical SUBSYS macro do?
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+They help when multiple people add such SUBSYS things and
+do not have to fight rejects.
