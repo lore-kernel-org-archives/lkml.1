@@ -1,116 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759669AbYDAVrd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759627AbYDAVrq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759669AbYDAVrd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Apr 2008 17:47:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754370AbYDAVrX
+	id S1759627AbYDAVrq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Apr 2008 17:47:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759340AbYDAVra
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Apr 2008 17:47:23 -0400
-Received: from fg-out-1718.google.com ([72.14.220.154]:3848 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756129AbYDAVrW (ORCPT
+	Tue, 1 Apr 2008 17:47:30 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:41391 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759154AbYDAVr3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Apr 2008 17:47:22 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=from:to:subject:date:user-agent:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id:sender;
-        b=uF+uCNjJVxQbNHHOuL8EVjA0FGQl27bBcRTvOipSgggBKY+jrKUI8ZDEty7S8NOV1JGb4vlfeL+2xHc8BYTiCoc/0XdF99I2ZjdDGg07fe8DQYfLQsdEbqKFgSretGdhWBq//xWXDzFbJZFGAv26jkeiL8TiW6RhI0/O5aOsHO0=
-From: Leonardo Potenza <lpotenza@inwind.it>
-To: kernel-janitors@vger.kernel.org
-Subject: [PATCH] drivers/pcmcia/i82365.c: check request_irq return value
-Date: Tue, 1 Apr 2008 23:47:09 +0200
-User-Agent: KMail/1.9.7
-Cc: linux-pcmcia@lists.infradead.org, linux-kernel@vger.kernel.org
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Tue, 1 Apr 2008 17:47:29 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:subject:from:to:cc:in-reply-to:references:
+	content-type:organization:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+	b=EJ4vOx2EJWzyhcm2Nu3BZZofK3OHlom7C6+s6szQp10oXgpXjYFgTsg/f1RlmhXx5
+	LtuFf2AfWGnc9W3GaQBLA==
+Subject: Re: [PATCH 2.6.25-rc7 resubmit] Fix itimer/many thread hang.
+From: Frank Mayhar <fmayhar@google.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: roland@redhat.com, linux-kernel@vger.kernel.org
+In-Reply-To: <20080401114546.5a222cc0.akpm@linux-foundation.org>
+References: <bug-9906-10286@http.bugzilla.kernel.org/>
+	 <20080207165455.04ec490b@Varda>
+	 <alpine.LRH.1.00.0802071100230.29369@mini.warudkars.net>
+	 <alpine.LRH.1.00.0802071153130.15220@mini.warudkars.net>
+	 <1204314904.4850.23.camel@peace.smo.corp.google.com>
+	 <20080304070016.903E127010A@magilla.localdomain>
+	 <1204660376.9768.1.camel@bobble.smo.corp.google.com>
+	 <20080305040826.D0E6127010A@magilla.localdomain>
+	 <1204830243.20004.31.camel@bobble.smo.corp.google.com>
+	 <20080311075020.A93DB26F991@magilla.localdomain>
+	 <1205269507.23124.57.camel@bobble.smo.corp.google.com>
+	 <20080311213507.5BCDF26F991@magilla.localdomain>
+	 <1205455050.19551.16.camel@bobble.smo.corp.google.com>
+	 <20080321071846.1B22B26F9A7@magilla.localdomain>
+	 <1206122240.14638.31.camel@bobble.smo.corp.google.com>
+	 <20080322215829.D69D026F9A7@magilla.localdomain>
+	 <1206665568.426.24.camel@bobble.smo.corp.google.com>
+	 <1206744400.19691.31.camel@bobble.smo.corp.google.com>
+	 <20080401114546.5a222cc0.akpm@linux-foundation.org>
+Content-Type: text/plain
+Organization: Google, Inc.
+Date: Tue, 01 Apr 2008 14:46:37 -0700
+Message-Id: <1207086397.20789.9.camel@bobble.smo.corp.google.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200804012347.10108.lpotenza@inwind.it>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Leonardo Potenza <lpotenza@inwind.it>
+On Tue, 2008-04-01 at 11:45 -0700, Andrew Morton wrote:
+> On Fri, 28 Mar 2008 15:46:40 -0700
+> Frank Mayhar <fmayhar@google.com> wrote:
+> 
+> >  asmlinkage long sys_times(struct tms __user * tbuf)
+> >  {
+> > +	struct thread_group_cputime thread_group_times;
+> > +
+> >  	/*
+> >  	 *	In the SMP world we might just be unlucky and have one of
+> >  	 *	the times increment as we use it. Since the value is an
+> > @@ -873,19 +875,28 @@ asmlinkage long sys_times(struct tms __user * tbuf)
+> >  	if (tbuf) {
+> >  		struct tms tmp;
+> >  		struct task_struct *tsk = current;
+> > -		struct task_struct *t;
+> >  		cputime_t utime, stime, cutime, cstime;
+> >  
+> >  		spin_lock_irq(&tsk->sighand->siglock);
+> > -		utime = tsk->signal->utime;
+> > -		stime = tsk->signal->stime;
+> > -		t = tsk;
+> > -		do {
+> > -			utime = cputime_add(utime, t->utime);
+> > -			stime = cputime_add(stime, t->stime);
+> > -			t = next_thread(t);
+> > -		} while (t != tsk);
+> > -
+> > +		/*
+> > +		 * If a POSIX interval timer is running use the process-wide
+> > +		 * fields, else fall back to brute force.
+> > +		 */
+> > +		if (sig->thread_group_times) {
+> 
+> kernel/sys.c: In function 'sys_times':
+> kernel/sys.c:885: error: 'sig' undeclared (first use in this function)
 
-Add a check for the request_irq() return value.
+Thanks.  As I said privately, I don't know how this snuck in but it's
+certainly time to blow away my build tree and reapply the next patch
+from scratch.
 
-Signed-off-by: Leonardo Potenza <lpotenza@inwind.it>
----
+Speaking of which, expect that next patch in a day or two.
+-- 
+Frank Mayhar <fmayhar@google.com>
+Google, Inc.
 
-The aim of this patch is to remove the following warning message:
-drivers/pcmcia/i82365.c: In function 'init_i82365':
-drivers/pcmcia/i82365.c:1296: warning: ignoring return value of 'request_irq', declared with attribute warn_unused_result
-
---- linux-2.6.orig/drivers/pcmcia/i82365.c
-+++ linux-2.6/drivers/pcmcia/i82365.c
-@@ -1263,7 +1263,7 @@ static int __init init_i82365(void)
- 
-     ret = driver_register(&i82365_driver);
-     if (ret)
--	return ret;
-+	goto err_out;
- 
-     i82365_device = platform_device_alloc("i82365", 0);
-     if (i82365_device) {
-@@ -1273,10 +1273,8 @@ static int __init init_i82365(void)
-     } else
- 	    ret = -ENOMEM;
- 
--    if (ret) {
--	driver_unregister(&i82365_driver);
--	return ret;
--    }
-+    if (ret)
-+	goto err_driver_unregister;
- 
-     printk(KERN_INFO "Intel ISA PCIC probe: ");
-     sockets = 0;
-@@ -1285,16 +1283,17 @@ static int __init init_i82365(void)
- 
-     if (sockets == 0) {
- 	printk("not found.\n");
--	platform_device_unregister(i82365_device);
--	release_region(i365_base, 2);
--	driver_unregister(&i82365_driver);
--	return -ENODEV;
-+	ret = -ENODEV;
-+	goto err_dev_unregister;
-     }
- 
-     /* Set up interrupt handler(s) */
-     if (grab_irq != 0)
--	request_irq(cs_irq, pcic_interrupt, 0, "i82365", pcic_interrupt);
--    
-+	ret = request_irq(cs_irq, pcic_interrupt, 0, "i82365", pcic_interrupt);
-+
-+    if (ret)
-+	goto err_socket_release;
-+
-     /* register sockets with the pcmcia core */
-     for (i = 0; i < sockets; i++) {
- 	    socket[i].socket.dev.parent = &i82365_device->dev;
-@@ -1324,7 +1323,23 @@ static int __init init_i82365(void)
-     }
-     
-     return 0;
--    
-+err_socket_release:
-+    for (i = 0; i < sockets; i++) {
-+	/* Turn off all interrupt sources! */
-+	i365_set(i, I365_CSCINT, 0);
-+	release_region(socket[i].ioaddr, 2);
-+    }
-+err_dev_unregister:
-+    platform_device_unregister(i82365_device);
-+    release_region(i365_base, 2);
-+#ifdef CONFIG_PNP
-+    if (i82365_pnpdev)
-+	pnp_disable_dev(i82365_pnpdev);
-+#endif
-+err_driver_unregister:
-+    driver_unregister(&i82365_driver);
-+err_out:
-+    return ret;
- } /* init_i82365 */
- 
- static void __exit exit_i82365(void)
