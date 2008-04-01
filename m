@@ -1,63 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760104AbYDAVeR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760695AbYDAVe6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760104AbYDAVeR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Apr 2008 17:34:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757415AbYDAVeD
+	id S1760695AbYDAVe6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Apr 2008 17:34:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758198AbYDAVeu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Apr 2008 17:34:03 -0400
-Received: from wf-out-1314.google.com ([209.85.200.175]:16548 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757184AbYDAVeB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Apr 2008 17:34:01 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=C7rQOCc9DdXJ2EfJc4CHW7gTUV05MpQ6YsEoCpXkaTKkfh3xaDdubSOg/OelTX+/F95HP5b+5W+Az6zGdk+UoONLyzxi3fhBipBfdrQQp6aT6cEsJXOFO8KvCJCB9CxkxPn9qG4eY+88b/36EHTPVHSlLMVFQ2HcJeyVYhmrTv4=
-Message-ID: <8bd0f97a0804011434r4869fbe8t89ade12c04c97f2@mail.gmail.com>
-Date: Tue, 1 Apr 2008 17:34:00 -0400
-From: "Mike Frysinger" <vapier.adi@gmail.com>
-To: "David Howells" <dhowells@redhat.com>, "Greg Ungerer" <gerg@snapgear.com>,
-       "David McCullough" <David_Mccullough@securecomputing.com>
-Subject: nommu: handling anonymous mmap clearing in userspace rather than kernel
-Cc: LKML <linux-kernel@vger.kernel.org>, "Bryan Wu" <Bryan.Wu@analog.com>,
-       "Bernd Schmidt" <bernds_cb1@t-online.de>,
-       "Robin Getz" <rgetz@blackfin.uclinux.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 1 Apr 2008 17:34:50 -0400
+Received: from mail.crca.org.au ([67.207.131.56]:53679 "EHLO crca.org.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757415AbYDAVes (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Apr 2008 17:34:48 -0400
+X-Bogosity: Ham, spamicity=0.000000
+Subject: Re: [RFC][PATCH] PM: Introduce new top level suspend and
+	hibernation callbacks (rev. 6)
+From: Nigel Cunningham <ncunningham@crca.org.au>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: pm list <linux-pm@lists.linux-foundation.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Alan Stern <stern@rowland.harvard.edu>, Greg KH <greg@kroah.com>,
+       Len Brown <lenb@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
+       Alexey Starikovskiy <astarikovskiy@suse.de>,
+       David Brownell <david-b@pacbell.net>, Pavel Machek <pavel@ucw.cz>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Oliver Neukum <oliver@neukum.org>
+In-Reply-To: <200804012212.48609.rjw@sisk.pl>
+References: <200803292317.50218.rjw@sisk.pl>
+	 <200803312329.03455.rjw@sisk.pl> <1207037741.23143.81.camel@nigel-laptop>
+	 <200804012212.48609.rjw@sisk.pl>
+Content-Type: text/plain
+Organization: Christian Reformed Churches of Australia
+Date: Wed, 02 Apr 2008 08:35:13 +1100
+Message-Id: <1207085713.23143.111.camel@nigel-laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.0 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-the problem: doing malloc() in userspace on no-mmu systems can take up
-an inordinate amount of time merely due to kernel forcing anonymously
-mapped memory to zero.  this is because the only way to implement
-userspace malloc() on no-mmu systems is via mmap(MAP_ANONYMOUS), and
-the kernel has an explicit memset() in mm/nommu.c:do_mmap_private()
-when MAP_ANONYMOUS is in the mmap flags.  however, POSIX states that
-memory returned from malloc() may be uninitialized, so this zeroing is
-not wanted in that case.
+Hi Rafael etc.
 
-the desire: be able to do a mmap(MAP_ANONYMOUS) to grab a chunk of
-memory without the memset() call.  this may bring up other arguments
-such as information leakage between kernels/processes, but on an
-embedded no-mmu system, people are very willing to sacrifice that for
-the very measurable performance gain.
+On Tue, 2008-04-01 at 22:12 +0200, Rafael J. Wysocki wrote:
+> 'ext' means 'extended'.  The idea is that the 'extended' version will be used
+> by bus types / driver types that don't need to implement the _noirq callbacks.
+> Both the platform and PCI bus types generally allow drivers to use _noirq
+> callbacks, so they use 'struct pm_ext_ops', as well as their corresponding
+> driver types.
 
-a workaround: introduce a new no-mmu-only mmap flag MAP_UNINITIALIZE
-to signal to the kernel that it should skip the memset().  this way,
-userspace malloc() can do mmap(MAP_ANONYMOUS|MAP_UNINITIALIZE) to get
-large chunks of memory without affecting any other anonymous mmap()
-call.
+Do you mean to say in the first sentence "...that _do_ need to
+implement..."? If not, then extended sounds like a misnomer and the two
+sentences seem to contradict one another.
 
-another idea: move the memset() from the kernel to the system C
-library.  make the kernel memset() controllable via a
-no-mmu/embedded-only Kconfig option (with the default being retained:
-the memset is called).  now the C library can easily control the
-zero-ing of memory as required by POSIX, and you spend less time in
-kernel space.  there are many places where the kernel<->user ABI is
-not POSIX compliant and instead relies on the C library to provide the
-little bit of POSIX glue, so this isnt a big deal.
--mike
+[...]
+
+> > > + *	However, drivers may NOT assume anything about the availability of the
+> > > + *	user space at that time and it is not correct to request firmware from
+> > > + *	within @prepare() (it's too late to do that).
+> > 
+> > That doesn't sound good. It would be good to be able to get drivers to
+> > request firmware early in the process.
+> 
+> That will be possible when we drop the freezer.
+
+Yeah, but right now, it seems to me to be a bogus limitation for drivers
+to have no way of automatically loading firmware when you're about to
+hibernate. (Of course I've since been reminded of the notifier chain -
+that should probably be mentioned here as the way of achieving this).
+
+By the way, I'm going to go on record now as saying I think dropping the
+freezer is a silly idea. I'm therefore currently considering including
+the freezer in TuxOnice from the time it gets dropped from mainline. I
+know that will only make it less likely that TuxOnIce gets merged, but
+I've given up caring about that anyway - caring about merging is
+pointless when the people who decide if it gets merged don't care.
+
+Regards,
+
+Nigel
+
