@@ -1,64 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758158AbYDAJyO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757789AbYDAKCJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758158AbYDAJyO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Apr 2008 05:54:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756242AbYDAJyF
+	id S1757789AbYDAKCJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Apr 2008 06:02:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756035AbYDAKB6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Apr 2008 05:54:05 -0400
-Received: from fk-out-0910.google.com ([209.85.128.187]:2928 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755985AbYDAJyC (ORCPT
+	Tue, 1 Apr 2008 06:01:58 -0400
+Received: from smtp.nokia.com ([192.100.122.230]:23129 "EHLO
+	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754922AbYDAKB5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Apr 2008 05:54:02 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=REST2nyv1nCPCxVzKaSesIGcD6fJKoN9FMeRiyC/lXxWD88SqnkIA0xiiq5mGqeVsWAawjmkV+6xrB7u1XCJOP74ybBAdwRTqfxqURv0fpPdW2ZeHSPkznjnUUbgAe7GpgQOzZ/epScVc9fH2T9Sq6LQHvRWw2aL6f/fZjS7gGw=
-Message-ID: <47F20631.7050308@gmail.com>
-Date: Tue, 01 Apr 2008 11:53:53 +0200
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
+	Tue, 1 Apr 2008 06:01:57 -0400
+Message-ID: <47F2071A.6010406@yandex.ru>
+Date: Tue, 01 Apr 2008 12:57:46 +0300
+From: Artem Bityutskiy <dedekind@yandex.ru>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/4] Char: ip2, fix sparse warnings
-References: <20080328032449.cbc09f3b.akpm@linux-foundation.org>	<1206739124-3875-3-git-send-email-jirislaby@gmail.com> <20080331165718.0fb7c14e.akpm@linux-foundation.org>
-In-Reply-To: <20080331165718.0fb7c14e.akpm@linux-foundation.org>
-X-Enigmail-Version: 0.95.6
+To: Tomasz Chmielewski <mangoo@wpkg.org>
+CC: LKML <linux-kernel@vger.kernel.org>, penberg@cs.helsinki.fi,
+       =?UTF-8?B?SsO2cm4gRW5nZWw=?= <joern@logfs.org>,
+       ext-adrian.hunter@nokia.com, jwboyer@gmail.com
+Subject: Re: UBIFS vs Logfs (was [RFC PATCH] UBIFS - new flash file system)
+References: <47F1EC20.6050600@wpkg.org> <47F1F644.4060000@yandex.ru> <47F202D9.20405@wpkg.org>
+In-Reply-To: <47F202D9.20405@wpkg.org>
 Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 01 Apr 2008 10:01:37.0142 (UTC) FILETIME=[5FA0C160:01C893DF]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton napsal(a):
-> On Fri, 28 Mar 2008 22:18:43 +0100
-> Jiri Slaby <jirislaby@gmail.com> wrote:
-> 
->> Unlock two grabbed locks on some paths.
->>
->> Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
->> ---
->>  drivers/char/ip2/i2lib.c |   10 ++++++----
->>  1 files changed, 6 insertions(+), 4 deletions(-)
->>
->> diff --git a/drivers/char/ip2/i2lib.c b/drivers/char/ip2/i2lib.c
->> index 618f5fe..1d5388c 100644
->> --- a/drivers/char/ip2/i2lib.c
->> +++ b/drivers/char/ip2/i2lib.c
-[...]
->> @@ -1834,6 +1834,8 @@ i2StripFifo(i2eBordStrPtr pB)
->>  		default: // Neither packet? should be impossible
->>  			ip2trace (ITRC_NO_PORT, ITRC_SFIFO, 5, 1,
->>  				PTYPE_OF(pB->i2eLeadoffWord) );
->> +			write_unlock_irqrestore(&pB->read_fifo_spinlock,
->> +					bflags);
->>  
->>  			break;
->>  		}  // End of switch on type of packets
-> 
-> Your tree apparently has a sensible-looking write_unlock_irqrestore(),
-> whereas mine has a stupid-looking WRITE_UNLOCK_IRQRESTORE().  How did this
-> happen?
+Tomasz Chmielewski wrote:
+> Such as?
 
-This was changed in the previous wrong patch, I'm preparing a correct one.
+ext3 for example.
+
+> Flash (also on block devices) is slow and expensive (when compared to 
+> modern hard disks) and therefore compression is *very* useful here.
+Well, if you are ready to trade performance to compression, then well,
+go ahead :-) May be I used too strong wording, but I wanted to say then
+use raw flash then. But I'd also consider implementing compression support
+for a block based FS. Reiser4 claimed to have it for example.
+
+> Do you mean using hacks like block2mtd? It's hacky, and pretty hard to 
+> boot a system this way (need to build own initramfs, with a static 
+> block2mtd or loads of libraries - not something an average user would 
+> like to do; no distro supports it; updating a kernel would be a pain etc.).
+Well, ok, it still sounds strange for me, but you may use JFFS2 and UBIFS
+with block2mtd as well if you really want to.
+
+> True.
+> Unfortunately, there is no way to access flash directly on flash-based 
+> block devices (USB-sticks, IDE-flash disks, SSD disks etc.).
+Yeah, that's a pity :-(
+
+> Unfortunately, traditional filesystems were rather designed for rotating 
+> media / cheap disks (no transparent compression; tend to accumulate 
+> writes in one area of the disk - more on that - below).
+Sure.
+
+> Performance is only one factor in the equation. Other factors are: cost 
+> and reliability.
+> 
+> I speak from experience: flash-based block devices tend to have poor 
+> wear-levelling (at least Transcend IDE-flash disks).
+> To reproduce:
+> - format a 2 GB Transcend IDE-flash disk with ext3
+> - write a small file (50-100 kB)
+> - update that file ~several hundred thousand times - as you finish, 
+> IDE-flash disk will have 200-300 badblocks
+Yeah, that's bad. But if you have a bad FTL, surely there is not guarantee
+a flash FS will help? Isn't it better to use better hardware?
+
+We did some experiments with MMC cards and we were unable to wear them
+out with re-writing the same sectors again and again. This suggests there
+_is_ better FTL hardware then that USB stick you was using.
+
+Anyway, your original mail said Logfs can work with block devices. My answer -
+UBIFS too, but this is very strange to do this IMO. But OK, it might is not
+senseless, sorry for the wording. :-)
+
+-- 
+Best Regards,
+Artem Bityutskiy (Артём Битюцкий)
