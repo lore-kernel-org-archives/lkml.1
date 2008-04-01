@@ -1,214 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761148AbYDAVCb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761273AbYDAVCs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761148AbYDAVCb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Apr 2008 17:02:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760012AbYDAU7Y
+	id S1761273AbYDAVCs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Apr 2008 17:02:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759014AbYDAU7e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Apr 2008 16:59:24 -0400
-Received: from relay2.sgi.com ([192.48.171.30]:51021 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1758667AbYDAU7K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Apr 2008 16:59:10 -0400
-Message-Id: <20080401205636.524832964@sgi.com>
-References: <20080401205531.986291575@sgi.com>
-User-Agent: quilt/0.46-1
-Date: Tue, 01 Apr 2008 13:55:35 -0700
-From: Christoph Lameter <clameter@sgi.com>
-To: Hugh Dickins <hugh@veritas.com>
-Cc: Andrea Arcangeli <andrea@qumranet.com>
-Cc: Robin Holt <holt@sgi.com>, Avi Kivity <avi@qumranet.com>,
-       Izik Eidus <izike@qumranet.com>
-Cc: kvm-devel@lists.sourceforge.net
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, general@lists.openfabrics.org
-Cc: Steve Wise <swise@opengridcomputing.com>
-Cc: Roland Dreier <rdreier@cisco.com>
-Cc: Kanoj Sarcar <kanojsarcar@yahoo.com>
-Cc: steiner@sgi.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Cc: daniel.blueman@quadrics.com
-Subject: [patch 4/9] Remove tlb pointer from the parameters of unmap vmas
-Content-Disposition: inline; filename=cleanup_unmap_vmas
+	Tue, 1 Apr 2008 16:59:34 -0400
+Received: from mail-07.jhb.wbs.co.za ([196.2.97.4]:17636 "EHLO
+	mail-07.jhb.wbs.co.za" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757023AbYDAU7d (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Apr 2008 16:59:33 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Al8EAPI+8kfEAmHEZGdsb2JhbACRPBwpml4
+From: Bongani Hlope <bonganilinux@mweb.co.za>
+To: Marcin Slusarz <marcin.slusarz@gmail.com>
+Subject: Re: 2.6.25-rc regression: bttv: oops on radio access (bisected)
+Date: Tue, 1 Apr 2008 22:58:26 +0200
+User-Agent: KMail/1.9.9
+Cc: Mauro Carvalho Chehab <mchehab@infradead.org>,
+       Douglas Schilling Landgraf <dougsland@gmail.com>,
+       video4linux-list@redhat.com, linux-kernel@vger.kernel.org,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Morton <akpm@google.com>
+References: <20080330162006.GA6048@joi> <20080401171051.724a9f75@gaivota> <20080401205240.GA11485@joi>
+In-Reply-To: <20080401205240.GA11485@joi>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200804012258.27095.bonganilinux@mweb.co.za>
+X-Original-Subject: Re: 2.6.25-rc regression: bttv: oops on radio access (bisected)
+X-Scan-Signature: 1b59164be252e3c5e2ab2d734b08ae31
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We no longer abort unmapping in unmap vmas because we can reschedule while
-unmapping since we are holding a semaphore. This would allow moving more
-of the tlb flusing into unmap_vmas reducing code in various places.
+On Tuesday 01 April 2008 22:52:45 Marcin Slusarz wrote:
+> On Tue, Apr 01, 2008 at 05:10:51PM -0300, Mauro Carvalho Chehab wrote:
+> > Hi Marcin
+> >
+> > On Sun, 30 Mar 2008 18:20:49 +0200
+> >
+> > Marcin Slusarz <marcin.slusarz@gmail.com> wrote:
+> > > Hi
+> > > 2.6.25-rc7 kernel oopses on exec of "radio -c /dev/radio0".
+> > > I bisected it down to:
+> > >
+> > > 402aa76aa5e57801b4db5ccf8c7beea9f580bb1b is first bad commit
+> > > commit 402aa76aa5e57801b4db5ccf8c7beea9f580bb1b
+> > > Author: Douglas Schilling Landgraf <dougsland@gmail.com>
+> > > Date:   Thu Dec 27 22:20:58 2007 -0300
+> > >
+> > >     V4L/DVB (6911): Converted bttv to use video_ioctl2
+> > >
+> > >     Signed-off-by: Douglas Schilling Landgraf <dougsland@gmail.com>
+> > >     Signed-off-by: Mauro Carvalho Chehab <mchehab@infradead.org>
+> >
+> > There are three patches that are meant to fix the bugs with radio. On the
+> > tests I did here, they worked, but the Bongani still points that the
+> > fixes didn't solve for him.
+> >
+> > On the tests I did here, the three patches seemed to work [1]. Maybe you
+> > could test with those patches and post us some results.
+> >
+> > There are three patches meant to fix several issues caused by the
+> > conversion:
+> >
+> > http://git.kernel.org/?p=linux/kernel/git/mchehab/v4l-dvb.git;a=commitdif
+> >f;h=bdd38d9b5c6365ea004df6d8a183dd1344b4801f
+> > http://git.kernel.org/?p=linux/kernel/git/mchehab/v4l-dvb.git;a=commitdif
+> >f;h=055a6282cabd311cf010a5a83f0494558504f7d0
+> > http://git.kernel.org/?p=linux/kernel/git/mchehab/v4l-dvb.git;a=commitdif
+> >f;h=6e07ff78274752fe812a1e8bddb6013a278e62e8
+> >
+> > Could you test please and give us some feedback?
+>
+> These patches fix my regression. Thanks!
+> (no oops, radio app does not crash/hang, no messages about invalid ioctls,
+> i can hear the radio)
+>
+> Marcin
 
-Signed-off-by: Christoph Lameter <clameter@sgi.com>
+When you exit the radio application do you get an oops? And does your TV work 
+with those patches? Those were the two issues I had.
 
----
- include/linux/mm.h |    3 +--
- mm/memory.c        |   43 +++++++++++++++++--------------------------
- mm/mmap.c          |   18 +++---------------
- 3 files changed, 21 insertions(+), 43 deletions(-)
 
-Index: linux-2.6/include/linux/mm.h
-===================================================================
---- linux-2.6.orig/include/linux/mm.h	2008-04-01 13:02:41.374608387 -0700
-+++ linux-2.6/include/linux/mm.h	2008-04-01 13:02:43.898651546 -0700
-@@ -723,8 +723,7 @@ struct zap_details {
- struct page *vm_normal_page(struct vm_area_struct *, unsigned long, pte_t);
- unsigned long zap_page_range(struct vm_area_struct *vma, unsigned long address,
- 		unsigned long size, struct zap_details *);
--unsigned long unmap_vmas(struct mmu_gather **tlb,
--		struct vm_area_struct *start_vma, unsigned long start_addr,
-+unsigned long unmap_vmas(struct vm_area_struct *start_vma, unsigned long start_addr,
- 		unsigned long end_addr, unsigned long *nr_accounted,
- 		struct zap_details *);
- 
-Index: linux-2.6/mm/memory.c
-===================================================================
---- linux-2.6.orig/mm/memory.c	2008-04-01 13:02:41.378608315 -0700
-+++ linux-2.6/mm/memory.c	2008-04-01 13:02:43.902651345 -0700
-@@ -806,7 +806,6 @@ static unsigned long unmap_page_range(st
- 
- /**
-  * unmap_vmas - unmap a range of memory covered by a list of vma's
-- * @tlbp: address of the caller's struct mmu_gather
-  * @vma: the starting vma
-  * @start_addr: virtual address at which to start unmapping
-  * @end_addr: virtual address at which to end unmapping
-@@ -818,20 +817,13 @@ static unsigned long unmap_page_range(st
-  * Unmap all pages in the vma list.
-  *
-  * We aim to not hold locks for too long (for scheduling latency reasons).
-- * So zap pages in ZAP_BLOCK_SIZE bytecounts.  This means we need to
-- * return the ending mmu_gather to the caller.
-+ * So zap pages in ZAP_BLOCK_SIZE bytecounts.
-  *
-  * Only addresses between `start' and `end' will be unmapped.
-  *
-  * The VMA list must be sorted in ascending virtual address order.
-- *
-- * unmap_vmas() assumes that the caller will flush the whole unmapped address
-- * range after unmap_vmas() returns.  So the only responsibility here is to
-- * ensure that any thus-far unmapped pages are flushed before unmap_vmas()
-- * drops the lock and schedules.
-  */
--unsigned long unmap_vmas(struct mmu_gather **tlbp,
--		struct vm_area_struct *vma, unsigned long start_addr,
-+unsigned long unmap_vmas(struct vm_area_struct *vma, unsigned long start_addr,
- 		unsigned long end_addr, unsigned long *nr_accounted,
- 		struct zap_details *details)
- {
-@@ -839,7 +831,15 @@ unsigned long unmap_vmas(struct mmu_gath
- 	unsigned long tlb_start = 0;	/* For tlb_finish_mmu */
- 	int tlb_start_valid = 0;
- 	unsigned long start = start_addr;
--	int fullmm = (*tlbp)->fullmm;
-+	int fullmm;
-+	struct mmu_gather *tlb;
-+	struct mm_struct *mm = vma->vm_mm;
-+
-+	emm_notify(mm, emm_invalidate_start, start_addr, end_addr);
-+	lru_add_drain();
-+	tlb = tlb_gather_mmu(mm, 0);
-+	update_hiwater_rss(mm);
-+	fullmm = tlb->fullmm;
- 
- 	for ( ; vma && vma->vm_start < end_addr; vma = vma->vm_next) {
- 		unsigned long end;
-@@ -866,7 +866,7 @@ unsigned long unmap_vmas(struct mmu_gath
- 						(HPAGE_SIZE / PAGE_SIZE);
- 				start = end;
- 			} else
--				start = unmap_page_range(*tlbp, vma,
-+				start = unmap_page_range(tlb, vma,
- 						start, end, &zap_work, details);
- 
- 			if (zap_work > 0) {
-@@ -874,13 +874,15 @@ unsigned long unmap_vmas(struct mmu_gath
- 				break;
- 			}
- 
--			tlb_finish_mmu(*tlbp, tlb_start, start);
-+			tlb_finish_mmu(tlb, tlb_start, start);
- 			cond_resched();
--			*tlbp = tlb_gather_mmu(vma->vm_mm, fullmm);
-+			tlb = tlb_gather_mmu(vma->vm_mm, fullmm);
- 			tlb_start_valid = 0;
- 			zap_work = ZAP_BLOCK_SIZE;
- 		}
- 	}
-+	tlb_finish_mmu(tlb, start_addr, end_addr);
-+	emm_notify(mm, emm_invalidate_end, start_addr, end_addr);
- 	return start;	/* which is now the end (or restart) address */
- }
- 
-@@ -894,21 +896,10 @@ unsigned long unmap_vmas(struct mmu_gath
- unsigned long zap_page_range(struct vm_area_struct *vma, unsigned long address,
- 		unsigned long size, struct zap_details *details)
- {
--	struct mm_struct *mm = vma->vm_mm;
--	struct mmu_gather *tlb;
- 	unsigned long end = address + size;
- 	unsigned long nr_accounted = 0;
- 
--	emm_notify(mm, emm_invalidate_start, address, end);
--	lru_add_drain();
--	tlb = tlb_gather_mmu(mm, 0);
--	update_hiwater_rss(mm);
--
--	end = unmap_vmas(&tlb, vma, address, end, &nr_accounted, details);
--	if (tlb)
--		tlb_finish_mmu(tlb, address, end);
--	emm_notify(mm, emm_invalidate_end, address, end);
--	return end;
-+	return unmap_vmas(vma, address, end, &nr_accounted, details);
- }
- 
- /*
-Index: linux-2.6/mm/mmap.c
-===================================================================
---- linux-2.6.orig/mm/mmap.c	2008-04-01 13:02:41.378608315 -0700
-+++ linux-2.6/mm/mmap.c	2008-04-01 13:03:19.627259624 -0700
-@@ -1741,19 +1741,12 @@ static void unmap_region(struct mm_struc
- 		unsigned long start, unsigned long end)
- {
- 	struct vm_area_struct *next = prev? prev->vm_next: mm->mmap;
--	struct mmu_gather *tlb;
- 	unsigned long nr_accounted = 0;
- 
--	emm_notify(mm, emm_invalidate_start, start, end);
--	lru_add_drain();
--	tlb = tlb_gather_mmu(mm, 0);
--	update_hiwater_rss(mm);
--	unmap_vmas(&tlb, vma, start, end, &nr_accounted, NULL);
-+	unmap_vmas(vma, start, end, &nr_accounted, NULL);
- 	vm_unacct_memory(nr_accounted);
--	tlb_finish_mmu(tlb, start, end);
- 	free_pgtables(vma, prev? prev->vm_end: FIRST_USER_ADDRESS,
- 				 next? next->vm_start: 0);
--	emm_notify(mm, emm_invalidate_end, start, end);
- }
- 
- /*
-@@ -2033,7 +2026,6 @@ EXPORT_SYMBOL(do_brk);
- /* Release all mmaps. */
- void exit_mmap(struct mm_struct *mm)
- {
--	struct mmu_gather *tlb;
- 	struct vm_area_struct *vma = mm->mmap;
- 	unsigned long nr_accounted = 0;
- 	unsigned long end;
-@@ -2041,15 +2033,11 @@ void exit_mmap(struct mm_struct *mm)
- 	/* mm's last user has gone, and its about to be pulled down */
- 	arch_exit_mmap(mm);
- 	emm_notify(mm, emm_release, 0, TASK_SIZE);
--
- 	lru_add_drain();
- 	flush_cache_mm(mm);
--	tlb = tlb_gather_mmu(mm, 1);
--	/* Don't update_hiwater_rss(mm) here, do_exit already did */
--	/* Use -1 here to ensure all VMAs in the mm are unmapped */
--	end = unmap_vmas(&tlb, vma, 0, -1, &nr_accounted, NULL);
-+
-+	end = unmap_vmas(vma, 0, -1, &nr_accounted, NULL);
- 	vm_unacct_memory(nr_accounted);
--	tlb_finish_mmu(tlb, 0, end);
- 	free_pgtables(vma, FIRST_USER_ADDRESS, 0);
- 
- 	/*
-
--- 
