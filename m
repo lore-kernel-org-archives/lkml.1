@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762627AbYDAVLx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760775AbYDAVMN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762627AbYDAVLx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Apr 2008 17:11:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760130AbYDAVIL
+	id S1760775AbYDAVMN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Apr 2008 17:12:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760412AbYDAVIN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Apr 2008 17:08:11 -0400
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:45630 "EHLO
+	Tue, 1 Apr 2008 17:08:13 -0400
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:45633 "EHLO
 	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761796AbYDAVIJ (ORCPT
+	with ESMTP id S1759386AbYDAVIM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Apr 2008 17:08:09 -0400
+	Tue, 1 Apr 2008 17:08:12 -0400
 From: Erez Zadok <ezk@cs.sunysb.edu>
 To: akpm@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
        viro@ftp.linux.org.uk, hch@infradead.org,
        Erez Zadok <ezk@cs.sunysb.edu>
-Subject: [PATCH 05/14] Unionfs: lock our dentry in file operations
-Date: Tue,  1 Apr 2008 17:06:47 -0400
-Message-Id: <12070840183389-git-send-email-ezk@cs.sunysb.edu>
+Subject: [PATCH 13/14] Unionfs: don't purge lower sb data on remount
+Date: Tue,  1 Apr 2008 17:06:55 -0400
+Message-Id: <12070840223433-git-send-email-ezk@cs.sunysb.edu>
 X-Mailer: git-send-email 1.5.2.2
 X-MailKey: Erez_Zadok
 In-Reply-To: <12070840162442-git-send-email-ezk@cs.sunysb.edu>
@@ -26,393 +26,57 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This is no longer needed, as we don't have upper and lower pages.  Plus this
+was racy, requiring the unexported inode_lock variable.
+
 Signed-off-by: Erez Zadok <ezk@cs.sunysb.edu>
 ---
- fs/unionfs/commonfops.c |   32 ++++++++++-----------------
- fs/unionfs/dirfops.c    |   18 ++++++++++-----
- fs/unionfs/file.c       |   55 +++++++++++++++++++++++++++++------------------
- fs/unionfs/union.h      |    1 -
- 4 files changed, 58 insertions(+), 48 deletions(-)
+ fs/unionfs/dentry.c |   11 -----------
+ fs/unionfs/super.c  |    8 +++++---
+ 2 files changed, 5 insertions(+), 14 deletions(-)
 
-diff --git a/fs/unionfs/commonfops.c b/fs/unionfs/commonfops.c
-index 2add167..50f4eda 100644
---- a/fs/unionfs/commonfops.c
-+++ b/fs/unionfs/commonfops.c
-@@ -302,7 +302,7 @@ out:
-  * @willwrite: true if caller may cause changes to the file; false otherwise.
-  * Caller must lock/unlock dentry's branch configuration.
-  */
--int unionfs_file_revalidate_locked(struct file *file, bool willwrite)
-+int unionfs_file_revalidate(struct file *file, bool willwrite)
- {
- 	struct super_block *sb;
- 	struct dentry *dentry;
-@@ -312,6 +312,7 @@ int unionfs_file_revalidate_locked(struct file *file, bool willwrite)
- 	int err = 0;
- 
- 	dentry = file->f_path.dentry;
-+	verify_locked(dentry);
- 	sb = dentry->d_sb;
- 
- 	/*
-@@ -419,17 +420,6 @@ out_nofree:
- 	return err;
+diff --git a/fs/unionfs/dentry.c b/fs/unionfs/dentry.c
+index 5e498c2..ee0da4f 100644
+--- a/fs/unionfs/dentry.c
++++ b/fs/unionfs/dentry.c
+@@ -273,17 +273,6 @@ static inline void purge_inode_data(struct inode *inode)
+ 	 */
  }
  
--int unionfs_file_revalidate(struct file *file, bool willwrite)
+-void purge_sb_data(struct super_block *sb)
 -{
--	int err;
+-	struct inode *inode;
 -
--	unionfs_lock_dentry(file->f_path.dentry, UNIONFS_DMUTEX_CHILD);
--	err = unionfs_file_revalidate_locked(file, willwrite);
--	unionfs_unlock_dentry(file->f_path.dentry);
--
--	return err;
+-	list_for_each_entry(inode, &sb->s_inodes, i_sb_list) {
+-		if (inode->i_state & (I_FREEING|I_WILL_FREE))
+-			continue;
+-		purge_inode_data(inode);
+-	}
 -}
 -
- /* unionfs_open helper function: open a directory */
- static int __open_dir(struct inode *inode, struct file *file)
- {
-@@ -632,6 +622,8 @@ int unionfs_file_release(struct inode *inode, struct file *file)
- 	int fgen, err = 0;
+ /*
+  * Revalidate a single file/symlink/special dentry.  Assume that info nodes
+  * of the dentry and its parent are locked.  Assume that parent(s) are all
+diff --git a/fs/unionfs/super.c b/fs/unionfs/super.c
+index 4cddc83..82b4045 100644
+--- a/fs/unionfs/super.c
++++ b/fs/unionfs/super.c
+@@ -747,10 +747,12 @@ out_no_change:
+ 	 * function).  This revalidation will happen lazily and
+ 	 * incrementally, as users perform operations on cached inodes.  We
+ 	 * would like to encourage this revalidation to happen sooner if
+-	 * possible, so we try to invalidate as many other pages in our
+-	 * superblock as we can.
++	 * possible, so we like to try to invalidate as many other pages in
++	 * our superblock as we can.  We used to call drop_pagecache_sb() or
++	 * a variant thereof, but either method was racy (drop_caches alone
++	 * is known to be racy).  So now we let the revalidation happen on a
++	 * per file basis in ->d_revalidate.
+ 	 */
+-	purge_sb_data(sb);
  
- 	unionfs_read_lock(sb, UNIONFS_SMUTEX_PARENT);
-+	unionfs_lock_dentry(dentry, UNIONFS_DMUTEX_CHILD);
-+
- 	/*
- 	 * Yes, we have to revalidate this file even if it's being released.
- 	 * This is important for open-but-unlinked files, as well as mmap
-@@ -650,7 +642,6 @@ int unionfs_file_release(struct inode *inode, struct file *file)
- 	bstart = fbstart(file);
- 	bend = fbend(file);
- 
--	unionfs_lock_dentry(dentry, UNIONFS_DMUTEX_CHILD);
- 	for (bindex = bstart; bindex <= bend; bindex++) {
- 		lower_file = unionfs_lower_file_idx(file, bindex);
- 
-@@ -665,7 +656,6 @@ int unionfs_file_release(struct inode *inode, struct file *file)
- 			unionfs_set_lower_dentry_idx(dentry, bindex, NULL);
- 		}
- 	}
--	unionfs_unlock_dentry(dentry);
- 
- 	kfree(fileinfo->lower_files);
- 	kfree(fileinfo->saved_branch_ids);
-@@ -683,6 +673,7 @@ int unionfs_file_release(struct inode *inode, struct file *file)
- 	kfree(fileinfo);
- 
- out:
-+	unionfs_unlock_dentry(dentry);
- 	unionfs_read_unlock(sb);
- 	return err;
- }
-@@ -729,7 +720,6 @@ static int unionfs_ioctl_queryfile(struct file *file, unsigned int cmd,
- 	struct vfsmount *mnt;
- 
- 	dentry = file->f_path.dentry;
--	unionfs_lock_dentry(dentry, UNIONFS_DMUTEX_CHILD);
- 	orig_bstart = dbstart(dentry);
- 	orig_bend = dbend(dentry);
- 	err = unionfs_partial_lookup(dentry);
-@@ -771,15 +761,16 @@ static int unionfs_ioctl_queryfile(struct file *file, unsigned int cmd,
- 		err = -EFAULT;
- 
- out:
--	unionfs_unlock_dentry(dentry);
- 	return err < 0 ? err : bend;
- }
- 
- long unionfs_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
- {
- 	long err;
-+	struct dentry *dentry = file->f_path.dentry;
- 
--	unionfs_read_lock(file->f_path.dentry->d_sb, UNIONFS_SMUTEX_PARENT);
-+	unionfs_read_lock(dentry->d_sb, UNIONFS_SMUTEX_PARENT);
-+	unionfs_lock_dentry(dentry, UNIONFS_DMUTEX_CHILD);
- 
- 	err = unionfs_file_revalidate(file, true);
- 	if (unlikely(err))
-@@ -807,7 +798,8 @@ long unionfs_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
- 
- out:
- 	unionfs_check_file(file);
--	unionfs_read_unlock(file->f_path.dentry->d_sb);
-+	unionfs_unlock_dentry(dentry);
-+	unionfs_read_unlock(dentry->d_sb);
- 	return err;
- }
- 
-@@ -821,7 +813,7 @@ int unionfs_flush(struct file *file, fl_owner_t id)
- 	unionfs_read_lock(dentry->d_sb, UNIONFS_SMUTEX_PARENT);
- 	unionfs_lock_dentry(dentry, UNIONFS_DMUTEX_CHILD);
- 
--	err = unionfs_file_revalidate_locked(file, true);
-+	err = unionfs_file_revalidate(file, true);
- 	if (unlikely(err))
- 		goto out;
- 	unionfs_check_file(file);
-@@ -843,7 +835,7 @@ int unionfs_flush(struct file *file, fl_owner_t id)
- out:
- 	if (!err)
- 		unionfs_check_file(file);
--	unionfs_unlock_dentry(file->f_path.dentry);
-+	unionfs_unlock_dentry(dentry);
- 	unionfs_read_unlock(dentry->d_sb);
- 	return err;
- }
-diff --git a/fs/unionfs/dirfops.c b/fs/unionfs/dirfops.c
-index a613862..8272fb6 100644
---- a/fs/unionfs/dirfops.c
-+++ b/fs/unionfs/dirfops.c
-@@ -97,19 +97,21 @@ static int unionfs_readdir(struct file *file, void *dirent, filldir_t filldir)
- {
- 	int err = 0;
- 	struct file *lower_file = NULL;
-+	struct dentry *dentry = file->f_path.dentry;
- 	struct inode *inode = NULL;
- 	struct unionfs_getdents_callback buf;
- 	struct unionfs_dir_state *uds;
- 	int bend;
- 	loff_t offset;
- 
--	unionfs_read_lock(file->f_path.dentry->d_sb, UNIONFS_SMUTEX_PARENT);
-+	unionfs_read_lock(dentry->d_sb, UNIONFS_SMUTEX_PARENT);
-+	unionfs_lock_dentry(dentry, UNIONFS_DMUTEX_CHILD);
- 
- 	err = unionfs_file_revalidate(file, false);
- 	if (unlikely(err))
- 		goto out;
- 
--	inode = file->f_path.dentry->d_inode;
-+	inode = dentry->d_inode;
- 
- 	uds = UNIONFS_F(file)->rdstate;
- 	if (!uds) {
-@@ -189,7 +191,8 @@ static int unionfs_readdir(struct file *file, void *dirent, filldir_t filldir)
- 	}
- 
- out:
--	unionfs_read_unlock(file->f_path.dentry->d_sb);
-+	unionfs_unlock_dentry(dentry);
-+	unionfs_read_unlock(dentry->d_sb);
- 	return err;
- }
- 
-@@ -206,9 +209,11 @@ out:
- static loff_t unionfs_dir_llseek(struct file *file, loff_t offset, int origin)
- {
- 	struct unionfs_dir_state *rdstate;
-+	struct dentry *dentry = file->f_path.dentry;
- 	loff_t err;
- 
--	unionfs_read_lock(file->f_path.dentry->d_sb, UNIONFS_SMUTEX_PARENT);
-+	unionfs_read_lock(dentry->d_sb, UNIONFS_SMUTEX_PARENT);
-+	unionfs_lock_dentry(dentry, UNIONFS_DMUTEX_CHILD);
- 
- 	err = unionfs_file_revalidate(file, false);
- 	if (unlikely(err))
-@@ -250,7 +255,7 @@ static loff_t unionfs_dir_llseek(struct file *file, loff_t offset, int origin)
- 					err = -EINVAL;
- 			} else {
- 				struct inode *inode;
--				inode = file->f_path.dentry->d_inode;
-+				inode = dentry->d_inode;
- 				rdstate = find_rdstate(inode, offset);
- 				if (rdstate) {
- 					UNIONFS_F(file)->rdstate = rdstate;
-@@ -269,7 +274,8 @@ static loff_t unionfs_dir_llseek(struct file *file, loff_t offset, int origin)
- 	}
- 
- out:
--	unionfs_read_unlock(file->f_path.dentry->d_sb);
-+	unionfs_unlock_dentry(dentry);
-+	unionfs_read_unlock(dentry->d_sb);
- 	return err;
- }
- 
-diff --git a/fs/unionfs/file.c b/fs/unionfs/file.c
-index 9397ff3..0a39387 100644
---- a/fs/unionfs/file.c
-+++ b/fs/unionfs/file.c
-@@ -27,7 +27,7 @@ static ssize_t unionfs_read(struct file *file, char __user *buf,
- 
- 	unionfs_read_lock(dentry->d_sb, UNIONFS_SMUTEX_PARENT);
- 	unionfs_lock_dentry(dentry, UNIONFS_DMUTEX_CHILD);
--	err = unionfs_file_revalidate_locked(file, false);
-+	err = unionfs_file_revalidate(file, false);
- 	if (unlikely(err))
- 		goto out;
- 
-@@ -55,7 +55,7 @@ static ssize_t unionfs_write(struct file *file, const char __user *buf,
- 
- 	unionfs_read_lock(dentry->d_sb, UNIONFS_SMUTEX_PARENT);
- 	unionfs_lock_dentry(dentry, UNIONFS_DMUTEX_CHILD);
--	err = unionfs_file_revalidate_locked(file, true);
-+	err = unionfs_file_revalidate(file, true);
- 	if (unlikely(err))
- 		goto out;
- 
-@@ -94,9 +94,11 @@ static int unionfs_mmap(struct file *file, struct vm_area_struct *vma)
- 	int err = 0;
- 	bool willwrite;
- 	struct file *lower_file;
-+	struct dentry *dentry = file->f_path.dentry;
- 	struct vm_operations_struct *saved_vm_ops = NULL;
- 
--	unionfs_read_lock(file->f_path.dentry->d_sb, UNIONFS_SMUTEX_PARENT);
-+	unionfs_read_lock(dentry->d_sb, UNIONFS_SMUTEX_PARENT);
-+	unionfs_lock_dentry(dentry, UNIONFS_DMUTEX_CHILD);
- 
- 	/* This might be deferred to mmap's writepage */
- 	willwrite = ((vma->vm_flags | VM_SHARED | VM_WRITE) == vma->vm_flags);
-@@ -157,10 +159,11 @@ static int unionfs_mmap(struct file *file, struct vm_area_struct *vma)
- out:
- 	if (!err) {
- 		/* copyup could cause parent dir times to change */
--		unionfs_copy_attr_times(file->f_path.dentry->d_parent->d_inode);
-+		unionfs_copy_attr_times(dentry->d_parent->d_inode);
- 		unionfs_check_file(file);
- 	}
--	unionfs_read_unlock(file->f_path.dentry->d_sb);
-+	unionfs_unlock_dentry(dentry);
-+	unionfs_read_unlock(dentry->d_sb);
- 	return err;
- }
- 
-@@ -172,7 +175,8 @@ int unionfs_fsync(struct file *file, struct dentry *dentry, int datasync)
- 	struct inode *lower_inode, *inode;
- 	int err = -EINVAL;
- 
--	unionfs_read_lock(file->f_path.dentry->d_sb, UNIONFS_SMUTEX_PARENT);
-+	unionfs_read_lock(dentry->d_sb, UNIONFS_SMUTEX_PARENT);
-+	unionfs_lock_dentry(dentry, UNIONFS_DMUTEX_CHILD);
- 	err = unionfs_file_revalidate(file, true);
- 	if (unlikely(err))
- 		goto out;
-@@ -207,8 +211,10 @@ int unionfs_fsync(struct file *file, struct dentry *dentry, int datasync)
- 	unionfs_copy_attr_times(inode);
- 
- out:
--	unionfs_check_file(file);
--	unionfs_read_unlock(file->f_path.dentry->d_sb);
-+	if (!err)
-+		unionfs_check_file(file);
-+	unionfs_unlock_dentry(dentry);
-+	unionfs_read_unlock(dentry->d_sb);
- 	return err;
- }
- 
-@@ -216,11 +222,12 @@ int unionfs_fasync(int fd, struct file *file, int flag)
- {
- 	int bindex, bstart, bend;
- 	struct file *lower_file;
--	struct dentry *dentry;
-+	struct dentry *dentry = file->f_path.dentry;
- 	struct inode *lower_inode, *inode;
- 	int err = 0;
- 
--	unionfs_read_lock(file->f_path.dentry->d_sb, UNIONFS_SMUTEX_PARENT);
-+	unionfs_read_lock(dentry->d_sb, UNIONFS_SMUTEX_PARENT);
-+	unionfs_lock_dentry(dentry, UNIONFS_DMUTEX_CHILD);
- 	err = unionfs_file_revalidate(file, true);
- 	if (unlikely(err))
- 		goto out;
-@@ -231,7 +238,6 @@ int unionfs_fasync(int fd, struct file *file, int flag)
- 	if (bstart < 0 || bend < 0)
- 		goto out;
- 
--	dentry = file->f_path.dentry;
- 	inode = dentry->d_inode;
- 	if (unlikely(!inode)) {
- 		printk(KERN_ERR
-@@ -253,8 +259,10 @@ int unionfs_fasync(int fd, struct file *file, int flag)
- 	unionfs_copy_attr_times(inode);
- 
- out:
--	unionfs_check_file(file);
--	unionfs_read_unlock(file->f_path.dentry->d_sb);
-+	if (!err)
-+		unionfs_check_file(file);
-+	unionfs_unlock_dentry(dentry);
-+	unionfs_read_unlock(dentry->d_sb);
- 	return err;
- }
- 
-@@ -264,8 +272,10 @@ static ssize_t unionfs_splice_read(struct file *file, loff_t *ppos,
- {
- 	ssize_t err;
- 	struct file *lower_file;
-+	struct dentry *dentry = file->f_path.dentry;
- 
--	unionfs_read_lock(file->f_path.dentry->d_sb, UNIONFS_SMUTEX_PARENT);
-+	unionfs_read_lock(dentry->d_sb, UNIONFS_SMUTEX_PARENT);
-+	unionfs_lock_dentry(dentry, UNIONFS_DMUTEX_CHILD);
- 	err = unionfs_file_revalidate(file, false);
- 	if (unlikely(err))
- 		goto out;
-@@ -274,14 +284,14 @@ static ssize_t unionfs_splice_read(struct file *file, loff_t *ppos,
- 	err = vfs_splice_to(lower_file, ppos, pipe, len, flags);
- 	/* update our inode atime upon a successful lower splice-read */
- 	if (err >= 0) {
--		fsstack_copy_attr_atime(file->f_path.dentry->d_inode,
-+		fsstack_copy_attr_atime(dentry->d_inode,
- 					lower_file->f_path.dentry->d_inode);
- 		unionfs_check_file(file);
- 	}
- 
- out:
--	unionfs_check_file(file);
--	unionfs_read_unlock(file->f_path.dentry->d_sb);
-+	unionfs_unlock_dentry(dentry);
-+	unionfs_read_unlock(dentry->d_sb);
- 	return err;
- }
- 
-@@ -291,8 +301,10 @@ static ssize_t unionfs_splice_write(struct pipe_inode_info *pipe,
- {
- 	ssize_t err = 0;
- 	struct file *lower_file;
-+	struct dentry *dentry = file->f_path.dentry;
- 
--	unionfs_read_lock(file->f_path.dentry->d_sb, UNIONFS_SMUTEX_PARENT);
-+	unionfs_read_lock(dentry->d_sb, UNIONFS_SMUTEX_PARENT);
-+	unionfs_lock_dentry(dentry, UNIONFS_DMUTEX_CHILD);
- 	err = unionfs_file_revalidate(file, true);
- 	if (unlikely(err))
- 		goto out;
-@@ -301,15 +313,16 @@ static ssize_t unionfs_splice_write(struct pipe_inode_info *pipe,
- 	err = vfs_splice_from(pipe, lower_file, ppos, len, flags);
- 	/* update our inode times+sizes upon a successful lower write */
- 	if (err >= 0) {
--		fsstack_copy_inode_size(file->f_path.dentry->d_inode,
-+		fsstack_copy_inode_size(dentry->d_inode,
- 					lower_file->f_path.dentry->d_inode);
--		fsstack_copy_attr_times(file->f_path.dentry->d_inode,
-+		fsstack_copy_attr_times(dentry->d_inode,
- 					lower_file->f_path.dentry->d_inode);
- 		unionfs_check_file(file);
- 	}
- 
- out:
--	unionfs_read_unlock(file->f_path.dentry->d_sb);
-+	unionfs_unlock_dentry(dentry);
-+	unionfs_read_unlock(dentry->d_sb);
- 	return err;
- }
- 
-diff --git a/fs/unionfs/union.h b/fs/unionfs/union.h
-index f6fabf8..63f3b21 100644
---- a/fs/unionfs/union.h
-+++ b/fs/unionfs/union.h
-@@ -355,7 +355,6 @@ extern int unionfs_setlk(struct file *file, int cmd, struct file_lock *fl);
- extern int unionfs_getlk(struct file *file, struct file_lock *fl);
- 
- /* Common file operations. */
--extern int unionfs_file_revalidate_locked(struct file *file, bool willwrite);
- extern int unionfs_file_revalidate(struct file *file, bool willwrite);
- extern int unionfs_open(struct inode *inode, struct file *file);
- extern int unionfs_file_release(struct inode *inode, struct file *file);
+ 	/* grab new lower super references; release old ones */
+ 	for (i = 0; i < new_branches; i++)
 -- 
 1.5.2.2
 
