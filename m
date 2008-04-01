@@ -1,184 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756660AbYDAIPl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756562AbYDAIR7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756660AbYDAIPl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Apr 2008 04:15:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754506AbYDAIP0
+	id S1756562AbYDAIR7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Apr 2008 04:17:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753393AbYDAIRq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Apr 2008 04:15:26 -0400
-Received: from mail.crca.org.au ([67.207.131.56]:41616 "EHLO crca.org.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752869AbYDAIPV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Apr 2008 04:15:21 -0400
-X-Bogosity: Ham, spamicity=0.000000
-Subject: Re: [RFC][PATCH] PM: Introduce new top level suspend and
-	hibernation callbacks (rev. 6)
-From: Nigel Cunningham <ncunningham@crca.org.au>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: pm list <linux-pm@lists.linux-foundation.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Alan Stern <stern@rowland.harvard.edu>, Greg KH <greg@kroah.com>,
-       Len Brown <lenb@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
-       Alexey Starikovskiy <astarikovskiy@suse.de>,
-       David Brownell <david-b@pacbell.net>, Pavel Machek <pavel@ucw.cz>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Oliver Neukum <oliver@neukum.org>
-In-Reply-To: <200803312329.03455.rjw@sisk.pl>
-References: <200803292317.50218.rjw@sisk.pl>
-	 <200803292320.38378.rjw@sisk.pl> <200803300454.26318.rjw@sisk.pl>
-	 <200803312329.03455.rjw@sisk.pl>
-Content-Type: text/plain; charset=UTF-8
-Organization: Christian Reformed Churches of Australia
-Date: Tue, 01 Apr 2008 19:15:41 +1100
-Message-Id: <1207037741.23143.81.camel@nigel-laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.0 
-Content-Transfer-Encoding: 8bit
+	Tue, 1 Apr 2008 04:17:46 -0400
+Received: from fg-out-1718.google.com ([72.14.220.154]:15451 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753208AbYDAIRo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Apr 2008 04:17:44 -0400
+From: Denys Vlasenko <vda.linux@googlemail.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: OOM (HighMem) on linux 2.6.24.2
+Date: Tue, 1 Apr 2008 10:17:35 +0200
+User-Agent: KMail/1.8.2
+Cc: Kevin Shanahan <kmshanah@ucwb.org.au>, linux-kernel@vger.kernel.org
+References: <1205974089.4023.20.camel@kulgan.wumi.org.au> <200804010431.11271.vda.linux@googlemail.com> <1207025847.8514.675.camel@twins>
+In-Reply-To: <1207025847.8514.675.camel@twins>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="koi8-r"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200804011017.35352.vda.linux@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Rafael.
-
-Please excuse me, but I'm going to ask the questions you get from
-someone who hasn't followed development to date, and is thus reading the
-explanation without prior knowledge. Hopefully that will be helpful when
-you come to finalising the commit message.
-
-On Mon, 2008-03-31 at 23:29 +0200, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rjw@sisk.pl>
+On Tuesday 01 April 2008 06:57, Peter Zijlstra wrote:
+> On Tue, 2008-04-01 at 04:31 +0200, Denys Vlasenko wrote:
+> > On Thursday 20 March 2008 11:04, Kevin Shanahan wrote:
+> > > Feb 28 06:32:20 hermes kernel: 5313 pages slab
+> > > Feb 28 06:32:20 hermes kernel: 2632 pages pagetables
+> > > Feb 28 06:32:20 hermes kernel: Out of memory: kill process 24013 (apache2) score 22070 or a child
+> > > Feb 28 06:32:20 hermes kernel: Killed process 24013 (apache2)
+> > > 
+> > > Looks like the HighMem low watermark was hit again (though I've no idea
+> > > if that's actually significant).
+> > 
+> > I kno that people routinely forget to do that, but
+> > at least for purely paranoid reasons you are better
+> > to run all daemons with setrlimit'ed memory size.
+> > At least all daemons which you cannot reasonably
+> > trust to be 100% leak-free and to have bounded
+> > peak memory usage.
 > 
-> Introduce 'struct pm_ops' and 'struct pm_ext_ops' representing
-> suspend and hibernation operations for bus types, device classes and
-> device types.
+> Afaik we don't actually implement RLIMIT_RSS.
 
-Does ..._ext_... mean extended? (external?) If 'extended' (or if not),
-does that imply that they're mutually exclusive alternatives for drivers
-to use?
+I don't know, but the following definitely works for me:
 
-> Modify the PM core to use 'struct pm_ops' and 'struct pm_ext_ops'
-> objects, if defined, instead of the ->suspend() and ->resume() or,
-> respectively, ->suspend_late() and ->resume_early() callbacks that
-> will be considered as legacy and gradually phased out.
+#include <stdlib.h>
+int main() {
+    void *p;
+    unsigned size = 1 << 20;
+    unsigned long total = 0;
+    while (size) {
+        p = malloc(size);
+        if (!p) size >>= 1;
+        else {
+            memset(p, 0x77, size);
+            total += size;
+            printf("Allocated %9u bytes, %12lu total\n", size, total);
+        }
+    }
+    printf("Cannot malloc more. Exiting\n");
+    return 0;
+}
 
-'Respectively' doesn't look like the right word to use, but I'm not sure
-I understand correctly what you're trying to say. The way it's written
-at the moment, it sounds to me like you're saying that suspend_late()
-and resume_early are deprecated, but you're modifying the PM core to use
-them.
+# softlimit -a 12000000 ./oom
+Allocated   1048576 bytes,      1048576 total
+Allocated   1048576 bytes,      2097152 total
+Allocated   1048576 bytes,      3145728 total
+Allocated   1048576 bytes,      4194304 total
+Allocated   1048576 bytes,      5242880 total
+Allocated   1048576 bytes,      6291456 total
+Allocated   1048576 bytes,      7340032 total
+Allocated   1048576 bytes,      8388608 total
+Allocated   1048576 bytes,      9437184 total
+Allocated   1048576 bytes,     10485760 total
+Allocated    262144 bytes,     10747904 total
+Cannot malloc more. Exiting
 
-> Change the behavior of the PM core wrt the error codes returned by
-> device drivers' ->resume() callbacks.  Namely, if an error code
-> is returned by one of them, the device for which it's been returned
-> is regarded as "invalid" by the PM core which will refuse to handle
-> it from that point on (in particualr, suspend/hibernation will not
-> be started if there is an "invalid" device in the system).
-
-s/﻿particualr,/particular
-
-So drivers can never validly fail to resume. That sounds fair enough. If
-the hardware has gone away while in lower power mode (USB, say), should
-the driver then just printk an error and return success?
-
-> The main purpose of doing this is to separate suspend (aka S2RAM and
-> standby) callbacks from hibernation callbacks in such a way that the
-> new callbacks won't take arguments and the semantics of each of them
-> will be clearly specified.  This has been requested for multiple
-> times by many people, including Linus himself, and the reason is that
-> within the current scheme if ->resume() is called, for example, it's
-> difficult to say why it's been called (ie. is it a resume from RAM or
-> from hibernation or a suspend/hibernation failure etc.?).
-> 
-> The second purpose is to make the suspend/hibernation callbacks more
-> flexible so that device drivers can handle more than they can within
-> the current scheme.  For example, some drivers may need to prevent
-> new children of the device from being registered before their
-> ->suspend() callbacks are executed or they may want to carry out some
-> operations requiring the availability of some other devices, not
-> directly bound via the parent-child relationship, in order to prepare
-> for the execution of ->suspend(), etc.
-
-Do these changes allow for other power state possibilities besides
-suspend to ram and hibernate (eg on other platforms)?
-
-> Ultimately, we'd like to stop using the freezing of tasks for suspend
-> and therefore the drivers' suspend/hibernation code will have to take
-> care of the handling of the user space during suspend/hibernation.
-> That, in turn, would be difficult within the current scheme, without
-> the new ->prepare() and ->complete() callbacks.
-> 
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> ---
-> 
->  arch/x86/kernel/apm_32.c   |    4 
->  drivers/base/power/main.c  |  706 ++++++++++++++++++++++++++++++++++-----------
->  drivers/base/power/power.h |    2 
->  drivers/base/power/trace.c |    4 
->  include/linux/device.h     |    9 
->  include/linux/pm.h         |  318 ++++++++++++++++++--
->  kernel/power/disk.c        |   20 -
->  kernel/power/main.c        |    6 
->  8 files changed, 870 insertions(+), 199 deletions(-)
-> 
-> Index: linux-2.6/include/linux/pm.h
-> ===================================================================
-> --- linux-2.6.orig/include/linux/pm.h
-> +++ linux-2.6/include/linux/pm.h
-> @@ -114,7 +114,9 @@ typedef struct pm_message {
->  	int event;
->  } pm_message_t;
->  
-> -/*
-> +/**
-> + * struct pm_ops - device PM callbacks
-> + *
->   * Several driver power state transitions are externally visible, affecting
->   * the state of pending I/O queues and (for drivers that touch hardware)
->   * interrupts, wakeups, DMA, and other hardware state.  There may also be
-> @@ -122,6 +124,288 @@ typedef struct pm_message {
->   * to the rest of the driver stack (such as a driver that's ON gating off
->   * clocks which are not in active use).
->   *
-> + * The externally visible transitions are handled with the help of the following
-> + * callbacks included in this structure:
-> + *
-> + * @prepare: Prepare the device for the upcoming transition, but do NOT change
-> + *	its hardware state.  Prevent new children of the device from being
-> + *	registered after @prepare() returns (the driver's subsystem and
-> + *	generally the rest of the kernel is supposed to prevent new calls to the
-> + *	probe method from being made too once @prepare() has succeeded).  If
-> + *	@prepare() detects a situation it cannot handle (e.g. registration of a
-> + *	child already in progress), it may return -EAGAIN, so that the PM core
-> + *	can execute it once again (e.g. after the new child has been registered)
-> + *	to recover from the race condition.  This method is executed for all
-> + *	kinds of suspend transitions and is followed by one of the suspend
-> + *	callbacks: @suspend(), @freeze(), or @poweroff().
-> + *	The PM core executes @prepare() for all devices before starting to
-> + *	execute suspend callbacks for any of them, so drivers may assume all of
-> + *	the other devices to be present and functional while @prepare() is being
-> + *	executed.  In particular, it is safe to make GFP_KERNEL memory
-> + *	allocations from within @prepare(), although they are likely to fail in
-> + *	case of hibernation, if a substantial amount of memory is requested.
-
-Why?
-
-> + *	However, drivers may NOT assume anything about the availability of the
-> + *	user space at that time and it is not correct to request firmware from
-> + *	within @prepare() (it's too late to do that).
-
-That doesn't sound good. It would be good to be able to get drivers to
-request firmware early in the process.
-
-> + * @complete: Undo the changes made by @prepare().  This method is executed for
-> + *	all kinds of resume transitions, following one of the resume callbacks:
-> + *	@resume(), @thaw(), @restore().  Also called if the state transition
-> + *	fails before the driver's suspend callback (@suspend(), @freeze(),
-> + *	@poweroff()) can be executed (e.g. if the suspend callback fails for one
-> + *	of the other devices that the PM core has unsucessfully attempted to
-
-s/﻿unsucessfully/﻿unsuccessfully
-
-Regards,
-
-Nigel
-
-
+--
+vda
