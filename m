@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932265AbYDAVKV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761574AbYDAVKr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932265AbYDAVKV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Apr 2008 17:10:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761480AbYDAVH5
+	id S1761574AbYDAVKr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Apr 2008 17:10:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759645AbYDAVIB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Apr 2008 17:07:57 -0400
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:45609 "EHLO
+	Tue, 1 Apr 2008 17:08:01 -0400
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:45619 "EHLO
 	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761248AbYDAVH4 (ORCPT
+	with ESMTP id S1761494AbYDAVH6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Apr 2008 17:07:56 -0400
+	Tue, 1 Apr 2008 17:07:58 -0400
 From: Erez Zadok <ezk@cs.sunysb.edu>
 To: akpm@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
        viro@ftp.linux.org.uk, hch@infradead.org,
        Erez Zadok <ezk@cs.sunysb.edu>
-Subject: [PATCH 03/14] Unionfs: implement splice_read/write methods directly
-Date: Tue,  1 Apr 2008 17:06:45 -0400
-Message-Id: <1207084017861-git-send-email-ezk@cs.sunysb.edu>
+Subject: [PATCH 10/14] Unionfs: document reasons for opaque directories
+Date: Tue,  1 Apr 2008 17:06:52 -0400
+Message-Id: <12070840213666-git-send-email-ezk@cs.sunysb.edu>
 X-Mailer: git-send-email 1.5.2.2
 X-MailKey: Erez_Zadok
 In-Reply-To: <12070840162442-git-send-email-ezk@cs.sunysb.edu>
@@ -26,102 +26,57 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Must implement splice_read/write directly, using VFS helpers, because we can
-no longer rely on generic_file_splice_read/write: they need
-address_space_operations implemented, which we no longer have.
-
 Signed-off-by: Erez Zadok <ezk@cs.sunysb.edu>
 ---
- fs/unionfs/file.c  |   59 ++++++++++++++++++++++++++++++++++++++++++++++++++-
- fs/unionfs/union.h |    1 +
- 2 files changed, 58 insertions(+), 2 deletions(-)
+ Documentation/filesystems/unionfs/concepts.txt |   36 ++++++++++++++++++++++++
+ 1 files changed, 36 insertions(+), 0 deletions(-)
 
-diff --git a/fs/unionfs/file.c b/fs/unionfs/file.c
-index 0c424f6..1fcaf8e 100644
---- a/fs/unionfs/file.c
-+++ b/fs/unionfs/file.c
-@@ -165,6 +165,61 @@ out:
- 	return err;
- }
+diff --git a/Documentation/filesystems/unionfs/concepts.txt b/Documentation/filesystems/unionfs/concepts.txt
+index 0bc1a19..b853788 100644
+--- a/Documentation/filesystems/unionfs/concepts.txt
++++ b/Documentation/filesystems/unionfs/concepts.txt
+@@ -52,6 +52,42 @@ Later, when Unionfs traverses branches (due to lookup or readdir), it
+ eliminate 'foo' from the namespace (as well as the whiteout itself.)
  
-+static ssize_t unionfs_splice_read(struct file *file, loff_t *ppos,
-+				   struct pipe_inode_info *pipe, size_t len,
-+				   unsigned int flags)
-+{
-+	ssize_t err;
-+	struct file *lower_file;
-+
-+	unionfs_read_lock(file->f_path.dentry->d_sb, UNIONFS_SMUTEX_PARENT);
-+	err = unionfs_file_revalidate(file, false);
-+	if (unlikely(err))
-+		goto out;
-+
-+	lower_file = unionfs_lower_file(file);
-+	err = vfs_splice_to(lower_file, ppos, pipe, len, flags);
-+	/* update our inode atime upon a successful lower splice-read */
-+	if (err >= 0) {
-+		fsstack_copy_attr_atime(file->f_path.dentry->d_inode,
-+					lower_file->f_path.dentry->d_inode);
-+		unionfs_check_file(file);
-+	}
-+
-+out:
-+	unionfs_check_file(file);
-+	unionfs_read_unlock(file->f_path.dentry->d_sb);
-+	return err;
-+}
-+
-+static ssize_t unionfs_splice_write(struct pipe_inode_info *pipe,
-+				    struct file *file, loff_t *ppos,
-+				    size_t len, unsigned int flags)
-+{
-+	ssize_t err = 0;
-+	struct file *lower_file;
-+
-+	unionfs_read_lock(file->f_path.dentry->d_sb, UNIONFS_SMUTEX_PARENT);
-+	err = unionfs_file_revalidate(file, true);
-+	if (unlikely(err))
-+		goto out;
-+
-+	lower_file = unionfs_lower_file(file);
-+	err = vfs_splice_from(pipe, lower_file, ppos, len, flags);
-+	/* update our inode times+sizes upon a successful lower write */
-+	if (err >= 0) {
-+		fsstack_copy_inode_size(file->f_path.dentry->d_inode,
-+					lower_file->f_path.dentry->d_inode);
-+		fsstack_copy_attr_times(file->f_path.dentry->d_inode,
-+					lower_file->f_path.dentry->d_inode);
-+		unionfs_check_file(file);
-+	}
-+
-+out:
-+	unionfs_read_unlock(file->f_path.dentry->d_sb);
-+	return err;
-+}
-+
- struct file_operations unionfs_main_fops = {
- 	.llseek		= generic_file_llseek,
- 	.read		= do_sync_read,
-@@ -179,6 +234,6 @@ struct file_operations unionfs_main_fops = {
- 	.release	= unionfs_file_release,
- 	.fsync		= unionfs_fsync,
- 	.fasync		= unionfs_fasync,
--	.splice_read	= generic_file_splice_read,
--	.splice_write	= generic_file_splice_write,
-+	.splice_read	= unionfs_splice_read,
-+	.splice_write	= unionfs_splice_write,
- };
-diff --git a/fs/unionfs/union.h b/fs/unionfs/union.h
-index 533806c..7b55e33 100644
---- a/fs/unionfs/union.h
-+++ b/fs/unionfs/union.h
-@@ -46,6 +46,7 @@
- #include <linux/poison.h>
- #include <linux/mman.h>
- #include <linux/backing-dev.h>
-+#include <linux/splice.h>
  
- #include <asm/system.h>
++Opaque Directories:
++===================
++
++Assume we have a unionfs mount comprising of two branches.  Branch 0 is
++empty; branch 1 has the directory /a and file /a/f.  Let's say we mount a
++union of branch 0 as read-write and branch 1 as read-only.  Now, let's say
++we try to perform the following operation in the union:
++
++	rm -fr a
++
++Because branch 1 is not writable, we cannot physically remove the file /a/f
++or the directory /a.  So instead, we will create a whiteout in branch 0
++named /.wh.a, masking out the name "a" from branch 1.  Next, let's say we
++try to create a directory named "a" as follows:
++
++	mkdir a
++
++Because we have a whiteout for "a" already, Unionfs behaves as if "a"
++doesn't exist, and thus will delete the whiteout and replace it with an
++actual directory named "a".
++
++The problem now is that if you try to "ls" in the union, Unionfs will
++perform is normal directory name unification, for *all* directories named
++"a" in all branches.  This will cause the file /a/f from branch 1 to
++re-appear in the union's namespace, which violates Unix semantics.
++
++To avoid this problem, we have a different form of whiteouts for
++directories, called "opaque directories" (same as BSD Union Mount does).
++Whenever we replace a whiteout with a directory, that directory is marked as
++opaque.  In Unionfs 2.x, it means that we create a file named
++/a/.wh.__dir_opaque in branch 0, after having created directory /a there.
++When unionfs notices that a directory is opaque, it stops all namespace
++operations (including merging readdir contents) at that opaque directory.
++This prevents re-exposing names from masked out directories.
++
++
+ Duplicate Elimination:
+ ======================
  
 -- 
 1.5.2.2
