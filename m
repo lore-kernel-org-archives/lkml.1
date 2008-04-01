@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760184AbYDAVB1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760975AbYDAVCP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760184AbYDAVB1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Apr 2008 17:01:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759950AbYDAU7R
+	id S1760975AbYDAVCP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Apr 2008 17:02:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760006AbYDAU7X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Apr 2008 16:59:17 -0400
-Received: from relay2.sgi.com ([192.48.171.30]:50974 "EHLO relay.sgi.com"
+	Tue, 1 Apr 2008 16:59:23 -0400
+Received: from relay2.sgi.com ([192.48.171.30]:51012 "EHLO relay.sgi.com"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1758198AbYDAU7I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1758428AbYDAU7I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 1 Apr 2008 16:59:08 -0400
-Message-Id: <20080401205635.793766935@sgi.com>
+Message-Id: <20080401205637.839049326@sgi.com>
 References: <20080401205531.986291575@sgi.com>
 User-Agent: quilt/0.46-1
-Date: Tue, 01 Apr 2008 13:55:32 -0700
+Date: Tue, 01 Apr 2008 13:55:40 -0700
 From: Christoph Lameter <clameter@sgi.com>
 To: Hugh Dickins <hugh@veritas.com>
 Cc: Andrea Arcangeli <andrea@qumranet.com>
@@ -25,630 +25,330 @@ Cc: Roland Dreier <rdreier@cisco.com>
 Cc: Kanoj Sarcar <kanojsarcar@yahoo.com>
 Cc: steiner@sgi.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org
 Cc: daniel.blueman@quadrics.com
-Subject: [patch 1/9] EMM Notifier: The notifier calls
-Content-Disposition: inline; filename=emm_notifier
+Subject: [patch 9/9] XPMEM: Simple example
+Content-Disposition: inline; filename=xpmem_test
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch implements a simple callback for device drivers that establish
-their own references to pages (KVM, GRU, XPmem, RDMA/Infiniband, DMA engines
-etc). These references are unknown to the VM (therefore external).
+A simple test program (well actually a pair).  They are fairly easy to use.
 
-With these callbacks it is possible for the device driver to release external
-references when the VM requests it. This enables swapping, page migration and
-allows support of remapping, permission changes etc etc for externally
-mapped memory.
+NOTE: the xpmem.h is copied from the kernel/drivers/misc/xp/xpmem.h
+file.
 
-With this functionality it becomes also possible to avoid pinning or mlocking
-pages (commonly done to stop the VM from unmapping device mapped pages).
-
-A device driver must subscribe to a process using
-
-	emm_register_notifier(struct emm_notifier *, struct mm_struct *)
-
-
-The VM will then perform callbacks for operations that unmap or change
-permissions of pages in that address space. When the process terminates
-the callback function is called with emm_release.
-
-Callbacks are performed before and after the unmapping action of the VM.
-
-	emm_invalidate_start	before
-
-	emm_invalidate_end	after
-
-The device driver must hold off establishing new references to pages
-in the range specified between a callback with emm_invalidate_start and
-the subsequent call with emm_invalidate_end set. This allows the VM to
-ensure that no concurrent driver actions are performed on an address
-range while performing remapping or unmapping operations.
-
-Callbacks are mostly performed in a non atomic context. However, in
-various places spinlocks are held to traverse rmaps. So this patch here
-is only useful for those devices that can remove mappings in an atomic
-context (f.e. KVM/GRU).
-
-If the rmap spinlocks are converted to semaphores then all callbacks will
-be performed in a nonatomic context. No additional changes will be necessary
-to this patchset.
-
-V1->V2:
-- page_referenced_one: Do not increment reference count if it is already
-  != 0.
-- Use rcu_assign_pointer and rcu_derefence_pointer instead of putting in our
-  own barriers.
+Type make.  Then from one session, type ./A1.  Grab the first
+line of output which should begin with ./A2 and paste the whole line
+into a second session.  Paste as many times as you like.  Each pass will
+increment the value one additional time.  When you are tired, hit enter
+in the first window.  You should see the same value printed from A1 as
+you most recently received from A2.
 
 Signed-off-by: Christoph Lameter <clameter@sgi.com>
 
 ---
- include/linux/mm_types.h |    3 +
- include/linux/rmap.h     |   50 +++++++++++++++++++++++++++++
- kernel/fork.c            |    3 +
- mm/Kconfig               |    5 ++
- mm/filemap_xip.c         |    4 ++
- mm/fremap.c              |    2 +
- mm/hugetlb.c             |    3 +
- mm/memory.c              |   42 +++++++++++++++++++-----
- mm/mmap.c                |    3 +
- mm/mprotect.c            |    3 +
- mm/mremap.c              |    4 ++
- mm/rmap.c                |   80 +++++++++++++++++++++++++++++++++++++++++++++--
- 12 files changed, 192 insertions(+), 10 deletions(-)
+ xpmem_test/A1.c     |   64 +++++++++++++++++++++++++
+ xpmem_test/A2.c     |   70 ++++++++++++++++++++++++++++
+ xpmem_test/Makefile |   14 +++++
+ xpmem_test/xpmem.h  |  130 ++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 4 files changed, 278 insertions(+)
 
-Index: linux-2.6/include/linux/mm_types.h
+Index: linux-2.6/xpmem_test/A1.c
 ===================================================================
---- linux-2.6.orig/include/linux/mm_types.h	2008-04-01 12:57:14.957042203 -0700
-+++ linux-2.6/include/linux/mm_types.h	2008-04-01 12:57:38.957452502 -0700
-@@ -225,6 +225,9 @@ struct mm_struct {
- #ifdef CONFIG_CGROUP_MEM_RES_CTLR
- 	struct mem_cgroup *mem_cgroup;
- #endif
-+#ifdef CONFIG_EMM_NOTIFIER
-+	struct emm_notifier     *emm_notifier;
-+#endif
- };
- 
- #endif /* _LINUX_MM_TYPES_H */
-Index: linux-2.6/mm/Kconfig
-===================================================================
---- linux-2.6.orig/mm/Kconfig	2008-04-01 12:56:13.595994316 -0700
-+++ linux-2.6/mm/Kconfig	2008-04-01 12:57:38.957452502 -0700
-@@ -193,3 +193,8 @@ config NR_QUICK
- config VIRT_TO_BUS
- 	def_bool y
- 	depends on !ARCH_NO_VIRT_TO_BUS
-+
-+config EMM_NOTIFIER
-+	def_bool n
-+	bool "External Mapped Memory Notifier for drivers directly mapping memory"
-+
-Index: linux-2.6/include/linux/rmap.h
-===================================================================
---- linux-2.6.orig/include/linux/rmap.h	2008-04-01 12:57:24.033197213 -0700
-+++ linux-2.6/include/linux/rmap.h	2008-04-01 13:02:26.426353593 -0700
-@@ -85,6 +85,56 @@ static inline void page_dup_rmap(struct 
- #endif
- 
- /*
-+ * Notifier for devices establishing their own references to Linux
-+ * kernel pages in addition to the regular mapping via page
-+ * table and rmap. The notifier allows the device to drop the mapping
-+ * when the VM removes references to pages.
-+ */
-+enum emm_operation {
-+	emm_release,		/* Process existing, */
-+	emm_invalidate_start,	/* Before the VM unmaps pages */
-+	emm_invalidate_end,	/* After the VM unmapped pages */
-+ 	emm_referenced		/* Check if a range was referenced */
-+};
-+
-+struct emm_notifier {
-+	int (*callback)(struct emm_notifier *e, struct mm_struct *mm,
-+		enum emm_operation op,
-+		unsigned long start, unsigned long end);
-+	struct emm_notifier *next;
-+};
-+
-+extern int __emm_notify(struct mm_struct *mm, enum emm_operation op,
-+		unsigned long start, unsigned long end);
-+
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6/xpmem_test/A1.c	2008-04-01 13:36:06.982428295 -0700
+@@ -0,0 +1,64 @@
 +/*
-+ * Callback to the device driver for an externally memory mapped section
-+ * of memory.
-+ *
-+ * start	Address of first byte of the range
-+ * end		Address of first byte after range.
++ *  Simple test program.  Makes a segment then waits for an input line
++ * and finally prints the value of the first integer of that segment.
 + */
-+static inline int emm_notify(struct mm_struct *mm, enum emm_operation op,
-+	unsigned long start, unsigned long end)
++
++#include <errno.h>
++#include <fcntl.h>
++#include <stdio.h>
++#include <stdlib.h>
++#include <stropts.h>
++#include <sys/mman.h>
++#include <sys/stat.h>
++#include <sys/types.h>
++#include <unistd.h>
++
++#include "xpmem.h"
++
++int xpmem_fd;
++
++int
++main(int argc, char **argv)
 +{
-+#ifdef CONFIG_EMM_NOTIFIER
-+	if (unlikely(mm->emm_notifier))
-+		return __emm_notify(mm, op, start, end);
-+#endif
++	char input[32];
++	struct xpmem_cmd_make make_info;
++	int *data_block;
++	int ret;
++	__s64 segid;
++
++	xpmem_fd = open("/dev/xpmem", O_RDWR);
++	if (xpmem_fd == -1) {
++		perror("Opening /dev/xpmem");
++		return -1;
++	}
++
++	data_block = mmap(NULL, getpagesize(), PROT_READ | PROT_WRITE,
++			  MAP_SHARED | MAP_ANONYMOUS, 0, 0);
++	if (data_block == MAP_FAILED) {
++		perror("Creating mapping.");
++		return -1;
++	}
++	data_block[0] = 1;
++
++	make_info.vaddr = (__u64) data_block;
++	make_info.size = getpagesize();
++	make_info.permit_type = XPMEM_PERMIT_MODE;
++	make_info.permit_value = (__u64) 0600;
++	ret = ioctl(xpmem_fd, XPMEM_CMD_MAKE, &make_info);
++	if (ret != 0) {
++		perror("xpmem_make");
++		return -1;
++	}
++
++	segid = make_info.segid;
++	printf("./A2 %d %d %d %d\ndata_block[0] = %d\n",
++	       (int)(segid >> 48 & 0xffff), (int)(segid >> 32 & 0xffff),
++	       (int)(segid >> 16 & 0xffff), (int)(segid & 0xffff),
++	       data_block[0]);
++	printf("Waiting for input before exiting.\n");
++	fscanf(stdin, "%s", input);
++
++	printf("data_block[0] = %d\n", data_block[0]);
++
 +	return 0;
 +}
-+
-+/*
-+ * Register a notifier with an mm struct. Release occurs when the process
-+ * terminates by calling the notifier function with emm_release.
-+ *
-+ * Must hold the mmap_sem for write.
-+ */
-+extern void emm_notifier_register(struct emm_notifier *e,
-+					struct mm_struct *mm);
-+
-+
-+/*
-  * Called from mm/vmscan.c to handle paging out
-  */
- int page_referenced(struct page *, int is_locked, struct mem_cgroup *cnt);
-Index: linux-2.6/mm/rmap.c
+Index: linux-2.6/xpmem_test/A2.c
 ===================================================================
---- linux-2.6.orig/mm/rmap.c	2008-04-01 12:56:13.603994568 -0700
-+++ linux-2.6/mm/rmap.c	2008-04-01 12:57:38.957452502 -0700
-@@ -263,6 +263,67 @@ pte_t *page_check_address(struct page *p
- 	return NULL;
- }
- 
-+#ifdef CONFIG_EMM_NOTIFIER
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6/xpmem_test/A2.c	2008-04-01 13:36:09.498469523 -0700
+@@ -0,0 +1,70 @@
 +/*
-+ * Notifier for devices establishing their own references to Linux
-+ * kernel pages in addition to the regular mapping via page
-+ * table and rmap. The notifier allows the device to drop the mapping
-+ * when the VM removes references to pages.
++ * Simple test program that gets then attaches an xpmem segment identified
++ * on the command line then increments the first integer of that buffer by
++ * one and exits.
 + */
 +
-+/*
-+ * This function is only called when a single process remains that performs
-+ * teardown when the last process is exiting.
-+ */
-+void emm_notifier_release(struct mm_struct *mm)
-+{
-+	struct emm_notifier *e;
++#include <errno.h>
++#include <fcntl.h>
++#include <stdio.h>
++#include <stdlib.h>
++#include <stropts.h>
++#include <sys/mman.h>
++#include <sys/stat.h>
++#include <sys/types.h>
++#include <unistd.h>
 +
-+	while (mm->emm_notifier) {
-+		e = mm->emm_notifier;
-+		mm->emm_notifier = e->next;
-+		e->callback(e, mm, emm_release, 0, 0);
++#include "xpmem.h"
++
++int xpmem_fd;
++
++int
++main(int argc, char **argv)
++{
++	int ret;
++	__s64 segid;
++	__s64 apid;
++	struct xpmem_cmd_get get_info;
++	struct xpmem_cmd_attach attach_info;
++	int *attached_buffer;
++
++	xpmem_fd = open("/dev/xpmem", O_RDWR);
++	if (xpmem_fd == -1) {
++		perror("Opening /dev/xpmem");
++		return -1;
 +	}
-+}
 +
-+/* Register a notifier */
-+void emm_notifier_register(struct emm_notifier *e, struct mm_struct *mm)
-+{
-+	e->next = mm->emm_notifier;
-+	/*
-+	 * The update to emm_notifier (e->next) must be visible
-+	 * before the pointer becomes visible.
-+	 * rcu_assign_pointer() does exactly what we need.
-+	 */
-+	rcu_assign_pointer(mm->emm_notifier, e);
-+}
-+EXPORT_SYMBOL_GPL(emm_notifier_register);
-+
-+/* Perform a callback */
-+int __emm_notify(struct mm_struct *mm, enum emm_operation op,
-+		unsigned long start, unsigned long end)
-+{
-+	struct emm_notifier *e = rcu_dereference(mm)->emm_notifier;
-+	int x;
-+
-+	while (e) {
-+
-+		if (e->callback) {
-+			x = e->callback(e, mm, op, start, end);
-+			if (x)
-+				return x;
-+		}
-+		/*
-+		 * emm_notifier contents (e) must be fetched after
-+		 * the retrival of the pointer to the notifier.
-+		 */
-+		e = rcu_dereference(e)->next;
++	segid = (__s64) atoi(argv[1]) << 48;
++	segid |= (__s64) atoi(argv[2]) << 32;
++	segid |= (__s64) atoi(argv[3]) << 16;
++	segid |= (__s64) atoi(argv[4]);
++	get_info.segid = segid;
++	get_info.flags = XPMEM_RDWR;
++	get_info.permit_type = XPMEM_PERMIT_MODE;
++	get_info.permit_value = (__u64) NULL;
++	ret = ioctl(xpmem_fd, XPMEM_CMD_GET, &get_info);
++	if (ret != 0) {
++		perror("xpmem_get");
++		return -1;
 +	}
++	apid = get_info.apid;
++
++	attach_info.apid = get_info.apid;
++	attach_info.offset = 0;
++	attach_info.size = getpagesize();
++	attach_info.vaddr = (__u64) NULL;
++	attach_info.fd = xpmem_fd;
++	attach_info.flags = 0;
++
++	ret = ioctl(xpmem_fd, XPMEM_CMD_ATTACH, &attach_info);
++	if (ret != 0) {
++		perror("xpmem_attach");
++		return -1;
++	}
++
++	attached_buffer = (int *)attach_info.vaddr;
++	attached_buffer[0]++;
++
++	printf("Just incremented the value to %d\n", attached_buffer[0]);
 +	return 0;
 +}
-+EXPORT_SYMBOL_GPL(__emm_notify);
+Index: linux-2.6/xpmem_test/Makefile
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6/xpmem_test/Makefile	2008-04-01 13:36:19.218628862 -0700
+@@ -0,0 +1,14 @@
++
++default:	A1 A2
++
++A1:	A1.c xpmem.h
++	gcc -Wall -o A1 A1.c
++
++A2:	A2.c xpmem.h
++	gcc -Wall -o A2 A2.c
++
++indent:
++	indent -npro -kr -i8 -ts8 -sob -l80 -ss -ncs -cp1 -psl -npcs A1.c A2.c
++
++clean:
++	rm -f A1 A2 *~
+Index: linux-2.6/xpmem_test/xpmem.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6/xpmem_test/xpmem.h	2008-04-01 13:36:24.418714133 -0700
+@@ -0,0 +1,130 @@
++/*
++ * This file is subject to the terms and conditions of the GNU General Public
++ * License.  See the file "COPYING" in the main directory of this archive
++ * for more details.
++ *
++ * Copyright (c) 2004-2007 Silicon Graphics, Inc.  All Rights Reserved.
++ */
++
++/*
++ * Cross Partition Memory (XPMEM) structures and macros.
++ */
++
++#ifndef _ASM_IA64_SN_XPMEM_H
++#define _ASM_IA64_SN_XPMEM_H
++
++#include <linux/types.h>
++#include <linux/ioctl.h>
++
++/*
++ * basic argument type definitions
++ */
++struct xpmem_addr {
++	__s64 apid;		/* apid that represents memory */
++	off_t offset;		/* offset into apid's memory */
++};
++
++#define XPMEM_MAXADDR_SIZE	(size_t)(-1L)
++
++#define XPMEM_ATTACH_WC		0x10000
++#define XPMEM_ATTACH_GETSPACE	0x20000
++
++/*
++ * path to XPMEM device
++ */
++#define XPMEM_DEV_PATH  "/dev/xpmem"
++
++/*
++ * The following are the possible XPMEM related errors.
++ */
++#define XPMEM_ERRNO_NOPROC	2004	/* unknown thread due to fork() */
++
++/*
++ * flags for segment permissions
++ */
++#define XPMEM_RDONLY	0x1
++#define XPMEM_RDWR	0x2
++
++/*
++ * Valid permit_type values for xpmem_make().
++ */
++#define XPMEM_PERMIT_MODE	0x1
++
++/*
++ * ioctl() commands used to interface to the kernel module.
++ */
++#define XPMEM_IOC_MAGIC		'x'
++#define XPMEM_CMD_VERSION	_IO(XPMEM_IOC_MAGIC, 0)
++#define XPMEM_CMD_MAKE		_IO(XPMEM_IOC_MAGIC, 1)
++#define XPMEM_CMD_REMOVE	_IO(XPMEM_IOC_MAGIC, 2)
++#define XPMEM_CMD_GET		_IO(XPMEM_IOC_MAGIC, 3)
++#define XPMEM_CMD_RELEASE	_IO(XPMEM_IOC_MAGIC, 4)
++#define XPMEM_CMD_ATTACH	_IO(XPMEM_IOC_MAGIC, 5)
++#define XPMEM_CMD_DETACH	_IO(XPMEM_IOC_MAGIC, 6)
++#define XPMEM_CMD_COPY		_IO(XPMEM_IOC_MAGIC, 7)
++#define XPMEM_CMD_BCOPY		_IO(XPMEM_IOC_MAGIC, 8)
++#define XPMEM_CMD_FORK_BEGIN	_IO(XPMEM_IOC_MAGIC, 9)
++#define XPMEM_CMD_FORK_END	_IO(XPMEM_IOC_MAGIC, 10)
++
++/*
++ * Structures used with the preceding ioctl() commands to pass data.
++ */
++struct xpmem_cmd_make {
++	__u64 vaddr;
++	size_t size;
++	int permit_type;
++	__u64 permit_value;
++	__s64 segid;		/* returned on success */
++};
++
++struct xpmem_cmd_remove {
++	__s64 segid;
++};
++
++struct xpmem_cmd_get {
++	__s64 segid;
++	int flags;
++	int permit_type;
++	__u64 permit_value;
++	__s64 apid;		/* returned on success */
++};
++
++struct xpmem_cmd_release {
++	__s64 apid;
++};
++
++struct xpmem_cmd_attach {
++	__s64 apid;
++	off_t offset;
++	size_t size;
++	__u64 vaddr;
++	int fd;
++	int flags;
++};
++
++struct xpmem_cmd_detach {
++	__u64 vaddr;
++};
++
++struct xpmem_cmd_copy {
++	__s64 src_apid;
++	off_t src_offset;
++	__s64 dst_apid;
++	off_t dst_offset;
++	size_t size;
++};
++
++#ifndef __KERNEL__
++extern int xpmem_version(void);
++extern __s64 xpmem_make(void *, size_t, int, void *);
++extern int xpmem_remove(__s64);
++extern __s64 xpmem_get(__s64, int, int, void *);
++extern int xpmem_release(__s64);
++extern void *xpmem_attach(struct xpmem_addr, size_t, void *);
++extern void *xpmem_attach_wc(struct xpmem_addr, size_t, void *);
++extern void *xpmem_attach_getspace(struct xpmem_addr, size_t, void *);
++extern int xpmem_detach(void *);
++extern int xpmem_bcopy(struct xpmem_addr, struct xpmem_addr, size_t);
 +#endif
 +
- /*
-  * Subfunctions of page_referenced: page_referenced_one called
-  * repeatedly from either page_referenced_anon or page_referenced_file.
-@@ -298,6 +359,10 @@ static int page_referenced_one(struct pa
- 
- 	(*mapcount)--;
- 	pte_unmap_unlock(pte, ptl);
-+
-+	if (emm_notify(mm, emm_referenced, address, address + PAGE_SIZE)
-+							&& !referenced)
-+			referenced++;
- out:
- 	return referenced;
- }
-@@ -448,9 +513,10 @@ static int page_mkclean_one(struct page 
- 	if (address == -EFAULT)
- 		goto out;
- 
-+	emm_notify(mm, emm_invalidate_start, address, address + PAGE_SIZE);
- 	pte = page_check_address(page, mm, address, &ptl);
- 	if (!pte)
--		goto out;
-+		goto out_notifier;
- 
- 	if (pte_dirty(*pte) || pte_write(*pte)) {
- 		pte_t entry;
-@@ -464,6 +530,9 @@ static int page_mkclean_one(struct page 
- 	}
- 
- 	pte_unmap_unlock(pte, ptl);
-+
-+out_notifier:
-+	emm_notify(mm, emm_invalidate_end, address, address + PAGE_SIZE);
- out:
- 	return ret;
- }
-@@ -707,9 +776,10 @@ static int try_to_unmap_one(struct page 
- 	if (address == -EFAULT)
- 		goto out;
- 
-+	emm_notify(mm, emm_invalidate_start, address, address + PAGE_SIZE);
- 	pte = page_check_address(page, mm, address, &ptl);
- 	if (!pte)
--		goto out;
-+		goto out_notify;
- 
- 	/*
- 	 * If the page is mlock()d, we cannot swap it out.
-@@ -779,6 +849,8 @@ static int try_to_unmap_one(struct page 
- 
- out_unmap:
- 	pte_unmap_unlock(pte, ptl);
-+out_notify:
-+	emm_notify(mm, emm_invalidate_end, address, address + PAGE_SIZE);
- out:
- 	return ret;
- }
-@@ -817,6 +889,7 @@ static void try_to_unmap_cluster(unsigne
- 	spinlock_t *ptl;
- 	struct page *page;
- 	unsigned long address;
-+	unsigned long start;
- 	unsigned long end;
- 
- 	address = (vma->vm_start + cursor) & CLUSTER_MASK;
-@@ -838,6 +911,8 @@ static void try_to_unmap_cluster(unsigne
- 	if (!pmd_present(*pmd))
- 		return;
- 
-+	start = address;
-+	emm_notify(mm, emm_invalidate_start, start, end);
- 	pte = pte_offset_map_lock(mm, pmd, address, &ptl);
- 
- 	/* Update high watermark before we lower rss */
-@@ -870,6 +945,7 @@ static void try_to_unmap_cluster(unsigne
- 		(*mapcount)--;
- 	}
- 	pte_unmap_unlock(pte - 1, ptl);
-+	emm_notify(mm, emm_invalidate_end, start, end);
- }
- 
- static int try_to_unmap_anon(struct page *page, int migration)
-Index: linux-2.6/kernel/fork.c
-===================================================================
---- linux-2.6.orig/kernel/fork.c	2008-04-01 12:56:13.655995449 -0700
-+++ linux-2.6/kernel/fork.c	2008-04-01 12:57:38.961451952 -0700
-@@ -362,6 +362,9 @@ static struct mm_struct * mm_init(struct
- 
- 	if (likely(!mm_alloc_pgd(mm))) {
- 		mm->def_flags = 0;
-+#ifdef CONFIG_EMM_NOTIFIER
-+		mm->emm_notifier = NULL;
-+#endif
- 		return mm;
- 	}
- 
-Index: linux-2.6/mm/memory.c
-===================================================================
---- linux-2.6.orig/mm/memory.c	2008-04-01 12:56:13.607994778 -0700
-+++ linux-2.6/mm/memory.c	2008-04-01 12:57:38.961451952 -0700
-@@ -596,6 +596,7 @@ int copy_page_range(struct mm_struct *ds
- 	unsigned long next;
- 	unsigned long addr = vma->vm_start;
- 	unsigned long end = vma->vm_end;
-+	int ret = 0;
- 
- 	/*
- 	 * Don't copy ptes where a page fault will fill them correctly.
-@@ -605,12 +606,15 @@ int copy_page_range(struct mm_struct *ds
- 	 */
- 	if (!(vma->vm_flags & (VM_HUGETLB|VM_NONLINEAR|VM_PFNMAP|VM_INSERTPAGE))) {
- 		if (!vma->anon_vma)
--			return 0;
-+			goto out;
- 	}
- 
- 	if (is_vm_hugetlb_page(vma))
- 		return copy_hugetlb_page_range(dst_mm, src_mm, vma);
- 
-+	if (is_cow_mapping(vma->vm_flags))
-+		emm_notify(src_mm, emm_invalidate_start, addr, end);
-+
- 	dst_pgd = pgd_offset(dst_mm, addr);
- 	src_pgd = pgd_offset(src_mm, addr);
- 	do {
-@@ -618,10 +622,16 @@ int copy_page_range(struct mm_struct *ds
- 		if (pgd_none_or_clear_bad(src_pgd))
- 			continue;
- 		if (copy_pud_range(dst_mm, src_mm, dst_pgd, src_pgd,
--						vma, addr, next))
--			return -ENOMEM;
-+						vma, addr, next)) {
-+			ret = -ENOMEM;
-+			break;
-+		}
- 	} while (dst_pgd++, src_pgd++, addr = next, addr != end);
--	return 0;
-+
-+	if (is_cow_mapping(vma->vm_flags))
-+		emm_notify(src_mm, emm_invalidate_end, addr, end);
-+out:
-+	return ret;
- }
- 
- static unsigned long zap_pte_range(struct mmu_gather *tlb,
-@@ -894,12 +904,15 @@ unsigned long zap_page_range(struct vm_a
- 	unsigned long end = address + size;
- 	unsigned long nr_accounted = 0;
- 
-+	emm_notify(mm, emm_invalidate_start, address, end);
- 	lru_add_drain();
- 	tlb = tlb_gather_mmu(mm, 0);
- 	update_hiwater_rss(mm);
-+
- 	end = unmap_vmas(&tlb, vma, address, end, &nr_accounted, details);
- 	if (tlb)
- 		tlb_finish_mmu(tlb, address, end);
-+	emm_notify(mm, emm_invalidate_end, address, end);
- 	return end;
- }
- 
-@@ -1340,6 +1353,7 @@ int remap_pfn_range(struct vm_area_struc
- 	pgd_t *pgd;
- 	unsigned long next;
- 	unsigned long end = addr + PAGE_ALIGN(size);
-+	unsigned long start = addr;
- 	struct mm_struct *mm = vma->vm_mm;
- 	int err;
- 
-@@ -1372,6 +1386,7 @@ int remap_pfn_range(struct vm_area_struc
- 	BUG_ON(addr >= end);
- 	pfn -= addr >> PAGE_SHIFT;
- 	pgd = pgd_offset(mm, addr);
-+	emm_notify(mm, emm_invalidate_start, start, end);
- 	flush_cache_range(vma, addr, end);
- 	do {
- 		next = pgd_addr_end(addr, end);
-@@ -1380,6 +1395,7 @@ int remap_pfn_range(struct vm_area_struc
- 		if (err)
- 			break;
- 	} while (pgd++, addr = next, addr != end);
-+	emm_notify(mm, emm_invalidate_end, start, end);
- 	return err;
- }
- EXPORT_SYMBOL(remap_pfn_range);
-@@ -1463,10 +1479,12 @@ int apply_to_page_range(struct mm_struct
- {
- 	pgd_t *pgd;
- 	unsigned long next;
-+	unsigned long start = addr;
- 	unsigned long end = addr + size;
- 	int err;
- 
- 	BUG_ON(addr >= end);
-+	emm_notify(mm, emm_invalidate_start, start, end);
- 	pgd = pgd_offset(mm, addr);
- 	do {
- 		next = pgd_addr_end(addr, end);
-@@ -1474,6 +1492,7 @@ int apply_to_page_range(struct mm_struct
- 		if (err)
- 			break;
- 	} while (pgd++, addr = next, addr != end);
-+	emm_notify(mm, emm_invalidate_end, start, end);
- 	return err;
- }
- EXPORT_SYMBOL_GPL(apply_to_page_range);
-@@ -1614,8 +1633,10 @@ static int do_wp_page(struct mm_struct *
- 			page_table = pte_offset_map_lock(mm, pmd, address,
- 							 &ptl);
- 			page_cache_release(old_page);
--			if (!pte_same(*page_table, orig_pte))
--				goto unlock;
-+			if (!pte_same(*page_table, orig_pte)) {
-+				pte_unmap_unlock(page_table, ptl);
-+				goto check_dirty;
-+			}
- 
- 			page_mkwrite = 1;
- 		}
-@@ -1631,7 +1652,8 @@ static int do_wp_page(struct mm_struct *
- 		if (ptep_set_access_flags(vma, address, page_table, entry,1))
- 			update_mmu_cache(vma, address, entry);
- 		ret |= VM_FAULT_WRITE;
--		goto unlock;
-+		pte_unmap_unlock(page_table, ptl);
-+		goto check_dirty;
- 	}
- 
- 	/*
-@@ -1653,6 +1675,7 @@ gotten:
- 	if (mem_cgroup_charge(new_page, mm, GFP_KERNEL))
- 		goto oom_free_new;
- 
-+	emm_notify(mm, emm_invalidate_start, address, address + PAGE_SIZE);
- 	/*
- 	 * Re-check the pte - we dropped the lock
- 	 */
-@@ -1691,8 +1714,11 @@ gotten:
- 		page_cache_release(new_page);
- 	if (old_page)
- 		page_cache_release(old_page);
--unlock:
-+
- 	pte_unmap_unlock(page_table, ptl);
-+	emm_notify(mm, emm_invalidate_end, address, address + PAGE_SIZE);
-+
-+check_dirty:
- 	if (dirty_page) {
- 		if (vma->vm_file)
- 			file_update_time(vma->vm_file);
-Index: linux-2.6/mm/mmap.c
-===================================================================
---- linux-2.6.orig/mm/mmap.c	2008-04-01 12:56:13.615994773 -0700
-+++ linux-2.6/mm/mmap.c	2008-04-01 12:57:38.961451952 -0700
-@@ -1744,6 +1744,7 @@ static void unmap_region(struct mm_struc
- 	struct mmu_gather *tlb;
- 	unsigned long nr_accounted = 0;
- 
-+	emm_notify(mm, emm_invalidate_start, start, end);
- 	lru_add_drain();
- 	tlb = tlb_gather_mmu(mm, 0);
- 	update_hiwater_rss(mm);
-@@ -1752,6 +1753,7 @@ static void unmap_region(struct mm_struc
- 	free_pgtables(&tlb, vma, prev? prev->vm_end: FIRST_USER_ADDRESS,
- 				 next? next->vm_start: 0);
- 	tlb_finish_mmu(tlb, start, end);
-+	emm_notify(mm, emm_invalidate_end, start, end);
- }
- 
- /*
-@@ -2038,6 +2040,7 @@ void exit_mmap(struct mm_struct *mm)
- 
- 	/* mm's last user has gone, and its about to be pulled down */
- 	arch_exit_mmap(mm);
-+	emm_notify(mm, emm_release, 0, TASK_SIZE);
- 
- 	lru_add_drain();
- 	flush_cache_mm(mm);
-Index: linux-2.6/mm/mprotect.c
-===================================================================
---- linux-2.6.orig/mm/mprotect.c	2008-04-01 12:56:13.619994769 -0700
-+++ linux-2.6/mm/mprotect.c	2008-04-01 12:57:38.961451952 -0700
-@@ -21,6 +21,7 @@
- #include <linux/syscalls.h>
- #include <linux/swap.h>
- #include <linux/swapops.h>
-+#include <linux/rmap.h>
- #include <asm/uaccess.h>
- #include <asm/pgtable.h>
- #include <asm/cacheflush.h>
-@@ -198,10 +199,12 @@ success:
- 		dirty_accountable = 1;
- 	}
- 
-+	emm_notify(mm, emm_invalidate_start, start, end);
- 	if (is_vm_hugetlb_page(vma))
- 		hugetlb_change_protection(vma, start, end, vma->vm_page_prot);
- 	else
- 		change_protection(vma, start, end, vma->vm_page_prot, dirty_accountable);
-+	emm_notify(mm, emm_invalidate_end, start, end);
- 	vm_stat_account(mm, oldflags, vma->vm_file, -nrpages);
- 	vm_stat_account(mm, newflags, vma->vm_file, nrpages);
- 	return 0;
-Index: linux-2.6/mm/mremap.c
-===================================================================
---- linux-2.6.orig/mm/mremap.c	2008-04-01 12:56:13.627994994 -0700
-+++ linux-2.6/mm/mremap.c	2008-04-01 12:57:38.961451952 -0700
-@@ -18,6 +18,7 @@
- #include <linux/highmem.h>
- #include <linux/security.h>
- #include <linux/syscalls.h>
-+#include <linux/rmap.h>
- 
- #include <asm/uaccess.h>
- #include <asm/cacheflush.h>
-@@ -74,7 +75,9 @@ static void move_ptes(struct vm_area_str
- 	struct mm_struct *mm = vma->vm_mm;
- 	pte_t *old_pte, *new_pte, pte;
- 	spinlock_t *old_ptl, *new_ptl;
-+	unsigned long old_start = old_addr;
- 
-+	emm_notify(mm, emm_invalidate_start, old_start, old_end);
- 	if (vma->vm_file) {
- 		/*
- 		 * Subtle point from Rajesh Venkatasubramanian: before
-@@ -116,6 +119,7 @@ static void move_ptes(struct vm_area_str
- 	pte_unmap_unlock(old_pte - 1, old_ptl);
- 	if (mapping)
- 		spin_unlock(&mapping->i_mmap_lock);
-+	emm_notify(mm, emm_invalidate_end, old_start, old_end);
- }
- 
- #define LATENCY_LIMIT	(64 * PAGE_SIZE)
-Index: linux-2.6/mm/filemap_xip.c
-===================================================================
---- linux-2.6.orig/mm/filemap_xip.c	2008-04-01 12:56:13.631995051 -0700
-+++ linux-2.6/mm/filemap_xip.c	2008-04-01 12:57:38.961451952 -0700
-@@ -190,6 +190,8 @@ __xip_unmap (struct address_space * mapp
- 		address = vma->vm_start +
- 			((pgoff - vma->vm_pgoff) << PAGE_SHIFT);
- 		BUG_ON(address < vma->vm_start || address >= vma->vm_end);
-+		emm_notify(mm, emm_invalidate_start,
-+					address, address + PAGE_SIZE);
- 		pte = page_check_address(page, mm, address, &ptl);
- 		if (pte) {
- 			/* Nuke the page table entry. */
-@@ -201,6 +203,8 @@ __xip_unmap (struct address_space * mapp
- 			pte_unmap_unlock(pte, ptl);
- 			page_cache_release(page);
- 		}
-+		emm_notify(mm, emm_invalidate_end,
-+					address, address + PAGE_SIZE);
- 	}
- 	spin_unlock(&mapping->i_mmap_lock);
- }
-Index: linux-2.6/mm/fremap.c
-===================================================================
---- linux-2.6.orig/mm/fremap.c	2008-04-01 12:56:13.639995208 -0700
-+++ linux-2.6/mm/fremap.c	2008-04-01 12:57:38.961451952 -0700
-@@ -214,7 +214,9 @@ asmlinkage long sys_remap_file_pages(uns
- 		spin_unlock(&mapping->i_mmap_lock);
- 	}
- 
-+	emm_notify(mm, emm_invalidate_start, start, end);
- 	err = populate_range(mm, vma, start, size, pgoff);
-+	emm_notify(mm, emm_invalidate_end, start, end);
- 	if (!err && !(flags & MAP_NONBLOCK)) {
- 		if (unlikely(has_write_lock)) {
- 			downgrade_write(&mm->mmap_sem);
-Index: linux-2.6/mm/hugetlb.c
-===================================================================
---- linux-2.6.orig/mm/hugetlb.c	2008-04-01 12:56:13.647995311 -0700
-+++ linux-2.6/mm/hugetlb.c	2008-04-01 12:57:38.961451952 -0700
-@@ -14,6 +14,7 @@
- #include <linux/mempolicy.h>
- #include <linux/cpuset.h>
- #include <linux/mutex.h>
-+#include <linux/rmap.h>
- 
- #include <asm/page.h>
- #include <asm/pgtable.h>
-@@ -799,6 +800,7 @@ void __unmap_hugepage_range(struct vm_ar
- 	BUG_ON(start & ~HPAGE_MASK);
- 	BUG_ON(end & ~HPAGE_MASK);
- 
-+	emm_notify(mm, emm_invalidate_start, start, end);
- 	spin_lock(&mm->page_table_lock);
- 	for (address = start; address < end; address += HPAGE_SIZE) {
- 		ptep = huge_pte_offset(mm, address);
-@@ -819,6 +821,7 @@ void __unmap_hugepage_range(struct vm_ar
- 	}
- 	spin_unlock(&mm->page_table_lock);
- 	flush_tlb_range(vma, start, end);
-+	emm_notify(mm, emm_invalidate_end, start, end);
- 	list_for_each_entry_safe(page, tmp, &page_list, lru) {
- 		list_del(&page->lru);
- 		put_page(page);
++#endif /* _ASM_IA64_SN_XPMEM_H */
 
 -- 
