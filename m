@@ -1,61 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758891AbYDARJ5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758728AbYDARZo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758891AbYDARJ5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Apr 2008 13:09:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756012AbYDARJt
+	id S1758728AbYDARZo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Apr 2008 13:25:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756356AbYDARZe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Apr 2008 13:09:49 -0400
-Received: from g1t0026.austin.hp.com ([15.216.28.33]:6694 "EHLO
-	g1t0026.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755715AbYDARJs (ORCPT
+	Tue, 1 Apr 2008 13:25:34 -0400
+Received: from smtp-out1.tiscali.nl ([195.241.79.176]:44795 "EHLO
+	smtp-out1.tiscali.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756056AbYDARZd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Apr 2008 13:09:48 -0400
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: + revert-gregkh-pci-pci-x86-use-generic-pci_enable_resources.patch added to -mm tree
-Date: Tue, 1 Apr 2008 11:09:42 -0600
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: davem@davemloft.net, greg@kroah.com, m.kozlowski@tuxland.pl,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       linux-kernel@vger.kernel.org, Tony Luck <tony.luck@intel.com>,
-       linux-ia64@vger.kernel.org, Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-References: <200803282348.m2SNmleP016847@imap1.linux-foundation.org> <200804010957.16459.bjorn.helgaas@hp.com> <20080401100050.009cec7b.akpm@linux-foundation.org>
-In-Reply-To: <20080401100050.009cec7b.akpm@linux-foundation.org>
+	Tue, 1 Apr 2008 13:25:33 -0400
+Message-ID: <47F26FF6.8070300@tiscali.nl>
+Date: Tue, 01 Apr 2008 19:25:10 +0200
+From: Roel Kluin <12o3l@tiscali.nl>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: rth@twiddle.net, ink@jurassic.park.msu.ru
+CC: trivial@kernel.org, lkml <linux-kernel@vger.kernel.org>
+Subject: [PATCH 1/8] alpha: replace `__attribute' by `__attribute__'
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200804011109.43046.bjorn.helgaas@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 01 April 2008 11:00:50 am Andrew Morton wrote:
-> On Tue, 1 Apr 2008 09:57:15 -0600 Bjorn Helgaas <bjorn.helgaas@hp.com> wrote:
-> 
-> > On Friday 28 March 2008 05:48:47 pm akpm@linux-foundation.org wrote:
-> > > 
-> > > The patch titled
-> > >      revert gregkh-pci-pci-x86-use-generic-pci_enable_resources
-> > > has been added to the -mm tree.  Its filename is
-> > >      revert-gregkh-pci-pci-x86-use-generic-pci_enable_resources.patch
-> > 
-> > OK, I'm not sure where we are with this.  Ben listed arches where
-> > the generic pci_enable_resources() should be safe: x86, alpha, and
-> > powerpc.  I think we should also include ia64, since I work on that.
-> > 
-> > If there's no objection to those arches, how should we move forward?
-> > Since Andrew put in "revert gregkh-pci" patches rather than just
-> > dropping things, I assume the original patches are in Greg KH's tree.
-> > 
-> > Can we just drop the "revert gregkh" patches for x86, alpha, powerpc,
-> > and ia64?
-> 
-> So powerpc is OK but ppc might not be?
+replace `__attribute' by `__attribute__'
 
-I suppose Ben is the expert on that, and he did say he thought both
-powerpc and ppc would be OK.  I think we just care less about ppc
-because powerpc is the new converged one.
-
-Bjorn
+Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
+---
+diff --git a/arch/alpha/kernel/core_cia.c b/arch/alpha/kernel/core_cia.c
+index 1d6ee6c..0f2df3c 100644
+--- a/arch/alpha/kernel/core_cia.c
++++ b/arch/alpha/kernel/core_cia.c
+@@ -569,7 +569,7 @@ struct
+ 	unsigned int w_mask;
+ 	unsigned int t_base;
+     } window[4];
+-} saved_config __attribute((common));
++} saved_config __attribute__((common));
+ 
+ void
+ cia_save_srm_settings(int is_pyxis)
+diff --git a/arch/alpha/kernel/core_t2.c b/arch/alpha/kernel/core_t2.c
+index f5ca525..3e4d908 100644
+--- a/arch/alpha/kernel/core_t2.c
++++ b/arch/alpha/kernel/core_t2.c
+@@ -91,7 +91,7 @@ static struct
+ 	unsigned long hae_3;
+ 	unsigned long hae_4;
+ 	unsigned long hbase;
+-} t2_saved_config __attribute((common));
++} t2_saved_config __attribute__((common));
+ 
+ /*
+  * Given a bus, device, and function number, compute resulting
+diff --git a/arch/alpha/kernel/sys_sio.c b/arch/alpha/kernel/sys_sio.c
+index ee7b900..c53a0c2 100644
+--- a/arch/alpha/kernel/sys_sio.c
++++ b/arch/alpha/kernel/sys_sio.c
+@@ -40,7 +40,7 @@
+ struct 
+ {
+ 	unsigned int orig_route_tab; /* for SAVE/RESTORE */
+-} saved_config __attribute((common));
++} saved_config __attribute__((common));
+ #endif
+ 
+ 
