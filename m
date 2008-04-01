@@ -1,53 +1,229 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756756AbYDATHH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758925AbYDATOF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756756AbYDATHH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Apr 2008 15:07:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756129AbYDATGy
+	id S1758925AbYDATOF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Apr 2008 15:14:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755446AbYDATNv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Apr 2008 15:06:54 -0400
-Received: from netrider.rowland.org ([192.131.102.5]:3612 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1755768AbYDATGx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Apr 2008 15:06:53 -0400
-Date: Tue, 1 Apr 2008 15:06:51 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@netrider.rowland.org
-To: Tino Keitel <tino.keitel@gmx.de>
-cc: Pavel Machek <pavel@ucw.cz>, <linux-usb@vger.kernel.org>,
-       Soeren Sonnenburg <sonne@nn7.de>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       <linux-kernel@vger.kernel.org>, Len Brown <lenb@kernel.org>
-Subject: Re: 2.6.25-rc6 hangs at resume after suspend to RAM on Mac mini Core
- Duo
-In-Reply-To: <20080401183732.GA5043@dose.home.local>
-Message-ID: <Pine.LNX.4.44L0.0804011505050.1397-100000@netrider.rowland.org>
+	Tue, 1 Apr 2008 15:13:51 -0400
+Received: from lucidpixels.com ([75.144.35.66]:57488 "EHLO lucidpixels.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755436AbYDATNv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Apr 2008 15:13:51 -0400
+Date: Tue, 1 Apr 2008 15:13:49 -0400 (EDT)
+From: Justin Piszcz <jpiszcz@lucidpixels.com>
+To: linux-kernel@vger.kernel.org
+Subject: Kernel 2.6.24.4 Realtek/HD audio bug(?)
+Message-ID: <alpine.DEB.1.00.0804011509490.32680@p34.internal.lan>
+User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: MULTIPART/MIXED; BOUNDARY="-1463747160-1138598795-1207077229=:32680"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 1 Apr 2008, Tino Keitel wrote:
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-> git-bisect revealed this:
-> 
-> $ git bisect good
-> e82cc1288fa57857c6af8c57f3d07096d4bcd9d9 is first bad commit
-> commit e82cc1288fa57857c6af8c57f3d07096d4bcd9d9
-> Author: David Brownell <david-b@pacbell.net>
-> Date:   Fri Mar 7 13:49:42 2008 -0800
-> 
->     USB: fix ehci unlink regressions
+---1463747160-1138598795-1207077229=:32680
+Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
 
-> For the linux-usb people: this commit breaks resume from suspend to RAM
-> on my Mac mini Core Duo. It worked with 2.6.24, 2.6.25-rc5, and was
-> broken since 2.6.25-rc6 (also with -rc7 and later). See
-> http://lkml.org/lkml/2008/3/20/23 for more information.
+Hi all,
 
-Can you get any information out of the computer after the hang?  It 
-would help to see the dmesg log (with CONFIG_USB_DEBUG enabled) and an 
-Alt-SysRq-T stack dump.
+Not sure if this has been posted on the list or not but from around 
+2.6.22/2.6.23 time period, when mplayer plays mpeg2/avi files (format does 
+not appear to matter) there are some cases where the sound driver does not 
+appear to act correctly.
 
-Alan Stern
+E.g., the sound is very crackly, does not sound correct, looking at the 
+output from mplayer suggests everything is fine, I was just wondering if 
+anyone else experienced this?
 
+Something else also changed during the 2.6.22/2.6.23 time period as well, 
+when I increase the volume I notice the hiss on my speakers MUCH more than 
+I ever did prior to 2.6.22/2.6.23.  Some big changes in the alsa tree, or?
+
+Also, if you cancel/kill mplayer and then replay the file, its fine, it 
+only happens randomly, it not easily reproducible at all, so I doubt it 
+will be easy to track down unless someone else has an idea about this?
+
+
+Distro: Debian Testing
+Mobo: AW9D-MAX
+Using: Alsa/Realtek/HD Audio & mplayer+alsa
+Kernel: 2.6.24.4
+Arch: x86
+
+.config attached.
+
+Thanks,
+
+Justin.
+---1463747160-1138598795-1207077229=:32680
+Content-Type: APPLICATION/octet-stream; name=config-2.6.24.bz2
+Content-Transfer-Encoding: BASE64
+Content-ID: <alpine.DEB.1.00.0804011513491.32680@p34.internal.lan>
+Content-Description: 
+Content-Disposition: attachment; filename=config-2.6.24.bz2
+
+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
+HfmaYdOklh/xdyRThQkFxOHsEA==
+
+---1463747160-1138598795-1207077229=:32680--
