@@ -1,80 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758757AbYDANj3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759100AbYDANjx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758757AbYDANj3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Apr 2008 09:39:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754989AbYDANjG
+	id S1759100AbYDANjx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Apr 2008 09:39:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755531AbYDANjl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Apr 2008 09:39:06 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:42805 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754860AbYDANjF (ORCPT
+	Tue, 1 Apr 2008 09:39:41 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:22092 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754989AbYDANjk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Apr 2008 09:39:05 -0400
-Subject: Re: [PATCH 1/2] Customize sched domain via cpuset
-From: Peter Zijlstra <peterz@infradead.org>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>,
-       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Paul Jackson <pj@sgi.com>
-In-Reply-To: <20080401132924.GI29105@one.firstfloor.org>
-References: <47F21BE3.5030705@jp.fujitsu.com>
-	 <87zlsdzttp.fsf@basil.nowhere.org> <1207050968.8514.721.camel@twins>
-	 <20080401132924.GI29105@one.firstfloor.org>
-Content-Type: text/plain
-Date: Tue, 01 Apr 2008 15:38:51 +0200
-Message-Id: <1207057131.8514.736.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.21.92 
+	Tue, 1 Apr 2008 09:39:40 -0400
+From: Chris Mason <chris.mason@oracle.com>
+To: Alex Chiang <achiang@hp.com>
+Subject: Re: [ANNOUNCE] Btrfs v0.13
+Date: Tue, 1 Apr 2008 09:38:26 -0400
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, btrfs-devel@oss.oracle.com
+References: <200802211609.50563.chris.mason@oracle.com> <20080331224710.GC2362@ldl.fc.hp.com> <20080401004053.GF2362@ldl.fc.hp.com>
+In-Reply-To: <20080401004053.GF2362@ldl.fc.hp.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200804010938.26762.chris.mason@oracle.com>
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-04-01 at 15:29 +0200, Andi Kleen wrote:
-> On Tue, Apr 01, 2008 at 01:56:08PM +0200, Peter Zijlstra wrote:
-> > On Tue, 2008-04-01 at 13:40 +0200, Andi Kleen wrote:
-> > > Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com> writes:
-> > > 
-> > > > Using cpuset, now we can partition the system into multiple sched domains.
-> > > > Then, how about providing different characteristics for each domains?
-> > > 
-> > > Did you actually see much improvement in any relevant workload
-> > > from tweaking these parameters?  If yes what did you change?
-> > > And how much did it gain?
-> > > 
-> > > Ideally the kernel should perform well without much tweaking
-> > > out of the box, simply because most users won't tweak. Adding a 
-> > > lot of such parameters would imply giving up on good defaults which 
-> > > is not a good thing.
-> > 
-> > >From what I understand they need very aggressive idle balancing; much
-> > more so than what is normally healty.
-> > 
-> > I can see how something like that can be useful when you have a lot of
-> > very short running tasks. These could pile up on a few cpus and leave
-> > others idle.
-> 
-> Could the scheduler auto tune itself to this situation?
-> 
-> e.g. when it sees a row of very high run queue inbalances increase the
-> frequency of the idle balancer?
+On Monday 31 March 2008, Alex Chiang wrote:
 
-Its not actually the idle balancer that's addressed here, but that runs
-at 1/HZ, so no we can't do that faster unless you tie it to a hrtimer.
+> > So, using the patch from my last mail, I created a btrfs, but was
+> > unable to mount it...
+>
+> At some point, I got confused which btrfs trees I was working in,
+> and gotten switched up to where I had insmod'ed btrfs v0.13, but
+> was trying to mount a filesystem created with
+> btrfs-progs-unstable. Of course, I got a version mismatch when it
+> went to check for BTRFS_MAGIC and mount failed.
+>
+> Moving to btrfs-unstable allowed me to mount the filesystem.
 
-What it does do is more aggresively look for idle cpus on newidle and
-fork. Normally we only consider the socket for these lookups, they want
-a wider view.
+This is a very easy mistake to make, a long standing TODO is to make sane 
+format revision fields.  I'll include this in the multi-device code.  Thanks 
+for all the patches so far.
 
-Auto-tune, perhaps although I'm a bit skeptical of heuristics. We'd need
-data on the avg 'atom' length of the tasks and idle-ness of remote cpus
-and so on.
-
-The thing is, even then it depends on the data footprint of these tasks
-and the cost/benefit for your application.
-
-By more aggresively migrating tasks you penalize through-put but get a
-better worst case response time.
-
-I'm just not sure we can make that decision for the user.
-
+-chris
