@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761854AbYDAP2l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932356AbYDAP24@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761854AbYDAP2l (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Apr 2008 11:28:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759532AbYDAPTJ
+	id S932356AbYDAP24 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Apr 2008 11:28:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759549AbYDAPTO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Apr 2008 11:19:09 -0400
-Received: from g4t0014.houston.hp.com ([15.201.24.17]:27421 "EHLO
-	g4t0014.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759494AbYDAPSn (ORCPT
+	Tue, 1 Apr 2008 11:19:14 -0400
+Received: from g4t0015.houston.hp.com ([15.201.24.18]:17665 "EHLO
+	g4t0015.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759486AbYDAPSq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Apr 2008 11:18:43 -0400
-Message-Id: <20080401151741.465022422@ldl.fc.hp.com>
+	Tue, 1 Apr 2008 11:18:46 -0400
+Message-Id: <20080401151743.051845641@ldl.fc.hp.com>
 References: <20080401151634.730901933@ldl.fc.hp.com>
 User-Agent: quilt/0.46-1
-Date: Tue, 01 Apr 2008 09:17:03 -0600
+Date: Tue, 01 Apr 2008 09:17:11 -0600
 From: Bjorn Helgaas <bjorn.helgaas@hp.com>
 To: Len Brown <lenb@kernel.org>
 Cc: linux-acpi@vger.kernel.org
@@ -25,234 +25,144 @@ Cc: Thomas Renninger <trenn@suse.de>
 Cc: Rene Herman <rene.herman@keyaccess.nl>
 Cc: Jaroslav Kysela <perex@perex.cz>
 Cc: Andrew Morton <akpm@linux-foundation.org>
-Subject: [patch 29/37] PNP: convert encoders to use pnp_get_resource(), not pnp_resource_table
-Content-Disposition: inline; filename=pnp-convert-encoders-to-pnp_get_resource
+Subject: [patch 37/37] PNP: make interfaces private to the PNP core
+Content-Disposition: inline; filename=pnp-make-interfaces-private
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This removes more direct references to pnp_resource_table.  This
-path is used when setting the resources used by a device.
+The interfaces for registering protocols, devices, cards,
+and resource options should only be used inside the PNP core.
 
 Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
 
-Index: work7/drivers/pnp/isapnp/core.c
+---
+ drivers/pnp/base.h  |   24 +++++++++++++++++++++++-
+ include/linux/pnp.h |   34 ----------------------------------
+ 2 files changed, 23 insertions(+), 35 deletions(-)
+
+Index: work7/include/linux/pnp.h
 ===================================================================
---- work7.orig/drivers/pnp/isapnp/core.c	2008-03-31 17:12:17.000000000 -0600
-+++ work7/drivers/pnp/isapnp/core.c	2008-03-31 17:12:25.000000000 -0600
-@@ -971,42 +971,37 @@
+--- work7.orig/include/linux/pnp.h	2008-03-31 16:51:21.000000000 -0600
++++ work7/include/linux/pnp.h	2008-03-31 16:52:02.000000000 -0600
+@@ -390,19 +390,12 @@
+ #if defined(CONFIG_PNP)
  
- static int isapnp_set_resources(struct pnp_dev *dev)
- {
--	struct pnp_resource_table *res = &dev->res;
--	int tmp;
-+	int i, irq;
-+	struct resource *res;
+ /* device management */
+-int pnp_register_protocol(struct pnp_protocol *protocol);
+-void pnp_unregister_protocol(struct pnp_protocol *protocol);
+-int pnp_add_device(struct pnp_dev *dev);
+ int pnp_device_attach(struct pnp_dev *pnp_dev);
+ void pnp_device_detach(struct pnp_dev *pnp_dev);
+ extern struct list_head pnp_global;
+ extern int pnp_platform_devices;
  
- 	isapnp_cfg_begin(dev->card->number, dev->number);
- 	dev->active = 1;
--	for (tmp = 0;
--	     tmp < ISAPNP_MAX_PORT
--	     && (res->port_resource[tmp].
--		 flags & (IORESOURCE_IO | IORESOURCE_UNSET)) == IORESOURCE_IO;
--	     tmp++)
--		isapnp_write_word(ISAPNP_CFG_PORT + (tmp << 1),
--				  res->port_resource[tmp].start);
--	for (tmp = 0;
--	     tmp < ISAPNP_MAX_IRQ
--	     && (res->irq_resource[tmp].
--		 flags & (IORESOURCE_IRQ | IORESOURCE_UNSET)) == IORESOURCE_IRQ;
--	     tmp++) {
--		int irq = res->irq_resource[tmp].start;
--		if (irq == 2)
--			irq = 9;
--		isapnp_write_byte(ISAPNP_CFG_IRQ + (tmp << 1), irq);
--	}
--	for (tmp = 0;
--	     tmp < ISAPNP_MAX_DMA
--	     && (res->dma_resource[tmp].
--		 flags & (IORESOURCE_DMA | IORESOURCE_UNSET)) == IORESOURCE_DMA;
--	     tmp++)
--		isapnp_write_byte(ISAPNP_CFG_DMA + tmp,
--				  res->dma_resource[tmp].start);
--	for (tmp = 0;
--	     tmp < ISAPNP_MAX_MEM
--	     && (res->mem_resource[tmp].
--		 flags & (IORESOURCE_MEM | IORESOURCE_UNSET)) == IORESOURCE_MEM;
--	     tmp++)
--		isapnp_write_word(ISAPNP_CFG_MEM + (tmp << 3),
--				  (res->mem_resource[tmp].start >> 8) & 0xffff);
-+	for (i = 0; i < ISAPNP_MAX_PORT; i++) {
-+		res = pnp_get_resource(dev, IORESOURCE_IO, i);
-+		if (res && !(res->flags & IORESOURCE_UNSET))
-+			isapnp_write_word(ISAPNP_CFG_PORT + (i << 1),
-+					  res->start);
-+	}
-+	for (i = 0; i < ISAPNP_MAX_IRQ; i++) {
-+		res = pnp_get_resource(dev, IORESOURCE_IRQ, i);
-+		if (res && !(res->flags & IORESOURCE_UNSET)) {
-+			irq = res->start;
-+			if (irq == 2)
-+				irq = 9;
-+			isapnp_write_byte(ISAPNP_CFG_IRQ + (i << 1), irq);
-+		}
-+	}
-+	for (i = 0; i < ISAPNP_MAX_DMA; i++) {
-+		res = pnp_get_resource(dev, IORESOURCE_DMA, i);
-+		if (res && !(res->flags & IORESOURCE_UNSET))
-+			isapnp_write_byte(ISAPNP_CFG_DMA + i, res->start);
-+	}
-+	for (i = 0; i < ISAPNP_MAX_MEM; i++) {
-+		res = pnp_get_resource(dev, IORESOURCE_MEM, i);
-+		if (res && !(res->flags & IORESOURCE_UNSET))
-+			isapnp_write_word(ISAPNP_CFG_MEM + (i << 3),
-+					  (res->start >> 8) & 0xffff);
-+	}
- 	/* FIXME: We aren't handling 32bit mems properly here */
- 	isapnp_activate(dev->number);
- 	isapnp_cfg_end();
-Index: work7/drivers/pnp/pnpacpi/rsparser.c
+ /* multidevice card support */
+-int pnp_add_card(struct pnp_card *card);
+-void pnp_remove_card(struct pnp_card *card);
+-int pnp_add_card_device(struct pnp_card *card, struct pnp_dev *dev);
+-void pnp_remove_card_device(struct pnp_dev *dev);
+ struct pnp_dev *pnp_request_card_device(struct pnp_card_link *clink,
+ 					const char *id, struct pnp_dev *from);
+ void pnp_release_card_device(struct pnp_dev *dev);
+@@ -411,23 +404,12 @@
+ extern struct list_head pnp_cards;
+ 
+ /* resource management */
+-struct pnp_option *pnp_register_independent_option(struct pnp_dev *dev);
+-struct pnp_option *pnp_register_dependent_option(struct pnp_dev *dev,
+-						 int priority);
+-int pnp_register_irq_resource(struct pnp_option *option, struct pnp_irq *data);
+-int pnp_register_dma_resource(struct pnp_option *option, struct pnp_dma *data);
+-int pnp_register_port_resource(struct pnp_option *option,
+-			       struct pnp_port *data);
+-int pnp_register_mem_resource(struct pnp_option *option, struct pnp_mem *data);
+-void pnp_init_resources(struct pnp_dev *dev);
+ int pnp_auto_config_dev(struct pnp_dev *dev);
+-int pnp_validate_config(struct pnp_dev *dev);
+ int pnp_start_dev(struct pnp_dev *dev);
+ int pnp_stop_dev(struct pnp_dev *dev);
+ int pnp_activate_dev(struct pnp_dev *dev);
+ int pnp_disable_dev(struct pnp_dev *dev);
+ 
+-
+ /* protocol helpers */
+ int pnp_is_active(struct pnp_dev *dev);
+ int compare_pnp_id(struct pnp_id *pos, const char *id);
+@@ -437,35 +419,19 @@
+ #else
+ 
+ /* device management */
+-static inline int pnp_register_protocol(struct pnp_protocol *protocol) { return -ENODEV; }
+-static inline void pnp_unregister_protocol(struct pnp_protocol *protocol) { }
+-static inline int pnp_init_device(struct pnp_dev *dev) { return -ENODEV; }
+-static inline int pnp_add_device(struct pnp_dev *dev) { return -ENODEV; }
+ static inline int pnp_device_attach(struct pnp_dev *pnp_dev) { return -ENODEV; }
+ static inline void pnp_device_detach(struct pnp_dev *pnp_dev) { }
+ 
+ #define pnp_platform_devices 0
+ 
+ /* multidevice card support */
+-static inline int pnp_add_card(struct pnp_card *card) { return -ENODEV; }
+-static inline void pnp_remove_card(struct pnp_card *card) { }
+-static inline int pnp_add_card_device(struct pnp_card *card, struct pnp_dev *dev) { return -ENODEV; }
+-static inline void pnp_remove_card_device(struct pnp_dev *dev) { }
+ static inline struct pnp_dev *pnp_request_card_device(struct pnp_card_link *clink, const char *id, struct pnp_dev *from) { return NULL; }
+ static inline void pnp_release_card_device(struct pnp_dev *dev) { }
+ static inline int pnp_register_card_driver(struct pnp_card_driver *drv) { return -ENODEV; }
+ static inline void pnp_unregister_card_driver(struct pnp_card_driver *drv) { }
+ 
+ /* resource management */
+-static inline struct pnp_option *pnp_register_independent_option(struct pnp_dev *dev) { return NULL; }
+-static inline struct pnp_option *pnp_register_dependent_option(struct pnp_dev *dev, int priority) { return NULL; }
+-static inline int pnp_register_irq_resource(struct pnp_option *option, struct pnp_irq *data) { return -ENODEV; }
+-static inline int pnp_register_dma_resource(struct pnp_option *option, struct pnp_dma *data) { return -ENODEV; }
+-static inline int pnp_register_port_resource(struct pnp_option *option, struct pnp_port *data) { return -ENODEV; }
+-static inline int pnp_register_mem_resource(struct pnp_option *option, struct pnp_mem *data) { return -ENODEV; }
+-static inline void pnp_init_resources(struct pnp_dev *dev) { }
+ static inline int pnp_auto_config_dev(struct pnp_dev *dev) { return -ENODEV; }
+-static inline int pnp_validate_config(struct pnp_dev *dev) { return -ENODEV; }
+ static inline int pnp_start_dev(struct pnp_dev *dev) { return -ENODEV; }
+ static inline int pnp_stop_dev(struct pnp_dev *dev) { return -ENODEV; }
+ static inline int pnp_activate_dev(struct pnp_dev *dev) { return -ENODEV; }
+Index: work7/drivers/pnp/base.h
 ===================================================================
---- work7.orig/drivers/pnp/pnpacpi/rsparser.c	2008-03-31 17:12:23.000000000 -0600
-+++ work7/drivers/pnp/pnpacpi/rsparser.c	2008-03-31 17:12:25.000000000 -0600
-@@ -852,7 +852,6 @@
- 
- int pnpacpi_encode_resources(struct pnp_dev *dev, struct acpi_buffer *buffer)
- {
--	struct pnp_resource_table *res_table = &dev->res;
- 	int i = 0;
- 	/* pnpacpi_build_resource_template allocates extra mem */
- 	int res_cnt = (buffer->length - 1) / sizeof(struct acpi_resource) - 1;
-@@ -863,45 +862,43 @@
- 		switch (resource->type) {
- 		case ACPI_RESOURCE_TYPE_IRQ:
- 			pnpacpi_encode_irq(resource,
--					   &res_table->irq_resource[irq]);
-+				pnp_get_resource(dev, IORESOURCE_IRQ, irq));
- 			irq++;
- 			break;
- 
- 		case ACPI_RESOURCE_TYPE_DMA:
- 			pnpacpi_encode_dma(resource,
--					   &res_table->dma_resource[dma]);
-+				pnp_get_resource(dev, IORESOURCE_DMA, dma));
- 			dma++;
- 			break;
- 		case ACPI_RESOURCE_TYPE_IO:
- 			pnpacpi_encode_io(resource,
--					  &res_table->port_resource[port]);
-+				pnp_get_resource(dev, IORESOURCE_IO, port));
- 			port++;
- 			break;
- 		case ACPI_RESOURCE_TYPE_FIXED_IO:
- 			pnpacpi_encode_fixed_io(resource,
--						&res_table->
--						port_resource[port]);
-+				pnp_get_resource(dev, IORESOURCE_IO, port));
- 			port++;
- 			break;
- 		case ACPI_RESOURCE_TYPE_MEMORY24:
- 			pnpacpi_encode_mem24(resource,
--					     &res_table->mem_resource[mem]);
-+				pnp_get_resource(dev, IORESOURCE_MEM, mem));
- 			mem++;
- 			break;
- 		case ACPI_RESOURCE_TYPE_MEMORY32:
- 			pnpacpi_encode_mem32(resource,
--					     &res_table->mem_resource[mem]);
-+				pnp_get_resource(dev, IORESOURCE_MEM, mem));
- 			mem++;
- 			break;
- 		case ACPI_RESOURCE_TYPE_FIXED_MEMORY32:
- 			pnpacpi_encode_fixed_mem32(resource,
--						   &res_table->
--						   mem_resource[mem]);
-+				pnp_get_resource(dev, IORESOURCE_MEM, mem));
- 			mem++;
- 			break;
- 		case ACPI_RESOURCE_TYPE_EXTENDED_IRQ:
- 			pnpacpi_encode_ext_irq(resource,
--					       &res_table->irq_resource[irq]);
-+				pnp_get_resource(dev, IORESOURCE_IRQ, irq));
- 			irq++;
- 			break;
- 		case ACPI_RESOURCE_TYPE_START_DEPENDENT:
-Index: work7/drivers/pnp/pnpbios/rsparser.c
-===================================================================
---- work7.orig/drivers/pnp/pnpbios/rsparser.c	2008-03-31 17:11:07.000000000 -0600
-+++ work7/drivers/pnp/pnpbios/rsparser.c	2008-03-31 17:12:25.000000000 -0600
-@@ -572,7 +572,6 @@
- 							     unsigned char *p,
- 							     unsigned char *end)
- {
--	struct pnp_resource_table *res = &dev->res;
- 	unsigned int len, tag;
- 	int port = 0, irq = 0, dma = 0, mem = 0;
- 
-@@ -595,42 +594,48 @@
- 		case LARGE_TAG_MEM:
- 			if (len != 9)
- 				goto len_err;
--			pnpbios_encode_mem(p, &res->mem_resource[mem]);
-+			pnpbios_encode_mem(p,
-+				pnp_get_resource(dev, IORESOURCE_MEM, mem));
- 			mem++;
- 			break;
- 
- 		case LARGE_TAG_MEM32:
- 			if (len != 17)
- 				goto len_err;
--			pnpbios_encode_mem32(p, &res->mem_resource[mem]);
-+			pnpbios_encode_mem32(p,
-+				pnp_get_resource(dev, IORESOURCE_MEM, mem));
- 			mem++;
- 			break;
- 
- 		case LARGE_TAG_FIXEDMEM32:
- 			if (len != 9)
- 				goto len_err;
--			pnpbios_encode_fixed_mem32(p, &res->mem_resource[mem]);
-+			pnpbios_encode_fixed_mem32(p,
-+				pnp_get_resource(dev, IORESOURCE_MEM, mem));
- 			mem++;
- 			break;
- 
- 		case SMALL_TAG_IRQ:
- 			if (len < 2 || len > 3)
- 				goto len_err;
--			pnpbios_encode_irq(p, &res->irq_resource[irq]);
-+			pnpbios_encode_irq(p,
-+				pnp_get_resource(dev, IORESOURCE_IRQ, irq));
- 			irq++;
- 			break;
- 
- 		case SMALL_TAG_DMA:
- 			if (len != 2)
- 				goto len_err;
--			pnpbios_encode_dma(p, &res->dma_resource[dma]);
-+			pnpbios_encode_dma(p,
-+				pnp_get_resource(dev, IORESOURCE_DMA, dma));
- 			dma++;
- 			break;
- 
- 		case SMALL_TAG_PORT:
- 			if (len != 7)
- 				goto len_err;
--			pnpbios_encode_port(p, &res->port_resource[port]);
-+			pnpbios_encode_port(p,
-+				pnp_get_resource(dev, IORESOURCE_IO, port));
- 			port++;
- 			break;
- 
-@@ -641,7 +646,8 @@
- 		case SMALL_TAG_FIXEDPORT:
- 			if (len != 3)
- 				goto len_err;
--			pnpbios_encode_fixed_port(p, &res->port_resource[port]);
-+			pnpbios_encode_fixed_port(p,
-+				pnp_get_resource(dev, IORESOURCE_IO, port));
- 			port++;
- 			break;
- 
+--- work7.orig/drivers/pnp/base.h	2008-03-31 16:51:21.000000000 -0600
++++ work7/drivers/pnp/base.h	2008-03-31 16:55:28.000000000 -0600
+@@ -1,11 +1,33 @@
+ extern spinlock_t pnp_lock;
+ void *pnp_alloc(long size);
++
++int pnp_register_protocol(struct pnp_protocol *protocol);
++void pnp_unregister_protocol(struct pnp_protocol *protocol);
++
+ void pnp_eisa_id_to_string(u32 id, char *str);
+ struct pnp_dev *pnp_alloc_dev(struct pnp_protocol *, int id, char *pnpid);
+ struct pnp_card *pnp_alloc_card(struct pnp_protocol *, int id, char *pnpid);
++
++int pnp_add_device(struct pnp_dev *dev);
+ struct pnp_id *pnp_add_id(struct pnp_dev *dev, char *id);
+-struct pnp_id *pnp_add_card_id(struct pnp_card *card, char *id);
+ int pnp_interface_attach_device(struct pnp_dev *dev);
++
++int pnp_add_card(struct pnp_card *card);
++struct pnp_id *pnp_add_card_id(struct pnp_card *card, char *id);
++void pnp_remove_card(struct pnp_card *card);
++int pnp_add_card_device(struct pnp_card *card, struct pnp_dev *dev);
++void pnp_remove_card_device(struct pnp_dev *dev);
++
++struct pnp_option *pnp_register_independent_option(struct pnp_dev *dev);
++struct pnp_option *pnp_register_dependent_option(struct pnp_dev *dev,
++						 int priority);
++int pnp_register_irq_resource(struct pnp_option *option, struct pnp_irq *data);
++int pnp_register_dma_resource(struct pnp_option *option, struct pnp_dma *data);
++int pnp_register_port_resource(struct pnp_option *option,
++			       struct pnp_port *data);
++int pnp_register_mem_resource(struct pnp_option *option, struct pnp_mem *data);
++void pnp_init_resources(struct pnp_dev *dev);
++
+ void pnp_fixup_device(struct pnp_dev *dev);
+ void pnp_free_option(struct pnp_option *option);
+ int __pnp_add_device(struct pnp_dev *dev);
 
 -- 
