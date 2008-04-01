@@ -1,62 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752869AbYDAER3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753204AbYDAEbm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752869AbYDAER3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Apr 2008 00:17:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750868AbYDAERT
+	id S1753204AbYDAEbm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Apr 2008 00:31:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751291AbYDAEbd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Apr 2008 00:17:19 -0400
-Received: from mail.lang.hm ([64.81.33.126]:45415 "EHLO bifrost.lang.hm"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750769AbYDAERS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Apr 2008 00:17:18 -0400
-Date: Mon, 31 Mar 2008 21:23:44 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: Daniel Phillips <phillips@phunq.net>
-cc: David Newall <davidn@davidnewall.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Willy Tarreau <w@1wt.eu>, linux-kernel@vger.kernel.org
-Subject: Re: [ANNOUNCE] Ramback: faster than a speeding bullet
-In-Reply-To: <200803312107.48892.phillips@phunq.net>
-Message-ID: <alpine.DEB.1.10.0803312121141.14049@asgard.lang.hm>
-References: <200803092346.17556.phillips@phunq.net> <200803310440.33019.phillips@phunq.net> <alpine.DEB.1.00.0803311727500.31200@asgard.lang.hm> <200803312107.48892.phillips@phunq.net>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Tue, 1 Apr 2008 00:31:33 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:55261 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751059AbYDAEbc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Apr 2008 00:31:32 -0400
+Message-ID: <47F1BA2E.9040706@cn.fujitsu.com>
+Date: Tue, 01 Apr 2008 12:29:34 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+To: tony.luck@intel.com
+CC: linux-ia64@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] IA64: use goto to jump out do/while_each_thread
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 31 Mar 2008, Daniel Phillips wrote:
+do_each_thread/while_each_thread is a double loop, so
+should use 'goto' rather than 'break' to break out
+the loop.
 
-> On Monday 31 March 2008 17:28, david@lang.hm wrote:
->> On Mon, 31 Mar 2008, Daniel Phillips wrote:
->>
->>> On Tuesday 18 March 2008 09:36, david@lang.hm wrote:
->>>> P.S. 8xPCI-e slots are only able to do 2GB/s of data transfer, in an
->>>> earlier post Daniel claimed that you needed 3GB/s of disk to mirror to the
->>>> disk, so the scenerio listed above looses 1/3 of it's performance compared
->>>> to what was being claimed earlier.
->>>
->>> Each Violin 1010 has two 8xPCI-e interfaces.
->>
->> but if you use them for redundancy by hooking them to two machines you can
->> only use one of them on your active system.
->
-> That is why you use two Violin 1010 boxes, each connected to two
-> servers.  The resulting mirror will have roughly 1 GByte/sec write
-> bandwidth and 3 GByte/sec read bandwidth.  Fast enough for you?  No?
->
-> Well then...
->
-> Continue this idea to achieve whatever bandwidth you want to the ramdisk,
-> subject to finding server motherboards that can take lots of PCI-e 8x
-> cards, which are admittedly rare, but see "have your checkbook ready".
+Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+---
+ arch/ia64/kernel/perfmon.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-so is it possible to use ramback safely without buying the violin boxes? 
-from your posts it doesn't seem like it.
-
-as a sample, say you were to take a pair of the sun x4600 boxes and 
-populate them with 256G of ram each. how would you use 200G of ram on the 
-box as a database with ramback?
-
-David Lang
+diff --git a/arch/ia64/kernel/perfmon.c b/arch/ia64/kernel/perfmon.c
+index a2aabfd..d1d24f4 100644
+--- a/arch/ia64/kernel/perfmon.c
++++ b/arch/ia64/kernel/perfmon.c
+@@ -4204,10 +4204,10 @@ pfm_check_task_exist(pfm_context_t *ctx)
+ 	do_each_thread (g, t) {
+ 		if (t->thread.pfm_context == ctx) {
+ 			ret = 0;
+-			break;
++			goto out;
+ 		}
+ 	} while_each_thread (g, t);
+-
++out:
+ 	read_unlock(&tasklist_lock);
+ 
+ 	DPRINT(("pfm_check_task_exist: ret=%d ctx=%p\n", ret, ctx));
+-- 
+1.5.4.rc3
