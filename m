@@ -1,70 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760069AbYDAWdT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759373AbYDAWie@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760069AbYDAWdT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Apr 2008 18:33:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755807AbYDAWdG
+	id S1759373AbYDAWie (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Apr 2008 18:38:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752841AbYDAWi0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Apr 2008 18:33:06 -0400
-Received: from e31.co.us.ibm.com ([32.97.110.149]:48288 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755149AbYDAWdE (ORCPT
+	Tue, 1 Apr 2008 18:38:26 -0400
+Received: from mga07.intel.com ([143.182.124.22]:10553 "EHLO
+	azsmga101.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750868AbYDAWi0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Apr 2008 18:33:04 -0400
-Subject: Re: [ANNOUNCE] Btrfs v0.13
-From: Badari Pulavarty <pbadari@gmail.com>
-To: Chris Mason <chris.mason@oracle.com>
-Cc: lkml <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       btrfs-devel@oss.oracle.com
-In-Reply-To: <1207092533.30407.23.camel@dyn9047017100.beaverton.ibm.com>
-References: <200802211609.50563.chris.mason@oracle.com>
-	 <1207092533.30407.23.camel@dyn9047017100.beaverton.ibm.com>
-Content-Type: text/plain
-Date: Tue, 01 Apr 2008 15:33:33 -0800
-Message-Id: <1207092813.30407.25.camel@dyn9047017100.beaverton.ibm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.0.4 (2.0.4-4) 
-Content-Transfer-Encoding: 7bit
+	Tue, 1 Apr 2008 18:38:26 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,589,1199692800"; 
+   d="scan'208";a="226138767"
+Message-ID: <47F2B788.1030101@linux.intel.com>
+Date: Tue, 01 Apr 2008 15:30:32 -0700
+From: Arjan van de Ven <arjan@linux.intel.com>
+User-Agent: Thunderbird 2.0.0.12 (Windows/20080213)
+MIME-Version: 1.0
+To: =?ISO-8859-1?Q?Thomas_Hellstr=F6m?= <thomas@tungstengraphics.com>
+CC: Andi Kleen <andi@firstfloor.org>, Dave Airlie <airlied@redhat.com>,
+       linux-kernel@vger.kernel.org, tglx@linutronix.de, mingo@redhat.com
+Subject: Re: [PATCH] x86: create array based interface to change page attribute
+References: <1206940788.7250.13.camel@clockmaker.usersys.redhat.com> <87myof8ief.fsf@basil.nowhere.org> <47F098E8.1050605@tungstengraphics.com> <20080331083816.GC29105@one.firstfloor.org> <47F0A988.7010707@tungstengraphics.com> <20080331091829.GD29105@one.firstfloor.org> <47F0C6C2.2000004@tungstengraphics.com> <47F10C62.7040500@linux.intel.com> <47F11443.7050302@tungstengraphics.com> <47F11616.3020403@linux.intel.com> <47F11ED3.40803@tungstengraphics.com> <47F2A202.1040900@linux.intel.com> <47F2A948.5070108@tungstengraphics.com>
+In-Reply-To: <47F2A948.5070108@tungstengraphics.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-04-01 at 15:28 -0800, Badari Pulavarty wrote:
-> On Thu, 2008-02-21 at 16:09 -0500, Chris Mason wrote:
-> > Hello everyone,
-> > 
-> > Btrfs v0.13 is now available for download from:
-> > 
-> > http://oss.oracle.com/projects/btrfs/
-> 
-> Hi Chris,
-> 
-> I am trying btrfs for the first time. Sorry :(
-> Not able to compile btrfs-progs. Where should I
-> get this uuid.h from ?
+Thomas Hellström wrote:
+> Arjan van de Ven wrote:
+>> Thomas Hellström wrote:
+>>> Given this problem, the previously mentioned use-case, and the fact 
+>>> that we mostly really use user-space mappings,
+>>> Is there a possibility we could add the following functions to Dave's 
+>>> patch (provided they would work as intended, of course, namely 
+>>> invalidate / bring back the kernel mapping).
+>>
+>> sadly there are multiple mappings, both in theory and practice.
+>> Especially the _np / _p functions specifically work on only the 
+>> mapping you specify.
+>>
+>> For this to work we would need to somehow make a "mark all mappings 
+>> NP, but please only do the kernel ones" kind of thing.
+>> The semantics of that are... lets say messy at best.
+> Hmm, I'm not sure I follow you here. Are you saying that it's illegal to 
+> have an NP mapping of a page (which, If I understand it correctly, means 
+> no mapping at all) at the same time as you have a, say user-space WC 
+> mapping pointing to the same physical page?
 
-
-Never mind. Found the answer :)
-
-Thanks,
-Badari
+no.
+What I'm saying is that even if you make one mapping NP, it's hard to know you got all of them,
+even just the kernel one.
 
 > 
-> Thanks,
-> Badari
-> 
-> 3b155:~/btrfs-progs-0.13 # make
-> ls mkfs.c
-> mkfs.c
-> gcc -Wp,-MMD,./.mkfs.o.d,-MT,mkfs.o -Wall -fno-strict-aliasing -
-> D_FILE_OFFSET_BITS=64 -D_FORTIFY_SOURCE=2 -g -Werror -c mkfs.c
-> mkfs.c:30:23: uuid/uuid.h: No such file or directory
-> 
-> 
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+> I was under the impression that calling CPA on the kernel mapping of 
+> that page would do the rest?
 
+this is not a correct assumption in general, especially not for things like
+"present".
+If a page is mapped 3 times in the kernel, and you set one to "np", the others
+WILL stay mapped.
+
+(and CPA itself no longer exists period ;)
