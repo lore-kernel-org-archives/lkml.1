@@ -1,60 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756851AbYDANZs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757939AbYDAN1T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756851AbYDANZs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Apr 2008 09:25:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752805AbYDANZj
+	id S1757939AbYDAN1T (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Apr 2008 09:27:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754615AbYDAN1J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Apr 2008 09:25:39 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:33846 "EHLO
+	Tue, 1 Apr 2008 09:27:09 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:33854 "EHLO
 	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752047AbYDANZj (ORCPT
+	with ESMTP id S1752937AbYDAN1I (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Apr 2008 09:25:39 -0400
-Date: Tue, 1 Apr 2008 15:29:25 +0200
+	Tue, 1 Apr 2008 09:27:08 -0400
+Date: Tue, 1 Apr 2008 15:30:53 +0200
 From: Andi Kleen <andi@firstfloor.org>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Andi Kleen <andi@firstfloor.org>,
-       Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>,
-       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Paul Jackson <pj@sgi.com>
-Subject: Re: [PATCH 1/2] Customize sched domain via cpuset
-Message-ID: <20080401132924.GI29105@one.firstfloor.org>
-References: <47F21BE3.5030705@jp.fujitsu.com> <87zlsdzttp.fsf@basil.nowhere.org> <1207050968.8514.721.camel@twins>
+To: Jiri Kosina <jkosina@suse.cz>
+Cc: Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org
+Subject: Re: spinlocks -- why are releases inlined and acquires are not?
+Message-ID: <20080401133053.GJ29105@one.firstfloor.org>
+References: <Pine.LNX.4.64.0804010202390.5541@jikos.suse.cz> <Pine.LNX.4.64.0804010236110.5541@jikos.suse.cz> <20080401083359.GB32272@elte.hu> <Pine.LNX.4.64.0804011034410.5541@jikos.suse.cz> <874pal25iu.fsf@basil.nowhere.org> <Pine.LNX.4.64.0804011436150.5541@jikos.suse.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1207050968.8514.721.camel@twins>
+In-Reply-To: <Pine.LNX.4.64.0804011436150.5541@jikos.suse.cz>
 User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 01, 2008 at 01:56:08PM +0200, Peter Zijlstra wrote:
-> On Tue, 2008-04-01 at 13:40 +0200, Andi Kleen wrote:
-> > Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com> writes:
-> > 
-> > > Using cpuset, now we can partition the system into multiple sched domains.
-> > > Then, how about providing different characteristics for each domains?
-> > 
-> > Did you actually see much improvement in any relevant workload
-> > from tweaking these parameters?  If yes what did you change?
-> > And how much did it gain?
-> > 
-> > Ideally the kernel should perform well without much tweaking
-> > out of the box, simply because most users won't tweak. Adding a 
-> > lot of such parameters would imply giving up on good defaults which 
-> > is not a good thing.
+On Tue, Apr 01, 2008 at 02:40:49PM +0200, Jiri Kosina wrote:
+> On Tue, 1 Apr 2008, Andi Kleen wrote:
 > 
-> >From what I understand they need very aggressive idle balancing; much
-> more so than what is normally healty.
+> > At some point -- but that was before queued locks -- I noticed that for 
+> > i386 spin unlocks the call sequence for the sub function is actually 
+> > larger in code than the actual spin unlock operation and for x86-64 it 
+> > was about the same. 
 > 
-> I can see how something like that can be useful when you have a lot of
-> very short running tasks. These could pile up on a few cpus and leave
-> others idle.
+> spin unlocks seem to be properly inlined anyway, so that should be fine. 
+> My concern here is the non-inlining of spin locks, for which I don't think 
+> your argument above is also valid, right?
 
-Could the scheduler auto tune itself to this situation?
+When I did the original numbers (again before queued locks) the
+call was slightly shorter than the actual spin lock operation.
 
-e.g. when it sees a row of very high run queue inbalances increase the
-frequency of the idle balancer?
+This was not counting register allocator effects though which
+are difficult to measure generally.
 
 -Andi
