@@ -1,113 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754573AbYDAB6n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754739AbYDACML@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754573AbYDAB6n (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Mar 2008 21:58:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752274AbYDAB6d
+	id S1754739AbYDACML (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Mar 2008 22:12:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752330AbYDACL7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Mar 2008 21:58:33 -0400
-Received: from netrider.rowland.org ([192.131.102.5]:2154 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751682AbYDAB6c (ORCPT
+	Mon, 31 Mar 2008 22:11:59 -0400
+Received: from moutng.kundenserver.de ([212.227.126.188]:53749 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752086AbYDACL6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Mar 2008 21:58:32 -0400
-Date: Mon, 31 Mar 2008 21:58:31 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@netrider.rowland.org
-To: Sergey Dolgov <solkaa@gmail.com>
-cc: linux-kernel@vger.kernel.org, <linux-usb@vger.kernel.org>
-Subject: Re: usb-storage, error reading the last 8 sectors, regression in
- 2.6.25-rc7
-In-Reply-To: <20080401011837.GA5385@slk.laptop>
-Message-ID: <Pine.LNX.4.44L0.0803312143180.14330-100000@netrider.rowland.org>
+	Mon, 31 Mar 2008 22:11:58 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
+Subject: Re: [RFC PATCH 19/26] UBIFS: add Garbage Collector
+Date: Tue, 1 Apr 2008 04:11:39 +0200
+User-Agent: KMail/1.9.9
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Adrian Hunter <ext-adrian.hunter@nokia.com>
+References: <1206629746-4298-1-git-send-email-Artem.Bityutskiy@nokia.com> <1206629746-4298-20-git-send-email-Artem.Bityutskiy@nokia.com>
+In-Reply-To: <1206629746-4298-20-git-send-email-Artem.Bityutskiy@nokia.com>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200804010411.39722.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1+JoVJUANbhOcOdM5MoOrxCSok2lBJW0SscbJI
+ +A2qV0tq4oQScGfhDuxgu19SluMDgirPYxyRfOEsRUoHwYRKmc
+ B5ELIpkE6oHkBkawwuSbg==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 1 Apr 2008, Sergey Dolgov wrote:
+On Thursday 27 March 2008, Artem Bityutskiy wrote:
+> + * Note, if the file-system is close to be full, this function may return
+> + * %-EAGAIN infinitely, so the caller has to limit amount of re-invocations of
+> + * the function. E.g., this happens if the limits on the journal size are too
+> + * tough and GC writes too much to the journal before an LEB is freed. This
+> + * might also mean that the journal is too large, and the TNC becomes to big,
+> + * so that the shrinker is constantly called, finds not clean znodes to free,
+> + * and requests commit. Well, this may also happen if the journal is all right,
+> + * but another kernel process consumes too much memory. Anyway, infinite
+> + * %-EAGAIN may happen, but in some extreme/misconfiguration cases.
 
-> On Mon, Mar 31, 2008 at 02:32:12AM +0400, Sergey Dolgov wrote:
-> > On Sun, Mar 30, 2008 at 02:59:49PM -0400, Alan Stern wrote:
-> > > On Sun, 30 Mar 2008, Sergey Dolgov wrote:
-> > > 
-> > > Can you build both 2.6.24.4 and 2.6.25-rc7 with
-> > > CONFIG_USB_STORAGE_DEBUG enabled, and post the dmesg logs from both
-> > > kernels showing what happens when the SDHC card is probed during boot?
-> > > Comparing the two logs should indicate where the crucial difference 
-> > > lies.
-> > 
-> > The dmesg output for 2.6.25-rc7 with USB storage debugging enabled is
-> > attached. I hope to produce the same for 2.6.24.4 on Monday.
-> > 
-> 
-> Here goes...
+This comment sounds a little bit scary, but that may only be because I don't
+understand the worst-case scenario.
 
-The difference is interesting.  Here's the version that works:
+Why can't you guarantee that there is always enough space to successfully
+run GC, e.g. by reserving some space that can never be used by file data?
 
-[   23.902571] usb-storage: Command READ_10 (10 bytes)
-[   23.902575] usb-storage:  28 00 00 ee f3 f8 00 00 08 00
-[   23.902591] usb-storage: Bulk Command S 0x43425355 T 0x16 L 4096 F 128 Trg 0 LUN 0 CL 10
-[   23.902598] usb-storage: usb_stor_bulk_transfer_buf: xfer 31 bytes
-[   23.902704] usb-storage: Status code 0; transferred 31/31
-[   23.902709] usb-storage: -- transfer complete
-[   23.902713] usb-storage: Bulk command transfer result=0
-[   23.902720] usb-storage: usb_stor_bulk_transfer_sglist: xfer 4096 bytes, 1 entries
-[   23.903337] usb-storage: Status code 0; transferred 4096/4096
-[   23.903343] usb-storage: -- transfer complete
-[   23.903349] usb-storage: Bulk data transfer result 0x0
-[   23.903354] usb-storage: Attempting to get CSW...
-[   23.903359] usb-storage: usb_stor_bulk_transfer_buf: xfer 13 bytes
-[   23.903448] usb-storage: Status code 0; transferred 13/13
-[   23.903453] usb-storage: -- transfer complete
-[   23.903457] usb-storage: Bulk status result = 0
-[   23.903463] usb-storage: Bulk Status S 0x53425355 T 0x16 R 0 Stat 0x0
-[   23.903469] usb-storage: scsi cmd done, result=0x0
+More importantly, if you get into the situation that the GC doesn't make
+forward progress any more, can you guarantee that it is always possible
+for the user to delete files in order to make space again? Or can you
+get an -ENOSPC on unlink in that case?
 
-And here's the version that fails:
-
-[   10.760357] usb-storage: Command READ_10 (10 bytes)
-[   10.760361] usb-storage:  28 00 00 ee f3 f8 00 00 07 00
-[   10.760376] usb-storage: Bulk Command S 0x43425355 T 0x16 L 3584 F 128 Trg 0 LUN 0 CL 10
-[   10.760384] usb-storage: usb_stor_bulk_transfer_buf: xfer 31 bytes
-[   10.760466] usb-storage: Status code 0; transferred 31/31
-[   10.760471] usb-storage: -- transfer complete
-[   10.760475] usb-storage: Bulk command transfer result=0
-[   10.760482] usb-storage: usb_stor_bulk_transfer_sglist: xfer 3584 bytes, 1 entries
-[   10.761089] usb-storage: Status code 0; transferred 3584/3584
-[   10.761094] usb-storage: -- transfer complete
-[   10.761099] usb-storage: Bulk data transfer result 0x0
-[   10.761104] usb-storage: Attempting to get CSW...
-[   10.761109] usb-storage: usb_stor_bulk_transfer_buf: xfer 13 bytes
-[   10.761214] usb-storage: Status code -32; transferred 0/13
-[   10.761220] usb-storage: clearing endpoint halt for pipe 0xc0010280
-[   10.761231] usb-storage: usb_stor_control_msg: rq=01 rqtype=02 value=0000 index=82 len=0
-[   10.761337] usb-storage: usb_stor_clear_halt: result = 0
-[   10.761342] usb-storage: Attempting to get CSW (2nd try)...
-[   10.761348] usb-storage: usb_stor_bulk_transfer_buf: xfer 13 bytes
-[   10.761461] usb-storage: Status code 0; transferred 13/13
-[   10.761466] usb-storage: -- transfer complete
-[   10.761470] usb-storage: Bulk status result = 0
-[   10.761477] usb-storage: Bulk Status S 0x53425355 T 0x16 R 0 Stat 0x1
-[   10.761483] usb-storage: -- transport indicates command failure
-
-The difference is that the first reads 8 sectors starting 8 sectors 
-from the end of the device, whereas the second reads only 7 sectors 
-starting from the same place.  There's no reason this should fail; the 
-device reports sense key = 4, ASC = 0x11, ASCQ = 0, which means 
-Hardware error, Unrecoverable Read Error.  Of course that is nonsense.
-
-Nevertheless, it's clear that the problem has nothing to do with the 
-USB stack.  The real source of the problem lies in the device itself, 
-for reporting a bogus error when in fact nothing went wrong.  That may 
-also explain why you don't always see the problem -- sometimes the 
-device works the way it ought to.
-
-It's being triggered by a change in some other part of the system.  I
-don't know who is responsible for those reads at the end of the device.
-It could be the partition detection code (EFI GUID does that sort of
-thing), or it could even be a userspace program (part of udev perhaps; 
-I think /lib/udev/vol_id reads strange parts of a disk).
-
-Alan Stern
-
+	Arnd <><
