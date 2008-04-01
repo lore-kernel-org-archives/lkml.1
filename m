@@ -1,133 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759295AbYDARhR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759302AbYDARuA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759295AbYDARhR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Apr 2008 13:37:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756521AbYDARhA
+	id S1759302AbYDARuA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Apr 2008 13:50:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756863AbYDARtw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Apr 2008 13:37:00 -0400
-Received: from smtp-out3.tiscali.nl ([195.241.79.178]:32870 "EHLO
-	smtp-out3.tiscali.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756362AbYDARg7 (ORCPT
+	Tue, 1 Apr 2008 13:49:52 -0400
+Received: from nf-out-0910.google.com ([64.233.182.185]:58650 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756851AbYDARtv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Apr 2008 13:36:59 -0400
-Message-ID: <47F272B7.6020701@tiscali.nl>
-Date: Tue, 01 Apr 2008 19:36:55 +0200
-From: Roel Kluin <12o3l@tiscali.nl>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Tue, 1 Apr 2008 13:49:51 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
+        b=cSYr3pD5sD//+I1NHMkdBevLcqUVm5L4ZXf93tRdvFNK9Fpbr/gjkT5qTRvrjctgqAvY8xgjQSnb9hFVzLqbJnc3FHCPGkBd85nYLUOszrug7pGgtMvUJ50TfouW+ejnTASFBsdSaVOhrtaOP6YI9vHN8RIjnhDz0at3HkUGcp8=
+Date: Tue, 1 Apr 2008 21:49:13 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: Mauro Carvalho Chehab <mchehab@infradead.org>, video4linux-list@redhat.com
+Subject: [PATCH] bttv: fix missed index check
+Message-ID: <20080401174913.GD7654@cvg>
 MIME-Version: 1.0
-To: netdev@vger.kernel.org
-CC: trivial@kernel.org, lkml <linux-kernel@vger.kernel.org>
-Subject: [PATCH 3/8] : replace `__attribute' by `__attribute__'
-References: <47F26FF6.8070300@tiscali.nl>
-In-Reply-To: <47F26FF6.8070300@tiscali.nl>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-replace `__attribute' by `__attribute__'
+We should check for proper index first
 
-Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
+Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
 ---
-diff --git a/drivers/net/3c527.h b/drivers/net/3c527.h
-index 75e28fe..21c59bd 100644
---- a/drivers/net/3c527.h
-+++ b/drivers/net/3c527.h
-@@ -34,7 +34,7 @@ struct mc32_mailbox
- {
-  	u16 mbox;
-  	u16 data[1];
--} __attribute((packed));
-+} __attribute__((packed));
- 
- struct skb_header
- {
-@@ -43,7 +43,7 @@ struct skb_header
- 	u16 next;	/* Do not change! */
- 	u16 length;
- 	u32 data;
--} __attribute((packed));
-+} __attribute__((packed));
- 
- struct mc32_stats
- {
-@@ -68,7 +68,7 @@ struct mc32_stats
- 	u32 dataA[6];
- 	u16 dataB[5];
- 	u32 dataC[14];
--} __attribute((packed));
-+} __attribute__((packed));
- 
- #define STATUS_MASK	0x0F
- #define COMPLETED	(1<<7)
-diff --git a/drivers/net/irda/vlsi_ir.h b/drivers/net/irda/vlsi_ir.h
-index c8b9c74..200af2b 100644
---- a/drivers/net/irda/vlsi_ir.h
-+++ b/drivers/net/irda/vlsi_ir.h
-@@ -545,7 +545,7 @@ struct ring_descr_hw {
- 			u8		addr_res[3];
- 			volatile u8	status;		/* descriptor status */
- 		} __attribute__((packed)) rd_s;
--	} __attribute((packed)) rd_u;
-+	} __attribute__((packed)) rd_u;
- } __attribute__ ((packed));
- 
- #define rd_addr		rd_u.addr
-diff --git a/drivers/net/lib8390.c b/drivers/net/lib8390.c
-index 0c5447d..c681056 100644
---- a/drivers/net/lib8390.c
-+++ b/drivers/net/lib8390.c
-@@ -1116,7 +1116,7 @@ static void NS8390_trigger_send(struct net_device *dev, unsigned int length,
- 								int start_page)
- {
- 	unsigned long e8390_base = dev->base_addr;
-- 	struct ei_device *ei_local __attribute((unused)) = (struct ei_device *) netdev_priv(dev);
-+ 	struct ei_device *ei_local __attribute__((unused)) = (struct ei_device *) netdev_priv(dev);
- 
- 	ei_outb_p(E8390_NODMA+E8390_PAGE0, e8390_base+E8390_CMD);
- 
-diff --git a/drivers/net/pcmcia/axnet_cs.c b/drivers/net/pcmcia/axnet_cs.c
-index ce95c5d..69b31d4 100644
---- a/drivers/net/pcmcia/axnet_cs.c
-+++ b/drivers/net/pcmcia/axnet_cs.c
-@@ -1812,7 +1812,7 @@ static void NS8390_trigger_send(struct net_device *dev, unsigned int length,
- 								int start_page)
- {
- 	long e8390_base = dev->base_addr;
-- 	struct ei_device *ei_local __attribute((unused)) = (struct ei_device *) netdev_priv(dev);
-+ 	struct ei_device *ei_local __attribute__((unused)) = (struct ei_device *) netdev_priv(dev);
-     
- 	if (inb_p(e8390_base) & E8390_TRANS) 
- 	{
-diff --git a/drivers/net/sky2.h b/drivers/net/sky2.h
-index 7bb3ba9..8cae15f 100644
---- a/drivers/net/sky2.h
-+++ b/drivers/net/sky2.h
-@@ -1947,21 +1947,21 @@ struct sky2_tx_le {
- 	__le16	length;	/* also vlan tag or checksum start */
- 	u8	ctrl;
- 	u8	opcode;
--} __attribute((packed));
-+} __attribute__((packed));
- 
- struct sky2_rx_le {
- 	__le32	addr;
- 	__le16	length;
- 	u8	ctrl;
- 	u8	opcode;
--} __attribute((packed));
-+} __attribute__((packed));
- 
- struct sky2_status_le {
- 	__le32	status;	/* also checksum */
- 	__le16	length;	/* also vlan tag */
- 	u8	css;
- 	u8	opcode;
--} __attribute((packed));
-+} __attribute__((packed));
- 
- struct tx_ring_info {
- 	struct sk_buff	*skb;
 
+I'm not really familiar with V4L so please check the patch
 
+Index: linux-2.6.git/drivers/media/video/bt8xx/bttv-driver.c
+===================================================================
+--- linux-2.6.git.orig/drivers/media/video/bt8xx/bttv-driver.c	2008-03-21 18:04:39.000000000 +0300
++++ linux-2.6.git/drivers/media/video/bt8xx/bttv-driver.c	2008-04-01 21:29:53.000000000 +0400
+@@ -3508,8 +3508,12 @@ static int radio_enum_input(struct file 
+ static int radio_g_audio(struct file *file, void *priv,
+ 					struct v4l2_audio *a)
+ {
++	if (a->index != 0)
++		return -EINVAL;
++
+ 	memset(a, 0, sizeof(*a));
+ 	strcpy(a->name, "Radio");
++
+ 	return 0;
+ }
+ 
