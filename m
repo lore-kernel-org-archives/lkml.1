@@ -1,64 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760300AbYDAQAq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757994AbYDAQEo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760300AbYDAQAq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Apr 2008 12:00:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756851AbYDAQAg
+	id S1757994AbYDAQEo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Apr 2008 12:04:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753976AbYDAQEf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Apr 2008 12:00:36 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:49956 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752805AbYDAQAf (ORCPT
+	Tue, 1 Apr 2008 12:04:35 -0400
+Received: from smtp-out.rrz.uni-koeln.de ([134.95.19.53]:45892 "EHLO
+	smtp-out.rrz.uni-koeln.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751963AbYDAQEd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Apr 2008 12:00:35 -0400
-From: Chris Mason <chris.mason@oracle.com>
-To: Alex Chiang <achiang@hp.com>
-Subject: Re: [ANNOUNCE] Btrfs v0.13
-Date: Tue, 1 Apr 2008 11:58:37 -0400
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, btrfs-devel@oss.oracle.com
-References: <200802211609.50563.chris.mason@oracle.com> <20080331.134510.126138884.davem@davemloft.net> <20080331224344.GB2362@ldl.fc.hp.com>
-In-Reply-To: <20080331224344.GB2362@ldl.fc.hp.com>
+	Tue, 1 Apr 2008 12:04:33 -0400
+X-Greylist: delayed 1946 seconds by postgrey-1.27 at vger.kernel.org; Tue, 01 Apr 2008 12:04:33 EDT
+Message-ID: <47F254F2.2000806@uni-koeln.de>
+Date: Tue, 01 Apr 2008 17:29:54 +0200
+From: Berthold Cogel <cogel@uni-koeln.de>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: David Howells <dhowells@redhat.com>
+CC: torvalds@osdl.org, akpm@linux-foundation.org, trond.myklebust@fys.uio.no,
+       chuck.lever@oracle.com, nfsv4@linux-nfs.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       selinux@tycho.nsa.gov, linux-security-module@vger.kernel.org
+Subject: Re: [PATCH 06/45] KEYS: Make the keyring quotas controllable through
+ /proc/sys [ver #35]
+References: <20080328143010.3483.99079.stgit@warthog.procyon.org.uk> <20080328143041.3483.46359.stgit@warthog.procyon.org.uk>
+In-Reply-To: <20080328143041.3483.46359.stgit@warthog.procyon.org.uk>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200804011158.37620.chris.mason@oracle.com>
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 31 March 2008, Alex Chiang wrote:
-> * David Miller <davem@davemloft.net>:
-> > From: Alex Chiang <achiang@hp.com>
-> > Date: Mon, 31 Mar 2008 14:26:33 -0600
-> >
-> > > I've gotten as far as successfully creating a btrfs filesystem
-> > > (at least that's what btrfsck tells me), but haven't been able to
-> > > mount it yet, probably because of the sector size issue.
-> >
-> > You should be able to make a filesystem with a sector
-> > size >= PAGE_SIZE and it should work just fine.  Please
-> > give it a try.
->
-> Hrm, I'm having issues still. First, here's a patch for
-> mkfs.btrfs to allow the user to pass in a different sector size.
+David Howells schrieb:
+> Make the keyring quotas controllable through /proc/sys files:
+> 
+>  (*) /proc/sys/kernel/keys/root_maxkeys
+>      /proc/sys/kernel/keys/root_maxbytes
+> 
+>      Maximum number of keys that root may have and the maximum total number of
+>      bytes of data that root may have stored in those keys.
+> 
+>  (*) /proc/sys/kernel/keys/maxkeys
+>      /proc/sys/kernel/keys/maxbytes
+> 
+>      Maximum number of keys that each non-root user may have and the maximum
+>      total number of bytes of data that each of those users may have stored in
+>      their keys.
+> 
+> Also increase the quotas as a number of people have been complaining that it's
+> not big enough.  I'm not sure that it's big enough now either, but on the
+> other hand, it can now be set in /etc/sysctl.conf.
+> 
 
-I did this a little differently, switching to getopt_long in mkfs.btrfs and 
-using [-s | --sectorsize ] for sectorsize.  -s used to be stripesize, but 
-that needs to be redone for the multi-device code anyway.
+Hello David,
 
-You can pull down integrated versions of your patches from:
+you're our hero! ;-)
 
-http://www.kernel.org/hg/btrfs/kernel-unstable
-http://www.kernel.org/hg/btrfs/progs-unstable
+We just hit this wall while migrating from RHEl 3 to RHEL 5 with some of 
+our webservers.
 
-Make sure to update both, there are minor format changes hidden in the 
-unstable tree since you last used it.
+[root@lvr11 ~]# cat /proc/key-users
+     0:    99 98/98 96/100 1681/10000
+    32:     2 2/2 2/100 56/10000
+    38:     2 2/2 2/100 56/10000
+    43:     2 2/2 2/100 56/10000
+    51:     2 2/2 2/100 56/10000
+    68:     2 2/2 2/100 56/10000
+    81:     2 2/2 2/100 56/10000
+    99:     2 2/2 2/100 56/10000
+   348:     2 2/2 2/100 58/10000
+42216:     2 2/2 2/100 62/10000
+55188:     3 3/3 3/100 72/10000
+56537:     2 2/2 2/100 62/10000
+63743:     2 2/2 2/100 62/10000
+68054:     2 2/2 2/100 62/10000
 
--chris
+....
+
+
+We're using OpenAFS on our systems and most of our webpages are stored 
+in AFS. We have a lot of small projects for which a separate server 
+would be a waste of 'metal'. Even in a virtual environment. So we're 
+hosting a lot of apache instances on a single machine. Beause suexec 
+doesn't work in an AFS environment, each instance is started by root 
+with its own IP (to be able to talk HTTPS) and in a PAG with a separate 
+token for a service user (to isolate the projects). Although each apache 
+switches  over to the service user, the initial tokens are acquired by root.
+
+On RHEL 3 with the old 2.4 kernel this was never a problem. But now...
+
+Btw.: We have some machines with about hundred (!) different projects 
+which need tokens.
+
+
+Best regards,
+
+Berthold Cogel
+
+-- 
+Dr. Berthold Cogel                             University of Cologne
+E-Mail: cogel@uni-koeln.de                     ZAIK-US (RRZK)
+Tel.:   +49(0)221/470-7873                     Robert-Koch-Str. 10
+FAX:    +49(0)221/478-85845                    D-50931 Cologne - Germany
