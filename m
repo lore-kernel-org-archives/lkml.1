@@ -1,46 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760705AbYDBTCp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752922AbYDAEIS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760705AbYDBTCp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 15:02:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759334AbYDBTCf
+	id S1752922AbYDAEIS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Apr 2008 00:08:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751058AbYDAEII
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 15:02:35 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:3734 "EHLO spitz.ucw.cz"
+	Tue, 1 Apr 2008 00:08:08 -0400
+Received: from phunq.net ([64.81.85.152]:49392 "EHLO moonbase.phunq.net"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756874AbYDBTCe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 15:02:34 -0400
-Date: Tue, 25 Mar 2008 21:23:15 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: pm list <linux-pm@lists.linux-foundation.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Alan Stern <stern@rowland.harvard.edu>, Greg KH <greg@kroah.com>,
-       Len Brown <lenb@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
-       Alexey Starikovskiy <astarikovskiy@suse.de>,
-       David Brownell <david-b@pacbell.net>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Oliver Neukum <oliver@neukum.org>,
-       Nigel Cunningham <ncunningham@crca.org.au>
-Subject: Re: [RFC][PATCH 3/3] PM: New suspend and hibernation callbacks for PCI bus type (rev. 3)
-Message-ID: <20080325202315.GA3943@ucw.cz>
-References: <200804020207.40278.rjw@sisk.pl> <200804020211.43441.rjw@sisk.pl>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1750927AbYDAEIH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Apr 2008 00:08:07 -0400
+From: Daniel Phillips <phillips@phunq.net>
+To: david@lang.hm
+Subject: Re: [ANNOUNCE] Ramback: faster than a speeding bullet
+Date: Mon, 31 Mar 2008 21:07:48 -0700
+User-Agent: KMail/1.9.5
+Cc: David Newall <davidn@davidnewall.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Willy Tarreau <w@1wt.eu>, linux-kernel@vger.kernel.org
+References: <200803092346.17556.phillips@phunq.net> <200803310440.33019.phillips@phunq.net> <alpine.DEB.1.00.0803311727500.31200@asgard.lang.hm>
+In-Reply-To: <alpine.DEB.1.00.0803311727500.31200@asgard.lang.hm>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200804020211.43441.rjw@sisk.pl>
-User-Agent: Mutt/1.5.9i
+Message-Id: <200803312107.48892.phillips@phunq.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
-
-> Implement new suspend and hibernation callbacks for the PCI bus type.
+On Monday 31 March 2008 17:28, david@lang.hm wrote:
+> On Mon, 31 Mar 2008, Daniel Phillips wrote:
 > 
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> > On Tuesday 18 March 2008 09:36, david@lang.hm wrote:
+> >> P.S. 8xPCI-e slots are only able to do 2GB/s of data transfer, in an
+> >> earlier post Daniel claimed that you needed 3GB/s of disk to mirror to the
+> >> disk, so the scenerio listed above looses 1/3 of it's performance compared
+> >> to what was being claimed earlier.
+> >
+> > Each Violin 1010 has two 8xPCI-e interfaces.
+> 
+> but if you use them for redundancy by hooking them to two machines you can 
+> only use one of them on your active system.
 
-ACK.
-							Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+That is why you use two Violin 1010 boxes, each connected to two
+servers.  The resulting mirror will have roughly 1 GByte/sec write
+bandwidth and 3 GByte/sec read bandwidth.  Fast enough for you?  No?
+
+Well then...
+
+Continue this idea to achieve whatever bandwidth you want to the ramdisk,
+subject to finding server motherboards that can take lots of PCI-e 8x
+cards, which are admittedly rare, but see "have your checkbook ready".
+
+Regards,
+
+Daniel
