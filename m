@@ -1,43 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759585AbYDAU6w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760050AbYDAU7Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759585AbYDAU6w (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Apr 2008 16:58:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752870AbYDAU6o
+	id S1760050AbYDAU7Z (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Apr 2008 16:59:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758514AbYDAU7J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Apr 2008 16:58:44 -0400
-Received: from mga09.intel.com ([134.134.136.24]:56333 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753132AbYDAU6n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Apr 2008 16:58:43 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,589,1199692800"; 
-   d="scan'208";a="311731595"
-Message-ID: <47F2A202.1040900@linux.intel.com>
-Date: Tue, 01 Apr 2008 13:58:42 -0700
-From: Arjan van de Ven <arjan@linux.intel.com>
-User-Agent: Thunderbird 2.0.0.12 (Windows/20080213)
-MIME-Version: 1.0
-To: =?ISO-8859-1?Q?Thomas_Hellstr=F6m?= <thomas@tungstengraphics.com>
-CC: Andi Kleen <andi@firstfloor.org>, Dave Airlie <airlied@redhat.com>,
-       linux-kernel@vger.kernel.org, tglx@linutronix.de, mingo@redhat.com
-Subject: Re: [PATCH] x86: create array based interface to change page attribute
-References: <1206940788.7250.13.camel@clockmaker.usersys.redhat.com> <87myof8ief.fsf@basil.nowhere.org> <47F098E8.1050605@tungstengraphics.com> <20080331083816.GC29105@one.firstfloor.org> <47F0A988.7010707@tungstengraphics.com> <20080331091829.GD29105@one.firstfloor.org> <47F0C6C2.2000004@tungstengraphics.com> <47F10C62.7040500@linux.intel.com> <47F11443.7050302@tungstengraphics.com> <47F11616.3020403@linux.intel.com> <47F11ED3.40803@tungstengraphics.com>
-In-Reply-To: <47F11ED3.40803@tungstengraphics.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
+	Tue, 1 Apr 2008 16:59:09 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:39653 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1758178AbYDAU7H (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Apr 2008 16:59:07 -0400
+Message-Id: <20080401205636.048829606@sgi.com>
+References: <20080401205531.986291575@sgi.com>
+User-Agent: quilt/0.46-1
+Date: Tue, 01 Apr 2008 13:55:33 -0700
+From: Christoph Lameter <clameter@sgi.com>
+To: Hugh Dickins <hugh@veritas.com>
+Cc: Andrea Arcangeli <andrea@qumranet.com>
+Cc: Robin Holt <holt@sgi.com>, Avi Kivity <avi@qumranet.com>,
+       Izik Eidus <izike@qumranet.com>
+Cc: kvm-devel@lists.sourceforge.net
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, general@lists.openfabrics.org
+Cc: Steve Wise <swise@opengridcomputing.com>
+Cc: Roland Dreier <rdreier@cisco.com>
+Cc: Kanoj Sarcar <kanojsarcar@yahoo.com>
+Cc: steiner@sgi.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Cc: daniel.blueman@quadrics.com
+Subject: [patch 2/9] Move tlb flushing into free_pgtables
+Content-Disposition: inline; filename=move_tlb_flush
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thomas Hellström wrote:
-> Given this problem, the previously mentioned use-case, and the fact that 
-> we mostly really use user-space mappings,
-> Is there a possibility we could add the following functions to Dave's 
-> patch (provided they would work as intended, of course, namely 
-> invalidate / bring back the kernel mapping).
+Move the tlb flushing into free_pgtables. The conversion of the locks
+taken for reverse map scanning would require taking sleeping locks
+in free_pgtables(). Moving the tlb flushing into free_pgtables allows
+sleeping in parts of free_pgtables().
 
-sadly there are multiple mappings, both in theory and practice.
-Especially the _np / _p functions specifically work on only the mapping you specify.
+This means that we do a tlb_finish_mmu() before freeing the page tables.
+Strictly speaking there may not be the need to do another tlb flush after
+freeing the tables. But its the only way to free a series of page table
+pages from the tlb list. And we do not want to call into the page allocator
+for performance reasons. Aim9 numbers look okay after this patch.
 
-For this to work we would need to somehow make a "mark all mappings NP, but please only do the kernel ones" kind of thing.
-The semantics of that are... lets say messy at best.
+Signed-off-by: Christoph Lameter <clameter@sgi.com>
+
+---
+ include/linux/mm.h |    4 ++--
+ mm/memory.c        |   14 ++++++++++----
+ mm/mmap.c          |    6 +++---
+ 3 files changed, 15 insertions(+), 9 deletions(-)
+
+Index: linux-2.6/include/linux/mm.h
+===================================================================
+--- linux-2.6.orig/include/linux/mm.h	2008-03-19 13:30:51.460856986 -0700
++++ linux-2.6/include/linux/mm.h	2008-03-19 13:31:20.809377398 -0700
+@@ -751,8 +751,8 @@ int walk_page_range(const struct mm_stru
+ 		    void *private);
+ void free_pgd_range(struct mmu_gather **tlb, unsigned long addr,
+ 		unsigned long end, unsigned long floor, unsigned long ceiling);
+-void free_pgtables(struct mmu_gather **tlb, struct vm_area_struct *start_vma,
+-		unsigned long floor, unsigned long ceiling);
++void free_pgtables(struct vm_area_struct *start_vma, unsigned long floor,
++						unsigned long ceiling);
+ int copy_page_range(struct mm_struct *dst, struct mm_struct *src,
+ 			struct vm_area_struct *vma);
+ void unmap_mapping_range(struct address_space *mapping,
+Index: linux-2.6/mm/memory.c
+===================================================================
+--- linux-2.6.orig/mm/memory.c	2008-03-19 13:29:06.007351495 -0700
++++ linux-2.6/mm/memory.c	2008-03-19 13:46:31.352774359 -0700
+@@ -271,9 +271,11 @@ void free_pgd_range(struct mmu_gather **
+ 	} while (pgd++, addr = next, addr != end);
+ }
+ 
+-void free_pgtables(struct mmu_gather **tlb, struct vm_area_struct *vma,
+-		unsigned long floor, unsigned long ceiling)
++void free_pgtables(struct vm_area_struct *vma, unsigned long floor,
++							unsigned long ceiling)
+ {
++	struct mmu_gather *tlb;
++
+ 	while (vma) {
+ 		struct vm_area_struct *next = vma->vm_next;
+ 		unsigned long addr = vma->vm_start;
+@@ -285,8 +287,10 @@ void free_pgtables(struct mmu_gather **t
+ 		unlink_file_vma(vma);
+ 
+ 		if (is_vm_hugetlb_page(vma)) {
+-			hugetlb_free_pgd_range(tlb, addr, vma->vm_end,
++			tlb = tlb_gather_mmu(vma->vm_mm, 0);
++			hugetlb_free_pgd_range(&tlb, addr, vma->vm_end,
+ 				floor, next? next->vm_start: ceiling);
++			tlb_finish_mmu(tlb, addr, vma->vm_end);
+ 		} else {
+ 			/*
+ 			 * Optimization: gather nearby vmas into one call down
+@@ -298,8 +302,10 @@ void free_pgtables(struct mmu_gather **t
+ 				anon_vma_unlink(vma);
+ 				unlink_file_vma(vma);
+ 			}
+-			free_pgd_range(tlb, addr, vma->vm_end,
++			tlb = tlb_gather_mmu(vma->vm_mm, 0);
++			free_pgd_range(&tlb, addr, vma->vm_end,
+ 				floor, next? next->vm_start: ceiling);
++			tlb_finish_mmu(tlb, addr, vma->vm_end);
+ 		}
+ 		vma = next;
+ 	}
+Index: linux-2.6/mm/mmap.c
+===================================================================
+--- linux-2.6.orig/mm/mmap.c	2008-03-19 13:29:48.659889667 -0700
++++ linux-2.6/mm/mmap.c	2008-03-19 13:30:36.296604891 -0700
+@@ -1750,9 +1750,9 @@ static void unmap_region(struct mm_struc
+ 	update_hiwater_rss(mm);
+ 	unmap_vmas(&tlb, vma, start, end, &nr_accounted, NULL);
+ 	vm_unacct_memory(nr_accounted);
+-	free_pgtables(&tlb, vma, prev? prev->vm_end: FIRST_USER_ADDRESS,
+-				 next? next->vm_start: 0);
+ 	tlb_finish_mmu(tlb, start, end);
++	free_pgtables(vma, prev? prev->vm_end: FIRST_USER_ADDRESS,
++				 next? next->vm_start: 0);
+ 	emm_notify(mm, emm_invalidate_end, start, end);
+ }
+ 
+@@ -2049,8 +2049,8 @@ void exit_mmap(struct mm_struct *mm)
+ 	/* Use -1 here to ensure all VMAs in the mm are unmapped */
+ 	end = unmap_vmas(&tlb, vma, 0, -1, &nr_accounted, NULL);
+ 	vm_unacct_memory(nr_accounted);
+-	free_pgtables(&tlb, vma, FIRST_USER_ADDRESS, 0);
+ 	tlb_finish_mmu(tlb, 0, end);
++	free_pgtables(vma, FIRST_USER_ADDRESS, 0);
+ 
+ 	/*
+ 	 * Walk the list again, actually closing and freeing it,
+
+-- 
