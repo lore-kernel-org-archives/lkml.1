@@ -1,57 +1,156 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756103AbYDAGsY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755541AbYDAGwr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756103AbYDAGsY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Apr 2008 02:48:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751890AbYDAGsP
+	id S1755541AbYDAGwr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Apr 2008 02:52:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751703AbYDAGwj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Apr 2008 02:48:15 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:9007 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751350AbYDAGsO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Apr 2008 02:48:14 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=OnW21EJzj9gGLyJ/IkAMw+tcJCP16zRww16k2f2IG8EQao6h8TDC0Rstc5keT2IpS
-	0joGAOh1G3pFjUQ7hvbiQ==
-Message-ID: <6599ad830803312348u3ee4d815i2e24c130978f8e04@mail.gmail.com>
-Date: Mon, 31 Mar 2008 23:48:00 -0700
-From: "Paul Menage" <menage@google.com>
-To: balbir@linux.vnet.ibm.com
-Subject: Re: [RFC][-mm] Add an owner to the mm_struct (v3)
-Cc: "Pavel Emelianov" <xemul@openvz.org>, "Hugh Dickins" <hugh@veritas.com>,
-       "Sudhir Kumar" <skumar@linux.vnet.ibm.com>,
-       "YAMAMOTO Takashi" <yamamoto@valinux.co.jp>, lizf@cn.fujitsu.com,
-       linux-kernel@vger.kernel.org, taka@valinux.co.jp, linux-mm@kvack.org,
-       "David Rientjes" <rientjes@google.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <47F1D4F3.3040207@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080401054324.829.4517.sendpatchset@localhost.localdomain>
-	 <6599ad830803312316m17f9e6f1mf7f068c0314a789e@mail.gmail.com>
-	 <47F1D4F3.3040207@linux.vnet.ibm.com>
+	Tue, 1 Apr 2008 02:52:39 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:38788 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751430AbYDAGwh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Apr 2008 02:52:37 -0400
+Date: Tue, 1 Apr 2008 17:52:30 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: linux-next@vger.kernel.org
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: linux-next: Tree for April 1
+Message-Id: <20080401175230.9ffe75cf.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.5.0beta1 (GTK+ 2.12.9; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Tue__1_Apr_2008_17_52_30_+1100_UMEEki2S0ArQzjyA"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 31, 2008 at 11:23 PM, Balbir Singh
-<balbir@linux.vnet.ibm.com> wrote:
->  > Here we'll want to call vm_cgroup_update_mm_owner(), to adjust the
->  > accounting. (Or if in future we end up with more than a couple of
->  > subsystems that want notification at this time, we'll want to call
->  > cgroup_update_mm_owner() and have it call any interested subsystems.
->  >
->
->  I don't think we need to adjust accounting, since only mm->owner is changing and
->  not the cgroup to which the task/mm belongs. Do we really need to notify? I
->  don't want to do any notifications under task_lock().
+--Signature=_Tue__1_Apr_2008_17_52_30_+1100_UMEEki2S0ArQzjyA
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-It's possible but unlikely that the new owner is in a different cgroup.
+Hi all,
 
-Paul
+I have created today's linux-next tree at
+git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git
+(tar balls at
+http://www.kernel.org/pub/linux/kernel/people/sfr/linux-next/).
+
+You can see which trees have been included by looking in the Next/Trees
+file in the source.  There are also quilt-import.log and merge.log files
+in the Next directory.  Between each merge, the tree was built with
+a ppc64_defconfig for powerpc and an allmodconfig for x86_64.
+
+There were a few merge conflicts (fairly trivial) and one build failure
+(reverted and notified).  Below is a summary of the stat of the merge.
+
+We are up to 50 trees, more are welcome (even if they are currently
+empty).  Thanks to those who have contributed, and to those who haven't,
+please do.
+
+In particular, I have very few of the architecture trees ....
+
+Status of my local build tests is at
+http://kisskb.ellerman.id.au/linux-next.  If maintainers want to give
+advice about cross compilers/configs that work, we are always open to add
+more builds.
+
+Thanks to Jan Dittmer for adding the linux-next tree to his build tests
+at http://l4x.org/k/ and the guys at http://test.kernel.org/.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+Merging origin/master
+Merging quilt/driver-core
+	I have removed driver-core-remove-no-longer-used-struct-class_device.patch
+	as it needs to be merged late.
+Merging quilt/pci
+Merging quilt/usb
+Merging quilt/device-mapper
+Merging hid/mm
+Merging quilt/i2c
+Merging quilt/kernel-doc
+Merging avr32/avr32-arch
+Merging v4l-dvb/stable
+Merging s390/features
+Merging sh/master
+Merging jfs/next
+Merging kbuild/master
+Merging quilt/ide
+CONFLICT (content): Merge conflict in Documentation/ide/ide.txt
+CONFLICT (content): Merge conflict in Documentation/kernel-parameters.txt
+CONFLICT (content): Merge conflict in drivers/ide/ide.c
+Merging libata/NEXT
+Merging nfs/linux-next
+Merging xfs/master
+Merging infiniband/for-next
+CONFLICT (content): Merge conflict in drivers/infiniband/hw/amso1100/c2_pro=
+vider.c
+CONFLICT (content): Merge conflict in drivers/infiniband/hw/cxgb3/iwch_prov=
+ider.c
+CONFLICT (content): Merge conflict in drivers/infiniband/hw/nes/nes_verbs.c
+Merging acpi/test
+Merging blackfin/for-linus
+Merging nfsd/nfsd-next
+Merging ieee1394/for-next
+Merging hwmon/testing
+Merging ubi/master
+Merging kvm/master
+CONFLICT (add/add): Merge conflict in include/asm-s390/sysinfo.h
+Merging dlm/next
+Merging scsi-rc-fixes/master
+CONFLICT (content): Merge conflict in drivers/scsi/hosts.c
+CONFLICT (content): Merge conflict in drivers/scsi/scsi_sysfs.c
+Merging scsi/master
+Merging ia64/test
+Merging tests/master
+CONFLICT (content): Merge conflict in lib/Kconfig.debug
+Merging ocfs2/linux-next
+Merging selinux/for-akpm
+Merging quilt/m68k
+Merging powerpc-merge/merge
+Merging powerpc/powerpc-next
+Merging hrt/mm
+Merging lblnet/master
+Merging ext4/next
+CONFLICT (content): Merge conflict in fs/jbd2/journal.c
+CONFLICT (content): Merge conflict in fs/jbd2/revoke.c
+Merging 4xx/next
+Merging async_tx/next
+Merging udf/for_next
+Merging security-testing/next
+Merging net/master
+CONFLICT (content): Merge conflict in MAINTAINERS
+Merging galak/powerpc-next
+Merging mtd/master
+Merging wireless/master
+Merging vfs/vfs-2.6.25
+CONFLICT (content): Merge conflict in fs/xfs/linux-2.6/xfs_ioctl.c
+CONFLICT (content): Merge conflict in fs/xfs/xfs_ialloc.c
+CONFLICT (content): Merge conflict in fs/xfs/xfs_sb.h
+Merging semaphore/semaphore
+Merging quilt/ldp
+	I have removed net-add-alacritech-slicoss-driver.patch as
+	it causes build failures.
+Created commit 0dc7166: Revert "novfs: Add the Novell filesystem client ker=
+nel module"
+Created commit ab51693: Revert "[SCSI] WD33C93: let platform stub override =
+no_sync/fast/dma_mode"
+Applying parport_pc: wrap PNP probe code in #ifdef CONFIG_PNP
+Applying smsc-ircc2: wrap PNP probe code in #ifdef CONFIG_PNP
+Applying nsc-ircc: wrap PNP probe code in #ifdef CONFIG_PNP
+
+--Signature=_Tue__1_Apr_2008_17_52_30_+1100_UMEEki2S0ArQzjyA
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFH8duyTgG2atn1QN8RAnxqAKCEP/WTTXDM7lgn3anNxI7aUKF6lQCfaGa6
+zwmqucyZPg5yg2TK4/RgyGI=
+=uJUv
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__1_Apr_2008_17_52_30_+1100_UMEEki2S0ArQzjyA--
