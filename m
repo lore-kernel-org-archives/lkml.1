@@ -1,83 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757851AbYDAIpe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757529AbYDAIrh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757851AbYDAIpe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Apr 2008 04:45:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754118AbYDAIp0
+	id S1757529AbYDAIrh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Apr 2008 04:47:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755829AbYDAIra
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Apr 2008 04:45:26 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:54092 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755897AbYDAIpY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Apr 2008 04:45:24 -0400
-Date: Tue, 1 Apr 2008 10:45:23 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Len Brown <lenb@kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Carlos Corbacho <carlos@strangeworlds.co.uk>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Shaohua Li <shaohua.li@intel.com>, Felix M?ller <fm@opensuse.org>,
-       Arthur Erhardt <erhardt@pit.physik.uni-tuebingen.de>,
-       Matthew Garrett <mjg59@srcf.ucam.org>
-Subject: Re: [PATCH] ACPI PM: Restore the 2.6.24 suspend ordering
-Message-ID: <20080401084523.GA25278@atrey.karlin.mff.cuni.cz>
-References: <200803300319.08398.rjw@sisk.pl> <200803301358.39831.rjw@sisk.pl> <20080330122838.GA7093@elf.ucw.cz> <200803301515.33922.rjw@sisk.pl>
+	Tue, 1 Apr 2008 04:47:30 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:39114 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754118AbYDAIr3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Apr 2008 04:47:29 -0400
+Date: Tue, 1 Apr 2008 10:47:10 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Alexander van Heukelum <heukelum@mailshack.com>
+Cc: Andi Kleen <andi@firstfloor.org>, LKML <linux-kernel@vger.kernel.org>,
+       Alexander van Heukelum <heukelum@fastmail.fm>
+Subject: Re: [PATCH] x86: generic versions of find_first_(zero_)bit,
+	convert i386
+Message-ID: <20080401084710.GB4787@elte.hu>
+References: <20080331171506.GA24017@mailshack.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200803301515.33922.rjw@sisk.pl>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20080331171506.GA24017@mailshack.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
 
-> > > > > For the reasons outlined above, the change of the suspend ordering
-> > > > > should be reverted, which is done by the patch below.
-> > > > 
-> > > > But this will break those few nvidia-based systems, no?
-> > > > 
-> > > > this may have been a good idea in -rc1 days, but we are in -rc7
-> > > > now... and the patch is slightly big.
-> > > 
-> > > It's quite obvious, though.
-> > 
-> > Yes, but breaking systems between -rc7 and final is _very_ unnice.
+* Alexander van Heukelum <heukelum@mailshack.com> wrote:
+
+> Generic versions of __find_first_bit and __find_first_zero_bit are 
+> introduced as simplified versions of __find_next_bit and 
+> __find_next_zero_bit. Their compilation and use are guarded by a new 
+> config variable GENERIC_FIND_FIRST_BIT.
 > 
-> Breaking systems between 2.6.24 and 2.6.25 is even worse, which is why
-> I've posted this patch.
+> The generic versions of find_first_bit and find_first_zero_bit are 
+> implemented in terms of the newly introduced __find_first_bit and 
+> __find_first_zero_bit.
 > 
-> IOW, we tried to fix systems that were broken with 2.6.24, but it didn't work,
-> because our "fix" broke systems that were OK with 2.6.24.  Solution: revert
-> the "fix" and go back to the design board.  That's all we can do so late in
-> the release cycle, IMO.
-
-Well, I agree that regression from 2.6.24 is worse, but it is
-_slightly_ worse... -rcs are really expected to improve...
-
-...plus it no longer looks like macbook regression is caused by _PTS
-ordering?
-
-> > > I think we _can_ do something about the failing NVidia systems in the 2.6.26
-> > > time frame, but that will require some more consideration.
-> > 
-> > We could simply blacklist them, no?
+> This patch also converts i386 to the generic functions. The text size 
+> shrinks slightly due to uninlining of the find_*_bit functions.
 > 
-> Yes, but for this purpose we'll have to redesign the core so that everything
-> (including debugging and the error paths) works if _PTS is executed before
-> suspending devices.  _That_, however, is not a 2.6.25 thing.
+>    text    data     bss     dec     hex filename
+> 4764939  480324  622592 5867855  59894f vmlinux  (i386 defconfig before)
+> 4764645  480324  622592 5867561  598829 vmlinux  (i386 defconfig after)
+> 
+> Signed-off-by: Alexander van Heukelum <heukelum@fastmail.fm>
+> 
+> ---
+> 
+> Hi Ingo,
+> 
+> Here is another step in the unification of the bitops for i386 and 
+> x86_64. This patch implements a minimal conversion to a generic 
+> implementation of find_first_bit/find_first_zero_bit for i386. The 
+> optimization for small bitmaps and the conversion of x86_64 will 
+> follow soon.
+> 
+> Compiles and runs fine on i386 and x86_64 (current x86#testing).
 
-So we have solution that fixes 2.6.24 systems, makes system that
-worked in 2.6.25-rc5 work with command line option, but gets error
-handling wrong.
+thanks, applied.
 
-I guess we could use that?
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+I guess we should keep the bitops.h portions alive for the moment though 
+(surrounded by #ifndef GENERIC_FIND_FIRST_BIT), to make it easy for 
+anyone to flip the Kconfig bit around via a oneliner patch and do some 
+benchmarking? At least initially - i'm convinced that we want the 
+generic versions in the long run. (especially if, as your patches do it, 
+the generic code picks up the easy constant tests and optimizes them at 
+build time)
+
+	Ingo
