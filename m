@@ -1,95 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760702AbYDAVEb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761773AbYDAVEt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760702AbYDAVEb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Apr 2008 17:04:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760547AbYDAVCu
+	id S1761773AbYDAVEt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Apr 2008 17:04:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761296AbYDAVC4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Apr 2008 17:02:50 -0400
-Received: from fk-out-0910.google.com ([209.85.128.185]:53526 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761271AbYDAVCt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Apr 2008 17:02:49 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=message-id:date:from:user-agent:mime-version:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=XXtwD1jWQ8Re6iiTCMixZzvnfveuoL48izFac+R9NoP5rKPxgPjPheWQzD0AcJXrNymNVAu8mxgMGpzz/vIDMhk3brl2+xcxExaALxIQAbX2yiEbE3teNmBA3/JSToAymklgdI6AFTL6G+hGKFywJR9w/B1nw+iXpJ70Nm5W0pc=
-Message-ID: <47F2A2F0.4060908@gmail.com>
-Date: Tue, 01 Apr 2008 23:02:40 +0200
-From: Luca Venturini <lucventurini@gmail.com>
-User-Agent: Thunderbird 2.0.0.12 (Windows/20080213)
-MIME-Version: 1.0
-CC: linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org
-Subject: Re: New IWL4935 driver for Intel Wireless Cards does not support
- WPA2 wireless network with PEAP - MSCHAPV2
-References: <47F1F4F4.2080502@gmail.com> <20080401164419.GA3530@tuxdriver.com> <5d75f4610804011306y55352e73sb5223a294b66f2cf@mail.gmail.com>
-In-Reply-To: <5d75f4610804011306y55352e73sb5223a294b66f2cf@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Tue, 1 Apr 2008 17:02:56 -0400
+Received: from mx5.orcon.net.nz ([219.88.242.55]:42748 "EHLO mx5.orcon.net.nz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759014AbYDAVCz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Apr 2008 17:02:55 -0400
+Cc: Tyson Whitehead <twhitehe@uwo.ca>, Rene Herman <rene.herman@keyaccess.nl>,
+       Takashi Iwai <tiwai@suse.de>, ALSA devel <alsa-devel@alsa-project.org>,
+       linux-kernel@vger.kernel.org,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>, linux-alpha@vger.kernel.org,
+       Krzysztof Helt <krzysztof.h1@wp.pl>
+Message-Id: <CB76D24F-0C1F-4FDA-B6B0-4B842989718B@orcon.net.nz>
+From: Michael Cree <mcree@orcon.net.nz>
+To: rct@frus.com (Bob Tracy)
+In-Reply-To: <20080401202605.70554DBA2@gherkin.frus.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
 Content-Transfer-Encoding: 7bit
-To: unlisted-recipients:; (no To-header on input)
+Mime-Version: 1.0 (Apple Message framework v919.2)
+Subject: Re: [alsa-devel] [regression] 2.6.25-rc4 snd-es18xx broken on Alpha
+Date: Wed, 2 Apr 2008 10:02:37 +1300
+References: <20080401202605.70554DBA2@gherkin.frus.com>
+X-Mailer: Apple Mail (2.919.2)
+X-DSPAM-Check: by mx5.orcon.net.nz on Wed, 02 Apr 2008 10:02:41 +1300
+X-DSPAM-Result: Innocent
+X-DSPAM-Processed: Wed Apr  2 10:02:52 2008
+X-DSPAM-Confidence: 0.8492
+X-DSPAM-Improbability: 1 in 564 chance of being spam
+X-DSPAM-Probability: 0.0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I hope, then, that Linux 2.6.25.x stable will be out sooner than 24th 
-april (Hardy release date) otherwise I (and I guess also many other 
-people) will be in a very bad spot until the kernel is updated...(I am 
-not proficient enough so to compile a whole Linux kernel for my distro).
-Thank you very much for your attention, in any case.
-Greetings
-Luca Venturini
-
-BuraphaLinux Server ha scritto:
-> intel wireless just doesn't work on linux 2.6.24.4; wait for 2.6.25.x stable.
+On 2/04/2008, at 9:26 AM, Bob Tracy wrote:
+> Hugh said we could blame him or Nick for removing the special
+> PageReserved usage, or the Alpha for ignoring gfp_flags in the
+> following:
 >
-> On 4/1/08, John W. Linville <linville@tuxdriver.com> wrote:
->   
->> You probably want to address this to linux-wireless@vger.kernel.org
->> instead...
->>
->> On Tue, Apr 01, 2008 at 10:40:20AM +0200, Luca Venturini wrote:
->>     
->>> Using Ubuntu Hardy Beta, Linux kernel 2.6.24, AMD64.
->>> I have to connect to a campus (University of Verona, Italy; more
->>> information maybe available at https://wifi.univr.it sadly in Italian
->>>       
->> only,
->>     
->>> and I am not sure it is reachable from outside the university) WPA2
->>> wireless network. It uses PEAP authentication, Dynamic WEP encryption,
->>> second phase: MSCHAPv2.
->>> It also requires user login, password, and a CA certificate (available at
->>> the web page I linked above).
->>> At the same page a wpasupplicant configuration file is also available, so
->>> to allow people to connect from linux also.
->>> In Ubuntu Gutsy 32 bit (Linux kernel 2.6.22.14 if I am not mistaken) I was
->>> able to connect through NetworkManager and precisely using the GNOME
->>> nm-applet.
->>> However, since I switched to Linux 2.6.24, I have no more been able to
->>> connect, whether through NM-applet or from the command line, using
->>> wpasupplicant. The wireless functions perfectly, and there has been no
->>> change in its configuration, since I am using it now (Windows Vista,
->>> configured months ago).
->>> Reported also here on launchpad:
->>> https://bugs.launchpad.net/ubuntu/+bug/209602
->>> Thank you for your attention.
->>> Greetings
->>>
->>> Luca Venturini
->>> --
->>> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
->>> the body of a message to majordomo@vger.kernel.org
->>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->>> Please read the FAQ at  http://www.tux.org/lkml/
->>>       
->> --
->> John W. Linville
->> linville@tuxdriver.com
->> --
->> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->> Please read the FAQ at  http://www.tux.org/lkml/
->>
->>     
+>  #define dma_alloc_coherent(dev, size, addr, gfp)      \
+>                pci_alloc_consistent(alpha_gendev_to_pci(dev), size,  
+> addr)
+>
+> The workaround (until the official patch was issued) was a small patch
+> against arch/alpha/kernel/pci_iommu.c:pci_alloc_consistent() that
+> replaced "gfp_t gfp = GFP_ATOMIC;" with "gfp_t gfp = GFP_ATOMIC| 
+> __GFP_COMP;".
+> That eliminated the "bad page state" errors for me, and I don't recall
+> what the official patch was.
+
+The official patch has just been uploaded to the -mm kernel.  Get it at:
+
+http://userweb.kernel.org/~akpm/mmotm/broken-out/alpha-fix-alsa-dma-mmap-crash.patch
+
+It fixed up quite a number of sound playing applications that were  
+causing kernel oops on my newer PWS600au (the older one still has  
+problems that are of a completely different nature) and also fixed use  
+of an M-Audio Revolution audio card on my XP1000.
+
+The repeated small passages at the end of a short sound file still  
+occurs with the es18xx driver on the newer PWS600au (and to a lesser  
+extent on the Compaq XP1000).  Other sound drivers (cmipci, ice1724)  
+do not exhibit the same anomalous symptoms so the problem is probably  
+in the es18xx driver.
+
+The older PWS600au fails to play sound at all and exhibits the  
+behaviour you described in a recent message (machine gun like noises  
+and the interrupts don't clock up at all) with the es18xx driver. I  
+tried to put the C-Media audio card (which uses the cmipci driver)  
+into this machine, but SRM reports on powerup that there is an  
+"illegal" card installed (I hope the police don't turn up at my door)  
+and that it must be removed to continue booting!!!  I tried setting  
+pci_device_override to 1 in SRM, but that didn't help.  So I can't  
+verify whether this is an es18xx specific problem or a more general  
+alsa problem.
+
+Now that the crashes due to "bad page state" errors are solved on both  
+of my PWS600aus, maybe I should start re-applying the es18xx interrupt  
+type patches that Tyson, et al., suggested and see if they now make a  
+difference.  I will not be able to do this before the weekend.
+
+Cheerz
+Michael.
 
