@@ -1,75 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759157AbYDAUxd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758911AbYDAU5N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759157AbYDAUxd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Apr 2008 16:53:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754222AbYDAUxZ
+	id S1758911AbYDAU5N (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Apr 2008 16:57:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752870AbYDAU46
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Apr 2008 16:53:25 -0400
-Received: from ug-out-1314.google.com ([66.249.92.170]:27541 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753768AbYDAUxY (ORCPT
+	Tue, 1 Apr 2008 16:56:58 -0400
+Received: from netrider.rowland.org ([192.131.102.5]:3858 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752672AbYDAU45 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Apr 2008 16:53:24 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=TffgDybbsK2aaQQ0zCXRZeMLSz+CiHyM+89PMd486mc0eK7sd9UU+Wo+fbryp3fbBV90hv4Wj7gWabt6SMBUv0Ts4sCeJ6YHazYreJZB4l07oGAwdSVovtcmgj5XUM2HhxIChZwrSDmdkYMO0Ra/OAf5vlUdveY57oaOaah5C5Y=
-Date: Tue, 1 Apr 2008 22:52:45 +0200
-From: Marcin Slusarz <marcin.slusarz@gmail.com>
-To: Mauro Carvalho Chehab <mchehab@infradead.org>
-Cc: Douglas Schilling Landgraf <dougsland@gmail.com>,
-       video4linux-list@redhat.com, linux-kernel@vger.kernel.org,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Morton <akpm@google.com>,
-       Bongani Hlope <bonganilinux@mweb.co.za>
-Subject: Re: 2.6.25-rc regression: bttv: oops on radio access (bisected)
-Message-ID: <20080401205240.GA11485@joi>
-References: <20080330162006.GA6048@joi> <20080401171051.724a9f75@gaivota>
+	Tue, 1 Apr 2008 16:56:57 -0400
+Date: Tue, 1 Apr 2008 16:56:55 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@netrider.rowland.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: Nigel Cunningham <ncunningham@crca.org.au>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Greg KH <greg@kroah.com>, Len Brown <lenb@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Alexey Starikovskiy <astarikovskiy@suse.de>,
+       David Brownell <david-b@pacbell.net>, Pavel Machek <pavel@ucw.cz>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Oliver Neukum <oliver@neukum.org>
+Subject: Re: [RFC][PATCH] PM: Introduce new top level suspend and hibernation
+ callbacks (rev. 6)
+In-Reply-To: <200804012212.48609.rjw@sisk.pl>
+Message-ID: <Pine.LNX.4.44L0.0804011653140.9362-100000@netrider.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080401171051.724a9f75@gaivota>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 01, 2008 at 05:10:51PM -0300, Mauro Carvalho Chehab wrote:
-> Hi Marcin
-> 
-> On Sun, 30 Mar 2008 18:20:49 +0200
-> Marcin Slusarz <marcin.slusarz@gmail.com> wrote:
-> 
-> > Hi
-> > 2.6.25-rc7 kernel oopses on exec of "radio -c /dev/radio0".
-> > I bisected it down to:
-> > 
-> > 402aa76aa5e57801b4db5ccf8c7beea9f580bb1b is first bad commit
-> > commit 402aa76aa5e57801b4db5ccf8c7beea9f580bb1b
-> > Author: Douglas Schilling Landgraf <dougsland@gmail.com>
-> > Date:   Thu Dec 27 22:20:58 2007 -0300
-> > 
-> >     V4L/DVB (6911): Converted bttv to use video_ioctl2
-> > 
-> >     Signed-off-by: Douglas Schilling Landgraf <dougsland@gmail.com>
-> >     Signed-off-by: Mauro Carvalho Chehab <mchehab@infradead.org>
-> > 
-> 
-> There are three patches that are meant to fix the bugs with radio. On the tests
-> I did here, they worked, but the Bongani still points that the fixes didn't
-> solve for him.
-> 
-> On the tests I did here, the three patches seemed to work [1]. Maybe you could
-> test with those patches and post us some results.
-> 
-> There are three patches meant to fix several issues caused by the conversion: 
-> 
-> http://git.kernel.org/?p=linux/kernel/git/mchehab/v4l-dvb.git;a=commitdiff;h=bdd38d9b5c6365ea004df6d8a183dd1344b4801f
-> http://git.kernel.org/?p=linux/kernel/git/mchehab/v4l-dvb.git;a=commitdiff;h=055a6282cabd311cf010a5a83f0494558504f7d0
-> http://git.kernel.org/?p=linux/kernel/git/mchehab/v4l-dvb.git;a=commitdiff;h=6e07ff78274752fe812a1e8bddb6013a278e62e8
-> 
-> Could you test please and give us some feedback?
+On Tue, 1 Apr 2008, Rafael J. Wysocki wrote:
 
-These patches fix my regression. Thanks!
-(no oops, radio app does not crash/hang, no messages about invalid ioctls, i can hear the radio)
- 
-Marcin
+> > Does ..._ext_... mean extended? (external?) If 'extended' (or if not),
+> > does that imply that they're mutually exclusive alternatives for drivers
+> > to use?
+> 
+> 'ext' means 'extended'.  The idea is that the 'extended' version will be used
+> by bus types / driver types that don't need to implement the _noirq callbacks.
+
+Something's wrong here.  This seems to say that the "extended" version
+has _fewer_ method pointers -- in which case it should be called 
+"restricted" instead.
+
+> > So drivers can never validly fail to resume. That sounds fair enough. If
+> > the hardware has gone away while in lower power mode (USB, say), should
+> > the driver then just printk an error and return success?
+> 
+> I think so.
+> 
+> IMO, an error code returned by a driver's ->resume() should mean "the device
+> hasn't resumed and is presumably dead".  Otherwise, ->resume() should return
+> success.
+
+If the device is gone, it doesn't much matter what resume() returns.
+
+Alan Stern
+
