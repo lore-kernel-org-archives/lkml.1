@@ -1,88 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759018AbYDAMFv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758547AbYDAMIq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759018AbYDAMFv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Apr 2008 08:05:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755970AbYDAMFn
+	id S1758547AbYDAMIq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Apr 2008 08:08:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752831AbYDAMIi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Apr 2008 08:05:43 -0400
-Received: from viefep11-int.chello.at ([62.179.121.31]:53981 "EHLO
-	viefep11-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755798AbYDAMFn (ORCPT
+	Tue, 1 Apr 2008 08:08:38 -0400
+Received: from py-out-1112.google.com ([64.233.166.178]:17166 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752047AbYDAMIh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Apr 2008 08:05:43 -0400
-Subject: Re: [RFC/PATCH 01/17] sched: mix tasks and groups
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: vatsa@linux.vnet.ibm.com
-Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
-       Mike Galbraith <efault@gmx.de>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>
-In-Reply-To: <20080401121238.GA3341@linux.vnet.ibm.com>
-References: <20080309170850.256853000@chello.nl>
-	 <20080309170925.857156000@chello.nl>
-	 <20080401121238.GA3341@linux.vnet.ibm.com>
-Content-Type: text/plain
-Date: Tue, 01 Apr 2008 14:05:14 +0200
-Message-Id: <1207051514.8514.725.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.21.92 
+	Tue, 1 Apr 2008 08:08:37 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=JEUDBqfxtUd0awB57urM2vVKoVkfnwkQgZdSOC08uhsAUXDMfxWrAHQnCjafj24tO6O5Py9nN3MFDW5yQQNVi0Z3QfPFw3SlmikjpojIk1KNcLKkKfJvxo6OspDGO7XFCjLlvrkKuC2zLm4QtYldqEEmh/0Twbbc+Uqfugy5pRc=
+Message-ID: <84144f020804010508k3099b2bagf2f1c0d2747a983@mail.gmail.com>
+Date: Tue, 1 Apr 2008 15:08:36 +0300
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+To: "Artem Bityutskiy" <Artem.Bityutskiy@nokia.com>
+Subject: Re: [RFC PATCH 20/26] UBIFS: add VFS operations
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       "Adrian Hunter" <ext-adrian.hunter@nokia.com>
+In-Reply-To: <1206629746-4298-21-git-send-email-Artem.Bityutskiy@nokia.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1206629746-4298-1-git-send-email-Artem.Bityutskiy@nokia.com>
+	 <1206629746-4298-21-git-send-email-Artem.Bityutskiy@nokia.com>
+X-Google-Sender-Auth: dbb618f8e980aed2
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-04-01 at 17:42 +0530, Srivatsa Vaddagiri wrote:
-> On Sun, Mar 09, 2008 at 06:08:51PM +0100, Peter Zijlstra wrote:
-> > This patch allows tasks and groups to exist in the same cfs_rq. With this
-> > change the CFS group scheduling follows a 1/(M+N) model from a 1/(1+N)
-> > fairness model where M tasks and N groups exist at the cfs_rq level.
-> > 
-> > [a.p.zijlstra@chello.nl: rt bits]
-> > Signed-off-by: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-> > Signed-off-by: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
-> > Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> > ---
-> >  kernel/sched.c      |   54 ++++++++++++++++++++++++++++++++++++++++++++++++++--
-> >  kernel/sched_fair.c |   48 +++++++++++++++++++++++++++++++++++++++++++---
-> >  kernel/sched_rt.c   |   15 ++++++++------
-> >  3 files changed, 106 insertions(+), 11 deletions(-)
-> > 
-> > Index: linux-2.6-2/kernel/sched.c
-> > ===================================================================
-> > --- linux-2.6-2.orig/kernel/sched.c
-> > +++ linux-2.6-2/kernel/sched.c
-> > @@ -273,18 +273,23 @@ struct task_group {
-> >  };
-> > 
-> >  #ifdef CONFIG_FAIR_GROUP_SCHED
-> > +
-> > +#ifdef CONFIG_USER_SCHED
-> >  /* Default task group's sched entity on each cpu */
-> >  static DEFINE_PER_CPU(struct sched_entity, init_sched_entity);
-> >  /* Default task group's cfs_rq on each cpu */
-> >  static DEFINE_PER_CPU(struct cfs_rq, init_cfs_rq) ____cacheline_aligned_in_smp;
-> > +#endif
-> 
-> 
-> I am trying to understand the change this brings for semantics of RT-scheduling.
-> 
-> With this change, /cgroup will be seen as the parent group of all other
-> groups (say: /cgroup/A, /cgroup/B etc). Is that correct?
-> 
-> If so, the check in __rt_schedulable() needs a change as well, which assumes 
-> that all task groups form a flat hierarchy.
+Hi Artem,
 
-Yes, I have that on my todo list somewhere. I realized the same thing
-earlier today :-)
+On Thu, Mar 27, 2008 at 5:55 PM, Artem Bityutskiy
+<Artem.Bityutskiy@nokia.com> wrote:
+>  +static int ubifs_set_page_dirty(struct page *page)
+>  +{
+>  +       /*
+>  +        * An attempt to dirty a page without budgeting for it - should not
+>  +        * happen.
+>  +        */
+>  +       ubifs_assert(0);
+>  +       return __set_page_dirty_nobuffers(page);
+>  +}
+>  +
+>  +static int ubifs_releasepage(struct page *page, gfp_t unused_gfp_flags)
+>  +{
+>  +       /*
+>  +        * An attempt to release a dirty page without budgeting for it - should
+>  +        * not happen.
+>  +        */
+>  +       ubifs_assert(PageLocked(page));
+>  +       if (PageWriteback(page))
+>  +               return 0;
+>  +       ubifs_assert(PagePrivate(page));
+>  +       ubifs_assert(0);
+>  +       ClearPagePrivate(page);
+>  +       ClearPageChecked(page);
+>  +       return 1;
+>  +}
 
-> For example: lets say that init_task_group (/cgroup in this case) had the
-> default rt_bandwidth of 95% (global_rt_runtime()). A child group under it 
-> (/cgroup/A) is created. If user tries to assign it a rt-bandwidth of
-> 50%, then AFAICS, it will fail with current code, whereas it shouldn't
-> (because by giving /cgroup/A 50% bandwidth, we are not really exceeding
-> the globally allowed RT bandwidth of 95%, since /cgroup/A is a child of
-> /cgroup).
+So you don't expect the VM to ever call these functions? Why?
 
-
-agreed.
-
+                        Pekka
