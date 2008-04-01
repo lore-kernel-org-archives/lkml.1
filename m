@@ -1,56 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756893AbYDAIeS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757133AbYDAIf2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756893AbYDAIeS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Apr 2008 04:34:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755977AbYDAIeM
+	id S1757133AbYDAIf2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Apr 2008 04:35:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756013AbYDAIfT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Apr 2008 04:34:12 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:37561 "EHLO mx2.mail.elte.hu"
+	Tue, 1 Apr 2008 04:35:19 -0400
+Received: from gate.crashing.org ([63.228.1.57]:52980 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755897AbYDAIeL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Apr 2008 04:34:11 -0400
-Date: Tue, 1 Apr 2008 10:33:59 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Jiri Kosina <jkosina@suse.cz>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: spinlocks -- why are releases inlined and acquires are not?
-Message-ID: <20080401083359.GB32272@elte.hu>
-References: <Pine.LNX.4.64.0804010202390.5541@jikos.suse.cz> <Pine.LNX.4.64.0804010236110.5541@jikos.suse.cz>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0804010236110.5541@jikos.suse.cz>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S1755904AbYDAIfS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Apr 2008 04:35:18 -0400
+Subject: Re: [RFC][PATCH] PM: Introduce new top level suspend and
+	hibernation callbacks (rev. 6)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reply-To: benh@kernel.crashing.org
+To: Nigel Cunningham <ncunningham@crca.org.au>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Alan Stern <stern@rowland.harvard.edu>, Greg KH <greg@kroah.com>,
+       Len Brown <lenb@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
+       Alexey Starikovskiy <astarikovskiy@suse.de>,
+       David Brownell <david-b@pacbell.net>, Pavel Machek <pavel@ucw.cz>,
+       Oliver Neukum <oliver@neukum.org>
+In-Reply-To: <1207037741.23143.81.camel@nigel-laptop>
+References: <200803292317.50218.rjw@sisk.pl>
+	 <200803292320.38378.rjw@sisk.pl> <200803300454.26318.rjw@sisk.pl>
+	 <200803312329.03455.rjw@sisk.pl>  <1207037741.23143.81.camel@nigel-laptop>
+Content-Type: text/plain
+Date: Tue, 01 Apr 2008 19:27:40 +1100
+Message-Id: <1207038460.10388.214.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Jiri Kosina <jkosina@suse.cz> wrote:
-
-> > What is the reason for this asymetry? Shouldn't the acquiring 
-> > functions be implemented in the very same way? Or at least, 
-> > shouldn't all the __lockfunc functions be inlined?
+On Tue, 2008-04-01 at 19:15 +1100, Nigel Cunningham wrote:
+> > + *   However, drivers may NOT assume anything about the availability of the
+> > + *   user space at that time and it is not correct to request firmware from
+> > + *   within @prepare() (it's too late to do that).
 > 
-> i.e. is there any particular reason why we don't have something like 
-> the patch below (implemented for all the lock variants of course, this 
-> is just to demonstrate what I mean)?
+> That doesn't sound good. It would be good to be able to get drivers to
+> request firmware early in the process.
 
-IIRC the main reason we decided to uninline them was image size. So i'd 
-suggest for you to check how this change impacts vmlinux size (on both 
-64-bit and 32-bit), a typical distro config (or allyesconfig with lock 
-debugging disabled).
+Agreed. Prepare() should still allow request_firmware and full userspace
+communication / helper usage.
 
-If you do the test on x86.git/latest you'll also have the 
-CONFIG_OPTIMIZE_INLINING=y and CONFIG_CC_OPTIMIZE_FOR_SIZE=y combination 
-as well, which generates the most compact x86 kernel image ever.
+> > + * @complete: Undo the changes made by @prepare().  This method is executed for
+> > + *   all kinds of resume transitions, following one of the resume callbacks:
+> > + *   @resume(), @thaw(), @restore().  Also called if the state transition
+> > + *   fails before the driver's suspend callback (@suspend(), @freeze(),
+> > + *   @poweroff()) can be executed (e.g. if the suspend callback fails for one
+> > + *   of the other devices that the PM core has unsucessfully attempted to
 
-	Ingo
+Ben.
+
+
