@@ -1,56 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759521AbYDASSW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759661AbYDAST3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759521AbYDASSW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Apr 2008 14:18:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757265AbYDASSK
+	id S1759661AbYDAST3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Apr 2008 14:19:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757835AbYDASTV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Apr 2008 14:18:10 -0400
-Received: from mail.vyatta.com ([216.93.170.194]:58936 "EHLO mail.vyatta.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757539AbYDASSJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Apr 2008 14:18:09 -0400
-X-Spam-Flag: NO
-X-Spam-Score: -1.996
-Date: Tue, 1 Apr 2008 11:18:02 -0700
-From: Stephen Hemminger <shemminger@vyatta.com>
-To: Inaky Perez-Gonzalez <inaky@linux.intel.com>
-Cc: netdev@vger.kernel.org, linux-wireless@vger.kernel.org,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [ANN] WiMAX stack and drivers for Intel WiMAX Link 5050
-Message-ID: <20080401111802.65fe259f@extreme>
-In-Reply-To: <200804011107.38563.inaky@linux.intel.com>
-References: <200804011107.38563.inaky@linux.intel.com>
-Organization: Vyatta
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 1 Apr 2008 14:19:21 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:24567 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757982AbYDASTT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Apr 2008 14:19:19 -0400
+From: Chris Mason <chris.mason@oracle.com>
+To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       linux-btrfs@vger.kernel.org, btrfs-devel@oss.oracle.com
+Subject: Btrfs hosting moving to kernel.org
+Date: Tue, 1 Apr 2008 14:16:43 -0400
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200804011416.43563.chris.mason@oracle.com>
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 1 Apr 2008 11:07:37 -0700
-Inaky Perez-Gonzalez <inaky@linux.intel.com> wrote:
+Hello everyone,
 
-> 
-> Intel would like to announce the initial release of a Linux WiMAX 
-> common stack and drivers for its WiMAX devices (eg: Intel(r) 
-> WiMAX/WiFi Link 5050, with estimated availability around third 
-> quarter of 2008).
-> 
-> The project follows a standard layered approach: a generic WiMAX 
-> kernel stack provides a common interface to control WiMAX devices. 
-> A user space daemon and libraries provide a high level API for 
-> control (network scanning, connection, disconnection, roaming 
-> management, etc) and access to the drivers. 
-> 
-> Currently much of this higher level code is tailored to Intel's 
-> device, but we wanted to get it out as soon as possible.
-> 
-> You can find the code and additional information at
-> http://linuxwimax.org.
-> 
+I have setup new locations for the Btrfs sources, mailing lists and web pages 
+on kernel.org.  The old pages on oss.oracle.com are still live but I'll 
+change things soon to point to the new location.
 
-Code review occurs on patch submittable not by pointing developers off
-to an external project. Most likely there will be feedback that requires
-changes to API and other choices so you want to do this soon.
+Btrfs resources from Oracle haven't changed, and we still have an aggressive 
+development plan to get things production ready.  The move to kernel.org will 
+hopefully increase the project's profile a bit, and make it easier for us to 
+collaborate with others interested in filesystem development.
+
+(thanks to the kernel.org admins for all of their help!)
+
+Main Btrfs project page:
+
+http://btrfs.wiki.kernel.org/
+
+Sources:
+
+http://www.kernel.org/hg/btrfs/
+http://www.kernel.org/pub/linux/kernel/people/mason/btrfs/
+
+Mailing list
+
+linux-btrfs@vger.kernel.org
+
+People on the current btrfs mailing lists will have to subscribe to the new 
+list on vger.  You can find more details on subscribing to the vger lists 
+here:
+
+http://vger.kernel.org/majordomo-info.html
+
+And the Btrfs list here:
+
+http://vger.kernel.org/vger-lists.html#linux-btrfs
+
+The short version is to send a message to majordomo@vger.kernel.org with:
+
+subscribe linux-btrfs
+
+In the body.
+
+-chris
+
