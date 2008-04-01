@@ -1,62 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761319AbYDAVDO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760652AbYDAVDg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761319AbYDAVDO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Apr 2008 17:03:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760344AbYDAVBX
+	id S1760652AbYDAVDg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Apr 2008 17:03:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760444AbYDAVBd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Apr 2008 17:01:23 -0400
-Received: from main.gmane.org ([80.91.229.2]:42886 "EHLO ciao.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760371AbYDAVBW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Apr 2008 17:01:22 -0400
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Matthieu CASTET <castet.matthieu@free.fr>
-Subject: Re: [RFC PATCH] UBIFS - new flash file system
-Date: Tue, 1 Apr 2008 21:01:09 +0000 (UTC)
-Message-ID: <loom.20080401T204425-749@post.gmane.org>
-References: <1206629746-4298-1-git-send-email-Artem.Bityutskiy@nokia.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-X-Complaints-To: usenet@ger.gmane.org
-X-Gmane-NNTP-Posting-Host: main.gmane.org
-User-Agent: Loom/3.14 (http://gmane.org/)
-X-Loom-IP: 81.57.151.96 (Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.13) Gecko/20080313 Iceape/1.1.9 (Debian-1.1.9-1))
+	Tue, 1 Apr 2008 17:01:33 -0400
+Received: from netrider.rowland.org ([192.131.102.5]:3876 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1760831AbYDAVBa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Apr 2008 17:01:30 -0400
+Date: Tue, 1 Apr 2008 17:01:29 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@netrider.rowland.org
+To: Hans de Goede <j.w.r.degoede@hhs.nl>
+cc: Boaz Harrosh <bharrosh@panasas.com>, Oliver Neukum <oliver@neukum.org>,
+       Sergey Dolgov <solkaa@gmail.com>, <linux-kernel@vger.kernel.org>,
+       <linux-usb@vger.kernel.org>
+Subject: Re: usb-storage, error reading the last 8 sectors, regression in
+ 2.6.25-rc7
+In-Reply-To: <47F29A04.2040701@hhs.nl>
+Message-ID: <Pine.LNX.4.44L0.0804011659500.9362-100000@netrider.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->Artem Bityutskiy <Artem.Bityutskiy <at> nokia.com> writes:
-Hi,
+On Tue, 1 Apr 2008, Hans de Goede wrote:
 
-thanks for this new file system
-> UBIFS is stable and very close to be production ready. It was
-> tested on OLPC and N810. The development was done on flash simulator
-> on a 2-way x86 machine. However, UBIFS needs a good review.
-Did you have a chance of testing it with various real flash : old small page
-nand flash, very big large page NAND (4GB), ...
+> Reverting the patch is easy, edit drivers/usb/storage/scsiglue.c and remove the 
+> following line:
+> "                sdev->last_sector_bug = 1;"
+> 
+> Which should be close to line 193 (it is 193 in my source tree, but thats a bit 
+> stale).
+> 
+> > 
+> > The old way was not necessarily correct for this type of device bug. Only
+> > that it had a very high chance of not appearing.
+> > 
+> > When discussing the last bug, it was said to enable it by default for USB
+> > instead of using blacklists. It looks like this bug, or the other, needs a
+> > blacklist.
+> > 
+> 
+> If the splitting of the request is the cause, yes then it looks like that.
+> 
+> > But to me it looks like this is a 4k thing. I think Windows will always
+> > use 4k for FAT, though never triggering either of the bugs.
+> > 
+> 
+> I'm pretty sure the last sector must only be read by itself bug (for lack of a 
+> better name) is present under windows too, but won't be triggered as windows 
+> normally doesn't access the last sector, where as various pieces of Linux 
+> routinely probe the end of the disk, for detection of exotic partition types/ 
+> disklabes.etc.
+> 
+> > The one submitting the last sector patch was, I think, Hans de Goede (CCed)
+> > Hans ?
+> 
+> Correct I wrote the split up requests which touch the last sector changes to 
+> the scsi disk handling, and a seperate patch to always set the flag which 
+> enables the splitting for usb disks.
+> 
+> >   If I read last 8 sectors (4k) on a device that exhibits the "last sector bug"
+> >   Does it work? (Is 8 a magic number here)
+> > 
+> 
+> I just tried and I'm afraid not, an 8 sector read which includes at the last 
+> sector completely kills the device, no other transfers to / from the device 
+> will work until the sdcard is removed and reinserted (the troublesome device is 
+> a card reader build into a multi function printer, one gets what one pays for).
 
+It sounds like the last_sector_bug setting should be conditional on a 
+blacklist entry.  As far as I know it affects only a small proportion 
+of devices; most are fine with multi-sector reads at the end.
 
-
-> UBIFS mount time is considerably faster as well. For example,
-> In case of OLPC we observed 10-15 seconds faster boot time
-> comparing to JFFS2 (fast mount, no full media check).
-May be you could update your benchmark :
-http://osl.sed.hu/wiki/ubifs/index.php/Mount_results doesn't give super result :
-1 second mount time on a 64 MB flash with 517.73 BogoMIPS CPU.
-What will be the result for a 4GB flash ? 64 seconds ?
-
-Did you do very intensive and long test where you can see bad block appearing on
-the flash ?
-
-
-Speaking of big nand, is UBI/UBI-FS free of 2GB/4GB limit ?
-
-> UBIFS is quite complex because
-Is it possible to create small and fast code for read only support in 
-bootloader ?
-
-
-Matthieu
+Alan Stern
 
