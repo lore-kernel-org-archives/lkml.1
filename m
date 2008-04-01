@@ -1,57 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760114AbYDAVGU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761073AbYDAVHq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760114AbYDAVGU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Apr 2008 17:06:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761950AbYDAVFg
+	id S1761073AbYDAVHq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Apr 2008 17:07:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757385AbYDAVHc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Apr 2008 17:05:36 -0400
-Received: from eazy.amigager.de ([213.239.192.238]:48960 "EHLO
-	eazy.amigager.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761941AbYDAVFe (ORCPT
+	Tue, 1 Apr 2008 17:07:32 -0400
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:45562 "EHLO
+	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757094AbYDAVHb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Apr 2008 17:05:34 -0400
-Date: Tue, 1 Apr 2008 23:06:17 +0200
-From: Tino Keitel <tino.keitel@gmx.de>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Pavel Machek <pavel@ucw.cz>, linux-usb@vger.kernel.org,
-       Soeren Sonnenburg <sonne@nn7.de>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Len Brown <lenb@kernel.org>
-Subject: Re: 2.6.25-rc6 hangs at resume after suspend to RAM on Mac mini
-	Core Duo
-Message-ID: <20080401210617.GA7346@dose.home.local>
-Mail-Followup-To: Alan Stern <stern@rowland.harvard.edu>,
-	Pavel Machek <pavel@ucw.cz>, linux-usb@vger.kernel.org,
-	Soeren Sonnenburg <sonne@nn7.de>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	linux-kernel@vger.kernel.org, Len Brown <lenb@kernel.org>
-References: <20080401202557.GA6617@dose.home.local> <Pine.LNX.4.44L0.0804011701340.9362-100000@netrider.rowland.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.0804011701340.9362-100000@netrider.rowland.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Tue, 1 Apr 2008 17:07:31 -0400
+From: Erez Zadok <ezk@cs.sunysb.edu>
+To: akpm@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       viro@ftp.linux.org.uk, hch@infradead.org,
+       Erez Zadok <ezk@cs.sunysb.edu>
+Subject: [PATCH 08/14] Unionfs: use __func__ instead of __FUNCTION__
+Date: Tue,  1 Apr 2008 17:06:50 -0400
+Message-Id: <12070840201274-git-send-email-ezk@cs.sunysb.edu>
+X-Mailer: git-send-email 1.5.2.2
+X-MailKey: Erez_Zadok
+In-Reply-To: <12070840162442-git-send-email-ezk@cs.sunysb.edu>
+References: <12070840162442-git-send-email-ezk@cs.sunysb.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 01, 2008 at 17:02:36 -0400, Alan Stern wrote:
-> On Tue, 1 Apr 2008, Tino Keitel wrote:
-> 
-> > On Tue, Apr 01, 2008 at 15:06:51 -0400, Alan Stern wrote:
-> > 
-> > [...]
-> > 
-> > > Can you get any information out of the computer after the hang?  It 
-> > > would help to see the dmesg log (with CONFIG_USB_DEBUG enabled) and an 
-> > > Alt-SysRq-T stack dump.
-> > 
-> > Looks difficult. The text console stays black after resume, and there
-> > is no serial interface.
-> 
-> Network console?  SSH?  Or even telnet?
+Signed-off-by: Erez Zadok <ezk@cs.sunysb.edu>
+---
+ fs/unionfs/dentry.c |    2 +-
+ fs/unionfs/union.h  |   18 +++++++++---------
+ 2 files changed, 10 insertions(+), 10 deletions(-)
 
-Network is dead, too.
+diff --git a/fs/unionfs/dentry.c b/fs/unionfs/dentry.c
+index f8f65e1..5e498c2 100644
+--- a/fs/unionfs/dentry.c
++++ b/fs/unionfs/dentry.c
+@@ -406,7 +406,7 @@ bool __unionfs_d_revalidate_chain(struct dentry *dentry, struct nameidata *nd,
+ 	chain = kzalloc(chain_len * sizeof(struct dentry *), GFP_KERNEL);
+ 	if (unlikely(!chain)) {
+ 		printk(KERN_CRIT "unionfs: no more memory in %s\n",
+-		       __FUNCTION__);
++		       __func__);
+ 		goto out;
+ 	}
+ 
+diff --git a/fs/unionfs/union.h b/fs/unionfs/union.h
+index 63f3b21..e93b9ef 100644
+--- a/fs/unionfs/union.h
++++ b/fs/unionfs/union.h
+@@ -557,24 +557,24 @@ static inline void unionfs_mntput(struct dentry *dentry, int bindex)
+ #ifdef CONFIG_UNION_FS_DEBUG
+ 
+ /* useful for tracking code reachability */
+-#define UDBG pr_debug("DBG:%s:%s:%d\n", __FILE__, __FUNCTION__, __LINE__)
++#define UDBG pr_debug("DBG:%s:%s:%d\n", __FILE__, __func__, __LINE__)
+ 
+ #define unionfs_check_inode(i)	__unionfs_check_inode((i),	\
+-	__FILE__, __FUNCTION__, __LINE__)
++	__FILE__, __func__, __LINE__)
+ #define unionfs_check_dentry(d)	__unionfs_check_dentry((d),	\
+-	__FILE__, __FUNCTION__, __LINE__)
++	__FILE__, __func__, __LINE__)
+ #define unionfs_check_file(f)	__unionfs_check_file((f),	\
+-	__FILE__, __FUNCTION__, __LINE__)
++	__FILE__, __func__, __LINE__)
+ #define unionfs_check_nd(n)	__unionfs_check_nd((n),		\
+-	__FILE__, __FUNCTION__, __LINE__)
++	__FILE__, __func__, __LINE__)
+ #define show_branch_counts(sb)	__show_branch_counts((sb),	\
+-	__FILE__, __FUNCTION__, __LINE__)
++	__FILE__, __func__, __LINE__)
+ #define show_inode_times(i)	__show_inode_times((i),		\
+-	__FILE__, __FUNCTION__, __LINE__)
++	__FILE__, __func__, __LINE__)
+ #define show_dinode_times(d)	__show_dinode_times((d),	\
+-	__FILE__, __FUNCTION__, __LINE__)
++	__FILE__, __func__, __LINE__)
+ #define show_inode_counts(i)	__show_inode_counts((i),	\
+-	__FILE__, __FUNCTION__, __LINE__)
++	__FILE__, __func__, __LINE__)
+ 
+ extern void __unionfs_check_inode(const struct inode *inode, const char *fname,
+ 				  const char *fxn, int line);
+-- 
+1.5.2.2
 
-Regards,
-Tino
