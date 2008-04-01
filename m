@@ -1,45 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757737AbYDAOBh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758235AbYDAOE1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757737AbYDAOBh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Apr 2008 10:01:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755053AbYDAOB3
+	id S1758235AbYDAOE1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Apr 2008 10:04:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754633AbYDAOER
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Apr 2008 10:01:29 -0400
-Received: from mtagate6.uk.ibm.com ([195.212.29.139]:25385 "EHLO
-	mtagate6.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754507AbYDAOB2 (ORCPT
+	Tue, 1 Apr 2008 10:04:17 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:41564 "EHLO
+	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754126AbYDAOER (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Apr 2008 10:01:28 -0400
-Subject: [PATCH 0/3] hugetlbfs: cleanup and new primitives for s390
-From: Gerald Schaefer <gerald.schaefer@de.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
-       schwidefsky@de.ibm.com, Ingo Molnar <mingo@elte.hu>,
-       "David S. Miller" <davem@davemloft.net>,
-       Tony Luck <tony.luck@intel.com>, Paul Mackerras <paulus@samba.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Paul Mundt <lethal@linux-sh.org>
-Content-Type: text/plain
-Date: Tue, 01 Apr 2008 16:01:25 +0200
-Message-Id: <1207058485.5063.36.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.0 (2.8.0-40.el5_1.1) 
-Content-Transfer-Encoding: 7bit
+	Tue, 1 Apr 2008 10:04:17 -0400
+Date: Tue, 1 Apr 2008 15:32:12 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: kernel list <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>,
+       marcel@holtmann.org, maxk@qualcomm.com
+Subject: hci_usb.h: fix hard-to-trigger race
+Message-ID: <20080401133212.GA24598@elf.ucw.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
 
-this patchset cleans up hugetlbfs architecture headers and adds new
-primitives as preparation for the s390 large page support. Most notably
-we found that we need to add a new tlb flush for the copy-on-write of
-a large page (patch #2). We think that this is a bug, but obviously one
-that hasn't shown up so far on any of the other large page architectures.
+If someone tries to _urb_unlink while _urb_queue_head is running,
+he'll see _urb->queue == NULL and fail to do any locking. Prevent that
+from happening by strategically placed barriers.
 
-As there were no objections so far, which would be the right tree for
-this to get it upstream?
+Signed-off-by: Pavel Machek <pavel@suse.cz>
 
---
-Gerald Schaefer
+diff --git a/drivers/bluetooth/hci_usb.h b/drivers/bluetooth/hci_usb.h
+index 414080a..1790cc8 100644
+--- a/drivers/bluetooth/hci_usb.h
++++ b/drivers/bluetooth/hci_usb.h
+@@ -70,7 +70,8 @@ static inline void _urb_queue_head(struc
+ {
+ 	unsigned long flags;
+ 	spin_lock_irqsave(&q->lock, flags);
+-	list_add(&_urb->list, &q->head); _urb->queue = q;
++	/* _urb_unlink needs to know which spinlock to use, thus mb(). */
++	_urb->queue = q; mb(); list_add(&_urb->list, &q->head);
+ 	spin_unlock_irqrestore(&q->lock, flags);
+ }
+ 
+@@ -78,19 +79,23 @@ static inline void _urb_queue_tail(struc
+ {
+ 	unsigned long flags;
+ 	spin_lock_irqsave(&q->lock, flags);
+-	list_add_tail(&_urb->list, &q->head); _urb->queue = q;
++	/* _urb_unlink needs to know which spinlock to use, thus mb(). */
++	_urb->queue = q; mb(); list_add_tail(&_urb->list, &q->head);
+ 	spin_unlock_irqrestore(&q->lock, flags);
+ }
+ 
+ static inline void _urb_unlink(struct _urb *_urb)
+ {
+-	struct _urb_queue *q = _urb->queue;
++	struct _urb_queue *q;
+ 	unsigned long flags;
+-	if (q) {
+-		spin_lock_irqsave(&q->lock, flags);
+-		list_del(&_urb->list); _urb->queue = NULL;
+-		spin_unlock_irqrestore(&q->lock, flags);
+-	}
++
++	mb();
++	q = _urb->queue;
++	/* If q is NULL, it will die at easy-to-debug NULL pointer dereference.
++	   No need to BUG(). */
++	spin_lock_irqsave(&q->lock, flags);
++	list_del(&_urb->list); _urb->queue = NULL;
++	spin_unlock_irqrestore(&q->lock, flags);
+ }
+ 
+ struct hci_usb {
 
 
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
