@@ -1,41 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758179AbYDAN3f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757063AbYDANgp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758179AbYDAN3f (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Apr 2008 09:29:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754637AbYDAN31
+	id S1757063AbYDANgp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Apr 2008 09:36:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752937AbYDANgg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Apr 2008 09:29:27 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:53048 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753109AbYDAN31 (ORCPT
+	Tue, 1 Apr 2008 09:36:36 -0400
+Received: from mga01.intel.com ([192.55.52.88]:18374 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752047AbYDANgf convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Apr 2008 09:29:27 -0400
-Date: Tue, 1 Apr 2008 15:33:13 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>,
-       kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: agpgart: scary messages are fortunately obsolete
-Message-ID: <20080401133313.GK29105@one.firstfloor.org>
-References: <20080328112507.GA10774@elf.ucw.cz> <20080328113508.GP29105@one.firstfloor.org> <20080401122403.GC12129@elf.ucw.cz>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080401122403.GC12129@elf.ucw.cz>
-User-Agent: Mutt/1.4.2.1i
+	Tue, 1 Apr 2008 09:36:35 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,587,1199692800"; 
+   d="scan'208";a="543585493"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Subject: RE: [PATCH] ioat_dca __iomem annotations
+Date: Tue, 1 Apr 2008 14:34:51 +0100
+Message-ID: <7F38996F7185A24AB9071ED4950AD8C101667B1F@swsmsx413.ger.corp.intel.com>
+In-Reply-To: <f12847240803310920r5854444fid9022cd705e54847@mail.gmail.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH] ioat_dca __iomem annotations
+Thread-Index: AciTS1euFqlFZbiISBW1YxcAppmN7gAsR42A
+From: "Sosnowski, Maciej" <maciej.sosnowski@intel.com>
+To: <viro@ftp.linux.org.uk>, <torvalds@linux-foundation.org>
+Cc: "Nelson, Shannon" <shannon.nelson@intel.com>,
+       <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 01 Apr 2008 13:34:53.0165 (UTC) FILETIME=[2AA6E9D0:01C893FD]
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->  	/* Should not happen anymore */
-> -	printk(KERN_ERR "PCI-DMA: More than 4GB of RAM and no IOMMU\n"
-> -	       KERN_ERR "PCI-DMA: 32bit PCI IO may malfunction.\n");
-> +	printk(KERN_WARNING "PCI-DMA: More than 4GB of RAM and no IOMMU\n"
-> +	       KERN_WARNING "falling back to iommu=soft.\n");
+> ---------- Original message ----------
+> From: Al Viro <viro@ftp.linux.org.uk>
+> Date: Mar 29, 2008 5:08 AM
+> Subject: [PATCH] ioat_dca __iomem annotations
+> To: torvalds@linux-foundation.org
+> Cc: shannon.nelson@intel.com, linux-kernel@vger.kernel.org
+> 
+> 
+> 
+> Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
+> ---
+>  drivers/dma/ioat_dca.c |    4 ++--
+>  1 files changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/dma/ioat_dca.c b/drivers/dma/ioat_dca.c
+> index 0fa8a98..9e92276 100644
+> --- a/drivers/dma/ioat_dca.c
+> +++ b/drivers/dma/ioat_dca.c
+> @@ -98,7 +98,7 @@ struct ioat_dca_slot {
+> 
+>  struct ioat_dca_priv {
+>        void __iomem            *iobase;
+> -       void                    *dca_base;
+> +       void __iomem            *dca_base;
+>        int                      max_requesters;
+>        int                      requester_count;
+>        u8                       tag_map[IOAT_TAG_MAP_LEN];
+> @@ -338,7 +338,7 @@ static struct dca_ops ioat2_dca_ops = {
+>        .get_tag                = ioat2_dca_get_tag,
+>  };
+> 
+> -static int ioat2_dca_count_dca_slots(void *iobase, u16 dca_offset)
+> +static int ioat2_dca_count_dca_slots(void __iomem *iobase, u16
+dca_offset)
+>  {
+>        int slots = 0;
+>        u32 req;
+> --
+> 1.5.3.GIT
 
-It might also fall back to another IOMMU (Calgary, Intel, ...) 
-soft is just last resort.
+Acked-by: Maciej Sosnowski <maciej.sosnowski@intel.com>
+---------------------------------------------------------------------
+Intel Technology Poland sp. z o.o.
+z siedziba w Gdansku
+ul. Slowackiego 173
+80-298 Gdansk
 
-You can probably just remove it.
+Sad Rejonowy Gdansk Polnoc w Gdansku, 
+VII Wydzial Gospodarczy Krajowego Rejestru Sadowego, 
+numer KRS 101882
 
--Andi
+NIP 957-07-52-316
+Kapital zakladowy 200.000 zl
+
+This e-mail and any attachments may contain confidential material for
+the sole use of the intended recipient(s). Any review or distribution
+by others is strictly prohibited. If you are not the intended
+recipient, please contact the sender and delete all copies.
+
