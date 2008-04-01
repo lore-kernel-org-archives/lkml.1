@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761533AbYDAVLJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932423AbYDAVLd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761533AbYDAVLJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Apr 2008 17:11:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761918AbYDAVID
+	id S932423AbYDAVLd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Apr 2008 17:11:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762128AbYDAVIJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Apr 2008 17:08:03 -0400
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:45620 "EHLO
+	Tue, 1 Apr 2008 17:08:09 -0400
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:45627 "EHLO
 	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761554AbYDAVH7 (ORCPT
+	with ESMTP id S1760557AbYDAVIH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Apr 2008 17:07:59 -0400
+	Tue, 1 Apr 2008 17:08:07 -0400
 From: Erez Zadok <ezk@cs.sunysb.edu>
 To: akpm@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
        viro@ftp.linux.org.uk, hch@infradead.org,
-       Erez Zadok <ezk@cs.sunysb.edu>
-Subject: [PATCH 07/14] Unionfs: don't copy parent inode times in setattr
-Date: Tue,  1 Apr 2008 17:06:49 -0400
-Message-Id: <12070840192374-git-send-email-ezk@cs.sunysb.edu>
+       Erez Zadok <ezk@cs.sunysb.edu>, Dave Miller <justdave@mozilla.com>
+Subject: [PATCH 11/14] Unionfs: display mount point name along with generation number
+Date: Tue,  1 Apr 2008 17:06:53 -0400
+Message-Id: <12070840212494-git-send-email-ezk@cs.sunysb.edu>
 X-Mailer: git-send-email 1.5.2.2
 X-MailKey: Erez_Zadok
 In-Reply-To: <12070840162442-git-send-email-ezk@cs.sunysb.edu>
@@ -26,25 +26,67 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+CC: Dave Miller <justdave@mozilla.com>
+
 Signed-off-by: Erez Zadok <ezk@cs.sunysb.edu>
 ---
- fs/unionfs/inode.c |    3 +--
- 1 files changed, 1 insertions(+), 2 deletions(-)
+ fs/unionfs/main.c  |    7 ++++++-
+ fs/unionfs/super.c |    4 +++-
+ fs/unionfs/union.h |    1 +
+ 3 files changed, 10 insertions(+), 2 deletions(-)
 
-diff --git a/fs/unionfs/inode.c b/fs/unionfs/inode.c
-index 640969d..0dc07ec 100644
---- a/fs/unionfs/inode.c
-+++ b/fs/unionfs/inode.c
-@@ -1064,8 +1064,7 @@ static int unionfs_setattr(struct dentry *dentry, struct iattr *ia)
- 	if (ia->ia_valid & ATTR_ATIME_SET)
- 		inode->i_atime = lower_inode->i_atime;
- 	fsstack_copy_inode_size(inode, lower_inode);
--	/* if setattr succeeded, then parent dir may have changed */
--	unionfs_copy_attr_times(dentry->d_parent->d_inode);
-+
- out:
- 	if (!err)
- 		unionfs_check_dentry(dentry);
+diff --git a/fs/unionfs/main.c b/fs/unionfs/main.c
+index 8f59fb5..b76264a 100644
+--- a/fs/unionfs/main.c
++++ b/fs/unionfs/main.c
+@@ -736,7 +736,12 @@ static int unionfs_get_sb(struct file_system_type *fs_type,
+ 			  int flags, const char *dev_name,
+ 			  void *raw_data, struct vfsmount *mnt)
+ {
+-	return get_sb_nodev(fs_type, flags, raw_data, unionfs_read_super, mnt);
++	int err;
++	err = get_sb_nodev(fs_type, flags, raw_data, unionfs_read_super, mnt);
++	if (!err)
++		UNIONFS_SB(mnt->mnt_sb)->dev_name =
++			kstrdup(dev_name, GFP_KERNEL);
++	return err;
+ }
+ 
+ static struct file_system_type unionfs_fs_type = {
+diff --git a/fs/unionfs/super.c b/fs/unionfs/super.c
+index 2456654..e5cb235 100644
+--- a/fs/unionfs/super.c
++++ b/fs/unionfs/super.c
+@@ -134,6 +134,7 @@ static void unionfs_put_super(struct super_block *sb)
+ 		atomic_dec(&s->s_active);
+ 	}
+ 
++	kfree(spd->dev_name);
+ 	kfree(spd->data);
+ 	kfree(spd);
+ 	sb->s_fs_info = NULL;
+@@ -805,7 +806,8 @@ out_no_change:
+ 	atomic_set(&UNIONFS_D(sb->s_root)->generation, i);
+ 	atomic_set(&UNIONFS_I(sb->s_root->d_inode)->generation, i);
+ 	if (!(*flags & MS_SILENT))
+-		pr_info("unionfs: new generation number %d\n", i);
++		pr_info("unionfs: %s: new generation number %d\n",
++			UNIONFS_SB(sb)->dev_name, i);
+ 	/* finally, update the root dentry's times */
+ 	unionfs_copy_attr_times(sb->s_root->d_inode);
+ 	err = 0;		/* reset to success */
+diff --git a/fs/unionfs/union.h b/fs/unionfs/union.h
+index e93b9ef..4ca4e76 100644
+--- a/fs/unionfs/union.h
++++ b/fs/unionfs/union.h
+@@ -159,6 +159,7 @@ struct unionfs_sb_info {
+ 	struct rw_semaphore rwsem;
+ 	pid_t write_lock_owner;	/* PID of rw_sem owner (write lock) */
+ 	int high_branch_id;	/* last unique branch ID given */
++	char *dev_name;		/* to identify different unions in pr_debug */
+ 	struct unionfs_data *data;
+ };
+ 
 -- 
 1.5.2.2
 
