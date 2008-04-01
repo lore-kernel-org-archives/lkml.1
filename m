@@ -1,81 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758317AbYDAOQC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758728AbYDAOei@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758317AbYDAOQC (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Apr 2008 10:16:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755064AbYDAOPz
+	id S1758728AbYDAOei (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Apr 2008 10:34:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755533AbYDAOe3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Apr 2008 10:15:55 -0400
-Received: from e31.co.us.ibm.com ([32.97.110.149]:36569 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755025AbYDAOPz (ORCPT
+	Tue, 1 Apr 2008 10:34:29 -0400
+Received: from adsl-67-113-118-6.dsl.sndg02.pacbell.net ([67.113.118.6]:37229
+	"EHLO multivac.one-eyed-alien.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755531AbYDAOe2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Apr 2008 10:15:55 -0400
-Date: Tue, 1 Apr 2008 09:15:41 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Pavel Emelyanov <xemul@openvz.org>
-Cc: Manfred Spraul <manfred@colorfullife.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Serge Hallyn <serue@us.ibm.com>,
-       Sukadev Bhattiprolu <sukadev@us.ibm.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [RFC, PATCH] fix SEM_UNDO with namespaces
-Message-ID: <20080401141540.GB13213@sergelap.ibm.com>
-References: <47EFFD1C.5020204@colorfullife.com> <47F08ED6.1090103@openvz.org> <47F10DF7.5010702@colorfullife.com> <47F203EC.7090806@openvz.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 1 Apr 2008 10:34:28 -0400
+Date: Tue, 1 Apr 2008 07:34:20 -0700
+From: Matthew Dharm <mdharm-kernel@one-eyed-alien.net>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Oliver Neukum <oliver@neukum.org>, Sergey Dolgov <solkaa@gmail.com>,
+       linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
+Subject: Re: usb-storage, error reading the last 8 sectors, regression in 2.6.25-rc7
+Message-ID: <20080401143420.GB20920@one-eyed-alien.net>
+Mail-Followup-To: Alan Stern <stern@rowland.harvard.edu>,
+	Oliver Neukum <oliver@neukum.org>, Sergey Dolgov <solkaa@gmail.com>,
+	linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
+References: <200804010938.53853.oliver@neukum.org> <Pine.LNX.4.44L0.0804011028230.3993-100000@iolanthe.rowland.org>
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="MW5yreqqjyrRcusr"
 Content-Disposition: inline
-In-Reply-To: <47F203EC.7090806@openvz.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <Pine.LNX.4.44L0.0804011028230.3993-100000@iolanthe.rowland.org>
+User-Agent: Mutt/1.4.2.3i
+Organization: One Eyed Alien Networks
+X-Copyright: (C) 2008 Matthew Dharm, all rights reserved.
+X-Message-Flag: Get a real e-mail client.  http://www.mutt.org/
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-2.1.12 (multivac.one-eyed-alien.net [127.0.0.1]); Tue, 01 Apr 2008 07:34:21 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Pavel Emelyanov (xemul@openvz.org):
-> Manfred Spraul wrote:
-> > Pavel Emelyanov wrote:
-> >> Manfred Spraul wrote:
-> >>   
-> >>> Hi,
-> >>>
-> >>> the attached patch should fix the combination of CLONE_NEWIPC with 
-> >>> shared sysv undo structures (the common case, just 
-> >>> sys_unshare(CLONE_NEWIPC)):
-> >>> lookup_undo() now locates the undo array based on both semid and the 
-> >>> namespace pointer.
-> >>>     
-> >> If you start using any IPC object and then call unshare with CLONE_NEWIPC,
-> >> then it's your problem, but not the kernel.
-> >>   
-> > The result is a kernel memory corruption, and kernel memory corruptions 
-> > are always the kernel's problem.
-> 
-> Agree. Must be fixed, but I'm not sure we should try handling this
-> case by trying to de-op semaphores for former task namespace. I think
-> that destroying this list or returning -EBUSY for this case is OK.
-> 
-> > The code assumed that a semaphore id is globally unique. With 
-> > namespaces,  this is not true anymore.
-> > If two semaphore arrays exist with the same id, but different sizes, 
-> > then semops will cause memory corruptions: The undo structure contains 
-> > one element for each semaphore, thus the semop will write behind the end 
-> > of the memory allocation.
-> > 
-> >> I agree, that we should probably destroy this one when the task calls 
-> >> unshare, but trying to keep this list relevant is useless.
-> >>   
-> > A very tricky question: Let's assume we have a process with two threads.
-> > The undo structure is shared, as per opengroup standard.
-> > Now one thread calls unshare(CLONE_NEWIPC). What should happen? We 
-> > cannot destroy the undo structure, the other thread might be still 
-> > interested in it.
-> > If we allow sys_unshare() for multithreaded processes with CLONE_NEWIPC 
-> > and without CLONE_SYSVSEM, then we must handle this case.
-> 
-> Hm... I'd simply disable creating any new namespaces for threads.
-> I think other namespaces developers agree with me. Serge, Suka, Eric
-> what do you think?
 
-Absolutely.
+--MW5yreqqjyrRcusr
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
--serge
+On Tue, Apr 01, 2008 at 10:28:52AM -0400, Alan Stern wrote:
+> On Tue, 1 Apr 2008, Oliver Neukum wrote:
+>=20
+> > Am Dienstag, 1. April 2008 03:58:31 schrieb Alan Stern:
+> > > Nevertheless, it's clear that the problem has nothing to do with the=
+=20
+> > > USB stack. =A0The real source of the problem lies in the device itsel=
+f,=20
+> > > for reporting a bogus error when in fact nothing went wrong. =A0That =
+may=20
+> > > also explain why you don't always see the problem -- sometimes the=20
+> > > device works the way it ought to.
+> >=20
+> > Reminds me of the devices that can read the last sector but only if it =
+is read
+> > by itself. Do you reckon this device may have the "opposite" quirk?
+>=20
+> Could be something like that.
+
+Didn't I see some SCSI patches go by to implement exactly this change?
+That is, only read the last sector by itself?
+
+Matt
+
+--=20
+Matthew Dharm                              Home: mdharm-usb@one-eyed-alien.=
+net=20
+Maintainer, Linux USB Mass Storage Driver
+
+We can customize our colonels.
+					-- Tux
+User Friendly, 12/1/1998
+
+--MW5yreqqjyrRcusr
+Content-Type: application/pgp-signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+
+iD8DBQFH8kfsHL9iwnUZqnkRAlB7AKCKKTtHTm8Wc/yY5IgrlRCNEba0DACfTdAn
+ibTbM78OGZbllr+nyk/XoGE=
+=1Rec
+-----END PGP SIGNATURE-----
+
+--MW5yreqqjyrRcusr--
