@@ -1,165 +1,143 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758447AbYDAJiP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758266AbYDAJjS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758447AbYDAJiP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Apr 2008 05:38:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756768AbYDAJiA
+	id S1758266AbYDAJjS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Apr 2008 05:39:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756842AbYDAJjG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Apr 2008 05:38:00 -0400
-Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:57395 "EHLO
-	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756741AbYDAJh7 (ORCPT
+	Tue, 1 Apr 2008 05:39:06 -0400
+Received: from smtp1.infomaniak.ch ([84.16.68.89]:32840 "EHLO
+	smtp1.infomaniak.ch" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756784AbYDAJjF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Apr 2008 05:37:59 -0400
-From: "Satoshi UCHIDA" <s-uchida@ap.jp.nec.com>
-To: <linux-kernel@vger.kernel.org>, <containers@lists.linux-foundation.org>,
-       <axboe@kernel.dk>, <menage@google.com>
-Cc: <s-uchida@ap.jp.nec.com>, <tom-sugawara@ap.jp.nec.com>,
-       <m-takahashi@ex.jp.nec.com>
-References: <007801c893d9$d89726f0$89c574d0$@jp.nec.com>
-In-Reply-To: <007801c893d9$d89726f0$89c574d0$@jp.nec.com>
-Subject: [RFC][patch 7/11][CFQ-cgroup] Control cfq_data per driver
-Date: Tue, 1 Apr 2008 18:37:40 +0900
-Message-Id: <008401c893dc$07669270$1633b750$@jp.nec.com>
+	Tue, 1 Apr 2008 05:39:05 -0400
+From: Didier Raboud <didier@raboud.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: =?utf-8?q?2=2E6=2E25-rc7=C2=A0=3A_hibernation_sometimes_not_resuming_on?=
+ =?utf-8?q?_Dell_Latitude?= D630
+Date: Tue, 1 Apr 2008 08:41:43 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org, debian-kernel@lists.debian.org
+References: <200803311823.36693.didier@raboud.com> <200803312303.19623.didier@raboud.com> <200804010818.59269.didier@raboud.com>
+In-Reply-To: <200804010818.59269.didier@raboud.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
+Content-Type: multipart/signed;
+  boundary="nextPart1588300.hqSSEA4Kmh";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
-X-Mailer: Microsoft Office Outlook 12.0
-Thread-Index: AciT2dazsgoxpK4vQk6Hf026phpfBAAAgreQ
-Content-Language: ja
+Message-Id: <200804010841.45623.didier@raboud.com>
+X-Antivirus: Dr.Web (R) for Mail Servers on smtp1 host
+X-Antivirus-Code: 100000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch expands cfq_meta_data to handling multi cfq_data.
-This control is used rb_tree and the key is used a pointer of cfq_data.
+--nextPart1588300.hqSSEA4Kmh
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-   Signed-off-by: Satoshi UCHIDA <uchida@ap.jp.nec.com>
+Le mardi, 1 avril 2008 08.18:57 Didier Raboud, vous avez =C3=A9crit=C2=A0:
+> Le lundi, 31 mars 2008 23.03:16 Didier Raboud, vous avez =C3=A9crit=C2=A0:
+> > Le lundi, 31 mars 2008 22.29:20 Rafael J. Wysocki, vous avez =C3=A9crit=
+=C2=A0:
+> > > On Monday, 31 of March 2008, Didier Raboud wrote:
+> > > > Le lundi, 31 mars 2008 19.36:00 Didier Raboud, vous avez =C3=A9crit=
+=C2=A0:
+> > > > > Le lundi, 31 mars 2008 19.24:55 maximilian attems, vous avez =C3=
+=A9crit=C2=A0:
+> > > > > > On Mon, Mar 31, 2008 at 07:03:13PM +0200, Didier Raboud wrote:
+> > > > > > <snipp>
+> > > > > >
+> > > > > > > > > Attached are a 2.6.25-rc7 and a 2.6.24 dmesg's after two
+> > > > > > > > > successful hibernate/resume cycles.
+> > > > > > > >
+> > > > > > > > Could you please check if the problem is still present if y=
+ou
+> > > > > > > > boot with acpi_new_pts_ordering kernel command line argumen=
+t?
+> > > > > > >
+> > > > > > > By the way, I just added acp_new_pts_ordering at the end of t=
+he
+> > > > > > > Grub line beginning by "linux (hd0,1)/vmlinuz(...)". Is that
+> > > > > > > correct=C2=A0?
+> > > > > >
+> > > > > > seems strange you should add it to the kopt line and then kick =
+as
+> > > > > > root update-grub
+> > > > > >
+> > > > > > # kopt=3Droot=3D/dev/sda1 ro
+> > > > > > it should land
+> > > > > > kernel          /boot/vmlinuz-2.6.25-rc7-amd64 root=3D/dev/sda1=
+ ro
+> > > > >
+> > > > > Well... I'm using Grub2 (grub-pc). I altered the boot option at
+> > > > > boot time but forgot to check /proc/cmdline. Will try again and
+> > > > > report back.
+> > > > >
+> > > > > Regards,
+> > > > >
+> > > > > Didier
+> > > >
+> > > > Hi,
+> > > >
+> > > > I tried again and ensured that /proc/cmdline 's end was
+> > > > acpi_new_pts_ordering . It did work for 2-3 hibernation, but then
+> > > > failed.
+> > >
+> > > Well, there were quite a lot of suspend-related changes between 2.6.24
+> > > and now.
+> > >
+> > > Hmm, do you have CONFIG_USB_SUSPEND set in .config by chance?
+> > >
+> > > Rafael
+> >
+> > I do (Debian default option)... I will build a kernel without it and
+> > retry.
+> >
+> > Didier
+>
+> Hi again.
+>
+> I compiled the same kernel with CONFIG_USB_SUSPEND not set. After 6
+> hibernations, I haven't had a problem for now.
+>
+> Regards,
+>
+> Didier
 
-diff --git a/block/cfq-cgroup.c b/block/cfq-cgroup.c
-index 34894d9..55090dc 100644
---- a/block/cfq-cgroup.c
-+++ b/block/cfq-cgroup.c
-@@ -54,9 +54,42 @@ static struct cfq_meta_data *cfq_cgroup_init_meta_data(struct cfq_data *cfqd, st
- 	cfqmd->cfq_driv_d.idle_slice_timer.data = (unsigned long) cfqd;
- 	cfqmd->cfq_driv_d.cfq_slice_idle = cfq_cgroup_slice_idle;
- 
-+	cfqmd->sibling_tree = RB_ROOT;
-+	cfqmd->siblings = 0;
-+
- 	return cfqmd;
- }
- 
-+static void cfq_meta_data_sibling_tree_add(struct cfq_meta_data *cfqmd,
-+					     struct cfq_data *cfqd)
-+{
-+	struct rb_node **p;
-+	struct rb_node *parent = NULL;
-+
-+	BUG_ON(!RB_EMPTY_NODE(&cfqd->sib_node));
-+
-+	p = &cfqmd->sibling_tree.rb_node;
-+
-+	while (*p) {
-+		struct cfq_data *__cfqd;
-+		struct rb_node **n;
-+
-+		parent = *p;
-+		__cfqd = rb_entry(parent, struct cfq_data, sib_node);
-+
-+		if (cfqd < __cfqd) {
-+			n = &(*p)->rb_left;
-+		} else {
-+			n = &(*p)->rb_right;
-+		}
-+		p = n;
-+	}
-+		
-+	rb_link_node(&cfqd->sib_node, parent, p);
-+	rb_insert_color(&cfqd->sib_node, &cfqmd->sibling_tree);
-+	cfqmd->siblings++;
-+	cfqd->cfqmd = cfqmd;
-+}
-  
- struct cfq_data *__cfq_cgroup_init_queue(struct request_queue *q, void *data)
- {
-@@ -66,6 +99,8 @@ struct cfq_data *__cfq_cgroup_init_queue(struct request_queue *q, void *data)
- 	if (!cfqd)
- 		return NULL;
- 
-+	RB_CLEAR_NODE(&cfqd->sib_node);
-+
- 	if (!cfqmd) {
-        		cfqmd = cfq_cgroup_init_meta_data(cfqd, q);
- 		if (!cfqmd) {
-@@ -73,6 +108,7 @@ struct cfq_data *__cfq_cgroup_init_queue(struct request_queue *q, void *data)
- 			return NULL;
- 		}
- 	}
-+	cfq_meta_data_sibling_tree_add(cfqmd, cfqd);
- 
- 	return cfqd;
- }
-@@ -102,11 +138,35 @@ cfq_cgroup_create(struct cgroup_subsys *ss, struct cgroup *cont)
- /*
-  * Remove device or cgroup data functions.
-  */
-+static void cfq_cgroup_erase_meta_data_siblings(struct cfq_meta_data *cfqmd, struct cfq_data *cfqd)
-+{
-+	rb_erase(&cfqd->sib_node, &cfqmd->sibling_tree);
-+	cfqmd->siblings--;
-+}
-+
-+static void cfq_exit_device_group(struct cfq_meta_data *cfqmd)
-+{
-+	struct rb_node *p, *n;
-+	struct cfq_data *cfqd;
-+
-+	p =  rb_first(&cfqmd->sibling_tree);
-+
-+	while (p) {
-+		n = rb_next(p);
-+		cfqd = rb_entry(p, struct cfq_data, sib_node);
-+
-+		cfq_cgroup_erase_meta_data_siblings(cfqmd, cfqd);
-+		__cfq_exit_data(cfqd);
-+
-+		p = n;
-+	}
-+}
-+
- static void __cfq_cgroup_exit_data(struct cfq_data *cfqd)
- {
- 	struct cfq_meta_data *cfqmd = cfqd->cfqmd;
- 
--	__cfq_exit_data(cfqd);
-+	cfq_exit_device_group(cfqmd);
- 	kfree(cfqmd);
- }
- 
-diff --git a/include/linux/cfq-iosched.h b/include/linux/cfq-iosched.h
-index e5b41da..c8879a7 100644
---- a/include/linux/cfq-iosched.h
-+++ b/include/linux/cfq-iosched.h
-@@ -54,6 +54,10 @@ struct cfq_driver_data {
-  */
- struct cfq_meta_data {
- 	struct cfq_data *elv_data;
-+
-+	/* device siblings */
-+	struct rb_root sibling_tree;
-+	unsigned int siblings;
- 	
- 	struct cfq_driver_data cfq_driv_d;
- };
-@@ -91,6 +95,9 @@ struct cfq_data {
- 
- #ifdef CONFIG_CGROUP_CFQ
- 	struct cfq_meta_data *cfqmd;
-+	/* sibling_tree member for cfq_meta_data */
-+	struct rb_node sib_node;
-+
- #else
- 	struct cfq_driver_data cfq_driv_d;
- #endif
+Hi again again,
 
+It hung after the 10th hibernation...
+
+I wonder if the problem would not be of Debian's uswsusp binary, because tt=
+y1=20
+tells me that the image is successfully loaded but I just can't act on my b=
+ox=20
+afterwards.
+
+There is a bug open in the Debian BTS requesting a packaging of the new=20
+upstream version (0.8) but the maintainer is told to be too busy to handle =
+it=20
+for now.
+
+Don't know...
+
+Regards,=20
+
+Didier
+
+--nextPart1588300.hqSSEA4Kmh
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBH8dkpwW1nnOmiePARAuPvAKCUqv72osAHrZQ6onBKd9qdzK4hrACfXx1e
+LzrnQpg8ml4FDxBdMFZ5WFc=
+=+IBV
+-----END PGP SIGNATURE-----
+
+--nextPart1588300.hqSSEA4Kmh--
