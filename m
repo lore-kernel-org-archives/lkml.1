@@ -1,96 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759716AbYDAUFy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760075AbYDAUGW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759716AbYDAUFy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Apr 2008 16:05:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757332AbYDAUFq
+	id S1760075AbYDAUGW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Apr 2008 16:06:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759467AbYDAUGM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Apr 2008 16:05:46 -0400
-Received: from smtp118.sbc.mail.sp1.yahoo.com ([69.147.64.91]:46299 "HELO
-	smtp118.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1756964AbYDAUFp (ORCPT
+	Tue, 1 Apr 2008 16:06:12 -0400
+Received: from el-out-1112.google.com ([209.85.162.180]:28555 "EHLO
+	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759876AbYDAUGL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Apr 2008 16:05:45 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:Received:Date:From:To:Subject:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-Id;
-  b=jHLtKnzIX8t+xIraZO8+ElPQOGePjoqPv6SYIxkRl0FCMPMTTPay5L0yv/OmBhu6TxJtcBQ3GRykFjvLPNE/3y/OsHDa6NZwstzTK2nUpqiY2MkVvJtRNTO84B9qW3fCFU3aJidHuVxFE0dM6tk26s/teoUrM6RWo5725PipEvY=  ;
-X-YMail-OSG: ncN9eJsVM1mRpIrYcDEZPucVfPpAx2E_yr2xyjWlizTMk7dhs.kwsUROjSeClUpUaHBOzfp7fQ--
-X-Yahoo-Newman-Property: ymail-3
-Date: Tue, 01 Apr 2008 13:06:18 -0700
-From: David Brownell <david-b@pacbell.net>
-To: tino.keitel@gmx.de, pavel@ucw.cz, linux-usb@vger.kernel.org
-Subject: Re: 2.6.25-rc6 hangs at resume after suspend to RAM on Mac mini Core 
- Duo
-Cc: sonne@nn7.de, rjw@sisk.pl, linux-kernel@vger.kernel.org, lenb@kernel.org,
-       akpm@linux-foundation.org
-References: <20080320060550.GA13200@dose.home.local>
- <20080320105432.GA13404@dose.home.local>
- <20080325231300.GA10641@thinkpad.home.local>
- <200803290003.16199.rjw@sisk.pl>
- <20080331212812.GB5313@dose.home.local>
- <1207030991.11035.35.camel@localhost>
- <20080401062734.GA8824@dose.home.local>
- <20080401105213.GB10554@elf.ucw.cz>
- <20080401183732.GA5043@dose.home.local>
-In-Reply-To: <20080401183732.GA5043@dose.home.local>
+	Tue, 1 Apr 2008 16:06:11 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=k2rdc29YBilDPU64vvkyU0NR1eB/Bftt29UWOhjg7NjOL7GuJilCJMqrfd0URmev7zw3Bz3fZXrp7vrX/Dt5Sqe3KTOT2MNVEDmLNcJ3lXMf5y2yWZ3ll11trJKqVYpQtUwGTiW9BukuxhgejCtP4XxfBFBQMqHHNGJmTo022II=
+Message-ID: <5d75f4610804011306y55352e73sb5223a294b66f2cf@mail.gmail.com>
+Date: Wed, 2 Apr 2008 03:06:07 +0700
+From: "BuraphaLinux Server" <buraphalinuxserver@gmail.com>
+To: "John W. Linville" <linville@tuxdriver.com>
+Subject: Re: New IWL4935 driver for Intel Wireless Cards does not support WPA2 wireless network with PEAP - MSCHAPV2
+Cc: "Luca Venturini" <lucventurini@gmail.com>, linux-kernel@vger.kernel.org,
+       linux-wireless@vger.kernel.org
+In-Reply-To: <20080401164419.GA3530@tuxdriver.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Message-Id: <20080401200618.7284DCC224@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
+Content-Disposition: inline
+References: <47F1F4F4.2080502@gmail.com> <20080401164419.GA3530@tuxdriver.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> git-bisect revealed this:
+intel wireless just doesn't work on linux 2.6.24.4; wait for 2.6.25.x stable.
+
+On 4/1/08, John W. Linville <linville@tuxdriver.com> wrote:
+> You probably want to address this to linux-wireless@vger.kernel.org
+> instead...
 >
-> $ git bisect good
-> e82cc1288fa57857c6af8c57f3d07096d4bcd9d9 is first bad commit
-> commit e82cc1288fa57857c6af8c57f3d07096d4bcd9d9
-> Author: David Brownell <david-b@pacbell.net>
-> Date:   Fri Mar 7 13:49:42 2008 -0800
+> On Tue, Apr 01, 2008 at 10:40:20AM +0200, Luca Venturini wrote:
+> > Using Ubuntu Hardy Beta, Linux kernel 2.6.24, AMD64.
+> > I have to connect to a campus (University of Verona, Italy; more
+> > information maybe available at https://wifi.univr.it sadly in Italian
+> only,
+> > and I am not sure it is reachable from outside the university) WPA2
+> > wireless network. It uses PEAP authentication, Dynamic WEP encryption,
+> > second phase: MSCHAPv2.
+> > It also requires user login, password, and a CA certificate (available at
+> > the web page I linked above).
+> > At the same page a wpasupplicant configuration file is also available, so
+> > to allow people to connect from linux also.
+> > In Ubuntu Gutsy 32 bit (Linux kernel 2.6.22.14 if I am not mistaken) I was
+> > able to connect through NetworkManager and precisely using the GNOME
+> > nm-applet.
+> > However, since I switched to Linux 2.6.24, I have no more been able to
+> > connect, whether through NM-applet or from the command line, using
+> > wpasupplicant. The wireless functions perfectly, and there has been no
+> > change in its configuration, since I am using it now (Windows Vista,
+> > configured months ago).
+> > Reported also here on launchpad:
+> > https://bugs.launchpad.net/ubuntu/+bug/209602
+> > Thank you for your attention.
+> > Greetings
+> >
+> > Luca Venturini
+> > --
+> > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> > the body of a message to majordomo@vger.kernel.org
+> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> > Please read the FAQ at  http://www.tux.org/lkml/
 >
->     USB: fix ehci unlink regressions
-
-Most curious.  Based on what I read earlier, I was wondering about
-the handling of the unlink watchdog during a known-dodgey path.
-
-Specifically:
-
->     The recent EHCI driver update to split the IAA watchdog timer out from
->     the other timers made several things work better, but not everything;
->     and it created a couple new issues in bugzilla.  Ergo this patch:
->     
->       - Handle a should-be-rare SMP race between the watchdog firing
->         and (very late) IAA interrupts;
->     
->       - Remove a shouldn't-have-been-added WARN_ON() test;
->     
->       - Guard against one observed OOPS;
->     
->       - If this watchdog fires during clean HC shutdown, it should act
->         as a NOP instead of interfering with the shutdown sequence;
-
-This "fires during a clean shutdown" path.  If there's any way this
-patch would affect resume handling, that's where I'd expect it to
-kick in.  Virtually nothing else *could* cause problems there.
-
-If you'd like to experiment, modify the "if (...)" at the top of the
-ehci_iaa_watchdog() function and make it just check to see if there's
-an entry being reclaimed ... comment out the HC_IS_RUNNING() check.
-
-
->       - Guard against silicon errata hypothesized by some vendors:
->           * IAA status latch broken, but IAAD cleared OK;
->           * IAAD wasn't cleared when IAA status got reported;
-
-FWIW the former has been confirmed as existing on some current AMD/ATI
-chipsets (SB600 and SB700 are the numbers that come to mind).
-
-
->     The WARN_ON is in bugzilla as 10168; the OOPS as 10078; these are
->     both regressions.
->     
->     Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
->     Tested-by: Gordon Farquharson <gordonfarquharson@gmail.com>
->     Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
+> --
+> John W. Linville
+> linville@tuxdriver.com
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
