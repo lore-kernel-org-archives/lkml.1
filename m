@@ -1,62 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758911AbYDAU5N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759585AbYDAU6w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758911AbYDAU5N (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Apr 2008 16:57:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752870AbYDAU46
+	id S1759585AbYDAU6w (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Apr 2008 16:58:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752870AbYDAU6o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Apr 2008 16:56:58 -0400
-Received: from netrider.rowland.org ([192.131.102.5]:3858 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752672AbYDAU45 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Apr 2008 16:56:57 -0400
-Date: Tue, 1 Apr 2008 16:56:55 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@netrider.rowland.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Nigel Cunningham <ncunningham@crca.org.au>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Greg KH <greg@kroah.com>, Len Brown <lenb@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Alexey Starikovskiy <astarikovskiy@suse.de>,
-       David Brownell <david-b@pacbell.net>, Pavel Machek <pavel@ucw.cz>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Oliver Neukum <oliver@neukum.org>
-Subject: Re: [RFC][PATCH] PM: Introduce new top level suspend and hibernation
- callbacks (rev. 6)
-In-Reply-To: <200804012212.48609.rjw@sisk.pl>
-Message-ID: <Pine.LNX.4.44L0.0804011653140.9362-100000@netrider.rowland.org>
+	Tue, 1 Apr 2008 16:58:44 -0400
+Received: from mga09.intel.com ([134.134.136.24]:56333 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753132AbYDAU6n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Apr 2008 16:58:43 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,589,1199692800"; 
+   d="scan'208";a="311731595"
+Message-ID: <47F2A202.1040900@linux.intel.com>
+Date: Tue, 01 Apr 2008 13:58:42 -0700
+From: Arjan van de Ven <arjan@linux.intel.com>
+User-Agent: Thunderbird 2.0.0.12 (Windows/20080213)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: =?ISO-8859-1?Q?Thomas_Hellstr=F6m?= <thomas@tungstengraphics.com>
+CC: Andi Kleen <andi@firstfloor.org>, Dave Airlie <airlied@redhat.com>,
+       linux-kernel@vger.kernel.org, tglx@linutronix.de, mingo@redhat.com
+Subject: Re: [PATCH] x86: create array based interface to change page attribute
+References: <1206940788.7250.13.camel@clockmaker.usersys.redhat.com> <87myof8ief.fsf@basil.nowhere.org> <47F098E8.1050605@tungstengraphics.com> <20080331083816.GC29105@one.firstfloor.org> <47F0A988.7010707@tungstengraphics.com> <20080331091829.GD29105@one.firstfloor.org> <47F0C6C2.2000004@tungstengraphics.com> <47F10C62.7040500@linux.intel.com> <47F11443.7050302@tungstengraphics.com> <47F11616.3020403@linux.intel.com> <47F11ED3.40803@tungstengraphics.com>
+In-Reply-To: <47F11ED3.40803@tungstengraphics.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 1 Apr 2008, Rafael J. Wysocki wrote:
+Thomas Hellström wrote:
+> Given this problem, the previously mentioned use-case, and the fact that 
+> we mostly really use user-space mappings,
+> Is there a possibility we could add the following functions to Dave's 
+> patch (provided they would work as intended, of course, namely 
+> invalidate / bring back the kernel mapping).
 
-> > Does ..._ext_... mean extended? (external?) If 'extended' (or if not),
-> > does that imply that they're mutually exclusive alternatives for drivers
-> > to use?
-> 
-> 'ext' means 'extended'.  The idea is that the 'extended' version will be used
-> by bus types / driver types that don't need to implement the _noirq callbacks.
+sadly there are multiple mappings, both in theory and practice.
+Especially the _np / _p functions specifically work on only the mapping you specify.
 
-Something's wrong here.  This seems to say that the "extended" version
-has _fewer_ method pointers -- in which case it should be called 
-"restricted" instead.
-
-> > So drivers can never validly fail to resume. That sounds fair enough. If
-> > the hardware has gone away while in lower power mode (USB, say), should
-> > the driver then just printk an error and return success?
-> 
-> I think so.
-> 
-> IMO, an error code returned by a driver's ->resume() should mean "the device
-> hasn't resumed and is presumably dead".  Otherwise, ->resume() should return
-> success.
-
-If the device is gone, it doesn't much matter what resume() returns.
-
-Alan Stern
-
+For this to work we would need to somehow make a "mark all mappings NP, but please only do the kernel ones" kind of thing.
+The semantics of that are... lets say messy at best.
