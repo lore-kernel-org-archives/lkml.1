@@ -1,56 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754794AbYDAGYg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751927AbYDAGZN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754794AbYDAGYg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Apr 2008 02:24:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751574AbYDAGY3
+	id S1751927AbYDAGZN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Apr 2008 02:25:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751574AbYDAGYz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Apr 2008 02:24:29 -0400
-Received: from fms-01.valinux.co.jp ([210.128.90.1]:59509 "EHLO
-	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751516AbYDAGY2 (ORCPT
+	Tue, 1 Apr 2008 02:24:55 -0400
+Received: from smtp.nokia.com ([192.100.105.134]:17385 "EHLO
+	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751350AbYDAGYy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Apr 2008 02:24:28 -0400
-To: menage@google.com
-Cc: balbir@linux.vnet.ibm.com, xemul@openvz.org, hugh@veritas.com,
-       skumar@linux.vnet.ibm.com, lizf@cn.fujitsu.com,
-       linux-kernel@vger.kernel.org, taka@valinux.co.jp, linux-mm@kvack.org,
-       rientjes@google.com, akpm@linux-foundation.org,
-       kamezawa.hiroyu@jp.fujitsu.com
-Subject: Re: [RFC][-mm] Add an owner to the mm_struct (v3)
-In-Reply-To: Your message of "Mon, 31 Mar 2008 23:06:12 -0700"
-	<6599ad830803312306l59fabaa0o2f62feb0d59b2ce3@mail.gmail.com>
-References: <6599ad830803312306l59fabaa0o2f62feb0d59b2ce3@mail.gmail.com>
-X-Mailer: Cue version 0.8 (080303-0742/takashi)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Message-Id: <20080401062427.A3E785A05@siro.lan>
-Date: Tue,  1 Apr 2008 15:24:27 +0900 (JST)
-From: yamamoto@valinux.co.jp (YAMAMOTO Takashi)
+	Tue, 1 Apr 2008 02:24:54 -0400
+Message-ID: <47F1D44A.8010908@yandex.ru>
+Date: Tue, 01 Apr 2008 09:20:58 +0300
+From: Artem Bityutskiy <dedekind@yandex.ru>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+MIME-Version: 1.0
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+CC: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Adrian Hunter <ext-adrian.hunter@nokia.com>
+Subject: Re: [RFC PATCH 25/26] UBIFS: add debugging stuff
+References: <1206629746-4298-1-git-send-email-Artem.Bityutskiy@nokia.com>       <1206629746-4298-26-git-send-email-Artem.Bityutskiy@nokia.com> <84144f020803311400s1f34420dx153d197f4752c65e@mail.gmail.com>
+In-Reply-To: <84144f020803311400s1f34420dx153d197f4752c65e@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 01 Apr 2008 06:24:47.0632 (UTC) FILETIME=[155B1100:01C893C1]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Mon, Mar 31, 2008 at 11:03 PM, YAMAMOTO Takashi
-> <yamamoto@valinux.co.jp> wrote:
-> >
-> >  changing mm->owner without notifying controllers makes it difficult to use.
-> >  can you provide a notification mechanism?
-> >
-> 
-> Yes, I think that call will need to be in the task_lock() critical
-> section in which we update mm->owner.
-> 
-> Right now I think the only user that needs to be notified at that
-> point is Balbir's virtual address limits controller.
-> 
-> Paul
+Good day Pekka
 
-i have some code for which i might want to use mm->owner.
-it does somewhat complicated things like acquiring mm_sem and
-traversing ptes in its ->attach hook.  (if you want to read the code, search
-"Subject: [RFC][PATCH] another swap controller for cgroup" in ML archive.)
+>>  +void *dbg_vmalloc(size_t size)
+>>  +
+>>  +void dbg_vfree(void *addr)
+>>  +
+>>  +void dbg_leak_report(void)
+>
+> Not acceptable for mainline kernel. SLAB already provides leak
+> detection and it should be straight-forward to port over to SLUB too.
 
-probably i don't need to use mm->owner, but it's better if mm->owner can
-handle more cases anyway.
+Yeah, we will remove this later, keep it for now because it is very
+convenient. I guess you refer the /proc/slab_allocations feature.
+We found it less appropriate because it needs additional scripts to
+be run to detect leaks, while this simple just hack makes UBIFS print
+a message if there is a leak, which is just easier for us.
 
-YAMAMOTO Takashi
+>>  +/*
+>>  + * struct eaten_memory - memory object eaten by UBIFS to cause memory pressure.
+>>  + * @list: link in the list of eaten memory objects
+>>  + * @pad: just pads to memory page size
+>>  + */
+>>  +struct eaten_memory {
+>>  +       struct list_head list;
+>>  +       uint8_t pad[PAGE_CACHE_SIZE - sizeof(struct list_head)];
+>>  +};
+>
+> If you need this, please make it a standalone module in mm/.
+
+That was introduced to test the UBIFS shrinker, and to make sure
+there are no races and everything works fine. Yes, will be removed
+later.
+
+>>  +#ifdef CONFIG_UBIFS_FS_DEBUG
+>>  +#define UBIFS_DBG(op) op
+>>  +#define ubifs_assert(expr)  do {                                               \
+>>  +
+>>  +/* Generic debugging message */
+>>  +#define dbg_msg(fmt, ...) do {                                                 \
+>>  +
+>>  +/* Debugging message which prints UBIFS key */
+>>  +#define dbg_key(c, key, fmt, ...) do {                                         \
+>>  +
+>>  +#define dbg_err(fmt, ...) ubifs_err(fmt, ##__VA_ARGS__)
+>>  +#define dbg_dump_stack() dump_stack()
+>
+> Please kill these wrappers and use BUG_ON, WARN_ON, and printk() where
+> appropriate.
+
+Well, I do not see a big reason not to get rid of this harmless stuff.
+Many kernel subsystems have their debugging, why not? Using BUG_ON() is
+OK in few most important places. But we want to have more assertions
+which are compiled-out by default, why can't we?. Similar is for prints.
+
+Thanks for the feed-back. 
+
+-- 
+Best Regards,
+Artem Bityutskiy (Артём Битюцкий)
