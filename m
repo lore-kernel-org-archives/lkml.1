@@ -1,58 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758255AbYDAMqP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758588AbYDAMr4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758255AbYDAMqP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Apr 2008 08:46:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752805AbYDAMqB
+	id S1758588AbYDAMr4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Apr 2008 08:47:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754286AbYDAMrt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Apr 2008 08:46:01 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:14410 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753109AbYDAMqA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Apr 2008 08:46:00 -0400
-Date: Tue, 1 Apr 2008 14:45:54 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Andrea Arcangeli <andrea@qumranet.com>
-Cc: Andrew Morton <akpm@osdl.org>, Yang Shi <yang.shi@windriver.com>,
-       linux-kernel@vger.kernel.org, kvm-devel@lists.sourceforge.net
-Subject: Re: regression breaks lowmem reserved RAM
-Message-ID: <20080401124553.GM12346@kernel.dk>
-References: <20080328194909.GA10617@duo.random> <20080401105331.GH12427@duo.random>
+	Tue, 1 Apr 2008 08:47:49 -0400
+Received: from smtp.nokia.com ([192.100.105.134]:54021 "EHLO
+	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753720AbYDAMrs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Apr 2008 08:47:48 -0400
+Message-ID: <47F22DD3.4060003@yandex.ru>
+Date: Tue, 01 Apr 2008 15:42:59 +0300
+From: Artem Bityutskiy <dedekind@yandex.ru>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080401105331.GH12427@duo.random>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+CC: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Adrian Hunter <ext-adrian.hunter@nokia.com>
+Subject: Re: [RFC PATCH 20/26] UBIFS: add VFS operations
+References: <1206629746-4298-1-git-send-email-Artem.Bityutskiy@nokia.com>         <1206629746-4298-21-git-send-email-Artem.Bityutskiy@nokia.com> <84144f020804010508k3099b2bagf2f1c0d2747a983@mail.gmail.com>
+In-Reply-To: <84144f020804010508k3099b2bagf2f1c0d2747a983@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 01 Apr 2008 12:46:52.0359 (UTC) FILETIME=[758ECD70:01C893F6]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 01 2008, Andrea Arcangeli wrote:
-> Looking a bit closer into this regression the reason this can't be
-> right is that dma_addr common default is BLK_BOUNCE_HIGH and most
-> machines have less than 4G. So if you do:
+Pekka Enberg wrote:
+> Hi Artem,
 > 
->     if (b_pfn <= (min_t(u64, 0xffffffff, BLK_BOUNCE_HIGH) >> PAGE_SHIFT))
-> 	dma = 1
-> 
-> that will translate to:
-> 
->      if (BLK_BOUNCE_HIGH <= BLK_BOUNCE_HIGH)
->      	dma = 1
-> 
-> So for 99% of hardware this will trigger unnecessary GFP_DMA
-> allocations and isa pooling operations.
-> 
-> Also note how the 32bit code still does b_pfn < blk_max_low_pfn.
-> 
-> I guess this is what you were looking after. I didn't verify but as
-> far as I can tell, this will stop the regression with isa dma
-> operations at boot for 99% of blkdev/memory combinations out there and
-> I guess this fixes the setups with >4G of ram and 32bit pci cards as
-> well (this also retains symmetry with the 32bit code).
-> 
-> Signed-off-by: Andrea Arcangeli <andrea@qumranet.com>
+> On Thu, Mar 27, 2008 at 5:55 PM, Artem Bityutskiy
+> <Artem.Bityutskiy@nokia.com> wrote:
+>>  +static int ubifs_set_page_dirty(struct page *page)
+>>  +{
+>>  +       /*
+>>  +        * An attempt to dirty a page without budgeting for it - should not
+>>  +        * happen.
+>>  +        */
+>>  +       ubifs_assert(0);
+>>  +       return __set_page_dirty_nobuffers(page);
+>>  +}
 
-Thanks Andrea, this looks much saner!
+In UBIFS pages must never become dirty without asking UBIFS if this is allowed or not.
+This is needed because of budgeting - before making any page dirty we have to make
+sure there is enough space to write it back. This is not usually an issue for
+traditional FSes, because pages may be changed in-place. In UBIFS we cannot change
+stuff in-place, so we have to be very careful when marking things dirty. This is why
+we have the budgeting sub-system. The white-paper tells more about this.
+
+Anyway, the requirement is that all the places where a page may become dirty
+should be in UBIFS and the corresponding operations have to be budgeted for.
+
+If this function is called, this means that someone made a page dirty without
+budgeting for this. Which in turn may mean that there will be no space when
+the page is written back. So basically, this implementation is just a guarding
+check.
+
+>>  +static int ubifs_releasepage(struct page *page, gfp_t unused_gfp_flags)
+>>  +{
+>>  +       /*
+>>  +        * An attempt to release a dirty page without budgeting for it - should
+>>  +        * not happen.
+>>  +        */
+>>  +       ubifs_assert(PageLocked(page));
+>>  +       if (PageWriteback(page))
+>>  +               return 0;
+>>  +       ubifs_assert(PagePrivate(page));
+>>  +       ubifs_assert(0);
+>>  +       ClearPagePrivate(page);
+>>  +       ClearPageChecked(page);
+>>  +       return 1;
+>>  +}
+
+Yeah, this is also a guarding thing. When a dirty page is released
+the budget which was allocated for it has to be freed. If this function
+is called, then the budget was not freed, which must never happen.
 
 -- 
-Jens Axboe
-
+Best Regards,
+Artem Bityutskiy (Артём Битюцкий)
