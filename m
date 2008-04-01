@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754251AbYDABge@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754825AbYDABhe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754251AbYDABge (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Mar 2008 21:36:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752083AbYDABg0
+	id S1754825AbYDABhe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Mar 2008 21:37:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752126AbYDABh0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Mar 2008 21:36:26 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:50412 "EHLO relay.sgi.com"
+	Mon, 31 Mar 2008 21:37:26 -0400
+Received: from relay2.sgi.com ([192.48.171.30]:59727 "EHLO relay.sgi.com"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752050AbYDABgZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Mar 2008 21:36:25 -0400
+	id S1752101AbYDABh0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 31 Mar 2008 21:37:26 -0400
 From: akepner@sgi.com
-Date: Mon, 31 Mar 2008 18:34:57 -0700
+Date: Mon, 31 Mar 2008 18:35:58 -0700
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Tony Luck <tony.luck@intel.com>, Jesse Barnes <jbarnes@virtuousgeek.org>,
        Jes Sorensen <jes@sgi.com>, Randy Dunlap <randy.dunlap@oracle.com>,
@@ -20,8 +20,8 @@ Cc: Tony Luck <tony.luck@intel.com>, Jesse Barnes <jbarnes@virtuousgeek.org>,
        Benjamin Herrenschmidt <benh@kernel.crashing.org>,
        Grant Grundler <grundler@parisc-linux.org>,
        Michael Ellerman <michael@ellerman.id.au>, linux-kernel@vger.kernel.org
-Subject: [PATCH 0/3 v6] dma: add dma_*map*_attrs() interfaces
-Message-ID: <20080401013457.GB29410@sgi.com>
+Subject: [PATCH 1/3 v6] dma: document dma_*map*_attrs() interfaces
+Message-ID: <20080401013558.GC29410@sgi.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -31,161 +31,118 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-v5-v6 changes:
-
-- if CONFIG_HAVE_DMA_ATTRS isn't defined , use macros to 
-  define dma_*map*_attrs() - this gets around a build problem 
-  on alpha, and maybe other arches, too.
-
-- fix ib_umem_get() call in drivers/infiniband/hw/nes/nes_verbs.c
-
---- 
-
-Introduce new interfaces, dma_*map*_attrs(), for passing
-architecture-specific attributes when memory is mapped and
-unmapped for DMA. Give the interfaces default implementations
-which ignore attributes. Also introduce the dma_{set|get}_attr()
-interfaces for setting and retrieving individual attributes. Define
-one attribute, DMA_ATTR_WRITE_BARRIER, in anticipation of its use
-by ia64/sn. Select whether architectures implement arch-specific
-versions of the dma_*map*_attrs() interfaces via HAVE_DMA_ATTRS in
-Kconfig.
+Document the new dma_*map*_attrs() functions.
 
 Signed-off-by: Arthur Kepner <akepner@sgi.com>
 
 ---
 
- arch/Kconfig                |    3 +
- arch/ia64/Kconfig           |    1 
- include/linux/dma-attrs.h   |   74 ++++++++++++++++++++++++++++++++++++++++++++
- include/linux/dma-mapping.h |   17 ++++++++++
- 4 files changed, 95 insertions(+)
+ DMA-API.txt        |   65 +++++++++++++++++++++++++++++++++++++++++++++++++++++
+ DMA-attributes.txt |   24 +++++++++++++++++++
+ 2 files changed, 89 insertions(+)
 
-diff --git a/arch/Kconfig b/arch/Kconfig
-index 694c9af..3ea332b 100644
---- a/arch/Kconfig
-+++ b/arch/Kconfig
-@@ -36,3 +36,6 @@ config HAVE_KPROBES
+diff --git a/Documentation/DMA-API.txt b/Documentation/DMA-API.txt
+index b939ebb..fdb82b0 100644
+--- a/Documentation/DMA-API.txt
++++ b/Documentation/DMA-API.txt
+@@ -395,6 +395,71 @@ Notes:  You must do this:
  
- config HAVE_KRETPROBES
- 	def_bool n
-+
-+config HAVE_DMA_ATTRS
-+	def_bool n
-diff --git a/arch/ia64/Kconfig b/arch/ia64/Kconfig
-index 8fa3faf..985b267 100644
---- a/arch/ia64/Kconfig
-+++ b/arch/ia64/Kconfig
-@@ -19,6 +19,7 @@ config IA64
- 	select HAVE_OPROFILE
- 	select HAVE_KPROBES
- 	select HAVE_KRETPROBES
-+	select HAVE_DMA_ATTRS
- 	default y
- 	help
- 	  The Itanium Processor Family is Intel's 64-bit successor to
-diff --git a/include/linux/dma-attrs.h b/include/linux/dma-attrs.h
-index e69de29..5f151fb 100644
---- a/include/linux/dma-attrs.h
-+++ b/include/linux/dma-attrs.h
-@@ -0,0 +1,74 @@
-+#ifndef _DMA_ATTR_H
-+#define _DMA_ATTR_H
-+
-+#include <linux/bitmap.h>
-+#include <linux/bitops.h>
-+#include <linux/bug.h>
-+
-+/**
-+ * an enum dma_attr represents an attribute associated with a DMA
-+ * mapping. The semantics of each attribute should be defined in
-+ * Documentation/DMA-attributes.txt.
-+ */
-+enum dma_attr {
-+	DMA_ATTR_WRITE_BARRIER,
-+	DMA_ATTR_MAX,
-+};
-+
-+#define __DMA_ATTRS_LONGS BITS_TO_LONGS(DMA_ATTR_MAX)
-+
-+/**
-+ * struct dma_attrs - an opaque container for DMA attributes
-+ * @flags - bitmask representing a collection of enum dma_attr
-+ */
-+struct dma_attrs {
-+	unsigned long flags[__DMA_ATTRS_LONGS];
-+};
-+
-+#define DEFINE_DMA_ATTRS(x) 					\
-+	struct dma_attrs x = {					\
-+		.flags = { [0 ... __DMA_ATTRS_LONGS-1] = 0 },	\
-+	}
-+
-+static inline void init_dma_attrs(struct dma_attrs *attrs)
-+{
-+	bitmap_zero(attrs->flags, __DMA_ATTRS_LONGS);
-+}
-+
-+#ifdef CONFIG_HAVE_DMA_ATTRS
-+/**
-+ * dma_set_attr - set a specific attribute
-+ * @attr: attribute to set
-+ * @attrs: struct dma_attrs (may be NULL)
-+ */
-+void dma_set_attr(enum dma_attr attr, struct dma_attrs *attrs)
-+{
-+	if (attrs == NULL)
-+		return;
-+	BUG_ON(attr >= DMA_ATTR_MAX);
-+	__set_bit(attr, attrs->flags);
-+}
-+
-+/**
-+ * dma_get_attr - check for a specific attribute
-+ * @attr: attribute to set
-+ * @attrs: struct dma_attrs (may be NULL)
-+ */
-+int dma_get_attr(enum dma_attr attr, struct dma_attrs *attrs)
-+{
-+	if (attrs == NULL)
-+		return 0;
-+	BUG_ON(attr >= DMA_ATTR_MAX);
-+	return test_bit(attr, attrs->flags);
-+}
-+#else /* !CONFIG_HAVE_DMA_ATTRS */
-+static inline void dma_set_attr(enum dma_attr attr, struct dma_attrs *attrs)
-+{
-+}
-+
-+static inline int dma_get_attr(enum dma_attr attr, struct dma_attrs *attrs)
-+{
-+	return 0;
-+}
-+#endif /* CONFIG_HAVE_DMA_ATTRS */
-+#endif /* _DMA_ATTR_H */
-diff --git a/include/linux/dma-mapping.h b/include/linux/dma-mapping.h
-index 3320307..952e0f8 100644
---- a/include/linux/dma-mapping.h
-+++ b/include/linux/dma-mapping.h
-@@ -146,4 +146,21 @@ static inline void dmam_release_declared_memory(struct device *dev)
- }
- #endif /* ARCH_HAS_DMA_DECLARE_COHERENT_MEMORY */
+ See also dma_map_single().
  
-+#ifndef CONFIG_HAVE_DMA_ATTRS
-+struct dma_attrs;
++dma_addr_t 
++dma_map_single_attrs(struct device *dev, void *cpu_addr, size_t size, 
++		     enum dma_data_direction dir, 
++		     struct dma_attrs *attrs)
 +
-+#define dma_map_single_attrs(dev, cpu_addr, size, dir, attrs) \
-+	dma_map_single(dev, cpu_addr, size, dir)
++void 
++dma_unmap_single_attrs(struct device *dev, dma_addr_t dma_addr,
++		       size_t size, enum dma_data_direction dir,
++		       struct dma_attrs *attrs)
 +
-+#define dma_unmap_single_attrs(dev, dma_addr, size, dir, attrs) \
-+	dma_unmap_single(dev, dma_addr, size, dir)
++int 
++dma_map_sg_attrs(struct device *dev, struct scatterlist *sgl,
++		 int nents, enum dma_data_direction dir, 
++		 struct dma_attrs *attrs)
 +
-+#define dma_map_sg_attrs(dev, sgl, nents, dir, attrs) \
-+	dma_map_sg(dev, sgl, nents, dir)
++void 
++dma_unmap_sg_attrs(struct device *dev, struct scatterlist *sgl, 
++		   int nents, enum dma_data_direction dir,
++		   struct dma_attrs *attrs)
 +
-+#define dma_unmap_sg_attrs(dev, sgl, nents, dir, attrs) \
-+	dma_unmap_sg(dev, sgl, nents, dir)
++The four functions above are just like the counterpart functions 
++without the _attrs suffixes, except that they pass an optional 
++struct dma_attrs*. 
 +
-+#endif /* CONFIG_HAVE_DMA_ATTRS */
++struct dma_attrs encapsulates a set of "dma attributes". For the 
++definition of struct dma_attrs see linux/dma-attrs.h. 
 +
- #endif
++The interpretation of dma attributes is architecture-specific, and 
++each attribute should be documented in Documentation/DMA-attributes.txt. 
++
++If struct dma_attrs* is NULL, the semantics of each of these 
++functions is identical to those of the corresponding function 
++without the _attrs suffix. As a result dma_map_single_attrs() 
++can generally replace dma_map_single(), etc.
++
++As an example of the use of the *_attrs functions, here's how 
++you could pass an attribute DMA_ATTR_FOO when mapping memory 
++for DMA:
++
++#include <linux/dma-attrs.h>
++/* DMA_ATTR_FOO should be defined in linux/dma-attrs.h and 
++ * documented in Documentation/DMA-attributes.txt */
++...
++
++	DECLARE_DMA_ATTRS(attrs);
++	dma_set_attr(&attrs, DMA_ATTR_FOO);
++	....
++	n = dma_map_sg_attrs(dev, sg, nents, DMA_TO_DEVICE, &attr);
++	....
++
++Architectures that care about DMA_ATTR_FOO would check for its 
++presence in their implementations of the mapping and unmapping 
++routines, e.g.:
++
++void whizco_dma_map_sg_attrs(struct device *dev, dma_addr_t dma_addr, 
++			     size_t size, enum dma_data_direction dir, 
++			     struct dma_attrs *attrs)
++{
++	....
++	int foo =  dma_get_attr(attrs, DMA_ATTR_FOO);
++	....
++	if (foo) 
++		/* twizzle the frobnozzle */
++	....
++
+ 
+ Part II - Advanced dma_ usage
+ -----------------------------
+diff --git a/Documentation/DMA-attributes.txt b/Documentation/DMA-attributes.txt
+index e69de29..6d772f8 100644
+--- a/Documentation/DMA-attributes.txt
++++ b/Documentation/DMA-attributes.txt
+@@ -0,0 +1,24 @@
++			DMA attributes
++			==============
++
++This document describes the semantics of the DMA attributes that are
++defined in linux/dma-attrs.h.
++
++DMA_ATTR_WRITE_BARRIER
++----------------------
++
++DMA_ATTR_WRITE_BARRIER is a (write) barrier attribute for DMA.  DMA
++to a memory region with the DMA_ATTR_WRITE_BARRIER attribute forces
++all pending DMA writes to complete, and thus provides a mechanism to
++strictly order DMA from a device across all intervening busses and
++bridges.  This barrier is not specific to a particular type of
++interconnect, it applies to the system as a whole, and so its
++implementation must account for the idiosyncracies of the system all
++the way from the DMA device to memory.
++
++As an example of a situation where DMA_ATTR_WRITE_BARRIER would be
++useful, suppose that a device does a DMA write to indicate that data is
++ready and available in memory.  The DMA of the "completion indication"
++could race with data DMA.  Mapping the memory used for completion
++indications with DMA_ATTR_WRITE_BARRIER would prevent the race.
++
