@@ -1,55 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758067AbYDAMX7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757422AbYDAMbz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758067AbYDAMX7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Apr 2008 08:23:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753649AbYDAMXt
+	id S1757422AbYDAMbz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Apr 2008 08:31:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753462AbYDAMbq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Apr 2008 08:23:49 -0400
-Received: from nwd2mail10.analog.com ([137.71.25.55]:37854 "EHLO
-	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755500AbYDAMXs (ORCPT
+	Tue, 1 Apr 2008 08:31:46 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:43032 "EHLO
+	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752805AbYDAMbo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Apr 2008 08:23:48 -0400
-X-IronPort-AV: E=Sophos;i="4.25,587,1199682000"; 
-   d="scan'208";a="65502261"
-From: Bryan Wu <cooloney@kernel.org>
-To: Trond.Myklebust@netapp.com, linux-nfs@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, Bryan Wu <cooloney@kernel.org>,
-       Mike Frysinger <vapier.adi@gmail.com>
-Subject: [PATCH 1/1] [NFS/NOMMU]: fix bug - executing FDPIC ELF on NFS mount triggers BUG() at mm/nommu.c:862:/do_mmap_private()
-Date: Tue,  1 Apr 2008 20:23:39 -0700
-Message-Id: <1207106619-7673-1-git-send-email-cooloney@kernel.org>
-X-Mailer: git-send-email 1.5.4.3
-In-Reply-To: <>
-References: <>
+	Tue, 1 Apr 2008 08:31:44 -0400
+Date: Tue, 1 Apr 2008 14:32:18 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: "Serge E. Hallyn" <serue@us.ibm.com>
+Cc: lkml <linux-kernel@vger.kernel.org>, daniel@hozac.com, lizf@cn.fujitsu.com,
+       Pavel Emelyanov <xemul@openvz.org>, Greg KH <greg@kroah.com>,
+       Andrew Morton <akpm@osdl.org>
+Subject: Re: [PATCH 1/1] cgroups: implement device whitelist (v6)
+Message-ID: <20080401123218.GE12129@elf.ucw.cz>
+References: <20080326180543.GA27709@sergelap.austin.ibm.com> <20080329081839.GA4423@ucw.cz> <20080331140053.GA9909@sergelap.austin.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080331140053.GA9909@sergelap.austin.ibm.com>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-NFS needs a NOMMU version mmap function to support uClinux on NOMMU machine
-http://blackfin.uclinux.org/gf/project/uclinux-dist/tracker/?action=TrackerItemEdit&tracker_id=141&tracker_item_id=3992
+On Mon 2008-03-31 09:00:53, Serge E. Hallyn wrote:
+> Quoting Pavel Machek (pavel@ucw.cz):
+> > On Wed 2008-03-26 13:05:43, Serge E. Hallyn wrote:
+> > > (This is identical to the version I sent on Mar 19 in response to
+> > > the comments by Daniel Hokka Zakrisson, which are the last
+> > > comments I've gotten.)
+> > > 
+> > > Implement a cgroup to track and enforce open and mknod restrictions on device
+> > > files.  A device cgroup associates a device access whitelist with each
+> > > cgroup.  A whitelist entry has 4 fields.  'type' is a (all), c (char), or
+> > > b (block).  'all' means it applies to all types and all major and minor
+> > > numbers.  Major and minor are either an integer or * for all.
+> > > Access is a composition of r (read), w (write), and m (mknod).
+> > > 
+> > > The root device cgroup starts with rwm to 'all'.  A child devcg gets
+> > > a copy of the parent.  Admins can then remove devices from the
+> > > whitelist or add new entries.  A child cgroup can never receive a
+> > > device access which is denied its parent.  However when a device
+> > > access is removed from a parent it will not also be removed from the
+> > > child(ren).
+> > > 
+> > > An entry is added using devices.allow, and removed using
+> > > devices.deny.  For instance
+> > > 
+> > > 	echo 'c 1:3 mr' > /cgroups/1/devices.allow
+> > > 
+> > > allows cgroup 1 to read and mknod the device usually known as
+> > > /dev/null.  Doing
+> > > 
+> > > 	echo a > /cgroups/1/devices.deny
+> > 
+> > Can't you use selinux or something?
+> 
+> No.  At the moment SELinux can't authorize based on type/major:minor.  I
+> would like to add that support later on, but even when I do, folks such
+> as the openvz folks do not want to rely on any security modules.
 
-Signed-off-by: Bryan Wu <cooloney@kernel.org>
-Cc: Mike Frysinger <vapier.adi@gmail.com>
----
- fs/nfs/file.c |    4 ++++
- 1 files changed, 4 insertions(+), 0 deletions(-)
+Yep, it looks like openvz folks do not want to rely on any security
+modules, do not want to fix their userland, and do not have a taste
+when implementing new features.
 
-diff --git a/fs/nfs/file.c b/fs/nfs/file.c
-index ef57a5a..5d2e9d9 100644
---- a/fs/nfs/file.c
-+++ b/fs/nfs/file.c
-@@ -64,7 +64,11 @@ const struct file_operations nfs_file_operations = {
- 	.write		= do_sync_write,
- 	.aio_read	= nfs_file_read,
- 	.aio_write	= nfs_file_write,
-+#ifdef CONFIG_MMU
- 	.mmap		= nfs_file_mmap,
-+#else
-+	.mmap		= generic_file_mmap,
-+#endif
- 	.open		= nfs_file_open,
- 	.flush		= nfs_file_flush,
- 	.release	= nfs_file_release,
+IMO that means openvz folks should be kept off mainline.
+
+Implementing SELinux extension that can authorize based on
+type/major:minor seems like a way to go to me....
+
+> > > --- a/include/linux/cgroup_subsys.h
+> > > +++ b/include/linux/cgroup_subsys.h
+> > > @@ -42,3 +42,9 @@ SUBSYS(mem_cgroup)
+> > >  #endif
+> > >  
+> > >  /* */
+> > > +
+> > > +#ifdef CONFIG_CGROUP_DEVICE
+> > > +SUBSYS(devices)
+> > > +#endif
+> > > +
+> > > +/* */
+> > 
+> > I don't know what this is, but it does not look like C...
+> 
+> Huh?
+
+Empty comments as separators? What does magical SUBSYS macro do?
+									Pavel
 -- 
-1.5.4.3
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
