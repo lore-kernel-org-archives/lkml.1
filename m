@@ -1,42 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752868AbYDAAWV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753082AbYDAAkt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752868AbYDAAWV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Mar 2008 20:22:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751428AbYDAAWL
+	id S1753082AbYDAAkt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Mar 2008 20:40:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751380AbYDAAkj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Mar 2008 20:22:11 -0400
-Received: from mail.lang.hm ([64.81.33.126]:40201 "EHLO bifrost.lang.hm"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751395AbYDAAWK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Mar 2008 20:22:10 -0400
-Date: Mon, 31 Mar 2008 17:28:31 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: Daniel Phillips <phillips@phunq.net>
-cc: David Newall <davidn@davidnewall.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Willy Tarreau <w@1wt.eu>, linux-kernel@vger.kernel.org
-Subject: Re: [ANNOUNCE] Ramback: faster than a speeding bullet
-In-Reply-To: <200803310440.33019.phillips@phunq.net>
-Message-ID: <alpine.DEB.1.00.0803311727500.31200@asgard.lang.hm>
-References: <200803092346.17556.phillips@phunq.net> <47DFBD99.2080501@davidnewall.com> <alpine.DEB.1.00.0803180933230.21250@asgard.lang.hm> <200803310440.33019.phillips@phunq.net>
-User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
+	Mon, 31 Mar 2008 20:40:39 -0400
+Received: from styx.suse.cz ([82.119.242.94]:43827 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751309AbYDAAki (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 31 Mar 2008 20:40:38 -0400
+Date: Tue, 1 Apr 2008 02:40:37 +0200 (CEST)
+From: Jiri Kosina <jkosina@suse.cz>
+To: Ingo Molnar <mingo@elte.hu>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: spinlocks -- why are releases inlined and acquires are not?
+In-Reply-To: <Pine.LNX.4.64.0804010202390.5541@jikos.suse.cz>
+Message-ID: <Pine.LNX.4.64.0804010236110.5541@jikos.suse.cz>
+References: <Pine.LNX.4.64.0804010202390.5541@jikos.suse.cz>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 31 Mar 2008, Daniel Phillips wrote:
+On Tue, 1 Apr 2008, Jiri Kosina wrote:
 
-> On Tuesday 18 March 2008 09:36, david@lang.hm wrote:
->> P.S. 8xPCI-e slots are only able to do 2GB/s of data transfer, in an
->> earlier post Daniel claimed that you needed 3GB/s of disk to mirror to the
->> disk, so the scenerio listed above looses 1/3 of it's performance compared
->> to what was being claimed earlier.
->
-> Each Violin 1010 has two 8xPCI-e interfaces.
+> What is the reason for this asymetry? Shouldn't the acquiring functions 
+> be implemented in the very same way? Or at least, shouldn't all the 
+> __lockfunc functions be inlined?
 
-but if you use them for redundancy by hooking them to two machines you can 
-only use one of them on your active system.
+i.e. is there any particular reason why we don't have something like the 
+patch below (implemented for all the lock variants of course, this is 
+just to demonstrate what I mean)?
 
-David Lang
+
+spinlocks: inline spin_lock() in non-debug cases
+
+inline spin_lock() in the non-debug case.
+
+Signed-off-by: Jiri Kosina <jkosina@suse.cz>
+
+diff --git a/include/linux/spinlock.h b/include/linux/spinlock.h
+index 576a5f7..30922ba 100644
+--- a/include/linux/spinlock.h
++++ b/include/linux/spinlock.h
+@@ -178,7 +178,12 @@ do {								\
+ #define read_trylock(lock)		__cond_lock(lock, _read_trylock(lock))
+ #define write_trylock(lock)		__cond_lock(lock, _write_trylock(lock))
+ 
++#if defined(CONFIG_DEBUG_SPINLOCK) || defined(CONFIG_PREEMPT) || \
++	!defined(CONFIG_SMP)
+ #define spin_lock(lock)			_spin_lock(lock)
++#else
++#define spin_lock(lock) \
++	 do { __raw_spin_lock(&(lock)->raw_lock); __acquire(lock); } while (0)
+ 
+ #ifdef CONFIG_DEBUG_LOCK_ALLOC
+ # define spin_lock_nested(lock, subclass) _spin_lock_nested(lock, subclass)
