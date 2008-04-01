@@ -1,52 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759577AbYDAW1X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759824AbYDAW2l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759577AbYDAW1X (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Apr 2008 18:27:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755499AbYDAW1Q
+	id S1759824AbYDAW2l (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Apr 2008 18:28:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753253AbYDAW2c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Apr 2008 18:27:16 -0400
-Received: from fmmailgate02.web.de ([217.72.192.227]:49091 "EHLO
-	fmmailgate02.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755417AbYDAW1P (ORCPT
+	Tue, 1 Apr 2008 18:28:32 -0400
+Received: from e33.co.us.ibm.com ([32.97.110.151]:51754 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752874AbYDAW2b (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Apr 2008 18:27:15 -0400
-From: Chr <chunkeey@web.de>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: The never ending BEEEEP/__smp_call_function_mask with 2.6.25-rc7
-Date: Wed, 2 Apr 2008 00:27:12 +0200
-User-Agent: KMail/1.9.9
-Cc: Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
-       Andi Kleen <andi-suse@firstfloor.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
-References: <200803302109.22219.chunkeey@web.de> <200804010130.17453.chunkeey@web.de> <200804012316.16371.rjw@sisk.pl>
-In-Reply-To: <200804012316.16371.rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Tue, 1 Apr 2008 18:28:31 -0400
+Subject: Re: [ANNOUNCE] Btrfs v0.13
+From: Badari Pulavarty <pbadari@gmail.com>
+To: Chris Mason <chris.mason@oracle.com>
+Cc: lkml <linux-kernel@vger.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       btrfs-devel@oss.oracle.com
+In-Reply-To: <200802211609.50563.chris.mason@oracle.com>
+References: <200802211609.50563.chris.mason@oracle.com>
+Content-Type: text/plain
+Date: Tue, 01 Apr 2008 15:28:53 -0800
+Message-Id: <1207092533.30407.23.camel@dyn9047017100.beaverton.ibm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.0.4 (2.0.4-4) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200804020027.13148.chunkeey@web.de>
-X-Provags-ID: V01U2FsdGVkX186sKyyIArQDAESAxS+8oQTKcnPIFDz0bzrxML2
-	Z4VvCtjjUd7IS4zkv0jnTy3oFMtVJlMyDjl/4CrHXFl/iwwNU8
-	edjdH9aWM=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 01 April 2008 23:16:15 Rafael J. Wysocki wrote:
-> On Tuesday, 1 of April 2008, Chr wrote:
-> > On Tuesday 01 April 2008 01:14:24 Rafael J. Wysocki wrote:
-> > > On Tuesday, 1 of April 2008, Chr wrote:
-> > >
-> > > Have you posted the .config already?
-> >
-> > Done!
->
-> Hmm.  Can you please choose one RTC infrastructure and maybe disable
-> CONFIG_HPET_EMULATE_RTC?
->
-Yep... compiling -rc8 now.
+On Thu, 2008-02-21 at 16:09 -0500, Chris Mason wrote:
+> Hello everyone,
+> 
+> Btrfs v0.13 is now available for download from:
+> 
+> http://oss.oracle.com/projects/btrfs/
 
-Regards,
-	Chr.
+Hi Chris,
+
+I am trying btrfs for the first time. Sorry :(
+Not able to compile btrfs-progs. Where should I
+get this uuid.h from ?
+
+Thanks,
+Badari
+
+3b155:~/btrfs-progs-0.13 # make
+ls mkfs.c
+mkfs.c
+gcc -Wp,-MMD,./.mkfs.o.d,-MT,mkfs.o -Wall -fno-strict-aliasing -
+D_FILE_OFFSET_BITS=64 -D_FORTIFY_SOURCE=2 -g -Werror -c mkfs.c
+mkfs.c:30:23: uuid/uuid.h: No such file or directory
+
+
 
