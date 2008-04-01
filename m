@@ -1,66 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755544AbYDAHeq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755509AbYDAHj0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755544AbYDAHeq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Apr 2008 03:34:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752049AbYDAHeh
+	id S1755509AbYDAHj0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Apr 2008 03:39:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752083AbYDAHjR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Apr 2008 03:34:37 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:58877 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752001AbYDAHeg (ORCPT
+	Tue, 1 Apr 2008 03:39:17 -0400
+Received: from py-out-1112.google.com ([64.233.166.179]:52710 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752001AbYDAHjQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Apr 2008 03:34:36 -0400
-Message-ID: <47F1E534.7050803@cs.helsinki.fi>
-Date: Tue, 01 Apr 2008 10:33:08 +0300
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-User-Agent: Thunderbird 2.0.0.12 (Macintosh/20080213)
+	Tue, 1 Apr 2008 03:39:16 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=Tf3We4b6dkcdwxkdXh5Re4lANS4plGQGPewglrVOe8ZSoDL6xyOyAC7d45wOjXxSNq9GP5ymjZI4PnlQSIWsr4+LkuiGe2y23gOZZsrerYP1DsuIZLKywLD5DtxlNTyuOjnMs2Jii6NWlMBcqxlr4fgWD0U5RLDScjyYqJnOOvU=
+Message-ID: <84144f020804010039n47133bd3l63f02258a2670e72@mail.gmail.com>
+Date: Tue, 1 Apr 2008 10:39:13 +0300
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+To: "Artem Bityutskiy" <Artem.Bityutskiy@nokia.com>
+Subject: Re: [RFC PATCH 26/26] UBIFS: include FS to compilation
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       "Adrian Hunter" <ext-adrian.hunter@nokia.com>
+In-Reply-To: <1206629746-4298-27-git-send-email-Artem.Bityutskiy@nokia.com>
 MIME-Version: 1.0
-To: Artem Bityutskiy <dedekind@yandex.ru>
-CC: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Adrian Hunter <ext-adrian.hunter@nokia.com>
-Subject: Re: [RFC PATCH 25/26] UBIFS: add debugging stuff
-References: <1206629746-4298-1-git-send-email-Artem.Bityutskiy@nokia.com>       <1206629746-4298-26-git-send-email-Artem.Bityutskiy@nokia.com> <84144f020803311400s1f34420dx153d197f4752c65e@mail.gmail.com> <47F1D44A.8010908@yandex.ru>
-In-Reply-To: <47F1D44A.8010908@yandex.ru>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1206629746-4298-1-git-send-email-Artem.Bityutskiy@nokia.com>
+	 <1206629746-4298-27-git-send-email-Artem.Bityutskiy@nokia.com>
+X-Google-Sender-Auth: 466f911774fb7391
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Hi Artem,
 
-Artem Bityutskiy wrote:
-> Well, I do not see a big reason not to get rid of this harmless stuff.
-> Many kernel subsystems have their debugging, why not? Using BUG_ON() is
-> OK in few most important places. But we want to have more assertions
-> which are compiled-out by default, why can't we?. Similar is for prints.
+On Thu, Mar 27, 2008 at 5:55 PM, Artem Bityutskiy
+<Artem.Bityutskiy@nokia.com> wrote:
+>  +config UBIFS_FS_DEBUG_MSG_GEN
+>  +
+>  +config UBIFS_FS_DEBUG_MSG_JRN
+>  +
+>  +config UBIFS_FS_DEBUG_MSG_CMT
+>  +
+>  +config UBIFS_FS_DEBUG_MSG_BUDG
+>  +
+>  +config UBIFS_FS_DEBUG_MSG_LOG
+>  +
+>  +config UBIFS_FS_DEBUG_MSG_TNC
+>  +
+>  +config UBIFS_FS_DEBUG_MSG_LP
+>  +
+>  +config UBIFS_FS_DEBUG_MSG_FIND
+>  +
+>  +config UBIFS_FS_DEBUG_MSG_MNT
+>  +
+>  +config UBIFS_FS_DEBUG_MSG_IO
+>  +
+>  +config UBIFS_FS_DEBUG_MSG_GC
+>  +
+>  +config UBIFS_FS_DEBUG_MSG_SCAN
 
-Why would you want to have assertions that are compiled out by default? 
-Either you handle the error or don't (and have an assertion). The reason 
-some subsystems have had their own asserts is because they go overboard 
-with defensive checks as they haven't bothered to think through a 
-reasonable error handling strategy. The downside? It clutters the code 
-and causes the (compiled out) assertions to bit-rot.
+But these don't make much sense to me. Why would you want to be able
+to compile out printks at this granularity? Why not enable all of them
+when CONFIG_UBIFS_FS_DEBUG is enabled?
 
-Note that they're also a total pain in the ass to enable for anyone not 
-intimately familiar with your code. Not to mention you're now making the 
-lives of those crazy embedded folks that disable CONFIG_BUG for smaller 
-kernel size harder as well.
+>  +menu "Extra self-checks"
+>  +       depends on UBIFS_FS_DEBUG
+>  +
+>  +config UBIFS_FS_DEBUG_CHK_MEMPRESS
 
-Do you know why we don't have compiled out asserts in the core kernel? 
-That's because it simply can't just roll-over and die if something 
-unexpected happens and your filesystem shouldn't probably do that 
-either. Sure, if you have some debugging checks that are way too 
-expensive for production use, you might want to have a 
-CONFIG_UBIFS_DEBUG but that shouldn't happen at assertion level but 
-rather at much higher level.
+>  +config UBIFS_FS_DEBUG_CHK_LPROPS
+>  +
+>  +config UBIFS_FS_DEBUG_CHK_TNC
+>  +
+>  +config UBIFS_FS_DEBUG_CHK_ORPH
+>  +
+>  +config UBIFS_FS_DEBUG_CHK_IDX_SZ
+>  +
+>  +config UBIFS_FS_DEBUG_CHK_OLD_IDX
+>  +
+>  +config UBIFS_FS_DEBUG_CHK_OTHER
+>  +
+>  +config UBIFS_FS_DEBUG_TEST_RCVRY
 
-And btw, for optional printks, we have a lot of tracing infrastructure 
-in the kernel already (kprobes, relayfs, ftrace probably soon), so if 
-you want to have tracing for UBIFS (you probably don't), don't invent 
-your mechanism. But for most printks, they're either useful or they're 
-not. Again, I do see the potential need for CONFIG_UBIFS_DEBUG here, but 
-doing that at printk-level is also too low-level.
-
-			Pekka
+Why would you not want to enable all of these for development kernels?
