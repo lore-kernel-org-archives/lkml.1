@@ -1,582 +1,792 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760625AbYDCRLZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760789AbYDCRLo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760625AbYDCRLZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Apr 2008 13:11:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759908AbYDCRKX
+	id S1760789AbYDCRLo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Apr 2008 13:11:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760012AbYDCRKb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Apr 2008 13:10:23 -0400
-Received: from lazybastard.de ([212.112.238.170]:43585 "EHLO
+	Thu, 3 Apr 2008 13:10:31 -0400
+Received: from lazybastard.de ([212.112.238.170]:43592 "EHLO
 	longford.logfs.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759467AbYDCRKP (ORCPT
+	with ESMTP id S1759883AbYDCRK0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Apr 2008 13:10:15 -0400
-Message-Id: <20080401181332.853833003@logfs.org>
+	Thu, 3 Apr 2008 13:10:26 -0400
+Message-Id: <20080401181332.853833005@logfs.org>
 References: <20080401181308.512473173@logfs.org>
 Date: Tue, 01 Apr 2008 20:13:08 +0200
 To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
        linux-mtd@lists.infradead.org
-Subject: [patch 3/15] fs/logfs/logfs.h
+Subject: [patch 5/15] fs/logfs/dir.c
 From: joern@logfs.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---- /dev/null	2008-04-02 16:29:12.813336657 +0200
-+++ linux-2.6.24logfs/fs/logfs/logfs.h	2008-04-01 21:00:59.600247674 +0200
-@@ -0,0 +1,555 @@
+--- /dev/null	2008-03-30 12:15:48.586669308 +0200
++++ linux-2.6.24logfs/fs/logfs/dir.c	2008-03-28 18:26:06.154955960 +0100
+@@ -0,0 +1,765 @@
 +/*
-+ * fs/logfs/logfs.h
++ * fs/logfs/dir.c	- directory-related code
 + *
 + * As should be obvious for Linux kernel code, license is GPLv2
 + *
 + * Copyright (c) 2005-2007 Joern Engel <joern@logfs.org>
-+ *
-+ * Private header for logfs.
 + */
-+#ifndef fs_logfs_logfs_h
-+#define fs_logfs_logfs_h
++#include "logfs.h"
 +
-+#define __CHECK_ENDIAN__
-+
-+#include <linux/crc32.h>
-+#include <linux/fs.h>
-+#include <linux/kernel.h>
-+#include <linux/mempool.h>
-+#include <linux/pagemap.h>
-+#include <linux/mtd/mtd.h>
-+#include "logfs_abi.h"
-+
-+#define PG_zero			PG_owner_priv_1
-+#define PageZero(page)		test_bit(PG_zero, &(page)->flags)
-+#define SetPageZero(page)	set_bit(PG_zero, &(page)->flags)
-+#define ClearPageZero(page)	clear_bit(PG_zero, &(page)->flags)
 +
 +/*
-+ * There is no generic kernel btree library yet.  When such a thing gets
-+ * introduced, this definition and the corresponding source file should
-+ * get removed.
++ * Atomic dir operations
++ *
++ * Directory operations are by default not atomic.  Dentries and Inodes are
++ * created/removed/altered in seperate operations.  Therefore we need to do
++ * a small amount of journaling.
++ *
++ * Create, link, mkdir, mknod and symlink all share the same function to do
++ * the work: __logfs_create.  This function works in two atomic steps:
++ * 1. allocate inode (remember in journal)
++ * 2. allocate dentry (clear journal)
++ *
++ * As we can only get interrupted between the two, when the inode we just
++ * created is simply stored in the anchor.  On next mount, if we were
++ * interrupted, we delete the inode.  From a users point of view the
++ * operation never happened.
++ *
++ * Unlink and rmdir also share the same function: unlink.  Again, this
++ * function works in two atomic steps
++ * 1. remove dentry (remember inode in journal)
++ * 2. unlink inode (clear journal)
++ *
++ * And again, on the next mount, if we were interrupted, we delete the inode.
++ * From a users point of view the operation succeeded.
++ *
++ * Rename is the real pain to deal with, harder than all the other methods
++ * combined.  Depending on the circumstances we can run into three cases.
++ * A "target rename" where the target dentry already existed, a "local
++ * rename" where both parent directories are identical or a "cross-directory
++ * rename" in the remaining case.
++ *
++ * Local rename is atomic, as the old dentry is simply rewritten with a new
++ * name.
++ *
++ * Cross-directory rename works in two steps, similar to __logfs_create and
++ * logfs_unlink:
++ * 1. Write new dentry (remember old dentry in journal)
++ * 2. Remove old dentry (clear journal)
++ *
++ * Here we remember a dentry instead of an inode.  On next mount, if we were
++ * interrupted, we delete the dentry.  From a users point of view, the
++ * operation succeeded.
++ *
++ * Target rename works in three atomic steps:
++ * 1. Attach old inode to new dentry (remember old dentry and new inode)
++ * 2. Remove old dentry (still remember the new inode)
++ * 3. Remove victim inode
++ *
++ * Here we remember both an inode an a dentry.  If we get interrupted
++ * between steps 1 and 2, we delete both the dentry and the inode.  If
++ * we get interrupted between steps 2 and 3, we delete just the inode.
++ * In either case, the remaining objects are deleted on next mount.  From
++ * a users point of view, the operation succeeded.
 + */
-+struct btree_head {
-+	struct btree_node *node;
-+	int height;
-+	void *null_ptr;
-+};
 +
-+static inline void build_bug_on_needs_a_function(void)
++typedef int (*dir_callback)(struct inode *dir, struct dentry *dentry,
++		struct logfs_disk_dentry *dd, loff_t pos, void *arg);
++
++static inline void logfs_inc_count(struct inode *inode)
 +{
-+	BUILD_BUG_ON(sizeof(struct logfs_object_header) != LOGFS_HEADERSIZE);
-+	BUILD_BUG_ON(sizeof(struct logfs_segment_header)
-+			!= LOGFS_SEGMENT_HEADERSIZE);
++	inode->i_nlink++;
++	mark_inode_dirty_sync(inode);
 +}
 +
-+/* FIXME: This should really be somewhere in the 64bit area. */
-+#define LOGFS_LINK_MAX		(1<<30)
++static inline void logfs_dec_count(struct inode *inode)
++{
++	inode->i_nlink--;
++	mark_inode_dirty_sync(inode);
++}
 +
-+/*
-+ * Private errno for accessed beyond end-of-file.  Only used internally to
-+ * logfs.  If this ever gets exposed to userspace or even other parts of the
-+ * kernel, it is a bug.  256 was chosen as a number sufficiently above all
-+ * used errno #defines.
-+ *
-+ * It can be argued that this is a hack and should be replaced with something
-+ * else.  My last attempt to do this failed spectacularly and there are more
-+ * urgent problems that users actually care about.  This will remain for the
-+ * moment.  Patches are welcome, of course.
-+ */
-+#define EOF			(512)
++static int read_dir(struct inode *dir, struct logfs_disk_dentry *dd, loff_t pos)
++{
++	return logfs_inode_read(dir, dd, sizeof(*dd), pos);
++}
 +
-+/* Read-only filesystem */
-+#define LOGFS_SB_FLAG_RO	1
++static int write_dir(struct inode *dir, struct logfs_disk_dentry *dd,
++		loff_t pos, struct logfs_transaction *ta)
++{
++	return logfs_inode_write(dir, dd, sizeof(*dd), pos,
++			WF_SYNC|WF_LOCK, ta, NULL);
++}
 +
-+/* Write Control Flags */
-+#define WF_LOCK		0x01	/* take write lock */
-+#define WF_WRITE	0x02	/* write block */
-+#define WF_DELETE	0x04	/* delete old block */
-+#define WF_SYNC		0x08	/* sync every indirect block */
-+#define WF_GC		0x10	/* GC write, move to GC list */
++static int write_inode(struct inode *inode)
++{
++	return __logfs_write_inode(inode, WF_LOCK|WF_SYNC);
++}
 +
-+/**
-+ * struct logfs_area - area management information
-+ *
-+ * @a_sb:			the superblock this area belongs to
-+ * @a_is_open:			1 if the area is currently open, else 0
-+ * @a_segno:			segment number of area
-+ * @a_used_bytes:		number of used bytes
-+ * @a_ops:			area operations (either journal or ostore)
-+ * @a_wbuf:			write buffer
-+ * @a_erase_count:		erase count
-+ * @a_level:			GC level
-+ */
-+struct logfs_area { /* a segment open for writing */
-+	struct super_block *a_sb;
-+	int	a_is_open;
-+	u32	a_segno;
-+	u32	a_used_bytes;
-+	const struct logfs_area_ops *a_ops;
-+	void			*a_wbuf;
-+	u32	a_erase_count;
-+	u8	a_level;
-+};
++static s64 dir_seek_data(struct inode *inode, s64 pos)
++{
++	s64 new_pos = logfs_seek_data(inode, pos);
 +
-+/**
-+ * struct logfs_area_ops - area operations
-+ *
-+ * @get_free_segment:		fill area->ofs with the offset of a free segment
-+ * @get_erase_count:		fill area->erase_count (needs area->ofs)
-+ * @erase_segment:		erase and setup segment
-+ * @finish_area:		flush buffers, etc.
-+ */
-+struct logfs_area_ops {
-+	void	(*get_free_segment)(struct logfs_area *area);
-+	void	(*get_erase_count)(struct logfs_area *area);
-+	int	(*erase_segment)(struct logfs_area *area);
-+	void	(*finish_area)(struct logfs_area *area);
-+};
++	return max(pos, new_pos - 1);
++}
 +
-+/**
-+ * struct logfs_device_ops - device access operations
-+ *
-+ * @read:			read from the device
-+ * @write:			write to the device
-+ * @erase:			erase part of the device
-+ */
-+struct logfs_device_ops {
-+	s64 (*find_sb)(struct super_block *sb);
-+	int (*read)(struct super_block *sb, loff_t ofs, size_t len, void *buf);
-+	int (*write)(struct super_block *sb, loff_t ofs, size_t len, void *buf);
-+	int (*erase)(struct super_block *sb, loff_t ofs, size_t len);
-+	void (*sync)(struct super_block *sb);
-+};
++static int __logfs_dir_walk(struct inode *dir, struct dentry *dentry,
++		dir_callback handler, void *arg,
++		struct logfs_disk_dentry *dd, loff_t *pos)
++{
++	struct qstr *name = dentry ? &dentry->d_name : NULL;
++	int ret;
 +
-+/**
-+ * struct gc_candidate - "candidate" segment to be garbage collected next
-+ *
-+ * @list:			list (either free of low)
-+ * @segno:			segment number
-+ * @valid:			number of valid bytes
-+ * @erase_count:		erase count of segment
-+ * @dist:			distance from tree root
-+ *
-+ * Candidates can be on two lists.  The free list contains electees rather
-+ * than candidates - segments that no longer contain any valid data.  The
-+ * low list contains candidates to be picked for GC.  It should be kept
-+ * short.  It is not required to always pick a perfect candidate.  In the
-+ * worst case GC will have to move more data than absolutely necessary.
-+ */
-+struct gc_candidate {
-+	struct list_head list;
-+	u64	gec;
-+	u32	segno;
-+	u32	valid;
-+	u32	erase_count;
-+	u8	dist;
-+};
++	for (; ; (*pos)++) {
++		ret = read_dir(dir, dd, *pos);
++		if (ret == -EOF)
++			return 0;
++		if (ret == -ENODATA) {
++			/* deleted dentry */
++			*pos = dir_seek_data(dir, *pos);
++			continue;
++		}
++		if (ret)
++			return ret;
++		BUG_ON(dd->namelen == 0);
 +
-+/**
-+ * struct candidate_list - list of similar candidates
-+ */
-+struct candidate_list {
-+	struct list_head list;
-+	int count;
-+	int maxcount;
-+	int sort_by_ec;
-+};
++		if (name) {
++			if (name->len != be16_to_cpu(dd->namelen))
++				continue;
++			if (memcmp(name->name, dd->name, name->len))
++				continue;
++		}
 +
-+/**
-+ * struct logfs_journal_entry - temporary structure used during journal scan
-+ *
-+ * @used:
-+ * @version:			normalized version
-+ * @len:			length
-+ * @offset:			offset
-+ */
-+struct logfs_journal_entry {
-+	int used;
-+	s16 version;
-+	u16 len;
-+	u16 datalen;
-+	u64 offset;
-+};
++		return handler(dir, dentry, dd, *pos, arg);
++	}
++	return ret;
++}
 +
-+enum transaction_state {
-+	CREATE_1 = 1,
-+	CREATE_2,
-+	UNLINK_1,
-+	UNLINK_2,
-+	CROSS_RENAME_1,
-+	CROSS_RENAME_2,
-+	TARGET_RENAME_1,
-+	TARGET_RENAME_2,
-+	TARGET_RENAME_3
-+};
++static int logfs_dir_walk(struct inode *dir, struct dentry *dentry,
++		dir_callback handler, void *arg)
++{
++	struct logfs_disk_dentry dd;
++	loff_t pos = 0;
 +
-+/**
-+ * struct logfs_transaction - essential fields to support atomic dirops
-+ *
-+ * @ino:			target inode
-+ * @dir:			inode of directory containing dentry
-+ * @pos:			pos of dentry in directory
-+ */
-+struct logfs_transaction {
-+	enum transaction_state state;
-+	u64	 ino;
-+	u64	 dir;
-+	u64	 pos;
-+};
++	return __logfs_dir_walk(dir, dentry, handler, arg, &dd, &pos);
++}
 +
-+/**
-+ * struct logfs_shadow - old block in the shadow of a not-yet-committed new one
-+ * @old_ofs:			offset of old block on medium
-+ * @new_ofs:			offset of new block on medium
-+ * @ino:			inode number
-+ * @bix:			block index
-+ * @old_len:			size of old block, including header
-+ * @new_len:			size of new block, including header
-+ * @level:			block level
-+ */
-+struct logfs_shadow {
-+	u64 old_ofs;
-+	u64 new_ofs;
-+	u64 ino;
-+	u64 bix;
-+	int old_len;
-+	int new_len;
-+	u8 level;
-+};
++static int logfs_lookup_handler(struct inode *dir, struct dentry *dentry,
++		struct logfs_disk_dentry *dd, loff_t pos, void *arg)
++{
++	struct inode *inode;
 +
-+/**
-+ * struct shadow_tree
-+ * @new:			shadows where old_ofs==0, indexed by new_ofs
-+ * @old:			shadows where old_ofs!=0, indexed by old_ofs
-+ */
-+struct shadow_tree {
-+	struct btree_head new;
-+	struct btree_head old;
-+};
++	inode = iget(dir->i_sb, be64_to_cpu(dd->ino));
++	if (!inode)
++		return -EIO;
++	return PTR_ERR(d_splice_alias(inode, dentry));
++}
 +
-+/**
-+ * struct logfs_block - contains any block state
-+ * @tree:			btree of shadows, indexed by old_ofs
-+ */
-+struct logfs_block {
-+	struct list_head dirty_list;
-+	struct shadow_tree shadow_tree;
-+	struct page *page;
++static struct dentry *logfs_lookup(struct inode *dir, struct dentry *dentry,
++		struct nameidata *nd)
++{
++	return ERR_PTR(logfs_dir_walk(dir, dentry, logfs_lookup_handler, NULL));
++}
++
++static int logfs_unlink_handler(struct inode *dir, struct dentry *dentry,
++		struct logfs_disk_dentry *dd, loff_t pos, void *ta)
++{
++	return logfs_delete(dir, pos, NULL, ta);
++}
++
++static int logfs_remove_inode(struct inode *inode)
++{
++	int ret;
++
++	inode->i_nlink--;
++	if (S_ISDIR(inode->i_mode))
++		inode->i_nlink--;
++	ret = write_inode(inode);
++	LOGFS_BUG_ON(ret, inode->i_sb);
++	return ret;
++}
++
++static void abort_transaction(struct inode *inode, struct logfs_transaction *ta)
++{
++	logfs_inode(inode)->li_transaction = NULL;
++	kfree(ta);
++}
++
++static int logfs_unlink(struct inode *dir, struct dentry *dentry)
++{
++	struct logfs_super *super = logfs_super(dir->i_sb);
++	struct inode *inode = dentry->d_inode;
 +	struct logfs_transaction *ta;
-+};
++	int ret;
 +
-+struct mtd_inode {
-+	struct mtd_info *mtd;
-+	long openers;
-+	struct inode vfs_inode;
-+};
++	ta = kzalloc(sizeof(*ta), GFP_KERNEL);
++	if (!ta)
++		return -ENOMEM;
 +
-+struct logfs_super {
-+	struct mtd_inode *s_mtd;		/* underlying device */
-+	struct block_device *s_bdev;		/* underlying device */
-+	int	 s_sync;			/* sync on next io? */
-+	const struct logfs_device_ops *s_devops;/* device access */
-+	struct inode	*s_master_inode;	/* ifile */
-+	long	 s_flags;
-+	/* dir.c fields */
-+	struct mutex s_dirop_mutex;		/* for creat/unlink/rename */
-+	u64	 s_victim_ino;			/* used for atomic dir-ops */
-+	u64	 s_rename_dir;			/* source directory ino */
-+	u64	 s_rename_pos;			/* position of source dd */
-+	/* gc.c fields */
-+	long	 s_segsize;			/* size of a segment */
-+	int	 s_segshift;			/* log2 of segment size */
-+	long	 s_no_segs;			/* segments on device */
-+	long	 s_no_blocks;			/* blocks per segment */
-+	long	 s_writesize;			/* minimum write size */
-+	int	 s_writeshift;			/* log2 of write size */
-+	u64	 s_size;			/* filesystem size */
-+	struct logfs_area *s_area[LOGFS_NO_AREAS];	/* open segment array */
-+	u64	 s_gec;				/* global erase count */
-+	u64	 s_sweeper;			/* current sweeper pos */
-+	u8	 s_ifile_levels;		/* max level of ifile */
-+	u8	 s_iblock_levels;		/* max level of regular files */
-+	u8	 s_data_levels;			/* # of segments to leaf block*/
-+	u8	 s_total_levels;		/* sum of above three */
-+	struct candidate_list s_free_list;	/* 100% free segments */
-+	struct candidate_list s_low_list[LOGFS_NO_AREAS];/* good candidates */
-+	struct candidate_list s_ec_list;	/* wear level candidates */
-+	struct btree_head s_reserved_segments;	/* sb, journal, bad, etc. */
-+	struct list_head s_dirty_list;		/* list of dirty blocks */
-+	struct list_head s_gc_dirty_list[LOGFS_NO_AREAS];/* blocks dirtied during GC */
-+	/* inode.c fields */
-+	spinlock_t s_ino_lock;			/* lock s_last_ino on 32bit */
-+	u64	 s_last_ino;			/* highest ino used */
-+	struct list_head s_freeing_list;	/* inodes being freed */
-+	/* journal.c fields */
-+	struct mutex s_journal_mutex;
-+	void	*s_je;				/* journal entry to compress */
-+	void	*s_compressed_je;		/* block to write to journal */
-+	u64	 s_journal_seg[LOGFS_JOURNAL_SEGS]; /* journal segments */
-+	u32	 s_journal_ec[LOGFS_JOURNAL_SEGS]; /* journal erasecounts */
-+	u64	 s_last_version;
-+	struct logfs_area *s_journal_area;	/* open journal segment */
-+	struct logfs_journal_entry s_retired[JE_LAST+1]; /* for journal scan */
-+	struct logfs_journal_entry s_speculative[JE_LAST+1]; /* dito */
-+	struct logfs_journal_entry s_first;		/* dito */
-+	int	 s_sum_index;			/* for the 12 summaries */
-+	__be32	*s_bb_array;			/* bad segments */
-+	/* readwrite.c fields */
-+	struct mutex s_w_mutex;
-+	struct page *s_write_page;		/* page under writeback now */
-+	mempool_t *s_block_pool;		/* struct logfs_block pool */
-+	mempool_t *s_shadow_pool;		/* struct logfs_shadow pool */
++	ta->state = UNLINK_1;
++	ta->ino = inode->i_ino;
++
++	if (S_ISDIR(inode->i_mode))
++		dir->i_nlink--;
++	inode->i_ctime = dir->i_ctime = dir->i_mtime = CURRENT_TIME;
++	mutex_lock(&super->s_dirop_mutex);
++	ret = logfs_dir_walk(dir, dentry, logfs_unlink_handler, ta);
++	if (!ret)
++		ret = write_inode(dir);
++
++	if (ret) {
++		super->s_victim_ino = 0;
++		abort_transaction(dir, ta);
++		printk(KERN_ERR"LOGFS: unable to delete inode\n");
++		if (S_ISDIR(inode->i_mode))
++			logfs_inc_count(dir);
++		goto out;
++	}
++
++	ta->state = UNLINK_2;
++	logfs_inode(inode)->li_transaction = ta;
++	ret = logfs_remove_inode(inode);
++out:
++	mutex_unlock(&super->s_dirop_mutex);
++	return ret;
++}
++
++static int logfs_empty_handler(struct inode *dir, struct dentry *dentry,
++		struct logfs_disk_dentry *dd, loff_t pos, void *arg)
++{
++	return -ENOTEMPTY;
++}
++
++static inline int logfs_empty_dir(struct inode *dir)
++{
++	return logfs_dir_walk(dir, NULL, logfs_empty_handler, NULL) == 0;
++}
++
++static int logfs_rmdir(struct inode *dir, struct dentry *dentry)
++{
++	struct inode *inode = dentry->d_inode;
++
++	if (!logfs_empty_dir(inode))
++		return -ENOTEMPTY;
++
++	return logfs_unlink(dir, dentry);
++}
++
++/* FIXME: readdir currently has it's own dir_walk code.  I don't see a good
++ * way to combine the two copies */
++#define IMPLICIT_NODES 2
++static int __logfs_readdir(struct file *file, void *buf, filldir_t filldir)
++{
++	struct logfs_disk_dentry dd;
++	struct inode *dir = file->f_dentry->d_inode;
++	loff_t pos = file->f_pos - IMPLICIT_NODES;
++	int err;
++
++	BUG_ON(pos < 0);
++	for (;; pos++) {
++		err = read_dir(dir, &dd, pos);
++		if (err == -EOF)
++			break;
++		if (err == -ENODATA) {
++			/* deleted dentry */
++			pos = dir_seek_data(dir, pos);
++			continue;
++		}
++		if (err)
++			return err;
++		BUG_ON(dd.namelen == 0);
++
++		if (filldir(buf, dd.name, be16_to_cpu(dd.namelen), pos,
++					be64_to_cpu(dd.ino), dd.type))
++			break;
++	}
++
++	file->f_pos = pos + IMPLICIT_NODES;
++	return 0;
++}
++
++static int logfs_readdir(struct file *file, void *buf, filldir_t filldir)
++{
++	struct inode *inode = file->f_dentry->d_inode;
++	ino_t pino = parent_ino(file->f_dentry);
++	int err;
++
++	if (file->f_pos < 0)
++		return -EINVAL;
++
++	if (file->f_pos == 0) {
++		if (filldir(buf, ".", 1, 1, inode->i_ino, DT_DIR) < 0)
++			return 0;
++		file->f_pos++;
++	}
++	if (file->f_pos == 1) {
++		if (filldir(buf, "..", 2, 2, pino, DT_DIR) < 0)
++			return 0;
++		file->f_pos++;
++	}
++
++	err = __logfs_readdir(file, buf, filldir);
++	return err;
++}
++
++static void logfs_set_name(struct logfs_disk_dentry *dd, struct qstr *name)
++{
++	dd->namelen = cpu_to_be16(name->len);
++	memcpy(dd->name, name->name, name->len);
++}
++
++static int logfs_write_dir(struct inode *dir, struct dentry *dentry,
++		struct inode *inode, struct logfs_transaction *ta)
++{
++	struct logfs_disk_dentry dd;
++	int err;
++
++	if (dentry->d_name.len > LOGFS_MAX_NAMELEN)
++		return -ENAMETOOLONG;
++
++	memset(&dd, 0, sizeof(dd));
++	dd.ino = cpu_to_be64(inode->i_ino);
++	dd.type = logfs_type(inode);
++	logfs_set_name(&dd, &dentry->d_name);
++
++	dir->i_ctime = dir->i_mtime = CURRENT_TIME;
 +	/*
-+	 * Space accounting in LogFS:
-+	 * - s_used_bytes specifies space used to store valid data objects.
-+	 * - s_dirty_used_bytes is space used to store non-committed data
-+	 *   objects.  Those objects have already been written themselves,
-+	 *   but they don't become valid until all indirect blocks up to the
-+	 *   journal have been written as well.
-+	 * - s_dirty_free_bytes is space used to store the old copy of a
-+	 *   replaced object, as long as the replacement is non-committed.
-+	 *   In other words, it is the amount of space freed when all dirty
-+	 *   blocks are written back.
-+	 * - s_free_bytes is the amount of free space available for any
-+	 *   purpose.
-+	 * - s_root_reserve is the amount of free space available only to
-+	 *   the root user.
-+	 * - s_gc_reserve is currently a mess.
++	 * FIXME: the file size should actually get aligned when writing,
++	 * not when reading.
 +	 */
-+	u64	 s_free_bytes;			/* free space */
-+	u64	 s_used_bytes;			/* used (valid) data */
-+	u64	 s_dirty_free_bytes;		/* space freed on commit */
-+	u64	 s_dirty_used_bytes;		/* space used on commit */
-+	u64	 s_gc_reserve;			/* space reserved for GC */
-+	u64	 s_root_reserve;	/* FIXME: currently unused */
-+	u32	 s_bad_segments;		/* number of bad segments */
-+};
++	err = write_dir(dir, &dd, logfs_seek_hole(dir, 0), ta);
++	if (err)
++		return err;
++	return 0;
++}
 +
-+/**
-+ * struct logfs_inode - in-memory inode
-+ *
-+ * @vfs_inode:			struct inode
-+ * @li_data:			data pointers
-+ * @li_used_bytes:		number of used bytes
-+ * @li_freeing_list:		used to track inodes currently being freed
-+ * @li_flags:			inode flags
++static int __logfs_create(struct inode *dir, struct dentry *dentry,
++		struct inode *inode, const char *dest, long destlen)
++{
++	struct logfs_super *super = logfs_super(dir->i_sb);
++	struct logfs_inode *li = logfs_inode(inode);
++	struct logfs_transaction *ta;
++	int ret;
++
++	ta = kzalloc(sizeof(*ta), GFP_KERNEL);
++	if (!ta)
++		return -ENOMEM;
++
++	ta->state = CREATE_1;
++	mutex_lock(&super->s_dirop_mutex);
++	ta->ino = inode->i_ino;
++	if (S_ISDIR(inode->i_mode))
++		inode->i_nlink++;
++
++	if (dest) {
++		/* symlink */
++		ret = logfs_inode_write(inode, dest, destlen, 0,
++				WF_SYNC|WF_LOCK, ta, NULL);
++		if (!ret)
++			ret = write_inode(inode);
++	} else {
++		/* creat/mkdir/mknod */
++		super->s_victim_ino = inode->i_ino;
++		ret = write_inode(inode);
++	}
++	if (ret) {
++		super->s_victim_ino = 0;
++		abort_transaction(inode, ta);
++		li->li_flags |= LOGFS_IF_STILLBORN;
++		/* FIXME: truncate symlink */
++		inode->i_nlink--;
++		iput(inode);
++		goto out;
++	}
++
++	ta->state = CREATE_2;
++	if (S_ISDIR(inode->i_mode))
++		dir->i_nlink++;
++	ret = logfs_write_dir(dir, dentry, inode, ta);
++	/* sync directory */
++	if (!ret)
++		ret = write_inode(dir);
++
++	if (ret) {
++		super->s_victim_ino = 0;
++		abort_transaction(dir, ta);
++		if (S_ISDIR(inode->i_mode))
++			dir->i_nlink--;
++		logfs_remove_inode(inode);
++		iput(inode);
++		goto out;
++	}
++	d_instantiate(dentry, inode);
++out:
++	mutex_unlock(&super->s_dirop_mutex);
++	return ret;
++}
++
++static int logfs_mkdir(struct inode *dir, struct dentry *dentry, int mode)
++{
++	struct inode *inode;
++
++	if (dir->i_nlink >= LOGFS_LINK_MAX)
++		return -EMLINK;
++
++	/*
++	 * FIXME: why do we have to fill in S_IFDIR, while the mode is
++	 * correct for mknod, creat, etc.?  Smells like the vfs *should*
++	 * do it for us but for some reason fails to do so.
++	 */
++	inode = logfs_new_inode(dir, S_IFDIR | mode);
++	if (IS_ERR(inode))
++		return PTR_ERR(inode);
++
++	inode->i_op = &logfs_dir_iops;
++	inode->i_fop = &logfs_dir_fops;
++
++	return __logfs_create(dir, dentry, inode, NULL, 0);
++}
++
++static int logfs_create(struct inode *dir, struct dentry *dentry, int mode,
++		struct nameidata *nd)
++{
++	struct inode *inode;
++
++	inode = logfs_new_inode(dir, mode);
++	if (IS_ERR(inode))
++		return PTR_ERR(inode);
++
++	inode->i_op = &logfs_reg_iops;
++	inode->i_fop = &logfs_reg_fops;
++	inode->i_mapping->a_ops = &logfs_reg_aops;
++
++	return __logfs_create(dir, dentry, inode, NULL, 0);
++}
++
++static int logfs_mknod(struct inode *dir, struct dentry *dentry, int mode,
++		dev_t rdev)
++{
++	struct inode *inode;
++
++	if (dentry->d_name.len > LOGFS_MAX_NAMELEN)
++		return -ENAMETOOLONG;
++
++	inode = logfs_new_inode(dir, mode);
++	if (IS_ERR(inode))
++		return PTR_ERR(inode);
++
++	init_special_inode(inode, mode, rdev);
++
++	return __logfs_create(dir, dentry, inode, NULL, 0);
++}
++
++static int logfs_symlink(struct inode *dir, struct dentry *dentry,
++		const char *target)
++{
++	struct inode *inode;
++	size_t destlen = strlen(target) + 1;
++
++	if (destlen > dir->i_sb->s_blocksize)
++		return -ENAMETOOLONG;
++
++	inode = logfs_new_inode(dir, S_IFLNK | S_IRWXUGO);
++	if (IS_ERR(inode))
++		return PTR_ERR(inode);
++
++	inode->i_op = &logfs_symlink_iops;
++	inode->i_mapping->a_ops = &logfs_reg_aops;
++
++	return __logfs_create(dir, dentry, inode, target, destlen);
++}
++
++static int logfs_permission(struct inode *inode, int mask, struct nameidata *nd)
++{
++	return generic_permission(inode, mask, NULL);
++}
++
++static int logfs_link(struct dentry *old_dentry, struct inode *dir,
++		struct dentry *dentry)
++{
++	struct inode *inode = old_dentry->d_inode;
++
++	if (inode->i_nlink >= LOGFS_LINK_MAX)
++		return -EMLINK;
++
++	inode->i_ctime = dir->i_ctime = dir->i_mtime = CURRENT_TIME;
++	atomic_inc(&inode->i_count);
++	logfs_inc_count(inode);
++
++	return __logfs_create(dir, dentry, inode, NULL, 0);
++}
++
++static int logfs_nop_handler(struct inode *dir, struct dentry *dentry,
++		struct logfs_disk_dentry *dd, loff_t pos, void *arg)
++{
++	return 0;
++}
++
++static inline int logfs_get_dd(struct inode *dir, struct dentry *dentry,
++		struct logfs_disk_dentry *dd, loff_t *pos)
++{
++	*pos = 0;
++	return __logfs_dir_walk(dir, dentry, logfs_nop_handler, NULL, dd, pos);
++}
++
++/* Easiest case, a local rename and the target doesn't exist.  Just change
++ * the name in the old dd.
 + */
-+struct logfs_inode {
-+	struct inode vfs_inode;
-+	u64	li_data[LOGFS_EMBEDDED_FIELDS];
-+	u64	li_used_bytes;
-+	struct list_head li_freeing_list;
-+	struct logfs_transaction *li_transaction;
-+	struct shadow_tree li_shadow_tree;
-+	u32	li_flags;
-+	u8	li_height;
-+};
-+
-+#define journal_for_each(__i) for (__i = 0; __i < LOGFS_JOURNAL_SEGS; __i++)
-+#define for_each_area(__i) for (__i = 0; __i < LOGFS_NO_AREAS; __i++)
-+
-+/* compr.c */
-+int logfs_compress(void *in, void *out, size_t inlen, size_t outlen);
-+int logfs_uncompress(void *in, void *out, size_t inlen, size_t outlen);
-+int __init logfs_compr_init(void);
-+void logfs_compr_exit(void);
-+
-+/* dev_bdev.c */
-+#ifdef CONFIG_BLOCK
-+int logfs_get_sb_bdev(struct file_system_type *type, int flags,
-+		const char *devname, struct vfsmount *mnt);
-+
-+static inline void logfs_put_bdev(struct block_device *bdev)
++static int logfs_rename_local(struct inode *dir, struct dentry *old_dentry,
++		struct dentry *new_dentry)
 +{
-+	if (bdev)
-+		close_bdev_excl(bdev);
-+}
-+#else
-+static inline int logfs_get_sb_bdev(struct file_system_type *type, int flags,
-+		const char *devname, struct vfsmount *mnt)
-+{
-+	return -ENODEV;
++	struct logfs_disk_dentry dd;
++	loff_t pos;
++	int err;
++
++	err = logfs_get_dd(dir, old_dentry, &dd, &pos);
++	if (err)
++		return err;
++
++	logfs_set_name(&dd, &new_dentry->d_name);
++	return write_dir(dir, &dd, pos, NULL);
 +}
 +
-+static inline void logfs_put_bdev(struct block_device *bdev)
++static int logfs_delete_dd(struct inode *dir, struct logfs_disk_dentry *dd,
++		loff_t pos, struct logfs_transaction *ta)
 +{
-+}
-+#endif
++	int err;
 +
-+/* dev_mtd.c */
-+#ifdef CONFIG_MTD
-+int logfs_get_sb_mtd(struct file_system_type *type, int flags,
-+		int mtdnr, struct vfsmount *mnt);
-+void logfs_put_mtd(struct mtd_inode *mi);
-+#else
-+static inline int logfs_get_sb_mtd(struct file_system_type *type, int flags,
-+		int mtdnr, struct vfsmount *mnt)
-+{
-+	return -ENODEV;
-+}
++	err = read_dir(dir, dd, pos);
 +
-+static inline void logfs_put_mtd(struct mtd_inode *mi)
-+{
-+}
-+#endif
++	/*
++	 * Getting called with pos somewhere beyond eof is either a goofup
++	 * within this file or means someone maliciously edited the
++	 * (crc-protected) journal.
++	 */
++	LOGFS_BUG_ON(err == -EOF, dir->i_sb);
++	if (err)
++		return err;
 +
-+/* dir.c */
-+extern const struct inode_operations logfs_symlink_iops;
-+extern const struct inode_operations logfs_dir_iops;
-+extern const struct file_operations logfs_dir_fops;
-+int logfs_replay_journal(struct super_block *sb);
-+
-+/* file.c */
-+extern const struct inode_operations logfs_reg_iops;
-+extern const struct file_operations logfs_reg_fops;
-+extern const struct address_space_operations logfs_reg_aops;
-+int logfs_readpage(struct file *file, struct page *page);
-+int logfs_ioctl(struct inode *inode, struct file *file, unsigned int cmd,
-+		unsigned long arg);
-+int logfs_fsync(struct file *file, struct dentry *dentry, int datasync);
-+
-+/* gc.c */
-+int logfs_safe_to_write_block(struct super_block *sb, u8 level);
-+struct gc_candidate *get_best_cand(struct candidate_list *list);
-+int add_free_segments_from_journal(struct super_block *sb,
-+		struct logfs_je_free_segments *segs, int count);
-+void logfs_dirty_for_gc(struct super_block *sb, struct logfs_block *block);
-+void logfs_gc_pass(struct super_block *sb);
-+int logfs_check_areas(struct super_block *sb);
-+int logfs_init_gc(struct logfs_super *super);
-+void logfs_cleanup_gc(struct logfs_super *super);
-+
-+/* inode.c */
-+extern const struct super_operations logfs_super_operations;
-+struct inode *logfs_iget(struct super_block *sb, ino_t ino, int *cookie);
-+void logfs_iput(struct inode *inode, int cookie);
-+struct inode *logfs_new_inode(struct inode *dir, int mode);
-+struct inode *logfs_new_meta_inode(struct super_block *sb, u64 ino);
-+int logfs_init_inode_cache(void);
-+void logfs_destroy_inode_cache(void);
-+int __logfs_write_inode(struct inode *inode, long flags);
-+void __logfs_destroy_inode(struct inode *inode);
-+void logfs_set_blocks(struct inode *inode, u64 no);
-+
-+/* journal.c */
-+int logfs_write_anchor(struct inode *inode);
-+int logfs_init_journal(struct super_block *sb);
-+void logfs_cleanup_journal(struct super_block *sb);
-+
-+/* memtree.c */
-+void btree_init(struct btree_head *head);
-+void *btree_lookup(struct btree_head *head, u64 val);
-+int btree_insert(struct btree_head *head, u64 val, void *ptr);
-+void *btree_remove(struct btree_head *head, u64 val);
-+int btree_merge(struct btree_head *target, struct btree_head *victim);
-+void btree_visitor(struct btree_head *head, long opaque,
-+		void (*func)(void *elem, long opaque, u64 val));
-+void btree_grim_visitor(struct btree_head *head, long opaque,
-+		void (*func)(void *elem, long opaque, u64 val));
-+
-+/* readwrite.c */
-+void logfs_unpack_index(pgoff_t index, u64 *bix, u8 *level);
-+void logfs_flush_dirty(struct super_block *sb, int sync);
-+int logfs_inode_read(struct inode *inode, void *buf, size_t n, loff_t _pos);
-+int logfs_inode_write(struct inode *inode, const void *buf, size_t count,
-+		loff_t bix, long flags, struct logfs_transaction *ta,
-+		struct shadow_tree *shadow_tree);
-+int logfs_readpage_nolock(struct page *page);
-+int logfs_write_buf(struct inode *inode, struct page *page,
-+		struct logfs_transaction *ta, long flags);
-+int logfs_delete(struct inode *inode, pgoff_t index,
-+		struct shadow_tree *shadow_tree, struct logfs_transaction *ta);
-+int logfs_rewrite_block(struct inode *inode, u64 bix, u64 ofs, int level,
-+		long flags);
-+int logfs_is_valid_block(struct super_block *sb, u64 ofs, u64 ino, u64 pos,
-+		u8 level);
-+int logfs_truncate(struct inode *inode, u64 size);
-+u64 logfs_seek_hole(struct inode *inode, u64 bix);
-+u64 logfs_seek_data(struct inode *inode, u64 bix);
-+int logfs_init_rw(struct logfs_super *super);
-+void logfs_cleanup_rw(struct logfs_super *super);
-+
-+/* segment.c */
-+int logfs_erase_segment(struct super_block *sb, u32 ofs);
-+int wbuf_read(struct super_block *sb, u64 ofs, size_t len, void *buf);
-+int logfs_segment_read(struct inode *inode, struct page *page, u64 ofs, u64 bix,
-+		u8 level);
-+int logfs_segment_write(struct inode *inode, struct page *page,
-+		struct logfs_shadow *shadow);
-+int logfs_segment_delete(struct inode *inode, struct logfs_shadow *shadow);
-+void logfs_buf_write(struct logfs_area *area, u64 ofs, void *data, size_t len);
-+
-+/* area handling */
-+int logfs_init_areas(struct super_block *sb);
-+void logfs_cleanup_areas(struct logfs_super *super);
-+int logfs_open_area(struct logfs_area *area);
-+void logfs_close_area(struct logfs_area *area);
-+
-+/* super.c */
-+void logfs_crash_dump(struct super_block *sb);
-+void *memchr_inv(const void *s, int c, size_t n);
-+int logfs_statfs(struct dentry *dentry, struct kstatfs *stats);
-+int logfs_get_sb_device(struct file_system_type *type, int flags,
-+		struct mtd_inode *mtd, struct block_device *bdev,
-+		const struct logfs_device_ops *devops, struct vfsmount *mnt);
-+
-+static inline struct logfs_super *logfs_super(struct super_block *sb)
-+{
-+	return sb->s_fs_info;
++	dir->i_ctime = dir->i_mtime = CURRENT_TIME;
++	if (dd->type == DT_DIR)
++		dir->i_nlink--;
++	return logfs_delete(dir, pos, NULL, ta);
 +}
 +
-+static inline struct logfs_inode *logfs_inode(struct inode *inode)
++/*
++ * Cross-directory rename, target does not exist.  Just a little nasty.
++ * Create a new dentry in the target dir, then remove the old dentry,
++ * all the while taking care to remember our operation in the journal.
++ */
++static int logfs_rename_cross(struct inode *old_dir, struct dentry *old_dentry,
++			      struct inode *new_dir, struct dentry *new_dentry)
 +{
-+	return container_of(inode, struct logfs_inode, vfs_inode);
++	struct logfs_super *super = logfs_super(old_dir->i_sb);
++	struct logfs_disk_dentry dd;
++	struct logfs_transaction *ta;
++	loff_t pos;
++	int err;
++
++	/* 1. locate source dd */
++	err = logfs_get_dd(old_dir, old_dentry, &dd, &pos);
++	if (err)
++		return err;
++
++	ta = kzalloc(sizeof(*ta), GFP_KERNEL);
++	if (!ta)
++		return -ENOMEM;
++
++	ta->state = CROSS_RENAME_1;
++	ta->dir = old_dir->i_ino;
++	ta->pos = pos;
++
++	/* 2. write target dd */
++	if (dd.type == DT_DIR)
++		new_dir->i_nlink++;
++	mutex_lock(&super->s_dirop_mutex);
++	err = logfs_write_dir(new_dir, new_dentry, old_dentry->d_inode, ta);
++	if (!err)
++		err = write_inode(new_dir);
++
++	if (err) {
++		super->s_rename_dir = 0;
++		super->s_rename_pos = 0;
++		abort_transaction(new_dir, ta);
++		goto out;
++	}
++
++	ta->state = CROSS_RENAME_2;
++	/* 3. remove source dd */
++	err = logfs_delete_dd(old_dir, &dd, pos, ta);
++	if (!err)
++		err = write_inode(old_dir);
++	LOGFS_BUG_ON(err, old_dir->i_sb);
++out:
++	mutex_unlock(&super->s_dirop_mutex);
++	return err;
 +}
 +
-+static inline void logfs_set_ro(struct super_block *sb)
++static int logfs_replace_inode(struct inode *dir, struct dentry *dentry,
++		struct logfs_disk_dentry *dd, struct inode *inode,
++		struct logfs_transaction *ta)
 +{
-+	logfs_super(sb)->s_flags |= LOGFS_SB_FLAG_RO;
++	loff_t pos;
++	int err;
++
++	err = logfs_get_dd(dir, dentry, dd, &pos);
++	if (err)
++		return err;
++	dd->ino = cpu_to_be64(inode->i_ino);
++	dd->type = logfs_type(inode);
++
++	err = write_dir(dir, dd, pos, ta);
++	if (err)
++		return err;
++	return write_inode(dir);
 +}
 +
-+#define LOGFS_BUG(sb) do {					\
-+	struct super_block *__sb = sb;				\
-+	logfs_crash_dump(__sb);					\
-+	logfs_super(__sb)->s_flags |= LOGFS_SB_FLAG_RO;		\
-+	BUG();							\
-+} while (0)
-+
-+#define LOGFS_BUG_ON(condition, sb) \
-+	do { if (unlikely(condition)) LOGFS_BUG((sb)); } while (0)
-+
-+static inline __be32 logfs_crc32(void *data, size_t len, size_t skip)
++/* Target dentry exists - the worst case.  We need to attach the source
++ * inode to the target dentry, then remove the orphaned target inode and
++ * source dentry.
++ */
++static int logfs_rename_target(struct inode *old_dir, struct dentry *old_dentry,
++			       struct inode *new_dir, struct dentry *new_dentry)
 +{
-+	return cpu_to_be32(crc32(~0, data+skip, len-skip));
++	struct logfs_super *super = logfs_super(old_dir->i_sb);
++	struct inode *old_inode = old_dentry->d_inode;
++	struct inode *new_inode = new_dentry->d_inode;
++	int isdir = S_ISDIR(old_inode->i_mode);
++	struct logfs_disk_dentry dd;
++	struct logfs_transaction *ta;
++	loff_t pos;
++	int err;
++
++	BUG_ON(isdir != S_ISDIR(new_inode->i_mode));
++	if (isdir) {
++		if (!logfs_empty_dir(new_inode))
++			return -ENOTEMPTY;
++	}
++
++	/* 1. locate source dd */
++	err = logfs_get_dd(old_dir, old_dentry, &dd, &pos);
++	if (err)
++		return err;
++
++	ta = kzalloc(sizeof(*ta), GFP_KERNEL);
++	if (!ta)
++		return -ENOMEM;
++
++	ta->state = TARGET_RENAME_1;
++	ta->dir = old_dir->i_ino;
++	ta->pos = pos;
++	ta->ino = new_inode->i_ino;
++
++	/* 2. attach source inode to target dd */
++	mutex_lock(&super->s_dirop_mutex);
++	err = logfs_replace_inode(new_dir, new_dentry, &dd, old_inode, ta);
++	if (err) {
++		super->s_rename_dir = 0;
++		super->s_rename_pos = 0;
++		super->s_victim_ino = 0;
++		abort_transaction(new_dir, ta);
++		goto out;
++	}
++
++	/* 3. remove source dd */
++	ta->state = TARGET_RENAME_2;
++	err = logfs_delete_dd(old_dir, &dd, pos, ta);
++	if (!err)
++		err = write_inode(old_dir);
++	LOGFS_BUG_ON(err, old_dir->i_sb);
++
++	/* 4. remove target inode */
++	ta->state = TARGET_RENAME_3;
++	logfs_inode(new_inode)->li_transaction = ta;
++	err = logfs_remove_inode(new_inode);
++
++out:
++	mutex_unlock(&super->s_dirop_mutex);
++	return err;
 +}
 +
-+static inline u8 logfs_type(struct inode *inode)
++static int logfs_rename(struct inode *old_dir, struct dentry *old_dentry,
++			struct inode *new_dir, struct dentry *new_dentry)
 +{
-+	return (inode->i_mode >> 12) & 15;
++	if (new_dentry->d_inode)
++		return logfs_rename_target(old_dir, old_dentry,
++					   new_dir, new_dentry);
++	else if (old_dir == new_dir)
++		return logfs_rename_local(old_dir, old_dentry, new_dentry);
++	return logfs_rename_cross(old_dir, old_dentry, new_dir, new_dentry);
 +}
 +
-+static inline pgoff_t logfs_index(struct super_block *sb, u64 pos)
-+{
-+	return pos >> sb->s_blocksize_bits;
-+}
-+
-+static inline u64 dev_ofs(struct super_block *sb, u32 segno, u32 ofs)
-+{
-+	return ((u64)segno << logfs_super(sb)->s_segshift) + ofs;
-+}
-+
-+static inline int device_read(struct super_block *sb, u32 segno, u32 ofs,
-+		size_t len, void *buf)
++/* No locking done here, as this is called before .get_sb() returns. */
++int logfs_replay_journal(struct super_block *sb)
 +{
 +	struct logfs_super *super = logfs_super(sb);
++	struct logfs_disk_dentry dd;
++	struct inode *inode;
++	u64 ino, pos;
++	int err;
 +
-+	return super->s_devops->read(sb, dev_ofs(sb, segno, ofs), len, buf);
++	if (super->s_victim_ino) {
++		/* delete victim inode */
++		ino = super->s_victim_ino;
++		printk(KERN_INFO"LogFS: delete unmapped inode #%llx\n", ino);
++		inode = iget(sb, ino);
++		if (!inode)
++			goto fail;
++
++		LOGFS_BUG_ON(i_size_read(inode) > 0, sb);
++		super->s_victim_ino = 0;
++		err = logfs_remove_inode(inode);
++		iput(inode);
++		if (err) {
++			super->s_victim_ino = ino;
++			goto fail;
++		}
++	}
++	if (super->s_rename_dir) {
++		/* delete old dd from rename */
++		ino = super->s_rename_dir;
++		pos = super->s_rename_pos;
++		printk(KERN_INFO"LogFS: delete unbacked dentry (%llx, %llx)\n",
++				ino, pos);
++		inode = iget(sb, ino);
++		if (!inode)
++			goto fail;
++
++		super->s_rename_dir = 0;
++		super->s_rename_pos = 0;
++		err = logfs_delete_dd(inode, &dd, pos, NULL);
++		iput(inode);
++		if (err) {
++			super->s_rename_dir = ino;
++			super->s_rename_pos = pos;
++			goto fail;
++		}
++	}
++	return 0;
++fail:
++	LOGFS_BUG(sb);
++	return -EIO;
 +}
 +
-+static inline struct logfs_block *logfs_block(struct page *page)
-+{
-+	return (void *)page->private;
-+}
++const struct inode_operations logfs_symlink_iops = {
++	.readlink	= generic_readlink,
++	.follow_link	= page_follow_link_light,
++};
 +
-+#endif
++const struct inode_operations logfs_dir_iops = {
++	.create		= logfs_create,
++	.link		= logfs_link,
++	.lookup		= logfs_lookup,
++	.mkdir		= logfs_mkdir,
++	.mknod		= logfs_mknod,
++	.rename		= logfs_rename,
++	.rmdir		= logfs_rmdir,
++	.permission	= logfs_permission,
++	.symlink	= logfs_symlink,
++	.unlink		= logfs_unlink,
++};
++const struct file_operations logfs_dir_fops = {
++	.fsync		= logfs_fsync,
++	.ioctl		= logfs_ioctl,
++	.readdir	= logfs_readdir,
++	.read		= generic_read_dir,
++};
 
