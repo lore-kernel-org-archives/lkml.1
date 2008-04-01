@@ -1,72 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756997AbYDAM50@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756639AbYDAND2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756997AbYDAM50 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Apr 2008 08:57:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752937AbYDAM5S
+	id S1756639AbYDAND2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Apr 2008 09:03:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752937AbYDANDT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Apr 2008 08:57:18 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:59161 "EHLO
-	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753177AbYDAM5S (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Apr 2008 08:57:18 -0400
-Date: Tue, 1 Apr 2008 14:57:52 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: kernel list <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>,
-       Trivial patch monkey <trivial@kernel.org>, marcel@holtmann.org,
-       maxk@qualcomm.com
-Subject: hci_usb: do not initialize static variables to 0
-Message-ID: <20080401125752.GA13779@elf.ucw.cz>
+	Tue, 1 Apr 2008 09:03:19 -0400
+Received: from mail1.perex.cz ([212.20.107.53]:38549 "EHLO mail1.perex.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752047AbYDANDS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Apr 2008 09:03:18 -0400
+X-Greylist: delayed 1743 seconds by postgrey-1.27 at vger.kernel.org; Tue, 01 Apr 2008 09:03:18 EDT
+Date: Tue, 1 Apr 2008 14:34:08 +0200 (CEST)
+From: Jaroslav Kysela <perex@perex.cz>
+X-X-Sender: perex@tm8103.perex-int.cz
+To: Pavel Machek <pavel@ucw.cz>
+cc: Andrew Morton <akpm@osdl.org>, Trivial patch monkey <trivial@kernel.org>,
+       Takashi Iwai <tiwai@suse.de>,
+       kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: fix comments in sound/core.h (fwd)
+In-Reply-To: <20080401114011.GA10887@elf.ucw.cz>
+Message-ID: <Pine.LNX.4.61.0804011433300.21832@tm8103.perex-int.cz>
+References: <20080401114011.GA10887@elf.ucw.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 1 Apr 2008, Pavel Machek wrote:
 
-hci_usb: do not initialize static variables to 0.
+> Do we have sound maintainers? Noone replies on trivial patches :-(.
 
-Signed-off-by: Pavel Machek <pavel@suse.cz>
+Applied to ALSA repository. Thanks.
 
----
-commit 3bd38b1d2beb30823cb19d8757ee3cd820b49e31
-tree d1a0562090a5941ab5ef7a3134213667b23cd089
-parent 45877d60f059a6a98edb541092eaaabfc93e4efc
-author Pavel <pavel@amd.ucw.cz> Tue, 01 Apr 2008 14:57:03 +0200
-committer Pavel <pavel@amd.ucw.cz> Tue, 01 Apr 2008 14:57:03 +0200
+					Jaroslav
 
- drivers/bluetooth/hci_usb.c |   14 +++++++-------
- 1 files changed, 7 insertions(+), 7 deletions(-)
+> ----- Forwarded message from Pavel Machek <pavel@suse.cz> -----
+> 
+> From: Pavel Machek <pavel@suse.cz>
+> To: perex@perex.cz, kernel list <linux-kernel@vger.kernel.org>,
+> 	Trivial patch monkey <trivial@kernel.org>, tiwai@suse.de
+> Subject: fix comments in sound/core.h
+> X-Warning: Reading this can be dangerous to your mental health.
+> 
+> 
+> Two sentences seem to be spliced into one in comment, fix that and fix
+> english. Also fix codingstyle.
+> 
+> Signed-off-by: Pavel Machek <pavel@suse.cz> 
+> 
+> diff --git a/include/sound/core.h b/include/sound/core.h
+> index 4fc0235..452000d 100644
+> --- a/include/sound/core.h
+> +++ b/include/sound/core.h
+> @@ -310,7 +310,7 @@ int snd_card_file_add(struct snd_card *c
+>  int snd_card_file_remove(struct snd_card *card, struct file *file);
+>  
+>  #ifndef snd_card_set_dev
+> -#define snd_card_set_dev(card,devptr) ((card)->dev = (devptr))
+> +#define snd_card_set_dev(card, devptr) ((card)->dev = (devptr))
+>  #endif
+>  
+>  /* device.c */
+> @@ -373,7 +373,7 @@ #ifdef CONFIG_SND_VERBOSE_PRINTK
+>   * snd_printd - debug printk
+>   * @fmt: format string
+>   *
+> - * Compiled only when Works like snd_printk() for debugging purpose.
+> + * Works like snd_printk() for debugging purposes.
+>   * Ignored when CONFIG_SND_DEBUG is not set.
+>   */
+>  #define snd_printd(fmt, args...) \
+> @@ -417,7 +417,7 @@ #ifdef CONFIG_SND_DEBUG_DETECT
+>   * snd_printdd - debug printk
+>   * @format: format string
+>   *
+> - * Compiled only when Works like snd_printk() for debugging purpose.
+> + * Works like snd_printk() for debugging purposes.
+>   * Ignored when CONFIG_SND_DEBUG_DETECT is not set.
+>   */
+>  #define snd_printdd(format, args...) snd_printk(format, ##args)
+> 
+> -- 
+> (english) http://www.livejournal.com/~pavelmachek
+> (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+> 
+> 
+> ----- End forwarded message -----
+> 
+> -- 
+> (english) http://www.livejournal.com/~pavelmachek
+> (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+> 
 
-diff --git a/drivers/bluetooth/hci_usb.c b/drivers/bluetooth/hci_usb.c
-index 8b884f8..99a714a 100644
---- a/drivers/bluetooth/hci_usb.c
-+++ b/drivers/bluetooth/hci_usb.c
-@@ -62,13 +62,13 @@ #undef  URB_ZERO_PACKET
- #define URB_ZERO_PACKET 0
- #endif
- 
--static int ignore = 0;
--static int ignore_dga = 0;
--static int ignore_csr = 0;
--static int ignore_sniffer = 0;
--static int disable_scofix = 0;
--static int force_scofix = 0;
--static int reset = 0;
-+static int ignore;
-+static int ignore_dga;
-+static int ignore_csr;
-+static int ignore_sniffer;
-+static int disable_scofix;
-+static int force_scofix;
-+static int reset;
- 
- #ifdef CONFIG_BT_HCIUSB_SCO
- static int isoc = 2;
+-----
+Jaroslav Kysela <perex@perex.cz>
+Linux Kernel Sound Maintainer
+ALSA Project, Red Hat, Inc.
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
