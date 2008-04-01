@@ -1,52 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760556AbYDAUcT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759893AbYDAUgw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760556AbYDAUcT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Apr 2008 16:32:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758433AbYDAUcF
+	id S1759893AbYDAUgw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Apr 2008 16:36:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757031AbYDAUgm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Apr 2008 16:32:05 -0400
-Received: from gherkin.frus.com ([192.158.254.49]:58314 "EHLO gherkin.frus.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758884AbYDAUcE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Apr 2008 16:32:04 -0400
-Subject: Re: [alsa-devel] [regression] 2.6.25-rc4 snd-es18xx broken on Alpha
-In-Reply-To: <47F28805.8030502@gmail.com> "from Rene Herman at Apr 1, 2008 09:07:49
- pm"
-To: Rene Herman <rene.herman@gmail.com>
-Date: Tue, 1 Apr 2008 15:32:01 -0500 (CDT)
-CC: Tyson Whitehead <twhitehe@uwo.ca>, Bob Tracy <rct@frus.com>,
-       Michael Cree <mcree@orcon.net.nz>, Takashi Iwai <tiwai@suse.de>,
-       ALSA devel <alsa-devel@alsa-project.org>, linux-kernel@vger.kernel.org,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>, linux-alpha@vger.kernel.org,
-       Krzysztof Helt <krzysztof.h1@wp.pl>
-X-Mailer: ELM [version 2.4ME+ PL82 (25)]
-MIME-Version: 1.0
+	Tue, 1 Apr 2008 16:36:42 -0400
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:38503 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756131AbYDAUgl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Apr 2008 16:36:41 -0400
+Subject: [GIT PATCH] SCSI fixes for 2.6.25-rc8
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Tue, 01 Apr 2008 15:36:37 -0500
+Message-Id: <1207082197.3100.26.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-3.fc8) 
 Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset=US-ASCII
-Message-Id: <20080401203201.12B1EDBA2@gherkin.frus.com>
-From: rct@frus.com (Bob Tracy)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rene Herman wrote:
-> On 01-04-08 20:34, Rene Herman wrote:
-> 
-> > On 01-04-08 20:07, Tyson Whitehead wrote:
-> > 
-> >> Hope this helps.
-> > 
-> > Not really no.
-> 
-> Sorry for the multiple copies; my ISP is crashing again.
-> 
-> Rene.
+This patch constitutes three bug fixes (the reversion of the BSG queue
+fix is the most serious; without it we're getting eventual corruption in
+systems).  The other two fix error legs or misleading reporting.  The
+remaining 8 patches are all updates to the mvsas driver which was a late
+addition at the -rc1 phase, so while they're not truly bug fixes, they
+are enhancements to make that unreleased driver more roubust for 2.6.25.
 
-And here I was, thinking you were giving us a *really* strong hint that
-you would like one of us to ship you an Alpha to play with :-).
+The patch is here:
 
--- 
-------------------------------------------------------------------------
-Bob Tracy          |  "I was a beta tester for dirt.  They never did
-rct@frus.com       |   get all the bugs out." - Steve McGrew on /.
-------------------------------------------------------------------------
+master.kernel.org:/pub/scm/linux/kernel/git/jejb/scsi-rc-fixes-2.6.git
+
+The short changelog is:
+
+James Bottomley (2):
+      libsas: Warn if ATA device detected but CONFIG_SCSI_SAS_ATA not set
+      Revert " fix bsg queue oops with iscsi logout"
+
+James Smart (1):
+      hosts.c: fixes for "no error" reported after error scenarios
+
+Ke Wei (8):
+      mvsas: check subsystem id
+      mvsas: get phy info.
+      mvsas: fix the buffer of rx DMA overflow bug
+      mvsas: retry aborting task.
+      mvsas: check hd whether unplugged
+      mvsas : interrupt handling
+      mvsas: a tag handler implementation
+      mvsas: fill in error info record and phy mode6 bits.
+
+and the diffstat:
+
+ drivers/scsi/hosts.c               |   16 
+ drivers/scsi/libsas/sas_discover.c |    5 
+ drivers/scsi/mvsas.c               |  711 +++++++++++++++++++++++++------------
+ drivers/scsi/scsi_sysfs.c          |    2 
+ 4 files changed, 497 insertions(+), 237 deletions(-)
+
+James
+
+
