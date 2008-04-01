@@ -1,165 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759515AbYDATY5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759228AbYDAT2a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759515AbYDATY5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Apr 2008 15:24:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757565AbYDATYg
+	id S1759228AbYDAT2a (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Apr 2008 15:28:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756507AbYDAT2V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Apr 2008 15:24:36 -0400
-Received: from yw-out-2324.google.com ([74.125.46.31]:24158 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757053AbYDATYe (ORCPT
+	Tue, 1 Apr 2008 15:28:21 -0400
+Received: from rn-out-0910.google.com ([64.233.170.185]:48817 "EHLO
+	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754861AbYDAT2U (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Apr 2008 15:24:34 -0400
+	Tue, 1 Apr 2008 15:28:20 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=JSgCcCA+DdfF1L8OlAKP0aouiQ8YzUqNqCkmnVeUjhIeGQEZ6J0cBMXgL7Q/VXdG3DnVsAGdrt4CT6WEDSOPXhZxl1k8NycoD1eqMPb67vDkdhLyhuNy6ORwykUeQGhEkyv4VkBNOBY+cLFSscGLqYvCHiItoil78Thqf8EhN/4=
-Subject: [PATCH 2/2] audit: fix sparse shadowed variable warnings
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Al Viro <viro@ZenIV.linux.org.uk>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Tue, 01 Apr 2008 12:24:30 -0700
-Message-Id: <1207077870.12466.18.camel@brick>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=BkcI3KjS5/9aVL44TpLo3+XqviXNaTu5Q2aPDdYKu4CvjOFCQxqk6nbrn7NRGRp2ym9kXDc2P4ScRELtbn9sDrS6oWKu03/pMPpUlb3yjpJzilVNYQm53SXR+BZxBrcac6BMdgMq/k2AIylhMIroBCVoln9pRukTXMjnzx5XEI0=
+Message-ID: <47F28CB8.6060305@gmail.com>
+Date: Tue, 01 Apr 2008 14:27:52 -0500
+From: Roger Heflin <rogerheflin@gmail.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+MIME-Version: 1.0
+To: Tejun Heo <htejun@gmail.com>
+CC: Hans-Peter Jansen <hpj@urpla.net>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org
+Subject: Re: 2.6.24.3: regular sata drive resets - worrisome?
+References: <200803201518.32109.hpj@urpla.net> <200803300114.40096.hpj@urpla.net> <47EEE4BF.5080609@gmail.com> <200803301400.10766.hpj@urpla.net> <47EF8A65.1010005@gmail.com> <47F06987.2060208@gmail.com>
+In-Reply-To: <47F06987.2060208@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use msglen as the identifier.
-kernel/audit.c:724:10: warning: symbol 'len' shadows an earlier one
-kernel/audit.c:575:8: originally declared here
+Tejun Heo wrote:
+>>> I can offer to you rebuilding that md in a test environment, and 
+>>> giving you access to it, if you're interested.
+> 
+> Can you hook up those failed drives to a different controller?  Say, 
+> ahci or ata_piix and put them under write load (ext3 w/ barrier=1 and 
+> copying lots of files into it should work) and see whether the problem 
+> reproduces?
 
-Don't use ino_f to check the inode field at the end of the functions.
-kernel/auditfilter.c:429:22: warning: symbol 'f' shadows an earlier one
-kernel/auditfilter.c:420:21: originally declared here
-kernel/auditfilter.c:542:22: warning: symbol 'f' shadows an earlier one
-kernel/auditfilter.c:529:21: originally declared here
+I can move switch the disks to a sata_promise controller, I also have a sata_via 
+controller but I cannot get those disks to work at all on it (it initially sees 
+the disk, but does not finish init).
 
-i always used as a counter for a for loop and initialized to zero before
-use.  Eliminate the inner i variables.
-kernel/auditsc.c:1295:8: warning: symbol 'i' shadows an earlier one
-kernel/auditsc.c:1152:6: originally declared here
-kernel/auditsc.c:1320:7: warning: symbol 'i' shadows an earlier one
-kernel/auditsc.c:1152:6: originally declared here
+I don't on the machine that those disks are on have any other sata controllers.
 
-Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
----
- kernel/audit.c       |   10 +++++-----
- kernel/auditfilter.c |   18 +++++++++---------
- kernel/auditsc.c     |    2 --
- 3 files changed, 14 insertions(+), 16 deletions(-)
+> 
+>> Here are the errors I get, though look at it closer, I am don't appear 
+>> to be getting the reset, just this error from time to time:
+>>
+>> sd 9:0:0:0: [sde] 976773168 512-byte hardware sectors (500108 MB)
+>> sd 9:0:0:0: [sde] Write Protect is off
+>> sd 9:0:0:0: [sde] Mode Sense: 00 3a 00 00
+>> sd 9:0:0:0: [sde] Write cache: enabled, read cache: enabled, doesn't 
+>> support DPO or FUA
+>> ata8.00: exception Emask 0x0 SAct 0x0 SErr 0x280000 action 0x0
+>> ata8.00: BMDMA2 stat 0x687d8009
+>> ata8.00: cmd 25/00:80:a7:00:1d/00:01:1d:00:00/e0 tag 0 cdb 0x0 data 
+>> 196608 in
+>>          res 51/04:8f:98:01:1d/00:00:1d:00:00/f0 Emask 0x1 (device error)
+>> ata8.00: configured for UDMA/100
+> 
+> That's device abort error on read.  The drive just can't read sector one 
+> of the requested sectors and it's not sata_sil24.  It's a bmdma one.
+> 
+>> I have 4 identical disks, with all 4 connected to the SIL controller 
+>> all give some errors, moving 2 of the disks to a promise controller 
+>> makes the errors go away on the 2 connected to the promise 
+>> controller.   All drives are part of a software raid5 array.
+> 
+> Ah.. okay, sata_sil.  Roger, the moving and errors are not very likely 
+> to have anything to do with each other.  The only possibility is 
+> transmission problems but the drive didn't report transport error (ICRC) 
+> and it's more likely that the drive was experiencing temporary failures. 
+>  It's also possible that the drive set ABRT although there was some 
+> problem with the transport tho.
+> 
+> If you move the drive back to the sata_sil, do those problems appear 
+> again?  Anyways, this doesn't really have anything to do with what Hans 
+> is seeing.
 
-diff --git a/kernel/audit.c b/kernel/audit.c
-index b782b04..a4c36ed 100644
---- a/kernel/audit.c
-+++ b/kernel/audit.c
-@@ -721,21 +721,21 @@ static int audit_receive_msg(struct sk_buff *skb, struct nlmsghdr *nlh)
- 	case AUDIT_MAKE_EQUIV: {
- 		void *bufp = data;
- 		u32 sizes[2];
--		size_t len = nlmsg_len(nlh);
-+		size_t msglen = nlmsg_len(nlh);
- 		char *old, *new;
- 
- 		err = -EINVAL;
--		if (len < 2 * sizeof(u32))
-+		if (msglen < 2 * sizeof(u32))
- 			break;
- 		memcpy(sizes, bufp, 2 * sizeof(u32));
- 		bufp += 2 * sizeof(u32);
--		len -= 2 * sizeof(u32);
--		old = audit_unpack_string(&bufp, &len, sizes[0]);
-+		msglen -= 2 * sizeof(u32);
-+		old = audit_unpack_string(&bufp, &msglen, sizes[0]);
- 		if (IS_ERR(old)) {
- 			err = PTR_ERR(old);
- 			break;
- 		}
--		new = audit_unpack_string(&bufp, &len, sizes[1]);
-+		new = audit_unpack_string(&bufp, &msglen, sizes[1]);
- 		if (IS_ERR(new)) {
- 			err = PTR_ERR(new);
- 			kfree(old);
-diff --git a/kernel/auditfilter.c b/kernel/auditfilter.c
-index 0c63577..587c893 100644
---- a/kernel/auditfilter.c
-+++ b/kernel/auditfilter.c
-@@ -417,7 +417,7 @@ exit_err:
- static struct audit_entry *audit_rule_to_entry(struct audit_rule *rule)
- {
- 	struct audit_entry *entry;
--	struct audit_field *f;
-+	struct audit_field *ino_f;
- 	int err = 0;
- 	int i;
- 
-@@ -499,9 +499,9 @@ static struct audit_entry *audit_rule_to_entry(struct audit_rule *rule)
- 		}
- 	}
- 
--	f = entry->rule.inode_f;
--	if (f) {
--		switch(f->op) {
-+	ino_f = entry->rule.inode_f;
-+	if (ino_f) {
-+		switch(ino_f->op) {
- 		case AUDIT_NOT_EQUAL:
- 			entry->rule.inode_f = NULL;
- 		case AUDIT_EQUAL:
-@@ -526,7 +526,7 @@ static struct audit_entry *audit_data_to_entry(struct audit_rule_data *data,
- {
- 	int err = 0;
- 	struct audit_entry *entry;
--	struct audit_field *f;
-+	struct audit_field *ino_f;
- 	void *bufp;
- 	size_t remain = datasz - sizeof(struct audit_rule_data);
- 	int i;
-@@ -539,7 +539,7 @@ static struct audit_entry *audit_data_to_entry(struct audit_rule_data *data,
- 	bufp = data->buf;
- 	entry->rule.vers_ops = 2;
- 	for (i = 0; i < data->field_count; i++) {
--		struct audit_field *f = &entry->rule.fields[i];
-+		audit_field *f = &entry->rule.fields[i];
- 
- 		err = -EINVAL;
- 		if (!(data->fieldflags[i] & AUDIT_OPERATORS) ||
-@@ -654,9 +654,9 @@ static struct audit_entry *audit_data_to_entry(struct audit_rule_data *data,
- 		}
- 	}
- 
--	f = entry->rule.inode_f;
--	if (f) {
--		switch(f->op) {
-+	ino_f = entry->rule.inode_f;
-+	if (ino_f) {
-+		switch(ino_f->op) {
- 		case AUDIT_NOT_EQUAL:
- 			entry->rule.inode_f = NULL;
- 		case AUDIT_EQUAL:
-diff --git a/kernel/auditsc.c b/kernel/auditsc.c
-index 12e7183..16c3abd 100644
---- a/kernel/auditsc.c
-+++ b/kernel/auditsc.c
-@@ -1292,7 +1292,6 @@ static void audit_log_exit(struct audit_context *context, struct task_struct *ts
- 			break; }
- 
- 		case AUDIT_SOCKETCALL: {
--			int i;
- 			struct audit_aux_data_socketcall *axs = (void *)aux;
- 			audit_log_format(ab, "nargs=%d", axs->nargs);
- 			for (i=0; i<axs->nargs; i++)
-@@ -1317,7 +1316,6 @@ static void audit_log_exit(struct audit_context *context, struct task_struct *ts
- 
- 	for (aux = context->aux_pids; aux; aux = aux->next) {
- 		struct audit_aux_data_pids *axs = (void *)aux;
--		int i;
- 
- 		for (i = 0; i < axs->pid_count; i++)
- 			if (audit_log_pid_context(context, axs->target_pid[i],
--- 
-1.5.5.rc1.135.g8527
+I can swap the disk around next time I reboot the machine, the 2 on the promise 
+will go to the sil and the 2 on the sil will go to the promise, from past 
+testing I expect the disk on the sil to have the errors and the ones on the 
+promise to not have errors.
 
+After I looked at the error more carefully and I though that too, I had 
+originally thought I was getting resets also but I was wrong on that.
+
+                       Roger
