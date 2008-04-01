@@ -1,66 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757763AbYDAKxl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758531AbYDAKz2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757763AbYDAKxl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Apr 2008 06:53:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756743AbYDAKxe
+	id S1758531AbYDAKz2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Apr 2008 06:55:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756838AbYDAKzO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Apr 2008 06:53:34 -0400
-Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:44150
-	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756742AbYDAKxd (ORCPT
+	Tue, 1 Apr 2008 06:55:14 -0400
+Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:59969 "EHLO
+	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756743AbYDAKzM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Apr 2008 06:53:33 -0400
-Date: Tue, 1 Apr 2008 12:53:31 +0200
-From: Andrea Arcangeli <andrea@qumranet.com>
-To: Andrew Morton <akpm@osdl.org>, Yang Shi <yang.shi@windriver.com>
-Cc: linux-kernel@vger.kernel.org, kvm-devel@lists.sourceforge.net,
-       Jens Axboe <axboe@kernel.dk>
-Subject: Re: regression breaks lowmem reserved RAM
-Message-ID: <20080401105331.GH12427@duo.random>
-References: <20080328194909.GA10617@duo.random>
+	Tue, 1 Apr 2008 06:55:12 -0400
+Message-Id: <2530BB4B166747659C8F65C9C3DE7CFB@nsl.ad.nec.co.jp>
+From: "Takashi Sato" <t-sato@yk.jp.nec.com>
+To: "David Chinner" <dgc@sgi.com>
+Cc: "David Chinner" <dgc@sgi.com>, <linux-ext4@vger.kernel.org>,
+       <linux-fsdevel@vger.kernel.org>, <xfs@oss.sgi.com>,
+       <dm-devel@redhat.com>, <linux-kernel@vger.kernel.org>
+References: <20080328180736t-sato@mail.jp.nec.com> <20080331000057.GI108924158@sgi.com>
+In-Reply-To: <20080331000057.GI108924158@sgi.com>
+Subject: Re: [RFC PATCH 2/2] Add timeout feature
+Date: Tue, 1 Apr 2008 19:54:42 +0900
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080328194909.GA10617@duo.random>
+Content-Type: text/plain;
+	format=flowed;
+	charset="iso-8859-1";
+	reply-type=original
+Content-Transfer-Encoding: 7bit
+X-Priority: 3
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Windows Mail 6.0.6000.16480
+X-MimeOLE: Produced By Microsoft MimeOLE V6.0.6000.16545
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Looking a bit closer into this regression the reason this can't be
-right is that dma_addr common default is BLK_BOUNCE_HIGH and most
-machines have less than 4G. So if you do:
+Hi,
 
-    if (b_pfn <= (min_t(u64, 0xffffffff, BLK_BOUNCE_HIGH) >> PAGE_SHIFT))
-	dma = 1
+David Chinner wrote:
+> The timeout is not for the freeze operation - the timeout is
+> only set up once the freeze is complete. i.e:
+>
+> $ time sudo ~/test_src/xfs_io -f -x -c 'gfreeze 10' /mnt/scratch/test
+> freezing with level = 10
+>
+> real    0m23.204s
+> user    0m0.008s
+> sys     0m0.012s
+>
+> The freeze takes 23s, and then the 10s timeout is started. So
+> this timeout does not protect against freeze_bdev() hangs at all.
+> All it does is introduce silent unfreezing of the block device that
+> can not be synchronised with the application that is operating
+> on the frozen device.
 
-that will translate to:
+Exactly my timeout feature is only for an application, not for freeze_bdev().
+I think it is needed for the situation we can't unfreeze from userspace.
+(e.g. Freezing the root filesystem)
 
-     if (BLK_BOUNCE_HIGH <= BLK_BOUNCE_HIGH)
-     	dma = 1
+> FWIW, resetting this timeout from userspace is unreliable - there's
+> no guarantee that under load your userspace process will get to run
+> again inside the timeout to reset it, hence leaving you with a
+> unfrozen filesystem when you really want it frozen...
 
-So for 99% of hardware this will trigger unnecessary GFP_DMA
-allocations and isa pooling operations.
+The timeout period specified to the reset ioctl should be much larger than
+the interval for calling the reset ioctl repeatedly.
+(e.g timeout period = 2 minutes, calling interval = 5 seconds)
+The reset ioctl will work under such setting.
+If a timeout still occurs before a reset, it would imply that an unexpected
+problem (e.g. deadlock) occur in an application.
 
-Also note how the 32bit code still does b_pfn < blk_max_low_pfn.
-
-I guess this is what you were looking after. I didn't verify but as
-far as I can tell, this will stop the regression with isa dma
-operations at boot for 99% of blkdev/memory combinations out there and
-I guess this fixes the setups with >4G of ram and 32bit pci cards as
-well (this also retains symmetry with the 32bit code).
-
-Signed-off-by: Andrea Arcangeli <andrea@qumranet.com>
-
-diff --git a/block/blk-settings.c b/block/blk-settings.c
-index 1344a0e..5713f7e 100644
---- a/block/blk-settings.c
-+++ b/block/blk-settings.c
-@@ -140,7 +140,7 @@ void blk_queue_bounce_limit(struct request_queue *q, u64 dma_addr)
- 	/* Assume anything <= 4GB can be handled by IOMMU.
- 	   Actually some IOMMUs can handle everything, but I don't
- 	   know of a way to test this here. */
--	if (b_pfn <= (min_t(u64, 0xffffffff, BLK_BOUNCE_HIGH) >> PAGE_SHIFT))
-+	if (b_pfn < (min_t(u64, 0x100000000UL, BLK_BOUNCE_HIGH) >> PAGE_SHIFT))
- 		dma = 1;
- 	q->bounce_pfn = max_low_pfn;
- #else
+Cheers, Takashi 
