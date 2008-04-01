@@ -1,59 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753082AbYDAAkt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754176AbYDAAlU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753082AbYDAAkt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Mar 2008 20:40:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751380AbYDAAkj
+	id S1754176AbYDAAlU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Mar 2008 20:41:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753441AbYDAAlA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Mar 2008 20:40:39 -0400
-Received: from styx.suse.cz ([82.119.242.94]:43827 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751309AbYDAAki (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Mar 2008 20:40:38 -0400
-Date: Tue, 1 Apr 2008 02:40:37 +0200 (CEST)
-From: Jiri Kosina <jkosina@suse.cz>
-To: Ingo Molnar <mingo@elte.hu>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: spinlocks -- why are releases inlined and acquires are not?
-In-Reply-To: <Pine.LNX.4.64.0804010202390.5541@jikos.suse.cz>
-Message-ID: <Pine.LNX.4.64.0804010236110.5541@jikos.suse.cz>
-References: <Pine.LNX.4.64.0804010202390.5541@jikos.suse.cz>
+	Mon, 31 Mar 2008 20:41:00 -0400
+Received: from g1t0027.austin.hp.com ([15.216.28.34]:1838 "EHLO
+	g1t0027.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753424AbYDAAk6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 31 Mar 2008 20:40:58 -0400
+Date: Mon, 31 Mar 2008 18:40:53 -0600
+From: Alex Chiang <achiang@hp.com>
+To: David Miller <davem@davemloft.net>, chris.mason@oracle.com,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       btrfs-devel@oss.oracle.com
+Subject: Re: [ANNOUNCE] Btrfs v0.13
+Message-ID: <20080401004053.GF2362@ldl.fc.hp.com>
+Mail-Followup-To: Alex Chiang <achiang@hp.com>,
+	David Miller <davem@davemloft.net>, chris.mason@oracle.com,
+	linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+	btrfs-devel@oss.oracle.com
+References: <200802211609.50563.chris.mason@oracle.com> <20080331202633.GA341@ldl.fc.hp.com> <20080331.134510.126138884.davem@davemloft.net> <20080331224710.GC2362@ldl.fc.hp.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080331224710.GC2362@ldl.fc.hp.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 1 Apr 2008, Jiri Kosina wrote:
+* Alex Chiang <achiang@hp.com>:
+> * David Miller <davem@davemloft.net>:
+> > From: Alex Chiang <achiang@hp.com>
+> > Date: Mon, 31 Mar 2008 14:26:33 -0600
+> > 
+> > > I've gotten as far as successfully creating a btrfs filesystem
+> > > (at least that's what btrfsck tells me), but haven't been able to
+> > > mount it yet, probably because of the sector size issue.
+> > 
+> > You should be able to make a filesystem with a sector
+> > size >= PAGE_SIZE and it should work just fine.  Please
+> > give it a try.
+> 
+> So, using the patch from my last mail, I created a btrfs, but was
+> unable to mount it...
 
-> What is the reason for this asymetry? Shouldn't the acquiring functions 
-> be implemented in the very same way? Or at least, shouldn't all the 
-> __lockfunc functions be inlined?
+It turns out I am an idiot.
 
-i.e. is there any particular reason why we don't have something like the 
-patch below (implemented for all the lock variants of course, this is 
-just to demonstrate what I mean)?
+At some point, I got confused which btrfs trees I was working in,
+and gotten switched up to where I had insmod'ed btrfs v0.13, but
+was trying to mount a filesystem created with
+btrfs-progs-unstable. Of course, I got a version mismatch when it
+went to check for BTRFS_MAGIC and mount failed.
 
+Moving to btrfs-unstable allowed me to mount the filesystem.
 
-spinlocks: inline spin_lock() in non-debug cases
+[root@canola btrfs-unstable]# mount -t btrfs /dev/cciss/c2d1
+/mnt/btrfs
+scan one opens /dev/cciss/c2d1
+found device 1 on /dev/cciss/c2d1
+lowest devid now 1
+scan one closes bdev /dev/cciss/c2d1
+opening /dev/cciss/c2d1 devid 1
+lowest bdev /dev/cciss/c2d1
 
-inline spin_lock() in the non-debug case.
+Sorry for the noise.
 
-Signed-off-by: Jiri Kosina <jkosina@suse.cz>
+/ac
 
-diff --git a/include/linux/spinlock.h b/include/linux/spinlock.h
-index 576a5f7..30922ba 100644
---- a/include/linux/spinlock.h
-+++ b/include/linux/spinlock.h
-@@ -178,7 +178,12 @@ do {								\
- #define read_trylock(lock)		__cond_lock(lock, _read_trylock(lock))
- #define write_trylock(lock)		__cond_lock(lock, _write_trylock(lock))
- 
-+#if defined(CONFIG_DEBUG_SPINLOCK) || defined(CONFIG_PREEMPT) || \
-+	!defined(CONFIG_SMP)
- #define spin_lock(lock)			_spin_lock(lock)
-+#else
-+#define spin_lock(lock) \
-+	 do { __raw_spin_lock(&(lock)->raw_lock); __acquire(lock); } while (0)
- 
- #ifdef CONFIG_DEBUG_LOCK_ALLOC
- # define spin_lock_nested(lock, subclass) _spin_lock_nested(lock, subclass)
