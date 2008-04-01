@@ -1,86 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756746AbYDAHsT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756428AbYDAHvT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756746AbYDAHsT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Apr 2008 03:48:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755322AbYDAHr4
+	id S1756428AbYDAHvT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Apr 2008 03:51:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753623AbYDAHvD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Apr 2008 03:47:56 -0400
-Received: from wf-out-1314.google.com ([209.85.200.175]:58078 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754628AbYDAHrz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Apr 2008 03:47:55 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=jmQIwUIC0WJyHdEckADBrQ4fyDKarVhpRdOrEbjSxEAkHn+KmhX1kHhqeUfEHx8jd+VfKWcv8xBT1XAJpwjZ2Vgeq+RKb6MYQvY/KCAMT9xVizbkZIOnzcSELIehNA7ukTFHUyvxxrm1QDZWgpwYBdtRwoYHmlgTJ/ClAikBNh4=
-Message-ID: <45a44e480804010047m36a9b8e3p97910308ed5677fb@mail.gmail.com>
-Date: Tue, 1 Apr 2008 00:47:54 -0700
-From: "Jaya Kumar" <jayakumar.lkml@gmail.com>
-To: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
-Subject: Re: Clarifying platform_device_unregister
-Cc: "Linux Kernel Development" <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080401051947.GD18041@anvil.corenet.prv>
+	Tue, 1 Apr 2008 03:51:03 -0400
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:43934 "EHLO smtp6.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753253AbYDAHvB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Apr 2008 03:51:01 -0400
+Date: Tue, 1 Apr 2008 10:50:58 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: David Miller <davem@davemloft.net>
+Cc: rpjday@crashcourse.ca, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [2.6 patch] forgotten bits of Sangoma drivers removal
+Message-ID: <20080401075058.GF23259@cs181133002.pp.htv.fi>
+References: <20080330224901.GW28445@cs181133002.pp.htv.fi> <20080331.193329.195976331.davem@davemloft.net> <alpine.LFD.1.00.0803312313210.21490@localhost.localdomain> <20080331.201702.119420148.davem@davemloft.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-References: <45a44e480803311814q22bc85dbx9a7d128d84b7db08@mail.gmail.com>
-	 <20080401051947.GD18041@anvil.corenet.prv>
+In-Reply-To: <20080331.201702.119420148.davem@davemloft.net>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 31, 2008 at 10:19 PM, Dmitry Torokhov
-<dmitry.torokhov@gmail.com> wrote:
->  On Mon, Mar 31, 2008 at 09:14:35PM -0400, Jaya Kumar wrote:
->  >         mytest_device->dev.platform_data = &mydata;
->
->  Platform device code does kfree(pdev->dev.platform_data) unpon
->  unregistration, so it is not a good idea to assign address of
->  statically-allocated variable here. You should be using:
->
->         platform_device_add_data(mytest_device, &mydata, sizeof(mydata));
->
+On Mon, Mar 31, 2008 at 08:17:02PM -0700, David Miller wrote:
+> From: "Robert P. J. Day" <rpjday@crashcourse.ca>
+> Date: Mon, 31 Mar 2008 23:14:46 -0400 (EDT)
+> 
+> > On Mon, 31 Mar 2008, David Miller wrote:
+> > 
+> > > From: Adrian Bunk <bunk@kernel.org>
+> > > Date: Mon, 31 Mar 2008 01:49:01 +0300
+> > >
+> > > > Robert P. J. Day spotted that my removal of the Sangoma drivers missed a
+> > > > few bits.
+> > > >
+> > > > Signed-off-by: Adrian Bunk <bunk@kernel.org>
+> > >
+> > > I must have missed some context or another patch, but
+> > > linux/if_wanpipe.h is still there, so I can't see why
+> > > we can remove it from linux/Kbuild
+> > 
+> > AFAICT, nothing in the source tree includes that header file, so i'm
+> > guessing that the patch should also include simply deleting it if it
+> > has no further value.
+> 
+> Ok, that makes sense.
+> 
+> Adrian, if you agree, please respin your patch with that
+> modification.
 
-That's interesting. I noticed though that a lot of platform device
-code assigns a statically allocated structure to platform_data. For
-example:
+My patch already removes include/linux/if_wanpipe.h
 
-arch/arm/mach-pxa/corgi_pm.c
-static struct sharpsl_charger_machinfo corgi_pm_machinfo = {
-...
-}
-        corgipm_device->dev.platform_data = &corgi_pm_machinfo;
+> Thanks.
 
-same with spitz_pm.c.
+cu
+Adrian
 
-egrep "platform_data.*=.*\&" *.c shows quite a lot of users doing
-that. I guess most of these below are probably okay since these
-drivers can't be rmmoded.
+-- 
 
-corgi.c:                .platform_data  = &corgi_scoop_setup,
-corgi.c:                .platform_data  = &corgi_bl_machinfo,
-corgi.c:                .platform_data  = &corgi_ts_machinfo,
-corgi_lcd.c:            .platform_data = &corgi_fb_info,
-corgi_pm.c:     corgipm_device->dev.platform_data = &corgi_pm_machinfo;
-generic.c:              .platform_data  = &pxa_udc_info,
-lpd270.c:                       .platform_data  = &lpd270_flash_data[0],
-lpd270.c:                       .platform_data  = &lpd270_flash_data[1],
-lubbock.c:              .platform_data  = &pxa_ssp_master_info,
-lubbock.c:      .platform_data  = &ads_info,
-lubbock.c:                      .platform_data = &lubbock_flash_data[0],
-lubbock.c:                      .platform_data = &lubbock_flash_data[1],
-mainstone.c:    .dev            = { .platform_data = &mst_audio_ops },
-mainstone.c:                    .platform_data = &mst_flash_data[0],
-mainstone.c:                    .platform_data = &mst_flash_data[1],
-poodle.c:               .platform_data  = &poodle_scoop_setup,
-poodle.c:               .platform_data  = &poodle_ts_machinfo,
-spitz.c:                .platform_data  = &spitz_scoop_setup,
-spitz.c:                .platform_data  = &spitz_scoop2_setup,
-spitz.c:                .platform_data  = &spitz_bl_machinfo,
-spitz.c:                .platform_data  = &spitz_ts_machinfo,
-spitz_pm.c:     spitzpm_device->dev.platform_data = &spitz_pm_machinfo;
-tosa.c:                 .platform_data  = &tosa_scoop_setup,
-tosa.c:                 .platform_data  = &tosa_scoop_jc_setup,
-trizeps4.c:             .platform_data = &trizeps4_flash_data,
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
