@@ -1,125 +1,166 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759959AbYDAPxj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759537AbYDAP5b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759959AbYDAPxj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Apr 2008 11:53:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752374AbYDAPxb
+	id S1759537AbYDAP5b (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Apr 2008 11:57:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752904AbYDAP5X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Apr 2008 11:53:31 -0400
-Received: from adsl-67-113-118-6.dsl.sndg02.pacbell.net ([67.113.118.6]:41198
-	"EHLO multivac.one-eyed-alien.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751447AbYDAPxa (ORCPT
+	Tue, 1 Apr 2008 11:57:23 -0400
+Received: from g4t0015.houston.hp.com ([15.201.24.18]:38767 "EHLO
+	g4t0015.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752831AbYDAP5V (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Apr 2008 11:53:30 -0400
-Date: Tue, 1 Apr 2008 08:53:23 -0700
-From: Matthew Dharm <mdharm-kernel@one-eyed-alien.net>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Oliver Neukum <oliver@neukum.org>, Sergey Dolgov <solkaa@gmail.com>,
-       linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
-Subject: Re: usb-storage, error reading the last 8 sectors, regression in 2.6.25-rc7
-Message-ID: <20080401155323.GB31604@one-eyed-alien.net>
-Mail-Followup-To: Alan Stern <stern@rowland.harvard.edu>,
-	Oliver Neukum <oliver@neukum.org>, Sergey Dolgov <solkaa@gmail.com>,
-	linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
-References: <20080401143420.GB20920@one-eyed-alien.net> <Pine.LNX.4.44L0.0804011040260.4253-100000@iolanthe.rowland.org>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="LyciRD1jyfeSSjG0"
+	Tue, 1 Apr 2008 11:57:21 -0400
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+To: akpm@linux-foundation.org
+Subject: Re: + revert-gregkh-pci-pci-x86-use-generic-pci_enable_resources.patch added to -mm tree
+Date: Tue, 1 Apr 2008 09:57:15 -0600
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: mm-commits@vger.kernel.org, davem@davemloft.net, greg@kroah.com,
+       m.kozlowski@tuxland.pl,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       linux-kernel@vger.kernel.org, Tony Luck <tony.luck@intel.com>,
+       linux-ia64@vger.kernel.org, Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+References: <200803282348.m2SNmleP016847@imap1.linux-foundation.org>
+In-Reply-To: <200803282348.m2SNmleP016847@imap1.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.0804011040260.4253-100000@iolanthe.rowland.org>
-User-Agent: Mutt/1.4.2.3i
-Organization: One Eyed Alien Networks
-X-Copyright: (C) 2008 Matthew Dharm, all rights reserved.
-X-Message-Flag: Get a real e-mail client.  http://www.mutt.org/
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-2.1.12 (multivac.one-eyed-alien.net [127.0.0.1]); Tue, 01 Apr 2008 08:53:23 -0700 (PDT)
+Message-Id: <200804010957.16459.bjorn.helgaas@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Friday 28 March 2008 05:48:47 pm akpm@linux-foundation.org wrote:
+> 
+> The patch titled
+>      revert gregkh-pci-pci-x86-use-generic-pci_enable_resources
+> has been added to the -mm tree.  Its filename is
+>      revert-gregkh-pci-pci-x86-use-generic-pci_enable_resources.patch
 
---LyciRD1jyfeSSjG0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+OK, I'm not sure where we are with this.  Ben listed arches where
+the generic pci_enable_resources() should be safe: x86, alpha, and
+powerpc.  I think we should also include ia64, since I work on that.
 
-On Tue, Apr 01, 2008 at 10:42:51AM -0400, Alan Stern wrote:
-> On Tue, 1 Apr 2008, Matthew Dharm wrote:
->=20
-> > On Tue, Apr 01, 2008 at 10:28:52AM -0400, Alan Stern wrote:
-> > > On Tue, 1 Apr 2008, Oliver Neukum wrote:
-> > >=20
-> > > > Am Dienstag, 1. April 2008 03:58:31 schrieb Alan Stern:
-> > > > > Nevertheless, it's clear that the problem has nothing to do with =
-the=20
-> > > > > USB stack. =A0The real source of the problem lies in the device i=
-tself,=20
-> > > > > for reporting a bogus error when in fact nothing went wrong. =A0T=
-hat may=20
-> > > > > also explain why you don't always see the problem -- sometimes th=
-e=20
-> > > > > device works the way it ought to.
-> > > >=20
-> > > > Reminds me of the devices that can read the last sector but only if=
- it is read
-> > > > by itself. Do you reckon this device may have the "opposite" quirk?
-> > >=20
-> > > Could be something like that.
-> >=20
-> > Didn't I see some SCSI patches go by to implement exactly this change?
-> > That is, only read the last sector by itself?
->=20
-> You are getting the two problems mixed up.  The older problem, which
-> the SCSI patche addressed, was that the device would fail when
-> accessing the last sector unless the transfer was 1 sector long.
->=20
-> This problem is different.  When performing an 8-sector read that=20
-> includes the last sector, the device succeeds.  When performing a=20
-> 7-sector read starting from the same place (so not including the last=20
-> sector), the device fails.
+If there's no objection to those arches, how should we move forward?
+Since Andrew put in "revert gregkh-pci" patches rather than just
+dropping things, I assume the original patches are in Greg KH's tree.
 
-I thought the patch I saw unconditionally re-wrote any access that included
-the last sector into two accesses -- everything but the last sector, and
-the last sector.
+Can we just drop the "revert gregkh" patches for x86, alpha, powerpc,
+and ia64?
 
-In other words, the patch attempted to avoid problems on devices that
-couldn't access the last sector unless the transfer was 1 sector long by
-ONLY accessing the last sector in a single transfer.
+Bjorn
 
-If I'm remembering correctly, that would explain the behavior change which
-lead to the exposure of the bad behavior of this new device.  This new
-device worked with the old code, but not with the new code.
+> ------------------------------------------------------
+> Subject: revert gregkh-pci-pci-x86-use-generic-pci_enable_resources
+> From: Andrew Morton <akpm@linux-foundation.org>
+> 
+> On Fri, 28 Mar 2008 16:10:11 -0700 (PDT) David Miller <davem@davemloft.net> wrote:
+> 
+> > From: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
+> > Date: Fri, 28 Mar 2008 23:52:10 +0100
+> > 
+> > > 	The gregkh-pci-pci-sparc64-use-generic-pci_enable_resources.patch which
+> > > replaces arch-specific code with generic pci_enable_resources() makes my sparc64
+> > > box unable to boot (that's what quilt bisection says). At first I see these messages:
+> > 
+> > Yes, that generic code won't work because of the NULL
+> > r->parent check.
+> > 
+> > Alpha, ARM, V32, FRV, IA64, MIPS, MN10300, PARISC, PPC,
+> > SH, V850, X86, and Xtensa are all likely to run into
+> > problems because of this change.
+> > 
+> > The only platform that did the check as a test of r->parent
+> > being NULL is Powerpc.
+> > 
+> > The rest either didn't check (like sparc64), or tested it by going:
+> > 
+> > 	if (!r->start && r->end)
+> > 
+> > So the amount of potential breakage from this change is enormous.
+> 
+> Cc: Bjorn Helgaas <bjorn.helgaas@hp.com>
+> Cc: Greg KH <greg@kroah.com>
+> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+> ---
+> 
+>  arch/x86/pci/common.c |    2 +-
+>  arch/x86/pci/i386.c   |   38 ++++++++++++++++++++++++++++++++++++++
+>  arch/x86/pci/pci.h    |    1 +
+>  3 files changed, 40 insertions(+), 1 deletion(-)
+> 
+> diff -puN arch/x86/pci/common.c~revert-gregkh-pci-pci-x86-use-generic-pci_enable_resources arch/x86/pci/common.c
+> --- a/arch/x86/pci/common.c~revert-gregkh-pci-pci-x86-use-generic-pci_enable_resources
+> +++ a/arch/x86/pci/common.c
+> @@ -466,7 +466,7 @@ int pcibios_enable_device(struct pci_dev
+>  {
+>  	int err;
+>  
+> -	if ((err = pci_enable_resources(dev, mask)) < 0)
+> +	if ((err = pcibios_enable_resources(dev, mask)) < 0)
+>  		return err;
+>  
+>  	if (!dev->msi_enabled)
+> diff -puN arch/x86/pci/i386.c~revert-gregkh-pci-pci-x86-use-generic-pci_enable_resources arch/x86/pci/i386.c
+> --- a/arch/x86/pci/i386.c~revert-gregkh-pci-pci-x86-use-generic-pci_enable_resources
+> +++ a/arch/x86/pci/i386.c
+> @@ -238,6 +238,44 @@ void __init pcibios_resource_survey(void
+>   */
+>  fs_initcall(pcibios_assign_resources);
+>  
+> +int pcibios_enable_resources(struct pci_dev *dev, int mask)
+> +{
+> +	u16 cmd, old_cmd;
+> +	int idx;
+> +	struct resource *r;
+> +
+> +	pci_read_config_word(dev, PCI_COMMAND, &cmd);
+> +	old_cmd = cmd;
+> +	for (idx = 0; idx < PCI_NUM_RESOURCES; idx++) {
+> +		/* Only set up the requested stuff */
+> +		if (!(mask & (1 << idx)))
+> +			continue;
+> +
+> +		r = &dev->resource[idx];
+> +		if (!(r->flags & (IORESOURCE_IO | IORESOURCE_MEM)))
+> +			continue;
+> +		if ((idx == PCI_ROM_RESOURCE) &&
+> +				(!(r->flags & IORESOURCE_ROM_ENABLE)))
+> +			continue;
+> +		if (!r->start && r->end) {
+> +			printk(KERN_ERR "PCI: Device %s not available "
+> +				"because of resource %d collisions\n",
+> +				pci_name(dev), idx);
+> +			return -EINVAL;
+> +		}
+> +		if (r->flags & IORESOURCE_IO)
+> +			cmd |= PCI_COMMAND_IO;
+> +		if (r->flags & IORESOURCE_MEM)
+> +			cmd |= PCI_COMMAND_MEMORY;
+> +	}
+> +	if (cmd != old_cmd) {
+> +		printk("PCI: Enabling device %s (%04x -> %04x)\n",
+> +			pci_name(dev), old_cmd, cmd);
+> +		pci_write_config_word(dev, PCI_COMMAND, cmd);
+> +	}
+> +	return 0;
+> +}
+> +
+>  /*
+>   *  If we set up a device for bus mastering, we need to check the latency
+>   *  timer as certain crappy BIOSes forget to set it properly.
+> diff -puN arch/x86/pci/pci.h~revert-gregkh-pci-pci-x86-use-generic-pci_enable_resources arch/x86/pci/pci.h
+> --- a/arch/x86/pci/pci.h~revert-gregkh-pci-pci-x86-use-generic-pci_enable_resources
+> +++ a/arch/x86/pci/pci.h
+> @@ -42,6 +42,7 @@ enum pci_bf_sort_state {
+>  extern unsigned int pcibios_max_latency;
+>  
+>  void pcibios_resource_survey(void);
+> +int pcibios_enable_resources(struct pci_dev *, int);
+>  
+>  /* pci-pc.c */
+>  
+> _
 
-Basically, by avoiding a common error condition in device firmware, we've
-found a device that has exactly the opposite bug.
-
-Presuming someone can find the patch in the archive, reverting it would
-produce a good test case; it should restore this device to a working state.
-Maybe we need some auto-detect logic here; try the new way, if it fails,
-revert to the old behavior.  That's probably the safe order, as a lot of
-the devices with the more 'classic' bug just die completely, whereas this
-one appears to be recoverable.
-
-Matt
-
---=20
-Matthew Dharm                              Home: mdharm-usb@one-eyed-alien.=
-net=20
-Maintainer, Linux USB Mass Storage Driver
-
-Sir, for the hundreth time, we do NOT carry 600-round boxes of belt-fed=20
-suction darts!
-					-- Salesperson to Greg
-User Friendly, 12/30/1997
-
---LyciRD1jyfeSSjG0
-Content-Type: application/pgp-signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-
-iD8DBQFH8lpzHL9iwnUZqnkRAvJrAJwI7eHZPMaQER2fvaRG8yBcecmSuACgme9j
-xcAoq/8QjVzyjLbzrq9BRUI=
-=y/B1
------END PGP SIGNATURE-----
-
---LyciRD1jyfeSSjG0--
