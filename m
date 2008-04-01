@@ -1,58 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758737AbYDAObx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759206AbYDAOzQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758737AbYDAObx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Apr 2008 10:31:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755051AbYDAObp
+	id S1759206AbYDAOzQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Apr 2008 10:55:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756851AbYDAOzD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Apr 2008 10:31:45 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:41618 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1755400AbYDAObp (ORCPT
+	Tue, 1 Apr 2008 10:55:03 -0400
+Received: from el-out-1112.google.com ([209.85.162.179]:11514 "EHLO
+	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752887AbYDAOzA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Apr 2008 10:31:45 -0400
-Date: Tue, 1 Apr 2008 10:31:44 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-cc: Nigel Cunningham <ncunningham@crca.org.au>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Greg KH <greg@kroah.com>, Len Brown <lenb@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Alexey Starikovskiy <astarikovskiy@suse.de>,
-       David Brownell <david-b@pacbell.net>, Pavel Machek <pavel@ucw.cz>,
-       Oliver Neukum <oliver@neukum.org>
-Subject: Re: [RFC][PATCH] PM: Introduce new top level suspend and hibernation
- callbacks (rev. 6)
-In-Reply-To: <1207038460.10388.214.camel@pasglop>
-Message-ID: <Pine.LNX.4.44L0.0804011029010.3993-100000@iolanthe.rowland.org>
+	Tue, 1 Apr 2008 10:55:00 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=Numhex6MXjQ4VKvfeNP0/OkjO3D773wqSR+t+rtxBRqiwtlylYBW4GgBvkRiPkfH8oGV3MSSLOcdYTo+WiQdAcX2FERc8yyqNiLkFZ2/ZloYNpmm5/Mg8obRKdm1VVmC9zJPCKK0dgrMglUbB9it3p+3e55qP7c2Gzttj0xQqcE=
+Date: Tue, 1 Apr 2008 10:54:54 -0400
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Jaya Kumar <jayakumar.lkml@gmail.com>, Richard Purdie <rpurdie@rpsys.net>
+Cc: Linux Kernel Development <linux-kernel@vger.kernel.org>
+Subject: Re: Clarifying platform_device_unregister
+Message-ID: <20080401104533.ZZRA012@mailhub.coreip.homeip.net>
+References: <45a44e480803311814q22bc85dbx9a7d128d84b7db08@mail.gmail.com> <20080401051947.GD18041@anvil.corenet.prv> <45a44e480804010047m36a9b8e3p97910308ed5677fb@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <45a44e480804010047m36a9b8e3p97910308ed5677fb@mail.gmail.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 1 Apr 2008, Benjamin Herrenschmidt wrote:
-
-> On Tue, 2008-04-01 at 19:15 +1100, Nigel Cunningham wrote:
-> > > + *   However, drivers may NOT assume anything about the availability of the
-> > > + *   user space at that time and it is not correct to request firmware from
-> > > + *   within @prepare() (it's too late to do that).
-> > 
-> > That doesn't sound good. It would be good to be able to get drivers to
-> > request firmware early in the process.
+On Tue, Apr 01, 2008 at 12:47:54AM -0700, Jaya Kumar wrote:
+> On Mon, Mar 31, 2008 at 10:19 PM, Dmitry Torokhov
+> <dmitry.torokhov@gmail.com> wrote:
+> >  On Mon, Mar 31, 2008 at 09:14:35PM -0400, Jaya Kumar wrote:
+> >  >         mytest_device->dev.platform_data = &mydata;
+> >
+> >  Platform device code does kfree(pdev->dev.platform_data) unpon
+> >  unregistration, so it is not a good idea to assign address of
+> >  statically-allocated variable here. You should be using:
+> >
+> >         platform_device_add_data(mytest_device, &mydata, sizeof(mydata));
+> >
 > 
-> Agreed. Prepare() should still allow request_firmware and full userspace
-> communication / helper usage.
+> That's interesting. I noticed though that a lot of platform device
+> code assigns a statically allocated structure to platform_data. For
+> example:
+> 
+> arch/arm/mach-pxa/corgi_pm.c
+> static struct sharpsl_charger_machinfo corgi_pm_machinfo = {
+> ...
+> }
+>         corgipm_device->dev.platform_data = &corgi_pm_machinfo;
+> 
+> same with spitz_pm.c.
+> 
+> egrep "platform_data.*=.*\&" *.c shows quite a lot of users doing
+> that. I guess most of these below are probably okay since these
+> drivers can't be rmmoded.
+> 
 
-Pepare() is called after userspace has been frozen.  (Of course, once 
-the freezer goes away this won't matter any more.)
+Hmm, are you sure they can't be removed? Why do they all have
+module_exit methods?
 
-There is a separate notifier chain which drivers can subscribe to;
-notifications about impending sleeps are sent out while userspace is
-still alive.  Drivers can use that for request_firmware, memory
-allocation, and other things.
+Even if they can't be unloaded the whole thing will blow to pieces
+if registration fails. Consider this:
 
-Alan Stern
+static int __devinit spitzpm_init(void)
+{
+        int ret;
 
+        spitzpm_device = platform_device_alloc("sharpsl-pm", -1);
+        if (!spitzpm_device)
+                return -ENOMEM;
+
+        spitzpm_device->dev.platform_data = &spitz_pm_machinfo;
+        ret = platform_device_add(spitzpm_device);
+
+        if (ret)
+                platform_device_put(spitzpm_device);
+		^^^^^^^^^^^
+This will try to kfree(spitzpm_device->dev.platform_data) and it gonna
+blow. We need to do spitzpm_device->dev.platform_data = NULL before doing
+put.
+
+Also  spitzpm_init() shoudl be marked __init, not __devinit and
+spitzpm_exit() should be __exit() if it is event needed at all.
+
+Richard, I think you work with spitz and corgi, any comments?
+
+-- 
+Dmitry
