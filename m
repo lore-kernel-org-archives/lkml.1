@@ -1,128 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758656AbYDAOIX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758984AbYDAOI7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758656AbYDAOIX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Apr 2008 10:08:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755495AbYDAOIP
+	id S1758984AbYDAOI7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Apr 2008 10:08:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757918AbYDAOIv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Apr 2008 10:08:15 -0400
-Received: from mtagate6.de.ibm.com ([195.212.29.155]:57478 "EHLO
-	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754883AbYDAOIO (ORCPT
+	Tue, 1 Apr 2008 10:08:51 -0400
+Received: from smtp.nokia.com ([192.100.105.134]:16533 "EHLO
+	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755495AbYDAOIu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Apr 2008 10:08:14 -0400
-Subject: [PATCH 2/3] hugetlbfs: cleanup and new primitives for s390
-From: Gerald Schaefer <gerald.schaefer@de.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
-       schwidefsky@de.ibm.com, Ingo Molnar <mingo@elte.hu>,
-       "David S. Miller" <davem@davemloft.net>,
-       Tony Luck <tony.luck@intel.com>, Paul Mackerras <paulus@samba.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Paul Mundt <lethal@linux-sh.org>
-In-Reply-To: <1207058485.5063.36.camel@localhost.localdomain>
-References: <1207058485.5063.36.camel@localhost.localdomain>
-Content-Type: text/plain
-Date: Tue, 01 Apr 2008 16:08:11 +0200
-Message-Id: <1207058891.5063.41.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.0 (2.8.0-40.el5_1.1) 
-Content-Transfer-Encoding: 7bit
+	Tue, 1 Apr 2008 10:08:50 -0400
+Message-ID: <47F240F6.3080108@nokia.com>
+Date: Tue, 01 Apr 2008 17:04:38 +0300
+From: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
+Reply-To: Artem.Bityutskiy@nokia.com
+Organization: Nokia OYJ
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+MIME-Version: 1.0
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+CC: Artem Bityutskiy <dedekind@yandex.ru>, LKML <linux-kernel@vger.kernel.org>,
+       Adrian Hunter <ext-adrian.hunter@nokia.com>
+Subject: Re: [RFC PATCH 20/26] UBIFS: add VFS operations
+References: <1206629746-4298-1-git-send-email-Artem.Bityutskiy@nokia.com>	 <1206629746-4298-21-git-send-email-Artem.Bityutskiy@nokia.com>	 <84144f020804010508k3099b2bagf2f1c0d2747a983@mail.gmail.com>	 <47F22DD3.4060003@yandex.ru> <84144f020804010612iec1c2d9xc9096f8cc3cd9d4d@mail.gmail.com>
+In-Reply-To: <84144f020804010612iec1c2d9xc9096f8cc3cd9d4d@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 01 Apr 2008 14:08:31.0437 (UTC) FILETIME=[DDA2C7D0:01C89401]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[PATCH 2/3] hugetlbfs: cleanup and new primitives for s390
+Pekka Enberg wrote:
+>>  Yeah, this is also a guarding thing. When a dirty page is released
+>>  the budget which was allocated for it has to be freed. If this function
+>>  is called, then the budget was not freed, which must never happen.
+> 
+> So what guarantees that no one calls invalidate_complete_page() or
+> fallback_migrate_page(), for example?
 
-A cow break on a hugetlbfs page with page_count > 1 will set a new pte
-with set_huge_pte_at(), w/o any tlb flush operation. The old pte will
-remain in the tlb and subsequent write access to the page will result
-in a page fault loop, for as long as it may take until the tlb is
-flushed from somewhere else.
-This patch introduces an architecture-specific huge_ptep_clear_flush()
-function, which is called before the the set_huge_pte_at() in
-hugetlb_cow().
+At the first glance it looks like it might be called, but for clean pages,
+which is not the problem, but there is this assert which may give fake
+alarm. Need to look closer at this. Thanks for the note.
 
-NOTE: This is just a nop on all architectures for now, there will be an
-s390 implementation with our large page patch later. Other architectures
-should define their own huge_ptep_clear_flush() if needed.
-
-Signed-off-by: Gerald Schaefer <gerald.schaefer@de.ibm.com>
-Acked-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
----
-
- include/asm-ia64/hugetlb.h    |    2 ++
- include/asm-powerpc/hugetlb.h |    2 ++
- include/asm-sh/hugetlb.h      |    2 ++
- include/asm-sparc64/hugetlb.h |    2 ++
- include/asm-x86/hugetlb.h     |    2 ++
- mm/hugetlb.c                  |    1 +
- 6 files changed, 11 insertions(+)
-
-Index: linux-2.6.25-rc7/mm/hugetlb.c
-===================================================================
---- linux-2.6.25-rc7.orig/mm/hugetlb.c
-+++ linux-2.6.25-rc7/mm/hugetlb.c
-@@ -864,6 +864,7 @@ static int hugetlb_cow(struct mm_struct 
- 	ptep = huge_pte_offset(mm, address & HPAGE_MASK);
- 	if (likely(pte_same(*ptep, pte))) {
- 		/* Break COW */
-+		huge_ptep_clear_flush(vma, address, ptep);
- 		set_huge_pte_at(mm, address, ptep,
- 				make_huge_pte(vma, new_page, 1));
- 		/* Make the old page be freed below */
-Index: linux-2.6.25-rc7/include/asm-ia64/hugetlb.h
-===================================================================
---- linux-2.6.25-rc7.orig/include/asm-ia64/hugetlb.h
-+++ linux-2.6.25-rc7/include/asm-ia64/hugetlb.h
-@@ -18,4 +18,6 @@ int prepare_hugepage_range(unsigned long
- 
- #define hugetlb_prefault_arch_hook(mm)		do { } while (0)
- 
-+#define huge_ptep_clear_flush(vma, addr, ptep)	do { } while (0)
-+
- #endif /* _ASM_IA64_HUGETLB_H */
-Index: linux-2.6.25-rc7/include/asm-powerpc/hugetlb.h
-===================================================================
---- linux-2.6.25-rc7.orig/include/asm-powerpc/hugetlb.h
-+++ linux-2.6.25-rc7/include/asm-powerpc/hugetlb.h
-@@ -32,4 +32,6 @@ pte_t huge_ptep_get_and_clear(struct mm_
- 
- #define hugetlb_prefault_arch_hook(mm)		do { } while (0)
- 
-+#define huge_ptep_clear_flush(vma, addr, ptep)	do { } while (0)
-+
- #endif /* _ASM_POWERPC_HUGETLB_H */
-Index: linux-2.6.25-rc7/include/asm-sh/hugetlb.h
-===================================================================
---- linux-2.6.25-rc7.orig/include/asm-sh/hugetlb.h
-+++ linux-2.6.25-rc7/include/asm-sh/hugetlb.h
-@@ -25,4 +25,6 @@ static inline int prepare_hugepage_range
- 
- #define hugetlb_prefault_arch_hook(mm)		do { } while (0)
- 
-+#define huge_ptep_clear_flush(vma, addr, ptep)	do { } while (0)
-+
- #endif /* _ASM_SH_HUGETLB_H */
-Index: linux-2.6.25-rc7/include/asm-sparc64/hugetlb.h
-===================================================================
---- linux-2.6.25-rc7.orig/include/asm-sparc64/hugetlb.h
-+++ linux-2.6.25-rc7/include/asm-sparc64/hugetlb.h
-@@ -27,4 +27,6 @@ pte_t huge_ptep_get_and_clear(struct mm_
- 
- void hugetlb_prefault_arch_hook(struct mm_struct *mm);
- 
-+#define huge_ptep_clear_flush(vma, addr, ptep)	do { } while (0)
-+
- #endif /* _ASM_SPARC64_HUGETLB_H */
-Index: linux-2.6.25-rc7/include/asm-x86/hugetlb.h
-===================================================================
---- linux-2.6.25-rc7.orig/include/asm-x86/hugetlb.h
-+++ linux-2.6.25-rc7/include/asm-x86/hugetlb.h
-@@ -25,4 +25,6 @@ static inline int prepare_hugepage_range
- 
- #define hugetlb_prefault_arch_hook(mm)		do { } while (0)
- 
-+#define huge_ptep_clear_flush(vma, addr, ptep)	do { } while (0)
-+
- #endif /* _ASM_X86_HUGETLB_H */
-
-
+-- 
+Best Regards,
+Artem Bityutskiy (Артём Битюцкий)
