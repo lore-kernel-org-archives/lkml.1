@@ -1,139 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758763AbYDAJm4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756863AbYDAJnj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758763AbYDAJm4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Apr 2008 05:42:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756105AbYDAJmt
+	id S1756863AbYDAJnj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Apr 2008 05:43:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756983AbYDAJnb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Apr 2008 05:42:49 -0400
-Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:35466 "EHLO
-	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752610AbYDAJms (ORCPT
+	Tue, 1 Apr 2008 05:43:31 -0400
+Received: from smtp.nokia.com ([192.100.122.233]:49262 "EHLO
+	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756962AbYDAJnb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Apr 2008 05:42:48 -0400
-From: "Satoshi UCHIDA" <s-uchida@ap.jp.nec.com>
-To: <linux-kernel@vger.kernel.org>, <containers@lists.linux-foundation.org>,
-       <axboe@kernel.dk>, <menage@google.com>
-Cc: <s-uchida@ap.jp.nec.com>, <tom-sugawara@ap.jp.nec.com>,
-       <m-takahashi@ex.jp.nec.com>
-References: <007801c893d9$d89726f0$89c574d0$@jp.nec.com>
-In-Reply-To: <007801c893d9$d89726f0$89c574d0$@jp.nec.com>
-Subject: [RFC][patch 11/11][CFQ-cgroup] entry/remove active cfq_data
-Date: Tue, 1 Apr 2008 18:42:35 +0900
-Message-Id: <008801c893dc$b7530a60$25f91f20$@jp.nec.com>
+	Tue, 1 Apr 2008 05:43:31 -0400
+Message-ID: <47F202CD.4000804@yandex.ru>
+Date: Tue, 01 Apr 2008 12:39:25 +0300
+From: Artem Bityutskiy <dedekind@yandex.ru>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Microsoft Office Outlook 12.0
-Thread-Index: AciT2dazsgoxpK4vQk6Hf026phpfBAAAr6Kw
-Content-Language: ja
+To: =?UTF-8?B?SsO2cm4gRW5nZWw=?= <joern@logfs.org>
+CC: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>,
+       Adrian Hunter <ext-adrian.hunter@nokia.com>,
+       Jan Engelhardt <jengelh@computergmbh.de>,
+       LKML <linux-kernel@vger.kernel.org>, joern@lazybastard.org
+Subject: Re: UBIFS vs Logfs (was [RFC PATCH] UBIFS - new flash file system)
+References: <1206629746-4298-1-git-send-email-Artem.Bityutskiy@nokia.com> <alpine.LNX.1.10.0803311428270.2554@fbirervta.pbzchgretzou.qr> <47F0DD49.7010302@nokia.com> <20080331132047.GA31660@logfs.org> <47F1C78D.2050300@yandex.ru> <47F1CE9D.4080709@nokia.com> <20080401092548.GC7465@logfs.org>
+In-Reply-To: <20080401092548.GC7465@logfs.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 01 Apr 2008 09:43:16.0047 (UTC) FILETIME=[CF52FDF0:01C893DC]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch controls whether cfq_data is active or not.
-When cfq_data is not active and active cfq_queue is inserted into cfq_data,
-cfq_data is activated.
-When cfq_data is active and active cfq_queue is not exist,
-cfq_data is deactivated.
+Jörn Engel wrote:
+> Correct.  I have a patch that caches this information in RAM, so the
+> worst-case scenario is to do the full scan once - if the filesystem is
+> near 100% full and performance is down the drain anyway.  The goal is
+> obviously to store that information on the medium.
 
-The new cfq optional operations:
-The "cfq_add_cfqq_opt_fn" defines a function that runs an additional process
-when active queue is inserted into cfq_data.
+Anyway, if you do not store this information on the flash, you are going
+to scan to acquire it. You may have caches, but they do not have to have
+information (may be empty), then you scan. This will lead to scalability
+problems at some point anyway.
 
-The "cfq_del_cfqq_opt_fn" defines a function that runs an additional process
-when active queue is removed in cfq_data.
+>> UBIFS stores per-eraseblock information on the media in a B-tree, and
+>> it also has lists of empty/dirty eraseblocks, which allow to very quickly
+>> find the best eraseblock to garbage-collect or to write to.
+> 
+> So how do you solve the catch-22?
 
-   Signed-off-by: Satoshi UCHIDA <uchida@ap.jp.nec.com>
+I'm not sure what you mean. In UBIFS we have lprops area, where we store
+per-LEB accounting. UBI lets it possible to have it on a fixed position.
+The accounting is a separate B-tree. Lprops area has its own independent
+garbage collector. You should probably refer the white paper for more
+information.
 
-diff --git a/block/cfq-cgroup.c b/block/cfq-cgroup.c
-index f040c98..46f3635 100644
---- a/block/cfq-cgroup.c
-+++ b/block/cfq-cgroup.c
-@@ -741,6 +741,32 @@ static int cfq_cgroup_active_data_check(struct cfq_data *cfqd)
- 	return (cfqd->cfqmd->active_data == cfqd);
- }
- 
-+static void cfq_cgroup_add_cfqd_rr(struct cfq_data *cfqd)
-+{
-+	if (!cfq_cfqd_on_rr(cfqd)) {
-+		cfq_mark_cfqd_on_rr(cfqd);
-+		cfqd->cfqmd->busy_data++;
-+
-+		cfq_cgroup_service_tree_add(cfqd, 0);
-+	}
-+}
-+
-+
-+static void cfq_cgroup_del_cfqd_rr(struct cfq_data *cfqd)
-+{
-+	if (RB_EMPTY_ROOT(&cfqd->service_tree.rb)) {
-+		struct cfq_meta_data *cfqdd = cfqd->cfqmd;
-+		BUG_ON(!cfq_cfqd_on_rr(cfqd));
-+		cfq_clear_cfqd_on_rr(cfqd);
-+		if (!RB_EMPTY_NODE(&cfqd->rb_node)) {
-+			cfq_rb_erase(&cfqd->rb_node,
-+				     &cfqdd->service_tree);
-+		}
-+		BUG_ON(!cfqdd->busy_data);
-+		cfqdd->busy_data--;
-+	}	
-+}
-+
- struct cfq_ops opt = {
- 	.cfq_init_queue_fn = __cfq_cgroup_init_queue,
- 	.cfq_exit_queue_fn = __cfq_cgroup_exit_data,
-@@ -749,4 +775,6 @@ struct cfq_ops opt = {
- 	.cfq_completed_request_after_fn = cfq_cgroup_completed_request_after,
- 	.cfq_empty_fn = cfq_cgroup_queue_empty,
- 	.cfq_active_check_fn = cfq_cgroup_active_data_check,
-+	.cfq_add_cfqq_opt_fn =  cfq_cgroup_add_cfqd_rr,
-+	.cfq_del_cfqq_opt_fn =  cfq_cgroup_del_cfqd_rr,
- };
-diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
-index 505e425..8f5227f 100644
---- a/block/cfq-iosched.c
-+++ b/block/cfq-iosched.c
-@@ -492,6 +492,9 @@ static void cfq_add_cfqq_rr(struct cfq_data *cfqd, struct cfq_queue *cfqq)
- 	cfqd->busy_queues++;
- 
- 	cfq_resort_rr_list(cfqd, cfqq);
-+
-+	if (opt.cfq_add_cfqq_opt_fn)
-+		opt.cfq_add_cfqq_opt_fn(cfqd);
- }
- 
- /*
-@@ -508,6 +511,9 @@ static void cfq_del_cfqq_rr(struct cfq_data *cfqd, struct cfq_queue *cfqq)
- 
- 	BUG_ON(!cfqd->busy_queues);
- 	cfqd->busy_queues--;
-+
-+	if (opt.cfq_del_cfqq_opt_fn)
-+		opt.cfq_del_cfqq_opt_fn(cfqd);
- }
- 
- /*
-diff --git a/include/linux/cfq-iosched.h b/include/linux/cfq-iosched.h
-index 63d2545..ed35050 100644
---- a/include/linux/cfq-iosched.h
-+++ b/include/linux/cfq-iosched.h
-@@ -161,6 +161,8 @@ typedef int (cfq_dispatch_requests_fn)(struct cfq_data *, int);
- typedef int (cfq_completed_request_after_fn)(struct cfq_data *);
- typedef int (cfq_active_check_fn)(struct cfq_data *);
- typedef int (cfq_empty_fn)(struct cfq_data *);
-+typedef void (cfq_add_cfqq_opt_fn)(struct cfq_data *);
-+typedef void (cfq_del_cfqq_opt_fn)(struct cfq_data *);
- 
- struct cfq_ops
- {
-@@ -171,6 +173,8 @@ struct cfq_ops
- 	cfq_completed_request_after_fn *cfq_completed_request_after_fn;
- 	cfq_active_check_fn *cfq_active_check_fn;
- 	cfq_empty_fn *cfq_empty_fn;
-+	cfq_add_cfqq_opt_fn *cfq_add_cfqq_opt_fn;
-+	cfq_del_cfqq_opt_fn *cfq_del_cfqq_opt_fn;
- };
- 
- extern struct cfq_ops opt;
-
+-- 
+Best Regards,
+Artem Bityutskiy (Артём Битюцкий)
