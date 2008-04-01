@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760269AbYDAPVc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760418AbYDAPVp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760269AbYDAPVc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Apr 2008 11:21:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759353AbYDAPSI
+	id S1760418AbYDAPVp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Apr 2008 11:21:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759375AbYDAPSL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Apr 2008 11:18:08 -0400
-Received: from g4t0014.houston.hp.com ([15.201.24.17]:26940 "EHLO
+	Tue, 1 Apr 2008 11:18:11 -0400
+Received: from g4t0014.houston.hp.com ([15.201.24.17]:26964 "EHLO
 	g4t0014.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758860AbYDAPR4 (ORCPT
+	with ESMTP id S1759218AbYDAPR5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Apr 2008 11:17:56 -0400
-Message-Id: <20080401151737.444994893@ldl.fc.hp.com>
+	Tue, 1 Apr 2008 11:17:57 -0400
+Message-Id: <20080401151737.646628835@ldl.fc.hp.com>
 References: <20080401151634.730901933@ldl.fc.hp.com>
 User-Agent: quilt/0.46-1
-Date: Tue, 01 Apr 2008 09:16:43 -0600
+Date: Tue, 01 Apr 2008 09:16:44 -0600
 From: Bjorn Helgaas <bjorn.helgaas@hp.com>
 To: Len Brown <lenb@kernel.org>
 Cc: linux-acpi@vger.kernel.org
@@ -25,72 +25,115 @@ Cc: Thomas Renninger <trenn@suse.de>
 Cc: Rene Herman <rene.herman@keyaccess.nl>
 Cc: Jaroslav Kysela <perex@perex.cz>
 Cc: Andrew Morton <akpm@linux-foundation.org>
-Subject: [patch 09/37] ISAPNP: pull pnp_add_card_id() out of isapnp_parse_card_id()
-Content-Disposition: inline; filename=isapnp-restructure-parse-card-id
+Subject: [patch 10/37] PNP: add pnp_alloc_card()
+Content-Disposition: inline; filename=pnp-alloc-card
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Split the pnp_add_card_id() part from the PNPID conversion part so we
-can move the initial add_id() into the pnp_card allocation.
-
-This makes the PNPID conversion generic so we can use the same
-one for both devices and cards.
+Add pnp_alloc_card() to allocate a struct pnp_card and fill in the
+protocol, instance number, and initial PNP ID.  Now it is always
+valid to use dev_printk() on any pnp_card pointer.
 
 Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
 
-Index: work7/drivers/pnp/isapnp/core.c
+---
+ drivers/pnp/base.h        |    1 +
+ drivers/pnp/card.c        |   28 +++++++++++++++++++++++++---
+ drivers/pnp/isapnp/core.c |   11 ++++-------
+ 3 files changed, 30 insertions(+), 10 deletions(-)
+
+Index: work7/drivers/pnp/base.h
 ===================================================================
---- work7.orig/drivers/pnp/isapnp/core.c	2008-03-31 16:59:11.000000000 -0600
-+++ work7/drivers/pnp/isapnp/core.c	2008-03-31 17:01:37.000000000 -0600
-@@ -817,26 +817,6 @@
+--- work7.orig/drivers/pnp/base.h	2008-03-31 17:07:27.000000000 -0600
++++ work7/drivers/pnp/base.h	2008-03-31 17:07:34.000000000 -0600
+@@ -2,6 +2,7 @@
+ void *pnp_alloc(long size);
+ void pnp_eisa_id_to_string(u32 id, char *str);
+ struct pnp_dev *pnp_alloc_dev(struct pnp_protocol *, int id, char *pnpid);
++struct pnp_card *pnp_alloc_card(struct pnp_protocol *, int id, char *pnpid);
+ struct pnp_id *pnp_add_id(struct pnp_dev *dev, char *id);
+ struct pnp_id *pnp_add_card_id(struct pnp_card *card, char *id);
+ int pnp_interface_attach_device(struct pnp_dev *dev);
+Index: work7/drivers/pnp/card.c
+===================================================================
+--- work7.orig/drivers/pnp/card.c	2008-03-31 17:07:27.000000000 -0600
++++ work7/drivers/pnp/card.c	2008-03-31 17:07:34.000000000 -0600
+@@ -151,6 +151,31 @@
+ 	kfree(card);
  }
  
- /*
-- *  Parse EISA id for ISA PnP card.
-- */
--static void isapnp_parse_card_id(struct pnp_card *card, unsigned short vendor,
--				 unsigned short device)
--{
--	char id[8];
--
--	id[0] = 'A' + ((vendor >> 2) & 0x3f) - 1;
--	id[1] = 'A' + (((vendor & 3) << 3) | ((vendor >> 13) & 7)) - 1;
--	id[2] = 'A' + ((vendor >> 8) & 0x1f) - 1;
--	id[3] = '0' + ((device >> 4) & 0x0f);
--	id[4] = '0' + (device & 0x0f);
--	id[5] = '0' + ((device >> 12) & 0x0f);
--	id[6] = '0' + ((device >> 8) & 0x0f);
--	id[7] = '\0';
--
--	pnp_add_card_id(card, id);
--}
--
--/*
-  *  Build device list for all present ISA PnP devices.
-  */
- static int __init isapnp_build_device_list(void)
-@@ -844,6 +824,8 @@
- 	int csn;
- 	unsigned char header[9], checksum;
- 	struct pnp_card *card;
-+	u32 eisa_id;
-+	char id[8];
++struct pnp_card *pnp_alloc_card(struct pnp_protocol *protocol, int id, char *pnpid)
++{
++	struct pnp_card *card;
++	struct pnp_id *dev_id;
++
++	card = kzalloc(sizeof(struct pnp_card), GFP_KERNEL);
++	if (!card)
++		return NULL;
++
++	card->protocol = protocol;
++	card->number = id;
++
++	card->dev.parent = &card->protocol->dev;
++	sprintf(card->dev.bus_id, "%02x:%02x", card->protocol->number,
++		card->number);
++
++	dev_id = pnp_add_card_id(card, pnpid);
++	if (!dev_id) {
++		kfree(card);
++		return NULL;
++	}
++
++	return card;
++}
++
+ static ssize_t pnp_show_card_name(struct device *dmdev,
+ 				  struct device_attribute *attr, char *buf)
+ {
+@@ -206,9 +231,6 @@
+ 	int error;
+ 	struct list_head *pos, *temp;
  
- 	isapnp_wait();
- 	isapnp_key();
-@@ -864,8 +846,10 @@
- 
- 		card->number = csn;
- 		INIT_LIST_HEAD(&card->devices);
--		isapnp_parse_card_id(card, (header[1] << 8) | header[0],
--				     (header[3] << 8) | header[2]);
-+		eisa_id = header[0] | header[1] << 8 |
-+			  header[2] << 16 | header[3] << 24;
-+		pnp_eisa_id_to_string(eisa_id, id);
-+		pnp_add_card_id(card, id);
+-	sprintf(card->dev.bus_id, "%02x:%02x", card->protocol->number,
+-		card->number);
+-	card->dev.parent = &card->protocol->dev;
+ 	card->dev.bus = NULL;
+ 	card->dev.release = &pnp_release_card;
+ 	error = device_register(&card->dev);
+Index: work7/drivers/pnp/isapnp/core.c
+===================================================================
+--- work7.orig/drivers/pnp/isapnp/core.c	2008-03-31 17:07:27.000000000 -0600
++++ work7/drivers/pnp/isapnp/core.c	2008-03-31 17:10:26.000000000 -0600
+@@ -840,16 +840,14 @@
+ 		       header[5], header[6], header[7], header[8]);
+ 		printk(KERN_DEBUG "checksum = 0x%x\n", checksum);
+ #endif
+-		if ((card =
+-		     kzalloc(sizeof(struct pnp_card), GFP_KERNEL)) == NULL)
+-			continue;
+-
+-		card->number = csn;
+-		INIT_LIST_HEAD(&card->devices);
+ 		eisa_id = header[0] | header[1] << 8 |
+ 			  header[2] << 16 | header[3] << 24;
+ 		pnp_eisa_id_to_string(eisa_id, id);
+-		pnp_add_card_id(card, id);
++		card = pnp_alloc_card(&isapnp_protocol, csn, id);
++		if (!card)
++			continue;
++
++		INIT_LIST_HEAD(&card->devices);
  		card->serial =
  		    (header[7] << 24) | (header[6] << 16) | (header[5] << 8) |
  		    header[4];
+@@ -860,7 +858,6 @@
+ 			       "isapnp: checksum for device %i is not valid (0x%x)\n",
+ 			       csn, isapnp_checksum_value);
+ 		card->checksum = isapnp_checksum_value;
+-		card->protocol = &isapnp_protocol;
+ 
+ 		pnp_add_card(card);
+ 	}
 
 -- 
