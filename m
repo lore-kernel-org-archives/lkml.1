@@ -1,77 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756132AbYDAIDO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756687AbYDAIER@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756132AbYDAIDO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Apr 2008 04:03:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753466AbYDAICx
+	id S1756687AbYDAIER (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Apr 2008 04:04:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753956AbYDAID6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Apr 2008 04:02:53 -0400
-Received: from mail.syneticon.net ([213.239.212.131]:53089 "EHLO
-	mail2.syneticon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752610AbYDAICu (ORCPT
+	Tue, 1 Apr 2008 04:03:58 -0400
+Received: from eazy.amigager.de ([213.239.192.238]:43293 "EHLO
+	eazy.amigager.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753466AbYDAID4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Apr 2008 04:02:50 -0400
-Message-ID: <47F1EC20.6050600@wpkg.org>
-Date: Tue, 01 Apr 2008 10:02:40 +0200
-From: Tomasz Chmielewski <mangoo@wpkg.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061110 Mandriva/1.5.0.8-1mdv2007.1 (2007.1) Thunderbird/1.5.0.8 Mnenhy/0.7.4.666
+	Tue, 1 Apr 2008 04:03:56 -0400
+Date: Tue, 1 Apr 2008 10:04:38 +0200
+From: Tino Keitel <tino.keitel@gmx.de>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Pavel Machek <pavel@ucw.cz>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Len Brown <lenb@kernel.org>
+Subject: Re: 2.6.25-rc6 hangs at resume after suspend to RAM on Mac mini
+	Core Duo
+Message-ID: <20080401080438.GA9906@dose.home.local>
+Mail-Followup-To: "Rafael J. Wysocki" <rjw@sisk.pl>,
+	Pavel Machek <pavel@ucw.cz>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	linux-kernel@vger.kernel.org, Len Brown <lenb@kernel.org>
+References: <20080320060550.GA13200@dose.home.local> <20080331215027.GC3714@elf.ucw.cz> <20080331220151.GA5580@dose.home.local> <200804010017.54799.rjw@sisk.pl>
 MIME-Version: 1.0
-To: LKML <linux-kernel@vger.kernel.org>, penberg@cs.helsinki.fi,
-       =?UTF-8?B?SsO2cm4gRW5nZWw=?= <joern@logfs.org>,
-       ext-adrian.hunter@nokia.com, jwboyer@gmail.com,
-       "Artem B. Bityutskiy" <dedekind@yandex.ru>
-Subject: UBIFS vs Logfs (was [RFC PATCH] UBIFS - new flash file system)
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200804010017.54799.rjw@sisk.pl>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Artem Bityutskiy wrote:
-
-> I've renamed the thread because I do not like this flamish discussion
-> to me mixed with the technical one.
+On Tue, Apr 01, 2008 at 00:17:53 +0200, Rafael J. Wysocki wrote:
+> On Tuesday, 1 of April 2008, Tino Keitel wrote:
+> > On Mon, Mar 31, 2008 at 23:50:27 +0200, Pavel Machek wrote:
+> > > On Mon 2008-03-31 23:28:12, Tino Keitel wrote:
+> > > > On Sat, Mar 29, 2008 at 00:03:15 +0100, Rafael J. Wysocki wrote:
+> > > > 
+> > > > [...]
+> > > > 
+> > > > > Can you please try to boot with acpi_new_pts_ordering and retest?
+> > > > 
+> > > > I just tried current -git (a9edadbf790d72adf6ebed476cb5caf7743e7e4a),
+> > > > without success. I still got the same hand at resume.
+> > > 
+> > > You should put "acpi_new_pts_ordering" on kernel command line.
+> > 
+> > I did, just forgot to mention it.
 > 
-> JÃ¶rn Engel wrote:
->> Shiny numbers!  Performance has improved significantly in the last six
->> month.  Still worth a closer look.
-> We'll re-run them. Does logfs support write-back? Does it support compression?
+> OK, thanks.
+> 
+> Have you tried to do:
+> 
+> # echo core > /sys/power/pm_test
+> # echo mem > /sys/power/state
+> 
+> (it's good to boot the kernel with no_console_suspend and do
+> "echo 8 > /proc/sys/kernel/printk" before that to see the messages)?
 
-For me, the motivators to wait for LogFS are mainly the facts that it
-can work on traditional block devices, and not only on pure flash:
+Thanks, I'll try this evening. What should I look for in the kernel
+messages?
 
-1. It works on normal block devices and it supports transparent compression
-
-Today, a 64 GB SSD/flash-based media costs ~about the same as a 1 TB
-hard disk. This makes flash very expensive to use; compression can
-compensate that cost a bit (will depend on the usage, of course).
-
-I believe there is no other Linux filesystem which can do transparent
-compression on block devices.
-
-
-2. It does wear-levelling also on normal block devices
-
-Although it doesn't sound normal to do wear-levelling twice (most
-flash-based block devices do wear-levelling on their own), I had a flash
-corruption after just ~one month of using RAID bitmap on a IDE-flash
-disk formatted with ext3. Apparently, device-level wear-levelling wasn't
-spreading updates of RAID bitmap file well enough.
-
-(...)
-
-> This basically means it is unfinished. Handling dynamic bad blocks is a *must*
-> if you are going to work on NAND, especially on MLC NAND which are not as
-> reliable as SLC.
-> I think you should bluntly say about this when you submit patches to prevent
-> people from starting using it in production.
-
-I too wouldn't use LogFS today in a production environment - it is still 
-not feature complete and not widely tested.
-I wouldn't use btrfs or ext4 today for the very same reason.
-
-
--- 
-Tomasz Chmielewski
-http://wpkg.org
-
-
+Regards,
+Tino
