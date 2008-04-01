@@ -1,56 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752955AbYDAAIq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752868AbYDAAWV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752955AbYDAAIq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Mar 2008 20:08:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751395AbYDAAIh
+	id S1752868AbYDAAWV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Mar 2008 20:22:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751428AbYDAAWL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Mar 2008 20:08:37 -0400
-Received: from styx.suse.cz ([82.119.242.94]:43291 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751251AbYDAAIg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Mar 2008 20:08:36 -0400
-Date: Tue, 1 Apr 2008 02:08:35 +0200 (CEST)
-From: Jiri Kosina <jkosina@suse.cz>
-To: Ingo Molnar <mingo@elte.hu>
-cc: linux-kernel@vger.kernel.org
-Subject: spinlocks -- why are releases inlined and acquires are not?
-Message-ID: <Pine.LNX.4.64.0804010202390.5541@jikos.suse.cz>
+	Mon, 31 Mar 2008 20:22:11 -0400
+Received: from mail.lang.hm ([64.81.33.126]:40201 "EHLO bifrost.lang.hm"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751395AbYDAAWK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 31 Mar 2008 20:22:10 -0400
+Date: Mon, 31 Mar 2008 17:28:31 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: Daniel Phillips <phillips@phunq.net>
+cc: David Newall <davidn@davidnewall.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Willy Tarreau <w@1wt.eu>, linux-kernel@vger.kernel.org
+Subject: Re: [ANNOUNCE] Ramback: faster than a speeding bullet
+In-Reply-To: <200803310440.33019.phillips@phunq.net>
+Message-ID: <alpine.DEB.1.00.0803311727500.31200@asgard.lang.hm>
+References: <200803092346.17556.phillips@phunq.net> <47DFBD99.2080501@davidnewall.com> <alpine.DEB.1.00.0803180933230.21250@asgard.lang.hm> <200803310440.33019.phillips@phunq.net>
+User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Mon, 31 Mar 2008, Daniel Phillips wrote:
 
-include/linux/spinlock.h shows:
+> On Tuesday 18 March 2008 09:36, david@lang.hm wrote:
+>> P.S. 8xPCI-e slots are only able to do 2GB/s of data transfer, in an
+>> earlier post Daniel claimed that you needed 3GB/s of disk to mirror to the
+>> disk, so the scenerio listed above looses 1/3 of it's performance compared
+>> to what was being claimed earlier.
+>
+> Each Violin 1010 has two 8xPCI-e interfaces.
 
-	#define spin_lock_irq(lock)             _spin_lock_irq(lock)
+but if you use them for redundancy by hooking them to two machines you can 
+only use one of them on your active system.
 
-unconditionally, i.e. irrespectible of config options, we always (on SMP) 
-call kernel/spinlock.c:_spin_lock_irq(), which is even not inlined.
-
-Contrary to that, unlocks are written as one would expect, i.e:
-
-	#if defined(CONFIG_DEBUG_SPINLOCK) || defined(CONFIG_PREEMPT) || \
-        	!defined(CONFIG_SMP)
-	# define spin_unlock_irq(lock)          _spin_unlock_irq(lock)
-	#else
-	# define spin_unlock_irq(lock)                  \
-	do {                                            \
-        	__raw_spin_unlock(&(lock)->raw_lock);   \
-	        __release(lock);                        \
-	        local_irq_enable();                     \
-	} while (0)
-
-and __raw_spin_unlock() is of course properly inlined.
-
-What is the reason for this asymetry? Shouldn't the acquiring functions be 
-implemented in the very same way? Or at least, shouldn't all the 
-__lockfunc functions be inlined?
-
-Thanks,
-
--- 
-Jiri Kosina
-SUSE Labs
+David Lang
