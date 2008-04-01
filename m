@@ -1,51 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761372AbYDAVWr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760653AbYDAV1W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761372AbYDAVWr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Apr 2008 17:22:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755807AbYDAVWi
+	id S1760653AbYDAV1W (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Apr 2008 17:27:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753364AbYDAV1J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Apr 2008 17:22:38 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:48581 "EHLO ogre.sisk.pl"
+	Tue, 1 Apr 2008 17:27:09 -0400
+Received: from 1wt.eu ([62.212.114.60]:1088 "EHLO 1wt.eu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752870AbYDAVWh convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Apr 2008 17:22:37 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Didier Raboud <didier@raboud.com>
-Subject: Re: =?iso-8859-15?q?2=2E6=2E25-rc7=A0=3A_hibernation_sometimes_not_resuming_on?=
- =?iso-8859-15?q?_Dell_Latitude?= D630
-Date: Tue, 1 Apr 2008 23:22:35 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: linux-kernel@vger.kernel.org, debian-kernel@lists.debian.org
-References: <200803311823.36693.didier@raboud.com> <200804012311.16076.rjw@sisk.pl> <200804012318.26002.didier@raboud.com>
-In-Reply-To: <200804012318.26002.didier@raboud.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 8BIT
+	id S1754406AbYDAV1I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Apr 2008 17:27:08 -0400
+Date: Tue, 1 Apr 2008 23:26:52 +0200
+From: Willy Tarreau <w@1wt.eu>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Artem Bityutskiy <dedekind@yandex.ru>, Andi Kleen <andi@firstfloor.org>,
+       Tomasz Chmielewski <mangoo@wpkg.org>,
+       LKML <linux-kernel@vger.kernel.org>, penberg@cs.helsinki.fi,
+       =?iso-8859-1?Q?J=F6rn?= Engel <joern@logfs.org>,
+       ext-adrian.hunter@nokia.com, jwboyer@gmail.com
+Subject: Re: UBIFS vs Logfs (was [RFC PATCH] UBIFS - new flash file system)
+Message-ID: <20080401212652.GD23796@1wt.eu>
+References: <47F1EC20.6050600@wpkg.org> <47F1F644.4060000@yandex.ru> <878wzx25s7.fsf@basil.nowhere.org> <47F21B47.4000206@yandex.ru> <47F26278.5070009@zytor.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200804012322.35672.rjw@sisk.pl>
+In-Reply-To: <47F26278.5070009@zytor.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday, 1 of April 2008, Didier Raboud wrote:
-> Le mardi, 1 avril 2008 23.11:15 Rafael J. Wysocki, vous avez écrit :
-> > (...)
-> > Can you please test the in-kernel hibernation, then?
+On Tue, Apr 01, 2008 at 09:27:36AM -0700, H. Peter Anvin wrote:
+> Artem Bityutskiy wrote:
+> >Andi Kleen wrote:
+> >>Artem Bityutskiy <dedekind@yandex.ru> writes:
+> >>
+> >>>Tomasz Chmielewski wrote:
+> >>>>For me, the motivators to wait for LogFS are mainly the facts that it
+> >>>>can work on traditional block devices, and not only on pure flash:
+> >>>Sorry Thomasz, for me this makes zero sense. There are _much_ better 
+> >>>file
+> >>>systems for block devices.
+> >>
+> >>I think he refers to flash disks appearing as block devices, like
+> >>usb sticks or similar.
 > >
-> > Rafael
+> >Right, I also meant that in my opinion it makes more sense to use 
+> >traditional
+> >file-systems like ext3 on USB-key/MMC and the like stuff (which I 
+> >confusingly
+> >referred as "block devices"), or may be something more "heavy-weight" like
+> >XFS or JFS (never tried them, though).
+> >
 > 
-> Hi,
-> 
-> would like to. How ? 
-> 
-> # echo -n disk > /sys/power/state 
+> Well, even auto-levelling storage should benefit from a filesystem which 
+> minimizes the total number of flash sectors churned, which means doing 
+> as few writes as possible and to large, contiguous sections.
 
-Yes, should work without the "-n", too.  Of course, you have to use the
-'resume=' kernel command line argument for this to work.
+Exactly. At exosec, we ship one appliance which writes statistics to a
+partition on a compactflash every 5 minutes. We preferred to go with JFFS2
+exactly because of this reason. We never had any problem proceeding this way.
+I'm not sure if it would have been the same with ext2 though.
 
-Perhaps increase the console log level before that.
+Willy
 
-Thanks,
-Rafael
