@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932356AbYDAP24@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760032AbYDAP31@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932356AbYDAP24 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Apr 2008 11:28:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759549AbYDAPTO
+	id S1760032AbYDAP31 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Apr 2008 11:29:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759565AbYDAPTR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Apr 2008 11:19:14 -0400
-Received: from g4t0015.houston.hp.com ([15.201.24.18]:17665 "EHLO
-	g4t0015.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759486AbYDAPSq (ORCPT
+	Tue, 1 Apr 2008 11:19:17 -0400
+Received: from g4t0014.houston.hp.com ([15.201.24.17]:27528 "EHLO
+	g4t0014.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753609AbYDAPSx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Apr 2008 11:18:46 -0400
-Message-Id: <20080401151743.051845641@ldl.fc.hp.com>
+	Tue, 1 Apr 2008 11:18:53 -0400
+Message-Id: <20080401151741.862705956@ldl.fc.hp.com>
 References: <20080401151634.730901933@ldl.fc.hp.com>
 User-Agent: quilt/0.46-1
-Date: Tue, 01 Apr 2008 09:17:11 -0600
+Date: Tue, 01 Apr 2008 09:17:05 -0600
 From: Bjorn Helgaas <bjorn.helgaas@hp.com>
 To: Len Brown <lenb@kernel.org>
 Cc: linux-acpi@vger.kernel.org
@@ -25,144 +25,219 @@ Cc: Thomas Renninger <trenn@suse.de>
 Cc: Rene Herman <rene.herman@keyaccess.nl>
 Cc: Jaroslav Kysela <perex@perex.cz>
 Cc: Andrew Morton <akpm@linux-foundation.org>
-Subject: [patch 37/37] PNP: make interfaces private to the PNP core
-Content-Disposition: inline; filename=pnp-make-interfaces-private
+Subject: [patch 31/37] PNP: convert resource checks to use pnp_get_resource(), not pnp_resource_table
+Content-Disposition: inline; filename=pnp-convert-checks-to-pnp_get_resource
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The interfaces for registering protocols, devices, cards,
-and resource options should only be used inside the PNP core.
+This removes more direct references to pnp_resource_table.
 
 Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
 
----
- drivers/pnp/base.h  |   24 +++++++++++++++++++++++-
- include/linux/pnp.h |   34 ----------------------------------
- 2 files changed, 23 insertions(+), 35 deletions(-)
-
-Index: work7/include/linux/pnp.h
+Index: work7/drivers/pnp/resource.c
 ===================================================================
---- work7.orig/include/linux/pnp.h	2008-03-31 16:51:21.000000000 -0600
-+++ work7/include/linux/pnp.h	2008-03-31 16:52:02.000000000 -0600
-@@ -390,19 +390,12 @@
- #if defined(CONFIG_PNP)
+--- work7.orig/drivers/pnp/resource.c	2008-03-31 17:12:25.000000000 -0600
++++ work7/drivers/pnp/resource.c	2008-03-31 17:15:31.000000000 -0600
+@@ -216,14 +216,17 @@
+ int pnp_check_port(struct pnp_dev *dev, int idx)
+ {
+ 	int i;
++	struct resource *res, *tres;
+ 	struct pnp_dev *tdev;
+ 	resource_size_t *port, *end, *tport, *tend;
  
- /* device management */
--int pnp_register_protocol(struct pnp_protocol *protocol);
--void pnp_unregister_protocol(struct pnp_protocol *protocol);
--int pnp_add_device(struct pnp_dev *dev);
- int pnp_device_attach(struct pnp_dev *pnp_dev);
- void pnp_device_detach(struct pnp_dev *pnp_dev);
- extern struct list_head pnp_global;
- extern int pnp_platform_devices;
- 
- /* multidevice card support */
--int pnp_add_card(struct pnp_card *card);
--void pnp_remove_card(struct pnp_card *card);
--int pnp_add_card_device(struct pnp_card *card, struct pnp_dev *dev);
--void pnp_remove_card_device(struct pnp_dev *dev);
- struct pnp_dev *pnp_request_card_device(struct pnp_card_link *clink,
- 					const char *id, struct pnp_dev *from);
- void pnp_release_card_device(struct pnp_dev *dev);
-@@ -411,23 +404,12 @@
- extern struct list_head pnp_cards;
- 
- /* resource management */
--struct pnp_option *pnp_register_independent_option(struct pnp_dev *dev);
--struct pnp_option *pnp_register_dependent_option(struct pnp_dev *dev,
--						 int priority);
--int pnp_register_irq_resource(struct pnp_option *option, struct pnp_irq *data);
--int pnp_register_dma_resource(struct pnp_option *option, struct pnp_dma *data);
--int pnp_register_port_resource(struct pnp_option *option,
--			       struct pnp_port *data);
--int pnp_register_mem_resource(struct pnp_option *option, struct pnp_mem *data);
--void pnp_init_resources(struct pnp_dev *dev);
- int pnp_auto_config_dev(struct pnp_dev *dev);
--int pnp_validate_config(struct pnp_dev *dev);
- int pnp_start_dev(struct pnp_dev *dev);
- int pnp_stop_dev(struct pnp_dev *dev);
- int pnp_activate_dev(struct pnp_dev *dev);
- int pnp_disable_dev(struct pnp_dev *dev);
- 
--
- /* protocol helpers */
- int pnp_is_active(struct pnp_dev *dev);
- int compare_pnp_id(struct pnp_id *pos, const char *id);
-@@ -437,35 +419,19 @@
- #else
- 
- /* device management */
--static inline int pnp_register_protocol(struct pnp_protocol *protocol) { return -ENODEV; }
--static inline void pnp_unregister_protocol(struct pnp_protocol *protocol) { }
--static inline int pnp_init_device(struct pnp_dev *dev) { return -ENODEV; }
--static inline int pnp_add_device(struct pnp_dev *dev) { return -ENODEV; }
- static inline int pnp_device_attach(struct pnp_dev *pnp_dev) { return -ENODEV; }
- static inline void pnp_device_detach(struct pnp_dev *pnp_dev) { }
- 
- #define pnp_platform_devices 0
- 
- /* multidevice card support */
--static inline int pnp_add_card(struct pnp_card *card) { return -ENODEV; }
--static inline void pnp_remove_card(struct pnp_card *card) { }
--static inline int pnp_add_card_device(struct pnp_card *card, struct pnp_dev *dev) { return -ENODEV; }
--static inline void pnp_remove_card_device(struct pnp_dev *dev) { }
- static inline struct pnp_dev *pnp_request_card_device(struct pnp_card_link *clink, const char *id, struct pnp_dev *from) { return NULL; }
- static inline void pnp_release_card_device(struct pnp_dev *dev) { }
- static inline int pnp_register_card_driver(struct pnp_card_driver *drv) { return -ENODEV; }
- static inline void pnp_unregister_card_driver(struct pnp_card_driver *drv) { }
- 
- /* resource management */
--static inline struct pnp_option *pnp_register_independent_option(struct pnp_dev *dev) { return NULL; }
--static inline struct pnp_option *pnp_register_dependent_option(struct pnp_dev *dev, int priority) { return NULL; }
--static inline int pnp_register_irq_resource(struct pnp_option *option, struct pnp_irq *data) { return -ENODEV; }
--static inline int pnp_register_dma_resource(struct pnp_option *option, struct pnp_dma *data) { return -ENODEV; }
--static inline int pnp_register_port_resource(struct pnp_option *option, struct pnp_port *data) { return -ENODEV; }
--static inline int pnp_register_mem_resource(struct pnp_option *option, struct pnp_mem *data) { return -ENODEV; }
--static inline void pnp_init_resources(struct pnp_dev *dev) { }
- static inline int pnp_auto_config_dev(struct pnp_dev *dev) { return -ENODEV; }
--static inline int pnp_validate_config(struct pnp_dev *dev) { return -ENODEV; }
- static inline int pnp_start_dev(struct pnp_dev *dev) { return -ENODEV; }
- static inline int pnp_stop_dev(struct pnp_dev *dev) { return -ENODEV; }
- static inline int pnp_activate_dev(struct pnp_dev *dev) { return -ENODEV; }
-Index: work7/drivers/pnp/base.h
-===================================================================
---- work7.orig/drivers/pnp/base.h	2008-03-31 16:51:21.000000000 -0600
-+++ work7/drivers/pnp/base.h	2008-03-31 16:55:28.000000000 -0600
-@@ -1,11 +1,33 @@
- extern spinlock_t pnp_lock;
- void *pnp_alloc(long size);
+-	port = &dev->res.port_resource[idx].start;
+-	end = &dev->res.port_resource[idx].end;
++	res = pnp_get_resource(dev, IORESOURCE_IO, idx);
 +
-+int pnp_register_protocol(struct pnp_protocol *protocol);
-+void pnp_unregister_protocol(struct pnp_protocol *protocol);
++	port = &res->start;
++	end = &res->end;
+ 
+ 	/* if the resource doesn't exist, don't complain about it */
+-	if (cannot_compare(dev->res.port_resource[idx].flags))
++	if (cannot_compare(res->flags))
+ 		return 1;
+ 
+ 	/* check if the resource is already in use, skip if the
+@@ -243,9 +246,10 @@
+ 
+ 	/* check for internal conflicts */
+ 	for (i = 0; i < PNP_MAX_PORT && i != idx; i++) {
+-		if (dev->res.port_resource[i].flags & IORESOURCE_IO) {
+-			tport = &dev->res.port_resource[i].start;
+-			tend = &dev->res.port_resource[i].end;
++		tres = pnp_get_resource(dev, IORESOURCE_IO, i);
++		if (tres->flags & IORESOURCE_IO) {
++			tport = &tres->start;
++			tend = &tres->end;
+ 			if (ranged_conflict(port, end, tport, tend))
+ 				return 0;
+ 		}
+@@ -256,12 +260,12 @@
+ 		if (tdev == dev)
+ 			continue;
+ 		for (i = 0; i < PNP_MAX_PORT; i++) {
+-			if (tdev->res.port_resource[i].flags & IORESOURCE_IO) {
+-				if (cannot_compare
+-				    (tdev->res.port_resource[i].flags))
++			tres = pnp_get_resource(tdev, IORESOURCE_IO, i);
++			if (tres->flags & IORESOURCE_IO) {
++				if (cannot_compare(tres->flags))
+ 					continue;
+-				tport = &tdev->res.port_resource[i].start;
+-				tend = &tdev->res.port_resource[i].end;
++				tport = &tres->start;
++				tend = &tres->end;
+ 				if (ranged_conflict(port, end, tport, tend))
+ 					return 0;
+ 			}
+@@ -274,14 +278,17 @@
+ int pnp_check_mem(struct pnp_dev *dev, int idx)
+ {
+ 	int i;
++	struct resource *res, *tres;
+ 	struct pnp_dev *tdev;
+ 	resource_size_t *addr, *end, *taddr, *tend;
+ 
+-	addr = &dev->res.mem_resource[idx].start;
+-	end = &dev->res.mem_resource[idx].end;
++	res = pnp_get_resource(dev, IORESOURCE_MEM, idx);
 +
- void pnp_eisa_id_to_string(u32 id, char *str);
- struct pnp_dev *pnp_alloc_dev(struct pnp_protocol *, int id, char *pnpid);
- struct pnp_card *pnp_alloc_card(struct pnp_protocol *, int id, char *pnpid);
++	addr = &res->start;
++	end = &res->end;
+ 
+ 	/* if the resource doesn't exist, don't complain about it */
+-	if (cannot_compare(dev->res.mem_resource[idx].flags))
++	if (cannot_compare(res->flags))
+ 		return 1;
+ 
+ 	/* check if the resource is already in use, skip if the
+@@ -301,9 +308,10 @@
+ 
+ 	/* check for internal conflicts */
+ 	for (i = 0; i < PNP_MAX_MEM && i != idx; i++) {
+-		if (dev->res.mem_resource[i].flags & IORESOURCE_MEM) {
+-			taddr = &dev->res.mem_resource[i].start;
+-			tend = &dev->res.mem_resource[i].end;
++		tres = pnp_get_resource(dev, IORESOURCE_MEM, i);
++		if (tres->flags & IORESOURCE_MEM) {
++			taddr = &tres->start;
++			tend = &tres->end;
+ 			if (ranged_conflict(addr, end, taddr, tend))
+ 				return 0;
+ 		}
+@@ -314,12 +322,12 @@
+ 		if (tdev == dev)
+ 			continue;
+ 		for (i = 0; i < PNP_MAX_MEM; i++) {
+-			if (tdev->res.mem_resource[i].flags & IORESOURCE_MEM) {
+-				if (cannot_compare
+-				    (tdev->res.mem_resource[i].flags))
++			tres = pnp_get_resource(tdev, IORESOURCE_MEM, i);
++			if (tres->flags & IORESOURCE_MEM) {
++				if (cannot_compare(tres->flags))
+ 					continue;
+-				taddr = &tdev->res.mem_resource[i].start;
+-				tend = &tdev->res.mem_resource[i].end;
++				taddr = &tres->start;
++				tend = &tres->end;
+ 				if (ranged_conflict(addr, end, taddr, tend))
+ 					return 0;
+ 			}
+@@ -337,11 +345,16 @@
+ int pnp_check_irq(struct pnp_dev *dev, int idx)
+ {
+ 	int i;
++	struct resource *res, *tres;
+ 	struct pnp_dev *tdev;
+-	resource_size_t *irq = &dev->res.irq_resource[idx].start;
++	resource_size_t *irq;
 +
-+int pnp_add_device(struct pnp_dev *dev);
- struct pnp_id *pnp_add_id(struct pnp_dev *dev, char *id);
--struct pnp_id *pnp_add_card_id(struct pnp_card *card, char *id);
- int pnp_interface_attach_device(struct pnp_dev *dev);
++	res = pnp_get_resource(dev, IORESOURCE_IRQ, idx);
 +
-+int pnp_add_card(struct pnp_card *card);
-+struct pnp_id *pnp_add_card_id(struct pnp_card *card, char *id);
-+void pnp_remove_card(struct pnp_card *card);
-+int pnp_add_card_device(struct pnp_card *card, struct pnp_dev *dev);
-+void pnp_remove_card_device(struct pnp_dev *dev);
++	irq = &res->start;
+ 
+ 	/* if the resource doesn't exist, don't complain about it */
+-	if (cannot_compare(dev->res.irq_resource[idx].flags))
++	if (cannot_compare(res->flags))
+ 		return 1;
+ 
+ 	/* check if the resource is valid */
+@@ -356,8 +369,9 @@
+ 
+ 	/* check for internal conflicts */
+ 	for (i = 0; i < PNP_MAX_IRQ && i != idx; i++) {
+-		if (dev->res.irq_resource[i].flags & IORESOURCE_IRQ) {
+-			if (dev->res.irq_resource[i].start == *irq)
++		tres = pnp_get_resource(dev, IORESOURCE_IRQ, i);
++		if (tres->flags & IORESOURCE_IRQ) {
++			if (tres->start == *irq)
+ 				return 0;
+ 		}
+ 	}
+@@ -389,11 +403,11 @@
+ 		if (tdev == dev)
+ 			continue;
+ 		for (i = 0; i < PNP_MAX_IRQ; i++) {
+-			if (tdev->res.irq_resource[i].flags & IORESOURCE_IRQ) {
+-				if (cannot_compare
+-				    (tdev->res.irq_resource[i].flags))
++			tres = pnp_get_resource(tdev, IORESOURCE_IRQ, i);
++			if (tres->flags & IORESOURCE_IRQ) {
++				if (cannot_compare(tres->flags))
+ 					continue;
+-				if ((tdev->res.irq_resource[i].start == *irq))
++				if (tres->start == *irq)
+ 					return 0;
+ 			}
+ 		}
+@@ -406,11 +420,16 @@
+ {
+ #ifndef CONFIG_IA64
+ 	int i;
++	struct resource *res, *tres;
+ 	struct pnp_dev *tdev;
+-	resource_size_t *dma = &dev->res.dma_resource[idx].start;
++	resource_size_t *dma;
 +
-+struct pnp_option *pnp_register_independent_option(struct pnp_dev *dev);
-+struct pnp_option *pnp_register_dependent_option(struct pnp_dev *dev,
-+						 int priority);
-+int pnp_register_irq_resource(struct pnp_option *option, struct pnp_irq *data);
-+int pnp_register_dma_resource(struct pnp_option *option, struct pnp_dma *data);
-+int pnp_register_port_resource(struct pnp_option *option,
-+			       struct pnp_port *data);
-+int pnp_register_mem_resource(struct pnp_option *option, struct pnp_mem *data);
-+void pnp_init_resources(struct pnp_dev *dev);
++	res = pnp_get_resource(dev, IORESOURCE_DMA, idx);
 +
- void pnp_fixup_device(struct pnp_dev *dev);
- void pnp_free_option(struct pnp_option *option);
- int __pnp_add_device(struct pnp_dev *dev);
++	dma = &res->start;
+ 
+ 	/* if the resource doesn't exist, don't complain about it */
+-	if (cannot_compare(dev->res.dma_resource[idx].flags))
++	if (cannot_compare(res->flags))
+ 		return 1;
+ 
+ 	/* check if the resource is valid */
+@@ -425,8 +444,9 @@
+ 
+ 	/* check for internal conflicts */
+ 	for (i = 0; i < PNP_MAX_DMA && i != idx; i++) {
+-		if (dev->res.dma_resource[i].flags & IORESOURCE_DMA) {
+-			if (dev->res.dma_resource[i].start == *dma)
++		tres = pnp_get_resource(dev, IORESOURCE_DMA, i);
++		if (tres->flags & IORESOURCE_DMA) {
++			if (tres->start == *dma)
+ 				return 0;
+ 		}
+ 	}
+@@ -444,11 +464,11 @@
+ 		if (tdev == dev)
+ 			continue;
+ 		for (i = 0; i < PNP_MAX_DMA; i++) {
+-			if (tdev->res.dma_resource[i].flags & IORESOURCE_DMA) {
+-				if (cannot_compare
+-				    (tdev->res.dma_resource[i].flags))
++			tres = pnp_get_resource(tdev, IORESOURCE_DMA, i);
++			if (tres->flags & IORESOURCE_DMA) {
++				if (cannot_compare(tres->flags))
+ 					continue;
+-				if ((tdev->res.dma_resource[i].start == *dma))
++				if (tres->start == *dma)
+ 					return 0;
+ 			}
+ 		}
 
 -- 
