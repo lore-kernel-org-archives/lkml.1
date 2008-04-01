@@ -1,151 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932439AbYDAPak@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756921AbYDAPa4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932439AbYDAPak (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Apr 2008 11:30:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758503AbYDAPTG
+	id S1756921AbYDAPa4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Apr 2008 11:30:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759933AbYDAPUT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Apr 2008 11:19:06 -0400
-Received: from g4t0017.houston.hp.com ([15.201.24.20]:12043 "EHLO
-	g4t0017.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759491AbYDAPSk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Apr 2008 11:18:40 -0400
-Message-Id: <20080401151741.667456204@ldl.fc.hp.com>
-References: <20080401151634.730901933@ldl.fc.hp.com>
-User-Agent: quilt/0.46-1
-Date: Tue, 01 Apr 2008 09:17:04 -0600
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: Len Brown <lenb@kernel.org>
-Cc: linux-acpi@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Cc: Adam Belay <ambx1@neo.rr.com>
-Cc: Li Shaohua <shaohua.li@intel.com>
-Cc: Matthieu Castet <castet.matthieu@free.fr>
-Cc: Thomas Renninger <trenn@suse.de>
-Cc: Rene Herman <rene.herman@keyaccess.nl>
-Cc: Jaroslav Kysela <perex@perex.cz>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Subject: [patch 30/37] PNP: convert resource accessors to use pnp_get_resource(), not pnp_resource_table
-Content-Disposition: inline; filename=pnp-convert-accessors-to-pnp_get_resource
+	Tue, 1 Apr 2008 11:20:19 -0400
+Received: from mail.gmx.net ([213.165.64.20]:56666 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1759931AbYDAPUR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Apr 2008 11:20:17 -0400
+X-Authenticated: #5039886
+X-Provags-ID: V01U2FsdGVkX1+I2M1iMKiIWH7wIMOoY8dFyXDXNxsimqeXg3hJyK
+	3thjiqkHME9vH+
+Date: Tue, 1 Apr 2008 17:20:11 +0200
+From: =?iso-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>
+To: Johannes Berg <johannes@sipsolutions.net>
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Arjan van de Ven <arjan@linux.intel.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jiri Kosina <jkosina@suse.cz>
+Subject: Re: [PATCH] evdev: Release eventual input device grabs when
+	getting disconnected
+Message-ID: <20080401152011.GA3044@atjola.homenet>
+References: <20080330184259.GB21375@atjola.homenet> <20080331190509.GA2876@atjola.homenet> <1207050678.5143.43.camel@johannes.berg>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1207050678.5143.43.camel@johannes.berg>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This removes more direct references to pnp_resource_table.
+On 2008.04.01 13:51:18 +0200, Johannes Berg wrote:
+> 
+> On Mon, 2008-03-31 at 21:05 +0200, Björn Steinbrink wrote:
+> > On 2008.03.30 20:42:59 +0200, Björn Steinbrink wrote:
+> > > I can't reproduce the bug on my UP box and currently can't afford
+> > > crashing my SMP box (all the oopses seem to come from SMP kernels, so I
+> > > guess it needs SMP to crash), so while this doesn't show any new
+> > > problems, I can't tell whether it actually fixes anything. Testers
+> > > welcome!
+> > 
+> > Hm, crap, can't reproduce on my x86_64 SMP box either. Tried with
+> > various preemption models as well as rcu classic and preempt. Johannes,
+> > is there anything "special" in your configuration?
+> 
+> slab debugging turned on by default? without it, you'll most likely
+> never notice.
 
-Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
+I tried with slab+debugging, slub+debugging (SLUB_DEBUG_ON was set),
+various preemption models, UP and SMP. No luck. I also wrote a test
+program like yours to eliminate any effects caused by different X.org
+versions, but it just doesn't want to crash :-/
 
-Index: work7/include/linux/pnp.h
-===================================================================
---- work7.orig/include/linux/pnp.h	2008-03-24 15:19:46.000000000 -0600
-+++ work7/include/linux/pnp.h	2008-03-24 15:19:47.000000000 -0600
-@@ -28,12 +28,24 @@
- struct resource *pnp_get_resource(struct pnp_dev *, unsigned int, unsigned int);
- 
- /* Use these instead of directly reading pnp_dev to get resource information */
--#define pnp_port_start(dev,bar)   ((dev)->res.port_resource[(bar)].start)
--#define pnp_port_end(dev,bar)     ((dev)->res.port_resource[(bar)].end)
--#define pnp_port_flags(dev,bar)   ((dev)->res.port_resource[(bar)].flags)
--#define pnp_port_valid(dev,bar) \
--	((pnp_port_flags((dev),(bar)) & (IORESOURCE_IO | IORESOURCE_UNSET)) \
--		== IORESOURCE_IO)
-+
-+#define pnp_port_start(dev,bar)	\
-+	pnp_get_resource(dev, IORESOURCE_IO, bar)->start
-+#define pnp_port_end(dev,bar)	\
-+	pnp_get_resource(dev, IORESOURCE_IO, bar)->end
-+#define pnp_port_flags(dev,bar)	\
-+	pnp_get_resource(dev, IORESOURCE_IO, bar)->flags
-+
-+static inline resource_size_t pnp_port_valid(struct pnp_dev *dev,
-+					     unsigned int bar)
-+{
-+	struct resource *res = pnp_get_resource(dev, IORESOURCE_IO, bar);
-+
-+	if (res && !(res->flags & IORESOURCE_UNSET))
-+		return 1;
-+	return 0;
-+}
-+
- #define pnp_port_len(dev,bar) \
- 	((pnp_port_start((dev),(bar)) == 0 &&	\
- 	  pnp_port_end((dev),(bar)) ==		\
-@@ -42,12 +54,23 @@
- 	 (pnp_port_end((dev),(bar)) -		\
- 	  pnp_port_start((dev),(bar)) + 1))
- 
--#define pnp_mem_start(dev,bar)   ((dev)->res.mem_resource[(bar)].start)
--#define pnp_mem_end(dev,bar)     ((dev)->res.mem_resource[(bar)].end)
--#define pnp_mem_flags(dev,bar)   ((dev)->res.mem_resource[(bar)].flags)
--#define pnp_mem_valid(dev,bar) \
--	((pnp_mem_flags((dev),(bar)) & (IORESOURCE_MEM | IORESOURCE_UNSET)) \
--		== IORESOURCE_MEM)
-+#define pnp_mem_start(dev,bar)	\
-+	pnp_get_resource(dev, IORESOURCE_MEM, bar)->start
-+#define pnp_mem_end(dev,bar)	\
-+	pnp_get_resource(dev, IORESOURCE_MEM, bar)->end
-+#define pnp_mem_flags(dev,bar)	\
-+	pnp_get_resource(dev, IORESOURCE_MEM, bar)->flags
-+
-+static inline resource_size_t pnp_mem_valid(struct pnp_dev *dev,
-+					    unsigned int bar)
-+{
-+	struct resource *res = pnp_get_resource(dev, IORESOURCE_MEM, bar);
-+
-+	if (res && !(res->flags & IORESOURCE_UNSET))
-+		return 1;
-+	return 0;
-+}
-+
- #define pnp_mem_len(dev,bar) \
- 	((pnp_mem_start((dev),(bar)) == 0 &&	\
- 	  pnp_mem_end((dev),(bar)) ==		\
-@@ -56,17 +79,35 @@
- 	 (pnp_mem_end((dev),(bar)) -		\
- 	  pnp_mem_start((dev),(bar)) + 1))
- 
--#define pnp_irq(dev,bar)	 ((dev)->res.irq_resource[(bar)].start)
--#define pnp_irq_flags(dev,bar)	 ((dev)->res.irq_resource[(bar)].flags)
--#define pnp_irq_valid(dev,bar) \
--	((pnp_irq_flags((dev),(bar)) & (IORESOURCE_IRQ | IORESOURCE_UNSET)) \
--		== IORESOURCE_IRQ)
--
--#define pnp_dma(dev,bar)	 ((dev)->res.dma_resource[(bar)].start)
--#define pnp_dma_flags(dev,bar)	 ((dev)->res.dma_resource[(bar)].flags)
--#define pnp_dma_valid(dev,bar) \
--	((pnp_dma_flags((dev),(bar)) & (IORESOURCE_DMA | IORESOURCE_UNSET)) \
--		== IORESOURCE_DMA)
-+#define pnp_irq(dev,bar)	\
-+	pnp_get_resource(dev, IORESOURCE_IRQ, bar)->start
-+#define pnp_irq_flags(dev,bar)	\
-+	pnp_get_resource(dev, IORESOURCE_IRQ, bar)->flags
-+
-+static inline resource_size_t pnp_irq_valid(struct pnp_dev *dev,
-+					    unsigned int bar)
-+{
-+	struct resource *res = pnp_get_resource(dev, IORESOURCE_IRQ, bar);
-+
-+	if (res && !(res->flags & IORESOURCE_UNSET))
-+		return 1;
-+	return 0;
-+}
-+
-+#define pnp_dma(dev,bar)	\
-+	pnp_get_resource(dev, IORESOURCE_DMA, bar)->start
-+#define pnp_dma_flags(dev,bar)	\
-+	pnp_get_resource(dev, IORESOURCE_DMA, bar)->flags
-+
-+static inline resource_size_t pnp_dma_valid(struct pnp_dev *dev,
-+					    unsigned int bar)
-+{
-+	struct resource *res = pnp_get_resource(dev, IORESOURCE_DMA, bar);
-+
-+	if (res && !(res->flags & IORESOURCE_UNSET))
-+		return 1;
-+	return 0;
-+}
- 
- #define PNP_PORT_FLAG_16BITADDR	(1<<0)
- #define PNP_PORT_FLAG_FIXED	(1<<1)
-
--- 
+Björn
