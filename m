@@ -1,86 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755419AbYDBMHP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755370AbYDBMMA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755419AbYDBMHP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 08:07:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753162AbYDBMHD
+	id S1755370AbYDBMMA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 08:12:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754042AbYDBMLw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 08:07:03 -0400
-Received: from smtp1.infomaniak.ch ([84.16.68.89]:50433 "EHLO
-	smtp1.infomaniak.ch" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752846AbYDBMHB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 08:07:01 -0400
-From: Didier Raboud <didier@raboud.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: =?iso-8859-15?q?2=2E6=2E25-rc7=A0=3A_hibernation_sometimes_not_resuming_on?=
- =?iso-8859-15?q?_Dell_Latitude?= D630
-Date: Wed, 2 Apr 2008 14:06:29 +0200
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org, debian-kernel@lists.debian.org
-References: <200803311823.36693.didier@raboud.com> <200804012318.26002.didier@raboud.com> <200804012322.35672.rjw@sisk.pl>
-In-Reply-To: <200804012322.35672.rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart1900600.ZKocu9aPAs";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200804021406.32668.didier@raboud.com>
-X-Antivirus: Dr.Web (R) for Mail Servers on smtp1 host
-X-Antivirus-Code: 100000
+	Wed, 2 Apr 2008 08:11:52 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:4357 "EHLO spitz.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753866AbYDBMLw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Apr 2008 08:11:52 -0400
+Date: Tue, 1 Apr 2008 21:37:53 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Didier Raboud <didier@raboud.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org,
+       debian-kernel@lists.debian.org
+Subject: Re: 2.6.25-rc7
+Message-ID: <20080401193753.GB4251@ucw.cz>
+References: <200803311823.36693.didier@raboud.com> <200803312303.19623.didier@raboud.com> <200804010818.59269.didier@raboud.com> <200804010841.45623.didier@raboud.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200804010841.45623.didier@raboud.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart1900600.ZKocu9aPAs
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
 
-Le mardi, 1 avril 2008 23.22:35 Rafael J. Wysocki, vous avez =E9crit=A0:
-> On Tuesday, 1 of April 2008, Didier Raboud wrote:
-> > Le mardi, 1 avril 2008 23.11:15 Rafael J. Wysocki, vous avez =E9crit=A0:
-> > > (...)
-> > > Can you please test the in-kernel hibernation, then?
-> > >
-> > > Rafael
+Hi!
+
+> > > I do (Debian default option)... I will build a kernel without it and
+> > > retry.
 > >
-> > Hi,
+> > I compiled the same kernel with CONFIG_USB_SUSPEND not set. After 6
+> > hibernations, I haven't had a problem for now.
 > >
-> > would like to. How=A0?
-> >
-> > # echo -n disk > /sys/power/state
->
-> Yes, should work without the "-n", too.  Of course, you have to use the
-> 'resume=3D' kernel command line argument for this to work.
->
-> Perhaps increase the console log level before that.
->
-> Thanks,
-> Rafael
 
-Ok. I found a "better" way to do it=A0: just uninstall uswsusp and let=20
-kpowersave use hal to use suspend :-)
+> It hung after the 10th hibernation...
+> 
+> I wonder if the problem would not be of Debian's uswsusp binary, because tty1 
+> tells me that the image is successfully loaded but I just can't act on my box 
+> afterwards.
+> 
+> There is a bug open in the Debian BTS requesting a packaging of the new 
+> upstream version (0.8) but the maintainer is told to be too busy to handle it 
+> for now.
+> 
+> Don't know...
 
-Anyway, so far so good (with USB_SUSPEND not set), no hang. I will test wit=
-h=20
-USB_SUSPEND set and the incoming 2.6.25-rc8.
+Just do echo disk > /sys/power/state to use swsusp and bypass uswsusp?
 
-Regards,=20
 
-Didier
-
---nextPart1900600.ZKocu9aPAs
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBH83bIwW1nnOmiePARApARAJ9orfuxozIfXDyfdRTHWQt5+jtqNQCeK0Et
-rYfWUBaM6sJF84q3TvtrSqE=
-=FS5W
------END PGP SIGNATURE-----
-
---nextPart1900600.ZKocu9aPAs--
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
