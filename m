@@ -1,84 +1,353 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758235AbYDAOE1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758553AbYDAOGY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758235AbYDAOE1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Apr 2008 10:04:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754633AbYDAOER
+	id S1758553AbYDAOGY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Apr 2008 10:06:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754989AbYDAOGQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Apr 2008 10:04:17 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:41564 "EHLO
-	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754126AbYDAOER (ORCPT
+	Tue, 1 Apr 2008 10:06:16 -0400
+Received: from mtagate4.de.ibm.com ([195.212.29.153]:27286 "EHLO
+	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752047AbYDAOGP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Apr 2008 10:04:17 -0400
-Date: Tue, 1 Apr 2008 15:32:12 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: kernel list <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>,
-       marcel@holtmann.org, maxk@qualcomm.com
-Subject: hci_usb.h: fix hard-to-trigger race
-Message-ID: <20080401133212.GA24598@elf.ucw.cz>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Tue, 1 Apr 2008 10:06:15 -0400
+Subject: [PATCH 1/3] hugetlbfs: cleanup and new primitives for s390
+From: Gerald Schaefer <gerald.schaefer@de.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
+       schwidefsky@de.ibm.com, Ingo Molnar <mingo@elte.hu>,
+       "David S. Miller" <davem@davemloft.net>,
+       Tony Luck <tony.luck@intel.com>, Paul Mackerras <paulus@samba.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Paul Mundt <lethal@linux-sh.org>
+In-Reply-To: <1207058485.5063.36.camel@localhost.localdomain>
+References: <1207058485.5063.36.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Tue, 01 Apr 2008 16:06:12 +0200
+Message-Id: <1207058772.5063.38.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.0 (2.8.0-40.el5_1.1) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+[PATCH 1/3] hugetlbfs: cleanup and new primitives for s390
 
-If someone tries to _urb_unlink while _urb_queue_head is running,
-he'll see _urb->queue == NULL and fail to do any locking. Prevent that
-from happening by strategically placed barriers.
+This patch moves all architecture functions for hugetlb to architecture
+header files (include/asm-foo/hugetlb.h). It also removes (!)
+ARCH_HAS_HUGEPAGE_ONLY_RANGE, ARCH_HAS_HUGETLB_FREE_PGD_RANGE,
+ARCH_HAS_PREPARE_HUGEPAGE_RANGE, ARCH_HAS_SETCLEAR_HUGE_PTE and
+ARCH_HAS_HUGETLB_PREFAULT_HOOK.
 
-Signed-off-by: Pavel Machek <pavel@suse.cz>
+Cross-Compile tests on the affected architectures (and one unaffected)
+worked fine, but I had no cross-compiler for sh.
 
-diff --git a/drivers/bluetooth/hci_usb.h b/drivers/bluetooth/hci_usb.h
-index 414080a..1790cc8 100644
---- a/drivers/bluetooth/hci_usb.h
-+++ b/drivers/bluetooth/hci_usb.h
-@@ -70,7 +70,8 @@ static inline void _urb_queue_head(struc
- {
- 	unsigned long flags;
- 	spin_lock_irqsave(&q->lock, flags);
--	list_add(&_urb->list, &q->head); _urb->queue = q;
-+	/* _urb_unlink needs to know which spinlock to use, thus mb(). */
-+	_urb->queue = q; mb(); list_add(&_urb->list, &q->head);
- 	spin_unlock_irqrestore(&q->lock, flags);
- }
- 
-@@ -78,19 +79,23 @@ static inline void _urb_queue_tail(struc
- {
- 	unsigned long flags;
- 	spin_lock_irqsave(&q->lock, flags);
--	list_add_tail(&_urb->list, &q->head); _urb->queue = q;
-+	/* _urb_unlink needs to know which spinlock to use, thus mb(). */
-+	_urb->queue = q; mb(); list_add_tail(&_urb->list, &q->head);
- 	spin_unlock_irqrestore(&q->lock, flags);
- }
- 
- static inline void _urb_unlink(struct _urb *_urb)
- {
--	struct _urb_queue *q = _urb->queue;
-+	struct _urb_queue *q;
- 	unsigned long flags;
--	if (q) {
--		spin_lock_irqsave(&q->lock, flags);
--		list_del(&_urb->list); _urb->queue = NULL;
--		spin_unlock_irqrestore(&q->lock, flags);
--	}
+Signed-off-by: Gerald Schaefer <gerald.schaefer@de.ibm.com>
+Acked-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
+---
+
+ include/asm-ia64/hugetlb.h    |   21 +++++++++++++++++++
+ include/asm-ia64/page.h       |    6 -----
+ include/asm-powerpc/hugetlb.h |   35 +++++++++++++++++++++++++++++++
+ include/asm-powerpc/page_64.h |    7 ------
+ include/asm-sh/hugetlb.h      |   28 +++++++++++++++++++++++++
+ include/asm-sparc64/hugetlb.h |   30 +++++++++++++++++++++++++++
+ include/asm-sparc64/page.h    |    2 -
+ include/asm-x86/hugetlb.h     |   28 +++++++++++++++++++++++++
+ include/linux/hugetlb.h       |   46 ------------------------------------------
+ 9 files changed, 143 insertions(+), 60 deletions(-)
+
+Index: linux-2.6.25-rc7/include/asm-ia64/hugetlb.h
+===================================================================
+--- /dev/null
++++ linux-2.6.25-rc7/include/asm-ia64/hugetlb.h
+@@ -0,0 +1,21 @@
++#ifndef _ASM_IA64_HUGETLB_H
++#define _ASM_IA64_HUGETLB_H
 +
-+	mb();
-+	q = _urb->queue;
-+	/* If q is NULL, it will die at easy-to-debug NULL pointer dereference.
-+	   No need to BUG(). */
-+	spin_lock_irqsave(&q->lock, flags);
-+	list_del(&_urb->list); _urb->queue = NULL;
-+	spin_unlock_irqrestore(&q->lock, flags);
- }
++#include <asm/page.h>
++
++
++#define is_hugepage_only_range(mm, addr, len)		\
++	(REGION_NUMBER(addr) == RGN_HPAGE ||	\
++	 REGION_NUMBER((addr)+(len)-1) == RGN_HPAGE)
++
++void hugetlb_free_pgd_range(struct mmu_gather **tlb, unsigned long addr,
++			    unsigned long end, unsigned long floor,
++			    unsigned long ceiling);
++int prepare_hugepage_range(unsigned long addr, unsigned long len);
++
++#define set_huge_pte_at(mm, addr, ptep, pte)	set_pte_at(mm, addr, ptep, pte)
++#define huge_ptep_get_and_clear(mm, addr, ptep) ptep_get_and_clear(mm, addr, ptep)
++
++#define hugetlb_prefault_arch_hook(mm)		do { } while (0)
++
++#endif /* _ASM_IA64_HUGETLB_H */
+Index: linux-2.6.25-rc7/include/asm-sh/hugetlb.h
+===================================================================
+--- /dev/null
++++ linux-2.6.25-rc7/include/asm-sh/hugetlb.h
+@@ -0,0 +1,28 @@
++#ifndef _ASM_SH_HUGETLB_H
++#define _ASM_SH_HUGETLB_H
++
++#include <asm/page.h>
++
++
++#define is_hugepage_only_range(mm, addr, len)	0
++#define hugetlb_free_pgd_range			free_pgd_range
++
++/*
++ * If the arch doesn't supply something else, assume that hugepage
++ * size aligned regions are ok without further preparation.
++ */
++static inline int prepare_hugepage_range(unsigned long addr, unsigned long len)
++{
++	if (len & ~HPAGE_MASK)
++		return -EINVAL;
++	if (addr & ~HPAGE_MASK)
++		return -EINVAL;
++	return 0;
++}
++
++#define set_huge_pte_at(mm, addr, ptep, pte)	set_pte_at(mm, addr, ptep, pte)
++#define huge_ptep_get_and_clear(mm, addr, ptep) ptep_get_and_clear(mm, addr, ptep)
++
++#define hugetlb_prefault_arch_hook(mm)		do { } while (0)
++
++#endif /* _ASM_SH_HUGETLB_H */
+Index: linux-2.6.25-rc7/include/asm-sparc64/hugetlb.h
+===================================================================
+--- /dev/null
++++ linux-2.6.25-rc7/include/asm-sparc64/hugetlb.h
+@@ -0,0 +1,30 @@
++#ifndef _ASM_SPARC64_HUGETLB_H
++#define _ASM_SPARC64_HUGETLB_H
++
++#include <asm/page.h>
++
++
++#define is_hugepage_only_range(mm, addr, len)	0
++#define hugetlb_free_pgd_range			free_pgd_range
++
++/*
++ * If the arch doesn't supply something else, assume that hugepage
++ * size aligned regions are ok without further preparation.
++ */
++static inline int prepare_hugepage_range(unsigned long addr, unsigned long len)
++{
++	if (len & ~HPAGE_MASK)
++		return -EINVAL;
++	if (addr & ~HPAGE_MASK)
++		return -EINVAL;
++	return 0;
++}
++
++void set_huge_pte_at(struct mm_struct *mm, unsigned long addr,
++		     pte_t *ptep, pte_t pte);
++pte_t huge_ptep_get_and_clear(struct mm_struct *mm, unsigned long addr,
++			      pte_t *ptep);
++
++void hugetlb_prefault_arch_hook(struct mm_struct *mm);
++
++#endif /* _ASM_SPARC64_HUGETLB_H */
+Index: linux-2.6.25-rc7/include/asm-x86/hugetlb.h
+===================================================================
+--- /dev/null
++++ linux-2.6.25-rc7/include/asm-x86/hugetlb.h
+@@ -0,0 +1,28 @@
++#ifndef _ASM_X86_HUGETLB_H
++#define _ASM_X86_HUGETLB_H
++
++#include <asm/page.h>
++
++
++#define is_hugepage_only_range(mm, addr, len)	0
++#define hugetlb_free_pgd_range			free_pgd_range
++
++/*
++ * If the arch doesn't supply something else, assume that hugepage
++ * size aligned regions are ok without further preparation.
++ */
++static inline int prepare_hugepage_range(unsigned long addr, unsigned long len)
++{
++	if (len & ~HPAGE_MASK)
++		return -EINVAL;
++	if (addr & ~HPAGE_MASK)
++		return -EINVAL;
++	return 0;
++}
++
++#define set_huge_pte_at(mm, addr, ptep, pte)	set_pte_at(mm, addr, ptep, pte)
++#define huge_ptep_get_and_clear(mm, addr, ptep) ptep_get_and_clear(mm, addr, ptep)
++
++#define hugetlb_prefault_arch_hook(mm)		do { } while (0)
++
++#endif /* _ASM_X86_HUGETLB_H */
+Index: linux-2.6.25-rc7/include/linux/hugetlb.h
+===================================================================
+--- linux-2.6.25-rc7.orig/include/linux/hugetlb.h
++++ linux-2.6.25-rc7/include/linux/hugetlb.h
+@@ -8,6 +8,7 @@
+ #include <linux/mempolicy.h>
+ #include <linux/shm.h>
+ #include <asm/tlbflush.h>
++#include <asm/hugetlb.h>
  
- struct hci_usb {
+ struct ctl_table;
+ 
+@@ -51,51 +52,6 @@ int pmd_huge(pmd_t pmd);
+ void hugetlb_change_protection(struct vm_area_struct *vma,
+ 		unsigned long address, unsigned long end, pgprot_t newprot);
+ 
+-#ifndef ARCH_HAS_HUGEPAGE_ONLY_RANGE
+-#define is_hugepage_only_range(mm, addr, len)	0
+-#endif
+-
+-#ifndef ARCH_HAS_HUGETLB_FREE_PGD_RANGE
+-#define hugetlb_free_pgd_range	free_pgd_range
+-#else
+-void hugetlb_free_pgd_range(struct mmu_gather **tlb, unsigned long addr,
+-			    unsigned long end, unsigned long floor,
+-			    unsigned long ceiling);
+-#endif
+-
+-#ifndef ARCH_HAS_PREPARE_HUGEPAGE_RANGE
+-/*
+- * If the arch doesn't supply something else, assume that hugepage
+- * size aligned regions are ok without further preparation.
+- */
+-static inline int prepare_hugepage_range(unsigned long addr, unsigned long len)
+-{
+-	if (len & ~HPAGE_MASK)
+-		return -EINVAL;
+-	if (addr & ~HPAGE_MASK)
+-		return -EINVAL;
+-	return 0;
+-}
+-#else
+-int prepare_hugepage_range(unsigned long addr, unsigned long len);
+-#endif
+-
+-#ifndef ARCH_HAS_SETCLEAR_HUGE_PTE
+-#define set_huge_pte_at(mm, addr, ptep, pte)	set_pte_at(mm, addr, ptep, pte)
+-#define huge_ptep_get_and_clear(mm, addr, ptep) ptep_get_and_clear(mm, addr, ptep)
+-#else
+-void set_huge_pte_at(struct mm_struct *mm, unsigned long addr,
+-		     pte_t *ptep, pte_t pte);
+-pte_t huge_ptep_get_and_clear(struct mm_struct *mm, unsigned long addr,
+-			      pte_t *ptep);
+-#endif
+-
+-#ifndef ARCH_HAS_HUGETLB_PREFAULT_HOOK
+-#define hugetlb_prefault_arch_hook(mm)		do { } while (0)
+-#else
+-void hugetlb_prefault_arch_hook(struct mm_struct *mm);
+-#endif
+-
+ #else /* !CONFIG_HUGETLB_PAGE */
+ 
+ static inline int is_vm_hugetlb_page(struct vm_area_struct *vma)
+Index: linux-2.6.25-rc7/include/asm-powerpc/hugetlb.h
+===================================================================
+--- /dev/null
++++ linux-2.6.25-rc7/include/asm-powerpc/hugetlb.h
+@@ -0,0 +1,35 @@
++#ifndef _ASM_POWERPC_HUGETLB_H
++#define _ASM_POWERPC_HUGETLB_H
++
++#include <asm/page.h>
++
++
++extern int is_hugepage_only_range(struct mm_struct *m,
++				  unsigned long addr,
++				  unsigned long len);
++
++void hugetlb_free_pgd_range(struct mmu_gather **tlb, unsigned long addr,
++			    unsigned long end, unsigned long floor,
++			    unsigned long ceiling);
++
++/*
++ * If the arch doesn't supply something else, assume that hugepage
++ * size aligned regions are ok without further preparation.
++ */
++static inline int prepare_hugepage_range(unsigned long addr, unsigned long len)
++{
++	if (len & ~HPAGE_MASK)
++		return -EINVAL;
++	if (addr & ~HPAGE_MASK)
++		return -EINVAL;
++	return 0;
++}
++
++void set_huge_pte_at(struct mm_struct *mm, unsigned long addr,
++		     pte_t *ptep, pte_t pte);
++pte_t huge_ptep_get_and_clear(struct mm_struct *mm, unsigned long addr,
++			      pte_t *ptep);
++
++#define hugetlb_prefault_arch_hook(mm)		do { } while (0)
++
++#endif /* _ASM_POWERPC_HUGETLB_H */
+Index: linux-2.6.25-rc7/include/asm-ia64/page.h
+===================================================================
+--- linux-2.6.25-rc7.orig/include/asm-ia64/page.h
++++ linux-2.6.25-rc7/include/asm-ia64/page.h
+@@ -54,9 +54,6 @@
+ # define HPAGE_MASK		(~(HPAGE_SIZE - 1))
+ 
+ # define HAVE_ARCH_HUGETLB_UNMAPPED_AREA
+-# define ARCH_HAS_HUGEPAGE_ONLY_RANGE
+-# define ARCH_HAS_PREPARE_HUGEPAGE_RANGE
+-# define ARCH_HAS_HUGETLB_FREE_PGD_RANGE
+ #endif /* CONFIG_HUGETLB_PAGE */
+ 
+ #ifdef __ASSEMBLY__
+@@ -153,9 +150,6 @@ typedef union ia64_va {
+ # define htlbpage_to_page(x)	(((unsigned long) REGION_NUMBER(x) << 61)			\
+ 				 | (REGION_OFFSET(x) >> (HPAGE_SHIFT-PAGE_SHIFT)))
+ # define HUGETLB_PAGE_ORDER	(HPAGE_SHIFT - PAGE_SHIFT)
+-# define is_hugepage_only_range(mm, addr, len)		\
+-	 (REGION_NUMBER(addr) == RGN_HPAGE ||	\
+-	  REGION_NUMBER((addr)+(len)-1) == RGN_HPAGE)
+ extern unsigned int hpage_shift;
+ #endif
+ 
+Index: linux-2.6.25-rc7/include/asm-powerpc/page_64.h
+===================================================================
+--- linux-2.6.25-rc7.orig/include/asm-powerpc/page_64.h
++++ linux-2.6.25-rc7/include/asm-powerpc/page_64.h
+@@ -128,11 +128,6 @@ extern void slice_init_context(struct mm
+ extern void slice_set_user_psize(struct mm_struct *mm, unsigned int psize);
+ #define slice_mm_new_context(mm)	((mm)->context.id == 0)
+ 
+-#define ARCH_HAS_HUGEPAGE_ONLY_RANGE
+-extern int is_hugepage_only_range(struct mm_struct *m,
+-				  unsigned long addr,
+-				  unsigned long len);
+-
+ #endif /* __ASSEMBLY__ */
+ #else
+ #define slice_init()
+@@ -146,8 +141,6 @@ do {						\
+ 
+ #ifdef CONFIG_HUGETLB_PAGE
+ 
+-#define ARCH_HAS_HUGETLB_FREE_PGD_RANGE
+-#define ARCH_HAS_SETCLEAR_HUGE_PTE
+ #define HAVE_ARCH_HUGETLB_UNMAPPED_AREA
+ 
+ #endif /* !CONFIG_HUGETLB_PAGE */
+Index: linux-2.6.25-rc7/include/asm-sparc64/page.h
+===================================================================
+--- linux-2.6.25-rc7.orig/include/asm-sparc64/page.h
++++ linux-2.6.25-rc7/include/asm-sparc64/page.h
+@@ -39,8 +39,6 @@
+ #define HPAGE_SIZE		(_AC(1,UL) << HPAGE_SHIFT)
+ #define HPAGE_MASK		(~(HPAGE_SIZE - 1UL))
+ #define HUGETLB_PAGE_ORDER	(HPAGE_SHIFT - PAGE_SHIFT)
+-#define ARCH_HAS_SETCLEAR_HUGE_PTE
+-#define ARCH_HAS_HUGETLB_PREFAULT_HOOK
+ #define HAVE_ARCH_HUGETLB_UNMAPPED_AREA
+ #endif
+ 
 
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
