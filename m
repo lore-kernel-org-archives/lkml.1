@@ -1,68 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758547AbYDAMIq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755649AbYDAMMz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758547AbYDAMIq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Apr 2008 08:08:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752831AbYDAMIi
+	id S1755649AbYDAMMz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Apr 2008 08:12:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752992AbYDAMMs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Apr 2008 08:08:38 -0400
-Received: from py-out-1112.google.com ([64.233.166.178]:17166 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752047AbYDAMIh (ORCPT
+	Tue, 1 Apr 2008 08:12:48 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:34293 "EHLO
+	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752227AbYDAMMr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Apr 2008 08:08:37 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=JEUDBqfxtUd0awB57urM2vVKoVkfnwkQgZdSOC08uhsAUXDMfxWrAHQnCjafj24tO6O5Py9nN3MFDW5yQQNVi0Z3QfPFw3SlmikjpojIk1KNcLKkKfJvxo6OspDGO7XFCjLlvrkKuC2zLm4QtYldqEEmh/0Twbbc+Uqfugy5pRc=
-Message-ID: <84144f020804010508k3099b2bagf2f1c0d2747a983@mail.gmail.com>
-Date: Tue, 1 Apr 2008 15:08:36 +0300
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: "Artem Bityutskiy" <Artem.Bityutskiy@nokia.com>
-Subject: Re: [RFC PATCH 20/26] UBIFS: add VFS operations
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       "Adrian Hunter" <ext-adrian.hunter@nokia.com>
-In-Reply-To: <1206629746-4298-21-git-send-email-Artem.Bityutskiy@nokia.com>
+	Tue, 1 Apr 2008 08:12:47 -0400
+Date: Tue, 1 Apr 2008 14:13:23 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Andi Kleen <andi@firstfloor.org>,
+       kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: agpgart: when telling user you'll corrupt his data, at least
+	do it at KERN_CRIT
+Message-ID: <20080401121323.GB12129@elf.ucw.cz>
+References: <20080328112507.GA10774@elf.ucw.cz> <20080328113528.GA8077@elte.hu> <20080328134451.GB4544@ucw.cz> <20080328141348.GE29218@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <1206629746-4298-1-git-send-email-Artem.Bityutskiy@nokia.com>
-	 <1206629746-4298-21-git-send-email-Artem.Bityutskiy@nokia.com>
-X-Google-Sender-Auth: dbb618f8e980aed2
+In-Reply-To: <20080328141348.GE29218@elte.hu>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Artem,
+On Fri 2008-03-28 15:13:48, Ingo Molnar wrote:
+> 
+> * Pavel Machek <pavel@ucw.cz> wrote:
+> 
+> > On Fri 2008-03-28 12:35:28, Ingo Molnar wrote:
+> > > 
+> > > * Pavel Machek <pavel@ucw.cz> wrote:
+> > > 
+> > > > IOMMU off means very bad stuff may happen, like data corruption on 
+> > > > your hard drives. At least tells users this is serious...
+> > > 
+> > > ouch. Please at minimum lets turn this into a panic(), but best would be 
+> > > to trim memory in this case, hm?
+> > 
+> > Andi tells me we already fallback to swiotlb, so messages are not on 
+> > wrong loglevel; they contain confusing/obsolete text.
+> 
+> yes that is the theory - but how did your disk get corrupted in 
+> practice? ;-)
 
-On Thu, Mar 27, 2008 at 5:55 PM, Artem Bityutskiy
-<Artem.Bityutskiy@nokia.com> wrote:
->  +static int ubifs_set_page_dirty(struct page *page)
->  +{
->  +       /*
->  +        * An attempt to dirty a page without budgeting for it - should not
->  +        * happen.
->  +        */
->  +       ubifs_assert(0);
->  +       return __set_page_dirty_nobuffers(page);
->  +}
->  +
->  +static int ubifs_releasepage(struct page *page, gfp_t unused_gfp_flags)
->  +{
->  +       /*
->  +        * An attempt to release a dirty page without budgeting for it - should
->  +        * not happen.
->  +        */
->  +       ubifs_assert(PageLocked(page));
->  +       if (PageWriteback(page))
->  +               return 0;
->  +       ubifs_assert(PagePrivate(page));
->  +       ubifs_assert(0);
->  +       ClearPagePrivate(page);
->  +       ClearPageChecked(page);
->  +       return 1;
->  +}
+Well, if you try suspend/resume, without iommu suspend/resume support
+(which is not there in some cases), you get nasty data
+corruption. ("PCI DMA will does not work").
 
-So you don't expect the VM to ever call these functions? Why?
+Then, I saw [obsolete] printk(KERN_ERR) that told me that PCI DMA will
+not work, and happily continued to boot.
 
-                        Pekka
+I'll fix the messages.
+								Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
