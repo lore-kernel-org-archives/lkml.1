@@ -1,57 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760170AbYDAQAU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760300AbYDAQAq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760170AbYDAQAU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Apr 2008 12:00:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752805AbYDAQAF
+	id S1760300AbYDAQAq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Apr 2008 12:00:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756851AbYDAQAg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Apr 2008 12:00:05 -0400
-Received: from rv-out-0910.google.com ([209.85.198.189]:60027 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751280AbYDAQAE (ORCPT
+	Tue, 1 Apr 2008 12:00:36 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:49956 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752805AbYDAQAf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Apr 2008 12:00:04 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=bRQVQ38UTtWNUPVzJvNnWXF1pMKQ6Lfvkn+ZsHMdejNaGoYvpV5T4rMdL5svhvqEVmYzxUdGKcm5ohBn3mCkOcK9xxwBpY9q+a/KygzAxgxGSJKvIszAZ5DtqeN4alZC1I7rkqrDa9MnP8zOa5j8k3XAeAL9w+mdb5J0SgjU1M4=
-Message-ID: <84144f020804010900s5335988ai58546874a6a2f8bd@mail.gmail.com>
-Date: Tue, 1 Apr 2008 19:00:03 +0300
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: "Balbir Singh" <balbir@linux.vnet.ibm.com>
-Subject: Re: [RFC][-mm] Add an owner to the mm_struct (v4)
-Cc: "Paul Menage" <menage@google.com>, "Pavel Emelianov" <xemul@openvz.org>,
-       "Hugh Dickins" <hugh@veritas.com>,
-       "Sudhir Kumar" <skumar@linux.vnet.ibm.com>,
-       "YAMAMOTO Takashi" <yamamoto@valinux.co.jp>, lizf@cn.fujitsu.com,
-       linux-kernel@vger.kernel.org, taka@valinux.co.jp, linux-mm@kvack.org,
-       "David Rientjes" <rientjes@google.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20080401124312.23664.64616.sendpatchset@localhost.localdomain>
+	Tue, 1 Apr 2008 12:00:35 -0400
+From: Chris Mason <chris.mason@oracle.com>
+To: Alex Chiang <achiang@hp.com>
+Subject: Re: [ANNOUNCE] Btrfs v0.13
+Date: Tue, 1 Apr 2008 11:58:37 -0400
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, btrfs-devel@oss.oracle.com
+References: <200802211609.50563.chris.mason@oracle.com> <20080331.134510.126138884.davem@davemloft.net> <20080331224344.GB2362@ldl.fc.hp.com>
+In-Reply-To: <20080331224344.GB2362@ldl.fc.hp.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <20080401124312.23664.64616.sendpatchset@localhost.localdomain>
-X-Google-Sender-Auth: 176494318ca95270
+Message-Id: <200804011158.37620.chris.mason@oracle.com>
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Monday 31 March 2008, Alex Chiang wrote:
+> * David Miller <davem@davemloft.net>:
+> > From: Alex Chiang <achiang@hp.com>
+> > Date: Mon, 31 Mar 2008 14:26:33 -0600
+> >
+> > > I've gotten as far as successfully creating a btrfs filesystem
+> > > (at least that's what btrfsck tells me), but haven't been able to
+> > > mount it yet, probably because of the sector size issue.
+> >
+> > You should be able to make a filesystem with a sector
+> > size >= PAGE_SIZE and it should work just fine.  Please
+> > give it a try.
+>
+> Hrm, I'm having issues still. First, here's a patch for
+> mkfs.btrfs to allow the user to pass in a different sector size.
 
-On Tue, Apr 1, 2008 at 3:43 PM, Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
->  @@ -227,8 +227,9 @@ struct mm_struct {
->         /* aio bits */
->         rwlock_t                ioctx_list_lock;
->         struct kioctx           *ioctx_list;
->  -#ifdef CONFIG_CGROUP_MEM_RES_CTLR
->  -       struct mem_cgroup *mem_cgroup;
->  +#ifdef CONFIG_MM_OWNER
->  +       struct task_struct *owner;      /* The thread group leader that */
->  +                                       /* owns the mm_struct.          */
->   #endif
+I did this a little differently, switching to getopt_long in mkfs.btrfs and 
+using [-s | --sectorsize ] for sectorsize.  -s used to be stripesize, but 
+that needs to be redone for the multi-device code anyway.
 
-Yes, please. This is useful for the revokeat() patches as well. I
-currently need a big ugly loop to scan each task so I can break COW of
-private pages.
+You can pull down integrated versions of your patches from:
+
+http://www.kernel.org/hg/btrfs/kernel-unstable
+http://www.kernel.org/hg/btrfs/progs-unstable
+
+Make sure to update both, there are minor format changes hidden in the 
+unstable tree since you last used it.
+
+-chris
