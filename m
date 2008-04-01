@@ -1,61 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754739AbYDACML@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755041AbYDACOX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754739AbYDACML (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Mar 2008 22:12:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752330AbYDACL7
+	id S1755041AbYDACOX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Mar 2008 22:14:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752464AbYDACOO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Mar 2008 22:11:59 -0400
-Received: from moutng.kundenserver.de ([212.227.126.188]:53749 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752086AbYDACL6 (ORCPT
+	Mon, 31 Mar 2008 22:14:14 -0400
+Received: from qb-out-0506.google.com ([72.14.204.224]:20077 "EHLO
+	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752086AbYDACON (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Mar 2008 22:11:58 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
-Subject: Re: [RFC PATCH 19/26] UBIFS: add Garbage Collector
-Date: Tue, 1 Apr 2008 04:11:39 +0200
-User-Agent: KMail/1.9.9
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Adrian Hunter <ext-adrian.hunter@nokia.com>
-References: <1206629746-4298-1-git-send-email-Artem.Bityutskiy@nokia.com> <1206629746-4298-20-git-send-email-Artem.Bityutskiy@nokia.com>
-In-Reply-To: <1206629746-4298-20-git-send-email-Artem.Bityutskiy@nokia.com>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Mon, 31 Mar 2008 22:14:13 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=date:message-id:to:cc:subject:from:in-reply-to:references:x-mailer:mime-version:content-type:content-transfer-encoding;
+        b=WNbCiuLgC7k78L3ar38E34xd74MuBudjfyGuak+Gv3qGPUAmPDIyPlMbe0FEhPlC4ocO/c2LuD0XIk0AxZmIDfdyLyCT3I4HtEEoPjXOO1+aFdr2nqyx50Q5AXwYg1dcGIKL72JEq8dR/HlYb+lIPxtp/N1bFV0s5o8pXDdX1+E=
+Date: Tue, 01 Apr 2008 10:11:29 +0800 (CST)
+Message-Id: <20080401.101129.90822580.xiyou.wangcong@gmail.com>
+To: davidn@davidnewall.com
+Cc: warthog9@kernel.org, users@kernel.org, linux-kernel@vger.kernel.org,
+       ftpadmin@kernel.org, mirror-list-d@redhat.com, suse-mirror@suse.de,
+       centos-mirror@centos.org, mirror-list@redhat.com, hands@isc.org,
+       support@osuosl.org, git@vger.kernel.org
+Subject: Re: Kernel.org Downtime Notice - Please read *very* important
+From: WANG Cong <xiyou.wangcong@gmail.com>
+In-Reply-To: <47F19460.7010206@davidnewall.com>
+References: <47F1895D.7090509@kernel.org>
+	<47F19460.7010206@davidnewall.com>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200804010411.39722.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1+JoVJUANbhOcOdM5MoOrxCSok2lBJW0SscbJI
- +A2qV0tq4oQScGfhDuxgu19SluMDgirPYxyRfOEsRUoHwYRKmc
- B5ELIpkE6oHkBkawwuSbg==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 27 March 2008, Artem Bityutskiy wrote:
-> + * Note, if the file-system is close to be full, this function may return
-> + * %-EAGAIN infinitely, so the caller has to limit amount of re-invocations of
-> + * the function. E.g., this happens if the limits on the journal size are too
-> + * tough and GC writes too much to the journal before an LEB is freed. This
-> + * might also mean that the journal is too large, and the TNC becomes to big,
-> + * so that the shrinker is constantly called, finds not clean znodes to free,
-> + * and requests commit. Well, this may also happen if the journal is all right,
-> + * but another kernel process consumes too much memory. Anyway, infinite
-> + * %-EAGAIN may happen, but in some extreme/misconfiguration cases.
+From: David Newall <davidn@davidnewall.com>
+Date: Tue, 01 Apr 2008 12:18:16 +1030
 
-This comment sounds a little bit scary, but that may only be because I don't
-understand the worst-case scenario.
+> J.H. wrote:
+> > we are upgrading the kernel.org machines from Fedora Core 5 to FreeBSD
+> > 7.0.
+> 
+> Highly commendable.  You should take this opportunity to also upgrade
+> network facilities to meet the requirements as laid out in RFC1149 (CPIP).
 
-Why can't you guarantee that there is always enough space to successfully
-run GC, e.g. by reserving some space that can never be used by file data?
-
-More importantly, if you get into the situation that the GC doesn't make
-forward progress any more, can you guarantee that it is always possible
-for the user to delete files in order to make space again? Or can you
-get an -ENOSPC on unlink in that case?
-
-	Arnd <><
+What about RFC1606? Maybe kernel should include a net/ipv9 branch.
+;-)
