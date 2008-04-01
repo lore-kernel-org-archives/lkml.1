@@ -1,86 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762948AbYDAVNf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932506AbYDAVNv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762948AbYDAVNf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Apr 2008 17:13:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762231AbYDAVIs
+	id S932506AbYDAVNv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Apr 2008 17:13:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932398AbYDAVLU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Apr 2008 17:08:48 -0400
-Received: from rv-out-0910.google.com ([209.85.198.188]:8107 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762223AbYDAVIq (ORCPT
+	Tue, 1 Apr 2008 17:11:20 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:48493 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754469AbYDAVLS convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Apr 2008 17:08:46 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=gNuLqYEeh6jrV/lgh4y26OhkbMB9LVe+MEdIdCXUH2K+yN+0s+5JIWtQgyah0z9eQml2JO4B6ZrA2W3WL8gTuGWAa48EHC/1+n4wN+cQaxyzZ3UQUSbpMW+AO3qPGFAHO0D+3oaIAfCh4vRzUTqG8qp2AKLsntJeFbVUTFGOXcY=
-Message-ID: <19f34abd0804011408v19e13b6cje1ca89a2a471484c@mail.gmail.com>
-Date: Tue, 1 Apr 2008 23:08:45 +0200
-From: "Vegard Nossum" <vegard.nossum@gmail.com>
-To: "Jens Axboe" <axboe@kernel.dk>
-Subject: kmemcheck caught read from freed memory (cfq_free_io_context)
-Cc: "Ingo Molnar" <mingo@elte.hu>, "Peter Zijlstra" <a.p.zijlstra@chello.nl>,
-       "Pekka Enberg" <penberg@cs.helsinki.fi>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+	Tue, 1 Apr 2008 17:11:18 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Didier Raboud <didier@raboud.com>
+Subject: Re: =?iso-8859-15?q?2=2E6=2E25-rc7=A0=3A_hibernation_sometimes_not_resuming_on?=
+ =?iso-8859-15?q?_Dell_Latitude?= D630
+Date: Tue, 1 Apr 2008 23:11:15 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: linux-kernel@vger.kernel.org, debian-kernel@lists.debian.org
+References: <200803311823.36693.didier@raboud.com> <200804010818.59269.didier@raboud.com> <200804010841.45623.didier@raboud.com>
+In-Reply-To: <200804010841.45623.didier@raboud.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
+Message-Id: <200804012311.16076.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Tuesday, 1 of April 2008, Didier Raboud wrote:
+> Le mardi, 1 avril 2008 08.18:57 Didier Raboud, vous avez écrit :
+> > Le lundi, 31 mars 2008 23.03:16 Didier Raboud, vous avez écrit :
+> > > Le lundi, 31 mars 2008 22.29:20 Rafael J. Wysocki, vous avez écrit :
+> > > > On Monday, 31 of March 2008, Didier Raboud wrote:
+> > > > > Le lundi, 31 mars 2008 19.36:00 Didier Raboud, vous avez écrit :
+> > > > > > Le lundi, 31 mars 2008 19.24:55 maximilian attems, vous avez écrit :
+> > > > > > > On Mon, Mar 31, 2008 at 07:03:13PM +0200, Didier Raboud wrote:
+> > > > > > > <snipp>
+> > > > > > >
+> > > > > > > > > > Attached are a 2.6.25-rc7 and a 2.6.24 dmesg's after two
+> > > > > > > > > > successful hibernate/resume cycles.
+> > > > > > > > >
+> > > > > > > > > Could you please check if the problem is still present if you
+> > > > > > > > > boot with acpi_new_pts_ordering kernel command line argument?
+> > > > > > > >
+> > > > > > > > By the way, I just added acp_new_pts_ordering at the end of the
+> > > > > > > > Grub line beginning by "linux (hd0,1)/vmlinuz(...)". Is that
+> > > > > > > > correct ?
+> > > > > > >
+> > > > > > > seems strange you should add it to the kopt line and then kick as
+> > > > > > > root update-grub
+> > > > > > >
+> > > > > > > # kopt=root=/dev/sda1 ro
+> > > > > > > it should land
+> > > > > > > kernel          /boot/vmlinuz-2.6.25-rc7-amd64 root=/dev/sda1 ro
+> > > > > >
+> > > > > > Well... I'm using Grub2 (grub-pc). I altered the boot option at
+> > > > > > boot time but forgot to check /proc/cmdline. Will try again and
+> > > > > > report back.
+> > > > > >
+> > > > > > Regards,
+> > > > > >
+> > > > > > Didier
+> > > > >
+> > > > > Hi,
+> > > > >
+> > > > > I tried again and ensured that /proc/cmdline 's end was
+> > > > > acpi_new_pts_ordering . It did work for 2-3 hibernation, but then
+> > > > > failed.
+> > > >
+> > > > Well, there were quite a lot of suspend-related changes between 2.6.24
+> > > > and now.
+> > > >
+> > > > Hmm, do you have CONFIG_USB_SUSPEND set in .config by chance?
+> > > >
+> > > > Rafael
+> > >
+> > > I do (Debian default option)... I will build a kernel without it and
+> > > retry.
+> > >
+> > > Didier
+> >
+> > Hi again.
+> >
+> > I compiled the same kernel with CONFIG_USB_SUSPEND not set. After 6
+> > hibernations, I haven't had a problem for now.
+> >
+> > Regards,
+> >
+> > Didier
+> 
+> Hi again again,
+> 
+> It hung after the 10th hibernation...
+> 
+> I wonder if the problem would not be of Debian's uswsusp binary, because tty1 
+> tells me that the image is successfully loaded but I just can't act on my box 
+> afterwards.
 
-This appeared in my logs:
+I don't really think so.  s2disk doesn't really do anything that could hang a
+machine, except for the console switch maybe ...
 
- kmemcheck: Caught 32-bit read from freed memory (f7042348)
+> There is a bug open in the Debian BTS requesting a packaging of the new 
+> upstream version (0.8) but the maintainer is told to be too busy to handle it 
+> for now.
+> 
+> Don't know...
 
- Pid: 1374, comm: bash Not tainted (2.6.25-rc7 #92)
- EIP: 0060:[<c0502f0d>] EFLAGS: 00210202 CPU: 0
- EIP is at call_for_each_cic+0x2d/0x44
- EAX: 00200286 EBX: 00000001 ECX: c200e908 EDX: f7042348
- ESI: f6c26c60 EDI: c0503310 EBP: f70fff38 ESP: c082ec88
-  DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
- CR0: 8005003b CR2: f7826904 CR3: 36cd7000 CR4: 000006c0
- DR0: 00000000 DR1: 00000000 DR2: 00000000 DR3: 00000000
- DR6: ffff4ff0 DR7: 00000400
-  [<c041cff8>] kmemcheck_read+0xa8/0xe0
-  [<c041d1d5>] kmemcheck_access+0x1a5/0x244
-  [<c0668252>] do_page_fault+0x622/0x6fc
-  [<c06666aa>] error_code+0x72/0x78
-  [<c050323f>] cfq_free_io_context+0xf/0x70
-  [<c04fc4d7>] put_io_context+0x4f/0x58
-  [<c04fc568>] exit_io_context+0x60/0x6c
-  [<c042f871>] do_exit+0x4d9/0x6f0
-  [<c042fab1>] do_group_exit+0x29/0x88
-  [<c042fb1f>] sys_exit_group+0xf/0x14
-  [<c0406105>] sysenter_past_esp+0x6d/0xa4
-  [<ffffffff>] 0xffffffff
+Can you please test the in-kernel hibernation, then?
 
-The error occurs in cfq_free_io_context()'s call to
-call_for_each_cic() which looks like this:
-
-        rcu_read_lock();
-        hlist_for_each_entry_rcu(cic, n, &ioc->cic_list, cic_list) {
-                func(ioc, cic);
-                called++;
-        }
-        rcu_read_unlock();
-
-The function that is called is cic_free_func(). It is postulated that
-hlist_for_each_entry_rcu() will dereference the previously freed list
-element to get the ->next pointer.
-
-After a short discussion with Pekka Enberg and Peter Zijlstra, it
-seemed evident that this list traversal should use
-hlist_for_each_entry_safe_rcu() instead, which would buffer the next
-pointer before the object is freed.
-
-Does this report seem to be valid?
-
-The kernel is 2.6.25-rc7.
-
-
-Kind regards,
-Vegard Nossum
+Rafael
