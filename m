@@ -1,22 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760050AbYDAU7Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760284AbYDAU7j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760050AbYDAU7Z (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Apr 2008 16:59:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758514AbYDAU7J
+	id S1760284AbYDAU7j (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Apr 2008 16:59:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758532AbYDAU7K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Apr 2008 16:59:09 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:39653 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1758178AbYDAU7H (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Apr 2008 16:59:10 -0400
+Received: from relay2.sgi.com ([192.48.171.30]:50980 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1758294AbYDAU7H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 1 Apr 2008 16:59:07 -0400
-Message-Id: <20080401205636.048829606@sgi.com>
+Message-Id: <20080401205637.230854375@sgi.com>
 References: <20080401205531.986291575@sgi.com>
 User-Agent: quilt/0.46-1
-Date: Tue, 01 Apr 2008 13:55:33 -0700
+Date: Tue, 01 Apr 2008 13:55:38 -0700
 From: Christoph Lameter <clameter@sgi.com>
 To: Hugh Dickins <hugh@veritas.com>
-Cc: Andrea Arcangeli <andrea@qumranet.com>
+Cc: Andrea Arcangeli <andrea@qumranet.com>, Dean Nelson <dcn@sgi.com>
 Cc: Robin Holt <holt@sgi.com>, Avi Kivity <avi@qumranet.com>,
        Izik Eidus <izike@qumranet.com>
 Cc: kvm-devel@lists.sourceforge.net
@@ -26,113 +25,34 @@ Cc: Roland Dreier <rdreier@cisco.com>
 Cc: Kanoj Sarcar <kanojsarcar@yahoo.com>
 Cc: steiner@sgi.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org
 Cc: daniel.blueman@quadrics.com
-Subject: [patch 2/9] Move tlb flushing into free_pgtables
-Content-Disposition: inline; filename=move_tlb_flush
+Subject: [patch 7/9] Locking rules for taking multiple mmap_sem locks.
+Content-Disposition: inline; filename=xpmem_v003_lock-rule
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Move the tlb flushing into free_pgtables. The conversion of the locks
-taken for reverse map scanning would require taking sleeping locks
-in free_pgtables(). Moving the tlb flushing into free_pgtables allows
-sleeping in parts of free_pgtables().
+This patch adds a lock ordering rule to avoid a potential deadlock when
+multiple mmap_sems need to be locked.
 
-This means that we do a tlb_finish_mmu() before freeing the page tables.
-Strictly speaking there may not be the need to do another tlb flush after
-freeing the tables. But its the only way to free a series of page table
-pages from the tlb list. And we do not want to call into the page allocator
-for performance reasons. Aim9 numbers look okay after this patch.
-
-Signed-off-by: Christoph Lameter <clameter@sgi.com>
+Signed-off-by: Dean Nelson <dcn@sgi.com>
 
 ---
- include/linux/mm.h |    4 ++--
- mm/memory.c        |   14 ++++++++++----
- mm/mmap.c          |    6 +++---
- 3 files changed, 15 insertions(+), 9 deletions(-)
+ mm/filemap.c |    3 +++
+ 1 file changed, 3 insertions(+)
 
-Index: linux-2.6/include/linux/mm.h
+Index: linux-2.6/mm/filemap.c
 ===================================================================
---- linux-2.6.orig/include/linux/mm.h	2008-03-19 13:30:51.460856986 -0700
-+++ linux-2.6/include/linux/mm.h	2008-03-19 13:31:20.809377398 -0700
-@@ -751,8 +751,8 @@ int walk_page_range(const struct mm_stru
- 		    void *private);
- void free_pgd_range(struct mmu_gather **tlb, unsigned long addr,
- 		unsigned long end, unsigned long floor, unsigned long ceiling);
--void free_pgtables(struct mmu_gather **tlb, struct vm_area_struct *start_vma,
--		unsigned long floor, unsigned long ceiling);
-+void free_pgtables(struct vm_area_struct *start_vma, unsigned long floor,
-+						unsigned long ceiling);
- int copy_page_range(struct mm_struct *dst, struct mm_struct *src,
- 			struct vm_area_struct *vma);
- void unmap_mapping_range(struct address_space *mapping,
-Index: linux-2.6/mm/memory.c
-===================================================================
---- linux-2.6.orig/mm/memory.c	2008-03-19 13:29:06.007351495 -0700
-+++ linux-2.6/mm/memory.c	2008-03-19 13:46:31.352774359 -0700
-@@ -271,9 +271,11 @@ void free_pgd_range(struct mmu_gather **
- 	} while (pgd++, addr = next, addr != end);
- }
- 
--void free_pgtables(struct mmu_gather **tlb, struct vm_area_struct *vma,
--		unsigned long floor, unsigned long ceiling)
-+void free_pgtables(struct vm_area_struct *vma, unsigned long floor,
-+							unsigned long ceiling)
- {
-+	struct mmu_gather *tlb;
-+
- 	while (vma) {
- 		struct vm_area_struct *next = vma->vm_next;
- 		unsigned long addr = vma->vm_start;
-@@ -285,8 +287,10 @@ void free_pgtables(struct mmu_gather **t
- 		unlink_file_vma(vma);
- 
- 		if (is_vm_hugetlb_page(vma)) {
--			hugetlb_free_pgd_range(tlb, addr, vma->vm_end,
-+			tlb = tlb_gather_mmu(vma->vm_mm, 0);
-+			hugetlb_free_pgd_range(&tlb, addr, vma->vm_end,
- 				floor, next? next->vm_start: ceiling);
-+			tlb_finish_mmu(tlb, addr, vma->vm_end);
- 		} else {
- 			/*
- 			 * Optimization: gather nearby vmas into one call down
-@@ -298,8 +302,10 @@ void free_pgtables(struct mmu_gather **t
- 				anon_vma_unlink(vma);
- 				unlink_file_vma(vma);
- 			}
--			free_pgd_range(tlb, addr, vma->vm_end,
-+			tlb = tlb_gather_mmu(vma->vm_mm, 0);
-+			free_pgd_range(&tlb, addr, vma->vm_end,
- 				floor, next? next->vm_start: ceiling);
-+			tlb_finish_mmu(tlb, addr, vma->vm_end);
- 		}
- 		vma = next;
- 	}
-Index: linux-2.6/mm/mmap.c
-===================================================================
---- linux-2.6.orig/mm/mmap.c	2008-03-19 13:29:48.659889667 -0700
-+++ linux-2.6/mm/mmap.c	2008-03-19 13:30:36.296604891 -0700
-@@ -1750,9 +1750,9 @@ static void unmap_region(struct mm_struc
- 	update_hiwater_rss(mm);
- 	unmap_vmas(&tlb, vma, start, end, &nr_accounted, NULL);
- 	vm_unacct_memory(nr_accounted);
--	free_pgtables(&tlb, vma, prev? prev->vm_end: FIRST_USER_ADDRESS,
--				 next? next->vm_start: 0);
- 	tlb_finish_mmu(tlb, start, end);
-+	free_pgtables(vma, prev? prev->vm_end: FIRST_USER_ADDRESS,
-+				 next? next->vm_start: 0);
- 	emm_notify(mm, emm_invalidate_end, start, end);
- }
- 
-@@ -2049,8 +2049,8 @@ void exit_mmap(struct mm_struct *mm)
- 	/* Use -1 here to ensure all VMAs in the mm are unmapped */
- 	end = unmap_vmas(&tlb, vma, 0, -1, &nr_accounted, NULL);
- 	vm_unacct_memory(nr_accounted);
--	free_pgtables(&tlb, vma, FIRST_USER_ADDRESS, 0);
- 	tlb_finish_mmu(tlb, 0, end);
-+	free_pgtables(vma, FIRST_USER_ADDRESS, 0);
- 
- 	/*
- 	 * Walk the list again, actually closing and freeing it,
+--- linux-2.6.orig/mm/filemap.c	2008-04-01 13:02:41.374608387 -0700
++++ linux-2.6/mm/filemap.c	2008-04-01 13:05:02.777015782 -0700
+@@ -80,6 +80,9 @@ generic_file_direct_IO(int rw, struct ki
+  *  ->i_mutex			(generic_file_buffered_write)
+  *    ->mmap_sem		(fault_in_pages_readable->do_page_fault)
+  *
++ *    When taking multiple mmap_sems, one should lock the lowest-addressed
++ *    one first proceeding on up to the highest-addressed one.
++ *
+  *  ->i_mutex
+  *    ->i_alloc_sem             (various)
+  *
 
 -- 
