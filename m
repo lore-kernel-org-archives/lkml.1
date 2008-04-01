@@ -1,97 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759901AbYDAUKa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760232AbYDAUKG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759901AbYDAUKa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Apr 2008 16:10:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760177AbYDAUJ4
+	id S1760232AbYDAUKG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Apr 2008 16:10:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758133AbYDAUJy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Apr 2008 16:09:56 -0400
-Received: from milhouse.binasys.co.uk ([216.12.200.91]:42246 "EHLO
-	milhouse.binasys.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758498AbYDAUJ4 convert rfc822-to-8bit (ORCPT
+	Tue, 1 Apr 2008 16:09:54 -0400
+Received: from nijmegen.renzel.net ([195.243.213.130]:48861 "EHLO
+	nijmegen.renzel.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756948AbYDAUJx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Apr 2008 16:09:56 -0400
-X-Greylist: delayed 1219 seconds by postgrey-1.27 at vger.kernel.org; Tue, 01 Apr 2008 16:09:55 EDT
-Date: Tue, 1 Apr 2008 20:42:47 +0100
-From: Steve Brokenshire <sbrokenshire@xestia.co.uk>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: linux-kernel@vger.kernel.org, linux-kbuild@vger.kernel.org
-Subject: Re: [PATCH] Compress kernel modules on installation.
-Message-Id: <20080401204247.068aaa22.sbrokenshire@xestia.co.uk>
-In-Reply-To: <20080226112840.GA29465@uranus.ravnborg.org>
-References: <20080225214209.a3f79327.sbrokenshire@xestia.co.uk>
-	<20080226112840.GA29465@uranus.ravnborg.org>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.10.4; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Tue, 1 Apr 2008 16:09:53 -0400
+Message-ID: <47F29687.3060403@twisted-brains.org>
+Date: Tue, 01 Apr 2008 22:09:43 +0200
+From: mws@twisted-brains.org
+User-Agent: Thunderbird 2.0.0.12 (Windows/20080213)
+MIME-Version: 1.0
+To: Jason Baron <jbaron@redhat.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: [patch 1/3] dynamic printk - core infrastructure
+References: <20080401194951.GC12029@redhat.com>
+In-Reply-To: <20080401194951.GC12029@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 26 Feb 2008 12:28:40 +0100
-Sam Ravnborg <sam@ravnborg.org> wrote:
+hi,
 
-> On Mon, Feb 25, 2008 at 09:42:09PM +0000, Steve Brokenshire wrote:
-> > Hi,
-> > 
-> > (I've sent this to the linux-kbuild and linux-kernel lists as this
-> > patch modifies the Makefile.modinst file. I also don't subscribe to the 
-> > linux-kbuild and linux-kernel mailing lists so can I have any replies
-> > CC'ed to me please)
-> > 
-> > This patch allows kernel modules to be compressed when 'make
-> > modules_install' is run after being copied to
-> > the /lib/module/<version>/<...> directory which is useful if you have
-> > module-init-tools installed with --enable-zlib. This patch adds an
-> > option (MODULE_COMPRESS) to the kernel configuration file (specifically
-> > init/Kconfig) so that the kernel modules will compressed if
-> > MODULE_COMPRESS is set.
-> > 
-> > When MODULE_COMPRESS is set the output of 'make modules_install' will
-> > go as the following:
-> > 
-> > INSTALL  drivers/fs/xfs/xfs.ko
-> > COMPRESS drivers/fs/xfs/xfs.ko
-> > INSTALL  drivers/fs/fat/fat.ko
-> > COMPRESS drivers/fs/fat/fat.ko
-> > ...
-> > 
-> > I've tested my patch on kernel versions 2.6.24.2, 2.6.24-git12, 2.6.23.14 and
-> > 2.6.19 and they compile, install and compress into the respective
-> > module directories without any errors.
-> > 
-> > I've also tested this with the uvcvideo (linux-uvc) kernel module (from
-> > the SVN branch and with kernel versions 2.6.24.2, 2.6.24-git12, 2.6.23.14 and
-> > 2.6.19) as that uses Kbuild properly when installing the module and
-> > after installing the uvcvideo the module is then compressed.
-> > Unfortunately, I couldn't find any other kernel modules which used the
-> > Kbuild system for installing their kernel modules. :(
-> > 
-> > I've included include/config/auto.conf in Makefile.modinst so that it
-> > can check if MODULE_COMPRESS is set when installing the kernel modules.
+Jason Baron schrieb:
+> Add the ability to dynamically enable/disable pr_debug()/dev_dbg() in the
+> kernel. Yes, these calls could be converted to printk(KERN_DEBUG), but there
+> are enough to cause overhead. Additionally, the logs become difficult to read.
+> Here, one can turn on and off these messages per .c source file via:
 > 
-> Should we mention this possibility in Documentation/kbuild/modules.txt also?
+> echo "add file.c" > /sys/kernel/debug/dynamic_printk/files
+> echo "remove file.c" > /sys/kernel/debug/dynamic_printk/files
 > 
-> Otherwise from a quick scan it looks OK.
-> As module-init-tols are our userspae counterpart we should align the
-> functionality with that tool.
-> I assume this gives us a simple choice of compression method and naming.
+> There is also a special 'all' value that turns on all the debugging messages.
 > 
-> 	Sam
+> Signed-off-by: Jason Baron <jbaron@redhat.com>
+> ---
+> 
+--snip --
 
-(Sorry for my lazy replying...)
+> diff --git a/include/linux/device.h b/include/linux/device.h
+> index db375be..b007f61 100644
+> --- a/include/linux/device.h
+> +++ b/include/linux/device.h
+> @@ -587,6 +587,17 @@ extern const char *dev_driver_string(struct device *dev);
+>  #define dev_info(dev, format, arg...)		\
+>  	dev_printk(KERN_INFO , dev , format , ## arg)
+>  
+> +#ifdef CONFIG_DYNAMIC_PRINTK
+> +extern void dyanmic_printk(char *, char *, ...);
 
-I think it should be mentioned in Documentation/kbuild/modules.txt at
-Chapter 2.2. The following should be added to the modules_install
-target part:
+this external should be dynamic_printk (typo), shouldn't it?
 
-If MODULES_COMPRESS is set when the modules_install target is run then
-the module is compressed after it has been copied to 
-/lib/modules/<kernel-version>. Compressed modules require 
-module-init-tools installed with --zlib-enabled.
+regards
+marcel
 
-Does that sound right?
 
-Anyway, as it currently is with the patch, MODULE_COMPRESS isn't as scalable as it perhaps could be and I've been thinking I should try and make a better version of the patch which is scalable (So depending on how module-init-tools is updated in the future each option would also give which version of module-init-tools is required to use that compression method in the init/KConfig file)
 
-Steve
