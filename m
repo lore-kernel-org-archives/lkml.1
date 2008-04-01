@@ -1,154 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757062AbYDAIyd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757816AbYDAIzL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757062AbYDAIyd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Apr 2008 04:54:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754685AbYDAIyY
+	id S1757816AbYDAIzL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Apr 2008 04:55:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755890AbYDAIy6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Apr 2008 04:54:24 -0400
-Received: from nf-out-0910.google.com ([64.233.182.187]:16531 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754833AbYDAIyW (ORCPT
+	Tue, 1 Apr 2008 04:54:58 -0400
+Received: from fg-out-1718.google.com ([72.14.220.157]:36027 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754685AbYDAIy5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Apr 2008 04:54:22 -0400
+	Tue, 1 Apr 2008 04:54:57 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=date:from:to:cc:message-id:mime-version:content-type:content-disposition:user-agent;
-        b=QLyH+KWOQaSS2wnwmbKavGmlaV/xz8dnLNNJldZNJrUI8qbSeWi9QYZkdOdNUi8ENYqVRJqlaF1LS/PmIQVS1JphfK3CMqKsGZnN4nWba9jjiecoT+J6YflRb7NhneXzi9rl4ZXFQbMoHlKMU1sFWNK02Of5l77JDKDq2b2gZy0=
-Date: Tue, 1 Apr 2008 16:59:42 +0800
-From: Dave Young <hidave.darkstar@gmail.com>
-To: David Miller <davem@davemloft.net>
-Cc: davej@codemonkey.org.uk, netdev@vger.kernel.org,
-       linux-bluetooth@vger.kernel.org, linux-kernel@vger.kernel.org
-Message-ID: <20080401085942.GA2809@darkstar.te-china.tietoenator.com>
+        h=message-id:date:from:organization:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=P4HIC5hzxlW28h02xOYD4+KsXEQUO+/knykhd+U6n5UcM1CTDOKt4I0e+jZrDKAhLnM/Z/Ke+n0z02RE3a1dDwDRiKew1TeG0l21foeEjdusH6BJvDagcDsglW5NB4RHF93MP1HHkKctBJD4/dRBHCEVdVsrS1KgXbs8KDWe25M=
+Message-ID: <47F1F859.6020305@gmail.com>
+Date: Tue, 01 Apr 2008 12:54:49 +0400
+From: Dmitri Vorobiev <dmitri.vorobiev@gmail.com>
+Organization: DmVo Home
+User-Agent: Thunderbird 1.5.0.14pre (X11/20071022)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: Ralf Baechle <ralf@linux-mips.org>
+CC: linux-mips@linux-mips.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/6] [MIPS] make some functions and variables static
+References: <1207001005-2633-1-git-send-email-dmitri.vorobiev@gmail.com> <20080331224143.GA28473@linux-mips.org>
+In-Reply-To: <20080331224143.GA28473@linux-mips.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-marcel@holtmann.org
-Bcc: 
-Subject: Re: bluetooth lockdep trace. (.25rc5-git4)
-Reply-To: 
-In-Reply-To: <20080328.182021.46780895.davem@davemloft.net>
-
-On Fri, Mar 28, 2008 at 06:20:21PM -0700, David Miller wrote:
-> From: Dave Jones <davej@codemonkey.org.uk>
-> Date: Thu, 27 Mar 2008 12:21:56 -0400
+Ralf Baechle пишет:
+> On Tue, Apr 01, 2008 at 02:03:19AM +0400, Dmitri Vorobiev wrote:
 > 
-> > Mar 27 08:10:57 localhost kernel: Pid: 3611, comm: obex-data-serve Not tainted 2.6.25-0.121.rc5.git4.fc9 #1
-> > Mar 27 08:10:57 localhost kernel:  [__lock_acquire+2287/3089] __lock_acquire+0x8ef/0xc11
-> > Mar 27 08:10:57 localhost kernel:  [sched_clock+8/11] ? sched_clock+0x8/0xb
-> > Mar 27 08:10:57 localhost kernel:  [lock_acquire+106/144] lock_acquire+0x6a/0x90
-> > Mar 27 08:10:57 localhost kernel:  [<f8bd9321>] ? l2cap_sock_bind+0x29/0x108 [l2cap]
-> > Mar 27 08:10:57 localhost kernel:  [lock_sock_nested+182/198] lock_sock_nested+0xb6/0xc6
-> > Mar 27 08:10:57 localhost kernel:  [<f8bd9321>] ? l2cap_sock_bind+0x29/0x108 [l2cap]
-> > Mar 27 08:10:57 localhost kernel:  [security_socket_post_create+22/27] ? security_socket_post_create+0x16/0x1b
-> > Mar 27 08:10:57 localhost kernel:  [__sock_create+388/472] ? __sock_create+0x184/0x1d8
-> > Mar 27 08:10:57 localhost kernel:  [<f8bd9321>] l2cap_sock_bind+0x29/0x108 [l2cap]
-> > Mar 27 08:10:57 localhost kernel:  [kernel_bind+10/13] kernel_bind+0xa/0xd
-> > Mar 27 08:10:57 localhost kernel:  [<f8dad3d7>] rfcomm_dlc_open+0xc8/0x294 [rfcomm]
-> > Mar 27 08:10:57 localhost kernel:  [lock_sock_nested+187/198] ? lock_sock_nested+0xbb/0xc6
-> > Mar 27 08:10:57 localhost kernel:  [<f8dae18c>] rfcomm_sock_connect+0x8b/0xc2 [rfcomm]
-> > Mar 27 08:10:57 localhost kernel:  [sys_connect+96/125] sys_connect+0x60/0x7d
-> > Mar 27 08:10:57 localhost kernel:  [__lock_acquire+1370/3089] ? __lock_acquire+0x55a/0xc11
-> > Mar 27 08:10:57 localhost kernel:  [sys_socketcall+140/392] sys_socketcall+0x8c/0x188
-> > Mar 27 08:10:57 localhost kernel:  [syscall_call+7/11] syscall_call+0x7/0xb
+>> I noticed that a few functions and variables in the MIPS-specific
+>> code can become static, and this series of patches cleans up the
+>> kernel global name space a little bit.
 > 
-> rfcomm connect locks the socket, then does rfcomm_dlc_open which in
-> turn can do a l2cap_sock_bind on a seperate second socket which in
-> turn locks that second socket.
+> I've queued the whole series for 2.6.26.
+
+Thank you, Ralf.
+
+Dmitri
+
 > 
-> Both of these sockets are AF_BLUETOOTH family, so lockdep thinks there
-> is a locking conflict, even though what is happening here is perfectly
-> fine since the two sockets are totally different AF_BLUETOOTH
-> sub-types.
+> Thanks,
 > 
-> Bluetooth will need to use sock_lock_init_class_and_name() and
-> lock sub-classes per AF_BLUETOOTH socket sub-type.
+>   Ralf
 > 
-> David, could you or someone else work on this?
 
-Does this fix the problem?
-
----
-'rfcomm connect' will trigger lockdep warnings which is caused by
-locking diffrent kinds of bluetooth sockets at the same time.
-
-So using sub-classes per AF_BLUETOOTH sub-type for lockdep.
-
-Thanks for the hints from dave jones.
-
-
-Signed-off-by: Dave Young <hidave.darkstar@gmail.com>
-
----
-net/bluetooth/af_bluetooth.c |   40 ++++++++++++++++++++++++++++++++++++++++
-1 file changed, 40 insertions(+)
-
-diff -upr linux/net/bluetooth/af_bluetooth.c linux.new/net/bluetooth/af_bluetooth.c
---- linux/net/bluetooth/af_bluetooth.c	2008-04-01 16:09:17.000000000 +0800
-+++ linux.new/net/bluetooth/af_bluetooth.c	2008-04-01 16:08:52.000000000 +0800
-@@ -53,6 +53,30 @@
- /* Bluetooth sockets */
- #define BT_MAX_PROTO	8
- static struct net_proto_family *bt_proto[BT_MAX_PROTO];
-+
-+static struct lock_class_key bt_slock_key[BT_MAX_PROTO];
-+static struct lock_class_key bt_lock_key[BT_MAX_PROTO];
-+static const char *bt_key_strings[BT_MAX_PROTO] = {
-+	"sk_lock-AF_BLUETOOTH-BTPROTO_L2CAP",
-+	"sk_lock-AF_BLUETOOTH-BTPROTO_HCI",
-+	"sk_lock-AF_BLUETOOTH-BTPROTO_SCO",
-+	"sk_lock-AF_BLUETOOTH-BTPROTO_RFCOMM",
-+	"sk_lock-AF_BLUETOOTH-BTPROTO_BNEP",
-+	"sk_lock-AF_BLUETOOTH-BTPROTO_CMTP",
-+	"sk_lock-AF_BLUETOOTH-BTPROTO_HIDP",
-+	"sk_lock-AF_BLUETOOTH-BTPROTO_AVDTP",
-+};
-+
-+static const char *bt_slock_key_strings[BT_MAX_PROTO] = {
-+	"slock-AF_BLUETOOTH-BTPROTO_L2CAP",
-+	"slock-AF_BLUETOOTH-BTPROTO_HCI",
-+	"slock-AF_BLUETOOTH-BTPROTO_SCO",
-+	"slock-AF_BLUETOOTH-BTPROTO_RFCOMM",
-+	"slock-AF_BLUETOOTH-BTPROTO_BNEP",
-+	"slock-AF_BLUETOOTH-BTPROTO_CMTP",
-+	"slock-AF_BLUETOOTH-BTPROTO_HIDP",
-+	"slock-AF_BLUETOOTH-BTPROTO_AVDTP",
-+};
- static DEFINE_RWLOCK(bt_proto_lock);
- 
- int bt_sock_register(int proto, struct net_proto_family *ops)
-@@ -95,6 +119,21 @@ int bt_sock_unregister(int proto)
- }
- EXPORT_SYMBOL(bt_sock_unregister);
- 
-+static void bt_reclassify_sock_lock(struct socket *sock, int proto)
-+{
-+	struct sock *sk = sock->sk;
-+
-+	if (!sk)
-+		return;
-+	BUG_ON(sock_owned_by_user(sk));
-+
-+	sock_lock_init_class_and_name(sk,
-+			bt_slock_key_strings[proto],
-+			&bt_slock_key[proto],
-+			bt_key_strings[proto],
-+			&bt_lock_key[proto]);
-+}
-+
- static int bt_sock_create(struct net *net, struct socket *sock, int proto)
- {
- 	int err;
-@@ -117,6 +156,7 @@ static int bt_sock_create(struct net *ne
- 
- 	if (bt_proto[proto] && try_module_get(bt_proto[proto]->owner)) {
- 		err = bt_proto[proto]->create(net, sock, proto);
-+		bt_reclassify_sock_lock(sock, proto);
- 		module_put(bt_proto[proto]->owner);
- 	}
- 
