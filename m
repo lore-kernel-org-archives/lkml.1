@@ -1,56 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758062AbYDAKv0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757763AbYDAKxl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758062AbYDAKv0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Apr 2008 06:51:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755897AbYDAKvR
+	id S1757763AbYDAKxl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Apr 2008 06:53:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756743AbYDAKxe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Apr 2008 06:51:17 -0400
-Received: from lazybastard.de ([212.112.238.170]:57565 "EHLO
-	longford.logfs.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756639AbYDAKvR (ORCPT
+	Tue, 1 Apr 2008 06:53:34 -0400
+Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:44150
+	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756742AbYDAKxd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Apr 2008 06:51:17 -0400
-Date: Tue, 1 Apr 2008 12:51:04 +0200
-From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
-To: Artem Bityutskiy <dedekind@yandex.ru>
-Cc: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>,
-       Adrian Hunter <ext-adrian.hunter@nokia.com>,
-       Jan Engelhardt <jengelh@computergmbh.de>,
-       LKML <linux-kernel@vger.kernel.org>, joern@lazybastard.org
-Subject: Re: UBIFS vs Logfs (was [RFC PATCH] UBIFS - new flash file system)
-Message-ID: <20080401105104.GE7465@logfs.org>
-References: <1206629746-4298-1-git-send-email-Artem.Bityutskiy@nokia.com> <alpine.LNX.1.10.0803311428270.2554@fbirervta.pbzchgretzou.qr> <47F0DD49.7010302@nokia.com> <20080331132047.GA31660@logfs.org> <47F1C78D.2050300@yandex.ru> <47F1CE9D.4080709@nokia.com> <20080401092548.GC7465@logfs.org> <47F202CD.4000804@yandex.ru>
+	Tue, 1 Apr 2008 06:53:33 -0400
+Date: Tue, 1 Apr 2008 12:53:31 +0200
+From: Andrea Arcangeli <andrea@qumranet.com>
+To: Andrew Morton <akpm@osdl.org>, Yang Shi <yang.shi@windriver.com>
+Cc: linux-kernel@vger.kernel.org, kvm-devel@lists.sourceforge.net,
+       Jens Axboe <axboe@kernel.dk>
+Subject: Re: regression breaks lowmem reserved RAM
+Message-ID: <20080401105331.GH12427@duo.random>
+References: <20080328194909.GA10617@duo.random>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <47F202CD.4000804@yandex.ru>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20080328194909.GA10617@duo.random>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 1 April 2008 12:39:25 +0300, Artem Bityutskiy wrote:
-> 
-> I'm not sure what you mean. In UBIFS we have lprops area, where we store
-> per-LEB accounting. UBI lets it possible to have it on a fixed position.
-> The accounting is a separate B-tree. Lprops area has its own independent
-> garbage collector. You should probably refer the white paper for more
-> information.
+Looking a bit closer into this regression the reason this can't be
+right is that dma_addr common default is BLK_BOUNCE_HIGH and most
+machines have less than 4G. So if you do:
 
-Fair enough.
+    if (b_pfn <= (min_t(u64, 0xffffffff, BLK_BOUNCE_HIGH) >> PAGE_SHIFT))
+	dma = 1
 
-The obvious downside of all this is depending on UBI, which has a linear
-scan.  My goal was to avoid the linear scan completely.  It is a harder
-goal and I haven't reached it yet.  Imo it is reachable and I will
-continue going in that direction.
+that will translate to:
 
-You picked the route of using UBI, which makes a lot of stuff easier.
-It is a fair approach and I don't mind you taking it.  It has drawbacks,
-but so has everything else.
+     if (BLK_BOUNCE_HIGH <= BLK_BOUNCE_HIGH)
+     	dma = 1
 
-Jörn
+So for 99% of hardware this will trigger unnecessary GFP_DMA
+allocations and isa pooling operations.
 
--- 
-Anything that can go wrong, will.
--- Finagle's Law
+Also note how the 32bit code still does b_pfn < blk_max_low_pfn.
+
+I guess this is what you were looking after. I didn't verify but as
+far as I can tell, this will stop the regression with isa dma
+operations at boot for 99% of blkdev/memory combinations out there and
+I guess this fixes the setups with >4G of ram and 32bit pci cards as
+well (this also retains symmetry with the 32bit code).
+
+Signed-off-by: Andrea Arcangeli <andrea@qumranet.com>
+
+diff --git a/block/blk-settings.c b/block/blk-settings.c
+index 1344a0e..5713f7e 100644
+--- a/block/blk-settings.c
++++ b/block/blk-settings.c
+@@ -140,7 +140,7 @@ void blk_queue_bounce_limit(struct request_queue *q, u64 dma_addr)
+ 	/* Assume anything <= 4GB can be handled by IOMMU.
+ 	   Actually some IOMMUs can handle everything, but I don't
+ 	   know of a way to test this here. */
+-	if (b_pfn <= (min_t(u64, 0xffffffff, BLK_BOUNCE_HIGH) >> PAGE_SHIFT))
++	if (b_pfn < (min_t(u64, 0x100000000UL, BLK_BOUNCE_HIGH) >> PAGE_SHIFT))
+ 		dma = 1;
+ 	q->bounce_pfn = max_low_pfn;
+ #else
