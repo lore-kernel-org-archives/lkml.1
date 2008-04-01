@@ -1,69 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759893AbYDAUgw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759520AbYDAUjq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759893AbYDAUgw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Apr 2008 16:36:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757031AbYDAUgm
+	id S1759520AbYDAUjq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Apr 2008 16:39:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755933AbYDAUjf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Apr 2008 16:36:42 -0400
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:38503 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756131AbYDAUgl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Apr 2008 16:36:41 -0400
-Subject: [GIT PATCH] SCSI fixes for 2.6.25-rc8
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-scsi <linux-scsi@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
+	Tue, 1 Apr 2008 16:39:35 -0400
+Received: from gate.crashing.org ([63.228.1.57]:37072 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753059AbYDAUje (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Apr 2008 16:39:34 -0400
+Subject: Re: +
+	revert-gregkh-pci-pci-x86-use-generic-pci_enable_resources.patch added to
+	-mm tree
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reply-To: benh@kernel.crashing.org
+To: Bjorn Helgaas <bjorn.helgaas@hp.com>
+Cc: akpm@linux-foundation.org, mm-commits@vger.kernel.org, davem@davemloft.net,
+       greg@kroah.com, m.kozlowski@tuxland.pl, linux-kernel@vger.kernel.org,
+       Tony Luck <tony.luck@intel.com>, linux-ia64@vger.kernel.org,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+In-Reply-To: <200804010957.16459.bjorn.helgaas@hp.com>
+References: <200803282348.m2SNmleP016847@imap1.linux-foundation.org>
+	 <200804010957.16459.bjorn.helgaas@hp.com>
 Content-Type: text/plain
-Date: Tue, 01 Apr 2008 15:36:37 -0500
-Message-Id: <1207082197.3100.26.camel@localhost.localdomain>
+Date: Wed, 02 Apr 2008 07:37:56 +1100
+Message-Id: <1207082276.10388.224.camel@pasglop>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-3.fc8) 
+X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch constitutes three bug fixes (the reversion of the BSG queue
-fix is the most serious; without it we're getting eventual corruption in
-systems).  The other two fix error legs or misleading reporting.  The
-remaining 8 patches are all updates to the mvsas driver which was a late
-addition at the -rc1 phase, so while they're not truly bug fixes, they
-are enhancements to make that unreleased driver more roubust for 2.6.25.
 
-The patch is here:
+On Tue, 2008-04-01 at 09:57 -0600, Bjorn Helgaas wrote:
+> 
+> Can we just drop the "revert gregkh" patches for x86, alpha, powerpc,
+> and ia64?
 
-master.kernel.org:/pub/scm/linux/kernel/git/jejb/scsi-rc-fixes-2.6.git
+Considering that the generic is equivalent to what I have today on
+powerpc, I'm fine with it.
 
-The short changelog is:
-
-James Bottomley (2):
-      libsas: Warn if ATA device detected but CONFIG_SCSI_SAS_ATA not set
-      Revert " fix bsg queue oops with iscsi logout"
-
-James Smart (1):
-      hosts.c: fixes for "no error" reported after error scenarios
-
-Ke Wei (8):
-      mvsas: check subsystem id
-      mvsas: get phy info.
-      mvsas: fix the buffer of rx DMA overflow bug
-      mvsas: retry aborting task.
-      mvsas: check hd whether unplugged
-      mvsas : interrupt handling
-      mvsas: a tag handler implementation
-      mvsas: fill in error info record and phy mode6 bits.
-
-and the diffstat:
-
- drivers/scsi/hosts.c               |   16 
- drivers/scsi/libsas/sas_discover.c |    5 
- drivers/scsi/mvsas.c               |  711 +++++++++++++++++++++++++------------
- drivers/scsi/scsi_sysfs.c          |    2 
- 4 files changed, 497 insertions(+), 237 deletions(-)
-
-James
+Cheers,
+Ben.
 
 
