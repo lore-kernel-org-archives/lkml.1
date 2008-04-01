@@ -1,53 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758648AbYDATGT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759386AbYDATGd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758648AbYDATGT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Apr 2008 15:06:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755557AbYDATGG
+	id S1759386AbYDATGd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Apr 2008 15:06:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755768AbYDATGH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Tue, 1 Apr 2008 15:06:07 -0400
+Received: from fk-out-0910.google.com ([209.85.128.191]:53323 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755446AbYDATGG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 1 Apr 2008 15:06:06 -0400
-Received: from mtaout01-winn.ispmail.ntl.com ([81.103.221.47]:25617 "EHLO
-	mtaout01-winn.ispmail.ntl.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755417AbYDATGD convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Apr 2008 15:06:03 -0400
-Date: Tue, 1 Apr 2008 20:05:52 +0100
-From: Ken Moffat <zarniwhoop@ntlworld.com>
-To: Jean Delvare <khali@linux-fr.org>
-Cc: Dave Airlie <airlied@gmail.com>, I2C <i2c@lm-sensors.org>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: Regression (gdm no longer shuts down) - 2.4.24.x and 2.6.25
-Message-ID: <20080401190552.GB10046@deepthought>
-References: <20080325200714.GA25487@deepthought> <20080326161934.7eae544f@hyperion.delvare> <20080326173701.GA16882@deepthought> <20080326201031.7c2cefb2@hyperion.delvare>
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=nrU/PldDAZNu4G8sJSuqKdRxErlXvJuAW4nS2qjwwGng80UDFp7Cg8ca04vdKJJQH8N/5T6Gb992XqJt6bw/dtwy/nYnLqFa98TS0LHqHtOmJF4C3gZzHB7ANxKB9djiULh8aLKGe9lj8MIE/lvnounMMWZOs3TrdroTYLWlVSM=
+Message-ID: <47F28805.8030502@gmail.com>
+Date: Tue, 01 Apr 2008 21:07:49 +0200
+From: Rene Herman <rene.herman@gmail.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <20080326201031.7c2cefb2@hyperion.delvare>
-User-Agent: Mutt/1.5.12-2006-07-14
-Content-Transfer-Encoding: 8BIT
+To: Tyson Whitehead <twhitehe@uwo.ca>
+CC: Bob Tracy <rct@frus.com>, Michael Cree <mcree@orcon.net.nz>,
+       Takashi Iwai <tiwai@suse.de>, ALSA devel <alsa-devel@alsa-project.org>,
+       linux-kernel@vger.kernel.org,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>, linux-alpha@vger.kernel.org,
+       Krzysztof Helt <krzysztof.h1@wp.pl>
+Subject: Re: [alsa-devel] [regression] 2.6.25-rc4 snd-es18xx broken on Alpha
+References: <20080314233357.5223BDBA2@gherkin.frus.com> <47F279E7.60801@uwo.ca> <47F28032.9060206@gmail.com>
+In-Reply-To: <47F28032.9060206@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 26, 2008 at 08:10:31PM +0100, Jean Delvare wrote:
+On 01-04-08 20:34, Rene Herman wrote:
+
+> On 01-04-08 20:07, Tyson Whitehead wrote:
 > 
-> The fact is that there is no i2c-viapro change in 2.6.24.2 nor .4, and
-> in fact no i2c change at all. So if anything changed in this driver,
-> this has to be a side effect of some (non-i2c) header file change.
-> That's a long shot, though.
+>> Hope this helps.
 > 
- I've been attending to more-urgent non-kernel problems.
+> Not really no.
 
- In fact, i2c-viapro is not contributory, and drm may have nothing
-to do with it - the problem seems to happen with any kernel > 2.6.24,
-but not always.
+Sorry for the multiple copies; my ISP is crashing again.
 
- So, to be clear, 2.6.24.4 with the drm patch reverted, and
-2.6.25-rc1, and 2.6.25-rc7 ALL intermittently fail.  I'll start
-bisecting.  Actually, I suppose I'd better try 2.6.24 itself a few
-more times, so that I have a little more confidence it was 'good'
-for this (fortunately, no other users on that box).  Apologies for
-attributing possible blame to i2c.
-
-Ken
--- 
-das eine Mal als Tragödie, das andere Mal als Farce
+Rene.
