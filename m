@@ -1,111 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761130AbYDAVVO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761372AbYDAVWr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761130AbYDAVVO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Apr 2008 17:21:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756964AbYDAVU7
+	id S1761372AbYDAVWr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Apr 2008 17:22:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755807AbYDAVWi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Apr 2008 17:20:59 -0400
-Received: from v320-147-lb.its.uwo.ca ([129.100.74.147]:58600 "EHLO uwo.ca"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752870AbYDAVU6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Apr 2008 17:20:58 -0400
-MIME-version: 1.0
-Content-type: multipart/mixed; boundary="Boundary_(ID_XbWirWW9zp0WF+RWF8C6SQ)"
-Message-id: <47F2A75D.9060809@uwo.ca>
-Date: Tue, 01 Apr 2008 17:21:33 -0400
-From: Tyson Whitehead <twhitehe@uwo.ca>
-User-Agent: Mozilla-Thunderbird 2.0.0.9 (X11/20080109)
-To: rene.herman@gmail.com, Michael Cree <mcree@orcon.net.nz>,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
-       linux-kernel@vger.kernel.org, ALSA devel <alsa-devel@alsa-project.org>
-Subject: [Fwd: Re: [alsa-devel] [regression] 2.6.25-rc4 snd-es18xx broken on
- Alpha]
+	Tue, 1 Apr 2008 17:22:38 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:48581 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752870AbYDAVWh convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Apr 2008 17:22:37 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Didier Raboud <didier@raboud.com>
+Subject: Re: =?iso-8859-15?q?2=2E6=2E25-rc7=A0=3A_hibernation_sometimes_not_resuming_on?=
+ =?iso-8859-15?q?_Dell_Latitude?= D630
+Date: Tue, 1 Apr 2008 23:22:35 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: linux-kernel@vger.kernel.org, debian-kernel@lists.debian.org
+References: <200803311823.36693.didier@raboud.com> <200804012311.16076.rjw@sisk.pl> <200804012318.26002.didier@raboud.com>
+In-Reply-To: <200804012318.26002.didier@raboud.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200804012322.35672.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
-
---Boundary_(ID_XbWirWW9zp0WF+RWF8C6SQ)
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7BIT
-
-Sorry.  Bob was just saying this could be an important observation, but 
-it didn't get to everyone as the CC list got shortened.  Cheers!  -Tyson
-
-
---Boundary_(ID_XbWirWW9zp0WF+RWF8C6SQ)
-Content-type: message/rfc822;
- name="Re: [alsa-devel] [regression] 2.6.25-rc4 snd-es18xx broken on Alpha.eml"
-Content-disposition: inline;
- filename*0="Re: [alsa-devel] [regression] 2.6.25-rc4 snd-es18xx broken o";
- filename*1="n Alpha.eml"
-
-Date: Tue, 01 Apr 2008 15:23:58 -0400
-From: Tyson Whitehead <twhitehe@uwo.ca>
-Subject: Re: [alsa-devel] [regression] 2.6.25-rc4 snd-es18xx broken on Alpha
-In-reply-to: <20080329063523.979EEDBA2@gherkin.frus.com>
-To: Bob Tracy <rct@frus.com>
-Cc: Takashi Iwai <tiwai@suse.de>
-Message-id: <47F28BCE.9090108@uwo.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7BIT
-References: <20080329063523.979EEDBA2@gherkin.frus.com>
-User-Agent: Mozilla-Thunderbird 2.0.0.9 (X11/20080109)
-
-Bob Tracy wrote:
-> Takashi Iwai wrote:
->> I vaguely remember about the patch...  The patch below was on my local
->> tree but never pushed because of lack of testing.  Does it work for
->> you?
->>
->> ---
->>
->> diff -r 82e6201fc907 sound/isa/es18xx.c
->> --- a/sound/isa/es18xx.c	Mon Mar 17 14:36:24 2008 +0100
->> +++ b/sound/isa/es18xx.c	Mon Mar 17 17:32:59 2008 +0100
->> @@ -765,9 +765,10 @@ static irqreturn_t snd_es18xx_interrupt(
->>  		/* Read Interrupt status */
->>  		status = snd_es18xx_mixer_read(chip, 0x7f) >> 4;
->>  	}
->> -#if 0
->> -	else {
->> -		status = 0;
->> +
->> +#ifdef CONFIG_ALPHA
->> +	if (!(status & (AUDIO1_IRQ | AUDIO2_IRQ))) {
->> +		/* status = 0; */
->>  		if (inb(chip->port + 0x0C) & 0x01)
->>  			status |= AUDIO1_IRQ;
->>  		if (snd_es18xx_mixer_read(chip, 0x7A) & 0x80)
->> @@ -777,7 +778,6 @@ static irqreturn_t snd_es18xx_interrupt(
->>  			status |= HWV_IRQ;
->>  	}
->>  #endif
->> -
->>  	/* Audio 1 & Audio 2 */
->>          if (status & AUDIO2_IRQ) {
->>                  if (chip->active & DAC2)
->> --
+On Tuesday, 1 of April 2008, Didier Raboud wrote:
+> Le mardi, 1 avril 2008 23.11:15 Rafael J. Wysocki, vous avez écrit :
+> > (...)
+> > Can you please test the in-kernel hibernation, then?
+> >
+> > Rafael
 > 
-> The above patch doesn't make any difference for me as far as how the
-> ES1888 works.  I get the same broken behavior as previously described.
+> Hi,
+> 
+> would like to. How ? 
+> 
+> # echo -n disk > /sys/power/state 
 
-I wonder if the difference between Bob and I (i.e., that I can get sound 
-working with patching while he cannot) might be that all along I've been 
-using CONFIG_ALPHA_GENERIC, while he has (possibly -- he will have to 
-confirm this) been using CONFIG_ALPHA_MIATA.
+Yes, should work without the "-n", too.  Of course, you have to use the
+'resume=' kernel command line argument for this to work.
 
-As I mentioned in the email I just sent out, I just finished discovering 
-that if I compile with CONFIG_ALPHA_MIATA, I can't get sound to work no 
-matter what I do (patched or unpatched es18xx or sb8).
+Perhaps increase the console log level before that.
 
-When I compile with CONFIG_ALPHA_GENERIC I can get sound working (modulo 
-this new "Bad page state in process 'mpg321'" thing that started 
-sometime after 2.6.14) with either the patched es18xx or standard sb8.
-
-Cheers!  -Tyson
-
-
---Boundary_(ID_XbWirWW9zp0WF+RWF8C6SQ)--
+Thanks,
+Rafael
