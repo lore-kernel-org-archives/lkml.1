@@ -1,74 +1,152 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758472AbYDALVo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758563AbYDAL1R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758472AbYDALVo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Apr 2008 07:21:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756423AbYDALVh
+	id S1758563AbYDAL1R (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Apr 2008 07:27:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756710AbYDAL1F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Apr 2008 07:21:37 -0400
-Received: from smtp.nokia.com ([192.100.105.134]:39252 "EHLO
-	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756035AbYDALVg (ORCPT
+	Tue, 1 Apr 2008 07:27:05 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:60762 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756676AbYDAL1E (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Apr 2008 07:21:36 -0400
-Message-ID: <47F219B0.6020109@nokia.com>
-Date: Tue, 01 Apr 2008 14:17:04 +0300
-From: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
-Reply-To: Artem.Bityutskiy@nokia.com
-Organization: Nokia OYJ
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	Tue, 1 Apr 2008 07:27:04 -0400
+Message-ID: <47F21BE3.5030705@jp.fujitsu.com>
+Date: Tue, 01 Apr 2008 20:26:27 +0900
+From: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.12 (Windows/20080213)
 MIME-Version: 1.0
-To: =?UTF-8?B?SsO2cm4gRW5nZWw=?= <joern@logfs.org>
-CC: Artem Bityutskiy <dedekind@yandex.ru>,
-       Adrian Hunter <ext-adrian.hunter@nokia.com>,
-       Jan Engelhardt <jengelh@computergmbh.de>,
-       LKML <linux-kernel@vger.kernel.org>, joern@lazybastard.org
-Subject: Re: UBIFS vs Logfs (was [RFC PATCH] UBIFS - new flash file system)
-References: <1206629746-4298-1-git-send-email-Artem.Bityutskiy@nokia.com> <alpine.LNX.1.10.0803311428270.2554@fbirervta.pbzchgretzou.qr> <47F0DD49.7010302@nokia.com> <20080331132047.GA31660@logfs.org> <47F1C78D.2050300@yandex.ru> <47F1CE9D.4080709@nokia.com> <20080401092548.GC7465@logfs.org> <47F202CD.4000804@yandex.ru> <20080401105104.GE7465@logfs.org>
-In-Reply-To: <20080401105104.GE7465@logfs.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-OriginalArrivalTime: 01 Apr 2008 11:20:56.0519 (UTC) FILETIME=[74700D70:01C893EA]
-X-Nokia-AV: Clean
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH 1/2] Customize sched domain via cpuset
+Content-Type: text/plain; charset=ISO-2022-JP
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jörn Engel wrote:
-> Fair enough.
-> 
-> The obvious downside of all this is depending on UBI, which has a linear
-> scan.  My goal was to avoid the linear scan completely.  It is a harder
-> goal and I haven't reached it yet.  Imo it is reachable and I will
-> continue going in that direction.
+Hi all,
 
-Yes, it was our core design decision. One of the reasons, we were not sure
-this is technically possible to do on bare flashes. I mean, it just looked
-so complex to have all in one, so we figured that was a good split, where
-you can cut on big work on two smaller separate ones. The benefit of this
-is obvious - we have created a complete system, which is not perfect though
-and have scalability issues.
+Using cpuset, now we can partition the system into multiple sched domains.
+Then, how about providing different characteristics for each domains?
 
-Our point is that UBI is scalable enough for the time being.
+This patch introduces new feature of cpuset - sched domain customization.
 
-I wrote some documentation about this in UBI FAQ and UBIFS FAQ:
-http://www.linux-mtd.infradead.org/doc/ubifs.html#L_scalability
+Signed-off-by: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
 
-We can now improve scalability of UBI without affecting UBIFS - it has some
-potential. And we may develop UBI2 which would be more much more scalable,
-but this is a big project and we are not planning to do this so far. Others
-could do.
+---
+ Documentation/cpusets.txt |   89 ++++++++++++++++++++++++++++++++++++++++++++--
+ 1 file changed, 87 insertions(+), 2 deletions(-)
 
-So in other words, using UBI allowed us to get a finished system faster. I
-meets our's and many other people's requirements, although it has issues if
-you try to use it on really huge flashes, like 64GiB. That's a drawback.
-But the good thing is that this would require re-working UBI layer, without
-complete re-working of UBIFS. 
+Index: GIT-torvalds/Documentation/cpusets.txt
+===================================================================
+--- GIT-torvalds.orig/Documentation/cpusets.txt
++++ GIT-torvalds/Documentation/cpusets.txt
+@@ -8,6 +8,7 @@ Portions Copyright (c) 2004-2006 Silicon
+ Modified by Paul Jackson <pj@sgi.com>
+ Modified by Christoph Lameter <clameter@sgi.com>
+ Modified by Paul Menage <menage@google.com>
++Modified by Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
 
-> You picked the route of using UBI, which makes a lot of stuff easier.
-> It is a fair approach and I don't mind you taking it.  It has drawbacks,
-> but so has everything else.
-Agree.
+ CONTENTS:
+ =========
+@@ -20,7 +21,8 @@ CONTENTS:
+   1.5 What is memory_pressure ?
+   1.6 What is memory spread ?
+   1.7 What is sched_load_balance ?
+-  1.8 How do I use cpusets ?
++  1.8 What are other sched_* files ?
++  1.9 How do I use cpusets ?
+ 2. Usage Examples and Syntax
+   2.1 Basic Usage
+   2.2 Adding/removing cpus
+@@ -497,7 +499,90 @@ the cpuset code to update these sched do
+ partition requested with the current, and updates its sched domains,
+ removing the old and adding the new, for each change.
 
--- 
-Best Regards,
-Artem Bityutskiy (Артём Битюцкий)
+-1.8 How do I use cpusets ?
++1.8 What are other sched_* files ?
++----------------------------------
++
++As described in 1.7, cpuset allows you to partition the systems CPUs
++into a number of sched domains.  Each sched domain is load balanced
++independently, in a traditional way that designed to be good for
++usual systems.
++
++But you may want to customize the behavior of load balancing for your
++special system.  For this requirement, cpuset provides some files named
++sched_* to customize the sched domain of the cpuset for some special
++situation, i.e. some specific application on some special system.
++
++These files are per-cpuset and affect the sched domain where the
++cpuset belongs to.  If multiple cpusets are overlapping and hence they
++form a single sched domain, changes in one of them affect others.
++If flag "sched_load_balance" of a cpuset is disabled, sched_* files
++have no effect since there is no sched domain belonging the cpuset.
++
++Note that modifying sched_* files will have both good and bad effects,
++and whether it is acceptable or not will be depend on your situation.
++Don't modify these files if you are not sure the effect.
++
++1.8.1 What is sched_wake_idle_far ?
++-----------------------------------
++
++When a task is woken up, scheduler try to wake up the task on idle CPU.
++
++For example, if a task A running on CPU X activates another task B
++on the same CPU X, and if CPU Y is X's sibling and performing idle,
++then scheduler migrate task B to CPU Y so that task B can start
++on CPU Y without waiting task A on CPU X.
++
++However scheduler doesn't search whole system, just searches nearby
++siblings at default.  Assume CPU Z is relatively far from CPU X.
++Even if CPU Z is idle while CPU X and the siblings are busy, scheduler
++can't migrate woken task B from X to Z.  As the result, task B on CPU X
++need to wait task A or wait load balance on the next tick.  For some
++special applications, waiting 1 tick is too long.
++
++The main reason why scheduler limits the range of searching idle CPU
++so small such as "siblings in the socket" is because it saves
++searching cost and migration cost.  Nowadays there are shared
++resources between siblings - CPU caches and so on, so this limit can
++save some migration cost assuming that the resources contain enough
++not-expired stuff for migrating task.  Usually this assumption will
++work, but not guaranteed.
++
++When the flag 'sched_wake_idle_far' is enabled, this searching range
++is expanded to all CPUs in the sched domain of the cpuset.
++
++If this flag was enabled on the example of CPU Z given above,
++scheduler can find CPU Z by taking some extra searching cost, and
++migrate task B to CPU Z by taking some extra migration cost.
++In exchange of these costs, you can start task B relatively fast.
++
++If your situation is:
++ - The migration costs between each cpu can be assumed considerably
++   small(for you) due to your special application's behavior or
++   special hardware support for CPU cache etc.
++ - The searching cost doesn't have impact(for you) or you can make
++   the searching cost enough small by managing cpuset to compact etc.
++ - The latency is required even it sacrifices cache hit rate etc.
++then turning on 'sched_wake_idle_far' would benefit you.
++
++1.8.2 What is sched_balance_newidle_far ?
++-----------------------------------------
++
++If a CPU run out of tasks in its runqueue, the CPU try to pull extra
++tasks from other busy CPUs to help them before it is going to be idle.
++
++Of course it takes some searching cost to find movable tasks,
++scheduler might not search all CPUs in the system.  For example,
++the range is limited in the same socket or node where the CPU locates.
++
++When the flag 'sched_balance_newidle_far' is enabled, this range
++is expanded to all CPUs in the sched domain of the cpuset.
++
++The assumed situation where this flag is considerable is almost same
++as that of 'sched_wake_idle_far'.  If you would like to trade better
++latency and high operating ratio in return of some other benefits,
++then enable this flag.
++
++1.9 How do I use cpusets ?
+ --------------------------
+
+ In order to minimize the impact of cpusets on critical kernel
