@@ -1,65 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758815AbYDAREr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758891AbYDARJ5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758815AbYDAREr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Apr 2008 13:04:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754833AbYDAREk
+	id S1758891AbYDARJ5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Apr 2008 13:09:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756012AbYDARJt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Apr 2008 13:04:40 -0400
-Received: from ra.tuxdriver.com ([70.61.120.52]:2947 "EHLO ra.tuxdriver.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755394AbYDAREj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Apr 2008 13:04:39 -0400
-Date: Tue, 1 Apr 2008 12:44:19 -0400
-From: "John W. Linville" <linville@tuxdriver.com>
-To: Luca Venturini <lucventurini@gmail.com>
-Cc: linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org
-Subject: Re: New IWL4935 driver for Intel Wireless Cards does not support
-	WPA2 wireless network with PEAP - MSCHAPV2
-Message-ID: <20080401164419.GA3530@tuxdriver.com>
-References: <47F1F4F4.2080502@gmail.com>
+	Tue, 1 Apr 2008 13:09:49 -0400
+Received: from g1t0026.austin.hp.com ([15.216.28.33]:6694 "EHLO
+	g1t0026.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755715AbYDARJs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Apr 2008 13:09:48 -0400
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: + revert-gregkh-pci-pci-x86-use-generic-pci_enable_resources.patch added to -mm tree
+Date: Tue, 1 Apr 2008 11:09:42 -0600
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: davem@davemloft.net, greg@kroah.com, m.kozlowski@tuxland.pl,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       linux-kernel@vger.kernel.org, Tony Luck <tony.luck@intel.com>,
+       linux-ia64@vger.kernel.org, Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+References: <200803282348.m2SNmleP016847@imap1.linux-foundation.org> <200804010957.16459.bjorn.helgaas@hp.com> <20080401100050.009cec7b.akpm@linux-foundation.org>
+In-Reply-To: <20080401100050.009cec7b.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <47F1F4F4.2080502@gmail.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Message-Id: <200804011109.43046.bjorn.helgaas@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-You probably want to address this to linux-wireless@vger.kernel.org
-instead...
+On Tuesday 01 April 2008 11:00:50 am Andrew Morton wrote:
+> On Tue, 1 Apr 2008 09:57:15 -0600 Bjorn Helgaas <bjorn.helgaas@hp.com> wrote:
+> 
+> > On Friday 28 March 2008 05:48:47 pm akpm@linux-foundation.org wrote:
+> > > 
+> > > The patch titled
+> > >      revert gregkh-pci-pci-x86-use-generic-pci_enable_resources
+> > > has been added to the -mm tree.  Its filename is
+> > >      revert-gregkh-pci-pci-x86-use-generic-pci_enable_resources.patch
+> > 
+> > OK, I'm not sure where we are with this.  Ben listed arches where
+> > the generic pci_enable_resources() should be safe: x86, alpha, and
+> > powerpc.  I think we should also include ia64, since I work on that.
+> > 
+> > If there's no objection to those arches, how should we move forward?
+> > Since Andrew put in "revert gregkh-pci" patches rather than just
+> > dropping things, I assume the original patches are in Greg KH's tree.
+> > 
+> > Can we just drop the "revert gregkh" patches for x86, alpha, powerpc,
+> > and ia64?
+> 
+> So powerpc is OK but ppc might not be?
 
-On Tue, Apr 01, 2008 at 10:40:20AM +0200, Luca Venturini wrote:
-> Using Ubuntu Hardy Beta, Linux kernel 2.6.24, AMD64.
-> I have to connect to a campus (University of Verona, Italy; more 
-> information maybe available at https://wifi.univr.it sadly in Italian only, 
-> and I am not sure it is reachable from outside the university) WPA2 
-> wireless network. It uses PEAP authentication, Dynamic WEP encryption, 
-> second phase: MSCHAPv2.
-> It also requires user login, password, and a CA certificate (available at 
-> the web page I linked above).
-> At the same page a wpasupplicant configuration file is also available, so 
-> to allow people to connect from linux also.
-> In Ubuntu Gutsy 32 bit (Linux kernel 2.6.22.14 if I am not mistaken) I was 
-> able to connect through NetworkManager and precisely using the GNOME 
-> nm-applet.
-> However, since I switched to Linux 2.6.24, I have no more been able to 
-> connect, whether through NM-applet or from the command line, using 
-> wpasupplicant. The wireless functions perfectly, and there has been no 
-> change in its configuration, since I am using it now (Windows Vista, 
-> configured months ago).
-> Reported also here on launchpad: 
-> https://bugs.launchpad.net/ubuntu/+bug/209602
-> Thank you for your attention.
-> Greetings
->
-> Luca Venturini
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+I suppose Ben is the expert on that, and he did say he thought both
+powerpc and ppc would be OK.  I think we just care less about ppc
+because powerpc is the new converged one.
 
--- 
-John W. Linville
-linville@tuxdriver.com
+Bjorn
