@@ -1,57 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759343AbYDASBk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759413AbYDASHY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759343AbYDASBk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Apr 2008 14:01:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757121AbYDASBb
+	id S1759413AbYDASHY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Apr 2008 14:07:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751884AbYDASHL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Apr 2008 14:01:31 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:48404 "EHLO pasmtpA.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757103AbYDASBb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Apr 2008 14:01:31 -0400
-Date: Tue, 1 Apr 2008 20:01:56 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Roel Kluin <12o3l@tiscali.nl>
-Cc: paulus@samba.org, linuxppc-dev@ozlabs.org, trivial@kernel.org,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2/8] powerpc: replace `__attribute' by `__attribute__'
-Message-ID: <20080401180156.GA14553@uranus.ravnborg.org>
-References: <47F26FF6.8070300@tiscali.nl> <47F27155.1000103@tiscali.nl>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47F27155.1000103@tiscali.nl>
-User-Agent: Mutt/1.4.2.1i
+	Tue, 1 Apr 2008 14:07:11 -0400
+Received: from v320-147-lb.its.uwo.ca ([129.100.74.147]:63704 "EHLO uwo.ca"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753082AbYDASHK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Apr 2008 14:07:10 -0400
+MIME-version: 1.0
+Content-transfer-encoding: 7BIT
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Message-id: <47F279E7.60801@uwo.ca>
+Date: Tue, 01 Apr 2008 14:07:35 -0400
+From: Tyson Whitehead <twhitehe@uwo.ca>
+User-Agent: Mozilla-Thunderbird 2.0.0.9 (X11/20080109)
+To: Bob Tracy <rct@frus.com>
+Cc: Rene Herman <rene.herman@keyaccess.nl>, Michael Cree <mcree@orcon.net.nz>,
+       Takashi Iwai <tiwai@suse.de>, ALSA devel <alsa-devel@alsa-project.org>,
+       linux-kernel@vger.kernel.org,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>, linux-alpha@vger.kernel.org,
+       Krzysztof Helt <krzysztof.h1@wp.pl>
+Subject: Re: [alsa-devel] [regression] 2.6.25-rc4 snd-es18xx broken on Alpha
+References: <20080314233357.5223BDBA2@gherkin.frus.com>
+In-reply-to: <20080314233357.5223BDBA2@gherkin.frus.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 01, 2008 at 07:31:01PM +0200, Roel Kluin wrote:
-> replace `__attribute' by `__attribute__'
+Bob Tracy wrote:
+> rct wrote:
+>> Rene Herman wrote:
+>>> Okay, and applying the attached just makes your sound completely dead in the 
+>>> water?
+>>> (patch to remove es1888_init from a Miata build omitted)
+>> I'll try a build with the old OSS "sb" driver, and if that works ok, we
+>> may be able to do away with es1888_init() on the Miata.  Tyson -- I
+>> think you have a Miata if I'm remembering correctly: can you confirm
+>> these observations?
 > 
-> Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
-> ---
-> diff --git a/arch/powerpc/platforms/iseries/main_store.h b/arch/powerpc/platforms/iseries/main_store.h
-> index 1a7a3f5..976b23e 100644
-> --- a/arch/powerpc/platforms/iseries/main_store.h
-> +++ b/arch/powerpc/platforms/iseries/main_store.h
-> @@ -61,7 +61,7 @@ struct IoHriMainStoreSegment4 {
->  };
->  
->  /* Main Store VPD for Power4 */
-> -struct __attribute((packed)) IoHriMainStoreChipInfo1 {
-> +struct __attribute__((packed)) IoHriMainStoreChipInfo1 {
->  	u32	chipMfgID;
->  	char	chipECLevel[4];
->  };
+> Quick followup: OSS "sb" driver works fine without es1888_init().
+> 
 
-Please introduce __packed if you touch this.
-See include/linux/compiler-gcc.h
+Okay.  I finally got everything tested on my Miata.  Unless I missed 
+something, the es1888_init routine only gets compiled in with 
+CONFIG_ALPHA_MIATA.  As I've been using the debian generic kernel (i.e., 
+CONFIG_ALPHA_GENERIC), I have never relied on this routine for anything.
 
-This comment is relevant for all your patches.
-We have __used and other similar variants.
+I did discover, however, when I compiled my own kernel (2.6.25-rc5) with 
+CONFIG_ALPHA_MIATA, things stopped working.  Specifically, I no longer 
+got any interupts (with or without the es1888_init patch and with or 
+without the alternative es188xx interupt patch) associated with either 
+the builtin sound card (es1888) or the IDE controller (CMD646).
 
-So take a good look at include/linux/compiler* and
-use the proper shortcuts where available.
+With CONFIG_ALPHA_GENERIC I only get one interupt with the es18xx driver 
+unless I applied to "alternative interupt" handling code.  Further, 
+sometime between 2.6.14 and 2.6.16, mpg321 (using the alsa driver) 
+started generating "Bad page state in process 'mpg321' ... Trying to fix 
+it up, but a reboot is needed" kernel messages.
 
-	Sam
+The machine would continue to operate okay though.  However, somewhere 
+between 2.6.16 and 2.6.24, it also started crashing very shortly 
+thereafter, giving the following backtrace: free_pages_check, 
+free_hot_cold_pages, put_pages, free_page_and_swap_cache, unmap_cmas, 
+unmap_region, default_wake_function, do_munmap, sys_munmap, entSys.
+
+Hope this helps.
+
+Cheers!  -Tyson
+
