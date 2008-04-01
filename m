@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760647AbYDAPWY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760730AbYDAPWk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760647AbYDAPWY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Apr 2008 11:22:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754469AbYDAPSP
+	id S1760730AbYDAPWk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Apr 2008 11:22:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759410AbYDAPST
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Apr 2008 11:18:15 -0400
-Received: from g4t0015.houston.hp.com ([15.201.24.18]:17191 "EHLO
-	g4t0015.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759307AbYDAPSB (ORCPT
+	Tue, 1 Apr 2008 11:18:19 -0400
+Received: from g4t0017.houston.hp.com ([15.201.24.20]:11865 "EHLO
+	g4t0017.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759320AbYDAPSE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Apr 2008 11:18:01 -0400
-Message-Id: <20080401151738.642616008@ldl.fc.hp.com>
+	Tue, 1 Apr 2008 11:18:04 -0400
+Message-Id: <20080401151738.051455892@ldl.fc.hp.com>
 References: <20080401151634.730901933@ldl.fc.hp.com>
 User-Agent: quilt/0.46-1
-Date: Tue, 01 Apr 2008 09:16:49 -0600
+Date: Tue, 01 Apr 2008 09:16:46 -0600
 From: Bjorn Helgaas <bjorn.helgaas@hp.com>
 To: Len Brown <lenb@kernel.org>
 Cc: linux-acpi@vger.kernel.org
@@ -25,61 +25,332 @@ Cc: Thomas Renninger <trenn@suse.de>
 Cc: Rene Herman <rene.herman@keyaccess.nl>
 Cc: Jaroslav Kysela <perex@perex.cz>
 Cc: Andrew Morton <akpm@linux-foundation.org>
-Subject: [patch 15/37] PNPACPI: pass pnp_dev instead of acpi_handle
-Content-Disposition: inline; filename=pnpacpi-use-pnp_dev
+Subject: [patch 12/37] PNPACPI: use temporaries to reduce repetition
+Content-Disposition: inline; filename=pnpacpi-use-acpi-resource-temporaries
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pass the pnp_dev pointer when possible instead of the acpi_handle.
-This allows better error messages and reduces the chance of error
-in the caller.
+No functional change, just fewer words and fewer chances for
+transcription errors.
 
 Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
 
-Index: work7/drivers/pnp/pnpacpi/core.c
-===================================================================
---- work7.orig/drivers/pnp/pnpacpi/core.c	2008-03-21 15:35:05.000000000 -0600
-+++ work7/drivers/pnp/pnpacpi/core.c	2008-03-21 15:36:00.000000000 -0600
-@@ -88,10 +88,10 @@
- {
- 	acpi_handle handle = dev->data;
- 	struct acpi_buffer buffer;
--	int ret = 0;
-+	int ret;
- 	acpi_status status;
- 
--	ret = pnpacpi_build_resource_template(handle, &buffer);
-+	ret = pnpacpi_build_resource_template(dev, &buffer);
- 	if (ret)
- 		return ret;
- 	ret = pnpacpi_encode_resources(res, &buffer);
-Index: work7/drivers/pnp/pnpacpi/pnpacpi.h
-===================================================================
---- work7.orig/drivers/pnp/pnpacpi/pnpacpi.h	2008-03-21 15:28:07.000000000 -0600
-+++ work7/drivers/pnp/pnpacpi/pnpacpi.h	2008-03-21 15:36:00.000000000 -0600
-@@ -8,5 +8,5 @@
- acpi_status pnpacpi_parse_allocated_resource(acpi_handle, struct pnp_resource_table*);
- acpi_status pnpacpi_parse_resource_option_data(acpi_handle, struct pnp_dev*);
- int pnpacpi_encode_resources(struct pnp_resource_table *, struct acpi_buffer *);
--int pnpacpi_build_resource_template(acpi_handle, struct acpi_buffer*);
-+int pnpacpi_build_resource_template(struct pnp_dev *, struct acpi_buffer *);
- #endif
 Index: work7/drivers/pnp/pnpacpi/rsparser.c
 ===================================================================
---- work7.orig/drivers/pnp/pnpacpi/rsparser.c	2008-03-21 15:35:59.000000000 -0600
-+++ work7/drivers/pnp/pnpacpi/rsparser.c	2008-03-21 15:36:00.000000000 -0600
-@@ -775,9 +775,10 @@
- 	return AE_OK;
+--- work7.orig/drivers/pnp/pnpacpi/rsparser.c	2008-03-20 12:07:31.000000000 -0600
++++ work7/drivers/pnp/pnpacpi/rsparser.c	2008-03-20 12:14:54.000000000 -0600
+@@ -278,6 +278,14 @@
+ 					      void *data)
+ {
+ 	struct pnp_resource_table *res_table = data;
++	struct acpi_resource_irq *irq;
++	struct acpi_resource_dma *dma;
++	struct acpi_resource_io *io;
++	struct acpi_resource_fixed_io *fixed_io;
++	struct acpi_resource_memory24 *memory24;
++	struct acpi_resource_memory32 *memory32;
++	struct acpi_resource_fixed_memory32 *fixed_memory32;
++	struct acpi_resource_extended_irq *extended_irq;
+ 	int i;
+ 
+ 	switch (res->type) {
+@@ -286,29 +294,32 @@
+ 		 * Per spec, only one interrupt per descriptor is allowed in
+ 		 * _CRS, but some firmware violates this, so parse them all.
+ 		 */
+-		for (i = 0; i < res->data.irq.interrupt_count; i++) {
++		irq = &res->data.irq;
++		for (i = 0; i < irq->interrupt_count; i++) {
+ 			pnpacpi_parse_allocated_irqresource(res_table,
+-				res->data.irq.interrupts[i],
+-				res->data.irq.triggering,
+-				res->data.irq.polarity,
+-				res->data.irq.sharable);
++				irq->interrupts[i],
++				irq->triggering,
++				irq->polarity,
++				irq->sharable);
+ 		}
+ 		break;
+ 
+ 	case ACPI_RESOURCE_TYPE_DMA:
+-		if (res->data.dma.channel_count > 0)
++		dma = &res->data.dma;
++		if (dma->channel_count > 0)
+ 			pnpacpi_parse_allocated_dmaresource(res_table,
+-				res->data.dma.channels[0],
+-				res->data.dma.type,
+-				res->data.dma.bus_master,
+-				res->data.dma.transfer);
++				dma->channels[0],
++				dma->type,
++				dma->bus_master,
++				dma->transfer);
+ 		break;
+ 
+ 	case ACPI_RESOURCE_TYPE_IO:
++		io = &res->data.io;
+ 		pnpacpi_parse_allocated_ioresource(res_table,
+-			res->data.io.minimum,
+-			res->data.io.address_length,
+-			res->data.io.io_decode);
++			io->minimum,
++			io->address_length,
++			io->io_decode);
+ 		break;
+ 
+ 	case ACPI_RESOURCE_TYPE_START_DEPENDENT:
+@@ -316,9 +327,10 @@
+ 		break;
+ 
+ 	case ACPI_RESOURCE_TYPE_FIXED_IO:
++		fixed_io = &res->data.fixed_io;
+ 		pnpacpi_parse_allocated_ioresource(res_table,
+-			res->data.fixed_io.address,
+-			res->data.fixed_io.address_length,
++			fixed_io->address,
++			fixed_io->address_length,
+ 			ACPI_DECODE_10);
+ 		break;
+ 
+@@ -329,22 +341,25 @@
+ 		break;
+ 
+ 	case ACPI_RESOURCE_TYPE_MEMORY24:
++		memory24 = &res->data.memory24;
+ 		pnpacpi_parse_allocated_memresource(res_table,
+-			res->data.memory24.minimum,
+-			res->data.memory24.address_length,
+-			res->data.memory24.write_protect);
++			memory24->minimum,
++			memory24->address_length,
++			memory24->write_protect);
+ 		break;
+ 	case ACPI_RESOURCE_TYPE_MEMORY32:
++		memory32 = &res->data.memory32;
+ 		pnpacpi_parse_allocated_memresource(res_table,
+-			res->data.memory32.minimum,
+-			res->data.memory32.address_length,
+-			res->data.memory32.write_protect);
++			memory32->minimum,
++			memory32->address_length,
++			memory32->write_protect);
+ 		break;
+ 	case ACPI_RESOURCE_TYPE_FIXED_MEMORY32:
++		fixed_memory32 = &res->data.fixed_memory32;
+ 		pnpacpi_parse_allocated_memresource(res_table,
+-			res->data.fixed_memory32.address,
+-			res->data.fixed_memory32.address_length,
+-			res->data.fixed_memory32.write_protect);
++			fixed_memory32->address,
++			fixed_memory32->address_length,
++			fixed_memory32->write_protect);
+ 		break;
+ 	case ACPI_RESOURCE_TYPE_ADDRESS16:
+ 	case ACPI_RESOURCE_TYPE_ADDRESS32:
+@@ -358,15 +373,16 @@
+ 		break;
+ 
+ 	case ACPI_RESOURCE_TYPE_EXTENDED_IRQ:
+-		if (res->data.extended_irq.producer_consumer == ACPI_PRODUCER)
++		extended_irq = &res->data.extended_irq;
++		if (extended_irq->producer_consumer == ACPI_PRODUCER)
+ 			return AE_OK;
+ 
+-		for (i = 0; i < res->data.extended_irq.interrupt_count; i++) {
++		for (i = 0; i < extended_irq->interrupt_count; i++) {
+ 			pnpacpi_parse_allocated_irqresource(res_table,
+-				res->data.extended_irq.interrupts[i],
+-				res->data.extended_irq.triggering,
+-				res->data.extended_irq.polarity,
+-				res->data.extended_irq.sharable);
++				extended_irq->interrupts[i],
++				extended_irq->triggering,
++				extended_irq->polarity,
++				extended_irq->sharable);
+ 		}
+ 		break;
+ 
+@@ -795,122 +811,136 @@
+ static void pnpacpi_encode_irq(struct acpi_resource *resource,
+ 			       struct resource *p)
+ {
++	struct acpi_resource_irq *irq = &resource->data.irq;
+ 	int triggering, polarity;
+ 
+ 	decode_irq_flags(p->flags & IORESOURCE_BITS, &triggering, &polarity);
+-	resource->data.irq.triggering = triggering;
+-	resource->data.irq.polarity = polarity;
++	irq->triggering = triggering;
++	irq->polarity = polarity;
+ 	if (triggering == ACPI_EDGE_SENSITIVE)
+-		resource->data.irq.sharable = ACPI_EXCLUSIVE;
++		irq->sharable = ACPI_EXCLUSIVE;
+ 	else
+-		resource->data.irq.sharable = ACPI_SHARED;
+-	resource->data.irq.interrupt_count = 1;
+-	resource->data.irq.interrupts[0] = p->start;
++		irq->sharable = ACPI_SHARED;
++	irq->interrupt_count = 1;
++	irq->interrupts[0] = p->start;
  }
  
--int pnpacpi_build_resource_template(acpi_handle handle,
-+int pnpacpi_build_resource_template(struct pnp_dev *dev,
- 				    struct acpi_buffer *buffer)
+ static void pnpacpi_encode_ext_irq(struct acpi_resource *resource,
+ 				   struct resource *p)
  {
-+	acpi_handle handle = dev->data;
- 	struct acpi_resource *resource;
- 	int res_cnt = 0;
- 	acpi_status status;
++	struct acpi_resource_extended_irq *extended_irq = &resource->data.extended_irq;
+ 	int triggering, polarity;
+ 
+ 	decode_irq_flags(p->flags & IORESOURCE_BITS, &triggering, &polarity);
+-	resource->data.extended_irq.producer_consumer = ACPI_CONSUMER;
+-	resource->data.extended_irq.triggering = triggering;
+-	resource->data.extended_irq.polarity = polarity;
++	extended_irq->producer_consumer = ACPI_CONSUMER;
++	extended_irq->triggering = triggering;
++	extended_irq->polarity = polarity;
+ 	if (triggering == ACPI_EDGE_SENSITIVE)
+-		resource->data.extended_irq.sharable = ACPI_EXCLUSIVE;
++		extended_irq->sharable = ACPI_EXCLUSIVE;
+ 	else
+-		resource->data.extended_irq.sharable = ACPI_SHARED;
+-	resource->data.extended_irq.interrupt_count = 1;
+-	resource->data.extended_irq.interrupts[0] = p->start;
++		extended_irq->sharable = ACPI_SHARED;
++	extended_irq->interrupt_count = 1;
++	extended_irq->interrupts[0] = p->start;
+ }
+ 
+ static void pnpacpi_encode_dma(struct acpi_resource *resource,
+ 			       struct resource *p)
+ {
++	struct acpi_resource_dma *dma = &resource->data.dma;
++
+ 	/* Note: pnp_assign_dma will copy pnp_dma->flags into p->flags */
+ 	switch (p->flags & IORESOURCE_DMA_SPEED_MASK) {
+ 	case IORESOURCE_DMA_TYPEA:
+-		resource->data.dma.type = ACPI_TYPE_A;
++		dma->type = ACPI_TYPE_A;
+ 		break;
+ 	case IORESOURCE_DMA_TYPEB:
+-		resource->data.dma.type = ACPI_TYPE_B;
++		dma->type = ACPI_TYPE_B;
+ 		break;
+ 	case IORESOURCE_DMA_TYPEF:
+-		resource->data.dma.type = ACPI_TYPE_F;
++		dma->type = ACPI_TYPE_F;
+ 		break;
+ 	default:
+-		resource->data.dma.type = ACPI_COMPATIBILITY;
++		dma->type = ACPI_COMPATIBILITY;
+ 	}
+ 
+ 	switch (p->flags & IORESOURCE_DMA_TYPE_MASK) {
+ 	case IORESOURCE_DMA_8BIT:
+-		resource->data.dma.transfer = ACPI_TRANSFER_8;
++		dma->transfer = ACPI_TRANSFER_8;
+ 		break;
+ 	case IORESOURCE_DMA_8AND16BIT:
+-		resource->data.dma.transfer = ACPI_TRANSFER_8_16;
++		dma->transfer = ACPI_TRANSFER_8_16;
+ 		break;
+ 	default:
+-		resource->data.dma.transfer = ACPI_TRANSFER_16;
++		dma->transfer = ACPI_TRANSFER_16;
+ 	}
+ 
+-	resource->data.dma.bus_master = !!(p->flags & IORESOURCE_DMA_MASTER);
+-	resource->data.dma.channel_count = 1;
+-	resource->data.dma.channels[0] = p->start;
++	dma->bus_master = !!(p->flags & IORESOURCE_DMA_MASTER);
++	dma->channel_count = 1;
++	dma->channels[0] = p->start;
+ }
+ 
+ static void pnpacpi_encode_io(struct acpi_resource *resource,
+ 			      struct resource *p)
+ {
++	struct acpi_resource_io *io = &resource->data.io;
++
+ 	/* Note: pnp_assign_port will copy pnp_port->flags into p->flags */
+-	resource->data.io.io_decode = (p->flags & PNP_PORT_FLAG_16BITADDR) ?
++	io->io_decode = (p->flags & PNP_PORT_FLAG_16BITADDR) ?
+ 	    ACPI_DECODE_16 : ACPI_DECODE_10;
+-	resource->data.io.minimum = p->start;
+-	resource->data.io.maximum = p->end;
+-	resource->data.io.alignment = 0;	/* Correct? */
+-	resource->data.io.address_length = p->end - p->start + 1;
++	io->minimum = p->start;
++	io->maximum = p->end;
++	io->alignment = 0;	/* Correct? */
++	io->address_length = p->end - p->start + 1;
+ }
+ 
+ static void pnpacpi_encode_fixed_io(struct acpi_resource *resource,
+ 				    struct resource *p)
+ {
+-	resource->data.fixed_io.address = p->start;
+-	resource->data.fixed_io.address_length = p->end - p->start + 1;
++	struct acpi_resource_fixed_io *fixed_io = &resource->data.fixed_io;
++
++	fixed_io->address = p->start;
++	fixed_io->address_length = p->end - p->start + 1;
+ }
+ 
+ static void pnpacpi_encode_mem24(struct acpi_resource *resource,
+ 				 struct resource *p)
+ {
++	struct acpi_resource_memory24 *memory24 = &resource->data.memory24;
++
+ 	/* Note: pnp_assign_mem will copy pnp_mem->flags into p->flags */
+-	resource->data.memory24.write_protect =
++	memory24->write_protect =
+ 	    (p->flags & IORESOURCE_MEM_WRITEABLE) ?
+ 	    ACPI_READ_WRITE_MEMORY : ACPI_READ_ONLY_MEMORY;
+-	resource->data.memory24.minimum = p->start;
+-	resource->data.memory24.maximum = p->end;
+-	resource->data.memory24.alignment = 0;
+-	resource->data.memory24.address_length = p->end - p->start + 1;
++	memory24->minimum = p->start;
++	memory24->maximum = p->end;
++	memory24->alignment = 0;
++	memory24->address_length = p->end - p->start + 1;
+ }
+ 
+ static void pnpacpi_encode_mem32(struct acpi_resource *resource,
+ 				 struct resource *p)
+ {
+-	resource->data.memory32.write_protect =
++	struct acpi_resource_memory32 *memory32 = &resource->data.memory32;
++
++	memory32->write_protect =
+ 	    (p->flags & IORESOURCE_MEM_WRITEABLE) ?
+ 	    ACPI_READ_WRITE_MEMORY : ACPI_READ_ONLY_MEMORY;
+-	resource->data.memory32.minimum = p->start;
+-	resource->data.memory32.maximum = p->end;
+-	resource->data.memory32.alignment = 0;
+-	resource->data.memory32.address_length = p->end - p->start + 1;
++	memory32->minimum = p->start;
++	memory32->maximum = p->end;
++	memory32->alignment = 0;
++	memory32->address_length = p->end - p->start + 1;
+ }
+ 
+ static void pnpacpi_encode_fixed_mem32(struct acpi_resource *resource,
+ 				       struct resource *p)
+ {
+-	resource->data.fixed_memory32.write_protect =
++	struct acpi_resource_fixed_memory32 *fixed_memory32 = &resource->data.fixed_memory32;
++
++	fixed_memory32->write_protect =
+ 	    (p->flags & IORESOURCE_MEM_WRITEABLE) ?
+ 	    ACPI_READ_WRITE_MEMORY : ACPI_READ_ONLY_MEMORY;
+-	resource->data.fixed_memory32.address = p->start;
+-	resource->data.fixed_memory32.address_length = p->end - p->start + 1;
++	fixed_memory32->address = p->start;
++	fixed_memory32->address_length = p->end - p->start + 1;
+ }
+ 
+ int pnpacpi_encode_resources(struct pnp_resource_table *res_table,
 
 -- 
