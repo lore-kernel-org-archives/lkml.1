@@ -1,143 +1,287 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758266AbYDAJjS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758638AbYDAJjc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758266AbYDAJjS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Apr 2008 05:39:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756842AbYDAJjG
+	id S1758638AbYDAJjc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Apr 2008 05:39:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756893AbYDAJjI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Apr 2008 05:39:06 -0400
-Received: from smtp1.infomaniak.ch ([84.16.68.89]:32840 "EHLO
-	smtp1.infomaniak.ch" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756784AbYDAJjF (ORCPT
+	Tue, 1 Apr 2008 05:39:08 -0400
+Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:57765 "EHLO
+	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756789AbYDAJjG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Apr 2008 05:39:05 -0400
-From: Didier Raboud <didier@raboud.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: =?utf-8?q?2=2E6=2E25-rc7=C2=A0=3A_hibernation_sometimes_not_resuming_on?=
- =?utf-8?q?_Dell_Latitude?= D630
-Date: Tue, 1 Apr 2008 08:41:43 +0200
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org, debian-kernel@lists.debian.org
-References: <200803311823.36693.didier@raboud.com> <200803312303.19623.didier@raboud.com> <200804010818.59269.didier@raboud.com>
-In-Reply-To: <200804010818.59269.didier@raboud.com>
+	Tue, 1 Apr 2008 05:39:06 -0400
+From: "Satoshi UCHIDA" <s-uchida@ap.jp.nec.com>
+To: <linux-kernel@vger.kernel.org>, <containers@lists.linux-foundation.org>,
+       <axboe@kernel.dk>, <menage@google.com>
+Cc: <s-uchida@ap.jp.nec.com>, <tom-sugawara@ap.jp.nec.com>,
+       <m-takahashi@ex.jp.nec.com>
+References: <007801c893d9$d89726f0$89c574d0$@jp.nec.com>
+In-Reply-To: <007801c893d9$d89726f0$89c574d0$@jp.nec.com>
+Subject: [RFC][patch 8/11][CFQ-cgroup] Control cfq_data per cgroup
+Date: Tue, 1 Apr 2008 18:38:52 +0900
+Message-Id: <008501c893dc$3206e520$9614af60$@jp.nec.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart1588300.hqSSEA4Kmh";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
+Content-Type: text/plain;
+	charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Message-Id: <200804010841.45623.didier@raboud.com>
-X-Antivirus: Dr.Web (R) for Mail Servers on smtp1 host
-X-Antivirus-Code: 100000
+X-Mailer: Microsoft Office Outlook 12.0
+Thread-Index: AciT2dazsgoxpK4vQk6Hf026phpfBAAAjPFA
+Content-Language: ja
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart1588300.hqSSEA4Kmh
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+This patch expands cfq data to handling multi cfq_data in group.
+This control is used rb_tree and the key is used a pointer of cfq_meta_data.
 
-Le mardi, 1 avril 2008 08.18:57 Didier Raboud, vous avez =C3=A9crit=C2=A0:
-> Le lundi, 31 mars 2008 23.03:16 Didier Raboud, vous avez =C3=A9crit=C2=A0:
-> > Le lundi, 31 mars 2008 22.29:20 Rafael J. Wysocki, vous avez =C3=A9crit=
-=C2=A0:
-> > > On Monday, 31 of March 2008, Didier Raboud wrote:
-> > > > Le lundi, 31 mars 2008 19.36:00 Didier Raboud, vous avez =C3=A9crit=
-=C2=A0:
-> > > > > Le lundi, 31 mars 2008 19.24:55 maximilian attems, vous avez =C3=
-=A9crit=C2=A0:
-> > > > > > On Mon, Mar 31, 2008 at 07:03:13PM +0200, Didier Raboud wrote:
-> > > > > > <snipp>
-> > > > > >
-> > > > > > > > > Attached are a 2.6.25-rc7 and a 2.6.24 dmesg's after two
-> > > > > > > > > successful hibernate/resume cycles.
-> > > > > > > >
-> > > > > > > > Could you please check if the problem is still present if y=
-ou
-> > > > > > > > boot with acpi_new_pts_ordering kernel command line argumen=
-t?
-> > > > > > >
-> > > > > > > By the way, I just added acp_new_pts_ordering at the end of t=
-he
-> > > > > > > Grub line beginning by "linux (hd0,1)/vmlinuz(...)". Is that
-> > > > > > > correct=C2=A0?
-> > > > > >
-> > > > > > seems strange you should add it to the kopt line and then kick =
-as
-> > > > > > root update-grub
-> > > > > >
-> > > > > > # kopt=3Droot=3D/dev/sda1 ro
-> > > > > > it should land
-> > > > > > kernel          /boot/vmlinuz-2.6.25-rc7-amd64 root=3D/dev/sda1=
- ro
-> > > > >
-> > > > > Well... I'm using Grub2 (grub-pc). I altered the boot option at
-> > > > > boot time but forgot to check /proc/cmdline. Will try again and
-> > > > > report back.
-> > > > >
-> > > > > Regards,
-> > > > >
-> > > > > Didier
-> > > >
-> > > > Hi,
-> > > >
-> > > > I tried again and ensured that /proc/cmdline 's end was
-> > > > acpi_new_pts_ordering . It did work for 2-3 hibernation, but then
-> > > > failed.
-> > >
-> > > Well, there were quite a lot of suspend-related changes between 2.6.24
-> > > and now.
-> > >
-> > > Hmm, do you have CONFIG_USB_SUSPEND set in .config by chance?
-> > >
-> > > Rafael
-> >
-> > I do (Debian default option)... I will build a kernel without it and
-> > retry.
-> >
-> > Didier
->
-> Hi again.
->
-> I compiled the same kernel with CONFIG_USB_SUSPEND not set. After 6
-> hibernations, I haven't had a problem for now.
->
-> Regards,
->
-> Didier
+   Signed-off-by: Satoshi UCHIDA <uchida@ap.jp.nec.com>
 
-Hi again again,
+diff --git a/block/cfq-cgroup.c b/block/cfq-cgroup.c
+index 55090dc..4110ab7 100644
+--- a/block/cfq-cgroup.c
++++ b/block/cfq-cgroup.c
+@@ -23,6 +23,9 @@ static const int cfq_cgroup_slice_idle = HZ / 125;
+ struct cfq_cgroup {
+ 	struct cgroup_subsys_state css;
+ 	unsigned int ioprio;
++
++	struct rb_root sibling_tree;
++	unsigned int siblings;
+ };
+ 
+ 
+@@ -35,6 +38,8 @@ static inline struct cfq_cgroup *cgroup_to_cfq_cgroup(struct cgroup *cont)
+ /*
+  * Add device or cgroup data functions.
+  */
++struct cfq_data *__cfq_cgroup_init_queue(struct request_queue *q, void *data);
++
+ static struct cfq_meta_data *cfq_cgroup_init_meta_data(struct cfq_data *cfqd, struct request_queue *q)
+ {
+ 	struct cfq_meta_data *cfqmd;
+@@ -90,16 +95,75 @@ static void cfq_meta_data_sibling_tree_add(struct cfq_meta_data *cfqmd,
+ 	cfqmd->siblings++;
+ 	cfqd->cfqmd = cfqmd;
+ }
+- 
++
++static void cfq_cgroup_sibling_tree_add(struct cfq_cgroup *cfqc,
++					struct cfq_data *cfqd)
++{
++	struct rb_node **p;
++	struct rb_node *parent = NULL;
++
++	BUG_ON(!RB_EMPTY_NODE(&cfqd->group_node));
++
++	p = &cfqc->sibling_tree.rb_node;
++
++	while (*p) {
++		struct cfq_data *__cfqd;
++		struct rb_node **n;
++
++		parent = *p;
++		__cfqd = rb_entry(parent, struct cfq_data, group_node);
++
++		if (cfqd->cfqmd < __cfqd->cfqmd) {
++			n = &(*p)->rb_left;
++		} else {
++			n = &(*p)->rb_right;
++		}
++		p = n;
++	}
++		
++	rb_link_node(&cfqd->group_node, parent, p);
++	rb_insert_color(&cfqd->group_node, &cfqc->sibling_tree);
++	cfqc->siblings++;
++	cfqd->cfqc = cfqc;
++}
++
++static void *cfq_cgroup_init_cfq_data(struct cfq_cgroup *cfqc, struct cfq_data *cfqd)
++{
++	struct cgroup *child;
++
++	/* setting cfq_data for cfq_cgroup */
++	if (!cfqc) {
++		cfqc = cgroup_to_cfq_cgroup(get_root_subsys(&cfq_cgroup_subsys));	
++		cfq_cgroup_sibling_tree_add(cfqc, cfqd);
++	} else {
++		struct cfq_data *__cfqd;
++		__cfqd = __cfq_cgroup_init_queue(CFQ_DRV_UNIQ_DATA(cfqd).queue, cfqd->cfqmd);
++		if (!__cfqd)
++			return NULL;
++		cfq_cgroup_sibling_tree_add(cfqc, __cfqd);
++	}
++
++	/* check and create cfq_data for children */
++	if (cfqc->css.cgroup)
++		list_for_each_entry(child, &cfqc->css.cgroup->children, children){
++			cfq_cgroup_init_cfq_data(cgroup_to_cfq_cgroup(child), cfqd);
++		}
++
++	return cfqc;
++}
++
++
+ struct cfq_data *__cfq_cgroup_init_queue(struct request_queue *q, void *data)
+ {
+ 	struct cfq_meta_data *cfqmd = (struct cfq_meta_data *)data;
+ 	struct cfq_data *cfqd = __cfq_init_cfq_data(q);
++	int root = 0;
+ 
+ 	if (!cfqd)
+ 		return NULL;
+ 
+ 	RB_CLEAR_NODE(&cfqd->sib_node);
++  	RB_CLEAR_NODE(&cfqd->group_node);
+ 
+ 	if (!cfqmd) {
+        		cfqmd = cfq_cgroup_init_meta_data(cfqd, q);
+@@ -107,12 +171,35 @@ struct cfq_data *__cfq_cgroup_init_queue(struct request_queue *q, void *data)
+ 			kfree(cfqd);
+ 			return NULL;
+ 		}
++		root = 1;
+ 	}
+ 	cfq_meta_data_sibling_tree_add(cfqmd, cfqd);
+ 
++	if (root)
++		cfq_cgroup_init_cfq_data(NULL, cfqd);
++
+ 	return cfqd;
+ }
+ 
++static void *cfq_cgroup_init_cgroup(struct cfq_cgroup *cfqc, struct cgroup *parent)
++{
++	struct rb_node *p;
++	if (parent) {
++		struct cfq_cgroup *cfqc_p = cgroup_to_cfq_cgroup(parent);
++
++		p = rb_first(&cfqc_p->sibling_tree);
++		while (p != NULL) {
++			struct cfq_data *__cfqd;
++			__cfqd = rb_entry(p, struct cfq_data, group_node);
++
++			cfq_cgroup_init_cfq_data(cfqc, __cfqd);
++
++			p = rb_next(p);		
++		}		
++	}
++
++	return cfqc;
++}
+ 
+ static struct cgroup_subsys_state *
+ cfq_cgroup_create(struct cgroup_subsys *ss, struct cgroup *cont)
+@@ -130,6 +217,11 @@ cfq_cgroup_create(struct cgroup_subsys *ss, struct cgroup *cont)
+ 		return ERR_PTR(-ENOMEM);
+ 
+ 	cfqc->ioprio = 3;
++	cfqc->sibling_tree = RB_ROOT;
++	cfqc->siblings = 0;
++
++	if (!cfq_cgroup_init_cgroup(cfqc, cont->parent))
++		return ERR_PTR(-ENOMEM);
+ 
+ 	return &cfqc->css;	
+ }
+@@ -144,6 +236,12 @@ static void cfq_cgroup_erase_meta_data_siblings(struct cfq_meta_data *cfqmd, str
+ 	cfqmd->siblings--;
+ }
+ 
++static void cfq_cgroup_erase_cgroup_siblings(struct cfq_cgroup *cfqc, struct cfq_data *cfqd)
++{
++	rb_erase(&cfqd->group_node, &cfqc->sibling_tree);
++	cfqc->siblings--;	
++}
++
+ static void cfq_exit_device_group(struct cfq_meta_data *cfqmd)
+ {
+ 	struct rb_node *p, *n;
+@@ -156,6 +254,7 @@ static void cfq_exit_device_group(struct cfq_meta_data *cfqmd)
+ 		cfqd = rb_entry(p, struct cfq_data, sib_node);
+ 
+ 		cfq_cgroup_erase_meta_data_siblings(cfqmd, cfqd);
++		cfq_cgroup_erase_cgroup_siblings(cfqd->cfqc, cfqd);
+ 		__cfq_exit_data(cfqd);
+ 
+ 		p = n;
+@@ -170,8 +269,28 @@ static void __cfq_cgroup_exit_data(struct cfq_data *cfqd)
+ 	kfree(cfqmd);
+ }
+ 
++static void cfq_exit_cgroup(struct cfq_cgroup *cfqc)
++{
++	struct rb_node *p, *n;
++	struct cfq_data *cfqd;
++
++	p =  rb_first(&cfqc->sibling_tree);
++
++	while (p) {
++		n = rb_next(p);
++		cfqd = rb_entry(p, struct cfq_data, group_node);
++
++		cfq_cgroup_erase_meta_data_siblings(cfqd->cfqmd, cfqd);
++		cfq_cgroup_erase_cgroup_siblings(cfqc, cfqd);
++		__cfq_exit_data(cfqd);			
++
++		p = n;
++	}
++}
++
+ static void cfq_cgroup_destroy(struct cgroup_subsys *ss, struct cgroup *cont)
+ {
++	cfq_exit_cgroup(cgroup_to_cfq_cgroup(cont));
+ 	kfree(cgroup_to_cfq_cgroup(cont));
+ }
+ 
+diff --git a/include/linux/cfq-iosched.h b/include/linux/cfq-iosched.h
+index c8879a7..93256ce 100644
+--- a/include/linux/cfq-iosched.h
++++ b/include/linux/cfq-iosched.h
+@@ -94,10 +94,16 @@ struct cfq_data {
+ 	struct list_head cic_list;
+ 
+ #ifdef CONFIG_CGROUP_CFQ
++	/* device unique attribute */
+ 	struct cfq_meta_data *cfqmd;
+ 	/* sibling_tree member for cfq_meta_data */
+ 	struct rb_node sib_node;
+ 
++	/* cfq_cgroup attribute */
++	struct cfq_cgroup *cfqc;
++	/* group_tree member for cfq_cgroup */
++	struct rb_node group_node;
++
+ #else
+ 	struct cfq_driver_data cfq_driv_d;
+ #endif
+diff --git a/include/linux/cgroup.h b/include/linux/cgroup.h
+index 785a01c..6423951 100644
+--- a/include/linux/cgroup.h
++++ b/include/linux/cgroup.h
+@@ -356,6 +356,7 @@ struct task_struct *cgroup_iter_next(struct cgroup *cgrp,
+ void cgroup_iter_end(struct cgroup *cgrp, struct cgroup_iter *it);
+ int cgroup_scan_tasks(struct cgroup_scanner *scan);
+ int cgroup_attach_task(struct cgroup *, struct task_struct *);
++struct cgroup* get_root_subsys(struct cgroup_subsys *css);
+ 
+ #else /* !CONFIG_CGROUPS */
+ 
+diff --git a/kernel/cgroup.c b/kernel/cgroup.c
+index e8e8ec4..1ef1de7 100644
+--- a/kernel/cgroup.c
++++ b/kernel/cgroup.c
+@@ -1290,6 +1290,12 @@ static int attach_task_by_pid(struct cgroup *cgrp, char *pidbuf)
+ 	return ret;
+ }
+ 
++
++struct cgroup* get_root_subsys(struct cgroup_subsys *css)
++{
++	return &css->root->top_cgroup;
++}
++
+ /* The various types of files and directories in a cgroup file system */
+ enum cgroup_filetype {
+ 	FILE_ROOT,
 
-It hung after the 10th hibernation...
-
-I wonder if the problem would not be of Debian's uswsusp binary, because tt=
-y1=20
-tells me that the image is successfully loaded but I just can't act on my b=
-ox=20
-afterwards.
-
-There is a bug open in the Debian BTS requesting a packaging of the new=20
-upstream version (0.8) but the maintainer is told to be too busy to handle =
-it=20
-for now.
-
-Don't know...
-
-Regards,=20
-
-Didier
-
---nextPart1588300.hqSSEA4Kmh
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBH8dkpwW1nnOmiePARAuPvAKCUqv72osAHrZQ6onBKd9qdzK4hrACfXx1e
-LzrnQpg8ml4FDxBdMFZ5WFc=
-=+IBV
------END PGP SIGNATURE-----
-
---nextPart1588300.hqSSEA4Kmh--
