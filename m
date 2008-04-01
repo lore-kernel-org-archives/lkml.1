@@ -1,119 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758925AbYDAJu7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758158AbYDAJyO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758925AbYDAJu7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Apr 2008 05:50:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757972AbYDAJuo
+	id S1758158AbYDAJyO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Apr 2008 05:54:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756242AbYDAJyF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Apr 2008 05:50:44 -0400
-Received: from 81-174-11-161.static.ngi.it ([81.174.11.161]:40849 "EHLO
-	mail.enneenne.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757831AbYDAJun (ORCPT
+	Tue, 1 Apr 2008 05:54:05 -0400
+Received: from fk-out-0910.google.com ([209.85.128.187]:2928 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755985AbYDAJyC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Apr 2008 05:50:43 -0400
-Date: Tue, 1 Apr 2008 11:50:37 +0200
-From: Rodolfo Giometti <giometti@enneenne.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, dwmw2@infradead.org, davej@redhat.com,
-       sam@ravnborg.org, greg@kroah.com, randy.dunlap@oracle.com
-Message-ID: <20080401095037.GE7279@enneenne.com>
-References: <12048053463198-git-send-email-giometti@linux.it> <12048053473401-git-send-email-giometti@linux.it> <20080320130356.69ab65fe.akpm@linux-foundation.org> <20080325144400.GG8959@enneenne.com> <20080327202531.a924e5d9.akpm@linux-foundation.org> <20080401084214.GY7279@enneenne.com> <20080401015555.f267d970.akpm@linux-foundation.org>
+	Tue, 1 Apr 2008 05:54:02 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=REST2nyv1nCPCxVzKaSesIGcD6fJKoN9FMeRiyC/lXxWD88SqnkIA0xiiq5mGqeVsWAawjmkV+6xrB7u1XCJOP74ybBAdwRTqfxqURv0fpPdW2ZeHSPkznjnUUbgAe7GpgQOzZ/epScVc9fH2T9Sq6LQHvRWw2aL6f/fZjS7gGw=
+Message-ID: <47F20631.7050308@gmail.com>
+Date: Tue, 01 Apr 2008 11:53:53 +0200
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080401015555.f267d970.akpm@linux-foundation.org>
-Organization: GNU/Linux Device Drivers, Embedded Systems and Courses
-X-PGP-Key: gpg --keyserver keyserver.linux.it --recv-keys D25A5633
-User-Agent: Mutt/1.5.16 (2007-06-11)
-X-SA-Exim-Connect-IP: 192.168.32.1
-X-SA-Exim-Mail-From: giometti@enneenne.com
-Subject: Re: [PATCH 1/7] LinuxPPS core support.
-X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
-X-SA-Exim-Scanned: Yes (on mail.enneenne.com)
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/4] Char: ip2, fix sparse warnings
+References: <20080328032449.cbc09f3b.akpm@linux-foundation.org>	<1206739124-3875-3-git-send-email-jirislaby@gmail.com> <20080331165718.0fb7c14e.akpm@linux-foundation.org>
+In-Reply-To: <20080331165718.0fb7c14e.akpm@linux-foundation.org>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 01, 2008 at 01:55:55AM -0700, Andrew Morton wrote:
-> On Tue, 1 Apr 2008 10:42:14 +0200 Rodolfo Giometti <giometti@enneenne.com> wrote:
+Andrew Morton napsal(a):
+> On Fri, 28 Mar 2008 22:18:43 +0100
+> Jiri Slaby <jirislaby@gmail.com> wrote:
 > 
-> > On Thu, Mar 27, 2008 at 08:25:31PM -0700, Andrew Morton wrote:
-> > > On Tue, 25 Mar 2008 15:44:00 +0100 Rodolfo Giometti <giometti@enneenne.com> wrote:
-> > > > > 
-> > > > > As it stands, there might be deadlocks such as when a process which itself
-> > > > > holds a ref on the pps_device (with an open fd?) calls
-> > > > > pps_unregister_source.
-> > > > 
-> > > > I can add a wait_event_interruptible in order to allow userland to
-> > > > continue by receiving a signal. It could be acceptable?
-> > > 
-> > > There should be no need to "wait" for anything.  When the final reference
-> > > to an object is released, that object is cleaned up.  Just like we do for
-> > > inodes, dentries, pages, files, and 100 other kernel objects.
-> > > 
-> > > The need to wait for something else to go away is a big red flag with
-> > > "busted refcounting" written on it.
-> > > 
-> > > > > Also, we need to take care that all processes which were waiting in
-> > > > > pps_unregister_source() get to finish their cleanup before we permit rmmod
-> > > > > to proceed.  Is that handled somewhere?
-> > > > 
-> > > > I don't understand the problem... this code as been added in order to
-> > > > avoid the case where a pps_event() is called while a process executes
-> > > > the pps_unregister_source(). If more processes try to execute this
-> > > > code the first which enters will execute idr_remove() which prevents
-> > > > another process to reach the wait_event()... is that wrong? =:-o
-> > > 
-> > > I was asking you!
-> > > 
-> > > We should get the reference counting and object lifetimes sorted out first. 
-> > > There should be no "wait for <object> to be released" code.  Once that is
-> > > in place, things like rmmod will also sort themselves out: it just won't be
-> > > possible to remove the module while there are live references to objects.
-> > 
-> > The problem is related to serial and parallel clients.
-> > 
-> > The PPS source related to a serial port (or a parallel one) uses the
-> > serial (or parallel) IRQ to get PPS timestamps and it could be
-> > possible that a process tries to close the PPS source while another
-> > CPU is runnig the serial IRQ, so I cannot remove the PPS object until
-> > the IRQ handler is finished its job on the PPS object.
-> > 
-> > For clients (currently none :) which define their own IRQ handler for
-> > PPS timestamps managing the problem doesn't arise at all.
+>> Unlock two grabbed locks on some paths.
+>>
+>> Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+>> ---
+>>  drivers/char/ip2/i2lib.c |   10 ++++++----
+>>  1 files changed, 6 insertions(+), 4 deletions(-)
+>>
+>> diff --git a/drivers/char/ip2/i2lib.c b/drivers/char/ip2/i2lib.c
+>> index 618f5fe..1d5388c 100644
+>> --- a/drivers/char/ip2/i2lib.c
+>> +++ b/drivers/char/ip2/i2lib.c
+[...]
+>> @@ -1834,6 +1834,8 @@ i2StripFifo(i2eBordStrPtr pB)
+>>  		default: // Neither packet? should be impossible
+>>  			ip2trace (ITRC_NO_PORT, ITRC_SFIFO, 5, 1,
+>>  				PTYPE_OF(pB->i2eLeadoffWord) );
+>> +			write_unlock_irqrestore(&pB->read_fifo_spinlock,
+>> +					bflags);
+>>  
+>>  			break;
+>>  		}  // End of switch on type of packets
 > 
-> This can all be handled with suitable locking and refcounting.  The device
-> which is delivering PPS interrupts has a reference on the PPS data
-> structures.  If userspace has PPS open then it also has a reference.
-> 
-> The thread of control which releases the last reference to the PPS data
-> structures also frees them all up.  This may require a schedule_work() if
-> we need to support release-from-interrupt (as it appears that we do), but
-> that's OK - we just need to be able to make the PPS data structures
-> ineligible for new lookups while the schedule_work() is pending.
-> 
-> There should be no need for any thread of control to wait for any other thread
-> of control to do anything.  Get the refcounting right and everything
-> can be done synchronously.
+> Your tree apparently has a sensible-looking write_unlock_irqrestore(),
+> whereas mine has a stupid-looking WRITE_UNLOCK_IRQRESTORE().  How did this
+> happen?
 
-So, if I well understand your suggestion, I should manage the object
-clean-up into pps_cdev_release() when pps->usage reaches 0, so the
-pps_unregister_source() can do only the following two steps:
-
-        pps_unregister_cdev(pps);
-        kfree(pps);
-
-Is that right?
-
-Also, can you please suggest me an example (URL or filename) about
-schedule_work() usage in case of release-from-interrupt?
-
-Thanks,
-
-Rodolfo
-
--- 
-
-GNU/Linux Solutions                  e-mail:    giometti@enneenne.com
-Linux Device Driver                             giometti@gnudd.com
-Embedded Systems                     		giometti@linux.it
-UNIX programming                     phone:     +39 349 2432127
+This was changed in the previous wrong patch, I'm preparing a correct one.
