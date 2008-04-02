@@ -1,225 +1,431 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760142AbYDUNUO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760905AbYDUNUj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760142AbYDUNUO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Apr 2008 09:20:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759480AbYDUNSp
+	id S1760905AbYDUNUj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Apr 2008 09:20:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759585AbYDUNSt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Apr 2008 09:18:45 -0400
-Received: from wa-out-1112.google.com ([209.85.146.179]:9129 "EHLO
+	Mon, 21 Apr 2008 09:18:49 -0400
+Received: from wa-out-1112.google.com ([209.85.146.180]:8681 "EHLO
 	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757392AbYDUNSn (ORCPT
+	with ESMTP id S1757630AbYDUNSo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Apr 2008 09:18:43 -0400
+	Mon, 21 Apr 2008 09:18:44 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=message-id:in-reply-to:references:date:subject:cc:from;
-        b=ZA3OS5xBbi8kqod6QrOSWOJf+DF+ryLEZbd6vVPO37/MtCRdiLwoSgazPd1hW0189z3m6d82prmVgkQji0im8V57xyvCP98fob1gp3usnXEBL6jNI4+4kH9dPGFW1ZUtqCXVxaKykSw7eskWcL0TXunipaMGTbGSRnv5jzcrXX4=
-Message-Id: <e6cdd15629a5a99d805fa3cbf0f5174bcfc685bb.1208783694.git.dmitry.torokhov@gmail.com>
+        b=GBmcd6MJ87cHCdRVMcBhZx8uALouxq05pDLRtApGYu2xz/2ksK8OmBOw1XvloNLph3hbE0k1OMhBeyLjNnJklw+UgOphnea5UTxkRVsYiCGvy4xcnml5dLLE7OOYOkc91yQdclrzBTll8I1oZ32Pxq2JyPtbXCOPDpVkOMRgOvY=
+Message-Id: <9448cefc6689aa51f1cd1cfe8b701dc94789c7ee.1208783694.git.dmitry.torokhov@gmail.com>
 In-Reply-To: <cover.1208783694.git.dmitry.torokhov@gmail.com>
 References: <cover.1208783694.git.dmitry.torokhov@gmail.com>
-Date: Wed, 2 Apr 2008 00:42:42 -0400
-Subject: [PATCH 02/37] Input: locomokbd - add 'off' button support for Sharp Collie/Poodle
+Date: Wed, 2 Apr 2008 00:51:21 -0400
+Subject: [PATCH 05/37] Input: WM97xx - add chip driver for WM9705 touchscreen
 Cc: linux-kernel@vger.kernel.org, jkosina@suse.cz, akpm@linux-foundation.org
-From: Helge Deller <dmitry.torokhov@gmail.com>
+From: Mark Brown <dmitry.torokhov@gmail.com>
 To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Enables the Sharp Zaurus Collie and Poodle devices to be turned off
-by pressing the "Cancel" button for a few seconds (as designed by
-Sharp).
-
-Additional small cleanups:
-- removal of unused #defines and variables
-- add missing __devinit/__devexit/__devinitconst annotations
-- reorganized copyright notice
-
-Signed-off-by: Helge Deller <deller@gmx.de>
+Signed-off-by: Liam Girdwood <liam.girdwood@wolfsonmicro.com>
+Signed-off-by: Graeme Gregory <gg@opensource.wolfsonmicro.com>
+Signed-off-by: Mike Arthur <mike.arthur@wolfsonmicro.com>
+Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
 Signed-off-by: Dmitry Torokhov <dtor@mail.ru>
 ---
- drivers/input/keyboard/locomokbd.c |   73 +++++++++++++++++++++++------------
- 1 files changed, 48 insertions(+), 25 deletions(-)
+ drivers/input/touchscreen/Kconfig  |    9 +
+ drivers/input/touchscreen/Makefile |    1 +
+ drivers/input/touchscreen/wm9705.c |  353 ++++++++++++++++++++++++++++++++++++
+ 3 files changed, 363 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/input/touchscreen/wm9705.c
 
-diff --git a/drivers/input/keyboard/locomokbd.c b/drivers/input/keyboard/locomokbd.c
-index 5a0ca18..9caed30 100644
---- a/drivers/input/keyboard/locomokbd.c
-+++ b/drivers/input/keyboard/locomokbd.c
-@@ -1,14 +1,12 @@
- /*
-- *  Copyright (c) 2005 John Lenz
-+ * LoCoMo keyboard driver for Linux-based ARM PDAs:
-+ * 	- SHARP Zaurus Collie (SL-5500)
-+ * 	- SHARP Zaurus Poodle (SL-5600)
-  *
-+ * Copyright (c) 2005 John Lenz
-  * Based on from xtkbd.c
-- */
--
--/*
-- * LoCoMo keyboard driver for Linux/ARM
-- */
--
--/*
+diff --git a/drivers/input/touchscreen/Kconfig b/drivers/input/touchscreen/Kconfig
+index a95a87c..4939a96 100644
+--- a/drivers/input/touchscreen/Kconfig
++++ b/drivers/input/touchscreen/Kconfig
+@@ -199,6 +199,15 @@ config TOUCHSCREEN_WM97XX
+ 	  To compile this driver as a module, choose M here: the
+ 	  module will be called wm97xx-ts.
+ 
++config TOUCHSCREEN_WM9705
++	bool "WM9705 Touchscreen interface support"
++	depends on TOUCHSCREEN_WM97XX
++	help
++	  Say Y here if you have a Wolfson Microelectronics WM9705
++	  touchscreen controller connected to your system.
++
++	  If unsure, say N.
++
+ config TOUCHSCREEN_USB_COMPOSITE
+ 	tristate "USB Touchscreen Driver"
+ 	depends on USB_ARCH_HAS_HCD
+diff --git a/drivers/input/touchscreen/Makefile b/drivers/input/touchscreen/Makefile
+index b4e7b5d..5829a43 100644
+--- a/drivers/input/touchscreen/Makefile
++++ b/drivers/input/touchscreen/Makefile
+@@ -22,3 +22,4 @@ obj-$(CONFIG_TOUCHSCREEN_TOUCHRIGHT)	+= touchright.o
+ obj-$(CONFIG_TOUCHSCREEN_TOUCHWIN)	+= touchwin.o
+ obj-$(CONFIG_TOUCHSCREEN_UCB1400)	+= ucb1400_ts.o
+ obj-$(CONFIG_TOUCHSCREEN_WM97XX)	+= wm97xx-ts.o
++wm97xx-ts-$(CONFIG_TOUCHSCREEN_WM9705)	+= wm9705.o
+diff --git a/drivers/input/touchscreen/wm9705.c b/drivers/input/touchscreen/wm9705.c
+new file mode 100644
+index 0000000..978e1a1
+--- /dev/null
++++ b/drivers/input/touchscreen/wm9705.c
+@@ -0,0 +1,353 @@
++/*
++ * wm9705.c  --  Codec driver for Wolfson WM9705 AC97 Codec.
 + *
++ * Copyright 2003, 2004, 2005, 2006, 2007 Wolfson Microelectronics PLC.
++ * Author: Liam Girdwood
++ *         liam.girdwood@wolfsonmicro.com or linux@wolfsonmicro.com
++ * Parts Copyright : Ian Molton <spyro@f2s.com>
++ *                   Andrew Zabolotny <zap@homelink.ru>
++ *                   Russell King <rmk@arm.linux.org.uk>
 + *
-  * This program is free software; you can redistribute it and/or modify
-  * it under the terms of the GNU General Public License as published by
-  * the Free Software Foundation; either version 2 of the License, or
-@@ -47,7 +45,8 @@ MODULE_LICENSE("GPL");
- #define KEY_CONTACT		KEY_F18
- #define KEY_CENTER		KEY_F15
- 
--static unsigned char locomokbd_keycode[LOCOMOKBD_NUMKEYS] = {
-+static const unsigned char
-+locomokbd_keycode[LOCOMOKBD_NUMKEYS] __devinitconst = {
- 	0, KEY_ESC, KEY_ACTIVITY, 0, 0, 0, 0, 0, 0, 0,				/* 0 - 9 */
- 	0, 0, 0, 0, 0, 0, 0, KEY_MENU, KEY_HOME, KEY_CONTACT,			/* 10 - 19 */
- 	0, 0, 0, 0, 0, 0, 0, 0, 0, 0,						/* 20 - 29 */
-@@ -67,22 +66,21 @@ static unsigned char locomokbd_keycode[LOCOMOKBD_NUMKEYS] = {
- #define KB_COLS			8
- #define KB_ROWMASK(r)		(1 << (r))
- #define SCANCODE(c,r)		( ((c)<<4) + (r) + 1 )
--#define	NR_SCANCODES		128
- 
- #define KB_DELAY		8
- #define SCAN_INTERVAL		(HZ/10)
--#define LOCOMOKBD_PRESSED	1
- 
- struct locomokbd {
- 	unsigned char keycode[LOCOMOKBD_NUMKEYS];
- 	struct input_dev *input;
- 	char phys[32];
- 
--	struct locomo_dev *ldev;
- 	unsigned long base;
- 	spinlock_t lock;
- 
- 	struct timer_list timer;
-+	unsigned long suspend_jiffies;
-+	unsigned int count_cancel;
- };
- 
- /* helper functions for reading the keyboard matrix */
-@@ -128,7 +126,7 @@ static inline void locomokbd_reset_col(unsigned long membase, int col)
- /* Scan the hardware keyboard and push any changes up through the input layer */
- static void locomokbd_scankeyboard(struct locomokbd *locomokbd)
- {
--	unsigned int row, col, rowd, scancode;
-+	unsigned int row, col, rowd;
- 	unsigned long flags;
- 	unsigned int num_pressed;
- 	unsigned long membase = locomokbd->base;
-@@ -145,13 +143,33 @@ static void locomokbd_scankeyboard(struct locomokbd *locomokbd)
- 
- 		rowd = ~locomo_readl(membase + LOCOMO_KIB);
- 		for (row = 0; row < KB_ROWS; row++) {
-+			unsigned int scancode, pressed, key;
++ *  This program is free software; you can redistribute  it and/or modify it
++ *  under  the terms of  the GNU General  Public License as published by the
++ *  Free Software Foundation;  either version 2 of the  License, or (at your
++ *  option) any later version.
++ *
++ */
 +
- 			scancode = SCANCODE(col, row);
--			if (rowd & KB_ROWMASK(row)) {
--				num_pressed += 1;
--				input_report_key(locomokbd->input, locomokbd->keycode[scancode], 1);
--			} else {
--				input_report_key(locomokbd->input, locomokbd->keycode[scancode], 0);
--			}
-+			pressed = rowd & KB_ROWMASK(row);
-+			key = locomokbd->keycode[scancode];
++#include <linux/module.h>
++#include <linux/moduleparam.h>
++#include <linux/version.h>
++#include <linux/kernel.h>
++#include <linux/input.h>
++#include <linux/delay.h>
++#include <linux/bitops.h>
++#include <linux/wm97xx.h>
 +
-+			input_report_key(locomokbd->input, key, pressed);
-+			if (likely(!pressed))
-+				continue;
++#define TS_NAME			"wm97xx"
++#define WM9705_VERSION		"1.00"
++#define DEFAULT_PRESSURE	0xb0c0
 +
-+			num_pressed++;
++/*
++ * Module parameters
++ */
 +
-+			/* The "Cancel/ESC" key is labeled "On/Off" on
-+			 * Collie and Poodle and should suspend the device
-+			 * if it was pressed for more than a second. */
-+			if (unlikely(key == KEY_ESC)) {
-+				if (!time_after(jiffies,
-+					locomokbd->suspend_jiffies + HZ))
-+					continue;
-+				if (locomokbd->count_cancel++
-+					!= (HZ/SCAN_INTERVAL + 1))
-+					continue;
-+				input_event(locomokbd->input, EV_PWR,
-+					KEY_SUSPEND, 1);
-+				locomokbd->suspend_jiffies = jiffies;
-+			} else
-+				locomokbd->count_cancel = 0;
- 		}
- 		locomokbd_reset_col(membase, col);
- 	}
-@@ -162,6 +180,8 @@ static void locomokbd_scankeyboard(struct locomokbd *locomokbd)
- 	/* if any keys are pressed, enable the timer */
- 	if (num_pressed)
- 		mod_timer(&locomokbd->timer, jiffies + SCAN_INTERVAL);
-+	else
-+		locomokbd->count_cancel = 0;
- 
- 	spin_unlock_irqrestore(&locomokbd->lock, flags);
- }
-@@ -186,10 +206,11 @@ static irqreturn_t locomokbd_interrupt(int irq, void *dev_id)
- static void locomokbd_timer_callback(unsigned long data)
- {
- 	struct locomokbd *locomokbd = (struct locomokbd *) data;
++/*
++ * Set current used for pressure measurement.
++ *
++ * Set pil = 2 to use 400uA
++ *     pil = 1 to use 200uA and
++ *     pil = 0 to disable pressure measurement.
++ *
++ * This is used to increase the range of values returned by the adc
++ * when measureing touchpanel pressure.
++ */
++static int pil;
++module_param(pil, int, 0);
++MODULE_PARM_DESC(pil, "Set current used for pressure measurement.");
 +
- 	locomokbd_scankeyboard(locomokbd);
- }
- 
--static int locomokbd_probe(struct locomo_dev *dev)
-+static int __devinit locomokbd_probe(struct locomo_dev *dev)
- {
- 	struct locomokbd *locomokbd;
- 	struct input_dev *input_dev;
-@@ -211,7 +232,6 @@ static int locomokbd_probe(struct locomo_dev *dev)
- 		goto err_free_mem;
- 	}
- 
--	locomokbd->ldev = dev;
- 	locomo_set_drvdata(dev, locomokbd);
- 
- 	locomokbd->base = (unsigned long) dev->mapbase;
-@@ -222,6 +242,8 @@ static int locomokbd_probe(struct locomo_dev *dev)
- 	locomokbd->timer.function = locomokbd_timer_callback;
- 	locomokbd->timer.data = (unsigned long) locomokbd;
- 
-+	locomokbd->suspend_jiffies = jiffies;
++/*
++ * Set threshold for pressure measurement.
++ *
++ * Pen down pressure below threshold is ignored.
++ */
++static int pressure = DEFAULT_PRESSURE & 0xfff;
++module_param(pressure, int, 0);
++MODULE_PARM_DESC(pressure, "Set threshold for pressure measurement.");
 +
- 	locomokbd->input = input_dev;
- 	strcpy(locomokbd->phys, "locomokbd/input0");
- 
-@@ -233,9 +255,10 @@ static int locomokbd_probe(struct locomo_dev *dev)
- 	input_dev->id.version = 0x0100;
- 	input_dev->dev.parent = &dev->dev;
- 
--	input_dev->evbit[0] = BIT_MASK(EV_KEY) | BIT_MASK(EV_REP);
-+	input_dev->evbit[0] = BIT_MASK(EV_KEY) | BIT_MASK(EV_REP) |
-+				BIT_MASK(EV_PWR);
- 	input_dev->keycode = locomokbd->keycode;
--	input_dev->keycodesize = sizeof(unsigned char);
-+	input_dev->keycodesize = sizeof(locomokbd_keycode[0]);
- 	input_dev->keycodemax = ARRAY_SIZE(locomokbd_keycode);
- 
- 	memcpy(locomokbd->keycode, locomokbd_keycode, sizeof(locomokbd->keycode));
-@@ -268,7 +291,7 @@ static int locomokbd_probe(struct locomo_dev *dev)
- 	return err;
- }
- 
--static int locomokbd_remove(struct locomo_dev *dev)
-+static int __devexit locomokbd_remove(struct locomo_dev *dev)
- {
- 	struct locomokbd *locomokbd = locomo_get_drvdata(dev);
- 
-@@ -292,7 +315,7 @@ static struct locomo_driver keyboard_driver = {
- 	},
- 	.devid	= LOCOMO_DEVID_KEYBOARD,
- 	.probe	= locomokbd_probe,
--	.remove	= locomokbd_remove,
-+	.remove	= __devexit_p(locomokbd_remove),
- };
- 
- static int __init locomokbd_init(void)
++/*
++ * Set adc sample delay.
++ *
++ * For accurate touchpanel measurements, some settling time may be
++ * required between the switch matrix applying a voltage across the
++ * touchpanel plate and the ADC sampling the signal.
++ *
++ * This delay can be set by setting delay = n, where n is the array
++ * position of the delay in the array delay_table below.
++ * Long delays > 1ms are supported for completeness, but are not
++ * recommended.
++ */
++static int delay = 4;
++module_param(delay, int, 0);
++MODULE_PARM_DESC(delay, "Set adc sample delay.");
++
++/*
++ * Pen detect comparator threshold.
++ *
++ * 0 to Vmid in 15 steps, 0 = use zero power comparator with Vmid threshold
++ * i.e. 1 =  Vmid/15 threshold
++ *      15 =  Vmid/1 threshold
++ *
++ * Adjust this value if you are having problems with pen detect not
++ * detecting any down events.
++ */
++static int pdd = 8;
++module_param(pdd, int, 0);
++MODULE_PARM_DESC(pdd, "Set pen detect comparator threshold");
++
++/*
++ * Set adc mask function.
++ *
++ * Sources of glitch noise, such as signals driving an LCD display, may feed
++ * through to the touch screen plates and affect measurement accuracy. In
++ * order to minimise this, a signal may be applied to the MASK pin to delay or
++ * synchronise the sampling.
++ *
++ * 0 = No delay or sync
++ * 1 = High on pin stops conversions
++ * 2 = Edge triggered, edge on pin delays conversion by delay param (above)
++ * 3 = Edge triggered, edge on pin starts conversion after delay param
++ */
++static int mask;
++module_param(mask, int, 0);
++MODULE_PARM_DESC(mask, "Set adc mask function.");
++
++/*
++ * ADC sample delay times in uS
++ */
++static const int delay_table[] = {
++	21,    /* 1 AC97 Link frames */
++	42,    /* 2                  */
++	84,    /* 4                  */
++	167,   /* 8                  */
++	333,   /* 16                 */
++	667,   /* 32                 */
++	1000,  /* 48                 */
++	1333,  /* 64                 */
++	2000,  /* 96                 */
++	2667,  /* 128                */
++	3333,  /* 160                */
++	4000,  /* 192                */
++	4667,  /* 224                */
++	5333,  /* 256                */
++	6000,  /* 288                */
++	0      /* No delay, switch matrix always on */
++};
++
++/*
++ * Delay after issuing a POLL command.
++ *
++ * The delay is 3 AC97 link frames + the touchpanel settling delay
++ */
++static inline void poll_delay(int d)
++{
++	udelay(3 * AC97_LINK_FRAME + delay_table[d]);
++}
++
++/*
++ * set up the physical settings of the WM9705
++ */
++static void wm9705_phy_init(struct wm97xx *wm)
++{
++	u16 dig1 = 0, dig2 = WM97XX_RPR;
++
++	/*
++	* mute VIDEO and AUX as they share X and Y touchscreen
++	* inputs on the WM9705
++	*/
++	wm97xx_reg_write(wm, AC97_AUX, 0x8000);
++	wm97xx_reg_write(wm, AC97_VIDEO, 0x8000);
++
++	/* touchpanel pressure current*/
++	if (pil == 2) {
++		dig2 |= WM9705_PIL;
++		dev_dbg(wm->dev,
++			"setting pressure measurement current to 400uA.");
++	} else if (pil)
++		dev_dbg(wm->dev,
++			"setting pressure measurement current to 200uA.");
++	if (!pil)
++		pressure = 0;
++
++	/* polling mode sample settling delay */
++	if (delay != 4) {
++		if (delay < 0 || delay > 15) {
++			dev_dbg(wm->dev, "supplied delay out of range.");
++			delay = 4;
++		}
++	}
++	dig1 &= 0xff0f;
++	dig1 |= WM97XX_DELAY(delay);
++	dev_dbg(wm->dev, "setting adc sample delay to %d u Secs.",
++		delay_table[delay]);
++
++	/* WM9705 pdd */
++	dig2 |= (pdd & 0x000f);
++	dev_dbg(wm->dev, "setting pdd to Vmid/%d", 1 - (pdd & 0x000f));
++
++	/* mask */
++	dig2 |= ((mask & 0x3) << 4);
++
++	wm97xx_reg_write(wm, AC97_WM97XX_DIGITISER1, dig1);
++	wm97xx_reg_write(wm, AC97_WM97XX_DIGITISER2, dig2);
++}
++
++static void wm9705_dig_enable(struct wm97xx *wm, int enable)
++{
++	if (enable) {
++		wm97xx_reg_write(wm, AC97_WM97XX_DIGITISER2,
++				 wm->dig[2] | WM97XX_PRP_DET_DIG);
++		wm97xx_reg_read(wm, AC97_WM97XX_DIGITISER_RD); /* dummy read */
++	} else
++		wm97xx_reg_write(wm, AC97_WM97XX_DIGITISER2,
++				 wm->dig[2] & ~WM97XX_PRP_DET_DIG);
++}
++
++static void wm9705_aux_prepare(struct wm97xx *wm)
++{
++	memcpy(wm->dig_save, wm->dig, sizeof(wm->dig));
++	wm97xx_reg_write(wm, AC97_WM97XX_DIGITISER1, 0);
++	wm97xx_reg_write(wm, AC97_WM97XX_DIGITISER2, WM97XX_PRP_DET_DIG);
++}
++
++static void wm9705_dig_restore(struct wm97xx *wm)
++{
++	wm97xx_reg_write(wm, AC97_WM97XX_DIGITISER1, wm->dig_save[1]);
++	wm97xx_reg_write(wm, AC97_WM97XX_DIGITISER2, wm->dig_save[2]);
++}
++
++static inline int is_pden(struct wm97xx *wm)
++{
++	return wm->dig[2] & WM9705_PDEN;
++}
++
++/*
++ * Read a sample from the WM9705 adc in polling mode.
++ */
++static int wm9705_poll_sample(struct wm97xx *wm, int adcsel, int *sample)
++{
++	int timeout = 5 * delay;
++
++	if (!wm->pen_probably_down) {
++		u16 data = wm97xx_reg_read(wm, AC97_WM97XX_DIGITISER_RD);
++		if (!(data & WM97XX_PEN_DOWN))
++			return RC_PENUP;
++		wm->pen_probably_down = 1;
++	}
++
++	/* set up digitiser */
++	if (adcsel & 0x8000)
++		adcsel = ((adcsel & 0x7fff) + 3) << 12;
++
++	if (wm->mach_ops && wm->mach_ops->pre_sample)
++		wm->mach_ops->pre_sample(adcsel);
++	wm97xx_reg_write(wm, AC97_WM97XX_DIGITISER1,
++			 adcsel | WM97XX_POLL | WM97XX_DELAY(delay));
++
++	/* wait 3 AC97 time slots + delay for conversion */
++	poll_delay(delay);
++
++	/* wait for POLL to go low */
++	while ((wm97xx_reg_read(wm, AC97_WM97XX_DIGITISER1) & WM97XX_POLL)
++	       && timeout) {
++		udelay(AC97_LINK_FRAME);
++		timeout--;
++	}
++
++	if (timeout == 0) {
++		/* If PDEN is set, we can get a timeout when pen goes up */
++		if (is_pden(wm))
++			wm->pen_probably_down = 0;
++		else
++			dev_dbg(wm->dev, "adc sample timeout");
++		return RC_PENUP;
++	}
++
++	*sample = wm97xx_reg_read(wm, AC97_WM97XX_DIGITISER_RD);
++	if (wm->mach_ops && wm->mach_ops->post_sample)
++		wm->mach_ops->post_sample(adcsel);
++
++	/* check we have correct sample */
++	if ((*sample & WM97XX_ADCSEL_MASK) != adcsel) {
++		dev_dbg(wm->dev, "adc wrong sample, read %x got %x", adcsel,
++		*sample & WM97XX_ADCSEL_MASK);
++		return RC_PENUP;
++	}
++
++	if (!(*sample & WM97XX_PEN_DOWN)) {
++		wm->pen_probably_down = 0;
++		return RC_PENUP;
++	}
++
++	return RC_VALID;
++}
++
++/*
++ * Sample the WM9705 touchscreen in polling mode
++ */
++static int wm9705_poll_touch(struct wm97xx *wm, struct wm97xx_data *data)
++{
++	int rc;
++
++	rc = wm9705_poll_sample(wm, WM97XX_ADCSEL_X, &data->x);
++	if (rc != RC_VALID)
++		return rc;
++	rc = wm9705_poll_sample(wm, WM97XX_ADCSEL_Y, &data->y);
++	if (rc != RC_VALID)
++		return rc;
++	if (pil) {
++		rc = wm9705_poll_sample(wm, WM97XX_ADCSEL_PRES, &data->p);
++		if (rc != RC_VALID)
++			return rc;
++	} else
++		data->p = DEFAULT_PRESSURE;
++
++	return RC_VALID;
++}
++
++/*
++ * Enable WM9705 continuous mode, i.e. touch data is streamed across
++ * an AC97 slot
++ */
++static int wm9705_acc_enable(struct wm97xx *wm, int enable)
++{
++	u16 dig1, dig2;
++	int ret = 0;
++
++	dig1 = wm->dig[1];
++	dig2 = wm->dig[2];
++
++	if (enable) {
++		/* continous mode */
++		if (wm->mach_ops->acc_startup &&
++		    (ret = wm->mach_ops->acc_startup(wm)) < 0)
++			return ret;
++		dig1 &= ~(WM97XX_CM_RATE_MASK | WM97XX_ADCSEL_MASK |
++			  WM97XX_DELAY_MASK | WM97XX_SLT_MASK);
++		dig1 |= WM97XX_CTC | WM97XX_COO | WM97XX_SLEN |
++			WM97XX_DELAY(delay) |
++			WM97XX_SLT(wm->acc_slot) |
++			WM97XX_RATE(wm->acc_rate);
++		if (pil)
++			dig1 |= WM97XX_ADCSEL_PRES;
++		dig2 |= WM9705_PDEN;
++	} else {
++		dig1 &= ~(WM97XX_CTC | WM97XX_COO | WM97XX_SLEN);
++		dig2 &= ~WM9705_PDEN;
++		if (wm->mach_ops->acc_shutdown)
++			wm->mach_ops->acc_shutdown(wm);
++	}
++
++	wm97xx_reg_write(wm, AC97_WM97XX_DIGITISER1, dig1);
++	wm97xx_reg_write(wm, AC97_WM97XX_DIGITISER2, dig2);
++
++	return ret;
++}
++
++struct wm97xx_codec_drv wm9705_codec = {
++	.id = WM9705_ID2,
++	.name = "wm9705",
++	.poll_sample = wm9705_poll_sample,
++	.poll_touch = wm9705_poll_touch,
++	.acc_enable = wm9705_acc_enable,
++	.phy_init = wm9705_phy_init,
++	.dig_enable = wm9705_dig_enable,
++	.dig_restore = wm9705_dig_restore,
++	.aux_prepare = wm9705_aux_prepare,
++};
++EXPORT_SYMBOL_GPL(wm9705_codec);
++
++/* Module information */
++MODULE_AUTHOR("Liam Girdwood <liam.girdwood@wolfsonmicro.com>");
++MODULE_DESCRIPTION("WM9705 Touch Screen Driver");
++MODULE_LICENSE("GPL");
 -- 
 1.5.5.rc2.6.gf58d
 
