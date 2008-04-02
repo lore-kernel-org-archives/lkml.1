@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932222AbYDBUa5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762490AbYDBUb1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932222AbYDBUa5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 16:30:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761763AbYDBURv
+	id S1762490AbYDBUb1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 16:31:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761780AbYDBURw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 16:17:51 -0400
-Received: from mail.suse.de ([195.135.220.2]:36831 "EHLO mx1.suse.de"
+	Wed, 2 Apr 2008 16:17:52 -0400
+Received: from ns1.suse.de ([195.135.220.2]:36843 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760318AbYDBURt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 16:17:49 -0400
+	id S1758206AbYDBURv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Apr 2008 16:17:51 -0400
 From: Mark Fasheh <mfasheh@suse.com>
 To: linux-kernel@vger.kernel.org
 Cc: ocfs2-devel@oss.oracle.com, Joel Becker <joel.becker@oracle.com>
-Subject: [PATCH 34/62] ocfs2: Add kbuild for ocfs2_stack_user.ko
-Date: Wed,  2 Apr 2008 13:14:44 -0700
-Message-Id: <12071673882492-git-send-email-mfasheh@suse.com>
+Subject: [PATCH 35/62] ocfs2: Allow selection of cluster plug-ins.
+Date: Wed,  2 Apr 2008 13:14:45 -0700
+Message-Id: <1207167390414-git-send-email-mfasheh@suse.com>
 X-Mailer: git-send-email 1.5.2.4
-In-Reply-To: <12071673872568-git-send-email-mfasheh@suse.com>
+In-Reply-To: <12071673882492-git-send-email-mfasheh@suse.com>
 References: <12071673121124-git-send-email-mfasheh@suse.com>
  <1207167318479-git-send-email-mfasheh@suse.com>
  <12071673203909-git-send-email-mfasheh@suse.com>
@@ -51,45 +51,90 @@ References: <12071673121124-git-send-email-mfasheh@suse.com>
  <12071673821008-git-send-email-mfasheh@suse.com>
  <12071673843208-git-send-email-mfasheh@suse.com>
  <12071673872568-git-send-email-mfasheh@suse.com>
+ <12071673882492-git-send-email-mfasheh@suse.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Joel Becker <joel.becker@oracle.com>
 
-Add ocfs2_stack_user.ko to the Makefile so that it builds.
+ocfs2 now supports plug-ins for the classic O2CB stack as well as
+userspace cluster stacks in conjunction with fs/dlm.  This allows zero,
+one, or both of the plug-ins to be selected in Kconfig.  For local mounts
+(non-clustered), neither plug-in is needed.  Both plugins can be loaded
+at one time, the runtime will select the one needed for the cluster
+systme in use.
 
 Signed-off-by: Joel Becker <joel.becker@oracle.com>
 Signed-off-by: Mark Fasheh <mfasheh@suse.com>
 ---
- fs/ocfs2/Makefile |    7 ++++++-
- 1 files changed, 6 insertions(+), 1 deletions(-)
+ fs/Kconfig        |   26 ++++++++++++++++++++++++++
+ fs/ocfs2/Makefile |   10 ++++++----
+ 2 files changed, 32 insertions(+), 4 deletions(-)
 
+diff --git a/fs/Kconfig b/fs/Kconfig
+index d731282..c7b50ce 100644
+--- a/fs/Kconfig
++++ b/fs/Kconfig
+@@ -444,6 +444,32 @@ config OCFS2_FS
+ 	  For more information on OCFS2, see the file
+ 	  <file:Documentation/filesystems/ocfs2.txt>.
+ 
++config OCFS2_FS_O2CB
++	tristate "O2CB Kernelspace Clustering"
++	depends on OCFS2_FS
++	default y
++	help
++	  OCFS2 includes a simple kernelspace clustering package, the OCFS2
++	  Cluster Base.  It only requires a very small userspace component
++	  to configure it. This comes with the standard ocfs2-tools package.
++	  O2CB is limited to maintaining a cluster for OCFS2 file systems.
++	  It cannot manage any other cluster applications.
++
++	  It is always safe to say Y here, as the clustering method is
++	  run-time selectable.
++
++config OCFS2_FS_USERSPACE_CLUSTER
++	tristate "OCFS2 Userspace Clustering"
++	depends on OCFS2_FS && DLM
++	default y
++	help
++	  This option will allow OCFS2 to use userspace clustering services
++	  in conjunction with the DLM in fs/dlm.  If you are using a
++	  userspace cluster manager, say Y here.
++
++	  It is safe to say Y, as the clustering method is run-time
++	  selectable.
++
+ config OCFS2_DEBUG_MASKLOG
+ 	bool "OCFS2 logging support"
+ 	depends on OCFS2_FS
 diff --git a/fs/ocfs2/Makefile b/fs/ocfs2/Makefile
-index b734254..b8d6d02 100644
+index b8d6d02..f6956de 100644
 --- a/fs/ocfs2/Makefile
 +++ b/fs/ocfs2/Makefile
-@@ -2,7 +2,11 @@ EXTRA_CFLAGS += -Ifs/ocfs2
+@@ -4,9 +4,10 @@ EXTRA_CFLAGS += -DCATCH_BH_JBD_RACES
  
- EXTRA_CFLAGS += -DCATCH_BH_JBD_RACES
- 
--obj-$(CONFIG_OCFS2_FS) += ocfs2.o ocfs2_stackglue.o ocfs2_stack_o2cb.o
-+obj-$(CONFIG_OCFS2_FS) += 	\
-+	ocfs2.o			\
-+	ocfs2_stackglue.o	\
-+	ocfs2_stack_o2cb.o	\
-+	ocfs2_stack_user.o
+ obj-$(CONFIG_OCFS2_FS) += 	\
+ 	ocfs2.o			\
+-	ocfs2_stackglue.o	\
+-	ocfs2_stack_o2cb.o	\
+-	ocfs2_stack_user.o
++	ocfs2_stackglue.o
++
++obj-$(CONFIG_OCFS2_FS_O2CB) += ocfs2_stack_o2cb.o
++obj-$(CONFIG_OCFS2_FS_USERSPACE_CLUSTER) += ocfs2_stack_user.o
  
  ocfs2-objs := \
  	alloc.o 		\
-@@ -33,6 +37,7 @@ ocfs2-objs := \
- 
- ocfs2_stackglue-objs := stackglue.o
+@@ -39,5 +40,6 @@ ocfs2_stackglue-objs := stackglue.o
  ocfs2_stack_o2cb-objs := stack_o2cb.o
-+ocfs2_stack_user-objs := stack_user.o
+ ocfs2_stack_user-objs := stack_user.o
  
++# cluster/ is always needed when OCFS2_FS for masklog support
  obj-$(CONFIG_OCFS2_FS) += cluster/
- obj-$(CONFIG_OCFS2_FS) += dlm/
+-obj-$(CONFIG_OCFS2_FS) += dlm/
++obj-$(CONFIG_OCFS2_FS_O2CB) += dlm/
 -- 
 1.5.4.1
 
