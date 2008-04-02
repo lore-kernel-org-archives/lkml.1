@@ -1,78 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757869AbYDBQ5T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758554AbYDBQ5d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757869AbYDBQ5T (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 12:57:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755789AbYDBQ5J
+	id S1758554AbYDBQ5d (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 12:57:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757056AbYDBQ5O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 12:57:09 -0400
-Received: from smtp118.sbc.mail.sp1.yahoo.com ([69.147.64.91]:30918 "HELO
-	smtp118.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754910AbYDBQ5I (ORCPT
+	Wed, 2 Apr 2008 12:57:14 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:59052 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756368AbYDBQ5K (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 12:57:08 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=GM0pS3296qftPZjoGG6BWNJ8E9Ku/wUJi02tzdHEn9Octadguk7x6xogYx5RDgMhLH2Kri/IVPu4JyZzvcN57RGDqOY9OPdUt43sOdKEk8ZVFiFPa8u/s9LqqKLeu0bAYAJnlQMCcfTc5Rst7wb0u/Ly81Prw8nx7gJnOi7u4Rc=  ;
-X-YMail-OSG: pf851g4VM1n9TKYM05eblbbh5A7EFfamWy7yDzWeT1sZYkSv8MYlkBx.04c9m5mab.3w5i.uEw--
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Mark Lord <lkml@rtr.ca>
-Subject: Re: [PATCH] usb ehci_iaa_watchdog fix
-Date: Wed, 2 Apr 2008 09:56:59 -0700
-User-Agent: KMail/1.9.6
-Cc: stern@rowland.harvard.edu, pavel@suse.cz, oliver@neukum.org,
-       linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org, jikos@suse.cz,
-       gregkh@suse.de, akpm@linux-foundation.org
-References: <Pine.LNX.4.44L0.0804021106320.6272-100000@iolanthe.rowland.org> <20080402160414.25F3035F5F8@adsl-69-226-248-13.dsl.pltn13.pacbell.net> <47F3B235.4000103@rtr.ca>
-In-Reply-To: <47F3B235.4000103@rtr.ca>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+	Wed, 2 Apr 2008 12:57:10 -0400
+Date: Wed, 2 Apr 2008 09:56:03 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: ebiederm@xmission.com (Eric W. Biederman), linux-next@vger.kernel.org,
+       gcosta@redhat.com
+Cc: lkml <linux-kernel@vger.kernel.org>, mingo <mingo@redhat.com>,
+       tglx <tglx@linutronix.de>, hpa <hpa@zytor.com>,
+       akpm <akpm@linux-foundation.org>
+Subject: Re: [PATCH linux-next] x86_32: fix VisualWS and Voyager kexec build
+ failures
+Message-Id: <20080402095603.c5433526.randy.dunlap@oracle.com>
+In-Reply-To: <m17ifgrbtg.fsf@ebiederm.dsl.xmission.com>
+References: <20080401104950.83b02073.randy.dunlap@oracle.com>
+	<m17ifgrbtg.fsf@ebiederm.dsl.xmission.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200804020957.00494.david-b@pacbell.net>
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 02 April 2008, Mark Lord wrote:
-> David Brownell wrote:
-> >> Also, check out the thread on LKML started by Tino Keitel.  He had
-> >> similar problems and found that reverting commit
-> >> e82cc1288fa57857c6af8c57f3d07096d4bcd9d9 fixed them.
-> > 
-> > And try the change I suggested there:  taking the
-> > HC_IS_RUNNING test out of ehci_iaa_watchdog().
-> ..
+On Wed, 02 Apr 2008 00:49:15 -0600 Eric W. Biederman wrote:
+
+> Randy Dunlap <randy.dunlap@oracle.com> writes:
 > 
-> Yup, that does indeed cure it.
-
-Given your immediately-preceding experience, I'll wait for a
-bit more confirmation ... but this seems like a candidate to
-merge while 2.6.25 still hasn't frozen!!
-
-
-> Here's a patch, in case you didn't already generate one:
-
-I hadn't; thanks.
-
- 
-> Signed-off-by: Mark Lord <mlord@pobox.com>
+> > From: Randy Dunlap <randy.dunlap@oracle.com>
+> >
+> > cc: Eric Biederman <ebiederm@xmission.com>
+> >
+> > Both Visual WS and Voyager builds fail in almost the same way (in
+> > linux-next) without this patch:
+> >
+> > VOYAGER:
+> > kernel/built-in.o: In function `crash_kexec':
+> > (.text+0x28588): undefined reference to `machine_crash_shutdown'
+> >
+> > VISWS:
+> > kernel/built-in.o: In function `crash_kexec':
+> > /next-20080401/kernel/kexec.c:1074: undefined reference to
+> > `machine_crash_shutdown'
+> > make[1]: *** [.tmp_vmlinux1] Error 1
+> >
+> > because arch/x86/kernel/reboot.c isn't built since CONFIG_X86_BIOS_REBOOT=n,
+> > so machine_crash_shutdown() isn't available.
 > 
-> --- rc8/drivers/usb/host/ehci-hcd.c	2008-03-11 11:18:40.000000000 -0400
-> +++ linux/drivers/usb/host/ehci-hcd.c	2008-04-02 12:16:40.000000000 -0400
-> @@ -289,9 +289,7 @@
->  	 * (a) SMP races against real IAA firing and retriggering, and
->  	 * (b) clean HC shutdown, when IAA watchdog was pending.
->  	 */
-> -	if (ehci->reclaim
-> -			&& !timer_pending(&ehci->iaa_watchdog)
-> -			&& HC_IS_RUNNING(ehci_to_hcd(ehci)->state)) {
-> +	if (ehci->reclaim && !timer_pending(&ehci->iaa_watchdog)) {
->  		u32 cmd, status;
->  
->  		/* If we get here, IAA is *REALLY* late.  It's barely
+> Weird.  I haven't had a chance to update to the devel kernels lately.
+> And in the older kernel I have machine_crash_shutdown is in crash.c
+> and is indeed not dependent xyz.
 > 
+> I get the feeling someone refactored something and ran afoul of the
+> x86_32 weird subarchitecture stuff in their testing.
+> 
+> > This patch does seem a small bit odd since the KEXEC help text says that
+> > kexec is independent of the system firmware.
+> 
+> Yes.
+> 
+> > Eric, is there some other way that this should be handled?
+> 
+> Yes.  Move machine_crash_shutdown back into crash.c
+> Or find some other way to accomplish whatever cleanup was done,
+> so that we still compile.
 
+Well.  This is a problem in linux-next and in -mm, not yet in
+mainline.  Hopefully this patch (wherever it is) won't be merged
+into mainline in its present form.
 
+---
+~Randy
