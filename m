@@ -1,40 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757666AbYDBQiL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758713AbYDBQi0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757666AbYDBQiL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 12:38:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755504AbYDBQh5
+	id S1758713AbYDBQi0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 12:38:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755504AbYDBQiQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 12:37:57 -0400
-Received: from sj-iport-2.cisco.com ([171.71.176.71]:48290 "EHLO
-	sj-iport-2.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755097AbYDBQh5 (ORCPT
+	Wed, 2 Apr 2008 12:38:16 -0400
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:41258 "EHLO
+	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757568AbYDBQiP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 12:37:57 -0400
-From: Roland Dreier <rdreier@cisco.com>
-To: Shirley Ma <xma@us.ibm.com>
-Cc: Richard Frank <richard.frank@oracle.com>, general@lists.openfabrics.org,
-       general-bounces@lists.openfabrics.org, linux-kernel@vger.kernel.org,
-       rds-devel@oss.oracle.com
-Subject: Re: [ofa-general] InfiniBand/iWARP/RDMA merge plans for 2.6.26 (what's	in infiniband.git)
-References: <OF1D776305.7E25BAA6-ON8725741F.005B027C-8825741F.002F5161@us.ibm.com>
-X-Message-Flag: Warning: May contain useful information
-Date: Wed, 02 Apr 2008 09:37:53 -0700
-In-Reply-To: <OF1D776305.7E25BAA6-ON8725741F.005B027C-8825741F.002F5161@us.ibm.com>
-	(Shirley Ma's message of "Wed, 2 Apr 2008 09:36:12 -0700")
-Message-ID: <adar6do1ace.fsf@cisco.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 02 Apr 2008 16:37:56.0125 (UTC) FILETIME=[E76B5CD0:01C894DF]
-Authentication-Results: sj-dkim-4; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim4002 verified; ); 
+	Wed, 2 Apr 2008 12:38:15 -0400
+Date: Wed, 2 Apr 2008 12:34:20 -0400
+Message-Id: <200804021634.m32GYKdZ018898@agora.fsl.cs.sunysb.edu>
+From: Erez Zadok <ezk@cs.sunysb.edu>
+To: Jan Kara <jack@suse.cz>
+Cc: Erez Zadok <ezk@cs.sunysb.edu>, sct@redhat.com, akpm@linux-foundation.org,
+       adilger@clusterfs.com, linux-ext4@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: ext3 lockdep warning in 2.6.25-rc6 
+In-reply-to: Your message of "Wed, 02 Apr 2008 10:12:15 +0200."
+             <20080402081215.GA2716@duck.suse.cz> 
+X-MailKey: Erez_Zadok
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- > Can the maintainer submit RDS patch for mainline kernel, in 2.6.26 or
- > 2.6.27 window? It's hard for Distros pick this feature without mainline
- > kernel acceptance.
+In message <20080402081215.GA2716@duck.suse.cz>, Jan Kara writes:
+> On Tue 01-04-08 17:23:34, Erez Zadok wrote:
+>  <snip>
+[...]
+>   I'll try to explain the locking here:
+> 1) We are not allowed to call into __invalidate_mapping_pages() with
+> inode_lock held - that it the bug lockdep is complaining about. Moreover it
+> leads to rather long waiting times for inode_lock (quite possibly several
+> seconds).
+> 2) When we release inode_lock, we need to protect from inode going away,
+> thus we hold reference to it - that guarantees us inode stays in the list.
+> 3) When we continue scanning of the list we must get inode_lock before we
+> put the inode reference to avoid races. But we cannot do iput() when we
+> hold inode_lock. Thus we save pointer to inode and do iput() next time we
+> have released the inode_lock...
+> 
+> > Peter's post:
+> > 
+> > 	http://lkml.org/lkml/2008/3/23/202
+> > 
+> > includes a reference to a mail by Andrew which implies that the fix may be
+> > much more involved than what you outlined above, no?
+>   Definitely we can do a more involved fix ;) What Andrew proposes would have
+> some other benefits as well. But until somebody gets to that, this slight
+> hack should work fine (Andrew has already merged my patch in -mm so I
+> guess he agrees ;).
 
-At least as a first order approximation, there is no chance of RDS being
-merged for 2.6.26 even if patches appear right this second...
+Thanks for the explanation.  And good to know it's in -mm.  I'll give it a
+try.
+
+Cheers,
+Erez.
