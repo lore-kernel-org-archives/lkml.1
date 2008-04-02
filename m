@@ -1,112 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932983AbYDBUoz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933424AbYDBUpX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932983AbYDBUoz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 16:44:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932539AbYDBUjR
+	id S933424AbYDBUpX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 16:45:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932724AbYDBUk0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 16:39:17 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:35916 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764010AbYDBUjO (ORCPT
+	Wed, 2 Apr 2008 16:40:26 -0400
+Received: from smtp121.sbc.mail.sp1.yahoo.com ([69.147.64.94]:45124 "HELO
+	smtp121.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S932719AbYDBUkY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 16:39:14 -0400
-Date: Wed, 2 Apr 2008 23:39:11 +0300 (EEST)
-From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
-X-X-Sender: ijjarvin@wrl-59.cs.helsinki.fi
-To: Alessandro Suardi <alessandro.suardi@gmail.com>
-cc: Linux Kernel <linux-kernel@vger.kernel.org>,
-       Netdev <netdev@vger.kernel.org>
-Subject: Re: 2.6.25-rc6-git2: warn_on_slowpath for tcp_simple_retransmit
-In-Reply-To: <5a4c581d0804021309y6b0f3af1tab24090a17104bf4@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0804022333230.10610@wrl-59.cs.helsinki.fi>
-References: <5a4c581d0804011528g786550c5sfd6bf90c0c37706@mail.gmail.com> 
- <Pine.LNX.4.64.0804021110190.10371@wrl-59.cs.helsinki.fi>
- <5a4c581d0804021309y6b0f3af1tab24090a17104bf4@mail.gmail.com>
+	Wed, 2 Apr 2008 16:40:24 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=pgzqR6kHSrG1QwBELY3WTYuaHNeKftBC2/1LSm9o+As84WkUIB8KohADP0qt4OmkORUE5s44mnmZJdjB55XWfipqXyOB79z20ja9atw1unRXryLn87B0wrkQqAc7SGX9AowtSkRn6b/YuLMjZj+QlUz/Ipm/Aaj4TRS2CVwJC8Y=  ;
+X-YMail-OSG: 7EcvT2wVM1kHZlm_O9_cooK9RtO1MdKWpWt59Em2S34v512CZKH7tJZJJSi9mvEXOfSY5XsVOj6_cFiPxdnmOvbXY3aDQ1__TH4Bv8625GXabLiW9mjbFzYk7yXe
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Greg KH <greg@kroah.com>
+Subject: [PATCH 2.6.25-rc8] usb: another ehci_iaa_watchdog fix
+Date: Wed, 2 Apr 2008 13:40:20 -0700
+User-Agent: KMail/1.9.6
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-usb@vger.kernel.org,
+       lkml <linux-kernel@vger.kernel.org>, Mark Lord <lkml@rtr.ca>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-696208474-1168032753-1207168751=:10610"
+Content-Type: Text/Plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200804021340.21348.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+This patch, suggested by Alan Stern, fixes the hung USB issues
+on my notebook from suspend/resume cycles.
 
----696208474-1168032753-1207168751=:10610
-Content-Type: TEXT/PLAIN; charset=iso-8859-1
-Content-Transfer-Encoding: 8BIT
+It does so by eliminating some confusion about the internal state
+machine associated with unlinking from the EHCI async schedule ring,
+which caused a recent regression:
 
-On Wed, 2 Apr 2008, Alessandro Suardi wrote:
+  http://bugzilla.kernel.org/show_bug.cgi?id=10345
 
-> On Wed, Apr 2, 2008 at 10:10 AM, Ilpo Järvinen
-> <ilpo.jarvinen@helsinki.fi> wrote:
-> > On Wed, 2 Apr 2008, Alessandro Suardi wrote:
-> >
-> >  > Found this in my FC6-based bittorrent box (K7-800 running
-> >  >  a 2.6.25-rc6-git2 kernel) this evening.
-> >  >
-> >  > The kernel was upgraded two weeks ago to fix the bug
-> >  >  in which an USB VIA driver hammered the PCI bus
-> >  >  causing ATA disk performance to drop, and has been
-> >  >  running since then (it still is).
-> >  >
-> >  > So it's actually 2.6.25-rc6-git2 plus patch as in here
-> >  > http://www.gossamer-threads.com/lists/linux/kernel/895506#895506
-> >  >
-> >  > If there's anything useful I can do, just ask. Thanks !
-> >
-> >  Can you reproduce?
-> 
-> Nope. That only happened once in this uptime:
-> 
-> [root@donkey ~]# uptime
->  21:57:21 up 14 days, 22:04,  5 users,  load average: 0.64, 0.47, 0.44
-> 
-> The machine runs unattended as a bittorrent client, 24x7,
->  with a very low traffic (uploading at a steady ~36KB/s,
->  and downloads happen in peaks).
-> 
-> I VNC into it in the evening and manage the torrents;
->  that is all.
-> 
-> Now, there's an interesting tidbit:
-> 
-> [root@donkey ~]# ip -s link show eth0
-> 3: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast qlen 1000
->     link/ether 00:c0:49:a7:33:fe brd ff:ff:ff:ff:ff:ff
->     RX: bytes  packets  errors  dropped overrun mcast
->     959044156  60549131 0       0       0       0
->     TX: bytes  packets  errors  dropped carrier collsns
->     744533957  66149681 0       0       0       0
-> 
-> [root@donkey ~]# ifconfig eth0
-> eth0      Link encap:Ethernet  HWaddr 00:C0:49:A7:33:FE
->           inet addr:192.168.1.7  Bcast:192.168.1.255  Mask:255.255.255.0
->           inet6 addr: fe80::2c0:49ff:fea7:33fe/64 Scope:Link
->           UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
->           RX packets:60551468 errors:0 dropped:0 overruns:0 frame:0
->           TX packets:66152721 errors:0 dropped:0 overruns:1 carrier:0
->           collisions:0 txqueuelen:1000
->           RX bytes:959199592 (914.7 MiB)  TX bytes:748395356 (713.7 MiB)
->           Interrupt:12 Base address:0xce00
-> 
-> Somehow the "overruns" counter is seen differently by 'ip'
->  and 'ifconfig' - one says 0, the other says 1 - perhaps the
->  packet that WARN'd me on tcp_simple_retransmit ?
+Signed-off-by: Mark Lord <mlord@pobox.com>
+Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
+---
+Merge before 2.6.25-final please...
 
-...I find that extreme unlikely.
+--- rc8/drivers/usb/host/ehci-hub.c	2008-03-11 11:18:40.000000000 -0400
++++ linux/drivers/usb/host/ehci-hub.c	2008-04-02 13:28:50.000000000 -0400
+@@ -135,8 +135,6 @@
+ 		hcd->state = HC_STATE_QUIESCING;
+ 	}
+ 	ehci->command = ehci_readl(ehci, &ehci->regs->command);
+-	if (ehci->reclaim)
+-		end_unlink_async(ehci);
+ 	ehci_work(ehci);
+ 
+ 	/* Unlike other USB host controller types, EHCI doesn't have
+@@ -180,6 +178,9 @@
+ 	ehci_halt (ehci);
+ 	hcd->state = HC_STATE_SUSPENDED;
+ 
++	if (ehci->reclaim)
++		end_unlink_async(ehci);
++
+ 	/* allow remote wakeup */
+ 	mask = INTR_MASK;
+ 	if (!device_may_wakeup(&hcd->self.root_hub->dev))
 
-> If there's anything else - reproducing seems really really
->  unlikely - 1 packet in 66 million...
-
-Yeah, it seems some hard to hit corner case and so far nobody has
-a reproducable scenario (or at least I'm not aware of any). I tried
-to reproduce it last weekend and failed, even with some netem stimuli 
-added while torrenting.
-
-I'll probably ask soon Andrew to queue some low cost debug patch into
--mm to get a bit more clues when somebody running mm happens to hit
-it.
-
--- 
- i.
----696208474-1168032753-1207168751=:10610--
