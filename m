@@ -1,48 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754750AbYDBIK6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755130AbYDBIMi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754750AbYDBIK6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 04:10:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752394AbYDBIKl
+	id S1755130AbYDBIMi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 04:12:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751753AbYDBIMV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 04:10:41 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:35631 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751685AbYDBIKk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 04:10:40 -0400
-Date: Wed, 2 Apr 2008 11:10:38 +0300 (EEST)
-From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
-X-X-Sender: ijjarvin@wrl-59.cs.helsinki.fi
-To: Alessandro Suardi <alessandro.suardi@gmail.com>
-cc: Linux Kernel <linux-kernel@vger.kernel.org>,
-       Netdev <netdev@vger.kernel.org>
-Subject: Re: 2.6.25-rc6-git2: warn_on_slowpath for tcp_simple_retransmit
-In-Reply-To: <5a4c581d0804011528g786550c5sfd6bf90c0c37706@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0804021110190.10371@wrl-59.cs.helsinki.fi>
-References: <5a4c581d0804011528g786550c5sfd6bf90c0c37706@mail.gmail.com>
-Mime-Version: 1.0
+	Wed, 2 Apr 2008 04:12:21 -0400
+Received: from styx.suse.cz ([82.119.242.94]:54877 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752155AbYDBIMT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Apr 2008 04:12:19 -0400
+Date: Wed, 2 Apr 2008 10:12:15 +0200
+From: Jan Kara <jack@suse.cz>
+To: Erez Zadok <ezk@cs.sunysb.edu>
+Cc: sct@redhat.com, akpm@linux-foundation.org, adilger@clusterfs.com,
+       linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: ext3 lockdep warning in 2.6.25-rc6
+Message-ID: <20080402081215.GA2716@duck.suse.cz>
+References: <20080325182909.GD21732@atrey.karlin.mff.cuni.cz> <200804012123.m31LNY3T012962@agora.fsl.cs.sunysb.edu>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <200804012123.m31LNY3T012962@agora.fsl.cs.sunysb.edu>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2 Apr 2008, Alessandro Suardi wrote:
-
-> Found this in my FC6-based bittorrent box (K7-800 running
->  a 2.6.25-rc6-git2 kernel) this evening.
+On Tue 01-04-08 17:23:34, Erez Zadok wrote:
+ <snip>
+> > From f5e41087e345fa5c3b46ac36e6e4a654d2f7f624 Mon Sep 17 00:00:00 2001
+> > From: Jan Kara <jack@suse.cz>
+> > Date: Tue, 18 Mar 2008 14:38:06 +0100
+> > Subject: [PATCH] Fix drop_pagecache_sb() to not call __invalidate_mapping_pages() under
+> > inode_lock.
+> > 
+> > Signed-off-by: Jan Kara <jack@suse.cz>
+> > ---
+> >  fs/drop_caches.c |    8 +++++++-
+> >  1 files changed, 7 insertions(+), 1 deletions(-)
+> > 
+> > diff --git a/fs/drop_caches.c b/fs/drop_caches.c
+> > index 59375ef..f5aae26 100644
+> > --- a/fs/drop_caches.c
+> > +++ b/fs/drop_caches.c
+> > @@ -14,15 +14,21 @@ int sysctl_drop_caches;
+> >  
+> >  static void drop_pagecache_sb(struct super_block *sb)
+> >  {
+> > -	struct inode *inode;
+> > +	struct inode *inode, *toput_inode = NULL;
+> >  
+> >  	spin_lock(&inode_lock);
+> >  	list_for_each_entry(inode, &sb->s_inodes, i_sb_list) {
+> >  		if (inode->i_state & (I_FREEING|I_WILL_FREE))
+> >  			continue;
+> > +		__iget(inode);
+> > +		spin_unlock(&inode_lock);
+> >  		__invalidate_mapping_pages(inode->i_mapping, 0, -1, true);
+> > +		iput(toput_inode);
+> > +		toput_inode = inode;
+> > +		spin_lock(&inode_lock);
+> >  	}
+> >  	spin_unlock(&inode_lock);
+> > +	iput(toput_inode);
+> >  }
 > 
-> The kernel was upgraded two weeks ago to fix the bug
->  in which an USB VIA driver hammered the PCI bus
->  causing ATA disk performance to drop, and has been
->  running since then (it still is).
+> Jan, I'll be happy to test this, but I don't understand two things about
+> this patch:
 > 
-> So it's actually 2.6.25-rc6-git2 plus patch as in here
-> http://www.gossamer-threads.com/lists/linux/kernel/895506#895506
+> 1. Is it safe to unlock and re-lock inode_lock temporarily within the loop?
 > 
-> If there's anything useful I can do, just ask. Thanks !
+> 2. What's the motivation behind having the second toput_inode pointer?  It
+>    appears that the first iteration through the loop, toput_inode will be
+>    NULL, so we'll be iput'ing a NULL pointer (which is ok).  So you're
+>    trying to iput the previous inode pointer that the list iterated over,
+>    right?  Is that intended?
+  I'll try to explain the locking here:
+1) We are not allowed to call into __invalidate_mapping_pages() with
+inode_lock held - that it the bug lockdep is complaining about. Moreover it
+leads to rather long waiting times for inode_lock (quite possibly several
+seconds).
+2) When we release inode_lock, we need to protect from inode going away,
+thus we hold reference to it - that guarantees us inode stays in the list.
+3) When we continue scanning of the list we must get inode_lock before we
+put the inode reference to avoid races. But we cannot do iput() when we
+hold inode_lock. Thus we save pointer to inode and do iput() next time we
+have released the inode_lock...
 
-Can you reproduce?
+> Peter's post:
+> 
+> 	http://lkml.org/lkml/2008/3/23/202
+> 
+> includes a reference to a mail by Andrew which implies that the fix may be
+> much more involved than what you outlined above, no?
+  Definitely we can do a more involved fix ;) What Andrew proposes would have
+some other benefits as well. But until somebody gets to that, this slight
+hack should work fine (Andrew has already merged my patch in -mm so I
+guess he agrees ;).
 
+									Honza
 -- 
- i.
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
