@@ -1,45 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933270AbYDBUoW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933316AbYDBUoi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933270AbYDBUoW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 16:44:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765498AbYDBUfK
+	id S933316AbYDBUoi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 16:44:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765756AbYDBUhP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 16:35:10 -0400
-Received: from mail.atlantis.sk ([80.94.52.35]:50620 "EHLO mail.atlantis.sk"
+	Wed, 2 Apr 2008 16:37:15 -0400
+Received: from nn7.de ([85.214.94.156]:59546 "EHLO nn7.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763082AbYDBUfI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 16:35:08 -0400
-From: Ondrej Zary <linux@rainbow-software.org>
-To: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
-Subject: Re: No IDE drivers loaded for Toshiba Satellite 320 CDS
-Date: Wed, 2 Apr 2008 22:34:58 +0200
-User-Agent: KMail/1.9.9
-Cc: Frans Pop <elendil@planet.nl>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-References: <200804021524.27222.elendil@planet.nl> <200804022210.26736.linux@rainbow-software.org> <20080402202225.GJ24237@csclub.uwaterloo.ca>
-In-Reply-To: <20080402202225.GJ24237@csclub.uwaterloo.ca>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	id S1765745AbYDBUhO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Apr 2008 16:37:14 -0400
+Subject: Re: 2.6.25-rc6 hangs at resume after suspend to RAM on Mac mini
+	Core Duo
+From: Soeren Sonnenburg <kernel@nn7.de>
+To: Tino Keitel <tino.keitel@gmx.de>
+Cc: Alan Stern <stern@rowland.harvard.edu>, Pavel Machek <pavel@ucw.cz>,
+       linux-usb@vger.kernel.org, "Rafael J\. Wysocki" <rjw@sisk.pl>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Len Brown <lenb@kernel.org>
+In-Reply-To: <20080402194757.GA5082@dose.home.local>
+References: <20080401210617.GA7346@dose.home.local>
+	 <Pine.LNX.4.44L0.0804021521260.11421-100000@iolanthe.rowland.org>
+	 <20080402194757.GA5082@dose.home.local>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200804022235.01433.linux@rainbow-software.org>
+Date: Wed, 02 Apr 2008 22:37:10 +0200
+Message-Id: <1207168630.4184.2.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.0 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 02 April 2008 22:22:25 Lennart Sorensen wrote:
-> On Wed, Apr 02, 2008 at 10:10:23PM +0200, Ondrej Zary wrote:
-> > I mean S320BIDE.EXE - that's for this machine only.
->
-> Hmm, I missed that one.  I wonder how they do it.  Well ISA did support
-> bus mastering DMA although it seems rare to implement it.  Or it could
-> be VLB style.
+On Wed, 2008-04-02 at 21:47 +0200, Tino Keitel wrote:
+> On Wed, Apr 02, 2008 at 15:26:44 -0400, Alan Stern wrote:
+> > On Tue, 1 Apr 2008, Tino Keitel wrote:
+> > 
+> > > On Tue, Apr 01, 2008 at 17:02:36 -0400, Alan Stern wrote:
+> > > > On Tue, 1 Apr 2008, Tino Keitel wrote:
+> > > > 
+> > > > > On Tue, Apr 01, 2008 at 15:06:51 -0400, Alan Stern wrote:
+> > > > > 
+> > > > > [...]
+> > > > > 
+> > > > > > Can you get any information out of the computer after the hang?  It 
+> > > > > > would help to see the dmesg log (with CONFIG_USB_DEBUG enabled) and an 
+> > > > > > Alt-SysRq-T stack dump.
+> > > > > 
+> > > > > Looks difficult. The text console stays black after resume, and there
+> > > > > is no serial interface.
+> > > > 
+> > > > Network console?  SSH?  Or even telnet?
+> > > 
+> > > Network is dead, too.
+> > 
+> > Tino, try this patch.  It fixed Mark Lord's problem, which looked the 
+> > same as yours.
+> 
+> Fine, it seems to solve the hang, I see no problems after the resume.
+> Thanks a lot.
 
-I suspect that the IDE controller is integrated into the Toshiba chipset but 
-does not appear as a separate PCI device. It could be controlled by some 
-registers of the "host-bridge" or some other device.
+Using this patch fixes the hang for my macbookpro1,1 too. However the
+console stays black after resume, though I can s2ram multiple times and
+reboot...
 
--- 
-Ondrej Zary
+Soeren
