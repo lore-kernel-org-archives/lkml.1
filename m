@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760214AbYDBSly@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761844AbYDBSmT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760214AbYDBSly (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 14:41:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758283AbYDBSfv
+	id S1761844AbYDBSmT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 14:42:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758400AbYDBSfw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 14:35:51 -0400
-Received: from 21.sub-75-208-3.myvzw.com ([75.208.3.21]:38418 "EHLO
+	Wed, 2 Apr 2008 14:35:52 -0400
+Received: from 21.sub-75-208-3.myvzw.com ([75.208.3.21]:38417 "EHLO
 	mail.goop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757408AbYDBSfn (ORCPT
+	with ESMTP id S1757394AbYDBSfo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 14:35:43 -0400
+	Wed, 2 Apr 2008 14:35:44 -0400
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Subject: [PATCH 08 of 24] Re: [PATCH 08/12] xen: add resend_irq_on_evtchn()
-	definition into events.c
-X-Mercurial-Node: ebc72e5a71941280fe996a619e51f9f06fcd3e7c
-Message-Id: <ebc72e5a71941280fe99.1207158837@localhost>
+Subject: [PATCH 10 of 24] xen: replace callers of
+	alloc_vm_area()/free_vm_area() with xen_ prefixed one
+X-Mercurial-Node: 38e0bd91b3522ddb9c536920bf32f020ac6c3d14
+Message-Id: <38e0bd91b3522ddb9c53.1207158839@localhost>
 In-Reply-To: <patchbomb.1207158829@localhost>
-Date: Wed, 02 Apr 2008 10:53:57 -0700
+Date: Wed, 02 Apr 2008 10:53:59 -0700
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: LKML <linux-kernel@vger.kernel.org>,
@@ -29,53 +29,95 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Isaku Yamahata <yamahata@valinux.co.jp>
 
-Define resend_irq_on_evtchn() which ia64/xen uses.
-Although it isn't used by current x86/xen code, it's arch generic
-so that put it into common code.
+Don't use alloc_vm_area()/free_vm_area() directly, instead define
+xen_alloc_vm_area()/xen_free_vm_area() and use them.
+
+alloc_vm_area()/free_vm_area() are used to allocate/free area which
+are for grant table mapping. Xen/x86 grant table is based on virtual
+address so that alloc_vm_area()/free_vm_area() are suitable.
+On the other hand Xen/ia64 (and Xen/powerpc) grant table is based on
+pseudo physical address (guest physical address) so that allocation
+should be done differently.
+The original version of xenified Linux/IA64 have its own
+allocate_vm_area()/free_vm_area() definitions which don't allocate vm area
+contradictory to those names.
+Now vanilla Linux already has its definitions so that it's impossible
+to have IA64 definitions of allocate_vm_area()/free_vm_area().
+Instead introduce xen_allocate_vm_area()/xen_free_vm_area() and use them.
 
 Signed-off-by: Isaku Yamahata <yamahata@valinux.co.jp>
 Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 ---
- drivers/xen/events.c |   16 ++++++++++++++++
- include/xen/events.h |    3 +--
- 2 files changed, 17 insertions(+), 2 deletions(-)
+ drivers/xen/grant-table.c          |    2 +-
+ drivers/xen/xenbus/xenbus_client.c |    6 +++---
+ include/asm-x86/xen/grant_table.h  |    7 +++++++
+ include/xen/grant_table.h          |    3 +--
+ 4 files changed, 12 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/xen/events.c b/drivers/xen/events.c
---- a/drivers/xen/events.c
-+++ b/drivers/xen/events.c
-@@ -586,6 +586,22 @@
- 	rebind_irq_to_cpu(irq, tcpu);
- }
+diff --git a/drivers/xen/grant-table.c b/drivers/xen/grant-table.c
+--- a/drivers/xen/grant-table.c
++++ b/drivers/xen/grant-table.c
+@@ -478,7 +478,7 @@
  
-+int resend_irq_on_evtchn(unsigned int irq)
-+{
-+	int masked, evtchn = evtchn_from_irq(irq);
-+	struct shared_info *s = HYPERVISOR_shared_info;
-+
-+	if (!VALID_EVTCHN(evtchn))
-+		return 1;
-+
-+	masked = sync_test_and_set_bit(evtchn, s->evtchn_mask);
-+	sync_set_bit(evtchn, s->evtchn_pending);
-+	if (!masked)
-+		unmask_evtchn(evtchn);
-+
-+	return 1;
-+}
-+
- static void enable_dynirq(unsigned int irq)
- {
- 	int evtchn = evtchn_from_irq(irq);
-diff --git a/include/xen/events.h b/include/xen/events.h
---- a/include/xen/events.h
-+++ b/include/xen/events.h
-@@ -31,6 +31,7 @@
- void unbind_from_irqhandler(unsigned int irq, void *dev_id);
+ 	if (shared == NULL) {
+ 		struct vm_struct *area;
+-		area = alloc_vm_area(PAGE_SIZE * max_nr_grant_frames());
++		area = xen_alloc_vm_area(PAGE_SIZE * max_nr_grant_frames());
+ 		BUG_ON(area == NULL);
+ 		shared = area->addr;
+ 	}
+diff --git a/drivers/xen/xenbus/xenbus_client.c b/drivers/xen/xenbus/xenbus_client.c
+--- a/drivers/xen/xenbus/xenbus_client.c
++++ b/drivers/xen/xenbus/xenbus_client.c
+@@ -399,7 +399,7 @@
  
- void xen_send_IPI_one(unsigned int cpu, enum ipi_vector vector);
-+int resend_irq_on_evtchn(unsigned int irq);
+ 	*vaddr = NULL;
  
- static inline void notify_remote_via_evtchn(int port)
- {
+-	area = alloc_vm_area(PAGE_SIZE);
++	area = xen_alloc_vm_area(PAGE_SIZE);
+ 	if (!area)
+ 		return -ENOMEM;
+ 
+@@ -409,7 +409,7 @@
+ 		BUG();
+ 
+ 	if (op.status != GNTST_okay) {
+-		free_vm_area(area);
++		xen_free_vm_area(area);
+ 		xenbus_dev_fatal(dev, op.status,
+ 				 "mapping in shared page %d from domain %d",
+ 				 gnt_ref, dev->otherend_id);
+@@ -508,7 +508,7 @@
+ 		BUG();
+ 
+ 	if (op.status == GNTST_okay)
+-		free_vm_area(area);
++		xen_free_vm_area(area);
+ 	else
+ 		xenbus_dev_error(dev, op.status,
+ 				 "unmapping page at handle %d error %d",
+diff --git a/include/asm-x86/xen/grant_table.h b/include/asm-x86/xen/grant_table.h
+new file mode 100644
+--- /dev/null
++++ b/include/asm-x86/xen/grant_table.h
+@@ -0,0 +1,7 @@
++#ifndef __XEN_GRANT_TABLE_H
++#define __XEN_GRANT_TABLE_H
++
++#define xen_alloc_vm_area(size)	alloc_vm_area(size)
++#define xen_free_vm_area(area)	free_vm_area(area)
++
++#endif /* __XEN_GRANT_TABLE_H */
+diff --git a/include/xen/grant_table.h b/include/xen/grant_table.h
+--- a/include/xen/grant_table.h
++++ b/include/xen/grant_table.h
+@@ -39,6 +39,7 @@
+ 
+ #include <asm/xen/hypervisor.h>
+ #include <xen/interface/grant_table.h>
++#include <asm/xen/grant_table.h>
+ 
+ /* NR_GRANT_FRAMES must be less than or equal to that configured in Xen */
+ #define NR_GRANT_FRAMES 4
 
 
