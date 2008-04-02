@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932691AbYDBUj6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932690AbYDBUk3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932691AbYDBUj6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 16:39:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762023AbYDBUSl
+	id S932690AbYDBUk3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 16:40:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759877AbYDBUSm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 16:18:41 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:33322 "EHLO mx2.suse.de"
+	Wed, 2 Apr 2008 16:18:42 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:33345 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762010AbYDBUSj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 16:18:39 -0400
+	id S1762015AbYDBUSl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Apr 2008 16:18:41 -0400
 From: Mark Fasheh <mfasheh@suse.com>
 To: linux-kernel@vger.kernel.org
 Cc: ocfs2-devel@oss.oracle.com, Joel Becker <joel.becker@oracle.com>,
-       Julia Lawall <julia@diku.dk>
-Subject: [PATCH 57/62] fs/ocfs2/aops.c: test for IS_ERR rather than 0
-Date: Wed,  2 Apr 2008 13:15:07 -0700
-Message-Id: <12071674382558-git-send-email-mfasheh@suse.com>
+       Jan Kara <jack@suse.cz>
+Subject: [PATCH 58/62] ocfs2: Improve rename locking
+Date: Wed,  2 Apr 2008 13:15:08 -0700
+Message-Id: <12071674402193-git-send-email-mfasheh@suse.com>
 X-Mailer: git-send-email 1.5.2.4
-In-Reply-To: <12071674361985-git-send-email-mfasheh@suse.com>
+In-Reply-To: <12071674382558-git-send-email-mfasheh@suse.com>
 References: <12071673121124-git-send-email-mfasheh@suse.com>
  <1207167318479-git-send-email-mfasheh@suse.com>
  <12071673203909-git-send-email-mfasheh@suse.com>
@@ -75,50 +75,35 @@ References: <12071673121124-git-send-email-mfasheh@suse.com>
  <12071674312495-git-send-email-mfasheh@suse.com>
  <12071674333467-git-send-email-mfasheh@suse.com>
  <12071674361985-git-send-email-mfasheh@suse.com>
+ <12071674382558-git-send-email-mfasheh@suse.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Julia Lawall <julia@diku.dk>
+From: Jan Kara <jack@suse.cz>
 
-The function ocfs2_start_trans always returns either a valid pointer or a
-value made with ERR_PTR, so its result should be tested with IS_ERR, not
-with a test for 0.
+ocfs2_rename() was being too aggressive with the rename lock - we only need
+it for certain forms of directory rename.
 
-Signed-off-by: Julia Lawall <julia@diku.dk>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Jan Kara <jack@suse.cz>
 Signed-off-by: Mark Fasheh <mfasheh@suse.com>
 ---
- fs/ocfs2/aops.c |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
+ fs/ocfs2/namei.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/fs/ocfs2/aops.c b/fs/ocfs2/aops.c
-index 90383ed..17964c0 100644
---- a/fs/ocfs2/aops.c
-+++ b/fs/ocfs2/aops.c
-@@ -467,11 +467,11 @@ handle_t *ocfs2_start_walk_page_trans(struct inode *inode,
- 							 unsigned to)
- {
- 	struct ocfs2_super *osb = OCFS2_SB(inode->i_sb);
--	handle_t *handle = NULL;
-+	handle_t *handle;
- 	int ret = 0;
- 
- 	handle = ocfs2_start_trans(osb, OCFS2_INODE_UPDATE_CREDITS);
--	if (!handle) {
-+	if (IS_ERR(handle)) {
- 		ret = -ENOMEM;
- 		mlog_errno(ret);
- 		goto out;
-@@ -487,7 +487,7 @@ handle_t *ocfs2_start_walk_page_trans(struct inode *inode,
- 	}
- out:
- 	if (ret) {
--		if (handle)
-+		if (!IS_ERR(handle))
- 			ocfs2_commit_trans(osb, handle);
- 		handle = ERR_PTR(ret);
- 	}
+diff --git a/fs/ocfs2/namei.c b/fs/ocfs2/namei.c
+index ab5a227..d5d808f 100644
+--- a/fs/ocfs2/namei.c
++++ b/fs/ocfs2/namei.c
+@@ -997,7 +997,7 @@ static int ocfs2_rename(struct inode *old_dir,
+ 	 *
+ 	 * And that's why, just like the VFS, we need a file system
+ 	 * rename lock. */
+-	if (old_dentry != new_dentry) {
++	if (old_dir != new_dir && S_ISDIR(old_inode->i_mode)) {
+ 		status = ocfs2_rename_lock(osb);
+ 		if (status < 0) {
+ 			mlog_errno(status);
 -- 
 1.5.4.1
 
