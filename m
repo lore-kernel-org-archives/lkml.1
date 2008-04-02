@@ -1,80 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760509AbYDBWZa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757512AbYDBWfv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760509AbYDBWZa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 18:25:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758385AbYDBWZO
+	id S1757512AbYDBWfv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 18:35:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753827AbYDBWfl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 18:25:14 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:32954 "EHLO
-	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754870AbYDBWZM (ORCPT
+	Wed, 2 Apr 2008 18:35:41 -0400
+Received: from artax.karlin.mff.cuni.cz ([195.113.31.125]:54399 "EHLO
+	artax.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751996AbYDBWfk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 18:25:12 -0400
-Date: Thu, 3 Apr 2008 00:25:55 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: what's the incompatibility between hibernation and
-	hotplug?memory
-Message-ID: <20080402222555.GF4644@elf.ucw.cz>
-References: <47EAD9A7.6020609@goop.org> <200803272155.01463.rjw@sisk.pl> <20080327233852.GA32617@elf.ucw.cz> <200803280044.00982.rjw@sisk.pl>
+	Wed, 2 Apr 2008 18:35:40 -0400
+Date: Thu, 3 Apr 2008 00:35:39 +0200 (CEST)
+From: Mikulas Patocka <mikulas@artax.karlin.mff.cuni.cz>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: viro@zeniv.linux.org.uk, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH]: Fix SMP-reordering race in mark_buffer_dirty
+In-Reply-To: <alpine.LFD.1.00.0804021422570.14670@woody.linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0804030022400.15850@artax.karlin.mff.cuni.cz>
+References: <Pine.LNX.4.64.0804022058530.13737@artax.karlin.mff.cuni.cz>
+ <alpine.LFD.1.00.0804021237031.14670@woody.linux-foundation.org>
+ <Pine.LNX.4.64.0804022238460.25023@artax.karlin.mff.cuni.cz>
+ <alpine.LFD.1.00.0804021422570.14670@woody.linux-foundation.org>
+X-Personality-Disorder: Schizoid
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200803280044.00982.rjw@sisk.pl>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri 2008-03-28 00:44:00, Rafael J. Wysocki wrote:
-> On Friday, 28 of March 2008, Pavel Machek wrote:
-> > On Thu 2008-03-27 21:55:01, Rafael J. Wysocki wrote:
-> > > On Thursday, 27 of March 2008, Jeremy Fitzhardinge wrote:
-> > > > Pavel Machek wrote:
-> > > > > Hi!
-> > > > >
-> > > > >   
-> > > > >>> I noticed that Kconfig warns that hibernation and hotplug memory are not 
-> > > > >>> compatible.  What's the issue?
-> > > > >>>       
-> > > > >> Generally, we might not be able to handle memory unplugged at a wrong time
-> > > > >> (eg. after we've created the image).
-> > > > >>
-> > > > >> Which part of Kconfig says that exactly?
-> > > > >>     
-> > > > >
-> > > > > Actually I believe it is simpler than that. We were not prepared to
-> > > > > deal with memory holes in hibernation code, so we just disabled it in
-> > > > > Kconfig...
-> > > > 
-> > > > Doesn't that mean its generally incompatible with non-flatmem memory 
-> > > > arrangements rather than hotplug memory specifically?
-> > > 
-> > > No, it should work with NUMA nowadays, actually.
-> > > 
-> > > Perhaps it's worth trying it with hotplug memory and see what problems arise?
+On Wed, 2 Apr 2008, Linus Torvalds wrote:
+
+> On Wed, 2 Apr 2008, Mikulas Patocka wrote:
 > > 
-> > Good. I believe it is good chance it will work with hotplug, too... as
-> > long as memory is not inserted/removed during suspend/resume.
+> > So you're right, the gain of mfence is so little that you can remove it 
+> > and use only test_set_buffer_dirty.
 > 
-> Well, there may be a problem if it's inserted after we've created the image
-> and before powering off, because the resumed kernel will not have any idea of
-> the new memory.  It probably will require us to add some resume callbacks
-> for the memory hotplugging to handle this cleanly.
+> Well, I suspect that part of the issue is that quite often you end up 
+> with *both* because the buffer wasn't already dirty from before.
+> 
+> Re-dirtying a dirty buffer is pretty common for things like bitmap blocks 
+> etc, so it's probably a worthy optimization if it has no cost, and on 
+> Core2 I suspect your version is worth it, but it's not like it's going to 
+> be necessarily a 99% kind of case. I suspect quite a lot of the 
+> mark_buffer_dirty() calls are actually on clean buffers.
 
-Well, "not having any idea of new memory" should not lead to big
-problems. 
+The cost of doing the buffer lookup and update is much more than the 20 
+clocks, so the 20 clocks mfence/lock difference can be forgotten.
 
-"Not being aware that memory was removed" would be worse ;-).
+> (Of course, a valid argument is that if it was already dirty, we'll skip 
+> the other expensive parts, so only the "already dirty" case is worth 
+> optimizing for. Maybe true. There might also be cases where it means one 
+> less dirty cacheline in memory.)
 
-And I think that we have the ammount of memory check, and will refuse
-the resume which is good failsafe behaviour.
+That is another good example: when two CPUs are simultaneously updating 
+the same buffer (i.e. two inodes in one block or simultaneous writes to a 
+bitmap), then test_set_buffer_dirty will do cache ping-pong (that is much 
+more expensive than that 20-100 cycles for an interlocked instruction), 
+and smp_mb()+test_buffer_dirty will keep cache intact.
 
-...so someone interested should just test it ;-).
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+So maybe there's still a reason for smb_mb().
+
+Mikulas
+
