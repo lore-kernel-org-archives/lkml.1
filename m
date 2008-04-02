@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762525AbYDBVmx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762790AbYDBVnd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762525AbYDBVmx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 17:42:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756429AbYDBVm0
+	id S1762790AbYDBVnd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 17:43:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762241AbYDBVmd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 17:42:26 -0400
-Received: from saeurebad.de ([85.214.36.134]:59927 "EHLO saeurebad.de"
+	Wed, 2 Apr 2008 17:42:33 -0400
+Received: from saeurebad.de ([85.214.36.134]:59959 "EHLO saeurebad.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762111AbYDBVmX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 17:42:23 -0400
+	id S1762224AbYDBVmc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Apr 2008 17:42:32 -0400
 From: Johannes Weiner <hannes@saeurebad.de>
 To: linux-kernel@vger.kernel.org
 Cc: linux-mm@kvack.org, mingo@elte.hu, davem@davemloft.net,
@@ -18,9 +18,9 @@ Cc: linux-mm@kvack.org, mingo@elte.hu, davem@davemloft.net,
        paulus@samba.org, schwidefsky@de.ibm.com, lethal@linux-sh.org,
        jdike@addtoit.com, miles@gnu.org, chris@zankel.net,
        rmk@arm.linux.org.uk, tony.luck@intel.com
-Subject: [RFC 03/22] sparc64: Use generic show_mem()
-Date: Wed,  2 Apr 2008 22:40:09 +0200
-Message-Id: <12071688624019-git-send-email-hannes@saeurebad.de>
+Subject: [RFC 04/22] avr32: Use generic show_mem()
+Date: Wed,  2 Apr 2008 22:40:10 +0200
+Message-Id: <12071688734124-git-send-email-hannes@saeurebad.de>
 X-Mailer: git-send-email 1.5.2.2
 In-Reply-To: <12071688283927-git-send-email-hannes@saeurebad.de>
 References: <12071688283927-git-send-email-hannes@saeurebad.de>
@@ -32,76 +32,70 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Johannes Weiner <hannes@saeurebad.de>
 
-diff --git a/arch/sparc64/Kconfig b/arch/sparc64/Kconfig
-index d74b027..463d1be 100644
---- a/arch/sparc64/Kconfig
-+++ b/arch/sparc64/Kconfig
-@@ -267,9 +267,6 @@ config ARCH_SPARSEMEM_ENABLE
- config ARCH_SPARSEMEM_DEFAULT
- 	def_bool y
+diff --git a/arch/avr32/Kconfig b/arch/avr32/Kconfig
+index 81e3360..c75d708 100644
+--- a/arch/avr32/Kconfig
++++ b/arch/avr32/Kconfig
+@@ -146,9 +146,6 @@ source "kernel/Kconfig.preempt"
+ config HAVE_ARCH_BOOTMEM_NODE
+ 	def_bool n
  
 -config HAVE_ARCH_SHOW_MEM
 -	def_bool y
 -
- source "mm/Kconfig"
+ config ARCH_HAVE_MEMORY_PRESENT
+ 	def_bool n
  
- config ISA
-diff --git a/arch/sparc64/mm/init.c b/arch/sparc64/mm/init.c
-index f37078d..f6a86a2 100644
---- a/arch/sparc64/mm/init.c
-+++ b/arch/sparc64/mm/init.c
-@@ -391,51 +391,6 @@ void __kprobes flush_icache_range(unsigned long start, unsigned long end)
- 	}
- }
+diff --git a/arch/avr32/mm/init.c b/arch/avr32/mm/init.c
+index 480760b..3cbff55 100644
+--- a/arch/avr32/mm/init.c
++++ b/arch/avr32/mm/init.c
+@@ -37,45 +37,6 @@ unsigned long mmu_context_cache = NO_CONTEXT;
+ #define START_PFN	(NODE_DATA(0)->bdata->node_boot_start >> PAGE_SHIFT)
+ #define MAX_LOW_PFN	(NODE_DATA(0)->bdata->node_low_pfn)
  
 -void show_mem(void)
 -{
--	unsigned long total = 0, reserved = 0;
--	unsigned long shared = 0, cached = 0;
+-	int total = 0, reserved = 0, cached = 0;
+-	int slab = 0, free = 0, shared = 0;
 -	pg_data_t *pgdat;
 -
--	printk(KERN_INFO "Mem-info:\n");
+-	printk("Mem-info:\n");
 -	show_free_areas();
--	printk(KERN_INFO "Free swap:       %6ldkB\n",
--	       nr_swap_pages << (PAGE_SHIFT-10));
--	for_each_online_pgdat(pgdat) {
--		unsigned long i, flags;
 -
--		pgdat_resize_lock(pgdat, &flags);
--		for (i = 0; i < pgdat->node_spanned_pages; i++) {
--			struct page *page = pgdat_page_nr(pgdat, i);
+-	for_each_online_pgdat(pgdat) {
+-		struct page *page, *end;
+-
+-		page = pgdat->node_mem_map;
+-		end = page + pgdat->node_spanned_pages;
+-
+-		do {
 -			total++;
 -			if (PageReserved(page))
 -				reserved++;
 -			else if (PageSwapCache(page))
 -				cached++;
--			else if (page_count(page))
+-			else if (PageSlab(page))
+-				slab++;
+-			else if (!page_count(page))
+-				free++;
+-			else
 -				shared += page_count(page) - 1;
--		}
--		pgdat_resize_unlock(pgdat, &flags);
+-			page++;
+-		} while (page < end);
 -	}
 -
--	printk(KERN_INFO "%lu pages of RAM\n", total);
--	printk(KERN_INFO "%lu reserved pages\n", reserved);
--	printk(KERN_INFO "%lu pages shared\n", shared);
--	printk(KERN_INFO "%lu pages swap cached\n", cached);
--
--	printk(KERN_INFO "%lu pages dirty\n",
--	       global_page_state(NR_FILE_DIRTY));
--	printk(KERN_INFO "%lu pages writeback\n",
--	       global_page_state(NR_WRITEBACK));
--	printk(KERN_INFO "%lu pages mapped\n",
--	       global_page_state(NR_FILE_MAPPED));
--	printk(KERN_INFO "%lu pages slab\n",
--		global_page_state(NR_SLAB_RECLAIMABLE) +
--		global_page_state(NR_SLAB_UNRECLAIMABLE));
--	printk(KERN_INFO "%lu pages pagetables\n",
--	       global_page_state(NR_PAGETABLE));
+-	printk ("%d pages of RAM\n", total);
+-	printk ("%d free pages\n", free);
+-	printk ("%d reserved pages\n", reserved);
+-	printk ("%d slab pages\n", slab);
+-	printk ("%d pages shared\n", shared);
+-	printk ("%d pages swap cached\n", cached);
 -}
 -
- void mmu_info(struct seq_file *m)
- {
- 	if (tlb_type == cheetah)
+ /*
+  * paging_init() sets up the page tables
+  *
 -- 
 1.5.2.2
 
