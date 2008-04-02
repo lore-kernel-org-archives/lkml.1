@@ -1,66 +1,150 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763483AbYDBVyX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765363AbYDBVyl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763483AbYDBVyX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 17:54:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764233AbYDBVsx
+	id S1765363AbYDBVyl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 17:54:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761538AbYDBVwR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 17:48:53 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:59678 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761799AbYDBVsw (ORCPT
+	Wed, 2 Apr 2008 17:52:17 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:36026 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762160AbYDBVwO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 17:48:52 -0400
-Date: Wed, 2 Apr 2008 22:48:24 +0100
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: akpm@linux-foundation.org, dave@linux.vnet.ibm.com, ezk@cs.sunysb.edu,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [patch 01/10] vfs: add path_create() and path_mknod()
-Message-ID: <20080402214824.GP9785@ZenIV.linux.org.uk>
-References: <20080402201247.358430231@szeredi.hu> <20080402201321.062856131@szeredi.hu> <20080402205450.GO9785@ZenIV.linux.org.uk> <E1JhAF9-0007Zx-Rq@pomaz-ex.szeredi.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <E1JhAF9-0007Zx-Rq@pomaz-ex.szeredi.hu>
-User-Agent: Mutt/1.4.2.3i
+	Wed, 2 Apr 2008 17:52:14 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Date: Wed, 2 Apr 2008 23:52:04 +0200 (CEST)
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: What's in linux1394-2.6.git?
+To: linux-kernel@vger.kernel.org
+cc: linux1394-devel@lists.sourceforge.net
+Message-ID: <tkrat.2c2b24ae6675e749@s5r6.in-berlin.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; CHARSET=us-ascii
+Content-Disposition: INLINE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 02, 2008 at 11:11:39PM +0200, Miklos Szeredi wrote:
+Well, nothing big.  First of all, what's _not_ in linux1394-2.6.git:  DV
+reception is still broken in drivers/firewire/ on OHCI 1.0 variants of
+VIA VT630x.  IP over 1394 is still not ported from drivers/ieee1394/ to
+drivers/firewire/.  Both issues are held up by of lack of manpower.
 
-> It is an interface with at least 3 callers at the moment: syscalls,
-> nfsd and ecryptfs and unionfs in the future. It is an interface
-> because all external accesses to the filesystem *are* done through the
-> namespace and not directly on filesystem internals.
-> 
-> Such direct access would be conceivable, but I don't think we should
-> base the design on theoretically possible uses.  If those uses appear,
-> we can change the interface to fit that.
-> 
-> This "move everything to callers" thing is wrong because it just
-> results in bloat and bugs, none of which is desirable in the kernel.
+These and a bunch of other miscellaneous issues with drivers/firewire/
+still keep them labeled EXPERIMENTAL for the time to come, even though
+we made some good progress with what went in for 2.6.25. Before
+distributors consider to switch from the ieee1394 subsystem to the
+firewire subsystem, they should have a good look at the ToDo and
+migration pages at wiki.linux1394.org.
 
-I disagree.  First of all, clear separation between operations on
-_filesystem_, which should all be namespace-agnostic and things
-that depend on vfsmount is a Good Thing(tm).  Think of that as
-of separation between server (superblock and everything related
-to it, starting with dentry tree) and clients; mixing those is a
-bloody bad idea.
+Now, what do we actually have for 2.6.26:
 
-What's more, I'm not at all convinced that for nfsd it's the right
-set of checks, to start with.  The same goes for future users.
+  - raw1394, video1394, dv1394:  [improvement]  These drivers are no
+    longer bound to unit directory devices. This has always been
+    unnecessary and got in the way of more specialized out-of-tree
+    drivers.
+  - firewire-core:  [fix]  Recognize changes in the configuration ROM of
+    devices while they are plugged in.
+  - firewire-ohci:  [feature]  Logging of various events can be enabled
+    at runtime by a module parameter.  This helps debugging the drivers
+    as well as devices.
+  - firewire-ohci:  [feature]  Unfiltered remote DMA can be enabled at
+    compile time via a new option in the kernel hacking menu.  This
+    enables remote debugging as with ohci1394.
+  - all:  A bunch of bug fixes which seemed to fit into .26 better than
+    into .25.  Small cleanups.
 
-As for ecryptfs, looking at their "lower_mnt" thing...  I'd say that
-it's a nonsense.  For one thing, duplicating a reference into ever
-dentry out there (and it's simply duplicated) makes no sense whatsoever.
-For another...  I'm not at all sure that remount of the underlying
-vfsmount r/o *should* take that sucker read-only.  And if it should,
-it's clearly an action that should have a visible effect on superblock
-flags of ecryptfs.
+Almost all patches have been seen on LKML (and all on linux1394-devel),
+hence I don't repost them this time.  They have all been exposed to -mm
+and to -next.  In the latter, linux1394-2.6.git is still involved in a
+trivial merge conflict due to the kernel hacking menu entry.
 
-	Incidentally, looking at ecryptfs open(), WTF is protecting
-crypt_stat->flags?  We take crypt_stat->cs_mutex, do nothing but
-check-and-modify of ->flags under it, then drop and several lines
-later do crypt_stat->flags &= ~(ECRYPTFS_ENCRYPTED); with no ->cs_mutex
-held...
+Still pending work:  My firewire-core reference counting changes had two
+comments from Kristian which I will address in an incremental update;
+perhaps I manage to do this in time for the merge.  Also, Pieter
+Palmer's iso transmit patch for the ieee1394 stack may perhaps be ready
+then.
+
+Shortlog and diffstat:
+
+Adrian Bunk (1):
+      firewire: cleanups
+
+Harvey Harrison (1):
+      ieee1394: replace remaining __FUNCTION__ occurrences
+
+Jarod Wilson (3):
+      firewire: fw-sbp2: set dual-phase cycle_limit
+      firewire: replace more hex values with defined csr constants
+      firewire: use bitwise and to get reg in handle_registers
+
+Marcin Slusarz (1):
+      ieee1394: be*_add_cpu conversion
+
+Robert P. J. Day (2):
+      ieee1394: Use shorter list_splice_init() for brevity.
+      ieee1394: Remove superfluous calls to kobject_set_name().
+
+Stefan Richter (30):
+      ieee1394: sbp2: relax SCSI DMA alignment
+      ieee1394: prevent device binding of raw1394, video1394, dv1394
+      ieee1394: ohci1394: switch on bus power after resume on PPC PMac
+      ieee1394: ohci1394: refactor probe, remove, suspend, resume
+      ieee1394: ohci1394: unroll a macro with return
+      ieee1394: ohci1394: refactor some printk format strings
+      ieee1394: ohci1394: missing PPC PMac feature calls in failure path
+      firewire: fw-sbp2: relax SCSI DMA alignment
+      firewire: remove superfluous reference counting
+      firewire: fw-sbp2: fix reference counting
+      firewire: refactor fw_unit reference counting
+      firewire: fw-sbp2: remove usages of fw_memcpy_to_be32
+      firewire: fw-sbp2: simplify some macros
+      firewire: fw-sbp2: remove unnecessary memset
+      firewire: fw-sbp2: reduce log noise
+      firewire: fw-ohci: add option for remote debugging
+      firewire: fw-ohci: switch on bus power after resume on PPC PMac
+      firewire: fw-ohci: refactor probe, remove, suspend, resume
+      firewire: replace static ROM cache by allocated cache
+      firewire: reread config ROM when device reset the bus
+      firewire: remove unused struct member
+      firewire: insist on successive self ID complete events
+      firewire: fw-ohci: add self ID error check
+      firewire: fw-ohci: catch self_id_count == 0
+      firewire: debug interrupt events
+      firewire: fw-ohci: untangle a mixed unsigned/signed expression
+      firewire: wait until PHY configuration packet was transmitted (fix bus reset loop)
+      firewire: fw-ohci: missing PPC PMac feature calls in failure path
+      firewire: unnecessary BM delay after generation rollover
+      firewire: fix synchronization of gap counts
+
+ Documentation/debugging-via-ohci1394.txt |   13 +-
+ drivers/firewire/Kconfig                 |    5 +
+ drivers/firewire/fw-card.c               |   52 +---
+ drivers/firewire/fw-cdev.c               |   13 +-
+ drivers/firewire/fw-device.c             |  263 +++++++++++++++----
+ drivers/firewire/fw-device.h             |   38 ++-
+ drivers/firewire/fw-iso.c                |    5 -
+ drivers/firewire/fw-ohci.c               |  321 +++++++++++++++++-----
+ drivers/firewire/fw-ohci.h               |    1 +
+ drivers/firewire/fw-sbp2.c               |  150 +++++------
+ drivers/firewire/fw-topology.c           |   22 ++-
+ drivers/firewire/fw-topology.h           |   11 +-
+ drivers/firewire/fw-transaction.c        |   75 +++---
+ drivers/firewire/fw-transaction.h        |   17 +-
+ drivers/ieee1394/csr.c                   |    6 +-
+ drivers/ieee1394/dv1394.c                |    4 +-
+ drivers/ieee1394/highlevel.c             |    6 +-
+ drivers/ieee1394/ieee1394_core.c         |    2 +-
+ drivers/ieee1394/nodemgr.c               |    6 +-
+ drivers/ieee1394/ohci1394.c              |  229 ++++++++--------
+ drivers/ieee1394/pcilynx.c               |   15 +-
+ drivers/ieee1394/raw1394.c               |    2 -
+ drivers/ieee1394/sbp2.c                  |   11 +-
+ drivers/ieee1394/video1394.c             |    4 +-
+ lib/Kconfig.debug                        |   10 +
+ 25 files changed, 820 insertions(+), 461 deletions(-)
+
+-- 
+Stefan Richter
+-=====-==--- -=-- ---=-
+http://arcgraph.de/sr/
+
