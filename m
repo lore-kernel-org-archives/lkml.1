@@ -1,54 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762216AbYDBUzt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761035AbYDBVBV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762216AbYDBUzt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 16:55:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761945AbYDBUzX
+	id S1761035AbYDBVBV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 17:01:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758083AbYDBVBI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 16:55:23 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:56435 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1761417AbYDBUzV (ORCPT
+	Wed, 2 Apr 2008 17:01:08 -0400
+Received: from e32.co.us.ibm.com ([32.97.110.150]:44624 "EHLO
+	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756392AbYDBVBG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 16:55:21 -0400
-Date: Wed, 2 Apr 2008 16:55:20 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: David Brownell <david-b@pacbell.net>
-cc: Mark Lord <lkml@rtr.ca>, <pavel@suse.cz>, <oliver@neukum.org>,
-       <linux-usb@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
-       <jikos@suse.cz>, <gregkh@suse.de>, <akpm@linux-foundation.org>
-Subject: Re: [PATCH] usb ehci_iaa_watchdog fix
-In-Reply-To: <200804021331.09991.david-b@pacbell.net>
-Message-ID: <Pine.LNX.4.44L0.0804021639290.2107-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 2 Apr 2008 17:01:06 -0400
+Subject: Re: [patch 01/10] vfs: add path_create() and path_mknod()
+From: Dave Hansen <dave@linux.vnet.ibm.com>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: viro@zeniv.linux.org.uk, akpm@linux-foundation.org, ezk@cs.sunysb.edu,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20080402201321.062856131@szeredi.hu>
+References: <20080402201247.358430231@szeredi.hu>
+	 <20080402201321.062856131@szeredi.hu>
+Content-Type: text/plain
+Date: Wed, 02 Apr 2008 14:00:58 -0700
+Message-Id: <1207170058.23710.38.camel@nimitz.home.sr71.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2 Apr 2008, David Brownell wrote:
+On Wed, 2008-04-02 at 22:12 +0200, Miklos Szeredi wrote:
+> This series is a cleanup, as well as fixing several places (mostly in
+> nfsd) where mnt_{want,drop}_write() were missing.
 
-> Those hcd->state tests have been getting more and more
-> dodgey as time goes by.  At this point I hardly trust
-> any of them.  There *IS* no clear state machine which
-> governs the usbcore/HCD interaction.
+Could you elaborate on these?
 
-ISTR trying to make that same point a few times over the past two or 
-three years...  :-)
-
-It would make more sense for each HCD to keep its own private "state" 
-variable.  The interaction with usbcore can be broken down into a few 
-simple tests, such as:
-
-	Is the HC dead?
-	Is the HC (i.e., the PCI or platform device) suspended?
-	Is the HC running?
-	Is it okay to submit an URB?
-
-There's plenty of redundancy in this list, and some of the information
-may already be available in hcd->self.root_hub->state.  In many or most
-cases, these questions can't be answered in a race-free manner anyhow, 
-which limits their usefulness.
-
-Alan Stern
+-- Dave
 
