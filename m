@@ -1,48 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762834AbYDBV5k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763108AbYDBV6B@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762834AbYDBV5k (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 17:57:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754899AbYDBV52
+	id S1763108AbYDBV6B (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 17:58:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759594AbYDBV5c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 17:57:28 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:37599 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753812AbYDBV51 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 17:57:27 -0400
-Date: Wed, 2 Apr 2008 14:54:52 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Andrea Arcangeli <andrea@qumranet.com>
-cc: Hugh Dickins <hugh@veritas.com>, Robin Holt <holt@sgi.com>,
-       Avi Kivity <avi@qumranet.com>, Izik Eidus <izike@qumranet.com>,
-       kvm-devel@lists.sourceforge.net,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, general@lists.openfabrics.org,
-       Steve Wise <swise@opengridcomputing.com>,
-       Roland Dreier <rdreier@cisco.com>, Kanoj Sarcar <kanojsarcar@yahoo.com>,
-       steiner@sgi.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       daniel.blueman@quadrics.com, Nick Piggin <npiggin@suse.de>
-Subject: Re: [patch 1/9] EMM Notifier: The notifier calls
-In-Reply-To: <20080402215334.GT19189@duo.random>
-Message-ID: <Pine.LNX.4.64.0804021453350.31247@schroedinger.engr.sgi.com>
-References: <20080401205531.986291575@sgi.com> <20080401205635.793766935@sgi.com>
- <20080402064952.GF19189@duo.random> <Pine.LNX.4.64.0804021048460.27214@schroedinger.engr.sgi.com>
- <20080402215334.GT19189@duo.random>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 2 Apr 2008 17:57:32 -0400
+Received: from relay2.sgi.com ([192.48.171.30]:53210 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1759114AbYDBV5b (ORCPT
+	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
+	Wed, 2 Apr 2008 17:57:31 -0400
+Date: Thu, 3 Apr 2008 07:57:20 +1000
+From: David Chinner <dgc@sgi.com>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: David Chinner <dgc@sgi.com>, xfs-masters@oss.sgi.com,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: xfs_io "BUG: lock held when returning to user space!" on suspend
+Message-ID: <20080402215720.GI103491721@sgi.com>
+References: <47F3D76E.1070400@goop.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <47F3D76E.1070400@goop.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2 Apr 2008, Andrea Arcangeli wrote:
-
-> > Hmmm... Okay that is one solution that would just require a BUG_ON in the 
-> > registration methods.
+On Wed, Apr 02, 2008 at 11:58:54AM -0700, Jeremy Fitzhardinge wrote:
+> I'm getting this:
 > 
-> Perhaps you didn't notice that this solution can't work if you call
-> range_begin/end not in the "current" context and try_to_unmap_cluster
-> does exactly that for both my patchset and yours. Missing an _end is
-> ok, missing a _begin is never ok.
+> ================================================
+> [ BUG: lock held when returning to user space! ]
+> ------------------------------------------------
+> xfs_io/18796 is leaving the kernel with locks still held!
+> 1 lock held by xfs_io/18796:
+> #0:  (&type->s_umount_key#19){----}, at: [<c048c9ac>] get_super+0x42/0x87
+> 
+> when I suspend, possibly during an xfs-freeze.  There don't seem to be any 
+> ill-effects.
 
-If you look at the patch you will see a requirement of holding a 
-writelock on mmap_sem which will keep out get_user_pages().
+Yup, both the sb->s_umount and bdev->bd_mount_sem seaphores are held
+across freeze_bdev()/thaw_bdev(), and they are issued via separate
+ioctls generally from separate processes. Not great design, but not
+a bug....
+
+Cheers,
+
+Dave.
+-- 
+Dave Chinner
+Principal Engineer
+SGI Australian Software Group
