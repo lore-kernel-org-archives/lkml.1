@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761857AbYDBVqf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763652AbYDBVqs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761857AbYDBVqf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 17:46:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762910AbYDBVnw
+	id S1763652AbYDBVqs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 17:46:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760343AbYDBVoF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 17:43:52 -0400
-Received: from saeurebad.de ([85.214.36.134]:60154 "EHLO saeurebad.de"
+	Wed, 2 Apr 2008 17:44:05 -0400
+Received: from saeurebad.de ([85.214.36.134]:60176 "EHLO saeurebad.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762906AbYDBVnv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 17:43:51 -0400
+	id S1762980AbYDBVoE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Apr 2008 17:44:04 -0400
 From: Johannes Weiner <hannes@saeurebad.de>
 To: linux-kernel@vger.kernel.org
 Cc: linux-mm@kvack.org, mingo@elte.hu, davem@davemloft.net,
@@ -18,9 +18,9 @@ Cc: linux-mm@kvack.org, mingo@elte.hu, davem@davemloft.net,
        paulus@samba.org, schwidefsky@de.ibm.com, lethal@linux-sh.org,
        jdike@addtoit.com, miles@gnu.org, chris@zankel.net,
        rmk@arm.linux.org.uk, tony.luck@intel.com
-Subject: [RFC 11/22] m68knommu: Use generic show_mem()
-Date: Wed,  2 Apr 2008 22:40:17 +0200
-Message-Id: <12071689522793-git-send-email-hannes@saeurebad.de>
+Subject: [RFC 12/22] mips: Use generic show_mem()
+Date: Wed,  2 Apr 2008 22:40:18 +0200
+Message-Id: <12071689633380-git-send-email-hannes@saeurebad.de>
 X-Mailer: git-send-email 1.5.2.2
 In-Reply-To: <12071688283927-git-send-email-hannes@saeurebad.de>
 References: <12071688283927-git-send-email-hannes@saeurebad.de>
@@ -32,63 +32,77 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Johannes Weiner <hannes@saeurebad.de>
 
-diff --git a/arch/m68knommu/Kconfig b/arch/m68knommu/Kconfig
-index 7e921a3..07eb4c4 100644
---- a/arch/m68knommu/Kconfig
-+++ b/arch/m68knommu/Kconfig
-@@ -671,9 +671,6 @@ config ROMKERNEL
- 
- endchoice
+diff --git a/arch/mips/Kconfig b/arch/mips/Kconfig
+index 7c5a3c2..8724ed3 100644
+--- a/arch/mips/Kconfig
++++ b/arch/mips/Kconfig
+@@ -1736,9 +1736,6 @@ config NODES_SHIFT
+ 	default "6"
+ 	depends on NEED_MULTIPLE_NODES
  
 -config HAVE_ARCH_SHOW_MEM
 -	def_bool y
 -
  source "mm/Kconfig"
  
- endmenu
-diff --git a/arch/m68knommu/mm/init.c b/arch/m68knommu/mm/init.c
-index 22e2a0d..345a92a 100644
---- a/arch/m68knommu/mm/init.c
-+++ b/arch/m68knommu/mm/init.c
-@@ -62,33 +62,6 @@ static unsigned long empty_bad_page;
+ config SMP
+diff --git a/arch/mips/mm/Makefile b/arch/mips/mm/Makefile
+index c6f832e..4796b35 100644
+--- a/arch/mips/mm/Makefile
++++ b/arch/mips/mm/Makefile
+@@ -3,8 +3,7 @@
+ #
  
- unsigned long empty_zero_page;
+ obj-y				+= cache.o dma-default.o extable.o fault.o \
+-				   init.o pgtable.o tlbex.o tlbex-fault.o \
+-				   uasm.o
++				   init.o tlbex.o tlbex-fault.o uasm.o
  
+ obj-$(CONFIG_32BIT)		+= ioremap.o pgtable-32.o
+ obj-$(CONFIG_64BIT)		+= pgtable-64.o
+diff --git a/arch/mips/mm/pgtable.c b/arch/mips/mm/pgtable.c
+deleted file mode 100644
+index 57df1c3..0000000
+--- a/arch/mips/mm/pgtable.c
++++ /dev/null
+@@ -1,37 +0,0 @@
+-#include <linux/kernel.h>
+-#include <linux/mm.h>
+-#include <linux/swap.h>
+-
 -void show_mem(void)
 -{
--    unsigned long i;
--    int free = 0, total = 0, reserved = 0, shared = 0;
--    int cached = 0;
+-#ifndef CONFIG_NEED_MULTIPLE_NODES  /* XXX(hch): later.. */
+-	int pfn, total = 0, reserved = 0;
+-	int shared = 0, cached = 0;
+-	int highmem = 0;
+-	struct page *page;
 -
--    printk(KERN_INFO "\nMem-info:\n");
--    show_free_areas();
--    i = max_mapnr;
--    while (i-- > 0) {
--	total++;
--	if (PageReserved(mem_map+i))
--	    reserved++;
--	else if (PageSwapCache(mem_map+i))
--	    cached++;
--	else if (!page_count(mem_map+i))
--	    free++;
--	else
--	    shared += page_count(mem_map+i) - 1;
--    }
--    printk(KERN_INFO "%d pages of RAM\n",total);
--    printk(KERN_INFO "%d free pages\n",free);
--    printk(KERN_INFO "%d reserved pages\n",reserved);
--    printk(KERN_INFO "%d pages shared\n",shared);
--    printk(KERN_INFO "%d pages swap cached\n",cached);
+-	printk("Mem-info:\n");
+-	show_free_areas();
+-	printk("Free swap:       %6ldkB\n", nr_swap_pages<<(PAGE_SHIFT-10));
+-	pfn = max_mapnr;
+-	while (pfn-- > 0) {
+-		if (!pfn_valid(pfn))
+-			continue;
+-		page = pfn_to_page(pfn);
+-		total++;
+-		if (PageHighMem(page))
+-			highmem++;
+-		if (PageReserved(page))
+-			reserved++;
+-		else if (PageSwapCache(page))
+-			cached++;
+-		else if (page_count(page))
+-			shared += page_count(page) - 1;
+-	}
+-	printk("%d pages of RAM\n", total);
+-	printk("%d pages of HIGHMEM\n", highmem);
+-	printk("%d reserved pages\n", reserved);
+-	printk("%d pages shared\n", shared);
+-	printk("%d pages swap cached\n", cached);
+-#endif
 -}
--
- extern unsigned long memory_start;
- extern unsigned long memory_end;
- 
-@@ -223,4 +196,3 @@ free_initmem()
- 			(int)(addr - PAGE_SIZE));
- #endif
- }
--
 -- 
 1.5.2.2
 
