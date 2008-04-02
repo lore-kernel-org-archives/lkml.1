@@ -1,77 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757034AbYDBOWW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757337AbYDBOXR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757034AbYDBOWW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 10:22:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754677AbYDBOWO
+	id S1757337AbYDBOXR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 10:23:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754310AbYDBOXF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 10:22:14 -0400
-Received: from smtp-out003.kontent.com ([81.88.40.217]:52324 "EHLO
-	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753812AbYDBOWN convert rfc822-to-8bit (ORCPT
+	Wed, 2 Apr 2008 10:23:05 -0400
+Received: from lazybastard.de ([212.112.238.170]:51872 "EHLO
+	longford.logfs.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753073AbYDBOXE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 10:22:13 -0400
-From: Oliver Neukum <oliver@neukum.org>
-Organization: Novell
-To: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [RFC][PATCH] PM: Introduce new top level suspend and hibernation callbacks (rev. 6)
-Date: Wed, 2 Apr 2008 16:22:03 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Nigel Cunningham <ncunningham@crca.org.au>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Greg KH <greg@kroah.com>, Len Brown <lenb@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Alexey Starikovskiy <astarikovskiy@suse.de>,
-       David Brownell <david-b@pacbell.net>, Pavel Machek <pavel@ucw.cz>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>
-References: <Pine.LNX.4.44L0.0804021007060.14858-100000@iolanthe.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0804021007060.14858-100000@iolanthe.rowland.org>
+	Wed, 2 Apr 2008 10:23:04 -0400
+Date: Wed, 2 Apr 2008 16:22:45 +0200
+From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
+To: Tomasz Chmielewski <mangoo@wpkg.org>
+Cc: Artem Bityutskiy <dedekind@yandex.ru>, LKML <linux-kernel@vger.kernel.org>,
+       penberg@cs.helsinki.fi, ext-adrian.hunter@nokia.com, jwboyer@gmail.com,
+       w@1wt.eu, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: UBIFS vs Logfs (was [RFC PATCH] UBIFS - new flash file system)
+Message-ID: <20080402142245.GA18017@logfs.org>
+References: <47F1EC20.6050600@wpkg.org> <47F1F644.4060000@yandex.ru> <47F202D9.20405@wpkg.org> <47F2071A.6010406@yandex.ru> <47F39575.40006@wpkg.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Message-Id: <200804021622.04461.oliver@neukum.org>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <47F39575.40006@wpkg.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Mittwoch, 2. April 2008 16:11:14 schrieb Alan Stern:
-> > However, I'd like to add a recommendation that the _new_ "resume" callbacks
-> > should only return errors in critical situations as the indication to the PM
-> > core that something went _really_ wrong and the device in question is quite
-> > surely unusable.
+On Wed, 2 April 2008 16:17:25 +0200, Tomasz Chmielewski wrote:
 > 
-> Agreed.  The most important aspect is that drivers should _not_ return
-> an error if the device is working correctly.  We should fix the drivers 
-> which make this mistake.
+> [1] Well, it didn't die, really. Once I removed the file which was 
+> showing I/O errors and did "dd if=/dev/zero of=bigfile", there are no 
+> badblocks anymore - probably remapped.
 
-We need to do something about devices that don't want to be resumed.
-There's code like this:
+Could have been soft errors.  Heaven knows how those devices report
+uncorrectable errors, but claiming the block to be bad is a good guess.
+Once blocks with uncorrectable errors are rewritten (the physical
+blocks, not what the device reports), they are perfectly usable again.
 
+JÃ¶rn
 
-static int usb_resume(struct device *dev)
-{
-	struct usb_device	*udev;
-
-	if (!is_usb_device(dev))	/* Ignore PM for interfaces */
-		return 0;
-	udev = to_usb_device(dev);
-
-	/* If udev->skip_sys_resume is set then udev was already suspended
-	 * when the system suspend started, so we don't want to resume
-	 * udev during this system wakeup.  However a reset-resume counts
-	 * as a wakeup event, so allow a reset-resume to occur if remote
-	 * wakeup is enabled. */
-	if (udev->skip_sys_resume) {
-		if (!(udev->reset_resume && udev->do_remote_wakeup))
-			return -EHOSTUNREACH;
-	}
-	return usb_external_resume_device(udev);
-}
-
-Do we want to keep this in the subsystems?
-
-	Regards
-		Oliver
+-- 
+They laughed at Galileo.  They laughed at Copernicus.  They laughed at
+Columbus. But remember, they also laughed at Bozo the Clown.
+-- unknown
