@@ -1,22 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764938AbYDBUbs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765017AbYDBUcI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764938AbYDBUbs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 16:31:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761809AbYDBURy
+	id S1765017AbYDBUcI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 16:32:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761830AbYDBUR5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 16:17:54 -0400
-Received: from ns2.suse.de ([195.135.220.15]:33143 "EHLO mx2.suse.de"
+	Wed, 2 Apr 2008 16:17:57 -0400
+Received: from ns.suse.de ([195.135.220.2]:36906 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761776AbYDBURx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 16:17:53 -0400
+	id S1761804AbYDBURz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Apr 2008 16:17:55 -0400
 From: Mark Fasheh <mfasheh@suse.com>
 To: linux-kernel@vger.kernel.org
-Cc: ocfs2-devel@oss.oracle.com, Joel Becker <joel.becker@oracle.com>
-Subject: [PATCH 36/62] ocfs2: Document /sys/fs/ocfs2
-Date: Wed,  2 Apr 2008 13:14:46 -0700
-Message-Id: <1207167392537-git-send-email-mfasheh@suse.com>
+Cc: ocfs2-devel@oss.oracle.com, Joel Becker <joel.becker@oracle.com>,
+       Sunil Mushran <sunil.mushran@oracle.com>
+Subject: [PATCH 37/62] ocfs2/dlm: Rename slabcache dlm_mle_cache to o2dlm_mle
+Date: Wed,  2 Apr 2008 13:14:47 -0700
+Message-Id: <12071673941659-git-send-email-mfasheh@suse.com>
 X-Mailer: git-send-email 1.5.2.4
-In-Reply-To: <1207167390414-git-send-email-mfasheh@suse.com>
+In-Reply-To: <1207167392537-git-send-email-mfasheh@suse.com>
 References: <12071673121124-git-send-email-mfasheh@suse.com>
  <1207167318479-git-send-email-mfasheh@suse.com>
  <12071673203909-git-send-email-mfasheh@suse.com>
@@ -53,121 +54,52 @@ References: <12071673121124-git-send-email-mfasheh@suse.com>
  <12071673872568-git-send-email-mfasheh@suse.com>
  <12071673882492-git-send-email-mfasheh@suse.com>
  <1207167390414-git-send-email-mfasheh@suse.com>
+ <1207167392537-git-send-email-mfasheh@suse.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Joel Becker <joel.becker@oracle.com>
+From: Sunil Mushran <sunil.mushran@oracle.com>
 
-Add ABI documentation for these files:
+This patch renames dlm_mle_slabcache to prevent namespace clashes with fs/dlm.
 
-	/sys/fs/ocfs2/max_locking_protocol
-	/sys/fs/ocfs2/loaded_cluster_plugins
-	/sys/fs/ocfs2/active_cluster_plugin
-	/sys/fs/ocfs2/cluster_stack
-
+Signed-off-by: Sunil Mushran <sunil.mushran@oracle.com>
 Signed-off-by: Joel Becker <joel.becker@oracle.com>
 Signed-off-by: Mark Fasheh <mfasheh@suse.com>
 ---
- Documentation/ABI/testing/sysfs-ocfs2 |   89 +++++++++++++++++++++++++++++++++
- 1 files changed, 89 insertions(+), 0 deletions(-)
- create mode 100644 Documentation/ABI/testing/sysfs-ocfs2
+ fs/ocfs2/dlm/dlmdomain.c |    4 +++-
+ fs/ocfs2/dlm/dlmmaster.c |    2 +-
+ 2 files changed, 4 insertions(+), 2 deletions(-)
 
-diff --git a/Documentation/ABI/testing/sysfs-ocfs2 b/Documentation/ABI/testing/sysfs-ocfs2
-new file mode 100644
-index 0000000..b7cc516
---- /dev/null
-+++ b/Documentation/ABI/testing/sysfs-ocfs2
-@@ -0,0 +1,89 @@
-+What:		/sys/fs/ocfs2/
-+Date:		April 2008
-+Contact:	ocfs2-devel@oss.oracle.com
-+Description:
-+		The /sys/fs/ocfs2 directory contains knobs used by the
-+		ocfs2-tools to interact with the filesystem.
-+
-+What:		/sys/fs/ocfs2/max_locking_protocol
-+Date:		April 2008
-+Contact:	ocfs2-devel@oss.oracle.com
-+Description:
-+		The /sys/fs/ocfs2/max_locking_protocol file displays version
-+		of ocfs2 locking supported by the filesystem.  This version
-+		covers how ocfs2 uses distributed locking between cluster
-+		nodes.
-+
-+		The protocol version has a major and minor number.  Two
-+		cluster nodes can interoperate if they have an identical
-+		major number and an overlapping minor number - thus,
-+		a node with version 1.10 can interoperate with a node
-+		sporting version 1.8, as long as both use the 1.8 protocol.
-+
-+		Reading from this file returns a single line, the major
-+		number and minor number joined by a period, eg "1.10".
-+
-+		This file is read-only.  The value is compiled into the
-+		driver.
-+
-+What:		/sys/fs/ocfs2/loaded_cluster_plugins
-+Date:		April 2008
-+Contact:	ocfs2-devel@oss.oracle.com
-+Description:
-+		The /sys/fs/ocfs2/loaded_cluster_plugins file describes
-+		the available plugins to support ocfs2 cluster operation.
-+		A cluster plugin is required to use ocfs2 in a cluster.
-+		There are currently two available plugins:
-+
-+		* 'o2cb' - The classic o2cb cluster stack that ocfs2 has
-+			used since its inception.
-+		* 'user' - A plugin supporting userspace cluster software
-+			in conjunction with fs/dlm.
-+
-+		Reading from this file returns the names of all loaded
-+		plugins, one per line.
-+
-+		This file is read-only.  Its contents may change as
-+		plugins are loaded or removed.
-+
-+What:		/sys/fs/ocfs2/active_cluster_plugin
-+Date:		April 2008
-+Contact:	ocfs2-devel@oss.oracle.com
-+Description:
-+		The /sys/fs/ocfs2/active_cluster_plugin displays which
-+		cluster plugin is currently in use by the filesystem.
-+		The active plugin will appear in the loaded_cluster_plugins
-+		file as well.  Only one plugin can be used at a time.
-+
-+		Reading from this file returns the name of the active plugin
-+		on a single line.
-+
-+		This file is read-only.  Which plugin is active depends on
-+		the cluster stack in use.  The contents may change
-+		when all filesystems are unmounted and the cluster stack
-+		is changed.
-+
-+What:		/sys/fs/ocfs2/cluster_stack
-+Date:		April 2008
-+Contact:	ocfs2-devel@oss.oracle.com
-+Description:
-+		The /sys/fs/ocfs2/cluster_stack file contains the name
-+		of current ocfs2 cluster stack.  This value is set by
-+		userspace tools when bringing the cluster stack online.
-+
-+		Cluster stack names are 4 characters in length.
-+
-+		When the 'o2cb' cluster stack is used, the 'o2cb' cluster
-+		plugin is active.  All other cluster stacks use the 'user'
-+		cluster plugin.
-+
-+		Reading from this file returns the name of the current
-+		cluster stack on a single line.
-+
-+		Writing a new stack name to this file changes the current
-+		cluster stack unless there are mounted ocfs2 filesystems.
-+		If there are mounted filesystems, attempts to change the
-+		stack return an error.
-+
-+Users:
-+	ocfs2-tools <ocfs2-tools-devel@oss.oracle.com>
+diff --git a/fs/ocfs2/dlm/dlmdomain.c b/fs/ocfs2/dlm/dlmdomain.c
+index 0879d86..2ce6207 100644
+--- a/fs/ocfs2/dlm/dlmdomain.c
++++ b/fs/ocfs2/dlm/dlmdomain.c
+@@ -1816,8 +1816,10 @@ static int __init dlm_init(void)
+ 	dlm_print_version();
+ 
+ 	status = dlm_init_mle_cache();
+-	if (status)
++	if (status) {
++		mlog(ML_ERROR, "Could not create o2dlm_mle slabcache\n");
+ 		return -1;
++	}
+ 
+ 	status = dlm_register_net_handlers();
+ 	if (status) {
+diff --git a/fs/ocfs2/dlm/dlmmaster.c b/fs/ocfs2/dlm/dlmmaster.c
+index ea6b895..90797c5 100644
+--- a/fs/ocfs2/dlm/dlmmaster.c
++++ b/fs/ocfs2/dlm/dlmmaster.c
+@@ -507,7 +507,7 @@ static void dlm_mle_node_up(struct dlm_ctxt *dlm,
+ 
+ int dlm_init_mle_cache(void)
+ {
+-	dlm_mle_cache = kmem_cache_create("dlm_mle_cache",
++	dlm_mle_cache = kmem_cache_create("o2dlm_mle",
+ 					  sizeof(struct dlm_master_list_entry),
+ 					  0, SLAB_HWCACHE_ALIGN,
+ 					  NULL);
 -- 
 1.5.4.1
 
