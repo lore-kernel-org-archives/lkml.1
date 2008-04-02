@@ -1,117 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759363AbYDBW7V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758565AbYDBXHc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759363AbYDBW7V (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 18:59:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755787AbYDBW7N
+	id S1758565AbYDBXHc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 19:07:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756368AbYDBXHT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 18:59:13 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:39434 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755514AbYDBW7N (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 18:59:13 -0400
-Date: Wed, 2 Apr 2008 15:52:47 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: yhlu.kernel@gmail.com
-Cc: Yinghai Lu <yhlu.kernel.send@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Badari Pulavarty <pbadari@us.ibm.com>, michael@ellerman.id.au,
-       Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>, linuxppc-dev@ozlabs.org,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] mm: allocate usemap at first instead of mem_map in
- sparse_init
-Message-Id: <20080402155247.5e746be7.akpm@linux-foundation.org>
-In-Reply-To: <200804021525.48799.yhlu.kernel@gmail.com>
-References: <200804021525.48799.yhlu.kernel@gmail.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 2 Apr 2008 19:07:19 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:42460 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755720AbYDBXHS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Apr 2008 19:07:18 -0400
+Date: Wed, 2 Apr 2008 16:04:42 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Andrea Arcangeli <andrea@qumranet.com>
+cc: Hugh Dickins <hugh@veritas.com>, Robin Holt <holt@sgi.com>,
+       Avi Kivity <avi@qumranet.com>, Izik Eidus <izike@qumranet.com>,
+       kvm-devel@lists.sourceforge.net,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, general@lists.openfabrics.org,
+       Steve Wise <swise@opengridcomputing.com>,
+       Roland Dreier <rdreier@cisco.com>, Kanoj Sarcar <kanojsarcar@yahoo.com>,
+       steiner@sgi.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       daniel.blueman@quadrics.com, Nick Piggin <npiggin@suse.de>
+Subject: Re: [patch 1/9] EMM Notifier: The notifier calls
+In-Reply-To: <20080402220936.GW19189@duo.random>
+Message-ID: <Pine.LNX.4.64.0804021551500.32273@schroedinger.engr.sgi.com>
+References: <20080401205531.986291575@sgi.com> <20080401205635.793766935@sgi.com>
+ <20080402064952.GF19189@duo.random> <Pine.LNX.4.64.0804021048460.27214@schroedinger.engr.sgi.com>
+ <20080402215334.GT19189@duo.random> <Pine.LNX.4.64.0804021453350.31247@schroedinger.engr.sgi.com>
+ <20080402220936.GW19189@duo.random>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2 Apr 2008 15:25:48 -0700 Yinghai Lu <yhlu.kernel.send@gmail.com> wrote:
+On Thu, 3 Apr 2008, Andrea Arcangeli wrote:
 
-> [PATCH] mm: allocate usemap at first instead of mem_map in sparse_init
+> I said try_to_unmap_cluster, not get_user_pages.
 > 
-> on powerpc,
-> 
-> On Wed, Apr 2, 2008 at 12:22 PM, Badari Pulavarty <pbadari@us.ibm.com> wrote:
-> > 
-> > On Wed, 2008-04-02 at 18:17 +1100, Michael Ellerman wrote:
-> >  > On Wed, 2008-04-02 at 12:38 +0530, Kamalesh Babulal wrote:
-> >  > > Andrew Morton wrote:
-> >  > > > On Wed, 02 Apr 2008 11:55:36 +0530 Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
-> >  > > >
-> >  > > >> Hi Andrew,
-> >  > > >>
-> >  > > >> The 2.6.25-rc8-mm1 kernel panic's while bootup on the power machine(s).
-> >  > > >>
-> >  > > >> [    0.000000] ------------[ cut here ]------------
-> >  > > >> [    0.000000] kernel BUG at arch/powerpc/mm/init_64.c:240!
-> >  > > >> [    0.000000] Oops: Exception in kernel mode, sig: 5 [#1]
-> >  > > >> [    0.000000] SMP NR_CPUS=32 NUMA PowerMac
-> >  > > >> [    0.000000] Modules linked in:
-> >  > > >> [    0.000000] NIP: c0000000003d1dcc LR: c0000000003d1dc4 CTR: c00000000002b6ac
-> >  > > >> [    0.000000] REGS: c00000000049b960 TRAP: 0700   Not tainted  (2.6.25-rc8-mm1-autokern1)
-> >  > > >> [    0.000000] MSR: 9000000000021032 <ME,IR,DR>  CR: 44000088  XER: 20000000
-> >  > > >> [    0.000000] TASK = c0000000003f9c90[0] 'swapper' THREAD: c000000000498000 CPU: 0
-> >  > > >> [    0.000000] GPR00: c0000000003d1dc4 c00000000049bbe0 c0000000004989d0 0000000000000001
-> >  > > >> [    0.000000] GPR04: d59aca40f0000000 000000000b000000 0000000000000010 0000000000000000
-> >  > > >> [    0.000000] GPR08: 0000000000000004 0000000000000001 c00000027e520800 c0000000004bf0f0
-> >  > > >> [    0.000000] GPR12: c0000000004bf020 c0000000003fa900 0000000000000000 0000000000000000
-> >  > > >> [    0.000000] GPR16: 0000000000000000 0000000000000000 0000000000000000 0000000000000000
-> >  > > >> [    0.000000] GPR20: 0000000000000000 0000000000000000 0000000000000000 4000000001400000
-> >  > > >> [    0.000000] GPR24: 00000000017d64b0 c0000000003d6250 0000000000000000 c000000000504000
-> >  > > >> [    0.000000] GPR28: 0000000000000000 cf000000001f8000 0000000001000000 cf00000000000000
-> >  > > >> [    0.000000] NIP [c0000000003d1dcc] .vmemmap_populate+0xb8/0xf4
-> >  > > >> [    0.000000] LR [c0000000003d1dc4] .vmemmap_populate+0xb0/0xf4
-> >  > > >> [    0.000000] Call Trace:
-> >  > > >> [    0.000000] [c00000000049bbe0] [c0000000003d1dc4] .vmemmap_populate+0xb0/0xf4 (unreliable)
-> >  > > >> [    0.000000] [c00000000049bc70] [c0000000003d2ee8] .sparse_mem_map_populate+0x38/0x60
-> >  > > >> [    0.000000] [c00000000049bd00] [c0000000003c242c] .sparse_early_mem_map_alloc+0x54/0x94
-> >  > > >> [    0.000000] [c00000000049bd90] [c0000000003c250c] .sparse_init+0xa0/0x20c
-> >  > > >> [    0.000000] [c00000000049be50] [c0000000003ab7d0] .setup_arch+0x1ac/0x218
-> >  > > >> [    0.000000] [c00000000049bee0] [c0000000003a36ac] .start_kernel+0xe0/0x3fc
-> >  > > >> [    0.000000] [c00000000049bf90] [c000000000008594] .start_here_common+0x54/0xc0
-> >  > > >> [    0.000000] Instruction dump:
-> >  > > >> [    0.000000] 7fe3fb78 7ca02a14 4082000c 3860fff4 4800003c e92289c8 e96289c0 e9090002
-> >  > > >> [    0.000000] e8eb0002 4bc575cd 60000000 78630fe0 <0b030000> 7ffff214 7fbfe840 7fe3fb78
-> >  > > >> [    0.000000] ---[ end trace 31fd0ba7d8756001 ]---
-> >  > > >> [    0.000000] Kernel panic - not syncing: Attempted to kill the idle task!
-> >
-> >  mm-make-mem_map-allocation-continuous.patch
-> >  and its friends in -mm.
-> >  
-> >  You have to call sparse_init_one_section() on each pmap and usemap
-> >  as we allocate - since valid_section() depends on it (which is needed
-> >  by vmemmap_populate() to check if the section is populated or not).
-> >  On ppc, we need to call htab_bolted_mapping() on each section and
-> >  we need to skip existing sections.
-> >  
-> >  These patches tried to group all allocations together and then later
-> >  calls sparse_init_one_section() - which is not good :(
-> 
-> so try to allocate usemap at first altogether.
+>   CPU0					CPU1
+>   try_to_unmap_cluster:
+>   emm_invalidate_start in EMM (or mmu_notifier_invalidate_range_start in #v10)
+>   walking the list by hand in EMM (or with hlist cleaner in #v10)
+>   xpmem method invoked
+>   schedule for a long while inside invalidate_range_start while skbs are sent
+> 					gru registers
+> 					synchronize_rcu (sorry useless now)
 
-I have to turn all the above crud into a proper changelog.  I'd prefer that
-you do it.
+All of this would be much easier if you could stop the drivel. The sync 
+rcu was for an earlier release of the mmu notifier. Why the sniping?
 
-Unless this patch should be folded into another one, in which case it
-doesn't matter.
+> 					single threaded, so taking a page fault
+>   					secondary tlb instantiated
 
-> Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
-> 
-> diff --git a/mm/sparse.c b/mm/sparse.c
-> index d3cb085..782ebe5 100644
-> --- a/mm/sparse.c
-> +++ b/mm/sparse.c
+The driver must not allow faults to occur between start and end. The 
+trouble here is that GRU and xpmem are mixed. If CPU0 would have been 
+running GRU instead of XPMEM then the fault would not have occurred 
+because the gru would have noticed that a range op is active. If both
+systems would have run xpmem then the same would have worked.
+ 
+I guess this means that an address space cannot reliably registered to 
+multiple subsystems if some of those do not take a refcount. If all 
+drivers would be required to take a refcount then this would also not 
+occur.
 
-We shouldn't merge this patch on its own because then that will leave a
-non-bisectable region in the powerpc history.
+> In general my #v10 solution mixing seqlock + rcu looks more robust and
+> allows multithreaded attachment of mmu notifers as well. I could have
 
-So which patch is this patch fixing?  Lexically it applies to
-mm-allocate-section_map-for-sparse_init.patch (and its updates).  But is
-that where it logically lies?
+Well its easy to say that if no one else has looked at it yet. I expressed 
+some concerns in reply to your post of #v10.
 
