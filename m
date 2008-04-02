@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762264AbYDBVmf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762525AbYDBVmx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762264AbYDBVmf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 17:42:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761614AbYDBVmM
+	id S1762525AbYDBVmx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 17:42:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756429AbYDBVm0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 17:42:12 -0400
-Received: from saeurebad.de ([85.214.36.134]:59900 "EHLO saeurebad.de"
+	Wed, 2 Apr 2008 17:42:26 -0400
+Received: from saeurebad.de ([85.214.36.134]:59927 "EHLO saeurebad.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757233AbYDBVmK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 17:42:10 -0400
+	id S1762111AbYDBVmX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Apr 2008 17:42:23 -0400
 From: Johannes Weiner <hannes@saeurebad.de>
 To: linux-kernel@vger.kernel.org
 Cc: linux-mm@kvack.org, mingo@elte.hu, davem@davemloft.net,
@@ -18,9 +18,9 @@ Cc: linux-mm@kvack.org, mingo@elte.hu, davem@davemloft.net,
        paulus@samba.org, schwidefsky@de.ibm.com, lethal@linux-sh.org,
        jdike@addtoit.com, miles@gnu.org, chris@zankel.net,
        rmk@arm.linux.org.uk, tony.luck@intel.com
-Subject: [RFC 02/22] x86: Use generic show_mem()
-Date: Wed,  2 Apr 2008 22:40:08 +0200
-Message-Id: <12071688511076-git-send-email-hannes@saeurebad.de>
+Subject: [RFC 03/22] sparc64: Use generic show_mem()
+Date: Wed,  2 Apr 2008 22:40:09 +0200
+Message-Id: <12071688624019-git-send-email-hannes@saeurebad.de>
 X-Mailer: git-send-email 1.5.2.2
 In-Reply-To: <12071688283927-git-send-email-hannes@saeurebad.de>
 References: <12071688283927-git-send-email-hannes@saeurebad.de>
@@ -32,101 +32,45 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Johannes Weiner <hannes@saeurebad.de>
 
-diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-index 47bb585..6c70fed 100644
---- a/arch/x86/Kconfig
-+++ b/arch/x86/Kconfig
-@@ -939,9 +939,6 @@ config ARCH_MEMORY_PROBE
- 	def_bool X86_64
- 	depends on MEMORY_HOTPLUG
+diff --git a/arch/sparc64/Kconfig b/arch/sparc64/Kconfig
+index d74b027..463d1be 100644
+--- a/arch/sparc64/Kconfig
++++ b/arch/sparc64/Kconfig
+@@ -267,9 +267,6 @@ config ARCH_SPARSEMEM_ENABLE
+ config ARCH_SPARSEMEM_DEFAULT
+ 	def_bool y
  
 -config HAVE_ARCH_SHOW_MEM
 -	def_bool y
 -
  source "mm/Kconfig"
  
- config HIGHPTE
-diff --git a/arch/x86/mm/init_64.c b/arch/x86/mm/init_64.c
-index a02a14f..82f3b6d 100644
---- a/arch/x86/mm/init_64.c
-+++ b/arch/x86/mm/init_64.c
-@@ -60,46 +60,6 @@ DEFINE_PER_CPU(struct mmu_gather, mmu_gathers);
-  * around without checking the pgd every time.
-  */
+ config ISA
+diff --git a/arch/sparc64/mm/init.c b/arch/sparc64/mm/init.c
+index f37078d..f6a86a2 100644
+--- a/arch/sparc64/mm/init.c
++++ b/arch/sparc64/mm/init.c
+@@ -391,51 +391,6 @@ void __kprobes flush_icache_range(unsigned long start, unsigned long end)
+ 	}
+ }
  
 -void show_mem(void)
 -{
--	long i, total = 0, reserved = 0;
--	long shared = 0, cached = 0;
--	struct page *page;
+-	unsigned long total = 0, reserved = 0;
+-	unsigned long shared = 0, cached = 0;
 -	pg_data_t *pgdat;
 -
 -	printk(KERN_INFO "Mem-info:\n");
 -	show_free_areas();
 -	printk(KERN_INFO "Free swap:       %6ldkB\n",
--		nr_swap_pages << (PAGE_SHIFT-10));
--
+-	       nr_swap_pages << (PAGE_SHIFT-10));
 -	for_each_online_pgdat(pgdat) {
--		for (i = 0; i < pgdat->node_spanned_pages; ++i) {
--			/*
--			 * This loop can take a while with 256 GB and
--			 * 4k pages so defer the NMI watchdog:
--			 */
--			if (unlikely(i % MAX_ORDER_NR_PAGES == 0))
--				touch_nmi_watchdog();
+-		unsigned long i, flags;
 -
--			if (!pfn_valid(pgdat->node_start_pfn + i))
--				continue;
--
--			page = pfn_to_page(pgdat->node_start_pfn + i);
--			total++;
--			if (PageReserved(page))
--				reserved++;
--			else if (PageSwapCache(page))
--				cached++;
--			else if (page_count(page))
--				shared += page_count(page) - 1;
--		}
--	}
--	printk(KERN_INFO "%lu pages of RAM\n",		total);
--	printk(KERN_INFO "%lu reserved pages\n",	reserved);
--	printk(KERN_INFO "%lu pages shared\n",		shared);
--	printk(KERN_INFO "%lu pages swap cached\n",	cached);
--}
--
- int after_bootmem;
- 
- static __init void *spp_getpage(void)
-diff --git a/arch/x86/mm/pgtable_32.c b/arch/x86/mm/pgtable_32.c
-index 2f9e9af..ead7015 100644
---- a/arch/x86/mm/pgtable_32.c
-+++ b/arch/x86/mm/pgtable_32.c
-@@ -24,54 +24,6 @@
- #include <asm/tlb.h>
- #include <asm/tlbflush.h>
- 
--void show_mem(void)
--{
--	int total = 0, reserved = 0;
--	int shared = 0, cached = 0;
--	int highmem = 0;
--	struct page *page;
--	pg_data_t *pgdat;
--	unsigned long i;
--	unsigned long flags;
--
--	printk(KERN_INFO "Mem-info:\n");
--	show_free_areas();
--	printk(KERN_INFO "Free swap:       %6ldkB\n", nr_swap_pages<<(PAGE_SHIFT-10));
--	for_each_online_pgdat(pgdat) {
 -		pgdat_resize_lock(pgdat, &flags);
--		for (i = 0; i < pgdat->node_spanned_pages; ++i) {
--			if (unlikely(i % MAX_ORDER_NR_PAGES == 0))
--				touch_nmi_watchdog();
--			page = pgdat_page_nr(pgdat, i);
+-		for (i = 0; i < pgdat->node_spanned_pages; i++) {
+-			struct page *page = pgdat_page_nr(pgdat, i);
 -			total++;
--			if (PageHighMem(page))
--				highmem++;
 -			if (PageReserved(page))
 -				reserved++;
 -			else if (PageSwapCache(page))
@@ -136,26 +80,28 @@ index 2f9e9af..ead7015 100644
 -		}
 -		pgdat_resize_unlock(pgdat, &flags);
 -	}
--	printk(KERN_INFO "%d pages of RAM\n", total);
--	printk(KERN_INFO "%d pages of HIGHMEM\n", highmem);
--	printk(KERN_INFO "%d reserved pages\n", reserved);
--	printk(KERN_INFO "%d pages shared\n", shared);
--	printk(KERN_INFO "%d pages swap cached\n", cached);
 -
--	printk(KERN_INFO "%lu pages dirty\n", global_page_state(NR_FILE_DIRTY));
+-	printk(KERN_INFO "%lu pages of RAM\n", total);
+-	printk(KERN_INFO "%lu reserved pages\n", reserved);
+-	printk(KERN_INFO "%lu pages shared\n", shared);
+-	printk(KERN_INFO "%lu pages swap cached\n", cached);
+-
+-	printk(KERN_INFO "%lu pages dirty\n",
+-	       global_page_state(NR_FILE_DIRTY));
 -	printk(KERN_INFO "%lu pages writeback\n",
--					global_page_state(NR_WRITEBACK));
--	printk(KERN_INFO "%lu pages mapped\n", global_page_state(NR_FILE_MAPPED));
+-	       global_page_state(NR_WRITEBACK));
+-	printk(KERN_INFO "%lu pages mapped\n",
+-	       global_page_state(NR_FILE_MAPPED));
 -	printk(KERN_INFO "%lu pages slab\n",
 -		global_page_state(NR_SLAB_RECLAIMABLE) +
 -		global_page_state(NR_SLAB_UNRECLAIMABLE));
 -	printk(KERN_INFO "%lu pages pagetables\n",
--					global_page_state(NR_PAGETABLE));
+-	       global_page_state(NR_PAGETABLE));
 -}
 -
- /*
-  * Associate a virtual page frame with a given physical page frame 
-  * and protection flags for that frame.
+ void mmu_info(struct seq_file *m)
+ {
+ 	if (tlb_type == cheetah)
 -- 
 1.5.2.2
 
