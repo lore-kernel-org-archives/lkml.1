@@ -1,116 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758668AbYDBRgS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757999AbYDBRgh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758668AbYDBRgS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 13:36:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754979AbYDBRgH
+	id S1757999AbYDBRgh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 13:36:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756769AbYDBRg0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 13:36:07 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:60919 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753652AbYDBRgG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 13:36:06 -0400
-Date: Wed, 2 Apr 2008 10:33:32 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Dmitri Vorobiev <dmitri.vorobiev@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.25-rc8-mm1 (mips build failure)
-In-Reply-To: <20080401230322.331c50f4.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0804021031480.26938@schroedinger.engr.sgi.com>
-References: <20080401213214.8fbb6d6b.akpm@linux-foundation.org>
- <47F31C46.9000503@gmail.com> <20080401230322.331c50f4.akpm@linux-foundation.org>
+	Wed, 2 Apr 2008 13:36:26 -0400
+Received: from wf-out-1314.google.com ([209.85.200.174]:11954 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756739AbYDBRg0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Apr 2008 13:36:26 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=from:organization:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=Nl8TGwPYhrWElOUrOafPTKEbLp7P8wDfhRKKTPyA1TCHDn3t3fBri+SCAxiIpO5uVxglPdSC9AED4tUJ5cc6Xwd1opbIa6xT8kVHErLkvu0Cp7JJHVtGtyK5gVzfrEGyYdG0gyUKDj5vUVr+oinBlNz49rJ1DXuOLa94bVH7Ey8=
+From: Balaji Rao <balajirrao@gmail.com>
+Organization: National Institute of Technology, Karnataka
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Subject: Re: 2.6.25-rc5.git4 regression PS/2 mouse not detected/working
+Date: Wed, 2 Apr 2008 23:00:13 +0530
+User-Agent: KMail/1.9.6 (enterprise 0.20071012.724442)
+Cc: Yanko Kaneti <yaneti@declera.com>, linux-input@vger.kernel.org,
+       linux-kernel@vger.kernel.org, mingo@elte.hu,
+       Thomas Gleixner <tglx@linutronix.de>
+References: <1205775229.25146.11.camel@indigo.declera.com> <200804022038.33245.balajirrao@gmail.com> <20080402113043.ZZRA012@mailhub.coreip.homeip.net>
+In-Reply-To: <20080402113043.ZZRA012@mailhub.coreip.homeip.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200804022300.14164.balajirrao@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 1 Apr 2008, Andrew Morton wrote:
-
-> On Wed, 02 Apr 2008 09:40:22 +0400 Dmitri Vorobiev <dmitri.vorobiev@gmail.com> wrote:
+On Wednesday 02 April 2008 09:03:28 pm Dmitry Torokhov wrote:
+> Hi Blaji,
 > 
-> > Hi Andrew,
+> On Wed, Apr 02, 2008 at 08:38:33PM +0530, Balaji Rao wrote:
 > > 
-> > MIPS build fails with the following:
+> > Coincidentally even I hit upon this bug a couple of days ago after enabling 
+> > HPET in my BIOS. A quick check told me that IRQ 12 which the patch assigns to 
+> > the HPET device is used by the PS/2 mouse as well. This makes the mouse 
+> > inactive.
 > > 
-> > $ make ARCH=mips CROSS_COMPILE=mips-unknown-linux-gnu-
-> > ...
-> > [skipped]
-> > ...
-> >   CC      arch/mips/mips-boards/generic/init.o
-> > In file included from include/asm/cacheflush.h:13,
-> >                  from arch/mips/mips-boards/generic/init.c:30:
-> > include/linux/mm.h:411:63: "NR_PAGEFLAGS" is not defined
-> > include/linux/mm.h:459:62: "NR_PAGEFLAGS" is not defined
-> > make[1]: *** [arch/mips/mips-boards/generic/init.o] Error 1
-> > make: *** [arch/mips/mips-boards/generic] Error 2
+> > I am working on this.. I am not sure if the PS/2 code is misbehaving though..
+> >
 > 
-> ahh, yup, known problem, sorry.  We are slowly working on a fix.
+> Normally IRQ12 can not be shared on X86 if PS/2 mouse is present.
+> If PCI side tries to grab the IRQ then ISA (legacy) side will never
+> see its interrupts coming.
+> 
+OK. So, I need to specifically check for IRQ12 being assigned and avoid it ?
 
-This the fix that I posted a couple of days ago after Andrew noted the 
-problem:
-
-
-
-
-From: Christoph Lameter <clameter@sgi.com>
-Subject: Allow override of definition for asm constant
-
-MIPS has a different way of defining asm constants which causes troubles
-for bounds.h generation (see also the Kbuild script).
-
-Add a new per arch CONFIG variable
-
-	CONFIG_ASM_SYMBOL_PREFIX
-
-which can be set to define an alternate header for asm constant definitions.
-Use this for MIPS to make bounds determination work right.
-
-Signed-off-by: Christoph Lameter <clameter@sgi.com>
-
----
- arch/mips/Kconfig |    7 +++++++
- kernel/bounds.c   |   11 ++++++++++-
- 2 files changed, 17 insertions(+), 1 deletion(-)
-
-Index: linux-2.6.25-rc5-mm1/arch/mips/Kconfig
-===================================================================
---- linux-2.6.25-rc5-mm1.orig/arch/mips/Kconfig	2008-03-31 13:14:26.888383587 -0700
-+++ linux-2.6.25-rc5-mm1/arch/mips/Kconfig	2008-03-31 13:14:28.028403612 -0700
-@@ -2019,6 +2019,13 @@ config I8253
- config ZONE_DMA32
- 	bool
- 
-+#
-+# Used to override gas symbol setup in kernel/bounds.c.
-+#
-+config ASM_SYMBOL_PREFIX
-+	string
-+	default "@@@#define "
-+
- source "drivers/pcmcia/Kconfig"
- 
- source "drivers/pci/hotplug/Kconfig"
-Index: linux-2.6.25-rc5-mm1/kernel/bounds.c
-===================================================================
---- linux-2.6.25-rc5-mm1.orig/kernel/bounds.c	2008-03-31 13:14:26.904383870 -0700
-+++ linux-2.6.25-rc5-mm1/kernel/bounds.c	2008-03-31 13:14:28.028403612 -0700
-@@ -9,8 +9,17 @@
- #include <linux/page-flags.h>
- #include <linux/mmzone.h>
- 
-+#ifdef CONFIG_ASM_SYMBOL_PREFIX
-+#define PREFIX CONFIG_ASM_SYMBOL_PREFIX
-+#else
-+/*
-+ * Standard gas way of defining an asm symbol
-+ */
-+#define PREFIX "->"
-+#endif
-+
- #define DEFINE(sym, val) \
--	asm volatile("\n->" #sym " %0 " #val : : "i" (val))
-+	asm volatile("\n" PREFIX #sym " %0 " : : "i" (val))
- 
- #define BLANK() asm volatile("\n->" : :)
- 
+-- 
+regards,
+balaji rao
+Dept. of Mechanical Engineering,
+National Institute of Technology Karnataka, India
