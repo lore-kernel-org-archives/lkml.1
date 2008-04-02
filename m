@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762697AbYDBUUv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762766AbYDBUVT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762697AbYDBUUv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 16:20:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761510AbYDBUQ5
+	id S1762766AbYDBUVT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 16:21:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761529AbYDBURB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 16:16:57 -0400
-Received: from ns.suse.de ([195.135.220.2]:36371 "EHLO mx1.suse.de"
+	Wed, 2 Apr 2008 16:17:01 -0400
+Received: from cantor.suse.de ([195.135.220.2]:36391 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761504AbYDBUQz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 16:16:55 -0400
+	id S1761513AbYDBUQ6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Apr 2008 16:16:58 -0400
 From: Mark Fasheh <mfasheh@suse.com>
 To: linux-kernel@vger.kernel.org
 Cc: ocfs2-devel@oss.oracle.com, Joel Becker <joel.becker@oracle.com>
-Subject: [PATCH 08/62] ocfs2: Separate out dlm lock functions.
-Date: Wed,  2 Apr 2008 13:14:18 -0700
-Message-Id: <12071673341888-git-send-email-mfasheh@suse.com>
+Subject: [PATCH 09/62] ocfs2: Use global DLM_ constants in generic code.
+Date: Wed,  2 Apr 2008 13:14:19 -0700
+Message-Id: <12071673362069-git-send-email-mfasheh@suse.com>
 X-Mailer: git-send-email 1.5.2.4
-In-Reply-To: <12071673321172-git-send-email-mfasheh@suse.com>
+In-Reply-To: <12071673341888-git-send-email-mfasheh@suse.com>
 References: <12071673121124-git-send-email-mfasheh@suse.com>
  <1207167318479-git-send-email-mfasheh@suse.com>
  <12071673203909-git-send-email-mfasheh@suse.com>
@@ -25,408 +25,666 @@ References: <12071673121124-git-send-email-mfasheh@suse.com>
  <12071673282579-git-send-email-mfasheh@suse.com>
  <1207167330482-git-send-email-mfasheh@suse.com>
  <12071673321172-git-send-email-mfasheh@suse.com>
+ <12071673341888-git-send-email-mfasheh@suse.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Joel Becker <joel.becker@oracle.com>
 
-This is the first in a series of patches to isolate ocfs2 from the
-underlying cluster stack. Here we wrap the dlm locking functions with
-ocfs2-specific calls. Because ocfs2 always uses the same dlm lock status
-callbacks, we can eliminate the callbacks from the filesystem visible
-functions.
+The ocfs2 generic code should use the values in <linux/dlmconstants.h>.
+stackglue.c will convert them to o2dlm values.
 
 Signed-off-by: Joel Becker <joel.becker@oracle.com>
 Signed-off-by: Mark Fasheh <mfasheh@suse.com>
 ---
- fs/ocfs2/Makefile    |    1 +
- fs/ocfs2/dlmglue.c   |  110 +++++++++++++++++++++++++++----------------------
- fs/ocfs2/dlmglue.h   |    3 +
- fs/ocfs2/stackglue.c |   65 +++++++++++++++++++++++++++++
- fs/ocfs2/stackglue.h |   45 ++++++++++++++++++++
- fs/ocfs2/super.c     |    4 ++
- 6 files changed, 179 insertions(+), 49 deletions(-)
- create mode 100644 fs/ocfs2/stackglue.c
- create mode 100644 fs/ocfs2/stackglue.h
+ fs/ocfs2/dlmglue.c   |  140 +++++++++++++++++++++++++-------------------------
+ fs/ocfs2/stackglue.c |   71 +++++++++++++++++++++++---
+ fs/ocfs2/stackglue.h |   13 +++++
+ 3 files changed, 147 insertions(+), 77 deletions(-)
 
-diff --git a/fs/ocfs2/Makefile b/fs/ocfs2/Makefile
-index 4d4ce48..3ba64af 100644
---- a/fs/ocfs2/Makefile
-+++ b/fs/ocfs2/Makefile
-@@ -24,6 +24,7 @@ ocfs2-objs := \
- 	namei.o 		\
- 	resize.o		\
- 	slot_map.o 		\
-+	stackglue.o		\
- 	suballoc.o 		\
- 	super.o 		\
- 	symlink.o 		\
 diff --git a/fs/ocfs2/dlmglue.c b/fs/ocfs2/dlmglue.c
-index 15a5167..aea3bef 100644
+index aea3bef..b8ac903 100644
 --- a/fs/ocfs2/dlmglue.c
 +++ b/fs/ocfs2/dlmglue.c
-@@ -53,6 +53,7 @@
- #include "heartbeat.h"
- #include "inode.h"
- #include "journal.h"
-+#include "stackglue.h"
- #include "slot_map.h"
- #include "super.h"
- #include "uptodate.h"
-@@ -888,22 +889,21 @@ static int ocfs2_lock_create(struct ocfs2_super *osb,
- 	lockres_or_flags(lockres, OCFS2_LOCK_BUSY);
- 	spin_unlock_irqrestore(&lockres->l_lock, flags);
+@@ -37,8 +37,6 @@
+ #include <cluster/nodemanager.h>
+ #include <cluster/tcp.h>
  
--	status = dlmlock(osb->dlm,
--			 level,
--			 &lockres->l_lksb,
--			 dlm_flags,
--			 lockres->l_name,
--			 OCFS2_LOCK_ID_MAX_LEN - 1,
--			 ocfs2_locking_ast,
--			 lockres,
--			 ocfs2_blocking_ast);
-+	status = ocfs2_dlm_lock(osb->dlm,
-+				level,
-+				&lockres->l_lksb,
-+				dlm_flags,
-+				lockres->l_name,
-+				OCFS2_LOCK_ID_MAX_LEN - 1,
-+				lockres);
- 	if (status != DLM_NORMAL) {
--		ocfs2_log_dlm_error("dlmlock", status, lockres);
-+		ocfs2_log_dlm_error("ocfs2_dlm_lock", status, lockres);
- 		ret = -EINVAL;
- 		ocfs2_recover_from_dlm_error(lockres, 1);
+-#include <dlm/dlmapi.h>
+-
+ #define MLOG_MASK_PREFIX ML_DLM_GLUE
+ #include <cluster/masklog.h>
+ 
+@@ -317,7 +315,7 @@ static inline struct ocfs2_super *ocfs2_get_lockres_osb(struct ocfs2_lock_res *l
+ static int ocfs2_lock_create(struct ocfs2_super *osb,
+ 			     struct ocfs2_lock_res *lockres,
+ 			     int level,
+-			     int dlm_flags);
++			     u32 dlm_flags);
+ static inline int ocfs2_may_continue_on_blocked_lock(struct ocfs2_lock_res *lockres,
+ 						     int wanted);
+ static void ocfs2_cluster_unlock(struct ocfs2_super *osb,
+@@ -407,9 +405,9 @@ static void ocfs2_lock_res_init_common(struct ocfs2_super *osb,
+ 	res->l_ops           = ops;
+ 	res->l_priv          = priv;
+ 
+-	res->l_level         = LKM_IVMODE;
+-	res->l_requested     = LKM_IVMODE;
+-	res->l_blocking      = LKM_IVMODE;
++	res->l_level         = DLM_LOCK_IV;
++	res->l_requested     = DLM_LOCK_IV;
++	res->l_blocking      = DLM_LOCK_IV;
+ 	res->l_action        = OCFS2_AST_INVALID;
+ 	res->l_unlock_action = OCFS2_UNLOCK_INVALID;
+ 
+@@ -605,10 +603,10 @@ static inline void ocfs2_inc_holders(struct ocfs2_lock_res *lockres,
+ 	BUG_ON(!lockres);
+ 
+ 	switch(level) {
+-	case LKM_EXMODE:
++	case DLM_LOCK_EX:
+ 		lockres->l_ex_holders++;
+ 		break;
+-	case LKM_PRMODE:
++	case DLM_LOCK_PR:
+ 		lockres->l_ro_holders++;
+ 		break;
+ 	default:
+@@ -626,11 +624,11 @@ static inline void ocfs2_dec_holders(struct ocfs2_lock_res *lockres,
+ 	BUG_ON(!lockres);
+ 
+ 	switch(level) {
+-	case LKM_EXMODE:
++	case DLM_LOCK_EX:
+ 		BUG_ON(!lockres->l_ex_holders);
+ 		lockres->l_ex_holders--;
+ 		break;
+-	case LKM_PRMODE:
++	case DLM_LOCK_PR:
+ 		BUG_ON(!lockres->l_ro_holders);
+ 		lockres->l_ro_holders--;
+ 		break;
+@@ -645,12 +643,12 @@ static inline void ocfs2_dec_holders(struct ocfs2_lock_res *lockres,
+  * lock types are added. */
+ static inline int ocfs2_highest_compat_lock_level(int level)
+ {
+-	int new_level = LKM_EXMODE;
++	int new_level = DLM_LOCK_EX;
+ 
+-	if (level == LKM_EXMODE)
+-		new_level = LKM_NLMODE;
+-	else if (level == LKM_PRMODE)
+-		new_level = LKM_PRMODE;
++	if (level == DLM_LOCK_EX)
++		new_level = DLM_LOCK_NL;
++	else if (level == DLM_LOCK_PR)
++		new_level = DLM_LOCK_PR;
+ 	return new_level;
+ }
+ 
+@@ -689,12 +687,12 @@ static inline void ocfs2_generic_handle_downconvert_action(struct ocfs2_lock_res
+ 	BUG_ON(!(lockres->l_flags & OCFS2_LOCK_BUSY));
+ 	BUG_ON(!(lockres->l_flags & OCFS2_LOCK_ATTACHED));
+ 	BUG_ON(!(lockres->l_flags & OCFS2_LOCK_BLOCKED));
+-	BUG_ON(lockres->l_blocking <= LKM_NLMODE);
++	BUG_ON(lockres->l_blocking <= DLM_LOCK_NL);
+ 
+ 	lockres->l_level = lockres->l_requested;
+ 	if (lockres->l_level <=
+ 	    ocfs2_highest_compat_lock_level(lockres->l_blocking)) {
+-		lockres->l_blocking = LKM_NLMODE;
++		lockres->l_blocking = DLM_LOCK_NL;
+ 		lockres_clear_flags(lockres, OCFS2_LOCK_BLOCKED);
  	}
+ 	lockres_clear_flags(lockres, OCFS2_LOCK_BUSY);
+@@ -713,7 +711,7 @@ static inline void ocfs2_generic_handle_convert_action(struct ocfs2_lock_res *lo
+ 	 * information is already up to data. Convert from NL to
+ 	 * *anything* however should mark ourselves as needing an
+ 	 * update */
+-	if (lockres->l_level == LKM_NLMODE &&
++	if (lockres->l_level == DLM_LOCK_NL &&
+ 	    lockres->l_ops->flags & LOCK_TYPE_REQUIRES_REFRESH)
+ 		lockres_or_flags(lockres, OCFS2_LOCK_NEEDS_REFRESH);
  
--	mlog(0, "lock %s, successfull return from dlmlock\n", lockres->l_name);
-+	mlog(0, "lock %s, successfull return from ocfs2_dlm_lock\n",
-+	     lockres->l_name);
+@@ -730,7 +728,7 @@ static inline void ocfs2_generic_handle_attach_action(struct ocfs2_lock_res *loc
+ 	BUG_ON((!(lockres->l_flags & OCFS2_LOCK_BUSY)));
+ 	BUG_ON(lockres->l_flags & OCFS2_LOCK_ATTACHED);
  
- bail:
- 	mlog_exit(ret);
-@@ -1091,29 +1091,27 @@ again:
+-	if (lockres->l_requested > LKM_NLMODE &&
++	if (lockres->l_requested > DLM_LOCK_NL &&
+ 	    !(lockres->l_flags & OCFS2_LOCK_LOCAL) &&
+ 	    lockres->l_ops->flags & LOCK_TYPE_REQUIRES_REFRESH)
+ 		lockres_or_flags(lockres, OCFS2_LOCK_NEEDS_REFRESH);
+@@ -775,7 +773,7 @@ static void ocfs2_blocking_ast(void *opaque, int level)
+ 	int needs_downconvert;
+ 	unsigned long flags;
+ 
+-	BUG_ON(level <= LKM_NLMODE);
++	BUG_ON(level <= DLM_LOCK_NL);
+ 
+ 	mlog(0, "BAST fired for lockres %s, blocking %d, level %d type %s\n",
+ 	     lockres->l_name, level, lockres->l_level,
+@@ -866,7 +864,7 @@ static inline void ocfs2_recover_from_dlm_error(struct ocfs2_lock_res *lockres,
+ static int ocfs2_lock_create(struct ocfs2_super *osb,
+ 			     struct ocfs2_lock_res *lockres,
+ 			     int level,
+-			     int dlm_flags)
++			     u32 dlm_flags)
+ {
+ 	int ret = 0;
+ 	enum dlm_status status = DLM_NORMAL;
+@@ -874,7 +872,7 @@ static int ocfs2_lock_create(struct ocfs2_super *osb,
+ 
+ 	mlog_entry_void();
+ 
+-	mlog(0, "lock %s, level = %d, flags = %d\n", lockres->l_name, level,
++	mlog(0, "lock %s, level = %d, flags = %u\n", lockres->l_name, level,
+ 	     dlm_flags);
+ 
+ 	spin_lock_irqsave(&lockres->l_lock, flags);
+@@ -1016,7 +1014,7 @@ static int ocfs2_wait_for_mask_interruptible(struct ocfs2_mask_waiter *mw,
+ static int ocfs2_cluster_lock(struct ocfs2_super *osb,
+ 			      struct ocfs2_lock_res *lockres,
+ 			      int level,
+-			      int lkm_flags,
++			      u32 lkm_flags,
+ 			      int arg_flags)
+ {
+ 	struct ocfs2_mask_waiter mw;
+@@ -1030,7 +1028,7 @@ static int ocfs2_cluster_lock(struct ocfs2_super *osb,
+ 	ocfs2_init_mask_waiter(&mw);
+ 
+ 	if (lockres->l_ops->flags & LOCK_TYPE_USES_LVB)
+-		lkm_flags |= LKM_VALBLK;
++		lkm_flags |= DLM_LKF_VALBLK;
+ 
+ again:
+ 	wait = 0;
+@@ -1074,18 +1072,18 @@ again:
+ 
+ 		if (!(lockres->l_flags & OCFS2_LOCK_ATTACHED)) {
+ 			lockres->l_action = OCFS2_AST_ATTACH;
+-			lkm_flags &= ~LKM_CONVERT;
++			lkm_flags &= ~DLM_LKF_CONVERT;
+ 		} else {
+ 			lockres->l_action = OCFS2_AST_CONVERT;
+-			lkm_flags |= LKM_CONVERT;
++			lkm_flags |= DLM_LKF_CONVERT;
+ 		}
+ 
+ 		lockres->l_requested = level;
+ 		lockres_or_flags(lockres, OCFS2_LOCK_BUSY);
+ 		spin_unlock_irqrestore(&lockres->l_lock, flags);
+ 
+-		BUG_ON(level == LKM_IVMODE);
+-		BUG_ON(level == LKM_NLMODE);
++		BUG_ON(level == DLM_LOCK_IV);
++		BUG_ON(level == DLM_LOCK_NL);
+ 
+ 		mlog(0, "lock %s, convert from %d to level = %d\n",
  		     lockres->l_name, lockres->l_level, level);
- 
- 		/* call dlm_lock to upgrade lock now */
--		status = dlmlock(osb->dlm,
--				 level,
--				 &lockres->l_lksb,
--				 lkm_flags,
--				 lockres->l_name,
--				 OCFS2_LOCK_ID_MAX_LEN - 1,
--				 ocfs2_locking_ast,
--				 lockres,
--				 ocfs2_blocking_ast);
-+		status = ocfs2_dlm_lock(osb->dlm,
-+					level,
-+					&lockres->l_lksb,
-+					lkm_flags,
-+					lockres->l_name,
-+					OCFS2_LOCK_ID_MAX_LEN - 1,
-+					lockres);
+@@ -1099,7 +1097,7 @@ again:
+ 					OCFS2_LOCK_ID_MAX_LEN - 1,
+ 					lockres);
  		if (status != DLM_NORMAL) {
- 			if ((lkm_flags & LKM_NOQUEUE) &&
+-			if ((lkm_flags & LKM_NOQUEUE) &&
++			if ((lkm_flags & DLM_LKF_NOQUEUE) &&
  			    (status == DLM_NOTQUEUED))
  				ret = -EAGAIN;
  			else {
--				ocfs2_log_dlm_error("dlmlock", status,
--						    lockres);
-+				ocfs2_log_dlm_error("ocfs2_dlm_lock",
-+						    status, lockres);
- 				ret = -EINVAL;
- 			}
- 			ocfs2_recover_from_dlm_error(lockres, 1);
- 			goto out;
- 		}
+@@ -1175,9 +1173,9 @@ static int ocfs2_create_new_lock(struct ocfs2_super *osb,
+ 				 int ex,
+ 				 int local)
+ {
+-	int level =  ex ? LKM_EXMODE : LKM_PRMODE;
++	int level =  ex ? DLM_LOCK_EX : DLM_LOCK_PR;
+ 	unsigned long flags;
+-	int lkm_flags = local ? LKM_LOCAL : 0;
++	u32 lkm_flags = local ? DLM_LKF_LOCAL : 0;
  
--		mlog(0, "lock %s, successfull return from dlmlock\n",
-+		mlog(0, "lock %s, successfull return from ocfs2_dlm_lock\n",
- 		     lockres->l_name);
+ 	spin_lock_irqsave(&lockres->l_lock, flags);
+ 	BUG_ON(lockres->l_flags & OCFS2_LOCK_ATTACHED);
+@@ -1220,7 +1218,7 @@ int ocfs2_create_new_inode_locks(struct inode *inode)
+ 	}
  
- 		/* At this point we've gone inside the dlm and need to
-@@ -1503,14 +1501,14 @@ int ocfs2_file_lock(struct file *file, int ex, int trylock)
+ 	/*
+-	 * We don't want to use LKM_LOCAL on a meta data lock as they
++	 * We don't want to use DLM_LKF_LOCAL on a meta data lock as they
+ 	 * don't use a generation in their lock names.
+ 	 */
+ 	ret = ocfs2_create_new_lock(osb, &OCFS2_I(inode)->ip_inode_lockres, 1, 0);
+@@ -1259,7 +1257,7 @@ int ocfs2_rw_lock(struct inode *inode, int write)
+ 
+ 	lockres = &OCFS2_I(inode)->ip_rw_lockres;
+ 
+-	level = write ? LKM_EXMODE : LKM_PRMODE;
++	level = write ? DLM_LOCK_EX : DLM_LOCK_PR;
+ 
+ 	status = ocfs2_cluster_lock(OCFS2_SB(inode->i_sb), lockres, level, 0,
+ 				    0);
+@@ -1272,7 +1270,7 @@ int ocfs2_rw_lock(struct inode *inode, int write)
+ 
+ void ocfs2_rw_unlock(struct inode *inode, int write)
+ {
+-	int level = write ? LKM_EXMODE : LKM_PRMODE;
++	int level = write ? DLM_LOCK_EX : DLM_LOCK_PR;
+ 	struct ocfs2_lock_res *lockres = &OCFS2_I(inode)->ip_rw_lockres;
+ 	struct ocfs2_super *osb = OCFS2_SB(inode->i_sb);
+ 
+@@ -1310,7 +1308,7 @@ int ocfs2_open_lock(struct inode *inode)
+ 	lockres = &OCFS2_I(inode)->ip_open_lockres;
+ 
+ 	status = ocfs2_cluster_lock(OCFS2_SB(inode->i_sb), lockres,
+-				    LKM_PRMODE, 0, 0);
++				    DLM_LOCK_PR, 0, 0);
+ 	if (status < 0)
+ 		mlog_errno(status);
+ 
+@@ -1338,16 +1336,16 @@ int ocfs2_try_open_lock(struct inode *inode, int write)
+ 
+ 	lockres = &OCFS2_I(inode)->ip_open_lockres;
+ 
+-	level = write ? LKM_EXMODE : LKM_PRMODE;
++	level = write ? DLM_LOCK_EX : DLM_LOCK_PR;
+ 
+ 	/*
+ 	 * The file system may already holding a PRMODE/EXMODE open lock.
+-	 * Since we pass LKM_NOQUEUE, the request won't block waiting on
++	 * Since we pass DLM_LKF_NOQUEUE, the request won't block waiting on
+ 	 * other nodes and the -EAGAIN will indicate to the caller that
+ 	 * this inode is still in use.
+ 	 */
+ 	status = ocfs2_cluster_lock(OCFS2_SB(inode->i_sb), lockres,
+-				    level, LKM_NOQUEUE, 0);
++				    level, DLM_LKF_NOQUEUE, 0);
+ 
+ out:
+ 	mlog_exit(status);
+@@ -1372,10 +1370,10 @@ void ocfs2_open_unlock(struct inode *inode)
+ 
+ 	if(lockres->l_ro_holders)
+ 		ocfs2_cluster_unlock(OCFS2_SB(inode->i_sb), lockres,
+-				     LKM_PRMODE);
++				     DLM_LOCK_PR);
+ 	if(lockres->l_ex_holders)
+ 		ocfs2_cluster_unlock(OCFS2_SB(inode->i_sb), lockres,
+-				     LKM_EXMODE);
++				     DLM_LOCK_EX);
+ 
+ out:
+ 	mlog_exit_void();
+@@ -1462,7 +1460,7 @@ int ocfs2_file_lock(struct file *file, int ex, int trylock)
+ 	ocfs2_init_mask_waiter(&mw);
+ 
+ 	if ((lockres->l_flags & OCFS2_LOCK_BUSY) ||
+-	    (lockres->l_level > LKM_NLMODE)) {
++	    (lockres->l_level > DLM_LOCK_NL)) {
+ 		mlog(ML_ERROR,
+ 		     "File lock \"%s\" has busy or locked state: flags: 0x%lx, "
+ 		     "level: %u\n", lockres->l_name, lockres->l_flags,
+@@ -1570,7 +1568,7 @@ void ocfs2_file_unlock(struct file *file)
+ 	 * Fake a blocking ast for the downconvert code.
+ 	 */
+ 	lockres_or_flags(lockres, OCFS2_LOCK_BLOCKED);
+-	lockres->l_blocking = LKM_EXMODE;
++	lockres->l_blocking = DLM_LOCK_EX;
+ 
+ 	ocfs2_prepare_downconvert(lockres, LKM_NLMODE);
  	lockres_add_mask_waiter(lockres, &mw, OCFS2_LOCK_BUSY, 0);
- 	spin_unlock_irqrestore(&lockres->l_lock, flags);
+@@ -1599,11 +1597,11 @@ static void ocfs2_downconvert_on_unlock(struct ocfs2_super *osb,
+ 	 * condition. */
+ 	if (lockres->l_flags & OCFS2_LOCK_BLOCKED) {
+ 		switch(lockres->l_blocking) {
+-		case LKM_EXMODE:
++		case DLM_LOCK_EX:
+ 			if (!lockres->l_ex_holders && !lockres->l_ro_holders)
+ 				kick = 1;
+ 			break;
+-		case LKM_PRMODE:
++		case DLM_LOCK_PR:
+ 			if (!lockres->l_ex_holders)
+ 				kick = 1;
+ 			break;
+@@ -1921,7 +1919,8 @@ int ocfs2_inode_lock_full(struct inode *inode,
+ 			 int ex,
+ 			 int arg_flags)
+ {
+-	int status, level, dlm_flags, acquired;
++	int status, level, acquired;
++	u32 dlm_flags;
+ 	struct ocfs2_lock_res *lockres = NULL;
+ 	struct ocfs2_super *osb = OCFS2_SB(inode->i_sb);
+ 	struct buffer_head *local_bh = NULL;
+@@ -1951,10 +1950,10 @@ int ocfs2_inode_lock_full(struct inode *inode,
+ 		ocfs2_wait_for_recovery(osb);
  
--	ret = dlmlock(osb->dlm, level, &lockres->l_lksb, lkm_flags,
--		      lockres->l_name, OCFS2_LOCK_ID_MAX_LEN - 1,
--		      ocfs2_locking_ast, lockres, ocfs2_blocking_ast);
-+	ret = ocfs2_dlm_lock(osb->dlm, level, &lockres->l_lksb, lkm_flags,
-+			     lockres->l_name, OCFS2_LOCK_ID_MAX_LEN - 1,
-+			     lockres);
- 	if (ret != DLM_NORMAL) {
- 		if (trylock && ret == DLM_NOTQUEUED)
- 			ret = -EAGAIN;
- 		else {
--			ocfs2_log_dlm_error("dlmlock", ret, lockres);
-+			ocfs2_log_dlm_error("ocfs2_dlm_lock", ret, lockres);
- 			ret = -EINVAL;
- 		}
+ 	lockres = &OCFS2_I(inode)->ip_inode_lockres;
+-	level = ex ? LKM_EXMODE : LKM_PRMODE;
++	level = ex ? DLM_LOCK_EX : DLM_LOCK_PR;
+ 	dlm_flags = 0;
+ 	if (arg_flags & OCFS2_META_LOCK_NOQUEUE)
+-		dlm_flags |= LKM_NOQUEUE;
++		dlm_flags |= DLM_LKF_NOQUEUE;
  
-@@ -2699,15 +2697,15 @@ static int ocfs2_drop_lock(struct ocfs2_super *osb,
+ 	status = ocfs2_cluster_lock(osb, lockres, level, dlm_flags, arg_flags);
+ 	if (status < 0) {
+@@ -2105,7 +2104,7 @@ int ocfs2_inode_lock_atime(struct inode *inode,
+ void ocfs2_inode_unlock(struct inode *inode,
+ 		       int ex)
+ {
+-	int level = ex ? LKM_EXMODE : LKM_PRMODE;
++	int level = ex ? DLM_LOCK_EX : DLM_LOCK_PR;
+ 	struct ocfs2_lock_res *lockres = &OCFS2_I(inode)->ip_inode_lockres;
+ 	struct ocfs2_super *osb = OCFS2_SB(inode->i_sb);
  
- 	mlog(0, "lock %s\n", lockres->l_name);
+@@ -2126,7 +2125,7 @@ int ocfs2_super_lock(struct ocfs2_super *osb,
+ 		     int ex)
+ {
+ 	int status = 0;
+-	int level = ex ? LKM_EXMODE : LKM_PRMODE;
++	int level = ex ? DLM_LOCK_EX : DLM_LOCK_PR;
+ 	struct ocfs2_lock_res *lockres = &osb->osb_super_lockres;
  
--	status = dlmunlock(osb->dlm, &lockres->l_lksb, lkm_flags,
--			   ocfs2_unlock_ast, lockres);
-+	status = ocfs2_dlm_unlock(osb->dlm, &lockres->l_lksb, lkm_flags,
-+				  lockres);
- 	if (status != DLM_NORMAL) {
--		ocfs2_log_dlm_error("dlmunlock", status, lockres);
-+		ocfs2_log_dlm_error("ocfs2_dlm_unlock", status, lockres);
- 		mlog(ML_ERROR, "lockres flags: %lu\n", lockres->l_flags);
- 		dlm_print_one_lock(lockres->l_lksb.lockid);
+ 	mlog_entry_void();
+@@ -2168,7 +2167,7 @@ bail:
+ void ocfs2_super_unlock(struct ocfs2_super *osb,
+ 			int ex)
+ {
+-	int level = ex ? LKM_EXMODE : LKM_PRMODE;
++	int level = ex ? DLM_LOCK_EX : DLM_LOCK_PR;
+ 	struct ocfs2_lock_res *lockres = &osb->osb_super_lockres;
+ 
+ 	if (!ocfs2_mount_local(osb))
+@@ -2186,7 +2185,7 @@ int ocfs2_rename_lock(struct ocfs2_super *osb)
+ 	if (ocfs2_mount_local(osb))
+ 		return 0;
+ 
+-	status = ocfs2_cluster_lock(osb, lockres, LKM_EXMODE, 0, 0);
++	status = ocfs2_cluster_lock(osb, lockres, DLM_LOCK_EX, 0, 0);
+ 	if (status < 0)
+ 		mlog_errno(status);
+ 
+@@ -2198,13 +2197,13 @@ void ocfs2_rename_unlock(struct ocfs2_super *osb)
+ 	struct ocfs2_lock_res *lockres = &osb->osb_rename_lockres;
+ 
+ 	if (!ocfs2_mount_local(osb))
+-		ocfs2_cluster_unlock(osb, lockres, LKM_EXMODE);
++		ocfs2_cluster_unlock(osb, lockres, DLM_LOCK_EX);
+ }
+ 
+ int ocfs2_dentry_lock(struct dentry *dentry, int ex)
+ {
+ 	int ret;
+-	int level = ex ? LKM_EXMODE : LKM_PRMODE;
++	int level = ex ? DLM_LOCK_EX : DLM_LOCK_PR;
+ 	struct ocfs2_dentry_lock *dl = dentry->d_fsdata;
+ 	struct ocfs2_super *osb = OCFS2_SB(dentry->d_sb);
+ 
+@@ -2225,7 +2224,7 @@ int ocfs2_dentry_lock(struct dentry *dentry, int ex)
+ 
+ void ocfs2_dentry_unlock(struct dentry *dentry, int ex)
+ {
+-	int level = ex ? LKM_EXMODE : LKM_PRMODE;
++	int level = ex ? DLM_LOCK_EX : DLM_LOCK_PR;
+ 	struct ocfs2_dentry_lock *dl = dentry->d_fsdata;
+ 	struct ocfs2_super *osb = OCFS2_SB(dentry->d_sb);
+ 
+@@ -2614,7 +2613,7 @@ static void ocfs2_unlock_ast(void *opaque, enum dlm_status status)
+ 		lockres->l_action = OCFS2_AST_INVALID;
+ 		break;
+ 	case OCFS2_UNLOCK_DROP_LOCK:
+-		lockres->l_level = LKM_IVMODE;
++		lockres->l_level = DLM_LOCK_IV;
+ 		break;
+ 	default:
+ 		BUG();
+@@ -2635,14 +2634,14 @@ static int ocfs2_drop_lock(struct ocfs2_super *osb,
+ {
+ 	enum dlm_status status;
+ 	unsigned long flags;
+-	int lkm_flags = 0;
++	u32 lkm_flags = 0;
+ 
+ 	/* We didn't get anywhere near actually using this lockres. */
+ 	if (!(lockres->l_flags & OCFS2_LOCK_INITIALIZED))
+ 		goto out;
+ 
+ 	if (lockres->l_ops->flags & LOCK_TYPE_USES_LVB)
+-		lkm_flags |= LKM_VALBLK;
++		lkm_flags |= DLM_LKF_VALBLK;
+ 
+ 	spin_lock_irqsave(&lockres->l_lock, flags);
+ 
+@@ -2668,7 +2667,7 @@ static int ocfs2_drop_lock(struct ocfs2_super *osb,
+ 
+ 	if (lockres->l_ops->flags & LOCK_TYPE_USES_LVB) {
+ 		if (lockres->l_flags & OCFS2_LOCK_ATTACHED &&
+-		    lockres->l_level == LKM_EXMODE &&
++		    lockres->l_level == DLM_LOCK_EX &&
+ 		    !(lockres->l_flags & OCFS2_LOCK_NEEDS_REFRESH))
+ 			lockres->l_ops->set_lvb(lockres);
+ 	}
+@@ -2801,10 +2800,10 @@ static void ocfs2_prepare_downconvert(struct ocfs2_lock_res *lockres,
+ {
+ 	assert_spin_locked(&lockres->l_lock);
+ 
+-	BUG_ON(lockres->l_blocking <= LKM_NLMODE);
++	BUG_ON(lockres->l_blocking <= DLM_LOCK_NL);
+ 
+ 	if (lockres->l_level <= new_level) {
+-		mlog(ML_ERROR, "lockres->l_level (%u) <= new_level (%u)\n",
++		mlog(ML_ERROR, "lockres->l_level (%d) <= new_level (%d)\n",
+ 		     lockres->l_level, new_level);
  		BUG();
  	}
--	mlog(0, "lock %s, successfull return from dlmunlock\n",
-+	mlog(0, "lock %s, successfull return from ocfs2_dlm_unlock\n",
- 	     lockres->l_name);
+@@ -2822,13 +2821,14 @@ static int ocfs2_downconvert_lock(struct ocfs2_super *osb,
+ 				  int new_level,
+ 				  int lvb)
+ {
+-	int ret, dlm_flags = LKM_CONVERT;
++	int ret;
++	u32 dlm_flags = DLM_LKF_CONVERT;
+ 	enum dlm_status status;
  
- 	ocfs2_wait_on_busy_lock(lockres);
-@@ -2832,17 +2830,15 @@ static int ocfs2_downconvert_lock(struct ocfs2_super *osb,
+ 	mlog_entry_void();
+ 
  	if (lvb)
- 		dlm_flags |= LKM_VALBLK;
+-		dlm_flags |= LKM_VALBLK;
++		dlm_flags |= DLM_LKF_VALBLK;
  
--	status = dlmlock(osb->dlm,
--			 new_level,
--			 &lockres->l_lksb,
--			 dlm_flags,
--			 lockres->l_name,
--			 OCFS2_LOCK_ID_MAX_LEN - 1,
--			 ocfs2_locking_ast,
--			 lockres,
--			 ocfs2_blocking_ast);
-+	status = ocfs2_dlm_lock(osb->dlm,
-+				new_level,
-+				&lockres->l_lksb,
-+				dlm_flags,
-+				lockres->l_name,
-+				OCFS2_LOCK_ID_MAX_LEN - 1,
-+				lockres);
- 	if (status != DLM_NORMAL) {
--		ocfs2_log_dlm_error("dlmlock", status, lockres);
-+		ocfs2_log_dlm_error("ocfs2_dlm_lock", status, lockres);
- 		ret = -EINVAL;
- 		ocfs2_recover_from_dlm_error(lockres, 1);
- 		goto bail;
-@@ -2854,7 +2850,7 @@ bail:
- 	return ret;
- }
- 
--/* returns 1 when the caller should unlock and call dlmunlock */
-+/* returns 1 when the caller should unlock and call ocfs2_dlm_unlock */
- static int ocfs2_prepare_cancel_convert(struct ocfs2_super *osb,
- 				        struct ocfs2_lock_res *lockres)
- {
-@@ -2896,18 +2892,17 @@ static int ocfs2_cancel_convert(struct ocfs2_super *osb,
- 	mlog(0, "lock %s\n", lockres->l_name);
- 
+ 	status = ocfs2_dlm_lock(osb->dlm,
+ 				new_level,
+@@ -2894,7 +2894,7 @@ static int ocfs2_cancel_convert(struct ocfs2_super *osb,
  	ret = 0;
--	status = dlmunlock(osb->dlm,
--			   &lockres->l_lksb,
--			   LKM_CANCEL,
--			   ocfs2_unlock_ast,
--			   lockres);
-+	status = ocfs2_dlm_unlock(osb->dlm,
-+				  &lockres->l_lksb,
-+				  LKM_CANCEL,
-+				  lockres);
+ 	status = ocfs2_dlm_unlock(osb->dlm,
+ 				  &lockres->l_lksb,
+-				  LKM_CANCEL,
++				  DLM_LKF_CANCEL,
+ 				  lockres);
  	if (status != DLM_NORMAL) {
--		ocfs2_log_dlm_error("dlmunlock", status, lockres);
-+		ocfs2_log_dlm_error("ocfs2_dlm_unlock", status, lockres);
- 		ret = -EINVAL;
- 		ocfs2_recover_from_dlm_error(lockres, 0);
+ 		ocfs2_log_dlm_error("ocfs2_dlm_unlock", status, lockres);
+@@ -2939,13 +2939,13 @@ recheck:
+ 
+ 	/* if we're blocking an exclusive and we have *any* holders,
+ 	 * then requeue. */
+-	if ((lockres->l_blocking == LKM_EXMODE)
++	if ((lockres->l_blocking == DLM_LOCK_EX)
+ 	    && (lockres->l_ex_holders || lockres->l_ro_holders))
+ 		goto leave_requeue;
+ 
+ 	/* If it's a PR we're blocking, then only
+ 	 * requeue if we've got any EX holders */
+-	if (lockres->l_blocking == LKM_PRMODE &&
++	if (lockres->l_blocking == DLM_LOCK_PR &&
+ 	    lockres->l_ex_holders)
+ 		goto leave_requeue;
+ 
+@@ -2992,7 +2992,7 @@ downconvert:
+ 	ctl->requeue = 0;
+ 
+ 	if (lockres->l_ops->flags & LOCK_TYPE_USES_LVB) {
+-		if (lockres->l_level == LKM_EXMODE)
++		if (lockres->l_level == DLM_LOCK_EX)
+ 			set_lvb = 1;
+ 
+ 		/*
+@@ -3046,7 +3046,7 @@ static int ocfs2_data_convert_worker(struct ocfs2_lock_res *lockres,
+ 		     (unsigned long long)OCFS2_I(inode)->ip_blkno);
  	}
+ 	sync_mapping_buffers(mapping);
+-	if (blocking == LKM_EXMODE) {
++	if (blocking == DLM_LOCK_EX) {
+ 		truncate_inode_pages(mapping, 0);
+ 	} else {
+ 		/* We only need to wait on the I/O if we're not also
+@@ -3067,8 +3067,8 @@ static int ocfs2_check_meta_downconvert(struct ocfs2_lock_res *lockres,
+ 	struct inode *inode = ocfs2_lock_res_inode(lockres);
+ 	int checkpointed = ocfs2_inode_fully_checkpointed(inode);
  
--	mlog(0, "lock %s return from dlmunlock\n", lockres->l_name);
-+	mlog(0, "lock %s return from ocfs2_dlm_unlock\n", lockres->l_name);
+-	BUG_ON(new_level != LKM_NLMODE && new_level != LKM_PRMODE);
+-	BUG_ON(lockres->l_level != LKM_EXMODE && !checkpointed);
++	BUG_ON(new_level != DLM_LOCK_NL && new_level != DLM_LOCK_PR);
++	BUG_ON(lockres->l_level != DLM_LOCK_EX && !checkpointed);
  
- 	mlog_exit(ret);
- 	return ret;
-@@ -3211,6 +3206,23 @@ static int ocfs2_dentry_convert_worker(struct ocfs2_lock_res *lockres,
- 	return UNBLOCK_CONTINUE_POST;
+ 	if (checkpointed)
+ 		return 1;
+@@ -3132,7 +3132,7 @@ static int ocfs2_dentry_convert_worker(struct ocfs2_lock_res *lockres,
+ 	 * valid. The downconvert code will retain a PR for this node,
+ 	 * so there's no further work to do.
+ 	 */
+-	if (blocking == LKM_PRMODE)
++	if (blocking == DLM_LOCK_PR)
+ 		return UNBLOCK_CONTINUE;
+ 
+ 	/*
+diff --git a/fs/ocfs2/stackglue.c b/fs/ocfs2/stackglue.c
+index 4f44f23..9953804 100644
+--- a/fs/ocfs2/stackglue.c
++++ b/fs/ocfs2/stackglue.c
+@@ -18,15 +18,65 @@
+  * General Public License for more details.
+  */
+ 
+-#include <linux/types.h>
+-#include <linux/list.h>
+-
+-#include "dlm/dlmapi.h"
+-
+ #include "stackglue.h"
+ 
+ static struct ocfs2_locking_protocol *lproto;
+ 
++/* These should be identical */
++#if (DLM_LOCK_IV != LKM_IVMODE)
++# error Lock modes do not match
++#endif
++#if (DLM_LOCK_NL != LKM_NLMODE)
++# error Lock modes do not match
++#endif
++#if (DLM_LOCK_CR != LKM_CRMODE)
++# error Lock modes do not match
++#endif
++#if (DLM_LOCK_CW != LKM_CWMODE)
++# error Lock modes do not match
++#endif
++#if (DLM_LOCK_PR != LKM_PRMODE)
++# error Lock modes do not match
++#endif
++#if (DLM_LOCK_PW != LKM_PWMODE)
++# error Lock modes do not match
++#endif
++#if (DLM_LOCK_EX != LKM_EXMODE)
++# error Lock modes do not match
++#endif
++static inline int mode_to_o2dlm(int mode)
++{
++	BUG_ON(mode > LKM_MAXMODE);
++
++	return mode;
++}
++
++#define map_flag(_generic, _o2dlm)		\
++	if (flags & (_generic)) {		\
++		flags &= ~(_generic);		\
++		o2dlm_flags |= (_o2dlm);	\
++	}
++static int flags_to_o2dlm(u32 flags)
++{
++	int o2dlm_flags = 0;
++
++	map_flag(DLM_LKF_NOQUEUE, LKM_NOQUEUE);
++	map_flag(DLM_LKF_CANCEL, LKM_CANCEL);
++	map_flag(DLM_LKF_CONVERT, LKM_CONVERT);
++	map_flag(DLM_LKF_VALBLK, LKM_VALBLK);
++	map_flag(DLM_LKF_IVVALBLK, LKM_INVVALBLK);
++	map_flag(DLM_LKF_ORPHAN, LKM_ORPHAN);
++	map_flag(DLM_LKF_FORCEUNLOCK, LKM_FORCE);
++	map_flag(DLM_LKF_TIMEOUT, LKM_TIMEOUT);
++	map_flag(DLM_LKF_LOCAL, LKM_LOCAL);
++
++	/* map_flag() should have cleared every flag passed in */
++	BUG_ON(flags != 0);
++
++	return o2dlm_flags;
++}
++#undef map_flag
++
+ enum dlm_status ocfs2_dlm_lock(struct dlm_ctxt *dlm,
+ 		   int mode,
+ 		   struct dlm_lockstatus *lksb,
+@@ -35,8 +85,12 @@ enum dlm_status ocfs2_dlm_lock(struct dlm_ctxt *dlm,
+ 		   unsigned int namelen,
+ 		   void *astarg)
+ {
++	int o2dlm_mode = mode_to_o2dlm(mode);
++	int o2dlm_flags = flags_to_o2dlm(flags);
++
+ 	BUG_ON(lproto == NULL);
+-	return dlmlock(dlm, mode, lksb, flags, name, namelen,
++
++	return dlmlock(dlm, o2dlm_mode, lksb, o2dlm_flags, name, namelen,
+ 		       lproto->lp_lock_ast, astarg,
+ 		       lproto->lp_blocking_ast);
+ }
+@@ -46,9 +100,12 @@ enum dlm_status ocfs2_dlm_unlock(struct dlm_ctxt *dlm,
+ 		     u32 flags,
+ 		     void *astarg)
+ {
++	int o2dlm_flags = flags_to_o2dlm(flags);
++
+ 	BUG_ON(lproto == NULL);
+ 
+-	return dlmunlock(dlm, lksb, flags, lproto->lp_unlock_ast, astarg);
++	return dlmunlock(dlm, lksb, o2dlm_flags,
++			 lproto->lp_unlock_ast, astarg);
  }
  
-+static struct ocfs2_locking_protocol lproto = {
-+	.lp_lock_ast		= ocfs2_locking_ast,
-+	.lp_blocking_ast	= ocfs2_blocking_ast,
-+	.lp_unlock_ast		= ocfs2_unlock_ast,
-+};
-+
-+/* This interface isn't the final one, hence the less-than-perfect names */
-+void dlmglue_init_stack(void)
-+{
-+	o2cb_get_stack(&lproto);
-+}
-+
-+void dlmglue_exit_stack(void)
-+{
-+	o2cb_put_stack();
-+}
-+
- static void ocfs2_process_blocked_lock(struct ocfs2_super *osb,
- 				       struct ocfs2_lock_res *lockres)
- {
-diff --git a/fs/ocfs2/dlmglue.h b/fs/ocfs2/dlmglue.h
-index e3cf902..3238043 100644
---- a/fs/ocfs2/dlmglue.h
-+++ b/fs/ocfs2/dlmglue.h
-@@ -114,5 +114,8 @@ void ocfs2_wake_downconvert_thread(struct ocfs2_super *osb);
- struct ocfs2_dlm_debug *ocfs2_new_dlm_debug(void);
- void ocfs2_put_dlm_debug(struct ocfs2_dlm_debug *dlm_debug);
  
-+void dlmglue_init_stack(void);
-+void dlmglue_exit_stack(void);
-+
- extern const struct dlm_protocol_version ocfs2_locking_protocol;
- #endif	/* DLMGLUE_H */
-diff --git a/fs/ocfs2/stackglue.c b/fs/ocfs2/stackglue.c
-new file mode 100644
-index 0000000..4f44f23
---- /dev/null
-+++ b/fs/ocfs2/stackglue.c
-@@ -0,0 +1,65 @@
-+/* -*- mode: c; c-basic-offset: 8; -*-
-+ * vim: noexpandtab sw=8 ts=8 sts=0:
-+ *
-+ * stackglue.c
-+ *
-+ * Code which implements an OCFS2 specific interface to underlying
-+ * cluster stacks.
-+ *
-+ * Copyright (C) 2007 Oracle.  All rights reserved.
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public
-+ * License as published by the Free Software Foundation, version 2.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-+ * General Public License for more details.
-+ */
-+
+diff --git a/fs/ocfs2/stackglue.h b/fs/ocfs2/stackglue.h
+index 40a0024..986d059 100644
+--- a/fs/ocfs2/stackglue.h
++++ b/fs/ocfs2/stackglue.h
+@@ -21,6 +21,19 @@
+ #ifndef STACKGLUE_H
+ #define STACKGLUE_H
+ 
 +#include <linux/types.h>
 +#include <linux/list.h>
++#include <linux/dlmconstants.h>
++
++/*
++ * dlmconstants.h does not have a LOCAL flag.  We hope to remove it
++ * some day, but right now we need it.  Let's fake it.  This value is larger
++ * than any flag in dlmconstants.h.
++ */
++#define DLM_LKF_LOCAL		0x00100000
 +
 +#include "dlm/dlmapi.h"
 +
-+#include "stackglue.h"
-+
-+static struct ocfs2_locking_protocol *lproto;
-+
-+enum dlm_status ocfs2_dlm_lock(struct dlm_ctxt *dlm,
-+		   int mode,
-+		   struct dlm_lockstatus *lksb,
-+		   u32 flags,
-+		   void *name,
-+		   unsigned int namelen,
-+		   void *astarg)
-+{
-+	BUG_ON(lproto == NULL);
-+	return dlmlock(dlm, mode, lksb, flags, name, namelen,
-+		       lproto->lp_lock_ast, astarg,
-+		       lproto->lp_blocking_ast);
-+}
-+
-+enum dlm_status ocfs2_dlm_unlock(struct dlm_ctxt *dlm,
-+		     struct dlm_lockstatus *lksb,
-+		     u32 flags,
-+		     void *astarg)
-+{
-+	BUG_ON(lproto == NULL);
-+
-+	return dlmunlock(dlm, lksb, flags, lproto->lp_unlock_ast, astarg);
-+}
-+
-+
-+void o2cb_get_stack(struct ocfs2_locking_protocol *proto)
-+{
-+	BUG_ON(proto == NULL);
-+
-+	lproto = proto;
-+}
-+
-+void o2cb_put_stack(void)
-+{
-+	lproto = NULL;
-+}
-diff --git a/fs/ocfs2/stackglue.h b/fs/ocfs2/stackglue.h
-new file mode 100644
-index 0000000..40a0024
---- /dev/null
-+++ b/fs/ocfs2/stackglue.h
-@@ -0,0 +1,45 @@
-+/* -*- mode: c; c-basic-offset: 8; -*-
-+ * vim: noexpandtab sw=8 ts=8 sts=0:
-+ *
-+ * stackglue.h
-+ *
-+ * Glue to the underlying cluster stack.
-+ *
-+ * Copyright (C) 2007 Oracle.  All rights reserved.
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public
-+ * License as published by the Free Software Foundation, version 2.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-+ * General Public License for more details.
-+ */
-+
-+
-+#ifndef STACKGLUE_H
-+#define STACKGLUE_H
-+
-+struct ocfs2_locking_protocol {
-+	void (*lp_lock_ast)(void *astarg);
-+	void (*lp_blocking_ast)(void *astarg, int level);
-+	void (*lp_unlock_ast)(void *astarg, enum dlm_status status);
-+};
-+
-+enum dlm_status ocfs2_dlm_lock(struct dlm_ctxt *dlm,
-+		   int mode,
-+		   struct dlm_lockstatus *lksb,
-+		   u32 flags,
-+		   void *name,
-+		   unsigned int namelen,
-+		   void *astarg);
-+enum dlm_status ocfs2_dlm_unlock(struct dlm_ctxt *dlm,
-+		     struct dlm_lockstatus *lksb,
-+		     u32 flags,
-+		     void *astarg);
-+
-+void o2cb_get_stack(struct ocfs2_locking_protocol *proto);
-+void o2cb_put_stack(void);
-+
-+#endif  /* STACKGLUE_H */
-diff --git a/fs/ocfs2/super.c b/fs/ocfs2/super.c
-index 1a4c7c7..c867546 100644
---- a/fs/ocfs2/super.c
-+++ b/fs/ocfs2/super.c
-@@ -933,6 +933,8 @@ static int __init ocfs2_init(void)
- 
- 	ocfs2_print_version();
- 
-+	dlmglue_init_stack();
-+
- 	status = init_ocfs2_uptodate_cache();
- 	if (status < 0) {
- 		mlog_errno(status);
-@@ -988,6 +990,8 @@ static void __exit ocfs2_exit(void)
- 
- 	exit_ocfs2_uptodate_cache();
- 
-+	dlmglue_exit_stack();
-+
- 	mlog_exit_void();
- }
- 
+ struct ocfs2_locking_protocol {
+ 	void (*lp_lock_ast)(void *astarg);
+ 	void (*lp_blocking_ast)(void *astarg, int level);
 -- 
 1.5.4.1
 
