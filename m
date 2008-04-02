@@ -1,67 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757946AbYDBDVt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758362AbYDBDak@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757946AbYDBDVt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Apr 2008 23:21:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752869AbYDBDVk
+	id S1758362AbYDBDak (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Apr 2008 23:30:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754007AbYDBDaa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Apr 2008 23:21:40 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:42059 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752667AbYDBDVj (ORCPT
+	Tue, 1 Apr 2008 23:30:30 -0400
+Received: from E23SMTP01.au.ibm.com ([202.81.18.162]:54986 "EHLO
+	e23smtp01.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753976AbYDBDa3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Apr 2008 23:21:39 -0400
-Date: Wed, 2 Apr 2008 05:21:38 +0200 (CEST)
-From: Jan Engelhardt <jengelh@medozas.de>
-To: Dmitri Vorobiev <dmitri.vorobiev@gmail.com>
-cc: Johannes Weiner <hannes@saeurebad.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Fix kernel thread names that might offend users.
-In-Reply-To: <47F2D343.3060009@gmail.com>
-Message-ID: <alpine.LNX.1.10.0804020510290.6604@fbirervta.pbzchgretzou.qr>
-References: <87r6dps3db.fsf@saeurebad.de> <47F2D343.3060009@gmail.com>
-User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
+	Tue, 1 Apr 2008 23:30:29 -0400
+Message-ID: <47F2FCAE.7070401@linux.vnet.ibm.com>
+Date: Wed, 02 Apr 2008 08:55:34 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+CC: Paul Menage <menage@google.com>, Pavel Emelianov <xemul@openvz.org>,
+       Hugh Dickins <hugh@veritas.com>,
+       Sudhir Kumar <skumar@linux.vnet.ibm.com>,
+       YAMAMOTO Takashi <yamamoto@valinux.co.jp>, lizf@cn.fujitsu.com,
+       linux-kernel@vger.kernel.org, taka@valinux.co.jp, linux-mm@kvack.org,
+       David Rientjes <rientjes@google.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [RFC][-mm] Add an owner to the mm_struct (v4)
+References: <20080401124312.23664.64616.sendpatchset@localhost.localdomain> <20080402093157.e445acfb.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20080402093157.e445acfb.kamezawa.hiroyu@jp.fujitsu.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+KAMEZAWA Hiroyuki wrote:
+> On Tue, 01 Apr 2008 18:13:12 +0530
+> Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+>> +	/*
+>> +	 * Search in the children
+>> +	 */
+>> +	list_for_each_entry(c, &p->children, sibling) {
+>> +		if (c->mm == mm)
+>> +			goto assign_new_owner;
+>> +	}
+>> +
+> This finds new owner when "current" is multi-threaded and
+> "current" called pthread_create(), right ?
+> 
 
-On Wednesday 2008-04-02 02:28, Dmitri Vorobiev wrote:
->>
->> To settle things down a bit on the bugtrackers, this patch renames all
->> offending kernel threads into something that goes better with
->> GNOME-based systems.
->> Since KDE is essentially dead[...]
+No, it won't find the new owner if we have CLONE_THREAD passed while creating
+threads. mm_need_new_owner() checks for !delay_group_leader(). If the
+group_leader is set, we don't need a new owner, it stays around till all threads
+exit.
 
-Beware of Linus's strong contrary opinion! (You might get called upon.)
+>> +	/*
+>> +	 * Search in the siblings
+>> +	 */
+>> +	list_for_each_entry(c, &p->parent->children, sibling) {
+>> +		if (c->mm == mm)
+>> +			goto assign_new_owner;
+>> +	}
+>> +
+> This finds new owner when "current" is multi-threaded and
+> "current" is just a child (means it doesn't call pthread_create()) ?
+> 
 
->> Also, please let me know if I forgot something.
+Ditto
 
-Since it all seems to be an April's joke, how about the KDE
-people change _their_ program names so as to
+> 
+>> +	/*
+>> +	 * Search through everything else. We should not get
+>> +	 * here often
+>> +	 */
+>> +	do_each_thread(g, c) {
+>> +		if (c->mm == mm)
+>> +			goto assign_new_owner;
+>> +	} while_each_thread(g, c);
+> 
+> Doing above in synchronized manner seems too heavy.
+> When this happen ? or Can this be done in lazy "on-demand" manner ?
+> 
 
-(1) not confuse kernel people [kwin -> kdewin]
-     since apparently, GNOME does it more than just right
-     (who would have thought! "gnome-control-center" is a perfect name,
-     "gcontrolcenter" would have been acceptable too, but "gcc" would not.)
+Do you mean under task_lock()?
 
-and
+> +assign_new_owner:
+> +	rcu_read_unlock();
+> +	BUG_ON(c == p);
+> +	task_lock(c);
+> +	if (c->mm != mm) {
+> +		task_unlock(c);
+> +		goto retry;
+> +	}
+> +	cgroup_mm_owner_callbacks(mm->owner, c);
+> +	mm->owner = c;
+> +	task_unlock(c);
+> +}
+> Why rcu_read_unlock() before changing owner ? Is it safe ?
+> 
 
-(2) not look like they did not know the English language.
-     [kontact,kolf,kompare -> contact,golf,compare]
-
-     Some are valid in German though [kalzium,konsole] and KDE does
-     seem to have strong .de ties, so I let these go through.
-
-
-> Did you forget to send this patch yesterday in which case this would have
-> been more suitable for April 1st?
-
-|Date: Tue, 01 Apr 2008 22:54:08 +0200 
-|From: Johannes Weiner
-|To: Linux Kernel Mailing List
-
+It should be safe, since we take task_lock(), but to be doubly sure, we can drop
+rcu read lock after taking the task_lock().
 
 -- 
-make boldconfig -- to boldly select what no one has selected before
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
