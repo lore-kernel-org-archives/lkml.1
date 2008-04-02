@@ -1,56 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757331AbYDBOnT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757886AbYDBOpA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757331AbYDBOnT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 10:43:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753416AbYDBOnK
+	id S1757886AbYDBOpA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 10:45:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755878AbYDBOow
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 10:43:10 -0400
-Received: from g4t0017.houston.hp.com ([15.201.24.20]:37786 "EHLO
-	g4t0017.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752639AbYDBOnI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 10:43:08 -0400
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: Greg KH <greg@kroah.com>
-Subject: Re: + revert-gregkh-pci-pci-x86-use-generic-pci_enable_resources.patch added to -mm tree
-Date: Wed, 2 Apr 2008 08:43:01 -0600
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       akpm@linux-foundation.org, mm-commits@vger.kernel.org,
-       davem@davemloft.net, m.kozlowski@tuxland.pl,
-       linux-kernel@vger.kernel.org, Tony Luck <tony.luck@intel.com>,
-       linux-ia64@vger.kernel.org, Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
-       Kyle McMartin <kyle@mcmartin.ca>
-References: <200803282348.m2SNmleP016847@imap1.linux-foundation.org> <1207082276.10388.224.camel@pasglop> <20080402051554.GA21714@kroah.com>
-In-Reply-To: <20080402051554.GA21714@kroah.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200804020843.02402.bjorn.helgaas@hp.com>
+	Wed, 2 Apr 2008 10:44:52 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:55511 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754734AbYDBOow (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Apr 2008 10:44:52 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <8bd0f97a0804011434r4869fbe8t89ade12c04c97f2@mail.gmail.com>
+References: <8bd0f97a0804011434r4869fbe8t89ade12c04c97f2@mail.gmail.com>
+To: "Mike Frysinger" <vapier.adi@gmail.com>
+Cc: dhowells@redhat.com, "Greg Ungerer" <gerg@snapgear.com>,
+       "David McCullough" <David_Mccullough@securecomputing.com>,
+       LKML <linux-kernel@vger.kernel.org>, "Bryan Wu" <Bryan.Wu@analog.com>,
+       "Bernd Schmidt" <bernds_cb1@t-online.de>,
+       "Robin Getz" <rgetz@blackfin.uclinux.org>
+Subject: Re: nommu: handling anonymous mmap clearing in userspace rather than kernel
+X-Mailer: MH-E 8.0.3+cvs; nmh 1.2-20070115cvs; GNU Emacs 23.0.50
+Date: Wed, 02 Apr 2008 15:20:14 +0100
+Message-ID: <5516.1207146014@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 01 April 2008 11:15:54 pm Greg KH wrote:
-> On Wed, Apr 02, 2008 at 07:37:56AM +1100, Benjamin Herrenschmidt wrote:
-> > 
-> > On Tue, 2008-04-01 at 09:57 -0600, Bjorn Helgaas wrote:
-> > > 
-> > > Can we just drop the "revert gregkh" patches for x86, alpha, powerpc,
-> > > and ia64?
-> > 
-> > Considering that the generic is equivalent to what I have today on
-> > powerpc, I'm fine with it.
-> 
-> Ok, so what ones should I keep in my tree?
-> 
-> Bjorn, any help?
+Mike Frysinger <vapier.adi@gmail.com> wrote:
 
-I think we should keep x86, alpha, powerpc, ppc, and ia64.
+> a workaround: introduce a new no-mmu-only mmap flag MAP_UNINITIALIZE
+> to signal to the kernel that it should skip the memset().  this way,
+> userspace malloc() can do mmap(MAP_ANONYMOUS|MAP_UNINITIALIZE) to get
+> large chunks of memory without affecting any other anonymous mmap()
+> call.
 
-Kyle previously acked it for parisc, so maybe he can speak
-up about whether to keep it there.
+I think that's reasonable for NOMMU.  It's not like the process accessing the
+uninitialised memory is prevented from accessing anything it wants to anyway.
 
-Bjorn
+I would vote that the memset() should only be skipped if requested as there
+may be programs that call mmap(MAP_ANONYMOUS) expecting the memory they're
+given to be zeroed out.
+
+David
+
+
