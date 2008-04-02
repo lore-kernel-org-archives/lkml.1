@@ -1,57 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757404AbYDBEv6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756929AbYDBFET@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757404AbYDBEv6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 00:51:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751273AbYDBEvv
+	id S1756929AbYDBFET (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 01:04:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751508AbYDBFEJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 00:51:51 -0400
-Received: from smtp.nokia.com ([192.100.122.230]:20570 "EHLO
-	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751257AbYDBEvu (ORCPT
+	Wed, 2 Apr 2008 01:04:09 -0400
+Received: from py-out-1112.google.com ([64.233.166.179]:13199 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751440AbYDBFEH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 00:51:50 -0400
-Message-ID: <47F30FDD.5080003@yandex.ru>
-Date: Wed, 02 Apr 2008 07:47:25 +0300
-From: Artem Bityutskiy <dedekind@yandex.ru>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	Wed, 2 Apr 2008 01:04:07 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=bkfVZbovwZ+hxYtn28Z2KBJ5Izdi94Ts8xAtjgTM17dupWWLF94fziJUuX4zT1xKLb6ePBvfevc8gaXzTrpDTrZOsq3OykKVlLsFsIQQ5fus3UQ+7D8FR2Iha9hm08mjDn2mPFe256PzWtan98/++/WEqt+4mqGmi1YF/C7rIX8=
+Date: Wed, 2 Apr 2008 01:04:00 -0400
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Jiri Kosina <jkosina@suse.cz>,
+       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Liam Girdwood <liam.girdwood@wolfsonmicro.com>
+Subject: Re: [PATCH 6/6] Build system and MAINTAINERS entry for WM97xx
+	touchscreen drivers
+Message-ID: <20080402050400.GA14189@anvil.corenet.prv>
+References: <20080401102825.GA30868@rakim.wolfsonmicro.main> <1207046169-2152-1-git-send-email-broonie@opensource.wolfsonmicro.com> <1207046169-2152-2-git-send-email-broonie@opensource.wolfsonmicro.com> <1207046169-2152-3-git-send-email-broonie@opensource.wolfsonmicro.com> <1207046169-2152-4-git-send-email-broonie@opensource.wolfsonmicro.com> <1207046169-2152-5-git-send-email-broonie@opensource.wolfsonmicro.com> <1207046169-2152-6-git-send-email-broonie@opensource.wolfsonmicro.com>
 MIME-Version: 1.0
-To: Willy Tarreau <w@1wt.eu>
-CC: "H. Peter Anvin" <hpa@zytor.com>, Andi Kleen <andi@firstfloor.org>,
-       Tomasz Chmielewski <mangoo@wpkg.org>,
-       LKML <linux-kernel@vger.kernel.org>, penberg@cs.helsinki.fi,
-       =?UTF-8?B?SsO2cm4gRW5nZWw=?= <joern@logfs.org>,
-       ext-adrian.hunter@nokia.com, jwboyer@gmail.com
-Subject: Re: UBIFS vs Logfs (was [RFC PATCH] UBIFS - new flash file system)
-References: <47F1EC20.6050600@wpkg.org> <47F1F644.4060000@yandex.ru> <878wzx25s7.fsf@basil.nowhere.org> <47F21B47.4000206@yandex.ru> <47F26278.5070009@zytor.com> <20080401212652.GD23796@1wt.eu>
-In-Reply-To: <20080401212652.GD23796@1wt.eu>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-OriginalArrivalTime: 02 Apr 2008 04:51:27.0875 (UTC) FILETIME=[360DB530:01C8947D]
-X-Nokia-AV: Clean
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1207046169-2152-6-git-send-email-broonie@opensource.wolfsonmicro.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Willy Tarreau wrote:
->> Well, even auto-levelling storage should benefit from a filesystem which 
->> minimizes the total number of flash sectors churned, which means doing 
->> as few writes as possible and to large, contiguous sections.
-> 
-> Exactly. At exosec, we ship one appliance which writes statistics to a
-> partition on a compactflash every 5 minutes. We preferred to go with JFFS2
-> exactly because of this reason. We never had any problem proceeding this way.
-> I'm not sure if it would have been the same with ext2 though.
->
+Hi Mark,
 
-Yes, as I agreed in a previous mail this may make sense in some cases.
+On Tue, Apr 01, 2008 at 11:36:09AM +0100, Mark Brown wrote:
+> +config TOUCHSCREEN_WM9705
+> +	bool "WM9705 Touchscreen interface support"
+> +	depends on TOUCHSCREEN_WM97XX
+> +	help
+> +	  Say Y here if you have a Wolfson Microelectronics WM9705 touchscreen
+> +	  controller connected to your system.
+> +
+> +	  If unsure, say N.
+> +
+> +	  To compile this driver as a module, choose M here: the
+> +	  module will be called wm9705.
 
-But in general it is not a good approach. Basically, it is wastage of resources.
-Indeed, first the firmware on MMC/SD/etc makes efforts to make flash look
-like a block device. It gives you in-place updates, but by cost of performance
-and reliability. Then you just drop this nice property, and use JFFS2, which
-assumes it has only out-of-place updates. But if this solves the task you have
-- fine!
+This is not correct. The chip drivers are compiled into wm97xx-ts
+module, there is no wm9705 module. I fixed it on my side and
+applied the series to wm97xx branch of my input tree. I also moved
+changes to Makefile/Kconfig to the appropriate patches instead of
+doing bulk update as a separate patch. Please take a look and let
+me know if you see anything wrong.
+
+Thank you.
+
 
 -- 
-Best Regards,
-Artem Bityutskiy (Артём Битюцкий)
+Dmitry
