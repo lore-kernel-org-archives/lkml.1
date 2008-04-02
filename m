@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759655AbYDBSix@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760783AbYDBSjK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759655AbYDBSix (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 14:38:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757514AbYDBSfm
+	id S1760783AbYDBSjK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 14:39:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757589AbYDBSfm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Wed, 2 Apr 2008 14:35:42 -0400
-Received: from 21.sub-75-208-3.myvzw.com ([75.208.3.21]:38410 "EHLO
+Received: from 21.sub-75-208-3.myvzw.com ([75.208.3.21]:38408 "EHLO
 	mail.goop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757121AbYDBSfi (ORCPT
+	with ESMTP id S1757189AbYDBSfi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 2 Apr 2008 14:35:38 -0400
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Subject: [PATCH 02 of 24] xen: add missing VIRQ_ARCH_[0-7] definitions which
-	ia64/xen needs
-X-Mercurial-Node: 1d752e8085f343c8d871a4021642ad7e578dfdef
-Message-Id: <1d752e8085f343c8d871.1207158831@localhost>
+Subject: [PATCH 05 of 24] xen: move features.c from arch/x86/xen/features.c to
+	drivers/xen
+X-Mercurial-Node: 08fcd88387c0838b1635654923420119870e3192
+Message-Id: <08fcd88387c0838b1635.1207158834@localhost>
 In-Reply-To: <patchbomb.1207158829@localhost>
-Date: Wed, 02 Apr 2008 10:53:51 -0700
+Date: Wed, 02 Apr 2008 10:53:54 -0700
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: LKML <linux-kernel@vger.kernel.org>,
@@ -29,39 +29,35 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Isaku Yamahata <yamahata@valinux.co.jp>
 
-Add xen VIRQ numbers defined for arch specific use.
-ia64/xen domU uses VIRQ_ARCH_0 for virtual itc timer.
-Although all those constants aren't used yet by ia64
-at this moment, add all arch specific VIRQ numbers.
+ia64/xen also uses it too. Move it into common place so that
+ia64/xen can share the code.
 
 Signed-off-by: Isaku Yamahata <yamahata@valinux.co.jp>
 Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 ---
- include/xen/interface/xen.h |   13 +++++++++++--
- 1 file changed, 11 insertions(+), 2 deletions(-)
+ arch/x86/xen/Makefile  |    2 +-
+ drivers/xen/Makefile   |    2 +-
+ drivers/xen/features.c |    1 -
+ 3 files changed, 2 insertions(+), 3 deletions(-)
 
-diff --git a/include/xen/interface/xen.h b/include/xen/interface/xen.h
---- a/include/xen/interface/xen.h
-+++ b/include/xen/interface/xen.h
-@@ -78,8 +78,18 @@
- #define VIRQ_CONSOLE    2  /* (DOM0) Bytes received on emergency console. */
- #define VIRQ_DOM_EXC    3  /* (DOM0) Exceptional event for some domain.   */
- #define VIRQ_DEBUGGER   6  /* (DOM0) A domain has paused for debugging.   */
--#define NR_VIRQS        8
+diff --git a/arch/x86/xen/Makefile b/arch/x86/xen/Makefile
+--- a/arch/x86/xen/Makefile
++++ b/arch/x86/xen/Makefile
+@@ -1,4 +1,4 @@
+-obj-y		:= enlighten.o setup.o features.o multicalls.o mmu.o \
++obj-y		:= enlighten.o setup.o multicalls.o mmu.o \
+ 			events.o time.o manage.o xen-asm.o
  
-+/* Architecture-specific VIRQ definitions. */
-+#define VIRQ_ARCH_0    16
-+#define VIRQ_ARCH_1    17
-+#define VIRQ_ARCH_2    18
-+#define VIRQ_ARCH_3    19
-+#define VIRQ_ARCH_4    20
-+#define VIRQ_ARCH_5    21
-+#define VIRQ_ARCH_6    22
-+#define VIRQ_ARCH_7    23
-+
-+#define NR_VIRQS       24
- /*
-  * MMU-UPDATE REQUESTS
-  *
+ obj-$(CONFIG_SMP)	+= smp.o
+diff --git a/drivers/xen/Makefile b/drivers/xen/Makefile
+--- a/drivers/xen/Makefile
++++ b/drivers/xen/Makefile
+@@ -1,2 +1,2 @@
+-obj-y	+= grant-table.o
++obj-y	+= grant-table.o features.o
+ obj-y	+= xenbus/
+diff --git a/arch/x86/xen/features.c b/drivers/xen/features.c
+rename from arch/x86/xen/features.c
+rename to drivers/xen/features.c
 
 
