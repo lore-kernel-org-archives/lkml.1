@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762490AbYDBUb1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764938AbYDBUbs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762490AbYDBUb1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 16:31:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761780AbYDBURw
+	id S1764938AbYDBUbs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 16:31:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761809AbYDBURy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 16:17:52 -0400
-Received: from ns1.suse.de ([195.135.220.2]:36843 "EHLO mx1.suse.de"
+	Wed, 2 Apr 2008 16:17:54 -0400
+Received: from ns2.suse.de ([195.135.220.15]:33143 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758206AbYDBURv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 16:17:51 -0400
+	id S1761776AbYDBURx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Apr 2008 16:17:53 -0400
 From: Mark Fasheh <mfasheh@suse.com>
 To: linux-kernel@vger.kernel.org
 Cc: ocfs2-devel@oss.oracle.com, Joel Becker <joel.becker@oracle.com>
-Subject: [PATCH 35/62] ocfs2: Allow selection of cluster plug-ins.
-Date: Wed,  2 Apr 2008 13:14:45 -0700
-Message-Id: <1207167390414-git-send-email-mfasheh@suse.com>
+Subject: [PATCH 36/62] ocfs2: Document /sys/fs/ocfs2
+Date: Wed,  2 Apr 2008 13:14:46 -0700
+Message-Id: <1207167392537-git-send-email-mfasheh@suse.com>
 X-Mailer: git-send-email 1.5.2.4
-In-Reply-To: <12071673882492-git-send-email-mfasheh@suse.com>
+In-Reply-To: <1207167390414-git-send-email-mfasheh@suse.com>
 References: <12071673121124-git-send-email-mfasheh@suse.com>
  <1207167318479-git-send-email-mfasheh@suse.com>
  <12071673203909-git-send-email-mfasheh@suse.com>
@@ -52,89 +52,122 @@ References: <12071673121124-git-send-email-mfasheh@suse.com>
  <12071673843208-git-send-email-mfasheh@suse.com>
  <12071673872568-git-send-email-mfasheh@suse.com>
  <12071673882492-git-send-email-mfasheh@suse.com>
+ <1207167390414-git-send-email-mfasheh@suse.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Joel Becker <joel.becker@oracle.com>
 
-ocfs2 now supports plug-ins for the classic O2CB stack as well as
-userspace cluster stacks in conjunction with fs/dlm.  This allows zero,
-one, or both of the plug-ins to be selected in Kconfig.  For local mounts
-(non-clustered), neither plug-in is needed.  Both plugins can be loaded
-at one time, the runtime will select the one needed for the cluster
-systme in use.
+Add ABI documentation for these files:
+
+	/sys/fs/ocfs2/max_locking_protocol
+	/sys/fs/ocfs2/loaded_cluster_plugins
+	/sys/fs/ocfs2/active_cluster_plugin
+	/sys/fs/ocfs2/cluster_stack
 
 Signed-off-by: Joel Becker <joel.becker@oracle.com>
 Signed-off-by: Mark Fasheh <mfasheh@suse.com>
 ---
- fs/Kconfig        |   26 ++++++++++++++++++++++++++
- fs/ocfs2/Makefile |   10 ++++++----
- 2 files changed, 32 insertions(+), 4 deletions(-)
+ Documentation/ABI/testing/sysfs-ocfs2 |   89 +++++++++++++++++++++++++++++++++
+ 1 files changed, 89 insertions(+), 0 deletions(-)
+ create mode 100644 Documentation/ABI/testing/sysfs-ocfs2
 
-diff --git a/fs/Kconfig b/fs/Kconfig
-index d731282..c7b50ce 100644
---- a/fs/Kconfig
-+++ b/fs/Kconfig
-@@ -444,6 +444,32 @@ config OCFS2_FS
- 	  For more information on OCFS2, see the file
- 	  <file:Documentation/filesystems/ocfs2.txt>.
- 
-+config OCFS2_FS_O2CB
-+	tristate "O2CB Kernelspace Clustering"
-+	depends on OCFS2_FS
-+	default y
-+	help
-+	  OCFS2 includes a simple kernelspace clustering package, the OCFS2
-+	  Cluster Base.  It only requires a very small userspace component
-+	  to configure it. This comes with the standard ocfs2-tools package.
-+	  O2CB is limited to maintaining a cluster for OCFS2 file systems.
-+	  It cannot manage any other cluster applications.
+diff --git a/Documentation/ABI/testing/sysfs-ocfs2 b/Documentation/ABI/testing/sysfs-ocfs2
+new file mode 100644
+index 0000000..b7cc516
+--- /dev/null
++++ b/Documentation/ABI/testing/sysfs-ocfs2
+@@ -0,0 +1,89 @@
++What:		/sys/fs/ocfs2/
++Date:		April 2008
++Contact:	ocfs2-devel@oss.oracle.com
++Description:
++		The /sys/fs/ocfs2 directory contains knobs used by the
++		ocfs2-tools to interact with the filesystem.
 +
-+	  It is always safe to say Y here, as the clustering method is
-+	  run-time selectable.
++What:		/sys/fs/ocfs2/max_locking_protocol
++Date:		April 2008
++Contact:	ocfs2-devel@oss.oracle.com
++Description:
++		The /sys/fs/ocfs2/max_locking_protocol file displays version
++		of ocfs2 locking supported by the filesystem.  This version
++		covers how ocfs2 uses distributed locking between cluster
++		nodes.
 +
-+config OCFS2_FS_USERSPACE_CLUSTER
-+	tristate "OCFS2 Userspace Clustering"
-+	depends on OCFS2_FS && DLM
-+	default y
-+	help
-+	  This option will allow OCFS2 to use userspace clustering services
-+	  in conjunction with the DLM in fs/dlm.  If you are using a
-+	  userspace cluster manager, say Y here.
++		The protocol version has a major and minor number.  Two
++		cluster nodes can interoperate if they have an identical
++		major number and an overlapping minor number - thus,
++		a node with version 1.10 can interoperate with a node
++		sporting version 1.8, as long as both use the 1.8 protocol.
 +
-+	  It is safe to say Y, as the clustering method is run-time
-+	  selectable.
++		Reading from this file returns a single line, the major
++		number and minor number joined by a period, eg "1.10".
 +
- config OCFS2_DEBUG_MASKLOG
- 	bool "OCFS2 logging support"
- 	depends on OCFS2_FS
-diff --git a/fs/ocfs2/Makefile b/fs/ocfs2/Makefile
-index b8d6d02..f6956de 100644
---- a/fs/ocfs2/Makefile
-+++ b/fs/ocfs2/Makefile
-@@ -4,9 +4,10 @@ EXTRA_CFLAGS += -DCATCH_BH_JBD_RACES
- 
- obj-$(CONFIG_OCFS2_FS) += 	\
- 	ocfs2.o			\
--	ocfs2_stackglue.o	\
--	ocfs2_stack_o2cb.o	\
--	ocfs2_stack_user.o
-+	ocfs2_stackglue.o
++		This file is read-only.  The value is compiled into the
++		driver.
 +
-+obj-$(CONFIG_OCFS2_FS_O2CB) += ocfs2_stack_o2cb.o
-+obj-$(CONFIG_OCFS2_FS_USERSPACE_CLUSTER) += ocfs2_stack_user.o
- 
- ocfs2-objs := \
- 	alloc.o 		\
-@@ -39,5 +40,6 @@ ocfs2_stackglue-objs := stackglue.o
- ocfs2_stack_o2cb-objs := stack_o2cb.o
- ocfs2_stack_user-objs := stack_user.o
- 
-+# cluster/ is always needed when OCFS2_FS for masklog support
- obj-$(CONFIG_OCFS2_FS) += cluster/
--obj-$(CONFIG_OCFS2_FS) += dlm/
-+obj-$(CONFIG_OCFS2_FS_O2CB) += dlm/
++What:		/sys/fs/ocfs2/loaded_cluster_plugins
++Date:		April 2008
++Contact:	ocfs2-devel@oss.oracle.com
++Description:
++		The /sys/fs/ocfs2/loaded_cluster_plugins file describes
++		the available plugins to support ocfs2 cluster operation.
++		A cluster plugin is required to use ocfs2 in a cluster.
++		There are currently two available plugins:
++
++		* 'o2cb' - The classic o2cb cluster stack that ocfs2 has
++			used since its inception.
++		* 'user' - A plugin supporting userspace cluster software
++			in conjunction with fs/dlm.
++
++		Reading from this file returns the names of all loaded
++		plugins, one per line.
++
++		This file is read-only.  Its contents may change as
++		plugins are loaded or removed.
++
++What:		/sys/fs/ocfs2/active_cluster_plugin
++Date:		April 2008
++Contact:	ocfs2-devel@oss.oracle.com
++Description:
++		The /sys/fs/ocfs2/active_cluster_plugin displays which
++		cluster plugin is currently in use by the filesystem.
++		The active plugin will appear in the loaded_cluster_plugins
++		file as well.  Only one plugin can be used at a time.
++
++		Reading from this file returns the name of the active plugin
++		on a single line.
++
++		This file is read-only.  Which plugin is active depends on
++		the cluster stack in use.  The contents may change
++		when all filesystems are unmounted and the cluster stack
++		is changed.
++
++What:		/sys/fs/ocfs2/cluster_stack
++Date:		April 2008
++Contact:	ocfs2-devel@oss.oracle.com
++Description:
++		The /sys/fs/ocfs2/cluster_stack file contains the name
++		of current ocfs2 cluster stack.  This value is set by
++		userspace tools when bringing the cluster stack online.
++
++		Cluster stack names are 4 characters in length.
++
++		When the 'o2cb' cluster stack is used, the 'o2cb' cluster
++		plugin is active.  All other cluster stacks use the 'user'
++		cluster plugin.
++
++		Reading from this file returns the name of the current
++		cluster stack on a single line.
++
++		Writing a new stack name to this file changes the current
++		cluster stack unless there are mounted ocfs2 filesystems.
++		If there are mounted filesystems, attempts to change the
++		stack return an error.
++
++Users:
++	ocfs2-tools <ocfs2-tools-devel@oss.oracle.com>
 -- 
 1.5.4.1
 
