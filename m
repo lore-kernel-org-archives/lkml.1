@@ -1,57 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757307AbYDBPis@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756580AbYDBPoS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757307AbYDBPis (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 11:38:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755662AbYDBPik
+	id S1756580AbYDBPoS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 11:44:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753718AbYDBPoI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 11:38:40 -0400
-Received: from e34.co.us.ibm.com ([32.97.110.152]:37752 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755590AbYDBPij (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 11:38:39 -0400
-Subject: Re: [PATCH 1/2] Keep track of original clocksource frequency
-From: John Stultz <johnstul@us.ibm.com>
-To: Roman Zippel <zippel@linux-m68k.org>
-Cc: lkml <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0804021314400.26791@localhost.localdomain>
-References: <1205878279.28128.114.camel@localhost>
-	 <Pine.LNX.4.64.0804021314400.26791@localhost.localdomain>
-Content-Type: text/plain
-Date: Wed, 02 Apr 2008 08:38:37 -0700
-Message-Id: <1207150717.6211.0.camel@jstultz-laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+	Wed, 2 Apr 2008 11:44:08 -0400
+Received: from rtr.ca ([76.10.145.34]:1099 "EHLO mail.rtr.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752988AbYDBPoH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Apr 2008 11:44:07 -0400
+Message-ID: <47F3A9C3.7030702@rtr.ca>
+Date: Wed, 02 Apr 2008 11:44:03 -0400
+From: Mark Lord <lkml@rtr.ca>
+Organization: Real-Time Remedies Inc.
+User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
+MIME-Version: 1.0
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Oliver Neukum <oliver@neukum.org>, Pavel Machek <pavel@suse.cz>,
+       Linux Kernel <linux-kernel@vger.kernel.org>, Greg KH <gregkh@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>, jikos@suse.cz,
+       linux-usb@vger.kernel.org
+Subject: Re: 2.6.25-rc7:  Ugh. ---> PATCH
+References: <Pine.LNX.4.44L0.0804021106320.6272-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0804021106320.6272-100000@iolanthe.rowland.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This patch seems to fix it.
+Could you guys look this over some more,
+as I really am not familiar with the USB code.
 
-On Wed, 2008-04-02 at 13:20 +0200, Roman Zippel wrote:
-> Hi,
-> 
-> On Tue, 18 Mar 2008, john stultz wrote:
-> 
-> > @@ -63,6 +64,7 @@ struct clocksource {
-> >  	cycle_t (*read)(void);
-> >  	cycle_t mask;
-> >  	u32 mult;
-> > +	s32 mult_orig;
-> >  	u32 shift;
-> >  	unsigned long flags;
-> >  	cycle_t (*vread)(void);
-> 
-> This is wrong, with HZ=100 the jiffies clock multiplier suddenly becomes 
-> negative and later the raw interval underflows.
+* * * *
 
-Ah, thanks for catching that!
+When comparing 2.6.24 against 2.6.25, this line of code
+stood out as not looking entirely correct, given the new
+uses of QH_STATE_UNLINK_WAIT in 2.6.25.
 
-> 
-> Signed-off-by: Roman Zippel <zippel@linux-m68k.org>
+Applying this patch seems to fix the USB suspend/resume deaths
+on my machine here.  More testing is needed to be sure.
 
-Acked-by: John Stultz <johnstul@us.ibm.com>
+Signed-off-by: Mark Lord <mlord@pobox.com>
 
 
-
+--- linux-2.6.25-rc8/drivers/usb/host/ehci-hcd.c	2008-03-11 11:18:40.000000000 -0400
++++ linux/drivers/usb/host/ehci-hcd.c	2008-04-02 11:36:13.000000000 -0400
+@@ -815,7 +815,7 @@
+ 		end_unlink_async(ehci);
+ 
+ 	/* if it's not linked then there's nothing to do */
+-	if (qh->qh_state != QH_STATE_LINKED)
++	if (qh->qh_state != QH_STATE_LINKED && qh->qh_state != QH_STATE_UNLINK_WAIT)
+ 		;
+ 
+ 	/* defer till later if busy */
