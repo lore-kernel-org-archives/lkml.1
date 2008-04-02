@@ -1,77 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757850AbYDBOSA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757034AbYDBOWW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757850AbYDBOSA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 10:18:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756776AbYDBORv
+	id S1757034AbYDBOWW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 10:22:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754677AbYDBOWO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 10:17:51 -0400
-Received: from mail.syneticon.net ([213.239.212.131]:35387 "EHLO
-	mail2.syneticon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756736AbYDBORu (ORCPT
+	Wed, 2 Apr 2008 10:22:14 -0400
+Received: from smtp-out003.kontent.com ([81.88.40.217]:52324 "EHLO
+	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753812AbYDBOWN convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 10:17:50 -0400
-Message-ID: <47F39575.40006@wpkg.org>
-Date: Wed, 02 Apr 2008 16:17:25 +0200
-From: Tomasz Chmielewski <mangoo@wpkg.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061110 Mandriva/1.5.0.8-1mdv2007.1 (2007.1) Thunderbird/1.5.0.8 Mnenhy/0.7.4.666
+	Wed, 2 Apr 2008 10:22:13 -0400
+From: Oliver Neukum <oliver@neukum.org>
+Organization: Novell
+To: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [RFC][PATCH] PM: Introduce new top level suspend and hibernation callbacks (rev. 6)
+Date: Wed, 2 Apr 2008 16:22:03 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Nigel Cunningham <ncunningham@crca.org.au>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Greg KH <greg@kroah.com>, Len Brown <lenb@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Alexey Starikovskiy <astarikovskiy@suse.de>,
+       David Brownell <david-b@pacbell.net>, Pavel Machek <pavel@ucw.cz>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>
+References: <Pine.LNX.4.44L0.0804021007060.14858-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0804021007060.14858-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-To: Artem Bityutskiy <dedekind@yandex.ru>
-Cc: LKML <linux-kernel@vger.kernel.org>, penberg@cs.helsinki.fi,
-       =?UTF-8?B?SsO2cm4gRW5nZWw=?= <joern@logfs.org>,
-       ext-adrian.hunter@nokia.com, jwboyer@gmail.com, w@1wt.eu,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: UBIFS vs Logfs (was [RFC PATCH] UBIFS - new flash file system)
-References: <47F1EC20.6050600@wpkg.org> <47F1F644.4060000@yandex.ru> <47F202D9.20405@wpkg.org> <47F2071A.6010406@yandex.ru>
-In-Reply-To: <47F2071A.6010406@yandex.ru>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200804021622.04461.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Artem Bityutskiy schrieb:
-> Tomasz Chmielewski wrote:
-
-(...)
-
->> Performance is only one factor in the equation. Other factors are: 
->> cost and reliability.
->>
->> I speak from experience: flash-based block devices tend to have poor 
->> wear-levelling (at least Transcend IDE-flash disks).
->> To reproduce:
->> - format a 2 GB Transcend IDE-flash disk with ext3
->> - write a small file (50-100 kB)
->> - update that file ~several hundred thousand times - as you finish, 
->> IDE-flash disk will have 200-300 badblocks
-> Yeah, that's bad. But if you have a bad FTL, surely there is not guarantee
-> a flash FS will help? Isn't it better to use better hardware?
+Am Mittwoch, 2. April 2008 16:11:14 schrieb Alan Stern:
+> > However, I'd like to add a recommendation that the _new_ "resume" callbacks
+> > should only return errors in critical situations as the indication to the PM
+> > core that something went _really_ wrong and the device in question is quite
+> > surely unusable.
 > 
-> We did some experiments with MMC cards and we were unable to wear them
-> out with re-writing the same sectors again and again. This suggests there
-> _is_ better FTL hardware then that USB stick you was using.
-> 
-> Anyway, your original mail said Logfs can work with block devices. My 
-> answer -
-> UBIFS too, but this is very strange to do this IMO. But OK, it might is not
-> senseless, sorry for the wording. :-)
+> Agreed.  The most important aspect is that drivers should _not_ return
+> an error if the device is working correctly.  We should fix the drivers 
+> which make this mistake.
 
-I was thinking why my IDE-flash disk died so soon[1] and how efficient 
-can an internal wear-levelling be in devices which hide its "flashiness" 
-(USB-sticks, IDE-flash disks etc.).
-
-Internal wear-levelling mechanism doesn't have a clue about free space 
-on the filesystem - it that case, how can it do any efficient 
-wear-levelling?
+We need to do something about devices that don't want to be resumed.
+There's code like this:
 
 
+static int usb_resume(struct device *dev)
+{
+	struct usb_device	*udev;
 
-[1] Well, it didn't die, really. Once I removed the file which was 
-showing I/O errors and did "dd if=/dev/zero of=bigfile", there are no 
-badblocks anymore - probably remapped.
+	if (!is_usb_device(dev))	/* Ignore PM for interfaces */
+		return 0;
+	udev = to_usb_device(dev);
 
+	/* If udev->skip_sys_resume is set then udev was already suspended
+	 * when the system suspend started, so we don't want to resume
+	 * udev during this system wakeup.  However a reset-resume counts
+	 * as a wakeup event, so allow a reset-resume to occur if remote
+	 * wakeup is enabled. */
+	if (udev->skip_sys_resume) {
+		if (!(udev->reset_resume && udev->do_remote_wakeup))
+			return -EHOSTUNREACH;
+	}
+	return usb_external_resume_device(udev);
+}
 
+Do we want to keep this in the subsystems?
 
--- 
-Tomasz Chmielewski
-http://wpkg.org
+	Regards
+		Oliver
