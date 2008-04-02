@@ -1,58 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754240AbYDBK0j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754013AbYDBKe1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754240AbYDBK0j (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 06:26:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752570AbYDBK0b
+	id S1754013AbYDBKe1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 06:34:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752815AbYDBKeS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 06:26:31 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:39989 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752126AbYDBK0a (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 06:26:30 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=gFlrwm41prhsoy/3tZlDMls8dt1b2c335ZbORPB+IbdOXEITBi4bBiZcMX5gB/BVp
-	UK6IVeLDZmH1BJYRHoqQw==
-Message-ID: <6599ad830804020326o7947e3e5k25249e6b1c00e6b5@mail.gmail.com>
-Date: Wed, 2 Apr 2008 03:26:24 -0700
-From: "Paul Menage" <menage@google.com>
-To: "Li Zefan" <lizf@cn.fujitsu.com>
-Subject: Re: [PATCH -mm 2/3] cgroup: simplify init_subsys()
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       containers@lists.linux-foundation.org
-In-Reply-To: <47F2EC94.8030707@cn.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 2 Apr 2008 06:34:18 -0400
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:56218 "EHLO e6.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751703AbYDBKeR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Apr 2008 06:34:17 -0400
+Subject: [ANNOUNCE] LTP-DEVEL RPMs for i386, x86_64, ia64, ppc64 & s390x
+From: Subrata Modak <subrata@linux.vnet.ibm.com>
+Reply-To: subrata@linux.vnet.ibm.com
+To: ltp-list <ltp-list@lists.sourceforge.net>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Content-Type: text/plain
+Organization: IBM
+Date: Wed, 02 Apr 2008 16:04:04 +0530
+Message-Id: <1207132445.4744.20.camel@subratamodak.linux.ibm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.0 (2.8.0-33.el5) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <47F2EC94.8030707@cn.fujitsu.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 1, 2008 at 7:16 PM, Li Zefan <lizf@cn.fujitsu.com> wrote:
->  -
->  -       /* If this subsystem requested that it be notified with fork
->  -        * events, we should send it one now for every process in the
->  -        * system */
->  -       if (ss->fork) {
->  -               struct task_struct *g, *p;
->  -
->  -               read_lock(&tasklist_lock);
->  -               do_each_thread(g, p) {
->  -                       ss->fork(ss, p);
->  -               } while_each_thread(g, p);
->  -               read_unlock(&tasklist_lock);
->  -       }
+Dear All,
 
-Should we maybe call ss->fork(ss, &init_task) ? Or just document that
-ss->fork() explicitly doesn't get called for init.
+LTP Announces the creation of LTP-DEVEL RPM Packages for i386, x86_64,
+ia64, ppc64 & s390x. The same can be picked up from:
 
-Maybe also add some BUG()s to confirm that no other tasks have in fact
-been forked by this point?
+http://ltp.sourceforge.net/,
 
-Paul
+The Original motivation to create these Packages is to allow developers
+to write unit testcases in LTP, without the need to download the entire
+LTP test tree. Now, they can straightaway write Test Cases and can
+integrate them to LTP in future. The README.ltp-devel file contains all
+instructions to do so.
+
+I would kindly request the community to create similar LTP-DEVEL Package
+for other architectures as well, and, share the same with us.
+
+Happy Testing--
+Subrata
+
