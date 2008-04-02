@@ -1,43 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759269AbYDBVlS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760656AbYDBVl5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759269AbYDBVlS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 17:41:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755097AbYDBVlF
+	id S1760656AbYDBVl5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 17:41:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756696AbYDBVls
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 17:41:05 -0400
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:52080 "EHLO
-	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754865AbYDBVlE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 17:41:04 -0400
-Date: Wed, 2 Apr 2008 17:22:08 -0400
-Message-Id: <200804022122.m32LM8Ao014937@agora.fsl.cs.sunysb.edu>
-From: Erez Zadok <ezk@cs.sunysb.edu>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: viro@zeniv.linux.org.uk, akpm@linux-foundation.org,
-       dave@linux.vnet.ibm.com, ezk@cs.sunysb.edu,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [patch 00/10] vfs: add helpers to check r/o bind mounts 
-In-reply-to: Your message of "Wed, 02 Apr 2008 22:12:47 +0200."
-             <20080402201247.358430231@szeredi.hu> 
-X-MailKey: Erez_Zadok
+	Wed, 2 Apr 2008 17:41:48 -0400
+Received: from saeurebad.de ([85.214.36.134]:59842 "EHLO saeurebad.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756497AbYDBVls (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Apr 2008 17:41:48 -0400
+From: Johannes Weiner <hannes@saeurebad.de>
+To: linux-kernel@vger.kernel.org
+Cc: linux-mm@kvack.org, mingo@elte.hu, davem@davemloft.net,
+       hskinnemoen@atmel.com, cooloney@kernel.org, starvik@axis.com,
+       dhowells@redhat.com, ysato@users.sourceforge.net, takata@linux-m32r.org,
+       geert@linux-m68k.org, ralf@linux-mips.org, kyle@parisc-linux.org,
+       paulus@samba.org, schwidefsky@de.ibm.com, lethal@linux-sh.org,
+       jdike@addtoit.com, miles@gnu.org, chris@zankel.net,
+       rmk@arm.linux.org.uk, tony.luck@intel.com
+Subject: [RFC 00/21] Generic show_mem()
+Date: Wed,  2 Apr 2008 22:40:06 +0200
+Message-Id: <12071688283927-git-send-email-hannes@saeurebad.de>
+X-Mailer: git-send-email 1.5.2.2
+X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In message <20080402201247.358430231@szeredi.hu>, Miklos Szeredi writes:
-> See first patch for description.  This is against vfs-2.6 + two
-> patches I posted recently.
-> 
-> It's not for -mm yet, as it needs conversion of unionfs (will that be
-> done by me, I wonder?)
+Hi.
 
-Miklos, I'll be happy to do the conversion of unionfs in -mm to use these
-path_* helpers.  Is the code in these helpers going to change at all?  Can I
-expect the API to remain stable?
+Every arch implements its own show_mem() function.  Most of them share
+quite some code, some of them are completely identical.
 
-> Thanks,
-> Miklos
+This proposal implements a generic version of this functions and
+migrates almost all architectures to use it.
 
-Thanks,
-Erez.
+I have only tested the x86_32 related part in lack of other archs.
+
+As far as I understood the code, the generic version should work for
+the architectures that used to iterate mem_map pfns, but I can not
+tell for sure.  Please give feedback.
+
+Also, this series leaves ia64, arm, and sparc as is.
+
+Tony, as far as I understand, ia64 jumps holes in the memory map with
+vmemmap_find_next_valid_pfn().  Any idea if and how this could be
+built into the generic show_mem() version?
+
+Russell, I don't know if arm can be transformed.  For now, it keeps
+its arch-specific show_mem().
+
+Dave, can sparc's version be simply migrated as well?
+
+	Hannes
+
+ arch/alpha/mm/init.c      |   30 ------------------
+ arch/alpha/mm/numa.c      |   35 ----------------------
+ arch/arm/mm/Kconfig       |    3 ++
+ arch/avr32/mm/init.c      |   39 ------------------------
+ arch/blackfin/mm/init.c   |   27 -----------------
+ arch/cris/mm/init.c       |   31 -------------------
+ arch/frv/mm/init.c        |   31 -------------------
+ arch/h8300/mm/init.c      |   28 -----------------
+ arch/ia64/Kconfig         |    3 ++
+ arch/m32r/mm/init.c       |   37 -----------------------
+ arch/m68k/mm/init.c       |   31 -------------------
+ arch/m68knommu/mm/init.c  |   28 -----------------
+ arch/mips/mm/Makefile     |    3 +-
+ arch/mips/mm/pgtable.c    |   37 -----------------------
+ arch/mn10300/mm/pgtable.c |   27 -----------------
+ arch/parisc/mm/init.c     |   72 ---------------------------------------------
+ arch/powerpc/mm/mem.c     |   40 -------------------------
+ arch/ppc/mm/init.c        |   31 -------------------
+ arch/s390/mm/init.c       |   36 ----------------------
+ arch/sh/mm/init.c         |   41 -------------------------
+ arch/sparc/Kconfig        |    3 ++
+ arch/sparc64/mm/init.c    |   45 ----------------------------
+ arch/um/kernel/mem.c      |   31 -------------------
+ arch/v850/kernel/setup.c  |   30 ------------------
+ arch/x86/mm/init_64.c     |   40 -------------------------
+ arch/x86/mm/pgtable_32.c  |   48 ------------------------------
+ arch/xtensa/mm/init.c     |   27 -----------------
+ mm/page_alloc.c           |   53 +++++++++++++++++++++++++++++++++
+ 28 files changed, 63 insertions(+), 824 deletions(-)
