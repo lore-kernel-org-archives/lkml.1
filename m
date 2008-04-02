@@ -1,73 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755327AbYDBMbr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755755AbYDBMeQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755327AbYDBMbr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 08:31:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753527AbYDBMbl
+	id S1755755AbYDBMeQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 08:34:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753073AbYDBMeJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 08:31:41 -0400
-Received: from fk-out-0910.google.com ([209.85.128.190]:16219 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753218AbYDBMbk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 08:31:40 -0400
-Message-ID: <47F37CA4.8000109@mellanox.co.il>
-Date: Wed, 02 Apr 2008 15:31:32 +0300
-Reply-To: tziporet@dev.mellanox.co.il
-Organization: Mellanox Technologies
-User-Agent: Thunderbird 1.5.0.14 (Windows/20071210)
+	Wed, 2 Apr 2008 08:34:09 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:22436 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752517AbYDBMeH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Apr 2008 08:34:07 -0400
+Date: Wed, 2 Apr 2008 14:34:02 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>, paulmck@linux.vnet.ibm.com,
+       Ingo Molnar <mingo@elte.hu>, Vegard Nossum <vegard.nossum@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: kmemcheck caught read from freed memory (cfq_free_io_context)
+Message-ID: <20080402123402.GG12774@kernel.dk>
+References: <20080402110718.GU12774@kernel.dk> <1207134536.8514.773.camel@twins> <20080402111422.GW12774@kernel.dk> <1207135212.8514.782.camel@twins> <20080402113258.GY12774@kernel.dk> <1207136230.8514.791.camel@twins> <20080402114243.GZ12774@kernel.dk> <1207136867.8514.796.camel@twins> <20080402115337.GD12774@kernel.dk> <1207139162.8514.806.camel@twins>
 MIME-Version: 1.0
-To: Roland Dreier <rdreier@cisco.com>
-CC: general@lists.openfabrics.org, linux-kernel@vger.kernel.org
-Subject: Re: [ofa-general] InfiniBand/iWARP/RDMA merge plans for 2.6.26 (what's
- in infiniband.git)
-References: <adave31bayd.fsf@cisco.com>
-In-Reply-To: <adave31bayd.fsf@cisco.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-From: Tziporet Koren <tziporet@dev.mellanox.co.il>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1207139162.8514.806.camel@twins>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Roland Dreier wrote:
-> Core:
->
->  - I did a bunch of cleanups all over drivers/infiniband and the
->    gcc and sparse warning noise is down to a pretty reasonable level.
->    Further cleanups welcome of course.
->   
-We want to add send with invalidate & mask compare and swap.
-Eli will be able to send the patches next week and since they are small 
-I think they can be in for 2.6.26
-> ULPs:
->
->  - I merged Eli's IPoIB stateless offload changes for checksum
->    offload and LSO changes.  The interrupt moderation changes are
->    next, and should not be a problem to merge.  Please test IPoIB
->    on all sorts of hardware!
->   
-What about the split CQ for UD mode? It's improved the IPoIB performance 
-for small messages significantly.
->
-> HW specific:
->
->   
-mlx4- we plan to send patches for the low level driver only to enable 
-mlx4_en. These only affect our low level driver.
-Should be ready next week. I hope these can get in too.
-> Here are a few topics that I believe will not be ready in time for the
-> 2.6.26 window and will need to wait for 2.6.27 at least:
->
->  - XRC.  I still don't have a good feeling that we have settled on all
->    the nuances of the ABI we want to expose to userspace for this, and
->    ideally I would like to understand how ehca LL QPs fit into the
->    picture as well.
->   
-I think we should try to push for XEC in 2.6.26 since there are already 
-MPI implementation that use it and this ties them to use OFED only.
-Also this feature is stable and now being defined in IBTA
-Not taking it causing changes between OFED and the kernel and your 
-libibverbs and we wish to avoid such gaps.
-Is there any thing we can do to help and make it into 2.6.26?
+On Wed, Apr 02 2008, Peter Zijlstra wrote:
+> On Wed, 2008-04-02 at 13:53 +0200, Jens Axboe wrote:
+> > On Wed, Apr 02 2008, Peter Zijlstra wrote:
+> > > On Wed, 2008-04-02 at 13:42 +0200, Jens Axboe wrote:
+> > > > On Wed, Apr 02 2008, Peter Zijlstra wrote:
+> > > > > On Wed, 2008-04-02 at 13:32 +0200, Jens Axboe wrote:
+> > > > > > On Wed, Apr 02 2008, Peter Zijlstra wrote:
+> > > > > > > On Wed, 2008-04-02 at 13:14 +0200, Jens Axboe wrote:
+> > > > > > > > On Wed, Apr 02 2008, Peter Zijlstra wrote:
+> > > > > > > > > On Wed, 2008-04-02 at 13:07 +0200, Jens Axboe wrote:
+> > > > > > > > > > On Wed, Apr 02 2008, Pekka Enberg wrote:
+> > > > > > > > > > > Hi Paul,
+> > > > > > > > > > > 
+> > > > > > > > > > > On Wed, Apr 2, 2008 at 1:55 PM, Paul E. McKenney
+> > > > > > > > > > > <paulmck@linux.vnet.ibm.com> wrote:
+> > > > > > > > > > > >  I will check this when I get back to some bandwidth -- but in the meantime,
+> > > > > > > > > > > >  does kmemcheck special-case SLAB_DESTROY_BY_RCU?  It is legal to access
+> > > > > > > > > > > >  newly-freed items in that case, as long as you did rcu_read_lock()
+> > > > > > > > > > > >  before gaining a reference to them and don't hold the reference past
+> > > > > > > > > > > >  the matching rcu_read_unlock().
+> > > > > > > > > > > 
+> > > > > > > > > > > No, kmemcheck is work in progress and does not know about
+> > > > > > > > > > > SLAB_DESTROY_BY_RCU yet. The reason I asked Vegard to post the warning
+> > > > > > > > > > > was because Peter, Vegard, and myself identified this particular
+> > > > > > > > > > > warning as a real problem. But yeah, kmemcheck can cause false
+> > > > > > > > > > > positives for RCU for now.
+> > > > > > > > > > 
+> > > > > > > > > > Makes sense, and to me Pauls analysis of the code looks totally correct
+> > > > > > > > > > - there's no bug there, at least related to hlist traversal and
+> > > > > > > > > > kmem_cache_free(), since we are under rcu_read_lock() and thus hold off
+> > > > > > > > > > the grace for freeing.
+> > > > > > > > > 
+> > > > > > > > > but what holds off the slab allocator re-issueing that same object and
+> > > > > > > > > someone else writing other stuff into it?
+> > > > > > > > 
+> > > > > > > > Nothing, that's how rcu destry works here. But for the validation to be
+> > > > > > > > WRONG radix_tree_lookup(..., old_key) must return cic for new_key, not
+> > > > > > > > NULL.
+> > > > > > > > 
+> > > > > > > 
+> > > > > > > 
+> > > > > > > 	A				B			C
+> > > > > > > 
+> > > > > > > cfq_cic_lookup(cfqd_1, ioc)
+> > > > > > > 
+> > > > > > >   rcu_read_lock()
+> > > > > > >   cic = radix_tree_lookup(, cfqd_q);
+> > > > > > > 
+> > > > > > > 					cfq_cic_free()
+> > > > > > >   					
+> > > > > > > 								cfq_cic_link(cfqd_2, ioc,)
+> > > > > > > 
+> > > > > > >   rcu_read_unlock()
+> > > > > > > 
+> > > > > > > 
+> > > > > > > and now we have that:
+> > > > > > > 
+> > > > > > >   cic->key == cfqd_2
+> > > > > > > 
+> > > > > > > 
+> > > > > > > I'm not seeing anything stopping this from happening.
+> > > > > > 
+> > > > > > I don't follow your A-B-C here, what do they refer to?
+> > > > > 
+> > > > > A does a radix_tree_lookup() of cfqd_1 (darn typos)
+> > > > > B does a kfree of the same cic found by A
+> > > > > C does an alloc and gets the same cic as freed by B and inserts it
+> > > > >   in a different location.
+> > > > > 
+> > > > > So that when we return to A, cic->key == cfqd_2 even though we did a
+> > > > > lookup for cfqd_1.
+> > > > 
+> > > > That I follow, my question was if A, B, and C refer to different
+> > > > processes but with a shared io context? I'm assuming that is correct...
+> > > 
+> > > Ah, yeah, whatever is needed to make this race happen :-)
+> > 
+> > The only place where you'll have multiple processes involved with this
+> > at all is if they share io contexts. That is also why the bug isn't that
+> > critical, since it's not possible right now (CLONE_IO flag must be
+> > used).
+> 
+> There are 3 races here:
+> 
+>  1) A continues with another object than intended
+>     (requires CLONE_IO)
+> 
+>  2) A does hlist_for_each_rcu() and races with B,C so that
+>     we continue the iteration on a possibly unrelated list.
+> 
+>  3) cic is freed after the !cic->key check.
+> 
+> I'm not familiar enough with the code yet to see if 3 really is an
+> possibility. But from what I can see there is nothing guarding its
+> existence.
 
+All 3 require CLONE_IO, because if that is not set, there's a 1:1
+mapping between a process and io context (no sharing occurs).
+
+-- 
+Jens Axboe
 
