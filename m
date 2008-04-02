@@ -1,59 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758713AbYDBQi0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758710AbYDBQj2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758713AbYDBQi0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 12:38:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755504AbYDBQiQ
+	id S1758710AbYDBQj2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 12:39:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755108AbYDBQjV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 12:38:16 -0400
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:41258 "EHLO
-	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757568AbYDBQiP (ORCPT
+	Wed, 2 Apr 2008 12:39:21 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:50169 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755504AbYDBQjU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 12:38:15 -0400
-Date: Wed, 2 Apr 2008 12:34:20 -0400
-Message-Id: <200804021634.m32GYKdZ018898@agora.fsl.cs.sunysb.edu>
-From: Erez Zadok <ezk@cs.sunysb.edu>
-To: Jan Kara <jack@suse.cz>
-Cc: Erez Zadok <ezk@cs.sunysb.edu>, sct@redhat.com, akpm@linux-foundation.org,
-       adilger@clusterfs.com, linux-ext4@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: ext3 lockdep warning in 2.6.25-rc6 
-In-reply-to: Your message of "Wed, 02 Apr 2008 10:12:15 +0200."
-             <20080402081215.GA2716@duck.suse.cz> 
-X-MailKey: Erez_Zadok
+	Wed, 2 Apr 2008 12:39:20 -0400
+Message-ID: <47F3C469.1020803@oracle.com>
+Date: Wed, 02 Apr 2008 12:37:45 -0500
+From: Richard Frank <richard.frank@oracle.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
+MIME-Version: 1.0
+To: "Scott Weitzenkamp (sweitzen)" <sweitzen@cisco.com>
+CC: "Roland Dreier (rdreier)" <rdreier@cisco.com>, rds-devel@oss.oracle.com,
+       linux-kernel@vger.kernel.org, general@lists.openfabrics.org
+Subject: Re: [ofa-general] InfiniBand/iWARP/RDMA merge plans for 2.6.26 (what'sin
+ infiniband.git)
+References: <adave31bayd.fsf@cisco.com>	<1207120932.4593.47.camel@localhost.localdomain>	<aday77w2s5z.fsf@cisco.com><47F3BE33.4000204@oracle.com> <adalk3w2pxz.fsf@cisco.com> <47F3C137.3070209@oracle.com> <A15335FBE9BD2449AF2C9EF3D1EB8EA3055471E8@xmb-sjc-216.amer.cisco.com>
+In-Reply-To: <A15335FBE9BD2449AF2C9EF3D1EB8EA3055471E8@xmb-sjc-216.amer.cisco.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In message <20080402081215.GA2716@duck.suse.cz>, Jan Kara writes:
-> On Tue 01-04-08 17:23:34, Erez Zadok wrote:
->  <snip>
-[...]
->   I'll try to explain the locking here:
-> 1) We are not allowed to call into __invalidate_mapping_pages() with
-> inode_lock held - that it the bug lockdep is complaining about. Moreover it
-> leads to rather long waiting times for inode_lock (quite possibly several
-> seconds).
-> 2) When we release inode_lock, we need to protect from inode going away,
-> thus we hold reference to it - that guarantees us inode stays in the list.
-> 3) When we continue scanning of the list we must get inode_lock before we
-> put the inode reference to avoid races. But we cannot do iput() when we
-> hold inode_lock. Thus we save pointer to inode and do iput() next time we
-> have released the inode_lock...
-> 
-> > Peter's post:
-> > 
-> > 	http://lkml.org/lkml/2008/3/23/202
-> > 
-> > includes a reference to a mail by Andrew which implies that the fix may be
-> > much more involved than what you outlined above, no?
->   Definitely we can do a more involved fix ;) What Andrew proposes would have
-> some other benefits as well. But until somebody gets to that, this slight
-> hack should work fine (Andrew has already merged my patch in -mm so I
-> guess he agrees ;).
+I believe there is a patch for NetPerf which supports RDS - although it 
+may need to be updated - and submitted.
 
-Thanks for the explanation.  And good to know it's in -mm.  I'll give it a
-try.
+The only prior discussion I can think of - was whether or not NetPerf 
+exercises RDS as Oracle would.
 
-Cheers,
-Erez.
+I'm not proposing that we should enhance NetPerf to do that (but that's 
+OK with me).
+
+We created a tool rds-stress which does that.
+
+Scott Weitzenkamp (sweitzen) wrote:
+>> WRT to merging RDS into the kernel - our current plans are to wait to 
+>> see RDS adopted by more than Oracle - before approaching the kernel 
+>> community about inclusion of RDS.
+>>     
+>
+> I've seen statements before from someone from Oracle that RDS was only
+> for Oracle's use, for example, that person did not want netperf changed
+> to support RDS.
+>
+> Scott Weitzenkamp
+> SQA and Release Manager
+> Data Center Access Engineering
+> Cisco Systems
+>   
