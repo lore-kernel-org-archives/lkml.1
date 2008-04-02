@@ -1,66 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757644AbYDBBgD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758312AbYDBBgZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757644AbYDBBgD (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Apr 2008 21:36:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753907AbYDBBfw
+	id S1758312AbYDBBgZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Apr 2008 21:36:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757284AbYDBBgA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Apr 2008 21:35:52 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:32936 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753227AbYDBBfv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Apr 2008 21:35:51 -0400
-Subject: Re: [PATCH] x86: create array based interface to change page
-	attribute
-From: Dave Airlie <airlied@redhat.com>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Dave Airlie <airlied@gmail.com>, linux-kernel@vger.kernel.org,
-       tglx@linutronix.de, mingo@redhat.com, arjan@linux.intel.com,
-       thomas@tungstengraphics.com
-In-Reply-To: <20080331114646.GE29105@one.firstfloor.org>
-References: <1206940788.7250.13.camel@clockmaker.usersys.redhat.com>
-	 <87myof8ief.fsf@basil.nowhere.org>
-	 <21d7e9970803310421k67f1a697s8ffb5a4eef71c605@mail.gmail.com>
-	 <20080331114646.GE29105@one.firstfloor.org>
-Content-Type: text/plain
-Date: Wed, 02 Apr 2008 11:35:34 +1000
-Message-Id: <1207100134.7250.21.camel@clockmaker.usersys.redhat.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-3.fc8) 
-Content-Transfer-Encoding: 7bit
+	Tue, 1 Apr 2008 21:36:00 -0400
+Received: from testure.choralone.org ([194.9.77.134]:53629 "EHLO
+	testure.choralone.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757069AbYDBBf7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Apr 2008 21:35:59 -0400
+Date: Tue, 1 Apr 2008 21:35:51 -0400
+From: Dave Jones <davej@codemonkey.org.uk>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: GFP_ATOMIC page allocation failures.
+Message-ID: <20080402013551.GA8361@codemonkey.org.uk>
+Mail-Followup-To: Dave Jones <davej@codemonkey.org.uk>,
+	Nick Piggin <nickpiggin@yahoo.com.au>,
+	Linux Kernel <linux-kernel@vger.kernel.org>
+References: <20080401235609.GA6947@codemonkey.org.uk> <200804021228.16875.nickpiggin@yahoo.com.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200804021228.16875.nickpiggin@yahoo.com.au>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Apr 02, 2008 at 12:28:16PM +1100, Nick Piggin wrote:
+ > On Wednesday 02 April 2008 10:56, Dave Jones wrote:
+ > > I found a few ways to cause pages and pages of spew to dmesg
+ > > of the following form..
+ > >
+ > > rhythmbox: page allocation failure. order:3, mode:0x4020
+ > > Pid: 4299, comm: rhythmbox Not tainted 2.6.25-0.172.rc7.git4.fc9.x86_64 #1
+ > >
+ > > Call Trace:
+ > >  <IRQ>  [<ffffffff810862dc>] __alloc_pages+0x3a3/0x3c3
+ > >  [<ffffffff812a58df>] ? trace_hardirqs_on_thunk+0x35/0x3a
+ > >  [<ffffffff8109fd94>] alloc_pages_current+0x100/0x109
+ > >  [<ffffffff810a6fd5>] new_slab+0x4a/0x249
+ > >  [<ffffffff810a776a>] __slab_alloc+0x251/0x4e0
+ > >  [<ffffffff8121c322>] ? __netdev_alloc_skb+0x31/0x4f
+ > >  [<ffffffff810a8736>] __kmalloc_node_track_caller+0x8a/0xe2
+ > >  [<ffffffff8121c322>] ? __netdev_alloc_skb+0x31/0x4f
+ > >  [<ffffffff8121b5db>] __alloc_skb+0x6f/0x135
+ > >  [<ffffffff8121c322>] __netdev_alloc_skb+0x31/0x4f
+ > >  [<ffffffff8814e5b4>] :e1000e:e1000_alloc_rx_buffers+0xb7/0x1dc
+ > >  [<ffffffff8814eada>] :e1000e:e1000_clean_rx_irq+0x271/0x307
+ > >  [<ffffffff8814c71a>] :e1000e:e1000_clean+0x66/0x205
+ > >  [<ffffffff8121eeb8>] net_rx_action+0xd9/0x20e
+ > >  [<ffffffff81038757>] __do_softirq+0x70/0xf1
+ > >  [<ffffffff8100d25c>] call_softirq+0x1c/0x28
+ > >  [<ffffffff8100e485>] do_softirq+0x39/0x8a
+ > >  [<ffffffff81038290>] irq_exit+0x4e/0x8f
+ > >  [<ffffffff8100e781>] do_IRQ+0x145/0x167
+ > >  [<ffffffff8100c5e6>] ret_from_intr+0x0/0xf
+ > >  <EOI>  [<ffffffff812a5ed8>] ? _spin_unlock_irqrestore+0x42/0x47
+ > >  [<ffffffff8102a040>] ? __wake_up+0x43/0x50
+ > >  [<ffffffff81056b7f>] ? wake_futex+0x47/0x53
+ > >  [<ffffffff810584cf>] ? do_futex+0x697/0xc57
+ > >  [<ffffffff8102fbc4>] ? hrtick_set+0xa1/0xfc
+ > >  [<ffffffff81058b84>] ? sys_futex+0xf5/0x113
+ > >  [<ffffffff810133e7>] ? syscall_trace_enter+0xb5/0xb9
+ > >  [<ffffffff8100c1d0>] ? tracesys+0xd5/0xda
+ > >
+ > > Given that we seem to recover from these events without negative effects
+ > > (ie, no apps get oom-killed), is there any value to actually flooding
+ > > syslog with this stuff ?
+ > 
+ > It's nice to have. Perhaps it could just be hardlimited to print
+ > say 10 times, and maybe we could have a vmstat counter to keep
+ > count after that.
 
-On Mon, 2008-03-31 at 13:46 +0200, Andi Kleen wrote:
-> On Mon, Mar 31, 2008 at 09:21:19PM +1000, Dave Airlie wrote:
-> > On Mon, Mar 31, 2008 at 5:25 PM, Andi Kleen <andi@firstfloor.org> wrote:
-> > > Dave Airlie <airlied@redhat.com> writes:
-> > >  >
-> > >  > +#define CPA_FLUSHTLB 1
-> > >  > +#define CPA_ARRAY 2
-> > >
-> > >  I don't think CPA_ARRAY should be a separate case. Rather single
-> > >  page flushing should be an array with only a single entry. pageattr
-> > >  is already very complex, no need to make add more special cases.
-> > 
-> > I thought about this but the current interface takes a start address
-> > and number of pages from that point to cpa,
-> > the array interface takes an array of page sized pages.
-> > 
-> > I don't really think we need to generate an array in the first case
-> > with all the pages in it..
-> 
-> Just put the length into the array members too.
+As an end-user, that's still 10 times too many.
+What is anyone expect to do with these traces ?
 
-I can only think to do this by maybe stealing some bits, and having the
-caller provide a pfn + length in one 64-bit dword.
+multi-page atomic allocations fail sometimes, we shouldn't be
+surprised by this.  As long as the code that tries to do them
+is aware of this, is there a problem ?
 
-As otherwise I'm going to end up with the largest use case for this
-having to allocate a large array of 64-bit dwords all containing 1.
+	Dave
 
-This isn't worth it IMHO and the array doesn't add that much more
-complexity.
-
-Dave.
-
+-- 
+http://www.codemonkey.org.uk
