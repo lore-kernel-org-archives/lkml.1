@@ -1,67 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750939AbYDBHbU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754747AbYDBHbd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750939AbYDBHbU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 03:31:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751404AbYDBHbL
+	id S1754747AbYDBHbd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 03:31:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752104AbYDBHbN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 03:31:11 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:50204 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751464AbYDBHbJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 03:31:09 -0400
-Date: Wed, 02 Apr 2008 16:31:27 +0900
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: "Tom May" <tom@tommay.com>
-Subject: Re: [PATCH 0/8][for -mm] mem_notify v6
-Cc: kosaki.motohiro@jp.fujitsu.com, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <ab3f9b940804011635g2de833d0l44558f78a1cce1e5@mail.gmail.com>
-References: <2f11576a0802090719i3c08a41aj38504e854edbfeac@mail.gmail.com> <ab3f9b940804011635g2de833d0l44558f78a1cce1e5@mail.gmail.com>
-Message-Id: <20080402154910.9588.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	Wed, 2 Apr 2008 03:31:13 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:2063 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751967AbYDBHbM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Apr 2008 03:31:12 -0400
+Date: Wed, 2 Apr 2008 09:31:08 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Pekka J Enberg <penberg@cs.helsinki.fi>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Vegard Nossum <vegard.nossum@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Subject: Re: kmemcheck caught read from freed memory (cfq_free_io_context)
+Message-ID: <20080402073108.GL12774@kernel.dk>
+References: <19f34abd0804011408v19e13b6cje1ca89a2a471484c@mail.gmail.com> <1207085788.29991.6.camel@lappy> <20080402071709.GC12774@kernel.dk> <Pine.LNX.4.64.0804021020280.25738@sbz-30.cs.Helsinki.FI> <20080402072456.GI12774@kernel.dk> <20080402072846.GA16454@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.42 [ja]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080402072846.GA16454@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Tom,
+On Wed, Apr 02 2008, Ingo Molnar wrote:
+> 
+> * Jens Axboe <jens.axboe@oracle.com> wrote:
+> 
+> > On Wed, Apr 02 2008, Pekka J Enberg wrote:
+> > > On Wed, 2 Apr 2008, Jens Axboe wrote:
+> > > > Good catch, I wonder why it didn't complain in my testing. I've added a
+> > > > patch to fix that, please see it here:
+> > > 
+> > > You probably don't have kmemcheck in your kernel ;-)
+> > 
+> > Ehm no, you are right :)
+> 
+> ... and you can get kmemcheck by testing on x86.git/latest:
+> 
+>   http://people.redhat.com/mingo/x86.git/README
+> 
+> ;-)
 
-Thank you very useful comment.
-that is very interesting.
+Thanks Ingo, I'll give it a spin to verify this fix!
 
-> I tried it with a real-world program that, among other things, mmaps
-> anonymous pages and touches them at a reasonable speed until it gets
-> notified via /dev/mem_notify, releases most of them with
-> madvise(MADV_DONTNEED), then loops to start the cycle again.
->
-> What tends to happen is that I do indeed get notifications via
-> /dev/mem_notify when the kernel would like to be swapping, at which
-> point I free memory.  But the notifications come at a time when the
-> kernel needs memory, and it gets the memory by discarding some Cached
-> or Mapped memory (I can see these decreasing in /proc/meminfo with
-> each notification).  With each mmap/notify/madvise cycle the Cached
-> and Mapped memory gets smaller, until eventually while I'm touching
-> pages the kernel can't find enough memory and will either invoke the
-> OOM killer or return ENOMEM from syscalls.  This is precisely the
-> situation I'm trying to avoid by using /dev/mem_notify.
-
-Could you send your test program?
-I can't reproduce that now, sorry.
-
-
-> The criterion of "notify when the kernel would like to swap" feels
-> correct, but in addition I seem to need something like "notify when
-> cached+mapped+free memory is getting low".
-
-Hmmm,
-I think this idea is only useful when userland process call 
-madvise(MADV_DONTNEED) periodically.
-
-but I hope improve my patch and solve your problem.
-if you don' mind, please help my testing ;)
-
-
+-- 
+Jens Axboe
 
