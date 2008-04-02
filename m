@@ -1,45 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758235AbYDBQkP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758496AbYDBQm0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758235AbYDBQkP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 12:40:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757274AbYDBQj6
+	id S1758496AbYDBQm0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 12:42:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756537AbYDBQmR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 12:39:58 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:55587 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756775AbYDBQj6 (ORCPT
+	Wed, 2 Apr 2008 12:42:17 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:42995 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1755504AbYDBQmR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 12:39:58 -0400
-Message-ID: <47F3B6B6.9010802@zytor.com>
-Date: Wed, 02 Apr 2008 09:39:18 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	Wed, 2 Apr 2008 12:42:17 -0400
+Date: Wed, 2 Apr 2008 12:42:15 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Oliver Neukum <oliver@neukum.org>
+cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Nigel Cunningham <ncunningham@crca.org.au>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Greg KH <greg@kroah.com>, Len Brown <lenb@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Alexey Starikovskiy <astarikovskiy@suse.de>,
+       David Brownell <david-b@pacbell.net>, Pavel Machek <pavel@ucw.cz>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [RFC][PATCH] PM: Introduce new top level suspend and hibernation
+ callbacks (rev. 6)
+In-Reply-To: <200804021728.45823.oliver@neukum.org>
+Message-ID: <Pine.LNX.4.44L0.0804021238190.5042-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-To: Paul Jackson <pj@sgi.com>
-CC: "Huang, Ying" <ying.huang@intel.com>, andi@firstfloor.org,
-       mingo@redhat.com, tglx@linutronix.de, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/4] x86_64 boot -v2: Add linked list of struct setup_data
-References: <1206672584.13404.25.camel@caritas-dev.intel.com>	<20080329233155.ee909a04.pj@sgi.com>	<1206924877.21451.6.camel@caritas-dev.intel.com> <20080402023947.d4d43f7d.pj@sgi.com>
-In-Reply-To: <20080402023947.d4d43f7d.pj@sgi.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul Jackson wrote:
-> Huang wrote:
->> On Sat, 2008-03-29 at 23:31 -0500, Paul Jackson wrote:
->>> Huang wrote:
->>>> +/* setup data types */
->>>> +#define SETUP_NONE			0
->>> This define seems unused?
->> I think this can prevent somebody to use 0 as type id.
-> 
-> Why is it a good idea to prevent a 0 type id?
-> 
+On Wed, 2 Apr 2008, Oliver Neukum wrote:
 
-It is usually handy to have an ID to use as ignore, or not present, and 
-for that to be zero.
+> Am Mittwoch, 2. April 2008 17:13:11 schrieb Alan Stern:
+> > Basically yes.  Subsystems and drivers are allowed to keep devices
+> > suspended if they were suspended before the system went to sleep.  
+> > Remember, the purpose of the resume method is to let drivers know that
+> > the system is now awake, not to force them to put their devices into a
+> > high-power state.
+> 
+> Well, sometimes it is exactly that what we desire, eg. as a side effect
+> of lsusb. Should the callbacks have different semantics depending on
+> the reason you call them? And how should that information be transferred?
 
-	-hpa
+Which callbacks are you referring to?  When lsusb opens a device and
+does an autoresume, it does not call the same routine as the PM core
+does when resuming from a system sleep.  lsusb ends up calling
+usb_autoresume_device() whereas the PM core ends up calling
+usb_resume(), which is the function you quoted earlier.
+
+Alan Stern
+
