@@ -1,138 +1,163 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759883AbYDBRCU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759219AbYDBREi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759883AbYDBRCU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 13:02:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755058AbYDBRCI
+	id S1759219AbYDBREi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 13:04:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757607AbYDBRE3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 13:02:08 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:47186 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755304AbYDBRCG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 13:02:06 -0400
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: linux-kernel@vger.kernel.org, virtualization@lists.linux-foundation.org,
-       mingo@redhat.com
-Subject: Re: xen: Make hvc0 the preferred console in domU
-References: <87zltm1p0s.fsf@pike.pond.sub.org> <47F08688.6050206@goop.org>
-	<87iqz0e24y.fsf@pike.pond.sub.org> <47F3B28E.3090803@goop.org>
-From: Markus Armbruster <armbru@redhat.com>
-Date: Wed, 02 Apr 2008 19:01:55 +0200
-In-Reply-To: <47F3B28E.3090803@goop.org> (Jeremy Fitzhardinge's message of "Wed\, 02 Apr 2008 09\:21\:34 -0700")
-Message-ID: <87sky4chrw.fsf@pike.pond.sub.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
+	Wed, 2 Apr 2008 13:04:29 -0400
+Received: from sj-iport-3.cisco.com ([171.71.176.72]:38314 "EHLO
+	sj-iport-3.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757581AbYDBRE2 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Apr 2008 13:04:28 -0400
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [ofa-general] InfiniBand/iWARP/RDMA merge plans for 2.6.26 (what'sin infiniband.git)
+Date: Wed, 2 Apr 2008 10:04:23 -0700
+Message-ID: <A15335FBE9BD2449AF2C9EF3D1EB8EA305547248@xmb-sjc-216.amer.cisco.com>
+In-Reply-To: <47F3C9BB.5040009@oracle.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [ofa-general] InfiniBand/iWARP/RDMA merge plans for 2.6.26 (what'sin infiniband.git)
+Thread-Index: AciU40BrTcjSRlDTTVqFM1c0R/8MZgAAEIhQ
+References: <adave31bayd.fsf@cisco.com>	<1207120932.4593.47.camel@localhost.localdomain>	<aday77w2s5z.fsf@cisco.com><47F3BE33.4000204@oracle.com> <adalk3w2pxz.fsf@cisco.com> <47F3C137.3070209@oracle.com> <A15335FBE9BD2449AF2C9EF3D1EB8EA3055471E8@xmb-sjc-216.amer.cisco.com> <47F3C469.1020803@oracle.com> <A15335FBE9BD2449AF2C9EF3D1EB8EA30554720D@xmb-sjc-216.amer.cisco.com> <47F3C9BB.5040009@oracle.com>
+From: "Scott Weitzenkamp (sweitzen)" <sweitzen@cisco.com>
+To: "Richard Frank" <richard.frank@oracle.com>
+Cc: "Roland Dreier (rdreier)" <rdreier@cisco.com>, <rds-devel@oss.oracle.com>,
+       <linux-kernel@vger.kernel.org>, <general@lists.openfabrics.org>
+X-OriginalArrivalTime: 02 Apr 2008 17:04:27.0416 (UTC) FILETIME=[9BE71980:01C894E3]
+Authentication-Results: sj-dkim-4; header.From=sweitzen@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim4002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Fitzhardinge <jeremy@goop.org> writes:
+I'd like to see netperf comparisions of UDP_STREAM/UDP_RR vs
+RDS_STREAM/RDS_RR, does anyone have a patch that will apply cleanly to a
+recent netperf?
 
-> Markus Armbruster wrote:
->> This turns out to a thornier problem than one might think.
->>
->> Consoles tty, hvc and ttyS register in this order.
->>
->> Unless the kernel command line dictates otherwise, the first one to
->> register becomes the preferred console (the one behind /dev/console).
->> This is tty.  Except we patched things so that hvc wins over tty in
->> domU.  That's what we want there; tty is the dummy console there.
->>
->> Enter PV framebuffer.  It turns tty into a useful console, which we
->> want to use.  But the PVFB is created only if it's enabled for this
->> domain, and we learn that from xenstore.
->>
->> Problem: when tty registers, we can't yet know whether the PVFB is
->> enabled.  By the time we can know, the console setup game is over.
->>   
->
-> Why's that?  Is it because xenbus setup is too late?  Could we do an
-> earlier query?
+Scott Weitzenkamp
+SQA and Release Manager
+Data Center Access Engineering
+Cisco Systems
 
-Yes, xs_init() runs after consoles register.  I don't know whether
-that could be changed.
 
->> The non-pvops PVFB has the same problem.  Jeremy Katz solved it there
->> with a fairly gross hack: right after the Xen console is up, at the
->> end of xencons_init(), we forcefully make the Xen console the
->> preferred console if the PVFB is disabled:
->>
->>         /* Check about framebuffer messing up the console */
->>         if (!is_initial_xendomain() &&
->> 	    !xenbus_exists(XBT_NIL, "device", "vfb")) {
->> 		/* FIXME: this is ugly */
->> 		unregister_console(&kcons_info);
->> 		kcons_info.flags |= CON_CONSDEV;
->> 		register_console(&kcons_info);
->> 	}
->>
->> Aside: we tried to get that into linux-2.6.18-xen.hg a couple of times
->> before we gave up.  If you use that tree unmodified, you simply get no
->> working console when you diable the PVFB.
->>
->> I append the straight pvops port of this hack.
->>
->> Instead of putting hvc_force_consdev() into hvc_console.c, we could
->> also have a force_console() in kernel/printk.c, like this:
->>
->> void
->> force_console(char *name, int index)
->> {
->> 	struct console *c, *cc;
->>
->> 	acquire_console_sem();
->> 	for (c = console_drivers; c->next; c = c->next) {
->> 		cc = c->next;
->> 		if (!strcmp(cc->name, name) && cc->index == index) {
->> 			c->next = c->next->next;
->> 			cc->next = console_drivers;
->> 			console_drivers->flags &= ~CON_CONSDEV;
->> 			console_drivers = cc;
->> 			cc->flags |= CON_CONSDEV;
->> 			break;
->> 		}
->> 	}
->> 	release_console_sem();
->> }
->>
->> If one of these two hacks is acceptable, I'll prepare a proper patch.
->> If not, I'd appreciate advice on how to solve this better.
->>   
->
-> The console system supports multiple concurrent consoles, doesn't it?
-> With the limitation that only one of them can be the source of
-> keyboard input.  Can we support that, so that even if the user gets
-> the config wrong they can still see some output (and we can printk a
-> helpful message so they can work out how to get it working).  Ideally
-> we could take input from all the consoles too, so there's no reason to
-> exclusively choose one over any other...
+ 
 
-The kernel routes printk output to all enabled console drivers, but
-/dev/console can be connected to only one of them.  That's the
-preferred console.
-
-Getting the preferred console right is important for user space.  For
-instance, if /dev/console is hvc, anaconda does a text install.  Not
-good when the user is looking at a fully functional PVFB, wondering
-why the installer doesn't come up.
-
-My hack makes sure that both tty (PVFB if enabled, else dummy) and hvc
-are enabled by default.  That's the easy part.  The hackish part makes
-sure that the right one ends up as the preferred console.
-
-> But aside from that, it doesn't seem like our problem is particularly
-> strange.  One can imagine many circumstances in which we come up using
-> whatever's currently available as a console, but then a better console
-> device appears during device probing.   In other words, this kind of
-> console device switching seems like something that the console
-> subsystem should support.
-
-That could be an argument for preferring the force_console() solution
-over the hvc_force_consdev() solution.
-
-> But in the meantime, pragmatics should win, and I don't have any
-> strong objections to this patch.
->
->    J
-
-Thanks!  I'll try to post a proper patch tomorrow.
+> -----Original Message-----
+> From: Richard Frank [mailto:richard.frank@oracle.com] 
+> Sent: Wednesday, April 02, 2008 11:00 AM
+> To: Scott Weitzenkamp (sweitzen)
+> Cc: Roland Dreier (rdreier); rds-devel@oss.oracle.com; 
+> linux-kernel@vger.kernel.org; general@lists.openfabrics.org
+> Subject: Re: [ofa-general] InfiniBand/iWARP/RDMA merge plans 
+> for 2.6.26 (what'sin infiniband.git)
+> 
+> OK - and the conversation was about using NetPerf to compare 
+> performance 
+> of RDS to UDP relative to suitability for Oracle use ... so I think 
+> those statements still illustrate my points...
+> 
+> 1) NetPerf does not do what Oracle does - and hence is not 
+> useful from 
+> Oracle's perspective in comparing ULPs.
+> 2) For some metrics - it's not valid to compare a 
+> non-reliable IPC to a 
+> reliable IPC -  it's not an apples to apples comparison. 
+> Especially when 
+> the app is considered and what the app must do to use UDP vs RDS.
+> 
+> I did not say that NetPerf should not be extended to support 
+> RDS - just 
+> that using it to do a comparison of ULPs to determine how well Oracle 
+> would run - is not what we (Oracle) would want - at least that was my 
+> intention..
+> 
+> Scott Weitzenkamp (sweitzen) wrote:
+> > Rich,
+> >
+> > On Nov 1, 2007, you wrote this to rds-devel:
+> >
+> >   "Netperf is too simplistic in that all it seems to do is 
+> stream data
+> > in a 
+> >   simple loop. This is not how Oracle uses the IPC and 
+> again does not 
+> >   reflect what it would take to make UDP reliable.
+> >
+> >   For this reason we are not interested in having Netperf 
+> support RDS
+> > and 
+> >   or seeing Netperf data."
+> >
+> > I would like to see RDS supported by existing common tools 
+> like netperf,
+> > iperf, etc. so we can easily compare how RDS performs to UDP for IPC
+> > models other than Oracle.
+> >
+> > Scott Weitzenkamp
+> > SQA and Release Manager
+> > Data Center Access Engineering
+> > Cisco Systems
+> >
+> >
+> >  
+> >
+> >   
+> >> -----Original Message-----
+> >> From: Richard Frank [mailto:richard.frank@oracle.com] 
+> >> Sent: Wednesday, April 02, 2008 10:38 AM
+> >> To: Scott Weitzenkamp (sweitzen)
+> >> Cc: Roland Dreier (rdreier); rds-devel@oss.oracle.com; 
+> >> linux-kernel@vger.kernel.org; general@lists.openfabrics.org
+> >> Subject: Re: [ofa-general] InfiniBand/iWARP/RDMA merge plans 
+> >> for 2.6.26 (what'sin infiniband.git)
+> >>
+> >> I believe there is a patch for NetPerf which supports RDS - 
+> >> although it 
+> >> may need to be updated - and submitted.
+> >>
+> >> The only prior discussion I can think of - was whether or 
+> not NetPerf 
+> >> exercises RDS as Oracle would.
+> >>
+> >> I'm not proposing that we should enhance NetPerf to do that 
+> >> (but that's 
+> >> OK with me).
+> >>
+> >> We created a tool rds-stress which does that.
+> >>
+> >> Scott Weitzenkamp (sweitzen) wrote:
+> >>     
+> >>>> WRT to merging RDS into the kernel - our current plans are 
+> >>>>         
+> >> to wait to 
+> >>     
+> >>>> see RDS adopted by more than Oracle - before approaching 
+> >>>>         
+> >> the kernel 
+> >>     
+> >>>> community about inclusion of RDS.
+> >>>>     
+> >>>>         
+> >>> I've seen statements before from someone from Oracle that 
+> >>>       
+> >> RDS was only
+> >>     
+> >>> for Oracle's use, for example, that person did not want 
+> >>>       
+> >> netperf changed
+> >>     
+> >>> to support RDS.
+> >>>
+> >>> Scott Weitzenkamp
+> >>> SQA and Release Manager
+> >>> Data Center Access Engineering
+> >>> Cisco Systems
+> >>>   
+> >>>       
+> 
