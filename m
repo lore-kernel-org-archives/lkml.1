@@ -1,59 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754729AbYDBIIU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754750AbYDBIK6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754729AbYDBIIU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 04:08:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752172AbYDBIII
+	id S1754750AbYDBIK6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 04:10:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752394AbYDBIKl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 04:08:08 -0400
-Received: from smtp-out003.kontent.com ([81.88.40.217]:44123 "EHLO
-	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752170AbYDBIIH convert rfc822-to-8bit (ORCPT
+	Wed, 2 Apr 2008 04:10:41 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:35631 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751685AbYDBIKk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 04:08:07 -0400
-From: Oliver Neukum <oliver@neukum.org>
-Organization: Novell
-To: Mark Lord <lkml@rtr.ca>
-Subject: Re: 2.6.25-rc7:  Ugh.
-Date: Wed, 2 Apr 2008 10:04:52 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Pavel Machek <pavel@suse.cz>, Linux Kernel <linux-kernel@vger.kernel.org>,
-       Greg KH <gregkh@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
-       jikos@suse.cz
-References: <47EBBD57.30902@rtr.ca> <200803312005.37804.oliver@neukum.org> <47F139C9.50803@rtr.ca>
-In-Reply-To: <47F139C9.50803@rtr.ca>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200804021004.53453.oliver@neukum.org>
+	Wed, 2 Apr 2008 04:10:40 -0400
+Date: Wed, 2 Apr 2008 11:10:38 +0300 (EEST)
+From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
+X-X-Sender: ijjarvin@wrl-59.cs.helsinki.fi
+To: Alessandro Suardi <alessandro.suardi@gmail.com>
+cc: Linux Kernel <linux-kernel@vger.kernel.org>,
+       Netdev <netdev@vger.kernel.org>
+Subject: Re: 2.6.25-rc6-git2: warn_on_slowpath for tcp_simple_retransmit
+In-Reply-To: <5a4c581d0804011528g786550c5sfd6bf90c0c37706@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0804021110190.10371@wrl-59.cs.helsinki.fi>
+References: <5a4c581d0804011528g786550c5sfd6bf90c0c37706@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Montag, 31. März 2008 21:21:45 schrieb Mark Lord:
-> Oliver Neukum wrote:
-> >
-> > But if power is cut with newer kernels and older kernels retain it, something
-> > must have changed. Can you undo the ACPI changes since the last working
-> > kernel?
-> ..
+On Wed, 2 Apr 2008, Alessandro Suardi wrote:
+
+> Found this in my FC6-based bittorrent box (K7-800 running
+>  a 2.6.25-rc6-git2 kernel) this evening.
 > 
-> No, that's no different.
-> This notebook always cuts +5V from USB on suspend or poweroff.
-> Regardless of kernel version.  I don't know how common this is,
-> but all of my notebooks here have always behaved this way,
-> as have most (but not all) of the larger systems.
+> The kernel was upgraded two weeks ago to fix the bug
+>  in which an USB VIA driver hammered the PCI bus
+>  causing ATA disk performance to drop, and has been
+>  running since then (it still is).
 > 
-> The two most recent PCIe motherboards I have here
-> do provide +5V standby power to USB, even when "OFF",
-> much to my annoyance and to the detriment of this planet.
+> So it's actually 2.6.25-rc6-git2 plus patch as in here
+> http://www.gossamer-threads.com/lists/linux/kernel/895506#895506
+> 
+> If there's anything useful I can do, just ask. Thanks !
 
-Very well.
+Can you reproduce?
 
-Mark, can you get a sysrq-t trace of your whole system when USB goes
-dead? And please enable CONFIG_USB_DEBUG. We need to do whether
-khubd and ksuspend_usbd are in state D.
-
-	Regards
-		Oliver
+-- 
+ i.
