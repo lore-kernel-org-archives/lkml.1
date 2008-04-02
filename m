@@ -1,103 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760784AbYDBVp3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758823AbYDBVpv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760784AbYDBVp3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 17:45:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762774AbYDBVn3
+	id S1758823AbYDBVpv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 17:45:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762808AbYDBVnf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 17:43:29 -0400
-Received: from saeurebad.de ([85.214.36.134]:60084 "EHLO saeurebad.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762767AbYDBVn2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 17:43:28 -0400
-From: Johannes Weiner <hannes@saeurebad.de>
-To: linux-kernel@vger.kernel.org
-Cc: linux-mm@kvack.org, mingo@elte.hu, davem@davemloft.net,
-       hskinnemoen@atmel.com, cooloney@kernel.org, starvik@axis.com,
-       dhowells@redhat.com, ysato@users.sourceforge.net, takata@linux-m32r.org,
-       geert@linux-m68k.org, ralf@linux-mips.org, kyle@parisc-linux.org,
-       paulus@samba.org, schwidefsky@de.ibm.com, lethal@linux-sh.org,
-       jdike@addtoit.com, miles@gnu.org, chris@zankel.net,
-       rmk@arm.linux.org.uk, tony.luck@intel.com
-Subject: [RFC 09/22] m32r: Use generic show_mem()
-Date: Wed,  2 Apr 2008 22:40:15 +0200
-Message-Id: <12071689301688-git-send-email-hannes@saeurebad.de>
-X-Mailer: git-send-email 1.5.2.2
-In-Reply-To: <12071688283927-git-send-email-hannes@saeurebad.de>
-References: <12071688283927-git-send-email-hannes@saeurebad.de>
-X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
+	Wed, 2 Apr 2008 17:43:35 -0400
+Received: from e35.co.us.ibm.com ([32.97.110.153]:53029 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762799AbYDBVne (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Apr 2008 17:43:34 -0400
+Subject: Re: [PATCH RFC] hotplug-memory: refactor online_pages to separate
+	zone growth from page onlining
+From: Dave Hansen <dave@linux.vnet.ibm.com>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Yasunori Goto <y-goto@jp.fujitsu.com>,
+       Christoph Lameter <clameter@sgi.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Anthony Liguori <anthony@codemonkey.ws>, Mel Gorman <mel@csn.ul.ie>
+In-Reply-To: <47F3FC2E.7090806@goop.org>
+References: <47ED8685.9040409@goop.org>
+	 <1206751622.27091.20.camel@nimitz.home.sr71.net>
+	 <47EDA4B9.6030801@goop.org>
+	 <1206806774.31896.27.camel@nimitz.home.sr71.net>
+	 <47EED683.5030200@goop.org>
+	 <1206981741.31896.51.camel@nimitz.home.sr71.net>
+	 <47F1282E.3020503@goop.org>
+	 <1207161962.23710.23.camel@nimitz.home.sr71.net>
+	 <47F3D5D9.1010301@goop.org>
+	 <1207162792.23710.28.camel@nimitz.home.sr71.net>
+	 <47F3F4A0.9010009@goop.org>
+	 <1207171050.23710.48.camel@nimitz.home.sr71.net>
+	 <47F3FC2E.7090806@goop.org>
+Content-Type: text/plain
+Date: Wed, 02 Apr 2008 14:43:30 -0700
+Message-Id: <1207172610.23710.55.camel@nimitz.home.sr71.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 2008-04-02 at 14:35 -0700, Jeremy Fitzhardinge wrote:
+> Dave Hansen wrote:
+> > Oh, once we've let Linux establish ptes to it, we've required that the
+> > hypervisor have it around?  How does that work with the balloon driver?
+> > Do we destroy the ptes when giving balloon memory back to the
+> > hypervisor?
+> 
+> Yep.  It removes any mapping before handing it back to the hypervisor.
 
-Signed-off-by: Johannes Weiner <hannes@saeurebad.de>
+Wow.  So does Xen ever use PSE to map kernel data?  That sucks.
 
-diff --git a/arch/m32r/Kconfig b/arch/m32r/Kconfig
-index 2f51d8f..de153de 100644
---- a/arch/m32r/Kconfig
-+++ b/arch/m32r/Kconfig
-@@ -225,9 +225,6 @@ config ARCH_DISCONTIGMEM_ENABLE
- 	depends on CHIP_M32700 || CHIP_M32102 || CHIP_VDEC2 || CHIP_OPSP || CHIP_M32104
- 	default y
- 
--config HAVE_ARCH_SHOW_MEM
--	def_bool y
--
- source "mm/Kconfig"
- 
- config IRAM_START
-diff --git a/arch/m32r/mm/init.c b/arch/m32r/mm/init.c
-index bbd97c8..2a3e8b5 100644
---- a/arch/m32r/mm/init.c
-+++ b/arch/m32r/mm/init.c
-@@ -36,42 +36,6 @@ pgd_t swapper_pg_dir[1024];
- 
- DEFINE_PER_CPU(struct mmu_gather, mmu_gathers);
- 
--void show_mem(void)
--{
--	int total = 0, reserved = 0;
--	int shared = 0, cached = 0;
--	int highmem = 0;
--	struct page *page;
--	pg_data_t *pgdat;
--	unsigned long i;
--
--	printk("Mem-info:\n");
--	show_free_areas();
--	printk("Free swap:       %6ldkB\n",nr_swap_pages<<(PAGE_SHIFT-10));
--	for_each_online_pgdat(pgdat) {
--		unsigned long flags;
--		pgdat_resize_lock(pgdat, &flags);
--		for (i = 0; i < pgdat->node_spanned_pages; ++i) {
--			page = pgdat_page_nr(pgdat, i);
--			total++;
--			if (PageHighMem(page))
--				highmem++;
--			if (PageReserved(page))
--				reserved++;
--			else if (PageSwapCache(page))
--				cached++;
--			else if (page_count(page))
--				shared += page_count(page) - 1;
--		}
--		pgdat_resize_unlock(pgdat, &flags);
--	}
--	printk("%d pages of RAM\n", total);
--	printk("%d pages of HIGHMEM\n",highmem);
--	printk("%d reserved pages\n",reserved);
--	printk("%d pages shared\n",shared);
--	printk("%d pages swap cached\n",cached);
--}
--
- /*
-  * Cache of MMU context last used.
-  */
-@@ -252,4 +216,3 @@ void free_initrd_mem(unsigned long start, unsigned long end)
- 	printk (KERN_INFO "Freeing initrd memory: %ldk freed\n", (end - start) >> 10);
- }
- #endif
--
--- 
-1.5.2.2
+> > If we're talking about i386, then we're set.  We don't map the hot-added
+> > memory at all because we only add highmem on i386.  The only time we map
+> > these pages is *after* we actually allocate them when they get mapped
+> > into userspace or used as vmalloc() or they're kmap()'d.
+> 
+> Well, the balloon driver can balloon out lowmem pages, so we have to 
+> deal with mappings either way.  But balloon+hotplug would work 
+> identically on x86-64, so all pages are mapped.
+
+Yeah, but I'm just talking about hotplugged memory.  When we add it, we
+don't have to map the added pages (since they're highmem) and don't have
+to touch their contents and zero them out, either.  Then, the balloon
+driver can notice that the memory is too large, and start to balloon it
+down.
+
+> >> I think we're getting off track here; this is a lot of extra complexity 
+> >> to justify allowing usermode to use /sys to online a chunk of hotplugged 
+> >> memory.
+> >>     
+> >
+> > Either that, or we're going to develop the entire Xen/kvm memory hotplug
+> > architecture around the soon-to-be-legacy i386 limitations. :)
+> 
+> Everything also applies to x86-64.
+
+Not really, though.  We don't have the page->flags shortage or lack of
+vmemmap on x86_64.
+
+-- Dave
 
