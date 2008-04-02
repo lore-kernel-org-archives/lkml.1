@@ -1,65 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758246AbYDBSQ1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758064AbYDBSSQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758246AbYDBSQ1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 14:16:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756580AbYDBSQT
+	id S1758064AbYDBSSQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 14:18:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752337AbYDBSSA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 14:16:19 -0400
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:41866 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756483AbYDBSQS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 14:16:18 -0400
-Subject: Re: [GIT PATCH] SCSI fixes for 2.6.25-rc8
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Boaz Harrosh <bharrosh@panasas.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <47F3CAFC.2050401@panasas.com>
-References: <1207082197.3100.26.camel@localhost.localdomain>
-	 <47F3CAFC.2050401@panasas.com>
-Content-Type: text/plain
-Date: Wed, 02 Apr 2008 13:16:14 -0500
-Message-Id: <1207160174.3082.48.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-3.fc8) 
-Content-Transfer-Encoding: 7bit
+	Wed, 2 Apr 2008 14:18:00 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:36336 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751886AbYDBSR7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Apr 2008 14:17:59 -0400
+Date: Wed, 2 Apr 2008 11:15:26 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Andrea Arcangeli <andrea@qumranet.com>
+cc: Hugh Dickins <hugh@veritas.com>, Robin Holt <holt@sgi.com>,
+       Avi Kivity <avi@qumranet.com>, Izik Eidus <izike@qumranet.com>,
+       kvm-devel@lists.sourceforge.net,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, general@lists.openfabrics.org,
+       Steve Wise <swise@opengridcomputing.com>,
+       Roland Dreier <rdreier@cisco.com>, Kanoj Sarcar <kanojsarcar@yahoo.com>,
+       steiner@sgi.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       daniel.blueman@quadrics.com
+Subject: Re: [patch 5/9] Convert anon_vma lock to rw_sem and refcount
+In-Reply-To: <20080402175058.GR19189@duo.random>
+Message-ID: <Pine.LNX.4.64.0804021107520.27337@schroedinger.engr.sgi.com>
+References: <20080401205531.986291575@sgi.com> <20080401205636.777127252@sgi.com>
+ <20080402175058.GR19189@duo.random>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-04-02 at 21:05 +0300, Boaz Harrosh wrote:
-> On Tue, Apr 01 2008 at 23:36 +0300, James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
-> > This patch constitutes three bug fixes (the reversion of the BSG queue
-> > fix is the most serious; without it we're getting eventual corruption in
-> > systems).  The other two fix error legs or misleading reporting.  The
-> > remaining 8 patches are all updates to the mvsas driver which was a late
-> > addition at the -rc1 phase, so while they're not truly bug fixes, they
-> > are enhancements to make that unreleased driver more roubust for 2.6.25.
-> > 
-> > The patch is here:
-> > 
-> > master.kernel.org:/pub/scm/linux/kernel/git/jejb/scsi-rc-fixes-2.6.git
-> > 
-> > The short changelog is:
-> > 
-> > James Bottomley (2):
-> >       libsas: Warn if ATA device detected but CONFIG_SCSI_SAS_ATA not set
-> >       Revert " fix bsg queue oops with iscsi logout"
-> > 
-> <snip>
+On Wed, 2 Apr 2008, Andrea Arcangeli wrote:
+
+> On Tue, Apr 01, 2008 at 01:55:36PM -0700, Christoph Lameter wrote:
+> >   This results in f.e. the Aim9 brk performance test to got down by 10-15%.
 > 
-> Does this mean that we still have the iscsi logout bug if used from bsg
-> in 2.6.25 kernel? I just want to know what are the out-of-tree patches 
-> I will need. Will the proper fix be candidate for the stable releases
-> of 2.6.25?
+> I guess it's more likely because of overscheduling for small crtitical
+> sections, did you counted the total number of context switches? I
+> guess there will be a lot more with your patch applied. That
+> regression is a showstopper and it is the reason why I've suggested
+> before to add a CONFIG_XPMEM or CONFIG_MMU_NOTIFIER_SLEEP config
+> option to make the VM locks sleep capable only when XPMEM=y
+> (PREEMPT_RT will enable it too). Thanks for doing the benchmark work!
 
-I don't know yet.  The discussion is here:
+There are more context switches if locks are contended. 
 
-http://marc.info/?t=120620205200001
-
-James
-
+But that has actually also some good aspects because we avoid busy loops 
+and can potentially continue work in another process.
 
