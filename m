@@ -1,72 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758932AbYDAMXg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758067AbYDAMX7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758932AbYDAMXg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Apr 2008 08:23:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753649AbYDAMX3
+	id S1758067AbYDAMX7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Apr 2008 08:23:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753649AbYDAMXt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Apr 2008 08:23:29 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:48848 "EHLO
-	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752904AbYDAMX2 (ORCPT
+	Tue, 1 Apr 2008 08:23:49 -0400
+Received: from nwd2mail10.analog.com ([137.71.25.55]:37854 "EHLO
+	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755500AbYDAMXs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Apr 2008 08:23:28 -0400
-Date: Tue, 1 Apr 2008 14:24:03 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Ingo Molnar <mingo@elte.hu>, kernel list <linux-kernel@vger.kernel.org>
-Subject: agpgart: scary messages are fortunately obsolete
-Message-ID: <20080401122403.GC12129@elf.ucw.cz>
-References: <20080328112507.GA10774@elf.ucw.cz> <20080328113508.GP29105@one.firstfloor.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080328113508.GP29105@one.firstfloor.org>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Tue, 1 Apr 2008 08:23:48 -0400
+X-IronPort-AV: E=Sophos;i="4.25,587,1199682000"; 
+   d="scan'208";a="65502261"
+From: Bryan Wu <cooloney@kernel.org>
+To: Trond.Myklebust@netapp.com, linux-nfs@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, Bryan Wu <cooloney@kernel.org>,
+       Mike Frysinger <vapier.adi@gmail.com>
+Subject: [PATCH 1/1] [NFS/NOMMU]: fix bug - executing FDPIC ELF on NFS mount triggers BUG() at mm/nommu.c:862:/do_mmap_private()
+Date: Tue,  1 Apr 2008 20:23:39 -0700
+Message-Id: <1207106619-7673-1-git-send-email-cooloney@kernel.org>
+X-Mailer: git-send-email 1.5.4.3
+In-Reply-To: <>
+References: <>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+NFS needs a NOMMU version mmap function to support uClinux on NOMMU machine
+http://blackfin.uclinux.org/gf/project/uclinux-dist/tracker/?action=TrackerItemEdit&tracker_id=141&tracker_item_id=3992
 
-Fix obsolete printks in aperture-64. We used not to handle missing
-agpgart, but we handle it okay now.
+Signed-off-by: Bryan Wu <cooloney@kernel.org>
+Cc: Mike Frysinger <vapier.adi@gmail.com>
+---
+ fs/nfs/file.c |    4 ++++
+ 1 files changed, 4 insertions(+), 0 deletions(-)
 
-Signed-off-by: Pavel Machek <pavel@suse.cz>
-
-diff --git a/arch/x86/kernel/pci-gart_64.c b/arch/x86/kernel/pci-gart_64.c
-index faf3229..3939c6d 100644
---- a/arch/x86/kernel/pci-gart_64.c
-+++ b/arch/x86/kernel/pci-gart_64.c
-@@ -615,13 +615,13 @@ static __init int init_k8_gatt(struct ag
- 
-  nommu:
- 	/* Should not happen anymore */
--	printk(KERN_ERR "PCI-DMA: More than 4GB of RAM and no IOMMU\n"
--	       KERN_ERR "PCI-DMA: 32bit PCI IO may malfunction.\n");
-+	printk(KERN_WARNING "PCI-DMA: More than 4GB of RAM and no IOMMU\n"
-+	       KERN_WARNING "falling back to iommu=soft.\n");
- 	return -1;
- }
- 
- extern int agp_amd64_init(void);
- 
- static const struct dma_mapping_ops gart_dma_ops = {
- 	.mapping_error			= NULL,
- 	.map_single			= gart_map_single,
-@@ -692,9 +690,9 @@ #endif
- 	    !gart_iommu_aperture ||
- 	    (no_agp && init_k8_gatt(&info) < 0)) {
- 		if (end_pfn > MAX_DMA32_PFN) {
--			printk(KERN_ERR "WARNING more than 4GB of memory "
--					"but GART IOMMU not available.\n"
--			       KERN_ERR "WARNING 32bit PCI may malfunction.\n");
-+			printk(KERN_WARNING "More than 4GB of memory "
-+			       	          "but GART IOMMU not available.\n"
-+			       KERN_WARNING "falling back to iommu=soft.\n");
- 		}
- 		return;
- 	}
-
+diff --git a/fs/nfs/file.c b/fs/nfs/file.c
+index ef57a5a..5d2e9d9 100644
+--- a/fs/nfs/file.c
++++ b/fs/nfs/file.c
+@@ -64,7 +64,11 @@ const struct file_operations nfs_file_operations = {
+ 	.write		= do_sync_write,
+ 	.aio_read	= nfs_file_read,
+ 	.aio_write	= nfs_file_write,
++#ifdef CONFIG_MMU
+ 	.mmap		= nfs_file_mmap,
++#else
++	.mmap		= generic_file_mmap,
++#endif
+ 	.open		= nfs_file_open,
+ 	.flush		= nfs_file_flush,
+ 	.release	= nfs_file_release,
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+1.5.4.3
