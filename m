@@ -1,84 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932207AbYDBVxx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763483AbYDBVyX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932207AbYDBVxx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 17:53:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764028AbYDBVr5
+	id S1763483AbYDBVyX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 17:54:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764233AbYDBVsx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 17:47:57 -0400
-Received: from xenotime.net ([66.160.160.81]:50527 "HELO xenotime.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1764026AbYDBVr4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 17:47:56 -0400
-Date: Wed, 2 Apr 2008 14:47:50 -0700
-From: Randy Dunlap <rdunlap@xenotime.net>
-To: lkml <linux-kernel@vger.kernel.org>
-Cc: rusty@rustcorp.com.au, akpm <akpm@linux-foundation.org>,
-       mattilinnanvuori@yahoo.com
-Subject: [PATCH] docbook: some kernel-locking fixes
-Message-Id: <20080402144750.4837bf17.rdunlap@xenotime.net>
-Organization: YPO4
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+	Wed, 2 Apr 2008 17:48:53 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:59678 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761799AbYDBVsw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Apr 2008 17:48:52 -0400
+Date: Wed, 2 Apr 2008 22:48:24 +0100
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: akpm@linux-foundation.org, dave@linux.vnet.ibm.com, ezk@cs.sunysb.edu,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [patch 01/10] vfs: add path_create() and path_mknod()
+Message-ID: <20080402214824.GP9785@ZenIV.linux.org.uk>
+References: <20080402201247.358430231@szeredi.hu> <20080402201321.062856131@szeredi.hu> <20080402205450.GO9785@ZenIV.linux.org.uk> <E1JhAF9-0007Zx-Rq@pomaz-ex.szeredi.hu>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <E1JhAF9-0007Zx-Rq@pomaz-ex.szeredi.hu>
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Matti Linnanvuori <mattilinnanvuori@yahoo.com>
+On Wed, Apr 02, 2008 at 11:11:39PM +0200, Miklos Szeredi wrote:
 
-Fix a wrong path. Add a chapter about try functions.
+> It is an interface with at least 3 callers at the moment: syscalls,
+> nfsd and ecryptfs and unionfs in the future. It is an interface
+> because all external accesses to the filesystem *are* done through the
+> namespace and not directly on filesystem internals.
+> 
+> Such direct access would be conceivable, but I don't think we should
+> base the design on theoretically possible uses.  If those uses appear,
+> we can change the interface to fit that.
+> 
+> This "move everything to callers" thing is wrong because it just
+> results in bloat and bugs, none of which is desirable in the kernel.
 
-http://bugzilla.kernel.org/show_bug.cgi?id=9011
+I disagree.  First of all, clear separation between operations on
+_filesystem_, which should all be namespace-agnostic and things
+that depend on vfsmount is a Good Thing(tm).  Think of that as
+of separation between server (superblock and everything related
+to it, starting with dentry tree) and clients; mixing those is a
+bloody bad idea.
 
-Signed-off-by: Matti Linnanvuori <mattilinnanvuori@yahoo.com>
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+What's more, I'm not at all convinced that for nfsd it's the right
+set of checks, to start with.  The same goes for future users.
 
----
- Documentation/DocBook/kernel-locking.tmpl |   25 +++++++++++++++++++-
- 1 file changed, 24 insertions(+), 1 deletion(-)
+As for ecryptfs, looking at their "lower_mnt" thing...  I'd say that
+it's a nonsense.  For one thing, duplicating a reference into ever
+dentry out there (and it's simply duplicated) makes no sense whatsoever.
+For another...  I'm not at all sure that remount of the underlying
+vfsmount r/o *should* take that sucker read-only.  And if it should,
+it's clearly an action that should have a visible effect on superblock
+flags of ecryptfs.
 
---- lin2625-rc8-kdoc.orig/Documentation/DocBook/kernel-locking.tmpl
-+++ lin2625-rc8-kdoc/Documentation/DocBook/kernel-locking.tmpl
-@@ -290,7 +290,7 @@
-      <para>
-        If you have a data structure which is only ever accessed from
-        user context, then you can use a simple semaphore
--       (<filename>linux/asm/semaphore.h</filename>) to protect it.  This 
-+       (<filename>include/asm/semaphore.h</filename>) to protect it.  This
-        is the most trivial case: you initialize the semaphore to the number 
-        of resources available (usually 1), and call
-        <function>down_interruptible()</function> to grab the semaphore, and 
-@@ -703,6 +703,29 @@
- </sect1>
- </chapter>
- 
-+<chapter id="try-variants">
-+ <title>The try variants</title>
-+
-+  <para>
-+    <function>spin_trylock()</function> does not spin but returns non-zero if
-+    it acquires the spinlock on the first try or 0 if not.
-+  </para>
-+
-+  <para>
-+    <function>mutex_trylock()</function> does not suspend your task
-+    but returns non-zero if it could lock the mutex on the first try
-+    or 0 if not.
-+  </para>
-+
-+  <para>
-+    <function>down_trylock()</function> does not suspend your task
-+    but returns 0 if it could get the semaphore on the first try or
-+    non-zero if not. The return value is the inverse of that of
-+    <function>spin_trylock()</function> and <function>mutex_trylock()
-+    </function>.
-+  </para>
-+</chapter>
-+
-   <chapter id="Examples">
-    <title>Common Examples</title>
-     <para>
-
-
----
+	Incidentally, looking at ecryptfs open(), WTF is protecting
+crypt_stat->flags?  We take crypt_stat->cs_mutex, do nothing but
+check-and-modify of ->flags under it, then drop and several lines
+later do crypt_stat->flags &= ~(ECRYPTFS_ENCRYPTED); with no ->cs_mutex
+held...
