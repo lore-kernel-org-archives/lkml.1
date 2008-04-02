@@ -1,101 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758884AbYDBAjG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758108AbYDBAys@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758884AbYDBAjG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Apr 2008 20:39:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752033AbYDBAiy
+	id S1758108AbYDBAys (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Apr 2008 20:54:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754488AbYDBAyi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Apr 2008 20:38:54 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:56501 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751884AbYDBAix (ORCPT
+	Tue, 1 Apr 2008 20:54:38 -0400
+Received: from c60.cesmail.net ([216.154.195.49]:65177 "EHLO c60.cesmail.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751571AbYDBAyh convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Apr 2008 20:38:53 -0400
-Message-ID: <47F2D590.2040300@zytor.com>
-Date: Tue, 01 Apr 2008 17:38:40 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	Tue, 1 Apr 2008 20:54:37 -0400
+Message-ID: <20080401205435.iov001h7gxs0o8sc@webmail.spamcop.net>
+Date: Tue, 01 Apr 2008 20:54:35 -0400
+From: Pavel Roskin <proski@gnu.org>
+To: Luca Venturini <lucventurini@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org
+Subject: Re: New IWL4935 driver for Intel Wireless Cards does not support
+	WPA2 wireless network with PEAP - MSCHAPV2
+References: <47F1F4F4.2080502@gmail.com>
+	<20080401164419.GA3530@tuxdriver.com>
+	<5d75f4610804011306y55352e73sb5223a294b66f2cf@mail.gmail.com>
+	<47F2A2F0.4060908@gmail.com>
+In-Reply-To: <47F2A2F0.4060908@gmail.com>
 MIME-Version: 1.0
-To: David Newall <davidn@davidnewall.com>
-CC: Jan Engelhardt <jengelh@computergmbh.de>, "John T." <j.thomast@yahoo.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: UTF-8 and Alt key in the console
-References: <205509.99433.qm@web45710.mail.sp1.yahoo.com> <alpine.LNX.1.00.0803231942380.3157@fbirervta.pbzchgretzou.qr> <47ED7EBD.8070009@zytor.com> <alpine.LNX.1.10.0803290055270.18418@fbirervta.pbzchgretzou.qr> <47ED8C13.5060509@zytor.com> <alpine.LNX.1.10.0803290143180.18418@fbirervta.pbzchgretzou.qr> <47EDE2A4.8080702@davidnewall.com> <47EE76BD.2000708@zytor.com> <alpine.LNX.1.10.0804012200340.6604@fbirervta.pbzchgretzou.qr> <47F2CD1B.7060804@davidnewall.com>
-In-Reply-To: <47F2CD1B.7060804@davidnewall.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+	charset=UTF-8;
+	DelSp="Yes";
+	format="flowed"
+Content-Disposition: inline
+Content-Transfer-Encoding: 8BIT
+User-Agent: Internet Messaging Program (IMP) H3 (4.1.4)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Newall wrote:
-> Jan Engelhardt wrote:
->> Hence the proposal of using definite start and end markers:
->>
->>     echo -e '\x1B43m\x1D wonderful \x1B0m\x1D' | cosmicrays | cat
-> 
-> I see no merit in the idea.  Most seriously, there isn't any real-world
-> problem being solved.  In addition, it proposes creating yet another
-> type of terminal emulation.  If there's something you don't like about
-> VT escape codes, use a different emulation.  For example, Televideo
-> terminals used almost exclusively single-character control codes,
-> reducing the scope of being mid-sequence to, well much closer to zero.
-> 
-> You need to make quite clear that your proposal is to discontinue use of
-> VT terminal emulation.
+Hello, Luca!
 
-Okay, let's put this to rest once and for all:
+I'm replying to your message that didn't come to be through a mailing  
+list.  Please don't bcc: random people.  It's a bad style.
 
-	*** ISO 6429 sequences are self-terminating. ***
+Quoting Luca Venturini <lucventurini@gmail.com>:
 
-No, you can't tell you're inside one if you miss the leading CSI, but as 
-has been pointed out, there really isn't a huge case for it.
+> I hope, then, that Linux 2.6.25.x stable will be out sooner than 24th
+> april (Hardy release date) otherwise I (and I guess also many other
+> people) will be in a very bad spot until the kernel is updated...(I am
+> not proficient enough so to compile a whole Linux kernel for my distro).
+> Thank you very much for your attention, in any case.
 
-The standard is available for free under the name ECMA-48:
-http://www.ecma-international.org/publications/files/ECMA-ST/Ecma-048.pdf
+2.6.25.1 will be out after the first bug is fixed in Linux 2.6.25.  I  
+cannot promise you that any such bug would exist.  Actually, I hope  
+that there will be no reason for 2.6.25.1 release.
 
-It references ISO 2022, a.k.a. ECMA-35:
-http://www.ecma-international.org/publications/files/ECMA-ST/Ecma-035.pdf
+In any case, putting pressure on wireless developers is not  
+appreciated.  Maybe you should learn how to compile Linux kernels.  Or  
+maybe you should talk to Ubuntu release engineers and ask them not to  
+wait for 2.6.25.1 (provided that your implication is correct and they  
+would wait).
 
-
-These standards use a decimalized hexadecimal notation, so if you see 
-"05/10" it means 0x5a.  A "column" refers to a 16-character set, so 
-"column 4" refers to bytes 0x40 to 0x4f.
-
-
-The structure defined in section 5.4 of ISO 6429/ECMA-48:
-
------------
-5.4 Control sequences
-A control sequence is a string of bit combinations starting with the 
-control function CONTROL SEQUENCE INTRODUCER (CSI) followed by one or 
-more bit combinations representing parameters, if any, and by one or 
-more bit combinations identifying the control function. The control 
-function CSI itself is an element of the C1 set.
-The format of a control sequence is
-CSI P ... P I ... I F
-where
-a) CSI is represented by bit combinations 01/11 (representing ESC) and 
-05/11 in a 7-bit code or by bit combination 09/11 in an 8-bit code, see 5.3;
-b) P ... P are Parameter Bytes, which, if present, consist of bit 
-combinations from 03/00 to 03/15;
-c) I ... I are Intermediate Bytes, which, if present, consist of bit 
-combinations from 02/00 to 02/15. Together with the Final Byte F, they 
-identify the control function;
-NOTE The number of Intermediate Bytes is not limited by this Standard; 
-in practice, one Intermediate Byte will be sufficient since with sixteen 
-different bit combinations available for the Intermediate Byte over one 
-thousand control functions may be identified.
-d) F is the Final Byte; it consists of a bit combination from 04/00 to 
-07/14; it terminates the control sequence and together with the 
-Intermediate Bytes, if present, identifies the control function. Bit 
-combinations 07/00 to 07/14 are available as Final Bytes of control 
-sequences for private (or experimental) use.
------------
-
-Note: DEC added nonstandard control sequences initiated with SS3 (ESC O) 
-as well as CSI (ESC [); otherwise they use the same format.
-
-The Final Byte is easy enough to spot, as writing a generic parser which 
-can pick this apart, including parameter handling.
-
-	-hpa
+-- 
+Regards,
+Pavel Roskin
