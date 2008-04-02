@@ -1,41 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761159AbYDBTAH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761294AbYDBTAd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761159AbYDBTAH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 15:00:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758869AbYDBS7y
+	id S1761294AbYDBTAd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 15:00:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760812AbYDBS74
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 14:59:54 -0400
-Received: from gw.goop.org ([64.81.55.164]:50117 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759317AbYDBS7x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 14:59:53 -0400
-Message-ID: <47F3D76E.1070400@goop.org>
-Date: Wed, 02 Apr 2008 11:58:54 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080315)
-MIME-Version: 1.0
-To: David Chinner <dgc@sgi.com>
-CC: xfs-masters@oss.sgi.com,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: xfs_io "BUG: lock held when returning to user space!" on suspend
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Wed, 2 Apr 2008 14:59:56 -0400
+Received: from e33.co.us.ibm.com ([32.97.110.151]:56202 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760796AbYDBS7z (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Apr 2008 14:59:55 -0400
+Subject: Re: [PATCH RFC] hotplug-memory: refactor online_pages to separate
+	zone growth from page onlining
+From: Dave Hansen <dave@linux.vnet.ibm.com>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Yasunori Goto <y-goto@jp.fujitsu.com>,
+       Christoph Lameter <clameter@sgi.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Anthony Liguori <anthony@codemonkey.ws>, Mel Gorman <mel@csn.ul.ie>
+In-Reply-To: <47F3D5D9.1010301@goop.org>
+References: <47ED8685.9040409@goop.org>
+	 <1206751622.27091.20.camel@nimitz.home.sr71.net>
+	 <47EDA4B9.6030801@goop.org>
+	 <1206806774.31896.27.camel@nimitz.home.sr71.net>
+	 <47EED683.5030200@goop.org>
+	 <1206981741.31896.51.camel@nimitz.home.sr71.net>
+	 <47F1282E.3020503@goop.org>
+	 <1207161962.23710.23.camel@nimitz.home.sr71.net>
+	 <47F3D5D9.1010301@goop.org>
+Content-Type: text/plain
+Date: Wed, 02 Apr 2008 11:59:52 -0700
+Message-Id: <1207162792.23710.28.camel@nimitz.home.sr71.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I'm getting this:
+On Wed, 2008-04-02 at 11:52 -0700, Jeremy Fitzhardinge wrote:
+> > Why don't we just have hotplug work that way?  When we want to take a
+> > guest from 1GB to 1GB+1 page (or whatever), we just hotplug the entire
+> > section (512MB or 1GB or whatever), actually online the whole thing,
+> > then make the balloon driver take it back to where it *should* be.  That
+> > way we're completely reusing existing components that have do be able to
+> > handle this case anyway.
+> >
+> > Yeah, this is suboptimal, an it has a possibility of fragmenting the
+> > memory, but it will only be used for the x86-32 case.
+> >   
+> 
+> It also requires you actually have the memory on hand to populate the 
+> whole area.  512MB is still a significant chunk on a 2GB server; you may 
+> end up generating significant overall system memory pressure to scrape 
+> together the memory, only to immediately discard it again.
 
-================================================
-[ BUG: lock held when returning to user space! ]
-------------------------------------------------
-xfs_io/18796 is leaving the kernel with locks still held!
-1 lock held by xfs_io/18796:
- #0:  (&type->s_umount_key#19){----}, at: [<c048c9ac>] get_super+0x42/0x87
+That's a very good point.  Can we make it so that the hypervisors don't
+actually allocate the memory to the guest until its first touch?  If the
+pages are on the freelist, their *contents* shouldn't be touched at all
+during the onlining process.
 
-when I suspend, possibly during an xfs-freeze.  There don't seem to be any ill-effects.
+Maybe we could put a special mark on the pages (please no page flag :)
+and the allocator can jump in and ask for the page from the hypervisor
+before returning it to the system.  I think Anthony had some ideas
+around this area.  It's kinda a poor man's page hinting.
 
-Thanks,
-	J
+-- Dave
 
