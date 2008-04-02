@@ -1,59 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760020AbYDBVZ2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759368AbYDBVbe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760020AbYDBVZ2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 17:25:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755458AbYDBVZT
+	id S1759368AbYDBVbe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 17:31:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755385AbYDBVbZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 17:25:19 -0400
-Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:50180
-	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755035AbYDBVZS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 17:25:18 -0400
-Date: Wed, 2 Apr 2008 23:25:15 +0200
-From: Andrea Arcangeli <andrea@qumranet.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Hugh Dickins <hugh@veritas.com>, Robin Holt <holt@sgi.com>,
-       Avi Kivity <avi@qumranet.com>, Izik Eidus <izike@qumranet.com>,
-       kvm-devel@lists.sourceforge.net,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, general@lists.openfabrics.org,
-       Steve Wise <swise@opengridcomputing.com>,
-       Roland Dreier <rdreier@cisco.com>, Kanoj Sarcar <kanojsarcar@yahoo.com>,
-       steiner@sgi.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       daniel.blueman@quadrics.com, Nick Piggin <npiggin@suse.de>
-Subject: Re: EMM: Fixup return value handling of emm_notify()
-Message-ID: <20080402212515.GS19189@duo.random>
-References: <20080401205531.986291575@sgi.com> <20080401205635.793766935@sgi.com> <20080402064952.GF19189@duo.random> <Pine.LNX.4.64.0804021048460.27214@schroedinger.engr.sgi.com> <Pine.LNX.4.64.0804021202450.28436@schroedinger.engr.sgi.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0804021202450.28436@schroedinger.engr.sgi.com>
+	Wed, 2 Apr 2008 17:31:25 -0400
+Received: from saeurebad.de ([85.214.36.134]:59364 "EHLO saeurebad.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751886AbYDBVbY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Apr 2008 17:31:24 -0400
+From: Johannes Weiner <hannes@saeurebad.de>
+To: linux-kernel@vger.kernel.org
+Cc: linux-mm@kvack.org, mingo@elte.hu, davem@davemloft.net,
+       hskinnemoen@atmel.com, cooloney@kernel.org, starvik@axis.com,
+       dhowells@redhat.com, ysato@users.sourceforge.net, takata@linux-m32r.org,
+       geert@linux-m68k.org, ralf@linux-mips.org, kyle@parisc-linux.org,
+       paulus@samba.org, schwidefsky@de.ibm.com, lethal@linux-sh.org,
+       jdike@addtoit.com, miles@gnu.org, chris@zankel.net,
+       rmk@arm.linux.org.uk, tony.luck@intel.com
+Subject: [RFC 00/21] Generic show_mem()
+Date: Wed,  2 Apr 2008 22:29:52 +0200
+Message-Id: <12071682142640-git-send-email-hannes@saeurebad.de>
+X-Mailer: git-send-email 1.5.2.2
+X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 02, 2008 at 12:03:50PM -0700, Christoph Lameter wrote:
-> +			/*
-> +			 * Callback may return a positive value to indicate a count
-> +			 * or a negative error code. We keep the first error code
-> +			 * but continue to perform callbacks to other subscribed
-> +			 * subsystems.
-> +			 */
-> +			if (x && result >= 0) {
-> +				if (x >= 0)
-> +					result += x;
-> +				else
-> +					result = x;
-> +			}
->  		}
-> +
+Hi.
 
-Now think of when one of the kernel janitors will micro-optimize
-PG_dirty to be returned by invalidate_page so a single set_page_dirty
-will be invoked... Keep in mind this is a kernel internal APIs, ask
-Greg if we can change it in order to optimize later in the future. I
-think my #v9 is optimal enough while being simple at the same time,
-but anyway it's silly to be hardwired to such an interface that worst
-of all requires switch statements instead of proper pointer to
-functions and a fixed set of parameters and retval semantics for all
-methods.
+Every arch implements its own show_mem() function.  Most of them share
+quite some code, some of them are completely identical.
+
+This proposal implements a generic version of this functions and
+migrates almost all architectures to use it.
+
+I have only tested the x86_32 related part in lack of other archs.
+
+As far as I understood the code, the generic version should work for
+the architectures that used to iterate mem_map pfns, but I can not
+tell for sure.  Please give feedback.
+
+Also, this series leaves ia64, arm, and sparc as is.
+
+Tony, as far as I understand, ia64 jumps holes in the memory map with
+vmemmap_find_next_valid_pfn().  Any idea if and how this could be
+built into the generic show_mem() version?
+
+Russell, I don't know if arm can be transformed.  For now, it keeps
+its arch-specific show_mem().
+
+Dave, can sparc's version be simply migrated as well?
+
+	Hannes
+
+ arch/alpha/mm/init.c      |   30 ------------------
+ arch/alpha/mm/numa.c      |   35 ----------------------
+ arch/arm/mm/Kconfig       |    3 ++
+ arch/avr32/mm/init.c      |   39 ------------------------
+ arch/blackfin/mm/init.c   |   27 -----------------
+ arch/cris/mm/init.c       |   31 -------------------
+ arch/frv/mm/init.c        |   31 -------------------
+ arch/h8300/mm/init.c      |   28 -----------------
+ arch/ia64/Kconfig         |    3 ++
+ arch/m32r/mm/init.c       |   37 -----------------------
+ arch/m68k/mm/init.c       |   31 -------------------
+ arch/m68knommu/mm/init.c  |   28 -----------------
+ arch/mips/mm/Makefile     |    3 +-
+ arch/mips/mm/pgtable.c    |   37 -----------------------
+ arch/mn10300/mm/pgtable.c |   27 -----------------
+ arch/parisc/mm/init.c     |   72 ---------------------------------------------
+ arch/powerpc/mm/mem.c     |   40 -------------------------
+ arch/ppc/mm/init.c        |   31 -------------------
+ arch/s390/mm/init.c       |   36 ----------------------
+ arch/sh/mm/init.c         |   41 -------------------------
+ arch/sparc/Kconfig        |    3 ++
+ arch/sparc64/mm/init.c    |   45 ----------------------------
+ arch/um/kernel/mem.c      |   31 -------------------
+ arch/v850/kernel/setup.c  |   30 ------------------
+ arch/x86/mm/init_64.c     |   40 -------------------------
+ arch/x86/mm/pgtable_32.c  |   48 ------------------------------
+ arch/xtensa/mm/init.c     |   27 -----------------
+ mm/page_alloc.c           |   53 +++++++++++++++++++++++++++++++++
+ 28 files changed, 63 insertions(+), 824 deletions(-)
