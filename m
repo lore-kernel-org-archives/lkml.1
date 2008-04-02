@@ -1,128 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754994AbYDBMFE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755419AbYDBMHP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754994AbYDBMFE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 08:05:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753812AbYDBMEx
+	id S1755419AbYDBMHP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 08:07:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753162AbYDBMHD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 08:04:53 -0400
-Received: from astoria.ccjclearline.com ([64.235.106.9]:48623 "EHLO
-	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753319AbYDBMEw (ORCPT
+	Wed, 2 Apr 2008 08:07:03 -0400
+Received: from smtp1.infomaniak.ch ([84.16.68.89]:50433 "EHLO
+	smtp1.infomaniak.ch" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752846AbYDBMHB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 08:04:52 -0400
-Date: Wed, 2 Apr 2008 08:04:45 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@crashcourse.ca>
-X-X-Sender: rpjday@localhost.localdomain
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-cc: Andrew Morton <akpm@osdl.org>
-Subject: [PATCH] Drop the exporting of empty <linux/byteorder/generic.h>.
-Message-ID: <alpine.LFD.1.00.0804020757590.17773@localhost.localdomain>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+	Wed, 2 Apr 2008 08:07:01 -0400
+From: Didier Raboud <didier@raboud.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: =?iso-8859-15?q?2=2E6=2E25-rc7=A0=3A_hibernation_sometimes_not_resuming_on?=
+ =?iso-8859-15?q?_Dell_Latitude?= D630
+Date: Wed, 2 Apr 2008 14:06:29 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org, debian-kernel@lists.debian.org
+References: <200803311823.36693.didier@raboud.com> <200804012318.26002.didier@raboud.com> <200804012322.35672.rjw@sisk.pl>
+In-Reply-To: <200804012322.35672.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - crashcourse.ca
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+Content-Type: multipart/signed;
+  boundary="nextPart1900600.ZKocu9aPAs";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200804021406.32668.didier@raboud.com>
+X-Antivirus: Dr.Web (R) for Mail Servers on smtp1 host
+X-Antivirus-Code: 100000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+--nextPart1900600.ZKocu9aPAs
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-Fix up the contents of <linux/byteorder/> so that it doesn't export a
-content-free generic.h to user space.  This involves:
+Le mardi, 1 avril 2008 23.22:35 Rafael J. Wysocki, vous avez =E9crit=A0:
+> On Tuesday, 1 of April 2008, Didier Raboud wrote:
+> > Le mardi, 1 avril 2008 23.11:15 Rafael J. Wysocki, vous avez =E9crit=A0:
+> > > (...)
+> > > Can you please test the in-kernel hibernation, then?
+> > >
+> > > Rafael
+> >
+> > Hi,
+> >
+> > would like to. How=A0?
+> >
+> > # echo -n disk > /sys/power/state
+>
+> Yes, should work without the "-n", too.  Of course, you have to use the
+> 'resume=3D' kernel command line argument for this to work.
+>
+> Perhaps increase the console log level before that.
+>
+> Thanks,
+> Rafael
 
-* Removing the __KERNEL__ tests from generic.h and dropping it from
-  Kbuild.
-* Wrapping the inclusions of generic.h in both big_endian.h and
-  little_endian.h in __KERNEL__ tests.
-* Shifting big_endian.h and little_endian.h from header-y to
-  unifdef-y in Kbuild.
+Ok. I found a "better" way to do it=A0: just uninstall uswsusp and let=20
+kpowersave use hal to use suspend :-)
 
-Signed-off-by: Robert P. J. Day <rpjday@crashcourse.ca>
+Anyway, so far so good (with USB_SUSPEND not set), no hang. I will test wit=
+h=20
+USB_SUSPEND set and the incoming 2.6.25-rc8.
 
----
+Regards,=20
 
-  what kernel subsystem would stuff like this fall under?
+Didier
 
+--nextPart1900600.ZKocu9aPAs
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
 
- include/linux/byteorder/Kbuild          |    6 ++----
- include/linux/byteorder/big_endian.h    |    2 ++
- include/linux/byteorder/generic.h       |    8 --------
- include/linux/byteorder/little_endian.h |    2 ++
- 4 files changed, 6 insertions(+), 12 deletions(-)
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
 
-diff --git a/include/linux/byteorder/Kbuild b/include/linux/byteorder/Kbuild
-index 79beddd..1133d5f 100644
---- a/include/linux/byteorder/Kbuild
-+++ b/include/linux/byteorder/Kbuild
-@@ -1,5 +1,3 @@
--header-y += big_endian.h
--header-y += little_endian.h
--
--unifdef-y += generic.h
-+unifdef-y += big_endian.h
-+unifdef-y += little_endian.h
- unifdef-y += swab.h
-diff --git a/include/linux/byteorder/big_endian.h b/include/linux/byteorder/big_endian.h
-index bef8789..961ed4b 100644
---- a/include/linux/byteorder/big_endian.h
-+++ b/include/linux/byteorder/big_endian.h
-@@ -101,6 +101,8 @@ static inline __u16 __be16_to_cpup(const __be16 *p)
- #define __cpu_to_be16s(x) do {} while (0)
- #define __be16_to_cpus(x) do {} while (0)
+iD8DBQBH83bIwW1nnOmiePARApARAJ9orfuxozIfXDyfdRTHWQt5+jtqNQCeK0Et
+rYfWUBaM6sJF84q3TvtrSqE=
+=FS5W
+-----END PGP SIGNATURE-----
 
-+#ifdef __KERNEL__
- #include <linux/byteorder/generic.h>
-+#endif
-
- #endif /* _LINUX_BYTEORDER_BIG_ENDIAN_H */
-diff --git a/include/linux/byteorder/generic.h b/include/linux/byteorder/generic.h
-index d377155..0846e6b 100644
---- a/include/linux/byteorder/generic.h
-+++ b/include/linux/byteorder/generic.h
-@@ -82,12 +82,6 @@
-  *
-  */
-
--
--#if defined(__KERNEL__)
--/*
-- * inside the kernel, we can use nicknames;
-- * outside of it, we must avoid POSIX namespace pollution...
-- */
- #define cpu_to_le64 __cpu_to_le64
- #define le64_to_cpu __le64_to_cpu
- #define cpu_to_le32 __cpu_to_le32
-@@ -176,6 +170,4 @@ static inline void be64_add_cpu(__be64 *var, u64 val)
- 	*var = cpu_to_be64(be64_to_cpu(*var) + val);
- }
-
--#endif /* KERNEL */
--
- #endif /* _LINUX_BYTEORDER_GENERIC_H */
-diff --git a/include/linux/byteorder/little_endian.h b/include/linux/byteorder/little_endian.h
-index 86e62b7..05dc7c3 100644
---- a/include/linux/byteorder/little_endian.h
-+++ b/include/linux/byteorder/little_endian.h
-@@ -101,6 +101,8 @@ static inline __u16 __be16_to_cpup(const __be16 *p)
- #define __cpu_to_be16s(x) __swab16s((x))
- #define __be16_to_cpus(x) __swab16s((x))
-
-+#ifdef __KERNEL__
- #include <linux/byteorder/generic.h>
-+#endif
-
- #endif /* _LINUX_BYTEORDER_LITTLE_ENDIAN_H */
-
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry:
-    Have classroom, will lecture.
-
-http://crashcourse.ca                          Waterloo, Ontario, CANADA
-========================================================================
+--nextPart1900600.ZKocu9aPAs--
