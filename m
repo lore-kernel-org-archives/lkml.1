@@ -1,48 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758543AbYDBGDk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759599AbYDBGEj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758543AbYDBGDk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 02:03:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751253AbYDBGDb
+	id S1759599AbYDBGEj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 02:04:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751628AbYDBGE1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 02:03:31 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:51579 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751139AbYDBGDb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 02:03:31 -0400
-Date: Tue, 1 Apr 2008 23:03:22 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Dmitri Vorobiev <dmitri.vorobiev@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Christoph Lameter <clameter@sgi.com>
+	Wed, 2 Apr 2008 02:04:27 -0400
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:49125 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751508AbYDBGE1 (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Apr 2008 02:04:27 -0400
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
 Subject: Re: 2.6.25-rc8-mm1
-Message-Id: <20080401230322.331c50f4.akpm@linux-foundation.org>
-In-Reply-To: <47F31C46.9000503@gmail.com>
+In-Reply-To: Your message of "Tue, 01 Apr 2008 21:32:14 PDT."
+             <20080401213214.8fbb6d6b.akpm@linux-foundation.org>
+From: Valdis.Kletnieks@vt.edu
 References: <20080401213214.8fbb6d6b.akpm@linux-foundation.org>
-	<47F31C46.9000503@gmail.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: multipart/signed; boundary="==_Exmh_1207116257_3005P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
 Content-Transfer-Encoding: 7bit
+Date: Wed, 02 Apr 2008 02:04:17 -0400
+Message-ID: <4893.1207116257@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 02 Apr 2008 09:40:22 +0400 Dmitri Vorobiev <dmitri.vorobiev@gmail.com> wrote:
+--==_Exmh_1207116257_3005P
+Content-Type: text/plain; charset=us-ascii
 
-> Hi Andrew,
-> 
-> MIPS build fails with the following:
-> 
-> $ make ARCH=mips CROSS_COMPILE=mips-unknown-linux-gnu-
-> ...
-> [skipped]
-> ...
->   CC      arch/mips/mips-boards/generic/init.o
-> In file included from include/asm/cacheflush.h:13,
->                  from arch/mips/mips-boards/generic/init.c:30:
-> include/linux/mm.h:411:63: "NR_PAGEFLAGS" is not defined
-> include/linux/mm.h:459:62: "NR_PAGEFLAGS" is not defined
-> make[1]: *** [arch/mips/mips-boards/generic/init.o] Error 1
-> make: *** [arch/mips/mips-boards/generic] Error 2
+On Tue, 01 Apr 2008 21:32:14 PDT, Andrew Morton said:
+> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.25-rc8/2.6.25-rc8-mm1/
 
-ahh, yup, known problem, sorry.  We are slowly working on a fix.
+Dell Latitude D820, Core2 T7200, x86_64.
+
+Built my usual .config cleanly, booted OK, has gone for a half hour
+of fairly representative usage without any oopsen or other dmesg surprises...
+
+--==_Exmh_1207116257_3005P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFH8yHhcC3lWbTT17ARAsu6AJ4sfOw+KJJMsKtUzH68cHVetA5irwCgkcE5
+5j0v3F17lsYY7oCYSewF2oc=
+=FRuo
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1207116257_3005P--
