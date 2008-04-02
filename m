@@ -1,24 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760034AbYDBShm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760239AbYDBSh5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760034AbYDBShm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 14:37:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757294AbYDBSfj
+	id S1760239AbYDBSh5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 14:37:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757321AbYDBSfk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 14:35:39 -0400
-Received: from 21.sub-75-208-3.myvzw.com ([75.208.3.21]:38410 "EHLO
+	Wed, 2 Apr 2008 14:35:40 -0400
+Received: from 21.sub-75-208-3.myvzw.com ([75.208.3.21]:38411 "EHLO
 	mail.goop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756874AbYDBSfg (ORCPT
+	with ESMTP id S1756915AbYDBSfh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 14:35:36 -0400
+	Wed, 2 Apr 2008 14:35:37 -0400
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Subject: [PATCH 15 of 24] xen blkfront: Delay wait for block devices until
-	after the disk is added
-X-Mercurial-Node: a44c031b8520b271479bbd5219719074755234e4
-Message-Id: <a44c031b8520b271479b.1207158844@localhost>
+Subject: [PATCH 16 of 24] xen: Module autoprobing support for frontend drivers
+X-Mercurial-Node: fa75e5f029963721e1d79cba06b3bcd6547085c2
+Message-Id: <fa75e5f029963721e1d7.1207158845@localhost>
 In-Reply-To: <patchbomb.1207158829@localhost>
-Date: Wed, 02 Apr 2008 10:54:04 -0700
+Date: Wed, 02 Apr 2008 10:54:05 -0700
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: LKML <linux-kernel@vger.kernel.org>,
@@ -27,104 +26,93 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Christian Limpach <Christian.Limpach@xensource.com>
+From: Mark McLoughlin <markmc@redhat.com>
 
-When the xen block frontend driver is built as a module the module load
-is only synchronous up to the point where the frontend and the backend
-become connected rather than when the disk is added.
+Add module aliases to support autoprobing modules
+for xen frontend devices.
 
-This means that there can be a race on boot between loading the module and
-loading the dm-* modules and doing the scan for LVM physical volumes (all
-in the initrd). In the failure case the disk is not present until after the
-scan for physical volumes is complete.
-
-Taken from:
-
-  http://xenbits.xensource.com/linux-2.6.18-xen.hg?rev/11483a00c017
-
-Signed-off-by: Christian Limpach <Christian.Limpach@xensource.com>
 Signed-off-by: Mark McLoughlin <markmc@redhat.com>
-Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 ---
- drivers/block/xen-blkfront.c      |   11 +++++++++++
- drivers/xen/xenbus/xenbus_probe.c |    5 ++++-
- include/xen/xenbus.h              |    2 +-
- 3 files changed, 16 insertions(+), 2 deletions(-)
+ drivers/block/xen-blkfront.c      |    1 +
+ drivers/net/xen-netfront.c        |    1 +
+ drivers/xen/xenbus/xenbus_probe.c |   28 +++++++++++++++++++++++++---
+ 3 files changed, 27 insertions(+), 3 deletions(-)
 
 diff --git a/drivers/block/xen-blkfront.c b/drivers/block/xen-blkfront.c
 --- a/drivers/block/xen-blkfront.c
 +++ b/drivers/block/xen-blkfront.c
-@@ -88,6 +88,7 @@
- 	struct blk_shadow shadow[BLK_RING_SIZE];
- 	unsigned long shadow_free;
- 	int feature_barrier;
-+	int is_ready;
+@@ -1015,3 +1015,4 @@
+ MODULE_DESCRIPTION("Xen virtual block device frontend");
+ MODULE_LICENSE("GPL");
+ MODULE_ALIAS_BLOCKDEV_MAJOR(XENVBD_MAJOR);
++MODULE_ALIAS("xen:vbd");
+diff --git a/drivers/net/xen-netfront.c b/drivers/net/xen-netfront.c
+--- a/drivers/net/xen-netfront.c
++++ b/drivers/net/xen-netfront.c
+@@ -1809,3 +1809,4 @@
  
- 	/**
- 	 * The number of people holding this device open.  We won't allow a
-@@ -839,6 +840,8 @@
- 	spin_unlock_irq(&blkif_io_lock);
- 
- 	add_disk(info->gd);
-+
-+	info->is_ready = 1;
- }
- 
- /**
-@@ -931,6 +934,13 @@
- 	return 0;
- }
- 
-+static int blkfront_is_ready(struct xenbus_device *dev)
-+{
-+	struct blkfront_info *info = dev->dev.driver_data;
-+
-+	return info->is_ready;
-+}
-+
- static int blkif_open(struct inode *inode, struct file *filep)
- {
- 	struct blkfront_info *info = inode->i_bdev->bd_disk->private_data;
-@@ -977,6 +987,7 @@
- 	.remove = blkfront_remove,
- 	.resume = blkfront_resume,
- 	.otherend_changed = backend_changed,
-+	.is_ready = blkfront_is_ready,
- };
- 
- static int __init xlblk_init(void)
+ MODULE_DESCRIPTION("Xen virtual network device frontend");
+ MODULE_LICENSE("GPL");
++MODULE_ALIAS("xen:vif");
 diff --git a/drivers/xen/xenbus/xenbus_probe.c b/drivers/xen/xenbus/xenbus_probe.c
 --- a/drivers/xen/xenbus/xenbus_probe.c
 +++ b/drivers/xen/xenbus/xenbus_probe.c
-@@ -846,6 +846,7 @@
- {
- 	struct xenbus_device *xendev = to_xenbus_device(dev);
- 	struct device_driver *drv = data;
-+	struct xenbus_driver *xendrv;
- 
- 	/*
- 	 * A device with no driver will never connect. We care only about
-@@ -858,7 +859,9 @@
- 	if (drv && (dev->driver != drv))
- 		return 0;
- 
--	return (xendev->state != XenbusStateConnected);
-+	xendrv = to_xenbus_driver(dev->driver);
-+	return (xendev->state != XenbusStateConnected ||
-+		(xendrv->is_ready && !xendrv->is_ready(xendev)));
+@@ -88,6 +88,16 @@
+ 	return match_device(drv->ids, to_xenbus_device(_dev)) != NULL;
  }
  
- static int exists_disconnected_device(struct device_driver *drv)
-diff --git a/include/xen/xenbus.h b/include/xen/xenbus.h
---- a/include/xen/xenbus.h
-+++ b/include/xen/xenbus.h
-@@ -97,6 +97,7 @@
- 	int (*uevent)(struct xenbus_device *, char **, int, char *, int);
- 	struct device_driver driver;
- 	int (*read_otherend_details)(struct xenbus_device *dev);
-+	int (*is_ready)(struct xenbus_device *dev);
- };
++static int xenbus_uevent(struct device *_dev, struct kobj_uevent_env *env)
++{
++	struct xenbus_device *dev = to_xenbus_device(_dev);
++
++	if (add_uevent_var(env, "MODALIAS=xen:%s", dev->devicetype))
++		return -ENOMEM;
++
++	return 0;
++}
++
+ /* device/<type>/<id> => <type>-<id> */
+ static int frontend_bus_id(char bus_id[BUS_ID_SIZE], const char *nodename)
+ {
+@@ -166,6 +176,7 @@
+ 	.bus = {
+ 		.name     = "xen",
+ 		.match    = xenbus_match,
++		.uevent   = xenbus_uevent,
+ 		.probe    = xenbus_dev_probe,
+ 		.remove   = xenbus_dev_remove,
+ 		.shutdown = xenbus_dev_shutdown,
+@@ -438,6 +449,12 @@
+ }
+ DEVICE_ATTR(devtype, S_IRUSR | S_IRGRP | S_IROTH, xendev_show_devtype, NULL);
  
- static inline struct xenbus_driver *to_xenbus_driver(struct device_driver *drv)
++static ssize_t xendev_show_modalias(struct device *dev,
++				    struct device_attribute *attr, char *buf)
++{
++	return sprintf(buf, "xen:%s\n", to_xenbus_device(dev)->devicetype);
++}
++DEVICE_ATTR(modalias, S_IRUSR | S_IRGRP | S_IROTH, xendev_show_modalias, NULL);
+ 
+ int xenbus_probe_node(struct xen_bus_type *bus,
+ 		      const char *type,
+@@ -492,10 +509,16 @@
+ 
+ 	err = device_create_file(&xendev->dev, &dev_attr_devtype);
+ 	if (err)
+-		goto fail_remove_file;
++		goto fail_remove_nodename;
++
++	err = device_create_file(&xendev->dev, &dev_attr_modalias);
++	if (err)
++		goto fail_remove_devtype;
+ 
+ 	return 0;
+-fail_remove_file:
++fail_remove_devtype:
++	device_remove_file(&xendev->dev, &dev_attr_devtype);
++fail_remove_nodename:
+ 	device_remove_file(&xendev->dev, &dev_attr_nodename);
+ fail_unregister:
+ 	device_unregister(&xendev->dev);
 
 
