@@ -1,119 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756235AbYDBWJi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763686AbYDBWJw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756235AbYDBWJi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 18:09:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758342AbYDBWJW
+	id S1763686AbYDBWJw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 18:09:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763280AbYDBWJk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 18:09:22 -0400
-Received: from py-out-1112.google.com ([64.233.166.177]:3977 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755426AbYDBWJU (ORCPT
+	Wed, 2 Apr 2008 18:09:40 -0400
+Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:47821
+	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763113AbYDBWJj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 18:09:20 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=pE7ZGKeiGerzFkR4eYJfGvhJtUcfh412R+NYWleuB8cQUY2IJJ54K549eIFmyIP+3KVmVz2rGsQRfhyVGHF8L3MOIFqmRzdmlnKQpZ1QNfb1l6x5sPy9BVFnxMR+8TtVn7s/HkeTs9mpgjB/a5lDOuWtwE8H4xzb7tpzRLu6CGY=
-From: Mike Snitzer <snitzer@gmail.com>
-To: linux-raid@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, paul.clements@steeleye.com, neilb@suse.de
-Subject: [RFC][PATCH] md: avoid fullsync if a faulty member missed a dirty transition
-Date: Wed,  2 Apr 2008 18:09:15 -0400
-Message-Id: <1207174155-20090-1-git-send-email-snitzer@gmail.com>
-X-Mailer: git-send-email 1.5.3.4
+	Wed, 2 Apr 2008 18:09:39 -0400
+Date: Thu, 3 Apr 2008 00:09:36 +0200
+From: Andrea Arcangeli <andrea@qumranet.com>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Hugh Dickins <hugh@veritas.com>, Robin Holt <holt@sgi.com>,
+       Avi Kivity <avi@qumranet.com>, Izik Eidus <izike@qumranet.com>,
+       kvm-devel@lists.sourceforge.net,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, general@lists.openfabrics.org,
+       Steve Wise <swise@opengridcomputing.com>,
+       Roland Dreier <rdreier@cisco.com>, Kanoj Sarcar <kanojsarcar@yahoo.com>,
+       steiner@sgi.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       daniel.blueman@quadrics.com, Nick Piggin <npiggin@suse.de>
+Subject: Re: [patch 1/9] EMM Notifier: The notifier calls
+Message-ID: <20080402220936.GW19189@duo.random>
+References: <20080401205531.986291575@sgi.com> <20080401205635.793766935@sgi.com> <20080402064952.GF19189@duo.random> <Pine.LNX.4.64.0804021048460.27214@schroedinger.engr.sgi.com> <20080402215334.GT19189@duo.random> <Pine.LNX.4.64.0804021453350.31247@schroedinger.engr.sgi.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0804021453350.31247@schroedinger.engr.sgi.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-resync via bitmap if faulty's events+1 == bitmap's events_cleared
+On Wed, Apr 02, 2008 at 02:54:52PM -0700, Christoph Lameter wrote:
+> On Wed, 2 Apr 2008, Andrea Arcangeli wrote:
+> 
+> > > Hmmm... Okay that is one solution that would just require a BUG_ON in the 
+> > > registration methods.
+> > 
+> > Perhaps you didn't notice that this solution can't work if you call
+> > range_begin/end not in the "current" context and try_to_unmap_cluster
+> > does exactly that for both my patchset and yours. Missing an _end is
+> > ok, missing a _begin is never ok.
+> 
+> If you look at the patch you will see a requirement of holding a 
+> writelock on mmap_sem which will keep out get_user_pages().
 
-For more background please see:
-http://marc.info/?l=linux-raid&m=120703208715865&w=2
+I said try_to_unmap_cluster, not get_user_pages.
 
-Without this change validate_super() will prevent the previously faulty
-member from recovering via bitmap, e.g.:
+  CPU0					CPU1
+  try_to_unmap_cluster:
+  emm_invalidate_start in EMM (or mmu_notifier_invalidate_range_start in #v10)
+  walking the list by hand in EMM (or with hlist cleaner in #v10)
+  xpmem method invoked
+  schedule for a long while inside invalidate_range_start while skbs are sent
+					gru registers
+					synchronize_rcu (sorry useless now)
+					single threaded, so taking a page fault
+  					secondary tlb instantiated
+  xpm method returns
+  end of the list (didn't notice that it has to restart to flush the gru)
+  zap pte
+  free the page
+					gru corrupts memory
 
- md: nbd0 rdev's ev1 (30080) < mddev->bitmap->events_cleared (30081)... rdev->raid_disk=-1
- md: nbd1 rdev's ev1 (30342) < mddev->bitmap->events_cleared (30343)... rdev->raid_disk=-1
- md: nbd0 rdev's ev1 (30186) < mddev->bitmap->events_cleared (30187)... rdev->raid_disk=-1
- md: nbd0 rdev's ev1 (30286) < mddev->bitmap->events_cleared (30287)... rdev->raid_disk=-1
- md: nbd1 rdev's ev1 (30476) < mddev->bitmap->events_cleared (30477)... rdev->raid_disk=-1
- md: nbd0 rdev's ev1 (30488) < mddev->bitmap->events_cleared (30489)... rdev->raid_disk=-1
- md: nbd1 rdev's ev1 (30680) < mddev->bitmap->events_cleared (30681)... rdev->raid_disk=-1
- md: nbd0 rdev's ev1 (31082) < mddev->bitmap->events_cleared (31083)... rdev->raid_disk=-1
- md: nbd1 rdev's ev1 (31264) < mddev->bitmap->events_cleared (31265)... rdev->raid_disk=-1
- md: nbd0 rdev's ev1 (31108) < mddev->bitmap->events_cleared (31109)... rdev->raid_disk=-1
- md: nbd0 rdev's ev1 (31126) < mddev->bitmap->events_cleared (31127)... rdev->raid_disk=-1
- md: nbd1 rdev's ev1 (31416) < mddev->bitmap->events_cleared (31417)... rdev->raid_disk=-1
- md: nbd1 rdev's ev1 (31432) < mddev->bitmap->events_cleared (31433)... rdev->raid_disk=-1
- md: nbd0 rdev's ev1 (31274) < mddev->bitmap->events_cleared (31275)... rdev->raid_disk=-1
- md: nbd1 rdev's ev1 (31448) < mddev->bitmap->events_cleared (31449)... rdev->raid_disk=-1
- md: nbd1 rdev's ev1 (31494) < mddev->bitmap->events_cleared (31495)... rdev->raid_disk=-1
- md: nbd1 rdev's ev1 (31512) < mddev->bitmap->events_cleared (31513)... rdev->raid_disk=-1
+CPU 1 was single threaded, CPU0 doesn't hold any mmap_sem or any other
+lock that could ever serialize against the GRU as far as I can tell.
 
-Note that 'mddev->bitmap->events_cleared' is _always_ odd and the
-previously faulty member's 'ev1' (aka events) is _always_ even.  The
-current validate_super() logic is blind to clean-to-dirty events
-transitions and as such it imposes, potentially expensive, full resyncs.
-
-This change makes the bitmap's 'events_cleared' logic more nuanced than
-that which is documented in include/linux/raid/bitmap.h:
-
- * (2) This event counter [events_cleared] is updated when the other one
- *    [events] is *if*and*only*if* the array is not degraded.  As bits are
- *    not cleared when the array is degraded, this represents the last
- *    time that any bits were cleared.  If a device is being added that
- *    has an event count with this value or higher, it is accepted as
- *    conforming to the bitmap.
-
-But the question becomes: is the proposed change safe?
-
-Considerable testing seems to indicate that it is.  But I welcome any
-other suggestions for how to prevent such unnecessary full resyncs.
----
- drivers/md/md.c |   20 ++++++++++++++++++--
- 1 files changed, 18 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/md/md.c b/drivers/md/md.c
-index 61ccbd2..43425e4 100644
---- a/drivers/md/md.c
-+++ b/drivers/md/md.c
-@@ -839,8 +839,16 @@ static int super_90_validate(mddev_t *mddev, mdk_rdev_t *rdev)
- 	} else if (mddev->bitmap) {
- 		/* if adding to array with a bitmap, then we can accept an
- 		 * older device ... but not too old.
-+		 *
-+		 * if 'mddev->bitmap->events_cleared' is odd it implies a clean-to-dirty
-+		 * transition occurred just before the array became degraded
-+		 * - if rdev's on-disk 'events' is just one less (aka even) this
-+		 *   dirty transition wasn't recorded; allow use of the bitmap to
-+		 *   efficiently resync to this member
- 		 */
--		if (ev1 < mddev->bitmap->events_cleared)
-+		if (ev1 < mddev->bitmap->events_cleared &&
-+		    !(mddev->degraded && (mddev->bitmap->events_cleared & 1) &&
-+		      (ev1+1 == mddev->bitmap->events_cleared)))
- 			return 0;
- 	} else {
- 		if (ev1 < mddev->events)
-@@ -1214,8 +1222,16 @@ static int super_1_validate(mddev_t *mddev, mdk_rdev_t *rdev)
- 	} else if (mddev->bitmap) {
- 		/* If adding to array with a bitmap, then we can accept an
- 		 * older device, but not too old.
-+		 *
-+		 * if 'mddev->bitmap->events_cleared' is odd it implies a clean-to-dirty
-+		 * transition likely occurred just before the array became degraded
-+		 * - if rdev's on-disk 'events' is just one less (aka even) this
-+		 *   dirty transition wasn't recorded; allow use of the bitmap to
-+		 *   efficiently resync to this member
- 		 */
--		if (ev1 < mddev->bitmap->events_cleared)
-+		if (ev1 < mddev->bitmap->events_cleared &&
-+		    !(mddev->degraded && (mddev->bitmap->events_cleared & 1) &&
-+		      (ev1+1 == mddev->bitmap->events_cleared)))
- 			return 0;
- 	} else {
- 		if (ev1 < mddev->events)
--- 
-1.5.3.5
-
+In general my #v10 solution mixing seqlock + rcu looks more robust and
+allows multithreaded attachment of mmu notifers as well. I could have
+fixed it with the single threaded thanks to the fact the only place
+outside the mm->mmap_sem is try_to_unmap_cluster for me but it wasn't
+simple to convert, nor worth it, given nonlinear isn't worth
+optimizing for (not even the core VM cares about try_to_unmap_cluster
+which is infact the only place in the VM with a O(N) complexity for
+each try_to_unmap call, where N is the size of the mapping divided by
+page_size).
