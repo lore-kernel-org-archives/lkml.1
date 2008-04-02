@@ -1,107 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760939AbYDBVc2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761308AbYDBVcq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760939AbYDBVc2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 17:32:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758548AbYDBVbb
+	id S1761308AbYDBVcq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 17:32:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760194AbYDBVb6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 17:31:31 -0400
-Received: from saeurebad.de ([85.214.36.134]:59434 "EHLO saeurebad.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758151AbYDBVb3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 17:31:29 -0400
-From: Johannes Weiner <hannes@saeurebad.de>
-To: linux-kernel@vger.kernel.org
-Cc: linux-mm@kvack.org, mingo@elte.hu, davem@davemloft.net,
-       hskinnemoen@atmel.com, cooloney@kernel.org, starvik@axis.com,
-       dhowells@redhat.com, ysato@users.sourceforge.net, takata@linux-m32r.org,
-       geert@linux-m68k.org, ralf@linux-mips.org, kyle@parisc-linux.org,
-       paulus@samba.org, schwidefsky@de.ibm.com, lethal@linux-sh.org,
-       jdike@addtoit.com, miles@gnu.org, chris@zankel.net,
-       rmk@arm.linux.org.uk, tony.luck@intel.com
-Subject: [RFC 03/22] sparc64: Use generic show_mem()
-Date: Wed,  2 Apr 2008 22:29:55 +0200
-Message-Id: <12071682193363-git-send-email-hannes@saeurebad.de>
-X-Mailer: git-send-email 1.5.2.2
-In-Reply-To: <12071682142640-git-send-email-hannes@saeurebad.de>
-References: <12071682142640-git-send-email-hannes@saeurebad.de>
-X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
+	Wed, 2 Apr 2008 17:31:58 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:60275 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1760188AbYDBVb5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Apr 2008 17:31:57 -0400
+Date: Wed, 2 Apr 2008 14:31:46 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Mikulas Patocka <mikulas@artax.karlin.mff.cuni.cz>
+cc: viro@zeniv.linux.org.uk, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH]: Fix SMP-reordering race in mark_buffer_dirty
+In-Reply-To: <Pine.LNX.4.64.0804022238460.25023@artax.karlin.mff.cuni.cz>
+Message-ID: <alpine.LFD.1.00.0804021422570.14670@woody.linux-foundation.org>
+References: <Pine.LNX.4.64.0804022058530.13737@artax.karlin.mff.cuni.cz> <alpine.LFD.1.00.0804021237031.14670@woody.linux-foundation.org> <Pine.LNX.4.64.0804022238460.25023@artax.karlin.mff.cuni.cz>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Signed-off-by: Johannes Weiner <hannes@saeurebad.de>
 
-diff --git a/arch/sparc64/Kconfig b/arch/sparc64/Kconfig
-index d74b027..463d1be 100644
---- a/arch/sparc64/Kconfig
-+++ b/arch/sparc64/Kconfig
-@@ -267,9 +267,6 @@ config ARCH_SPARSEMEM_ENABLE
- config ARCH_SPARSEMEM_DEFAULT
- 	def_bool y
- 
--config HAVE_ARCH_SHOW_MEM
--	def_bool y
--
- source "mm/Kconfig"
- 
- config ISA
-diff --git a/arch/sparc64/mm/init.c b/arch/sparc64/mm/init.c
-index f37078d..f6a86a2 100644
---- a/arch/sparc64/mm/init.c
-+++ b/arch/sparc64/mm/init.c
-@@ -391,51 +391,6 @@ void __kprobes flush_icache_range(unsigned long start, unsigned long end)
- 	}
- }
- 
--void show_mem(void)
--{
--	unsigned long total = 0, reserved = 0;
--	unsigned long shared = 0, cached = 0;
--	pg_data_t *pgdat;
--
--	printk(KERN_INFO "Mem-info:\n");
--	show_free_areas();
--	printk(KERN_INFO "Free swap:       %6ldkB\n",
--	       nr_swap_pages << (PAGE_SHIFT-10));
--	for_each_online_pgdat(pgdat) {
--		unsigned long i, flags;
--
--		pgdat_resize_lock(pgdat, &flags);
--		for (i = 0; i < pgdat->node_spanned_pages; i++) {
--			struct page *page = pgdat_page_nr(pgdat, i);
--			total++;
--			if (PageReserved(page))
--				reserved++;
--			else if (PageSwapCache(page))
--				cached++;
--			else if (page_count(page))
--				shared += page_count(page) - 1;
--		}
--		pgdat_resize_unlock(pgdat, &flags);
--	}
--
--	printk(KERN_INFO "%lu pages of RAM\n", total);
--	printk(KERN_INFO "%lu reserved pages\n", reserved);
--	printk(KERN_INFO "%lu pages shared\n", shared);
--	printk(KERN_INFO "%lu pages swap cached\n", cached);
--
--	printk(KERN_INFO "%lu pages dirty\n",
--	       global_page_state(NR_FILE_DIRTY));
--	printk(KERN_INFO "%lu pages writeback\n",
--	       global_page_state(NR_WRITEBACK));
--	printk(KERN_INFO "%lu pages mapped\n",
--	       global_page_state(NR_FILE_MAPPED));
--	printk(KERN_INFO "%lu pages slab\n",
--		global_page_state(NR_SLAB_RECLAIMABLE) +
--		global_page_state(NR_SLAB_UNRECLAIMABLE));
--	printk(KERN_INFO "%lu pages pagetables\n",
--	       global_page_state(NR_PAGETABLE));
--}
--
- void mmu_info(struct seq_file *m)
- {
- 	if (tlb_type == cheetah)
--- 
-1.5.2.2
+On Wed, 2 Apr 2008, Mikulas Patocka wrote:
+> 
+> So you're right, the gain of mfence is so little that you can remove it 
+> and use only test_set_buffer_dirty.
 
+Well, I suspect that part of the issue is that quite often you end up 
+with *both* because the buffer wasn't already dirty from before.
+
+Re-dirtying a dirty buffer is pretty common for things like bitmap blocks 
+etc, so it's probably a worthy optimization if it has no cost, and on 
+Core2 I suspect your version is worth it, but it's not like it's going to 
+be necessarily a 99% kind of case. I suspect quite a lot of the 
+mark_buffer_dirty() calls are actually on clean buffers.
+
+(Of course, a valid argument is that if it was already dirty, we'll skip 
+the other expensive parts, so only the "already dirty" case is worth 
+optimizing for. Maybe true. There might also be cases where it means one 
+less dirty cacheline in memory.)
+
+> I don't know if there are other architectures where smb_mb() would be 
+> significantly faster than test_and_set_bit.
+
+Probably none, since it test_and_set_bit() implies a smp_mb(), and 
+generally the bigger cost is in the barrier than in the bit setting 
+itself.
+
+Core 2 is the outlier in having a noticeably faster "mfence" than atomic 
+instructions (and judging by noises Intel makes, Nehalem will undo that 
+outlier).
+
+				Linus
