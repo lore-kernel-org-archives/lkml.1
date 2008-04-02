@@ -1,89 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756996AbYDBRcH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757590AbYDBRdq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756996AbYDBRcH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 13:32:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755023AbYDBRby
+	id S1757590AbYDBRdq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 13:33:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754781AbYDBRdi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 13:31:54 -0400
-Received: from wr-out-0506.google.com ([64.233.184.226]:9291 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754781AbYDBRbx (ORCPT
+	Wed, 2 Apr 2008 13:33:38 -0400
+Received: from gv-out-0910.google.com ([216.239.58.184]:33754 "EHLO
+	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753670AbYDBRdi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 13:31:53 -0400
+	Wed, 2 Apr 2008 13:33:38 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=hDn91RmI8SyHf/4H5Y93GI7ppI5g7NC3WOpP3NWZhD3m9djIABEFkO3UTJQbc4Tk3kXNTFEwulwzdphVETcp0LdnolwHk4i3bykh4JIMapjMHQfqe/UP6EBBtWqslFAyNH2vDz4gAGTmZWkX3bJUlCdZp11sgGaB/w0HwcaAH8g=
-Message-ID: <19f34abd0804021031j3e8ecd91pf7a481a92114dda8@mail.gmail.com>
-Date: Wed, 2 Apr 2008 19:31:51 +0200
-From: "Vegard Nossum" <vegard.nossum@gmail.com>
-To: paulmck@linux.vnet.ibm.com
-Subject: Re: kmemcheck caught read from freed memory (cfq_free_io_context)
-Cc: "Pekka Enberg" <penberg@cs.helsinki.fi>, "Ingo Molnar" <mingo@elte.hu>,
-       "Jens Axboe" <jens.axboe@oracle.com>,
-       "Peter Zijlstra" <a.p.zijlstra@chello.nl>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080402165933.GD9333@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+        h=to:subject:content-disposition:organization:date:mime-version:content-type:content-transfer-encoding:message-id:from;
+        b=FtyRLcfNOoY1jHH99rhw742IpsWuhXzXvnL6nBTgW4AAUwh7A4iJRZ5B3v94/RxouWNIOJs9A8MYrQeayQmapux12zE4LzCDt0/UNqFccdmhlVI0yV2tnK25mY6MT3deb2JNsNQKz53p+6/LiKBcVXr7g3p7zkf2eWuUOKJ2rPY=
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: linux-2.6.25-rc8, an oddity
 Content-Disposition: inline
-References: <19f34abd0804011408v19e13b6cje1ca89a2a471484c@mail.gmail.com>
-	 <20080402071709.GC12774@kernel.dk>
-	 <Pine.LNX.4.64.0804021020280.25738@sbz-30.cs.Helsinki.FI>
-	 <20080402072456.GI12774@kernel.dk> <20080402072846.GA16454@elte.hu>
-	 <20080402105539.GA5610@linux.vnet.ibm.com>
-	 <84144f020804020401j4e5863dcofd16662baa54574@mail.gmail.com>
-	 <20080402160809.GA4123@linux.vnet.ibm.com>
-	 <19f34abd0804020915k210277bbmb6b9aa28f282bb42@mail.gmail.com>
-	 <20080402165933.GD9333@linux.vnet.ibm.com>
+Organization: Organization? Not detectable
+Date: Wed, 2 Apr 2008 13:33:19 -0400
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200804021333.20061.gene.heskett@verizon.net>
+From: Gene Heskett <gene.heskett@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 2, 2008 at 6:59 PM, Paul E. McKenney
-<paulmck@linux.vnet.ibm.com> wrote:
-> On Wed, Apr 02, 2008 at 06:15:52PM +0200, Vegard Nossum wrote:
->  > On Wed, Apr 2, 2008 at 6:08 PM, Paul E. McKenney
->  > <paulmck@linux.vnet.ibm.com> wrote:
->  > > On Wed, Apr 02, 2008 at 02:01:13PM +0300, Pekka Enberg wrote:
->  > >  > No, kmemcheck is work in progress and does not know about
->  > >  > SLAB_DESTROY_BY_RCU yet. The reason I asked Vegard to post the warning
->  > >  > was because Peter, Vegard, and myself identified this particular
->  > >  > warning as a real problem. But yeah, kmemcheck can cause false
->  > >  > positives for RCU for now.
->  > >
->  > >  Would the following be an appropriate fix?  It seems to me to be in
->  > >  the same spirit as the existing check for s->ctor.
->  >
->  > In my opinion, no.
->  >
->  > It would fix the false positives, but would in fact also hide cases
->  > such as this one with cfq, e.g. the real cases of mis-use.
->
->  Though this case apparently does not qualify as misuse until such
->  time as CLONE_IO is implemented.
->
->  And doesn't the current check for ->ctor also potentially hide misuse?
+Greetings;
 
-Hm, no. Objects with a ctor should retain its "initializedness"
-between allocations of the same object. This is one of the features of
-slab allocation.
+I've switched to an ati based R610 chipset video card, and the radeonhd 
+driver, so I can rejoin the canaries that test this stuff.  All brought about 
+by my 200GB boot drive giving itself an appendectomy as it was dying of 
+whatever they die of when the logs show an incessant attempt to reset the 
+drive.  There is now a 500GB on the end of that cable.
 
->  > Peter Zijlstra suggested this:
->  > > It would have to register an call_rcu callback itself in order to mark
->  > > it freed - and handle the race with the object being handed out again.
->
->  Glad you liked them!
->
->  And Peter's suggested approach would indeed be more accurate.  But I
->  will still put my patch forward as a stopgap.  ;-)
+3 observations, but I believe only the first is related to this kernel.
 
-Yes, I realize that it will be needed as a temporary fix. It _is_
-better to hide some real warnings in favour of the showing false ones.
-(But a TODO comment is in order, I believe.)
+1. I note when I logged in (always to runlevel 3, no x at that point) that it 
+gave me tty1, instead of the usual tty0.
 
-Thanks.
+Is there a reason why the non-x login screen wasn't /dev/tty0?  It does 
+exist..
 
+2. Also, if I exit x, expecting to see my original screen, its not there, no 
+drive at all to the monitor so it shuts down.  I think I can blindly startx 
+again, or type reboot, or give it the vulcan nerve pinch but I don't get 
+video back until the reboots post finds it.  This is regardless of the kernel 
+running apparently I've tried fedora's latest, 2.6.24.4, and now 2.6.25-rc8.
 
-Vegard
+3. Can I modprobe a vesa related module to fix this somehow?  There are 
+several in the /lib/modules/`uname -r`/drivers/video subdir tree but they do 
+not show in an lsmod as being loaded.  This card is shown in dmesg only as a 
+single entry:
+
+0.526924] pci 0000:02:00.0: Boot video device
+
+and shows as this in lspci -nv now:
+
+02:00.0 0300: 1002:94c4 (prog-if 00 [VGA controller])
+        Subsystem: 1545:0028
+        Flags: bus master, 66MHz, medium devsel, latency 32, IRQ 5
+        Memory at d0000000 (32-bit, prefetchable) [size=256M]
+        I/O ports at c000 [size=256]
+        Memory at e1000000 (32-bit, non-prefetchable) [size=64K]
+        Capabilities: [50] Power Management version 3
+        Capabilities: [58] AGP version 3.0
+
+Thanks for any help/info here.
+
+-- 
+Cheers, Gene
+"There are four boxes to be used in defense of liberty:
+ soap, ballot, jury, and ammo. Please use in that order."
+-Ed Howdershelt (Author)
+Success is getting what you want; happiness is wanting what you get.
