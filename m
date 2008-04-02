@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763990AbYDBU0p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762014AbYDBU1A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763990AbYDBU0p (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 16:26:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761639AbYDBURh
+	id S1762014AbYDBU1A (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 16:27:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761646AbYDBURi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 16:17:37 -0400
-Received: from mx2.suse.de ([195.135.220.15]:33073 "EHLO mx2.suse.de"
+	Wed, 2 Apr 2008 16:17:38 -0400
+Received: from ns1.suse.de ([195.135.220.2]:36677 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761619AbYDBURc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 16:17:32 -0400
+	id S1760846AbYDBURe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Apr 2008 16:17:34 -0400
 From: Mark Fasheh <mfasheh@suse.com>
 To: linux-kernel@vger.kernel.org
 Cc: ocfs2-devel@oss.oracle.com, Joel Becker <joel.becker@oracle.com>
-Subject: [PATCH 26/62] ocfs2: Add the user stack module.
-Date: Wed,  2 Apr 2008 13:14:36 -0700
-Message-Id: <12071673722691-git-send-email-mfasheh@suse.com>
+Subject: [PATCH 27/62] ocfs2: Add the ocfs2_control misc device.
+Date: Wed,  2 Apr 2008 13:14:37 -0700
+Message-Id: <12071673731276-git-send-email-mfasheh@suse.com>
 X-Mailer: git-send-email 1.5.2.4
-In-Reply-To: <12071673701937-git-send-email-mfasheh@suse.com>
+In-Reply-To: <12071673722691-git-send-email-mfasheh@suse.com>
 References: <12071673121124-git-send-email-mfasheh@suse.com>
  <1207167318479-git-send-email-mfasheh@suse.com>
  <12071673203909-git-send-email-mfasheh@suse.com>
@@ -43,66 +43,227 @@ References: <12071673121124-git-send-email-mfasheh@suse.com>
  <12071673661674-git-send-email-mfasheh@suse.com>
  <12071673681650-git-send-email-mfasheh@suse.com>
  <12071673701937-git-send-email-mfasheh@suse.com>
+ <12071673722691-git-send-email-mfasheh@suse.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Joel Becker <joel.becker@oracle.com>
 
-Add a skeleton for the stack_user module.  It's just the barebones module
-code.
+The ocfs2_control misc device is how a userspace control daemon (controld)
+talks to the filesystem.  Introduce the bare-bones filesystem ops.
 
 Signed-off-by: Joel Becker <joel.becker@oracle.com>
 Signed-off-by: Mark Fasheh <mfasheh@suse.com>
 ---
- fs/ocfs2/stack_user.c |   38 ++++++++++++++++++++++++++++++++++++++
- 1 files changed, 38 insertions(+), 0 deletions(-)
- create mode 100644 fs/ocfs2/stack_user.c
+ fs/ocfs2/stack_user.c |  184 ++++++++++++++++++++++++++++++++++++++++++++++++-
+ 1 files changed, 183 insertions(+), 1 deletions(-)
 
 diff --git a/fs/ocfs2/stack_user.c b/fs/ocfs2/stack_user.c
-new file mode 100644
-index 0000000..920eb11
---- /dev/null
+index 920eb11..fdca5d3 100644
+--- a/fs/ocfs2/stack_user.c
 +++ b/fs/ocfs2/stack_user.c
-@@ -0,0 +1,38 @@
-+/* -*- mode: c; c-basic-offset: 8; -*-
-+ * vim: noexpandtab sw=8 ts=8 sts=0:
+@@ -18,17 +18,199 @@
+  */
+ 
+ #include <linux/module.h>
++#include <linux/fs.h>
++#include <linux/miscdevice.h>
++#include <linux/mutex.h>
++#include <linux/reboot.h>
+ 
+ #include "stackglue.h"
+ 
+ 
+-static int __init user_stack_init(void)
++/*
++ * The control protocol starts with a handshake.  Until the handshake
++ * is complete, the control device will fail all write(2)s.
 + *
-+ * stack_user.c
-+ *
-+ * Code which interfaces ocfs2 with fs/dlm and a userspace stack.
-+ *
-+ * Copyright (C) 2007 Oracle.  All rights reserved.
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public
-+ * License as published by the Free Software Foundation, version 2.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-+ * General Public License for more details.
++ * The handshake is simple.  First, the client reads until EOF.  Each line
++ * of output is a supported protocol tag.  All protocol tags are a single
++ * character followed by a two hex digit version number.  Currently the
++ * only things supported is T01, for "Text-base version 0x01".  Next, the
++ * client writes the version they would like to use.  If the version tag
++ * written is unknown, -EINVAL is returned.  Once the negotiation is
++ * complete, the client can start sending messages.
 + */
 +
-+#include <linux/module.h>
++/*
++ * ocfs2_live_connection is refcounted because the filesystem and
++ * miscdevice sides can detach in different order.  Let's just be safe.
++ */
++struct ocfs2_live_connection {
++	struct list_head		oc_list;
++	struct ocfs2_cluster_connection	*oc_conn;
++};
 +
-+#include "stackglue.h"
++static atomic_t ocfs2_control_opened;
++
++static LIST_HEAD(ocfs2_live_connection_list);
++static DEFINE_MUTEX(ocfs2_control_lock);
++
++static struct ocfs2_live_connection *ocfs2_connection_find(const char *name)
++{
++	size_t len = strlen(name);
++	struct ocfs2_live_connection *c;
++
++	BUG_ON(!mutex_is_locked(&ocfs2_control_lock));
++
++	list_for_each_entry(c, &ocfs2_live_connection_list, oc_list) {
++		if ((c->oc_conn->cc_namelen == len) &&
++		    !strncmp(c->oc_conn->cc_name, name, len))
++			return c;
++	}
++
++	return c;
++}
++
++/*
++ * ocfs2_live_connection structures are created underneath the ocfs2
++ * mount path.  Since the VFS prevents multiple calls to
++ * fill_super(), we can't get dupes here.
++ */
++static int ocfs2_live_connection_new(struct ocfs2_cluster_connection *conn,
++				     struct ocfs2_live_connection **c_ret)
++{
++	int rc = 0;
++	struct ocfs2_live_connection *c;
++
++	c = kzalloc(sizeof(struct ocfs2_live_connection), GFP_KERNEL);
++	if (!c)
++		return -ENOMEM;
++
++	mutex_lock(&ocfs2_control_lock);
++	c->oc_conn = conn;
++
++	if (atomic_read(&ocfs2_control_opened))
++		list_add(&c->oc_list, &ocfs2_live_connection_list);
++	else {
++		printk(KERN_ERR
++		       "ocfs2: Userspace control daemon is not present\n");
++		rc = -ESRCH;
++	}
++
++	mutex_unlock(&ocfs2_control_lock);
++
++	if (!rc)
++		*c_ret = c;
++	else
++		kfree(c);
++
++	return rc;
++}
++
++/*
++ * This function disconnects the cluster connection from ocfs2_control.
++ * Afterwards, userspace can't affect the cluster connection.
++ */
++static void ocfs2_live_connection_drop(struct ocfs2_live_connection *c)
++{
++	mutex_lock(&ocfs2_control_lock);
++	list_del_init(&c->oc_list);
++	c->oc_conn = NULL;
++	mutex_unlock(&ocfs2_control_lock);
++
++	kfree(c);
++}
 +
 +
-+static int __init user_stack_init(void)
++static ssize_t ocfs2_control_write(struct file *file,
++				   const char __user *buf,
++				   size_t count,
++				   loff_t *ppos)
+ {
+ 	return 0;
+ }
+ 
++static ssize_t ocfs2_control_read(struct file *file,
++				  char __user *buf,
++				  size_t count,
++				  loff_t *ppos)
 +{
 +	return 0;
 +}
 +
-+static void __exit user_stack_exit(void)
++static int ocfs2_control_release(struct inode *inode, struct file *file)
 +{
++	if (atomic_dec_and_test(&ocfs2_control_opened)) {
++		mutex_lock(&ocfs2_control_lock);
++		if (!list_empty(&ocfs2_live_connection_list)) {
++			/* XXX: Do bad things! */
++			printk(KERN_ERR
++			       "ocfs2: Unexpected release of ocfs2_control!\n"
++			       "       Loss of cluster connection requires "
++			       "an emergency restart!\n");
++			emergency_restart();
++		}
++		mutex_unlock(&ocfs2_control_lock);
++	}
++
++	return 0;
 +}
 +
-+MODULE_AUTHOR("Oracle");
-+MODULE_DESCRIPTION("ocfs2 driver for userspace cluster stacks");
-+MODULE_LICENSE("GPL");
-+module_init(user_stack_init);
-+module_exit(user_stack_exit);
++static int ocfs2_control_open(struct inode *inode, struct file *file)
++{
++	atomic_inc(&ocfs2_control_opened);
++
++	return 0;
++}
++
++static const struct file_operations ocfs2_control_fops = {
++	.open    = ocfs2_control_open,
++	.release = ocfs2_control_release,
++	.read    = ocfs2_control_read,
++	.write   = ocfs2_control_write,
++	.owner   = THIS_MODULE,
++};
++
++struct miscdevice ocfs2_control_device = {
++	.minor		= MISC_DYNAMIC_MINOR,
++	.name		= "ocfs2_control",
++	.fops		= &ocfs2_control_fops,
++};
++
++static int ocfs2_control_init(void)
++{
++	int rc;
++
++	atomic_set(&ocfs2_control_opened, 0);
++
++	rc = misc_register(&ocfs2_control_device);
++	if (rc)
++		printk(KERN_ERR
++		       "ocfs2: Unable to register ocfs2_control device "
++		       "(errno %d)\n",
++		       -rc);
++
++	return rc;
++}
++
++static void ocfs2_control_exit(void)
++{
++	int rc;
++
++	rc = misc_deregister(&ocfs2_control_device);
++	if (rc)
++		printk(KERN_ERR
++		       "ocfs2: Unable to deregister ocfs2_control device "
++		       "(errno %d)\n",
++		       -rc);
++}
++
++static int __init user_stack_init(void)
++{
++	return ocfs2_control_init();
++}
++
+ static void __exit user_stack_exit(void)
+ {
++	ocfs2_control_exit();
+ }
+ 
+ MODULE_AUTHOR("Oracle");
 -- 
 1.5.4.1
 
