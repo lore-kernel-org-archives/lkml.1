@@ -1,44 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761491AbYDBWIR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762058AbYDBWJH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761491AbYDBWIR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 18:08:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757219AbYDBWIE
+	id S1762058AbYDBWJH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 18:09:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757219AbYDBWIz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 18:08:04 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:47631 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757001AbYDBWID (ORCPT
+	Wed, 2 Apr 2008 18:08:55 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:37999 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755435AbYDBWIy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 18:08:03 -0400
-Date: Wed, 2 Apr 2008 15:07:22 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: mikulas@artax.karlin.mff.cuni.cz, viro@zeniv.linux.org.uk,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH]: Fix SMP-reordering race in mark_buffer_dirty
-In-Reply-To: <20080402150158.f366370f.akpm@linux-foundation.org>
-Message-ID: <alpine.LFD.1.00.0804021505160.14670@woody.linux-foundation.org>
-References: <Pine.LNX.4.64.0804022058530.13737@artax.karlin.mff.cuni.cz> <alpine.LFD.1.00.0804021237031.14670@woody.linux-foundation.org> <20080402150158.f366370f.akpm@linux-foundation.org>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+	Wed, 2 Apr 2008 18:08:54 -0400
+Date: Wed, 2 Apr 2008 15:06:19 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Andrea Arcangeli <andrea@qumranet.com>
+cc: Hugh Dickins <hugh@veritas.com>, Robin Holt <holt@sgi.com>,
+       Avi Kivity <avi@qumranet.com>, Izik Eidus <izike@qumranet.com>,
+       kvm-devel@lists.sourceforge.net,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, general@lists.openfabrics.org,
+       Steve Wise <swise@opengridcomputing.com>,
+       Roland Dreier <rdreier@cisco.com>, Kanoj Sarcar <kanojsarcar@yahoo.com>,
+       steiner@sgi.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       daniel.blueman@quadrics.com, Nick Piggin <npiggin@suse.de>
+Subject: Re: EMM: Require single threadedness for registration.
+In-Reply-To: <20080402220148.GV19189@duo.random>
+Message-ID: <Pine.LNX.4.64.0804021503320.31247@schroedinger.engr.sgi.com>
+References: <20080401205531.986291575@sgi.com> <20080401205635.793766935@sgi.com>
+ <20080402064952.GF19189@duo.random> <Pine.LNX.4.64.0804021048460.27214@schroedinger.engr.sgi.com>
+ <Pine.LNX.4.64.0804021402190.30337@schroedinger.engr.sgi.com>
+ <20080402220148.GV19189@duo.random>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 3 Apr 2008, Andrea Arcangeli wrote:
 
+> That would work for #v10 if I remove the invalidate_range_start from
+> try_to_unmap_cluster, it can't work for EMM because you've
+> emm_invalidate_start firing anywhere outside the context of the
+> current task (even regular rmap code, not just nonlinear corner case
+> will trigger the race). In short the single threaded approach would be
 
-On Wed, 2 Apr 2008, Andrew Morton wrote:
-> 
-> But then the test-and-set of an already-set flag would newly cause the
-> cacheline to be dirtied, requiring additional bus usage to write it back?
-> 
-> The CPU's test-and-set-bit operation could of course optimise that away in
-> this case.  But does it?
+But in that case it will be firing for a callback to another mm_struct. 
+The notifiers are bound to mm_structs and keep separate contexts.
 
-No, afaik no current x86 uarch will optimize away the write on a locked 
-instuction if it turns out to be unnecessary. 
+> The requirement for invalidate_page is that the pte and linux tlb are
+> flushed _before_ and the page is freed _after_ the invalidate_page
+> method. that's not the case for _begin/_end. The page is freed well
+> before _end runs, hence the need of _begin and to block the secondary
+> mmu page fault during the vma-mangling operations.
 
-Can somebody find a timing reason to have the ugly code?
+You could flush in _begin and free on _end? I thought you are taking a 
+refcount on the page? You can drop the refcount only on _end to ensure 
+that the page does not go away before.
 
-		Linus
