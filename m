@@ -1,81 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759274AbYDBT0w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758822AbYDBT23@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759274AbYDBT0w (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 15:26:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756925AbYDBT0q
+	id S1758822AbYDBT23 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 15:28:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757282AbYDBT2X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 15:26:46 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:37368 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752902AbYDBT0p (ORCPT
+	Wed, 2 Apr 2008 15:28:23 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:43146 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755091AbYDBT2V (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 15:26:45 -0400
-Date: Wed, 2 Apr 2008 15:26:44 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Tino Keitel <tino.keitel@gmx.de>
-cc: Pavel Machek <pavel@ucw.cz>, <linux-usb@vger.kernel.org>,
-       Soeren Sonnenburg <sonne@nn7.de>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       <linux-kernel@vger.kernel.org>, Len Brown <lenb@kernel.org>
-Subject: Re: 2.6.25-rc6 hangs at resume after suspend to RAM on Mac mini Core
- Duo
-In-Reply-To: <20080401210617.GA7346@dose.home.local>
-Message-ID: <Pine.LNX.4.44L0.0804021521260.11421-100000@iolanthe.rowland.org>
+	Wed, 2 Apr 2008 15:28:21 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=lny9CpOEKbj/uFc/eMlc3He1UZn9zs1FrIGu11r2Qc4mTEQeLI4C5j9q0luHxgOCl
+	Ry0RGGllMrrmRYtFdNnjg==
+Message-ID: <6599ad830804021227od74be74j696105eae67bd22a@mail.gmail.com>
+Date: Wed, 2 Apr 2008 12:27:38 -0700
+From: "Paul Menage" <menage@google.com>
+To: balbir@linux.vnet.ibm.com
+Subject: Re: [RFC][-mm] Add an owner to the mm_struct (v4)
+Cc: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>,
+       "Pavel Emelianov" <xemul@openvz.org>, "Hugh Dickins" <hugh@veritas.com>,
+       "Sudhir Kumar" <skumar@linux.vnet.ibm.com>,
+       "YAMAMOTO Takashi" <yamamoto@valinux.co.jp>, lizf@cn.fujitsu.com,
+       linux-kernel@vger.kernel.org, taka@valinux.co.jp, linux-mm@kvack.org,
+       "David Rientjes" <rientjes@google.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>
+In-Reply-To: <47F2FCAE.7070401@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080401124312.23664.64616.sendpatchset@localhost.localdomain>
+	 <20080402093157.e445acfb.kamezawa.hiroyu@jp.fujitsu.com>
+	 <47F2FCAE.7070401@linux.vnet.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 1 Apr 2008, Tino Keitel wrote:
+On Tue, Apr 1, 2008 at 8:25 PM, Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+>
+>  > +assign_new_owner:
+>  > +     rcu_read_unlock();
+>  > +     BUG_ON(c == p);
+>  > +     task_lock(c);
+>  > +     if (c->mm != mm) {
+>  > +             task_unlock(c);
+>  > +             goto retry;
+>  > +     }
+>  > +     cgroup_mm_owner_callbacks(mm->owner, c);
+>  > +     mm->owner = c;
+>  > +     task_unlock(c);
+>  > +}
+>  > Why rcu_read_unlock() before changing owner ? Is it safe ?
+>  >
+>
+>  It should be safe, since we take task_lock(), but to be doubly sure, we can drop
+>  rcu read lock after taking the task_lock().
+>
 
-> On Tue, Apr 01, 2008 at 17:02:36 -0400, Alan Stern wrote:
-> > On Tue, 1 Apr 2008, Tino Keitel wrote:
-> > 
-> > > On Tue, Apr 01, 2008 at 15:06:51 -0400, Alan Stern wrote:
-> > > 
-> > > [...]
-> > > 
-> > > > Can you get any information out of the computer after the hang?  It 
-> > > > would help to see the dmesg log (with CONFIG_USB_DEBUG enabled) and an 
-> > > > Alt-SysRq-T stack dump.
-> > > 
-> > > Looks difficult. The text console stays black after resume, and there
-> > > is no serial interface.
-> > 
-> > Network console?  SSH?  Or even telnet?
-> 
-> Network is dead, too.
+I agree with Kamezawa - the task can technically disappear as soon as
+we leave the RCU critical section. (In practice, it'll only happen
+with CONFIG_PREEMPT).
 
-Tino, try this patch.  It fixed Mark Lord's problem, which looked the 
-same as yours.
-
-Alan Stern
-
-
-
---- rc8/drivers/usb/host/ehci-hub.c	2008-03-11 11:18:40.000000000 -0400
-+++ linux/drivers/usb/host/ehci-hub.c	2008-04-02 13:28:50.000000000 -0400
-@@ -135,8 +135,6 @@
- 		hcd->state = HC_STATE_QUIESCING;
- 	}
- 	ehci->command = ehci_readl(ehci, &ehci->regs->command);
--	if (ehci->reclaim)
--		end_unlink_async(ehci);
- 	ehci_work(ehci);
- 
- 	/* Unlike other USB host controller types, EHCI doesn't have
-@@ -180,6 +178,9 @@
- 	ehci_halt (ehci);
- 	hcd->state = HC_STATE_SUSPENDED;
- 
-+	if (ehci->reclaim)
-+		end_unlink_async(ehci);
-+
- 	/* allow remote wakeup */
- 	mask = INTR_MASK;
- 	if (!device_may_wakeup(&hcd->self.root_hub->dev))
-
-
-
+Paul
