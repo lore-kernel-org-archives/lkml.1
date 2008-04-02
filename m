@@ -1,85 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762677AbYDBVnO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762685AbYDBVns@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762677AbYDBVnO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 17:43:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762183AbYDBVm3
+	id S1762685AbYDBVns (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 17:43:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760910AbYDBVmo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 17:42:29 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:58450 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761073AbYDBVm2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 17:42:28 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:subject:from:to:cc:in-reply-to:references:
-	content-type:organization:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-	b=WdbjxoXCRGT3XMLite6StnBFeehLBY6DwkcMHaFZsgsPHIz6eAYDhSVAhwRHDR4B6
-	r4gBNJZD6OVBmHMUHNcTw==
-Subject: Re: posix-cpu-timers revamp
-From: Frank Mayhar <fmayhar@google.com>
-To: Roland McGrath <roland@redhat.com>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <1207168464.11976.48.camel@bobble.smo.corp.google.com>
-References: <bug-9906-10286@http.bugzilla.kernel.org/>
-	 <20080206165045.89b809cc.akpm@linux-foundation.org>
-	 <1202345893.8525.33.camel@peace.smo.corp.google.com>
-	 <alpine.LRH.1.00.0802062148480.7445@mini.warudkars.net>
-	 <20080207162203.3e3cf5ab@Varda>
-	 <alpine.LRH.1.00.0802071040010.29320@mini.warudkars.net>
-	 <alpine.LRH.1.00.0802071054160.29320@mini.warudkars.net>
-	 <20080207165455.04ec490b@Varda>
-	 <alpine.LRH.1.00.0802071100230.29369@mini.warudkars.net>
-	 <alpine.LRH.1.00.0802071153130.15220@mini.warudkars.net>
-	 <1204314904.4850.23.camel@peace.smo.corp.google.com>
-	 <20080304070016.903E127010A@magilla.localdomain>
-	 <1204660376.9768.1.camel@bobble.smo.corp.google.com>
-	 <20080305040826.D0E6127010A@magilla.localdomain>
-	 <1204830243.20004.31.camel@bobble.smo.corp.google.com>
-	 <20080311075020.A93DB26F991@magilla.localdomain>
-	 <1205269507.23124.57.camel@bobble.smo.corp.google.com>
-	 <20080311213507.5BCDF26F991@magilla.localdomain>
-	 <1205455050.19551.16.camel@bobble.smo.corp.google.com>
-	 <20080321071846.1B22B26F9A7@magilla.localdomain>
-	 <1206122240.14638.31.camel@bobble.smo.corp.google.com>
-	 <20080322215829.D69D026F9A7@magilla.localdomain>
-	 <1206380079.21896.20.camel@bobble.smo.corp.google.com>
-	 <20080331054404.78CDB26F8E9@magilla.localdomain>
-	 <1206995072.14649.41.camel@bobble.smo.corp.google.com>
-	 <20080402020707.151E126F8DC@magilla.localdomain>
-	 <1207158164.11976.32.camel@bobble.smo.corp.google.com>
-	 <20080402194836.4933026F98A@magilla.localdomain>
-	 <1207168464.11976.48.camel@bobble.smo.corp.google.com>
-Content-Type: text/plain
-Organization: Google, Inc.
-Date: Wed, 02 Apr 2008 14:42:07 -0700
-Message-Id: <1207172527.11976.58.camel@bobble.smo.corp.google.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 2 Apr 2008 17:42:44 -0400
+Received: from saeurebad.de ([85.214.36.134]:59980 "EHLO saeurebad.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762343AbYDBVmn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Apr 2008 17:42:43 -0400
+From: Johannes Weiner <hannes@saeurebad.de>
+To: linux-kernel@vger.kernel.org
+Cc: linux-mm@kvack.org, mingo@elte.hu, davem@davemloft.net,
+       hskinnemoen@atmel.com, cooloney@kernel.org, starvik@axis.com,
+       dhowells@redhat.com, ysato@users.sourceforge.net, takata@linux-m32r.org,
+       geert@linux-m68k.org, ralf@linux-mips.org, kyle@parisc-linux.org,
+       paulus@samba.org, schwidefsky@de.ibm.com, lethal@linux-sh.org,
+       jdike@addtoit.com, miles@gnu.org, chris@zankel.net,
+       rmk@arm.linux.org.uk, tony.luck@intel.com
+Subject: [RFC 05/22] blackfin: Use generic show_mem()
+Date: Wed,  2 Apr 2008 22:40:11 +0200
+Message-Id: <12071688843479-git-send-email-hannes@saeurebad.de>
+X-Mailer: git-send-email 1.5.2.2
+In-Reply-To: <12071688283927-git-send-email-hannes@saeurebad.de>
+References: <12071688283927-git-send-email-hannes@saeurebad.de>
+X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-04-02 at 13:34 -0700, Frank Mayhar wrote:
-> One little gotcha we just ran into, though:  When checking
-> tsk->signal->(anything) in run_posix_cpu_timers(), we have to hold
-> tasklist_lock to avoid a race with release_task().  This is going to
-> make even the null case always cost more than before.
 
-This race, by the way, is because we're dereferencing task->signal at
-interrupt once per tick.  We ran into a case where a process was going
-through release_task() and being torn down on one CPU while running a
-timer tick on another.  Under load.  It's not a very likely race but
-with sufficient time or load it's pretty much inevitable.
+Signed-off-by: Johannes Weiner <hannes@saeurebad.de>
 
-My thought is to move thread_group_cputime from the signal structure to
-hanging directly off the task structure.  It would be shared in the same
-way as the signal structure is now but would be deallocated with the
-task structure rather than the signal structure.  This should mean that
-I could avoid getting tasklist_lock under most conditions.
-
-Thoughts?
+diff --git a/arch/blackfin/Kconfig b/arch/blackfin/Kconfig
+index a8cc977..589c6ac 100644
+--- a/arch/blackfin/Kconfig
++++ b/arch/blackfin/Kconfig
+@@ -526,9 +526,6 @@ config BFIN_SCRATCH_REG_CYCLES
+ 
+ endchoice
+ 
+-config HAVE_ARCH_SHOW_MEM
+-	def_bool y
+-
+ endmenu
+ 
+ 
+diff --git a/arch/blackfin/mm/init.c b/arch/blackfin/mm/init.c
+index ec3141f..4d5326e 100644
+--- a/arch/blackfin/mm/init.c
++++ b/arch/blackfin/mm/init.c
+@@ -53,33 +53,6 @@ static unsigned long empty_bad_page;
+ 
+ unsigned long empty_zero_page;
+ 
+-void show_mem(void)
+-{
+-	unsigned long i;
+-	int free = 0, total = 0, reserved = 0, shared = 0;
+-
+-	int cached = 0;
+-	printk(KERN_INFO "Mem-info:\n");
+-	show_free_areas();
+-	i = max_mapnr;
+-	while (i-- > 0) {
+-		total++;
+-		if (PageReserved(mem_map + i))
+-			reserved++;
+-		else if (PageSwapCache(mem_map + i))
+-			cached++;
+-		else if (!page_count(mem_map + i))
+-			free++;
+-		else
+-			shared += page_count(mem_map + i) - 1;
+-	}
+-	printk(KERN_INFO "%d pages of RAM\n", total);
+-	printk(KERN_INFO "%d free pages\n", free);
+-	printk(KERN_INFO "%d reserved pages\n", reserved);
+-	printk(KERN_INFO "%d pages shared\n", shared);
+-	printk(KERN_INFO "%d pages swap cached\n", cached);
+-}
+-
+ /*
+  * paging_init() continues the virtual memory environment setup which
+  * was begun by the code in arch/head.S.
 -- 
-Frank Mayhar <fmayhar@google.com>
-Google, Inc.
+1.5.2.2
 
