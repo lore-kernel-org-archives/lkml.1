@@ -1,60 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755161AbYDBNAp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756044AbYDBNIW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755161AbYDBNAp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 09:00:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754519AbYDBNAh
+	id S1756044AbYDBNIW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 09:08:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754677AbYDBNIK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 09:00:37 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:1396 "EHLO spitz.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753040AbYDBNAg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 09:00:36 -0400
-Date: Wed, 2 Apr 2008 15:00:20 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Len Brown <lenb@kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Carlos Corbacho <carlos@strangeworlds.co.uk>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Shaohua Li <shaohua.li@intel.com>, Felix M?ller <fm@opensuse.org>,
-       Arthur Erhardt <erhardt@pit.physik.uni-tuebingen.de>,
-       Matthew Garrett <mjg59@srcf.ucam.org>
-Subject: Re: [PATCH] ACPI PM: Restore the 2.6.24 suspend ordering
-Message-ID: <20080402130020.GB5295@ucw.cz>
-References: <200803300319.08398.rjw@sisk.pl> <200803301515.33922.rjw@sisk.pl> <20080401084523.GA25278@atrey.karlin.mff.cuni.cz> <200804012155.52547.rjw@sisk.pl>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 2 Apr 2008 09:08:10 -0400
+Received: from rv-out-0910.google.com ([209.85.198.188]:28641 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754656AbYDBNII (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Apr 2008 09:08:08 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=PMannnlmxTSHMHUKVdhpT2ZVzoQRr86yxztBga5pVu5IJgidSweKTGP2S7X7SP3xPB642hlWbHActhAono4lnuUuqxDxnX3KqWvVxt26+KSyIE+BKL5xeXdhih+AZ9ZuhN6UNsK54wdHOwxULWOPWgp4mztaOttBkUTMGKE7Z2I=
+Message-ID: <5681ec900804020608o62be52c4ted172e18daf24f5b@mail.gmail.com>
+Date: Wed, 2 Apr 2008 18:38:07 +0530
+From: "Sanjeev Aditya Naga" <sanjeev.kernel@gmail.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Subject: Re: [>=2.6.23][BUG] Oops on power disconnection
+Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org,
+       "Venkatesh Pallipadi" <venkatesh.pallipadi@intel.com>
+In-Reply-To: <20080402001418.aad6eed2.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200804012155.52547.rjw@sisk.pl>
-User-Agent: Mutt/1.5.9i
+References: <5681ec900803300645l5369cda4g119957a4b7f05d17@mail.gmail.com>
+	 <5681ec900803300651m6e5f38deke1b7746236e5bb9@mail.gmail.com>
+	 <20080402001418.aad6eed2.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+Hello Andrew Morton,
 
-> > > > We could simply blacklist them, no?
-> > > 
-> > > Yes, but for this purpose we'll have to redesign the core so that everything
-> > > (including debugging and the error paths) works if _PTS is executed before
-> > > suspending devices.  _That_, however, is not a 2.6.25 thing.
-> > 
-> > So we have solution that fixes 2.6.24 systems, makes system that
-> > worked in 2.6.25-rc5 work with command line option, but gets error
-> > handling wrong.
-> > 
-> > I guess we could use that?
-> 
-> IMO we should not use that, because it's broken.  That's why I posted the
-> patch.
+Greetings!
 
-I understand that. World will not fall down one way or another, but
-I'd slightly prefer the 'only change default' version. That's why I
-objected to your patch :-).
-							Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Thank you for the update. Is there anything I can do
+from my side?
+
+I thought it was a acpi (dsdt) problem. And based on
+a tutorial, I have tried to extract, fix, recompile the dsdt
+and use it with the kernel. But still I have the same problem.
+Let me know if I shall attach the dsdt (original) decompiled
+code, if that helps.
+
+Kind Regards,
+Sanjeev
+
+On Wed, Apr 2, 2008 at 12:44 PM, Andrew Morton
+<akpm@linux-foundation.org> wrote:
+>
+> On Sun, 30 Mar 2008 19:21:39 +0530 "Sanjeev Aditya Naga" <sanjeev.kernel@gmail.com> wrote:
+>
+>  > Hi,
+>  >
+>  >  This happens everytime there is a power disconnection
+>  >  (switching to battery). Complete dmesg attached. This
+>  >  in particular is of kernel 2.6.24.3.
+>  >
+>  >  Greetings,
+>  >  Kind Regards,
+>  >  Sanjeev
+>  >
+>  >  BUG: unable to handle kernel NULL pointer dereference at virtual
+>  >  address 00000020
+>  >  printing eip: c04c4716 *pde = 578c2067
+>  >  Oops: 0000 [#1] SMP
+>  >  Modules linked in: cbc(U) geode_aes(U) blkcipher(U) aes_i586(U)
+>  >  aes_generic(U) dm_crypt(U) ipt_MASQUERADE(U) iptable_nat(U) nf_nat(U)
+>  >  bridge(U) autofs4(U) nf_conntrack_ipv4(U) xt_state(U) nf_conntrack(U)
+>  >  xt_tcpudp(U) ipt_REJECT(U) iptable_filter(U) ip_tables(U) x_tables(U)
+>  >  cpufreq_ondemand(U) acpi_cpufreq(U) fuse(U) loop(U) dm_mirror(U)
+>  >  dm_multipath(U) dm_mod(U) ipv6(U) snd_hda_intel(U) snd_seq_dummy(U)
+>  >  snd_seq_oss(U) snd_seq_midi_event(U) snd_seq(U) snd_seq_device(U)
+>  >  snd_pcm_oss(U) sr_mod(U) snd_mixer_oss(U) snd_pcm(U) 8139cp(U)
+>  >  snd_timer(U) button(U) 8139too(U) mii(U) snd_page_alloc(U) cdrom(U)
+>  >  video(U) output(U) snd_hwdep(U) ac(U) snd(U) pcspkr(U) i2c_piix4(U)
+>  >  i2c_core(U) battery(U) joydev(U) soundcore(U) sg(U) pata_atiixp(U)
+>  >  pata_acpi(U) sata_sil(U) ata_generic(U) libata(U) sd_mod(U)
+>  >  scsi_mod(U) ext3(U) jbd(U) mbcache(U) uhci_hcd(U) ohci_hcd(U)
+>  >  ehci_hcd(U)
+>  >
+>  >  Pid: 69, comm: kacpi_notify Not tainted (2.6.24.3 #5)
+>  >  EIP: 0060:[<c04c4716>] EFLAGS: 00010246 CPU: 0
+>  >  EIP is at sysfs_addrm_start+0x21/0x81
+>  >  EAX: c04c47d7 EBX: 00000000 ECX: 00000000 EDX: f78b8000
+>  >  ESI: f78b8eb8 EDI: f78b8ec8 EBP: 00000000 ESP: f78b8ea4
+>  >   DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
+>  >  Process kacpi_notify (pid: 69, ti=f78b8000 task=f78d8000 task.ti=f78b8000)
+>  >  Stack: f229ff54 f229ff54 f5b8d390 fffffff4 c04c4b45 00000000 00000000 00000000
+>  >        00000000 f229ff54 00000000 00000000 f782601c c04c4bab f78b8ee0 c04fe65d
+>  >        f229ff54 c04fe8a8 f722e67f ffffffff ffffffff 00000007 f722e678 f78261d8
+>  >  Call Trace:
+>  >   [<c04c4b45>] create_dir+0x33/0x6c
+>  >   [<c04c4bab>] sysfs_create_dir+0x2d/0x40
+>  >   [<c04fe65d>] kobject_get+0xf/0x13
+>  >   [<c04fe8a8>] kobject_add+0xdd/0x176
+>  >   [<c04fe9eb>] kobject_register+0x19/0x2d
+>  >   [<c05b0ad0>] cpuidle_add_state_sysfs+0x7b/0xe4
+>  >   [<c052660e>] acpi_os_execute_notify+0x0/0x2b
+>  >   [<c05b03fd>] cpuidle_enable_device+0x31/0x9b
+>  >   [<c0545923>] acpi_processor_cst_has_changed+0x40/0x55
+>  >   [<c0543ae2>] acpi_processor_notify+0x8b/0xf4
+>  >   [<c052bcbb>] acpi_ev_notify_dispatch+0x4c/0x55
+>  >   [<c0526630>] acpi_os_execute_notify+0x22/0x2b
+>  >   [<c052660e>] acpi_os_execute_notify+0x0/0x2b
+>  >   [<c043c212>] run_workqueue+0x7d/0x107
+>  >   [<c043fa5b>] prepare_to_wait+0x28/0x45
+>  >   [<c043c35a>] worker_thread+0xbe/0xca
+>  >   [<c043f8ff>] autoremove_wake_function+0x0/0x35
+>  >   [<c043c29c>] worker_thread+0x0/0xca
+>  >   [<c043f679>] kthread+0x38/0x5d
+>  >   [<c043f641>] kthread+0x0/0x5d
+>  >   [<c0406477>] kernel_thread_helper+0x7/0x10
+>  >   =======================
+>  >  Code: c0 89 31 83 c4 14 5b 5e 5f c3 57 b9 04 00 00 00 56 89 c7 53 89
+>  >  c6 83 ec 04 89 d3 31 c0 f3 ab b8 903f 72 c0 89 16 e8 6a cf 16 00 <8b>
+>  >  53 20 b9 ec 42 4c c0 a1 84 e4 83 c0 89 1c 24 e8 44 6e fd ff
+>  >  EIP: [<c04c4716>] sysfs_addrm_start+0x21/0x81 SS:ESP 0068:f78b8ea4
+>
+>  Looks like a cpuidle problem (or at least acpi).
+>
+>  I seem to recall having seen other reports of this?
+>
