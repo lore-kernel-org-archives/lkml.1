@@ -1,129 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759580AbYDBVEb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762241AbYDBVEs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759580AbYDBVEb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 17:04:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756243AbYDBVEV
+	id S1762241AbYDBVEs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 17:04:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758907AbYDBVE1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 17:04:21 -0400
-Received: from mo10.iij4u.or.jp ([210.138.174.78]:53378 "EHLO mo10.iij4u.or.jp"
+	Wed, 2 Apr 2008 17:04:27 -0400
+Received: from gw.goop.org ([64.81.55.164]:43815 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755782AbYDBVEU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 17:04:20 -0400
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-To: linux-kernel@vger.kernel.org
-Cc: tomof@acm.org, FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Tony Luck <tony.luck@intel.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH -mm] SWIOTLB: use iommu_is_span_boundary helper function
-Date: Thu,  3 Apr 2008 06:02:35 +0900
-Message-Id: <1207170155-8065-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
-X-Mailer: git-send-email 1.5.3.7
+	id S1758490AbYDBVEZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Apr 2008 17:04:25 -0400
+Message-ID: <47F3F4A0.9010009@goop.org>
+Date: Wed, 02 Apr 2008 14:03:28 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080315)
+MIME-Version: 1.0
+To: Dave Hansen <dave@linux.vnet.ibm.com>
+CC: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Yasunori Goto <y-goto@jp.fujitsu.com>,
+       Christoph Lameter <clameter@sgi.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Anthony Liguori <anthony@codemonkey.ws>, Mel Gorman <mel@csn.ul.ie>
+Subject: Re: [PATCH RFC] hotplug-memory: refactor online_pages to separate
+ zone growth from page onlining
+References: <47ED8685.9040409@goop.org>	 <1206751622.27091.20.camel@nimitz.home.sr71.net>	 <47EDA4B9.6030801@goop.org>	 <1206806774.31896.27.camel@nimitz.home.sr71.net>	 <47EED683.5030200@goop.org>	 <1206981741.31896.51.camel@nimitz.home.sr71.net>	 <47F1282E.3020503@goop.org>	 <1207161962.23710.23.camel@nimitz.home.sr71.net>	 <47F3D5D9.1010301@goop.org> <1207162792.23710.28.camel@nimitz.home.sr71.net>
+In-Reply-To: <1207162792.23710.28.camel@nimitz.home.sr71.net>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-iommu_is_span_boundary in lib/iommu-helper.c was exported for PARISC
-IOMMUs (commit 3715863aa142c4f4c5208f5f3e5e9bac06006d2f). SWIOTLB can
-use it instead of the homegrown function.
+Dave Hansen wrote:
+> On Wed, 2008-04-02 at 11:52 -0700, Jeremy Fitzhardinge wrote:
+>   
+>>> Why don't we just have hotplug work that way?  When we want to take a
+>>> guest from 1GB to 1GB+1 page (or whatever), we just hotplug the entire
+>>> section (512MB or 1GB or whatever), actually online the whole thing,
+>>> then make the balloon driver take it back to where it *should* be.  That
+>>> way we're completely reusing existing components that have do be able to
+>>> handle this case anyway.
+>>>
+>>> Yeah, this is suboptimal, an it has a possibility of fragmenting the
+>>> memory, but it will only be used for the x86-32 case.
+>>>   
+>>>       
+>> It also requires you actually have the memory on hand to populate the 
+>> whole area.  512MB is still a significant chunk on a 2GB server; you may 
+>> end up generating significant overall system memory pressure to scrape 
+>> together the memory, only to immediately discard it again.
+>>     
+>
+> That's a very good point.  Can we make it so that the hypervisors don't
+> actually allocate the memory to the guest until its first touch?  If the
+> pages are on the freelist, their *contents* shouldn't be touched at all
+> during the onlining process.
+>   
 
-Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Ingo Molnar <mingo@redhat.com>
-Cc: H. Peter Anvin <hpa@zytor.com>
-Cc: Tony Luck <tony.luck@intel.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>
----
- arch/ia64/Kconfig |    5 ++++-
- arch/x86/Kconfig  |    5 ++---
- lib/swiotlb.c     |   14 +++-----------
- 3 files changed, 9 insertions(+), 15 deletions(-)
+No, not in a Xen direct-pagetable guest.  The guest actually sees real 
+hardware page numbers (mfns) when the hypervisor gives it a page.  By 
+the time the hypervisor gives it a page reference, it already 
+guaranteeing that the page is available for guest use.  The only thing 
+that we could do is prevent the guest from mapping the page, but that 
+doesn't really achieve much.
 
-diff --git a/arch/ia64/Kconfig b/arch/ia64/Kconfig
-index 53b8410..6840a13 100644
---- a/arch/ia64/Kconfig
-+++ b/arch/ia64/Kconfig
-@@ -47,6 +47,9 @@ config MMU
- config SWIOTLB
-        bool
- 
-+config IOMMU_HELPER
-+       bool
-+
- config GENERIC_LOCKBREAK
- 	bool
- 	default y
-@@ -624,7 +627,7 @@ config IRQ_PER_CPU
- 	default y
- 
- config IOMMU_HELPER
--	def_bool (IA64_HP_ZX1 || IA64_HP_ZX1_SWIOTLB || IA64_GENERIC)
-+	def_bool (IA64_HP_ZX1 || IA64_HP_ZX1_SWIOTLB || IA64_GENERIC || SWIOTLB)
- 
- source "arch/ia64/hp/sim/Kconfig"
- 
-diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-index 1f44517..e6c01c2 100644
---- a/arch/x86/Kconfig
-+++ b/arch/x86/Kconfig
-@@ -502,9 +502,6 @@ config CALGARY_IOMMU_ENABLED_BY_DEFAULT
- 	  Calgary anyway, pass 'iommu=calgary' on the kernel command line.
- 	  If unsure, say Y.
- 
--config IOMMU_HELPER
--	def_bool (CALGARY_IOMMU || GART_IOMMU)
--
- # need this always selected by IOMMU for the VIA workaround
- config SWIOTLB
- 	bool
-@@ -515,6 +512,8 @@ config SWIOTLB
- 	  access 32-bits of memory can be used on systems with more than
- 	  3 GB of memory. If unsure, say Y.
- 
-+config IOMMU_HELPER
-+	def_bool (CALGARY_IOMMU || GART_IOMMU || SWIOTLB)
- 
- config NR_CPUS
- 	int "Maximum number of CPUs (2-255)"
-diff --git a/lib/swiotlb.c b/lib/swiotlb.c
-index 62c9a18..b50c7e0 100644
---- a/lib/swiotlb.c
-+++ b/lib/swiotlb.c
-@@ -31,6 +31,7 @@
- 
- #include <linux/init.h>
- #include <linux/bootmem.h>
-+#include <linux/iommu-helper.h>
- 
- #define OFFSET(val,align) ((unsigned long)	\
- 	                   ( (val) & ( (align) - 1)))
-@@ -282,15 +283,6 @@ address_needs_mapping(struct device *hwdev, dma_addr_t addr)
- 	return (addr & ~mask) != 0;
- }
- 
--static inline unsigned int is_span_boundary(unsigned int index,
--					    unsigned int nslots,
--					    unsigned long offset_slots,
--					    unsigned long max_slots)
--{
--	unsigned long offset = (offset_slots + index) & (max_slots - 1);
--	return offset + nslots > max_slots;
--}
--
- /*
-  * Allocates bounce buffer and returns its kernel virtual address.
-  */
-@@ -338,8 +330,8 @@ map_single(struct device *hwdev, char *buffer, size_t size, int dir)
- 	wrap = index;
- 
- 	do {
--		while (is_span_boundary(index, nslots, offset_slots,
--				max_slots)) {
-+		while (iommu_is_span_boundary(index, nslots, offset_slots,
-+					      max_slots)) {
- 			index += stride;
- 			if (index >= io_tlb_nslabs)
- 				index = 0;
--- 
-1.5.3.7
+I think we're getting off track here; this is a lot of extra complexity 
+to justify allowing usermode to use /sys to online a chunk of hotplugged 
+memory.
 
+    J
