@@ -1,52 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756675AbYDBM7Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755161AbYDBNAp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756675AbYDBM7Q (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 08:59:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754554AbYDBM7E
+	id S1755161AbYDBNAp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 09:00:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754519AbYDBNAh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 08:59:04 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:27739 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754240AbYDBM7C (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 08:59:02 -0400
-Date: Wed, 2 Apr 2008 14:58:58 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>, paulmck@linux.vnet.ibm.com,
-       Ingo Molnar <mingo@elte.hu>, Pekka J Enberg <penberg@cs.helsinki.fi>,
-       Vegard Nossum <vegard.nossum@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Cc: fabio@gandalf.sssup.it
-Subject: Re: kmemcheck caught read from freed memory (cfq_free_io_context)
-Message-ID: <20080402125857.GP12774@kernel.dk>
-References: <20080402072456.GI12774@kernel.dk> <20080402072846.GA16454@elte.hu> <20080402105539.GA5610@linux.vnet.ibm.com> <1207133961.8514.768.camel@twins> <20080402113327.GC41073@gandalf.sssup.it> <20080402114338.GA12774@kernel.dk> <20080402123620.GH12774@kernel.dk> <20080402123639.GI12774@kernel.dk> <20080402125530.GF41073@gandalf.sssup.it> <20080402125819.GO12774@kernel.dk>
-MIME-Version: 1.0
+	Wed, 2 Apr 2008 09:00:37 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:1396 "EHLO spitz.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753040AbYDBNAg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Apr 2008 09:00:36 -0400
+Date: Wed, 2 Apr 2008 15:00:20 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Len Brown <lenb@kernel.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Carlos Corbacho <carlos@strangeworlds.co.uk>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Shaohua Li <shaohua.li@intel.com>, Felix M?ller <fm@opensuse.org>,
+       Arthur Erhardt <erhardt@pit.physik.uni-tuebingen.de>,
+       Matthew Garrett <mjg59@srcf.ucam.org>
+Subject: Re: [PATCH] ACPI PM: Restore the 2.6.24 suspend ordering
+Message-ID: <20080402130020.GB5295@ucw.cz>
+References: <200803300319.08398.rjw@sisk.pl> <200803301515.33922.rjw@sisk.pl> <20080401084523.GA25278@atrey.karlin.mff.cuni.cz> <200804012155.52547.rjw@sisk.pl>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080402125819.GO12774@kernel.dk>
+In-Reply-To: <200804012155.52547.rjw@sisk.pl>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 02 2008, Jens Axboe wrote:
-> On Wed, Apr 02 2008, Fabio Checconi wrote:
-> > > From: Jens Axboe <jens.axboe@oracle.com>
-> > > Date: Wed, Apr 02, 2008 02:36:39PM +0200
-> > >
-> > > > Looks good and tests fine as well. I've applied it, on top of the
-> > > > hlist_for_each_entry_safe_rcu() fix.
-> > > > 
-> > > > http://git.kernel.dk/?p=linux-2.6-block.git;a=commit;h=436151ad32b4a59e0d36165a7d6312545f126661
-> > > > 
+Hi!
+
+> > > > We could simply blacklist them, no?
+> > > 
+> > > Yes, but for this purpose we'll have to redesign the core so that everything
+> > > (including debugging and the error paths) works if _PTS is executed before
+> > > suspending devices.  _That_, however, is not a 2.6.25 thing.
 > > 
-> > ok, thanks.  anyway I don't think the hlist_for_each_entry_safe_rcu()
-> > is needed at this point, since the pos->next pointer is still valid
-> > (at least) until the next rcu_read_unlock().  am I wrong?
+> > So we have solution that fixes 2.6.24 systems, makes system that
+> > worked in 2.6.25-rc5 work with command line option, but gets error
+> > handling wrong.
+> > 
+> > I guess we could use that?
 > 
-> it isn't, but it's still clearer. so either that or a nice comment, I
-> just stuck with what I had already committed.
+> IMO we should not use that, because it's broken.  That's why I posted the
+> patch.
 
-Christ, mutt is still dropping you. Sorry about that.
-
+I understand that. World will not fall down one way or another, but
+I'd slightly prefer the 'only change default' version. That's why I
+objected to your patch :-).
+							Pavel
 -- 
-Jens Axboe
-
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
