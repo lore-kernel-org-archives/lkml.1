@@ -1,44 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757976AbYDBRvS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757922AbYDBRzL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757976AbYDBRvS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 13:51:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756101AbYDBRvI
+	id S1757922AbYDBRzL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 13:55:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756067AbYDBRy6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 13:51:08 -0400
-Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:51964
-	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755225AbYDBRvH (ORCPT
+	Wed, 2 Apr 2008 13:54:58 -0400
+Received: from mga02.intel.com ([134.134.136.20]:27664 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754351AbYDBRy5 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 13:51:07 -0400
-Date: Wed, 2 Apr 2008 19:50:58 +0200
-From: Andrea Arcangeli <andrea@qumranet.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Hugh Dickins <hugh@veritas.com>, Robin Holt <holt@sgi.com>,
-       Avi Kivity <avi@qumranet.com>, Izik Eidus <izike@qumranet.com>,
-       kvm-devel@lists.sourceforge.net,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, general@lists.openfabrics.org,
-       Steve Wise <swise@opengridcomputing.com>,
-       Roland Dreier <rdreier@cisco.com>, Kanoj Sarcar <kanojsarcar@yahoo.com>,
-       steiner@sgi.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       daniel.blueman@quadrics.com
-Subject: Re: [patch 5/9] Convert anon_vma lock to rw_sem and refcount
-Message-ID: <20080402175058.GR19189@duo.random>
-References: <20080401205531.986291575@sgi.com> <20080401205636.777127252@sgi.com>
+	Wed, 2 Apr 2008 13:54:57 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,594,1199692800"; 
+   d="scan'208";a="364880701"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080401205636.777127252@sgi.com>
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: 2.6.25-rc8-mm1 -- drivers/net/wireless/iwlwifi/iwl-led.c:184: error: 'struct iwl_priv' has no member named 'last_blink_time'
+Date: Wed, 2 Apr 2008 10:52:14 -0700
+Message-ID: <D936D925018D154694D8A362EEB0892004194769@orsmsx416.amr.corp.intel.com>
+In-Reply-To: <a44ae5cd0804020404k295ffc7ew8761cc0901996e20@mail.gmail.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: 2.6.25-rc8-mm1 -- drivers/net/wireless/iwlwifi/iwl-led.c:184: error: 'struct iwl_priv' has no member named 'last_blink_time'
+thread-index: AciUsXxnai/zzZrjQQaoAGfpdBfcuwAOJaiQ
+References: <a44ae5cd0804020404k295ffc7ew8761cc0901996e20@mail.gmail.com>
+From: "Chatre, Reinette" <reinette.chatre@intel.com>
+To: "Miles Lane" <miles.lane@gmail.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "LKML" <linux-kernel@vger.kernel.org>, "Zhu, Yi" <yi.zhu@intel.com>,
+       "wireless" <linux-wireless@vger.kernel.org>,
+       "John W. Linville" <linville@tuxdriver.com>
+X-OriginalArrivalTime: 02 Apr 2008 17:52:18.0517 (UTC) FILETIME=[4B365850:01C894EA]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 01, 2008 at 01:55:36PM -0700, Christoph Lameter wrote:
->   This results in f.e. the Aim9 brk performance test to got down by 10-15%.
+On Wednesday, April 02, 2008 4:04 AM, Miles Lane  wrote:
 
-I guess it's more likely because of overscheduling for small crtitical
-sections, did you counted the total number of context switches? I
-guess there will be a lot more with your patch applied. That
-regression is a showstopper and it is the reason why I've suggested
-before to add a CONFIG_XPMEM or CONFIG_MMU_NOTIFIER_SLEEP config
-option to make the VM locks sleep capable only when XPMEM=y
-(PREEMPT_RT will enable it too). Thanks for doing the benchmark work!
+>  CC [M]  drivers/net/wireless/iwlwifi/iwl-led.o
+> drivers/net/wireless/iwlwifi/iwl-led.c: In function
+> 'iwl4965_led_associated': drivers/net/wireless/iwlwifi/iwl-led.c:184:
+> error: 'struct iwl_priv' has no member named 'last_blink_time'
+> drivers/net/wireless/iwlwifi/iwl-led.c:184: error: 'struct iwl_priv'
+> has no member named 'allow_blinking'
+> drivers/net/wireless/iwlwifi/iwl-led.c:185: error: 'struct iwl_priv'
+> has no member named 'last_blink_time'
+> drivers/net/wireless/iwlwifi/iwl-led.c: In function
+> 'iwl4965_led_brightness_set':
+
+Another problem with iwlwifi config variables. A fix has just been sent
+to wireless-testing ("iwl4965: use IWLWIFI_LEDS config variable").
+
+Thanks!
+
+Reinette
