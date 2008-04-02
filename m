@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765765AbYDBUhS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765844AbYDBUhq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765765AbYDBUhS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 16:37:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760868AbYDBUS2
+	id S1765844AbYDBUhq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 16:37:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761899AbYDBUSa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 16:18:28 -0400
-Received: from ns.suse.de ([195.135.220.2]:37138 "EHLO mx1.suse.de"
+	Wed, 2 Apr 2008 16:18:30 -0400
+Received: from ns.suse.de ([195.135.220.2]:37150 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761969AbYDBUSY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 16:18:24 -0400
+	id S1757406AbYDBUS0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Apr 2008 16:18:26 -0400
 From: Mark Fasheh <mfasheh@suse.com>
 To: linux-kernel@vger.kernel.org
 Cc: ocfs2-devel@oss.oracle.com, Joel Becker <joel.becker@oracle.com>
-Subject: [PATCH 50/62] sysfs: Allow removal of symlinks in the sysfs root
-Date: Wed,  2 Apr 2008 13:15:00 -0700
-Message-Id: <12071674242631-git-send-email-mfasheh@suse.com>
+Subject: [PATCH 51/62] ocfs2: Move /sys/o2cb to /sys/fs/o2cb
+Date: Wed,  2 Apr 2008 13:15:01 -0700
+Message-Id: <1207167425415-git-send-email-mfasheh@suse.com>
 X-Mailer: git-send-email 1.5.2.4
-In-Reply-To: <12071674213882-git-send-email-mfasheh@suse.com>
+In-Reply-To: <12071674242631-git-send-email-mfasheh@suse.com>
 References: <12071673121124-git-send-email-mfasheh@suse.com>
  <1207167318479-git-send-email-mfasheh@suse.com>
  <12071673203909-git-send-email-mfasheh@suse.com>
@@ -67,41 +67,107 @@ References: <12071673121124-git-send-email-mfasheh@suse.com>
  <12071674171596-git-send-email-mfasheh@suse.com>
  <12071674193441-git-send-email-mfasheh@suse.com>
  <12071674213882-git-send-email-mfasheh@suse.com>
+ <12071674242631-git-send-email-mfasheh@suse.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Allow callers of sysfs_remove_link() to pass a NULL kobj, in which case
-sysfs_root will be used as the parent directory. This allows us to tear down
-top level symlinks created via sysfs_create_link(), which already has
-similar handling of a NULL parent object.
+/sys/fs is where we really want file system specific sysfs objects.
+
+Ocfs2-tools has been updated to look in /sys/fs/o2cb. We can maintain
+backwards compatibility with old ocfs2-tools by using a sysfs symlink. After
+some time (2 years), the symlink can be safely removed. This patch also adds
+documentation to make it easier for people to figure out what /sys/fs/o2cb
+is used for.
 
 Signed-off-by: Mark Fasheh <mfasheh@suse.com>
-Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- fs/sysfs/symlink.c |    9 ++++++++-
- 1 files changed, 8 insertions(+), 1 deletions(-)
+ Documentation/ABI/obsolete/o2cb            |   11 +++++++++++
+ Documentation/ABI/stable/o2cb              |   10 ++++++++++
+ Documentation/feature-removal-schedule.txt |   10 ++++++++++
+ fs/ocfs2/cluster/sys.c                     |    9 +++++++++
+ 4 files changed, 40 insertions(+), 0 deletions(-)
+ create mode 100644 Documentation/ABI/obsolete/o2cb
+ create mode 100644 Documentation/ABI/stable/o2cb
 
-diff --git a/fs/sysfs/symlink.c b/fs/sysfs/symlink.c
-index 5f66c44..817f596 100644
---- a/fs/sysfs/symlink.c
-+++ b/fs/sysfs/symlink.c
-@@ -87,7 +87,14 @@ int sysfs_create_link(struct kobject * kobj, struct kobject * target, const char
- 
- void sysfs_remove_link(struct kobject * kobj, const char * name)
+diff --git a/Documentation/ABI/obsolete/o2cb b/Documentation/ABI/obsolete/o2cb
+new file mode 100644
+index 0000000..9c49d8e
+--- /dev/null
++++ b/Documentation/ABI/obsolete/o2cb
+@@ -0,0 +1,11 @@
++What:		/sys/o2cb symlink
++Date:		Dec 2005
++KernelVersion:	2.6.16
++Contact:	ocfs2-devel@oss.oracle.com
++Description:	This is a symlink: /sys/o2cb to /sys/fs/o2cb. The symlink will
++		be removed when new versions of ocfs2-tools which know to look
++		in /sys/fs/o2cb are sufficiently prevalent. Don't code new
++		software to look here, it should try /sys/fs/o2cb instead.
++		See Documentation/ABI/stable/o2cb for more information on usage.
++Users:		ocfs2-tools. It's sufficient to mail proposed changes to
++		ocfs2-devel@oss.oracle.com.
+diff --git a/Documentation/ABI/stable/o2cb b/Documentation/ABI/stable/o2cb
+new file mode 100644
+index 0000000..5eb1545
+--- /dev/null
++++ b/Documentation/ABI/stable/o2cb
+@@ -0,0 +1,10 @@
++What:		/sys/fs/o2cb/ (was /sys/o2cb)
++Date:		Dec 2005
++KernelVersion:	2.6.16
++Contact:	ocfs2-devel@oss.oracle.com
++Description:	Ocfs2-tools looks at 'interface-revision' for versioning
++		information. Each logmask/ file controls a set of debug prints
++		and can be written into with the strings "allow", "deny", or
++		"off". Reading the file returns the current state.
++Users:		ocfs2-tools. It's sufficient to mail proposed changes to
++		ocfs2-devel@oss.oracle.com.
+diff --git a/Documentation/feature-removal-schedule.txt b/Documentation/feature-removal-schedule.txt
+index bf0e3df..4101f1f 100644
+--- a/Documentation/feature-removal-schedule.txt
++++ b/Documentation/feature-removal-schedule.txt
+@@ -318,3 +318,13 @@ Why:	Not used in-tree. The current out-of-tree users used it to
+ 	code / infrastructure should be in the kernel and not in some
+ 	out-of-tree driver.
+ Who:	Thomas Gleixner <tglx@linutronix.de>
++
++---------------------------
++
++What:	/sys/o2cb symlink
++When:	January 2010
++Why:	/sys/fs/o2cb is the proper location for this information - /sys/o2cb
++	exists as a symlink for backwards compatibility for old versions of
++	ocfs2-tools. 2 years should be sufficient time to phase in new versions
++	which know to look in /sys/fs/o2cb.
++Who:	ocfs2-devel@oss.oracle.com
+diff --git a/fs/ocfs2/cluster/sys.c b/fs/ocfs2/cluster/sys.c
+index 0c095ce..98429fd 100644
+--- a/fs/ocfs2/cluster/sys.c
++++ b/fs/ocfs2/cluster/sys.c
+@@ -57,6 +57,7 @@ static struct kset *o2cb_kset;
+ void o2cb_sys_shutdown(void)
  {
--	sysfs_hash_and_remove(kobj->sd, name);
-+	struct sysfs_dirent *parent_sd = NULL;
-+
-+	if (!kobj)
-+		parent_sd = &sysfs_root;
-+	else
-+		parent_sd = kobj->sd;
-+
-+	sysfs_hash_and_remove(parent_sd, name);
+ 	mlog_sys_shutdown();
++	sysfs_remove_link(NULL, "o2cb");
+ 	kset_unregister(o2cb_kset);
  }
  
- static int sysfs_get_target_path(struct sysfs_dirent *parent_sd,
+@@ -68,6 +69,14 @@ int o2cb_sys_init(void)
+ 	if (!o2cb_kset)
+ 		return -ENOMEM;
+ 
++	/*
++	 * Create this symlink for backwards compatibility with old
++	 * versions of ocfs2-tools which look for things in /sys/o2cb.
++	 */
++	ret = sysfs_create_link(NULL, &o2cb_kset->kobj, "o2cb");
++	if (ret)
++		goto error;
++
+ 	ret = sysfs_create_group(&o2cb_kset->kobj, &o2cb_attr_group);
+ 	if (ret)
+ 		goto error;
 -- 
 1.5.4.1
 
