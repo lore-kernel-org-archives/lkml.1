@@ -1,51 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754811AbYDBKhd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754386AbYDBKkB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754811AbYDBKhd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 06:37:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752651AbYDBKhZ
+	id S1754386AbYDBKkB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 06:40:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752902AbYDBKjx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 06:37:25 -0400
-Received: from opensource.wolfsonmicro.com ([80.75.67.52]:48289 "EHLO
-	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752086AbYDBKhY (ORCPT
+	Wed, 2 Apr 2008 06:39:53 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:33204 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752880AbYDBKjw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 06:37:24 -0400
-Date: Wed, 2 Apr 2008 11:37:22 +0100
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Jiri Kosina <jkosina@suse.cz>,
-       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Liam Girdwood <liam.girdwood@wolfsonmicro.com>
-Subject: Re: [PATCH 6/6] Build system and MAINTAINERS entry for WM97xx
-	touchscreen drivers
-Message-ID: <20080402103722.GA3432@rakim.wolfsonmicro.main>
-Mail-Followup-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Jiri Kosina <jkosina@suse.cz>, linux-input@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	Liam Girdwood <liam.girdwood@wolfsonmicro.com>
-References: <20080401102825.GA30868@rakim.wolfsonmicro.main> <1207046169-2152-1-git-send-email-broonie@opensource.wolfsonmicro.com> <1207046169-2152-2-git-send-email-broonie@opensource.wolfsonmicro.com> <1207046169-2152-3-git-send-email-broonie@opensource.wolfsonmicro.com> <1207046169-2152-4-git-send-email-broonie@opensource.wolfsonmicro.com> <1207046169-2152-5-git-send-email-broonie@opensource.wolfsonmicro.com> <1207046169-2152-6-git-send-email-broonie@opensource.wolfsonmicro.com> <20080402050400.GA14189@anvil.corenet.prv>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080402050400.GA14189@anvil.corenet.prv>
-X-Cookie: Poverty begins at home.
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Wed, 2 Apr 2008 06:39:52 -0400
+Date: Wed, 2 Apr 2008 05:39:49 -0500
+From: Paul Jackson <pj@sgi.com>
+To: Mike Travis <travis@sgi.com>
+Cc: mingo@elte.hu, tglx@linutronix.de, hpa@zytor.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/3] x86: add cpuset_scnprintf function
+Message-Id: <20080402053949.8f71b31d.pj@sgi.com>
+In-Reply-To: <47F33A1D.3050301@sgi.com>
+References: <20080401225422.064890000@polaris-admin.engr.sgi.com>
+	<20080402012006.1722c2bd.pj@sgi.com>
+	<47F33A1D.3050301@sgi.com>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 02, 2008 at 01:04:00AM -0400, Dmitry Torokhov wrote:
+Mike wrote:
+> I wanted to not break current apps unmercifully, but perhaps I should
+> default it to the "non-compatible" mode (and adjust the schedstat version
+> to indicate this)?  [It's the only output that I found that seemed to care.]
 
-> applied the series to wm97xx branch of my input tree. I also moved
-> changes to Makefile/Kconfig to the appropriate patches instead of
-> doing bulk update as a separate patch. Please take a look and let
-> me know if you see anything wrong.
+It doesn't matter which way you set the default.  My concerns apply
+either way.  I don't think your reply addressed my concerns.
 
-Everything looks good, thanks.
 
-The build infrastructure was split off to ensure that the tree was
-buildable with the partially applied series - the core is obviously
-non-functional without the individual chip drivers.  In the past it
-wouldn't build with missing chip drivers but that shouldn't be the case
-any more.
+> I know if I'm a user and I'm really interested in understanding
+> the outputs when there's hundreds and hundreds of cpus, then the
+> more compact format is much more useful.
+
+That's not sufficient reason to change an API visible across the
+kernel-user boundary.
+
+
+> Plus I was under the impression that one of the basic tenets of Linux
+> was that API's can and will change?
+
+Kernel internals have a relatively lower barrier to API changes.
+
+Kernel API's visible to kernel drivers or loadable modules have a
+higher barrier to change.
+
+Kernel API's visible to user space, such as this one, have a much
+higher barrier to incompatible change.
+
+I hesitate to NAQ patches because I strike out more often than someone
+like Al Viro.  But I'm getting tempted on this one.
+
+Perhaps you could write yourself a user utility that scanned its input
+for masks in legacy format, converted them to list format, and passed
+all else unscathed?
+
+-- 
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.940.382.4214
