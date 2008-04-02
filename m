@@ -1,178 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763522AbYDBWB1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932596AbYDBWCL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763522AbYDBWB1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 18:01:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757390AbYDBWBS
+	id S932596AbYDBWCL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 18:02:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755249AbYDBWB5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 18:01:18 -0400
-Received: from nwd2mail10.analog.com ([137.71.25.55]:2855 "EHLO
-	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755787AbYDBWBR (ORCPT
+	Wed, 2 Apr 2008 18:01:57 -0400
+Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:39485
+	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757390AbYDBWB4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 18:01:17 -0400
-X-IronPort-AV: E=Sophos;i="4.25,595,1199682000"; 
-   d="scan'208";a="65639863"
-From: Robin Getz <rgetz@blackfin.uclinux.org>
-Organization: Blackfin uClinux org
-To: "Rusty Russell" <rusty@rustcorp.com.au>
-Subject: Re: PATCH [1/1]: Don't return symbol lables in init sections after they have been freed
-Date: Wed, 2 Apr 2008 18:01:25 -0400
-User-Agent: KMail/1.9.5
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       "LKML" <linux-kernel@vger.kernel.org>
-References: <200803041847.15884.rgetz@blackfin.uclinux.org> <200803051243.26732.rusty@rustcorp.com.au>
-In-Reply-To: <200803051243.26732.rusty@rustcorp.com.au>
+	Wed, 2 Apr 2008 18:01:56 -0400
+Date: Thu, 3 Apr 2008 00:01:48 +0200
+From: Andrea Arcangeli <andrea@qumranet.com>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Hugh Dickins <hugh@veritas.com>, Robin Holt <holt@sgi.com>,
+       Avi Kivity <avi@qumranet.com>, Izik Eidus <izike@qumranet.com>,
+       kvm-devel@lists.sourceforge.net,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, general@lists.openfabrics.org,
+       Steve Wise <swise@opengridcomputing.com>,
+       Roland Dreier <rdreier@cisco.com>, Kanoj Sarcar <kanojsarcar@yahoo.com>,
+       steiner@sgi.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       daniel.blueman@quadrics.com, Nick Piggin <npiggin@suse.de>
+Subject: Re: EMM: Require single threadedness for registration.
+Message-ID: <20080402220148.GV19189@duo.random>
+References: <20080401205531.986291575@sgi.com> <20080401205635.793766935@sgi.com> <20080402064952.GF19189@duo.random> <Pine.LNX.4.64.0804021048460.27214@schroedinger.engr.sgi.com> <Pine.LNX.4.64.0804021402190.30337@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200804021801.25937.rgetz@blackfin.uclinux.org>
-X-OriginalArrivalTime: 02 Apr 2008 22:01:15.0955 (UTC) FILETIME=[129E8030:01C8950D]
+In-Reply-To: <Pine.LNX.4.64.0804021402190.30337@schroedinger.engr.sgi.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue 4 Mar 2008 20:43, Rusty Russell pondered:
->     As to the actual patch, your kallsyms.c patch matches 
-> a2da4052f1df6bc77749f84496fe731ab8b458f7's change to extable.c: please 
-> resubmit with just that one.  For bonus points, look at combining the extable 
-> and kallsyms logic so we don't diverge in future...
+On Wed, Apr 02, 2008 at 02:05:28PM -0700, Christoph Lameter wrote:
+> Here is a patch to require single threaded execution during emm_register. 
+> This also allows an easy implementation of an unregister function and gets
+> rid of the races that Andrea worried about.
 
-OK since this took so long, I went for bonus points...
+That would work for #v10 if I remove the invalidate_range_start from
+try_to_unmap_cluster, it can't work for EMM because you've
+emm_invalidate_start firing anywhere outside the context of the
+current task (even regular rmap code, not just nonlinear corner case
+will trigger the race). In short the single threaded approach would be
+workable only thanks to the fact #v10 has the notion of
+invalidate_page for flushing the tlb _after_ and to avoid blocking the
+secondary page fault during swapping. In the kvm case I don't want to
+block the page fault for anything but madvise which is strictly only
+used after guest inflated the balloon, and the existence of
+invalidate_page allows that optimization, and allows not to serialize
+against the kvm page fault during all regular page faults when the
+invalidate_page is called while the page is pinned by the VM.
 
-The only think I wasn't sure about - is since it now does things in extable.c,
-it removes the static inline functions from kallsyms.c - which could cause a
-potential slowdown...
+The requirement for invalidate_page is that the pte and linux tlb are
+flushed _before_ and the page is freed _after_ the invalidate_page
+method. that's not the case for _begin/_end. The page is freed well
+before _end runs, hence the need of _begin and to block the secondary
+mmu page fault during the vma-mangling operations.
 
-I'm sure this will not apply to the mm tree, (it was based on 2.6.24.3), but
-should provide some idea for feedback.
-
-Index: linux-2.6.x/kernel/extable.c
-===================================================================
---- linux-2.6.x/kernel/extable.c	(revision 4461)
-+++ linux-2.6.x/kernel/extable.c	(working copy)
-@@ -40,17 +40,40 @@
- 	return e;
- }
- 
--int core_kernel_text(unsigned long addr)
-+int core_kernel_inittext(unsigned long addr)
- {
-+	if (addr >= (unsigned long)_sinittext &&
-+	    addr <= (unsigned long)_einittext)
-+		return 1;
-+	return 0;
-+}
-+
-+int core_kernel_extratext(unsigned long addr)
-+{
-+	if (addr >= (unsigned long)_sextratext &&
-+	    addr <= (unsigned long)_eextratext)
-+		return 1;
-+	return 0;
-+}
-+
-+int __core_kernel_text(unsigned long addr)
-+{
- 	if (addr >= (unsigned long)_stext &&
- 	    addr <= (unsigned long)_etext)
- 		return 1;
- 
--	if (addr >= (unsigned long)_sinittext &&
--	    addr <= (unsigned long)_einittext)
- 		return 1;
- 	return 0;
-+
- }
-+int core_kernel_text(unsigned long addr)
-+{
-+	return __core_kernel_text(addr) || core_kernel_inittext(addr);
-+}
- 
- int __kernel_text_address(unsigned long addr)
- {
-@@ -65,3 +88,4 @@
- 		return 1;
- 	return module_text_address(addr) != NULL;
- }
-+
-Index: linux-2.6.x/kernel/kallsyms.c
-===================================================================
---- linux-2.6.x/kernel/kallsyms.c	(revision 4461)
-+++ linux-2.6.x/kernel/kallsyms.c	(working copy)
-@@ -45,47 +45,24 @@
- 
- extern const unsigned long kallsyms_markers[] __attribute__((weak));
- 
--static inline int is_kernel_inittext(unsigned long addr)
--{
--	if (addr >= (unsigned long)_sinittext
--	    && addr <= (unsigned long)_einittext)
--		return 1;
--	return 0;
--}
--
--static inline int is_kernel_extratext(unsigned long addr)
--{
--	if (addr >= (unsigned long)_sextratext
--	    && addr <= (unsigned long)_eextratext)
--		return 1;
--	return 0;
--}
--
- static inline int is_kernel_text(unsigned long addr)
- {
--	if (addr >= (unsigned long)_stext && addr <= (unsigned long)_etext)
-+	if (core_kernel_text(addr))
- 		return 1;
--	return in_gate_area_no_task(addr);
--}
- 
--static inline int is_kernel(unsigned long addr)
--{
--	if (addr >= (unsigned long)_stext && addr <= (unsigned long)_end)
--		return 1;
- 	return in_gate_area_no_task(addr);
- }
- 
- static int is_ksym_addr(unsigned long addr)
- {
--	if (all_var)
--		return is_kernel(addr);
-+	if (all_var) {
-+		if (addr >= (unsigned long)_stext && addr <= (unsigned long)_end)
-+			return 1;
-+		else
-+			return in_gate_area_no_task(addr);
-+	}
- 
--	return is_kernel_text(addr) || is_kernel_inittext(addr) ||
--		is_kernel_extratext(addr);
-+	return is_kernel_text(addr) || core_kernel_extratext(addr);
- }
- 
- /* expand a compressed symbol data into the resulting uncompressed string,
-@@ -215,7 +192,7 @@
- 
- 	/* if we found no next symbol, we use the end of the section */
- 	if (!symbol_end) {
--		if (is_kernel_inittext(addr))
-+		if (core_kernel_inittext(addr))
- 			symbol_end = (unsigned long)_einittext;
- 		else if (all_var)
- 			symbol_end = (unsigned long)_end;
-Index: linux-2.6.x/include/linux/kernel.h
-===================================================================
---- linux-2.6.x/include/linux/kernel.h	(revision 4461)
-+++ linux-2.6.x/include/linux/kernel.h	(working copy)
-@@ -167,6 +167,8 @@
- extern unsigned long long memparse(char *ptr, char **retptr);
- 
- extern int core_kernel_text(unsigned long addr);
-+extern int core_kernel_extratext(unsigned long addr);
-+extern int core_kernel_inittext(unsigned long addr);
- extern int __kernel_text_address(unsigned long addr);
- extern int kernel_text_address(unsigned long addr);
- struct pid;
-
+#v10 takes care of all this, and despite I could perhaps fix the
+remaining two issues using the single-threaded enforcement I
+suggested, I preferred to go safe and spend an unsigned per-mm in case
+anybody needs to attach at runtime, the single threaded restriction
+didn't look very clean.
