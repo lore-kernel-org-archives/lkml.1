@@ -1,119 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760248AbYDBHJG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760744AbYDBHJY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760248AbYDBHJG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 03:09:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752888AbYDBHIw
+	id S1760744AbYDBHJY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 03:09:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759039AbYDBHI5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 03:08:52 -0400
-Received: from E23SMTP04.au.ibm.com ([202.81.18.173]:54059 "EHLO
-	e23smtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756094AbYDBHIw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 03:08:52 -0400
-Message-ID: <47F330FF.3050806@linux.vnet.ibm.com>
-Date: Wed, 02 Apr 2008 12:38:47 +0530
-From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-User-Agent: Thunderbird 1.5.0.14ubu (X11/20080306)
+	Wed, 2 Apr 2008 03:08:57 -0400
+Received: from www.tglx.de ([62.245.132.106]:38886 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758625AbYDBHI4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Apr 2008 03:08:56 -0400
+Date: Wed, 2 Apr 2008 09:08:29 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Chr <chunkeey@web.de>
+cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org,
+       Andi Kleen <andi-suse@firstfloor.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: The never ending BEEEEP/__smp_call_function_mask with
+ 2.6.25-rc7
+In-Reply-To: <200804020029.12019.chunkeey@web.de>
+Message-ID: <alpine.LFD.1.10.0804020820130.3219@apollo.tec.linutronix.de>
+References: <200803302109.22219.chunkeey@web.de> <200804010001.51288.chunkeey@web.de> <alpine.LFD.1.10.0804011817310.3219@apollo.tec.linutronix.de> <200804020029.12019.chunkeey@web.de>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       Andy Whitcroft <apw@shadowen.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Badari Pulavarty <pbadari@us.ibm.com>
-Subject: Re: [BUG] 2.6.25-rc8-mm1 kernel panic while bootup on powerpc
-References: <20080401213214.8fbb6d6b.akpm@linux-foundation.org> <47F326E0.3010604@linux.vnet.ibm.com> <20080401233909.23220623.akpm@linux-foundation.org>
-In-Reply-To: <20080401233909.23220623.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Wed, 02 Apr 2008 11:55:36 +0530 Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
-> 
->> Hi Andrew,
->>
->> The 2.6.25-rc8-mm1 kernel panic's while bootup on the power machine(s).
->>
->> [    0.000000] ------------[ cut here ]------------
->> [    0.000000] kernel BUG at arch/powerpc/mm/init_64.c:240!
->> [    0.000000] Oops: Exception in kernel mode, sig: 5 [#1]
->> [    0.000000] SMP NR_CPUS=32 NUMA PowerMac
->> [    0.000000] Modules linked in:
->> [    0.000000] NIP: c0000000003d1dcc LR: c0000000003d1dc4 CTR: c00000000002b6ac
->> [    0.000000] REGS: c00000000049b960 TRAP: 0700   Not tainted  (2.6.25-rc8-mm1-autokern1)
->> [    0.000000] MSR: 9000000000021032 <ME,IR,DR>  CR: 44000088  XER: 20000000
->> [    0.000000] TASK = c0000000003f9c90[0] 'swapper' THREAD: c000000000498000 CPU: 0
->> [    0.000000] GPR00: c0000000003d1dc4 c00000000049bbe0 c0000000004989d0 0000000000000001 
->> [    0.000000] GPR04: d59aca40f0000000 000000000b000000 0000000000000010 0000000000000000 
->> [    0.000000] GPR08: 0000000000000004 0000000000000001 c00000027e520800 c0000000004bf0f0 
->> [    0.000000] GPR12: c0000000004bf020 c0000000003fa900 0000000000000000 0000000000000000 
->> [    0.000000] GPR16: 0000000000000000 0000000000000000 0000000000000000 0000000000000000 
->> [    0.000000] GPR20: 0000000000000000 0000000000000000 0000000000000000 4000000001400000 
->> [    0.000000] GPR24: 00000000017d64b0 c0000000003d6250 0000000000000000 c000000000504000 
->> [    0.000000] GPR28: 0000000000000000 cf000000001f8000 0000000001000000 cf00000000000000 
->> [    0.000000] NIP [c0000000003d1dcc] .vmemmap_populate+0xb8/0xf4
->> [    0.000000] LR [c0000000003d1dc4] .vmemmap_populate+0xb0/0xf4
->> [    0.000000] Call Trace:
->> [    0.000000] [c00000000049bbe0] [c0000000003d1dc4] .vmemmap_populate+0xb0/0xf4 (unreliable)
->> [    0.000000] [c00000000049bc70] [c0000000003d2ee8] .sparse_mem_map_populate+0x38/0x60
->> [    0.000000] [c00000000049bd00] [c0000000003c242c] .sparse_early_mem_map_alloc+0x54/0x94
->> [    0.000000] [c00000000049bd90] [c0000000003c250c] .sparse_init+0xa0/0x20c
->> [    0.000000] [c00000000049be50] [c0000000003ab7d0] .setup_arch+0x1ac/0x218
->> [    0.000000] [c00000000049bee0] [c0000000003a36ac] .start_kernel+0xe0/0x3fc
->> [    0.000000] [c00000000049bf90] [c000000000008594] .start_here_common+0x54/0xc0
->> [    0.000000] Instruction dump:
->> [    0.000000] 7fe3fb78 7ca02a14 4082000c 3860fff4 4800003c e92289c8 e96289c0 e9090002 
->> [    0.000000] e8eb0002 4bc575cd 60000000 78630fe0 <0b030000> 7ffff214 7fbfe840 7fe3fb78 
->> [    0.000000] ---[ end trace 31fd0ba7d8756001 ]---
->> [    0.000000] Kernel panic - not syncing: Attempted to kill the idle task!
->>
-> 
-> int __meminit vmemmap_populate(struct page *start_page,
-> 					unsigned long nr_pages, int node)
-> {
-> 	unsigned long mode_rw;
-> 	unsigned long start = (unsigned long)start_page;
-> 	unsigned long end = (unsigned long)(start_page + nr_pages);
-> 	unsigned long page_size = 1 << mmu_psize_defs[mmu_linear_psize].shift;
-> 
-> 	mode_rw = _PAGE_ACCESSED | _PAGE_DIRTY | _PAGE_COHERENT | PP_RWXX;
-> 
-> 	/* Align to the page size of the linear mapping. */
-> 	start = _ALIGN_DOWN(start, page_size);
-> 
-> 	for (; start < end; start += page_size) {
-> 		int mapped;
-> 		void *p;
-> 
-> 		if (vmemmap_populated(start, page_size))
-> 			continue;
-> 
-> 		p = vmemmap_alloc_block(page_size, node);
-> 		if (!p)
-> 			return -ENOMEM;
-> 
-> 		pr_debug("vmemmap %08lx allocated at %p, physical %08lx.\n",
-> 			start, p, __pa(p));
-> 
-> 		mapped = htab_bolt_mapping(start, start + page_size,
-> 					__pa(p), mode_rw, mmu_linear_psize,
-> 					mmu_kernel_ssize);
-> =====>		BUG_ON(mapped < 0);
-> 	}
-> 
-> 	return 0;
-> }
-> 
-> Beats me.  pseries?  Badari has been diddling with the bolted memory code
-> in git-powerpc...
+On Wed, 2 Apr 2008, Chr wrote:
+> On Tuesday 01 April 2008 18:27:34 Thomas Gleixner wrote:
+> > On Tue, 1 Apr 2008, Chr wrote:
+> > > Ahhm it happend again (well, actually it's the fifth time today, but this
+> > > time I _hopefully_ found something)
+> > > 
+> > > (direct link)
+> > > http://bugzilla.kernel.org/attachment.cgi?id=15542
+> >
+> > # expires at 4839289000000 nsecs [in -168780949682 nsecs]
+> >
+> > That's strange. Local APIC timer interrupt seems to be stuck.
+> >
+> > Can you please upload a boot log and the output of
+> > /proc/timer_list of 2.6.24.x to the bugzilla ?
+> >
+> > Does adding "noapictimer" to the command line help ?
+> noapictimer seems to help too... (chrony is on)
 
-One of the machines is the Power5 and another is PowerMac G5, on which the 
-same kernel panic is seen.
+Ok. Can you please provide the output of /proc/cpuinfo ?
 
--- 
-Thanks & Regards,
-Kamalesh Babulal,
-Linux Technology Center,
-IBM, ISTL.
+Thanks,
+
+	tglx
