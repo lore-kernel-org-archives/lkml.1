@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765450AbYDBUep@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764306AbYDBUfP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765450AbYDBUep (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 16:34:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761930AbYDBUSP
+	id S1764306AbYDBUfP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 16:35:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761943AbYDBUSR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 16:18:15 -0400
-Received: from ns.suse.de ([195.135.220.2]:37064 "EHLO mx1.suse.de"
+	Wed, 2 Apr 2008 16:18:17 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:33190 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761917AbYDBUSM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 16:18:12 -0400
+	id S1761925AbYDBUSO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Apr 2008 16:18:14 -0400
 From: Mark Fasheh <mfasheh@suse.com>
 To: linux-kernel@vger.kernel.org
 Cc: ocfs2-devel@oss.oracle.com, Joel Becker <joel.becker@oracle.com>,
        Sunil Mushran <sunil.mushran@oracle.com>
-Subject: [PATCH 44/62] ocfs2/dlm: Dumps the mles into a debugfs file
-Date: Wed,  2 Apr 2008 13:14:54 -0700
-Message-Id: <12071674103432-git-send-email-mfasheh@suse.com>
+Subject: [PATCH 45/62] ocfs2/dlm: Dumps the purgelist into a debugfs file
+Date: Wed,  2 Apr 2008 13:14:55 -0700
+Message-Id: <1207167413855-git-send-email-mfasheh@suse.com>
 X-Mailer: git-send-email 1.5.2.4
-In-Reply-To: <12071674083120-git-send-email-mfasheh@suse.com>
+In-Reply-To: <12071674103432-git-send-email-mfasheh@suse.com>
 References: <12071673121124-git-send-email-mfasheh@suse.com>
  <1207167318479-git-send-email-mfasheh@suse.com>
  <12071673203909-git-send-email-mfasheh@suse.com>
@@ -62,119 +62,72 @@ References: <12071673121124-git-send-email-mfasheh@suse.com>
  <12071674033903-git-send-email-mfasheh@suse.com>
  <12071674061934-git-send-email-mfasheh@suse.com>
  <12071674083120-git-send-email-mfasheh@suse.com>
+ <12071674103432-git-send-email-mfasheh@suse.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Sunil Mushran <sunil.mushran@oracle.com>
 
-This patch dumps all mles it can fit in one page into a debugfs file.
-Useful for debugging.
+This patch dumps all the lockres' on the purgelist it can fit in one page
+into a debugfs file. Useful for debugging.
 
 Signed-off-by: Sunil Mushran <sunil.mushran@oracle.com>
 Signed-off-by: Joel Becker <joel.becker@oracle.com>
 Signed-off-by: Mark Fasheh <mfasheh@suse.com>
 ---
- fs/ocfs2/dlm/dlmdebug.c |  119 +++++++++++++++++++++++++++++++++++++++++++++++
+ fs/ocfs2/dlm/dlmdebug.c |   71 +++++++++++++++++++++++++++++++++++++++++++++++
  fs/ocfs2/dlm/dlmdebug.h |    1 +
- 2 files changed, 120 insertions(+), 0 deletions(-)
+ 2 files changed, 72 insertions(+), 0 deletions(-)
 
 diff --git a/fs/ocfs2/dlm/dlmdebug.c b/fs/ocfs2/dlm/dlmdebug.c
-index cccb1ce..6de326b 100644
+index 6de326b..a109005 100644
 --- a/fs/ocfs2/dlm/dlmdebug.c
 +++ b/fs/ocfs2/dlm/dlmdebug.c
-@@ -302,6 +302,7 @@ static int stringify_lockname(const char *lockname, int locklen,
- #define DLM_DEBUGFS_DIR				"o2dlm"
+@@ -303,6 +303,7 @@ static int stringify_lockname(const char *lockname, int locklen,
  #define DLM_DEBUGFS_DLM_STATE			"dlm_state"
  #define DLM_DEBUGFS_LOCKING_STATE		"locking_state"
-+#define DLM_DEBUGFS_MLE_STATE			"mle_state"
+ #define DLM_DEBUGFS_MLE_STATE			"mle_state"
++#define DLM_DEBUGFS_PURGE_LIST			"purge_list"
  
  /* begin - utils funcs */
  static void dlm_debug_free(struct kref *kref)
-@@ -395,6 +396,112 @@ static int debug_buffer_release(struct inode *inode, struct file *file)
+@@ -396,6 +397,63 @@ static int debug_buffer_release(struct inode *inode, struct file *file)
  }
  /* end - util funcs */
  
-+/* begin - debug mle funcs */
-+static int dump_mle(struct dlm_master_list_entry *mle, char *buf, int len)
++/* begin - purge list funcs */
++static int debug_purgelist_print(struct dlm_ctxt *dlm, struct debug_buffer *db)
 +{
-+	int out = 0;
-+	unsigned int namelen;
-+	const char *name;
-+	char *mle_type;
-+
-+	if (mle->type != DLM_MLE_MASTER) {
-+		namelen = mle->u.name.len;
-+		name = mle->u.name.name;
-+	} else {
-+		namelen = mle->u.res->lockname.len;
-+		name = mle->u.res->lockname.name;
-+	}
-+
-+	if (mle->type == DLM_MLE_BLOCK)
-+		mle_type = "BLK";
-+	else if (mle->type == DLM_MLE_MASTER)
-+		mle_type = "MAS";
-+	else
-+		mle_type = "MIG";
-+
-+	out += stringify_lockname(name, namelen, buf + out, len - out);
-+	out += snprintf(buf + out, len - out,
-+			"\t%3s\tmas=%3u\tnew=%3u\tevt=%1d\tuse=%1d\tref=%3d\n",
-+			mle_type, mle->master, mle->new_master,
-+			!list_empty(&mle->hb_events),
-+			!!mle->inuse,
-+			atomic_read(&mle->mle_refs.refcount));
-+
-+	out += snprintf(buf + out, len - out, "Maybe=");
-+	out += stringify_nodemap(mle->maybe_map, O2NM_MAX_NODES,
-+				 buf + out, len - out);
-+	out += snprintf(buf + out, len - out, "\n");
-+
-+	out += snprintf(buf + out, len - out, "Vote=");
-+	out += stringify_nodemap(mle->vote_map, O2NM_MAX_NODES,
-+				 buf + out, len - out);
-+	out += snprintf(buf + out, len - out, "\n");
-+
-+	out += snprintf(buf + out, len - out, "Response=");
-+	out += stringify_nodemap(mle->response_map, O2NM_MAX_NODES,
-+				 buf + out, len - out);
-+	out += snprintf(buf + out, len - out, "\n");
-+
-+	out += snprintf(buf + out, len - out, "Node=");
-+	out += stringify_nodemap(mle->node_map, O2NM_MAX_NODES,
-+				 buf + out, len - out);
-+	out += snprintf(buf + out, len - out, "\n");
-+
-+	out += snprintf(buf + out, len - out, "\n");
-+
-+	return out;
-+}
-+
-+static int debug_mle_print(struct dlm_ctxt *dlm, struct debug_buffer *db)
-+{
-+	struct dlm_master_list_entry *mle;
++	struct dlm_lock_resource *res;
 +	int out = 0;
 +	unsigned long total = 0;
 +
 +	out += snprintf(db->buf + out, db->len - out,
-+			"Dumping MLEs for Domain: %s\n", dlm->name);
++			"Dumping Purgelist for Domain: %s\n", dlm->name);
 +
-+	spin_lock(&dlm->master_lock);
-+	list_for_each_entry(mle, &dlm->master_list, list) {
++	spin_lock(&dlm->spinlock);
++	list_for_each_entry(res, &dlm->purge_list, purge) {
 +		++total;
-+		if (db->len - out < 200)
++		if (db->len - out < 100)
 +			continue;
-+		out += dump_mle(mle, db->buf + out, db->len - out);
++		spin_lock(&res->spinlock);
++		out += stringify_lockname(res->lockname.name,
++					  res->lockname.len,
++					  db->buf + out, db->len - out);
++		out += snprintf(db->buf + out, db->len - out, "\t%ld\n",
++				(jiffies - res->last_used)/HZ);
++		spin_unlock(&res->spinlock);
 +	}
-+	spin_unlock(&dlm->master_lock);
++	spin_unlock(&dlm->spinlock);
 +
 +	out += snprintf(db->buf + out, db->len - out,
 +			"Total on list: %ld\n", total);
++
 +	return out;
 +}
 +
-+static int debug_mle_open(struct inode *inode, struct file *file)
++static int debug_purgelist_open(struct inode *inode, struct file *file)
 +{
 +	struct dlm_ctxt *dlm = inode->i_private;
 +	struct debug_buffer *db;
@@ -183,7 +136,7 @@ index cccb1ce..6de326b 100644
 +	if (!db)
 +		goto bail;
 +
-+	db->len = debug_mle_print(dlm, db);
++	db->len = debug_purgelist_print(dlm, db);
 +
 +	file->private_data = db;
 +
@@ -192,28 +145,28 @@ index cccb1ce..6de326b 100644
 +	return -ENOMEM;
 +}
 +
-+static struct file_operations debug_mle_fops = {
-+	.open =		debug_mle_open,
++static struct file_operations debug_purgelist_fops = {
++	.open =		debug_purgelist_open,
 +	.release =	debug_buffer_release,
 +	.read =		debug_buffer_read,
 +	.llseek =	debug_buffer_llseek,
 +};
++/* end - purge list funcs */
 +
-+/* end - debug mle funcs */
-+
- /* begin - debug lockres funcs */
- static int dump_lock(struct dlm_lock *lock, int list_type, char *buf, int len)
+ /* begin - debug mle funcs */
+ static int dump_mle(struct dlm_master_list_entry *mle, char *buf, int len)
  {
-@@ -789,6 +896,16 @@ int dlm_debug_init(struct dlm_ctxt *dlm)
+@@ -906,6 +964,17 @@ int dlm_debug_init(struct dlm_ctxt *dlm)
  		goto bail;
  	}
  
-+	/* for dumping mles */
-+	dc->debug_mle_dentry = debugfs_create_file(DLM_DEBUGFS_MLE_STATE,
-+						   S_IFREG|S_IRUSR,
-+						   dlm->dlm_debugfs_subroot,
-+						   dlm, &debug_mle_fops);
-+	if (!dc->debug_mle_dentry) {
++	/* for dumping lockres on the purge list */
++	dc->debug_purgelist_dentry =
++			debugfs_create_file(DLM_DEBUGFS_PURGE_LIST,
++					    S_IFREG|S_IRUSR,
++					    dlm->dlm_debugfs_subroot,
++					    dlm, &debug_purgelist_fops);
++	if (!dc->debug_purgelist_dentry) {
 +		mlog_errno(-ENOMEM);
 +		goto bail;
 +	}
@@ -221,24 +174,24 @@ index cccb1ce..6de326b 100644
  	dlm_debug_get(dc);
  	return 0;
  
-@@ -802,6 +919,8 @@ void dlm_debug_shutdown(struct dlm_ctxt *dlm)
+@@ -919,6 +988,8 @@ void dlm_debug_shutdown(struct dlm_ctxt *dlm)
  	struct dlm_debug_ctxt *dc = dlm->dlm_debug_ctxt;
  
  	if (dc) {
-+		if (dc->debug_mle_dentry)
-+			debugfs_remove(dc->debug_mle_dentry);
++		if (dc->debug_purgelist_dentry)
++			debugfs_remove(dc->debug_purgelist_dentry);
+ 		if (dc->debug_mle_dentry)
+ 			debugfs_remove(dc->debug_mle_dentry);
  		if (dc->debug_lockres_dentry)
- 			debugfs_remove(dc->debug_lockres_dentry);
- 		if (dc->debug_state_dentry)
 diff --git a/fs/ocfs2/dlm/dlmdebug.h b/fs/ocfs2/dlm/dlmdebug.h
-index 7c5b2b0..cbc69f2 100644
+index cbc69f2..8857743 100644
 --- a/fs/ocfs2/dlm/dlmdebug.h
 +++ b/fs/ocfs2/dlm/dlmdebug.h
-@@ -31,6 +31,7 @@ struct dlm_debug_ctxt {
- 	struct kref debug_refcnt;
+@@ -32,6 +32,7 @@ struct dlm_debug_ctxt {
  	struct dentry *debug_state_dentry;
  	struct dentry *debug_lockres_dentry;
-+	struct dentry *debug_mle_dentry;
+ 	struct dentry *debug_mle_dentry;
++	struct dentry *debug_purgelist_dentry;
  };
  
  struct debug_buffer {
