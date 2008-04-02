@@ -1,58 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765233AbYDBVxh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932207AbYDBVxx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765233AbYDBVxh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 17:53:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763482AbYDBVqV
+	id S932207AbYDBVxx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 17:53:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764028AbYDBVr5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 17:46:21 -0400
-Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:33685
-	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763483AbYDBVqU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 17:46:20 -0400
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
+	Wed, 2 Apr 2008 17:47:57 -0400
+Received: from xenotime.net ([66.160.160.81]:50527 "HELO xenotime.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1764026AbYDBVr4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Apr 2008 17:47:56 -0400
+Date: Wed, 2 Apr 2008 14:47:50 -0700
+From: Randy Dunlap <rdunlap@xenotime.net>
+To: lkml <linux-kernel@vger.kernel.org>
+Cc: rusty@rustcorp.com.au, akpm <akpm@linux-foundation.org>,
+       mattilinnanvuori@yahoo.com
+Subject: [PATCH] docbook: some kernel-locking fixes
+Message-Id: <20080402144750.4837bf17.rdunlap@xenotime.net>
+Organization: YPO4
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Subject: [PATCH 8 of 8] This patch adds a lock ordering rule to avoid a
-	potential deadlock when
-X-Mercurial-Node: f3f119118b0abd9c4624263ef388dc7230d937fe
-Message-Id: <f3f119118b0abd9c4624.1207171809@duo.random>
-In-Reply-To: <patchbomb.1207171801@duo.random>
-Date: Wed, 02 Apr 2008 23:30:09 +0200
-From: Andrea Arcangeli <andrea@qumranet.com>
-To: akpm@linux-foundation.org
-Cc: Christoph Lameter <clameter@sgi.com>, Jack Steiner <steiner@sgi.com>,
-       Nick Piggin <npiggin@suse.de>, Robin Holt <holt@sgi.com>,
-       Avi Kivity <avi@qumranet.com>, Izik Eidus <izike@qumranet.com>,
-       kvm-devel@lists.sourceforge.net,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, general@lists.openfabrics.org,
-       Steve Wise <swise@opengridcomputing.com>,
-       Roland Dreier <rdreier@cisco.com>, Kanoj Sarcar <kanojsarcar@yahoo.com>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-# HG changeset patch
-# User Andrea Arcangeli <andrea@qumranet.com>
-# Date 1207159059 -7200
-# Node ID f3f119118b0abd9c4624263ef388dc7230d937fe
-# Parent  31fc23193bd039cc595fba1ca149a9715f7d0fb2
-This patch adds a lock ordering rule to avoid a potential deadlock when
-multiple mmap_sems need to be locked.
+From: Matti Linnanvuori <mattilinnanvuori@yahoo.com>
 
-Signed-off-by: Dean Nelson <dcn@sgi.com>
+Fix a wrong path. Add a chapter about try functions.
 
-diff --git a/mm/filemap.c b/mm/filemap.c
---- a/mm/filemap.c
-+++ b/mm/filemap.c
-@@ -79,6 +79,9 @@
-  *
-  *  ->i_mutex			(generic_file_buffered_write)
-  *    ->mmap_sem		(fault_in_pages_readable->do_page_fault)
-+ *
-+ *    When taking multiple mmap_sems, one should lock the lowest-addressed
-+ *    one first proceeding on up to the highest-addressed one.
-  *
-  *  ->i_mutex
-  *    ->i_alloc_sem             (various)
+http://bugzilla.kernel.org/show_bug.cgi?id=9011
+
+Signed-off-by: Matti Linnanvuori <mattilinnanvuori@yahoo.com>
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+
+---
+ Documentation/DocBook/kernel-locking.tmpl |   25 +++++++++++++++++++-
+ 1 file changed, 24 insertions(+), 1 deletion(-)
+
+--- lin2625-rc8-kdoc.orig/Documentation/DocBook/kernel-locking.tmpl
++++ lin2625-rc8-kdoc/Documentation/DocBook/kernel-locking.tmpl
+@@ -290,7 +290,7 @@
+      <para>
+        If you have a data structure which is only ever accessed from
+        user context, then you can use a simple semaphore
+-       (<filename>linux/asm/semaphore.h</filename>) to protect it.  This 
++       (<filename>include/asm/semaphore.h</filename>) to protect it.  This
+        is the most trivial case: you initialize the semaphore to the number 
+        of resources available (usually 1), and call
+        <function>down_interruptible()</function> to grab the semaphore, and 
+@@ -703,6 +703,29 @@
+ </sect1>
+ </chapter>
+ 
++<chapter id="try-variants">
++ <title>The try variants</title>
++
++  <para>
++    <function>spin_trylock()</function> does not spin but returns non-zero if
++    it acquires the spinlock on the first try or 0 if not.
++  </para>
++
++  <para>
++    <function>mutex_trylock()</function> does not suspend your task
++    but returns non-zero if it could lock the mutex on the first try
++    or 0 if not.
++  </para>
++
++  <para>
++    <function>down_trylock()</function> does not suspend your task
++    but returns 0 if it could get the semaphore on the first try or
++    non-zero if not. The return value is the inverse of that of
++    <function>spin_trylock()</function> and <function>mutex_trylock()
++    </function>.
++  </para>
++</chapter>
++
+   <chapter id="Examples">
+    <title>Common Examples</title>
+     <para>
+
+
+---
