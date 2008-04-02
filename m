@@ -1,52 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758915AbYDBTow@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759572AbYDBTrY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758915AbYDBTow (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 15:44:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755487AbYDBTop
+	id S1759572AbYDBTrY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 15:47:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757041AbYDBTrP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 15:44:45 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:51865 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755249AbYDBTop (ORCPT
+	Wed, 2 Apr 2008 15:47:15 -0400
+Received: from eazy.amigager.de ([213.239.192.238]:55167 "EHLO
+	eazy.amigager.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756736AbYDBTrO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 15:44:45 -0400
-Date: Wed, 2 Apr 2008 12:44:05 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Mikulas Patocka <mikulas@artax.karlin.mff.cuni.cz>
-cc: viro@zeniv.linux.org.uk, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH]: Fix SMP-reordering race in mark_buffer_dirty
-In-Reply-To: <Pine.LNX.4.64.0804022058530.13737@artax.karlin.mff.cuni.cz>
-Message-ID: <alpine.LFD.1.00.0804021237031.14670@woody.linux-foundation.org>
-References: <Pine.LNX.4.64.0804022058530.13737@artax.karlin.mff.cuni.cz>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+	Wed, 2 Apr 2008 15:47:14 -0400
+Date: Wed, 2 Apr 2008 21:47:58 +0200
+From: Tino Keitel <tino.keitel@gmx.de>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Pavel Machek <pavel@ucw.cz>, linux-usb@vger.kernel.org,
+       Soeren Sonnenburg <sonne@nn7.de>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Len Brown <lenb@kernel.org>
+Subject: Re: 2.6.25-rc6 hangs at resume after suspend to RAM on Mac mini
+	Core Duo
+Message-ID: <20080402194757.GA5082@dose.home.local>
+Mail-Followup-To: Alan Stern <stern@rowland.harvard.edu>,
+	Pavel Machek <pavel@ucw.cz>, linux-usb@vger.kernel.org,
+	Soeren Sonnenburg <sonne@nn7.de>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	linux-kernel@vger.kernel.org, Len Brown <lenb@kernel.org>
+References: <20080401210617.GA7346@dose.home.local> <Pine.LNX.4.44L0.0804021521260.11421-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.44L0.0804021521260.11421-100000@iolanthe.rowland.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Apr 02, 2008 at 15:26:44 -0400, Alan Stern wrote:
+> On Tue, 1 Apr 2008, Tino Keitel wrote:
+> 
+> > On Tue, Apr 01, 2008 at 17:02:36 -0400, Alan Stern wrote:
+> > > On Tue, 1 Apr 2008, Tino Keitel wrote:
+> > > 
+> > > > On Tue, Apr 01, 2008 at 15:06:51 -0400, Alan Stern wrote:
+> > > > 
+> > > > [...]
+> > > > 
+> > > > > Can you get any information out of the computer after the hang?  It 
+> > > > > would help to see the dmesg log (with CONFIG_USB_DEBUG enabled) and an 
+> > > > > Alt-SysRq-T stack dump.
+> > > > 
+> > > > Looks difficult. The text console stays black after resume, and there
+> > > > is no serial interface.
+> > > 
+> > > Network console?  SSH?  Or even telnet?
+> > 
+> > Network is dead, too.
+> 
+> Tino, try this patch.  It fixed Mark Lord's problem, which looked the 
+> same as yours.
 
+Fine, it seems to solve the hang, I see no problems after the resume.
+Thanks a lot.
 
-On Wed, 2 Apr 2008, Mikulas Patocka wrote:
-> +	/*
-> +	 * Make sure that the test for buffer_dirty(bh) is not reordered with
-> +	 * previous modifications to the buffer data.
-> +	 * -- mikulas
-> +	 */
-> +	smp_mb();
->  	WARN_ON_ONCE(!buffer_uptodate(bh));
->  	if (!buffer_dirty(bh) && !test_set_buffer_dirty(bh))
-
-At that point, the better patch is to just *remove* the buffer_dirty() 
-test, and rely on the stronger ordering requirements of 
-test_set_buffer_dirty().
-
-The whole - and only - point of the buffer_dirty() check was to avoid the 
-more expensive test_set_buffer_dirty() call, but it's only more expensive 
-because of the barrier semantics. So if you add a barrier, the point goes 
-away and you should instead remove the optimization.
-
-(I also seriously doubt you can actually trigger this in real life, but 
-simplifying the code is probably fine regardless).
-
-		Linus
+Regards,
+Tino
