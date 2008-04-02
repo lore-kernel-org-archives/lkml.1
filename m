@@ -1,110 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760265AbYDBGkt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759990AbYDBGn2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760265AbYDBGkt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 02:40:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752235AbYDBGkm
+	id S1759990AbYDBGn2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 02:43:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752068AbYDBGnU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 02:40:42 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:39421 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752888AbYDBGkl (ORCPT
+	Wed, 2 Apr 2008 02:43:20 -0400
+Received: from rv-out-0910.google.com ([209.85.198.186]:63878 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751651AbYDBGnT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 02:40:41 -0400
-Date: Tue, 1 Apr 2008 23:39:09 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       Andy Whitcroft <apw@shadowen.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Badari Pulavarty <pbadari@us.ibm.com>
-Subject: Re: [BUG] 2.6.25-rc8-mm1 kernel panic while bootup on powerpc
-Message-Id: <20080401233909.23220623.akpm@linux-foundation.org>
-In-Reply-To: <47F326E0.3010604@linux.vnet.ibm.com>
-References: <20080401213214.8fbb6d6b.akpm@linux-foundation.org>
-	<47F326E0.3010604@linux.vnet.ibm.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 2 Apr 2008 02:43:19 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=message-id:date:from:sender:to:subject:cc:mime-version:content-type:x-google-sender-auth;
+        b=YepbAl5ByMbzmyg9Osq3Kk8lP5MqIF1Rwj/z6pZ1O763rf4fQmXKXQJ8ew63041oZ/K61v2JnlktXev2pMpomYWljc69Up/YH1Gq9Ns4jsOI72+qiH0Ava1sCxNfEOaXWMAPaWkGgdFOiyKAJGA2+WJZ2uFK2igw4Ft31N5QWcA=
+Message-ID: <76366b180804012343m629320e9p2c76ec0c900a6450@mail.gmail.com>
+Date: Wed, 2 Apr 2008 02:43:19 -0400
+From: "Andrew Paprocki" <andrew@ishiboo.com>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] [WATCHDOG] it8712f_wdt Zero MSB timeout byte when disabling watchdog
+Cc: "Wim Van Sebroeck" <wim@iguana.be>, "Oliver Schuster" <olivers137@aol.com>
+MIME-Version: 1.0
+Content-Type: multipart/mixed; 
+	boundary="----=_Part_227_26663682.1207118599286"
+X-Google-Sender-Auth: 158e096e9080682a
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 02 Apr 2008 11:55:36 +0530 Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
+------=_Part_227_26663682.1207118599286
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-> Hi Andrew,
-> 
-> The 2.6.25-rc8-mm1 kernel panic's while bootup on the power machine(s).
-> 
-> [    0.000000] ------------[ cut here ]------------
-> [    0.000000] kernel BUG at arch/powerpc/mm/init_64.c:240!
-> [    0.000000] Oops: Exception in kernel mode, sig: 5 [#1]
-> [    0.000000] SMP NR_CPUS=32 NUMA PowerMac
-> [    0.000000] Modules linked in:
-> [    0.000000] NIP: c0000000003d1dcc LR: c0000000003d1dc4 CTR: c00000000002b6ac
-> [    0.000000] REGS: c00000000049b960 TRAP: 0700   Not tainted  (2.6.25-rc8-mm1-autokern1)
-> [    0.000000] MSR: 9000000000021032 <ME,IR,DR>  CR: 44000088  XER: 20000000
-> [    0.000000] TASK = c0000000003f9c90[0] 'swapper' THREAD: c000000000498000 CPU: 0
-> [    0.000000] GPR00: c0000000003d1dc4 c00000000049bbe0 c0000000004989d0 0000000000000001 
-> [    0.000000] GPR04: d59aca40f0000000 000000000b000000 0000000000000010 0000000000000000 
-> [    0.000000] GPR08: 0000000000000004 0000000000000001 c00000027e520800 c0000000004bf0f0 
-> [    0.000000] GPR12: c0000000004bf020 c0000000003fa900 0000000000000000 0000000000000000 
-> [    0.000000] GPR16: 0000000000000000 0000000000000000 0000000000000000 0000000000000000 
-> [    0.000000] GPR20: 0000000000000000 0000000000000000 0000000000000000 4000000001400000 
-> [    0.000000] GPR24: 00000000017d64b0 c0000000003d6250 0000000000000000 c000000000504000 
-> [    0.000000] GPR28: 0000000000000000 cf000000001f8000 0000000001000000 cf00000000000000 
-> [    0.000000] NIP [c0000000003d1dcc] .vmemmap_populate+0xb8/0xf4
-> [    0.000000] LR [c0000000003d1dc4] .vmemmap_populate+0xb0/0xf4
-> [    0.000000] Call Trace:
-> [    0.000000] [c00000000049bbe0] [c0000000003d1dc4] .vmemmap_populate+0xb0/0xf4 (unreliable)
-> [    0.000000] [c00000000049bc70] [c0000000003d2ee8] .sparse_mem_map_populate+0x38/0x60
-> [    0.000000] [c00000000049bd00] [c0000000003c242c] .sparse_early_mem_map_alloc+0x54/0x94
-> [    0.000000] [c00000000049bd90] [c0000000003c250c] .sparse_init+0xa0/0x20c
-> [    0.000000] [c00000000049be50] [c0000000003ab7d0] .setup_arch+0x1ac/0x218
-> [    0.000000] [c00000000049bee0] [c0000000003a36ac] .start_kernel+0xe0/0x3fc
-> [    0.000000] [c00000000049bf90] [c000000000008594] .start_here_common+0x54/0xc0
-> [    0.000000] Instruction dump:
-> [    0.000000] 7fe3fb78 7ca02a14 4082000c 3860fff4 4800003c e92289c8 e96289c0 e9090002 
-> [    0.000000] e8eb0002 4bc575cd 60000000 78630fe0 <0b030000> 7ffff214 7fbfe840 7fe3fb78 
-> [    0.000000] ---[ end trace 31fd0ba7d8756001 ]---
-> [    0.000000] Kernel panic - not syncing: Attempted to kill the idle task!
-> 
+I noticed this while testing the latest code. I'm not sure if it is required,
+but the normal (or LSB) timeout value is set to zero, so the MSB should
+be as well to stay consistent.
 
-int __meminit vmemmap_populate(struct page *start_page,
-					unsigned long nr_pages, int node)
-{
-	unsigned long mode_rw;
-	unsigned long start = (unsigned long)start_page;
-	unsigned long end = (unsigned long)(start_page + nr_pages);
-	unsigned long page_size = 1 << mmu_psize_defs[mmu_linear_psize].shift;
+If the chip revision is >= 8, set MSB of the 16-bit timeout value to zero
+when disabling the watchdog in it8712f_wdt_disable().
 
-	mode_rw = _PAGE_ACCESSED | _PAGE_DIRTY | _PAGE_COHERENT | PP_RWXX;
+Signed-off-by: Andrew Paprocki <andrew@ishiboo.com>
 
-	/* Align to the page size of the linear mapping. */
-	start = _ALIGN_DOWN(start, page_size);
+------=_Part_227_26663682.1207118599286
+Content-Type: text/plain; name=2.6.25-rc8-it8712f_wdt-zero-timeout.txt
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_fejj6b6d1
+Content-Disposition: attachment;
+ filename=2.6.25-rc8-it8712f_wdt-zero-timeout.txt
 
-	for (; start < end; start += page_size) {
-		int mapped;
-		void *p;
-
-		if (vmemmap_populated(start, page_size))
-			continue;
-
-		p = vmemmap_alloc_block(page_size, node);
-		if (!p)
-			return -ENOMEM;
-
-		pr_debug("vmemmap %08lx allocated at %p, physical %08lx.\n",
-			start, p, __pa(p));
-
-		mapped = htab_bolt_mapping(start, start + page_size,
-					__pa(p), mode_rw, mmu_linear_psize,
-					mmu_kernel_ssize);
-=====>		BUG_ON(mapped < 0);
-	}
-
-	return 0;
-}
-
-Beats me.  pseries?  Badari has been diddling with the bolted memory code
-in git-powerpc...
+RGF0ZTogV2VkLCAyIEFwciAyMDA4IDAyOjIzOjMzIC0wNDAwClN1YmplY3Q6IFtQQVRDSF0gW1dB
+VENIRE9HXSBpdDg3MTJmX3dkdCBaZXJvIE1TQiB0aW1lb3V0IGJ5dGUgd2hlbiBkaXNhYmxpbmcg
+d2F0Y2hkb2cKCklmIHRoZSBjaGlwIHJldmlzaW9uIGlzID49IDgsIHNldCBNU0Igb2YgdGhlIDE2
+LWJpdCB0aW1lb3V0IHZhbHVlIHRvIHplcm8Kd2hlbiBkaXNhYmxpbmcgdGhlIHdhdGNoZG9nIGlu
+IGl0ODcxMmZfd2R0X2Rpc2FibGUoKS4KClNpZ25lZC1vZmYtYnk6IEFuZHJldyBQYXByb2NraSA8
+YW5kcmV3QGlzaGlib28uY29tPgotLS0KIGRyaXZlcnMvd2F0Y2hkb2cvaXQ4NzEyZl93ZHQuYyB8
+ICAgIDIgKysKIDEgZmlsZXMgY2hhbmdlZCwgMiBpbnNlcnRpb25zKCspLCAwIGRlbGV0aW9ucygt
+KQoKZGlmZiAtLWdpdCBhL2RyaXZlcnMvd2F0Y2hkb2cvaXQ4NzEyZl93ZHQuYyBiL2RyaXZlcnMv
+d2F0Y2hkb2cvaXQ4NzEyZl93ZHQuYwppbmRleCBjYTkwYzUxLi40NDViN2U4IDEwMDY0NAotLS0g
+YS9kcml2ZXJzL3dhdGNoZG9nL2l0ODcxMmZfd2R0LmMKKysrIGIvZHJpdmVycy93YXRjaGRvZy9p
+dDg3MTJmX3dkdC5jCkBAIC0yMDAsNiArMjAwLDggQEAgaXQ4NzEyZl93ZHRfZGlzYWJsZSh2b2lk
+KQogCiAJc3VwZXJpb19vdXRiKDAsIFdEVF9DT05GSUcpOwogCXN1cGVyaW9fb3V0YigwLCBXRFRf
+Q09OVFJPTCk7CisJaWYgKHJldmlzaW9uID49IDB4MDgpCisJCXN1cGVyaW9fb3V0YigwLCBXRFRf
+VElNRU9VVCArIDEpOwogCXN1cGVyaW9fb3V0YigwLCBXRFRfVElNRU9VVCk7CiAKIAlzdXBlcmlv
+X2V4aXQoKTsKLS0gCjEuNC40LjQKCg==
+------=_Part_227_26663682.1207118599286--
