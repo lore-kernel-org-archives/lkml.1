@@ -1,66 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759572AbYDBTrY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760048AbYDBTsU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759572AbYDBTrY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 15:47:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757041AbYDBTrP
+	id S1760048AbYDBTsU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 15:48:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757922AbYDBTsJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 15:47:15 -0400
-Received: from eazy.amigager.de ([213.239.192.238]:55167 "EHLO
-	eazy.amigager.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756736AbYDBTrO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 15:47:14 -0400
-Date: Wed, 2 Apr 2008 21:47:58 +0200
-From: Tino Keitel <tino.keitel@gmx.de>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Pavel Machek <pavel@ucw.cz>, linux-usb@vger.kernel.org,
-       Soeren Sonnenburg <sonne@nn7.de>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Len Brown <lenb@kernel.org>
-Subject: Re: 2.6.25-rc6 hangs at resume after suspend to RAM on Mac mini
-	Core Duo
-Message-ID: <20080402194757.GA5082@dose.home.local>
-Mail-Followup-To: Alan Stern <stern@rowland.harvard.edu>,
-	Pavel Machek <pavel@ucw.cz>, linux-usb@vger.kernel.org,
-	Soeren Sonnenburg <sonne@nn7.de>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	linux-kernel@vger.kernel.org, Len Brown <lenb@kernel.org>
-References: <20080401210617.GA7346@dose.home.local> <Pine.LNX.4.44L0.0804021521260.11421-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.0804021521260.11421-100000@iolanthe.rowland.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Wed, 2 Apr 2008 15:48:09 -0400
+Received: from c60.cesmail.net ([216.154.195.49]:62281 "EHLO c60.cesmail.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758048AbYDBTsI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Apr 2008 15:48:08 -0400
+Subject: Re: New IWL4935 driver for Intel Wireless Cards does not support
+	WPA2 wireless network with PEAP - MSCHAPV2
+From: Pavel Roskin <proski@gnu.org>
+To: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
+Cc: Luca Venturini <lucventurini@gmail.com>, linux-kernel@vger.kernel.org,
+       linux-wireless@vger.kernel.org
+In-Reply-To: <20080402122440.GA24239@csclub.uwaterloo.ca>
+References: <47F1F4F4.2080502@gmail.com>
+	 <20080401164419.GA3530@tuxdriver.com>
+	 <5d75f4610804011306y55352e73sb5223a294b66f2cf@mail.gmail.com>
+	 <47F2A2F0.4060908@gmail.com>
+	 <20080401205435.iov001h7gxs0o8sc@webmail.spamcop.net>
+	 <20080402122440.GA24239@csclub.uwaterloo.ca>
+Content-Type: text/plain
+Date: Wed, 02 Apr 2008 15:48:05 -0400
+Message-Id: <1207165685.7840.5.camel@dv>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-3.fc8) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 02, 2008 at 15:26:44 -0400, Alan Stern wrote:
-> On Tue, 1 Apr 2008, Tino Keitel wrote:
-> 
-> > On Tue, Apr 01, 2008 at 17:02:36 -0400, Alan Stern wrote:
-> > > On Tue, 1 Apr 2008, Tino Keitel wrote:
-> > > 
-> > > > On Tue, Apr 01, 2008 at 15:06:51 -0400, Alan Stern wrote:
-> > > > 
-> > > > [...]
-> > > > 
-> > > > > Can you get any information out of the computer after the hang?  It 
-> > > > > would help to see the dmesg log (with CONFIG_USB_DEBUG enabled) and an 
-> > > > > Alt-SysRq-T stack dump.
-> > > > 
-> > > > Looks difficult. The text console stays black after resume, and there
-> > > > is no serial interface.
-> > > 
-> > > Network console?  SSH?  Or even telnet?
-> > 
-> > Network is dead, too.
-> 
-> Tino, try this patch.  It fixed Mark Lord's problem, which looked the 
-> same as yours.
+On Wed, 2008-04-02 at 08:24 -0400, Lennart Sorensen wrote:
 
-Fine, it seems to solve the hang, I see no problems after the resume.
-Thanks a lot.
+> Strangely I find with the 2.6.24 kernel currently in Debian, the intel
+> wireless seemed to work great with WPA2 (at least on a 4965).  Maybe
+> that was 2.6.24.2 or 2.6.24.3 or something.  It was a couple of weeks
+> ago now.  I haven't heard of the 4935 before.
 
+Since nobody has mentioned that, it's possible to compile the latest
+wireless drivers for the current kernel (starting with 2.6.18) thanks to
+the compat-wireless package:
+
+http://linuxwireless.org/en/users/Download
+
+That should be of great help for those looking to use the latest
+wireless drivers without having to recompile the currently used kernel.
+
+-- 
 Regards,
-Tino
+Pavel Roskin
