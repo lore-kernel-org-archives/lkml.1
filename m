@@ -1,54 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754747AbYDBHbd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753223AbYDBHgu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754747AbYDBHbd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 03:31:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752104AbYDBHbN
+	id S1753223AbYDBHgu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 03:36:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751885AbYDBHgm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 03:31:13 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:2063 "EHLO kernel.dk"
+	Wed, 2 Apr 2008 03:36:42 -0400
+Received: from frosty.hhs.nl ([145.52.2.15]:55386 "EHLO frosty.hhs.nl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751967AbYDBHbM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 03:31:12 -0400
-Date: Wed, 2 Apr 2008 09:31:08 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Pekka J Enberg <penberg@cs.helsinki.fi>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Vegard Nossum <vegard.nossum@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Subject: Re: kmemcheck caught read from freed memory (cfq_free_io_context)
-Message-ID: <20080402073108.GL12774@kernel.dk>
-References: <19f34abd0804011408v19e13b6cje1ca89a2a471484c@mail.gmail.com> <1207085788.29991.6.camel@lappy> <20080402071709.GC12774@kernel.dk> <Pine.LNX.4.64.0804021020280.25738@sbz-30.cs.Helsinki.FI> <20080402072456.GI12774@kernel.dk> <20080402072846.GA16454@elte.hu>
+	id S1751421AbYDBHgl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Apr 2008 03:36:41 -0400
+X-Greylist: delayed 1421 seconds by postgrey-1.27 at vger.kernel.org; Wed, 02 Apr 2008 03:36:41 EDT
+Message-ID: <47F32F4F.2030702@hhs.nl>
+Date: Wed, 02 Apr 2008 09:01:35 +0200
+From: Hans de Goede <j.w.r.degoede@hhs.nl>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080303)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080402072846.GA16454@elte.hu>
+To: Alan Stern <stern@rowland.harvard.edu>
+CC: Boaz Harrosh <bharrosh@panasas.com>, Oliver Neukum <oliver@neukum.org>,
+       Sergey Dolgov <solkaa@gmail.com>, linux-kernel@vger.kernel.org,
+       linux-usb@vger.kernel.org
+Subject: Re: usb-storage, error reading the last 8 sectors, regression in
+ 2.6.25-rc7
+References: <Pine.LNX.4.44L0.0804011659500.9362-100000@netrider.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0804011659500.9362-100000@netrider.rowland.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Anti-Virus: Kaspersky Anti-Virus for MailServers 5.5.2/RELEASE, bases: 02042008 #608293, status: clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 02 2008, Ingo Molnar wrote:
+Alan Stern wrote:
+> On Tue, 1 Apr 2008, Hans de Goede wrote:
 > 
-> * Jens Axboe <jens.axboe@oracle.com> wrote:
+>> Reverting the patch is easy, edit drivers/usb/storage/scsiglue.c and remove the 
+>> following line:
+>> "                sdev->last_sector_bug = 1;"
+>>
+>> Which should be close to line 193 (it is 193 in my source tree, but thats a bit 
+>> stale).
+>>
+>>> The old way was not necessarily correct for this type of device bug. Only
+>>> that it had a very high chance of not appearing.
+>>>
+>>> When discussing the last bug, it was said to enable it by default for USB
+>>> instead of using blacklists. It looks like this bug, or the other, needs a
+>>> blacklist.
+>>>
+>> If the splitting of the request is the cause, yes then it looks like that.
+>>
+>>> But to me it looks like this is a 4k thing. I think Windows will always
+>>> use 4k for FAT, though never triggering either of the bugs.
+>>>
+>> I'm pretty sure the last sector must only be read by itself bug (for lack of a 
+>> better name) is present under windows too, but won't be triggered as windows 
+>> normally doesn't access the last sector, where as various pieces of Linux 
+>> routinely probe the end of the disk, for detection of exotic partition types/ 
+>> disklabes.etc.
+>>
+>>> The one submitting the last sector patch was, I think, Hans de Goede (CCed)
+>>> Hans ?
+>> Correct I wrote the split up requests which touch the last sector changes to 
+>> the scsi disk handling, and a seperate patch to always set the flag which 
+>> enables the splitting for usb disks.
+>>
+>>>   If I read last 8 sectors (4k) on a device that exhibits the "last sector bug"
+>>>   Does it work? (Is 8 a magic number here)
+>>>
+>> I just tried and I'm afraid not, an 8 sector read which includes at the last 
+>> sector completely kills the device, no other transfers to / from the device 
+>> will work until the sdcard is removed and reinserted (the troublesome device is 
+>> a card reader build into a multi function printer, one gets what one pays for).
 > 
-> > On Wed, Apr 02 2008, Pekka J Enberg wrote:
-> > > On Wed, 2 Apr 2008, Jens Axboe wrote:
-> > > > Good catch, I wonder why it didn't complain in my testing. I've added a
-> > > > patch to fix that, please see it here:
-> > > 
-> > > You probably don't have kmemcheck in your kernel ;-)
-> > 
-> > Ehm no, you are right :)
+> It sounds like the last_sector_bug setting should be conditional on a 
+> blacklist entry.  As far as I know it affects only a small proportion 
+> of devices; most are fine with multi-sector reads at the end.
 > 
-> ... and you can get kmemcheck by testing on x86.git/latest:
-> 
->   http://people.redhat.com/mingo/x86.git/README
-> 
-> ;-)
 
-Thanks Ingo, I'll give it a spin to verify this fix!
+Maybe we should first determine that the regression is _really_ caused by this?
 
--- 
-Jens Axboe
+When testing yesterday I did a printk of any (unmodified) reads which would 
+touch the last sector and quite a few where not 8 sector reads, so if this 
+devices goes barf on any last sector including read of a different size then 8, 
+it will have troubles without the work around too.
+
+First we need to determine what _exactly_ causes this device to become unhappy 
+(which should be trivial to test through dd), if I understand things sofar, the 
+device doesn't like if a read is done which stops one sector short of the last 
+sector. Such  a read being done could happen without my split requests code 
+too, so making that conditional then wouldn't do any good, it would only make 
+the bug (much) less likely to get triggered, but it could still happen en 
+probably be reproduced by a trivial dd command.
+
+Regards,
+
+Hans
 
