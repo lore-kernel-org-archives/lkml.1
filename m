@@ -1,80 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759324AbYDBGUX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759587AbYDBGWV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759324AbYDBGUX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 02:20:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751715AbYDBGUL
+	id S1759587AbYDBGWV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 02:22:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751724AbYDBGWI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 02:20:11 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:43082 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751628AbYDBGUK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 02:20:10 -0400
-Date: Wed, 2 Apr 2008 01:20:06 -0500
-From: Paul Jackson <pj@sgi.com>
-To: Mike Travis <travis@sgi.com>
-Cc: mingo@elte.hu, tglx@linutronix.de, hpa@zytor.com,
+	Wed, 2 Apr 2008 02:22:08 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:54150 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751628AbYDBGWG (ORCPT
+	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
+	Wed, 2 Apr 2008 02:22:06 -0400
+Date: Wed, 2 Apr 2008 16:21:47 +1000
+From: David Chinner <dgc@sgi.com>
+To: Takashi Sato <t-sato@yk.jp.nec.com>
+Cc: David Chinner <dgc@sgi.com>, linux-ext4@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, xfs@oss.sgi.com, dm-devel@redhat.com,
        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/3] x86: add cpuset_scnprintf function
-Message-Id: <20080402012006.1722c2bd.pj@sgi.com>
-In-Reply-To: <20080401225422.064890000@polaris-admin.engr.sgi.com>
-References: <20080401225422.064890000@polaris-admin.engr.sgi.com>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
+Subject: Re: [RFC PATCH 2/2] Add timeout feature
+Message-ID: <20080402062147.GH103491721@sgi.com>
+References: <20080328180736t-sato@mail.jp.nec.com> <20080331000057.GI108924158@sgi.com> <2530BB4B166747659C8F65C9C3DE7CFB@nsl.ad.nec.co.jp>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <2530BB4B166747659C8F65C9C3DE7CFB@nsl.ad.nec.co.jp>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hmmm ... my apologies, Mike, if I overlooked some earlier discussion
-of this patchset on one of the other more limited email threads that
-we share ... however a couple of aspects of this patchset don't fit
-so well for me.
- 1) I'm surprised to see this new routine called 'cpuset_scnprintf'
-    (with the "cpuset" prefix), rather than a variant of a trio of
-    names with prefixes of bitmap_, cpumask_, and nodemask_, like
-    the other print routines in the bitmap family.  This doesn't
-    seem to be a cpuset function to me, but a bitmap (and derived
-    types cpumask and nodemask) printing function.
- 2) The idea of the patch, that being a kernel modal flag that if
-    set, changes a few particular details of the kernel API for all,
-    seems like something I'd rarely want to do, unless I was really
-    short of other options.  It leads to one app breaking another
-    as a result of changing this mode, and to head butting between
-    apps which cannot agree on how to set the mode.  And it introduces
-    the option of breaking an existing API, which is seldom a good
-    option.
+On Tue, Apr 01, 2008 at 07:54:42PM +0900, Takashi Sato wrote:
+> Hi,
+> 
+> David Chinner wrote:
+> >The timeout is not for the freeze operation - the timeout is
+> >only set up once the freeze is complete. i.e:
+> >
+> >$ time sudo ~/test_src/xfs_io -f -x -c 'gfreeze 10' /mnt/scratch/test
+> >freezing with level = 10
+> >
+> >real    0m23.204s
+> >user    0m0.008s
+> >sys     0m0.012s
+> >
+> >The freeze takes 23s, and then the 10s timeout is started. So
+> >this timeout does not protect against freeze_bdev() hangs at all.
+> >All it does is introduce silent unfreezing of the block device that
+> >can not be synchronised with the application that is operating
+> >on the frozen device.
+> 
+> Exactly my timeout feature is only for an application, not for 
+> freeze_bdev().
+> I think it is needed for the situation we can't unfreeze from userspace.
+> (e.g. Freezing the root filesystem)
 
-I tried reading the opening "discussion that led up" comments you
-posted, but couldn't find any overwhelming problem that had to be
-solved of sufficient magnitude and quandry of sufficient difficulty
-to justify the API conflicts and breakage in (2) above.  I did find
-this comment, apparently by Bert Wesarg (though that's not clear
-from your presentation):
+Ummm - why can't you unfreeze the root fs from userspace? freezing
+only prevents modification to the filesystem. A frozen filesystem is
+effectively a read-only filesystem...
 
->  If you change the format, the brown-paper-bag is yours.
+On XFS:
 
-I don't see a compelling response to the above comment.
+# xfs_freeze -f /
+# echo $?
+0
+# xfs_freeze -u /
+# echo $?
+0
 
-Granted, what you've done isn't outright changing the format.  Rather it
-is handing user space a means to change the format system-wide.
+The underlying filesystem is broken w.r.t. freezing if you can't
+read from it successfully once it's been frozen....
 
-However doing this is worse in my view than simply breaking the format
-outright, unilaterally and irrevocably.  If you just flat out stick a
-fork in an API and break it hard on some release, then at least user
-space knows that it must adapt or die at that version.  If you hand
-user space the means to break that API, then any properly and
-defensively written user code has to be prepared to deal with both API
-flavors, and the majority of user space code is broken half the time,
-when run on a system with the API variant it wasn't expecting.  More
-over, you end up with apps having "toilet seat wars" with each other:
-you left it up and it should be down; no you left it down and it should
-be up.  Not a pretty sight.
+> >FWIW, resetting this timeout from userspace is unreliable - there's
+> >no guarantee that under load your userspace process will get to run
+> >again inside the timeout to reset it, hence leaving you with a
+> >unfrozen filesystem when you really want it frozen...
+> 
+> The timeout period specified to the reset ioctl should be much larger than
+> the interval for calling the reset ioctl repeatedly.
+> (e.g timeout period = 2 minutes, calling interval = 5 seconds)
 
-Perhaps I totally misunderstand this patchset ?
+What application developer will ever use this?
 
+> The reset ioctl will work under such setting.
+> If a timeout still occurs before a reset, it would imply that an unexpected
+> problem (e.g. deadlock) occur in an application.
+
+Right - the application is broken and needs fixing.  We don't need
+to supply a crutch in a "new" API to support hypothetically broken
+applications that don't actually exist yet.
+
+Cheers,
+
+Dave.
 -- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.940.382.4214
+Dave Chinner
+Principal Engineer
+SGI Australian Software Group
