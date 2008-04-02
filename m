@@ -1,45 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760046AbYDBWMp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761480AbYDBWOS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760046AbYDBWMp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 18:12:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755222AbYDBWMh
+	id S1761480AbYDBWOS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 18:14:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755058AbYDBWOF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 18:12:37 -0400
-Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:50784
-	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752846AbYDBWMg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 18:12:36 -0400
-Date: Thu, 3 Apr 2008 00:12:28 +0200
-From: Andrea Arcangeli <andrea@qumranet.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Hugh Dickins <hugh@veritas.com>, Robin Holt <holt@sgi.com>,
-       Avi Kivity <avi@qumranet.com>, Izik Eidus <izike@qumranet.com>,
-       kvm-devel@lists.sourceforge.net,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, general@lists.openfabrics.org,
-       Steve Wise <swise@opengridcomputing.com>,
-       Roland Dreier <rdreier@cisco.com>, Kanoj Sarcar <kanojsarcar@yahoo.com>,
-       steiner@sgi.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       daniel.blueman@quadrics.com
-Subject: Re: [patch 5/9] Convert anon_vma lock to rw_sem and refcount
-Message-ID: <20080402221228.GX19189@duo.random>
-References: <20080401205531.986291575@sgi.com> <20080401205636.777127252@sgi.com> <20080402175058.GR19189@duo.random> <Pine.LNX.4.64.0804021107520.27337@schroedinger.engr.sgi.com> <20080402215604.GU19189@duo.random> <Pine.LNX.4.64.0804021455180.31247@schroedinger.engr.sgi.com>
+	Wed, 2 Apr 2008 18:14:05 -0400
+Received: from gw.goop.org ([64.81.55.164]:54855 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752375AbYDBWOD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Apr 2008 18:14:03 -0400
+Message-ID: <47F404F1.30103@goop.org>
+Date: Wed, 02 Apr 2008 15:13:05 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080315)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0804021455180.31247@schroedinger.engr.sgi.com>
+To: Dave Hansen <dave@linux.vnet.ibm.com>
+CC: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Yasunori Goto <y-goto@jp.fujitsu.com>,
+       Christoph Lameter <clameter@sgi.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Anthony Liguori <anthony@codemonkey.ws>, Mel Gorman <mel@csn.ul.ie>
+Subject: Re: [PATCH RFC] hotplug-memory: refactor online_pages to separate
+ zone growth from page onlining
+References: <47ED8685.9040409@goop.org>	 <1206751622.27091.20.camel@nimitz.home.sr71.net>	 <47EDA4B9.6030801@goop.org>	 <1206806774.31896.27.camel@nimitz.home.sr71.net>	 <47EED683.5030200@goop.org>	 <1206981741.31896.51.camel@nimitz.home.sr71.net>	 <47F1282E.3020503@goop.org>	 <1207161962.23710.23.camel@nimitz.home.sr71.net>	 <47F3D5D9.1010301@goop.org>	 <1207162792.23710.28.camel@nimitz.home.sr71.net>	 <47F3F4A0.9010009@goop.org>	 <1207171050.23710.48.camel@nimitz.home.sr71.net>	 <47F3FC2E.7090806@goop.org> <1207172610.23710.55.camel@nimitz.home.sr71.net>
+In-Reply-To: <1207172610.23710.55.camel@nimitz.home.sr71.net>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 02, 2008 at 02:56:25PM -0700, Christoph Lameter wrote:
-> I am a bit surprised that brk performance is that important. There may be 
+Dave Hansen wrote:
+> On Wed, 2008-04-02 at 14:35 -0700, Jeremy Fitzhardinge wrote:
+>   
+>> Dave Hansen wrote:
+>>     
+>>> Oh, once we've let Linux establish ptes to it, we've required that the
+>>> hypervisor have it around?  How does that work with the balloon driver?
+>>> Do we destroy the ptes when giving balloon memory back to the
+>>> hypervisor?
+>>>       
+>> Yep.  It removes any mapping before handing it back to the hypervisor.
+>>     
+>
+> Wow.  So does Xen ever use PSE to map kernel data?  That sucks.
+>   
 
-I think it's not brk but fork that is being slowed down, did you
-oprofile? AIM forks a lot... The write side fast path generating the
-overscheduling I guess is when the new vmas are created for the child
-and queued in the parent anon-vma in O(1), so immediate, even
-preempt-rt would be ok with it spinning and not scheduling, it's just
-a list_add (much faster than schedule() indeed). Every time there's a
-collision when multiple child forks simultaneously and they all try to
-queue in the same anon-vma, things will slowdown.
+Not at present.  But I'd like to change it to manage memory in largepage 
+chunks so that we can.
+
+> Yeah, but I'm just talking about hotplugged memory.  When we add it, we
+> don't have to map the added pages (since they're highmem) and don't have
+> to touch their contents and zero them out, either.  Then, the balloon
+> driver can notice that the memory is too large, and start to balloon it
+> down.
+>   
+
+I didn't think x86-64 had a notion of highmem.
+
+How do you prevent the pages from being used before they're ballooned out?
+
+>> Everything also applies to x86-64.
+>>     
+>
+> Not really, though.  We don't have the page->flags shortage or lack of
+> vmemmap on x86_64.
+
+Right now, I'd rather have a single mechanism that works for both.
+
+    J
