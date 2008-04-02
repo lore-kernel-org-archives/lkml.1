@@ -1,30 +1,33 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759143AbYDBRhP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758765AbYDBRiV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759143AbYDBRhP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 13:37:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756072AbYDBRhA
+	id S1758765AbYDBRiV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 13:38:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756263AbYDBRiK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 13:37:00 -0400
-Received: from relay2.sgi.com ([192.48.171.30]:41462 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754750AbYDBRg7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 13:36:59 -0400
-Date: Wed, 2 Apr 2008 12:36:55 -0500
-From: Paul Jackson <pj@sgi.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: ying.huang@intel.com, andi@firstfloor.org, mingo@redhat.com,
-       tglx@linutronix.de, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/4] x86_64 boot -v2: Add linked list of struct
- setup_data
-Message-Id: <20080402123655.2e316352.pj@sgi.com>
-In-Reply-To: <47F3B6B6.9010802@zytor.com>
-References: <1206672584.13404.25.camel@caritas-dev.intel.com>
-	<20080329233155.ee909a04.pj@sgi.com>
-	<1206924877.21451.6.camel@caritas-dev.intel.com>
-	<20080402023947.d4d43f7d.pj@sgi.com>
-	<47F3B6B6.9010802@zytor.com>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
+	Wed, 2 Apr 2008 13:38:10 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:54288 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756072AbYDBRiI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Apr 2008 13:38:08 -0400
+Date: Wed, 2 Apr 2008 10:33:55 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Chris Snook <csnook@redhat.com>, Dave Jones <davej@codemonkey.org.uk>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       NetDev <netdev@vger.kernel.org>, David Miller <davem@davemloft.net>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: GFP_ATOMIC page allocation failures.
+Message-Id: <20080402103355.77ef22ff.akpm@linux-foundation.org>
+In-Reply-To: <47F3C0A8.9090300@garzik.org>
+References: <20080401235609.GA6947@codemonkey.org.uk>
+	<200804021228.16875.nickpiggin@yahoo.com.au>
+	<20080402013551.GA8361@codemonkey.org.uk>
+	<47F32789.2070703@redhat.com>
+	<20080402005646.f8df1c1b.akpm@linux-foundation.org>
+	<47F3C0A8.9090300@garzik.org>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -32,18 +35,48 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-hpa wrote:
-> It is usually handy to have an ID to use as ignore, or not present, and 
-> for that to be zero.
+On Wed, 02 Apr 2008 13:21:44 -0400 Jeff Garzik <jeff@garzik.org> wrote:
 
-Sometimes handy - if needed for specific reasons.
+> Andrew Morton wrote:
+> > The appropriate thing to do here is to convert known-good drivers (such as
+> > e1000[e]) to use __GFP_NOWARN.
+> > 
+> > Unfortunately netdev_alloc_skb() went and assumed GFP_ATOMIC, but I guess
+> > we can dive below the covers and use __netdev_alloc_skb():
+> > 
+> > 
+> > 
+> > From: Andrew Morton <akpm@linux-foundation.org>
+> > 
+> > We get rather a lot of reports of page allocation warnings coming out of
+> > e1000.  But this driver is know to handle them properly so let's suppress
+> > them.
+> 
+> 
+> Do you people hear what you're saying???
+> 
+> I respectfully but strongly disagree with this.
+> 
+> We do __not__ need a whitelist (__GFP_NOWARN) of drivers that handle 
+> allocation failures properly.  That's a long list, a maintenance 
+> nightmare, and it is punishing good behavior.
+> 
+> It has been true for over a decade that allocations should be checked 
+> for NULL, and GFP_ATOMIC allocations MUST be checked for NULL.
+> 
+> Let's not crap all over good drivers, because a few bad apples don't 
+> have the proper checks.
+> 
+> Or at the very least, this TOTALLY BOGUS spew from working drivers 
+> should not be foisted upon users.  Every time a working driver complains 
+> about this -- as in the examples here -- the value of the warning 
+> decreases to noise.
+> 
+> And the solution to noise is not _more noise_ (adding 'nowarn' to every 
+> damn driver in the kernel).
+> 
 
-But many enumerations (enum or #define constants) in
-the kernel have no such NONE/ignore/not-present value.
+After you've read Nick's comments (which I pray you have not), and after
+you've convinced us and yourself of their wrongness, you might like to
+consider adding a __GFP_NOWARN to netdev_alloc_skb().
 
-What's the use here?  I see no use for it.
-
--- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.940.382.4214
