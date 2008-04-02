@@ -1,55 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759365AbYDBTYY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759274AbYDBT0w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759365AbYDBTYY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 15:24:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755419AbYDBTYP
+	id S1759274AbYDBT0w (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 15:26:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756925AbYDBT0q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 15:24:15 -0400
-Received: from mms3.broadcom.com ([216.31.210.19]:2337 "EHLO MMS3.broadcom.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755304AbYDBTYO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 15:24:14 -0400
-X-Server-Uuid: B55A25B1-5D7D-41F8-BC53-C57E7AD3C201
-Subject: Re: GFP_ATOMIC page allocation failures.
-From: "Michael Chan" <mchan@broadcom.com>
-To: "David Miller" <davem@davemloft.net>, mcarlson@broadcom.com
-cc: kosaki.motohiro@jp.fujitsu.com, akpm@linux-foundation.org,
-       csnook@redhat.com, davej@codemonkey.org.uk, nickpiggin@yahoo.com.au,
-       linux-kernel@vger.kernel.org, netdev <netdev@vger.kernel.org>
-In-Reply-To: <20080402.114441.78726196.davem@davemloft.net>
-References: <20080402.012406.246863209.davem@davemloft.net>
- <20080402175857.959A.KOSAKI.MOTOHIRO@jp.fujitsu.com>
- <20080402195428.95A3.KOSAKI.MOTOHIRO@jp.fujitsu.com>
- <20080402.114441.78726196.davem@davemloft.net>
-Date: Wed, 02 Apr 2008 12:12:06 -0800
-Message-ID: <1207167128.5311.5.camel@dell>
+	Wed, 2 Apr 2008 15:26:46 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:37368 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752902AbYDBT0p (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Apr 2008 15:26:45 -0400
+Date: Wed, 2 Apr 2008 15:26:44 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Tino Keitel <tino.keitel@gmx.de>
+cc: Pavel Machek <pavel@ucw.cz>, <linux-usb@vger.kernel.org>,
+       Soeren Sonnenburg <sonne@nn7.de>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       <linux-kernel@vger.kernel.org>, Len Brown <lenb@kernel.org>
+Subject: Re: 2.6.25-rc6 hangs at resume after suspend to RAM on Mac mini Core
+ Duo
+In-Reply-To: <20080401210617.GA7346@dose.home.local>
+Message-ID: <Pine.LNX.4.44L0.0804021521260.11421-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-X-Mailer: Evolution 2.0.2 (2.0.2-8)
-X-WSS-ID: 6BED02DB40G129459-01-01
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-04-02 at 11:44 -0700, David Miller wrote:
-> From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> Date: Wed, 02 Apr 2008 19:56:05 +0900
->
-> > BTW:
-> > other person's tg3 allocation failure bug report.
-> > 
-> > http://bugzilla.kernel.org/show_bug.cgi?id=9771
-> 
-> Yes, I know about it.  It will occur for any device
-> which must use linear RX buffers and supports
-> >PAGE_SIZE MTUs.
-> 
-> But modern chips are going to support segmentation of
-> receive packets into multiple individual pages and
-> therefore not have this order>0 page allocation
-> requirement.
+On Tue, 1 Apr 2008, Tino Keitel wrote:
 
-tg3 hardware has a jumbo rx ring that can accommodate non-linear SKBs.
-Matt is working on some patches to add this feature.
+> On Tue, Apr 01, 2008 at 17:02:36 -0400, Alan Stern wrote:
+> > On Tue, 1 Apr 2008, Tino Keitel wrote:
+> > 
+> > > On Tue, Apr 01, 2008 at 15:06:51 -0400, Alan Stern wrote:
+> > > 
+> > > [...]
+> > > 
+> > > > Can you get any information out of the computer after the hang?  It 
+> > > > would help to see the dmesg log (with CONFIG_USB_DEBUG enabled) and an 
+> > > > Alt-SysRq-T stack dump.
+> > > 
+> > > Looks difficult. The text console stays black after resume, and there
+> > > is no serial interface.
+> > 
+> > Network console?  SSH?  Or even telnet?
+> 
+> Network is dead, too.
+
+Tino, try this patch.  It fixed Mark Lord's problem, which looked the 
+same as yours.
+
+Alan Stern
+
+
+
+--- rc8/drivers/usb/host/ehci-hub.c	2008-03-11 11:18:40.000000000 -0400
++++ linux/drivers/usb/host/ehci-hub.c	2008-04-02 13:28:50.000000000 -0400
+@@ -135,8 +135,6 @@
+ 		hcd->state = HC_STATE_QUIESCING;
+ 	}
+ 	ehci->command = ehci_readl(ehci, &ehci->regs->command);
+-	if (ehci->reclaim)
+-		end_unlink_async(ehci);
+ 	ehci_work(ehci);
+ 
+ 	/* Unlike other USB host controller types, EHCI doesn't have
+@@ -180,6 +178,9 @@
+ 	ehci_halt (ehci);
+ 	hcd->state = HC_STATE_SUSPENDED;
+ 
++	if (ehci->reclaim)
++		end_unlink_async(ehci);
++
+ 	/* allow remote wakeup */
+ 	mask = INTR_MASK;
+ 	if (!device_may_wakeup(&hcd->self.root_hub->dev))
+
+
 
