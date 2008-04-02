@@ -1,80 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758952AbYDBTtr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760575AbYDBTvI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758952AbYDBTtr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 15:49:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758201AbYDBTtj
+	id S1760575AbYDBTvI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 15:51:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758714AbYDBTuz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 15:49:39 -0400
-Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:60121 "EHLO
-	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757632AbYDBTtj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 15:49:39 -0400
-Date: Wed, 2 Apr 2008 15:49:38 -0400
-To: Frans Pop <elendil@planet.nl>
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: Re: No IDE drivers loaded for Toshiba Satellite 320 CDS
-Message-ID: <20080402194938.GI24237@csclub.uwaterloo.ca>
-References: <200804021524.27222.elendil@planet.nl> <200804021629.41153.elendil@planet.nl> <20080402154636.GH24237@csclub.uwaterloo.ca> <200804021820.04610.elendil@planet.nl>
+	Wed, 2 Apr 2008 15:50:55 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:58451 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758422AbYDBTuz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Apr 2008 15:50:55 -0400
+Date: Wed, 2 Apr 2008 15:41:32 -0400
+From: Josef Bacik <jbacik@redhat.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Josef Bacik <jbacik@redhat.com>, Valdis.Kletnieks@vt.edu, sct@redhat.com,
+       jack@suse.cz, linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
+       eparis@redhat.com, Stephen Smalley <sds@tycho.nsa.gov>
+Subject: Re: 2.6.25-rc8-mm1 - BUG in fs/jbd/transaction.c
+Message-ID: <20080402194132.GA32549@unused.rdu.redhat.com>
+References: <20080401213214.8fbb6d6b.akpm@linux-foundation.org> <6495.1207163569@turing-police.cc.vt.edu> <20080402192715.GA32454@unused.rdu.redhat.com> <20080402123905.386c56f8.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200804021820.04610.elendil@planet.nl>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
+In-Reply-To: <20080402123905.386c56f8.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 02, 2008 at 06:20:03PM +0200, Frans Pop wrote:
-> Well, what the installer used to do for Sarge and Etch was basically to load 
-> _all_ drivers (including ide-generic) manually by default, which is totally 
-> useless as most devices are perfectly autodetected nowadays. It also wastes 
-> memory as you'd end up having a lot of unused drivers in memory.
+On Wed, Apr 02, 2008 at 12:39:05PM -0700, Andrew Morton wrote:
+> On Wed, 2 Apr 2008 15:27:15 -0400
+> Josef Bacik <jbacik@redhat.com> wrote:
 > 
-> Post-etch we decided to change that and currently drivers are only loaded if 
-> autodetected (with some exceptions, such as for sparc sbus and hppa bus). 
-> We were aware that this could cause some regressions, but so far this is the 
-> first real report.
+> > On Wed, Apr 02, 2008 at 03:12:49PM -0400, Valdis.Kletnieks@vt.edu wrote:
+> > > On Tue, 01 Apr 2008 21:32:14 PDT, Andrew Morton said:
+> > > > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.25-rc8/2.6.25-rc8-mm1/
+> > > 
+> > > (Yes, I know the kernel is tainted.  Hopefully the traceback will make
+> > > enough sense that it won't matter.  I think I cc'd most everybody who is
+> > > listed in MAINTAINERS or had a non-trivial jbd, quota, or ext3 patch in the broken-out/)
+> > > 
+> > > So I was running a 'yum update' on my laptop, walked away to ask a cow-orker
+> > > a question, and came back to find it had BUG'ed twice...  Amazingly
+> > > enough, although it died in ext3 code, it apparently only nuked whatever
+> > > filesystem it was handling, as syslog was still able to log the gory details
+> > > into a file in /var. Given that a kernel rpm was the one it failed on, the
+> > > I/O was almost certainly on either / or /boot - both ext3. / is mounted
+> > > with quotas, /boot isn't, so I'm betting on /
+> > > 
+> > > Apr  2 13:48:07 turing-police yum: Updated: texlive-texmf-latex-2007-18.fc9.noarch
+> > > Apr  2 13:48:08 turing-police yum: Updated: 1:openoffice.org-xsltfilter-2.4.0-12.4.fc9.x86_64
+> > > Apr  2 13:48:09 turing-police yum: Updated: 1:openoffice.org-javafilter-2.4.0-12.4.fc9.x86_64
+> > > Apr  2 13:48:12 turing-police yum: Updated: kernel-headers-2.6.25-0.185.rc7.git6.fc9.x86_64
+> > > 
+> > > (here, it started updating kernel-2.6.25-0.185.rc7.git6 and died while I wasn't looking)
+> > 
+> > <snip>
+> > 
+> > Try this patch, it will keep us from re-entering the fs when we aren't supposed
+> > to.  cc'ing Eric Paris since he's the only selinux guy I know :).  I don't think
+> > any of the other allocations in here need to be fixed, but I didn't look too
+> > carefully.
+> > 
+> > Signed-off-by: Josef Bacik <jbacik@redhat.com>
+> > 
+> > 
+> > diff --git a/security/selinux/hooks.c b/security/selinux/hooks.c
+> > index c2fef7b..820d07a 100644
+> > --- a/security/selinux/hooks.c
+> > +++ b/security/selinux/hooks.c
+> > @@ -180,7 +180,7 @@ static int inode_alloc_security(struct inode *inode)
+> >  	struct task_security_struct *tsec = current->security;
+> >  	struct inode_security_struct *isec;
+> >  
+> > -	isec = kmem_cache_zalloc(sel_inode_cache, GFP_KERNEL);
+> > +	isec = kmem_cache_zalloc(sel_inode_cache, GFP_NOFS);
+> >  	if (!isec)
+> >  		return -ENOMEM;
+> >  
+> > @@ -2429,7 +2429,7 @@ static int selinux_inode_init_security(struct inode *inode, struct inode *dir,
+> >  		return -EOPNOTSUPP;
+> >  
+> >  	if (name) {
+> > -		namep = kstrdup(XATTR_SELINUX_SUFFIX, GFP_KERNEL);
+> > +		namep = kstrdup(XATTR_SELINUX_SUFFIX, GFP_NOFS);
+> >  		if (!namep)
+> >  			return -ENOMEM;
+> >  		*name = namep;
 > 
-> Another change in Debian since Etch is that initramfs-tools no longer loads 
-> ide-generic by default, which IMO is also a good thing. We can easily make 
-> it load ide-generic when needed, but for that again we first have to know 
-> that it _is_ needed.
-
-Well, my educated guess (and that's all it is) is that any system with a
-386, 486 or pentium might have an ISA based IDE controller.  For that
-matter I used to have an ISA based IDE controller on my sound card in a
-PPro, although that one was PnP capable (although I always ran with that
-disabled because it sucked).
-
-Essentially if you have an ISA bus there could be an IDE controller
-there.  No way to really know without probing the standard IDE ports,
-which is pretty much what ide-generic does as far as I can tell.  I
-think many architectures other than x86 also have generic IDE
-controllers that are supported as long as ide-generic is loaded with the
-architecture specific code having defined the ports to look at.
-
-> Yes, that could be one way to implement it: load it and then check if that 
-> added any devices.
-
-Well even if you see other disks doesn't mean you don't also have an old
-IDE controller you want to use, so probably load it and see if it finds
-any disks is the best bet after loading all the other probeable drivers
-first.
-
-> That would still leave us with the problem of not knowing whether it needs 
-> to be added for initramfs-tools or not.
+> Might fix it.  But 2.6.24's inode_alloc_security() also uses GFP_KERNEL and
+> doesn't have this bug.  What changed?
 > 
-> If there are no other suggestions, I guess we'll go with a "load and check" 
-> implementation. Thanks a lot for your input.
+>
 
-I think that's the best you can do.
+I don't see why the problem couldn't happen in 2.6.24, I'm sure if I generate
+enough memory pressure and start creating a bunch of files I could reproduce the
+same thing.  /me wanders off to try,
 
-> Anybody know how other distributions deal with this?
-
-I gave up other distributions for Debian in 1999, so I can't help there.
-
--- 
-Len Sorensen
+Josef 
