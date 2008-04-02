@@ -1,153 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764860AbYDBV61@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765511AbYDBV6p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764860AbYDBV61 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 17:58:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762911AbYDBV5m
+	id S1765511AbYDBV6p (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 17:58:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762358AbYDBV6G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 17:57:42 -0400
-Received: from wr-out-0506.google.com ([64.233.184.230]:33142 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762294AbYDBV5j (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 17:57:39 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=ZXJ/EoG27V0SEyqFcWf+ykRY/Qg2+KjcktCj6/Lw4hpAL7yvmb93k8VEfYj+OG3bMBuV/evB7cKD1LUK0wJso1YnbyxtN90/gd0yXyq2epNwnKP/B0x9UixdWTMyg12dr3SXlvXfYGQtGsU/Iy5AWfynu2sr7F7uTCGzglKjTFM=
-Message-ID: <86802c440804021457y5a9e84f7o3d2d95efb7ba521@mail.gmail.com>
-Date: Wed, 2 Apr 2008 14:57:37 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Badari Pulavarty" <pbadari@us.ibm.com>
-Subject: Re: [BUG] 2.6.25-rc8-mm1 kernel panic while bootup on powerpc
-Cc: michael@ellerman.id.au, "Kamalesh Babulal" <kamalesh@linux.vnet.ibm.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>, linuxppc-dev@ozlabs.org,
-       "Balbir Singh" <balbir@linux.vnet.ibm.com>,
-       lkml <linux-kernel@vger.kernel.org>
-In-Reply-To: <1207164127.30407.36.camel@dyn9047017100.beaverton.ibm.com>
+	Wed, 2 Apr 2008 17:58:06 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:55291 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1763115AbYDBV6E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Apr 2008 17:58:04 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Bongani Hlope <bhlope@mweb.co.za>
+Subject: Re: 2.6.25-rc7-git5: Reported regressions from 2.6.24
+Date: Wed, 2 Apr 2008 23:57:40 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Mauro Carvalho Chehab <mchehab@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       video4linux-list@redhat.com
+References: <200803310228.11027.rjw@sisk.pl> <200804022300.52031.bhlope@mweb.co.za>
+In-Reply-To: <200804022300.52031.bhlope@mweb.co.za>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-2"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <20080401213214.8fbb6d6b.akpm@linux-foundation.org>
-	 <47F326E0.3010604@linux.vnet.ibm.com>
-	 <20080401233909.23220623.akpm@linux-foundation.org>
-	 <47F330FF.3050806@linux.vnet.ibm.com>
-	 <1207120676.7349.11.camel@concordia.ozlabs.ibm.com>
-	 <1207164127.30407.36.camel@dyn9047017100.beaverton.ibm.com>
+Message-Id: <200804022357.41221.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 2, 2008 at 12:22 PM, Badari Pulavarty <pbadari@us.ibm.com> wrote:
->
-> On Wed, 2008-04-02 at 18:17 +1100, Michael Ellerman wrote:
->  > On Wed, 2008-04-02 at 12:38 +0530, Kamalesh Babulal wrote:
->  > > Andrew Morton wrote:
->  > > > On Wed, 02 Apr 2008 11:55:36 +0530 Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
->  > > >
->  > > >> Hi Andrew,
->  > > >>
->  > > >> The 2.6.25-rc8-mm1 kernel panic's while bootup on the power machine(s).
->  > > >>
->  > > >> [    0.000000] ------------[ cut here ]------------
->  > > >> [    0.000000] kernel BUG at arch/powerpc/mm/init_64.c:240!
->  > > >> [    0.000000] Oops: Exception in kernel mode, sig: 5 [#1]
->  > > >> [    0.000000] SMP NR_CPUS=32 NUMA PowerMac
->  > > >> [    0.000000] Modules linked in:
->  > > >> [    0.000000] NIP: c0000000003d1dcc LR: c0000000003d1dc4 CTR: c00000000002b6ac
->  > > >> [    0.000000] REGS: c00000000049b960 TRAP: 0700   Not tainted  (2.6.25-rc8-mm1-autokern1)
->  > > >> [    0.000000] MSR: 9000000000021032 <ME,IR,DR>  CR: 44000088  XER: 20000000
->  > > >> [    0.000000] TASK = c0000000003f9c90[0] 'swapper' THREAD: c000000000498000 CPU: 0
->  > > >> [    0.000000] GPR00: c0000000003d1dc4 c00000000049bbe0 c0000000004989d0 0000000000000001
->  > > >> [    0.000000] GPR04: d59aca40f0000000 000000000b000000 0000000000000010 0000000000000000
->  > > >> [    0.000000] GPR08: 0000000000000004 0000000000000001 c00000027e520800 c0000000004bf0f0
->  > > >> [    0.000000] GPR12: c0000000004bf020 c0000000003fa900 0000000000000000 0000000000000000
->  > > >> [    0.000000] GPR16: 0000000000000000 0000000000000000 0000000000000000 0000000000000000
->  > > >> [    0.000000] GPR20: 0000000000000000 0000000000000000 0000000000000000 4000000001400000
->  > > >> [    0.000000] GPR24: 00000000017d64b0 c0000000003d6250 0000000000000000 c000000000504000
->  > > >> [    0.000000] GPR28: 0000000000000000 cf000000001f8000 0000000001000000 cf00000000000000
->  > > >> [    0.000000] NIP [c0000000003d1dcc] .vmemmap_populate+0xb8/0xf4
->  > > >> [    0.000000] LR [c0000000003d1dc4] .vmemmap_populate+0xb0/0xf4
->  > > >> [    0.000000] Call Trace:
->  > > >> [    0.000000] [c00000000049bbe0] [c0000000003d1dc4] .vmemmap_populate+0xb0/0xf4 (unreliable)
->  > > >> [    0.000000] [c00000000049bc70] [c0000000003d2ee8] .sparse_mem_map_populate+0x38/0x60
->  > > >> [    0.000000] [c00000000049bd00] [c0000000003c242c] .sparse_early_mem_map_alloc+0x54/0x94
->  > > >> [    0.000000] [c00000000049bd90] [c0000000003c250c] .sparse_init+0xa0/0x20c
->  > > >> [    0.000000] [c00000000049be50] [c0000000003ab7d0] .setup_arch+0x1ac/0x218
->  > > >> [    0.000000] [c00000000049bee0] [c0000000003a36ac] .start_kernel+0xe0/0x3fc
->  > > >> [    0.000000] [c00000000049bf90] [c000000000008594] .start_here_common+0x54/0xc0
->  > > >> [    0.000000] Instruction dump:
->  > > >> [    0.000000] 7fe3fb78 7ca02a14 4082000c 3860fff4 4800003c e92289c8 e96289c0 e9090002
->  > > >> [    0.000000] e8eb0002 4bc575cd 60000000 78630fe0 <0b030000> 7ffff214 7fbfe840 7fe3fb78
->  > > >> [    0.000000] ---[ end trace 31fd0ba7d8756001 ]---
->  > > >> [    0.000000] Kernel panic - not syncing: Attempted to kill the idle task!
->  > > >>
->  > > >
->  > > > int __meminit vmemmap_populate(struct page *start_page,
->  > > >                                   unsigned long nr_pages, int node)
->  > > > {
->  > > >   unsigned long mode_rw;
->  > > >   unsigned long start = (unsigned long)start_page;
->  > > >   unsigned long end = (unsigned long)(start_page + nr_pages);
->  > > >   unsigned long page_size = 1 << mmu_psize_defs[mmu_linear_psize].shift;
->  > > >
->  > > >   mode_rw = _PAGE_ACCESSED | _PAGE_DIRTY | _PAGE_COHERENT | PP_RWXX;
->  > > >
->  > > >   /* Align to the page size of the linear mapping. */
->  > > >   start = _ALIGN_DOWN(start, page_size);
->  > > >
->  > > >   for (; start < end; start += page_size) {
->  > > >           int mapped;
->  > > >           void *p;
->  > > >
->  > > >           if (vmemmap_populated(start, page_size))
->  > > >                   continue;
->  > > >
->  > > >           p = vmemmap_alloc_block(page_size, node);
->  > > >           if (!p)
->  > > >                   return -ENOMEM;
->  > > >
->  > > >           pr_debug("vmemmap %08lx allocated at %p, physical %08lx.\n",
->  > > >                   start, p, __pa(p));
->  > > >
->  > > >           mapped = htab_bolt_mapping(start, start + page_size,
->  > > >                                   __pa(p), mode_rw, mmu_linear_psize,
->  > > >                                   mmu_kernel_ssize);
->  > > > =====>            BUG_ON(mapped < 0);
->  > > >   }
->  > > >
->  > > >   return 0;
->  > > > }
->  > > >
->  > > > Beats me.  pseries?  Badari has been diddling with the bolted memory code
->  > > > in git-powerpc...
->  > >
->  > > One of the machines is the Power5 and another is PowerMac G5, on which the
->  > > same kernel panic is seen.
->  >
->  > Can you enable DEBUG_LOW in arch/powerpc/platforms/pseries/lpar.c, that
->  > should show what's happening in hpte_insert().
->  >
->  > cheers
->  >
->
->  Okay. Found it.
->
->  Root cause is:
->
->  mm-make-mem_map-allocation-continuous.patch
->  and its friends in -mm.
->
->  You have to call sparse_init_one_section() on each pmap and usemap
->  as we allocate - since valid_section() depends on it (which is needed
->  by vmemmap_populate() to check if the section is populated or not).
->  On ppc, we need to call htab_bolted_mapping() on each section and
->  we need to skip existing sections.
->
->  These patches tried to group all allocations together and then later
->  calls sparse_init_one_section() - which is not good :(
->
+On Wednesday, 2 of April 2008, Bongani Hlope wrote:
+> On Monday 31 March 2008 02:28:10 Rafael J. Wysocki wrote:
+> > This message contains a list of some regressions from 2.6.24, for which
+> > there are no fixes in the mainline I know of.  If any of them have been
+> > fixed already, please let me know.
+> >
+> > If you know of any other unresolved regressions from 2.6.24, please let me
+> > know either and I'll add them to the list.  Also, please let me know if any
+> > of the entries below are invalid.
+> >
+> 
+> Hi Rafael
 
-will send you patch workaround it...
+Hi,
 
-YH
+> 8<
+> 
+> >
+> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10027
+> > Subject		: 2.6.25-rc[12] Video4Linux Bttv Regression
+> > Submitter	: Bongani Hlope <bonganilinux@mweb.co.za>
+> > Date		: 2008-02-17 09:36 (43 days old)
+> > References	: http://lkml.org/lkml/2008/2/17/55
+> >
+> 
+> This has been fixed and tested, the patch is in Linus' tree this is the git 
+> commit 49115b7cb1483a14c557666b61fe81d3c23780d6. You can close the bug now.
+
+Closed.
+
+Thanks,
+Rafael
