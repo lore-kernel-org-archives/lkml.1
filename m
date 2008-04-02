@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763994AbYDBUZs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764062AbYDBU0L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763994AbYDBUZs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 16:25:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761480AbYDBURd
+	id S1764062AbYDBU0L (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 16:26:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761633AbYDBURf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 16:17:33 -0400
-Received: from ns1.suse.de ([195.135.220.2]:36599 "EHLO mx1.suse.de"
+	Wed, 2 Apr 2008 16:17:35 -0400
+Received: from mail.suse.de ([195.135.220.2]:36630 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760846AbYDBUR0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 16:17:26 -0400
+	id S1761610AbYDBUR3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Apr 2008 16:17:29 -0400
 From: Mark Fasheh <mfasheh@suse.com>
 To: linux-kernel@vger.kernel.org
 Cc: ocfs2-devel@oss.oracle.com, Joel Becker <joel.becker@oracle.com>
-Subject: [PATCH 22/62] ocfs2: Break out stackglue into modules.
-Date: Wed,  2 Apr 2008 13:14:32 -0700
-Message-Id: <1207167363119-git-send-email-mfasheh@suse.com>
+Subject: [PATCH 24/62] ocfs2: Add the USERSPACE_STACK incompat bit.
+Date: Wed,  2 Apr 2008 13:14:34 -0700
+Message-Id: <12071673681650-git-send-email-mfasheh@suse.com>
 X-Mailer: git-send-email 1.5.2.4
-In-Reply-To: <12071673613757-git-send-email-mfasheh@suse.com>
+In-Reply-To: <12071673661674-git-send-email-mfasheh@suse.com>
 References: <12071673121124-git-send-email-mfasheh@suse.com>
  <1207167318479-git-send-email-mfasheh@suse.com>
  <12071673203909-git-send-email-mfasheh@suse.com>
@@ -39,658 +39,304 @@ References: <12071673121124-git-send-email-mfasheh@suse.com>
  <12071673571757-git-send-email-mfasheh@suse.com>
  <12071673591158-git-send-email-mfasheh@suse.com>
  <12071673613757-git-send-email-mfasheh@suse.com>
+ <1207167363119-git-send-email-mfasheh@suse.com>
+ <12071673661674-git-send-email-mfasheh@suse.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Joel Becker <joel.becker@oracle.com>
 
-We define the ocfs2_stack_plugin structure to represent a stack driver.
-The o2cb stack code is split into stack_o2cb.c.  This becomes the
-ocfs2_stack_o2cb.ko module.
+The filesystem gains the USERSPACE_STACK incomat bit and the
+s_cluster_info field on the superblock.  When a userspace stack is in
+use, the name of the stack is stored on-disk for mount-time
+verification.
 
-The stackglue generic functions are similarly split into the
-ocfs2_stackglue.ko module.  This module now provides an interface to
-register drivers.  The ocfs2_stack_o2cb driver registers itself.  As
-part of this interface, ocfs2_stackglue can load drivers on demand.
-This is accomplished in ocfs2_cluster_connect().
+The "cluster_stack" option is added to mount(2) processing.  The mount
+process needs to pass the matching stack name.  If the passed name and
+the on-disk name do not match, the mount is failed.
 
-ocfs2_cluster_disconnect() is now notified when a _hangup() is pending.
-If a hangup is pending, it will not release the driver module and will
-let _hangup() do that.
+When using the classic o2cb stack, the incompat bit is *not* set and no
+mount option is used other than the usual heartbeat=local.  Thus, the
+filesystem is compatible with older tools.
 
 Signed-off-by: Joel Becker <joel.becker@oracle.com>
+Signed-off-by: Mark Fasheh <mfasheh@suse.com>
 ---
- fs/ocfs2/Makefile     |    7 +-
- fs/ocfs2/dlmglue.c    |    7 +-
- fs/ocfs2/dlmglue.h    |    2 +-
- fs/ocfs2/stack_o2cb.c |   41 +++++++--
- fs/ocfs2/stackglue.c  |  238 ++++++++++++++++++++++++++++++++++++++++++++-----
- fs/ocfs2/stackglue.h  |   36 +++++++-
- fs/ocfs2/super.c      |   16 ++--
- 7 files changed, 297 insertions(+), 50 deletions(-)
+ fs/ocfs2/ocfs2.h    |    7 ++++
+ fs/ocfs2/ocfs2_fs.h |   40 +++++++++++++++++++++-
+ fs/ocfs2/super.c    |   90 ++++++++++++++++++++++++++++++++++++++++++++++++++-
+ 3 files changed, 134 insertions(+), 3 deletions(-)
 
-diff --git a/fs/ocfs2/Makefile b/fs/ocfs2/Makefile
-index 8e86195..b734254 100644
---- a/fs/ocfs2/Makefile
-+++ b/fs/ocfs2/Makefile
-@@ -2,7 +2,7 @@ EXTRA_CFLAGS += -Ifs/ocfs2
+diff --git a/fs/ocfs2/ocfs2.h b/fs/ocfs2/ocfs2.h
+index af929ec..9ff5811 100644
+--- a/fs/ocfs2/ocfs2.h
++++ b/fs/ocfs2/ocfs2.h
+@@ -248,6 +248,7 @@ struct ocfs2_super
+ 	struct ocfs2_alloc_stats alloc_stats;
+ 	char dev_str[20];		/* "major,minor" of the device */
  
- EXTRA_CFLAGS += -DCATCH_BH_JBD_RACES
++	char osb_cluster_stack[OCFS2_STACK_LABEL_LEN + 1];
+ 	struct ocfs2_cluster_connection *cconn;
+ 	struct ocfs2_lock_res osb_super_lockres;
+ 	struct ocfs2_lock_res osb_rename_lockres;
+@@ -368,6 +369,12 @@ static inline int ocfs2_is_soft_readonly(struct ocfs2_super *osb)
+ 	return ret;
+ }
  
--obj-$(CONFIG_OCFS2_FS) += ocfs2.o
-+obj-$(CONFIG_OCFS2_FS) += ocfs2.o ocfs2_stackglue.o ocfs2_stack_o2cb.o
- 
- ocfs2-objs := \
- 	alloc.o 		\
-@@ -24,8 +24,6 @@ ocfs2-objs := \
- 	namei.o 		\
- 	resize.o		\
- 	slot_map.o 		\
--	stackglue.o		\
--	stack_o2cb.o		\
- 	suballoc.o 		\
- 	super.o 		\
- 	symlink.o 		\
-@@ -33,5 +31,8 @@ ocfs2-objs := \
- 	uptodate.o		\
- 	ver.o
- 
-+ocfs2_stackglue-objs := stackglue.o
-+ocfs2_stack_o2cb-objs := stack_o2cb.o
++static inline int ocfs2_userspace_stack(struct ocfs2_super *osb)
++{
++	return (osb->s_feature_incompat &
++		OCFS2_FEATURE_INCOMPAT_USERSPACE_STACK);
++}
 +
- obj-$(CONFIG_OCFS2_FS) += cluster/
- obj-$(CONFIG_OCFS2_FS) += dlm/
-diff --git a/fs/ocfs2/dlmglue.c b/fs/ocfs2/dlmglue.c
-index 8a9c849..f62a9e4 100644
---- a/fs/ocfs2/dlmglue.c
-+++ b/fs/ocfs2/dlmglue.c
-@@ -2641,7 +2641,7 @@ int ocfs2_dlm_init(struct ocfs2_super *osb)
- 		mlog_errno(status);
- 		mlog(ML_ERROR,
- 		     "could not find this host's node number\n");
--		ocfs2_cluster_disconnect(conn);
-+		ocfs2_cluster_disconnect(conn, 0);
+ static inline int ocfs2_mount_local(struct ocfs2_super *osb)
+ {
+ 	return (osb->s_feature_incompat & OCFS2_FEATURE_INCOMPAT_LOCAL_MOUNT);
+diff --git a/fs/ocfs2/ocfs2_fs.h b/fs/ocfs2/ocfs2_fs.h
+index c495023..52c4266 100644
+--- a/fs/ocfs2/ocfs2_fs.h
++++ b/fs/ocfs2/ocfs2_fs.h
+@@ -89,7 +89,8 @@
+ #define OCFS2_FEATURE_INCOMPAT_SUPP	(OCFS2_FEATURE_INCOMPAT_LOCAL_MOUNT \
+ 					 | OCFS2_FEATURE_INCOMPAT_SPARSE_ALLOC \
+ 					 | OCFS2_FEATURE_INCOMPAT_INLINE_DATA \
+-					 | OCFS2_FEATURE_INCOMPAT_EXTENDED_SLOT_MAP)
++					 | OCFS2_FEATURE_INCOMPAT_EXTENDED_SLOT_MAP \
++					 | OCFS2_FEATURE_INCOMPAT_USERSPACE_STACK)
+ #define OCFS2_FEATURE_RO_COMPAT_SUPP	OCFS2_FEATURE_RO_COMPAT_UNWRITTEN
+ 
+ /*
+@@ -131,6 +132,17 @@
+ 
+ 
+ /*
++ * Support for alternate, userspace cluster stacks.  If set, the superblock
++ * field s_cluster_info contains a tag for the alternate stack in use as
++ * well as the name of the cluster being joined.
++ * mount.ocfs2 must pass in a matching stack name.
++ *
++ * If not set, the classic stack will be used.  This is compatbile with
++ * all older versions.
++ */
++#define OCFS2_FEATURE_INCOMPAT_USERSPACE_STACK	0x0080
++
++/*
+  * backup superblock flag is used to indicate that this volume
+  * has backup superblocks.
+  */
+@@ -272,6 +284,10 @@ struct ocfs2_new_group_input {
+ #define OCFS2_VOL_UUID_LEN		16
+ #define OCFS2_MAX_VOL_LABEL_LEN		64
+ 
++/* The alternate, userspace stack fields */
++#define OCFS2_STACK_LABEL_LEN		4
++#define OCFS2_CLUSTER_NAME_LEN		16
++
+ /* Journal limits (in bytes) */
+ #define OCFS2_MIN_JOURNAL_SIZE		(4 * 1024 * 1024)
+ 
+@@ -513,6 +529,13 @@ struct ocfs2_slot_map_extended {
+  */
+ };
+ 
++struct ocfs2_cluster_info {
++/*00*/	__u8   ci_stack[OCFS2_STACK_LABEL_LEN];
++	__le32 ci_reserved;
++/*08*/	__u8   ci_cluster[OCFS2_CLUSTER_NAME_LEN];
++/*18*/
++};
++
+ /*
+  * On disk superblock for OCFS2
+  * Note that it is contained inside an ocfs2_dinode, so all offsets
+@@ -545,7 +568,20 @@ struct ocfs2_super_block {
+ 					 * group header */
+ /*50*/	__u8  s_label[OCFS2_MAX_VOL_LABEL_LEN];	/* Label for mounting, etc. */
+ /*90*/	__u8  s_uuid[OCFS2_VOL_UUID_LEN];	/* 128-bit uuid */
+-/*A0*/
++/*A0*/  struct ocfs2_cluster_info s_cluster_info; /* Selected userspace
++						     stack.  Only valid
++						     with INCOMPAT flag. */
++/*B8*/  __le64 s_reserved2[17];		/* Fill out superblock */
++/*140*/
++
++	/*
++	 * NOTE: As stated above, all offsets are relative to
++	 * ocfs2_dinode.id2, which is at 0xC0 in the inode.
++	 * 0xC0 + 0x140 = 0x200 or 512 bytes.  A superblock must fit within
++	 * our smallest blocksize, which is 512 bytes.  To ensure this,
++	 * we reserve the space in s_reserved2.  Anything past s_reserved2
++	 * will not be available on the smallest blocksize.
++	 */
+ };
+ 
+ /*
+diff --git a/fs/ocfs2/super.c b/fs/ocfs2/super.c
+index e27a0d4..96ebe36 100644
+--- a/fs/ocfs2/super.c
++++ b/fs/ocfs2/super.c
+@@ -87,6 +87,7 @@ struct mount_options
+ 	unsigned int	atime_quantum;
+ 	signed short	slot;
+ 	unsigned int	localalloc_opt;
++	char		cluster_stack[OCFS2_STACK_LABEL_LEN + 1];
+ };
+ 
+ static int ocfs2_parse_options(struct super_block *sb, char *options,
+@@ -152,6 +153,7 @@ enum {
+ 	Opt_commit,
+ 	Opt_localalloc,
+ 	Opt_localflocks,
++	Opt_stack,
+ 	Opt_err,
+ };
+ 
+@@ -170,6 +172,7 @@ static match_table_t tokens = {
+ 	{Opt_commit, "commit=%u"},
+ 	{Opt_localalloc, "localalloc=%d"},
+ 	{Opt_localflocks, "localflocks"},
++	{Opt_stack, "cluster_stack=%s"},
+ 	{Opt_err, NULL}
+ };
+ 
+@@ -549,8 +552,17 @@ static int ocfs2_verify_heartbeat(struct ocfs2_super *osb)
+ 		}
+ 	}
+ 
++	if (ocfs2_userspace_stack(osb)) {
++		if (osb->s_mount_opt & OCFS2_MOUNT_HB_LOCAL) {
++			mlog(ML_ERROR, "Userspace stack expected, but "
++			     "o2cb heartbeat arguments passed to mount\n");
++			return -EINVAL;
++		}
++	}
++
+ 	if (!(osb->s_mount_opt & OCFS2_MOUNT_HB_LOCAL)) {
+-		if (!ocfs2_mount_local(osb) && !ocfs2_is_hard_readonly(osb)) {
++		if (!ocfs2_mount_local(osb) && !ocfs2_is_hard_readonly(osb) &&
++		    !ocfs2_userspace_stack(osb)) {
+ 			mlog(ML_ERROR, "Heartbeat has to be started to mount "
+ 			     "a read-write clustered device.\n");
+ 			return -EINVAL;
+@@ -560,6 +572,35 @@ static int ocfs2_verify_heartbeat(struct ocfs2_super *osb)
+ 	return 0;
+ }
+ 
++/*
++ * If we're using a userspace stack, mount should have passed
++ * a name that matches the disk.  If not, mount should not
++ * have passed a stack.
++ */
++static int ocfs2_verify_userspace_stack(struct ocfs2_super *osb,
++					struct mount_options *mopt)
++{
++	if (!ocfs2_userspace_stack(osb) && mopt->cluster_stack[0]) {
++		mlog(ML_ERROR,
++		     "cluster stack passed to mount, but this filesystem "
++		     "does not support it\n");
++		return -EINVAL;
++	}
++
++	if (ocfs2_userspace_stack(osb) &&
++	    strncmp(osb->osb_cluster_stack, mopt->cluster_stack,
++		    OCFS2_STACK_LABEL_LEN)) {
++		mlog(ML_ERROR,
++		     "cluster stack passed to mount (\"%s\") does not "
++		     "match the filesystem (\"%s\")\n",
++		     mopt->cluster_stack,
++		     osb->osb_cluster_stack);
++		return -EINVAL;
++	}
++
++	return 0;
++}
++
+ static int ocfs2_fill_super(struct super_block *sb, void *data, int silent)
+ {
+ 	struct dentry *root;
+@@ -598,6 +639,10 @@ static int ocfs2_fill_super(struct super_block *sb, void *data, int silent)
+ 	osb->osb_commit_interval = parsed_options.commit_interval;
+ 	osb->local_alloc_size = parsed_options.localalloc_opt;
+ 
++	status = ocfs2_verify_userspace_stack(osb, &parsed_options);
++	if (status)
++		goto read_super_error;
++
+ 	sb->s_magic = OCFS2_SUPER_MAGIC;
+ 
+ 	/* Hard readonly mode only if: bdev_read_only, MS_RDONLY,
+@@ -752,6 +797,7 @@ static int ocfs2_parse_options(struct super_block *sb,
+ 	mopt->atime_quantum = OCFS2_DEFAULT_ATIME_QUANTUM;
+ 	mopt->slot = OCFS2_INVALID_SLOT;
+ 	mopt->localalloc_opt = OCFS2_DEFAULT_LOCAL_ALLOC_SIZE;
++	mopt->cluster_stack[0] = '\0';
+ 
+ 	if (!options) {
+ 		status = 1;
+@@ -853,6 +899,25 @@ static int ocfs2_parse_options(struct super_block *sb,
+ 			if (!is_remount)
+ 				mopt->mount_opt |= OCFS2_MOUNT_LOCALFLOCKS;
+ 			break;
++		case Opt_stack:
++			/* Check both that the option we were passed
++			 * is of the right length and that it is a proper
++			 * string of the right length.
++			 */
++			if (((args[0].to - args[0].from) !=
++			     OCFS2_STACK_LABEL_LEN) ||
++			    (strnlen(args[0].from,
++				     OCFS2_STACK_LABEL_LEN) !=
++			     OCFS2_STACK_LABEL_LEN)) {
++				mlog(ML_ERROR,
++				     "Invalid cluster_stack option\n");
++				status = 0;
++				goto bail;
++			}
++			memcpy(mopt->cluster_stack, args[0].from,
++			       OCFS2_STACK_LABEL_LEN);
++			mopt->cluster_stack[OCFS2_STACK_LABEL_LEN] = '\0';
++			break;
+ 		default:
+ 			mlog(ML_ERROR,
+ 			     "Unrecognized mount option \"%s\" "
+@@ -911,6 +976,10 @@ static int ocfs2_show_options(struct seq_file *s, struct vfsmount *mnt)
+ 	if (opts & OCFS2_MOUNT_LOCALFLOCKS)
+ 		seq_printf(s, ",localflocks,");
+ 
++	if (osb->osb_cluster_stack[0])
++		seq_printf(s, ",cluster_stack=%.*s", OCFS2_STACK_LABEL_LEN,
++			   osb->osb_cluster_stack);
++
+ 	return 0;
+ }
+ 
+@@ -1403,6 +1472,25 @@ static int ocfs2_initialize_super(struct super_block *sb,
  		goto bail;
  	}
  
-@@ -2663,7 +2663,8 @@ bail:
- 	return status;
- }
- 
--void ocfs2_dlm_shutdown(struct ocfs2_super *osb)
-+void ocfs2_dlm_shutdown(struct ocfs2_super *osb,
-+			int hangup_pending)
- {
- 	mlog_entry_void();
- 
-@@ -2683,7 +2684,7 @@ void ocfs2_dlm_shutdown(struct ocfs2_super *osb)
- 	ocfs2_lock_res_free(&osb->osb_super_lockres);
- 	ocfs2_lock_res_free(&osb->osb_rename_lockres);
- 
--	ocfs2_cluster_disconnect(osb->cconn);
-+	ocfs2_cluster_disconnect(osb->cconn, hangup_pending);
- 	osb->cconn = NULL;
- 
- 	ocfs2_dlm_shutdown_debug(osb);
-diff --git a/fs/ocfs2/dlmglue.h b/fs/ocfs2/dlmglue.h
-index 34b7598..2bb01f0 100644
---- a/fs/ocfs2/dlmglue.h
-+++ b/fs/ocfs2/dlmglue.h
-@@ -58,7 +58,7 @@ struct ocfs2_meta_lvb {
- #define OCFS2_LOCK_NONBLOCK		(0x04)
- 
- int ocfs2_dlm_init(struct ocfs2_super *osb);
--void ocfs2_dlm_shutdown(struct ocfs2_super *osb);
-+void ocfs2_dlm_shutdown(struct ocfs2_super *osb, int hangup_pending);
- void ocfs2_lock_res_init_once(struct ocfs2_lock_res *res);
- void ocfs2_inode_lock_res_init(struct ocfs2_lock_res *res,
- 			       enum ocfs2_lock_type type,
-diff --git a/fs/ocfs2/stack_o2cb.c b/fs/ocfs2/stack_o2cb.c
-index c9bc354..ac1d74c 100644
---- a/fs/ocfs2/stack_o2cb.c
-+++ b/fs/ocfs2/stack_o2cb.c
-@@ -18,7 +18,7 @@
-  */
- 
- #include <linux/crc32.h>
--#include <linux/kmod.h>
-+#include <linux/module.h>
- 
- /* Needed for AOP_TRUNCATED_PAGE in mlog_errno() */
- #include <linux/fs.h>
-@@ -33,6 +33,8 @@ struct o2dlm_private {
- 	struct dlm_eviction_cb op_eviction_cb;
- };
- 
-+static struct ocfs2_stack_plugin o2cb_stack;
-+
- /* These should be identical */
- #if (DLM_LOCK_IV != LKM_IVMODE)
- # error Lock modes do not match
-@@ -158,23 +160,23 @@ static int dlm_status_to_errno(enum dlm_status status)
- 
- static void o2dlm_lock_ast_wrapper(void *astarg)
- {
--	BUG_ON(stack_glue_lproto == NULL);
-+	BUG_ON(o2cb_stack.sp_proto == NULL);
- 
--	stack_glue_lproto->lp_lock_ast(astarg);
-+	o2cb_stack.sp_proto->lp_lock_ast(astarg);
- }
- 
- static void o2dlm_blocking_ast_wrapper(void *astarg, int level)
- {
--	BUG_ON(stack_glue_lproto == NULL);
-+	BUG_ON(o2cb_stack.sp_proto == NULL);
- 
--	stack_glue_lproto->lp_blocking_ast(astarg, level);
-+	o2cb_stack.sp_proto->lp_blocking_ast(astarg, level);
- }
- 
- static void o2dlm_unlock_ast_wrapper(void *astarg, enum dlm_status status)
- {
- 	int error = dlm_status_to_errno(status);
- 
--	BUG_ON(stack_glue_lproto == NULL);
-+	BUG_ON(o2cb_stack.sp_proto == NULL);
- 
- 	/*
- 	 * In o2dlm, you can get both the lock_ast() for the lock being
-@@ -190,7 +192,7 @@ static void o2dlm_unlock_ast_wrapper(void *astarg, enum dlm_status status)
- 	if (status == DLM_CANCELGRANT)
- 		return;
- 
--	stack_glue_lproto->lp_unlock_ast(astarg, error);
-+	o2cb_stack.sp_proto->lp_unlock_ast(astarg, error);
- }
- 
- static int o2cb_dlm_lock(struct ocfs2_cluster_connection *conn,
-@@ -267,6 +269,7 @@ static int o2cb_cluster_connect(struct ocfs2_cluster_connection *conn)
- 	struct dlm_protocol_version dlm_version;
- 
- 	BUG_ON(conn == NULL);
-+	BUG_ON(o2cb_stack.sp_proto == NULL);
- 
- 	/* for now we only have one cluster/node, make sure we see it
- 	 * in the heartbeat universe */
-@@ -314,7 +317,8 @@ out:
- 	return rc;
- }
- 
--static int o2cb_cluster_disconnect(struct ocfs2_cluster_connection *conn)
-+static int o2cb_cluster_disconnect(struct ocfs2_cluster_connection *conn,
-+				   int hangup_pending)
- {
- 	struct dlm_ctxt *dlm = conn->cc_lockspace;
- 	struct o2dlm_private *priv = conn->cc_private;
-@@ -393,3 +397,24 @@ struct ocfs2_stack_operations o2cb_stack_ops = {
- 	.dump_lksb	= o2cb_dump_lksb,
- };
- 
-+static struct ocfs2_stack_plugin o2cb_stack = {
-+	.sp_name	= "o2cb",
-+	.sp_ops		= &o2cb_stack_ops,
-+	.sp_owner	= THIS_MODULE,
-+};
-+
-+static int __init o2cb_stack_init(void)
-+{
-+	return ocfs2_stack_glue_register(&o2cb_stack);
-+}
-+
-+static void __exit o2cb_stack_exit(void)
-+{
-+	ocfs2_stack_glue_unregister(&o2cb_stack);
-+}
-+
-+MODULE_AUTHOR("Oracle");
-+MODULE_DESCRIPTION("ocfs2 driver for the classic o2cb stack");
-+MODULE_LICENSE("GPL");
-+module_init(o2cb_stack_init);
-+module_exit(o2cb_stack_exit);
-diff --git a/fs/ocfs2/stackglue.c b/fs/ocfs2/stackglue.c
-index e197367..1978c9c 100644
---- a/fs/ocfs2/stackglue.c
-+++ b/fs/ocfs2/stackglue.c
-@@ -18,17 +18,176 @@
-  * General Public License for more details.
-  */
- 
-+#include <linux/list.h>
-+#include <linux/spinlock.h>
-+#include <linux/module.h>
- #include <linux/slab.h>
- #include <linux/kmod.h>
- 
--/* Needed for AOP_TRUNCATED_PAGE in mlog_errno() */
--#include <linux/fs.h>
-+#include "stackglue.h"
- 
--#include "cluster/masklog.h"
-+static struct ocfs2_locking_protocol *lproto;
-+static DEFINE_SPINLOCK(ocfs2_stack_lock);
-+static LIST_HEAD(ocfs2_stack_list);
- 
--#include "stackglue.h"
-+/*
-+ * The stack currently in use.  If not null, active_stack->sp_count > 0,
-+ * the module is pinned, and the locking protocol cannot be changed.
-+ */
-+static struct ocfs2_stack_plugin *active_stack;
-+
-+static struct ocfs2_stack_plugin *ocfs2_stack_lookup(const char *name)
-+{
-+	struct ocfs2_stack_plugin *p;
-+
-+	assert_spin_locked(&ocfs2_stack_lock);
-+
-+	list_for_each_entry(p, &ocfs2_stack_list, sp_list) {
-+		if (!strcmp(p->sp_name, name))
-+			return p;
-+	}
-+
-+	return NULL;
-+}
-+
-+static int ocfs2_stack_driver_request(const char *name)
-+{
-+	int rc;
-+	struct ocfs2_stack_plugin *p;
-+
-+	spin_lock(&ocfs2_stack_lock);
-+
-+	if (active_stack) {
-+		/*
-+		 * If the active stack isn't the one we want, it cannot
-+		 * be selected right now.
-+		 */
-+		if (!strcmp(active_stack->sp_name, name))
-+			rc = 0;
-+		else
-+			rc = -EBUSY;
-+		goto out;
-+	}
-+
-+	p = ocfs2_stack_lookup(name);
-+	if (!p || !try_module_get(p->sp_owner)) {
-+		rc = -ENOENT;
-+		goto out;
-+	}
-+
-+	/* Ok, the stack is pinned */
-+	p->sp_count++;
-+	active_stack = p;
-+
-+	rc = 0;
-+
-+out:
-+	spin_unlock(&ocfs2_stack_lock);
-+	return rc;
-+}
-+
-+/*
-+ * This function looks up the appropriate stack and makes it active.  If
-+ * there is no stack, it tries to load it.  It will fail if the stack still
-+ * cannot be found.  It will also fail if a different stack is in use.
-+ */
-+static int ocfs2_stack_driver_get(const char *name)
-+{
-+	int rc;
-+
-+	rc = ocfs2_stack_driver_request(name);
-+	if (rc == -ENOENT) {
-+		request_module("ocfs2_stack_%s", name);
-+		rc = ocfs2_stack_driver_request(name);
-+	}
-+
-+	if (rc == -ENOENT) {
-+		printk(KERN_ERR
-+		       "ocfs2: Cluster stack driver \"%s\" cannot be found\n",
-+		       name);
-+	} else if (rc == -EBUSY) {
-+		printk(KERN_ERR
-+		       "ocfs2: A different cluster stack driver is in use\n");
-+	}
-+
-+	return rc;
-+}
- 
--struct ocfs2_locking_protocol *stack_glue_lproto;
-+static void ocfs2_stack_driver_put(void)
-+{
-+	spin_lock(&ocfs2_stack_lock);
-+	BUG_ON(active_stack == NULL);
-+	BUG_ON(active_stack->sp_count == 0);
-+
-+	active_stack->sp_count--;
-+	if (!active_stack->sp_count) {
-+		module_put(active_stack->sp_owner);
-+		active_stack = NULL;
-+	}
-+	spin_unlock(&ocfs2_stack_lock);
-+}
-+
-+int ocfs2_stack_glue_register(struct ocfs2_stack_plugin *plugin)
-+{
-+	int rc;
-+
-+	spin_lock(&ocfs2_stack_lock);
-+	if (!ocfs2_stack_lookup(plugin->sp_name)) {
-+		plugin->sp_count = 0;
-+		plugin->sp_proto = lproto;
-+		list_add(&plugin->sp_list, &ocfs2_stack_list);
-+		printk(KERN_INFO "ocfs2: Registered cluster interface %s\n",
-+		       plugin->sp_name);
-+		rc = 0;
++	if (ocfs2_userspace_stack(osb)) {
++		memcpy(osb->osb_cluster_stack,
++		       OCFS2_RAW_SB(di)->s_cluster_info.ci_stack,
++		       OCFS2_STACK_LABEL_LEN);
++		osb->osb_cluster_stack[OCFS2_STACK_LABEL_LEN] = '\0';
++		if (strlen(osb->osb_cluster_stack) != OCFS2_STACK_LABEL_LEN) {
++			mlog(ML_ERROR,
++			     "couldn't mount because of an invalid "
++			     "cluster stack label (%s) \n",
++			     osb->osb_cluster_stack);
++			status = -EINVAL;
++			goto bail;
++		}
 +	} else {
-+		printk(KERN_ERR "ocfs2: Stack \"%s\" already registered\n",
-+		       plugin->sp_name);
-+		rc = -EEXIST;
-+	}
-+	spin_unlock(&ocfs2_stack_lock);
-+
-+	return rc;
-+}
-+EXPORT_SYMBOL_GPL(ocfs2_stack_glue_register);
-+
-+void ocfs2_stack_glue_unregister(struct ocfs2_stack_plugin *plugin)
-+{
-+	struct ocfs2_stack_plugin *p;
-+
-+	spin_lock(&ocfs2_stack_lock);
-+	p = ocfs2_stack_lookup(plugin->sp_name);
-+	if (p) {
-+		BUG_ON(p != plugin);
-+		BUG_ON(plugin == active_stack);
-+		BUG_ON(plugin->sp_count != 0);
-+		list_del_init(&plugin->sp_list);
-+		printk(KERN_INFO "ocfs2: Unregistered cluster interface %s\n",
-+		       plugin->sp_name);
-+	} else {
-+		printk(KERN_ERR "Stack \"%s\" is not registered\n",
-+		       plugin->sp_name);
-+	}
-+	spin_unlock(&ocfs2_stack_lock);
-+}
-+EXPORT_SYMBOL_GPL(ocfs2_stack_glue_unregister);
-+
-+void ocfs2_stack_glue_set_locking_protocol(struct ocfs2_locking_protocol *proto)
-+{
-+	struct ocfs2_stack_plugin *p;
-+
-+	BUG_ON(proto == NULL);
-+
-+	spin_lock(&ocfs2_stack_lock);
-+	BUG_ON(active_stack != NULL);
-+
-+	lproto = proto;
-+	list_for_each_entry(p, &ocfs2_stack_list, sp_list) {
-+		p->sp_proto = lproto;
++		/* The empty string is identical with classic tools that
++		 * don't know about s_cluster_info. */
++		osb->osb_cluster_stack[0] = '\0';
 +	}
 +
-+	spin_unlock(&ocfs2_stack_lock);
-+}
-+EXPORT_SYMBOL_GPL(ocfs2_stack_glue_set_locking_protocol);
+ 	get_random_bytes(&osb->s_next_generation, sizeof(u32));
  
- 
- int ocfs2_dlm_lock(struct ocfs2_cluster_connection *conn,
-@@ -39,26 +198,29 @@ int ocfs2_dlm_lock(struct ocfs2_cluster_connection *conn,
- 		   unsigned int namelen,
- 		   void *astarg)
- {
--	BUG_ON(stack_glue_lproto == NULL);
-+	BUG_ON(lproto == NULL);
- 
--	return o2cb_stack_ops.dlm_lock(conn, mode, lksb, flags,
--				       name, namelen, astarg);
-+	return active_stack->sp_ops->dlm_lock(conn, mode, lksb, flags,
-+					      name, namelen, astarg);
- }
-+EXPORT_SYMBOL_GPL(ocfs2_dlm_lock);
- 
- int ocfs2_dlm_unlock(struct ocfs2_cluster_connection *conn,
- 		     union ocfs2_dlm_lksb *lksb,
- 		     u32 flags,
- 		     void *astarg)
- {
--	BUG_ON(stack_glue_lproto == NULL);
-+	BUG_ON(lproto == NULL);
- 
--	return o2cb_stack_ops.dlm_unlock(conn, lksb, flags, astarg);
-+	return active_stack->sp_ops->dlm_unlock(conn, lksb, flags, astarg);
- }
-+EXPORT_SYMBOL_GPL(ocfs2_dlm_unlock);
- 
- int ocfs2_dlm_lock_status(union ocfs2_dlm_lksb *lksb)
- {
--	return o2cb_stack_ops.lock_status(lksb);
-+	return active_stack->sp_ops->lock_status(lksb);
- }
-+EXPORT_SYMBOL_GPL(ocfs2_dlm_lock_status);
- 
- /*
-  * Why don't we cast to ocfs2_meta_lvb?  The "clean" answer is that we
-@@ -67,13 +229,15 @@ int ocfs2_dlm_lock_status(union ocfs2_dlm_lksb *lksb)
-  */
- void *ocfs2_dlm_lvb(union ocfs2_dlm_lksb *lksb)
- {
--	return o2cb_stack_ops.lock_lvb(lksb);
-+	return active_stack->sp_ops->lock_lvb(lksb);
- }
-+EXPORT_SYMBOL_GPL(ocfs2_dlm_lvb);
- 
- void ocfs2_dlm_dump_lksb(union ocfs2_dlm_lksb *lksb)
- {
--	o2cb_stack_ops.dump_lksb(lksb);
-+	active_stack->sp_ops->dump_lksb(lksb);
- }
-+EXPORT_SYMBOL_GPL(ocfs2_dlm_dump_lksb);
- 
- int ocfs2_cluster_connect(const char *group,
- 			  int grouplen,
-@@ -107,11 +271,16 @@ int ocfs2_cluster_connect(const char *group,
- 	new_conn->cc_recovery_data = recovery_data;
- 
- 	/* Start the new connection at our maximum compatibility level */
--	new_conn->cc_version = stack_glue_lproto->lp_max_version;
-+	new_conn->cc_version = lproto->lp_max_version;
-+
-+	/* This will pin the stack driver if successful */
-+	rc = ocfs2_stack_driver_get("o2cb");
-+	if (rc)
-+		goto out_free;
- 
--	rc = o2cb_stack_ops.connect(new_conn);
-+	rc = active_stack->sp_ops->connect(new_conn);
- 	if (rc) {
--		mlog_errno(rc);
-+		ocfs2_stack_driver_put();
- 		goto out_free;
- 	}
- 
-@@ -124,39 +293,60 @@ out_free:
- out:
- 	return rc;
- }
-+EXPORT_SYMBOL_GPL(ocfs2_cluster_connect);
- 
--int ocfs2_cluster_disconnect(struct ocfs2_cluster_connection *conn)
-+/* If hangup_pending is 0, the stack driver will be dropped */
-+int ocfs2_cluster_disconnect(struct ocfs2_cluster_connection *conn,
-+			     int hangup_pending)
- {
- 	int ret;
- 
- 	BUG_ON(conn == NULL);
- 
--	ret = o2cb_stack_ops.disconnect(conn);
-+	ret = active_stack->sp_ops->disconnect(conn, hangup_pending);
- 
- 	/* XXX Should we free it anyway? */
--	if (!ret)
-+	if (!ret) {
- 		kfree(conn);
-+		if (!hangup_pending)
-+			ocfs2_stack_driver_put();
-+	}
- 
- 	return ret;
- }
-+EXPORT_SYMBOL_GPL(ocfs2_cluster_disconnect);
- 
- void ocfs2_cluster_hangup(const char *group, int grouplen)
- {
- 	BUG_ON(group == NULL);
- 	BUG_ON(group[grouplen] != '\0');
- 
--	o2cb_stack_ops.hangup(group, grouplen);
-+	active_stack->sp_ops->hangup(group, grouplen);
-+
-+	/* cluster_disconnect() was called with hangup_pending==1 */
-+	ocfs2_stack_driver_put();
- }
-+EXPORT_SYMBOL_GPL(ocfs2_cluster_hangup);
- 
- int ocfs2_cluster_this_node(unsigned int *node)
- {
--	return o2cb_stack_ops.this_node(node);
-+	return active_stack->sp_ops->this_node(node);
- }
-+EXPORT_SYMBOL_GPL(ocfs2_cluster_this_node);
- 
--void ocfs2_stack_glue_set_locking_protocol(struct ocfs2_locking_protocol *proto)
-+
-+static int __init ocfs2_stack_glue_init(void)
- {
--	BUG_ON(proto != NULL);
-+	return 0;
-+}
- 
--	stack_glue_lproto = proto;
-+static void __exit ocfs2_stack_glue_exit(void)
-+{
-+	lproto = NULL;
- }
- 
-+MODULE_AUTHOR("Oracle");
-+MODULE_DESCRIPTION("ocfs2 cluter stack glue layer");
-+MODULE_LICENSE("GPL");
-+module_init(ocfs2_stack_glue_init);
-+module_exit(ocfs2_stack_glue_exit);
-diff --git a/fs/ocfs2/stackglue.h b/fs/ocfs2/stackglue.h
-index 0836322..c96c8bb 100644
---- a/fs/ocfs2/stackglue.h
-+++ b/fs/ocfs2/stackglue.h
-@@ -119,14 +119,21 @@ struct ocfs2_stack_operations {
- 	 * Once ->disconnect() has returned, the connection structure will
- 	 * be freed.  Thus, a stack must not return from ->disconnect()
- 	 * until it will no longer reference the conn pointer.
-+	 *
-+	 * If hangup_pending is zero, ocfs2_cluster_disconnect() will also
-+	 * be dropping the reference on the module.
- 	 */
--	int (*disconnect)(struct ocfs2_cluster_connection *conn);
-+	int (*disconnect)(struct ocfs2_cluster_connection *conn,
-+			  int hangup_pending);
- 
- 	/*
- 	 * ocfs2_cluster_hangup() exists for compatibility with older
- 	 * ocfs2 tools.  Only the classic stack really needs it.  As such
- 	 * ->hangup() is not required of all stacks.  See the comment by
- 	 * ocfs2_cluster_hangup() for more details.
-+	 *
-+	 * Note that ocfs2_cluster_hangup() can only be called if
-+	 * hangup_pending was passed to ocfs2_cluster_disconnect().
- 	 */
- 	void (*hangup)(const char *group, int grouplen);
- 
-@@ -184,13 +191,32 @@ struct ocfs2_stack_operations {
- 	void (*dump_lksb)(union ocfs2_dlm_lksb *lksb);
- };
- 
-+/*
-+ * Each stack plugin must describe itself by registering a
-+ * ocfs2_stack_plugin structure.  This is only seen by stackglue and the
-+ * stack driver.
-+ */
-+struct ocfs2_stack_plugin {
-+	char *sp_name;
-+	struct ocfs2_stack_operations *sp_ops;
-+	struct module *sp_owner;
-+
-+	/* These are managed by the stackglue code. */
-+	struct list_head sp_list;
-+	unsigned int sp_count;
-+	struct ocfs2_locking_protocol *sp_proto;
-+};
-+
-+
-+/* Used by the filesystem */
- int ocfs2_cluster_connect(const char *group,
- 			  int grouplen,
- 			  void (*recovery_handler)(int node_num,
- 						   void *recovery_data),
- 			  void *recovery_data,
- 			  struct ocfs2_cluster_connection **conn);
--int ocfs2_cluster_disconnect(struct ocfs2_cluster_connection *conn);
-+int ocfs2_cluster_disconnect(struct ocfs2_cluster_connection *conn,
-+			     int hangup_pending);
- void ocfs2_cluster_hangup(const char *group, int grouplen);
- int ocfs2_cluster_this_node(unsigned int *node);
- 
-@@ -212,6 +238,8 @@ void ocfs2_dlm_dump_lksb(union ocfs2_dlm_lksb *lksb);
- 
- void ocfs2_stack_glue_set_locking_protocol(struct ocfs2_locking_protocol *proto);
- 
--extern struct ocfs2_locking_protocol *stack_glue_lproto;
--extern struct ocfs2_stack_operations o2cb_stack_ops;
-+
-+/* Used by stack plugins */
-+int ocfs2_stack_glue_register(struct ocfs2_stack_plugin *plugin);
-+void ocfs2_stack_glue_unregister(struct ocfs2_stack_plugin *plugin);
- #endif  /* STACKGLUE_H */
-diff --git a/fs/ocfs2/super.c b/fs/ocfs2/super.c
-index b4a02a0..e27a0d4 100644
---- a/fs/ocfs2/super.c
-+++ b/fs/ocfs2/super.c
-@@ -1186,7 +1186,7 @@ leave:
- 
- static void ocfs2_dismount_volume(struct super_block *sb, int mnt_err)
- {
--	int tmp;
-+	int tmp, hangup_needed = 0;
- 	struct ocfs2_super *osb = NULL;
- 	char nodestr[8];
- 
-@@ -1225,19 +1225,21 @@ static void ocfs2_dismount_volume(struct super_block *sb, int mnt_err)
- 
- 	ocfs2_release_system_inodes(osb);
- 
--	if (osb->cconn)
--		ocfs2_dlm_shutdown(osb);
--
--	debugfs_remove(osb->osb_debug_root);
--
- 	/*
--	 * This is a small hack to move ocfs2_hb_ctl into stackglue.
- 	 * If we're dismounting due to mount error, mount.ocfs2 will clean
- 	 * up heartbeat.  If we're a local mount, there is no heartbeat.
- 	 * If we failed before we got a uuid_str yet, we can't stop
- 	 * heartbeat.  Otherwise, do it.
- 	 */
- 	if (!mnt_err && !ocfs2_mount_local(osb) && osb->uuid_str)
-+		hangup_needed = 1;
-+
-+	if (osb->cconn)
-+		ocfs2_dlm_shutdown(osb, hangup_needed);
-+
-+	debugfs_remove(osb->osb_debug_root);
-+
-+	if (hangup_needed)
- 		ocfs2_cluster_hangup(osb->uuid_str, strlen(osb->uuid_str));
- 
- 	atomic_set(&osb->vol_state, VOLUME_DISMOUNTED);
+ 	/* FIXME
 -- 
 1.5.4.1
 
