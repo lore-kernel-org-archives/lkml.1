@@ -1,47 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765639AbYDBV7d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932387AbYDBWAa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765639AbYDBV7d (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 17:59:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765573AbYDBV7A
+	id S932387AbYDBWAa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 18:00:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755336AbYDBWAF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 17:59:00 -0400
-Received: from relay2.sgi.com ([192.48.171.30]:53304 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1765569AbYDBV67 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 17:58:59 -0400
-Date: Wed, 2 Apr 2008 14:56:25 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Andrea Arcangeli <andrea@qumranet.com>
-cc: Hugh Dickins <hugh@veritas.com>, Robin Holt <holt@sgi.com>,
-       Avi Kivity <avi@qumranet.com>, Izik Eidus <izike@qumranet.com>,
-       kvm-devel@lists.sourceforge.net,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, general@lists.openfabrics.org,
-       Steve Wise <swise@opengridcomputing.com>,
-       Roland Dreier <rdreier@cisco.com>, Kanoj Sarcar <kanojsarcar@yahoo.com>,
-       steiner@sgi.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       daniel.blueman@quadrics.com
-Subject: Re: [patch 5/9] Convert anon_vma lock to rw_sem and refcount
-In-Reply-To: <20080402215604.GU19189@duo.random>
-Message-ID: <Pine.LNX.4.64.0804021455180.31247@schroedinger.engr.sgi.com>
-References: <20080401205531.986291575@sgi.com> <20080401205636.777127252@sgi.com>
- <20080402175058.GR19189@duo.random> <Pine.LNX.4.64.0804021107520.27337@schroedinger.engr.sgi.com>
- <20080402215604.GU19189@duo.random>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 2 Apr 2008 18:00:05 -0400
+Received: from saeurebad.de ([85.214.36.134]:33066 "EHLO saeurebad.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753343AbYDBWAD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Apr 2008 18:00:03 -0400
+From: Johannes Weiner <hannes@saeurebad.de>
+To: linux-kernel@vger.kernel.org
+Cc: linux-mm@kvack.org, mingo@elte.hu, davem@davemloft.net,
+       hskinnemoen@atmel.com, cooloney@kernel.org, starvik@axis.com,
+       dhowells@redhat.com, ysato@users.sourceforge.net, takata@linux-m32r.org,
+       geert@linux-m68k.org, ralf@linux-mips.org, kyle@parisc-linux.org,
+       paulus@samba.org, schwidefsky@de.ibm.com, lethal@linux-sh.org,
+       jdike@addtoit.com, miles@gnu.org, chris@zankel.net,
+       rmk@arm.linux.org.uk, tony.luck@intel.com
+Subject: [RFC 04/22] avr32: Use generic show_mem()
+Date: Wed,  2 Apr 2008 22:29:56 +0200
+Message-Id: <12071682201539-git-send-email-hannes@saeurebad.de>
+X-Mailer: git-send-email 1.5.2.2
+In-Reply-To: <12071682142640-git-send-email-hannes@saeurebad.de>
+References: <12071682142640-git-send-email-hannes@saeurebad.de>
+X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2 Apr 2008, Andrea Arcangeli wrote:
 
-> paging), hence the slowdown. What you benchmarked is the write side,
-> which is also the fast path when the system is heavily CPU bound. I've
-> to say aim is a great benchmark to test this regression.
+Signed-off-by: Johannes Weiner <hannes@saeurebad.de>
 
-I am a bit surprised that brk performance is that important. There may be 
-other measurement that have to be made to assess how this would impact a 
-real load.
-
-
+diff --git a/arch/avr32/Kconfig b/arch/avr32/Kconfig
+index 81e3360..c75d708 100644
+--- a/arch/avr32/Kconfig
++++ b/arch/avr32/Kconfig
+@@ -146,9 +146,6 @@ source "kernel/Kconfig.preempt"
+ config HAVE_ARCH_BOOTMEM_NODE
+ 	def_bool n
+ 
+-config HAVE_ARCH_SHOW_MEM
+-	def_bool y
+-
+ config ARCH_HAVE_MEMORY_PRESENT
+ 	def_bool n
+ 
+diff --git a/arch/avr32/mm/init.c b/arch/avr32/mm/init.c
+index 480760b..3cbff55 100644
+--- a/arch/avr32/mm/init.c
++++ b/arch/avr32/mm/init.c
+@@ -37,45 +37,6 @@ unsigned long mmu_context_cache = NO_CONTEXT;
+ #define START_PFN	(NODE_DATA(0)->bdata->node_boot_start >> PAGE_SHIFT)
+ #define MAX_LOW_PFN	(NODE_DATA(0)->bdata->node_low_pfn)
+ 
+-void show_mem(void)
+-{
+-	int total = 0, reserved = 0, cached = 0;
+-	int slab = 0, free = 0, shared = 0;
+-	pg_data_t *pgdat;
+-
+-	printk("Mem-info:\n");
+-	show_free_areas();
+-
+-	for_each_online_pgdat(pgdat) {
+-		struct page *page, *end;
+-
+-		page = pgdat->node_mem_map;
+-		end = page + pgdat->node_spanned_pages;
+-
+-		do {
+-			total++;
+-			if (PageReserved(page))
+-				reserved++;
+-			else if (PageSwapCache(page))
+-				cached++;
+-			else if (PageSlab(page))
+-				slab++;
+-			else if (!page_count(page))
+-				free++;
+-			else
+-				shared += page_count(page) - 1;
+-			page++;
+-		} while (page < end);
+-	}
+-
+-	printk ("%d pages of RAM\n", total);
+-	printk ("%d free pages\n", free);
+-	printk ("%d reserved pages\n", reserved);
+-	printk ("%d slab pages\n", slab);
+-	printk ("%d pages shared\n", shared);
+-	printk ("%d pages swap cached\n", cached);
+-}
+-
+ /*
+  * paging_init() sets up the page tables
+  *
+-- 
+1.5.2.2
 
