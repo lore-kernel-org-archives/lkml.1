@@ -1,136 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760209AbYDBVIS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761940AbYDBVJS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760209AbYDBVIS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 17:08:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755514AbYDBVIH
+	id S1761940AbYDBVJS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 17:09:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760340AbYDBVJB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 17:08:07 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:53084 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753162AbYDBVIG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 17:08:06 -0400
-Date: Wed, 2 Apr 2008 14:05:28 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Andrea Arcangeli <andrea@qumranet.com>
-cc: Hugh Dickins <hugh@veritas.com>, Robin Holt <holt@sgi.com>,
-       Avi Kivity <avi@qumranet.com>, Izik Eidus <izike@qumranet.com>,
-       kvm-devel@lists.sourceforge.net,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, general@lists.openfabrics.org,
-       Steve Wise <swise@opengridcomputing.com>,
-       Roland Dreier <rdreier@cisco.com>, Kanoj Sarcar <kanojsarcar@yahoo.com>,
-       steiner@sgi.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       daniel.blueman@quadrics.com, Nick Piggin <npiggin@suse.de>
-Subject: EMM: Require single threadedness for registration.
-In-Reply-To: <Pine.LNX.4.64.0804021048460.27214@schroedinger.engr.sgi.com>
-Message-ID: <Pine.LNX.4.64.0804021402190.30337@schroedinger.engr.sgi.com>
-References: <20080401205531.986291575@sgi.com> <20080401205635.793766935@sgi.com>
- <20080402064952.GF19189@duo.random> <Pine.LNX.4.64.0804021048460.27214@schroedinger.engr.sgi.com>
+	Wed, 2 Apr 2008 17:09:01 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:43779 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1756255AbYDBVJA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Apr 2008 17:09:00 -0400
+Date: Wed, 2 Apr 2008 17:08:59 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: David Brownell <david-b@pacbell.net>
+cc: Mark Lord <lkml@rtr.ca>, <pavel@suse.cz>, <oliver@neukum.org>,
+       <linux-usb@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+       <jikos@suse.cz>, <gregkh@suse.de>, <akpm@linux-foundation.org>
+Subject: Re: [PATCH] usb ehci_iaa_watchdog fix
+In-Reply-To: <200804021342.33102.david-b@pacbell.net>
+Message-ID: <Pine.LNX.4.44L0.0804021658170.2107-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Here is a patch to require single threaded execution during emm_register. 
-This also allows an easy implementation of an unregister function and gets
-rid of the races that Andrea worried about.
+On Wed, 2 Apr 2008, David Brownell wrote:
 
-The approach here is similar to what was used in selinux for security
-context changes (see selinux_setprocattr).
+> > It fixes the cause rather than the symptom.
+> 
+> I'm not sure I'd agree with that.
 
-Is it okay for the users of emm to require single threadedness for 
-registration?
+Really?  The logic seemed clear enough to me.
 
+     1. Evidently the ehci_iaa_watchdog routine was getting called at a 
+	time when the host controller wasn't running -- which had to
+	have been after it was suspended.
 
+     2. But ehci_bus_suspend() calls end_unlink_async(), which turns
+	off the IAA watchdog timer.
 
-Subject: EMM: Require single threaded execution for register and unregister
+     3. Hence the timer must have been restarted later on while 
+	ehci_bus_suspend() was still running.  The call to ehci_work() 
+	appeared to be the only place that could have happened.
 
-We can avoid the concurrency issues arising at registration if we
-only allow registration of notifiers when the process has only a single
-thread. That even allows to avoid the use of rcu.
+     4. Thus moving the end_unlink_async() call to after ehci_work()
+	(or just to be doubly safe, after ehci_halt() and the change
+	to HC_STATE_SUSPENDED) should take care of all pending QH
+	unlinks and leave none of them unfinished.
 
-Signed-off-by: Christoph Lameter <clameter@sgi.com>
+Strictly speaking, it would be best to move the del_timer_sync() calls
+to after ehci_lock is released.  But it doesn't really matter if the
+timer routines get invoked after the controller is suspended.
 
----
- mm/rmap.c |   46 +++++++++++++++++++++++++++++++++++++---------
- 1 file changed, 37 insertions(+), 9 deletions(-)
+Alan Stern
 
-Index: linux-2.6/mm/rmap.c
-===================================================================
---- linux-2.6.orig/mm/rmap.c	2008-04-02 13:53:46.002473685 -0700
-+++ linux-2.6/mm/rmap.c	2008-04-02 14:03:05.872199896 -0700
-@@ -286,20 +286,48 @@ void emm_notifier_release(struct mm_stru
- 	}
- }
- 
--/* Register a notifier */
-+/*
-+ * Register a notifier
-+ *
-+ * mmap_sem is held writably.
-+ *
-+ * Process must be single threaded.
-+ */
- void emm_notifier_register(struct emm_notifier *e, struct mm_struct *mm)
- {
-+	BUG_ON(atomic_read(&mm->mm_users) != 1);
-+
- 	e->next = mm->emm_notifier;
--	/*
--	 * The update to emm_notifier (e->next) must be visible
--	 * before the pointer becomes visible.
--	 * rcu_assign_pointer() does exactly what we need.
--	 */
--	rcu_assign_pointer(mm->emm_notifier, e);
-+	mm->emm_notifier = e;
- }
- EXPORT_SYMBOL_GPL(emm_notifier_register);
- 
- /*
-+ * Unregister a notifier
-+ *
-+ * mmap_sem is held writably
-+ *
-+ * Process must be single threaded
-+ */
-+void emm_notifier_unregister(struct emm_notifier *e, struct mm_struct *mm)
-+{
-+	struct emm_notifier *p = mm->emm_notifier;
-+
-+	BUG_ON(atomic_read(&mm->mm_users) != 1);
-+
-+	if (e == p)
-+		mm->emm_notifier = e->next;
-+	else {
-+		while (p->next != e)
-+			p = p->next;
-+
-+		p->next = e->next;
-+	}
-+	e->callback(e, mm, emm_release, 0, TASK_SIZE);
-+}
-+EXPORT_SYMBOL_GPL(emm_notifier_unregister);
-+
-+/*
-  * Perform a callback
-  *
-  * The return of this function is either a negative error of the first
-@@ -309,7 +337,7 @@ EXPORT_SYMBOL_GPL(emm_notifier_register)
- int __emm_notify(struct mm_struct *mm, enum emm_operation op,
- 		unsigned long start, unsigned long end)
- {
--	struct emm_notifier *e = rcu_dereference(mm->emm_notifier);
-+	struct emm_notifier *e = mm->emm_notifier;
- 	int x;
- 	int result = 0;
- 
-@@ -335,7 +363,7 @@ int __emm_notify(struct mm_struct *mm, e
- 		 * emm_notifier contents (e) must be fetched after
- 		 * the retrival of the pointer to the notifier.
- 		 */
--		e = rcu_dereference(e->next);
-+		e = e->next;
- 	}
- 	return result;
- }
