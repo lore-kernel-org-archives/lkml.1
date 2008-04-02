@@ -1,65 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759296AbYDBQjo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758235AbYDBQkP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759296AbYDBQjo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 12:39:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757008AbYDBQjf
+	id S1758235AbYDBQkP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 12:40:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757274AbYDBQj6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 12:39:35 -0400
-Received: from smtp-vbr11.xs4all.nl ([194.109.24.31]:1293 "EHLO
-	smtp-vbr11.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757358AbYDBQjf (ORCPT
+	Wed, 2 Apr 2008 12:39:58 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:55587 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756775AbYDBQj6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 12:39:35 -0400
-Date: Wed, 2 Apr 2008 18:37:31 +0200 (CEST)
-From: Roman Zippel <zippel@linux-m68k.org>
-X-X-Sender: roman@localhost.localdomain
-To: John Stultz <johnstul@us.ibm.com>
-cc: lkml <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 2/2] Introduce CLOCK_MONOTONIC_RAW
-In-Reply-To: <1207152111.6211.13.camel@jstultz-laptop>
-Message-ID: <Pine.LNX.4.64.0804021820370.26791@localhost.localdomain>
-References: <1205878279.28128.114.camel@localhost>  <1205878420.28128.117.camel@localhost>
-  <Pine.LNX.4.64.0804021340290.26791@localhost.localdomain>
- <1207152111.6211.13.camel@jstultz-laptop>
+	Wed, 2 Apr 2008 12:39:58 -0400
+Message-ID: <47F3B6B6.9010802@zytor.com>
+Date: Wed, 02 Apr 2008 09:39:18 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Paul Jackson <pj@sgi.com>
+CC: "Huang, Ying" <ying.huang@intel.com>, andi@firstfloor.org,
+       mingo@redhat.com, tglx@linutronix.de, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/4] x86_64 boot -v2: Add linked list of struct setup_data
+References: <1206672584.13404.25.camel@caritas-dev.intel.com>	<20080329233155.ee909a04.pj@sgi.com>	<1206924877.21451.6.camel@caritas-dev.intel.com> <20080402023947.d4d43f7d.pj@sgi.com>
+In-Reply-To: <20080402023947.d4d43f7d.pj@sgi.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-
-On Wed, 2 Apr 2008, John Stultz wrote:
-
-> > +	u64 raw_nsec;
-> > +	long raw_sec;
+Paul Jackson wrote:
+> Huang wrote:
+>> On Sat, 2008-03-29 at 23:31 -0500, Paul Jackson wrote:
+>>> Huang wrote:
+>>>> +/* setup data types */
+>>>> +#define SETUP_NONE			0
+>>> This define seems unused?
+>> I think this can prevent somebody to use 0 as type id.
 > 
+> Why is it a good idea to prevent a 0 type id?
 > 
-> So, with the raw_sec being stored in the clocksource, and there not
-> being a monotonic_raw value, doesn't this mean the MONOTONIC_RAW value
-> will clear to zero on clocksource changes? 
 
-It's copied during the clock change.
+It is usually handy to have an ID to use as ignore, or not present, and 
+for that to be zero.
 
-> > @@ -215,6 +218,8 @@ static inline void clocksource_calculate
-> > 
-> >  	/* Go back from cycles -> shifted ns, this time use ntp adjused mult */
-> >  	c->xtime_interval = (u64)c->cycle_interval * c->mult;
-> > +	c->raw_interval = ((u64)c->cycle_interval * c->mult_orig) <<
-> > +			  (NTP_SCALE_SHIFT - c->shift);
-> >  }
-> 
-> Could you explain further how this extra shift scaling is beneficial?
-
-The value has a constant scale, which allows a few optimizations, e.g. 
-look at update_wall_time(), where the 64bit-shift and 64bit-compare 
-has become a simple 32bit-compare, as it's now very easy to extract the 
-full nanosecond part and to drop the fraction part.
-
-> (Additionally, if we're using it for more then just NTP's shift, we
-> might want to change its name).
-
-I don't mind.
-
-bye, Roman
+	-hpa
