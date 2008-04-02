@@ -1,102 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759836AbYDBHOa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760744AbYDBHOo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759836AbYDBHOa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 03:14:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757932AbYDBHOV
+	id S1760744AbYDBHOo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 03:14:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760512AbYDBHOe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 03:14:21 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:59545 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751724AbYDBHOU (ORCPT
+	Wed, 2 Apr 2008 03:14:34 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:53215
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1760396AbYDBHOc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 03:14:20 -0400
-Date: Wed, 2 Apr 2008 00:14:18 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Sanjeev Aditya Naga" <sanjeev.kernel@gmail.com>
-Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-Subject: Re: [>=2.6.23][BUG] Oops on power disconnection
-Message-Id: <20080402001418.aad6eed2.akpm@linux-foundation.org>
-In-Reply-To: <5681ec900803300651m6e5f38deke1b7746236e5bb9@mail.gmail.com>
-References: <5681ec900803300645l5369cda4g119957a4b7f05d17@mail.gmail.com>
-	<5681ec900803300651m6e5f38deke1b7746236e5bb9@mail.gmail.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+	Wed, 2 Apr 2008 03:14:32 -0400
+Date: Wed, 02 Apr 2008 00:14:32 -0700 (PDT)
+Message-Id: <20080402.001432.159603826.davem@davemloft.net>
+To: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Cc: mm-commits@vger.kernel.org, david-b@pacbell.net,
+       dbrownell@users.sourceforge.net
+Subject: Re: + sparc32-delete-bogus-js-rtc-records.patch added to -mm tree
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <200803312351.m2VNpc2p032266@imap1.linux-foundation.org>
+References: <200803312351.m2VNpc2p032266@imap1.linux-foundation.org>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 30 Mar 2008 19:21:39 +0530 "Sanjeev Aditya Naga" <sanjeev.kernel@gmail.com> wrote:
+From: akpm@linux-foundation.org
+Date: Mon, 31 Mar 2008 16:51:38 -0700
 
-> Hi,
+> Subject: sparc32: delete bogus js-rtc records
+> From: David Brownell <david-b@pacbell.net>
 > 
->  This happens everytime there is a power disconnection
->  (switching to battery). Complete dmesg attached. This
->  in particular is of kernel 2.6.24.3.
+> While looking at the legacy RTC drivers in the drivers/char directory, I
+> noticed what looks like bogus entry for SPARC32 systems: JS_RTC, which seems
+> to rely on a non-existent js-rtc file.  Just delete it.
 > 
->  Greetings,
->  Kind Regards,
->  Sanjeev
-> 
->  BUG: unable to handle kernel NULL pointer dereference at virtual
->  address 00000020
->  printing eip: c04c4716 *pde = 578c2067
->  Oops: 0000 [#1] SMP
->  Modules linked in: cbc(U) geode_aes(U) blkcipher(U) aes_i586(U)
->  aes_generic(U) dm_crypt(U) ipt_MASQUERADE(U) iptable_nat(U) nf_nat(U)
->  bridge(U) autofs4(U) nf_conntrack_ipv4(U) xt_state(U) nf_conntrack(U)
->  xt_tcpudp(U) ipt_REJECT(U) iptable_filter(U) ip_tables(U) x_tables(U)
->  cpufreq_ondemand(U) acpi_cpufreq(U) fuse(U) loop(U) dm_mirror(U)
->  dm_multipath(U) dm_mod(U) ipv6(U) snd_hda_intel(U) snd_seq_dummy(U)
->  snd_seq_oss(U) snd_seq_midi_event(U) snd_seq(U) snd_seq_device(U)
->  snd_pcm_oss(U) sr_mod(U) snd_mixer_oss(U) snd_pcm(U) 8139cp(U)
->  snd_timer(U) button(U) 8139too(U) mii(U) snd_page_alloc(U) cdrom(U)
->  video(U) output(U) snd_hwdep(U) ac(U) snd(U) pcspkr(U) i2c_piix4(U)
->  i2c_core(U) battery(U) joydev(U) soundcore(U) sg(U) pata_atiixp(U)
->  pata_acpi(U) sata_sil(U) ata_generic(U) libata(U) sd_mod(U)
->  scsi_mod(U) ext3(U) jbd(U) mbcache(U) uhci_hcd(U) ohci_hcd(U)
->  ehci_hcd(U)
-> 
->  Pid: 69, comm: kacpi_notify Not tainted (2.6.24.3 #5)
->  EIP: 0060:[<c04c4716>] EFLAGS: 00010246 CPU: 0
->  EIP is at sysfs_addrm_start+0x21/0x81
->  EAX: c04c47d7 EBX: 00000000 ECX: 00000000 EDX: f78b8000
->  ESI: f78b8eb8 EDI: f78b8ec8 EBP: 00000000 ESP: f78b8ea4
->   DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
->  Process kacpi_notify (pid: 69, ti=f78b8000 task=f78d8000 task.ti=f78b8000)
->  Stack: f229ff54 f229ff54 f5b8d390 fffffff4 c04c4b45 00000000 00000000 00000000
->        00000000 f229ff54 00000000 00000000 f782601c c04c4bab f78b8ee0 c04fe65d
->        f229ff54 c04fe8a8 f722e67f ffffffff ffffffff 00000007 f722e678 f78261d8
->  Call Trace:
->   [<c04c4b45>] create_dir+0x33/0x6c
->   [<c04c4bab>] sysfs_create_dir+0x2d/0x40
->   [<c04fe65d>] kobject_get+0xf/0x13
->   [<c04fe8a8>] kobject_add+0xdd/0x176
->   [<c04fe9eb>] kobject_register+0x19/0x2d
->   [<c05b0ad0>] cpuidle_add_state_sysfs+0x7b/0xe4
->   [<c052660e>] acpi_os_execute_notify+0x0/0x2b
->   [<c05b03fd>] cpuidle_enable_device+0x31/0x9b
->   [<c0545923>] acpi_processor_cst_has_changed+0x40/0x55
->   [<c0543ae2>] acpi_processor_notify+0x8b/0xf4
->   [<c052bcbb>] acpi_ev_notify_dispatch+0x4c/0x55
->   [<c0526630>] acpi_os_execute_notify+0x22/0x2b
->   [<c052660e>] acpi_os_execute_notify+0x0/0x2b
->   [<c043c212>] run_workqueue+0x7d/0x107
->   [<c043fa5b>] prepare_to_wait+0x28/0x45
->   [<c043c35a>] worker_thread+0xbe/0xca
->   [<c043f8ff>] autoremove_wake_function+0x0/0x35
->   [<c043c29c>] worker_thread+0x0/0xca
->   [<c043f679>] kthread+0x38/0x5d
->   [<c043f641>] kthread+0x0/0x5d
->   [<c0406477>] kernel_thread_helper+0x7/0x10
->   =======================
->  Code: c0 89 31 83 c4 14 5b 5e 5f c3 57 b9 04 00 00 00 56 89 c7 53 89
->  c6 83 ec 04 89 d3 31 c0 f3 ab b8 903f 72 c0 89 16 e8 6a cf 16 00 <8b>
->  53 20 b9 ec 42 4c c0 a1 84 e4 83 c0 89 1c 24 e8 44 6e fd ff
->  EIP: [<c04c4716>] sysfs_addrm_start+0x21/0x81 SS:ESP 0068:f78b8ea4
+> Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
+> Cc: "David S. Miller" <davem@davemloft.net>
+> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
-Looks like a cpuidle problem (or at least acpi).
+It is actually used.  Look at what the Makefile is doing:
 
-I seem to recall having seen other reports of this?
+> diff -puN drivers/char/Makefile~sparc32-delete-bogus-js-rtc-records drivers/char/Makefile
+> --- a/drivers/char/Makefile~sparc32-delete-bogus-js-rtc-records
+> +++ a/drivers/char/Makefile
+> @@ -109,9 +109,6 @@ obj-$(CONFIG_TCG_TPM)		+= tpm/
+>  
+>  obj-$(CONFIG_PS3_FLASH)		+= ps3flash.o
+>  
+> -obj-$(CONFIG_JS_RTC)		+= js-rtc.o
+> -js-rtc-y = rtc.o
+> -
+>  # Files generated that shall be removed upon make clean
+>  clean-files := consolemap_deftbl.c defkeymap.c
+
+It's building rtc.c into js-rtc.o, and if CONFIG_JS_RTC is set that
+gets linked into the kernel.
+
+Andrew, please drop this one.
+
+Thanks.
