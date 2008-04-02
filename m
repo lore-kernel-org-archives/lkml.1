@@ -1,56 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755707AbYDBMtn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755752AbYDBMxz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755707AbYDBMtn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 08:49:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753812AbYDBMtg
+	id S1755752AbYDBMxz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 08:53:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753866AbYDBMxr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 08:49:36 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:1695 "EHLO spitz.ucw.cz"
+	Wed, 2 Apr 2008 08:53:47 -0400
+Received: from smtp2.sssup.it ([193.205.80.100]:34517 "EHLO smpt2.sssup.it"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753073AbYDBMtg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 08:49:36 -0400
-Date: Wed, 2 Apr 2008 14:49:23 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: perex@perex.cz, linux-kernel@vger.kernel.org, tiwai@suse.de
-Subject: Re: usb audio: Fix another Dallas quirk
-Message-ID: <20080402124922.GA5321@ucw.cz>
-References: <20080329223241.GA5348@elf.ucw.cz> <20080401122000.83ce5a3e.akpm@linux-foundation.org>
+	id S1753516AbYDBMxr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Apr 2008 08:53:47 -0400
+Date: Wed, 2 Apr 2008 14:55:30 +0200
+From: Fabio Checconi <fchecconi@gmail.com>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, paulmck@linux.vnet.ibm.com,
+       Ingo Molnar <mingo@elte.hu>, Pekka J Enberg <penberg@cs.helsinki.fi>,
+       Vegard Nossum <vegard.nossum@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: kmemcheck caught read from freed memory (cfq_free_io_context)
+Message-ID: <20080402125530.GF41073@gandalf.sssup.it>
+Mail-Followup-To: Jens Axboe <jens.axboe@oracle.com>,
+	Peter Zijlstra <a.p.zijlstra@chello.nl>, paulmck@linux.vnet.ibm.com,
+	Ingo Molnar <mingo@elte.hu>,
+	Pekka J Enberg <penberg@cs.helsinki.fi>,
+	Vegard Nossum <vegard.nossum@gmail.com>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <20080402071709.GC12774@kernel.dk> <Pine.LNX.4.64.0804021020280.25738@sbz-30.cs.Helsinki.FI> <20080402072456.GI12774@kernel.dk> <20080402072846.GA16454@elte.hu> <20080402105539.GA5610@linux.vnet.ibm.com> <1207133961.8514.768.camel@twins> <20080402113327.GC41073@gandalf.sssup.it> <20080402114338.GA12774@kernel.dk> <20080402123620.GH12774@kernel.dk> <20080402123639.GI12774@kernel.dk>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080401122000.83ce5a3e.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <20080402123639.GI12774@kernel.dk>
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue 2008-04-01 12:20:00, Andrew Morton wrote:
-> On Sat, 29 Mar 2008 23:32:41 +0100
-> Pavel Machek <pavel@suse.cz> wrote:
-> 
+> From: Jens Axboe <jens.axboe@oracle.com>
+> Date: Wed, Apr 02, 2008 02:36:39PM +0200
+>
+> > Looks good and tests fine as well. I've applied it, on top of the
+> > hlist_for_each_entry_safe_rcu() fix.
 > > 
-> > Dallas USB speakers are buggy in more than one way. One of configs
-> > they offer does not work at all.
+> > http://git.kernel.dk/?p=linux-2.6-block.git;a=commit;h=436151ad32b4a59e0d36165a7d6312545f126661
 > > 
-> > Signed-off-by: Pavel Machek <pavel@suse.cz>
-> > 
-> > diff --git a/sound/usb/usbaudio.c b/sound/usb/usbaudio.c
-> > index 257a4e1..b6b2490 100644
-> > --- a/sound/usb/usbaudio.c
-> > +++ b/sound/usb/usbaudio.c
-> >  	int format;
-> >  	struct audioformat *fp;
-> >  	unsigned char *fmt, *csep;
-> > +	int num;
-> 
-> This is not a patch - something munched the "@@ -2676,12 +2676,23 @@"
-> line.
-> 
-> I typed it in again.
 
-Thanks a lot. I guess I did something wrong when hand-editing it.
-
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+ok, thanks.  anyway I don't think the hlist_for_each_entry_safe_rcu()
+is needed at this point, since the pos->next pointer is still valid
+(at least) until the next rcu_read_unlock().  am I wrong?
