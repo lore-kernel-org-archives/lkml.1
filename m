@@ -1,23 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758782AbYDBSlj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760214AbYDBSly@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758782AbYDBSlj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 14:41:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757391AbYDBSfu
+	id S1760214AbYDBSly (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 14:41:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758283AbYDBSfv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 14:35:50 -0400
-Received: from 21.sub-75-208-3.myvzw.com ([75.208.3.21]:38410 "EHLO
+	Wed, 2 Apr 2008 14:35:51 -0400
+Received: from 21.sub-75-208-3.myvzw.com ([75.208.3.21]:38418 "EHLO
 	mail.goop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757366AbYDBSfn (ORCPT
+	with ESMTP id S1757408AbYDBSfn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 2 Apr 2008 14:35:43 -0400
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Subject: [PATCH 07 of 24] Xen: Make events.c portable for ia64/xen support
-X-Mercurial-Node: 2be0ce717957fc186993ee918535c8c3f11136da
-Message-Id: <2be0ce717957fc186993.1207158836@localhost>
+Subject: [PATCH 08 of 24] Re: [PATCH 08/12] xen: add resend_irq_on_evtchn()
+	definition into events.c
+X-Mercurial-Node: ebc72e5a71941280fe996a619e51f9f06fcd3e7c
+Message-Id: <ebc72e5a71941280fe99.1207158837@localhost>
 In-Reply-To: <patchbomb.1207158829@localhost>
-Date: Wed, 02 Apr 2008 10:53:56 -0700
+Date: Wed, 02 Apr 2008 10:53:57 -0700
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: LKML <linux-kernel@vger.kernel.org>,
@@ -28,102 +29,53 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Isaku Yamahata <yamahata@valinux.co.jp>
 
-Remove x86 dependency in drivers/xen/events.c for ia64/xen support
-introducing include/asm/xen/events.h.
-Introduce xen_irqs_disabled() to hide regs->flags
-Introduce xen_do_IRQ() to hide regs->orig_ax.
-make enum ipi_vector definition arch specific. ia64/xen needs four vectors.
-Add one rmb() because on ia64 xchg() isn't barrier.
+Define resend_irq_on_evtchn() which ia64/xen uses.
+Although it isn't used by current x86/xen code, it's arch generic
+so that put it into common code.
 
 Signed-off-by: Isaku Yamahata <yamahata@valinux.co.jp>
 Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 ---
- drivers/xen/events.c         |   13 +++++++------
- include/asm-x86/xen/events.h |   22 ++++++++++++++++++++++
- include/xen/events.h         |   10 +---------
- 3 files changed, 30 insertions(+), 15 deletions(-)
+ drivers/xen/events.c |   16 ++++++++++++++++
+ include/xen/events.h |    3 +--
+ 2 files changed, 17 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/xen/events.c b/drivers/xen/events.c
 --- a/drivers/xen/events.c
 +++ b/drivers/xen/events.c
-@@ -469,7 +469,7 @@
- 	for_each_online_cpu(i) {
- 		struct vcpu_info *v = per_cpu(xen_vcpu, i);
- 		printk("%d: masked=%d pending=%d event_sel %08lx\n  ", i,
--			(get_irq_regs() && i == cpu) ? !(get_irq_regs()->flags & X86_EFLAGS_IF) : v->evtchn_upcall_mask,
-+			(get_irq_regs() && i == cpu) ? xen_irqs_disabled(get_irq_regs()) : v->evtchn_upcall_mask,
- 			v->evtchn_upcall_pending,
- 			v->evtchn_pending_sel);
- 	}
-@@ -527,7 +527,10 @@
- 		if (__get_cpu_var(nesting_count)++)
- 			goto out;
+@@ -586,6 +586,22 @@
+ 	rebind_irq_to_cpu(irq, tcpu);
+ }
  
--		/* NB. No need for a barrier here -- XCHG is a barrier on x86. */
-+#ifndef CONFIG_X86 /* No need for a barrier -- XCHG is a barrier on x86. */
-+		/* Clear master flag /before/ clearing selector flag. */
-+		rmb();
-+#endif
- 		pending_words = xchg(&vcpu_info->evtchn_pending_sel, 0);
- 		while (pending_words != 0) {
- 			unsigned long pending_bits;
-@@ -539,10 +542,8 @@
- 				int port = (word_idx * BITS_PER_LONG) + bit_idx;
- 				int irq = evtchn_to_irq[port];
- 
--				if (irq != -1) {
--					regs->orig_ax = ~irq;
--					do_IRQ(regs);
--				}
-+				if (irq != -1)
-+					xen_do_IRQ(irq, regs);
- 			}
- 		}
- 
-diff --git a/include/asm-x86/xen/events.h b/include/asm-x86/xen/events.h
-new file mode 100644
---- /dev/null
-+++ b/include/asm-x86/xen/events.h
-@@ -0,0 +1,22 @@
-+#ifndef __XEN_EVENTS_H
-+#define __XEN_EVENTS_H
-+
-+enum ipi_vector {
-+	XEN_RESCHEDULE_VECTOR,
-+	XEN_CALL_FUNCTION_VECTOR,
-+
-+	XEN_NR_IPIS,
-+};
-+
-+static inline int xen_irqs_disabled(struct pt_regs *regs)
++int resend_irq_on_evtchn(unsigned int irq)
 +{
-+	return raw_irqs_disabled_flags(regs->flags);
++	int masked, evtchn = evtchn_from_irq(irq);
++	struct shared_info *s = HYPERVISOR_shared_info;
++
++	if (!VALID_EVTCHN(evtchn))
++		return 1;
++
++	masked = sync_test_and_set_bit(evtchn, s->evtchn_mask);
++	sync_set_bit(evtchn, s->evtchn_pending);
++	if (!masked)
++		unmask_evtchn(evtchn);
++
++	return 1;
 +}
 +
-+static inline void xen_do_IRQ(int irq, struct pt_regs *regs)
-+{
-+	regs->orig_ax = ~irq;
-+	do_IRQ(regs);
-+}
-+
-+#endif /* __XEN_EVENTS_H */
+ static void enable_dynirq(unsigned int irq)
+ {
+ 	int evtchn = evtchn_from_irq(irq);
 diff --git a/include/xen/events.h b/include/xen/events.h
 --- a/include/xen/events.h
 +++ b/include/xen/events.h
-@@ -5,13 +5,7 @@
+@@ -31,6 +31,7 @@
+ void unbind_from_irqhandler(unsigned int irq, void *dev_id);
  
- #include <xen/interface/event_channel.h>
- #include <asm/xen/hypercall.h>
--
--enum ipi_vector {
--	XEN_RESCHEDULE_VECTOR,
--	XEN_CALL_FUNCTION_VECTOR,
--
--	XEN_NR_IPIS,
--};
-+#include <asm/xen/events.h>
+ void xen_send_IPI_one(unsigned int cpu, enum ipi_vector vector);
++int resend_irq_on_evtchn(unsigned int irq);
  
- int bind_evtchn_to_irq(unsigned int evtchn);
- int bind_evtchn_to_irqhandler(unsigned int evtchn,
+ static inline void notify_remote_via_evtchn(int port)
+ {
 
 
