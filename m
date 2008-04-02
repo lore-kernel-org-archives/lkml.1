@@ -1,64 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757152AbYDBOg2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757530AbYDBOgm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757152AbYDBOg2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 10:36:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754912AbYDBOgU
+	id S1757530AbYDBOgm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 10:36:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757252AbYDBOgd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 10:36:20 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:41441 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753812AbYDBOgU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 10:36:20 -0400
-Subject: Re: [PATCH 0/3] xen: Fix oops when mapping/unmapping addr above 1Gb
-From: Mark McLoughlin <markmc@redhat.com>
-Reply-To: Mark McLoughlin <markmc@redhat.com>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       xen-devel@lists.xensource.com, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>
-In-Reply-To: <47F0FB5F.2000908@goop.org>
-References: <1206722297-11763-1-git-send-email-markmc@redhat.com>
-	 <20080331131442.GF14636@elte.hu>  <47F0FB5F.2000908@goop.org>
-Content-Type: text/plain
-Date: Wed, 02 Apr 2008 15:35:43 +0100
-Message-Id: <1207146943.11911.1.camel@muff>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-3.fc8) 
+	Wed, 2 Apr 2008 10:36:33 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:58503 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754912AbYDBOgc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Apr 2008 10:36:32 -0400
+Message-ID: <47F399EE.4080704@sgi.com>
+Date: Wed, 02 Apr 2008 07:36:30 -0700
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+MIME-Version: 1.0
+To: Paul Jackson <pj@sgi.com>
+CC: mingo@elte.hu, tglx@linutronix.de, hpa@zytor.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/3] x86: add cpuset_scnprintf function
+References: <20080401225422.064890000@polaris-admin.engr.sgi.com> <20080402012006.1722c2bd.pj@sgi.com>
+In-Reply-To: <20080402012006.1722c2bd.pj@sgi.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-03-31 at 07:55 -0700, Jeremy Fitzhardinge wrote:
-> Ingo Molnar wrote:
-> > * Mark McLoughlin <markmc@redhat.com> wrote:
-> >   
-> >>         In Fedora rawhide we're currently seeing oopses whenever a 
-> >> processes dlopen()s a library which prelink() has previously relocated 
-> >> above 1Gb. Some more details at:
-> >>
-> >>   https://bugzilla.redhat.com/436453
-> >>
-> >>         The issue seems to be that during xen_pgd_pin(), we only pin 
-> >> PTE pages, but xen's release_pmd() tries to unpin PMD pages too.
-> >>
-> >>         The following series of patches is against the latest x86 
-> >> tree.
-> >>     
-> >
-> > thanks, i've picked them up to get them tested - but it would be nice to 
-> > have an ack from Jeremy as well. This seems like v2.6.25 material as 
-> > well, right?
+
+Paul Jackson wrote:
+...
+>  1) I'm surprised to see this new routine called 'cpuset_scnprintf'
+>     (with the "cpuset" prefix), rather than a variant of a trio of
+>     names with prefixes of bitmap_, cpumask_, and nodemask_, like
+>     the other print routines in the bitmap family.  This doesn't
+>     seem to be a cpuset function to me, but a bitmap (and derived
+>     types cpumask and nodemask) printing function.
+
+How about "cpus_scnprintf" to avoid confusion with "cpusets"?
+
+>  2) The idea of the patch, that being a kernel modal flag that if
+>     set, changes a few particular details of the kernel API for all,
+>     seems like something I'd rarely want to do, unless I was really
+>     short of other options.  It leads to one app breaking another
+>     as a result of changing this mode, and to head butting between
+>     apps which cannot agree on how to set the mode.  And it introduces
+>     the option of breaking an existing API, which is seldom a good
+>     option.
+
+I could preface the cpulist_scnprintf output with '+' so a user app
+could then:
+
+        if (buf[0] == '+')
+                bitmask_parselist(&buf[1], ...)
+        else
+                bitmask_parsehex(buf, ...)
+
+or the perl equivalent which is probably more prevalent.
+
+[I'll put this into the Documentation for compat_cpus_scnprintf...]
+
+Does this sufficiently satisfy your concerns?  It stays compatible with
+the current method, but provides an avenue for future growth...?
+
+> Kernel API's visible to kernel drivers or loadable modules have a
+> higher barrier to change.
+
+> Kernel API's visible to user space, such as this one, have a much
+> higher barrier to incompatible change.
+
+But where is the API spec for /proc outputs?  I'd like to see how others
+have managed to change it in the past, and what are the rules for doing so.
+
+> I hesitate to NAQ patches because I strike out more often than someone
+> like Al Viro.  But I'm getting tempted on this one.
 > 
-> Didn't I reply?  Anyway, the patch looks good.  It's definitely 2.6.25 
-> material; its fallout from the changes I did to dynamically 
-> allocate/deallocate pmds rather than always do them with the pgd.
+> Perhaps you could write yourself a user utility that scanned its input
+> for masks in legacy format, converted them to list format, and passed
+> all else unscathed?
 
-Okay, here are the patches rebased to 2.6.25-rc8.
+Or write a utility to convert the more compact readable format into the
+incomprehensible one and output that ... ?  ;-)
 
-I've reproduced the issue with plain -rc8 and confirmed the patches fix
-it.
-
-Cheers,
-Mark.
-
+Thanks,
+Mike
