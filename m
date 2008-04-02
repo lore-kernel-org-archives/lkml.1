@@ -1,54 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755321AbYDBLHb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754735AbYDBLIv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755321AbYDBLHb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 07:07:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753427AbYDBLHX
+	id S1754735AbYDBLIv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 07:08:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753473AbYDBLIo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 07:07:23 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:19520 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753370AbYDBLHX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 07:07:23 -0400
-Date: Wed, 2 Apr 2008 13:07:19 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: paulmck@linux.vnet.ibm.com, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Vegard Nossum <vegard.nossum@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: kmemcheck caught read from freed memory (cfq_free_io_context)
-Message-ID: <20080402110718.GU12774@kernel.dk>
-References: <19f34abd0804011408v19e13b6cje1ca89a2a471484c@mail.gmail.com> <1207085788.29991.6.camel@lappy> <20080402071709.GC12774@kernel.dk> <Pine.LNX.4.64.0804021020280.25738@sbz-30.cs.Helsinki.FI> <20080402072456.GI12774@kernel.dk> <20080402072846.GA16454@elte.hu> <20080402105539.GA5610@linux.vnet.ibm.com> <84144f020804020401j4e5863dcofd16662baa54574@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <84144f020804020401j4e5863dcofd16662baa54574@mail.gmail.com>
+	Wed, 2 Apr 2008 07:08:44 -0400
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:35430 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753427AbYDBLIo (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Apr 2008 07:08:44 -0400
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Miles Lane <miles.lane@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       ipw3945-devel@lists.sourceforge.net, Zhu Yi <yi.zhu@intel.com>,
+       reinette.chatre@intel.com, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.25-rc8-mm1
+In-Reply-To: Your message of "Wed, 02 Apr 2008 03:49:14 PDT."
+             <a44ae5cd0804020349v695e22b6k3c273a5724c5d52e@mail.gmail.com>
+From: Valdis.Kletnieks@vt.edu
+References: <20080401213214.8fbb6d6b.akpm@linux-foundation.org>
+            <a44ae5cd0804020349v695e22b6k3c273a5724c5d52e@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1207134511_27002P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 7bit
+Date: Wed, 02 Apr 2008 07:08:31 -0400
+Message-ID: <1405.1207134511@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 02 2008, Pekka Enberg wrote:
-> Hi Paul,
-> 
-> On Wed, Apr 2, 2008 at 1:55 PM, Paul E. McKenney
-> <paulmck@linux.vnet.ibm.com> wrote:
-> >  I will check this when I get back to some bandwidth -- but in the meantime,
-> >  does kmemcheck special-case SLAB_DESTROY_BY_RCU?  It is legal to access
-> >  newly-freed items in that case, as long as you did rcu_read_lock()
-> >  before gaining a reference to them and don't hold the reference past
-> >  the matching rcu_read_unlock().
-> 
-> No, kmemcheck is work in progress and does not know about
-> SLAB_DESTROY_BY_RCU yet. The reason I asked Vegard to post the warning
-> was because Peter, Vegard, and myself identified this particular
-> warning as a real problem. But yeah, kmemcheck can cause false
-> positives for RCU for now.
+--==_Exmh_1207134511_27002P
+Content-Type: text/plain; charset=us-ascii
 
-Makes sense, and to me Pauls analysis of the code looks totally correct
-- there's no bug there, at least related to hlist traversal and
-kmem_cache_free(), since we are under rcu_read_lock() and thus hold off
-the grace for freeing.
+On Wed, 02 Apr 2008 03:49:14 PDT, Miles Lane said:
+>   CC [M]  drivers/net/wireless/iwlwifi/iwl3945-base.o
+> drivers/net/wireless/iwlwifi/iwl3945-base.c: In function
+> 'iwl3945_build_tx_cmd_basic':
+> drivers/net/wireless/iwlwifi/iwl3945-base.c:2492: error: 'struct
+> iwl3945_priv' has no member named 'rxtxpackets'
+> make[4]: *** [drivers/net/wireless/iwlwifi/iwl3945-base.o] Error 1
 
--- 
-Jens Axboe
+Caused by this:
 
+> CONFIG_IWL3945_LEDS=y
+
+Apparently not ready for prime time...
+
+
+
+
+--==_Exmh_1207134511_27002P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFH82kvcC3lWbTT17ARAvzgAKC67Avu8HL6FizqM9xCvthlntC1rwCgsnT7
+GV2OxmZJ4gFpwvZnRdo9q2M=
+=VjAf
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1207134511_27002P--
