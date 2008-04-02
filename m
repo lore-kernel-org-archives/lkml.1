@@ -1,22 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765844AbYDBUhq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762193AbYDBUiJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765844AbYDBUhq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 16:37:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761899AbYDBUSa
+	id S1762193AbYDBUiJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 16:38:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761990AbYDBUSd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 16:18:30 -0400
-Received: from ns.suse.de ([195.135.220.2]:37150 "EHLO mx1.suse.de"
+	Wed, 2 Apr 2008 16:18:33 -0400
+Received: from ns.suse.de ([195.135.220.2]:37185 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757406AbYDBUS0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 16:18:26 -0400
+	id S1761962AbYDBUSb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Apr 2008 16:18:31 -0400
 From: Mark Fasheh <mfasheh@suse.com>
 To: linux-kernel@vger.kernel.org
-Cc: ocfs2-devel@oss.oracle.com, Joel Becker <joel.becker@oracle.com>
-Subject: [PATCH 51/62] ocfs2: Move /sys/o2cb to /sys/fs/o2cb
-Date: Wed,  2 Apr 2008 13:15:01 -0700
-Message-Id: <1207167425415-git-send-email-mfasheh@suse.com>
+Cc: ocfs2-devel@oss.oracle.com, Joel Becker <joel.becker@oracle.com>,
+       Tao Ma <tao.ma@oracle.com>
+Subject: [PATCH 53/62] ocfs2: Enable cross extent block merge.
+Date: Wed,  2 Apr 2008 13:15:03 -0700
+Message-Id: <12071674291040-git-send-email-mfasheh@suse.com>
 X-Mailer: git-send-email 1.5.2.4
-In-Reply-To: <12071674242631-git-send-email-mfasheh@suse.com>
+In-Reply-To: <1207167427753-git-send-email-mfasheh@suse.com>
 References: <12071673121124-git-send-email-mfasheh@suse.com>
  <1207167318479-git-send-email-mfasheh@suse.com>
  <12071673203909-git-send-email-mfasheh@suse.com>
@@ -68,106 +69,161 @@ References: <12071673121124-git-send-email-mfasheh@suse.com>
  <12071674193441-git-send-email-mfasheh@suse.com>
  <12071674213882-git-send-email-mfasheh@suse.com>
  <12071674242631-git-send-email-mfasheh@suse.com>
+ <1207167425415-git-send-email-mfasheh@suse.com>
+ <1207167427753-git-send-email-mfasheh@suse.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-/sys/fs is where we really want file system specific sysfs objects.
+From: Tao Ma <tao.ma@oracle.com>
 
-Ocfs2-tools has been updated to look in /sys/fs/o2cb. We can maintain
-backwards compatibility with old ocfs2-tools by using a sysfs symlink. After
-some time (2 years), the symlink can be safely removed. This patch also adds
-documentation to make it easier for people to figure out what /sys/fs/o2cb
-is used for.
+In ocfs2_figure_merge_contig_type, we judge whether there exists
+a cross extent block merge and enable it by setting CONTIG_LEFT
+and CONTIG_RIGHT accordingly.
 
+Signed-off-by: Tao Ma <tao.ma@oracle.com>
 Signed-off-by: Mark Fasheh <mfasheh@suse.com>
 ---
- Documentation/ABI/obsolete/o2cb            |   11 +++++++++++
- Documentation/ABI/stable/o2cb              |   10 ++++++++++
- Documentation/feature-removal-schedule.txt |   10 ++++++++++
- fs/ocfs2/cluster/sys.c                     |    9 +++++++++
- 4 files changed, 40 insertions(+), 0 deletions(-)
- create mode 100644 Documentation/ABI/obsolete/o2cb
- create mode 100644 Documentation/ABI/stable/o2cb
+ fs/ocfs2/alloc.c |   94 +++++++++++++++++++++++++++++++++++++++++++++++++----
+ 1 files changed, 86 insertions(+), 8 deletions(-)
 
-diff --git a/Documentation/ABI/obsolete/o2cb b/Documentation/ABI/obsolete/o2cb
-new file mode 100644
-index 0000000..9c49d8e
---- /dev/null
-+++ b/Documentation/ABI/obsolete/o2cb
-@@ -0,0 +1,11 @@
-+What:		/sys/o2cb symlink
-+Date:		Dec 2005
-+KernelVersion:	2.6.16
-+Contact:	ocfs2-devel@oss.oracle.com
-+Description:	This is a symlink: /sys/o2cb to /sys/fs/o2cb. The symlink will
-+		be removed when new versions of ocfs2-tools which know to look
-+		in /sys/fs/o2cb are sufficiently prevalent. Don't code new
-+		software to look here, it should try /sys/fs/o2cb instead.
-+		See Documentation/ABI/stable/o2cb for more information on usage.
-+Users:		ocfs2-tools. It's sufficient to mail proposed changes to
-+		ocfs2-devel@oss.oracle.com.
-diff --git a/Documentation/ABI/stable/o2cb b/Documentation/ABI/stable/o2cb
-new file mode 100644
-index 0000000..5eb1545
---- /dev/null
-+++ b/Documentation/ABI/stable/o2cb
-@@ -0,0 +1,10 @@
-+What:		/sys/fs/o2cb/ (was /sys/o2cb)
-+Date:		Dec 2005
-+KernelVersion:	2.6.16
-+Contact:	ocfs2-devel@oss.oracle.com
-+Description:	Ocfs2-tools looks at 'interface-revision' for versioning
-+		information. Each logmask/ file controls a set of debug prints
-+		and can be written into with the strings "allow", "deny", or
-+		"off". Reading the file returns the current state.
-+Users:		ocfs2-tools. It's sufficient to mail proposed changes to
-+		ocfs2-devel@oss.oracle.com.
-diff --git a/Documentation/feature-removal-schedule.txt b/Documentation/feature-removal-schedule.txt
-index bf0e3df..4101f1f 100644
---- a/Documentation/feature-removal-schedule.txt
-+++ b/Documentation/feature-removal-schedule.txt
-@@ -318,3 +318,13 @@ Why:	Not used in-tree. The current out-of-tree users used it to
- 	code / infrastructure should be in the kernel and not in some
- 	out-of-tree driver.
- Who:	Thomas Gleixner <tglx@linutronix.de>
-+
-+---------------------------
-+
-+What:	/sys/o2cb symlink
-+When:	January 2010
-+Why:	/sys/fs/o2cb is the proper location for this information - /sys/o2cb
-+	exists as a symlink for backwards compatibility for old versions of
-+	ocfs2-tools. 2 years should be sufficient time to phase in new versions
-+	which know to look in /sys/fs/o2cb.
-+Who:	ocfs2-devel@oss.oracle.com
-diff --git a/fs/ocfs2/cluster/sys.c b/fs/ocfs2/cluster/sys.c
-index 0c095ce..98429fd 100644
---- a/fs/ocfs2/cluster/sys.c
-+++ b/fs/ocfs2/cluster/sys.c
-@@ -57,6 +57,7 @@ static struct kset *o2cb_kset;
- void o2cb_sys_shutdown(void)
- {
- 	mlog_sys_shutdown();
-+	sysfs_remove_link(NULL, "o2cb");
- 	kset_unregister(o2cb_kset);
+diff --git a/fs/ocfs2/alloc.c b/fs/ocfs2/alloc.c
+index f63cb32..7d81aa6 100644
+--- a/fs/ocfs2/alloc.c
++++ b/fs/ocfs2/alloc.c
+@@ -3782,20 +3782,57 @@ out:
  }
  
-@@ -68,6 +69,14 @@ int o2cb_sys_init(void)
- 	if (!o2cb_kset)
- 		return -ENOMEM;
- 
-+	/*
-+	 * Create this symlink for backwards compatibility with old
-+	 * versions of ocfs2-tools which look for things in /sys/o2cb.
-+	 */
-+	ret = sysfs_create_link(NULL, &o2cb_kset->kobj, "o2cb");
-+	if (ret)
-+		goto error;
+ static enum ocfs2_contig_type
+-ocfs2_figure_merge_contig_type(struct inode *inode,
++ocfs2_figure_merge_contig_type(struct inode *inode, struct ocfs2_path *path,
+ 			       struct ocfs2_extent_list *el, int index,
+ 			       struct ocfs2_extent_rec *split_rec)
+ {
+-	struct ocfs2_extent_rec *rec;
++	int status;
+ 	enum ocfs2_contig_type ret = CONTIG_NONE;
++	u32 left_cpos, right_cpos;
++	struct ocfs2_extent_rec *rec = NULL;
++	struct ocfs2_extent_list *new_el;
++	struct ocfs2_path *left_path = NULL, *right_path = NULL;
++	struct buffer_head *bh;
++	struct ocfs2_extent_block *eb;
 +
- 	ret = sysfs_create_group(&o2cb_kset->kobj, &o2cb_attr_group);
- 	if (ret)
- 		goto error;
++	if (index > 0) {
++		rec = &el->l_recs[index - 1];
++	} else if (path->p_tree_depth > 0) {
++		status = ocfs2_find_cpos_for_left_leaf(inode->i_sb,
++						       path, &left_cpos);
++		if (status)
++			goto out;
++
++		if (left_cpos != 0) {
++			left_path = ocfs2_new_path(path_root_bh(path),
++						   path_root_el(path));
++			if (!left_path)
++				goto out;
++
++			status = ocfs2_find_path(inode, left_path, left_cpos);
++			if (status)
++				goto out;
++
++			new_el = path_leaf_el(left_path);
++
++			if (le16_to_cpu(new_el->l_next_free_rec) !=
++			    le16_to_cpu(new_el->l_count)) {
++				bh = path_leaf_bh(left_path);
++				eb = (struct ocfs2_extent_block *)bh->b_data;
++				OCFS2_RO_ON_INVALID_EXTENT_BLOCK(inode->i_sb,
++								 eb);
++				goto out;
++			}
++			rec = &new_el->l_recs[
++				le16_to_cpu(new_el->l_next_free_rec) - 1];
++		}
++	}
+ 
+ 	/*
+ 	 * We're careful to check for an empty extent record here -
+ 	 * the merge code will know what to do if it sees one.
+ 	 */
+-
+-	if (index > 0) {
+-		rec = &el->l_recs[index - 1];
++	if (rec) {
+ 		if (index == 1 && ocfs2_is_empty_extent(rec)) {
+ 			if (split_rec->e_cpos == el->l_recs[index].e_cpos)
+ 				ret = CONTIG_RIGHT;
+@@ -3804,10 +3841,45 @@ ocfs2_figure_merge_contig_type(struct inode *inode,
+ 		}
+ 	}
+ 
+-	if (index < (le16_to_cpu(el->l_next_free_rec) - 1)) {
++	rec = NULL;
++	if (index < (le16_to_cpu(el->l_next_free_rec) - 1))
++		rec = &el->l_recs[index + 1];
++	else if (le16_to_cpu(el->l_next_free_rec) == le16_to_cpu(el->l_count) &&
++		 path->p_tree_depth > 0) {
++		status = ocfs2_find_cpos_for_right_leaf(inode->i_sb,
++							path, &right_cpos);
++		if (status)
++			goto out;
++
++		if (right_cpos == 0)
++			goto out;
++
++		right_path = ocfs2_new_path(path_root_bh(path),
++					    path_root_el(path));
++		if (!right_path)
++			goto out;
++
++		status = ocfs2_find_path(inode, right_path, right_cpos);
++		if (status)
++			goto out;
++
++		new_el = path_leaf_el(right_path);
++		rec = &new_el->l_recs[0];
++		if (ocfs2_is_empty_extent(rec)) {
++			if (le16_to_cpu(new_el->l_next_free_rec) <= 1) {
++				bh = path_leaf_bh(right_path);
++				eb = (struct ocfs2_extent_block *)bh->b_data;
++				OCFS2_RO_ON_INVALID_EXTENT_BLOCK(inode->i_sb,
++								 eb);
++				goto out;
++			}
++			rec = &new_el->l_recs[1];
++		}
++	}
++
++	if (rec) {
+ 		enum ocfs2_contig_type contig_type;
+ 
+-		rec = &el->l_recs[index + 1];
+ 		contig_type = ocfs2_extent_contig(inode, rec, split_rec);
+ 
+ 		if (contig_type == CONTIG_LEFT && ret == CONTIG_RIGHT)
+@@ -3816,6 +3888,12 @@ ocfs2_figure_merge_contig_type(struct inode *inode,
+ 			ret = contig_type;
+ 	}
+ 
++out:
++	if (left_path)
++		ocfs2_free_path(left_path);
++	if (right_path)
++		ocfs2_free_path(right_path);
++
+ 	return ret;
+ }
+ 
+@@ -4278,7 +4356,7 @@ static int __ocfs2_mark_extent_written(struct inode *inode,
+ 		goto out;
+ 	}
+ 
+-	ctxt.c_contig_type = ocfs2_figure_merge_contig_type(inode, el,
++	ctxt.c_contig_type = ocfs2_figure_merge_contig_type(inode, path, el,
+ 							    split_index,
+ 							    split_rec);
+ 
 -- 
 1.5.4.1
 
