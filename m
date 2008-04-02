@@ -1,68 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758267AbYDBQsr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757446AbYDBQy6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758267AbYDBQsr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 12:48:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755087AbYDBQsi
+	id S1757446AbYDBQy6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 12:54:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755692AbYDBQys
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 12:48:38 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:51609 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753503AbYDBQsh (ORCPT
+	Wed, 2 Apr 2008 12:54:48 -0400
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:42485 "EHLO
+	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755435AbYDBQyr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 12:48:37 -0400
-Date: Wed, 2 Apr 2008 12:48:36 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Mark Lord <lkml@rtr.ca>
-cc: David Brownell <david-b@pacbell.net>, <pavel@suse.cz>, <oliver@neukum.org>,
-       <linux-usb@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
-       <jikos@suse.cz>, <gregkh@suse.de>, <akpm@linux-foundation.org>
-Subject: Re: [PATCH] usb ehci_iaa_watchdog fix
-In-Reply-To: <47F3B235.4000103@rtr.ca>
-Message-ID: <Pine.LNX.4.44L0.0804021244230.5042-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 2 Apr 2008 12:54:47 -0400
+Date: Wed, 2 Apr 2008 12:54:27 -0400
+Message-Id: <200804021654.m32GsRnI020433@agora.fsl.cs.sunysb.edu>
+From: Erez Zadok <ezk@cs.sunysb.edu>
+To: Tomas M <tomas@slax.org>
+Cc: Erez Zadok <ezk@cs.sunysb.edu>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       viro@ftp.linux.org.uk, hch@infradead.org
+Subject: Re: [GIT PULL -mm] 00/14 VFS/Unionfs updates/fixes/cleanups 
+In-reply-to: Your message of "Wed, 02 Apr 2008 15:48:00 +0200."
+             <47F38E90.20306@slax.org> 
+X-MailKey: Erez_Zadok
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2 Apr 2008, Mark Lord wrote:
+In message <47F38E90.20306@slax.org>, Tomas M writes:
 
-> Yup, that does indeed cure it.
-> Here's a patch, in case you didn't already generate one:
+> > 1. Based on recommendations we've received while at LSF'08, we've changed
+> >    Unionfs to use the vm_operations->fault method, instead of
+> >    address_space_operations.
+[...]
+> May I ask you, why did it took so long?
+> Mainly, why did you refused to make the changes last year?
 > 
-> Signed-off-by: Mark Lord <mlord@pobox.com>
+> Thank you
 > 
-> --- rc8/drivers/usb/host/ehci-hcd.c	2008-03-11 11:18:40.000000000 -0400
-> +++ linux/drivers/usb/host/ehci-hcd.c	2008-04-02 12:16:40.000000000 -0400
-> @@ -289,9 +289,7 @@
->  	 * (a) SMP races against real IAA firing and retriggering, and
->  	 * (b) clean HC shutdown, when IAA watchdog was pending.
->  	 */
-> -	if (ehci->reclaim
-> -			&& !timer_pending(&ehci->iaa_watchdog)
-> -			&& HC_IS_RUNNING(ehci_to_hcd(ehci)->state)) {
-> +	if (ehci->reclaim && !timer_pending(&ehci->iaa_watchdog)) {
->  		u32 cmd, status;
->  
->  		/* If we get here, IAA is *REALLY* late.  It's barely
+> Tomas M
 
-Okay, I'm puzzled.  How could this make any difference?  
-ehci_bus_suspend() calls end_unlink_async() anyway, whenever reclaim is 
-set.
+The current ->fault API requires (IMHO) an ugly hack such as this:
 
-Is the real problem that it does so before calling ehci_work() instead 
-of after calling ehci_halt()?
+1. get the upper file pointer from vma->vm_file
+2. get the lower file from the upper file
+3. *override* the vma->vm_file pointer with the lower file
+4. call the lower ->fault op with the changed vma->vm_file pointer
+5. upon return, *reset* the vma->vm_file pointer back to its original value
+   (i.e., pointing to the upper file)
 
-Mark, if you want to experiment some more, try reverting your patch 
-above and moving:
+Steps 3 and 5 require this "pointer flipping" that I was sure was
+unacceptable to kernel developers who might be reviewing the code.  I didn't
+want to use this technique before I've had the sanctioning of the
+appropriate kernel maintainers, along with an acceptable path to fix the
+->fault API.  LSF was an excellent opportunity to discuss this and many
+other related issues in person.
 
-	if (ehci->reclaim)
-		end_unlink_async(ehci);
-
-in ehci-hub.c:ehci_bus_suspend() to just after the line saying:
-
-	hcd->state = HC_STATE_SUSPENDED;
-
-Alan Stern
-
+Cheers,
+Erez.
