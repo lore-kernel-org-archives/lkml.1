@@ -1,23 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761803AbYDBUYn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763828AbYDBUY7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761803AbYDBUYn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 16:24:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761583AbYDBURR
+	id S1763828AbYDBUY7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 16:24:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761618AbYDBURb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 16:17:17 -0400
-Received: from ns2.suse.de ([195.135.220.15]:33027 "EHLO mx2.suse.de"
+	Wed, 2 Apr 2008 16:17:31 -0400
+Received: from ns.suse.de ([195.135.220.2]:36611 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760696AbYDBURP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 16:17:15 -0400
+	id S1760661AbYDBUR1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Apr 2008 16:17:27 -0400
 From: Mark Fasheh <mfasheh@suse.com>
 To: linux-kernel@vger.kernel.org
-Cc: ocfs2-devel@oss.oracle.com, Joel Becker <joel.becker@oracle.com>,
-       David Teigland <teigland@redhat.com>
-Subject: [PATCH 17/62] ocfs2: handle async EAGAIN from NOQUEUE request
-Date: Wed,  2 Apr 2008 13:14:27 -0700
-Message-Id: <12071673543752-git-send-email-mfasheh@suse.com>
+Cc: ocfs2-devel@oss.oracle.com, Joel Becker <joel.becker@oracle.com>
+Subject: [PATCH 23/62] ocfs2: Create stack glue sysfs files.
+Date: Wed,  2 Apr 2008 13:14:33 -0700
+Message-Id: <12071673661674-git-send-email-mfasheh@suse.com>
 X-Mailer: git-send-email 1.5.2.4
-In-Reply-To: <12071673511262-git-send-email-mfasheh@suse.com>
+In-Reply-To: <1207167363119-git-send-email-mfasheh@suse.com>
 References: <12071673121124-git-send-email-mfasheh@suse.com>
  <1207167318479-git-send-email-mfasheh@suse.com>
  <12071673203909-git-send-email-mfasheh@suse.com>
@@ -35,92 +34,177 @@ References: <12071673121124-git-send-email-mfasheh@suse.com>
  <12071673481928-git-send-email-mfasheh@suse.com>
  <12071673492775-git-send-email-mfasheh@suse.com>
  <12071673511262-git-send-email-mfasheh@suse.com>
+ <12071673543752-git-send-email-mfasheh@suse.com>
+ <1207167355295-git-send-email-mfasheh@suse.com>
+ <12071673571757-git-send-email-mfasheh@suse.com>
+ <12071673591158-git-send-email-mfasheh@suse.com>
+ <12071673613757-git-send-email-mfasheh@suse.com>
+ <1207167363119-git-send-email-mfasheh@suse.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: David Teigland <teigland@redhat.com>
+From: Joel Becker <joel.becker@oracle.com>
 
-When using fsdlm, -EAGAIN is returned in the async callback for NOQUEUE
-requests. Fix up dlmglue to expect this.
+Introduce a set of sysfs files that describe the current stack glue
+state.  The files live under /sys/fs/ocfs2.  The locking_protocol file
+displays the version of ocfs2's locking code.  The
+loaded_cluster_plugins file displays all of the currently loaded stack
+plugins.  When filesystems are mounted, the active_cluster_plugin file
+will display the plugin in use.
 
-Signed-off-by: David Teigland <teigland@redhat.com>
 Signed-off-by: Joel Becker <joel.becker@oracle.com>
 Signed-off-by: Mark Fasheh <mfasheh@suse.com>
 ---
- fs/ocfs2/dlmglue.c |   27 +++++++++++++++++++++++----
- 1 files changed, 23 insertions(+), 4 deletions(-)
+ fs/ocfs2/stackglue.c |  121 +++++++++++++++++++++++++++++++++++++++++++++++++-
+ 1 files changed, 120 insertions(+), 1 deletions(-)
 
-diff --git a/fs/ocfs2/dlmglue.c b/fs/ocfs2/dlmglue.c
-index 295c47f..b640423 100644
---- a/fs/ocfs2/dlmglue.c
-+++ b/fs/ocfs2/dlmglue.c
-@@ -880,13 +880,20 @@ static void ocfs2_locking_ast(void *opaque)
- 	struct ocfs2_lock_res *lockres = opaque;
- 	struct ocfs2_super *osb = ocfs2_get_lockres_osb(lockres);
- 	unsigned long flags;
-+	int status;
+diff --git a/fs/ocfs2/stackglue.c b/fs/ocfs2/stackglue.c
+index 1978c9c..76ae4fc 100644
+--- a/fs/ocfs2/stackglue.c
++++ b/fs/ocfs2/stackglue.c
+@@ -23,6 +23,9 @@
+ #include <linux/module.h>
+ #include <linux/slab.h>
+ #include <linux/kmod.h>
++#include <linux/fs.h>
++#include <linux/kobject.h>
++#include <linux/sysfs.h>
  
- 	spin_lock_irqsave(&lockres->l_lock, flags);
+ #include "stackglue.h"
  
--	if (ocfs2_dlm_lock_status(&lockres->l_lksb)) {
-+	status = ocfs2_dlm_lock_status(&lockres->l_lksb);
+@@ -335,14 +338,130 @@ int ocfs2_cluster_this_node(unsigned int *node)
+ EXPORT_SYMBOL_GPL(ocfs2_cluster_this_node);
+ 
+ 
+-static int __init ocfs2_stack_glue_init(void)
++/*
++ * Sysfs bits
++ */
 +
-+	if (status == -EAGAIN) {
-+		lockres_clear_flags(lockres, OCFS2_LOCK_BUSY);
-+		goto out;
-+	}
++static ssize_t ocfs2_max_locking_protocol_show(struct kobject *kobj,
++					       struct kobj_attribute *attr,
++					       char *buf)
++{
++	ssize_t ret = 0;
 +
-+	if (status) {
- 		mlog(ML_ERROR, "lockres %s: lksb status value of %d!\n",
--		     lockres->l_name,
--		     ocfs2_dlm_lock_status(&lockres->l_lksb));
-+		     lockres->l_name, status);
- 		spin_unlock_irqrestore(&lockres->l_lock, flags);
- 		return;
- 	}
-@@ -909,7 +916,7 @@ static void ocfs2_locking_ast(void *opaque)
- 		     lockres->l_unlock_action);
- 		BUG();
- 	}
--
-+out:
- 	/* set it to something invalid so if we get called again we
- 	 * can catch it. */
- 	lockres->l_action = OCFS2_AST_INVALID;
-@@ -1113,6 +1120,7 @@ static int ocfs2_cluster_lock(struct ocfs2_super *osb,
- 	int ret = 0; /* gcc doesn't realize wait = 1 guarantees ret is set */
- 	unsigned long flags;
- 	unsigned int gen;
-+	int noqueue_attempted = 0;
- 
- 	mlog_entry_void();
- 
-@@ -1157,6 +1165,13 @@ again:
- 	}
- 
- 	if (level > lockres->l_level) {
-+		if (noqueue_attempted > 0) {
-+			ret = -EAGAIN;
-+			goto unlock;
++	spin_lock(&ocfs2_stack_lock);
++	if (lproto)
++		ret = snprintf(buf, PAGE_SIZE, "%u.%u\n",
++			       lproto->lp_max_version.pv_major,
++			       lproto->lp_max_version.pv_minor);
++	spin_unlock(&ocfs2_stack_lock);
++
++	return ret;
++}
++
++static struct kobj_attribute ocfs2_attr_max_locking_protocol =
++	__ATTR(max_locking_protocol, S_IFREG | S_IRUGO,
++	       ocfs2_max_locking_protocol_show, NULL);
++
++static ssize_t ocfs2_loaded_cluster_plugins_show(struct kobject *kobj,
++						 struct kobj_attribute *attr,
++						 char *buf)
+ {
++	ssize_t ret = 0, total = 0, remain = PAGE_SIZE;
++	struct ocfs2_stack_plugin *p;
++
++	spin_lock(&ocfs2_stack_lock);
++	list_for_each_entry(p, &ocfs2_stack_list, sp_list) {
++		ret = snprintf(buf, remain, "%s\n",
++			       p->sp_name);
++		if (ret < 0) {
++			total = ret;
++			break;
 +		}
-+		if (lkm_flags & DLM_LKF_NOQUEUE)
-+			noqueue_attempted = 1;
++		if (ret == remain) {
++			/* snprintf() didn't fit */
++			total = -E2BIG;
++			break;
++		}
++		total += ret;
++		remain -= ret;
++	}
++	spin_unlock(&ocfs2_stack_lock);
 +
- 		if (lockres->l_action != OCFS2_AST_INVALID)
- 			mlog(ML_ERROR, "lockres %s has action %u pending\n",
- 			     lockres->l_name, lockres->l_action);
-@@ -1621,6 +1636,10 @@ int ocfs2_file_lock(struct file *file, int ex, int trylock)
- 		 * to just bubble sucess back up to the user.
- 		 */
- 		ret = ocfs2_flock_handle_signal(lockres, level);
-+	} else if (!ret && (level > lockres->l_level)) {
-+		/* Trylock failed asynchronously */
-+		BUG_ON(!trylock);
-+		ret = -EAGAIN;
- 	}
++	return total;
++}
++
++static struct kobj_attribute ocfs2_attr_loaded_cluster_plugins =
++	__ATTR(loaded_cluster_plugins, S_IFREG | S_IRUGO,
++	       ocfs2_loaded_cluster_plugins_show, NULL);
++
++static ssize_t ocfs2_active_cluster_plugin_show(struct kobject *kobj,
++						struct kobj_attribute *attr,
++						char *buf)
++{
++	ssize_t ret = 0;
++
++	spin_lock(&ocfs2_stack_lock);
++	if (active_stack) {
++		ret = snprintf(buf, PAGE_SIZE, "%s\n",
++			       active_stack->sp_name);
++		if (ret == PAGE_SIZE)
++			ret = -E2BIG;
++	}
++	spin_unlock(&ocfs2_stack_lock);
++
++	return ret;
++}
++
++static struct kobj_attribute ocfs2_attr_active_cluster_plugin =
++	__ATTR(active_cluster_plugin, S_IFREG | S_IRUGO,
++	       ocfs2_active_cluster_plugin_show, NULL);
++
++static struct attribute *ocfs2_attrs[] = {
++	&ocfs2_attr_max_locking_protocol.attr,
++	&ocfs2_attr_loaded_cluster_plugins.attr,
++	&ocfs2_attr_active_cluster_plugin.attr,
++	NULL,
++};
++
++static struct attribute_group ocfs2_attr_group = {
++	.attrs = ocfs2_attrs,
++};
++
++static struct kset *ocfs2_kset;
++
++static void ocfs2_sysfs_exit(void)
++{
++	kset_unregister(ocfs2_kset);
++}
++
++static int ocfs2_sysfs_init(void)
++{
++	int ret;
++
++	ocfs2_kset = kset_create_and_add("ocfs2", NULL, fs_kobj);
++	if (!ocfs2_kset)
++		return -ENOMEM;
++
++	ret = sysfs_create_group(&ocfs2_kset->kobj, &ocfs2_attr_group);
++	if (ret)
++		goto error;
++
+ 	return 0;
++
++error:
++	kset_unregister(ocfs2_kset);
++	return ret;
++}
++
++static int __init ocfs2_stack_glue_init(void)
++{
++	return ocfs2_sysfs_init();
+ }
  
- out:
+ static void __exit ocfs2_stack_glue_exit(void)
+ {
+ 	lproto = NULL;
++	ocfs2_sysfs_exit();
+ }
+ 
+ MODULE_AUTHOR("Oracle");
 -- 
 1.5.4.1
 
