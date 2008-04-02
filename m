@@ -1,51 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757482AbYDBFkh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757932AbYDBFy5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757482AbYDBFkh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 01:40:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751139AbYDBFk2
+	id S1757932AbYDBFy5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 01:54:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751439AbYDBFyp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 01:40:28 -0400
-Received: from fg-out-1718.google.com ([72.14.220.157]:64462 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750956AbYDBFk1 (ORCPT
+	Wed, 2 Apr 2008 01:54:45 -0400
+Received: from fk-out-0910.google.com ([209.85.128.187]:46217 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751317AbYDBFyn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 01:40:27 -0400
+	Wed, 2 Apr 2008 01:54:43 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=message-id:date:from:organization:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=SCyBA+RaG3uQMP8NseKFB5aBZfJ2f3d1MTZJV8mS6StFPcCnsdesDLfTzk86tw5/nV8NByYDQ1vxeAsZcNchjTK+XpL0B1o/USHkpbW9wDn5VRSf2jXdTxBzHSl52bkeQDZZ6SB26YpXWtyjnsKPnSR/7Sg5ft7ljTkrO0J06Bw=
-Message-ID: <47F31C46.9000503@gmail.com>
-Date: Wed, 02 Apr 2008 09:40:22 +0400
-From: Dmitri Vorobiev <dmitri.vorobiev@gmail.com>
-Organization: DmVo Home
-User-Agent: Thunderbird 1.5.0.14pre (X11/20071022)
+        h=date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
+        b=sS/KM/DpG1g1f87NtHADbUf7T2MIvRpGQqmpHmlzbdhmZ/ORnIV6cDkUOO3NzZUsbHm6f2zolbrvqnClHU4fxs7LuBcAwQ7ZJfUwzstCTVAT550jXW0mJe6WM8LRXMJmnRtI/D7Jkpkv1uLHkblBDAZcQcBBTYlB+WEKfmdPW5c=
+Date: Wed, 2 Apr 2008 13:59:56 +0800
+From: Dave Young <hidave.darkstar@gmail.com>
+To: davem@davemloft.net
+Cc: davej@codemonkey.org.uk, netdev@vger.kernel.org,
+       linux-bluetooth@vger.kernel.org, linux-kernel@vger.kernel.org,
+       marcel@holtmann.org
+Subject: [PATCH 1/2] bluetooth : use lockdep sub-classes for diffrent
+	bluetooth protocol
+Message-ID: <20080402055956.GA3050@darkstar.te-china.tietoenator.com>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.25-rc8-mm1
-References: <20080401213214.8fbb6d6b.akpm@linux-foundation.org>
-In-Reply-To: <20080401213214.8fbb6d6b.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Andrew,
+'rfcomm connect' will trigger lockdep warnings which is caused by
+locking diffrent kinds of bluetooth sockets at the same time.
 
-MIPS build fails with the following:
+So using sub-classes per AF_BLUETOOTH sub-type for lockdep.
 
-$ make ARCH=mips CROSS_COMPILE=mips-unknown-linux-gnu-
-...
-[skipped]
-...
-  CC      arch/mips/mips-boards/generic/init.o
-In file included from include/asm/cacheflush.h:13,
-                 from arch/mips/mips-boards/generic/init.c:30:
-include/linux/mm.h:411:63: "NR_PAGEFLAGS" is not defined
-include/linux/mm.h:459:62: "NR_PAGEFLAGS" is not defined
-make[1]: *** [arch/mips/mips-boards/generic/init.o] Error 1
-make: *** [arch/mips/mips-boards/generic] Error 2
+Thanks for the hints from dave jones.
 
-Thanks,
-Dmitri
+---
+> From: Dave Jones <davej@codemonkey.org.uk>
+> Date: Thu, 27 Mar 2008 12:21:56 -0400
+>
+> > Mar 27 08:10:57 localhost kernel: Pid: 3611, comm: obex-data-serve Not tainted 2.6.25-0.121.rc5.git4.fc9 #1
+> > Mar 27 08:10:57 localhost kernel:  [__lock_acquire+2287/3089] __lock_acquire+0x8ef/0xc11
+> > Mar 27 08:10:57 localhost kernel:  [sched_clock+8/11] ? sched_clock+0x8/0xb
+> > Mar 27 08:10:57 localhost kernel:  [lock_acquire+106/144] lock_acquire+0x6a/0x90
+> > Mar 27 08:10:57 localhost kernel:  [<f8bd9321>] ? l2cap_sock_bind+0x29/0x108 [l2cap]
+> > Mar 27 08:10:57 localhost kernel:  [lock_sock_nested+182/198] lock_sock_nested+0xb6/0xc6
+> > Mar 27 08:10:57 localhost kernel:  [<f8bd9321>] ? l2cap_sock_bind+0x29/0x108 [l2cap]
+> > Mar 27 08:10:57 localhost kernel:  [security_socket_post_create+22/27] ? security_socket_post_create+0x16/0x1b
+> > Mar 27 08:10:57 localhost kernel:  [__sock_create+388/472] ? __sock_create+0x184/0x1d8
+> > Mar 27 08:10:57 localhost kernel:  [<f8bd9321>] l2cap_sock_bind+0x29/0x108 [l2cap]
+> > Mar 27 08:10:57 localhost kernel:  [kernel_bind+10/13] kernel_bind+0xa/0xd
+> > Mar 27 08:10:57 localhost kernel:  [<f8dad3d7>] rfcomm_dlc_open+0xc8/0x294 [rfcomm]
+> > Mar 27 08:10:57 localhost kernel:  [lock_sock_nested+187/198] ? lock_sock_nested+0xbb/0xc6
+> > Mar 27 08:10:57 localhost kernel:  [<f8dae18c>] rfcomm_sock_connect+0x8b/0xc2 [rfcomm]
+> > Mar 27 08:10:57 localhost kernel:  [sys_connect+96/125] sys_connect+0x60/0x7d
+> > Mar 27 08:10:57 localhost kernel:  [__lock_acquire+1370/3089] ? __lock_acquire+0x55a/0xc11
+> > Mar 27 08:10:57 localhost kernel:  [sys_socketcall+140/392] sys_socketcall+0x8c/0x188
+> > Mar 27 08:10:57 localhost kernel:  [syscall_call+7/11] syscall_call+0x7/0xb
+---
+
+Signed-off-by: Dave Young <hidave.darkstar@gmail.com>
+
+---
+net/bluetooth/af_bluetooth.c |   40 ++++++++++++++++++++++++++++++++++++++++
+1 file changed, 40 insertions(+)
+
+diff -upr linux/net/bluetooth/af_bluetooth.c linux.new/net/bluetooth/af_bluetooth.c
+--- linux/net/bluetooth/af_bluetooth.c	2008-04-01 16:09:17.000000000 +0800
++++ linux.new/net/bluetooth/af_bluetooth.c	2008-04-01 16:08:52.000000000 +0800
+@@ -53,6 +53,30 @@
+ /* Bluetooth sockets */
+ #define BT_MAX_PROTO	8
+ static struct net_proto_family *bt_proto[BT_MAX_PROTO];
++
++static struct lock_class_key bt_slock_key[BT_MAX_PROTO];
++static struct lock_class_key bt_lock_key[BT_MAX_PROTO];
++static const char *bt_key_strings[BT_MAX_PROTO] = {
++	"sk_lock-AF_BLUETOOTH-BTPROTO_L2CAP",
++	"sk_lock-AF_BLUETOOTH-BTPROTO_HCI",
++	"sk_lock-AF_BLUETOOTH-BTPROTO_SCO",
++	"sk_lock-AF_BLUETOOTH-BTPROTO_RFCOMM",
++	"sk_lock-AF_BLUETOOTH-BTPROTO_BNEP",
++	"sk_lock-AF_BLUETOOTH-BTPROTO_CMTP",
++	"sk_lock-AF_BLUETOOTH-BTPROTO_HIDP",
++	"sk_lock-AF_BLUETOOTH-BTPROTO_AVDTP",
++};
++
++static const char *bt_slock_key_strings[BT_MAX_PROTO] = {
++	"slock-AF_BLUETOOTH-BTPROTO_L2CAP",
++	"slock-AF_BLUETOOTH-BTPROTO_HCI",
++	"slock-AF_BLUETOOTH-BTPROTO_SCO",
++	"slock-AF_BLUETOOTH-BTPROTO_RFCOMM",
++	"slock-AF_BLUETOOTH-BTPROTO_BNEP",
++	"slock-AF_BLUETOOTH-BTPROTO_CMTP",
++	"slock-AF_BLUETOOTH-BTPROTO_HIDP",
++	"slock-AF_BLUETOOTH-BTPROTO_AVDTP",
++};
+ static DEFINE_RWLOCK(bt_proto_lock);
+ 
+ int bt_sock_register(int proto, struct net_proto_family *ops)
+@@ -95,6 +119,21 @@ int bt_sock_unregister(int proto)
+ }
+ EXPORT_SYMBOL(bt_sock_unregister);
+ 
++static void bt_reclassify_sock_lock(struct socket *sock, int proto)
++{
++	struct sock *sk = sock->sk;
++
++	if (!sk)
++		return;
++	BUG_ON(sock_owned_by_user(sk));
++
++	sock_lock_init_class_and_name(sk,
++			bt_slock_key_strings[proto],
++			&bt_slock_key[proto],
++			bt_key_strings[proto],
++			&bt_lock_key[proto]);
++}
++
+ static int bt_sock_create(struct net *net, struct socket *sock, int proto)
+ {
+ 	int err;
+@@ -117,6 +156,7 @@ static int bt_sock_create(struct net *ne
+ 
+ 	if (bt_proto[proto] && try_module_get(bt_proto[proto]->owner)) {
+ 		err = bt_proto[proto]->create(net, sock, proto);
++		bt_reclassify_sock_lock(sock, proto);
+ 		module_put(bt_proto[proto]->owner);
+ 	}
+ 
