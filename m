@@ -1,24 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760868AbYDBSjc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760969AbYDBSjp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760868AbYDBSjc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 14:39:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757651AbYDBSfn
+	id S1760969AbYDBSjp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 14:39:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757892AbYDBSfo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 14:35:43 -0400
-Received: from 21.sub-75-208-3.myvzw.com ([75.208.3.21]:38412 "EHLO
+	Wed, 2 Apr 2008 14:35:44 -0400
+Received: from 21.sub-75-208-3.myvzw.com ([75.208.3.21]:38411 "EHLO
 	mail.goop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757205AbYDBSfi (ORCPT
+	with ESMTP id S1757179AbYDBSfj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 14:35:38 -0400
+	Wed, 2 Apr 2008 14:35:39 -0400
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Subject: [PATCH 06 of 24] xen: Move events.c to drivers/xen for IA64/Xen
-	support
-X-Mercurial-Node: 31c970b6aed33a1672db93c58c1ac9b64f0bae61
-Message-Id: <31c970b6aed33a1672db.1207158835@localhost>
+Subject: [PATCH 12 of 24] xen: import arch generic part of xencomm
+X-Mercurial-Node: cc73ded882bdb317993c0928fdf83b0b69d5e1dc
+Message-Id: <cc73ded882bdb317993c.1207158841@localhost>
 In-Reply-To: <patchbomb.1207158829@localhost>
-Date: Wed, 02 Apr 2008 10:53:55 -0700
+Date: Wed, 02 Apr 2008 10:54:01 -0700
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: LKML <linux-kernel@vger.kernel.org>,
@@ -29,86 +28,392 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Isaku Yamahata <yamahata@valinux.co.jp>
 
-move arch/x86/xen/events.c undedr drivers/xen to share codes
-with x86 and ia64. And minor adjustment to compile.
-ia64/xen also uses events.c
+On xen/ia64 and xen/powerpc hypercall arguments are passed by pseudo
+physical address (guest physical address) so that it's necessary to
+convert from virtual address into pseudo physical address. The frame
+work is called xencomm.
+Import arch generic part of xencomm.
 
-Signed-off-by: Yaozu (Eddie) Dong <eddie.dong@intel.com>
 Signed-off-by: Isaku Yamahata <yamahata@valinux.co.jp>
 Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 ---
- arch/x86/xen/Makefile  |    2 +-
- arch/x86/xen/xen-ops.h |    2 +-
- drivers/xen/Makefile   |    2 +-
- drivers/xen/events.c   |    3 +--
- include/xen/xen-ops.h  |    9 ++++++++-
- 5 files changed, 12 insertions(+), 6 deletions(-)
+ drivers/xen/Makefile            |    1
+ drivers/xen/xencomm.c           |  232 +++++++++++++++++++++++++++++++++++++++
+ include/xen/interface/xencomm.h |   41 ++++++
+ include/xen/xencomm.h           |   78 ++++++++++++-
+ 4 files changed, 351 insertions(+), 1 deletion(-)
 
-diff --git a/arch/x86/xen/Makefile b/arch/x86/xen/Makefile
---- a/arch/x86/xen/Makefile
-+++ b/arch/x86/xen/Makefile
-@@ -1,4 +1,4 @@
- obj-y		:= enlighten.o setup.o multicalls.o mmu.o \
--			events.o time.o manage.o xen-asm.o
-+			time.o manage.o xen-asm.o
- 
- obj-$(CONFIG_SMP)	+= smp.o
-diff --git a/arch/x86/xen/xen-ops.h b/arch/x86/xen/xen-ops.h
---- a/arch/x86/xen/xen-ops.h
-+++ b/arch/x86/xen/xen-ops.h
-@@ -3,6 +3,7 @@
- 
- #include <linux/init.h>
- #include <linux/irqreturn.h>
-+#include <xen/xen-ops.h>
- 
- /* These are code, but not functions.  Defined in entry.S */
- extern const char xen_hypervisor_callback[];
-@@ -10,7 +11,6 @@
- 
- void xen_copy_trap_info(struct trap_info *traps);
- 
--DECLARE_PER_CPU(struct vcpu_info *, xen_vcpu);
- DECLARE_PER_CPU(unsigned long, xen_cr3);
- DECLARE_PER_CPU(unsigned long, xen_current_cr3);
- 
 diff --git a/drivers/xen/Makefile b/drivers/xen/Makefile
 --- a/drivers/xen/Makefile
 +++ b/drivers/xen/Makefile
-@@ -1,2 +1,2 @@
--obj-y	+= grant-table.o features.o
-+obj-y	+= grant-table.o features.o events.o
+@@ -1,2 +1,3 @@
+ obj-y	+= grant-table.o features.o events.o
  obj-y	+= xenbus/
-diff --git a/arch/x86/xen/events.c b/drivers/xen/events.c
-rename from arch/x86/xen/events.c
-rename to drivers/xen/events.c
---- a/arch/x86/xen/events.c
-+++ b/drivers/xen/events.c
-@@ -33,11 +33,10 @@
- #include <asm/xen/hypercall.h>
- #include <asm/xen/hypervisor.h>
- 
-+#include <xen/xen-ops.h>
- #include <xen/events.h>
- #include <xen/interface/xen.h>
- #include <xen/interface/event_channel.h>
--
--#include "xen-ops.h"
- 
- /*
-  * This lock protects updates to the following mapping and reference-count
-diff --git a/include/xen/xen-ops.h b/include/xen/xen-ops.h
++obj-$(CONFIG_XEN_XENCOMM)	+= xencomm.o
+diff --git a/drivers/xen/xencomm.c b/drivers/xen/xencomm.c
 new file mode 100644
 --- /dev/null
-+++ b/include/xen/xen-ops.h
-@@ -0,0 +1,8 @@
-+#ifndef INCLUDE_XEN_OPS_H
-+#define INCLUDE_XEN_OPS_H
++++ b/drivers/xen/xencomm.c
+@@ -0,0 +1,232 @@
++/*
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
++ *
++ * Copyright (C) IBM Corp. 2006
++ *
++ * Authors: Hollis Blanchard <hollisb@us.ibm.com>
++ */
 +
-+#include <linux/percpu.h>
++#include <linux/gfp.h>
++#include <linux/mm.h>
++#include <asm/page.h>
++#include <xen/xencomm.h>
++#include <xen/interface/xen.h>
++#ifdef __ia64__
++#include <asm/xen/xencomm.h>	/* for is_kern_addr() */
++#endif
 +
-+DECLARE_PER_CPU(struct vcpu_info *, xen_vcpu);
++#ifdef HAVE_XEN_PLATFORM_COMPAT_H
++#include <xen/platform-compat.h>
++#endif
 +
-+#endif /* INCLUDE_XEN_OPS_H */
++static int xencomm_init(struct xencomm_desc *desc,
++			void *buffer, unsigned long bytes)
++{
++	unsigned long recorded = 0;
++	int i = 0;
++
++	while ((recorded < bytes) && (i < desc->nr_addrs)) {
++		unsigned long vaddr = (unsigned long)buffer + recorded;
++		unsigned long paddr;
++		int offset;
++		int chunksz;
++
++		offset = vaddr % PAGE_SIZE; /* handle partial pages */
++		chunksz = min(PAGE_SIZE - offset, bytes - recorded);
++
++		paddr = xencomm_vtop(vaddr);
++		if (paddr == ~0UL) {
++			printk(KERN_DEBUG "%s: couldn't translate vaddr %lx\n",
++			       __func__, vaddr);
++			return -EINVAL;
++		}
++
++		desc->address[i++] = paddr;
++		recorded += chunksz;
++	}
++
++	if (recorded < bytes) {
++		printk(KERN_DEBUG
++		       "%s: could only translate %ld of %ld bytes\n",
++		       __func__, recorded, bytes);
++		return -ENOSPC;
++	}
++
++	/* mark remaining addresses invalid (just for safety) */
++	while (i < desc->nr_addrs)
++		desc->address[i++] = XENCOMM_INVALID;
++
++	desc->magic = XENCOMM_MAGIC;
++
++	return 0;
++}
++
++static struct xencomm_desc *xencomm_alloc(gfp_t gfp_mask,
++					  void *buffer, unsigned long bytes)
++{
++	struct xencomm_desc *desc;
++	unsigned long buffer_ulong = (unsigned long)buffer;
++	unsigned long start = buffer_ulong & PAGE_MASK;
++	unsigned long end = (buffer_ulong + bytes) | ~PAGE_MASK;
++	unsigned long nr_addrs = (end - start + 1) >> PAGE_SHIFT;
++	unsigned long size = sizeof(*desc) +
++		sizeof(desc->address[0]) * nr_addrs;
++
++	/*
++	 * slab allocator returns at least sizeof(void*) aligned pointer.
++	 * When sizeof(*desc) > sizeof(void*), struct xencomm_desc might
++	 * cross page boundary.
++	 */
++	if (sizeof(*desc) > sizeof(void *)) {
++		unsigned long order = get_order(size);
++		desc = (struct xencomm_desc *)__get_free_pages(gfp_mask,
++							       order);
++		if (desc == NULL)
++			return NULL;
++
++		desc->nr_addrs =
++			((PAGE_SIZE << order) - sizeof(struct xencomm_desc)) /
++			sizeof(*desc->address);
++	} else {
++		desc = kmalloc(size, gfp_mask);
++		if (desc == NULL)
++			return NULL;
++
++		desc->nr_addrs = nr_addrs;
++	}
++	return desc;
++}
++
++void xencomm_free(struct xencomm_handle *desc)
++{
++	if (desc && !((ulong)desc & XENCOMM_INLINE_FLAG)) {
++		struct xencomm_desc *desc__ = (struct xencomm_desc *)desc;
++		if (sizeof(*desc__) > sizeof(void *)) {
++			unsigned long size = sizeof(*desc__) +
++				sizeof(desc__->address[0]) * desc__->nr_addrs;
++			unsigned long order = get_order(size);
++			free_pages((unsigned long)__va(desc), order);
++		} else
++			kfree(__va(desc));
++	}
++}
++
++static int xencomm_create(void *buffer, unsigned long bytes,
++			  struct xencomm_desc **ret, gfp_t gfp_mask)
++{
++	struct xencomm_desc *desc;
++	int rc;
++
++	pr_debug("%s: %p[%ld]\n", __func__, buffer, bytes);
++
++	if (bytes == 0) {
++		/* don't create a descriptor; Xen recognizes NULL. */
++		BUG_ON(buffer != NULL);
++		*ret = NULL;
++		return 0;
++	}
++
++	BUG_ON(buffer == NULL); /* 'bytes' is non-zero */
++
++	desc = xencomm_alloc(gfp_mask, buffer, bytes);
++	if (!desc) {
++		printk(KERN_DEBUG "%s failure\n", "xencomm_alloc");
++		return -ENOMEM;
++	}
++
++	rc = xencomm_init(desc, buffer, bytes);
++	if (rc) {
++		printk(KERN_DEBUG "%s failure: %d\n", "xencomm_init", rc);
++		xencomm_free((struct xencomm_handle *)__pa(desc));
++		return rc;
++	}
++
++	*ret = desc;
++	return 0;
++}
++
++/* check if memory address is within VMALLOC region  */
++static int is_phys_contiguous(unsigned long addr)
++{
++	if (!is_kernel_addr(addr))
++		return 0;
++
++	return (addr < VMALLOC_START) || (addr >= VMALLOC_END);
++}
++
++static struct xencomm_handle *xencomm_create_inline(void *ptr)
++{
++	unsigned long paddr;
++
++	BUG_ON(!is_phys_contiguous((unsigned long)ptr));
++
++	paddr = (unsigned long)xencomm_pa(ptr);
++	BUG_ON(paddr & XENCOMM_INLINE_FLAG);
++	return (struct xencomm_handle *)(paddr | XENCOMM_INLINE_FLAG);
++}
++
++/* "mini" routine, for stack-based communications: */
++static int xencomm_create_mini(void *buffer,
++	unsigned long bytes, struct xencomm_mini *xc_desc,
++	struct xencomm_desc **ret)
++{
++	int rc = 0;
++	struct xencomm_desc *desc;
++	BUG_ON(((unsigned long)xc_desc) % sizeof(*xc_desc) != 0);
++
++	desc = (void *)xc_desc;
++
++	desc->nr_addrs = XENCOMM_MINI_ADDRS;
++
++	rc = xencomm_init(desc, buffer, bytes);
++	if (!rc)
++		*ret = desc;
++
++	return rc;
++}
++
++struct xencomm_handle *xencomm_map(void *ptr, unsigned long bytes)
++{
++	int rc;
++	struct xencomm_desc *desc;
++
++	if (is_phys_contiguous((unsigned long)ptr))
++		return xencomm_create_inline(ptr);
++
++	rc = xencomm_create(ptr, bytes, &desc, GFP_KERNEL);
++
++	if (rc || desc == NULL)
++		return NULL;
++
++	return xencomm_pa(desc);
++}
++
++struct xencomm_handle *__xencomm_map_no_alloc(void *ptr, unsigned long bytes,
++			struct xencomm_mini *xc_desc)
++{
++	int rc;
++	struct xencomm_desc *desc = NULL;
++
++	if (is_phys_contiguous((unsigned long)ptr))
++		return xencomm_create_inline(ptr);
++
++	rc = xencomm_create_mini(ptr, bytes, xc_desc,
++				&desc);
++
++	if (rc)
++		return NULL;
++
++	return xencomm_pa(desc);
++}
+diff --git a/include/xen/interface/xencomm.h b/include/xen/interface/xencomm.h
+new file mode 100644
+--- /dev/null
++++ b/include/xen/interface/xencomm.h
+@@ -0,0 +1,41 @@
++/*
++ * Permission is hereby granted, free of charge, to any person obtaining a copy
++ * of this software and associated documentation files (the "Software"), to
++ * deal in the Software without restriction, including without limitation the
++ * rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
++ * sell copies of the Software, and to permit persons to whom the Software is
++ * furnished to do so, subject to the following conditions:
++ *
++ * The above copyright notice and this permission notice shall be included in
++ * all copies or substantial portions of the Software.
++ *
++ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
++ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
++ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
++ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
++ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
++ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
++ * DEALINGS IN THE SOFTWARE.
++ *
++ * Copyright (C) IBM Corp. 2006
++ */
++
++#ifndef _XEN_XENCOMM_H_
++#define _XEN_XENCOMM_H_
++
++/* A xencomm descriptor is a scatter/gather list containing physical
++ * addresses corresponding to a virtually contiguous memory area. The
++ * hypervisor translates these physical addresses to machine addresses to copy
++ * to and from the virtually contiguous area.
++ */
++
++#define XENCOMM_MAGIC 0x58434F4D /* 'XCOM' */
++#define XENCOMM_INVALID (~0UL)
++
++struct xencomm_desc {
++    uint32_t magic;
++    uint32_t nr_addrs; /* the number of entries in address[] */
++    uint64_t address[0];
++};
++
++#endif /* _XEN_XENCOMM_H_ */
+diff --git a/include/xen/xencomm.h b/include/xen/xencomm.h
+new file mode 100644
+--- /dev/null
++++ b/include/xen/xencomm.h
+@@ -0,0 +1,77 @@
++/*
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
++ *
++ * Copyright (C) IBM Corp. 2006
++ *
++ * Authors: Hollis Blanchard <hollisb@us.ibm.com>
++ *          Jerone Young <jyoung5@us.ibm.com>
++ */
++
++#ifndef _LINUX_XENCOMM_H_
++#define _LINUX_XENCOMM_H_
++
++#include <xen/interface/xencomm.h>
++
++#define XENCOMM_MINI_ADDRS 3
++struct xencomm_mini {
++	struct xencomm_desc _desc;
++	uint64_t address[XENCOMM_MINI_ADDRS];
++};
++
++/* To avoid additionnal virt to phys conversion, an opaque structure is
++   presented.  */
++struct xencomm_handle;
++
++extern void xencomm_free(struct xencomm_handle *desc);
++extern struct xencomm_handle *xencomm_map(void *ptr, unsigned long bytes);
++extern struct xencomm_handle *__xencomm_map_no_alloc(void *ptr,
++			unsigned long bytes,  struct xencomm_mini *xc_area);
++
++#if 0
++#define XENCOMM_MINI_ALIGNED(xc_desc, n)				\
++	struct xencomm_mini xc_desc ## _base[(n)]			\
++	__attribute__((__aligned__(sizeof(struct xencomm_mini))));	\
++	struct xencomm_mini *xc_desc = &xc_desc ## _base[0];
++#else
++/*
++ * gcc bug workaround:
++ * http://gcc.gnu.org/bugzilla/show_bug.cgi?id=16660
++ * gcc doesn't handle properly stack variable with
++ * __attribute__((__align__(sizeof(struct xencomm_mini))))
++ */
++#define XENCOMM_MINI_ALIGNED(xc_desc, n)				\
++	unsigned char xc_desc ## _base[((n) + 1 ) *			\
++				       sizeof(struct xencomm_mini)];	\
++	struct xencomm_mini *xc_desc = (struct xencomm_mini *)		\
++		((unsigned long)xc_desc ## _base +			\
++		 (sizeof(struct xencomm_mini) -				\
++		  ((unsigned long)xc_desc ## _base) %			\
++		  sizeof(struct xencomm_mini)));
++#endif
++#define xencomm_map_no_alloc(ptr, bytes)			\
++	({ XENCOMM_MINI_ALIGNED(xc_desc, 1);			\
++		__xencomm_map_no_alloc(ptr, bytes, xc_desc); })
++
++/* provided by architecture code: */
++extern unsigned long xencomm_vtop(unsigned long vaddr);
++
++static inline void *xencomm_pa(void *ptr)
++{
++	return (void *)xencomm_vtop((unsigned long)ptr);
++}
++
++#define xen_guest_handle(hnd)  ((hnd).p)
++
++#endif /* _LINUX_XENCOMM_H_ */
 
 
