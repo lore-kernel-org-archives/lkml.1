@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754899AbYDBIGI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752393AbYDBIG1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754899AbYDBIGI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 04:06:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752314AbYDBIFw
+	id S1752393AbYDBIG1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 04:06:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752438AbYDBIFx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 04:05:52 -0400
-Received: from mx.ATComputing.nl ([195.108.229.5]:35909 "EHLO
+	Wed, 2 Apr 2008 04:05:53 -0400
+Received: from mx.ATComputing.nl ([195.108.229.5]:39873 "EHLO
 	mx.ATComputing.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752037AbYDBIFv (ORCPT
+	with ESMTP id S1752172AbYDBIFv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 2 Apr 2008 04:05:51 -0400
-Date: Wed, 2 Apr 2008 09:33:41 +0200
+Date: Wed, 2 Apr 2008 09:31:51 +0200
 From: Gerlof Langeveld <gerlof@ATComputing.nl>
 To: linux-kernel@vger.kernel.org
 Cc: akpm@linux-foundation.org
-Subject: [PATCH 3/3] accounting: task counters for disk/network
-Message-ID: <20080402073341.GC8419@atcmpg.ATComputing.nl>
+Subject: [PATCH 2/3] accounting: task counters for disk/network
+Message-ID: <20080402073151.GB8419@atcmpg.ATComputing.nl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -27,85 +27,159 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Gerlof Langeveld <gerlof@atcomputing.nl>
 
-This patch depends on patch 2/3 "accounting: task counters for disk/network".
+Process level counters related to CPU, memory, disk and network utilization
+should also be preserved in the process accounting record, once the
+process has finished.
 
-Kernel configuration should allow the selection of the required
-type of process accounting record (new type 6). The standard type
-of process accounting record remains the default.
+This patch depends on patch 1/3 "accounting: task counters for disk/network".
 
-Furthermore per-task I/O accounting (i.e. the availability of the
-file /proc/pid/io) is made independent of the export of these
-statistics through netlink. The current structure of the ifdef's
-allows this independency.
+The additional disk and network I/O counters should be stored in the
+process accounting record at the moment that a process exits. For this
+reason a new type of process accounting record (type 6) is introduced
+as a configurable option.
 
-Modified file
-  init/Kconfig:               When process accounting support is configured,
-                              a choice can be made between type 2 (default),
-                              type 3 (was already an existing alternative)
-                              or type 6 (new alternative).
+The performance monitor 'atop' uses a similar kernel patch for several
+years now to supply a complete overview of all processes (so also
+exited processes) that utilized certain system resources.
 
-                              Task I/O accounting is no longer depending on
-                              extended taskstats through netlink interface.
+Modified source files
+  include/linux/acct.h:       addition new format of process accounting record
+
+  kernel/acct.c:              fill new format of process accounting record
+
+Since this new type of record is optional, all modifications are ifdef'd
+with a macro (CONFIG_PROCESS_ACCT_V6).
+Patch applies to kernel version 2.6.24.4
 
 Signed-off-by: Gerlof Langeveld <gerlof@atcomputing.nl>
 ---
 
-diff -uprN -X linux-2.6.24.4-modified/Documentation/dontdiff linux-2.6.24.4-vanilla/init/Kconfig linux-2.6.24.4-modified/init/Kconfig
---- linux-2.6.24.4-vanilla/init/Kconfig	2008-03-24 19:49:18.000000000 +0100
-+++ linux-2.6.24.4-modified/init/Kconfig	2008-03-27 09:49:39.000000000 +0100
-@@ -152,18 +152,37 @@ config BSD_PROCESS_ACCT
- 	  up to the user level program to do useful things with this
- 	  information.  This is generally a good idea, so say Y.
+diff -uprN -X linux-2.6.24.4-vanilla/Documentation/dontdiff linux-2.6.24.4-vanilla/include/linux/acct.h linux-2.6.24.4-modified/include/linux/acct.h
+--- linux-2.6.24.4-vanilla/include/linux/acct.h	2008-03-24 19:49:18.000000000 +0100
++++ linux-2.6.24.4-modified/include/linux/acct.h	2008-03-25 14:01:30.000000000 +0100
+@@ -97,6 +97,54 @@ struct acct_v3
+ 	char		ac_comm[ACCT_COMM];	/* Command Name */
+ };
  
-+choice
-+        depends on BSD_PROCESS_ACCT
-+        prompt "Accounting record type"
-+	default BSD_PROCESS_ACCT_V2
++struct acct_v6 {
 +
-+config BSD_PROCESS_ACCT_V2
-+	bool "BSD Process Accounting version 2 file format"
-+	help
-+	  Default format with limited process accounting information.
++	char		ac_flag;		/* Flags */
++	char		ac_version;		/* Always set to ACCT_VERSION */
++	__u32		ac_pid;			/* Process ID */
++	__u32		ac_ppid;		/* Parent Process ID */
++	__u16		ac_uid16;		/* LSB of Real User ID */
++	__u16		ac_gid16;		/* LSB of Real Group ID */
++	__u16		ac_tty;			/* Control Terminal */
++	__u32		ac_btime;		/* Process Creation Time */
++	comp_t		ac_utime;		/* User Time */
++	comp_t		ac_stime;		/* System Time */
++	comp_t		ac_etime;		/* Elapsed Time */
++	comp_t		ac_mem;			/* Virtual  Memory */
++	comp_t		ac_rss;			/* Resident Memory */
++	comp_t		ac_io;			/* Chars Transferred */
++	comp_t		ac_rw;			/* Blocks Read or Written */
++	comp_t		ac_bread;		/* Blocks Read */
++	comp_t		ac_bwrite;		/* Blocks Written */
++	comp2_t		ac_dskrsz;		/* Cum. blocks read */
++	comp2_t		ac_dskwsz;		/* Cum. blocks written */
++	comp_t		ac_tcpsnd;		/* TCP send requests */
++	comp_t		ac_tcprcv;		/* TCP recv requests */
++	comp2_t		ac_tcpssz;		/* TCP cum. length   */
++	comp2_t		ac_tcprsz;		/* TCP cum. length   */
++	comp_t		ac_udpsnd;		/* UDP send requests */
++	comp_t		ac_udprcv;		/* UDP recv requests */
++	comp2_t		ac_udpssz;		/* UDP cum. length   */
++	comp2_t		ac_udprsz;		/* UDP cum. length   */
++	comp_t		ac_rawsnd;		/* RAW send requests */
++	comp_t		ac_rawrcv;		/* RAW recv requests */
++	comp_t		ac_minflt;		/* Minor Pagefaults */
++	comp_t		ac_majflt;		/* Major Pagefaults */
++	comp_t		ac_swaps;		/* Number of Swaps */
++/* m68k had no padding here. */
++#if !defined(CONFIG_M68K) || !defined(__KERNEL__)
++	__u16		ac_ahz;			/* AHZ */
++#endif
++	__u32		ac_exitcode;		/* Exitcode */
++	char		ac_comm[ACCT_COMM + 1];	/* Command Name */
++	__u8		ac_etime_hi;		/* Elapsed Time MSB */
++	__u16		ac_etime_lo;		/* Elapsed Time LSB */
++	__u32		ac_uid;			/* Real User ID */
++	__u32		ac_gid;			/* Real Group ID */
++};
 +
- config BSD_PROCESS_ACCT_V3
- 	bool "BSD Process Accounting version 3 file format"
--	depends on BSD_PROCESS_ACCT
--	default n
- 	help
--	  If you say Y here, the process accounting information is written
-+	  The process accounting information is written
- 	  in a new file format that also logs the process IDs of each
- 	  process and it's parent. Note that this file format is incompatible
- 	  with previous v0/v1/v2 file formats, so you will need updated tools
- 	  for processing it. A preliminary version of these tools is available
- 	  at <http://www.physik3.uni-rostock.de/tim/kernel/utils/acct/>.
- 
-+config PROCESS_ACCT_V6
-+	bool "Process Accounting version 6 file format"
-+	help
-+	  The process accounting information is written
-+	  in a file format that logs the PID of each process and
-+	  additional I/O statistics for disk and networking.
-+	  Note that this file format is incompatible
-+	  with previous v0/v1/v2/v3 file formats, but supplies optimal
-+	  information for tools like atop.
-+endchoice
 +
- config TASKSTATS
- 	bool "Export task/process statistics through netlink (EXPERIMENTAL)"
- 	depends on NET
-@@ -198,11 +217,10 @@ config TASK_XACCT
- 	  Say N if unsure.
++
+ /*
+  *  accounting flags
+  */
+@@ -143,7 +191,11 @@ extern void acct_process(void);
+  * 5: new binary incompatible format (128 bytes, second half)
+  *
+  */
+-
++#ifdef CONFIG_PROCESS_ACCT_V6
++#define ACCT_VERSION	6
++#define AHZ		(USER_HZ)
++typedef struct acct_v6 acct_t;
++#else
+ #ifdef CONFIG_BSD_PROCESS_ACCT_V3
+ #define ACCT_VERSION	3
+ #define AHZ		100
+@@ -157,6 +209,7 @@ typedef struct acct_v3 acct_t;
+ #define AHZ		(USER_HZ)
+ typedef struct acct acct_t;
+ #endif
++#endif
  
- config TASK_IO_ACCOUNTING
--	bool "Enable per-task storage I/O accounting (EXPERIMENTAL)"
--	depends on TASK_XACCT
-+	bool "Enable per-task I/O accounting (EXPERIMENTAL)"
- 	help
--	  Collect information on the number of bytes of storage I/O which this
--	  task has caused.
-+	  Collect information on disk and network I/O which this task
-+	  has caused.
+ #else
+ #define ACCT_VERSION	2
+diff -uprN -X linux-2.6.24.4-vanilla/Documentation/dontdiff linux-2.6.24.4-vanilla/kernel/acct.c linux-2.6.24.4-modified/kernel/acct.c
+--- linux-2.6.24.4-vanilla/kernel/acct.c	2008-03-25 14:09:18.000000000 +0100
++++ linux-2.6.24.4-modified/kernel/acct.c	2008-03-25 14:07:45.000000000 +0100
+@@ -344,7 +344,7 @@ static comp_t encode_comp_t(unsigned lon
+ 	return exp;
+ }
  
- 	  Say N if unsure.
+-#if ACCT_VERSION==1 || ACCT_VERSION==2
++#if ACCT_VERSION == 1 || ACCT_VERSION == 2 || ACCT_VERSION == 6
+ /*
+  * encode an u64 into a comp2_t (24 bits)
+  *
+@@ -484,6 +484,37 @@ static void do_acct_process(struct file 
+ 	ac.ac_pid = current->tgid;
+ 	ac.ac_ppid = current->real_parent->tgid;
+ #endif
++#if ACCT_VERSION == 6
++	ac.ac_pid    = current->pid;
++	ac.ac_ppid   = current->parent->pid;
++	ac.ac_uid16  = current->uid;
++	ac.ac_gid16  = current->gid;
++	ac.ac_ahz    = AHZ;
++	ac.ac_rss    = current->mm ?
++		encode_comp_t(get_mm_rss(current->mm)<<(PAGE_SHIFT-10)) :
++		encode_comp_t(0);
++#ifdef CONFIG_TASK_IO_ACCOUNTING
++	ac.ac_bread  = encode_comp_t(current->ioac.dsk_rio);
++	ac.ac_bwrite = encode_comp_t(current->ioac.dsk_wio);
++	ac.ac_dskrsz = encode_comp2_t(current->ioac.dsk_rsz);
++	ac.ac_dskwsz = encode_comp2_t(current->ioac.dsk_wsz);
++	ac.ac_tcpsnd = encode_comp_t(current->ioac.tcp_snd);
++	ac.ac_tcprcv = encode_comp_t(current->ioac.tcp_rcv);
++	ac.ac_tcpssz = encode_comp2_t(current->ioac.tcp_ssz);
++	ac.ac_tcprsz = encode_comp2_t(current->ioac.tcp_rsz);
++	ac.ac_udpsnd = encode_comp_t(current->ioac.udp_snd);
++	ac.ac_udprcv = encode_comp_t(current->ioac.udp_rcv);
++	ac.ac_udpssz = encode_comp2_t(current->ioac.udp_ssz);
++	ac.ac_udprsz = encode_comp2_t(current->ioac.udp_rsz);
++	ac.ac_rawsnd = encode_comp_t(current->ioac.raw_snd);
++	ac.ac_rawrcv = encode_comp_t(current->ioac.raw_rcv);
++#else
++	ac.ac_bread  = ac.ac_bwrite = ac.ac_dskrsz = ac.ac_dskwsz = 0;
++	ac.ac_tcpsnd = ac.ac_tcprcv = ac.ac_tcpssz = ac.ac_tcprsz = 0;
++	ac.ac_udpsnd = ac.ac_udprcv = ac.ac_udpssz = ac.ac_udprsz = 0;
++	ac.ac_rawsnd = ac.ac_rawrcv = 0;
++#endif
++#endif
  
+ 	spin_lock_irq(&current->sighand->siglock);
+ 	tty = current->signal->tty;
