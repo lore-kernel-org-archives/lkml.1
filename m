@@ -1,86 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765427AbYDBVzB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932278AbYDBVzg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765427AbYDBVzB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 17:55:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765251AbYDBVxi
+	id S932278AbYDBVzg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 17:55:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932186AbYDBVxs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 17:53:38 -0400
-Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:50243
-	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1765236AbYDBVxh (ORCPT
+	Wed, 2 Apr 2008 17:53:48 -0400
+Received: from mga02.intel.com ([134.134.136.20]:23295 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932180AbYDBVxr convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 17:53:37 -0400
-Date: Wed, 2 Apr 2008 23:53:34 +0200
-From: Andrea Arcangeli <andrea@qumranet.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Hugh Dickins <hugh@veritas.com>, Robin Holt <holt@sgi.com>,
-       Avi Kivity <avi@qumranet.com>, Izik Eidus <izike@qumranet.com>,
-       kvm-devel@lists.sourceforge.net,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, general@lists.openfabrics.org,
-       Steve Wise <swise@opengridcomputing.com>,
-       Roland Dreier <rdreier@cisco.com>, Kanoj Sarcar <kanojsarcar@yahoo.com>,
-       steiner@sgi.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       daniel.blueman@quadrics.com, Nick Piggin <npiggin@suse.de>
-Subject: Re: [patch 1/9] EMM Notifier: The notifier calls
-Message-ID: <20080402215334.GT19189@duo.random>
-References: <20080401205531.986291575@sgi.com> <20080401205635.793766935@sgi.com> <20080402064952.GF19189@duo.random> <Pine.LNX.4.64.0804021048460.27214@schroedinger.engr.sgi.com>
+	Wed, 2 Apr 2008 17:53:47 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,595,1199692800"; 
+   d="scan'208";a="266632195"
+X-MIMEOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0804021048460.27214@schroedinger.engr.sgi.com>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Subject: RE: [RFC 00/21] Generic show_mem()
+Date: Wed, 2 Apr 2008 14:53:45 -0700
+Message-ID: <1FE6DD409037234FAB833C420AA843ECF9DFC4@orsmsx424.amr.corp.intel.com>
+In-reply-to: <12071682142640-git-send-email-hannes@saeurebad.de>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [RFC 00/21] Generic show_mem()
+Thread-Index: AciVCbNLmh3h030/QRSKVAf7aZR2mAAAUIyw
+References: <12071682142640-git-send-email-hannes@saeurebad.de>
+From: "Luck, Tony" <tony.luck@intel.com>
+To: "Johannes Weiner" <hannes@saeurebad.de>, <linux-kernel@vger.kernel.org>
+Cc: <linux-mm@kvack.org>, <mingo@elte.hu>, <davem@davemloft.net>,
+       <hskinnemoen@atmel.com>, <cooloney@kernel.org>, <starvik@axis.com>,
+       <dhowells@redhat.com>, <ysato@users.sourceforge.net>,
+       <takata@linux-m32r.org>, <geert@linux-m68k.org>, <ralf@linux-mips.org>,
+       <kyle@parisc-linux.org>, <paulus@samba.org>, <schwidefsky@de.ibm.com>,
+       <lethal@linux-sh.org>, <jdike@addtoit.com>, <miles@gnu.org>,
+       <chris@zankel.net>, <rmk@arm.linux.org.uk>
+X-OriginalArrivalTime: 02 Apr 2008 21:53:46.0466 (UTC) FILETIME=[06B3EC20:01C8950C]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 02, 2008 at 10:59:50AM -0700, Christoph Lameter wrote:
-> Did I see #v10? Could you start a new subject when you post please? Do 
-> not respond to some old message otherwise the threading will be wrong.
+> Tony, as far as I understand, ia64 jumps holes in the memory map with
+> vmemmap_find_next_valid_pfn().  Any idea if and how this could be
+> built into the generic show_mem() version?
 
-I wasn't clear enough, #v10 was in the works... I was thinking about
-the last two issues before posting it.
+Perhaps it might be worth looking at this when ia64 slims down to
+just one memory model (using sparse virtual mem map).  But I don't
+think anyone is actively working on this.  Right now we have two
+very different show_mem() functions for the contig and discontig
+cases.
 
-> How exactly does the GRU corrupt memory?
+This whole function sends shivers down my spine for a large
+system though ... that inner loop looks at every single page
+structure ... on a multi-terabyte machine that could run to
+billions of cache misses.  Hope the users aren't in a hurry
+to see the answer ... or doing something painful like:
 
-Jack added synchronize_rcu, I assume for a reason.
+	# watch -n 1 cat /proc/meminfo
 
->  
-> >    Another less obviously safe approach is to allow the register
-> >    method to succeed only when mm_users=1 and the task is single
-> >    threaded. This way if all the places where the mmu notifers aren't
-> >    invoked on the mm not by the current task, are only doing
-> >    invalidates after/before zapping ptes, if the istantiation of new
-> >    ptes is single threaded too, we shouldn't worry if we miss an
-> >    invalidate for a pte that is zero and doesn't point to any physical
-> >    page. In the places where current->mm != mm I'm using
-> >    invalidate_page 99% of the time, and that only follows the
-> >    ptep_clear_flush. The problem are the range_begin that will happen
-> >    before zapping the pte in places where current->mm !=
-> >    mm. Unfortunately in my incremental patch where I move all
-> >    invalidate_page outside of the PT lock to prepare for allowing
-> >    sleeping inside the mmu notifiers, I used range_begin/end in places
-> >    like try_to_unmap_cluster where current->mm != mm. In general
-> >    this solution looks more fragile than the seqlock.
-> 
-> Hmmm... Okay that is one solution that would just require a BUG_ON in the 
-> registration methods.
-
-Perhaps you didn't notice that this solution can't work if you call
-range_begin/end not in the "current" context and try_to_unmap_cluster
-does exactly that for both my patchset and yours. Missing an _end is
-ok, missing a _begin is never ok.
-
-> Well doesnt the requirement of just one execution thread also deal with 
-> that issue?
-
-Yes, except again it can't work for try_to_unmap_cluster.
-
-This solution is only applicable to #v10 if I fix try_to_unmap_cluster
-to only call invalidate_page (relaying on the fact the VM holds a pin
-and a lock on any page that is being mmu-notifier-invalidated).
-
-You can't use the single threaded approach to solve either 1 or 2,
-because your _begin call is called anywhere and that's where you call
-the secondary-tlb flush and it's fatal to miss it.
-
-invalidate_page is called always after, so it enforced the tlb flush
-to be called _after_ and so it's inherently safe.
+-Tony
