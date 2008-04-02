@@ -1,58 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758569AbYDBO3x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757152AbYDBOg2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758569AbYDBO3x (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 10:29:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756275AbYDBO3o
+	id S1757152AbYDBOg2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 10:36:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754912AbYDBOgU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 10:29:44 -0400
-Received: from hpsmtp-eml14.kpnxchange.com ([213.75.38.114]:52930 "EHLO
-	hpsmtp-eml14.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756497AbYDBO3n (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 10:29:43 -0400
-From: Frans Pop <elendil@planet.nl>
-To: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
-Subject: Re: No IDE drivers loaded for Toshiba Satellite 320 CDS
-Date: Wed, 2 Apr 2008 16:29:40 +0200
-User-Agent: KMail/1.9.9
-References: <200804021524.27222.elendil@planet.nl> <20080402135729.GB24239@csclub.uwaterloo.ca>
-In-Reply-To: <20080402135729.GB24239@csclub.uwaterloo.ca>
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Wed, 2 Apr 2008 10:36:20 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:41441 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753812AbYDBOgU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Apr 2008 10:36:20 -0400
+Subject: Re: [PATCH 0/3] xen: Fix oops when mapping/unmapping addr above 1Gb
+From: Mark McLoughlin <markmc@redhat.com>
+Reply-To: Mark McLoughlin <markmc@redhat.com>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       xen-devel@lists.xensource.com, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>
+In-Reply-To: <47F0FB5F.2000908@goop.org>
+References: <1206722297-11763-1-git-send-email-markmc@redhat.com>
+	 <20080331131442.GF14636@elte.hu>  <47F0FB5F.2000908@goop.org>
+Content-Type: text/plain
+Date: Wed, 02 Apr 2008 15:35:43 +0100
+Message-Id: <1207146943.11911.1.camel@muff>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-3.fc8) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200804021629.41153.elendil@planet.nl>
-X-OriginalArrivalTime: 02 Apr 2008 14:29:41.0319 (UTC) FILETIME=[FCF52570:01C894CD]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 02 April 2008, Lennart Sorensen wrote:
-> How old is that system?
+On Mon, 2008-03-31 at 07:55 -0700, Jeremy Fitzhardinge wrote:
+> Ingo Molnar wrote:
+> > * Mark McLoughlin <markmc@redhat.com> wrote:
+> >   
+> >>         In Fedora rawhide we're currently seeing oopses whenever a 
+> >> processes dlopen()s a library which prelink() has previously relocated 
+> >> above 1Gb. Some more details at:
+> >>
+> >>   https://bugzilla.redhat.com/436453
+> >>
+> >>         The issue seems to be that during xen_pgd_pin(), we only pin 
+> >> PTE pages, but xen's release_pmd() tries to unpin PMD pages too.
+> >>
+> >>         The following series of patches is against the latest x86 
+> >> tree.
+> >>     
+> >
+> > thanks, i've picked them up to get them tested - but it would be nice to 
+> > have an ack from Jeremy as well. This seems like v2.6.25 material as 
+> > well, right?
+> 
+> Didn't I reply?  Anyway, the patch looks good.  It's definitely 2.6.25 
+> material; its fallout from the changes I did to dynamically 
+> allocate/deallocate pmds rather than always do them with the pgd.
 
-Not sure. As the system only has 32MB RAM I'd say sometime late 1990s.
+Okay, here are the patches rebased to 2.6.25-rc8.
 
-> Maybe the IDE isn't even PCI based.  That would explain why nothing shows
-> in lspci, but the IDE ports are still present and working.
-
-Could be. What would it be then? ISA? Any way to recognize that?
-
-I did find a product page, but it's low on real specs:
-http://www.toshiba.ca/web/product.grp?lg=en&section=1&group=223&product=1605
-
-> One could always just manually tell the system to always load
-> ide-generic, since deciding what to load does seem to be a userspace
-> choice these days.
-
-Well, in the Debian Installer we prefer to load things automatically 
-whenever possible. If the kernel does not do it, that's fine.
-
-But to have the installer itself automatically load ide-generic for the 
-user, we'd still have to somehow recognize that we need the driver.
-Any ideas/suggestions what to look for?
+I've reproduced the issue with plain -rc8 and confirmed the patches fix
+it.
 
 Cheers,
-FJP
+Mark.
+
