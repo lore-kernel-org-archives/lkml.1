@@ -1,52 +1,34 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756767AbYDBPWF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757415AbYDBPWW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756767AbYDBPWF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 11:22:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755181AbYDBPVx
+	id S1757415AbYDBPWW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 11:22:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755998AbYDBPV6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 11:21:53 -0400
-Received: from smtp-out002.kontent.com ([81.88.40.216]:52545 "EHLO
-	smtp-out002.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755031AbYDBPVx (ORCPT
+	Wed, 2 Apr 2008 11:21:58 -0400
+Received: from e34.co.us.ibm.com ([32.97.110.152]:40312 "EHLO
+	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755947AbYDBPV5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 11:21:53 -0400
-From: Oliver Neukum <oliver@neukum.org>
-Organization: Novell
-To: Mark Lord <lkml@rtr.ca>
-Subject: Re: 2.6.25-rc7/rc8 USB dead on resume
-Date: Wed, 2 Apr 2008 17:21:49 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Pavel Machek <pavel@suse.cz>, Linux Kernel <linux-kernel@vger.kernel.org>,
-       Greg KH <gregkh@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
-       jikos@suse.cz, Alan Stern <stern@rowland.harvard.edu>,
-       linux-usb@vger.kernel.org
-References: <47EBBD57.30902@rtr.ca> <47F39A80.9090201@rtr.ca> <47F3A0B1.1030205@rtr.ca>
-In-Reply-To: <47F3A0B1.1030205@rtr.ca>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+	Wed, 2 Apr 2008 11:21:57 -0400
+Subject: Re: [ofa-general] InfiniBand/iWARP/RDMA merge plans for 2.6.26
+	(what's in infiniband.git)
+From: Shirley Ma <mashirle@us.ibm.com>
+To: Roland Dreier <rdreier@cisco.com>
+Cc: general@lists.openfabrics.org, linux-kernel@vger.kernel.org
+In-Reply-To: <adave31bayd.fsf@cisco.com>
+References: <adave31bayd.fsf@cisco.com>
+Content-Type: text/plain
+Date: Wed, 02 Apr 2008 00:22:12 -0700
+Message-Id: <1207120932.4593.47.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200804021721.50168.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Mittwoch, 2. April 2008 17:05:21 schrieb Mark Lord:
-> Mark Lord wrote:
+What's the status of RDS?
 
-> No change in -rc8.  I've uploaded new syslog (with alt-sysrq-T) and .config
-> as attachements to the bugzilla entry:
-> 
->     http://bugzilla.kernel.org/show_bug.cgi?id=10345
-> 
-> 
-
-Same analysis. ehci_endpoint_disable() is spinning and ksuspend_usb
-is waiting for it.
-
-	Regards
-		Oliver
-
-PS: Sorry for not looking at the full bugzilla entry
+Thanks
+Shirley
 
