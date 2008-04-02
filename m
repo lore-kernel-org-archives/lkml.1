@@ -1,82 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758765AbYDBRiV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759242AbYDBRik@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758765AbYDBRiV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 13:38:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756263AbYDBRiK
+	id S1759242AbYDBRik (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 13:38:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755298AbYDBRib
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 13:38:10 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:54288 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756072AbYDBRiI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 13:38:08 -0400
-Date: Wed, 2 Apr 2008 10:33:55 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Chris Snook <csnook@redhat.com>, Dave Jones <davej@codemonkey.org.uk>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       NetDev <netdev@vger.kernel.org>, David Miller <davem@davemloft.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: GFP_ATOMIC page allocation failures.
-Message-Id: <20080402103355.77ef22ff.akpm@linux-foundation.org>
-In-Reply-To: <47F3C0A8.9090300@garzik.org>
-References: <20080401235609.GA6947@codemonkey.org.uk>
-	<200804021228.16875.nickpiggin@yahoo.com.au>
-	<20080402013551.GA8361@codemonkey.org.uk>
-	<47F32789.2070703@redhat.com>
-	<20080402005646.f8df1c1b.akpm@linux-foundation.org>
-	<47F3C0A8.9090300@garzik.org>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 2 Apr 2008 13:38:31 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:32856 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755276AbYDBRia (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Apr 2008 13:38:30 -0400
+Date: Wed, 2 Apr 2008 10:35:57 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+cc: Pekka Enberg <penberg@cs.helsinki.fi>, paulmck@linux.vnet.ibm.com,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Vegard Nossum <vegard.nossum@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: kmemcheck caught read from freed memory (cfq_free_io_context)
+In-Reply-To: <1207133344.8514.759.camel@twins>
+Message-ID: <Pine.LNX.4.64.0804021035481.26938@schroedinger.engr.sgi.com>
+References: <19f34abd0804011408v19e13b6cje1ca89a2a471484c@mail.gmail.com> 
+ <1207085788.29991.6.camel@lappy> <20080402071709.GC12774@kernel.dk> 
+ <20080402104025.GC2813@linux.vnet.ibm.com> 
+ <84144f020804020346v6c6de91fr795dec55e0543105@mail.gmail.com>
+ <1207133344.8514.759.camel@twins>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 02 Apr 2008 13:21:44 -0400 Jeff Garzik <jeff@garzik.org> wrote:
+On Wed, 2 Apr 2008, Peter Zijlstra wrote:
 
-> Andrew Morton wrote:
-> > The appropriate thing to do here is to convert known-good drivers (such as
-> > e1000[e]) to use __GFP_NOWARN.
-> > 
-> > Unfortunately netdev_alloc_skb() went and assumed GFP_ATOMIC, but I guess
-> > we can dive below the covers and use __netdev_alloc_skb():
-> > 
-> > 
-> > 
-> > From: Andrew Morton <akpm@linux-foundation.org>
-> > 
-> > We get rather a lot of reports of page allocation warnings coming out of
-> > e1000.  But this driver is know to handle them properly so let's suppress
-> > them.
-> 
-> 
-> Do you people hear what you're saying???
-> 
-> I respectfully but strongly disagree with this.
-> 
-> We do __not__ need a whitelist (__GFP_NOWARN) of drivers that handle 
-> allocation failures properly.  That's a long list, a maintenance 
-> nightmare, and it is punishing good behavior.
-> 
-> It has been true for over a decade that allocations should be checked 
-> for NULL, and GFP_ATOMIC allocations MUST be checked for NULL.
-> 
-> Let's not crap all over good drivers, because a few bad apples don't 
-> have the proper checks.
-> 
-> Or at the very least, this TOTALLY BOGUS spew from working drivers 
-> should not be foisted upon users.  Every time a working driver complains 
-> about this -- as in the examples here -- the value of the warning 
-> decreases to noise.
-> 
-> And the solution to noise is not _more noise_ (adding 'nowarn' to every 
-> damn driver in the kernel).
-> 
+> Does SLAB (as opposed to SLUB) do it differently?
 
-After you've read Nick's comments (which I pray you have not), and after
-you've convinced us and yourself of their wrongness, you might like to
-consider adding a __GFP_NOWARN to netdev_alloc_skb().
+No it works the same in both.
 
