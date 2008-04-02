@@ -1,62 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758198AbYDBPd5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757398AbYDBPgN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758198AbYDBPd5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 11:33:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757556AbYDBPdj
+	id S1757398AbYDBPgN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 11:36:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755259AbYDBPf5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 11:33:39 -0400
-Received: from e35.co.us.ibm.com ([32.97.110.153]:46998 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757493AbYDBPdi (ORCPT
+	Wed, 2 Apr 2008 11:35:57 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:24723 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753835AbYDBPf4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 11:33:38 -0400
-Date: Wed, 2 Apr 2008 08:33:35 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
-       Pekka J Enberg <penberg@cs.helsinki.fi>,
-       Vegard Nossum <vegard.nossum@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: kmemcheck caught read from freed memory (cfq_free_io_context)
-Message-ID: <20080402153335.GA9333@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20080402105539.GA5610@linux.vnet.ibm.com> <1207133961.8514.768.camel@twins> <20080402113327.GC41073@gandalf.sssup.it> <20080402114338.GA12774@kernel.dk> <20080402123620.GH12774@kernel.dk> <20080402123639.GI12774@kernel.dk> <20080402125530.GF41073@gandalf.sssup.it> <20080402125819.GO12774@kernel.dk> <20080402133715.GA5327@linux.vnet.ibm.com> <20080402134123.GA12774@kernel.dk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080402134123.GA12774@kernel.dk>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Wed, 2 Apr 2008 11:35:56 -0400
+Date: Wed, 2 Apr 2008 08:33:43 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Michael Buesch <mb@bu3sch.de>
+Cc: John Linville <linville@tuxdriver.com>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, bcm43xx-dev@lists.berlios.de,
+       linux-wireless@vger.kernel.org
+Subject: Re: [PATCH] ssb: Fix build for non-PCIhost
+Message-Id: <20080402083343.02de39c0.randy.dunlap@oracle.com>
+In-Reply-To: <200804021703.27817.mb@bu3sch.de>
+References: <20080401175230.9ffe75cf.sfr@canb.auug.org.au>
+	<20080401092119.3cb214b1.randy.dunlap@oracle.com>
+	<200804021703.27817.mb@bu3sch.de>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 02, 2008 at 03:41:23PM +0200, Jens Axboe wrote:
-> On Wed, Apr 02 2008, Paul E. McKenney wrote:
-> > On Wed, Apr 02, 2008 at 02:58:19PM +0200, Jens Axboe wrote:
-> > > On Wed, Apr 02 2008, Fabio Checconi wrote:
-> > > > > From: Jens Axboe <jens.axboe@oracle.com>
-> > > > > Date: Wed, Apr 02, 2008 02:36:39PM +0200
-> > > > >
-> > > > > > Looks good and tests fine as well. I've applied it, on top of the
-> > > > > > hlist_for_each_entry_safe_rcu() fix.
-> > > > > > 
-> > > > > > http://git.kernel.dk/?p=linux-2.6-block.git;a=commit;h=436151ad32b4a59e0d36165a7d6312545f126661
-> > > > > > 
-> > > > 
-> > > > ok, thanks.  anyway I don't think the hlist_for_each_entry_safe_rcu()
-> > > > is needed at this point, since the pos->next pointer is still valid
-> > > > (at least) until the next rcu_read_unlock().  am I wrong?
-> > > 
-> > > it isn't, but it's still clearer. so either that or a nice comment, I
-> > > just stuck with what I had already committed.
-> > 
-> > Given Peter's comment, would you be willing to drop the
-> > hlist_for_each_entry_safe_rcu()?  People tend to read too much into
-> > the "safe" sometimes.  ;-)
+On Wed, 2 Apr 2008 17:03:26 +0200 Michael Buesch wrote:
+
+> This fixes a build error when PCMCIA-host support is built,
+> but PCI-host support is disabled.
+> Hell, who on earth would use such a weird configuration. :D
 > 
-> Sure, let me rebase it... I already sent a pull request to Linus, and he
-> just loves when I rebase and change the diffstats behind his back :)
+> drivers/built-in.o: In function `ssb_attr_sprom_store':
+> (.text+0x1c4b79): undefined reference to `ssb_devices_freeze'
+> drivers/built-in.o: In function `ssb_attr_sprom_store':
+> (.text+0x1c4bb3): undefined reference to `ssb_devices_thaw'
+> make[1]: *** [.tmp_vmlinux1] Error 1
+> 
+> Signed-off-by: Michael Buesch <mb@bu3sch.de>
 
-Would it help if I submitted the patch to you to back it out later?  ;-)
+Acked-by: Randy Dunlap <randy.dunlap@oracle.com>
 
-							Thanx, Paul
+
+> ---
+> 
+> John, please apply this to 2.6.26
+> 
+> 
+> Index: wireless-testing/drivers/ssb/main.c
+> ===================================================================
+> --- wireless-testing.orig/drivers/ssb/main.c	2008-03-21 21:41:31.000000000 +0100
+> +++ wireless-testing/drivers/ssb/main.c	2008-04-02 16:50:16.000000000 +0200
+> @@ -202,7 +202,7 @@ out:
+>  	return err;
+>  }
+>  
+> -#ifdef CONFIG_SSB_PCIHOST
+> +#ifdef CONFIG_SSB_SPROM
+>  int ssb_devices_freeze(struct ssb_bus *bus)
+>  {
+>  	struct ssb_device *dev;
+> @@ -288,7 +288,7 @@ int ssb_devices_thaw(struct ssb_bus *bus
+>  
+>  	return 0;
+>  }
+> -#endif /* CONFIG_SSB_PCIHOST */
+> +#endif /* CONFIG_SSB_SPROM */
+>  
+>  static void ssb_device_shutdown(struct device *dev)
+>  {
+> 
+> 
+> -- 
+
+---
+~Randy
