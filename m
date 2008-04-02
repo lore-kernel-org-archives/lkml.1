@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761625AbYDBVrw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760202AbYDBVsT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761625AbYDBVrw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 17:47:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763073AbYDBVoi
+	id S1760202AbYDBVsT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 17:48:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763207AbYDBVov
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 17:44:38 -0400
-Received: from saeurebad.de ([85.214.36.134]:60280 "EHLO saeurebad.de"
+	Wed, 2 Apr 2008 17:44:51 -0400
+Received: from saeurebad.de ([85.214.36.134]:60302 "EHLO saeurebad.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760707AbYDBVoh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 17:44:37 -0400
+	id S1763164AbYDBVos (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Apr 2008 17:44:48 -0400
 From: Johannes Weiner <hannes@saeurebad.de>
 To: linux-kernel@vger.kernel.org
 Cc: linux-mm@kvack.org, mingo@elte.hu, davem@davemloft.net,
@@ -18,9 +18,9 @@ Cc: linux-mm@kvack.org, mingo@elte.hu, davem@davemloft.net,
        paulus@samba.org, schwidefsky@de.ibm.com, lethal@linux-sh.org,
        jdike@addtoit.com, miles@gnu.org, chris@zankel.net,
        rmk@arm.linux.org.uk, tony.luck@intel.com
-Subject: [RFC 15/22] powerpc: Use generic show_mem()
-Date: Wed,  2 Apr 2008 22:40:21 +0200
-Message-Id: <12071689982382-git-send-email-hannes@saeurebad.de>
+Subject: [RFC 16/22] ppc: Use generic show_mem()
+Date: Wed,  2 Apr 2008 22:40:22 +0200
+Message-Id: <1207169009616-git-send-email-hannes@saeurebad.de>
 X-Mailer: git-send-email 1.5.2.2
 In-Reply-To: <12071688283927-git-send-email-hannes@saeurebad.de>
 References: <12071688283927-git-send-email-hannes@saeurebad.de>
@@ -32,71 +32,62 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Johannes Weiner <hannes@saeurebad.de>
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 8950e0c..1189d8d 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -350,9 +350,6 @@ config ARCH_SPARSEMEM_DEFAULT
+diff --git a/arch/ppc/Kconfig b/arch/ppc/Kconfig
+index db5e6a1..abc877f 100644
+--- a/arch/ppc/Kconfig
++++ b/arch/ppc/Kconfig
+@@ -924,9 +924,6 @@ config HIGHMEM
  config ARCH_POPULATES_NODE_MAP
  	def_bool y
  
 -config HAVE_ARCH_SHOW_MEM
 -	def_bool y
 -
+ source kernel/Kconfig.hz
+ source kernel/Kconfig.preempt
  source "mm/Kconfig"
- 
- config ARCH_MEMORY_PROBE
-diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
-index be5c506..fcbae37 100644
---- a/arch/powerpc/mm/mem.c
-+++ b/arch/powerpc/mm/mem.c
-@@ -164,46 +164,6 @@ walk_memory_resource(unsigned long start_pfn, unsigned long nr_pages, void *arg,
- 
- #endif /* CONFIG_MEMORY_HOTPLUG */
+diff --git a/arch/ppc/mm/init.c b/arch/ppc/mm/init.c
+index 7444df3..132031a 100644
+--- a/arch/ppc/mm/init.c
++++ b/arch/ppc/mm/init.c
+@@ -101,37 +101,6 @@ unsigned long __max_memory;
+ /* max amount of low RAM to map in */
+ unsigned long __max_low_memory = MAX_LOW_MEM;
  
 -void show_mem(void)
 -{
--	unsigned long total = 0, reserved = 0;
--	unsigned long shared = 0, cached = 0;
--	unsigned long highmem = 0;
--	struct page *page;
--	pg_data_t *pgdat;
--	unsigned long i;
+-	int i,free = 0,total = 0,reserved = 0;
+-	int shared = 0, cached = 0;
+-	int highmem = 0;
 -
 -	printk("Mem-info:\n");
 -	show_free_areas();
 -	printk("Free swap:       %6ldkB\n", nr_swap_pages<<(PAGE_SHIFT-10));
--	for_each_online_pgdat(pgdat) {
--		unsigned long flags;
--		pgdat_resize_lock(pgdat, &flags);
--		for (i = 0; i < pgdat->node_spanned_pages; i++) {
--			if (!pfn_valid(pgdat->node_start_pfn + i))
--				continue;
--			page = pgdat_page_nr(pgdat, i);
--			total++;
--			if (PageHighMem(page))
--				highmem++;
--			if (PageReserved(page))
--				reserved++;
--			else if (PageSwapCache(page))
--				cached++;
--			else if (page_count(page))
--				shared += page_count(page) - 1;
--		}
--		pgdat_resize_unlock(pgdat, &flags);
+-	i = max_mapnr;
+-	while (i-- > 0) {
+-		total++;
+-		if (PageHighMem(mem_map+i))
+-			highmem++;
+-		if (PageReserved(mem_map+i))
+-			reserved++;
+-		else if (PageSwapCache(mem_map+i))
+-			cached++;
+-		else if (!page_count(mem_map+i))
+-			free++;
+-		else
+-			shared += page_count(mem_map+i) - 1;
 -	}
--	printk("%ld pages of RAM\n", total);
--#ifdef CONFIG_HIGHMEM
--	printk("%ld pages of HIGHMEM\n", highmem);
--#endif
--	printk("%ld reserved pages\n", reserved);
--	printk("%ld pages shared\n", shared);
--	printk("%ld pages swap cached\n", cached);
+-	printk("%d pages of RAM\n",total);
+-	printk("%d pages of HIGHMEM\n", highmem);
+-	printk("%d free pages\n",free);
+-	printk("%d reserved pages\n",reserved);
+-	printk("%d pages shared\n",shared);
+-	printk("%d pages swap cached\n",cached);
 -}
 -
- /*
-  * Initialize the bootmem system and give it all the memory we
-  * have available.  If we are using highmem, we only put the
+ /* Free up now-unused memory */
+ static void free_sec(unsigned long start, unsigned long end, const char *name)
+ {
 -- 
 1.5.2.2
 
