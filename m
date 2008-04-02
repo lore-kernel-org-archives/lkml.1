@@ -1,57 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761570AbYDBVgi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761907AbYDBVgv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761570AbYDBVgi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 17:36:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759779AbYDBVg0
+	id S1761907AbYDBVgv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 17:36:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760127AbYDBVgj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 17:36:26 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:36554 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753811AbYDBVg0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 17:36:26 -0400
-Date: Wed, 2 Apr 2008 14:33:51 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Andrea Arcangeli <andrea@qumranet.com>
-cc: Hugh Dickins <hugh@veritas.com>, Robin Holt <holt@sgi.com>,
-       Avi Kivity <avi@qumranet.com>, Izik Eidus <izike@qumranet.com>,
-       kvm-devel@lists.sourceforge.net,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, general@lists.openfabrics.org,
-       Steve Wise <swise@opengridcomputing.com>,
-       Roland Dreier <rdreier@cisco.com>, Kanoj Sarcar <kanojsarcar@yahoo.com>,
-       steiner@sgi.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       daniel.blueman@quadrics.com, Nick Piggin <npiggin@suse.de>
-Subject: Re: EMM: Fixup return value handling of emm_notify()
-In-Reply-To: <20080402212515.GS19189@duo.random>
-Message-ID: <Pine.LNX.4.64.0804021427210.30516@schroedinger.engr.sgi.com>
-References: <20080401205531.986291575@sgi.com> <20080401205635.793766935@sgi.com>
- <20080402064952.GF19189@duo.random> <Pine.LNX.4.64.0804021048460.27214@schroedinger.engr.sgi.com>
- <Pine.LNX.4.64.0804021202450.28436@schroedinger.engr.sgi.com>
- <20080402212515.GS19189@duo.random>
+	Wed, 2 Apr 2008 17:36:39 -0400
+Received: from gw.goop.org ([64.81.55.164]:59223 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761563AbYDBVgi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Apr 2008 17:36:38 -0400
+Message-ID: <47F3FC2E.7090806@goop.org>
+Date: Wed, 02 Apr 2008 14:35:42 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080315)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Dave Hansen <dave@linux.vnet.ibm.com>
+CC: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Yasunori Goto <y-goto@jp.fujitsu.com>,
+       Christoph Lameter <clameter@sgi.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Anthony Liguori <anthony@codemonkey.ws>, Mel Gorman <mel@csn.ul.ie>
+Subject: Re: [PATCH RFC] hotplug-memory: refactor online_pages to separate
+ zone growth from page onlining
+References: <47ED8685.9040409@goop.org>	 <1206751622.27091.20.camel@nimitz.home.sr71.net>	 <47EDA4B9.6030801@goop.org>	 <1206806774.31896.27.camel@nimitz.home.sr71.net>	 <47EED683.5030200@goop.org>	 <1206981741.31896.51.camel@nimitz.home.sr71.net>	 <47F1282E.3020503@goop.org>	 <1207161962.23710.23.camel@nimitz.home.sr71.net>	 <47F3D5D9.1010301@goop.org>	 <1207162792.23710.28.camel@nimitz.home.sr71.net>	 <47F3F4A0.9010009@goop.org> <1207171050.23710.48.camel@nimitz.home.sr71.net>
+In-Reply-To: <1207171050.23710.48.camel@nimitz.home.sr71.net>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2 Apr 2008, Andrea Arcangeli wrote:
+Dave Hansen wrote:
+> Oh, once we've let Linux establish ptes to it, we've required that the
+> hypervisor have it around?  How does that work with the balloon driver?
+> Do we destroy the ptes when giving balloon memory back to the
+> hypervisor?
+>   
 
-> but anyway it's silly to be hardwired to such an interface that worst
-> of all requires switch statements instead of proper pointer to
-> functions and a fixed set of parameters and retval semantics for all
-> methods.
+Yep.  It removes any mapping before handing it back to the hypervisor.
 
-The EMM API with a single callback is the simplest approach at this point. 
-A common callback for all operations allows the driver to implement common 
-entry and exit code as seen in XPMem.
+> If we're talking about i386, then we're set.  We don't map the hot-added
+> memory at all because we only add highmem on i386.  The only time we map
+> these pages is *after* we actually allocate them when they get mapped
+> into userspace or used as vmalloc() or they're kmap()'d.
+>   
 
-I guess we can complicate this more by switching to a different API or 
-adding additional emm_xxx() callback if need be but I really want to have 
-a strong case for why this would be needed. There is the danger of 
-adding frills with special callbacks in this and that situation that could 
-make the notifier complicated and specific to a certain usage scenario. 
+Well, the balloon driver can balloon out lowmem pages, so we have to 
+deal with mappings either way.  But balloon+hotplug would work 
+identically on x86-64, so all pages are mapped.
 
-Having this generic simple interface will hopefully avoid such things.
+>> I think we're getting off track here; this is a lot of extra complexity 
+>> to justify allowing usermode to use /sys to online a chunk of hotplugged 
+>> memory.
+>>     
+>
+> Either that, or we're going to develop the entire Xen/kvm memory hotplug
+> architecture around the soon-to-be-legacy i386 limitations. :)
+
+Everything also applies to x86-64.
 
 
+    J
