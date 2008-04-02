@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761265AbYDBUag@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932222AbYDBUa5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761265AbYDBUag (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 16:30:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761753AbYDBURu
+	id S932222AbYDBUa5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 16:30:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761763AbYDBURv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 16:17:50 -0400
-Received: from ns1.suse.de ([195.135.220.2]:36818 "EHLO mx1.suse.de"
+	Wed, 2 Apr 2008 16:17:51 -0400
+Received: from mail.suse.de ([195.135.220.2]:36831 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758572AbYDBURs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 16:17:48 -0400
+	id S1760318AbYDBURt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Apr 2008 16:17:49 -0400
 From: Mark Fasheh <mfasheh@suse.com>
 To: linux-kernel@vger.kernel.org
 Cc: ocfs2-devel@oss.oracle.com, Joel Becker <joel.becker@oracle.com>
-Subject: [PATCH 33/62] ocfs2: Change mlog_bug_on to BUG_ON in ocfs2_lockid.h
-Date: Wed,  2 Apr 2008 13:14:43 -0700
-Message-Id: <12071673872568-git-send-email-mfasheh@suse.com>
+Subject: [PATCH 34/62] ocfs2: Add kbuild for ocfs2_stack_user.ko
+Date: Wed,  2 Apr 2008 13:14:44 -0700
+Message-Id: <12071673882492-git-send-email-mfasheh@suse.com>
 X-Mailer: git-send-email 1.5.2.4
-In-Reply-To: <12071673843208-git-send-email-mfasheh@suse.com>
+In-Reply-To: <12071673872568-git-send-email-mfasheh@suse.com>
 References: <12071673121124-git-send-email-mfasheh@suse.com>
  <1207167318479-git-send-email-mfasheh@suse.com>
  <12071673203909-git-send-email-mfasheh@suse.com>
@@ -50,35 +50,46 @@ References: <12071673121124-git-send-email-mfasheh@suse.com>
  <1207167379283-git-send-email-mfasheh@suse.com>
  <12071673821008-git-send-email-mfasheh@suse.com>
  <12071673843208-git-send-email-mfasheh@suse.com>
+ <12071673872568-git-send-email-mfasheh@suse.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Joel Becker <joel.becker@oracle.com>
 
-The masklog code is in the o2cb stack, but ocfs2_lockid.h now needs to
-be included by the user stack.  The BUG() in ocfs2_lock_type_string()
-does not need masklog support, so change it to a regular BUG_ON().
+Add ocfs2_stack_user.ko to the Makefile so that it builds.
 
 Signed-off-by: Joel Becker <joel.becker@oracle.com>
 Signed-off-by: Mark Fasheh <mfasheh@suse.com>
 ---
- fs/ocfs2/ocfs2_lockid.h |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ fs/ocfs2/Makefile |    7 ++++++-
+ 1 files changed, 6 insertions(+), 1 deletions(-)
 
-diff --git a/fs/ocfs2/ocfs2_lockid.h b/fs/ocfs2/ocfs2_lockid.h
-index 86f3e37..82c200f 100644
---- a/fs/ocfs2/ocfs2_lockid.h
-+++ b/fs/ocfs2/ocfs2_lockid.h
-@@ -100,7 +100,7 @@ static char *ocfs2_lock_type_strings[] = {
- static inline const char *ocfs2_lock_type_string(enum ocfs2_lock_type type)
- {
- #ifdef __KERNEL__
--	mlog_bug_on_msg(type >= OCFS2_NUM_LOCK_TYPES, "%d\n", type);
-+	BUG_ON(type >= OCFS2_NUM_LOCK_TYPES);
- #endif
- 	return ocfs2_lock_type_strings[type];
- }
+diff --git a/fs/ocfs2/Makefile b/fs/ocfs2/Makefile
+index b734254..b8d6d02 100644
+--- a/fs/ocfs2/Makefile
++++ b/fs/ocfs2/Makefile
+@@ -2,7 +2,11 @@ EXTRA_CFLAGS += -Ifs/ocfs2
+ 
+ EXTRA_CFLAGS += -DCATCH_BH_JBD_RACES
+ 
+-obj-$(CONFIG_OCFS2_FS) += ocfs2.o ocfs2_stackglue.o ocfs2_stack_o2cb.o
++obj-$(CONFIG_OCFS2_FS) += 	\
++	ocfs2.o			\
++	ocfs2_stackglue.o	\
++	ocfs2_stack_o2cb.o	\
++	ocfs2_stack_user.o
+ 
+ ocfs2-objs := \
+ 	alloc.o 		\
+@@ -33,6 +37,7 @@ ocfs2-objs := \
+ 
+ ocfs2_stackglue-objs := stackglue.o
+ ocfs2_stack_o2cb-objs := stack_o2cb.o
++ocfs2_stack_user-objs := stack_user.o
+ 
+ obj-$(CONFIG_OCFS2_FS) += cluster/
+ obj-$(CONFIG_OCFS2_FS) += dlm/
 -- 
 1.5.4.1
 
