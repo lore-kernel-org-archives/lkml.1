@@ -1,58 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756404AbYDBMqR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755707AbYDBMtn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756404AbYDBMqR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 08:46:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754395AbYDBMqA
+	id S1755707AbYDBMtn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 08:49:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753812AbYDBMtg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 08:46:00 -0400
-Received: from fg-out-1718.google.com ([72.14.220.155]:26247 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754104AbYDBMp7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 08:45:59 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=message-id:date:from:organization:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=Y3MLfMZKqsjeRrDRpnzFHGHfPxvjDhg6x+aFJYiAR3ZnM+VxFgFq05XEWE4kjVYTtXz/j2+p+qbr6F1lnkTpPYdm9Qha+eo1ttlSPftkZb7bog+jaPDdwUV7pk48AHLER1kmTQdH5BPugIIoIPwJNG+h6ojUGUQcOKH+/HKH8V4=
-Message-ID: <47F37FF6.50206@gmail.com>
-Date: Wed, 02 Apr 2008 16:45:42 +0400
-From: Dmitri Vorobiev <dmitri.vorobiev@gmail.com>
-Organization: DmVo Home
-User-Agent: Thunderbird 1.5.0.14pre (X11/20071022)
-MIME-Version: 1.0
-To: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-CC: linux-mips@linux-mips.org, ralf@linux-mips.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 5/5] [MIPS] unexport null_perf_irq() and make it static
-References: <1207094318-21748-1-git-send-email-dmitri.vorobiev@gmail.com>	<1207094318-21748-6-git-send-email-dmitri.vorobiev@gmail.com> <20080402.213817.74752727.anemo@mba.ocn.ne.jp>
-In-Reply-To: <20080402.213817.74752727.anemo@mba.ocn.ne.jp>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+	Wed, 2 Apr 2008 08:49:36 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:1695 "EHLO spitz.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753073AbYDBMtg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Apr 2008 08:49:36 -0400
+Date: Wed, 2 Apr 2008 14:49:23 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: perex@perex.cz, linux-kernel@vger.kernel.org, tiwai@suse.de
+Subject: Re: usb audio: Fix another Dallas quirk
+Message-ID: <20080402124922.GA5321@ucw.cz>
+References: <20080329223241.GA5348@elf.ucw.cz> <20080401122000.83ce5a3e.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080401122000.83ce5a3e.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Atsushi Nemoto пишет:
-> On Wed,  2 Apr 2008 03:58:38 +0400, Dmitri Vorobiev <dmitri.vorobiev@gmail.com> wrote:
->> --- a/arch/mips/oprofile/op_model_mipsxx.c
->> +++ b/arch/mips/oprofile/op_model_mipsxx.c
->> @@ -31,6 +31,8 @@
->>  
->>  #define M_COUNTER_OVERFLOW		(1UL      << 31)
->>  
->> +int (*save_perf_irq)(void);
+On Tue 2008-04-01 12:20:00, Andrew Morton wrote:
+> On Sat, 29 Mar 2008 23:32:41 +0100
+> Pavel Machek <pavel@suse.cz> wrote:
 > 
-> This should be another target of "make it static" patch :-)
-
-Indeed. Thank you for noticing that.
-
+> > 
+> > Dallas USB speakers are buggy in more than one way. One of configs
+> > they offer does not work at all.
+> > 
+> > Signed-off-by: Pavel Machek <pavel@suse.cz>
+> > 
+> > diff --git a/sound/usb/usbaudio.c b/sound/usb/usbaudio.c
+> > index 257a4e1..b6b2490 100644
+> > --- a/sound/usb/usbaudio.c
+> > +++ b/sound/usb/usbaudio.c
+> >  	int format;
+> >  	struct audioformat *fp;
+> >  	unsigned char *fmt, *csep;
+> > +	int num;
 > 
-> ---
-> Atsushi Nemoto
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+> This is not a patch - something munched the "@@ -2676,12 +2676,23 @@"
+> line.
 > 
+> I typed it in again.
 
+Thanks a lot. I guess I did something wrong when hand-editing it.
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
