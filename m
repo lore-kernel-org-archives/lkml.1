@@ -1,55 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753748AbYDBHnA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753879AbYDBHrw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753748AbYDBHnA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 03:43:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751685AbYDBHmx
+	id S1753879AbYDBHrw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 03:47:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751885AbYDBHro
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 03:42:53 -0400
-Received: from e34.co.us.ibm.com ([32.97.110.152]:37777 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750885AbYDBHmw (ORCPT
+	Wed, 2 Apr 2008 03:47:44 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:56694 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751685AbYDBHrn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 03:42:52 -0400
-Date: Wed, 2 Apr 2008 13:22:55 +0530
-From: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
-To: a.p.zijlstra@chello.nl
-Cc: Ingo Molnar <mingo@elte.hu>, aneesh.kumar@linux.vnet.ibm.com,
-       dhaval@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
-       Balbir Singh <balbir@in.ibm.com>
-Subject: set_task_rq bug?
-Message-ID: <20080402075255.GE17617@linux.vnet.ibm.com>
-Reply-To: vatsa@linux.vnet.ibm.com
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.11
+	Wed, 2 Apr 2008 03:47:43 -0400
+Message-ID: <47F33A1D.3050301@sgi.com>
+Date: Wed, 02 Apr 2008 00:47:41 -0700
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+MIME-Version: 1.0
+To: Paul Jackson <pj@sgi.com>
+CC: mingo@elte.hu, tglx@linutronix.de, hpa@zytor.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/3] x86: add cpuset_scnprintf function
+References: <20080401225422.064890000@polaris-admin.engr.sgi.com> <20080402012006.1722c2bd.pj@sgi.com>
+In-Reply-To: <20080402012006.1722c2bd.pj@sgi.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-For the case of CONFIG_RT_GROUP_SCHED and !CONFIG_FAIR_GROUP_SCHED, this
-piece of code seems to be wrong?
 
-/* Change a task's cfs_rq and parent entity if it moves across
- * CPUs/groups */
-static inline void set_task_rq(struct task_struct *p, unsigned int cpu)
-{
-#ifdef CONFIG_FAIR_GROUP_SCHED
-        p->se.cfs_rq = task_group(p)->cfs_rq[cpu];
-        p->se.parent = task_group(p)->se[cpu];
-#endif
+> However doing this is worse in my view than simply breaking the format
+> outright, unilaterally and irrevocably.  If you just flat out stick a
+> fork in an API and break it hard on some release, then at least user
+> space knows that it must adapt or die at that version.  If you hand
+> user space the means to break that API, then any properly and
+> defensively written user code has to be prepared to deal with both API
+> flavors, and the majority of user space code is broken half the time,
+> when run on a system with the API variant it wasn't expecting.  More
+> over, you end up with apps having "toilet seat wars" with each other:
+> you left it up and it should be down; no you left it down and it should
+> be up.  Not a pretty sight.
+> 
+> Perhaps I totally misunderstand this patchset ?
+> 
 
-#ifdef CONFIG_RT_GROUP_SCHED
-        p->rt.rt_rq  = task_group(p)->rt_rq[cpu];
-        p->rt.parent = task_group(p)->rt_se[cpu];
-#endif
-}
+Hi,
 
-Basically for the above config case, a task's p->se.cfs_rq is never set,
-which seems to be incorrect, as lot of sched_fair.c (for ex:
-enqueue_task_fair) banks on the availability of this information. It should 
-atleast be set to &rq->cfs?
+I wanted to not break current apps unmercifully, but perhaps I should
+default it to the "non-compatible" mode (and adjust the schedstat version
+to indicate this)?  [It's the only output that I found that seemed to care.]
 
--- 
-Regards,
-vatsa
+And if users have apps that they can't convert, they can revert to the
+"old" (compatible) method of outputs.  I know if I'm a user and I'm really
+interested in understanding the outputs when there's hundreds and hundreds
+of cpus, then the more compact format is much more useful.
+
+I can't believe there hasn't been many changes in all of these outputs.
+Like what happened before Hyperthreading, or 3rd level caches, or ?
+Even the new Intel announcements for Nehalem may introduce more changes
+in what's important in the output information.  Plus I was under the
+impression that one of the basic tenets of Linux was that API's can and
+will change?
+
+Thanks,
+Mike
