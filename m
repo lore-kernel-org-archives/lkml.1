@@ -1,53 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758760AbYDBXwj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759827AbYDBXxW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758760AbYDBXwj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 19:52:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756990AbYDBXw3
+	id S1759827AbYDBXxW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 19:53:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755204AbYDBXxH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 19:52:29 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:39009 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756235AbYDBXw2 (ORCPT
+	Wed, 2 Apr 2008 19:53:07 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:56348 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756235AbYDBXxE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 19:52:28 -0400
-Date: Wed, 2 Apr 2008 16:52:14 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: mikulas@artax.karlin.mff.cuni.cz, viro@zeniv.linux.org.uk,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH]: Fix SMP-reordering race in mark_buffer_dirty
-In-Reply-To: <20080402150158.f366370f.akpm@linux-foundation.org>
-Message-ID: <alpine.LFD.1.00.0804021645560.14670@woody.linux-foundation.org>
-References: <Pine.LNX.4.64.0804022058530.13737@artax.karlin.mff.cuni.cz> <alpine.LFD.1.00.0804021237031.14670@woody.linux-foundation.org> <20080402150158.f366370f.akpm@linux-foundation.org>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 2 Apr 2008 19:53:04 -0400
+Date: Thu, 3 Apr 2008 00:47:58 +0100
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Trond Myklebust <trond.myklebust@fys.uio.no>
+Cc: Miklos Szeredi <miklos@szeredi.hu>, akpm@linux-foundation.org,
+       dave@linux.vnet.ibm.com, ezk@cs.sunysb.edu,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [patch 01/10] vfs: add path_create() and path_mknod()
+Message-ID: <20080402234758.GS9785@ZenIV.linux.org.uk>
+References: <20080402201247.358430231@szeredi.hu> <20080402201321.062856131@szeredi.hu> <20080402205450.GO9785@ZenIV.linux.org.uk> <E1JhAF9-0007Zx-Rq@pomaz-ex.szeredi.hu> <20080402214824.GP9785@ZenIV.linux.org.uk> <1207174890.722.12.camel@heimdal.trondhjem.org> <20080402223637.GQ9785@ZenIV.linux.org.uk> <1207178398.20254.19.camel@heimdal.trondhjem.org> <20080402234043.GR9785@ZenIV.linux.org.uk>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080402234043.GR9785@ZenIV.linux.org.uk>
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Apr 03, 2008 at 12:40:43AM +0100, Al Viro wrote:
+> Anyway, what the hell for?  It's more complex and buys you nothing
+> useful.
 
+BTW, what it gives you is an extra headache for scenarios like
 
-On Wed, 2 Apr 2008, Andrew Morton wrote:
-> 
-> But then the test-and-set of an already-set flag would newly cause the
-> cacheline to be dirtied, requiring additional bus usage to write it back?
+task A:
+	write(fd, ...)
+task B:	/* shares descriptor table with A */
+	close(fd)
+task C: umount(<mountpoint of tree where fd is>)
+...
+task A: still writing
 
-Looking around a bit, I don't see any realistic case where this could 
-possibly be the case and that is performance-sensitive.
-
-The VFS-level uses of mark_buffer_dirty() seem to all be coupled with 
-other uses that clear or set other bits in the buffer status word, so the 
-cacheline will always apparently be dirty. 
-
-The low-level filesystems sometimes do it for things like block bitmap 
-changes, and I could imagine that there it actually (a) is no longer in 
-the cache and (b) the buffer really was dirty to start with, but in ext3 
-for example, you'd end up in journal_dirty_metadata which spinlocks on the 
-BH_State bit first etc etc.
-
-So the cacheline *will* be dirty, and this function doesn't seem like it 
-could possibly ever show up in a real profile for any real load anyway, so 
-it seems odd to try to optimize it this way.
-
-			Linus
+At the very least, you want "that thing is still busy" on normal umount -
+we are still in the middle of write(2) and hell knows how long it's going
+to last.  So you need to play with refcount of vfsmount in a very nasty
+way, for all your pains.  Again, what for?
