@@ -1,23 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761247AbYDBSkb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759962AbYDBSks@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761247AbYDBSkb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 14:40:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758046AbYDBSfq
+	id S1759962AbYDBSks (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 14:40:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758192AbYDBSfs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 14:35:46 -0400
-Received: from 21.sub-75-208-3.myvzw.com ([75.208.3.21]:38415 "EHLO
+	Wed, 2 Apr 2008 14:35:48 -0400
+Received: from 21.sub-75-208-3.myvzw.com ([75.208.3.21]:38413 "EHLO
 	mail.goop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757315AbYDBSfk (ORCPT
+	with ESMTP id S1757239AbYDBSfl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 14:35:40 -0400
+	Wed, 2 Apr 2008 14:35:41 -0400
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Subject: [PATCH 20 of 24] xen: disable preemption during tlb flush
-X-Mercurial-Node: 31e6dbedc4a20899f686541506b3696a77396af4
-Message-Id: <31e6dbedc4a20899f686.1207158849@localhost>
+Subject: [PATCH 04 of 24] xen: add missing definitions in
+	include/xen/interface/vcpu.h which ia64/xen needs
+X-Mercurial-Node: 8023c18664d77145f6641b2d7fad6fe58c91aa1d
+Message-Id: <8023c18664d77145f664.1207158833@localhost>
 In-Reply-To: <patchbomb.1207158829@localhost>
-Date: Wed, 02 Apr 2008 10:54:09 -0700
+Date: Wed, 02 Apr 2008 10:53:53 -0700
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: LKML <linux-kernel@vger.kernel.org>,
@@ -26,57 +27,61 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Various places in the kernel flush the tlb even though preemption doens't
-guarantee the tlb flush is happening on any particular CPU.  In many cases
-this doesn't seem to matter, so don't make a fuss about it.
+From: Isaku Yamahata <yamahata@valinux.co.jp>
 
+Add xen handles realted definitions for xen vcpu which ia64/xen needs.
+Pointer argumsnts for ia64/xen hypercall are passed in pseudo physical
+address (guest physical address) so that it is required to convert
+guest kernel virtual address into pseudo physical address.
+The xen guest handle represents such arguments.
+
+Signed-off-by: Isaku Yamahata <yamahata@valinux.co.jp>
 Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 ---
- arch/x86/xen/enlighten.c |   15 +++++++++++++--
- 1 file changed, 13 insertions(+), 2 deletions(-)
+ include/xen/interface/vcpu.h |    6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
 
-diff --git a/arch/x86/xen/enlighten.c b/arch/x86/xen/enlighten.c
---- a/arch/x86/xen/enlighten.c
-+++ b/arch/x86/xen/enlighten.c
-@@ -532,26 +532,37 @@
- static void xen_flush_tlb(void)
- {
- 	struct mmuext_op *op;
--	struct multicall_space mcs = xen_mc_entry(sizeof(*op));
-+	struct multicall_space mcs;
-+
-+	preempt_disable();
-+
-+	mcs = xen_mc_entry(sizeof(*op));
+diff --git a/include/xen/interface/vcpu.h b/include/xen/interface/vcpu.h
+--- a/include/xen/interface/vcpu.h
++++ b/include/xen/interface/vcpu.h
+@@ -85,6 +85,7 @@
+ 		 */
+ 		uint64_t time[4];
+ };
++DEFINE_GUEST_HANDLE_STRUCT(vcpu_runstate_info);
  
- 	op = mcs.args;
- 	op->cmd = MMUEXT_TLB_FLUSH_LOCAL;
- 	MULTI_mmuext_op(mcs.mc, op, 1, NULL, DOMID_SELF);
+ /* VCPU is currently running on a physical CPU. */
+ #define RUNSTATE_running  0
+@@ -119,6 +120,7 @@
+ #define VCPUOP_register_runstate_memory_area 5
+ struct vcpu_register_runstate_memory_area {
+ 		union {
++				GUEST_HANDLE(vcpu_runstate_info) h;
+ 				struct vcpu_runstate_info *v;
+ 				uint64_t p;
+ 		} addr;
+@@ -134,6 +136,7 @@
+ struct vcpu_set_periodic_timer {
+ 		uint64_t period_ns;
+ };
++DEFINE_GUEST_HANDLE_STRUCT(vcpu_set_periodic_timer);
  
- 	xen_mc_issue(PARAVIRT_LAZY_MMU);
-+
-+	preempt_enable();
- }
+ /*
+  * Set or stop a VCPU's single-shot timer. Every VCPU has one single-shot
+@@ -145,6 +148,7 @@
+ 		uint64_t timeout_abs_ns;
+ 		uint32_t flags;			   /* VCPU_SSHOTTMR_??? */
+ };
++DEFINE_GUEST_HANDLE_STRUCT(vcpu_set_singleshot_timer);
  
- static void xen_flush_tlb_single(unsigned long addr)
- {
- 	struct mmuext_op *op;
--	struct multicall_space mcs = xen_mc_entry(sizeof(*op));
-+	struct multicall_space mcs;
+ /* Flags to VCPUOP_set_singleshot_timer. */
+  /* Require the timeout to be in the future (return -ETIME if it's passed). */
+@@ -164,5 +168,6 @@
+     uint32_t offset; /* offset within page */
+     uint32_t rsvd;   /* unused */
+ };
++DEFINE_GUEST_HANDLE_STRUCT(vcpu_register_vcpu_info);
  
-+	preempt_disable();
-+
-+	mcs = xen_mc_entry(sizeof(*op));
- 	op = mcs.args;
- 	op->cmd = MMUEXT_INVLPG_LOCAL;
- 	op->arg1.linear_addr = addr & PAGE_MASK;
- 	MULTI_mmuext_op(mcs.mc, op, 1, NULL, DOMID_SELF);
- 
- 	xen_mc_issue(PARAVIRT_LAZY_MMU);
-+
-+	preempt_enable();
- }
- 
- static void xen_flush_tlb_others(const cpumask_t *cpus, struct mm_struct *mm,
+ #endif /* __XEN_PUBLIC_VCPU_H__ */
 
 
