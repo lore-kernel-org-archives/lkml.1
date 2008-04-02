@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932619AbYDBUjk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932691AbYDBUj6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932619AbYDBUjk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 16:39:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762008AbYDBUSj
+	id S932691AbYDBUj6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 16:39:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762023AbYDBUSl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 16:18:39 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:33306 "EHLO mx2.suse.de"
+	Wed, 2 Apr 2008 16:18:41 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:33322 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762003AbYDBUSh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 16:18:37 -0400
+	id S1762010AbYDBUSj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Apr 2008 16:18:39 -0400
 From: Mark Fasheh <mfasheh@suse.com>
 To: linux-kernel@vger.kernel.org
 Cc: ocfs2-devel@oss.oracle.com, Joel Becker <joel.becker@oracle.com>,
-       Tao Ma <tao.ma@oracle.com>
-Subject: [PATCH 56/62] ocfs2: Add inode stealing for ocfs2_reserve_new_inode
-Date: Wed,  2 Apr 2008 13:15:06 -0700
-Message-Id: <12071674361985-git-send-email-mfasheh@suse.com>
+       Julia Lawall <julia@diku.dk>
+Subject: [PATCH 57/62] fs/ocfs2/aops.c: test for IS_ERR rather than 0
+Date: Wed,  2 Apr 2008 13:15:07 -0700
+Message-Id: <12071674382558-git-send-email-mfasheh@suse.com>
 X-Mailer: git-send-email 1.5.2.4
-In-Reply-To: <12071674333467-git-send-email-mfasheh@suse.com>
+In-Reply-To: <12071674361985-git-send-email-mfasheh@suse.com>
 References: <12071673121124-git-send-email-mfasheh@suse.com>
  <1207167318479-git-send-email-mfasheh@suse.com>
  <12071673203909-git-send-email-mfasheh@suse.com>
@@ -74,262 +74,51 @@ References: <12071673121124-git-send-email-mfasheh@suse.com>
  <12071674291040-git-send-email-mfasheh@suse.com>
  <12071674312495-git-send-email-mfasheh@suse.com>
  <12071674333467-git-send-email-mfasheh@suse.com>
+ <12071674361985-git-send-email-mfasheh@suse.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Tao Ma <tao.ma@oracle.com>
+From: Julia Lawall <julia@diku.dk>
 
-Inode allocation is modified to look in other nodes allocators during
-extreme out of space situations. We retry our own slot when space is freed
-back to the global bitmap, or whenever we've allocated more than 1024 inodes
-from another slot.
+The function ocfs2_start_trans always returns either a valid pointer or a
+value made with ERR_PTR, so its result should be tested with IS_ERR, not
+with a test for 0.
 
-Signed-off-by: Tao Ma <tao.ma@oracle.com>
+Signed-off-by: Julia Lawall <julia@diku.dk>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Mark Fasheh <mfasheh@suse.com>
 ---
- fs/ocfs2/alloc.c      |    2 +
- fs/ocfs2/localalloc.c |    2 +
- fs/ocfs2/namei.c      |    2 +-
- fs/ocfs2/ocfs2.h      |   34 +++++++++++++++++++-
- fs/ocfs2/suballoc.c   |   80 +++++++++++++++++++++++++++++++++++++++++++++++-
- fs/ocfs2/super.c      |    1 +
- 6 files changed, 116 insertions(+), 5 deletions(-)
+ fs/ocfs2/aops.c |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/fs/ocfs2/alloc.c b/fs/ocfs2/alloc.c
-index 7d81aa6..a268821 100644
---- a/fs/ocfs2/alloc.c
-+++ b/fs/ocfs2/alloc.c
-@@ -5150,6 +5150,8 @@ static void ocfs2_truncate_log_worker(struct work_struct *work)
- 	status = ocfs2_flush_truncate_log(osb);
- 	if (status < 0)
- 		mlog_errno(status);
-+	else
-+		ocfs2_init_inode_steal_slot(osb);
- 
- 	mlog_exit(status);
- }
-diff --git a/fs/ocfs2/localalloc.c b/fs/ocfs2/localalloc.c
-index b6d0719..ce0dc14 100644
---- a/fs/ocfs2/localalloc.c
-+++ b/fs/ocfs2/localalloc.c
-@@ -447,6 +447,8 @@ out_mutex:
- 	iput(main_bm_inode);
- 
- out:
-+	if (!status)
-+		ocfs2_init_inode_steal_slot(osb);
- 	mlog_exit(status);
- 	return status;
- }
-diff --git a/fs/ocfs2/namei.c b/fs/ocfs2/namei.c
-index ae9ad95..ab5a227 100644
---- a/fs/ocfs2/namei.c
-+++ b/fs/ocfs2/namei.c
-@@ -424,7 +424,7 @@ static int ocfs2_mknod_locked(struct ocfs2_super *osb,
- 	fe->i_fs_generation = cpu_to_le32(osb->fs_generation);
- 	fe->i_blkno = cpu_to_le64(fe_blkno);
- 	fe->i_suballoc_bit = cpu_to_le16(suballoc_bit);
--	fe->i_suballoc_slot = cpu_to_le16(osb->slot_num);
-+	fe->i_suballoc_slot = cpu_to_le16(inode_ac->ac_alloc_slot);
- 	fe->i_uid = cpu_to_le32(current->fsuid);
- 	if (dir->i_mode & S_ISGID) {
- 		fe->i_gid = cpu_to_le32(dir->i_gid);
-diff --git a/fs/ocfs2/ocfs2.h b/fs/ocfs2/ocfs2.h
-index 9ff5811..3169237 100644
---- a/fs/ocfs2/ocfs2.h
-+++ b/fs/ocfs2/ocfs2.h
-@@ -208,11 +208,14 @@ struct ocfs2_super
- 	u32 s_feature_incompat;
- 	u32 s_feature_ro_compat;
- 
--	/* Protects s_next_generaion, osb_flags. Could protect more on
--	 * osb as it's very short lived. */
-+	/* Protects s_next_generation, osb_flags and s_inode_steal_slot.
-+	 * Could protect more on osb as it's very short lived.
-+	 */
- 	spinlock_t osb_lock;
- 	u32 s_next_generation;
- 	unsigned long osb_flags;
-+	s16 s_inode_steal_slot;
-+	atomic_t s_num_inodes_stolen;
- 
- 	unsigned long s_mount_opt;
- 	unsigned int s_atime_quantum;
-@@ -537,6 +540,33 @@ static inline unsigned int ocfs2_pages_per_cluster(struct super_block *sb)
- 	return pages_per_cluster;
- }
- 
-+static inline void ocfs2_init_inode_steal_slot(struct ocfs2_super *osb)
-+{
-+	spin_lock(&osb->osb_lock);
-+	osb->s_inode_steal_slot = OCFS2_INVALID_SLOT;
-+	spin_unlock(&osb->osb_lock);
-+	atomic_set(&osb->s_num_inodes_stolen, 0);
-+}
-+
-+static inline void ocfs2_set_inode_steal_slot(struct ocfs2_super *osb,
-+					      s16 slot)
-+{
-+	spin_lock(&osb->osb_lock);
-+	osb->s_inode_steal_slot = slot;
-+	spin_unlock(&osb->osb_lock);
-+}
-+
-+static inline s16 ocfs2_get_inode_steal_slot(struct ocfs2_super *osb)
-+{
-+	s16 slot;
-+
-+	spin_lock(&osb->osb_lock);
-+	slot = osb->s_inode_steal_slot;
-+	spin_unlock(&osb->osb_lock);
-+
-+	return slot;
-+}
-+
- #define ocfs2_set_bit ext2_set_bit
- #define ocfs2_clear_bit ext2_clear_bit
- #define ocfs2_test_bit ext2_test_bit
-diff --git a/fs/ocfs2/suballoc.c b/fs/ocfs2/suballoc.c
-index 33d5573..d2d278f 100644
---- a/fs/ocfs2/suballoc.c
-+++ b/fs/ocfs2/suballoc.c
-@@ -49,6 +49,8 @@
- #define NOT_ALLOC_NEW_GROUP		0
- #define ALLOC_NEW_GROUP			1
- 
-+#define OCFS2_MAX_INODES_TO_STEAL	1024
-+
- static inline void ocfs2_debug_bg(struct ocfs2_group_desc *bg);
- static inline void ocfs2_debug_suballoc_inode(struct ocfs2_dinode *fe);
- static inline u16 ocfs2_find_victim_chain(struct ocfs2_chain_list *cl);
-@@ -109,7 +111,7 @@ static inline void ocfs2_block_to_cluster_group(struct inode *inode,
- 						u64 *bg_blkno,
- 						u16 *bg_bit_off);
- 
--void ocfs2_free_alloc_context(struct ocfs2_alloc_context *ac)
-+static void ocfs2_free_ac_resource(struct ocfs2_alloc_context *ac)
+diff --git a/fs/ocfs2/aops.c b/fs/ocfs2/aops.c
+index 90383ed..17964c0 100644
+--- a/fs/ocfs2/aops.c
++++ b/fs/ocfs2/aops.c
+@@ -467,11 +467,11 @@ handle_t *ocfs2_start_walk_page_trans(struct inode *inode,
+ 							 unsigned to)
  {
- 	struct inode *inode = ac->ac_inode;
+ 	struct ocfs2_super *osb = OCFS2_SB(inode->i_sb);
+-	handle_t *handle = NULL;
++	handle_t *handle;
+ 	int ret = 0;
  
-@@ -120,9 +122,17 @@ void ocfs2_free_alloc_context(struct ocfs2_alloc_context *ac)
- 		mutex_unlock(&inode->i_mutex);
- 
- 		iput(inode);
-+		ac->ac_inode = NULL;
+ 	handle = ocfs2_start_trans(osb, OCFS2_INODE_UPDATE_CREDITS);
+-	if (!handle) {
++	if (IS_ERR(handle)) {
+ 		ret = -ENOMEM;
+ 		mlog_errno(ret);
+ 		goto out;
+@@ -487,7 +487,7 @@ handle_t *ocfs2_start_walk_page_trans(struct inode *inode,
  	}
--	if (ac->ac_bh)
-+	if (ac->ac_bh) {
- 		brelse(ac->ac_bh);
-+		ac->ac_bh = NULL;
-+	}
-+}
-+
-+void ocfs2_free_alloc_context(struct ocfs2_alloc_context *ac)
-+{
-+	ocfs2_free_ac_resource(ac);
- 	kfree(ac);
- }
- 
-@@ -522,10 +532,42 @@ bail:
- 	return status;
- }
- 
-+static int ocfs2_steal_inode_from_other_nodes(struct ocfs2_super *osb,
-+					      struct ocfs2_alloc_context *ac)
-+{
-+	int i, status = -ENOSPC;
-+	s16 slot = ocfs2_get_inode_steal_slot(osb);
-+
-+	/* Start to steal inodes from the first slot after ours. */
-+	if (slot == OCFS2_INVALID_SLOT)
-+		slot = osb->slot_num + 1;
-+
-+	for (i = 0; i < osb->max_slots; i++, slot++) {
-+		if (slot == osb->max_slots)
-+			slot = 0;
-+
-+		if (slot == osb->slot_num)
-+			continue;
-+
-+		status = ocfs2_reserve_suballoc_bits(osb, ac,
-+						     INODE_ALLOC_SYSTEM_INODE,
-+						     slot, NOT_ALLOC_NEW_GROUP);
-+		if (status >= 0) {
-+			ocfs2_set_inode_steal_slot(osb, slot);
-+			break;
-+		}
-+
-+		ocfs2_free_ac_resource(ac);
-+	}
-+
-+	return status;
-+}
-+
- int ocfs2_reserve_new_inode(struct ocfs2_super *osb,
- 			    struct ocfs2_alloc_context **ac)
- {
- 	int status;
-+	s16 slot = ocfs2_get_inode_steal_slot(osb);
- 
- 	*ac = kzalloc(sizeof(struct ocfs2_alloc_context), GFP_KERNEL);
- 	if (!(*ac)) {
-@@ -539,9 +581,43 @@ int ocfs2_reserve_new_inode(struct ocfs2_super *osb,
- 
- 	(*ac)->ac_group_search = ocfs2_block_group_search;
- 
-+	/*
-+	 * slot is set when we successfully steal inode from other nodes.
-+	 * It is reset in 3 places:
-+	 * 1. when we flush the truncate log
-+	 * 2. when we complete local alloc recovery.
-+	 * 3. when we successfully allocate from our own slot.
-+	 * After it is set, we will go on stealing inodes until we find the
-+	 * need to check our slots to see whether there is some space for us.
-+	 */
-+	if (slot != OCFS2_INVALID_SLOT &&
-+	    atomic_read(&osb->s_num_inodes_stolen) < OCFS2_MAX_INODES_TO_STEAL)
-+		goto inode_steal;
-+
-+	atomic_set(&osb->s_num_inodes_stolen, 0);
- 	status = ocfs2_reserve_suballoc_bits(osb, *ac,
- 					     INODE_ALLOC_SYSTEM_INODE,
- 					     osb->slot_num, ALLOC_NEW_GROUP);
-+	if (status >= 0) {
-+		status = 0;
-+
-+		/*
-+		 * Some inodes must be freed by us, so try to allocate
-+		 * from our own next time.
-+		 */
-+		if (slot != OCFS2_INVALID_SLOT)
-+			ocfs2_init_inode_steal_slot(osb);
-+		goto bail;
-+	} else if (status < 0 && status != -ENOSPC) {
-+		mlog_errno(status);
-+		goto bail;
-+	}
-+
-+	ocfs2_free_ac_resource(*ac);
-+
-+inode_steal:
-+	status = ocfs2_steal_inode_from_other_nodes(osb, *ac);
-+	atomic_inc(&osb->s_num_inodes_stolen);
- 	if (status < 0) {
- 		if (status != -ENOSPC)
- 			mlog_errno(status);
-diff --git a/fs/ocfs2/super.c b/fs/ocfs2/super.c
-index 96ebe36..df63ba2 100644
---- a/fs/ocfs2/super.c
-+++ b/fs/ocfs2/super.c
-@@ -1394,6 +1394,7 @@ static int ocfs2_initialize_super(struct super_block *sb,
- 	INIT_LIST_HEAD(&osb->blocked_lock_list);
- 	osb->blocked_lock_count = 0;
- 	spin_lock_init(&osb->osb_lock);
-+	ocfs2_init_inode_steal_slot(osb);
- 
- 	atomic_set(&osb->alloc_stats.moves, 0);
- 	atomic_set(&osb->alloc_stats.local_data, 0);
+ out:
+ 	if (ret) {
+-		if (handle)
++		if (!IS_ERR(handle))
+ 			ocfs2_commit_trans(osb, handle);
+ 		handle = ERR_PTR(ret);
+ 	}
 -- 
 1.5.4.1
 
