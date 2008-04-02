@@ -1,94 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758730AbYDBOhf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758877AbYDBOi0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758730AbYDBOhf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 10:37:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757571AbYDBOgn
+	id S1758877AbYDBOi0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 10:38:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757130AbYDBOiR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 10:36:43 -0400
-Received: from mail17.svc.cra.dublin.eircom.net ([159.134.118.216]:37053 "HELO
-	mail17.svc.cra.dublin.eircom.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1757515AbYDBOgm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 10:36:42 -0400
-From: Mark McLoughlin <markmc@redhat.com>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       xen-devel@lists.xensource.com, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>, Mark McLoughlin <markmc@redhat.com>
-Subject: [PATCH 2/3] xen: Do not pin/unpin PMD pages
-Date: Wed,  2 Apr 2008 15:36:37 +0100
-Message-Id: <1207146998-14607-2-git-send-email-markmc@redhat.com>
-X-Mailer: git-send-email 1.5.4.1
-In-Reply-To: <1207146998-14607-1-git-send-email-markmc@redhat.com>
-References: <1207146943.11911.1.camel@muff>
- <1207146998-14607-1-git-send-email-markmc@redhat.com>
+	Wed, 2 Apr 2008 10:38:17 -0400
+Received: from rtr.ca ([76.10.145.34]:3467 "EHLO mail.rtr.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756727AbYDBOiQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Apr 2008 10:38:16 -0400
+Message-ID: <47F39A55.5070102@rtr.ca>
+Date: Wed, 02 Apr 2008 10:38:13 -0400
+From: Mark Lord <lkml@rtr.ca>
+Organization: Real-Time Remedies Inc.
+User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
+MIME-Version: 1.0
+To: Oliver Neukum <oliver@neukum.org>
+Cc: Pavel Machek <pavel@suse.cz>, Linux Kernel <linux-kernel@vger.kernel.org>,
+       Greg KH <gregkh@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
+       jikos@suse.cz, Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: 2.6.25-rc7:  Ugh.
+References: <47EBBD57.30902@rtr.ca> <200803312005.37804.oliver@neukum.org> <47F139C9.50803@rtr.ca> <200804021004.53453.oliver@neukum.org>
+In-Reply-To: <200804021004.53453.oliver@neukum.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-During process startup, in xen_pgd_pin(), we pin PTE pages
-but not PMD pages. If we then later map and unmap using an
-otherwise unused PMD page, the unpin in release_pd() fails
-because it wasn't previously pinned.
+(CCing Alan Stern on this sub-thread)
 
-i.e. with this simple test case:
+Oliver Neukum wrote:
+> Am Montag, 31. März 2008 21:21:45 schrieb Mark Lord:
+>> Oliver Neukum wrote:
+>>> But if power is cut with newer kernels and older kernels retain it, something
+>>> must have changed. Can you undo the ACPI changes since the last working
+>>> kernel?
+>> ..
+>>
+>> No, that's no different.
+>> This notebook always cuts +5V from USB on suspend or poweroff.
+>> Regardless of kernel version.  I don't know how common this is,
+>> but all of my notebooks here have always behaved this way,
+>> as have most (but not all) of the larger systems.
+>>
+>> The two most recent PCIe motherboards I have here
+>> do provide +5V standby power to USB, even when "OFF",
+>> much to my annoyance and to the detriment of this planet.
+> 
+> Very well.
+> 
+> Mark, can you get a sysrq-t trace of your whole system when USB goes
+> dead? And please enable CONFIG_USB_DEBUG. We need to do whether
+> khubd and ksuspend_usbd are in state D.
+..
 
-    int fd = open("/dev/zero", O_RDONLY);
-    munmap(mmap((void *)0x40000000, 0x1000_LEN, PROT_READ, MAP_PRIVATE, fd, 0), 0x1000);
-    close(fd);
+Both of those things were already done, and results from the last time
+are attached to the bugzilla report: http://bugzilla.kernel.org/show_bug.cgi?id=10345
 
-we currently get:
+I'll be installing -rc8 today, and see what happens there.
 
-   kernel BUG at arch/x86/xen/enlighten.c:678!
-   ...
-   EIP is at xen_release_pt+0x79/0xa9
-   ...
-   Call Trace:
-    [<c041da25>] ? __pmd_free_tlb+0x1a/0x75
-    [<c047a192>] ? free_pgd_range+0x1d2/0x2b5
-    [<c047a2f3>] ? free_pgtables+0x7e/0x93
-    [<c047b272>] ? unmap_region+0xb9/0xf5
-    [<c047c1bd>] ? do_munmap+0x193/0x1f5
-    [<c047c24f>] ? sys_munmap+0x30/0x3f
-    [<c0408cce>] ? syscall_call+0x7/0xb
-    =======================
-
-and xen complains:
-
-  (XEN) mm.c:2241:d4 Mfn 1cc37 not pinned
-
-Further details at:
-
-  https://bugzilla.redhat.com/436453
-
-Signed-off-by: Mark McLoughlin <markmc@redhat.com>
----
- arch/x86/xen/enlighten.c |    5 ++---
- 1 files changed, 2 insertions(+), 3 deletions(-)
-
-diff --git a/arch/x86/xen/enlighten.c b/arch/x86/xen/enlighten.c
-index 16e2f80..f16b056 100644
---- a/arch/x86/xen/enlighten.c
-+++ b/arch/x86/xen/enlighten.c
-@@ -689,8 +689,6 @@ static void xen_alloc_ptpage(struct mm_struct *mm, u32 pfn, unsigned level)
- 			make_lowmem_page_readonly(__va(PFN_PHYS(pfn)));
- 			if (level == PT_PTE)
- 				pin_pagetable_pfn(MMUEXT_PIN_L1_TABLE, pfn);
--			else if (level == PT_PMD)
--				pin_pagetable_pfn(MMUEXT_PIN_L2_TABLE, pfn);
- 		} else
- 			/* make sure there are no stray mappings of
- 			   this page */
-@@ -715,7 +713,8 @@ static void xen_release_ptpage(u32 pfn, unsigned level)
- 
- 	if (PagePinned(page)) {
- 		if (!PageHighMem(page)) {
--			pin_pagetable_pfn(MMUEXT_UNPIN_TABLE, pfn);
-+			if (level == PT_PTE)
-+				pin_pagetable_pfn(MMUEXT_UNPIN_TABLE, pfn);
- 			make_lowmem_page_readwrite(__va(PFN_PHYS(pfn)));
- 		}
- 	}
--- 
-1.5.4.5
-
+Cheers
