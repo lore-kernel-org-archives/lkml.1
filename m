@@ -1,60 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758710AbYDBQj2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759296AbYDBQjo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758710AbYDBQj2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 12:39:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755108AbYDBQjV
+	id S1759296AbYDBQjo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 12:39:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757008AbYDBQjf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 12:39:21 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:50169 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755504AbYDBQjU (ORCPT
+	Wed, 2 Apr 2008 12:39:35 -0400
+Received: from smtp-vbr11.xs4all.nl ([194.109.24.31]:1293 "EHLO
+	smtp-vbr11.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757358AbYDBQjf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 12:39:20 -0400
-Message-ID: <47F3C469.1020803@oracle.com>
-Date: Wed, 02 Apr 2008 12:37:45 -0500
-From: Richard Frank <richard.frank@oracle.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
+	Wed, 2 Apr 2008 12:39:35 -0400
+Date: Wed, 2 Apr 2008 18:37:31 +0200 (CEST)
+From: Roman Zippel <zippel@linux-m68k.org>
+X-X-Sender: roman@localhost.localdomain
+To: John Stultz <johnstul@us.ibm.com>
+cc: lkml <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 2/2] Introduce CLOCK_MONOTONIC_RAW
+In-Reply-To: <1207152111.6211.13.camel@jstultz-laptop>
+Message-ID: <Pine.LNX.4.64.0804021820370.26791@localhost.localdomain>
+References: <1205878279.28128.114.camel@localhost>  <1205878420.28128.117.camel@localhost>
+  <Pine.LNX.4.64.0804021340290.26791@localhost.localdomain>
+ <1207152111.6211.13.camel@jstultz-laptop>
 MIME-Version: 1.0
-To: "Scott Weitzenkamp (sweitzen)" <sweitzen@cisco.com>
-CC: "Roland Dreier (rdreier)" <rdreier@cisco.com>, rds-devel@oss.oracle.com,
-       linux-kernel@vger.kernel.org, general@lists.openfabrics.org
-Subject: Re: [ofa-general] InfiniBand/iWARP/RDMA merge plans for 2.6.26 (what'sin
- infiniband.git)
-References: <adave31bayd.fsf@cisco.com>	<1207120932.4593.47.camel@localhost.localdomain>	<aday77w2s5z.fsf@cisco.com><47F3BE33.4000204@oracle.com> <adalk3w2pxz.fsf@cisco.com> <47F3C137.3070209@oracle.com> <A15335FBE9BD2449AF2C9EF3D1EB8EA3055471E8@xmb-sjc-216.amer.cisco.com>
-In-Reply-To: <A15335FBE9BD2449AF2C9EF3D1EB8EA3055471E8@xmb-sjc-216.amer.cisco.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I believe there is a patch for NetPerf which supports RDS - although it 
-may need to be updated - and submitted.
+Hi,
 
-The only prior discussion I can think of - was whether or not NetPerf 
-exercises RDS as Oracle would.
+On Wed, 2 Apr 2008, John Stultz wrote:
 
-I'm not proposing that we should enhance NetPerf to do that (but that's 
-OK with me).
+> > +	u64 raw_nsec;
+> > +	long raw_sec;
+> 
+> 
+> So, with the raw_sec being stored in the clocksource, and there not
+> being a monotonic_raw value, doesn't this mean the MONOTONIC_RAW value
+> will clear to zero on clocksource changes? 
 
-We created a tool rds-stress which does that.
+It's copied during the clock change.
 
-Scott Weitzenkamp (sweitzen) wrote:
->> WRT to merging RDS into the kernel - our current plans are to wait to 
->> see RDS adopted by more than Oracle - before approaching the kernel 
->> community about inclusion of RDS.
->>     
->
-> I've seen statements before from someone from Oracle that RDS was only
-> for Oracle's use, for example, that person did not want netperf changed
-> to support RDS.
->
-> Scott Weitzenkamp
-> SQA and Release Manager
-> Data Center Access Engineering
-> Cisco Systems
->   
+> > @@ -215,6 +218,8 @@ static inline void clocksource_calculate
+> > 
+> >  	/* Go back from cycles -> shifted ns, this time use ntp adjused mult */
+> >  	c->xtime_interval = (u64)c->cycle_interval * c->mult;
+> > +	c->raw_interval = ((u64)c->cycle_interval * c->mult_orig) <<
+> > +			  (NTP_SCALE_SHIFT - c->shift);
+> >  }
+> 
+> Could you explain further how this extra shift scaling is beneficial?
+
+The value has a constant scale, which allows a few optimizations, e.g. 
+look at update_wall_time(), where the 64bit-shift and 64bit-compare 
+has become a simple 32bit-compare, as it's now very easy to extract the 
+full nanosecond part and to drop the fraction part.
+
+> (Additionally, if we're using it for more then just NTP's shift, we
+> might want to change its name).
+
+I don't mind.
+
+bye, Roman
