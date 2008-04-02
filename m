@@ -1,78 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760340AbYDBXHv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759328AbYDBXKt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760340AbYDBXHv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 19:07:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757985AbYDBXH1
+	id S1759328AbYDBXKt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 19:10:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757156AbYDBXKl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 19:07:27 -0400
-Received: from smtp118.sbc.mail.sp1.yahoo.com ([69.147.64.91]:37091 "HELO
-	smtp118.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1757661AbYDBXHZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 19:07:25 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=5qfAIKLoG97t1jtN0G2bxg6yUP2Bj1o7kHvtI83Wh8k6QHH+naUHRu4zmaYy51UfkmlvTdfNR7XaBajtA1kCs/3aKN0Ry79Apdm+YfayNQJ2eNwJDuP6RpFuVlr9XT7Y0T01WkmDMZJ1qJRFAcTcAIODYZRP3p2qBoCeyepsrno=  ;
-X-YMail-OSG: OdBd3WsVM1ltM17.RzRPdfuIX5URoL0npSoBCog4W6n42YcsSn6rT00zVKdjsUUkblYGL_owVQ--
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH] usb ehci_iaa_watchdog fix
-Date: Wed, 2 Apr 2008 16:07:21 -0700
-User-Agent: KMail/1.9.6
-Cc: Mark Lord <lkml@rtr.ca>, pavel@suse.cz, oliver@neukum.org,
-       linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org, jikos@suse.cz,
-       gregkh@suse.de, akpm@linux-foundation.org
-References: <Pine.LNX.4.44L0.0804021639290.2107-100000@iolanthe.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0804021639290.2107-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200804021607.22424.david-b@pacbell.net>
+	Wed, 2 Apr 2008 19:10:41 -0400
+Received: from main.gmane.org ([80.91.229.2]:39278 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757154AbYDBXKl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Apr 2008 19:10:41 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Stefan Schweizer <genstef@gentoo.org>
+Subject: Re: suspend
+Followup-To: gmane.linux.kernel
+Date: Thu, 03 Apr 2008 01:09:01 +0200
+Message-ID: <ft13p5$h64$1@ger.gmane.org>
+References: <dd18b0c30804012331oc548416k113e492d7dc9c189@mail.gmail.com> <200804021419.06672.rjw@sisk.pl> <dd18b0c30804020853w50e0290cy8b0303e30f2bcfec@mail.gmail.com> <200804021939.46733.rjw@sisk.pl>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: ppp-82-135-8-6.dynamic.mnet-online.de
+User-Agent: KNode/0.99.01
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 02 April 2008, Alan Stern wrote:
-> On Wed, 2 Apr 2008, David Brownell wrote:
+Rafael J. Wysocki wrote:
+
+> On Wednesday, 2 of April 2008, Justin Mattock wrote:
+>> Hello; the only problems I see after a suspend is the appletouch
+>> looses its scroll function,
 > 
-> > Those hcd->state tests have been getting more and more
-> > dodgey as time goes by.  At this point I hardly trust
-> > any of them.  There *IS* no clear state machine which
-> > governs the usbcore/HCD interaction.
-> 
-> ISTR trying to make that same point a few times over the past two or 
-> three years...  :-)
+> Is that a USB device or some other kind?
 
-Was there any argument about that fact?  The question was
-more "shouldn't there actually *be* such a state machine"
-than "do we have one yet".
+I have the same Problem on my macbook 13,3" using the appletouch usb module
+to drive the touchpad. chvt 1; chvt 7 brings the touchpad back after resume
+but do you maybe know a better solution?
 
+Best regards,
 
-> It would make more sense for each HCD to keep its own private "state" 
-> variable.  The interaction with usbcore can be broken down into a few 
-> simple tests, such as:
-> 
-> 	Is the HC dead?
-> 	Is the HC (i.e., the PCI or platform device) suspended?
-> 	Is the HC running?
-> 	Is it okay to submit an URB?
-> 
-> There's plenty of redundancy in this list, and some of the information
-> may already be available in hcd->self.root_hub->state.  In many or most
-> cases, these questions can't be answered in a race-free manner anyhow, 
-> which limits their usefulness.
-
-At any given instant, all of them have valid answers.
-The only one that's not resolvable by mutual exclusion
-on the HCD's spinlock is "is it dead", since the HC
-could crap out at any time.  (Nowadays that's fortunately
-rare ... we've been whomping on such bugs for long enough
-by now!)
-
-- Dave
-
- 
