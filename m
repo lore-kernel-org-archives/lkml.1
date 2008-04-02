@@ -1,40 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757409AbYDBQSi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758197AbYDBQTS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757409AbYDBQSi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 12:18:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754969AbYDBQSb
+	id S1758197AbYDBQTS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 12:19:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755291AbYDBQTG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 12:18:31 -0400
-Received: from saeurebad.de ([85.214.36.134]:39332 "EHLO saeurebad.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754327AbYDBQSa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 12:18:30 -0400
-From: Johannes Weiner <hannes@saeurebad.de>
-To: "linux-os \(Dick Johnson\)" <linux-os@analogic.com>
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Fix kernel thread names that might offend users.
-References: <87r6dps3db.fsf@saeurebad.de>
-	<Pine.LNX.4.61.0804021000210.19372@chaos.analogic.com>
-Date: Wed, 02 Apr 2008 17:16:34 +0200
-In-Reply-To: <Pine.LNX.4.61.0804021000210.19372@chaos.analogic.com>
-	(linux-os@analogic.com's message of "Wed, 2 Apr 2008 10:02:16 -0400")
-Message-ID: <87zlscqobx.fsf@saeurebad.de>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+	Wed, 2 Apr 2008 12:19:06 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:48596 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754969AbYDBQTD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Apr 2008 12:19:03 -0400
+Message-ID: <47F3BFEC.1000400@oracle.com>
+Date: Wed, 02 Apr 2008 12:18:36 -0500
+From: Richard Frank <richard.frank@oracle.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
+To: Roland Dreier <rdreier@cisco.com>
+CC: Shirley Ma <mashirle@us.ibm.com>, linux-kernel@vger.kernel.org,
+       general@lists.openfabrics.org, rds-devel@oss.oracle.com
+Subject: Re: [ofa-general] InfiniBand/iWARP/RDMA merge plans for 2.6.26 (what's
+ in infiniband.git)
+References: <adave31bayd.fsf@cisco.com>	<1207120932.4593.47.camel@localhost.localdomain>	<aday77w2s5z.fsf@cisco.com> <47F3BE33.4000204@oracle.com> <adalk3w2pxz.fsf@cisco.com>
+In-Reply-To: <adalk3w2pxz.fsf@cisco.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Yes, I see this is for pushing RDS upstream - but what about running RDS 
+as is over IWARP NICs - that should just work right ?
 
-"linux-os (Dick Johnson)" <linux-os@analogic.com> writes:
-
-> But wasn't the "k" just for "kernel?" What on earth does "g"
-> stand for???  We shouldn't change names just because we don't
-> like them!
-
-Come on.. Check the date of my original submission :-)
-
-	Hannes
+Roland Dreier wrote:
+>  > What is the work we need to do here - I was thinking RDS should just work ?
+>
+> Stuff doesn't get merged into the kernel on its own.  If you want RDS
+> upstream then the first step is to post patches in a form suitable for
+> reviewing.  Then respond to the review comments.
+>
+> The files Documentation/SubmittingPatches and to some extent
+> Documentation/SubmittingDrivers in the kernel source have more info.
+>
+>  - R.
+>   
