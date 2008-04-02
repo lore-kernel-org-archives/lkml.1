@@ -1,73 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757181AbYDBPFe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757804AbYDBPGe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757181AbYDBPFe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 11:05:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754971AbYDBPFY
+	id S1757804AbYDBPGe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 11:06:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754971AbYDBPG1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 11:05:24 -0400
-Received: from rtr.ca ([76.10.145.34]:2463 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754220AbYDBPFX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 11:05:23 -0400
-Message-ID: <47F3A0B1.1030205@rtr.ca>
-Date: Wed, 02 Apr 2008 11:05:21 -0400
-From: Mark Lord <lkml@rtr.ca>
-Organization: Real-Time Remedies Inc.
-User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
+	Wed, 2 Apr 2008 11:06:27 -0400
+Received: from py-out-1112.google.com ([64.233.166.183]:41333 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755016AbYDBPGZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Apr 2008 11:06:25 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=IJ3vFGXYmEz2m6eqEM3kiSzDHYYI4Xp5CNp9oFNa7uBTUcRUxSiGdHHWDJNdkeEKIIU4Jd2kd2bQI23aAQyZzxpnqPvNKKYT1fFpBPQOIjefvQpZkbCrpHlr0htbDS51a7VH208ebBM/aFTyw8m5Ieonb4lKX72u9c0V+KeIbsE=
+Message-ID: <bc64b4640804020806y2dc68600k8179092c9c4a100e@mail.gmail.com>
+Date: Wed, 2 Apr 2008 19:06:24 +0400
+From: Dmitry <dbaryshkov@gmail.com>
+To: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
+Subject: Re: [PATCH] Fix tosakbd suspend
+Cc: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20080402104921.ZZRA012@mailhub.coreip.homeip.net>
 MIME-Version: 1.0
-To: Oliver Neukum <oliver@neukum.org>
-Cc: Pavel Machek <pavel@suse.cz>, Linux Kernel <linux-kernel@vger.kernel.org>,
-       Greg KH <gregkh@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
-       jikos@suse.cz, Alan Stern <stern@rowland.harvard.edu>,
-       linux-usb@vger.kernel.org
-Subject: 2.6.25-rc7/rc8 USB dead on resume
-References: <47EBBD57.30902@rtr.ca> <200803312005.37804.oliver@neukum.org> <47F139C9.50803@rtr.ca> <200804021004.53453.oliver@neukum.org> <47F39A55.5070102@rtr.ca> <47F39A80.9090201@rtr.ca>
-In-Reply-To: <47F39A80.9090201@rtr.ca>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080401144224.GA6436@USFSHXP-002051>
+	 <20080402141632.GA19698@doriath.ww600.siemens.net>
+	 <bc64b4640804020738l25b51263la04cff12c38e0325@mail.gmail.com>
+	 <20080402104921.ZZRA012@mailhub.coreip.homeip.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mark Lord wrote:
-> (CCing linux-usb again)
-> (CCing Alan Stern on this sub-thread)
-> 
-> Oliver Neukum wrote:
->> Am Montag, 31. März 2008 21:21:45 schrieb Mark Lord:
->>> Oliver Neukum wrote:
->>>> But if power is cut with newer kernels and older kernels retain it, 
->>>> something
->>>> must have changed. Can you undo the ACPI changes since the last working
->>>> kernel?
->>> ..
->>>
->>> No, that's no different.
->>> This notebook always cuts +5V from USB on suspend or poweroff.
->>> Regardless of kernel version.  I don't know how common this is,
->>> but all of my notebooks here have always behaved this way,
->>> as have most (but not all) of the larger systems.
->>>
->>> The two most recent PCIe motherboards I have here
->>> do provide +5V standby power to USB, even when "OFF",
->>> much to my annoyance and to the detriment of this planet.
->>
->> Very well.
->>
->> Mark, can you get a sysrq-t trace of your whole system when USB goes
->> dead? And please enable CONFIG_USB_DEBUG. We need to do whether
->> khubd and ksuspend_usbd are in state D.
-> ..
-> 
-> Both of those things were already done, and results from the last time
-> are attached to the bugzilla report: 
-> http://bugzilla.kernel.org/show_bug.cgi?id=10345
-> 
-> I'll be installing -rc8 today, and see what happens there.
-..
+Hi,
 
-No change in -rc8.  I've uploaded new syslog (with alt-sysrq-T) and .config
-as attachements to the bugzilla entry:
+2008/4/2, Dmitry Torokhov <dmitry.torokhov@gmail.com>:
+> On Wed, Apr 02, 2008 at 06:38:26PM +0400, Dmitry wrote:
+>  > Hi,
+>  >
+>  > Sorry, that was me... Sometimes I hate git-am & git-format-patch
+>  >
+>
+>
+> Heh, you had me scratching my head for a moment ;)
 
-    http://bugzilla.kernel.org/show_bug.cgi?id=10345
+:)
 
+>
+>  > 2008/4/2, <dbaryshkov@gmail.com>:
+>
+> > >
+>  > > Fixed two minor glitches. Works for me. Please add it to your tree.
+>  > >
+>
+>
+> What were they? I dont see any difference from the patch I sent to you,
+>  so I want to make sure I have the correct version.
+
+suspended instead of suspeneded in struct tosakbd definition,
+declaration of tosakbd in tosakbd_resume.
+
+-- 
+With best wishes
+Dmitry
