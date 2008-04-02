@@ -1,63 +1,298 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758877AbYDBOi0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759148AbYDBOil@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758877AbYDBOi0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 10:38:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757130AbYDBOiR
+	id S1759148AbYDBOil (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 10:38:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758897AbYDBOi2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 10:38:17 -0400
-Received: from rtr.ca ([76.10.145.34]:3467 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756727AbYDBOiQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 10:38:16 -0400
-Message-ID: <47F39A55.5070102@rtr.ca>
-Date: Wed, 02 Apr 2008 10:38:13 -0400
-From: Mark Lord <lkml@rtr.ca>
-Organization: Real-Time Remedies Inc.
-User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
-MIME-Version: 1.0
-To: Oliver Neukum <oliver@neukum.org>
-Cc: Pavel Machek <pavel@suse.cz>, Linux Kernel <linux-kernel@vger.kernel.org>,
-       Greg KH <gregkh@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
-       jikos@suse.cz, Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: 2.6.25-rc7:  Ugh.
-References: <47EBBD57.30902@rtr.ca> <200803312005.37804.oliver@neukum.org> <47F139C9.50803@rtr.ca> <200804021004.53453.oliver@neukum.org>
-In-Reply-To: <200804021004.53453.oliver@neukum.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+	Wed, 2 Apr 2008 10:38:28 -0400
+Received: from mtagate2.de.ibm.com ([195.212.29.151]:23184 "EHLO
+	mtagate2.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758870AbYDBOi0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Apr 2008 10:38:26 -0400
+Subject: [PATCH 3/3] hugetlbfs: common code update for s390
+From: Gerald Schaefer <gerald.schaefer@de.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
+       schwidefsky@de.ibm.com, Ingo Molnar <mingo@elte.hu>,
+       "David S. Miller" <davem@davemloft.net>,
+       Tony Luck <tony.luck@intel.com>, Paul Mackerras <paulus@samba.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Paul Mundt <lethal@linux-sh.org>
+In-Reply-To: <1207145843.4980.7.camel@localhost.localdomain>
+References: <1207145843.4980.7.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Wed, 02 Apr 2008 16:38:24 +0200
+Message-Id: <1207147104.4980.20.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.0 (2.8.0-40.el5_1.1) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(CCing Alan Stern on this sub-thread)
+Subject: [PATCH 3/3] hugetlbfs: common code update for s390
 
-Oliver Neukum wrote:
-> Am Montag, 31. März 2008 21:21:45 schrieb Mark Lord:
->> Oliver Neukum wrote:
->>> But if power is cut with newer kernels and older kernels retain it, something
->>> must have changed. Can you undo the ACPI changes since the last working
->>> kernel?
->> ..
->>
->> No, that's no different.
->> This notebook always cuts +5V from USB on suspend or poweroff.
->> Regardless of kernel version.  I don't know how common this is,
->> but all of my notebooks here have always behaved this way,
->> as have most (but not all) of the larger systems.
->>
->> The two most recent PCIe motherboards I have here
->> do provide +5V standby power to USB, even when "OFF",
->> much to my annoyance and to the detriment of this planet.
-> 
-> Very well.
-> 
-> Mark, can you get a sysrq-t trace of your whole system when USB goes
-> dead? And please enable CONFIG_USB_DEBUG. We need to do whether
-> khubd and ksuspend_usbd are in state D.
-..
+From: Gerald Schaefer <gerald.schaefer@de.ibm.com>
 
-Both of those things were already done, and results from the last time
-are attached to the bugzilla report: http://bugzilla.kernel.org/show_bug.cgi?id=10345
+Huge ptes have a special type on s390 and cannot be handled with the
+standard pte functions in certain cases. This patch adds some new
+architecture-specific definitions and functions to hugetlb common code,
+as a prerequisite for the s390 large page support. They won't affect
+other architectures.
 
-I'll be installing -rc8 today, and see what happens there.
+Acked-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Signed-off-by: Gerald Schaefer <gerald.schaefer@de.ibm.com>
+---
 
-Cheers
+ include/asm-ia64/hugetlb.h    |   11 +++++++++++
+ include/asm-powerpc/hugetlb.h |   11 +++++++++++
+ include/asm-sh/hugetlb.h      |   11 +++++++++++
+ include/asm-sparc64/hugetlb.h |   11 +++++++++++
+ include/asm-x86/hugetlb.h     |   11 +++++++++++
+ mm/hugetlb.c                  |   36 +++++++++++++++++++++---------------
+ 6 files changed, 76 insertions(+), 15 deletions(-)
+
+Index: linux-2.6.25-rc7/mm/hugetlb.c
+===================================================================
+--- linux-2.6.25-rc7.orig/mm/hugetlb.c
++++ linux-2.6.25-rc7/mm/hugetlb.c
+@@ -129,6 +129,7 @@ static void update_and_free_page(struct 
+ 	}
+ 	set_compound_page_dtor(page, NULL);
+ 	set_page_refcounted(page);
++	arch_release_hugepage(page);
+ 	__free_pages(page, HUGETLB_PAGE_ORDER);
+ }
+ 
+@@ -198,6 +199,10 @@ static struct page *alloc_fresh_huge_pag
+ 		htlb_alloc_mask|__GFP_COMP|__GFP_THISNODE|__GFP_NOWARN,
+ 		HUGETLB_PAGE_ORDER);
+ 	if (page) {
++		if (arch_prepare_hugepage(page)) {
++			__free_pages(page, HUGETLB_PAGE_ORDER);
++			return 0;
++		}
+ 		set_compound_page_dtor(page, free_huge_page);
+ 		spin_lock(&hugetlb_lock);
+ 		nr_huge_pages++;
+@@ -707,7 +712,7 @@ static pte_t make_huge_pte(struct vm_are
+ 		entry =
+ 		    pte_mkwrite(pte_mkdirty(mk_pte(page, vma->vm_page_prot)));
+ 	} else {
+-		entry = pte_wrprotect(mk_pte(page, vma->vm_page_prot));
++		entry = huge_pte_wrprotect(mk_pte(page, vma->vm_page_prot));
+ 	}
+ 	entry = pte_mkyoung(entry);
+ 	entry = pte_mkhuge(entry);
+@@ -720,8 +725,8 @@ static void set_huge_ptep_writable(struc
+ {
+ 	pte_t entry;
+ 
+-	entry = pte_mkwrite(pte_mkdirty(*ptep));
+-	if (ptep_set_access_flags(vma, address, ptep, entry, 1)) {
++	entry = pte_mkwrite(pte_mkdirty(huge_ptep_get(ptep)));
++	if (huge_ptep_set_access_flags(vma, address, ptep, entry, 1)) {
+ 		update_mmu_cache(vma, address, entry);
+ 	}
+ }
+@@ -751,10 +756,10 @@ int copy_hugetlb_page_range(struct mm_st
+ 
+ 		spin_lock(&dst->page_table_lock);
+ 		spin_lock(&src->page_table_lock);
+-		if (!pte_none(*src_pte)) {
++		if (!huge_pte_none(huge_ptep_get(src_pte))) {
+ 			if (cow)
+-				ptep_set_wrprotect(src, addr, src_pte);
+-			entry = *src_pte;
++				huge_ptep_set_wrprotect(src, addr, src_pte);
++			entry = huge_ptep_get(src_pte);
+ 			ptepage = pte_page(entry);
+ 			get_page(ptepage);
+ 			set_huge_pte_at(dst, addr, dst_pte, entry);
+@@ -798,7 +803,7 @@ void __unmap_hugepage_range(struct vm_ar
+ 			continue;
+ 
+ 		pte = huge_ptep_get_and_clear(mm, address, ptep);
+-		if (pte_none(pte))
++		if (huge_pte_none(pte))
+ 			continue;
+ 
+ 		page = pte_page(pte);
+@@ -862,7 +867,7 @@ static int hugetlb_cow(struct mm_struct 
+ 	spin_lock(&mm->page_table_lock);
+ 
+ 	ptep = huge_pte_offset(mm, address & HPAGE_MASK);
+-	if (likely(pte_same(*ptep, pte))) {
++	if (likely(pte_same(huge_ptep_get(ptep), pte))) {
+ 		/* Break COW */
+ 		huge_ptep_clear_flush(vma, address, ptep);
+ 		set_huge_pte_at(mm, address, ptep,
+@@ -932,7 +937,7 @@ retry:
+ 		goto backout;
+ 
+ 	ret = 0;
+-	if (!pte_none(*ptep))
++	if (!huge_pte_none(huge_ptep_get(ptep)))
+ 		goto backout;
+ 
+ 	new_pte = make_huge_pte(vma, page, ((vma->vm_flags & VM_WRITE)
+@@ -974,8 +979,8 @@ int hugetlb_fault(struct mm_struct *mm, 
+ 	 * the same page in the page cache.
+ 	 */
+ 	mutex_lock(&hugetlb_instantiation_mutex);
+-	entry = *ptep;
+-	if (pte_none(entry)) {
++	entry = huge_ptep_get(ptep);
++	if (huge_pte_none(entry)) {
+ 		ret = hugetlb_no_page(mm, vma, address, ptep, write_access);
+ 		mutex_unlock(&hugetlb_instantiation_mutex);
+ 		return ret;
+@@ -985,7 +990,7 @@ int hugetlb_fault(struct mm_struct *mm, 
+ 
+ 	spin_lock(&mm->page_table_lock);
+ 	/* Check for a racing update before calling hugetlb_cow */
+-	if (likely(pte_same(entry, *ptep)))
++	if (likely(pte_same(entry, huge_ptep_get(ptep))))
+ 		if (write_access && !pte_write(entry))
+ 			ret = hugetlb_cow(mm, vma, address, ptep, entry);
+ 	spin_unlock(&mm->page_table_lock);
+@@ -1015,7 +1020,8 @@ int follow_hugetlb_page(struct mm_struct
+ 		 */
+ 		pte = huge_pte_offset(mm, vaddr & HPAGE_MASK);
+ 
+-		if (!pte || pte_none(*pte) || (write && !pte_write(*pte))) {
++		if (!pte || huge_pte_none(huge_ptep_get(pte)) ||
++		    (write && !pte_write(huge_ptep_get(pte)))) {
+ 			int ret;
+ 
+ 			spin_unlock(&mm->page_table_lock);
+@@ -1031,7 +1037,7 @@ int follow_hugetlb_page(struct mm_struct
+ 		}
+ 
+ 		pfn_offset = (vaddr & ~HPAGE_MASK) >> PAGE_SHIFT;
+-		page = pte_page(*pte);
++		page = pte_page(huge_ptep_get(pte));
+ same_page:
+ 		if (pages) {
+ 			get_page(page);
+@@ -1080,7 +1086,7 @@ void hugetlb_change_protection(struct vm
+ 			continue;
+ 		if (huge_pmd_unshare(mm, &address, ptep))
+ 			continue;
+-		if (!pte_none(*ptep)) {
++		if (!huge_pte_none(huge_ptep_get(ptep))) {
+ 			pte = huge_ptep_get_and_clear(mm, address, ptep);
+ 			pte = pte_mkhuge(pte_modify(pte, newprot));
+ 			set_huge_pte_at(mm, address, ptep, pte);
+Index: linux-2.6.25-rc7/include/asm-ia64/hugetlb.h
+===================================================================
+--- linux-2.6.25-rc7.orig/include/asm-ia64/hugetlb.h
++++ linux-2.6.25-rc7/include/asm-ia64/hugetlb.h
+@@ -18,6 +18,17 @@ int prepare_hugepage_range(unsigned long
+ 
+ #define hugetlb_prefault_arch_hook(mm)		do { } while (0)
+ 
++#define huge_pte_none(pte)			pte_none(pte)
++#define huge_pte_wrprotect(pte)			pte_wrprotect(pte)
++#define huge_ptep_set_wrprotect(mm, addr, ptep)	\
++	ptep_set_wrprotect(mm, addr, ptep)
++#define huge_ptep_set_access_flags(vma, addr, ptep, pte, dirty)	\
++	ptep_set_access_flags(vma, addr, ptep, pte, dirty)
++#define huge_ptep_get(ptep)			(*ptep)
++
++#define arch_prepare_hugepage(page)		0
++#define arch_release_hugepage(page)		do { } while (0)
++
+ #define huge_ptep_clear_flush(vma, addr, ptep)	do { } while (0)
+ 
+ #endif /* _ASM_IA64_HUGETLB_H */
+Index: linux-2.6.25-rc7/include/asm-powerpc/hugetlb.h
+===================================================================
+--- linux-2.6.25-rc7.orig/include/asm-powerpc/hugetlb.h
++++ linux-2.6.25-rc7/include/asm-powerpc/hugetlb.h
+@@ -32,6 +32,17 @@ pte_t huge_ptep_get_and_clear(struct mm_
+ 
+ #define hugetlb_prefault_arch_hook(mm)		do { } while (0)
+ 
++#define huge_pte_none(pte)			pte_none(pte)
++#define huge_pte_wrprotect(pte)			pte_wrprotect(pte)
++#define huge_ptep_set_wrprotect(mm, addr, ptep)	\
++	ptep_set_wrprotect(mm, addr, ptep)
++#define huge_ptep_set_access_flags(vma, addr, ptep, pte, dirty)	\
++	ptep_set_access_flags(vma, addr, ptep, pte, dirty)
++#define huge_ptep_get(ptep)			(*ptep)
++
++#define arch_prepare_hugepage(page)		0
++#define arch_release_hugepage(page)		do { } while (0)
++
+ #define huge_ptep_clear_flush(vma, addr, ptep)	do { } while (0)
+ 
+ #endif /* _ASM_POWERPC_HUGETLB_H */
+Index: linux-2.6.25-rc7/include/asm-sh/hugetlb.h
+===================================================================
+--- linux-2.6.25-rc7.orig/include/asm-sh/hugetlb.h
++++ linux-2.6.25-rc7/include/asm-sh/hugetlb.h
+@@ -25,6 +25,17 @@ static inline int prepare_hugepage_range
+ 
+ #define hugetlb_prefault_arch_hook(mm)		do { } while (0)
+ 
++#define huge_pte_none(pte)			pte_none(pte)
++#define huge_pte_wrprotect(pte)			pte_wrprotect(pte)
++#define huge_ptep_set_wrprotect(mm, addr, ptep)	\
++	ptep_set_wrprotect(mm, addr, ptep)
++#define huge_ptep_set_access_flags(vma, addr, ptep, pte, dirty)	\
++	ptep_set_access_flags(vma, addr, ptep, pte, dirty)
++#define huge_ptep_get(ptep)			(*ptep)
++
++#define arch_prepare_hugepage(page)		0
++#define arch_release_hugepage(page)		do { } while (0)
++
+ #define huge_ptep_clear_flush(vma, addr, ptep)	do { } while (0)
+ 
+ #endif /* _ASM_SH_HUGETLB_H */
+Index: linux-2.6.25-rc7/include/asm-sparc64/hugetlb.h
+===================================================================
+--- linux-2.6.25-rc7.orig/include/asm-sparc64/hugetlb.h
++++ linux-2.6.25-rc7/include/asm-sparc64/hugetlb.h
+@@ -27,6 +27,17 @@ pte_t huge_ptep_get_and_clear(struct mm_
+ 
+ void hugetlb_prefault_arch_hook(struct mm_struct *mm);
+ 
++#define huge_pte_none(pte)			pte_none(pte)
++#define huge_pte_wrprotect(pte)			pte_wrprotect(pte)
++#define huge_ptep_set_wrprotect(mm, addr, ptep)	\
++	ptep_set_wrprotect(mm, addr, ptep)
++#define huge_ptep_set_access_flags(vma, addr, ptep, pte, dirty)	\
++	ptep_set_access_flags(vma, addr, ptep, pte, dirty)
++#define huge_ptep_get(ptep)			(*ptep)
++
++#define arch_prepare_hugepage(page)		0
++#define arch_release_hugepage(page)		do { } while (0)
++
+ #define huge_ptep_clear_flush(vma, addr, ptep)	do { } while (0)
+ 
+ #endif /* _ASM_SPARC64_HUGETLB_H */
+Index: linux-2.6.25-rc7/include/asm-x86/hugetlb.h
+===================================================================
+--- linux-2.6.25-rc7.orig/include/asm-x86/hugetlb.h
++++ linux-2.6.25-rc7/include/asm-x86/hugetlb.h
+@@ -25,6 +25,17 @@ static inline int prepare_hugepage_range
+ 
+ #define hugetlb_prefault_arch_hook(mm)		do { } while (0)
+ 
++#define huge_pte_none(pte)			pte_none(pte)
++#define huge_pte_wrprotect(pte)			pte_wrprotect(pte)
++#define huge_ptep_set_wrprotect(mm, addr, ptep)	\
++	ptep_set_wrprotect(mm, addr, ptep)
++#define huge_ptep_set_access_flags(vma, addr, ptep, pte, dirty)	\
++	ptep_set_access_flags(vma, addr, ptep, pte, dirty)
++#define huge_ptep_get(ptep)			(*ptep)
++
++#define arch_prepare_hugepage(page)		0
++#define arch_release_hugepage(page)		do { } while (0)
++
+ #define huge_ptep_clear_flush(vma, addr, ptep)	do { } while (0)
+ 
+ #endif /* _ASM_X86_HUGETLB_H */
+
+
