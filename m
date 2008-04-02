@@ -1,98 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760875AbYDBHR0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761000AbYDBHRk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760875AbYDBHR0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 03:17:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751840AbYDBHRO
+	id S1761000AbYDBHRk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 03:17:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760683AbYDBHRT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 03:17:14 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:19659 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760567AbYDBHRN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 03:17:13 -0400
-Date: Wed, 2 Apr 2008 09:17:10 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Vegard Nossum <vegard.nossum@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Subject: Re: kmemcheck caught read from freed memory (cfq_free_io_context)
-Message-ID: <20080402071709.GC12774@kernel.dk>
-References: <19f34abd0804011408v19e13b6cje1ca89a2a471484c@mail.gmail.com> <1207085788.29991.6.camel@lappy>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1207085788.29991.6.camel@lappy>
+	Wed, 2 Apr 2008 03:17:19 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:45104 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1760651AbYDBHRR convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Apr 2008 03:17:17 -0400
+Date: Wed, 2 Apr 2008 00:16:40 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: =?ISO-8859-1?Q? "J.A._Magall=F3n" ?= <jamagallon@ono.com>
+Cc: "Linux-Kernel, " <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org
+Subject: Re: Again... DMA speed too slow
+Message-Id: <20080402001640.41c103a7.akpm@linux-foundation.org>
+In-Reply-To: <20080330235357.20a54963@werewolf>
+References: <20080330235357.20a54963@werewolf>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 01 2008, Peter Zijlstra wrote:
-> On Tue, 2008-04-01 at 23:08 +0200, Vegard Nossum wrote:
-> > Hi,
-> > 
-> > This appeared in my logs:
-> > 
-> >  kmemcheck: Caught 32-bit read from freed memory (f7042348)
-> > 
-> >  Pid: 1374, comm: bash Not tainted (2.6.25-rc7 #92)
-> >  EIP: 0060:[<c0502f0d>] EFLAGS: 00210202 CPU: 0
-> >  EIP is at call_for_each_cic+0x2d/0x44
-> >  EAX: 00200286 EBX: 00000001 ECX: c200e908 EDX: f7042348
-> >  ESI: f6c26c60 EDI: c0503310 EBP: f70fff38 ESP: c082ec88
-> >   DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
-> >  CR0: 8005003b CR2: f7826904 CR3: 36cd7000 CR4: 000006c0
-> >  DR0: 00000000 DR1: 00000000 DR2: 00000000 DR3: 00000000
-> >  DR6: ffff4ff0 DR7: 00000400
-> >   [<c041cff8>] kmemcheck_read+0xa8/0xe0
-> >   [<c041d1d5>] kmemcheck_access+0x1a5/0x244
-> >   [<c0668252>] do_page_fault+0x622/0x6fc
-> >   [<c06666aa>] error_code+0x72/0x78
-> >   [<c050323f>] cfq_free_io_context+0xf/0x70
-> >   [<c04fc4d7>] put_io_context+0x4f/0x58
-> >   [<c04fc568>] exit_io_context+0x60/0x6c
-> >   [<c042f871>] do_exit+0x4d9/0x6f0
-> >   [<c042fab1>] do_group_exit+0x29/0x88
-> >   [<c042fb1f>] sys_exit_group+0xf/0x14
-> >   [<c0406105>] sysenter_past_esp+0x6d/0xa4
-> >   [<ffffffff>] 0xffffffff
-> > 
-> > The error occurs in cfq_free_io_context()'s call to
-> > call_for_each_cic() which looks like this:
-> > 
-> >         rcu_read_lock();
-> >         hlist_for_each_entry_rcu(cic, n, &ioc->cic_list, cic_list) {
-> >                 func(ioc, cic);
-> >                 called++;
-> >         }
-> >         rcu_read_unlock();
-> > 
-> > The function that is called is cic_free_func(). It is postulated that
-> > hlist_for_each_entry_rcu() will dereference the previously freed list
-> > element to get the ->next pointer.
-> > 
-> > After a short discussion with Pekka Enberg and Peter Zijlstra, it
-> > seemed evident that this list traversal should use
-> > hlist_for_each_entry_safe_rcu() instead, which would buffer the next
-> > pointer before the object is freed.
-> > 
-> > Does this report seem to be valid?
-> > 
-> > The kernel is 2.6.25-rc7.
+On Sun, 30 Mar 2008 23:53:57 +0200 "J.A. Magallón" <jamagallon@ono.com> wrote:
+
+> Hi all...
 > 
-> The missing hlist for loop would look something like so:
+> I have tried to burn some data from the commandline with wodim (since time
+> ago I just used beasero...), and I have noticed this (media is CD, not DVD):
 > 
-> #define hlist_for_each_entry_safe_rcu(tpos, pos, n, head, member)        \
->         for (pos = (head)->first;                                        \
->              rcu_dereference(pos) && ({ n = pos->next; 1; }) &&          \
->                 ({ tpos = hlist_entry(pos, typeof(*tpos), member); 1;}); \
->              pos = n)
+> Vendor_info    : 'HL-DT-ST'
+> Identification : 'DVDRAM GSA-H10N '
+> Revision       : 'JL12'
+> Device seems to be: Generic mmc2 DVD-R/DVD-RW.
+> Using generic SCSI-3/mmc   CD-R/CD-RW driver (mmc_cdr).
+> Driver flags   : MMC-3 SWABAUDIO BURNFREE
+> Supported modes: TAO PACKET SAO SAO/R96P SAO/R96R RAW/R16 RAW/R96P RAW/R96R
+> Speed set to 8467 KB/s
+> wodim: DMA speed too slow (OK for 5x). Cannot write at speed 48x.
+> Starting to write CD/DVD at speed  48.0 in real TAO mode for single session.
+> 
+> I just can burn CDs at 5x ??
+> But then the program tries to write at 48x.
+> It the DMA message really true ?
+> 
+> Accodring to wodim -prcap:
+> 
+>   Maximum read  speed: 22161 kB/s (CD 125x, DVD 16x)
+>   Current read  speed: 22161 kB/s (CD 125x, DVD 16x)
+>   Maximum write speed: 11080 kB/s (CD  62x, DVD  8x)
+>   Current write speed: 11080 kB/s (CD  62x, DVD  8x)
+>   Rotational control selected: CLV/PCAV
+>   Buffer size in KB: 2048
+>   Copy management revision supported: 1
+>   Number of supported write speeds: 3
+>   Write speed # 0: 11080 kB/s CLV/PCAV (CD  62x, DVD  8x)
+>   Write speed # 1:  5540 kB/s CLV/PCAV (CD  31x, DVD  4x)
+>   Write speed # 2:  3324 kB/s CLV/PCAV (CD  18x, DVD  2x)
+> 
+> Why the tests in wodim say that DMA to the drive is slow ?
+> 
+> Kernel is 2.6.24.4.
+> The drive is controlled by libata+sata_promise:
+> 
+> sata_promise 0000:03:04.0: version 2.11
+> ACPI: PCI Interrupt 0000:03:04.0[A] -> GSI 23 (level, low) -> IRQ 17
+> scsi6 : sata_promise
+> scsi7 : sata_promise
+> scsi8 : sata_promise
+> ata5: SATA max UDMA/133 mmio m4096@0xf6029000 port 0xf6029200 irq 17
+> ata6: SATA max UDMA/133 mmio m4096@0xf6029000 port 0xf6029280 irq 17
+> ata7: PATA max UDMA/133 mmio m4096@0xf6029000 port 0xf6029300 irq 17
+> ata5: SATA link down (SStatus 0 SControl 300)
+> ata6: SATA link down (SStatus 0 SControl 0)
+> ata7.00: ATA-6: ST3120022A, 3.06, max UDMA/100
+> ata7.00: 234441648 sectors, multi 0: LBA48
+> ata7.01: ATAPI: HL-DT-ST DVDRAM GSA-H10N, JL12, max UDMA/33
+> ata7.00: configured for UDMA/100
+> ata7.01: configured for UDMA/33
+> scsi 8:0:0:0: Direct-Access     ATA      ST3120022A       3.06 PQ: 0 ANSI: 5
+> sd 8:0:0:0: [sdd] 234441648 512-byte hardware sectors (120034 MB)
+> sd 8:0:0:0: [sdd] Write Protect is off
+> sd 8:0:0:0: [sdd] Mode Sense: 00 3a 00 00
+> sd 8:0:0:0: [sdd] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
+> sd 8:0:0:0: [sdd] 234441648 512-byte hardware sectors (120034 MB)
+> sd 8:0:0:0: [sdd] Write Protect is off
+> sd 8:0:0:0: [sdd] Mode Sense: 00 3a 00 00
+> sd 8:0:0:0: [sdd] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
+>  sdd: sdd1
+> sd 8:0:0:0: [sdd] Attached SCSI disk
+> sd 8:0:0:0: Attached scsi generic sg3 type 0
+> scsi 8:0:1:0: CD-ROM            HL-DT-ST DVDRAM GSA-H10N  JL12 PQ: 0 ANSI: 5
+> sr0: scsi3-mmc drive: 48x/48x writer dvd-ram cd/rw xa/form2 cdda tray
+> 
+> UDMA/33 on the burner should be ok for 48x (150x48 = 7.2 MB/s) ?
+> Or just 16x, as I read elsewhere ?
+> 
 
-Good catch, I wonder why it didn't complain in my testing. I've added a
-patch to fix that, please see it here:
-
-http://git.kernel.dk/?p=linux-2.6-block.git;a=commit;h=51998b2da4e5db65cb24317329059044083ea151
-
--- 
-Jens Axboe
+Please always cc linux-ide on ata-related bug reports.
 
