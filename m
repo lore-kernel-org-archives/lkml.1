@@ -1,92 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756561AbYDBMgy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756677AbYDBMhn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756561AbYDBMgy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 08:36:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753162AbYDBMgo
+	id S1756677AbYDBMhn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 08:37:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754402AbYDBMhe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 08:36:44 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:1654 "EHLO kernel.dk"
+	Wed, 2 Apr 2008 08:37:34 -0400
+Received: from mba.ocn.ne.jp ([122.1.235.107]:53537 "EHLO smtp.mba.ocn.ne.jp"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752846AbYDBMgn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 08:36:43 -0400
-Date: Wed, 2 Apr 2008 14:36:39 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>, paulmck@linux.vnet.ibm.com,
-       Ingo Molnar <mingo@elte.hu>, Pekka J Enberg <penberg@cs.helsinki.fi>,
-       Vegard Nossum <vegard.nossum@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Cc: fabio@gandalf.sssup.it
-Subject: Re: kmemcheck caught read from freed memory (cfq_free_io_context)
-Message-ID: <20080402123639.GI12774@kernel.dk>
-References: <1207085788.29991.6.camel@lappy> <20080402071709.GC12774@kernel.dk> <Pine.LNX.4.64.0804021020280.25738@sbz-30.cs.Helsinki.FI> <20080402072456.GI12774@kernel.dk> <20080402072846.GA16454@elte.hu> <20080402105539.GA5610@linux.vnet.ibm.com> <1207133961.8514.768.camel@twins> <20080402113327.GC41073@gandalf.sssup.it> <20080402114338.GA12774@kernel.dk> <20080402123620.GH12774@kernel.dk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080402123620.GH12774@kernel.dk>
+	id S1754394AbYDBMhd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Apr 2008 08:37:33 -0400
+Date: Wed, 02 Apr 2008 21:38:17 +0900 (JST)
+Message-Id: <20080402.213817.74752727.anemo@mba.ocn.ne.jp>
+To: dmitri.vorobiev@gmail.com
+Cc: linux-mips@linux-mips.org, ralf@linux-mips.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 5/5] [MIPS] unexport null_perf_irq() and make it static
+From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+In-Reply-To: <1207094318-21748-6-git-send-email-dmitri.vorobiev@gmail.com>
+References: <1207094318-21748-1-git-send-email-dmitri.vorobiev@gmail.com>
+	<1207094318-21748-6-git-send-email-dmitri.vorobiev@gmail.com>
+X-Fingerprint: 6ACA 1623 39BD 9A94 9B1A  B746 CA77 FE94 2874 D52F
+X-Pgp-Public-Key: http://wwwkeys.pgp.net/pks/lookup?op=get&search=0x2874D52F
+X-Mailer: Mew version 5.2 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 02 2008, Jens Axboe wrote:
-> On Wed, Apr 02 2008, Jens Axboe wrote:
-> > On Wed, Apr 02 2008, Fabio Checconi wrote:
-> > > > From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> > > > Date: Wed, Apr 02, 2008 12:59:21PM +0200
-> > > >
-> > > > On Wed, 2008-04-02 at 03:55 -0700, Paul E. McKenney wrote:
-> > > > > On Wed, Apr 02, 2008 at 09:28:46AM +0200, Ingo Molnar wrote:
-> > > > > > 
-> > > > > > * Jens Axboe <jens.axboe@oracle.com> wrote:
-> > > > > > 
-> > > > > > > On Wed, Apr 02 2008, Pekka J Enberg wrote:
-> > > > > > > > On Wed, 2 Apr 2008, Jens Axboe wrote:
-> > > > > > > > > Good catch, I wonder why it didn't complain in my testing. I've added a
-> > > > > > > > > patch to fix that, please see it here:
-> > > > > > > > 
-> > > > > > > > You probably don't have kmemcheck in your kernel ;-)
-> > > > > > > 
-> > > > > > > Ehm no, you are right :)
-> > > > > > 
-> > > > > > ... and you can get kmemcheck by testing on x86.git/latest:
-> > > > > > 
-> > > > > >   http://people.redhat.com/mingo/x86.git/README
-> > > > > > 
-> > > > > > ;-)
-> > > > > 
-> > > > > I will check this when I get back to some bandwidth -- but in the meantime,
-> > > > > does kmemcheck special-case SLAB_DESTROY_BY_RCU?  It is legal to access
-> > > > > newly-freed items in that case, as long as you did rcu_read_lock()
-> > > > > before gaining a reference to them and don't hold the reference past
-> > > > > the matching rcu_read_unlock().
-> > > > 
-> > > > I don't think it does.
-> > > > 
-> > > > It would have to register an call_rcu callback itself in order to mark
-> > > > it freed - and handle the race with the object being handed out again.
-> > > > 
-> > > 
-> > > I had the same problem while debugging a cfq-derived i/o scheduler,
-> > > and I found nothing preventing the reuse of the freed memory.
-> > > The patch below seemed to fix the logic.
-> > 
-> > Thanks, from a first look this looks like it'll fix this bad rcu slab
-> > usage. I'll give it some closer scrutiny and testing.
-> 
-> (CC reinstated, sometimes mutt is really annoying and drops the person
-> you are replying too :-(
+On Wed,  2 Apr 2008 03:58:38 +0400, Dmitri Vorobiev <dmitri.vorobiev@gmail.com> wrote:
+> --- a/arch/mips/oprofile/op_model_mipsxx.c
+> +++ b/arch/mips/oprofile/op_model_mipsxx.c
+> @@ -31,6 +31,8 @@
+>  
+>  #define M_COUNTER_OVERFLOW		(1UL      << 31)
+>  
+> +int (*save_perf_irq)(void);
 
-(for real...)
+This should be another target of "make it static" patch :-)
 
-> 
-> Looks good and tests fine as well. I've applied it, on top of the
-> hlist_for_each_entry_safe_rcu() fix.
-> 
-> http://git.kernel.dk/?p=linux-2.6-block.git;a=commit;h=436151ad32b4a59e0d36165a7d6312545f126661
-> 
-> -- 
-> Jens Axboe
-> 
-
--- 
-Jens Axboe
-
+---
+Atsushi Nemoto
