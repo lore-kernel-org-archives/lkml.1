@@ -1,105 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754917AbYDBLm4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755775AbYDBLnv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754917AbYDBLm4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 07:42:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753640AbYDBLms
+	id S1755775AbYDBLnv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 07:43:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753640AbYDBLnn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 07:42:48 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:17299 "EHLO kernel.dk"
+	Wed, 2 Apr 2008 07:43:43 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:17312 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753594AbYDBLms (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 07:42:48 -0400
-Date: Wed, 2 Apr 2008 13:42:43 +0200
+	id S1753218AbYDBLnn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Apr 2008 07:43:43 -0400
+Date: Wed, 2 Apr 2008 13:43:38 +0200
 From: Jens Axboe <jens.axboe@oracle.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>, paulmck@linux.vnet.ibm.com,
-       Ingo Molnar <mingo@elte.hu>, Vegard Nossum <vegard.nossum@gmail.com>,
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>, paulmck@linux.vnet.ibm.com,
+       Ingo Molnar <mingo@elte.hu>, Pekka J Enberg <penberg@cs.helsinki.fi>,
+       Vegard Nossum <vegard.nossum@gmail.com>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Subject: Re: kmemcheck caught read from freed memory (cfq_free_io_context)
-Message-ID: <20080402114243.GZ12774@kernel.dk>
-References: <20080402072456.GI12774@kernel.dk> <20080402072846.GA16454@elte.hu> <20080402105539.GA5610@linux.vnet.ibm.com> <84144f020804020401j4e5863dcofd16662baa54574@mail.gmail.com> <20080402110718.GU12774@kernel.dk> <1207134536.8514.773.camel@twins> <20080402111422.GW12774@kernel.dk> <1207135212.8514.782.camel@twins> <20080402113258.GY12774@kernel.dk> <1207136230.8514.791.camel@twins>
+Message-ID: <20080402114338.GA12774@kernel.dk>
+References: <19f34abd0804011408v19e13b6cje1ca89a2a471484c@mail.gmail.com> <1207085788.29991.6.camel@lappy> <20080402071709.GC12774@kernel.dk> <Pine.LNX.4.64.0804021020280.25738@sbz-30.cs.Helsinki.FI> <20080402072456.GI12774@kernel.dk> <20080402072846.GA16454@elte.hu> <20080402105539.GA5610@linux.vnet.ibm.com> <1207133961.8514.768.camel@twins> <20080402113327.GC41073@gandalf.sssup.it>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1207136230.8514.791.camel@twins>
+In-Reply-To: <20080402113327.GC41073@gandalf.sssup.it>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 02 2008, Peter Zijlstra wrote:
-> On Wed, 2008-04-02 at 13:32 +0200, Jens Axboe wrote:
-> > On Wed, Apr 02 2008, Peter Zijlstra wrote:
-> > > On Wed, 2008-04-02 at 13:14 +0200, Jens Axboe wrote:
-> > > > On Wed, Apr 02 2008, Peter Zijlstra wrote:
-> > > > > On Wed, 2008-04-02 at 13:07 +0200, Jens Axboe wrote:
-> > > > > > On Wed, Apr 02 2008, Pekka Enberg wrote:
-> > > > > > > Hi Paul,
-> > > > > > > 
-> > > > > > > On Wed, Apr 2, 2008 at 1:55 PM, Paul E. McKenney
-> > > > > > > <paulmck@linux.vnet.ibm.com> wrote:
-> > > > > > > >  I will check this when I get back to some bandwidth -- but in the meantime,
-> > > > > > > >  does kmemcheck special-case SLAB_DESTROY_BY_RCU?  It is legal to access
-> > > > > > > >  newly-freed items in that case, as long as you did rcu_read_lock()
-> > > > > > > >  before gaining a reference to them and don't hold the reference past
-> > > > > > > >  the matching rcu_read_unlock().
-> > > > > > > 
-> > > > > > > No, kmemcheck is work in progress and does not know about
-> > > > > > > SLAB_DESTROY_BY_RCU yet. The reason I asked Vegard to post the warning
-> > > > > > > was because Peter, Vegard, and myself identified this particular
-> > > > > > > warning as a real problem. But yeah, kmemcheck can cause false
-> > > > > > > positives for RCU for now.
+On Wed, Apr 02 2008, Fabio Checconi wrote:
+> > From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> > Date: Wed, Apr 02, 2008 12:59:21PM +0200
+> >
+> > On Wed, 2008-04-02 at 03:55 -0700, Paul E. McKenney wrote:
+> > > On Wed, Apr 02, 2008 at 09:28:46AM +0200, Ingo Molnar wrote:
+> > > > 
+> > > > * Jens Axboe <jens.axboe@oracle.com> wrote:
+> > > > 
+> > > > > On Wed, Apr 02 2008, Pekka J Enberg wrote:
+> > > > > > On Wed, 2 Apr 2008, Jens Axboe wrote:
+> > > > > > > Good catch, I wonder why it didn't complain in my testing. I've added a
+> > > > > > > patch to fix that, please see it here:
 > > > > > > 
-> > > > > > Makes sense, and to me Pauls analysis of the code looks totally correct
-> > > > > > - there's no bug there, at least related to hlist traversal and
-> > > > > > kmem_cache_free(), since we are under rcu_read_lock() and thus hold off
-> > > > > > the grace for freeing.
+> > > > > > You probably don't have kmemcheck in your kernel ;-)
 > > > > > 
-> > > > > but what holds off the slab allocator re-issueing that same object and
-> > > > > someone else writing other stuff into it?
+> > > > > Ehm no, you are right :)
 > > > > 
-> > > > Nothing, that's how rcu destry works here. But for the validation to be
-> > > > WRONG radix_tree_lookup(..., old_key) must return cic for new_key, not
-> > > > NULL.
+> > > > ... and you can get kmemcheck by testing on x86.git/latest:
 > > > > 
+> > > >   http://people.redhat.com/mingo/x86.git/README
+> > > > 
+> > > > ;-)
 > > > 
-> > > 
-> > > 	A				B			C
-> > > 
-> > > cfq_cic_lookup(cfqd_1, ioc)
-> > > 
-> > >   rcu_read_lock()
-> > >   cic = radix_tree_lookup(, cfqd_q);
-> > > 
-> > > 					cfq_cic_free()
-> > >   					
-> > > 								cfq_cic_link(cfqd_2, ioc,)
-> > > 
-> > >   rcu_read_unlock()
-> > > 
-> > > 
-> > > and now we have that:
-> > > 
-> > >   cic->key == cfqd_2
-> > > 
-> > > 
-> > > I'm not seeing anything stopping this from happening.
+> > > I will check this when I get back to some bandwidth -- but in the meantime,
+> > > does kmemcheck special-case SLAB_DESTROY_BY_RCU?  It is legal to access
+> > > newly-freed items in that case, as long as you did rcu_read_lock()
+> > > before gaining a reference to them and don't hold the reference past
+> > > the matching rcu_read_unlock().
 > > 
-> > I don't follow your A-B-C here, what do they refer to?
+> > I don't think it does.
+> > 
+> > It would have to register an call_rcu callback itself in order to mark
+> > it freed - and handle the race with the object being handed out again.
+> > 
 > 
-> A does a radix_tree_lookup() of cfqd_1 (darn typos)
-> B does a kfree of the same cic found by A
-> C does an alloc and gets the same cic as freed by B and inserts it
->   in a different location.
-> 
-> So that when we return to A, cic->key == cfqd_2 even though we did a
-> lookup for cfqd_1.
+> I had the same problem while debugging a cfq-derived i/o scheduler,
+> and I found nothing preventing the reuse of the freed memory.
+> The patch below seemed to fix the logic.
 
-That I follow, my question was if A, B, and C refer to different
-processes but with a shared io context? I'm assuming that is correct...
-
-And it does look buggy. It looks my assumption of what slab rcu destroy
-did is WRONG, it should be replaced by a manual call_rcu() freeing
-instead.
+Thanks, from a first look this looks like it'll fix this bad rcu slab
+usage. I'll give it some closer scrutiny and testing.
 
 -- 
 Jens Axboe
