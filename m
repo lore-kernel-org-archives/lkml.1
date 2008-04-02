@@ -1,75 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758300AbYDBRWW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756996AbYDBRcH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758300AbYDBRWW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 13:22:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756067AbYDBRWM
+	id S1756996AbYDBRcH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 13:32:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755023AbYDBRby
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 13:22:12 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:57910 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756004AbYDBRWL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 13:22:11 -0400
-Message-ID: <47F3C0A8.9090300@garzik.org>
-Date: Wed, 02 Apr 2008 13:21:44 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	Wed, 2 Apr 2008 13:31:54 -0400
+Received: from wr-out-0506.google.com ([64.233.184.226]:9291 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754781AbYDBRbx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Apr 2008 13:31:53 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=hDn91RmI8SyHf/4H5Y93GI7ppI5g7NC3WOpP3NWZhD3m9djIABEFkO3UTJQbc4Tk3kXNTFEwulwzdphVETcp0LdnolwHk4i3bykh4JIMapjMHQfqe/UP6EBBtWqslFAyNH2vDz4gAGTmZWkX3bJUlCdZp11sgGaB/w0HwcaAH8g=
+Message-ID: <19f34abd0804021031j3e8ecd91pf7a481a92114dda8@mail.gmail.com>
+Date: Wed, 2 Apr 2008 19:31:51 +0200
+From: "Vegard Nossum" <vegard.nossum@gmail.com>
+To: paulmck@linux.vnet.ibm.com
+Subject: Re: kmemcheck caught read from freed memory (cfq_free_io_context)
+Cc: "Pekka Enberg" <penberg@cs.helsinki.fi>, "Ingo Molnar" <mingo@elte.hu>,
+       "Jens Axboe" <jens.axboe@oracle.com>,
+       "Peter Zijlstra" <a.p.zijlstra@chello.nl>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <20080402165933.GD9333@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Chris Snook <csnook@redhat.com>, Dave Jones <davej@codemonkey.org.uk>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       NetDev <netdev@vger.kernel.org>, David Miller <davem@davemloft.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: GFP_ATOMIC page allocation failures.
-References: <20080401235609.GA6947@codemonkey.org.uk>	<200804021228.16875.nickpiggin@yahoo.com.au>	<20080402013551.GA8361@codemonkey.org.uk>	<47F32789.2070703@redhat.com> <20080402005646.f8df1c1b.akpm@linux-foundation.org>
-In-Reply-To: <20080402005646.f8df1c1b.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Disposition: inline
+References: <19f34abd0804011408v19e13b6cje1ca89a2a471484c@mail.gmail.com>
+	 <20080402071709.GC12774@kernel.dk>
+	 <Pine.LNX.4.64.0804021020280.25738@sbz-30.cs.Helsinki.FI>
+	 <20080402072456.GI12774@kernel.dk> <20080402072846.GA16454@elte.hu>
+	 <20080402105539.GA5610@linux.vnet.ibm.com>
+	 <84144f020804020401j4e5863dcofd16662baa54574@mail.gmail.com>
+	 <20080402160809.GA4123@linux.vnet.ibm.com>
+	 <19f34abd0804020915k210277bbmb6b9aa28f282bb42@mail.gmail.com>
+	 <20080402165933.GD9333@linux.vnet.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> The appropriate thing to do here is to convert known-good drivers (such as
-> e1000[e]) to use __GFP_NOWARN.
-> 
-> Unfortunately netdev_alloc_skb() went and assumed GFP_ATOMIC, but I guess
-> we can dive below the covers and use __netdev_alloc_skb():
-> 
-> 
-> 
-> From: Andrew Morton <akpm@linux-foundation.org>
-> 
-> We get rather a lot of reports of page allocation warnings coming out of
-> e1000.  But this driver is know to handle them properly so let's suppress
-> them.
+On Wed, Apr 2, 2008 at 6:59 PM, Paul E. McKenney
+<paulmck@linux.vnet.ibm.com> wrote:
+> On Wed, Apr 02, 2008 at 06:15:52PM +0200, Vegard Nossum wrote:
+>  > On Wed, Apr 2, 2008 at 6:08 PM, Paul E. McKenney
+>  > <paulmck@linux.vnet.ibm.com> wrote:
+>  > > On Wed, Apr 02, 2008 at 02:01:13PM +0300, Pekka Enberg wrote:
+>  > >  > No, kmemcheck is work in progress and does not know about
+>  > >  > SLAB_DESTROY_BY_RCU yet. The reason I asked Vegard to post the warning
+>  > >  > was because Peter, Vegard, and myself identified this particular
+>  > >  > warning as a real problem. But yeah, kmemcheck can cause false
+>  > >  > positives for RCU for now.
+>  > >
+>  > >  Would the following be an appropriate fix?  It seems to me to be in
+>  > >  the same spirit as the existing check for s->ctor.
+>  >
+>  > In my opinion, no.
+>  >
+>  > It would fix the false positives, but would in fact also hide cases
+>  > such as this one with cfq, e.g. the real cases of mis-use.
+>
+>  Though this case apparently does not qualify as misuse until such
+>  time as CLONE_IO is implemented.
+>
+>  And doesn't the current check for ->ctor also potentially hide misuse?
+
+Hm, no. Objects with a ctor should retain its "initializedness"
+between allocations of the same object. This is one of the features of
+slab allocation.
+
+>  > Peter Zijlstra suggested this:
+>  > > It would have to register an call_rcu callback itself in order to mark
+>  > > it freed - and handle the race with the object being handed out again.
+>
+>  Glad you liked them!
+>
+>  And Peter's suggested approach would indeed be more accurate.  But I
+>  will still put my patch forward as a stopgap.  ;-)
+
+Yes, I realize that it will be needed as a temporary fix. It _is_
+better to hide some real warnings in favour of the showing false ones.
+(But a TODO comment is in order, I believe.)
+
+Thanks.
 
 
-Do you people hear what you're saying???
-
-I respectfully but strongly disagree with this.
-
-We do __not__ need a whitelist (__GFP_NOWARN) of drivers that handle 
-allocation failures properly.  That's a long list, a maintenance 
-nightmare, and it is punishing good behavior.
-
-It has been true for over a decade that allocations should be checked 
-for NULL, and GFP_ATOMIC allocations MUST be checked for NULL.
-
-Let's not crap all over good drivers, because a few bad apples don't 
-have the proper checks.
-
-Or at the very least, this TOTALLY BOGUS spew from working drivers 
-should not be foisted upon users.  Every time a working driver complains 
-about this -- as in the examples here -- the value of the warning 
-decreases to noise.
-
-And the solution to noise is not _more noise_ (adding 'nowarn' to every 
-damn driver in the kernel).
-
-	Jeff
-
-
+Vegard
