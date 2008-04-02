@@ -1,49 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761799AbYDBUnT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933227AbYDBUnz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761799AbYDBUnT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 16:43:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761857AbYDBUbP
+	id S933227AbYDBUnz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 16:43:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765469AbYDBUe6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 16:31:15 -0400
-Received: from smtp117.sbc.mail.sp1.yahoo.com ([69.147.64.90]:23219 "HELO
-	smtp117.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1762501AbYDBUbM (ORCPT
+	Wed, 2 Apr 2008 16:34:58 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:50556 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1765388AbYDBUez (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 16:31:12 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=rVsO9/gsGYS9DNReI0DTFZr89YHm2b5QZB5D/2FZenqfOsbt/n90izlUirzsI2KZqhf8xMgy30l2JC1EUz/IopGjgaufyVRrOFdKx1daJ7RNbRSvC1gJfRn5DeIWD0spsY4wVflZfrctdBgawVyZuHw8/tug5zyPepGEKqqPxVw=  ;
-X-YMail-OSG: 1U1nH9EVM1lEj_N9EJrDoUPv3dgdpkvaOvNxoawGJF6J8jJif_zSml7r6piy2dEOJlBYkn1cRQ--
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Mark Lord <lkml@rtr.ca>
-Subject: Re: 2.6.25-rc7:  Ugh.
-Date: Wed, 2 Apr 2008 13:22:05 -0700
-User-Agent: KMail/1.9.6
-Cc: stern@rowland.harvard.edu, pavel@suse.cz, oliver@neukum.org,
-       linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org, jikos@suse.cz,
-       gregkh@suse.de, akpm@linux-foundation.org
-References: <Pine.LNX.4.44L0.0804021106320.6272-100000@iolanthe.rowland.org> <20080402160414.25F3035F5F8@adsl-69-226-248-13.dsl.pltn13.pacbell.net> <47F3AFD5.9080801@rtr.ca>
-In-Reply-To: <47F3AFD5.9080801@rtr.ca>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8bit
-Content-Disposition: inline
-Message-Id: <200804021322.06002.david-b@pacbell.net>
+	Wed, 2 Apr 2008 16:34:55 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:subject:from:to:cc:in-reply-to:references:
+	content-type:organization:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+	b=C4qBCre9CL95Ex7VfZlagtZIF3S0MZjO1MAqmVJoQ+jZiaceBrH/WIPLp/e7amdjH
+	vwE7vR6hvzhvH/JGxZtCw==
+Subject: Re: posix-cpu-timers revamp
+From: Frank Mayhar <fmayhar@google.com>
+To: Roland McGrath <roland@redhat.com>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20080402194836.4933026F98A@magilla.localdomain>
+References: <bug-9906-10286@http.bugzilla.kernel.org/>
+	 <20080206165045.89b809cc.akpm@linux-foundation.org>
+	 <1202345893.8525.33.camel@peace.smo.corp.google.com>
+	 <alpine.LRH.1.00.0802062148480.7445@mini.warudkars.net>
+	 <20080207162203.3e3cf5ab@Varda>
+	 <alpine.LRH.1.00.0802071040010.29320@mini.warudkars.net>
+	 <alpine.LRH.1.00.0802071054160.29320@mini.warudkars.net>
+	 <20080207165455.04ec490b@Varda>
+	 <alpine.LRH.1.00.0802071100230.29369@mini.warudkars.net>
+	 <alpine.LRH.1.00.0802071153130.15220@mini.warudkars.net>
+	 <1204314904.4850.23.camel@peace.smo.corp.google.com>
+	 <20080304070016.903E127010A@magilla.localdomain>
+	 <1204660376.9768.1.camel@bobble.smo.corp.google.com>
+	 <20080305040826.D0E6127010A@magilla.localdomain>
+	 <1204830243.20004.31.camel@bobble.smo.corp.google.com>
+	 <20080311075020.A93DB26F991@magilla.localdomain>
+	 <1205269507.23124.57.camel@bobble.smo.corp.google.com>
+	 <20080311213507.5BCDF26F991@magilla.localdomain>
+	 <1205455050.19551.16.camel@bobble.smo.corp.google.com>
+	 <20080321071846.1B22B26F9A7@magilla.localdomain>
+	 <1206122240.14638.31.camel@bobble.smo.corp.google.com>
+	 <20080322215829.D69D026F9A7@magilla.localdomain>
+	 <1206380079.21896.20.camel@bobble.smo.corp.google.com>
+	 <20080331054404.78CDB26F8E9@magilla.localdomain>
+	 <1206995072.14649.41.camel@bobble.smo.corp.google.com>
+	 <20080402020707.151E126F8DC@magilla.localdomain>
+	 <1207158164.11976.32.camel@bobble.smo.corp.google.com>
+	 <20080402194836.4933026F98A@magilla.localdomain>
+Content-Type: text/plain
+Organization: Google, Inc.
+Date: Wed, 02 Apr 2008 13:34:24 -0700
+Message-Id: <1207168464.11976.48.camel@bobble.smo.corp.google.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 02 April 2008, Mark Lord wrote:
+On Wed, 2008-04-02 at 12:48 -0700, Roland McGrath wrote:
+> > One quick note:  this inline isn't needed for the 2b solution (allocate
+> > percpu storage in copy_signal CLONE_THREAD case), since if there's more
+> > than one thread there'll always be a percpu area and if there's only one
+> > thread the summation code won't be entered.
 > 
-> > And try the change I suggested there:  taking the
-> > HC_IS_RUNNING test out of ehci_iaa_watchdog().
-> ..
-> 
-> Will do, thanks.  And there's a similar one in ehci_work().  ??
+> That's true.  I still think it's a good idea to have it, even if it winds
+> up being empty in the variants we really use.  The principle is that the
+> new set of types/functions could be used to implement exactly what we have
+> now.  In fact, it's usually best to do a series of small patches that start
+> with introducing the abstraction while not changing anything.
 
-Don't see why that should matter.  In any case, that
-test hasn't changed recently.
+Ah, okay.  Well, except that the whole point of this exercise is to fix
+that hang. :-)  But yeah, I understand.
+
+> > And another quick note:  It appears that with the "allocate percpu
+> > storage in copy_signal CLONE_THREAD case" mechanism, I don't need to
+> > worry about allocating it anywhere else.  If I need it (which is only in
+> > the case of multiple threads and an interval timer) then I'll have it
+> > because it was allocated with the second thread.  
+> 
+> That's correct.
+> 
+> > So I just eliminate the allocation in do_setitimer() entirely.
+> 
+> Again, I'd leave the call to the inline that would do it.
+> For this implementation plan, its body is:
+> 	BUG_ON(!task->signal->cputime.totals && !thread_group_empty(task));
+
+BTW I did look at allocating it in posix_cpu_timer_set() and
+set_process_cpu_timer() but the first at least is doing stuff with locks
+held.  I'll keep looking at it, though.
+
+One little gotcha we just ran into, though:  When checking
+tsk->signal->(anything) in run_posix_cpu_timers(), we have to hold
+tasklist_lock to avoid a race with release_task().  This is going to
+make even the null case always cost more than before.
+-- 
+Frank Mayhar <fmayhar@google.com>
+Google, Inc.
 
