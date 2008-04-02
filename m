@@ -1,76 +1,355 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758171AbYDBO0X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758391AbYDBO1Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758171AbYDBO0X (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 10:26:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754540AbYDBO0P
+	id S1758391AbYDBO1Q (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 10:27:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756009AbYDBO1A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 10:26:15 -0400
-Received: from relay2.sgi.com ([192.48.171.30]:45347 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756551AbYDBO0P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 10:26:15 -0400
-Date: Wed, 2 Apr 2008 09:26:10 -0500
-From: Robin Holt <holt@sgi.com>
-To: Andrea Arcangeli <andrea@qumranet.com>
-Cc: Robin Holt <holt@sgi.com>, Christoph Lameter <clameter@sgi.com>,
-       Hugh Dickins <hugh@veritas.com>, Avi Kivity <avi@qumranet.com>,
-       Izik Eidus <izike@qumranet.com>, kvm-devel@lists.sourceforge.net,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, general@lists.openfabrics.org,
-       Steve Wise <swise@opengridcomputing.com>,
-       Roland Dreier <rdreier@cisco.com>, Kanoj Sarcar <kanojsarcar@yahoo.com>,
-       steiner@sgi.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       daniel.blueman@quadrics.com, Nick Piggin <npiggin@suse.de>
-Subject: Re: [patch 1/9] EMM Notifier: The notifier calls
-Message-ID: <20080402142609.GD22493@sgi.com>
-References: <20080401205531.986291575@sgi.com> <20080401205635.793766935@sgi.com> <20080402064952.GF19189@duo.random> <20080402105925.GC22493@sgi.com> <20080402111651.GN19189@duo.random>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080402111651.GN19189@duo.random>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+	Wed, 2 Apr 2008 10:27:00 -0400
+Received: from mtagate1.uk.ibm.com ([195.212.29.134]:59757 "EHLO
+	mtagate1.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754865AbYDBO07 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Apr 2008 10:26:59 -0400
+Subject: [PATCH 1/3] hugetlbfs: architecture header cleanup
+From: Gerald Schaefer <gerald.schaefer@de.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
+       schwidefsky@de.ibm.com, Ingo Molnar <mingo@elte.hu>,
+       "David S. Miller" <davem@davemloft.net>,
+       Tony Luck <tony.luck@intel.com>, Paul Mackerras <paulus@samba.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Paul Mundt <lethal@linux-sh.org>
+In-Reply-To: <1207145843.4980.7.camel@localhost.localdomain>
+References: <1207145843.4980.7.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Wed, 02 Apr 2008 16:26:55 +0200
+Message-Id: <1207146415.4980.11.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.0 (2.8.0-40.el5_1.1) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I must have missed v10.  Could you repost so I can build xpmem
-against it to see how it operates?  To help reduce confusion, you should
-probably comandeer the patches from Christoph's set which you think are
-needed to make it sleep.
+Subject: [PATCH 1/3] hugetlbfs: architecture header cleanup
 
-Thanks,
-Robin
+From: Gerald Schaefer <gerald.schaefer@de.ibm.com>
+
+This patch moves all architecture functions for hugetlb to architecture
+header files (include/asm-foo/hugetlb.h). It also removes (!)
+ARCH_HAS_HUGEPAGE_ONLY_RANGE, ARCH_HAS_HUGETLB_FREE_PGD_RANGE,
+ARCH_HAS_PREPARE_HUGEPAGE_RANGE, ARCH_HAS_SETCLEAR_HUGE_PTE and
+ARCH_HAS_HUGETLB_PREFAULT_HOOK.
+
+Cross-Compile tests on the affected architectures (and one unaffected)
+worked fine, but I had no cross-compiler for sh.
+
+Acked-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Signed-off-by: Gerald Schaefer <gerald.schaefer@de.ibm.com>
+---
+
+ include/asm-ia64/hugetlb.h    |   21 +++++++++++++++++++
+ include/asm-ia64/page.h       |    6 -----
+ include/asm-powerpc/hugetlb.h |   35 +++++++++++++++++++++++++++++++
+ include/asm-powerpc/page_64.h |    7 ------
+ include/asm-sh/hugetlb.h      |   28 +++++++++++++++++++++++++
+ include/asm-sparc64/hugetlb.h |   30 +++++++++++++++++++++++++++
+ include/asm-sparc64/page.h    |    2 -
+ include/asm-x86/hugetlb.h     |   28 +++++++++++++++++++++++++
+ include/linux/hugetlb.h       |   46 ------------------------------------------
+ 9 files changed, 143 insertions(+), 60 deletions(-)
+
+Index: linux-2.6.25-rc7/include/asm-ia64/hugetlb.h
+===================================================================
+--- /dev/null
++++ linux-2.6.25-rc7/include/asm-ia64/hugetlb.h
+@@ -0,0 +1,21 @@
++#ifndef _ASM_IA64_HUGETLB_H
++#define _ASM_IA64_HUGETLB_H
++
++#include <asm/page.h>
++
++
++#define is_hugepage_only_range(mm, addr, len)		\
++	(REGION_NUMBER(addr) == RGN_HPAGE ||	\
++	 REGION_NUMBER((addr)+(len)-1) == RGN_HPAGE)
++
++void hugetlb_free_pgd_range(struct mmu_gather **tlb, unsigned long addr,
++			    unsigned long end, unsigned long floor,
++			    unsigned long ceiling);
++int prepare_hugepage_range(unsigned long addr, unsigned long len);
++
++#define set_huge_pte_at(mm, addr, ptep, pte)	set_pte_at(mm, addr, ptep, pte)
++#define huge_ptep_get_and_clear(mm, addr, ptep) ptep_get_and_clear(mm, addr, ptep)
++
++#define hugetlb_prefault_arch_hook(mm)		do { } while (0)
++
++#endif /* _ASM_IA64_HUGETLB_H */
+Index: linux-2.6.25-rc7/include/asm-sh/hugetlb.h
+===================================================================
+--- /dev/null
++++ linux-2.6.25-rc7/include/asm-sh/hugetlb.h
+@@ -0,0 +1,28 @@
++#ifndef _ASM_SH_HUGETLB_H
++#define _ASM_SH_HUGETLB_H
++
++#include <asm/page.h>
++
++
++#define is_hugepage_only_range(mm, addr, len)	0
++#define hugetlb_free_pgd_range			free_pgd_range
++
++/*
++ * If the arch doesn't supply something else, assume that hugepage
++ * size aligned regions are ok without further preparation.
++ */
++static inline int prepare_hugepage_range(unsigned long addr, unsigned long len)
++{
++	if (len & ~HPAGE_MASK)
++		return -EINVAL;
++	if (addr & ~HPAGE_MASK)
++		return -EINVAL;
++	return 0;
++}
++
++#define set_huge_pte_at(mm, addr, ptep, pte)	set_pte_at(mm, addr, ptep, pte)
++#define huge_ptep_get_and_clear(mm, addr, ptep) ptep_get_and_clear(mm, addr, ptep)
++
++#define hugetlb_prefault_arch_hook(mm)		do { } while (0)
++
++#endif /* _ASM_SH_HUGETLB_H */
+Index: linux-2.6.25-rc7/include/asm-sparc64/hugetlb.h
+===================================================================
+--- /dev/null
++++ linux-2.6.25-rc7/include/asm-sparc64/hugetlb.h
+@@ -0,0 +1,30 @@
++#ifndef _ASM_SPARC64_HUGETLB_H
++#define _ASM_SPARC64_HUGETLB_H
++
++#include <asm/page.h>
++
++
++#define is_hugepage_only_range(mm, addr, len)	0
++#define hugetlb_free_pgd_range			free_pgd_range
++
++/*
++ * If the arch doesn't supply something else, assume that hugepage
++ * size aligned regions are ok without further preparation.
++ */
++static inline int prepare_hugepage_range(unsigned long addr, unsigned long len)
++{
++	if (len & ~HPAGE_MASK)
++		return -EINVAL;
++	if (addr & ~HPAGE_MASK)
++		return -EINVAL;
++	return 0;
++}
++
++void set_huge_pte_at(struct mm_struct *mm, unsigned long addr,
++		     pte_t *ptep, pte_t pte);
++pte_t huge_ptep_get_and_clear(struct mm_struct *mm, unsigned long addr,
++			      pte_t *ptep);
++
++void hugetlb_prefault_arch_hook(struct mm_struct *mm);
++
++#endif /* _ASM_SPARC64_HUGETLB_H */
+Index: linux-2.6.25-rc7/include/asm-x86/hugetlb.h
+===================================================================
+--- /dev/null
++++ linux-2.6.25-rc7/include/asm-x86/hugetlb.h
+@@ -0,0 +1,28 @@
++#ifndef _ASM_X86_HUGETLB_H
++#define _ASM_X86_HUGETLB_H
++
++#include <asm/page.h>
++
++
++#define is_hugepage_only_range(mm, addr, len)	0
++#define hugetlb_free_pgd_range			free_pgd_range
++
++/*
++ * If the arch doesn't supply something else, assume that hugepage
++ * size aligned regions are ok without further preparation.
++ */
++static inline int prepare_hugepage_range(unsigned long addr, unsigned long len)
++{
++	if (len & ~HPAGE_MASK)
++		return -EINVAL;
++	if (addr & ~HPAGE_MASK)
++		return -EINVAL;
++	return 0;
++}
++
++#define set_huge_pte_at(mm, addr, ptep, pte)	set_pte_at(mm, addr, ptep, pte)
++#define huge_ptep_get_and_clear(mm, addr, ptep) ptep_get_and_clear(mm, addr, ptep)
++
++#define hugetlb_prefault_arch_hook(mm)		do { } while (0)
++
++#endif /* _ASM_X86_HUGETLB_H */
+Index: linux-2.6.25-rc7/include/linux/hugetlb.h
+===================================================================
+--- linux-2.6.25-rc7.orig/include/linux/hugetlb.h
++++ linux-2.6.25-rc7/include/linux/hugetlb.h
+@@ -8,6 +8,7 @@
+ #include <linux/mempolicy.h>
+ #include <linux/shm.h>
+ #include <asm/tlbflush.h>
++#include <asm/hugetlb.h>
+ 
+ struct ctl_table;
+ 
+@@ -51,51 +52,6 @@ int pmd_huge(pmd_t pmd);
+ void hugetlb_change_protection(struct vm_area_struct *vma,
+ 		unsigned long address, unsigned long end, pgprot_t newprot);
+ 
+-#ifndef ARCH_HAS_HUGEPAGE_ONLY_RANGE
+-#define is_hugepage_only_range(mm, addr, len)	0
+-#endif
+-
+-#ifndef ARCH_HAS_HUGETLB_FREE_PGD_RANGE
+-#define hugetlb_free_pgd_range	free_pgd_range
+-#else
+-void hugetlb_free_pgd_range(struct mmu_gather **tlb, unsigned long addr,
+-			    unsigned long end, unsigned long floor,
+-			    unsigned long ceiling);
+-#endif
+-
+-#ifndef ARCH_HAS_PREPARE_HUGEPAGE_RANGE
+-/*
+- * If the arch doesn't supply something else, assume that hugepage
+- * size aligned regions are ok without further preparation.
+- */
+-static inline int prepare_hugepage_range(unsigned long addr, unsigned long len)
+-{
+-	if (len & ~HPAGE_MASK)
+-		return -EINVAL;
+-	if (addr & ~HPAGE_MASK)
+-		return -EINVAL;
+-	return 0;
+-}
+-#else
+-int prepare_hugepage_range(unsigned long addr, unsigned long len);
+-#endif
+-
+-#ifndef ARCH_HAS_SETCLEAR_HUGE_PTE
+-#define set_huge_pte_at(mm, addr, ptep, pte)	set_pte_at(mm, addr, ptep, pte)
+-#define huge_ptep_get_and_clear(mm, addr, ptep) ptep_get_and_clear(mm, addr, ptep)
+-#else
+-void set_huge_pte_at(struct mm_struct *mm, unsigned long addr,
+-		     pte_t *ptep, pte_t pte);
+-pte_t huge_ptep_get_and_clear(struct mm_struct *mm, unsigned long addr,
+-			      pte_t *ptep);
+-#endif
+-
+-#ifndef ARCH_HAS_HUGETLB_PREFAULT_HOOK
+-#define hugetlb_prefault_arch_hook(mm)		do { } while (0)
+-#else
+-void hugetlb_prefault_arch_hook(struct mm_struct *mm);
+-#endif
+-
+ #else /* !CONFIG_HUGETLB_PAGE */
+ 
+ static inline int is_vm_hugetlb_page(struct vm_area_struct *vma)
+Index: linux-2.6.25-rc7/include/asm-powerpc/hugetlb.h
+===================================================================
+--- /dev/null
++++ linux-2.6.25-rc7/include/asm-powerpc/hugetlb.h
+@@ -0,0 +1,35 @@
++#ifndef _ASM_POWERPC_HUGETLB_H
++#define _ASM_POWERPC_HUGETLB_H
++
++#include <asm/page.h>
++
++
++extern int is_hugepage_only_range(struct mm_struct *m,
++				  unsigned long addr,
++				  unsigned long len);
++
++void hugetlb_free_pgd_range(struct mmu_gather **tlb, unsigned long addr,
++			    unsigned long end, unsigned long floor,
++			    unsigned long ceiling);
++
++/*
++ * If the arch doesn't supply something else, assume that hugepage
++ * size aligned regions are ok without further preparation.
++ */
++static inline int prepare_hugepage_range(unsigned long addr, unsigned long len)
++{
++	if (len & ~HPAGE_MASK)
++		return -EINVAL;
++	if (addr & ~HPAGE_MASK)
++		return -EINVAL;
++	return 0;
++}
++
++void set_huge_pte_at(struct mm_struct *mm, unsigned long addr,
++		     pte_t *ptep, pte_t pte);
++pte_t huge_ptep_get_and_clear(struct mm_struct *mm, unsigned long addr,
++			      pte_t *ptep);
++
++#define hugetlb_prefault_arch_hook(mm)		do { } while (0)
++
++#endif /* _ASM_POWERPC_HUGETLB_H */
+Index: linux-2.6.25-rc7/include/asm-ia64/page.h
+===================================================================
+--- linux-2.6.25-rc7.orig/include/asm-ia64/page.h
++++ linux-2.6.25-rc7/include/asm-ia64/page.h
+@@ -54,9 +54,6 @@
+ # define HPAGE_MASK		(~(HPAGE_SIZE - 1))
+ 
+ # define HAVE_ARCH_HUGETLB_UNMAPPED_AREA
+-# define ARCH_HAS_HUGEPAGE_ONLY_RANGE
+-# define ARCH_HAS_PREPARE_HUGEPAGE_RANGE
+-# define ARCH_HAS_HUGETLB_FREE_PGD_RANGE
+ #endif /* CONFIG_HUGETLB_PAGE */
+ 
+ #ifdef __ASSEMBLY__
+@@ -153,9 +150,6 @@ typedef union ia64_va {
+ # define htlbpage_to_page(x)	(((unsigned long) REGION_NUMBER(x) << 61)			\
+ 				 | (REGION_OFFSET(x) >> (HPAGE_SHIFT-PAGE_SHIFT)))
+ # define HUGETLB_PAGE_ORDER	(HPAGE_SHIFT - PAGE_SHIFT)
+-# define is_hugepage_only_range(mm, addr, len)		\
+-	 (REGION_NUMBER(addr) == RGN_HPAGE ||	\
+-	  REGION_NUMBER((addr)+(len)-1) == RGN_HPAGE)
+ extern unsigned int hpage_shift;
+ #endif
+ 
+Index: linux-2.6.25-rc7/include/asm-powerpc/page_64.h
+===================================================================
+--- linux-2.6.25-rc7.orig/include/asm-powerpc/page_64.h
++++ linux-2.6.25-rc7/include/asm-powerpc/page_64.h
+@@ -128,11 +128,6 @@ extern void slice_init_context(struct mm
+ extern void slice_set_user_psize(struct mm_struct *mm, unsigned int psize);
+ #define slice_mm_new_context(mm)	((mm)->context.id == 0)
+ 
+-#define ARCH_HAS_HUGEPAGE_ONLY_RANGE
+-extern int is_hugepage_only_range(struct mm_struct *m,
+-				  unsigned long addr,
+-				  unsigned long len);
+-
+ #endif /* __ASSEMBLY__ */
+ #else
+ #define slice_init()
+@@ -146,8 +141,6 @@ do {						\
+ 
+ #ifdef CONFIG_HUGETLB_PAGE
+ 
+-#define ARCH_HAS_HUGETLB_FREE_PGD_RANGE
+-#define ARCH_HAS_SETCLEAR_HUGE_PTE
+ #define HAVE_ARCH_HUGETLB_UNMAPPED_AREA
+ 
+ #endif /* !CONFIG_HUGETLB_PAGE */
+Index: linux-2.6.25-rc7/include/asm-sparc64/page.h
+===================================================================
+--- linux-2.6.25-rc7.orig/include/asm-sparc64/page.h
++++ linux-2.6.25-rc7/include/asm-sparc64/page.h
+@@ -39,8 +39,6 @@
+ #define HPAGE_SIZE		(_AC(1,UL) << HPAGE_SHIFT)
+ #define HPAGE_MASK		(~(HPAGE_SIZE - 1UL))
+ #define HUGETLB_PAGE_ORDER	(HPAGE_SHIFT - PAGE_SHIFT)
+-#define ARCH_HAS_SETCLEAR_HUGE_PTE
+-#define ARCH_HAS_HUGETLB_PREFAULT_HOOK
+ #define HAVE_ARCH_HUGETLB_UNMAPPED_AREA
+ #endif
+ 
 
 
-On Wed, Apr 02, 2008 at 01:16:51PM +0200, Andrea Arcangeli wrote:
-> On Wed, Apr 02, 2008 at 05:59:25AM -0500, Robin Holt wrote:
-> > On Wed, Apr 02, 2008 at 08:49:52AM +0200, Andrea Arcangeli wrote:
-> > > Most other patches will apply cleanly on top of my coming mmu
-> > > notifiers #v10 that I hope will go in -mm.
-> > > 
-> > > For #v10 the only two left open issues to discuss are:
-> > 
-> > Does your v10 allow sleeping inside the callbacks?
-> 
-> Yes if you apply all the patches. But not if you apply the first patch
-> only, most patches in EMM serie will apply cleanly or with minor
-> rejects to #v10 too, Christoph's further work to make EEM sleep
-> capable looks very good and it's going to be 100% shared, it's also
-> going to be a lot more controversial for merging than the two #v10 or
-> EMM first patch. EMM also doesn't allow sleeping inside the callbacks
-> if you only apply the first patch in the serie.
-> 
-> My priority is to get #v9 or the coming #v10 merged in -mm (only
-> difference will be the replacement of rcu_read_lock with the seqlock
-> to avoid breaking the synchronize_rcu in GRU code). I will mix seqlock
-> with rcu ordered writes. EMM indeed breaks GRU by making
-> synchronize_rcu a noop and by not providing any alternative (I will
-> obsolete synchronize_rcu making it a noop instead). This assumes Jack
-> used synchronize_rcu for whatever good reason. But this isn't the real
-> strong point against EMM, adding seqlock to EMM is as easy as adding
-> it to #v10 (admittedly with #v10 is a bit easier because I didn't
-> expand the hlist operations for zero gain like in EMM).
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
