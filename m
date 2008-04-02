@@ -1,101 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759551AbYDBUJc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759357AbYDBUKN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759551AbYDBUJc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 16:09:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758812AbYDBUJZ
+	id S1759357AbYDBUKN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 16:10:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757845AbYDBUJ6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 16:09:25 -0400
-Received: from nf-out-0910.google.com ([64.233.182.188]:18322 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758450AbYDBUJX convert rfc822-to-8bit (ORCPT
+	Wed, 2 Apr 2008 16:09:58 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:44392 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1757409AbYDBUJ5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 16:09:23 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=Tyv7x3nYs0C8pN7R0PPmskt+nkzLFKSQKDGbhXggld5MuIAifwaxQQVkDvwW4nZtdH973GwRyE/JQpxf4fGFvwLtLWUImuTCG0HylOcgtJbcJmitjUogNFxVIj91pwP/nRACgBwKm1E+W8E/xBJEi+eRm8uzCFOieTl8+llovPo=
-Message-ID: <5a4c581d0804021309y6b0f3af1tab24090a17104bf4@mail.gmail.com>
-Date: Wed, 2 Apr 2008 22:09:20 +0200
-From: "Alessandro Suardi" <alessandro.suardi@gmail.com>
-To: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
-Subject: Re: 2.6.25-rc6-git2: warn_on_slowpath for tcp_simple_retransmit
-Cc: "Linux Kernel" <linux-kernel@vger.kernel.org>,
-       Netdev <netdev@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.64.0804021110190.10371@wrl-59.cs.helsinki.fi>
+	Wed, 2 Apr 2008 16:09:57 -0400
+Date: Wed, 2 Apr 2008 16:09:55 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Mark Lord <lkml@rtr.ca>
+cc: Oliver Neukum <oliver@neukum.org>, Pavel Machek <pavel@suse.cz>,
+       Linux Kernel <linux-kernel@vger.kernel.org>, Greg KH <gregkh@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>, <jikos@suse.cz>,
+       <linux-usb@vger.kernel.org>
+Subject: Re: 2.6.25-rc7:  Ugh. ---> PATCH
+In-Reply-To: <47F3A9C3.7030702@rtr.ca>
+Message-ID: <Pine.LNX.4.44L0.0804021601490.2107-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-References: <5a4c581d0804011528g786550c5sfd6bf90c0c37706@mail.gmail.com>
-	 <Pine.LNX.4.64.0804021110190.10371@wrl-59.cs.helsinki.fi>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 2, 2008 at 10:10 AM, Ilpo Järvinen
-<ilpo.jarvinen@helsinki.fi> wrote:
-> On Wed, 2 Apr 2008, Alessandro Suardi wrote:
->
->  > Found this in my FC6-based bittorrent box (K7-800 running
->  >  a 2.6.25-rc6-git2 kernel) this evening.
->  >
->  > The kernel was upgraded two weeks ago to fix the bug
->  >  in which an USB VIA driver hammered the PCI bus
->  >  causing ATA disk performance to drop, and has been
->  >  running since then (it still is).
->  >
->  > So it's actually 2.6.25-rc6-git2 plus patch as in here
->  > http://www.gossamer-threads.com/lists/linux/kernel/895506#895506
->  >
->  > If there's anything useful I can do, just ask. Thanks !
->
->  Can you reproduce?
+On Wed, 2 Apr 2008, Mark Lord wrote:
 
-Nope. That only happened once in this uptime:
+> When comparing 2.6.24 against 2.6.25, this line of code
+> stood out as not looking entirely correct, given the new
+> uses of QH_STATE_UNLINK_WAIT in 2.6.25.
 
-[root@donkey ~]# uptime
- 21:57:21 up 14 days, 22:04,  5 users,  load average: 0.64, 0.47, 0.44
+> --- linux-2.6.25-rc8/drivers/usb/host/ehci-hcd.c	2008-03-11 11:18:40.000000000 -0400
+> +++ linux/drivers/usb/host/ehci-hcd.c	2008-04-02 11:36:13.000000000 -0400
+> @@ -815,7 +815,7 @@
+>  		end_unlink_async(ehci);
+>  
+>  	/* if it's not linked then there's nothing to do */
+> -	if (qh->qh_state != QH_STATE_LINKED)
+> +	if (qh->qh_state != QH_STATE_LINKED && qh->qh_state != QH_STATE_UNLINK_WAIT)
+>  		;
+>  
+>  	/* defer till later if busy */
 
-The machine runs unattended as a bittorrent client, 24x7,
- with a very low traffic (uploading at a steady ~36KB/s,
- and downloads happen in peaks).
+To answer your implied question...
 
-I VNC into it in the evening and manage the torrents;
- that is all.
+QH_STATE_UNLINK_WAIT doesn't have a new meaning in 2.6.25.  Just as 
+before, it means that qh is on a queue waiting to be unlinked.
 
-Now, there's an interesting tidbit:
+qh->qh_state can never be equal to QH_STATE_UNLINK_WAIT at this point.  
+If it were, it would mean that some part of the driver had tried to
+unlink qh twice.  But even then, the correct move would be to follow
+the "nothing to do" path -- since qh is already waiting to be unlinked,
+there's no point trying to do any more.
 
-[root@donkey ~]# ip -s link show eth0
-3: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast qlen 1000
-    link/ether 00:c0:49:a7:33:fe brd ff:ff:ff:ff:ff:ff
-    RX: bytes  packets  errors  dropped overrun mcast
-    959044156  60549131 0       0       0       0
-    TX: bytes  packets  errors  dropped carrier collsns
-    744533957  66149681 0       0       0       0
+Alan Stern
 
-[root@donkey ~]# ifconfig eth0
-eth0      Link encap:Ethernet  HWaddr 00:C0:49:A7:33:FE
-          inet addr:192.168.1.7  Bcast:192.168.1.255  Mask:255.255.255.0
-          inet6 addr: fe80::2c0:49ff:fea7:33fe/64 Scope:Link
-          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
-          RX packets:60551468 errors:0 dropped:0 overruns:0 frame:0
-          TX packets:66152721 errors:0 dropped:0 overruns:1 carrier:0
-          collisions:0 txqueuelen:1000
-          RX bytes:959199592 (914.7 MiB)  TX bytes:748395356 (713.7 MiB)
-          Interrupt:12 Base address:0xce00
-
-Somehow the "overruns" counter is seen differently by 'ip'
- and 'ifconfig' - one says 0, the other says 1 - perhaps the
- packet that WARN'd me on tcp_simple_retransmit ?
-
-If there's anything else - reproducing seems really really
- unlikely - 1 packet in 66 million...
-
-Thanks,
-
---alessandro
-
- "Hold back the years, hold back the hours
- I want to live to see the sun break through these days"
-
- (Patrick Wolf, 'This Weather')
