@@ -1,66 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759510AbYDBOjT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757331AbYDBOnT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759510AbYDBOjT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 10:39:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759354AbYDBOi7
+	id S1757331AbYDBOnT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 10:43:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753416AbYDBOnK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 10:38:59 -0400
-Received: from rtr.ca ([76.10.145.34]:3478 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759332AbYDBOi5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 10:38:57 -0400
-Message-ID: <47F39A80.9090201@rtr.ca>
-Date: Wed, 02 Apr 2008 10:38:56 -0400
-From: Mark Lord <lkml@rtr.ca>
-Organization: Real-Time Remedies Inc.
-User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
+	Wed, 2 Apr 2008 10:43:10 -0400
+Received: from g4t0017.houston.hp.com ([15.201.24.20]:37786 "EHLO
+	g4t0017.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752639AbYDBOnI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Apr 2008 10:43:08 -0400
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+To: Greg KH <greg@kroah.com>
+Subject: Re: + revert-gregkh-pci-pci-x86-use-generic-pci_enable_resources.patch added to -mm tree
+Date: Wed, 2 Apr 2008 08:43:01 -0600
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       akpm@linux-foundation.org, mm-commits@vger.kernel.org,
+       davem@davemloft.net, m.kozlowski@tuxland.pl,
+       linux-kernel@vger.kernel.org, Tony Luck <tony.luck@intel.com>,
+       linux-ia64@vger.kernel.org, Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+       Kyle McMartin <kyle@mcmartin.ca>
+References: <200803282348.m2SNmleP016847@imap1.linux-foundation.org> <1207082276.10388.224.camel@pasglop> <20080402051554.GA21714@kroah.com>
+In-Reply-To: <20080402051554.GA21714@kroah.com>
 MIME-Version: 1.0
-To: Oliver Neukum <oliver@neukum.org>
-Cc: Pavel Machek <pavel@suse.cz>, Linux Kernel <linux-kernel@vger.kernel.org>,
-       Greg KH <gregkh@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
-       jikos@suse.cz, Alan Stern <stern@rowland.harvard.edu>,
-       linux-usb@vger.kernel.org
-Subject: Re: 2.6.25-rc7:  Ugh.
-References: <47EBBD57.30902@rtr.ca> <200803312005.37804.oliver@neukum.org> <47F139C9.50803@rtr.ca> <200804021004.53453.oliver@neukum.org> <47F39A55.5070102@rtr.ca>
-In-Reply-To: <47F39A55.5070102@rtr.ca>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200804020843.02402.bjorn.helgaas@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(CCing linux-usb again)
-(CCing Alan Stern on this sub-thread)
+On Tuesday 01 April 2008 11:15:54 pm Greg KH wrote:
+> On Wed, Apr 02, 2008 at 07:37:56AM +1100, Benjamin Herrenschmidt wrote:
+> > 
+> > On Tue, 2008-04-01 at 09:57 -0600, Bjorn Helgaas wrote:
+> > > 
+> > > Can we just drop the "revert gregkh" patches for x86, alpha, powerpc,
+> > > and ia64?
+> > 
+> > Considering that the generic is equivalent to what I have today on
+> > powerpc, I'm fine with it.
+> 
+> Ok, so what ones should I keep in my tree?
+> 
+> Bjorn, any help?
 
-Oliver Neukum wrote:
-> Am Montag, 31. März 2008 21:21:45 schrieb Mark Lord:
->> Oliver Neukum wrote:
->>> But if power is cut with newer kernels and older kernels retain it, something
->>> must have changed. Can you undo the ACPI changes since the last working
->>> kernel?
->> ..
->>
->> No, that's no different.
->> This notebook always cuts +5V from USB on suspend or poweroff.
->> Regardless of kernel version.  I don't know how common this is,
->> but all of my notebooks here have always behaved this way,
->> as have most (but not all) of the larger systems.
->>
->> The two most recent PCIe motherboards I have here
->> do provide +5V standby power to USB, even when "OFF",
->> much to my annoyance and to the detriment of this planet.
->
-> Very well.
->
-> Mark, can you get a sysrq-t trace of your whole system when USB goes
-> dead? And please enable CONFIG_USB_DEBUG. We need to do whether
-> khubd and ksuspend_usbd are in state D.
-..
+I think we should keep x86, alpha, powerpc, ppc, and ia64.
 
-Both of those things were already done, and results from the last time
-are attached to the bugzilla report: http://bugzilla.kernel.org/show_bug.cgi?id=10345
+Kyle previously acked it for parisc, so maybe he can speak
+up about whether to keep it there.
 
-I'll be installing -rc8 today, and see what happens there.
-
-Cheers
-
+Bjorn
