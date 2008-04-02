@@ -1,153 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757811AbYDBBIY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757778AbYDBBQH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757811AbYDBBIY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Apr 2008 21:08:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753080AbYDBBIO
+	id S1757778AbYDBBQH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Apr 2008 21:16:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753128AbYDBBPy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Apr 2008 21:08:14 -0400
-Received: from astoria.ccjclearline.com ([64.235.106.9]:48583 "EHLO
-	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753447AbYDBBIN (ORCPT
+	Tue, 1 Apr 2008 21:15:54 -0400
+Received: from fk-out-0910.google.com ([209.85.128.186]:22839 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753079AbYDBBPy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Apr 2008 21:08:13 -0400
-Date: Tue, 1 Apr 2008 21:08:09 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@crashcourse.ca>
-X-X-Sender: rpjday@localhost.localdomain
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-cc: Andrew Morton <akpm@osdl.org>
-Subject: [PATCH] Remove __KERNEL__ tests of unexported headers under
- asm-generic/.
-Message-ID: <alpine.LFD.1.00.0804011959020.28479@localhost.localdomain>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+	Tue, 1 Apr 2008 21:15:54 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=nd1fScAfHwGfNrRqRJmIuiKIulxHwYDrh4kQ4tFscFnVuMOAzKZwpPAoKE+Sih1vorS2t7uJraAWwBeI+VsbWgWR+7BTnbdeOdGRAEx+/MZ7lfeSJD8LglAb1rpOwV74fXJZGKqYm4oEbTvHjrePTBUlkR55UOM+ZjocDhJZ2R0=
+Message-ID: <3cb76b010804011815l52e69576x9ddb97c07ab38111@mail.gmail.com>
+Date: Tue, 1 Apr 2008 21:15:52 -0400
+From: "Sapan Bhatia" <sapan.bhatia@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: race leading to held mutexes, inode_cache corruption
+Cc: daniel@hozac.com, akpm@linux-foundation.org
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - crashcourse.ca
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
-Signed-off-by: Robert P. J. Day <rpjday@crashcourse.ca>
+We've been trying to investigate a file-system corruption issue in our
+kernel (http://svn.planet-lab.org/browser/linux-2.6/trunk) that
+manifests itself both with ext3 and ext2. It appears to be happening
+to due a contamination of the inode cache (we spent some time
+monitoring our systems to arrive at this hypothesis), and can be
+reproduced on a vanilla kernel as well.
 
----
+The race that leads to this issue involves a process being terminated
+when it is waiting for a mutex in __mutex_lock_common. eg. when it is
+sent a SIGKILL, and the mutex is unlocked, causing the process to be
+woken up and sent to exit while now holding the lock.
 
-  just another directory's worth of cleanup ...
+The way it contaminates the inode_cache slab is that inode->i_mutex is
+only initialized once, and assumes that inodes coming back into the
+cache are initialized. It seems that in our case such poisoned inodes
+were leaking out of pipe.c.
 
+This (www.cs.princeton.edu/~sapanb/mut.c) is the module we used to
+test the condition, as follows. Writing to the char device locks a
+mutex and reading from it unlocks it.
+# echo 1 > /dev/mut
+# cat /etc/passwd > /dev/mut &
+[2] 6232
+# kill -9 6232
+# cat /dev/mut
+[2]-  Killed                  cat /etc/passwd > /dev/mut
+# echo 1 > /dev/mut
+(goes to sleep)
 
- include/asm-generic/bitops.h       |    4 ----
- include/asm-generic/futex.h        |    3 ---
- include/asm-generic/memory_model.h |    2 --
- include/asm-generic/page.h         |    2 --
- include/asm-generic/rtc.h          |    3 ---
- 5 files changed, 14 deletions(-)
+I suppose that one could also construct an attack to proactively
+corrupt inode_cache, but I haven't tried that as yet.
 
-diff --git a/include/asm-generic/bitops.h b/include/asm-generic/bitops.h
-index 15e6f25..c9f369c 100644
---- a/include/asm-generic/bitops.h
-+++ b/include/asm-generic/bitops.h
-@@ -17,8 +17,6 @@
- #include <asm-generic/bitops/fls64.h>
- #include <asm-generic/bitops/find.h>
+Our base kernel is 2.6.22.19.
 
--#ifdef __KERNEL__
--
- #ifndef _LINUX_BITOPS_H
- #error only <linux/bitops.h> can be included directly
- #endif
-@@ -32,6 +30,4 @@
- #include <asm-generic/bitops/ext2-atomic.h>
- #include <asm-generic/bitops/minix.h>
-
--#endif /* __KERNEL__ */
--
- #endif /* _ASM_GENERIC_BITOPS_H */
-diff --git a/include/asm-generic/futex.h b/include/asm-generic/futex.h
-index f422df0..81644fd 100644
---- a/include/asm-generic/futex.h
-+++ b/include/asm-generic/futex.h
-@@ -1,8 +1,6 @@
- #ifndef _ASM_GENERIC_FUTEX_H
- #define _ASM_GENERIC_FUTEX_H
-
--#ifdef __KERNEL__
--
- #include <linux/futex.h>
- #include <asm/errno.h>
- #include <asm/uaccess.h>
-@@ -56,4 +54,3 @@ futex_atomic_cmpxchg_inatomic(int __user *uaddr, int oldval, int newval)
- }
-
- #endif
--#endif
-diff --git a/include/asm-generic/memory_model.h b/include/asm-generic/memory_model.h
-index 52226e1..ae060c6 100644
---- a/include/asm-generic/memory_model.h
-+++ b/include/asm-generic/memory_model.h
-@@ -1,7 +1,6 @@
- #ifndef __ASM_MEMORY_MODEL_H
- #define __ASM_MEMORY_MODEL_H
-
--#ifdef __KERNEL__
- #ifndef __ASSEMBLY__
-
- #if defined(CONFIG_FLATMEM)
-@@ -81,6 +80,5 @@ extern unsigned long page_to_pfn(struct page *page);
- #endif /* CONFIG_OUT_OF_LINE_PFN_TO_PAGE */
-
- #endif /* __ASSEMBLY__ */
--#endif /* __KERNEL__ */
-
- #endif
-diff --git a/include/asm-generic/page.h b/include/asm-generic/page.h
-index a96b5d9..14db733 100644
---- a/include/asm-generic/page.h
-+++ b/include/asm-generic/page.h
-@@ -1,7 +1,6 @@
- #ifndef _ASM_GENERIC_PAGE_H
- #define _ASM_GENERIC_PAGE_H
-
--#ifdef __KERNEL__
- #ifndef __ASSEMBLY__
-
- #include <linux/compiler.h>
-@@ -21,6 +20,5 @@ static __inline__ __attribute_const__ int get_order(unsigned long size)
- }
-
- #endif	/* __ASSEMBLY__ */
--#endif	/* __KERNEL__ */
-
- #endif	/* _ASM_GENERIC_PAGE_H */
-diff --git a/include/asm-generic/rtc.h b/include/asm-generic/rtc.h
-index dd1bed8..be4af00 100644
---- a/include/asm-generic/rtc.h
-+++ b/include/asm-generic/rtc.h
-@@ -12,8 +12,6 @@
- #ifndef __ASM_RTC_H__
- #define __ASM_RTC_H__
-
--#ifdef __KERNEL__
--
- #include <linux/mc146818rtc.h>
- #include <linux/rtc.h>
- #include <linux/bcd.h>
-@@ -213,5 +211,4 @@ static inline int set_rtc_pll(struct rtc_pll_info *pll)
- 	return -EINVAL;
- }
-
--#endif /* __KERNEL__ */
- #endif /* __ASM_RTC_H__ */
-
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry:
-    Have classroom, will lecture.
-
-http://crashcourse.ca                          Waterloo, Ontario, CANADA
-========================================================================
+Thank you,
+Sapan
