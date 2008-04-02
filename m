@@ -1,28 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757932AbYDBFy5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759176AbYDBF5n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757932AbYDBFy5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 01:54:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751439AbYDBFyp
+	id S1759176AbYDBF5n (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 01:57:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751665AbYDBF5d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 01:54:45 -0400
-Received: from fk-out-0910.google.com ([209.85.128.187]:46217 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751317AbYDBFyn (ORCPT
+	Wed, 2 Apr 2008 01:57:33 -0400
+Received: from mu-out-0910.google.com ([209.85.134.189]:49444 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751508AbYDBF5b (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 01:54:43 -0400
+	Wed, 2 Apr 2008 01:57:31 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
         h=date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
-        b=sS/KM/DpG1g1f87NtHADbUf7T2MIvRpGQqmpHmlzbdhmZ/ORnIV6cDkUOO3NzZUsbHm6f2zolbrvqnClHU4fxs7LuBcAwQ7ZJfUwzstCTVAT550jXW0mJe6WM8LRXMJmnRtI/D7Jkpkv1uLHkblBDAZcQcBBTYlB+WEKfmdPW5c=
-Date: Wed, 2 Apr 2008 13:59:56 +0800
+        b=M8fR2SAcfvGGk4fv2uUjU0TaoiDrgXLrx6a3Yk1k+8wEnTHmnDmvtFzwCPWnymVTdtLn8D2i6KlAUkA7OBy/eNyDoswZYWXWD7628w0AFmvsmGt/pAIDbzJ2BfJGMxwL4ejhaPQZ5B/ew1iKin8wUqrtZHYI9H2Ec/8Poor7//o=
+Date: Wed, 2 Apr 2008 14:02:43 +0800
 From: Dave Young <hidave.darkstar@gmail.com>
 To: davem@davemloft.net
 Cc: davej@codemonkey.org.uk, netdev@vger.kernel.org,
        linux-bluetooth@vger.kernel.org, linux-kernel@vger.kernel.org,
        marcel@holtmann.org
-Subject: [PATCH 1/2] bluetooth : use lockdep sub-classes for diffrent
-	bluetooth protocol
-Message-ID: <20080402055956.GA3050@darkstar.te-china.tietoenator.com>
+Subject: [PATCH 2/2] bluetooth : __rfcomm_dlc_close lock fix
+Message-ID: <20080402060243.GB3050@darkstar.te-china.tietoenator.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -31,104 +30,136 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-'rfcomm connect' will trigger lockdep warnings which is caused by
-locking diffrent kinds of bluetooth sockets at the same time.
+Lockdep warning will be trigged while rfcomm connection closing.
 
-So using sub-classes per AF_BLUETOOTH sub-type for lockdep.
+The locks taken in rfcomm_dev_add:
+rfcomm_dev_lock --> d->lock
 
-Thanks for the hints from dave jones.
+In __rfcomm_dlc_close:
+d->lock --> rfcomm_dev_lock (in rfcomm_dev_state_change)
 
----
-> From: Dave Jones <davej@codemonkey.org.uk>
-> Date: Thu, 27 Mar 2008 12:21:56 -0400
->
-> > Mar 27 08:10:57 localhost kernel: Pid: 3611, comm: obex-data-serve Not tainted 2.6.25-0.121.rc5.git4.fc9 #1
-> > Mar 27 08:10:57 localhost kernel:  [__lock_acquire+2287/3089] __lock_acquire+0x8ef/0xc11
-> > Mar 27 08:10:57 localhost kernel:  [sched_clock+8/11] ? sched_clock+0x8/0xb
-> > Mar 27 08:10:57 localhost kernel:  [lock_acquire+106/144] lock_acquire+0x6a/0x90
-> > Mar 27 08:10:57 localhost kernel:  [<f8bd9321>] ? l2cap_sock_bind+0x29/0x108 [l2cap]
-> > Mar 27 08:10:57 localhost kernel:  [lock_sock_nested+182/198] lock_sock_nested+0xb6/0xc6
-> > Mar 27 08:10:57 localhost kernel:  [<f8bd9321>] ? l2cap_sock_bind+0x29/0x108 [l2cap]
-> > Mar 27 08:10:57 localhost kernel:  [security_socket_post_create+22/27] ? security_socket_post_create+0x16/0x1b
-> > Mar 27 08:10:57 localhost kernel:  [__sock_create+388/472] ? __sock_create+0x184/0x1d8
-> > Mar 27 08:10:57 localhost kernel:  [<f8bd9321>] l2cap_sock_bind+0x29/0x108 [l2cap]
-> > Mar 27 08:10:57 localhost kernel:  [kernel_bind+10/13] kernel_bind+0xa/0xd
-> > Mar 27 08:10:57 localhost kernel:  [<f8dad3d7>] rfcomm_dlc_open+0xc8/0x294 [rfcomm]
-> > Mar 27 08:10:57 localhost kernel:  [lock_sock_nested+187/198] ? lock_sock_nested+0xbb/0xc6
-> > Mar 27 08:10:57 localhost kernel:  [<f8dae18c>] rfcomm_sock_connect+0x8b/0xc2 [rfcomm]
-> > Mar 27 08:10:57 localhost kernel:  [sys_connect+96/125] sys_connect+0x60/0x7d
-> > Mar 27 08:10:57 localhost kernel:  [__lock_acquire+1370/3089] ? __lock_acquire+0x55a/0xc11
-> > Mar 27 08:10:57 localhost kernel:  [sys_socketcall+140/392] sys_socketcall+0x8c/0x188
-> > Mar 27 08:10:57 localhost kernel:  [syscall_call+7/11] syscall_call+0x7/0xb
----
+There's two way to fix it, one is in rfcomm_dev_add we first locking
+d->lock then the rfcomm_dev_lock
+
+The other (in this patch), remove the locking of d->lock for
+rfcomm_dev_state_change because just locking "d->state = BT_CLOSED;"
+is enough.
+
+[  295.002046] =======================================================
+[  295.002046] [ INFO: possible circular locking dependency detected ]
+[  295.002046] 2.6.25-rc7 #1
+[  295.002046] -------------------------------------------------------
+[  295.002046] krfcommd/2705 is trying to acquire lock:
+[  295.002046]  (rfcomm_dev_lock){-.--}, at: [<f89a090a>] rfcomm_dev_state_change+0x6a/0xd0 [rfcomm]
+[  295.002046] 
+[  295.002046] but task is already holding lock:
+[  295.002046]  (&d->lock){--..}, at: [<f899c533>] __rfcomm_dlc_close+0x43/0xd0 [rfcomm]
+[  295.002046] 
+[  295.002046] which lock already depends on the new lock.
+[  295.002046] 
+[  295.002046] 
+[  295.002046] the existing dependency chain (in reverse order) is:
+[  295.002046] 
+[  295.002046] -> #1 (&d->lock){--..}:
+[  295.002046]        [<c0149b23>] check_prev_add+0xd3/0x200
+[  295.002046]        [<c0149ce5>] check_prevs_add+0x95/0xe0
+[  295.002046]        [<c0149f6f>] validate_chain+0x23f/0x320
+[  295.002046]        [<c014b7b1>] __lock_acquire+0x1c1/0x760
+[  295.002046]        [<c014c349>] lock_acquire+0x79/0xb0
+[  295.002046]        [<c03d6b99>] _spin_lock+0x39/0x80
+[  295.002046]        [<f89a01c0>] rfcomm_dev_add+0x240/0x360 [rfcomm]
+[  295.002046]        [<f89a047e>] rfcomm_create_dev+0x6e/0xe0 [rfcomm]
+[  295.002046]        [<f89a0823>] rfcomm_dev_ioctl+0x33/0x60 [rfcomm]
+[  295.002046]        [<f899facc>] rfcomm_sock_ioctl+0x2c/0x50 [rfcomm]
+[  295.002046]        [<c0363d38>] sock_ioctl+0x118/0x240
+[  295.002046]        [<c0194196>] vfs_ioctl+0x76/0x90
+[  295.002046]        [<c0194446>] do_vfs_ioctl+0x56/0x140
+[  295.002046]        [<c0194569>] sys_ioctl+0x39/0x60
+[  295.002046]        [<c0104faa>] syscall_call+0x7/0xb
+[  295.002046]        [<ffffffff>] 0xffffffff
+[  295.002046] 
+[  295.002046] -> #0 (rfcomm_dev_lock){-.--}:
+[  295.002046]        [<c0149a84>] check_prev_add+0x34/0x200
+[  295.002046]        [<c0149ce5>] check_prevs_add+0x95/0xe0
+[  295.002046]        [<c0149f6f>] validate_chain+0x23f/0x320
+[  295.002046]        [<c014b7b1>] __lock_acquire+0x1c1/0x760
+[  295.002046]        [<c014c349>] lock_acquire+0x79/0xb0
+[  295.002046]        [<c03d6639>] _read_lock+0x39/0x80
+[  295.002046]        [<f89a090a>] rfcomm_dev_state_change+0x6a/0xd0 [rfcomm]
+[  295.002046]        [<f899c548>] __rfcomm_dlc_close+0x58/0xd0 [rfcomm]
+[  295.002046]        [<f899d44f>] rfcomm_recv_ua+0x6f/0x120 [rfcomm]
+[  295.002046]        [<f899e061>] rfcomm_recv_frame+0x171/0x1e0 [rfcomm]
+[  295.002046]        [<f899e357>] rfcomm_run+0xe7/0x550 [rfcomm]
+[  295.002046]        [<c013c18c>] kthread+0x5c/0xa0
+[  295.002046]        [<c0105c07>] kernel_thread_helper+0x7/0x10
+[  295.002046]        [<ffffffff>] 0xffffffff
+[  295.002046] 
+[  295.002046] other info that might help us debug this:
+[  295.002046] 
+[  295.002046] 2 locks held by krfcommd/2705:
+[  295.002046]  #0:  (rfcomm_mutex){--..}, at: [<f899e2eb>] rfcomm_run+0x7b/0x550 [rfcomm]
+[  295.002046]  #1:  (&d->lock){--..}, at: [<f899c533>] __rfcomm_dlc_close+0x43/0xd0 [rfcomm]
+[  295.002046] 
+[  295.002046] stack backtrace:
+[  295.002046] Pid: 2705, comm: krfcommd Not tainted 2.6.25-rc7 #1
+[  295.002046]  [<c0128a38>] ? printk+0x18/0x20
+[  295.002046]  [<c014927f>] print_circular_bug_tail+0x6f/0x80
+[  295.002046]  [<c0149a84>] check_prev_add+0x34/0x200
+[  295.002046]  [<c0149ce5>] check_prevs_add+0x95/0xe0
+[  295.002046]  [<c0149f6f>] validate_chain+0x23f/0x320
+[  295.002046]  [<c014b7b1>] __lock_acquire+0x1c1/0x760
+[  295.002046]  [<c014c349>] lock_acquire+0x79/0xb0
+[  295.002046]  [<f89a090a>] ? rfcomm_dev_state_change+0x6a/0xd0 [rfcomm]
+[  295.002046]  [<c03d6639>] _read_lock+0x39/0x80
+[  295.002046]  [<f89a090a>] ? rfcomm_dev_state_change+0x6a/0xd0 [rfcomm]
+[  295.002046]  [<f89a090a>] rfcomm_dev_state_change+0x6a/0xd0 [rfcomm]
+[  295.002046]  [<f899c548>] __rfcomm_dlc_close+0x58/0xd0 [rfcomm]
+[  295.002046]  [<f899d44f>] rfcomm_recv_ua+0x6f/0x120 [rfcomm]
+[  295.002046]  [<f899e061>] rfcomm_recv_frame+0x171/0x1e0 [rfcomm]
+[  295.002046]  [<c014abd9>] ? trace_hardirqs_on+0xb9/0x130
+[  295.002046]  [<c03d6e89>] ? _spin_unlock_irqrestore+0x39/0x70
+[  295.002046]  [<f899e357>] rfcomm_run+0xe7/0x550 [rfcomm]
+[  295.002046]  [<c03d4559>] ? __sched_text_start+0x229/0x4c0
+[  295.002046]  [<c0120000>] ? cpu_avg_load_per_task+0x20/0x30
+[  295.002046]  [<f899e270>] ? rfcomm_run+0x0/0x550 [rfcomm]
+[  295.002046]  [<c013c18c>] kthread+0x5c/0xa0
+[  295.002046]  [<c013c130>] ? kthread+0x0/0xa0
+[  295.002046]  [<c0105c07>] kernel_thread_helper+0x7/0x10
+[  295.002046]  =======================
 
 Signed-off-by: Dave Young <hidave.darkstar@gmail.com>
 
 ---
-net/bluetooth/af_bluetooth.c |   40 ++++++++++++++++++++++++++++++++++++++++
-1 file changed, 40 insertions(+)
+net/bluetooth/rfcomm/core.c |    2 +-
+net/bluetooth/rfcomm/tty.c  |    5 -----
+2 files changed, 1 insertion(+), 6 deletions(-)
 
-diff -upr linux/net/bluetooth/af_bluetooth.c linux.new/net/bluetooth/af_bluetooth.c
---- linux/net/bluetooth/af_bluetooth.c	2008-04-01 16:09:17.000000000 +0800
-+++ linux.new/net/bluetooth/af_bluetooth.c	2008-04-01 16:08:52.000000000 +0800
-@@ -53,6 +53,30 @@
- /* Bluetooth sockets */
- #define BT_MAX_PROTO	8
- static struct net_proto_family *bt_proto[BT_MAX_PROTO];
-+
-+static struct lock_class_key bt_slock_key[BT_MAX_PROTO];
-+static struct lock_class_key bt_lock_key[BT_MAX_PROTO];
-+static const char *bt_key_strings[BT_MAX_PROTO] = {
-+	"sk_lock-AF_BLUETOOTH-BTPROTO_L2CAP",
-+	"sk_lock-AF_BLUETOOTH-BTPROTO_HCI",
-+	"sk_lock-AF_BLUETOOTH-BTPROTO_SCO",
-+	"sk_lock-AF_BLUETOOTH-BTPROTO_RFCOMM",
-+	"sk_lock-AF_BLUETOOTH-BTPROTO_BNEP",
-+	"sk_lock-AF_BLUETOOTH-BTPROTO_CMTP",
-+	"sk_lock-AF_BLUETOOTH-BTPROTO_HIDP",
-+	"sk_lock-AF_BLUETOOTH-BTPROTO_AVDTP",
-+};
-+
-+static const char *bt_slock_key_strings[BT_MAX_PROTO] = {
-+	"slock-AF_BLUETOOTH-BTPROTO_L2CAP",
-+	"slock-AF_BLUETOOTH-BTPROTO_HCI",
-+	"slock-AF_BLUETOOTH-BTPROTO_SCO",
-+	"slock-AF_BLUETOOTH-BTPROTO_RFCOMM",
-+	"slock-AF_BLUETOOTH-BTPROTO_BNEP",
-+	"slock-AF_BLUETOOTH-BTPROTO_CMTP",
-+	"slock-AF_BLUETOOTH-BTPROTO_HIDP",
-+	"slock-AF_BLUETOOTH-BTPROTO_AVDTP",
-+};
- static DEFINE_RWLOCK(bt_proto_lock);
+diff -upr linux/net/bluetooth/rfcomm/core.c linux.new/net/bluetooth/rfcomm/core.c
+--- linux/net/bluetooth/rfcomm/core.c	2008-04-02 13:01:24.000000000 +0800
++++ linux.new/net/bluetooth/rfcomm/core.c	2008-04-02 13:01:39.000000000 +0800
+@@ -423,8 +423,8 @@ static int __rfcomm_dlc_close(struct rfc
  
- int bt_sock_register(int proto, struct net_proto_family *ops)
-@@ -95,6 +119,21 @@ int bt_sock_unregister(int proto)
- }
- EXPORT_SYMBOL(bt_sock_unregister);
+ 		rfcomm_dlc_lock(d);
+ 		d->state = BT_CLOSED;
+-		d->state_change(d, err);
+ 		rfcomm_dlc_unlock(d);
++		d->state_change(d, err);
  
-+static void bt_reclassify_sock_lock(struct socket *sock, int proto)
-+{
-+	struct sock *sk = sock->sk;
-+
-+	if (!sk)
-+		return;
-+	BUG_ON(sock_owned_by_user(sk));
-+
-+	sock_lock_init_class_and_name(sk,
-+			bt_slock_key_strings[proto],
-+			&bt_slock_key[proto],
-+			bt_key_strings[proto],
-+			&bt_lock_key[proto]);
-+}
-+
- static int bt_sock_create(struct net *net, struct socket *sock, int proto)
- {
- 	int err;
-@@ -117,6 +156,7 @@ static int bt_sock_create(struct net *ne
+ 		skb_queue_purge(&d->tx_queue);
+ 		rfcomm_dlc_unlink(d);
+diff -upr linux/net/bluetooth/rfcomm/tty.c linux.new/net/bluetooth/rfcomm/tty.c
+--- linux/net/bluetooth/rfcomm/tty.c	2008-04-01 17:52:42.000000000 +0800
++++ linux.new/net/bluetooth/rfcomm/tty.c	2008-04-02 13:02:56.000000000 +0800
+@@ -570,12 +570,7 @@ static void rfcomm_dev_state_change(stru
+ 					return;
  
- 	if (bt_proto[proto] && try_module_get(bt_proto[proto]->owner)) {
- 		err = bt_proto[proto]->create(net, sock, proto);
-+		bt_reclassify_sock_lock(sock, proto);
- 		module_put(bt_proto[proto]->owner);
- 	}
- 
+ 				rfcomm_dev_del(dev);
+-				/* We have to drop DLC lock here, otherwise
+-				   rfcomm_dev_put() will dead lock if it's
+-				   the last reference. */
+-				rfcomm_dlc_unlock(dlc);
+ 				rfcomm_dev_put(dev);
+-				rfcomm_dlc_lock(dlc);
+ 			}
+ 		} else
+ 			tty_hangup(dev->tty);
