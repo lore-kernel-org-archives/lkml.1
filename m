@@ -1,81 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757404AbYDBPxu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757911AbYDBPz5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757404AbYDBPxu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 11:53:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755824AbYDBPxm
+	id S1757911AbYDBPz5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 11:55:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755029AbYDBPzs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 11:53:42 -0400
-Received: from an-out-0708.google.com ([209.85.132.242]:34679 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755225AbYDBPxl (ORCPT
+	Wed, 2 Apr 2008 11:55:48 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:41884 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754034AbYDBPzr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 11:53:41 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=KiX/Sfr3t3C2NS2vb9ek3bgPegSBXXDfAXI4HUNGNzvg6BwzxJyt2IAVFGOndPPXLtd+Z8AUbuq1UrDRYMTd1XUlA9NIhn2cfy9JOjq/hEcwlJ/2ZrcJo0nHKt3Mhd8iixZnj5J1XfUcrZmZ6iX+wtg96ty+ZEmC3XOGZabNftE=
-Message-ID: <dd18b0c30804020853w50e0290cy8b0303e30f2bcfec@mail.gmail.com>
-Date: Wed, 2 Apr 2008 15:53:40 +0000
-From: "Justin Mattock" <justinmattock@gmail.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: suspend
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <200804021419.06672.rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 2 Apr 2008 11:55:47 -0400
+Date: Wed, 2 Apr 2008 08:54:37 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: Chris Snook <csnook@redhat.com>, Dave Jones <davej@codemonkey.org.uk>,
+       Linux Kernel <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
+       Peter Zijlstra <peterz@infradead.org>
+Subject: Re: GFP_ATOMIC page allocation failures.
+Message-Id: <20080402085437.7d9abf1f.akpm@linux-foundation.org>
+In-Reply-To: <200804022012.58760.nickpiggin@yahoo.com.au>
+References: <20080401235609.GA6947@codemonkey.org.uk>
+	<47F32789.2070703@redhat.com>
+	<20080402005646.f8df1c1b.akpm@linux-foundation.org>
+	<200804022012.58760.nickpiggin@yahoo.com.au>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <dd18b0c30804012331oc548416k113e492d7dc9c189@mail.gmail.com>
-	 <200804021419.06672.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello; the only problems I see after a suspend is the appletouch
-looses its scroll function, as well as the bluetooth mighty
-mouse(probably dont have my xorg.conf set up for suspend),
-wpa_supplicant seems to not respond as well.
-also here is what I see with sata:    ( revalidation failed?)
+On Wed, 2 Apr 2008 20:12:58 +1100 Nick Piggin <nickpiggin@yahoo.com.au> wrote:
 
-[ 1233.811794] sd 2:0:1:0: [sda] Starting disk
-[ 1234.013599] ata1.00: ACPI cmd ef/03:0c:00:00:00:a0 filtered out
-[ 1234.013601] ata1.00: ACPI cmd ef/03:44:00:00:00:a0 filtered out
-[ 1234.180232] ata1.00: configured for UDMA/66
-[ 1222.732011] ata3.01: NODEV after polling detection
-[ 1222.732016] ata3.01: revalidation failed (errno=-2)
-[ 1222.732020] ata3: failed to recover some devices, retrying in 5 secs
-[ 1227.908752] ata3.01: ACPI cmd ef/03:0c:00:00:00:b0 filtered out
-[ 1227.908758] ata3.01: ACPI cmd ef/03:45:00:00:00:b0 filtered out
-[ 1227.922377] ata3.01: configured for UDMA/100
-[ 1227.945525] sd 2:0:1:0: [sda] 234441648 512-byte hardware sectors (120034 MB)
-[ 1227.945525] sd 2:0:1:0: [sda] Write Protect is off
-[ 1227.945525] sd 2:0:1:0: [sda] Mode Sense: 00 3a 00 00
-[ 1227.945525] sd 2:0:1:0: [sda] Write cache: enabled, read cache:
-enabled, doesn't support DPO or FUA
-[ 1227.945525] applesmc: device has already been initialized (0xe0, 0x00).
+> On Wednesday 02 April 2008 18:56, Andrew Morton wrote:
+> 
+> > > Limiting this to once per boot should suffice for debugging purposes.
+> > > Even if you manage to concoct a bug that always survives the first
+> > > failure, you should be able to take the hint when you keep seeing this
+> > > in dmesg.
+> >
+> > The appropriate thing to do here is to convert known-good drivers (such as
+> > e1000[e]) to use __GFP_NOWARN.
+> >
+> > Unfortunately netdev_alloc_skb() went and assumed GFP_ATOMIC, but I guess
+> > we can dive below the covers and use __netdev_alloc_skb():
+> 
+> It's still actually nice to know how often it is happening even for
+> these known good sites because too much can indicate a problem and
+> that you could actually bring performance up by tuning some things.
 
-Other than that it seems to work alright.
-regards;
+Yes, it's useful debugging.  It tells us when we mucked up the page
+allocator.
 
-            Justin P. Mattock
+It also tells us when we mucked up the net driver - I doubt if we (or at
+least, I) would have discovered that e1000 does a 32k allocation for a 5k(?)
+frame if this warning wasn't coming out.
 
-On Wed, Apr 2, 2008 at 12:19 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
->
-> On Wednesday, 2 of April 2008, Justin Mattock wrote:
->  > Hello; attached is my results with testing 2.6.25-rc8 with echo mem >
->  > /sys/power/state
->  > hopefully this helps in debugging the issues with the imac.
->  > I'm running a macbook pro 15' with the ATI chipset.
->  > regards;
->
->  Well, I don't see anything particularly wrong in the log you sent.
->
->  Wnat exactly is wrong with the box after a resume?
->
->  Rafael
->
+> So I think that the messages should stay, and they should print out
+> some header to say that it is only a warning and if not happening
+> too often then it is not a problem, and if it is continually
+> happening then please try X or Y or post a message to lkml...
 
+Yes, I suppose so.
 
-
--- 
-Justin P. Mattock
+hm, tricky.
