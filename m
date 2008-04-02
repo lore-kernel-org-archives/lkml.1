@@ -1,67 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754721AbYDBIlw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754344AbYDBIoh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754721AbYDBIlw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 04:41:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751886AbYDBIlp
+	id S1754344AbYDBIoh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 04:44:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751901AbYDBIo1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 04:41:45 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:53700 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751785AbYDBIlo (ORCPT
+	Wed, 2 Apr 2008 04:44:27 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:57165 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752314AbYDBIo0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 04:41:44 -0400
-Message-ID: <47F346A8.5000801@jp.fujitsu.com>
-Date: Wed, 02 Apr 2008 17:41:12 +0900
-From: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.12 (Windows/20080213)
-MIME-Version: 1.0
-To: Peter Zijlstra <peterz@infradead.org>
-CC: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Paul Jackson <pj@sgi.com>
-Subject: Re: [PATCH 2/2] Customize sched domain via cpuset
-References: <47F21C38.8090608@jp.fujitsu.com> <1207050712.8514.715.camel@twins>
-In-Reply-To: <1207050712.8514.715.camel@twins>
-Content-Type: text/plain; charset=ISO-2022-JP
+	Wed, 2 Apr 2008 04:44:26 -0400
+Date: Wed, 2 Apr 2008 01:43:17 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: David Miller <davem@davemloft.net>
+Cc: kosaki.motohiro@jp.fujitsu.com, csnook@redhat.com, davej@codemonkey.org.uk,
+       nickpiggin@yahoo.com.au, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: GFP_ATOMIC page allocation failures.
+Message-Id: <20080402014317.7634515f.akpm@linux-foundation.org>
+In-Reply-To: <20080402.012406.246863209.davem@davemloft.net>
+References: <47F32789.2070703@redhat.com>
+	<20080402005646.f8df1c1b.akpm@linux-foundation.org>
+	<20080402171104.9591.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	<20080402.012406.246863209.davem@davemloft.net>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Zijlstra wrote:
-> On Tue, 2008-04-01 at 20:27 +0900, Hidetoshi Seto wrote:
->> The implementation is here.
->>
->>  - Add 2 new cpuset files:
->>      sched_wake_idle_far
->>      sched_balance_newidle_far
->>
->>  - Modify partition_sched_domains() and build_sched_domains()
->>    to take flags parameter passed from cpuset.
->>
->>  - Fill newidle_idx for node domains which currently unused but
->>    might be required for sched_balance_newidle_far.
+On Wed, 02 Apr 2008 01:24:06 -0700 (PDT) David Miller <davem@davemloft.net> wrote:
+
+> From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+> Date: Wed, 02 Apr 2008 17:17:50 +0900
 > 
-> Just to be clear; the same effect can be had by poking into:
+> > if network guys hope known-good driver should call 
+> > __netdev_alloc_skb(dev, length, GFP_ATOMIC|__GFP_NOWARN) instead netdev_alloc_skb,
+> > I think we should make netdev_alloc_skb_nowarn.
 > 
->  /proc/sys/kernel/sched_domain/$cpu/$domain/flags
+> Giving it a proper name like this takes away the indication that this
+> situation is very special.
 > 
-> but this interface you now propose gives a more stable interface in that
-> you'd have to re-do your setting after every cpuset change (admittedly
-> those are rare, but I see how it could be a nuisance).
+> Two leading underscores to an interface means "something special and
+> unusual requiring more careful consideration than usual is occuring
+> here."  netdev_alloc_skb_nowarn() on the other hand, does not
+> convey this meaning.
+> 
+> And we will have very few drivers that use this construct, thus it
+> really is best to handle things the way Andrew has.
 
-And the sysctl entry "sched_domain" is not available unless SCHED_DEBUG.
+Oh.  I just went and redid thing the other way.  Picked the same name too.
 
-So it is common sense that this sysctl is not open to public yet,
-and that the expected users are scheduler developers, Ingo and friends.
-
-> Or do you actually add something that wasn't available through the
-> initial domain interface?
-
-At this time I have no idea, but it would be possible if there are
-something unreasonable on global system but acceptable on a part.
-
-In other words, we can invent other sched_* families which has special
-effect that "default scheduler" never have.
-
-Thanks,
-H.Seto
+Whatever.
