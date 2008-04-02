@@ -1,59 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758505AbYDBXlK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758760AbYDBXwj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758505AbYDBXlK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 19:41:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755226AbYDBXk5
+	id S1758760AbYDBXwj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 19:52:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756990AbYDBXw3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 19:40:57 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:54693 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754732AbYDBXk4 (ORCPT
+	Wed, 2 Apr 2008 19:52:29 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:39009 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756235AbYDBXw2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 19:40:56 -0400
-Date: Thu, 3 Apr 2008 00:40:43 +0100
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Trond Myklebust <trond.myklebust@fys.uio.no>
-Cc: Miklos Szeredi <miklos@szeredi.hu>, akpm@linux-foundation.org,
-       dave@linux.vnet.ibm.com, ezk@cs.sunysb.edu,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [patch 01/10] vfs: add path_create() and path_mknod()
-Message-ID: <20080402234043.GR9785@ZenIV.linux.org.uk>
-References: <20080402201247.358430231@szeredi.hu> <20080402201321.062856131@szeredi.hu> <20080402205450.GO9785@ZenIV.linux.org.uk> <E1JhAF9-0007Zx-Rq@pomaz-ex.szeredi.hu> <20080402214824.GP9785@ZenIV.linux.org.uk> <1207174890.722.12.camel@heimdal.trondhjem.org> <20080402223637.GQ9785@ZenIV.linux.org.uk> <1207178398.20254.19.camel@heimdal.trondhjem.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1207178398.20254.19.camel@heimdal.trondhjem.org>
-User-Agent: Mutt/1.4.2.3i
+	Wed, 2 Apr 2008 19:52:28 -0400
+Date: Wed, 2 Apr 2008 16:52:14 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: mikulas@artax.karlin.mff.cuni.cz, viro@zeniv.linux.org.uk,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH]: Fix SMP-reordering race in mark_buffer_dirty
+In-Reply-To: <20080402150158.f366370f.akpm@linux-foundation.org>
+Message-ID: <alpine.LFD.1.00.0804021645560.14670@woody.linux-foundation.org>
+References: <Pine.LNX.4.64.0804022058530.13737@artax.karlin.mff.cuni.cz> <alpine.LFD.1.00.0804021237031.14670@woody.linux-foundation.org> <20080402150158.f366370f.akpm@linux-foundation.org>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 02, 2008 at 07:19:58PM -0400, Trond Myklebust wrote:
 
-> I'm just suggesting splitting out the namespace-specific part of struct
-> file into a separate structure that would be private to the VFS.
-> Something like
+
+On Wed, 2 Apr 2008, Andrew Morton wrote:
 > 
-> struct file_descriptor {
-> 	struct file *file;
-> 	struct vfsmount *mnt;
-> 	atomic_t refcount;
-> };
-> 
-> and then having the 'struct file' hold a reference to the superblock
-> instead of holding a reference to the vfsmount.
-> 
-> Why would that be problematic for SCM_RIGHTS? We don't allow people to
-> send arbitrary references to 'struct file' using SCM_RIGHTS now; they
-> have to send descriptors.
+> But then the test-and-set of an already-set flag would newly cause the
+> cacheline to be dirtied, requiring additional bus usage to write it back?
 
-HUH?  Descriptor is a number.  There is no struct file_descriptor,
-let alone refcounting for such.  There is a table, indexed by number
-and containing references to struct file.
+Looking around a bit, I don't see any realistic case where this could 
+possibly be the case and that is performance-sensitive.
 
-If you want to shove pointer to vfsmount in there (what for?  to waste
-some memory and make SMP protection on access more interesting?), you
-could do that, but IMO it's too ugly to consider.
+The VFS-level uses of mark_buffer_dirty() seem to all be coupled with 
+other uses that clear or set other bits in the buffer status word, so the 
+cacheline will always apparently be dirty. 
 
-Anyway, what the hell for?  It's more complex and buys you nothing
-useful.
+The low-level filesystems sometimes do it for things like block bitmap 
+changes, and I could imagine that there it actually (a) is no longer in 
+the cache and (b) the buffer really was dirty to start with, but in ext3 
+for example, you'd end up in journal_dirty_metadata which spinlocks on the 
+BH_State bit first etc etc.
+
+So the cacheline *will* be dirty, and this function doesn't seem like it 
+could possibly ever show up in a real profile for any real load anyway, so 
+it seems odd to try to optimize it this way.
+
+			Linus
