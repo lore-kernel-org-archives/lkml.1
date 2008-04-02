@@ -1,46 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755919AbYDBQCj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758106AbYDBQDp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755919AbYDBQCj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 12:02:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757575AbYDBQCX
+	id S1758106AbYDBQDp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 12:03:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755451AbYDBQDh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 12:02:23 -0400
-Received: from ns1.bluetone.cz ([212.158.128.13]:58923 "EHLO ns1.bluetone.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757515AbYDBQCW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 12:02:22 -0400
-X-Greylist: delayed 8047 seconds by postgrey-1.27 at vger.kernel.org; Wed, 02 Apr 2008 12:02:22 EDT
-Message-ID: <47F38E90.20306@slax.org>
-Date: Wed, 02 Apr 2008 15:48:00 +0200
-From: Tomas M <tomas@slax.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
+	Wed, 2 Apr 2008 12:03:37 -0400
+Received: from smtp124.sbc.mail.sp1.yahoo.com ([69.147.64.97]:29623 "HELO
+	smtp124.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1755023AbYDBQDg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Apr 2008 12:03:36 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:Received:Date:From:To:Subject:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-Id;
+  b=hcCkFcJ+/Z0C2oJkHyP56/LJuL7RvKZy4oKWjhxJXS4yv1WHj80/3qx/0rxAXqnYjhyDOihahPHB6A4gs/Da1tgPzPV9BBkUvmV3COU9v0tfr7io9FoInkz3TXY/kipV9rXDLSnjF+qEhFU04M0KXMpRHD+NeGkRrGW0EPkZsRE=  ;
+X-YMail-OSG: 8BtoZuYVM1kY0w2.1kOPqC9Q.eAeXmXJ6Ni.LPkrTJ1zvPhXHwPIsKqPbnmcJYrSV2rf8fx4dA--
+X-Yahoo-Newman-Property: ymail-3
+Date: Wed, 02 Apr 2008 09:04:14 -0700
+From: David Brownell <david-b@pacbell.net>
+To: stern@rowland.harvard.edu, lkml@rtr.ca
+Subject: Re: 2.6.25-rc7:  Ugh.
+Cc: pavel@suse.cz, oliver@neukum.org, linux-usb@vger.kernel.org,
+       linux-kernel@vger.kernel.org, jikos@suse.cz, gregkh@suse.de,
+       akpm@linux-foundation.org
+References: <Pine.LNX.4.44L0.0804021106320.6272-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0804021106320.6272-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-To: Erez Zadok <ezk@cs.sunysb.edu>
-CC: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, viro@ftp.linux.org.uk, hch@infradead.org
-Subject: Re: [GIT PULL -mm] 00/14 VFS/Unionfs updates/fixes/cleanups
-References: <12070840162442-git-send-email-ezk@cs.sunysb.edu>
-In-Reply-To: <12070840162442-git-send-email-ezk@cs.sunysb.edu>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-Id: <20080402160414.25F3035F5F8@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> 1. Based on recommendations we've received while at LSF'08, we've changed
->    Unionfs to use the vm_operations->fault method, instead of
->    address_space_operations.  This makes unionfs's code smaller, runs faster
->    (reduce memory pressure), and removes a number of potential races.  This
->    change is significant ...
+> Also, check out the thread on LKML started by Tino Keitel.  He had
+> similar problems and found that reverting commit
+> e82cc1288fa57857c6af8c57f3d07096d4bcd9d9 fixed them.
 
-Interesting to see you're finally switching to the approach,
-which is in AUFS for ages.
-
-May I ask you, why did it took so long?
-Mainly, why did you refused to make the changes last year?
-
-Thank you
-
-
-Tomas M
+And try the change I suggested there:  taking the
+HC_IS_RUNNING test out of ehci_iaa_watchdog().
 
