@@ -1,85 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760691AbYDBWx1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759609AbYDBW4S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760691AbYDBWx1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 18:53:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758111AbYDBWxQ
+	id S1759609AbYDBW4S (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 18:56:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757259AbYDBW4D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 18:53:16 -0400
-Received: from artax.karlin.mff.cuni.cz ([195.113.31.125]:52182 "EHLO
-	artax.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757575AbYDBWxQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 18:53:16 -0400
-Date: Thu, 3 Apr 2008 00:53:14 +0200 (CEST)
-From: Mikulas Patocka <mikulas@artax.karlin.mff.cuni.cz>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: Andrew Morton <akpm@linux-foundation.org>, viro@zeniv.linux.org.uk,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH]: Fix SMP-reordering race in mark_buffer_dirty
-In-Reply-To: <alpine.LFD.1.00.0804021505160.14670@woody.linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0804030050290.15850@artax.karlin.mff.cuni.cz>
-References: <Pine.LNX.4.64.0804022058530.13737@artax.karlin.mff.cuni.cz>
- <alpine.LFD.1.00.0804021237031.14670@woody.linux-foundation.org>
- <20080402150158.f366370f.akpm@linux-foundation.org>
- <alpine.LFD.1.00.0804021505160.14670@woody.linux-foundation.org>
-X-Personality-Disorder: Schizoid
+	Wed, 2 Apr 2008 18:56:03 -0400
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:37069 "EHLO e1.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757017AbYDBW4A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Apr 2008 18:56:00 -0400
+Date: Wed, 2 Apr 2008 15:55:56 -0700
+From: Nishanth Aravamudan <nacc@us.ibm.com>
+To: Paul Mundt <lethal@linux-sh.org>,
+       Nish Aravamudan <nish.aravamudan@gmail.com>,
+       Adrian Bunk <bunk@kernel.org>, wli@holomorphy.com,
+       linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: HugeTLB vs. SH3 cpu
+Message-ID: <20080402225556.GI21524@us.ibm.com>
+References: <20080401225809.GC32269@cs181133002.pp.htv.fi> <29495f1d0804011626n2399d69aj7566df7f78953458@mail.gmail.com> <20080402080448.GA4171@linux-sh.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080402080448.GA4171@linux-sh.org>
+X-Operating-System: Linux 2.6.24-12-generic (i686)
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Wed, 2 Apr 2008, Linus Torvalds wrote:
-
-> 
-> 
-> On Wed, 2 Apr 2008, Andrew Morton wrote:
+On 02.04.2008 [17:04:48 +0900], Paul Mundt wrote:
+> On Tue, Apr 01, 2008 at 04:26:14PM -0700, Nish Aravamudan wrote:
+> > On 4/1/08, Adrian Bunk <bunk@kernel.org> wrote:
+> > > fs/Kconfig says:
+> > >
+> > >  config HUGETLBFS
+> > >         bool "HugeTLB file system support"
+> > >         depends on X86 || IA64 || PPC64 || SPARC64 || (SUPERH && MMU) || BROKEN
+> > >
+> > >
+> > >  arch/sh/mm/Kconfig says:
+> > >
+> > >  choice
+> > >         prompt "HugeTLB page size"
+> > >         depends on HUGETLB_PAGE && (CPU_SH4 || CPU_SH5) && MMU
 > > 
-> > But then the test-and-set of an already-set flag would newly cause the
-> > cacheline to be dirtied, requiring additional bus usage to write it back?
+> > So the problem is that SH3 is allowed to enable
+> > HUGETLB_PAGE/HUGETLBFS, but only SH4/5 define the HPAGE_SHIFT macro,
+> > due to some #ifdeffery on the hugepage size. So either the choice
+> > needs to be extended to include CPU_SH3 (which builds here, when
+> > changed) or the HUGETLBFS conditional needs to depend more
+> > specifically on SH4/5 and not just SUPERH. I think the arch maintainer
+> > has to make that call, as I don't know the hardware to say if SH3
+> > actually supports multiple hugepage sizes.
 > > 
-> > The CPU's test-and-set-bit operation could of course optimise that away in
-> > this case.  But does it?
+> The problem is that the hugetlb Kconfig stuff is a complete mess. There's
+> a semi-decoupling between HUGETLBFS and HUGETLB_PAGE, though they both
+> depend on each other.
 > 
-> No, afaik no current x86 uarch will optimize away the write on a locked 
-> instuction if it turns out to be unnecessary. 
+> Sorting out the mess noted by Adrian is pretty trivial with a
+> HAVE_HUGETLB_PAGE. How about this?
 
-No, it doesn't. Try this:
+I'm confused, isn't the following simpler fix equivalent?
 
-#include <string.h>
-#include <pthread.h>
-void *pth(void *p)
-{
-        int i;
-        for (i = 0; i < 100000000; i++)
-                __asm__ volatile ("lock;btsl $0, %0"::"m"(*(int 
-*)p):"cc");
-        return NULL;
-}
-int args[2000];
-int main(void)
-{
-        pthread_t t1, t2, t3, t4;
-        memset(args, -1, sizeof args);
-        pthread_create(&t1, NULL, pth, &args[0]);
-        pthread_create(&t2, NULL, pth, &args[16]);
-        pthread_create(&t3, NULL, pth, &args[32]);
-        pthread_create(&t4, NULL, pth, &args[48]);
-        pthread_join(t1, NULL);
-        pthread_join(t2, NULL);
-        pthread_join(t3, NULL);
-        pthread_join(t4, NULL);
-        return 0;
-}
+Fix sh3 build with HUGETLBFS=y. Only SH4 and SH5 actually support
+HUGETLB_PAGE (which HUGETLBFS depends on).
 
---- when the &args[] indices are in a conflicting cacheline, I get 9 times 
-slower execution. I tried it on 2 double-core Core 2 Xeons.
+Signed-off-by: Nishanth Aravamudan <nacc@us.ibm.com>
 
-Mikulas
-
-> Can somebody find a timing reason to have the ugly code?
-> 
-> 		Linus
-> 
+diff --git a/fs/Kconfig b/fs/Kconfig
+index d731282..1981f8e 100644
+--- a/fs/Kconfig
++++ b/fs/Kconfig
+@@ -978,7 +978,7 @@ config TMPFS_POSIX_ACL
+ 
+ config HUGETLBFS
+ 	bool "HugeTLB file system support"
+-	depends on X86 || IA64 || PPC64 || SPARC64 || (SUPERH && MMU) || BROKEN
++	depends on X86 || IA64 || PPC64 || SPARC64 || ((CPU_SH4 || CPU_SH5) && MMU) || BROKEN
+ 	help
+ 	  hugetlbfs is a filesystem backing for HugeTLB pages, based on
+ 	  ramfs. For architectures that support it, say Y here and read
