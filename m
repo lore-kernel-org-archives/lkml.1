@@ -1,62 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755811AbYDBN17@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756793AbYDBN3G@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755811AbYDBN17 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 09:27:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754842AbYDBN1u
+	id S1756793AbYDBN3G (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 09:29:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754729AbYDBN2z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 09:27:50 -0400
-Received: from de01egw01.freescale.net ([192.88.165.102]:42911 "EHLO
-	de01egw01.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755824AbYDBN1t (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 09:27:49 -0400
-Subject: Re: [PATCH 2/2 v5] Add DIU platform code for MPC8610HPCD
-From: York Sun <yorksun@freescale.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org, galak@kernel.crashing.org,
-       a.p.zijlstra@chello.nl, scottwood@freescale.com,
-       avorontsov@ru.mvista.com, timur@freescale.com
-In-Reply-To: <20080401140029.be918d87.akpm@linux-foundation.org>
-References: <12069806051060-git-send-email-yorksun@freescale.com>
-	 <1206980605689-git-send-email-yorksun@freescale.com>
-	 <12069806051291-git-send-email-yorksun@freescale.com>
-	 <20080401140029.be918d87.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Wed, 02 Apr 2008 08:27:43 -0500
-Message-Id: <1207142863.20695.19.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-1.fc6) 
+	Wed, 2 Apr 2008 09:28:55 -0400
+Received: from nbd.name ([88.198.39.176]:38223 "EHLO ds10.mine.nu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754735AbYDBN2z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Apr 2008 09:28:55 -0400
+X-Greylist: delayed 2315 seconds by postgrey-1.27 at vger.kernel.org; Wed, 02 Apr 2008 09:28:54 EDT
+Message-ID: <47F380FD.6010605@openwrt.org>
+Date: Wed, 02 Apr 2008 14:50:05 +0200
+From: Felix Fietkau <nbd@openwrt.org>
+User-Agent: Thunderbird 2.0.0.12 (Macintosh/20080213)
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] fix unportability in gen_initramfs_list.sh
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 02 Apr 2008 13:27:44.0928 (UTC) FILETIME=[55D0E200:01C894C5]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-04-01 at 14:00 -0700, Andrew Morton wrote:
-> On Mon, 31 Mar 2008 11:23:25 -0500
-> York Sun <yorksun@freescale.com> wrote:
-> 
-> > Add platform code to support Freescale DIU. The platform code includes
-> > framebuffer memory allocation, pixel format, monitor port, etc.
-> > 
-> > Signed-off-by: York Sun <yorksun@freescale.com>
-> > Signed-off-by: Timur Tabi <timur@freescale.com>
-> > ---
-> > This patch addes platform support for Freescale DIU driver, targeting 2.6.26 kernel.
-> > 
-> >  arch/powerpc/configs/mpc8610_hpcd_defconfig |  198 +++++++++++++++++++++++----
-> >  arch/powerpc/platforms/86xx/mpc8610_hpcd.c  |  190 ++++++++++++++++++++++++--
-> >  arch/powerpc/sysdev/fsl_soc.c               |   41 ++++++
-> >  arch/powerpc/sysdev/fsl_soc.h               |   23 +++
-> >  4 files changed, 413 insertions(+), 39 deletions(-)
-> 
-> The defconfig change gets almost 100% rejects and probably isn't
-> appropriate here and isn't very important.  I dropped that part of the
-> patch.
-> 
+On a Mac OS X machine the output of ls -l is different from a standard 
+Linux machine. Use readlink instead of parsing a hardcoded field number 
+from the ls output.
 
-It's OK.
+Signed-off-by: Felix Fietkau <nbd@openwrt.org>
 
-York
+diff --git a/scripts/gen_initramfs_list.sh b/scripts/gen_initramfs_list.sh
+index 684fb9c..5f3415f 100644
+--- a/scripts/gen_initramfs_list.sh
++++ b/scripts/gen_initramfs_list.sh
+@@ -135,7 +135,7 @@ parse() {
+    			str="${ftype} ${name} ${str} ${dev} ${maj} ${min}"
+    			;;
+    		"slink")
+-			local target=`field 11 $(LC_ALL=C ls -l "${location}")`
++			local target=`readlink "${location}"`
+    			str="${ftype} ${name} ${target} ${str}"
+    			;;
+    		*)
+
 
