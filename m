@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761932AbYDBU02@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763990AbYDBU0p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761932AbYDBU02 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 16:26:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761637AbYDBURg
+	id S1763990AbYDBU0p (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 16:26:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761639AbYDBURh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 16:17:36 -0400
-Received: from mail.suse.de ([195.135.220.2]:36655 "EHLO mx1.suse.de"
+	Wed, 2 Apr 2008 16:17:37 -0400
+Received: from mx2.suse.de ([195.135.220.15]:33073 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760374AbYDBURb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 16:17:31 -0400
+	id S1761619AbYDBURc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Apr 2008 16:17:32 -0400
 From: Mark Fasheh <mfasheh@suse.com>
 To: linux-kernel@vger.kernel.org
 Cc: ocfs2-devel@oss.oracle.com, Joel Becker <joel.becker@oracle.com>
-Subject: [PATCH 25/62] ocfs2: Add the 'cluster_stack' sysfs file.
-Date: Wed,  2 Apr 2008 13:14:35 -0700
-Message-Id: <12071673701937-git-send-email-mfasheh@suse.com>
+Subject: [PATCH 26/62] ocfs2: Add the user stack module.
+Date: Wed,  2 Apr 2008 13:14:36 -0700
+Message-Id: <12071673722691-git-send-email-mfasheh@suse.com>
 X-Mailer: git-send-email 1.5.2.4
-In-Reply-To: <12071673681650-git-send-email-mfasheh@suse.com>
+In-Reply-To: <12071673701937-git-send-email-mfasheh@suse.com>
 References: <12071673121124-git-send-email-mfasheh@suse.com>
  <1207167318479-git-send-email-mfasheh@suse.com>
  <12071673203909-git-send-email-mfasheh@suse.com>
@@ -42,262 +42,67 @@ References: <12071673121124-git-send-email-mfasheh@suse.com>
  <1207167363119-git-send-email-mfasheh@suse.com>
  <12071673661674-git-send-email-mfasheh@suse.com>
  <12071673681650-git-send-email-mfasheh@suse.com>
+ <12071673701937-git-send-email-mfasheh@suse.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Joel Becker <joel.becker@oracle.com>
 
-Userspace can now query and specify the cluster stack in use via the
-/sys/fs/ocfs2/cluster_stack file.  By default, it is 'o2cb', which is
-the classic stack.  Thus, old tools that do not know how to modify this
-file will work just fine.  The stack cannot be modified if there is a
-live filesystem.
-
-ocfs2_cluster_connect() now takes the expected cluster stack as an
-argument.  This way, the filesystem and the stack glue ensure they are
-speaking to the same backend.
-
-If the stack is 'o2cb', the o2cb stack plugin is used.  For any other
-value, the fsdlm stack plugin is selected.
+Add a skeleton for the stack_user module.  It's just the barebones module
+code.
 
 Signed-off-by: Joel Becker <joel.becker@oracle.com>
 Signed-off-by: Mark Fasheh <mfasheh@suse.com>
 ---
- fs/ocfs2/dlmglue.c   |    3 +-
- fs/ocfs2/stackglue.c |  111 +++++++++++++++++++++++++++++++++++++++++++++-----
- fs/ocfs2/stackglue.h |    3 +-
- 3 files changed, 104 insertions(+), 13 deletions(-)
+ fs/ocfs2/stack_user.c |   38 ++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 38 insertions(+), 0 deletions(-)
+ create mode 100644 fs/ocfs2/stack_user.c
 
-diff --git a/fs/ocfs2/dlmglue.c b/fs/ocfs2/dlmglue.c
-index f62a9e4..394d25a 100644
---- a/fs/ocfs2/dlmglue.c
-+++ b/fs/ocfs2/dlmglue.c
-@@ -2627,7 +2627,8 @@ int ocfs2_dlm_init(struct ocfs2_super *osb)
- 	}
- 
- 	/* for now, uuid == domain */
--	status = ocfs2_cluster_connect(osb->uuid_str,
-+	status = ocfs2_cluster_connect(osb->osb_cluster_stack,
-+				       osb->uuid_str,
- 				       strlen(osb->uuid_str),
- 				       ocfs2_do_node_down, osb,
- 				       &conn);
-diff --git a/fs/ocfs2/stackglue.c b/fs/ocfs2/stackglue.c
-index 76ae4fc..bf45d9b 100644
---- a/fs/ocfs2/stackglue.c
-+++ b/fs/ocfs2/stackglue.c
-@@ -27,11 +27,17 @@
- #include <linux/kobject.h>
- #include <linux/sysfs.h>
- 
-+#include "ocfs2_fs.h"
+diff --git a/fs/ocfs2/stack_user.c b/fs/ocfs2/stack_user.c
+new file mode 100644
+index 0000000..920eb11
+--- /dev/null
++++ b/fs/ocfs2/stack_user.c
+@@ -0,0 +1,38 @@
++/* -*- mode: c; c-basic-offset: 8; -*-
++ * vim: noexpandtab sw=8 ts=8 sts=0:
++ *
++ * stack_user.c
++ *
++ * Code which interfaces ocfs2 with fs/dlm and a userspace stack.
++ *
++ * Copyright (C) 2007 Oracle.  All rights reserved.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public
++ * License as published by the Free Software Foundation, version 2.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++ * General Public License for more details.
++ */
 +
- #include "stackglue.h"
- 
-+#define OCFS2_STACK_PLUGIN_O2CB		"o2cb"
-+#define OCFS2_STACK_PLUGIN_USER		"user"
++#include <linux/module.h>
 +
- static struct ocfs2_locking_protocol *lproto;
- static DEFINE_SPINLOCK(ocfs2_stack_lock);
- static LIST_HEAD(ocfs2_stack_list);
-+static char cluster_stack_name[OCFS2_STACK_LABEL_LEN + 1];
- 
- /*
-  * The stack currently in use.  If not null, active_stack->sp_count > 0,
-@@ -53,26 +59,36 @@ static struct ocfs2_stack_plugin *ocfs2_stack_lookup(const char *name)
- 	return NULL;
- }
- 
--static int ocfs2_stack_driver_request(const char *name)
-+static int ocfs2_stack_driver_request(const char *stack_name,
-+				      const char *plugin_name)
- {
- 	int rc;
- 	struct ocfs2_stack_plugin *p;
- 
- 	spin_lock(&ocfs2_stack_lock);
- 
-+	/*
-+	 * If the stack passed by the filesystem isn't the selected one,
-+	 * we can't continue.
-+	 */
-+	if (strcmp(stack_name, cluster_stack_name)) {
-+		rc = -EBUSY;
-+		goto out;
-+	}
++#include "stackglue.h"
 +
- 	if (active_stack) {
- 		/*
- 		 * If the active stack isn't the one we want, it cannot
- 		 * be selected right now.
- 		 */
--		if (!strcmp(active_stack->sp_name, name))
-+		if (!strcmp(active_stack->sp_name, plugin_name))
- 			rc = 0;
- 		else
- 			rc = -EBUSY;
- 		goto out;
- 	}
- 
--	p = ocfs2_stack_lookup(name);
-+	p = ocfs2_stack_lookup(plugin_name);
- 	if (!p || !try_module_get(p->sp_owner)) {
- 		rc = -ENOENT;
- 		goto out;
-@@ -94,23 +110,42 @@ out:
-  * there is no stack, it tries to load it.  It will fail if the stack still
-  * cannot be found.  It will also fail if a different stack is in use.
-  */
--static int ocfs2_stack_driver_get(const char *name)
-+static int ocfs2_stack_driver_get(const char *stack_name)
- {
- 	int rc;
-+	char *plugin_name = OCFS2_STACK_PLUGIN_O2CB;
 +
-+	/*
-+	 * Classic stack does not pass in a stack name.  This is
-+	 * compatible with older tools as well.
-+	 */
-+	if (!stack_name || !*stack_name)
-+		stack_name = OCFS2_STACK_PLUGIN_O2CB;
-+
-+	if (strlen(stack_name) != OCFS2_STACK_LABEL_LEN) {
-+		printk(KERN_ERR
-+		       "ocfs2 passed an invalid cluster stack label: \"%s\"\n",
-+		       stack_name);
-+		return -EINVAL;
-+	}
- 
--	rc = ocfs2_stack_driver_request(name);
-+	/* Anything that isn't the classic stack is a user stack */
-+	if (strcmp(stack_name, OCFS2_STACK_PLUGIN_O2CB))
-+		plugin_name = OCFS2_STACK_PLUGIN_USER;
-+
-+	rc = ocfs2_stack_driver_request(stack_name, plugin_name);
- 	if (rc == -ENOENT) {
--		request_module("ocfs2_stack_%s", name);
--		rc = ocfs2_stack_driver_request(name);
-+		request_module("ocfs2_stack_%s", plugin_name);
-+		rc = ocfs2_stack_driver_request(stack_name, plugin_name);
- 	}
- 
- 	if (rc == -ENOENT) {
- 		printk(KERN_ERR
- 		       "ocfs2: Cluster stack driver \"%s\" cannot be found\n",
--		       name);
-+		       plugin_name);
- 	} else if (rc == -EBUSY) {
- 		printk(KERN_ERR
--		       "ocfs2: A different cluster stack driver is in use\n");
-+		       "ocfs2: A different cluster stack is in use\n");
- 	}
- 
- 	return rc;
-@@ -242,7 +277,8 @@ void ocfs2_dlm_dump_lksb(union ocfs2_dlm_lksb *lksb)
- }
- EXPORT_SYMBOL_GPL(ocfs2_dlm_dump_lksb);
- 
--int ocfs2_cluster_connect(const char *group,
-+int ocfs2_cluster_connect(const char *stack_name,
-+			  const char *group,
- 			  int grouplen,
- 			  void (*recovery_handler)(int node_num,
- 						   void *recovery_data),
-@@ -277,7 +313,7 @@ int ocfs2_cluster_connect(const char *group,
- 	new_conn->cc_version = lproto->lp_max_version;
- 
- 	/* This will pin the stack driver if successful */
--	rc = ocfs2_stack_driver_get("o2cb");
-+	rc = ocfs2_stack_driver_get(stack_name);
- 	if (rc)
- 		goto out_free;
- 
-@@ -416,10 +452,61 @@ static struct kobj_attribute ocfs2_attr_active_cluster_plugin =
- 	__ATTR(active_cluster_plugin, S_IFREG | S_IRUGO,
- 	       ocfs2_active_cluster_plugin_show, NULL);
- 
-+static ssize_t ocfs2_cluster_stack_show(struct kobject *kobj,
-+					struct kobj_attribute *attr,
-+					char *buf)
++static int __init user_stack_init(void)
 +{
-+	ssize_t ret;
-+	spin_lock(&ocfs2_stack_lock);
-+	ret = snprintf(buf, PAGE_SIZE, "%s\n", cluster_stack_name);
-+	spin_unlock(&ocfs2_stack_lock);
-+
-+	return ret;
++	return 0;
 +}
 +
-+static ssize_t ocfs2_cluster_stack_store(struct kobject *kobj,
-+					 struct kobj_attribute *attr,
-+					 const char *buf, size_t count)
++static void __exit user_stack_exit(void)
 +{
-+	size_t len = count;
-+	ssize_t ret;
-+
-+	if (len == 0)
-+		return len;
-+
-+	if (buf[len - 1] == '\n')
-+		len--;
-+
-+	if ((len != OCFS2_STACK_LABEL_LEN) ||
-+	    (strnlen(buf, len) != len))
-+		return -EINVAL;
-+
-+	spin_lock(&ocfs2_stack_lock);
-+	if (active_stack) {
-+		if (!strncmp(buf, cluster_stack_name, len))
-+			ret = count;
-+		else
-+			ret = -EBUSY;
-+	} else {
-+		memcpy(cluster_stack_name, buf, len);
-+		ret = count;
-+	}
-+	spin_unlock(&ocfs2_stack_lock);
-+
-+	return ret;
 +}
 +
-+
-+static struct kobj_attribute ocfs2_attr_cluster_stack =
-+	__ATTR(cluster_stack, S_IFREG | S_IRUGO | S_IWUSR,
-+	       ocfs2_cluster_stack_show,
-+	       ocfs2_cluster_stack_store);
-+
- static struct attribute *ocfs2_attrs[] = {
- 	&ocfs2_attr_max_locking_protocol.attr,
- 	&ocfs2_attr_loaded_cluster_plugins.attr,
- 	&ocfs2_attr_active_cluster_plugin.attr,
-+	&ocfs2_attr_cluster_stack.attr,
- 	NULL,
- };
- 
-@@ -455,6 +542,8 @@ error:
- 
- static int __init ocfs2_stack_glue_init(void)
- {
-+	strcpy(cluster_stack_name, OCFS2_STACK_PLUGIN_O2CB);
-+
- 	return ocfs2_sysfs_init();
- }
- 
-diff --git a/fs/ocfs2/stackglue.h b/fs/ocfs2/stackglue.h
-index c96c8bb..d88bc65 100644
---- a/fs/ocfs2/stackglue.h
-+++ b/fs/ocfs2/stackglue.h
-@@ -209,7 +209,8 @@ struct ocfs2_stack_plugin {
- 
- 
- /* Used by the filesystem */
--int ocfs2_cluster_connect(const char *group,
-+int ocfs2_cluster_connect(const char *stack_name,
-+			  const char *group,
- 			  int grouplen,
- 			  void (*recovery_handler)(int node_num,
- 						   void *recovery_data),
++MODULE_AUTHOR("Oracle");
++MODULE_DESCRIPTION("ocfs2 driver for userspace cluster stacks");
++MODULE_LICENSE("GPL");
++module_init(user_stack_init);
++module_exit(user_stack_exit);
 -- 
 1.5.4.1
 
