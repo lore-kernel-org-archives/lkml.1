@@ -1,101 +1,178 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932387AbYDBWAa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763522AbYDBWB1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932387AbYDBWAa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 18:00:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755336AbYDBWAF
+	id S1763522AbYDBWB1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 18:01:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757390AbYDBWBS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 18:00:05 -0400
-Received: from saeurebad.de ([85.214.36.134]:33066 "EHLO saeurebad.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753343AbYDBWAD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 18:00:03 -0400
-From: Johannes Weiner <hannes@saeurebad.de>
-To: linux-kernel@vger.kernel.org
-Cc: linux-mm@kvack.org, mingo@elte.hu, davem@davemloft.net,
-       hskinnemoen@atmel.com, cooloney@kernel.org, starvik@axis.com,
-       dhowells@redhat.com, ysato@users.sourceforge.net, takata@linux-m32r.org,
-       geert@linux-m68k.org, ralf@linux-mips.org, kyle@parisc-linux.org,
-       paulus@samba.org, schwidefsky@de.ibm.com, lethal@linux-sh.org,
-       jdike@addtoit.com, miles@gnu.org, chris@zankel.net,
-       rmk@arm.linux.org.uk, tony.luck@intel.com
-Subject: [RFC 04/22] avr32: Use generic show_mem()
-Date: Wed,  2 Apr 2008 22:29:56 +0200
-Message-Id: <12071682201539-git-send-email-hannes@saeurebad.de>
-X-Mailer: git-send-email 1.5.2.2
-In-Reply-To: <12071682142640-git-send-email-hannes@saeurebad.de>
-References: <12071682142640-git-send-email-hannes@saeurebad.de>
-X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
+	Wed, 2 Apr 2008 18:01:18 -0400
+Received: from nwd2mail10.analog.com ([137.71.25.55]:2855 "EHLO
+	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755787AbYDBWBR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Apr 2008 18:01:17 -0400
+X-IronPort-AV: E=Sophos;i="4.25,595,1199682000"; 
+   d="scan'208";a="65639863"
+From: Robin Getz <rgetz@blackfin.uclinux.org>
+Organization: Blackfin uClinux org
+To: "Rusty Russell" <rusty@rustcorp.com.au>
+Subject: Re: PATCH [1/1]: Don't return symbol lables in init sections after they have been freed
+Date: Wed, 2 Apr 2008 18:01:25 -0400
+User-Agent: KMail/1.9.5
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       "LKML" <linux-kernel@vger.kernel.org>
+References: <200803041847.15884.rgetz@blackfin.uclinux.org> <200803051243.26732.rusty@rustcorp.com.au>
+In-Reply-To: <200803051243.26732.rusty@rustcorp.com.au>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200804021801.25937.rgetz@blackfin.uclinux.org>
+X-OriginalArrivalTime: 02 Apr 2008 22:01:15.0955 (UTC) FILETIME=[129E8030:01C8950D]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue 4 Mar 2008 20:43, Rusty Russell pondered:
+>     As to the actual patch, your kallsyms.c patch matches 
+> a2da4052f1df6bc77749f84496fe731ab8b458f7's change to extable.c: please 
+> resubmit with just that one.  For bonus points, look at combining the extable 
+> and kallsyms logic so we don't diverge in future...
 
-Signed-off-by: Johannes Weiner <hannes@saeurebad.de>
+OK since this took so long, I went for bonus points...
 
-diff --git a/arch/avr32/Kconfig b/arch/avr32/Kconfig
-index 81e3360..c75d708 100644
---- a/arch/avr32/Kconfig
-+++ b/arch/avr32/Kconfig
-@@ -146,9 +146,6 @@ source "kernel/Kconfig.preempt"
- config HAVE_ARCH_BOOTMEM_NODE
- 	def_bool n
+The only think I wasn't sure about - is since it now does things in extable.c,
+it removes the static inline functions from kallsyms.c - which could cause a
+potential slowdown...
+
+I'm sure this will not apply to the mm tree, (it was based on 2.6.24.3), but
+should provide some idea for feedback.
+
+Index: linux-2.6.x/kernel/extable.c
+===================================================================
+--- linux-2.6.x/kernel/extable.c	(revision 4461)
++++ linux-2.6.x/kernel/extable.c	(working copy)
+@@ -40,17 +40,40 @@
+ 	return e;
+ }
  
--config HAVE_ARCH_SHOW_MEM
--	def_bool y
--
- config ARCH_HAVE_MEMORY_PRESENT
- 	def_bool n
+-int core_kernel_text(unsigned long addr)
++int core_kernel_inittext(unsigned long addr)
+ {
++	if (addr >= (unsigned long)_sinittext &&
++	    addr <= (unsigned long)_einittext)
++		return 1;
++	return 0;
++}
++
++int core_kernel_extratext(unsigned long addr)
++{
++	if (addr >= (unsigned long)_sextratext &&
++	    addr <= (unsigned long)_eextratext)
++		return 1;
++	return 0;
++}
++
++int __core_kernel_text(unsigned long addr)
++{
+ 	if (addr >= (unsigned long)_stext &&
+ 	    addr <= (unsigned long)_etext)
+ 		return 1;
  
-diff --git a/arch/avr32/mm/init.c b/arch/avr32/mm/init.c
-index 480760b..3cbff55 100644
---- a/arch/avr32/mm/init.c
-+++ b/arch/avr32/mm/init.c
-@@ -37,45 +37,6 @@ unsigned long mmu_context_cache = NO_CONTEXT;
- #define START_PFN	(NODE_DATA(0)->bdata->node_boot_start >> PAGE_SHIFT)
- #define MAX_LOW_PFN	(NODE_DATA(0)->bdata->node_low_pfn)
+-	if (addr >= (unsigned long)_sinittext &&
+-	    addr <= (unsigned long)_einittext)
+ 		return 1;
+ 	return 0;
++
+ }
++int core_kernel_text(unsigned long addr)
++{
++	return __core_kernel_text(addr) || core_kernel_inittext(addr);
++}
  
--void show_mem(void)
+ int __kernel_text_address(unsigned long addr)
+ {
+@@ -65,3 +88,4 @@
+ 		return 1;
+ 	return module_text_address(addr) != NULL;
+ }
++
+Index: linux-2.6.x/kernel/kallsyms.c
+===================================================================
+--- linux-2.6.x/kernel/kallsyms.c	(revision 4461)
++++ linux-2.6.x/kernel/kallsyms.c	(working copy)
+@@ -45,47 +45,24 @@
+ 
+ extern const unsigned long kallsyms_markers[] __attribute__((weak));
+ 
+-static inline int is_kernel_inittext(unsigned long addr)
 -{
--	int total = 0, reserved = 0, cached = 0;
--	int slab = 0, free = 0, shared = 0;
--	pg_data_t *pgdat;
--
--	printk("Mem-info:\n");
--	show_free_areas();
--
--	for_each_online_pgdat(pgdat) {
--		struct page *page, *end;
--
--		page = pgdat->node_mem_map;
--		end = page + pgdat->node_spanned_pages;
--
--		do {
--			total++;
--			if (PageReserved(page))
--				reserved++;
--			else if (PageSwapCache(page))
--				cached++;
--			else if (PageSlab(page))
--				slab++;
--			else if (!page_count(page))
--				free++;
--			else
--				shared += page_count(page) - 1;
--			page++;
--		} while (page < end);
--	}
--
--	printk ("%d pages of RAM\n", total);
--	printk ("%d free pages\n", free);
--	printk ("%d reserved pages\n", reserved);
--	printk ("%d slab pages\n", slab);
--	printk ("%d pages shared\n", shared);
--	printk ("%d pages swap cached\n", cached);
+-	if (addr >= (unsigned long)_sinittext
+-	    && addr <= (unsigned long)_einittext)
+-		return 1;
+-	return 0;
 -}
 -
- /*
-  * paging_init() sets up the page tables
-  *
--- 
-1.5.2.2
+-static inline int is_kernel_extratext(unsigned long addr)
+-{
+-	if (addr >= (unsigned long)_sextratext
+-	    && addr <= (unsigned long)_eextratext)
+-		return 1;
+-	return 0;
+-}
+-
+ static inline int is_kernel_text(unsigned long addr)
+ {
+-	if (addr >= (unsigned long)_stext && addr <= (unsigned long)_etext)
++	if (core_kernel_text(addr))
+ 		return 1;
+-	return in_gate_area_no_task(addr);
+-}
+ 
+-static inline int is_kernel(unsigned long addr)
+-{
+-	if (addr >= (unsigned long)_stext && addr <= (unsigned long)_end)
+-		return 1;
+ 	return in_gate_area_no_task(addr);
+ }
+ 
+ static int is_ksym_addr(unsigned long addr)
+ {
+-	if (all_var)
+-		return is_kernel(addr);
++	if (all_var) {
++		if (addr >= (unsigned long)_stext && addr <= (unsigned long)_end)
++			return 1;
++		else
++			return in_gate_area_no_task(addr);
++	}
+ 
+-	return is_kernel_text(addr) || is_kernel_inittext(addr) ||
+-		is_kernel_extratext(addr);
++	return is_kernel_text(addr) || core_kernel_extratext(addr);
+ }
+ 
+ /* expand a compressed symbol data into the resulting uncompressed string,
+@@ -215,7 +192,7 @@
+ 
+ 	/* if we found no next symbol, we use the end of the section */
+ 	if (!symbol_end) {
+-		if (is_kernel_inittext(addr))
++		if (core_kernel_inittext(addr))
+ 			symbol_end = (unsigned long)_einittext;
+ 		else if (all_var)
+ 			symbol_end = (unsigned long)_end;
+Index: linux-2.6.x/include/linux/kernel.h
+===================================================================
+--- linux-2.6.x/include/linux/kernel.h	(revision 4461)
++++ linux-2.6.x/include/linux/kernel.h	(working copy)
+@@ -167,6 +167,8 @@
+ extern unsigned long long memparse(char *ptr, char **retptr);
+ 
+ extern int core_kernel_text(unsigned long addr);
++extern int core_kernel_extratext(unsigned long addr);
++extern int core_kernel_inittext(unsigned long addr);
+ extern int __kernel_text_address(unsigned long addr);
+ extern int kernel_text_address(unsigned long addr);
+ struct pid;
 
