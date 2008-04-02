@@ -1,47 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757973AbYDBPtq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757687AbYDBPvS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757973AbYDBPtq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 11:49:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755231AbYDBPti
+	id S1757687AbYDBPvS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 11:51:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755853AbYDBPvI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 11:49:38 -0400
-Received: from rtr.ca ([76.10.145.34]:4366 "EHLO mail.rtr.ca"
+	Wed, 2 Apr 2008 11:51:08 -0400
+Received: from smtp03.mtu.ru ([62.5.255.50]:49565 "EHLO smtp03.mtu.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753652AbYDBPth (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 11:49:37 -0400
-Message-ID: <47F3AB10.1000708@rtr.ca>
-Date: Wed, 02 Apr 2008 11:49:36 -0400
-From: Mark Lord <lkml@rtr.ca>
-Organization: Real-Time Remedies Inc.
-User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
-MIME-Version: 1.0
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Oliver Neukum <oliver@neukum.org>, Pavel Machek <pavel@suse.cz>,
-       Linux Kernel <linux-kernel@vger.kernel.org>, Greg KH <gregkh@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>, jikos@suse.cz,
-       linux-usb@vger.kernel.org
-Subject: Re: 2.6.25-rc7:  Ugh. ---> PATCH
-References: <Pine.LNX.4.44L0.0804021106320.6272-100000@iolanthe.rowland.org> <47F3A9C3.7030702@rtr.ca> <47F3AA97.1010704@rtr.ca>
-In-Reply-To: <47F3AA97.1010704@rtr.ca>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+	id S1755058AbYDBPvI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Apr 2008 11:51:08 -0400
+From: Dmitri Vorobiev <dmitri.vorobiev@gmail.com>
+To: linux-mips@linux-mips.org, ralf@linux-mips.org,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH 6/5] [MIPS] op_model_mipsxx.c: make the save_perf_irq variable static
+Date: Wed,  2 Apr 2008 19:51:05 +0400
+Message-Id: <1207151465-29257-1-git-send-email-dmitri.vorobiev@gmail.com>
+X-Mailer: git-send-email 1.5.3.6
+In-Reply-To: <1207094318-21748-1-git-send-email-dmitri.vorobiev@gmail.com>
+References: <1207094318-21748-1-git-send-email-dmitri.vorobiev@gmail.com>
+X-DCC-STREAM-Metrics: smtp03.mtu.ru 10001; Body=0 Fuz1=0 Fuz2=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mark Lord wrote:
-> Mark Lord wrote:
->> This patch seems to fix it.
->> Could you guys look this over some more,
->> as I really am not familiar with the USB code.
-> 
-> Here it is again, with more lines of context, for easier review:
-..
+The function pointer save_perf_irq introduced by the previous
+patch in this series can become static.
 
-Nope.  Nevermind.
+Thanks for Atsushi Nemoto for pointing out the possibility.
 
-Just got lucky once, without the resistor installed on USB power.
+Signed-off-by: Dmitri Vorobiev <dmitri.vorobiev@gmail.com>
+---
+Hi Ralf,
 
-The patch doesn't fix it.  But that code still looks strange to me.
+If you find that the series is worth it, please pick up this
+patch too. Thank you.
 
-Cheers
+Dmitri
+
+ arch/mips/oprofile/op_model_mipsxx.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/arch/mips/oprofile/op_model_mipsxx.c b/arch/mips/oprofile/op_model_mipsxx.c
+index 12e840f..0a11727 100644
+--- a/arch/mips/oprofile/op_model_mipsxx.c
++++ b/arch/mips/oprofile/op_model_mipsxx.c
+@@ -31,7 +31,7 @@
+ 
+ #define M_COUNTER_OVERFLOW		(1UL      << 31)
+ 
+-int (*save_perf_irq)(void);
++static int (*save_perf_irq)(void);
+ 
+ #ifdef CONFIG_MIPS_MT_SMP
+ #define WHAT		(M_TC_EN_VPE | M_PERFCTL_VPEID(smp_processor_id()))
+-- 
+1.5.3
+
