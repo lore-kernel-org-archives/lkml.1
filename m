@@ -1,283 +1,249 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764425AbYDBU1z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760174AbYDBU23@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764425AbYDBU1z (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 16:27:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761657AbYDBURk
+	id S1760174AbYDBU23 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 16:28:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761674AbYDBURl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 16:17:40 -0400
-Received: from mail.suse.de ([195.135.220.2]:36702 "EHLO mx1.suse.de"
+	Wed, 2 Apr 2008 16:17:41 -0400
+Received: from mx2.suse.de ([195.135.220.15]:32910 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760796AbYDBURg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 16:17:36 -0400
+	id S1758167AbYDBUQk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Apr 2008 16:16:40 -0400
 From: Mark Fasheh <mfasheh@suse.com>
 To: linux-kernel@vger.kernel.org
 Cc: ocfs2-devel@oss.oracle.com, Joel Becker <joel.becker@oracle.com>
-Subject: [PATCH 28/62] ocfs2: Start the ocfs2_control handshake.
-Date: Wed,  2 Apr 2008 13:14:38 -0700
-Message-Id: <12071673753788-git-send-email-mfasheh@suse.com>
+Subject: [PATCH 01/62] ocfs2: Move slot map access into slot_map.c
+Date: Wed,  2 Apr 2008 13:14:11 -0700
+Message-Id: <1207167318479-git-send-email-mfasheh@suse.com>
 X-Mailer: git-send-email 1.5.2.4
-In-Reply-To: <12071673731276-git-send-email-mfasheh@suse.com>
+In-Reply-To: <12071673121124-git-send-email-mfasheh@suse.com>
 References: <12071673121124-git-send-email-mfasheh@suse.com>
- <1207167318479-git-send-email-mfasheh@suse.com>
- <12071673203909-git-send-email-mfasheh@suse.com>
- <12071673232465-git-send-email-mfasheh@suse.com>
- <12071673263948-git-send-email-mfasheh@suse.com>
- <12071673282579-git-send-email-mfasheh@suse.com>
- <1207167330482-git-send-email-mfasheh@suse.com>
- <12071673321172-git-send-email-mfasheh@suse.com>
- <12071673341888-git-send-email-mfasheh@suse.com>
- <12071673362069-git-send-email-mfasheh@suse.com>
- <12071673391031-git-send-email-mfasheh@suse.com>
- <12071673413492-git-send-email-mfasheh@suse.com>
- <1207167343926-git-send-email-mfasheh@suse.com>
- <12071673461268-git-send-email-mfasheh@suse.com>
- <12071673481928-git-send-email-mfasheh@suse.com>
- <12071673492775-git-send-email-mfasheh@suse.com>
- <12071673511262-git-send-email-mfasheh@suse.com>
- <12071673543752-git-send-email-mfasheh@suse.com>
- <1207167355295-git-send-email-mfasheh@suse.com>
- <12071673571757-git-send-email-mfasheh@suse.com>
- <12071673591158-git-send-email-mfasheh@suse.com>
- <12071673613757-git-send-email-mfasheh@suse.com>
- <1207167363119-git-send-email-mfasheh@suse.com>
- <12071673661674-git-send-email-mfasheh@suse.com>
- <12071673681650-git-send-email-mfasheh@suse.com>
- <12071673701937-git-send-email-mfasheh@suse.com>
- <12071673722691-git-send-email-mfasheh@suse.com>
- <12071673731276-git-send-email-mfasheh@suse.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Joel Becker <joel.becker@oracle.com>
-
-When a control daemon opens the ocfs2_control device, it must perform a
-handshake to tell the filesystem it is something capable of monitoring
-cluster status.  Only after the handshake is complete will the filesystem
-allow mounts.
-
-This is the first part of the handshake.  The daemon reads all supported
-ocfs2_control protocols, then writes in the protocol it will use.
+journal.c and dlmglue.c would refresh the slot map by hand.  Instead, have
+the update and clear functions do the work inside slot_map.c.  The eventual
+result is to make ocfs2_slot_info defined privately in slot_map.c
 
 Signed-off-by: Joel Becker <joel.becker@oracle.com>
 Signed-off-by: Mark Fasheh <mfasheh@suse.com>
 ---
- fs/ocfs2/stack_user.c |  144 +++++++++++++++++++++++++++++++++++++++++++++++--
- 1 files changed, 139 insertions(+), 5 deletions(-)
+ fs/ocfs2/dlmglue.c  |    8 +-----
+ fs/ocfs2/journal.c  |    3 +-
+ fs/ocfs2/slot_map.c |   62 +++++++++++++++++++++++++++++++++++++++-----------
+ fs/ocfs2/slot_map.h |   11 +++-----
+ fs/ocfs2/super.c    |    3 +-
+ 5 files changed, 55 insertions(+), 32 deletions(-)
 
-diff --git a/fs/ocfs2/stack_user.c b/fs/ocfs2/stack_user.c
-index fdca5d3..ff8d307 100644
---- a/fs/ocfs2/stack_user.c
-+++ b/fs/ocfs2/stack_user.c
-@@ -22,6 +22,7 @@
- #include <linux/miscdevice.h>
- #include <linux/mutex.h>
- #include <linux/reboot.h>
-+#include <asm/uaccess.h>
+diff --git a/fs/ocfs2/dlmglue.c b/fs/ocfs2/dlmglue.c
+index 1f1873b..1a80fa9 100644
+--- a/fs/ocfs2/dlmglue.c
++++ b/fs/ocfs2/dlmglue.c
+@@ -2132,8 +2132,6 @@ int ocfs2_super_lock(struct ocfs2_super *osb,
+ 	int status = 0;
+ 	int level = ex ? LKM_EXMODE : LKM_PRMODE;
+ 	struct ocfs2_lock_res *lockres = &osb->osb_super_lockres;
+-	struct buffer_head *bh;
+-	struct ocfs2_slot_info *si = osb->slot_info;
  
- #include "stackglue.h"
+ 	mlog_entry_void();
  
-@@ -40,6 +41,16 @@
-  */
+@@ -2159,11 +2157,7 @@ int ocfs2_super_lock(struct ocfs2_super *osb,
+ 		goto bail;
+ 	}
+ 	if (status) {
+-		bh = si->si_bh;
+-		status = ocfs2_read_block(osb, bh->b_blocknr, &bh, 0,
+-					  si->si_inode);
+-		if (status == 0)
+-			ocfs2_update_slot_info(si);
++		status = ocfs2_refresh_slot_info(osb);
  
- /*
-+ * Whether or not the client has done the handshake.
-+ * For now, we have just one protocol version.
-+ */
-+#define OCFS2_CONTROL_PROTO			"T01\n"
-+#define OCFS2_CONTROL_PROTO_LEN			4
-+#define OCFS2_CONTROL_HANDSHAKE_INVALID		(0)
-+#define OCFS2_CONTROL_HANDSHAKE_READ		(1)
-+#define OCFS2_CONTROL_HANDSHAKE_VALID		(2)
-+
-+/*
-  * ocfs2_live_connection is refcounted because the filesystem and
-  * miscdevice sides can detach in different order.  Let's just be safe.
-  */
-@@ -48,11 +59,30 @@ struct ocfs2_live_connection {
- 	struct ocfs2_cluster_connection	*oc_conn;
- };
+ 		ocfs2_complete_lock_res_refresh(lockres, status);
  
-+struct ocfs2_control_private {
-+	struct list_head op_list;
-+	int op_state;
-+};
-+
- static atomic_t ocfs2_control_opened;
+diff --git a/fs/ocfs2/journal.c b/fs/ocfs2/journal.c
+index f31c7e8..c2e654e 100644
+--- a/fs/ocfs2/journal.c
++++ b/fs/ocfs2/journal.c
+@@ -1123,8 +1123,7 @@ static int ocfs2_recover_node(struct ocfs2_super *osb,
  
- static LIST_HEAD(ocfs2_live_connection_list);
-+static LIST_HEAD(ocfs2_control_private_list);
- static DEFINE_MUTEX(ocfs2_control_lock);
+ 	/* Likewise, this would be a strange but ultimately not so
+ 	 * harmful place to get an error... */
+-	ocfs2_clear_slot(si, slot_num);
+-	status = ocfs2_update_disk_slots(osb, si);
++	status = ocfs2_clear_slot(osb, slot_num);
+ 	if (status < 0)
+ 		mlog_errno(status);
  
-+static inline void ocfs2_control_set_handshake_state(struct file *file,
-+						     int state)
-+{
-+	struct ocfs2_control_private *p = file->private_data;
-+	p->op_state = state;
-+}
-+
-+static inline int ocfs2_control_get_handshake_state(struct file *file)
-+{
-+	struct ocfs2_control_private *p = file->private_data;
-+	return p->op_state;
-+}
-+
- static struct ocfs2_live_connection *ocfs2_connection_find(const char *name)
+diff --git a/fs/ocfs2/slot_map.c b/fs/ocfs2/slot_map.c
+index 3a50ce5..f5727b8 100644
+--- a/fs/ocfs2/slot_map.c
++++ b/fs/ocfs2/slot_map.c
+@@ -49,7 +49,7 @@ static void __ocfs2_fill_slot(struct ocfs2_slot_info *si,
+ 			      s16 node_num);
+ 
+ /* post the slot information on disk into our slot_info struct. */
+-void ocfs2_update_slot_info(struct ocfs2_slot_info *si)
++static void ocfs2_update_slot_info(struct ocfs2_slot_info *si)
  {
- 	size_t len = strlen(name);
-@@ -119,27 +149,115 @@ static void ocfs2_live_connection_drop(struct ocfs2_live_connection *c)
- 	kfree(c);
+ 	int i;
+ 	__le16 *disk_info;
+@@ -65,10 +65,27 @@ void ocfs2_update_slot_info(struct ocfs2_slot_info *si)
+ 	spin_unlock(&si->si_lock);
  }
  
-+static ssize_t ocfs2_control_cfu(char *target, size_t target_len,
-+				 const char __user *buf, size_t count)
++int ocfs2_refresh_slot_info(struct ocfs2_super *osb)
 +{
-+	/* The T01 expects write(2) calls to have exactly one command */
-+	if (count != target_len)
-+		return -EINVAL;
++	int ret;
++	struct ocfs2_slot_info *si = osb->slot_info;
++	struct buffer_head *bh;
 +
-+	if (copy_from_user(target, buf, target_len))
-+		return -EFAULT;
-+
-+	return count;
-+}
-+
-+static ssize_t ocfs2_control_validate_handshake(struct file *file,
-+						const char __user *buf,
-+						size_t count)
-+{
-+	ssize_t ret;
-+	char kbuf[OCFS2_CONTROL_PROTO_LEN];
-+
-+	ret = ocfs2_control_cfu(kbuf, OCFS2_CONTROL_PROTO_LEN,
-+				buf, count);
-+	if (ret != count)
-+		return ret;
-+
-+	if (strncmp(kbuf, OCFS2_CONTROL_PROTO, OCFS2_CONTROL_PROTO_LEN))
-+		return -EINVAL;
-+
-+	atomic_inc(&ocfs2_control_opened);
-+	ocfs2_control_set_handshake_state(file,
-+					  OCFS2_CONTROL_HANDSHAKE_VALID);
-+
-+
-+	return count;
-+}
-+
- 
- static ssize_t ocfs2_control_write(struct file *file,
- 				   const char __user *buf,
- 				   size_t count,
- 				   loff_t *ppos)
- {
--	return 0;
-+	ssize_t ret;
-+
-+	switch (ocfs2_control_get_handshake_state(file)) {
-+		case OCFS2_CONTROL_HANDSHAKE_INVALID:
-+			ret = -EINVAL;
-+			break;
-+
-+		case OCFS2_CONTROL_HANDSHAKE_READ:
-+			ret = ocfs2_control_validate_handshake(file, buf,
-+							       count);
-+			break;
-+
-+		case OCFS2_CONTROL_HANDSHAKE_VALID:
-+			ret = count;  /* XXX */
-+			break;
-+
-+		default:
-+			BUG();
-+			ret = -EIO;
-+			break;
-+	}
-+
-+	return ret;
- }
- 
-+/*
-+ * This is a naive version.  If we ever have a new protocol, we'll expand
-+ * it.  Probably using seq_file.
-+ */
- static ssize_t ocfs2_control_read(struct file *file,
- 				  char __user *buf,
- 				  size_t count,
- 				  loff_t *ppos)
- {
--	return 0;
-+	char *proto_string = OCFS2_CONTROL_PROTO;
-+	size_t to_write = 0;
-+
-+	if (*ppos >= OCFS2_CONTROL_PROTO_LEN)
++	if (si == NULL)
 +		return 0;
 +
-+	to_write = OCFS2_CONTROL_PROTO_LEN - *ppos;
-+	if (to_write > count)
-+		to_write = count;
-+	if (copy_to_user(buf, proto_string + *ppos, to_write))
-+		return -EFAULT;
++	bh = si->si_bh;
++	ret = ocfs2_read_block(osb, bh->b_blocknr, &bh, 0, si->si_inode);
++	if (ret == 0)
++		ocfs2_update_slot_info(si);
 +
-+	*ppos += to_write;
++	return ret;
++}
 +
-+	/* Have we read the whole protocol list? */
-+	if (*ppos >= OCFS2_CONTROL_PROTO_LEN)
-+		ocfs2_control_set_handshake_state(file,
-+						  OCFS2_CONTROL_HANDSHAKE_READ);
-+
-+	return to_write;
+ /* post the our slot info stuff into it's destination bh and write it
+  * out. */
+-int ocfs2_update_disk_slots(struct ocfs2_super *osb,
+-			    struct ocfs2_slot_info *si)
++static int ocfs2_update_disk_slots(struct ocfs2_super *osb,
++				   struct ocfs2_slot_info *si)
+ {
+ 	int status, i;
+ 	__le16 *disk_info = (__le16 *) si->si_bh->b_data;
+@@ -135,6 +152,19 @@ s16 ocfs2_node_num_to_slot(struct ocfs2_slot_info *si,
+ 	return ret;
  }
  
- static int ocfs2_control_release(struct inode *inode, struct file *file)
++static void __ocfs2_free_slot_info(struct ocfs2_slot_info *si)
++{
++	if (si == NULL)
++		return;
++
++	if (si->si_inode)
++		iput(si->si_inode);
++	if (si->si_bh)
++		brelse(si->si_bh);
++
++	kfree(si);
++}
++
+ static void __ocfs2_fill_slot(struct ocfs2_slot_info *si,
+ 			      s16 slot_num,
+ 			      s16 node_num)
+@@ -147,12 +177,18 @@ static void __ocfs2_fill_slot(struct ocfs2_slot_info *si,
+ 	si->si_global_node_nums[slot_num] = node_num;
+ }
+ 
+-void ocfs2_clear_slot(struct ocfs2_slot_info *si,
+-		      s16 slot_num)
++int ocfs2_clear_slot(struct ocfs2_super *osb, s16 slot_num)
  {
-+	struct ocfs2_control_private *p = file->private_data;
++	struct ocfs2_slot_info *si = osb->slot_info;
 +
-+	mutex_lock(&ocfs2_control_lock);
++	if (si == NULL)
++		return 0;
 +
-+	if (ocfs2_control_get_handshake_state(file) !=
-+	    OCFS2_CONTROL_HANDSHAKE_VALID)
-+		goto out;
+ 	spin_lock(&si->si_lock);
+ 	__ocfs2_fill_slot(si, slot_num, OCFS2_INVALID_SLOT);
+ 	spin_unlock(&si->si_lock);
 +
- 	if (atomic_dec_and_test(&ocfs2_control_opened)) {
--		mutex_lock(&ocfs2_control_lock);
- 		if (!list_empty(&ocfs2_live_connection_list)) {
- 			/* XXX: Do bad things! */
- 			printk(KERN_ERR
-@@ -148,15 +266,31 @@ static int ocfs2_control_release(struct inode *inode, struct file *file)
- 			       "an emergency restart!\n");
- 			emergency_restart();
- 		}
--		mutex_unlock(&ocfs2_control_lock);
++	return ocfs2_update_disk_slots(osb, osb->slot_info);
+ }
+ 
+ int ocfs2_init_slot_info(struct ocfs2_super *osb)
+@@ -202,18 +238,17 @@ int ocfs2_init_slot_info(struct ocfs2_super *osb)
+ 	osb->slot_info = si;
+ bail:
+ 	if (status < 0 && si)
+-		ocfs2_free_slot_info(si);
++		__ocfs2_free_slot_info(si);
+ 
+ 	return status;
+ }
+ 
+-void ocfs2_free_slot_info(struct ocfs2_slot_info *si)
++void ocfs2_free_slot_info(struct ocfs2_super *osb)
+ {
+-	if (si->si_inode)
+-		iput(si->si_inode);
+-	if (si->si_bh)
+-		brelse(si->si_bh);
+-	kfree(si);
++	struct ocfs2_slot_info *si = osb->slot_info;
++
++	osb->slot_info = NULL;
++	__ocfs2_free_slot_info(si);
+ }
+ 
+ int ocfs2_find_slot(struct ocfs2_super *osb)
+@@ -285,7 +320,6 @@ void ocfs2_put_slot(struct ocfs2_super *osb)
  	}
  
-+out:
-+	list_del_init(&p->op_list);
-+	file->private_data = NULL;
-+
-+	mutex_unlock(&ocfs2_control_lock);
-+
-+	kfree(p);
-+
- 	return 0;
+ bail:
+-	osb->slot_info = NULL;
+-	ocfs2_free_slot_info(si);
++	ocfs2_free_slot_info(osb);
  }
  
- static int ocfs2_control_open(struct inode *inode, struct file *file)
- {
--	atomic_inc(&ocfs2_control_opened);
-+	struct ocfs2_control_private *p;
-+
-+	p = kzalloc(sizeof(struct ocfs2_control_private), GFP_KERNEL);
-+	if (!p)
-+		return -ENOMEM;
-+
-+	mutex_lock(&ocfs2_control_lock);
-+	file->private_data = p;
-+	list_add(&p->op_list, &ocfs2_control_private_list);
-+	mutex_unlock(&ocfs2_control_lock);
+diff --git a/fs/ocfs2/slot_map.h b/fs/ocfs2/slot_map.h
+index 1025872..b029ffd 100644
+--- a/fs/ocfs2/slot_map.h
++++ b/fs/ocfs2/slot_map.h
+@@ -30,7 +30,7 @@
+ struct ocfs2_slot_info {
+ 	spinlock_t si_lock;
  
- 	return 0;
- }
+-       	struct inode *si_inode;
++	struct inode *si_inode;
+ 	struct buffer_head *si_bh;
+ 	unsigned int si_num_slots;
+ 	unsigned int si_size;
+@@ -38,19 +38,16 @@ struct ocfs2_slot_info {
+ };
+ 
+ int ocfs2_init_slot_info(struct ocfs2_super *osb);
+-void ocfs2_free_slot_info(struct ocfs2_slot_info *si);
++void ocfs2_free_slot_info(struct ocfs2_super *osb);
+ 
+ int ocfs2_find_slot(struct ocfs2_super *osb);
+ void ocfs2_put_slot(struct ocfs2_super *osb);
+ 
+-void ocfs2_update_slot_info(struct ocfs2_slot_info *si);
+-int ocfs2_update_disk_slots(struct ocfs2_super *osb,
+-			    struct ocfs2_slot_info *si);
++int ocfs2_refresh_slot_info(struct ocfs2_super *osb);
+ 
+ s16 ocfs2_node_num_to_slot(struct ocfs2_slot_info *si,
+ 			   s16 global);
+-void ocfs2_clear_slot(struct ocfs2_slot_info *si,
+-		      s16 slot_num);
++int ocfs2_clear_slot(struct ocfs2_super *osb, s16 slot_num);
+ 
+ static inline int ocfs2_is_empty_slot(struct ocfs2_slot_info *si,
+ 				      int slot_num)
+diff --git a/fs/ocfs2/super.c b/fs/ocfs2/super.c
+index bec75af..fad37af 100644
+--- a/fs/ocfs2/super.c
++++ b/fs/ocfs2/super.c
+@@ -1724,8 +1724,7 @@ static void ocfs2_delete_osb(struct ocfs2_super *osb)
+ 
+ 	/* This function assumes that the caller has the main osb resource */
+ 
+-	if (osb->slot_info)
+-		ocfs2_free_slot_info(osb->slot_info);
++	ocfs2_free_slot_info(osb);
+ 
+ 	kfree(osb->osb_orphan_wipes);
+ 	/* FIXME
 -- 
 1.5.4.1
 
