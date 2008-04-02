@@ -1,43 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756929AbYDBFbn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757482AbYDBFkh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756929AbYDBFbn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 01:31:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751044AbYDBFbc
+	id S1757482AbYDBFkh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 01:40:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751139AbYDBFk2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 01:31:32 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:52853 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750740AbYDBFbc (ORCPT
+	Wed, 2 Apr 2008 01:40:28 -0400
+Received: from fg-out-1718.google.com ([72.14.220.157]:64462 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750956AbYDBFk1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 01:31:32 -0400
-Date: Wed, 2 Apr 2008 00:31:27 -0500
-From: Paul Jackson <pj@sgi.com>
-To: Vasily Tarasov <vtaras@openvz.org>
-Cc: axboe@kernel.dk, linux-kernel@vger.kernel.org, devel@openvz.org,
-       containers@linux-foundation.com, dev@openvz.org, xemul@openvz.org,
-       vtaras@openvz.org
-Subject: Re: [RFC][PATCH 0/9] cgroups: block: cfq: I/O bandwidth controlling
- subsystem for CGroups based on CFQ
-Message-Id: <20080402003127.d22e9d3e.pj@sgi.com>
-In-Reply-To: <1203058414.042372.2088.nullmailer@me>
-References: <1203058414.042372.2088.nullmailer@me>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 2 Apr 2008 01:40:27 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=message-id:date:from:organization:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=SCyBA+RaG3uQMP8NseKFB5aBZfJ2f3d1MTZJV8mS6StFPcCnsdesDLfTzk86tw5/nV8NByYDQ1vxeAsZcNchjTK+XpL0B1o/USHkpbW9wDn5VRSf2jXdTxBzHSl52bkeQDZZ6SB26YpXWtyjnsKPnSR/7Sg5ft7ljTkrO0J06Bw=
+Message-ID: <47F31C46.9000503@gmail.com>
+Date: Wed, 02 Apr 2008 09:40:22 +0400
+From: Dmitri Vorobiev <dmitri.vorobiev@gmail.com>
+Organization: DmVo Home
+User-Agent: Thunderbird 1.5.0.14pre (X11/20071022)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.25-rc8-mm1
+References: <20080401213214.8fbb6d6b.akpm@linux-foundation.org>
+In-Reply-To: <20080401213214.8fbb6d6b.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A couple of details:
- 1) Your clock is way off.  These patches have a date stamp of Feb 15,
-    but were actually sent out March 21 (and I'm behind in my reading of
-    lkml - sorry ;).
- 2) Please put a different Subject on each path ... not just the N/M
-    patch number, but use different words to describe each patch.
+Hi Andrew,
 
--- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.940.382.4214
+MIPS build fails with the following:
+
+$ make ARCH=mips CROSS_COMPILE=mips-unknown-linux-gnu-
+...
+[skipped]
+...
+  CC      arch/mips/mips-boards/generic/init.o
+In file included from include/asm/cacheflush.h:13,
+                 from arch/mips/mips-boards/generic/init.c:30:
+include/linux/mm.h:411:63: "NR_PAGEFLAGS" is not defined
+include/linux/mm.h:459:62: "NR_PAGEFLAGS" is not defined
+make[1]: *** [arch/mips/mips-boards/generic/init.o] Error 1
+make: *** [arch/mips/mips-boards/generic] Error 2
+
+Thanks,
+Dmitri
