@@ -1,105 +1,178 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761000AbYDBHRk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761125AbYDBHST@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761000AbYDBHRk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 03:17:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760683AbYDBHRT
+	id S1761125AbYDBHST (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 03:18:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759330AbYDBHSA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 03:17:19 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:45104 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1760651AbYDBHRR convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 03:17:17 -0400
-Date: Wed, 2 Apr 2008 00:16:40 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: =?ISO-8859-1?Q? "J.A._Magall=F3n" ?= <jamagallon@ono.com>
-Cc: "Linux-Kernel, " <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org
-Subject: Re: Again... DMA speed too slow
-Message-Id: <20080402001640.41c103a7.akpm@linux-foundation.org>
-In-Reply-To: <20080330235357.20a54963@werewolf>
-References: <20080330235357.20a54963@werewolf>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+	Wed, 2 Apr 2008 03:18:00 -0400
+Received: from ozlabs.org ([203.10.76.45]:35267 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758884AbYDBHR7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Apr 2008 03:17:59 -0400
+Subject: Re: [BUG] 2.6.25-rc8-mm1 kernel panic while bootup on powerpc
+From: Michael Ellerman <michael@ellerman.id.au>
+Reply-To: michael@ellerman.id.au
+To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@ozlabs.org,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Badari Pulavarty <pbadari@us.ibm.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <47F330FF.3050806@linux.vnet.ibm.com>
+References: <20080401213214.8fbb6d6b.akpm@linux-foundation.org>
+	 <47F326E0.3010604@linux.vnet.ibm.com>
+	 <20080401233909.23220623.akpm@linux-foundation.org>
+	 <47F330FF.3050806@linux.vnet.ibm.com>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-bosSrVyBWJmMrKnR8vcF"
+Date: Wed, 02 Apr 2008 18:17:56 +1100
+Message-Id: <1207120676.7349.11.camel@concordia.ozlabs.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+X-Mailer: Evolution 2.12.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 30 Mar 2008 23:53:57 +0200 "J.A. Magallón" <jamagallon@ono.com> wrote:
 
-> Hi all...
-> 
-> I have tried to burn some data from the commandline with wodim (since time
-> ago I just used beasero...), and I have noticed this (media is CD, not DVD):
-> 
-> Vendor_info    : 'HL-DT-ST'
-> Identification : 'DVDRAM GSA-H10N '
-> Revision       : 'JL12'
-> Device seems to be: Generic mmc2 DVD-R/DVD-RW.
-> Using generic SCSI-3/mmc   CD-R/CD-RW driver (mmc_cdr).
-> Driver flags   : MMC-3 SWABAUDIO BURNFREE
-> Supported modes: TAO PACKET SAO SAO/R96P SAO/R96R RAW/R16 RAW/R96P RAW/R96R
-> Speed set to 8467 KB/s
-> wodim: DMA speed too slow (OK for 5x). Cannot write at speed 48x.
-> Starting to write CD/DVD at speed  48.0 in real TAO mode for single session.
-> 
-> I just can burn CDs at 5x ??
-> But then the program tries to write at 48x.
-> It the DMA message really true ?
-> 
-> Accodring to wodim -prcap:
-> 
->   Maximum read  speed: 22161 kB/s (CD 125x, DVD 16x)
->   Current read  speed: 22161 kB/s (CD 125x, DVD 16x)
->   Maximum write speed: 11080 kB/s (CD  62x, DVD  8x)
->   Current write speed: 11080 kB/s (CD  62x, DVD  8x)
->   Rotational control selected: CLV/PCAV
->   Buffer size in KB: 2048
->   Copy management revision supported: 1
->   Number of supported write speeds: 3
->   Write speed # 0: 11080 kB/s CLV/PCAV (CD  62x, DVD  8x)
->   Write speed # 1:  5540 kB/s CLV/PCAV (CD  31x, DVD  4x)
->   Write speed # 2:  3324 kB/s CLV/PCAV (CD  18x, DVD  2x)
-> 
-> Why the tests in wodim say that DMA to the drive is slow ?
-> 
-> Kernel is 2.6.24.4.
-> The drive is controlled by libata+sata_promise:
-> 
-> sata_promise 0000:03:04.0: version 2.11
-> ACPI: PCI Interrupt 0000:03:04.0[A] -> GSI 23 (level, low) -> IRQ 17
-> scsi6 : sata_promise
-> scsi7 : sata_promise
-> scsi8 : sata_promise
-> ata5: SATA max UDMA/133 mmio m4096@0xf6029000 port 0xf6029200 irq 17
-> ata6: SATA max UDMA/133 mmio m4096@0xf6029000 port 0xf6029280 irq 17
-> ata7: PATA max UDMA/133 mmio m4096@0xf6029000 port 0xf6029300 irq 17
-> ata5: SATA link down (SStatus 0 SControl 300)
-> ata6: SATA link down (SStatus 0 SControl 0)
-> ata7.00: ATA-6: ST3120022A, 3.06, max UDMA/100
-> ata7.00: 234441648 sectors, multi 0: LBA48
-> ata7.01: ATAPI: HL-DT-ST DVDRAM GSA-H10N, JL12, max UDMA/33
-> ata7.00: configured for UDMA/100
-> ata7.01: configured for UDMA/33
-> scsi 8:0:0:0: Direct-Access     ATA      ST3120022A       3.06 PQ: 0 ANSI: 5
-> sd 8:0:0:0: [sdd] 234441648 512-byte hardware sectors (120034 MB)
-> sd 8:0:0:0: [sdd] Write Protect is off
-> sd 8:0:0:0: [sdd] Mode Sense: 00 3a 00 00
-> sd 8:0:0:0: [sdd] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
-> sd 8:0:0:0: [sdd] 234441648 512-byte hardware sectors (120034 MB)
-> sd 8:0:0:0: [sdd] Write Protect is off
-> sd 8:0:0:0: [sdd] Mode Sense: 00 3a 00 00
-> sd 8:0:0:0: [sdd] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
->  sdd: sdd1
-> sd 8:0:0:0: [sdd] Attached SCSI disk
-> sd 8:0:0:0: Attached scsi generic sg3 type 0
-> scsi 8:0:1:0: CD-ROM            HL-DT-ST DVDRAM GSA-H10N  JL12 PQ: 0 ANSI: 5
-> sr0: scsi3-mmc drive: 48x/48x writer dvd-ram cd/rw xa/form2 cdda tray
-> 
-> UDMA/33 on the burner should be ok for 48x (150x48 = 7.2 MB/s) ?
-> Or just 16x, as I read elsewhere ?
-> 
+--=-bosSrVyBWJmMrKnR8vcF
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Please always cc linux-ide on ata-related bug reports.
+
+On Wed, 2008-04-02 at 12:38 +0530, Kamalesh Babulal wrote:
+> Andrew Morton wrote:
+> > On Wed, 02 Apr 2008 11:55:36 +0530 Kamalesh Babulal <kamalesh@linux.vne=
+t.ibm.com> wrote:
+> >=20
+> >> Hi Andrew,
+> >>
+> >> The 2.6.25-rc8-mm1 kernel panic's while bootup on the power machine(s)=
+.
+> >>
+> >> [    0.000000] ------------[ cut here ]------------
+> >> [    0.000000] kernel BUG at arch/powerpc/mm/init_64.c:240!
+> >> [    0.000000] Oops: Exception in kernel mode, sig: 5 [#1]
+> >> [    0.000000] SMP NR_CPUS=3D32 NUMA PowerMac
+> >> [    0.000000] Modules linked in:
+> >> [    0.000000] NIP: c0000000003d1dcc LR: c0000000003d1dc4 CTR: c000000=
+00002b6ac
+> >> [    0.000000] REGS: c00000000049b960 TRAP: 0700   Not tainted  (2.6.2=
+5-rc8-mm1-autokern1)
+> >> [    0.000000] MSR: 9000000000021032 <ME,IR,DR>  CR: 44000088  XER: 20=
+000000
+> >> [    0.000000] TASK =3D c0000000003f9c90[0] 'swapper' THREAD: c0000000=
+00498000 CPU: 0
+> >> [    0.000000] GPR00: c0000000003d1dc4 c00000000049bbe0 c0000000004989=
+d0 0000000000000001=20
+> >> [    0.000000] GPR04: d59aca40f0000000 000000000b000000 00000000000000=
+10 0000000000000000=20
+> >> [    0.000000] GPR08: 0000000000000004 0000000000000001 c00000027e5208=
+00 c0000000004bf0f0=20
+> >> [    0.000000] GPR12: c0000000004bf020 c0000000003fa900 00000000000000=
+00 0000000000000000=20
+> >> [    0.000000] GPR16: 0000000000000000 0000000000000000 00000000000000=
+00 0000000000000000=20
+> >> [    0.000000] GPR20: 0000000000000000 0000000000000000 00000000000000=
+00 4000000001400000=20
+> >> [    0.000000] GPR24: 00000000017d64b0 c0000000003d6250 00000000000000=
+00 c000000000504000=20
+> >> [    0.000000] GPR28: 0000000000000000 cf000000001f8000 00000000010000=
+00 cf00000000000000=20
+> >> [    0.000000] NIP [c0000000003d1dcc] .vmemmap_populate+0xb8/0xf4
+> >> [    0.000000] LR [c0000000003d1dc4] .vmemmap_populate+0xb0/0xf4
+> >> [    0.000000] Call Trace:
+> >> [    0.000000] [c00000000049bbe0] [c0000000003d1dc4] .vmemmap_populate=
++0xb0/0xf4 (unreliable)
+> >> [    0.000000] [c00000000049bc70] [c0000000003d2ee8] .sparse_mem_map_p=
+opulate+0x38/0x60
+> >> [    0.000000] [c00000000049bd00] [c0000000003c242c] .sparse_early_mem=
+_map_alloc+0x54/0x94
+> >> [    0.000000] [c00000000049bd90] [c0000000003c250c] .sparse_init+0xa0=
+/0x20c
+> >> [    0.000000] [c00000000049be50] [c0000000003ab7d0] .setup_arch+0x1ac=
+/0x218
+> >> [    0.000000] [c00000000049bee0] [c0000000003a36ac] .start_kernel+0xe=
+0/0x3fc
+> >> [    0.000000] [c00000000049bf90] [c000000000008594] .start_here_commo=
+n+0x54/0xc0
+> >> [    0.000000] Instruction dump:
+> >> [    0.000000] 7fe3fb78 7ca02a14 4082000c 3860fff4 4800003c e92289c8 e=
+96289c0 e9090002=20
+> >> [    0.000000] e8eb0002 4bc575cd 60000000 78630fe0 <0b030000> 7ffff214=
+ 7fbfe840 7fe3fb78=20
+> >> [    0.000000] ---[ end trace 31fd0ba7d8756001 ]---
+> >> [    0.000000] Kernel panic - not syncing: Attempted to kill the idle =
+task!
+> >>
+> >=20
+> > int __meminit vmemmap_populate(struct page *start_page,
+> > 					unsigned long nr_pages, int node)
+> > {
+> > 	unsigned long mode_rw;
+> > 	unsigned long start =3D (unsigned long)start_page;
+> > 	unsigned long end =3D (unsigned long)(start_page + nr_pages);
+> > 	unsigned long page_size =3D 1 << mmu_psize_defs[mmu_linear_psize].shif=
+t;
+> >=20
+> > 	mode_rw =3D _PAGE_ACCESSED | _PAGE_DIRTY | _PAGE_COHERENT | PP_RWXX;
+> >=20
+> > 	/* Align to the page size of the linear mapping. */
+> > 	start =3D _ALIGN_DOWN(start, page_size);
+> >=20
+> > 	for (; start < end; start +=3D page_size) {
+> > 		int mapped;
+> > 		void *p;
+> >=20
+> > 		if (vmemmap_populated(start, page_size))
+> > 			continue;
+> >=20
+> > 		p =3D vmemmap_alloc_block(page_size, node);
+> > 		if (!p)
+> > 			return -ENOMEM;
+> >=20
+> > 		pr_debug("vmemmap %08lx allocated at %p, physical %08lx.\n",
+> > 			start, p, __pa(p));
+> >=20
+> > 		mapped =3D htab_bolt_mapping(start, start + page_size,
+> > 					__pa(p), mode_rw, mmu_linear_psize,
+> > 					mmu_kernel_ssize);
+> > =3D=3D=3D=3D=3D>		BUG_ON(mapped < 0);
+> > 	}
+> >=20
+> > 	return 0;
+> > }
+> >=20
+> > Beats me.  pseries?  Badari has been diddling with the bolted memory co=
+de
+> > in git-powerpc...
+>=20
+> One of the machines is the Power5 and another is PowerMac G5, on which th=
+e=20
+> same kernel panic is seen.
+
+Can you enable DEBUG_LOW in arch/powerpc/platforms/pseries/lpar.c, that
+should show what's happening in hpte_insert().
+
+cheers
+
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
+
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-bosSrVyBWJmMrKnR8vcF
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBH8zMkdSjSd0sB4dIRAnp2AJ99v7Bil1TkqxTgp1tAKNOlLn0iwACfXnNB
+tOfCDXRhLra3Oc6tnU9g13A=
+=WmVb
+-----END PGP SIGNATURE-----
+
+--=-bosSrVyBWJmMrKnR8vcF--
 
