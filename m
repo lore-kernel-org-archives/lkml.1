@@ -1,66 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759435AbYDBUM2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759760AbYDBUNm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759435AbYDBUM2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 16:12:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755689AbYDBUMV
+	id S1759760AbYDBUNm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 16:13:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757281AbYDBUNf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 16:12:21 -0400
-Received: from smtp-out003.kontent.com ([81.88.40.217]:46797 "EHLO
-	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753827AbYDBUMU convert rfc822-to-8bit (ORCPT
+	Wed, 2 Apr 2008 16:13:35 -0400
+Received: from rn-out-0910.google.com ([64.233.170.188]:10899 "EHLO
+	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756990AbYDBUNf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 16:12:20 -0400
-From: Oliver Neukum <oliver@neukum.org>
-Organization: Novell
-To: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [RFC][PATCH] PM: Introduce new top level suspend and hibernation callbacks (rev. 6)
-Date: Wed, 2 Apr 2008 22:11:35 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Nigel Cunningham <ncunningham@crca.org.au>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Greg KH <greg@kroah.com>, Len Brown <lenb@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Alexey Starikovskiy <astarikovskiy@suse.de>,
-       David Brownell <david-b@pacbell.net>, Pavel Machek <pavel@ucw.cz>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>
-References: <Pine.LNX.4.44L0.0804021238190.5042-100000@iolanthe.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0804021238190.5042-100000@iolanthe.rowland.org>
+	Wed, 2 Apr 2008 16:13:35 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=rnoa0q8TnQyq+NoeiVGDBXW2KNn9e8oZYHoUdQfyLXjSlMMuTgH7unGb1UN0x10yOHi+Q052uaa7o2NAB3wAaZHDiVkn8LNuzoeSxUvWwkC/LiUKgi9mR2aJk5QpKs3UNnXkK6pwsnwxaTyAi6Jw9Dke3p8/bTPNq5mLwKUQpG0=
+Message-ID: <1ba2fa240804021313l59b34b7cy5fba78d62d9fac58@mail.gmail.com>
+Date: Wed, 2 Apr 2008 23:13:33 +0300
+From: "Tomas Winkler" <tomasw@gmail.com>
+To: "Miles Lane" <miles.lane@gmail.com>
+Subject: =?WINDOWS-1252?Q?Re:_2.6.25-rc8-mm1_--_drivers/ne?= =?WINDOWS-1252?Q?t/wireless/iwlwifi/iwl-led.c:184?= =?WINDOWS-1252?Q?:_error:_=91struct_iwl=5Fpriv=92_has_n?= =?WINDOWS-1252?Q?o_member_named_=91last=5Fblink=5Ftime=92?=
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, "Zhu Yi" <yi.zhu@intel.com>,
+       wireless <linux-wireless@vger.kernel.org>, reinette.chatre@intel.com
+In-Reply-To: <a44ae5cd0804020404k295ffc7ew8761cc0901996e20@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200804022211.36438.oliver@neukum.org>
+References: <a44ae5cd0804020404k295ffc7ew8761cc0901996e20@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Mittwoch, 2. April 2008 18:42:15 schrieb Alan Stern:
-> On Wed, 2 Apr 2008, Oliver Neukum wrote:
-> 
-> > Am Mittwoch, 2. April 2008 17:13:11 schrieb Alan Stern:
-> > > Basically yes.  Subsystems and drivers are allowed to keep devices
-> > > suspended if they were suspended before the system went to sleep.  
-> > > Remember, the purpose of the resume method is to let drivers know that
-> > > the system is now awake, not to force them to put their devices into a
-> > > high-power state.
-> > 
-> > Well, sometimes it is exactly that what we desire, eg. as a side effect
-> > of lsusb. Should the callbacks have different semantics depending on
-> > the reason you call them? And how should that information be transferred?
-> 
-> Which callbacks are you referring to?  When lsusb opens a device and
-> does an autoresume, it does not call the same routine as the PM core
-> does when resuming from a system sleep.  lsusb ends up calling
-> usb_autoresume_device() whereas the PM core ends up calling
-> usb_resume(), which is the function you quoted earlier.
+On Wed, Apr 2, 2008 at 2:04 PM, Miles Lane <miles.lane@gmail.com> wrote:
 
-But how is usb_autoresume_device() supposed to take to the driver?
-Furthermore suppose the interface woken up is storage. This will have
-to work across subsystem borders. Why not put it into generic code?
 
-	Regards
-		Oliver
 
+
+>  CONFIG_IWLCORE=m
+>  CONFIG_IWLWIFI_LEDS=y
+>  # CONFIG_IWL4965 is not set
+>  CONFIG_IWL3945=m
+>  # CONFIG_IWL3945_SPECTRUM_MEASUREMENT is not set
+>  # CONFIG_IWL3945_LEDS is not set
+>  # CONFIG_IWL3945_DEBUG is not set
+
+This is a known problem please do use CONFIG_IWLWIFI_LEDS=y when not
+compiling IWL4965
+The fix need some more coding, we will fix this soon.
+Thanks
+Tomas
