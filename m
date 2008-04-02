@@ -1,243 +1,363 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762078AbYDBUSt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759113AbYDBUTM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762078AbYDBUSt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 16:18:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760667AbYDBUQn
+	id S1759113AbYDBUTM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 16:19:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761423AbYDBUQo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 16:16:43 -0400
-Received: from cantor.suse.de ([195.135.220.2]:36240 "EHLO mx1.suse.de"
+	Wed, 2 Apr 2008 16:16:44 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:32924 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761388AbYDBUQi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 16:16:38 -0400
+	id S1760668AbYDBUQn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Apr 2008 16:16:43 -0400
 From: Mark Fasheh <mfasheh@suse.com>
 To: linux-kernel@vger.kernel.org
 Cc: ocfs2-devel@oss.oracle.com, Joel Becker <joel.becker@oracle.com>
-Subject: [PATCH 0/62] Ocfs2 updates for 2.6.26-rc1
-Date: Wed,  2 Apr 2008 13:14:10 -0700
-Message-Id: <12071673121124-git-send-email-mfasheh@suse.com>
+Subject: [PATCH 02/62] ocfs2: Make ocfs2_slot_info private.
+Date: Wed,  2 Apr 2008 13:14:12 -0700
+Message-Id: <12071673203909-git-send-email-mfasheh@suse.com>
 X-Mailer: git-send-email 1.5.2.4
+In-Reply-To: <1207167318479-git-send-email-mfasheh@suse.com>
+References: <12071673121124-git-send-email-mfasheh@suse.com>
+ <1207167318479-git-send-email-mfasheh@suse.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The following series of patches comprises the bulk of our outstanding
-changes for Ocfs2.
+From: Joel Becker <joel.becker@oracle.com>
 
+Just use osb_lock around the ocfs2_slot_info data.  This allows us to
+take the ocfs2_slot_info structure private in slot_info.c.  All access
+is now via accessors.
 
-Aside from the usual set of cleanups and fixes that were inappropriate for
-2.6.25, there are a few highlights:
+Signed-off-by: Joel Becker <joel.becker@oracle.com>
+Signed-off-by: Mark Fasheh <mfasheh@suse.com>
+---
+ fs/ocfs2/journal.c  |   24 +++++++-------
+ fs/ocfs2/ocfs2.h    |    1 +
+ fs/ocfs2/slot_map.c |   81 ++++++++++++++++++++++++++++++++++++---------------
+ fs/ocfs2/slot_map.h |   25 ++-------------
+ 4 files changed, 74 insertions(+), 57 deletions(-)
 
-
-The '/sys/o2cb' directory has been moved to '/sys/fs/o2cb'. The new location
-meshes better with modern sysfs layout. A symbolic link has been placed in
-the old location so as to not break old versions of ocfs2-tools. New
-versions of ocfs2-tools know to look in /sys/fs/o2cb. When an appropriate
-amount of time has passed (decided to be two years), we can remove the link.
-This change required a small patch to sysfs (entirely external to Ocfs2)
-which is included here with the appropriate 'Acked-by' lines.
-
-
-Inode allocation in Ocfs2 has been modified to better handle an annoying
-corner case. When a node's local inode allocator fills up, it attempts to
-grow the allocator by adding an inode group. This might be impossible
-though, if the main file system bitmap is too full or fragmented to provide
-the required space. This used to be treated as an ENOSPC condition, but with
-the addition of Tao's "inode stealing" patches, the allocation code will
-attempt to allocate from other node's inode allocators before throwing an
-error.
-
-
-Merging of unwritten extents has also undergone an incremental but
-significant improvement - extents can now be merged between leaf nodes. This
-ensures that the allocation btree stays as compact as possible, even if
-previous write patterns had caused it to fragment. Thanks again goes to Tao
-for this improvement.
-
-
-Sunil has improved our ability to debug the Ocfs2 DLM by allowing us to
-track DLM state via a set of debugfs files. It's now possible to get a
-point-in-time view of master list entries, lock resource states and more.
-Debugfs.ocfs2 has been patched to make this process even easier.
-
-
-And finally, we have Joel's work to allow Ocfs2 to use userspace cluster
-stacks. This series of patches is the last step in a multi-year process of
-seperating the Ocfs2 file system code from the underlying cluster stack.
-The file system is now cluster stack agnostic. Users can choose between
-the "o2cb" stack which is comprised of the traditional Ocfs2 cluster
-components (including fs/ocfs2/dlm, also referred to as "o2dlm") or the new
-"user" cluster stack. The "user" cluster stack requires a userspace
-component to communicate node membership information to the file system via
-a misc device. In "user" cluster stack mode, Dave Teigland's dlm (fs/dlm) is
-used as it already contains a cluster stack agnostic userspace API.
-
-This all has several benefits. The most obvious is that we now get to share
-code and maintenance cost with other cluster-related projects instead of
-re-implementing cluster and dlm features in parallel. Additionally, Ocfs2
-users can now run the cluster stack of their choice. For example, while we
-anticipate that some users will want to stick with o2cb for it's simplicity
-of setup and use, many will want access to some of the advanced features
-(clustered volume management, hardware fencing, service failover, etc) that
-are already provided by most userspace cluster stacks. These patches allow
-for that sort of decision to be made.
-
-Of course, all of this is 100% backwards compatible with old versions of
-Ocfs2-tools. Users only need to download a new version of Ocfs2-tools if
-they want to take advantage of the userspace cluster stack feature. An
-ocfs2-tools tree with code to enable userspace cluster stacks can be found
-at:
-
-http://oss.oracle.com/git/?p=ocfs2-tools.git;a=shortlog;h=stack-user
-
-Right now, the sole stack interface implemented in the toolchain is to Red
-Hat's "cluster" project. In time, we anticipate that ocfs2-tools will grow
-support for other cluster stacks, including linux-ha. Our thanks go to the
-folks involved in the "cluster" project. Their help and advice was
-instrumental to getting this together.
-
-
-Finally, my apologies for the large e-mail. There's a lot of patches here
-and I wanted to make sure any interested parties had a good idea of what
-they represent.
-	--Mark
-
-
-Git branch with these changes:
-
-git://git.kernel.org/pub/scm/linux/kernel/git/mfasheh/ocfs2.git upstream-linus
-
-
-Diffstat and shortlog:
-
- Documentation/ABI/obsolete/o2cb            |   11 +
- Documentation/ABI/stable/o2cb              |   10 +
- Documentation/ABI/testing/sysfs-ocfs2      |   89 +++
- Documentation/feature-removal-schedule.txt |   10 +
- MAINTAINERS                                |    1 +
- fs/Kconfig                                 |   26 +
- fs/ocfs2/Makefile                          |   14 +-
- fs/ocfs2/alloc.c                           |  465 +++++++++++++--
- fs/ocfs2/aops.c                            |    6 +-
- fs/ocfs2/cluster/sys.c                     |    9 +
- fs/ocfs2/cluster/tcp.c                     |   96 ++--
- fs/ocfs2/cluster/tcp_internal.h            |    2 +
- fs/ocfs2/dlm/dlmcommon.h                   |   49 ++
- fs/ocfs2/dlm/dlmdebug.c                    |  911 +++++++++++++++++++++++++---
- fs/ocfs2/dlm/dlmdebug.h                    |   86 +++
- fs/ocfs2/dlm/dlmdomain.c                   |   70 ++-
- fs/ocfs2/dlm/dlmlock.c                     |   22 +-
- fs/ocfs2/dlm/dlmmaster.c                   |  200 ++-----
- fs/ocfs2/dlmglue.c                         |  645 ++++++++++++--------
- fs/ocfs2/dlmglue.h                         |    5 +-
- fs/ocfs2/file.c                            |    4 +-
- fs/ocfs2/heartbeat.c                       |  184 +------
- fs/ocfs2/heartbeat.h                       |   17 +-
- fs/ocfs2/ioctl.c                           |   13 +-
- fs/ocfs2/ioctl.h                           |    3 +-
- fs/ocfs2/journal.c                         |  211 ++++++-
- fs/ocfs2/journal.h                         |    4 +
- fs/ocfs2/localalloc.c                      |    4 +
- fs/ocfs2/namei.c                           |    4 +-
- fs/ocfs2/ocfs2.h                           |   77 ++-
- fs/ocfs2/ocfs2_fs.h                        |   79 +++-
- fs/ocfs2/ocfs2_lockid.h                    |    2 +-
- fs/ocfs2/slot_map.c                        |  454 +++++++++++---
- fs/ocfs2/slot_map.h                        |   32 +-
- fs/ocfs2/stack_o2cb.c                      |  420 +++++++++++++
- fs/ocfs2/stack_user.c                      |  883 +++++++++++++++++++++++++++
- fs/ocfs2/stackglue.c                       |  568 +++++++++++++++++
- fs/ocfs2/stackglue.h                       |  261 ++++++++
- fs/ocfs2/suballoc.c                        |  103 +++-
- fs/ocfs2/suballoc.h                        |    1 +
- fs/ocfs2/super.c                           |  208 ++++---
- fs/sysfs/symlink.c                         |    9 +-
- 42 files changed, 5230 insertions(+), 1038 deletions(-)
- create mode 100644 Documentation/ABI/obsolete/o2cb
- create mode 100644 Documentation/ABI/stable/o2cb
- create mode 100644 Documentation/ABI/testing/sysfs-ocfs2
- create mode 100644 fs/ocfs2/dlm/dlmdebug.h
- create mode 100644 fs/ocfs2/stack_o2cb.c
- create mode 100644 fs/ocfs2/stack_user.c
- create mode 100644 fs/ocfs2/stackglue.c
- create mode 100644 fs/ocfs2/stackglue.h
-
-Andi Kleen (1):
-      ocfs2: Convert ocfs2 over to unlocked_ioctl
-
-David Teigland (2):
-      ocfs2: handle async EAGAIN from NOQUEUE request
-      ocfs2: add fsdlm to stackglue
-
-Jan Kara (1):
-      ocfs2: Improve rename locking
-
-Jeff Mahoney (1):
-      ocfs2/cluster: Get rid of arguments to the timeout routines
-
-Joel Becker (33):
-      ocfs2: Make ocfs2_slot_info private.
-      ocfs2: Change the recovery map to an array of node numbers.
-      ocfs2: slot_map I/O based on max_slots.
-      ocfs2: De-magic the in-memory slot map.
-      ocfs2: Define the contents of the slot_map file.
-      ocfs2: New slot map format
-      ocfs2: Separate out dlm lock functions.
-      ocfs2: Use global DLM_ constants in generic code.
-      ocfs2: Use -errno instead of dlm_status for ocfs2_dlm_lock/unlock() API.
-      ocfs2: Create the lock status block union.
-      ocfs2: Introduce the new ocfs2_cluster_connect/disconnect() API.
-      ocfs2: Abstract out node number queries.
-      ocfs2: Move o2hb functionality into the stack glue.
-      ocfs2: Remove CANCELGRANT from the view of dlmglue.
-      ocfs2: Abstract out a debugging function for underlying dlms.
-      ocfs2: Clean up stackglue initialization
-      ocfs2: Split o2cb code from generic stack functions.
-      ocfs2: Create ocfs2_stack_operations and split out the o2cb stack.
-      ocfs2: Break out stackglue into modules.
-      ocfs2: Create stack glue sysfs files.
-      ocfs2: Add the USERSPACE_STACK incompat bit.
-      ocfs2: Add the 'cluster_stack' sysfs file.
-      ocfs2: Add the user stack module.
-      ocfs2: Add the ocfs2_control misc device.
-      ocfs2: Start the ocfs2_control handshake.
-      ocfs2: Introduce the DOWN message to ocfs2_control
-      ocfs2: Add the local node id to the handshake.
-      ocfs2: Add the 'set version' message to the ocfs2_control device.
-      ocfs2: Change mlog_bug_on to BUG_ON in ocfs2_lockid.h
-      ocfs2: Add kbuild for ocfs2_stack_user.ko
-      ocfs2: Allow selection of cluster plug-ins.
-      ocfs2: Document /sys/fs/ocfs2
-      ocfs2: Put tree in MAINTAINERS
-
-Julia Lawall (2):
-      fs/ocfs2/aops.c: test for IS_ERR rather than 0
-      ocfs2: Use BUG_ON
-
-Mark Fasheh (4):
-      ocfs2: Move slot map access into slot_map.c
-      ocfs2: Fill node number during cluster stack init
-      sysfs: Allow removal of symlinks in the sysfs root
-      ocfs2: Move /sys/o2cb to /sys/fs/o2cb
-
-Sunil Mushran (12):
-      ocfs2/dlm: Rename slabcache dlm_mle_cache to o2dlm_mle
-      ocfs2/dlm: Create slabcaches for lock and lockres
-      ocfs2/dlm: Link all lockres' to a tracking list
-      ocfs2/dlm: Create debugfs dirs
-      ocfs2/dlm: Dump the dlm state in a debugfs file
-      ocfs2/dlm: Dumps the lockres' into a debugfs file
-      ocfs2/dlm: Move struct dlm_master_list_entry to dlmcommon.h
-      ocfs2/dlm: Dumps the mles into a debugfs file
-      ocfs2/dlm: Dumps the purgelist into a debugfs file
-      ocfs2/dlm: Move dlm_print_one_mle() from dlmmaster.c to dlmdebug.c
-      ocfs2/dlm: Fix lockname in lockres print function
-      ocfs2/dlm: Cleanup lockres print
-
-Tao Ma (6):
-      ocfs2:  Reconnect after idle time out.
-      ocfs2: Add support for cross extent block
-      ocfs2: Enable cross extent block merge.
-      ocfs2: Add a new parameter for ocfs2_reserve_suballoc_bits
-      ocfs2: Add ac_alloc_slot in ocfs2_alloc_context
-      ocfs2: Add inode stealing for ocfs2_reserve_new_inode
+diff --git a/fs/ocfs2/journal.c b/fs/ocfs2/journal.c
+index c2e654e..ed0c6d0 100644
+--- a/fs/ocfs2/journal.c
++++ b/fs/ocfs2/journal.c
+@@ -1079,7 +1079,6 @@ static int ocfs2_recover_node(struct ocfs2_super *osb,
+ {
+ 	int status = 0;
+ 	int slot_num;
+-	struct ocfs2_slot_info *si = osb->slot_info;
+ 	struct ocfs2_dinode *la_copy = NULL;
+ 	struct ocfs2_dinode *tl_copy = NULL;
+ 
+@@ -1092,8 +1091,8 @@ static int ocfs2_recover_node(struct ocfs2_super *osb,
+ 	 * case we should've called ocfs2_journal_load instead. */
+ 	BUG_ON(osb->node_num == node_num);
+ 
+-	slot_num = ocfs2_node_num_to_slot(si, node_num);
+-	if (slot_num == OCFS2_INVALID_SLOT) {
++	slot_num = ocfs2_node_num_to_slot(osb, node_num);
++	if (slot_num == -ENOENT) {
+ 		status = 0;
+ 		mlog(0, "no slot for this node, so no recovery required.\n");
+ 		goto done;
+@@ -1183,23 +1182,24 @@ bail:
+  * slot info struct has been updated from disk. */
+ int ocfs2_mark_dead_nodes(struct ocfs2_super *osb)
+ {
+-	int status, i, node_num;
+-	struct ocfs2_slot_info *si = osb->slot_info;
++	unsigned int node_num;
++	int status, i;
+ 
+ 	/* This is called with the super block cluster lock, so we
+ 	 * know that the slot map can't change underneath us. */
+ 
+-	spin_lock(&si->si_lock);
+-	for(i = 0; i < si->si_num_slots; i++) {
++	spin_lock(&osb->osb_lock);
++	for (i = 0; i < osb->max_slots; i++) {
+ 		if (i == osb->slot_num)
+ 			continue;
+-		if (ocfs2_is_empty_slot(si, i))
++
++		status = ocfs2_slot_to_node_num_locked(osb, i, &node_num);
++		if (status == -ENOENT)
+ 			continue;
+ 
+-		node_num = si->si_global_node_nums[i];
+ 		if (ocfs2_node_map_test_bit(osb, &osb->recovery_map, node_num))
+ 			continue;
+-		spin_unlock(&si->si_lock);
++		spin_unlock(&osb->osb_lock);
+ 
+ 		/* Ok, we have a slot occupied by another node which
+ 		 * is not in the recovery map. We trylock his journal
+@@ -1215,9 +1215,9 @@ int ocfs2_mark_dead_nodes(struct ocfs2_super *osb)
+ 			goto bail;
+ 		}
+ 
+-		spin_lock(&si->si_lock);
++		spin_lock(&osb->osb_lock);
+ 	}
+-	spin_unlock(&si->si_lock);
++	spin_unlock(&osb->osb_lock);
+ 
+ 	status = 0;
+ bail:
+diff --git a/fs/ocfs2/ocfs2.h b/fs/ocfs2/ocfs2.h
+index 6546cef..ee3f675 100644
+--- a/fs/ocfs2/ocfs2.h
++++ b/fs/ocfs2/ocfs2.h
+@@ -179,6 +179,7 @@ enum ocfs2_mount_options
+ #define OCFS2_DEFAULT_ATIME_QUANTUM	60
+ 
+ struct ocfs2_journal;
++struct ocfs2_slot_info;
+ struct ocfs2_super
+ {
+ 	struct task_struct *commit_task;
+diff --git a/fs/ocfs2/slot_map.c b/fs/ocfs2/slot_map.c
+index f5727b8..762360d 100644
+--- a/fs/ocfs2/slot_map.c
++++ b/fs/ocfs2/slot_map.c
+@@ -42,13 +42,25 @@
+ 
+ #include "buffer_head_io.h"
+ 
++struct ocfs2_slot_info {
++	struct inode *si_inode;
++	struct buffer_head *si_bh;
++	unsigned int si_num_slots;
++	unsigned int si_size;
++	s16 si_global_node_nums[OCFS2_MAX_SLOTS];
++};
++
++
+ static s16 __ocfs2_node_num_to_slot(struct ocfs2_slot_info *si,
+ 				    s16 global);
+ static void __ocfs2_fill_slot(struct ocfs2_slot_info *si,
+ 			      s16 slot_num,
+ 			      s16 node_num);
+ 
+-/* post the slot information on disk into our slot_info struct. */
++/*
++ * Post the slot information on disk into our slot_info struct.
++ * Must be protected by osb_lock.
++ */
+ static void ocfs2_update_slot_info(struct ocfs2_slot_info *si)
+ {
+ 	int i;
+@@ -56,13 +68,10 @@ static void ocfs2_update_slot_info(struct ocfs2_slot_info *si)
+ 
+ 	/* we don't read the slot block here as ocfs2_super_lock
+ 	 * should've made sure we have the most recent copy. */
+-	spin_lock(&si->si_lock);
+ 	disk_info = (__le16 *) si->si_bh->b_data;
+ 
+ 	for (i = 0; i < si->si_size; i++)
+ 		si->si_global_node_nums[i] = le16_to_cpu(disk_info[i]);
+-
+-	spin_unlock(&si->si_lock);
+ }
+ 
+ int ocfs2_refresh_slot_info(struct ocfs2_super *osb)
+@@ -76,8 +85,11 @@ int ocfs2_refresh_slot_info(struct ocfs2_super *osb)
+ 
+ 	bh = si->si_bh;
+ 	ret = ocfs2_read_block(osb, bh->b_blocknr, &bh, 0, si->si_inode);
+-	if (ret == 0)
++	if (ret == 0) {
++		spin_lock(&osb->osb_lock);
+ 		ocfs2_update_slot_info(si);
++		spin_unlock(&osb->osb_lock);
++	}
+ 
+ 	return ret;
+ }
+@@ -90,10 +102,10 @@ static int ocfs2_update_disk_slots(struct ocfs2_super *osb,
+ 	int status, i;
+ 	__le16 *disk_info = (__le16 *) si->si_bh->b_data;
+ 
+-	spin_lock(&si->si_lock);
++	spin_lock(&osb->osb_lock);
+ 	for (i = 0; i < si->si_size; i++)
+ 		disk_info[i] = cpu_to_le16(si->si_global_node_nums[i]);
+-	spin_unlock(&si->si_lock);
++	spin_unlock(&osb->osb_lock);
+ 
+ 	status = ocfs2_write_block(osb, si->si_bh, si->si_inode);
+ 	if (status < 0)
+@@ -119,7 +131,8 @@ static s16 __ocfs2_node_num_to_slot(struct ocfs2_slot_info *si,
+ 	return ret;
+ }
+ 
+-static s16 __ocfs2_find_empty_slot(struct ocfs2_slot_info *si, s16 preferred)
++static s16 __ocfs2_find_empty_slot(struct ocfs2_slot_info *si,
++				   s16 preferred)
+ {
+ 	int i;
+ 	s16 ret = OCFS2_INVALID_SLOT;
+@@ -141,15 +154,36 @@ out:
+ 	return ret;
+ }
+ 
+-s16 ocfs2_node_num_to_slot(struct ocfs2_slot_info *si,
+-			   s16 global)
++int ocfs2_node_num_to_slot(struct ocfs2_super *osb, unsigned int node_num)
+ {
+-	s16 ret;
++	s16 slot;
++	struct ocfs2_slot_info *si = osb->slot_info;
+ 
+-	spin_lock(&si->si_lock);
+-	ret = __ocfs2_node_num_to_slot(si, global);
+-	spin_unlock(&si->si_lock);
+-	return ret;
++	spin_lock(&osb->osb_lock);
++	slot = __ocfs2_node_num_to_slot(si, node_num);
++	spin_unlock(&osb->osb_lock);
++
++	if (slot == OCFS2_INVALID_SLOT)
++		return -ENOENT;
++
++	return slot;
++}
++
++int ocfs2_slot_to_node_num_locked(struct ocfs2_super *osb, int slot_num,
++				  unsigned int *node_num)
++{
++	struct ocfs2_slot_info *si = osb->slot_info;
++
++	assert_spin_locked(&osb->osb_lock);
++
++	BUG_ON(slot_num < 0);
++	BUG_ON(slot_num > osb->max_slots);
++
++	if (si->si_global_node_nums[slot_num] == OCFS2_INVALID_SLOT)
++		return -ENOENT;
++
++	*node_num = si->si_global_node_nums[slot_num];
++	return 0;
+ }
+ 
+ static void __ocfs2_free_slot_info(struct ocfs2_slot_info *si)
+@@ -184,9 +218,9 @@ int ocfs2_clear_slot(struct ocfs2_super *osb, s16 slot_num)
+ 	if (si == NULL)
+ 		return 0;
+ 
+-	spin_lock(&si->si_lock);
++	spin_lock(&osb->osb_lock);
+ 	__ocfs2_fill_slot(si, slot_num, OCFS2_INVALID_SLOT);
+-	spin_unlock(&si->si_lock);
++	spin_unlock(&osb->osb_lock);
+ 
+ 	return ocfs2_update_disk_slots(osb, osb->slot_info);
+ }
+@@ -206,7 +240,6 @@ int ocfs2_init_slot_info(struct ocfs2_super *osb)
+ 		goto bail;
+ 	}
+ 
+-	spin_lock_init(&si->si_lock);
+ 	si->si_num_slots = osb->max_slots;
+ 	si->si_size = OCFS2_MAX_SLOTS;
+ 
+@@ -235,7 +268,7 @@ int ocfs2_init_slot_info(struct ocfs2_super *osb)
+ 
+ 	si->si_inode = inode;
+ 	si->si_bh = bh;
+-	osb->slot_info = si;
++	osb->slot_info = (struct ocfs2_slot_info *)si;
+ bail:
+ 	if (status < 0 && si)
+ 		__ocfs2_free_slot_info(si);
+@@ -261,9 +294,9 @@ int ocfs2_find_slot(struct ocfs2_super *osb)
+ 
+ 	si = osb->slot_info;
+ 
++	spin_lock(&osb->osb_lock);
+ 	ocfs2_update_slot_info(si);
+ 
+-	spin_lock(&si->si_lock);
+ 	/* search for ourselves first and take the slot if it already
+ 	 * exists. Perhaps we need to mark this in a variable for our
+ 	 * own journal recovery? Possibly not, though we certainly
+@@ -274,7 +307,7 @@ int ocfs2_find_slot(struct ocfs2_super *osb)
+ 		 * one. */
+ 		slot = __ocfs2_find_empty_slot(si, osb->preferred_slot);
+ 		if (slot == OCFS2_INVALID_SLOT) {
+-			spin_unlock(&si->si_lock);
++			spin_unlock(&osb->osb_lock);
+ 			mlog(ML_ERROR, "no free slots available!\n");
+ 			status = -EINVAL;
+ 			goto bail;
+@@ -285,7 +318,7 @@ int ocfs2_find_slot(struct ocfs2_super *osb)
+ 
+ 	__ocfs2_fill_slot(si, slot, osb->node_num);
+ 	osb->slot_num = slot;
+-	spin_unlock(&si->si_lock);
++	spin_unlock(&osb->osb_lock);
+ 
+ 	mlog(0, "taking node slot %d\n", osb->slot_num);
+ 
+@@ -306,12 +339,12 @@ void ocfs2_put_slot(struct ocfs2_super *osb)
+ 	if (!si)
+ 		return;
+ 
++	spin_lock(&osb->osb_lock);
+ 	ocfs2_update_slot_info(si);
+ 
+-	spin_lock(&si->si_lock);
+ 	__ocfs2_fill_slot(si, osb->slot_num, OCFS2_INVALID_SLOT);
+ 	osb->slot_num = OCFS2_INVALID_SLOT;
+-	spin_unlock(&si->si_lock);
++	spin_unlock(&osb->osb_lock);
+ 
+ 	status = ocfs2_update_disk_slots(osb, si);
+ 	if (status < 0) {
+diff --git a/fs/ocfs2/slot_map.h b/fs/ocfs2/slot_map.h
+index b029ffd..5118e89 100644
+--- a/fs/ocfs2/slot_map.h
++++ b/fs/ocfs2/slot_map.h
+@@ -27,16 +27,6 @@
+ #ifndef SLOTMAP_H
+ #define SLOTMAP_H
+ 
+-struct ocfs2_slot_info {
+-	spinlock_t si_lock;
+-
+-	struct inode *si_inode;
+-	struct buffer_head *si_bh;
+-	unsigned int si_num_slots;
+-	unsigned int si_size;
+-	s16 si_global_node_nums[OCFS2_MAX_SLOTS];
+-};
+-
+ int ocfs2_init_slot_info(struct ocfs2_super *osb);
+ void ocfs2_free_slot_info(struct ocfs2_super *osb);
+ 
+@@ -45,17 +35,10 @@ void ocfs2_put_slot(struct ocfs2_super *osb);
+ 
+ int ocfs2_refresh_slot_info(struct ocfs2_super *osb);
+ 
+-s16 ocfs2_node_num_to_slot(struct ocfs2_slot_info *si,
+-			   s16 global);
+-int ocfs2_clear_slot(struct ocfs2_super *osb, s16 slot_num);
++int ocfs2_node_num_to_slot(struct ocfs2_super *osb, unsigned int node_num);
++int ocfs2_slot_to_node_num_locked(struct ocfs2_super *osb, int slot_num,
++				  unsigned int *node_num);
+ 
+-static inline int ocfs2_is_empty_slot(struct ocfs2_slot_info *si,
+-				      int slot_num)
+-{
+-	BUG_ON(slot_num == OCFS2_INVALID_SLOT);
+-	assert_spin_locked(&si->si_lock);
+-
+-	return si->si_global_node_nums[slot_num] == OCFS2_INVALID_SLOT;
+-}
++int ocfs2_clear_slot(struct ocfs2_super *osb, s16 slot_num);
+ 
+ #endif
+-- 
+1.5.4.1
 
