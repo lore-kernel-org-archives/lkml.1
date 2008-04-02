@@ -1,55 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756034AbYDBLFh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755321AbYDBLHb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756034AbYDBLFh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 07:05:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753052AbYDBLF2
+	id S1755321AbYDBLHb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 07:07:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753427AbYDBLHX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 07:05:28 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:52507 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752913AbYDBLF2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 07:05:28 -0400
-Subject: Re: GFP_ATOMIC page allocation failures.
-From: Peter Zijlstra <peterz@infradead.org>
-To: David Miller <davem@davemloft.net>
-Cc: kosaki.motohiro@jp.fujitsu.com, akpm@linux-foundation.org,
-       csnook@redhat.com, davej@codemonkey.org.uk, nickpiggin@yahoo.com.au,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-In-Reply-To: <20080402.012406.246863209.davem@davemloft.net>
-References: <47F32789.2070703@redhat.com>
-	 <20080402005646.f8df1c1b.akpm@linux-foundation.org>
-	 <20080402171104.9591.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-	 <20080402.012406.246863209.davem@davemloft.net>
-Content-Type: text/plain
-Date: Wed, 02 Apr 2008 13:04:59 +0200
-Message-Id: <1207134299.8514.771.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.21.92 
-Content-Transfer-Encoding: 7bit
+	Wed, 2 Apr 2008 07:07:23 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:19520 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753370AbYDBLHX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Apr 2008 07:07:23 -0400
+Date: Wed, 2 Apr 2008 13:07:19 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: paulmck@linux.vnet.ibm.com, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Vegard Nossum <vegard.nossum@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: kmemcheck caught read from freed memory (cfq_free_io_context)
+Message-ID: <20080402110718.GU12774@kernel.dk>
+References: <19f34abd0804011408v19e13b6cje1ca89a2a471484c@mail.gmail.com> <1207085788.29991.6.camel@lappy> <20080402071709.GC12774@kernel.dk> <Pine.LNX.4.64.0804021020280.25738@sbz-30.cs.Helsinki.FI> <20080402072456.GI12774@kernel.dk> <20080402072846.GA16454@elte.hu> <20080402105539.GA5610@linux.vnet.ibm.com> <84144f020804020401j4e5863dcofd16662baa54574@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <84144f020804020401j4e5863dcofd16662baa54574@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-04-02 at 01:24 -0700, David Miller wrote:
-> From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> Date: Wed, 02 Apr 2008 17:17:50 +0900
+On Wed, Apr 02 2008, Pekka Enberg wrote:
+> Hi Paul,
 > 
-> > if network guys hope known-good driver should call 
-> > __netdev_alloc_skb(dev, length, GFP_ATOMIC|__GFP_NOWARN) instead netdev_alloc_skb,
-> > I think we should make netdev_alloc_skb_nowarn.
+> On Wed, Apr 2, 2008 at 1:55 PM, Paul E. McKenney
+> <paulmck@linux.vnet.ibm.com> wrote:
+> >  I will check this when I get back to some bandwidth -- but in the meantime,
+> >  does kmemcheck special-case SLAB_DESTROY_BY_RCU?  It is legal to access
+> >  newly-freed items in that case, as long as you did rcu_read_lock()
+> >  before gaining a reference to them and don't hold the reference past
+> >  the matching rcu_read_unlock().
 > 
-> Giving it a proper name like this takes away the indication that this
-> situation is very special.
-> 
-> Two leading underscores to an interface means "something special and
-> unusual requiring more careful consideration than usual is occuring
-> here."  netdev_alloc_skb_nowarn() on the other hand, does not
-> convey this meaning.
-> 
-> And we will have very few drivers that use this construct, thus it
-> really is best to handle things the way Andrew has.
+> No, kmemcheck is work in progress and does not know about
+> SLAB_DESTROY_BY_RCU yet. The reason I asked Vegard to post the warning
+> was because Peter, Vegard, and myself identified this particular
+> warning as a real problem. But yeah, kmemcheck can cause false
+> positives for RCU for now.
 
-Would we not hope that most net drivers can handle {,net}dev_alloc_skb()
-failing? Otherwise we have some serious trouble.
+Makes sense, and to me Pauls analysis of the code looks totally correct
+- there's no bug there, at least related to hlist traversal and
+kmem_cache_free(), since we are under rcu_read_lock() and thus hold off
+the grace for freeing.
+
+-- 
+Jens Axboe
 
