@@ -1,44 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754899AbYDBK7k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755745AbYDBK7x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754899AbYDBK7k (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 06:59:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752563AbYDBK7d
+	id S1755745AbYDBK7x (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 06:59:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753415AbYDBK7f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 06:59:33 -0400
-Received: from relay2.sgi.com ([192.48.171.30]:58823 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752530AbYDBK7c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 06:59:32 -0400
-Date: Wed, 2 Apr 2008 05:59:25 -0500
-From: Robin Holt <holt@sgi.com>
-To: Andrea Arcangeli <andrea@qumranet.com>
-Cc: Christoph Lameter <clameter@sgi.com>, Hugh Dickins <hugh@veritas.com>,
-       Robin Holt <holt@sgi.com>, Avi Kivity <avi@qumranet.com>,
-       Izik Eidus <izike@qumranet.com>, kvm-devel@lists.sourceforge.net,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, general@lists.openfabrics.org,
-       Steve Wise <swise@opengridcomputing.com>,
-       Roland Dreier <rdreier@cisco.com>, Kanoj Sarcar <kanojsarcar@yahoo.com>,
-       steiner@sgi.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       daniel.blueman@quadrics.com, Nick Piggin <npiggin@suse.de>
-Subject: Re: [patch 1/9] EMM Notifier: The notifier calls
-Message-ID: <20080402105925.GC22493@sgi.com>
-References: <20080401205531.986291575@sgi.com> <20080401205635.793766935@sgi.com> <20080402064952.GF19189@duo.random>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080402064952.GF19189@duo.random>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+	Wed, 2 Apr 2008 06:59:35 -0400
+Received: from viefep20-int.chello.at ([62.179.121.40]:38463 "EHLO
+	viefep20-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752902AbYDBK7e (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Apr 2008 06:59:34 -0400
+Subject: Re: kmemcheck caught read from freed memory (cfq_free_io_context)
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: paulmck@linux.vnet.ibm.com
+Cc: Ingo Molnar <mingo@elte.hu>, Jens Axboe <jens.axboe@oracle.com>,
+       Pekka J Enberg <penberg@cs.helsinki.fi>,
+       Vegard Nossum <vegard.nossum@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <20080402105539.GA5610@linux.vnet.ibm.com>
+References: <19f34abd0804011408v19e13b6cje1ca89a2a471484c@mail.gmail.com>
+	 <1207085788.29991.6.camel@lappy> <20080402071709.GC12774@kernel.dk>
+	 <Pine.LNX.4.64.0804021020280.25738@sbz-30.cs.Helsinki.FI>
+	 <20080402072456.GI12774@kernel.dk> <20080402072846.GA16454@elte.hu>
+	 <20080402105539.GA5610@linux.vnet.ibm.com>
+Content-Type: text/plain
+Date: Wed, 02 Apr 2008 12:59:21 +0200
+Message-Id: <1207133961.8514.768.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.21.92 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 02, 2008 at 08:49:52AM +0200, Andrea Arcangeli wrote:
-> Most other patches will apply cleanly on top of my coming mmu
-> notifiers #v10 that I hope will go in -mm.
+On Wed, 2008-04-02 at 03:55 -0700, Paul E. McKenney wrote:
+> On Wed, Apr 02, 2008 at 09:28:46AM +0200, Ingo Molnar wrote:
+> > 
+> > * Jens Axboe <jens.axboe@oracle.com> wrote:
+> > 
+> > > On Wed, Apr 02 2008, Pekka J Enberg wrote:
+> > > > On Wed, 2 Apr 2008, Jens Axboe wrote:
+> > > > > Good catch, I wonder why it didn't complain in my testing. I've added a
+> > > > > patch to fix that, please see it here:
+> > > > 
+> > > > You probably don't have kmemcheck in your kernel ;-)
+> > > 
+> > > Ehm no, you are right :)
+> > 
+> > ... and you can get kmemcheck by testing on x86.git/latest:
+> > 
+> >   http://people.redhat.com/mingo/x86.git/README
+> > 
+> > ;-)
 > 
-> For #v10 the only two left open issues to discuss are:
+> I will check this when I get back to some bandwidth -- but in the meantime,
+> does kmemcheck special-case SLAB_DESTROY_BY_RCU?  It is legal to access
+> newly-freed items in that case, as long as you did rcu_read_lock()
+> before gaining a reference to them and don't hold the reference past
+> the matching rcu_read_unlock().
 
-Does your v10 allow sleeping inside the callbacks?
+I don't think it does.
 
-Thanks,
-Robin
+It would have to register an call_rcu callback itself in order to mark
+it freed - and handle the race with the object being handed out again.
+
