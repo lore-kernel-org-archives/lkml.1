@@ -1,85 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760469AbYDBGdP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759585AbYDBGjn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760469AbYDBGdP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 02:33:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753813AbYDBGc6
+	id S1759585AbYDBGjn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 02:39:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752084AbYDBGjg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 02:32:58 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:56171 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753174AbYDBGc5 (ORCPT
+	Wed, 2 Apr 2008 02:39:36 -0400
+Received: from mga06.intel.com ([134.134.136.21]:10729 "EHLO
+	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752030AbYDBGjf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 02:32:57 -0400
-Date: Tue, 1 Apr 2008 23:30:47 -0700
-From: Greg KH <greg@kroah.com>
-To: Kay Sievers <kay.sievers@vrfy.org>
-Cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Hannes Reinecke <hare@suse.de>, linux-scsi <linux-scsi@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/2] sysfs: allow the group is_visible() method to
-	return a mode and add an update API
-Message-ID: <20080402063047.GC8158@kroah.com>
-References: <1206134832.2961.64.camel@localhost.localdomain> <20080321222635.GA2674@kroah.com> <1206208949.4393.25.camel@localhost.localdomain> <1206896083.4224.40.camel@localhost.localdomain> <1206970929.20492.27.camel@lov.site>
+	Wed, 2 Apr 2008 02:39:35 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,591,1199692800"; 
+   d="scan'208";a="266481752"
+Message-ID: <47F3294E.8090805@linux.intel.com>
+Date: Tue, 01 Apr 2008 23:35:58 -0700
+From: Arjan van de Ven <arjan@linux.intel.com>
+User-Agent: Thunderbird 2.0.0.12 (Windows/20080213)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1206970929.20492.27.camel@lov.site>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: =?ISO-8859-1?Q?Thomas_Hellstr=F6m?= <thomas@tungstengraphics.com>
+CC: Andi Kleen <andi@firstfloor.org>, Dave Airlie <airlied@redhat.com>,
+       linux-kernel@vger.kernel.org, tglx@linutronix.de, mingo@redhat.com
+Subject: Re: [PATCH] x86: create array based interface to change page attribute
+References: <1206940788.7250.13.camel@clockmaker.usersys.redhat.com> <87myof8ief.fsf@basil.nowhere.org> <47F098E8.1050605@tungstengraphics.com> <20080331083816.GC29105@one.firstfloor.org> <47F0A988.7010707@tungstengraphics.com> <20080331091829.GD29105@one.firstfloor.org> <47F0C6C2.2000004@tungstengraphics.com> <47F10C62.7040500@linux.intel.com> <47F11443.7050302@tungstengraphics.com> <47F11616.3020403@linux.intel.com> <47F11ED3.40803@tungstengraphics.com> <47F2A202.1040900@linux.intel.com> <47F2A948.5070108@tungstengraphics.com> <47F2B788.1030101@linux.intel.com> <47F32816.4060806@tungstengraphics.com>
+In-Reply-To: <47F32816.4060806@tungstengraphics.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 31, 2008 at 03:42:09PM +0200, Kay Sievers wrote:
-> On Sun, 2008-03-30 at 11:54 -0500, James Bottomley wrote:
-> > On Sat, 2008-03-22 at 13:02 -0500, James Bottomley wrote:
-> > > On Fri, 2008-03-21 at 15:26 -0700, Greg KH wrote:
-> > > > On Fri, Mar 21, 2008 at 04:27:12PM -0500, James Bottomley wrote:
-> > > > > We have a problem in scsi_transport_spi in that we need to customise
-> > > > > not only the visibility of the attributes, but also their mode.  Fix
-> > > > > this by making the is_visible() callback return a mode, with 0
-> > > > > indicating is not visible.
-> > > > > 
-> > > > > Also add a sysfs_update_group() API to allow us to change either the
-> > > > > visibility or mode of the files at any time on the fly.
-> > > > > 
-> > > > > Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
-> > > > > ---
-> > > > > 
-> > > > > Greg, can I take this through SCSI, please ... assuming it's OK?  We
-> > > > > need this to fix up the SPI transport class.
-> > > > 
-> > > > Sure.  But can you document that "update" field a bit more so we can
-> > > > remember what it means in the future?
-> > > 
-> > > How about this?  I also added docbook for create and update attribute
-> > > group.
-> 
-> Looks good to me.
-> 
-> I think with the "visible" stuff for attribute groups, will be able to
-> fix the USB event timing problem, by moving the creation of the device
-> attributes to default attributes. So I'm looking forward to have this in
-> the tree.
+Thomas Hellström wrote:
 
-Me too.
+> But what mappings are there,  immediately after alloc_page(), that 
+> set_memory_np won't catch? 
 
-> > Can I get an ACK from someone from sysfs for this, please?
-> 
-> > > ---
-> > > 
-> > > From: James Bottomley <James.Bottomley@HansenPartnership.com>
-> > > Date: Thu, 20 Mar 2008 20:47:52 -0500
-> > > Subject: [SCSI] sysfs: make group is_valid return a mode_t
-> > > 
-> > > We have a problem in scsi_transport_spi in that we need to customise
-> > > not only the visibility of the attributes, but also their mode.  Fix
-> > > this by making the is_visible() callback return a mode, with 0
-> > > indicating is not visible.
-> > > 
-> > > Also add a sysfs_update_group() API to allow us to change either the
-> > > visibility or mode of the files at any time on the fly.
-> 
-> Acked-by: Kay Sievers <kay.sievers@vrfy.org>
+For example on x86 64bit, the kernel text is mapped (to allow relocatable) in another
+space as well.. and to allow 2Mb tlbs for this, that second mapping is bigger than it strictly needs to be.
+So your alloc_page() could get a page from the free pool that comes from the pages that have a second mapping
+due to this rounding.
+(and more fun, since it's close to frequently accessed memory, the hw prefetchers may actually just decide to pull
+such pages into the cache preemptively)
 
-Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
 
+> Drivers relying on set_memory_uc touching all mappings the driver hasn't 
+> set up itself must then have the same problem and needs to be fixed; 
+> referring in particular to agpgart for which driver the old CPA 
+> functionality was once created, IIRC.
+
+"uc" is different than "np"; for "uc" the implementation, if your cpu needs this, will fix
+up the shadow text mappings already today.
+
+for "present" this doesn't make sense, since no cpu needs this.
