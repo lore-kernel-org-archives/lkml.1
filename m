@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760875AbYDBVrg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761625AbYDBVrw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760875AbYDBVrg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 17:47:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763000AbYDBVo1
+	id S1761625AbYDBVrw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 17:47:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763073AbYDBVoi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 17:44:27 -0400
-Received: from saeurebad.de ([85.214.36.134]:60248 "EHLO saeurebad.de"
+	Wed, 2 Apr 2008 17:44:38 -0400
+Received: from saeurebad.de ([85.214.36.134]:60280 "EHLO saeurebad.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760279AbYDBVo0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 17:44:26 -0400
+	id S1760707AbYDBVoh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Apr 2008 17:44:37 -0400
 From: Johannes Weiner <hannes@saeurebad.de>
 To: linux-kernel@vger.kernel.org
 Cc: linux-mm@kvack.org, mingo@elte.hu, davem@davemloft.net,
@@ -18,9 +18,9 @@ Cc: linux-mm@kvack.org, mingo@elte.hu, davem@davemloft.net,
        paulus@samba.org, schwidefsky@de.ibm.com, lethal@linux-sh.org,
        jdike@addtoit.com, miles@gnu.org, chris@zankel.net,
        rmk@arm.linux.org.uk, tony.luck@intel.com
-Subject: [RFC 14/22] parisc: Use generic show_mem()
-Date: Wed,  2 Apr 2008 22:40:20 +0200
-Message-Id: <12071689863221-git-send-email-hannes@saeurebad.de>
+Subject: [RFC 15/22] powerpc: Use generic show_mem()
+Date: Wed,  2 Apr 2008 22:40:21 +0200
+Message-Id: <12071689982382-git-send-email-hannes@saeurebad.de>
 X-Mailer: git-send-email 1.5.2.2
 In-Reply-To: <12071688283927-git-send-email-hannes@saeurebad.de>
 References: <12071688283927-git-send-email-hannes@saeurebad.de>
@@ -32,103 +32,71 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Johannes Weiner <hannes@saeurebad.de>
 
-diff --git a/arch/parisc/Kconfig b/arch/parisc/Kconfig
-index 9ec4fcd..bc7a19d 100644
---- a/arch/parisc/Kconfig
-+++ b/arch/parisc/Kconfig
-@@ -240,9 +240,6 @@ config NODES_SHIFT
- 	default "3"
- 	depends on NEED_MULTIPLE_NODES
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 8950e0c..1189d8d 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -350,9 +350,6 @@ config ARCH_SPARSEMEM_DEFAULT
+ config ARCH_POPULATES_NODE_MAP
+ 	def_bool y
  
 -config HAVE_ARCH_SHOW_MEM
 -	def_bool y
 -
- source "kernel/Kconfig.preempt"
- source "kernel/Kconfig.hz"
  source "mm/Kconfig"
-diff --git a/arch/parisc/mm/init.c b/arch/parisc/mm/init.c
-index eb80f5e..e8e9891 100644
---- a/arch/parisc/mm/init.c
-+++ b/arch/parisc/mm/init.c
-@@ -548,78 +548,6 @@ void __init mem_init(void)
  
- unsigned long *empty_zero_page __read_mostly;
+ config ARCH_MEMORY_PROBE
+diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
+index be5c506..fcbae37 100644
+--- a/arch/powerpc/mm/mem.c
++++ b/arch/powerpc/mm/mem.c
+@@ -164,46 +164,6 @@ walk_memory_resource(unsigned long start_pfn, unsigned long nr_pages, void *arg,
+ 
+ #endif /* CONFIG_MEMORY_HOTPLUG */
  
 -void show_mem(void)
 -{
--	int i,free = 0,total = 0,reserved = 0;
--	int shared = 0, cached = 0;
+-	unsigned long total = 0, reserved = 0;
+-	unsigned long shared = 0, cached = 0;
+-	unsigned long highmem = 0;
+-	struct page *page;
+-	pg_data_t *pgdat;
+-	unsigned long i;
 -
--	printk(KERN_INFO "Mem-info:\n");
+-	printk("Mem-info:\n");
 -	show_free_areas();
--	printk(KERN_INFO "Free swap:	 %6ldkB\n",
--				nr_swap_pages<<(PAGE_SHIFT-10));
--#ifndef CONFIG_DISCONTIGMEM
--	i = max_mapnr;
--	while (i-- > 0) {
--		total++;
--		if (PageReserved(mem_map+i))
--			reserved++;
--		else if (PageSwapCache(mem_map+i))
--			cached++;
--		else if (!page_count(&mem_map[i]))
--			free++;
--		else
--			shared += page_count(&mem_map[i]) - 1;
--	}
--#else
--	for (i = 0; i < npmem_ranges; i++) {
--		int j;
--
--		for (j = node_start_pfn(i); j < node_end_pfn(i); j++) {
--			struct page *p;
--			unsigned long flags;
--
--			pgdat_resize_lock(NODE_DATA(i), &flags);
--			p = nid_page_nr(i, j) - node_start_pfn(i);
--
+-	printk("Free swap:       %6ldkB\n", nr_swap_pages<<(PAGE_SHIFT-10));
+-	for_each_online_pgdat(pgdat) {
+-		unsigned long flags;
+-		pgdat_resize_lock(pgdat, &flags);
+-		for (i = 0; i < pgdat->node_spanned_pages; i++) {
+-			if (!pfn_valid(pgdat->node_start_pfn + i))
+-				continue;
+-			page = pgdat_page_nr(pgdat, i);
 -			total++;
--			if (PageReserved(p))
+-			if (PageHighMem(page))
+-				highmem++;
+-			if (PageReserved(page))
 -				reserved++;
--			else if (PageSwapCache(p))
+-			else if (PageSwapCache(page))
 -				cached++;
--			else if (!page_count(p))
--				free++;
--			else
--				shared += page_count(p) - 1;
--			pgdat_resize_unlock(NODE_DATA(i), &flags);
--        	}
--	}
--#endif
--	printk(KERN_INFO "%d pages of RAM\n", total);
--	printk(KERN_INFO "%d reserved pages\n", reserved);
--	printk(KERN_INFO "%d pages shared\n", shared);
--	printk(KERN_INFO "%d pages swap cached\n", cached);
--
--
--#ifdef CONFIG_DISCONTIGMEM
--	{
--		struct zonelist *zl;
--		int i, j, k;
--
--		for (i = 0; i < npmem_ranges; i++) {
--			for (j = 0; j < MAX_NR_ZONES; j++) {
--				zl = NODE_DATA(i)->node_zonelists + j;
--
--				printk("Zone list for zone %d on node %d: ", j, i);
--				for (k = 0; zl->zones[k] != NULL; k++) 
--					printk("[%d/%s] ", zone_to_nid(zl->zones[k]), zl->zones[k]->name);
--				printk("\n");
--			}
+-			else if (page_count(page))
+-				shared += page_count(page) - 1;
 -		}
+-		pgdat_resize_unlock(pgdat, &flags);
 -	}
+-	printk("%ld pages of RAM\n", total);
+-#ifdef CONFIG_HIGHMEM
+-	printk("%ld pages of HIGHMEM\n", highmem);
 -#endif
+-	printk("%ld reserved pages\n", reserved);
+-	printk("%ld pages shared\n", shared);
+-	printk("%ld pages swap cached\n", cached);
 -}
 -
--
- static void __init map_pages(unsigned long start_vaddr, unsigned long start_paddr, unsigned long size, pgprot_t pgprot)
- {
- 	pgd_t *pg_dir;
+ /*
+  * Initialize the bootmem system and give it all the memory we
+  * have available.  If we are using highmem, we only put the
 -- 
 1.5.2.2
 
