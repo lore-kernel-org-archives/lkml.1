@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763828AbYDBUY7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763906AbYDBUZ2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763828AbYDBUY7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 16:24:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761618AbYDBURb
+	id S1763906AbYDBUZ2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 16:25:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753652AbYDBURJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 16:17:31 -0400
-Received: from ns.suse.de ([195.135.220.2]:36611 "EHLO mx1.suse.de"
+	Wed, 2 Apr 2008 16:17:09 -0400
+Received: from ns2.suse.de ([195.135.220.15]:33007 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760661AbYDBUR1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 16:17:27 -0400
+	id S1761549AbYDBURH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Apr 2008 16:17:07 -0400
 From: Mark Fasheh <mfasheh@suse.com>
 To: linux-kernel@vger.kernel.org
 Cc: ocfs2-devel@oss.oracle.com, Joel Becker <joel.becker@oracle.com>
-Subject: [PATCH 23/62] ocfs2: Create stack glue sysfs files.
-Date: Wed,  2 Apr 2008 13:14:33 -0700
-Message-Id: <12071673661674-git-send-email-mfasheh@suse.com>
+Subject: [PATCH 13/62] ocfs2: Abstract out node number queries.
+Date: Wed,  2 Apr 2008 13:14:23 -0700
+Message-Id: <12071673461268-git-send-email-mfasheh@suse.com>
 X-Mailer: git-send-email 1.5.2.4
-In-Reply-To: <1207167363119-git-send-email-mfasheh@suse.com>
+In-Reply-To: <1207167343926-git-send-email-mfasheh@suse.com>
 References: <12071673121124-git-send-email-mfasheh@suse.com>
  <1207167318479-git-send-email-mfasheh@suse.com>
  <12071673203909-git-send-email-mfasheh@suse.com>
@@ -30,181 +30,163 @@ References: <12071673121124-git-send-email-mfasheh@suse.com>
  <12071673391031-git-send-email-mfasheh@suse.com>
  <12071673413492-git-send-email-mfasheh@suse.com>
  <1207167343926-git-send-email-mfasheh@suse.com>
- <12071673461268-git-send-email-mfasheh@suse.com>
- <12071673481928-git-send-email-mfasheh@suse.com>
- <12071673492775-git-send-email-mfasheh@suse.com>
- <12071673511262-git-send-email-mfasheh@suse.com>
- <12071673543752-git-send-email-mfasheh@suse.com>
- <1207167355295-git-send-email-mfasheh@suse.com>
- <12071673571757-git-send-email-mfasheh@suse.com>
- <12071673591158-git-send-email-mfasheh@suse.com>
- <12071673613757-git-send-email-mfasheh@suse.com>
- <1207167363119-git-send-email-mfasheh@suse.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Joel Becker <joel.becker@oracle.com>
 
-Introduce a set of sysfs files that describe the current stack glue
-state.  The files live under /sys/fs/ocfs2.  The locking_protocol file
-displays the version of ocfs2's locking code.  The
-loaded_cluster_plugins file displays all of the currently loaded stack
-plugins.  When filesystems are mounted, the active_cluster_plugin file
-will display the plugin in use.
+ocfs2 asks the cluster stack for the local node's node number for two
+reasons; to fill the slot map and to print it. While the slot map isn't
+necessary for userspace cluster stacks, the printing is very nice for
+debugging. Thus we add ocfs2_cluster_this_node() as a generic API to get
+this value. It is anticipated that the slot map will not be used under a
+userspace cluster stack, so validity checks of the node num only need to
+exist in the slot map code. Otherwise, it just gets used and printed as an
+opaque value.
+
+[ Fixed up some "int" versus "unsigned int" issues and made osb->node_num
+  truly opaque. --Mark ]
 
 Signed-off-by: Joel Becker <joel.becker@oracle.com>
 Signed-off-by: Mark Fasheh <mfasheh@suse.com>
 ---
- fs/ocfs2/stackglue.c |  121 +++++++++++++++++++++++++++++++++++++++++++++++++-
- 1 files changed, 120 insertions(+), 1 deletions(-)
+ fs/ocfs2/ocfs2.h     |    2 +-
+ fs/ocfs2/slot_map.c  |    2 --
+ fs/ocfs2/stackglue.c |   17 +++++++++++++++++
+ fs/ocfs2/stackglue.h |    1 +
+ fs/ocfs2/super.c     |   22 +++++++++++-----------
+ 5 files changed, 30 insertions(+), 14 deletions(-)
 
+diff --git a/fs/ocfs2/ocfs2.h b/fs/ocfs2/ocfs2.h
+index 664e4fe..7006aba 100644
+--- a/fs/ocfs2/ocfs2.h
++++ b/fs/ocfs2/ocfs2.h
+@@ -218,7 +218,7 @@ struct ocfs2_super
+ 	unsigned int s_atime_quantum;
+ 
+ 	unsigned int max_slots;
+-	s16 node_num;
++	unsigned int node_num;
+ 	int slot_num;
+ 	int preferred_slot;
+ 	int s_sectsize_bits;
+diff --git a/fs/ocfs2/slot_map.c b/fs/ocfs2/slot_map.c
+index 63fb1b2..bb5ff89 100644
+--- a/fs/ocfs2/slot_map.c
++++ b/fs/ocfs2/slot_map.c
+@@ -73,8 +73,6 @@ static void ocfs2_set_slot(struct ocfs2_slot_info *si,
+ 			   int slot_num, unsigned int node_num)
+ {
+ 	BUG_ON((slot_num < 0) || (slot_num >= si->si_num_slots));
+-	BUG_ON((node_num == O2NM_INVALID_NODE_NUM) ||
+-	       (node_num >= O2NM_MAX_NODES));
+ 
+ 	si->si_slots[slot_num].sl_valid = 1;
+ 	si->si_slots[slot_num].sl_node_num = node_num;
 diff --git a/fs/ocfs2/stackglue.c b/fs/ocfs2/stackglue.c
-index 1978c9c..76ae4fc 100644
+index f6f309a..8146863 100644
 --- a/fs/ocfs2/stackglue.c
 +++ b/fs/ocfs2/stackglue.c
-@@ -23,6 +23,9 @@
- #include <linux/module.h>
- #include <linux/slab.h>
- #include <linux/kmod.h>
-+#include <linux/fs.h>
-+#include <linux/kobject.h>
-+#include <linux/sysfs.h>
+@@ -25,6 +25,8 @@
+ #include <linux/fs.h>
  
+ #include "cluster/masklog.h"
++#include "cluster/nodemanager.h"
++
  #include "stackglue.h"
  
-@@ -335,14 +338,130 @@ int ocfs2_cluster_this_node(unsigned int *node)
- EXPORT_SYMBOL_GPL(ocfs2_cluster_this_node);
- 
- 
--static int __init ocfs2_stack_glue_init(void)
-+/*
-+ * Sysfs bits
-+ */
-+
-+static ssize_t ocfs2_max_locking_protocol_show(struct kobject *kobj,
-+					       struct kobj_attribute *attr,
-+					       char *buf)
-+{
-+	ssize_t ret = 0;
-+
-+	spin_lock(&ocfs2_stack_lock);
-+	if (lproto)
-+		ret = snprintf(buf, PAGE_SIZE, "%u.%u\n",
-+			       lproto->lp_max_version.pv_major,
-+			       lproto->lp_max_version.pv_minor);
-+	spin_unlock(&ocfs2_stack_lock);
-+
-+	return ret;
-+}
-+
-+static struct kobj_attribute ocfs2_attr_max_locking_protocol =
-+	__ATTR(max_locking_protocol, S_IFREG | S_IRUGO,
-+	       ocfs2_max_locking_protocol_show, NULL);
-+
-+static ssize_t ocfs2_loaded_cluster_plugins_show(struct kobject *kobj,
-+						 struct kobj_attribute *attr,
-+						 char *buf)
- {
-+	ssize_t ret = 0, total = 0, remain = PAGE_SIZE;
-+	struct ocfs2_stack_plugin *p;
-+
-+	spin_lock(&ocfs2_stack_lock);
-+	list_for_each_entry(p, &ocfs2_stack_list, sp_list) {
-+		ret = snprintf(buf, remain, "%s\n",
-+			       p->sp_name);
-+		if (ret < 0) {
-+			total = ret;
-+			break;
-+		}
-+		if (ret == remain) {
-+			/* snprintf() didn't fit */
-+			total = -E2BIG;
-+			break;
-+		}
-+		total += ret;
-+		remain -= ret;
-+	}
-+	spin_unlock(&ocfs2_stack_lock);
-+
-+	return total;
-+}
-+
-+static struct kobj_attribute ocfs2_attr_loaded_cluster_plugins =
-+	__ATTR(loaded_cluster_plugins, S_IFREG | S_IRUGO,
-+	       ocfs2_loaded_cluster_plugins_show, NULL);
-+
-+static ssize_t ocfs2_active_cluster_plugin_show(struct kobject *kobj,
-+						struct kobj_attribute *attr,
-+						char *buf)
-+{
-+	ssize_t ret = 0;
-+
-+	spin_lock(&ocfs2_stack_lock);
-+	if (active_stack) {
-+		ret = snprintf(buf, PAGE_SIZE, "%s\n",
-+			       active_stack->sp_name);
-+		if (ret == PAGE_SIZE)
-+			ret = -E2BIG;
-+	}
-+	spin_unlock(&ocfs2_stack_lock);
-+
-+	return ret;
-+}
-+
-+static struct kobj_attribute ocfs2_attr_active_cluster_plugin =
-+	__ATTR(active_cluster_plugin, S_IFREG | S_IRUGO,
-+	       ocfs2_active_cluster_plugin_show, NULL);
-+
-+static struct attribute *ocfs2_attrs[] = {
-+	&ocfs2_attr_max_locking_protocol.attr,
-+	&ocfs2_attr_loaded_cluster_plugins.attr,
-+	&ocfs2_attr_active_cluster_plugin.attr,
-+	NULL,
-+};
-+
-+static struct attribute_group ocfs2_attr_group = {
-+	.attrs = ocfs2_attrs,
-+};
-+
-+static struct kset *ocfs2_kset;
-+
-+static void ocfs2_sysfs_exit(void)
-+{
-+	kset_unregister(ocfs2_kset);
-+}
-+
-+static int ocfs2_sysfs_init(void)
-+{
-+	int ret;
-+
-+	ocfs2_kset = kset_create_and_add("ocfs2", NULL, fs_kobj);
-+	if (!ocfs2_kset)
-+		return -ENOMEM;
-+
-+	ret = sysfs_create_group(&ocfs2_kset->kobj, &ocfs2_attr_group);
-+	if (ret)
-+		goto error;
-+
+ static struct ocfs2_locking_protocol *lproto;
+@@ -371,6 +373,21 @@ int ocfs2_cluster_disconnect(struct ocfs2_cluster_connection *conn)
  	return 0;
+ }
+ 
++int ocfs2_cluster_this_node(unsigned int *node)
++{
++	int node_num;
 +
-+error:
-+	kset_unregister(ocfs2_kset);
-+	return ret;
++	node_num = o2nm_this_node();
++	if (node_num == O2NM_INVALID_NODE_NUM)
++		return -ENOENT;
++
++	if (node_num >= O2NM_MAX_NODES)
++		return -EOVERFLOW;
++
++	*node = node_num;
++	return 0;
 +}
 +
-+static int __init ocfs2_stack_glue_init(void)
-+{
-+	return ocfs2_sysfs_init();
- }
- 
- static void __exit ocfs2_stack_glue_exit(void)
+ void o2cb_get_stack(struct ocfs2_locking_protocol *proto)
  {
- 	lproto = NULL;
-+	ocfs2_sysfs_exit();
- }
+ 	BUG_ON(proto == NULL);
+diff --git a/fs/ocfs2/stackglue.h b/fs/ocfs2/stackglue.h
+index 3900b5c..ccb0399 100644
+--- a/fs/ocfs2/stackglue.h
++++ b/fs/ocfs2/stackglue.h
+@@ -74,6 +74,7 @@ int ocfs2_cluster_connect(const char *group,
+ 			  void *recovery_data,
+ 			  struct ocfs2_cluster_connection **conn);
+ int ocfs2_cluster_disconnect(struct ocfs2_cluster_connection *conn);
++int ocfs2_cluster_this_node(unsigned int *node);
  
- MODULE_AUTHOR("Oracle");
+ int ocfs2_dlm_lock(struct ocfs2_cluster_connection *conn,
+ 		   int mode,
+diff --git a/fs/ocfs2/super.c b/fs/ocfs2/super.c
+index 0ee4975..d3c4d32 100644
+--- a/fs/ocfs2/super.c
++++ b/fs/ocfs2/super.c
+@@ -694,7 +694,7 @@ static int ocfs2_fill_super(struct super_block *sb, void *data, int silent)
+ 	if (ocfs2_mount_local(osb))
+ 		snprintf(nodestr, sizeof(nodestr), "local");
+ 	else
+-		snprintf(nodestr, sizeof(nodestr), "%d", osb->node_num);
++		snprintf(nodestr, sizeof(nodestr), "%u", osb->node_num);
+ 
+ 	printk(KERN_INFO "ocfs2: Mounting device (%s) on (node %s, slot %d) "
+ 	       "with %s data mode.\n",
+@@ -1145,16 +1145,17 @@ static int ocfs2_fill_local_node_info(struct ocfs2_super *osb)
+ 	 * desirable. */
+ 	if (ocfs2_mount_local(osb))
+ 		osb->node_num = 0;
+-	else
+-		osb->node_num = o2nm_this_node();
+-
+-	if (osb->node_num == O2NM_MAX_NODES) {
+-		mlog(ML_ERROR, "could not find this host's node number\n");
+-		status = -ENOENT;
+-		goto bail;
++	else {
++		status = ocfs2_cluster_this_node(&osb->node_num);
++		if (status < 0) {
++			mlog_errno(status);
++			mlog(ML_ERROR,
++			     "could not find this host's node number\n");
++			goto bail;
++		}
+ 	}
+ 
+-	mlog(0, "I am node %d\n", osb->node_num);
++	mlog(0, "I am node %u\n", osb->node_num);
+ 
+ 	status = 0;
+ bail:
+@@ -1282,7 +1283,7 @@ static void ocfs2_dismount_volume(struct super_block *sb, int mnt_err)
+ 	if (ocfs2_mount_local(osb))
+ 		snprintf(nodestr, sizeof(nodestr), "local");
+ 	else
+-		snprintf(nodestr, sizeof(nodestr), "%d", osb->node_num);
++		snprintf(nodestr, sizeof(nodestr), "%u", osb->node_num);
+ 
+ 	printk(KERN_INFO "ocfs2: Unmounting device (%s) on (node %s)\n",
+ 	       osb->dev_str, nodestr);
+@@ -1384,7 +1385,6 @@ static int ocfs2_initialize_super(struct super_block *sb,
+ 
+ 	osb->s_atime_quantum = OCFS2_DEFAULT_ATIME_QUANTUM;
+ 
+-	osb->node_num = O2NM_INVALID_NODE_NUM;
+ 	osb->slot_num = OCFS2_INVALID_SLOT;
+ 
+ 	osb->local_alloc_state = OCFS2_LA_UNUSED;
 -- 
 1.5.4.1
 
