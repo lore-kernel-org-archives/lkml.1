@@ -1,63 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757671AbYDBReH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758601AbYDBRfL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757671AbYDBReH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 13:34:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757829AbYDBRdy
+	id S1758601AbYDBRfL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 13:35:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754781AbYDBRe6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 13:33:54 -0400
-Received: from nn7.de ([85.214.94.156]:54415 "EHLO nn7.de"
+	Wed, 2 Apr 2008 13:34:58 -0400
+Received: from rtr.ca ([76.10.145.34]:4944 "EHLO mail.rtr.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757819AbYDBRdx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 13:33:53 -0400
-Subject: Re: 2.6.25-rc6 hangs at resume after suspend to RAM on Mac mini
-	Core Duo
-From: Soeren Sonnenburg <kernel@nn7.de>
-To: "Rafael J\. Wysocki" <rjw@sisk.pl>
-Cc: Tino Keitel <tino.keitel@gmx.de>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Len Brown <lenb@kernel.org>, Pavel Machek <pavel@ucw.cz>
-In-Reply-To: <200804012305.04250.rjw@sisk.pl>
-References: <20080320060550.GA13200@dose.home.local>
-	 <20080401062734.GA8824@dose.home.local>
-	 <1207031898.11035.38.camel@localhost>  <200804012305.04250.rjw@sisk.pl>
-Content-Type: text/plain
+	id S1755570AbYDBRe5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Apr 2008 13:34:57 -0400
+Message-ID: <47F3C3C0.5080705@rtr.ca>
+Date: Wed, 02 Apr 2008 13:34:56 -0400
+From: Mark Lord <lkml@rtr.ca>
+Organization: Real-Time Remedies Inc.
+User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
+MIME-Version: 1.0
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: David Brownell <david-b@pacbell.net>, pavel@suse.cz, oliver@neukum.org,
+       linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org, jikos@suse.cz,
+       gregkh@suse.de, akpm@linux-foundation.org
+Subject: Re: [PATCH] usb ehci_iaa_watchdog fix
+References: <Pine.LNX.4.44L0.0804021244230.5042-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0804021244230.5042-100000@iolanthe.rowland.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Date: Wed, 02 Apr 2008 19:33:49 +0200
-Message-Id: <1207157629.9669.2.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.0 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-04-01 at 23:05 +0200, Rafael J. Wysocki wrote:
-> On Tuesday, 1 of April 2008, Soeren Sonnenburg wrote:
-> > On Tue, 2008-04-01 at 08:27 +0200, Tino Keitel wrote:
-> > > On Tue, Apr 01, 2008 at 06:23:11 +0000, Soeren Sonnenburg wrote:
-> > > > On Mon, 2008-03-31 at 23:28 +0200, Tino Keitel wrote:
-> > > > > On Sat, Mar 29, 2008 at 00:03:15 +0100, Rafael J. Wysocki wrote:
-> > > > > 
-> > > > > [...]
-> > > > > 
-> > > > > > Can you please try to boot with acpi_new_pts_ordering and retest?
-> > > > > 
-> > > > > I just tried current -git (a9edadbf790d72adf6ebed476cb5caf7743e7e4a),
-> > > > > without success. I still got the same hand at resume.
-> > > > 
-> > > > I am having the hang on resume problem too (macbook pro), cf.
-> > > > http://bugzilla.kernel.org/show_bug.cgi?id=10319, 2.6.24 was fine.
-> > > 
-> > > What about 2.6.25-rc5? Up to this, resume works for me. -rc6 is broken.
-> > 
-> > No never worked in 2.6.25 (at least from rc2 on) and still does not in
-> > rc7-current-git. But note that on console I could suspend to ram and
-> > resume but the display is not anymore coming back with s2ram - from
-> > within X it freezes though.
+Alan Stern wrote:
+> On Wed, 2 Apr 2008, Mark Lord wrote:
 > 
-> Please try -rc8.
+>> Yup, that does indeed cure it.
+>> Here's a patch, in case you didn't already generate one:
+>>
+>> Signed-off-by: Mark Lord <mlord@pobox.com>
+>>
+>> --- rc8/drivers/usb/host/ehci-hcd.c	2008-03-11 11:18:40.000000000 -0400
+>> +++ linux/drivers/usb/host/ehci-hcd.c	2008-04-02 12:16:40.000000000 -0400
+>> @@ -289,9 +289,7 @@
+>>  	 * (a) SMP races against real IAA firing and retriggering, and
+>>  	 * (b) clean HC shutdown, when IAA watchdog was pending.
+>>  	 */
+>> -	if (ehci->reclaim
+>> -			&& !timer_pending(&ehci->iaa_watchdog)
+>> -			&& HC_IS_RUNNING(ehci_to_hcd(ehci)->state)) {
+>> +	if (ehci->reclaim && !timer_pending(&ehci->iaa_watchdog)) {
+>>  		u32 cmd, status;
+>>  
+>>  		/* If we get here, IAA is *REALLY* late.  It's barely
+> 
+> Okay, I'm puzzled.  How could this make any difference?  
+> ehci_bus_suspend() calls end_unlink_async() anyway, whenever reclaim is 
+> set.
+> 
+> Is the real problem that it does so before calling ehci_work() instead 
+> of after calling ehci_halt()?
+> 
+> Mark, if you want to experiment some more, try reverting your patch 
+> above and moving:
+..
 
-OK I did. Now not only the console stays black but blindly typing
-reboot/s2ram does not do anything after a resume... in this respect rc7
-was better though not usable (as the display remained off).
+Here's what I did, and yes, this also works.  Pick one.
 
-Soeren
+This patch, suggested by Alan Stern, fixes the hung USB issues
+on my notebook from suspend/resume cycles.
+
+Signed-off-by: Mark Lord <mlord@pobox.com>
+
+--- rc8/drivers/usb/host/ehci-hub.c	2008-03-11 11:18:40.000000000 -0400
++++ linux/drivers/usb/host/ehci-hub.c	2008-04-02 13:28:50.000000000 -0400
+@@ -135,8 +135,6 @@
+ 		hcd->state = HC_STATE_QUIESCING;
+ 	}
+ 	ehci->command = ehci_readl(ehci, &ehci->regs->command);
+-	if (ehci->reclaim)
+-		end_unlink_async(ehci);
+ 	ehci_work(ehci);
+ 
+ 	/* Unlike other USB host controller types, EHCI doesn't have
+@@ -180,6 +178,9 @@
+ 	ehci_halt (ehci);
+ 	hcd->state = HC_STATE_SUSPENDED;
+ 
++	if (ehci->reclaim)
++		end_unlink_async(ehci);
++
+ 	/* allow remote wakeup */
+ 	mask = INTR_MASK;
+ 	if (!device_may_wakeup(&hcd->self.root_hub->dev))
