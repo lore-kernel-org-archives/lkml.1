@@ -1,165 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759299AbYDCB06@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760297AbYDCB1e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759299AbYDCB06 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 21:26:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754683AbYDCB0w
+	id S1760297AbYDCB1e (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 21:27:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759592AbYDCB1W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 21:26:52 -0400
-Received: from relay2.sgi.com ([192.48.171.30]:59018 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756217AbYDCB0v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 21:26:51 -0400
-Date: Wed, 2 Apr 2008 18:24:15 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Andrea Arcangeli <andrea@qumranet.com>
-cc: Hugh Dickins <hugh@veritas.com>, Robin Holt <holt@sgi.com>,
-       Avi Kivity <avi@qumranet.com>, Izik Eidus <izike@qumranet.com>,
-       kvm-devel@lists.sourceforge.net,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, general@lists.openfabrics.org,
-       Steve Wise <swise@opengridcomputing.com>,
-       Roland Dreier <rdreier@cisco.com>, Kanoj Sarcar <kanojsarcar@yahoo.com>,
-       steiner@sgi.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       daniel.blueman@quadrics.com, Nick Piggin <npiggin@suse.de>
-Subject: EMM: disable other notifiers before register and unregister
-In-Reply-To: <20080402221716.GY19189@duo.random>
-Message-ID: <Pine.LNX.4.64.0804021821230.639@schroedinger.engr.sgi.com>
-References: <20080401205531.986291575@sgi.com> <20080401205635.793766935@sgi.com>
- <20080402064952.GF19189@duo.random> <Pine.LNX.4.64.0804021048460.27214@schroedinger.engr.sgi.com>
- <Pine.LNX.4.64.0804021402190.30337@schroedinger.engr.sgi.com>
- <20080402220148.GV19189@duo.random> <Pine.LNX.4.64.0804021503320.31247@schroedinger.engr.sgi.com>
- <20080402221716.GY19189@duo.random>
+	Wed, 2 Apr 2008 21:27:22 -0400
+Received: from wf-out-1314.google.com ([209.85.200.174]:2019 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759588AbYDCB1U (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Apr 2008 21:27:20 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=reply-to:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id:from;
+        b=lzbTk6xja4D86sP7vscSNIVqSU1jxiOd4eQENHLnVsBju+Y+5GT4zECSIwWdt81A1WIiGgox3gO++xtd6z0SqEQJEaBnFoImyPCr4/kS2HnBc9t34FTGMBcC9cCOLFWXjt96XV7Lwd27nR3l+qF8+7VxKvdQ4vHFw7W8Vr2VRUg=
+Reply-To: yhlu.kernel@gmail.com
+To: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
+Subject: [PATCH] mm: make mem_map allocation continuous v2.
+Date: Wed, 2 Apr 2008 18:30:24 -0700
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Badari Pulavarty <pbadari@us.ibm.com>, michael@ellerman.id.au,
+       Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>, linuxppc-dev@ozlabs.org,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       kernel list <linux-kernel@vger.kernel.org>
+References: <200804021525.48799.yhlu.kernel@gmail.com> <20080402155247.5e746be7.akpm@linux-foundation.org> <86802c440804021744m7c6e3d94vcb6af3ebcaa71b5b@mail.gmail.com>
+In-Reply-To: <86802c440804021744m7c6e3d94vcb6af3ebcaa71b5b@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200804021830.24563.yhlu.kernel@gmail.com>
+From: Yinghai Lu <yhlu.kernel.send@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ok lets forget about the single theaded thing to solve the registration 
-races. As Andrea pointed out this still has ssues with other subscribed 
-subsystems (and also try_to_unmap). We could do something like what 
-stop_machine_run does: First disable all running subsystems before 
-registering a new one.
 
-Maybe this is a possible solution.
+vmemmap allocation current got
+ [ffffe20000000000-ffffe200001fffff] PMD ->ffff810001400000 on node 0
+ [ffffe20000200000-ffffe200003fffff] PMD ->ffff810001800000 on node 0
+ [ffffe20000400000-ffffe200005fffff] PMD ->ffff810001c00000 on node 0
+ [ffffe20000600000-ffffe200007fffff] PMD ->ffff810002000000 on node 0
+ [ffffe20000800000-ffffe200009fffff] PMD ->ffff810002400000 on node 0
+...
 
+there is 2M hole between them.
 
-Subject: EMM: disable other notifiers before register and unregister
+the rootcause is that usemap (24 bytes) will be allocated after every 2M
+mem_map. and it will push next vmemmap (2M) to next align (2M).
 
-As Andrea has pointed out: There are races during registration if other
-subsystem notifiers are active while we register a callback.
+solution:
+try to allocate mem_map continously.
 
-Solve that issue by adding two new notifiers:
+after patch, will get
+ [ffffe20000000000-ffffe200001fffff] PMD ->ffff810001400000 on node 0
+ [ffffe20000200000-ffffe200003fffff] PMD ->ffff810001600000 on node 0
+ [ffffe20000400000-ffffe200005fffff] PMD ->ffff810001800000 on node 0
+ [ffffe20000600000-ffffe200007fffff] PMD ->ffff810001a00000 on node 0
+ [ffffe20000800000-ffffe200009fffff] PMD ->ffff810001c00000 on node 0
+...
+and usemap will share in page because of they are allocated continuously too.
+sparse_early_usemap_alloc: usemap = ffff810024e00000 size = 24
+sparse_early_usemap_alloc: usemap = ffff810024e00080 size = 24
+sparse_early_usemap_alloc: usemap = ffff810024e00100 size = 24
+sparse_early_usemap_alloc: usemap = ffff810024e00180 size = 24
+...
 
-emm_stop
-	Stops the notifier operations. Notifier must block on
-	invalidate_start and emm_referenced from this point on.
-	If an invalidate_start has not been completed by a call
-	to invalidate_end then the driver must wait until the
-	operation is complete before returning.
+so we make the bootmem allocation more compact and use less memory for usemap.
 
-emm_start
-	Restart notifier operations.
+for power pc
+Badari Pulavarty <pbadari@us.ibm.com> wrote:
 
-Before registration all other subscribed subsystems are stopped.
-Then the new subsystem is subscribed and things can get running
-without consistency issues.
+>  You have to call sparse_init_one_section() on each pmap and usemap
+>  as we allocate - since valid_section() depends on it (which is needed
+>  by vmemmap_populate() to check if the section is populated or not).
+>  On ppc, we need to call htab_bolted_mapping() on each section and
+>  we need to skip existing sections.
 
-Subsystems are restarted after the lists have been updated.
+so try to allocate usemap at first altogether.
 
-This also works for unregistering. If we can get all subsystems
-to stop then we can also reliably unregister a subsystem. So
-provide that callback.
+v2 replace:
+	[PATCH] mm: make mem_map allocation continuous.
+	[PATCH] mm: allocate section_map for sparse_init
+	[PATCH] mm: allocate usemap at first instead of mem_map in sparse_init
 
-Signed-off-by: Christoph Lameter <clameter@sgi.com>
+Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
 
----
- include/linux/rmap.h |   10 +++++++---
- mm/rmap.c            |   30 ++++++++++++++++++++++++++++++
- 2 files changed, 37 insertions(+), 3 deletions(-)
-
-Index: linux-2.6/include/linux/rmap.h
-===================================================================
---- linux-2.6.orig/include/linux/rmap.h	2008-04-02 18:16:07.906032549 -0700
-+++ linux-2.6/include/linux/rmap.h	2008-04-02 18:17:10.291070009 -0700
-@@ -94,7 +94,9 @@ enum emm_operation {
- 	emm_release,		/* Process exiting, */
- 	emm_invalidate_start,	/* Before the VM unmaps pages */
- 	emm_invalidate_end,	/* After the VM unmapped pages */
-- 	emm_referenced		/* Check if a range was referenced */
-+ 	emm_referenced,		/* Check if a range was referenced */
-+	emm_stop,		/* Halt all faults/invalidate_starts */
-+	emm_start,		/* Restart operations */
- };
+diff --git a/mm/sparse.c b/mm/sparse.c
+index f6a43c0..2881222 100644
+--- a/mm/sparse.c
++++ b/mm/sparse.c
+@@ -294,22 +294,48 @@ void __init sparse_init(void)
+ 	unsigned long pnum;
+ 	struct page *map;
+ 	unsigned long *usemap;
++	unsigned long **usemap_map;
++	int size;
++
++	/*
++	 * map is using big page (aka 2M in x86 64 bit)
++	 * usemap is less one page (aka 24 bytes)
++	 * so alloc 2M (with 2M align) and 24 bytes in turn will
++	 * make next 2M slip to one more 2M later.
++	 * then in big system, the memory will have a lot of holes...
++	 * here try to allocate 2M pages continously.
++	 *
++	 * powerpc need to call sparse_init_one_section right after each
++	 * sparse_early_mem_map_alloc, so allocate usemap_map at first.
++	 */
++	size = sizeof(unsigned long *) * NR_MEM_SECTIONS;
++	usemap_map = alloc_bootmem(size);
++	if (!usemap_map)
++		panic("can not allocate usemap_map\n");
  
- struct emm_notifier {
-@@ -126,13 +128,15 @@ static inline int emm_notify(struct mm_s
- 
- /*
-  * Register a notifier with an mm struct. Release occurs when the process
-- * terminates by calling the notifier function with emm_release.
-+ * terminates by calling the notifier function with emm_release or when
-+ * emm_notifier_unregister is called.
-  *
-  * Must hold the mmap_sem for write.
-  */
- extern void emm_notifier_register(struct emm_notifier *e,
- 					struct mm_struct *mm);
--
-+extern void emm_notifier_unregister(struct emm_notifier *e,
-+					struct mm_struct *mm);
- 
- /*
-  * Called from mm/vmscan.c to handle paging out
-Index: linux-2.6/mm/rmap.c
-===================================================================
---- linux-2.6.orig/mm/rmap.c	2008-04-02 18:16:09.378057062 -0700
-+++ linux-2.6/mm/rmap.c	2008-04-02 18:16:10.710079201 -0700
-@@ -289,16 +289,46 @@ void emm_notifier_release(struct mm_stru
- /* Register a notifier */
- void emm_notifier_register(struct emm_notifier *e, struct mm_struct *mm)
- {
-+	/* Bring all other notifiers into a quiescent state */
-+	emm_notify(mm, emm_stop, 0, TASK_SIZE);
-+
- 	e->next = mm->emm_notifier;
-+
- 	/*
- 	 * The update to emm_notifier (e->next) must be visible
- 	 * before the pointer becomes visible.
- 	 * rcu_assign_pointer() does exactly what we need.
- 	 */
- 	rcu_assign_pointer(mm->emm_notifier, e);
-+
-+	/* Continue notifiers */
-+	emm_notify(mm, emm_start, 0, TASK_SIZE);
- }
- EXPORT_SYMBOL_GPL(emm_notifier_register);
- 
-+/* Unregister a notifier */
-+void emm_notifier_unregister(struct emm_notifier *e, struct mm_struct *mm)
-+{
-+	struct emm_notifier *p;
-+
-+	emm_notify(mm, emm_stop, 0, TASK_SIZE);
-+
-+	p = mm->emm_notifier;
-+	if (e == p)
-+		mm->emm_notifier = e->next;
-+	else {
-+		while (p->next != e)
-+			p = p->next;
-+
-+		p->next = e->next;
+ 	for (pnum = 0; pnum < NR_MEM_SECTIONS; pnum++) {
+ 		if (!present_section_nr(pnum))
+ 			continue;
++		usemap_map[pnum] = sparse_early_usemap_alloc(pnum);
 +	}
-+	e->next = mm->emm_notifier;
+ 
+-		map = sparse_early_mem_map_alloc(pnum);
+-		if (!map)
++	for (pnum = 0; pnum < NR_MEM_SECTIONS; pnum++) {
++		if (!present_section_nr(pnum))
+ 			continue;
+ 
+-		usemap = sparse_early_usemap_alloc(pnum);
++		usemap = usemap_map[pnum];
+ 		if (!usemap)
+ 			continue;
+ 
++		map = sparse_early_mem_map_alloc(pnum);
++		if (!map)
++			continue;
 +
-+	emm_notify(mm, emm_start, 0, TASK_SIZE);
-+	e->callback(e, mm, emm_release, 0, TASK_SIZE);
-+}
-+EXPORT_SYMBOL_GPL(emm_notifier_unregister);
+ 		sparse_init_one_section(__nr_to_section(pnum), pnum, map,
+ 								usemap);
+ 	}
 +
- /*
-  * Perform a callback
-  *
-
++	free_bootmem(__pa(usemap_map), size);
+ }
+ 
+ #ifdef CONFIG_MEMORY_HOTPLUG
