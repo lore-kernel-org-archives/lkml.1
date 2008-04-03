@@ -1,56 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755953AbYDCXLl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755898AbYDCXPG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755953AbYDCXLl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Apr 2008 19:11:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752423AbYDCXLd
+	id S1755898AbYDCXPG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Apr 2008 19:15:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752657AbYDCXOz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Apr 2008 19:11:33 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:46908 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751706AbYDCXLd (ORCPT
+	Thu, 3 Apr 2008 19:14:55 -0400
+Received: from an-out-0708.google.com ([209.85.132.251]:15787 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750960AbYDCXOx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Apr 2008 19:11:33 -0400
-Date: Thu, 3 Apr 2008 16:11:06 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, a.p.zijlstra@chello.nl
-Subject: Re: [RESEND][RFC v3 PATCH] RTTIME watchdog timer proc interface
-Message-Id: <20080403161106.fe260fd7.akpm@linux-foundation.org>
-In-Reply-To: <47F55D8D.3060700@ct.jp.nec.com>
-References: <47F55D8D.3060700@ct.jp.nec.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 3 Apr 2008 19:14:53 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=qmnT+Q8HQkY6zgQQ4ar8xUh/3iTxrKOA29ckWi7fsx3rTpsoOl9tg6rrKdrUyUJERinMVKmNd1wE8SnLxLZ0xrwGOjoDAcd0vxiP0GF0THYUdrCXmtrfLJHAi83FdFL6p7IrH070o8Ym1TfXpQaivg27oKnWlgfJ7hDXcIhBgSQ=
+Message-ID: <dd18b0c30804031614vf072230g894ab03e4f44034c@mail.gmail.com>
+Date: Thu, 3 Apr 2008 23:14:52 +0000
+From: "Justin Mattock" <justinmattock@gmail.com>
+To: "Stefan Schweizer" <genstef@gentoo.org>
+Subject: Re: suspend
+Cc: "Oliver Neukum" <oliver@neukum.org>, linux-usb@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <e79639220804030153q46fa82c7jb79bedbe88b30df7@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <dd18b0c30804012331oc548416k113e492d7dc9c189@mail.gmail.com>
+	 <200804030932.27993.oliver@neukum.org> <ft21pb$oc3$1@ger.gmane.org>
+	 <200804031029.26635.oliver@neukum.org>
+	 <e79639220804030153q46fa82c7jb79bedbe88b30df7@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 03 Apr 2008 15:43:25 -0700
-Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com> wrote:
+Hello with doing some more testing on suspending the macbook pro;
+ like in the other posts about appletouch, it seems to me to be a
+problem with X,  one test appletouch was able to have scroll
+functionality due to the event number staying the same. Hopefully with
+the latest version coming  this issue will be resolved.  With running
+a test on wpa_supplicant. when shutting internet off then suspending
+the system wpa_supplicant seems to be unresponsive, but if you leave
+wpa_supplicant connected the only issue I see is  when wpa_supplicant
+does a rekey.
 
-> From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-> 
-> Introduce new proc interface for RTTIME watchdog.
-> It makes administrator able to set RTTIME watchdog to exisiting real-time
-> applications without impact. It's useful we don't want to change software
-> stack, but want to use RTTIME watchdog for that software.
+with streaming music xmms seems to do alright, the music will play
+whatever is left in the memory then reconnect itself, with watching
+T.V. through gmplayer it seems to loose connectivity as well as
+watching T.V. through flash.
 
-Well you don't really need to change the software stack.  It's a matter of
-setting RLIMIT_RTTIME in the parent process before starting the stack up. 
-This is not much more work than poking at /proc/<pid>/rttime afterwards.
+With watching a DVD gmplayer seems to crash everytime upon wakeup.
 
-Although setting RLIMIT_RTTIME via fork() is much less useful than being
-able to alter it at runtime.
-
->  fs/proc/base.c |  103 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-And that's rather a lot of new code just for RLIMIT_RTTIME.  And
-RLIMIT_RTTIME is not the only rlimit which has this problem - generally the
-rlimit interface is a rather nasty one.
+with the isight it seems rmmod uvcvideo and modprobe uvcvideo does the
+trick, but SELinux will reject the device due to the event number
+changing.
+With the bluetooth mighty mouse hid2hci --tohci does the trick, but
+I'm not satisfied with that, how to keep the device on hci?
+after a wakeup.
+regards;
+               Justin P. Mattock
 
 
-I think we should look at creating a general way of modifying and reading a
-running process's rlimits.  If we want to do that, a syscall would be the
-appropriate interface.
+On Thu, Apr 3, 2008 at 8:53 AM, Stefan Schweizer <genstef@gentoo.org> wrote:
+> >  On second thought, this should be fixed by usb persist if the appletouch
+>  >  driver supported reset_resume. Would you be willing to test a kernel patch
+>  >  that implements reset_resume in the appletouch driver?
+>
+>  Sure, I would love to have this fixed :-)
+>
+>  best regards,
+>  -Stefan
+>
+>
+> --
+>  To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+>  the body of a message to majordomo@vger.kernel.org
+>  More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>  Please read the FAQ at  http://www.tux.org/lkml/
+>
 
+
+
+-- 
+Justin P. Mattock
