@@ -1,72 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759842AbYDCV2L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760741AbYDCV3f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759842AbYDCV2L (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Apr 2008 17:28:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755546AbYDCV15
+	id S1760741AbYDCV3f (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Apr 2008 17:29:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756206AbYDCV30
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Apr 2008 17:27:57 -0400
-Received: from e32.co.us.ibm.com ([32.97.110.150]:54475 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753325AbYDCV14 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Apr 2008 17:27:56 -0400
-Date: Thu, 3 Apr 2008 14:27:53 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Pekka J Enberg <penberg@cs.helsinki.fi>
-Cc: Vegard Nossum <vegard.nossum@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: kmemcheck caught read from freed memory (cfq_free_io_context)
-Message-ID: <20080403212753.GL8770@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20080402105539.GA5610@linux.vnet.ibm.com> <84144f020804020401j4e5863dcofd16662baa54574@mail.gmail.com> <20080402160809.GA4123@linux.vnet.ibm.com> <19f34abd0804020915k210277bbmb6b9aa28f282bb42@mail.gmail.com> <Pine.LNX.4.64.0804021924280.6839@sbz-30.cs.Helsinki.FI> <20080402182352.GF9333@linux.vnet.ibm.com> <84144f020804021253i7e08e83fve3f2707063fc64d1@mail.gmail.com> <20080402201551.GL9333@linux.vnet.ibm.com> <20080403151842.GA25193@linux.vnet.ibm.com> <Pine.LNX.4.64.0804032244510.15758@sbz-30.cs.Helsinki.FI>
+	Thu, 3 Apr 2008 17:29:26 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:34188 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755546AbYDCV3Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Apr 2008 17:29:25 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Ken Moffat <zarniwhoop@ntlworld.com>
+Subject: Re: Regression in gdm-2.18 since 2.6.24
+Date: Thu, 3 Apr 2008 23:29:21 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       lkml <linux-kernel@vger.kernel.org>
+References: <20080403191916.GA30864@deepthought> <200804032156.54021.rjw@sisk.pl> <20080403210840.GA2292@deepthought>
+In-Reply-To: <20080403210840.GA2292@deepthought>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0804032244510.15758@sbz-30.cs.Helsinki.FI>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Message-Id: <200804032329.22483.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 03, 2008 at 10:49:23PM +0300, Pekka J Enberg wrote:
-> Hi Paul,
-> 
-> On Thu, 3 Apr 2008, Paul E. McKenney wrote:
-> > OK, so another approach would be to use a larger shadow block for
-> > SLAB_DESTROY_BY_RCU slabs, so that each shadow location would have enough
-> > room for an rcu_head and a size in addition to the flag.  That would
-> > trivialize tracking, or, more accurately, delegate such tracking to the
-> > RCU infrastructure.
-> 
-> Yeah, or just allocate some extra spaces for the RCU case and not 
-> overload the current shadow pages. But sounds good to me.
-
-As long as we have an rcu_head for each memory block in the slab, I am
-not to worried about where they are allocated.
-
-> On Thu, 3 Apr 2008, Paul E. McKenney wrote:
-> > Of course, the case where the block gets reallocated before the RCU
-> > grace period ends would also need to be handled (which my rough sketch
-> > yesterday did -not- handle, by the way...).
+On Thursday, 3 of April 2008, Ken Moffat wrote:
+> On Thu, Apr 03, 2008 at 09:56:53PM +0200, Rafael J. Wysocki wrote:
+> > On Thursday, 3 of April 2008, Ken Moffat wrote:
+> > >  Third attempt, with luck this time I've managed to find what really
+> > > broke it.  Sorry, this is going to be a long mail to explain my
+> > > current attribution of 'blame'.
+> [...]
 > > 
-> > There are a couple of ways of doing this.  Probably the easiest approach
-> > is to add more state to the flag, so that the RCU callback would check
-> > to see if reallocation had already happened.  If so, it would update the
-> > state to indicate that the rcu_head was again available, and would need to
-> > repost itself if the block had been freed again after being reallocated.
+> > The attachments are missing.
 > > 
-> > The other approach would be to defer actually adding the block to the
-> > freelist until the grace period expired.  This would be more accurate,
-> > but also quite a bit more intrusive.
+> > Can you please just provide us with the name of the git commit that you think
+> > breaks things for you?
+> > 
+> > Also, is there CONFIG_FAIR_GROUP_SCHED set in your .config?
+> > 
+> > Thanks,
+> > Rafael
+>  Oh!  Maybe they are there this time.  Apologies.
 > 
-> We already talked about deferring the actual freeing in kmemcheck to 
-> better detect these use-after-free conditions with Vegard. So it's 
-> something that we probably want to do regardless of RCU.
+>  For the commit, all I've got is the truncated line out of
+> patch-2.6.24.1:
+> index da7c061..2288ad8 100644
+> 
+>  Unfortunately, git log doesn't seem to find da7c061.
+> 
+>  And from the config
+> CONFIG_FAIR_GROUP_SCHED=y
 
-Then it is especially important that the rcu_head be pre-allocated.
-Otherwise we could get into out-of-memory deadlocks where a free
-operation is blocked by an allocation operation.  ;-)
+Please unset CONFIG_GROUP_SCHED and retest.  It is known to cause problems
+(see http://bugzilla.kernel.org/show_bug.cgi?id=9969, for example).
 
-							Thanx, Paul
+Thanks,
+Rafael
