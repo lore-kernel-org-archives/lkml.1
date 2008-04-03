@@ -1,76 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758612AbYDCUpZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758244AbYDCUuL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758612AbYDCUpZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Apr 2008 16:45:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755426AbYDCUpO
+	id S1758244AbYDCUuL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Apr 2008 16:50:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755523AbYDCUt6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Apr 2008 16:45:14 -0400
-Received: from archer.toppoint.de ([217.70.197.1]:54726 "EHLO mail.toppoint.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755404AbYDCUpM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Apr 2008 16:45:12 -0400
-X-Greylist: delayed 1715 seconds by postgrey-1.27 at vger.kernel.org; Thu, 03 Apr 2008 16:45:11 EDT
-Date: Thu, 3 Apr 2008 22:05:29 +0200
-From: Wilfried Klaebe <wk-20080331@kaos.in-kiel.de>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Pozsar Balazs <pozsy@uhulinux.hu>, Pavel Machek <pavel@ucw.cz>,
-       linux-kernel@vger.kernel.org, Alan <alan@lxorguk.ukuu.org.uk>,
-       Jeff Garzik <jeff@garzik.org>, Tejun Heo <htejun@gmail.com>
-Subject: Re: suspend not working on macbook pro
-Message-ID: <20080403200529.GA14399@kaos.in-kiel.de>
-Mail-Followup-To: "Rafael J. Wysocki" <rjw@sisk.pl>,
-	Pozsar Balazs <pozsy@uhulinux.hu>, Pavel Machek <pavel@ucw.cz>,
-	linux-kernel@vger.kernel.org, Alan <alan@lxorguk.ukuu.org.uk>,
-	Jeff Garzik <jeff@garzik.org>, Tejun Heo <htejun@gmail.com>
-References: <20080308110626.GE4491@ojjektum.uhulinux.hu> <200803211756.10987.rjw@sisk.pl> <20080403121035.GL29048@ojjektum.uhulinux.hu> <200804031711.56985.rjw@sisk.pl>
+	Thu, 3 Apr 2008 16:49:58 -0400
+Received: from mtaout03-winn.ispmail.ntl.com ([81.103.221.49]:24445 "EHLO
+	mtaout03-winn.ispmail.ntl.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755299AbYDCUt5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Apr 2008 16:49:57 -0400
+Message-ID: <47F542BE.3000106@gentoo.org>
+Date: Thu, 03 Apr 2008 21:49:02 +0100
+From: Daniel Drake <dsd@gentoo.org>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080315)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200804031711.56985.rjw@sisk.pl>
-X-message-flag: Get yourself a real email client. http://www.mutt.org/
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: Sam Ravnborg <sam@ravnborg.org>
+CC: linux kernel <linux-kernel@vger.kernel.org>, kerframil@gmail.com,
+       mpagano@gentoo.org, linux-kbuild@vger.kernel.org
+Subject: x86: defconfig not being applied automatically in 2.6.24+
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Thu, Apr 03, 2008 at 05:11:55PM +0200 schrieb Rafael J. Wysocki:
-> On Thursday, 3 of April 2008, Pozsar Balazs wrote:
-> > On Fri, Mar 21, 2008 at 05:56:10PM +0100, Rafael J. Wysocki wrote:
-> > > On Friday, 21 of March 2008, Pozsar Balazs wrote:
-> > > > On Sun, Mar 09, 2008 at 10:01:55AM +0100, Pavel Machek wrote:
-> > > > > Hi!
-> > > > > 
-> > > > > > I'm using a macbook pro 3,1 (mid-2007), and suspend worked ok with 
-> > > > > > kernel 2.6.23.x, but with 2.6.25-rc{1,2,3,4} it just freezes during 
-> > > > > > suspend. The console is still on, the disk is powered off, but no 
-> > > > > > response or poweroff...
-> > > > > > 
-> > > > > > Did anyone else met the same thing? How could I help debug it?
-> > > > > > What other info would you need?
-> > > > > 
-> > > > > Find more exact version when it broke? git bisect?
-> > > > 
-> > > > I did not have time for bisect, but I have found that if I boot an 
-> > > > initrd and do not load the ata_piix module, suspend works, if I load it, 
-> > > > it hangs during suspend.
-> > > 
-> > > Hm, we have an ata_piix vs suspend problem on this box, then.
-> > > 
-> > > Any chance to verify if 2.6.24.x works?
-> > 
-> > I tried with ata_piix.c copied from 2.6.24, and it fails the same way.
-> 
-> It generally is not sufficient to replace just one file.  Please try the entire
-> 2.6.24.
-> 
-> Also, please check 2.6.25-rc8-git2, it might have fixed your issue.
+In 2.6.23, if you unpacked a kernel source tarball and then ran "make 
+menuconfig" you'd be presented with this message:
+	# using defaults found in arch/i386/defconfig
 
-I had the very same problems on a MacBook Pro 3.1 - 2.6.24 suspended and resumed,
-2.6.25-rc[1-7] did not. I never had the time to bisect it, only to test newer RCs,
-and 2.6.25-rc8 just works.
+and the default options would be set.
 
-Thanks!
+The same thing in 2.6.24 does not give you any "using defaults" message, 
+and the default config options within menuconfig are rather blank (e.g. 
+no PCI support). You can work around this by explicitly running "make 
+defconfig" before menuconfig, but it would be nice to have the behaviour 
+the way it was for 2.6.23 (and the way it still is for other archs).
 
-Wilfried
--- 
-Irgendwas ist ja immer...
+
+I've looked into the problem. It works on 2.6.23 because of init/Kconfig 
+which is still unchanged:
+
+config DEFCONFIG_LIST
+	[...]
+	default "arch/$ARCH/defconfig"
+
+arch/i386/defconfig and arch/x86_64/defconfig existed in 2.6.23, but not 
+in 2.6.24 due to the arch merge.
+
+I've identified why it worked in 2.6.23 but I'm not really sure of the 
+right way to fix it for the newer kernels. I tried adding another 
+default in DEFCONFIG_LIST:
+	default "arch/$SRCARCH/configs/$KBUILD_DEFCONFIG"
+but it seems that $SRCARCH and $KBUILD_DEFCONFIG are not being exported 
+to kconfig and I couldn't immediately see how to change that.
+
+Any thoughts?
+
+Thanks,
+Daniel
