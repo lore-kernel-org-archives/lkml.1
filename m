@@ -1,69 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760118AbYDCBeb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760206AbYDCBhv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760118AbYDCBeb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 21:34:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756970AbYDCBeX
+	id S1760206AbYDCBhv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 21:37:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756970AbYDCBhm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 21:34:23 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:46095 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755327AbYDCBeX (ORCPT
+	Wed, 2 Apr 2008 21:37:42 -0400
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:44849 "EHLO
+	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756254AbYDCBhl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 21:34:23 -0400
-Date: Thu, 3 Apr 2008 02:34:20 +0100
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Harvey Harrison <harvey.harrison@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, josh@freedesktop.org
-Subject: Re: [PATCH 7/7] asm-generic: suppress sparse warning in ioctl.h
-Message-ID: <20080403013420.GV9785@ZenIV.linux.org.uk>
-References: <1207182818.5740.26.camel@brick> <alpine.LFD.1.00.0804021752040.14670@woody.linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.00.0804021752040.14670@woody.linux-foundation.org>
-User-Agent: Mutt/1.4.2.3i
+	Wed, 2 Apr 2008 21:37:41 -0400
+Date: Wed, 2 Apr 2008 21:37:01 -0400
+Message-Id: <200804030137.m331b1O8004886@agora.fsl.cs.sunysb.edu>
+From: Erez Zadok <ezk@cs.sunysb.edu>
+To: Al Viro <viro@zeniv.linux.org.uk>
+Cc: Erez Zadok <ezk@cs.sunysb.edu>,
+       Trond Myklebust <trond.myklebust@fys.uio.no>,
+       Miklos Szeredi <miklos@szeredi.hu>, akpm@linux-foundation.org,
+       dave@linux.vnet.ibm.com, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch 01/10] vfs: add path_create() and path_mknod() 
+In-reply-to: Your message of "Thu, 03 Apr 2008 02:00:16 BST."
+             <20080403010016.GU9785@ZenIV.linux.org.uk> 
+X-MailKey: Erez_Zadok
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 02, 2008 at 05:57:54PM -0700, Linus Torvalds wrote:
-> 
-> 
-> On Wed, 2 Apr 2008, Harvey Harrison wrote:
-> >
-> > 1 ? 0 : x
+In message <20080403010016.GU9785@ZenIV.linux.org.uk>, Al Viro writes:
+> On Wed, Apr 02, 2008 at 08:47:06PM -0400, Erez Zadok wrote:
+> > In message <1207183329.20254.49.camel@heimdal.trondhjem.org>, Trond Myklebust writes:
+> > > 
+> > > On Thu, 2008-04-03 at 00:47 +0100, Al Viro wrote:
+> > [...]
+> > > >  Again, what for?
+> > > 
+> > > It allows you to get rid of the vfsmount 'argument' when opening a file,
+> > > which again lowers the barrier for stacking filesystems.
+> > > 
+> > > As far as the filesystems themselves are concerned, the effect is to
+> > > enforce your assertion that file operations should not depend on the
+> > > namespace.
 > > 
-> > is not valid in contexts where C requires integer constant expressions.
-> > Index in static array initializer is one of those.
+> > I'd be delighted the day I won't have to deal with vfsmounts AT ALL in
+> > any stacked f/s.
 > 
-> So I don't much like this one, because (a) we could just make sparse 
-> accept it and (b) gcc _does_ accept it and gives us nicer error messages. 
+> vfsmounts or the fact that any fs may be mounted in many places?
 
-Umm...  How far do you want sparse to go?  You _really_ don't want
-bug-for-bug compatibility with gcc - it's far too weird (and that's
-even before going into the effects of optimization flags).
+I think the former.  The fact that any f/s can be mounted in many places,
+should be fine for a stacked f/s (topology changes as we discussed before
+are a different problem).
 
-BTW, what happened with sparse.git?  The last changeset in there (in
-/pub/scm/devel/sparse/sparse.git/ on g.k.o) is
-commit a02aeb329d5a8f9047c0b75b7e7f64ee2db3ffcf
-Author: Josh Triplett <josh@freedesktop.org>
-Date:   Tue Nov 13 04:15:13 2007 -0800
+Since you've hinted of major vfs changes post-25, here's my take.
 
-    Makefile: VERSION=0.4.1
+Right now I (and to a similar extent ecryptfs too) needs to keep track of
+vfsmounts for various reasons:
 
-and I definitely had seen patches on sparse maillist since then (hell,
-sent several myself - including fixes for show_typename(), etc.)
+- to grab a reference so the lower filesystems/mounts won't disappear on me
+- to pass it to dentry_open (opening the lower file)
+- some fs ops pass a vfsmount (umount_begin, show_options)
+- some fs ops or vfs helpers require a nameidata or struct path which embed
+  a vfsmount inside
+- sometimes it's ok to pass NULL for those things, sometimes it's not ok
 
-I don't mind doing more liberal ICE handling, *if* we agree on a well-defined
-extensions to what C99 says.  But I'd rather have some idea of what's pending
-the inclusion into the tree...
+Often it also appears that a vfsmount and a dentry tuple are needed
+together, hence struct path.  So we recently started using struct path in a
+few places, and using path_get/put.  The need to deal with <dentry,vfsmount>
+pairs by hand can lead to interesting bugs, such as the recent ecryptfs
+bugfix which had to swap the order of a dput() and mntput() sequence.
 
-As for the extensions...  Amend 6.6p6 in a way similar to 6.6p3 (i.e. allow
-any junk in unevaluated subexpressions)?  Making that option-controlled,
-probably...
+The fact that several vfs ops and helpers take different namespace-related
+structures (dentry, nameidata, vfsmount, path), is confusing and hard to
+track.  Is there a way to reduce the number of those structures to 1-2 at
+most?
 
-BTW, gcc is very definitely buggy - int a[1 + 0 * x]; is accepted and
-that breaks even 6.6p3, let alone 6.6p6.  With -pedantic -std=c99 -Wall,
-at that.
+For a stackable f/s, it's important the the VFS ops *and* the VFS helpers
+(vfs_*, path_*, dentry_open, etc.) use the same namespace structures: then
+there's more symmetry b/t the objects passed to a stacked f/s, and the
+objects it has to pass to VFS helpers (and FWIW, every such object should
+ideally leave a "void *private" field for f/s specific extensibility).
+
+In the longer run, is there a way that a stackable f/s could traverse the
+namespace below it w/o knowing or caring how they are composed (assorted r-w
+and r-o bind mounts and such)?
+
+Cheers,
+Erez.
