@@ -1,58 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932439AbYDCRSc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761256AbYDCRUo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932439AbYDCRSc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Apr 2008 13:18:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759010AbYDCRSR
+	id S1761256AbYDCRUo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Apr 2008 13:20:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751566AbYDCRUe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Apr 2008 13:18:17 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:36583 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759780AbYDCRSP (ORCPT
+	Thu, 3 Apr 2008 13:20:34 -0400
+Received: from bzq-219-195-70.pop.bezeqint.net ([62.219.195.70]:49812 "EHLO
+	bh-buildlin1.bhalevy.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752536AbYDCRUd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Apr 2008 13:18:15 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=Yj+PJDuLe5DDtrWDUtRJpL+zyzIka2Q3a1BCXd65TxUI1gzRcPWd16eXnIlVy5Jtc
-	Z53sV/y3hmiwSrvpUCZ0w==
-Message-ID: <6599ad830804031017m60dc5ca5sebaa434e5bde8633@mail.gmail.com>
-Date: Thu, 3 Apr 2008 10:17:44 -0700
-From: "Paul Menage" <menage@google.com>
-To: balbir@linux.vnet.ibm.com
-Subject: Re: [-mm] Add an owner to the mm_struct (v6)
-Cc: "Pavel Emelianov" <xemul@openvz.org>, "Hugh Dickins" <hugh@veritas.com>,
-       "Sudhir Kumar" <skumar@linux.vnet.ibm.com>,
-       "YAMAMOTO Takashi" <yamamoto@valinux.co.jp>, lizf@cn.fujitsu.com,
-       linux-kernel@vger.kernel.org, taka@valinux.co.jp, linux-mm@kvack.org,
-       "David Rientjes" <rientjes@google.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <47F5109D.8060606@linux.vnet.ibm.com>
+	Thu, 3 Apr 2008 13:20:33 -0400
+Message-ID: <47F511BF.8090506@panasas.com>
+Date: Thu, 03 Apr 2008 20:19:59 +0300
+From: Benny Halevy <bhalevy@panasas.com>
+Organization: Panasas, Inc.
+User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Alexander van Heukelum <heukelum@mailshack.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       linux-arch <linux-arch@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Andi Kleen <andi@firstfloor.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [0/3] Improve generic fls64 for 64-bit machines
+References: <20080315172913.GA21648@mailshack.com>
+In-Reply-To: <20080315172913.GA21648@mailshack.com>
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080403073043.3563.63717.sendpatchset@localhost.localdomain>
-	 <6599ad830804030845m71d56d88u3508a252fc134ba5@mail.gmail.com>
-	 <47F5109D.8060606@linux.vnet.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 3, 2008 at 10:15 AM, Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
->  > Even better, maybe just pass in the relevant cgroup_subsys_state
->  > objects here, rather than the cgroup objects?
->  >
->
->  Is that better than passing the cgroups? All the callbacks I see usually pass
->  either task_struct or cgroup. Won't it be better, consistent use of API to pass
->  either of those?
+On Mar. 15, 2008, 19:29 +0200, Alexander van Heukelum <heukelum@mailshack.com> wrote:
+> This series of patches:
+> 
+> [1/3] adds __fls.h to asm-generic
+> [2/3] modifies asm-*/bitops.h for 64-bit archs to implement __fls
+> [3/3] modifies asm-generic/fls64.h to make use of __fls
 
-I have a long term plan to try to divorce the subsystems from having
-to worry too much about actual control groups where possible.
+I strongly support this.
 
-But I guess that for consistency with the current API, passing in the
-cgroup is OK.
+I wish we'd also have a consistent naming convention for all
+the bitops functions so it will be clearer what data type the
+function is working on and is the result 0 or 1 based.
 
-Paul
+It seems like what we currently have is:
+
+name	type	first bit#
+----	----	----------
+ffs	int	1
+fls	int	1
+__ffs	ulong	0
+__fls	ulong	0	# in your proposal
+ffz	ulong	0
+fls64	__u64	1
+
+so it seems like
+- ffz is misnamed and is rather confusing.
+  Apprently is should be renamed to __ffz.
+
+- (new) ffz(x) can be defined to ffs(~(x))
+
+- It'd be nice to have ffs64, and maybe ffz64.
+
+Benny
+
+> 
+> I have compiled i386 and x86_64, and they generate the same code as
+> before the change. The changes to the other archs are a best effort.
+> Please comment.
+> 
+> If this patch series is accepted, it will make one tiny bit of
+> the x86-unification a tiny bit cleaner. The patches are against
+> Linus' current tree.
+> 
+> Andrew, if no concensus can be reached that this is a bad patch
+> series, would you be willing to add this to your tree?
+> 
+> Greetings,
+> 	Alexander
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+
