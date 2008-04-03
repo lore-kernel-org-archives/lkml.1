@@ -1,77 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759290AbYDCVtl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760565AbYDCVt6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759290AbYDCVtl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Apr 2008 17:49:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755632AbYDCVtb
+	id S1760565AbYDCVt6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Apr 2008 17:49:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759577AbYDCVto
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Apr 2008 17:49:31 -0400
-Received: from outbound-mail-101.bluehost.com ([69.89.22.11]:41233 "HELO
-	outbound-mail-101.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753537AbYDCVta (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Apr 2008 17:49:30 -0400
-X-Greylist: delayed 397 seconds by postgrey-1.27 at vger.kernel.org; Thu, 03 Apr 2008 17:49:30 EDT
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
+	Thu, 3 Apr 2008 17:49:44 -0400
+Received: from gate.crashing.org ([63.228.1.57]:54318 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758988AbYDCVtl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Apr 2008 17:49:41 -0400
 Subject: Re: [RFC][PATCH 1/3] use new pm_ops in DRM drivers
-Date: Thu, 3 Apr 2008 14:41:07 -0700
-User-Agent: KMail/1.9.9
-Cc: pm list <linux-pm@lists.linux-foundation.org>,
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reply-To: benh@kernel.crashing.org
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       pm list <linux-pm@lists.linux-foundation.org>,
        ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
        Alan Stern <stern@rowland.harvard.edu>, Greg KH <greg@kroah.com>,
        Len Brown <lenb@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
        Alexey Starikovskiy <astarikovskiy@suse.de>,
        David Brownell <david-b@pacbell.net>, Pavel Machek <pavel@ucw.cz>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
        Oliver Neukum <oliver@neukum.org>,
        Nigel Cunningham <ncunningham@crca.org.au>,
        Dave Airlie <airlied@linux.ie>
-References: <200804020207.40278.rjw@sisk.pl> <200804031150.55967.jbarnes@virtuousgeek.org> <200804032323.59133.rjw@sisk.pl>
-In-Reply-To: <200804032323.59133.rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-2"
+In-Reply-To: <200804031150.55967.jbarnes@virtuousgeek.org>
+References: <200804020207.40278.rjw@sisk.pl>
+	 <200804020209.47207.rjw@sisk.pl>
+	 <200804031150.55967.jbarnes@virtuousgeek.org>
+Content-Type: text/plain
+Date: Fri, 04 Apr 2008 08:47:47 +1100
+Message-Id: <1207259267.10388.334.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200804031441.07703.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, April 03, 2008 2:23 pm Rafael J. Wysocki wrote:
-> > +static int i915_poweroff(struct device *dev)
-> > +{
-> > +	/* Shut down the device */
-> > +	pci_disable_device(dev->pdev);
-> > +	pci_set_power_state(dev->pdev, PCI_D3hot);
->
-> I think you may need to do that in ->suspend() too, as opposed to
-> ->freeze(), ...
 
-Because ->poweroff won't be called in the paths that do ->suspend?  Ah yeah, 
-must have skipped over that section of the documentation...
+On Thu, 2008-04-03 at 11:50 -0700, Jesse Barnes wrote:
+> +static struct pm_ops i915_pm_ops = {
+> +       .prepare = NULL, /* DRM core should prevent any new ioctls? */
+> +       .complete = NULL, /* required to re-enable DRM client requests
+> */
 
->
-> > +}
-> > +
-> > +static struct pm_ops i915_pm_ops = {
-> > +	.prepare = NULL, /* DRM core should prevent any new ioctls? */
-> > +	.complete = NULL, /* required to re-enable DRM client requests */
-> > +	.suspend = i915_save,
-> > +	.resume = i915_restore,
-> > +	.freeze = i915_save,
->
-> ... so perhaps define ->suspend() as ->save() + ->poweroff()?
+The DRM core could definitely provide generic prepare & complete that
+sync'up with user space, making sure the command streams stop etc...
 
-Yep, I can just make a wrapper for it in the driver.
+Ben.
 
-Thanks a lot for making these changes to the core.  My only worry is that all 
-the old-style stuff will stick around forever...  so fwiw you can add my
 
-Acked-by:  Jesse Barnes <jesse.barnes@intel.com>
-
-to the series.
-
-Thanks,
-Jesse
