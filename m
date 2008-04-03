@@ -1,55 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760010AbYDCTbo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760798AbYDCTcA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760010AbYDCTbo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Apr 2008 15:31:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755562AbYDCTbf
+	id S1760798AbYDCTcA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Apr 2008 15:32:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759398AbYDCTbm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Apr 2008 15:31:35 -0400
-Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:50952 "EHLO
-	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755421AbYDCTbe (ORCPT
+	Thu, 3 Apr 2008 15:31:42 -0400
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:46738 "EHLO
+	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758566AbYDCTbl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Apr 2008 15:31:34 -0400
-Date: Thu, 3 Apr 2008 15:31:22 -0400
-To: Frans Pop <elendil@planet.nl>
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: Re: No IDE drivers loaded for Toshiba Satellite 320 CDS
-Message-ID: <20080403193122.GQ24237@csclub.uwaterloo.ca>
-References: <200804021524.27222.elendil@planet.nl> <200804021820.04610.elendil@planet.nl> <20080402194938.GI24237@csclub.uwaterloo.ca> <200804031947.07674.elendil@planet.nl>
+	Thu, 3 Apr 2008 15:31:41 -0400
+Date: Thu, 3 Apr 2008 15:31:27 -0400
+From: "Josef 'Jeff' Sipek" <jeffpc@josefsipek.net>
+To: Hugh Dickins <hugh@veritas.com>
+Cc: Erez Zadok <ezk@cs.sunysb.edu>, akpm@linux-foundation.org,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Al Viro <viro@zeniv.linux.org.uk>, hch@infradead.org
+Subject: Re: fs_stack/eCryptfs: remove 3rd arg of copy_attr_all, add
+	locking to copy_inode_size
+Message-ID: <20080403193127.GA640@josefsipek.net>
+References: <200804031907.m33J70fQ025437@agora.fsl.cs.sunysb.edu> <Pine.LNX.4.64.0804032014350.4616@blonde.site>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200804031947.07674.elendil@planet.nl>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
+In-Reply-To: <Pine.LNX.4.64.0804032014350.4616@blonde.site>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 03, 2008 at 07:47:06PM +0200, Frans Pop wrote:
-> I've decided (at least for now) to only do this f /sys/bus/isa is present.
-> I added a check to see if there are additional devices in /sys/block after 
-> loading ide-generic to decide whether or not to also include it in the 
-> initrd for the installed system.
+On Thu, Apr 03, 2008 at 08:26:54PM +0100, Hugh Dickins wrote:
+> On Thu, 3 Apr 2008, Erez Zadok wrote:
+> > In message <20080403182001.GB30189@josefsipek.net>, "Josef 'Jeff' Sipek" writes:
+> > > I think you need to check CONFIG_PREEMPT as well.
+> > 
+> > I'm not sure if it's needed in case of CONFIG_PREEMPT.  Anyone?  The code
+> > for i_size_write (below), and the comment at the top of the function,
+> > suggest that the spinlock is needed only to prevent the lots seqcount.
+> 
+> Correct.
+ 
+True...
 
-I am just wondering if arm, m68k, etc might have IDE ports that work
-with ide-generic.  I have no idea to be quite honest.
+> > BTW, some time ago I reviewed all callers of i_size_write.  I did so again
+> > just now, and the results were the same:
+> > 
+> > - a LOT of callers of i_size_write don't take any lock
+> 
+> They mostly know that i_mutex is already held (as i_size_write comment
+> mentions); but I believe that's up to the individual filesystem.
 
-> /sys/bus/isa is present for this machine so it works even if (as Ondrej 
-> suggests) the controller is not actually on the ISA bus. We can always 
-> extend the test if it turns out systems without ISA bus are also affected.
+Is this function (fsstack_copy_inode_size) used only in unlocked paths? If
+there's little chance that it'll ever need to be used in locked paths, then
+sure, why not have the lock right in the function.
 
-Hmm, I must admit my newest x86 does in fact not have a /sys/bus/isa.  I
-guess it really does not have anything left resembling ISA.
-
-> I'll also send out a call for testing specifically for this issue.
-
-I can certainly give the installer a shot on my 486, if I can manage to
-boot it somehow.  Any floppy images for the installer around anymore? :)
-
-Do I have to put a disk image on a harddisk and boot from that?  CD and
-network boot are not an option.
+Josef 'Jeff' Sipek.
 
 -- 
-Len Sorensen
+My public GPG key can be found at
+http://www.josefsipek.net/gpg/public-0xC7958FFE.txt
