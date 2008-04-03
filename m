@@ -1,120 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758699AbYDCN62@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758073AbYDCOE0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758699AbYDCN62 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Apr 2008 09:58:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756786AbYDCN6U
+	id S1758073AbYDCOE0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Apr 2008 10:04:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756710AbYDCOEP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Apr 2008 09:58:20 -0400
-Received: from mtagate5.de.ibm.com ([195.212.29.154]:48116 "EHLO
-	mtagate5.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756729AbYDCN6T (ORCPT
+	Thu, 3 Apr 2008 10:04:15 -0400
+Received: from out4.smtp.messagingengine.com ([66.111.4.28]:52894 "EHLO
+	out4.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756869AbYDCOEN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Apr 2008 09:58:19 -0400
-Subject: Re: kernel BUG at drivers/block/ub.c:820!
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Reply-To: schwidefsky@de.ibm.com
-To: Boaz Harrosh <bharrosh@panasas.com>
-Cc: linux-kernel@vger.kernel.org, k-ueda@ct.jp.nec.com, j-nomura@ce.jp.nec.com,
-       jens.axboe@oracle.com, zaitcev@redhat.com
-In-Reply-To: <47F4C044.1090609@panasas.com>
-References: <1207212156.5602.5.camel@localhost>
-	 <47F4C044.1090609@panasas.com>
-Content-Type: text/plain
-Organization: IBM Corporation
-Date: Thu, 03 Apr 2008 15:57:25 +0200
-Message-Id: <1207231045.9155.6.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 
+	Thu, 3 Apr 2008 10:04:13 -0400
+Message-Id: <1207231451.8070.1245872431@webmail.messagingengine.com>
+X-Sasl-Enc: vbqTUbWmC37gnzy6a5L4IRfnmUJbUrHQfRmHSFxTW0uh 1207231451
+From: "Kai" <epimetreus@fastmail.fm>
+To: "Ingo Molnar" <mingo@elte.hu>
+Cc: "Ray Lee" <ray-lk@madrabbit.org>, linux-kernel@vger.kernel.org,
+       "Peter Zijlstra" <a.p.zijlstra@chello.nl>,
+       "Mike Galbraith" <efault@gmx.de>
+Content-Disposition: inline
 Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="ISO-8859-1"
+MIME-Version: 1.0
+X-Mailer: MessagingEngine.com Webmail Interface
+References: <1206310206.17373.1243881033@webmail.messagingengine.com>
+   <2c0942db0803231522w7c66f168xf7fea72d135ba395@mail.gmail.com>
+   <1206341873.32060.1243929851@webmail.messagingengine.com>
+   <20080327091711.GD30918@elte.hu>
+Subject: Re: Serious performance regression in Wine applications and Linux      
+   2.6.24.*
+In-Reply-To: <20080327091711.GD30918@elte.hu>
+Date: Thu, 03 Apr 2008 07:04:11 -0700
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-04-03 at 14:32 +0300, Boaz Harrosh wrote:
-> > With git bisect I could came up with:
-> > 610d8b0c972e3b75493efef8e96175518fd736d3 good
-> > 3bcddeac1c4c7e6fb90531b80f236b1a05dfe514 compile error
-> > 5450d3e1d68f10be087f0855d8bad5458b50ecbe compile error
-> > b8286239ddaf2632cec65c01e68a403ac4c3d079 compile error
-> > 7d699bafe258ebd8f9b4ec182c554200b369a504 bad
+On Thu, 27 Mar 2008 10:17:14 +0100, "Ingo Molnar" <mingo@elte.hu> said:
+> 
+> * Kai <epimetreus@fastmail.fm> wrote:
+> 
+> > The issue only shows with Age of Wonders II and AoW Shadow Magic.
 > > 
-> > If I replace the BUG() with a printk my kernel survives the usb plug but
-> > udev doesn't find the stick.
+> > Every version of wine from 0.9.55 to 0.9.58, including several 
+> > intermediate git builds.
 > > 
+> > Xorg version 1.4.0.90, and a couple other versions (the problems has 
+> > persisted across a couple updates of Xorg)
+> > 
+> > Hardware rendering; using the prop. nV driver; updating that also 
+> > doesn't affect the issue, nor does retaining the same version.
 > 
-> It is not the right fix but what happens if you change above code to this:
+> could you run this script while such a slowdown is really prominent:
 > 
-> static void ub_end_rq(struct request *rq, unsigned int scsi_status)
-> {
->         int error;
+>   http://people.redhat.com/mingo/cfs-scheduler/tools/cfs-debug-info.sh
 > 
->         if (scsi_status == 0) {
->                 error = 0;
->         } else {
->                 error = -EIO;
->                 rq->errors = scsi_status;
->         }
->         if (__blk_end_request(rq, error, blk_rq_bytes(rq)))
->                 __blk_end_request(rq, error, ~0);  /* <-- added line BUG removed. */
->         }
-> }
+> and send me the output it generates? The output is the most useful if 
+> you do this on a kernel that has CONFIG_SCHED_DEBUG=y and 
+> CONFIG_SCHEDSTATS=y enabled.
+> 
+> on the off chance that this issue has been fixed in the soon-to-be 
+> 2.6.25 kernel, you might also want to try x86.git/latest, which is based 
+> on the latest Linus tree and has all relevant x86 fixes and improvements 
+> added as well:
+> 
+>   http://people.redhat.com/mingo/x86.git/README
+> 
+> several of the changes can affect performance.
+> 
+> a third (and most comprehensive) way to debug this would be to send me a 
+> scheduler trace of such a slowdown, you can generate a scheduler trace 
+> the following way:
+> 
+>   http://people.redhat.com/mingo/sched-devel.git/readme-tracer.txt
+> 
+> but we can probably give a first estimation based on the cfs-debug-info 
+> output already. Btw., you can combine the scheduler and the x86 git tree 
+> into a temporary unified tree by doing these two commands:
+> 
+>   git-checkout -b tmp x86/latest
+>   git-merge sched-devel/latest
+> 
+> (run "make oldconfig" to pick up the new config options.)
 
-I've tried this patch:
+Okay, so I don't know a lot about git; I tried following the
+instructions in the readme at
+http://people.redhat.com/mingo/x86.git/README to get a latest x86 tree,
+and merge it with sched-devel/latest using the commands git-checkout -b
+tmp x86/latest and git-merge sched-devel/latest:
 
---- snip
-diff --git a/drivers/block/ub.c b/drivers/block/ub.c
-index c452e2d..0031e72 100644
---- a/drivers/block/ub.c
-+++ b/drivers/block/ub.c
-@@ -808,7 +808,7 @@ static void ub_rw_cmd_done(struct ub_dev *sc, struct ub_scsi_cmd *cmd)
- 
- static void ub_end_rq(struct request *rq, unsigned int scsi_status)
- {
--	int error;
-+	int error, size;
- 
- 	if (scsi_status == 0) {
- 		error = 0;
-@@ -816,8 +816,12 @@ static void ub_end_rq(struct request *rq, unsigned int scsi_status)
- 		error = -EIO;
- 		rq->errors = scsi_status;
- 	}
--	if (__blk_end_request(rq, error, blk_rq_bytes(rq)))
--		BUG();
-+	size = blk_rq_bytes(rq);
-+	if (__blk_end_request(rq, error, size)) {
-+		  printk(KERN_WARNING "ub_end_rq: __blk_end_request failed "
-+			 "with size %i\n", size);
-+		__blk_end_request(rq, error, ~0);
-+	}
- }
- 
- static int ub_rw_cmd_retry(struct ub_dev *sc, struct ub_lun *lun,
+mkdir linux.trees.git || exit -1
+cd linux.trees.git
+git-init-db
+git-remote add linus
+git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git
+git-remote add x86
+git://git.kernel.org/pub/scm/linux/kernel/git/x86/linux-2.6-x86.git
+git-remote update
+git-checkout -b tmp x86/latest
+git-merge sched-devel/latest
 
---- snip
+Then I copied over a config file and updated it, but building failed
+shortly into the process, with some errors about missing a } before ;,
+and excess elements in scalar initializer, in file
+arch/x86/kernel/init_task.cc.. anyway, I tried to update again, using
+git-remote update, but it kept giving me this output: 
 
-The output on the console:
+Updating linus
+Updating sched-devel
+fatal: The remote end hung up unexpectedly
+fetch sched-devel: command returned error: 128
 
-# usb 5-4: new high speed USB device using ehci_hcd and address 3
-# usb 5-4: configuration #1 chosen from 1 choice
-#  uba: uba1
-# usbcore: registered new interface driver ub
-# Initializing USB Mass Storage driver...
-# usbcore: registered new interface driver usb-storage
-# USB Mass Storage support registered.
-# ub_end_rq: __blk_end_request failed with size 218
-# ub_end_rq: __blk_end_request failed with size 218
-# ub_end_rq: __blk_end_request failed with size 218
-# ub_end_rq: __blk_end_request failed with size 218
-
-I can mount the stick and read files from it without any additional
-warnings. Just the initial detection seems to create the odd sized
-requests.
-
--- 
-blue skies,
-  Martin.
-
-"Reality continues to ruin my life." - Calvin.
-
-
+So I'm just going to test using 2.6.25-rc8-git2; however, can someone
+also give me the proper sequence of commands to get a working tree as
+Ingo Molnar requested, so I can test that way, too? Sorry to be a pain.
