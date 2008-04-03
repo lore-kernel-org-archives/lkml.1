@@ -1,80 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759827AbYDCAGY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758800AbYDCASv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759827AbYDCAGY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 20:06:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755490AbYDCAGQ
+	id S1758800AbYDCASv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 20:18:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755448AbYDCASk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 20:06:16 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:34804 "EHLO e4.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754966AbYDCAGP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 20:06:15 -0400
-Subject: Re: HugeTLB vs. SH3 cpu
-From: Dave Hansen <dave@linux.vnet.ibm.com>
-To: Nishanth Aravamudan <nacc@us.ibm.com>
-Cc: Paul Mundt <lethal@linux-sh.org>,
-       Nish Aravamudan <nish.aravamudan@gmail.com>,
-       Adrian Bunk <bunk@kernel.org>, wli@holomorphy.com,
-       linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20080402225556.GI21524@us.ibm.com>
-References: <20080401225809.GC32269@cs181133002.pp.htv.fi>
-	 <29495f1d0804011626n2399d69aj7566df7f78953458@mail.gmail.com>
-	 <20080402080448.GA4171@linux-sh.org>  <20080402225556.GI21524@us.ibm.com>
-Content-Type: text/plain
-Date: Wed, 02 Apr 2008 17:06:09 -0700
-Message-Id: <1207181169.23710.84.camel@nimitz.home.sr71.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+	Wed, 2 Apr 2008 20:18:40 -0400
+Received: from wf-out-1314.google.com ([209.85.200.170]:15461 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755272AbYDCASj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Apr 2008 20:18:39 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=EDma+HyLTHawtySDvgZob/bnpmSToaajZTKk+0Zj9LA/+WD1sQSz33wGD8Rq8HLdj0bVa0a4hpgT1UA4FVI4Ho/Ew1trVAyJXnWjAcLolX5Mns6abZAcNnWNFJwSrfw3PVF/Kzt6DMZzEyjzDqyLbP6nIG8rdqJgNRpuJkIgl/k=
+Message-ID: <47F42259.8030603@gmail.com>
+Date: Thu, 03 Apr 2008 09:18:33 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+MIME-Version: 1.0
+To: Justin Mattock <justinmattock@gmail.com>
+CC: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org,
+       Alan <alan@lxorguk.ukuu.org.uk>, Jeff Garzik <jeff@garzik.org>,
+       Pavel Machek <pavel@ucw.cz>
+Subject: Re: suspend
+References: <dd18b0c30804012331oc548416k113e492d7dc9c189@mail.gmail.com>	 <200804021419.06672.rjw@sisk.pl>	 <dd18b0c30804020853w50e0290cy8b0303e30f2bcfec@mail.gmail.com>	 <200804021939.46733.rjw@sisk.pl> <dd18b0c30804021218t700484faua57a46e237ea581f@mail.gmail.com>
+In-Reply-To: <dd18b0c30804021218t700484faua57a46e237ea581f@mail.gmail.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-04-02 at 15:55 -0700, Nishanth Aravamudan wrote:
-> On 02.04.2008 [17:04:48 +0900], Paul Mundt wrote:
-> > On Tue, Apr 01, 2008 at 04:26:14PM -0700, Nish Aravamudan wrote:
-> > Sorting out the mess noted by Adrian is pretty trivial with a
-> > HAVE_HUGETLB_PAGE. How about this?
-> 
-> I'm confused, isn't the following simpler fix equivalent?
-> 
-> Fix sh3 build with HUGETLBFS=y. Only SH4 and SH5 actually support
-> HUGETLB_PAGE (which HUGETLBFS depends on).
-> 
-> Signed-off-by: Nishanth Aravamudan <nacc@us.ibm.com>
-> 
-> diff --git a/fs/Kconfig b/fs/Kconfig
-> index d731282..1981f8e 100644
-> --- a/fs/Kconfig
-> +++ b/fs/Kconfig
-> @@ -978,7 +978,7 @@ config TMPFS_POSIX_ACL
->  
->  config HUGETLBFS
->  	bool "HugeTLB file system support"
-> -	depends on X86 || IA64 || PPC64 || SPARC64 || (SUPERH && MMU) || BROKEN
-> +	depends on X86 || IA64 || PPC64 || SPARC64 || ((CPU_SH4 || CPU_SH5) && MMU) || BROKEN
+Hello,
 
-Yeah, that's equivalent.  But, you have to draw the line at some point
-on how complex that "depends on" is going to get.  I think you each have
-unique pain tolerances. :)
+Justin Mattock wrote:
+>>  > [ 1233.811794] sd 2:0:1:0: [sda] Starting disk
+>>  > [ 1234.013599] ata1.00: ACPI cmd ef/03:0c:00:00:00:a0 filtered out
+>>  > [ 1234.013601] ata1.00: ACPI cmd ef/03:44:00:00:00:a0 filtered out
+>>  > [ 1234.180232] ata1.00: configured for UDMA/66
+>>  > [ 1222.732011] ata3.01: NODEV after polling detection
+>>  > [ 1222.732016] ata3.01: revalidation failed (errno=-2)
 
-Personally, I kinda prefer to break it out per-arch, because that SUPERH
-logic is getting a bit screwy.
+I presume this is ata_piix, right?  What's hanging off of ata3.01?  An 
+optical drive?
 
-You could also do something like this:
+What happened is that, after resuming, libata reseted the channel and 
+issued IDENTIFY[_PACKET] to make sure the device was still there.  The 
+device violated the state machine transition in the same way as when 
+there's no device attached.  libata paused for a while and retries and 
+the device responded correctly at the retry.  Things like this can 
+happen.  The problem is that libata resume is currently synchronous and 
+retries like this hold the machine back from reaching operational status 
+even when there's no reason for resume retrial on optical drive to delay 
+the rest of resume process.
 
->  config HUGETLBFS
->  	bool "HugeTLB file system support"
-> -	depends on X86 || IA64 || PPC64 || SPARC64 || (SUPERH && MMU) || BROKEN
-> +	depends on X86 || IA64 || PPC64 || SPARC64 || SUPERH_HUGETLBFS || BROKEN
+Can you please post full kernel log and the result of 'lspci -nn'?
 
-And then:
-
-config SUPERH_HUGETLBFS
-	def_bool y
-	depends on (CPU_SH4 || CPU_SH5) && MMU
-
-on the arch-specific side.  
-
--- Dave
-
+-- 
+tejun
