@@ -1,102 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757555AbYDCF0b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757987AbYDCFaK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757555AbYDCF0b (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Apr 2008 01:26:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751996AbYDCF0X
+	id S1757987AbYDCFaK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Apr 2008 01:30:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752341AbYDCF3y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Apr 2008 01:26:23 -0400
-Received: from wa-out-1112.google.com ([209.85.146.177]:20622 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751961AbYDCF0W (ORCPT
+	Thu, 3 Apr 2008 01:29:54 -0400
+Received: from smtp114.mail.mud.yahoo.com ([209.191.84.67]:44891 "HELO
+	smtp114.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752005AbYDCF3x (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Apr 2008 01:26:22 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=dzuspLpyBc9U3bHRuKzaLAZvjdsiI9GqYse1omPQq7ohldH3SyS6YtOsHgz7XcMbfILuZQoO174RVP0adk4AlNVwgKy38LI9eVW3O5lBldtFZoDmk5qV+LYKSuKtJ+ViF6/07TqIk8Z6kOp6OL7S82E5vmicCj8/M2NE/pTX7aE=
-Message-ID: <47F46A74.504@gmail.com>
-Date: Thu, 03 Apr 2008 14:26:12 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	Thu, 3 Apr 2008 01:29:53 -0400
+X-Greylist: delayed 440 seconds by postgrey-1.27 at vger.kernel.org; Thu, 03 Apr 2008 01:29:53 EDT
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=FYhAKt2rqbP31z2laHgthfyb+/JSOo3ILYm4DM+gSrrWmrfLKFiAGB+gBvmBodMN0pcXYpxjRlsedMavngeRDDZpsBK8/eYUdviv83OM6PoSw/Skzw5fW76VU4bcsxysS3CXAfgshLbjZVDyvRWkUAKP2wq06W730d3M+cBnTx0=  ;
+X-YMail-OSG: e_fpaHQVM1nNJEEeG4Vpo.uH.nidTL3HVv4_ok3.7XClau1XkRCeFhjY3a8C7sjPUcy_jElGlg--
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: GFP_ATOMIC page allocation failures.
+Date: Thu, 3 Apr 2008 16:22:26 +1100
+User-Agent: KMail/1.9.5
+Cc: Chris Snook <csnook@redhat.com>, Dave Jones <davej@codemonkey.org.uk>,
+       Linux Kernel <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
+       Peter Zijlstra <peterz@infradead.org>
+References: <20080401235609.GA6947@codemonkey.org.uk> <200804022012.58760.nickpiggin@yahoo.com.au> <20080402085437.7d9abf1f.akpm@linux-foundation.org>
+In-Reply-To: <20080402085437.7d9abf1f.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: Volker Armin Hemmann <volker.armin.hemmann@tu-clausthal.de>
-CC: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
-       Peer Chen <pchen@nvidia.com>, Kuan Luo <kluo@nvidia.com>
-Subject: Re: 2.6.24.X: SATA/AHCI related boot delay. - not with 2.6.24.3
-References: <200803091922.33083.volker.armin.hemmann@tu-clausthal.de> <200804021909.41609.volker.armin.hemmann@tu-clausthal.de> <47F43766.2070207@gmail.com> <200804030704.21480.volker.armin.hemmann@tu-clausthal.de>
-In-Reply-To: <200804030704.21480.volker.armin.hemmann@tu-clausthal.de>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200804031622.26973.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello, Volker.
+On Thursday 03 April 2008 02:54, Andrew Morton wrote:
+> On Wed, 2 Apr 2008 20:12:58 +1100 Nick Piggin <nickpiggin@yahoo.com.au> 
+wrote:
+> > On Wednesday 02 April 2008 18:56, Andrew Morton wrote:
+> > > > Limiting this to once per boot should suffice for debugging purposes.
+> > > > Even if you manage to concoct a bug that always survives the first
+> > > > failure, you should be able to take the hint when you keep seeing
+> > > > this in dmesg.
+> > >
+> > > The appropriate thing to do here is to convert known-good drivers (such
+> > > as e1000[e]) to use __GFP_NOWARN.
+> > >
+> > > Unfortunately netdev_alloc_skb() went and assumed GFP_ATOMIC, but I
+> > > guess we can dive below the covers and use __netdev_alloc_skb():
+> >
+> > It's still actually nice to know how often it is happening even for
+> > these known good sites because too much can indicate a problem and
+> > that you could actually bring performance up by tuning some things.
+>
+> Yes, it's useful debugging.  It tells us when we mucked up the page
+> allocator.
 
-Volker Armin Hemmann wrote:
->>> In short, no changes at all.
->> Thanks for confirming.
->>
->> Peer, Kuan.  Volker is reporting detection problems on MCP65 AHCI.
->> The followings are what we've discovered till now.
->>
->> 1. When the controller is put into non-raid mode in BIOS
->>
->>   * If softreset is used, either the softreset itself or IDENTIFY
->>     following it times out once.  On retrial, it works fine.  It
->>     doesn't matter whether the SRST is issued by itself or as
->>     follow-up-srst after hardreset.  Using only hardreset works fine.
->>
->>   * The controller doesn't indicate MSI capability and MSI isn't used
->>     by default.
->>
->> 2. When the controller is put into ahci mode in BIOS
->>
->>   * SRST works fine.
->>
->>   * The controller indicates MSI capability but MSI doesn't work
->>     properly resulting in IRQ delivery failure.  Adding
->>     intx_disable_bug quirk doesn't help.
->>
->> I've performed similar test on MCP67 and everything worked fine on it.
->>
->> Both problems (SRST and MSI) can be worked around but I need more
->> information to work around those.
->>
->> * Which chips are affected?  Are there proper fixes?
->>
->> * For the MSI problem, is it system wide problem or local to the ahci
->>   controller?
-> 
-> 
-> I rebooted with non-raid set, without pci=nomsi
-> 
-> this is cat /proc/interrupts:
->           CPU0       CPU1
->   0:         57          1   IO-APIC-edge      timer
->   1:          0         81   IO-APIC-edge      i8042
->   8:          0          1   IO-APIC-edge      rtc
->   9:          0          1   IO-APIC-fasteoi   acpi
->  12:          0          3   IO-APIC-edge      i8042
->  17:          2       2868   IO-APIC-fasteoi   nvidia
->  18:          0          0   IO-APIC-fasteoi   EMU10K1
->  22:          4        745   IO-APIC-fasteoi   ehci_hcd:usb1
-> 314:          0        158   PCI-MSI-edge      eth0
-> 315:          7      12769   PCI-MSI-edge      ahci
-> 
-> as you can see, only the sata controller and the network uses msi.
-> 
-> And networking works - or I wouldn't be able to send you this mail.
+Right.
 
-I guess the ahci controller works too.  This is getting confusing, so 
-MSI doesn't work iff the controller is configured as ahci in BIOS?
 
-> I will reboot from systemresucecd later today and post some results with 
-> ahci-mode set, no nomsi. Just can't try patches that way.
+> It also tells us when we mucked up the net driver - I doubt if we (or at
+> least, I) would have discovered that e1000 does a 32k allocation for a
+> 5k(?) frame if this warning wasn't coming out.
 
-Is sytemrescuecd using the same kernel?  Otherwise, it will only add 
-more to the confusion.
+Is that right? If it is allocating for 9K MTU, then the slab allocator
+(slub in this case) will bump that up to the 16K kmalloc slab. If it is
+a 5K frame, then it would get the 8K kmalloc slab I think.
 
--- 
-tejun
+Oh, but SLUB's default MIN_OBJECTS is 4, so 4*8 is 32 indeed. So slub
+is probably deciding to round the kmalloc-8192 allocations up to order-3.
+I think. How did you know it was a 5k frame? :)
+
