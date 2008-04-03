@@ -1,523 +1,529 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761309AbYDCF7b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760741AbYDCGEX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761309AbYDCF7b (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Apr 2008 01:59:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757468AbYDCF7X
+	id S1760741AbYDCGEX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Apr 2008 02:04:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755016AbYDCGEO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Apr 2008 01:59:23 -0400
-Received: from e33.co.us.ibm.com ([32.97.110.151]:43306 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757098AbYDCF7V (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Apr 2008 01:59:21 -0400
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: Paul Menage <menage@google.com>, Pavel Emelianov <xemul@openvz.org>
-Cc: Hugh Dickins <hugh@veritas.com>, Sudhir Kumar <skumar@linux.vnet.ibm.com>,
-       YAMAMOTO Takashi <yamamoto@valinux.co.jp>, lizf@cn.fujitsu.com,
-       linux-kernel@vger.kernel.org, taka@valinux.co.jp, linux-mm@kvack.org,
-       David Rientjes <rientjes@google.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Date: Thu, 03 Apr 2008 11:29:01 +0530
-Message-Id: <20080403055901.31796.41411.sendpatchset@localhost.localdomain>
-Subject: [-mm] Add an owner to the mm_struct (v5)
+	Thu, 3 Apr 2008 02:04:14 -0400
+Received: from smtp3-g19.free.fr ([212.27.42.29]:50806 "EHLO smtp3-g19.free.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755876AbYDCGEM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Apr 2008 02:04:12 -0400
+Message-ID: <47F47324.80108@free.fr>
+Date: Thu, 03 Apr 2008 08:03:16 +0200
+From: Xavier <x.guimard@free.fr>
+User-Agent: Mozilla-Thunderbird 2.0.0.9 (X11/20080110)
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+Subject: Proposed patch for IDE missing commands
+Content-Type: multipart/mixed;
+ boundary="------------050204090804010707040006"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This is a multi-part message in MIME format.
+--------------050204090804010707040006
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+
+Hi all,
+
+I'm working for the french Gendarmerie Nationale and we've decided to 
+publish our patch for the kernel that provides some missing IDE commands 
+to access to protected areas (HPA and DCO).
+
+Best regards,
+Xavier
 
 
-Changelog v4
-------------
-1. Release rcu_read_lock() after acquiring task_lock(). Also get a reference
-   to the task_struct
-2. Change cgroup mm_owner_changed callback to callback only if the
-   cgroup of old and new task is different and to pass the old and new
-   cgroups instead of task pointers
-3. Port the patch to 2.6.25-rc8-mm1
+--------------050204090804010707040006
+Content-Type: text/plain;
+ name="patch-linux-2.6.24-ide"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="patch-linux-2.6.24-ide"
 
-Changelog v3
-------------
-
-1. Add mm->owner change callbacks using cgroups
-
-This patch removes the mem_cgroup member from mm_struct and instead adds
-an owner. This approach was suggested by Paul Menage. The advantage of
-this approach is that, once the mm->owner is known, using the subsystem
-id, the cgroup can be determined. It also allows several control groups
-that are virtually grouped by mm_struct, to exist independent of the memory
-controller i.e., without adding mem_cgroup's for each controller,
-to mm_struct.
-
-A new config option CONFIG_MM_OWNER is added and the memory resource
-controller selects this config option.
-
-This patch also adds cgroup callbacks to notify subsystems when mm->owner
-changes. The mm_cgroup_changed callback is called with the task_lock()
-of the new task held and is called just prior to changing the mm->owner.
-
-I am indebted to Paul Menage for the several reviews of this patchset
-and helping me make it lighter and simpler.
-
-This patch was tested on a powerpc box.
-
-Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
----
-
- fs/exec.c                  |    1 
- include/linux/cgroup.h     |   15 ++++++++
- include/linux/init_task.h  |    2 -
- include/linux/memcontrol.h |   17 ++-------
- include/linux/mm_types.h   |    5 +-
- include/linux/sched.h      |   14 ++++++++
- init/Kconfig               |   15 ++++++++
- kernel/cgroup.c            |   30 +++++++++++++++++
- kernel/exit.c              |   77 +++++++++++++++++++++++++++++++++++++++++++++
- kernel/fork.c              |   11 ++++--
- mm/memcontrol.c            |   21 +-----------
- 11 files changed, 171 insertions(+), 37 deletions(-)
-
-diff -puN fs/exec.c~memory-controller-add-mm-owner fs/exec.c
---- linux-2.6.25-rc8/fs/exec.c~memory-controller-add-mm-owner	2008-04-03 10:08:23.000000000 +0530
-+++ linux-2.6.25-rc8-balbir/fs/exec.c	2008-04-03 10:08:23.000000000 +0530
-@@ -735,6 +735,7 @@ static int exec_mmap(struct mm_struct *m
- 	tsk->active_mm = mm;
- 	activate_mm(active_mm, mm);
- 	task_unlock(tsk);
-+	mm_update_next_owner(mm);
- 	arch_pick_mmap_layout(mm);
- 	if (old_mm) {
- 		up_read(&old_mm->mmap_sem);
-diff -puN include/linux/cgroup.h~memory-controller-add-mm-owner include/linux/cgroup.h
---- linux-2.6.25-rc8/include/linux/cgroup.h~memory-controller-add-mm-owner	2008-04-03 10:08:23.000000000 +0530
-+++ linux-2.6.25-rc8-balbir/include/linux/cgroup.h	2008-04-03 10:33:25.000000000 +0530
-@@ -300,6 +300,12 @@ struct cgroup_subsys {
- 			struct cgroup *cgrp);
- 	void (*post_clone)(struct cgroup_subsys *ss, struct cgroup *cgrp);
- 	void (*bind)(struct cgroup_subsys *ss, struct cgroup *root);
-+	/*
-+	 * This routine is called with the task_lock of mm->owner held
-+	 */
-+	void (*mm_owner_changed)(struct cgroup_subsys *ss,
-+					struct cgroup *old,
-+					struct cgroup *new);
- 	int subsys_id;
- 	int active;
- 	int disabled;
-@@ -385,4 +391,13 @@ static inline int cgroupstats_build(stru
- 
- #endif /* !CONFIG_CGROUPS */
- 
-+#ifdef CONFIG_MM_OWNER
-+extern void
-+cgroup_mm_owner_callbacks(struct task_struct *old, struct task_struct *new);
-+#else /* !CONFIG_MM_OWNER */
-+static inline void
-+cgroup_mm_owner_callbacks(struct task_struct *old, struct task_struct *new)
-+{
-+}
-+#endif /* CONFIG_MM_OWNER */
- #endif /* _LINUX_CGROUP_H */
-diff -puN include/linux/init_task.h~memory-controller-add-mm-owner include/linux/init_task.h
---- linux-2.6.25-rc8/include/linux/init_task.h~memory-controller-add-mm-owner	2008-04-03 10:08:23.000000000 +0530
-+++ linux-2.6.25-rc8-balbir/include/linux/init_task.h	2008-04-03 10:08:23.000000000 +0530
-@@ -57,6 +57,7 @@
- 	.page_table_lock =  __SPIN_LOCK_UNLOCKED(name.page_table_lock),	\
- 	.mmlist		= LIST_HEAD_INIT(name.mmlist),		\
- 	.cpu_vm_mask	= CPU_MASK_ALL,				\
-+	.owner		= &init_task,				\
- }
- 
- #define INIT_SIGNALS(sig) {						\
-@@ -199,7 +200,6 @@ extern struct group_info init_groups;
- 	INIT_LOCKDEP							\
- }
- 
--
- #define INIT_CPU_TIMERS(cpu_timers)					\
- {									\
- 	LIST_HEAD_INIT(cpu_timers[0]),					\
-diff -puN include/linux/memcontrol.h~memory-controller-add-mm-owner include/linux/memcontrol.h
---- linux-2.6.25-rc8/include/linux/memcontrol.h~memory-controller-add-mm-owner	2008-04-03 10:08:23.000000000 +0530
-+++ linux-2.6.25-rc8-balbir/include/linux/memcontrol.h	2008-04-03 10:08:23.000000000 +0530
-@@ -27,9 +27,6 @@ struct mm_struct;
- 
- #ifdef CONFIG_CGROUP_MEM_RES_CTLR
- 
--extern void mm_init_cgroup(struct mm_struct *mm, struct task_struct *p);
--extern void mm_free_cgroup(struct mm_struct *mm);
--
- #define page_reset_bad_cgroup(page)	((page)->page_cgroup = 0)
- 
- extern struct page_cgroup *page_get_page_cgroup(struct page *page);
-@@ -48,8 +45,10 @@ extern unsigned long mem_cgroup_isolate_
- extern void mem_cgroup_out_of_memory(struct mem_cgroup *mem, gfp_t gfp_mask);
- int task_in_mem_cgroup(struct task_struct *task, const struct mem_cgroup *mem);
- 
-+extern struct mem_cgroup *mem_cgroup_from_task(struct task_struct *p);
-+
- #define mm_match_cgroup(mm, cgroup)	\
--	((cgroup) == rcu_dereference((mm)->mem_cgroup))
-+	((cgroup) == mem_cgroup_from_task((mm)->owner))
- 
- extern int mem_cgroup_prepare_migration(struct page *page);
- extern void mem_cgroup_end_migration(struct page *page);
-@@ -73,15 +72,6 @@ extern long mem_cgroup_calc_reclaim_inac
- 				struct zone *zone, int priority);
- 
- #else /* CONFIG_CGROUP_MEM_RES_CTLR */
--static inline void mm_init_cgroup(struct mm_struct *mm,
--					struct task_struct *p)
--{
--}
--
--static inline void mm_free_cgroup(struct mm_struct *mm)
--{
--}
--
- static inline void page_reset_bad_cgroup(struct page *page)
- {
- }
-@@ -172,6 +162,7 @@ static inline long mem_cgroup_calc_recla
- {
- 	return 0;
- }
-+
- #endif /* CONFIG_CGROUP_MEM_CONT */
- 
- #endif /* _LINUX_MEMCONTROL_H */
-diff -puN include/linux/mm_types.h~memory-controller-add-mm-owner include/linux/mm_types.h
---- linux-2.6.25-rc8/include/linux/mm_types.h~memory-controller-add-mm-owner	2008-04-03 10:08:23.000000000 +0530
-+++ linux-2.6.25-rc8-balbir/include/linux/mm_types.h	2008-04-03 10:08:23.000000000 +0530
-@@ -230,8 +230,9 @@ struct mm_struct {
- 	/* aio bits */
- 	rwlock_t		ioctx_list_lock;	/* aio lock */
- 	struct kioctx		*ioctx_list;
--#ifdef CONFIG_CGROUP_MEM_RES_CTLR
--	struct mem_cgroup *mem_cgroup;
-+#ifdef CONFIG_MM_OWNER
-+	struct task_struct *owner;	/* The thread group leader that */
-+					/* owns the mm_struct.		*/
- #endif
- 
- #ifdef CONFIG_PROC_FS
-diff -puN include/linux/sched.h~memory-controller-add-mm-owner include/linux/sched.h
---- linux-2.6.25-rc8/include/linux/sched.h~memory-controller-add-mm-owner	2008-04-03 10:08:23.000000000 +0530
-+++ linux-2.6.25-rc8-balbir/include/linux/sched.h	2008-04-03 10:08:23.000000000 +0530
-@@ -2144,6 +2144,20 @@ static inline void migration_init(void)
- 
- #define TASK_STATE_TO_CHAR_STR "RSDTtZX"
- 
-+#ifdef CONFIG_MM_OWNER
-+extern void mm_update_next_owner(struct mm_struct *mm);
-+extern void mm_init_owner(struct mm_struct *mm, struct task_struct *p);
-+#else
-+static inline void
-+mm_update_next_owner(struct mm_struct *mm, struct task_struct *p)
-+{
-+}
-+
-+static inline void mm_init_owner(struct mm_struct *mm, struct task_struct *p)
-+{
-+}
-+#endif /* CONFIG_MM_OWNER */
-+
- #endif /* __KERNEL__ */
- 
- #endif
-diff -puN init/Kconfig~memory-controller-add-mm-owner init/Kconfig
---- linux-2.6.25-rc8/init/Kconfig~memory-controller-add-mm-owner	2008-04-03 10:08:23.000000000 +0530
-+++ linux-2.6.25-rc8-balbir/init/Kconfig	2008-04-03 10:08:23.000000000 +0530
-@@ -371,9 +371,21 @@ config RESOURCE_COUNTERS
-           infrastructure that works with cgroups
- 	depends on CGROUPS
- 
-+config MM_OWNER
-+	bool "Enable ownership of mm structure"
-+	help
-+	  This option enables mm_struct's to have an owner. The advantage
-+	  of this approach is that it allows for several independent memory
-+	  based cgorup controllers to co-exist independently without too
-+	  much space overhead
-+
-+	  This feature adds fork/exit overhead. So enable this only if
-+	  you need resource controllers
-+
- config CGROUP_MEM_RES_CTLR
- 	bool "Memory Resource Controller for Control Groups"
- 	depends on CGROUPS && RESOURCE_COUNTERS
-+	select MM_OWNER
- 	help
- 	  Provides a memory resource controller that manages both page cache and
- 	  RSS memory.
-@@ -386,6 +398,9 @@ config CGROUP_MEM_RES_CTLR
- 	  Only enable when you're ok with these trade offs and really
- 	  sure you need the memory resource controller.
- 
-+	  This config option also selects MM_OWNER config option, which
-+	  could in turn add some fork/exit overhead.
-+
- config SYSFS_DEPRECATED
- 	bool
- 
-diff -puN kernel/cgroup.c~memory-controller-add-mm-owner kernel/cgroup.c
---- linux-2.6.25-rc8/kernel/cgroup.c~memory-controller-add-mm-owner	2008-04-03 10:08:23.000000000 +0530
-+++ linux-2.6.25-rc8-balbir/kernel/cgroup.c	2008-04-03 10:34:15.000000000 +0530
-@@ -118,6 +118,7 @@ static int root_count;
-  * be called.
-  */
- static int need_forkexit_callback;
-+static int need_mm_owner_callback;
- 
- /* convenient tests for these bits */
- inline int cgroup_is_removed(const struct cgroup *cgrp)
-@@ -2485,6 +2486,7 @@ static void __init cgroup_init_subsys(st
+diff -aburN linux-2.6.24/drivers/ide/ide-disk.c linux-2.6.24-ide/drivers/ide/ide-disk.c
+--- linux-2.6.24/drivers/ide/ide-disk.c	2008-01-24 23:58:37.000000000 +0100
++++ linux-2.6.24-ide/drivers/ide/ide-disk.c	2008-03-25 18:30:02.000000000 +0100
+@@ -331,6 +331,7 @@
  	}
- 
- 	need_forkexit_callback |= ss->fork || ss->exit;
-+	need_mm_owner_callback |= !!ss->mm_owner_changed;
- 
- 	ss->active = 1;
+ 	return addr;
  }
-@@ -2721,6 +2723,34 @@ void cgroup_fork_callbacks(struct task_s
- 	}
++EXPORT_SYMBOL(idedisk_read_native_max_address);
+ 
+ static unsigned long long idedisk_read_native_max_address_ext(ide_drive_t *drive)
+ {
+@@ -361,6 +362,8 @@
+ 	return addr;
  }
  
-+#ifdef CONFIG_MM_OWNER
-+/**
-+ * cgroup_mm_owner_callbacks - run callbacks when the mm->owner changes
-+ * @p: the new owner
-+ *
-+ * Called on every change to mm->owner. mm_init_owner() does not
-+ * invoke this routine, since it assigns the mm->owner the first time
-+ * and does not change it.
-+ */
-+void cgroup_mm_owner_callbacks(struct task_struct *old, struct task_struct *new)
-+{
-+	struct cgroup *oldcgrp, *newcgrp;
++EXPORT_SYMBOL(idedisk_read_native_max_address_ext);
 +
-+	if (need_mm_owner_callback) {
-+		int i;
-+		for (i = 0; i < CGROUP_SUBSYS_COUNT; i++) {
-+			struct cgroup_subsys *ss = subsys[i];
-+			oldcgrp = task_cgroup(old, ss->subsys_id);
-+			newcgrp = task_cgroup(new, ss->subsys_id);
-+			if (oldcgrp == newcgrp)
-+				continue;
-+			if (ss->mm_owner_changed)
-+				ss->mm_owner_changed(ss, oldcgrp, newcgrp);
+ /*
+  * Sets maximum virtual LBA address of the drive.
+  * Returns new maximum virtual LBA address (> 0) or 0 on failure.
+@@ -392,6 +395,7 @@
+ 	}
+ 	return addr_set;
+ }
++EXPORT_SYMBOL(idedisk_set_max_address);
+ 
+ static unsigned long long idedisk_set_max_address_ext(ide_drive_t *drive, unsigned long long addr_req)
+ {
+@@ -428,6 +432,7 @@
+ 	}
+ 	return addr_set;
+ }
++EXPORT_SYMBOL(idedisk_set_max_address_ext);
+ 
+ static unsigned long long sectors_to_MB(unsigned long long n)
+ {
+@@ -465,6 +470,125 @@
+ 	{ NULL,		NULL }
+ };
+ 
++static unsigned long long idedisk_read_lba_hpa(ide_drive_t *drive)
++{
++	unsigned long long lba_hpa;
++	
++	if (idedisk_supports_lba48(drive->id)) 
++	{
++		/* drive speaks 48-bit LBA */
++		lba_hpa = drive->id->lba_capacity_2-1;
++		printk(KERN_INFO "drive speaks 48-bit LBA.(%llu)\n",lba_hpa);
++	} 
++	else if ((drive->id->capability & 2) && lba_capacity_is_ok(drive->id)) 
++	{
++		/* drive speaks 28-bit LBA */
++		lba_hpa = drive->id->lba_capacity-1;
++		printk(KERN_INFO "drive speaks 24-bit LBA.(%llu)\n",lba_hpa);
++	} 
++	else 
++	{
++		/* drive speaks boring old 28-bit CHS */
++		lba_hpa = (drive->cyl * drive->head * drive->sect)-1;
++		printk(KERN_INFO "drive speaks 24-bit CHS.(%llu)\n",lba_hpa);
++	}
++	return lba_hpa;
++}
++
++static unsigned long long idedisk_read_lba_dco(ide_drive_t *drive)
++{
++	unsigned long long lba_dco;
++	int lba48 = idedisk_supports_lba48(drive->id);
++
++	if (lba48)
++	{
++		lba_dco = idedisk_read_native_max_address_ext(drive)-1;
++		printk(KERN_INFO "read native max address 48-bit LBA.(%llu)\n",lba_dco);
++	}
++	else
++	{
++		lba_dco = idedisk_read_native_max_address(drive)-1;
++		printk(KERN_INFO "read native max address 24-bit LBA.(%llu)\n",lba_dco);
++	}
++	return lba_dco;
++}
++
++static int idedisk_get_dco(ide_drive_t *drive, u8 *buf)
++{
++	ide_task_t args;
++
++	memset(&args, 0, sizeof(ide_task_t));
++	args.tfRegister[IDE_FEATURE_OFFSET]	= 0xC2;
++	args.tfRegister[IDE_NSECTOR_OFFSET]	= 0x01;
++	args.tfRegister[IDE_LCYL_OFFSET]	= 0x00;
++	args.tfRegister[IDE_HCYL_OFFSET]	= 0x00;
++	args.tfRegister[IDE_COMMAND_OFFSET]	= 0xB1;
++	args.command_type			= IDE_DRIVE_TASK_IN;
++	args.data_phase				= TASKFILE_IN;
++	args.handler				= &task_in_intr;
++	return ide_raw_taskfile(drive, &args, buf);
++}
++
++static inline int idedisk_supports_dco(const struct hd_driveid *id)
++{
++	return (id->command_set_2 & 0x0800);
++}
++
++static unsigned long long idedisk_read_lba_max(ide_drive_t *drive)
++{
++
++	unsigned long long lba_max=0;
++	int s_dco = idedisk_supports_dco(drive->id);
++//	unsigned short int tmp;
++//	unsigned short int tmpa;
++//	char txt[2];
++	unsigned char qtmp[8];
++	char *ptr;
++	char *buf=NULL;
++	
++	if (s_dco)
++	{
++		printk(KERN_INFO "DCO supported\n");
++		buf = kzalloc(512, GFP_KERNEL);
++		if (!buf)
++			return (unsigned long long)-1;
++		
++		if (!idedisk_get_dco(drive, buf)) 
++		{
++			ptr=buf+6;
++			qtmp[0]=(*ptr);
++			ptr++;
++			qtmp[1]=(*ptr);
++			ptr++;
++			qtmp[2]=(*ptr);
++			ptr++;
++			qtmp[3]=*(ptr);
++			ptr++;
++			qtmp[4]=(*ptr);
++			ptr++;
++			qtmp[5]=(*ptr);
++			ptr++;
++			qtmp[6]=(*ptr);
++			ptr++;
++			qtmp[7]=(*ptr);
++			lba_max+=(unsigned long long)(*((unsigned long long *)(&qtmp)));
++			printk(KERN_INFO "LBA MAX via DCO (%llu)\n",lba_max);
 +		}
++		else
++		{
++			lba_max = 0;
++			printk(KERN_INFO "Error : LBA MAX via DCO (%llu)\n",lba_max);
++		}
++		kfree(buf);
 +	}
++	else
++	{
++		lba_max = drive->id->lba_capacity_2;
++		printk(KERN_INFO "DCO not supported, LBA MAX.(%llu)\n",lba_max);
++	}
++	return lba_max;	
 +}
-+#endif /* CONFIG_MM_OWNER */
 +
- /**
-  * cgroup_post_fork - called on a new task after adding it to the task list
-  * @child: the task in question
-diff -puN kernel/exit.c~memory-controller-add-mm-owner kernel/exit.c
---- linux-2.6.25-rc8/kernel/exit.c~memory-controller-add-mm-owner	2008-04-03 10:08:23.000000000 +0530
-+++ linux-2.6.25-rc8-balbir/kernel/exit.c	2008-04-03 10:27:21.000000000 +0530
-@@ -577,6 +577,82 @@ void exit_fs(struct task_struct *tsk)
+ static void idedisk_check_hpa(ide_drive_t *drive)
+ {
+ 	unsigned long long capacity, set_max;
+@@ -495,7 +619,7 @@
+ 			 capacity, sectors_to_MB(capacity),
+ 			 set_max, sectors_to_MB(set_max));
  
- EXPORT_SYMBOL_GPL(exit_fs);
+-	if (lba48)
++/*	if (lba48)
+ 		set_max = idedisk_set_max_address_ext(drive, set_max);
+ 	else
+ 		set_max = idedisk_set_max_address(drive, set_max);
+@@ -503,9 +627,11 @@
+ 		drive->capacity64 = set_max;
+ 		printk(KERN_INFO "%s: Host Protected Area disabled.\n",
+ 				 drive->name);
+-	}
++	}*/
+ }
  
-+#ifdef CONFIG_MM_OWNER
-+/*
-+ * Task p is exiting and it owned p, so lets find a new owner for it
-+ */
-+static inline int
-+mm_need_new_owner(struct mm_struct *mm, struct task_struct *p)
-+{
-+	int ret;
 +
-+	ret = (mm && (atomic_read(&mm->mm_users) > 1) && (mm->owner == p) &&
-+		!delay_group_leader(p));
-+	return ret;
-+}
-+
-+void mm_update_next_owner(struct mm_struct *mm)
-+{
-+	struct task_struct *c, *g, *p = current;
-+
-+retry:
-+	if (!mm_need_new_owner(mm, p))
-+		return;
-+
-+	rcu_read_lock();
-+	/*
-+	 * Search in the children
-+	 */
-+	list_for_each_entry(c, &p->children, sibling) {
-+		if (c->mm == mm)
-+			goto assign_new_owner;
-+	}
-+
-+	/*
-+	 * Search in the siblings
-+	 */
-+	list_for_each_entry(c, &p->parent->children, sibling) {
-+		if (c->mm == mm)
-+			goto assign_new_owner;
-+	}
-+
-+	/*
-+	 * Search through everything else. We should not get
-+	 * here often
-+	 */
-+	do_each_thread(g, c) {
-+		if (c->mm == mm)
-+			goto assign_new_owner;
-+	} while_each_thread(g, c);
-+
-+	rcu_read_unlock();
-+	return;
-+
-+assign_new_owner:
-+	BUG_ON(c == p);
-+	get_task_struct(c);
-+	/*
-+	 * The task_lock protects c->mm from changing.
-+	 * We always want mm->owner->mm == mm
-+	 */
-+	task_lock(c);
-+	/*
-+ 	 * Delay rcu_read_unlock() till we have the task_lock()
-+ 	 * to ensure that c does not slip away underneath us
-+ 	 */
-+	rcu_read_unlock();
-+	if (c->mm != mm) {
-+		task_unlock(c);
-+		put_task_struct(c);
-+		goto retry;
-+	}
-+	cgroup_mm_owner_callbacks(mm->owner, c);
-+	mm->owner = c;
-+	task_unlock(c);
-+	put_task_struct(c);
-+}
-+#endif /* CONFIG_MM_OWNER */
 +
  /*
-  * Turn us into a lazy TLB process if we
-  * aren't already..
-@@ -616,6 +692,7 @@ static void exit_mm(struct task_struct *
- 	/* We don't want this task to be frozen prematurely */
- 	clear_freeze_flag(tsk);
- 	task_unlock(tsk);
-+	mm_update_next_owner(mm);
- 	mmput(mm);
- }
- 
-diff -puN kernel/fork.c~memory-controller-add-mm-owner kernel/fork.c
---- linux-2.6.25-rc8/kernel/fork.c~memory-controller-add-mm-owner	2008-04-03 10:08:23.000000000 +0530
-+++ linux-2.6.25-rc8-balbir/kernel/fork.c	2008-04-03 10:08:40.000000000 +0530
-@@ -358,14 +358,13 @@ static struct mm_struct * mm_init(struct
- 	mm->ioctx_list = NULL;
- 	mm->free_area_cache = TASK_UNMAPPED_BASE;
- 	mm->cached_hole_size = ~0UL;
--	mm_init_cgroup(mm, p);
-+	mm_init_owner(mm, p);
- 
- 	if (likely(!mm_alloc_pgd(mm))) {
- 		mm->def_flags = 0;
- 		return mm;
- 	}
- 
--	mm_free_cgroup(mm);
- 	free_mm(mm);
- 	return NULL;
- }
-@@ -416,7 +415,6 @@ void mmput(struct mm_struct *mm)
- 			spin_unlock(&mmlist_lock);
- 		}
- 		put_swap_token(mm);
--		mm_free_cgroup(mm);
- 		mmdrop(mm);
- 	}
- }
-@@ -996,6 +994,13 @@ static void rt_mutex_init_task(struct ta
- #endif
- }
- 
-+#ifdef CONFIG_MM_OWNER
-+void mm_init_owner(struct mm_struct *mm, struct task_struct *p)
-+{
-+	mm->owner = p;
-+}
-+#endif /* CONFIG_MM_OWNER */
-+
- /*
-  * This creates a new process as a copy of the old one,
-  * but does not actually start it yet.
-diff -puN mm/memcontrol.c~memory-controller-add-mm-owner mm/memcontrol.c
---- linux-2.6.25-rc8/mm/memcontrol.c~memory-controller-add-mm-owner	2008-04-03 10:08:23.000000000 +0530
-+++ linux-2.6.25-rc8-balbir/mm/memcontrol.c	2008-04-03 10:08:23.000000000 +0530
-@@ -238,26 +238,12 @@ static struct mem_cgroup *mem_cgroup_fro
- 				css);
- }
- 
--static struct mem_cgroup *mem_cgroup_from_task(struct task_struct *p)
-+struct mem_cgroup *mem_cgroup_from_task(struct task_struct *p)
- {
- 	return container_of(task_subsys_state(p, mem_cgroup_subsys_id),
- 				struct mem_cgroup, css);
- }
- 
--void mm_init_cgroup(struct mm_struct *mm, struct task_struct *p)
--{
--	struct mem_cgroup *mem;
--
--	mem = mem_cgroup_from_task(p);
--	css_get(&mem->css);
--	mm->mem_cgroup = mem;
--}
--
--void mm_free_cgroup(struct mm_struct *mm)
--{
--	css_put(&mm->mem_cgroup->css);
--}
--
- static inline int page_cgroup_locked(struct page *page)
- {
- 	return bit_spin_is_locked(PAGE_CGROUP_LOCK_BIT, &page->page_cgroup);
-@@ -478,6 +464,7 @@ unsigned long mem_cgroup_isolate_pages(u
- 	int zid = zone_idx(z);
- 	struct mem_cgroup_per_zone *mz;
- 
-+	BUG_ON(!mem_cont);
- 	mz = mem_cgroup_zoneinfo(mem_cont, nid, zid);
- 	if (active)
- 		src = &mz->active_list;
-@@ -576,7 +563,7 @@ retry:
- 		mm = &init_mm;
- 
- 	rcu_read_lock();
--	mem = rcu_dereference(mm->mem_cgroup);
-+	mem = mem_cgroup_from_task(rcu_dereference(mm->owner));
- 	/*
- 	 * For every charge from the cgroup, increment reference count
+  * Compute drive->capacity, the full capacity of the drive
+  * Called with drive->id != NULL.
+@@ -527,20 +653,24 @@
+ 	 * If this drive supports the Host Protected Area feature set,
+ 	 * then we may need to change our opinion about the drive's capacity.
  	 */
-@@ -1006,7 +993,6 @@ mem_cgroup_create(struct cgroup_subsys *
+-	int hpa = idedisk_supports_hpa(id);
++	
++	drive->lba_hpa = idedisk_read_lba_hpa(drive);
++	drive->lba_dco = idedisk_read_lba_dco(drive);
++	drive->lba_max = idedisk_read_lba_max(drive);
++//	int hpa = idedisk_supports_hpa(id);
  
- 	if (unlikely((cont->parent) == NULL)) {
- 		mem = &init_mem_cgroup;
--		init_mm.mem_cgroup = mem;
- 		page_cgroup_cache = KMEM_CACHE(page_cgroup, SLAB_PANIC);
- 	} else
- 		mem = kzalloc(sizeof(struct mem_cgroup), GFP_KERNEL);
-@@ -1088,7 +1074,6 @@ static void mem_cgroup_move_task(struct 
- 		goto out;
+ 	if (idedisk_supports_lba48(id)) {
+ 		/* drive speaks 48-bit LBA */
+ 		drive->select.b.lba = 1;
+ 		drive->capacity64 = id->lba_capacity_2;
+-		if (hpa)
+-			idedisk_check_hpa(drive);
++/*		if (hpa)
++			idedisk_check_hpa(drive);*/
+ 	} else if ((id->capability & 2) && lba_capacity_is_ok(id)) {
+ 		/* drive speaks 28-bit LBA */
+ 		drive->select.b.lba = 1;
+ 		drive->capacity64 = id->lba_capacity;
+-		if (hpa)
+-			idedisk_check_hpa(drive);
++/*		if (hpa)
++			idedisk_check_hpa(drive);*/
+ 	} else {
+ 		/* drive speaks boring old 28-bit CHS */
+ 		drive->capacity64 = drive->cyl * drive->head * drive->sect;
+@@ -584,6 +714,8 @@
+ 	return ide_raw_taskfile(drive, &args, buf);
+ }
  
- 	css_get(&mem->css);
--	rcu_assign_pointer(mm->mem_cgroup, mem);
- 	css_put(&old_mem->css);
++
++
+ static int proc_idedisk_read_cache
+ 	(char *page, char **start, off_t off, int count, int *eof, void *data)
+ {
+@@ -646,12 +778,49 @@
+ 	PROC_IDE_READ_RETURN(page,start,off,count,eof,len);
+ }
  
- out:
-_
++static int proc_idedisk_read_lba_hpa
++		(char *page, char **start, off_t off, int count, int *eof, void *data)
++{
++	ide_drive_t*drive = (ide_drive_t *)data;
++	int len;
++	
++	len = sprintf(page,"%llu\n", idedisk_read_lba_hpa(drive));
++	PROC_IDE_READ_RETURN(page,start,off,count,eof,len);
++}
++
++
++static int proc_idedisk_read_lba_dco
++		(char *page, char **start, off_t off, int count, int *eof, void *data)
++{
++	ide_drive_t*drive = (ide_drive_t *)data;
++	int len;
++
++	len = sprintf(page,"%llu\n", idedisk_read_lba_dco(drive));
++	PROC_IDE_READ_RETURN(page,start,off,count,eof,len);
++}
++
++
++
++
++static int proc_idedisk_read_lba_max
++		(char *page, char **start, off_t off, int count, int *eof, void *data)
++{
++	ide_drive_t*drive = (ide_drive_t *)data;
++	int		len = 0;
++
++	len = sprintf(page,"%llu\n", idedisk_read_lba_max(drive));
++	PROC_IDE_READ_RETURN(page,start,off,count,eof,len);
++}
++
+ static ide_proc_entry_t idedisk_proc[] = {
+ 	{ "cache",		S_IFREG|S_IRUGO,	proc_idedisk_read_cache,		NULL },
+ 	{ "capacity",		S_IFREG|S_IRUGO,	proc_idedisk_read_capacity,		NULL },
+ 	{ "geometry",		S_IFREG|S_IRUGO,	proc_ide_read_geometry,			NULL },
+ 	{ "smart_values",	S_IFREG|S_IRUSR,	proc_idedisk_read_smart_values,		NULL },
+ 	{ "smart_thresholds",	S_IFREG|S_IRUSR,	proc_idedisk_read_smart_thresholds,	NULL },
++	{ "lba_hpa",	S_IFREG|S_IRUGO,	proc_idedisk_read_lba_hpa,	NULL },
++	{ "lba_dco",	S_IFREG|S_IRUGO,	proc_idedisk_read_lba_dco,	NULL },
++	{ "lba_max",	S_IFREG|S_IRUGO,	proc_idedisk_read_lba_max,	NULL },
+ 	{ NULL, 0, NULL, NULL }
+ };
+ #endif	/* CONFIG_IDE_PROC_FS */
+@@ -831,7 +1000,7 @@
+ 	ide_add_setting(drive,	"bios_cyl",	SETTING_RW,	TYPE_INT,	0,	65535,			1,	1,	&drive->bios_cyl,	NULL);
+ 	ide_add_setting(drive,	"bios_head",	SETTING_RW,	TYPE_BYTE,	0,	255,			1,	1,	&drive->bios_head,	NULL);
+ 	ide_add_setting(drive,	"bios_sect",	SETTING_RW,	TYPE_BYTE,	0,	63,			1,	1,	&drive->bios_sect,	NULL);
+-	ide_add_setting(drive,	"address",	SETTING_RW,	TYPE_BYTE,	0,	2,			1,	1,	&drive->addressing,	set_lba_addressing);
++	ide_add_setting(drive,	"address",	SETTING_RW,	TYPE_INTA,	0,	2,			1,	1,	&drive->addressing,	set_lba_addressing);
+ 	ide_add_setting(drive,	"bswap",	SETTING_READ,	TYPE_BYTE,	0,	1,			1,	1,	&drive->bswap,		NULL);
+ 	ide_add_setting(drive,	"multcount",	SETTING_RW,	TYPE_BYTE,	0,	id->max_multsect,	1,	1,	&drive->mult_count,	set_multcount);
+ 	ide_add_setting(drive,	"nowerr",	SETTING_RW,	TYPE_BYTE,	0,	1,			1,	1,	&drive->nowerr,		set_nowerr);
+@@ -928,8 +1097,8 @@
+ 			}
+ 		}
+ 	}
+-	printk(KERN_INFO "%s: %llu sectors (%llu MB)",
+-			 drive->name, capacity, sectors_to_MB(capacity));
++	printk(KERN_INFO "%s: %llu sectors (%llu MB), (HPA: %llu, DCO: %llu, MAX: %llu)",
++			 drive->name, capacity, sectors_to_MB(capacity),drive->lba_hpa,drive->lba_dco,drive->lba_max);
+ 
+ 	/* Only print cache size when it was specified */
+ 	if (id->buf_size)
+diff -aburN linux-2.6.24/drivers/ide/ide-proc.c linux-2.6.24-ide/drivers/ide/ide-proc.c
+--- linux-2.6.24/drivers/ide/ide-proc.c	2008-01-24 23:58:37.000000000 +0100
++++ linux-2.6.24-ide/drivers/ide/ide-proc.c	2008-03-25 18:58:35.000000000 +0100
+@@ -37,6 +37,8 @@
+ #include <linux/ide.h>
+ #include <linux/seq_file.h>
+ 
++#include <linux/types.h>
++
+ #include <asm/io.h>
+ 
+ static struct proc_dir_entry *proc_ide_root;
+@@ -152,7 +154,7 @@
+  *	remove.
+  */
+ 
+-static int __ide_add_setting(ide_drive_t *drive, const char *name, int rw, int data_type, int min, int max, int mul_factor, int div_factor, void *data, ide_procset_t *set, int auto_remove)
++static int __ide_add_setting(ide_drive_t *drive, const char *name, int rw, int data_type, int min, u64 max, int mul_factor, int div_factor, void *data, ide_procset_t *set, int auto_remove)
+ {
+ 	ide_settings_t **p = (ide_settings_t **) &drive->settings, *setting = NULL;
+ 
+@@ -185,7 +187,7 @@
+ 	return -1;
+ }
+ 
+-int ide_add_setting(ide_drive_t *drive, const char *name, int rw, int data_type, int min, int max, int mul_factor, int div_factor, void *data, ide_procset_t *set)
++int ide_add_setting(ide_drive_t *drive, const char *name, int rw, int data_type, int min, u64 max, int mul_factor, int div_factor, void *data, ide_procset_t *set)
+ {
+ 	return __ide_add_setting(drive, name, rw, data_type, min, max, mul_factor, div_factor, data, set, 1);
+ }
+@@ -276,22 +278,26 @@
+  *	be told apart
+  */
+ 
+-static int ide_read_setting(ide_drive_t *drive, ide_settings_t *setting)
++static u64 ide_read_setting(ide_drive_t *drive, ide_settings_t *setting)
+ {
+-	int		val = -EINVAL;
++	u64		val = -EINVAL;
+ 	unsigned long	flags;
+ 
+ 	if ((setting->rw & SETTING_READ)) {
+ 		spin_lock_irqsave(&ide_lock, flags);
+ 		switch(setting->data_type) {
+ 			case TYPE_BYTE:
+-				val = *((u8 *) setting->data);
++				val = (u64)(*((u8 *) setting->data));
+ 				break;
+ 			case TYPE_SHORT:
+-				val = *((u16 *) setting->data);
++				val = (u64)(*((u16 *) setting->data));
+ 				break;
+ 			case TYPE_INT:
+-				val = *((u32 *) setting->data);
++			case TYPE_INTA:
++				val = (u64)(*((u32 *) setting->data));
++				break;
++			case TYPE_LONG:
++				val = *((u64 *) setting->data);
+ 				break;
+ 		}
+ 		spin_unlock_irqrestore(&ide_lock, flags);
+@@ -319,6 +325,9 @@
+ 
+ static int ide_write_setting(ide_drive_t *drive, ide_settings_t *setting, int val)
+ {
++	int i;
++	u32 *p;
++
+ 	if (!capable(CAP_SYS_ADMIN))
+ 		return -EACCES;
+ 	if (setting->set)
+@@ -339,6 +348,11 @@
+ 		case TYPE_INT:
+ 			*((u32 *) setting->data) = val;
+ 			break;
++		case TYPE_INTA:
++			p = (u32 *) setting->data;
++			for (i = 0; i < 1 << PARTN_BITS; i++, p++)
++				*p = val;
++			break;
+ 	}
+ 	spin_unlock_irq(&ide_lock);
+ 	return 0;
+@@ -384,6 +398,9 @@
+ 	__ide_add_setting(drive,	"init_speed",		SETTING_RW,					TYPE_BYTE,	0,	70,				1,		1,		&drive->init_speed,		NULL,		0);
+ 	__ide_add_setting(drive,	"current_speed",	SETTING_RW,					TYPE_BYTE,	0,	70,				1,		1,		&drive->current_speed,		set_xfer_rate,	0);
+ 	__ide_add_setting(drive,	"number",		SETTING_RW,					TYPE_BYTE,	0,	3,				1,		1,		&drive->dn,			NULL,		0);
++	__ide_add_setting(drive,	"get_lba_max",		SETTING_READ,					TYPE_LONG, 0,	(u64)-1,			1,		1,		&drive->lba_max,		NULL,		0);
++	__ide_add_setting(drive,	"get_lba_dco",		SETTING_READ,					TYPE_LONG,	0,	(u64)-1,			1,		1,		&drive->lba_dco,		NULL,		0);
++	__ide_add_setting(drive,	"get_lba_hpa",		SETTING_READ,					TYPE_LONG,	0,	(u64)-1,			1,		1,		&drive->lba_hpa,		NULL,		0);
+ }
+ 
+ static void proc_ide_settings_warn(void)
+@@ -404,8 +421,8 @@
+ 	ide_drive_t	*drive = (ide_drive_t *) data;
+ 	ide_settings_t	*setting = (ide_settings_t *) drive->settings;
+ 	char		*out = page;
+-	int		len, rc, mul_factor, div_factor;
+-
++	int		len, mul_factor, div_factor;
++	u64 rc;
+ 	proc_ide_settings_warn();
+ 
+ 	mutex_lock(&ide_setting_mtx);
+@@ -416,10 +433,10 @@
+ 		div_factor = setting->div_factor;
+ 		out += sprintf(out, "%-24s", setting->name);
+ 		if ((rc = ide_read_setting(drive, setting)) >= 0)
+-			out += sprintf(out, "%-16d", rc * mul_factor / div_factor);
++			out += sprintf(out, "%llu",(u64)(rc * (u64)(mul_factor / div_factor)));
+ 		else
+ 			out += sprintf(out, "%-16s", "write-only");
+-		out += sprintf(out, "%-16d%-16d", (setting->min * mul_factor + div_factor - 1) / div_factor, setting->max * mul_factor / div_factor);
++		out += sprintf(out, "%-16d%llu", (setting->min * mul_factor + div_factor - 1) / div_factor, (u64)(setting->max * (u64)(mul_factor / div_factor)));
+ 		if (setting->rw & SETTING_READ)
+ 			out += sprintf(out, "r");
+ 		if (setting->rw & SETTING_WRITE)
+diff -aburN linux-2.6.24/drivers/ide/ide-taskfile.c linux-2.6.24-ide/drivers/ide/ide-taskfile.c
+--- linux-2.6.24/drivers/ide/ide-taskfile.c	2008-01-24 23:58:37.000000000 +0100
++++ linux-2.6.24-ide/drivers/ide/ide-taskfile.c	2008-03-25 12:33:35.000000000 +0100
+@@ -528,7 +528,7 @@
+ 	u8 io_32bit		= drive->io_32bit;
+ 	char __user *buf = (char __user *)arg;
+ 
+-//	printk("IDE Taskfile ...\n");
++//	printk(KERN_ERR "IDE Taskfile ...\n");
+ 
+ 	req_task = kzalloc(tasksize, GFP_KERNEL);
+ 	if (req_task == NULL) return -ENOMEM;
+@@ -620,6 +620,7 @@
+ 			err = ide_diag_taskfile(drive, &args, taskin, inbuf);
+ 			break;
+ 		case TASKFILE_NO_DATA:
++			printk(KERN_INFO "Debut Taskfile no data") ;
+ 			args.handler = &task_no_data_intr;
+ 			err = ide_diag_taskfile(drive, &args, 0, NULL);
+ 			break;
+@@ -835,7 +836,6 @@
+ 	 */
+ 	hwif->OUTB(taskfile->device_head | drive->select.all, IDE_SELECT_REG);
+ 	switch(task->data_phase) {
+-
+    	        case TASKFILE_OUT_DMAQ:
+ 		case TASKFILE_OUT_DMA:
+ 		case TASKFILE_IN_DMAQ:
+diff -aburN linux-2.6.24/include/linux/hdreg.h linux-2.6.24-ide/include/linux/hdreg.h
+--- linux-2.6.24/include/linux/hdreg.h	2008-01-24 23:58:37.000000000 +0100
++++ linux-2.6.24-ide/include/linux/hdreg.h	2008-03-25 19:30:40.000000000 +0100
+@@ -399,6 +399,9 @@
+ #define HDIO_GET_WCACHE		0x030e	/* get write cache mode on|off */
+ #define HDIO_GET_ACOUSTIC	0x030f	/* get acoustic value */
+ #define	HDIO_GET_ADDRESS	0x0310	/* */
++#define	HDIO_GET_LBA_HPA	0x0315	/* get lba hpa*/
++#define	HDIO_GET_LBA_DCO	0x0316	/* get lba dco*/
++#define	HDIO_GET_LBA_MAX	0x0317	/* get lba max*/
+ 
+ #define HDIO_GET_BUSSTATE	0x031a	/* get the bus state of the hwif */
+ #define HDIO_TRISTATE_HWIF	0x031b	/* execute a channel tristate */
+diff -aburN linux-2.6.24/include/linux/ide.h linux-2.6.24-ide/include/linux/ide.h
+--- linux-2.6.24/include/linux/ide.h	2008-01-24 23:58:37.000000000 +0100
++++ linux-2.6.24-ide/include/linux/ide.h	2008-03-25 19:28:10.000000000 +0100
+@@ -636,6 +636,12 @@
+ 	struct list_head list;
+ 	struct device	gendev;
+ 	struct completion gendev_rel_comp;	/* to deal with device release() */
++	int f_lba_max;
++	u64 lba_max;
++	int f_lba_dco;
++	u64 lba_dco;
++	int f_lba_hpa;
++	u64 lba_hpa;
+ } ide_drive_t;
+ 
+ #define to_ide_device(dev)container_of(dev, ide_drive_t, gendev)
+@@ -864,8 +870,10 @@
+  */
+ 
+ #define TYPE_INT	0
+-#define TYPE_BYTE	1
+-#define TYPE_SHORT	2
++#define TYPE_INTA	1
++#define TYPE_BYTE	2
++#define TYPE_SHORT	3
++#define TYPE_LONG	4
+ 
+ #define SETTING_READ	(1 << 0)
+ #define SETTING_WRITE	(1 << 1)
 
--- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+--------------050204090804010707040006--
