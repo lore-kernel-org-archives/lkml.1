@@ -1,76 +1,176 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757987AbYDCFaK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758866AbYDCFbd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757987AbYDCFaK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Apr 2008 01:30:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752341AbYDCF3y
+	id S1758866AbYDCFbd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Apr 2008 01:31:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752341AbYDCFb0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Apr 2008 01:29:54 -0400
-Received: from smtp114.mail.mud.yahoo.com ([209.191.84.67]:44891 "HELO
-	smtp114.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752005AbYDCF3x (ORCPT
+	Thu, 3 Apr 2008 01:31:26 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:54765 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751831AbYDCFbZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Apr 2008 01:29:53 -0400
-X-Greylist: delayed 440 seconds by postgrey-1.27 at vger.kernel.org; Thu, 03 Apr 2008 01:29:53 EDT
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=FYhAKt2rqbP31z2laHgthfyb+/JSOo3ILYm4DM+gSrrWmrfLKFiAGB+gBvmBodMN0pcXYpxjRlsedMavngeRDDZpsBK8/eYUdviv83OM6PoSw/Skzw5fW76VU4bcsxysS3CXAfgshLbjZVDyvRWkUAKP2wq06W730d3M+cBnTx0=  ;
-X-YMail-OSG: e_fpaHQVM1nNJEEeG4Vpo.uH.nidTL3HVv4_ok3.7XClau1XkRCeFhjY3a8C7sjPUcy_jElGlg--
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: GFP_ATOMIC page allocation failures.
-Date: Thu, 3 Apr 2008 16:22:26 +1100
-User-Agent: KMail/1.9.5
-Cc: Chris Snook <csnook@redhat.com>, Dave Jones <davej@codemonkey.org.uk>,
-       Linux Kernel <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
-       Peter Zijlstra <peterz@infradead.org>
-References: <20080401235609.GA6947@codemonkey.org.uk> <200804022012.58760.nickpiggin@yahoo.com.au> <20080402085437.7d9abf1f.akpm@linux-foundation.org>
-In-Reply-To: <20080402085437.7d9abf1f.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Thu, 3 Apr 2008 01:31:25 -0400
+Date: Wed, 2 Apr 2008 22:30:56 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Denys Fedoryshchenko" <denys@visp.net.lb>
+Cc: linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net
+Subject: Re: atyfb rmmod & vram crash, 2.6.24, 2.6.25-rc8
+Message-Id: <20080402223056.f708881b.akpm@linux-foundation.org>
+In-Reply-To: <20080403051531.M38762@visp.net.lb>
+References: <20080402124854.M56647@visp.net.lb>
+	<20080402145554.77ede423.akpm@linux-foundation.org>
+	<20080403051531.M38762@visp.net.lb>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200804031622.26973.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 03 April 2008 02:54, Andrew Morton wrote:
-> On Wed, 2 Apr 2008 20:12:58 +1100 Nick Piggin <nickpiggin@yahoo.com.au> 
-wrote:
-> > On Wednesday 02 April 2008 18:56, Andrew Morton wrote:
-> > > > Limiting this to once per boot should suffice for debugging purposes.
-> > > > Even if you manage to concoct a bug that always survives the first
-> > > > failure, you should be able to take the hint when you keep seeing
-> > > > this in dmesg.
+On Thu, 3 Apr 2008 08:22:19 +0300 "Denys Fedoryshchenko" <denys@visp.net.lb> wrote:
+
+> Well, additionally i am not able to manage this FB driver to work on my VGA,
+> while uvesafb works fine (but probably slower). But it is probably sync
+> problems with my TV-Out, i am still investigating it. But again, uvesafb works
+> great.
+
+OK.
+
+> Btw just a bit offtopic question, do i need to report here about such issues,
+> while i can find for myself another solution? Maybe better to not take time of
+> developers for such not important things? Or better to "bugtest" kernel and to
+> make it better together?
+
+No, you did fine.  You forgot to cc the fbdev mailing list, but I fixed
+that.  Thanks for helping.
+
+
+> On Wed, 2 Apr 2008 14:55:54 -0700, Andrew Morton wrote
+> > On Wed, 2 Apr 2008 15:54:12 +0300
+> > "Denys Fedoryshchenko" <denys@visp.net.lb> wrote:
+> > 
+> > > VGA card i dont know how much RAM there actually, but lspci here shows looks
+> > > like 16MB:
+> > > 
+> > > 03:09.0 VGA compatible controller: ATI Technologies Inc 3D Rage Pro 215GP (rev
+> > > 5c) (prog-if 00 [VGA controller])
+> > >         Subsystem: ATI Technologies Inc Rage Pro Turbo
+> > >         Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr-
+> > > Stepping+ SERR- FastB2B- DisINTx-
+> > >         Status: Cap- 66MHz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort-
+> > > <TAbort- <MAbort- >SERR- <PERR- INTx-
+> > >         Latency: 66 (2000ns min), Cache Line Size: 32 bytes
+> > >         Interrupt: pin A routed to IRQ 21
+> > >         Region 0: Memory at f0000000 (32-bit, prefetchable) [size=16M]
+> > >         Region 1: I/O ports at 2000 [size=256]
+> > >         Region 2: Memory at d0121000 (32-bit, non-prefetchable) [size=4K]
+> > >         Kernel driver in use: atyfb
+> > > 
+> > > 
+> > > 
+> > > Loading without parameters
+> > > 
+> > > atyfb: using auxiliary register aperture
+> > > atyfb: 3D RAGE PRO (Mach64 GP, PQFP, PCI) [0x4750 rev 0x7c]
+> > > atyfb: Mach64 BIOS is located at c0000, mapped at c00c0000.
+> > > atyfb: BIOS frequency table:
+> > > atyfb: PCLK_min_freq 984, PCLK_max_freq 23600, ref_freq 2950, ref_divider 64
+> > > atyfb: MCLK_pwd 4200, MCLK_max_freq 7500, XCLK_max_freq 10000, SCLK_freq 5000
+> > > atyfb: 8M SGRAM (1:1), 29.498928 MHz XTAL, 236 MHz PLL, 75 Mhz MCLK, 100
+> MHz XCLK
+> > > atyfb: fb0: ATY Mach64 frame buffer device on PCI
+> > > 
+> > > It detects 8M.
+> > > If i put parameter vram=8
+> > > atyfb: 3D RAGE PRO (Mach64 GP, PQFP, PCI) [0x4750 rev 0x7c]
+> > > atyfb: Mach64 BIOS is located at c0000, mapped at c00c0000.
+> > > atyfb: BIOS frequency table:
+> > > atyfb: PCLK_min_freq 984, PCLK_max_freq 23600, ref_freq 2950, ref_divider 64
+> > > atyfb: MCLK_pwd 4200, MCLK_max_freq 7500, XCLK_max_freq 10000, SCLK_freq 5000
+> > > atyfb: 0M SGRAM (1:1), 29.498928 MHz XTAL, 236 MHz PLL, 75 Mhz MCLK, 100
+> MHz XCLK
+> > > atyfb: not enough video RAM
+> > > atyfb: can't set default video mode
+> > 
+> > Why did this happen?  It seems from reading the code that the vram 
+> > arg is in kilobytes, yes?
+> Also from various sources, like Documentation/fb/intel810.txt
+> <<< SNIP >>>
+>    e. "vram:<value>"
+>         select amount of system RAM in MB to allocate for the video memory
+> 
+>         Recommendation: 1 - 4 MB.
+>         (default = 4)
+> <<< SNIP >>>
+> 
+> I tried also 8388608, sure it doesn't work too. This parameter seems doesn't
+> work at all. When i didn't specify it - it shows amount or RAM (which looks
+> invalid), when i specify it any value (i try 2 or 8 or 16) - it shows 0MB and
+> crashing.
+
+OK.
+
+> > 
+> > > And most interesting when i do rmmod
+> > > tv1 ~ # rmmod atyfb
+> > > Segmentation fault
+> > > 
+> > > and dmesg:
+> > > BUG: unable to handle kernel NULL pointer dereference at 00000448
+> > > IP: [<ce8fd0f2>] :atyfb:aty_set_crtc+0x9/0x19d
+> > > *pde = 00000000
+> > > Oops: 0000 [#1] SMP
+> > > Modules linked in: atyfb(-) fb backlight cfbcopyarea cfbimgblt cfbfillrect
+> > > rtc_cmos rtc_core rtc_lib e100 mii snd_intel8x0 snd_ac97_codec ac97_bus
+> > > snd_pcm snd_timer snd soundcore snd_page_alloc i2c_i801 i2c_core rng_core
+> > > iTCO_wdt uhci_hcd usbcore [last unloaded: atyfb]
+> > > 
+> > > Pid: 5198, comm: rmmod Not tainted (2.6.25-rc8-video #1)
+> > > EIP: 0060:[<ce8fd0f2>] EFLAGS: 00010286 CPU: 1
+> > > EIP is at aty_set_crtc+0x9/0x19d [atyfb]
+> > > EAX: 00000000 EBX: 00000000 ECX: cd8c6854 EDX: ce9064a0
+> > > ESI: ce9064a0 EDI: ce905830 EBP: cc9a1ed0 ESP: cc9a1ec8
+> > >  DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
+> > > Process rmmod (pid: 5198, ti=cc9a1000 task=cc9da000 task.ti=cc9a1000)
+> > > Stack: 00000000 ccacd000 cc9a1ee0 ce900d20 cd8c6800 ce905830 cc9a1eec c01c8376
+> > >        cd8c6854 cc9a1efc c0208c92 cd8c3854 cd8c6854 cc9a1f10 c02090c1 ce905830
+> > >        00000000 c0369060 cc9a1f24 c02086bc 00000000 ce905830 00000880 cc9a1f34
+> > > Call Trace:
+> > >  [<ce900d20>] ? atyfb_pci_remove+0x1d/0xb3 [atyfb]
+> > >  [<c01c8376>] ? pci_device_remove+0x19/0x39
+> > >  [<c0208c92>] ? __device_release_driver+0x60/0x7d
+> > >  [<c02090c1>] ? driver_detach+0x8e/0xcd
+> > >  [<c02086bc>] ? bus_remove_driver+0x63/0x7f
+> > >  [<c020914c>] ? driver_unregister+0x2a/0x2e
+> > >  [<c01c852e>] ? pci_unregister_driver+0x1e/0x64
+> > >  [<ce900d01>] ? atyfb_exit+0xd/0xf [atyfb]
+> > >  [<c013be85>] ? sys_delete_module+0x195/0x1d0
+> > >  [<c0110b8c>] ? do_page_fault+0x251/0x505
+> > >  [<c012e5cd>] ? up_read+0x16/0x29
+> > >  [<c0110b8c>] ? do_page_fault+0x251/0x505
+> > >  [<c0103892>] ? sysenter_past_esp+0x5f/0x91
+> > >  =======================
+> > > Code: 01 00 00 00 e8 84 ff ff ff a8 02 74 0e 8b 07 89 83 dc 03 00 00 8b b3 50
+> > > 04 00 00 89 f0 5b 5e 5f 5d c3 55 89 e5 56 53 89 c3 89 d6 <83> b8 48 04 00 00
+> > > 00 74 5f 8b 52 2c 81 e2 ff ff ff fc 8b 80 48
+> > > EIP: [<ce8fd0f2>] aty_set_crtc+0x9/0x19d [atyfb] SS:ESP 0068:cc9a1ec8
+> > > ---[ end trace 1c998179e35e2f76 ]---
+> > > 
+> > > I will try to enable more debug, but probably this information is enough?
 > > >
-> > > The appropriate thing to do here is to convert known-good drivers (such
-> > > as e1000[e]) to use __GFP_NOWARN.
-> > >
-> > > Unfortunately netdev_alloc_skb() went and assumed GFP_ATOMIC, but I
-> > > guess we can dive below the covers and use __netdev_alloc_skb():
-> >
-> > It's still actually nice to know how often it is happening even for
-> > these known good sites because too much can indicate a problem and
-> > that you could actually bring performance up by tuning some things.
->
-> Yes, it's useful debugging.  It tells us when we mucked up the page
-> allocator.
+> > 
+> > Looks like incoming arg `par' is NULL in aty_set_crtc().
+> > 
+> > I suspect the problem is that the module shouldn't have successfully 
+> > loaded at all, given that its fb_ops.fb_set_par() failed?
+> Maybe, at least it must not crash such ugly way. I am not enough programmer to
+> give comments about code.
 
-Right.
+Alas, I don't think we have an atyfb maintainer, and our official fbdev
+maintainer (Tony Daplas) has been out of contact for a couple of months. 
+(This has happened before and I expect he'll return).  Meanwhile a few
+other people are helping out.
 
-
-> It also tells us when we mucked up the net driver - I doubt if we (or at
-> least, I) would have discovered that e1000 does a 32k allocation for a
-> 5k(?) frame if this warning wasn't coming out.
-
-Is that right? If it is allocating for 9K MTU, then the slab allocator
-(slub in this case) will bump that up to the 16K kmalloc slab. If it is
-a 5K frame, then it would get the 8K kmalloc slab I think.
-
-Oh, but SLUB's default MIN_OBJECTS is 4, so 4*8 is 32 indeed. So slub
-is probably deciding to round the kmalloc-8192 allocations up to order-3.
-I think. How did you know it was a 5k frame? :)
-
+But it may take us some time to get onto this.  If nothing happens, please
+do send a repeat bug report in a month or so.
