@@ -1,56 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758348AbYDCTOT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759295AbYDCTPn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758348AbYDCTOT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Apr 2008 15:14:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755299AbYDCTOF
+	id S1759295AbYDCTPn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Apr 2008 15:15:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755124AbYDCTPf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Apr 2008 15:14:05 -0400
-Received: from harold.telenet-ops.be ([195.130.133.65]:58635 "EHLO
-	harold.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755063AbYDCTOE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Apr 2008 15:14:04 -0400
-Date: Thu, 3 Apr 2008 21:13:50 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Hugh Dickins <hugh@veritas.com>
-cc: Johannes Weiner <hannes@saeurebad.de>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, mingo@elte.hu, davem@davemloft.net,
-       hskinnemoen@atmel.com, cooloney@kernel.org, starvik@axis.com,
-       dhowells@redhat.com, ysato@users.sourceforge.net, takata@linux-m32r.org,
-       ralf@linux-mips.org, kyle@parisc-linux.org, paulus@samba.org,
-       schwidefsky@de.ibm.com, lethal@linux-sh.org, jdike@addtoit.com,
-       miles@gnu.org, chris@zankel.net, rmk@arm.linux.org.uk,
-       tony.luck@intel.com, akpm@linux-foundation.org
-Subject: Re: [RFC 10/22] m68k: Use generic show_mem()
-In-Reply-To: <Pine.LNX.4.64.0804031705230.11465@blonde.site>
-Message-ID: <Pine.LNX.4.64.0804032113100.22696@anakin>
-References: <12071688283927-git-send-email-hannes@saeurebad.de>
- <1207168941186-git-send-email-hannes@saeurebad.de> <Pine.LNX.4.64.0804030939320.9848@anakin>
- <87myobp02g.fsf@saeurebad.de> <Pine.LNX.4.64.0804031538150.11898@anakin>
- <87wsnfnfdu.fsf@saeurebad.de> <Pine.LNX.4.64.0804031705230.11465@blonde.site>
+	Thu, 3 Apr 2008 15:15:35 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:35467 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753667AbYDCTPf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Apr 2008 15:15:35 -0400
+Date: Thu, 3 Apr 2008 12:12:57 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Nick Piggin <npiggin@suse.de>
+cc: Linux Memory Management List <linux-mm@kvack.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [rfc] SLQB: YASA
+In-Reply-To: <20080403072550.GC25932@wotan.suse.de>
+Message-ID: <Pine.LNX.4.64.0804031200530.7265@schroedinger.engr.sgi.com>
+References: <20080403072550.GC25932@wotan.suse.de>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 3 Apr 2008, Hugh Dickins wrote:
-> On Thu, 3 Apr 2008, Johannes Weiner wrote:
-> > Sorry for the wasted time.  These cleanups already took more energy than
-> > they are worth it, I guess... :/
-> 
-> Please do persist, I for one appreciate your efforts on this:
-> something I wanted to do years ago but never yet got around to.
+On Thu, 3 Apr 2008, Nick Piggin wrote:
 
-Ack. Don't be disappointed by our comments!
+> I've been playing around with slab allocators because I'm concerned about
+> the directions that SLUB is going in. I've come up so far with a working
+> alternative implementation, which I have called SLQB (the remaining vowels
+> are crap).
 
-Gr{oetje,eeting}s,
+Hmm... Interesting stuff. I have toyed around with a lot of similar ideas 
+to add at least limited queuing to SLUB but the increased overhead / 
+complexity in the hot paths always killed these attempts. Well worth 
+pursuing and I could even imagine the queuing you are adding to be merged 
+to SLUB (or rename it to whatever else) if it does not impact performance 
+otherwise.
 
-						Geert
+> What I have tried to concentrate on is:
+> - Per CPU scalability, which is important for MC and MT CPUs.
+> This is achieved by having per CPU queues of node local free and partial
+> lists. Per node lists are used for off-node allocations.
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+Yeah that is similar to SLAB. The off node lists will require locks and 
+thus you run into similar issues with queue management as in SLAB. How do 
+you expire the objects and configure the queues?
+ 
+> - Good performance with order-0 pages.
+> I feel that order-0 allocations are the way to go and higher orders are not.
+> This is achieved by using queues of pages. We still could* use higher order
+> allocations, but it is not as important as SLUB.
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+If you want to go with order-0 pages then it would be good to first work 
+on the page allocator performance so that there is no need of buffering 
+order-0 allocations in the slab allocators. The buffering stuff for 4k 
+allocs that I had to add to SLUB in 2.6.25 and that likely concerns you 
+could go mostly away if the page allocator had competitive performance.
+
+Higher orders are still likely a must in the future because it allows a 
+reduction of the metadata management overhead (pretty important for 
+filesystems f.e.). And the argument about faster processors compensating 
+for the increased effort to manage the metadata (page structs and such) 
+really does not cut it because memory speeds do not keep up nor does the 
+evolution of the locking algorithms / reclaim logic in the kernel.
