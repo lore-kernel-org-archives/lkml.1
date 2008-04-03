@@ -1,157 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761163AbYDCDZt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761154AbYDCDeJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761163AbYDCDZt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 23:25:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759422AbYDCDZl
+	id S1761154AbYDCDeJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 23:34:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759422AbYDCDd4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 23:25:41 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:41384 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759381AbYDCDZk (ORCPT
+	Wed, 2 Apr 2008 23:33:56 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:47326 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1759317AbYDCDdz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 23:25:40 -0400
-Date: Thu, 03 Apr 2008 12:22:18 +0900
-From: Yasunori Goto <y-goto@jp.fujitsu.com>
-To: yhlu.kernel@gmail.com
-Subject: Re: [PATCH] mm: make mem_map allocation continuous v2.
-Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Badari Pulavarty <pbadari@us.ibm.com>, michael@ellerman.id.au,
-       Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>, linuxppc-dev@ozlabs.org,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       kernel list <linux-kernel@vger.kernel.org>
-In-Reply-To: <200804021830.24563.yhlu.kernel@gmail.com>
-References: <86802c440804021744m7c6e3d94vcb6af3ebcaa71b5b@mail.gmail.com> <200804021830.24563.yhlu.kernel@gmail.com>
-X-Mailer-Plugin: BkASPil for Becky!2 Ver.2.068
-Message-Id: <20080403122051.D1EC.E1E9C6FF@jp.fujitsu.com>
+	Wed, 2 Apr 2008 23:33:55 -0400
+Date: Wed, 2 Apr 2008 20:31:20 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Miles Lane <miles.lane@gmail.com>
+cc: LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: 2.6.25-rc8-mm1 -- BUG buffer_head: Redzone overwritten
+In-Reply-To: <47F43B7F.6090505@gmail.com>
+Message-ID: <Pine.LNX.4.64.0804022016160.1510@schroedinger.engr.sgi.com>
+References: <47F43B7F.6090505@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.45 [ja]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 2 Apr 2008, Miles Lane wrote:
 
-Looks good to me. And ia64 boots up with this patch too.
-Thanks.
+> I hit the Redzone BUG while stress testing. I had several processes
+> intensively reading my Windows NTFS partition and other processes reading from
+> my ext3 partition.  In addition, I was playing music residing on my NTFS
+> partition using Rhythmbox.  Lastly, the BUG occurred when I ran "apt-get
+> update". 
 
-Acked-by: Yasunori Goto <y-goto@jp.fujitsu.com>
+Hmmm... It looks like all the object fields of the object were 
+overwritten. Maybe one symptom of whatever cause the lock imbalance.
 
-
-> 
-> vmemmap allocation current got
->  [ffffe20000000000-ffffe200001fffff] PMD ->ffff810001400000 on node 0
->  [ffffe20000200000-ffffe200003fffff] PMD ->ffff810001800000 on node 0
->  [ffffe20000400000-ffffe200005fffff] PMD ->ffff810001c00000 on node 0
->  [ffffe20000600000-ffffe200007fffff] PMD ->ffff810002000000 on node 0
->  [ffffe20000800000-ffffe200009fffff] PMD ->ffff810002400000 on node 0
-> ...
-> 
-> there is 2M hole between them.
-> 
-> the rootcause is that usemap (24 bytes) will be allocated after every 2M
-> mem_map. and it will push next vmemmap (2M) to next align (2M).
-> 
-> solution:
-> try to allocate mem_map continously.
-> 
-> after patch, will get
->  [ffffe20000000000-ffffe200001fffff] PMD ->ffff810001400000 on node 0
->  [ffffe20000200000-ffffe200003fffff] PMD ->ffff810001600000 on node 0
->  [ffffe20000400000-ffffe200005fffff] PMD ->ffff810001800000 on node 0
->  [ffffe20000600000-ffffe200007fffff] PMD ->ffff810001a00000 on node 0
->  [ffffe20000800000-ffffe200009fffff] PMD ->ffff810001c00000 on node 0
-> ...
-> and usemap will share in page because of they are allocated continuously too.
-> sparse_early_usemap_alloc: usemap = ffff810024e00000 size = 24
-> sparse_early_usemap_alloc: usemap = ffff810024e00080 size = 24
-> sparse_early_usemap_alloc: usemap = ffff810024e00100 size = 24
-> sparse_early_usemap_alloc: usemap = ffff810024e00180 size = 24
-> ...
-> 
-> so we make the bootmem allocation more compact and use less memory for usemap.
-> 
-> for power pc
-> Badari Pulavarty <pbadari@us.ibm.com> wrote:
-> 
-> >  You have to call sparse_init_one_section() on each pmap and usemap
-> >  as we allocate - since valid_section() depends on it (which is needed
-> >  by vmemmap_populate() to check if the section is populated or not).
-> >  On ppc, we need to call htab_bolted_mapping() on each section and
-> >  we need to skip existing sections.
-> 
-> so try to allocate usemap at first altogether.
-> 
-> v2 replace:
-> 	[PATCH] mm: make mem_map allocation continuous.
-> 	[PATCH] mm: allocate section_map for sparse_init
-> 	[PATCH] mm: allocate usemap at first instead of mem_map in sparse_init
-> 
-> Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
-> 
-> diff --git a/mm/sparse.c b/mm/sparse.c
-> index f6a43c0..2881222 100644
-> --- a/mm/sparse.c
-> +++ b/mm/sparse.c
-> @@ -294,22 +294,48 @@ void __init sparse_init(void)
->  	unsigned long pnum;
->  	struct page *map;
->  	unsigned long *usemap;
-> +	unsigned long **usemap_map;
-> +	int size;
-> +
-> +	/*
-> +	 * map is using big page (aka 2M in x86 64 bit)
-> +	 * usemap is less one page (aka 24 bytes)
-> +	 * so alloc 2M (with 2M align) and 24 bytes in turn will
-> +	 * make next 2M slip to one more 2M later.
-> +	 * then in big system, the memory will have a lot of holes...
-> +	 * here try to allocate 2M pages continously.
-> +	 *
-> +	 * powerpc need to call sparse_init_one_section right after each
-> +	 * sparse_early_mem_map_alloc, so allocate usemap_map at first.
-> +	 */
-> +	size = sizeof(unsigned long *) * NR_MEM_SECTIONS;
-> +	usemap_map = alloc_bootmem(size);
-> +	if (!usemap_map)
-> +		panic("can not allocate usemap_map\n");
->  
->  	for (pnum = 0; pnum < NR_MEM_SECTIONS; pnum++) {
->  		if (!present_section_nr(pnum))
->  			continue;
-> +		usemap_map[pnum] = sparse_early_usemap_alloc(pnum);
-> +	}
->  
-> -		map = sparse_early_mem_map_alloc(pnum);
-> -		if (!map)
-> +	for (pnum = 0; pnum < NR_MEM_SECTIONS; pnum++) {
-> +		if (!present_section_nr(pnum))
->  			continue;
->  
-> -		usemap = sparse_early_usemap_alloc(pnum);
-> +		usemap = usemap_map[pnum];
->  		if (!usemap)
->  			continue;
->  
-> +		map = sparse_early_mem_map_alloc(pnum);
-> +		if (!map)
-> +			continue;
-> +
->  		sparse_init_one_section(__nr_to_section(pnum), pnum, map,
->  								usemap);
->  	}
-> +
-> +	free_bootmem(__pa(usemap_map), size);
->  }
->  
->  #ifdef CONFIG_MEMORY_HOTPLUG
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-
--- 
-Yasunori Goto 
+> [   58.512165]  [<f8b7dfd8>] snd_hda_multi_out_analog_open+0xd3/0xef
 
 
+Could be related to sound driver issue? snd_hda seem to occurt in multiple 
+traces.
+
+> [11543.669966]
+> =============================================================================
+> [11543.669979] BUG buffer_head: Redzone overwritten
+
+Well thats nasty thing....
+
+> [11543.669992] INFO: 0xd62af5d4-0xd62af5d7. First byte 0x5a instead of 0xbb
+
+Was overwrittten with 5a inuse poison instead of red zone inactive. Could 
+be that the redone was not initialized.
+
+> [11543.669997] INFO: Allocated in 0x5a5a5a5a age=2783036320 cpu=1515870810
+> pid=1515870810
+> [11543.670023] INFO: Freed in 0x5a5a5a5a age=2783036320 cpu=1515870810
+> pid=1515870810
+
+Bogus info because the metadata of the object was corrupted too.
+
+> [11543.670036] INFO: Slab 0xc14db748 objects=42 used=23 fp=0xd62af5a0
+> flags=0x150000c3
+> [11543.670041] INFO: Object 0xd62af5a0 @offset=1440 fp=0x5a5a5a5a
+> [11543.670044]
+> [11543.670048] Bytes b4 0xd62af590:  5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a
+> 5a 5a ZZZZZZZZZZZZZZZZ
+> [11543.670078]   Object 0xd62af5a0:  5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a
+> 5a 5a ZZZZZZZZZZZZZZZZ
+> [11543.670108]   Object 0xd62af5b0:  5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a
+> 5a 5a ZZZZZZZZZZZZZZZZ
+> [11543.670137]   Object 0xd62af5c0:  5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a
+> 5a 5a ZZZZZZZZZZZZZZZZ
+> [11543.670166]   Object 0xd62af5d0:  5a 5a 5a 5a
+
+Looks like a newly allocated object.
+
+> ZZZZ            [11543.670195]  Redzone 0xd62af5d4:  5a 5a 5a 5a
+> ZZZZ            [11543.670223]  Padding 0xd62af5fc:  5a 5a 5a 5a
+
+
+But somehow padding and redzone were never set or overwritten?
+
+> ondemand_readahead+0x11a/0x128
+> [11543.670494]  [page_cache_async_readahead+0x53/0x5e]
+> page_cache_async_readahead+0x53/0x5e
+> [11543.670507]  [fuse:generic_file_aio_read+0x1ef/0x650]
+> generic_file_aio_read+0x1ef/0x493
+> [11543.670533]  [fuse:do_sync_read+0xbb/0x8c3] do_sync_read+0xbb/0xf9
+> [11543.670552]  [<c0130fc5>] ? autoremove_wake_function+0x0/0x30
+> [11543.670568]  [snd_hda_intel:_spin_unlock_irqrestore+0x56/0x6c] ?
+> _spin_unlock_irqrestore+0x56/0x6c
+
+sound driver going to fuse?
+
+
+> CONFIG_SLUB_DEBUG_ON=y
+
+Ah. The command line possibility is not used.
