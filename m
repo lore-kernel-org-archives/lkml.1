@@ -1,60 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757523AbYDCSa1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759892AbYDCSau@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757523AbYDCSa1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Apr 2008 14:30:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754599AbYDCSaT
+	id S1759892AbYDCSau (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Apr 2008 14:30:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758971AbYDCSaj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Apr 2008 14:30:19 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:47146 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754415AbYDCSaS (ORCPT
+	Thu, 3 Apr 2008 14:30:39 -0400
+Received: from g5t0007.atlanta.hp.com ([15.192.0.44]:29786 "EHLO
+	g5t0007.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758653AbYDCSai (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Apr 2008 14:30:18 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=FDlEUt6NtFX31dwZN9AJUSFtkLy55gq+o/e2uLInOgVEHq06XBHOebb+/4ecq13Qz
-	o3NQhoDwEdaGD+fNR2kyQ==
-Message-ID: <6599ad830804031130s666368a8v2b31ee6db493b501@mail.gmail.com>
-Date: Thu, 3 Apr 2008 11:30:00 -0700
-From: "Paul Menage" <menage@google.com>
-To: "Dave Hansen" <dave@linux.vnet.ibm.com>
-Subject: Re: [-mm] Add an owner to the mm_struct (v7)
-Cc: "Balbir Singh" <balbir@linux.vnet.ibm.com>,
-       "Pavel Emelianov" <xemul@openvz.org>, "Hugh Dickins" <hugh@veritas.com>,
-       "Sudhir Kumar" <skumar@linux.vnet.ibm.com>,
-       "YAMAMOTO Takashi" <yamamoto@valinux.co.jp>, lizf@cn.fujitsu.com,
-       linux-kernel@vger.kernel.org, taka@valinux.co.jp, linux-mm@kvack.org,
-       "David Rientjes" <rientjes@google.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <1207247113.21922.63.camel@nimitz.home.sr71.net>
+	Thu, 3 Apr 2008 14:30:38 -0400
+Message-ID: <47F5224C.3020604@hp.com>
+Date: Thu, 03 Apr 2008 14:30:36 -0400
+From: "Alan D. Brunelle" <Alan.Brunelle@hp.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
 MIME-Version: 1.0
+To: linux-ia64@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, tony.luck@intel.com
+Subject: [PATCH] Fix unlock ordering in smp_callin
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080403174433.26356.42121.sendpatchset@localhost.localdomain>
-	 <1207247113.21922.63.camel@nimitz.home.sr71.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 3, 2008 at 11:25 AM, Dave Hansen <dave@linux.vnet.ibm.com> wrote:
->  > +     /*
->  > +      * Search through everything else. We should not get
->  > +      * here often
->  > +      */
->  > +     do_each_thread(g, c) {
->  > +             if (c->mm == mm)
->  > +                     goto assign_new_owner;
->  > +     } while_each_thread(g, c);
->
->  What is the case in which we get here?  Threading that's two deep where
->  none of the immeidate siblings or children is still alive?
+One should normally unlock in the reverse order of the lock calls,
+and in this case there certainly is no reason not to.
 
-Probably the most likely case of this would be a LinuxThreads process
-where the manager thread exits, and then the main thread, while other
-threads still exist.
+To better see the results (with locks included), here's the complete
+section of corrected code:
 
-Paul
+        lock_ipi_calllock();
+        spin_lock(&vector_lock);
+        /* Setup the per cpu irq handling data structures */
+        __setup_vector_irq(cpuid);
+        cpu_set(cpuid, cpu_online_map);
+        per_cpu(cpu_state, cpuid) = CPU_ONLINE;
+        spin_unlock(&vector_lock);
+        unlock_ipi_calllock();
+
+Signed-off-by: Alan D. Brunelle <alan.brunelle@hp.com>
+---
+ arch/ia64/kernel/smpboot.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/arch/ia64/kernel/smpboot.c b/arch/ia64/kernel/smpboot.c
+index 32ee597..16483be 100644
+--- a/arch/ia64/kernel/smpboot.c
++++ b/arch/ia64/kernel/smpboot.c
+@@ -400,9 +400,9 @@ smp_callin (void)
+ 	/* Setup the per cpu irq handling data structures */
+ 	__setup_vector_irq(cpuid);
+ 	cpu_set(cpuid, cpu_online_map);
+-	unlock_ipi_calllock();
+ 	per_cpu(cpu_state, cpuid) = CPU_ONLINE;
+ 	spin_unlock(&vector_lock);
++	unlock_ipi_calllock();
+
+ 	smp_setup_percpu_timer();
+
+-- 
+1.5.2.5
+
+
