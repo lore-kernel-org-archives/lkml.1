@@ -1,101 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761154AbYDCDeJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761228AbYDCDx7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761154AbYDCDeJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 23:34:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759422AbYDCDd4
+	id S1761228AbYDCDx7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 23:53:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759749AbYDCDxt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 23:33:56 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:47326 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1759317AbYDCDdz (ORCPT
+	Wed, 2 Apr 2008 23:53:49 -0400
+Received: from e31.co.us.ibm.com ([32.97.110.149]:34505 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759429AbYDCDxs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 23:33:55 -0400
-Date: Wed, 2 Apr 2008 20:31:20 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Miles Lane <miles.lane@gmail.com>
-cc: LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: 2.6.25-rc8-mm1 -- BUG buffer_head: Redzone overwritten
-In-Reply-To: <47F43B7F.6090505@gmail.com>
-Message-ID: <Pine.LNX.4.64.0804022016160.1510@schroedinger.engr.sgi.com>
-References: <47F43B7F.6090505@gmail.com>
+	Wed, 2 Apr 2008 23:53:48 -0400
+Date: Wed, 2 Apr 2008 22:53:47 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: "Serge E. Hallyn" <serue@us.ibm.com>, Paul Menage <menage@google.com>,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/1] cgroups: introduce cft->read_seq()
+Message-ID: <20080403035347.GB25873@sergelap.austin.ibm.com>
+References: <20080403010130.GA20543@sergelap.austin.ibm.com> <47F4378A.2000008@cn.fujitsu.com> <47F440F7.6080308@cn.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <47F440F7.6080308@cn.fujitsu.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2 Apr 2008, Miles Lane wrote:
+Quoting Li Zefan (lizf@cn.fujitsu.com):
+> Li Zefan wrote:
+> > Serge E. Hallyn wrote:
+> >> Hi Paul,
+> >>
+> >> the following (against 2.6.25-rc8-mm1) is a first attempt
+> >> at a simple seq_file usage in cgroups.  Comments much
+> >> appreciated.
+> >>
+> >> thanks,
+> >> -serge
+> >>
+> >> >From bd0977a5819dc43866fff325ae1e2726e747e2f4 Mon Sep 17 00:00:00 2001
+> >> From: Serge E. Hallyn <serue@us.ibm.com>
+> >> Date: Wed, 2 Apr 2008 17:54:21 -0700
+> >> Subject: [PATCH 1/1] cgroups: introduce cft->read_seq()
+> >>
+> >> Introduce a read_seq() helper in cftype, which uses
+> >> seq_file to print out lists.  Use it in the devices
+> >> cgroup.  Also split devices.allow into two files, so
+> >> now devices.deny and devices.allow are the ones to
+> >> use to manipulate the whitelist, while devices.list
+> >> outputs the cgroup's current whitelist.
+> >>
+> >> Signed-off-by: Serge E. Hallyn <serue@us.ibm.com>
+> >> ---
+> >>  include/linux/cgroup.h   |    6 ++++
+> >>  kernel/cgroup.c          |   22 ++++++++++++-
+> >>  security/device_cgroup.c |   74 ++++++++++++++-------------------------------
+> >>  3 files changed, 49 insertions(+), 53 deletions(-)
+> >>
+> >> diff --git a/include/linux/cgroup.h b/include/linux/cgroup.h
+> >> index 2d1d151..feb83dd 100644
+> >> --- a/include/linux/cgroup.h
+> >> +++ b/include/linux/cgroup.h
+> >> @@ -227,6 +227,12 @@ struct cftype {
+> >>  	 */
+> >>  	int (*read_map) (struct cgroup *cont, struct cftype *cft,
+> >>  			 struct cgroup_map_cb *cb);
+> >> +	/*
+> >> +	 * read_seq() is used for outputting a simple sequence
+> >> +	 * using seqfile.
+> >> +	 */
+> >> +	int (*read_seq) (struct cgroup *cont, struct cftype *cft,
+> >> +			 struct seq_file *m);
+> >>  
+> > 
+> > Can't we remove read_map() ?
+> > 
+> > btw: s/cont/cgrp
+> > 
+> 
+> It seems read_seq() is the general case of read_map(). A read_seq() method can
+> produce the output freely, and read_map() strictly produces string->u64 maps.
 
-> I hit the Redzone BUG while stress testing. I had several processes
-> intensively reading my Windows NTFS partition and other processes reading from
-> my ext3 partition.  In addition, I was playing music residing on my NTFS
-> partition using Rhythmbox.  Lastly, the BUG occurred when I ran "apt-get
-> update". 
+Right, the memcontroller cgroup is using read_map(), and I seem to recall
+it was intended to be of pretty general use so I was going to just
+leave it there.
 
-Hmmm... It looks like all the object fields of the object were 
-overwritten. Maybe one symptom of whatever cause the lock imbalance.
+As for s/cont/cgrp I agree but that's for a separate pure renaming
+patch.  In the meantime I just wanted to follow the existing style.
+I could rebase this patch on top of a renaming patch but that's
+definately wrong for just soliciting comments on this being the right
+approach.
 
-> [   58.512165]  [<f8b7dfd8>] snd_hda_multi_out_analog_open+0xd3/0xef
+Thanks for taking a look.
 
-
-Could be related to sound driver issue? snd_hda seem to occurt in multiple 
-traces.
-
-> [11543.669966]
-> =============================================================================
-> [11543.669979] BUG buffer_head: Redzone overwritten
-
-Well thats nasty thing....
-
-> [11543.669992] INFO: 0xd62af5d4-0xd62af5d7. First byte 0x5a instead of 0xbb
-
-Was overwrittten with 5a inuse poison instead of red zone inactive. Could 
-be that the redone was not initialized.
-
-> [11543.669997] INFO: Allocated in 0x5a5a5a5a age=2783036320 cpu=1515870810
-> pid=1515870810
-> [11543.670023] INFO: Freed in 0x5a5a5a5a age=2783036320 cpu=1515870810
-> pid=1515870810
-
-Bogus info because the metadata of the object was corrupted too.
-
-> [11543.670036] INFO: Slab 0xc14db748 objects=42 used=23 fp=0xd62af5a0
-> flags=0x150000c3
-> [11543.670041] INFO: Object 0xd62af5a0 @offset=1440 fp=0x5a5a5a5a
-> [11543.670044]
-> [11543.670048] Bytes b4 0xd62af590:  5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a
-> 5a 5a ZZZZZZZZZZZZZZZZ
-> [11543.670078]   Object 0xd62af5a0:  5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a
-> 5a 5a ZZZZZZZZZZZZZZZZ
-> [11543.670108]   Object 0xd62af5b0:  5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a
-> 5a 5a ZZZZZZZZZZZZZZZZ
-> [11543.670137]   Object 0xd62af5c0:  5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a
-> 5a 5a ZZZZZZZZZZZZZZZZ
-> [11543.670166]   Object 0xd62af5d0:  5a 5a 5a 5a
-
-Looks like a newly allocated object.
-
-> ZZZZ            [11543.670195]  Redzone 0xd62af5d4:  5a 5a 5a 5a
-> ZZZZ            [11543.670223]  Padding 0xd62af5fc:  5a 5a 5a 5a
-
-
-But somehow padding and redzone were never set or overwritten?
-
-> ondemand_readahead+0x11a/0x128
-> [11543.670494]  [page_cache_async_readahead+0x53/0x5e]
-> page_cache_async_readahead+0x53/0x5e
-> [11543.670507]  [fuse:generic_file_aio_read+0x1ef/0x650]
-> generic_file_aio_read+0x1ef/0x493
-> [11543.670533]  [fuse:do_sync_read+0xbb/0x8c3] do_sync_read+0xbb/0xf9
-> [11543.670552]  [<c0130fc5>] ? autoremove_wake_function+0x0/0x30
-> [11543.670568]  [snd_hda_intel:_spin_unlock_irqrestore+0x56/0x6c] ?
-> _spin_unlock_irqrestore+0x56/0x6c
-
-sound driver going to fuse?
-
-
-> CONFIG_SLUB_DEBUG_ON=y
-
-Ah. The command line possibility is not used.
+-serge
