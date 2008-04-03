@@ -1,45 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756051AbYDCXma@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756907AbYDCXqS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756051AbYDCXma (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Apr 2008 19:42:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753123AbYDCXmX
+	id S1756907AbYDCXqS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Apr 2008 19:46:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753530AbYDCXqK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Apr 2008 19:42:23 -0400
-Received: from ozlabs.org ([203.10.76.45]:37939 "EHLO ozlabs.org"
+	Thu, 3 Apr 2008 19:46:10 -0400
+Received: from saeurebad.de ([85.214.36.134]:57603 "EHLO saeurebad.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752779AbYDCXmW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Apr 2008 19:42:22 -0400
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Robin Getz <rgetz@blackfin.uclinux.org>
-Subject: Re: PATCH [1/1]: Don't return symbol lables in init sections after they have been freed
-Date: Fri, 4 Apr 2008 09:41:42 +1000
-User-Agent: KMail/1.9.9
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       "LKML" <linux-kernel@vger.kernel.org>
-References: <200803041847.15884.rgetz@blackfin.uclinux.org> <200803051243.26732.rusty@rustcorp.com.au> <200804021801.25937.rgetz@blackfin.uclinux.org>
-In-Reply-To: <200804021801.25937.rgetz@blackfin.uclinux.org>
+	id S1752689AbYDCXqJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Apr 2008 19:46:09 -0400
+From: Johannes Weiner <hannes@saeurebad.de>
+To: linux-kernel@vger.kernel.org
+Cc: linux-mm@kvack.org, mingo@elte.hu, davem@davemloft.net,
+       hskinnemoen@atmel.com, cooloney@kernel.org, starvik@axis.com,
+       dhowells@redhat.com, takata@linux-m32r.org, geert@linux-m68k.org,
+       ralf@linux-mips.org, kyle@parisc-linux.org, paulus@samba.org,
+       schwidefsky@de.ibm.com, lethal@linux-sh.org, jdike@addtoit.com,
+       miles@gnu.org, chris@zankel.net, rmk@arm.linux.org.uk,
+       tony.luck@intel.com
+Subject: Re: [RFC 00/21] Generic show_mem()
+References: <12071688283927-git-send-email-hannes@saeurebad.de>
+Date: Fri, 04 Apr 2008 01:45:59 +0200
+In-Reply-To: <12071688283927-git-send-email-hannes@saeurebad.de> (Johannes
+	Weiner's message of "Wed, 2 Apr 2008 22:40:06 +0200")
+Message-ID: <87hceimrig.fsf@saeurebad.de>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200804040941.42275.rusty@rustcorp.com.au>
+Content-Type: text/plain; charset=us-ascii
+X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 03 April 2008 08:01:25 Robin Getz wrote:
-> On Tue 4 Mar 2008 20:43, Rusty Russell pondered:
-> >     As to the actual patch, your kallsyms.c patch matches
-> > a2da4052f1df6bc77749f84496fe731ab8b458f7's change to extable.c: please
-> > resubmit with just that one.  For bonus points, look at combining the
-> > extable and kallsyms logic so we don't diverge in future...
->
-> OK since this took so long, I went for bonus points...
+Hi,
 
-Looks good.  I don't have extratext in my kernel tho 
-(v2.6.25-rc8-139-ge315c12).  Otherwise I'd suspect it should be consistently 
-used between extable and kallsyms.
+most of the feedback I got now was about information displaying that I
+allegedly have simply dropped.  This was only true in one case where I
+missed the quicklist cache, the other droppings were redundant
+information (already displayed in show_free_areas() for example).
 
-Thanks!
-Rusty.
+Geert suggested that I should boil down show_mem() first for each arch
+and then unify it but I would prefer unifying it first and listing
+removed redundancy in the changelog of every arch-specific removal. Any
+objections on this?
+
+	Hannes
