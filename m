@@ -1,65 +1,190 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755059AbYDCSXE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758885AbYDCSZ1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755059AbYDCSXE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Apr 2008 14:23:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754168AbYDCSWx
+	id S1758885AbYDCSZ1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Apr 2008 14:25:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755143AbYDCSZT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Apr 2008 14:22:53 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:46314 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752824AbYDCSWw (ORCPT
+	Thu, 3 Apr 2008 14:25:19 -0400
+Received: from e35.co.us.ibm.com ([32.97.110.153]:37153 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754832AbYDCSZS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Apr 2008 14:22:52 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=g6kcaNc6SKy/gVXXZbipxqW88SEFMWmyWj4dq/s8pGvrBVTyONaUZB7Q6Ei1dYUye
-	/N+lrw7HJkOGXD863yFGg==
-Message-ID: <6599ad830804031122y3f6946fbp97dc18073bf02609@mail.gmail.com>
-Date: Thu, 3 Apr 2008 11:22:36 -0700
-From: "Paul Menage" <menage@google.com>
-To: balbir@linux.vnet.ibm.com
+	Thu, 3 Apr 2008 14:25:18 -0400
 Subject: Re: [-mm] Add an owner to the mm_struct (v7)
-Cc: "Pavel Emelianov" <xemul@openvz.org>, "Hugh Dickins" <hugh@veritas.com>,
-       "Sudhir Kumar" <skumar@linux.vnet.ibm.com>,
-       "YAMAMOTO Takashi" <yamamoto@valinux.co.jp>, lizf@cn.fujitsu.com,
+From: Dave Hansen <dave@linux.vnet.ibm.com>
+To: Balbir Singh <balbir@linux.vnet.ibm.com>
+Cc: Paul Menage <menage@google.com>, Pavel Emelianov <xemul@openvz.org>,
+       Hugh Dickins <hugh@veritas.com>,
+       Sudhir Kumar <skumar@linux.vnet.ibm.com>,
+       YAMAMOTO Takashi <yamamoto@valinux.co.jp>, lizf@cn.fujitsu.com,
        linux-kernel@vger.kernel.org, taka@valinux.co.jp, linux-mm@kvack.org,
-       "David Rientjes" <rientjes@google.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <47F51DE7.7010204@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+       David Rientjes <rientjes@google.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20080403174433.26356.42121.sendpatchset@localhost.localdomain>
 References: <20080403174433.26356.42121.sendpatchset@localhost.localdomain>
-	 <6599ad830804031058l1e2a7ad9p56cff47dca738d79@mail.gmail.com>
-	 <47F51DE7.7010204@linux.vnet.ibm.com>
+Content-Type: text/plain
+Date: Thu, 03 Apr 2008 11:25:13 -0700
+Message-Id: <1207247113.21922.63.camel@nimitz.home.sr71.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 3, 2008 at 11:11 AM, Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
->  >
->  > Hmm, is this new check for delay_group_leader() safe? Won't we have
->  > called exit_cgroup() by this point, and hence be reassigned to the
->  > root cgroup? And so mm->owner->cgroups won't point to the right place?
->  >
->
->  cgroup_exit() comes in much later after exit_mm(). Moreover delay_group_leader()
->  is a function that checks to see if
+On Thu, 2008-04-03 at 23:14 +0530, Balbir Singh wrote:
+> diff -puN include/linux/init_task.h~memory-controller-add-mm-owner include/linux/init_task.h
+> --- linux-2.6.25-rc8/include/linux/init_task.h~memory-controller-add-mm-owner	2008-04-03 22:43:27.000000000 +0530
+> +++ linux-2.6.25-rc8-balbir/include/linux/init_task.h	2008-04-03 22:43:27.000000000 +0530
+> @@ -199,7 +199,6 @@ extern struct group_info init_groups;
+>  	INIT_LOCKDEP							\
+>  }
+> 
+> -
+>  #define INIT_CPU_TIMERS(cpu_timers)					\
+>  {									\
+>  	LIST_HEAD_INIT(cpu_timers[0]),					\
 
-Sorry, I was unclear.
+I assume you didn't mean to do that one.
 
-Yes, the call to cgroup_exit() comes much later than exit_mm() - but
-it probably does come before the other users of the mm have finished
-using the mm. So can't we end up with a situation like this?
+> diff -puN include/linux/memcontrol.h~memory-controller-add-mm-owner include/linux/memcontrol.h
+> --- linux-2.6.25-rc8/include/linux/memcontrol.h~memory-controller-add-mm-owner	2008-04-03 22:43:27.000000000 +0530
+> +++ linux-2.6.25-rc8-balbir/include/linux/memcontrol.h	2008-04-03 22:43:27.000000000 +0530
+> @@ -27,9 +27,6 @@ struct mm_struct;
+> 
+>  #ifdef CONFIG_CGROUP_MEM_RES_CTLR
+> 
+> -extern void mm_init_cgroup(struct mm_struct *mm, struct task_struct *p);
+> -extern void mm_free_cgroup(struct mm_struct *mm);
+> -
+>  #define page_reset_bad_cgroup(page)	((page)->page_cgroup = 0)
+> 
+>  extern struct page_cgroup *page_get_page_cgroup(struct page *page);
+> @@ -48,8 +45,10 @@ extern unsigned long mem_cgroup_isolate_
+>  extern void mem_cgroup_out_of_memory(struct mem_cgroup *mem, gfp_t gfp_mask);
+>  int task_in_mem_cgroup(struct task_struct *task, const struct mem_cgroup *mem);
+> 
+> +extern struct mem_cgroup *mem_cgroup_from_task(struct task_struct *p);
+> +
+>  #define mm_match_cgroup(mm, cgroup)	\
+> -	((cgroup) == rcu_dereference((mm)->mem_cgroup))
+> +	((cgroup) == mem_cgroup_from_task((mm)->owner))
 
-A (group leader) exits; at this point, A->mm->owner == A
-A calls exit_mm(), sees delay_group_leader(), doesn't change A->mm->owner
-A calls cgroup_exit(), A->cgroups is set to init_css_set.
-B (another thread) does something with B->mm->owner->cgroups (e.g. VM
-accounting) and accesses the wrong group
+Now that you've mucked with this one, can you just turn this into a
+static inline?
 
-Paul
+...
+> +#ifdef CONFIG_MM_OWNER
+> +/*
+> + * Task p is exiting and it owned p, so lets find a new owner for it
+> + */
+> +static inline int
+> +mm_need_new_owner(struct mm_struct *mm, struct task_struct *p)
+> +{
+> +	int ret;
+> +
+> +	/*
+> +	 * If there are other users of the mm and the owner (us) is exiting
+> +	 * we need to find a new owner to take on the responsibility.
+> +	 * When we use thread groups (CLONE_THREAD), the thread group
+> +	 * leader is kept around in zombie state, even after it exits.
+> +	 * delay_group_leader() ensures that if the group leader is around
+> +	 * we need not select a new owner.
+> +	 */
+> +	ret = (mm && (atomic_read(&mm->mm_users) > 1) && (mm->owner == p) &&
+> +		!delay_group_leader(p));
+> +	return ret;
+> +}
+
+Ugh.  Could you please spell this out a bit more.  I find that stuff
+above really hard to read.  Something like:
+
+	if (!mm)
+		return 0;
+	if (atomic_read(&mm->mm_users) <= 1)
+		return 0;
+	if (mm->owner != p)
+		return 0;
+	if (delay_group_leader(p))
+		return 0;
+	return 1;
+
+It also gives you a nice spot to stick comments for each particular
+check.
+
+> +void mm_update_next_owner(struct mm_struct *mm)
+> +{
+> +	struct task_struct *c, *g, *p = current;
+
+Any chance I can talk you into spelling these out a bit?  By the time I
+get down in the function, it's easy to forget what they are.
+
+> +retry:
+> +	if (!mm_need_new_owner(mm, p))
+> +		return;
+> +
+> +	rcu_read_lock();
+> +	/*
+> +	 * Search in the children
+> +	 */
+> +	list_for_each_entry(c, &p->children, sibling) {
+> +		if (c->mm == mm)
+> +			goto assign_new_owner;
+> +	}
+> +
+> +	/*
+> +	 * Search in the siblings
+> +	 */
+> +	list_for_each_entry(c, &p->parent->children, sibling) {
+> +		if (c->mm == mm)
+> +			goto assign_new_owner;
+> +	}
+> +
+> +	/*
+> +	 * Search through everything else. We should not get
+> +	 * here often
+> +	 */
+> +	do_each_thread(g, c) {
+> +		if (c->mm == mm)
+> +			goto assign_new_owner;
+> +	} while_each_thread(g, c);
+
+What is the case in which we get here?  Threading that's two deep where
+none of the immeidate siblings or children is still alive?
+
+Have you happened to instrument this and see if it happens in practice
+much?
+
+> +	rcu_read_unlock();
+> +	return;
+> +
+> +assign_new_owner:
+> +	BUG_ON(c == p);
+> +	get_task_struct(c);
+> +	/*
+> +	 * The task_lock protects c->mm from changing.
+> +	 * We always want mm->owner->mm == mm
+> +	 */
+> +	task_lock(c);
+> +	/*
+> + 	 * Delay rcu_read_unlock() till we have the task_lock()
+> + 	 * to ensure that c does not slip away underneath us
+> + 	 */
+> +	rcu_read_unlock();
+> +	if (c->mm != mm) {
+> +		task_unlock(c);
+> +		put_task_struct(c);
+> +		goto retry;
+> +	}
+> +	cgroup_mm_owner_callbacks(mm->owner, c);
+> +	mm->owner = c;
+> +	task_unlock(c);
+> +	put_task_struct(c);
+> +}
+> +#endif /* CONFIG_MM_OWNER */
+
+
+
+-- Dave
+
