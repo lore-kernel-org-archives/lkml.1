@@ -1,46 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759675AbYDCPiB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759958AbYDCPk2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759675AbYDCPiB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Apr 2008 11:38:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757516AbYDCPhx
+	id S1759958AbYDCPk2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Apr 2008 11:40:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757471AbYDCPkV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Apr 2008 11:37:53 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:58078 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1756781AbYDCPhw (ORCPT
+	Thu, 3 Apr 2008 11:40:21 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:24083 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757186AbYDCPkU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Apr 2008 11:37:52 -0400
-Date: Thu, 3 Apr 2008 11:37:51 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Xavier Bestel <xavier.bestel@free.fr>
-cc: linux-usb@vger.kernel.org, <linux-kernel@vger.kernel.org>
-Subject: Re: ASUS ScreenDuo
-In-Reply-To: <1207230481.24037.11.camel@skunk.anacadf.mentorg.com>
-Message-ID: <Pine.LNX.4.44L0.0804031136330.5546-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 3 Apr 2008 11:40:20 -0400
+Date: Thu, 3 Apr 2008 08:39:53 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Tom Horsley <tom.horsley@ccur.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: module parameters versus kernel command line
+Message-Id: <20080403083953.42ea3f1d.randy.dunlap@oracle.com>
+In-Reply-To: <20080403090053.56f243df@tomh>
+References: <20080403090053.56f243df@tomh>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 3 Apr 2008, Xavier Bestel wrote:
+On Thu, 3 Apr 2008 09:00:53 -0400 Tom Horsley wrote:
 
-> Hi,
-> 
-> I have an ASUS motherboard with an USB gadget, the ASUS ScreenDUO. It's
-> an independant little lcd screen with buttons, apparently it runs some
-> kind of OS because it can access the net (e.g. to retrieve RSS) even
-> when the computer is off - I guess they mean soft-off.
-> 
-> Well, all that is theory because it's under Vista, which I don't have.
-> Under Linux the ScreenDUO is kind-of recognized: it says it's a mass
-> storage device, but I can't mount it (the kernel says it's bound to sdc,
-> but sdc doesn't exist).
-> I'd like to access it. Does anyone know how that thing works ?
+> Just curious: Is there any reason even dynamically loaded
+> modules shouldn't be able to find module parameters on
+> the kernel command line? I haven't actually investigated
+> the code involved (since I have no idea where it is :-),
+> but it sure seems like it would be convenient to have
+> a single place to put module parameters where they
+> would always be found regardless of the module's static
+> or dynamic build mode (especially when multi-booting
+> different kernels built different ways).
+> --
 
-What does usbmon show when you modprobe usb-storage?  (The instructions 
-for usbmon are in the kernel source file Documentation/usb/usbmon.txt.)
+Does this answer your question?  from Documentation/kernel-parameters.txt:
 
-Alan Stern
+Module parameters for loadable modules are specified only as the
+parameter name with optional '=' and value as appropriate, such as:
 
+	modprobe usbcore blinkenlights=1
+
+Module parameters for modules that are built into the kernel image
+are specified on the kernel command line with the module name plus
+'.' plus parameter name, with '=' and value if appropriate, such as:
+
+	usbcore.blinkenlights=1
+
+---
+~Randy
