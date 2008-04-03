@@ -1,47 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758634AbYDCU0G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758841AbYDCU1u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758634AbYDCU0G (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Apr 2008 16:26:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751450AbYDCUZw
+	id S1758841AbYDCU1u (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Apr 2008 16:27:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751077AbYDCU1n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Apr 2008 16:25:52 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:48399 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750757AbYDCUZv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Apr 2008 16:25:51 -0400
-Date: Thu, 3 Apr 2008 13:23:12 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Andrea Arcangeli <andrea@qumranet.com>
-cc: Robin Holt <holt@sgi.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       steiner@sgi.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       Nick Piggin <npiggin@suse.de>
-Subject: Re: EMM: disable other notifiers before register and unregister
-In-Reply-To: <Pine.LNX.4.64.0804031215050.7480@schroedinger.engr.sgi.com>
-Message-ID: <Pine.LNX.4.64.0804031321260.8331@schroedinger.engr.sgi.com>
-References: <20080401205531.986291575@sgi.com> <20080401205635.793766935@sgi.com>
- <20080402064952.GF19189@duo.random> <Pine.LNX.4.64.0804021048460.27214@schroedinger.engr.sgi.com>
- <Pine.LNX.4.64.0804021402190.30337@schroedinger.engr.sgi.com>
- <20080402220148.GV19189@duo.random> <Pine.LNX.4.64.0804021503320.31247@schroedinger.engr.sgi.com>
- <20080402221716.GY19189@duo.random> <Pine.LNX.4.64.0804021821230.639@schroedinger.engr.sgi.com>
- <20080403151908.GB9603@duo.random> <Pine.LNX.4.64.0804031215050.7480@schroedinger.engr.sgi.com>
+	Thu, 3 Apr 2008 16:27:43 -0400
+Received: from E23SMTP06.au.ibm.com ([202.81.18.175]:42823 "EHLO
+	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754722AbYDCU1m (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Apr 2008 16:27:42 -0400
+Message-ID: <47F53DA2.3050403@linux.vnet.ibm.com>
+Date: Fri, 04 Apr 2008 01:57:14 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Hugh Dickins <hugh@veritas.com>, Andrew Morton <akpm@linux-foundation.org>
+CC: Paul Menage <menage@google.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Pavel Emelyanov <xemul@openvz.org>,
+       Sudhir Kumar <skumar@linux.vnet.ibm.com>,
+       Li Zefan <lizf@cn.fujitsu.com>, David Rientjes <rientjes@google.com>,
+       YAMAMOTO Takashi <yamamoto@valinux.co.jp>, linux-kernel@vger.kernel.org
+Subject: Re: cgroup_disable=memory for 2.6.25?
+References: <Pine.LNX.4.64.0804032055590.8157@blonde.site>
+In-Reply-To: <Pine.LNX.4.64.0804032055590.8157@blonde.site>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 3 Apr 2008, Christoph Lameter wrote:
-
-> > faults). So it should be ok to take all those locks inside the
-> > mmap_sem and implement a lock_vm(mm) unlock_vm(mm). I'll think more
-> > about this hammer approach while I try to implement it...
+Hugh Dickins wrote:
+> Hi Balbir,
 > 
-> Well good luck. Hopefully we will get to something that works.
+> I'm rather surprised that nobody has pushed -mm's
+> 
+> cgroups-add-cgroup-support-for-enabling-controllers-at-boot-time.patch
+> cgroups-add-cgroup-support-for-enabling-controllers-at-boot-time-fix-boot-option-parsing.patch
+> memory-controller-make-memory-resource-control-aware-of-boot-options.patch
+> 
+> into 2.6.25: which was what I'd expected when I first suggested that
+> distros might want a way to build with the potential for mem cgroups,
+> but be able to switch off their significant overhead for everyone not
+> interested.
+> 
+> Ballpark figures, I'm trying to get this question out rather than
+> processing the exact numbers: CONFIG_CGROUP_MEM_RES_CTLR adds 15%
+> overhead to the affected paths, booting with cgroup_disable=memory
+> cuts that back to 1% overhead (due to slightly bigger struct page).
+> 
+> I'm no expert on distros, they may have no interest whatever in
+> CONFIG_CGROUP_MEM_RES_CTLR=y; and the rest of us can easily build
+> with or without it, or apply the cgroup_disable=memory patches.
+> 
+> But if those patches serve a purpose, shouldn't they be in 2.6.25?
 
-Another hammer to use may be the freezer from software suspend. With that 
-you can get all tasks of a process into a definite state. Then take the 
-mmap_sem writably. But then there is still try_to_unmap and friends that 
-can race.
+Hi, Hugh,
+
+I expected those patches to make it into 2.6.25. But ever since 2.6.25-rc5-mm1,
+the next -mm was for 2.6.25-rc8. I have been meaning to follow up with Andrew,
+but lost with some other patches.
+
+Andrew,
+
+Could we please push these patches upstream before 2.6.25? Or is it too late?
 
 
+-- 
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
