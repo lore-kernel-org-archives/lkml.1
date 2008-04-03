@@ -1,43 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756223AbYDCM0Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755568AbYDCMbk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756223AbYDCM0Q (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Apr 2008 08:26:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751625AbYDCM0E
+	id S1755568AbYDCMbk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Apr 2008 08:31:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751910AbYDCMbc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Apr 2008 08:26:04 -0400
-Received: from wr-out-0506.google.com ([64.233.184.228]:13978 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750774AbYDCM0C (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Apr 2008 08:26:02 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=hxAJMtKvnGL1ODatQUcdVdPLOGk7kHAtW4tRGeJ6huFS68za0wstFAPKYuvPsvGKxj6NPmus95+CsV9e/ou9y6tBbAzB+/HJc9/bdUbaw99YHjzOWwG0D7jz9BJGviA7084sY0LW0leSiBHW1z1x5ey3E3v40TtkcWjzc7vRzYY=
-Message-ID: <19f34abd0804030526j3b54e4a2ya5cd22677721cd08@mail.gmail.com>
-Date: Thu, 3 Apr 2008 14:26:01 +0200
-From: "Vegard Nossum" <vegard.nossum@gmail.com>
-To: "=?UTF-8?Q?J=C3=B6rn_Engel?=" <joern@logfs.org>
-Subject: Re: [PATCH 109/148] include/asm-x86/serial.h: checkpatch cleanups - formatting only
-Cc: "David Miller" <davem@davemloft.net>, mingo@elte.hu,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20080326115853.GE22847@logfs.org>
+	Thu, 3 Apr 2008 08:31:32 -0400
+Received: from mail0.scram.de ([78.47.204.202]:40932 "EHLO mail.scram.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751690AbYDCMbc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Apr 2008 08:31:32 -0400
+X-Spam-Score: -4.21
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+ * -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
+ *      [score: 0.0000]
+ *  0.2 AWL AWL: From: address is in the auto white-list
+Message-ID: <47F4CE11.1090607@scram.de>
+Date: Thu, 03 Apr 2008 14:31:13 +0200
+From: Jochen Friedrich <jochen@scram.de>
+User-Agent: Mozilla-Thunderbird 2.0.0.9 (X11/20080110)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-References: <20080326102654.GB22847@logfs.org> <20080326112311.GG17176@elte.hu>
-	 <20080326114142.GD22847@logfs.org>
-	 <20080326.044802.107678511.davem@davemloft.net>
-	 <20080326115853.GE22847@logfs.org>
+To: Laurent Pinchart <laurentp@cse-semaphore.com>
+CC: linuxppc-dev@ozlabs.org, Scott Wood <scottwood@freescale.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] [POWERPC] CPM1: implement GPIO LIB API
+References: <47E92EC8.7010700@scram.de> <200804031319.12715.laurentp@cse-semaphore.com>
+In-Reply-To: <200804031319.12715.laurentp@cse-semaphore.com>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha id m33CQJnq003607
 
-Hi,
-[Some CCs dropped. I don't think they're truly interested.]
-On 3/26/08, JÃ¶rn Engel <joern@logfs.org> wrote:>  What is the reason why (void *)foo is better than (void*)foo?  Just that>  fact that by random chance one them them became more common in our>  codebase and the minority always has to give in?
-I think the rationale for using (void *) over (void*) is that weusually write a space before the * in other places (again, it's aboutconsistency). Or do you also write void*a; in variable declarations?
+Hi Laurent,
 
-Vegardÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éÝ¶¥Šwÿº{.nÇ+‰·¥Š{±þG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŽŠÝ¢j"ú¶m§ÿÿ¾«þG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
+> I haven't checked all CPM1-based parts, but for the MPC855 family this doesn't 
+> look right. The MPC855 has two 32-bit ports, port B and port E. Registers for 
+> port B are dir, par, odr and dat, and registers for port E are dir, par, sor, 
+> odr and dat.
+
+You probably mean MPC885. Thanks for catching this, the 32bit registers really
+are a mess on CPM1 platforms.
+
+> Are you working on a similar patch for the CPM2 ? CPM2 I/O ports are 32 bit 
+> wide and their registers are layed out like for port E on the MPC855. It 
+> should thus be possible to share code between CPM1 and CPM2.
+
+Yes, some common port setup code could probably be moved to cpm.c.
+
+Thanks,
+Jochen
