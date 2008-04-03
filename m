@@ -1,50 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760557AbYDCADY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759827AbYDCAGY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760557AbYDCADY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 20:03:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758800AbYDCACx
+	id S1759827AbYDCAGY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 20:06:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755490AbYDCAGQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 20:02:53 -0400
-Received: from wa-out-1112.google.com ([209.85.146.176]:60565 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758107AbYDCACv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 20:02:51 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=di3hVKjoVNWA6hTnrETXyPMefrSISSkHK9srIjXE5+f8hyv4/AUusrwBt9X4hjO28/KqVKglGbozN2W9M8IrK/hBeCNSSVzo1zIqNAIDFs6+IeBHiXHMZtNd1eMb02lqRAKC701tp9I4ZRRPL3NzYbJC2RL7+Y0ROUkzgd5YJ1g=
-Message-ID: <e64671580804021702n3e9a3a44v7042029c45d38806@mail.gmail.com>
-Date: Wed, 2 Apr 2008 19:02:51 -0500
-From: "Sabuj Pattanayek" <sabujp@gmail.com>
-To: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       "Moore, Eric" <Eric.Moore@lsi.com>
-Subject: Re: kernel exception in Fusion MPT base driver 3.04.06 (linux-2.6.24.3)
-In-Reply-To: <e64671580803191636r59d0cd0ar93692dc50d852be7@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 2 Apr 2008 20:06:16 -0400
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:34804 "EHLO e4.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754966AbYDCAGP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Apr 2008 20:06:15 -0400
+Subject: Re: HugeTLB vs. SH3 cpu
+From: Dave Hansen <dave@linux.vnet.ibm.com>
+To: Nishanth Aravamudan <nacc@us.ibm.com>
+Cc: Paul Mundt <lethal@linux-sh.org>,
+       Nish Aravamudan <nish.aravamudan@gmail.com>,
+       Adrian Bunk <bunk@kernel.org>, wli@holomorphy.com,
+       linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20080402225556.GI21524@us.ibm.com>
+References: <20080401225809.GC32269@cs181133002.pp.htv.fi>
+	 <29495f1d0804011626n2399d69aj7566df7f78953458@mail.gmail.com>
+	 <20080402080448.GA4171@linux-sh.org>  <20080402225556.GI21524@us.ibm.com>
+Content-Type: text/plain
+Date: Wed, 02 Apr 2008 17:06:09 -0700
+Message-Id: <1207181169.23710.84.camel@nimitz.home.sr71.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <e64671580803171629g534ebf34l89adbb14bb985dc7@mail.gmail.com>
-	 <20080318002502.852d0f12.akpm@linux-foundation.org>
-	 <47DFFE90.8050808@sgi.com>
-	 <e64671580803191411r7ca57fffu885e173f9b3285d0@mail.gmail.com>
-	 <e64671580803191636r59d0cd0ar93692dc50d852be7@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+On Wed, 2008-04-02 at 15:55 -0700, Nishanth Aravamudan wrote:
+> On 02.04.2008 [17:04:48 +0900], Paul Mundt wrote:
+> > On Tue, Apr 01, 2008 at 04:26:14PM -0700, Nish Aravamudan wrote:
+> > Sorting out the mess noted by Adrian is pretty trivial with a
+> > HAVE_HUGETLB_PAGE. How about this?
+> 
+> I'm confused, isn't the following simpler fix equivalent?
+> 
+> Fix sh3 build with HUGETLBFS=y. Only SH4 and SH5 actually support
+> HUGETLB_PAGE (which HUGETLBFS depends on).
+> 
+> Signed-off-by: Nishanth Aravamudan <nacc@us.ibm.com>
+> 
+> diff --git a/fs/Kconfig b/fs/Kconfig
+> index d731282..1981f8e 100644
+> --- a/fs/Kconfig
+> +++ b/fs/Kconfig
+> @@ -978,7 +978,7 @@ config TMPFS_POSIX_ACL
+>  
+>  config HUGETLBFS
+>  	bool "HugeTLB file system support"
+> -	depends on X86 || IA64 || PPC64 || SPARC64 || (SUPERH && MMU) || BROKEN
+> +	depends on X86 || IA64 || PPC64 || SPARC64 || ((CPU_SH4 || CPU_SH5) && MMU) || BROKEN
 
-On Wed, Mar 19, 2008 at 6:36 PM, Sabuj Pattanayek <sabujp@gmail.com> wrote:
-> Hi,
->  >  >  Does the exception happen every time?
->
+Yeah, that's equivalent.  But, you have to draw the line at some point
+on how complex that "depends on" is going to get.  I think you each have
+unique pain tolerances. :)
 
-After going through lots of hardware (HBAs, motherboards, PSUs) it was
-determined that there was a problem with the PCI-X riser in this
-particular system. Sorry about the false alarm but this one was
-difficult to track down.
+Personally, I kinda prefer to break it out per-arch, because that SUPERH
+logic is getting a bit screwy.
 
-Thanks,
-Sabuj
+You could also do something like this:
+
+>  config HUGETLBFS
+>  	bool "HugeTLB file system support"
+> -	depends on X86 || IA64 || PPC64 || SPARC64 || (SUPERH && MMU) || BROKEN
+> +	depends on X86 || IA64 || PPC64 || SPARC64 || SUPERH_HUGETLBFS || BROKEN
+
+And then:
+
+config SUPERH_HUGETLBFS
+	def_bool y
+	depends on (CPU_SH4 || CPU_SH5) && MMU
+
+on the arch-specific side.  
+
+-- Dave
+
