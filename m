@@ -1,66 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757385AbYDCEY2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761238AbYDCEYu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757385AbYDCEY2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Apr 2008 00:24:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751450AbYDCEYR
+	id S1761238AbYDCEYu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Apr 2008 00:24:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751450AbYDCEYj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Thu, 3 Apr 2008 00:24:39 -0400
+Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:46063 "EHLO
+	pd3mo1so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751467AbYDCEYR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 3 Apr 2008 00:24:17 -0400
-Received: from ozlabs.org ([203.10.76.45]:49837 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750960AbYDCEYQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Apr 2008 00:24:16 -0400
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18420.22563.895489.490165@cargo.ozlabs.ibm.com>
-Date: Thu, 3 Apr 2008 15:08:03 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.25-rc8
-In-Reply-To: <alpine.LFD.1.00.0804020748100.14670@woody.linux-foundation.org>
-References: <alpine.LFD.1.00.0804011257310.14670@woody.linux-foundation.org>
-	<18418.44094.156352.405647@cargo.ozlabs.ibm.com>
-	<alpine.LFD.1.00.0804020748100.14670@woody.linux-foundation.org>
-X-Mailer: VM 7.19 under Emacs 21.4.1
+Date: Wed, 02 Apr 2008 22:21:13 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: Slow tape drive timeout
+In-reply-to: <fa.of3hIrxfNefAS08Tzqfm1dI0BOo@ifi.uio.no>
+To: Kai Makisara <Kai.Makisara@kolumbus.fi>
+Cc: Carlo Nyto <carlonyto@gmail.com>, linux-kernel@vger.kernel.org
+Message-id: <47F45B39.7080305@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7bit
+References: <fa.iY7vJs54MoScDgyQ4PUWZsO+3Jw@ifi.uio.no>
+ <fa.of3hIrxfNefAS08Tzqfm1dI0BOo@ifi.uio.no>
+User-Agent: Thunderbird 2.0.0.12 (Windows/20080213)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds writes:
-
-> Well, that part isn't the one that I think is bothersome - I just wonder 
-> if the whole "defconfig" mess is worth keeping with the kernel at _all_.
+Kai Makisara wrote:
+> On Tue, 1 Apr 2008, Carlo Nyto wrote:
 > 
-> It also causes tons of noise whenever I happen to do something like "git 
-> grep CONFIG_XYZZY" to see where some config variable is used etc.
+>> I am experiencing a two minute timeout open()ing a tape device when
+>> there is no tape in the drive.
+>>
+>> open() with O_NONBLOCK succeeds immediately, however.
+>>
+> This is how open() is supposed to work according to standards (e.g., SUS) 
+> if O_NONBLOCK is supported. (Well, actually open() should wait 
+> indefinitely but the non-linux systems I tested had a timeout.) The linux 
+> st driver was changed to comply with standards at 2.5.3. I.e., the 2.4 
+> kernels did return immediately but the 2.6 kernels have always waited.
 > 
-> So I was more wondering whether maybe there could be better ways of doing 
-> that whole thing. 
+>> The problem is that I am trying to set up Legato on a system that has
+>> multiple tape drives. For certain common operations, Legato tries to
+>> open() each tape drive multiple times. On a system with multiple tape
+>> drives, this adds up to a significant amount of time wasted due to
+>> this timeout.
+>>
+> You are not the only person who has noticed this. At work we had to 
+> install a distribution using 2.4 kernel to our backup server in order to 
+> use Legato ;-(
+> 
+> But this is a Legato problem, not a kernel problem.
+> 
+>> Solaris does not have this problem, and Legato support advises that
+>> they are at the mercy of the operating system.
+>>
+> Solaris does return EIO. Either it does not support O_NONBLOCK or it is 
+> not compliant with SUS.
+> 
+> Legato would not be so much "at the mercy of the operating system" if they 
+> would write their software to work according to standards, not according 
+> to some operating system.
 
-Having the defconfigs seems to be useful for the embedded folks,
-judging by the number of defconfigs they have.  They generally have a
-defconfig for each reference board.
-
-Those defconfigs would be much smaller and change much less often if
-they could be expressed as a delta from some other defconfig.  So we'd
-end up with a small number of base defconfigs plus a set of board
-defconfigs that would say effectively "use the options from that other
-defconfig, plus turn this on and that off".
-
-On the whole, I think defconfigs are useful because we have so many
-configuration options, and the defaults and help texts for many of the
-options are not always helpful.
-
-We could possibly do without defconfigs if we put effort into making
-sure that all the "depends" and "default" values in all the Kconfig
-files are sensible.  Ideally, a user could select something like
-"32-bit powermac support" and take the defaults for everything else,
-and get something sensible for a 32-bit powermac.  We're not at that
-point, and I think it would take considerable effort to get there.
-
-I would like to see something better than what we have at the moment
-(whether one of the two ideas above, or something else) because I find
-maintaining the defconfigs a bit of a pain myself.
-
-Paul.
+Why is accessing the tape drive with no tape in it causing a timeout in 
+the first place? I should think that would fail immediately with some 
+"medium not present" error from the drive. Unless the drive has no 
+mechanism to detect it, but that seems really retarded..
