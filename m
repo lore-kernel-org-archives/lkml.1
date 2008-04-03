@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763806AbYDCTlm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763941AbYDCTl5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763806AbYDCTlm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Apr 2008 15:41:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761213AbYDCTdZ
+	id S1763941AbYDCTl5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Apr 2008 15:41:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760898AbYDCTd0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Apr 2008 15:33:25 -0400
-Received: from bzq-179-150-194.static.bezeqint.net ([212.179.150.194]:53020
+	Thu, 3 Apr 2008 15:33:26 -0400
+Received: from bzq-179-150-194.static.bezeqint.net ([212.179.150.194]:39114
 	"EHLO il.qumranet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760830AbYDCTdB (ORCPT
+	with ESMTP id S1756705AbYDCTdA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Apr 2008 15:33:01 -0400
+	Thu, 3 Apr 2008 15:33:00 -0400
 From: Avi Kivity <avi@qumranet.com>
 To: kvm-devel@lists.sourceforge.net
 Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 31/35] KVM: MMU: Introduce and use spte_to_page()
-Date: Thu,  3 Apr 2008 22:32:46 +0300
-Message-Id: <1207251170-5013-32-git-send-email-avi@qumranet.com>
+Subject: [PATCH 28/35] KVM: MMU: Set the accessed bit on non-speculative shadow ptes
+Date: Thu,  3 Apr 2008 22:32:43 +0300
+Message-Id: <1207251170-5013-29-git-send-email-avi@qumranet.com>
 X-Mailer: git-send-email 1.5.4.5
 In-Reply-To: <1207251170-5013-1-git-send-email-avi@qumranet.com>
 References: <1207251170-5013-1-git-send-email-avi@qumranet.com>
@@ -23,70 +23,77 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Encapsulate the pte mask'n'shift in a function.
+If we populate a shadow pte due to a fault (and not speculatively due to a
+pte write) then we can set the accessed bit on it, as we know it will be
+set immediately on the next guest instruction.  This saves a read-modify-write
+operation.
 
 Signed-off-by: Avi Kivity <avi@qumranet.com>
 ---
- arch/x86/kvm/mmu.c |   17 ++++++++++++-----
- 1 files changed, 12 insertions(+), 5 deletions(-)
+ arch/x86/kvm/mmu.c         |    8 +++++---
+ arch/x86/kvm/paging_tmpl.h |    4 ++--
+ 2 files changed, 7 insertions(+), 5 deletions(-)
 
 diff --git a/arch/x86/kvm/mmu.c b/arch/x86/kvm/mmu.c
-index dd4b95b..6fc3421 100644
+index 072e942..a5872b3 100644
 --- a/arch/x86/kvm/mmu.c
 +++ b/arch/x86/kvm/mmu.c
-@@ -240,6 +240,13 @@ static int is_rmap_pte(u64 pte)
- 	return is_shadow_present_pte(pte);
- }
- 
-+static struct page *spte_to_page(u64 pte)
-+{
-+	hfn_t hfn = (pte & PT64_BASE_ADDR_MASK) >> PAGE_SHIFT;
-+
-+	return pfn_to_page(hfn);
-+}
-+
- static gfn_t pse36_gfn_delta(u32 gpte)
+@@ -1020,7 +1020,7 @@ static void mmu_set_spte(struct kvm_vcpu *vcpu, u64 *shadow_pte,
+ 			 unsigned pt_access, unsigned pte_access,
+ 			 int user_fault, int write_fault, int dirty,
+ 			 int *ptwrite, int largepage, gfn_t gfn,
+-			 struct page *page)
++			 struct page *page, bool speculative)
  {
- 	int shift = 32 - PT32_DIR_PSE36_SHIFT - PAGE_SHIFT;
-@@ -541,7 +548,7 @@ static void rmap_remove(struct kvm *kvm, u64 *spte)
- 	if (!is_rmap_pte(*spte))
- 		return;
- 	sp = page_header(__pa(spte));
--	page = pfn_to_page((*spte & PT64_BASE_ADDR_MASK) >> PAGE_SHIFT);
-+	page = spte_to_page(*spte);
- 	mark_page_accessed(page);
- 	if (is_writeble_pte(*spte))
- 		kvm_release_page_dirty(page);
-@@ -630,7 +637,7 @@ static void rmap_write_protect(struct kvm *kvm, u64 gfn)
- 		struct page *page;
- 
- 		spte = rmap_next(kvm, rmapp, NULL);
--		page = pfn_to_page((*spte & PT64_BASE_ADDR_MASK) >> PAGE_SHIFT);
-+		page = spte_to_page(*spte);
- 		SetPageDirty(page);
- 	}
- 
-@@ -1033,7 +1040,6 @@ static void mmu_set_spte(struct kvm_vcpu *vcpu, u64 *shadow_pte,
  	u64 spte;
  	int was_rmapped = 0;
- 	int was_writeble = is_writeble_pte(*shadow_pte);
--	hfn_t host_pfn = (*shadow_pte & PT64_BASE_ADDR_MASK) >> PAGE_SHIFT;
+@@ -1061,6 +1061,8 @@ static void mmu_set_spte(struct kvm_vcpu *vcpu, u64 *shadow_pte,
+ 	 * demand paging).
+ 	 */
+ 	spte = PT_PRESENT_MASK | PT_DIRTY_MASK;
++	if (!speculative)
++		pte_access |= PT_ACCESSED_MASK;
+ 	if (!dirty)
+ 		pte_access &= ~ACC_WRITE_MASK;
+ 	if (!(pte_access & ACC_EXEC_MASK))
+@@ -1148,13 +1150,13 @@ static int __direct_map(struct kvm_vcpu *vcpu, gpa_t v, int write,
  
- 	pgprintk("%s: spte %llx access %x write_fault %d"
- 		 " user_fault %d gfn %lx\n",
-@@ -1051,9 +1057,10 @@ static void mmu_set_spte(struct kvm_vcpu *vcpu, u64 *shadow_pte,
+ 		if (level == 1) {
+ 			mmu_set_spte(vcpu, &table[index], ACC_ALL, ACC_ALL,
+-				     0, write, 1, &pt_write, 0, gfn, page);
++				     0, write, 1, &pt_write, 0, gfn, page, false);
+ 			return pt_write;
+ 		}
  
- 			child = page_header(pte & PT64_BASE_ADDR_MASK);
- 			mmu_page_remove_parent_pte(child, shadow_pte);
--		} else if (host_pfn != page_to_pfn(page)) {
-+		} else if (page != spte_to_page(*shadow_pte)) {
- 			pgprintk("hfn old %lx new %lx\n",
--				 host_pfn, page_to_pfn(page));
-+				 page_to_pfn(spte_to_page(*shadow_pte)),
-+				 page_to_pfn(page));
- 			rmap_remove(vcpu->kvm, shadow_pte);
- 		} else {
- 			if (largepage)
+ 		if (largepage && level == 2) {
+ 			mmu_set_spte(vcpu, &table[index], ACC_ALL, ACC_ALL,
+-				    0, write, 1, &pt_write, 1, gfn, page);
++				     0, write, 1, &pt_write, 1, gfn, page, false);
+ 			return pt_write;
+ 		}
+ 
+diff --git a/arch/x86/kvm/paging_tmpl.h b/arch/x86/kvm/paging_tmpl.h
+index 57abbd0..e9ae5db 100644
+--- a/arch/x86/kvm/paging_tmpl.h
++++ b/arch/x86/kvm/paging_tmpl.h
+@@ -266,7 +266,7 @@ static void FNAME(update_pte)(struct kvm_vcpu *vcpu, struct kvm_mmu_page *page,
+ 	get_page(npage);
+ 	mmu_set_spte(vcpu, spte, page->role.access, pte_access, 0, 0,
+ 		     gpte & PT_DIRTY_MASK, NULL, largepage, gpte_to_gfn(gpte),
+-		     npage);
++		     npage, true);
+ }
+ 
+ /*
+@@ -349,7 +349,7 @@ static u64 *FNAME(fetch)(struct kvm_vcpu *vcpu, gva_t addr,
+ 	mmu_set_spte(vcpu, shadow_ent, access, walker->pte_access & access,
+ 		     user_fault, write_fault,
+ 		     walker->ptes[walker->level-1] & PT_DIRTY_MASK,
+-		     ptwrite, largepage, walker->gfn, page);
++		     ptwrite, largepage, walker->gfn, page, false);
+ 
+ 	return shadow_ent;
+ }
 -- 
 1.5.4.5
 
