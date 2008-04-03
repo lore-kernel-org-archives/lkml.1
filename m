@@ -1,69 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760608AbYDCBqj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760705AbYDCBsj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760608AbYDCBqj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 21:46:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758021AbYDCBqb
+	id S1760705AbYDCBsj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 21:48:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758112AbYDCBsb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 21:46:31 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:57194 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757977AbYDCBqa (ORCPT
+	Wed, 2 Apr 2008 21:48:31 -0400
+Received: from wx-out-0506.google.com ([66.249.82.238]:18183 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757462AbYDCBsa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 21:46:30 -0400
-Date: Thu, 3 Apr 2008 02:46:22 +0100
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Erez Zadok <ezk@cs.sunysb.edu>
-Cc: Trond Myklebust <trond.myklebust@fys.uio.no>,
-       Miklos Szeredi <miklos@szeredi.hu>, akpm@linux-foundation.org,
-       dave@linux.vnet.ibm.com, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch 01/10] vfs: add path_create() and path_mknod()
-Message-ID: <20080403014622.GW9785@ZenIV.linux.org.uk>
-References: <20080403010016.GU9785@ZenIV.linux.org.uk> <200804030137.m331b1O8004886@agora.fsl.cs.sunysb.edu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200804030137.m331b1O8004886@agora.fsl.cs.sunysb.edu>
-User-Agent: Mutt/1.4.2.3i
+	Wed, 2 Apr 2008 21:48:30 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=fWAwTqYKBJBd3qpfby5q5y+Vi501tFowdsSlD1ZwzmprWZVg3UxbcRNDm2VtqVEdLgys8l+tctq4/CiC880Uev9fxkYtZXU/ej3xDrzta1kvtLqxaX9slzsofU7cwT2jVilcXndJHZnqe3MR3wW76sJMN2Vm2AwUNbX6eEiyyWM=
+Message-ID: <47F43766.2070207@gmail.com>
+Date: Thu, 03 Apr 2008 10:48:22 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+MIME-Version: 1.0
+To: Volker Armin Hemmann <volker.armin.hemmann@tu-clausthal.de>
+CC: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
+       Peer Chen <pchen@nvidia.com>, Kuan Luo <kluo@nvidia.com>
+Subject: Re: 2.6.24.X: SATA/AHCI related boot delay. - not with 2.6.24.3
+References: <200803091922.33083.volker.armin.hemmann@tu-clausthal.de> <200803191455.14380.volker.armin.hemmann@tu-clausthal.de> <47F30438.40506@gmail.com> <200804021909.41609.volker.armin.hemmann@tu-clausthal.de>
+In-Reply-To: <200804021909.41609.volker.armin.hemmann@tu-clausthal.de>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 02, 2008 at 09:37:01PM -0400, Erez Zadok wrote:
-> Since you've hinted of major vfs changes post-25, here's my take.
+Hello, Volker.
+
+Volker Armin Hemmann wrote:
+> On Mittwoch, 2. April 2008, Tejun Heo wrote:
+>> Volker Armin Hemmann wrote:
+>>> On Mittwoch, 19. März 2008, Tejun Heo wrote:
+>>>> Volker Armin Hemmann wrote:
+>>>>> On Mittwoch, 19. März 2008, Tejun Heo wrote:
+>>>>>> x UDMA/133 abar m8192@0xf9dfc000 port 0xf9dfc200
+>>>>>>
+>>>>>>> irq 315
+>>>>>>> [   38.125479] ata4: SATA max UDMA/133 abar m8192@0xf9dfc000 port
+>>>>>>> 0xf9dfc280 irq 315
+>>>>>>> [   38.597035] ata1: SATA link up 3.0 Gbps (SStatus 123 SControl 300)
+>>>>>>> [   38.597732] ata1.00: ATA-7: WDC WD1600JS-00MHB1, 10.02E01, max
+>>>>>>> UDMA/133 [   38.597775] ata1.00: 312581808 sectors, multi 16: LBA48
+>>>>>>> [   38.598405] ata1.00: configured for UDMA/133
+>>>>>>> [   39.069342] ata2: SATA link up 3.0 Gbps (SStatus 123 SControl 300)
+>>>>>>> [   39.084225] ata2.00: ATA-8: SAMSUNG HD501LJ, CR100-12, max UDMA7
+>>>>>>> [   39.084264] ata2.00: 976773168 sectors, multi 16: LBA48 NCQ (depth
+>>>>>>> 0/32) [   39.086268] ata2.00: configured for UDMA/133
+>>>>>> So, just to confirm.  With the updated patch, you don't see any
+>>>>>> problem, right?
+>>>>> Correct. With the updated patch I don't see problems in 'non-raid'
+>>>>> mode. AHCI mode still has problems without nosmi. But that is an
+>>>>> entirely different problem, right?
+>>>> Yeap, can you please post the result of "lspci -nn"?
+>>> with AHCI+nosmi, 2.6.24.3:
+>>> 00:0a.0 SATA controller [0106]: nVidia Corporation MCP65 AHCI Controller
+>>> [10de:044d] (rev a1)
+>> Sorry about the long delay.  Can you please test the attached patch in
+>> both ahci and non-ahci modes w/o pci=nomsi and post resulting boot logs?
 > 
-> Right now I (and to a similar extent ecryptfs too) needs to keep track of
-> vfsmounts for various reasons:
+> patch -p1 < /home/energyman/mcp65-ahci-debug.patch
+> patching file drivers/ata/libata-core.c
+> Hunk #1 succeeded at 7136 (offset 2 lines).
+> patching file drivers/ata/libata-eh.c
+> Hunk #1 succeeded at 2083 (offset -107 lines).
+> patching file drivers/pci/quirks.c
+> Hunk #1 succeeded at 1733 with fuzz 1 (offset -122 lines).
 > 
-> - to grab a reference so the lower filesystems/mounts won't disappear on me
+> saved config, removed linux-2.6.24.3, unpacked 2.6.24.3 from tarball, reiser4 
+> and your patch, make oldconfig, make menuconfig, make all modules_install 
+> install.
+> 
+> dmesgs are below. 
+[--snip--]
+> In short, no changes at all.
 
-Umm...  Strictly speaking that's not true; you can grab an active reference
-to superblock and then superblock will stay.  vfsmount is usually more
-convenient, but that's it.
+Thanks for confirming.
 
-> - to pass it to dentry_open (opening the lower file)
-> - some fs ops pass a vfsmount (umount_begin, show_options)
+Peer, Kuan.  Volker is reporting detection problems on MCP65 AHCI.
+The followings are what we've discovered till now.
 
-Thank Trond for the former, BTW ;-)  Both methods will be back to sanity;
-for umount_begin() the only obstacle is cifs mess, where we do unconditional
-(and bogus) work at each umount(2).  With that fixed, we'll be back to
-calling it only for forced umount and passing it only superblock.
-->show_options() can and should revert immediately after 2.6.25; thanks
-for pointing that one out.
+1. When the controller is put into non-raid mode in BIOS
 
-> - some fs ops or vfs helpers require a nameidata or struct path which embed
->   a vfsmount inside
+  * If softreset is used, either the softreset itself or IDENTIFY
+    following it times out once.  On retrial, it works fine.  It
+    doesn't matter whether the SRST is issued by itself or as
+    follow-up-srst after hardreset.  Using only hardreset works fine.
 
-*ONLY* ->follow_link().  Which has to, by definition...  The rest will be
-gone by .26.
+  * The controller doesn't indicate MSI capability and MSI isn't used
+    by default.
 
-> - sometimes it's ok to pass NULL for those things, sometimes it's not ok
+2. When the controller is put into ahci mode in BIOS
 
-See above.  This crap will be gone.  For ->follow_link() nobody is allowed
-to pass NULL as nameidata, period.
+  * SRST works fine.
 
-> In the longer run, is there a way that a stackable f/s could traverse the
-> namespace below it w/o knowing or caring how they are composed (assorted r-w
-> and r-o bind mounts and such)?
+  * The controller indicates MSI capability but MSI doesn't work
+    properly resulting in IRQ delivery failure.  Adding
+    intx_disable_bug quirk doesn't help.
 
-Eh?  Explain, please...
+I've performed similar test on MCP67 and everything worked fine on it.
+
+Both problems (SRST and MSI) can be worked around but I need more
+information to work around those.
+
+* Which chips are affected?  Are there proper fixes?
+
+* For the MSI problem, is it system wide problem or local to the ahci
+  controller?
+
+Thanks.
+
+-- 
+tejun
