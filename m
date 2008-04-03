@@ -1,133 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760689AbYDCAoc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760991AbYDCAou@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760689AbYDCAoc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 20:44:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757783AbYDCAoV
+	id S1760991AbYDCAou (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 20:44:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760667AbYDCAob
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 20:44:21 -0400
-Received: from rv-out-0910.google.com ([209.85.198.186]:18976 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757726AbYDCAoU (ORCPT
+	Wed, 2 Apr 2008 20:44:31 -0400
+Received: from an-out-0708.google.com ([209.85.132.240]:3915 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760487AbYDCAoa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 20:44:20 -0400
+	Wed, 2 Apr 2008 20:44:30 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=KkuvD5jMJ4+jz9x5RabIov6C6r6V38qqdid/HxSYL92uhvQ9EUQ6ltfLiqmvOsBdTLtCSjvd3m1sLiccSgVW8GERkfiM1QEIvnpu6mFFu0bH3L5G0ccQFw9fdhYB6xgUgF5mcudTOBH8kdm0FoBjhik7U2qCOaZrx74VPHtOkqA=
-Message-ID: <86802c440804021744m7c6e3d94vcb6af3ebcaa71b5b@mail.gmail.com>
-Date: Wed, 2 Apr 2008 17:44:19 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: [PATCH] mm: allocate usemap at first instead of mem_map in sparse_init
-Cc: "Yinghai Lu" <yhlu.kernel.send@gmail.com>, "Ingo Molnar" <mingo@elte.hu>,
-       "Badari Pulavarty" <pbadari@us.ibm.com>, michael@ellerman.id.au,
-       "Kamalesh Babulal" <kamalesh@linux.vnet.ibm.com>,
-       linuxppc-dev@ozlabs.org, "Balbir Singh" <balbir@linux.vnet.ibm.com>,
-       "kernel list" <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080402155247.5e746be7.akpm@linux-foundation.org>
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:references;
+        b=lfhO4moMnVgm9Q+ENCqLr7xTFUif0NiJEV+3iT4Vtr/M5PkVUCSBLRJ6PI5O25XmtsaZElF3+eyJag2IrVfqNK0nxDmzKXjzRZJxLKl9Gn625e0TIplTPwU7BH4xboaHWrr1y0x1JwdmMIjiommVsOSFlPDTmbimEGKFQU+iuxM=
+Message-ID: <dd18b0c30804021744m67fe4db4m8aed3897945baaa8@mail.gmail.com>
+Date: Thu, 3 Apr 2008 00:44:24 +0000
+From: "Justin Mattock" <justinmattock@gmail.com>
+To: "Tejun Heo" <htejun@gmail.com>
+Subject: Re: suspend
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org,
+       Alan <alan@lxorguk.ukuu.org.uk>, "Jeff Garzik" <jeff@garzik.org>,
+       "Pavel Machek" <pavel@ucw.cz>
+In-Reply-To: <47F42259.8030603@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200804021525.48799.yhlu.kernel@gmail.com>
-	 <20080402155247.5e746be7.akpm@linux-foundation.org>
+Content-Type: multipart/mixed; 
+	boundary="----=_Part_6979_33351618.1207183464442"
+References: <dd18b0c30804012331oc548416k113e492d7dc9c189@mail.gmail.com>
+	 <200804021419.06672.rjw@sisk.pl>
+	 <dd18b0c30804020853w50e0290cy8b0303e30f2bcfec@mail.gmail.com>
+	 <200804021939.46733.rjw@sisk.pl>
+	 <dd18b0c30804021218t700484faua57a46e237ea581f@mail.gmail.com>
+	 <47F42259.8030603@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 2, 2008 at 3:52 PM, Andrew Morton <akpm@linux-foundation.org> wrote:
->
-> On Wed, 2 Apr 2008 15:25:48 -0700 Yinghai Lu <yhlu.kernel.send@gmail.com> wrote:
->
->  > [PATCH] mm: allocate usemap at first instead of mem_map in sparse_init
->  >
->  > on powerpc,
->  >
->  > On Wed, Apr 2, 2008 at 12:22 PM, Badari Pulavarty <pbadari@us.ibm.com> wrote:
->  > >
->  > > On Wed, 2008-04-02 at 18:17 +1100, Michael Ellerman wrote:
->  > >  > On Wed, 2008-04-02 at 12:38 +0530, Kamalesh Babulal wrote:
->  > >  > > Andrew Morton wrote:
->  > >  > > > On Wed, 02 Apr 2008 11:55:36 +0530 Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
->  > >  > > >
->  > >  > > >> Hi Andrew,
->  > >  > > >>
->  > >  > > >> The 2.6.25-rc8-mm1 kernel panic's while bootup on the power machine(s).
->  > >  > > >>
->  > >  > > >> [    0.000000] ------------[ cut here ]------------
->  > >  > > >> [    0.000000] kernel BUG at arch/powerpc/mm/init_64.c:240!
->  > >  > > >> [    0.000000] Oops: Exception in kernel mode, sig: 5 [#1]
->  > >  > > >> [    0.000000] SMP NR_CPUS=32 NUMA PowerMac
->  > >  > > >> [    0.000000] Modules linked in:
->  > >  > > >> [    0.000000] NIP: c0000000003d1dcc LR: c0000000003d1dc4 CTR: c00000000002b6ac
->  > >  > > >> [    0.000000] REGS: c00000000049b960 TRAP: 0700   Not tainted  (2.6.25-rc8-mm1-autokern1)
->  > >  > > >> [    0.000000] MSR: 9000000000021032 <ME,IR,DR>  CR: 44000088  XER: 20000000
->  > >  > > >> [    0.000000] TASK = c0000000003f9c90[0] 'swapper' THREAD: c000000000498000 CPU: 0
->  > >  > > >> [    0.000000] GPR00: c0000000003d1dc4 c00000000049bbe0 c0000000004989d0 0000000000000001
->  > >  > > >> [    0.000000] GPR04: d59aca40f0000000 000000000b000000 0000000000000010 0000000000000000
->  > >  > > >> [    0.000000] GPR08: 0000000000000004 0000000000000001 c00000027e520800 c0000000004bf0f0
->  > >  > > >> [    0.000000] GPR12: c0000000004bf020 c0000000003fa900 0000000000000000 0000000000000000
->  > >  > > >> [    0.000000] GPR16: 0000000000000000 0000000000000000 0000000000000000 0000000000000000
->  > >  > > >> [    0.000000] GPR20: 0000000000000000 0000000000000000 0000000000000000 4000000001400000
->  > >  > > >> [    0.000000] GPR24: 00000000017d64b0 c0000000003d6250 0000000000000000 c000000000504000
->  > >  > > >> [    0.000000] GPR28: 0000000000000000 cf000000001f8000 0000000001000000 cf00000000000000
->  > >  > > >> [    0.000000] NIP [c0000000003d1dcc] .vmemmap_populate+0xb8/0xf4
->  > >  > > >> [    0.000000] LR [c0000000003d1dc4] .vmemmap_populate+0xb0/0xf4
->  > >  > > >> [    0.000000] Call Trace:
->  > >  > > >> [    0.000000] [c00000000049bbe0] [c0000000003d1dc4] .vmemmap_populate+0xb0/0xf4 (unreliable)
->  > >  > > >> [    0.000000] [c00000000049bc70] [c0000000003d2ee8] .sparse_mem_map_populate+0x38/0x60
->  > >  > > >> [    0.000000] [c00000000049bd00] [c0000000003c242c] .sparse_early_mem_map_alloc+0x54/0x94
->  > >  > > >> [    0.000000] [c00000000049bd90] [c0000000003c250c] .sparse_init+0xa0/0x20c
->  > >  > > >> [    0.000000] [c00000000049be50] [c0000000003ab7d0] .setup_arch+0x1ac/0x218
->  > >  > > >> [    0.000000] [c00000000049bee0] [c0000000003a36ac] .start_kernel+0xe0/0x3fc
->  > >  > > >> [    0.000000] [c00000000049bf90] [c000000000008594] .start_here_common+0x54/0xc0
->  > >  > > >> [    0.000000] Instruction dump:
->  > >  > > >> [    0.000000] 7fe3fb78 7ca02a14 4082000c 3860fff4 4800003c e92289c8 e96289c0 e9090002
->  > >  > > >> [    0.000000] e8eb0002 4bc575cd 60000000 78630fe0 <0b030000> 7ffff214 7fbfe840 7fe3fb78
->  > >  > > >> [    0.000000] ---[ end trace 31fd0ba7d8756001 ]---
->  > >  > > >> [    0.000000] Kernel panic - not syncing: Attempted to kill the idle task!
->  > >
->  > >  mm-make-mem_map-allocation-continuous.patch
->  > >  and its friends in -mm.
->  > >
->  > >  You have to call sparse_init_one_section() on each pmap and usemap
->  > >  as we allocate - since valid_section() depends on it (which is needed
->  > >  by vmemmap_populate() to check if the section is populated or not).
->  > >  On ppc, we need to call htab_bolted_mapping() on each section and
->  > >  we need to skip existing sections.
->  > >
->  > >  These patches tried to group all allocations together and then later
->  > >  calls sparse_init_one_section() - which is not good :(
->  >
->  > so try to allocate usemap at first altogether.
->
->  I have to turn all the above crud into a proper changelog.  I'd prefer that
->  you do it.
->
->  Unless this patch should be folded into another one, in which case it
->  doesn't matter.
->
->
->  > Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
->  >
->  > diff --git a/mm/sparse.c b/mm/sparse.c
->  > index d3cb085..782ebe5 100644
->  > --- a/mm/sparse.c
->  > +++ b/mm/sparse.c
->
->  We shouldn't merge this patch on its own because then that will leave a
->  non-bisectable region in the powerpc history.
->
->  So which patch is this patch fixing?  Lexically it applies to
->  mm-allocate-section_map-for-sparse_init.patch (and its updates).  But is
->  that where it logically lies?
+------=_Part_6979_33351618.1207183464442
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-yes. we should fold
+Hello; attached is kern.log as asked and lspci -nn.
+I've noticed some avc's in there. makes me wonder if this is why
+wpa_supplicant isnt working after a wakeup
+regards;
+                Justin P. Mattock
 
-mm-make-mem_map-allocation-continuous.patch
-mm-allocate-section_map-for-sparse_init.patch
-and this one
+On Thu, Apr 3, 2008 at 12:18 AM, Tejun Heo <htejun@gmail.com> wrote:
+> Hello,
+>
+>  Justin Mattock wrote:
+>
+> >
+> > >  > [ 1233.811794] sd 2:0:1:0: [sda] Starting disk
+> > >  > [ 1234.013599] ata1.00: ACPI cmd ef/03:0c:00:00:00:a0 filtered out
+> > >  > [ 1234.013601] ata1.00: ACPI cmd ef/03:44:00:00:00:a0 filtered out
+> > >  > [ 1234.180232] ata1.00: configured for UDMA/66
+> > >  > [ 1222.732011] ata3.01: NODEV after polling detection
+> > >  > [ 1222.732016] ata3.01: revalidation failed (errno=-2)
+> > >
+> >
+>
+>  I presume this is ata_piix, right?  What's hanging off of ata3.01?  An
+> optical drive?
+>
+>  What happened is that, after resuming, libata reseted the channel and
+> issued IDENTIFY[_PACKET] to make sure the device was still there.  The
+> device violated the state machine transition in the same way as when there's
+> no device attached.  libata paused for a while and retries and the device
+> responded correctly at the retry.  Things like this can happen.  The problem
+> is that libata resume is currently synchronous and retries like this hold
+> the machine back from reaching operational status even when there's no
+> reason for resume retrial on optical drive to delay the rest of resume
+> process.
+>
+>  Can you please post full kernel log and the result of 'lspci -nn'?
+>
+>  --
+>  tejun
+>
 
-to big one (not big really).
 
-YH
+
+-- 
+Justin P. Mattock
+
+------=_Part_6979_33351618.1207183464442
+Content-Type: application/octet-stream; name=lspci
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_fekluuq31
+Content-Disposition: attachment; filename=lspci
+
+MDA6MDAuMCBIb3N0IGJyaWRnZSBbMDYwMF06IEludGVsIENvcnBvcmF0aW9uIE1vYmlsZSA5NDVH
+TS9QTS9HTVMsIDk0My85NDBHTUwgYW5kIDk0NUdUIEV4cHJlc3MgTWVtb3J5IENvbnRyb2xsZXIg
+SHViIFs4MDg2OjI3YTBdIChyZXYgMDMpCjAwOjAxLjAgUENJIGJyaWRnZSBbMDYwNF06IEludGVs
+IENvcnBvcmF0aW9uIE1vYmlsZSA5NDVHTS9QTS9HTVMsIDk0My85NDBHTUwgYW5kIDk0NUdUIEV4
+cHJlc3MgUENJIEV4cHJlc3MgUm9vdCBQb3J0IFs4MDg2OjI3YTFdIChyZXYgMDMpCjAwOjA3LjAg
+UGVyZm9ybWFuY2UgY291bnRlcnMgWzExMDFdOiBJbnRlbCBDb3Jwb3JhdGlvbiBVbmtub3duIGRl
+dmljZSBbODA4NjoyN2EzXSAocmV2IDAzKQowMDoxYi4wIEF1ZGlvIGRldmljZSBbMDQwM106IElu
+dGVsIENvcnBvcmF0aW9uIDgyODAxRyAoSUNINyBGYW1pbHkpIEhpZ2ggRGVmaW5pdGlvbiBBdWRp
+byBDb250cm9sbGVyIFs4MDg2OjI3ZDhdIChyZXYgMDIpCjAwOjFjLjAgUENJIGJyaWRnZSBbMDYw
+NF06IEludGVsIENvcnBvcmF0aW9uIDgyODAxRyAoSUNINyBGYW1pbHkpIFBDSSBFeHByZXNzIFBv
+cnQgMSBbODA4NjoyN2QwXSAocmV2IDAyKQowMDoxYy4xIFBDSSBicmlkZ2UgWzA2MDRdOiBJbnRl
+bCBDb3Jwb3JhdGlvbiA4MjgwMUcgKElDSDcgRmFtaWx5KSBQQ0kgRXhwcmVzcyBQb3J0IDIgWzgw
+ODY6MjdkMl0gKHJldiAwMikKMDA6MWMuMiBQQ0kgYnJpZGdlIFswNjA0XTogSW50ZWwgQ29ycG9y
+YXRpb24gODI4MDFHIChJQ0g3IEZhbWlseSkgUENJIEV4cHJlc3MgUG9ydCAzIFs4MDg2OjI3ZDRd
+IChyZXYgMDIpCjAwOjFkLjAgVVNCIENvbnRyb2xsZXIgWzBjMDNdOiBJbnRlbCBDb3Jwb3JhdGlv
+biA4MjgwMUcgKElDSDcgRmFtaWx5KSBVU0IgVUhDSSBDb250cm9sbGVyICMxIFs4MDg2OjI3Yzhd
+IChyZXYgMDIpCjAwOjFkLjEgVVNCIENvbnRyb2xsZXIgWzBjMDNdOiBJbnRlbCBDb3Jwb3JhdGlv
+biA4MjgwMUcgKElDSDcgRmFtaWx5KSBVU0IgVUhDSSBDb250cm9sbGVyICMyIFs4MDg2OjI3Yzld
+IChyZXYgMDIpCjAwOjFkLjIgVVNCIENvbnRyb2xsZXIgWzBjMDNdOiBJbnRlbCBDb3Jwb3JhdGlv
+biA4MjgwMUcgKElDSDcgRmFtaWx5KSBVU0IgVUhDSSBDb250cm9sbGVyICMzIFs4MDg2OjI3Y2Fd
+IChyZXYgMDIpCjAwOjFkLjMgVVNCIENvbnRyb2xsZXIgWzBjMDNdOiBJbnRlbCBDb3Jwb3JhdGlv
+biA4MjgwMUcgKElDSDcgRmFtaWx5KSBVU0IgVUhDSSBDb250cm9sbGVyICM0IFs4MDg2OjI3Y2Jd
+IChyZXYgMDIpCjAwOjFkLjcgVVNCIENvbnRyb2xsZXIgWzBjMDNdOiBJbnRlbCBDb3Jwb3JhdGlv
+biA4MjgwMUcgKElDSDcgRmFtaWx5KSBVU0IyIEVIQ0kgQ29udHJvbGxlciBbODA4NjoyN2NjXSAo
+cmV2IDAyKQowMDoxZS4wIFBDSSBicmlkZ2UgWzA2MDRdOiBJbnRlbCBDb3Jwb3JhdGlvbiA4Mjgw
+MSBNb2JpbGUgUENJIEJyaWRnZSBbODA4NjoyNDQ4XSAocmV2IGUyKQowMDoxZi4wIElTQSBicmlk
+Z2UgWzA2MDFdOiBJbnRlbCBDb3Jwb3JhdGlvbiA4MjgwMUdCTSAoSUNINy1NKSBMUEMgSW50ZXJm
+YWNlIEJyaWRnZSBbODA4NjoyN2I5XSAocmV2IDAyKQowMDoxZi4xIElERSBpbnRlcmZhY2UgWzAx
+MDFdOiBJbnRlbCBDb3Jwb3JhdGlvbiA4MjgwMUcgKElDSDcgRmFtaWx5KSBJREUgQ29udHJvbGxl
+ciBbODA4NjoyN2RmXSAocmV2IDAyKQowMDoxZi4yIElERSBpbnRlcmZhY2UgWzAxMDFdOiBJbnRl
+bCBDb3Jwb3JhdGlvbiA4MjgwMUdCTS9HSE0gKElDSDcgRmFtaWx5KSBTQVRBIElERSBDb250cm9s
+bGVyIFs4MDg2OjI3YzRdIChyZXYgMDIpCjAwOjFmLjMgU01CdXMgWzBjMDVdOiBJbnRlbCBDb3Jw
+b3JhdGlvbiA4MjgwMUcgKElDSDcgRmFtaWx5KSBTTUJ1cyBDb250cm9sbGVyIFs4MDg2OjI3ZGFd
+IChyZXYgMDIpCjAxOjAwLjAgVkdBIGNvbXBhdGlibGUgY29udHJvbGxlciBbMDMwMF06IEFUSSBU
+ZWNobm9sb2dpZXMgSW5jIE01NlAgW1JhZGVvbiBNb2JpbGl0eSBYMTYwMF0gWzEwMDI6NzFjNV0K
+MDI6MDAuMCBFdGhlcm5ldCBjb250cm9sbGVyIFswMjAwXTogTWFydmVsbCBUZWNobm9sb2d5IEdy
+b3VwIEx0ZC4gODhFODA1MyBQQ0ktRSBHaWdhYml0IEV0aGVybmV0IENvbnRyb2xsZXIgWzExYWI6
+NDM2Ml0gKHJldiAyMikKMDM6MDAuMCBOZXR3b3JrIGNvbnRyb2xsZXIgWzAyODBdOiBBdGhlcm9z
+IENvbW11bmljYXRpb25zLCBJbmMuIEFSNTQxOCA4MDIuMTFhYmduIFdpcmVsZXNzIFBDSSBFeHBy
+ZXNzIEFkYXB0ZXIgWzE2OGM6MDAyNF0gKHJldiAwMSkKMGM6MDMuMCBGaXJlV2lyZSAoSUVFRSAx
+Mzk0KSBbMGMwMF06IFRleGFzIEluc3RydW1lbnRzIFRTQjgyQUEyIElFRUUtMTM5NGIgTGluayBM
+YXllciBDb250cm9sbGVyIFsxMDRjOjgwMjVdIChyZXYgMDEpCg==
+------=_Part_6979_33351618.1207183464442--
