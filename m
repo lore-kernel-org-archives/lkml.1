@@ -1,86 +1,191 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759398AbYDCWiS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758665AbYDCWnm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759398AbYDCWiS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Apr 2008 18:38:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752005AbYDCWiF
+	id S1758665AbYDCWnm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Apr 2008 18:43:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751773AbYDCWne
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Apr 2008 18:38:05 -0400
-Received: from saeurebad.de ([85.214.36.134]:52364 "EHLO saeurebad.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754413AbYDCWiD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Apr 2008 18:38:03 -0400
-From: Johannes Weiner <hannes@saeurebad.de>
-To: Heiko Carstens <heiko.carstens@de.ibm.com>
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, mingo@elte.hu,
-       davem@davemloft.net, hskinnemoen@atmel.com, cooloney@kernel.org,
-       starvik@axis.com, dhowells@redhat.com, ysato@users.sourceforge.net,
-       takata@linux-m32r.org, geert@linux-m68k.org, ralf@linux-mips.org,
-       kyle@parisc-linux.org, paulus@samba.org, schwidefsky@de.ibm.com,
-       lethal@linux-sh.org, jdike@addtoit.com, miles@gnu.org, chris@zankel.net,
-       rmk@arm.linux.org.uk, tony.luck@intel.com
-Subject: Re: [RFC 17/22] s390: Use generic show_mem()
-References: <12071688283927-git-send-email-hannes@saeurebad.de>
-	<12071690203023-git-send-email-hannes@saeurebad.de>
-	<20080403075029.GB4125@osiris.boeblingen.de.ibm.com>
-	<87iqyzozyx.fsf@saeurebad.de>
-	<20080403175856.GA4131@osiris.boeblingen.de.ibm.com>
-Date: Fri, 04 Apr 2008 00:37:53 +0200
-In-Reply-To: <20080403175856.GA4131@osiris.boeblingen.de.ibm.com> (Heiko
-	Carstens's message of "Thu, 3 Apr 2008 19:58:56 +0200")
-Message-ID: <87lk3umuny.fsf@saeurebad.de>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+	Thu, 3 Apr 2008 18:43:34 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.158]:56914 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751402AbYDCWnd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Apr 2008 18:43:33 -0400
+Message-ID: <47F55D8D.3060700@ct.jp.nec.com>
+Date: Thu, 03 Apr 2008 15:43:25 -0700
+From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+User-Agent: Thunderbird 2.0.0.12 (Windows/20080213)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
+To: linux-kernel@vger.kernel.org
+Cc: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: [RESEND][RFC v3 PATCH] RTTIME watchdog timer proc interface
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
 
-Heiko Carstens <heiko.carstens@de.ibm.com> writes:
+Introduce new proc interface for RTTIME watchdog.
+It makes administrator able to set RTTIME watchdog to exisiting real-time
+applications without impact. It's useful we don't want to change software
+stack, but want to use RTTIME watchdog for that software.
 
-> On Thu, Apr 03, 2008 at 03:00:22PM +0200, Johannes Weiner wrote:
->> Hi,
->> 
->> Heiko Carstens <heiko.carstens@de.ibm.com> writes:
->> 
->> >> diff --git a/arch/s390/mm/init.c b/arch/s390/mm/init.c
->> >> index 8053245..27b94cb 100644
->> >> --- a/arch/s390/mm/init.c
->> >> +++ b/arch/s390/mm/init.c
->> >> @@ -42,42 +42,6 @@ DEFINE_PER_CPU(struct mmu_gather, mmu_gathers);
->> >>  pgd_t swapper_pg_dir[PTRS_PER_PGD] __attribute__((__aligned__(PAGE_SIZE)));
->> >>  char  empty_zero_page[PAGE_SIZE] __attribute__((__aligned__(PAGE_SIZE)));
->> >> 
->> >> -	printk("Free swap:       %6ldkB\n", nr_swap_pages << (PAGE_SHIFT - 10));
->> >> -	printk("%lu pages dirty\n", global_page_state(NR_FILE_DIRTY));
->> >> -	printk("%lu pages writeback\n", global_page_state(NR_WRITEBACK));
->> >> -	printk("%lu pages mapped\n", global_page_state(NR_FILE_MAPPED));
->> >> -	printk("%lu pages slab\n",
->> >> -	       global_page_state(NR_SLAB_RECLAIMABLE) +
->> >> -	       global_page_state(NR_SLAB_UNRECLAIMABLE));
->> >> -	printk("%lu pages pagetables\n", global_page_state(NR_PAGETABLE));
->> >
->> > These are all missing in the generic implementation.
->> 
->> These are all duplicates from show_free_areas().
->
-> In this case ignore my comment ;)
-> Btw. your patch regarding the removal of show_free_areas() from
-> s390's arch code will be merged during the next merge window.
+New proc files:
+ /proc/<pid>/rttime
+ /proc/<pid>/task/<tid>/rttime
+these files have same content.
 
-Okay.
+$ cat /proc/<pid>/rttime
+10000000 20000000
+It shows current RLIMIT_RTTIME values, and the unit is nsec.
+If the value is RLIM_INFINITY, it prints "unlimited".
 
-Do you mean the removal of
+$ echo "10000000" > /proc/<pid>/rttime
+It sets RTTIME current value to 10000000.
 
-	printk("Free swap:       %6ldkB\n", nr_swap_pages << (PAGE_SHIFT
-		- 10));
+$ echo "10000000 20000000" > /proc/<pid>/rttime
+It sets RTTIME current value to 10000000 and max value to 20000000.
 
-in show_mem()?  This was my last patch series about.
+$ echo "0 0" > /proc/<pid>/rttime
+It sets RTTIME values to unlimited.
 
-Can I add your Acked-by for _this_ series?
+Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+---
+ Update for 2.6.25-rc8
 
-Thanks,
+ fs/proc/base.c |  103 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 103 insertions(+), 0 deletions(-)
 
-	Hannes
+diff --git a/fs/proc/base.c b/fs/proc/base.c
+index 81d7d14..07cbbae 100644
+--- a/fs/proc/base.c
++++ b/fs/proc/base.c
+@@ -376,6 +376,107 @@ static const struct file_operations proc_lstats_operations = {
+ 
+ #endif
+ 
++static int rttime_show_proc(struct seq_file *m, void *v)
++{
++	struct inode *inode = m->private;
++	struct task_struct *task = get_proc_task(inode);
++	struct rlimit *rt;
++
++	if (!task)
++		return -ESRCH;
++
++	rt = &task->signal->rlim[RLIMIT_RTTIME];
++
++	if (rt->rlim_cur == RLIM_INFINITY)
++		seq_printf(m, "unlimited ");
++	else
++		seq_printf(m, "%lu ", rt->rlim_cur);
++
++	if (rt->rlim_max == RLIM_INFINITY)
++		seq_printf(m, "unlimited\n");
++	else
++		seq_printf(m, "%lu\n", rt->rlim_max);
++
++	put_task_struct(task);
++
++	return 0;
++}
++
++static int rttime_open(struct inode *inode, struct file *file)
++{
++	return single_open(file, rttime_show_proc, inode);
++}
++
++static ssize_t rttime_do_write(struct task_struct *task,
++			       const char __user *buf,
++			       size_t count)
++{
++	char buffer[PROC_NUMBUF], *end;
++	struct rlimit new_rlim, *old_rlim;
++	size_t bufsz;
++	int ret;
++
++	old_rlim = task->signal->rlim + RLIMIT_RTTIME;
++	new_rlim = *old_rlim;
++	memset(buffer, 0, sizeof(buffer));
++	bufsz = min(count, sizeof(buffer) - 1);
++	if (copy_from_user(buffer, buf, bufsz))
++		return -EFAULT;
++	new_rlim.rlim_cur = simple_strtoul(buffer, &end, 0);
++	if (end - buffer == 0)
++		return -EINVAL;
++	/* 0 means unlimited */
++	if (new_rlim.rlim_cur == 0)
++		new_rlim.rlim_cur = RLIM_INFINITY;
++	if (*end == ' ') {
++		++end;
++		buf += end - buffer;
++		memset(buffer, 0, sizeof(buffer));
++		bufsz = min(count - (end - buffer), sizeof(buffer) - 1);
++		if (copy_from_user(buffer, buf, bufsz))
++			return -EFAULT;
++		ret = strict_strtoul(buffer, 0, &new_rlim.rlim_max);
++		if (ret)
++			return ret;
++		/* 0 means unlimited */
++		if (new_rlim.rlim_max == 0)
++			new_rlim.rlim_max = RLIM_INFINITY;
++	}
++	if (new_rlim.rlim_cur > new_rlim.rlim_max)
++		return -EINVAL;
++	if ((new_rlim.rlim_max > old_rlim->rlim_max) &&
++	    !__capable(task, CAP_SYS_RESOURCE))
++		return -EPERM;
++	task_lock(task->group_leader);
++	*old_rlim = new_rlim;
++	task_unlock(task->group_leader);
++
++	return count;
++}
++
++static ssize_t rttime_write(struct file *file,
++			    const char __user *buf,
++			    size_t count,
++			    loff_t *ppos)
++{
++	struct task_struct *task = get_proc_task(file->f_dentry->d_inode);
++	int ret;
++
++	if (!task)
++		return -ESRCH;
++	ret = rttime_do_write(task, buf, count);
++	put_task_struct(task);
++	return ret;
++}
++
++static const struct file_operations proc_rttime_operations = {
++	.open		= rttime_open,
++	.read		= seq_read,
++	.write		= rttime_write,
++	.llseek		= seq_lseek,
++	.release	= single_release,
++};
++
+ /* The badness from the OOM killer */
+ unsigned long badness(struct task_struct *p, unsigned long uptime);
+ static int proc_oom_score(struct task_struct *task, char *buffer)
+@@ -2312,6 +2413,7 @@ static const struct pid_entry tgid_base_stuff[] = {
+ 	LNK("exe",        exe),
+ 	REG("mounts",     S_IRUGO, mounts),
+ 	REG("mountstats", S_IRUSR, mountstats),
++	REG("rttime",     S_IRUSR|S_IWUSR, rttime),
+ #ifdef CONFIG_PROC_PAGE_MONITOR
+ 	REG("clear_refs", S_IWUSR, clear_refs),
+ 	REG("smaps",      S_IRUGO, smaps),
+@@ -2643,6 +2745,7 @@ static const struct pid_entry tid_base_stuff[] = {
+ 	LNK("root",      root),
+ 	LNK("exe",       exe),
+ 	REG("mounts",    S_IRUGO, mounts),
++	REG("rttime",    S_IRUSR|S_IWUSR, rttime),
+ #ifdef CONFIG_PROC_PAGE_MONITOR
+ 	REG("clear_refs", S_IWUSR, clear_refs),
+ 	REG("smaps",     S_IRUGO, smaps),
+-- 
+1.5.4.1
+
