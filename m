@@ -1,56 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759588AbYDCRrU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756960AbYDCRrd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759588AbYDCRrU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Apr 2008 13:47:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753466AbYDCRrL
+	id S1756960AbYDCRrd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Apr 2008 13:47:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759552AbYDCRrU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Apr 2008 13:47:11 -0400
-Received: from hpsmtp-eml11.kpnxchange.com ([213.75.38.111]:50769 "EHLO
-	hpsmtp-eml11.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754655AbYDCRrK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Apr 2008 13:47:10 -0400
-From: Frans Pop <elendil@planet.nl>
-To: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
-Subject: Re: No IDE drivers loaded for Toshiba Satellite 320 CDS
-Date: Thu, 3 Apr 2008 19:47:06 +0200
-User-Agent: KMail/1.9.9
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-References: <200804021524.27222.elendil@planet.nl> <200804021820.04610.elendil@planet.nl> <20080402194938.GI24237@csclub.uwaterloo.ca>
-In-Reply-To: <20080402194938.GI24237@csclub.uwaterloo.ca>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200804031947.07674.elendil@planet.nl>
-X-OriginalArrivalTime: 03 Apr 2008 17:47:08.0407 (UTC) FILETIME=[BCC91070:01C895B2]
+	Thu, 3 Apr 2008 13:47:20 -0400
+Received: from main.gmane.org ([80.91.229.2]:35869 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759479AbYDCRrT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Apr 2008 13:47:19 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Frederik Himpe <fhimpe@telenet.be>
+Subject: Re: [REGRESSION] BCM4306 cannot associate with any version of b43
+ driver
+Date: Thu, 3 Apr 2008 17:47:02 +0000 (UTC)
+Message-ID: <pan.2008.04.03.17.47.01@telenet.be>
+References: <200804031115.52596.ace@staticwave.ca>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: 78-23-171-221.access.telenet.be
+User-Agent: Pan/0.132 (Waxed in Black)
+Cc: linux-wireless@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 02 April 2008, Lennart Sorensen wrote:
-> > Yes, that could be one way to implement it: load it and then check if
-> > that added any devices.
->
-> Well even if you see other disks doesn't mean you don't also have an old
-> IDE controller you want to use, so probably load it and see if it finds
-> any disks is the best bet after loading all the other probeable drivers
-> first.
+On Thu, 03 Apr 2008 11:15:52 -0400, Gabriel A. Devenyi wrote:
 
-I've decided (at least for now) to only do this f /sys/bus/isa is present.
-I added a check to see if there are additional devices in /sys/block after 
-loading ide-generic to decide whether or not to also include it in the 
-initrd for the installed system.
+> I feel I have to escalate this regression to the mailing lists because
+> I've had no response on the kernel bugzilla from quite some time now.
+> 
+> With the release of the b43 driver, my card can no longer associate with
+> its AP. I've been testing with 2.6.24 and the wireless-git tree hoping
+> that someone would fix it, but I've had no requests for testing and no
+> response.
+> 
+> http://bugzilla.kernel.org/show_bug.cgi?id=9987
 
-/sys/bus/isa is present for this machine so it works even if (as Ondrej 
-suggests) the controller is not actually on the ISA bus. We can always 
-extend the test if it turns out systems without ISA bus are also affected.
+Is your AP using channel 13 or something like that by any chance?
+Then you'll need to load mac80211 with the option ieee80211_regdom=64 to 
+make this work. Add
 
-I'll also send out a call for testing specifically for this issue.
+options mac80211 ieee80211_regdom=64
 
-Thanks to you and Ondrej for the discussion.
+to modprobe.conf and reload the mac80211 module.
 
-Cheers,
-FJP
+-- 
+Frederik Himpe
+
