@@ -1,704 +1,163 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757037AbYDCFEk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756850AbYDCFLP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757037AbYDCFEk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Apr 2008 01:04:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751762AbYDCFE3
+	id S1756850AbYDCFLP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Apr 2008 01:11:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751815AbYDCFLC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Apr 2008 01:04:29 -0400
-Received: from hades.rz.tu-clausthal.de ([139.174.2.20]:63115 "EHLO
-	hades.rz.tu-clausthal.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750949AbYDCFE0 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Apr 2008 01:04:26 -0400
-From: Volker Armin Hemmann <volker.armin.hemmann@tu-clausthal.de>
-To: Tejun Heo <htejun@gmail.com>
-Subject: Re: 2.6.24.X: SATA/AHCI related boot delay. - not with 2.6.24.3
-Date: Thu, 3 Apr 2008 07:04:21 +0200
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
-       Peer Chen <pchen@nvidia.com>, Kuan Luo <kluo@nvidia.com>
-References: <200803091922.33083.volker.armin.hemmann@tu-clausthal.de> <200804021909.41609.volker.armin.hemmann@tu-clausthal.de> <47F43766.2070207@gmail.com>
-In-Reply-To: <47F43766.2070207@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200804030704.21480.volker.armin.hemmann@tu-clausthal.de>
+	Thu, 3 Apr 2008 01:11:02 -0400
+Received: from nn7.de ([85.214.94.156]:40416 "EHLO nn7.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751762AbYDCFLA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Apr 2008 01:11:00 -0400
+Subject: 2.6.25-rc8: WARNING: at net/ipv4/tcp_input.c:2173
+	tcp_mark_head_lost+0x11d/0x150()
+From: Soeren Sonnenburg <kernel@nn7.de>
+To: Linux Kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Thu, 03 Apr 2008 07:10:56 +0200
+Message-Id: <1207199456.7616.3.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.0 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+trying to download things, I am seeing this (ignore the tainted, it is
+from madwifi and although the module is loaded the device was never
+used)
 
-On Donnerstag, 3. April 2008, Tejun Heo wrote:
-> Hello, Volker.
->
-> Volker Armin Hemmann wrote:
-> > On Mittwoch, 2. April 2008, Tejun Heo wrote:
-> >> Volker Armin Hemmann wrote:
-> >>> On Mittwoch, 19. März 2008, Tejun Heo wrote:
-> >>>> Volker Armin Hemmann wrote:
-> >>>>> On Mittwoch, 19. März 2008, Tejun Heo wrote:
-> >>>>>> x UDMA/133 abar m8192@0xf9dfc000 port 0xf9dfc200
-> >>>>>>
-> >>>>>>> irq 315
-> >>>>>>> [   38.125479] ata4: SATA max UDMA/133 abar m8192@0xf9dfc000 port
-> >>>>>>> 0xf9dfc280 irq 315
-> >>>>>>> [   38.597035] ata1: SATA link up 3.0 Gbps (SStatus 123 SControl
-> >>>>>>> 300) [   38.597732] ata1.00: ATA-7: WDC WD1600JS-00MHB1, 10.02E01,
-> >>>>>>> max UDMA/133 [   38.597775] ata1.00: 312581808 sectors, multi 16:
-> >>>>>>> LBA48 [   38.598405] ata1.00: configured for UDMA/133
-> >>>>>>> [   39.069342] ata2: SATA link up 3.0 Gbps (SStatus 123 SControl
-> >>>>>>> 300) [   39.084225] ata2.00: ATA-8: SAMSUNG HD501LJ, CR100-12, max
-> >>>>>>> UDMA7 [   39.084264] ata2.00: 976773168 sectors, multi 16: LBA48
-> >>>>>>> NCQ (depth 0/32) [   39.086268] ata2.00: configured for UDMA/133
-> >>>>>>
-> >>>>>> So, just to confirm.  With the updated patch, you don't see any
-> >>>>>> problem, right?
-> >>>>>
-> >>>>> Correct. With the updated patch I don't see problems in 'non-raid'
-> >>>>> mode. AHCI mode still has problems without nosmi. But that is an
-> >>>>> entirely different problem, right?
-> >>>>
-> >>>> Yeap, can you please post the result of "lspci -nn"?
-> >>>
-> >>> with AHCI+nosmi, 2.6.24.3:
-> >>> 00:0a.0 SATA controller [0106]: nVidia Corporation MCP65 AHCI
-> >>> Controller [10de:044d] (rev a1)
-> >>
-> >> Sorry about the long delay.  Can you please test the attached patch in
-> >> both ahci and non-ahci modes w/o pci=nomsi and post resulting boot logs?
-> >
-> > patch -p1 < /home/energyman/mcp65-ahci-debug.patch
-> > patching file drivers/ata/libata-core.c
-> > Hunk #1 succeeded at 7136 (offset 2 lines).
-> > patching file drivers/ata/libata-eh.c
-> > Hunk #1 succeeded at 2083 (offset -107 lines).
-> > patching file drivers/pci/quirks.c
-> > Hunk #1 succeeded at 1733 with fuzz 1 (offset -122 lines).
-> >
-> > saved config, removed linux-2.6.24.3, unpacked 2.6.24.3 from tarball,
-> > reiser4 and your patch, make oldconfig, make menuconfig, make all
-> > modules_install install.
-> >
-> > dmesgs are below.
->
-> [--snip--]
->
-> > In short, no changes at all.
->
-> Thanks for confirming.
->
-> Peer, Kuan.  Volker is reporting detection problems on MCP65 AHCI.
-> The followings are what we've discovered till now.
->
-> 1. When the controller is put into non-raid mode in BIOS
->
->   * If softreset is used, either the softreset itself or IDENTIFY
->     following it times out once.  On retrial, it works fine.  It
->     doesn't matter whether the SRST is issued by itself or as
->     follow-up-srst after hardreset.  Using only hardreset works fine.
->
->   * The controller doesn't indicate MSI capability and MSI isn't used
->     by default.
->
-> 2. When the controller is put into ahci mode in BIOS
->
->   * SRST works fine.
->
->   * The controller indicates MSI capability but MSI doesn't work
->     properly resulting in IRQ delivery failure.  Adding
->     intx_disable_bug quirk doesn't help.
->
-> I've performed similar test on MCP67 and everything worked fine on it.
->
-> Both problems (SRST and MSI) can be worked around but I need more
-> information to work around those.
->
-> * Which chips are affected?  Are there proper fixes?
->
-> * For the MSI problem, is it system wide problem or local to the ahci
->   controller?
+Could anyone make sense of this please?
+
+Thanks,
+Soeren
+
+------------[ cut here ]------------
+WARNING: at net/ipv4/tcp_input.c:2173 tcp_mark_head_lost+0x11d/0x150()
+Modules linked in: vfat fat isofs udf usb_storage coretemp rfcomm l2cap
+hci_usb bluetooth xfrm_user xfrm4_tunnel tunnel4 ipcomp esp4 ah4 hfsplus
+binfmt_misc fuse ebtable_broute bridge llc ebtable_nat ebt
+Pid: 0, comm: swapper Tainted: P         2.6.25-rc8-sonne #24
+ [<c012a654>] warn_on_slowpath+0x54/0x70
+ [<c0374d05>] ? ip_output+0x75/0xd0
+ [<c0373b78>] ? ip_local_out+0x18/0x20
+ [<c0374f34>] ? ip_queue_xmit+0x1d4/0x3a0
+ [<c011f4b7>] ? enqueue_task_fair+0x37/0x2a0
+ [<c034fd62>] ? __skb_clone+0x22/0xd0
+ [<c037e32d>] tcp_mark_head_lost+0x11d/0x150
+ [<c0385460>] ? tcp_transmit_skb+0x410/0x7b0
+ [<c0380d4b>] tcp_ack+0x171b/0x1d60
+ [<c0171efa>] ? dma_pool_alloc+0xfa/0x1a0
+ [<c0384434>] tcp_rcv_established+0x504/0x750
+ [<c0389f93>] tcp_v4_do_rcv+0xb3/0x1f0
+ [<c0377a7e>] ? __inet_lookup_established+0x17e/0x190
+ [<c038b9cf>] tcp_v4_rcv+0x6bf/0x7c0
+ [<c036fea9>] ip_local_deliver_finish+0xa9/0x210
+ [<c03703d0>] ip_local_deliver+0x30/0xa0
+ [<c036fb6f>] ip_rcv_finish+0xff/0x390
+ [<c036a3a0>] ? nf_hook_slow+0xa0/0xf0
+ [<c036fa70>] ? ip_rcv_finish+0x0/0x390
+ [<c03702f0>] ip_rcv+0x1e0/0x290
+ [<c036fa70>] ? ip_rcv_finish+0x0/0x390
+ [<c0370110>] ? ip_rcv+0x0/0x290
+ [<c0356bc7>] netif_receive_skb+0x247/0x2d0
+ [<f88632ea>] sky2_poll+0x4ba/0xc20 [sky2]
+ [<c01474a2>] ? tick_program_event+0x42/0x70
+ [<c01474a2>] ? tick_program_event+0x42/0x70
+ [<c03590c8>] net_rx_action+0xa8/0x130
+ [<c012f7e4>] __do_softirq+0x84/0x100
+ [<c012f89b>] do_softirq+0x3b/0x50
+ [<c012fa15>] irq_exit+0x75/0x90
+ [<c01070e5>] do_IRQ+0x45/0x80
+ [<c0104c53>] common_interrupt+0x23/0x28
+ [<c02a1f46>] ? acpi_idle_enter_bm+0x28a/0x2f8
+ [<c033bea6>] cpuidle_idle_call+0x76/0xb0
+ [<c033be30>] ? cpuidle_idle_call+0x0/0xb0
+ [<c0102aef>] cpu_idle+0x6f/0x110
+ [<c03e447d>] rest_init+0x5d/0x60
+ =======================
+---[ end trace a109db92c4e172c2 ]---
+------------[ cut here ]------------
 
 
-I rebooted with non-raid set, without pci=nomsi
+------------[ cut here ]------------
+WARNING: at net/ipv4/tcp_input.c:1771 tcp_enter_frto+0x267/0x270()
+Modules linked in: vfat fat isofs udf usb_storage coretemp rfcomm l2cap
+hci_usb bluetooth xfrm_user xfrm4_tunnel tunnel4 ipcomp esp4 ah4 hfsplus
+binfmt_misc fuse ebtable_broute bridge llc ebtable_nat ebt
+Pid: 0, comm: swapper Tainted: P         2.6.25-rc8-sonne #24
+ [<c012a654>] warn_on_slowpath+0x54/0x70
+ [<c011e157>] ? enqueue_task+0x57/0x70
+ [<c011f302>] ? __update_rq_clock+0x22/0x180
+ [<c011811d>] ? read_hpet+0xd/0x20
+ [<c0143194>] ? getnstimeofday+0x34/0xe0
+ [<c0141338>] ? ktime_get_ts+0x48/0x50
+ [<c0141359>] ? ktime_get+0x19/0x40
+ [<c0383387>] tcp_enter_frto+0x267/0x270
+ [<c0388ac1>] tcp_write_timer+0x301/0x690
+ [<c0118829>] ? hpet_legacy_next_event+0x29/0x40
+ [<c0146269>] ? clockevents_program_event+0x99/0x120
+ [<c01335d5>] run_timer_softirq+0x155/0x1c0
+ [<c03887c0>] ? tcp_write_timer+0x0/0x690
+ [<c03f34ac>] ? _spin_unlock+0x1c/0x30
+ [<c03887c0>] ? tcp_write_timer+0x0/0x690
+ [<c012f7e4>] __do_softirq+0x84/0x100
+ [<c012f89b>] do_softirq+0x3b/0x50
+ [<c012fa15>] irq_exit+0x75/0x90
+ [<c01070e5>] do_IRQ+0x45/0x80
+ [<c0104c53>] common_interrupt+0x23/0x28
+ [<c02a1f46>] ? acpi_idle_enter_bm+0x28a/0x2f8
+ [<c033bea6>] cpuidle_idle_call+0x76/0xb0
+ [<c033be30>] ? cpuidle_idle_call+0x0/0xb0
+ [<c0102aef>] cpu_idle+0x6f/0x110
+ [<c03e447d>] rest_init+0x5d/0x60
+ =======================
+---[ end trace a109db92c4e172c2 ]---
+------------[ cut here ]------------
 
-this is cat /proc/interrupts:
-          CPU0       CPU1
-  0:         57          1   IO-APIC-edge      timer
-  1:          0         81   IO-APIC-edge      i8042
-  8:          0          1   IO-APIC-edge      rtc
-  9:          0          1   IO-APIC-fasteoi   acpi
- 12:          0          3   IO-APIC-edge      i8042
- 17:          2       2868   IO-APIC-fasteoi   nvidia
- 18:          0          0   IO-APIC-fasteoi   EMU10K1
- 22:          4        745   IO-APIC-fasteoi   ehci_hcd:usb1
-314:          0        158   PCI-MSI-edge      eth0
-315:          7      12769   PCI-MSI-edge      ahci
-NMI:          0          0   Non-maskable interrupts
-LOC:      12308      14343   Local timer interrupts
-RES:       2994       1456   Rescheduling interrupts
-CAL:        559         59   function call interrupts
-TLB:        323        245   TLB shootdowns
-TRM:          0          0   Thermal event interrupts
-THR:          0          0   Threshold APIC interrupts
-SPU:          0          0   Spurious interrupts
-ERR:          0
 
-as you can see, only the sata controller and the network uses msi.
+------------[ cut here ]------------
+WARNING: at net/ipv4/tcp_input.c:2532 tcp_ack+0x1a6f/0x1d60()
+Modules linked in: vfat fat isofs udf usb_storage coretemp rfcomm l2cap
+hci_usb bluetooth xfrm_user xfrm4_tunnel tunnel4 ipcomp esp4 ah4 hfsplus
+binfmt_misc fuse ebtable_broute bridge llc ebtable_nat ebt
+Pid: 0, comm: swapper Tainted: P         2.6.25-rc8-sonne #24
+ [<c012a654>] warn_on_slowpath+0x54/0x70
+ [<c0374d05>] ? ip_output+0x75/0xd0
+ [<c0373b78>] ? ip_local_out+0x18/0x20
+ [<c0374f34>] ? ip_queue_xmit+0x1d4/0x3a0
+ [<c034fd62>] ? __skb_clone+0x22/0xd0
+ [<c0385460>] ? tcp_transmit_skb+0x410/0x7b0
+ [<c038109f>] tcp_ack+0x1a6f/0x1d60
+ [<c0171efa>] ? dma_pool_alloc+0xfa/0x1a0
+ [<c0384434>] tcp_rcv_established+0x504/0x750
+ [<c0389f93>] tcp_v4_do_rcv+0xb3/0x1f0
+ [<c0377a7e>] ? __inet_lookup_established+0x17e/0x190
+ [<c038b9cf>] tcp_v4_rcv+0x6bf/0x7c0
+ [<c036fea9>] ip_local_deliver_finish+0xa9/0x210
+ [<c03703d0>] ip_local_deliver+0x30/0xa0
+ [<c036fb6f>] ip_rcv_finish+0xff/0x390
+ [<c036a3a0>] ? nf_hook_slow+0xa0/0xf0
+ [<c036fa70>] ? ip_rcv_finish+0x0/0x390
+ [<c03702f0>] ip_rcv+0x1e0/0x290
+ [<c036fa70>] ? ip_rcv_finish+0x0/0x390
+ [<c0370110>] ? ip_rcv+0x0/0x290
+ [<c0356bc7>] netif_receive_skb+0x247/0x2d0
+ [<f88632ea>] sky2_poll+0x4ba/0xc20 [sky2]
+ [<c0144acb>] ? clocksource_get_next+0x3b/0x50
+ [<c01474a2>] ? tick_program_event+0x42/0x70
+ [<c03590c8>] net_rx_action+0xa8/0x130
+ [<c012f7e4>] __do_softirq+0x84/0x100
+ [<c012f89b>] do_softirq+0x3b/0x50
+ [<c012fa15>] irq_exit+0x75/0x90
+ [<c01070e5>] do_IRQ+0x45/0x80
+ [<c0104c53>] common_interrupt+0x23/0x28
+ [<c02a1f46>] ? acpi_idle_enter_bm+0x28a/0x2f8
+ [<c033bea6>] cpuidle_idle_call+0x76/0xb0
+ [<c033be30>] ? cpuidle_idle_call+0x0/0xb0
+ [<c0102aef>] cpu_idle+0x6f/0x110
+ [<c03e447d>] rest_init+0x5d/0x60
+ =======================
+---[ end trace a109db92c4e172c2 ]---
+------------[ cut here ]------------
 
-And networking works - or I wouldn't be able to send you this mail.
-
-lspci -vv:
-00:00.0 RAM memory: nVidia Corporation MCP65 Memory Controller (rev a1)
-        Subsystem: ASRock Incorporation Unknown device 0444
-        Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- 
-Stepping- SERR- FastB2B- DisINTx-
-        Status: Cap+ 66MHz+ UDF- FastB2B+ ParErr- DEVSEL=fast >TAbort- 
-<TAbort- <MAbort- >SERR- <PERR- INTx-
-        Latency: 0
-        Capabilities: [44] HyperTransport: Slave or Primary Interface
-                Command: BaseUnitID=0 UnitCnt=15 MastHost- DefDir- DUL-
-                Link Control 0: CFlE+ CST- CFE- <LkFail- Init+ EOC- TXO- 
-<CRCErr=0 IsocEn- LSEn- ExtCTL- 64b-
-                Link Config 0: MLWI=16bit DwFcIn- MLWO=16bit DwFcOut- 
-LWI=16bit DwFcInEn- LWO=16bit DwFcOutEn-
-                Link Control 1: CFlE- CST- CFE- <LkFail+ Init- EOC+ TXO+ 
-<CRCErr=0 IsocEn- LSEn- ExtCTL- 64b-
-                Link Config 1: MLWI=8bit DwFcIn- MLWO=8bit DwFcOut- LWI=8bit 
-DwFcInEn- LWO=8bit DwFcOutEn-
-                Revision ID: 1.03
-                Link Frequency 0: 800MHz
-                Link Error 0: <Prot- <Ovfl- <EOC- CTLTm-
-                Link Frequency Capability 0: 200MHz+ 300MHz+ 400MHz+ 500MHz+ 
-600MHz+ 800MHz+ 1.0GHz+ 1.2GHz- 1.4GHz- 1.6GHz- Vend-
-                Feature Capability: IsocFC+ LDTSTOP+ CRCTM- ECTLT- 64bA- 
-UIDRD-
-                Link Frequency 1: 200MHz
-                Link Error 1: <Prot- <Ovfl- <EOC- CTLTm-
-                Link Frequency Capability 1: 200MHz- 300MHz- 400MHz- 500MHz- 
-600MHz- 800MHz- 1.0GHz- 1.2GHz- 1.4GHz- 1.6GHz- Vend-
-                Error Handling: PFlE+ OFlE+ PFE- OFE- EOCFE- RFE- CRCFE- 
-SERRFE- CF- RE- PNFE- ONFE- EOCNFE- RNFE- CRCNFE- SERRNFE-
-                Prefetchable memory behind bridge Upper: 00-00
-                Bus Number: 00
-        Capabilities: [dc] HyperTransport: MSI Mapping Enable+ Fixed-
-                Mapping Address Base: 00000000fee00000
-
-00:01.0 ISA bridge: nVidia Corporation MCP65 LPC Bridge (rev a2)
-        Subsystem: ASRock Incorporation Unknown device 0441
-        Control: I/O+ Mem+ BusMaster+ SpecCycle+ MemWINV- VGASnoop- ParErr- 
-Stepping- SERR- FastB2B- DisINTx-
-        Status: Cap- 66MHz+ UDF- FastB2B+ ParErr- DEVSEL=fast >TAbort- 
-<TAbort- <MAbort+ >SERR- <PERR- INTx-
-        Latency: 0
-        Region 0: I/O ports at 2f00 [size=256]
-
-00:01.1 SMBus: nVidia Corporation MCP65 SMBus (rev a1)
-        Subsystem: ASRock Incorporation Unknown device 0446
-        Control: I/O+ Mem- BusMaster- SpecCycle- MemWINV- VGASnoop- ParErr- 
-Stepping- SERR- FastB2B- DisINTx-
-        Status: Cap+ 66MHz+ UDF- FastB2B+ ParErr- DEVSEL=fast >TAbort- 
-<TAbort- <MAbort- >SERR- <PERR- INTx-
-        Interrupt: pin A routed to IRQ 11
-        Region 0: I/O ports at bc00 [size=64]
-        Region 4: I/O ports at 2d00 [size=64]
-        Region 5: I/O ports at 2e00 [size=64]
-        Capabilities: [44] Power Management version 2
-                Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA 
-PME(D0-,D1-,D2-,D3hot+,D3cold+)
-                Status: D0 PME-Enable- DSel=0 DScale=0 PME-
-        Kernel modules: i2c-nforce2
-
-00:01.2 RAM memory: nVidia Corporation MCP65 Memory Controller (rev a1)
-        Subsystem: ASRock Incorporation Unknown device 0446
-        Control: I/O- Mem- BusMaster- SpecCycle- MemWINV- VGASnoop- ParErr- 
-Stepping- SERR- FastB2B- DisINTx+
-        Status: Cap- 66MHz+ UDF- FastB2B+ ParErr- DEVSEL=fast >TAbort- 
-<TAbort- <MAbort- >SERR- <PERR- INTx-
-
-00:02.0 USB Controller: nVidia Corporation MCP65 USB Controller (rev a1) 
-(prog-if 10 [OHCI])
-        Subsystem: ASRock Incorporation Unknown device 0454
-        Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- 
-Stepping- SERR- FastB2B- DisINTx-
-        Status: Cap+ 66MHz+ UDF- FastB2B+ ParErr- DEVSEL=fast >TAbort- 
-<TAbort- <MAbort- >SERR- <PERR- INTx-
-        Latency: 0 (750ns min, 250ns max)
-        Interrupt: pin A routed to IRQ 5
-        Region 0: Memory at f9dff000 (32-bit, non-prefetchable) [size=4K]
-        Capabilities: [44] Power Management version 2
-                Flags: PMEClk- DSI- D1+ D2+ AuxCurrent=0mA 
-PME(D0+,D1+,D2+,D3hot+,D3cold+)
-                Status: D0 PME-Enable- DSel=0 DScale=0 PME-
-        Kernel modules: ohci-hcd
-
-00:02.1 USB Controller: nVidia Corporation MCP65 USB Controller (rev a1) 
-(prog-if 20 [EHCI])
-        Subsystem: ASRock Incorporation Unknown device 0455
-        Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- 
-Stepping- SERR- FastB2B- DisINTx-
-        Status: Cap+ 66MHz+ UDF- FastB2B+ ParErr- DEVSEL=fast >TAbort- 
-<TAbort- <MAbort- >SERR- <PERR- INTx-
-        Latency: 0 (750ns min, 250ns max)
-        Interrupt: pin B routed to IRQ 22
-        Region 0: Memory at f9dfec00 (32-bit, non-prefetchable) [size=256]
-        Capabilities: [44] Debug port: BAR=1 offset=0098
-        Capabilities: [80] Power Management version 2
-                Flags: PMEClk- DSI- D1+ D2+ AuxCurrent=0mA 
-PME(D0+,D1+,D2+,D3hot+,D3cold+)
-                Status: D0 PME-Enable- DSel=0 DScale=0 PME-
-        Kernel driver in use: ehci_hcd
-        Kernel modules: ehci-hcd
-
-00:08.0 PCI bridge: nVidia Corporation MCP65 PCI bridge (rev a1) (prog-if 01 
-[Subtractive decode])
-        Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- 
-Stepping- SERR- FastB2B- DisINTx-
-        Status: Cap+ 66MHz+ UDF- FastB2B+ ParErr- DEVSEL=fast >TAbort- 
-<TAbort- <MAbort- >SERR- <PERR- INTx-
-        Latency: 0
-        Bus: primary=00, secondary=02, subordinate=02, sec-latency=32
-        I/O behind bridge: 0000d000-0000dfff
-        Memory behind bridge: f9f00000-f9ffffff
-        Secondary status: 66MHz- FastB2B+ ParErr- DEVSEL=medium >TAbort- 
-<TAbort- <MAbort+ <SERR- <PERR-
-        BridgeCtl: Parity- SERR+ NoISA- VGA- MAbort- >Reset- FastB2B-
-                PriDiscTmr- SecDiscTmr+ DiscTmrStat- DiscTmrSERREn-
-        Capabilities: [b8] Subsystem: ASRock Incorporation Unknown device 0449
-        Capabilities: [8c] HyperTransport: MSI Mapping Enable- Fixed-
-                Mapping Address Base: 00000000fee00000
-
-00:09.0 IDE interface: nVidia Corporation MCP65 IDE (rev a1) (prog-if 8a 
-[Master SecP PriP])
-        Subsystem: ASRock Incorporation Unknown device 0448
-        Control: I/O+ Mem- BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- 
-Stepping- SERR- FastB2B- DisINTx-
-        Status: Cap+ 66MHz+ UDF- FastB2B+ ParErr- DEVSEL=fast >TAbort- 
-<TAbort- <MAbort- >SERR- <PERR- INTx-
-        Latency: 0 (750ns min, 250ns max)
-        Region 0: [virtual] Memory at 000001f0 (32-bit, non-prefetchable) 
-[disabled] [size=8]
-        Region 1: [virtual] Memory at 000003f0 (type 3, non-prefetchable) 
-[disabled] [size=1]
-        Region 2: [virtual] Memory at 00000170 (32-bit, non-prefetchable) 
-[disabled] [size=8]
-        Region 3: [virtual] Memory at 00000370 (type 3, non-prefetchable) 
-[disabled] [size=1]
-        Region 4: I/O ports at ffa0 [size=16]
-        Capabilities: [44] Power Management version 2
-                Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA 
-PME(D0-,D1-,D2-,D3hot-,D3cold-)
-                Status: D0 PME-Enable- DSel=0 DScale=0 PME-
-
-00:0a.0 IDE interface: nVidia Corporation MCP65 SATA Controller (rev a1) 
-(prog-if 85 [Master SecO PriO])
-        Subsystem: ASRock Incorporation Unknown device 045d
-        Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- 
-Stepping- SERR- FastB2B- DisINTx+
-        Status: Cap+ 66MHz+ UDF- FastB2B+ ParErr- DEVSEL=fast >TAbort- 
-<TAbort- <MAbort- >SERR- <PERR- INTx-
-        Latency: 0 (750ns min, 250ns max)
-        Interrupt: pin A routed to IRQ 315
-        Region 0: I/O ports at 0e00 [size=8]
-        Region 1: I/O ports at 0e20 [size=4]
-        Region 2: I/O ports at 0e40 [size=8]
-        Region 3: I/O ports at 0e60 [size=4]
-        Region 4: I/O ports at a800 [size=16]
-        Region 5: Memory at f9dfc000 (32-bit, non-prefetchable) [size=8K]
-        Capabilities: [44] Power Management version 2
-                Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA 
-PME(D0-,D1-,D2-,D3hot-,D3cold-)
-                Status: D0 PME-Enable- DSel=0 DScale=0 PME-
-        Capabilities: [b0] Message Signalled Interrupts: Mask- 64bit+ 
-Queue=0/3 Enable+
-                Address: 00000000fee0300c  Data: 4171
-        Capabilities: [cc] HyperTransport: MSI Mapping Enable- Fixed+
-        Kernel driver in use: ahci
-
-00:0b.0 PCI bridge: nVidia Corporation Unknown device 045b (rev a1) (prog-if 
-00 [Normal decode])
-        Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- 
-Stepping- SERR- FastB2B- DisINTx+
-        Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- 
-<TAbort- <MAbort- >SERR- <PERR- INTx-
-        Latency: 0, Cache Line Size: 64 bytes
-        Bus: primary=00, secondary=01, subordinate=01, sec-latency=0
-        I/O behind bridge: 0000c000-0000cfff
-        Memory behind bridge: f9e00000-f9efffff
-        Secondary status: 66MHz- FastB2B- ParErr- DEVSEL=fast >TAbort- 
-<TAbort- <MAbort- <SERR- <PERR-
-        BridgeCtl: Parity- SERR+ NoISA- VGA- MAbort- >Reset- FastB2B-
-                PriDiscTmr- SecDiscTmr- DiscTmrStat- DiscTmrSERREn-
-        Capabilities: [40] Subsystem: ASRock Incorporation Unknown device 045b
-        Capabilities: [48] Power Management version 2
-                Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA 
-PME(D0+,D1+,D2+,D3hot+,D3cold+)
-                Status: D0 PME-Enable- DSel=0 DScale=0 PME-
-        Capabilities: [50] Message Signalled Interrupts: Mask- 64bit+ 
-Queue=0/1 Enable+
-                Address: 00000000fee0300c  Data: 4149
-        Capabilities: [60] HyperTransport: MSI Mapping Enable- Fixed-
-                Mapping Address Base: 00000000fee00000
-        Capabilities: [80] Express (v1) Root Port (Slot+), MSI 00
-                DevCap: MaxPayload 256 bytes, PhantFunc 0, Latency L0s <64ns, 
-L1 <1us
-                        ExtTag- RBE+ FLReset-
-                DevCtl: Report errors: Correctable+ Non-Fatal+ Fatal+ 
-Unsupported+
-                        RlxdOrd+ ExtTag- PhantFunc- AuxPwr- NoSnoop+
-                        MaxPayload 128 bytes, MaxReadReq 512 bytes
-                DevSta: CorrErr- UncorrErr- FatalErr- UnsuppReq- AuxPwr- 
-TransPend-
-                LnkCap: Port #3, Speed 2.5GT/s, Width x2, ASPM L0s L1, Latency 
-L0 <512ns, L1 <4us
-                        ClockPM- Suprise- LLActRep+ BwNot-
-                LnkCtl: ASPM Disabled; RCB 64 bytes Disabled- Retrain- 
-CommClk-
-                        ExtSynch- ClockPM- AutWidDis- BWInt- AutBWInt-
-                LnkSta: Speed 2.5GT/s, Width x1, TrErr- Train- SlotClk+ 
-DLActive+ BWMgmt- ABWMgmt-
-                SltCap: AttnBtn- PwrCtrl- MRL- AttnInd- PwrInd- HotPlug- 
-Surpise-
-                        Slot #  0, PowerLimit 0.000000; Interlock- NoCompl-
-                SltCtl: Enable: AttnBtn- PwrFlt- MRL- PresDet- CmdCplt- HPIrq- 
-LinkChg-
-                        Control: AttnInd Off, PwrInd On, Power- Interlock-
-                SltSta: Status: AttnBtn- PowerFlt- MRL- CmdCplt- PresDet+ 
-Interlock-
-                        Changed: MRL- PresDet+ LinkState+
-                RootCtl: ErrCorrectable- ErrNon-Fatal- ErrFatal- PMEIntEna- 
-CRSVisible-
-                RootCap: CRSVisible-
-                RootSta: PME ReqID 0000, PMEStatus- PMEPending-
-        Kernel driver in use: pcieport-driver
-
-00:0c.0 PCI bridge: nVidia Corporation MCP65 PCI Express bridge (rev a1) 
-(prog-if 00 [Normal decode])
-        Control: I/O- Mem- BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- 
-Stepping- SERR- FastB2B- DisINTx+
-        Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- 
-<TAbort- <MAbort- >SERR- <PERR- INTx-
-        Latency: 0, Cache Line Size: 64 bytes
-        Bus: primary=00, secondary=03, subordinate=03, sec-latency=0
-        Secondary status: 66MHz- FastB2B- ParErr- DEVSEL=fast >TAbort- 
-<TAbort- <MAbort- <SERR- <PERR-
-        BridgeCtl: Parity- SERR+ NoISA- VGA- MAbort- >Reset- FastB2B-
-                PriDiscTmr- SecDiscTmr- DiscTmrStat- DiscTmrSERREn-
-        Capabilities: [40] Subsystem: ASRock Incorporation Unknown device 045a
-        Capabilities: [48] Power Management version 2
-                Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA 
-PME(D0+,D1+,D2+,D3hot+,D3cold+)
-                Status: D0 PME-Enable- DSel=0 DScale=0 PME-
-        Capabilities: [50] Message Signalled Interrupts: Mask- 64bit+ 
-Queue=0/1 Enable+
-                Address: 00000000fee0300c  Data: 4151
-        Capabilities: [60] HyperTransport: MSI Mapping Enable- Fixed-
-                Mapping Address Base: 00000000fee00000
-        Capabilities: [80] Express (v1) Root Port (Slot+), MSI 00
-                DevCap: MaxPayload 256 bytes, PhantFunc 0, Latency L0s <64ns, 
-L1 <1us
-                        ExtTag- RBE+ FLReset-
-                DevCtl: Report errors: Correctable+ Non-Fatal+ Fatal+ 
-Unsupported+
-                        RlxdOrd+ ExtTag- PhantFunc- AuxPwr- NoSnoop+
-                        MaxPayload 128 bytes, MaxReadReq 512 bytes
-                DevSta: CorrErr- UncorrErr- FatalErr- UnsuppReq- AuxPwr- 
-TransPend-
-                LnkCap: Port #2, Speed 2.5GT/s, Width x1, ASPM L0s L1, Latency 
-L0 <512ns, L1 <4us
-                        ClockPM- Suprise- LLActRep+ BwNot-
-                LnkCtl: ASPM Disabled; RCB 64 bytes Disabled- Retrain- 
-CommClk-
-                        ExtSynch- ClockPM- AutWidDis- BWInt- AutBWInt-
-                LnkSta: Speed 2.5GT/s, Width x2, TrErr- Train- SlotClk+ 
-DLActive- BWMgmt- ABWMgmt-
-                SltCap: AttnBtn- PwrCtrl- MRL- AttnInd- PwrInd- HotPlug- 
-Surpise-
-                        Slot #  0, PowerLimit 0.000000; Interlock- NoCompl-
-                SltCtl: Enable: AttnBtn- PwrFlt- MRL- PresDet- CmdCplt- HPIrq- 
-LinkChg-
-                        Control: AttnInd Off, PwrInd On, Power- Interlock-
-                SltSta: Status: AttnBtn- PowerFlt- MRL- CmdCplt- PresDet- 
-Interlock-
-                        Changed: MRL- PresDet- LinkState-
-                RootCtl: ErrCorrectable- ErrNon-Fatal- ErrFatal- PMEIntEna- 
-CRSVisible-
-                RootCap: CRSVisible-
-                RootSta: PME ReqID 0000, PMEStatus- PMEPending-
-        Kernel driver in use: pcieport-driver
-
-00:0d.0 PCI bridge: nVidia Corporation MCP65 PCI Express bridge (rev a1) 
-(prog-if 00 [Normal decode])
-        Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- 
-Stepping- SERR- FastB2B- DisINTx+
-        Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- 
-<TAbort- <MAbort- >SERR- <PERR- INTx-
-        Latency: 0, Cache Line Size: 64 bytes
-        Bus: primary=00, secondary=04, subordinate=04, sec-latency=0
-        I/O behind bridge: 0000e000-0000efff
-        Memory behind bridge: fa000000-febfffff
-        Prefetchable memory behind bridge: 00000000d0000000-00000000dfffffff
-        Secondary status: 66MHz- FastB2B- ParErr- DEVSEL=fast >TAbort- 
-<TAbort- <MAbort- <SERR- <PERR-
-        BridgeCtl: Parity- SERR+ NoISA- VGA+ MAbort- >Reset- FastB2B-
-                PriDiscTmr- SecDiscTmr- DiscTmrStat- DiscTmrSERREn-
-        Capabilities: [40] Subsystem: ASRock Incorporation Unknown device 0458
-        Capabilities: [48] Power Management version 2
-                Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA 
-PME(D0+,D1+,D2+,D3hot+,D3cold+)
-                Status: D0 PME-Enable- DSel=0 DScale=0 PME-
-        Capabilities: [50] Message Signalled Interrupts: Mask- 64bit+ 
-Queue=0/1 Enable+
-                Address: 00000000fee0300c  Data: 4159
-        Capabilities: [60] HyperTransport: MSI Mapping Enable- Fixed-
-                Mapping Address Base: 00000000fee00000
-        Capabilities: [80] Express (v1) Root Port (Slot+), MSI 00
-                DevCap: MaxPayload 256 bytes, PhantFunc 0, Latency L0s <64ns, 
-L1 <1us
-                        ExtTag- RBE+ FLReset-
-                DevCtl: Report errors: Correctable+ Non-Fatal+ Fatal+ 
-Unsupported+
-                        RlxdOrd+ ExtTag- PhantFunc- AuxPwr- NoSnoop+
-                        MaxPayload 128 bytes, MaxReadReq 512 bytes
-                DevSta: CorrErr- UncorrErr- FatalErr- UnsuppReq- AuxPwr- 
-TransPend-
-                LnkCap: Port #0, Speed 2.5GT/s, Width x16, ASPM L0s L1, 
-Latency L0 <512ns, L1 <4us
-                        ClockPM- Suprise- LLActRep+ BwNot-
-                LnkCtl: ASPM Disabled; RCB 64 bytes Disabled- Retrain- 
-CommClk-
-                        ExtSynch- ClockPM- AutWidDis- BWInt- AutBWInt-
-                LnkSta: Speed 2.5GT/s, Width x16, TrErr- Train- SlotClk+ 
-DLActive+ BWMgmt- ABWMgmt-
-                SltCap: AttnBtn- PwrCtrl- MRL- AttnInd- PwrInd- HotPlug- 
-Surpise-
-                        Slot #  0, PowerLimit 0.000000; Interlock- NoCompl-
-                SltCtl: Enable: AttnBtn- PwrFlt- MRL- PresDet- CmdCplt- HPIrq- 
-LinkChg-
-                        Control: AttnInd Off, PwrInd On, Power- Interlock-
-                SltSta: Status: AttnBtn- PowerFlt- MRL- CmdCplt- PresDet+ 
-Interlock-
-                        Changed: MRL- PresDet+ LinkState+
-                RootCtl: ErrCorrectable- ErrNon-Fatal- ErrFatal- PMEIntEna- 
-CRSVisible-
-                RootCap: CRSVisible-
-                RootSta: PME ReqID 0000, PMEStatus- PMEPending-
-        Kernel driver in use: pcieport-driver
-
-00:0e.0 PCI bridge: nVidia Corporation MCP65 PCI Express bridge (rev a1) 
-(prog-if 00 [Normal decode])
-        Control: I/O- Mem- BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- 
-Stepping- SERR- FastB2B- DisINTx+
-        Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- 
-<TAbort- <MAbort- >SERR- <PERR- INTx-
-        Latency: 0, Cache Line Size: 64 bytes
-        Bus: primary=00, secondary=05, subordinate=05, sec-latency=0
-        Secondary status: 66MHz- FastB2B- ParErr- DEVSEL=fast >TAbort- 
-<TAbort- <MAbort- <SERR- <PERR-
-        BridgeCtl: Parity- SERR+ NoISA- VGA- MAbort- >Reset- FastB2B-
-                PriDiscTmr- SecDiscTmr- DiscTmrStat- DiscTmrSERREn-
-        Capabilities: [40] Subsystem: ASRock Incorporation Unknown device 0459
-        Capabilities: [48] Power Management version 2
-                Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA 
-PME(D0+,D1+,D2+,D3hot+,D3cold+)
-                Status: D0 PME-Enable- DSel=0 DScale=0 PME-
-        Capabilities: [50] Message Signalled Interrupts: Mask- 64bit+ 
-Queue=0/1 Enable+
-                Address: 00000000fee0300c  Data: 4161
-        Capabilities: [60] HyperTransport: MSI Mapping Enable- Fixed-
-                Mapping Address Base: 00000000fee00000
-        Capabilities: [80] Express (v1) Root Port (Slot+), MSI 00
-                DevCap: MaxPayload 256 bytes, PhantFunc 0, Latency L0s <64ns, 
-L1 <1us
-                        ExtTag- RBE+ FLReset-
-                DevCtl: Report errors: Correctable+ Non-Fatal+ Fatal+ 
-Unsupported+
-                        RlxdOrd+ ExtTag- PhantFunc- AuxPwr- NoSnoop+
-                        MaxPayload 128 bytes, MaxReadReq 512 bytes
-                DevSta: CorrErr- UncorrErr- FatalErr- UnsuppReq- AuxPwr- 
-TransPend-
-                LnkCap: Port #1, Speed 2.5GT/s, Width x1, ASPM L0s L1, Latency 
-L0 <512ns, L1 <4us
-                        ClockPM- Suprise- LLActRep+ BwNot-
-                LnkCtl: ASPM Disabled; RCB 64 bytes Disabled- Retrain- 
-CommClk-
-                        ExtSynch- ClockPM- AutWidDis- BWInt- AutBWInt-
-                LnkSta: Speed 2.5GT/s, Width x8, TrErr- Train- SlotClk+ 
-DLActive- BWMgmt- ABWMgmt-
-                SltCap: AttnBtn- PwrCtrl- MRL- AttnInd- PwrInd- HotPlug- 
-Surpise-
-                        Slot #  0, PowerLimit 0.000000; Interlock- NoCompl-
-                SltCtl: Enable: AttnBtn- PwrFlt- MRL- PresDet- CmdCplt- HPIrq- 
-LinkChg-
-                        Control: AttnInd Off, PwrInd On, Power- Interlock-
-                SltSta: Status: AttnBtn- PowerFlt- MRL- CmdCplt- PresDet- 
-Interlock-
-                        Changed: MRL- PresDet- LinkState-
-                RootCtl: ErrCorrectable- ErrNon-Fatal- ErrFatal- PMEIntEna- 
-CRSVisible-
-                RootCap: CRSVisible-
-                RootSta: PME ReqID 0000, PMEStatus- PMEPending-
-        Kernel driver in use: pcieport-driver
-
-00:18.0 Host bridge: Advanced Micro Devices [AMD] K8 [Athlon64/Opteron] 
-HyperTransport Technology Configuration
-        Control: I/O- Mem- BusMaster- SpecCycle- MemWINV- VGASnoop- ParErr- 
-Stepping- SERR- FastB2B- DisINTx-
-        Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- 
-<TAbort- <MAbort- >SERR- <PERR- INTx-
-        Capabilities: [80] HyperTransport: Host or Secondary Interface
-                !!! Possibly incomplete decoding
-                Command: WarmRst+ DblEnd-
-                Link Control: CFlE- CST- CFE- <LkFail- Init+ EOC- TXO- 
-<CRCErr=0
-                Link Config: MLWI=16bit MLWO=16bit LWI=16bit LWO=16bit
-                Revision ID: 1.02
-
-00:18.1 Host bridge: Advanced Micro Devices [AMD] K8 [Athlon64/Opteron] 
-Address Map
-        Control: I/O- Mem- BusMaster- SpecCycle- MemWINV- VGASnoop- ParErr- 
-Stepping- SERR- FastB2B- DisINTx-
-        Status: Cap- 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- 
-<TAbort- <MAbort- >SERR- <PERR- INTx-
-
-00:18.2 Host bridge: Advanced Micro Devices [AMD] K8 [Athlon64/Opteron] DRAM 
-Controller
-        Control: I/O- Mem- BusMaster- SpecCycle- MemWINV- VGASnoop- ParErr- 
-Stepping- SERR- FastB2B- DisINTx-
-        Status: Cap- 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- 
-<TAbort- <MAbort- >SERR- <PERR- INTx-
-
-00:18.3 Host bridge: Advanced Micro Devices [AMD] K8 [Athlon64/Opteron] 
-Miscellaneous Control
-        Control: I/O- Mem- BusMaster- SpecCycle- MemWINV- VGASnoop- ParErr- 
-Stepping- SERR- FastB2B- DisINTx-
-        Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- 
-<TAbort- <MAbort- >SERR- <PERR- INTx-
-        Capabilities: [f0] Secure device <?>
-        Kernel driver in use: k8temp
-        Kernel modules: k8temp
-
-01:00.0 Ethernet controller: Realtek Semiconductor Co., Ltd. RTL8111/8168B PCI 
-Express Gigabit Ethernet controller (rev 01)
-        Subsystem: ASRock Incorporation Unknown device 8168
-        Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- 
-Stepping- SERR+ FastB2B- DisINTx+
-        Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- 
-<TAbort- <MAbort- >SERR- <PERR- INTx-
-        Latency: 0, Cache Line Size: 64 bytes
-        Interrupt: pin A routed to IRQ 314
-        Region 0: I/O ports at c800 [size=256]
-        Region 2: Memory at f9eff000 (64-bit, non-prefetchable) [size=4K]
-        Expansion ROM at f9ec0000 [disabled] [size=128K]
-        Capabilities: [40] Power Management version 2
-                Flags: PMEClk- DSI- D1+ D2+ AuxCurrent=375mA 
-PME(D0-,D1+,D2+,D3hot+,D3cold+)
-                Status: D0 PME-Enable- DSel=0 DScale=0 PME-
-        Capabilities: [48] Vital Product Data <?>
-        Capabilities: [50] Message Signalled Interrupts: Mask- 64bit+ 
-Queue=0/1 Enable+
-                Address: 00000000fee0300c  Data: 4181
-        Capabilities: [60] Express (v1) Endpoint, MSI 00
-                DevCap: MaxPayload 1024 bytes, PhantFunc 0, Latency L0s 
-<128ns, L1 unlimited
-                        ExtTag+ AttnBtn+ AttnInd+ PwrInd+ RBE- FLReset-
-                DevCtl: Report errors: Correctable- Non-Fatal- Fatal- 
-Unsupported-
-                        RlxdOrd+ ExtTag- PhantFunc- AuxPwr- NoSnoop+
-                        MaxPayload 128 bytes, MaxReadReq 4096 bytes
-                DevSta: CorrErr- UncorrErr- FatalErr- UnsuppReq- AuxPwr+ 
-TransPend-
-                LnkCap: Port #0, Speed 2.5GT/s, Width x1, ASPM L0s, Latency L0 
-unlimited, L1 unlimited
-                        ClockPM- Suprise- LLActRep- BwNot-
-                LnkCtl: ASPM Disabled; RCB 64 bytes Disabled- Retrain- 
-CommClk-
-                        ExtSynch- ClockPM- AutWidDis- BWInt- AutBWInt-
-                LnkSta: Speed 2.5GT/s, Width x1, TrErr- Train- SlotClk+ 
-DLActive- BWMgmt- ABWMgmt-
-        Capabilities: [84] Vendor Specific Information <?>
-        Kernel driver in use: r8169
-        Kernel modules: r8169
-
-02:08.0 SCSI storage controller: Adaptec AHA-2944UW / AIC-7884U (rev 01)
-        Subsystem: Adaptec Unknown device 7884
-        Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV+ VGASnoop- ParErr- 
-Stepping- SERR+ FastB2B- DisINTx-
-        Status: Cap+ 66MHz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort- 
-<TAbort- <MAbort- >SERR- <PERR- INTx-
-        Latency: 32 (2000ns min, 2000ns max), Cache Line Size: 64 bytes
-        Interrupt: pin A routed to IRQ 11
-        Region 0: I/O ports at d800 [size=256]
-        Region 1: Memory at f9fff000 (32-bit, non-prefetchable) [size=4K]
-        Expansion ROM at f9f00000 [disabled] [size=64K]
-        Capabilities: [dc] Power Management version 1
-                Flags: PMEClk- DSI+ D1- D2- AuxCurrent=0mA 
-PME(D0-,D1-,D2-,D3hot-,D3cold-)
-                Status: D0 PME-Enable- DSel=0 DScale=0 PME-
-        Kernel modules: aic7xxx
-
-02:09.0 Multimedia audio controller: Creative Labs SB0400 Audigy2 Value
-        Subsystem: Creative Labs Unknown device 1001
-        Control: I/O+ Mem- BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- 
-Stepping- SERR+ FastB2B- DisINTx-
-        Status: Cap+ 66MHz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort- 
-<TAbort- <MAbort- >SERR- <PERR- INTx-
-        Latency: 32 (500ns min, 5000ns max)
-        Interrupt: pin A routed to IRQ 18
-        Region 0: I/O ports at dc00 [size=64]
-        Capabilities: [dc] Power Management version 2
-                Flags: PMEClk- DSI+ D1+ D2+ AuxCurrent=0mA 
-PME(D0-,D1-,D2-,D3hot-,D3cold-)
-                Status: D0 PME-Enable- DSel=0 DScale=0 PME-
-        Kernel driver in use: EMU10K1_Audigy
-        Kernel modules: snd-emu10k1
-
-04:00.0 VGA compatible controller: nVidia Corporation Unknown device 0402 (rev 
-a1) (prog-if 00 [VGA controller])
-        Subsystem: nVidia Corporation Unknown device 0439
-        Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- 
-Stepping- SERR+ FastB2B- DisINTx-
-        Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- 
-<TAbort- <MAbort- >SERR- <PERR- INTx-
-        Latency: 0
-        Interrupt: pin A routed to IRQ 17
-        Region 0: Memory at fd000000 (32-bit, non-prefetchable) [size=16M]
-        Region 1: Memory at d0000000 (64-bit, prefetchable) [size=256M]
-        Region 3: Memory at fa000000 (64-bit, non-prefetchable) [size=32M]
-        Region 5: I/O ports at ec00 [size=128]
-        [virtual] Expansion ROM at febe0000 [disabled] [size=128K]
-        Capabilities: [60] Power Management version 2
-                Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA 
-PME(D0-,D1-,D2-,D3hot-,D3cold-)
-                Status: D0 PME-Enable- DSel=0 DScale=0 PME-
-        Capabilities: [68] Message Signalled Interrupts: Mask- 64bit+ 
-Queue=0/0 Enable-
-                Address: 0000000000000000  Data: 0000
-        Capabilities: [78] Express (v1) Endpoint, MSI 00
-                DevCap: MaxPayload 128 bytes, PhantFunc 0, Latency L0s <512ns, 
-L1 <4us
-                        ExtTag+ AttnBtn- AttnInd- PwrInd- RBE+ FLReset-
-                DevCtl: Report errors: Correctable- Non-Fatal- Fatal- 
-Unsupported-
-                        RlxdOrd+ ExtTag+ PhantFunc- AuxPwr- NoSnoop+
-                        MaxPayload 128 bytes, MaxReadReq 512 bytes
-                DevSta: CorrErr- UncorrErr- FatalErr- UnsuppReq- AuxPwr- 
-TransPend-
-                LnkCap: Port #0, Speed 2.5GT/s, Width x16, ASPM L0s L1, 
-Latency L0 <512ns, L1 <4us
-                        ClockPM- Suprise- LLActRep- BwNot-
-                LnkCtl: ASPM Disabled; RCB 128 bytes Disabled- Retrain- 
-CommClk-
-                        ExtSynch- ClockPM- AutWidDis- BWInt- AutBWInt-
-                LnkSta: Speed 2.5GT/s, Width x16, TrErr- Train- SlotClk+ 
-DLActive- BWMgmt- ABWMgmt-
-        Kernel driver in use: nvidia
-        Kernel modules: nvidia
-
-I will reboot from systemresucecd later today and post some results with 
-ahci-mode set, no nomsi. Just can't try patches that way.
-
-Glück Auf,
-Volker
