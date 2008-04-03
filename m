@@ -1,61 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759958AbYDCPk2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760095AbYDCPmt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759958AbYDCPk2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Apr 2008 11:40:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757471AbYDCPkV
+	id S1760095AbYDCPmt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Apr 2008 11:42:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758000AbYDCPml
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Apr 2008 11:40:21 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:24083 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757186AbYDCPkU (ORCPT
+	Thu, 3 Apr 2008 11:42:41 -0400
+Received: from yw-out-2324.google.com ([74.125.46.28]:13551 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757990AbYDCPmk convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Apr 2008 11:40:20 -0400
-Date: Thu, 3 Apr 2008 08:39:53 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Tom Horsley <tom.horsley@ccur.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: module parameters versus kernel command line
-Message-Id: <20080403083953.42ea3f1d.randy.dunlap@oracle.com>
-In-Reply-To: <20080403090053.56f243df@tomh>
-References: <20080403090053.56f243df@tomh>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Thu, 3 Apr 2008 11:42:40 -0400
+Message-ID: <9ea470500804030842ne89877dg840c960eb44f0219@mail.gmail.com>
+Date: Thu, 3 Apr 2008 17:42:32 +0200
+From: "Boris Petkov" <petkovbb@googlemail.com>
+Reply-To: petkovbb@gmail.com
+To: "Stefan Richter" <stefanr@s5r6.in-berlin.de>
+Subject: Re: Proposed patch for IDE missing commands
+Cc: "Frans Pop" <elendil@planet.nl>, x.guimard@free.fr,
+       linux-kernel@vger.kernel.org, bzolnier@gmail.com,
+       linux-ide@vger.kernel.org
+In-Reply-To: <47F4F6D7.4050908@s5r6.in-berlin.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+References: <47F47324.80108@free.fr>
+	 <9ea470500804030228p3077456ai4a756aa46116aa4c@mail.gmail.com>
+	 <200804031220.07380.elendil@planet.nl>
+	 <47F4F6D7.4050908@s5r6.in-berlin.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 3 Apr 2008 09:00:53 -0400 Tom Horsley wrote:
+On Thu, Apr 3, 2008 at 5:25 PM, Stefan Richter
+<stefanr@s5r6.in-berlin.de> wrote:
+> Frans Pop wrote:
+>  > Boris Petkov wrote:
+>  >> Please, rebase/redo your patch against latest -rc kernel (in this case
+>  >> 2.6.25-rc8) und run it through scripts/checkpatch.pl in order to adjust it
+>  >> to the kernel coding style. See Documentation/CodingStyle for details.
+>
+>  Why don't linux kernel insiders help first-time contributors here a bit
+>  and simply repost the patch with style fix-up?  That would be a matter
+>  of 10 minutes or so and a more valuable contribution than a mere
+>  RTFCodingStyle.
 
-> Just curious: Is there any reason even dynamically loaded
-> modules shouldn't be able to find module parameters on
-> the kernel command line? I haven't actually investigated
-> the code involved (since I have no idea where it is :-),
-> but it sure seems like it would be convenient to have
-> a single place to put module parameters where they
-> would always be found regardless of the module's static
-> or dynamic build mode (especially when multi-booting
-> different kernels built different ways).
-> --
+Well, it'll probably take the same time to run checkpatch.pl on it and
+simply do what the
+tool suggests wrt to style - after all this can't be more complex than
+writing kernel code
+in itself, now can it? What is more, my suggestion was also to _redo_
+the patch against a more
+recent kernel version since ide-disk has changed since then and, even
+disregarding code
+style issues, the patch is inapplicable as such (e.g. deleted
+functions) Finally, despite all
+that who's-doing-what soul searching, redoing patches has a great
+didactical value which
+all of us have experienced time and again :).
 
-Does this answer your question?  from Documentation/kernel-parameters.txt:
 
-Module parameters for loadable modules are specified only as the
-parameter name with optional '=' and value as appropriate, such as:
-
-	modprobe usbcore blinkenlights=1
-
-Module parameters for modules that are built into the kernel image
-are specified on the kernel command line with the module name plus
-'.' plus parameter name, with '=' and value if appropriate, such as:
-
-	usbcore.blinkenlights=1
-
----
-~Randy
+-- 
+Regards/Gruﬂ,
+Boris
