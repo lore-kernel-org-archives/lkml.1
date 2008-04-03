@@ -1,80 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760209AbYDCPtO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760587AbYDCPta@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760209AbYDCPtO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Apr 2008 11:49:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757734AbYDCPs7
+	id S1760587AbYDCPta (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Apr 2008 11:49:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760272AbYDCPtS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Apr 2008 11:48:59 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:60860 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751964AbYDCPs7 convert rfc822-to-8bit (ORCPT
+	Thu, 3 Apr 2008 11:49:18 -0400
+Received: from adsl-67-113-118-6.dsl.sndg02.pacbell.net ([67.113.118.6]:52227
+	"EHLO multivac.one-eyed-alien.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1760260AbYDCPtR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Apr 2008 11:48:59 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Didier Raboud <didier@raboud.com>
-Subject: Re: =?iso-8859-15?q?2=2E6=2E25-rc7=A0=3A_hibernation_sometimes_not_resuming_on?=
- =?iso-8859-15?q?_Dell_Latitude?= D630
-Date: Thu, 3 Apr 2008 17:48:57 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: linux-kernel@vger.kernel.org, debian-kernel@lists.debian.org
-References: <200803311823.36693.didier@raboud.com> <200804021406.32668.didier@raboud.com> <200804031541.38493.didier@raboud.com>
-In-Reply-To: <200804031541.38493.didier@raboud.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 8BIT
+	Thu, 3 Apr 2008 11:49:17 -0400
+Date: Thu, 3 Apr 2008 08:48:45 -0700
+From: Matthew Dharm <mdharm-kernel@one-eyed-alien.net>
+To: Xavier Bestel <xavier.bestel@free.fr>
+Cc: Mark Lord <lkml@rtr.ca>, linux-usb@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: ASUS ScreenDuo
+Message-ID: <20080403154845.GA11683@one-eyed-alien.net>
+Mail-Followup-To: Xavier Bestel <xavier.bestel@free.fr>,
+	Mark Lord <lkml@rtr.ca>, linux-usb@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+References: <1207230481.24037.11.camel@skunk.anacadf.mentorg.com> <47F4E234.9000308@rtr.ca> <1207231628.3438.6.camel@skunk.anacadf.mentorg.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="sm4nu43k4a2Rpi4c"
 Content-Disposition: inline
-Message-Id: <200804031748.58113.rjw@sisk.pl>
+In-Reply-To: <1207231628.3438.6.camel@skunk.anacadf.mentorg.com>
+User-Agent: Mutt/1.4.2.3i
+Organization: One Eyed Alien Networks
+X-Copyright: (C) 2008 Matthew Dharm, all rights reserved.
+X-Message-Flag: Get a real e-mail client.  http://www.mutt.org/
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-2.1.12 (multivac.one-eyed-alien.net [127.0.0.1]); Thu, 03 Apr 2008 08:48:45 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, 3 of April 2008, Didier Raboud wrote:
-> Le mercredi, 2 avril 2008 14.06:29 Didier Raboud, vous avez écrit :
-> > Le mardi, 1 avril 2008 23.22:35 Rafael J. Wysocki, vous avez écrit :
-> > > On Tuesday, 1 of April 2008, Didier Raboud wrote:
-> > > > Le mardi, 1 avril 2008 23.11:15 Rafael J. Wysocki, vous avez écrit :
-> > > > > (...)
-> > > > > Can you please test the in-kernel hibernation, then?
-> > > > >
-> > > > > Rafael
-> > > >
-> > > > Hi,
-> > > >
-> > > > would like to. How ?
-> > > >
-> > > > # echo -n disk > /sys/power/state
-> > >
-> > > Yes, should work without the "-n", too.  Of course, you have to use the
-> > > 'resume=' kernel command line argument for this to work.
-> > >
-> > > Perhaps increase the console log level before that.
-> > >
-> > > Thanks,
-> > > Rafael
-> >
-> > Ok. I found a "better" way to do it : just uninstall uswsusp and let
-> > kpowersave use hal to use suspend :-)
-> >
-> > Anyway, so far so good (with USB_SUSPEND not set), no hang. I will test
-> > with USB_SUSPEND set and the incoming 2.6.25-rc8.
-> >
-> > Regards,
-> >
-> > Didier
-> 
-> So far so good too with "stock" Debian Kernel (2.7.25-rc7-amd64) with 
-> USB_SUSPEND set. No hang.
-> 
-> The kernel suspend is less user-friendly than uswsusp though...
-> 
-> So I bet there is a bug in uswsusp's kernel part ?
 
-It's almost the same as the in-kernel one, especially as far as the resume is
-concerned.  The simplest explanation coming to mind is that the image is
-somehow damaged in the uswsusp case.
+--sm4nu43k4a2Rpi4c
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-You can use the uswsusp's checksumming to verify that, though.
+On Thu, Apr 03, 2008 at 04:07:08PM +0200, Xavier Bestel wrote:
+> On Thu, 2008-04-03 at 09:57 -0400, Mark Lord wrote:
+> > > [root@awak:~]$ fdisk /dev/sdc
+> > >=20
+> > > Unable to open /dev/sdc
+> > >=20
+> > ..
+> >=20
+> > As root, try:   mknod /tmp/sdc b 8 32 ; fdisk /tmp/sdc
+> >=20
+> > Any different?=20
+>=20
+> Nope. But /dev/sdc has already been created, and looks right (b 8 32
+> too). Just there's nothing behind it.
 
-Thanks,
-Rafael
+Turn on CONFIG_USB_STORAGE_DEBUG and see what logs it generates when you
+try to access the device.
+
+Matt
+
+--=20
+Matthew Dharm                              Home: mdharm-usb@one-eyed-alien.=
+net=20
+Maintainer, Linux USB Mass Storage Driver
+
+NYET! The evil stops here!
+					-- Pitr
+User Friendly, 6/22/1998
+
+--sm4nu43k4a2Rpi4c
+Content-Type: application/pgp-signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+
+iD8DBQFH9PxdHL9iwnUZqnkRAgtiAJ9QR0u9/FNPXYW6eDGF9Xo4qtaTVQCeKSxl
+gsRkQHi8S7l1/QeHBbktoBc=
+=xmNB
+-----END PGP SIGNATURE-----
+
+--sm4nu43k4a2Rpi4c--
