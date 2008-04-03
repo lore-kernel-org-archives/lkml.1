@@ -1,67 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757857AbYDCXsW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758031AbYDCXtp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757857AbYDCXsW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Apr 2008 19:48:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753530AbYDCXsQ
+	id S1758031AbYDCXtp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Apr 2008 19:49:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753530AbYDCXti
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Apr 2008 19:48:16 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.158]:57557 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751752AbYDCXsQ (ORCPT
+	Thu, 3 Apr 2008 19:49:38 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:23301 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750770AbYDCXth (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Apr 2008 19:48:16 -0400
-Message-ID: <47F56CBC.4080706@ct.jp.nec.com>
-Date: Thu, 03 Apr 2008 16:48:12 -0700
-From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-User-Agent: Thunderbird 2.0.0.12 (Windows/20080213)
+	Thu, 3 Apr 2008 19:49:37 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=C0aKp7ynF94i/Sk1Ydex/wxoHpjgZ2pwLeoDuPkfSmZRNcmGNArMeoPJXzL3AOssp
+	S14G+Gc3lnA5+UPQcqLBA==
+Message-ID: <6599ad830804031649p6bbc60f3s59fb7c25a7260505@mail.gmail.com>
+Date: Thu, 3 Apr 2008 16:49:24 -0700
+From: "Paul Menage" <menage@google.com>
+To: matthltc@us.ibm.com
+Subject: Re: [Devel] [RFC PATCH 0/4] Container Freezer: Reuse Suspend Freezer
+Cc: Linux-Kernel <linux-kernel@vger.kernel.org>,
+       "Linux Containers" <containers@lists.linux-foundation.org>
+In-Reply-To: <20080403210316.397506379@us.ibm.com>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, a.p.zijlstra@chello.nl
-Subject: Re: [RESEND][RFC v3 PATCH] RTTIME watchdog timer proc interface
-References: <47F55D8D.3060700@ct.jp.nec.com> <20080403161106.fe260fd7.akpm@linux-foundation.org>
-In-Reply-To: <20080403161106.fe260fd7.akpm@linux-foundation.org>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080403210316.397506379@us.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Thu, 03 Apr 2008 15:43:25 -0700
-> Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com> wrote:
-> 
->> From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
->>
->> Introduce new proc interface for RTTIME watchdog.
->> It makes administrator able to set RTTIME watchdog to exisiting real-time
->> applications without impact. It's useful we don't want to change software
->> stack, but want to use RTTIME watchdog for that software.
-> 
-> Well you don't really need to change the software stack.  It's a matter of
-> setting RLIMIT_RTTIME in the parent process before starting the stack up. 
+On Thu, Apr 3, 2008 at 2:03 PM,  <matthltc@us.ibm.com> wrote:
+>
+>    * "freezer.kill"
+>
+>      writing <n> will send signal number <n> to all tasks
+>
 
-I think it means all processes have the same RTTIME, I cannot change some
-of them, correct?
+My first thought (not having looked at the code yet) is that sending a
+signal doesn't really have anything to do with freezing, so it
+shouldn't be in the same subsystem. Maybe a separate subsystem called
+"signal"?
 
-> This is not much more work than poking at /proc/<pid>/rttime afterwards.
-> 
-> Although setting RLIMIT_RTTIME via fork() is much less useful than being
-> able to alter it at runtime.
-> 
->>  fs/proc/base.c |  103 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-> 
-> And that's rather a lot of new code just for RLIMIT_RTTIME.  And
-> RLIMIT_RTTIME is not the only rlimit which has this problem - generally the
-> rlimit interface is a rather nasty one.
-> 
-> 
-> I think we should look at creating a general way of modifying and reading a
-> running process's rlimits.  If we want to do that, a syscall would be the
-> appropriate interface.
-> 
-I agreed, using /proc is easy but wrong way.
-I'll look for other approach for this.
+And more than that, it's not something that requires any particular
+per-process state, so there's no reason that the subsystem that
+provides the "kill" functionality shouldn't be able to be mounted in
+multiple hierarchies.
 
+How about if I added support for stateless subsystems, that could
+potentially be mounted in multiple hierarchies at once? They wouldn't
+need an entry in the css set, since they have no state.
 
-thanks,
-Hiroshi Shimamoto
+>  * Usage :
+>
+>    # mkdir /containers/freezer
+>    # mount -t container -ofreezer freezer  /containers/freezer
+>    # mkdir /containers/freezer/0
+>    # echo $some_pid > /containers/freezer/0/tasks
+>
+>  to get status of the freezer subsystem :
+>
+>    # cat /containers/freezer/0/freezer.freeze
+>    RUNNING
+>
+>  to freeze all tasks in the container :
+>
+>    # echo 1 > /containers/freezer/0/freezer.freeze
+>    # cat /containers/freezer/0/freezer.freeze
+>    FREEZING
+>    # cat /containers/freezer/0/freezer.freeze
+>    FROZEN
+
+Could we separate this out into two files? One called "freeze" that's
+a 0/1 for whether we're intending to freeze the subsystem, and one
+called "frozen" that indicates whether it is frozen? And maybe a
+"state" file to report the RUNNING/FREEZING/FROZEN distinction in a
+human-readable way?
+
+Paul
