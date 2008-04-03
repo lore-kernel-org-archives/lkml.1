@@ -1,160 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757511AbYDCSsW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759495AbYDCSsr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757511AbYDCSsW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Apr 2008 14:48:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754415AbYDCSsL
+	id S1759495AbYDCSsr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Apr 2008 14:48:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757948AbYDCSsh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Apr 2008 14:48:11 -0400
-Received: from smtp2f.orange.fr ([80.12.242.152]:36044 "EHLO smtp2f.orange.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752856AbYDCSsJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Apr 2008 14:48:09 -0400
-X-ME-UUID: 20080403175303999.F41D970000B2@mwinf2f03.orange.fr
-Subject: Re: ASUS ScreenDuo
-From: Xavier Bestel <xavier.bestel@free.fr>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <Pine.LNX.4.44L0.0804031136330.5546-100000@iolanthe.rowland.org>
-References: <Pine.LNX.4.44L0.0804031136330.5546-100000@iolanthe.rowland.org>
-Content-Type: text/plain
-Date: Thu, 03 Apr 2008 19:52:55 +0200
-Message-Id: <1207245175.24007.0.camel@bip.parateam.prv>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 
+	Thu, 3 Apr 2008 14:48:37 -0400
+Received: from E23SMTP06.au.ibm.com ([202.81.18.175]:57420 "EHLO
+	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754599AbYDCSsg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Apr 2008 14:48:36 -0400
+Message-ID: <47F5266B.2060402@linux.vnet.ibm.com>
+Date: Fri, 04 Apr 2008 00:18:11 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+MIME-Version: 1.0
+To: Paul Menage <menage@google.com>
+CC: Pavel Emelianov <xemul@openvz.org>, Hugh Dickins <hugh@veritas.com>,
+       Sudhir Kumar <skumar@linux.vnet.ibm.com>,
+       YAMAMOTO Takashi <yamamoto@valinux.co.jp>, lizf@cn.fujitsu.com,
+       linux-kernel@vger.kernel.org, taka@valinux.co.jp, linux-mm@kvack.org,
+       David Rientjes <rientjes@google.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Subject: Re: [-mm] Add an owner to the mm_struct (v7)
+References: <20080403174433.26356.42121.sendpatchset@localhost.localdomain> <6599ad830804031058l1e2a7ad9p56cff47dca738d79@mail.gmail.com> <47F51DE7.7010204@linux.vnet.ibm.com> <6599ad830804031122y3f6946fbp97dc18073bf02609@mail.gmail.com> <47F5233F.1010108@linux.vnet.ibm.com> <6599ad830804031141o142bf8c2o1899ca78f8cd434a@mail.gmail.com>
+In-Reply-To: <6599ad830804031141o142bf8c2o1899ca78f8cd434a@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On jeu, 2008-04-03 at 11:37 -0400, Alan Stern wrote:
-> On Thu, 3 Apr 2008, Xavier Bestel wrote:
+Paul Menage wrote:
+> On Thu, Apr 3, 2008 at 11:34 AM, Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+>>  That is indeed quite bad. Do we have to retire the group_leader to init_css_set?
+>>  Can we not check for delay_group_leader() there?
+>>
 > 
-> > Hi,
-> > 
-> > I have an ASUS motherboard with an USB gadget, the ASUS ScreenDUO. It's
-> > an independant little lcd screen with buttons, apparently it runs some
-> > kind of OS because it can access the net (e.g. to retrieve RSS) even
-> > when the computer is off - I guess they mean soft-off.
-> > 
-> > Well, all that is theory because it's under Vista, which I don't have.
-> > Under Linux the ScreenDUO is kind-of recognized: it says it's a mass
-> > storage device, but I can't mount it (the kernel says it's bound to sdc,
-> > but sdc doesn't exist).
-> > I'd like to access it. Does anyone know how that thing works ?
-> 
-> What does usbmon show when you modprobe usb-storage?  (The instructions 
-> for usbmon are in the kernel source file Documentation/usb/usbmon.txt.)
+> That might have unintentded consequences, such as leaving a pid in the
+> cgroup that can't be moved (since it's PF_EXITING) but won't go away
+> until its threads have all exited.
+> Maybe that's OK if the other threads are guaranteed to have started
+> exiting by this point. We'd need some cleanup for when the group
+> leader finally did exit.
 
-dfb8d3c0 4163439081 C Ii:7:001:1 0:2048 1 = 10
-dfb8d3c0 4163439091 S Ii:7:001:1 -115:2048 4 <
-e5d7aa40 4163439171 S Ci:7:001:0 s a3 00 0000 0004 0004 4 <
-e5d7aa40 4163439176 C Ci:7:001:0 0 4 = 01050100
-e5d7aa40 4163439179 S Co:7:001:0 s 23 01 0010 0004 0000 0
-e5d7aa40 4163439182 C Co:7:001:0 0 0
-e5d7aa40 4163439184 S Ci:7:001:0 s a3 00 0000 0004 0004 4 <
-e5d7aa40 4163439186 C Ci:7:001:0 0 4 = 01050000
-e5d7aa40 4163470364 S Ci:7:001:0 s a3 00 0000 0004 0004 4 <
-e5d7aa40 4163470368 C Ci:7:001:0 0 4 = 01050000
-e5d7aa40 4163502356 S Ci:7:001:0 s a3 00 0000 0004 0004 4 <
-e5d7aa40 4163502360 C Ci:7:001:0 0 4 = 01050000
-e5d7aa40 4163534355 S Ci:7:001:0 s a3 00 0000 0004 0004 4 <
-e5d7aa40 4163534358 C Ci:7:001:0 0 4 = 01050000
-e5d7aa40 4163566364 S Ci:7:001:0 s a3 00 0000 0004 0004 4 <
-e5d7aa40 4163566367 C Ci:7:001:0 0 4 = 01050000
-e5d7aa40 4163566374 S Co:7:001:0 s 23 03 0004 0004 0000 0
-e5d7aa40 4163566377 C Co:7:001:0 0 0
-e5d7aa40 4163622353 S Ci:7:001:0 s a3 00 0000 0004 0004 4 <
-e5d7aa40 4163622563 C Ci:7:001:0 0 4 = 03051000
-e5d7aa40 4163678364 S Co:7:001:0 s 23 01 0014 0004 0000 0
-e5d7aa40 4163678369 C Co:7:001:0 0 0
-e5d7aa40 4163678392 S Ci:7:000:0 s 80 06 0100 0000 0040 64 <
-e5d7aa40 4163678576 C Ci:7:000:0 0 18 = 12010002 00000040 43100031 01001020 6001
-e5d7aa40 4163678602 S Co:7:001:0 s 23 03 0004 0004 0000 0
-e5d7aa40 4163678607 C Co:7:001:0 0 0
-e5d7aa40 4163734354 S Ci:7:001:0 s a3 00 0000 0004 0004 4 <
-e5d7aa40 4163734568 C Ci:7:001:0 0 4 = 03051000
-e5d7aa40 4163790363 S Co:7:001:0 s 23 01 0014 0004 0000 0
-e5d7aa40 4163790370 C Co:7:001:0 0 0
-e5d7aa40 4163790373 S Co:7:000:0 s 00 05 0005 0000 0000 0
-e5d7aa40 4163790577 C Co:7:000:0 0 0
-e5d7aa40 4163810360 S Ci:7:005:0 s 80 06 0100 0000 0012 18 <
-e5d7aa40 4163810578 C Ci:7:005:0 0 18 = 12010002 00000040 43100031 01001020 6001
-e5d7aa40 4163810603 S Ci:7:005:0 s 80 06 0200 0000 0009 9 <
-e5d7aa40 4163810828 C Ci:7:005:0 0 9 = 09022300 010130c0 00
-e5d7aa40 4163810847 S Ci:7:005:0 s 80 06 0200 0000 0023 35 <
-e5d7aa40 4163811078 C Ci:7:005:0 0 35 = 09022300 010130c0 00090400 00020806 50400705 81020002 00070502 02000200
-e5d7aa40 4163811103 S Ci:7:005:0 s 80 06 0300 0000 00ff 255 <
-e5d7aa40 4163811328 C Ci:7:005:0 0 4 = 04030904
-e5d7aa40 4163811346 S Ci:7:005:0 s 80 06 0320 0409 00ff 255 <
-e5d7aa40 4163811578 C Ci:7:005:0 0 20 = 14035300 63007200 65006500 6e004400 55004f00
-e5d7aa40 4163811598 S Ci:7:005:0 s 80 06 0310 0409 00ff 255 <
-e5d7aa40 4163811828 C Ci:7:005:0 0 10 = 0a034100 53005500 5300
-e5d7aa40 4163811846 S Ci:7:005:0 s 80 06 0360 0409 00ff 255 <
-e5d7aa40 4163812078 C Ci:7:005:0 0 64 = 4d000000 0b8f8309 c0b002c0 99e92e00 f0a0e2e2 0f02400c e0f03050 09090509
-e5d7aa40 4163812248 S Co:7:005:0 s 00 09 0001 0000 0000 0
-e5d7aa40 4163812452 C Co:7:005:0 0 0
-e5d7aa40 4163812462 S Ci:7:005:0 s 80 06 0330 0409 00ff 255 <
-e5d7aa40 4163812702 C Ci:7:005:0 0 28 = 1c034300 4f004e00 46004900 47002000 53005400 52004900 4e004700
-e5d7a540 4163812815 S Ci:7:005:0 s 80 06 0340 0409 00ff 255 <
-e5d7a540 4163812953 C Ci:7:005:0 0 34 = 22034900 4e005400 45005200 46004100 43004500 20005300 54005200 49004e00
-e5d7aa40 4168810367 S Ci:7:005:0 s a1 fe 0000 0000 0001 1 <
-e5d7aa40 4168811518 C Ci:7:005:0 0 1 = 00
-e5d7aa40 4168811605 S Bo:7:005:2 -115 31 = 55534243 01000000 24000000 80000612 00000024 00000000 00000000 000000
-e5d7aa40 4168811642 C Bo:7:005:2 0 31 >
-e5d7a540 4168811651 S Bi:7:005:1 -115 36 <
-e5d7a540 4168811891 C Bi:7:005:1 0 36 = 00800202 21000000 41535553 20202020 53637265 656e4455 4f202020 20202020
-e5d7aa40 4168811896 S Bi:7:005:1 -115 13 <
-e5d7aa40 4168812017 C Bi:7:005:1 0 13 = 55534253 01000000 00000000 00
-e5d7aa40 4168812294 S Bo:7:005:2 -115 31 = 55534243 02000000 00000000 00000600 00000000 00000000 00000000 000000
-e5d7aa40 4168812391 C Bo:7:005:2 0 31 >
-e5d7aa40 4168812394 S Bi:7:005:1 -115 13 <
-e5d7aa40 4168812641 C Bi:7:005:1 0 13 = 55534253 02000000 00000000 01
-e5d7aa40 4168812644 S Bo:7:005:2 -115 31 = 55534243 03000000 12000000 80000603 00000012 00000000 00000000 000000
-e5d7aa40 4168812766 C Bo:7:005:2 0 31 >
-f36a85c0 4168827343 S Bi:7:005:1 -115 18 <
-f36a85c0 4168827391 C Bi:7:005:1 0 18 = 70000200 0000000a 00000000 3a000000 0000
-e5d7aa40 4168827396 S Bi:7:005:1 -115 13 <
-e5d7aa40 4168827516 C Bi:7:005:1 0 13 = 55534253 03000000 00000000 00
-e5d7aa40 4262289563 S Bo:7:005:2 -115 31 = 55534243 04000000 00000000 00000600 00000000 00000000 00000000 000000
-e5d7aa40 4262289679 C Bo:7:005:2 0 31 >
-e5d7aa40 4262289683 S Bi:7:005:1 -115 13 <
-e5d7aa40 4262289803 C Bi:7:005:1 0 13 = 55534253 04000000 00000000 01
-e5d7aa40 4262289808 S Bo:7:005:2 -115 31 = 55534243 05000000 12000000 80000603 00000012 00000000 00000000 000000
-e5d7aa40 4262290053 C Bo:7:005:2 0 31 >
-f36a8240 4262290058 S Bi:7:005:1 -115 18 <
-f36a8240 4262290178 C Bi:7:005:1 0 18 = 70000200 0000000a 00000000 3a000000 0000
-e5d7aa40 4262290183 S Bi:7:005:1 -115 13 <
-e5d7aa40 4262290303 C Bi:7:005:1 0 13 = 55534253 05000000 00000000 00
-e5d7aa40 4262290327 S Bo:7:005:2 -115 31 = 55534243 06000000 00000000 00000600 00000000 00000000 00000000 000000
-e5d7aa40 4262290429 C Bo:7:005:2 0 31 >
-e5d7aa40 4262290432 S Bi:7:005:1 -115 13 <
-e5d7aa40 4262290554 C Bi:7:005:1 0 13 = 55534253 06000000 00000000 01
-e5d7aa40 4262290558 S Bo:7:005:2 -115 31 = 55534243 07000000 12000000 80000603 00000012 00000000 00000000 000000
-e5d7aa40 4262290803 C Bo:7:005:2 0 31 >
-f36a8240 4262290806 S Bi:7:005:1 -115 18 <
-f36a8240 4262290929 C Bi:7:005:1 0 18 = 70000200 0000000a 00000000 3a000000 0000
-e5d7aa40 4262290933 S Bi:7:005:1 -115 13 <
-e5d7aa40 4262291053 C Bi:7:005:1 0 13 = 55534253 07000000 00000000 00
-e5d7aa40 4262291077 S Bo:7:005:2 -115 31 = 55534243 08000000 00000000 00000600 00000000 00000000 00000000 000000
-e5d7aa40 4262291179 C Bo:7:005:2 0 31 >
-e5d7aa40 4262291183 S Bi:7:005:1 -115 13 <
-e5d7aa40 4262291428 C Bi:7:005:1 0 13 = 55534253 08000000 00000000 01
-e5d7aa40 4262291431 S Bo:7:005:2 -115 31 = 55534243 09000000 12000000 80000603 00000012 00000000 00000000 000000
-e5d7aa40 4262291554 C Bo:7:005:2 0 31 >
-f36a8240 4262291558 S Bi:7:005:1 -115 18 <
-f36a8240 4262291803 C Bi:7:005:1 0 18 = 70000200 0000000a 00000000 3a000000 0000
-e5d7aa40 4262291806 S Bi:7:005:1 -115 13 <
-e5d7aa40 4262291928 C Bi:7:005:1 0 13 = 55534253 09000000 00000000 00
-e5d7aa40 4262291946 S Bo:7:005:2 -115 31 = 55534243 0a000000 00000000 00000600 00000000 00000000 00000000 000000
-e5d7aa40 4262292054 C Bo:7:005:2 0 31 >
-e5d7aa40 4262292058 S Bi:7:005:1 -115 13 <
-e5d7aa40 4262292303 C Bi:7:005:1 0 13 = 55534253 0a000000 00000000 01
-e5d7aa40 4262292306 S Bo:7:005:2 -115 31 = 55534243 0b000000 12000000 80000603 00000012 00000000 00000000 000000
-e5d7aa40 4262292429 C Bo:7:005:2 0 31 >
-f36a8240 4262292433 S Bi:7:005:1 -115 18 <
-f36a8240 4262292678 C Bi:7:005:1 0 18 = 70000200 0000000a 00000000 3a000000 0000
-e5d7aa40 4262292681 S Bi:7:005:1 -115 13 <
-e5d7aa40 4262292804 C Bi:7:005:1 0 13 = 55534253 0b000000 00000000 00
+Yes, we might be stuck with an unremovable group, but I am not sure how to
+address the side-effect at this point. Not having that check could mean that
+mm_update_new_owner() will be called very frequently and for thousands of
+threads that could clearly become an overhead, if threads start exiting one by
+one - lead by the thread group leader.
 
-
-
+-- 
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
