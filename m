@@ -1,128 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758782AbYDCN1l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758300AbYDCNaj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758782AbYDCN1l (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Apr 2008 09:27:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756353AbYDCN1d
+	id S1758300AbYDCNaj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Apr 2008 09:30:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753792AbYDCNab
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Apr 2008 09:27:33 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:34713 "EHLO mx1.redhat.com"
+	Thu, 3 Apr 2008 09:30:31 -0400
+Received: from saeurebad.de ([85.214.36.134]:53508 "EHLO saeurebad.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755664AbYDCN1c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Apr 2008 09:27:32 -0400
-Subject: [PATCH] xen: Fix grant table bug
-From: Mark McLoughlin <markmc@redhat.com>
-Reply-To: Mark McLoughlin <markmc@redhat.com>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: xen-devel <xen-devel@lists.xensource.com>,
-       Michael Abd-El-Malek <mabdelmalek@cmu.edu>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <47F05DB1.5090606@cmu.edu>
-References: <47F05DB1.5090606@cmu.edu>
-Content-Type: text/plain
-Date: Thu, 03 Apr 2008 14:26:50 +0100
-Message-Id: <1207229210.29720.11.camel@muff>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-3.fc8) 
-Content-Transfer-Encoding: 7bit
+	id S1753483AbYDCNaa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Apr 2008 09:30:30 -0400
+From: Johannes Weiner <hannes@saeurebad.de>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Heiko Carstens <heiko.carstens@de.ibm.com>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, mingo@elte.hu, davem@davemloft.net,
+       hskinnemoen@atmel.com, cooloney@kernel.org, starvik@axis.com,
+       dhowells@redhat.com, ysato@users.sourceforge.net, takata@linux-m32r.org,
+       geert@linux-m68k.org, ralf@linux-mips.org, kyle@parisc-linux.org,
+       paulus@samba.org, schwidefsky@de.ibm.com, lethal@linux-sh.org,
+       jdike@addtoit.com, miles@gnu.org, chris@zankel.net,
+       rmk@arm.linux.org.uk, tony.luck@intel.com
+Subject: Re: [RFC 01/22] Generic show_mem() implementation
+References: <12071688283927-git-send-email-hannes@saeurebad.de>
+	<1207168839586-git-send-email-hannes@saeurebad.de>
+	<20080403075545.GC4125@osiris.boeblingen.de.ibm.com>
+	<20080403124820.GA30356@uranus.ravnborg.org>
+Date: Thu, 03 Apr 2008 15:30:23 +0200
+In-Reply-To: <20080403124820.GA30356@uranus.ravnborg.org> (Sam Ravnborg's
+	message of "Thu, 3 Apr 2008 14:48:20 +0200")
+Message-ID: <87abkboykw.fsf@saeurebad.de>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2008-03-30 at 23:42 -0400, Michael Abd-El-Malek wrote:
+Hi,
 
-> There was a bug in the free list allocation code. The free list was indexed as 
-> if it was the same size as the grant table.  But it's only half as large.  So 
-> memory got corrupted, and I was seeing crashes in the slab allocator later on.
+Sam Ravnborg <sam@ravnborg.org> writes:
 
-Looks like an obvious candidate for upstream linux too. Rebased version
-below.
+>> > +
+>> > +config HAVE_ARCH_SHOW_MEM
+>> > +	def_bool y
+>> 
+>> These are all not necessary. Better add some global Kconfig option that
+>> gets selected by an arch if it wants the generic implementation.
+>> 
+>> e.g. we currently have this in arch/s390/Kconfig:
+>> 
+>> config S390
+>>         def_bool y
+>>         select HAVE_OPROFILE
+>>         select HAVE_KPROBES
+>>         select HAVE_KRETPROBES
+>> 
+>> just add a select HAVE_GENERIC_SHOWMEM or something like that in the arch
+>> specific patches.
+> Seconded.
+> See Documentation/kbuild/kconfig-language.txt for a few more hints
+> how to do it.
 
-Cheers,
-Mark.
+Yes, I will rework the patches.  Thanks.
 
-From: Michael Abd-El-Malek <mabdelmalek@cmu.edu>
-
-A PV OS has two grant table data structures: the grant table itself
-and a free list.  The free list is composed of an array of pages,
-which grow dynamically as the guest OS requires more grants.  While
-the grant table contains 8-byte entries, the free list contains 4-byte
-entries.  So we have half as many pages in the free list than in the
-grant table.
-
-There was a bug in the free list allocation code. The free list was
-indexed as if it was the same size as the grant table.  But it's only
-half as large.  So memory got corrupted, and I was seeing crashes in
-the slab allocator later on.
-
-Taken from:
-
-  http://xenbits.xensource.com/linux-2.6.18-xen.hg?rev/4018c0da3360
-
-Signed-off-by: Michael Abd-El-Malek <mabdelmalek@cmu.edu>
-Signed-off-by: Mark McLoughlin <markmc@redhat.com>
----
- drivers/xen/grant-table.c |   16 ++++++++++------
- 1 files changed, 10 insertions(+), 6 deletions(-)
-
-diff --git a/drivers/xen/grant-table.c b/drivers/xen/grant-table.c
-index ea94dba..d85dc6d 100644
---- a/drivers/xen/grant-table.c
-+++ b/drivers/xen/grant-table.c
-@@ -381,11 +381,15 @@ EXPORT_SYMBOL_GPL(gnttab_cancel_free_callback);
- static int grow_gnttab_list(unsigned int more_frames)
- {
- 	unsigned int new_nr_grant_frames, extra_entries, i;
-+	unsigned int nr_glist_frames, new_nr_glist_frames;
- 
- 	new_nr_grant_frames = nr_grant_frames + more_frames;
- 	extra_entries       = more_frames * GREFS_PER_GRANT_FRAME;
- 
--	for (i = nr_grant_frames; i < new_nr_grant_frames; i++) {
-+	nr_glist_frames = (nr_grant_frames * GREFS_PER_GRANT_FRAME + RPP - 1) / RPP;
-+	new_nr_glist_frames =
-+		(new_nr_grant_frames * GREFS_PER_GRANT_FRAME + RPP - 1) / RPP;
-+	for (i = nr_glist_frames; i < new_nr_glist_frames; i++) {
- 		gnttab_list[i] = (grant_ref_t *)__get_free_page(GFP_ATOMIC);
- 		if (!gnttab_list[i])
- 			goto grow_nomem;
-@@ -407,7 +411,7 @@ static int grow_gnttab_list(unsigned int more_frames)
- 	return 0;
- 
- grow_nomem:
--	for ( ; i >= nr_grant_frames; i--)
-+	for ( ; i >= nr_glist_frames; i--)
- 		free_page((unsigned long) gnttab_list[i]);
- 	return -ENOMEM;
- }
-@@ -530,7 +534,7 @@ static int gnttab_expand(unsigned int req_entries)
- static int __devinit gnttab_init(void)
- {
- 	int i;
--	unsigned int max_nr_glist_frames;
-+	unsigned int max_nr_glist_frames, nr_glist_frames;
- 	unsigned int nr_init_grefs;
- 
- 	if (!is_running_on_xen())
-@@ -543,15 +547,15 @@ static int __devinit gnttab_init(void)
- 	 * grant reference free list on the current hypervisor.
- 	 */
- 	max_nr_glist_frames = (boot_max_nr_grant_frames *
--			       GREFS_PER_GRANT_FRAME /
--			       (PAGE_SIZE / sizeof(grant_ref_t)));
-+			       GREFS_PER_GRANT_FRAME / RPP);
- 
- 	gnttab_list = kmalloc(max_nr_glist_frames * sizeof(grant_ref_t *),
- 			      GFP_KERNEL);
- 	if (gnttab_list == NULL)
- 		return -ENOMEM;
- 
--	for (i = 0; i < nr_grant_frames; i++) {
-+	nr_glist_frames = (nr_grant_frames * GREFS_PER_GRANT_FRAME + RPP - 1) / RPP;
-+	for (i = 0; i < nr_glist_frames; i++) {
- 		gnttab_list[i] = (grant_ref_t *)__get_free_page(GFP_KERNEL);
- 		if (gnttab_list[i] == NULL)
- 			goto ini_nomem;
--- 
-
-
+	Hannes
