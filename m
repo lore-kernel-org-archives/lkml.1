@@ -1,73 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759604AbYDCOrS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759044AbYDCOtE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759604AbYDCOrS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Apr 2008 10:47:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757415AbYDCOrF
+	id S1759044AbYDCOtE (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Apr 2008 10:49:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757603AbYDCOsy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Apr 2008 10:47:05 -0400
-Received: from yw-out-2324.google.com ([74.125.46.29]:63851 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757552AbYDCOrD (ORCPT
+	Thu, 3 Apr 2008 10:48:54 -0400
+Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:56635 "EHLO
+	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757329AbYDCOsy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Apr 2008 10:47:03 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=a/e94U5WnUYdB/n8dIb18jmH2RhyyJsCmjxBxpBXwnCmmJxExTaK8+ZAc4VMMNkzXc0LOjrx4LfWtN0ooGBK7ozMJ1rAbSvGMQZaR3RwPtrhJa/c/Gih2LM62kECRsTy6wrXGGl/UZLNzSBAul41AWPqtwnG8jkNvcnoK3J7XkE=
-Message-ID: <8bd0f97a0804030746k155a716tb1ced0d1aec6047f@mail.gmail.com>
-Date: Thu, 3 Apr 2008 10:46:55 -0400
-From: "Mike Frysinger" <vapier.adi@gmail.com>
-To: "Bernd Schmidt" <bernds_cb1@t-online.de>
-Subject: Re: nommu: handling anonymous mmap clearing in userspace rather than kernel
-Cc: "David Howells" <dhowells@redhat.com>, "Greg Ungerer" <gerg@snapgear.com>,
-       "David McCullough" <David_Mccullough@securecomputing.com>,
-       LKML <linux-kernel@vger.kernel.org>, "Bryan Wu" <Bryan.Wu@analog.com>,
-       "Robin Getz" <rgetz@blackfin.uclinux.org>
-In-Reply-To: <47F4BA31.1080702@t-online.de>
+	Thu, 3 Apr 2008 10:48:54 -0400
+Date: Thu, 3 Apr 2008 10:48:52 -0400
+To: "Andreas K. Huettel" <mail@akhuettel.de>
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [tainted,fglrx] page allocation failure: basic meaning of log messages?
+Message-ID: <20080403144852.GD24239@csclub.uwaterloo.ca>
+References: <alpine.LNX.1.00.0804031117030.10277@localhost> <20080403183021.028C.KOSAKI.MOTOHIRO@jp.fujitsu.com> <alpine.LNX.1.00.0804031318480.10277@localhost>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <8bd0f97a0804011434r4869fbe8t89ade12c04c97f2@mail.gmail.com>
-	 <5516.1207146014@redhat.com>
-	 <8bd0f97a0804020747r2d7c2802pa18cf08eced3821b@mail.gmail.com>
-	 <47F3A02B.5070302@t-online.de>
-	 <8bd0f97a0804020807o21f69b7due910563b9dad03e8@mail.gmail.com>
-	 <47F4BA31.1080702@t-online.de>
+In-Reply-To: <alpine.LNX.1.00.0804031318480.10277@localhost>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 3, 2008 at 7:06 AM, Bernd Schmidt <bernds_cb1@t-online.de> wrote:
-> Mike Frysinger wrote:
-> > i also expected MAP_UNINITIALIZE to be unacceptable to LKML.  and
-> > afaik, there doesnt seem to be a way to distinguish in the kernel
-> > whether the call is coming from userspace or kernel space, so the
-> > memset() call will still be called for the kernel.  ideally the code
-> > would read:
-> > if (!kernel && !(flags & MAP_UNINITIALIZE))
-> >    memset(base, 0, len);
-> >
->
->  Have you examined all callers in the kernel whether they can take
-> uninitialized memory?
+On Thu, Apr 03, 2008 at 01:22:40PM +0200, Andreas K. Huettel wrote:
+> -----BEGIN PGP SIGNED MESSAGE-----
+> Hash: RIPEMD160
+> 
+> 
+> Hi, 
+> 
+> #]> Apr  3 09:01:30 bellini hal-system-powe: page allocation failure. order:10, mode:0x4020
+> #]> Apr  3 09:01:30 bellini Pid: 327, comm: hal-system-powe Tainted: PF       2.6.24-gentoo-r3 #1
+> #]> Apr  3 09:01:30 bellini [<c0140c48>] __alloc_pages+0x2bd/0x2ce
+> #]> Apr  3 09:01:30 bellini [<c0140c92>] __get_free_pages+0x39/0x47
+> #]> Apr  3 09:01:30 bellini [<f8adcd9e>] firegl_cmmqs_save_fb+0x8e/0x200 [fglrx]
+> #]
+> #]this messages doesn't mean bug, merely indicate allocation failure.
+> #]if any other bad thind doen't happend, you can ignore it.
+> 
+> Swapping like mad without any obvious cause (500M swap in use, 1.5G RAM 
+> - - which is normally not such a big problem). This however stopped when 
+> I closed some memory-intensive applications (firefox, vmware).
+> 
+> Since then the machine is running without problems. 
 
-if they cant, they're broken, and need to get fixed.  i see these
-crashes then as a good thing :).
+firefox 2.x tends to leak memory like crazy in my experience, so it may
+be perfectly normal.  If you have adobe's flash plugin firefox can leak
+very quickly too.
 
-> (Your code doesn't match your description btw, so I'm
-> only guessing what you actually want to achieve.)
-
-doesnt it ?  the memset should only be called for userspace when it
-hasnt given the uninitialize flag.  if it's kernel space, we want to
-skip it.  if the uninitialize flag is given, we want to skip it.
-
->  Really, if MAP_UNINITIALIZE is unacceptable, then that's too bad and we'll
-> carry it as a local patch, but all the other proposed mechanisms are
-> non-solutions because they break an established interface.
-
-i'm just airing out the different solutions so people get a better
-idea of what's going on.  i dont think the userspace <-> kernelspace
-breakage is important, as the ABI is maintained at the important
-layer: user application <-> C library.
--mike
+-- 
+Len Sorensen
