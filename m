@@ -1,101 +1,152 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758643AbYDCVkk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758988AbYDCVoP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758643AbYDCVkk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Apr 2008 17:40:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753325AbYDCVk3
+	id S1758988AbYDCVoP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Apr 2008 17:44:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755146AbYDCVn7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Apr 2008 17:40:29 -0400
-Received: from rv-out-0910.google.com ([209.85.198.187]:25445 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752582AbYDCVk3 (ORCPT
+	Thu, 3 Apr 2008 17:43:59 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:47774 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754716AbYDCVn6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Apr 2008 17:40:29 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=gUH4VLmE5OZXdlV8GouMUnEWUlhn60g/TI6NoyHkiN5Zw7EXnCgfyvBLDdRfyCGZR04HxH5Vl0k4xV7tJ6kOZZKKTYirCqH6CBOqRDafroV+x+huTpc+7kj0wTm7ytnSPYV1HFnzpLR5VP++fky0v6juiYKP5t9eAoKa6mFN16w=
-Message-ID: <19f34abd0804031440x582674f6sa0dcddb62b0db226@mail.gmail.com>
-Date: Thu, 3 Apr 2008 23:40:28 +0200
-From: "Vegard Nossum" <vegard.nossum@gmail.com>
-To: "Pekka Paalanen" <pq@iki.fi>
-Subject: Re: mmiotrace bug: recursive probe hit
-Cc: avi@qumranet.com, linux-kernel@vger.kernel.org,
-       "Ingo Molnar" <mingo@elte.hu>, "Christoph Hellwig" <hch@infradead.org>,
-       "Arjan van de Ven" <arjan@infradead.org>,
-       "Pavel Roskin" <proski@gnu.org>, "Steven Rostedt" <rostedt@goodmis.org>,
-       "Peter Zijlstra" <a.p.zijlstra@chello.nl>, penberg@cs.helsinki.fi
-In-Reply-To: <20080404000701.70bbc1a4@daedalus.pq.iki.fi>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+	Thu, 3 Apr 2008 17:43:58 -0400
+Date: Thu, 3 Apr 2008 14:43:24 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Gerald Schaefer <gerald.schaefer@de.ibm.com>
+Cc: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
+       schwidefsky@de.ibm.com, mingo@elte.hu, davem@davemloft.net,
+       tony.luck@intel.com, paulus@samba.org, tglx@linutronix.de,
+       lethal@linux-sh.org
+Subject: Re: [PATCH 1/3] hugetlbfs: architecture header cleanup
+Message-Id: <20080403144324.fc672728.akpm@linux-foundation.org>
+In-Reply-To: <1207146415.4980.11.camel@localhost.localdomain>
+References: <1207145843.4980.7.camel@localhost.localdomain>
+	<1207146415.4980.11.camel@localhost.localdomain>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080309164050.2194461e@daedalus.pq.iki.fi>
-	 <20080328222500.21863a44@daedalus.pq.iki.fi>
-	 <20080330202608.054702a4@daedalus.pq.iki.fi>
-	 <20080404000701.70bbc1a4@daedalus.pq.iki.fi>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 3, 2008 at 11:07 PM, Pekka Paalanen <pq@iki.fi> wrote:
-> Pekka Paalanen <pq@iki.fi> wrote:
-> > C) Vegard mentioned something about per-cpu page tables for kmemcheck.
->  > This would be the ultimate solution, because it would solve two problems:
->  > - recursive probe hits
->  > - missed events due to another cpu disarming the page for single stepping
->  > Would it be possible to have a single temporary per-cpu pte?
->  >
->  > I understood kmemcheck has similar issues. Of course, one could force the
->  > system down to a single running CPU, but that feels nasty.
+On Wed, 02 Apr 2008 16:26:55 +0200
+Gerald Schaefer <gerald.schaefer@de.ibm.com> wrote:
 
-Yes, Ingo Molnar has suggested per-cpu page tables, but that's so far
-away from what I am capable of, so unless Ingo wants to do it himself,
-I fear it will never be done ;-) [I also believe the resulting code
-would be too ugly and too un-useful for the rest of the kernel that it
-would probably not ever be merged. But that's a different story.] But
-I do think this is the best solution in terms of reliability.
+> Subject: [PATCH 1/3] hugetlbfs: architecture header cleanup
+> 
+> From: Gerald Schaefer <gerald.schaefer@de.ibm.com>
+> 
+> This patch moves all architecture functions for hugetlb to architecture
+> header files (include/asm-foo/hugetlb.h). It also removes (!)
+> ARCH_HAS_HUGEPAGE_ONLY_RANGE, ARCH_HAS_HUGETLB_FREE_PGD_RANGE,
+> ARCH_HAS_PREPARE_HUGEPAGE_RANGE, ARCH_HAS_SETCLEAR_HUGE_PTE and
+> ARCH_HAS_HUGETLB_PREFAULT_HOOK.
+> 
+> Cross-Compile tests on the affected architectures (and one unaffected)
+> worked fine, but I had no cross-compiler for sh.
+> 
 
-We do indeed limit maxcpus to 1 at run-time if the kernel is compiled
-with CONFIG_SMP. kmemcheck is a debugging facility, and as such,
-actual multiprocessor support is not critical for the purpose of
-kmemcheck, in my opinion. Doesn't the same hold for mmiotrace?
+This text explains what the patch does but not why it does it.  Always provide
+both, please.  That way people will stop asking why this:
 
->  One more idea:
->
->  D) Emulate the faulting instruction.
->  In __ioremap(), do the mapping, but steal it for mmiotrace's personal use,
->  and return a bogus mapping that is identifiable in #pf handler. When
->  something accesses the bogus mapping, emulate and step over the faulting
->  instruction using the stolen IO memory mapping. This would get rid of
->  the debug trap and single stepping, and also remove the need to disarm
->  the mmio page, which means tracing would work reliably on SMP without
->  any page table kludges. This would also remove the yet another instruction
->  decoding code that mmiotrace has.
->
->  The catch is the instruction emulation. I see KVM has some emulation code,
->  but I cannot understand it without a deep study that would take me weeks.
->  Is that general enough to be used, or could it be generalized?
->  Mmiotrace, apart from executing the instruction with a modified address,
->  would need to extract the type of IO memory access, width and the data
->  read/written. And since it is dealing with IO memory, the emulation
->  should be very careful to access the hardware exactly like the original
->  instruction would have.
+> 
+>  include/asm-ia64/hugetlb.h    |   21 +++++++++++++++++++
+>  include/asm-ia64/page.h       |    6 -----
+>  include/asm-powerpc/hugetlb.h |   35 +++++++++++++++++++++++++++++++
+>  include/asm-powerpc/page_64.h |    7 ------
+>  include/asm-sh/hugetlb.h      |   28 +++++++++++++++++++++++++
+>  include/asm-sparc64/hugetlb.h |   30 +++++++++++++++++++++++++++
+>  include/asm-sparc64/page.h    |    2 -
+>  include/asm-x86/hugetlb.h     |   28 +++++++++++++++++++++++++
+>  include/linux/hugetlb.h       |   46 ------------------------------------------
+>  9 files changed, 143 insertions(+), 60 deletions(-)
 
-I think that would be extremely difficult to do. I am personally
-trying to stay as far away from opcode decoding (and recoding!
-*shudder*) as possible. I do the minimal decoding for operand sizes,
-etc, which I think you do as well in mmiotrace.
+is the way it is.
 
->  Maybe also kmemcheck could use this approach, since the current approach
->  is very much like in mmiotrace: #pf, show page, single step, #db trap,
->  hide page.
+> Index: linux-2.6.25-rc7/include/asm-ia64/hugetlb.h
+> ===================================================================
+> --- /dev/null
+> +++ linux-2.6.25-rc7/include/asm-ia64/hugetlb.h
+> @@ -0,0 +1,21 @@
+> +#ifndef _ASM_IA64_HUGETLB_H
+> +#define _ASM_IA64_HUGETLB_H
+> +
+> +#include <asm/page.h>
+> +
+> +
+> +#define is_hugepage_only_range(mm, addr, len)		\
+> +	(REGION_NUMBER(addr) == RGN_HPAGE ||	\
+> +	 REGION_NUMBER((addr)+(len)-1) == RGN_HPAGE)
+> +
+> +void hugetlb_free_pgd_range(struct mmu_gather **tlb, unsigned long addr,
+> +			    unsigned long end, unsigned long floor,
+> +			    unsigned long ceiling);
+> +int prepare_hugepage_range(unsigned long addr, unsigned long len);
+> +
+> +#define set_huge_pte_at(mm, addr, ptep, pte)	set_pte_at(mm, addr, ptep, pte)
+> +#define huge_ptep_get_and_clear(mm, addr, ptep) ptep_get_and_clear(mm, addr, ptep)
+> +
+> +#define hugetlb_prefault_arch_hook(mm)		do { } while (0)
+> +
+> +#endif /* _ASM_IA64_HUGETLB_H */
+> Index: linux-2.6.25-rc7/include/asm-sh/hugetlb.h
+> ===================================================================
+> --- /dev/null
+> +++ linux-2.6.25-rc7/include/asm-sh/hugetlb.h
+> @@ -0,0 +1,28 @@
+> +#ifndef _ASM_SH_HUGETLB_H
+> +#define _ASM_SH_HUGETLB_H
+> +
+> +#include <asm/page.h>
+> +
+> +
+> +#define is_hugepage_only_range(mm, addr, len)	0
+> +#define hugetlb_free_pgd_range			free_pgd_range
+> +
+> +/*
+> + * If the arch doesn't supply something else, assume that hugepage
+> + * size aligned regions are ok without further preparation.
+> + */
+> +static inline int prepare_hugepage_range(unsigned long addr, unsigned long len)
+> +{
+> +	if (len & ~HPAGE_MASK)
+> +		return -EINVAL;
+> +	if (addr & ~HPAGE_MASK)
+> +		return -EINVAL;
+> +	return 0;
+> +}
+> +
+> +#define set_huge_pte_at(mm, addr, ptep, pte)	set_pte_at(mm, addr, ptep, pte)
+> +#define huge_ptep_get_and_clear(mm, addr, ptep) ptep_get_and_clear(mm, addr, ptep)
+> +
+> +#define hugetlb_prefault_arch_hook(mm)		do { } while (0)
 
-They are indeed very much the same. I wish somebody had told me about
-mmiotrace when I first started working on kmemcheck! :-)
+urgh.  I wouldn't say the result of this "cleanup" is very clean. 
+Basically all the macros there should be zapped and turned into inlines. 
+That will happen to fix the bug in ia64's is_hugepage_only_range(), which
+presently references its arg once or twice, and will do bad things if
+called with an expression-with-side-effects.
 
+> +
+> +#endif /* _ASM_SH_HUGETLB_H */
+> Index: linux-2.6.25-rc7/include/asm-sparc64/hugetlb.h
+> ===================================================================
+> --- /dev/null
+> +++ linux-2.6.25-rc7/include/asm-sparc64/hugetlb.h
+> @@ -0,0 +1,30 @@
+> +#ifndef _ASM_SPARC64_HUGETLB_H
+> +#define _ASM_SPARC64_HUGETLB_H
+> +
+> +#include <asm/page.h>
+> +
+> +
+> +#define is_hugepage_only_range(mm, addr, len)	0
 
-I don't think I can be of much more help than that. Just my opinion on things.
+This is bad too, because it can lead to unused-var warnings if compiled
+with suitable config combinations.
 
+So basically the existing hugetlb arch support code needs a big de-macro
+crapectomy.  But your patch has gone and massively duplicated the existing
+crap, making that decrapectomy larger and harder.
 
-Kind regards,
-Vegard Nossum
