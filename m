@@ -1,80 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759341AbYDCRXy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757990AbYDCRh5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759341AbYDCRXy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Apr 2008 13:23:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753091AbYDCRXp
+	id S1757990AbYDCRh5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Apr 2008 13:37:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752640AbYDCRhs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Apr 2008 13:23:45 -0400
-Received: from el-out-1112.google.com ([209.85.162.178]:34969 "EHLO
-	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752715AbYDCRXo (ORCPT
+	Thu, 3 Apr 2008 13:37:48 -0400
+Received: from bzq-219-195-70.pop.bezeqint.net ([62.219.195.70]:56834 "EHLO
+	bh-buildlin2.bhalevy.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752536AbYDCRhr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Apr 2008 13:23:44 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=AJnZ0AoHN6uQ925V6NnEsqKj1CUJrdhzrBVGpnwALjbRO64++0dRWE3JjYhpcjKW4SdSbQa6lbtw3CuTiDk1ImubjvYtpEbVCIBcGwn62clwd4mySkDMhDgTrUpOEOJ4uItXvbpUoNN/8eTDhx39mSBXLqFkGx2SfARbZeu1uYc=
-Message-ID: <4cefeab80804031023m10924d6n9e21f6cb792f5d76@mail.gmail.com>
-Date: Thu, 3 Apr 2008 22:53:43 +0530
-From: "Nitin Gupta" <nitingupta910@gmail.com>
-To: "Peter Zijlstra" <a.p.zijlstra@chello.nl>
-Subject: Re: [PATCH 3/6] compcache: TLSF Allocator interface
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org
-In-Reply-To: <1206385013.6437.140.camel@lappy>
+	Thu, 3 Apr 2008 13:37:47 -0400
+Message-ID: <47F515A6.4040505@panasas.com>
+Date: Thu, 03 Apr 2008 20:36:38 +0300
+From: Boaz Harrosh <bharrosh@panasas.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
+To: Pete Zaitcev <zaitcev@redhat.com>
+CC: schwidefsky@de.ibm.com, Kiyoshi Ueda <k-ueda@ct.jp.nec.com>,
+       linux-kernel@vger.kernel.org, j-nomura@ce.jp.nec.com,
+       jens.axboe@oracle.com, m-ikeda@ds.jp.nec.com
+Subject: Re: kernel BUG at drivers/block/ub.c:820!
+References: <1207212156.5602.5.camel@localhost>	<20080403.110825.07645490.k-ueda@ct.jp.nec.com>	<1207235911.9155.16.camel@localhost> <20080403093042.f20e38a2.zaitcev@redhat.com>
+In-Reply-To: <20080403093042.f20e38a2.zaitcev@redhat.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200803242034.24264.nitingupta910@gmail.com>
-	 <1206377777.6437.123.camel@lappy>
-	 <4cefeab80803241034m6f62c01fq669129db9959f47f@mail.gmail.com>
-	 <1206385013.6437.140.camel@lappy>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 25, 2008 at 12:26 AM, Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+On Thu, Apr 03 2008 at 19:30 +0300, Pete Zaitcev <zaitcev@redhat.com> wrote:
+> On Thu, 03 Apr 2008 17:18:31 +0200, Martin Schwidefsky <schwidefsky@de.ibm.com> wrote:
+>> On Thu, 2008-04-03 at 11:08 -0500, Kiyoshi Ueda wrote:
+> 
+>>> I believe the patch from Pete fixes this BUG():
+>>>     http://marc.info/?l=linux-usb&m=120613888005382&w=2
+>>>
+>>> Could you try that?
+>> Just tested the patch and it indeed fixes the bug.
+> 
+> I'm glad.
+> 
+>> Could we push this upstream for 2.6.25? It is a regression, I would
+>> prefer to have a 2.6.25 that doesn't panic my machine when I attach a
+>> USB stick..
+> 
+> I was going to work through Greg as usual and then push it to
+> the stable tree. I'm not Linus' "leutenant", so I cannot just send
+> him random patches.
+> 
+> -- Pete
 
->  Yeah, it also suffers from a horrible coding style, can use excessive
->  amounts of vmalloc space, isn't hooked into the reclaim process as an
->  allocator should be and has a severe lack of per-cpu data making it a
->  pretty big bottleneck on anything with more than a few cores.
->
->  Now, it might be needed, might work better, and the scalability issue
->  might not be a problem when used for swap, but still, you don't treat
->  any of these points in your changelog.
->
+This is a block device siting in block/ folder. It is certainly Jens's
+linux-block territory. Best put it through the tree that introduced the
+bug, no?
 
+Best would be to resend to Jens ASAP, it is a 2.6.25 regression.
 
-I will add these points to changelog.
-This project is meant for small systems only. So, scalability is not an issue.
-
-
->  FWIW, please split up the patches in a sane way. This series looks like
->  it wants to be 2 or 3 patches. The first introducing all of TLSF (this
->  split per file is horrible). The second doing all of the block device,
->  and a possible last doing documentation and such.
->
-
-Ok. I will resend with better splitting.
-
-
->  Also, how bad was kmalloc() compared to this TLSF, we need numbers :-)
->
->
-
-I have posted performance numbers at:
-http://code.google.com/p/compcache/wiki/AllocatorsComparison
-
-Data Summary:
-
-Peak Memory Usage:
-
-    * Ideal: 24947 KB
-    * TLSF: 25377 KB
-    * KMalloc(SLUB): 36483 KB
-
-So, KMalloc uses ~43% more memory than TLSF!
-
-
-- Nitin
+Boaz
