@@ -1,140 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760154AbYDCGV5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760775AbYDCGZI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760154AbYDCGV5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Apr 2008 02:21:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757032AbYDCGVs
+	id S1760775AbYDCGZI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Apr 2008 02:25:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757059AbYDCGY5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Apr 2008 02:21:48 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:50102 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1755052AbYDCGVr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Apr 2008 02:21:47 -0400
-Message-ID: <47F476FE.6040800@cn.fujitsu.com>
-Date: Thu, 03 Apr 2008 14:19:42 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Balbir Singh <balbir@linux.vnet.ibm.com>
-CC: Paul Menage <menage@google.com>, Pavel Emelianov <xemul@openvz.org>,
-       Hugh Dickins <hugh@veritas.com>,
-       Sudhir Kumar <skumar@linux.vnet.ibm.com>,
-       YAMAMOTO Takashi <yamamoto@valinux.co.jp>, linux-kernel@vger.kernel.org,
-       taka@valinux.co.jp, linux-mm@kvack.org,
-       David Rientjes <rientjes@google.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: Re: [-mm] Add an owner to the mm_struct (v5)
-References: <20080403055901.31796.41411.sendpatchset@localhost.localdomain>
-In-Reply-To: <20080403055901.31796.41411.sendpatchset@localhost.localdomain>
-Content-Type: text/plain; charset=UTF-8
+	Thu, 3 Apr 2008 02:24:57 -0400
+Received: from main.gmane.org ([80.91.229.2]:45579 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757032AbYDCGY5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Apr 2008 02:24:57 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Jon Masters <jonathan@jonmasters.org>
+Subject: Re: Real time USB2Serial devices and behaivor
+Date: Thu, 03 Apr 2008 02:24:30 -0400
+Message-ID: <1207203870.12035.1.camel@perihelion>
+References: <20080326152559.GA17164@linux.intel.com>
+Mime-Version: 1.0
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: boston.jonmasters.org
+In-Reply-To: <20080326152559.GA17164@linux.intel.com>
+X-Mailer: Evolution 2.12.2 (2.12.2-2.fc8) 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Balbir Singh wrote:
-> Changelog v4
-> ------------
-> 1. Release rcu_read_lock() after acquiring task_lock(). Also get a reference
->    to the task_struct
-> 2. Change cgroup mm_owner_changed callback to callback only if the
->    cgroup of old and new task is different and to pass the old and new
->    cgroups instead of task pointers
-> 3. Port the patch to 2.6.25-rc8-mm1
-> 
-> Changelog v3
-> ------------
-> 
-> 1. Add mm->owner change callbacks using cgroups
-> 
-> This patch removes the mem_cgroup member from mm_struct and instead adds
-> an owner. This approach was suggested by Paul Menage. The advantage of
-> this approach is that, once the mm->owner is known, using the subsystem
-> id, the cgroup can be determined. It also allows several control groups
-> that are virtually grouped by mm_struct, to exist independent of the memory
-> controller i.e., without adding mem_cgroup's for each controller,
-> to mm_struct.
-> 
-> A new config option CONFIG_MM_OWNER is added and the memory resource
-> controller selects this config option.
-> 
-> This patch also adds cgroup callbacks to notify subsystems when mm->owner
-> changes. The mm_cgroup_changed callback is called with the task_lock()
-> of the new task held and is called just prior to changing the mm->owner.
-> 
-> I am indebted to Paul Menage for the several reviews of this patchset
-> and helping me make it lighter and simpler.
-> 
-> This patch was tested on a powerpc box.
-> 
-> Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
-> ---
-> 
->  fs/exec.c                  |    1 
->  include/linux/cgroup.h     |   15 ++++++++
->  include/linux/init_task.h  |    2 -
->  include/linux/memcontrol.h |   17 ++-------
->  include/linux/mm_types.h   |    5 +-
->  include/linux/sched.h      |   14 ++++++++
->  init/Kconfig               |   15 ++++++++
->  kernel/cgroup.c            |   30 +++++++++++++++++
->  kernel/exit.c              |   77 +++++++++++++++++++++++++++++++++++++++++++++
->  kernel/fork.c              |   11 ++++--
->  mm/memcontrol.c            |   21 +-----------
->  11 files changed, 171 insertions(+), 37 deletions(-)
-> 
-> diff -puN fs/exec.c~memory-controller-add-mm-owner fs/exec.c
-> --- linux-2.6.25-rc8/fs/exec.c~memory-controller-add-mm-owner	2008-04-03 10:08:23.000000000 +0530
-> +++ linux-2.6.25-rc8-balbir/fs/exec.c	2008-04-03 10:08:23.000000000 +0530
-> @@ -735,6 +735,7 @@ static int exec_mmap(struct mm_struct *m
->  	tsk->active_mm = mm;
->  	activate_mm(active_mm, mm);
->  	task_unlock(tsk);
-> +	mm_update_next_owner(mm);
->  	arch_pick_mmap_layout(mm);
->  	if (old_mm) {
->  		up_read(&old_mm->mmap_sem);
-> diff -puN include/linux/cgroup.h~memory-controller-add-mm-owner include/linux/cgroup.h
-> --- linux-2.6.25-rc8/include/linux/cgroup.h~memory-controller-add-mm-owner	2008-04-03 10:08:23.000000000 +0530
-> +++ linux-2.6.25-rc8-balbir/include/linux/cgroup.h	2008-04-03 10:33:25.000000000 +0530
-> @@ -300,6 +300,12 @@ struct cgroup_subsys {
->  			struct cgroup *cgrp);
->  	void (*post_clone)(struct cgroup_subsys *ss, struct cgroup *cgrp);
->  	void (*bind)(struct cgroup_subsys *ss, struct cgroup *root);
-> +	/*
-> +	 * This routine is called with the task_lock of mm->owner held
-> +	 */
-> +	void (*mm_owner_changed)(struct cgroup_subsys *ss,
-> +					struct cgroup *old,
-> +					struct cgroup *new);
->  	int subsys_id;
->  	int active;
->  	int disabled;
-> @@ -385,4 +391,13 @@ static inline int cgroupstats_build(stru
->  
->  #endif /* !CONFIG_CGROUPS */
->  
-> +#ifdef CONFIG_MM_OWNER
-> +extern void
-> +cgroup_mm_owner_callbacks(struct task_struct *old, struct task_struct *new);
-> +#else /* !CONFIG_MM_OWNER */
-> +static inline void
-> +cgroup_mm_owner_callbacks(struct task_struct *old, struct task_struct *new)
-> +{
-> +}
-> +#endif /* CONFIG_MM_OWNER */
->  #endif /* _LINUX_CGROUP_H */
-> diff -puN include/linux/init_task.h~memory-controller-add-mm-owner include/linux/init_task.h
-> --- linux-2.6.25-rc8/include/linux/init_task.h~memory-controller-add-mm-owner	2008-04-03 10:08:23.000000000 +0530
-> +++ linux-2.6.25-rc8-balbir/include/linux/init_task.h	2008-04-03 10:08:23.000000000 +0530
-> @@ -57,6 +57,7 @@
->  	.page_table_lock =  __SPIN_LOCK_UNLOCKED(name.page_table_lock),	\
->  	.mmlist		= LIST_HEAD_INIT(name.mmlist),		\
->  	.cpu_vm_mask	= CPU_MASK_ALL,				\
-> +	.owner		= &init_task,				\
 
-#ifdef CONFIG_MM_OWNER
-	.owner		= &init_task,
-#endif
+On Wed, 2008-03-26 at 08:25 -0700, mark gross wrote:
 
-Otherwise building broken with CONFIG_MM_OWNER disabled.
+> BTW Why does the PL2303 have a 1KB buffer for incoming data?
+
+Personally, RT or not, I really like to avoid using those PL230X parts.
+They're everywhere, this is true, but also quite horrible sometimes.
+
+Jon.
+
+
+
