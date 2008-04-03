@@ -1,186 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756565AbYDCLn2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757062AbYDCLno@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756565AbYDCLn2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Apr 2008 07:43:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750960AbYDCLnT
+	id S1757062AbYDCLno (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Apr 2008 07:43:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754658AbYDCLnU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Thu, 3 Apr 2008 07:43:20 -0400
+Received: from mta23.gyao.ne.jp ([125.63.38.249]:44975 "EHLO mx.gate01.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754254AbYDCLnT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 3 Apr 2008 07:43:19 -0400
-Received: from ecfrec.frec.bull.fr ([129.183.4.8]:55156 "EHLO
-	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751560AbYDCLnS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Apr 2008 07:43:18 -0400
-From: Laurent Vivier <Laurent.Vivier@bull.net>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: linux-kernel@vger.kernel.org, Laurent Vivier <Laurent.Vivier@bull.net>
-Subject: [PATCH] Modify RAMDISK (brd) device to be able to manage partitions
-Date: Thu,  3 Apr 2008 13:44:54 +0200
-Message-Id: <12072230943942-git-send-email-Laurent.Vivier@bull.net>
-X-Mailer: git-send-email 1.5.2.4
+Date: Thu, 3 Apr 2008 20:41:24 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Johannes Weiner <hannes@saeurebad.de>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, mingo@elte.hu,
+       davem@davemloft.net, hskinnemoen@atmel.com, cooloney@kernel.org,
+       starvik@axis.com, dhowells@redhat.com, ysato@users.sourceforge.net,
+       takata@linux-m32r.org, geert@linux-m68k.org, ralf@linux-mips.org,
+       kyle@parisc-linux.org, paulus@samba.org, schwidefsky@de.ibm.com,
+       jdike@addtoit.com, miles@gnu.org, chris@zankel.net,
+       rmk@arm.linux.org.uk, tony.luck@intel.com
+Subject: Re: [RFC 18/22] sh: Use generic show_mem()
+Message-ID: <20080403114124.GA25523@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	Johannes Weiner <hannes@saeurebad.de>, linux-kernel@vger.kernel.org,
+	linux-mm@kvack.org, mingo@elte.hu, davem@davemloft.net,
+	hskinnemoen@atmel.com, cooloney@kernel.org, starvik@axis.com,
+	dhowells@redhat.com, ysato@users.sf.net, takata@linux-m32r.org,
+	geert@linux-m68k.org, ralf@linux-mips.org, kyle@parisc-linux.org,
+	paulus@samba.org, schwidefsky@de.ibm.com, jdike@addtoit.com,
+	miles@gnu.org, chris@zankel.net, rmk@arm.linux.org.uk,
+	tony.luck@intel.com
+References: <12071688283927-git-send-email-hannes@saeurebad.de> <12071690311447-git-send-email-hannes@saeurebad.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <12071690311447-git-send-email-hannes@saeurebad.de>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds partition management for Block RAM Device (BRD).
+On Wed, Apr 02, 2008 at 10:40:24PM +0200, Johannes Weiner wrote:
+> -	printk(KERN_INFO "Total of %ld pages in page table cache\n",
+> -	       quicklist_total_size());
+> -}
+> -
 
-This patch is done to keep in sync BRD and loop device drivers.
-
-This patch adds a parameter to the module, max_part, to specify
-the maximum number of partitions per RAM device.
-
-Example:
-
-# modprobe brd max_part=63
-# ls -l /dev/ram*
-brw-rw---- 1 root disk 1,   0 2008-04-03 13:39 /dev/ram0
-brw-rw---- 1 root disk 1,  64 2008-04-03 13:39 /dev/ram1
-brw-rw---- 1 root disk 1, 640 2008-04-03 13:39 /dev/ram10
-brw-rw---- 1 root disk 1, 704 2008-04-03 13:39 /dev/ram11
-brw-rw---- 1 root disk 1, 768 2008-04-03 13:39 /dev/ram12
-brw-rw---- 1 root disk 1, 832 2008-04-03 13:39 /dev/ram13
-brw-rw---- 1 root disk 1, 896 2008-04-03 13:39 /dev/ram14
-brw-rw---- 1 root disk 1, 960 2008-04-03 13:39 /dev/ram15
-brw-rw---- 1 root disk 1, 128 2008-04-03 13:39 /dev/ram2
-brw-rw---- 1 root disk 1, 192 2008-04-03 13:39 /dev/ram3
-brw-rw---- 1 root disk 1, 256 2008-04-03 13:39 /dev/ram4
-brw-rw---- 1 root disk 1, 320 2008-04-03 13:39 /dev/ram5
-brw-rw---- 1 root disk 1, 384 2008-04-03 13:39 /dev/ram6
-brw-rw---- 1 root disk 1, 448 2008-04-03 13:39 /dev/ram7
-brw-rw---- 1 root disk 1, 512 2008-04-03 13:39 /dev/ram8
-brw-rw---- 1 root disk 1, 576 2008-04-03 13:39 /dev/ram9
-# fdisk /dev/ram0
-Device contains neither a valid DOS partition table, nor Sun, SGI or OSF disklabel
-Building a new DOS disklabel. Changes will remain in memory only,
-until you decide to write them. After that, of course, the previous
-content won't be recoverable.
-
-Warning: invalid flag 0x0000 of partition table 4 will be corrected by w(rite)
-
-Command (m for help): o
-Building a new DOS disklabel. Changes will remain in memory only,
-until you decide to write them. After that, of course, the previous
-content won't be recoverable.
-
-Warning: invalid flag 0x0000 of partition table 4 will be corrected by w(rite)
-
-Command (m for help): n
-Command action
-   e   extended
-   p   primary partition (1-4)
-p
-Partition number (1-4): 1
-First cylinder (1-2, default 1): 1
-Last cylinder or +size or +sizeM or +sizeK (1-2, default 2): 2
-
-Command (m for help): w
-The partition table has been altered!
-
-Calling ioctl() to re-read partition table.
-Syncing disks.
-# ls -l /dev/ram0*
-brw-rw---- 1 root disk 1, 0 2008-04-03 13:40 /dev/ram0
-brw-rw---- 1 root disk 1, 1 2008-04-03 13:40 /dev/ram0p1
-# mkfs /dev/ram0p1
-mke2fs 1.40-WIP (14-Nov-2006)
-Filesystem label=
-OS type: Linux
-Block size=1024 (log=0)
-Fragment size=1024 (log=0)
-4016 inodes, 16032 blocks
-801 blocks (5.00%) reserved for the super user
-First data block=1
-Maximum filesystem blocks=16515072
-2 block groups
-8192 blocks per group, 8192 fragments per group
-2008 inodes per group
-Superblock backups stored on blocks: 
-	8193
-
-Writing inode tables: done                            
-Writing superblocks and filesystem accounting information: done
-
-This filesystem will be automatically checked every 26 mounts or
-180 days, whichever comes first.  Use tune2fs -c or -i to override.
-# mount /dev/ram0p1 /mnt
-df /mnt
-Filesystem           1K-blocks      Used Available Use% Mounted on
-/dev/ram0p1              15521       138     14582   1% /mnt
-# ls -l /mnt
-total 12
-drwx------ 2 root root 12288 2008-04-03 13:41 lost+found
-# umount /mnt
-# rmmod brd
-
-Signed-off-by: Laurent Vivier <Laurent.Vivier@bull.net>
----
- drivers/block/brd.c |   19 ++++++++++++++-----
- 1 files changed, 14 insertions(+), 5 deletions(-)
-
-diff --git a/drivers/block/brd.c b/drivers/block/brd.c
-index 8536480..8baf781 100644
---- a/drivers/block/brd.c
-+++ b/drivers/block/brd.c
-@@ -386,10 +386,14 @@ static struct block_device_operations brd_fops = {
-  */
- static int rd_nr;
- int rd_size = CONFIG_BLK_DEV_RAM_SIZE;
-+static int max_part;
-+static int part_shift;
- module_param(rd_nr, int, 0);
- MODULE_PARM_DESC(rd_nr, "Maximum number of brd devices");
- module_param(rd_size, int, 0);
- MODULE_PARM_DESC(rd_size, "Size of each RAM disk in kbytes.");
-+module_param(max_part, int, 0);
-+MODULE_PARM_DESC(max_part, "Maximum number of partitions per RAM disk");
- MODULE_LICENSE("GPL");
- MODULE_ALIAS_BLOCKDEV_MAJOR(RAMDISK_MAJOR);
- 
-@@ -434,11 +438,11 @@ static struct brd_device *brd_alloc(int i)
- 	blk_queue_max_sectors(brd->brd_queue, 1024);
- 	blk_queue_bounce_limit(brd->brd_queue, BLK_BOUNCE_ANY);
- 
--	disk = brd->brd_disk = alloc_disk(1);
-+	disk = brd->brd_disk = alloc_disk(1 << part_shift);
- 	if (!disk)
- 		goto out_free_queue;
- 	disk->major		= RAMDISK_MAJOR;
--	disk->first_minor	= i;
-+	disk->first_minor	= i << part_shift;
- 	disk->fops		= &brd_fops;
- 	disk->private_data	= brd;
- 	disk->queue		= brd->brd_queue;
-@@ -522,7 +526,12 @@ static int __init brd_init(void)
- 	 *     themselves and have kernel automatically instantiate actual
- 	 *     device on-demand.
- 	 */
--	if (rd_nr > 1UL << MINORBITS)
-+
-+	part_shift = 0;
-+	if (max_part > 0)
-+		part_shift = fls(max_part);
-+
-+	if (rd_nr > 1UL << (MINORBITS - part_shift))
- 		return -EINVAL;
- 
- 	if (rd_nr) {
-@@ -530,7 +539,7 @@ static int __init brd_init(void)
- 		range = rd_nr;
- 	} else {
- 		nr = CONFIG_BLK_DEV_RAM_COUNT;
--		range = 1UL << MINORBITS;
-+		range = 1UL << (MINORBITS - part_shift);
- 	}
- 
- 	if (register_blkdev(RAMDISK_MAJOR, "ramdisk"))
-@@ -569,7 +578,7 @@ static void __exit brd_exit(void)
- 	unsigned long range;
- 	struct brd_device *brd, *next;
- 
--	range = rd_nr ? rd_nr :  1UL << MINORBITS;
-+	range = rd_nr ? rd_nr :  1UL << (MINORBITS - part_shift);
- 
- 	list_for_each_entry_safe(brd, next, &brd_devices, brd_list)
- 		brd_del_one(brd);
--- 
-1.5.2.4
-
+NACK. The quicklists are also absent from the generic implementation.
+Doing things generically is nice and all, but please do not go around
+removing all of the different implementations and consolidating on the
+simplest point of commonality you could come up with. Either combine
+everything in to a generic show_mem() that doesn't sacrifice
+functionality, or only convert the platforms that are identical.
