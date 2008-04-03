@@ -1,163 +1,164 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756850AbYDCFLP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757065AbYDCFWj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756850AbYDCFLP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Apr 2008 01:11:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751815AbYDCFLC
+	id S1757065AbYDCFWj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Apr 2008 01:22:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751872AbYDCFWa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Apr 2008 01:11:02 -0400
-Received: from nn7.de ([85.214.94.156]:40416 "EHLO nn7.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751762AbYDCFLA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Apr 2008 01:11:00 -0400
-Subject: 2.6.25-rc8: WARNING: at net/ipv4/tcp_input.c:2173
-	tcp_mark_head_lost+0x11d/0x150()
-From: Soeren Sonnenburg <kernel@nn7.de>
-To: Linux Kernel <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Thu, 03 Apr 2008 07:10:56 +0200
-Message-Id: <1207199456.7616.3.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.0 
+	Thu, 3 Apr 2008 01:22:30 -0400
+Received: from usermail.globalproof.net ([194.146.153.18]:58093 "EHLO
+	usermail.globalproof.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751797AbYDCFW2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Apr 2008 01:22:28 -0400
+From: "Denys Fedoryshchenko" <denys@visp.net.lb>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net
+Subject: Re: atyfb rmmod & vram crash, 2.6.24, 2.6.25-rc8
+Date: Thu, 3 Apr 2008 08:22:19 +0300
+Message-Id: <20080403051531.M38762@visp.net.lb>
+In-Reply-To: <20080402145554.77ede423.akpm@linux-foundation.org>
+References: <20080402124854.M56647@visp.net.lb> <20080402145554.77ede423.akpm@linux-foundation.org>
+X-Mailer: OpenWebMail 2.52 
+X-OriginatingIP: 195.69.208.251 (denys@visp.net.lb)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset=koi8-r
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-trying to download things, I am seeing this (ignore the tainted, it is
-from madwifi and although the module is loaded the device was never
-used)
+Well, additionally i am not able to manage this FB driver to work on my VGA,
+while uvesafb works fine (but probably slower). But it is probably sync
+problems with my TV-Out, i am still investigating it. But again, uvesafb works
+great.
 
-Could anyone make sense of this please?
+Btw just a bit offtopic question, do i need to report here about such issues,
+while i can find for myself another solution? Maybe better to not take time of
+developers for such not important things? Or better to "bugtest" kernel and to
+make it better together?
 
-Thanks,
-Soeren
+On Wed, 2 Apr 2008 14:55:54 -0700, Andrew Morton wrote
+> On Wed, 2 Apr 2008 15:54:12 +0300
+> "Denys Fedoryshchenko" <denys@visp.net.lb> wrote:
+> 
+> > VGA card i dont know how much RAM there actually, but lspci here shows looks
+> > like 16MB:
+> > 
+> > 03:09.0 VGA compatible controller: ATI Technologies Inc 3D Rage Pro 215GP (rev
+> > 5c) (prog-if 00 [VGA controller])
+> >         Subsystem: ATI Technologies Inc Rage Pro Turbo
+> >         Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr-
+> > Stepping+ SERR- FastB2B- DisINTx-
+> >         Status: Cap- 66MHz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort-
+> > <TAbort- <MAbort- >SERR- <PERR- INTx-
+> >         Latency: 66 (2000ns min), Cache Line Size: 32 bytes
+> >         Interrupt: pin A routed to IRQ 21
+> >         Region 0: Memory at f0000000 (32-bit, prefetchable) [size=16M]
+> >         Region 1: I/O ports at 2000 [size=256]
+> >         Region 2: Memory at d0121000 (32-bit, non-prefetchable) [size=4K]
+> >         Kernel driver in use: atyfb
+> > 
+> > 
+> > 
+> > Loading without parameters
+> > 
+> > atyfb: using auxiliary register aperture
+> > atyfb: 3D RAGE PRO (Mach64 GP, PQFP, PCI) [0x4750 rev 0x7c]
+> > atyfb: Mach64 BIOS is located at c0000, mapped at c00c0000.
+> > atyfb: BIOS frequency table:
+> > atyfb: PCLK_min_freq 984, PCLK_max_freq 23600, ref_freq 2950, ref_divider 64
+> > atyfb: MCLK_pwd 4200, MCLK_max_freq 7500, XCLK_max_freq 10000, SCLK_freq 5000
+> > atyfb: 8M SGRAM (1:1), 29.498928 MHz XTAL, 236 MHz PLL, 75 Mhz MCLK, 100
+MHz XCLK
+> > atyfb: fb0: ATY Mach64 frame buffer device on PCI
+> > 
+> > It detects 8M.
+> > If i put parameter vram=8
+> > atyfb: 3D RAGE PRO (Mach64 GP, PQFP, PCI) [0x4750 rev 0x7c]
+> > atyfb: Mach64 BIOS is located at c0000, mapped at c00c0000.
+> > atyfb: BIOS frequency table:
+> > atyfb: PCLK_min_freq 984, PCLK_max_freq 23600, ref_freq 2950, ref_divider 64
+> > atyfb: MCLK_pwd 4200, MCLK_max_freq 7500, XCLK_max_freq 10000, SCLK_freq 5000
+> > atyfb: 0M SGRAM (1:1), 29.498928 MHz XTAL, 236 MHz PLL, 75 Mhz MCLK, 100
+MHz XCLK
+> > atyfb: not enough video RAM
+> > atyfb: can't set default video mode
+> 
+> Why did this happen?  It seems from reading the code that the vram 
+> arg is in kilobytes, yes?
+Also from various sources, like Documentation/fb/intel810.txt
+<<< SNIP >>>
+   e. "vram:<value>"
+        select amount of system RAM in MB to allocate for the video memory
 
-------------[ cut here ]------------
-WARNING: at net/ipv4/tcp_input.c:2173 tcp_mark_head_lost+0x11d/0x150()
-Modules linked in: vfat fat isofs udf usb_storage coretemp rfcomm l2cap
-hci_usb bluetooth xfrm_user xfrm4_tunnel tunnel4 ipcomp esp4 ah4 hfsplus
-binfmt_misc fuse ebtable_broute bridge llc ebtable_nat ebt
-Pid: 0, comm: swapper Tainted: P         2.6.25-rc8-sonne #24
- [<c012a654>] warn_on_slowpath+0x54/0x70
- [<c0374d05>] ? ip_output+0x75/0xd0
- [<c0373b78>] ? ip_local_out+0x18/0x20
- [<c0374f34>] ? ip_queue_xmit+0x1d4/0x3a0
- [<c011f4b7>] ? enqueue_task_fair+0x37/0x2a0
- [<c034fd62>] ? __skb_clone+0x22/0xd0
- [<c037e32d>] tcp_mark_head_lost+0x11d/0x150
- [<c0385460>] ? tcp_transmit_skb+0x410/0x7b0
- [<c0380d4b>] tcp_ack+0x171b/0x1d60
- [<c0171efa>] ? dma_pool_alloc+0xfa/0x1a0
- [<c0384434>] tcp_rcv_established+0x504/0x750
- [<c0389f93>] tcp_v4_do_rcv+0xb3/0x1f0
- [<c0377a7e>] ? __inet_lookup_established+0x17e/0x190
- [<c038b9cf>] tcp_v4_rcv+0x6bf/0x7c0
- [<c036fea9>] ip_local_deliver_finish+0xa9/0x210
- [<c03703d0>] ip_local_deliver+0x30/0xa0
- [<c036fb6f>] ip_rcv_finish+0xff/0x390
- [<c036a3a0>] ? nf_hook_slow+0xa0/0xf0
- [<c036fa70>] ? ip_rcv_finish+0x0/0x390
- [<c03702f0>] ip_rcv+0x1e0/0x290
- [<c036fa70>] ? ip_rcv_finish+0x0/0x390
- [<c0370110>] ? ip_rcv+0x0/0x290
- [<c0356bc7>] netif_receive_skb+0x247/0x2d0
- [<f88632ea>] sky2_poll+0x4ba/0xc20 [sky2]
- [<c01474a2>] ? tick_program_event+0x42/0x70
- [<c01474a2>] ? tick_program_event+0x42/0x70
- [<c03590c8>] net_rx_action+0xa8/0x130
- [<c012f7e4>] __do_softirq+0x84/0x100
- [<c012f89b>] do_softirq+0x3b/0x50
- [<c012fa15>] irq_exit+0x75/0x90
- [<c01070e5>] do_IRQ+0x45/0x80
- [<c0104c53>] common_interrupt+0x23/0x28
- [<c02a1f46>] ? acpi_idle_enter_bm+0x28a/0x2f8
- [<c033bea6>] cpuidle_idle_call+0x76/0xb0
- [<c033be30>] ? cpuidle_idle_call+0x0/0xb0
- [<c0102aef>] cpu_idle+0x6f/0x110
- [<c03e447d>] rest_init+0x5d/0x60
- =======================
----[ end trace a109db92c4e172c2 ]---
-------------[ cut here ]------------
+        Recommendation: 1 - 4 MB.
+        (default = 4)
+<<< SNIP >>>
+
+I tried also 8388608, sure it doesn't work too. This parameter seems doesn't
+work at all. When i didn't specify it - it shows amount or RAM (which looks
+invalid), when i specify it any value (i try 2 or 8 or 16) - it shows 0MB and
+crashing.
+
+> 
+> > And most interesting when i do rmmod
+> > tv1 ~ # rmmod atyfb
+> > Segmentation fault
+> > 
+> > and dmesg:
+> > BUG: unable to handle kernel NULL pointer dereference at 00000448
+> > IP: [<ce8fd0f2>] :atyfb:aty_set_crtc+0x9/0x19d
+> > *pde = 00000000
+> > Oops: 0000 [#1] SMP
+> > Modules linked in: atyfb(-) fb backlight cfbcopyarea cfbimgblt cfbfillrect
+> > rtc_cmos rtc_core rtc_lib e100 mii snd_intel8x0 snd_ac97_codec ac97_bus
+> > snd_pcm snd_timer snd soundcore snd_page_alloc i2c_i801 i2c_core rng_core
+> > iTCO_wdt uhci_hcd usbcore [last unloaded: atyfb]
+> > 
+> > Pid: 5198, comm: rmmod Not tainted (2.6.25-rc8-video #1)
+> > EIP: 0060:[<ce8fd0f2>] EFLAGS: 00010286 CPU: 1
+> > EIP is at aty_set_crtc+0x9/0x19d [atyfb]
+> > EAX: 00000000 EBX: 00000000 ECX: cd8c6854 EDX: ce9064a0
+> > ESI: ce9064a0 EDI: ce905830 EBP: cc9a1ed0 ESP: cc9a1ec8
+> >  DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
+> > Process rmmod (pid: 5198, ti=cc9a1000 task=cc9da000 task.ti=cc9a1000)
+> > Stack: 00000000 ccacd000 cc9a1ee0 ce900d20 cd8c6800 ce905830 cc9a1eec c01c8376
+> >        cd8c6854 cc9a1efc c0208c92 cd8c3854 cd8c6854 cc9a1f10 c02090c1 ce905830
+> >        00000000 c0369060 cc9a1f24 c02086bc 00000000 ce905830 00000880 cc9a1f34
+> > Call Trace:
+> >  [<ce900d20>] ? atyfb_pci_remove+0x1d/0xb3 [atyfb]
+> >  [<c01c8376>] ? pci_device_remove+0x19/0x39
+> >  [<c0208c92>] ? __device_release_driver+0x60/0x7d
+> >  [<c02090c1>] ? driver_detach+0x8e/0xcd
+> >  [<c02086bc>] ? bus_remove_driver+0x63/0x7f
+> >  [<c020914c>] ? driver_unregister+0x2a/0x2e
+> >  [<c01c852e>] ? pci_unregister_driver+0x1e/0x64
+> >  [<ce900d01>] ? atyfb_exit+0xd/0xf [atyfb]
+> >  [<c013be85>] ? sys_delete_module+0x195/0x1d0
+> >  [<c0110b8c>] ? do_page_fault+0x251/0x505
+> >  [<c012e5cd>] ? up_read+0x16/0x29
+> >  [<c0110b8c>] ? do_page_fault+0x251/0x505
+> >  [<c0103892>] ? sysenter_past_esp+0x5f/0x91
+> >  =======================
+> > Code: 01 00 00 00 e8 84 ff ff ff a8 02 74 0e 8b 07 89 83 dc 03 00 00 8b b3 50
+> > 04 00 00 89 f0 5b 5e 5f 5d c3 55 89 e5 56 53 89 c3 89 d6 <83> b8 48 04 00 00
+> > 00 74 5f 8b 52 2c 81 e2 ff ff ff fc 8b 80 48
+> > EIP: [<ce8fd0f2>] aty_set_crtc+0x9/0x19d [atyfb] SS:ESP 0068:cc9a1ec8
+> > ---[ end trace 1c998179e35e2f76 ]---
+> > 
+> > I will try to enable more debug, but probably this information is enough?
+> >
+> 
+> Looks like incoming arg `par' is NULL in aty_set_crtc().
+> 
+> I suspect the problem is that the module shouldn't have successfully 
+> loaded at all, given that its fb_ops.fb_set_par() failed?
+Maybe, at least it must not crash such ugly way. I am not enough programmer to
+give comments about code.
 
 
-------------[ cut here ]------------
-WARNING: at net/ipv4/tcp_input.c:1771 tcp_enter_frto+0x267/0x270()
-Modules linked in: vfat fat isofs udf usb_storage coretemp rfcomm l2cap
-hci_usb bluetooth xfrm_user xfrm4_tunnel tunnel4 ipcomp esp4 ah4 hfsplus
-binfmt_misc fuse ebtable_broute bridge llc ebtable_nat ebt
-Pid: 0, comm: swapper Tainted: P         2.6.25-rc8-sonne #24
- [<c012a654>] warn_on_slowpath+0x54/0x70
- [<c011e157>] ? enqueue_task+0x57/0x70
- [<c011f302>] ? __update_rq_clock+0x22/0x180
- [<c011811d>] ? read_hpet+0xd/0x20
- [<c0143194>] ? getnstimeofday+0x34/0xe0
- [<c0141338>] ? ktime_get_ts+0x48/0x50
- [<c0141359>] ? ktime_get+0x19/0x40
- [<c0383387>] tcp_enter_frto+0x267/0x270
- [<c0388ac1>] tcp_write_timer+0x301/0x690
- [<c0118829>] ? hpet_legacy_next_event+0x29/0x40
- [<c0146269>] ? clockevents_program_event+0x99/0x120
- [<c01335d5>] run_timer_softirq+0x155/0x1c0
- [<c03887c0>] ? tcp_write_timer+0x0/0x690
- [<c03f34ac>] ? _spin_unlock+0x1c/0x30
- [<c03887c0>] ? tcp_write_timer+0x0/0x690
- [<c012f7e4>] __do_softirq+0x84/0x100
- [<c012f89b>] do_softirq+0x3b/0x50
- [<c012fa15>] irq_exit+0x75/0x90
- [<c01070e5>] do_IRQ+0x45/0x80
- [<c0104c53>] common_interrupt+0x23/0x28
- [<c02a1f46>] ? acpi_idle_enter_bm+0x28a/0x2f8
- [<c033bea6>] cpuidle_idle_call+0x76/0xb0
- [<c033be30>] ? cpuidle_idle_call+0x0/0xb0
- [<c0102aef>] cpu_idle+0x6f/0x110
- [<c03e447d>] rest_init+0x5d/0x60
- =======================
----[ end trace a109db92c4e172c2 ]---
-------------[ cut here ]------------
-
-
-------------[ cut here ]------------
-WARNING: at net/ipv4/tcp_input.c:2532 tcp_ack+0x1a6f/0x1d60()
-Modules linked in: vfat fat isofs udf usb_storage coretemp rfcomm l2cap
-hci_usb bluetooth xfrm_user xfrm4_tunnel tunnel4 ipcomp esp4 ah4 hfsplus
-binfmt_misc fuse ebtable_broute bridge llc ebtable_nat ebt
-Pid: 0, comm: swapper Tainted: P         2.6.25-rc8-sonne #24
- [<c012a654>] warn_on_slowpath+0x54/0x70
- [<c0374d05>] ? ip_output+0x75/0xd0
- [<c0373b78>] ? ip_local_out+0x18/0x20
- [<c0374f34>] ? ip_queue_xmit+0x1d4/0x3a0
- [<c034fd62>] ? __skb_clone+0x22/0xd0
- [<c0385460>] ? tcp_transmit_skb+0x410/0x7b0
- [<c038109f>] tcp_ack+0x1a6f/0x1d60
- [<c0171efa>] ? dma_pool_alloc+0xfa/0x1a0
- [<c0384434>] tcp_rcv_established+0x504/0x750
- [<c0389f93>] tcp_v4_do_rcv+0xb3/0x1f0
- [<c0377a7e>] ? __inet_lookup_established+0x17e/0x190
- [<c038b9cf>] tcp_v4_rcv+0x6bf/0x7c0
- [<c036fea9>] ip_local_deliver_finish+0xa9/0x210
- [<c03703d0>] ip_local_deliver+0x30/0xa0
- [<c036fb6f>] ip_rcv_finish+0xff/0x390
- [<c036a3a0>] ? nf_hook_slow+0xa0/0xf0
- [<c036fa70>] ? ip_rcv_finish+0x0/0x390
- [<c03702f0>] ip_rcv+0x1e0/0x290
- [<c036fa70>] ? ip_rcv_finish+0x0/0x390
- [<c0370110>] ? ip_rcv+0x0/0x290
- [<c0356bc7>] netif_receive_skb+0x247/0x2d0
- [<f88632ea>] sky2_poll+0x4ba/0xc20 [sky2]
- [<c0144acb>] ? clocksource_get_next+0x3b/0x50
- [<c01474a2>] ? tick_program_event+0x42/0x70
- [<c03590c8>] net_rx_action+0xa8/0x130
- [<c012f7e4>] __do_softirq+0x84/0x100
- [<c012f89b>] do_softirq+0x3b/0x50
- [<c012fa15>] irq_exit+0x75/0x90
- [<c01070e5>] do_IRQ+0x45/0x80
- [<c0104c53>] common_interrupt+0x23/0x28
- [<c02a1f46>] ? acpi_idle_enter_bm+0x28a/0x2f8
- [<c033bea6>] cpuidle_idle_call+0x76/0xb0
- [<c033be30>] ? cpuidle_idle_call+0x0/0xb0
- [<c0102aef>] cpu_idle+0x6f/0x110
- [<c03e447d>] rest_init+0x5d/0x60
- =======================
----[ end trace a109db92c4e172c2 ]---
-------------[ cut here ]------------
+--
+Denys Fedoryshchenko
+Technical Manager
+Virtual ISP S.A.L.
 
