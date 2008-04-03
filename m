@@ -1,62 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759767AbYDCBcO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760118AbYDCBeb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759767AbYDCBcO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 21:32:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757209AbYDCBcE
+	id S1760118AbYDCBeb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 21:34:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756970AbYDCBeX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 21:32:04 -0400
-Received: from coffee.shu.ac.uk ([143.52.2.44]:53188 "EHLO coffee.shu.ac.uk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757142AbYDCBcD convert rfc822-to-8bit (ORCPT
+	Wed, 2 Apr 2008 21:34:23 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:46095 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755327AbYDCBeX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 21:32:03 -0400
-X-Greylist: delayed 1471 seconds by postgrey-1.27 at vger.kernel.org; Wed, 02 Apr 2008 21:32:03 EDT
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Subject: RE: BUG: soft lockup detected on Phenom with Debian 2.6.24-4
-Date: Thu, 3 Apr 2008 02:04:23 +0100
-Message-ID: <F48CD7752D86EC4CAD59AE7CAFDAA60B011DE00E@foxglove.hallam.shu.ac.uk>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: BUG: soft lockup detected on Phenom with Debian 2.6.24-4
-Thread-Index: AciVGa5aIowfTtgwS06mpn5qaPDmGwAC2Jkx
-References: <1205013615.15075.409.camel@localhost>	 <1205678588.15075.563.camel@localhost> <1206015619.15075.666.camel@localhost> <47E26A5D.40401@amd.com>
-From: "Schmielau, Tim" <T.Schmielau@shu.ac.uk>
-To: "Peter Oruba" <peter.oruba@amd.com>, "Laurent GUERBY" <laurent@guerby.net>
-Cc: <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 03 Apr 2008 01:04:24.0156 (UTC) FILETIME=[A818E9C0:01C89526]
-X-SHU-MailScanner-Information: Please contact the ISP for more information
-X-SHU-MailScanner: Found to be clean
-X-MailScanner-From: acests@exchange.shu.ac.uk
+	Wed, 2 Apr 2008 21:34:23 -0400
+Date: Thu, 3 Apr 2008 02:34:20 +0100
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Harvey Harrison <harvey.harrison@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, josh@freedesktop.org
+Subject: Re: [PATCH 7/7] asm-generic: suppress sparse warning in ioctl.h
+Message-ID: <20080403013420.GV9785@ZenIV.linux.org.uk>
+References: <1207182818.5740.26.camel@brick> <alpine.LFD.1.00.0804021752040.14670@woody.linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.1.00.0804021752040.14670@woody.linux-foundation.org>
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu 3/20/2008 1:45 PM, Peter Oruba wrote:
- 
-> you may have triggered the L2 eviction bug (E298).
+On Wed, Apr 02, 2008 at 05:57:54PM -0700, Linus Torvalds wrote:
 > 
-> Please try
 > 
-> hexdump -s 0xc0010015 -n 8 -C /dev/cpu/0/msr
+> On Wed, 2 Apr 2008, Harvey Harrison wrote:
+> >
+> > 1 ? 0 : x
+> > 
+> > is not valid in contexts where C requires integer constant expressions.
+> > Index in static array initializer is one of those.
 > 
-> Output is little-endian, so the left-most byte must have bit 3 enabled meaning 
-> TLB caching is disabled.
+> So I don't much like this one, because (a) we could just make sparse 
+> accept it and (b) gcc _does_ accept it and gives us nicer error messages. 
 
-While this question was not directed at me, I indeed find that bit 3 of the
-leftmost byte is set with 2.6.24:
+Umm...  How far do you want sparse to go?  You _really_ don't want
+bug-for-bug compatibility with gcc - it's far too weird (and that's
+even before going into the effects of optimization flags).
 
-  # hexdump -s 0xc0010015 -n 8 -C /dev/cpu/0/msr
-  c0010015  18 00 00 01 00 00 00 00                           |........|
-  c001001d
-  # uname -a
-  Linux quad 2.6.24.4-default #1 SMP Mon Mar 31 18:51:48 BST 2008 x86_64 x86_64 x86_64 GNU/Linux
+BTW, what happened with sparse.git?  The last changeset in there (in
+/pub/scm/devel/sparse/sparse.git/ on g.k.o) is
+commit a02aeb329d5a8f9047c0b75b7e7f64ee2db3ffcf
+Author: Josh Triplett <josh@freedesktop.org>
+Date:   Tue Nov 13 04:15:13 2007 -0800
 
-while (as expected) it was zero running 2.6.23.17 patched with the erratum 298
-workaround. Yet I saw the lockups with both kernels.
+    Makefile: VERSION=0.4.1
 
-Thanks,
-Tim
+and I definitely had seen patches on sparse maillist since then (hell,
+sent several myself - including fixes for show_typename(), etc.)
+
+I don't mind doing more liberal ICE handling, *if* we agree on a well-defined
+extensions to what C99 says.  But I'd rather have some idea of what's pending
+the inclusion into the tree...
+
+As for the extensions...  Amend 6.6p6 in a way similar to 6.6p3 (i.e. allow
+any junk in unevaluated subexpressions)?  Making that option-controlled,
+probably...
+
+BTW, gcc is very definitely buggy - int a[1 + 0 * x]; is accepted and
+that breaks even 6.6p3, let alone 6.6p6.  With -pedantic -std=c99 -Wall,
+at that.
