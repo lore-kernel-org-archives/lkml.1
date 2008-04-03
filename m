@@ -1,164 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757065AbYDCFWj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757555AbYDCF0b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757065AbYDCFWj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Apr 2008 01:22:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751872AbYDCFWa
+	id S1757555AbYDCF0b (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Apr 2008 01:26:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751996AbYDCF0X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Apr 2008 01:22:30 -0400
-Received: from usermail.globalproof.net ([194.146.153.18]:58093 "EHLO
-	usermail.globalproof.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751797AbYDCFW2 (ORCPT
+	Thu, 3 Apr 2008 01:26:23 -0400
+Received: from wa-out-1112.google.com ([209.85.146.177]:20622 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751961AbYDCF0W (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Apr 2008 01:22:28 -0400
-From: "Denys Fedoryshchenko" <denys@visp.net.lb>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net
-Subject: Re: atyfb rmmod & vram crash, 2.6.24, 2.6.25-rc8
-Date: Thu, 3 Apr 2008 08:22:19 +0300
-Message-Id: <20080403051531.M38762@visp.net.lb>
-In-Reply-To: <20080402145554.77ede423.akpm@linux-foundation.org>
-References: <20080402124854.M56647@visp.net.lb> <20080402145554.77ede423.akpm@linux-foundation.org>
-X-Mailer: OpenWebMail 2.52 
-X-OriginatingIP: 195.69.208.251 (denys@visp.net.lb)
+	Thu, 3 Apr 2008 01:26:22 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=dzuspLpyBc9U3bHRuKzaLAZvjdsiI9GqYse1omPQq7ohldH3SyS6YtOsHgz7XcMbfILuZQoO174RVP0adk4AlNVwgKy38LI9eVW3O5lBldtFZoDmk5qV+LYKSuKtJ+ViF6/07TqIk8Z6kOp6OL7S82E5vmicCj8/M2NE/pTX7aE=
+Message-ID: <47F46A74.504@gmail.com>
+Date: Thu, 03 Apr 2008 14:26:12 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset=koi8-r
+To: Volker Armin Hemmann <volker.armin.hemmann@tu-clausthal.de>
+CC: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
+       Peer Chen <pchen@nvidia.com>, Kuan Luo <kluo@nvidia.com>
+Subject: Re: 2.6.24.X: SATA/AHCI related boot delay. - not with 2.6.24.3
+References: <200803091922.33083.volker.armin.hemmann@tu-clausthal.de> <200804021909.41609.volker.armin.hemmann@tu-clausthal.de> <47F43766.2070207@gmail.com> <200804030704.21480.volker.armin.hemmann@tu-clausthal.de>
+In-Reply-To: <200804030704.21480.volker.armin.hemmann@tu-clausthal.de>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Well, additionally i am not able to manage this FB driver to work on my VGA,
-while uvesafb works fine (but probably slower). But it is probably sync
-problems with my TV-Out, i am still investigating it. But again, uvesafb works
-great.
+Hello, Volker.
 
-Btw just a bit offtopic question, do i need to report here about such issues,
-while i can find for myself another solution? Maybe better to not take time of
-developers for such not important things? Or better to "bugtest" kernel and to
-make it better together?
-
-On Wed, 2 Apr 2008 14:55:54 -0700, Andrew Morton wrote
-> On Wed, 2 Apr 2008 15:54:12 +0300
-> "Denys Fedoryshchenko" <denys@visp.net.lb> wrote:
+Volker Armin Hemmann wrote:
+>>> In short, no changes at all.
+>> Thanks for confirming.
+>>
+>> Peer, Kuan.  Volker is reporting detection problems on MCP65 AHCI.
+>> The followings are what we've discovered till now.
+>>
+>> 1. When the controller is put into non-raid mode in BIOS
+>>
+>>   * If softreset is used, either the softreset itself or IDENTIFY
+>>     following it times out once.  On retrial, it works fine.  It
+>>     doesn't matter whether the SRST is issued by itself or as
+>>     follow-up-srst after hardreset.  Using only hardreset works fine.
+>>
+>>   * The controller doesn't indicate MSI capability and MSI isn't used
+>>     by default.
+>>
+>> 2. When the controller is put into ahci mode in BIOS
+>>
+>>   * SRST works fine.
+>>
+>>   * The controller indicates MSI capability but MSI doesn't work
+>>     properly resulting in IRQ delivery failure.  Adding
+>>     intx_disable_bug quirk doesn't help.
+>>
+>> I've performed similar test on MCP67 and everything worked fine on it.
+>>
+>> Both problems (SRST and MSI) can be worked around but I need more
+>> information to work around those.
+>>
+>> * Which chips are affected?  Are there proper fixes?
+>>
+>> * For the MSI problem, is it system wide problem or local to the ahci
+>>   controller?
 > 
-> > VGA card i dont know how much RAM there actually, but lspci here shows looks
-> > like 16MB:
-> > 
-> > 03:09.0 VGA compatible controller: ATI Technologies Inc 3D Rage Pro 215GP (rev
-> > 5c) (prog-if 00 [VGA controller])
-> >         Subsystem: ATI Technologies Inc Rage Pro Turbo
-> >         Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr-
-> > Stepping+ SERR- FastB2B- DisINTx-
-> >         Status: Cap- 66MHz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort-
-> > <TAbort- <MAbort- >SERR- <PERR- INTx-
-> >         Latency: 66 (2000ns min), Cache Line Size: 32 bytes
-> >         Interrupt: pin A routed to IRQ 21
-> >         Region 0: Memory at f0000000 (32-bit, prefetchable) [size=16M]
-> >         Region 1: I/O ports at 2000 [size=256]
-> >         Region 2: Memory at d0121000 (32-bit, non-prefetchable) [size=4K]
-> >         Kernel driver in use: atyfb
-> > 
-> > 
-> > 
-> > Loading without parameters
-> > 
-> > atyfb: using auxiliary register aperture
-> > atyfb: 3D RAGE PRO (Mach64 GP, PQFP, PCI) [0x4750 rev 0x7c]
-> > atyfb: Mach64 BIOS is located at c0000, mapped at c00c0000.
-> > atyfb: BIOS frequency table:
-> > atyfb: PCLK_min_freq 984, PCLK_max_freq 23600, ref_freq 2950, ref_divider 64
-> > atyfb: MCLK_pwd 4200, MCLK_max_freq 7500, XCLK_max_freq 10000, SCLK_freq 5000
-> > atyfb: 8M SGRAM (1:1), 29.498928 MHz XTAL, 236 MHz PLL, 75 Mhz MCLK, 100
-MHz XCLK
-> > atyfb: fb0: ATY Mach64 frame buffer device on PCI
-> > 
-> > It detects 8M.
-> > If i put parameter vram=8
-> > atyfb: 3D RAGE PRO (Mach64 GP, PQFP, PCI) [0x4750 rev 0x7c]
-> > atyfb: Mach64 BIOS is located at c0000, mapped at c00c0000.
-> > atyfb: BIOS frequency table:
-> > atyfb: PCLK_min_freq 984, PCLK_max_freq 23600, ref_freq 2950, ref_divider 64
-> > atyfb: MCLK_pwd 4200, MCLK_max_freq 7500, XCLK_max_freq 10000, SCLK_freq 5000
-> > atyfb: 0M SGRAM (1:1), 29.498928 MHz XTAL, 236 MHz PLL, 75 Mhz MCLK, 100
-MHz XCLK
-> > atyfb: not enough video RAM
-> > atyfb: can't set default video mode
 > 
-> Why did this happen?  It seems from reading the code that the vram 
-> arg is in kilobytes, yes?
-Also from various sources, like Documentation/fb/intel810.txt
-<<< SNIP >>>
-   e. "vram:<value>"
-        select amount of system RAM in MB to allocate for the video memory
-
-        Recommendation: 1 - 4 MB.
-        (default = 4)
-<<< SNIP >>>
-
-I tried also 8388608, sure it doesn't work too. This parameter seems doesn't
-work at all. When i didn't specify it - it shows amount or RAM (which looks
-invalid), when i specify it any value (i try 2 or 8 or 16) - it shows 0MB and
-crashing.
-
+> I rebooted with non-raid set, without pci=nomsi
 > 
-> > And most interesting when i do rmmod
-> > tv1 ~ # rmmod atyfb
-> > Segmentation fault
-> > 
-> > and dmesg:
-> > BUG: unable to handle kernel NULL pointer dereference at 00000448
-> > IP: [<ce8fd0f2>] :atyfb:aty_set_crtc+0x9/0x19d
-> > *pde = 00000000
-> > Oops: 0000 [#1] SMP
-> > Modules linked in: atyfb(-) fb backlight cfbcopyarea cfbimgblt cfbfillrect
-> > rtc_cmos rtc_core rtc_lib e100 mii snd_intel8x0 snd_ac97_codec ac97_bus
-> > snd_pcm snd_timer snd soundcore snd_page_alloc i2c_i801 i2c_core rng_core
-> > iTCO_wdt uhci_hcd usbcore [last unloaded: atyfb]
-> > 
-> > Pid: 5198, comm: rmmod Not tainted (2.6.25-rc8-video #1)
-> > EIP: 0060:[<ce8fd0f2>] EFLAGS: 00010286 CPU: 1
-> > EIP is at aty_set_crtc+0x9/0x19d [atyfb]
-> > EAX: 00000000 EBX: 00000000 ECX: cd8c6854 EDX: ce9064a0
-> > ESI: ce9064a0 EDI: ce905830 EBP: cc9a1ed0 ESP: cc9a1ec8
-> >  DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
-> > Process rmmod (pid: 5198, ti=cc9a1000 task=cc9da000 task.ti=cc9a1000)
-> > Stack: 00000000 ccacd000 cc9a1ee0 ce900d20 cd8c6800 ce905830 cc9a1eec c01c8376
-> >        cd8c6854 cc9a1efc c0208c92 cd8c3854 cd8c6854 cc9a1f10 c02090c1 ce905830
-> >        00000000 c0369060 cc9a1f24 c02086bc 00000000 ce905830 00000880 cc9a1f34
-> > Call Trace:
-> >  [<ce900d20>] ? atyfb_pci_remove+0x1d/0xb3 [atyfb]
-> >  [<c01c8376>] ? pci_device_remove+0x19/0x39
-> >  [<c0208c92>] ? __device_release_driver+0x60/0x7d
-> >  [<c02090c1>] ? driver_detach+0x8e/0xcd
-> >  [<c02086bc>] ? bus_remove_driver+0x63/0x7f
-> >  [<c020914c>] ? driver_unregister+0x2a/0x2e
-> >  [<c01c852e>] ? pci_unregister_driver+0x1e/0x64
-> >  [<ce900d01>] ? atyfb_exit+0xd/0xf [atyfb]
-> >  [<c013be85>] ? sys_delete_module+0x195/0x1d0
-> >  [<c0110b8c>] ? do_page_fault+0x251/0x505
-> >  [<c012e5cd>] ? up_read+0x16/0x29
-> >  [<c0110b8c>] ? do_page_fault+0x251/0x505
-> >  [<c0103892>] ? sysenter_past_esp+0x5f/0x91
-> >  =======================
-> > Code: 01 00 00 00 e8 84 ff ff ff a8 02 74 0e 8b 07 89 83 dc 03 00 00 8b b3 50
-> > 04 00 00 89 f0 5b 5e 5f 5d c3 55 89 e5 56 53 89 c3 89 d6 <83> b8 48 04 00 00
-> > 00 74 5f 8b 52 2c 81 e2 ff ff ff fc 8b 80 48
-> > EIP: [<ce8fd0f2>] aty_set_crtc+0x9/0x19d [atyfb] SS:ESP 0068:cc9a1ec8
-> > ---[ end trace 1c998179e35e2f76 ]---
-> > 
-> > I will try to enable more debug, but probably this information is enough?
-> >
+> this is cat /proc/interrupts:
+>           CPU0       CPU1
+>   0:         57          1   IO-APIC-edge      timer
+>   1:          0         81   IO-APIC-edge      i8042
+>   8:          0          1   IO-APIC-edge      rtc
+>   9:          0          1   IO-APIC-fasteoi   acpi
+>  12:          0          3   IO-APIC-edge      i8042
+>  17:          2       2868   IO-APIC-fasteoi   nvidia
+>  18:          0          0   IO-APIC-fasteoi   EMU10K1
+>  22:          4        745   IO-APIC-fasteoi   ehci_hcd:usb1
+> 314:          0        158   PCI-MSI-edge      eth0
+> 315:          7      12769   PCI-MSI-edge      ahci
 > 
-> Looks like incoming arg `par' is NULL in aty_set_crtc().
+> as you can see, only the sata controller and the network uses msi.
 > 
-> I suspect the problem is that the module shouldn't have successfully 
-> loaded at all, given that its fb_ops.fb_set_par() failed?
-Maybe, at least it must not crash such ugly way. I am not enough programmer to
-give comments about code.
+> And networking works - or I wouldn't be able to send you this mail.
 
+I guess the ahci controller works too.  This is getting confusing, so 
+MSI doesn't work iff the controller is configured as ahci in BIOS?
 
---
-Denys Fedoryshchenko
-Technical Manager
-Virtual ISP S.A.L.
+> I will reboot from systemresucecd later today and post some results with 
+> ahci-mode set, no nomsi. Just can't try patches that way.
 
+Is sytemrescuecd using the same kernel?  Otherwise, it will only add 
+more to the confusion.
+
+-- 
+tejun
