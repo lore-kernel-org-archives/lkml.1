@@ -1,39 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760052AbYDCSFx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758621AbYDCSLv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760052AbYDCSFx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Apr 2008 14:05:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755456AbYDCSFp
+	id S1758621AbYDCSLv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Apr 2008 14:11:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753091AbYDCSLj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Apr 2008 14:05:45 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:52524 "EHLO mx1.redhat.com"
+	Thu, 3 Apr 2008 14:11:39 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:49779 "EHLO pasmtpB.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751913AbYDCSFo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Apr 2008 14:05:44 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <20080403180300.13644.68956.stgit@warthog.procyon.org.uk>
-References: <20080403180300.13644.68956.stgit@warthog.procyon.org.uk>
-To: Catalin Marinas <catalin.marinas@arm.com>
-Cc: dhowells@redhat.com, torvalds@osdl.org, akpm@linux-foundation.org,
-       me@bobcopeland.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] AFS: The AFS RPC op CBGetCapabilities is actually CBTellMeAboutYourself [try #2]
-X-Mailer: MH-E 8.0.3+cvs; nmh 1.2-20070115cvs; GNU Emacs 23.0.50
-Date: Thu, 03 Apr 2008 19:04:57 +0100
-Message-ID: <13766.1207245897@redhat.com>
+	id S1752320AbYDCSLi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Apr 2008 14:11:38 -0400
+Date: Thu, 3 Apr 2008 20:12:02 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Johannes Weiner <hannes@saeurebad.de>
+Cc: Heiko Carstens <heiko.carstens@de.ibm.com>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, mingo@elte.hu, davem@davemloft.net,
+       hskinnemoen@atmel.com, cooloney@kernel.org, starvik@axis.com,
+       dhowells@redhat.com, ysato@users.sourceforge.net, takata@linux-m32r.org,
+       geert@linux-m68k.org, ralf@linux-mips.org, kyle@parisc-linux.org,
+       paulus@samba.org, schwidefsky@de.ibm.com, lethal@linux-sh.org,
+       jdike@addtoit.com, miles@gnu.org, chris@zankel.net,
+       rmk@arm.linux.org.uk, tony.luck@intel.com
+Subject: Re: [RFC 01/22] Generic show_mem() implementation
+Message-ID: <20080403181202.GA32319@uranus.ravnborg.org>
+References: <12071688283927-git-send-email-hannes@saeurebad.de> <1207168839586-git-send-email-hannes@saeurebad.de> <20080403075545.GC4125@osiris.boeblingen.de.ibm.com> <20080403124820.GA30356@uranus.ravnborg.org> <871w5nouwp.fsf@saeurebad.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <871w5nouwp.fsf@saeurebad.de>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Howells <dhowells@redhat.com> wrote:
+On Thu, Apr 03, 2008 at 04:49:42PM +0200, Johannes Weiner wrote:
+> Hi,
+> 
+> Sam Ravnborg <sam@ravnborg.org> writes:
+> 
+> >> e.g. we currently have this in arch/s390/Kconfig:
+> >> 
+> >> config S390
+> >>         def_bool y
+> >>         select HAVE_OPROFILE
+> >>         select HAVE_KPROBES
+> >>         select HAVE_KRETPROBES
+> >> 
+> >> just add a select HAVE_GENERIC_SHOWMEM or something like that in the arch
+> >> specific patches.
+> > Seconded.
+> > See Documentation/kbuild/kconfig-language.txt for a few more hints
+> > how to do it.
+> 
+> After more thinking about it, wouldn't it be better to have
+> HAVE_ARCH_SHOW_MEM in mm/Kconfig and let archs with their own show_mem()
+> select it?  Because there are far more archs that use the generic
+> version than those having their own.
 
-> +static const struct afs_call_type afs_SRXCBTellMeAboutYourself = {
-> +	.name		= "CB.",
-> +	.deliver	= afs_deliver_cb_tell_me_about_yourself,
+Positive logic is almost always simpler to grasp.
+And the usual way to do this is to let arch's select what they
+use.
+We do not want to have a situation where in most cases we select
+a generic version but in some oddball case we select to have
+a local version.
 
-I really must get Catalin to make "stg mail" refuse to send mails if there are
-outstanding changes.
-
-David
+	Sam
