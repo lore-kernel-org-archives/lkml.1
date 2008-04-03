@@ -1,70 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757777AbYDCNjg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758237AbYDCNk1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757777AbYDCNjg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Apr 2008 09:39:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754379AbYDCNj2
+	id S1758237AbYDCNk1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Apr 2008 09:40:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754379AbYDCNkO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Apr 2008 09:39:28 -0400
-Received: from nelson.telenet-ops.be ([195.130.133.66]:55608 "EHLO
-	nelson.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754284AbYDCNj1 (ORCPT
+	Thu, 3 Apr 2008 09:40:14 -0400
+Received: from nn7.de ([85.214.94.156]:54490 "EHLO nn7.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753217AbYDCNkN convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Apr 2008 09:39:27 -0400
-Date: Thu, 3 Apr 2008 15:39:16 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Johannes Weiner <hannes@saeurebad.de>
-cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, mingo@elte.hu,
-       davem@davemloft.net, hskinnemoen@atmel.com, cooloney@kernel.org,
-       starvik@axis.com, dhowells@redhat.com, ysato@users.sourceforge.net,
-       takata@linux-m32r.org, ralf@linux-mips.org, kyle@parisc-linux.org,
-       paulus@samba.org, schwidefsky@de.ibm.com, lethal@linux-sh.org,
-       jdike@addtoit.com, miles@gnu.org, chris@zankel.net,
-       rmk@arm.linux.org.uk, tony.luck@intel.com
-Subject: Re: [RFC 10/22] m68k: Use generic show_mem()
-In-Reply-To: <87myobp02g.fsf@saeurebad.de>
-Message-ID: <Pine.LNX.4.64.0804031538150.11898@anakin>
-References: <12071688283927-git-send-email-hannes@saeurebad.de>
- <1207168941186-git-send-email-hannes@saeurebad.de> <Pine.LNX.4.64.0804030939320.9848@anakin>
- <87myobp02g.fsf@saeurebad.de>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 3 Apr 2008 09:40:13 -0400
+Subject: Re: 2.6.25-rc8: WARNING: at net/ipv4/tcp_input.c:2173
+	tcp_mark_head_lost+0x11d/0x150()
+From: Soeren Sonnenburg <kernel@nn7.de>
+To: Ilpo =?ISO-8859-1?Q?J=E4rvinen?= <ilpo.jarvinen@helsinki.fi>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
+       Netdev <netdev@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.64.0804031616330.21524@wrl-59.cs.helsinki.fi>
+References: <1207199456.7616.3.camel@localhost>
+	 <Pine.LNX.4.64.0804031616330.21524@wrl-59.cs.helsinki.fi>
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 8BIT
+Date: Thu, 03 Apr 2008 15:40:08 +0200
+Message-Id: <1207230008.4513.14.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.0 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 3 Apr 2008, Johannes Weiner wrote:
-> Geert Uytterhoeven <geert@linux-m68k.org> writes:
-> > The new version no longer prints
-> >
-> >> -	printk("Free swap:       %6ldkB\n", nr_swap_pages<<(PAGE_SHIFT-10));
-> >
+On Thu, 2008-04-03 at 16:26 +0300, Ilpo Järvinen wrote:
+> On Thu, 3 Apr 2008, Soeren Sonnenburg wrote:
 > 
-> show_mem()
->  show_free_areas()
->   show_swap_cache_info()
->    printk("Free swap  = %lukB\n", nr_swap_pages << (PAGE_SHIFT - 10));
+> > trying to download things, I am seeing this (ignore the tainted, it is
+> > from madwifi and although the module is loaded the device was never
+> > used)
+> > 
+> > Could anyone make sense of this please?
 > 
-> > and
-> >
-> >> -	printk("%d free pages\n",free);
-> >
-> > on m68k.
+> ...I'm just trying to find out who and where invariants of the TCP code
+> are broken. These were relatively recently enabled (pre-2.6.24 just didn't 
+> care too much). A number of long standing issues plus bugs from my 
+> modifications have been fixed because of the more rigid checking :-).
 > 
-> show_free_areas() prints global_page_state(NR_FREE_PAGES).  Isn't this
-> the same?
+> > ------------[ cut here ]------------
+> > WARNING: at net/ipv4/tcp_input.c:2173 tcp_mark_head_lost+0x11d/0x150()
+> 
+> > ------------[ cut here ]------------
+> > WARNING: at net/ipv4/tcp_input.c:1771 tcp_enter_frto+0x267/0x270()
+> 
+> > ------------[ cut here ]------------
+> > WARNING: at net/ipv4/tcp_input.c:2532 tcp_ack+0x1a6f/0x1d60()
+> 
+> Can you reproduce it? 
 
-Thanks, good to know...
+Yes, by massively downloading things :-) But I have no real recipe to
+make it easily reproducible...
 
-So I suggest to add an additional (first) step to the consolidation: remove all
-duplicates.
+Looks like you are in fact interested in:
+grep WARNING: /var/log/kern.log | cut -c 40- | sort -u
 
-Gr{oetje,eeting}s,
+net/ipv4/tcp_input.c:1771 tcp_enter_frto+0x267/0x270()
+net/ipv4/tcp_input.c:2173 tcp_mark_head_lost+0x11d/0x150()
+net/ipv4/tcp_input.c:2532 tcp_ack+0x1a6f/0x1d60()
+net/ipv4/tcp_input.c:3067 tcp_ack+0x1d2b/0x1d60()
 
-						Geert
+> Please include netdev next time while report networking related problems.
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+OK
+Soeren
