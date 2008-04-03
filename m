@@ -1,89 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755071AbYDCXIp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755715AbYDCXKJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755071AbYDCXIp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Apr 2008 19:08:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751232AbYDCXIg
+	id S1755715AbYDCXKJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Apr 2008 19:10:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751706AbYDCXJ6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Apr 2008 19:08:36 -0400
-Received: from out4.smtp.messagingengine.com ([66.111.4.28]:54458 "EHLO
-	out4.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751044AbYDCXIf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Apr 2008 19:08:35 -0400
-X-Sasl-enc: kOh36WWQsu2At6maqPlsrw/YmhMzT38vstwRlpR7lux3 1207264113
-Message-ID: <47F56363.4090002@imap.cc>
-Date: Fri, 04 Apr 2008 01:08:19 +0200
-From: Tilman Schmidt <tilman@imap.cc>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	Thu, 3 Apr 2008 19:09:58 -0400
+Received: from ozlabs.org ([203.10.76.45]:43158 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750960AbYDCXJ6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Apr 2008 19:09:58 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Subject: Re: module parameters versus kernel command line
+Date: Fri, 4 Apr 2008 09:09:28 +1000
+User-Agent: KMail/1.9.9
+Cc: Tom Horsley <tom.horsley@ccur.com>, linux-kernel@vger.kernel.org
+References: <20080403090053.56f243df@tomh> <20080403120425.232cb1ba@tomh> <20080403091444.827d954a.randy.dunlap@oracle.com>
+In-Reply-To: <20080403091444.827d954a.randy.dunlap@oracle.com>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
-       Jeff Garzik <jgarzik@pobox.com>
-Subject: Re: 2.6.25-rc8-mm1: Intel SATA boot failure
-References: <20080401213214.8fbb6d6b.akpm@linux-foundation.org>
-In-Reply-To: <20080401213214.8fbb6d6b.akpm@linux-foundation.org>
-X-Enigmail-Version: 0.95.6
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig32A17F2F33F1E2B20B399749"
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200804040909.28983.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig32A17F2F33F1E2B20B399749
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+On Friday 04 April 2008 02:14:44 Randy Dunlap wrote:
+> On Thu, 3 Apr 2008 12:04:25 -0400 Tom Horsley wrote:
+> > I know that part, I'm just wondering if it would be nice to have
+> > even dynamically loaded modules notice the kernel option
+> > so that the "usbcore" module would see the "blinkenlights=1"
+> > parameter from the kernel boot options when dynamically loaded?
+> >
+> > That way, you wouldn't have to stop and figure out if a module
+> > was static or dynamic to decide if you need to edit the grub boot
+> > line or the modprobe.conf file.
+>
+> OK, that makes some sense to me.
+>
+> Rusty added to cc for his objective viewpoint.
 
-Andrew Morton schrieb:
-> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.25-rc=
-8/2.6.25-rc8-mm1/
+I agree with Randy; it has some appeal, but it's not a killer feature.
 
-This fails to come up on my development machine, apparently because it
-has trouble accessing the SATA hard disks.
-Hardware: Intel Pentium D940, Intel DQ965GF board, two SATA hard disks.
-Some unusual things I noticed during the boot process:
+We already do the reverse: sysfs exposed parameters are the same for modules 
+and builtins.  If they're modifiable (most aren't), you don't have to care 
+whether it's a module or not.
 
-- a message "doing fast boot" that looked unfamiliar; unfortunately
-  it scrolled off too quickly to note its context
+But there are also minor downsides.  The first is that we currently warn about 
+unused parameters (at least those containing '.').  We'd have to come up with 
+something cleverer if we want to warn only about parameters which cannot be 
+used by modules (ie. do it in userspace).
 
-- for each of the two SATA ports in use, a message
-  "SATA port is slow to respond, please be patient"
-  accompanied by about 10 secs wait
+The second is that users might be surprised when they take 
+the 'usbcore.blinkenlights' line out of their modprobe config file and it 
+still applies.  Most users use everything-is-a-module distributions.
 
-- it actually got past the point where it mounts the root file system,
-  so it must have thought it could access the disks
+Finally, it would be logical to take all the module parameters and autogen 
+them into the kernel commandline, but it will soon hit cmdline limits (hmm, 
+actually on my Ubuntu Hardy system here I think I'd be OK).
 
-- finally, the system hung completely after the SUSE startup messages
-
-  Setting current sysctl status from /etc/sysctl.conf
-  net.ipv4.icmp_echo_ignore_broadcasts =3D 1
-
-  with a dead keyboard and I had to hit the Win^Wreset button.
-
-- After rebooting into 2.6.24-rc8 (which works fine), nothing had been
-  written to the disks, not even the dmesg output which SUSE usually
-  dumps into /var/log/boot.msg early during startup.
-
-Before I try booting that kernel again, any instructions on what to
-watch out for? Is netconsole usable again? Other ideas?
-
-Regards,
-Tilman
-
-
---------------enig32A17F2F33F1E2B20B399749
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.4-svn0 (GNU/Linux)
-Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
-
-iD8DBQFH9WNuQ3+did9BuFsRArtwAJ9oDWistx1H0H5+6+H1dQcpVWdidwCdHboc
-KkAIEyX9FxnAqcH5NayPaOY=
-=EgLX
------END PGP SIGNATURE-----
-
---------------enig32A17F2F33F1E2B20B399749--
+Cheers,
+Rusty.
