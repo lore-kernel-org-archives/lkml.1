@@ -1,57 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760206AbYDCJ2x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759335AbYDCJdd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760206AbYDCJ2x (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Apr 2008 05:28:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757249AbYDCJ2o
+	id S1759335AbYDCJdd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Apr 2008 05:33:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757143AbYDCJd0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Apr 2008 05:28:44 -0400
-Received: from wf-out-1314.google.com ([209.85.200.173]:20482 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756722AbYDCJ2n convert rfc822-to-8bit (ORCPT
+	Thu, 3 Apr 2008 05:33:26 -0400
+Received: from e33.co.us.ibm.com ([32.97.110.151]:47466 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754781AbYDCJdZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Apr 2008 05:28:43 -0400
-Message-ID: <9ea470500804030228p3077456ai4a756aa46116aa4c@mail.gmail.com>
-Date: Thu, 3 Apr 2008 11:28:42 +0200
-From: "Boris Petkov" <petkovbb@googlemail.com>
-Reply-To: petkovbb@gmail.com
-To: Xavier <x.guimard@free.fr>
-Subject: Re: Proposed patch for IDE missing commands
-Cc: linux-kernel@vger.kernel.org,
-       "Bartlomiej Zolnierkiewicz" <bzolnier@gmail.com>,
-       linux-ide@vger.kernel.org
-In-Reply-To: <47F47324.80108@free.fr>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-References: <47F47324.80108@free.fr>
+	Thu, 3 Apr 2008 05:33:25 -0400
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Hugh Dickins <hugh@veritas.com>, Sudhir Kumar <skumar@linux.vnet.ibm.com>,
+       YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
+       Paul Menage <menage@google.com>, lizf@cn.fujitsu.com,
+       linux-kernel@vger.kernel.org, taka@valinux.co.jp, linux-mm@kvack.org,
+       David Rientjes <rientjes@google.com>,
+       Pavel Emelianov <xemul@openvz.org>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Date: Thu, 03 Apr 2008 15:02:53 +0530
+Message-Id: <20080403093253.8944.10168.sendpatchset@localhost.localdomain>
+Subject: [-mm] Make the memory controller more desktop responsive
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(adding Bart, linux-ide to CC:)
 
-Hi,
 
-On Thu, Apr 3, 2008 at 8:03 AM, Xavier <x.guimard@free.fr> wrote:
-> Hi all,
->
->  I'm working for the french Gendarmerie Nationale and we've decided to
-> publish our patch for the kernel that provides some missing IDE commands to
-> access to protected areas (HPA and DCO).
->
->  Best regards,
->  Xavier
->
+This patch makes the memory controller more responsive on my desktop.
 
-Please, rebase/redo your patch against latest -rc kernel (in this case
-2.6.25-rc8) und run it through
-scripts/checkpatch.pl in order to adjust it to the kernel coding
-style. See Documentation/CodingStyle
-for details.
+Here is what the patch does
 
-Thanks.
+1. Reduces the number of retries to 2. We had 5 earlier, since we
+   were controlling swap cache as well. We pushed data from mappings
+   to swap cache and we needed additional passes to clear out the cache.
+2. It sets all cached pages as inactive. We were by default marking
+   all pages as active, thus forcing us to go through two passes for
+   reclaiming pages
+3. Removes congestion_wait(), since we already have that logic in
+   do_try_to_free_pages()
+
+Comments? Flames?
+
+The patch is against 2.6.25-rc8-mm1
+
+Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
+---
+
+ mm/memcontrol.c |    5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
+
+diff -puN mm/memcontrol.c~memory-controller-improve-responsiveness mm/memcontrol.c
+--- linux-2.6.25-rc8/mm/memcontrol.c~memory-controller-improve-responsiveness	2008-04-03 13:07:17.000000000 +0530
++++ linux-2.6.25-rc8-balbir/mm/memcontrol.c	2008-04-03 14:02:27.000000000 +0530
+@@ -35,7 +35,7 @@
+ #include <asm/uaccess.h>
+ 
+ struct cgroup_subsys mem_cgroup_subsys;
+-static const int MEM_CGROUP_RECLAIM_RETRIES = 5;
++static const int MEM_CGROUP_RECLAIM_RETRIES = 2;
+ static struct kmem_cache *page_cgroup_cache;
+ 
+ /*
+@@ -604,7 +604,6 @@ retry:
+ 			mem_cgroup_out_of_memory(mem, gfp_mask);
+ 			goto out;
+ 		}
+-		congestion_wait(WRITE, HZ/10);
+ 	}
+ 
+ 	pc->ref_cnt = 1;
+@@ -612,7 +611,7 @@ retry:
+ 	pc->page = page;
+ 	pc->flags = PAGE_CGROUP_FLAG_ACTIVE;
+ 	if (ctype == MEM_CGROUP_CHARGE_TYPE_CACHE)
+-		pc->flags |= PAGE_CGROUP_FLAG_CACHE;
++		pc->flags = PAGE_CGROUP_FLAG_CACHE;
+ 
+ 	lock_page_cgroup(page);
+ 	if (page_get_page_cgroup(page)) {
+_
 
 -- 
-Regards/Gruﬂ,
-Boris
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
