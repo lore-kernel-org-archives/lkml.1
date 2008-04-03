@@ -1,41 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760449AbYDCJe2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760675AbYDCJfx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760449AbYDCJe2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Apr 2008 05:34:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757143AbYDCJeU
+	id S1760675AbYDCJfx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Apr 2008 05:35:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757579AbYDCJfp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Apr 2008 05:34:20 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:38172 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754781AbYDCJeT (ORCPT
+	Thu, 3 Apr 2008 05:35:45 -0400
+Received: from triton.rz.uni-saarland.de ([134.96.7.25]:24266 "EHLO
+	triton.rz.uni-saarland.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757530AbYDCJfo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Apr 2008 05:34:19 -0400
-Date: Thu, 03 Apr 2008 18:34:00 +0900
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: "Andreas K. Huettel" <mail@akhuettel.de>
-Subject: Re: [tainted,fglrx] page allocation failure: basic meaning of log messages?
-Cc: kosaki.motohiro@jp.fujitsu.com, linux-kernel@vger.kernel.org
-In-Reply-To: <alpine.LNX.1.00.0804031117030.10277@localhost>
-References: <alpine.LNX.1.00.0804031117030.10277@localhost>
-Message-Id: <20080403183021.028C.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.42 [ja]
+	Thu, 3 Apr 2008 05:35:44 -0400
+Date: Thu, 3 Apr 2008 11:34:59 +0200
+From: Alexander van Heukelum <heukelum@mailshack.com>
+To: Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Alexander van Heukelum <heukelum@fastmail.fm>
+Subject: Re: [PATCH] x86: remove x86-specific implementations of find_first_bit
+Message-ID: <20080403093459.GA28740@mailshack.com>
+References: <20080331171506.GA24017@mailshack.com> <20080401084710.GB4787@elte.hu> <20080401094618.GA24862@mailshack.com> <20080401154126.GA26062@mailshack.com> <20080401154221.GB26062@mailshack.com> <20080401154757.GC26062@mailshack.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080401154757.GC26062@mailshack.com>
+User-Agent: Mutt/1.5.9i
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (triton.rz.uni-saarland.de [134.96.7.25]); Thu, 03 Apr 2008 11:35:25 +0200 (CEST)
+X-AntiVirus: checked by AntiVir MailGate (version: 2.1.2-14; AVE: 7.6.0.80; VDF: 7.0.3.110; host: AntiVir3)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
+On Tue, Apr 01, 2008 at 05:47:57PM +0200, Alexander van Heukelum wrote:
+> This patch should of course wait until it is decided if the generic
+> version is good enough to replace the x86-specific ones. I hacked
+> together a benchmark that people can run on different machines. It can
+> be downloaded from:
+> 
+>    http://heukelum.fastmail.fm/find_first_bit
 
-> Apr  3 09:01:30 bellini hal-system-powe: page allocation failure. order:10, mode:0x4020
-> Apr  3 09:01:30 bellini Pid: 327, comm: hal-system-powe Tainted: PF       2.6.24-gentoo-r3 #1
-> Apr  3 09:01:30 bellini [<c0140c48>] __alloc_pages+0x2bd/0x2ce
-> Apr  3 09:01:30 bellini [<c0140c92>] __get_free_pages+0x39/0x47
-> Apr  3 09:01:30 bellini [<f8adcd9e>] firegl_cmmqs_save_fb+0x8e/0x200 [fglrx]
+I now put a much more sound benchmarking program there. And its
+results for P-IV-like Xeon, Athlon XP and Opteron for the current
+and generic implementations.
 
-this messages doesn't mean bug, merely indicate allocation failure.
-if any other bad thind doen't happend, you can ignore it.
-
-
-
+Greetings,
+	Alexander
