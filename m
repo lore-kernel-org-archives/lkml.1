@@ -1,54 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760684AbYDCELG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760235AbYDCEQS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760684AbYDCELG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Apr 2008 00:11:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751077AbYDCEKx
+	id S1760235AbYDCEQS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Apr 2008 00:16:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751313AbYDCEQI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Apr 2008 00:10:53 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:27470 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750949AbYDCEKx (ORCPT
+	Thu, 3 Apr 2008 00:16:08 -0400
+Received: from rv-out-0910.google.com ([209.85.198.185]:46679 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751276AbYDCEQG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Apr 2008 00:10:53 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=X9kxULDAW8d0DIBvaTkpJnw5vBfoRDuot04bFUrP+2GQo+7oT5RM0A2JxcpzTDLkh
-	wYTXU0YjBOXcBGnVyj1Nw==
-Message-ID: <6599ad830804022110h2090f3efg7c6173df8185679e@mail.gmail.com>
-Date: Wed, 2 Apr 2008 21:10:36 -0700
-From: "Paul Menage" <menage@google.com>
-To: balbir@linux.vnet.ibm.com
-Subject: Re: [RFC][-mm] Add an owner to the mm_struct (v4)
-Cc: "Pavel Emelianov" <xemul@openvz.org>, "Hugh Dickins" <hugh@veritas.com>,
-       "Sudhir Kumar" <skumar@linux.vnet.ibm.com>,
-       "YAMAMOTO Takashi" <yamamoto@valinux.co.jp>, lizf@cn.fujitsu.com,
-       linux-kernel@vger.kernel.org, taka@valinux.co.jp, linux-mm@kvack.org,
-       "David Rientjes" <rientjes@google.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <47F4577E.5060905@linux.vnet.ibm.com>
+	Thu, 3 Apr 2008 00:16:06 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=d3JSQnB50HQXBmVYEwbSDtpPpHB9Hj4l/+ZeabPcNizyYnMLgSKdFyrDV1WVr2Su9i3d90yvBznO1DsBoC/Vktz2scdcd7J+SP3recDyMiXqpkTjLsY5vIW+YSm2uWbWCapra5EQ9YEG0wPR5dmtZoyvC9EPgTCG9zq6gg8A/zA=
+Message-ID: <86802c440804022116j2a8fb745pf734f61542a8e287@mail.gmail.com>
+Date: Wed, 2 Apr 2008 21:16:05 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Subject: Re: [PATCH] mm: make mem_map allocation continuous v2.
+Cc: "Yinghai Lu" <yhlu.kernel.send@gmail.com>, "Ingo Molnar" <mingo@elte.hu>,
+       "Badari Pulavarty" <pbadari@us.ibm.com>, michael@ellerman.id.au,
+       "Kamalesh Babulal" <kamalesh@linux.vnet.ibm.com>,
+       linuxppc-dev@ozlabs.org, "Balbir Singh" <balbir@linux.vnet.ibm.com>,
+       "kernel list" <linux-kernel@vger.kernel.org>
+In-Reply-To: <20080402192223.5e8754a0.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <20080401124312.23664.64616.sendpatchset@localhost.localdomain>
-	 <47F3D62E.4070808@linux.vnet.ibm.com>
-	 <6599ad830804021253y6bf3b37y9bf1167b63c32e70@mail.gmail.com>
-	 <47F4577E.5060905@linux.vnet.ibm.com>
+References: <200804021525.48799.yhlu.kernel@gmail.com>
+	 <20080402155247.5e746be7.akpm@linux-foundation.org>
+	 <86802c440804021744m7c6e3d94vcb6af3ebcaa71b5b@mail.gmail.com>
+	 <200804021830.24563.yhlu.kernel@gmail.com>
+	 <20080402192223.5e8754a0.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 2, 2008 at 9:05 PM, Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+On Wed, Apr 2, 2008 at 7:22 PM, Andrew Morton <akpm@linux-foundation.org> wrote:
+> On Wed, 2 Apr 2008 18:30:24 -0700 Yinghai Lu <yhlu.kernel.send@gmail.com> wrote:
 >
->  I checked to see that cgroup_exit is called after mm_update_new_owner(). We call
->  mm_update_new_owner() from exit_mm(). I did not check for current->cgroups !=
->  new_owner->cgroups, since I did not want to limit the callbacks.
+>  > v2 replace:
+>  >       [PATCH] mm: make mem_map allocation continuous.
+>  >       [PATCH] mm: allocate section_map for sparse_init
+>  >       [PATCH] mm: allocate usemap at first instead of mem_map in sparse_init
+>  >
+>
+>  err, no.
+>
+>
+>  >
+>  > diff --git a/mm/sparse.c b/mm/sparse.c
+>  > index f6a43c0..2881222 100644
+>  > --- a/mm/sparse.c
+>  > +++ b/mm/sparse.c
+>
+>  Sorry, but I'd rather not do it this way.  We presently have this:
+>
 
-No cgroup subsystem should be concerned about mm ownership changes
-between tasks in the same cgroup. So I think that's a valid and useful
-optimization.
+it replaces
 
-Paul
+>  mm-make-mem_map-allocation-continuous.patch
+>  mm-make-mem_map-allocation-continuous-checkpatch-fixes.patch
+>  mm-allocate-section_map-for-sparse_init.patch
+>  mm-allocate-section_map-for-sparse_init-update.patch
+>  mm-allocate-section_map-for-sparse_init-update-fix.patch
+>  mm-allocate-section_map-for-sparse_init-powerpc-fix.patch
+
+others still needed
+
+so mm-make-mem-map-allocation-continuous.patch will not break powerpc and ia64
+
+YH
