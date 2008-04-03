@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762333AbYDCTmZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932263AbYDCTmk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762333AbYDCTmZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Apr 2008 15:42:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761207AbYDCTd1
+	id S932263AbYDCTmk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Apr 2008 15:42:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761224AbYDCTd2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Apr 2008 15:33:27 -0400
-Received: from bzq-179-150-194.static.bezeqint.net ([212.179.150.194]:39113
+	Thu, 3 Apr 2008 15:33:28 -0400
+Received: from bzq-179-150-194.static.bezeqint.net ([212.179.150.194]:53024
 	"EHLO il.qumranet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760707AbYDCTdA (ORCPT
+	with ESMTP id S1760743AbYDCTdA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 3 Apr 2008 15:33:00 -0400
 From: Avi Kivity <avi@qumranet.com>
 To: kvm-devel@lists.sourceforge.net
-Cc: linux-kernel@vger.kernel.org, Glauber Costa <gcosta@redhat.com>
-Subject: [PATCH 26/35] x86: KVM guest: disable clock before rebooting.
-Date: Thu,  3 Apr 2008 22:32:41 +0300
-Message-Id: <1207251170-5013-27-git-send-email-avi@qumranet.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH 29/35] KVM: Move some x86 specific constants and structures to include/asm-x86
+Date: Thu,  3 Apr 2008 22:32:44 +0300
+Message-Id: <1207251170-5013-30-git-send-email-avi@qumranet.com>
 X-Mailer: git-send-email 1.5.4.5
 In-Reply-To: <1207251170-5013-1-git-send-email-avi@qumranet.com>
 References: <1207251170-5013-1-git-send-email-avi@qumranet.com>
@@ -23,76 +23,74 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Glauber Costa <gcosta@redhat.com>
-
-This patch writes 0 (actually, what really matters is that the
-LSB is cleared) to the system time msr before shutting down
-the machine for kexec.
-
-Without it, we can have a random memory location being written
-when the guest comes back
-
-It overrides the functions shutdown, used in the path of kernel_kexec() (sys.c)
-and crash_shutdown, used in the path of crash_kexec() (kexec.c)
-
-Signed-off-by: Glauber Costa <gcosta@redhat.com>
 Signed-off-by: Avi Kivity <avi@qumranet.com>
 ---
- arch/x86/kernel/kvmclock.c |   27 +++++++++++++++++++++++++++
- 1 files changed, 27 insertions(+), 0 deletions(-)
+ include/asm-x86/kvm_host.h |   13 +++++++++++++
+ include/linux/kvm_host.h   |   13 -------------
+ 2 files changed, 13 insertions(+), 13 deletions(-)
 
-diff --git a/arch/x86/kernel/kvmclock.c b/arch/x86/kernel/kvmclock.c
-index b999f5e..ddee040 100644
---- a/arch/x86/kernel/kvmclock.c
-+++ b/arch/x86/kernel/kvmclock.c
-@@ -22,6 +22,7 @@
- #include <asm/msr.h>
- #include <asm/apic.h>
- #include <linux/percpu.h>
-+#include <asm/reboot.h>
+diff --git a/include/asm-x86/kvm_host.h b/include/asm-x86/kvm_host.h
+index 52e276c..2773f91 100644
+--- a/include/asm-x86/kvm_host.h
++++ b/include/asm-x86/kvm_host.h
+@@ -20,6 +20,13 @@
  
- #define KVM_SCALE 22
+ #include <asm/desc.h>
  
-@@ -143,6 +144,28 @@ static void kvm_setup_secondary_clock(void)
- 	setup_secondary_APIC_clock();
- }
- 
-+/*
-+ * After the clock is registered, the host will keep writing to the
-+ * registered memory location. If the guest happens to shutdown, this memory
-+ * won't be valid. In cases like kexec, in which you install a new kernel, this
-+ * means a random memory location will be kept being written. So before any
-+ * kind of shutdown from our side, we unregister the clock by writting anything
-+ * that does not have the 'enable' bit set in the msr
-+ */
-+#ifdef CONFIG_KEXEC
-+static void kvm_crash_shutdown(struct pt_regs *regs)
-+{
-+	native_write_msr_safe(MSR_KVM_SYSTEM_TIME, 0, 0);
-+	native_machine_crash_shutdown(regs);
-+}
-+#endif
++#define KVM_MAX_VCPUS 16
++#define KVM_MEMORY_SLOTS 32
++/* memory slots that does not exposed to userspace */
++#define KVM_PRIVATE_MEM_SLOTS 4
 +
-+static void kvm_shutdown(void)
-+{
-+	native_write_msr_safe(MSR_KVM_SYSTEM_TIME, 0, 0);
-+	native_machine_shutdown();
-+}
++#define KVM_PIO_PAGE_OFFSET 1
 +
- void __init kvmclock_init(void)
- {
- 	if (!kvm_para_available())
-@@ -155,6 +178,10 @@ void __init kvmclock_init(void)
- 		pv_time_ops.set_wallclock = kvm_set_wallclock;
- 		pv_time_ops.sched_clock = kvm_clock_read;
- 		pv_apic_ops.setup_secondary_clock = kvm_setup_secondary_clock;
-+		machine_ops.shutdown  = kvm_shutdown;
-+#ifdef CONFIG_KEXEC
-+		machine_ops.crash_shutdown  = kvm_crash_shutdown;
-+#endif
- 		clocksource_register(&kvm_clock);
- 	}
- }
+ #define CR3_PAE_RESERVED_BITS ((X86_CR3_PWT | X86_CR3_PCD) - 1)
+ #define CR3_NONPAE_RESERVED_BITS ((PAGE_SIZE-1) & ~(X86_CR3_PWT | X86_CR3_PCD))
+ #define CR3_L_MODE_RESERVED_BITS (CR3_NONPAE_RESERVED_BITS|0xFFFFFF0000000000ULL)
+@@ -113,6 +120,12 @@ enum {
+ 
+ #define KVM_NR_MEM_OBJS 40
+ 
++struct kvm_guest_debug {
++	int enabled;
++	unsigned long bp[4];
++	int singlestep;
++};
++
+ /*
+  * We don't want allocation failures within the mmu code, so we preallocate
+  * enough memory for a single page fault in a cache.
+diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
+index 958e003..f4e1436 100644
+--- a/include/linux/kvm_host.h
++++ b/include/linux/kvm_host.h
+@@ -24,13 +24,6 @@
+ 
+ #include <asm/kvm_host.h>
+ 
+-#define KVM_MAX_VCPUS 16
+-#define KVM_MEMORY_SLOTS 32
+-/* memory slots that does not exposed to userspace */
+-#define KVM_PRIVATE_MEM_SLOTS 4
+-
+-#define KVM_PIO_PAGE_OFFSET 1
+-
+ /*
+  * vcpu->requests bit members
+  */
+@@ -43,12 +36,6 @@
+ struct kvm_vcpu;
+ extern struct kmem_cache *kvm_vcpu_cache;
+ 
+-struct kvm_guest_debug {
+-	int enabled;
+-	unsigned long bp[4];
+-	int singlestep;
+-};
+-
+ /*
+  * It would be nice to use something smarter than a linear search, TBD...
+  * Thankfully we dont expect many devices to register (famous last words :),
 -- 
 1.5.4.5
 
