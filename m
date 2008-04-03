@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760303AbYDCSDl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760718AbYDCSEk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760303AbYDCSDl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Apr 2008 14:03:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754168AbYDCSDd
+	id S1760718AbYDCSEk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Apr 2008 14:04:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755298AbYDCSEc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Apr 2008 14:03:33 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:52429 "EHLO mx1.redhat.com"
+	Thu, 3 Apr 2008 14:04:32 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:52467 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753466AbYDCSDd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Apr 2008 14:03:33 -0400
+	id S1755085AbYDCSEb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Apr 2008 14:04:31 -0400
 Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
 	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
 	Kingdom.
 	Registered in England and Wales under Company Registration No. 3798903
 From: David Howells <dhowells@redhat.com>
 Subject: [PATCH] AFS: The AFS RPC op CBGetCapabilities is actually
-	CBTellMeAboutYourself [try #2]
+	CBTellMeAboutYourself [try #3]
 To: torvalds@osdl.org, akpm@linux-foundation.org, me@bobcopeland.com
 Cc: dhowells@redhat.com, linux-kernel@vger.kernel.org
-Date: Thu, 03 Apr 2008 19:03:00 +0100
-Message-ID: <20080403180300.13644.68956.stgit@warthog.procyon.org.uk>
+Date: Thu, 03 Apr 2008 19:04:01 +0100
+Message-ID: <20080403180401.13724.24051.stgit@warthog.procyon.org.uk>
 User-Agent: StGIT/0.14.1
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -52,7 +52,7 @@ index 7b4d4fa..5f62f3e 100644
  
  #define AFS_CAP_ERROR_TRANSLATION	0x1
 diff --git a/fs/afs/cmservice.c b/fs/afs/cmservice.c
-index 47b71c8..9b19c02 100644
+index 47b71c8..75da3d0 100644
 --- a/fs/afs/cmservice.c
 +++ b/fs/afs/cmservice.c
 @@ -26,8 +26,8 @@ static int afs_deliver_cb_init_call_back_state3(struct afs_call *,
@@ -77,7 +77,7 @@ index 47b71c8..9b19c02 100644
 -	.name		= "CB.GetCapabilities",
 -	.deliver	= afs_deliver_cb_get_capabilities,
 +static const struct afs_call_type afs_SRXCBTellMeAboutYourself = {
-+	.name		= "CB.",
++	.name		= "CB.TellMeAboutYourself",
 +	.deliver	= afs_deliver_cb_tell_me_about_yourself,
  	.abort_to_error	= afs_abort_to_error,
  	.destructor	= afs_cm_destructor,
