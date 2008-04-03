@@ -1,40 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754045AbYDCWwT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755263AbYDCXF3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754045AbYDCWwT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Apr 2008 18:52:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751369AbYDCWwI
+	id S1755263AbYDCXF3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Apr 2008 19:05:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752271AbYDCXFS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Apr 2008 18:52:08 -0400
-Received: from ozlabs.org ([203.10.76.45]:41810 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750954AbYDCWwH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Apr 2008 18:52:07 -0400
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Harvey Harrison <harvey.harrison@gmail.com>
-Subject: Re: [PATCH 1/7] virtio: fix sparse return void-valued expression warnings
-Date: Fri, 4 Apr 2008 08:51:37 +1000
-User-Agent: KMail/1.9.9
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Al Viro <viro@zeniv.linux.org.uk>
-References: <1207182814.5740.20.camel@brick>
-In-Reply-To: <1207182814.5740.20.camel@brick>
+	Thu, 3 Apr 2008 19:05:18 -0400
+Received: from namei.org ([69.55.235.186]:47999 "EHLO us.intercode.com.au"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751495AbYDCXFQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Apr 2008 19:05:16 -0400
+Date: Fri, 4 Apr 2008 10:02:39 +1100 (EST)
+From: James Morris <jmorris@namei.org>
+X-X-Sender: jmorris@us.intercode.com.au
+To: Stephen Smalley <sds@tycho.nsa.gov>
+cc: Andrew Morton <akpm@linux-foundation.org>, Josef Bacik <jbacik@redhat.com>,
+       Valdis.Kletnieks@vt.edu, sct@redhat.com, jack@suse.cz,
+       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
+       eparis@redhat.com
+Subject: Re: 2.6.25-rc8-mm1 - BUG in fs/jbd/transaction.c
+In-Reply-To: <1207246695.27710.292.camel@moss-spartans.epoch.ncsc.mil>
+Message-ID: <Xine.LNX.4.64.0804041001410.23232@us.intercode.com.au>
+References: <20080401213214.8fbb6d6b.akpm@linux-foundation.org> 
+ <6495.1207163569@turing-police.cc.vt.edu>  <20080402192715.GA32454@unused.rdu.redhat.com>
+  <20080402123905.386c56f8.akpm@linux-foundation.org>
+ <1207246695.27710.292.camel@moss-spartans.epoch.ncsc.mil>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200804040851.37778.rusty@rustcorp.com.au>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 03 April 2008 10:33:34 Harvey Harrison wrote:
-> drivers/virtio/virtio_pci.c:148:2: warning: returning void-valued
-> expression drivers/virtio/virtio_pci.c:155:2: warning: returning
-> void-valued expression
+On Thu, 3 Apr 2008, Stephen Smalley wrote:
 
-Hi Harvey,
+> > > Try this patch, it will keep us from re-entering the fs when we aren't supposed
+> > > to.  cc'ing Eric Paris since he's the only selinux guy I know :).  I don't think
 
-This patch is in my tree, thanks.
+Please see the MAINTAINERS file.
 
-Rusty.
+> > > any of the other allocations in here need to be fixed, but I didn't look too
+> > > carefully.
+> > > 
+> > > Signed-off-by: Josef Bacik <jbacik@redhat.com>
+
+Thanks, I'll push this to Linus, but note that further analysis is 
+required.
+
+
+-- 
+James Morris
+<jmorris@namei.org>
