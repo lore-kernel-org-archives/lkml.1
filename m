@@ -1,41 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760775AbYDCGZI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760237AbYDCG3A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760775AbYDCGZI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Apr 2008 02:25:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757059AbYDCGY5
+	id S1760237AbYDCG3A (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Apr 2008 02:29:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757156AbYDCG2w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Apr 2008 02:24:57 -0400
-Received: from main.gmane.org ([80.91.229.2]:45579 "EHLO ciao.gmane.org"
+	Thu, 3 Apr 2008 02:28:52 -0400
+Received: from www.tglx.de ([62.245.132.106]:40685 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757032AbYDCGY5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Apr 2008 02:24:57 -0400
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Jon Masters <jonathan@jonmasters.org>
-Subject: Re: Real time USB2Serial devices and behaivor
-Date: Thu, 03 Apr 2008 02:24:30 -0400
-Message-ID: <1207203870.12035.1.camel@perihelion>
-References: <20080326152559.GA17164@linux.intel.com>
-Mime-Version: 1.0
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-X-Complaints-To: usenet@ger.gmane.org
-X-Gmane-NNTP-Posting-Host: boston.jonmasters.org
-In-Reply-To: <20080326152559.GA17164@linux.intel.com>
-X-Mailer: Evolution 2.12.2 (2.12.2-2.fc8) 
+	id S1755070AbYDCG2v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Apr 2008 02:28:51 -0400
+Date: Thu, 3 Apr 2008 08:28:25 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Karsten Wiese <fzu@wemgehoertderstaat.de>
+cc: John Stultz <johnstul@us.ibm.com>, Tim Ricketts <tr@earth.li>,
+       Michael Smith <msmith@xiph.org>, LKML <linux-kernel@vger.kernel.org>,
+       Andy Wingo <wingo@fluendo.com>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: gettimeofday() jumping into the future
+In-Reply-To: <200804030157.32086.fzu@wemgehoertderstaat.de>
+Message-ID: <alpine.LFD.1.10.0804030827180.3219@apollo.tec.linutronix.de>
+References: <3c1737210708230408i7a8049a9m5db49e6c4d89ab62@mail.gmail.com> <1206979407.6175.2.camel@jstultz-laptop> <alpine.LFD.1.10.0804021254420.3219@apollo.tec.linutronix.de> <200804030157.32086.fzu@wemgehoertderstaat.de>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 3 Apr 2008, Karsten Wiese wrote:
+> > To prevent this TSC specific wreckage we need to compare the TSC value
+> > against the reference value and return the latter when it is larger
+> > than the actual TSC value.
+> 
+> Last paragraph IMO should be:
+> 	To prevent this TSC specific wreckage we need to substract the
+> 	reference value from the TSC value, interpret the result as
+> 	signed. If the interpreted result is negative, return the reference
+> 	value, else the TSC Value.
+> Your patch misses the corner case where TSC value is < reference _and_ valid
+> at TSC wrap around.
 
-On Wed, 2008-03-26 at 08:25 -0700, mark gross wrote:
+In about 200 years on a 3Ghz box.
+ 
+> The access to the reference value needs a (the xtime ?) lock on 32bit, no?
 
-> BTW Why does the PL2303 have a 1KB buffer for incoming data?
+The readout is under xtime lock anyway.
 
-Personally, RT or not, I really like to avoid using those PL230X parts.
-They're everywhere, this is true, but also quite horrible sometimes.
+Thanks,
 
-Jon.
-
-
-
+	tglx
