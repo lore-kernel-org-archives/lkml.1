@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759861AbYDCTe0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761785AbYDCTeo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759861AbYDCTe0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Apr 2008 15:34:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760352AbYDCTc7
+	id S1761785AbYDCTeo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Apr 2008 15:34:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759643AbYDCTc7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Thu, 3 Apr 2008 15:32:59 -0400
-Received: from bzq-179-150-194.static.bezeqint.net ([212.179.150.194]:53007
+Received: from bzq-179-150-194.static.bezeqint.net ([212.179.150.194]:53021
 	"EHLO il.qumranet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756960AbYDCTcz (ORCPT
+	with ESMTP id S1756705AbYDCTc4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Apr 2008 15:32:55 -0400
+	Thu, 3 Apr 2008 15:32:56 -0400
 From: Avi Kivity <avi@qumranet.com>
 To: kvm-devel@lists.sourceforge.net
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 01/35] KVM: Use x86's segment descriptor struct instead of private definition
-Date: Thu,  3 Apr 2008 22:32:16 +0300
-Message-Id: <1207251170-5013-2-git-send-email-avi@qumranet.com>
+Cc: linux-kernel@vger.kernel.org, Alexander Graf <alex@csgraf.de>
+Subject: [PATCH 06/35] KVM: Implement dummy values for MSR_PERF_STATUS
+Date: Thu,  3 Apr 2008 22:32:21 +0300
+Message-Id: <1207251170-5013-7-git-send-email-avi@qumranet.com>
 X-Mailer: git-send-email 1.5.4.5
 In-Reply-To: <1207251170-5013-1-git-send-email-avi@qumranet.com>
 References: <1207251170-5013-1-git-send-email-avi@qumranet.com>
@@ -23,120 +23,49 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The x86 desc_struct unification allows us to remove segment_descriptor.h.
+From: Alexander Graf <alex@csgraf.de>
 
+Darwin relies on this and ceases to work without.
+
+Signed-off-by: Alexander Graf <alex@csgraf.de>
 Signed-off-by: Avi Kivity <avi@qumranet.com>
 ---
- arch/x86/kvm/segment_descriptor.h |   29 -----------------------------
- arch/x86/kvm/vmx.c                |    3 +--
- arch/x86/kvm/x86.c                |   15 +++++++--------
- 3 files changed, 8 insertions(+), 39 deletions(-)
- delete mode 100644 arch/x86/kvm/segment_descriptor.h
+ arch/x86/kvm/x86.c |    8 +++++++-
+ 1 files changed, 7 insertions(+), 1 deletions(-)
 
-diff --git a/arch/x86/kvm/segment_descriptor.h b/arch/x86/kvm/segment_descriptor.h
-deleted file mode 100644
-index 56fc4c8..0000000
---- a/arch/x86/kvm/segment_descriptor.h
-+++ /dev/null
-@@ -1,29 +0,0 @@
--#ifndef __SEGMENT_DESCRIPTOR_H
--#define __SEGMENT_DESCRIPTOR_H
--
--struct segment_descriptor {
--	u16 limit_low;
--	u16 base_low;
--	u8  base_mid;
--	u8  type : 4;
--	u8  system : 1;
--	u8  dpl : 2;
--	u8  present : 1;
--	u8  limit_high : 4;
--	u8  avl : 1;
--	u8  long_mode : 1;
--	u8  default_op : 1;
--	u8  granularity : 1;
--	u8  base_high;
--} __attribute__((packed));
--
--#ifdef CONFIG_X86_64
--/* LDT or TSS descriptor in the GDT. 16 bytes. */
--struct segment_descriptor_64 {
--	struct segment_descriptor s;
--	u32 base_higher;
--	u32 pad_zero;
--};
--
--#endif
--#endif
-diff --git a/arch/x86/kvm/vmx.c b/arch/x86/kvm/vmx.c
-index 2d5ccec..f46ad03 100644
---- a/arch/x86/kvm/vmx.c
-+++ b/arch/x86/kvm/vmx.c
-@@ -17,7 +17,6 @@
- 
- #include "irq.h"
- #include "vmx.h"
--#include "segment_descriptor.h"
- #include "mmu.h"
- 
- #include <linux/kvm_host.h>
-@@ -388,7 +387,7 @@ static void reload_tss(void)
- 	 * VT restores TR but not its size.  Useless.
- 	 */
- 	struct descriptor_table gdt;
--	struct segment_descriptor *descs;
-+	struct desc_struct *descs;
- 
- 	get_gdt(&gdt);
- 	descs = (void *)gdt.base;
 diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
-index b7c32f6..a063f44 100644
+index cf6261e..0dd038e 100644
 --- a/arch/x86/kvm/x86.c
 +++ b/arch/x86/kvm/x86.c
-@@ -15,7 +15,6 @@
-  */
- 
- #include <linux/kvm_host.h>
--#include "segment_descriptor.h"
- #include "irq.h"
- #include "mmu.h"
- 
-@@ -29,6 +28,7 @@
- 
- #include <asm/uaccess.h>
- #include <asm/msr.h>
-+#include <asm/desc.h>
- 
- #define MAX_IO_MSRS 256
- #define CR0_RESERVED_BITS						\
-@@ -94,7 +94,7 @@ struct kvm_stats_debugfs_item debugfs_entries[] = {
- unsigned long segment_base(u16 selector)
- {
- 	struct descriptor_table gdt;
--	struct segment_descriptor *d;
-+	struct desc_struct *d;
- 	unsigned long table_base;
- 	unsigned long v;
- 
-@@ -110,13 +110,12 @@ unsigned long segment_base(u16 selector)
- 		asm("sldt %0" : "=g"(ldt_selector));
- 		table_base = segment_base(ldt_selector);
- 	}
--	d = (struct segment_descriptor *)(table_base + (selector & ~7));
--	v = d->base_low | ((unsigned long)d->base_mid << 16) |
--		((unsigned long)d->base_high << 24);
-+	d = (struct desc_struct *)(table_base + (selector & ~7));
-+	v = d->base0 | ((unsigned long)d->base1 << 16) |
-+		((unsigned long)d->base2 << 24);
- #ifdef CONFIG_X86_64
--	if (d->system == 0 && (d->type == 2 || d->type == 9 || d->type == 11))
--		v |= ((unsigned long) \
--		      ((struct segment_descriptor_64 *)d)->base_higher) << 32;
-+	if (d->s == 0 && (d->type == 2 || d->type == 9 || d->type == 11))
-+		v |= ((unsigned long)((struct ldttss_desc64 *)d)->base3) << 32;
+@@ -426,6 +426,7 @@ static u32 msrs_to_save[] = {
+ 	MSR_CSTAR, MSR_KERNEL_GS_BASE, MSR_SYSCALL_MASK, MSR_LSTAR,
  #endif
- 	return v;
- }
+ 	MSR_IA32_TIME_STAMP_COUNTER, MSR_KVM_SYSTEM_TIME, MSR_KVM_WALL_CLOCK,
++	MSR_IA32_PERF_STATUS,
+ };
+ 
+ static unsigned num_msrs_to_save;
+@@ -653,7 +654,6 @@ int kvm_get_msr_common(struct kvm_vcpu *vcpu, u32 msr, u64 *pdata)
+ 	case MSR_IA32_MC0_MISC+12:
+ 	case MSR_IA32_MC0_MISC+16:
+ 	case MSR_IA32_UCODE_REV:
+-	case MSR_IA32_PERF_STATUS:
+ 	case MSR_IA32_EBL_CR_POWERON:
+ 		/* MTRR registers */
+ 	case 0xfe:
+@@ -669,6 +669,12 @@ int kvm_get_msr_common(struct kvm_vcpu *vcpu, u32 msr, u64 *pdata)
+ 	case MSR_IA32_MISC_ENABLE:
+ 		data = vcpu->arch.ia32_misc_enable_msr;
+ 		break;
++	case MSR_IA32_PERF_STATUS:
++		/* TSC increment by tick */
++		data = 1000ULL;
++		/* CPU multiplier */
++		data |= (((uint64_t)4ULL) << 40);
++		break;
+ 	case MSR_EFER:
+ 		data = vcpu->arch.shadow_efer;
+ 		break;
 -- 
 1.5.4.5
 
