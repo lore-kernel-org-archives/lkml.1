@@ -1,164 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761546AbYDCIjU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761764AbYDCIlZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761546AbYDCIjU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Apr 2008 04:39:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750752AbYDCIjK
+	id S1761764AbYDCIlZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Apr 2008 04:41:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755226AbYDCIlR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Apr 2008 04:39:10 -0400
-Received: from web26206.mail.ukl.yahoo.com ([217.12.10.243]:24603 "HELO
-	web26206.mail.ukl.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754732AbYDCIjI (ORCPT
+	Thu, 3 Apr 2008 04:41:17 -0400
+Received: from smtp-out01.alice-dsl.net ([88.44.60.11]:10146 "EHLO
+	smtp-out01.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751693AbYDCIlQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Apr 2008 04:39:08 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.it;
-  h=X-YMail-OSG:Received:Date:From:Subject:To:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=aGThR4BUdh6pnb295Wfy1irlTNc0/P0yAlIhwGDCgo/58JLxfcYTRHVMcouMhvVELnBXP4n61YkU8iigV5FvOK8W/dMWoZgw/bWiWCZvG9dA6x1GxBQHFFc57T2b3SOrrikR0vd6VYIdJqMZ1i2gQcMozPqiAaW3gro2qxFLlew=;
-X-YMail-OSG: NWm8OHoVM1kGoOTn42XJxQTtveWinzRw93NDJCX5JWW3jvRc7SB5pEsO62n3p9xHE0sPW3EFBWGcZckh7mTpgR94SJTZb3bSxZRQwKZbSuhPKDvFkXxbgZWXG.A-
-Date: Thu, 3 Apr 2008 10:39:06 +0200 (CEST)
-From: Michael Trimarchi <trimarchimichael@yahoo.it>
-Subject: [PATCH] atmel serial reduce trasmitting window & code style patch
-To: linux-kernel@vger.kernel.org
-Cc: Haavard Skinnemoen <hskinnemoen@atmel.com>
+	Thu, 3 Apr 2008 04:41:16 -0400
+To: Nick Piggin <npiggin@suse.de>
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Christoph Lameter <clameter@sgi.com>
+Subject: Re: [rfc] SLQB: YASA
+From: Andi Kleen <andi@firstfloor.org>
+References: <84144f020804030045p44456894lfc006dcdeab6f67c@mail.gmail.com>
+	<20080403075725.GA7514@wotan.suse.de>
+	<20080403171626.0283.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	<20080403082650.GA20132@wotan.suse.de>
+Date: Thu, 03 Apr 2008 10:41:13 +0200
+In-Reply-To: <20080403082650.GA20132@wotan.suse.de> (Nick Piggin's message of "Thu, 3 Apr 2008 10:26:51 +0200")
+Message-ID: <87r6dns53q.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="0-1240872090-1207211946=:25009"
-Content-Transfer-Encoding: 8bit
-Message-ID: <524838.25009.qm@web26206.mail.ukl.yahoo.com>
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 03 Apr 2008 08:34:32.0418 (UTC) FILETIME=[8A46A420:01C89565]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---0-1240872090-1207211946=:25009
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
-Content-Id: 
-Content-Disposition: inline
+Nick Piggin <npiggin@suse.de> writes:
+>
+> Nothing really interesting, unfortunately. I have run some tests on
+> various microbenchmarks like tbench and things like that. But I
+> don't have many good ideas for more meaningful tests where slab
+> allocation performance is critial. Any suggestions? :)
 
-Hi,
+Some networking workloads hit slab pretty aggressive (two 
+allocations per packet) 
 
-two more patches for atmel serial driver.
+Just be careful with standard loopback, it has a contended lock
+elsewhere
 
-Regards 
-Michael
-
-
-
-      Inviato da Yahoo! Mail. 
-La casella di posta intelligente.
-http://it.docs.yahoo.com/mail/overview/index.html
---0-1240872090-1207211946=:25009
-Content-Type: text/x-patch; name="coding-style-cleanup.patch"
-Content-Description: 3607956876-coding-style-cleanup.patch
-Content-Disposition: inline; filename="coding-style-cleanup.patch"
-
-Coding style clean-up patch.
-
-Signed-off-by: michael <trimarchi@gandalf.sssup.it>
-
----
- drivers/serial/atmel_serial.c |   14 +++++++-------
- 1 files changed, 7 insertions(+), 7 deletions(-)
-
-diff --git a/drivers/serial/atmel_serial.c b/drivers/serial/atmel_serial.c
-index d57bf3e..9f58eb3 100644
---- a/drivers/serial/atmel_serial.c
-+++ b/drivers/serial/atmel_serial.c
-@@ -122,7 +122,7 @@ struct atmel_uart_char {
- 	u16		ch;
- };
- 
--#define ATMEL_SERIAL_RINGSIZE 1024
-+#define ATMEL_SERIAL_RINGSIZE	1024
- 
- /*
-  * We wrap our port structure around the generic uart_port.
-@@ -394,8 +394,8 @@ static void atmel_rx_chars(struct uart_port *port)
- 			/* clear error */
- 			UART_PUT_CR(port, ATMEL_US_RSTSTA);
- 
--			if (status & ATMEL_US_RXBRK
--			    && !atmel_port->break_active) {
-+			if (status & ATMEL_US_RXBRK &&
-+			    !atmel_port->break_active) {
- 				atmel_port->break_active = 1;
- 				UART_PUT_IER(port, ATMEL_US_RXBRK);
- 			} else {
-@@ -1394,8 +1394,8 @@ console_initcall(atmel_console_init);
-  */
- static int __init atmel_late_console_init(void)
- {
--	if (atmel_default_console_device
--	    && !(atmel_console.flags & CON_ENABLED))
-+	if (atmel_default_console_device &&
-+	    !(atmel_console.flags & CON_ENABLED))
- 		register_console(&atmel_console);
- 
- 	return 0;
-@@ -1434,8 +1434,8 @@ static int atmel_serial_suspend(struct platform_device *pdev,
- 	struct uart_port *port = platform_get_drvdata(pdev);
- 	struct atmel_uart_port *atmel_port = to_atmel_uart_port(port);
- 
--	if (device_may_wakeup(&pdev->dev)
--	    && !at91_suspend_entering_slow_clock())
-+	if (device_may_wakeup(&pdev->dev) &&
-+	    !at91_suspend_entering_slow_clock())
- 		enable_irq_wake(port->irq);
- 	else {
- 		uart_suspend_port(&atmel_uart, port);
--- 
-1.5.2.1.174.gcd03-dirty
-
-
---0-1240872090-1207211946=:25009
-Content-Type: text/x-patch; name="atmel-interrupt-tx-chars-fix.patch"
-Content-Description: 3362687731-atmel-interrupt-tx-chars-fix.patch
-Content-Disposition: inline; filename="atmel-interrupt-tx-chars-fix.patch"
-
-Reduce the trasmitting window size to avoid blocking of tasklet because 
-it must handle the receive phase too.
-
-Signed-off-by: michael <trimarchi@gandalf.sssup.it>
-
----
- drivers/serial/atmel_serial.c |    6 +++++-
- 1 files changed, 5 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/serial/atmel_serial.c b/drivers/serial/atmel_serial.c
-index 9f58eb3..511a0cc 100644
---- a/drivers/serial/atmel_serial.c
-+++ b/drivers/serial/atmel_serial.c
-@@ -123,6 +123,7 @@ struct atmel_uart_char {
- };
- 
- #define ATMEL_SERIAL_RINGSIZE	1024
-+#define ATMEL_SERIAL_TXSIZE	32
- 
- /*
-  * We wrap our port structure around the generic uart_port.
-@@ -426,6 +427,7 @@ static void atmel_rx_chars(struct uart_port *port)
- static void atmel_tx_chars(struct uart_port *port)
- {
- 	struct circ_buf *xmit = &port->info->xmit;
-+	int count = 0;
- 
- 	if (port->x_char && UART_GET_CSR(port) & ATMEL_US_TXRDY) {
- 		UART_PUT_CHAR(port, port->x_char);
-@@ -435,10 +437,12 @@ static void atmel_tx_chars(struct uart_port *port)
- 	if (uart_circ_empty(xmit) || uart_tx_stopped(port))
- 		return;
- 
--	while (UART_GET_CSR(port) & ATMEL_US_TXRDY) {
-+	while (UART_GET_CSR(port) & ATMEL_US_TXRDY &&
-+	       count < ATMEL_SERIAL_TXSIZE) {
- 		UART_PUT_CHAR(port, xmit->buf[xmit->tail]);
- 		xmit->tail = (xmit->tail + 1) & (UART_XMIT_SIZE - 1);
- 		port->icount.tx++;
-+		count++;
- 		if (uart_circ_empty(xmit))
- 			break;
- 	}
--- 
-1.5.2.1.174.gcd03-dirty
-
-
---0-1240872090-1207211946=:25009--
+-Andi
