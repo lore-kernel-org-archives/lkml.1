@@ -1,70 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760263AbYDCPTg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760561AbYDCPTt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760263AbYDCPTg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Apr 2008 11:19:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757840AbYDCPTZ
+	id S1760561AbYDCPTt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Apr 2008 11:19:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758712AbYDCPT0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Apr 2008 11:19:25 -0400
-Received: from rn-out-0910.google.com ([64.233.170.188]:59230 "EHLO
-	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757591AbYDCPTY (ORCPT
+	Thu, 3 Apr 2008 11:19:26 -0400
+Received: from mtagate1.de.ibm.com ([195.212.29.150]:4309 "EHLO
+	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757785AbYDCPTZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Apr 2008 11:19:24 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=CVWtpXclNgx796BG/YK8PQxK551M4ytcspkjxmGxn4zfAN/M2M2+yQQ9LItnrrvkF6c9uE+JDJP/sh9CjDqWtY2nhOKcE+tvhjok9ABbmcofDozpMLMGDay24DPqAirEPKaXiDj6SbA0wBFddDkyG6VDRvACzwPMqiTd0TO58iw=
-Message-ID: <3ae72650804030819n2b26cf13na9b30eed18df3d2c@mail.gmail.com>
-Date: Thu, 3 Apr 2008 17:19:23 +0200
-From: "Kay Sievers" <kay.sievers@vrfy.org>
-To: "Xavier Bestel" <xavier.bestel@free.fr>
-Subject: Re: PnP: WARNING: at fs/sysfs/dir.c:424 sysfs_add_one()
-Cc: linux-kernel@vger.kernel.org, "Adam Belay" <ambx1@neo.rr.com>
-In-Reply-To: <1207230993.3438.4.camel@skunk.anacadf.mentorg.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+	Thu, 3 Apr 2008 11:19:25 -0400
+Subject: Re: kernel BUG at drivers/block/ub.c:820!
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Reply-To: schwidefsky@de.ibm.com
+To: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
+Cc: linux-kernel@vger.kernel.org, j-nomura@ce.jp.nec.com,
+       jens.axboe@oracle.com, zaitcev@redhat.com, m-ikeda@ds.jp.nec.com
+In-Reply-To: <20080403.110825.07645490.k-ueda@ct.jp.nec.com>
+References: <1207212156.5602.5.camel@localhost>
+	 <20080403.110825.07645490.k-ueda@ct.jp.nec.com>
+Content-Type: text/plain
+Organization: IBM Corporation
+Date: Thu, 03 Apr 2008 17:18:31 +0200
+Message-Id: <1207235911.9155.16.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1207230896.3438.1.camel@skunk.anacadf.mentorg.com>
-	 <1207230993.3438.4.camel@skunk.anacadf.mentorg.com>
-X-Google-Sender-Auth: ca7c67551cc64fbf
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 3, 2008 at 3:56 PM, Xavier Bestel <xavier.bestel@free.fr> wrote:
->  it's a debian 2.6.24-5
+Hi Kiyoshi,
 
->  On Thu, 2008-04-03 at 15:54 +0200, Xavier Bestel wrote:
->  > I know some of these have been reported, but I couldn't find one in the
->  > PnP subsystem.
->  >
->  >
->  > Linux Plug and Play Support v0.97 (c) Adam Belay
->  > pnp: PnP ACPI init
->  > ACPI: bus type pnp registered
->  > pnp: PnP ACPI: found 15 devices
->  > ACPI: ACPI bus type pnp unregistered
->  > PnPBIOS: Disabled by ACPI PNP
->  > PCI: Probing PCI hardware
->  > sysfs: duplicate filename 'bridge' can not be created
->  > WARNING: at fs/sysfs/dir.c:424 sysfs_add_one()
->  > Pid: 1, comm: swapper Not tainted 2.6.24-1-686 #1
->  >  [<c01b12f8>] sysfs_add_one+0x54/0xb8
->  >  [<c01b1ee2>] sysfs_create_link+0xaf/0xfd
->  >  [<c01e7070>] pci_bus_add_devices+0xba/0xff
->  >  [<c0253589>] pcibios_scan_root+0x25/0x80
->  >  [<c01251d5>] printk+0x1b/0x1f
->  >  [<c0394d9c>] pci_legacy_init+0x53/0xe1
->  >  [<c0377497>] kernel_init+0x153/0x2c6
->  >  [<c0103d92>] ret_from_fork+0x6/0x1c
->  >  [<c0377344>] kernel_init+0x0/0x2c6
->  >  [<c0377344>] kernel_init+0x0/0x2c6
->  >  [<c0104b0f>] kernel_thread_helper+0x7/0x10
->  >  =======================
->  > pci 0000:00:01.0: Error creating sysfs bridge symlink, continuing...
+On Thu, 2008-04-03 at 11:08 -0500, Kiyoshi Ueda wrote:
+> I believe the patch from Pete fixes this BUG():
+>     http://marc.info/?l=linux-usb&m=120613888005382&w=2
+> 
+> Could you try that?
 
-I guess, this fixes it:
-  http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=cc74d96f47b0d916840f92092595e3be9731e047
+Just tested the patch and it indeed fixes the bug.
 
-Kay
+> Original ub driver was probably ignoring bio completion on BLOCK_PC,
+> and I missed the conversion to blk_end_request for BLOCK_PC.
+> Sorry about that.
+
+Could we push this upstream for 2.6.25? It is a regression, I would
+prefer to have a 2.6.25 that doesn't panic my machine when I attach a
+USB stick..
+
+Anyway, thanks for the patch. For now my machine is happy again :-)
+
+-- 
+blue skies,
+  Martin.
+
+"Reality continues to ruin my life." - Calvin.
+
+
