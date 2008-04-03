@@ -1,47 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756907AbYDCXqS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757857AbYDCXsW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756907AbYDCXqS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Apr 2008 19:46:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753530AbYDCXqK
+	id S1757857AbYDCXsW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Apr 2008 19:48:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753530AbYDCXsQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Apr 2008 19:46:10 -0400
-Received: from saeurebad.de ([85.214.36.134]:57603 "EHLO saeurebad.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752689AbYDCXqJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Apr 2008 19:46:09 -0400
-From: Johannes Weiner <hannes@saeurebad.de>
-To: linux-kernel@vger.kernel.org
-Cc: linux-mm@kvack.org, mingo@elte.hu, davem@davemloft.net,
-       hskinnemoen@atmel.com, cooloney@kernel.org, starvik@axis.com,
-       dhowells@redhat.com, takata@linux-m32r.org, geert@linux-m68k.org,
-       ralf@linux-mips.org, kyle@parisc-linux.org, paulus@samba.org,
-       schwidefsky@de.ibm.com, lethal@linux-sh.org, jdike@addtoit.com,
-       miles@gnu.org, chris@zankel.net, rmk@arm.linux.org.uk,
-       tony.luck@intel.com
-Subject: Re: [RFC 00/21] Generic show_mem()
-References: <12071688283927-git-send-email-hannes@saeurebad.de>
-Date: Fri, 04 Apr 2008 01:45:59 +0200
-In-Reply-To: <12071688283927-git-send-email-hannes@saeurebad.de> (Johannes
-	Weiner's message of "Wed, 2 Apr 2008 22:40:06 +0200")
-Message-ID: <87hceimrig.fsf@saeurebad.de>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+	Thu, 3 Apr 2008 19:48:16 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.158]:57557 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751752AbYDCXsQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Apr 2008 19:48:16 -0400
+Message-ID: <47F56CBC.4080706@ct.jp.nec.com>
+Date: Thu, 03 Apr 2008 16:48:12 -0700
+From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+User-Agent: Thunderbird 2.0.0.12 (Windows/20080213)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, a.p.zijlstra@chello.nl
+Subject: Re: [RESEND][RFC v3 PATCH] RTTIME watchdog timer proc interface
+References: <47F55D8D.3060700@ct.jp.nec.com> <20080403161106.fe260fd7.akpm@linux-foundation.org>
+In-Reply-To: <20080403161106.fe260fd7.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Andrew Morton wrote:
+> On Thu, 03 Apr 2008 15:43:25 -0700
+> Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com> wrote:
+> 
+>> From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+>>
+>> Introduce new proc interface for RTTIME watchdog.
+>> It makes administrator able to set RTTIME watchdog to exisiting real-time
+>> applications without impact. It's useful we don't want to change software
+>> stack, but want to use RTTIME watchdog for that software.
+> 
+> Well you don't really need to change the software stack.  It's a matter of
+> setting RLIMIT_RTTIME in the parent process before starting the stack up. 
 
-most of the feedback I got now was about information displaying that I
-allegedly have simply dropped.  This was only true in one case where I
-missed the quicklist cache, the other droppings were redundant
-information (already displayed in show_free_areas() for example).
+I think it means all processes have the same RTTIME, I cannot change some
+of them, correct?
 
-Geert suggested that I should boil down show_mem() first for each arch
-and then unify it but I would prefer unifying it first and listing
-removed redundancy in the changelog of every arch-specific removal. Any
-objections on this?
+> This is not much more work than poking at /proc/<pid>/rttime afterwards.
+> 
+> Although setting RLIMIT_RTTIME via fork() is much less useful than being
+> able to alter it at runtime.
+> 
+>>  fs/proc/base.c |  103 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+> 
+> And that's rather a lot of new code just for RLIMIT_RTTIME.  And
+> RLIMIT_RTTIME is not the only rlimit which has this problem - generally the
+> rlimit interface is a rather nasty one.
+> 
+> 
+> I think we should look at creating a general way of modifying and reading a
+> running process's rlimits.  If we want to do that, a syscall would be the
+> appropriate interface.
+> 
+I agreed, using /proc is easy but wrong way.
+I'll look for other approach for this.
 
-	Hannes
+
+thanks,
+Hiroshi Shimamoto
