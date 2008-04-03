@@ -1,78 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761976AbYDCT7P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762289AbYDCT7v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761976AbYDCT7P (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Apr 2008 15:59:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757607AbYDCT66
+	id S1762289AbYDCT7v (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Apr 2008 15:59:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760657AbYDCT7n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Apr 2008 15:58:58 -0400
-Received: from smtp2e.orange.fr ([80.12.242.111]:53999 "EHLO smtp2e.orange.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757514AbYDCT65 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Apr 2008 15:58:57 -0400
-X-Greylist: delayed 7551 seconds by postgrey-1.27 at vger.kernel.org; Thu, 03 Apr 2008 15:58:57 EDT
-X-ME-UUID: 20080403195855818.C7DD17000091@mwinf2e02.orange.fr
-Subject: Re: ASUS ScreenDuo
-From: Xavier Bestel <xavier.bestel@free.fr>
-To: david@lang.hm
-Cc: Alan Stern <stern@rowland.harvard.edu>, linux-usb@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <alpine.DEB.1.10.0804031303210.22292@asgard.lang.hm>
-References: <Pine.LNX.4.44L0.0804031506300.7376-100000@iolanthe.rowland.org>
-	 <1207251545.24007.3.camel@bip.parateam.prv>
-	 <alpine.DEB.1.10.0804031303210.22292@asgard.lang.hm>
-Content-Type: text/plain
-Date: Thu, 03 Apr 2008 21:58:52 +0200
-Message-Id: <1207252732.24007.5.camel@bip.parateam.prv>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 
-Content-Transfer-Encoding: 7bit
+	Thu, 3 Apr 2008 15:59:43 -0400
+Received: from mail.hauppauge.com ([167.206.143.4]:2210 "EHLO
+	mail.hauppauge.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757607AbYDCT7m (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Apr 2008 15:59:42 -0400
+Message-ID: <47F536FF.8060105@linuxtv.org>
+From: mkrufky@linuxtv.org
+To: harvey.harrison@gmail.com
+Cc: abraham.manu@gmail.com, v4l-dvb-maintainer@linuxtv.org,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       mchehab@infradead.org
+Subject: Re: [v4l-dvb-maintainer] [PATCH] media: replace	remaining	__FUNCT
+	ION__ occurences
+Date: Thu, 3 Apr 2008 14:58:55 -0500 
+MIME-Version: 1.0
+X-Mailer: Internet Mail Service (5.5.2657.72)
+in-reply-to: <1204613661.22933.110.camel@brick>
+x-originalarrivaltime: 03 Apr 2008 20:57:26.0791 (UTC) FILETIME=[52AC3170:01C895CD]
+user-agent: Thunderbird 2.0.0.12 (Windows/20080213)
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Harvey Harrison wrote:
+> On Tue, 2008-03-04 at 01:38 -0500, Michael Krufky wrote:
+>   
+>> Manu Abraham wrote:
+>>     
+>>> Michael Krufky wrote:
+>>>       
+>>>> On Mon, Mar 3, 2008 at 7:03 PM, Harvey Harrison
+>>>> <harvey.harrison@gmail.com> wrote:
+>>>>         
+>>>>> __FUNCTION__ is gcc-specific, use __func__
+>>>>>
+>>>>>  Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+>>>>>   162 files changed, 892 insertions(+), 892 deletions(-)
+>>>>>           
+>>>> If we apply this, can it be broken down into several smaller patches?
+>>>> I am in the midst of a large overhaul of the tuning subsystem, and if
+>>>> this all gets applied at once, it will wreck havoc on my pending
+>>>> changesets.
+>>>>         
+>>> Please make sure your changes don't conflict with the multiproto tree
+>>> changes.
+>>>
+>>> Regards,
+>>> Manu
+>>>       
+>> Manu,
+>>
+>> Does that mean that you plan to merge multiproto soon?  If that's the
+>> case, then we'd be better off if you give Harvey an "exclude list" of
+>> files he should stay away from.  He can regenerate patches to those
+>> files after multiproto is merged.
+>>
+>>     
+>
+> Or just apply it after both of you have merged and ignore any conflicts,
+> I can come back to it at a later time (2.6.26-rc1 maybe?).
 
-On jeu, 2008-04-03 at 13:04 -0700, david@lang.hm wrote:
-> On Thu, 3 Apr 2008, Xavier Bestel wrote:
-> 
-> > On jeu, 2008-04-03 at 15:07 -0400, Alan Stern wrote:
-> >> On Thu, 3 Apr 2008, Xavier Bestel wrote:
-> >>
-> >>> On jeu, 2008-04-03 at 11:37 -0400, Alan Stern wrote:
-> >>>> On Thu, 3 Apr 2008, Xavier Bestel wrote:
-> >>>>
-> >>>>> Hi,
-> >>>>>
-> >>>>> I have an ASUS motherboard with an USB gadget, the ASUS ScreenDUO. It's
-> >>>>> an independant little lcd screen with buttons, apparently it runs some
-> >>>>> kind of OS because it can access the net (e.g. to retrieve RSS) even
-> >>>>> when the computer is off - I guess they mean soft-off.
-> >>>>>
-> >>>>> Well, all that is theory because it's under Vista, which I don't have.
-> >>>>> Under Linux the ScreenDUO is kind-of recognized: it says it's a mass
-> >>>>> storage device, but I can't mount it (the kernel says it's bound to sdc,
-> >>>>> but sdc doesn't exist).
-> >>>>> I'd like to access it. Does anyone know how that thing works ?
-> >>>>
-> >>>> What does usbmon show when you modprobe usb-storage?  (The instructions
-> >>>> for usbmon are in the kernel source file Documentation/usb/usbmon.txt.)
-> >>
-> >> ...
-> >>
-> >> The ScreenDUO is reporting that no medium is present.  Maybe it needs
-> >> you to insert some sort of flash memory card before it will work as a
-> >> mass-storage device.
-> >
-> > Ah. Apparently it just waits for some driver from the Windows side (no
-> > way to insert anything in there).
-> > I guess it'll just be another useless piece of electronics at home.
-> 
-> for future use, what was it that made everyone decide that this is going 
-> to show up as a storage device?
-> 
-> with a screen and buttons I would have guessed a HID of some sort.
+Harvey,
 
-Maybe it waits for a firmware or something first.
+The greater portion of my refactoring changes have been merged.  As far 
+as I am concerned, you should feel free to send in cleanup changesets now.
 
-	Xav
+Manu,
 
+We can't expect Harvey to avoid conflicts with multiproto -- do you have 
+any plans to ACTUALLY merge these changes?  You've been saying "any day 
+now" for the past two years.
 
+If you plan to merge multiproto for 2.6.26, then, IMHO, now is the 
+time.  Otherwise, it's safe for Harvey to do his cleanups.
+
+Harvey,
+
+If you decide to move forward with these cleanups now, please keep the 
+previous discussion in mind -- please generate the changesets against 
+the v4l-dvb master repository, hosted on linuxtv.org, and please 
+separate the changesets by each level of the directory tree hierarchy.
+
+Regards,
+
+Mike Krufky
