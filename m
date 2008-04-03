@@ -1,86 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760250AbYDCTy6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761315AbYDCT5V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760250AbYDCTy6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Apr 2008 15:54:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752715AbYDCTys
+	id S1761315AbYDCT5V (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Apr 2008 15:57:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756960AbYDCT5G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Apr 2008 15:54:48 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:58761 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752111AbYDCTyr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Apr 2008 15:54:47 -0400
-Date: Thu, 3 Apr 2008 12:54:16 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Gerlof Langeveld <gerlof@ATComputing.nl>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/3] accounting: task counters for disk/network
-Message-Id: <20080403125416.ead5cd38.akpm@linux-foundation.org>
-In-Reply-To: <20080402073037.GA8419@atcmpg.ATComputing.nl>
-References: <20080402073037.GA8419@atcmpg.ATComputing.nl>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 3 Apr 2008 15:57:06 -0400
+Received: from mail.lang.hm ([64.81.33.126]:48100 "EHLO bifrost.lang.hm"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756947AbYDCT5F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Apr 2008 15:57:05 -0400
+Date: Thu, 3 Apr 2008 13:04:16 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: Xavier Bestel <xavier.bestel@free.fr>
+cc: Alan Stern <stern@rowland.harvard.edu>, linux-usb@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: ASUS ScreenDuo
+In-Reply-To: <1207251545.24007.3.camel@bip.parateam.prv>
+Message-ID: <alpine.DEB.1.10.0804031303210.22292@asgard.lang.hm>
+References: <Pine.LNX.4.44L0.0804031506300.7376-100000@iolanthe.rowland.org> <1207251545.24007.3.camel@bip.parateam.prv>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2 Apr 2008 09:30:37 +0200
-Gerlof Langeveld <gerlof@ATComputing.nl> wrote:
+On Thu, 3 Apr 2008, Xavier Bestel wrote:
 
-> 
-> From: Gerlof Langeveld <gerlof@atcomputing.nl>
+> On jeu, 2008-04-03 at 15:07 -0400, Alan Stern wrote:
+>> On Thu, 3 Apr 2008, Xavier Bestel wrote:
+>>
+>>> On jeu, 2008-04-03 at 11:37 -0400, Alan Stern wrote:
+>>>> On Thu, 3 Apr 2008, Xavier Bestel wrote:
+>>>>
+>>>>> Hi,
+>>>>>
+>>>>> I have an ASUS motherboard with an USB gadget, the ASUS ScreenDUO. It's
+>>>>> an independant little lcd screen with buttons, apparently it runs some
+>>>>> kind of OS because it can access the net (e.g. to retrieve RSS) even
+>>>>> when the computer is off - I guess they mean soft-off.
+>>>>>
+>>>>> Well, all that is theory because it's under Vista, which I don't have.
+>>>>> Under Linux the ScreenDUO is kind-of recognized: it says it's a mass
+>>>>> storage device, but I can't mount it (the kernel says it's bound to sdc,
+>>>>> but sdc doesn't exist).
+>>>>> I'd like to access it. Does anyone know how that thing works ?
+>>>>
+>>>> What does usbmon show when you modprobe usb-storage?  (The instructions
+>>>> for usbmon are in the kernel source file Documentation/usb/usbmon.txt.)
+>>
+>> ...
+>>
+>> The ScreenDUO is reporting that no medium is present.  Maybe it needs
+>> you to insert some sort of flash memory card before it will work as a
+>> mass-storage device.
+>
+> Ah. Apparently it just waits for some driver from the Windows side (no
+> way to insert anything in there).
+> I guess it'll just be another useless piece of electronics at home.
 
-You sent three different patches, all with the same title.  Please don't do
-that - choose unique, suitable and meaningful titles for each patch.
+for future use, what was it that made everyone decide that this is going 
+to show up as a storage device?
 
-> Proper performance analysis requires the availability of system level
-> and process level counters for CPU, memory, disk and network utilization.
-> The current kernel offers the system level counters, however process level
-> counters are only (sufficiently) available for CPU and memory utilization.
-> 
-> The kernel feature "task I/O accounting" currently maintains
-> per process counters for the number of bytes transferred to/from disk.
-> These counters are available via /proc/pid/io. It is still not possible
-> to find out which process issues the physical disk transfer. Besides,
-> not *all* disk transfers are accounted to processes (e.g. swap-transfers
-> by kswapd, journaling transfers).
-> 
-> This patch extends "task I/O accounting" by counting real *physical*
-> disk transfers per process and by counting IPv4/IPv6 socket transfers
-> per process.
-> The modified output generated for /proc/pid/io will be as follows:
-> 
->   $ cat /proc/3179/io
+with a screen and buttons I would have guessed a HID of some sort.
 
-/proc/pid/io is not the primary interface for this sort of accounting - it
-was just tossed in there as an afterthought because it wasy easy.
-
-This sort of accounting should be delivered across taskstats and
-Documentation/accounting/getdelays.c should be suitably updated.
-
-> --- linux-2.6.24.4-vanilla/block/ll_rw_blk.c	2008-03-24 19:49:18.000000000 +0100
-> +++ linux-2.6.24.4-modified/block/ll_rw_blk.c	2008-03-25 13:52:14.000000000 +0100
-> @@ -2739,6 +2739,19 @@ static void drive_stat_acct(struct reque
->  		disk_round_stats(rq->rq_disk);
->  		rq->rq_disk->in_flight++;
->  	}
-> +
-> +#ifdef CONFIG_TASK_IO_ACCOUNTING
-> +	switch (rw) {
-> +	case READ:
-> +		current->group_leader->ioac.dsk_rio += new_io;
-> +		current->group_leader->ioac.dsk_rsz += rq->nr_sectors;
-> +		break;
-> +	case WRITE:
-> +		current->group_leader->ioac.dsk_wio += new_io;
-> +		current->group_leader->ioac.dsk_wsz += rq->nr_sectors;
-> +		break;
-> +	}
-> +#endif
-
-For many workloads, this will cause almost all writeout to be accounted to
-pdflush and perhaps kswapd.  This makes the per-task write accounting
-largely unuseful.
-
+David Lang
