@@ -1,46 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759034AbYDCOH2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759390AbYDCOHm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759034AbYDCOH2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Apr 2008 10:07:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757094AbYDCOHP
+	id S1759390AbYDCOHm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Apr 2008 10:07:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757373AbYDCOHQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Apr 2008 10:07:15 -0400
-Received: from smtp21.orange.fr ([80.12.242.46]:44845 "EHLO smtp21.orange.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755109AbYDCOHO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Apr 2008 10:07:16 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:51517 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756321AbYDCOHO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 3 Apr 2008 10:07:14 -0400
-X-ME-UUID: 20080403140712224.36D221C000AC@mwinf2103.orange.fr
-Subject: Re: ASUS ScreenDuo
-From: Xavier Bestel <xavier.bestel@free.fr>
-To: Mark Lord <lkml@rtr.ca>
-Cc: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <47F4E234.9000308@rtr.ca>
-References: <1207230481.24037.11.camel@skunk.anacadf.mentorg.com>
-	 <47F4E234.9000308@rtr.ca>
+Subject: Re: xfs_io "BUG: lock held when returning to user space!" on
+	suspend
+From: Peter Zijlstra <peterz@infradead.org>
+To: David Chinner <dgc@sgi.com>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>, xfs-masters@oss.sgi.com,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <1207230794.8514.825.camel@twins>
+References: <47F3D76E.1070400@goop.org> <20080402215720.GI103491721@sgi.com>
+	 <1207230794.8514.825.camel@twins>
 Content-Type: text/plain
-Date: Thu, 03 Apr 2008 16:07:08 +0200
-Message-Id: <1207231628.3438.6.camel@skunk.anacadf.mentorg.com>
+Date: Thu, 03 Apr 2008 16:07:00 +0200
+Message-Id: <1207231620.8514.829.camel@twins>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.0 (2.8.0-40.el5) 
+X-Mailer: Evolution 2.21.92 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-04-03 at 09:57 -0400, Mark Lord wrote:
-> > [root@awak:~]$ fdisk /dev/sdc
+On Thu, 2008-04-03 at 15:53 +0200, Peter Zijlstra wrote:
+> On Thu, 2008-04-03 at 07:57 +1000, David Chinner wrote:
+> > On Wed, Apr 02, 2008 at 11:58:54AM -0700, Jeremy Fitzhardinge wrote:
+> > > I'm getting this:
+> > > 
+> > > ================================================
+> > > [ BUG: lock held when returning to user space! ]
+> > > ------------------------------------------------
+> > > xfs_io/18796 is leaving the kernel with locks still held!
+> > > 1 lock held by xfs_io/18796:
+> > > #0:  (&type->s_umount_key#19){----}, at: [<c048c9ac>] get_super+0x42/0x87
+> > > 
+> > > when I suspend, possibly during an xfs-freeze.  There don't seem to be any 
+> > > ill-effects.
 > > 
-> > Unable to open /dev/sdc
-> > 
-> ..
+> > Yup, both the sb->s_umount and bdev->bd_mount_sem seaphores are held
+> > across freeze_bdev()/thaw_bdev(), and they are issued via separate
+> > ioctls generally from separate processes. Not great design, but not
+> > a bug....
 > 
-> As root, try:   mknod /tmp/sdc b 8 32 ; fdisk /tmp/sdc
-> 
-> Any different? 
+> Actually... we do consider that bugs.
 
-Nope. But /dev/sdc has already been created, and looks right (b 8 32
-too). Just there's nothing behind it.
+http://lkml.org/lkml/2007/10/27/135
 
-	Xav
+Where Linus says:
 
+ Definitely not a sane thing to do. It should use ref-counting and/or a 
+single bit to say "busy". 
 
