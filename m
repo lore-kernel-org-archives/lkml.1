@@ -1,78 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760629AbYDCIXz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756926AbYDCIY0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760629AbYDCIXz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Apr 2008 04:23:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751176AbYDCIXj
+	id S1756926AbYDCIY0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Apr 2008 04:24:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760911AbYDCIYI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Apr 2008 04:23:39 -0400
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:32903 "EHLO smtp6.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751061AbYDCIXi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Apr 2008 04:23:38 -0400
-Date: Thu, 3 Apr 2008 11:23:36 +0300
-From: Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>
-To: Denys Fedoryshchenko <denys@visp.net.lb>
-Cc: linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net
-Subject: Re: atyfb rmmod & vram crash, 2.6.24, 2.6.25-rc8
-Message-ID: <20080403082336.GD16619@sci.fi>
-Mail-Followup-To: Denys Fedoryshchenko <denys@visp.net.lb>,
-	linux-kernel@vger.kernel.org,
-	linux-fbdev-devel@lists.sourceforge.net
-References: <20080402124854.M56647@visp.net.lb>
+	Thu, 3 Apr 2008 04:24:08 -0400
+Received: from rv-out-0910.google.com ([209.85.198.185]:16677 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760876AbYDCIYA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Apr 2008 04:24:00 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=D77N9RR/CqPDVHg+vdDXmJoN/JhIj+MR89LGC2E7c55+MSE7e4uxgfFcvcITK925x8O+dnwMibypZdxQV8AgIaFxxs1vaLJlRcNeCKJIac14ub70AE8Y3T8G109LlORuDXpytaUl3aS+ZKP9k6gBeVXnssEIXGfC4rXChzfBEbU=
+Message-ID: <84144f020804030124m4cc0bc1en2e11218f1f8bdc55@mail.gmail.com>
+Date: Thu, 3 Apr 2008 11:24:00 +0300
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+To: "Nick Piggin" <npiggin@suse.de>
+Subject: Re: [rfc] SLQB: YASA
+Cc: "Linux Memory Management List" <linux-mm@kvack.org>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Christoph Lameter" <clameter@sgi.com>
+In-Reply-To: <20080403081338.GA18337@wotan.suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20080402124854.M56647@visp.net.lb>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+References: <20080403072550.GC25932@wotan.suse.de>
+	 <84144f020804030045p44456894lfc006dcdeab6f67c@mail.gmail.com>
+	 <20080403075725.GA7514@wotan.suse.de>
+	 <20080403081338.GA18337@wotan.suse.de>
+X-Google-Sender-Auth: b3f8cc41df767ad4
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 02, 2008 at 03:54:12PM +0300, Denys Fedoryshchenko wrote:
-> VGA card i dont know how much RAM there actually, but lspci here shows looks
-> like 16MB:
-> 
-> 03:09.0 VGA compatible controller: ATI Technologies Inc 3D Rage Pro 215GP (rev
-> 5c) (prog-if 00 [VGA controller])
->         Subsystem: ATI Technologies Inc Rage Pro Turbo
->         Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr-
-> Stepping+ SERR- FastB2B- DisINTx-
->         Status: Cap- 66MHz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort-
-> <TAbort- <MAbort- >SERR- <PERR- INTx-
->         Latency: 66 (2000ns min), Cache Line Size: 32 bytes
->         Interrupt: pin A routed to IRQ 21
->         Region 0: Memory at f0000000 (32-bit, prefetchable) [size=16M]
+Hi Nick,
 
-This region is always 16MB regardless of how much actual RAM is on the
-card.
+On Thu, Apr 03, 2008 at 09:57:25AM +0200, Nick Piggin wrote:
+> > It's a completely different design of the core allocator algorithms
+> > really.
+> >
+> > It probably looks quite similar because I started with slub.c, but
+> > really is just the peripheral supporting code and structure. I'm never
+> > intending to try to go through the pain of incrementally changing SLUB
+> > into SLQB. If SLQB is found to be a good idea, then it could maybe get
+> > merged.
 
-> Loading without parameters
-> 
-> atyfb: using auxiliary register aperture
-> atyfb: 3D RAGE PRO (Mach64 GP, PQFP, PCI) [0x4750 rev 0x7c]
-> atyfb: Mach64 BIOS is located at c0000, mapped at c00c0000.
-> atyfb: BIOS frequency table:
-> atyfb: PCLK_min_freq 984, PCLK_max_freq 23600, ref_freq 2950, ref_divider 64
-> atyfb: MCLK_pwd 4200, MCLK_max_freq 7500, XCLK_max_freq 10000, SCLK_freq 5000
-> atyfb: 8M SGRAM (1:1), 29.498928 MHz XTAL, 236 MHz PLL, 75 Mhz MCLK, 100 MHz XCLK
-> atyfb: fb0: ATY Mach64 frame buffer device on PCI
-> 
-> It detects 8M.
-> If i put parameter vram=8
+On Thu, Apr 3, 2008 at 11:13 AM, Nick Piggin <npiggin@suse.de> wrote:
+>  And also I guess I don't think Christoph would be very happy about
+>  it :) He loves higher order allocations :)
+>
+>  The high level choices are pretty clear and I simply think there might
+>  be a better way to do it. I'm not saying it *is* better because I simply
+>  don't know, and there are areas where the tradeoffs I've made means that
+>  in some situations SLQB cannot match SLUB.
 
-The vram paramter takes KB not MB.
+So do you disagree with Christoph's statement that we should fix page
+allocator performance instead of adding queues to SLUB? I also don't
+think higher order allocations are the answer for regular boxes but I
+can see why they're useful for HPC people with huge machines.
 
-Why do you want to override it anyway? It seems to detect the amount of
-RAM just fine.
-
-> And most interesting when i do rmmod
-> tv1 ~ # rmmod atyfb
-> Segmentation fault
-
-Does this only happen after the failure caused by the bad vram parameter?
-
--- 
-Ville Syrjälä
-syrjala@sci.fi
-http://www.sci.fi/~syrjala/
+                                     Pekka
