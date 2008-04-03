@@ -1,99 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932145AbYDCHNG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761614AbYDCHNX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932145AbYDCHNG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Apr 2008 03:13:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761453AbYDCHMq
+	id S1761614AbYDCHNX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Apr 2008 03:13:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761473AbYDCHNJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Apr 2008 03:12:46 -0400
-Received: from smtp.nokia.com ([192.100.122.230]:25091 "EHLO
-	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761388AbYDCHMp (ORCPT
+	Thu, 3 Apr 2008 03:13:09 -0400
+Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:39849 "EHLO
+	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932150AbYDCHNH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Apr 2008 03:12:45 -0400
-Message-ID: <47F48244.9000500@yandex.ru>
-Date: Thu, 03 Apr 2008 10:07:48 +0300
-From: Artem Bityutskiy <dedekind@yandex.ru>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	Thu, 3 Apr 2008 03:13:07 -0400
+From: "Satoshi UCHIDA" <s-uchida@ap.jp.nec.com>
+To: "'Satoshi UCHIDA'" <s-uchida@ap.jp.nec.com>,
+       "'Paul Menage'" <menage@google.com>, <linux-kernel@vger.kernel.org>,
+       <containers@lists.linux-foundation.org>
+Cc: <axboe@kernel.dk>, <tom-sugawara@ap.jp.nec.com>
+References: <007801c893d9$d89726f0$89c574d0$@jp.nec.com>		<008001c893db$4e2eccf0$ea8c66d0$@jp.nec.com>	<6599ad830804021541s3c1e3197y77d87f63bf47e4b3@mail.gmail.com> <005d01c89559$9e538200$dafa8600$@jp.nec.com>
+In-Reply-To: <005d01c89559$9e538200$dafa8600$@jp.nec.com>
+Subject: [RFC][patch 3/12][CFQ-cgroup] Introduce cgroup subsystem
+Date: Thu, 3 Apr 2008 16:12:54 +0900
+Message-Id: <006001c8955a$23267fa0$69737ee0$@jp.nec.com>
 MIME-Version: 1.0
-To: Matthieu CASTET <castet.matthieu@free.fr>
-CC: linux-kernel@vger.kernel.org, Hunter Adrian <ext-Adrian.Hunter@nokia.com>
-Subject: Re: [RFC PATCH] UBIFS - new flash file system
-References: <1206629746-4298-1-git-send-email-Artem.Bityutskiy@nokia.com> <loom.20080401T204425-749@post.gmane.org>
-In-Reply-To: <loom.20080401T204425-749@post.gmane.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-OriginalArrivalTime: 03 Apr 2008 07:12:07.0477 (UTC) FILETIME=[06DC8650:01C8955A]
-X-Nokia-AV: Clean
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Microsoft Office Outlook 12.0
+Thread-Index: AciVEsqJacziMmPnQjKpkKdoNO90TwARhoqAAABL1CA=
+Content-Language: ja
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Matthieu,
+This patch introduces a simple cgroup subsystem.
+New cgroup subsystem is called cfq_cgroup.
 
-Not sure why me/Adrian were not in CC, but it is difficult to notice 
-e-mails in this case.
+   Signed-off-by: Satoshi UCHIDA <uchida@ap.jp.nec.com>
 
-Matthieu CASTET wrote:
->> UBIFS is stable and very close to be production ready. It was
->> tested on OLPC and N810. The development was done on flash simulator
->> on a 2-way x86 machine. However, UBIFS needs a good review.
-> Did you have a chance of testing it with various real flash : old small page
-> nand flash, very big large page NAND (4GB), ...
+---
+ block/Makefile                |    1 +
+ block/cfq-cgroup.c            |   57 +++++++++++++++++++++++++++++++++++++++++
+ include/linux/cgroup_subsys.h |    6 ++++
+ 3 files changed, 64 insertions(+), 0 deletions(-)
+ create mode 100644 block/cfq-cgroup.c
 
-Most of the development was done on nandsim. We tested 512/2048 NAND page
-sizes on nandsim. We also tried mtdram which emulates NOR flash as well,
-UBIFS worked fine.
-
-Vs. real hardware, unfortunately we have only tried Nokia N8100 which has
-256MiB internal SLC NAND flash and OLPC which has 1GiB internal SLC NAND flash.
-It would be nice to try on more hardware, but we do not have it available.
-
-Nevertheless, we expect it to work fine on different NAND page sizes as
-long as they are power of 2.
-
-> May be you could update your benchmark :
-> http://osl.sed.hu/wiki/ubifs/index.php/Mount_results doesn't give super result :
-> 1 second mount time on a 64 MB flash with 517.73 BogoMIPS CPU.
-> What will be the result for a 4GB flash ? 64 seconds ?
-
-Not sure about that measurement. As far as I know the guys from Szeged have some
-board with very slow flash I/O which gave them these results.
-
-But it included both UBI initialization and UBIFS mount time. The latter part
-is always quick. The former may be slow if I/O speed is slow. Depending on
-hardware, for 4GB I would expect 4-10 sec UBI initialization time. Not perfect.
-UBI needs improvements to work with large flashes. We have few ideas for
-improving current UBI. But for dramatical to developing UBI2 would be needed.
-
-Here you may find some figures I observed:
-http://www.linux-mtd.infradead.org/doc/ubi.html#L_scalability
-
-> Did you do very intensive and long test where you can see bad block appearing on
-> the flash ?
-
-Yes, we tried. But we were unable to wear out Samsung OneNAND. Surprisingly, it
-survived much more erase cycles that the manual declares. It is SLC. We need an
-MLC flash to do this, which we do not have, unfortunately. 
-
-The way we made sure wear-leveling is OK - we improved nandsim to report wear
-information (see rptwear nandsim module option).
-
-> Speaking of big nand, is UBI/UBI-FS free of 2GB/4GB limit ?
-Yes, I believe so. All the addressing is done in eraseblock number/offset within
-the eraseblock units.
-
->> UBIFS is quite complex because
-> Is it possible to create small and fast code for read only support in 
-> bootloader ?
-Yeah, read-only implementation should not be very complex, but it would anyway
-be much more complex than the one for JFFS2. It might be easier to have /boot
-partition as JFFS2 I guess.
-
-I had a wild idea of implanting boot-loader support into UBI/UBIFS. That would
-mean to store additional information about location of specific files in a
-dedicated place on flash. Just for few files, like the ones in /boot. Not sure
-how much sense does it make, though.
-
+diff --git a/block/Makefile b/block/Makefile
+index 5a43c7d..ea07b46 100644
+--- a/block/Makefile
++++ b/block/Makefile
+@@ -11,6 +11,7 @@ obj-$(CONFIG_IOSCHED_NOOP)	+= noop-iosched.o
+ obj-$(CONFIG_IOSCHED_AS)	+= as-iosched.o
+ obj-$(CONFIG_IOSCHED_DEADLINE)	+= deadline-iosched.o
+ obj-$(CONFIG_IOSCHED_CFQ)	+= cfq-iosched.o
++obj-$(CONFIG_CGROUP_CFQ)	+= cfq-cgroup.o
+ 
+ obj-$(CONFIG_BLK_DEV_IO_TRACE)	+= blktrace.o
+ obj-$(CONFIG_BLOCK_COMPAT)	+= compat_ioctl.o
+diff --git a/block/cfq-cgroup.c b/block/cfq-cgroup.c
+new file mode 100644
+index 0000000..de00a0d
+--- /dev/null
++++ b/block/cfq-cgroup.c
+@@ -0,0 +1,57 @@
++/*
++ *  CFQ CGROUP disk scheduler.
++ *
++ *     This program is a wrapper program that is
++ *     extend CFQ disk scheduler for handling
++ *     cgroup subsystem. 
++ *
++ *     This program is based on original CFQ code.
++ * 
++ *  Copyright (C) 2008 Satoshi UCHIDA <s-uchida@ap.jp.nec.com>
++ *   and NEC Corp.
++ */
++
++#include <linux/blkdev.h>
++#include <linux/cgroup.h>
++#include <linux/cfq-iosched.h>
++
++struct cfq_cgroup {
++	struct cgroup_subsys_state css;
++};
++
++
++static inline struct cfq_cgroup *cgroup_to_cfq_cgroup(struct cgroup *cont)
++{
++	return container_of(cgroup_subsys_state(cont, cfq_subsys_id),
++			    struct cfq_cgroup, css);
++}
++
++static struct cgroup_subsys_state *
++cfq_cgroup_create(struct cgroup_subsys *ss, struct cgroup *cont)
++{
++	struct cfq_cgroup *cfqc;
++
++	if (!capable(CAP_SYS_ADMIN))
++		return ERR_PTR(-EPERM);
++
++	if (!cgroup_is_descendant(cont))
++		return ERR_PTR(-EPERM);
++
++	cfqc = kzalloc(sizeof(struct cfq_cgroup), GFP_KERNEL);
++	if (unlikely(!cfqc))
++		return ERR_PTR(-ENOMEM);
++
++	return &cfqc->css;	
++}
++
++static void cfq_cgroup_destroy(struct cgroup_subsys *ss, struct cgroup *cont)
++{
++	kfree(cgroup_to_cfq_cgroup(cont));
++}
++
++struct cgroup_subsys cfq_subsys = {
++	.name = "cfq",
++	.create = cfq_cgroup_create,
++	.destroy = cfq_cgroup_destroy,
++	.subsys_id = cfq_subsys_id,
++};
+diff --git a/include/linux/cgroup_subsys.h b/include/linux/cgroup_subsys.h
+index 1ddebfc..217ecb9 100644
+--- a/include/linux/cgroup_subsys.h
++++ b/include/linux/cgroup_subsys.h
+@@ -42,3 +42,9 @@ SUBSYS(mem_cgroup)
+ #endif
+ 
+ /* */
++
++#ifdef CONFIG_CGROUP_CFQ
++SUBSYS(cfq)
++#endif
++
++/* */
 -- 
-Best Regards,
-Artem Bityutskiy (Артём Битюцкий)
+1.5.4.1
+
+
