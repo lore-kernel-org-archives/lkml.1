@@ -1,51 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756030AbYDCTG3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760549AbYDCTH1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756030AbYDCTG3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Apr 2008 15:06:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755926AbYDCTGW
+	id S1760549AbYDCTH1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Apr 2008 15:07:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756347AbYDCTHO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Apr 2008 15:06:22 -0400
-Received: from rtr.ca ([76.10.145.34]:2531 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751593AbYDCTGV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Apr 2008 15:06:21 -0400
-Message-ID: <47F52AAC.8090005@rtr.ca>
-Date: Thu, 03 Apr 2008 15:06:20 -0400
-From: Mark Lord <lkml@rtr.ca>
-Organization: Real-Time Remedies Inc.
-User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
-MIME-Version: 1.0
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: LKML <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, david-b@pacbell.net,
-       oliver@neukum.org, Alan Stern <stern@rowland.harvard.edu>
-Subject: 2.6.25-rc7/8: Another resume regression
-References: <200803220259.48534.rjw@sisk.pl> <alpine.LFD.1.00.0803311118120.14670@woody.linux-foundation.org> <47F13B8F.1000003@rtr.ca>
-In-Reply-To: <47F13B8F.1000003@rtr.ca>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+	Thu, 3 Apr 2008 15:07:14 -0400
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:45097 "EHLO
+	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756323AbYDCTHM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Apr 2008 15:07:12 -0400
+Date: Thu, 3 Apr 2008 15:07:00 -0400
+Message-Id: <200804031907.m33J70fQ025437@agora.fsl.cs.sunysb.edu>
+From: Erez Zadok <ezk@cs.sunysb.edu>
+To: "Josef 'Jeff' Sipek" <jeffpc@josefsipek.net>
+Cc: Erez Zadok <ezk@cs.sunysb.edu>, akpm@linux-foundation.org,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Al Viro <viro@zeniv.linux.org.uk>, hch@infradead.org
+Subject: Re: fs_stack/eCryptfs: remove 3rd arg of copy_attr_all, add locking to copy_inode_size 
+In-reply-to: Your message of "Thu, 03 Apr 2008 14:20:01 EDT."
+             <20080403182001.GB30189@josefsipek.net> 
+X-MailKey: Erez_Zadok
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+In message <20080403182001.GB30189@josefsipek.net>, "Josef 'Jeff' Sipek" writes:
+> On Wed, Apr 02, 2008 at 09:49:11PM -0400, Erez Zadok wrote:
+> ...
+> > +#if BITS_PER_LONG == 32 && defined(CONFIG_SMP)
+> > +	spin_lock(&dst->i_lock);
+> > +#endif
+> 
+> I think you need to check CONFIG_PREEMPT as well.
+> 
+> Josef 'Jeff' Sipek.
 
-Okay, USB now works fine on resume after fixing the iaa_watchdog issue.
+I'm not sure if it's needed in case of CONFIG_PREEMPT.  Anyone?  The code
+for i_size_write (below), and the comment at the top of the function,
+suggest that the spinlock is needed only to prevent the lots seqcount.
 
-But twice now, once before that fix, and again just a minute ago,
-my machine has failed completely to resume after suspend-to-RAM.
+/*
+ * NOTE: unlike i_size_read(), i_size_write() does need locking around it
+ * (normally i_mutex), otherwise on 32bit/SMP an update of i_size_seqcount
+ * can be lost, resulting in subsequent i_size_read() calls spinning forever.
+ */
+static inline void i_size_write(struct inode *inode, loff_t i_size)
+{
+#if BITS_PER_LONG==32 && defined(CONFIG_SMP)
+	write_seqcount_begin(&inode->i_size_seqcount);
+	inode->i_size = i_size;
+	write_seqcount_end(&inode->i_size_seqcount);
+#elif BITS_PER_LONG==32 && defined(CONFIG_PREEMPT)
+	preempt_disable();
+	inode->i_size = i_size;
+	preempt_enable();
+#else
+	inode->i_size = i_size;
+#endif
+}
 
-Again, resume here is 100% reliable in 2.6.24 and earlier.
 
-Symptoms: the usual:
+BTW, some time ago I reviewed all callers of i_size_write.  I did so again
+just now, and the results were the same:
 
-  -- 2.6.25-rc8 (and -rc7 earlier), plus USB fix.
-  -- not reproduceable on demand.
-  -- black screen of death -- no backlight, no kernel messages.
-  -- no hard drive activity.
-  -- no alt-sysrq-anything.
-  -- 5 second hold of the power button to poweroff and then recover.
+- a LOT of callers of i_size_write don't take any lock
+- some take another spinlock in a different data structure
+- those that do take the spinlock, do so unconditionally
+- only unionfs and fs/stack.c wrap the spinlock in
 
-Not much info to go on, but it's worth knowing there's an issue here somewhere.
+	#if BITS_PER_LONG == 32 && defined(CONFIG_SMP)
 
-Cheers
+Erez.
