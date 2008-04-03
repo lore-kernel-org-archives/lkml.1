@@ -1,54 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761902AbYDUNZ5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932381AbYDUN2L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761902AbYDUNZ5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Apr 2008 09:25:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760148AbYDUNTP
+	id S932381AbYDUN2L (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Apr 2008 09:28:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759502AbYDUNT2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Apr 2008 09:19:15 -0400
-Received: from wa-out-1112.google.com ([209.85.146.179]:9129 "EHLO
+	Mon, 21 Apr 2008 09:19:28 -0400
+Received: from wa-out-1112.google.com ([209.85.146.176]:8449 "EHLO
 	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760033AbYDUNTK (ORCPT
+	with ESMTP id S1760173AbYDUNTY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Apr 2008 09:19:10 -0400
+	Mon, 21 Apr 2008 09:19:24 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=message-id:in-reply-to:references:date:subject:cc:from;
-        b=p/UOgWhCcM5WIEDUa/m0dgBfbKPxgykYT4Y6VISuC/CGWhxB8RFJel6fLPz0Uv8PKqIs45hhFzpPOyGrsCW4/GntxlwebVlnGI22t4rtLanTzrm+usnuxljPtRzq0Ty5PUaFdmxjtQgVq8WNPPZZniZ/mN0BELOguIqyWbmsKlM=
-Message-Id: <db7c10e708b9bdd1618c034591d27c33cb341222.1208783694.git.dmitry.torokhov@gmail.com>
+        b=dsqkQoqUPCTh4nBFrq3m93p0i9i4QPQZcgNecuBYgMY3J4rfOD6/dNFylb+UO1aP5C6+eK7CuvfRAY57vjVxBWC3+3hsRMx5wuBLMlw8JFp8mPW+p+L/sSg+hpMD7IoFwebi8pqnMFjPO/+q5LrP4UJfE9+HN8OhaBdaGa5y/rw=
+Message-Id: <a0979923d7c34c9c60d0ee8a533f9502dcfbd42b.1208783694.git.dmitry.torokhov@gmail.com>
 In-Reply-To: <cover.1208783694.git.dmitry.torokhov@gmail.com>
 References: <cover.1208783694.git.dmitry.torokhov@gmail.com>
-Date: Thu, 17 Apr 2008 09:24:48 -0400
-Subject: [PATCH 31/37] Input: wm97xx-core - use IRQF_SAMPLE_RANDOM
+Date: Thu, 3 Apr 2008 16:18:10 -0400
+Subject: [PATCH 12/37] Input: xpad - fix dpad handling of unknown devices
 Cc: linux-kernel@vger.kernel.org, jkosina@suse.cz, akpm@linux-foundation.org
-From: Mark Brown <dmitry.torokhov@gmail.com>
+From: Anssi Hannula <dmitry.torokhov@gmail.com>
 To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The touchscreen interrupt is driven by human input which can reasonably
-be used to provide entropy.
+For devices not specifically listed in xpad.c, xpad->dpad_mapping
+is initially set to MAP_DPAD_UNKNOWN. In xpad_probe() it gets changed
+to either MAP_DPAD_TO_BUTTONS or MAP_DPAD_TO_AXES, depending on the
+module parameter dpad_to_buttons.
 
-Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
+However, MAP_DPAD_UNKNOWN is defined as -1, while the field is u8.
+This results in actual value of 255, causing the MAP_DPAD_UNKNOWN
+check in xpad_probe() to fail.
+Fix that by defining MAP_DPAD_UNKNOWN as 2 instead.
+
+Also, setting module parameter dpad_to_buttons to 1 should obviously
+map dpad to buttons, while the default behaviour (0) should be to map
+dpad to axes. However, dpad_to_buttons is directly assigned to
+xpad->dpad_mapping, and as MAP_DPAD_TO_BUTTONS is 0, the actual
+behaviour is reversed.
+Fix that by negating dpad_to_buttons in assignment.
+
+Signed-off-by: Anssi Hannula <anssi.hannula@gmail.com>
 Signed-off-by: Dmitry Torokhov <dtor@mail.ru>
 ---
- drivers/input/touchscreen/wm97xx-core.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
+ drivers/input/joystick/xpad.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/input/touchscreen/wm97xx-core.c b/drivers/input/touchscreen/wm97xx-core.c
-index e27b1e0..fec07c2 100644
---- a/drivers/input/touchscreen/wm97xx-core.c
-+++ b/drivers/input/touchscreen/wm97xx-core.c
-@@ -355,7 +355,8 @@ static int wm97xx_init_pen_irq(struct wm97xx *wm)
- 	 * provided. */
- 	BUG_ON(!wm->mach_ops->irq_enable);
+diff --git a/drivers/input/joystick/xpad.c b/drivers/input/joystick/xpad.c
+index 8804ad3..6288c4f 100644
+--- a/drivers/input/joystick/xpad.c
++++ b/drivers/input/joystick/xpad.c
+@@ -87,7 +87,7 @@
+    but we map them to axes when possible to simplify things */
+ #define MAP_DPAD_TO_BUTTONS    0
+ #define MAP_DPAD_TO_AXES       1
+-#define MAP_DPAD_UNKNOWN       -1
++#define MAP_DPAD_UNKNOWN       2
  
--	if (request_irq(wm->pen_irq, wm97xx_pen_interrupt, IRQF_SHARED,
-+	if (request_irq(wm->pen_irq, wm97xx_pen_interrupt,
-+			IRQF_SHARED | IRQF_SAMPLE_RANDOM,
- 			"wm97xx-pen", wm)) {
- 		dev_err(wm->dev,
- 			"Failed to register pen down interrupt, polling");
+ #define XTYPE_XBOX        0
+ #define XTYPE_XBOX360     1
+@@ -653,7 +653,7 @@ static int xpad_probe(struct usb_interface *intf, const struct usb_device_id *id
+ 	xpad->dpad_mapping = xpad_device[i].dpad_mapping;
+ 	xpad->xtype = xpad_device[i].xtype;
+ 	if (xpad->dpad_mapping == MAP_DPAD_UNKNOWN)
+-		xpad->dpad_mapping = dpad_to_buttons;
++		xpad->dpad_mapping = !dpad_to_buttons;
+ 	if (xpad->xtype == XTYPE_UNKNOWN)
+ 		xpad->xtype = (intf->cur_altsetting->desc.bInterfaceClass == USB_CLASS_VENDOR_SPEC);
+ 	xpad->dev = input_dev;
 -- 
 1.5.5.rc2.6.gf58d
 
