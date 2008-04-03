@@ -1,42 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759465AbYDCPBS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759632AbYDCPD7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759465AbYDCPBS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Apr 2008 11:01:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758702AbYDCPAx
+	id S1759632AbYDCPD7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Apr 2008 11:03:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757861AbYDCPDw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Apr 2008 11:00:53 -0400
-Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:56059
-	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758576AbYDCPAw (ORCPT
+	Thu, 3 Apr 2008 11:03:52 -0400
+Received: from mtagate4.de.ibm.com ([195.212.29.153]:54698 "EHLO
+	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757853AbYDCPDw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Apr 2008 11:00:52 -0400
-Date: Thu, 3 Apr 2008 17:00:48 +0200
-From: Andrea Arcangeli <andrea@qumranet.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Christoph Lameter <clameter@sgi.com>, Hugh Dickins <hugh@veritas.com>,
-       Robin Holt <holt@sgi.com>, Avi Kivity <avi@qumranet.com>,
-       Izik Eidus <izike@qumranet.com>, kvm-devel@lists.sourceforge.net,
-       general@lists.openfabrics.org, Steve Wise <swise@opengridcomputing.com>,
-       Roland Dreier <rdreier@cisco.com>, Kanoj Sarcar <kanojsarcar@yahoo.com>,
-       steiner@sgi.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       daniel.blueman@quadrics.com, Nick Piggin <npiggin@suse.de>
-Subject: Re: EMM: Fixup return value handling of emm_notify()
-Message-ID: <20080403143341.GA9603@duo.random>
-References: <20080401205531.986291575@sgi.com> <20080401205635.793766935@sgi.com> <20080402064952.GF19189@duo.random> <Pine.LNX.4.64.0804021048460.27214@schroedinger.engr.sgi.com> <Pine.LNX.4.64.0804021202450.28436@schroedinger.engr.sgi.com> <20080402212515.GS19189@duo.random> <Pine.LNX.4.64.0804021427210.30516@schroedinger.engr.sgi.com> <1207219246.8514.817.camel@twins>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1207219246.8514.817.camel@twins>
+	Thu, 3 Apr 2008 11:03:52 -0400
+Subject: Re: kernel BUG at drivers/block/ub.c:820!
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Reply-To: schwidefsky@de.ibm.com
+To: Boaz Harrosh <bharrosh@panasas.com>
+Cc: linux-kernel@vger.kernel.org, k-ueda@ct.jp.nec.com, j-nomura@ce.jp.nec.com,
+       jens.axboe@oracle.com, zaitcev@redhat.com
+In-Reply-To: <47F4E694.4060103@panasas.com>
+References: <1207212156.5602.5.camel@localhost>
+	 <47F4C044.1090609@panasas.com> <1207231045.9155.6.camel@localhost>
+	 <47F4E694.4060103@panasas.com>
+Content-Type: text/plain
+Organization: IBM Corporation
+Date: Thu, 03 Apr 2008 17:02:58 +0200
+Message-Id: <1207234978.9155.13.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 03, 2008 at 12:40:46PM +0200, Peter Zijlstra wrote:
-> It seems to me that common code can be shared using functions? No need
-> FWIW I prefer separate methods.
+On Thu, 2008-04-03 at 17:15 +0300, Boaz Harrosh wrote:
+> OK So first this confirms that for ages the ub.c driver was leaking
+> BIO's
+> on first connection. Just that it was never noticed before.
+> 
+> or that we have a BLOCK_PC at hand but before the 7d699baf patch
+> we completed with - rq->hard_nr_sectors << 9 - where now
+> blk_rq_bytes(rq)
+> will return 218 which is less. Could you also put rq->hard_nr_sectors
+> in the print above?
+> 
+> Did you mange to find what is that 218 bytes command. Put a WARN_ON(1)
+> in ub_request_fn_1 for any command that has a blk_rq_bytes(rq) of 218
+> so we'll see who issues these commands. And what is the real bug.
 
-kvm patch using mmu notifiers shares 99% of the code too between the
-two different methods implemented indeed. Code sharing is the same and
-if something pointer to functions will be faster if gcc isn't smart or
-can't create a compile time hash to jump into the right address
-without having to check every case: .
+I've added a WARN_ON(blk_rq_bytes(rq) == 218) right before the
+ub_submit_scsi in ub_request_fn_1. ub_end_rq still reports the odd size
+but I get nothing from ub_request_fn_1. Interesting.
+
+-- 
+blue skies,
+  Martin.
+
+"Reality continues to ruin my life." - Calvin.
+
+
