@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763422AbYDCTj7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762131AbYDCTk3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763422AbYDCTj7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Apr 2008 15:39:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761129AbYDCTdS
+	id S1762131AbYDCTk3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Apr 2008 15:40:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761148AbYDCTdT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Apr 2008 15:33:18 -0400
-Received: from bzq-179-150-194.static.bezeqint.net ([212.179.150.194]:39115
+	Thu, 3 Apr 2008 15:33:19 -0400
+Received: from bzq-179-150-194.static.bezeqint.net ([212.179.150.194]:39116
 	"EHLO il.qumranet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760253AbYDCTdA (ORCPT
+	with ESMTP id S1760335AbYDCTdB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Apr 2008 15:33:00 -0400
+	Thu, 3 Apr 2008 15:33:01 -0400
 From: Avi Kivity <avi@qumranet.com>
 To: kvm-devel@lists.sourceforge.net
-Cc: linux-kernel@vger.kernel.org, Izik Eidus <izike@qumranet.com>
-Subject: [PATCH 30/35] KVM: MMU: fix dirty bit setting when removing write permissions
-Date: Thu,  3 Apr 2008 22:32:45 +0300
-Message-Id: <1207251170-5013-31-git-send-email-avi@qumranet.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH 33/35] KVM: VMX: Add module option to disable flexpriority
+Date: Thu,  3 Apr 2008 22:32:48 +0300
+Message-Id: <1207251170-5013-34-git-send-email-avi@qumranet.com>
 X-Mailer: git-send-email 1.5.4.5
 In-Reply-To: <1207251170-5013-1-git-send-email-avi@qumranet.com>
 References: <1207251170-5013-1-git-send-email-avi@qumranet.com>
@@ -23,42 +23,39 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Izik Eidus <izike@qumranet.com>
+Useful for debugging.
 
-When mmu_set_spte() checks if a page related to spte should be release as
-dirty or clean, it check if the shadow pte was writeble, but in case
-rmap_write_protect() is called called it is possible for shadow ptes that were
-writeble to become readonly and therefor mmu_set_spte will release the pages
-as clean.
-
-This patch fix this issue by marking the page as dirty inside
-rmap_write_protect().
-
-Signed-off-by: Izik Eidus <izike@qumranet.com>
 Signed-off-by: Avi Kivity <avi@qumranet.com>
 ---
- arch/x86/kvm/mmu.c |    8 ++++++++
- 1 files changed, 8 insertions(+), 0 deletions(-)
+ arch/x86/kvm/vmx.c |    8 ++++++--
+ 1 files changed, 6 insertions(+), 2 deletions(-)
 
-diff --git a/arch/x86/kvm/mmu.c b/arch/x86/kvm/mmu.c
-index a5872b3..dd4b95b 100644
---- a/arch/x86/kvm/mmu.c
-+++ b/arch/x86/kvm/mmu.c
-@@ -626,6 +626,14 @@ static void rmap_write_protect(struct kvm *kvm, u64 gfn)
- 		}
- 		spte = rmap_next(kvm, rmapp, spte);
- 	}
-+	if (write_protected) {
-+		struct page *page;
+diff --git a/arch/x86/kvm/vmx.c b/arch/x86/kvm/vmx.c
+index fb0389d..0155931 100644
+--- a/arch/x86/kvm/vmx.c
++++ b/arch/x86/kvm/vmx.c
+@@ -39,6 +39,9 @@ module_param(bypass_guest_pf, bool, 0);
+ static int enable_vpid = 1;
+ module_param(enable_vpid, bool, 0);
+ 
++static int flexpriority_enabled = 1;
++module_param(flexpriority_enabled, bool, 0);
 +
-+		spte = rmap_next(kvm, rmapp, NULL);
-+		page = pfn_to_page((*spte & PT64_BASE_ADDR_MASK) >> PAGE_SHIFT);
-+		SetPageDirty(page);
-+	}
-+
- 	/* check for huge page mappings */
- 	rmapp = gfn_to_rmap(kvm, gfn, 1);
- 	spte = rmap_next(kvm, rmapp, NULL);
+ struct vmcs {
+ 	u32 revision_id;
+ 	u32 abort;
+@@ -200,8 +203,9 @@ static inline int cpu_has_secondary_exec_ctrls(void)
+ 
+ static inline bool cpu_has_vmx_virtualize_apic_accesses(void)
+ {
+-	return (vmcs_config.cpu_based_2nd_exec_ctrl &
+-		SECONDARY_EXEC_VIRTUALIZE_APIC_ACCESSES);
++	return flexpriority_enabled
++		&& (vmcs_config.cpu_based_2nd_exec_ctrl &
++		    SECONDARY_EXEC_VIRTUALIZE_APIC_ACCESSES);
+ }
+ 
+ static inline int vm_need_virtualize_apic_accesses(struct kvm *kvm)
 -- 
 1.5.4.5
 
