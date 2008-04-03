@@ -1,88 +1,190 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752413AbYDCEFw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759977AbYDCEJc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752413AbYDCEFw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Apr 2008 00:05:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750757AbYDCEFn
+	id S1759977AbYDCEJc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Apr 2008 00:09:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750928AbYDCEJY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Apr 2008 00:05:43 -0400
-Received: from E23SMTP06.au.ibm.com ([202.81.18.175]:50715 "EHLO
-	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750752AbYDCEFm (ORCPT
+	Thu, 3 Apr 2008 00:09:24 -0400
+Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:15576 "EHLO
+	pd4mo1so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750757AbYDCEJX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Apr 2008 00:05:42 -0400
-Message-ID: <47F4577E.5060905@linux.vnet.ibm.com>
-Date: Thu, 03 Apr 2008 09:35:18 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
-MIME-Version: 1.0
-To: Paul Menage <menage@google.com>
-CC: Pavel Emelianov <xemul@openvz.org>, Hugh Dickins <hugh@veritas.com>,
-       Sudhir Kumar <skumar@linux.vnet.ibm.com>,
-       YAMAMOTO Takashi <yamamoto@valinux.co.jp>, lizf@cn.fujitsu.com,
-       linux-kernel@vger.kernel.org, taka@valinux.co.jp, linux-mm@kvack.org,
-       David Rientjes <rientjes@google.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: Re: [RFC][-mm] Add an owner to the mm_struct (v4)
-References: <20080401124312.23664.64616.sendpatchset@localhost.localdomain> <47F3D62E.4070808@linux.vnet.ibm.com> <6599ad830804021253y6bf3b37y9bf1167b63c32e70@mail.gmail.com>
-In-Reply-To: <6599ad830804021253y6bf3b37y9bf1167b63c32e70@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Thu, 3 Apr 2008 00:09:23 -0400
+Date: Wed, 02 Apr 2008 22:06:38 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: ATA Bus Error with ICH7R and WDC WD7500AAKS-0
+In-reply-to: <fa.jGqgv39Iy1hVP2GVd7SfXYdAHwY@ifi.uio.no>
+To: Chaitanya Huilgol <chaitanya@tidaldata.com>
+Cc: linux-kernel@vger.kernel.org
+Message-id: <47F457CE.9050304@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7bit
+References: <fa.jGqgv39Iy1hVP2GVd7SfXYdAHwY@ifi.uio.no>
+User-Agent: Thunderbird 2.0.0.12 (Windows/20080213)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul Menage wrote:
-> On Wed, Apr 2, 2008 at 11:53 AM, Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
->>  So far I've heard no objections or seen any review suggestions. Paul if you are
->>  OK with this patch, I'll ask Andrew to include it in -mm.
+Chaitanya Huilgol wrote:
 > 
-> My only thoughts were:
+> Hi,
 > 
-> - I think I'd still prefer CONFIG_MM_OWNER to be auto-selected rather
-> than manually configured, but it's not a huge deal either way.
+> I am getting frequent 'ATA bus error' with ICH7R & WD7500AAKS-0.
+> I have tried the following combinations of NCQ and Write Cache disabled,
+> Write I/O is done with dd:
+> dd if=/dev/zero of=/dev/sdc bs=1048576
 > 
-
-It is auto-selected now by CONFIG_CGROUP_MEM_RES_CTLR in the latest patchset
-
-> - in theory I think we should goto retry if we get to the end of
-> mm_update_next_owner() without finding any other owner. Otherwise we
-> could miss another user if we race with one process forking a new
-> child and then exiting?
+> (1) With Write Cache is Disabled and NCQ is enabled then the
+> errors are seen immediately on starting I/O
+> (2) With Write Cache enabled and NCQ enabled the errors are less frequent
+> (3) With NCQ disabled using "echo 1 >/sys/block/sdc/device/queue_depth"
+> the errors are rare but do occur.
 > 
-
-When we the current task is exiting and we've verified that we are mm->owner and
-we cannot miss the new process since through the process of forking, it would
-have added the new process to the tasklist before exiting.
-
-> - I was looking through the exit code trying to convince myself that
-> current is still on the tasklist until after it makes this call. If it
-> isn't then we could have trouble finding the new owner. But I can't
-> figure out for sure exactly at what point we come off the tasklist.
+> I have tried with different SATA Cables & Sata port combinations to
+> rule out cable/bad port issues.
 > 
-
-We come off the task list in __unhash_process(), which is in turn called by
-release_task() through __exit_signal().
-
-> - I think we only need the cgroup callback in the event that
-> current->cgroups != new_owner->cgroups. (Hmm, have we already been
-> moved back to the root cgroup by this point? If so, then we'll have no
-> way to know which cgruop to unaccount from).
+> I am wondering if the WDC WD7500AAKS-0 is another candidate for NCQ 
+> blacklist?
 > 
+> 
+> Configuration Details:
+> ------------------------
+> 
+> MotherBoard: S975XBX2
+> AHCI controller: ICH7R
+> 
+> Kernel     version:        2.6.21.1
+> ahci.ko    version:        2.1
+> libata.ko  version:        2.20
+> 
+> Relevant dmesg output:
+> -------------------------
+> ata3: SATA max UDMA/133 cmd 0xf8822200 ctl 0x00000000 bmdma 0x00000000 
+> irq 220
+> ata3: SATA link up 3.0 Gbps (SStatus 123 SControl 300)
+> ata3.00: ATA-7: WDC WD7500AAKS-00RBA0, 30.04G30, max UDMA/133
+> ata3.00: 1465149168 sectors, multi 0: LBA48 NCQ (depth 31/32)
+> ata3.00: configured for UDMA/133
+> scsi3 : ahci
+> scsi 2:0:0:0: Direct-Access     ATA      WDC WD7500AAKS-0 30.0 PQ: 0 
+> ANSI: 5
+> SCSI device sdc: 1465149168 512-byte hdwr sectors (750156 MB)
+> sdc: Write Protect is off
+> sdc: Mode Sense: 00 3a 00 00
+> SCSI device sdc: write cache: enabled, read cache: enabled, doesn't 
+> support DPO or FUA
+> SCSI device sdc: 1465149168 512-byte hdwr sectors (750156 MB)
+> sdc: Write Protect is off
+> sdc: Mode Sense: 00 3a 00 00
+> SCSI device sdc: write cache: enabled, read cache: enabled, doesn't 
+> support DPO or FUA
+> 
+> ata3.00: exception Emask 0x10 SAct 0x7fffffff SErr 0x810000 action 0x2 
+> frozen
+> ata3.00: (irq_stat 0x08400000, interface fatal error, PHY RDY changed)
+> ata3.00: cmd 61/00:00:78:96:fd/04:00:00:00:00/40 tag 0 cdb 0x0 data 
+> 524288 out
+>          res 40/00:cc:78:06:fe/00:00:00:00:00/40 Emask 0x10 (ATA bus error)
+> ata3.00: cmd 61/00:08:78:9a:fd/04:00:00:00:00/40 tag 1 cdb 0x0 data 
+> 524288 out
+>          res 40/00:cc:78:06:fe/00:00:00:00:00/40 Emask 0x10 (ATA bus error)
+> ata3.00: cmd 61/00:10:78:aa:fd/04:00:00:00:00/40 tag 2 cdb 0x0 data 
+> 524288 out
+>          res 40/00:cc:78:06:fe/00:00:00:00:00/40 Emask 0x10 (ATA bus error)
+> ata3.00: cmd 61/00:18:78:ae:fd/04:00:00:00:00/40 tag 3 cdb 0x0 data 
+> 524288 out
+>          res 40/00:cc:78:06:fe/00:00:00:00:00/40 Emask 0x10 (ATA bus error)
+> ata3.00: cmd 61/00:20:78:b2:fd/04:00:00:00:00/40 tag 4 cdb 0x0 data 
+> 524288 out
+>          res 40/00:cc:78:06:fe/00:00:00:00:00/40 Emask 0x10 (ATA bus error)
+> ata3.00: cmd 61/00:28:78:b6:fd/04:00:00:00:00/40 tag 5 cdb 0x0 data 
+> 524288 out
+>     res 40/00:cc:78:06:fe/00:00:00:00:00/40 Emask 0x10 (ATA bus error)
+> ata3.00: cmd 61/00:30:78:ba:fd/04:00:00:00:00/40 tag 6 cdb 0x0 data 
+> 524288 out
+>          res 40/00:cc:78:06:fe/00:00:00:00:00/40 Emask 0x10 (ATA bus error)
+> ata3.00: cmd 61/00:38:78:be:fd/04:00:00:00:00/40 tag 7 cdb 0x0 data 
+> 524288 out
+>          res 40/00:cc:78:06:fe/00:00:00:00:00/40 Emask 0x10 (ATA bus error)
+> ata3.00: cmd 61/00:40:78:c2:fd/04:00:00:00:00/40 tag 8 cdb 0x0 data 
+> 524288 out
+>          res 40/00:cc:78:06:fe/00:00:00:00:00/40 Emask 0x10 (ATA bus error)
+> ata3.00: cmd 61/00:48:78:c6:fd/04:00:00:00:00/40 tag 9 cdb 0x0 data 
+> 524288 out
+>          res 40/00:cc:78:06:fe/00:00:00:00:00/40 Emask 0x10 (ATA bus error)
+> ata3.00: cmd 61/00:50:78:ca:fd/04:00:00:00:00/40 tag 10 cdb 0x0 data 
+> 524288 out
+>          res 40/00:cc:78:06:fe/00:00:00:00:00/40 Emask 0x10 (ATA bus error)
+> ata3.00: cmd 61/00:58:78:ce:fd/04:00:00:00:00/40 tag 11 cdb 0x0 data 
+> 524288 out
+>          res 40/00:cc:78:06:fe/00:00:00:00:00/40 Emask 0x10 (ATA bus error)
+> ata3.00: cmd 61/00:60:78:d2:fd/04:00:00:00:00/40 tag 12 cdb 0x0 data 
+> 524288 out
+>          res 40/00:cc:78:06:fe/00:00:00:00:00/40 Emask 0x10 (ATA bus error)
+> ata3.00: cmd 61/00:68:78:d6:fd/04:00:00:00:00/40 tag 13 cdb 0x0 data 
+> 524288 out
+>          res 40/00:cc:78:06:fe/00:00:00:00:00/40 Emask 0x10 (ATA bus error)
+> ata3.00: cmd 61/00:70:78:da:fd/04:00:00:00:00/40 tag 14 cdb 0x0 data 
+> 524288 out
+>          res 40/00:cc:78:06:fe/00:00:00:00:00/40 Emask 0x10 (ATA bus error)
+> ata3.00: cmd 61/00:78:78:de:fd/04:00:00:00:00/40 tag 15 cdb 0x0 data 
+> 524288 out
+>          res 40/00:cc:78:06:fe/00:00:00:00:00/40 Emask 0x10 (ATA bus error)
+> ata3.00: cmd 61/00:80:78:e2:fd/04:00:00:00:00/40 tag 16 cdb 0x0 data 
+> 524288 out
+>          res 40/00:cc:78:06:fe/00:00:00:00:00/40 Emask 0x10 (ATA bus error)
+> ata3.00: cmd 61/00:88:78:e6:fd/04:00:00:00:00/40 tag 17 cdb 0x0 data 
+> 524288 out
+>          res 40/00:cc:78:06:fe/00:00:00:00:00/40 Emask 0x10 (ATA bus error)
+> ata3.00: cmd 61/00:90:78:ea:fd/04:00:00:00:00/40 tag 18 cdb 0x0 data 
+> 524288 out
+>          res 40/00:cc:78:06:fe/00:00:00:00:00/40 Emask 0x10 (ATA bus error)
+> ata3.00: cmd 61/00:98:78:ee:fd/04:00:00:00:00/40 tag 19 cdb 0x0 data 
+> 524288 out
+>          res 40/00:cc:78:06:fe/00:00:00:00:00/40 Emask 0x10 (ATA bus error)
+> ata3.00: cmd 61/00:a0:78:f2:fd/04:00:00:00:00/40 tag 20 cdb 0x0 data 
+> 524288 out
+>          res 40/00:cc:78:06:fe/00:00:00:00:00/40 Emask 0x10 (ATA bus error)
+> ata3.00: cmd 61/00:a8:78:f6:fd/04:00:00:00:00/40 tag 21 cdb 0x0 data 
+> 524288 out
+>          res 40/00:cc:78:06:fe/00:00:00:00:00/40 Emask 0x10 (ATA bus error)
+> ata3.00: cmd 61/00:b0:78:fa:fd/04:00:00:00:00/40 tag 22 cdb 0x0 data 
+> 524288 out
+>          res 40/00:cc:78:06:fe/00:00:00:00:00/40 Emask 0x10 (ATA bus error)
+> ata3.00: cmd 61/00:b8:78:fe:fd/04:00:00:00:00/40 tag 23 cdb 0x0 data 
+> 524288 out
+>          res 40/00:cc:78:06:fe/00:00:00:00:00/40 Emask 0x10 (ATA bus error)
+> ata3.00: cmd 61/00:c0:78:02:fe/04:00:00:00:00/40 tag 24 cdb 0x0 data 
+> 524288 out
+>          res 40/00:cc:78:06:fe/00:00:00:00:00/40 Emask 0x10 (ATA bus error)
+> ata3.00: cmd 61/00:c8:78:06:fe/04:00:00:00:00/40 tag 25 cdb 0x0 data 
+> 524288 out
+>          res 40/00:cc:78:06:fe/00:00:00:00:00/40 Emask 0x10 (ATA bus error)
+> ata3.00: cmd 61/00:d0:78:0a:fe/04:00:00:00:00/40 tag 26 cdb 0x0 data 
+> 524288 out
+>          res 40/00:cc:78:06:fe/00:00:00:00:00/40 Emask 0x10 (ATA bus error)
+> ata3.00: cmd 61/00:d8:78:92:fd/04:00:00:00:00/40 tag 27 cdb 0x0 data 
+> 524288 out
+>          res 40/00:cc:78:06:fe/00:00:00:00:00/40 Emask 0x10 (ATA bus error)
+> ata3.00: cmd 61/00:e0:78:9e:fd/04:00:00:00:00/40 tag 28 cdb 0x0 data 
+> 524288 out
+>          res 40/00:cc:78:06:fe/00:00:00:00:00/40 Emask 0x10 (ATA bus error)
+> ata3.00: cmd 61/00:e8:78:a2:fd/04:00:00:00:00/40 tag 29 cdb 0x0 data 
+> 524288 out
+>          res 40/00:cc:78:06:fe/00:00:00:00:00/40 Emask 0x10 (ATA bus error)
+> ata3.00: cmd 61/00:f0:78:a6:fd/04:00:00:00:00/40 tag 30 cdb 0x0 data 
+> 524288 out
+>          res 40/00:cc:78:06:fe/00:00:00:00:00/40 Emask 0x10 (ATA bus error)
+> ata3: waiting for device to spin up (7 secs)
+> ata3: soft resetting port
+> ata3: SATA link up 3.0 Gbps (SStatus 123 SControl 300)
+> ata3.00: configured for UDMA/133
+> ata3: EH complete
+> SCSI device sdc: 1465149168 512-byte hdwr sectors (750156 MB)
+> sdc: Write Protect is off
+> sdc: Mode Sense: 00 3a 00 00
 
-I checked to see that cgroup_exit is called after mm_update_new_owner(). We call
-mm_update_new_owner() from exit_mm(). I did not check for current->cgroups !=
-new_owner->cgroups, since I did not want to limit the callbacks. An interested
-callback can make that check and no-op the callback.
-
-I am going to change the rcu_read_lock(), so that it is released after we take
-the task_lock() and repost the patch
-
-
--- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+These kind of errors are often caused by hardware issues: bad/loose SATA 
+cable, insufficient power supply, etc. When the controller reports 
+things like PHY ready changes, it's not normally a driver problem.
