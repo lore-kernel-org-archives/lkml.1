@@ -1,85 +1,162 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759939AbYDCVHj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760246AbYDCVJC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759939AbYDCVHj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Apr 2008 17:07:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756206AbYDCVHa
+	id S1760246AbYDCVJC (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Apr 2008 17:09:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756206AbYDCVIv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Apr 2008 17:07:30 -0400
-Received: from pne-smtpout4-sn1.fre.skanova.net ([81.228.11.168]:40448 "EHLO
-	pne-smtpout4-sn1.fre.skanova.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755248AbYDCVH3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Apr 2008 17:07:29 -0400
-Date: Fri, 4 Apr 2008 00:07:01 +0300
-From: Pekka Paalanen <pq@iki.fi>
-To: avi@qumranet.com, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>
-Cc: Christoph Hellwig <hch@infradead.org>,
-       Arjan van de Ven <arjan@infradead.org>, Pavel Roskin <proski@gnu.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, penberg@cs.helsinki.fi,
-       vegard.nossum@gmail.com
-Subject: Re: mmiotrace bug: recursive probe hit
-Message-ID: <20080404000701.70bbc1a4@daedalus.pq.iki.fi>
-In-Reply-To: <20080330202608.054702a4@daedalus.pq.iki.fi>
-References: <20080309164050.2194461e@daedalus.pq.iki.fi>
-	<20080328222500.21863a44@daedalus.pq.iki.fi>
-	<20080330202608.054702a4@daedalus.pq.iki.fi>
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.8; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 3 Apr 2008 17:08:51 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:53104 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756113AbYDCVIu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Apr 2008 17:08:50 -0400
+From: Roland McGrath <roland@redhat.com>
+To: Paul Mackerras <paulus@samba.org>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+Subject: [PATCH] powerpc TLF_RESTORE_SIGMASK
+X-Fcc: ~/Mail/linus
+X-Zippy-Says: Remember, if you try to ESCAPE, many APARTMENT HOPPING ALCOHOLICS
+    will SIMONIZE your HALLWAYS!!  This is your LAST WARNING!!
+Message-Id: <20080403210842.6C88C26F98D@magilla.localdomain>
+Date: Thu,  3 Apr 2008 14:08:42 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 30 Mar 2008 20:26:08 +0300
-Pekka Paalanen <pq@iki.fi> wrote:
+This requires the earlier HAVE_SET_RESTORE_SIGMASK patch series.
+This does the same for powerpc that I posted the x86 change for.
 
-> 
-> C) Vegard mentioned something about per-cpu page tables for kmemcheck.
-> This would be the ultimate solution, because it would solve two problems:
-> - recursive probe hits
-> - missed events due to another cpu disarming the page for single stepping
-> Would it be possible to have a single temporary per-cpu pte?
-> 
-> I understood kmemcheck has similar issues. Of course, one could force the
-> system down to a single running CPU, but that feels nasty.
+---
+Replace TIF_RESTORE_SIGMASK with TLF_RESTORE_SIGMASK and define
+our own set_restore_sigmask() function.  This saves the costly
+SMP-safe set_bit operation, which we do not need for the sigmask
+flag since TIF_SIGPENDING always has to be set too.
 
-One more idea:
+Signed-off-by: Roland McGrath <roland@redhat.com>
+---
+ arch/powerpc/kernel/entry_32.S    |    4 ++--
+ arch/powerpc/kernel/signal.c      |   12 ++++++------
+ arch/powerpc/kernel/signal_32.c   |    2 +-
+ include/asm-powerpc/thread_info.h |   17 +++++++++++++----
+ 4 files changed, 22 insertions(+), 13 deletions(-)
 
-D) Emulate the faulting instruction.
-In __ioremap(), do the mapping, but steal it for mmiotrace's personal use,
-and return a bogus mapping that is identifiable in #pf handler. When
-something accesses the bogus mapping, emulate and step over the faulting
-instruction using the stolen IO memory mapping. This would get rid of
-the debug trap and single stepping, and also remove the need to disarm
-the mmio page, which means tracing would work reliably on SMP without
-any page table kludges. This would also remove the yet another instruction
-decoding code that mmiotrace has.
-
-The catch is the instruction emulation. I see KVM has some emulation code,
-but I cannot understand it without a deep study that would take me weeks.
-Is that general enough to be used, or could it be generalized?
-Mmiotrace, apart from executing the instruction with a modified address,
-would need to extract the type of IO memory access, width and the data
-read/written. And since it is dealing with IO memory, the emulation
-should be very careful to access the hardware exactly like the original
-instruction would have.
-
-Maybe also kmemcheck could use this approach, since the current approach
-is very much like in mmiotrace: #pf, show page, single step, #db trap,
-hide page.
-
-Are there other x86(_64) instruction emulation facilities in the kernel
-I might use?
-
-Or, if the emulation cannot be used, what would it take to make at least
-instruction decoding general enough so that mmiotrace could use that instead
-of its own decoding?
-
-I fear modifying KVM emulation code is a too heavy job for me personally.
-
--- 
-Pekka Paalanen
-http://www.iki.fi/pq/
+diff --git a/arch/powerpc/kernel/entry_32.S b/arch/powerpc/kernel/entry_32.S
+index 69a91bd..646daf4 100644
+--- a/arch/powerpc/kernel/entry_32.S
++++ b/arch/powerpc/kernel/entry_32.S
+@@ -661,7 +661,7 @@ user_exc_return:		/* r10 contains MSR_KERNEL here */
+ 	/* Check current_thread_info()->flags */
+ 	rlwinm	r9,r1,0,0,(31-THREAD_SHIFT)
+ 	lwz	r9,TI_FLAGS(r9)
+-	andi.	r0,r9,(_TIF_SIGPENDING|_TIF_RESTORE_SIGMASK|_TIF_NEED_RESCHED)
++	andi.	r0,r9,(_TIF_SIGPENDING|_TIF_NEED_RESCHED)
+ 	bne	do_work
+ 
+ restore_user:
+@@ -912,7 +912,7 @@ recheck:
+ 	lwz	r9,TI_FLAGS(r9)
+ 	andi.	r0,r9,_TIF_NEED_RESCHED
+ 	bne-	do_resched
+-	andi.	r0,r9,_TIF_SIGPENDING|_TIF_RESTORE_SIGMASK
++	andi.	r0,r9,_TIF_SIGPENDING
+ 	beq	restore_user
+ do_user_signal:			/* r10 contains MSR_KERNEL here */
+ 	ori	r10,r10,MSR_EE
+diff --git a/arch/powerpc/kernel/signal.c b/arch/powerpc/kernel/signal.c
+index a65a44f..ad55488 100644
+--- a/arch/powerpc/kernel/signal.c
++++ b/arch/powerpc/kernel/signal.c
+@@ -120,7 +120,7 @@ int do_signal(sigset_t *oldset, struct pt_regs *regs)
+ 	int ret;
+ 	int is32 = is_32bit_task();
+ 
+-	if (test_thread_flag(TIF_RESTORE_SIGMASK))
++	if (current_thread_info()->local_flags & _TLF_RESTORE_SIGMASK)
+ 		oldset = &current->saved_sigmask;
+ 	else if (!oldset)
+ 		oldset = &current->blocked;
+@@ -131,9 +131,10 @@ int do_signal(sigset_t *oldset, struct pt_regs *regs)
+ 	check_syscall_restart(regs, &ka, signr > 0);
+ 
+ 	if (signr <= 0) {
++		struct thread_info *ti = current_thread_info();
+ 		/* No signal to deliver -- put the saved sigmask back */
+-		if (test_thread_flag(TIF_RESTORE_SIGMASK)) {
+-			clear_thread_flag(TIF_RESTORE_SIGMASK);
++		if (ti->local_flags & _TLF_RESTORE_SIGMASK) {
++			ti->local_flags &= ~_TLF_RESTORE_SIGMASK;
+ 			sigprocmask(SIG_SETMASK, &current->saved_sigmask, NULL);
+ 		}
+ 		return 0;               /* no signals delivered */
+@@ -169,10 +170,9 @@ int do_signal(sigset_t *oldset, struct pt_regs *regs)
+ 
+ 		/*
+ 		 * A signal was successfully delivered; the saved sigmask is in
+-		 * its frame, and we can clear the TIF_RESTORE_SIGMASK flag.
++		 * its frame, and we can clear the TLF_RESTORE_SIGMASK flag.
+ 		 */
+-		if (test_thread_flag(TIF_RESTORE_SIGMASK))
+-			clear_thread_flag(TIF_RESTORE_SIGMASK);
++		current_thread_info()->local_flags &= ~_TLF_RESTORE_SIGMASK;
+ 	}
+ 
+ 	return ret;
+diff --git a/arch/powerpc/kernel/signal_32.c b/arch/powerpc/kernel/signal_32.c
+index ad69434..4ae16d1 100644
+--- a/arch/powerpc/kernel/signal_32.c
++++ b/arch/powerpc/kernel/signal_32.c
+@@ -243,7 +243,7 @@ long sys_sigsuspend(old_sigset_t mask)
+ 
+  	current->state = TASK_INTERRUPTIBLE;
+  	schedule();
+- 	set_thread_flag(TIF_RESTORE_SIGMASK);
++	set_restore_sigmask();
+  	return -ERESTARTNOHAND;
+ }
+ 
+diff --git a/include/asm-powerpc/thread_info.h b/include/asm-powerpc/thread_info.h
+index 40d5f98..3b9271b 100644
+--- a/include/asm-powerpc/thread_info.h
++++ b/include/asm-powerpc/thread_info.h
+@@ -120,7 +120,6 @@ static inline struct thread_info *current_thread_info(void)
+ #define TIF_SECCOMP		10	/* secure computing */
+ #define TIF_RESTOREALL		11	/* Restore all regs (implies NOERROR) */
+ #define TIF_NOERROR		12	/* Force successful syscall return */
+-#define TIF_RESTORE_SIGMASK	13	/* Restore signal mask in do_signal */
+ #define TIF_FREEZE		14	/* Freezing for suspend */
+ #define TIF_RUNLATCH		15	/* Is the runlatch enabled? */
+ #define TIF_ABI_PENDING		16	/* 32/64 bit switch needed */
+@@ -138,21 +137,31 @@ static inline struct thread_info *current_thread_info(void)
+ #define _TIF_SECCOMP		(1<<TIF_SECCOMP)
+ #define _TIF_RESTOREALL		(1<<TIF_RESTOREALL)
+ #define _TIF_NOERROR		(1<<TIF_NOERROR)
+-#define _TIF_RESTORE_SIGMASK	(1<<TIF_RESTORE_SIGMASK)
+ #define _TIF_FREEZE		(1<<TIF_FREEZE)
+ #define _TIF_RUNLATCH		(1<<TIF_RUNLATCH)
+ #define _TIF_ABI_PENDING	(1<<TIF_ABI_PENDING)
+ #define _TIF_SYSCALL_T_OR_A	(_TIF_SYSCALL_TRACE|_TIF_SYSCALL_AUDIT|_TIF_SECCOMP)
+ 
+-#define _TIF_USER_WORK_MASK	( _TIF_SIGPENDING | \
+-				 _TIF_NEED_RESCHED | _TIF_RESTORE_SIGMASK)
++#define _TIF_USER_WORK_MASK	(_TIF_SIGPENDING | _TIF_NEED_RESCHED)
+ #define _TIF_PERSYSCALL_MASK	(_TIF_RESTOREALL|_TIF_NOERROR)
+ 
+ /* Bits in local_flags */
+ /* Don't move TLF_NAPPING without adjusting the code in entry_32.S */
+ #define TLF_NAPPING		0	/* idle thread enabled NAP mode */
++#define TLF_RESTORE_SIGMASK	1	/* Restore signal mask in do_signal */
+ 
+ #define _TLF_NAPPING		(1 << TLF_NAPPING)
++#define _TLF_RESTORE_SIGMASK	(1 << TLF_RESTORE_SIGMASK)
++
++#ifndef __ASSEMBLY__
++#define HAVE_SET_RESTORE_SIGMASK	1
++static inline void set_restore_sigmask(void)
++{
++	struct thread_info *ti = current_thread_info();
++	ti->local_flags |= TLF_RESTORE_SIGMASK;
++	set_bit(TIF_SIGPENDING, &ti->flags);
++}
++#endif	/* !__ASSEMBLY__ */
+ 
+ #endif /* __KERNEL__ */
+ 
