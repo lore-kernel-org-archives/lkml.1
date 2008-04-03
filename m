@@ -1,134 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759300AbYDCS7k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759532AbYDCTCY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759300AbYDCS7k (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Apr 2008 14:59:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754599AbYDCS7d
+	id S1759532AbYDCTCY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Apr 2008 15:02:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754599AbYDCTCN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Apr 2008 14:59:33 -0400
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:43030 "EHLO e3.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751771AbYDCS7c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Apr 2008 14:59:32 -0400
-Subject: Re: [-mm] Add an owner to the mm_struct (v7)
-From: Dave Hansen <dave@linux.vnet.ibm.com>
-To: balbir@linux.vnet.ibm.com
-Cc: Paul Menage <menage@google.com>, Pavel Emelianov <xemul@openvz.org>,
-       Hugh Dickins <hugh@veritas.com>,
-       Sudhir Kumar <skumar@linux.vnet.ibm.com>,
-       YAMAMOTO Takashi <yamamoto@valinux.co.jp>, lizf@cn.fujitsu.com,
-       linux-kernel@vger.kernel.org, taka@valinux.co.jp, linux-mm@kvack.org,
-       David Rientjes <rientjes@google.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <47F52735.7090502@linux.vnet.ibm.com>
-References: <20080403174433.26356.42121.sendpatchset@localhost.localdomain>
-	 <1207247113.21922.63.camel@nimitz.home.sr71.net>
-	 <47F52735.7090502@linux.vnet.ibm.com>
-Content-Type: text/plain
-Date: Thu, 03 Apr 2008 11:59:24 -0700
-Message-Id: <1207249164.21922.71.camel@nimitz.home.sr71.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 3 Apr 2008 15:02:13 -0400
+Received: from extu-mxob-2.symantec.com ([216.10.194.135]:56745 "EHLO
+	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751457AbYDCTCM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Apr 2008 15:02:12 -0400
+Date: Thu, 3 Apr 2008 20:02:12 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.site
+To: "Josef 'Jeff' Sipek" <jeffpc@josefsipek.net>
+cc: Erez Zadok <ezk@cs.sunysb.edu>, akpm@linux-foundation.org,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Al Viro <viro@zeniv.linux.org.uk>, hch@infradead.org
+Subject: Re: fs_stack/eCryptfs: remove 3rd arg of copy_attr_all, add locking
+ to copy_inode_size
+In-Reply-To: <20080403182001.GB30189@josefsipek.net>
+Message-ID: <Pine.LNX.4.64.0804031951430.840@blonde.site>
+References: <200804030149.m331nBCv005555@agora.fsl.cs.sunysb.edu>
+ <20080403182001.GB30189@josefsipek.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-04-04 at 00:21 +0530, Balbir Singh wrote:
-> >> +static inline int
-> >> +mm_need_new_owner(struct mm_struct *mm, struct task_struct *p)
-> >> +{
-> >> +	int ret;
-> >> +
-> >> +	/*
-> >> +	 * If there are other users of the mm and the owner (us) is exiting
-> >> +	 * we need to find a new owner to take on the responsibility.
-> >> +	 * When we use thread groups (CLONE_THREAD), the thread group
-> >> +	 * leader is kept around in zombie state, even after it exits.
-> >> +	 * delay_group_leader() ensures that if the group leader is around
-> >> +	 * we need not select a new owner.
-> >> +	 */
-> >> +	ret = (mm && (atomic_read(&mm->mm_users) > 1) && (mm->owner == p) &&
-> >> +		!delay_group_leader(p));
-> >> +	return ret;
-> >> +}
-> > 
-> > Ugh.  Could you please spell this out a bit more.  I find that stuff
-> > above really hard to read.  Something like:
-> > 
-> > 	if (!mm)
-> > 		return 0;
-> > 	if (atomic_read(&mm->mm_users) <= 1)
-> > 		return 0;
-> > 	if (mm->owner != p)
-> > 		return 0;
-> > 	if (delay_group_leader(p))
-> > 		return 0;
-> > 	return 1;
-> > 
+On Thu, 3 Apr 2008, Josef 'Jeff' Sipek wrote:
+> On Wed, Apr 02, 2008 at 09:49:11PM -0400, Erez Zadok wrote:
+> ...
+> > +#if BITS_PER_LONG == 32 && defined(CONFIG_SMP)
+> > +	spin_lock(&dst->i_lock);
+> > +#endif
 > 
-> The problem with code above is 4 branch instructions and the code I have just 4
-> AND operations.
+> I think you need to check CONFIG_PREEMPT as well.
 
-Please give the compiler a little credit.  Give it a try.  Compile both
-versions and see how different they look in the end.  What you see on
-your screen in C has very little to do with whether the compiler uses
-branch or AND instructions.
+Don't i_size_read() and i_size_write() handle that case adequately
+themselves with preempt_dis/enable?
 
-> I don't think &&'s are so hard to read. If there is a mixture of
-> operations (&&, ||) then it can get a little harder
+If you mean it'd be better to have the preempt_dis/enable bracketing
+around the i_size_read() along with the i_size_write(): well, could
+do, but if lower i_size is changing underneath us in that way,
+it can just as well change again a moment later, so no point.
 
-Yup, it's just a suggestion.  I think the extra parenthesis were the
-hardest part for my weak little brain to parse.  It's not awful or
-anything, I'm just suggesting what I think is a slightly better form.
+The bit that worries me, that prevents me from saying Acked-by,
+is that I'm unsure of the extent to which lower filesystems are
+relying on i_mutex or something else for their i_size serialization.
+Using the i_lock here plays well with unionfs internally, and fixes
+the hangs I used to see; but relying on one locking scheme here and
+another below is uncomfortable for me.  But it is an improvement.
 
-> >> +retry:
-> >> +	if (!mm_need_new_owner(mm, p))
-> >> +		return;
-> >> +
-> >> +	rcu_read_lock();
-> >> +	/*
-> >> +	 * Search in the children
-> >> +	 */
-> >> +	list_for_each_entry(c, &p->children, sibling) {
-> >> +		if (c->mm == mm)
-> >> +			goto assign_new_owner;
-> >> +	}
-> >> +
-> >> +	/*
-> >> +	 * Search in the siblings
-> >> +	 */
-> >> +	list_for_each_entry(c, &p->parent->children, sibling) {
-> >> +		if (c->mm == mm)
-> >> +			goto assign_new_owner;
-> >> +	}
-> >> +
-> >> +	/*
-> >> +	 * Search through everything else. We should not get
-> >> +	 * here often
-> >> +	 */
-> >> +	do_each_thread(g, c) {
-> >> +		if (c->mm == mm)
-> >> +			goto assign_new_owner;
-> >> +	} while_each_thread(g, c);
-> > 
-> > What is the case in which we get here?  Threading that's two deep where
-> > none of the immeidate siblings or children is still alive?
-> > 
-> 
-> This usually happens for cases where threads were created without CLONE_THREAD.
-> We need to scan for shared mm's between processes (siblings and children scans
-> have not been successful).
-> 
-> > Have you happened to instrument this and see if it happens in practice
-> > much?
-> > 
-> 
-> Yes, I have. I removed the !delay_group_leader() and registered the cgroup
-> mm_owner_changed callback and saw the mm->owner change.
-
-I'm just wondering how *common* it is.  It's a slow operation so perhaps
-we should optimize it if it's happening all the time.
-
--- Dave
-
+Hugh
