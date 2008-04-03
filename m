@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760733AbYDCTds@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761515AbYDCTeH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760733AbYDCTds (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Apr 2008 15:33:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758869AbYDCTc5
+	id S1761515AbYDCTeH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Apr 2008 15:34:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760284AbYDCTc6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Apr 2008 15:32:57 -0400
-Received: from bzq-179-150-194.static.bezeqint.net ([212.179.150.194]:53005
+	Thu, 3 Apr 2008 15:32:58 -0400
+Received: from bzq-179-150-194.static.bezeqint.net ([212.179.150.194]:53004
 	"EHLO il.qumranet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757296AbYDCTcz (ORCPT
+	with ESMTP id S1757151AbYDCTcz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 3 Apr 2008 15:32:55 -0400
 From: Avi Kivity <avi@qumranet.com>
 To: kvm-devel@lists.sourceforge.net
-Cc: linux-kernel@vger.kernel.org, Amit Shah <amit.shah@qumranet.com>
-Subject: [PATCH 02/35] KVM: Add stat counter for hypercalls
-Date: Thu,  3 Apr 2008 22:32:17 +0300
-Message-Id: <1207251170-5013-3-git-send-email-avi@qumranet.com>
+Cc: linux-kernel@vger.kernel.org, Harvey Harrison <harvey.harrison@gmail.com>
+Subject: [PATCH 03/35] KVM: x86 emulator: fix sparse warnings in x86_emulate.c
+Date: Thu,  3 Apr 2008 22:32:18 +0300
+Message-Id: <1207251170-5013-4-git-send-email-avi@qumranet.com>
 X-Mailer: git-send-email 1.5.4.5
 In-Reply-To: <1207251170-5013-1-git-send-email-avi@qumranet.com>
 References: <1207251170-5013-1-git-send-email-avi@qumranet.com>
@@ -23,47 +23,46 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Amit Shah <amit.shah@qumranet.com>
+From: Harvey Harrison <harvey.harrison@gmail.com>
 
-Signed-off-by: Amit Shah <amit.shah@qumranet.com>
+Nesting __emulate_2op_nobyte inside__emulate_2op produces many shadowed
+variable warnings on the internal variable _tmp used by both macros.
+
+Change the outer macro to use __tmp.
+
+Avoids a sparse warning like the following at every call site of __emulate_2op
+arch/x86/kvm/x86_emulate.c:1091:3: warning: symbol '_tmp' shadows an earlier one
+arch/x86/kvm/x86_emulate.c:1091:3: originally declared here
+[18 more warnings suppressed]
+
+Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
 Signed-off-by: Avi Kivity <avi@qumranet.com>
 ---
- arch/x86/kvm/x86.c         |    2 ++
- include/asm-x86/kvm_host.h |    1 +
- 2 files changed, 3 insertions(+), 0 deletions(-)
+ arch/x86/kvm/x86_emulate.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
-index a063f44..15bba5d 100644
---- a/arch/x86/kvm/x86.c
-+++ b/arch/x86/kvm/x86.c
-@@ -72,6 +72,7 @@ struct kvm_stats_debugfs_item debugfs_entries[] = {
- 	{ "irq_window", VCPU_STAT(irq_window_exits) },
- 	{ "halt_exits", VCPU_STAT(halt_exits) },
- 	{ "halt_wakeup", VCPU_STAT(halt_wakeup) },
-+	{ "hypercalls", VCPU_STAT(hypercalls) },
- 	{ "request_irq", VCPU_STAT(request_irq_exits) },
- 	{ "irq_exits", VCPU_STAT(irq_exits) },
- 	{ "host_state_reload", VCPU_STAT(host_state_reload) },
-@@ -2405,6 +2406,7 @@ int kvm_emulate_hypercall(struct kvm_vcpu *vcpu)
- 	}
- 	vcpu->arch.regs[VCPU_REGS_RAX] = ret;
- 	kvm_x86_ops->decache_regs(vcpu);
-+	++vcpu->stat.hypercalls;
- 	return 0;
- }
- EXPORT_SYMBOL_GPL(kvm_emulate_hypercall);
-diff --git a/include/asm-x86/kvm_host.h b/include/asm-x86/kvm_host.h
-index 0c429c8..4f5a71a 100644
---- a/include/asm-x86/kvm_host.h
-+++ b/include/asm-x86/kvm_host.h
-@@ -327,6 +327,7 @@ struct kvm_vcpu_stat {
- 	u32 fpu_reload;
- 	u32 insn_emulation;
- 	u32 insn_emulation_fail;
-+	u32 hypercalls;
- };
+diff --git a/arch/x86/kvm/x86_emulate.c b/arch/x86/kvm/x86_emulate.c
+index cacdcf5..f59ed93 100644
+--- a/arch/x86/kvm/x86_emulate.c
++++ b/arch/x86/kvm/x86_emulate.c
+@@ -371,7 +371,7 @@ static u16 group2_table[] = {
  
- struct descriptor_table {
+ #define __emulate_2op(_op,_src,_dst,_eflags,_bx,_by,_wx,_wy,_lx,_ly,_qx,_qy) \
+ 	do {								     \
+-		unsigned long _tmp;					     \
++		unsigned long __tmp;					     \
+ 		switch ((_dst).bytes) {				             \
+ 		case 1:							     \
+ 			__asm__ __volatile__ (				     \
+@@ -379,7 +379,7 @@ static u16 group2_table[] = {
+ 				_op"b %"_bx"3,%1; "			     \
+ 				_POST_EFLAGS("0", "4", "2")		     \
+ 				: "=m" (_eflags), "=m" ((_dst).val),	     \
+-				  "=&r" (_tmp)				     \
++				  "=&r" (__tmp)				     \
+ 				: _by ((_src).val), "i" (EFLAGS_MASK));      \
+ 			break;						     \
+ 		default:						     \
 -- 
 1.5.4.5
 
