@@ -1,71 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757215AbYDCXSc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756621AbYDCXWk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757215AbYDCXSc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Apr 2008 19:18:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752423AbYDCXSW
+	id S1756621AbYDCXWk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Apr 2008 19:22:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752471AbYDCXWd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Apr 2008 19:18:22 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:54132 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751519AbYDCXSV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Apr 2008 19:18:21 -0400
-Date: Thu, 3 Apr 2008 16:17:33 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Tilman Schmidt <tilman@imap.cc>
-Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org, jgarzik@pobox.com
-Subject: Re: 2.6.25-rc8-mm1: Intel SATA boot failure
-Message-Id: <20080403161733.c05dac53.akpm@linux-foundation.org>
-In-Reply-To: <47F56363.4090002@imap.cc>
-References: <20080401213214.8fbb6d6b.akpm@linux-foundation.org>
-	<47F56363.4090002@imap.cc>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 3 Apr 2008 19:22:33 -0400
+Received: from yoi5.greathalifaxhome.com ([66.180.172.116]:50175 "HELO
+	vps1.tull.net" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with SMTP
+	id S1751787AbYDCXWc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Apr 2008 19:22:32 -0400
+X-Greylist: delayed 402 seconds by postgrey-1.27 at vger.kernel.org; Thu, 03 Apr 2008 19:22:32 EDT
+X-Spam-Check-By: mail.local.tull.net
+Date: Fri, 4 Apr 2008 10:13:09 +1100
+From: Nick Andrew <nick@nick-andrew.net>
+To: Madhou <madh2001@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: shell outputs anything typed when the kernel thinks@100%
+Message-ID: <20080403231309.GB18242@tull.net>
+References: <200803212211.43833.madh2001@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200803212211.43833.madh2001@gmail.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-SMTPD: qpsmtpd/0.26, http://develooper.com/code/qpsmtpd/
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 04 Apr 2008 01:08:19 +0200
-Tilman Schmidt <tilman@imap.cc> wrote:
+On Fri, Mar 21, 2008 at 10:11:43PM +0100, Madhou wrote:
+> When logging in a shell, one will type his username, 'return' and then his 
+> password...
 
-> Andrew Morton schrieb:
-> > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.25-rc8/2.6.25-rc8-mm1/
-> 
-> This fails to come up on my development machine, apparently because it
-> has trouble accessing the SATA hard disks.
-> Hardware: Intel Pentium D940, Intel DQ965GF board, two SATA hard disks.
-> Some unusual things I noticed during the boot process:
-> 
-> - a message "doing fast boot" that looked unfamiliar; unfortunately
->   it scrolled off too quickly to note its context
-> 
-> - for each of the two SATA ports in use, a message
->   "SATA port is slow to respond, please be patient"
->   accompanied by about 10 secs wait
-> 
-> - it actually got past the point where it mounts the root file system,
->   so it must have thought it could access the disks
-> 
-> - finally, the system hung completely after the SUSE startup messages
-> 
->   Setting current sysctl status from /etc/sysctl.conf
->   net.ipv4.icmp_echo_ignore_broadcasts = 1
-> 
->   with a dead keyboard and I had to hit the Win^Wreset button.
-> 
-> - After rebooting into 2.6.24-rc8 (which works fine), nothing had been
->   written to the disks, not even the dmesg output which SUSE usually
->   dumps into /var/log/boot.msg early during startup.
-> 
-> Before I try booting that kernel again, any instructions on what to
-> watch out for? Is netconsole usable again?
+It sounds like you are describing behaviour of getty, not the
+shell. That's because the tty device is set to echo typed characters at
+the 'login:' prompt.  After getty receives your username either it or
+/bin/login will turn off the echo flag and prompt for your password.
 
-Yes, netconsole is usable again ;)
+If it's a problem for you, patch getty to turn off echo (and cooked
+mode) before the 'login:' prompt and perform all keyboard input
+processing and echoing in the program.
 
-> Other ideas?
+> But just after 'return' the kernel is launched into thinking for long enough 
+> to the point that users who do everything fast including logging in a shell 
+> let the shell display the first letters of their passwords.
+> This problem tends to be critical when the user makes a demonstration to a 
+> bunch of people thanks to an overhead projector.
 
-Usual stuff: `diff -u dmesg-2.6.25-rc8 dmesg-2.6.25-rc8-mm1'.  Bisection.
+I don't think the kernel can be blamed for this behaviour, particularly
+when your password is 'qwerty'. When demonstrating, setup a demo
+username so you don't have to type your own password in front of a
+roomful of people.
 
-Thanks.
+Nick.
+-- 
+PGP Key ID = 0x418487E7                      http://www.nick-andrew.net/
+PGP Key fingerprint = B3ED 6894 8E49 1770 C24A  67E3 6266 6EB9 4184 87E7
