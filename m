@@ -1,53 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759876AbYDCB77@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760251AbYDCCET@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759876AbYDCB77 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 21:59:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757984AbYDCB7u
+	id S1760251AbYDCCET (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 22:04:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757845AbYDCCEJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 21:59:50 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:54034 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757869AbYDCB7t (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 21:59:49 -0400
-Date: Thu, 3 Apr 2008 02:59:46 +0100
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Harvey Harrison <harvey.harrison@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, josh@freedesktop.org
-Subject: Re: [PATCH 7/7] asm-generic: suppress sparse warning in ioctl.h
-Message-ID: <20080403015946.GX9785@ZenIV.linux.org.uk>
-References: <1207182818.5740.26.camel@brick> <alpine.LFD.1.00.0804021752040.14670@woody.linux-foundation.org> <20080403013420.GV9785@ZenIV.linux.org.uk> <alpine.LFD.1.00.0804021848140.14670@woody.linux-foundation.org>
+	Wed, 2 Apr 2008 22:04:09 -0400
+Received: from mga01.intel.com ([192.55.52.88]:16487 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757581AbYDCCEI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Apr 2008 22:04:08 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,596,1199692800"; 
+   d="scan'208";a="544700239"
+Subject: Re: rc6+ regression - backlight reset to 0 on boot after
+	7c0ea45be4f114d85ee35caeead8e1660699c46f
+From: Zhao Yakui <yakui.zhao@intel.com>
+To: Andrey Borzenkov <arvidjaar@mail.ru>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-acpi@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <200804022253.17862.arvidjaar@mail.ru>
+References: <200804022253.17862.arvidjaar@mail.ru>
+Content-Type: text/plain
+Date: Thu, 03 Apr 2008 09:59:39 +0800
+Message-Id: <1207187979.25346.8.camel@yakui_zhao.sh.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.00.0804021848140.14670@woody.linux-foundation.org>
-User-Agent: Mutt/1.4.2.3i
+X-Mailer: Evolution 2.8.0 (2.8.0-7.fc6) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 02, 2008 at 06:50:20PM -0700, Linus Torvalds wrote:
+On Wed, 2008-04-02 at 22:53 +0400, Andrey Borzenkov wrote:
+> Commit 7c0ea45be4f114d85ee35caeead8e1660699c46f registers ACPI backlight
+> even if _BQC method (query current backlight level) is missing. The effect is:
 > 
+> during initialization video.c:acpi_video_device_find_cap() calls backlight_update_status(). It tries to fetch actual level via acpi_video_get_brightness() - but as _BQC is missing it just returns current value
+> as stored in memory - i.e. zero, because it was never set. So effectively
+> backlight_update_status() reset brightness to minimal value == 0.
 > 
-> On Thu, 3 Apr 2008, Al Viro wrote:
-> > 
-> > Umm...  How far do you want sparse to go?  You _really_ don't want
-> > bug-for-bug compatibility with gcc - it's far too weird (and that's
-> > even before going into the effects of optimization flags).
-> 
-> I would suggest just accepting link-time constants in constant 
-> expressions. But yeah, maybe limit even that just to unevaluated 
-> subexpressions.
+> This happens on Toshiba Portege 4000. Verified by reverting commit on top of
+> rc8.
+It seems that _BQC object is missing on the Toshiba Portege 4000. And
+acpi video driver will continue to update the status of backlight even
+when _BQC object is missing, which is inappropriate. 
+Maybe it is more appropriate that OS doesn't update the status of
+backlight in boot phase when _BQC object is missing.
 
-Um...  But that's _not_ a link-time constant - simply an int variable not
-defined in any object file...
- 
-> That said, for sparse, the right thing to do would be to use 
-> __builtin_warning() or something, but gcc doesn't have that kind of thing, 
-> so..
-> 
-> > BTW, what happened with sparse.git?
-> 
-> Yeah, we do seem to have lost a maintainer.
+Of course please attach the output of acpidump in kernel bugzilla.
+http://bugzilla.kernel.org/show_bug.cgi?id=10387
+> On a side note, it would be nice to fit backlight device into actual ACPI
+> device tree instead of /devices/virtual.
+
