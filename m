@@ -1,56 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761366AbYDCI1H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760741AbYDCIbf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761366AbYDCI1H (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Apr 2008 04:27:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757830AbYDCI0x
+	id S1760741AbYDCIbf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Apr 2008 04:31:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751711AbYDCIbZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Apr 2008 04:26:53 -0400
-Received: from mail.suse.de ([195.135.220.2]:40904 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757017AbYDCI0w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Apr 2008 04:26:52 -0400
-Date: Thu, 3 Apr 2008 10:26:51 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Christoph Lameter <clameter@sgi.com>
-Subject: Re: [rfc] SLQB: YASA
-Message-ID: <20080403082650.GA20132@wotan.suse.de>
-References: <84144f020804030045p44456894lfc006dcdeab6f67c@mail.gmail.com> <20080403075725.GA7514@wotan.suse.de> <20080403171626.0283.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 3 Apr 2008 04:31:25 -0400
+Received: from smtp-out002.kontent.com ([81.88.40.216]:34614 "EHLO
+	smtp-out002.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751636AbYDCIbY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Apr 2008 04:31:24 -0400
+From: Oliver Neukum <oliver@neukum.org>
+Organization: Novell
+To: Stefan Schweizer <genstef@gentoo.org>
+Subject: Re: suspend
+Date: Thu, 3 Apr 2008 10:29:26 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <dd18b0c30804012331oc548416k113e492d7dc9c189@mail.gmail.com> <200804030932.27993.oliver@neukum.org> <ft21pb$oc3$1@ger.gmane.org>
+In-Reply-To: <ft21pb$oc3$1@ger.gmane.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080403171626.0283.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-User-Agent: Mutt/1.5.9i
+Message-Id: <200804031029.26635.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 03, 2008 at 05:17:39PM +0900, KOSAKI Motohiro wrote:
-> Hi 
+Am Donnerstag, 3. April 2008 09:42:00 schrieb Stefan Schweizer:
+> Oliver Neukum wrote:
+> > Please load the appletouch module with the parameter "debug=1" and
+> > post dmesg of a suspend/resume and the chvt thing.
 > 
-> > > Why is this not a patch set against SLUB?
-> > 
-> > It's a completely different design of the core allocator algorithms
-> > really.
-> > 
-> > It probably looks quite similar because I started with slub.c, but
-> > really is just the peripheral supporting code and structure. I'm never
-> > intending to try to go through the pain of incrementally changing SLUB
-> > into SLQB. If SLQB is found to be a good idea, then it could maybe get
-> > merged.
+> I found out the appletouch issue was already discused here:
+> http://lkml.org/lkml/2007/3/28/172
 > 
-> Do you have performance mesurement result?
-> I hope see it if possible.
+> Unfortunately there seems to be no workaround and X-input still has more
+> issues than it solves..
 > 
-> Thanks! :)
+> Attached is the dmesg excerpt
 
-Nothing really interesting, unfortunately. I have run some tests on
-various microbenchmarks like tbench and things like that. But I
-don't have many good ideas for more meaningful tests where slab
-allocation performance is critial. Any suggestions? :)
+On second thought, this should be fixed by usb persist if the appletouch
+driver supported reset_resume. Would you be willing to test a kernel patch
+that implements reset_resume in the appletouch driver?
 
-Thanks,
-Nick
+	Regards
+		Oliver
+
