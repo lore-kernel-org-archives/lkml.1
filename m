@@ -1,92 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759858AbYDCFw7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760940AbYDCFxZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759858AbYDCFw7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Apr 2008 01:52:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754351AbYDCFwv
+	id S1760940AbYDCFxZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Apr 2008 01:53:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760281AbYDCFxO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Apr 2008 01:52:51 -0400
-Received: from rv-out-0910.google.com ([209.85.198.188]:53365 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753343AbYDCFwv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Apr 2008 01:52:51 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=WOhPSEFk/TP261W60Wv4N8l6a4momJoj4JOQggmh/K4MetcAyeXyuBXMVi68maeEmP86q1peRTFAAStZsroz3j5zLPcQhWE/3SqEQ0cxwkTAQgg6B/z1r1d0AIoGmeYh6lwVbVRhM2ZaKBfvaHQoMk4hUaOzZzOJJjf4cRTNTJ4=
-Message-ID: <86802c440804022252q71af08fere6619271dfe17ee@mail.gmail.com>
-Date: Wed, 2 Apr 2008 22:52:50 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Yasunori Goto" <y-goto@jp.fujitsu.com>
-Subject: Re: [Patch 003/005](memory hotplug) make alloc_bootmem_section()
-Cc: "Badari Pulavarty" <pbadari@us.ibm.com>, "Andrew Morton" <akpm@osdl.org>,
-       "Linux Kernel ML" <linux-kernel@vger.kernel.org>,
-       linux-mm <linux-mm@kvack.org>
-In-Reply-To: <20080403144027.D1FC.E1E9C6FF@jp.fujitsu.com>
+	Thu, 3 Apr 2008 01:53:14 -0400
+Received: from mta23.gyao.ne.jp ([125.63.38.249]:32150 "EHLO mx.gate01.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754351AbYDCFxM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Apr 2008 01:53:12 -0400
+Date: Thu, 3 Apr 2008 14:52:35 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Mel Gorman <mel@csn.ul.ie>
+Cc: Nish Aravamudan <nish.aravamudan@gmail.com>, Adrian Bunk <bunk@kernel.org>,
+       wli@holomorphy.com, linux-sh@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: HugeTLB vs. SH3 cpu
+Message-ID: <20080403055235.GC4171@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	Mel Gorman <mel@csn.ul.ie>,
+	Nish Aravamudan <nish.aravamudan@gmail.com>,
+	Adrian Bunk <bunk@kernel.org>, wli@holomorphy.com,
+	linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org,
+	Paul Mackerras <paulus@samba.org>,
+	Benjamin Herrenschmidt <benh@kernel.crashing.org>
+References: <20080401225809.GC32269@cs181133002.pp.htv.fi> <29495f1d0804011626n2399d69aj7566df7f78953458@mail.gmail.com> <20080402080448.GA4171@linux-sh.org> <20080402101538.GA18564@csn.ul.ie>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20080403140221.D1F2.E1E9C6FF@jp.fujitsu.com>
-	 <20080403144027.D1FC.E1E9C6FF@jp.fujitsu.com>
+In-Reply-To: <20080402101538.GA18564@csn.ul.ie>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 2, 2008 at 10:41 PM, Yasunori Goto <y-goto@jp.fujitsu.com> wrote:
-> alloc_bootmem_section() can allocate specified section's area.
->  This is used for usemap to keep same section with pgdat by later patch.
->
->  Signed-off-by: Yasunori Goto <y-goto@jp.fujitsu.com>
->
->   include/linux/bootmem.h |    2 ++
->   mm/bootmem.c            |   25 +++++++++++++++++++++++++
->   2 files changed, 27 insertions(+)
->
->  Index: current/include/linux/bootmem.h
->  ===================================================================
->  --- current.orig/include/linux/bootmem.h        2008-04-01 20:56:39.000000000 +0900
->  +++ current/include/linux/bootmem.h     2008-04-01 20:59:02.000000000 +0900
->  @@ -101,6 +101,8 @@
->   extern void free_bootmem_node(pg_data_t *pgdat,
->                               unsigned long addr,
->                               unsigned long size);
->  +extern void *alloc_bootmem_section(unsigned long size,
->  +                                  unsigned long section_nr);
->
->   #ifndef CONFIG_HAVE_ARCH_BOOTMEM_NODE
->   #define alloc_bootmem_node(pgdat, x) \
->  Index: current/mm/bootmem.c
->  ===================================================================
->  --- current.orig/mm/bootmem.c   2008-04-01 20:56:39.000000000 +0900
->  +++ current/mm/bootmem.c        2008-04-01 20:59:02.000000000 +0900
->  @@ -540,6 +540,31 @@
->         return __alloc_bootmem(size, align, goal);
->   }
->
->  +void * __init alloc_bootmem_section(unsigned long size,
->  +                                   unsigned long section_nr)
->  +{
->  +       void *ptr;
->  +       unsigned long limit, goal, start_nr, end_nr, pfn;
->  +       struct pglist_data *pgdat;
->  +
->  +       pfn = section_nr_to_pfn(section_nr);
->  +       goal = PFN_PHYS(pfn);
->  +       limit = PFN_PHYS(section_nr_to_pfn(section_nr + 1)) - 1;
->  +       pgdat = NODE_DATA(early_pfn_to_nid(pfn));
->  +       ptr = __alloc_bootmem_core(pgdat->bdata, size, SMP_CACHE_BYTES, goal,
->  +                                  limit);
->  +
->  +       start_nr = pfn_to_section_nr(PFN_DOWN(__pa(ptr)));
->  +       end_nr = pfn_to_section_nr(PFN_DOWN(__pa(ptr) + size));
->  +       if (start_nr != section_nr || end_nr != section_nr) {
->  +               printk(KERN_WARNING "alloc_bootmem failed on section %ld.\n",
->  +                      section_nr);
->  +               free_bootmem_core(pgdat->bdata, __pa(ptr), size);
->  +               ptr = NULL;
->  +       }
+On Wed, Apr 02, 2008 at 11:15:38AM +0100, Mel Gorman wrote:
+> On (02/04/08 17:04), Paul Mundt didst pronounce:
+> > The problem is that the hugetlb Kconfig stuff is a complete mess. There's
+> > a semi-decoupling between HUGETLBFS and HUGETLB_PAGE, though they both
+> > depend on each other.
+> 
+> I believe the original intention was that HUGETLB_PAGE would build the
+> hugepage pool and the arch-specific code and HUGETLBFS would be the userspace
+> interface but not necessarily the only one. Whatever the original intention,
+> it's no longer the case as they have become inter-dependant. Fixing it is
+> not straight-forward but I don't think we want to collapse HUGETLB_PAGE and
+> HUGETLBFS just yet either.
+> 
+That makes more sense, perhaps it's worth beating in to shape so there
+can also be non hugetlbfs users, this needs a bit of use-case thinking,
+though.
 
-how about __alloc_bootmem_core return NULL?
-
-YH
+> > diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
+> > index 0c3face..7c937ad 100644
+> > --- a/arch/powerpc/platforms/Kconfig.cputype
+> > +++ b/arch/powerpc/platforms/Kconfig.cputype
+> > @@ -1,5 +1,6 @@
+> >  config PPC64
+> >  	bool "64-bit kernel"
+> > +	select HAVE_HUGETLB_PAGE
+> >  	default n
+> >  	help
+> >  	  This option selects whether a 32-bit or a 64-bit kernel
+> 
+> hmm... This is what Kconfig is currently doing but by rights, it should be
+> set on a per-processor basis. I guess it's outside the scope of this patch as
+> there isn't an obvious way to tell what processor versions support huge pages.
+> 
+Yes, I had the same thoughts, perhaps the PPC64 folks can shed some light
+on this.
