@@ -1,64 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759593AbYDCQSR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759882AbYDCQUI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759593AbYDCQSR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Apr 2008 12:18:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756528AbYDCQSG
+	id S1759882AbYDCQUI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Apr 2008 12:20:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756497AbYDCQTy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Apr 2008 12:18:06 -0400
-Received: from saeurebad.de ([85.214.36.134]:59728 "EHLO saeurebad.de"
+	Thu, 3 Apr 2008 12:19:54 -0400
+Received: from smtp23.orange.fr ([80.12.242.97]:22148 "EHLO smtp23.orange.fr"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756451AbYDCQSF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Apr 2008 12:18:05 -0400
-From: Johannes Weiner <hannes@saeurebad.de>
-To: Hugh Dickins <hugh@veritas.com>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, mingo@elte.hu, davem@davemloft.net,
-       hskinnemoen@atmel.com, cooloney@kernel.org, starvik@axis.com,
-       dhowells@redhat.com, ysato@users.sourceforge.net, takata@linux-m32r.org,
-       ralf@linux-mips.org, kyle@parisc-linux.org, paulus@samba.org,
-       schwidefsky@de.ibm.com, lethal@linux-sh.org, jdike@addtoit.com,
-       miles@gnu.org, chris@zankel.net, rmk@arm.linux.org.uk,
-       tony.luck@intel.com, akpm@linux-foundation.org
-Subject: Re: [RFC 10/22] m68k: Use generic show_mem()
-References: <12071688283927-git-send-email-hannes@saeurebad.de>
-	<1207168941186-git-send-email-hannes@saeurebad.de>
-	<Pine.LNX.4.64.0804030939320.9848@anakin>
-	<87myobp02g.fsf@saeurebad.de>
-	<Pine.LNX.4.64.0804031538150.11898@anakin>
-	<87wsnfnfdu.fsf@saeurebad.de>
-	<Pine.LNX.4.64.0804031705230.11465@blonde.site>
-Date: Thu, 03 Apr 2008 18:17:54 +0200
-In-Reply-To: <Pine.LNX.4.64.0804031705230.11465@blonde.site> (Hugh Dickins's
-	message of "Thu, 3 Apr 2008 17:07:32 +0100 (BST)")
-Message-ID: <874paioqtp.fsf@saeurebad.de>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+	id S1756589AbYDCQTy convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Apr 2008 12:19:54 -0400
+X-ME-UUID: 20080403161950122.1DF997000086@mwinf2358.orange.fr
+Message-ID: <47F5039D.1070007@cosmosbay.com>
+Date: Thu, 03 Apr 2008 18:19:41 +0200
+From: Eric Dumazet <dada1@cosmosbay.com>
+User-Agent: Thunderbird 1.5.0.14 (Windows/20071210)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Ingo Molnar <mingo@elte.hu>, David Miller <davem@davemloft.net>,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [RFC,PATCH] loopback: calls netif_receive_skb() instead of	netif_rx()
+References: <47BDC848.50607@cosmosbay.com> <20080226.182120.183405235.davem@davemloft.net> <47C92F49.4070100@cosmosbay.com> <20080323.032949.194309002.davem@davemloft.net> <47E6A5FD.6060407@cosmosbay.com> <20080331094823.GA11651@elte.hu> <47F0B66C.6080404@cosmosbay.com> <20080331101237.GA12324@elte.hu> <47F1FE0A.9090501@cosmosbay.com> <20080403140600.GA4507@ucw.cz>
+In-Reply-To: <20080403140600.GA4507@ucw.cz>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-
-Hugh Dickins <hugh@veritas.com> writes:
-
-> On Thu, 3 Apr 2008, Johannes Weiner wrote:
->> 
->> Sorry for the wasted time.  These cleanups already took more energy than
->> they are worth it, I guess... :/
+Pavel Machek a écrit :
+> Hi!
 >
-> Please do persist, I for one appreciate your efforts on this:
-> something I wanted to do years ago but never yet got around to.
+>   
+>>> the rule on x86 should be something like this: on 4K 
+>>> stacks and 64-bit [which have irqstacks] free stack 
+>>> space can go as low as 25%. On 8K stacks [which doesnt 
+>>>       
+> ...
+>   
+>>   32 bits and 4K stacks (separate irq stacks) : can use 
+>>   up to 25% of stack
+>>     
 >
-> Thank you!
-> Hugh
+> I think ingo meant 'up to 75% used'.
+>
+>
+>   
+Patch is OK, my english might be a litle bit unsual :)
 
-Thanks a lot!
 
-I will do a removal of redundant output for every show_mem() based on my
-prior patches first and then give the generic version another shot.
 
-Thanks for all your comments so far.
 
-	Hannes
