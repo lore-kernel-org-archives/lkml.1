@@ -1,102 +1,157 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760842AbYDCDV4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761163AbYDCDZt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760842AbYDCDV4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 23:21:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759192AbYDCDVt
+	id S1761163AbYDCDZt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 23:25:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759422AbYDCDZl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 23:21:49 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:41212 "EHLO
+	Wed, 2 Apr 2008 23:25:41 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:41384 "EHLO
 	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759136AbYDCDVs (ORCPT
+	with ESMTP id S1759381AbYDCDZk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 23:21:48 -0400
-Message-ID: <47F44D25.6030001@jp.fujitsu.com>
-Date: Thu, 03 Apr 2008 12:21:09 +0900
-From: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.12 (Windows/20080213)
+	Wed, 2 Apr 2008 23:25:40 -0400
+Date: Thu, 03 Apr 2008 12:22:18 +0900
+From: Yasunori Goto <y-goto@jp.fujitsu.com>
+To: yhlu.kernel@gmail.com
+Subject: Re: [PATCH] mm: make mem_map allocation continuous v2.
+Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Badari Pulavarty <pbadari@us.ibm.com>, michael@ellerman.id.au,
+       Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>, linuxppc-dev@ozlabs.org,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       kernel list <linux-kernel@vger.kernel.org>
+In-Reply-To: <200804021830.24563.yhlu.kernel@gmail.com>
+References: <86802c440804021744m7c6e3d94vcb6af3ebcaa71b5b@mail.gmail.com> <200804021830.24563.yhlu.kernel@gmail.com>
+X-Mailer-Plugin: BkASPil for Becky!2 Ver.2.068
+Message-Id: <20080403122051.D1EC.E1E9C6FF@jp.fujitsu.com>
 MIME-Version: 1.0
-To: Paul Jackson <pj@sgi.com>
-CC: linux-kernel@vger.kernel.org, mingo@elte.hu, peterz@infradead.org,
-       andi@firstfloor.org
-Subject: Re: [PATCH 1/2] Customize sched domain via cpuset
-References: <47F21BE3.5030705@jp.fujitsu.com>	<20080401065534.a6267b96.pj@sgi.com>	<47F34625.6000600@jp.fujitsu.com> <20080402061405.197c0c90.pj@sgi.com>
-In-Reply-To: <20080402061405.197c0c90.pj@sgi.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.45 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul Jackson wrote:
-> Hidetoshi wrote:
->> Put simply, if the system tend to be idle, then "push to idle" strategy
->> works well.  OTOH if the system tend to be busy, then "pull by idle"
->> strategy works well.  Else, both strategy will work but besides of all
->> there is a question: how much searching cost can you pay?
+
+Looks good to me. And ia64 boots up with this patch too.
+Thanks.
+
+Acked-by: Yasunori Goto <y-goto@jp.fujitsu.com>
+
+
 > 
-> So each flag has value in some cases ... that much seems reasonable to me.
+> vmemmap allocation current got
+>  [ffffe20000000000-ffffe200001fffff] PMD ->ffff810001400000 on node 0
+>  [ffffe20000200000-ffffe200003fffff] PMD ->ffff810001800000 on node 0
+>  [ffffe20000400000-ffffe200005fffff] PMD ->ffff810001c00000 on node 0
+>  [ffffe20000600000-ffffe200007fffff] PMD ->ffff810002000000 on node 0
+>  [ffffe20000800000-ffffe200009fffff] PMD ->ffff810002400000 on node 0
+> ...
 > 
-> But you're saying that you'd like to avoid having to turn on both, just to
-> get the benefit of one of them, in order to avoid the searching costs of
-> the other flag that was not valuable on that load, right?
+> there is 2M hole between them.
 > 
-> But is this necessarily so?
-
-I'd like to turn on both(since I know it is best for my application/system),
-but it can't be denied that there are other situations loving only one of
-them...  At least there is a small possible conflict:
-   "Are you idle?" - "No, I'm busy to search a busy CPU!"
-
-To be honest, I don't have strong reason to have them to be divided.
-Just I thought that they could work independently and it might be usable
-interface for other people.
-(... well, I would be a little happy if I don't need to rewrite almost all
-  of the additional piece of Documentation/cpuset.txt, but don't care :-D)
-
-So, if there is no one can find use of two flags, I'll change it to one.
-Comments from any others?
-
-> If "pull by idle" is attempted on a system
-> which tends to be idle, then while it is true that the search for something
-> to pull will usually find nothing, what does it matter that we wasted some
-> otherwise idle cycles, looking for pullable, runnable tasks that cannot be
-> found, on a system that is mostly idle?
+> the rootcause is that usemap (24 bytes) will be allocated after every 2M
+> mem_map. and it will push next vmemmap (2M) to next align (2M).
 > 
-> If "push to idle" is attempted on a system that is quite busy, then
-> couldn't that be coded to notice rather quickly if any nearby CPUs are
-> idle, and not search if there are no idle neighbors.  One could imagine
-> a word of memory for each smaller domain ("neighborhood") of CPUs (say
-> all the logical CPUs in a package), with one bit per logical CPU, that
-> was set if-and-only-if that CPU was in idle.  Then it would be very
-> quick for all the CPUs in that domain to see if there are (or just
-> were ... close enough) any idle CPUs, and skip trying to "push to idle"
-> if that word was all zero bits.  That is, there would be no sense
-> trying to push to idle if there were no idle CPUs to push to.  The only
-> writing and the only locking of that word would be from idle loop code,
-> and only from nearby CPUs in the same small domain, so it would not be
-> an impediment to large system scaling or a waste of many CPU cycles on
-> busy systems.
+> solution:
+> try to allocate mem_map continously.
 > 
-> With a little work such as this, we could make it so that anytime you
-> needed either flag, you could turn on both, and the other one would be
-> harmless enough ... just a minor consumer of otherwise idle cycles.
+> after patch, will get
+>  [ffffe20000000000-ffffe200001fffff] PMD ->ffff810001400000 on node 0
+>  [ffffe20000200000-ffffe200003fffff] PMD ->ffff810001600000 on node 0
+>  [ffffe20000400000-ffffe200005fffff] PMD ->ffff810001800000 on node 0
+>  [ffffe20000600000-ffffe200007fffff] PMD ->ffff810001a00000 on node 0
+>  [ffffe20000800000-ffffe200009fffff] PMD ->ffff810001c00000 on node 0
+> ...
+> and usemap will share in page because of they are allocated continuously too.
+> sparse_early_usemap_alloc: usemap = ffff810024e00000 size = 24
+> sparse_early_usemap_alloc: usemap = ffff810024e00080 size = 24
+> sparse_early_usemap_alloc: usemap = ffff810024e00100 size = 24
+> sparse_early_usemap_alloc: usemap = ffff810024e00180 size = 24
+> ...
 > 
-> Then with that, we could have one flag, that did both.
-
-I believe there are quite technical reasons why we have no "idle_map."
-Excellent answers would be brought by scheduler folks...
-
->> It looks easy... but how do you handle if cpusets are overlapping?
+> so we make the bootmem allocation more compact and use less memory for usemap.
 > 
-> Yeah - that part might be challenging.  Would it work to always take
-> the largest domain balancing requested?
+> for power pc
+> Badari Pulavarty <pbadari@us.ibm.com> wrote:
+> 
+> >  You have to call sparse_init_one_section() on each pmap and usemap
+> >  as we allocate - since valid_section() depends on it (which is needed
+> >  by vmemmap_populate() to check if the section is populated or not).
+> >  On ppc, we need to call htab_bolted_mapping() on each section and
+> >  we need to skip existing sections.
+> 
+> so try to allocate usemap at first altogether.
+> 
+> v2 replace:
+> 	[PATCH] mm: make mem_map allocation continuous.
+> 	[PATCH] mm: allocate section_map for sparse_init
+> 	[PATCH] mm: allocate usemap at first instead of mem_map in sparse_init
+> 
+> Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
+> 
+> diff --git a/mm/sparse.c b/mm/sparse.c
+> index f6a43c0..2881222 100644
+> --- a/mm/sparse.c
+> +++ b/mm/sparse.c
+> @@ -294,22 +294,48 @@ void __init sparse_init(void)
+>  	unsigned long pnum;
+>  	struct page *map;
+>  	unsigned long *usemap;
+> +	unsigned long **usemap_map;
+> +	int size;
+> +
+> +	/*
+> +	 * map is using big page (aka 2M in x86 64 bit)
+> +	 * usemap is less one page (aka 24 bytes)
+> +	 * so alloc 2M (with 2M align) and 24 bytes in turn will
+> +	 * make next 2M slip to one more 2M later.
+> +	 * then in big system, the memory will have a lot of holes...
+> +	 * here try to allocate 2M pages continously.
+> +	 *
+> +	 * powerpc need to call sparse_init_one_section right after each
+> +	 * sparse_early_mem_map_alloc, so allocate usemap_map at first.
+> +	 */
+> +	size = sizeof(unsigned long *) * NR_MEM_SECTIONS;
+> +	usemap_map = alloc_bootmem(size);
+> +	if (!usemap_map)
+> +		panic("can not allocate usemap_map\n");
+>  
+>  	for (pnum = 0; pnum < NR_MEM_SECTIONS; pnum++) {
+>  		if (!present_section_nr(pnum))
+>  			continue;
+> +		usemap_map[pnum] = sparse_early_usemap_alloc(pnum);
+> +	}
+>  
+> -		map = sparse_early_mem_map_alloc(pnum);
+> -		if (!map)
+> +	for (pnum = 0; pnum < NR_MEM_SECTIONS; pnum++) {
+> +		if (!present_section_nr(pnum))
+>  			continue;
+>  
+> -		usemap = sparse_early_usemap_alloc(pnum);
+> +		usemap = usemap_map[pnum];
+>  		if (!usemap)
+>  			continue;
+>  
+> +		map = sparse_early_mem_map_alloc(pnum);
+> +		if (!map)
+> +			continue;
+> +
+>  		sparse_init_one_section(__nr_to_section(pnum), pnum, map,
+>  								usemap);
+>  	}
+> +
+> +	free_bootmem(__pa(usemap_map), size);
+>  }
+>  
+>  #ifdef CONFIG_MEMORY_HOTPLUG
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
-Hum... if one requests "smaller" and another is "don't care = default",
-we always take "default" range.
+-- 
+Yasunori Goto 
 
-Anyway, I'd like to give a lot of care to well-defined cpusets, and
-I know that balancing on overlapping cpusets are easy to be confused,
-so I'll update my patch to take levels, getting in your suggestion.
 
-Thanks,
-H.Seto
