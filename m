@@ -1,91 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760386AbYDCPxU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759860AbYDCPxe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760386AbYDCPxU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Apr 2008 11:53:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758364AbYDCPxG
+	id S1759860AbYDCPxe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Apr 2008 11:53:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758465AbYDCPxI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Apr 2008 11:53:06 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:54823 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757405AbYDCPxD (ORCPT
+	Thu, 3 Apr 2008 11:53:08 -0400
+Received: from smtpq1.groni1.gr.home.nl ([213.51.130.200]:36278 "EHLO
+	smtpq1.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758160AbYDCPxF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Apr 2008 11:53:03 -0400
-Date: Thu, 3 Apr 2008 08:52:17 -0700
-From: Greg KH <greg@kroah.com>
-To: Ming Lei <tom.leiming@gmail.com>
-Cc: mark gross <mgross@linux.intel.com>, lkml <linux-kernel@vger.kernel.org>,
-       linux-rt-users@vger.kernel.org, linux-usb@vger.kernel.org
-Subject: Re: Real time USB2Serial devices and behaivor
-Message-ID: <20080403155217.GB10425@kroah.com>
-References: <20080326152559.GA17164@linux.intel.com> <20080326162728.GC6020@kroah.com> <d82e647a0804030726r6432aafdvfa6395f0256dc97b@mail.gmail.com>
+	Thu, 3 Apr 2008 11:53:05 -0400
+Message-ID: <47F4FDCB.2000803@keyaccess.nl>
+Date: Thu, 03 Apr 2008 17:54:51 +0200
+From: Rene Herman <rene.herman@keyaccess.nl>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <d82e647a0804030726r6432aafdvfa6395f0256dc97b@mail.gmail.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: Bjorn Helgaas <bjorn.helgaas@hp.com>
+CC: Rene Herman <rene.herman@gmail.com>, Len Brown <lenb@kernel.org>,
+       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Adam Belay <ambx1@neo.rr.com>, Li Shaohua <shaohua.li@intel.com>,
+       Matthieu Castet <castet.matthieu@free.fr>,
+       Thomas Renninger <trenn@suse.de>, Jaroslav Kysela <perex@perex.cz>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [patch 00/37] PNP resource_table cleanups, v2
+References: <20080401151634.730901933@ldl.fc.hp.com> <47F2C8A2.3070303@keyaccess.nl> <200804021535.22011.bjorn.helgaas@hp.com>
+In-Reply-To: <200804021535.22011.bjorn.helgaas@hp.com>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -1.0 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 03, 2008 at 10:26:57PM +0800, Ming Lei wrote:
-> 2008/3/27, Greg KH <greg@kroah.com>:
-> > On Wed, Mar 26, 2008 at 08:25:59AM -0700, mark gross wrote:
-> >  > At home I'm playing with a real time amateur robotics application with a
-> >  > micro controller talking over its serial port to a Linux box running an RT
-> >  > kernel and some RT user mode software to suck in the serial port data
-> >  > and do some processing in real time.  One example of what I want to do
-> >  > with this type of configuration is to create a type of IMU thing and run
-> >  > the data through a kalman filter to see how good I can do with my
-> >  > hardware.
-> >  >
-> >  > I'll be sending data regularly at data rates between 50 and 500 HZ from
-> >  > the MCU (depending on mode)
-> >  >
-> >  > Anyway, I have the RT code and the system prototyped using the hardware
-> >  > serial port on my desktop and I'm getting rock solid RT delivery times
-> >  > of the data +/- 30usec.  While stressing the system in CPU and disk. (I
-> >  > still need to do the test while flood pinging the box)  However; when I
-> >  > use my USB dongle instead of the hardware serial port the system falls
-> >  > over WRT real time behavior.
-> >  >
-> >  > I'm just starting to look into the behavior now but has anyone looked at
-> >  > the RT'ness of USB2Serial + USB stack yet?  I would like to see what
-> >  > other folks have done.  My googleing last night didn't get any useful
-> >  > hits.
-> >
-> >
-> > I have, and others have in the past, and it's something that you can not
-> >  really do.  USB is not "deterministic", and these cheap usb to serial
-> >  devices introduce a very big lag that also is not deterministic.
-> >
+On 02-04-08 23:35, Bjorn Helgaas wrote:
+
+>>    By the way, the original isapnp_parse_id explicitly encodes the top _6_
+>>    bits in str[0] (& 0x3f) which seems odd. Bit 31 had better be 0 indeed,
+>>    but I wonder why the original didn't just assume such.
 > 
-> I had done some usb serial test about 2 weeks ago and found :
-> 1),the max read thoughtput is 480bps,using the generic usb
->  serial driver and a wireless cdma usb card.
+> Yes, I wonder about that, too.  Including that bit would mean that
+> the first character of PNP IDs could include characters at offsets
+> 0x20-0x3f, i.e., "`a..z{|}~" and DEL.  I poked around and found
+> some IDs that seem to depend on that, e.g., "nEC8241" in the 8250_pnp
+> serial driver.
 
-The generic usb serial driver is KNOWN TO BE A VERY SLOW DRIVER!
+Oh well, PC hardware...
 
-I'm getting very tired of repeating myself about this one, don't do any
-speed tests, or run any real hardware modems with this driver at all,
-it's just not worth it.
+> I changed this to include six bits for the first character, and
+> masked off the top bit in PNPBIOS.  I think that should preserve
+> the previous behavior; see what you think.
 
-The code was not designed to be fast, only get the job done.
+Yes, it should. I checked the ISAPnP specification and it explicitly fixes 
+bit 31 at 0 (and defines the "compressed ASCII" as 5 bits). Given what you 
+describe you probably don't have a good place to stash a comment but with 6 
+bits being non-spec something like "appease broken ISAPnP hardware" would 
+probably be good.
 
-> 2),if I increase the read urb transfer size from one wMaxPacketSize
-> to four wMaxPacketSize, the max read throughtput can be beyond 1440bps.
-> But maybe there is some timeout risk, isn't there?
+>>    2: There are 4 tests for ACPI_READ_WRITE_MEMORY here which are turned
+>>       into IORESOURCE_MEM_WRITEABLE or 0. Not sure, but should they be
+>>       turned into IORESOURCE_MEM_WRITEABLE or IORESOURCE_READONLY?
+> 
+> One would expect that "mem.write_protect == 1" would mean read-only.
+> Unfortunately, I'm too lazy to un-obfuscate the ACPI CA logic that
+> deals with mem.write_protect, since it seems to be all table-driven.
+> In the absence of understanding, I tried to preserve the existing
+> behavior.  I think I did, i.e., if "write_protect == ACPI_READ_WRITE_MEMORY",
+> we add in IORESOURCE_MEM_WRITEABLE, otherwise do nothing.  If I
+> goofed that up, let me know.
 
-That's one way to increase speed, but not the only way, it can be done a
-whole lot better if you are worried about throughput.  See the sierra
-driver for an implementation that does this correctly for maximum
-througput.
+No, you didn't, is fine.
 
-> 3),The throughput still can be increased by submitting more urbs
->  parallelly , and the latency can be decreased a bit by the way.
+> I have an ISA question here, too: previously isapnp_read_resources()
+> set only res.start for IO and MMIO resources and left res.end unset
+> (should be zero, I think).  I don't think ISA tells you the size, so
+> I assumed "1", but I don't know if that's the right thing to do.  My
+> reasoning was "zero is obviously wrong, two could be too big and
+> generate bogus conflicts, so one is the only possible choice."
 
-But again, that has nothing to do with determinism, or latency, or real
-time issues.
+Yes, as far as I'm aware the actual value is of no consequence. The size is 
+not a setable parameter; to hardware they're only base address registers, It 
+used to be kept simply at -1 (in an unsigned sort of way) and as far as I'm 
+aware, we're also not interested yet at this level.
 
-thanks,
+However, now that you made me look closer and in context -- there's actually 
+a possibly somewhat serious problem here.
 
-greg k-h
+isapnp_read_resources() stores the resources as read from the hardware at 
+the index in the table that matches the actual index in the hardware and 
+isapnp_set_resources() stores them back into those same hardware indices.
+
+Now by using pnp_add_foo_resource() which just scans for the first _UNSET 
+resource, the resources might not end up in the same linear position in 
+table/list if intermediate resources were unset in hardware (!ret). A 
+subsequent isapnp_set_resources() would them restore the value to the wrong 
+hardware index.
+
+The IORESOURCE_ flags currently reserve too few bits (IORESOURCE_BITS,  8) 
+to be able to store the hardware index: IORESOURCE_MEM and IORESOURCE_DMA 
+need 2 and 1 respectively and there are 1 and 0 available respectively. It's 
+ofcourse possible to hijack a few more bits in IORESOURCE_ flags but you're 
+turning this into a list. I suppose the idea is to make it a simple list of 
+struct resource, but perhaps a resource-private "driver_data" sort of field 
+comes in handy for more than this already? Swiping more of IORESOURCE_ is a 
+bit ugly...
+
+In any case, I missed this, but ISAPnP is still (at least in principle) 
+broken with the current set therefore.
+
+> I also made the _len() functions inlines and restructured the logic in
+> both _len() and _valid() functions.  I couldn't stand the thought of all
+> those extra list traversals in there :-)  I'd appreciate a double-check
+> of that.
+
+Will do.
+
+Rene.
