@@ -1,97 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761228AbYDCDx7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752413AbYDCEFw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761228AbYDCDx7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 23:53:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759749AbYDCDxt
+	id S1752413AbYDCEFw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Apr 2008 00:05:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750757AbYDCEFn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 23:53:49 -0400
-Received: from e31.co.us.ibm.com ([32.97.110.149]:34505 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759429AbYDCDxs (ORCPT
+	Thu, 3 Apr 2008 00:05:43 -0400
+Received: from E23SMTP06.au.ibm.com ([202.81.18.175]:50715 "EHLO
+	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750752AbYDCEFm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 23:53:48 -0400
-Date: Wed, 2 Apr 2008 22:53:47 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Li Zefan <lizf@cn.fujitsu.com>
-Cc: "Serge E. Hallyn" <serue@us.ibm.com>, Paul Menage <menage@google.com>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/1] cgroups: introduce cft->read_seq()
-Message-ID: <20080403035347.GB25873@sergelap.austin.ibm.com>
-References: <20080403010130.GA20543@sergelap.austin.ibm.com> <47F4378A.2000008@cn.fujitsu.com> <47F440F7.6080308@cn.fujitsu.com>
+	Thu, 3 Apr 2008 00:05:42 -0400
+Message-ID: <47F4577E.5060905@linux.vnet.ibm.com>
+Date: Thu, 03 Apr 2008 09:35:18 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47F440F7.6080308@cn.fujitsu.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: Paul Menage <menage@google.com>
+CC: Pavel Emelianov <xemul@openvz.org>, Hugh Dickins <hugh@veritas.com>,
+       Sudhir Kumar <skumar@linux.vnet.ibm.com>,
+       YAMAMOTO Takashi <yamamoto@valinux.co.jp>, lizf@cn.fujitsu.com,
+       linux-kernel@vger.kernel.org, taka@valinux.co.jp, linux-mm@kvack.org,
+       David Rientjes <rientjes@google.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Subject: Re: [RFC][-mm] Add an owner to the mm_struct (v4)
+References: <20080401124312.23664.64616.sendpatchset@localhost.localdomain> <47F3D62E.4070808@linux.vnet.ibm.com> <6599ad830804021253y6bf3b37y9bf1167b63c32e70@mail.gmail.com>
+In-Reply-To: <6599ad830804021253y6bf3b37y9bf1167b63c32e70@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Li Zefan (lizf@cn.fujitsu.com):
-> Li Zefan wrote:
-> > Serge E. Hallyn wrote:
-> >> Hi Paul,
-> >>
-> >> the following (against 2.6.25-rc8-mm1) is a first attempt
-> >> at a simple seq_file usage in cgroups.  Comments much
-> >> appreciated.
-> >>
-> >> thanks,
-> >> -serge
-> >>
-> >> >From bd0977a5819dc43866fff325ae1e2726e747e2f4 Mon Sep 17 00:00:00 2001
-> >> From: Serge E. Hallyn <serue@us.ibm.com>
-> >> Date: Wed, 2 Apr 2008 17:54:21 -0700
-> >> Subject: [PATCH 1/1] cgroups: introduce cft->read_seq()
-> >>
-> >> Introduce a read_seq() helper in cftype, which uses
-> >> seq_file to print out lists.  Use it in the devices
-> >> cgroup.  Also split devices.allow into two files, so
-> >> now devices.deny and devices.allow are the ones to
-> >> use to manipulate the whitelist, while devices.list
-> >> outputs the cgroup's current whitelist.
-> >>
-> >> Signed-off-by: Serge E. Hallyn <serue@us.ibm.com>
-> >> ---
-> >>  include/linux/cgroup.h   |    6 ++++
-> >>  kernel/cgroup.c          |   22 ++++++++++++-
-> >>  security/device_cgroup.c |   74 ++++++++++++++-------------------------------
-> >>  3 files changed, 49 insertions(+), 53 deletions(-)
-> >>
-> >> diff --git a/include/linux/cgroup.h b/include/linux/cgroup.h
-> >> index 2d1d151..feb83dd 100644
-> >> --- a/include/linux/cgroup.h
-> >> +++ b/include/linux/cgroup.h
-> >> @@ -227,6 +227,12 @@ struct cftype {
-> >>  	 */
-> >>  	int (*read_map) (struct cgroup *cont, struct cftype *cft,
-> >>  			 struct cgroup_map_cb *cb);
-> >> +	/*
-> >> +	 * read_seq() is used for outputting a simple sequence
-> >> +	 * using seqfile.
-> >> +	 */
-> >> +	int (*read_seq) (struct cgroup *cont, struct cftype *cft,
-> >> +			 struct seq_file *m);
-> >>  
-> > 
-> > Can't we remove read_map() ?
-> > 
-> > btw: s/cont/cgrp
-> > 
+Paul Menage wrote:
+> On Wed, Apr 2, 2008 at 11:53 AM, Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+>>  So far I've heard no objections or seen any review suggestions. Paul if you are
+>>  OK with this patch, I'll ask Andrew to include it in -mm.
 > 
-> It seems read_seq() is the general case of read_map(). A read_seq() method can
-> produce the output freely, and read_map() strictly produces string->u64 maps.
+> My only thoughts were:
+> 
+> - I think I'd still prefer CONFIG_MM_OWNER to be auto-selected rather
+> than manually configured, but it's not a huge deal either way.
+> 
 
-Right, the memcontroller cgroup is using read_map(), and I seem to recall
-it was intended to be of pretty general use so I was going to just
-leave it there.
+It is auto-selected now by CONFIG_CGROUP_MEM_RES_CTLR in the latest patchset
 
-As for s/cont/cgrp I agree but that's for a separate pure renaming
-patch.  In the meantime I just wanted to follow the existing style.
-I could rebase this patch on top of a renaming patch but that's
-definately wrong for just soliciting comments on this being the right
-approach.
+> - in theory I think we should goto retry if we get to the end of
+> mm_update_next_owner() without finding any other owner. Otherwise we
+> could miss another user if we race with one process forking a new
+> child and then exiting?
+> 
 
-Thanks for taking a look.
+When we the current task is exiting and we've verified that we are mm->owner and
+we cannot miss the new process since through the process of forking, it would
+have added the new process to the tasklist before exiting.
 
--serge
+> - I was looking through the exit code trying to convince myself that
+> current is still on the tasklist until after it makes this call. If it
+> isn't then we could have trouble finding the new owner. But I can't
+> figure out for sure exactly at what point we come off the tasklist.
+> 
+
+We come off the task list in __unhash_process(), which is in turn called by
+release_task() through __exit_signal().
+
+> - I think we only need the cgroup callback in the event that
+> current->cgroups != new_owner->cgroups. (Hmm, have we already been
+> moved back to the root cgroup by this point? If so, then we'll have no
+> way to know which cgruop to unaccount from).
+> 
+
+I checked to see that cgroup_exit is called after mm_update_new_owner(). We call
+mm_update_new_owner() from exit_mm(). I did not check for current->cgroups !=
+new_owner->cgroups, since I did not want to limit the callbacks. An interested
+callback can make that check and no-op the callback.
+
+I am going to change the rcu_read_lock(), so that it is released after we take
+the task_lock() and repost the patch
+
+
+-- 
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
