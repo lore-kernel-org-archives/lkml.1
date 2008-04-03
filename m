@@ -1,80 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756634AbYDCLXQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755676AbYDCLeL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756634AbYDCLXQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Apr 2008 07:23:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753563AbYDCLXE
+	id S1755676AbYDCLeL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Apr 2008 07:34:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753563AbYDCLeA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Apr 2008 07:23:04 -0400
-Received: from mailservice.tudelft.nl ([130.161.131.5]:3720 "EHLO
-	mailservice.tudelft.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754180AbYDCLXD (ORCPT
+	Thu, 3 Apr 2008 07:34:00 -0400
+Received: from bzq-219-195-70.pop.bezeqint.net ([62.219.195.70]:38404 "EHLO
+	bh-buildlin2.bhalevy.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753503AbYDCLd7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Apr 2008 07:23:03 -0400
-X-Spam-Flag: NO
-X-Spam-Score: -8.379
-Date: Thu, 3 Apr 2008 13:22:40 +0200 (CEST)
-From: "Andreas K. Huettel" <A.K.Huettel@tudelft.nl>
-X-X-Sender: huettel@localhost
-Reply-To: "Andreas K. Huettel" <mail@akhuettel.de>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [tainted,fglrx] page allocation failure: basic meaning of log
- messages?
-In-Reply-To: <20080403183021.028C.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-Message-ID: <alpine.LNX.1.00.0804031318480.10277@localhost>
-References: <alpine.LNX.1.00.0804031117030.10277@localhost> <20080403183021.028C.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-User-Agent: Alpine 1.00 (LNX 882 2007-12-20)
-X-Information: My public GPG key can be obtained at http://www.akhuettel.de/
+	Thu, 3 Apr 2008 07:33:59 -0400
+Message-ID: <47F4C044.1090609@panasas.com>
+Date: Thu, 03 Apr 2008 14:32:20 +0300
+From: Boaz Harrosh <bharrosh@panasas.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: schwidefsky@de.ibm.com
+CC: linux-kernel@vger.kernel.org, k-ueda@ct.jp.nec.com, j-nomura@ce.jp.nec.com,
+       jens.axboe@oracle.com, zaitcev@redhat.com
+Subject: Re: kernel BUG at drivers/block/ub.c:820!
+References: <1207212156.5602.5.camel@localhost>
+In-Reply-To: <1207212156.5602.5.camel@localhost>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: RIPEMD160
+On Thu, Apr 03 2008 at 11:42 +0300, Martin Schwidefsky <schwidefsky@de.ibm.com> wrote:
+> Greetings,
+> I have an 'evil' USB stick that crashes my T43 with the yesterdays git.
+> All I have to do is to insert the USB stick and watch the kernel die:
+> 
+> kernel BUG at drivers/block/ub.c:820!
+> invalid opcode: 0000 [#1] PREEMPT
+> Modules linked in: usb_storage ub ipt_LOG xt_limit ipt_REJECT xt_tcpudp
+> xt_state iptable_nat nf_nat nf_conntrack_ipv4 nf_conntrack
+> iptable_filter ip_tables x_tables deflate zlib_deflate ctr twofish
+> twofish_common camellia serpent blowfish des_generic cbc aes_i586
+> aes_generic xcbc sha256_generic sha1_generic crypto_null af_key
+> nls_iso8859_1 nsl_cp437 vfat fat fuse dm_crypt crypto_blkcipher
+> dm_snapshot dm_mirror dm_mod freq_table ide_generic ide_disk irtty_sir
+> mousedev sir_dev snd_intel8x0 snd_ac97_codec ac97_bus snd_pcm_oss
+> snd_mixer_oss snd_pcm snd_timer pcmcia nsc_ircc snd_ipw2200 psmouse
+> sdhci irda ieee80211 ieee80211_crypt serio_raw soundcore i2c_i801 rtc
+> crc_ccitt parport_pc parport 8250_pnp pcspkr snd_page_alloc i2c_core
+> 8250_pci yenta_socket rsrc_nonstatic pcmcia_core mmc_core firmware_class
+> video output intel_agp agpgart evdev thinkpad_acpi sg sr_mod sd_mod
+> ide_pci_generic ata_piix floppy pata_acpi libata scsi_mod ehci_hcd
+> uhci_hcd usbcore tg3 unix ide_cd_mod cdrom
+> 
+> Pid: 3893, comm: udevd Not tainted (2.6.25-rc8 #4)
+> EIP: 0060:[<f8ca6b99>] EFLAGS: 00010002 CPU: 0
+> EIP is at ub_end_rq+0x2b/0x33 [ub]
+> EAX: 00000001 EBX: f78f296c ECX: 00000024 EDX: 00000001
+> ESI: 00000000 EDI: f7bb5ad4 EBP: f79fde0c ESP: f79fde04
+>  DS: 007b ES: 007b FS: 0000 GS: 0033 SS: 0068
+> Process udevd (pid: 3893, ti=f79fc000 task=f64e01b0 task.ti=f79fc000)
+> Stack: f7bb5ad4 00000000 f79fde34 f8ca6fa1 f7b6f400 f7bb5a00 f7bb5a34 f78f296c
+>        00000086 f7b6f400 f7b6f400 f7bb5ad4 f79fde48 f8ca73b6 f7b6f400 c03ec2ec
+>        0000000a f79fde6c f8ca7c06 f7b6f5c0 f7b6f550 00000286 f7bb5ad4 00000000
+> Call Trace:
+>  [<f8ca6fa1>] ? ub_rw_cmd_done+0x1c2/0x1d8 [ub]
+>  [<f8ca73b6>] ? ub_scsi_urb_compl+0x31c/0x35b [ub]
+>  [<f8ca7c06>] ? ub_scsi_action+0x18f/0x1c4 [ub]
+>  [<c011e0bf>] ? tasklet_action+0x35/0x56
+>  [<c011e01e>] ? __do_softirq+0x38/0x7a
+>  [<c011e085>] ? do_softirq+0x25/0x2a
+>  [<c011e1db>] ? irq_exit+0x28/0x61
+>  [<c010630f>] ? do_IRQ+0x58/0x6d
+>  [<c01052c3>] ? common_interrupt+0x23/0x28
+>  [<c024cf52>] ? skb_dequeue+0x3d/0x50
+>  [<c024d2a0>] ? skb_queue_purge+0x14/0x1b
+>  [<f8843544>] ? unix_sock_destructor+0xe/0xb4 [unix]
+>  [<f8841e65>] ? unix_release+0x1a/0x20 [unix]
+>  [<c0248ee6>] ? sock_release+0x14/0x6f
+>  [<c02492fe>] ? sock_close+0x29/0x30
+>  [<c015afa5>] ? __fput+0x93/0x14a
+>  [<c015b1e4>] ? fput+0x16/0x18
+>  [<c0158aad>] ? filp_close+0x50/0x5a
+>  [<c0159d1e>] ? sys_close+0x6f/0xb9
+>  [<c01048b2>] ? sysenter_past_esp+0x5f/0x85
+>  [<c02a0000>] ? __xfrm_state_bump_genids+0x22/0xfd
+>  =======================
+> Code: 55 89 e5 56 31 f6 85 d2 53 89 c3 74 08 89 50 7c be fb ff ff ff 89 d8 e8 75
+>  b5 51 c7 89 f2 89 c1 89 d8 e8 30 c0 51 c7 85 c0 74 04 <0f> 0b eb fe 5b 5e 5d c3
+>  55 89 e5 57 56 53 83 ec 14 89 45 e8 8b
+> EIP: [<f8ca6b99>] ub_end_rq+0x2b/0x33 [ub] SS:ESP 0068:f79fde04
+> Kernel panic - not syncing: Fatal exception in interrupt
+> 
+> Looking at the code I find:
+> 
+> static void ub_end_rq(struct request *rq, unsigned int scsi_status)
+> {
+>         int error;
+> 
+> 	if (scsi_status == 0) {
+> 		error = 0;
+> 	} else {
+> 		error = -EIO;
+> 		rq->errors = scsi_status;
+> 	}
+> 	if (__blk_end_request(rq, error, blk_rq_bytes(rq)))
+> 		BUG();  <-- kernel crashes here.
+> 	}
+> }
+> 
+> With git bisect I could came up with:
+> 610d8b0c972e3b75493efef8e96175518fd736d3 good
+> 3bcddeac1c4c7e6fb90531b80f236b1a05dfe514 compile error
+> 5450d3e1d68f10be087f0855d8bad5458b50ecbe compile error
+> b8286239ddaf2632cec65c01e68a403ac4c3d079 compile error
+> 7d699bafe258ebd8f9b4ec182c554200b369a504 bad
+> 
+> If I replace the BUG() with a printk my kernel survives the usb plug but
+> udev doesn't find the stick.
+> 
 
+It is not the right fix but what happens if you change above code to this:
 
-Hi, 
+static void ub_end_rq(struct request *rq, unsigned int scsi_status)
+{
+        int error;
 
-#]> Apr  3 09:01:30 bellini hal-system-powe: page allocation failure. order:10, mode:0x4020
-#]> Apr  3 09:01:30 bellini Pid: 327, comm: hal-system-powe Tainted: PF       2.6.24-gentoo-r3 #1
-#]> Apr  3 09:01:30 bellini [<c0140c48>] __alloc_pages+0x2bd/0x2ce
-#]> Apr  3 09:01:30 bellini [<c0140c92>] __get_free_pages+0x39/0x47
-#]> Apr  3 09:01:30 bellini [<f8adcd9e>] firegl_cmmqs_save_fb+0x8e/0x200 [fglrx]
-#]
-#]this messages doesn't mean bug, merely indicate allocation failure.
-#]if any other bad thind doen't happend, you can ignore it.
+	if (scsi_status == 0) {
+		error = 0;
+	} else {
+		error = -EIO;
+		rq->errors = scsi_status;
+	}
+	if (__blk_end_request(rq, error, blk_rq_bytes(rq)))
+		__blk_end_request(rq, error, ~0);  /* <-- added line BUG removed. */
+	}
+}
 
-Swapping like mad without any obvious cause (500M swap in use, 1.5G RAM 
-- - which is normally not such a big problem). This however stopped when 
-I closed some memory-intensive applications (firefox, vmware).
-
-Since then the machine is running without problems. 
-
-Thanks for the info, 
-Andreas
-
-
-
-- --
-This message is transmitted using 100% recycled electrons.
-- --
-- ---------------------------------------------------------------------
-Dr. Andreas K. Huettel                  tel. +31 15 27 88102  (univ.)
-Molecular Electronics and Devices            +31 6 42527466  (mobile)
-Kavli Institute of Nanoscience Delft
-Delft University of Technology                 A.K.Huettel@tudelft.nl
-PO Box 5046, 2600 GA Delft                          mail@akhuettel.de
-The Netherlands                     http://www.akhuettel.de/research/
-- ---------------------------------------------------------------------
-Please use GNUPG or PGP for signed and encrypted email. My public key
-can be found at  http://www.akhuettel.de/pgp_key.php
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.7 (GNU/Linux)
-
-iD8DBQFH9L4I3ao2Zwy3NWoRA90bAKCVUgen8y3P6xBKcAPIZSARE1VudQCgoklk
-X+V4eXmg7Tk5pikhui/zCeI=
-=pEk1
------END PGP SIGNATURE-----
+Boaz
