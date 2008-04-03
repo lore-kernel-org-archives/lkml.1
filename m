@@ -1,23 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753260AbYDGUvz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755625AbYDGUyQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753260AbYDGUvz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Apr 2008 16:51:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752689AbYDGUvr
+	id S1755625AbYDGUyQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Apr 2008 16:54:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752628AbYDGUx7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Apr 2008 16:51:47 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:46910 "EHLO
+	Mon, 7 Apr 2008 16:53:59 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:46918 "EHLO
 	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752227AbYDGUvp (ORCPT
+	with ESMTP id S1750960AbYDGUx6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Apr 2008 16:51:45 -0400
-Date: Thu, 3 Apr 2008 18:37:41 +0100
+	Mon, 7 Apr 2008 16:53:58 -0400
+Date: Thu, 3 Apr 2008 18:50:34 +0100
 From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Xavier <x.guimard@free.fr>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Proposed patch for IDE missing commands
-Message-ID: <20080403183741.736fde6c@the-village.bc.nu>
-In-Reply-To: <47F47324.80108@free.fr>
-References: <47F47324.80108@free.fr>
+To: Ondrej Zary <linux@rainbow-software.org>
+Cc: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
+       Frans Pop <elendil@planet.nl>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Subject: Re: No IDE drivers loaded for Toshiba Satellite 320 CDS
+Message-ID: <20080403185034.759022ce@the-village.bc.nu>
+In-Reply-To: <200804022235.01433.linux@rainbow-software.org>
+References: <200804021524.27222.elendil@planet.nl>
+	<200804022210.26736.linux@rainbow-software.org>
+	<20080402202225.GJ24237@csclub.uwaterloo.ca>
+	<200804022235.01433.linux@rainbow-software.org>
 X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; i386-redhat-linux-gnu)
 Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
  Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
@@ -29,18 +35,23 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 03 Apr 2008 08:03:16 +0200
-Xavier <x.guimard@free.fr> wrote:
+On Wed, 2 Apr 2008 22:34:58 +0200
+Ondrej Zary <linux@rainbow-software.org> wrote:
 
-> Hi all,
+> On Wednesday 02 April 2008 22:22:25 Lennart Sorensen wrote:
+> > On Wed, Apr 02, 2008 at 10:10:23PM +0200, Ondrej Zary wrote:
+> > > I mean S320BIDE.EXE - that's for this machine only.
+> >
+> > Hmm, I missed that one.  I wonder how they do it.  Well ISA did support
+> > bus mastering DMA although it seems rare to implement it.  Or it could
+> > be VLB style.
 > 
-> I'm working for the french Gendarmerie Nationale and we've decided to 
-> publish our patch for the kernel that provides some missing IDE commands 
-> to access to protected areas (HPA and DCO).
+> I suspect that the IDE controller is integrated into the Toshiba chipset but 
+> does not appear as a separate PCI device. It could be controlled by some 
+> registers of the "host-bridge" or some other device.
 
-Code looks fine barring style oddities but
-- Almost all vendors are moving to libata
-- I don't understand why you cannot use the existing SG_IO interface to
-issue the needed commands without adding more kernel bits ?
+Toshiba Piccolo series. PCI chipset integrated IDE, not supported as
+Toshiba refused to even answer emails about it. If you want it to work
+you need to find out what registers their driver writes to
 
 Alan
