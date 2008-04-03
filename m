@@ -1,65 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761665AbYDCTpj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761531AbYDCTp4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761665AbYDCTpj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Apr 2008 15:45:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763224AbYDCTjQ
+	id S1761531AbYDCTp4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Apr 2008 15:45:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757514AbYDCTkR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Apr 2008 15:39:16 -0400
-Received: from smtp21.orange.fr ([80.12.242.47]:60762 "EHLO smtp21.orange.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763093AbYDCTjO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Apr 2008 15:39:14 -0400
-X-ME-UUID: 20080403193912938.E50BF1C000AC@mwinf2108.orange.fr
-Subject: Re: ASUS ScreenDuo
-From: Xavier Bestel <xavier.bestel@free.fr>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <Pine.LNX.4.44L0.0804031506300.7376-100000@iolanthe.rowland.org>
-References: <Pine.LNX.4.44L0.0804031506300.7376-100000@iolanthe.rowland.org>
-Content-Type: text/plain
-Date: Thu, 03 Apr 2008 21:39:05 +0200
-Message-Id: <1207251545.24007.3.camel@bip.parateam.prv>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 
+	Thu, 3 Apr 2008 15:40:17 -0400
+Received: from fg-out-1718.google.com ([72.14.220.157]:30108 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759892AbYDCTkP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Apr 2008 15:40:15 -0400
+Message-ID: <47F5329B.8080305@colorfullife.com>
+Date: Thu, 03 Apr 2008 21:40:11 +0200
+From: Manfred Spraul <manfred@colorfullife.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+MIME-Version: 1.0
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+CC: Pavel Emelyanov <xemul@openvz.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Serge Hallyn <serue@us.ibm.com>,
+       Sukadev Bhattiprolu <sukadev@us.ibm.com>
+Subject: Re: [RFC, PATCH] fix SEM_UNDO with namespaces
+References: <47EFFD1C.5020204@colorfullife.com> <47F08ED6.1090103@openvz.org> <47F10DF7.5010702@colorfullife.com> <47F203EC.7090806@openvz.org> <m1od8tiom7.fsf@ebiederm.dsl.xmission.com>
+In-Reply-To: <m1od8tiom7.fsf@ebiederm.dsl.xmission.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Eric W. Biederman wrote:
+> Pavel Emelyanov <xemul@openvz.org> writes:
+>   
+>>>> I agree, that we should probably destroy this one when the task calls 
+>>>> unshare, but trying to keep this list relevant is useless.
+>>>>   
+>>>>         
+>>> A very tricky question: Let's assume we have a process with two threads.
+>>> The undo structure is shared, as per opengroup standard.
+>>> Now one thread calls unshare(CLONE_NEWIPC). What should happen? We 
+>>> cannot destroy the undo structure, the other thread might be still 
+>>> interested in it.
+>>> If we allow sys_unshare() for multithreaded processes with CLONE_NEWIPC 
+>>> and without CLONE_SYSVSEM, then we must handle this case.
+>>>       
+>> Hm... I'd simply disable creating any new namespaces for threads.
+>> I think other namespaces developers agree with me. Serge, Suka, Eric
+>> what do you think?
+>>     
+>
+> I almost agree.  sys_unshare() in a multithreaded process breaks
+> all kinds of user space libs.  So you can only reasonably look at
+> the problem as what we do with linux tasks that share some things
+> and not others.  The posix/opengroup notion of processes and threads
+> are a distraction.
+>
+> In this case requiring it appears that to require unsharing both
+> CLONE_SYSVSEM and CLONE_NEWIPC at the same time.  (i.e. unshare
+> of CLONE_SYSVSEM should fail if CLONE_NEWIPC is not also specified).
+> Then to make it work we make unshare of SYSVSEM succeed when it is not shared.
+>
+> This looks like about a 5 line patch or two.
+>
+>   
+Probably something like this in copy_ipcs:
+       if (current->sysvsem.undo_list != NULL && 
+atomic_read(current->sysvsem.undo_list->refcount) > 1)
+          return -EINVAL;
 
-On jeu, 2008-04-03 at 15:07 -0400, Alan Stern wrote:
-> On Thu, 3 Apr 2008, Xavier Bestel wrote:
-> 
-> > On jeu, 2008-04-03 at 11:37 -0400, Alan Stern wrote:
-> > > On Thu, 3 Apr 2008, Xavier Bestel wrote:
-> > > 
-> > > > Hi,
-> > > > 
-> > > > I have an ASUS motherboard with an USB gadget, the ASUS ScreenDUO. It's
-> > > > an independant little lcd screen with buttons, apparently it runs some
-> > > > kind of OS because it can access the net (e.g. to retrieve RSS) even
-> > > > when the computer is off - I guess they mean soft-off.
-> > > > 
-> > > > Well, all that is theory because it's under Vista, which I don't have.
-> > > > Under Linux the ScreenDUO is kind-of recognized: it says it's a mass
-> > > > storage device, but I can't mount it (the kernel says it's bound to sdc,
-> > > > but sdc doesn't exist).
-> > > > I'd like to access it. Does anyone know how that thing works ?
-> > > 
-> > > What does usbmon show when you modprobe usb-storage?  (The instructions 
-> > > for usbmon are in the kernel source file Documentation/usb/usbmon.txt.)
-> 
-> ...
-> 
-> The ScreenDUO is reporting that no medium is present.  Maybe it needs 
-> you to insert some sort of flash memory card before it will work as a 
-> mass-storage device.
+I'll think about it and write a patch over the weekend.
 
-Ah. Apparently it just waits for some driver from the Windows side (no
-way to insert anything in there).
-I guess it'll just be another useless piece of electronics at home.
+> The effect is because we don't support unsharing of SYSVSEM currently
+> we don't support a threaded process unsharing the ipc namespace.
+>   
+I agree.
+Btw: The manpage of unshare() is IMHO a bit misleading:
+ >   NAME
+ >       unshare - disassociate parts of the process execution context
 
-Thanks,
-	Xav
+unshare() only operates on a single thread, shouldn't the description be 
+"disassociate parts of the thread execution context"?
 
-
+--
+    Manfred
