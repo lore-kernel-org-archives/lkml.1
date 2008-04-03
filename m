@@ -1,70 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760388AbYDCCXp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760960AbYDCCZa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760388AbYDCCXp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Apr 2008 22:23:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758618AbYDCCXf
+	id S1760960AbYDCCZa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Apr 2008 22:25:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758704AbYDCCZT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Apr 2008 22:23:35 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:58324 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758507AbYDCCXe (ORCPT
+	Wed, 2 Apr 2008 22:25:19 -0400
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:48498 "EHLO
+	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758702AbYDCCZR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Apr 2008 22:23:34 -0400
-Date: Wed, 2 Apr 2008 19:22:23 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: yhlu.kernel@gmail.com
-Cc: Yinghai Lu <yhlu.kernel.send@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Badari Pulavarty <pbadari@us.ibm.com>, michael@ellerman.id.au,
-       Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>, linuxppc-dev@ozlabs.org,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] mm: make mem_map allocation continuous v2.
-Message-Id: <20080402192223.5e8754a0.akpm@linux-foundation.org>
-In-Reply-To: <200804021830.24563.yhlu.kernel@gmail.com>
-References: <200804021525.48799.yhlu.kernel@gmail.com>
-	<20080402155247.5e746be7.akpm@linux-foundation.org>
-	<86802c440804021744m7c6e3d94vcb6af3ebcaa71b5b@mail.gmail.com>
-	<200804021830.24563.yhlu.kernel@gmail.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 2 Apr 2008 22:25:17 -0400
+Date: Wed, 2 Apr 2008 22:21:24 -0400
+Message-Id: <200804030221.m332LOH6007818@agora.fsl.cs.sunysb.edu>
+From: Erez Zadok <ezk@cs.sunysb.edu>
+To: Al Viro <viro@zeniv.linux.org.uk>
+Cc: Erez Zadok <ezk@cs.sunysb.edu>,
+       Trond Myklebust <trond.myklebust@fys.uio.no>,
+       Miklos Szeredi <miklos@szeredi.hu>, akpm@linux-foundation.org,
+       dave@linux.vnet.ibm.com, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch 01/10] vfs: add path_create() and path_mknod() 
+In-reply-to: Your message of "Thu, 03 Apr 2008 02:46:22 BST."
+             <20080403014622.GW9785@ZenIV.linux.org.uk> 
+X-MailKey: Erez_Zadok
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2 Apr 2008 18:30:24 -0700 Yinghai Lu <yhlu.kernel.send@gmail.com> wrote:
-
-> v2 replace:
-> 	[PATCH] mm: make mem_map allocation continuous.
-> 	[PATCH] mm: allocate section_map for sparse_init
-> 	[PATCH] mm: allocate usemap at first instead of mem_map in sparse_init
+In message <20080403014622.GW9785@ZenIV.linux.org.uk>, Al Viro writes:
+> On Wed, Apr 02, 2008 at 09:37:01PM -0400, Erez Zadok wrote:
+> > Since you've hinted of major vfs changes post-25, here's my take.
+> > 
+> > Right now I (and to a similar extent ecryptfs too) needs to keep track of
+> > vfsmounts for various reasons:
+> > 
+> > - to grab a reference so the lower filesystems/mounts won't disappear on me
 > 
+> Umm...  Strictly speaking that's not true; you can grab an active reference
+> to superblock and then superblock will stay.  vfsmount is usually more
+> convenient, but that's it.
 
-err, no.
+Yes, I do grab both vfsmount and superblock refs.  I found out that grabbing
+vfsmount refs wasn't enough to prevent "umount -l" from detaching the f/s on
+which I'm stacked on.  So now at mount time (or branch management time), I
+grab those super-refs, as I have them after a successful path_lookup.  And,
+since I keep a list of the branches I'm stacked on, I know precisely which
+superblocks' references I need to release when unionfs is unmounted.
 
+But what do I do if I descend into another lower superblock while looking up
+a lower directory?  How do keep track of the superblock refs now?  I'd
+basically have to memorize the hierarchy of mounted superblocks somehow?
+How would I know when to release those refs?  (hmm, maybe I can rely on
+d_mounted or the like?)
+
+> > - sometimes it's ok to pass NULL for those things, sometimes it's not ok
 > 
-> diff --git a/mm/sparse.c b/mm/sparse.c
-> index f6a43c0..2881222 100644
-> --- a/mm/sparse.c
-> +++ b/mm/sparse.c
+> See above.  This crap will be gone.  For ->follow_link() nobody is allowed
+> to pass NULL as nameidata, period.
 
-Sorry, but I'd rather not do it this way.  We presently have this:
+There's been talk in the past of splitting nameidata into intent structure
+and all the rest.  Is that also part of your plan for 26?  Intents are
+indeed very useful in ->lookup; the rest I can do without.
 
-mm-make-mem_map-allocation-continuous.patch
-mm-make-mem_map-allocation-continuous-checkpatch-fixes.patch
-mm-fix-alloc_bootmem_core-to-use-fast-searching-for-all-nodes.patch
-mm-allocate-section_map-for-sparse_init.patch
-mm-allocate-section_map-for-sparse_init-update.patch
-mm-allocate-section_map-for-sparse_init-update-fix.patch
-mm-allocate-section_map-for-sparse_init-powerpc-fix.patch
-mm-offset-align-in-alloc_bootmem.patch
-mm-make-reserve_bootmem-can-crossed-the-nodes.patch
-mm-make-reserve_bootmem-can-crossed-the-nodes-checkpatch-fixes.patch
+> > In the longer run, is there a way that a stackable f/s could traverse the
+> > namespace below it w/o knowing or caring how they are composed (assorted r-w
+> > and r-o bind mounts and such)?
+> 
+> Eh?  Explain, please...
 
-and you purport to throw some of them away and combine them into a single
-patch?  We assume that the later patches will still apply and work on top
-of this newer patch?  It is up to me to check that the replacement patch
-incorporates the third-party changes to the original patches?
+So, in ->lookup, I essentially have to do a lookup on the corresponding
+lower objects.  I get a nameidata, I have to create my own nameidata, and
+pass it to lower ->lookup calls.  Can the API be changed so I wouldn't need
+to get or pass a nameidata? (maybe just intent struct).
 
-Too hard, too risky.  Can't we just do a fix against 2.6.25-rc8-mm1?
+Also in ->lookup I call lookup_one_len, which is nice b/c it doesn't involve
+vfsmounts or nameidata.  But lookup_one_len doesn't use the same prototype
+as ->lookup, so there's some asymmetry here (I often like to see that a
+stacked op passed to the lower f/s uses the same API as what was passed to
+the op in the first place).
+
+Ironically, since lookup_one_len doesn't involve vfsmounts, but I need them
+for other reasons, I'm forced to live with NULL vfsmounts in some cases, or
+refer to the lower vfsmounts I already had for my root dentry (that makes
+transparently descending into a different vfsmount challenging, if not
+inconsistent).
+
+For many fs ops, the prototype of the ->op has a perfectly symmetric vfs_op()
+helper.  For example, ->mkdir(inode,dentry,mode) and
+vfs_mkdir(inode,dentry,mode).  But nothing as simple for lookup, one of the
+most complex ops in unionfs.
+
+BTW, to be honest, some of extra complications in unionfs (and
+unionfs_lookup) have to do with .wh.* files (whiteouts).  But I hope that'll
+get simpler once we have native WH support in the all the major filesystems.
+
+Cheers,
+Erez.
