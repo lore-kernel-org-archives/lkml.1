@@ -1,57 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760175AbYDCPKh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759923AbYDCPMz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760175AbYDCPKh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Apr 2008 11:10:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758065AbYDCPK3
+	id S1759923AbYDCPMz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Apr 2008 11:12:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758135AbYDCPMs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Apr 2008 11:10:29 -0400
-Received: from saeurebad.de ([85.214.36.134]:58047 "EHLO saeurebad.de"
+	Thu, 3 Apr 2008 11:12:48 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:60719 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758056AbYDCPK2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Apr 2008 11:10:28 -0400
-From: Johannes Weiner <hannes@saeurebad.de>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, mingo@elte.hu,
-       davem@davemloft.net, hskinnemoen@atmel.com, cooloney@kernel.org,
-       starvik@axis.com, dhowells@redhat.com, ysato@users.sourceforge.net,
-       takata@linux-m32r.org, ralf@linux-mips.org, kyle@parisc-linux.org,
-       paulus@samba.org, schwidefsky@de.ibm.com, lethal@linux-sh.org,
-       jdike@addtoit.com, miles@gnu.org, chris@zankel.net,
-       rmk@arm.linux.org.uk, tony.luck@intel.com, akpm@linux-foundation.org
-Subject: Re: [RFC 10/22] m68k: Use generic show_mem()
-References: <12071688283927-git-send-email-hannes@saeurebad.de>
-	<1207168941186-git-send-email-hannes@saeurebad.de>
-	<Pine.LNX.4.64.0804030939320.9848@anakin>
-	<87myobp02g.fsf@saeurebad.de>
-	<Pine.LNX.4.64.0804031538150.11898@anakin>
-Date: Thu, 03 Apr 2008 17:10:21 +0200
-In-Reply-To: <Pine.LNX.4.64.0804031538150.11898@anakin> (Geert Uytterhoeven's
-	message of "Thu, 3 Apr 2008 15:39:16 +0200 (CEST)")
-Message-ID: <87wsnfnfdu.fsf@saeurebad.de>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+	id S1758039AbYDCPMr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Apr 2008 11:12:47 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Pozsar Balazs <pozsy@uhulinux.hu>
+Subject: Re: suspend not working on macbook pro
+Date: Thu, 3 Apr 2008 17:11:55 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Pavel Machek <pavel@ucw.cz>, linux-kernel@vger.kernel.org,
+       Alan <alan@lxorguk.ukuu.org.uk>, Jeff Garzik <jeff@garzik.org>,
+       Tejun Heo <htejun@gmail.com>
+References: <20080308110626.GE4491@ojjektum.uhulinux.hu> <200803211756.10987.rjw@sisk.pl> <20080403121035.GL29048@ojjektum.uhulinux.hu>
+In-Reply-To: <20080403121035.GL29048@ojjektum.uhulinux.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200804031711.56985.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Thursday, 3 of April 2008, Pozsar Balazs wrote:
+> On Fri, Mar 21, 2008 at 05:56:10PM +0100, Rafael J. Wysocki wrote:
+> > On Friday, 21 of March 2008, Pozsar Balazs wrote:
+> > > On Sun, Mar 09, 2008 at 10:01:55AM +0100, Pavel Machek wrote:
+> > > > Hi!
+> > > > 
+> > > > > I'm using a macbook pro 3,1 (mid-2007), and suspend worked ok with 
+> > > > > kernel 2.6.23.x, but with 2.6.25-rc{1,2,3,4} it just freezes during 
+> > > > > suspend. The console is still on, the disk is powered off, but no 
+> > > > > response or poweroff...
+> > > > > 
+> > > > > Did anyone else met the same thing? How could I help debug it?
+> > > > > What other info would you need?
+> > > > 
+> > > > Find more exact version when it broke? git bisect?
+> > > 
+> > > I did not have time for bisect, but I have found that if I boot an 
+> > > initrd and do not load the ata_piix module, suspend works, if I load it, 
+> > > it hangs during suspend.
+> > 
+> > Hm, we have an ata_piix vs suspend problem on this box, then.
+> > 
+> > Any chance to verify if 2.6.24.x works?
+> 
+> I tried with ata_piix.c copied from 2.6.24, and it fails the same way.
 
-Geert Uytterhoeven <geert@linux-m68k.org> writes:
+It generally is not sufficient to replace just one file.  Please try the entire
+2.6.24.
 
-> So I suggest to add an additional (first) step to the consolidation: remove all
-> duplicates.
+Also, please check 2.6.25-rc8-git2, it might have fixed your issue.
 
-I shall do that.  Problem is, I had a patch-series removing only parts
-of the duplication (shame on me) and not all of these patches are yet in
-the subsystem trees and still partially in -mm.  None of them have hit
-mainline yet.  Suggestions?
-
-The earlier patch-series was called `remove redundant output from
-show_mem()'.
-
-Sorry for the wasted time.  These cleanups already took more energy than
-they are worth it, I guess... :/
-
-	Hannes
+Thanks,
+Rafael
