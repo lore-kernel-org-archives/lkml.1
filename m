@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932263AbYDCTmk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932360AbYDCTnE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932263AbYDCTmk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Apr 2008 15:42:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761224AbYDCTd2
+	id S932360AbYDCTnE (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Apr 2008 15:43:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760743AbYDCTd2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Thu, 3 Apr 2008 15:33:28 -0400
-Received: from bzq-179-150-194.static.bezeqint.net ([212.179.150.194]:53024
+Received: from bzq-179-150-194.static.bezeqint.net ([212.179.150.194]:39112
 	"EHLO il.qumranet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760743AbYDCTdA (ORCPT
+	with ESMTP id S1757632AbYDCTc7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Apr 2008 15:33:00 -0400
+	Thu, 3 Apr 2008 15:32:59 -0400
 From: Avi Kivity <avi@qumranet.com>
 To: kvm-devel@lists.sourceforge.net
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 29/35] KVM: Move some x86 specific constants and structures to include/asm-x86
-Date: Thu,  3 Apr 2008 22:32:44 +0300
-Message-Id: <1207251170-5013-30-git-send-email-avi@qumranet.com>
+Cc: linux-kernel@vger.kernel.org, Glauber Costa <gcosta@redhat.com>
+Subject: [PATCH 24/35] x86: allow machine_crash_shutdown to be replaced
+Date: Thu,  3 Apr 2008 22:32:39 +0300
+Message-Id: <1207251170-5013-25-git-send-email-avi@qumranet.com>
 X-Mailer: git-send-email 1.5.4.5
 In-Reply-To: <1207251170-5013-1-git-send-email-avi@qumranet.com>
 References: <1207251170-5013-1-git-send-email-avi@qumranet.com>
@@ -23,74 +23,78 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Glauber Costa <gcosta@redhat.com>
+
+This patch a llows machine_crash_shutdown to
+be replaced, just like any of the other functions
+in machine_ops
+
+Signed-off-by: Glauber Costa <gcosta@redhat.com>
 Signed-off-by: Avi Kivity <avi@qumranet.com>
 ---
- include/asm-x86/kvm_host.h |   13 +++++++++++++
- include/linux/kvm_host.h   |   13 -------------
- 2 files changed, 13 insertions(+), 13 deletions(-)
+ arch/x86/kernel/crash.c  |    3 ++-
+ arch/x86/kernel/reboot.c |   11 ++++++++++-
+ include/asm-x86/reboot.h |    1 +
+ 3 files changed, 13 insertions(+), 2 deletions(-)
 
-diff --git a/include/asm-x86/kvm_host.h b/include/asm-x86/kvm_host.h
-index 52e276c..2773f91 100644
---- a/include/asm-x86/kvm_host.h
-+++ b/include/asm-x86/kvm_host.h
-@@ -20,6 +20,13 @@
+diff --git a/arch/x86/kernel/crash.c b/arch/x86/kernel/crash.c
+index 9a5fa0a..d262306 100644
+--- a/arch/x86/kernel/crash.c
++++ b/arch/x86/kernel/crash.c
+@@ -25,6 +25,7 @@
+ #include <asm/hpet.h>
+ #include <linux/kdebug.h>
+ #include <asm/smp.h>
++#include <asm/reboot.h>
  
- #include <asm/desc.h>
+ #ifdef CONFIG_X86_32
+ #include <mach_ipi.h>
+@@ -121,7 +122,7 @@ static void nmi_shootdown_cpus(void)
+ }
+ #endif
  
-+#define KVM_MAX_VCPUS 16
-+#define KVM_MEMORY_SLOTS 32
-+/* memory slots that does not exposed to userspace */
-+#define KVM_PRIVATE_MEM_SLOTS 4
-+
-+#define KVM_PIO_PAGE_OFFSET 1
-+
- #define CR3_PAE_RESERVED_BITS ((X86_CR3_PWT | X86_CR3_PCD) - 1)
- #define CR3_NONPAE_RESERVED_BITS ((PAGE_SIZE-1) & ~(X86_CR3_PWT | X86_CR3_PCD))
- #define CR3_L_MODE_RESERVED_BITS (CR3_NONPAE_RESERVED_BITS|0xFFFFFF0000000000ULL)
-@@ -113,6 +120,12 @@ enum {
+-void machine_crash_shutdown(struct pt_regs *regs)
++void native_machine_crash_shutdown(struct pt_regs *regs)
+ {
+ 	/* This function is only called after the system
+ 	 * has panicked or is otherwise in a critical state.
+diff --git a/arch/x86/kernel/reboot.c b/arch/x86/kernel/reboot.c
+index 484c4a8..708d6f8 100644
+--- a/arch/x86/kernel/reboot.c
++++ b/arch/x86/kernel/reboot.c
+@@ -471,7 +471,10 @@ struct machine_ops machine_ops = {
+ 	.shutdown = native_machine_shutdown,
+ 	.emergency_restart = native_machine_emergency_restart,
+ 	.restart = native_machine_restart,
+-	.halt = native_machine_halt
++	.halt = native_machine_halt,
++#ifdef CONFIG_KEXEC
++	.crash_shutdown = native_machine_crash_shutdown,
++#endif
+ };
  
- #define KVM_NR_MEM_OBJS 40
+ void machine_power_off(void)
+@@ -499,3 +502,9 @@ void machine_halt(void)
+ 	machine_ops.halt();
+ }
  
-+struct kvm_guest_debug {
-+	int enabled;
-+	unsigned long bp[4];
-+	int singlestep;
-+};
-+
- /*
-  * We don't want allocation failures within the mmu code, so we preallocate
-  * enough memory for a single page fault in a cache.
-diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
-index 958e003..f4e1436 100644
---- a/include/linux/kvm_host.h
-+++ b/include/linux/kvm_host.h
-@@ -24,13 +24,6 @@
++#ifdef CONFIG_KEXEC
++void machine_crash_shutdown(struct pt_regs *regs)
++{
++	machine_ops.crash_shutdown(regs);
++}
++#endif
+diff --git a/include/asm-x86/reboot.h b/include/asm-x86/reboot.h
+index e9e3ffc..ff9b546 100644
+--- a/include/asm-x86/reboot.h
++++ b/include/asm-x86/reboot.h
+@@ -16,5 +16,6 @@ struct machine_ops
+ extern struct machine_ops machine_ops;
  
- #include <asm/kvm_host.h>
+ void machine_real_restart(unsigned char *code, int length);
++void native_machine_crash_shutdown(struct pt_regs *regs);
  
--#define KVM_MAX_VCPUS 16
--#define KVM_MEMORY_SLOTS 32
--/* memory slots that does not exposed to userspace */
--#define KVM_PRIVATE_MEM_SLOTS 4
--
--#define KVM_PIO_PAGE_OFFSET 1
--
- /*
-  * vcpu->requests bit members
-  */
-@@ -43,12 +36,6 @@
- struct kvm_vcpu;
- extern struct kmem_cache *kvm_vcpu_cache;
- 
--struct kvm_guest_debug {
--	int enabled;
--	unsigned long bp[4];
--	int singlestep;
--};
--
- /*
-  * It would be nice to use something smarter than a linear search, TBD...
-  * Thankfully we dont expect many devices to register (famous last words :),
+ #endif	/* _ASM_REBOOT_H */
 -- 
 1.5.4.5
 
