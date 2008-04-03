@@ -1,52 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760565AbYDCVt6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757435AbYDCVu2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760565AbYDCVt6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Apr 2008 17:49:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759577AbYDCVto
+	id S1757435AbYDCVu2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Apr 2008 17:50:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759805AbYDCVts
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Apr 2008 17:49:44 -0400
-Received: from gate.crashing.org ([63.228.1.57]:54318 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758988AbYDCVtl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Apr 2008 17:49:41 -0400
-Subject: Re: [RFC][PATCH 1/3] use new pm_ops in DRM drivers
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Alan Stern <stern@rowland.harvard.edu>, Greg KH <greg@kroah.com>,
-       Len Brown <lenb@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
-       Alexey Starikovskiy <astarikovskiy@suse.de>,
-       David Brownell <david-b@pacbell.net>, Pavel Machek <pavel@ucw.cz>,
-       Oliver Neukum <oliver@neukum.org>,
-       Nigel Cunningham <ncunningham@crca.org.au>,
-       Dave Airlie <airlied@linux.ie>
-In-Reply-To: <200804031150.55967.jbarnes@virtuousgeek.org>
-References: <200804020207.40278.rjw@sisk.pl>
-	 <200804020209.47207.rjw@sisk.pl>
-	 <200804031150.55967.jbarnes@virtuousgeek.org>
-Content-Type: text/plain
-Date: Fri, 04 Apr 2008 08:47:47 +1100
-Message-Id: <1207259267.10388.334.camel@pasglop>
+	Thu, 3 Apr 2008 17:49:48 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:47739 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758988AbYDCVtp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Apr 2008 17:49:45 -0400
+Date: Thu, 3 Apr 2008 14:49:13 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Gerald Schaefer <gerald.schaefer@de.ibm.com>
+Cc: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
+       schwidefsky@de.ibm.com, mingo@elte.hu, davem@davemloft.net,
+       tony.luck@intel.com, paulus@samba.org, tglx@linutronix.de,
+       lethal@linux-sh.org
+Subject: Re: [PATCH 2/3] hugetlbfs: add missing TLB flush to hugetlb_cow()
+Message-Id: <20080403144913.4eb59540.akpm@linux-foundation.org>
+In-Reply-To: <1207146546.4980.14.camel@localhost.localdomain>
+References: <1207145843.4980.7.camel@localhost.localdomain>
+	<1207146546.4980.14.camel@localhost.localdomain>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 02 Apr 2008 16:29:05 +0200
+Gerald Schaefer <gerald.schaefer@de.ibm.com> wrote:
 
-On Thu, 2008-04-03 at 11:50 -0700, Jesse Barnes wrote:
-> +static struct pm_ops i915_pm_ops = {
-> +       .prepare = NULL, /* DRM core should prevent any new ioctls? */
-> +       .complete = NULL, /* required to re-enable DRM client requests
-> */
+> Subject: [PATCH 2/3] hugetlbfs: add missing TLB flush to hugetlb_cow()
+> 
+> From: Gerald Schaefer <gerald.schaefer@de.ibm.com>
+> 
+> A cow break on a hugetlbfs page with page_count > 1 will set a new pte
+> with set_huge_pte_at(), w/o any tlb flush operation. The old pte will
+> remain in the tlb and subsequent write access to the page will result
+> in a page fault loop, for as long as it may take until the tlb is
+> flushed from somewhere else.
+> This patch introduces an architecture-specific huge_ptep_clear_flush()
+> function, which is called before the the set_huge_pte_at() in
+> hugetlb_cow().
+> 
+> NOTE: This is just a nop on all architectures for now, there will be an
+> s390 implementation with our large page patch later. Other architectures
+> should define their own huge_ptep_clear_flush() if needed.
+> 
+> +#define huge_ptep_clear_flush(vma, addr, ptep)	do { } while (0)
+> +#define huge_ptep_clear_flush(vma, addr, ptep)	do { } while (0)
+> +#define huge_ptep_clear_flush(vma, addr, ptep)	do { } while (0)
+> +#define huge_ptep_clear_flush(vma, addr, ptep)	do { } while (0)
+> +#define huge_ptep_clear_flush(vma, addr, ptep)	do { } while (0)
 
-The DRM core could definitely provide generic prepare & complete that
-sync'up with user space, making sure the command streams stop etc...
+Again, the problem here is that the macro doesn't have typechecking so I
+can merrily add
 
-Ben.
+	huge_ptep_clear_flush(some_u64, some_struct_ntfs_inode, some_undefined_variable)
 
+and the compiler will just swallow it, depending on config options.  An
+inline solves this.
+
+And the macro can lead to unused-variable warnings because the macro
+doesn't count as a reference of its args.  An inline solves this too.
+
+There is almost never any need to put any code in macros ever.  Please make
+it a last resort, not a first one.
 
