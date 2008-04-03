@@ -1,70 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759592AbYDCPTJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760263AbYDCPTg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759592AbYDCPTJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Apr 2008 11:19:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757591AbYDCPS4
+	id S1760263AbYDCPTg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Apr 2008 11:19:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757840AbYDCPTZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Apr 2008 11:18:56 -0400
-Received: from e36.co.us.ibm.com ([32.97.110.154]:45768 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757552AbYDCPSz (ORCPT
+	Thu, 3 Apr 2008 11:19:25 -0400
+Received: from rn-out-0910.google.com ([64.233.170.188]:59230 "EHLO
+	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757591AbYDCPTY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Apr 2008 11:18:55 -0400
-Date: Thu, 3 Apr 2008 08:18:42 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: Vegard Nossum <vegard.nossum@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: kmemcheck caught read from freed memory (cfq_free_io_context)
-Message-ID: <20080403151842.GA25193@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20080402072456.GI12774@kernel.dk> <20080402072846.GA16454@elte.hu> <20080402105539.GA5610@linux.vnet.ibm.com> <84144f020804020401j4e5863dcofd16662baa54574@mail.gmail.com> <20080402160809.GA4123@linux.vnet.ibm.com> <19f34abd0804020915k210277bbmb6b9aa28f282bb42@mail.gmail.com> <Pine.LNX.4.64.0804021924280.6839@sbz-30.cs.Helsinki.FI> <20080402182352.GF9333@linux.vnet.ibm.com> <84144f020804021253i7e08e83fve3f2707063fc64d1@mail.gmail.com> <20080402201551.GL9333@linux.vnet.ibm.com>
+	Thu, 3 Apr 2008 11:19:24 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=CVWtpXclNgx796BG/YK8PQxK551M4ytcspkjxmGxn4zfAN/M2M2+yQQ9LItnrrvkF6c9uE+JDJP/sh9CjDqWtY2nhOKcE+tvhjok9ABbmcofDozpMLMGDay24DPqAirEPKaXiDj6SbA0wBFddDkyG6VDRvACzwPMqiTd0TO58iw=
+Message-ID: <3ae72650804030819n2b26cf13na9b30eed18df3d2c@mail.gmail.com>
+Date: Thu, 3 Apr 2008 17:19:23 +0200
+From: "Kay Sievers" <kay.sievers@vrfy.org>
+To: "Xavier Bestel" <xavier.bestel@free.fr>
+Subject: Re: PnP: WARNING: at fs/sysfs/dir.c:424 sysfs_add_one()
+Cc: linux-kernel@vger.kernel.org, "Adam Belay" <ambx1@neo.rr.com>
+In-Reply-To: <1207230993.3438.4.camel@skunk.anacadf.mentorg.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080402201551.GL9333@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+References: <1207230896.3438.1.camel@skunk.anacadf.mentorg.com>
+	 <1207230993.3438.4.camel@skunk.anacadf.mentorg.com>
+X-Google-Sender-Auth: ca7c67551cc64fbf
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 02, 2008 at 01:15:51PM -0700, Paul E. McKenney wrote:
-> On Wed, Apr 02, 2008 at 10:53:53PM +0300, Pekka Enberg wrote:
-> > I suppose you haven't actually run kmemcheck on your machine? We're
-> > taking a page fault for _every_ memory access so a lock round-trip in
-> > the SLAB_RCU case is probably not that bad performance-wise :-).
-> 
-> Coward that I am, no I have not.  ;-)
-> 
-> The thing that worries me even more than the lock is the need to keep
-> track of the addresses.
-> 
-> Then again, if you are taking a page fault on every access, perhaps not
-> such a big deal to allocate the memory and link it into a list...
-> But yikes!!!  ;-)
+On Thu, Apr 3, 2008 at 3:56 PM, Xavier Bestel <xavier.bestel@free.fr> wrote:
+>  it's a debian 2.6.24-5
 
-OK, so another approach would be to use a larger shadow block for
-SLAB_DESTROY_BY_RCU slabs, so that each shadow location would have enough
-room for an rcu_head and a size in addition to the flag.  That would
-trivialize tracking, or, more accurately, delegate such tracking to the
-RCU infrastructure.
+>  On Thu, 2008-04-03 at 15:54 +0200, Xavier Bestel wrote:
+>  > I know some of these have been reported, but I couldn't find one in the
+>  > PnP subsystem.
+>  >
+>  >
+>  > Linux Plug and Play Support v0.97 (c) Adam Belay
+>  > pnp: PnP ACPI init
+>  > ACPI: bus type pnp registered
+>  > pnp: PnP ACPI: found 15 devices
+>  > ACPI: ACPI bus type pnp unregistered
+>  > PnPBIOS: Disabled by ACPI PNP
+>  > PCI: Probing PCI hardware
+>  > sysfs: duplicate filename 'bridge' can not be created
+>  > WARNING: at fs/sysfs/dir.c:424 sysfs_add_one()
+>  > Pid: 1, comm: swapper Not tainted 2.6.24-1-686 #1
+>  >  [<c01b12f8>] sysfs_add_one+0x54/0xb8
+>  >  [<c01b1ee2>] sysfs_create_link+0xaf/0xfd
+>  >  [<c01e7070>] pci_bus_add_devices+0xba/0xff
+>  >  [<c0253589>] pcibios_scan_root+0x25/0x80
+>  >  [<c01251d5>] printk+0x1b/0x1f
+>  >  [<c0394d9c>] pci_legacy_init+0x53/0xe1
+>  >  [<c0377497>] kernel_init+0x153/0x2c6
+>  >  [<c0103d92>] ret_from_fork+0x6/0x1c
+>  >  [<c0377344>] kernel_init+0x0/0x2c6
+>  >  [<c0377344>] kernel_init+0x0/0x2c6
+>  >  [<c0104b0f>] kernel_thread_helper+0x7/0x10
+>  >  =======================
+>  > pci 0000:00:01.0: Error creating sysfs bridge symlink, continuing...
 
-Of course, the case where the block gets reallocated before the RCU
-grace period ends would also need to be handled (which my rough sketch
-yesterday did -not- handle, by the way...).
+I guess, this fixes it:
+  http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=cc74d96f47b0d916840f92092595e3be9731e047
 
-There are a couple of ways of doing this.  Probably the easiest approach
-is to add more state to the flag, so that the RCU callback would check
-to see if reallocation had already happened.  If so, it would update the
-state to indicate that the rcu_head was again available, and would need to
-repost itself if the block had been freed again after being reallocated.
-
-The other approach would be to defer actually adding the block to the
-freelist until the grace period expired.  This would be more accurate,
-but also quite a bit more intrusive.
-
-Thoughts?
-
-							Thanx, Paul
+Kay
