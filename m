@@ -1,90 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760504AbYDCFpm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760057AbYDCFq6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760504AbYDCFpm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Apr 2008 01:45:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759671AbYDCFp1
+	id S1760057AbYDCFq6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Apr 2008 01:46:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755276AbYDCFqu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Apr 2008 01:45:27 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:42040 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759581AbYDCFp0 (ORCPT
+	Thu, 3 Apr 2008 01:46:50 -0400
+Received: from smtp.ertelecom.ru ([212.33.232.210]:63361 "EHLO
+	smtp.ertelecom.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755220AbYDCFqt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Apr 2008 01:45:26 -0400
-Date: Thu, 03 Apr 2008 14:44:22 +0900
-From: Yasunori Goto <y-goto@jp.fujitsu.com>
-To: Badari Pulavarty <pbadari@us.ibm.com>
-Subject: [Patch 004/005](memory hotplug)allocate usemap on the section with pgdat
-Cc: Andrew Morton <akpm@osdl.org>,
-       Linux Kernel ML <linux-kernel@vger.kernel.org>,
-       Yinghai Lu <yhlu.kernel@gmail.com>, linux-mm <linux-mm@kvack.org>
-In-Reply-To: <20080403140221.D1F2.E1E9C6FF@jp.fujitsu.com>
-References: <20080403140221.D1F2.E1E9C6FF@jp.fujitsu.com>
-X-Mailer-Plugin: BkASPil for Becky!2 Ver.2.068
-Message-Id: <20080403144159.D1FE.E1E9C6FF@jp.fujitsu.com>
+	Thu, 3 Apr 2008 01:46:49 -0400
+Message-ID: <47F46F3A.3060105@permonline.ru>
+Date: Thu, 03 Apr 2008 11:46:34 +0600
+From: "Artem S. Tashkinov" <birdie@permonline.ru>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+To: linux-kernel@vger.kernel.org
+Subject: Recreating RAID1 after the reckless mdadm usage
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.45 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello,
 
+I have initially created RAID1 in a wrong way:
 
-Usemaps are allocated on the section which has pgdat by this.
+mdadm --create --verbose /dev/md0 --level=1 --force --raid-devices=1 
+/dev/sda1
 
-Because usemap size is very small, many usemaps for sections
-are allocated on only one page. The page will be quite hard to
-be removed until removing all other sections.
-This dependency is not desirable for memory removing.
+Note the --raid-devices=1 option and nowhere to be found 'missing' argument.
 
-Pgdat has similar feature. If sections has pgdat area, it 
-must be the last section for removing on the node.
+People have told me I wouldn't be able to add another partition to have 
+a working RAID1. Unfortunately, I've already populated /dev/md0 with a 
+great deal of data.
 
-This is to collect the cause pages of its dependency on one section.
-If other sections doesn't have any dependency, this section will
-be able to be removed finally.
+Then I did this:
 
+mdadm --stop /dev/md0
+mdadm --create --assume-clean --verbose /dev/md0 --level=1 --force 
+--raid-devices=2 /dev/sda1 missing (which is obviously the right command).
 
-Signed-off-by: Yasunori Goto <y-goto@jp.fujitsu.com>
+After doing that I see that my data on a recreated /dev/md0 is there (It 
+seems like it's intact). Is it safe to use this RAID1 and is my data 
+safe? Can I now add the second block device to md0 using 'mdadm /dev/md0 
+-a /dev/sdb1' command?
 
+With respect,
 
- mm/sparse.c |   16 +++++++++++++---
- 1 file changed, 13 insertions(+), 3 deletions(-)
-
-Index: current/mm/sparse.c
-===================================================================
---- current.orig/mm/sparse.c	2008-04-01 20:59:07.000000000 +0900
-+++ current/mm/sparse.c	2008-04-01 20:59:09.000000000 +0900
-@@ -238,13 +238,23 @@
- }
- #endif /* CONFIG_MEMORY_HOTPLUG */
- 
--static unsigned long *__init sparse_early_usemap_alloc(unsigned long pnum)
-+static unsigned long *__init sparse_early_usemap_alloc(int pnum)
- {
--	unsigned long *usemap;
-+	unsigned long *usemap, section_nr;
- 	struct mem_section *ms = __nr_to_section(pnum);
- 	int nid = sparse_early_nid(ms);
-+	struct pglist_data *pgdat = NODE_DATA(nid);
-+
-+	/*
-+	 * This is allocated on same section of pgdat.
-+	 * It will not be freed until other sections hot-removing on the node.
-+	 * Pgdat has same feature. This collects all usemap on the same
-+	 * section.
-+	 */
-+
-+	section_nr = pfn_to_section_nr(__pa(pgdat) >> PAGE_SHIFT);
-+	usemap = alloc_bootmem_section(usemap_size(), section_nr);
- 
--	usemap = alloc_bootmem_node(NODE_DATA(nid), usemap_size());
- 	if (usemap)
- 		return usemap;
- 
-
--- 
-Yasunori Goto 
-
-
+Artem S. Tashkinov
