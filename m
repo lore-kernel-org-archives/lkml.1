@@ -1,202 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761182AbYDCHMs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932145AbYDCHNG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761182AbYDCHMs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Apr 2008 03:12:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758730AbYDCHMk
+	id S932145AbYDCHNG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Apr 2008 03:13:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761453AbYDCHMq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Apr 2008 03:12:40 -0400
-Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:39674 "EHLO
-	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757471AbYDCHMj (ORCPT
+	Thu, 3 Apr 2008 03:12:46 -0400
+Received: from smtp.nokia.com ([192.100.122.230]:25091 "EHLO
+	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761388AbYDCHMp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Apr 2008 03:12:39 -0400
-From: "Satoshi UCHIDA" <s-uchida@ap.jp.nec.com>
-To: "'Satoshi UCHIDA'" <s-uchida@ap.jp.nec.com>,
-       "'Paul Menage'" <menage@google.com>, <linux-kernel@vger.kernel.org>,
-       <containers@lists.linux-foundation.org>
-Cc: <axboe@kernel.dk>, <tom-sugawara@ap.jp.nec.com>
-References: <007801c893d9$d89726f0$89c574d0$@jp.nec.com>		<008001c893db$4e2eccf0$ea8c66d0$@jp.nec.com>	<6599ad830804021541s3c1e3197y77d87f63bf47e4b3@mail.gmail.com> <005d01c89559$9e538200$dafa8600$@jp.nec.com>
-In-Reply-To: <005d01c89559$9e538200$dafa8600$@jp.nec.com>
-Subject: [RFC][patch 2/11][CFQ-cgroup] Move header file
-Date: Thu, 3 Apr 2008 16:12:27 +0900
-Message-Id: <005f01c8955a$13144570$393cd050$@jp.nec.com>
+	Thu, 3 Apr 2008 03:12:45 -0400
+Message-ID: <47F48244.9000500@yandex.ru>
+Date: Thu, 03 Apr 2008 10:07:48 +0300
+From: Artem Bityutskiy <dedekind@yandex.ru>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Microsoft Office Outlook 12.0
-Thread-Index: AciVEsqJacziMmPnQjKpkKdoNO90TwARhoqAAABE0pA=
-Content-Language: ja
+To: Matthieu CASTET <castet.matthieu@free.fr>
+CC: linux-kernel@vger.kernel.org, Hunter Adrian <ext-Adrian.Hunter@nokia.com>
+Subject: Re: [RFC PATCH] UBIFS - new flash file system
+References: <1206629746-4298-1-git-send-email-Artem.Bityutskiy@nokia.com> <loom.20080401T204425-749@post.gmane.org>
+In-Reply-To: <loom.20080401T204425-749@post.gmane.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 03 Apr 2008 07:12:07.0477 (UTC) FILETIME=[06DC8650:01C8955A]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch moves some data structure into header file
-(include/linux/cfq-iosched.h).
+Hi Matthieu,
 
-      Signed-off-by: Satoshi UCHIDA <uchida@ap.jp.nec.com>
+Not sure why me/Adrian were not in CC, but it is difficult to notice 
+e-mails in this case.
 
----
- block/cfq-iosched.c         |   60 +------------------------------------
- include/linux/cfq-iosched.h |   70 +++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 71 insertions(+), 59 deletions(-)
- create mode 100644 include/linux/cfq-iosched.h
+Matthieu CASTET wrote:
+>> UBIFS is stable and very close to be production ready. It was
+>> tested on OLPC and N810. The development was done on flash simulator
+>> on a 2-way x86 machine. However, UBIFS needs a good review.
+> Did you have a chance of testing it with various real flash : old small page
+> nand flash, very big large page NAND (4GB), ...
 
-diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
-index 0f962ec..c1f9da9 100644
---- a/block/cfq-iosched.c
-+++ b/block/cfq-iosched.c
-@@ -11,6 +11,7 @@
- #include <linux/elevator.h>
- #include <linux/rbtree.h>
- #include <linux/ioprio.h>
-+#include <linux/cfq-iosched.h>
- 
- /*
-  * tunables
-@@ -58,65 +59,6 @@ static struct completion *ioc_gone;
- 
- #define sample_valid(samples)	((samples) > 80)
- 
--/*
-- * Most of our rbtree usage is for sorting with min extraction, so
-- * if we cache the leftmost node we don't have to walk down the tree
-- * to find it. Idea borrowed from Ingo Molnars CFS scheduler. We should
-- * move this into the elevator for the rq sorting as well.
-- */
--struct cfq_rb_root {
--	struct rb_root rb;
--	struct rb_node *left;
--};
--#define CFQ_RB_ROOT	(struct cfq_rb_root) { RB_ROOT, NULL, }
--
--/*
-- * Per block device queue structure
-- */
--struct cfq_data {
--	struct request_queue *queue;
--
--	/*
--	 * rr list of queues with requests and the count of them
--	 */
--	struct cfq_rb_root service_tree;
--	unsigned int busy_queues;
--
--	int rq_in_driver;
--	int sync_flight;
--	int hw_tag;
--
--	/*
--	 * idle window management
--	 */
--	struct timer_list idle_slice_timer;
--	struct work_struct unplug_work;
--
--	struct cfq_queue *active_queue;
--	struct cfq_io_context *active_cic;
--
--	/*
--	 * async queue for each priority case
--	 */
--	struct cfq_queue *async_cfqq[2][IOPRIO_BE_NR];
--	struct cfq_queue *async_idle_cfqq;
--
--	sector_t last_position;
--	unsigned long last_end_request;
--
--	/*
--	 * tunables, see top of file
--	 */
--	unsigned int cfq_quantum;
--	unsigned int cfq_fifo_expire[2];
--	unsigned int cfq_back_penalty;
--	unsigned int cfq_back_max;
--	unsigned int cfq_slice[2];
--	unsigned int cfq_slice_async_rq;
--	unsigned int cfq_slice_idle;
--
--	struct list_head cic_list;
--};
- 
- /*
-  * Per process-grouping structure
-diff --git a/include/linux/cfq-iosched.h b/include/linux/cfq-iosched.h
-new file mode 100644
-index 0000000..cce3993
---- /dev/null
-+++ b/include/linux/cfq-iosched.h
-@@ -0,0 +1,70 @@
-+#ifndef _LINUX_CFQ_IOSCHED_H
-+#define _LINUX_CFQ_IOSCHED_H
-+
-+#include <linux/rbtree.h>
-+#include <linux/list.h>
-+
-+struct request_queue;
-+struct cfq_io_context;
-+
-+/*
-+ * Most of our rbtree usage is for sorting with min extraction, so
-+ * if we cache the leftmost node we don't have to walk down the tree
-+ * to find it. Idea borrowed from Ingo Molnars CFS scheduler. We should
-+ * move this into the elevator for the rq sorting as well.
-+ */
-+struct cfq_rb_root {
-+	struct rb_root rb;
-+	struct rb_node *left;
-+};
-+#define CFQ_RB_ROOT	(struct cfq_rb_root) { RB_ROOT, NULL, }
-+
-+/*
-+ * Per block device queue structure
-+ */
-+struct cfq_data {
-+	struct request_queue *queue;
-+
-+	/*
-+	 * rr list of queues with requests and the count of them
-+	 */
-+	struct cfq_rb_root service_tree;
-+	unsigned int busy_queues;
-+
-+	int rq_in_driver;
-+	int sync_flight;
-+	int hw_tag;
-+
-+	/*
-+	 * idle window management
-+	 */
-+	struct timer_list idle_slice_timer;
-+	struct work_struct unplug_work;
-+
-+	struct cfq_queue *active_queue;
-+	struct cfq_io_context *active_cic;
-+
-+	/*
-+	 * async queue for each priority case
-+	 */
-+	struct cfq_queue *async_cfqq[2][IOPRIO_BE_NR];
-+	struct cfq_queue *async_idle_cfqq;
-+
-+	sector_t last_position;
-+	unsigned long last_end_request;
-+
-+	/*
-+	 * tunables, see top of file
-+	 */
-+	unsigned int cfq_quantum;
-+	unsigned int cfq_fifo_expire[2];
-+	unsigned int cfq_back_penalty;
-+	unsigned int cfq_back_max;
-+	unsigned int cfq_slice[2];
-+	unsigned int cfq_slice_async_rq;
-+	unsigned int cfq_slice_idle;
-+
-+	struct list_head cic_list;
-+};
-+
-+#endif  /* _LINUX_CFQ_IOSCHED_H */
+Most of the development was done on nandsim. We tested 512/2048 NAND page
+sizes on nandsim. We also tried mtdram which emulates NOR flash as well,
+UBIFS worked fine.
+
+Vs. real hardware, unfortunately we have only tried Nokia N8100 which has
+256MiB internal SLC NAND flash and OLPC which has 1GiB internal SLC NAND flash.
+It would be nice to try on more hardware, but we do not have it available.
+
+Nevertheless, we expect it to work fine on different NAND page sizes as
+long as they are power of 2.
+
+> May be you could update your benchmark :
+> http://osl.sed.hu/wiki/ubifs/index.php/Mount_results doesn't give super result :
+> 1 second mount time on a 64 MB flash with 517.73 BogoMIPS CPU.
+> What will be the result for a 4GB flash ? 64 seconds ?
+
+Not sure about that measurement. As far as I know the guys from Szeged have some
+board with very slow flash I/O which gave them these results.
+
+But it included both UBI initialization and UBIFS mount time. The latter part
+is always quick. The former may be slow if I/O speed is slow. Depending on
+hardware, for 4GB I would expect 4-10 sec UBI initialization time. Not perfect.
+UBI needs improvements to work with large flashes. We have few ideas for
+improving current UBI. But for dramatical to developing UBI2 would be needed.
+
+Here you may find some figures I observed:
+http://www.linux-mtd.infradead.org/doc/ubi.html#L_scalability
+
+> Did you do very intensive and long test where you can see bad block appearing on
+> the flash ?
+
+Yes, we tried. But we were unable to wear out Samsung OneNAND. Surprisingly, it
+survived much more erase cycles that the manual declares. It is SLC. We need an
+MLC flash to do this, which we do not have, unfortunately. 
+
+The way we made sure wear-leveling is OK - we improved nandsim to report wear
+information (see rptwear nandsim module option).
+
+> Speaking of big nand, is UBI/UBI-FS free of 2GB/4GB limit ?
+Yes, I believe so. All the addressing is done in eraseblock number/offset within
+the eraseblock units.
+
+>> UBIFS is quite complex because
+> Is it possible to create small and fast code for read only support in 
+> bootloader ?
+Yeah, read-only implementation should not be very complex, but it would anyway
+be much more complex than the one for JFFS2. It might be easier to have /boot
+partition as JFFS2 I guess.
+
+I had a wild idea of implanting boot-loader support into UBI/UBIFS. That would
+mean to store additional information about location of specific files in a
+dedicated place on flash. Just for few files, like the ones in /boot. Not sure
+how much sense does it make, though.
+
 -- 
-1.5.4.1
-
-
+Best Regards,
+Artem Bityutskiy (Артём Битюцкий)
