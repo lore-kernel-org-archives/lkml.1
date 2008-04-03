@@ -1,53 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761918AbYDCHeg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761513AbYDCHlS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761918AbYDCHeg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Apr 2008 03:34:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760534AbYDCHe1
+	id S1761513AbYDCHlS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Apr 2008 03:41:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759581AbYDCHlG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Apr 2008 03:34:27 -0400
-Received: from smtp-out003.kontent.com ([81.88.40.217]:41207 "EHLO
-	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759797AbYDCHe0 (ORCPT
+	Thu, 3 Apr 2008 03:41:06 -0400
+Received: from nelson.telenet-ops.be ([195.130.133.66]:49426 "EHLO
+	nelson.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758976AbYDCHlF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Apr 2008 03:34:26 -0400
-From: Oliver Neukum <oliver@neukum.org>
-Organization: Novell
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: suspend
-Date: Thu, 3 Apr 2008 09:32:27 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Stefan Schweizer <genstef@gentoo.org>, linux-kernel@vger.kernel.org,
-       Alan Stern <stern@rowland.harvard.edu>, linux-usb@vger.kernel.org
-References: <dd18b0c30804012331oc548416k113e492d7dc9c189@mail.gmail.com> <ft13p5$h64$1@ger.gmane.org> <200804030155.33888.rjw@sisk.pl>
-In-Reply-To: <200804030155.33888.rjw@sisk.pl>
+	Thu, 3 Apr 2008 03:41:05 -0400
+Date: Thu, 3 Apr 2008 09:40:50 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Johannes Weiner <hannes@saeurebad.de>
+cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, mingo@elte.hu,
+       davem@davemloft.net, hskinnemoen@atmel.com, cooloney@kernel.org,
+       starvik@axis.com, dhowells@redhat.com, ysato@users.sourceforge.net,
+       takata@linux-m32r.org, ralf@linux-mips.org, kyle@parisc-linux.org,
+       paulus@samba.org, schwidefsky@de.ibm.com, lethal@linux-sh.org,
+       jdike@addtoit.com, miles@gnu.org, chris@zankel.net,
+       rmk@arm.linux.org.uk, tony.luck@intel.com
+Subject: Re: [RFC 10/22] m68k: Use generic show_mem()
+In-Reply-To: <1207168941186-git-send-email-hannes@saeurebad.de>
+Message-ID: <Pine.LNX.4.64.0804030939320.9848@anakin>
+References: <12071688283927-git-send-email-hannes@saeurebad.de>
+ <1207168941186-git-send-email-hannes@saeurebad.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200804030932.27993.oliver@neukum.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Donnerstag, 3. April 2008 01:55:33 schrieb Rafael J. Wysocki:
-> On Thursday, 3 of April 2008, Stefan Schweizer wrote:
-> > Rafael J. Wysocki wrote:
-> > 
-> > > On Wednesday, 2 of April 2008, Justin Mattock wrote:
-> > >> Hello; the only problems I see after a suspend is the appletouch
-> > >> looses its scroll function,
-> > > 
-> > > Is that a USB device or some other kind?
-> > 
-> > I have the same Problem on my macbook 13,3" using the appletouch usb module
-> > to drive the touchpad. chvt 1; chvt 7 brings the touchpad back after resume
-> > but do you maybe know a better solution?
-> 
-> No, I don't, but perhaps the USB developers do (CCed now).
 
-Please load the appletouch module with the parameter "debug=1" and
-post dmesg of a suspend/resume and the chvt thing.
+The new version no longer prints
 
-	Regards
-		Oliver
+> -	printk("Free swap:       %6ldkB\n", nr_swap_pages<<(PAGE_SHIFT-10));
+
+and
+
+> -	printk("%d free pages\n",free);
+
+on m68k.
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
