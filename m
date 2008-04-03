@@ -1,122 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760719AbYDCRPv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760853AbYDCRQO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760719AbYDCRPv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Apr 2008 13:15:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759250AbYDCRLd
+	id S1760853AbYDCRQO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Apr 2008 13:16:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760706AbYDCRLg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Thu, 3 Apr 2008 13:11:36 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:4929 "EHLO spitz.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1759042AbYDCRLd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 3 Apr 2008 13:11:33 -0400
-Received: from lazybastard.de ([212.112.238.170]:43588 "EHLO
-	longford.logfs.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759876AbYDCRKW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Apr 2008 13:10:22 -0400
-Message-Id: <20080401181332.853833004@logfs.org>
-References: <20080401181308.512473173@logfs.org>
-Date: Tue, 01 Apr 2008 20:13:08 +0200
-To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       linux-mtd@lists.infradead.org
-Subject: [patch 4/15] fs/logfs/compr.c
-From: joern@logfs.org
+Date: Thu, 3 Apr 2008 18:51:19 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Stefan Hellermann <stefan@the2masters.de>, linux-kernel@vger.kernel.org
+Subject: Re: make O=dir fails with current git
+Message-ID: <20080403165119.GB4507@ucw.cz>
+References: <47EE8829.10409@the2masters.de> <20080331180022.GA4833@uranus.ravnborg.org> <47F12CE9.1090202@the2masters.de> <20080331184247.GC4833@uranus.ravnborg.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080331184247.GC4833@uranus.ravnborg.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---- /dev/null	2008-03-30 12:15:48.586669308 +0200
-+++ linux-2.6.24logfs/fs/logfs/compr.c	2008-03-25 16:56:40.399236016 +0100
-@@ -0,0 +1,95 @@
-+/*
-+ * fs/logfs/compr.c	- compression routines
-+ *
-+ * As should be obvious for Linux kernel code, license is GPLv2
-+ *
-+ * Copyright (c) 2005-2007 Joern Engel <joern@logfs.org>
-+ */
-+#include "logfs.h"
-+#include <linux/vmalloc.h>
-+#include <linux/zlib.h>
-+
-+#define COMPR_LEVEL 3
-+
-+static DEFINE_MUTEX(compr_mutex);
-+static struct z_stream_s stream;
-+
-+int logfs_compress(void *in, void *out, size_t inlen, size_t outlen)
-+{
-+	int err, ret;
-+
-+	ret = -EIO;
-+	mutex_lock(&compr_mutex);
-+	err = zlib_deflateInit(&stream, COMPR_LEVEL);
-+	if (err != Z_OK)
-+		goto error;
-+
-+	stream.next_in = in;
-+	stream.avail_in = inlen;
-+	stream.total_in = 0;
-+	stream.next_out = out;
-+	stream.avail_out = outlen;
-+	stream.total_out = 0;
-+
-+	err = zlib_deflate(&stream, Z_FINISH);
-+	if (err != Z_STREAM_END)
-+		goto error;
-+
-+	err = zlib_deflateEnd(&stream);
-+	if (err != Z_OK)
-+		goto error;
-+
-+	if (stream.total_out >= stream.total_in)
-+		goto error;
-+
-+	ret = stream.total_out;
-+error:
-+	mutex_unlock(&compr_mutex);
-+	return ret;
-+}
-+
-+int logfs_uncompress(void *in, void *out, size_t inlen, size_t outlen)
-+{
-+	int err, ret;
-+
-+	ret = -EIO;
-+	mutex_lock(&compr_mutex);
-+	err = zlib_inflateInit(&stream);
-+	if (err != Z_OK)
-+		goto error;
-+
-+	stream.next_in = in;
-+	stream.avail_in = inlen;
-+	stream.total_in = 0;
-+	stream.next_out = out;
-+	stream.avail_out = outlen;
-+	stream.total_out = 0;
-+
-+	err = zlib_inflate(&stream, Z_FINISH);
-+	if (err != Z_STREAM_END)
-+		goto error;
-+
-+	err = zlib_inflateEnd(&stream);
-+	if (err != Z_OK)
-+		goto error;
-+
-+	ret = 0;
-+error:
-+	mutex_unlock(&compr_mutex);
-+	return ret;
-+}
-+
-+int __init logfs_compr_init(void)
-+{
-+	size_t size = max(zlib_deflate_workspacesize(),
-+			zlib_inflate_workspacesize());
-+	stream.workspace = vmalloc(size);
-+	if (!stream.workspace)
-+		return -ENOMEM;
-+	return 0;
-+}
-+
-+void logfs_compr_exit(void)
-+{
-+	vfree(stream.workspace);
-+}
+Hi!
 
+> > >> running "make mrproper" (without O=dir) doesn't help.
+> > >> I've not changed anything, I only made a "git-pull".
+> > >> Now I'm at home, tried "mkdir test; make O=test defconfig all" with current git-head, it
+> > >> doesn't work too.
+> > > 
+> > > I tried to reproduce this here without luck.
+> > > The tests performed by kbuild to dertermine if the
+> > > source directory is clean are very basic.
+> > > If the file .config exist or the directory
+> > > include/config exists then the source tree is considered clean.
+> > > Otherwise you get the above message.
+> > 
+> > Hi, damn, it's that easy!
+> > It was the .config file, I added (as root) a symlink to dir/.config to let some other
+> > application check if some Kernel-options are set, then the permissions of this symlink
+> > prevented make mrproper from removing it.
+> > 
+> > For what purpose is this check?
+> The O= build will use the wrong files if the source tree is not clean.
+> There are several special cases which goes wrong under the wrong circumstances
+> and therefore this consistency check.
+
+Actually, I keep hitting this all the time. I run make in source tree,
+and before I realize my mistake, it creates include/config... which I
+have to remove manually before I can use make O=...
+
+Could it perhaps remove include/config when .config does not exist?
+
+Or create include/config only after writting .config?
+
+	(answering 1000 questions takes time, its easy to hit ^c
+	there....)
+						Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
