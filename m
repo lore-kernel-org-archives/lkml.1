@@ -1,113 +1,257 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764510AbYDCTqY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762722AbYDCTry@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764510AbYDCTqY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Apr 2008 15:46:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759203AbYDCToV
+	id S1762722AbYDCTry (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Apr 2008 15:47:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756885AbYDCTro
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Apr 2008 15:44:21 -0400
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:35118 "EHLO e6.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762670AbYDCToU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Apr 2008 15:44:20 -0400
-Date: Thu, 3 Apr 2008 14:44:18 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Pavel Emelyanov <xemul@openvz.org>,
-       Manfred Spraul <manfred@colorfullife.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Serge Hallyn <serue@us.ibm.com>,
-       Sukadev Bhattiprolu <sukadev@us.ibm.com>
-Subject: Re: [RFC, PATCH] fix SEM_UNDO with namespaces
-Message-ID: <20080403194418.GA11105@sergelap.austin.ibm.com>
-References: <47EFFD1C.5020204@colorfullife.com> <47F08ED6.1090103@openvz.org> <47F10DF7.5010702@colorfullife.com> <47F203EC.7090806@openvz.org> <m1od8tiom7.fsf@ebiederm.dsl.xmission.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <m1od8tiom7.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Thu, 3 Apr 2008 15:47:44 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:35036 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756497AbYDCTrm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Apr 2008 15:47:42 -0400
+Date: Thu, 3 Apr 2008 12:45:29 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: lkml <linux-kernel@vger.kernel.org>
+Cc: linux-kbuild@vger.kernel.org, samr <sam@ravnborg.org>,
+       akpm <akpm@linux-foundation.org>
+Subject: [PATCH] documentation: build source files in Documentation sub-dir
+Message-Id: <20080403124529.3f2efb79.randy.dunlap@oracle.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Eric W. Biederman (ebiederm@xmission.com):
-> Pavel Emelyanov <xemul@openvz.org> writes:
-> >>> I agree, that we should probably destroy this one when the task calls 
-> >>> unshare, but trying to keep this list relevant is useless.
-> >>>   
-> >> A very tricky question: Let's assume we have a process with two threads.
-> >> The undo structure is shared, as per opengroup standard.
-> >> Now one thread calls unshare(CLONE_NEWIPC). What should happen? We 
-> >> cannot destroy the undo structure, the other thread might be still 
-> >> interested in it.
-> >> If we allow sys_unshare() for multithreaded processes with CLONE_NEWIPC 
-> >> and without CLONE_SYSVSEM, then we must handle this case.
-> >
-> > Hm... I'd simply disable creating any new namespaces for threads.
-> > I think other namespaces developers agree with me. Serge, Suka, Eric
-> > what do you think?
-> 
-> I almost agree.  sys_unshare() in a multithreaded process breaks
-> all kinds of user space libs.  So you can only reasonably look at
-> the problem as what we do with linux tasks that share some things
-> and not others.  The posix/opengroup notion of processes and threads
-> are a distraction.
-> 
-> In this case requiring it appears that to require unsharing both
-> CLONE_SYSVSEM and CLONE_NEWIPC at the same time.  (i.e. unshare
-> of CLONE_SYSVSEM should fail if CLONE_NEWIPC is not also specified).
-> 
-> Then to make it work we make unshare of SYSVSEM succeed when it is
-> not shared.
-> 
-> This looks like about a 5 line patch or two.
-> 
-> The effect is because we don't support unsharing of SYSVSEM currently
-> we don't support a threaded process unsharing the ipc namespace.
-> 
-> Eric
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
-Eric, does the following patch correctly interpret your recommendation?
+Currently source files in the Documentation/ sub-dir can easily bit-rot
+since they are not generally buildable, either because they are hidden
+in text files or because there are no Makefile rules for them.
+This needs to be fixed so that the source files remain usable and good
+examples of code instead of bad examples.
 
-Pavel does it make sense to you?
+Add the ability to build source files that are in the Documentation/ dir.
+Add to Kconfig as "BUILD_DOCSRC" config symbol.
 
-thanks,
--serge
+Use "CONFIG_BUILD_DOCSRC=1 make ..." to build objects from the
+Documentation/ sources.  Or enable BUILD_DOCSRC in the *config system.
 
->From 9c85fb3cb80cea1d888c3c253a9fb6e9bc173649 Mon Sep 17 00:00:00 2001
-From: Serge E. Hallyn <serue@us.ibm.com>
-Date: Thu, 3 Apr 2008 12:43:23 -0700
-Subject: [PATCH 1/1] ipc namespaces: fix svsem unsharing issue
+The Makefiles use $objdir/usr/include for header files, so doing
+"make headers_install" is required.  This is done for you if you enable
+CONFIG_HEADERS_CHECK=y.
 
-Refuse to unshare an ipcns if the semundo is shared and we
-are not requesting a new SYSVSEM
+Note: needs documentation-move-spidev_fdx-example-to-its-own-source-file.patch
+from -mm patchset.
 
-Signed-off-by: Serge E. Hallyn <serue@us.ibm.com>
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+Reviewed-by: Sam Ravnborg <sam@ravnborg.org>
 ---
- ipc/namespace.c |   10 ++++++++++
- 1 files changed, 10 insertions(+), 0 deletions(-)
+ Documentation/DocBook/Makefile              |    7 +++++++
+ Documentation/Makefile                      |    3 +++
+ Documentation/accounting/Makefile           |   10 ++++++++++
+ Documentation/auxdisplay/Makefile           |   10 ++++++++++
+ Documentation/connector/Makefile            |    9 +++++++++
+ Documentation/filesystems/configfs/Makefile |    1 +
+ Documentation/ia64/Makefile                 |    8 ++++++++
+ Documentation/networking/Makefile           |    8 ++++++++
+ Documentation/pcmcia/Makefile               |   10 ++++++++++
+ Documentation/spi/Makefile                  |   11 +++++++++++
+ Documentation/video4linux/Makefile          |    8 ++++++++
+ Documentation/vm/Makefile                   |    8 ++++++++
+ Documentation/watchdog/src/Makefile         |    8 ++++++++
+ Makefile                                    |    5 ++++-
+ lib/Kconfig.debug                           |    8 ++++++++
+ 15 files changed, 113 insertions(+), 1 deletion(-)
+ create mode 100644 Documentation/Makefile
+ create mode 100644 Documentation/accounting/Makefile
 
-diff --git a/ipc/namespace.c b/ipc/namespace.c
-index 9171d94..9044505 100644
---- a/ipc/namespace.c
-+++ b/ipc/namespace.c
-@@ -48,6 +48,16 @@ struct ipc_namespace *copy_ipcs(unsigned long flags, struct ipc_namespace *ns)
- 	if (!(flags & CLONE_NEWIPC))
- 		return ns;
- 
-+	if (!(flags & CLONE_SYSVSEM)) {
-+		if (!current->sysvsem.undo_list)
-+			goto ok;
-+		if (atomic_read(&current->sysvsem.undo_list->refcnt) == 1)
-+			goto ok;
-+		put_ipc_ns(ns);
-+		return ERR_PTR(-EINVAL);
-+	}
+--- /dev/null
++++ lin2625-rc8-docsrc/Documentation/Makefile
+@@ -0,0 +1,3 @@
++obj-m := DocBook/ accounting/ auxdisplay/ connector/ \
++	filesystems/configfs/ ia64/ networking/ \
++	pcmcia/ spi/ video4linux/ vm/ watchdog/src/
+--- /dev/null
++++ lin2625-rc8-docsrc/Documentation/accounting/Makefile
+@@ -0,0 +1,10 @@
++# kbuild trick to avoid linker error. Can be omitted if a module is built.
++obj- := dummy.o
 +
-+ok:
- 	new_ns = clone_ipc_ns(ns);
++# List of programs to build
++hostprogs-y := getdelays
++
++# Tell kbuild to always build the programs
++always := $(hostprogs-y)
++
++HOSTCFLAGS_getdelays.o += -I$(srctree)/usr/include
+--- lin2625-rc8-docsrc.orig/Makefile
++++ lin2625-rc8-docsrc/Makefile
+@@ -806,6 +806,9 @@ endif
+ ifdef CONFIG_SAMPLES
+ 	$(Q)$(MAKE) $(build)=samples
+ endif
++ifdef CONFIG_BUILD_DOCSRC
++	$(Q)$(MAKE) $(build)=Documentation
++endif
+ 	$(call vmlinux-modpost)
+ 	$(call if_changed_rule,vmlinux__)
+ 	$(Q)rm -f .old_version
+@@ -1114,7 +1117,7 @@ MRPROPER_FILES += .config .config.old in
+ #
+ clean: rm-dirs  := $(CLEAN_DIRS)
+ clean: rm-files := $(CLEAN_FILES)
+-clean-dirs      := $(addprefix _clean_,$(srctree) $(vmlinux-alldirs))
++clean-dirs      := $(addprefix _clean_,$(srctree) $(vmlinux-alldirs) Documentation)
  
- 	put_ipc_ns(ns);
--- 
-1.5.3.6
-
+ PHONY += $(clean-dirs) clean archclean
+ $(clean-dirs):
+--- lin2625-rc8-docsrc.orig/Documentation/DocBook/Makefile
++++ lin2625-rc8-docsrc/Documentation/DocBook/Makefile
+@@ -101,6 +101,13 @@ C-procfs-example = procfs_example.xml
+ C-procfs-example2 = $(addprefix $(obj)/,$(C-procfs-example))
+ $(obj)/procfs-guide.xml: $(C-procfs-example2)
+ 
++# List of programs to build
++##oops, this is a kernel module::hostprogs-y := procfs_example
++obj-m += procfs_example.o
++
++# Tell kbuild to always build the programs
++always := $(hostprogs-y)
++
+ notfoundtemplate = echo "*** You have to install docbook-utils or xmlto ***"; \
+ 		   exit 1
+ db2xtemplate = db2TYPE -o $(dir $@) $<
+--- /dev/null
++++ lin2625-rc8-docsrc/Documentation/auxdisplay/Makefile
+@@ -0,0 +1,10 @@
++# kbuild trick to avoid linker error. Can be omitted if a module is built.
++obj- := dummy.o
++
++# List of programs to build
++hostprogs-y := cfag12864b-example
++
++# Tell kbuild to always build the programs
++always := $(hostprogs-y)
++
++HOSTCFLAGS_cfag12864b-example.o += -I$(srctree)/usr/include
+--- /dev/null
++++ lin2625-rc8-docsrc/Documentation/connector/Makefile
+@@ -0,0 +1,9 @@
++obj-m += cn_test.o
++
++# List of programs to build
++hostprogs-y := ucon
++
++# Tell kbuild to always build the programs
++always := $(hostprogs-y)
++
++HOSTCFLAGS_ucon.o += -I$(srctree)/usr/include
+--- /dev/null
++++ lin2625-rc8-docsrc/Documentation/ia64/Makefile
+@@ -0,0 +1,8 @@
++# kbuild trick to avoid linker error. Can be omitted if a module is built.
++obj- := dummy.o
++
++# List of programs to build
++hostprogs-y := aliasing-test
++
++# Tell kbuild to always build the programs
++always := $(hostprogs-y)
+--- /dev/null
++++ lin2625-rc8-docsrc/Documentation/networking/Makefile
+@@ -0,0 +1,8 @@
++# kbuild trick to avoid linker error. Can be omitted if a module is built.
++obj- := dummy.o
++
++# List of programs to build
++hostprogs-y := ifenslave
++
++# Tell kbuild to always build the programs
++always := $(hostprogs-y)
+--- /dev/null
++++ lin2625-rc8-docsrc/Documentation/pcmcia/Makefile
+@@ -0,0 +1,10 @@
++# kbuild trick to avoid linker error. Can be omitted if a module is built.
++obj- := dummy.o
++
++# List of programs to build
++hostprogs-y := crc32hash
++
++# Tell kbuild to always build the programs
++always := $(hostprogs-y)
++
++HOSTCFLAGS_crc32hash.o += -I$(srctree)/usr/include
+--- /dev/null
++++ lin2625-rc8-docsrc/Documentation/spi/Makefile
+@@ -0,0 +1,11 @@
++# kbuild trick to avoid linker error. Can be omitted if a module is built.
++obj- := dummy.o
++
++# List of programs to build
++hostprogs-y := spidev_test spidev_fdx
++
++# Tell kbuild to always build the programs
++always := $(hostprogs-y)
++
++HOSTCFLAGS_spidev_test.o += -I$(srctree)/usr/include
++HOSTCFLAGS_spidev_fdx.o += -I$(srctree)/usr/include
+--- /dev/null
++++ lin2625-rc8-docsrc/Documentation/video4linux/Makefile
+@@ -0,0 +1,8 @@
++# kbuild trick to avoid linker error. Can be omitted if a module is built.
++obj- := dummy.o
++
++# List of programs to build
++hostprogs-y := v4lgrab
++
++# Tell kbuild to always build the programs
++always := $(hostprogs-y)
+--- /dev/null
++++ lin2625-rc8-docsrc/Documentation/vm/Makefile
+@@ -0,0 +1,8 @@
++# kbuild trick to avoid linker error. Can be omitted if a module is built.
++obj- := dummy.o
++
++# List of programs to build
++hostprogs-y := slabinfo
++
++# Tell kbuild to always build the programs
++always := $(hostprogs-y)
+--- /dev/null
++++ lin2625-rc8-docsrc/Documentation/watchdog/src/Makefile
+@@ -0,0 +1,8 @@
++# kbuild trick to avoid linker error. Can be omitted if a module is built.
++obj- := dummy.o
++
++# List of programs to build
++hostprogs-y := watchdog-simple watchdog-test
++
++# Tell kbuild to always build the programs
++always := $(hostprogs-y)
+--- /dev/null
++++ lin2625-rc8-docsrc/Documentation/filesystems/configfs/Makefile
+@@ -0,0 +1 @@
++obj-m += configfs_example.o
+--- lin2625-rc8-docsrc.orig/lib/Kconfig.debug
++++ lin2625-rc8-docsrc/lib/Kconfig.debug
+@@ -621,4 +621,12 @@ config PROVIDE_OHCI1394_DMA_INIT
+ 
+ 	  See Documentation/debugging-via-ohci1394.txt for more information.
+ 
++menuconfig BUILD_DOCSRC
++	bool "Build targets in Documentation/ tree"
++	help
++	  This option attempts to build objects from the source files in the
++	  kernel Documentation/ tree.
++
++	  Say N if you are unsure.
++
+ source "samples/Kconfig"
