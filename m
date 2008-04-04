@@ -1,61 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758823AbYDDJhl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759319AbYDDJhz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758823AbYDDJhl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Apr 2008 05:37:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752325AbYDDJhc
+	id S1759319AbYDDJhz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Apr 2008 05:37:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758583AbYDDJhk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Apr 2008 05:37:32 -0400
-Received: from moutng.kundenserver.de ([212.227.126.183]:63691 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751169AbYDDJhb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Apr 2008 05:37:31 -0400
-From: Bodo Eggert <7eggert@gmx.de>
-Subject: Re: Slow tape drive timeout
-To: Kai Makisara <Kai.Makisara@kolumbus.fi>, Robert Hancock <hancockr@shaw.ca>,
-       Carlo Nyto <carlonyto@gmail.com>, linux-kernel@vger.kernel.org
-Reply-To: 7eggert@gmx.de
-Date: Fri, 04 Apr 2008 11:37:20 +0200
-References: <aepft-NF-5@gated-at.bofh.it> <aepft-NF-7@gated-at.bofh.it> <aepfs-NF-3@gated-at.bofh.it> <aeCw6-5Yu-35@gated-at.bofh.it>
-User-Agent: KNode/0.10.4
+	Fri, 4 Apr 2008 05:37:40 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:37517 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757544AbYDDJhj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Apr 2008 05:37:39 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Adrian Bunk <bunk@kernel.org>
+Subject: Re: TUNER_TDA8290=y, VIDEO_DEV=n build error
+Date: Fri, 4 Apr 2008 11:37:40 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Toralf Feorster <toralf.foerster@gmx.de>
+References: <pdj7pZVURbL.A.42H.kDW9HB@albercik> <pdYe6zNQVl.A.iUB.YHW9HB@albercik> <20080404084754.GA10993@cs181133002.pp.htv.fi>
+In-Reply-To: <20080404084754.GA10993@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7Bit
-Message-Id: <E1JhiML-0000lG-6H@be1.7eggert.dyndns.org>
-X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
-X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
-X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
-X-Provags-ID: V01U2FsdGVkX193114u8hNDW9ZdZbxewvyxdSzx1PwG3J7Q4Sj
- kgiS80B7qpkGte2oioSKug1g430Cj7izXRULon4Pz7O7PsuoQG
- N/BI+c3ZnTWjIne3HURMg==
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200804041137.40582.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kai Makisara <Kai.Makisara@kolumbus.fi> wrote:
-> On Wed, 2 Apr 2008, Robert Hancock wrote:
+On Friday, 4 of April 2008, Adrian Bunk wrote:
+> On Fri, Apr 04, 2008 at 01:20:32AM +0200, Rafael J. Wysocki wrote:
+> > The following report is on the current list of known regressions
+> > from 2.6.24.  Please verify if the issue is still present in the
+> > mainline.
+> 
+> When you asked me just 2 days ago exactly the same question in the 
+> Bugzilla entry I immediately confirmed it's still present.
+> 
+> Was anything wrong with my answer (and the subsequent discussions) that 
+> you now also ask Toralf for confirmation?
 
->> Why is accessing the tape drive with no tape in it causing a timeout in the
->> first place? I should think that would fail immediately with some "medium not
->> present" error from the drive. Unless the drive has no mechanism to detect
->> it, but that seems really retarded..
->> 
-> It does not seem retarded to me. If a program wants to just wait until the
-> tape drive becomes ready (e.g., loads the tape), it can use the blocking
-> open. This is simple.
+This text is automatically added to the messages sent in replies to the main
+report.
 
-This would be simple, if there were no timeout. Having the timeout, the program
-must loop anyway.
+Well, it probably could be better.  I'm open for suggestions. :-)
 
-> If a program wants to test the status, it uses 
-> non-blocking open. The behavior mandated by the standards provides
-> alternatives. If O_NONBLOCK is not supported, the user program must
-> implement the waiting logic if the program just wants to wait until the
-> drive is ready before starting i/o.
+> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10067
+> > Subject		: TUNER_TDA8290=y, VIDEO_DEV=n build error
+> > Submitter	: Toralf Foerster <toralf.foerster@gmx.de>
+> > Date		: 2008-02-22 10:36 (42 days old)
+> > References	: http://lkml.org/lkml/2008/2/19/262
 
-Therfore a portable program SHOULD implement a waiting logic that won't burn
-the CPU if there is no tape in the drive.
-
-It's still sane to allow waiting for media change, but this applies to any
-removable media.
-
+Thanks,
+Rafael
