@@ -1,91 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752124AbYDDUxT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752439AbYDDUyn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752124AbYDDUxT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Apr 2008 16:53:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751247AbYDDUxF
+	id S1752439AbYDDUyn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Apr 2008 16:54:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751247AbYDDUye
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Apr 2008 16:53:05 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:61803 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751008AbYDDUxE (ORCPT
+	Fri, 4 Apr 2008 16:54:34 -0400
+Received: from fg-out-1718.google.com ([72.14.220.159]:40610 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751204AbYDDUyd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Apr 2008 16:53:04 -0400
-Message-ID: <47F68804.5060902@oracle.com>
-Date: Fri, 04 Apr 2008 12:56:52 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-User-Agent: Thunderbird 1.5.0.5 (X11/20060719)
+	Fri, 4 Apr 2008 16:54:33 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=CoN+xG1z65ww+2DaVYh/df+eWr8ICNK0gH3gN8mcxvzkGnsYPLCUjQaFtZ+5J0nuz16Os+NzZsKdqb0h2BsynCXV95+po1xVdBJd0JMs5IUm+BEcrILqlik7LaBJGH1lkRj/+LHF3IYUFtcgLt4isuMEC1UZ7oK0gZ66LfzSu/I=
+Message-ID: <6101e8c40804041354g2b065078i997e63cf03e576f0@mail.gmail.com>
+Date: Fri, 4 Apr 2008 22:54:32 +0200
+From: "Oliver Pinter" <oliver.pntr@gmail.com>
+To: "Jens Axboe" <jens.axboe@oracle.com>
+Subject: Re: [PATCH] splice: use mapping_gfp_mask
+Cc: "Hugh Dickins" <hugh@veritas.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20080404114609.GG29686@kernel.dk>
 MIME-Version: 1.0
-To: Mark Fasheh <mfasheh@suse.com>
-CC: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, joel.becker@oracle.com
-Subject: Re: linux-next: Tree for March 25 (ocfs2 build)
-References: <20080325175224.3ee62b09.sfr@canb.auug.org.au> <20080325143902.e69b704b.randy.dunlap@oracle.com> <20080404194716.GM21261@wotan.suse.de>
-In-Reply-To: <20080404194716.GM21261@wotan.suse.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Content-Disposition: inline
+References: <Pine.LNX.4.64.0804032331190.27180@blonde.site>
+	 <20080404114609.GG29686@kernel.dk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mark Fasheh wrote:
-> On Tue, Mar 25, 2008 at 02:39:02PM -0700, Randy Dunlap wrote:
->> ocfs2 link/build problem with
->> CONFIG_OCFS2_FS=y
->> CONFIG_OCFS2_FS_O2CB=m
->>
->> ERROR: "dlmunlock" [fs/ocfs2/ocfs2_stack_o2cb.ko] undefined!
->> ERROR: "dlm_setup_eviction_cb" [fs/ocfs2/ocfs2_stack_o2cb.ko] undefined!
->> ERROR: "dlm_register_eviction_cb" [fs/ocfs2/ocfs2_stack_o2cb.ko] undefined!
->> ERROR: "dlm_register_domain" [fs/ocfs2/ocfs2_stack_o2cb.ko] undefined!
->> ERROR: "dlm_unregister_domain" [fs/ocfs2/ocfs2_stack_o2cb.ko] undefined!
->> ERROR: "dlm_unregister_eviction_cb" [fs/ocfs2/ocfs2_stack_o2cb.ko] undefined!
->> ERROR: "dlmlock" [fs/ocfs2/ocfs2_stack_o2cb.ko] undefined!
->> ERROR: "dlm_print_one_lock" [fs/ocfs2/ocfs2_stack_o2cb.ko] undefined!
->> make[2]: *** [__modpost] Error 1
-> 
-> Ok, does this patch fix it for you?
-> 	--Mark
+hi all!
 
-Yes, thanks.
+this patch for 2.6.22.y ?
 
-Acked-by: Randy Dunlap <randy.dunlap@oracle.com>
+if i good see, the __generic_file_splice_read bring out to 2.6.22 ..
 
+http://repo.or.cz/w/linux-2.6.22.y-op-patches.git
+http://repo.or.cz/w/linux-2.6.22.y-op.git
 
+On 4/4/08, Jens Axboe <jens.axboe@oracle.com> wrote:
+> On Thu, Apr 03 2008, Hugh Dickins wrote:
+> > The loop block driver is careful to mask __GFP_IO|__GFP_FS out of its
+> > mapping_gfp_mask, to avoid hangs under memory pressure.  But nowadays
+> > it uses splice, usually going through __generic_file_splice_read.  That
+> > must use mapping_gfp_mask instead of GFP_KERNEL to avoid those hangs.
+> >
+> > Signed-off-by: Hugh Dickins <hugh@veritas.com>
+> > ---
+> > Ought to go into 2.6.25.  For 2.6.23 and 2.6.24 stable?  Well, I've
+> > not actually seen this hang on any of these, though presumably it's
+> > lurking there.  Where I did see it, and test the fix, was 2.6.25-rc5-mm1:
+> > whose SLUB had a disturbing predilection (since corrected) for order-4
+> > allocations, even when allocating radix tree nodes.
+>
+> Thanks Hugh, definitely correct! I see it's already merged, so all is
+> well.
+>
 > --
-> Mark Fasheh
-> 
-> 
-> From: Mark Fasheh <mfasheh@suse.com>
-> 
-> ocfs2: Only build ocfs2/dlm with the o2cb stack module
-> 
-> fs/ocfs2/dlm/ocfs2_dlm.ko and fs/ocfs2/dlm/ocfs2_dlmfs.ko get built if
-> CONFIG_FS_OCFS2 is specified. This isn't quite how it should happen any more
-> - the "o2cb" dlm modules should only be built if CONFIG_FS_OCFS2_O2CB is
-> set, so update the dlm Makefile accordingly.
-> 
-> Signed-off-by: Mark Fasheh <mfasheh@suse.com>
-> ---
->  fs/ocfs2/dlm/Makefile |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/fs/ocfs2/dlm/Makefile b/fs/ocfs2/dlm/Makefile
-> index ce3f7c2..1903613 100644
-> --- a/fs/ocfs2/dlm/Makefile
-> +++ b/fs/ocfs2/dlm/Makefile
-> @@ -1,6 +1,6 @@
->  EXTRA_CFLAGS += -Ifs/ocfs2
->  
-> -obj-$(CONFIG_OCFS2_FS) += ocfs2_dlm.o ocfs2_dlmfs.o
-> +obj-$(CONFIG_OCFS2_FS_O2CB) += ocfs2_dlm.o ocfs2_dlmfs.o
->  
->  ocfs2_dlm-objs := dlmdomain.o dlmdebug.o dlmthread.o dlmrecovery.o \
->  	dlmmaster.o dlmast.o dlmconvert.o dlmlock.o dlmunlock.o dlmver.o
+> Jens Axboe
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
 
 
 -- 
-~Randy
+Thanks,
+Oliver
