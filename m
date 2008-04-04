@@ -1,151 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753053AbYDDWDs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753537AbYDDWEl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753053AbYDDWDs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Apr 2008 18:03:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751882AbYDDWDi
+	id S1753537AbYDDWEl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Apr 2008 18:04:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751961AbYDDWE2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Apr 2008 18:03:38 -0400
-Received: from wx-out-0506.google.com ([66.249.82.235]:62384 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751819AbYDDWDh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Apr 2008 18:03:37 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=ne84qp5PcAj84Dz5V2cTH0q8HB0grMspTafBNpMYo62PMJtq6cgCeO0JLi6eT9UJbON8IEi+elB2oN8zAYFmw5lY+TyVcjpOAG8ldEv6GqkFoWtCHoDEh7mFKW9WWvMRq3WzI1HQWu9fpLKWws+OM+tUIW9a320XJ9+iBcSdXIg=
-Message-ID: <5767b9100804041503o7395ff34nd13002c111e11c8a@mail.gmail.com>
-Date: Sat, 5 Apr 2008 06:03:32 +0800
-From: "Conke Hu" <conke.hu@gmail.com>
-To: linux-kernel@vger.kernel.org, hcegtvedt@atmel.com, rmk@arm.linux.org.uk
-Subject: [PATCH] add AT73C213 DAC support for AT91SAM9261
+	Fri, 4 Apr 2008 18:04:28 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:51412 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751882AbYDDWE1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Apr 2008 18:04:27 -0400
+Message-ID: <47F6A5E8.1030602@garzik.org>
+Date: Fri, 04 Apr 2008 18:04:24 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Rich West <Rich.West@wesmo.com>
+CC: linux-kernel@vger.kernel.org,
+       Linux IDE mailing list <linux-ide@vger.kernel.org>
+Subject: Re: sata_via
+References: <47F694C8.8020507@wesmo.com>
+In-Reply-To: <47F694C8.8020507@wesmo.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Many AT91SAM9261-based boards use AT73C213 as external audio DAC, this
-patch makes it work.
+Rich West wrote:
+> On my mythtv backend system, the recordings volume tends to get pounded
+> rather hard (up to 5 recordings (some HD) at once with multiple frontend
+> systems reading from that same volume).  I recently (4 months ago)
+> upgraded the system to a motherboard that happened to have the VIA
+> chipset on it.
+> 
+> Since that time, I have had some bizarre problems with that volume. 
+> After a seemingly random amount of time, the kernel would report an
+> error with the volume and put it in read-only mode.  However, it would
+> not really be in read-only mode, but it would be completely
+> inaccessible.  Unmounting the volume would be successful, but
+> re-mounting the volume would fail.
+> 
+> I've replaced the drive (with an identical one), tested memory, changed
+> filesystems (it was LVM + ext3, then just ext3) and the problem persists.
+> 
+> Running 2.6.24.4-64 (Fedora 8).
+> 
+> A larger snippet from the messages log is (dmesg gets cleared after 
+> reboot):
+> Apr  3 16:47:27 mythtv1 kernel: ata4.00: exception Emask 0x0 SAct 0x0
+> SErr 0x0 action 0x2 frozen
+> Apr  3 16:47:27 mythtv1 kernel: ata4.00: cmd
+> c8/00:00:77:31:21/00:00:00:00:00/e1 tag 0 dma 131072 in
+> Apr  3 16:47:27 mythtv1 kernel:          res
+> 40/00:01:00:4f:c2/00:00:00:00:00/00 Emask 0x4 (timeout)
+> Apr  3 16:47:27 mythtv1 kernel: ata4.00: status: { DRDY }
+> Apr  3 16:47:27 mythtv1 kernel: ata4: soft resetting link
+> Apr  3 16:47:57 mythtv1 kernel: ata4.00: qc timeout (cmd 0x27)
+> Apr  3 16:47:57 mythtv1 kernel: ata4.00: failed to read native max
+> address (err_mask=0x4)
+> Apr  3 16:47:57 mythtv1 kernel: ata4.00: HPA support seems broken, will
+> skip HPA handling
+> Apr  3 16:47:57 mythtv1 kernel: ata4.00: revalidation failed (errno=-5)
+> Apr  3 16:47:57 mythtv1 kernel: ata4: failed to recover some devices,
+> retrying in 5 secs
+> Apr  3 16:48:02 mythtv1 kernel: ata4: soft resetting link
+> Apr  3 16:48:02 mythtv1 kernel: ata4.00: configured for UDMA/133
+> Apr  3 16:48:02 mythtv1 kernel: ata4: EH complete
+> Apr  3 16:49:02 mythtv1 kernel: ata4.00: exception Emask 0x0 SAct 0x0
+> SErr 0x0 action 0x2 frozen
+> Apr  3 16:49:02 mythtv1 kernel: ata4.00: cmd
+> c8/00:00:77:31:21/00:00:00:00:00/e1 tag 0 dma 131072 in
+> Apr  3 16:49:02 mythtv1 kernel:          res
+> 40/00:01:00:4f:c2/00:00:00:00:00/00 Emask 0x4 (timeout)
+> Apr  3 16:49:02 mythtv1 kernel: ata4.00: status: { DRDY }
+> Apr  3 16:49:02 mythtv1 kernel: ata4: soft resetting link
+> Apr  3 16:49:03 mythtv1 kernel: ata4.00: configured for UDMA/133
+> Apr  3 16:49:03 mythtv1 kernel: ata4: EH complete
+> 
+> It is almost as if I am hitting some bug that is causing the drive to
+> fall off, but I really don't know where else to look or where else to
+> turn...
+> 
+> I'm tempted to just go back to using a PATA drive (smaller.  :(  ) to
+> avoid the problem.  I'm just at a loss as to how it can actually be solved.
 
-Signed-off-by: Conke Hu <conke.hu@gmail.com>
----------------------------------------
-diff --git a/arch/arm/mach-at91/at91sam9261_devices.c
-b/arch/arm/mach-at91/at91sam9261_devices.c
-old mode 100644
-new mode 100755
-diff --git a/arch/arm/mach-at91/board-sam9261ek.c
-b/arch/arm/mach-at91/board-sam9261ek.c
-old mode 100644
-new mode 100755
-index 0ce38df..a739cfe
---- a/arch/arm/mach-at91/board-sam9261ek.c
-+++ b/arch/arm/mach-at91/board-sam9261ek.c
-@@ -30,6 +30,8 @@
- #include <linux/fb.h>
- #include <linux/gpio_keys.h>
- #include <linux/input.h>
-+#include <linux/clk.h>
-+#include <linux/spi/at73c213.h>
+This timeout/DRDY message has been a common one recently.  Some of the 
+issues causing this may be resolved in 2.6.25-rc, can you try that?
 
- #include <video/atmel_lcdc.h>
+Also, if you could build and test some older kernels to see when this 
+behavior first appeared, that would be quite helpful.
 
-@@ -239,6 +241,45 @@ static void __init ek_add_device_ts(void) {}
- #endif
+Overall, a timeout _might_ be a problem with libata (the kernel SATA 
+drivers), or it _might_ be a problem with your system's interrupt 
+delivery (sometimes an ACPI or BIOS problem).  Try booting with 'noapic' 
+or 'acpi=off'.
 
- /*
-+ * AT73C213 Audio
-+ */
-+#if defined(CONFIG_SND_AT73C213) || defined(CONFIG_SND_AT73C213_MODULE)
-+static struct at73c213_board_info at73c213_info = {
-+	.ssc_id    = 1,
-+	.shortname = "at72c213",
-+};
-+
-+static void __init at91_setup_at73c213(void)
-+{
-+	struct clk *mclk;
-+	struct clk *plla;
-+
-+	mclk = clk_get(NULL, "pck2");
-+	if (IS_ERR(mclk))
-+		goto err_mclk;
-+
-+	plla = clk_get(NULL, "plla");
-+	if (IS_ERR(plla))
-+		goto err_plla;
-+
-+	if (clk_set_parent(mclk, plla))
-+		goto err_clk;
-+
-+	at91_set_B_periph(AT91_PIN_PB31, 0);
-+	at73c213_info.dac_clk = mclk;
-+
-+err_clk:
-+	clk_put(plla);
-+err_plla:
-+	clk_put(mclk);
-+err_mclk:
-+	return;
-+}
-+#else
-+static void __init at91_setup_at73c213(void) {}
-+#endif
-+
-+/*
-  * SPI devices
-  */
- static struct spi_board_info ek_spi_devices[] = {
-@@ -271,6 +312,8 @@ static struct spi_board_info ek_spi_devices[] = {
- 		.chip_select	= 3,
- 		.max_speed_hz	= 10 * 1000 * 1000,
- 		.bus_num	= 0,
-+		.platform_data = &at73c213_info,
-+		.controller_data = (void*)AT91_PIN_PA29,
- 	},
- #endif
- };
-@@ -477,6 +520,8 @@ static void __init ek_board_init(void)
+	Jeff
 
- 	/* spi0 and mmc/sd share the same PIO pins */
- #if defined(CONFIG_SPI_ATMEL) || defined(CONFIG_SPI_ATMEL_MODULE)
-+	/* Audio */
-+	at91_setup_at73c213();
- 	/* SPI */
- 	at91_add_device_spi(ek_spi_devices, ARRAY_SIZE(ek_spi_devices));
- 	/* Touchscreen */
-@@ -489,6 +534,10 @@ static void __init ek_board_init(void)
- 	at91_add_device_lcdc(&ek_lcdc_data);
- 	/* Push Buttons */
- 	ek_add_device_buttons();
-+	/* SSC */
-+#if defined(CONFIG_ATMEL_SSC) || defined(CONFIG_ATMEL_SSC_MODULE)
-+	at91_add_device_ssc(AT91SAM9261_ID_SSC1, ATMEL_SSC_TX);
-+#endif
- }
 
- MACHINE_START(AT91SAM9261EK, "Atmel AT91SAM9261-EK")
-diff --git a/sound/core/control.c b/sound/core/control.c
-old mode 100644
-new mode 100755
-diff --git a/sound/spi/at73c213.c b/sound/spi/at73c213.c
-old mode 100644
-new mode 100755
-index 89d6e9c..b8e43fe
---- a/sound/spi/at73c213.c
-+++ b/sound/spi/at73c213.c
-@@ -114,7 +114,11 @@ snd_at73c213_write_reg(struct snd_at73c213 *chip,
-u8 reg, u8 val)
- static struct snd_pcm_hardware snd_at73c213_playback_hw = {
- 	.info		= SNDRV_PCM_INFO_INTERLEAVED |
- 			  SNDRV_PCM_INFO_BLOCK_TRANSFER,
-+#ifdef __BIG_ENDIAN
- 	.formats	= SNDRV_PCM_FMTBIT_S16_BE,
-+#else
-+	.formats	= SNDRV_PCM_FMTBIT_S16_LE,
-+#endif
- 	.rates		= SNDRV_PCM_RATE_CONTINUOUS,
- 	.rate_min	= 8000,  /* Replaced by chip->bitrate later. */
- 	.rate_max	= 50000, /* Replaced by chip->bitrate later. */
+
+
