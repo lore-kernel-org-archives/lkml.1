@@ -1,62 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758327AbYDDODH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757949AbYDDOLT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758327AbYDDODH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Apr 2008 10:03:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751391AbYDDOCz
+	id S1757949AbYDDOLT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Apr 2008 10:11:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755712AbYDDOLK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Apr 2008 10:02:55 -0400
-Received: from py-out-1112.google.com ([64.233.166.182]:62445 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752646AbYDDOCy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Apr 2008 10:02:54 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=KxjW/n0xRrVjQXIRJI+iQ6HCmAZC/iYEAEpuGtOorCWWBb10WYsM8kvf+kme9NxGz7OcrG5Oijnb8th44mz7AmIea/kNk1dxAhzhsqogqqTkprBv5lDwQXcbCV4/UMZQ/F7p8UvcSnYKrBMZIzy2sBR4C7p9iRegCvR24fs1FOs=
-Message-ID: <2f11576a0804040702j854653ble14fe655d25b922f@mail.gmail.com>
-Date: Fri, 4 Apr 2008 23:02:51 +0900
-From: "KOSAKI Motohiro" <m-kosaki@ceres.dti.ne.jp>
-To: "Balbir Singh" <balbir@linux.vnet.ibm.com>
-Subject: Re: [-mm] Make the memory controller more desktop responsive (v2)
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       "YAMAMOTO Takashi" <yamamoto@valinux.co.jp>,
-       "Paul Menage" <menage@google.com>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, "Pavel Emelianov" <xemul@openvz.org>,
-       "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <2f11576a0804040701s5b6267b0w430c29b5010bf841@mail.gmail.com>
+	Fri, 4 Apr 2008 10:11:10 -0400
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:50578 "EHLO e5.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755605AbYDDOLI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Apr 2008 10:11:08 -0400
+Date: Fri, 4 Apr 2008 09:11:06 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Paul Menage <menage@google.com>
+Cc: matthltc@us.ibm.com,
+       Linux Containers <containers@lists.linux-foundation.org>,
+       Linux-Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [Devel] [RFC PATCH 0/4] Container Freezer: Reuse Suspend
+	Freezer
+Message-ID: <20080404141106.GA9977@sergelap.austin.ibm.com>
+References: <20080403210316.397506379@us.ibm.com> <6599ad830804031649p6bbc60f3s59fb7c25a7260505@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20080404132116.5217.14401.sendpatchset@localhost.localdomain>
-	 <2f11576a0804040701s5b6267b0w430c29b5010bf841@mail.gmail.com>
-X-Google-Sender-Auth: c169f0af47217f4b
+In-Reply-To: <6599ad830804031649p6bbc60f3s59fb7c25a7260505@mail.gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 4, 2008 at 11:01 PM, KOSAKI Motohiro
-<m-kosaki@ceres.dti.ne.jp> wrote:
-> Hi
->
->
->  >  @@ -612,7 +611,7 @@ retry:
->  >         pc->page = page;
->  >         pc->flags = PAGE_CGROUP_FLAG_ACTIVE;
->  >         if (ctype == MEM_CGROUP_CHARGE_TYPE_CACHE)
->  >  -               pc->flags |= PAGE_CGROUP_FLAG_CACHE;
->  >  +               pc->flags = PAGE_CGROUP_FLAG_CACHE;
->  >
->  >         lock_page_cgroup(page);
->  >         if (page_get_page_cgroup(page)) {
->
->  Yes.
->  in general, cache page create as cold page.
->  if not, large file copy or streaming file drop all cache easily.
->
->  Reviewd-by: KOSAKI
+Quoting Paul Menage (menage@google.com):
+> On Thu, Apr 3, 2008 at 2:03 PM,  <matthltc@us.ibm.com> wrote:
+> >
+> >    * "freezer.kill"
+> >
+> >      writing <n> will send signal number <n> to all tasks
+> >
+> 
+> My first thought (not having looked at the code yet) is that sending a
+> signal doesn't really have anything to do with freezing, so it
+> shouldn't be in the same subsystem. Maybe a separate subsystem called
+> "signal"?
+> 
+> And more than that, it's not something that requires any particular
+> per-process state, so there's no reason that the subsystem that
+> provides the "kill" functionality shouldn't be able to be mounted in
+> multiple hierarchies.
+> 
+> How about if I added support for stateless subsystems, that could
+> potentially be mounted in multiple hierarchies at once? They wouldn't
+> need an entry in the css set, since they have no state.
+> 
+> >  * Usage :
+> >
+> >    # mkdir /containers/freezer
+> >    # mount -t container -ofreezer freezer  /containers/freezer
+> >    # mkdir /containers/freezer/0
+> >    # echo $some_pid > /containers/freezer/0/tasks
+> >
+> >  to get status of the freezer subsystem :
+> >
+> >    # cat /containers/freezer/0/freezer.freeze
+> >    RUNNING
+> >
+> >  to freeze all tasks in the container :
+> >
+> >    # echo 1 > /containers/freezer/0/freezer.freeze
+> >    # cat /containers/freezer/0/freezer.freeze
+> >    FREEZING
+> >    # cat /containers/freezer/0/freezer.freeze
+> >    FROZEN
+> 
+> Could we separate this out into two files? One called "freeze" that's
+> a 0/1 for whether we're intending to freeze the subsystem, and one
+> called "frozen" that indicates whether it is frozen? And maybe a
+> "state" file to report the RUNNING/FREEZING/FROZEN distinction in a
+> human-readable way?
 
-sorry, I sent premature document.
+One thing Oren had mentioned for checkpoint/restart was having more
+states - i.e. restoring, checkpointing...  So then (assuming we used
+this subsys for that) we'd have more than the two files.  Which is
+probably fine, just wanted to point that out.
 
-Reviewed-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+-serge
