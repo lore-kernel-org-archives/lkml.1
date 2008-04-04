@@ -1,67 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758196AbYDDB5r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758941AbYDDCA2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758196AbYDDB5r (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Apr 2008 21:57:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751913AbYDDB5j
+	id S1758941AbYDDCA2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Apr 2008 22:00:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752433AbYDDCAS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Apr 2008 21:57:39 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:34942 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751861AbYDDB5i (ORCPT
+	Thu, 3 Apr 2008 22:00:18 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:48675 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751913AbYDDCAQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Apr 2008 21:57:38 -0400
-Date: Fri, 04 Apr 2008 10:56:28 +0900
-From: Yasunori Goto <y-goto@jp.fujitsu.com>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: Re: [PATCH 1 of 6] hotplug-memory: refactor online_pages to separate zone growth from page onlining
-Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Dave Hansen <dave@linux.vnet.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Christoph Lameter <clameter@sgi.com>
-In-Reply-To: <5a397e7f3c1aeb7648b9.1207267541@localhost>
-References: <patchbomb.1207267540@localhost> <5a397e7f3c1aeb7648b9.1207267541@localhost>
-X-Mailer-Plugin: BkASPil for Becky!2 Ver.2.068
-Message-Id: <20080404104358.C7F5.E1E9C6FF@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.45 [ja]
+	Thu, 3 Apr 2008 22:00:16 -0400
+Date: Fri, 4 Apr 2008 03:00:13 +0100
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Josh Triplett <josh@freedesktop.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Harvey Harrison <harvey.harrison@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, linux-sparse@vger.kernel.org
+Subject: Re: [PATCH 7/7] asm-generic: suppress sparse warning in ioctl.h
+Message-ID: <20080404020013.GD9785@ZenIV.linux.org.uk>
+References: <1207182818.5740.26.camel@brick> <alpine.LFD.1.00.0804021752040.14670@woody.linux-foundation.org> <20080403013420.GV9785@ZenIV.linux.org.uk> <alpine.LFD.1.00.0804021848140.14670@woody.linux-foundation.org> <20080403024117.GZ9785@ZenIV.linux.org.uk> <47F53E84.8080607@freedesktop.org> <20080404011951.GC9785@ZenIV.linux.org.uk>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080404011951.GC9785@ZenIV.linux.org.uk>
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> +/* Mark a set of pages as online */
-> +unsigned long mark_pages_onlined(unsigned long pfn, unsigned long nr_pages)
-> +{
-> +	struct zone *zone = page_zone(pfn_to_page(pfn));
-> +	unsigned long onlined_pages = 0;
-> +	int need_zonelists_rebuild = 0;
->  
->  	/*
->  	 * If this zone is not populated, then it is not in zonelist.
-> @@ -240,10 +246,38 @@
->  	vm_total_pages = nr_free_pagecache_pages();
->  	writeback_set_ratelimit();
->  
-> -	if (onlined_pages)
-> +	if (onlined_pages) {
-> +		struct memory_notify arg;
-> +
-> +		arg.start_pfn = pfn;  /* ? */
-> +		arg.nr_pages = onlined_pages;
-> +		arg.status_change_nid = -1;  /* ? */
+On Fri, Apr 04, 2008 at 02:19:51AM +0100, Al Viro wrote:
+> 	* no functions returning variably-modified type.
 
-status_change_nid is to prepare data structures which are allocated on
-each NUMA node.
+Note: *pointer* to function returning a variably-modified type is possible,
+is variably-modified itself and as such can appear only in function and
+the same "compiler will consider VLA compatible with any array that has
+as compatible element, but if the size doesn't match it's on your head"
+applies.  IOW,
 
-When memory less node gets new memory, and it changes status
-to normal memory, then status_change_nid must be set.
+int a[2][2] = {{1, 2}, {3, 4}};
 
-SLUB uses it now.
+int (*f(void))[2] /* return a pointer to two-element array of int */
+{
+        return &a[0];
+}
 
-Thanks.
+int h(int n)
+{
+	/* pointer to function that returns a pointer to n-element VLA of int */
+        int (*(*p)(void))[n];
+	/* OK if n is 2, undefined otherwise */
+        p = f;
+        return p()[1][1];
+}
 
--- 
-Yasunori Goto 
-
-
+is fine and h(2) will give you 4, but if you ever do e.g. h(1), you are in
+nasal daemon country.  In reality h(1) will _probably_ give a[1][0], but
+compiler has every right to silently produce a binary that'll wipe your disk
+or do the same itself...
