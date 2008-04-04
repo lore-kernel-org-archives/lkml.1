@@ -1,321 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752040AbYDDUmP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751877AbYDDUnw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752040AbYDDUmP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Apr 2008 16:42:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750749AbYDDUmA
+	id S1751877AbYDDUnw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Apr 2008 16:43:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751080AbYDDUnm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Apr 2008 16:42:00 -0400
-Received: from triton.rz.uni-saarland.de ([134.96.7.25]:4475 "EHLO
-	triton.rz.uni-saarland.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750764AbYDDUl7 (ORCPT
+	Fri, 4 Apr 2008 16:43:42 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:39422 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750749AbYDDUnl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Apr 2008 16:41:59 -0400
-Date: Fri, 4 Apr 2008 22:40:27 +0200
-From: Alexander van Heukelum <heukelum@mailshack.com>
-To: Harvey Harrison <harvey.harrison@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Jeff Dike <jdike@addtoit.com>
-Cc: Andi Kleen <andi@firstfloor.org>, LKML <linux-kernel@vger.kernel.org>,
-       Alexander van Heukelum <heukelum@fastmail.fm>
-Subject: [PATCH] uml: cleanup: use def_bool in Kconfig files
-Message-ID: <20080404204027.GA9417@mailshack.com>
-References: <20080404184930.GA8978@mailshack.com> <20080404185147.GB8989@mailshack.com> <1207335610.18838.85.camel@brick>
+	Fri, 4 Apr 2008 16:43:41 -0400
+Date: Fri, 4 Apr 2008 23:43:37 +0300 (EEST)
+From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
+X-X-Sender: ijjarvin@wrl-59.cs.helsinki.fi
+To: Tony Lill <ajlill@ajlc.waterloo.on.ca>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       "Robin H. Johnson" <robbat2@gentoo.org>,
+       LKML <linux-kernel@vger.kernel.org>, Netdev <netdev@vger.kernel.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: WARNING: at net/ipv4/tcp_input.c:2173 tcp_mark_head_lost+0x173/0x1a0()
+In-Reply-To: <200804041609.m34G9PPM003350@freevo.ajlc.waterloo.on.ca>
+Message-ID: <Pine.LNX.4.64.0804042321520.8186@wrl-59.cs.helsinki.fi>
+References: <20080402224137.GB25768@curie-int.orbis-terrarum.net>
+ <20080403211913.3a0c1d00.akpm@linux-foundation.org>
+ <200804041609.m34G9PPM003350@freevo.ajlc.waterloo.on.ca>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1207335610.18838.85.camel@brick>
-User-Agent: Mutt/1.5.9i
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (triton.rz.uni-saarland.de [134.96.7.25]); Fri, 04 Apr 2008 22:41:28 +0200 (CEST)
-X-AntiVirus: checked by AntiVir MailGate (version: 2.1.2-14; AVE: 7.6.0.81; VDF: 7.0.3.121; host: AntiVir3)
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Cleanup: use def_bool in User-mode Linux' Kconfig files.
+On Fri, 4 Apr 2008, Tony Lill wrote:
 
-Signed-off-by: Alexander van Heukelum <heukelum@fastmail.fm>
+> Andrew Morton <akpm@linux-foundation.org> writes:
+> 
+> > (cc netdev)
+> >
+> > (and Rafael - I assume 2.6.24 didn't do this..)
+> >
+> > On Wed, 2 Apr 2008 15:41:37 -0700 "Robin H. Johnson" <robbat2@gentoo.org> wrote:
+> >
+> >> (Please CC, not on LKML).
+> >> 
+> >> One of the nodes in my web-serving cluster (isohunt.com) started showing this:
+> >> 
+> >> ------------[ cut here ]------------
+> >> WARNING: at net/ipv4/tcp_input.c:2173 tcp_mark_head_lost+0x173/0x1a0()
+> >> Modules linked in: lm85 hwmon_vid nfs lockd nfs_acl sunrpc bonding reiserfs k8temp hwmon i2c_nforce2 i2c_core sg
+> >> Pid: 32500, comm: php-cgi Not tainted 2.6.25-rc4-git2 #7
+> 
+> Are you talking about the warning in this particular module, or
+> WARNINGS in tcp_input.c (and tcp_output.c) in general. 'Cause I've
+> been getting them sporadically since moving from 2.6.23 to 2.6.24.
 
----
+2.6.22-2.6.23 did have WARNINGs but BUG_ON but I had to back off from that 
+for NewReno case because it was just hitting it because of some 
+transitional states (SACK TCP has been under this check since 2.6.22, 
+before that it just silently corrected incorrect estimates). For 2.6.24 
+the severity was reduced to WARN_ON to avoid crashing people boxes and 
+NewReno case was added to the check.
 
-Harvey Harrison wrote:
-> > +config GENERIC_FIND_FIRST_BIT
-> > +	bool
-> > +	default y
-> > +
-> 	def_bool y
+> At least I think that's the timeframe.
+> 
+> Mar 28 23:42:40 matrix kernel: WARNING: at net/ipv4/tcp_output.c:1799 tcp_simple_retransmit()
+> Mar 29 01:03:32 matrix kernel: WARNING: at net/ipv4/tcp_input.c:2413 tcp_fastretrans_alert()
+> Mar 29 01:12:41 matrix kernel: WARNING: at net/ipv4/tcp_input.c:1675 tcp_enter_frto()
+> Mar 29 03:03:04 matrix kernel: WARNING: at net/ipv4/tcp_input.c:2960 tcp_process_frto()
+> Mar 29 03:03:04 matrix kernel: WARNING: at net/ipv4/tcp_input.c:2314 tcp_try_to_open()
+> 
+> No user visble effects, and no messages since.
 
-Indeed! But it is hardly the only occurence of the long version.
-Should we add this patch? If so, should it go via the -x86 tree,
-as this depends on changes I introduced for the bitops unification?
+In general they're rather harmless (and that combined with the rareness 
+of it makes people to not very easily report them), a packet burst in the 
+worst case which nobody usually is able to see (if packets_in_flight ends 
+up underflowing). Would I not have enabled the tracking, the bugs causing 
+them now to show up would never have been detected nor fixed (e.g., the 
+tcp_simple_retransmit bug I found yesterday is a long standing one rather 
+than regression, also there have been couple of other long standing ones 
+found earlier which are nowadays fixed).
 
-Greetings,
-	Alexander
-
- arch/um/Kconfig        |   50 +++++++++++++++++------------------------------
- arch/um/Kconfig.char   |    6 +---
- arch/um/Kconfig.i386   |   27 ++++++++-----------------
- arch/um/Kconfig.x86_64 |   33 ++++++++++---------------------
- 4 files changed, 40 insertions(+), 76 deletions(-)
-
-diff --git a/arch/um/Kconfig b/arch/um/Kconfig
-index dba8e05..bbbc198 100644
---- a/arch/um/Kconfig
-+++ b/arch/um/Kconfig
-@@ -5,16 +5,13 @@ config DEFCONFIG_LIST
- 
- # UML uses the generic IRQ subsystem
- config GENERIC_HARDIRQS
--	bool
--	default y
-+	def_bool y
- 
- config UML
--	bool
--	default y
-+	def_bool y
- 
- config MMU
--	bool
--	default y
-+	def_bool y
- 
- config NO_IOMEM
- 	def_bool y
-@@ -22,51 +19,43 @@ config NO_IOMEM
- mainmenu "Linux/Usermode Kernel Configuration"
- 
- config ISA
--	bool
-+	def_bool n
- 
- config SBUS
--	bool
-+	def_bool n
- 
- config PCI
--	bool
-+	def_bool n
- 
- config PCMCIA
--	bool
-+	def_bool n
- 
- # Yet to do!
- config TRACE_IRQFLAGS_SUPPORT
--	bool
--	default n
-+	def_bool n
- 
- config LOCKDEP_SUPPORT
--	bool
--	default y
-+	def_bool y
- 
- config STACKTRACE_SUPPORT
--	bool
--	default n
-+	def_bool n
- 
- config GENERIC_CALIBRATE_DELAY
--	bool
--	default y
-+	def_bool y
- 
- config GENERIC_BUG
--	bool
--	default y
-+	def_bool y
- 	depends on BUG
- 
- config GENERIC_TIME
--	bool
--	default y
-+	def_bool y
- 
- config GENERIC_CLOCKEVENTS
--	bool
--	default y
-+	def_bool y
- 
- # Used in kernel/irq/manage.c and include/linux/irq.h
- config IRQ_RELEASE_METHOD
--	bool
--	default y
-+	def_bool y
- 
- config HZ
- 	int
-@@ -90,13 +79,11 @@ source "mm/Kconfig"
- source "kernel/time/Kconfig"
- 
- config LD_SCRIPT_STATIC
--	bool
--	default y
-+	def_bool y
- 	depends on STATIC_LINK
- 
- config LD_SCRIPT_DYN
--	bool
--	default y
-+	def_bool y
- 	depends on !LD_SCRIPT_STATIC
- 
- source "fs/Kconfig.binfmt"
-@@ -261,7 +248,6 @@ endif
- 
- #This is just to shut up some Kconfig warnings, so no prompt.
- config INPUT
--	bool
--	default n
-+	def_bool n
- 
- source "arch/um/Kconfig.debug"
-diff --git a/arch/um/Kconfig.char b/arch/um/Kconfig.char
-index 3a4b396..c51b3b3 100644
---- a/arch/um/Kconfig.char
-+++ b/arch/um/Kconfig.char
-@@ -8,8 +8,7 @@ config STDERR_CONSOLE
- 	  console driver which dumps all printk messages to stderr.
- 
- config STDIO_CONSOLE
--	bool
--	default y
-+	def_bool y
- 
- config SSL
- 	bool "Virtual serial line"
-@@ -68,8 +67,7 @@ config XTERM_CHAN
-           It is safe to say 'Y' here.
- 
- config NOCONFIG_CHAN
--	bool
--	default !(XTERM_CHAN && TTY_CHAN && PTY_CHAN && PORT_CHAN && NULL_CHAN)
-+	def_bool !(XTERM_CHAN && TTY_CHAN && PTY_CHAN && PORT_CHAN && NULL_CHAN)
- 
- config CON_ZERO_CHAN
- 	string "Default main console channel initialization"
-diff --git a/arch/um/Kconfig.i386 b/arch/um/Kconfig.i386
-index f694cff..4d36f66 100644
---- a/arch/um/Kconfig.i386
-+++ b/arch/um/Kconfig.i386
-@@ -5,23 +5,19 @@ source "arch/x86/Kconfig.cpu"
- endmenu
- 
- config UML_X86
--	bool
--	default y
-+	def_bool y
- 
- config X86_32
--       bool
--       default y
-+       def_bool y
- 
- config RWSEM_XCHGADD_ALGORITHM
- 	def_bool y
- 
- config 64BIT
--	bool
--	default n
-+	def_bool n
- 
- config SEMAPHORE_SLEEPERS
--	bool
--	default y
-+	def_bool y
- 
- config 3_LEVEL_PGTABLES
- 	bool "Three-level pagetables (EXPERIMENTAL)"
-@@ -36,24 +32,19 @@ config 3_LEVEL_PGTABLES
- 	N (on x86-64 it's automatically enabled, instead, as it's safe there).
- 
- config ARCH_HAS_SC_SIGNALS
--	bool
--	default y
-+	def_bool y
- 
- config ARCH_REUSE_HOST_VSYSCALL_AREA
--	bool
--	default y
-+	def_bool y
- 
- config GENERIC_FIND_FIRST_BIT
--	bool
--	default y
-+	def_bool y
- 
- config GENERIC_FIND_NEXT_BIT
--	bool
--	default y
-+	def_bool y
- 
- config GENERIC_HWEIGHT
--	bool
--	default y
-+	def_bool y
- 
- config ARCH_SUPPORTS_AOUT
- 	def_bool y
-diff --git a/arch/um/Kconfig.x86_64 b/arch/um/Kconfig.x86_64
-index 84cefd5..42131b2 100644
---- a/arch/um/Kconfig.x86_64
-+++ b/arch/um/Kconfig.x86_64
-@@ -1,47 +1,36 @@
- config UML_X86
--	bool
--	default y
-+	def_bool y
- 
- config 64BIT
--	bool
--	default y
-+	def_bool y
- 
- #XXX: this is so in the underlying arch, but it's wrong!!!
- config RWSEM_GENERIC_SPINLOCK
--	bool
--	default y
-+	def_bool y
- 
- config SEMAPHORE_SLEEPERS
--	bool
--	default y
-+	def_bool y
- 
- config 3_LEVEL_PGTABLES
--       bool
--       default y
-+       def_bool y
- 
- config ARCH_HAS_SC_SIGNALS
--	bool
--	default n
-+	def_bool n
- 
- config ARCH_REUSE_HOST_VSYSCALL_AREA
--	bool
--	default n
-+	def_bool n
- 
- config SMP_BROKEN
--	bool
--	default y
-+	def_bool y
- 
- config GENERIC_FIND_FIRST_BIT
--	bool
--	default y
-+	def_bool y
- 
- config GENERIC_FIND_NEXT_BIT
--	bool
--	default y
-+	def_bool y
- 
- config GENERIC_HWEIGHT
--	bool
--	default y
-+	def_bool y
- 
- config ARCH_SUPPORTS_AOUT
- 	def_bool y
-
+-- 
+ i.
