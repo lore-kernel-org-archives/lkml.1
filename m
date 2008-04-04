@@ -1,200 +1,162 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759701AbYDDM4G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760413AbYDDM43@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759701AbYDDM4G (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Apr 2008 08:56:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758679AbYDDMyw
+	id S1760413AbYDDM43 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Apr 2008 08:56:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758999AbYDDMyy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Apr 2008 08:54:52 -0400
-Received: from wine.ocn.ne.jp ([122.1.235.145]:63602 "EHLO smtp.wine.ocn.ne.jp"
+	Fri, 4 Apr 2008 08:54:54 -0400
+Received: from wine.ocn.ne.jp ([122.1.235.145]:63618 "EHLO smtp.wine.ocn.ne.jp"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756960AbYDDMyr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1756996AbYDDMyr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 4 Apr 2008 08:54:47 -0400
-Message-Id: <20080404122403.082198283@I-love.SAKURA.ne.jp>
+Message-Id: <20080404122408.585519579@I-love.SAKURA.ne.jp>
 References: <20080404122242.867070732@I-love.SAKURA.ne.jp>
 User-Agent: quilt/0.46-1
-Date: Fri, 04 Apr 2008 21:22:57 +0900
+Date: Fri, 04 Apr 2008 21:23:11 +0900
 From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
 To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
        linux-security-module@vger.kernel.org
 Cc: Kentaro Takeda <takedakn@nttdata.co.jp>,
        Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>,
        Toshiharu Harada <haradats@nttdata.co.jp>
-Subject: [TOMOYO #7 15/30] Automatic bind port selection control part.
-Content-Disposition: inline; filename=tomoyo-automatic-bind-restriction-part.patch
+Subject: [TOMOYO #7 29/30] Kconfig and Makefile.
+Content-Disposition: inline; filename=tomoyo-kconfig-and-makefile.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-LSM doesn't provide hook for selecting local port. I don't know why.
-
-Don't you think it is not happy if some port
-(in /proc/sys/net/ipv4/ip_local_port_range) is implicitly allocated by
-bind() with "struct sockaddr_in *"->sin_port = htons(0) or
-connect() without bind()?
-For example, 8080 could be unexpectedly used by some process
-although Squid wanted to use 8080 but the administrator did
-
-  echo 5000 10000 > /proc/sys/net/ipv4/ip_local_port_range
-
-
-Since selecting local port is done with a spinlock held,
-TOMOYO Linux can't support "delayed enforcing" mode for this functionality.
-But that doesn't matter.
+This file contains Kconfig and Makefile.
 
 Signed-off-by: Kentaro Takeda <takedakn@nttdata.co.jp>
 Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
 Signed-off-by: Toshiharu Harada <haradats@nttdata.co.jp>
 ---
- fs/sakura_bind.c |  145 +++++++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 145 insertions(+)
+ fs/Kconfig.ccs      |  112 ++++++++++++++++++++++++++++++++++++++++++++++++++++
+ fs/Makefile-2.6.ccs |    5 ++
+ 2 files changed, 117 insertions(+)
 
 --- /dev/null
-+++ linux-2.6.25-rc8-mm1/fs/sakura_bind.c
-@@ -0,0 +1,145 @@
-+/*
-+ * fs/sakura_bind.c
-+ *
-+ * Implementation of the Domain-Free Mandatory Access Control.
-+ *
-+ * Copyright (C) 2005-2008  NTT DATA CORPORATION
-+ *
-+ * Version: 1.6.0   2008/04/01
-+ *
-+ */
++++ linux-2.6.25-rc8-mm1/fs/Kconfig.ccs
+@@ -0,0 +1,112 @@
++config SAKURA
++	bool "SAKURA (Domain-Free Mandatory Access Control) support"
++	default y
++	help
++	  Say Y here to support the Domain-Free Mandatory Access Control.
 +
-+#include <linux/ccs_common.h>
-+#include <linux/sakura.h>
-+#include <linux/realpath.h>
++	  SAKURA stands for
++	  "Security Advancement Know-how Upon Read-only Approach".
++	  As the name shows, SAKURA was originally a methodology to make
++	  root fs read-only to avoid tampering the system files.
++	  But now, SAKURA is not only a methodology but also a kernel patch
++	  that improves the system security with less effort.
 +
-+/* Structure for "deny_autobind" keyword. */
-+struct reserved_entry {
-+	struct list1_head list;
-+	bool is_deleted;             /* Delete flag.                         */
-+	u16 min_port;                /* Start of port number range.          */
-+	u16 max_port;                /* End of port number range.            */
-+};
++	  SAKURA can restrict operations that affect systemwide.
 +
-+/* The list for "struct reserved_entry". */
-+static LIST1_HEAD(reservedport_list);
++config TOMOYO
++	bool "TOMOYO (Domain-Based Mandatory Access Control) support"
++	default y
++	help
++	  Say Y here to support the Domain-Based Mandatory Access Control.
 +
-+/**
-+ * update_reserved_entry - Update "struct reserved_entry" list.
-+ *
-+ * @min_port: Start of port number range.
-+ * @max_port: End of port number range.
-+ * @is_delete: True if it is a delete request.
-+ *
-+ * Returns 0 on success, negative value otherwise.
-+ */
-+static int update_reserved_entry(const u16 min_port, const u16 max_port,
-+				 const bool is_delete)
-+{
-+	struct reserved_entry *new_entry, *ptr;
-+	static DEFINE_MUTEX(lock);
-+	int error = -ENOMEM;
-+	mutex_lock(&lock);
-+	list1_for_each_entry(ptr, &reservedport_list, list) {
-+		if (ptr->min_port != min_port || max_port != ptr->max_port)
-+			continue;
-+		ptr->is_deleted = is_delete;
-+		error = 0;
-+		goto out;
-+	}
-+	if (is_delete) {
-+		error = -ENOENT;
-+		goto out;
-+	}
-+	new_entry = ccs_alloc_element(sizeof(*new_entry));
-+	if (!new_entry)
-+		goto out;
-+	new_entry->min_port = min_port;
-+	new_entry->max_port = max_port;
-+	list1_add_tail_mb(&new_entry->list, &reservedport_list);
-+	error = 0;
-+ out:
-+	mutex_unlock(&lock);
-+	ccs_update_counter(CCS_UPDATES_COUNTER_SYSTEM_POLICY);
-+	return error;
-+}
++	  TOMOYO stands for "Task Oriented Management Obviates Your Onus".
++	  TOMOYO is intended to provide the Domain-Based MAC
++	  utilizing task_struct.
 +
-+/**
-+ * ccs_may_autobind - Check permission for bind()'s automatic port number selection.
-+ *
-+ * @port: Port number.
-+ *
-+ * Returns 0 on success, -EPERM otherwise.
-+ */
-+int ccs_may_autobind(const u16 port)
-+{
-+	/***** CRITICAL SECTION START *****/
-+	struct reserved_entry *ptr;
-+	if (!ccs_check_flags_no_sleep_check(CCS_SAKURA_RESTRICT_AUTOBIND))
-+		return 0;
-+	list1_for_each_entry(ptr, &reservedport_list, list) {
-+		if (ptr->min_port <= port && port <= ptr->max_port &&
-+		    !ptr->is_deleted)
-+			return -EPERM;
-+	}
-+	return 0;
-+	/***** CRITICAL SECTION END *****/
-+}
-+EXPORT_SYMBOL(ccs_may_autobind); /* for net/ipv4/ and net/ipv6/ */
++	  The word "domain" in TOMOYO is a class that a process
++	  (i.e. task_struct) belong to.
++	  The domain of a process changes whenever the process
++	  executes a program.
++	  This allows you to classify at the finest level.
++	  The access permission is granted to domains, not to processes.
++	  Policy is defined as "Which domain can access to which resource.".
++	  There is no concept of "user id" nor "role" like RBAC.
 +
-+/**
-+ * ccs_write_reserved_port_policy - Write "struct reserved_entry" list.
-+ *
-+ * @data:      String to parse.
-+ * @is_delete: True if it is a delete request.
-+ *
-+ * Returns 0 on success, negative value otherwise.
-+ */
-+int ccs_write_reserved_port_policy(char *data, const bool is_delete)
-+{
-+	unsigned int from;
-+	unsigned int to;
-+	if (strchr(data, ' '))
-+		goto out;
-+	if (sscanf(data, "%u-%u", &from, &to) == 2) {
-+		if (from <= to && to < 65536)
-+			return update_reserved_entry(from, to, is_delete);
-+	} else if (sscanf(data, "%u", &from) == 1) {
-+		if (from < 65536)
-+			return update_reserved_entry(from, from, is_delete);
-+	}
-+ out:
-+	printk(KERN_WARNING "%s: ERROR: Invalid port range '%s'\n",
-+	       __func__, data);
-+	return -EINVAL;
-+}
++	  The biggest feature of TOMOYO is that TOMOYO has "learning mode".
++	  The learning mode can automatically generate policy definition,
++	  and dramatically reduces the policy definition labors.
 +
-+/**
-+ * ccs_read_reserved_port_policy - Read "struct reserved_entry" list.
-+ *
-+ * @head: Pointer to "struct ccs_io_buffer".
-+ *
-+ * Returns true on success, false otherwise.
-+ */
-+bool ccs_read_reserved_port_policy(struct ccs_io_buffer *head)
-+{
-+	struct list1_head *pos;
-+	char buffer[16];
-+	memset(buffer, 0, sizeof(buffer));
-+	list1_for_each_cookie(pos, head->read_var2, &reservedport_list) {
-+		u16 min_port, max_port;
-+		struct reserved_entry *ptr;
-+		ptr = list1_entry(pos, struct reserved_entry, list);
-+		if (ptr->is_deleted)
-+			continue;
-+		min_port = ptr->min_port;
-+		max_port = ptr->max_port;
-+		snprintf(buffer, sizeof(buffer) - 1, "%u%c%u", min_port,
-+			 min_port != max_port ? '-' : '\0', max_port);
-+		if (!ccs_io_printf(head, KEYWORD_DENY_AUTOBIND "%s\n", buffer))
-+			goto out;
-+	}
-+	return true;
-+ out:
-+	return false;
-+}
++	  TOMOYO is much simpler and easier than SELinux.
++
++	  TOMOYO is applicable to figuring out the system's behavior, for
++	  TOMOYO uses the canonicalized absolute pathnames and
++	  TreeView style domain transitions.
++
++	  You can make custom root fs with minimum files
++	  to run minimum applications with TOMOYO.
++
++config TOMOYO_MAX_ACCEPT_ENTRY
++	int "Default maximal count for learning mode"
++	default 2048
++	range 0 2147483647
++	depends on TOMOYO
++	help
++	  This is the default value for maximal ACL entries
++	  that are automatically appended into policy at "learning mode".
++	  Some programs access thousands of objects, so running
++	  such programs in "learning mode" dulls the system response
++	  and consumes much memory.
++	  This is the safeguard for such programs.
++
++config TOMOYO_MAX_GRANT_LOG
++	int "Default maximal count for grant log"
++	default 1024
++	range 0 2147483647
++	depends on TOMOYO
++	help
++	  This is the default value for maximal entries for
++	  access grant logs that the kernel can hold on memory.
++	  You can read the log via /proc/ccs/grant_log.
++	  If you don't need access grant logs,
++	  you may set this value to 0.
++
++config TOMOYO_MAX_REJECT_LOG
++	int "Default maximal count for reject log"
++	default 1024
++	range 0 2147483647
++	depends on TOMOYO
++	help
++	  This is the default value for maximal entries for
++	  access reject logs that the kernel can hold on memory.
++	  You can read the log via /proc/ccs/reject_log.
++	  If you don't need access reject logs,
++	  you may set this value to 0.
++
++config SYAORAN
++	tristate "SYAORAN (Tamper-Proof Device Filesystem) support"
++	default m
++	help
++	  Say Y or M here to support the Tamper-Proof Device Filesystem.
++
++	  SYAORAN stands for
++	  "Simple Yet All-important Object Realizing Abiding Nexus".
++	  SYAORAN is a filesystem for /dev with Mandatory Access Control.
++
++	  SAKURA can make root fs read-only, but the system can't work
++	  if /dev is read-only. Therefore you need to mount a writable
++	  filesystem (such as tmpfs) for /dev if root fs is read-only.
++
++	  But the writable /dev means that files on /dev might be tampered.
++	  For example, if /dev/null is deleted and re-created as a symbolic
++	  link to /dev/hda by an attacker, the contents of the IDE HDD
++	  will be destroyed at a blow.
++
++	  Also, TOMOYO controls file access by pathnames,
++	  not by security labels.
++	  Therefore /dev/null, for example, might be tampered
++	  if a process have write permission to /dev/null .
++
++	  SYAORAN can ensure /dev/null is a character device file
++	  with major=1 minor=3.
++
++	  You can use SAKURA to make /dev not unmountable.
+--- /dev/null
++++ linux-2.6.25-rc8-mm1/fs/Makefile-2.6.ccs
+@@ -0,0 +1,5 @@
++obj-y += tomoyo_domain.o
++obj-$(CONFIG_SAKURA) += ccs_common.o realpath.o sakura_mount.o sakura_chroot.o sakura_umount.o sakura_maymount.o sakura_pivot.o sakura_bind.o
++obj-$(CONFIG_TOMOYO) += ccs_common.o realpath.o tomoyo_cond.o tomoyo_file.o tomoyo_exec.o tomoyo_network.o tomoyo_signal.o tomoyo_capability.o tomoyo_audit.o tomoyo_env.o
++obj-$(CONFIG_SYAORAN) += syaoran.o
++syaoran-objs := syaoran_2.6.o
 
 -- 
