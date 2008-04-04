@@ -1,75 +1,314 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756265AbYDDKsZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756848AbYDDKzA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756265AbYDDKsZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Apr 2008 06:48:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753528AbYDDKsM
+	id S1756848AbYDDKzA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Apr 2008 06:55:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754747AbYDDKyv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Apr 2008 06:48:12 -0400
-Received: from wmproxy1-g27.free.fr ([212.27.42.91]:50148 "EHLO
-	wmproxy1-g27.free.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753190AbYDDKsL (ORCPT
+	Fri, 4 Apr 2008 06:54:51 -0400
+Received: from wipro-blr-out01.wipro.com ([203.91.198.74]:32332 "EHLO
+	wipro-blr-out01.wipro.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753528AbYDDKyu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Apr 2008 06:48:11 -0400
-X-Greylist: delayed 642 seconds by postgrey-1.27 at vger.kernel.org; Fri, 04 Apr 2008 06:48:11 EDT
-Message-ID: <1207305444.47f604e4c37b0@imp.free.fr>
-Date: Fri, 04 Apr 2008 12:37:24 +0200
-From: Gilles Espinasse <g.esp@free.fr>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: David Miller <davem@davemloft.net>, netdev@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [git patches] net driver fixes
-References: <20080404063359.GA13309@havoc.gtf.org>
-In-Reply-To: <20080404063359.GA13309@havoc.gtf.org>
+	Fri, 4 Apr 2008 06:54:50 -0400
+X-AuditID: cb5bdd57-ae4dbbb00000609b-8b-47f608f7c179
+X-MIMEOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-User-Agent: Internet Messaging Program (IMP) 3.2.8
-X-Originating-IP: 192.54.193.57
+Content-Type: multipart/mixed;
+	boundary="----_=_NextPart_001_01C89642.42E689DA"
+Subject: How to PCI to PCI(P2P) bridge node in dts for powerpc mpc8349emds
+Date: Fri, 4 Apr 2008 16:23:52 +0530
+Message-ID: <47230CE166B64744B0120173E4C2161E04A81766@BLR-EC-MBX01.wipro.com>
+X-MS-Has-Attach: yes
+X-MS-TNEF-Correlator: 
+Thread-Topic: How to PCI to PCI(P2P) bridge node in dts for powerpc mpc8349emds
+Thread-Index: AciWGL/TaezNYuJbSh2BMYzzqhZz+QAABIaAAApCnSA=
+From: <vivek.trivedi@wipro.com>
+To: <linux-kernel@vger.kernel.org>
+Cc: <vivek.trivedi@wipro.com>, <govind.nair@wipro.com>
+X-OriginalArrivalTime: 04 Apr 2008 10:54:31.0579 (UTC) FILETIME=[42FAA6B0:01C89642]
+X-Brightmail-Tracker: AAAAAA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Selon Jeff Garzik <jeff@garzik.org>:
+This is a multi-part message in MIME format.
 
-> I will have another batch to send in the next day or so, including a
-> notable forcedeth fix.
->
-> Please pull from 'upstream-davem' branch of
-> master.kernel.org:/pub/scm/linux/kernel/git/jgarzik/netdev-2.6.git
-> upstream-davem
->
-> to receive the following updates:
->
->  drivers/net/forcedeth.c         |    5 ++---
->  drivers/net/phy/marvell.c       |    2 --
->  drivers/net/tokenring/olympic.c |    6 +++---
->  drivers/net/tulip/tulip_core.c  |    1 -
->  4 files changed, 5 insertions(+), 9 deletions(-)
->
-...
-> Chuck Ebbert (1):
->       NET: remove support for Davicom 9102 from the Tulip driver
-...
-> diff --git a/drivers/net/tulip/tulip_core.c b/drivers/net/tulip/tulip_core.c
-> index 82f404b..4443f0f 100644
-> --- a/drivers/net/tulip/tulip_core.c
-> +++ b/drivers/net/tulip/tulip_core.c
-> @@ -231,7 +231,6 @@ static struct pci_device_id tulip_pci_tbl[] = {
->  	{ 0x11F6, 0x9881, PCI_ANY_ID, PCI_ANY_ID, 0, 0, COMPEX9881 },
->  	{ 0x8086, 0x0039, PCI_ANY_ID, PCI_ANY_ID, 0, 0, I21145 },
->  	{ 0x1282, 0x9100, PCI_ANY_ID, PCI_ANY_ID, 0, 0, DM910X },
-> -	{ 0x1282, 0x9102, PCI_ANY_ID, PCI_ANY_ID, 0, 0, DM910X },
->  	{ 0x1113, 0x1216, PCI_ANY_ID, PCI_ANY_ID, 0, 0, COMET },
->  	{ 0x1113, 0x1217, PCI_ANY_ID, PCI_ANY_ID, 0, 0, MX98715 },
->  	{ 0x1113, 0x9511, PCI_ANY_ID, PCI_ANY_ID, 0, 0, COMET },
+------_=_NextPart_001_01C89642.42E689DA
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-I was looking at some dfme vs tulip google search.
+Hi ,
+=20
+Can any one help me in adding nodes for devices connected on PCI to PCI
+bridge.
+=20
+I am using 2.6.18 kernel on a mpc8349emds based board.
+I have a 3 port PCI to PCI(P2P) bridge, connected on PCI .
+This P2P is a multi functional device(BDF 00.13.00 and 00.13.01), with
+two secondary buses.
+=20
+On secondary1 of this P2P bridge i have 3 DSPs and On secondary2 i have
+4 DSPs.
+We need to map secondary 1 devices on to Externel IRQ 6, and secondary 2
+devices to Externel IRQ 7.
+=20
+My query is how to add IDSEL nodes for the devices connected on P2P
+secondary 1 and 2 in the Device Tree Structure(dts).
+I am also attaching the DTS file after adding nodes for all devices.
+=20
+    =20
+                                         /* 3 Port P2P bridge on Bus 0,
+AD19,IDSEL 0x13, BDF 00.13.00 and BDF 00.13.01*/
+                                        /*Bus 1, 1 VGA DSP and 2 DSPs
+mezanine card*/
+=20
+                                        /* Bus 1, AD16, IDSEL 0x10, BDF
+01.00.00 */
+                                         18000 0 0 1 700 17 8
+                                         18000 0 0 2 700 12 8
+                                         18000 0 0 3 700 16 8
+                                         18000 0 0 4 700 11 8
+=20
+                                        /* Bus 1, AD17, IDSEL 0x11, BDF
+01.01.00 */
+                                         18800 0 0 1 700 17 8
+                                         18800 0 0 2 700 12 8
+                                         18800 0 0 3 700 16 8
+                                         18800 0 0 4 700 11 8
+=20
+                                        /* Bus 1, AD18, IDSEL 0x12, BDF
+01.02.00 */
+                                         19000 0 0 1 700 17 8
+                                         19000 0 0 2 700 16 8
+                                         19000 0 0 3 700 11 8
+                                         19000 0 0 4 700 12 8
+=20
+                                        /*Bus 2, 4 DSPs mezanine card*/
+                                        /* Bus 2, AD16, IDSEL 0x10, BDF
+02.00.00 */
+                                         28000 0 0 1 700 16 8
+                                         28000 0 0 2 700 12 8
+                                         28000 0 0 3 700 11 8
+                                         28000 0 0 4 700 17 8
+=20
+                                        /* Bus 2, AD17, IDSEL 0x11, BDF
+02.01.00 */
+                                         28800 0 0 1 700 16 8
+                                         28800 0 0 2 700 12 8
+                                         28800 0 0 3 700 17 8
+                                         28800 0 0 4 700 11 8
+=20
+                                        /* Bus 2, AD18, IDSEL 0x12, BDF
+02.02.00 */
+                                         29000 0 0 1 700 16 8
+                                         29000 0 0 2 700 12 8
+                                         29000 0 0 3 700 11 8
+                                         29000 0 0 4 700 17 8
+=20
+                                        /* Bus 2, AD19, IDSEL 0x13, BDF
+02.03.00 */
+                                         29800 0 0 1 700 16 8
+                                         29800 0 0 2 700 11 8
+                                         29800 0 0 3 700 12 8
+                                         29800 0 0 4 700 17 8=20
 
-How the id removal accord to this debian bug report
-http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=400837
+=20
+Even after adding these nodes, i am not able to get proper IRQ
+assignment on cat /proc/interrupts.
+=20
+I have also modified the interrupt map mask to <3f800 0 0 7> instead of
+<f800 0 0 7> as i am passing 0,1 and 2 numbers.
+Do i need to add any other setting in dts...?
+=20
+Thanks,
+Vivek=20
+=20
 
-Looking at dmfe history on git, it is not clearly stated this problem has been
-fixed.
-http://git.kernel.org/?p=linux/kernel/git/stable/linux-2.6.24.y.git;a=history;f=drivers/net/tulip/dmfe.c;h=656200472fa17aa3e5e8e5d592c4fc2fa1ff2077;hb=HEAD
+------_=_NextPart_001_01C89642.42E689DA
+Content-Type: application/octet-stream;
+	name="mpc8349emds_V1.1.dts"
+Content-Transfer-Encoding: base64
+Content-Description: mpc8349emds_V1.1.dts
+Content-Disposition: attachment;
+	filename="mpc8349emds_V1.1.dts"
 
-Gilles
+LyoKICogTVBDODM0OUUgTURTIERldmljZSBUcmVlIFNvdXJjZQogKgogKiBDb3B5cmlnaHQgMjAw
+NSwgMjAwNiBGcmVlc2NhbGUgU2VtaWNvbmR1Y3RvciBJbmMuCiAqCiAqIFRoaXMgcHJvZ3JhbSBp
+cyBmcmVlIHNvZnR3YXJlOyB5b3UgY2FuIHJlZGlzdHJpYnV0ZSAgaXQgYW5kL29yIG1vZGlmeSBp
+dAogKiB1bmRlciAgdGhlIHRlcm1zIG9mICB0aGUgR05VIEdlbmVyYWwgIFB1YmxpYyBMaWNlbnNl
+IGFzIHB1Ymxpc2hlZCBieSB0aGUKICogRnJlZSBTb2Z0d2FyZSBGb3VuZGF0aW9uOyAgZWl0aGVy
+IHZlcnNpb24gMiBvZiB0aGUgIExpY2Vuc2UsIG9yIChhdCB5b3VyCiAqIG9wdGlvbikgYW55IGxh
+dGVyIHZlcnNpb24uCiAqLwoKLyB7Cgltb2RlbCA9ICJNUEM4MzQ5RU1EUyI7Cgljb21wYXRpYmxl
+ID0gIk1QQzgzNHhNRFMiOwoJI2FkZHJlc3MtY2VsbHMgPSA8MT47Cgkjc2l6ZS1jZWxscyA9IDwx
+PjsKCgljcHVzIHsKCQkjY3B1cyA9IDwxPjsKCQkjYWRkcmVzcy1jZWxscyA9IDwxPjsKCQkjc2l6
+ZS1jZWxscyA9IDwwPjsKCgkJUG93ZXJQQyw4MzQ5QDAgewoJCQlkZXZpY2VfdHlwZSA9ICJjcHUi
+OwoJCQlyZWcgPSA8MD47CgkJCWQtY2FjaGUtbGluZS1zaXplID0gPDIwPjsJLy8gMzIgYnl0ZXMK
+CQkJaS1jYWNoZS1saW5lLXNpemUgPSA8MjA+OwkvLyAzMiBieXRlcwoJCQlkLWNhY2hlLXNpemUg
+PSA8ODAwMD47CQkvLyBMMSwgMzJLCgkJCWktY2FjaGUtc2l6ZSA9IDw4MDAwPjsJCS8vIEwxLCAz
+MksKCQkJdGltZWJhc2UtZnJlcXVlbmN5ID0gPDA+OwkvLyBmcm9tIGJvb3Rsb2FkZXIKCQkJYnVz
+LWZyZXF1ZW5jeSA9IDwwPjsJCS8vIGZyb20gYm9vdGxvYWRlcgoJCQljbG9jay1mcmVxdWVuY3kg
+PSA8MD47CQkvLyBmcm9tIGJvb3Rsb2FkZXIKCQkJMzItYml0OwoJCX07Cgl9OwoKCW1lbW9yeSB7
+CgkJZGV2aWNlX3R5cGUgPSAibWVtb3J5IjsKCQlyZWcgPSA8MDAwMDAwMDAgMTAwMDAwMDA+Owkv
+LyAyNTZNQiBhdCAwCgl9OwoKCglzb2M4MzQ5QGUwMDAwMDAwIHsKCQkjYWRkcmVzcy1jZWxscyA9
+IDwxPjsKCQkjc2l6ZS1jZWxscyA9IDwxPjsKCQkjaW50ZXJydXB0LWNlbGxzID0gPDI+OwoJCWRl
+dmljZV90eXBlID0gInNvYyI7CgkJcmFuZ2VzID0gPDAgZTAwMDAwMDAgMDAxMDAwMDA+OwoJCXJl
+ZyA9IDxlMDAwMDAwMCAwMDAwMDIwMD47CgkJYnVzLWZyZXF1ZW5jeSA9IDwwPjsKCgkJd2R0QDIw
+MCB7CgkJCWRldmljZV90eXBlID0gIndhdGNoZG9nIjsKCQkJY29tcGF0aWJsZSA9ICJtcGM4M3h4
+X3dkdCI7CgkJCXJlZyA9IDwyMDAgMTAwPjsKCQl9OwoKCQlpMmNAMzAwMCB7CgkJCWRldmljZV90
+eXBlID0gImkyYyI7CgkJCWNvbXBhdGlibGUgPSAiZnNsLWkyYyI7CgkJCXJlZyA9IDwzMDAwIDEw
+MD47CgkJCWludGVycnVwdHMgPSA8ZSA4PjsKCQkJaW50ZXJydXB0LXBhcmVudCA9IDw3MDA+OwoJ
+CQlkZnNycjsKCQl9OwoKCQlpMmNAMzEwMCB7CgkJCWRldmljZV90eXBlID0gImkyYyI7CgkJCWNv
+bXBhdGlibGUgPSAiZnNsLWkyYyI7CgkJCXJlZyA9IDwzMTAwIDEwMD47CgkJCWludGVycnVwdHMg
+PSA8ZiA4PjsKCQkJaW50ZXJydXB0LXBhcmVudCA9IDw3MDA+OwoJCQlkZnNycjsKCQl9OwoKCQlz
+cGlANzAwMCB7CgkJCWRldmljZV90eXBlID0gInNwaSI7CgkJCWNvbXBhdGlibGUgPSAibXBjODN4
+eF9zcGkiOwoJCQlyZWcgPSA8NzAwMCAxMDAwPjsKCQkJaW50ZXJydXB0cyA9IDwxMCA4PjsKCQkJ
+aW50ZXJydXB0LXBhcmVudCA9IDw3MDA+OwoJCQltb2RlID0gPDA+OwoJCX07CgoJCS8qIHBoeSB0
+eXBlIChVTFBJIG9yIFNFUklBTCkgYXJlIG9ubHkgdHlwZXMgc3VwcG9ydHRlZCBmb3IgTVBIICov
+CgkJLyogcG9ydCA9IDAgb3IgMSAqLwoJCXVzYkAyMjAwMCB7CgkJCWRldmljZV90eXBlID0gInVz
+YiI7CgkJCWNvbXBhdGlibGUgPSAiZnNsLXVzYjItbXBoIjsKCQkJcmVnID0gPDIyMDAwIDEwMDA+
+OwoJCQkjYWRkcmVzcy1jZWxscyA9IDwxPjsKCQkJI3NpemUtY2VsbHMgPSA8MD47CgkJCWludGVy
+cnVwdC1wYXJlbnQgPSA8NzAwPjsKCQkJaW50ZXJydXB0cyA9IDwyNyAyPjsKCQkJcGh5X3R5cGUg
+PSAidWxwaSI7CgkJCXBvcnQxOwoJCX07CgkJLyogcGh5IHR5cGUgKFVMUEksIFVUTUksIFVUTUlf
+V0lERSwgU0VSSUFMKSAqLwoJCXVzYkAyMzAwMCB7CgkJCWRldmljZV90eXBlID0gInVzYiI7CgkJ
+CWNvbXBhdGlibGUgPSAiZnNsLXVzYjItZHIiOwoJCQlyZWcgPSA8MjMwMDAgMTAwMD47CgkJCSNh
+ZGRyZXNzLWNlbGxzID0gPDE+OwoJCQkjc2l6ZS1jZWxscyA9IDwwPjsKCQkJaW50ZXJydXB0LXBh
+cmVudCA9IDw3MDA+OwoJCQlpbnRlcnJ1cHRzID0gPDI2IDI+OwoJCQlwaHlfdHlwZSA9ICJ1bHBp
+IjsKCQl9OwoKCQltZGlvQDI0NTIwIHsKCQkJZGV2aWNlX3R5cGUgPSAibWRpbyI7CgkJCWNvbXBh
+dGlibGUgPSAiZ2lhbmZhciI7CgkJCXJlZyA9IDwyNDUyMCAyMD47CgkJCSNhZGRyZXNzLWNlbGxz
+ID0gPDE+OwoJCQkjc2l6ZS1jZWxscyA9IDwwPjsKCQkJbGludXgscGhhbmRsZSA9IDwyNDUyMD47
+CgkJCWV0aGVybmV0LXBoeUAwIHsKCQkJCWxpbnV4LHBoYW5kbGUgPSA8MjQ1MjAwMD47CgkJCQlp
+bnRlcnJ1cHQtcGFyZW50ID0gPDcwMD47CgkJCQlpbnRlcnJ1cHRzID0gPDExIDI+OwoJCQkJcmVn
+ID0gPDEwPjsKCQkJCWRldmljZV90eXBlID0gImV0aGVybmV0LXBoeSI7CgkJCX07CgkJCWV0aGVy
+bmV0LXBoeUAxIHsKCQkJCWxpbnV4LHBoYW5kbGUgPSA8MjQ1MjAwMT47CgkJCQlpbnRlcnJ1cHQt
+cGFyZW50ID0gPDcwMD47CgkJCQlpbnRlcnJ1cHRzID0gPDEyIDI+OwoJCQkJcmVnID0gPDE3PjsK
+CQkJCWRldmljZV90eXBlID0gImV0aGVybmV0LXBoeSI7CgkJCX07CgkJfTsKCgkJZXRoZXJuZXRA
+MjQwMDAgewoJCQlkZXZpY2VfdHlwZSA9ICJuZXR3b3JrIjsKCQkJbW9kZWwgPSAiVFNFQyI7CgkJ
+CWNvbXBhdGlibGUgPSAiZ2lhbmZhciI7CgkJCXJlZyA9IDwyNDAwMCAxMDAwPjsKCQkJYWRkcmVz
+cyA9IFsgMDAgMDAgMDAgMDAgMDAgMDAgXTsKCQkJbG9jYWwtbWFjLWFkZHJlc3MgPSBbIDAwIDAw
+IDAwIDAwIDAwIDAwIF07CgkJCWludGVycnVwdHMgPSA8MjAgOCAyMSA4IDIyIDg+OwoJCQlpbnRl
+cnJ1cHQtcGFyZW50ID0gPDcwMD47CgkJCXBoeS1oYW5kbGUgPSA8MjQ1MjAwMD47CgkJfTsKCgkJ
+ZXRoZXJuZXRAMjUwMDAgewoJCQkjYWRkcmVzcy1jZWxscyA9IDwxPjsKCQkJI3NpemUtY2VsbHMg
+PSA8MD47CgkJCWRldmljZV90eXBlID0gIm5ldHdvcmsiOwoJCQltb2RlbCA9ICJUU0VDIjsKCQkJ
+Y29tcGF0aWJsZSA9ICJnaWFuZmFyIjsKCQkJcmVnID0gPDI1MDAwIDEwMDA+OwoJCQlhZGRyZXNz
+ID0gWyAwMCAwMCAwMCAwMCAwMCAwMCBdOwoJCQlsb2NhbC1tYWMtYWRkcmVzcyA9IFsgMDAgMDAg
+MDAgMDAgMDAgMDAgXTsKCQkJaW50ZXJydXB0cyA9IDwyMyA4IDI0IDggMjUgOD47CgkJCWludGVy
+cnVwdC1wYXJlbnQgPSA8NzAwPjsKCQkJcGh5LWhhbmRsZSA9IDwyNDUyMDAxPjsKCQl9OwoKCQlz
+ZXJpYWxANDUwMCB7CgkJCWRldmljZV90eXBlID0gInNlcmlhbCI7CgkJCWNvbXBhdGlibGUgPSAi
+bnMxNjU1MCI7CgkJCXJlZyA9IDw0NTAwIDEwMD47CgkJCWNsb2NrLWZyZXF1ZW5jeSA9IDwwPjsK
+CQkJaW50ZXJydXB0cyA9IDw5IDg+OwoJCQlpbnRlcnJ1cHQtcGFyZW50ID0gPDcwMD47CgkJfTsK
+CgkJc2VyaWFsQDQ2MDAgewoJCQlkZXZpY2VfdHlwZSA9ICJzZXJpYWwiOwoJCQljb21wYXRpYmxl
+ID0gIm5zMTY1NTAiOwoJCQlyZWcgPSA8NDYwMCAxMDA+OwoJCQljbG9jay1mcmVxdWVuY3kgPSA8
+MD47CgkJCWludGVycnVwdHMgPSA8YSA4PjsKCQkJaW50ZXJydXB0LXBhcmVudCA9IDw3MDA+OwoJ
+CX07CgoJCXBjaUA4NTAwIHsKCQkJaW50ZXJydXB0LW1hcC1tYXNrID0gPDNmODAwIDAgMCA3PjsK
+CQkJaW50ZXJydXB0LW1hcCA9IDwKCgkJCQkJLyogQnVzIDAsIEFEMTcsIElEU0VMIDB4MTEsIEJE
+RiAwMC4xMS4wMCAqLyAKCQkJCQkgMDg4MDAgMCAwIDEgNzAwIDE2IDgKCQkJCQkgMDg4MDAgMCAw
+IDIgNzAwIDEyIDgKCQkJCQkgMDg4MDAgMCAwIDMgNzAwIDExIDgKCQkJCQkgMDg4MDAgMCAwIDQg
+NzAwIDE3IDgKCgkJCQkJLyogQnVzIDAsIEFEMTgsIElEU0VMIDB4MTIsIEJERiAwMC4xMi4wMCAq
+LwoJCQkJCSAwOTAwMCAwIDAgMSA3MDAgMTcgOAoJCQkJCSAwOTAwMCAwIDAgMiA3MDAgMTYgOAoJ
+CQkJCSAwOTAwMCAwIDAgMyA3MDAgMTEgOAoJCQkJCSAwOTAwMCAwIDAgNCA3MDAgMTIgOAoJCQkJ
+CQogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIC8qIDMgUG9ydCBQMlAg
+YnJpZGdlIG9uIEJ1cyAwLCBBRDE5LElEU0VMIDB4MTMsIEJERiAwMC4xMy4wMCBhbmQgQkRGIDAw
+LjEzLjAxKi8KICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIC8qQnVzIDEs
+IDEgVkdBIERTUCBhbmQgMiBEU1BzIG1lemFuaW5lIGNhcmQqLwoKICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgIC8qIEJ1cyAxLCBBRDE2LCBJRFNFTCAweDEwLCBCREYgMDEu
+MDAuMDAgKi8KICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAxODAwMCAw
+IDAgMSA3MDAgMTcgOAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIDE4
+MDAwIDAgMCAyIDcwMCAxMiA4CiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgMTgwMDAgMCAwIDMgNzAwIDE2IDgKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAxODAwMCAwIDAgNCA3MDAgMTEgOAoKICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgIC8qIEJ1cyAxLCBBRDE3LCBJRFNFTCAweDExLCBCREYgMDEuMDEuMDAgKi8K
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAxODgwMCAwIDAgMSA3MDAg
+MTcgOAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIDE4ODAwIDAgMCAy
+IDcwMCAxMiA4CiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgMTg4MDAg
+MCAwIDMgNzAwIDE2IDgKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAx
+ODgwMCAwIDAgNCA3MDAgMTEgOAoKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgIC8qIEJ1cyAxLCBBRDE4LCBJRFNFTCAweDEyLCBCREYgMDEuMDIuMDAgKi8KICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAxOTAwMCAwIDAgMSA3MDAgMTcgOAogICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIDE5MDAwIDAgMCAyIDcwMCAxNiA4
+CiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgMTkwMDAgMCAwIDMgNzAw
+IDExIDgKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAxOTAwMCAwIDAg
+NCA3MDAgMTIgOAoKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIC8qQnVz
+IDIsIDQgRFNQcyBtZXphbmluZSBjYXJkKi8KICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgIC8qIEJ1cyAyLCBBRDE2LCBJRFNFTCAweDEwLCBCREYgMDIuMDAuMDAgKi8KICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAyODAwMCAwIDAgMSA3MDAgMTYg
+OAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIDI4MDAwIDAgMCAyIDcw
+MCAxMiA4CiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgMjgwMDAgMCAw
+IDMgNzAwIDExIDgKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAyODAw
+MCAwIDAgNCA3MDAgMTcgOAoKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+IC8qIEJ1cyAyLCBBRDE3LCBJRFNFTCAweDExLCBCREYgMDIuMDEuMDAgKi8KICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAyODgwMCAwIDAgMSA3MDAgMTYgOAogICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIDI4ODAwIDAgMCAyIDcwMCAxMiA4CiAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgMjg4MDAgMCAwIDMgNzAwIDE3
+IDgKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAyODgwMCAwIDAgNCA3
+MDAgMTEgOAoKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIC8qIEJ1cyAy
+LCBBRDE4LCBJRFNFTCAweDEyLCBCREYgMDIuMDIuMDAgKi8KICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAyOTAwMCAwIDAgMSA3MDAgMTYgOAogICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgIDI5MDAwIDAgMCAyIDcwMCAxMiA4CiAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgMjkwMDAgMCAwIDMgNzAwIDExIDgKICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAyOTAwMCAwIDAgNCA3MDAgMTcgOAoK
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIC8qIEJ1cyAyLCBBRDE5LCBJ
+RFNFTCAweDEzLCBCREYgMDIuMDMuMDAgKi8KICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAyOTgwMCAwIDAgMSA3MDAgMTYgOAogICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgIDI5ODAwIDAgMCAyIDcwMCAxMSA4CiAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgMjk4MDAgMCAwIDMgNzAwIDEyIDgKICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAyOTgwMCAwIDAgNCA3MDAgMTcgOAoKICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAvKiBCdXMgMCwgMSBWR0EgRFNQICovCiAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgLyogQnVzIDAsIEFEMjAsIElE
+U0VMIDB4MTQsIEJERiAwMC4xNC4wMCAqLwogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgIDBhMDAwIDAgMCAxIDcwMCAxNyA4CiAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgMGEwMDAgMCAwIDIgNzAwIDExIDgKICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAwYTAwMCAwIDAgMyA3MDAgMTIgOAogICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgIDBhMDAwIDAgMCA0IDcwMCAxNiA4PjsKCQkJaW50ZXJy
+dXB0LXBhcmVudCA9IDw3MDA+OwoJCQlpbnRlcnJ1cHRzID0gPDQyIDg+OwoJCQlidXMtcmFuZ2Ug
+PSA8MCAwPjsKCQkJcmFuZ2VzID0gPDAyMDAwMDAwIDAgODAwMDAwMDAgODAwMDAwMDAgMCAyMDAw
+MDAwMAoJCQkJICA0MjAwMDAwMCAwIDgwMDAwMDAwIDgwMDAwMDAwIDAgMTAwMDAwMDAKCQkJCSAg
+MDEwMDAwMDAgMCAwMDAwMDAwMCBlMjAwMDAwMCAwIDAwMTAwMDAwPjsKCQkJY2xvY2stZnJlcXVl
+bmN5ID0gPDNmOTQwYWE+OwoJCQkjaW50ZXJydXB0LWNlbGxzID0gPDE+OwoJCQkjc2l6ZS1jZWxs
+cyA9IDwyPjsKCQkJI2FkZHJlc3MtY2VsbHMgPSA8Mz47CgkJCXJlZyA9IDw4NTAwIDEwMD47CgkJ
+CWNvbXBhdGlibGUgPSAiZnNsLG1wYzgzNDktcGNpIjsKCQkJZGV2aWNlX3R5cGUgPSAicGNpIjsK
+CQl9OwoKCQlwY2lAODYwMCB7CgkJCWludGVycnVwdC1tYXAtbWFzayA9IDxmODAwIDAgMCA3PjsK
+CQkJaW50ZXJydXB0LW1hcCA9IDwKCgkJCQkJLyogSURTRUwgMHgxMSAqLwoJCQkJCSA4ODAwIDAg
+MCAxIDcwMCAxMSA4CgkJCQkJIDg4MDAgMCAwIDIgNzAwIDEyIDgKCQkJCQkgODgwMCAwIDAgMyA3
+MDAgMTYgOAoJCQkJCSA4ODAwIDAgMCA0IDcwMCAxNyA4CgoJCQkJCS8qIElEU0VMIDB4MTIgKi8K
+CQkJCQkgOTAwMCAwIDAgMSA3MDAgMTYgOAoJCQkJCSA5MDAwIDAgMCAyIDcwMCAxNyA4CgkJCQkJ
+IDkwMDAgMCAwIDMgNzAwIDExIDgKCQkJCQkgOTAwMCAwIDAgNCA3MDAgMTIgOAoKCQkJCQkvKiBJ
+RFNFTCAweDEzICovCgkJCQkJIDk4MDAgMCAwIDEgNzAwIDE3IDgKCQkJCQkgOTgwMCAwIDAgMiA3
+MDAgMTEgOAoJCQkJCSA5ODAwIDAgMCAzIDcwMCAxMiA4CgkJCQkJIDk4MDAgMCAwIDQgNzAwIDE2
+IDgKCgkJCQkJLyogSURTRUwgMHgxNSAqLwoJCQkJCSBhODAwIDAgMCAxIDcwMCAxMSA4CgkJCQkJ
+IGE4MDAgMCAwIDIgNzAwIDEyIDgKCQkJCQkgYTgwMCAwIDAgMyA3MDAgMTYgOAoJCQkJCSBhODAw
+IDAgMCA0IDcwMCAxNyA4CgoJCQkJCS8qIElEU0VMIDB4MTYgKi8KCQkJCQkgYjAwMCAwIDAgMSA3
+MDAgMTcgOAoJCQkJCSBiMDAwIDAgMCAyIDcwMCAxMSA4CgkJCQkJIGIwMDAgMCAwIDMgNzAwIDEy
+IDgKCQkJCQkgYjAwMCAwIDAgNCA3MDAgMTYgOAoKCQkJCQkvKiBJRFNFTCAweDE3ICovCgkJCQkJ
+IGI4MDAgMCAwIDEgNzAwIDE2IDgKCQkJCQkgYjgwMCAwIDAgMiA3MDAgMTcgOAoJCQkJCSBiODAw
+IDAgMCAzIDcwMCAxMSA4CgkJCQkJIGI4MDAgMCAwIDQgNzAwIDEyIDgKCgkJCQkJLyogSURTRUwg
+MHgxOCAqLwoJCQkJCSBjMDAwIDAgMCAxIDcwMCAxMiA4CgkJCQkJIGMwMDAgMCAwIDIgNzAwIDE2
+IDgKCQkJCQkgYzAwMCAwIDAgMyA3MDAgMTcgOAoJCQkJCSBjMDAwIDAgMCA0IDcwMCAxMSA4PjsK
+CQkJaW50ZXJydXB0LXBhcmVudCA9IDw3MDA+OwoJCQlpbnRlcnJ1cHRzID0gPDQyIDg+OwoJCQli
+dXMtcmFuZ2UgPSA8MCAwPjsKCQkJcmFuZ2VzID0gPDAyMDAwMDAwIDAgYTAwMDAwMDAgYTAwMDAw
+MDAgMCAxMDAwMDAwMAoJCQkJICA0MjAwMDAwMCAwIGEwMDAwMDAwIGEwMDAwMDAwIDAgMTAwMDAw
+MDAKCQkJCSAgMDEwMDAwMDAgMCAwMDAwMDAwMCBlMjEwMDAwMCAwIDAwMTAwMDAwPjsKCQkJY2xv
+Y2stZnJlcXVlbmN5ID0gPDNmOTQwYWE+OwoJCQkjaW50ZXJydXB0LWNlbGxzID0gPDE+OwoJCQkj
+c2l6ZS1jZWxscyA9IDwyPjsKCQkJI2FkZHJlc3MtY2VsbHMgPSA8Mz47CgkJCXJlZyA9IDw4NjAw
+IDEwMD47CgkJCWNvbXBhdGlibGUgPSAiZnNsLG1wYzgzNDktcGNpIjsKCQkJZGV2aWNlX3R5cGUg
+PSAicGNpIjsKCQl9OwoKCQkvKiBNYXkgbmVlZCB0byByZW1vdmUgaWYgb24gYSBwYXJ0IHdpdGhv
+dXQgY3J5cHRvIGVuZ2luZSAqLwoJCWNyeXB0b0AzMDAwMCB7CgkJCWRldmljZV90eXBlID0gImNy
+eXB0byI7CgkJCW1vZGVsID0gIlNFQzIiOwoJCQljb21wYXRpYmxlID0gInRhbGl0b3MiOwoJCQly
+ZWcgPSA8MzAwMDAgMTAwMDA+OwoJCQlpbnRlcnJ1cHRzID0gPGIgOD47CgkJCWludGVycnVwdC1w
+YXJlbnQgPSA8NzAwPjsKCQkJbnVtLWNoYW5uZWxzID0gPDQ+OwoJCQljaGFubmVsLWZpZm8tbGVu
+ID0gPDE4PjsKCQkJZXhlYy11bml0cy1tYXNrID0gPDAwMDAwMDdlPjsKCQkJLyogZGVzYyBtYXNr
+IGlzIGZvciByZXYyLjAsCgkJCSAqIHdlIG5lZWQgcnVudGltZSBmaXh1cCBmb3IgPjIuMCAqLwoJ
+CQlkZXNjcmlwdG9yLXR5cGVzLW1hc2sgPSA8MDEwMTBlYmY+OwoJCX07CgoJCXdkZnBnYUAxODAw
+MDA0MCB7CgkJCWRldmljZV90eXBlID0gIndkZnBnYSI7CgkJCWNvbXBhdGlibGUgPSAid2RmcGdh
+IjsKCQkJcmVnID0gPDE4MDAwMDQwIEZGPjsKCQkJaW50ZXJydXB0cyA9IDwzMCAyIDE1IDI+OwoJ
+CQlpbnRlcnJ1cHQtcGFyZW50ID0gPDcwMD47CgkJfTsKCgkJLyogSVBJQwoJCSAqIGludGVycnVw
+dHMgY2VsbCA9IDxpbnRyICMsIHNlbnNlPgoJCSAqIHNlbnNlIHZhbHVlcyBtYXRjaCBsaW51eCBJ
+T1JFU09VUkNFX0lSUV8qIGRlZmluZXM6CgkJICogc2Vuc2UgPT0gODogTGV2ZWwsIGxvdyBhc3Nl
+cnRpb24KCQkgKiBzZW5zZSA9PSAyOiBFZGdlLCBoaWdoLXRvLWxvdyBjaGFuZ2UKCQkgKi8KCQlw
+aWNANzAwIHsKCQkJbGludXgscGhhbmRsZSA9IDw3MDA+OwoJCQlpbnRlcnJ1cHQtY29udHJvbGxl
+cjsKCQkJI2FkZHJlc3MtY2VsbHMgPSA8MD47CgkJCSNpbnRlcnJ1cHQtY2VsbHMgPSA8Mj47CgkJ
+CXJlZyA9IDw3MDAgMTAwPjsKCQkJYnVpbHQtaW47CgkJCWRldmljZV90eXBlID0gImlwaWMiOwoJ
+CX07Cgl9Owp9Owo=
+
+------_=_NextPart_001_01C89642.42E689DA--
