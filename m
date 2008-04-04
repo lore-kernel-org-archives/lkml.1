@@ -1,30 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759524AbYDDRJs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758469AbYDDRO2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759524AbYDDRJs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Apr 2008 13:09:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755404AbYDDRJi
+	id S1758469AbYDDRO2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Apr 2008 13:14:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752615AbYDDROU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Apr 2008 13:09:38 -0400
-Received: from [194.117.236.238] ([194.117.236.238]:47988 "EHLO
-	heracles.linux360.ro" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1758721AbYDDRJa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Apr 2008 13:09:30 -0400
-Date: Fri, 4 Apr 2008 20:06:10 +0300
-From: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-To: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Pekka Enberg <penberg@cs.helsinki.fi>,
-       Tom Zanussi <zanussi@us.ibm.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>
-Subject: Re: [PATCH] relay: add buffer-only functionality, allowing for
- early kernel tracing
-Message-ID: <20080404200610.747d02cd@linux360.ro>
-In-Reply-To: <20080404164022.GA1762@Krystal>
-References: <20080404183303.2e239a20@linux360.ro>
-	<20080404160623.GC32126@Krystal>
-	<20080404191943.2d708cbf@linux360.ro>
-	<20080404164022.GA1762@Krystal>
-X-Mailer: Claws Mail 3.3.0 (GTK+ 2.12.1; x86_64-pc-linux-gnu)
+	Fri, 4 Apr 2008 13:14:20 -0400
+Received: from gateway.drzeus.cx ([85.8.24.16]:58537 "EHLO smtp.drzeus.cx"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750783AbYDDROT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Apr 2008 13:14:19 -0400
+Date: Fri, 4 Apr 2008 19:13:50 +0200
+From: Pierre Ossman <drzeus-list@drzeus.cx>
+To: Greg KH <gregkh@suse.de>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: pci: add to global list before sysfs?
+Message-ID: <20080404191350.7f0183a5@mjolnir.drzeus.cx>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; i386-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -32,40 +23,30 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 4 Apr 2008 12:40:22 -0400
-Mathieu Desnoyers <compudj@krystal.dyndns.org> wrote:
- 
-> Then I guess we would depend on page_alloc_init(). It's not that bad,
-> but I guess the question is : do we prefer to let users specify the
-> buffer size to reserve for tracing on the kernel command line (that
-> would require __get_free_pages()) or do we compile-in a static buffer
-> size, which can be specified in the kernel configuration. I think
-> providing both could be an option : flexibility _and_ *very* early
-> tracing.
+Hi Greg,
 
-I wasn't referring to the kernel's users specifying the buffer on the
-command line. For example, LTTng code (I'm not familiar with it) could
-allocate a buffer, by itself or using a helper function, and pass it to
-relay_early_open(). Of course, it could read the command line and call
-that helper function, passing the size required by the user as an
-argument.
+I have a PCI hotplug problem I was hoping you could provide some
+insight into.
 
-Basically, I'm saying that having relay code manage a large buffer,
-allocating memory from it for each of its callers, could be very
-complex. It would be easier and less complex to let each tracing
-subsystem allocate memory on its own, either through a static buffer or
-with __get_free_pages().
+I want the PCI layer to make sure that all subfunctions of a newly
+added card are visible via pci_get_device() before any of them are
+binded to drivers. I.e. I want pci_bus_add_devices() to first make a
+pass and add the devices to the global list, then a second pass for
+device_add().
 
-> So making this relay interface flexible enough to receive a buffer
-> either reserved by __get_free_pages() or a static buffer seems like a
-> good compromise. It would also have to receive the buffer size from
-> the caller.
+The reason I want this is because I have at least two chips where I
+need to know which other subfunctions are present on the card in order
+to correctly initalise the subfunction I'm currently probing. Right now
+that fails miserably as the driver does not see the other devices in
+its probe function.
 
-Yes, it shouldn't matter to the relay interface whether the buffer was
-statically or dynamically allocated. All it needs to know is where it
-starts and how long it is.
+Is it possible to do this or will things break left and right if I
+add them to the global list before I register them with the driver core?
 
-BTW, I'll resubmit a modified patch soon, as suggested by Randy Dunlap.
+Rgds
+-- 
+     -- Pierre Ossman
 
-
-Eduard
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  PulseAudio, core developer          http://pulseaudio.org
+  rdesktop, core developer          http://www.rdesktop.org
