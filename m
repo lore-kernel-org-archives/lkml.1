@@ -1,139 +1,255 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760698AbYDDPBy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760786AbYDDPCV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760698AbYDDPBy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Apr 2008 11:01:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759777AbYDDPAY
+	id S1760786AbYDDPCV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Apr 2008 11:02:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758032AbYDDPAa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Apr 2008 11:00:24 -0400
-Received: from ecfrec.frec.bull.fr ([129.183.4.8]:59147 "EHLO
+	Fri, 4 Apr 2008 11:00:30 -0400
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:59157 "EHLO
 	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758097AbYDDPAW (ORCPT
+	with ESMTP id S1759773AbYDDPAY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Apr 2008 11:00:22 -0400
-Message-Id: <20080404145948.909464000@bull.net>
+	Fri, 4 Apr 2008 11:00:24 -0400
+Message-Id: <20080404145949.300787000@bull.net>
 References: <20080404145129.637145000@bull.net>
 User-Agent: quilt/0.45-1
-Date: Fri, 04 Apr 2008 16:51:32 +0200
+Date: Fri, 04 Apr 2008 16:51:33 +0200
 From: Nadia.Derbey@bull.net
 To: linux-kernel@vger.kernel.org
 Cc: containers@lists.linux-foundation.org, orenl@cs.columbia.edu,
        Nadia Derbey <Nadia.Derbey@bull.net>
-Subject: [RFC][PATCH 3/4] IPC: use the target ID specified in procfs
-Content-Disposition: inline; filename=ipc_use_next_id.patch
+Subject: [RFC][PATCH 4/4] PID: use the target ID specified in procfs
+Content-Disposition: inline; filename=upidnr_use_next_id.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[PATCH 03/04]
+[PATCH 04/04]
 
-This patch makes use of the target id specified by a previous write into
-/proc/self/next_id as the id to use to allocate the next IPC object.
+This patch makes use of the target ids specified by a previous write to
+/proc/self/next_id as the ids to use to allocate the next upid nrs.
+Upper levels upid nrs that are not specified in next_pids file are left to the
+kernel choice.
 
 Signed-off-by: Nadia Derbey <Nadia.Derbey@bull.net>
 
 ---
- include/linux/sysids.h |    7 +++++++
- ipc/util.c             |   40 ++++++++++++++++++++++++++++++++--------
- kernel/nextid.c        |    2 +-
- 3 files changed, 40 insertions(+), 9 deletions(-)
+ include/linux/pid.h |    2 
+ kernel/fork.c       |    3 -
+ kernel/pid.c        |  141 +++++++++++++++++++++++++++++++++++++++++++++-------
+ 3 files changed, 126 insertions(+), 20 deletions(-)
 
-Index: linux-2.6.25-rc8-mm1/include/linux/sysids.h
+Index: linux-2.6.25-rc8-mm1/include/linux/pid.h
 ===================================================================
---- linux-2.6.25-rc8-mm1.orig/include/linux/sysids.h	2008-04-04 14:18:04.000000000 +0200
-+++ linux-2.6.25-rc8-mm1/include/linux/sysids.h	2008-04-04 14:37:45.000000000 +0200
-@@ -37,9 +37,16 @@ struct sys_id {
- 	long *blocks[0];
- };
+--- linux-2.6.25-rc8-mm1.orig/include/linux/pid.h	2008-04-04 13:11:37.000000000 +0200
++++ linux-2.6.25-rc8-mm1/include/linux/pid.h	2008-04-04 14:54:09.000000000 +0200
+@@ -121,7 +121,7 @@ extern struct pid *find_get_pid(int nr);
+ extern struct pid *find_ge_pid(int nr, struct pid_namespace *);
+ int next_pidmap(struct pid_namespace *pid_ns, int last);
  
-+#define next_ipcid(tsk) ((tsk)->next_id					\
-+				? ((tsk)->next_id->nids			\
-+					? ID_AT((tsk)->next_id, 0)	\
-+					: -1)				\
-+				: -1)
-+
- extern ssize_t get_nextid(struct task_struct *, char *, size_t);
- extern int set_nextid(struct task_struct *, char *);
- extern int reset_nextid(struct task_struct *);
-+extern void id_blocks_free(struct sys_id *);
+-extern struct pid *alloc_pid(struct pid_namespace *ns);
++extern struct pid *alloc_pid(struct pid_namespace *ns, int *retval);
+ extern void free_pid(struct pid *pid);
  
- static inline void exit_nextid(struct task_struct *tsk)
- {
-Index: linux-2.6.25-rc8-mm1/kernel/nextid.c
+ /*
+Index: linux-2.6.25-rc8-mm1/kernel/fork.c
 ===================================================================
---- linux-2.6.25-rc8-mm1.orig/kernel/nextid.c	2008-04-04 14:28:13.000000000 +0200
-+++ linux-2.6.25-rc8-mm1/kernel/nextid.c	2008-04-04 14:38:38.000000000 +0200
-@@ -49,7 +49,7 @@ out_undo_partial_alloc:
- 	return NULL;
+--- linux-2.6.25-rc8-mm1.orig/kernel/fork.c	2008-04-04 14:00:35.000000000 +0200
++++ linux-2.6.25-rc8-mm1/kernel/fork.c	2008-04-04 14:54:43.000000000 +0200
+@@ -1200,8 +1200,7 @@ static struct task_struct *copy_process(
+ 		goto bad_fork_cleanup_io;
+ 
+ 	if (pid != &init_struct_pid) {
+-		retval = -ENOMEM;
+-		pid = alloc_pid(task_active_pid_ns(p));
++		pid = alloc_pid(task_active_pid_ns(p), &retval);
+ 		if (!pid)
+ 			goto bad_fork_cleanup_io;
+ 
+Index: linux-2.6.25-rc8-mm1/kernel/pid.c
+===================================================================
+--- linux-2.6.25-rc8-mm1.orig/kernel/pid.c	2008-04-04 13:11:39.000000000 +0200
++++ linux-2.6.25-rc8-mm1/kernel/pid.c	2008-04-04 14:59:24.000000000 +0200
+@@ -122,6 +122,26 @@ static void free_pidmap(struct upid *upi
+ 	atomic_inc(&map->nr_free);
  }
  
--static void id_blocks_free(struct sys_id *ids)
-+void id_blocks_free(struct sys_id *ids)
- {
- 	if (ids == NULL)
- 		return;
-Index: linux-2.6.25-rc8-mm1/ipc/util.c
-===================================================================
---- linux-2.6.25-rc8-mm1.orig/ipc/util.c	2008-04-04 13:11:37.000000000 +0200
-+++ linux-2.6.25-rc8-mm1/ipc/util.c	2008-04-04 14:41:53.000000000 +0200
-@@ -260,6 +260,7 @@ int ipc_get_maxid(struct ipc_ids *ids)
- int ipc_addid(struct ipc_ids* ids, struct kern_ipc_perm* new, int size)
- {
- 	int id, err;
-+	int next_id;
- 
- 	if (size > IPCMNI)
- 		size = IPCMNI;
-@@ -267,20 +268,43 @@ int ipc_addid(struct ipc_ids* ids, struc
- 	if (ids->in_use >= size)
- 		return -ENOSPC;
- 
--	err = idr_get_new(&ids->ipcs_idr, new, &id);
--	if (err)
--		return err;
-+	next_id = next_ipcid(current);
-+	if (next_id >= 0) {
-+		/* There is a target id specified, try to use it */
-+		int new_lid = next_id % SEQ_MULTIPLIER;
++static inline int alloc_pidmap_page(struct pidmap *map)
++{
++	if (unlikely(!map->page)) {
++		void *page = kzalloc(PAGE_SIZE, GFP_KERNEL);
++		/*
++		 * Free the page if someone raced with us
++		 * installing it:
++		 */
++		spin_lock_irq(&pidmap_lock);
++		if (map->page)
++			kfree(page);
++		else
++			map->page = page;
++		spin_unlock_irq(&pidmap_lock);
++		if (unlikely(!map->page))
++			return -1;
++	}
++	return 0;
++}
 +
-+		if (next_id !=
-+		    (new_lid + (next_id / SEQ_MULTIPLIER) * SEQ_MULTIPLIER))
-+			return -EINVAL;
+ static int alloc_pidmap(struct pid_namespace *pid_ns)
+ {
+ 	int i, offset, max_scan, pid, last = pid_ns->last_pid;
+@@ -134,21 +154,8 @@ static int alloc_pidmap(struct pid_names
+ 	map = &pid_ns->pidmap[pid/BITS_PER_PAGE];
+ 	max_scan = (pid_max + BITS_PER_PAGE - 1)/BITS_PER_PAGE - !offset;
+ 	for (i = 0; i <= max_scan; ++i) {
+-		if (unlikely(!map->page)) {
+-			void *page = kzalloc(PAGE_SIZE, GFP_KERNEL);
+-			/*
+-			 * Free the page if someone raced with us
+-			 * installing it:
+-			 */
+-			spin_lock_irq(&pidmap_lock);
+-			if (map->page)
+-				kfree(page);
+-			else
+-				map->page = page;
+-			spin_unlock_irq(&pidmap_lock);
+-			if (unlikely(!map->page))
+-				break;
+-		}
++		if (unlikely(alloc_pidmap_page(map)))
++			break;
+ 		if (likely(atomic_read(&map->nr_free))) {
+ 			do {
+ 				if (!test_and_set_bit(offset, map->page)) {
+@@ -182,6 +189,35 @@ static int alloc_pidmap(struct pid_names
+ 	return -1;
+ }
+ 
++/*
++ * Return a predefined pid value if successful (ID_AT(pid_l, level)),
++ * -errno else
++ */
++static int alloc_fixed_pidmap(struct pid_namespace *pid_ns,
++			struct sys_id *pid_l, int level)
++{
++	int offset, pid;
++	struct pidmap *map;
 +
-+		err = idr_get_new_above(&ids->ipcs_idr, new, new_lid, &id);
-+		if (err)
-+			return err;
-+		if (id != new_lid) {
-+			idr_remove(&ids->ipcs_idr, id);
-+			return -EBUSY;
++	pid = ID_AT(pid_l, level);
++	if (pid < RESERVED_PIDS || pid >= pid_max)
++		return -EINVAL;
++
++	map = &pid_ns->pidmap[pid / BITS_PER_PAGE];
++
++	if (unlikely(alloc_pidmap_page(map)))
++		return -ENOMEM;
++
++	offset = pid & BITS_PER_PAGE_MASK;
++	if (test_and_set_bit(offset, map->page))
++		return -EBUSY;
++
++	atomic_dec(&map->nr_free);
++	pid_ns->last_pid = max(pid_ns->last_pid, pid);
++
++	return pid;
++}
++
+ int next_pidmap(struct pid_namespace *pid_ns, int last)
+ {
+ 	int offset;
+@@ -243,20 +279,91 @@ void free_pid(struct pid *pid)
+ 	call_rcu(&pid->rcu, delayed_put_pid);
+ }
+ 
+-struct pid *alloc_pid(struct pid_namespace *ns)
++/*
++ * Called by alloc_pid() to use a list of predefined ids for the calling
++ * process' upper ns levels.
++ * Returns next pid ns to visit if successful (may be NULL if walked through
++ * the entire pid ns hierarchy).
++ * i is filled with next level to be visited (useful for the error cases).
++ */
++static struct pid_namespace *set_predefined_pids(struct pid_namespace *ns,
++						struct pid *pid,
++						struct sys_id *pid_l,
++						int *next_level)
++{
++	struct pid_namespace *tmp;
++	int rel_level, i, nr;
++
++	rel_level = pid_l->nids - 1;
++	if (rel_level > ns->level)
++		return ERR_PTR(-EINVAL);
++
++	tmp = ns;
++
++	/*
++	 * Use the predefined upid nrs for levels ns->level down to
++	 * ns->level - rel_level
++	 */
++	for (i = ns->level ; rel_level >= 0; i--, rel_level--) {
++		nr = alloc_fixed_pidmap(tmp, pid_l, rel_level);
++		if (nr < 0) {
++			tmp = ERR_PTR(nr);
++			goto out;
 +		}
 +
-+		new->id = next_id;
-+		new->seq = next_id / SEQ_MULTIPLIER;
-+		id_blocks_free(current->next_id);
-+		current->next_id = NULL;
-+	} else {
-+		err = idr_get_new(&ids->ipcs_idr, new, &id);
-+		if (err)
-+			return err;
-+
-+		new->seq = ids->seq++;
-+		if (ids->seq > ids->seq_max)
-+			ids->seq = 0;
-+		new->id = ipc_buildid(id, new->seq);
++		pid->numbers[i].nr = nr;
++		pid->numbers[i].ns = tmp;
++		tmp = tmp->parent;
 +	}
++
++	id_blocks_free(pid_l);
++out:
++	*next_level = i;
++	return tmp;
++}
++
++struct pid *alloc_pid(struct pid_namespace *ns, int *retval)
+ {
+ 	struct pid *pid;
+ 	enum pid_type type;
+ 	int i, nr;
+ 	struct pid_namespace *tmp;
+ 	struct upid *upid;
++	struct sys_id *pid_l;
  
- 	ids->in_use++;
++	*retval = -ENOMEM;
+ 	pid = kmem_cache_alloc(ns->pid_cachep, GFP_KERNEL);
+ 	if (!pid)
+ 		goto out;
  
- 	new->cuid = new->uid = current->euid;
- 	new->gid = new->cgid = current->egid;
- 
--	new->seq = ids->seq++;
--	if(ids->seq > ids->seq_max)
--		ids->seq = 0;
--
--	new->id = ipc_buildid(id, new->seq);
- 	spin_lock_init(&new->lock);
- 	new->deleted = 0;
- 	rcu_read_lock();
+ 	tmp = ns;
+-	for (i = ns->level; i >= 0; i--) {
++	i = ns->level;
++
++	/*
++	 * If there is a list of upid nrs specified, use it instead of letting
++	 * the kernel chose the upid nrs for us.
++	 */
++	pid_l = current->next_id;
++	if (pid_l && pid_l->nids) {
++		/*
++		 * returns the next ns to be visited in the following loop
++		 * (or NULL if we are done).
++		 * i is filled in with the next level to be visited. We need
++		 * it to undo things in the error cases.
++		 */
++		tmp = set_predefined_pids(ns, pid, pid_l, &i);
++		if (IS_ERR(tmp)) {
++			*retval = PTR_ERR(tmp);
++			goto out_free;
++		}
++		current->next_id = NULL;
++	}
++
++	*retval = -ENOMEM;
++	/*
++	 * Let the lower levels upid nrs be automatically allocated
++	 */
++	for ( ; i >= 0; i--) {
+ 		nr = alloc_pidmap(tmp);
+ 		if (nr < 0)
+ 			goto out_free;
 
 --
