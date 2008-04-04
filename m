@@ -1,49 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756726AbYDDKB4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756662AbYDDKPY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756726AbYDDKB4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Apr 2008 06:01:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751337AbYDDKBp
+	id S1756662AbYDDKPY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Apr 2008 06:15:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752778AbYDDKPN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Apr 2008 06:01:45 -0400
-Received: from ns.unixsol.org ([193.110.159.2]:49724 "EHLO ns.unixsol.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751027AbYDDKBo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Apr 2008 06:01:44 -0400
-Message-ID: <47F5FC87.504@unixsol.org>
-Date: Fri, 04 Apr 2008 13:01:43 +0300
-From: Georgi Chorbadzhiyski <gf@unixsol.org>
-Organization: Unix Solutions Ltd. (http://unixsol.org)
-User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
+	Fri, 4 Apr 2008 06:15:13 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:53795 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752031AbYDDKPL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Apr 2008 06:15:11 -0400
+Date: Fri, 4 Apr 2008 12:15:09 +0200
+From: Jan Kara <jack@suse.cz>
+To: Stephen Smalley <sds@tycho.nsa.gov>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Josef Bacik <jbacik@redhat.com>,
+       Valdis.Kletnieks@vt.edu, sct@redhat.com, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org, eparis@redhat.com,
+       James Morris <jmorris@namei.org>
+Subject: Re: 2.6.25-rc8-mm1 - BUG in fs/jbd/transaction.c
+Message-ID: <20080404101509.GB477@atrey.karlin.mff.cuni.cz>
+References: <20080401213214.8fbb6d6b.akpm@linux-foundation.org> <6495.1207163569@turing-police.cc.vt.edu> <20080402192715.GA32454@unused.rdu.redhat.com> <20080402123905.386c56f8.akpm@linux-foundation.org> <1207246695.27710.292.camel@moss-spartans.epoch.ncsc.mil>
 MIME-Version: 1.0
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       "Robin H. Johnson" <robbat2@gentoo.org>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org,
-       =?ISO-8859-1?Q?Ilpo_J=E4rvinen?= <ilpo.jarvinen@helsinki.fi>
-Subject: Re: WARNING: at net/ipv4/tcp_input.c:2173 tcp_mark_head_lost+0x173/0x1a0()
-References: <20080402224137.GB25768@curie-int.orbis-terrarum.net> <20080403211913.3a0c1d00.akpm@linux-foundation.org> <200804041150.34046.rjw@sisk.pl>
-In-Reply-To: <200804041150.34046.rjw@sisk.pl>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1207246695.27710.292.camel@moss-spartans.epoch.ncsc.mil>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Around 04/04/08 12:50, Rafael J. Wysocki scribbled:
-> On Friday, 4 of April 2008, Andrew Morton wrote:
->> (cc netdev)
->>
->> (and Rafael - I assume 2.6.24 didn't do this..)
->>
->> On Wed, 2 Apr 2008 15:41:37 -0700 "Robin H. Johnson" <robbat2@gentoo.org> wrote:
 > 
-> That's http://bugzilla.kernel.org/show_bug.cgi?id=10346 , I think. 
+> On Wed, 2008-04-02 at 12:39 -0700, Andrew Morton wrote:
+> > On Wed, 2 Apr 2008 15:27:15 -0400
+> > Josef Bacik <jbacik@redhat.com> wrote:
+> > 
+> > > On Wed, Apr 02, 2008 at 03:12:49PM -0400, Valdis.Kletnieks@vt.edu wrote:
+> > > > On Tue, 01 Apr 2008 21:32:14 PDT, Andrew Morton said:
+> > > > > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.25-rc8/2.6.25-rc8-mm1/
+> > > > 
+> > > > (Yes, I know the kernel is tainted.  Hopefully the traceback will make
+> > > > enough sense that it won't matter.  I think I cc'd most everybody who is
+> > > > listed in MAINTAINERS or had a non-trivial jbd, quota, or ext3 patch in the broken-out/)
+> > > > 
+> > > > So I was running a 'yum update' on my laptop, walked away to ask a cow-orker
+> > > > a question, and came back to find it had BUG'ed twice...  Amazingly
+> > > > enough, although it died in ext3 code, it apparently only nuked whatever
+> > > > filesystem it was handling, as syslog was still able to log the gory details
+> > > > into a file in /var. Given that a kernel rpm was the one it failed on, the
+> > > > I/O was almost certainly on either / or /boot - both ext3. / is mounted
+> > > > with quotas, /boot isn't, so I'm betting on /
+> > > > 
+> > > > Apr  2 13:48:07 turing-police yum: Updated: texlive-texmf-latex-2007-18.fc9.noarch
+> > > > Apr  2 13:48:08 turing-police yum: Updated: 1:openoffice.org-xsltfilter-2.4.0-12.4.fc9.x86_64
+> > > > Apr  2 13:48:09 turing-police yum: Updated: 1:openoffice.org-javafilter-2.4.0-12.4.fc9.x86_64
+> > > > Apr  2 13:48:12 turing-police yum: Updated: kernel-headers-2.6.25-0.185.rc7.git6.fc9.x86_64
+> > > > 
+> > > > (here, it started updating kernel-2.6.25-0.185.rc7.git6 and died while I wasn't looking)
+> > > 
+> > > <snip>
+> > > 
+> > > Try this patch, it will keep us from re-entering the fs when we aren't supposed
+> > > to.  cc'ing Eric Paris since he's the only selinux guy I know :).  I don't think
+> > > any of the other allocations in here need to be fixed, but I didn't look too
+> > > carefully.
+> > > 
+> > > Signed-off-by: Josef Bacik <jbacik@redhat.com>
+> > > 
+> > > 
+> > > diff --git a/security/selinux/hooks.c b/security/selinux/hooks.c
+> > > index c2fef7b..820d07a 100644
+> > > --- a/security/selinux/hooks.c
+> > > +++ b/security/selinux/hooks.c
+> > > @@ -180,7 +180,7 @@ static int inode_alloc_security(struct inode *inode)
+> > >  	struct task_security_struct *tsec = current->security;
+> > >  	struct inode_security_struct *isec;
+> > >  
+> > > -	isec = kmem_cache_zalloc(sel_inode_cache, GFP_KERNEL);
+> > > +	isec = kmem_cache_zalloc(sel_inode_cache, GFP_NOFS);
+> > >  	if (!isec)
+> > >  		return -ENOMEM;
+> > >  
+> > > @@ -2429,7 +2429,7 @@ static int selinux_inode_init_security(struct inode *inode, struct inode *dir,
+> > >  		return -EOPNOTSUPP;
+> > >  
+> > >  	if (name) {
+> > > -		namep = kstrdup(XATTR_SELINUX_SUFFIX, GFP_KERNEL);
+> > > +		namep = kstrdup(XATTR_SELINUX_SUFFIX, GFP_NOFS);
+> > >  		if (!namep)
+> > >  			return -ENOMEM;
+> > >  		*name = namep;
+> > 
+> > Might fix it.  But 2.6.24's inode_alloc_security() also uses GFP_KERNEL and
+> > doesn't have this bug.  What changed?
 > 
-> Robin, please add yourself to the CC list in the bugzilla entry above.
+> Looks legitimate, although we've been doing that since Linux 2.6.0-test3
+> (selinux merge) for inode_alloc_security and d_instantiate, and since
+> Linux 2.6.14 for inode_init_security, so something is at least
+> triggering it more easily now.  inode_doinit_with_dentry looks like
+> another instance and security_context_to_sid_core as well.
+  I guess it is just the combination of someone using SELinux + quota
+(or several journaling filesystems) + being unlucky under memory
+pressure that makes this happen only rarely. Josef, have you been
+successful in reproducing the problem under older kernel?
 
-No idea about 2.6.24 behavior. The kernel I was using before
-upgrading to 2.6.25-rc6 was 2.6.21-rc7.
-
+								Honza
 -- 
-Georgi Chorbadzhiyski
-http://georgi.unixsol.org/
+Jan Kara <jack@suse.cz>
+SuSE CR Labs
