@@ -1,127 +1,157 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756820AbYDDQ37@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758531AbYDDQdj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756820AbYDDQ37 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Apr 2008 12:29:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752561AbYDDQ3p
+	id S1758531AbYDDQdj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Apr 2008 12:33:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753416AbYDDQdb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Apr 2008 12:29:45 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.158]:36305 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751003AbYDDQ3n (ORCPT
+	Fri, 4 Apr 2008 12:33:31 -0400
+Received: from serrano.cc.columbia.edu ([128.59.29.6]:35988 "EHLO
+	serrano.cc.columbia.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753272AbYDDQda (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Apr 2008 12:29:43 -0400
-Subject: Re: [TOMOYO #7 30/30] Hooks for SAKURA and TOMOYO.
-From: Daniel Walker <dwalker@mvista.com>
-To: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org,
-       Kentaro Takeda <takedakn@nttdata.co.jp>,
-       Toshiharu Harada <haradats@nttdata.co.jp>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-netdev <netdev@vger.kernel.org>
-In-Reply-To: <20080404122408.986477936@I-love.SAKURA.ne.jp>
-References: <20080404122242.867070732@I-love.SAKURA.ne.jp>
-	 <20080404122408.986477936@I-love.SAKURA.ne.jp>
-Content-Type: text/plain
-Date: Fri, 04 Apr 2008 09:29:35 -0700
-Message-Id: <1207326576.21308.71.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-3.fc8) 
+	Fri, 4 Apr 2008 12:33:30 -0400
+X-Greylist: delayed 2151 seconds by postgrey-1.27 at vger.kernel.org; Fri, 04 Apr 2008 12:33:30 EDT
+Message-ID: <47F64FBB.2080207@cs.columbia.edu>
+Date: Fri, 04 Apr 2008 11:56:43 -0400
+From: Oren Laadan <orenl@cs.columbia.edu>
+Organization: Columbia University
+User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
+MIME-Version: 1.0
+To: Matt Helsley <matthltc@us.ibm.com>
+CC: Paul Menage <menage@google.com>,
+       Linux Containers <containers@lists.linux-foundation.org>,
+       Cedric Le Goater <clg@fr.ibm.com>,
+       Linux-Kernel <linux-kernel@vger.kernel.org>,
+       linux-pm@lists.linux-foundation.org
+Subject: Re: [Devel] [RFC PATCH 0/4] Container Freezer: Reuse Suspend Freezer
+References: <20080403210316.397506379@us.ibm.com>	<6599ad830804031649p6bbc60f3s59fb7c25a7260505@mail.gmail.com> <1207278180.30178.94.camel@localhost.localdomain>
+In-Reply-To: <1207278180.30178.94.camel@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-No-Spam-Score: Local
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Fri, 2008-04-04 at 21:23 +0900, Tetsuo Handa wrote:
 
-> This patch makes two lines deletion by
->   sed -e 's:search_binary_handler:search_binary_handler_with_transition:'
-> TOMOYO does domain transition when execve() is called.
-> Thus, distinguishing search_binary_handler() from do_execve() and
-> search_binary_handler() from other functions (e.g. load_script())
-> makes TOMOYO's domain transition handler simple.
+Matt Helsley wrote:
+> On Thu, 2008-04-03 at 16:49 -0700, Paul Menage wrote:
+>> On Thu, Apr 3, 2008 at 2:03 PM,  <matthltc@us.ibm.com> wrote:
+>>>    * "freezer.kill"
+>>>
+>>>      writing <n> will send signal number <n> to all tasks
+>>>
+>> My first thought (not having looked at the code yet) is that sending a
+>> signal doesn't really have anything to do with freezing, so it
+>> shouldn't be in the same subsystem. Maybe a separate subsystem called
+>> "signal"?
+>>
+>> And more than that, it's not something that requires any particular
+>> per-process state, so there's no reason that the subsystem that
+>> provides the "kill" functionality shouldn't be able to be mounted in
+>> multiple hierarchies.
+>>
+>> How about if I added support for stateless subsystems, that could
+>> potentially be mounted in multiple hierarchies at once? They wouldn't
+>> need an entry in the css set, since they have no state.
 > 
-> Signed-off-by: Kentaro Takeda <takedakn@nttdata.co.jp>
-> Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-> Signed-off-by: Toshiharu Harada <haradats@nttdata.co.jp>
-> Cc: linux-fsdevel <linux-fsdevel@vger.kernel.org>
-> Cc: linux-netdev <netdev@vger.kernel.org>
-> ---
->  Documentation/kernel-parameters.txt |   15 ++++
->  arch/ia64/ia32/sys_ia32.c           |    7 ++
->  arch/mips/kernel/ptrace32.c         |    7 ++
->  arch/s390/kernel/ptrace.c           |    7 ++
->  arch/sh/kernel/ptrace_64.c          |    7 ++
->  arch/x86/kernel/ptrace.c            |    7 ++
->  fs/Kconfig                          |    2 
->  fs/Makefile                         |    2 
->  fs/attr.c                           |   19 +++++
+> 	This seems reasonable to me. A quick look at Cedric's patches suggests
+> there's no need for such cgroup subsystems to be tied together -- the
+> signalling is all done internally to the freeze_task(), refrigerator(),
+> and thaw_process() functions from what I recall.
+> 
+>>>  * Usage :
+>>>
+>>>    # mkdir /containers/freezer
+>>>    # mount -t container -ofreezer freezer  /containers/freezer
+>>>    # mkdir /containers/freezer/0
+>>>    # echo $some_pid > /containers/freezer/0/tasks
+>>>
+>>>  to get status of the freezer subsystem :
+>>>
+>>>    # cat /containers/freezer/0/freezer.freeze
+>>>    RUNNING
+>>>
+>>>  to freeze all tasks in the container :
+>>>
+>>>    # echo 1 > /containers/freezer/0/freezer.freeze
+>>>    # cat /containers/freezer/0/freezer.freeze
+>>>    FREEZING
+>>>    # cat /containers/freezer/0/freezer.freeze
+>>>    FROZEN
+>> Could we separate this out into two files? One called "freeze" that's
+>> a 0/1 for whether we're intending to freeze the subsystem, and one
+>> called "frozen" that indicates whether it is frozen? And maybe a
+>> "state" file to report the RUNNING/FREEZING/FROZEN distinction in a
+>> human-readable way?
+> 
+> 3 files seems like overkill. I think making them human-readable is good
+> and can be done with two files: "state" (read-only) and
+> "state-next" (read/write). Transitions between RUNNING and FROZEN are
+> obvious when state-next != state. I think the advantages are it's pretty
+> human-readable, you don't need separate strings and files for the
+> transitions, it's clear what's about to happen (IMHO), and it only
+> requires 2 files. Some examples:
+> 
+> To initiate freezing:
+> 
+> # cat /containers/freezer/0/freezer.state
+> RUNNING
+> # echo "FROZEN" > /containers/freezer/0/freezer.state-next
+> # cat /containers/freezer/0/freezer.state
+> RUNNING
+> # cat /containers/freezer/0/freezer.state-next
+> FROZEN
+> # sleep N
+> # cat /containers/freezer/0/freezer.state
+> FROZEN
+> # cat /containers/freezer/0/freezer.state-next
+> FROZEN
+> 
+> So to cancel freezing you might see something like:
+> 
+> # cat /containers/freezer/0/freezer.state
+> RUNNING
+> # cat /containers/freezer/0/freezer.state-next
+> FROZEN
+> # echo "RUNNING" > /containers/freezer/0/freezer.state-next
+> # cat /containers/freezer/0/freezer.state-next
+> RUNNING
+> 
+> If you wanted to know if a group was transitioning:
+> 
+> # diff /containers/freezer/0/freezer.state /containers/freezer/0/freezer.state-next
+> 
+> Or:
+> # current=`cat /containers/freezer/0/freezer.state`
+> # next=`cat /containers/freezer/0/freezer.state-next`
+> # [ "$current" != "$next" ] && echo "Transitioning"
+> # [ "$current" == "RUNNING" -a "$next" == "FROZEN" ] && echo "Freezing"
+> # [ "$current" == "FROZEN" -a "$next" == "RUNNING" ] && echo "Thawing"
+> # [ "$current" == "RUNNING" -a "$next" == "RUNNING" ] && echo "No-op"
+> # [ "$current" == "FROZEN" -a "$next" == "FROZEN" ] && echo "No-op"
 
->From a reviews perspective what I would want is each set of changes,
-file system, networking, arch, etc split into separate patches. For
-example you have a number of patches just adding header files. You could
-merge the header file with the hook additions. Then you have a natural
-code split up which should be easier to review..
+First, I totally agree with Serge's comment (oh well, it's about my
+own suggestion, so I must) - for checkpoint/restart we'll need more
+states if we are to use the same subsystem.
 
-> +	/***** TOMOYO Linux start. *****/
-> +	if (!ccs_capable(TOMOYO_SYS_PTRACE))
-> +		return -EPERM;
-> +	/***** TOMOYO Linux end. *****/
+Second, my gut feeling is that a single, atomic operation to get the
+status is preferred over multiple (non-atomic) operations. In other
+words, I suggest a single state file instead of two. You can encode
+every possible transition in a single state. It's not that the kernel
+doesn't know what's going on inside, so it can just as well report it
+directly. I don't see the benefit of using two files.
 
-For instance if the function name was "tomoyo_check_capable" it would be
-clear that it's part of your code.. The current function naming here is
-obscure ..
- 
-
-> +	/***** CCS start. *****/
-> +#if defined(CONFIG_SAKURA) || defined(CONFIG_TOMOYO)
-> +	printk(KERN_INFO "Hook version: 2.6.25-rc8-mm1 2008/04/02\n");
-> +#endif
-> +	/***** CCS end. *****/
-
-This printk clearly needs to go away ..
-
-> --- linux-2.6.25-rc8-mm1.orig/include/linux/init_task.h
-> +++ linux-2.6.25-rc8-mm1/include/linux/init_task.h
-> @@ -197,6 +197,10 @@ extern struct group_info init_groups;
->  	INIT_IDS							\
->  	INIT_TRACE_IRQFLAGS						\
->  	INIT_LOCKDEP							\
-> +	/***** TOMOYO Linux start. *****/        \
-> +	.domain_info = &KERNEL_DOMAIN,           \
-> +	.tomoyo_flags = 0,                       \
-> +	/***** TOMOYO Linux end. *****/          \
->  }
-
-ifdef's ?
+Oren.
 
 > 
-> --- linux-2.6.25-rc8-mm1.orig/include/linux/sched.h
-> +++ linux-2.6.25-rc8-mm1/include/linux/sched.h
-> @@ -29,6 +29,11 @@
->  #define CLONE_NEWNET		0x40000000	/* New network namespace */
->  #define CLONE_IO		0x80000000	/* Clone io context */
->  
-> +/***** TOMOYO Linux start. *****/
-> +struct domain_info;
-> +extern struct domain_info KERNEL_DOMAIN;
-> +/***** TOMOYO Linux end. *****/
-> +
->  /*
->   * Scheduling policies
->   */
-> @@ -1278,6 +1283,10 @@ struct task_struct {
->  	int latency_record_count;
->  	struct latency_record latency_record[LT_SAVECOUNT];
->  #endif
-> +	/***** TOMOYO Linux start. *****/
-> +	struct domain_info *domain_info;
-> +	u32 tomoyo_flags;
-> +	/***** TOMOYO Linux end. *****/
->  };
-
-ifdefs? 
- 
-
-
+> etc.
+> 
+> Cheers,
+> 	-Matt Helsley
+> 
+> _______________________________________________
+> Containers mailing list
+> Containers@lists.linux-foundation.org
+> https://lists.linux-foundation.org/mailman/listinfo/containers
