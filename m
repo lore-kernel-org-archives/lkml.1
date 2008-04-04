@@ -1,52 +1,149 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751898AbYDDU5g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752734AbYDDU5u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751898AbYDDU5g (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Apr 2008 16:57:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751247AbYDDU52
+	id S1752734AbYDDU5u (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Apr 2008 16:57:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751842AbYDDU5f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Apr 2008 16:57:28 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:39030 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751143AbYDDU51 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Apr 2008 16:57:27 -0400
-Message-ID: <47F69621.3080105@garzik.org>
-Date: Fri, 04 Apr 2008 16:57:05 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
-MIME-Version: 1.0
-To: Thomas Gleixner <tglx@linutronix.de>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [GIT pull] x86 fixes for 2.6.25
-References: <alpine.LFD.1.10.0804042019210.3224@apollo.tec.linutronix.de>
-In-Reply-To: <alpine.LFD.1.10.0804042019210.3224@apollo.tec.linutronix.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Fri, 4 Apr 2008 16:57:35 -0400
+Received: from crystal.sipsolutions.net ([195.210.38.204]:36045 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751715AbYDDU5e (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Apr 2008 16:57:34 -0400
+Subject: Re: debugfs_remove() vs. anything that is dynamic
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Greg KH <greg@kroah.com>
+Cc: Linux Kernel list <linux-kernel@vger.kernel.org>
+In-Reply-To: <20080404202006.GB14016@kroah.com>
+References: <1207266986.19189.14.camel@johannes.berg>
+	 <20080404153402.GB16923@kroah.com>
+	 <1207323684.19189.54.camel@johannes.berg>
+	 <20080404202006.GB14016@kroah.com>
+Content-Type: text/plain
+Date: Fri, 04 Apr 2008 22:57:24 +0200
+Message-Id: <1207342644.3625.4.camel@johannes.berg>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thomas Gleixner wrote:
-> 1) drivers/char/hpet.c
->    include/linux/hpet.h
+
+On Fri, 2008-04-04 at 13:20 -0700, Greg KH wrote:
+
+> Then use the debugfs_create_file() function instead of the individual
+> variable ones if this is the issue.  You can easily wrap them up much
+> like the debugfs core does with the common wrappers to allow for the
+> proper module lifetime rules to be followed.
+
+Yeah, I was actually looking into this whole thing because I thought
+that mac80211's debugfs code is too large (at about a quarter of the
+binary size of the whole thing), so I'm not keen on adding more code, I
+was rather wondering if it would be possible to remove a lot of the code
+in favour of using simple attributes :)
+
+> > we could NULL out that pointer on debugfs_remove() and have
+> > simple_attr_read() just return -ENOENT.
 > 
->    due to the revert of the HPET irq assignemt, which was only affects x86.
+> Patches are always gladly accepted :)
+> 
+> > However, if nobody else is concerned about this, I'll just remove all
+> > the wireless debugfs code instead, I just don't want to allow crashing
+> > it that way.
+> 
+> I think you should be able to handle this in your debugfs calls, or if
+> needed, we can easily add a new parameter to them to handle the module
+> ownership if you are concerned about them.
 
+No, I'm not particularly concerned about module ownership, I'm more
+concerned about any dynamic objects.
 
-Related to this...  check out jgarzik/misc-2.6.git#irq-cleanups and 
-#irq-remove for my set of patches that remove the 'irq' argument from 
-all irq handlers.
+This patch seems to work. My system boots (so sysfs definitely works)
+and my debugfs test case returns -ENOENT on the read, even if the file
+was opened previously.
 
-I have a couple cleanup patches for HPET that should go in prior to the 
-big "remove irq argument" massive change (even if people don't want to 
-remove the 'irq' argument ultimately, the cleanup is still useful)
+I think, however, it's not correct when you have a hard-link, and the
+NULLing out of i_private must be done depending on (inode->i_nlink == 1)
+instead of unconditionally. I will have to test that once I figure out
+if (and if yes, how) you can even create inodes with nlink>1 with simple
+attributes.
 
-Who is the HPET maintainer these days, if anyone?
-
-	Jeff
+--- everything.orig/fs/libfs.c	2008-04-04 22:37:18.000000000 +0200
++++ everything/fs/libfs.c	2008-04-04 22:37:37.000000000 +0200
+@@ -287,6 +287,7 @@ int simple_unlink(struct inode *dir, str
+ {
+ 	struct inode *inode = dentry->d_inode;
+ 
++	inode->i_private = NULL;
+ 	inode->i_ctime = dir->i_ctime = dir->i_mtime = CURRENT_TIME;
+ 	drop_nlink(inode);
+ 	dput(dentry);
+@@ -587,7 +588,7 @@ struct simple_attr {
+ 	int (*set)(void *, u64);
+ 	char get_buf[24];	/* enough to store a u64 and "\n\0" */
+ 	char set_buf[24];
+-	void *data;
++	void **dataptr;
+ 	const char *fmt;	/* format for read operation */
+ 	struct mutex mutex;	/* protects access to these buffers */
+ };
+@@ -606,7 +607,7 @@ int simple_attr_open(struct inode *inode
+ 
+ 	attr->get = get;
+ 	attr->set = set;
+-	attr->data = inode->i_private;
++	attr->dataptr = &inode->i_private;
+ 	attr->fmt = fmt;
+ 	mutex_init(&attr->mutex);
+ 
+@@ -642,9 +643,17 @@ ssize_t simple_attr_read(struct file *fi
+ 		size = strlen(attr->get_buf);
+ 	} else {		/* first read */
+ 		u64 val;
+-		ret = attr->get(attr->data, &val);
+-		if (ret)
++		void *data;
++
++		data = *attr->dataptr;
++		if (!data) {
++			ret = -ENOENT;
+ 			goto out;
++		} else {
++			ret = attr->get(data, &val);
++			if (ret)
++				goto out;
++		}
+ 
+ 		size = scnprintf(attr->get_buf, sizeof(attr->get_buf),
+ 				 attr->fmt, (unsigned long long)val);
+@@ -664,6 +673,7 @@ ssize_t simple_attr_write(struct file *f
+ 	u64 val;
+ 	size_t size;
+ 	ssize_t ret;
++	void *data;
+ 
+ 	attr = file->private_data;
+ 	if (!attr->set)
+@@ -678,10 +688,15 @@ ssize_t simple_attr_write(struct file *f
+ 	if (copy_from_user(attr->set_buf, buf, size))
+ 		goto out;
+ 
+-	ret = len; /* claim we got the whole input */
+-	attr->set_buf[size] = '\0';
+-	val = simple_strtol(attr->set_buf, NULL, 0);
+-	attr->set(attr->data, val);
++	data = *attr->dataptr;
++	if (!data) {
++		ret = -ENOENT;
++	} else {
++		ret = len; /* claim we got the whole input */
++		attr->set_buf[size] = '\0';
++		val = simple_strtol(attr->set_buf, NULL, 0);
++		attr->set(data, val);
++	}
+ out:
+ 	mutex_unlock(&attr->mutex);
+ 	return ret;
 
 
