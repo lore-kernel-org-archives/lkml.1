@@ -1,55 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751700AbYDDUwU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752124AbYDDUxT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751700AbYDDUwU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Apr 2008 16:52:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751131AbYDDUwE
+	id S1752124AbYDDUxT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Apr 2008 16:53:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751247AbYDDUxF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Apr 2008 16:52:04 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:48216 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751056AbYDDUwB (ORCPT
+	Fri, 4 Apr 2008 16:53:05 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:61803 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751008AbYDDUxE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Apr 2008 16:52:01 -0400
-Date: Fri, 4 Apr 2008 13:51:54 -0700
-From: Greg KH <greg@kroah.com>
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Greg KH <gregkh@suse.de>, linux-usb@vger.kernel.org
-Subject: Re: usb unbind/bind => WARNING at fs/sysfs/dir.c [Was:
-	2.6.25-rc8-mm1]
-Message-ID: <20080404205154.GB14315@kroah.com>
-References: <20080401213214.8fbb6d6b.akpm@linux-foundation.org> <47F68CA0.7090007@gmail.com>
+	Fri, 4 Apr 2008 16:53:04 -0400
+Message-ID: <47F68804.5060902@oracle.com>
+Date: Fri, 04 Apr 2008 12:56:52 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+User-Agent: Thunderbird 1.5.0.5 (X11/20060719)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47F68CA0.7090007@gmail.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: Mark Fasheh <mfasheh@suse.com>
+CC: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, joel.becker@oracle.com
+Subject: Re: linux-next: Tree for March 25 (ocfs2 build)
+References: <20080325175224.3ee62b09.sfr@canb.auug.org.au> <20080325143902.e69b704b.randy.dunlap@oracle.com> <20080404194716.GM21261@wotan.suse.de>
+In-Reply-To: <20080404194716.GM21261@wotan.suse.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 04, 2008 at 10:16:32PM +0200, Jiri Slaby wrote:
-> On 04/02/2008 06:32 AM, Andrew Morton wrote:
->> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.25-rc8/2.6.25-rc8-mm1/
->
-> After
-> $ echo -n 4-1.2 >/sys/bus/usb/drivers/usb/unbind
-> $ echo -n 4-1.2 >/sys/bus/usb/drivers/usb/bind
->
-> I have this in logs:
->
-> sysfs: duplicate filename 'usbdev4.12_ep81' can not be created
+Mark Fasheh wrote:
+> On Tue, Mar 25, 2008 at 02:39:02PM -0700, Randy Dunlap wrote:
+>> ocfs2 link/build problem with
+>> CONFIG_OCFS2_FS=y
+>> CONFIG_OCFS2_FS_O2CB=m
+>>
+>> ERROR: "dlmunlock" [fs/ocfs2/ocfs2_stack_o2cb.ko] undefined!
+>> ERROR: "dlm_setup_eviction_cb" [fs/ocfs2/ocfs2_stack_o2cb.ko] undefined!
+>> ERROR: "dlm_register_eviction_cb" [fs/ocfs2/ocfs2_stack_o2cb.ko] undefined!
+>> ERROR: "dlm_register_domain" [fs/ocfs2/ocfs2_stack_o2cb.ko] undefined!
+>> ERROR: "dlm_unregister_domain" [fs/ocfs2/ocfs2_stack_o2cb.ko] undefined!
+>> ERROR: "dlm_unregister_eviction_cb" [fs/ocfs2/ocfs2_stack_o2cb.ko] undefined!
+>> ERROR: "dlmlock" [fs/ocfs2/ocfs2_stack_o2cb.ko] undefined!
+>> ERROR: "dlm_print_one_lock" [fs/ocfs2/ocfs2_stack_o2cb.ko] undefined!
+>> make[2]: *** [__modpost] Error 1
+> 
+> Ok, does this patch fix it for you?
+> 	--Mark
 
-Does this also show up in 2.6.25-rc8 without -mm?
+Yes, thanks.
 
-I thought I fixed this already, I don't see what slipped into -mm that
-would have caused it to come back.  Time to run some more tests...
+Acked-by: Randy Dunlap <randy.dunlap@oracle.com>
 
-Oh, also note that binding and unbinding the main "usb" driver is not
-encouraged, or even supported.  I'm amazed it works, as this is not
-something that any "real" user would do as it makes no sense at all
-because we have no "alternative" drivers yet for the main USB device.
 
-thanks,
+> --
+> Mark Fasheh
+> 
+> 
+> From: Mark Fasheh <mfasheh@suse.com>
+> 
+> ocfs2: Only build ocfs2/dlm with the o2cb stack module
+> 
+> fs/ocfs2/dlm/ocfs2_dlm.ko and fs/ocfs2/dlm/ocfs2_dlmfs.ko get built if
+> CONFIG_FS_OCFS2 is specified. This isn't quite how it should happen any more
+> - the "o2cb" dlm modules should only be built if CONFIG_FS_OCFS2_O2CB is
+> set, so update the dlm Makefile accordingly.
+> 
+> Signed-off-by: Mark Fasheh <mfasheh@suse.com>
+> ---
+>  fs/ocfs2/dlm/Makefile |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/fs/ocfs2/dlm/Makefile b/fs/ocfs2/dlm/Makefile
+> index ce3f7c2..1903613 100644
+> --- a/fs/ocfs2/dlm/Makefile
+> +++ b/fs/ocfs2/dlm/Makefile
+> @@ -1,6 +1,6 @@
+>  EXTRA_CFLAGS += -Ifs/ocfs2
+>  
+> -obj-$(CONFIG_OCFS2_FS) += ocfs2_dlm.o ocfs2_dlmfs.o
+> +obj-$(CONFIG_OCFS2_FS_O2CB) += ocfs2_dlm.o ocfs2_dlmfs.o
+>  
+>  ocfs2_dlm-objs := dlmdomain.o dlmdebug.o dlmthread.o dlmrecovery.o \
+>  	dlmmaster.o dlmast.o dlmconvert.o dlmlock.o dlmunlock.o dlmver.o
 
-greg k-h
+
+-- 
+~Randy
