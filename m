@@ -1,114 +1,301 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757251AbYDDPwg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757537AbYDDQGg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757251AbYDDPwg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Apr 2008 11:52:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751973AbYDDPw2
+	id S1757537AbYDDQGg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Apr 2008 12:06:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754477AbYDDQG0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Apr 2008 11:52:28 -0400
-Received: from mail.ift.unesp.br ([200.145.46.3]:53434 "EHLO mail.ift.unesp.br"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751028AbYDDPw1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Apr 2008 11:52:27 -0400
-Date: Fri, 4 Apr 2008 12:51:56 -0300
-From: "Carlos R. Mafra" <crmafra2@gmail.com>
-To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-Cc: Ray Lee <ray-lk@madrabbit.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Pallipadi@ogre.sisk.pl, Soeren Sonnenburg <kernel@nn7.de>
-Subject: Re: 2.6.25-current-git hangs on boot unless CONFIG_CPU_IDLE=n
-	-Apple
-Message-ID: <20080404155155.GA6578@localhost.ift.unesp.br>
-References: <pdj7pZVURbL.A.42H.kDW9HB@albercik> <pdYe6zNQVl.A.AOB.6GW9HB@albercik> <924EFEDD5F540B4284297C4DC59F3DEED0EA1E@orsmsx423.amr.corp.intel.com> <20080404011053.GA21254@localhost.ift.unesp.br> <2c0942db0804032015y57e91811r37b729cd836cef6d@mail.gmail.com> <20080404114756.GA3890@localhost.ift.unesp.br> <924EFEDD5F540B4284297C4DC59F3DEED0EB77@orsmsx423.amr.corp.intel.com>
-MIME-Version: 1.0
+	Fri, 4 Apr 2008 12:06:26 -0400
+Received: from tomts16-srv.bellnexxia.net ([209.226.175.4]:42952 "EHLO
+	tomts16-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753582AbYDDQGZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Apr 2008 12:06:25 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApsEAD7v9UdMQWoK/2dsb2JhbACBWqo7
+Date: Fri, 4 Apr 2008 12:06:23 -0400
+From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+To: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+Cc: LKML <linux-kernel@vger.kernel.org>, Pekka Enberg <penberg@cs.helsinki.fi>
+Subject: Re: [PATCH] relay: add buffer-only functionality, allowing for
+	early kernel tracing
+Message-ID: <20080404160623.GC32126@Krystal>
+References: <20080404183303.2e239a20@linux360.ro>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <924EFEDD5F540B4284297C4DC59F3DEED0EB77@orsmsx423.amr.corp.intel.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <20080404183303.2e239a20@linux360.ro>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 12:01:19 up 35 days, 12:12,  7 users,  load average: 1.66, 0.70,
+	0.51
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri  4.Apr'08 at  7:25:34 -0700, Pallipadi, Venkatesh wrote:
+* Eduard - Gabriel Munteanu (eduard.munteanu@linux360.ro) wrote:
+> relay_open() can now handle NULL base_filename, to register a
+> buffer-only channel. Using a new function, relay_late_setup_files(), one
+> can assign files after creating the channel, thus allowing for doing
+> early tracing in the kernel, before VFS is up.
+> 
+
+I like this :) But could we trace event sooner if we did not depend on
+vmalloc to allocate the buffers ?
+
+I am thinking of receiving a kernel parameter that would reserve a
+buffer in the linear kernel mapping (kmalloc ?), or to compile-in a
+static buffer, which could be used by relay instead of the vmalloc'd
+buffer. That would permit to trace the memory allocator and some other
+very early stuff. Basically, relay would have it's "memory pool" to
+manage and would do its allocations from this fixed buffer. No free
+would be required.
+
+Mathieu
+
+> Signed-off-by: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+> ---
+>  Documentation/filesystems/relay.txt |   11 ++++
+>  include/linux/relay.h               |    4 ++
+>  kernel/relay.c                      |  102 ++++++++++++++++++++++++++---------
+>  3 files changed, 91 insertions(+), 26 deletions(-)
+> 
+> diff --git a/Documentation/filesystems/relay.txt b/Documentation/filesystems/relay.txt
+> index 094f2d2..b59c228 100644
+> --- a/Documentation/filesystems/relay.txt
+> +++ b/Documentation/filesystems/relay.txt
+> @@ -161,6 +161,7 @@ TBD(curr. line MT:/API/)
+>      relay_close(chan)
+>      relay_flush(chan)
+>      relay_reset(chan)
+> +    relay_late_setup_files(chan, base_filename, parent)
 >  
+>    channel management typically called on instigation of userspace:
+>  
+> @@ -294,6 +295,16 @@ user-defined data with a channel, and is immediately available
+>  (including in create_buf_file()) via chan->private_data or
+>  buf->chan->private_data.
+>  
+> +Buffer-only channels
+> +--------------------
+> +
+> +These channels have no files associated and can be created with
+> +relay_open(NULL, NULL, ...). Such channels are useful in scenarios such
+> +as when doing early tracing in the kernel, before the VFS is up. In these
+> +cases, one may open a channel a buffer-only channel and then call
+> +relay_late_setup_files() when the kernel is ready to handle files, to expose
+> +the buffered data to the userspace.
+> +
+>  Channel 'modes'
+>  ---------------
+>  
+> diff --git a/include/linux/relay.h b/include/linux/relay.h
+> index 6cd8c44..ca9ee3f 100644
+> --- a/include/linux/relay.h
+> +++ b/include/linux/relay.h
+> @@ -68,6 +68,7 @@ struct rchan
+>  	int is_global;			/* One global buffer ? */
+>  	struct list_head list;		/* for channel list */
+>  	struct dentry *parent;		/* parent dentry passed to open */
+> +	int has_base_filename;		/* has a filename associated? */
+>  	char base_filename[NAME_MAX];	/* saved base filename */
+>  };
+>  
+> @@ -169,6 +170,9 @@ struct rchan *relay_open(const char *base_filename,
+>  			 size_t n_subbufs,
+>  			 struct rchan_callbacks *cb,
+>  			 void *private_data);
+> +extern int relay_late_setup_files(struct rchan *chan,
+> +				  const char *base_filename,
+> +				  struct dentry *parent);
+>  extern void relay_close(struct rchan *chan);
+>  extern void relay_flush(struct rchan *chan);
+>  extern void relay_subbufs_consumed(struct rchan *chan,
+> diff --git a/kernel/relay.c b/kernel/relay.c
+> index 4c035a8..4bea94a 100644
+> --- a/kernel/relay.c
+> +++ b/kernel/relay.c
+> @@ -378,6 +378,35 @@ void relay_reset(struct rchan *chan)
+>  }
+>  EXPORT_SYMBOL_GPL(relay_reset);
+>  
+> +static int relay_setup_buf_file(struct rchan *chan,
+> +				struct rchan_buf *buf,
+> +				unsigned int cpu)
+> +{
+> +	struct dentry *dentry;
+> + 	char *tmpname;
+> +
+> +	tmpname = kzalloc(NAME_MAX + 1, GFP_KERNEL);
+> +	if (!tmpname)
+> +		goto failed;
+> +	snprintf(tmpname, NAME_MAX, "%s%d", chan->base_filename, cpu);
+> +
+> +	/* Create file in fs */
+> +	dentry = chan->cb->create_buf_file(tmpname, chan->parent,
+> +					   S_IRUSR, buf, 
+> +					   &chan->is_global);
+> +	
+> +	if (!dentry)
+> +		goto failed;
+> +	buf->dentry = dentry;
+> +
+> +	kfree(tmpname);
+> +
+> +	return 0;
+> +
+> +failed:
+> +	return 1;
+> +}
+> +
+>  /*
+>   *	relay_open_buf - create a new relay channel buffer
+>   *
+> @@ -386,44 +415,30 @@ EXPORT_SYMBOL_GPL(relay_reset);
+>  static struct rchan_buf *relay_open_buf(struct rchan *chan, unsigned int cpu)
+>  {
+>   	struct rchan_buf *buf = NULL;
+> -	struct dentry *dentry;
+> - 	char *tmpname;
+>  
+>   	if (chan->is_global)
+>  		return chan->buf[0];
+>  
+> -	tmpname = kzalloc(NAME_MAX + 1, GFP_KERNEL);
+> - 	if (!tmpname)
+> - 		goto end;
+> - 	snprintf(tmpname, NAME_MAX, "%s%d", chan->base_filename, cpu);
+> -
+>  	buf = relay_create_buf(chan);
+>  	if (!buf)
+> - 		goto free_name;
+> + 		goto end;
+> +
+> + 	if (chan->has_base_filename)
+> +		if (relay_setup_buf_file(chan, buf, cpu)) goto free_buf;
+>  
+>   	buf->cpu = cpu;
+>   	__relay_reset(buf, 1);
+>  
+> -	/* Create file in fs */
+> - 	dentry = chan->cb->create_buf_file(tmpname, chan->parent, S_IRUSR,
+> - 					   buf, &chan->is_global);
+> - 	if (!dentry)
+> - 		goto free_buf;
+> -
+> -	buf->dentry = dentry;
+> -
+>   	if(chan->is_global) {
+>   		chan->buf[0] = buf;
+>   		buf->cpu = 0;
+>    	}
+>  
+> - 	goto free_name;
+> + 	goto end;
+>  
+>  free_buf:
+>   	relay_destroy_buf(buf);
+>   	buf = NULL;
+> -free_name:
+> - 	kfree(tmpname);
+>  end:
+>  	return buf;
+>  }
+> @@ -508,8 +523,8 @@ static int __cpuinit relay_hotcpu_callback(struct notifier_block *nb,
+>  
+>  /**
+>   *	relay_open - create a new relay channel
+> - *	@base_filename: base name of files to create
+> - *	@parent: dentry of parent directory, %NULL for root directory
+> + *	@base_filename: base name of files to create, %NULL for buffering only
+> + *	@parent: dentry of parent directory, %NULL for root directory or buffer
+>   *	@subbuf_size: size of sub-buffers
+>   *	@n_subbufs: number of sub-buffers
+>   *	@cb: client callback functions
+> @@ -531,8 +546,6 @@ struct rchan *relay_open(const char *base_filename,
+>  {
+>  	unsigned int i;
+>  	struct rchan *chan;
+> -	if (!base_filename)
+> -		return NULL;
+>  
+>  	if (!(subbuf_size && n_subbufs))
+>  		return NULL;
+> @@ -547,12 +560,17 @@ struct rchan *relay_open(const char *base_filename,
+>  	chan->alloc_size = FIX_SIZE(subbuf_size * n_subbufs);
+>  	chan->parent = parent;
+>  	chan->private_data = private_data;
+> -	strlcpy(chan->base_filename, base_filename, NAME_MAX);
+> +	if (base_filename) {
+> +		chan->has_base_filename = 1;
+> +		strlcpy(chan->base_filename, base_filename, NAME_MAX);
+> +	} else {
+> +		chan->has_base_filename = 0;
+> +	}
+>  	setup_callbacks(chan, cb);
+>  	kref_init(&chan->kref);
+>  
+>  	mutex_lock(&relay_channels_mutex);
+> -	for_each_online_cpu(i) {
+> +	for_each_present_cpu(i) {
+>  		chan->buf[i] = relay_open_buf(chan, i);
+>  		if (!chan->buf[i])
+>  			goto free_bufs;
+> @@ -563,7 +581,7 @@ struct rchan *relay_open(const char *base_filename,
+>  	return chan;
+>  
+>  free_bufs:
+> -	for_each_online_cpu(i) {
+> +	for_each_present_cpu(i) {
+>  		if (!chan->buf[i])
+>  			break;
+>  		relay_close_buf(chan->buf[i]);
+> @@ -576,6 +594,38 @@ free_bufs:
+>  EXPORT_SYMBOL_GPL(relay_open);
+>  
+>  /**
+> + *	relay_late_setup_files - triggers file creation
+> + *	@chan: channel to operate on
+> + *	@base_filename: base name of files to create
+> + *	@parent: dentry of parent directory, %NULL for root directory
+> + *
+> + *	Returns 0 is successful, non-zero otherwise.
+> + *
+> + *	Use to setup files for a previously buffer-only channel.
+> + *	Useful to do early tracing in kernel, before VFS is up, for example.
+> + */
+> +int relay_late_setup_files(struct rchan *chan,
+> +			   const char *base_filename,
+> +			   struct dentry *parent)
+> +{
+> +	unsigned int i;
+> +	
+> +	if (!chan || !base_filename)
+> +		return 1;
+> +	
+> +	strlcpy(chan->base_filename, base_filename, NAME_MAX);
+> +	chan->has_base_filename = 1;
+> +	chan->parent = parent;
+> +
+> +	mutex_lock(&relay_channels_mutex);
+> +	for_each_present_cpu(i)
+> +		relay_setup_buf_file(chan, chan->buf[i], i);
+> +	mutex_unlock(&relay_channels_mutex);
+> +
+> +	return 0;
+> +}
+> +		
+> +/**
+>   *	relay_switch_subbuf - switch to a new sub-buffer
+>   *	@buf: channel buffer
+>   *	@length: size of current event
+> -- 
+> 1.5.2.5
 > 
-> >-----Original Message-----
-> >From: linux-kernel-owner@vger.kernel.org 
-> >[mailto:linux-kernel-owner@vger.kernel.org] On Behalf Of 
-> >Carlos R. Mafra
-> >Sent: Friday, April 04, 2008 4:48 AM
-> >To: Ray Lee
-> >Cc: Pallipadi, Venkatesh; Rafael J. Wysocki; Linux Kernel 
-> >Mailing List; Pallipadi@ogre.sisk.pl; Soeren Sonnenburg
-> >Subject: Re: 2.6.25-current-git hangs on boot unless 
-> >CONFIG_CPU_IDLE=n -Apple
-> >
-> >On Thu  3.Apr'08 at 20:15:02 -0700, Ray Lee wrote:
-> >> On Thu, Apr 3, 2008 at 6:10 PM, Carlos R. Mafra 
-> ><crmafra2@gmail.com> wrote:
-> >> > On Thu  3.Apr'08 at 17:14:22 -0700, Pallipadi, Venkatesh wrote:
-> >> >  > >The following report is on the current list of known 
-> >regressions
-> >> >  > >from 2.6.24.  Please verify if the issue is still 
-> >present in the
-> >> >  > >mainline.
-> >> >  > >
-> >> >  > >
-> >> >  > >Bug-Entry    : http://bugzilla.kernel.org/show_bug.cgi?id=10093
-> >> >  > >Subject              : 2.6.25-current-git hangs on boot
-> >> >  > >unless CONFIG_CPU_IDLE=n - Apple
-> >> >  > >Submitter    : Soeren Sonnenburg <kernel@nn7.de>
-> >> >  > >Date         : 2008-02-23 18:55 (41 days old)
-> >> >  > >References   : http://lkml.org/lkml/2008/2/23/263
-> >> >  > >
-> >> >  > >http://marc.info/?l=linux-acpi&amp;m=120387537018467&amp;w=4
-> >> >  > >Handled-By   : Pallipadi, Venkatesh 
-> ><venkatesh.pallipadi@intel.com>
-> >> >  > >
-> >> >  >
-> >> >  > Last comment I saw from Soeren says it does not really 
-> >hang. It waits
-> >> >  > for 5-10 seconds sometimes before continuing. We are 
-> >still trying to
-> >> >  > narrow this down with max_cstate etc..
-> >> >
-> >> >  I should say that my laptop (Vaio) _hangs_ at boot (less 
-> >than 10% of boots)
-> >> >  and this is the last message I see:
-> >> >
-> >> >  "ACPI: Processor [CPU1] (supports 8 throttling states)"
-> >> >
-> >> >  and it stays there "forever" (more than 1 or 2 minutes at least).
-> >> >
-> >> >  I am not using my laptop too much these days, and I thought this
-> >> >  bug had been solved because it didn't hang for the last week (but
-> >> >  I boot it once per day), however it hang last night (using some
-> >> >  post 2.6.25-rc7 kernel)
-> >> >
-> >> >  I have pictures of the screen while showing this last 
-> >message at boot,
-> >> >  should I post it somewhere or that is not necessary?.
-> >> 
-> >> If the sysrq key still works when that happens, try to do a sysrq-t,
-> >> s, b to generate a trace, sync the filesystem, and reboot. 
-> >If anything
-> >> made it to the logs, please post it.
-> >
-> >Sysrq keys don't work when it hangs, I have to push the power button.
-> >
-> >Another thing to notice is that when it happens, it usually happens
-> >more times in a row (like 3 times). And then it can take many boots to
-> >happen again.
-> >
-> >I've uploaded the picture where it hangs, it is in the very beginning
-> >of the boot process:
-> >
-> >http://www.ift.unesp.br/users/crmafra/dsc04673.jpg
-> 
-> 
-> Can you try the latest git and see whether this still is a problem?
 
-I've just updated to latest git, but it may take some time for it 
-to happen again (the first 3 boots were okay). Last time it happened
-with 2.6.25-rc7-00149-gaf8be4e (I checked now). 
-
-Do you have reasons to believe this issue was fixed since then?
+-- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
