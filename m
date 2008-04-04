@@ -1,49 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757799AbYDDIro@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757393AbYDDIsZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757799AbYDDIro (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Apr 2008 04:47:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751923AbYDDIrg
+	id S1757393AbYDDIsZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Apr 2008 04:48:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751923AbYDDIsS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Apr 2008 04:47:36 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:45682 "EHLO mx3.mail.elte.hu"
+	Fri, 4 Apr 2008 04:48:18 -0400
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:49133 "EHLO smtp5.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751261AbYDDIrg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Apr 2008 04:47:36 -0400
-Date: Fri, 4 Apr 2008 10:47:13 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Alexander van Heukelum <heukelum@mailshack.com>
-Cc: Andi Kleen <andi@firstfloor.org>, LKML <linux-kernel@vger.kernel.org>,
-       Alexander van Heukelum <heukelum@fastmail.fm>
-Subject: Re: [PATCH] x86: remove x86-specific implementations of
-	find_first_bit
-Message-ID: <20080404084713.GD32209@elte.hu>
-References: <20080331171506.GA24017@mailshack.com> <20080401084710.GB4787@elte.hu> <20080401094618.GA24862@mailshack.com> <20080401154126.GA26062@mailshack.com> <20080401154221.GB26062@mailshack.com> <20080401154757.GC26062@mailshack.com>
+	id S1751916AbYDDIsR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Apr 2008 04:48:17 -0400
+Date: Fri, 4 Apr 2008 11:47:56 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Toralf Feorster <toralf.foerster@gmx.de>
+Subject: Re: TUNER_TDA8290=y, VIDEO_DEV=n build error
+Message-ID: <20080404084754.GA10993@cs181133002.pp.htv.fi>
+References: <pdj7pZVURbL.A.42H.kDW9HB@albercik> <pdYe6zNQVl.A.iUB.YHW9HB@albercik>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20080401154757.GC26062@mailshack.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.1
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.1 required=5.9 tests=BAYES_05 autolearn=no SpamAssassin version=3.2.3
-	-1.1 BAYES_05               BODY: Bayesian spam probability is 1 to 5%
-	[score: 0.0458]
+In-Reply-To: <pdYe6zNQVl.A.iUB.YHW9HB@albercik>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Apr 04, 2008 at 01:20:32AM +0200, Rafael J. Wysocki wrote:
+> The following report is on the current list of known regressions
+> from 2.6.24.  Please verify if the issue is still present in the
+> mainline.
 
-* Alexander van Heukelum <heukelum@mailshack.com> wrote:
+When you asked me just 2 days ago exactly the same question in the 
+Bugzilla entry I immediately confirmed it's still present.
 
-> [PATCH] x86: remove x86-specific implementations of find_first_bit
-> 
-> x86 has been switched to the generic versions of find_first_bit and 
-> find_first_zero_bit, but the original versions were retained. This 
-> patch just removes the now unused x86-specific versions.
+Was anything wrong with my answer (and the subsequent discussions) that 
+you now also ask Toralf for confirmation?
 
-thanks Alexander, i've added your patches to x86.git/latest.
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10067
+> Subject		: TUNER_TDA8290=y, VIDEO_DEV=n build error
+> Submitter	: Toralf Foerster <toralf.foerster@gmx.de>
+> Date		: 2008-02-22 10:36 (42 days old)
+> References	: http://lkml.org/lkml/2008/2/19/262
 
-	Ingo
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
