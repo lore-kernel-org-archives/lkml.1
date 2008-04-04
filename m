@@ -1,93 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761691AbYDDNED@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932083AbYDDNEb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761691AbYDDNED (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Apr 2008 09:04:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760669AbYDDM55
+	id S932083AbYDDNEb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Apr 2008 09:04:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760888AbYDDM6A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Apr 2008 08:57:57 -0400
-Received: from saeurebad.de ([85.214.36.134]:44800 "EHLO saeurebad.de"
+	Fri, 4 Apr 2008 08:58:00 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:52926 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760873AbYDDM54 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Apr 2008 08:57:56 -0400
-X-Mailbox-Line: From hannes@skyscraper.fehenstaub.lan Fri Apr  4 13:52:32 2008
-Message-Id: <20080404115232.479618744@skyscraper.fehenstaub.lan>
-References: <20080404115137.397502419@skyscraper.fehenstaub.lan>
-User-Agent: quilt/0.46-1
-Date: Fri, 04 Apr 2008 13:51:50 +0200
-From: hannes@saeurebad.de
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: David Howells <dhowells@redhat.com>
-Subject: [patch 13/22 -v2] mn10300: Use generic show_mem()
-Content-Disposition: inline; filename=mn10300-use-generic-show_mem.patch
-X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
+	id S1760889AbYDDM57 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Apr 2008 08:57:59 -0400
+Date: Fri, 4 Apr 2008 14:57:43 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Mikael Pettersson <mikpe@it.uu.se>
+Cc: Michael Tokarev <mjt@tls.msk.ru>,
+       Linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.24 still doesn't boot on i486..
+Message-ID: <20080404125743.GB29423@elte.hu>
+References: <47F5EE6A.6080705@msgid.tls.msk.ru> <18422.8628.510177.819697@harpo.it.uu.se>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <18422.8628.510177.819697@harpo.it.uu.se>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.1
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.1 required=5.9 tests=BAYES_05 autolearn=no SpamAssassin version=3.2.3
+	-1.1 BAYES_05               BODY: Bayesian spam probability is 1 to 5%
+	[score: 0.0126]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Remove arch-specific show_mem() in favor of the generic version.
 
-This also removes the following redundant information display:
+* Mikael Pettersson <mikpe@it.uu.se> wrote:
 
-	- free pages, printed by show_free_areas()
-	- pages in swapcache, printed by show_swap_cache_info()
+>  > And now I wonder if I'm the only person in this world with i486 
+>  > machine... ;)
+> 
+> Just FYI, 2.6.23, 2.6.24 and 2.6.25-rc6 work fine on my i486DX4.
+> 
+> However, it's clear from your .config fragment above that you've 
+> enabled features that cannot possibly exist on a 486 (APICs and MCE 
+> for starters) and there may be bugs related to that. I suggest 
+> trimming your .config and making it 486-specific.
 
-where show_mem() calls show_free_areas(), which calls
-show_swap_cache_info().
+apics should be auto-detect though. So if a .24 config was plugged into 
+.25 and the kernel broke that's still a regression - would be nice to 
+figure out which .config detail causes this problem.
 
-Signed-off-by: Johannes Weiner <hannes@saeurebad.de>
-CC: David Howells <dhowells@redhat.com>
----
-
-Index: tree-linus/arch/mn10300/Kconfig
-===================================================================
---- tree-linus.orig/arch/mn10300/Kconfig
-+++ tree-linus/arch/mn10300/Kconfig
-@@ -7,7 +7,6 @@ mainmenu "Linux Kernel Configuration"
- 
- config MN10300
- 	def_bool y
--	select HAVE_ARCH_SHOW_MEM
- 
- config AM33
- 	def_bool y
-Index: tree-linus/arch/mn10300/mm/pgtable.c
-===================================================================
---- tree-linus.orig/arch/mn10300/mm/pgtable.c
-+++ tree-linus/arch/mn10300/mm/pgtable.c
-@@ -27,33 +27,6 @@
- #include <asm/tlb.h>
- #include <asm/tlbflush.h>
- 
--void show_mem(void)
--{
--	unsigned long i;
--	int free = 0, total = 0, reserved = 0, shared = 0;
--
--	int cached = 0;
--	printk(KERN_INFO "Mem-info:\n");
--	show_free_areas();
--	i = max_mapnr;
--	while (i-- > 0) {
--		total++;
--		if (PageReserved(mem_map + i))
--			reserved++;
--		else if (PageSwapCache(mem_map + i))
--			cached++;
--		else if (!page_count(mem_map + i))
--			free++;
--		else
--			shared += page_count(mem_map + i) - 1;
--	}
--	printk(KERN_INFO "%d pages of RAM\n", total);
--	printk(KERN_INFO "%d free pages\n", free);
--	printk(KERN_INFO "%d reserved pages\n", reserved);
--	printk(KERN_INFO "%d pages shared\n", shared);
--	printk(KERN_INFO "%d pages swap cached\n", cached);
--}
--
- /*
-  * Associate a large virtual page frame with a given physical page frame
-  * and protection flags for that frame. pfn is for the base of the page,
-
--- 
-
+	Ingo
