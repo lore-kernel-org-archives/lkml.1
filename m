@@ -1,132 +1,208 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755873AbYDDWec@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754869AbYDDWeO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755873AbYDDWec (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Apr 2008 18:34:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753649AbYDDWbp
+	id S1754869AbYDDWeO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Apr 2008 18:34:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753550AbYDDWbp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Fri, 4 Apr 2008 18:31:45 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:50585 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752615AbYDDWbh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Apr 2008 18:31:37 -0400
-Message-Id: <20080404223131.727813758@sgi.com>
+Received: from relay2.sgi.com ([192.48.171.30]:52694 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752685AbYDDWbi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Apr 2008 18:31:38 -0400
+Message-Id: <20080404223132.259410373@sgi.com>
 References: <20080404223048.374852899@sgi.com>
 User-Agent: quilt/0.46-1
-Date: Fri, 04 Apr 2008 15:30:51 -0700
+Date: Fri, 04 Apr 2008 15:30:53 -0700
 From: Christoph Lameter <clameter@sgi.com>
 To: Andrea Arcangeli <andrea@qumranet.com>
 Cc: Robin Holt <holt@sgi.com>
 Cc: kvm-devel@lists.sourceforge.net
 Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, general@lists.openfabrics.org
 Cc: steiner@sgi.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: [patch 03/10] emm: Move tlb flushing into free_pgtables
-Content-Disposition: inline; filename=move_tlb_flush
+Subject: [patch 05/10] emm: Remove tlb pointer from the parameters of unmap vmas
+Content-Disposition: inline; filename=cleanup_unmap_vmas
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Move the tlb flushing into free_pgtables. The conversion of the locks
-taken for reverse map scanning would require taking sleeping locks
-in free_pgtables(). Moving the tlb flushing into free_pgtables allows
-sleeping in parts of free_pgtables().
-
-This means that we do a tlb_finish_mmu() before freeing the page tables.
-Strictly speaking there may not be the need to do another tlb flush after
-freeing the tables. But its the only way to free a series of page table
-pages from the tlb list. And we do not want to call into the page allocator
-for performance reasons. Aim9 numbers look okay after this patch.
+We no longer abort unmapping in unmap vmas because we can reschedule while
+unmapping since we are holding a semaphore. This would allow moving more
+of the tlb flusing into unmap_vmas reducing code in various places.
 
 Signed-off-by: Christoph Lameter <clameter@sgi.com>
 
 ---
- include/linux/mm.h |    4 ++--
- mm/memory.c        |   14 ++++++++++----
- mm/mmap.c          |    6 +++---
- 3 files changed, 15 insertions(+), 9 deletions(-)
+ include/linux/mm.h |    3 +--
+ mm/memory.c        |   43 +++++++++++++++++--------------------------
+ mm/mmap.c          |   18 +++---------------
+ 3 files changed, 21 insertions(+), 43 deletions(-)
 
 Index: linux-2.6/include/linux/mm.h
 ===================================================================
---- linux-2.6.orig/include/linux/mm.h	2008-03-19 13:30:51.460856986 -0700
-+++ linux-2.6/include/linux/mm.h	2008-03-19 13:31:20.809377398 -0700
-@@ -751,8 +751,8 @@ int walk_page_range(const struct mm_stru
- 		    void *private);
- void free_pgd_range(struct mmu_gather **tlb, unsigned long addr,
- 		unsigned long end, unsigned long floor, unsigned long ceiling);
--void free_pgtables(struct mmu_gather **tlb, struct vm_area_struct *start_vma,
--		unsigned long floor, unsigned long ceiling);
-+void free_pgtables(struct vm_area_struct *start_vma, unsigned long floor,
-+						unsigned long ceiling);
- int copy_page_range(struct mm_struct *dst, struct mm_struct *src,
- 			struct vm_area_struct *vma);
- void unmap_mapping_range(struct address_space *mapping,
+--- linux-2.6.orig/include/linux/mm.h	2008-04-01 13:02:41.374608387 -0700
++++ linux-2.6/include/linux/mm.h	2008-04-01 13:02:43.898651546 -0700
+@@ -723,8 +723,7 @@ struct zap_details {
+ struct page *vm_normal_page(struct vm_area_struct *, unsigned long, pte_t);
+ unsigned long zap_page_range(struct vm_area_struct *vma, unsigned long address,
+ 		unsigned long size, struct zap_details *);
+-unsigned long unmap_vmas(struct mmu_gather **tlb,
+-		struct vm_area_struct *start_vma, unsigned long start_addr,
++unsigned long unmap_vmas(struct vm_area_struct *start_vma, unsigned long start_addr,
+ 		unsigned long end_addr, unsigned long *nr_accounted,
+ 		struct zap_details *);
+ 
 Index: linux-2.6/mm/memory.c
 ===================================================================
---- linux-2.6.orig/mm/memory.c	2008-03-19 13:29:06.007351495 -0700
-+++ linux-2.6/mm/memory.c	2008-03-19 13:46:31.352774359 -0700
-@@ -271,9 +271,11 @@ void free_pgd_range(struct mmu_gather **
- 	} while (pgd++, addr = next, addr != end);
+--- linux-2.6.orig/mm/memory.c	2008-04-01 13:02:41.378608315 -0700
++++ linux-2.6/mm/memory.c	2008-04-01 13:02:43.902651345 -0700
+@@ -806,7 +806,6 @@ static unsigned long unmap_page_range(st
+ 
+ /**
+  * unmap_vmas - unmap a range of memory covered by a list of vma's
+- * @tlbp: address of the caller's struct mmu_gather
+  * @vma: the starting vma
+  * @start_addr: virtual address at which to start unmapping
+  * @end_addr: virtual address at which to end unmapping
+@@ -818,20 +817,13 @@ static unsigned long unmap_page_range(st
+  * Unmap all pages in the vma list.
+  *
+  * We aim to not hold locks for too long (for scheduling latency reasons).
+- * So zap pages in ZAP_BLOCK_SIZE bytecounts.  This means we need to
+- * return the ending mmu_gather to the caller.
++ * So zap pages in ZAP_BLOCK_SIZE bytecounts.
+  *
+  * Only addresses between `start' and `end' will be unmapped.
+  *
+  * The VMA list must be sorted in ascending virtual address order.
+- *
+- * unmap_vmas() assumes that the caller will flush the whole unmapped address
+- * range after unmap_vmas() returns.  So the only responsibility here is to
+- * ensure that any thus-far unmapped pages are flushed before unmap_vmas()
+- * drops the lock and schedules.
+  */
+-unsigned long unmap_vmas(struct mmu_gather **tlbp,
+-		struct vm_area_struct *vma, unsigned long start_addr,
++unsigned long unmap_vmas(struct vm_area_struct *vma, unsigned long start_addr,
+ 		unsigned long end_addr, unsigned long *nr_accounted,
+ 		struct zap_details *details)
+ {
+@@ -839,7 +831,15 @@ unsigned long unmap_vmas(struct mmu_gath
+ 	unsigned long tlb_start = 0;	/* For tlb_finish_mmu */
+ 	int tlb_start_valid = 0;
+ 	unsigned long start = start_addr;
+-	int fullmm = (*tlbp)->fullmm;
++	int fullmm;
++	struct mmu_gather *tlb;
++	struct mm_struct *mm = vma->vm_mm;
++
++	emm_notify(mm, emm_invalidate_start, start_addr, end_addr);
++	lru_add_drain();
++	tlb = tlb_gather_mmu(mm, 0);
++	update_hiwater_rss(mm);
++	fullmm = tlb->fullmm;
+ 
+ 	for ( ; vma && vma->vm_start < end_addr; vma = vma->vm_next) {
+ 		unsigned long end;
+@@ -866,7 +866,7 @@ unsigned long unmap_vmas(struct mmu_gath
+ 						(HPAGE_SIZE / PAGE_SIZE);
+ 				start = end;
+ 			} else
+-				start = unmap_page_range(*tlbp, vma,
++				start = unmap_page_range(tlb, vma,
+ 						start, end, &zap_work, details);
+ 
+ 			if (zap_work > 0) {
+@@ -874,13 +874,15 @@ unsigned long unmap_vmas(struct mmu_gath
+ 				break;
+ 			}
+ 
+-			tlb_finish_mmu(*tlbp, tlb_start, start);
++			tlb_finish_mmu(tlb, tlb_start, start);
+ 			cond_resched();
+-			*tlbp = tlb_gather_mmu(vma->vm_mm, fullmm);
++			tlb = tlb_gather_mmu(vma->vm_mm, fullmm);
+ 			tlb_start_valid = 0;
+ 			zap_work = ZAP_BLOCK_SIZE;
+ 		}
+ 	}
++	tlb_finish_mmu(tlb, start_addr, end_addr);
++	emm_notify(mm, emm_invalidate_end, start_addr, end_addr);
+ 	return start;	/* which is now the end (or restart) address */
  }
  
--void free_pgtables(struct mmu_gather **tlb, struct vm_area_struct *vma,
--		unsigned long floor, unsigned long ceiling)
-+void free_pgtables(struct vm_area_struct *vma, unsigned long floor,
-+							unsigned long ceiling)
+@@ -894,21 +896,10 @@ unsigned long unmap_vmas(struct mmu_gath
+ unsigned long zap_page_range(struct vm_area_struct *vma, unsigned long address,
+ 		unsigned long size, struct zap_details *details)
  {
-+	struct mmu_gather *tlb;
-+
- 	while (vma) {
- 		struct vm_area_struct *next = vma->vm_next;
- 		unsigned long addr = vma->vm_start;
-@@ -285,8 +287,10 @@ void free_pgtables(struct mmu_gather **t
- 		unlink_file_vma(vma);
+-	struct mm_struct *mm = vma->vm_mm;
+-	struct mmu_gather *tlb;
+ 	unsigned long end = address + size;
+ 	unsigned long nr_accounted = 0;
  
- 		if (is_vm_hugetlb_page(vma)) {
--			hugetlb_free_pgd_range(tlb, addr, vma->vm_end,
-+			tlb = tlb_gather_mmu(vma->vm_mm, 0);
-+			hugetlb_free_pgd_range(&tlb, addr, vma->vm_end,
- 				floor, next? next->vm_start: ceiling);
-+			tlb_finish_mmu(tlb, addr, vma->vm_end);
- 		} else {
- 			/*
- 			 * Optimization: gather nearby vmas into one call down
-@@ -298,8 +302,10 @@ void free_pgtables(struct mmu_gather **t
- 				anon_vma_unlink(vma);
- 				unlink_file_vma(vma);
- 			}
--			free_pgd_range(tlb, addr, vma->vm_end,
-+			tlb = tlb_gather_mmu(vma->vm_mm, 0);
-+			free_pgd_range(&tlb, addr, vma->vm_end,
- 				floor, next? next->vm_start: ceiling);
-+			tlb_finish_mmu(tlb, addr, vma->vm_end);
- 		}
- 		vma = next;
- 	}
+-	emm_notify(mm, emm_invalidate_start, address, end);
+-	lru_add_drain();
+-	tlb = tlb_gather_mmu(mm, 0);
+-	update_hiwater_rss(mm);
+-
+-	end = unmap_vmas(&tlb, vma, address, end, &nr_accounted, details);
+-	if (tlb)
+-		tlb_finish_mmu(tlb, address, end);
+-	emm_notify(mm, emm_invalidate_end, address, end);
+-	return end;
++	return unmap_vmas(vma, address, end, &nr_accounted, details);
+ }
+ 
+ /*
 Index: linux-2.6/mm/mmap.c
 ===================================================================
---- linux-2.6.orig/mm/mmap.c	2008-03-19 13:29:48.659889667 -0700
-+++ linux-2.6/mm/mmap.c	2008-03-19 13:30:36.296604891 -0700
-@@ -1750,9 +1750,9 @@ static void unmap_region(struct mm_struc
- 	update_hiwater_rss(mm);
- 	unmap_vmas(&tlb, vma, start, end, &nr_accounted, NULL);
+--- linux-2.6.orig/mm/mmap.c	2008-04-01 13:02:41.378608315 -0700
++++ linux-2.6/mm/mmap.c	2008-04-01 13:03:19.627259624 -0700
+@@ -1741,19 +1741,12 @@ static void unmap_region(struct mm_struc
+ 		unsigned long start, unsigned long end)
+ {
+ 	struct vm_area_struct *next = prev? prev->vm_next: mm->mmap;
+-	struct mmu_gather *tlb;
+ 	unsigned long nr_accounted = 0;
+ 
+-	emm_notify(mm, emm_invalidate_start, start, end);
+-	lru_add_drain();
+-	tlb = tlb_gather_mmu(mm, 0);
+-	update_hiwater_rss(mm);
+-	unmap_vmas(&tlb, vma, start, end, &nr_accounted, NULL);
++	unmap_vmas(vma, start, end, &nr_accounted, NULL);
  	vm_unacct_memory(nr_accounted);
--	free_pgtables(&tlb, vma, prev? prev->vm_end: FIRST_USER_ADDRESS,
--				 next? next->vm_start: 0);
- 	tlb_finish_mmu(tlb, start, end);
-+	free_pgtables(vma, prev? prev->vm_end: FIRST_USER_ADDRESS,
-+				 next? next->vm_start: 0);
- 	emm_notify(mm, emm_invalidate_end, start, end);
+-	tlb_finish_mmu(tlb, start, end);
+ 	free_pgtables(vma, prev? prev->vm_end: FIRST_USER_ADDRESS,
+ 				 next? next->vm_start: 0);
+-	emm_notify(mm, emm_invalidate_end, start, end);
  }
  
-@@ -2049,8 +2049,8 @@ void exit_mmap(struct mm_struct *mm)
- 	/* Use -1 here to ensure all VMAs in the mm are unmapped */
- 	end = unmap_vmas(&tlb, vma, 0, -1, &nr_accounted, NULL);
+ /*
+@@ -2033,7 +2026,6 @@ EXPORT_SYMBOL(do_brk);
+ /* Release all mmaps. */
+ void exit_mmap(struct mm_struct *mm)
+ {
+-	struct mmu_gather *tlb;
+ 	struct vm_area_struct *vma = mm->mmap;
+ 	unsigned long nr_accounted = 0;
+ 	unsigned long end;
+@@ -2041,15 +2033,11 @@ void exit_mmap(struct mm_struct *mm)
+ 	/* mm's last user has gone, and its about to be pulled down */
+ 	arch_exit_mmap(mm);
+ 	emm_notify(mm, emm_release, 0, TASK_SIZE);
+-
+ 	lru_add_drain();
+ 	flush_cache_mm(mm);
+-	tlb = tlb_gather_mmu(mm, 1);
+-	/* Don't update_hiwater_rss(mm) here, do_exit already did */
+-	/* Use -1 here to ensure all VMAs in the mm are unmapped */
+-	end = unmap_vmas(&tlb, vma, 0, -1, &nr_accounted, NULL);
++
++	end = unmap_vmas(vma, 0, -1, &nr_accounted, NULL);
  	vm_unacct_memory(nr_accounted);
--	free_pgtables(&tlb, vma, FIRST_USER_ADDRESS, 0);
- 	tlb_finish_mmu(tlb, 0, end);
-+	free_pgtables(vma, FIRST_USER_ADDRESS, 0);
+-	tlb_finish_mmu(tlb, 0, end);
+ 	free_pgtables(vma, FIRST_USER_ADDRESS, 0);
  
  	/*
- 	 * Walk the list again, actually closing and freeing it,
 
 -- 
