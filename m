@@ -1,255 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760786AbYDDPCV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760876AbYDDPCq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760786AbYDDPCV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Apr 2008 11:02:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758032AbYDDPAa
+	id S1760876AbYDDPCq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Apr 2008 11:02:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758032AbYDDPCe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Apr 2008 11:00:30 -0400
-Received: from ecfrec.frec.bull.fr ([129.183.4.8]:59157 "EHLO
-	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759773AbYDDPAY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Apr 2008 11:00:24 -0400
-Message-Id: <20080404145949.300787000@bull.net>
-References: <20080404145129.637145000@bull.net>
-User-Agent: quilt/0.45-1
-Date: Fri, 04 Apr 2008 16:51:33 +0200
-From: Nadia.Derbey@bull.net
-To: linux-kernel@vger.kernel.org
-Cc: containers@lists.linux-foundation.org, orenl@cs.columbia.edu,
-       Nadia Derbey <Nadia.Derbey@bull.net>
-Subject: [RFC][PATCH 4/4] PID: use the target ID specified in procfs
-Content-Disposition: inline; filename=upidnr_use_next_id.patch
+	Fri, 4 Apr 2008 11:02:34 -0400
+Received: from mtaout01-winn.ispmail.ntl.com ([81.103.221.47]:30705 "EHLO
+	mtaout01-winn.ispmail.ntl.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755150AbYDDPCd convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Apr 2008 11:02:33 -0400
+Date: Fri, 4 Apr 2008 16:02:21 +0100
+From: Ken Moffat <zarniwhoop@ntlworld.com>
+To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
+       Ingo Molnar <mingo@elte.hu>, lkml <linux-kernel@vger.kernel.org>
+Subject: Re: Regression in gdm-2.18 since 2.6.24
+Message-ID: <20080404150221.GB21753@deepthought>
+References: <20080403191916.GA30864@deepthought> <200804032329.22483.rjw@sisk.pl> <20080403234839.GA5181@deepthought> <200804040220.00732.rjw@sisk.pl> <20080404123717.GA19045@deepthought> <20080404144825.GB890@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <20080404144825.GB890@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.12-2006-07-14
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[PATCH 04/04]
+On Fri, Apr 04, 2008 at 08:18:25PM +0530, Dhaval Giani wrote:
+> On Fri, Apr 04, 2008 at 01:37:17PM +0100, Ken Moffat wrote:
+> > On Fri, Apr 04, 2008 at 02:20:00AM +0200, Rafael J. Wysocki wrote:
+> > > On Friday, 4 of April 2008, Ken Moffat wrote:
+> > > > On Thu, Apr 03, 2008 at 11:29:21PM +0200, Rafael J. Wysocki wrote:
+> > > > > 
+> > > > > Please unset CONFIG_GROUP_SCHED and retest.  It is known to cause problems
+> > > > > (see http://bugzilla.kernel.org/show_bug.cgi?id=9969, for example).
+> > > > > 
+> > > > > Thanks,
+> > > > > Rafael
+> > > >  Thanks for the suggestion.  Tried it on 2.6.24.4, and
+> > > > double-checked /proc/config.gz after booting -
+> > > > 
+> > > > # CONFIG_FAIR_GROUP_SCHED is not set
+> > > > 
+> > > >  Unfortunately, the first test reboot failed in the same way.
+> > > 
+> > > Please unset CONFIG_GROUP_SCHED too.
+> > > 
+> > > Thanks,
+> > > Rafael
+> > 
+> >  Yet again, I'm confused.  I thought you'd missed a word in what you
+> > asked because the config for 2.6.24.4 doesn't show this.
+> > ken@bluesbreaker ~ $zgrep GROUP /proc/config.gz 
+> > # CONFIG_CGROUPS is not set
+> > # CONFIG_FAIR_GROUP_SCHED is not set
+> > ken@bluesbreaker ~ $
+> > 
+> >  I _can_ see it in the 2.6.25 configs (except for rc1).  Will retry
+> > rc8 with them both turned off.
+> > 
+> 
+> Right, in 2.6.24 we called it CONFIG_FAIR_GROUP_SCHED since group
+> scheduling was available only for CFS. In 2.6.25 we have group
+> scheduling for RT as well, so it is called CONFIG_GROUP_SCHED now.
+> 
+> -- 
+> regards,
+> Dhaval
+ OK, thanks for the explanation.  Just gave -rc8 the first test with
+CONFIG_GROUP_SCHED unset, and again it fails.
 
-This patch makes use of the target ids specified by a previous write to
-/proc/self/next_id as the ids to use to allocate the next upid nrs.
-Upper levels upid nrs that are not specified in next_pids file are left to the
-kernel choice.
-
-Signed-off-by: Nadia Derbey <Nadia.Derbey@bull.net>
-
----
- include/linux/pid.h |    2 
- kernel/fork.c       |    3 -
- kernel/pid.c        |  141 +++++++++++++++++++++++++++++++++++++++++++++-------
- 3 files changed, 126 insertions(+), 20 deletions(-)
-
-Index: linux-2.6.25-rc8-mm1/include/linux/pid.h
-===================================================================
---- linux-2.6.25-rc8-mm1.orig/include/linux/pid.h	2008-04-04 13:11:37.000000000 +0200
-+++ linux-2.6.25-rc8-mm1/include/linux/pid.h	2008-04-04 14:54:09.000000000 +0200
-@@ -121,7 +121,7 @@ extern struct pid *find_get_pid(int nr);
- extern struct pid *find_ge_pid(int nr, struct pid_namespace *);
- int next_pidmap(struct pid_namespace *pid_ns, int last);
- 
--extern struct pid *alloc_pid(struct pid_namespace *ns);
-+extern struct pid *alloc_pid(struct pid_namespace *ns, int *retval);
- extern void free_pid(struct pid *pid);
- 
- /*
-Index: linux-2.6.25-rc8-mm1/kernel/fork.c
-===================================================================
---- linux-2.6.25-rc8-mm1.orig/kernel/fork.c	2008-04-04 14:00:35.000000000 +0200
-+++ linux-2.6.25-rc8-mm1/kernel/fork.c	2008-04-04 14:54:43.000000000 +0200
-@@ -1200,8 +1200,7 @@ static struct task_struct *copy_process(
- 		goto bad_fork_cleanup_io;
- 
- 	if (pid != &init_struct_pid) {
--		retval = -ENOMEM;
--		pid = alloc_pid(task_active_pid_ns(p));
-+		pid = alloc_pid(task_active_pid_ns(p), &retval);
- 		if (!pid)
- 			goto bad_fork_cleanup_io;
- 
-Index: linux-2.6.25-rc8-mm1/kernel/pid.c
-===================================================================
---- linux-2.6.25-rc8-mm1.orig/kernel/pid.c	2008-04-04 13:11:39.000000000 +0200
-+++ linux-2.6.25-rc8-mm1/kernel/pid.c	2008-04-04 14:59:24.000000000 +0200
-@@ -122,6 +122,26 @@ static void free_pidmap(struct upid *upi
- 	atomic_inc(&map->nr_free);
- }
- 
-+static inline int alloc_pidmap_page(struct pidmap *map)
-+{
-+	if (unlikely(!map->page)) {
-+		void *page = kzalloc(PAGE_SIZE, GFP_KERNEL);
-+		/*
-+		 * Free the page if someone raced with us
-+		 * installing it:
-+		 */
-+		spin_lock_irq(&pidmap_lock);
-+		if (map->page)
-+			kfree(page);
-+		else
-+			map->page = page;
-+		spin_unlock_irq(&pidmap_lock);
-+		if (unlikely(!map->page))
-+			return -1;
-+	}
-+	return 0;
-+}
-+
- static int alloc_pidmap(struct pid_namespace *pid_ns)
- {
- 	int i, offset, max_scan, pid, last = pid_ns->last_pid;
-@@ -134,21 +154,8 @@ static int alloc_pidmap(struct pid_names
- 	map = &pid_ns->pidmap[pid/BITS_PER_PAGE];
- 	max_scan = (pid_max + BITS_PER_PAGE - 1)/BITS_PER_PAGE - !offset;
- 	for (i = 0; i <= max_scan; ++i) {
--		if (unlikely(!map->page)) {
--			void *page = kzalloc(PAGE_SIZE, GFP_KERNEL);
--			/*
--			 * Free the page if someone raced with us
--			 * installing it:
--			 */
--			spin_lock_irq(&pidmap_lock);
--			if (map->page)
--				kfree(page);
--			else
--				map->page = page;
--			spin_unlock_irq(&pidmap_lock);
--			if (unlikely(!map->page))
--				break;
--		}
-+		if (unlikely(alloc_pidmap_page(map)))
-+			break;
- 		if (likely(atomic_read(&map->nr_free))) {
- 			do {
- 				if (!test_and_set_bit(offset, map->page)) {
-@@ -182,6 +189,35 @@ static int alloc_pidmap(struct pid_names
- 	return -1;
- }
- 
-+/*
-+ * Return a predefined pid value if successful (ID_AT(pid_l, level)),
-+ * -errno else
-+ */
-+static int alloc_fixed_pidmap(struct pid_namespace *pid_ns,
-+			struct sys_id *pid_l, int level)
-+{
-+	int offset, pid;
-+	struct pidmap *map;
-+
-+	pid = ID_AT(pid_l, level);
-+	if (pid < RESERVED_PIDS || pid >= pid_max)
-+		return -EINVAL;
-+
-+	map = &pid_ns->pidmap[pid / BITS_PER_PAGE];
-+
-+	if (unlikely(alloc_pidmap_page(map)))
-+		return -ENOMEM;
-+
-+	offset = pid & BITS_PER_PAGE_MASK;
-+	if (test_and_set_bit(offset, map->page))
-+		return -EBUSY;
-+
-+	atomic_dec(&map->nr_free);
-+	pid_ns->last_pid = max(pid_ns->last_pid, pid);
-+
-+	return pid;
-+}
-+
- int next_pidmap(struct pid_namespace *pid_ns, int last)
- {
- 	int offset;
-@@ -243,20 +279,91 @@ void free_pid(struct pid *pid)
- 	call_rcu(&pid->rcu, delayed_put_pid);
- }
- 
--struct pid *alloc_pid(struct pid_namespace *ns)
-+/*
-+ * Called by alloc_pid() to use a list of predefined ids for the calling
-+ * process' upper ns levels.
-+ * Returns next pid ns to visit if successful (may be NULL if walked through
-+ * the entire pid ns hierarchy).
-+ * i is filled with next level to be visited (useful for the error cases).
-+ */
-+static struct pid_namespace *set_predefined_pids(struct pid_namespace *ns,
-+						struct pid *pid,
-+						struct sys_id *pid_l,
-+						int *next_level)
-+{
-+	struct pid_namespace *tmp;
-+	int rel_level, i, nr;
-+
-+	rel_level = pid_l->nids - 1;
-+	if (rel_level > ns->level)
-+		return ERR_PTR(-EINVAL);
-+
-+	tmp = ns;
-+
-+	/*
-+	 * Use the predefined upid nrs for levels ns->level down to
-+	 * ns->level - rel_level
-+	 */
-+	for (i = ns->level ; rel_level >= 0; i--, rel_level--) {
-+		nr = alloc_fixed_pidmap(tmp, pid_l, rel_level);
-+		if (nr < 0) {
-+			tmp = ERR_PTR(nr);
-+			goto out;
-+		}
-+
-+		pid->numbers[i].nr = nr;
-+		pid->numbers[i].ns = tmp;
-+		tmp = tmp->parent;
-+	}
-+
-+	id_blocks_free(pid_l);
-+out:
-+	*next_level = i;
-+	return tmp;
-+}
-+
-+struct pid *alloc_pid(struct pid_namespace *ns, int *retval)
- {
- 	struct pid *pid;
- 	enum pid_type type;
- 	int i, nr;
- 	struct pid_namespace *tmp;
- 	struct upid *upid;
-+	struct sys_id *pid_l;
- 
-+	*retval = -ENOMEM;
- 	pid = kmem_cache_alloc(ns->pid_cachep, GFP_KERNEL);
- 	if (!pid)
- 		goto out;
- 
- 	tmp = ns;
--	for (i = ns->level; i >= 0; i--) {
-+	i = ns->level;
-+
-+	/*
-+	 * If there is a list of upid nrs specified, use it instead of letting
-+	 * the kernel chose the upid nrs for us.
-+	 */
-+	pid_l = current->next_id;
-+	if (pid_l && pid_l->nids) {
-+		/*
-+		 * returns the next ns to be visited in the following loop
-+		 * (or NULL if we are done).
-+		 * i is filled in with the next level to be visited. We need
-+		 * it to undo things in the error cases.
-+		 */
-+		tmp = set_predefined_pids(ns, pid, pid_l, &i);
-+		if (IS_ERR(tmp)) {
-+			*retval = PTR_ERR(tmp);
-+			goto out_free;
-+		}
-+		current->next_id = NULL;
-+	}
-+
-+	*retval = -ENOMEM;
-+	/*
-+	 * Let the lower levels upid nrs be automatically allocated
-+	 */
-+	for ( ; i >= 0; i--) {
- 		nr = alloc_pidmap(tmp);
- 		if (nr < 0)
- 			goto out_free;
-
---
+Ken
+-- 
+das eine Mal als Tragödie, das andere Mal als Farce
