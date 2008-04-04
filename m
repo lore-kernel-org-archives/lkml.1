@@ -1,585 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762785AbYDDNML@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762886AbYDDNMi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762785AbYDDNML (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Apr 2008 09:12:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761736AbYDDNEM
+	id S1762886AbYDDNMi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Apr 2008 09:12:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932188AbYDDNE7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Apr 2008 09:04:12 -0400
-Received: from wine.ocn.ne.jp ([122.1.235.145]:50884 "EHLO smtp.wine.ocn.ne.jp"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761722AbYDDNEG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Apr 2008 09:04:06 -0400
-Message-Id: <20080404122402.228330717@I-love.SAKURA.ne.jp>
-References: <20080404122242.867070732@I-love.SAKURA.ne.jp>
-User-Agent: quilt/0.46-1
-Date: Fri, 04 Apr 2008 21:22:55 +0900
-From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org
-Cc: Kentaro Takeda <takedakn@nttdata.co.jp>,
-       Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>,
-       Toshiharu Harada <haradats@nttdata.co.jp>
-Subject: [TOMOYO #7 13/30] mount restriction part.
-Content-Disposition: inline; filename=tomoyo-mount-restriction-part.patch
+	Fri, 4 Apr 2008 09:04:59 -0400
+Received: from mtagate4.uk.ibm.com ([195.212.29.137]:51474 "EHLO
+	mtagate4.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932174AbYDDNE5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Apr 2008 09:04:57 -0400
+From: Thomas Klein <osstklei@de.ibm.com>
+To: Jeff Garzik <jeff@garzik.org>
+Subject: [PATCH] ehea: Fix DLPAR memory add support
+Date: Fri, 4 Apr 2008 15:04:53 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Christoph Raisch <raisch@de.ibm.com>,
+       "Jan-Bernd Themann" <themann@de.ibm.com>,
+       "linux-kernel" <linux-kernel@vger.kernel.org>,
+       "linux-ppc" <linuxppc-dev@ozlabs.org>, netdev <netdev@vger.kernel.org>,
+       Stefan Roscher <stefan.roscher@de.ibm.com>,
+       Hannes Hering <hering2@de.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200804041504.54130.osstklei@de.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This file controls mount() requests.
+This patch fixes two weaknesses in send/receive packet handling which may
+lead to kernel panics during DLPAR memory add operations.
 
-Signed-off-by: Kentaro Takeda <takedakn@nttdata.co.jp>
-Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-Signed-off-by: Toshiharu Harada <haradats@nttdata.co.jp>
+Signed-off-by: Thomas Klein <tklein@de.ibm.com>
+
 ---
- fs/sakura_mount.c |  544 ++++++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 544 insertions(+)
-
---- /dev/null
-+++ linux-2.6.25-rc8-mm1/fs/sakura_mount.c
-@@ -0,0 +1,544 @@
-+/*
-+ * fs/sakura_mount.c
-+ *
-+ * Implementation of the Domain-Free Mandatory Access Control.
-+ *
-+ * Copyright (C) 2005-2008  NTT DATA CORPORATION
-+ *
-+ * Version: 1.6.0   2008/04/01
-+ *
-+ */
+diff -Nurp -X dontdiff linux-2.6.25-rc8/drivers/net/ehea/ehea.h patched_kernel/drivers/net/ehea/ehea.h
+--- linux-2.6.25-rc8/drivers/net/ehea/ehea.h	2008-04-01 21:44:26.000000000 +0200
++++ patched_kernel/drivers/net/ehea/ehea.h	2008-04-03 15:36:36.000000000 +0200
+@@ -40,7 +40,7 @@
+ #include <asm/io.h>
+ 
+ #define DRV_NAME	"ehea"
+-#define DRV_VERSION	"EHEA_0089"
++#define DRV_VERSION	"EHEA_0090"
+ 
+ /* eHEA capability flags */
+ #define DLPAR_PORT_ADD_REM 1
+@@ -371,6 +371,7 @@ struct ehea_port_res {
+ 	struct ehea_q_skb_arr rq2_skba;
+ 	struct ehea_q_skb_arr rq3_skba;
+ 	struct ehea_q_skb_arr sq_skba;
++	int sq_skba_size;
+ 	spinlock_t netif_queue;
+ 	int queue_stopped;
+ 	int swqe_refill_th;
+diff -Nurp -X dontdiff linux-2.6.25-rc8/drivers/net/ehea/ehea_main.c patched_kernel/drivers/net/ehea/ehea_main.c
+--- linux-2.6.25-rc8/drivers/net/ehea/ehea_main.c	2008-04-01 21:44:26.000000000 +0200
++++ patched_kernel/drivers/net/ehea/ehea_main.c	2008-04-03 15:36:36.000000000 +0200
+@@ -349,7 +349,8 @@ static void ehea_refill_rq1(struct ehea_
+ 	pr->rq1_skba.os_skbs = 0;
+ 
+ 	if (unlikely(test_bit(__EHEA_STOP_XFER, &ehea_driver_flags))) {
+-		pr->rq1_skba.index = index;
++		if (nr_of_wqes > 0)
++			pr->rq1_skba.index = index;
+ 		pr->rq1_skba.os_skbs = fill_wqes;
+ 		return;
+ 	}
+@@ -1464,7 +1465,9 @@ static int ehea_init_port_res(struct ehe
+ 			  init_attr->act_nr_rwqes_rq2,
+ 			  init_attr->act_nr_rwqes_rq3);
+ 
+-	ret = ehea_init_q_skba(&pr->sq_skba, init_attr->act_nr_send_wqes + 1);
++	pr->sq_skba_size = init_attr->act_nr_send_wqes + 1;
 +
-+#include <linux/ccs_common.h>
-+#include <linux/sakura.h>
-+#include <linux/realpath.h>
-+#include <linux/namei.h>
-+
-+/* Keywords for mount restrictions. */
-+
-+/* Allow to call 'mount --bind /source_dir /dest_dir' */
-+#define MOUNT_BIND_KEYWORD                               "--bind"
-+/* Allow to call 'mount --move /old_dir    /new_dir ' */
-+#define MOUNT_MOVE_KEYWORD                               "--move"
-+/* Allow to call 'mount -o remount /dir             ' */
-+#define MOUNT_REMOUNT_KEYWORD                            "--remount"
-+/* Allow to call 'mount --make-unbindable /dir'       */
-+#define MOUNT_MAKE_UNBINDABLE_KEYWORD                    "--make-unbindable"
-+/* Allow to call 'mount --make-private /dir'          */
-+#define MOUNT_MAKE_PRIVATE_KEYWORD                       "--make-private"
-+/* Allow to call 'mount --make-slave /dir'            */
-+#define MOUNT_MAKE_SLAVE_KEYWORD                         "--make-slave"
-+/* Allow to call 'mount --make-shared /dir'           */
-+#define MOUNT_MAKE_SHARED_KEYWORD                        "--make-shared"
-+
-+/* Structure for "allow_mount" keyword. */
-+struct mount_entry {
-+	struct list1_head list;
-+	const struct path_info *dev_name;
-+	const struct path_info *dir_name;
-+	const struct path_info *fs_type;
-+	unsigned long flags;
-+	bool is_deleted;
-+};
-+
-+/* The list for "struct mount_entry". */
-+static LIST1_HEAD(mount_list);
-+
-+/**
-+ * update_mount_acl - Update "struct mount_entry" list.
-+ *
-+ * @dev_name:  Name of device file.
-+ * @dir_name:  Name of mount point.
-+ * @fs_type:   Name of filesystem.
-+ * @flags:     Mount options.
-+ * @is_delete: True if it is a delete request.
-+ *
-+ * Returns 0 on success, negative value otherwise.
-+ */
-+static int update_mount_acl(const char *dev_name, const char *dir_name,
-+			    const char *fs_type, const unsigned long flags,
-+			    const bool is_delete)
++	ret = ehea_init_q_skba(&pr->sq_skba, pr->sq_skba_size);
+ 	ret |= ehea_init_q_skba(&pr->rq1_skba, init_attr->act_nr_rwqes_rq1 + 1);
+ 	ret |= ehea_init_q_skba(&pr->rq2_skba, init_attr->act_nr_rwqes_rq2 + 1);
+ 	ret |= ehea_init_q_skba(&pr->rq3_skba, init_attr->act_nr_rwqes_rq3 + 1);
+@@ -2621,6 +2624,22 @@ void ehea_purge_sq(struct ehea_qp *orig_
+ 	}
+ }
+ 
++void ehea_flush_sq(struct ehea_port *port)
 +{
-+	struct file_system_type *type = NULL;
-+	struct mount_entry *new_entry;
-+	struct mount_entry *ptr;
-+	const struct path_info *fs;
-+	const struct path_info *dev;
-+	const struct path_info *dir;
-+	static DEFINE_MUTEX(lock);
-+	int error = -ENOMEM;
-+	fs = ccs_save_name(fs_type);
-+	if (!fs)
-+		return -EINVAL;
-+	if (!dev_name)
-+		/* Map dev_name to "<NULL>" for if no dev_name given. */
-+		dev_name = "<NULL>";
-+	if (!strcmp(fs->name, MOUNT_REMOUNT_KEYWORD))
-+		/* Fix dev_name to "any" for remount permission. */
-+		dev_name = "any";
-+	if (!strcmp(fs->name, MOUNT_MAKE_UNBINDABLE_KEYWORD) ||
-+	    !strcmp(fs->name, MOUNT_MAKE_PRIVATE_KEYWORD) ||
-+	    !strcmp(fs->name, MOUNT_MAKE_SLAVE_KEYWORD) ||
-+	    !strcmp(fs->name, MOUNT_MAKE_SHARED_KEYWORD))
-+		dev_name = "any";
-+	if (!ccs_is_correct_path(dev_name, 0, 0, 0, __func__) ||
-+	    !ccs_is_correct_path(dir_name, 0, 0, 0, __func__))
-+		return -EINVAL;
-+	dev = ccs_save_name(dev_name);
-+	dir = ccs_save_name(dir_name);
-+	if (!dev || !dir)
-+		return -ENOMEM;
-+	mutex_lock(&lock);
-+	list1_for_each_entry(ptr, &mount_list, list) {
-+		if (ptr->flags != flags ||
-+		    ccs_pathcmp(ptr->dev_name, dev) ||
-+		    ccs_pathcmp(ptr->dir_name, dir) ||
-+		    ccs_pathcmp(ptr->fs_type, fs))
-+			continue;
-+		error = 0;
-+		if (is_delete) {
-+			ptr->is_deleted = true;
-+			goto out;
-+		} else {
-+			if (ptr->is_deleted) {
-+				ptr->is_deleted = false;
-+				goto update;
-+			}
-+			goto out; /* No changes. */
++	int i;
++
++	for (i = 0; i < port->num_def_qps + port->num_add_tx_qps; i++) {
++		struct ehea_port_res *pr = &port->port_res[i];
++		int swqe_max = pr->sq_skba_size - 2 - pr->swqe_ll_count;
++		int k = 0;
++		while (atomic_read(&pr->swqe_avail) < swqe_max) {
++			msleep(5);
++			if (++k == 20)
++				break;
 +		}
 +	}
-+	if (is_delete) {
-+		error = -ENOENT;
-+		goto out;
-+	}
-+	new_entry = ccs_alloc_element(sizeof(*new_entry));
-+	if (!new_entry)
-+		goto out;
-+	new_entry->dev_name = dev;
-+	new_entry->dir_name = dir;
-+	new_entry->fs_type = fs;
-+	new_entry->flags = flags;
-+	list1_add_tail_mb(&new_entry->list, &mount_list);
-+	error = 0;
-+	ptr = new_entry;
-+ update:
-+	if (!strcmp(fs->name, MOUNT_REMOUNT_KEYWORD)) {
-+		printk(KERN_CONT "%sAllow remount %s with options 0x%lX.\n",
-+		       ccs_log_level, dir->name, ptr->flags);
-+	} else if (!strcmp(fs->name, MOUNT_BIND_KEYWORD)
-+		   || !strcmp(fs->name, MOUNT_MOVE_KEYWORD)) {
-+		printk(KERN_CONT "%sAllow mount %s %s %s with options 0x%lX\n",
-+		       ccs_log_level, fs->name, dev->name, dir->name,
-+		       ptr->flags);
-+	} else if (!strcmp(fs->name, MOUNT_MAKE_UNBINDABLE_KEYWORD) ||
-+		   !strcmp(fs->name, MOUNT_MAKE_PRIVATE_KEYWORD) ||
-+		   !strcmp(fs->name, MOUNT_MAKE_SLAVE_KEYWORD) ||
-+		   !strcmp(fs->name, MOUNT_MAKE_SHARED_KEYWORD)) {
-+		printk(KERN_CONT "%sAllow mount %s %s with options 0x%lX.\n",
-+		       ccs_log_level, fs->name, dir->name, ptr->flags);
-+	} else {
-+		type = get_fs_type(fs->name);
-+		if (type && (type->fs_flags & FS_REQUIRES_DEV) != 0)
-+			printk(KERN_CONT "%sAllow mount -t %s %s %s "
-+			       "with options 0x%lX.\n", ccs_log_level,
-+			       fs->name, dev->name, dir->name, ptr->flags);
-+		else
-+			printk(KERN_CONT "%sAllow mount %s on %s "
-+			       "with options 0x%lX.\n", ccs_log_level,
-+			       fs->name, dir->name, ptr->flags);
-+	}
-+	if (type)
-+		put_filesystem(type);
-+ out:
-+	mutex_unlock(&lock);
-+	ccs_update_counter(CCS_UPDATES_COUNTER_SYSTEM_POLICY);
-+	return error;
 +}
 +
-+/**
-+ * print_success - Print success messages.
-+ *
-+ * @dev_name: Name of device file.
-+ * @dir_name: Name of mount point.
-+ * @type:     Name of filesystem type.
-+ * @flags:    Mount options.
-+ * @need_dev: Type of @dev_name.
-+ *
-+ * Returns nothing.
-+ */
-+static void print_success(const char *dev_name, const char *dir_name,
-+			  const char *type, const unsigned long flags,
-+			  const int need_dev)
-+{
-+	if (need_dev > 0) {
-+		printk(KERN_DEBUG "SAKURA-NOTICE: "
-+		       "'mount -t %s %s %s 0x%lX' accepted.\n",
-+		       type, dev_name, dir_name, flags);
-+	} else if (need_dev < 0) {
-+		printk(KERN_DEBUG "SAKURA-NOTICE: "
-+		       "'mount %s %s %s 0x%lX' accepted.\n",
-+		       type, dev_name, dir_name, flags);
-+	} else if (!strcmp(type, MOUNT_REMOUNT_KEYWORD)) {
-+		printk(KERN_DEBUG "SAKURA-NOTICE: "
-+		       "'mount -o remount %s 0x%lX' accepted.\n",
-+		       dir_name, flags);
-+	} else if (!strcmp(type, MOUNT_MAKE_UNBINDABLE_KEYWORD) ||
-+		   !strcmp(type, MOUNT_MAKE_PRIVATE_KEYWORD) ||
-+		   !strcmp(type, MOUNT_MAKE_SLAVE_KEYWORD) ||
-+		   !strcmp(type, MOUNT_MAKE_SHARED_KEYWORD)) {
-+		printk(KERN_DEBUG "SAKURA-NOTICE: "
-+		       "'mount %s %s 0x%lX' accepted.\n",
-+		       type, dir_name, flags);
-+	} else {
-+		printk(KERN_DEBUG "SAKURA-NOTICE: "
-+		       "'mount %s on %s 0x%lX' accepted.\n",
-+		       type, dir_name, flags);
-+	}
-+}
-+
-+/**
-+ * print_error - Print error messages.
-+ *
-+ * @dev_name:   Name of device file.
-+ * @dir_name:   Name of mount point.
-+ * @type:       Name of filesystem type.
-+ * @flags:      Mount options.
-+ * @is_enforce: True if it is enforcing mode.
-+ * @error:      Error value.
-+ *
-+ * Returns 0 if permitted by the administrator's decision, negative value
-+ * otherwise.
-+ */
-+static int print_error(const char *dev_name, const char *dir_name,
-+		       const char *type, const unsigned long flags,
-+		       const bool is_enforce, int error)
-+{
-+	const char *realname1 = ccs_realpath(dev_name);
-+	const char *realname2 = ccs_realpath(dir_name);
-+	const char *exename = ccs_get_exe();
-+	if (!strcmp(type, MOUNT_REMOUNT_KEYWORD)) {
-+		printk(KERN_WARNING "SAKURA-%s: mount -o remount %s 0x%lX "
-+		       "(pid=%d:exe=%s): Permission denied.\n",
-+		       ccs_get_msg(is_enforce),
-+		       realname2 ? realname2 : dir_name,
-+		       flags, current->pid, exename);
-+		if (is_enforce)
-+			error = ccs_check_supervisor("# %s is requesting\n"
-+						     "mount -o remount %s "
-+						     "0x%lX\n", exename,
-+						     realname2 ? realname2
-+						     : dir_name, flags);
-+	} else if (!strcmp(type, MOUNT_BIND_KEYWORD)
-+		   || !strcmp(type, MOUNT_MOVE_KEYWORD)) {
-+		printk(KERN_WARNING "SAKURA-%s: mount %s %s %s 0x%lX "
-+		       "(pid=%d:exe=%s): Permission denied.\n",
-+		       ccs_get_msg(is_enforce), type,
-+		       realname1 ? realname1 : dev_name,
-+		       realname2 ? realname2 : dir_name,
-+		       flags, current->pid, exename);
-+		if (is_enforce)
-+			error = ccs_check_supervisor("# %s is requesting\n"
-+						     "mount %s %s %s 0x%lX\n",
-+						     exename, type,
-+						     realname1 ? realname1 :
-+						     dev_name,
-+						     realname2 ? realname2 :
-+						     dir_name, flags);
-+	} else if (!strcmp(type, MOUNT_MAKE_UNBINDABLE_KEYWORD) ||
-+		   !strcmp(type, MOUNT_MAKE_PRIVATE_KEYWORD) ||
-+		   !strcmp(type, MOUNT_MAKE_SLAVE_KEYWORD) ||
-+		   !strcmp(type, MOUNT_MAKE_SHARED_KEYWORD)) {
-+		printk(KERN_WARNING "SAKURA-%s: mount %s %s 0x%lX "
-+		       "(pid=%d:exe=%s): Permission denied.\n",
-+		       ccs_get_msg(is_enforce), type,
-+		       realname2 ? realname2 : dir_name,
-+		       flags, current->pid, exename);
-+		if (is_enforce)
-+			error = ccs_check_supervisor("# %s is requesting\n"
-+						     "mount %s %s 0x%lX",
-+						     exename, type,
-+						     realname2 ? realname2 :
-+						     dir_name, flags);
-+	} else {
-+		printk(KERN_WARNING "SAKURA-%s: mount -t %s %s %s 0x%lX "
-+		       "(pid=%d:exe=%s): Permission denied.\n",
-+		       ccs_get_msg(is_enforce), type,
-+		       realname1 ? realname1 : dev_name,
-+		       realname2 ? realname2 : dir_name,
-+		       flags, current->pid, exename);
-+		if (is_enforce)
-+			error = ccs_check_supervisor("# %s is requesting\n"
-+						     "mount -t %s %s %s "
-+						     "0x%lX\n", exename, type,
-+						     realname1 ? realname1 :
-+						     dev_name,
-+						     realname2 ? realname2 :
-+						     dir_name, flags);
-+	}
-+	ccs_free(exename);
-+	ccs_free(realname2);
-+	ccs_free(realname1);
-+	return error;
-+}
-+
-+/**
-+ * check_mount_permission2 - Check permission for mount() operation.
-+ *
-+ * @dev_name: Name of device file.
-+ * @dir_name: Name of mount point.
-+ * @type:     Name of filesystem type. May be NULL.
-+ * @flags:    Mount options.
-+ *
-+ * Returns 0 on success, negative value otherwise.
-+ */
-+static int check_mount_permission2(char *dev_name, char *dir_name, char *type,
-+				   unsigned long flags)
-+{
-+	const u8 mode = ccs_check_flags(CCS_SAKURA_RESTRICT_MOUNT);
-+	const bool is_enforce = (mode == 3);
-+	int error = -EPERM;
-+	if (!mode)
-+		return 0;
-+	if (!type)
-+		type = "<NULL>";
-+	if ((flags & MS_MGC_MSK) == MS_MGC_VAL)
-+		flags &= ~MS_MGC_MSK;
-+	switch (flags & (MS_REMOUNT | MS_MOVE | MS_BIND)) {
-+	case MS_REMOUNT:
-+	case MS_MOVE:
-+	case MS_BIND:
-+	case 0:
-+		break;
-+	default:
-+		printk(KERN_WARNING "SAKURA-ERROR: "
-+		       "%s%s%sare given for single mount operation.\n",
-+		       flags & MS_REMOUNT ? "'remount' " : "",
-+		       flags & MS_MOVE    ? "'move' " : "",
-+		       flags & MS_BIND    ? "'bind' " : "");
-+		return -EINVAL;
-+	}
-+	switch (flags & (MS_UNBINDABLE | MS_PRIVATE | MS_SLAVE | MS_SHARED)) {
-+	case MS_UNBINDABLE:
-+	case MS_PRIVATE:
-+	case MS_SLAVE:
-+	case MS_SHARED:
-+	case 0:
-+		break;
-+	default:
-+		printk(KERN_WARNING "SAKURA-ERROR: "
-+		       "%s%s%s%sare given for single mount operation.\n",
-+		       flags & MS_UNBINDABLE ? "'unbindable' " : "",
-+		       flags & MS_PRIVATE    ? "'private' " : "",
-+		       flags & MS_SLAVE      ? "'slave' " : "",
-+		       flags & MS_SHARED     ? "'shared' " : "");
-+		return -EINVAL;
-+	}
-+	if (flags & MS_REMOUNT) {
-+		error = check_mount_permission2(dev_name, dir_name,
-+						MOUNT_REMOUNT_KEYWORD,
-+						flags & ~MS_REMOUNT);
-+	} else if (flags & MS_MOVE) {
-+		error = check_mount_permission2(dev_name, dir_name,
-+						MOUNT_MOVE_KEYWORD,
-+						flags & ~MS_MOVE);
-+	} else if (flags & MS_BIND) {
-+		error = check_mount_permission2(dev_name, dir_name,
-+						MOUNT_BIND_KEYWORD,
-+						flags & ~MS_BIND);
-+	} else if (flags & MS_UNBINDABLE) {
-+		error = check_mount_permission2(dev_name, dir_name,
-+						MOUNT_MAKE_UNBINDABLE_KEYWORD,
-+						flags & ~MS_UNBINDABLE);
-+	} else if (flags & MS_PRIVATE) {
-+		error = check_mount_permission2(dev_name, dir_name,
-+						MOUNT_MAKE_PRIVATE_KEYWORD,
-+						flags & ~MS_PRIVATE);
-+	} else if (flags & MS_SLAVE) {
-+		error = check_mount_permission2(dev_name, dir_name,
-+						MOUNT_MAKE_SLAVE_KEYWORD,
-+						flags & ~MS_SLAVE);
-+	} else if (flags & MS_SHARED) {
-+		error = check_mount_permission2(dev_name, dir_name,
-+						MOUNT_MAKE_SHARED_KEYWORD,
-+						flags & ~MS_SHARED);
-+	} else {
-+		struct mount_entry *ptr;
-+		struct file_system_type *fstype = NULL;
-+		const char *requested_dir_name = NULL;
-+		const char *requested_dev_name = NULL;
-+		struct path_info rdev;
-+		struct path_info rdir;
-+		int need_dev = 0;
-+
-+		requested_dir_name = ccs_realpath(dir_name);
-+		if (!requested_dir_name) {
-+			error = -ENOENT;
-+			goto cleanup;
-+		}
-+		rdir.name = requested_dir_name;
-+		ccs_fill_path_info(&rdir);
-+
-+		/* Compare fs name. */
-+		if (!strcmp(type, MOUNT_REMOUNT_KEYWORD)) {
-+			/* Needn't to resolve dev_name */
-+		} else if (!strcmp(type, MOUNT_MAKE_UNBINDABLE_KEYWORD) ||
-+			   !strcmp(type, MOUNT_MAKE_PRIVATE_KEYWORD) ||
-+			   !strcmp(type, MOUNT_MAKE_SLAVE_KEYWORD) ||
-+			   !strcmp(type, MOUNT_MAKE_SHARED_KEYWORD)) {
-+			/* Needn't to resolve dev_name */
-+		} else if (!strcmp(type, MOUNT_BIND_KEYWORD) ||
-+			   !strcmp(type, MOUNT_MOVE_KEYWORD)) {
-+			requested_dev_name = ccs_realpath(dev_name);
-+			if (!requested_dev_name) {
-+				error = -ENOENT;
-+				goto cleanup;
-+			}
-+			rdev.name = requested_dev_name;
-+			ccs_fill_path_info(&rdev);
-+			/* dev_name is a directory */
-+			need_dev = -1;
-+		} else {
-+			fstype = get_fs_type(type);
-+			if (fstype) {
-+				if (fstype->fs_flags & FS_REQUIRES_DEV) {
-+					requested_dev_name
-+						= ccs_realpath(dev_name);
-+					if (!requested_dev_name) {
-+						error = -ENOENT;
-+						goto cleanup;
-+					}
-+					rdev.name = requested_dev_name;
-+					ccs_fill_path_info(&rdev);
-+					/* dev_name is a block device file */
-+					need_dev = 1;
-+				}
-+			} else {
-+				error = -ENODEV;
-+				goto cleanup;
-+			}
-+		}
-+		list1_for_each_entry(ptr, &mount_list, list) {
-+			if (ptr->is_deleted)
-+				continue;
-+
-+			/* Compare options */
-+			if (ptr->flags != flags)
-+				continue;
-+
-+			/* Compare fs name. */
-+			if (strcmp(type, ptr->fs_type->name))
-+				continue;
-+
-+			/* Compare mount point. */
-+			if (ccs_path_matches_pattern(&rdir, ptr->dir_name) == 0)
-+				continue;
-+
-+			/* Compare device name. */
-+			if (requested_dev_name &&
-+			    ccs_path_matches_pattern(&rdev, ptr->dev_name) == 0)
-+				continue;
-+
-+			/* OK. */
-+			error = 0;
-+			print_success(requested_dev_name, requested_dir_name,
-+				      type, flags, need_dev);
-+			break;
-+		}
-+		if (error)
-+			error = print_error(dev_name, dir_name, type, flags,
-+					    is_enforce, error);
-+		if (error && mode == 1)
-+			update_mount_acl(need_dev ?
-+					 requested_dev_name : dev_name,
-+					 requested_dir_name, type, flags, 0);
-+ cleanup:
-+		ccs_free(requested_dev_name);
-+		ccs_free(requested_dir_name);
-+		if (fstype)
-+			put_filesystem(fstype);
-+	}
-+	if (!is_enforce)
-+		error = 0;
-+	return error;
-+}
-+
-+/**
-+ * ccs_check_mount_permission - Check permission for mount() operation.
-+ *
-+ * @dev_name: Name of device file.
-+ * @dir_name: Name of mount point.
-+ * @type:     Name of filesystem type. May be NULL.
-+ * @flags:    Mount options.
-+ *
-+ * Returns 0 on success, negative value otherwise.
-+ *
-+ * This is a wrapper to allow use of 1.4.x patch for 1.5.x.
-+ */
-+int ccs_check_mount_permission(char *dev_name, char *dir_name, char *type,
-+			       const unsigned long *flags)
-+{
-+	return check_mount_permission2(dev_name, dir_name, type, *flags);
-+}
-+
-+/**
-+ * ccs_write_mount_policy - Write "struct mount_entry" list.
-+ *
-+ * @data:      String to parse.
-+ * @is_delete: True if it is a delete request.
-+ *
-+ * Returns 0 on success, negative value otherwise.
-+ */
-+int ccs_write_mount_policy(char *data, const bool is_delete)
-+{
-+	char *cp;
-+	char *cp2;
-+	const char *fs;
-+	const char *dev;
-+	const char *dir;
-+	unsigned long flags = 0;
-+	cp2 = data;
-+	cp = strchr(cp2, ' ');
-+	if (!cp)
-+		return -EINVAL;
-+	*cp = '\0';
-+	dev = cp2;
-+	cp2 = cp + 1;
-+	cp = strchr(cp2, ' ');
-+	if (!cp)
-+		return -EINVAL;
-+	*cp = '\0';
-+	dir = cp2;
-+	cp2 = cp + 1;
-+	cp = strchr(cp2, ' ');
-+	if (!cp)
-+		return -EINVAL;
-+	*cp = '\0';
-+	fs = cp2;
-+	flags = simple_strtoul(cp + 1, NULL, 0);
-+	return update_mount_acl(dev, dir, fs, flags, is_delete);
-+}
-+
-+/**
-+ * ccs_read_mount_policy - Read "struct mount_entry" list.
-+ *
-+ * @head: Pointer to "struct ccs_io_buffer".
-+ *
-+ * Returns true on success, false otherwise.
-+ */
-+bool ccs_read_mount_policy(struct ccs_io_buffer *head)
-+{
-+	struct list1_head *pos;
-+	list1_for_each_cookie(pos, head->read_var2, &mount_list) {
-+		struct mount_entry *ptr;
-+		ptr = list1_entry(pos, struct mount_entry, list);
-+		if (ptr->is_deleted)
-+			continue;
-+		if (!ccs_io_printf(head, KEYWORD_ALLOW_MOUNT "%s %s %s 0x%lX\n",
-+				   ptr->dev_name->name, ptr->dir_name->name,
-+				   ptr->fs_type->name, ptr->flags))
-+			goto out;
-+	}
-+	return true;
-+ out:
-+	return false;
-+}
-
--- 
+ int ehea_stop_qps(struct net_device *dev)
+ {
+ 	struct ehea_port *port = netdev_priv(dev);
+@@ -2845,6 +2864,7 @@ static void ehea_rereg_mrs(struct work_s
+ 					if (dev->flags & IFF_UP) {
+ 						down(&port->port_lock);
+ 						netif_stop_queue(dev);
++						ehea_flush_sq(port);
+ 						ret = ehea_stop_qps(dev);
+ 						if (ret) {
+ 							up(&port->port_lock);
