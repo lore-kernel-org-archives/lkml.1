@@ -1,91 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759848AbYDDPmZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760083AbYDDPnT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759848AbYDDPmZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Apr 2008 11:42:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757243AbYDDPmP
+	id S1760083AbYDDPnT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Apr 2008 11:43:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752533AbYDDPnI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Apr 2008 11:42:15 -0400
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:56538 "EHLO
-	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756895AbYDDPmO (ORCPT
+	Fri, 4 Apr 2008 11:43:08 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:41871 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757467AbYDDPnH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Apr 2008 11:42:14 -0400
-Date: Fri, 4 Apr 2008 11:37:58 -0400
-Message-Id: <200804041537.m34FbwBG009160@agora.fsl.cs.sunysb.edu>
-From: Erez Zadok <ezk@cs.sunysb.edu>
-To: Jan Kara <jack@suse.cz>
-Cc: Erez Zadok <ezk@cs.sunysb.edu>, sct@redhat.com, akpm@linux-foundation.org,
-       adilger@clusterfs.com, linux-ext4@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: ext3 lockdep warning in 2.6.25-rc6 
-In-reply-to: Your message of "Tue, 25 Mar 2008 19:29:09 BST."
-             <20080325182909.GD21732@atrey.karlin.mff.cuni.cz> 
-X-MailKey: Erez_Zadok
+	Fri, 4 Apr 2008 11:43:07 -0400
+Subject: [PATCH -rt] shorten softirq kernel thread names
+From: Peter Zijlstra <peterz@infradead.org>
+To: Steven Rostedt <rostedt@goodmis.org>, Clark Williams <williams@redhat.com>
+Cc: linux-rt-users <linux-rt-users@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Fri, 04 Apr 2008 17:42:53 +0200
+Message-Id: <1207323773.15579.4.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In message <20080325182909.GD21732@atrey.karlin.mff.cuni.cz>, Jan Kara writes:
+Subject: -rt: shorten softirq kernel thread names
 
-> > I was building a kernel using "make -j 4" inside a unionfs, mounted on top
-> > of ext3.  The kernel is vanilla 2.6.25-rc6 plus unionfs patches.  At some
-> > point I forced a cache flush using "echo 3 > /proc/sys/vm/drop_caches" and I
-> > got the lockdep warning below.  Note that unionfs doesn't appear to be
-> > involved in this lockdep warning at all, so I suspect this is probably an
-> > issue between jbd and ext3 directly.
-> > 
-> > Let me know if I can be of more help.
->   Actually, I have a fix for that - attached. Can you try it? Thanks.
-> 									Honza
-[...]
+Shorten the softirq kernel thread names because they often overflow
+the limited comm length.
 
-> From f5e41087e345fa5c3b46ac36e6e4a654d2f7f624 Mon Sep 17 00:00:00 2001
-> From: Jan Kara <jack@suse.cz>
-> Date: Tue, 18 Mar 2008 14:38:06 +0100
-> Subject: [PATCH] Fix drop_pagecache_sb() to not call __invalidate_mapping_pages() under
-> inode_lock.
-> 
-> Signed-off-by: Jan Kara <jack@suse.cz>
-> ---
->  fs/drop_caches.c |    8 +++++++-
->  1 files changed, 7 insertions(+), 1 deletions(-)
-> 
-> diff --git a/fs/drop_caches.c b/fs/drop_caches.c
-> index 59375ef..f5aae26 100644
-> --- a/fs/drop_caches.c
-> +++ b/fs/drop_caches.c
-> @@ -14,15 +14,21 @@ int sysctl_drop_caches;
->  
->  static void drop_pagecache_sb(struct super_block *sb)
->  {
-> -	struct inode *inode;
-> +	struct inode *inode, *toput_inode = NULL;
->  
->  	spin_lock(&inode_lock);
->  	list_for_each_entry(inode, &sb->s_inodes, i_sb_list) {
->  		if (inode->i_state & (I_FREEING|I_WILL_FREE))
->  			continue;
-> +		__iget(inode);
-> +		spin_unlock(&inode_lock);
->  		__invalidate_mapping_pages(inode->i_mapping, 0, -1, true);
-> +		iput(toput_inode);
-> +		toput_inode = inode;
-> +		spin_lock(&inode_lock);
->  	}
->  	spin_unlock(&inode_lock);
-> +	iput(toput_inode);
->  }
->  
->  void drop_pagecache(void)
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+---
+diff --git a/kernel/softirq.c b/kernel/softirq.c
+index a9e1b08..385ed5b 100644
+--- a/kernel/softirq.c
++++ b/kernel/softirq.c
+@@ -923,7 +923,7 @@ static int __cpuinit cpu_callback(struct notifier_block *nfb,
+ 		for (i = 0; i < MAX_SOFTIRQ; i++) {
+ 			p = kthread_create(ksoftirqd,
+ 					   &per_cpu(ksoftirqd, hotcpu)[i],
+-					   "softirq-%s/%d", softirq_names[i],
++					   "sirq-%s/%d", softirq_names[i],
+ 					   hotcpu);
+ 			if (IS_ERR(p)) {
+ 				printk("ksoftirqd %d for %i failed\n", i,
 
-Jan, I tried the above patch on top of v2.6.25-rc8-82-g49115b7, and using
-the same setup and workloads that produced the warning before: running "make
--j 20" of the linux kernel 100 times, dual-CPU, SMP, PREEMPT, while running
-flush_cache every few seconds.  The entire run took over 12 hours.  I'm
-happy to report that so far I've not gotten the same lockdep warning as
-before.
 
-Maybe this can now go to -mm for more testing?
-
-Cheers,
-Erez.
