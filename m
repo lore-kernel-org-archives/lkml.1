@@ -1,72 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760746AbYDDTso@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760884AbYDDTtU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760746AbYDDTso (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Apr 2008 15:48:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755750AbYDDTsd
+	id S1760884AbYDDTtU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Apr 2008 15:49:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757549AbYDDTtJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Apr 2008 15:48:33 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:39997 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753125AbYDDTsc (ORCPT
+	Fri, 4 Apr 2008 15:49:09 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:60645 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755750AbYDDTtH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Apr 2008 15:48:32 -0400
-Date: Fri, 4 Apr 2008 22:48:29 +0300 (EEST)
-From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
-X-X-Sender: ijjarvin@wrl-59.cs.helsinki.fi
-To: "Robin H. Johnson" <robbat2@gentoo.org>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Netdev <netdev@vger.kernel.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: WARNING: at net/ipv4/tcp_input.c:2173	tcp_mark_head_lost+0x173/0x1a0()
-In-Reply-To: <20080404082201.GC20121@curie-int.orbis-terrarum.net>
-Message-ID: <Pine.LNX.4.64.0804042244260.415@wrl-59.cs.helsinki.fi>
-References: <20080402224137.GB25768@curie-int.orbis-terrarum.net>
- <20080403211913.3a0c1d00.akpm@linux-foundation.org>
- <20080403212038.ec0a4244.akpm@linux-foundation.org>
- <20080404082201.GC20121@curie-int.orbis-terrarum.net>
+	Fri, 4 Apr 2008 15:49:07 -0400
+Date: Fri, 4 Apr 2008 12:48:12 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Michael Trimarchi <trimarchimichael@yahoo.it>
+Cc: linux-kernel@vger.kernel.org, linux-mtd@lists.infradead.org,
+       dwmw2@infradead.org, linux-arm-kernel@lists.arm.linux.org.uk,
+       spi-devel-general@lists.sourceforge.net
+Subject: Re: [PATCH]  jffs2 summary allocation
+Message-Id: <20080404124812.d39fa640.akpm@linux-foundation.org>
+In-Reply-To: <713171.37644.qm@web26213.mail.ukl.yahoo.com>
+References: <713171.37644.qm@web26213.mail.ukl.yahoo.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 4 Apr 2008, Robin H. Johnson wrote:
+On Fri, 4 Apr 2008 10:23:55 +0000 (GMT)
+Michael Trimarchi <trimarchimichael@yahoo.it> wrote:
 
-> On Thu, Apr 03, 2008 at 09:20:38PM -0700, Andrew Morton wrote:
-> > On Thu, 3 Apr 2008 21:19:13 -0700 Andrew Morton <akpm@linux-foundation.org> wrote:
-> > 
-> > > 
-> > > (cc netdev)
-> > > 
-> > > (and Rafael - I assume 2.6.24 didn't do this..)
-> > 
-> > urgh.
-> > 
-> > > On Wed, 2 Apr 2008 15:41:37 -0700 "Robin H. Johnson" <robbat2@gentoo.org> wrote:
-> > > 
-> > > > (Please CC, not on LKML).
-> > > > 
-> > > > One of the nodes in my web-serving cluster (isohunt.com) started showing this:
-> > > > 
-> > > > ------------[ cut here ]------------
-> > > > WARNING: at net/ipv4/tcp_input.c:2173 tcp_mark_head_lost+0x173/0x1a0()
-> > > > Modules linked in: lm85 hwmon_vid nfs lockd nfs_acl sunrpc bonding reiserfs k8temp hwmon i2c_nforce2 i2c_core sg
-> > > > Pid: 32500, comm: php-cgi Not tainted 2.6.25-rc4-git2 #7
-> > I misread that as -rc8.
-> > We fixed a lot of stuff since -rc4.  Please retest current mainline?
+> Hi,
 > 
-> Hopefully this is new enough. -git3 was released right while I was writing this
-> email after testing, and I don't see anything in there that seems related.
+> I apply this patch to fix this oops.
 > 
-> ------------[ cut here ]------------
-> WARNING: at net/ipv4/tcp_input.c:1771 tcp_enter_frto+0x2bb/0x2c0()
+> 
+> Unable to handle kernel NULL pointer dereference at virtual address 00000000
+> pgd = c0004000
+> [00000000] *pgd=00000000
+> stopped custom tracer.
+> Internal error: Oops: 817 [#1] PREEMPT
+> Modules linked in:
+> CPU: 0    Not tainted  (2.6.24-rc5-rt1 #37)
+> PC is at dma_cache_maint+0x40/0x80
+> LR is at atmel_spi_transfer+0x94/0x178
+> pc : [<c002488c>]    lr : [<c013eedc>]    psr: 20000013
+> sp : c044db84  ip : c044db94  fp : c044db90
+> r10: ffffffff  r9 : 00000000  r8 : c04e4c00
+> r7 : c03ee310  r6 : c044dcfc  r5 : c109d3bc  r4 : c044dcd8
+> r3 : 00000000  r2 : 00000001  r1 : c109d7dc  r0 : c109d3bc
+> Flags: nzCv  IRQs on  FIQs on  Mode SVC_32  ISA ARM  Segment kernel
+> Control: 0005317f  Table: 20588000  DAC: 00000017
+> Process jffs2_gcd_mtd1 (pid: 313, stack limit = 0xc044c258)
+> Stack: (0xc044db84 to 0xc044e000)
+> ...
+> Backtrace:
+> [<c002484c>] (dma_cache_maint+0x0/0x80) from [<c013eedc>] (atmel_spi_transfer+0x94/0x178)
+> [<c013ee48>] (atmel_spi_transfer+0x0/0x178) from [<c013e124>] (spi_sync+0x74/0x98)
+> [<c013e0b0>] (spi_sync+0x0/0x98) from [<c013dcb0>] (dataflash_write+0x1b0/0x270)
+>  r8:000014bf r7:00000420 r6:c0446000 r5:00000420 r4:00a5f800
+> [<c013db00>] (dataflash_write+0x0/0x270) from [<c013a00c>] (part_write+0xa8/0xb0)
+> [<c0139f64>] (part_write+0x0/0xb0) from [<c00e0724>] (jffs2_flash_writev+0x278/0x434)
+>  r6:c04d9000 r5:00000420 r4:00000420
+> [<c00e04b0>] (jffs2_flash_writev+0x4/0x434) from [<c00e1f40>] (jffs2_sum_write_sumnode+0x334/0x420)
+> [<c00e1c0c>] (jffs2_sum_write_sumnode+0x0/0x420) from [<c00d5ca0>] (jffs2_do_reserve_space+0x94/0x3c8)
+> [<c00d5c0c>] (jffs2_do_reserve_space+0x0/0x3c8) from [<c00d6014>] (jffs2_reserve_space_gc+0x40/0x78)
+> [<c00d5fd4>] (jffs2_reserve_space_gc+0x0/0x78) from [<c00da938>] (jffs2_garbage_collect_pristine+0x5c/0x3a8)
+> [<c00da8dc>] (jffs2_garbage_collect_pristine+0x0/0x3a8) from [<c00dc32c>] (jffs2_garbage_collect_pass+0x590/0x714)
+> [<c00dbd9c>] (jffs2_garbage_collect_pass+0x0/0x714) from [<c00dd730>] (jffs2_garbage_collect_thread+0x100/0x18c)
+> [<c00dd630>] (jffs2_garbage_collect_thread+0x0/0x18c) from [<c0039818>] (do_exit+0x0/0x73c)
+> Code: 9a000001 e15c0003 3a000001 e3a03000 (e5833000)
+> 
 
-Is this _the first one_ you encounter? It's very strange place because
-tcp_enter_frto won't touch those sacked_out / lost_out counters at all
-so it hardly could cause an overflow there.
+--- a/fs/jffs2/summary.c~jffs2-summary-allocation
++++ a/fs/jffs2/summary.c
+@@ -17,7 +17,6 @@
+ #include <linux/pagemap.h>
+ #include <linux/crc32.h>
+ #include <linux/compiler.h>
+-#include <linux/vmalloc.h>
+ #include "nodelist.h"
+ #include "debug.h"
+ 
+@@ -30,7 +29,7 @@ int jffs2_sum_init(struct jffs2_sb_info 
+ 		return -ENOMEM;
+ 	}
+ 
+-	c->summary->sum_buf = vmalloc(c->sector_size);
++	c->summary->sum_buf = kmalloc(c->sector_size, GFP_KERNEL);
+ 
+ 	if (!c->summary->sum_buf) {
+ 		JFFS2_WARNING("Can't allocate buffer for writing out summary information!\n");
+@@ -49,7 +48,7 @@ void jffs2_sum_exit(struct jffs2_sb_info
+ 
+ 	jffs2_sum_disable_collecting(c->summary);
+ 
+-	vfree(c->summary->sum_buf);
++	kfree(c->summary->sum_buf);
+ 	c->summary->sum_buf = NULL;
+ 
+ 	kfree(c->summary);
+_
 
+All this does is switch sum_buf from vmalloced-memory over to
+kmalloced-memory.
 
+I'm assuming from the trace that the arm code tried to put that memory
+under DMA (or at least, passed it into part of the DMA management code to
+get the various caches sorted out) and that the arm DMA support code
+doesn't like being given vmalloced memory.
 
--- 
- i.
+So the question is: who is wrong here?  Is jffs wrong to use vmalloced
+memory in this application, or is arm wrong to not handle it?
+
