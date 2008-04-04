@@ -1,1602 +1,1610 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762877AbYDDNKA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762242AbYDDNKa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762877AbYDDNKA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Apr 2008 09:10:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760965AbYDDNCD
+	id S1762242AbYDDNKa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Apr 2008 09:10:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761204AbYDDNCJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Apr 2008 09:02:03 -0400
-Received: from wine.ocn.ne.jp ([122.1.235.145]:50119 "EHLO smtp.wine.ocn.ne.jp"
+	Fri, 4 Apr 2008 09:02:09 -0400
+Received: from wine.ocn.ne.jp ([122.1.235.145]:50181 "EHLO smtp.wine.ocn.ne.jp"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761540AbYDDNBs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Apr 2008 09:01:48 -0400
-Message-Id: <20080404122406.566872635@I-love.SAKURA.ne.jp>
+	id S1761547AbYDDNBv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Apr 2008 09:01:51 -0400
+Message-Id: <20080404122408.986477936@I-love.SAKURA.ne.jp>
 References: <20080404122242.867070732@I-love.SAKURA.ne.jp>
 User-Agent: quilt/0.46-1
-Date: Fri, 04 Apr 2008 21:23:06 +0900
+Date: Fri, 04 Apr 2008 21:23:12 +0900
 From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
 To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
        linux-security-module@vger.kernel.org
 Cc: Kentaro Takeda <takedakn@nttdata.co.jp>,
        Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>,
-       Toshiharu Harada <haradats@nttdata.co.jp>
-Subject: [TOMOYO #7 24/30] File operation restriction part.
-Content-Disposition: inline; filename=tomoyo-file-restriction-part.patch
+       Toshiharu Harada <haradats@nttdata.co.jp>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       linux-netdev <netdev@vger.kernel.org>
+Subject: [TOMOYO #7 30/30] Hooks for SAKURA and TOMOYO.
+Content-Disposition: inline; filename=tomoyo-hooks.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This file controls file related operations.
+This file contains modifications against kernel source code
+needed to use TOMOYO Linux 1.6.
+
+Although LSM hooks are provided for performing access control,
+TOMOYO Linux 1.6 doesn't use LSM because of the following reasons.
+
+Reason 1:
+
+CONFIG_SECURITY=y adds security fields to various structures and
+introduces hooks for allocating/freeing these security fields.
+But TOMOYO Linux can hardly utilize them.
+
+TOMOYO Linux requires modification against only "struct task_struct",
+and adding two variables to "struct task_struct" is sufficient.
+
+I think reserving LSM hooks for other security modules (e.g. SELinux, SMACK)
+and making TOMOYO Linux coexist with them is better than
+poorly utilizing LSM hooks and making TOMOYO Linux irreconcilable.
+In fact, I'm building TOMOYO Linux kernel packages with SELinux enabled
+and I'm experiencing no problems.
+
+Reason 2:
+
+TOMOYO Linux supports "delayed enforcing" mode that allows administrator
+judge interactively when policy violation occurred.
+To support that mode, all hooks but ccs_may_autobind() are called from
+context that is permitted to sleep.
+But some of LSM hooks are called from context that is not permitted to sleep.
+
+Reason 3:
+
+LSM hooks are called from VFS helper functions.
+But VFS helper functions don't receive "struct vfsmount" that are needed for
+TOMOYO Linux.
+Current specification of LSM is suitable for label based access control,
+but is not suitable for pathname based access control.
+As far as I can see, adding "struct vfsmount" to VFS helper functions
+to make LSM suitable for pathname based access control is unlikely acceptable.
+TOMOYO Linux can achieve its functionality using
+mnt_want_write()/mnt_drop_write()-like hooks.
+
+Reason 4:
+
+TOMOYO Linux is not only a tool for doing access control
+but also a tool for analyzing a system's behavior.
+
+
+Currently, this patch encloses inserted lines in
+"/***** ... start. *****/" and "/***** end. *****/" comments so that
+reviewers can easily find the range of modifications.
+Of course, these comments will go away when ready to merge.
+
+This patch makes two lines deletion by
+  sed -e 's:search_binary_handler:search_binary_handler_with_transition:'
+TOMOYO does domain transition when execve() is called.
+Thus, distinguishing search_binary_handler() from do_execve() and
+search_binary_handler() from other functions (e.g. load_script())
+makes TOMOYO's domain transition handler simple.
 
 Signed-off-by: Kentaro Takeda <takedakn@nttdata.co.jp>
 Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
 Signed-off-by: Toshiharu Harada <haradats@nttdata.co.jp>
+Cc: linux-fsdevel <linux-fsdevel@vger.kernel.org>
+Cc: linux-netdev <netdev@vger.kernel.org>
 ---
- fs/tomoyo_file.c | 1561 +++++++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 1561 insertions(+)
+ Documentation/kernel-parameters.txt |   15 ++++
+ arch/ia64/ia32/sys_ia32.c           |    7 ++
+ arch/mips/kernel/ptrace32.c         |    7 ++
+ arch/s390/kernel/ptrace.c           |    7 ++
+ arch/sh/kernel/ptrace_64.c          |    7 ++
+ arch/x86/kernel/ptrace.c            |    7 ++
+ fs/Kconfig                          |    2 
+ fs/Makefile                         |    2 
+ fs/attr.c                           |   19 +++++
+ fs/compat.c                         |    2 
+ fs/compat_ioctl.c                   |    9 ++
+ fs/exec.c                           |   20 +++++-
+ fs/fcntl.c                          |    9 ++
+ fs/ioctl.c                          |    7 ++
+ fs/namei.c                          |  118 ++++++++++++++++++++++++++++++++++++
+ fs/namespace.c                      |   49 ++++++++++++++
+ fs/open.c                           |   27 ++++++++
+ fs/proc/Makefile                    |    3 
+ fs/proc/proc_misc.c                 |    5 +
+ include/linux/init_task.h           |    4 +
+ include/linux/sched.h               |    9 ++
+ kernel/compat.c                     |    7 ++
+ kernel/kexec.c                      |    7 ++
+ kernel/kmod.c                       |    5 +
+ kernel/module.c                     |   11 +++
+ kernel/ptrace.c                     |   11 +++
+ kernel/sched.c                      |    7 ++
+ kernel/signal.c                     |   21 ++++++
+ kernel/sys.c                        |   21 ++++++
+ kernel/sysctl.c                     |   94 ++++++++++++++++++++++++++++
+ kernel/time.c                       |   11 +++
+ kernel/time/ntp.c                   |    7 ++
+ net/core/datagram.c                 |   11 +++
+ net/ipv4/inet_connection_sock.c     |    7 ++
+ net/ipv4/inet_hashtables.c          |    7 ++
+ net/ipv4/udp.c                      |   10 +++
+ net/socket.c                        |   41 ++++++++++++
+ net/unix/af_unix.c                  |   15 ++++
+ 38 files changed, 626 insertions(+), 2 deletions(-)
 
---- /dev/null
-+++ linux-2.6.25-rc8-mm1/fs/tomoyo_file.c
-@@ -0,0 +1,1561 @@
-+/*
-+ * fs/tomoyo_file.c
-+ *
-+ * Implementation of the Domain-Based Mandatory Access Control.
-+ *
-+ * Copyright (C) 2005-2008  NTT DATA CORPORATION
-+ *
-+ * Version: 1.6.0   2008/04/01
-+ *
-+ */
-+
-+#include <linux/ccs_common.h>
+--- linux-2.6.25-rc8-mm1.orig/arch/ia64/ia32/sys_ia32.c
++++ linux-2.6.25-rc8-mm1/arch/ia64/ia32/sys_ia32.c
+@@ -51,6 +51,9 @@
+ #include <asm/types.h>
+ #include <asm/uaccess.h>
+ #include <asm/unistd.h>
++/***** TOMOYO Linux start. *****/
 +#include <linux/tomoyo.h>
-+#include <linux/realpath.h>
-+#include <linux/binfmts.h>
-+#define ACC_MODE(x) ("\000\004\002\006"[(x)&O_ACCMODE])
++/***** TOMOYO Linux end. *****/
+ 
+ #include "ia32priv.h"
+ 
+@@ -1754,6 +1757,10 @@ sys32_ptrace (int request, pid_t pid, un
+ 	struct task_struct *child;
+ 	unsigned int value, tmp;
+ 	long i, ret;
++	/***** TOMOYO Linux start. *****/
++	if (!ccs_capable(TOMOYO_SYS_PTRACE))
++		return -EPERM;
++	/***** TOMOYO Linux end. *****/
+ 
+ 	lock_kernel();
+ 	if (request == PTRACE_TRACEME) {
+--- linux-2.6.25-rc8-mm1.orig/arch/mips/kernel/ptrace32.c
++++ linux-2.6.25-rc8-mm1/arch/mips/kernel/ptrace32.c
+@@ -35,6 +35,9 @@
+ #include <asm/system.h>
+ #include <asm/uaccess.h>
+ #include <asm/bootinfo.h>
++/***** TOMOYO Linux start. *****/
++#include <linux/tomoyo.h>
++/***** TOMOYO Linux end. *****/
+ 
+ int ptrace_getregs(struct task_struct *child, __s64 __user *data);
+ int ptrace_setregs(struct task_struct *child, __s64 __user *data);
+@@ -50,6 +53,10 @@ asmlinkage int sys32_ptrace(int request,
+ {
+ 	struct task_struct *child;
+ 	int ret;
++	/***** TOMOYO Linux start. *****/
++	if (!ccs_capable(TOMOYO_SYS_PTRACE))
++		return -EPERM;
++	/***** TOMOYO Linux end. *****/
+ 
+ #if 0
+ 	printk("ptrace(r=%d,pid=%d,addr=%08lx,data=%08lx)\n",
+--- linux-2.6.25-rc8-mm1.orig/arch/s390/kernel/ptrace.c
++++ linux-2.6.25-rc8-mm1/arch/s390/kernel/ptrace.c
+@@ -41,6 +41,9 @@
+ #include <asm/system.h>
+ #include <asm/uaccess.h>
+ #include <asm/unistd.h>
++/***** TOMOYO Linux start. *****/
++#include <linux/tomoyo.h>
++/***** TOMOYO Linux end. *****/
+ 
+ #ifdef CONFIG_COMPAT
+ #include "compat_ptrace.h"
+@@ -698,6 +701,10 @@ sys_ptrace(long request, long pid, long 
+ 	struct task_struct *child;
+ 	int ret;
+ 
++	/***** TOMOYO Linux start. *****/
++	if (!ccs_capable(TOMOYO_SYS_PTRACE))
++		return -EPERM;
++	/***** TOMOYO Linux end. *****/
+ 	lock_kernel();
+ 	if (request == PTRACE_TRACEME) {
+ 		 ret = ptrace_traceme();
+--- linux-2.6.25-rc8-mm1.orig/arch/sh/kernel/ptrace_64.c
++++ linux-2.6.25-rc8-mm1/arch/sh/kernel/ptrace_64.c
+@@ -33,6 +33,9 @@
+ #include <asm/system.h>
+ #include <asm/processor.h>
+ #include <asm/mmu_context.h>
++/***** TOMOYO Linux start. *****/
++#include <linux/tomoyo.h>
++/***** TOMOYO Linux end. *****/
+ 
+ /* This mask defines the bits of the SR which the user is not allowed to
+    change, which are everything except S, Q, M, PR, SZ, FR. */
+@@ -253,6 +256,10 @@ asmlinkage int sh64_ptrace(long request,
+ {
+ #define WPC_DBRMODE 0x0d104008
+ 	static int first_call = 1;
++	/***** TOMOYO Linux start. *****/
++	if (!ccs_capable(TOMOYO_SYS_PTRACE))
++		return -EPERM;
++	/***** TOMOYO Linux end. *****/
+ 
+ 	lock_kernel();
+ 	if (first_call) {
+--- linux-2.6.25-rc8-mm1.orig/arch/x86/kernel/ptrace.c
++++ linux-2.6.25-rc8-mm1/arch/x86/kernel/ptrace.c
+@@ -32,6 +32,9 @@
+ #include <asm/prctl.h>
+ #include <asm/proto.h>
+ #include <asm/ds.h>
++/***** TOMOYO Linux start. *****/
++#include <linux/tomoyo.h>
++/***** TOMOYO Linux end. *****/
+ 
+ #include "tls.h"
+ 
+@@ -1240,6 +1243,10 @@ asmlinkage long sys32_ptrace(long reques
+ 	void __user *datap = compat_ptr(data);
+ 	int ret;
+ 	__u32 val;
++	/***** TOMOYO Linux start. *****/
++	if (!ccs_capable(TOMOYO_SYS_PTRACE))
++		return -EPERM;
++	/***** TOMOYO Linux end. *****/
+ 
+ 	switch (request) {
+ 	case PTRACE_TRACEME:
+--- linux-2.6.25-rc8-mm1.orig/fs/Kconfig
++++ linux-2.6.25-rc8-mm1/fs/Kconfig
+@@ -2196,4 +2196,6 @@ endif
+ source "fs/nls/Kconfig"
+ source "fs/dlm/Kconfig"
+ 
++source "fs/Kconfig.ccs"
 +
-+/* Structure for "allow_read" keyword. */
-+struct globally_readable_file_entry {
-+	struct list1_head list;
-+	const struct path_info *filename;
-+	bool is_deleted;
-+};
+ endmenu
+--- linux-2.6.25-rc8-mm1.orig/fs/Makefile
++++ linux-2.6.25-rc8-mm1/fs/Makefile
+@@ -121,3 +121,5 @@ obj-$(CONFIG_DEBUG_FS)		+= debugfs/
+ obj-$(CONFIG_OCFS2_FS)		+= ocfs2/
+ obj-$(CONFIG_GFS2_FS)           += gfs2/
+ obj-$(CONFIG_UNION_FS)		+= unionfs/
 +
-+/* Structure for "file_pattern" keyword. */
-+struct pattern_entry {
-+	struct list1_head list;
-+	const struct path_info *pattern;
-+	bool is_deleted;
-+};
-+
-+/* Structure for "deny_rewrite" keyword. */
-+struct no_rewrite_entry {
-+	struct list1_head list;
-+	const struct path_info *pattern;
-+	bool is_deleted;
-+};
-+
-+/* Keyword array for single path operations. */
-+static const char *sp_keyword[MAX_SINGLE_PATH_OPERATION] = {
-+	[TYPE_READ_WRITE_ACL] = "read/write",
-+	[TYPE_EXECUTE_ACL]    = "execute",
-+	[TYPE_READ_ACL]       = "read",
-+	[TYPE_WRITE_ACL]      = "write",
-+	[TYPE_CREATE_ACL]     = "create",
-+	[TYPE_UNLINK_ACL]     = "unlink",
-+	[TYPE_MKDIR_ACL]      = "mkdir",
-+	[TYPE_RMDIR_ACL]      = "rmdir",
-+	[TYPE_MKFIFO_ACL]     = "mkfifo",
-+	[TYPE_MKSOCK_ACL]     = "mksock",
-+	[TYPE_MKBLOCK_ACL]    = "mkblock",
-+	[TYPE_MKCHAR_ACL]     = "mkchar",
-+	[TYPE_TRUNCATE_ACL]   = "truncate",
-+	[TYPE_SYMLINK_ACL]    = "symlink",
-+	[TYPE_REWRITE_ACL]    = "rewrite",
-+};
-+
-+/* Keyword array for double path operations. */
-+static const char *dp_keyword[MAX_DOUBLE_PATH_OPERATION] = {
-+	[TYPE_LINK_ACL]    = "link",
-+	[TYPE_RENAME_ACL]  = "rename",
-+};
-+
-+/**
-+ * ccs_sp2keyword - Get the name of single path operation.
-+ *
-+ * @operation: Type of operation.
-+ *
-+ * Returns the name of single path operation.
-+ */
-+const char *ccs_sp2keyword(const u8 operation)
-+{
-+	return (operation < MAX_SINGLE_PATH_OPERATION)
-+		? sp_keyword[operation] : NULL;
-+}
-+
-+/**
-+ * ccs_dp2keyword - Get the name of double path operation.
-+ *
-+ * @operation: Type of operation.
-+ *
-+ * Returns the name of double path operation.
-+ */
-+const char *ccs_dp2keyword(const u8 operation)
-+{
-+	return (operation < MAX_DOUBLE_PATH_OPERATION)
-+		? dp_keyword[operation] : NULL;
-+}
-+
-+/**
-+ * strendswith - Check whether the token ends with the given token.
-+ *
-+ * @name: The token to check.
-+ * @tail: The token to find.
-+ *
-+ * Returns true if @name ends with @tail, false otherwise.
-+ */
-+static bool strendswith(const char *name, const char *tail)
-+{
-+	int len;
-+	if (!name || !tail)
-+		return false;
-+	len = strlen(name) - strlen(tail);
-+	return len >= 0 && !strcmp(name + len, tail);
-+}
-+
-+/**
-+ * ccs_get_path - Get realpath.
-+ *
-+ * @dentry: Pointer to "struct dentry".
-+ * @mnt:    Pointer to "struct vfsmount".
-+ *
-+ * Returns pointer to "struct path_info" on success, NULL otherwise.
-+ */
-+static struct path_info *ccs_get_path(struct dentry *dentry,
-+				      struct vfsmount *mnt)
-+{
-+	int error;
-+	struct path_info_with_data *buf = ccs_alloc(sizeof(*buf));
-+	if (!buf)
-+		return NULL;
-+	/* Preserve one byte for appending "/". */
-+	error = ccs_realpath_from_dentry2(dentry, mnt, buf->body,
-+					  sizeof(buf->body) - 2);
-+	if (!error) {
-+		buf->head.name = buf->body;
-+		ccs_fill_path_info(&buf->head);
-+		return &buf->head;
-+	}
-+	ccs_free(buf);
-+	return NULL;
-+}
-+
-+static int update_double_path_acl(const u8 type, const char *filename1,
-+				  const char *filename2,
-+				  struct domain_info * const domain,
-+				  const struct condition_list *condition,
-+				  const bool is_delete);
-+static int update_single_path_acl(const u8 type, const char *filename,
-+				  struct domain_info * const domain,
-+				  const struct condition_list *condition,
-+				  const bool is_delete);
-+
-+/**
-+ * audit_file_log - Audit file related request log.
-+ *
-+ * @operation:  The name of operation.
-+ * @filename1:  First pathname.
-+ * @filename2:  Second pathname. May be NULL.
-+ * @is_granted: True if this is a granted log.
-+ * @profile:    Profile number used.
-+ * @mode:       Access control mode used.
-+ * @bprm:       Pointer to "struct linux_binprm". May be NULL.
-+ *
-+ * Returns 0 on success, negative value otherwise.
-+ */
-+static int audit_file_log(const char *operation,
-+			  const struct path_info *filename1,
-+			  const struct path_info *filename2,
-+			  const bool is_granted, const u8 profile,
-+			  const u8 mode, struct linux_binprm *bprm)
-+{
-+	char *buf;
-+	int len;
-+	int len2;
-+	if (ccs_can_save_audit_log(is_granted) < 0)
-+		return -ENOMEM;
-+	len = strlen(operation) + filename1->total_len + 16;
-+	if (filename2)
-+		len += filename2->total_len;
-+	buf = ccs_init_audit_log(&len, profile, mode, bprm);
-+	if (!buf)
-+		return -ENOMEM;
-+	len2 = strlen(buf);
-+	snprintf(buf + len2, len - len2 - 1, "allow_%s %s %s\n",
-+		 operation, filename1->name, filename2 ? filename2->name : "");
-+	return ccs_write_audit_log(buf, is_granted);
-+}
-+
-+/* The list for "struct globally_readable_file_entry". */
-+static LIST1_HEAD(globally_readable_list);
-+
-+/**
-+ * update_globally_readable_entry - Update "struct globally_readable_file_entry" list.
-+ *
-+ * @filename:  Filename unconditionally permitted to open() for reading.
-+ * @is_delete: True if it is a delete request.
-+ *
-+ * Returns 0 on success, negative value otherwise.
-+ */
-+static int update_globally_readable_entry(const char *filename,
-+					  const bool is_delete)
-+{
-+	struct globally_readable_file_entry *new_entry;
-+	struct globally_readable_file_entry *ptr;
-+	static DEFINE_MUTEX(lock);
-+	const struct path_info *saved_filename;
-+	int error = -ENOMEM;
-+	if (!ccs_is_correct_path(filename, 1, -1, -1, __func__))
-+		return -EINVAL; /* No patterns allowed. */
-+	saved_filename = ccs_save_name(filename);
-+	if (!saved_filename)
-+		return -ENOMEM;
-+	mutex_lock(&lock);
-+	list1_for_each_entry(ptr, &globally_readable_list, list) {
-+		if (ptr->filename != saved_filename)
-+			continue;
-+		ptr->is_deleted = is_delete;
-+		error = 0;
-+		goto out;
-+	}
-+	if (is_delete) {
-+		error = -ENOENT;
-+		goto out;
-+	}
-+	new_entry = ccs_alloc_element(sizeof(*new_entry));
-+	if (!new_entry)
-+		goto out;
-+	new_entry->filename = saved_filename;
-+	list1_add_tail_mb(&new_entry->list, &globally_readable_list);
-+	error = 0;
-+ out:
-+	mutex_unlock(&lock);
-+	ccs_update_counter(CCS_UPDATES_COUNTER_EXCEPTION_POLICY);
-+	return error;
-+}
-+
-+/**
-+ * is_globally_readable_file - Check if the file is unconditionnaly permitted to be open()ed for reading.
-+ *
-+ * @filename: The filename to check.
-+ *
-+ * Returns true if any domain can open @filename for reading, false otherwise.
-+ */
-+static bool is_globally_readable_file(const struct path_info *filename)
-+{
-+	struct globally_readable_file_entry *ptr;
-+	list1_for_each_entry(ptr, &globally_readable_list, list) {
-+		if (!ptr->is_deleted && !ccs_pathcmp(filename, ptr->filename))
-+			return true;
-+	}
-+	return false;
-+}
-+
-+/**
-+ * ccs_write_globally_readable_policy - Write "struct globally_readable_file_entry" list.
-+ *
-+ * @data:      String to parse.
-+ * @is_delete: True if it is a delete request.
-+ *
-+ * Returns 0 on success, negative value otherwise.
-+ */
-+int ccs_write_globally_readable_policy(char *data, const bool is_delete)
-+{
-+	return update_globally_readable_entry(data, is_delete);
-+}
-+
-+/**
-+ * ccs_read_globally_readable_policy - Read "struct globally_readable_file_entry" list.
-+ *
-+ * @head: Pointer to "struct ccs_io_buffer".
-+ *
-+ * Returns true on success, false otherwise.
-+ */
-+bool ccs_read_globally_readable_policy(struct ccs_io_buffer *head)
-+{
-+	struct list1_head *pos;
-+	list1_for_each_cookie(pos, head->read_var2, &globally_readable_list) {
-+		struct globally_readable_file_entry *ptr;
-+		ptr = list1_entry(pos, struct globally_readable_file_entry,
-+				  list);
-+		if (ptr->is_deleted)
-+			continue;
-+		if (!ccs_io_printf(head, KEYWORD_ALLOW_READ "%s\n",
-+				   ptr->filename->name))
-+			goto out;
-+	}
-+	return true;
-+ out:
-+	return false;
-+}
-+
-+/* The list for "struct path_group_entry". */
-+static LIST1_HEAD(path_group_list);
-+
-+/**
-+ * update_path_group_entry - Update "struct path_group_entry" list.
-+ *
-+ * @group_name:  The name of pathname group.
-+ * @member_name: The name of group's member.
-+ * @is_delete:   True if it is a delete request.
-+ *
-+ * Returns 0 on success, negative value otherwise.
-+ */
-+static int update_path_group_entry(const char *group_name,
-+				   const char *member_name,
-+				   const bool is_delete)
-+{
-+	static DEFINE_MUTEX(lock);
-+	struct path_group_entry *new_group;
-+	struct path_group_entry *group;
-+	struct path_group_member *new_member;
-+	struct path_group_member *member;
-+	const struct path_info *saved_group_name;
-+	const struct path_info *saved_member_name;
-+	int error = -ENOMEM;
-+	bool found = false;
-+	if (!ccs_is_correct_path(group_name, 0, 0, 0, __func__) ||
-+	    !group_name[0] ||
-+	    !ccs_is_correct_path(member_name, 0, 0, 0, __func__) ||
-+	    !member_name[0])
-+		return -EINVAL;
-+	saved_group_name = ccs_save_name(group_name);
-+	saved_member_name = ccs_save_name(member_name);
-+	if (!saved_group_name || !saved_member_name)
-+		return -ENOMEM;
-+	mutex_lock(&lock);
-+	list1_for_each_entry(group, &path_group_list, list) {
-+		if (saved_group_name != group->group_name)
-+			continue;
-+		list1_for_each_entry(member, &group->path_group_member_list,
-+				     list) {
-+			if (member->member_name != saved_member_name)
-+				continue;
-+			member->is_deleted = is_delete;
-+			error = 0;
-+			goto out;
++include $(srctree)/fs/Makefile-2.6.ccs
+--- linux-2.6.25-rc8-mm1.orig/fs/attr.c
++++ linux-2.6.25-rc8-mm1/fs/attr.c
+@@ -14,6 +14,9 @@
+ #include <linux/fcntl.h>
+ #include <linux/quotaops.h>
+ #include <linux/security.h>
++/***** TOMOYO Linux start. *****/
++#include <linux/tomoyo.h>
++/***** TOMOYO Linux end. *****/
+ 
+ /* Taken over from the old code... */
+ 
+@@ -159,12 +162,28 @@ int notify_change(struct dentry * dentry
+ 
+ 	if (inode->i_op && inode->i_op->setattr) {
+ 		error = security_inode_setattr(dentry, attr);
++		/***** TOMOYO Linux start. *****/
++		if (!error && (ia_valid & ATTR_MODE) &&
++		    !ccs_capable(TOMOYO_SYS_CHMOD))
++			error = -EPERM;
++		if (!error && (ia_valid & (ATTR_UID | ATTR_GID)) &&
++		    !ccs_capable(TOMOYO_SYS_CHOWN))
++			error = -EPERM;
++		/***** TOMOYO Linux end. *****/
+ 		if (!error)
+ 			error = inode->i_op->setattr(dentry, attr);
+ 	} else {
+ 		error = inode_change_ok(inode, attr);
+ 		if (!error)
+ 			error = security_inode_setattr(dentry, attr);
++		/***** TOMOYO Linux start. *****/
++		if (!error && (ia_valid & ATTR_MODE) &&
++		    !ccs_capable(TOMOYO_SYS_CHMOD))
++			error = -EPERM;
++		if (!error && (ia_valid & (ATTR_UID | ATTR_GID)) &&
++		    !ccs_capable(TOMOYO_SYS_CHOWN))
++			error = -EPERM;
++		/***** TOMOYO Linux end. *****/
+ 		if (!error) {
+ 			if ((ia_valid & ATTR_UID && attr->ia_uid != inode->i_uid) ||
+ 			    (ia_valid & ATTR_GID && attr->ia_gid != inode->i_gid))
+--- linux-2.6.25-rc8-mm1.orig/fs/compat.c
++++ linux-2.6.25-rc8-mm1/fs/compat.c
+@@ -1399,7 +1399,7 @@ int compat_do_execve(char * filename,
+ 	if (retval < 0)
+ 		goto out;
+ 
+-	retval = search_binary_handler(bprm, regs);
++	retval = search_binary_handler_with_transition(bprm, regs);
+ 	if (retval >= 0) {
+ 		/* execve success */
+ 		security_bprm_free(bprm);
+--- linux-2.6.25-rc8-mm1.orig/fs/compat_ioctl.c
++++ linux-2.6.25-rc8-mm1/fs/compat_ioctl.c
+@@ -113,6 +113,9 @@
+ #ifdef CONFIG_SPARC
+ #include <asm/fbio.h>
+ #endif
++/***** TOMOYO Linux start. *****/
++#include <linux/tomoyo.h>
++/***** TOMOYO Linux end. *****/
+ 
+ static int do_ioctl32_pointer(unsigned int fd, unsigned int cmd,
+ 			      unsigned long arg, struct file *f)
+@@ -2910,6 +2913,12 @@ asmlinkage long compat_sys_ioctl(unsigne
+ 		/*FALL THROUGH*/
+ 
+ 	default:
++		/***** TOMOYO Linux start. *****/
++		if (!ccs_capable(TOMOYO_SYS_IOCTL)) {
++			error = -EPERM;
++			goto out_fput;
 +		}
-+		found = true;
-+		break;
-+	}
-+	if (is_delete) {
-+		error = -ENOENT;
-+		goto out;
-+	}
-+	if (!found) {
-+		new_group = ccs_alloc_element(sizeof(*new_group));
-+		if (!new_group)
-+			goto out;
-+		INIT_LIST1_HEAD(&new_group->path_group_member_list);
-+		new_group->group_name = saved_group_name;
-+		list1_add_tail_mb(&new_group->list, &path_group_list);
-+		group = new_group;
-+	}
-+	new_member = ccs_alloc_element(sizeof(*new_member));
-+	if (!new_member)
-+		goto out;
-+	new_member->member_name = saved_member_name;
-+	list1_add_tail_mb(&new_member->list, &group->path_group_member_list);
-+	error = 0;
-+ out:
-+	mutex_unlock(&lock);
-+	ccs_update_counter(CCS_UPDATES_COUNTER_EXCEPTION_POLICY);
-+	return error;
-+}
++		/***** TOMOYO Linux end. *****/
+ 		if (filp->f_op && filp->f_op->compat_ioctl) {
+ 			error = filp->f_op->compat_ioctl(filp, cmd, arg);
+ 			if (error != -ENOIOCTLCMD)
+--- linux-2.6.25-rc8-mm1.orig/fs/exec.c
++++ linux-2.6.25-rc8-mm1/fs/exec.c
+@@ -60,6 +60,10 @@
+ #include <linux/kmod.h>
+ #endif
+ 
++/***** TOMOYO Linux start. *****/
++#include <linux/tomoyo.h>
++/***** TOMOYO Linux end. *****/
 +
-+/**
-+ * ccs_write_path_group_policy - Write "struct path_group_entry" list.
-+ *
-+ * @data:      String to parse.
-+ * @is_delete: True if it is a delete request.
-+ *
-+ * Returns 0 on success, nagative value otherwise.
-+ */
-+int ccs_write_path_group_policy(char *data, const bool is_delete)
-+{
-+	char *cp = strchr(data, ' ');
-+	if (!cp)
-+		return -EINVAL;
-+	*cp++ = '\0';
-+	return update_path_group_entry(data, cp, is_delete);
-+}
+ int core_uses_pid;
+ char core_pattern[CORENAME_MAX_SIZE] = "core";
+ int suid_dumpable = 0;
+@@ -118,6 +122,12 @@ asmlinkage long sys_uselib(const char __
+ 	error = vfs_permission(&nd, MAY_READ | MAY_EXEC);
+ 	if (error)
+ 		goto exit;
++	/***** TOMOYO Linux start. *****/
++	/* 01 means "read". */
++	error = ccs_check_open_permission(nd.path.dentry, nd.path.mnt, 01);
++	if (error)
++		goto exit;
++	/***** TOMOYO Linux end. *****/
+ 
+ 	file = nameidata_to_filp(&nd, O_RDONLY|O_LARGEFILE);
+ 	error = PTR_ERR(file);
+@@ -664,6 +674,14 @@ struct file *open_exec(const char *name)
+ 		file = ERR_PTR(-EACCES);
+ 		if (S_ISREG(inode->i_mode)) {
+ 			int err = vfs_permission(&nd, MAY_EXEC);
++			/***** TOMOYO Linux start. *****/
++			if (!err && (current->tomoyo_flags &
++				     TOMOYO_CHECK_READ_FOR_OPEN_EXEC))
++				/* 01 means "read". */
++				err = ccs_check_open_permission(nd.path.dentry,
++								nd.path.mnt,
++								01);
++			/***** TOMOYO Linux end. *****/
+ 			file = ERR_PTR(err);
+ 			if (!err) {
+ 				file = nameidata_to_filp(&nd,
+@@ -1325,7 +1343,7 @@ int do_execve(char * filename,
+ 	if (retval < 0)
+ 		goto out;
+ 
+-	retval = search_binary_handler(bprm,regs);
++	retval = search_binary_handler_with_transition(bprm, regs);
+ 	if (retval >= 0) {
+ 		/* execve success */
+ 		free_arg_pages(bprm);
+--- linux-2.6.25-rc8-mm1.orig/fs/fcntl.c
++++ linux-2.6.25-rc8-mm1/fs/fcntl.c
+@@ -23,6 +23,9 @@
+ #include <asm/poll.h>
+ #include <asm/siginfo.h>
+ #include <asm/uaccess.h>
++/***** TOMOYO Linux start. *****/
++#include <linux/tomoyo.h>
++/***** TOMOYO Linux end. *****/
+ 
+ void set_close_on_exec(unsigned int fd, int flag)
+ {
+@@ -217,6 +220,12 @@ static int setfl(int fd, struct file * f
+ 	if (((arg ^ filp->f_flags) & O_APPEND) && IS_APPEND(inode))
+ 		return -EPERM;
+ 
++	/***** TOMOYO Linux start. *****/
++	if (((arg ^ filp->f_flags) & O_APPEND) &&
++	    ccs_check_rewrite_permission(filp))
++		return -EPERM;
++	/***** TOMOYO Linux end. *****/
 +
-+/**
-+ * find_or_assign_new_path_group - Create pathname group.
-+ *
-+ * @group_name: The name of pathname group.
-+ *
-+ * Returns pointer to "struct path_group_entry" if found, NULL otherwise.
-+ */
-+static struct path_group_entry *
-+find_or_assign_new_path_group(const char *group_name)
-+{
-+	u8 i;
-+	struct path_group_entry *group;
-+	for (i = 0; i <= 1; i++) {
-+		list1_for_each_entry(group, &path_group_list, list) {
-+			if (!strcmp(group_name, group->group_name->name))
-+				return group;
-+		}
-+		if (!i) {
-+			update_path_group_entry(group_name, "/", false);
-+			update_path_group_entry(group_name, "/", true);
-+		}
-+	}
-+	return NULL;
-+}
+ 	/* O_NOATIME can only be set by the owner or superuser */
+ 	if ((arg & O_NOATIME) && !(filp->f_flags & O_NOATIME))
+ 		if (!is_owner_or_cap(inode))
+--- linux-2.6.25-rc8-mm1.orig/fs/ioctl.c
++++ linux-2.6.25-rc8-mm1/fs/ioctl.c
+@@ -15,6 +15,9 @@
+ #include <linux/uaccess.h>
+ 
+ #include <asm/ioctls.h>
++/***** TOMOYO Linux start. *****/
++#include <linux/tomoyo.h>
++/***** TOMOYO Linux end. *****/
+ 
+ /**
+  * vfs_ioctl - call filesystem specific ioctl methods
+@@ -35,6 +38,10 @@ static long vfs_ioctl(struct file *filp,
+ 
+ 	if (!filp->f_op)
+ 		goto out;
++	/***** TOMOYO Linux start. *****/
++	if (!ccs_capable(TOMOYO_SYS_IOCTL))
++		return -EPERM;
++	/***** TOMOYO Linux end. *****/
+ 
+ 	if (filp->f_op->unlocked_ioctl) {
+ 		error = filp->f_op->unlocked_ioctl(filp, cmd, arg);
+--- linux-2.6.25-rc8-mm1.orig/fs/namei.c
++++ linux-2.6.25-rc8-mm1/fs/namei.c
+@@ -36,6 +36,10 @@
+ 
+ #define ACC_MODE(x) ("\000\004\002\006"[(x)&O_ACCMODE])
+ 
++/***** TOMOYO Linux start. *****/
++#include <linux/tomoyo.h>
++/***** TOMOYO Linux end. *****/
 +
-+/**
-+ * path_matches_group - Check whether the given pathname matches members of the given pathname group.
-+ *
-+ * @pathname:        The name of pathname.
-+ * @group:           Pointer to "struct path_group_entry".
-+ * @may_use_pattern: True if wild card is permitted.
-+ *
-+ * Returns true if @pathname matches pathnames in @group, false otherwise.
-+ */
-+static bool path_matches_group(const struct path_info *pathname,
-+			       const struct path_group_entry *group,
-+			       const bool may_use_pattern)
-+{
-+	struct path_group_member *member;
-+	list1_for_each_entry(member, &group->path_group_member_list, list) {
-+		if (member->is_deleted)
-+			continue;
-+		if (!member->member_name->is_patterned) {
-+			if (!ccs_pathcmp(pathname, member->member_name))
-+				return true;
-+		} else if (may_use_pattern) {
-+			if (ccs_path_matches_pattern(pathname,
-+						     member->member_name))
-+				return true;
-+		}
+ /* [Feb-1997 T. Schoebel-Theuer]
+  * Fundamental changes in the pathname lookup mechanisms (namei)
+  * were necessary because of omirr.  The reason is that omirr needs
+@@ -1595,6 +1599,14 @@ int vfs_create(struct inode *dir, struct
+ 	error = security_inode_create(dir, dentry, mode);
+ 	if (error)
+ 		return error;
++	/***** TOMOYO Linux start. *****/
++	if (nd) {
++		error = ccs_check_1path_perm(TYPE_CREATE_ACL, dentry,
++					     nd->path.mnt);
++		if (error < 0)
++			return error;
 +	}
-+	return false;
-+}
++	/***** TOMOYO Linux end. *****/
+ 	DQUOT_INIT(dir);
+ 	error = dir->i_op->create(dir, dentry, mode, nd);
+ 	if (!error)
+@@ -1649,6 +1661,13 @@ int may_open(struct nameidata *nd, int a
+ 		if (!is_owner_or_cap(inode))
+ 			return -EPERM;
+ 
++	/***** TOMOYO Linux start. *****/
++	/* includes O_APPEND and O_TRUNC checks */
++	error = ccs_check_open_permission(dentry, nd->path.mnt, flag);
++	if (error)
++		return error;
++	/***** TOMOYO Linux end. *****/
 +
-+/**
-+ * ccs_read_path_group_policy - Read "struct path_group_entry" list.
-+ *
-+ * @head: Pointer to "struct ccs_io_buffer".
-+ *
-+ * Returns true on success, false otherwise.
-+ */
-+bool ccs_read_path_group_policy(struct ccs_io_buffer *head)
-+{
-+	struct list1_head *gpos;
-+	struct list1_head *mpos;
-+	list1_for_each_cookie(gpos, head->read_var1, &path_group_list) {
-+		struct path_group_entry *group;
-+		group = list1_entry(gpos, struct path_group_entry, list);
-+		list1_for_each_cookie(mpos, head->read_var2,
-+				      &group->path_group_member_list) {
-+			struct path_group_member *member;
-+			member = list1_entry(mpos, struct path_group_member,
-+					     list);
-+			if (member->is_deleted)
-+				continue;
-+			if (!ccs_io_printf(head, KEYWORD_PATH_GROUP "%s %s\n",
-+					   group->group_name->name,
-+					   member->member_name->name))
-+				goto out;
-+		}
-+	}
-+	return true;
-+ out:
-+	return false;
-+}
-+
-+/* The list for "struct pattern_entry". */
-+static LIST1_HEAD(pattern_list);
-+
-+/**
-+ * update_file_pattern_entry - Update "struct pattern_entry" list.
-+ *
-+ * @pattern:   Pathname pattern.
-+ * @is_delete: True if it is a delete request.
-+ *
-+ * Returns 0 on success, negative value otherwise.
-+ */
-+static int update_file_pattern_entry(const char *pattern, const bool is_delete)
-+{
-+	struct pattern_entry *new_entry;
-+	struct pattern_entry *ptr;
-+	static DEFINE_MUTEX(lock);
-+	const struct path_info *saved_pattern;
-+	int error = -ENOMEM;
-+	if (!ccs_is_correct_path(pattern, 0, 1, 0, __func__))
-+		return -EINVAL;
-+	saved_pattern = ccs_save_name(pattern);
-+	if (!saved_pattern)
-+		return -ENOMEM;
-+	mutex_lock(&lock);
-+	list1_for_each_entry(ptr, &pattern_list, list) {
-+		if (saved_pattern != ptr->pattern)
-+			continue;
-+		ptr->is_deleted = is_delete;
-+		error = 0;
-+		goto out;
-+	}
-+	if (is_delete) {
-+		error = -ENOENT;
-+		goto out;
-+	}
-+	new_entry = ccs_alloc_element(sizeof(*new_entry));
-+	if (!new_entry)
-+		goto out;
-+	new_entry->pattern = saved_pattern;
-+	list1_add_tail_mb(&new_entry->list, &pattern_list);
-+	error = 0;
-+ out:
-+	mutex_unlock(&lock);
-+	ccs_update_counter(CCS_UPDATES_COUNTER_EXCEPTION_POLICY);
-+	return error;
-+}
-+
-+/**
-+ * get_file_pattern - Get patterned pathname.
-+ *
-+ * @filename: The filename to find patterned pathname.
-+ *
-+ * Returns pointer to pathname pattern if matched, @filename otherwise.
-+ */
-+static const struct path_info *
-+get_file_pattern(const struct path_info *filename)
-+{
-+	struct pattern_entry *ptr;
-+	const struct path_info *pattern = NULL;
-+	list1_for_each_entry(ptr, &pattern_list, list) {
-+		if (ptr->is_deleted)
-+			continue;
-+		if (!ccs_path_matches_pattern(filename, ptr->pattern))
-+			continue;
-+		pattern = ptr->pattern;
-+		if (strendswith(pattern->name, "/\\*")) {
-+			/* Do nothing. Try to find the better match. */
-+		} else {
-+			/* This would be the better match. Use this. */
-+			break;
-+		}
-+	}
-+	if (pattern)
-+		filename = pattern;
-+	return filename;
-+}
-+
-+/**
-+ * ccs_write_pattern_policy - Write "struct pattern_entry" list.
-+ *
-+ * @data:      String to parse.
-+ * @is_delete: True if it is a delete request.
-+ *
-+ * Returns 0 on success, negative value otherwise.
-+ */
-+int ccs_write_pattern_policy(char *data, const bool is_delete)
-+{
-+	return update_file_pattern_entry(data, is_delete);
-+}
-+
-+/**
-+ * ccs_read_file_pattern - Read "struct pattern_entry" list.
-+ *
-+ * @head: Pointer to "struct ccs_io_buffer".
-+ *
-+ * Returns true on success, false otherwise.
-+ */
-+bool ccs_read_file_pattern(struct ccs_io_buffer *head)
-+{
-+	struct list1_head *pos;
-+	list1_for_each_cookie(pos, head->read_var2, &pattern_list) {
-+		struct pattern_entry *ptr;
-+		ptr = list1_entry(pos, struct pattern_entry, list);
-+		if (ptr->is_deleted)
-+			continue;
-+		if (!ccs_io_printf(head, KEYWORD_FILE_PATTERN "%s\n",
-+				   ptr->pattern->name))
-+			goto out;
-+	}
-+	return true;
-+ out:
-+	return false;
-+}
-+
-+/* The list for "struct no_rewrite_entry". */
-+static LIST1_HEAD(no_rewrite_list);
-+
-+/**
-+ * update_no_rewrite_entry - Update "struct no_rewrite_entry" list.
-+ *
-+ * @pattern:   Pathname pattern that are not rewritable by default.
-+ * @is_delete: True if it is a delete request.
-+ *
-+ * Returns 0 on success, negative value otherwise.
-+ */
-+static int update_no_rewrite_entry(const char *pattern, const bool is_delete)
-+{
-+	struct no_rewrite_entry *new_entry, *ptr;
-+	static DEFINE_MUTEX(lock);
-+	const struct path_info *saved_pattern;
-+	int error = -ENOMEM;
-+	if (!ccs_is_correct_path(pattern, 0, 0, 0, __func__))
-+		return -EINVAL;
-+	saved_pattern = ccs_save_name(pattern);
-+	if (!saved_pattern)
-+		return -ENOMEM;
-+	mutex_lock(&lock);
-+	list1_for_each_entry(ptr, &no_rewrite_list, list) {
-+		if (ptr->pattern != saved_pattern)
-+			continue;
-+		ptr->is_deleted = is_delete;
-+		error = 0;
-+		goto out;
-+	}
-+	if (is_delete) {
-+		error = -ENOENT;
-+		goto out;
-+	}
-+	new_entry = ccs_alloc_element(sizeof(*new_entry));
-+	if (!new_entry)
-+		goto out;
-+	new_entry->pattern = saved_pattern;
-+	list1_add_tail_mb(&new_entry->list, &no_rewrite_list);
-+	error = 0;
-+ out:
-+	mutex_unlock(&lock);
-+	ccs_update_counter(CCS_UPDATES_COUNTER_EXCEPTION_POLICY);
-+	return error;
-+}
-+
-+/**
-+ * is_no_rewrite_file - Check if the given pathname is not permitted to be rewrited.
-+ *
-+ * @filename: Filename to check.
-+ *
-+ * Returns true if @filename is specified by "deny_rewrite" directive,
-+ * false otherwise.
-+ */
-+static bool is_no_rewrite_file(const struct path_info *filename)
-+{
-+	struct no_rewrite_entry *ptr;
-+	list1_for_each_entry(ptr, &no_rewrite_list, list) {
-+		if (ptr->is_deleted)
-+			continue;
-+		if (!ccs_path_matches_pattern(filename, ptr->pattern))
-+			continue;
-+		return true;
-+	}
-+	return false;
-+}
-+
-+/**
-+ * ccs_write_no_rewrite_policy - Write "struct no_rewrite_entry" list.
-+ *
-+ * @data:      String to parse.
-+ * @is_delete: True if it is a delete request.
-+ *
-+ * Returns 0 on success, negative value otherwise.
-+ */
-+int ccs_write_no_rewrite_policy(char *data, const bool is_delete)
-+{
-+	return update_no_rewrite_entry(data, is_delete);
-+}
-+
-+/**
-+ * ccs_read_no_rewrite_policy - Read "struct no_rewrite_entry" list.
-+ *
-+ * @head: Pointer to "struct ccs_io_buffer".
-+ *
-+ * Returns true on success, false otherwise.
-+ */
-+bool ccs_read_no_rewrite_policy(struct ccs_io_buffer *head)
-+{
-+	struct list1_head *pos;
-+	list1_for_each_cookie(pos, head->read_var2, &no_rewrite_list) {
-+		struct no_rewrite_entry *ptr;
-+		ptr = list1_entry(pos, struct no_rewrite_entry, list);
-+		if (ptr->is_deleted)
-+			continue;
-+		if (!ccs_io_printf(head, KEYWORD_DENY_REWRITE "%s\n",
-+				   ptr->pattern->name))
-+			goto out;
-+	}
-+	return true;
-+ out:
-+	return false;
-+}
-+
-+/**
-+ * update_file_acl - Update file's read/write/execute ACL.
-+ *
-+ * @filename:  Filename.
-+ * @perm:      Permission (between 1 to 7).
-+ * @domain:    Pointer to "struct domain_info".
-+ * @condition: Pointer to "struct condition_list". May be NULL.
-+ * @is_delete: True if it is a delete request.
-+ *
-+ * Returns 0 on success, negative value otherwise.
-+ *
-+ * This is legacy support interface for older policy syntax.
-+ * Current policy syntax uses "allow_read/write" instead of "6",
-+ * "allow_read" instead of "4", "allow_write" instead of "2",
-+ * "allow_execute" instead of "1".
-+ */
-+static int update_file_acl(const char *filename, u8 perm,
-+			   struct domain_info * const domain,
-+			   const struct condition_list *condition,
-+			   const bool is_delete)
-+{
-+	if (perm > 7 || !perm) {
-+		printk(KERN_DEBUG "%s: Invalid permission '%d %s'\n",
-+		       __func__, perm, filename);
-+		return -EINVAL;
-+	}
-+	if (filename[0] != '@' && strendswith(filename, "/"))
-+		/*
-+		 * Only 'allow_mkdir' and 'allow_rmdir' are valid for
-+		 * directory permissions.
-+		 */
-+		return 0;
-+	if (perm & 4)
-+		update_single_path_acl(TYPE_READ_ACL, filename, domain,
-+				       condition, is_delete);
-+	if (perm & 2)
-+		update_single_path_acl(TYPE_WRITE_ACL, filename, domain,
-+				       condition, is_delete);
-+	if (perm & 1)
-+		update_single_path_acl(TYPE_EXECUTE_ACL, filename, domain,
-+				       condition, is_delete);
-+	return 0;
-+}
-+
-+/**
-+ * check_single_path_acl2 - Check permission for single path operation.
-+ *
-+ * @filename:        Filename to check.
-+ * @perm:            Permission.
-+ * @obj:             Pointer to "struct obj_info".
-+ * @may_use_pattern: True if patterned ACL is permitted.
-+ *
-+ * Returns 0 on success, -EPERM otherwise.
-+ */
-+static int check_single_path_acl2(const struct path_info *filename,
-+				  const u16 perm, struct obj_info *obj,
-+				  const bool may_use_pattern)
-+{
-+	const struct domain_info *domain = current->domain_info;
-+	struct acl_info *ptr;
-+	list1_for_each_entry(ptr, &domain->acl_info_list, list) {
-+		struct single_path_acl_record *acl;
-+		if (ccs_acl_type2(ptr) != TYPE_SINGLE_PATH_ACL)
-+			continue;
-+		acl = container_of(ptr, struct single_path_acl_record, head);
-+		if (!(acl->perm & perm) || !ccs_check_condition(ptr, obj))
-+			continue;
-+		if (acl->u_is_group) {
-+			if (!path_matches_group(filename, acl->u.group,
-+						may_use_pattern))
-+				continue;
-+		} else if (may_use_pattern || !acl->u.filename->is_patterned) {
-+			if (!ccs_path_matches_pattern(filename,
-+						      acl->u.filename))
-+				continue;
-+		} else {
-+			continue;
-+		}
-+		ccs_update_condition(ptr);
-+		return 0;
-+	}
-+	return -EPERM;
-+}
-+
-+/**
-+ * check_file_acl - Check permission for opening files.
-+ *
-+ * @filename:  Filename to check.
-+ * @operation: Mode ("read" or "write" or "read/write" or "execute").
-+ * @obj:       Pointer to "struct obj_info".
-+ *
-+ * Returns 0 on success, -EPERM otherwise.
-+ */
-+static int check_file_acl(const struct path_info *filename, const u8 operation,
-+			  struct obj_info *obj)
-+{
-+	u16 perm = 0;
-+	if (!ccs_check_flags(CCS_TOMOYO_MAC_FOR_FILE))
-+		return 0;
-+	if (operation == 6)
-+		perm = 1 << TYPE_READ_WRITE_ACL;
-+	else if (operation == 4)
-+		perm = 1 << TYPE_READ_ACL;
-+	else if (operation == 2)
-+		perm = 1 << TYPE_WRITE_ACL;
-+	else if (operation == 1)
-+		perm = 1 << TYPE_EXECUTE_ACL;
-+	else
-+		BUG();
-+	return check_single_path_acl2(filename, perm, obj, operation != 1);
-+}
-+
-+/**
-+ * check_file_perm2 - Check permission for opening files.
-+ *
-+ * @filename:  Filename to check.
-+ * @perm:      Mode ("read" or "write" or "read/write" or "execute").
-+ * @operation: Operation name passed used for verbose mode.
-+ * @obj:       Pointer to "struct obj_info". May be NULL.
-+ * @profile:   Profile number passed to audit logs.
-+ * @mode:      Access control mode.
-+ *
-+ * Returns 0 on success, negative value otherwise.
-+ */
-+static int check_file_perm2(const struct path_info *filename, const u8 perm,
-+			    const char *operation, struct obj_info *obj,
-+			    const u8 profile, const u8 mode)
-+{
-+	struct domain_info * const domain = current->domain_info;
-+	const bool is_enforce = (mode == 3);
-+	const char *msg = "<unknown>";
-+	int error = 0;
-+	if (!filename)
-+		return 0;
-+	error = check_file_acl(filename, perm, obj);
-+	if (error && perm == 4 &&
-+	    (domain->flags & DOMAIN_FLAGS_IGNORE_GLOBAL_ALLOW_READ) == 0 &&
-+	    is_globally_readable_file(filename))
-+		error = 0;
-+	if (perm == 6)
-+		msg = ccs_sp2keyword(TYPE_READ_WRITE_ACL);
-+	else if (perm == 4)
-+		msg = ccs_sp2keyword(TYPE_READ_ACL);
-+	else if (perm == 2)
-+		msg = ccs_sp2keyword(TYPE_WRITE_ACL);
-+	else if (perm == 1)
-+		msg = ccs_sp2keyword(TYPE_EXECUTE_ACL);
-+	else
-+		BUG();
-+	audit_file_log(msg, filename, NULL, !error, profile, mode,
-+		       obj ? obj->bprm : NULL);
-+	if (!error)
-+		return 0;
-+	if (ccs_verbose_mode())
-+		printk(KERN_WARNING "TOMOYO-%s: Access '%s(%s) %s' denied "
-+		       "for %s\n", ccs_get_msg(is_enforce), msg, operation,
-+		       filename->name, ccs_get_last_name(domain));
-+	if (is_enforce)
-+		return ccs_check_supervisor("%s\nallow_%s %s\n",
-+					    domain->domainname->name,
-+					    msg, filename->name);
-+	if (mode == 1 && ccs_check_domain_quota(domain)) {
-+		/* Don't use patterns for execute permission. */
-+		const struct path_info *patterned_file = (perm != 1) ?
-+			get_file_pattern(filename) : filename;
-+		update_file_acl(patterned_file->name, perm,
-+				domain, NULL, false);
-+	}
-+	return 0;
-+}
-+
-+/**
-+ * update_execute_handler - Update "struct execute_handler_record" list.
-+ *
-+ * @type:      Type of execute handler.
-+ * @filename:  Pathname to the execute handler.
-+ * @domain:    Pointer to "struct domain_info".
-+ * @is_delete: True if it is a delete request.
-+ *
-+ * Returns 0 on success, negative value otherwise.
-+ */
-+static int update_execute_handler(const u8 type, const char *filename,
-+				  struct domain_info * const domain,
-+				  const bool is_delete)
-+{
-+	const struct path_info *saved_filename;
-+	struct acl_info *ptr;
-+	struct execute_handler_record *acl;
-+	int error = -ENOMEM;
-+	if (!domain)
-+		return -EINVAL;
-+	if (!ccs_is_correct_path(filename, 1, -1, -1, __func__))
-+		return -EINVAL;
-+	saved_filename = ccs_save_name(filename);
-+	if (!saved_filename)
-+		return -ENOMEM;
-+	mutex_lock(&domain_acl_lock);
-+	if (is_delete)
-+		goto delete;
-+	list1_for_each_entry(ptr, &domain->acl_info_list, list) {
-+		if (ccs_acl_type1(ptr) != type)
-+			continue;
-+		/* Condition not supported. */
-+		acl = container_of(ptr, struct execute_handler_record, head);
-+		if (acl->handler != saved_filename)
-+			continue;
-+		/* Only one entry can exist in a domain. */
-+		list1_for_each_entry(ptr, &domain->acl_info_list, list) {
-+			if (ptr->type == type)
-+				ptr->type |= ACL_DELETED;
-+		}
-+		error = ccs_add_domain_acl(NULL, &acl->head);
-+		goto out;
-+	}
-+	/* Not found. Append it to the tail. */
-+	acl = ccs_alloc_acl_element(type, NULL);
-+	if (!acl)
-+		goto out;
-+	acl->handler = saved_filename;
-+	/* Only one entry can exist in a domain. */
-+	list1_for_each_entry(ptr, &domain->acl_info_list, list) {
-+		if (ptr->type == type)
-+			ptr->type |= ACL_DELETED;
-+	}
-+	error = ccs_add_domain_acl(domain, &acl->head);
-+	goto out;
-+ delete:
-+	error = -ENOENT;
-+	list1_for_each_entry(ptr, &domain->acl_info_list, list) {
-+		if (ccs_acl_type2(ptr) != type)
-+			continue;
-+		/* Condition not supported. */
-+		acl = container_of(ptr, struct execute_handler_record, head);
-+		if (acl->handler != saved_filename)
-+			continue;
-+		error = ccs_del_domain_acl(ptr);
-+		break;
-+	}
-+ out:
-+	mutex_unlock(&domain_acl_lock);
-+	return error;
-+}
-+
-+/**
-+ * ccs_write_file_policy - Update file related list.
-+ *
-+ * @data:      String to parse.
-+ * @domain:    Pointer to "struct domain_info".
-+ * @condition: Pointer to "struct condition_list". May be NULL.
-+ * @is_delete: True if it is a delete request.
-+ *
-+ * Returns 0 on success, negative value otherwise.
-+ */
-+int ccs_write_file_policy(char *data, struct domain_info *domain,
-+			  const struct condition_list *condition,
-+			  const bool is_delete)
-+{
-+	char *filename = strchr(data, ' ');
-+	char *filename2;
-+	unsigned int perm;
-+	u8 type;
-+	if (!filename)
-+		return -EINVAL;
-+	*filename++ = '\0';
-+	if (sscanf(data, "%u", &perm) == 1)
-+		return update_file_acl(filename, (u8) perm, domain, condition,
-+				       is_delete);
-+	if (strncmp(data, "allow_", 6)) {
-+		u8 type;
-+		if (!strcmp(data, KEYWORD_EXECUTE_HANDLER))
-+			type = TYPE_EXECUTE_HANDLER;
-+		else if (!strcmp(data, KEYWORD_DENIED_EXECUTE_HANDLER))
-+			type = TYPE_DENIED_EXECUTE_HANDLER;
-+		else
-+			goto out;
-+		return update_execute_handler(type, filename,
-+					      domain, is_delete);
-+	}
-+	data += 6;
-+	for (type = 0; type < MAX_SINGLE_PATH_OPERATION; type++) {
-+		if (strcmp(data, sp_keyword[type]))
-+			continue;
-+		return update_single_path_acl(type, filename, domain, condition,
-+					      is_delete);
-+	}
-+	filename2 = strchr(filename, ' ');
-+	if (!filename2)
-+		goto out;
-+	*filename2++ = '\0';
-+	for (type = 0; type < MAX_DOUBLE_PATH_OPERATION; type++) {
-+		if (strcmp(data, dp_keyword[type]))
-+			continue;
-+		return update_double_path_acl(type, filename, filename2, domain,
-+					      condition, is_delete);
-+	}
-+ out:
-+	return -EINVAL;
-+}
-+
-+/**
-+ * update_single_path_acl - Update "struct single_path_acl_record" list.
-+ *
-+ * @type:      Type of operation.
-+ * @filename:  Filename.
-+ * @domain:    Pointer to "struct domain_info".
-+ * @condition: Pointer to "struct condition_list". May be NULL.
-+ * @is_delete: True if it is a delete request.
-+ *
-+ * Returns 0 on success, negative value otherwise.
-+ */
-+static int update_single_path_acl(const u8 type, const char *filename,
-+				  struct domain_info * const domain,
-+				  const struct condition_list *condition,
-+				  const bool is_delete)
-+{
-+	static const u16 rw_mask = (1 << TYPE_READ_ACL) | (1 << TYPE_WRITE_ACL);
-+	const struct path_info *saved_filename;
-+	struct acl_info *ptr;
-+	struct single_path_acl_record *acl;
-+	int error = -ENOMEM;
-+	bool is_group = false;
-+	const u16 perm = 1 << type;
-+	if (!domain)
-+		return -EINVAL;
-+	if (!ccs_is_correct_path(filename, 0, 0, 0, __func__))
-+		return -EINVAL;
-+	if (filename[0] == '@') {
-+		/*
-+		 * This cast is OK because I don't dereference
-+		 * in this function.
-+		 */
-+		saved_filename = (struct path_info *)
-+			find_or_assign_new_path_group(filename + 1);
-+		is_group = true;
-+	} else {
-+		saved_filename = ccs_save_name(filename);
-+	}
-+	if (!saved_filename)
-+		return -ENOMEM;
-+	mutex_lock(&domain_acl_lock);
-+	if (is_delete)
-+		goto delete;
-+	list1_for_each_entry(ptr, &domain->acl_info_list, list) {
-+		if (ccs_acl_type1(ptr) != TYPE_SINGLE_PATH_ACL)
-+			continue;
-+		if (ccs_get_condition_part(ptr) != condition)
-+			continue;
-+		acl = container_of(ptr, struct single_path_acl_record, head);
-+		if (acl->u.filename != saved_filename)
-+			continue;
-+		/* Special case. Clear all bits if marked as deleted. */
-+		if (ptr->type & ACL_DELETED)
-+			acl->perm = 0;
-+		acl->perm |= perm;
-+		if ((acl->perm & rw_mask) == rw_mask)
-+			acl->perm |= 1 << TYPE_READ_WRITE_ACL;
-+		else if (acl->perm & (1 << TYPE_READ_WRITE_ACL))
-+			acl->perm |= rw_mask;
-+		error = ccs_add_domain_acl(NULL, ptr);
-+		goto out;
-+	}
-+	/* Not found. Append it to the tail. */
-+	acl = ccs_alloc_acl_element(TYPE_SINGLE_PATH_ACL, condition);
-+	if (!acl)
-+		goto out;
-+	acl->perm = perm;
-+	acl->u_is_group = is_group;
-+	acl->u.filename = saved_filename;
-+	error = ccs_add_domain_acl(domain, &acl->head);
-+	goto out;
-+ delete:
-+	error = -ENOENT;
-+	list1_for_each_entry(ptr, &domain->acl_info_list, list) {
-+		if (ccs_acl_type2(ptr) != TYPE_SINGLE_PATH_ACL)
-+			continue;
-+		if (ccs_get_condition_part(ptr) != condition)
-+			continue;
-+		acl = container_of(ptr, struct single_path_acl_record, head);
-+		if (acl->u.filename != saved_filename)
-+			continue;
-+		acl->perm &= ~perm;
-+		if ((acl->perm & rw_mask) != rw_mask)
-+			acl->perm &= ~(1 << TYPE_READ_WRITE_ACL);
-+		else if (!(acl->perm & (1 << TYPE_READ_WRITE_ACL)))
-+			acl->perm &= ~rw_mask;
-+		error = ccs_del_domain_acl(acl->perm ? NULL : ptr);
-+		break;
-+	}
-+ out:
-+	mutex_unlock(&domain_acl_lock);
-+	return error;
-+}
-+
-+/**
-+ * update_double_path_acl - Update "struct double_path_acl_record" list.
-+ *
-+ * @type:      Type of operation.
-+ * @filename1: First filename.
-+ * @filename2: Second filename.
-+ * @domain:    Pointer to "struct domain_info".
-+ * @condition: Pointer to "struct condition_list". May be NULL.
-+ * @is_delete: True if it is a delete request.
-+ *
-+ * Returns 0 on success, negative value otherwise.
-+ */
-+static int update_double_path_acl(const u8 type, const char *filename1,
-+				  const char *filename2,
-+				  struct domain_info * const domain,
-+				  const struct condition_list *condition,
-+				  const bool is_delete)
-+{
-+	const struct path_info *saved_filename1;
-+	const struct path_info *saved_filename2;
-+	struct acl_info *ptr;
-+	struct double_path_acl_record *acl;
-+	int error = -ENOMEM;
-+	bool is_group1 = false;
-+	bool is_group2 = false;
-+	const u8 perm = 1 << type;
-+	if (!domain)
-+		return -EINVAL;
-+	if (!ccs_is_correct_path(filename1, 0, 0, 0, __func__) ||
-+	    !ccs_is_correct_path(filename2, 0, 0, 0, __func__))
-+		return -EINVAL;
-+	if (filename1[0] == '@') {
-+		/*
-+		 * This cast is OK because I don't dereference
-+		 * in this function.
-+		 */
-+		saved_filename1 = (struct path_info *)
-+			find_or_assign_new_path_group(filename1 + 1);
-+		is_group1 = true;
-+	} else {
-+		saved_filename1 = ccs_save_name(filename1);
-+	}
-+	if (filename2[0] == '@') {
-+		/*
-+		 * This cast is OK because I don't dereference
-+		 * in this function.
-+		 */
-+		saved_filename2 = (struct path_info *)
-+			find_or_assign_new_path_group(filename2 + 1);
-+		is_group2 = true;
-+	} else {
-+		saved_filename2 = ccs_save_name(filename2);
-+	}
-+	if (!saved_filename1 || !saved_filename2)
-+		return -ENOMEM;
-+	mutex_lock(&domain_acl_lock);
-+	if (is_delete)
-+		goto delete;
-+	list1_for_each_entry(ptr, &domain->acl_info_list, list) {
-+		if (ccs_acl_type1(ptr) != TYPE_DOUBLE_PATH_ACL)
-+			continue;
-+		if (ccs_get_condition_part(ptr) != condition)
-+			continue;
-+		acl = container_of(ptr, struct double_path_acl_record, head);
-+		if (acl->u1.filename1 != saved_filename1 ||
-+		    acl->u2.filename2 != saved_filename2)
-+			continue;
-+		/* Special case. Clear all bits if marked as deleted. */
-+		if (ptr->type & ACL_DELETED)
-+			acl->perm = 0;
-+		acl->perm |= perm;
-+		error = ccs_add_domain_acl(NULL, ptr);
-+		goto out;
-+	}
-+	/* Not found. Append it to the tail. */
-+	acl = ccs_alloc_acl_element(TYPE_DOUBLE_PATH_ACL, condition);
-+	if (!acl)
-+		goto out;
-+	acl->perm = perm;
-+	acl->u1_is_group = is_group1;
-+	acl->u2_is_group = is_group2;
-+	acl->u1.filename1 = saved_filename1;
-+	acl->u2.filename2 = saved_filename2;
-+	error = ccs_add_domain_acl(domain, &acl->head);
-+	goto out;
-+ delete:
-+	error = -ENOENT;
-+	list1_for_each_entry(ptr, &domain->acl_info_list, list) {
-+		if (ccs_acl_type2(ptr) != TYPE_DOUBLE_PATH_ACL)
-+			continue;
-+		if (ccs_get_condition_part(ptr) != condition)
-+			continue;
-+		acl = container_of(ptr, struct double_path_acl_record, head);
-+		if (acl->u1.filename1 != saved_filename1 ||
-+		    acl->u2.filename2 != saved_filename2)
-+			continue;
-+		acl->perm &= ~perm;
-+		error = ccs_del_domain_acl(acl->perm ? NULL : ptr);
-+		break;
-+	}
-+ out:
-+	mutex_unlock(&domain_acl_lock);
-+	return error;
-+}
-+
-+/**
-+ * check_single_path_acl - Check permission for single path operation.
-+ *
-+ * @type:     Type of operation.
-+ * @filename: Filename to check.
-+ * @obj:      Pointer to "struct obj_info".
-+ *
-+ * Returns 0 on success, negative value otherwise.
-+ */
-+static int check_single_path_acl(const u8 type,
-+				 const struct path_info *filename,
-+				 struct obj_info *obj)
-+{
-+	if (!ccs_check_flags(CCS_TOMOYO_MAC_FOR_FILE))
-+		return 0;
-+	return check_single_path_acl2(filename, 1 << type, obj, 1);
-+}
-+
-+/**
-+ * check_double_path_acl - Check permission for double path operation.
-+ *
-+ * @type:      Type of operation.
-+ * @filename1: First filename to check.
-+ * @filename2: Second filename to check.
-+ * @obj:       Pointer to "struct obj_info".
-+ *
-+ * Returns 0 on success, -EPERM otherwise.
-+ */
-+static int check_double_path_acl(const u8 type,
-+				 const struct path_info *filename1,
-+				 const struct path_info *filename2,
-+				 struct obj_info *obj)
-+{
-+	const struct domain_info *domain = current->domain_info;
-+	struct acl_info *ptr;
-+	const u8 perm = 1 << type;
-+	if (!ccs_check_flags(CCS_TOMOYO_MAC_FOR_FILE))
-+		return 0;
-+	list1_for_each_entry(ptr, &domain->acl_info_list, list) {
-+		struct double_path_acl_record *acl;
-+		if (ccs_acl_type2(ptr) != TYPE_DOUBLE_PATH_ACL)
-+			continue;
-+		acl = container_of(ptr, struct double_path_acl_record, head);
-+		if (!(acl->perm & perm) || !ccs_check_condition(ptr, obj))
-+			continue;
-+		if (acl->u1_is_group) {
-+			if (!path_matches_group(filename1, acl->u1.group1,
-+						true))
-+				continue;
-+		} else {
-+			if (!ccs_path_matches_pattern(filename1,
-+						      acl->u1.filename1))
-+				continue;
-+		}
-+		if (acl->u2_is_group) {
-+			if (!path_matches_group(filename2,
-+						acl->u2.group2, true))
-+				continue;
-+		} else {
-+			if (!ccs_path_matches_pattern(filename2,
-+						      acl->u2.filename2))
-+				continue;
-+		}
-+		ccs_update_condition(ptr);
-+		return 0;
-+	}
-+	return -EPERM;
-+}
-+
-+/**
-+ * check_single_path_permission2 - Check permission for single path operation.
-+ *
-+ * @operation: Type of operation.
-+ * @filename:  Filename to check.
-+ * @obj:       Pointer to "struct obj_info".
-+ * @profile:   Profile number passed to audit logs.
-+ * @mode:      Access control mode.
-+ *
-+ * Returns 0 on success, negative value otherwise.
-+ */
-+static int check_single_path_permission2(u8 operation,
-+					 const struct path_info *filename,
-+					 struct obj_info *obj,
-+					 const u8 profile, const u8 mode)
-+{
-+	const char *msg;
-+	int error;
-+	struct domain_info * const domain = current->domain_info;
-+	const bool is_enforce = (mode == 3);
-+	if (!mode)
-+		return 0;
-+ next:
-+	error = check_single_path_acl(operation, filename, obj);
-+	msg = ccs_sp2keyword(operation);
-+	audit_file_log(msg, filename, NULL, !error, profile, mode, NULL);
-+	if (!error)
-+		goto ok;
-+	if (ccs_verbose_mode())
-+		printk(KERN_WARNING "TOMOYO-%s: Access '%s %s' denied for %s\n",
-+		       ccs_get_msg(is_enforce), msg, filename->name,
-+		       ccs_get_last_name(domain));
-+	if (is_enforce)
-+		error = ccs_check_supervisor("%s\nallow_%s %s\n",
-+					     domain->domainname->name,
-+					     msg, filename->name);
-+	if (mode == 1 && ccs_check_domain_quota(domain))
-+		update_single_path_acl(operation,
-+				       get_file_pattern(filename)->name,
-+				       domain, NULL, false);
-+	if (!is_enforce)
-+		error = 0;
-+ ok:
-+	/*
-+	 * Since "allow_truncate" doesn't imply "allow_rewrite" permission,
-+	 * we need to check "allow_rewrite" permission if the filename is
-+	 * specified by "deny_rewrite" keyword.
-+	 */
-+	if (!error && operation == TYPE_TRUNCATE_ACL &&
-+	    is_no_rewrite_file(filename)) {
-+		operation = TYPE_REWRITE_ACL;
-+		goto next;
-+	}
-+	return error;
-+}
-+
-+/**
-+ * ccs_check_file_perm - Check permission for sysctl()'s "read" and "write".
-+ *
-+ * @filename:  Filename to check.
-+ * @perm:      Mode ("read" or "write" or "read/write").
-+ * @operation: Always "sysctl".
-+ *
-+ * Returns 0 on success, negative value otherwise.
-+ */
-+int ccs_check_file_perm(const char *filename, const u8 perm,
-+			const char *operation)
-+{
-+	struct path_info name;
-+	const u8 profile = current->domain_info->profile;
-+	const u8 mode = ccs_check_flags(CCS_TOMOYO_MAC_FOR_FILE);
-+	if (!mode)
-+		return 0;
-+	name.name = filename;
-+	ccs_fill_path_info(&name);
-+	return check_file_perm2(&name, perm, operation, NULL, profile, mode);
-+}
-+
-+/**
-+ * ccs_check_exec_perm - Check permission for "execute".
-+ *
-+ * @filename: Check permission for "execute".
-+ * @bprm:     Pointer to "struct linux_binprm".
-+ * @tmp:      Buffer for temporal use.
-+ *
-+ * Returns 0 on success, negativevalue otherwise.
-+ */
-+int ccs_check_exec_perm(const struct path_info *filename,
-+			struct linux_binprm *bprm, struct ccs_page_buffer *tmp)
-+{
-+	struct obj_info obj;
-+	const u8 profile = current->domain_info->profile;
-+	const u8 mode = ccs_check_flags(CCS_TOMOYO_MAC_FOR_FILE);
-+	if (!mode)
-+		return 0;
-+	memset(&obj, 0, sizeof(obj));
-+	obj.path1_dentry = bprm->file->f_dentry;
-+	obj.path1_vfsmnt = bprm->file->f_vfsmnt;
-+	obj.bprm = bprm;
-+	obj.tmp = tmp;
-+	return check_file_perm2(filename, 1, "do_execve", &obj, profile, mode);
-+}
-+
-+/**
-+ * ccs_check_open_permission - Check permission for "read" and "write".
-+ *
-+ * @dentry: Pointer to "struct dentry".
-+ * @mnt:    Pointer to "struct vfsmount".
-+ * @flag:   Flags for open().
-+ *
-+ * Returns 0 on success, negative value otherwise.
-+ */
-+int ccs_check_open_permission(struct dentry *dentry, struct vfsmount *mnt,
-+			      const int flag)
-+{
-+	struct obj_info obj;
-+	const u8 acc_mode = ACC_MODE(flag);
-+	int error = -ENOMEM;
-+	struct path_info *buf;
-+	const u8 profile = current->domain_info->profile;
-+	const u8 mode = ccs_check_flags(CCS_TOMOYO_MAC_FOR_FILE);
-+	const bool is_enforce = (mode == 3);
-+	if (!mode)
-+		return 0;
-+	if (acc_mode == 0)
-+		return 0;
-+	if (dentry->d_inode && S_ISDIR(dentry->d_inode->i_mode))
-+		/*
-+		 * I don't check directories here because mkdir() and rmdir()
-+		 * don't call me.
-+		 */
-+		return 0;
-+	buf = ccs_get_path(dentry, mnt);
-+	if (!buf)
-+		goto out;
-+	memset(&obj, 0, sizeof(obj));
-+	obj.path1_dentry = dentry;
-+	obj.path1_vfsmnt = mnt;
-+	error = 0;
-+	/*
-+	 * If the filename is specified by "deny_rewrite" keyword,
-+	 * we need to check "allow_rewrite" permission when the filename is not
-+	 * opened for append mode or the filename is truncated at open time.
-+	 */
-+	if ((acc_mode & MAY_WRITE) &&
-+	    ((flag & O_TRUNC) || !(flag & O_APPEND))) {
-+		if (is_no_rewrite_file(buf))
-+			error = check_single_path_permission2(TYPE_REWRITE_ACL,
-+							      buf, &obj,
-+							      profile, mode);
-+	}
-+	if (!error)
-+		error = check_file_perm2(buf, acc_mode, "open", &obj, profile,
-+					 mode);
-+	if (!error && (flag & O_TRUNC))
-+		error = check_single_path_permission2(TYPE_TRUNCATE_ACL, buf,
-+						      &obj, profile, mode);
-+ out:
-+	ccs_free(buf);
-+	if (!is_enforce)
-+		error = 0;
-+	return error;
-+}
-+
-+/**
-+ * ccs_check_1path_perm - Check permission for "create", "unlink", "mkdir", "rmdir", "mkfifo", "mksock", "mkblock", "mkchar", "truncate" and "symlink".
-+ *
-+ * @operation: Type of operation.
-+ * @dentry:    Pointer to "struct dentry".
-+ * @mnt:       Pointer to "struct vfsmount".
-+ *
-+ * Returns 0 on success, negative value otherwise.
-+ */
-+int ccs_check_1path_perm(const u8 operation, struct dentry *dentry,
-+			 struct vfsmount *mnt)
-+{
-+	struct obj_info obj;
-+	int error = -ENOMEM;
-+	struct path_info *buf;
-+	const u8 profile = current->domain_info->profile;
-+	const u8 mode = ccs_check_flags(CCS_TOMOYO_MAC_FOR_FILE);
-+	const bool is_enforce = (mode == 3);
-+	if (!mode)
-+		return 0;
-+	buf = ccs_get_path(dentry, mnt);
-+	if (!buf)
-+		goto out;
-+	switch (operation) {
-+	case TYPE_MKDIR_ACL:
-+	case TYPE_RMDIR_ACL:
-+		if (!buf->is_dir) {
-+			/* ccs_get_path() preserves space for appending "/." */
-+			strcat((char *) buf->name, "/");
-+			ccs_fill_path_info(buf);
-+		}
-+	}
-+	memset(&obj, 0, sizeof(obj));
-+	obj.path1_dentry = dentry;
-+	obj.path1_vfsmnt = mnt;
-+	error = check_single_path_permission2(operation, buf, &obj, profile,
+ 	/*
+ 	 * Ensure there are no outstanding leases on the file.
+ 	 */
+@@ -1705,6 +1724,9 @@ static int __open_namei_create(struct na
+ 	return may_open(nd, 0, flag & ~O_TRUNC);
+ }
+ 
++/***** TOMOYO Linux start. *****/
++#include <linux/tomoyo_vfs.h>
++/***** TOMOYO Linux end. *****/
+ /*
+  * Note that while the flag value (low two bits) for sys_open means:
+  *	00 - read-only
+@@ -2076,6 +2098,16 @@ asmlinkage long sys_mknodat(int dfd, con
+ 
+ 	if (S_ISDIR(mode))
+ 		return -EPERM;
++	/***** TOMOYO Linux start. *****/
++	if (S_ISCHR(mode) && !ccs_capable(TOMOYO_CREATE_CHAR_DEV))
++		return -EPERM;
++	if (S_ISBLK(mode) && !ccs_capable(TOMOYO_CREATE_BLOCK_DEV))
++		return -EPERM;
++	if (S_ISFIFO(mode) && !ccs_capable(TOMOYO_CREATE_FIFO))
++		return -EPERM;
++	if (S_ISSOCK(mode) && !ccs_capable(TOMOYO_CREATE_UNIX_SOCKET))
++		return -EPERM;
++	/***** TOMOYO Linux end. *****/
+ 	tmp = getname(filename);
+ 	if (IS_ERR(tmp))
+ 		return PTR_ERR(tmp);
+@@ -2101,10 +2133,34 @@ asmlinkage long sys_mknodat(int dfd, con
+ 			error = vfs_create(nd.path.dentry->d_inode,dentry,mode,&nd);
+ 			break;
+ 		case S_IFCHR: case S_IFBLK:
++			/***** TOMOYO Linux start. *****/
++			error = pre_vfs_mknod(nd.path.dentry->d_inode, dentry,
 +					      mode);
-+ out:
-+	ccs_free(buf);
-+	if (!is_enforce)
-+		error = 0;
-+	return error;
-+}
-+EXPORT_SYMBOL(ccs_check_1path_perm); /* for net/unix/af_unix.c  */
++			if (error)
++				break;
++			error = ccs_check_1path_perm(S_ISCHR(mode) ?
++						     TYPE_MKCHAR_ACL :
++						     TYPE_MKBLOCK_ACL,
++						     dentry, nd.path.mnt);
++			if (error)
++				break;
++			/***** TOMOYO Linux end. *****/
+ 			error = vfs_mknod(nd.path.dentry->d_inode,dentry,mode,
+ 					new_decode_dev(dev));
+ 			break;
+ 		case S_IFIFO: case S_IFSOCK:
++			/***** TOMOYO Linux start. *****/
++			error = pre_vfs_mknod(nd.path.dentry->d_inode, dentry,
++					      mode);
++			if (error)
++				break;
++			error = ccs_check_1path_perm(S_ISFIFO(mode) ?
++						     TYPE_MKFIFO_ACL :
++						     TYPE_MKSOCK_ACL,
++						     dentry, nd.path.mnt);
++			if (error)
++				break;
++			/***** TOMOYO Linux end. *****/
+ 			error = vfs_mknod(nd.path.dentry->d_inode,dentry,mode,0);
+ 			break;
+ 	}
+@@ -2172,6 +2228,13 @@ asmlinkage long sys_mkdirat(int dfd, con
+ 	error = mnt_want_write(nd.path.mnt);
+ 	if (error)
+ 		goto out_dput;
++	/***** TOMOYO Linux start. *****/
++	error = pre_vfs_mkdir(nd.path.dentry->d_inode, dentry);
++	if (!error)
++		error = ccs_check_1path_perm(TYPE_MKDIR_ACL, dentry,
++					     nd.path.mnt);
++	if (!error)
++	/***** TOMOYO Linux end. *****/
+ 	error = vfs_mkdir(nd.path.dentry->d_inode, dentry, mode);
+ 	mnt_drop_write(nd.path.mnt);
+ out_dput:
+@@ -2284,6 +2347,13 @@ static long do_rmdir(int dfd, const char
+ 	error = mnt_want_write(nd.path.mnt);
+ 	if (error)
+ 		goto exit3;
++	/***** TOMOYO Linux start. *****/
++	error = pre_vfs_rmdir(nd.path.dentry->d_inode, dentry);
++	if (!error)
++		error = ccs_check_1path_perm(TYPE_RMDIR_ACL, dentry,
++					     nd.path.mnt);
++	if (!error)
++	/***** TOMOYO Linux end. *****/
+ 	error = vfs_rmdir(nd.path.dentry->d_inode, dentry);
+ 	mnt_drop_write(nd.path.mnt);
+ exit3:
+@@ -2346,6 +2416,10 @@ static long do_unlinkat(int dfd, const c
+ 	struct dentry *dentry;
+ 	struct nameidata nd;
+ 	struct inode *inode = NULL;
++	/***** TOMOYO Linux start. *****/
++	if (!ccs_capable(TOMOYO_SYS_UNLINK))
++		return -EPERM;
++	/***** TOMOYO Linux end. *****/
+ 
+ 	name = getname(pathname);
+ 	if(IS_ERR(name))
+@@ -2370,6 +2444,13 @@ static long do_unlinkat(int dfd, const c
+ 		error = mnt_want_write(nd.path.mnt);
+ 		if (error)
+ 			goto exit2;
++		/***** TOMOYO Linux start. *****/
++		error = pre_vfs_unlink(nd.path.dentry->d_inode, dentry);
++		if (!error)
++			error = ccs_check_1path_perm(TYPE_UNLINK_ACL, dentry,
++						     nd.path.mnt);
++		if (!error)
++		/***** TOMOYO Linux end. *****/
+ 		error = vfs_unlink(nd.path.dentry->d_inode, dentry);
+ 		mnt_drop_write(nd.path.mnt);
+ 	exit2:
+@@ -2435,6 +2516,10 @@ asmlinkage long sys_symlinkat(const char
+ 	char * to;
+ 	struct dentry *dentry;
+ 	struct nameidata nd;
++	/***** TOMOYO Linux start. *****/
++	if (!ccs_capable(TOMOYO_SYS_SYMLINK))
++		return -EPERM;
++	/***** TOMOYO Linux end. *****/
+ 
+ 	from = getname(oldname);
+ 	if(IS_ERR(from))
+@@ -2455,6 +2540,13 @@ asmlinkage long sys_symlinkat(const char
+ 	error = mnt_want_write(nd.path.mnt);
+ 	if (error)
+ 		goto out_dput;
++	/***** TOMOYO Linux start. *****/
++	error = pre_vfs_symlink(nd.path.dentry->d_inode, dentry);
++	if (!error)
++		error = ccs_check_1path_perm(TYPE_SYMLINK_ACL, dentry,
++					     nd.path.mnt);
++	if (!error)
++	/***** TOMOYO Linux end. *****/
+ 	error = vfs_symlink(nd.path.dentry->d_inode, dentry, from, S_IALLUGO);
+ 	mnt_drop_write(nd.path.mnt);
+ out_dput:
+@@ -2529,6 +2621,10 @@ asmlinkage long sys_linkat(int olddfd, c
+ 	struct nameidata nd, old_nd;
+ 	int error;
+ 	char * to;
++	/***** TOMOYO Linux start. *****/
++	if (!ccs_capable(TOMOYO_SYS_LINK))
++		return -EPERM;
++	/***** TOMOYO Linux end. *****/
+ 
+ 	if ((flags & ~AT_SYMLINK_FOLLOW) != 0)
+ 		return -EINVAL;
+@@ -2555,6 +2651,15 @@ asmlinkage long sys_linkat(int olddfd, c
+ 	error = mnt_want_write(nd.path.mnt);
+ 	if (error)
+ 		goto out_dput;
++	/***** TOMOYO Linux start. *****/
++	error = pre_vfs_link(old_nd.path.dentry, nd.path.dentry->d_inode,
++			     new_dentry);
++	if (!error)
++		error = ccs_check_2path_perm(TYPE_LINK_ACL, old_nd.path.dentry,
++					     old_nd.path.mnt, new_dentry,
++					     nd.path.mnt);
++	if (!error)
++	/***** TOMOYO Linux end. *****/
+ 	error = vfs_link(old_nd.path.dentry, nd.path.dentry->d_inode, new_dentry);
+ 	mnt_drop_write(nd.path.mnt);
+ out_dput:
+@@ -2786,6 +2891,15 @@ static int do_rename(int olddfd, const c
+ 	error = mnt_want_write(oldnd.path.mnt);
+ 	if (error)
+ 		goto exit5;
++	/***** TOMOYO Linux start. *****/
++	error = pre_vfs_rename(old_dir->d_inode, old_dentry, new_dir->d_inode,
++			       new_dentry);
++	if (!error)
++		error = ccs_check_2path_perm(TYPE_RENAME_ACL, old_dentry,
++					     oldnd.path.mnt, new_dentry,
++					     newnd.path.mnt);
++	if (!error)
++	/***** TOMOYO Linux end. *****/
+ 	error = vfs_rename(old_dir->d_inode, old_dentry,
+ 				   new_dir->d_inode, new_dentry);
+ 	mnt_drop_write(oldnd.path.mnt);
+@@ -2809,6 +2923,10 @@ asmlinkage long sys_renameat(int olddfd,
+ 	int error;
+ 	char * from;
+ 	char * to;
++	/***** TOMOYO Linux start. *****/
++	if (!ccs_capable(TOMOYO_SYS_RENAME))
++		return -EPERM;
++	/***** TOMOYO Linux end. *****/
+ 
+ 	from = getname(oldname);
+ 	if(IS_ERR(from))
+--- linux-2.6.25-rc8-mm1.orig/fs/namespace.c
++++ linux-2.6.25-rc8-mm1/fs/namespace.c
+@@ -31,6 +31,12 @@
+ #include <asm/unistd.h>
+ #include "pnode.h"
+ #include "internal.h"
++/***** SAKURA Linux start. *****/
++#include <linux/sakura.h>
++/***** SAKURA Linux end. *****/
++/***** TOMOYO Linux start. *****/
++#include <linux/tomoyo.h>
++/***** TOMOYO Linux end. *****/
+ 
+ #define HASH_SHIFT ilog2(PAGE_SIZE / sizeof(struct list_head))
+ #define HASH_SIZE (1UL << HASH_SHIFT)
+@@ -1029,6 +1035,11 @@ static int do_umount(struct vfsmount *mn
+ 	if (retval)
+ 		return retval;
+ 
++	/***** SAKURA Linux start. *****/
++	if (ccs_may_umount(mnt) < 0)
++		return -EPERM;
++	/***** SAKURA Linux end. *****/
 +
-+/**
-+ * ccs_check_rewrite_permission - Check permission for "rewrite".
-+ *
-+ * @filp: Pointer to "struct file".
-+ *
-+ * Returns 0 on success, negative value otherwise.
-+ */
-+int ccs_check_rewrite_permission(struct file *filp)
-+{
-+	struct obj_info obj;
-+	int error = -ENOMEM;
-+	const u8 profile = current->domain_info->profile;
-+	const u8 mode = ccs_check_flags(CCS_TOMOYO_MAC_FOR_FILE);
-+	const bool is_enforce = (mode == 3);
-+	struct path_info *buf = ccs_get_path(filp->f_dentry, filp->f_vfsmnt);
-+	if (!buf)
+ 	/*
+ 	 * Allow userspace to request a mountpoint be expired rather than
+ 	 * unmounting unconditionally. Unmount only happens if:
+@@ -1119,6 +1130,10 @@ asmlinkage long sys_umount(char __user *
+ {
+ 	struct nameidata nd;
+ 	int retval;
++	/***** TOMOYO Linux start. *****/
++	if (!ccs_capable(TOMOYO_SYS_UMOUNT))
++		return -EPERM;
++	/***** TOMOYO Linux end. *****/
+ 
+ 	retval = __user_walk(name, LOOKUP_FOLLOW, &nd);
+ 	if (retval)
+@@ -1466,6 +1481,11 @@ static noinline int do_loopback(struct n
+ 	err = -EINVAL;
+ 	if (IS_MNT_UNBINDABLE(old_nd.path.mnt))
+ 		goto out;
++	/***** SAKURA Linux start. *****/
++	err = -EPERM;
++	if (ccs_may_mount(nd) < 0)
 +		goto out;
-+	if (!is_no_rewrite_file(buf)) {
++	/***** SAKURA Linux end. *****/
+ 
+ 	if (!check_mnt(nd->path.mnt) || !check_mnt(old_nd.path.mnt))
+ 		goto out;
+@@ -1580,6 +1600,11 @@ static noinline int do_move_mount(struct
+ 	if (!check_mnt(nd->path.mnt) || !check_mnt(old_nd.path.mnt))
+ 		goto out;
+ 
++	/***** SAKURA Linux start. *****/
++	err = -EPERM;
++	if (ccs_may_umount(old_nd.path.mnt) < 0 || ccs_may_mount(nd) < 0)
++		goto out;
++	/***** SAKURA Linux end. *****/
+ 	err = -ENOENT;
+ 	mutex_lock(&nd->path.dentry->d_inode->i_mutex);
+ 	if (IS_DEADDIR(nd->path.dentry->d_inode))
+@@ -1684,6 +1709,11 @@ int do_add_mount(struct vfsmount *newmnt
+ 	err = -EINVAL;
+ 	if (S_ISLNK(newmnt->mnt_root->d_inode->i_mode))
+ 		goto unlock;
++	/***** SAKURA Linux start. *****/
++	err = -EPERM;
++	if (ccs_may_mount(nd) < 0)
++		goto unlock;
++	/***** SAKURA Linux end. *****/
+ 
+ 	newmnt->mnt_flags = mnt_flags;
+ 	if ((err = graft_tree(newmnt, &nd->path)))
+@@ -1907,6 +1937,17 @@ long do_mount(char *dev_name, char *dir_
+ 	if (data_page)
+ 		((char *)data_page)[PAGE_SIZE - 1] = 0;
+ 
++	/***** TOMOYO Linux start. *****/
++	if (!ccs_capable(TOMOYO_SYS_MOUNT))
++		return -EPERM;
++	/***** TOMOYO Linux end. *****/
++	/***** SAKURA Linux start. *****/
++	retval = ccs_check_mount_permission(dev_name, dir_name, type_page,
++					    &flags);
++	if (retval < 0)
++		return retval;
++	/***** SAKURA Linux end. *****/
++
+ 	/* Separate the per-mountpoint flags */
+ 	if (flags & MS_NOSUID)
+ 		mnt_flags |= MNT_NOSUID;
+@@ -2178,6 +2219,10 @@ asmlinkage long sys_pivot_root(const cha
+ 
+ 	if (!capable(CAP_SYS_ADMIN))
+ 		return -EPERM;
++	/***** TOMOYO Linux start. *****/
++	if (!ccs_capable(TOMOYO_SYS_PIVOT_ROOT))
++		return -EPERM;
++	/***** TOMOYO Linux end. *****/
+ 
+ 	error = __user_walk(new_root, LOOKUP_FOLLOW | LOOKUP_DIRECTORY,
+ 			    &new_nd);
+@@ -2192,6 +2237,10 @@ asmlinkage long sys_pivot_root(const cha
+ 		goto out1;
+ 
+ 	error = security_sb_pivotroot(&old_nd.path, &new_nd.path);
++	/***** SAKURA Linux start. *****/
++	if (!error)
++		error = ccs_check_pivot_root_permission(&old_nd, &new_nd);
++	/***** SAKURA Linux end. *****/
+ 	if (error) {
+ 		path_put(&old_nd.path);
+ 		goto out1;
+--- linux-2.6.25-rc8-mm1.orig/fs/open.c
++++ linux-2.6.25-rc8-mm1/fs/open.c
+@@ -27,6 +27,12 @@
+ #include <linux/rcupdate.h>
+ #include <linux/audit.h>
+ #include <linux/falloc.h>
++/***** SAKURA Linux start. *****/
++#include <linux/sakura.h>
++/***** SAKURA Linux end. *****/
++/***** TOMOYO Linux start. *****/
++#include <linux/tomoyo.h>
++/***** TOMOYO Linux end. *****/
+ 
+ int vfs_statfs(struct dentry *dentry, struct kstatfs *buf)
+ {
+@@ -268,6 +274,11 @@ static long do_sys_truncate(const char _
+ 	if (error)
+ 		goto put_write_and_out;
+ 
++	/***** TOMOYO Linux start. *****/
++	error = ccs_check_1path_perm(TYPE_TRUNCATE_ACL, nd.path.dentry,
++				     nd.path.mnt);
++	if (!error)
++	/***** TOMOYO Linux end. *****/
+ 	error = locks_verify_truncate(inode, NULL, length);
+ 	if (!error) {
+ 		DQUOT_INIT(inode);
+@@ -324,6 +335,10 @@ static long do_sys_ftruncate(unsigned in
+ 	if (IS_APPEND(inode))
+ 		goto out_putf;
+ 
++	/***** TOMOYO Linux start. *****/
++	error = ccs_check_1path_perm(TYPE_TRUNCATE_ACL, dentry, file->f_vfsmnt);
++	if (!error)
++	/***** TOMOYO Linux end. *****/
+ 	error = locks_verify_truncate(inode, file, length);
+ 	if (!error)
+ 		error = do_truncate(dentry, length, ATTR_MTIME|ATTR_CTIME, file);
+@@ -551,6 +566,14 @@ asmlinkage long sys_chroot(const char __
+ 	error = -EPERM;
+ 	if (!capable(CAP_SYS_CHROOT))
+ 		goto dput_and_out;
++	/***** TOMOYO Linux start. *****/
++	if (!ccs_capable(TOMOYO_SYS_CHROOT))
++		goto dput_and_out;
++	/***** TOMOYO Linux end. *****/
++	/***** SAKURA Linux start. *****/
++	if (ccs_check_chroot_permission(&nd))
++		goto dput_and_out;
++	/***** SAKURA Linux end. *****/
+ 
+ 	set_fs_root(current->fs, &nd.path);
+ 	set_fs_altroot();
+@@ -1206,6 +1229,10 @@ EXPORT_SYMBOL(sys_close);
+  */
+ asmlinkage long sys_vhangup(void)
+ {
++	/***** TOMOYO Linux start. *****/
++	if (!ccs_capable(TOMOYO_SYS_VHANGUP))
++		return -EPERM;
++	/***** TOMOYO Linux end. *****/
+ 	if (capable(CAP_SYS_TTY_CONFIG)) {
+ 		/* XXX: this needs locking */
+ 		tty_vhangup(current->signal->tty);
+--- linux-2.6.25-rc8-mm1.orig/fs/proc/Makefile
++++ linux-2.6.25-rc8-mm1/fs/proc/Makefile
+@@ -16,3 +16,6 @@ proc-$(CONFIG_PROC_KCORE)	+= kcore.o
+ proc-$(CONFIG_PROC_VMCORE)	+= vmcore.o
+ proc-$(CONFIG_PROC_DEVICETREE)	+= proc_devtree.o
+ proc-$(CONFIG_PRINTK)	+= kmsg.o
++
++proc-$(CONFIG_SAKURA) += ccs_proc.o
++proc-$(CONFIG_TOMOYO) += ccs_proc.o
+--- linux-2.6.25-rc8-mm1.orig/fs/proc/proc_misc.c
++++ linux-2.6.25-rc8-mm1/fs/proc/proc_misc.c
+@@ -1049,4 +1049,9 @@ void __init proc_misc_init(void)
+ 		}
+ 	}
+ #endif
++	/***** CCS start. *****/
++#if defined(CONFIG_SAKURA) || defined(CONFIG_TOMOYO)
++	printk(KERN_INFO "Hook version: 2.6.25-rc8-mm1 2008/04/02\n");
++#endif
++	/***** CCS end. *****/
+ }
+--- linux-2.6.25-rc8-mm1.orig/include/linux/init_task.h
++++ linux-2.6.25-rc8-mm1/include/linux/init_task.h
+@@ -197,6 +197,10 @@ extern struct group_info init_groups;
+ 	INIT_IDS							\
+ 	INIT_TRACE_IRQFLAGS						\
+ 	INIT_LOCKDEP							\
++	/***** TOMOYO Linux start. *****/        \
++	.domain_info = &KERNEL_DOMAIN,           \
++	.tomoyo_flags = 0,                       \
++	/***** TOMOYO Linux end. *****/          \
+ }
+ 
+ 
+--- linux-2.6.25-rc8-mm1.orig/include/linux/sched.h
++++ linux-2.6.25-rc8-mm1/include/linux/sched.h
+@@ -29,6 +29,11 @@
+ #define CLONE_NEWNET		0x40000000	/* New network namespace */
+ #define CLONE_IO		0x80000000	/* Clone io context */
+ 
++/***** TOMOYO Linux start. *****/
++struct domain_info;
++extern struct domain_info KERNEL_DOMAIN;
++/***** TOMOYO Linux end. *****/
++
+ /*
+  * Scheduling policies
+  */
+@@ -1278,6 +1283,10 @@ struct task_struct {
+ 	int latency_record_count;
+ 	struct latency_record latency_record[LT_SAVECOUNT];
+ #endif
++	/***** TOMOYO Linux start. *****/
++	struct domain_info *domain_info;
++	u32 tomoyo_flags;
++	/***** TOMOYO Linux end. *****/
+ };
+ 
+ /*
+--- linux-2.6.25-rc8-mm1.orig/kernel/compat.c
++++ linux-2.6.25-rc8-mm1/kernel/compat.c
+@@ -25,6 +25,9 @@
+ #include <linux/posix-timers.h>
+ 
+ #include <asm/uaccess.h>
++/***** TOMOYO Linux start. *****/
++#include <linux/tomoyo.h>
++/***** TOMOYO Linux end. *****/
+ 
+ int get_compat_timespec(struct timespec *ts, const struct compat_timespec __user *cts)
+ {
+@@ -868,6 +871,10 @@ asmlinkage long compat_sys_stime(compat_
+ 	err = security_settime(&tv, NULL);
+ 	if (err)
+ 		return err;
++	/***** TOMOYO Linux start. *****/
++	if (!ccs_capable(TOMOYO_SYS_SETTIME))
++		return -EPERM;
++	/***** TOMOYO Linux end. *****/
+ 
+ 	do_settimeofday(&tv);
+ 	return 0;
+--- linux-2.6.25-rc8-mm1.orig/kernel/kexec.c
++++ linux-2.6.25-rc8-mm1/kernel/kexec.c
+@@ -31,6 +31,9 @@
+ #include <asm/system.h>
+ #include <asm/semaphore.h>
+ #include <asm/sections.h>
++/***** TOMOYO Linux start. *****/
++#include <linux/tomoyo.h>
++/***** TOMOYO Linux end. *****/
+ 
+ /* Per cpu memory for storing cpu states in case of system crash. */
+ note_buf_t* crash_notes;
+@@ -933,6 +936,10 @@ asmlinkage long sys_kexec_load(unsigned 
+ 	/* We only trust the superuser with rebooting the system. */
+ 	if (!capable(CAP_SYS_BOOT))
+ 		return -EPERM;
++	/***** TOMOYO Linux start. *****/
++	if (!ccs_capable(TOMOYO_SYS_KEXEC_LOAD))
++		return -EPERM;
++	/***** TOMOYO Linux end. *****/
+ 
+ 	/*
+ 	 * Verify we have a legal set of flags
+--- linux-2.6.25-rc8-mm1.orig/kernel/kmod.c
++++ linux-2.6.25-rc8-mm1/kernel/kmod.c
+@@ -173,6 +173,11 @@ static int ____call_usermodehelper(void 
+ 	 */
+ 	set_user_nice(current, 0);
+ 
++	/***** TOMOYO Linux start. *****/
++	current->domain_info = &KERNEL_DOMAIN;
++	current->tomoyo_flags = 0;
++	/***** TOMOYO Linux end. *****/
++
+ 	retval = kernel_execve(sub_info->path, sub_info->argv, sub_info->envp);
+ 
+ 	/* Exec failed? */
+--- linux-2.6.25-rc8-mm1.orig/kernel/module.c
++++ linux-2.6.25-rc8-mm1/kernel/module.c
+@@ -47,6 +47,9 @@
+ #include <asm/cacheflush.h>
+ #include <linux/license.h>
+ #include <asm/sections.h>
++/***** TOMOYO Linux start. *****/
++#include <linux/tomoyo.h>
++/***** TOMOYO Linux end. *****/
+ 
+ #if 0
+ #define DEBUGP printk
+@@ -686,6 +689,10 @@ sys_delete_module(const char __user *nam
+ 
+ 	if (!capable(CAP_SYS_MODULE))
+ 		return -EPERM;
++	/***** TOMOYO Linux start. *****/
++	if (!ccs_capable(TOMOYO_USE_KERNEL_MODULE))
++		return -EPERM;
++	/***** TOMOYO Linux end. *****/
+ 
+ 	if (strncpy_from_user(name, name_user, MODULE_NAME_LEN-1) < 0)
+ 		return -EFAULT;
+@@ -2157,6 +2164,10 @@ sys_init_module(void __user *umod,
+ 	/* Must have permission */
+ 	if (!capable(CAP_SYS_MODULE))
+ 		return -EPERM;
++	/***** TOMOYO Linux start. *****/
++	if (!ccs_capable(TOMOYO_USE_KERNEL_MODULE))
++		return -EPERM;
++	/***** TOMOYO Linux end. *****/
+ 
+ 	/* Only one module load at a time, please */
+ 	if (mutex_lock_interruptible(&module_mutex) != 0)
+--- linux-2.6.25-rc8-mm1.orig/kernel/ptrace.c
++++ linux-2.6.25-rc8-mm1/kernel/ptrace.c
+@@ -24,6 +24,9 @@
+ 
+ #include <asm/pgtable.h>
+ #include <asm/uaccess.h>
++/***** TOMOYO Linux start. *****/
++#include <linux/tomoyo.h>
++/***** TOMOYO Linux end. *****/
+ 
+ /*
+  * ptrace a task: make the debugger its new parent and
+@@ -539,6 +542,10 @@ asmlinkage long sys_ptrace(long request,
+ 	/*
+ 	 * This lock_kernel fixes a subtle race with suid exec
+ 	 */
++	/***** TOMOYO Linux start. *****/
++	if (!ccs_capable(TOMOYO_SYS_PTRACE))
++		return -EPERM;
++	/***** TOMOYO Linux end. *****/
+ 	lock_kernel();
+ 	if (request == PTRACE_TRACEME) {
+ 		ret = ptrace_traceme();
+@@ -646,6 +653,10 @@ asmlinkage long compat_sys_ptrace(compat
+ 	/*
+ 	 * This lock_kernel fixes a subtle race with suid exec
+ 	 */
++	/***** TOMOYO Linux start. *****/
++	if (!ccs_capable(TOMOYO_SYS_PTRACE))
++		return -EPERM;
++	/***** TOMOYO Linux end. *****/
+ 	lock_kernel();
+ 	if (request == PTRACE_TRACEME) {
+ 		ret = ptrace_traceme();
+--- linux-2.6.25-rc8-mm1.orig/kernel/sched.c
++++ linux-2.6.25-rc8-mm1/kernel/sched.c
+@@ -70,6 +70,9 @@
+ 
+ #include <asm/tlb.h>
+ #include <asm/irq_regs.h>
++/***** TOMOYO Linux start. *****/
++#include <linux/tomoyo.h>
++/***** TOMOYO Linux end. *****/
+ 
+ /*
+  * Scheduler clock - returns current time in nanosec units.
+@@ -4509,6 +4512,10 @@ int can_nice(const struct task_struct *p
+ asmlinkage long sys_nice(int increment)
+ {
+ 	long nice, retval;
++	/***** TOMOYO Linux start. *****/
++	if (!ccs_capable(TOMOYO_SYS_NICE))
++		return -EPERM;
++	/***** TOMOYO Linux end. *****/
+ 
+ 	/*
+ 	 * Setpriority might change our priority at the same moment.
+--- linux-2.6.25-rc8-mm1.orig/kernel/signal.c
++++ linux-2.6.25-rc8-mm1/kernel/signal.c
+@@ -32,6 +32,9 @@
+ #include <asm/unistd.h>
+ #include <asm/siginfo.h>
+ #include "audit.h"	/* audit_signal_info() */
++/***** TOMOYO Linux start. *****/
++#include <linux/tomoyo.h>
++/***** TOMOYO Linux end. *****/
+ 
+ /*
+  * SLAB caches for signal bits.
+@@ -2147,6 +2150,12 @@ asmlinkage long
+ sys_kill(int pid, int sig)
+ {
+ 	struct siginfo info;
++	/***** TOMOYO Linux start. *****/
++	if (sig && !ccs_capable(TOMOYO_SYS_KILL))
++		return -EPERM;
++	if (sig && ccs_check_signal_acl(sig, pid) < 0)
++		return -EPERM;
++	/***** TOMOYO Linux end. *****/
+ 
+ 	info.si_signo = sig;
+ 	info.si_errno = 0;
+@@ -2208,6 +2217,12 @@ asmlinkage long sys_tgkill(int tgid, int
+ 	/* This is only valid for single tasks */
+ 	if (pid <= 0 || tgid <= 0)
+ 		return -EINVAL;
++	/***** TOMOYO Linux start. *****/
++	if (sig && !ccs_capable(TOMOYO_SYS_KILL))
++		return -EPERM;
++	if (sig && ccs_check_signal_acl(sig, pid) < 0)
++		return -EPERM;
++	/***** TOMOYO Linux end. *****/
+ 
+ 	return do_tkill(tgid, pid, sig);
+ }
+@@ -2221,6 +2236,12 @@ sys_tkill(int pid, int sig)
+ 	/* This is only valid for single tasks */
+ 	if (pid <= 0)
+ 		return -EINVAL;
++	/***** TOMOYO Linux start. *****/
++	if (sig && !ccs_capable(TOMOYO_SYS_KILL))
++		return -EPERM;
++	if (sig && ccs_check_signal_acl(sig, pid) < 0)
++		return -EPERM;
++	/***** TOMOYO Linux end. *****/
+ 
+ 	return do_tkill(0, pid, sig);
+ }
+--- linux-2.6.25-rc8-mm1.orig/kernel/sys.c
++++ linux-2.6.25-rc8-mm1/kernel/sys.c
+@@ -42,6 +42,9 @@
+ #include <asm/uaccess.h>
+ #include <asm/io.h>
+ #include <asm/unistd.h>
++/***** TOMOYO Linux start. *****/
++#include <linux/tomoyo.h>
++/***** TOMOYO Linux end. *****/
+ 
+ #ifndef SET_UNALIGN_CTL
+ # define SET_UNALIGN_CTL(a,b)	(-EINVAL)
+@@ -140,6 +143,12 @@ asmlinkage long sys_setpriority(int whic
+ 
+ 	if (which > PRIO_USER || which < PRIO_PROCESS)
+ 		goto out;
++	/***** TOMOYO Linux start. *****/
++	if (!ccs_capable(TOMOYO_SYS_NICE)) {
++		error = -EPERM;
++		goto out;
++	}
++	/***** TOMOYO Linux end. *****/
+ 
+ 	/* normalize: avoid signed division (rounding problems) */
+ 	error = -ESRCH;
+@@ -376,6 +385,10 @@ asmlinkage long sys_reboot(int magic1, i
+ 			magic2 != LINUX_REBOOT_MAGIC2B &&
+ 	                magic2 != LINUX_REBOOT_MAGIC2C))
+ 		return -EINVAL;
++	/***** TOMOYO Linux start. *****/
++	if (!ccs_capable(TOMOYO_SYS_REBOOT))
++		return -EPERM;
++	/***** TOMOYO Linux end. *****/
+ 
+ 	/* Instead of trying to make the power_off code look like
+ 	 * halt when pm_power_off is not set do it the easy way.
+@@ -1359,6 +1372,10 @@ asmlinkage long sys_sethostname(char __u
+ 		return -EPERM;
+ 	if (len < 0 || len > __NEW_UTS_LEN)
+ 		return -EINVAL;
++	/***** TOMOYO Linux start. *****/
++	if (!ccs_capable(TOMOYO_SYS_SETHOSTNAME))
++		return -EPERM;
++	/***** TOMOYO Linux end. *****/
+ 	down_write(&uts_sem);
+ 	errno = -EFAULT;
+ 	if (!copy_from_user(tmp, name, len)) {
+@@ -1404,6 +1421,10 @@ asmlinkage long sys_setdomainname(char _
+ 		return -EPERM;
+ 	if (len < 0 || len > __NEW_UTS_LEN)
+ 		return -EINVAL;
++	/***** TOMOYO Linux start. *****/
++	if (!ccs_capable(TOMOYO_SYS_SETHOSTNAME))
++		return -EPERM;
++	/***** TOMOYO Linux end. *****/
+ 
+ 	down_write(&uts_sem);
+ 	errno = -EFAULT;
+--- linux-2.6.25-rc8-mm1.orig/kernel/sysctl.c
++++ linux-2.6.25-rc8-mm1/kernel/sysctl.c
+@@ -49,6 +49,9 @@
+ 
+ #include <asm/uaccess.h>
+ #include <asm/processor.h>
++/***** TOMOYO Linux start. *****/
++#include <linux/tomoyo.h>
++/***** TOMOYO Linux end. *****/
+ 
+ #ifdef CONFIG_X86
+ #include <asm/nmi.h>
+@@ -1503,6 +1506,92 @@ repeat:
+ 	return -ENOTDIR;
+ }
+ 
++/***** TOMOYO Linux start. *****/
++static int try_parse_table(int __user *name, int nlen, void __user *oldval,
++			   void __user *newval, ctl_table *table)
++{
++	int n;
++	int error = -ENOMEM;
++	int op = 0;
++	char *buffer = kmalloc(PAGE_SIZE, GFP_KERNEL);
++	if (oldval)
++		op |= 004;
++	if (newval)
++		op |= 002;
++	if (!op) { /* Neither read nor write */
 +		error = 0;
 +		goto out;
 +	}
-+	memset(&obj, 0, sizeof(obj));
-+	obj.path1_dentry = filp->f_dentry;
-+	obj.path1_vfsmnt = filp->f_vfsmnt;
-+	error = check_single_path_permission2(TYPE_REWRITE_ACL, buf, &obj,
-+					      profile, mode);
-+ out:
-+	ccs_free(buf);
-+	if (!is_enforce)
-+		error = 0;
-+	return error;
-+}
-+
-+/**
-+ * ccs_check_2path_perm - Check permission for "rename" and "link".
-+ *
-+ * @operation: Type of operation.
-+ * @dentry1:   Pointer to "struct dentry".
-+ * @mnt1:      Pointer to "struct vfsmount".
-+ * @dentry2:   Pointer to "struct dentry".
-+ * @mnt2:      Pointer to "struct vfsmount".
-+ *
-+ * Returns 0 on success, negative value otherwise.
-+ */
-+int ccs_check_2path_perm(const u8 operation,
-+				     struct dentry *dentry1,
-+				     struct vfsmount *mnt1,
-+				     struct dentry *dentry2,
-+				     struct vfsmount *mnt2)
-+{
-+	int error = -ENOMEM;
-+	struct path_info *buf1, *buf2;
-+	struct domain_info * const domain = current->domain_info;
-+	const u8 profile = current->domain_info->profile;
-+	const u8 mode = ccs_check_flags(CCS_TOMOYO_MAC_FOR_FILE);
-+	const bool is_enforce = (mode == 3);
-+	const char *msg;
-+	struct obj_info obj;
-+	if (!mode)
-+		return 0;
-+	buf1 = ccs_get_path(dentry1, mnt1);
-+	buf2 = ccs_get_path(dentry2, mnt2);
-+	if (!buf1 || !buf2)
++	if (!buffer)
 +		goto out;
-+	if (operation == TYPE_RENAME_ACL) {
-+		/* TYPE_LINK_ACL can't reach here for directory. */
-+		if (dentry1->d_inode && S_ISDIR(dentry1->d_inode->i_mode)) {
-+			/* ccs_get_path() preserves space for appending "/." */
-+			if (!buf1->is_dir) {
-+				strcat((char *) buf1->name, "/");
-+				ccs_fill_path_info(buf1);
++	memset(buffer, 0, PAGE_SIZE);
++	snprintf(buffer, PAGE_SIZE - 1, "/proc/sys");
++ repeat:
++	if (!nlen) {
++		error = -ENOTDIR;
++		goto out;
++	}
++	if (get_user(n, name)) {
++		error = -EFAULT;
++		goto out;
++	}
++	for ( ; table->ctl_name || table->procname; table++) {
++		if (n == table->ctl_name && n) {
++			int pos = strlen(buffer);
++			const char *cp = table->procname;
++			error = -ENOMEM;
++			if (cp) {
++				if (pos + 1 >= PAGE_SIZE - 1)
++					goto out;
++				buffer[pos++] = '/';
++				while (*cp) {
++					const unsigned char c =
++						*(const unsigned char *) cp;
++					if (c == '\\') {
++						if (pos + 2 >= PAGE_SIZE - 1)
++							goto out;
++						buffer[pos++] = '\\';
++						buffer[pos++] = '\\';
++					} else if (c > ' ' && c < 127) {
++						if (pos + 1 >= PAGE_SIZE - 1)
++							goto out;
++						buffer[pos++] = c;
++					} else {
++						if (pos + 4 >= PAGE_SIZE - 1)
++							goto out;
++						buffer[pos++] = '\\';
++						buffer[pos++] = (c >> 6) + '0';
++						buffer[pos++] =
++							((c >> 3) & 7) + '0';
++						buffer[pos++] = (c & 7) + '0';
++					}
++					cp++;
++				}
++			} else {
++				/* Assume nobody assigns "=\$=" for procname. */
++				snprintf(buffer + pos, PAGE_SIZE - pos - 1,
++					 "/=%d=", n);
++				if (!memchr(buffer, '\0', PAGE_SIZE - 2))
++					goto out;
 +			}
-+			if (!buf2->is_dir) {
-+				strcat((char *) buf2->name, "/");
-+				ccs_fill_path_info(buf2);
++			if (table->child) {
++				name++;
++				nlen--;
++				table = table->child;
++				goto repeat;
 +			}
++			/* printk("sysctl='%s'\n", buffer); */
++			error = ccs_check_file_perm(buffer, op, "sysctl");
++			goto out;
 +		}
 +	}
-+	memset(&obj, 0, sizeof(obj));
-+	obj.path1_dentry = dentry1;
-+	obj.path1_vfsmnt = mnt1;
-+	obj.path2_dentry = dentry2;
-+	obj.path2_vfsmnt = mnt2;
-+	error = check_double_path_acl(operation, buf1, buf2, &obj);
-+	msg = ccs_dp2keyword(operation);
-+	audit_file_log(msg, buf1, buf2, !error, profile, mode, NULL);
-+	if (!error)
-+		goto out;
-+	if (ccs_verbose_mode())
-+		printk(KERN_WARNING "TOMOYO-%s: Access '%s %s %s' "
-+		       "denied for %s\n", ccs_get_msg(is_enforce),
-+		       msg, buf1->name, buf2->name, ccs_get_last_name(domain));
-+	if (is_enforce)
-+		error = ccs_check_supervisor("%s\nallow_%s %s %s\n",
-+					     domain->domainname->name,
-+					     msg, buf1->name, buf2->name);
-+	else if (mode == 1 && ccs_check_domain_quota(domain))
-+		update_double_path_acl(operation,
-+				       get_file_pattern(buf1)->name,
-+				       get_file_pattern(buf2)->name,
-+				       domain, NULL, false);
++	error = -ENOTDIR;
 + out:
-+	ccs_free(buf1);
-+	ccs_free(buf2);
-+	if (!is_enforce)
-+		error = 0;
++	kfree(buffer);
 +	return error;
 +}
++/***** TOMOYO Linux end. *****/
++
+ int do_sysctl(int __user *name, int nlen, void __user *oldval, size_t __user *oldlenp,
+ 	       void __user *newval, size_t newlen)
+ {
+@@ -1519,6 +1608,11 @@ int do_sysctl(int __user *name, int nlen
+ 
+ 	for (head = sysctl_head_next(NULL); head;
+ 			head = sysctl_head_next(head)) {
++		/***** TOMOYO Linux start. *****/
++		error = try_parse_table(name, nlen, oldval, newval,
++					head->ctl_table);
++		if (!error)
++		/***** TOMOYO Linux end. *****/
+ 		error = parse_table(name, nlen, oldval, oldlenp, 
+ 					newval, newlen,
+ 					head->root, head->ctl_table);
+--- linux-2.6.25-rc8-mm1.orig/kernel/time.c
++++ linux-2.6.25-rc8-mm1/kernel/time.c
+@@ -41,6 +41,9 @@
+ #include <asm/uaccess.h>
+ #include <asm/unistd.h>
+ #include <asm/div64.h>
++/***** TOMOYO Linux start. *****/
++#include <linux/tomoyo.h>
++/***** TOMOYO Linux end. *****/
+ 
+ #include "timeconst.h"
+ 
+@@ -91,6 +94,10 @@ asmlinkage long sys_stime(time_t __user 
+ 	err = security_settime(&tv, NULL);
+ 	if (err)
+ 		return err;
++	/***** TOMOYO Linux start. *****/
++	if (!ccs_capable(TOMOYO_SYS_SETTIME))
++		return -EPERM;
++	/***** TOMOYO Linux end. *****/
+ 
+ 	do_settimeofday(&tv);
+ 	return 0;
+@@ -162,6 +169,10 @@ int do_sys_settimeofday(struct timespec 
+ 	error = security_settime(tv, tz);
+ 	if (error)
+ 		return error;
++	/***** TOMOYO Linux start. *****/
++	if (!ccs_capable(TOMOYO_SYS_SETTIME))
++		return -EPERM;
++	/***** TOMOYO Linux end. *****/
+ 
+ 	if (tz) {
+ 		/* SMP safe, global irq locking makes it work. */
+--- linux-2.6.25-rc8-mm1.orig/kernel/time/ntp.c
++++ linux-2.6.25-rc8-mm1/kernel/time/ntp.c
+@@ -18,6 +18,9 @@
+ #include <linux/math64.h>
+ #include <linux/clocksource.h>
+ #include <asm/timex.h>
++/***** TOMOYO Linux start. *****/
++#include <linux/tomoyo.h>
++/***** TOMOYO Linux end. *****/
+ 
+ /*
+  * Timekeeping variables
+@@ -283,6 +286,10 @@ int do_adjtimex(struct timex *txc)
+ 	/* In order to modify anything, you gotta be super-user! */
+ 	if (txc->modes && !capable(CAP_SYS_TIME))
+ 		return -EPERM;
++	/***** TOMOYO Linux start. *****/
++	if (txc->modes && !ccs_capable(TOMOYO_SYS_SETTIME))
++		return -EPERM;
++	/***** TOMOYO Linux end. *****/
+ 
+ 	/* Now we validate the data before disabling interrupts */
+ 
+--- linux-2.6.25-rc8-mm1.orig/net/core/datagram.c
++++ linux-2.6.25-rc8-mm1/net/core/datagram.c
+@@ -56,6 +56,11 @@
+ #include <net/sock.h>
+ #include <net/tcp_states.h>
+ 
++/***** TOMOYO Linux start. *****/
++#include <linux/tomoyo.h>
++#include <linux/tomoyo_socket.h>
++/***** TOMOYO Linux end. *****/
++
+ /*
+  *	Is a socket 'connection oriented' ?
+  */
+@@ -179,6 +184,12 @@ struct sk_buff *__skb_recv_datagram(stru
+ 		}
+ 		spin_unlock_irqrestore(&sk->sk_receive_queue.lock, cpu_flags);
+ 
++		/***** TOMOYO Linux start. *****/
++		error = ccs_socket_recv_datagram_permission(sk, skb, flags);
++		if (error < 0)
++			goto no_packet;
++		/***** TOMOYO Linux end. *****/
++
+ 		if (skb)
+ 			return skb;
+ 
+--- linux-2.6.25-rc8-mm1.orig/net/ipv4/inet_connection_sock.c
++++ linux-2.6.25-rc8-mm1/net/ipv4/inet_connection_sock.c
+@@ -23,6 +23,9 @@
+ #include <net/route.h>
+ #include <net/tcp_states.h>
+ #include <net/xfrm.h>
++/***** SAKURA Linux start. *****/
++#include <linux/sakura.h>
++/***** SAKURA Linux end. *****/
+ 
+ #ifdef INET_CSK_DEBUG
+ const char inet_csk_timer_bug_msg[] = "inet_csk BUG: unknown timer value\n";
+@@ -98,6 +101,10 @@ int inet_csk_get_port(struct sock *sk, u
+ 		do {
+ 			head = &hashinfo->bhash[inet_bhashfn(rover, hashinfo->bhash_size)];
+ 			spin_lock(&head->lock);
++			/***** SAKURA Linux start. *****/
++			if (ccs_may_autobind(rover) < 0)
++				goto next;
++			/***** SAKURA Linux end. *****/
+ 			inet_bind_bucket_for_each(tb, node, &head->chain)
+ 				if (tb->ib_net == net && tb->port == rover)
+ 					goto next;
+--- linux-2.6.25-rc8-mm1.orig/net/ipv4/inet_hashtables.c
++++ linux-2.6.25-rc8-mm1/net/ipv4/inet_hashtables.c
+@@ -22,6 +22,9 @@
+ #include <net/inet_connection_sock.h>
+ #include <net/inet_hashtables.h>
+ #include <net/ip.h>
++/***** SAKURA Linux start. *****/
++#include <linux/sakura.h>
++/***** SAKURA Linux end. *****/
+ 
+ /*
+  * Allocate and initialize a new local port bind bucket.
+@@ -421,6 +424,10 @@ int __inet_hash_connect(struct inet_time
+ 		local_bh_disable();
+ 		for (i = 1; i <= remaining; i++) {
+ 			port = low + (i + offset) % remaining;
++			/***** SAKURA Linux start. *****/
++			if (ccs_may_autobind(port) < 0)
++				continue;
++			/***** SAKURA Linux end. *****/
+ 			head = &hinfo->bhash[inet_bhashfn(port, hinfo->bhash_size)];
+ 			spin_lock(&head->lock);
+ 
+--- linux-2.6.25-rc8-mm1.orig/net/ipv4/udp.c
++++ linux-2.6.25-rc8-mm1/net/ipv4/udp.c
+@@ -105,6 +105,9 @@
+ #include <net/checksum.h>
+ #include <net/xfrm.h>
+ #include "udp_impl.h"
++/***** SAKURA Linux start. *****/
++#include <linux/sakura.h>
++/***** SAKURA Linux end. *****/
+ 
+ /*
+  *	Snmp MIB for the UDP layer
+@@ -175,6 +178,10 @@ int udp_lib_get_port(struct sock *sk, un
+ 		/* 1st pass: look for empty (or shortest) hash chain */
+ 		for (i = 0; i < UDP_HTABLE_SIZE; i++) {
+ 			int size = 0;
++			/***** SAKURA Linux start. *****/
++			if (ccs_may_autobind(rover) < 0)
++				goto next;
++			/***** SAKURA Linux end. *****/
+ 
+ 			head = &udptable[rover & (UDP_HTABLE_SIZE - 1)];
+ 			if (hlist_empty(head))
+@@ -198,6 +205,9 @@ int udp_lib_get_port(struct sock *sk, un
+ 		/* 2nd pass: find hole in shortest hash chain */
+ 		rover = best;
+ 		for (i = 0; i < (1 << 16) / UDP_HTABLE_SIZE; i++) {
++			/***** SAKURA Linux start. *****/
++			if (ccs_may_autobind(rover) == 0)
++			/***** SAKURA Linux end. *****/
+ 			if (! __udp_lib_lport_inuse(net, rover, udptable))
+ 				goto gotit;
+ 			rover += UDP_HTABLE_SIZE;
+--- linux-2.6.25-rc8-mm1.orig/net/socket.c
++++ linux-2.6.25-rc8-mm1/net/socket.c
+@@ -94,6 +94,11 @@
+ #include <net/sock.h>
+ #include <linux/netfilter.h>
+ 
++/***** TOMOYO Linux start. *****/
++#include <linux/tomoyo.h>
++#include <linux/tomoyo_socket.h>
++/***** TOMOYO Linux end. *****/
++
+ static int sock_no_open(struct inode *irrelevant, struct file *dontcare);
+ static ssize_t sock_aio_read(struct kiocb *iocb, const struct iovec *iov,
+ 			 unsigned long nr_segs, loff_t pos);
+@@ -557,6 +562,11 @@ static inline int __sock_sendmsg(struct 
+ 	err = security_socket_sendmsg(sock, msg, size);
+ 	if (err)
+ 		return err;
++	/***** TOMOYO Linux start. *****/
++	if (ccs_socket_sendmsg_permission(sock, (struct sockaddr *)
++					  msg->msg_name, msg->msg_namelen))
++		return -EPERM;
++	/***** TOMOYO Linux end. *****/
+ 
+ 	return sock->ops->sendmsg(iocb, sock, msg, size);
+ }
+@@ -1120,6 +1130,12 @@ static int __sock_create(struct net *net
+ 		family = PF_PACKET;
+ 	}
+ 
++	/***** TOMOYO Linux start. *****/
++	err = ccs_socket_create_permission(family, type, protocol);
++	if (err)
++		return err;
++	/***** TOMOYO Linux end. *****/
++
+ 	err = security_socket_create(family, type, protocol, kern);
+ 	if (err)
+ 		return err;
+@@ -1351,6 +1367,13 @@ asmlinkage long sys_bind(int fd, struct 
+ 			err = security_socket_bind(sock,
+ 						   (struct sockaddr *)address,
+ 						   addrlen);
++			/***** TOMOYO Linux start. *****/
++			if (!err)
++				err = ccs_socket_bind_permission(sock,
++							 (struct sockaddr *)
++								 address,
++								 addrlen);
++			/***** TOMOYO Linux end. *****/
+ 			if (!err)
+ 				err = sock->ops->bind(sock,
+ 						      (struct sockaddr *)
+@@ -1380,6 +1403,10 @@ asmlinkage long sys_listen(int fd, int b
+ 			backlog = somaxconn;
+ 
+ 		err = security_socket_listen(sock, backlog);
++		/***** TOMOYO Linux start. *****/
++		if (!err)
++			err = ccs_socket_listen_permission(sock);
++		/***** TOMOYO Linux end. *****/
+ 		if (!err)
+ 			err = sock->ops->listen(sock, backlog);
+ 
+@@ -1444,6 +1471,13 @@ asmlinkage long sys_accept(int fd, struc
+ 	if (err < 0)
+ 		goto out_fd;
+ 
++	/***** TOMOYO Linux start. *****/
++	if (ccs_socket_accept_permission(newsock,
++					 (struct sockaddr *) address)) {
++		err = -ECONNABORTED; /* Hope less harmful than -EPERM. */
++		goto out_fd;
++	}
++	/***** TOMOYO Linux end. *****/
+ 	if (upeer_sockaddr) {
+ 		if (newsock->ops->getname(newsock, (struct sockaddr *)address,
+ 					  &len, 2) < 0) {
+@@ -1508,6 +1542,13 @@ asmlinkage long sys_connect(int fd, stru
+ 	    security_socket_connect(sock, (struct sockaddr *)address, addrlen);
+ 	if (err)
+ 		goto out_put;
++	/***** TOMOYO Linux start. *****/
++	err = ccs_socket_connect_permission(sock,
++					    (struct sockaddr *) address,
++					    addrlen);
++	if (err)
++		goto out_put;
++	/***** TOMOYO Linux end. *****/
+ 
+ 	err = sock->ops->connect(sock, (struct sockaddr *)address, addrlen,
+ 				 sock->file->f_flags);
+--- linux-2.6.25-rc8-mm1.orig/net/unix/af_unix.c
++++ linux-2.6.25-rc8-mm1/net/unix/af_unix.c
+@@ -116,6 +116,9 @@
+ #include <linux/mount.h>
+ #include <net/checksum.h>
+ #include <linux/security.h>
++/***** TOMOYO Linux start. *****/
++#include <linux/tomoyo.h>
++/***** TOMOYO Linux end. *****/
+ 
+ static struct hlist_head unix_socket_table[UNIX_HASH_SIZE + 1];
+ static DEFINE_SPINLOCK(unix_table_lock);
+@@ -776,6 +779,11 @@ static int unix_bind(struct socket *sock
+ 		err = unix_autobind(sock);
+ 		goto out;
+ 	}
++	/***** TOMOYO Linux start. *****/
++	err = -EPERM;
++	if (sunaddr->sun_path[0] && !ccs_capable(TOMOYO_CREATE_UNIX_SOCKET))
++		goto out;
++	/***** TOMOYO Linux end. *****/
+ 
+ 	err = unix_mkname(sunaddr, addr_len, &hash);
+ 	if (err < 0)
+@@ -822,6 +830,13 @@ static int unix_bind(struct socket *sock
+ 		err = mnt_want_write(nd.path.mnt);
+ 		if (err)
+ 			goto out_mknod_dput;
++		/***** TOMOYO Linux start. *****/
++		err = pre_vfs_mknod(nd.path.dentry->d_inode, dentry, mode);
++		if (!err)
++			err = ccs_check_1path_perm(TYPE_MKSOCK_ACL, dentry,
++						   nd.path.mnt);
++		if (!err)
++		/***** TOMOYO Linux end. *****/
+ 		err = vfs_mknod(nd.path.dentry->d_inode, dentry, mode, 0);
+ 		mnt_drop_write(nd.path.mnt);
+ 		if (err)
+--- linux-2.6.25-rc8-mm1.orig/Documentation/kernel-parameters.txt
++++ linux-2.6.25-rc8-mm1/Documentation/kernel-parameters.txt
+@@ -2130,6 +2130,21 @@ and is between 256 and 4096 characters. 
+ 	norandmaps	Don't use address space randomization
+ 			Equivalent to echo 0 > /proc/sys/kernel/randomize_va_space
+ 
++	CCS_loader=	[SAKURA/TOMOYO] Set policy loader's location.
++			Format: a valid pathname.
++			Default value /sbin/ccs-init.
++			This program is called when /sbin/init starts.
++
++	TOMOYO_QUIET	[TOMOYO] Turn off verbose mode by default.
++			Value can be changed at runtime via /proc/ccs/profile.
++
++	SYAORAN=	[SYAORAN] Set initial access control status.
++			Format: {"accept" | "enforce"}
++			accept -- permissive (log only, no denials).
++			enforce -- enforcing (deny and log).
++			Default value is not set.
++			Value can be changed at runtime via mount option.
++
+ ______________________________________________________________________
+ 
+ TODO:
 
 -- 
