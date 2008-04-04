@@ -1,92 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762601AbYDDNII@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762632AbYDDNIe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762601AbYDDNII (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Apr 2008 09:08:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760307AbYDDM7b
+	id S1762632AbYDDNIe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Apr 2008 09:08:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761393AbYDDNBM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Apr 2008 08:59:31 -0400
-Received: from saeurebad.de ([85.214.36.134]:44863 "EHLO saeurebad.de"
+	Fri, 4 Apr 2008 09:01:12 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:44478 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760348AbYDDM73 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Apr 2008 08:59:29 -0400
-X-Mailbox-Line: From hannes@skyscraper.fehenstaub.lan Fri Apr  4 13:52:33 2008
-Message-Id: <20080404115233.795244074@skyscraper.fehenstaub.lan>
-References: <20080404115137.397502419@skyscraper.fehenstaub.lan>
-User-Agent: quilt/0.46-1
-Date: Fri, 04 Apr 2008 13:51:59 +0200
-From: hannes@saeurebad.de
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Chris Zankel <chris@zankel.net>
-Subject: [patch 22/22 -v2] xtensa: Use generic show_mem()
-Content-Disposition: inline; filename=xtensa-use-generic-show_mem.patch
-X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
+	id S1761298AbYDDNBK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Apr 2008 09:01:10 -0400
+Date: Fri, 4 Apr 2008 08:53:30 -0400
+From: Josef Bacik <jbacik@redhat.com>
+To: Jan Kara <jack@suse.cz>
+Cc: Stephen Smalley <sds@tycho.nsa.gov>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Josef Bacik <jbacik@redhat.com>, Valdis.Kletnieks@vt.edu,
+       sct@redhat.com, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org, eparis@redhat.com,
+       James Morris <jmorris@namei.org>
+Subject: Re: 2.6.25-rc8-mm1 - BUG in fs/jbd/transaction.c'
+Message-ID: <20080404125330.GB22429@unused.rdu.redhat.com>
+References: <20080401213214.8fbb6d6b.akpm@linux-foundation.org> <6495.1207163569@turing-police.cc.vt.edu> <20080402192715.GA32454@unused.rdu.redhat.com> <20080402123905.386c56f8.akpm@linux-foundation.org> <1207246695.27710.292.camel@moss-spartans.epoch.ncsc.mil> <20080404101509.GB477@atrey.karlin.mff.cuni.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080404101509.GB477@atrey.karlin.mff.cuni.cz>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Remove arch-specific show_mem() in favor of the generic version.
+On Fri, Apr 04, 2008 at 12:15:09PM +0200, Jan Kara wrote:
+> > 
+> > On Wed, 2008-04-02 at 12:39 -0700, Andrew Morton wrote:
+> > > On Wed, 2 Apr 2008 15:27:15 -0400
+> > > Josef Bacik <jbacik@redhat.com> wrote:
+> > > 
+> > > > On Wed, Apr 02, 2008 at 03:12:49PM -0400, Valdis.Kletnieks@vt.edu wrote:
+> > > > > On Tue, 01 Apr 2008 21:32:14 PDT, Andrew Morton said:
+> > > > > > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.25-rc8/2.6.25-rc8-mm1/
+> > > > > 
+> > > > > (Yes, I know the kernel is tainted.  Hopefully the traceback will make
+> > > > > enough sense that it won't matter.  I think I cc'd most everybody who is
+> > > > > listed in MAINTAINERS or had a non-trivial jbd, quota, or ext3 patch in the broken-out/)
+> > > > > 
+> > > > > So I was running a 'yum update' on my laptop, walked away to ask a cow-orker
+> > > > > a question, and came back to find it had BUG'ed twice...  Amazingly
+> > > > > enough, although it died in ext3 code, it apparently only nuked whatever
+> > > > > filesystem it was handling, as syslog was still able to log the gory details
+> > > > > into a file in /var. Given that a kernel rpm was the one it failed on, the
+> > > > > I/O was almost certainly on either / or /boot - both ext3. / is mounted
+> > > > > with quotas, /boot isn't, so I'm betting on /
+> > > > > 
+> > > > > Apr  2 13:48:07 turing-police yum: Updated: texlive-texmf-latex-2007-18.fc9.noarch
+> > > > > Apr  2 13:48:08 turing-police yum: Updated: 1:openoffice.org-xsltfilter-2.4.0-12.4.fc9.x86_64
+> > > > > Apr  2 13:48:09 turing-police yum: Updated: 1:openoffice.org-javafilter-2.4.0-12.4.fc9.x86_64
+> > > > > Apr  2 13:48:12 turing-police yum: Updated: kernel-headers-2.6.25-0.185.rc7.git6.fc9.x86_64
+> > > > > 
+> > > > > (here, it started updating kernel-2.6.25-0.185.rc7.git6 and died while I wasn't looking)
+> > > > 
+> > > > <snip>
+> > > > 
+> > > > Try this patch, it will keep us from re-entering the fs when we aren't supposed
+> > > > to.  cc'ing Eric Paris since he's the only selinux guy I know :).  I don't think
+> > > > any of the other allocations in here need to be fixed, but I didn't look too
+> > > > carefully.
+> > > > 
+> > > > Signed-off-by: Josef Bacik <jbacik@redhat.com>
+> > > > 
+> > > > 
+> > > > diff --git a/security/selinux/hooks.c b/security/selinux/hooks.c
+> > > > index c2fef7b..820d07a 100644
+> > > > --- a/security/selinux/hooks.c
+> > > > +++ b/security/selinux/hooks.c
+> > > > @@ -180,7 +180,7 @@ static int inode_alloc_security(struct inode *inode)
+> > > >  	struct task_security_struct *tsec = current->security;
+> > > >  	struct inode_security_struct *isec;
+> > > >  
+> > > > -	isec = kmem_cache_zalloc(sel_inode_cache, GFP_KERNEL);
+> > > > +	isec = kmem_cache_zalloc(sel_inode_cache, GFP_NOFS);
+> > > >  	if (!isec)
+> > > >  		return -ENOMEM;
+> > > >  
+> > > > @@ -2429,7 +2429,7 @@ static int selinux_inode_init_security(struct inode *inode, struct inode *dir,
+> > > >  		return -EOPNOTSUPP;
+> > > >  
+> > > >  	if (name) {
+> > > > -		namep = kstrdup(XATTR_SELINUX_SUFFIX, GFP_KERNEL);
+> > > > +		namep = kstrdup(XATTR_SELINUX_SUFFIX, GFP_NOFS);
+> > > >  		if (!namep)
+> > > >  			return -ENOMEM;
+> > > >  		*name = namep;
+> > > 
+> > > Might fix it.  But 2.6.24's inode_alloc_security() also uses GFP_KERNEL and
+> > > doesn't have this bug.  What changed?
+> > 
+> > Looks legitimate, although we've been doing that since Linux 2.6.0-test3
+> > (selinux merge) for inode_alloc_security and d_instantiate, and since
+> > Linux 2.6.14 for inode_init_security, so something is at least
+> > triggering it more easily now.  inode_doinit_with_dentry looks like
+> > another instance and security_context_to_sid_core as well.
+>   I guess it is just the combination of someone using SELinux + quota
+> (or several journaling filesystems) + being unlucky under memory
+> pressure that makes this happen only rarely. Josef, have you been
+> successful in reproducing the problem under older kernel?
+> 
 
-This also removes the following redundant information display:
+Not yet, I haven't been lucky enough apparently.  I'm going to kick it off on a
+couple of boxes over the weekend and see if I can't hit it on one of them
+instead of just relying on the one box.
 
-	- free pages, printed by show_free_areas()
-	- pages in swapcache, printed by show_swap_cache_info()
-
-where show_mem() calls show_free_areas(), which calls
-show_swap_cache_info().
-
-Signed-off-by: Johannes Weiner <hannes@saeurebad.de>
-CC: Chris Zankel <chris@zankel.net>
----
-
-Index: tree-linus/arch/xtensa/Kconfig
-===================================================================
---- tree-linus.orig/arch/xtensa/Kconfig
-+++ tree-linus/arch/xtensa/Kconfig
-@@ -15,7 +15,6 @@ config XTENSA
- 	bool
- 	default y
- 	select HAVE_IDE
--	select HAVE_ARCH_SHOW_MEM
- 	help
- 	  Xtensa processors are 32-bit RISC machines designed by Tensilica
- 	  primarily for embedded systems.  These processors are both
-Index: tree-linus/arch/xtensa/mm/init.c
-===================================================================
---- tree-linus.orig/arch/xtensa/mm/init.c
-+++ tree-linus/arch/xtensa/mm/init.c
-@@ -280,32 +280,6 @@ void free_initmem(void)
- 	       (&__init_end - &__init_begin) >> 10);
- }
- 
--void show_mem(void)
--{
--	int i, free = 0, total = 0, reserved = 0;
--	int shared = 0, cached = 0;
--
--	printk("Mem-info:\n");
--	show_free_areas();
--	i = max_mapnr;
--	while (i-- > 0) {
--		total++;
--		if (PageReserved(mem_map+i))
--			reserved++;
--		else if (PageSwapCache(mem_map+i))
--			cached++;
--		else if (!page_count(mem_map + i))
--			free++;
--		else
--			shared += page_count(mem_map + i) - 1;
--	}
--	printk("%d pages of RAM\n", total);
--	printk("%d reserved pages\n", reserved);
--	printk("%d pages shared\n", shared);
--	printk("%d pages swap cached\n",cached);
--	printk("%d free pages\n", free);
--}
--
- struct kmem_cache *pgtable_cache __read_mostly;
- 
- static void pgd_ctor(struct kmem_cache *cache, void* addr)
-
--- 
-
+Josef
