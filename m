@@ -1,56 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753517AbYDDEXW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752472AbYDDEbO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753517AbYDDEXW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Apr 2008 00:23:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752347AbYDDEW7
+	id S1752472AbYDDEbO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Apr 2008 00:31:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751338AbYDDEbA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Apr 2008 00:22:59 -0400
-Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:22150 "EHLO
-	pd2mo2so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752067AbYDDEW6 (ORCPT
+	Fri, 4 Apr 2008 00:31:00 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:48863 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751337AbYDDEa7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Apr 2008 00:22:58 -0400
-Date: Thu, 03 Apr 2008 22:20:34 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: Access to struct file in scsi_request_fn()?
-In-reply-to: <cffffbd9-8d29-4c23-a7f9-315d1d519ed6@d45g2000hsc.googlegroups.com>
-To: "hectorlas@yahoo.com" <hectorlas@yahoo.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>
-Message-id: <47F5AC92.2050003@shaw.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7bit
-References: <cffffbd9-8d29-4c23-a7f9-315d1d519ed6@d45g2000hsc.googlegroups.com>
-User-Agent: Thunderbird 2.0.0.12 (Windows/20080213)
+	Fri, 4 Apr 2008 00:30:59 -0400
+Date: Thu, 3 Apr 2008 21:30:10 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Boaz Harrosh <bharrosh@panasas.com>
+Cc: Pete Zaitcev <zaitcev@redhat.com>, schwidefsky@de.ibm.com,
+       Kiyoshi Ueda <k-ueda@ct.jp.nec.com>, linux-kernel@vger.kernel.org,
+       j-nomura@ce.jp.nec.com, jens.axboe@oracle.com, m-ikeda@ds.jp.nec.com,
+       Greg KH <greg@kroah.com>
+Subject: Re: kernel BUG at drivers/block/ub.c:820!
+Message-Id: <20080403213010.94045431.akpm@linux-foundation.org>
+In-Reply-To: <47F515A6.4040505@panasas.com>
+References: <1207212156.5602.5.camel@localhost>
+	<20080403.110825.07645490.k-ueda@ct.jp.nec.com>
+	<1207235911.9155.16.camel@localhost>
+	<20080403093042.f20e38a2.zaitcev@redhat.com>
+	<47F515A6.4040505@panasas.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-hectorlas@yahoo.com wrote:
-> Here's the short question:  Is there a way to access the struct file
-> associated with a write() within the libATA code?
-> 
-> I've been documenting the semi-direct execution path from a file I/O
-> open() call down to the ata_scsi_rw_xlat() call in libATA.  I'd like
-> to modify my local libATA code to do something based on the file being
-> operated on using a flag that I still need to store in struct file,
-> perhaps through the private_data field (I haven't worked that out
-> yet).  The scsi_request_fn() gets a struct request_queue argument that
-> has a lot of contexts in it.  Could anyone help me with information on
-> whether the struct file * is in it somewhere?  I know there's some
-> kind of cohesion between submitting the scsi command and its
-> completion function, but I'm not quite seeing it yet.
-> 
-> That was painful to write, I'm sure it was painful to read, sorry
-> about that.  I'm learning more and more as I go, but the big picture
-> is still escaping me.
-> 
-> Thanks.
-> Hector
+On Thu, 03 Apr 2008 20:36:38 +0300 Boaz Harrosh <bharrosh@panasas.com> wrote:
 
-I think that this is likely not a good approach for whatever you're 
-attempting to do (and you would likely get better responses if you 
-described what exactly that is). By the time libata or even the SCSI 
-layer gets a write request, that is pretty well removed from the 
-original file operation. They may be quite highly separated in time due 
-to write buffering for one thing.
+> On Thu, Apr 03 2008 at 19:30 +0300, Pete Zaitcev <zaitcev@redhat.com> wrote:
+> > On Thu, 03 Apr 2008 17:18:31 +0200, Martin Schwidefsky <schwidefsky@de.ibm.com> wrote:
+> >> On Thu, 2008-04-03 at 11:08 -0500, Kiyoshi Ueda wrote:
+> > 
+> >>> I believe the patch from Pete fixes this BUG():
+> >>>     http://marc.info/?l=linux-usb&m=120613888005382&w=2
+> >>>
+> >>> Could you try that?
+> >> Just tested the patch and it indeed fixes the bug.
+> > 
+> > I'm glad.
+> > 
+> >> Could we push this upstream for 2.6.25? It is a regression, I would
+> >> prefer to have a 2.6.25 that doesn't panic my machine when I attach a
+> >> USB stick..
+> > 
+> > I was going to work through Greg as usual and then push it to
+> > the stable tree. I'm not Linus' "leutenant", so I cannot just send
+> > him random patches.
+> > 
+> > -- Pete
+> 
+> This is a block device siting in block/ folder. It is certainly Jens's
+> linux-block territory. Best put it through the tree that introduced the
+> bug, no?
+> 
+> Best would be to resend to Jens ASAP, it is a 2.6.25 regression.
+
+I stole it out of Greg's tree - I'll merge it Saturdayish unless someone
+stops me.
