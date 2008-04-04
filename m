@@ -1,47 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762132AbYDDAQw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762194AbYDDARU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762132AbYDDAQw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Apr 2008 20:16:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761396AbYDDAQh
+	id S1762194AbYDDARU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Apr 2008 20:17:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761540AbYDDAQl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Apr 2008 20:16:37 -0400
-Received: from mtaout01-winn.ispmail.ntl.com ([81.103.221.47]:42291 "EHLO
-	mtaout01-winn.ispmail.ntl.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1762073AbYDDAQg convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Apr 2008 20:16:36 -0400
-Date: Fri, 4 Apr 2008 00:48:39 +0100
-From: Ken Moffat <zarniwhoop@ntlworld.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: Regression in gdm-2.18 since 2.6.24
-Message-ID: <20080403234839.GA5181@deepthought>
-References: <20080403191916.GA30864@deepthought> <200804032156.54021.rjw@sisk.pl> <20080403210840.GA2292@deepthought> <200804032329.22483.rjw@sisk.pl>
+	Thu, 3 Apr 2008 20:16:41 -0400
+Received: from mga09.intel.com ([134.134.136.24]:33234 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760814AbYDDAQj convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Apr 2008 20:16:39 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,600,1199692800"; 
+   d="scan'208";a="312483103"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <200804032329.22483.rjw@sisk.pl>
-User-Agent: Mutt/1.5.12-2006-07-14
+Content-Type: text/plain;
+	charset="us-ascii"
 Content-Transfer-Encoding: 8BIT
+Subject: RE: 2.6.25-current-git hangs on boot unless CONFIG_CPU_IDLE=n - Apple
+Date: Thu, 3 Apr 2008 17:14:22 -0700
+Message-ID: <924EFEDD5F540B4284297C4DC59F3DEED0EA1E@orsmsx423.amr.corp.intel.com>
+In-Reply-To: <pdYe6zNQVl.A.AOB.6GW9HB@albercik>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: 2.6.25-current-git hangs on boot unless CONFIG_CPU_IDLE=n - Apple
+Thread-Index: AciV6BB0/ns1Je/vQvKHWbj34qQrBAAAHwXQ
+References: <pdj7pZVURbL.A.42H.kDW9HB@albercik> <pdYe6zNQVl.A.AOB.6GW9HB@albercik>
+From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+Cc: <Pallipadi@ogre.sisk.pl>, "Soeren Sonnenburg" <kernel@nn7.de>
+X-OriginalArrivalTime: 04 Apr 2008 00:12:05.0332 (UTC) FILETIME=[83A02140:01C895E8]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 03, 2008 at 11:29:21PM +0200, Rafael J. Wysocki wrote:
-> 
-> Please unset CONFIG_GROUP_SCHED and retest.  It is known to cause problems
-> (see http://bugzilla.kernel.org/show_bug.cgi?id=9969, for example).
-> 
-> Thanks,
-> Rafael
- Thanks for the suggestion.  Tried it on 2.6.24.4, and
-double-checked /proc/config.gz after booting -
+ 
 
-# CONFIG_FAIR_GROUP_SCHED is not set
+>-----Original Message-----
+>From: Rafael J. Wysocki [mailto:rjw@sisk.pl] 
+>Sent: Thursday, April 03, 2008 4:23 PM
+>To: Linux Kernel Mailing List
+>Cc: Pallipadi@ogre.sisk.pl; Pallipadi, Venkatesh; Soeren Sonnenburg
+>Subject: 2.6.25-current-git hangs on boot unless 
+>CONFIG_CPU_IDLE=n - Apple
+>
+>The following report is on the current list of known regressions
+>from 2.6.24.  Please verify if the issue is still present in the
+>mainline.
+>
+>
+>Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10093
+>Subject		: 2.6.25-current-git hangs on boot 
+>unless CONFIG_CPU_IDLE=n - Apple
+>Submitter	: Soeren Sonnenburg <kernel@nn7.de>
+>Date		: 2008-02-23 18:55 (41 days old)
+>References	: http://lkml.org/lkml/2008/2/23/263
+>		  
+>http://marc.info/?l=linux-acpi&amp;m=120387537018467&amp;w=4
+>Handled-By	: Pallipadi, Venkatesh <venkatesh.pallipadi@intel.com>
+>
 
- Unfortunately, the first test reboot failed in the same way.
+Last comment I saw from Soeren says it does not really hang. It waits
+for 5-10 seconds sometimes before continuing. We are still trying to
+narrow this down with max_cstate etc..
 
-Ken
--- 
-das eine Mal als Tragödie, das andere Mal als Farce
+Thanks,
+Venki
