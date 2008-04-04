@@ -1,64 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753143AbYDDX6x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753535AbYDEAA1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753143AbYDDX6x (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Apr 2008 19:58:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751680AbYDDX6n
+	id S1753535AbYDEAA1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Apr 2008 20:00:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751405AbYDEAAQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Apr 2008 19:58:43 -0400
-Received: from smtp121.sbc.mail.sp1.yahoo.com ([69.147.64.94]:34449 "HELO
-	smtp121.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751544AbYDDX6m (ORCPT
+	Fri, 4 Apr 2008 20:00:16 -0400
+Received: from static-151-204-187-166.pskn.east.verizon.net ([151.204.187.166]:49972
+	"EHLO wesmo.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751439AbYDEAAP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Apr 2008 19:58:42 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=0pkk+JC+UzlTizSfXRIZvvAmG1+Alo4xb/oOhdp+zL9HvE3gzAhitfP0puoxJfa5kiHHfQ9dyemMlGxp0KtwF71hIZjSAXGSFgQ1Ju2rAV4nHeEE2YvXyqKANGfm7gZs1e8zg2h52XZ0+Ih3Q8mYdPV8WKmMowmRRSlNYkY3z5E=  ;
-X-YMail-OSG: PimQd6IVM1nC1Y9VvyM1gBLTzxPhtU5q0BRzG6lgmJyfN177g.jl5svWE_GyBe2VELPtOG4_cA--
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Josh Boyer <jwboyer@gmail.com>
-Subject: Re: [PATCH]  jffs2 summary allocation
-Date: Fri, 4 Apr 2008 16:58:38 -0700
-User-Agent: KMail/1.9.6
-Cc: linux-arm-kernel@lists.arm.linux.org.uk,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Michael Trimarchi <trimarchimichael@yahoo.it>, dwmw2@infradead.org,
-       spi-devel-general@lists.sourceforge.net, linux-mtd@lists.infradead.org,
-       linux-kernel@vger.kernel.org
-References: <713171.37644.qm@web26213.mail.ukl.yahoo.com> <200804041609.41092.david-b@pacbell.net> <1207351282.3224.79.camel@vader.jdub.homelinux.org>
-In-Reply-To: <1207351282.3224.79.camel@vader.jdub.homelinux.org>
+	Fri, 4 Apr 2008 20:00:15 -0400
+Message-ID: <47F6BD55.3090708@wesmo.com>
+Date: Fri, 04 Apr 2008 19:44:21 -0400
+From: Rich West <Rich.West@wesmo.com>
+User-Agent: Thunderbird 2.0.0.12 (Windows/20080213)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8bit
-Content-Disposition: inline
-Message-Id: <200804041658.38499.david-b@pacbell.net>
+To: Jeff Garzik <jeff@garzik.org>
+CC: linux-kernel@vger.kernel.org,
+       Linux IDE mailing list <linux-ide@vger.kernel.org>
+Subject: Re: sata_via
+References: <47F694C8.8020507@wesmo.com> <47F6A5E8.1030602@garzik.org>
+In-Reply-To: <47F6A5E8.1030602@garzik.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (wesmo.com [127.0.0.1]); Fri, 04 Apr 2008 20:00:13 -0400 (EDT)
+X-Greylist: Sender succeeded SMTP AUTH, not delayed by milter-greylist-4.0 (wesmo.com [192.168.56.10]); Fri, 04 Apr 2008 19:44:21 -0400 (EDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 04 April 2008, Josh Boyer wrote:
-> 
-> >   ... This means specifically that you may _not_ use the
-> >   memory/addresses returned from vmalloc() for DMA.  ...
-> > 
-> > So I'm rather surprised to see *ANY* kernel code trying to do
-> > that.  That rule has been in effect for many, many years now.
-> 
-> I don't think it was intentional.  You're going through several layers
-> here:
-> 
-> JFFS2 -> mtd parts -> mtd dataflash -> atmel_spi.
-> 
-> Typically MTD drivers aren't doing DMAs to flash and JFFS2 has no idea
-> which particular chip driver is being used because it's abstracted by
-> MTD.
 
-That's true ... although I can imagine using DMA to
-avoid dcache trashing if its setup cost is low enough,
-with either NAND or NOR chips.
 
-Still:  in this context vmalloc() is wrong.
+Jeff Garzik wrote:
+> Rich West wrote:
+>> On my mythtv backend system, the recordings volume tends to get pounded
+>> rather hard (up to 5 recordings (some HD) at once with multiple frontend
+>> systems reading from that same volume).  I recently (4 months ago)
+>> upgraded the system to a motherboard that happened to have the VIA
+>> chipset on it.
+>>
+>> Since that time, I have had some bizarre problems with that volume. 
+>> After a seemingly random amount of time, the kernel would report an
+>> error with the volume and put it in read-only mode.  However, it would
+>> not really be in read-only mode, but it would be completely
+>> inaccessible.  Unmounting the volume would be successful, but
+>> re-mounting the volume would fail.
+>>
+>> I've replaced the drive (with an identical one), tested memory, changed
+>> filesystems (it was LVM + ext3, then just ext3) and the problem 
+>> persists.
+>>
+>> Running 2.6.24.4-64 (Fedora 8).
+>>
+>> A larger snippet from the messages log is (dmesg gets cleared after 
+>> reboot):
+>> Apr  3 16:47:27 mythtv1 kernel: ata4.00: exception Emask 0x0 SAct 0x0
+>> SErr 0x0 action 0x2 frozen
+>> Apr  3 16:47:27 mythtv1 kernel: ata4.00: cmd
+>> c8/00:00:77:31:21/00:00:00:00:00/e1 tag 0 dma 131072 in
+>> Apr  3 16:47:27 mythtv1 kernel:          res
+>> 40/00:01:00:4f:c2/00:00:00:00:00/00 Emask 0x4 (timeout)
+>> Apr  3 16:47:27 mythtv1 kernel: ata4.00: status: { DRDY }
+>> Apr  3 16:47:27 mythtv1 kernel: ata4: soft resetting link
+>> Apr  3 16:47:57 mythtv1 kernel: ata4.00: qc timeout (cmd 0x27)
+>> Apr  3 16:47:57 mythtv1 kernel: ata4.00: failed to read native max
+>> address (err_mask=0x4)
+>> Apr  3 16:47:57 mythtv1 kernel: ata4.00: HPA support seems broken, will
+>> skip HPA handling
+>> Apr  3 16:47:57 mythtv1 kernel: ata4.00: revalidation failed (errno=-5)
+>> Apr  3 16:47:57 mythtv1 kernel: ata4: failed to recover some devices,
+>> retrying in 5 secs
+>> Apr  3 16:48:02 mythtv1 kernel: ata4: soft resetting link
+>> Apr  3 16:48:02 mythtv1 kernel: ata4.00: configured for UDMA/133
+>> Apr  3 16:48:02 mythtv1 kernel: ata4: EH complete
+>> Apr  3 16:49:02 mythtv1 kernel: ata4.00: exception Emask 0x0 SAct 0x0
+>> SErr 0x0 action 0x2 frozen
+>> Apr  3 16:49:02 mythtv1 kernel: ata4.00: cmd
+>> c8/00:00:77:31:21/00:00:00:00:00/e1 tag 0 dma 131072 in
+>> Apr  3 16:49:02 mythtv1 kernel:          res
+>> 40/00:01:00:4f:c2/00:00:00:00:00/00 Emask 0x4 (timeout)
+>> Apr  3 16:49:02 mythtv1 kernel: ata4.00: status: { DRDY }
+>> Apr  3 16:49:02 mythtv1 kernel: ata4: soft resetting link
+>> Apr  3 16:49:03 mythtv1 kernel: ata4.00: configured for UDMA/133
+>> Apr  3 16:49:03 mythtv1 kernel: ata4: EH complete
+>>
+>> It is almost as if I am hitting some bug that is causing the drive to
+>> fall off, but I really don't know where else to look or where else to
+>> turn...
+>>
+>> I'm tempted to just go back to using a PATA drive (smaller.  :(  ) to
+>> avoid the problem.  I'm just at a loss as to how it can actually be 
+>> solved.
+>
+> This timeout/DRDY message has been a common one recently.  Some of the 
+> issues causing this may be resolved in 2.6.25-rc, can you try that?
+>
+> Also, if you could build and test some older kernels to see when this 
+> behavior first appeared, that would be quite helpful.
+>
+> Overall, a timeout _might_ be a problem with libata (the kernel SATA 
+> drivers), or it _might_ be a problem with your system's interrupt 
+> delivery (sometimes an ACPI or BIOS problem).  Try booting with 
+> 'noapic' or 'acpi=off'.
+>
 
-- Dave
+Thanks for the quick response.
+
+I know this problem was happening with all of the Fedora 7 supplied 
+kernels (from initial release up until about a week ago) and has 
+happened with each of the Fedora 8 supplied kernels.  I'll try rolling 
+2.6.25-rc to see if the problem resurfaces.  Unfortunately, I don't know 
+what collision of events causes this problem to erupt, but it usually 
+happens within 7 days of a reboot (some times within hours of a reboot).
+
+I'll give noapic a try, but (dumb question) what does acpi=off buy?
+
+-Rich
