@@ -1,78 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757987AbYDDB1w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758026AbYDDBdT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757987AbYDDB1w (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Apr 2008 21:27:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754924AbYDDB1o
+	id S1758026AbYDDBdT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Apr 2008 21:33:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751913AbYDDBdI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Apr 2008 21:27:44 -0400
-Received: from relay2.sgi.com ([192.48.171.30]:40619 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752831AbYDDB1n (ORCPT
-	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
-	Thu, 3 Apr 2008 21:27:43 -0400
-Date: Fri, 4 Apr 2008 11:27:35 +1000
-From: David Chinner <dgc@sgi.com>
-To: Jan Kara <jack@suse.cz>
-Cc: David Chinner <dgc@sgi.com>, lkml <linux-kernel@vger.kernel.org>
-Subject: Re: BUG: ext3 hang in transaction commit
-Message-ID: <20080404012735.GA103491721@sgi.com>
-References: <20080326231612.GC103491721@sgi.com> <20080403100742.GA16314@atrey.karlin.mff.cuni.cz>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080403100742.GA16314@atrey.karlin.mff.cuni.cz>
-User-Agent: Mutt/1.4.2.1i
+	Thu, 3 Apr 2008 21:33:08 -0400
+Received: from gw.goop.org ([64.81.55.164]:56373 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754215AbYDDBdH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Apr 2008 21:33:07 -0400
+Message-ID: <47F58519.1060109@goop.org>
+Date: Thu, 03 Apr 2008 18:32:09 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080315)
+MIME-Version: 1.0
+To: Dave Hansen <dave@linux.vnet.ibm.com>
+CC: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Yasunori Goto <y-goto@jp.fujitsu.com>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Christoph Lameter <clameter@sgi.com>
+Subject: Re: [PATCH 1 of 6] hotplug-memory: refactor online_pages to	separate
+ zone growth from page onlining
+References: <5a397e7f3c1aeb7648b9.1207267541@localhost> <1207271371.943.43.camel@nimitz.home.sr71.net>
+In-Reply-To: <1207271371.943.43.camel@nimitz.home.sr71.net>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 03, 2008 at 12:07:42PM +0200, Jan Kara wrote:
->   Hi,
-> 
-> > ia32 XFS QA machine, ext3 root on a raw partition. 2.6.25-rc3.
-> > 
-> > kjournald hung journal_commit_transaction():
-> > 
-> > Stack traceback for pid 2046
-> > 0xf6e0b350     2046        2  0    0   D  0xf6e0b550  kjournald
-> > esp        eip        Function (args)
-> > 0xf68d5e70 0xc04c20b2 schedule+0x51e
-> > 0xf68d5ec0 0xc04c2394 io_schedule+0x1d
-> > 0xf68d5ecc 0xc0179b64 sync_buffer+0x33 (invalid)
-> > 0xf68d5ed4 0xc04c2570 __wait_on_bit+0x36 (0xc2000b78, 0xf68d5f00, 0xc0179b31, 0x2)
-> > 0xf68d5ef0 0xc04c25ef out_of_line_wait_on_bit+0x58 (0xde89bc18, 0x2, 0xc0179b31, 0x2)
-> > 0xf68d5f2c 0xc0179adf __wait_on_buffer+0x19
-> > 0xf68d5f38 0xc01cecba journal_commit_transaction+0x40b (0xf6d94a00)
-> > 0xf68d5fa0 0xc01d180a kjournald+0xa4 (0xf6d94a00)
-> > 0xf68d5fd4 0xc01301f1 kthread+0x3b (invalid)
-> 
->   I suppose this is wait_on_buffer() in line 444 in fs/jbd/commit.c, isn't it?
+Dave Hansen wrote:
+> On Thu, 2008-04-03 at 17:05 -0700, Jeremy Fitzhardinge wrote:
+>   
+>> +int prepare_online_pages(unsigned long pfn, unsigned long nr_pages)
+>> +{
+>> +       int ret = notify_going_online(pfn, nr_pages);
+>> +       if (ret)
+>> +               return ret;
+>> +
+>> +       grow_zone_span(pfn, pfn+nr_pages);
+>>         return 0;
+>> +}
+>>     
+>
+> OK, after seeing this used in the Xen driver, I'm even less a fan of the
+> name.  Mostly because it doesn't actually prepare *pages* to be onlined.
+> It prepares the zones/pgdats and notifies that pages might soon be
+> online.  Can you think of any better names?
+>
+> grow_and_notify...??
+>   
 
-No idea. I haven't looked at the code....
+Does it even need to be a separately visible function?  Could it just be 
+part of add_memory()?  Is there any reason delay doing it until 
+online_pages()?
 
-> > We're waiting on the last page/buffer in the file, and it doesn't appear
-> > to be under writeback....
->   We wait for write of ordered-data to finish. Which seems to never
-> happen. Page isn't under writeback, but that just means we submitted the
-> buffer from the commit code (that doesn't change the page state).
->   Anyway, the cause is that either due to some bug IO never finished and
+That way online_pages() can return to being the one-stop function to 
+online all the pages, making mark_pages_online() redundant.
 
-Yes, I certainly beleive that is possible. We see it often enough with
-XFS....
+> It's also a bit funky because you're calling the online notifiers, but
+> you're not actually onlining the pages, yet.  Does that have any
+> repercussions?
 
-> so buffer never got unlocked, or we somewhere locked the buffer and
-> forgot to unlock it (but I've checked all the relevant places and think
-> they are correct). The traces of all the processes seem harmless - I see
-> no place trace where we are holding a buffer lock.
->   If you happen to hit this again, please let me know and I'll look into
-> it further...
+No.  It will always call the GOING_ONLINE notifier, but it will only 
+call the ONLINE notifier if it actually bulk-onlines all the pages.  In 
+my page-by-page case, it will never end up calling the ONLINE notifier.  
+I could call it repeatedly for each page, but I'm not sure how useful 
+that is (the lack of any users of the ONLINE notifier makes it hard to 
+judge).
 
-Will do.
-
-Cheers,
-
-Dave.
--- 
-Dave Chinner
-Principal Engineer
-SGI Australian Software Group
+    J
