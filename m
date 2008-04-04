@@ -1,111 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759214AbYDDO3j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759301AbYDDOa3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759214AbYDDO3j (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Apr 2008 10:29:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756633AbYDDO3a
+	id S1759301AbYDDOa3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Apr 2008 10:30:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756679AbYDDOaT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Apr 2008 10:29:30 -0400
-Received: from crystal.sipsolutions.net ([195.210.38.204]:36931 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756747AbYDDO32 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Apr 2008 10:29:28 -0400
-Subject: debugfs_remove() vs. anything that is dynamic
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Linux Kernel list <linux-kernel@vger.kernel.org>
-Cc: Greg KH <greg@kroah.com>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-Z7QhognU0JxA8d52/Snz"
-Date: Fri, 04 Apr 2008 01:56:26 +0200
-Message-Id: <1207266986.19189.14.camel@johannes.berg>
+	Fri, 4 Apr 2008 10:30:19 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:59685 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756677AbYDDOaS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Apr 2008 10:30:18 -0400
+Date: Fri, 04 Apr 2008 10:29:02 -0500 (EST)
+Message-Id: <20080404.102902.74754100.k-ueda@ct.jp.nec.com>
+To: akpm@linux-foundation.org, greg@kroah.com, zaitcev@redhat.com
+Cc: bharrosh@panasas.com, schwidefsky@de.ibm.com, linux-kernel@vger.kernel.org,
+       j-nomura@ce.jp.nec.com, jens.axboe@oracle.com, m-ikeda@ds.jp.nec.com,
+       k-ueda@ct.jp.nec.com, cw@f00f.org
+Subject: Re: kernel BUG at drivers/block/ub.c:820!
+From: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
+In-Reply-To: <20080403213010.94045431.akpm@linux-foundation.org>
+References: <20080403093042.f20e38a2.zaitcev@redhat.com>
+	<47F515A6.4040505@panasas.com>
+	<20080403213010.94045431.akpm@linux-foundation.org>
+X-Mailer: Mew version 4.2 on Emacs 21.4 / Mule 5.0
+ =?iso-2022-jp?B?KBskQjgtTFobKEIp?=
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Andrew, Greg, Pete,
 
---=-Z7QhognU0JxA8d52/Snz
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+On Thu, 3 Apr 2008 21:30:10 -0700, Andrew Morton wrote:
+> On Thu, 03 Apr 2008 20:36:38 +0300 Boaz Harrosh <bharrosh@panasas.com> wrote:
+> 
+> > On Thu, Apr 03 2008 at 19:30 +0300, Pete Zaitcev <zaitcev@redhat.com> wrote:
+> > > On Thu, 03 Apr 2008 17:18:31 +0200, Martin Schwidefsky <schwidefsky@de.ibm.com> wrote:
+> > >> On Thu, 2008-04-03 at 11:08 -0500, Kiyoshi Ueda wrote:
+> > > 
+> > >>> I believe the patch from Pete fixes this BUG():
+> > >>>     http://marc.info/?l=linux-usb&m=120613888005382&w=2
+> > >>>
+> > >>> Could you try that?
+> > >> Just tested the patch and it indeed fixes the bug.
+> > > 
+> > > I'm glad.
+> > > 
+> > >> Could we push this upstream for 2.6.25? It is a regression, I would
+> > >> prefer to have a 2.6.25 that doesn't panic my machine when I attach a
+> > >> USB stick..
+> > > 
+> > > I was going to work through Greg as usual and then push it to
+> > > the stable tree. I'm not Linus' "leutenant", so I cannot just send
+> > > him random patches.
+> > > 
+> > > -- Pete
+> > 
+> > This is a block device siting in block/ folder. It is certainly Jens's
+> > linux-block territory. Best put it through the tree that introduced the
+> > bug, no?
+> > 
+> > Best would be to resend to Jens ASAP, it is a 2.6.25 regression.
+> 
+> I stole it out of Greg's tree - I'll merge it Saturdayish unless someone
+> stops me.
 
-Consider the following trivial module:
+I think that it is a broken patch and Pete wants you to take
+the patch below:
+    http://marc.info/?l=linux-usb&m=120613888005382&w=2
 
---- %< ---
-#include <linux/module.h>
-#include <linux/debugfs.h>
-
-static struct dentry *f;
-static u32 tmp;
-
-int __init mod_enter(void)
-{
-	f =3D debugfs_create_u32("tmp-test", 0666, NULL, &tmp);
-
-	return 0;
-}
-
-void __exit mod_leave(void)
-{
-	debugfs_remove(f);
-}
-
-module_init(mod_enter);
-module_exit(mod_leave);
-MODULE_LICENSE("GPL");
---- >% ---
-
-How do I make that safe?
-
-
-FWIW, the problem is:
-
-thread 1			thread 2
- fd =3D open("tmp-test")
-
- sleep(30);			rmmod test-module
-
- read(fd, buf, 100);
-
---> accesses now invalid memory because debugfs doesn't actually stop
-you from accessing "&tmp" after debugfs_remove(). [yes, I actually
-tested a variation of this where I dynamically allocated the 'tmp'
-variable, I got the slab poison in my test program]
+The patch, which Greg and Andrew is taking now, was tested by Chris
+Wedgwood and he detected a bug is still in there:
+    http://marc.info/?l=linux-usb&m=120603584207543&w=2
+Pete revised it and posted the new patch as above, but the new patch
+seems not to be included in the Greg's tree yet.
 
 
-Personally, I tend to think this makes debugfs rather unusable in
-modules and with anything that is dynamically allocated [1]. AFAICT
-sysfs avoids this by having object lifetime imposed by sysfs, but
-debugfs doesn't work that way.
+Pete,
+The new patch you posted seems not having your sign-off.
+Could you follow it so that the new patch can be included instead of
+the old patch?
 
-What am I missing?
-
-johannes
-
-[1] which covers many many current users, it seems at least usbmon,
-ohci/ehci/uhci-dbg, pktcdvd, fault injection code, blktrace and probably
-more.
-
---=-Z7QhognU0JxA8d52/Snz
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iQIVAwUAR/VuqaVg1VMiehFYAQLTFQ//ZKqrpJ53bB/4+WVpKT4SWQ9ACMoF1RCZ
-G+PR/WM65GRQIHYI1Lx0163Clc70B3NSPMn2Z/mAGvqTyYzEVteSXfbo+EZH3Vse
-9doqvG6M6dVaXfVvbi4N8VbKomz2JpobzTy5JTBBgf/rLetEf6EKtxroc1PgPny0
-yd0E2fKJuz/4FA7d4v/4enIo+JsRJlJgKfZOXV2gbGiua+ufUg0EC4bOIv0SqbRE
-gC9S4hXgL8twVCyv9PFcOvoW0vf92zaf06DoJwjbT1RwJuo/0jWQ9KJbN66IpfCt
-ZV9+sMRnKZfnnwnykBtJSiVGfRksoZCbZbs0IvmiW3A8K5LPD/owW44l6Cysu7YR
-UOpW7WfVLZLoq7hOWsp10q+J3UOWewIxfPh+zmDsEHXaG4US8Oqu0KWQzL9HZrCe
-y+KHGnIIlcAAwguG0yhWiH9Z0oD5Q1WoWwAmSOOAVDqwm6Zct8I5Dsi7I2ALbmTq
-QcUVFJlXHsJXUzDIGMXbgtUNlBN68m0KhZZMB/Tc2LkXA6N8qGq83V6Gs1c9d7xy
-rtG+DUw0qqAktBYijq8FNhVqs5w5pVW+Oixt6I+CCvABEjucbiAr5niixet31DMv
-THpJKkxJr8ErxzQRM/m2z2yto9/ZgTXJuGz9M17jnUtJldgZ38HkvhLo/2tVkTU1
-4zq6EkLDIQw=
-=pieb
------END PGP SIGNATURE-----
-
---=-Z7QhognU0JxA8d52/Snz--
-
+Thanks,
+Kiyoshi Ueda
