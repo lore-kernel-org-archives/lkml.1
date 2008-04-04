@@ -1,51 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752928AbYDDHjg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756972AbYDDHrp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752928AbYDDHjg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Apr 2008 03:39:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756759AbYDDHjZ
+	id S1756972AbYDDHrp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Apr 2008 03:47:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752502AbYDDHrg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Apr 2008 03:39:25 -0400
-Received: from mtagate3.de.ibm.com ([195.212.29.152]:51985 "EHLO
-	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752574AbYDDHjY (ORCPT
+	Fri, 4 Apr 2008 03:47:36 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:26504 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751944AbYDDHrg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Apr 2008 03:39:24 -0400
-Date: Fri, 4 Apr 2008 09:39:18 +0200
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
-To: Johannes Weiner <hannes@saeurebad.de>
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, mingo@elte.hu,
-       davem@davemloft.net, hskinnemoen@atmel.com, cooloney@kernel.org,
-       starvik@axis.com, dhowells@redhat.com, ysato@users.sourceforge.net,
-       takata@linux-m32r.org, geert@linux-m68k.org, ralf@linux-mips.org,
-       kyle@parisc-linux.org, paulus@samba.org, schwidefsky@de.ibm.com,
-       lethal@linux-sh.org, jdike@addtoit.com, miles@gnu.org, chris@zankel.net,
-       rmk@arm.linux.org.uk, tony.luck@intel.com
-Subject: Re: [RFC 17/22] s390: Use generic show_mem()
-Message-ID: <20080404073918.GA6910@osiris.boeblingen.de.ibm.com>
-References: <12071688283927-git-send-email-hannes@saeurebad.de> <12071690203023-git-send-email-hannes@saeurebad.de> <20080403075029.GB4125@osiris.boeblingen.de.ibm.com> <87iqyzozyx.fsf@saeurebad.de> <20080403175856.GA4131@osiris.boeblingen.de.ibm.com> <87lk3umuny.fsf@saeurebad.de>
+	Fri, 4 Apr 2008 03:47:36 -0400
+Message-ID: <47F5DC8F.9010001@oracle.com>
+Date: Fri, 04 Apr 2008 13:15:19 +0530
+From: Gurudas Pai <gurudas.pai@oracle.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <87lk3umuny.fsf@saeurebad.de>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: Nish Aravamudan <nish.aravamudan@gmail.com>
+CC: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
+Subject: Re: [BUG]:2.6.25-rc7 memory leak with hugepages.
+References: <47EB4E2A.1040507@oracle.com> <20080327083849.GF15626@elte.hu>	 <47EB75C5.20207@oracle.com>	 <29495f1d0804032040h56f39051lcd5f707660d3c06c@mail.gmail.com> <29495f1d0804040028i795a9859y585ed0ca2413816a@mail.gmail.com>
+In-Reply-To: <29495f1d0804040028i795a9859y585ed0ca2413816a@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > Btw. your patch regarding the removal of show_free_areas() from
-> > s390's arch code will be merged during the next merge window.
-> 
-> Okay.
-> 
-> Do you mean the removal of
-> 
-> 	printk("Free swap:       %6ldkB\n", nr_swap_pages << (PAGE_SHIFT
-> 		- 10));
-> 
-> in show_mem()?  This was my last patch series about.
 
-Yes.
 
-> Can I add your Acked-by for _this_ series?
+Nish Aravamudan wrote:
+> On 4/3/08, Nish Aravamudan <nish.aravamudan@gmail.com> wrote:
+>> On 3/27/08, Gurudas Pai <gurudas.pai@oracle.com> wrote:
+>>  >  Ingo Molnar wrote:
+>>  >  > * Gurudas Pai <gurudas.pai@oracle.com> wrote:
+> 
+> <snip>
+> 
+>>  On another note, it is odd that we're using the dynamic pool, when it
+>>  is initially disabled...I'll have to think about that.
+> 
+> What is the value in /proc/sys/vm/nr_overcommit_hugepages?
+> 
+cat /proc/sys/vm/nr_overcommit_hugepages
+0
 
-Acked-by: Heiko Carstens <heiko.carstens@de.ibm.com>
+Thanks,
+-Guru
