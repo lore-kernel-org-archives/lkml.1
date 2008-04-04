@@ -1,117 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756589AbYDDMrz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757390AbYDDMsV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756589AbYDDMrz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Apr 2008 08:47:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756874AbYDDMrT
+	id S1757390AbYDDMsV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Apr 2008 08:48:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758827AbYDDMr1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Apr 2008 08:47:19 -0400
-Received: from mail.ift.unesp.br ([200.145.46.3]:52072 "EHLO mail.ift.unesp.br"
+	Fri, 4 Apr 2008 08:47:27 -0400
+Received: from wine.ocn.ne.jp ([122.1.235.145]:49208 "EHLO smtp.wine.ocn.ne.jp"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756409AbYDDMrS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Apr 2008 08:47:18 -0400
-Date: Fri, 4 Apr 2008 09:46:38 -0300
-From: "Carlos R. Mafra" <crmafra2@gmail.com>
-To: Soeren Sonnenburg <kernel@nn7.de>
-Cc: Ray Lee <ray-lk@madrabbit.org>,
-       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Pallipadi@ogre.sisk.pl
-Subject: Re: 2.6.25-current-git hangs on boot unless CONFIG_CPU_IDLE=n -
-	Apple
-Message-ID: <20080404124638.GA4848@localhost.ift.unesp.br>
-References: <pdj7pZVURbL.A.42H.kDW9HB@albercik> <pdYe6zNQVl.A.AOB.6GW9HB@albercik> <924EFEDD5F540B4284297C4DC59F3DEED0EA1E@orsmsx423.amr.corp.intel.com> <20080404011053.GA21254@localhost.ift.unesp.br> <2c0942db0804032015y57e91811r37b729cd836cef6d@mail.gmail.com> <20080404114756.GA3890@localhost.ift.unesp.br> <1207311056.4547.4.camel@localhost>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1207311056.4547.4.camel@localhost>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	id S1758715AbYDDMrY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Apr 2008 08:47:24 -0400
+Message-Id: <20080404122242.867070732@I-love.SAKURA.ne.jp>
+User-Agent: quilt/0.46-1
+Date: Fri, 04 Apr 2008 21:22:42 +0900
+From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org
+Subject: [TOMOYO #7 00/30] TOMOYO Linux 1.6.0 released
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri  4.Apr'08 at 14:10:56 +0200, Soeren Sonnenburg wrote:
-> On Fri, 2008-04-04 at 08:47 -0300, Carlos R. Mafra wrote:
-> > On Thu  3.Apr'08 at 20:15:02 -0700, Ray Lee wrote:
-> > > On Thu, Apr 3, 2008 at 6:10 PM, Carlos R. Mafra <crmafra2@gmail.com> wrote:
-> > > > On Thu  3.Apr'08 at 17:14:22 -0700, Pallipadi, Venkatesh wrote:
-> > > >  > >The following report is on the current list of known regressions
-> > > >  > >from 2.6.24.  Please verify if the issue is still present in the
-> > > >  > >mainline.
-> > > >  > >
-> > > >  > >
-> > > >  > >Bug-Entry    : http://bugzilla.kernel.org/show_bug.cgi?id=10093
-> > > >  > >Subject              : 2.6.25-current-git hangs on boot
-> > > >  > >unless CONFIG_CPU_IDLE=n - Apple
-> > > >  > >Submitter    : Soeren Sonnenburg <kernel@nn7.de>
-> > > >  > >Date         : 2008-02-23 18:55 (41 days old)
-> > > >  > >References   : http://lkml.org/lkml/2008/2/23/263
-> > > >  > >
-> > > >  > >http://marc.info/?l=linux-acpi&m=120387537018467&w=4
-> > > >  > >Handled-By   : Pallipadi, Venkatesh <venkatesh.pallipadi@intel.com>
-> > > >  > >
-> > > >  >
-> > > >  > Last comment I saw from Soeren says it does not really hang. It waits
-> > > >  > for 5-10 seconds sometimes before continuing. We are still trying to
-> > > >  > narrow this down with max_cstate etc..
-> > > >
-> > > >  I should say that my laptop (Vaio) _hangs_ at boot (less than 10% of boots)
-> > > >  and this is the last message I see:
-> > > >
-> > > >  "ACPI: Processor [CPU1] (supports 8 throttling states)"
-> > > >
-> > > >  and it stays there "forever" (more than 1 or 2 minutes at least).
-> > > >
-> > > >  I am not using my laptop too much these days, and I thought this
-> > > >  bug had been solved because it didn't hang for the last week (but
-> > > >  I boot it once per day), however it hang last night (using some
-> > > >  post 2.6.25-rc7 kernel)
-> > > >
-> > > >  I have pictures of the screen while showing this last message at boot,
-> > > >  should I post it somewhere or that is not necessary?.
-> > > 
-> > > If the sysrq key still works when that happens, try to do a sysrq-t,
-> > > s, b to generate a trace, sync the filesystem, and reboot. If anything
-> > > made it to the logs, please post it.
-> > 
-> > Sysrq keys don't work when it hangs, I have to push the power button.
-> > 
-> > Another thing to notice is that when it happens, it usually happens
-> > more times in a row (like 3 times). And then it can take many boots to
-> > happen again.
-> > 
-> > I've uploaded the picture where it hangs, it is in the very beginning
-> > of the boot process:
-> > 
-> > http://www.ift.unesp.br/users/crmafra/dsc04673.jpg
-> 
-> Actually this is 
-> http://bugzilla.kernel.org/show_bug.cgi?id=10117 ... and what you
-> describe is exactly what I was seeing. 
+What is TOMOYO Linux for?
 
-Ops, I am sorry. But in the bug description which Rafael wrote above
-there is a link to your original post
+  It is userland applications' charge to keep processes under control.
+  This includes that userland applications restrict what programs are
+  permitted to execute and what files are permitted to read/write
+  by the application.
+  Thus, the kernel does whatever asked by the userland applications.
 
-References: http://lkml.org/lkml/2008/2/23/263
+  But userland applications often make mistakes such as buffer overflow,
+  OS command injection, directory traversal etc.
+  As a result, they can't always keep processes under control.
 
-so I thought this was the bug being dealt with here.
+  TOMOYO Linux is developed to take partial charge of keeping processes
+  under control, by teaching the kernel what programs are
+  permitted to execute and what files are permitted to read/write
+  by the application and letting the kernel check it once again.
 
-> However I thought that we are talking about the hang with 
-> ladder governor as the last message on the screen. Anyway I am not sure
-> if both bugs are related or not but I couldn't reproduce the throttling
-> states bug with current mainstream...
+Can TOMOYO Linux coexist with SELinux, SMACK, AppArmor etc. ?
 
-I thought that the bug had vanished, but two days ago it happened
-again in my Vaio. There were a couple of different messages comparing
-to the picture in the link above, but the last message was exactly the
-same.
+  Yes. TOMOYO Linux 1.x is not using LSM because I want don't want to disable
+  different access control implementations.
 
-And I see that Rafael closed the bug 
-http://bugzilla.kernel.org/show_bug.cgi?id=10117
+  TOMOYO Linux is good at dealing with the subject's request chains,
+  while LSM is good at dealing with object's life-cycle.
 
-The hang two days ago was with 2.6.25-rc7-00150-g(can't remember),
-do you think the bug was fixed since that kernel?
+What are new features of this release?
 
-I will try to test with the latest git, but I don't have internet
-access at my house anymore, so I will have to clone the git
-repository into my pendrive and take it there...
+  This release reinforced execution parameter checks.
+
+  Introduced execute handler mechanism.
+
+    The usage of TOMOYO Linux is that understand what programs are executed and
+    what files are opened by individual applications and let the kernel
+    enforce them. Thus, assuming that all programs needed by individual
+    applications are known by the time of enforcing, attempts to execute
+    not ever observed application (e.g. /bin/sh) are considered to be attacks.
+
+    Some shellcode (an exploit code used to execute /bin/sh) attempts to
+    execute /bin/sh until the execution succeeds. One of such shellcodes is
+    Samba's trans2open exploit. It attempts to execute /bin/sh from infinite
+    loop. As a result, just rejecting execute request of /bin/sh triggers
+    CPU power consumption problem (all CPU powers are eaten by the shellcode's
+    infinite loop).
+
+    But by using execute handler, you can run different programs instead of
+    just rejecting execute request to redirect the process to somewhere else.
+
+    This redirection mechanism is useful for deploying on demand honey pot.
+    You can provide regular service in peacetime, and you can redirect
+    the attacker trying to start /bin/sh to honey pot in wartime.
+
+    Also, since the fact that a program which is different from the requested
+    one is executed by execute handler is not notified to the caller process,
+    you can use execute handler as a transparent validation interface
+    like "Web Application Firewall" or "AntiVirus". You can monitor
+    parameters passed to execve() and stdio to drop unwanted parameters or
+    reject the execution of the program requested by the caller process.
+
+  Introduced "struct linux_bprm" checks.
+
+    Proper codes tends to setting up argv[] and envp[] when executing
+    a new program. But shellcodes tend to not setting up argv[] and envp[]
+    when executed using buffer overflows.
+    Thus, it became possible to require specific argv[] and envp[] values
+    when executing a program.
+
+  Introduced environment variable names checks.
+
+    Some environment variables (e.g. LD_PRELOAD) are used by attackers to make
+    the application behave differently.
+    Thus, it became possible to restrict acceptable environment variable's
+    names passed to execve().
+
+  And various usability enhancement like more detailed access logs and
+  policy management by non root user.
+
+Is TOMOYO Linux architecture independent?
+
+  Yes. I think TOMOYO Linux doesn't contain architecture dependent code.
+  TOMOYO Linux touches only surface of the kernel code.
+
+Are older kernels supported?
+
+  Yes. From 2.4.30 to 2.4.36 and from 2.6.11 to 2.6.25-rc7 are supported.
+  Also, various distributions' latest kernels are supported.
+
+Where's the web page?
+
+  http://elinux.org/TomoyoLinux
+  http://tomoyo.sourceforge.jp/wiki-e/?WhatIs
+  http://sourceforge.jp/projects/tomoyo/document/fosdem2008.pdf
+
+  TOMOYO Linux is compact and suits well to PC servers and embedded systems.
+  There is a TOMOYO Linux presentation at CELF Embedded Linux Conference 2008
+  held in California from April 15th to the 17th.
+
+Thank you.
+
