@@ -1,346 +1,300 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760309AbYDDPBW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760545AbYDDPBk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760309AbYDDPBW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Apr 2008 11:01:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759664AbYDDPAV
+	id S1760545AbYDDPBk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Apr 2008 11:01:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759734AbYDDPAX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Apr 2008 11:00:21 -0400
-Received: from ecfrec.frec.bull.fr ([129.183.4.8]:59127 "EHLO
+	Fri, 4 Apr 2008 11:00:23 -0400
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:59139 "EHLO
 	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759571AbYDDPAS (ORCPT
+	with ESMTP id S1759599AbYDDPAU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Apr 2008 11:00:18 -0400
-Message-Id: <20080404145948.255109000@bull.net>
+	Fri, 4 Apr 2008 11:00:20 -0400
+Message-Id: <20080404145948.519867000@bull.net>
 References: <20080404145129.637145000@bull.net>
 User-Agent: quilt/0.45-1
-Date: Fri, 04 Apr 2008 16:51:30 +0200
+Date: Fri, 04 Apr 2008 16:51:31 +0200
 From: Nadia.Derbey@bull.net
 To: linux-kernel@vger.kernel.org
 Cc: containers@lists.linux-foundation.org, orenl@cs.columbia.edu,
        Nadia Derbey <Nadia.Derbey@bull.net>
-Subject: [RFC][PATCH 1/4] Provide a new procfs interface to set next id
-Content-Disposition: inline; filename=proc_set_next_id.patch
+Subject: [RFC][PATCH 2/4] Provide a new procfs interface to set next upid nr(s)
+Content-Disposition: inline; filename=proc_set_next_ids.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[PATCH 01/04]
+[PATCH 02/04]
 
-This patch proposes the procfs facilities needed to feed the id for the
-next object to be allocated.
+This patch proposes the procfs facilities needed to feed the id(s) for the
+next task to be forked.
+
+say n is the number of pids to be provided through procfs:
 
 if an
-echo "LONG XX" > /proc/self/next_id
-is issued, next object to be created will have XX as its id.
+echo "LONG<n> X0 X1 ... X<n-1>" > /proc/self/next_pids
+is issued, the next task to be forked will have its upid nrs set as follows
+(say it is forked in a pid ns of level L):
 
-This applies to objects that need a single id, such as ipc objects.
+level         upid nr
+L ----------> X0
+..
+L - i ------> Xi
+..
+L - n + 1 --> X<n-1>
+
+Then, for levels L-n down to level 0, the pids will be left to the kernel
+choice.
 
 Signed-off-by: Nadia Derbey <Nadia.Derbey@bull.net>
 
 ---
- fs/exec.c              |    3 +
- fs/proc/base.c         |   73 +++++++++++++++++++++++++++++++++++++++++
- include/linux/sched.h  |    3 +
- include/linux/sysids.h |   24 +++++++++++++
- kernel/Makefile        |    2 -
- kernel/exit.c          |    4 ++
- kernel/fork.c          |    2 +
- kernel/nextid.c        |   86 +++++++++++++++++++++++++++++++++++++++++++++++++
- 8 files changed, 196 insertions(+), 1 deletion(-)
+ include/linux/sysids.h |   27 ++++++++
+ kernel/nextid.c        |  150 ++++++++++++++++++++++++++++++++++++++++++-------
+ 2 files changed, 155 insertions(+), 22 deletions(-)
 
 Index: linux-2.6.25-rc8-mm1/include/linux/sysids.h
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.25-rc8-mm1/include/linux/sysids.h	2008-04-04 13:53:04.000000000 +0200
-@@ -0,0 +1,24 @@
+--- linux-2.6.25-rc8-mm1.orig/include/linux/sysids.h	2008-04-04 13:53:04.000000000 +0200
++++ linux-2.6.25-rc8-mm1/include/linux/sysids.h	2008-04-04 14:18:04.000000000 +0200
+@@ -8,8 +8,33 @@
+ #ifndef _LINUX_SYSIDS_H
+ #define _LINUX_SYSIDS_H
+ 
++
++#define NIDS_SMALL       32
++#define NIDS_PER_BLOCK   ((unsigned int)(PAGE_SIZE / sizeof(long)))
++
++/* access the ids "array" with this macro */
++#define ID_AT(pi, i)	\
++	((pi)->blocks[(i) / NIDS_PER_BLOCK][(i) % NIDS_PER_BLOCK])
++
++
 +/*
-+ * include/linux/sysids.h
++ * List of ids for the next object to be created. This presently applies to
++ * next process to be created.
++ * The next process to be created is associated to a set of upid nrs: one for
++ * each pid namespace level that process belongs to.
++ * upid nrs from level 0 up to level <npids - 1> will be automatically
++ * allocated.
++ * upid nr for level nids will be set to blocks[0][0]
++ * upid nr for level <nids + i> will be set to ID_AT(ids, i);
 + *
-+ * Definitions to support object creation with predefined id.
-+ *
++ * If a single id is needed, nids is set to 1 and small_block[0] is set to
++ * that id.
 + */
-+
-+#ifndef _LINUX_SYSIDS_H
-+#define _LINUX_SYSIDS_H
-+
-+struct sys_id {
-+	long id;
-+};
-+
-+extern ssize_t get_nextid(struct task_struct *, char *, size_t);
-+extern int set_nextid(struct task_struct *, char *);
-+extern int reset_nextid(struct task_struct *);
-+
-+static inline void exit_nextid(struct task_struct *tsk)
-+{
-+	reset_nextid(tsk);
-+}
-+
-+#endif /* _LINUX_SYSIDS_H */
-Index: linux-2.6.25-rc8-mm1/include/linux/sched.h
-===================================================================
---- linux-2.6.25-rc8-mm1.orig/include/linux/sched.h	2008-04-04 13:11:37.000000000 +0200
-+++ linux-2.6.25-rc8-mm1/include/linux/sched.h	2008-04-04 13:55:10.000000000 +0200
-@@ -88,6 +88,7 @@ struct sched_param {
- #include <linux/task_io_accounting.h>
- #include <linux/kobject.h>
- #include <linux/latencytop.h>
-+#include <linux/sysids.h>
- 
- #include <asm/processor.h>
- 
-@@ -1278,6 +1279,8 @@ struct task_struct {
- 	int latency_record_count;
- 	struct latency_record latency_record[LT_SAVECOUNT];
- #endif
-+	/* Id to assign to the next resource to be created */
-+	struct sys_id *next_id;
+ struct sys_id {
+-	long id;
++	int nids;
++	long small_block[NIDS_SMALL];
++	int nblocks;
++	long *blocks[0];
  };
  
- /*
-Index: linux-2.6.25-rc8-mm1/fs/proc/base.c
-===================================================================
---- linux-2.6.25-rc8-mm1.orig/fs/proc/base.c	2008-04-04 13:11:35.000000000 +0200
-+++ linux-2.6.25-rc8-mm1/fs/proc/base.c	2008-04-04 13:57:18.000000000 +0200
-@@ -1138,6 +1138,77 @@ static const struct file_operations proc
- #endif
- 
- 
-+static ssize_t next_id_read(struct file *file, char __user *buf,
-+				size_t count, loff_t *ppos)
-+{
-+	struct task_struct *task;
-+	char *page;
-+	ssize_t length;
-+
-+	task = get_proc_task(file->f_path.dentry->d_inode);
-+	if (!task)
-+		return -ESRCH;
-+
-+	if (count >= PAGE_SIZE)
-+		count = PAGE_SIZE - 1;
-+
-+	length = -ENOMEM;
-+	page = (char *) __get_free_page(GFP_TEMPORARY);
-+	if (!page)
-+		goto out;
-+
-+	length = get_nextid(task, (char *) page, count);
-+	if (length >= 0)
-+		length = simple_read_from_buffer(buf, count, ppos,
-+						(char *)page, length);
-+	free_page((unsigned long) page);
-+
-+out:
-+	put_task_struct(task);
-+	return length;
-+}
-+
-+static ssize_t next_id_write(struct file *file, const char __user *buf,
-+				size_t count, loff_t *ppos)
-+{
-+	struct inode *inode = file->f_path.dentry->d_inode;
-+	char *page;
-+	ssize_t length;
-+
-+	if (pid_task(proc_pid(inode), PIDTYPE_PID) != current)
-+		return -EPERM;
-+
-+	if (count >= PAGE_SIZE)
-+		count = PAGE_SIZE - 1;
-+
-+	if (*ppos != 0) {
-+		/* No partial writes. */
-+		return -EINVAL;
-+	}
-+	page = (char *)__get_free_page(GFP_TEMPORARY);
-+	if (!page)
-+		return -ENOMEM;
-+	length = -EFAULT;
-+	if (copy_from_user(page, buf, count))
-+		goto out_free_page;
-+
-+	page[count] = '\0';
-+
-+	length = set_nextid(current, page);
-+	if (!length)
-+		length = count;
-+
-+out_free_page:
-+	free_page((unsigned long) page);
-+	return length;
-+}
-+
-+static const struct file_operations proc_next_id_operations = {
-+	.read		= next_id_read,
-+	.write		= next_id_write,
-+};
-+
-+
- #ifdef CONFIG_SCHED_DEBUG
- /*
-  * Print out various scheduling related per-task fields:
-@@ -2453,6 +2524,7 @@ static const struct pid_entry tgid_base_
- #ifdef CONFIG_TASK_IO_ACCOUNTING
- 	INF("io",	S_IRUGO, pid_io_accounting),
- #endif
-+	REG("next_id", S_IRUGO|S_IWUSR, next_id),
- };
- 
- static int proc_tgid_base_readdir(struct file * filp,
-@@ -2779,6 +2851,7 @@ static const struct pid_entry tid_base_s
- #ifdef CONFIG_FAULT_INJECTION
- 	REG("make-it-fail", S_IRUGO|S_IWUSR, fault_inject),
- #endif
-+	REG("next_id", S_IRUGO|S_IWUSR, next_id),
- };
- 
- static int proc_tid_base_readdir(struct file * filp,
-Index: linux-2.6.25-rc8-mm1/kernel/Makefile
-===================================================================
---- linux-2.6.25-rc8-mm1.orig/kernel/Makefile	2008-04-04 13:11:37.000000000 +0200
-+++ linux-2.6.25-rc8-mm1/kernel/Makefile	2008-04-04 13:58:22.000000000 +0200
-@@ -9,7 +9,7 @@ obj-y     = sched.o fork.o exec_domain.o
- 	    rcupdate.o extable.o params.o posix-timers.o \
- 	    kthread.o wait.o kfifo.o sys_ni.o posix-cpu-timers.o mutex.o \
- 	    hrtimer.o rwsem.o nsproxy.o srcu.o semaphore.o \
--	    notifier.o ksysfs.o pm_qos_params.o
-+	    notifier.o ksysfs.o pm_qos_params.o nextid.o
- 
- obj-$(CONFIG_SYSCTL_SYSCALL_CHECK) += sysctl_check.o
- obj-$(CONFIG_STACKTRACE) += stacktrace.o
+ extern ssize_t get_nextid(struct task_struct *, char *, size_t);
 Index: linux-2.6.25-rc8-mm1/kernel/nextid.c
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.25-rc8-mm1/kernel/nextid.c	2008-04-04 13:59:59.000000000 +0200
-@@ -0,0 +1,86 @@
-+/*
-+ * linux/kernel/nextid.c
-+ *
-+ *
-+ * Provide the get_nextid() / set_nextid() routines
-+ * (called from fs/proc/base.c).
-+ * They allow to specify the id for the next resource to be allocated,
-+ * instead of letting the allocator set it for us.
-+ */
-+
-+#include <linux/sched.h>
-+#include <linux/ctype.h>
-+
-+
-+
-+ssize_t get_nextid(struct task_struct *task, char *buffer, size_t size)
+--- linux-2.6.25-rc8-mm1.orig/kernel/nextid.c	2008-04-04 13:59:59.000000000 +0200
++++ linux-2.6.25-rc8-mm1/kernel/nextid.c	2008-04-04 14:28:13.000000000 +0200
+@@ -13,38 +13,138 @@
+ 
+ 
+ 
++static struct sys_id *id_blocks_alloc(int nids)
 +{
-+	struct sys_id *sid;
++	struct sys_id *ids;
++	int nblocks;
++	int i;
 +
-+	sid = task->next_id;
-+	if (!sid)
-+		return snprintf(buffer, size, "UNSET\n");
++	nblocks = (nids + NIDS_PER_BLOCK - 1) / NIDS_PER_BLOCK;
++	BUG_ON(nblocks < 1);
 +
-+	return snprintf(buffer, size, "LONG %ld\n", sid->id);
++	ids = kmalloc(sizeof(*ids) + nblocks * sizeof(long *), GFP_KERNEL);
++	if (!ids)
++		return NULL;
++	ids->nids = nids;
++	ids->nblocks = nblocks;
++
++	if (nids <= NIDS_SMALL)
++		ids->blocks[0] = ids->small_block;
++	else {
++		for (i = 0; i < nblocks; i++) {
++			long *b;
++			b = (void *)__get_free_page(GFP_KERNEL);
++			if (!b)
++				goto out_undo_partial_alloc;
++			ids->blocks[i] = b;
++		}
++	}
++	return ids;
++
++out_undo_partial_alloc:
++	while (--i >= 0)
++		free_page((unsigned long)ids->blocks[i]);
++
++	kfree(ids);
++	return NULL;
 +}
 +
-+static int set_single_id(struct task_struct *task, char *buffer)
++static void id_blocks_free(struct sys_id *ids)
 +{
++	if (ids == NULL)
++		return;
++
++	if (ids->blocks[0] != ids->small_block) {
++		int i;
++		for (i = 0; i < ids->nblocks; i++)
++			free_page((unsigned long)ids->blocks[i]);
++	}
++	kfree(ids);
++	return;
++}
++
+ ssize_t get_nextid(struct task_struct *task, char *buffer, size_t size)
+ {
++	ssize_t count = 0;
+ 	struct sys_id *sid;
++	char *bufptr = buffer;
++	int i;
+ 
+ 	sid = task->next_id;
+-	if (!sid)
++	if (!sid || !sid->nids)
+ 		return snprintf(buffer, size, "UNSET\n");
+ 
+-	return snprintf(buffer, size, "LONG %ld\n", sid->id);
++	count = sprintf(bufptr, "LONGS (%d) ", sid->nids);
++
++	for (i = 0; i < sid->nids - 1; i++)
++		count += sprintf(&bufptr[count], "%ld ", ID_AT(sid, i));
++
++	count += sprintf(&bufptr[count], "%ld\n", ID_AT(sid, i));
++
++	return count;
+ }
+ 
+-static int set_single_id(struct task_struct *task, char *buffer)
++static int fill_nextid_list(struct task_struct *task, int nids, char *buffer)
+ {
+-	struct sys_id *sid;
+-	long next_id;
++	char *token, *buff = buffer;
+ 	char *end;
 +	struct sys_id *sid;
-+	long next_id;
++	struct sys_id *old_list = task->next_id;
++	int i;
+ 
+-	next_id = simple_strtol(buffer, &end, 0);
+-	if (end == buffer || (end && !isspace(*end)))
+-		return -EINVAL;
++	sid = id_blocks_alloc(nids);
++	if (!sid)
++		return -ENOMEM;
+ 
+-	sid = task->next_id;
+-	if (!sid) {
+-		sid = kzalloc(sizeof(*sid), GFP_KERNEL);
+-		if (!sid)
+-			return -ENOMEM;
+-		task->next_id = sid;
++	i = 0;
++	while ((token = strsep(&buff, " ")) != NULL && i < nids) {
++		long id;
++
++		if (!*token)
++			goto out_free;
++		id = simple_strtol(token, &end, 0);
++		if (end == token || (*end && !isspace(*end)))
++			goto out_free;
++		ID_AT(sid, i) = id;
++		i++;
+ 	}
+ 
+-	sid->id = next_id;
++	if (i != nids)
++		/* Not enough pids compared to npids */
++		goto out_free;
++
++	if (old_list)
++		id_blocks_free(old_list);
+ 
++	task->next_id = sid;
+ 	return 0;
++
++out_free:
++	id_blocks_free(sid);
++	return -EINVAL;
++}
++
++/*
++ * Parses a line with the following format:
++ * <x> <id0> ... <idx-1>
++ * and sets <id0> to <idx-1> as the sequence of ids to be used for the next
++ * object to be created by the task.
++ * This applies to processes that need 1 id per namespace level.
++ * Any trailing character on the line is skipped.
++ */
++static int set_multiple_ids(struct task_struct *task, char *nb, char *buffer)
++{
++	int nids;
 +	char *end;
 +
-+	next_id = simple_strtol(buffer, &end, 0);
-+	if (end == buffer || (end && !isspace(*end)))
++	nids = simple_strtol(nb, &end, 0);
++	if (*end)
 +		return -EINVAL;
 +
-+	sid = task->next_id;
-+	if (!sid) {
-+		sid = kzalloc(sizeof(*sid), GFP_KERNEL);
-+		if (!sid)
-+			return -ENOMEM;
-+		task->next_id = sid;
-+	}
-+
-+	sid->id = next_id;
-+
-+	return 0;
-+}
-+
-+int reset_nextid(struct task_struct *task)
-+{
-+	struct sys_id *sid;
-+
-+	sid = task->next_id;
-+	if (!sid)
-+		return 0;
-+
-+	task->next_id = NULL;
-+	kfree(sid);
-+	return 0;
-+}
-+
-+#define LONG_STR    "LONG"
-+#define RESET_STR   "RESET"
-+
-+/*
-+ * Parses a line written to /proc/self/next_id.
-+ * this line has the following format:
-+ * LONG id              --> a single id is specified
-+ */
-+int set_nextid(struct task_struct *task, char *buffer)
-+{
-+	char *token, *out = buffer;
-+
-+	if (!out)
++	if (nids <= 0)
 +		return -EINVAL;
 +
-+	token = strsep(&out, " ");
-+
-+	if (!strcmp(token, LONG_STR))
-+		return set_single_id(task, out);
-+	else if (!strncmp(token, RESET_STR, strlen(RESET_STR)))
-+		return reset_nextid(task);
-+	else
-+		return -EINVAL;
-+}
-Index: linux-2.6.25-rc8-mm1/kernel/fork.c
-===================================================================
---- linux-2.6.25-rc8-mm1.orig/kernel/fork.c	2008-04-04 13:11:37.000000000 +0200
-+++ linux-2.6.25-rc8-mm1/kernel/fork.c	2008-04-04 14:00:35.000000000 +0200
-@@ -1167,6 +1167,8 @@ static struct task_struct *copy_process(
- 	p->blocked_on = NULL; /* not blocked yet */
- #endif
++	return fill_nextid_list(task, nids, buffer);
+ }
  
-+	p->next_id = NULL;
-+
- 	/* Perform scheduler related setup. Assign this task to a CPU. */
- 	sched_fork(p, clone_flags);
+ int reset_nextid(struct task_struct *task)
+@@ -55,8 +155,8 @@ int reset_nextid(struct task_struct *tas
+ 	if (!sid)
+ 		return 0;
  
-Index: linux-2.6.25-rc8-mm1/kernel/exit.c
-===================================================================
---- linux-2.6.25-rc8-mm1.orig/kernel/exit.c	2008-04-04 13:11:37.000000000 +0200
-+++ linux-2.6.25-rc8-mm1/kernel/exit.c	2008-04-04 14:01:22.000000000 +0200
-@@ -987,6 +987,10 @@ NORET_TYPE void do_exit(long code)
- 
- 	proc_exit_connector(tsk);
- 	exit_notify(tsk, group_dead);
-+
-+	if (unlikely(tsk->next_id))
-+		exit_nextid(tsk);
-+
- #ifdef CONFIG_NUMA
- 	mpol_free(tsk->mempolicy);
- 	tsk->mempolicy = NULL;
-Index: linux-2.6.25-rc8-mm1/fs/exec.c
-===================================================================
---- linux-2.6.25-rc8-mm1.orig/fs/exec.c	2008-04-04 13:11:34.000000000 +0200
-+++ linux-2.6.25-rc8-mm1/fs/exec.c	2008-04-04 14:02:09.000000000 +0200
-@@ -1024,6 +1024,9 @@ int flush_old_exec(struct linux_binprm *
- 	flush_signal_handlers(current, 0);
- 	flush_old_files(current->files);
- 
-+	if (unlikely(current->next_id))
-+		reset_nextid(current);
-+
++	id_blocks_free(sid);
+ 	task->next_id = NULL;
+-	kfree(sid);
  	return 0;
+ }
  
- mmap_failed:
+@@ -65,12 +165,14 @@ int reset_nextid(struct task_struct *tas
+ 
+ /*
+  * Parses a line written to /proc/self/next_id.
+- * this line has the following format:
++ * this line has one of the following formats:
+  * LONG id              --> a single id is specified
++ * LONG<x> id0 ... id<x-1> --> a sequence of ids is specified
+  */
+ int set_nextid(struct task_struct *task, char *buffer)
+ {
+ 	char *token, *out = buffer;
++	size_t sz;
+ 
+ 	if (!out)
+ 		return -EINVAL;
+@@ -78,9 +180,15 @@ int set_nextid(struct task_struct *task,
+ 	token = strsep(&out, " ");
+ 
+ 	if (!strcmp(token, LONG_STR))
+-		return set_single_id(task, out);
+-	else if (!strncmp(token, RESET_STR, strlen(RESET_STR)))
++		return fill_nextid_list(task, 1, out);
++
++	sz = strlen(LONG_STR);
++
++	if (!strncmp(token, LONG_STR, sz))
++		return set_multiple_ids(task, token + sz, out);
++
++	if (!strncmp(token, RESET_STR, strlen(RESET_STR)))
+ 		return reset_nextid(task);
+-	else
+-		return -EINVAL;
++
++	return -EINVAL;
+ }
 
 --
