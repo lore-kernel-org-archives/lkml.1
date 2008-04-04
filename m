@@ -1,68 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756677AbYDDJrn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757505AbYDDJul@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756677AbYDDJrn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Apr 2008 05:47:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752658AbYDDJrf
+	id S1757505AbYDDJul (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Apr 2008 05:50:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752778AbYDDJub
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Apr 2008 05:47:35 -0400
-Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:52747 "EHLO
-	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752528AbYDDJre (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Apr 2008 05:47:34 -0400
-From: "Satoshi UCHIDA" <s-uchida@ap.jp.nec.com>
-To: "'Paul Menage'" <menage@google.com>
-Cc: <linux-kernel@vger.kernel.org>, <containers@lists.linux-foundation.org>,
-       <axboe@kernel.dk>, <tom-sugawara@ap.jp.nec.com>,
-       <m-takahashi@ex.jp.nec.com>
-References: <007801c893d9$d89726f0$89c574d0$@jp.nec.com>	 <008501c893dc$3206e520$9614af60$@jp.nec.com>	 <6599ad830804030835s73392db0v29426425c0ea4381@mail.gmail.com>	 <003401c8961c$00eea670$02cbf350$@jp.nec.com> <6599ad830804040200u1ed48f4bxecaa664862cf30a5@mail.gmail.com>
-In-Reply-To: <6599ad830804040200u1ed48f4bxecaa664862cf30a5@mail.gmail.com>
-Subject: RE: [RFC][patch 8/11][CFQ-cgroup] Control cfq_data per cgroup
-Date: Fri, 4 Apr 2008 18:46:53 +0900
-Message-Id: <018c01c89638$d01d3850$7057a8f0$@jp.nec.com>
+	Fri, 4 Apr 2008 05:50:31 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:37650 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752658AbYDDJu3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Apr 2008 05:50:29 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: WARNING: at net/ipv4/tcp_input.c:2173 tcp_mark_head_lost+0x173/0x1a0()
+Date: Fri, 4 Apr 2008 11:50:33 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: "Robin H. Johnson" <robbat2@gentoo.org>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, Georgi Chorbadzhiyski <gf@unixsol.org>,
+       Ilpo =?iso-8859-1?q?J=E4rvinen?= <ilpo.jarvinen@helsinki.fi>
+References: <20080402224137.GB25768@curie-int.orbis-terrarum.net> <20080403211913.3a0c1d00.akpm@linux-foundation.org>
+In-Reply-To: <20080403211913.3a0c1d00.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="us-ascii"
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-Mailer: Microsoft Office Outlook 12.0
-Thread-Index: AciWMlNK5VFnln8eSS+k6ivkjl3ahQAANC3A
-Content-Language: ja
+Content-Disposition: inline
+Message-Id: <200804041150.34046.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-
+On Friday, 4 of April 2008, Andrew Morton wrote:
 > 
-> On Thu, Apr 3, 2008 at 11:20 PM, Satoshi UCHIDA <s-uchida@ap.jp.nec.com>
-> wrote:
-> >
-> >  So that you say, root subsystem state maybe keep a reference locally.
-> >  For example, create a variable for root subsystem state and
-> >  store the pointer when making subsystem state first.
+> (cc netdev)
 > 
-> Yes, that's what I'm suggesting.
+> (and Rafael - I assume 2.6.24 didn't do this..)
 > 
-> >
-> >  However, I think that it is smart to calculate root group of subsystems
-> >  when needing its information.
+> On Wed, 2 Apr 2008 15:41:37 -0700 "Robin H. Johnson" <robbat2@gentoo.org> wrote:
+
+That's http://bugzilla.kernel.org/show_bug.cgi?id=10346 , I think. 
+
+Robin, please add yourself to the CC list in the bugzilla entry above.
+
+> > One of the nodes in my web-serving cluster (isohunt.com) started showing this:
+> > 
+> > ------------[ cut here ]------------
+> > WARNING: at net/ipv4/tcp_input.c:2173 tcp_mark_head_lost+0x173/0x1a0()
+> > Modules linked in: lm85 hwmon_vid nfs lockd nfs_acl sunrpc bonding reiserfs k8temp hwmon i2c_nforce2 i2c_core sg
+> > Pid: 32500, comm: php-cgi Not tainted 2.6.25-rc4-git2 #7
+> > 
+> > Call Trace:
+> >  <IRQ>  [<ffffffff80233d2f>] warn_on_slowpath+0x5f/0x80
+> >  [<ffffffff8057ec9e>] ? __qdisc_run+0xae/0x210
+> >  [<ffffffff8056f8b6>] ? dev_queue_xmit+0xb6/0x350
+> >  [<ffffffff805904e0>] ? ip_finish_output+0x0/0x2d0
+> >  [<ffffffff8059061f>] ? ip_finish_output+0x13f/0x2d0
+> >  [<ffffffff8059b9a3>] tcp_mark_head_lost+0x173/0x1a0
+> >  [<ffffffff8059e4f9>] tcp_ack+0x1719/0x2050
+> >  [<ffffffff805a2188>] tcp_rcv_established+0x438/0x9c0
+> >  [<ffffffff805c91a5>] ? ip_vs_in+0x215/0x2b0
+> >  [<ffffffff805a8665>] tcp_v4_do_rcv+0xd5/0x210
+> >  [<ffffffff80594349>] ? __inet_lookup_established+0xf9/0x1b0
+> >  [<ffffffff805aa005>] tcp_v4_rcv+0x4a5/0x830
+> >  [<ffffffff8058c0c5>] ip_local_deliver_finish+0x65/0x1b0
+> >  [<ffffffff8058c66b>] ip_local_deliver+0x3b/0x90
+> >  [<ffffffff8058be40>] ip_rcv_finish+0x120/0x340
+> >  [<ffffffff8058c53a>] ip_rcv+0x1fa/0x2f0
+> >  [<ffffffff8056c788>] netif_receive_skb+0x2a8/0x330
+> >  [<ffffffff803ea9f7>] e1000_clean_rx_irq+0x1a7/0x5a0
+> >  [<ffffffff803e5f2f>] e1000_clean+0x6f/0x290
+> >  [<ffffffff8056ed99>] net_rx_action+0x109/0x210
+> >  [<ffffffff80239a04>] __do_softirq+0x74/0xe0
+> >  [<ffffffff8020c66c>] call_softirq+0x1c/0x30
+> >  [<ffffffff8020eb5d>] do_softirq+0x3d/0x80
+> >  [<ffffffff80239985>] irq_exit+0x45/0x50
+> >  [<ffffffff8020ec55>] do_IRQ+0x85/0x100
+> >  [<ffffffff8020b9f1>] ret_from_intr+0x0/0xa
+> >  <EOI> 
+> > ---[ end trace cd81b9a520cecbe0 ]---
+> > 
+> > .config attached.
 > 
-> I don't see why it's better to go through the cgroup subsystem to
-> retrieve the reference.
+> 
 > 
 
-If program have temporary data, it may cause inconsistency.
-I think that information should be referred to original(control mechanism).
-
-Information of cgroup is controlled at cgroup subsystem (and cgroupfs_root).
-So, I think that it's better to query into cgroup subsystem.
-
-Now, cgroup susbsystem would not change root group.
-Therefore, system would also runs by your suggestion.
-
-I will consider this issue.
-
-Thanks,
- Satoshi UCHIDA.
 
 
+-- 
+"Premature optimization is the root of all evil." - Donald Knuth
