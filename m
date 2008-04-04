@@ -1,57 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759319AbYDDM5H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760710AbYDDM50@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759319AbYDDM5H (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Apr 2008 08:57:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759381AbYDDMy6
+	id S1760710AbYDDM50 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Apr 2008 08:57:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759433AbYDDMzA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Apr 2008 08:54:58 -0400
-Received: from wine.ocn.ne.jp ([122.1.235.145]:63729 "EHLO smtp.wine.ocn.ne.jp"
+	Fri, 4 Apr 2008 08:55:00 -0400
+Received: from wine.ocn.ne.jp ([122.1.235.145]:63790 "EHLO smtp.wine.ocn.ne.jp"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757191AbYDDMys (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1757732AbYDDMys (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 4 Apr 2008 08:54:48 -0400
-Message-Id: <20080404122401.326400640@I-love.SAKURA.ne.jp>
+Message-Id: <20080404122405.351321002@I-love.SAKURA.ne.jp>
 References: <20080404122242.867070732@I-love.SAKURA.ne.jp>
 User-Agent: quilt/0.46-1
-Date: Fri, 04 Apr 2008 21:22:53 +0900
+Date: Fri, 04 Apr 2008 21:23:03 +0900
 From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
 To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
        linux-security-module@vger.kernel.org
 Cc: Kentaro Takeda <takedakn@nttdata.co.jp>,
        Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>,
        Toshiharu Harada <haradats@nttdata.co.jp>
-Subject: [TOMOYO #7 11/30] /proc/ccs/ interface for policy management.
-Content-Disposition: inline; filename=tomoyo-proc-interface.patch
+Subject: [TOMOYO #7 21/30] Capability restriction part.
+Content-Disposition: inline; filename=tomoyo-capability-restriction-part.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This file handles entries in /proc/ccs/ directory.
+TOMOYO Linux uses per-a-domain capability, an approach that associate
+capabilities with each domain, and assign a domain for each process.
+The advantages of this approach are that
 
+(1) Minimum capabilities required for a process is directly given
+    compared to setting/clearing/inheriting bit fields of a process's
+    capability value.
 
-Kyle Moffett advised me not to use /proc/ , but I want to use /proc/ because
+(2) It can support as many types of capabilities as you want.
+    Regarding per-a-task capability, you need to allocate memory for
+    individual "task_struct". Thus, the number of supportable capabilities
+    is bound by the width of variable in bits (i.e. 32 or 64).
+    Regarding per-a-domain capability, you need to allocate memory for
+    individual domains. But you can allocate memory dynamically.
+    Thus, the number of supportable capabilities is not bounded to 32 or 64.
 
-(1) securityfs is not always ready at /sys/kernel/security/ .
-    I have to mount securityfs when /sbin/init starts.
-    But proc is always ready at /proc/ .
-(2) TOMOYO Linux doesn't require LSM.
-    TOMOYO Linux can be built without CONFIG_SECURITY=y .
-(3) TOMOYO Linux is not only a tool for access control
-    but also a tool for analyzing a system's behavior.
+I can support up to 65536 types of capability,
+but currently there are not so many capability hooks inserted.
+Adding more capability hooks is a future work.
 
 Signed-off-by: Kentaro Takeda <takedakn@nttdata.co.jp>
 Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
 Signed-off-by: Toshiharu Harada <haradats@nttdata.co.jp>
 ---
- fs/proc/ccs_proc.c |  156 +++++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 156 insertions(+)
+ fs/tomoyo_capability.c |  223 +++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 223 insertions(+)
 
 --- /dev/null
-+++ linux-2.6.25-rc8-mm1/fs/proc/ccs_proc.c
-@@ -0,0 +1,156 @@
++++ linux-2.6.25-rc8-mm1/fs/tomoyo_capability.c
+@@ -0,0 +1,223 @@
 +/*
-+ * fs/proc/ccs_proc.c
++ * fs/tomoyo_capability.c
 + *
-+ * /proc interface for SAKURA and TOMOYO.
++ * Implementation of the Domain-Based Mandatory Access Control.
 + *
 + * Copyright (C) 2005-2008  NTT DATA CORPORATION
 + *
@@ -59,150 +66,217 @@ Signed-off-by: Toshiharu Harada <haradats@nttdata.co.jp>
 + *
 + */
 +
-+#include <linux/types.h>
-+#include <linux/kernel.h>
-+#include <linux/io.h>
-+#include <linux/proc_fs.h>
-+#include <linux/module.h>
-+#include <linux/ccs_proc.h>
 +#include <linux/ccs_common.h>
-+
-+#if defined(CONFIG_SAKURA) || defined(CONFIG_TOMOYO)
++#include <linux/tomoyo.h>
++#include <linux/realpath.h>
 +
 +/**
-+ * ccs_open - open() for /proc/ccs/ interface.
++ * cap_operation2name - Convert capability operation to capability message.
 + *
-+ * @inode: Pointer to "struct inode".
-+ * @file:  Pointer to "struct file".
++ * @operation: Type of operation.
++ *
++ * Returns the name of capability.
++ */
++static const char *cap_operation2name(const u8 operation)
++{
++	static const char *capability_name[TOMOYO_MAX_CAPABILITY_INDEX] = {
++		[TOMOYO_INET_STREAM_SOCKET_CREATE]  =
++		"socket(PF_INET, SOCK_STREAM)",
++		[TOMOYO_INET_STREAM_SOCKET_LISTEN]  =
++		"listen(PF_INET, SOCK_STREAM)",
++		[TOMOYO_INET_STREAM_SOCKET_CONNECT] =
++		"connect(PF_INET, SOCK_STREAM)",
++		[TOMOYO_USE_INET_DGRAM_SOCKET]      =
++		"socket(PF_INET, SOCK_DGRAM)",
++		[TOMOYO_USE_INET_RAW_SOCKET]        =
++		"socket(PF_INET, SOCK_RAW)",
++		[TOMOYO_USE_ROUTE_SOCKET]           = "socket(PF_ROUTE)",
++		[TOMOYO_USE_PACKET_SOCKET]          = "socket(PF_PACKET)",
++		[TOMOYO_SYS_MOUNT]                  = "sys_mount()",
++		[TOMOYO_SYS_UMOUNT]                 = "sys_umount()",
++		[TOMOYO_SYS_REBOOT]                 = "sys_reboot()",
++		[TOMOYO_SYS_CHROOT]                 = "sys_chroot()",
++		[TOMOYO_SYS_KILL]                   = "sys_kill()",
++		[TOMOYO_SYS_VHANGUP]                = "sys_vhangup()",
++		[TOMOYO_SYS_SETTIME]                = "sys_settimeofday()",
++		[TOMOYO_SYS_NICE]                   = "sys_nice()",
++		[TOMOYO_SYS_SETHOSTNAME]            = "sys_sethostname()",
++		[TOMOYO_USE_KERNEL_MODULE]          = "kernel_module",
++		[TOMOYO_CREATE_FIFO]                = "mknod(FIFO)",
++		[TOMOYO_CREATE_BLOCK_DEV]           = "mknod(BDEV)",
++		[TOMOYO_CREATE_CHAR_DEV]            = "mknod(CDEV)",
++		[TOMOYO_CREATE_UNIX_SOCKET]         = "mknod(SOCKET)",
++		[TOMOYO_SYS_LINK]                   = "sys_link()",
++		[TOMOYO_SYS_SYMLINK]                = "sys_symlink()",
++		[TOMOYO_SYS_RENAME]                 = "sys_rename()",
++		[TOMOYO_SYS_UNLINK]                 = "sys_unlink()",
++		[TOMOYO_SYS_CHMOD]                  = "sys_chmod()",
++		[TOMOYO_SYS_CHOWN]                  = "sys_chown()",
++		[TOMOYO_SYS_IOCTL]                  = "sys_ioctl()",
++		[TOMOYO_SYS_KEXEC_LOAD]             = "sys_kexec_load()",
++		[TOMOYO_SYS_PIVOT_ROOT]             = "sys_pivot_root()",
++		[TOMOYO_SYS_PTRACE]                 = "sys_ptrace()",
++	};
++	if (operation < TOMOYO_MAX_CAPABILITY_INDEX)
++		return capability_name[operation];
++	return NULL;
++}
++
++/**
++ * audit_capability_log - Audit capability log.
++ *
++ * @operation:  Type of operation.
++ * @is_granted: True if this is a granted log.
++ * @profile:    Profile number used.
++ * @mode:       Access control mode used.
 + *
 + * Returns 0 on success, negative value otherwise.
 + */
-+static int ccs_open(struct inode *inode, struct file *file)
++static int audit_capability_log(const u8 operation, const bool is_granted,
++				const u8 profile, const u8 mode)
 +{
-+	return ccs_open_control(((u8 *) PDE(inode)->data) - ((u8 *) NULL),
-+				file);
++	char *buf;
++	int len = 64;
++	int len2;
++	if (ccs_can_save_audit_log(is_granted) < 0)
++		return -ENOMEM;
++	buf = ccs_init_audit_log(&len, profile, mode, NULL);
++	if (!buf)
++		return -ENOMEM;
++	len2 = strlen(buf);
++	snprintf(buf + len2, len - len2 - 1, KEYWORD_ALLOW_CAPABILITY "%s\n",
++		 ccs_cap2keyword(operation));
++	return ccs_write_audit_log(buf, is_granted);
 +}
 +
 +/**
-+ * ccs_release - close() for /proc/ccs/ interface.
++ * update_capability_acl - Update "struct capability_acl_record" list.
 + *
-+ * @inode: Pointer to "struct inode".
-+ * @file:  Pointer to "struct file".
++ * @operation: Type of operation.
++ * @domain:    Pointer to "struct domain_info".
++ * @condition: Pointer to "struct condition_list". May be NULL.
++ * @is_delete: True if it is a delete request.
 + *
 + * Returns 0 on success, negative value otherwise.
 + */
-+static int ccs_release(struct inode *inode, struct file *file)
++static int update_capability_acl(const u8 operation, struct domain_info *domain,
++				 const struct condition_list *condition,
++				 const bool is_delete)
 +{
-+	return ccs_close_control(file);
-+}
-+
-+/**
-+ * ccs_poll - poll() for /proc/ccs/ interface.
-+ *
-+ * @file: Pointer to "struct file".
-+ * @wait: Pointer to "poll_table".
-+ *
-+ * Returns 0 on success, negative value otherwise.
-+ */
-+static unsigned int ccs_poll(struct file *file, poll_table *wait)
-+{
-+	return ccs_poll_control(file, wait);
-+}
-+
-+/**
-+ * ccs_read - read() for /proc/ccs/ interface.
-+ *
-+ * @file:  Pointer to "struct file".
-+ * @buf:   Pointer to buffer.
-+ * @count: Size of @buf.
-+ * @ppos:  Unused.
-+ *
-+ * Returns bytes read on success, negative value otherwise.
-+ */
-+static ssize_t ccs_read(struct file *file, char __user *buf, size_t count,
-+			loff_t *ppos)
-+{
-+	return ccs_read_control(file, buf, count);
-+}
-+
-+/**
-+ * ccs_write - write() for /proc/ccs/ interface.
-+ *
-+ * @file:  Pointer to "struct file".
-+ * @buf:   Pointer to buffer.
-+ * @count: Size of @buf.
-+ * @ppos:  Unused.
-+ *
-+ * Returns @count on success, negative value otherwise.
-+ */
-+static ssize_t ccs_write(struct file *file, const char __user *buf,
-+			 size_t count, loff_t *ppos)
-+{
-+	return ccs_write_control(file, buf, count);
-+}
-+
-+/* Operations for /proc/ccs/interface. */
-+static struct file_operations ccs_operations = {
-+	.open    = ccs_open,
-+	.release = ccs_release,
-+	.poll    = ccs_poll,
-+	.read    = ccs_read,
-+	.write   = ccs_write,
-+};
-+
-+/**
-+ * create_entry - Create interface files under /proc/ccs/ directory.
-+ *
-+ * @name:   The name of the interface file.
-+ * @mode:   The permission of the interface file.
-+ * @parent: The parent directory.
-+ * @key:    Type of interface.
-+ *
-+ * Returns nothing.
-+ */
-+static void __init create_entry(const char *name, const mode_t mode,
-+				struct proc_dir_entry *parent, const u8 key)
-+{
-+	struct proc_dir_entry *entry = create_proc_entry(name, mode, parent);
-+	if (entry) {
-+		entry->proc_fops = &ccs_operations;
-+		entry->data = ((u8 *) NULL) + key;
++	struct acl_info *ptr;
++	struct capability_acl_record *acl;
++	int error = -ENOMEM;
++	if (!domain)
++		return -EINVAL;
++	mutex_lock(&domain_acl_lock);
++	if (is_delete)
++		goto delete;
++	list1_for_each_entry(ptr, &domain->acl_info_list, list) {
++		if (ccs_acl_type1(ptr) != TYPE_CAPABILITY_ACL)
++			continue;
++		if (ccs_get_condition_part(ptr) != condition)
++			continue;
++		acl = container_of(ptr, struct capability_acl_record, head);
++		if (acl->operation != operation)
++			continue;
++		error = ccs_add_domain_acl(NULL, ptr);
++		goto out;
 +	}
++	/* Not found. Append it to the tail. */
++	acl = ccs_alloc_acl_element(TYPE_CAPABILITY_ACL, condition);
++	if (!acl)
++		goto out;
++	acl->operation = operation;
++	error = ccs_add_domain_acl(domain, &acl->head);
++	goto out;
++ delete:
++	error = -ENOENT;
++	list1_for_each_entry(ptr, &domain->acl_info_list, list) {
++		if (ccs_acl_type2(ptr) != TYPE_CAPABILITY_ACL)
++			continue;
++		if (ccs_get_condition_part(ptr) != condition)
++			continue;
++		acl = container_of(ptr, struct capability_acl_record, head);
++		if (acl->operation != operation)
++			continue;
++		error = ccs_del_domain_acl(ptr);
++		break;
++	}
++ out:
++	mutex_unlock(&domain_acl_lock);
++	return error;
 +}
 +
 +/**
-+ * ccs_proc_init - Initialize /proc/ccs/ interface.
++ * ccs_capable - Check permission for capability.
 + *
-+ * Returns 0.
++ * @operation: Type of operation.
++ *
++ * Returns true on success, false otherwise.
 + */
-+static int __init ccs_proc_init(void)
++bool ccs_capable(const u8 operation)
 +{
-+	struct proc_dir_entry *ccs_dir = proc_mkdir("ccs", NULL);
-+	create_entry("query",            0600, ccs_dir, CCS_QUERY);
-+#ifdef CONFIG_SAKURA
-+	create_entry("system_policy",    0600, ccs_dir, CCS_SYSTEMPOLICY);
-+#endif
-+#ifdef CONFIG_TOMOYO
-+	create_entry("domain_policy",    0600, ccs_dir, CCS_DOMAINPOLICY);
-+	create_entry("exception_policy", 0600, ccs_dir, CCS_EXCEPTIONPOLICY);
-+	create_entry("grant_log",        0400, ccs_dir, CCS_GRANTLOG);
-+	create_entry("reject_log",       0400, ccs_dir, CCS_REJECTLOG);
-+#endif
-+	create_entry("self_domain",      0400, ccs_dir, CCS_SELFDOMAIN);
-+	create_entry(".domain_status",   0600, ccs_dir, CCS_DOMAIN_STATUS);
-+	create_entry(".process_status",  0600, ccs_dir, CCS_PROCESS_STATUS);
-+	create_entry("meminfo",          0400, ccs_dir, CCS_MEMINFO);
-+	create_entry("profile",          0600, ccs_dir, CCS_PROFILE);
-+	create_entry("manager",          0600, ccs_dir, CCS_MANAGER);
-+	create_entry(".updates_counter", 0400, ccs_dir, CCS_UPDATESCOUNTER);
-+	create_entry("version",          0400, ccs_dir, CCS_VERSION);
-+	if (sizeof(struct ccs_page_buffer) <  CCS_MAX_PATHNAME_LEN - 16)
-+		panic("Bad size!");
-+	return 0;
++	struct domain_info * const domain = current->domain_info;
++	struct acl_info *ptr;
++	const u8 profile = current->domain_info->profile;
++	const u8 mode = ccs_check_capability_flags(operation);
++	const bool is_enforce = (mode == 3);
++	bool found = false;
++	if (!mode)
++		return true;
++	list1_for_each_entry(ptr, &domain->acl_info_list, list) {
++		struct capability_acl_record *acl;
++		if (ccs_acl_type2(ptr) != TYPE_CAPABILITY_ACL)
++			continue;
++		acl = container_of(ptr, struct capability_acl_record, head);
++		if (acl->operation != operation ||
++		    !ccs_check_condition(ptr, NULL))
++			continue;
++		ccs_update_condition(ptr);
++		found = true;
++		break;
++	}
++	audit_capability_log(operation, found, profile, mode);
++	if (found)
++		return true;
++	if (ccs_verbose_mode())
++		printk(KERN_WARNING "TOMOYO-%s: %s denied for %s\n",
++		       ccs_get_msg(is_enforce), cap_operation2name(operation),
++		       ccs_get_last_name(domain));
++	if (is_enforce)
++		return !ccs_check_supervisor("%s\n"
++					    KEYWORD_ALLOW_CAPABILITY "%s\n",
++					    domain->domainname->name,
++					    ccs_cap2keyword(operation));
++	if (mode == 1 && ccs_check_domain_quota(domain))
++		update_capability_acl(operation, domain, NULL, false);
++	return true;
 +}
++EXPORT_SYMBOL(ccs_capable); /* for net/unix/af_unix.c */
 +
-+security_initcall(ccs_proc_init);
-+
-+#endif
++/**
++ * ccs_write_capability_policy - Write "struct capability_acl_record" list.
++ *
++ * @data:      String to parse.
++ * @domain:    Pointer to "struct domain_info".
++ * @condition: Pointer to "struct condition_list". May be NULL.
++ * @is_delete: True if it is a delete request.
++ *
++ * Returns 0 on success, negative value otherwise.
++ */
++int ccs_write_capability_policy(char *data, struct domain_info *domain,
++				const struct condition_list *condition,
++				const bool is_delete)
++{
++	u8 capability;
++	for (capability = 0; capability < TOMOYO_MAX_CAPABILITY_INDEX;
++	     capability++) {
++		if (strcmp(data, ccs_cap2keyword(capability)))
++			continue;
++		return update_capability_acl(capability, domain, condition,
++					     is_delete);
++	}
++	return -EINVAL;
++}
 
 -- 
