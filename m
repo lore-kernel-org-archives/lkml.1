@@ -1,45 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759722AbYDDMzt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759701AbYDDM4G@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759722AbYDDMzt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Apr 2008 08:55:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758261AbYDDMyu
+	id S1759701AbYDDM4G (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Apr 2008 08:56:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758679AbYDDMyw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Apr 2008 08:54:50 -0400
-Received: from wine.ocn.ne.jp ([122.1.235.145]:63601 "EHLO smtp.wine.ocn.ne.jp"
+	Fri, 4 Apr 2008 08:54:52 -0400
+Received: from wine.ocn.ne.jp ([122.1.235.145]:63602 "EHLO smtp.wine.ocn.ne.jp"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756959AbYDDMyr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1756960AbYDDMyr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 4 Apr 2008 08:54:47 -0400
-Message-Id: <20080404122403.835097743@I-love.SAKURA.ne.jp>
+Message-Id: <20080404122403.082198283@I-love.SAKURA.ne.jp>
 References: <20080404122242.867070732@I-love.SAKURA.ne.jp>
 User-Agent: quilt/0.46-1
-Date: Fri, 04 Apr 2008 21:22:59 +0900
+Date: Fri, 04 Apr 2008 21:22:57 +0900
 From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
 To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
        linux-security-module@vger.kernel.org
 Cc: Kentaro Takeda <takedakn@nttdata.co.jp>,
        Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>,
        Toshiharu Harada <haradats@nttdata.co.jp>
-Subject: [TOMOYO #7 17/30] chroot restriction part.
-Content-Disposition: inline; filename=tomoyo-chroot-restriction-part.patch
+Subject: [TOMOYO #7 15/30] Automatic bind port selection control part.
+Content-Disposition: inline; filename=tomoyo-automatic-bind-restriction-part.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This file controls chroot() requests.
-LSM hook for chroot() is not provided. I don't know why.
+LSM doesn't provide hook for selecting local port. I don't know why.
+
+Don't you think it is not happy if some port
+(in /proc/sys/net/ipv4/ip_local_port_range) is implicitly allocated by
+bind() with "struct sockaddr_in *"->sin_port = htons(0) or
+connect() without bind()?
+For example, 8080 could be unexpectedly used by some process
+although Squid wanted to use 8080 but the administrator did
+
+  echo 5000 10000 > /proc/sys/net/ipv4/ip_local_port_range
+
+
+Since selecting local port is done with a spinlock held,
+TOMOYO Linux can't support "delayed enforcing" mode for this functionality.
+But that doesn't matter.
 
 Signed-off-by: Kentaro Takeda <takedakn@nttdata.co.jp>
 Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
 Signed-off-by: Toshiharu Harada <haradats@nttdata.co.jp>
 ---
- fs/sakura_chroot.c |  173 +++++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 173 insertions(+)
+ fs/sakura_bind.c |  145 +++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 145 insertions(+)
 
 --- /dev/null
-+++ linux-2.6.25-rc8-mm1/fs/sakura_chroot.c
-@@ -0,0 +1,173 @@
++++ linux-2.6.25-rc8-mm1/fs/sakura_bind.c
+@@ -0,0 +1,145 @@
 +/*
-+ * fs/sakura_chroot.c
++ * fs/sakura_bind.c
 + *
 + * Implementation of the Domain-Free Mandatory Access Control.
 + *
@@ -52,41 +65,36 @@ Signed-off-by: Toshiharu Harada <haradats@nttdata.co.jp>
 +#include <linux/ccs_common.h>
 +#include <linux/sakura.h>
 +#include <linux/realpath.h>
-+#include <linux/namei.h>
 +
-+/* Structure for "allow_chroot" keyword. */
-+struct chroot_entry {
++/* Structure for "deny_autobind" keyword. */
++struct reserved_entry {
 +	struct list1_head list;
-+	const struct path_info *dir;
-+	bool is_deleted;
++	bool is_deleted;             /* Delete flag.                         */
++	u16 min_port;                /* Start of port number range.          */
++	u16 max_port;                /* End of port number range.            */
 +};
 +
-+/* The list for "struct chroot_entry". */
-+static LIST1_HEAD(chroot_list);
++/* The list for "struct reserved_entry". */
++static LIST1_HEAD(reservedport_list);
 +
 +/**
-+ * update_chroot_acl - Update "struct chroot_entry" list.
++ * update_reserved_entry - Update "struct reserved_entry" list.
 + *
-+ * @dir:       The name of directory.
++ * @min_port: Start of port number range.
++ * @max_port: End of port number range.
 + * @is_delete: True if it is a delete request.
 + *
 + * Returns 0 on success, negative value otherwise.
 + */
-+static int update_chroot_acl(const char *dir, const bool is_delete)
++static int update_reserved_entry(const u16 min_port, const u16 max_port,
++				 const bool is_delete)
 +{
-+	struct chroot_entry *new_entry;
-+	struct chroot_entry *ptr;
-+	const struct path_info *saved_dir;
++	struct reserved_entry *new_entry, *ptr;
 +	static DEFINE_MUTEX(lock);
 +	int error = -ENOMEM;
-+	if (!ccs_is_correct_path(dir, 1, 0, 1, __func__))
-+		return -EINVAL;
-+	saved_dir = ccs_save_name(dir);
-+	if (!saved_dir)
-+		return -ENOMEM;
 +	mutex_lock(&lock);
-+	list1_for_each_entry(ptr, &chroot_list, list) {
-+		if (ptr->dir != saved_dir)
++	list1_for_each_entry(ptr, &reservedport_list, list) {
++		if (ptr->min_port != min_port || max_port != ptr->max_port)
 +			continue;
 +		ptr->is_deleted = is_delete;
 +		error = 0;
@@ -99,10 +107,10 @@ Signed-off-by: Toshiharu Harada <haradats@nttdata.co.jp>
 +	new_entry = ccs_alloc_element(sizeof(*new_entry));
 +	if (!new_entry)
 +		goto out;
-+	new_entry->dir = saved_dir;
-+	list1_add_tail_mb(&new_entry->list, &chroot_list);
++	new_entry->min_port = min_port;
++	new_entry->max_port = max_port;
++	list1_add_tail_mb(&new_entry->list, &reservedport_list);
 +	error = 0;
-+	printk(KERN_CONT "%sAllow chroot() to %s\n", ccs_log_level, dir);
 + out:
 +	mutex_unlock(&lock);
 +	ccs_update_counter(CCS_UPDATES_COUNTER_SYSTEM_POLICY);
@@ -110,101 +118,78 @@ Signed-off-by: Toshiharu Harada <haradats@nttdata.co.jp>
 +}
 +
 +/**
-+ * print_error - Print error message.
++ * ccs_may_autobind - Check permission for bind()'s automatic port number selection.
 + *
-+ * @root_name: Requested directory name.
-+ * @mode:      Access control mode.
++ * @port: Port number.
 + *
-+ * Returns 0 if @mode is not enforcing mode or permitted by the administrator's
-+ * decision, negative value otherwise.
++ * Returns 0 on success, -EPERM otherwise.
 + */
-+static int print_error(const char *root_name, const u8 mode)
++int ccs_may_autobind(const u16 port)
 +{
-+	int error;
-+	const bool is_enforce = (mode == 3);
-+	const char *exename = ccs_get_exe();
-+	printk(KERN_WARNING "SAKURA-%s: chroot %s (pid=%d:exe=%s): "
-+	       "Permission denied.\n", ccs_get_msg(is_enforce),
-+	       root_name, current->pid, exename);
-+	if (is_enforce)
-+		error = ccs_check_supervisor("# %s is requesting\n"
-+					     "chroot %s\n", exename, root_name);
-+	else
-+		error = 0;
-+	if (exename)
-+		ccs_free(exename);
-+	if (mode == 1 && root_name)
-+		update_chroot_acl(root_name, false);
-+	return error;
-+}
-+
-+/**
-+ * ccs_check_chroot_permission - Check permission for chroot().
-+ *
-+ * @nd: Pointer to "struct nameidata".
-+ *
-+ * Returns 0 on success, negative value otherwise.
-+ */
-+int ccs_check_chroot_permission(struct nameidata *nd)
-+{
-+	int error = -EPERM;
-+	char *root_name;
-+	const u8 mode = ccs_check_flags(CCS_SAKURA_RESTRICT_CHROOT);
-+	if (!mode)
++	/***** CRITICAL SECTION START *****/
++	struct reserved_entry *ptr;
++	if (!ccs_check_flags_no_sleep_check(CCS_SAKURA_RESTRICT_AUTOBIND))
 +		return 0;
-+	root_name = ccs_realpath_from_dentry(nd->path.dentry, nd->path.mnt);
-+	if (root_name) {
-+		struct path_info dir;
-+		dir.name = root_name;
-+		ccs_fill_path_info(&dir);
-+		if (dir.is_dir) {
-+			struct chroot_entry *ptr;
-+			list1_for_each_entry(ptr, &chroot_list, list) {
-+				if (ptr->is_deleted)
-+					continue;
-+				if (!ccs_path_matches_pattern(&dir, ptr->dir))
-+					continue;
-+				error = 0;
-+				break;
-+			}
-+		}
++	list1_for_each_entry(ptr, &reservedport_list, list) {
++		if (ptr->min_port <= port && port <= ptr->max_port &&
++		    !ptr->is_deleted)
++			return -EPERM;
 +	}
-+	if (error)
-+		error = print_error(root_name, mode);
-+	ccs_free(root_name);
-+	return error;
++	return 0;
++	/***** CRITICAL SECTION END *****/
 +}
++EXPORT_SYMBOL(ccs_may_autobind); /* for net/ipv4/ and net/ipv6/ */
 +
 +/**
-+ * ccs_write_chroot_policy - Write "struct chroot_entry" list.
++ * ccs_write_reserved_port_policy - Write "struct reserved_entry" list.
 + *
 + * @data:      String to parse.
 + * @is_delete: True if it is a delete request.
 + *
 + * Returns 0 on success, negative value otherwise.
 + */
-+int ccs_write_chroot_policy(char *data, const bool is_delete)
++int ccs_write_reserved_port_policy(char *data, const bool is_delete)
 +{
-+	return update_chroot_acl(data, is_delete);
++	unsigned int from;
++	unsigned int to;
++	if (strchr(data, ' '))
++		goto out;
++	if (sscanf(data, "%u-%u", &from, &to) == 2) {
++		if (from <= to && to < 65536)
++			return update_reserved_entry(from, to, is_delete);
++	} else if (sscanf(data, "%u", &from) == 1) {
++		if (from < 65536)
++			return update_reserved_entry(from, from, is_delete);
++	}
++ out:
++	printk(KERN_WARNING "%s: ERROR: Invalid port range '%s'\n",
++	       __func__, data);
++	return -EINVAL;
 +}
 +
 +/**
-+ * ccs_read_chroot_policy - Read "struct chroot_entry" list.
++ * ccs_read_reserved_port_policy - Read "struct reserved_entry" list.
 + *
 + * @head: Pointer to "struct ccs_io_buffer".
 + *
 + * Returns true on success, false otherwise.
 + */
-+bool ccs_read_chroot_policy(struct ccs_io_buffer *head)
++bool ccs_read_reserved_port_policy(struct ccs_io_buffer *head)
 +{
 +	struct list1_head *pos;
-+	list1_for_each_cookie(pos, head->read_var2, &chroot_list) {
-+		struct chroot_entry *ptr;
-+		ptr = list1_entry(pos, struct chroot_entry, list);
++	char buffer[16];
++	memset(buffer, 0, sizeof(buffer));
++	list1_for_each_cookie(pos, head->read_var2, &reservedport_list) {
++		u16 min_port, max_port;
++		struct reserved_entry *ptr;
++		ptr = list1_entry(pos, struct reserved_entry, list);
 +		if (ptr->is_deleted)
 +			continue;
-+		if (!ccs_io_printf(head, KEYWORD_ALLOW_CHROOT "%s\n",
-+				   ptr->dir->name))
++		min_port = ptr->min_port;
++		max_port = ptr->max_port;
++		snprintf(buffer, sizeof(buffer) - 1, "%u%c%u", min_port,
++			 min_port != max_port ? '-' : '\0', max_port);
++		if (!ccs_io_printf(head, KEYWORD_DENY_AUTOBIND "%s\n", buffer))
 +			goto out;
 +	}
 +	return true;
