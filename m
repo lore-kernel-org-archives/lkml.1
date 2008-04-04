@@ -1,118 +1,247 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758869AbYDDIWx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759055AbYDDIXZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758869AbYDDIWx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Apr 2008 04:22:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753546AbYDDIWJ
+	id S1759055AbYDDIXZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Apr 2008 04:23:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756194AbYDDIXJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Apr 2008 04:22:09 -0400
-Received: from b01.ext.isohunt.com ([208.71.112.51]:55175 "EHLO
-	mail.isohunt.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755408AbYDDIWE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Apr 2008 04:22:04 -0400
-Date: Fri, 4 Apr 2008 01:22:01 -0700
-From: "Robin H. Johnson" <robbat2@gentoo.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: "Robin H. Johnson" <robbat2@gentoo.org>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: WARNING: at net/ipv4/tcp_input.c:2173
-	tcp_mark_head_lost+0x173/0x1a0()
-Message-ID: <20080404082201.GC20121@curie-int.orbis-terrarum.net>
-References: <20080402224137.GB25768@curie-int.orbis-terrarum.net> <20080403211913.3a0c1d00.akpm@linux-foundation.org> <20080403212038.ec0a4244.akpm@linux-foundation.org>
+	Fri, 4 Apr 2008 04:23:09 -0400
+Received: from havoc.gtf.org ([69.61.125.42]:35889 "EHLO havoc.gtf.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753546AbYDDIXG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Apr 2008 04:23:06 -0400
+Date: Fri, 4 Apr 2008 04:23:03 -0400
+From: Jeff Garzik <jeff@garzik.org>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-ide@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: [git patches] libata fixes
+Message-ID: <20080404082303.GA17822@havoc.gtf.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="2JFBq9zoW8cOFH7v"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080403212038.ec0a4244.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---2JFBq9zoW8cOFH7v
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Please pull from 'upstream-linus' branch of
+master.kernel.org:/pub/scm/linux/kernel/git/jgarzik/libata-dev.git upstream-linus
 
-On Thu, Apr 03, 2008 at 09:20:38PM -0700, Andrew Morton wrote:
-> On Thu, 3 Apr 2008 21:19:13 -0700 Andrew Morton <akpm@linux-foundation.or=
-g> wrote:
->=20
-> >=20
-> > (cc netdev)
-> >=20
-> > (and Rafael - I assume 2.6.24 didn't do this..)
->=20
-> urgh.
->=20
-> > On Wed, 2 Apr 2008 15:41:37 -0700 "Robin H. Johnson" <robbat2@gentoo.or=
-g> wrote:
-> >=20
-> > > (Please CC, not on LKML).
-> > >=20
-> > > One of the nodes in my web-serving cluster (isohunt.com) started show=
-ing this:
-> > >=20
-> > > ------------[ cut here ]------------
-> > > WARNING: at net/ipv4/tcp_input.c:2173 tcp_mark_head_lost+0x173/0x1a0()
-> > > Modules linked in: lm85 hwmon_vid nfs lockd nfs_acl sunrpc bonding re=
-iserfs k8temp hwmon i2c_nforce2 i2c_core sg
-> > > Pid: 32500, comm: php-cgi Not tainted 2.6.25-rc4-git2 #7
-> I misread that as -rc8.
-> We fixed a lot of stuff since -rc4.  Please retest current mainline?
+to receive the following updates:
 
-Hopefully this is new enough. -git3 was released right while I was writing =
-this
-email after testing, and I don't see anything in there that seems related.
+ drivers/ata/libata-core.c |   41 ++++++++++++++++++++++++++++++++++++++++-
+ drivers/ata/pata_ali.c    |   40 ++++++++++++++++++++++++++++++++++++++++
+ include/linux/libata.h    |   25 +++----------------------
+ 3 files changed, 83 insertions(+), 23 deletions(-)
 
-------------[ cut here ]------------
-WARNING: at net/ipv4/tcp_input.c:1771 tcp_enter_frto+0x2bb/0x2c0()
-Modules linked in: lm85 hwmon_vid nfs lockd nfs_acl sunrpc bonding reiserfs=
- i2c_nforce2 k8temp hwmon i2c_core sg
-Pid: 0, comm: swapper Not tainted 2.6.25-rc8-git2 #1
+Bartlomiej Zolnierkiewicz (1):
+      libata: fix IDENTIFY order in ata_bus_probe()
 
-Call Trace:
- <IRQ>  [<ffffffff8023413f>] warn_on_slowpath+0x5f/0x80
- [<ffffffff803ecefb>] ? e1000_alloc_rx_buffers+0xdb/0x3a0
- [<ffffffff803edcc2>] ? e1000_clean_rx_irq+0x312/0x5a0
- [<ffffffff805a44db>] tcp_enter_frto+0x2bb/0x2c0
- [<ffffffff805aa661>] tcp_write_timer+0x3a1/0x790
- [<ffffffff8024c3e5>] ? hrtimer_run_pending+0x35/0xc0
- [<ffffffff805aa2c0>] ? tcp_write_timer+0x0/0x790
- [<ffffffff8023dd5f>] run_timer_softirq+0x18f/0x1f0
- [<ffffffff80239e74>] __do_softirq+0x74/0xf0
- [<ffffffff8020ee9a>] ? profile_pc+0x3a/0x70
- [<ffffffff8020c7cc>] call_softirq+0x1c/0x30
- [<ffffffff8020ecbd>] do_softirq+0x3d/0x80
- [<ffffffff80239df5>] irq_exit+0x45/0x50
- [<ffffffff8021c62e>] smp_apic_timer_interrupt+0x7e/0xc0
- [<ffffffff8020a480>] ? default_idle+0x0/0x70
- [<ffffffff8020c276>] apic_timer_interrupt+0x66/0x70
- <EOI>  [<ffffffff8020a4b9>] ? default_idle+0x39/0x70
- [<ffffffff8020a4b4>] ? default_idle+0x34/0x70
- [<ffffffff8020a480>] ? default_idle+0x0/0x70
- [<ffffffff8020a565>] ? cpu_idle+0x75/0xa0
- [<ffffffff8061deca>] ? rest_init+0x5a/0x60
+Tejun Heo (3):
+      libata: uninline atapi_cmd_type()
+      libata: ATA_12/16 doesn't fall into ATAPI_MISC
+      pata_ali: disable ATAPI DMA
 
----[ end trace 52f4c6f608900cab ]---
---=20
-Robin Hugh Johnson
-Gentoo Linux Developer & Infra Guy
-E-Mail     : robbat2@gentoo.org
-GnuPG FP   : 11AC BA4F 4778 E3F6 E4ED  F38E B27B 944E 3488 4E85
-
---2JFBq9zoW8cOFH7v
-Content-Type: application/pgp-signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.8 (GNU/Linux)
-Comment: Robbat2 @ Orbis-Terrarum Networks - The text below is a digital signature. If it doesn't make any sense to you, ignore it.
-
-iEYEARECAAYFAkf15SkACgkQPpIsIjIzwixbUgCgq8esbbnFRervYguL/M8Z0lDk
-tiUAn2nWnjsYwfNagkiX5iw4F1+qa8fy
-=zuhl
------END PGP SIGNATURE-----
-
---2JFBq9zoW8cOFH7v--
+diff --git a/drivers/ata/libata-core.c b/drivers/ata/libata-core.c
+index 4851988..be95fdb 100644
+--- a/drivers/ata/libata-core.c
++++ b/drivers/ata/libata-core.c
+@@ -326,6 +326,44 @@ static void ata_force_horkage(struct ata_device *dev)
+ }
+ 
+ /**
++ *	atapi_cmd_type - Determine ATAPI command type from SCSI opcode
++ *	@opcode: SCSI opcode
++ *
++ *	Determine ATAPI command type from @opcode.
++ *
++ *	LOCKING:
++ *	None.
++ *
++ *	RETURNS:
++ *	ATAPI_{READ|WRITE|READ_CD|PASS_THRU|MISC}
++ */
++int atapi_cmd_type(u8 opcode)
++{
++	switch (opcode) {
++	case GPCMD_READ_10:
++	case GPCMD_READ_12:
++		return ATAPI_READ;
++
++	case GPCMD_WRITE_10:
++	case GPCMD_WRITE_12:
++	case GPCMD_WRITE_AND_VERIFY_10:
++		return ATAPI_WRITE;
++
++	case GPCMD_READ_CD:
++	case GPCMD_READ_CD_MSF:
++		return ATAPI_READ_CD;
++
++	case ATA_16:
++	case ATA_12:
++		if (atapi_passthru16)
++			return ATAPI_PASS_THRU;
++		/* fall thru */
++	default:
++		return ATAPI_MISC;
++	}
++}
++
++/**
+  *	ata_tf_to_fis - Convert ATA taskfile to SATA FIS structure
+  *	@tf: Taskfile to convert
+  *	@pmp: Port multiplier port
+@@ -2660,7 +2698,7 @@ int ata_bus_probe(struct ata_port *ap)
+ 	   specific sequence bass-ackwards so that PDIAG- is released by
+ 	   the slave device */
+ 
+-	ata_link_for_each_dev(dev, &ap->link) {
++	ata_link_for_each_dev_reverse(dev, &ap->link) {
+ 		if (tries[dev->devno])
+ 			dev->class = classes[dev->devno];
+ 
+@@ -7774,6 +7812,7 @@ EXPORT_SYMBOL_GPL(ata_tf_read);
+ EXPORT_SYMBOL_GPL(ata_noop_dev_select);
+ EXPORT_SYMBOL_GPL(ata_std_dev_select);
+ EXPORT_SYMBOL_GPL(sata_print_link_status);
++EXPORT_SYMBOL_GPL(atapi_cmd_type);
+ EXPORT_SYMBOL_GPL(ata_tf_to_fis);
+ EXPORT_SYMBOL_GPL(ata_tf_from_fis);
+ EXPORT_SYMBOL_GPL(ata_pack_xfermask);
+diff --git a/drivers/ata/pata_ali.c b/drivers/ata/pata_ali.c
+index 8786455..ce830fe 100644
+--- a/drivers/ata/pata_ali.c
++++ b/drivers/ata/pata_ali.c
+@@ -36,6 +36,10 @@
+ #define DRV_NAME "pata_ali"
+ #define DRV_VERSION "0.7.5"
+ 
++int ali_atapi_dma = 0;
++module_param_named(atapi_dma, ali_atapi_dma, int, 0644);
++MODULE_PARM_DESC(atapi_dma, "Enable ATAPI DMA (0=disable, 1=enable)");
++
+ /*
+  *	Cable special cases
+  */
+@@ -270,6 +274,27 @@ static void ali_set_dmamode(struct ata_port *ap, struct ata_device *adev)
+ }
+ 
+ /**
++ *	ali_warn_atapi_dma	-	Warn about ATAPI DMA disablement
++ *	@adev: Device
++ *
++ *	Whine about ATAPI DMA disablement if @adev is an ATAPI device.
++ *	Can be used as ->dev_config.
++ */
++
++static void ali_warn_atapi_dma(struct ata_device *adev)
++{
++	struct ata_eh_context *ehc = &adev->link->eh_context;
++	int print_info = ehc->i.flags & ATA_EHI_PRINTINFO;
++
++	if (print_info && adev->class == ATA_DEV_ATAPI && !ali_atapi_dma) {
++		ata_dev_printk(adev, KERN_WARNING,
++			       "WARNING: ATAPI DMA disabled for reliablity issues.  It can be enabled\n");
++		ata_dev_printk(adev, KERN_WARNING,
++			       "WARNING: via pata_ali.atapi_dma modparam or corresponding sysfs node.\n");
++	}
++}
++
++/**
+  *	ali_lock_sectors	-	Keep older devices to 255 sector mode
+  *	@adev: Device
+  *
+@@ -283,6 +308,7 @@ static void ali_set_dmamode(struct ata_port *ap, struct ata_device *adev)
+ static void ali_lock_sectors(struct ata_device *adev)
+ {
+ 	adev->max_sectors = 255;
++	ali_warn_atapi_dma(adev);
+ }
+ 
+ /**
+@@ -294,6 +320,18 @@ static void ali_lock_sectors(struct ata_device *adev)
+ 
+ static int ali_check_atapi_dma(struct ata_queued_cmd *qc)
+ {
++	if (!ali_atapi_dma) {
++		/* FIXME: pata_ali can't do ATAPI DMA reliably but the
++		 * IDE alim15x3 driver can.  I tried lots of things
++		 * but couldn't find what the actual difference was.
++		 * If you got an idea, please write it to
++		 * linux-ide@vger.kernel.org and cc htejun@gmail.com.
++		 *
++		 * Disable ATAPI DMA for now.
++		 */
++		return -EOPNOTSUPP;
++	}
++
+ 	/* If its not a media command, its not worth it */
+ 	if (atapi_cmd_type(qc->cdb[0]) == ATAPI_MISC)
+ 		return -EOPNOTSUPP;
+@@ -359,6 +397,7 @@ static struct ata_port_operations ali_20_port_ops = {
+ 
+ 	.tf_load	= ata_tf_load,
+ 	.tf_read	= ata_tf_read,
++	.check_atapi_dma = ali_check_atapi_dma,
+ 	.check_status 	= ata_check_status,
+ 	.exec_command	= ata_exec_command,
+ 	.dev_select 	= ata_std_dev_select,
+@@ -438,6 +477,7 @@ static struct ata_port_operations ali_c5_port_ops = {
+ 	.check_status 	= ata_check_status,
+ 	.exec_command	= ata_exec_command,
+ 	.dev_select 	= ata_std_dev_select,
++	.dev_config	= ali_warn_atapi_dma,
+ 
+ 	.freeze		= ata_bmdma_freeze,
+ 	.thaw		= ata_bmdma_thaw,
+diff --git a/include/linux/libata.h b/include/linux/libata.h
+index b064bfe..37ee881 100644
+--- a/include/linux/libata.h
++++ b/include/linux/libata.h
+@@ -350,7 +350,8 @@ enum {
+ 	ATAPI_READ		= 0,		/* READs */
+ 	ATAPI_WRITE		= 1,		/* WRITEs */
+ 	ATAPI_READ_CD		= 2,		/* READ CD [MSF] */
+-	ATAPI_MISC		= 3,		/* the rest */
++	ATAPI_PASS_THRU		= 3,		/* SAT pass-thru */
++	ATAPI_MISC		= 4,		/* the rest */
+ };
+ 
+ enum ata_xfer_mask {
+@@ -849,6 +850,7 @@ extern unsigned int ata_dev_try_classify(struct ata_device *dev, int present,
+  */
+ extern void ata_tf_load(struct ata_port *ap, const struct ata_taskfile *tf);
+ extern void ata_tf_read(struct ata_port *ap, struct ata_taskfile *tf);
++extern int atapi_cmd_type(u8 opcode);
+ extern void ata_tf_to_fis(const struct ata_taskfile *tf,
+ 			  u8 pmp, int is_cmd, u8 *fis);
+ extern void ata_tf_from_fis(const u8 *fis, struct ata_taskfile *tf);
+@@ -1379,27 +1381,6 @@ static inline int ata_try_flush_cache(const struct ata_device *dev)
+ 	       ata_id_has_flush_ext(dev->id);
+ }
+ 
+-static inline int atapi_cmd_type(u8 opcode)
+-{
+-	switch (opcode) {
+-	case GPCMD_READ_10:
+-	case GPCMD_READ_12:
+-		return ATAPI_READ;
+-
+-	case GPCMD_WRITE_10:
+-	case GPCMD_WRITE_12:
+-	case GPCMD_WRITE_AND_VERIFY_10:
+-		return ATAPI_WRITE;
+-
+-	case GPCMD_READ_CD:
+-	case GPCMD_READ_CD_MSF:
+-		return ATAPI_READ_CD;
+-
+-	default:
+-		return ATAPI_MISC;
+-	}
+-}
+-
+ static inline unsigned int ac_err_mask(u8 status)
+ {
+ 	if (status & (ATA_BUSY | ATA_DRQ))
