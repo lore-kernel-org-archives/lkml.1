@@ -1,70 +1,384 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760999AbYDDM6l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760084AbYDDM7D@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760999AbYDDM6l (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Apr 2008 08:58:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759573AbYDDMzK
+	id S1760084AbYDDM7D (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Apr 2008 08:59:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758275AbYDDMzN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Apr 2008 08:55:10 -0400
-Received: from saeurebad.de ([85.214.36.134]:44713 "EHLO saeurebad.de"
+	Fri, 4 Apr 2008 08:55:13 -0400
+Received: from wine.ocn.ne.jp ([122.1.235.145]:63819 "EHLO smtp.wine.ocn.ne.jp"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756728AbYDDMyt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Apr 2008 08:54:49 -0400
-X-Mailbox-Line: From hannes@skyscraper.fehenstaub.lan Fri Apr  4 13:52:30 2008
-Message-Id: <20080404115137.397502419@skyscraper.fehenstaub.lan>
+	id S1756226AbYDDMys (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Apr 2008 08:54:48 -0400
+Message-Id: <20080404122408.228606837@I-love.SAKURA.ne.jp>
+References: <20080404122242.867070732@I-love.SAKURA.ne.jp>
 User-Agent: quilt/0.46-1
-Date: Fri, 04 Apr 2008 13:51:37 +0200
-From: hannes@saeurebad.de
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: [patch 00/22 -v2] Generic show_mem()
-X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
+Date: Fri, 04 Apr 2008 21:23:10 +0900
+From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org
+Cc: Kentaro Takeda <takedakn@nttdata.co.jp>,
+       Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>,
+       Toshiharu Harada <haradats@nttdata.co.jp>
+Subject: [TOMOYO #7 28/30] Filesystem part of tamper-proof device filesystem.
+Content-Disposition: inline; filename=tomoyo-tamper-proof-device-filesystem-part.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Every arch implements its own show_mem() function.  Most of them share
-quite some code, some of them are completely identical.
+This file is almost identical to fs/ramfs/inode.c except that
+there are hooks for checking filename-attribute pairs.
 
-This series implements a generic version of this function and migrates
-almost all architectures to it.
-
+Signed-off-by: Kentaro Takeda <takedakn@nttdata.co.jp>
+Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+Signed-off-by: Toshiharu Harada <haradats@nttdata.co.jp>
 ---
-version 2:
-	- Fix kbuild bits as suggested by Heiko Carstens
-	- Include quicklist info as suggested by Paul Mundt
-	- Extend changelogs by info on removal of redundant output
+ fs/syaoran_2.6.c |  342 +++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 342 insertions(+)
 
-Note: This patchset is based on the `Remove redundant display of free
-swap space from show_mem()' series. 
+--- /dev/null
++++ linux-2.6.25-rc8-mm1/fs/syaoran_2.6.c
+@@ -0,0 +1,342 @@
++/*
++ * fs/syaoran_2.6.c
++ *
++ * Implementation of the Tamper-Proof Device Filesystem.
++ *
++ * Portions Copyright (C) 2005-2008  NTT DATA CORPORATION
++ *
++ * Version: 1.6.0   2008/04/01
++ *
++ * This filesystem is developed using the ramfs implementation.
++ *
++ */
++/*
++ * Resizable simple ram filesystem for Linux.
++ *
++ * Copyright (C) 2000 Linus Torvalds.
++ *               2000 Transmeta Corp.
++ *
++ * Usage limits added by David Gibson, Linuxcare Australia.
++ * This file is released under the GPL.
++ */
++
++/*
++ * NOTE! This filesystem is probably most useful
++ * not as a real filesystem, but as an example of
++ * how virtual filesystems can be written.
++ *
++ * It doesn't get much simpler than this. Consider
++ * that this file implements the full semantics of
++ * a POSIX-compliant read-write filesystem.
++ *
++ * Note in particular how the filesystem does not
++ * need to implement any data structures of its own
++ * to keep track of the virtual data: using the VFS
++ * caches is sufficient.
++ */
++
++#include <linux/module.h>
++#include <linux/fs.h>
++#include <linux/pagemap.h>
++#include <linux/highmem.h>
++#include <linux/init.h>
++#include <linux/string.h>
++#include <linux/smp_lock.h>
++#include <linux/backing-dev.h>
++
++#include <linux/uaccess.h>
++
++#include <linux/namei.h>
++#include <linux/sched.h>
++#include <linux/mm.h>
++
++static struct super_operations syaoran_ops;
++static struct address_space_operations syaoran_aops;
++static struct inode_operations syaoran_file_inode_operations;
++static struct inode_operations syaoran_dir_inode_operations;
++static struct inode_operations syaoran_symlink_inode_operations;
++static struct file_operations syaoran_file_operations;
++
++static struct backing_dev_info syaoran_backing_dev_info = {
++	.ra_pages      = 0,    /* No readahead */
++	.capabilities  = BDI_CAP_NO_ACCT_DIRTY | BDI_CAP_NO_WRITEBACK |
++	BDI_CAP_MAP_DIRECT | BDI_CAP_MAP_COPY |
++	BDI_CAP_READ_MAP | BDI_CAP_WRITE_MAP |
++	BDI_CAP_EXEC_MAP,
++};
++
++#include <linux/syaoran.h>
++
++static struct inode *syaoran_get_inode(struct super_block *sb, int mode,
++				       dev_t dev)
++{
++	struct inode *inode = new_inode(sb);
++
++	if (inode) {
++		inode->i_mode = mode;
++		inode->i_uid = current->fsuid;
++		inode->i_gid = current->fsgid;
++		inode->i_blocks = 0;
++		inode->i_mapping->a_ops = &syaoran_aops;
++		inode->i_mapping->backing_dev_info = &syaoran_backing_dev_info;
++		inode->i_ctime = CURRENT_TIME;
++		inode->i_mtime = inode->i_ctime;
++		inode->i_atime = inode->i_mtime;
++		switch (mode & S_IFMT) {
++		default:
++			init_special_inode(inode, mode, dev);
++			if (S_ISBLK(mode))
++				inode->i_fop = &wrapped_def_blk_fops;
++			else if (S_ISCHR(mode))
++				inode->i_fop = &wrapped_def_chr_fops;
++			inode->i_op = &syaoran_file_inode_operations;
++			break;
++		case S_IFREG:
++			inode->i_op = &syaoran_file_inode_operations;
++			inode->i_fop = &syaoran_file_operations;
++			break;
++		case S_IFDIR:
++			inode->i_op = &syaoran_dir_inode_operations;
++			inode->i_fop = &simple_dir_operations;
++			/*
++			 * directory inodes start off with i_nlink == 2
++			 * (for "." entry)
++			 */
++			inode->i_nlink++;
++			break;
++		case S_IFLNK:
++			inode->i_op = &syaoran_symlink_inode_operations;
++			break;
++		}
++	}
++	return inode;
++}
++
++/*
++ * File creation. Allocate an inode, and we're done..
++ */
++/* SMP-safe */
++static int syaoran_mknod(struct inode *dir, struct dentry *dentry, int mode,
++			 dev_t dev)
++{
++	struct inode *inode;
++	int error = -ENOSPC;
++	if (syaoran_may_create_node(dentry, mode, dev) < 0)
++		return -EPERM;
++	inode = syaoran_get_inode(dir->i_sb, mode, dev);
++	if (inode) {
++		if (dir->i_mode & S_ISGID) {
++			inode->i_gid = dir->i_gid;
++			if (S_ISDIR(mode))
++				inode->i_mode |= S_ISGID;
++		}
++		d_instantiate(dentry, inode);
++		dget(dentry); /* Extra count - pin the dentry in core */
++		error = 0;
++	}
++	return error;
++}
++
++static int syaoran_mkdir(struct inode *dir, struct dentry *dentry, int mode)
++{
++	int retval = syaoran_mknod(dir, dentry, mode | S_IFDIR, 0);
++	if (!retval)
++		dir->i_nlink++;
++	return retval;
++}
++
++static int syaoran_create(struct inode *dir, struct dentry *dentry, int mode,
++			  struct nameidata *nd)
++{
++	return syaoran_mknod(dir, dentry, mode | S_IFREG, 0);
++}
++
++static int syaoran_symlink(struct inode *dir, struct dentry *dentry,
++			   const char *symname)
++{
++	struct inode *inode;
++	int error = -ENOSPC;
++	if (syaoran_may_create_node(dentry, S_IFLNK, 0) < 0)
++		return -EPERM;
++	inode = syaoran_get_inode(dir->i_sb, S_IFLNK|S_IRWXUGO, 0);
++	if (inode) {
++		int l = strlen(symname)+1;
++		error = page_symlink(inode, symname, l);
++		if (!error) {
++			if (dir->i_mode & S_ISGID)
++				inode->i_gid = dir->i_gid;
++			d_instantiate(dentry, inode);
++			dget(dentry);
++		} else
++			iput(inode);
++	}
++	return error;
++}
++
++static int syaoran_link(struct dentry *old_dentry, struct inode *dir,
++			struct dentry *dentry)
++{
++	struct inode *inode = old_dentry->d_inode;
++	if (!inode || syaoran_may_create_node(dentry, inode->i_mode,
++					      inode->i_rdev) < 0)
++		return -EPERM;
++	return simple_link(old_dentry, dir, dentry);
++}
++
++static int syaoran_unlink(struct inode *dir, struct dentry *dentry)
++{
++	if (syaoran_may_modify_node(dentry, MAY_DELETE) < 0)
++		return -EPERM;
++	return simple_unlink(dir, dentry);
++}
++
++static int syaoran_rename(struct inode *old_dir, struct dentry *old_dentry,
++			  struct inode *new_dir, struct dentry *new_dentry)
++{
++	struct inode *inode = old_dentry->d_inode;
++	if (!inode || syaoran_may_modify_node(old_dentry, MAY_DELETE) < 0 ||
++	    syaoran_may_create_node(new_dentry, inode->i_mode,
++				    inode->i_rdev) < 0)
++		return -EPERM;
++	return simple_rename(old_dir, old_dentry, new_dir, new_dentry);
++}
++
++static int syaoran_rmdir(struct inode *dir, struct dentry *dentry)
++{
++	if (syaoran_may_modify_node(dentry, MAY_DELETE) < 0)
++		return -EPERM;
++	return simple_rmdir(dir, dentry);
++}
++
++static int syaoran_setattr(struct dentry *dentry, struct iattr *attr)
++{
++	struct inode *inode = dentry->d_inode;
++	int error = inode_change_ok(inode, attr);
++	if (!error) {
++		unsigned int ia_valid = attr->ia_valid;
++		unsigned int flags = 0;
++		if (ia_valid & (ATTR_UID | ATTR_GID))
++			flags |= MAY_CHOWN;
++		if (ia_valid & ATTR_MODE)
++			flags |= MAY_CHMOD;
++		if (syaoran_may_modify_node(dentry, flags) < 0)
++			return -EPERM;
++		if (!error)
++			error = inode_setattr(inode, attr);
++	}
++	return error;
++}
++
++static int syaoran_set_page_dirty_no_writeback(struct page *page)
++{
++	if (!PageDirty(page))
++		SetPageDirty(page);
++	return 0;
++}
++static struct address_space_operations syaoran_aops = {
++	.readpage       = simple_readpage,
++	.write_begin    = simple_write_begin,
++	.write_end      = simple_write_end,
++	.set_page_dirty = syaoran_set_page_dirty_no_writeback,
++};
++
++static struct file_operations syaoran_file_operations = {
++	.aio_read    = generic_file_aio_read,
++	.read        = do_sync_read,
++	.aio_write   = generic_file_aio_write,
++	.write       = do_sync_write,
++	.mmap        = generic_file_mmap,
++	.fsync       = simple_sync_file,
++	.splice_read = generic_file_splice_read,
++	.llseek      = generic_file_llseek,
++};
++
++static struct inode_operations syaoran_file_inode_operations = {
++	.getattr    = simple_getattr,
++	.setattr    = syaoran_setattr,
++};
++
++static struct inode_operations syaoran_dir_inode_operations = {
++	.create     = syaoran_create,
++	.lookup     = simple_lookup,
++	.link       = syaoran_link,
++	.unlink     = syaoran_unlink,
++	.symlink    = syaoran_symlink,
++	.mkdir      = syaoran_mkdir,
++	.rmdir      = syaoran_rmdir,
++	.mknod      = syaoran_mknod,
++	.rename     = syaoran_rename,
++	.setattr    = syaoran_setattr,
++};
++
++static struct inode_operations syaoran_symlink_inode_operations = {
++	.readlink       = generic_readlink,
++	.follow_link    = page_follow_link_light,
++	.put_link       = page_put_link,
++	.setattr        = syaoran_setattr,
++};
++
++static struct super_operations syaoran_ops = {
++	.statfs     = simple_statfs,
++	.drop_inode = generic_delete_inode,
++	.put_super  = syaoran_put_super,
++};
++
++static int syaoran_fill_super(struct super_block *sb, void *data, int silent)
++{
++	struct inode *inode;
++	struct dentry *root;
++
++	sb->s_maxbytes = MAX_LFS_FILESIZE;
++	sb->s_blocksize = PAGE_CACHE_SIZE;
++	sb->s_blocksize_bits = PAGE_CACHE_SHIFT;
++	sb->s_magic = SYAORAN_MAGIC;
++	sb->s_op = &syaoran_ops;
++	sb->s_time_gran = 1;
++	{
++		int error = syaoran_initialize(sb, data);
++		if (error < 0)
++			return error;
++	}
++	inode = syaoran_get_inode(sb, S_IFDIR | 0755, 0);
++	if (!inode)
++		return -ENOMEM;
++
++	root = d_alloc_root(inode);
++	if (!root) {
++		iput(inode);
++		return -ENOMEM;
++	}
++	sb->s_root = root;
++	syaoran_make_initial_nodes(sb);
++	return 0;
++}
++
++static int syaoran_get_sb(struct file_system_type *fs_type,
++			  int flags, const char *dev_name, void *data,
++			  struct vfsmount *mnt)
++{
++	return get_sb_nodev(fs_type, flags, data, syaoran_fill_super, mnt);
++}
++
++static struct file_system_type syaoran_fs_type = {
++	.owner      = THIS_MODULE,
++	.name       = "syaoran",
++	.get_sb     = syaoran_get_sb,
++	.kill_sb    = kill_litter_super,
++};
++
++static int __init init_syaoran_fs(void)
++{
++	return register_filesystem(&syaoran_fs_type);
++}
++
++static void __exit exit_syaoran_fs(void)
++{
++	unregister_filesystem(&syaoran_fs_type);
++}
++
++module_init(init_syaoran_fs);
++module_exit(exit_syaoran_fs);
++
++MODULE_LICENSE("GPL");
 
- arch/alpha/mm/init.c      |   29 -----------------------
- arch/alpha/mm/numa.c      |   34 ---------------------------
- arch/arm/Kconfig          |    1 +
- arch/avr32/mm/init.c      |   39 -------------------------------
- arch/blackfin/mm/init.c   |   27 ----------------------
- arch/cris/mm/init.c       |   30 ------------------------
- arch/frv/mm/init.c        |   31 -------------------------
- arch/h8300/mm/init.c      |   28 -----------------------
- arch/ia64/Kconfig         |    1 +
- arch/m32r/mm/init.c       |   35 ----------------------------
- arch/m68k/mm/init.c       |   30 ------------------------
- arch/m68knommu/mm/init.c  |   28 -----------------------
- arch/mips/mm/Makefile     |    3 +-
- arch/mips/mm/pgtable.c    |   36 -----------------------------
- arch/mn10300/mm/pgtable.c |   27 ----------------------
- arch/parisc/Kconfig       |    1 +
- arch/powerpc/mm/mem.c     |   39 -------------------------------
- arch/ppc/mm/init.c        |   30 ------------------------
- arch/s390/mm/init.c       |   35 ----------------------------
- arch/sh/mm/init.c         |   40 --------------------------------
- arch/sparc/Kconfig        |    1 +
- arch/sparc64/mm/init.c    |   43 -----------------------------------
- arch/um/kernel/mem.c      |   29 -----------------------
- arch/v850/kernel/setup.c  |   30 ------------------------
- arch/x86/mm/init_64.c     |   37 ------------------------------
- arch/x86/mm/pgtable_32.c  |   47 --------------------------------------
- arch/xtensa/mm/init.c     |   26 ---------------------
- mm/Kconfig                |    3 ++
- mm/page_alloc.c           |   55 +++++++++++++++++++++++++++++++++++++++++++++
- mm/swap_state.c           |    3 +-
- 30 files changed, 65 insertions(+), 733 deletions(-)
-
+-- 
