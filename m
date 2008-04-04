@@ -1,68 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752327AbYDDVH1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752182AbYDDVRE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752327AbYDDVH1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Apr 2008 17:07:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751196AbYDDVHQ
+	id S1752182AbYDDVRE (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Apr 2008 17:17:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751080AbYDDVQw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Apr 2008 17:07:16 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:33143 "EHLO mx2.suse.de"
+	Fri, 4 Apr 2008 17:16:52 -0400
+Received: from mga11.intel.com ([192.55.52.93]:47542 "EHLO mga11.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751080AbYDDVHP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Apr 2008 17:07:15 -0400
-Date: Fri, 4 Apr 2008 14:01:32 -0700
-From: Greg KH <gregkh@suse.de>
-To: Pierre Ossman <drzeus-list@drzeus.cx>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: pci: add to global list before sysfs?
-Message-ID: <20080404210132.GA14418@suse.de>
-References: <20080404191350.7f0183a5@mjolnir.drzeus.cx>
+	id S1751038AbYDDVQv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Apr 2008 17:16:51 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,606,1199692800"; 
+   d="scan'208";a="545916807"
+Message-ID: <47F69965.7030303@intel.com>
+Date: Fri, 04 Apr 2008 14:11:01 -0700
+From: "Kok, Auke" <auke-jan.h.kok@intel.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071125)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080404191350.7f0183a5@mjolnir.drzeus.cx>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       NetDev <netdev@vger.kernel.org>,
+       e1000-list <e1000-devel@lists.sourceforge.net>,
+       linux-pci maillist <linux-pci@atrey.karlin.mff.cuni.cz>
+CC: Jeff Garzik <jeff@garzik.org>, Andrew Morton <akpm@linux-foundation.org>,
+       "David S. Miller" <davem@davemloft.net>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Jesse Brandeburg <jesse.brandeburg@intel.com>,
+       "Ronciak, John" <john.ronciak@intel.com>,
+       "Allan, Bruce W" <bruce.w.allan@intel.com>, Greg KH <greg@kroah.com>,
+       Arjan van de Ven <arjan@linux.intel.com>
+Subject: [ANNOUNCE] e1000 to e1000e migration of PCI Express devices
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 04 Apr 2008 21:12:04.0364 (UTC) FILETIME=[8828F4C0:01C89698]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 04, 2008 at 07:13:50PM +0200, Pierre Ossman wrote:
-> Hi Greg,
-> 
-> I have a PCI hotplug problem I was hoping you could provide some
-> insight into.
-> 
-> I want the PCI layer to make sure that all subfunctions of a newly
-> added card are visible via pci_get_device() before any of them are
-> binded to drivers. I.e. I want pci_bus_add_devices() to first make a
-> pass and add the devices to the global list, then a second pass for
-> device_add().
 
-What "global list"?  You mean the one that I just deleted with my
-patchset that is in -mm and going to be in 2.6.26?  :)
+All,
 
-> The reason I want this is because I have at least two chips where I
-> need to know which other subfunctions are present on the card in order
-> to correctly initalise the subfunction I'm currently probing. Right now
-> that fails miserably as the driver does not see the other devices in
-> its probe function.
+>From kernel 2.6.26 onward all *PCI Express* device IDs previously
+supported by e1000 will be moving to the e1000e driver.  This includes
+ich8 and ich9 onboard LAN, server 5000 platform onboard LAN (es2) and
+82571/2/3 chipset based adapters and variants.
 
-How will changing the addition of the device to the list affect this
-behavior?  Do you want to walk the list in your driver's probe function,
-looking for the "subfunction" that is not yet added to the list?
+If you have not already enabled CONFIG_E1000E make sure that you do so.
+You can already do this with 2.6.25.  From 2.6.26 on this change will be
+required if you have such a device.
 
-> Is it possible to do this or will things break left and right if I
-> add them to the global list before I register them with the driver core?
+It is also worthwhile to note you will have to update your modprobe.conf
+or equivalent file to point existing interfaces to the new driver.
 
-As I mention above, the "global list" is now gone, so it's going to be a
-bit harder to do this.  We now only keep one list of all PCI devices,
-and that is with the driver core mechanisms as the duplicate list was
-just sitting there doing nothing for the past 4 years.
+For clarity, please note that all 8254x devices are only supported by
+e1000, even if they are hidden behind a PCI Express bridge.  They are
+still regular PCI or PCI-X devices.
 
-So is the problem that your driver need to bind to multiple pci devices
-at the same time in order to work properly?
+Intel will continue to support both e1000 and e1000e drivers in the
+kernel.
 
-Or is this just really broken hardware?
 
-confused,
+Regards,
 
-greg k-h
+Auke
