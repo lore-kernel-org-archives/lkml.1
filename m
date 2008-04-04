@@ -1,50 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757527AbYDDGmO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756091AbYDDGyk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757527AbYDDGmO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Apr 2008 02:42:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751405AbYDDGmA
+	id S1756091AbYDDGyk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Apr 2008 02:54:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751681AbYDDGyb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Apr 2008 02:42:00 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:40642 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751974AbYDDGl7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Apr 2008 02:41:59 -0400
-Date: Thu, 3 Apr 2008 23:34:40 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Ralf Baechle <ralf@linux-mips.org>
-Cc: Sergei Shtylyov <sshtylyov@ru.mvista.com>, linux-mips@linux-mips.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Alchemy: move UART platform code to its proper place
-Message-Id: <20080403233440.9b920466.akpm@linux-foundation.org>
-In-Reply-To: <20080404062924.GA12086@linux-mips.org>
-References: <200804040002.53757.sshtylyov@ru.mvista.com>
-	<20080404062924.GA12086@linux-mips.org>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 4 Apr 2008 02:54:31 -0400
+Received: from nn7.de ([85.214.94.156]:50285 "EHLO nn7.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751405AbYDDGyb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Apr 2008 02:54:31 -0400
+Subject: Re: 2.6.25 intended change: smc:kbd_backlight vs.
+	smc::kbd_backlight ?
+From: Soeren Sonnenburg <kernel@nn7.de>
+To: rpurdie@rpsys.net
+Cc: Julien BLACHE <jb@jblache.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <1207162690.9669.11.camel@localhost>
+References: <1207162690.9669.11.camel@localhost>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
+Date: Fri, 04 Apr 2008 08:54:28 +0200
+Message-Id: <1207292068.4511.10.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.0 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 4 Apr 2008 07:29:25 +0100 Ralf Baechle <ralf@linux-mips.org> wrote:
-
-> On Fri, Apr 04, 2008 at 12:02:53AM +0400, Sergei Shtylyov wrote:
+On Wed, 2008-04-02 at 20:58 +0200, Soeren Sonnenburg wrote:
+> Dear all,
 > 
-> > Move the code registering the Alchemy UART platform devices from drivers/serial/
-> > to its proper place, into the Alchemy platform code.  Fix the related Kconfig
-> > entry, while at it...
-> > 
-> > Signed-off-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-> > 
-> > ---
-> > Ralf, could you take this patch thru your queue -- it ahould apply atop of my
-> > former #include /extern cleanup?
-> > 
-> > I don't know how the platform code ended up accepted into the serial drivers in
-> > the first place -- it's high time to amend this.
+> I am wondering whether the change from 
 > 
-> Andrew, I'd like to queue this patch, ok?
+> /sys/devices/platform/applesmc.768/leds/smc:kbd_backlight  (2.6.24) 
+> /sys/devices/platform/applesmc.768/leds/smc::kbd_backlight (2.6.25)
+> 
+> is intentional?
+> 
+> I recognized that it breaks current userspace applications changing the
+> keyboard background leds like pommed...
 
-Sure..
+OK it looks like commit 6c152beefbf90579d21afc4f7e075b1f801f9a75 from
+Richard Purdie, 'leds: Standardise LED naming scheme' introduced this
+change.
+
+Why do we need '::' instead of a single ':' (that would not have broken
+things)?
+
+Also sometimes only a single ':' seperator is used like in
+corgi:green:mail but e.g. not in clevo::mail ?!
+
+Soeren
