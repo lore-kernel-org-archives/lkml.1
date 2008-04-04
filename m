@@ -1,85 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758120AbYDDSEW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759881AbYDDSE4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758120AbYDDSEW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Apr 2008 14:04:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751350AbYDDSEM
+	id S1759881AbYDDSE4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Apr 2008 14:04:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752909AbYDDSEn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Apr 2008 14:04:12 -0400
-Received: from emh07.mail.saunalahti.fi ([62.142.5.117]:44920 "EHLO
-	emh07.mail.saunalahti.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750925AbYDDSEL (ORCPT
+	Fri, 4 Apr 2008 14:04:43 -0400
+Received: from e34.co.us.ibm.com ([32.97.110.152]:60553 "EHLO
+	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751350AbYDDSEm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Apr 2008 14:04:11 -0400
-Date: Fri, 4 Apr 2008 21:04:06 +0300 (EEST)
-From: Kai Makisara <Kai.Makisara@kolumbus.fi>
-X-X-Sender: makisara@kai.makisara.local
-To: Robert Hancock <hancockr@shaw.ca>
-cc: Carlo Nyto <carlonyto@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: Slow tape drive timeout
-In-Reply-To: <47F5917C.5080803@shaw.ca>
-Message-ID: <alpine.LSU.1.10.0804042018001.7279@kai.makisara.local>
-References: <fa.iY7vJs54MoScDgyQ4PUWZsO+3Jw@ifi.uio.no> <fa.of3hIrxfNefAS08Tzqfm1dI0BOo@ifi.uio.no> <47F45B39.7080305@shaw.ca> <alpine.LSU.1.10.0804032121380.9918@kai.makisara.local> <47F5917C.5080803@shaw.ca>
-User-Agent: Alpine 1.10 (LSU 962 2008-03-14)
+	Fri, 4 Apr 2008 14:04:42 -0400
+Date: Fri, 4 Apr 2008 11:04:22 -0700
+From: Nishanth Aravamudan <nacc@us.ibm.com>
+To: Andy Whitcroft <apw@shadowen.org>
+Cc: Nish Aravamudan <nish.aravamudan@gmail.com>,
+       Gurudas Pai <gurudas.pai@oracle.com>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] hugetlbpage.txt: correct overcommit caveat [Was Re:
+	[BUG]:2.6.25-rc7 memory leak with hugepages.]
+Message-ID: <20080404180422.GA19896@us.ibm.com>
+References: <47EB4E2A.1040507@oracle.com> <20080327083849.GF15626@elte.hu> <47EB75C5.20207@oracle.com> <29495f1d0804032040h56f39051lcd5f707660d3c06c@mail.gmail.com> <20080404171638.GA17915@shadowen.org> <20080404173125.GE30117@us.ibm.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Antivirus: VAMS
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080404173125.GE30117@us.ibm.com>
+X-Operating-System: Linux 2.6.25-rc3 (x86_64)
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 3 Apr 2008, Robert Hancock wrote:
-
-> Kai Makisara wrote:
-> > On Wed, 2 Apr 2008, Robert Hancock wrote:
+On 04.04.2008 [10:31:25 -0700], Nishanth Aravamudan wrote:
+> On 04.04.2008 [18:16:38 +0100], Andy Whitcroft wrote:
+> > On Thu, Apr 03, 2008 at 08:40:41PM -0700, Nish Aravamudan wrote:
 > > 
-> > > Kai Makisara wrote:
-> > > > On Tue, 1 Apr 2008, Carlo Nyto wrote:
-> > > > 
-> > > > > I am experiencing a two minute timeout open()ing a tape device when
-> > > > > there is no tape in the drive.
-> > > > > 
-> > > > > open() with O_NONBLOCK succeeds immediately, however.
-> > > > > 
-> > > > This is how open() is supposed to work according to standards (e.g.,
-> > > > SUS) if
-> > > > O_NONBLOCK is supported. (Well, actually open() should wait indefinitely
-> > > > but
-> > > > the non-linux systems I tested had a timeout.) The linux st driver was
-> > > > changed to comply with standards at 2.5.3. I.e., the 2.4 kernels did
-> > > > return
-> > > > immediately but the 2.6 kernels have always waited.
-> > > > 
-> > ...
-> > > Why is accessing the tape drive with no tape in it causing a timeout in
-> > > the
-> > > first place? I should think that would fail immediately with some "medium
-> > > not
-> > > present" error from the drive. Unless the drive has no mechanism to detect
-> > > it,
-> > > but that seems really retarded..
+> > > Hrm, fio is using SHM_HUGETLB. Does ipcs indicate maybe fio is not
+> > > cleaning up the shared memory segment? FWIW, it seems like each run is
+> > > using 400 hugepages in the SHM_HUGETLB segment, and then when you try
+> > > to force the pool to shrink, it converts those 800 (since you ran fio
+> > > twice) hugepages from static pool pages to dynamic (or overcommit)
+> > > pages.
 > > > 
-> > It does not seem retarded to me. If a program wants to just wait until the
-> > tape drive becomes ready (e.g., loads the tape), it can use the blocking
-> > open. This is simple. If a program wants to test the status, it uses
-> > non-blocking open. The behavior mandated by the standards provides
-> > alternatives. If O_NONBLOCK is not supported, the user program must
-> > implement the waiting logic if the program just wants to wait until the
-> > drive is ready before starting i/o.
+> > > On another note, it is odd that we're using the dynamic pool, when it
+> > > is initially disabled...I'll have to think about that.
+> > > 
+> > > I'll try and look at this later this evening or early tomorrow.
+> > 
+> > Yes that is an expected result.  We have no way to force the pool to
+> > shrink when pages are in-use.  When a request is made to redoce the pool
+> > below the number of in-use pages, we move the pages to surplus.  While
+> > this does temporarily violate the overcommit cap, it does provide the
+> > most utility as those pages will be returned to the buddy at the
+> > earliest oppotunity.
+> > 
+> > I suspect the documenation could do with a little clarification.
 > 
-> This behavior is not consistent with any other removable storage device
-> provided by Linux, however. If you try to open a CD-ROM device node when no
-> disc is inserted, it doesn't block, it just gives you an error right away. Why
-> should the tape drive behavior be different?
+> 
+> As shown by Gurudas Pai recently, we can put hugepages into the surplus
+> state (by echo 0 > /proc/sys/vm/nr_hugepages), even when
+> /proc/sys/vm/nr_overcommit_hugepages is 0. This is actually correct, to
+> allow the original goal (shrink the static pool to 0) to succeed when it
+> is possible for it two (we are converting hugepages to surplus because
 
-The tape driver supports O_NONBLOCK, the cdrom and disk drivers don't. The 
-tape and disk drivers are otherwise so different (tape is character 
-device, disks block devices) that I don't think it is a problem if the 
-tape drive supports more features than the disk drivers.
+s/when it is possible for it two//
 
-I looked at my emails from 2001 when support for O_NONBLOCK was 
-introduced. The reasons for this where standards (as mentioned already) 
-and that some applications required this feature. So, it was not added 
-just for fun.
+Will fix in my copy.
+
+Thanks,
+Nish
 
 -- 
-Kai
+Nishanth Aravamudan <nacc@us.ibm.com>
+IBM Linux Technology Center
