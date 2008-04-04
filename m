@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759912AbYDDMts@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759544AbYDDMuI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759912AbYDDMts (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Apr 2008 08:49:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758976AbYDDMri
+	id S1759544AbYDDMuI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Apr 2008 08:50:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756373AbYDDMrq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Apr 2008 08:47:38 -0400
-Received: from wine.ocn.ne.jp ([122.1.235.145]:49669 "EHLO smtp.wine.ocn.ne.jp"
+	Fri, 4 Apr 2008 08:47:46 -0400
+Received: from wine.ocn.ne.jp ([122.1.235.145]:49670 "EHLO smtp.wine.ocn.ne.jp"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758823AbYDDMr1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1758814AbYDDMr1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 4 Apr 2008 08:47:27 -0400
-Message-Id: <20080404122358.772001758@I-love.SAKURA.ne.jp>
+Message-Id: <20080404122359.091428222@I-love.SAKURA.ne.jp>
 References: <20080404122242.867070732@I-love.SAKURA.ne.jp>
 User-Agent: quilt/0.46-1
-Date: Fri, 04 Apr 2008 21:22:47 +0900
+Date: Fri, 04 Apr 2008 21:22:48 +0900
 From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
 To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
        linux-security-module@vger.kernel.org
 Cc: Kentaro Takeda <takedakn@nttdata.co.jp>,
        Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>,
        Toshiharu Harada <haradats@nttdata.co.jp>
-Subject: [TOMOYO #7 05/30] External functions prototypes for SAKURA.
-Content-Disposition: inline; filename=tomoyo-sakura-header.patch
+Subject: [TOMOYO #7 06/30] External functions prototypes for TOMOYO.
+Content-Disposition: inline; filename=tomoyo-tomoyo-header.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -31,16 +31,16 @@ Signed-off-by: Kentaro Takeda <takedakn@nttdata.co.jp>
 Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
 Signed-off-by: Toshiharu Harada <haradats@nttdata.co.jp>
 ---
- include/linux/sakura.h |   82 +++++++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 82 insertions(+)
+ include/linux/tomoyo.h |  308 +++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 308 insertions(+)
 
 --- /dev/null
-+++ linux-2.6.25-rc8-mm1/include/linux/sakura.h
-@@ -0,0 +1,82 @@
++++ linux-2.6.25-rc8-mm1/include/linux/tomoyo.h
+@@ -0,0 +1,308 @@
 +/*
-+ * include/linux/sakura.h
++ * include/linux/tomoyo.h
 + *
-+ * Implementation of the Domain-Free Mandatory Access Control.
++ * Implementation of the Domain-Based Mandatory Access Control.
 + *
 + * Copyright (C) 2005-2008  NTT DATA CORPORATION
 + *
@@ -48,75 +48,301 @@ Signed-off-by: Toshiharu Harada <haradats@nttdata.co.jp>
 + *
 + */
 +/*
-+ * A brief description about SAKURA:
++ * A brief description about TOMOYO:
 + *
-+ *  SAKURA stands for "Security Advancement Know-how Upon Read-only Approach".
-+ *  As the name shows, SAKURA was originally a methodology to make root fs
-+ *  read-only to avoid tampering the system files.
-+ *  But now, SAKURA is not only a methodology but also a kernel patch
-+ *  that improves the system security with less effort.
++ *  TOMOYO stands for "Task Oriented Management Obviates Your Onus".
++ *  TOMOYO is intended to provide the Domain-Based MAC utilizing task_struct.
 + *
-+ *  SAKURA can restrict operations that affect systemwide.
-+ *  SAKURA manages the filesystem's namespace related operations so that
-+ *  files remains where the administrator expects.
++ *  The biggest feature of TOMOYO is that TOMOYO has "learning mode".
++ *  The learning mode can automatically generate policy definition,
++ *  and dramatically reduces the policy definition labors.
++ *
++ *  TOMOYO is applicable to figuring out the system's behavior, for
++ *  TOMOYO uses the canonicalized absolute pathnames and
++ *  TreeView style domain transitions.
 + */
 +
-+#ifndef _LINUX_SAKURA_H
-+#define _LINUX_SAKURA_H
++#ifndef _LINUX_TOMOYO_H
++#define _LINUX_TOMOYO_H
 +
-+#if defined(CONFIG_SAKURA)
++struct path_info;
++struct dentry;
++struct vfsmount;
++struct inode;
++struct linux_binprm;
++struct pt_regs;
++struct ccs_page_buffer;
 +
-+/* Check whether the given pathname is allowed to chroot to. */
-+int ccs_check_chroot_permission(struct nameidata *nd);
++#if defined(CONFIG_TOMOYO)
 +
-+/* Check whether the mount operation with the given parameters is allowed. */
-+int ccs_check_mount_permission(char *dev_name, char *dir_name, char *type,
-+			       const unsigned long *flags);
++int ccs_check_file_perm(const char *filename, const u8 perm,
++			const char *operation);
++int ccs_check_exec_perm(const struct path_info *filename,
++			struct linux_binprm *bprm,
++			struct ccs_page_buffer *buf);
++int ccs_check_open_permission(struct dentry *dentry, struct vfsmount *mnt,
++			      const int flag);
++int ccs_check_1path_perm(const u8 operation,
++				     struct dentry *dentry,
++				     struct vfsmount *mnt);
++int ccs_check_2path_perm(const u8 operation,
++				     struct dentry *dentry1,
++				     struct vfsmount *mnt1,
++				     struct dentry *dentry2,
++				     struct vfsmount *mnt2);
++int ccs_check_rewrite_permission(struct file *filp);
 +
-+/* Check whether the current process is allowed to pivot_root. */
-+int ccs_check_pivot_root_permission(struct nameidata *old_nd,
-+				    struct nameidata *new_nd);
++/* Check whether the basename of program and argv0 is allowed to differ. */
++int ccs_check_argv0_perm(const struct path_info *filename, const char *argv0);
 +
-+/* Check whether the given mount operation hides an mounted partition. */
-+int ccs_may_mount(struct nameidata *nd);
++/* Check whether the given environment is allowed to be received. */
++int ccs_check_env_perm(const char *env, const u8 profile, const u8 mode);
 +
-+/* Check whether the given mountpoint is allowed to umount. */
-+int ccs_may_umount(struct vfsmount *mnt);
++/* Check whether the given IP address and port number are allowed to use. */
++int ccs_check_network_listen_acl(const bool is_ipv6, const u8 *address,
++				 const u16 port);
++int ccs_check_network_connect_acl(const bool is_ipv6, const int sock_type,
++				  const u8 *address, const u16 port);
++int ccs_check_network_bind_acl(const bool is_ipv6, const int sock_type,
++			       const u8 *address, const u16 port);
++int ccs_check_network_accept_acl(const bool is_ipv6, const u8 *address,
++				 const u16 port);
++int ccs_check_network_sendmsg_acl(const bool is_ipv6, const int sock_type,
++				  const u8 *address, const u16 port);
++int ccs_check_network_recvmsg_acl(const bool is_ipv6, const int sock_type,
++				  const u8 *address, const u16 port);
 +
-+/* Check whether the given port is allowed to autobind. */
-+int ccs_may_autobind(const u16 port);
++/* Check whether the given signal is allowed to use. */
++int ccs_check_signal_acl(const int sig, const int pid);
++
++/* Check whether the given capability is allowed to use. */
++bool ccs_capable(const u8 operation);
 +
 +#else
 +
-+static inline int ccs_check_chroot_permission(struct nameidata *nd)
++static inline int ccs_check_file_perm(const char *filename, const u8 perm,
++				      const char *operation)
 +{
 +	return 0;
 +}
-+static inline int ccs_check_mount_permission(char *dev_name, char *dir_name,
-+					     char *type,
-+					     const unsigned long *flags)
++static inline int ccs_check_exec_perm(const struct path_info *filename,
++				      struct linux_binprm *bprm,
++				      struct ccs_page_buffer *buf)
 +{
 +	return 0;
 +}
-+static inline int ccs_check_pivot_root_permission(struct nameidata *old_nd,
-+						  struct nameidata *new_nd)
++static inline int ccs_check_open_permission(struct dentry *dentry,
++					    struct vfsmount *mnt,
++					    const int flag)
 +{
 +	return 0;
 +}
-+static inline int ccs_may_mount(struct nameidata *nd)
++static inline int ccs_check_1path_perm(const u8 operation,
++						   struct dentry *dentry,
++						   struct vfsmount *mnt)
 +{
 +	return 0;
 +}
-+static inline int ccs_may_umount(struct vfsmount *mnt)
++static inline int ccs_check_2path_perm(const u8 operation,
++						   struct dentry *dentry1,
++						   struct vfsmount *mnt1,
++						   struct dentry *dentry2,
++						   struct vfsmount *mnt2)
 +{
 +	return 0;
 +}
-+static inline int ccs_may_autobind(const u16 port)
++static inline int ccs_check_rewrite_permission(struct file *filp)
 +{
 +	return 0;
++}
++static inline int ccs_check_argv0_perm(const struct path_info *filename,
++				       const char *argv0)
++{
++	return 0;
++}
++static inline int ccs_check_env_perm(const char *env, const u8 profile,
++				     const u8 mode)
++{
++	return 0;
++}
++static inline int ccs_check_network_listen_acl(const bool is_ipv6,
++					       const u8 *address,
++					       const u16 port)
++{
++	return 0;
++}
++static inline int ccs_check_network_connect_acl(const bool is_ipv6,
++						const int sock_type,
++						const u8 *address,
++						const u16 port)
++{
++	return 0;
++}
++static inline int ccs_check_network_bind_acl(const bool is_ipv6,
++					     const int sock_type,
++					     const u8 *address, const u16 port)
++{
++	return 0;
++}
++static inline int ccs_check_network_accept_acl(const bool is_ipv6,
++					       const u8 *address,
++					       const u16 port)
++{
++	return 0;
++}
++static inline int ccs_check_network_sendmsg_acl(const bool is_ipv6,
++						const int sock_type,
++						const u8 *address,
++						const u16 port)
++{
++	return 0;
++}
++static inline int ccs_check_network_recvmsg_acl(const bool is_ipv6,
++						const int sock_type,
++						const u8 *address,
++						const u16 port)
++{
++	return 0;
++}
++static inline int ccs_check_signal_acl(const int sig, const int pid)
++{
++	return 0;
++}
++static inline bool ccs_capable(const u8 operation)
++{
++	return true;
 +}
 +
 +#endif
++
++int pre_vfs_mknod(struct inode *dir, struct dentry *dentry, int mode);
++
++int search_binary_handler_with_transition(struct linux_binprm *bprm,
++					  struct pt_regs *regs);
++#define TOMOYO_CHECK_READ_FOR_OPEN_EXEC 1
++#define CCS_DONT_SLEEP_ON_ENFORCE_ERROR 2
++#define TOMOYO_TASK_IS_EXECUTE_HANDLER  4
++
++/* Index numbers for Access Controls. */
++
++#define TYPE_SINGLE_PATH_ACL                 0
++#define TYPE_DOUBLE_PATH_ACL                 1
++#define TYPE_ARGV0_ACL                       2
++#define TYPE_ENV_ACL                         3
++#define TYPE_CAPABILITY_ACL                  4
++#define TYPE_IP_NETWORK_ACL                  5
++#define TYPE_SIGNAL_ACL                      6
++#define TYPE_EXECUTE_HANDLER                 7
++#define TYPE_DENIED_EXECUTE_HANDLER          8
++
++/* Index numbers for File Controls. */
++
++/*
++ * TYPE_READ_WRITE_ACL is special. TYPE_READ_WRITE_ACL is automatically set
++ * if both TYPE_READ_ACL and TYPE_WRITE_ACL are set. Both TYPE_READ_ACL and
++ * TYPE_WRITE_ACL are automatically set if TYPE_READ_WRITE_ACL is set.
++ * TYPE_READ_WRITE_ACL is automatically cleared if either TYPE_READ_ACL or
++ * TYPE_WRITE_ACL is cleared. Both TYPE_READ_ACL and TYPE_WRITE_ACL are
++ * automatically cleared if TYPE_READ_WRITE_ACL is cleared.
++ */
++
++#define TYPE_READ_WRITE_ACL        0
++#define TYPE_EXECUTE_ACL           1
++#define TYPE_READ_ACL              2
++#define TYPE_WRITE_ACL             3
++#define TYPE_CREATE_ACL            4
++#define TYPE_UNLINK_ACL            5
++#define TYPE_MKDIR_ACL             6
++#define TYPE_RMDIR_ACL             7
++#define TYPE_MKFIFO_ACL            8
++#define TYPE_MKSOCK_ACL            9
++#define TYPE_MKBLOCK_ACL          10
++#define TYPE_MKCHAR_ACL           11
++#define TYPE_TRUNCATE_ACL         12
++#define TYPE_SYMLINK_ACL          13
++#define TYPE_REWRITE_ACL          14
++#define MAX_SINGLE_PATH_OPERATION 15
++
++#define TYPE_LINK_ACL             0
++#define TYPE_RENAME_ACL           1
++#define MAX_DOUBLE_PATH_OPERATION 2
++
++/* Index numbers for Capability Controls. */
++
++/* socket(PF_INET or PF_INET6, SOCK_STREAM, *)                 */
++#define TOMOYO_INET_STREAM_SOCKET_CREATE         0
++/* listen() for PF_INET or PF_INET6, SOCK_STREAM               */
++#define TOMOYO_INET_STREAM_SOCKET_LISTEN         1
++/* connect() for PF_INET or PF_INET6, SOCK_STREAM              */
++#define TOMOYO_INET_STREAM_SOCKET_CONNECT        2
++/* socket(PF_INET or PF_INET6, SOCK_DGRAM, *)                  */
++#define TOMOYO_USE_INET_DGRAM_SOCKET             3
++/* socket(PF_INET or PF_INET6, SOCK_RAW, *)                    */
++#define TOMOYO_USE_INET_RAW_SOCKET               4
++/* socket(PF_ROUTE, *, *)                                      */
++#define TOMOYO_USE_ROUTE_SOCKET                  5
++/* socket(PF_PACKET, *, *)                                     */
++#define TOMOYO_USE_PACKET_SOCKET                 6
++/* sys_mount()                                                 */
++#define TOMOYO_SYS_MOUNT                         7
++/* sys_umount()                                                */
++#define TOMOYO_SYS_UMOUNT                        8
++/* sys_reboot()                                                */
++#define TOMOYO_SYS_REBOOT                        9
++/* sys_chroot()                                                */
++#define TOMOYO_SYS_CHROOT                       10
++/* sys_kill(), sys_tkill(), sys_tgkill()                       */
++#define TOMOYO_SYS_KILL                         11
++/* sys_vhangup()                                               */
++#define TOMOYO_SYS_VHANGUP                      12
++/* do_settimeofday(), sys_adjtimex()                           */
++#define TOMOYO_SYS_SETTIME                      13
++/* sys_nice(), sys_setpriority()                               */
++#define TOMOYO_SYS_NICE                         14
++/* sys_sethostname(), sys_setdomainname()                      */
++#define TOMOYO_SYS_SETHOSTNAME                  15
++/* sys_create_module(), sys_init_module(), sys_delete_module() */
++#define TOMOYO_USE_KERNEL_MODULE                16
++/* sys_mknod(S_IFIFO)                                          */
++#define TOMOYO_CREATE_FIFO                      17
++/* sys_mknod(S_IFBLK)                                          */
++#define TOMOYO_CREATE_BLOCK_DEV                 18
++/* sys_mknod(S_IFCHR)                                          */
++#define TOMOYO_CREATE_CHAR_DEV                  19
++/* sys_mknod(S_IFSOCK)                                         */
++#define TOMOYO_CREATE_UNIX_SOCKET               20
++/* sys_link()                                                  */
++#define TOMOYO_SYS_LINK                         21
++/* sys_symlink()                                               */
++#define TOMOYO_SYS_SYMLINK                      22
++/* sys_rename()                                                */
++#define TOMOYO_SYS_RENAME                       23
++/* sys_unlink()                                                */
++#define TOMOYO_SYS_UNLINK                       24
++/* sys_chmod(), sys_fchmod()                                   */
++#define TOMOYO_SYS_CHMOD                        25
++/* sys_chown(), sys_fchown(), sys_lchown()                     */
++#define TOMOYO_SYS_CHOWN                        26
++/* sys_ioctl(), compat_sys_ioctl()                             */
++#define TOMOYO_SYS_IOCTL                        27
++/* sys_kexec_load()                                            */
++#define TOMOYO_SYS_KEXEC_LOAD                   28
++/* sys_pivot_root()                                            */
++#define TOMOYO_SYS_PIVOT_ROOT                   29
++/* sys_ptrace()                                                */
++#define TOMOYO_SYS_PTRACE                       30
++#define TOMOYO_MAX_CAPABILITY_INDEX             31
++
++/* Index numbers for Network Controls. */
++
++#define NETWORK_ACL_UDP_BIND    0
++#define NETWORK_ACL_UDP_CONNECT 1
++#define NETWORK_ACL_TCP_BIND    2
++#define NETWORK_ACL_TCP_LISTEN  3
++#define NETWORK_ACL_TCP_CONNECT 4
++#define NETWORK_ACL_TCP_ACCEPT  5
++#define NETWORK_ACL_RAW_BIND    6
++#define NETWORK_ACL_RAW_CONNECT 7
 +
 +#endif
 
