@@ -1,48 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760165AbYDDT3Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759752AbYDDTfG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760165AbYDDT3Q (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Apr 2008 15:29:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756589AbYDDT3A
+	id S1759752AbYDDTfG (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Apr 2008 15:35:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756869AbYDDTez
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Apr 2008 15:29:00 -0400
-Received: from relay2.sgi.com ([192.48.171.30]:35745 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751116AbYDDT3A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Apr 2008 15:29:00 -0400
-Date: Fri, 4 Apr 2008 12:28:58 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-cc: Dave Hansen <dave@linux.vnet.ibm.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Yasunori Goto <y-goto@jp.fujitsu.com>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 5 of 6] hotplug-memory: add section_ops
-In-Reply-To: <47F6719E.9010807@goop.org>
-Message-ID: <Pine.LNX.4.64.0804041226080.3936@schroedinger.engr.sgi.com>
-References: <785fe0877fea0f488bc5.1207267545@localhost> 
- <1207270272.943.27.camel@nimitz.home.sr71.net> <47F5809A.7040307@goop.org>
-  <1207273978.943.82.camel@nimitz.home.sr71.net> <47F5BD6C.30100@goop.org>
- <1207318946.943.107.camel@nimitz.home.sr71.net> <47F6719E.9010807@goop.org>
+	Fri, 4 Apr 2008 15:34:55 -0400
+Received: from sj-iport-4.cisco.com ([171.68.10.86]:18069 "EHLO
+	sj-iport-4.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756829AbYDDTey (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Apr 2008 15:34:54 -0400
+X-IronPort-AV: E=Sophos;i="4.25,605,1199692800"; 
+   d="scan'208";a="10254538"
+From: Roland Dreier <rdreier@cisco.com>
+To: Richard Frank <richard.frank@oracle.com>
+Cc: tziporet@dev.mellanox.co.il, linux-kernel@vger.kernel.org,
+       general@lists.openfabrics.org
+Subject: Re: [ofa-general] InfiniBand/iWARP/RDMA merge plans for 2.6.26 (what's in infiniband.git)
+References: <adave31bayd.fsf@cisco.com> <47F37CA4.8000109@mellanox.co.il>
+	<adahcek2pru.fsf@cisco.com> <47F68EDC.4050107@oracle.com>
+X-Message-Flag: Warning: May contain useful information
+Date: Fri, 04 Apr 2008 12:34:52 -0700
+In-Reply-To: <47F68EDC.4050107@oracle.com> (Richard Frank's message of "Fri,
+	04 Apr 2008 15:26:04 -0500")
+Message-ID: <adaiqyxs9b7.fsf@cisco.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 04 Apr 2008 19:34:53.0262 (UTC) FILETIME=[F48D66E0:01C8968A]
+Authentication-Results: sj-dkim-1; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim1004 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 4 Apr 2008, Jeremy Fitzhardinge wrote:
+ > We are very interested in these new operations and are moving in the
+ > direction of tightly integrating RDMA along with atomics (if
+ > available) into Oracle.  We plan on testing some early prototypes of
+ > the these in the few months.
 
-> > Say that you have a very fragmented lowmem-only machine and you want to
-> > add a section of new mem_map[].  That's 512MB/PAGE_SIZE*sizeof(struct
-> > page), which is between 4 and 8MB.  So, you need 8MB of contiguous pages
-> > for that mem_map[].  The way we designed it, you could always have that
+And you need the ConnectX-only masked atomics?  Or do the standard IB
+atomic operations work for you?  Of course using atomics at all means
+that things don't work on iWARP.
 
-Note that you could use 4k page size chunks for the memmap if its 
-virtualized (CONFIG_SPARSEMEM_VMEMMAP). Instead of a single PMD 
-pointing to a 2MB block you would have the PMD point to a block of
-ptes that would in turn point to the discontiguous series of 4k pages.
+ > Send with invalidate is an exact match for our current RDS V3 rdma
+ > driver - and should be more efficient than the current background
+ > syncing of the tpt  to ensure keys are invalidated.
 
-The memory is virtually contiguous so all the logic stays the same. What 
-would be needed is some enhancements to the way the memmap is populated.
+How does send with invalidate interact with the current IB FMR stuff?
+Seems that you would run into trouble keeping the state of the FMR
+straight if the remote side is invalidating them.
 
+Also I would think that send-with-invalidate would be much more
+expensive than the current FMR method of batching up the invalidates,
+since you don't get to amortize the cost of syncing up all the internal
+HCA state.
 
+ - R.
