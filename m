@@ -1,52 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756972AbYDDHrp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752281AbYDDHt7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756972AbYDDHrp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Apr 2008 03:47:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752502AbYDDHrg
+	id S1752281AbYDDHt7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Apr 2008 03:49:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753517AbYDDHtw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Apr 2008 03:47:36 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:26504 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751944AbYDDHrg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Apr 2008 03:47:36 -0400
-Message-ID: <47F5DC8F.9010001@oracle.com>
-Date: Fri, 04 Apr 2008 13:15:19 +0530
-From: Gurudas Pai <gurudas.pai@oracle.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Fri, 4 Apr 2008 03:49:52 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:48821 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752969AbYDDHtv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Apr 2008 03:49:51 -0400
+Message-ID: <47F5DD9A.1070905@garzik.org>
+Date: Fri, 04 Apr 2008 03:49:46 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-To: Nish Aravamudan <nish.aravamudan@gmail.com>
-CC: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
-Subject: Re: [BUG]:2.6.25-rc7 memory leak with hugepages.
-References: <47EB4E2A.1040507@oracle.com> <20080327083849.GF15626@elte.hu>	 <47EB75C5.20207@oracle.com>	 <29495f1d0804032040h56f39051lcd5f707660d3c06c@mail.gmail.com> <29495f1d0804040028i795a9859y585ed0ca2413816a@mail.gmail.com>
-In-Reply-To: <29495f1d0804040028i795a9859y585ed0ca2413816a@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Chris Wedgwood <cw@f00f.org>
+CC: Tejun Heo <htejun@gmail.com>, Len Brown <len.brown@intel.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Add 'short help text' to ATA_ACPI so it's [de]selectable.
+References: <20080318220648.GA31208@puku.stupidest.org>
+In-Reply-To: <20080318220648.GA31208@puku.stupidest.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Chris Wedgwood wrote:
+> ATA_ACPI isn't selectable right now because it lacks 'short help
+> text'.  This means it's always enabled and always enables ACPI_DOCK.
+> Add text so it's now [de]selectable.
+> 
+> cc: Jeff Garzik <jeff@garzik.org>
+> cc: Tejun Heo <htejun@gmail.com>
+> cc: Len Brown <len.brown@intel.com>
+> Signed-off-by: Chris Wedgwood <cw@f00f.org>
+> 
+> diff --git a/drivers/ata/Kconfig b/drivers/ata/Kconfig
+> index 25aba69..ea665c2 100644
+> --- a/drivers/ata/Kconfig
+> +++ b/drivers/ata/Kconfig
+> @@ -28,7 +28,7 @@ config ATA_NONSTANDARD
+>         default n
+> 
+>  config ATA_ACPI
+> -	bool
+> +	bool "ATA ACPI Support"
+>  	depends on ACPI && PCI
+>  	select ACPI_DOCK
+
+applied
 
 
-Nish Aravamudan wrote:
-> On 4/3/08, Nish Aravamudan <nish.aravamudan@gmail.com> wrote:
->> On 3/27/08, Gurudas Pai <gurudas.pai@oracle.com> wrote:
->>  >  Ingo Molnar wrote:
->>  >  > * Gurudas Pai <gurudas.pai@oracle.com> wrote:
-> 
-> <snip>
-> 
->>  On another note, it is odd that we're using the dynamic pool, when it
->>  is initially disabled...I'll have to think about that.
-> 
-> What is the value in /proc/sys/vm/nr_overcommit_hugepages?
-> 
-cat /proc/sys/vm/nr_overcommit_hugepages
-0
-
-Thanks,
--Guru
