@@ -1,63 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759232AbYDDBOZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758827AbYDDBSQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759232AbYDDBOZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Apr 2008 21:14:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758126AbYDDBOF
+	id S1758827AbYDDBSQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Apr 2008 21:18:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752220AbYDDBSG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Apr 2008 21:14:05 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:32833 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757396AbYDDBOD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Apr 2008 21:14:03 -0400
-Date: Fri, 4 Apr 2008 10:18:07 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: balbir@linux.vnet.ibm.com, hugh@veritas.com, menage@google.com,
-       xemul@openvz.org, skumar@linux.vnet.ibm.com, lizf@cn.fujitsu.com,
-       rientjes@google.com, yamamoto@valinux.co.jp,
-       linux-kernel@vger.kernel.org
-Subject: Re: cgroup_disable=memory for 2.6.25?
-Message-Id: <20080404101807.b9fa6a73.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20080403134153.d7476dda.akpm@linux-foundation.org>
-References: <Pine.LNX.4.64.0804032055590.8157@blonde.site>
-	<47F53DA2.3050403@linux.vnet.ibm.com>
-	<20080403134153.d7476dda.akpm@linux-foundation.org>
-Organization: Fujitsu
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 3 Apr 2008 21:18:06 -0400
+Received: from mail.ift.unesp.br ([200.145.46.3]:49274 "EHLO mail.ift.unesp.br"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751832AbYDDBSF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Apr 2008 21:18:05 -0400
+X-Greylist: delayed 391 seconds by postgrey-1.27 at vger.kernel.org; Thu, 03 Apr 2008 21:18:05 EDT
+Date: Thu, 3 Apr 2008 22:10:53 -0300
+From: "Carlos R. Mafra" <crmafra2@gmail.com>
+To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Pallipadi@ogre.sisk.pl, Soeren Sonnenburg <kernel@nn7.de>
+Subject: Re: 2.6.25-current-git hangs on boot unless CONFIG_CPU_IDLE=n -
+	Apple
+Message-ID: <20080404011053.GA21254@localhost.ift.unesp.br>
+References: <pdj7pZVURbL.A.42H.kDW9HB@albercik> <pdYe6zNQVl.A.AOB.6GW9HB@albercik> <924EFEDD5F540B4284297C4DC59F3DEED0EA1E@orsmsx423.amr.corp.intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <924EFEDD5F540B4284297C4DC59F3DEED0EA1E@orsmsx423.amr.corp.intel.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 3 Apr 2008 13:41:53 -0700
-Andrew Morton <akpm@linux-foundation.org> wrote:
-
-> On Fri, 04 Apr 2008 01:57:14 +0530
-> Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+On Thu  3.Apr'08 at 17:14:22 -0700, Pallipadi, Venkatesh wrote:
+> >The following report is on the current list of known regressions
+> >from 2.6.24.  Please verify if the issue is still present in the
+> >mainline.
+> >
+> >
+> >Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10093
+> >Subject		: 2.6.25-current-git hangs on boot 
+> >unless CONFIG_CPU_IDLE=n - Apple
+> >Submitter	: Soeren Sonnenburg <kernel@nn7.de>
+> >Date		: 2008-02-23 18:55 (41 days old)
+> >References	: http://lkml.org/lkml/2008/2/23/263
+> >		  
+> >http://marc.info/?l=linux-acpi&amp;m=120387537018467&amp;w=4
+> >Handled-By	: Pallipadi, Venkatesh <venkatesh.pallipadi@intel.com>
+> >
 > 
-> > I expected those patches to make it into 2.6.25.
-> 
-> My mind-ray receptors might need a tune-up.
-> 
-> > Could we please push these patches upstream before 2.6.25? Or is it too late?
-> 
-> Should be OK.  I borrowed a bit of Hugh's email and stuck it in the changelog
-> so that it at least has some attempt to describe why it's an urgent change.
+> Last comment I saw from Soeren says it does not really hang. It waits
+> for 5-10 seconds sometimes before continuing. We are still trying to
+> narrow this down with max_cstate etc..
 
-For example. Unix bench's execl test result on x86_64 was
+I should say that my laptop (Vaio) _hangs_ at boot (less than 10% of boots)
+and this is the last message I see:
 
-== just after boot without mounting any cgroup fs.==
-mem_cgorup=off : Execl Throughput       43.0     3150.1      732.6
-mem_cgroup=on  : Execl Throughput       43.0     2932.6      682.0
-==
+"ACPI: Processor [CPU1] (supports 8 throttling states)"
 
-I believe this is worth ot be urgent.
+and it stays there "forever" (more than 1 or 2 minutes at least).
 
-I'm now trying performance improvement patches but it's too late.
+I am not using my laptop too much these days, and I thought this
+bug had been solved because it didn't hang for the last week (but
+I boot it once per day), however it hang last night (using some
+post 2.6.25-rc7 kernel)
 
-Thanks,
--Kame
-
+I have pictures of the screen while showing this last message at boot, 
+should I post it somewhere or that is not necessary?.
