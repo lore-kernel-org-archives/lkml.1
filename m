@@ -1,59 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759752AbYDDTfG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759999AbYDDTg4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759752AbYDDTfG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Apr 2008 15:35:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756869AbYDDTez
+	id S1759999AbYDDTg4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Apr 2008 15:36:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752860AbYDDTgs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Apr 2008 15:34:55 -0400
-Received: from sj-iport-4.cisco.com ([171.68.10.86]:18069 "EHLO
-	sj-iport-4.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756829AbYDDTey (ORCPT
+	Fri, 4 Apr 2008 15:36:48 -0400
+Received: from zone0.gcu-squad.org ([212.85.147.21]:48776 "EHLO
+	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752121AbYDDTgr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Apr 2008 15:34:54 -0400
-X-IronPort-AV: E=Sophos;i="4.25,605,1199692800"; 
-   d="scan'208";a="10254538"
-From: Roland Dreier <rdreier@cisco.com>
-To: Richard Frank <richard.frank@oracle.com>
-Cc: tziporet@dev.mellanox.co.il, linux-kernel@vger.kernel.org,
-       general@lists.openfabrics.org
-Subject: Re: [ofa-general] InfiniBand/iWARP/RDMA merge plans for 2.6.26 (what's in infiniband.git)
-References: <adave31bayd.fsf@cisco.com> <47F37CA4.8000109@mellanox.co.il>
-	<adahcek2pru.fsf@cisco.com> <47F68EDC.4050107@oracle.com>
-X-Message-Flag: Warning: May contain useful information
-Date: Fri, 04 Apr 2008 12:34:52 -0700
-In-Reply-To: <47F68EDC.4050107@oracle.com> (Richard Frank's message of "Fri,
-	04 Apr 2008 15:26:04 -0500")
-Message-ID: <adaiqyxs9b7.fsf@cisco.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 04 Apr 2008 19:34:53.0262 (UTC) FILETIME=[F48D66E0:01C8968A]
-Authentication-Results: sj-dkim-1; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim1004 verified; ); 
+	Fri, 4 Apr 2008 15:36:47 -0400
+Date: Fri, 4 Apr 2008 21:36:32 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: Trent Piepho <tpiepho@freescale.com>
+Cc: David Brownell <david-b@pacbell.net>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: [patch/rfc 2/4] pcf875x I2C GPIO expander driver
+Message-ID: <20080404213632.300eb3de@hyperion.delvare>
+In-Reply-To: <Pine.LNX.4.64.0804041102230.20532@t2.domain.actdsltmp>
+References: <200710291809.29936.david-b@pacbell.net>
+	<200711301040.54777.david-b@pacbell.net>
+	<20071130211332.49a21a6b@hyperion.delvare>
+	<200711301259.22666.david-b@pacbell.net>
+	<Pine.LNX.4.64.0804031844500.11928@t2.domain.actdsltmp>
+	<20080404100933.077bee33@hyperion.delvare>
+	<Pine.LNX.4.64.0804041102230.20532@t2.domain.actdsltmp>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- > We are very interested in these new operations and are moving in the
- > direction of tightly integrating RDMA along with atomics (if
- > available) into Oracle.  We plan on testing some early prototypes of
- > the these in the few months.
+On Fri, 4 Apr 2008 12:07:12 -0700 (PDT), Trent Piepho wrote:
+> On Fri, 4 Apr 2008, Jean Delvare wrote:
+> > On Thu, 3 Apr 2008 19:06:27 -0700 (PDT), Trent Piepho wrote:
+> >> +	strcpy(buf, test_bit(FLAG_IS_OUT, &gdesc->flags) ? "out\n" : "in\n\0");
+> >> +
+> >> +	return 5;
+> >
+> > Confusing construct... I suggest using sprintf instead, which will
+> > automatically return the correct number of bytes for you.
+> 
+> But it's less efficient!  Will nobody think of the wasted cycles?
 
-And you need the ConnectX-only masked atomics?  Or do the standard IB
-atomic operations work for you?  Of course using atomics at all means
-that things don't work on iWARP.
+Can you prove that it is actually less efficient, and if so, by how
+much? The time spent in this single function if probably insignificant
+in comparison to the whole chain from the user-space process to the
+GPIO chip.
 
- > Send with invalidate is an exact match for our current RDS V3 rdma
- > driver - and should be more efficient than the current background
- > syncing of the tpt  to ensure keys are invalidated.
+Not that it really matters anyway, this is in no way a hot path
+so clarity and correctness definitely take over efficiency. And the
+code above is actually incorrect: as I mentioned elsewhere in this
+thread, you aren't support to include trailing \0s in the buffer you
+pass back to sysfs. Not all programming languages use \0 for string
+termination.
 
-How does send with invalidate interact with the current IB FMR stuff?
-Seems that you would run into trouble keeping the state of the FMR
-straight if the remote side is invalidating them.
+> (...)
+> >> +static void __exit gpio_class_exit(void)
+> >> +{
+> >> +	/* FIXME:  Code to remove all the sysfs devices and files created
+> >> +	 * should go here */
+> >
+> > Oh yes it really should ;)
+> 
+> I know, but I'm not using modules for the system this is in, so it will never
+> get called.  What's the point of writing code I'll never use if this isn't
+> useful for the kernel?
 
-Also I would think that send-with-invalidate would be much more
-expensive than the current FMR method of batching up the invalidates,
-since you don't get to amortize the cost of syncing up all the internal
-HCA state.
+Because most certainly your code won't be accepted upstream until this
+is fixed, and presumably you posted this patch in the hope that it
+would go upstream ;) Just because it isn't useful to you doesn't mean
+it won't be useful to others. Otherwise this particular piece of code
+couldn't be built as a module at all.
 
- - R.
+> (...)
+> >> @@ -118,6 +290,22 @@ int gpiochip_add(struct gpio_chip *chip)
+> >>   	}
+> >>
+> >>   	spin_unlock_irqrestore(&gpio_lock, flags);
+> >> +
+> >> +	if (status)
+> >> +		goto fail;
+> >> +
+> >> +	if (chip->dev) {
+> >> +		/* can sleep, so can't call with the spinlock held */
+> >
+> > You don't actually hold the spinlock at this point.
+> 
+> It would be easier to call gpiochip_classdev_register() earlier when the spin
+> lock is held, but one can't because it could sleep.  The comment was a warning
+> to anyone who thought they could simplify the logic.
+
+Oops, sorry. I totally missed the "can't" in the comment.
+
+-- 
+Jean Delvare
