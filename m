@@ -1,85 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753026AbYDDVf2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753828AbYDDVfm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753026AbYDDVf2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Apr 2008 17:35:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751711AbYDDVfT
+	id S1753828AbYDDVfm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Apr 2008 17:35:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751937AbYDDVfW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Apr 2008 17:35:19 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:42657 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751529AbYDDVfS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Apr 2008 17:35:18 -0400
-Date: Fri, 4 Apr 2008 23:35:40 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Johannes Weiner <hannes@saeurebad.de>
-Cc: Heiko Carstens <heiko.carstens@de.ibm.com>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, mingo@elte.hu, davem@davemloft.net,
-       hskinnemoen@atmel.com, cooloney@kernel.org, starvik@axis.com,
-       dhowells@redhat.com, ysato@users.sourceforge.net, takata@linux-m32r.org,
-       geert@linux-m68k.org, ralf@linux-mips.org, kyle@parisc-linux.org,
-       paulus@samba.org, schwidefsky@de.ibm.com, lethal@linux-sh.org,
-       jdike@addtoit.com, miles@gnu.org, chris@zankel.net,
-       rmk@arm.linux.org.uk, tony.luck@intel.com
-Subject: Re: [RFC 01/22] Generic show_mem() implementation
-Message-ID: <20080404213540.GA15535@uranus.ravnborg.org>
-References: <12071688283927-git-send-email-hannes@saeurebad.de> <1207168839586-git-send-email-hannes@saeurebad.de> <20080403075545.GC4125@osiris.boeblingen.de.ibm.com> <20080403124820.GA30356@uranus.ravnborg.org> <871w5nouwp.fsf@saeurebad.de> <20080403181202.GA32319@uranus.ravnborg.org> <87prt6muux.fsf@saeurebad.de>
-Mime-Version: 1.0
+	Fri, 4 Apr 2008 17:35:22 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:27776 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751337AbYDDVfU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Apr 2008 17:35:20 -0400
+Date: Fri, 4 Apr 2008 14:34:53 -0700
+From: Joel Becker <Joel.Becker@oracle.com>
+To: Harvey Harrison <harvey.harrison@gmail.com>
+Cc: Mark Fasheh <mfasheh@suse.com>, Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/2] ocfs2: replace remaining __PRETTY_FUNCTION__
+	occurrences
+Message-ID: <20080404213453.GL32107@mail.oracle.com>
+Mail-Followup-To: Harvey Harrison <harvey.harrison@gmail.com>,
+	Mark Fasheh <mfasheh@suse.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	LKML <linux-kernel@vger.kernel.org>
+References: <1207344480.18838.96.camel@brick>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <87prt6muux.fsf@saeurebad.de>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <1207344480.18838.96.camel@brick>
+X-Burt-Line: Trees are cool.
+X-Red-Smith: Ninety feet between bases is perhaps as close as man has ever
+	come to perfection.
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 04, 2008 at 12:33:42AM +0200, Johannes Weiner wrote:
-> Hi,
-> 
-> Sam Ravnborg <sam@ravnborg.org> writes:
-> 
-> > On Thu, Apr 03, 2008 at 04:49:42PM +0200, Johannes Weiner wrote:
-> >> Hi,
-> >> 
-> >> Sam Ravnborg <sam@ravnborg.org> writes:
-> >> 
-> >> >> e.g. we currently have this in arch/s390/Kconfig:
-> >> >> 
-> >> >> config S390
-> >> >>         def_bool y
-> >> >>         select HAVE_OPROFILE
-> >> >>         select HAVE_KPROBES
-> >> >>         select HAVE_KRETPROBES
-> >> >> 
-> >> >> just add a select HAVE_GENERIC_SHOWMEM or something like that in the arch
-> >> >> specific patches.
-> >> > Seconded.
-> >> > See Documentation/kbuild/kconfig-language.txt for a few more hints
-> >> > how to do it.
-> >> 
-> >> After more thinking about it, wouldn't it be better to have
-> >> HAVE_ARCH_SHOW_MEM in mm/Kconfig and let archs with their own show_mem()
-> >> select it?  Because there are far more archs that use the generic
-> >> version than those having their own.
-> >
-> > Positive logic is almost always simpler to grasp.
-> > And the usual way to do this is to let arch's select what they
-> > use.
-> > We do not want to have a situation where in most cases we select
-> > a generic version but in some oddball case we select to have
-> > a local version.
-> 
-> I can not follow you.  Of course the arch selects what they use.  But
-> they should not _all_ have to be flagged with an extra select.  So what
-> default-value are you arguing for?
-The normal pattern is to let arch select the generic implmentation they
-use.
-Just because the majority does use the generic version should not
-make us start to use the inverse logic as in your case.
+On Fri, Apr 04, 2008 at 02:28:00PM -0700, Harvey Harrison wrote:
+> The kernel is written in C, not C++, use __func__
 
-So I want all archs that uses the generic show_mem() to
-do an explicit:
+__PRETTY_FUNCTION__ is GNU C, but __func__ is still better.
+Acked-by: Joel Becker <joel.becker@oracle.com>
 
-config MYARCH
-	select HAVE_GENERIC_SHOWMEM
+> 
+> Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+> ---
+>  fs/ocfs2/cluster/masklog.h |    2 +-
+>  fs/ocfs2/dlmglue.c         |    2 +-
+>  fs/ocfs2/super.h           |    4 ++--
+>  3 files changed, 4 insertions(+), 4 deletions(-)
+> 
+> diff --git a/fs/ocfs2/cluster/masklog.h b/fs/ocfs2/cluster/masklog.h
+> index 597e064..8bdb182 100644
+> --- a/fs/ocfs2/cluster/masklog.h
+> +++ b/fs/ocfs2/cluster/masklog.h
+> @@ -193,7 +193,7 @@ extern struct mlog_bits mlog_and_bits, mlog_not_bits;
+>   */
+>  #define __mlog_printk(level, fmt, args...)				\
+>  	printk(level "(%u,%lu):%s:%d " fmt, task_pid_nr(current),	\
+> -	       __mlog_cpu_guess, __PRETTY_FUNCTION__, __LINE__ ,	\
+> +	       __mlog_cpu_guess, __func__, __LINE__ ,	\
+>  	       ##args)
+>  
+>  #define mlog(mask, fmt, args...) do {					\
+> diff --git a/fs/ocfs2/dlmglue.c b/fs/ocfs2/dlmglue.c
+> index 1f1873b..5a3f1f4 100644
+> --- a/fs/ocfs2/dlmglue.c
+> +++ b/fs/ocfs2/dlmglue.c
+> @@ -105,7 +105,7 @@ static void ocfs2_dentry_post_unlock(struct ocfs2_super *osb,
+>  				     struct ocfs2_lock_res *lockres);
+>  
+> 
+> -#define mlog_meta_lvb(__level, __lockres) ocfs2_dump_meta_lvb_info(__level, __PRETTY_FUNCTION__, __LINE__, __lockres)
+> +#define mlog_meta_lvb(__level, __lockres) ocfs2_dump_meta_lvb_info(__level, __func__, __LINE__, __lockres)
+>  
+>  /* This aids in debugging situations where a bad LVB might be involved. */
+>  static void ocfs2_dump_meta_lvb_info(u64 level,
+> diff --git a/fs/ocfs2/super.h b/fs/ocfs2/super.h
+> index 783f527..15e2d98 100644
+> --- a/fs/ocfs2/super.h
+> +++ b/fs/ocfs2/super.h
+> @@ -36,13 +36,13 @@ void __ocfs2_error(struct super_block *sb,
+>  		   const char *fmt, ...)
+>  	__attribute__ ((format (printf, 3, 4)));
+>  
+> -#define ocfs2_error(sb, fmt, args...) __ocfs2_error(sb, __PRETTY_FUNCTION__, fmt, ##args)
+> +#define ocfs2_error(sb, fmt, args...) __ocfs2_error(sb, __func__, fmt, ##args)
+>  
+>  void __ocfs2_abort(struct super_block *sb,
+>  		   const char *function,
+>  		   const char *fmt, ...)
+>  	__attribute__ ((format (printf, 3, 4)));
+>  
+> -#define ocfs2_abort(sb, fmt, args...) __ocfs2_abort(sb, __PRETTY_FUNCTION__, fmt, ##args)
+> +#define ocfs2_abort(sb, fmt, args...) __ocfs2_abort(sb, __func__, fmt, ##args)
+>  
+>  #endif /* OCFS2_SUPER_H */
+> -- 
+> 1.5.5.rc1.135.g8527
+> 
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
 
-	Sam
+-- 
+
+ "I'm living so far beyond my income that we may almost be said
+ to be living apart."
+         - e e cummings
+
+Joel Becker
+Principal Software Developer
+Oracle
+E-mail: joel.becker@oracle.com
+Phone: (650) 506-8127
