@@ -1,123 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757527AbYDDGeS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758002AbYDDGgw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757527AbYDDGeS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Apr 2008 02:34:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753171AbYDDGeB
+	id S1758002AbYDDGgw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Apr 2008 02:36:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754580AbYDDGgp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Apr 2008 02:34:01 -0400
-Received: from havoc.gtf.org ([69.61.125.42]:45114 "EHLO havoc.gtf.org"
+	Fri, 4 Apr 2008 02:36:45 -0400
+Received: from mga11.intel.com ([192.55.52.93]:19649 "EHLO mga11.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752928AbYDDGeA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Apr 2008 02:34:00 -0400
-Date: Fri, 4 Apr 2008 02:33:59 -0400
-From: Jeff Garzik <jeff@garzik.org>
-To: David Miller <davem@davemloft.net>
-Cc: netdev@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: [git patches] net driver fixes
-Message-ID: <20080404063359.GA13309@havoc.gtf.org>
+	id S1754223AbYDDGgo convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Apr 2008 02:36:44 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,602,1199692800"; 
+   d="scan'208";a="545524243"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: 2.6.25-current-git hangs on boot unless CONFIG_CPU_IDLE=n -Apple
+Date: Thu, 3 Apr 2008 23:38:15 -0700
+Message-ID: <924EFEDD5F540B4284297C4DC59F3DEED0EB0B@orsmsx423.amr.corp.intel.com>
+In-Reply-To: <1207290744.4511.3.camel@localhost>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: 2.6.25-current-git hangs on boot unless CONFIG_CPU_IDLE=n -Apple
+Thread-Index: AciWHdmnC9FuHVRuQaaTA6D5wUtfAAAAHPTw
+References: <pdj7pZVURbL.A.42H.kDW9HB@albercik> <pdYe6zNQVl.A.AOB.6GW9HB@albercik> <1207290744.4511.3.camel@localhost>
+From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+To: "Soeren Sonnenburg" <kernel@nn7.de>, "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 04 Apr 2008 06:36:08.0961 (UTC) FILETIME=[2AB2DF10:01C8961E]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I will have another batch to send in the next day or so, including a
-notable forcedeth fix.
-
-Please pull from 'upstream-davem' branch of
-master.kernel.org:/pub/scm/linux/kernel/git/jgarzik/netdev-2.6.git upstream-davem
-
-to receive the following updates:
-
- drivers/net/forcedeth.c         |    5 ++---
- drivers/net/phy/marvell.c       |    2 --
- drivers/net/tokenring/olympic.c |    6 +++---
- drivers/net/tulip/tulip_core.c  |    1 -
- 4 files changed, 5 insertions(+), 9 deletions(-)
-
-Adrian Bunk (1):
-      net/tokenring/olympic.c section fixes
-
-Al Viro (1):
-      fix endian lossage in forcedeth
-
-Chuck Ebbert (1):
-      NET: remove support for Davicom 9102 from the Tulip driver
-
-Harvey Harrison (1):
-      net: marvell.c fix sparse shadowed variable warning
-
-diff --git a/drivers/net/forcedeth.c b/drivers/net/forcedeth.c
-index 980c2c2..419f533 100644
---- a/drivers/net/forcedeth.c
-+++ b/drivers/net/forcedeth.c
-@@ -2112,9 +2112,8 @@ static inline void nv_tx_flip_ownership(struct net_device *dev)
  
- 	np->tx_pkts_in_progress--;
- 	if (np->tx_change_owner) {
--		__le32 flaglen = le32_to_cpu(np->tx_change_owner->first_tx_desc->flaglen);
--		flaglen |= NV_TX2_VALID;
--		np->tx_change_owner->first_tx_desc->flaglen = cpu_to_le32(flaglen);
-+		np->tx_change_owner->first_tx_desc->flaglen |=
-+			cpu_to_le32(NV_TX2_VALID);
- 		np->tx_pkts_in_progress++;
- 
- 		np->tx_change_owner = np->tx_change_owner->next_tx_ctx;
-diff --git a/drivers/net/phy/marvell.c b/drivers/net/phy/marvell.c
-index 3353991..32a8503 100644
---- a/drivers/net/phy/marvell.c
-+++ b/drivers/net/phy/marvell.c
-@@ -211,8 +211,6 @@ static int m88e1111_config_init(struct phy_device *phydev)
- 	}
- 
- 	if (phydev->interface == PHY_INTERFACE_MODE_SGMII) {
--		int temp;
--
- 		temp = phy_read(phydev, MII_M1111_PHY_EXT_SR);
- 		if (temp < 0)
- 			return temp;
-diff --git a/drivers/net/tokenring/olympic.c b/drivers/net/tokenring/olympic.c
-index 433c994..db4ca4f 100644
---- a/drivers/net/tokenring/olympic.c
-+++ b/drivers/net/tokenring/olympic.c
-@@ -117,7 +117,7 @@
-  * Official releases will only have an a.b.c version number format. 
-  */
- 
--static char version[] __devinitdata = 
-+static char version[] =
- "Olympic.c v1.0.5 6/04/02 - Peter De Schrijver & Mike Phillips" ; 
- 
- static char *open_maj_error[]  = {"No error", "Lobe Media Test", "Physical Insertion",
-@@ -290,7 +290,7 @@ op_disable_dev:
- 	return i;
- }
- 
--static int __devinit olympic_init(struct net_device *dev)
-+static int olympic_init(struct net_device *dev)
- {
-     	struct olympic_private *olympic_priv;
- 	u8 __iomem *olympic_mmio, *init_srb,*adapter_addr;
-@@ -434,7 +434,7 @@ static int __devinit olympic_init(struct net_device *dev)
- 
- }
- 
--static int __devinit olympic_open(struct net_device *dev) 
-+static int olympic_open(struct net_device *dev)
- {
- 	struct olympic_private *olympic_priv=netdev_priv(dev);
- 	u8 __iomem *olympic_mmio=olympic_priv->olympic_mmio,*init_srb;
-diff --git a/drivers/net/tulip/tulip_core.c b/drivers/net/tulip/tulip_core.c
-index 82f404b..4443f0f 100644
---- a/drivers/net/tulip/tulip_core.c
-+++ b/drivers/net/tulip/tulip_core.c
-@@ -231,7 +231,6 @@ static struct pci_device_id tulip_pci_tbl[] = {
- 	{ 0x11F6, 0x9881, PCI_ANY_ID, PCI_ANY_ID, 0, 0, COMPEX9881 },
- 	{ 0x8086, 0x0039, PCI_ANY_ID, PCI_ANY_ID, 0, 0, I21145 },
- 	{ 0x1282, 0x9100, PCI_ANY_ID, PCI_ANY_ID, 0, 0, DM910X },
--	{ 0x1282, 0x9102, PCI_ANY_ID, PCI_ANY_ID, 0, 0, DM910X },
- 	{ 0x1113, 0x1216, PCI_ANY_ID, PCI_ANY_ID, 0, 0, COMET },
- 	{ 0x1113, 0x1217, PCI_ANY_ID, PCI_ANY_ID, 0, 0, MX98715 },
- 	{ 0x1113, 0x9511, PCI_ANY_ID, PCI_ANY_ID, 0, 0, COMET },
+
+>-----Original Message-----
+>From: Soeren Sonnenburg [mailto:kernel@nn7.de] 
+>Sent: Thursday, April 03, 2008 11:32 PM
+>To: Rafael J. Wysocki
+>Cc: Linux Kernel Mailing List; Pallipadi@ogre.sisk.pl; 
+>Pallipadi, Venkatesh
+>Subject: Re: 2.6.25-current-git hangs on boot unless 
+>CONFIG_CPU_IDLE=n -Apple
+>
+>On Fri, 2008-04-04 at 01:22 +0200, Rafael J. Wysocki wrote:
+>> The following report is on the current list of known regressions
+>> from 2.6.24.  Please verify if the issue is still present in the
+>> mainline.
+>> 
+>> 
+>> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10093
+>> Subject		: 2.6.25-current-git hangs on boot 
+>unless CONFIG_CPU_IDLE=n - Apple
+>> Submitter	: Soeren Sonnenburg <kernel@nn7.de>
+>> Date		: 2008-02-23 18:55 (41 days old)
+>> References	: http://lkml.org/lkml/2008/2/23/263
+>> 		  http://marc.info/?l=linux-acpi&m=120387537018467&w=4
+>> Handled-By	: Pallipadi, Venkatesh <venkatesh.pallipadi@intel.com>
+>
+>yes still there, but not a hangs forever hang anymore but only a hang
+>for (this time) 15 seconds hang.
+>
+
+Can you please try the max_cstate experiments that I mentioned in the
+bugzilla.
+
+Thanks,
+Venki
