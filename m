@@ -1,107 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753455AbYDDV3a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753086AbYDDVb1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753455AbYDDV3a (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Apr 2008 17:29:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751646AbYDDV3T
+	id S1753086AbYDDVb1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Apr 2008 17:31:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751543AbYDDVbQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Apr 2008 17:29:19 -0400
-Received: from havoc.gtf.org ([69.61.125.42]:51238 "EHLO havoc.gtf.org"
+	Fri, 4 Apr 2008 17:31:16 -0400
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:35029 "EHLO e4.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751506AbYDDV3S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Apr 2008 17:29:18 -0400
-Date: Fri, 4 Apr 2008 17:29:17 -0400
-From: Jeff Garzik <jeff@garzik.org>
-To: David Miller <davem@davemloft.net>
-Cc: netdev@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: [git patches] net driver fixes (v2)
-Message-ID: <20080404212917.GA28174@havoc.gtf.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	id S1751003AbYDDVbP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Apr 2008 17:31:15 -0400
+Subject: Re: [ANNOUNCE] e1000 to e1000e migration of PCI Express devices
+From: Dave Hansen <dave@linux.vnet.ibm.com>
+To: "Kok, Auke" <auke-jan.h.kok@intel.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       NetDev <netdev@vger.kernel.org>,
+       e1000-list <e1000-devel@lists.sourceforge.net>,
+       linux-pci maillist <linux-pci@atrey.karlin.mff.cuni.cz>,
+       Jeff Garzik <jeff@garzik.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "David S. Miller" <davem@davemloft.net>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Jesse Brandeburg <jesse.brandeburg@intel.com>,
+       "Ronciak, John" <john.ronciak@intel.com>,
+       "Allan, Bruce W" <bruce.w.allan@intel.com>, Greg KH <greg@kroah.com>,
+       Arjan van de Ven <arjan@linux.intel.com>
+In-Reply-To: <47F69965.7030303@intel.com>
+References: <47F69965.7030303@intel.com>
+Content-Type: text/plain
+Date: Fri, 04 Apr 2008 14:31:09 -0700
+Message-Id: <1207344669.26869.33.camel@nimitz.home.sr71.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 2008-04-04 at 14:11 -0700, Kok, Auke wrote:
+> >From kernel 2.6.26 onward all *PCI Express* device IDs previously
+> supported by e1000 will be moving to the e1000e driver.  This includes
+> ich8 and ich9 onboard LAN, server 5000 platform onboard LAN (es2) and
+> 82571/2/3 chipset based adapters and variants.
+> 
+> If you have not already enabled CONFIG_E1000E make sure that you do so.
+> You can already do this with 2.6.25.  From 2.6.26 on this change will be
+> required if you have such a device.
 
-NOTE: dropped dmfe change, would cause regression noted by Meelis
+I've been bitten by one or two of these in the past.  Can we do
+something like this for a couple of releases?
 
-Please pull from 'upstream-davem' branch of
-master.kernel.org:/pub/scm/linux/kernel/git/jgarzik/netdev-2.6.git upstream-davem
+Shouldn't this default the E1000E config option to the same thing that
+people have the E1000 set as?  It should catch the dumb people like me
+who's enter key gets held down during a 'make oldconfig'. :)
 
-to receive the following updates:
+diff --git a/drivers/net/Kconfig b/drivers/net/Kconfig
+index 3a0b20a..aa0fe14 100644
+--- a/drivers/net/Kconfig
++++ b/drivers/net/Kconfig
+@@ -2005,6 +2005,7 @@ config E1000_DISABLE_PACKET_SPLIT
+ config E1000E
+        tristate "Intel(R) PRO/1000 PCI-Express Gigabit Ethernet support"
+        depends on PCI
++       default E1000
+        ---help---
+          This driver supports the PCI-Express Intel(R) PRO/1000 gigabit
+          ethernet family of adapters. For PCI or PCI-X e1000 adapters,
 
- drivers/net/forcedeth.c         |    5 ++---
- drivers/net/phy/marvell.c       |    2 --
- drivers/net/tokenring/olympic.c |    6 +++---
- 3 files changed, 5 insertions(+), 8 deletions(-)
 
-Adrian Bunk (1):
-      net/tokenring/olympic.c section fixes
+-- Dave
 
-Al Viro (1):
-      fix endian lossage in forcedeth
-
-Harvey Harrison (1):
-      net: marvell.c fix sparse shadowed variable warning
-
-diff --git a/drivers/net/forcedeth.c b/drivers/net/forcedeth.c
-index 980c2c2..419f533 100644
---- a/drivers/net/forcedeth.c
-+++ b/drivers/net/forcedeth.c
-@@ -2112,9 +2112,8 @@ static inline void nv_tx_flip_ownership(struct net_device *dev)
- 
- 	np->tx_pkts_in_progress--;
- 	if (np->tx_change_owner) {
--		__le32 flaglen = le32_to_cpu(np->tx_change_owner->first_tx_desc->flaglen);
--		flaglen |= NV_TX2_VALID;
--		np->tx_change_owner->first_tx_desc->flaglen = cpu_to_le32(flaglen);
-+		np->tx_change_owner->first_tx_desc->flaglen |=
-+			cpu_to_le32(NV_TX2_VALID);
- 		np->tx_pkts_in_progress++;
- 
- 		np->tx_change_owner = np->tx_change_owner->next_tx_ctx;
-diff --git a/drivers/net/phy/marvell.c b/drivers/net/phy/marvell.c
-index 3353991..32a8503 100644
---- a/drivers/net/phy/marvell.c
-+++ b/drivers/net/phy/marvell.c
-@@ -211,8 +211,6 @@ static int m88e1111_config_init(struct phy_device *phydev)
- 	}
- 
- 	if (phydev->interface == PHY_INTERFACE_MODE_SGMII) {
--		int temp;
--
- 		temp = phy_read(phydev, MII_M1111_PHY_EXT_SR);
- 		if (temp < 0)
- 			return temp;
-diff --git a/drivers/net/tokenring/olympic.c b/drivers/net/tokenring/olympic.c
-index 433c994..db4ca4f 100644
---- a/drivers/net/tokenring/olympic.c
-+++ b/drivers/net/tokenring/olympic.c
-@@ -117,7 +117,7 @@
-  * Official releases will only have an a.b.c version number format. 
-  */
- 
--static char version[] __devinitdata = 
-+static char version[] =
- "Olympic.c v1.0.5 6/04/02 - Peter De Schrijver & Mike Phillips" ; 
- 
- static char *open_maj_error[]  = {"No error", "Lobe Media Test", "Physical Insertion",
-@@ -290,7 +290,7 @@ op_disable_dev:
- 	return i;
- }
- 
--static int __devinit olympic_init(struct net_device *dev)
-+static int olympic_init(struct net_device *dev)
- {
-     	struct olympic_private *olympic_priv;
- 	u8 __iomem *olympic_mmio, *init_srb,*adapter_addr;
-@@ -434,7 +434,7 @@ static int __devinit olympic_init(struct net_device *dev)
- 
- }
- 
--static int __devinit olympic_open(struct net_device *dev) 
-+static int olympic_open(struct net_device *dev)
- {
- 	struct olympic_private *olympic_priv=netdev_priv(dev);
- 	u8 __iomem *olympic_mmio=olympic_priv->olympic_mmio,*init_srb;
