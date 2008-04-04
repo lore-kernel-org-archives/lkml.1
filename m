@@ -1,67 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760404AbYDDSGH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760577AbYDDSGk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760404AbYDDSGH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Apr 2008 14:06:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760076AbYDDSFd
+	id S1760577AbYDDSGk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Apr 2008 14:06:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751637AbYDDSGa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Apr 2008 14:05:33 -0400
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:52893 "EHLO smtp5.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756771AbYDDSFa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Apr 2008 14:05:30 -0400
-Date: Fri, 4 Apr 2008 21:05:09 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Gabriel C <nix.or.die@googlemail.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Gabriel C <crazy@frugalware.org>, netdev <netdev@vger.kernel.org>,
-       linux-usb@vger.kernel.org, linux-acpi@vger.kernel.org
-Subject: Re: array subscript is above array bounds warnings with gcc4.3
-Message-ID: <20080404180509.GA1900@cs181133002.pp.htv.fi>
-References: <47F665E6.2010409@googlemail.com>
+	Fri, 4 Apr 2008 14:06:30 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:57215 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751261AbYDDSG3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Apr 2008 14:06:29 -0400
+Message-ID: <47F66E10.8030405@zytor.com>
+Date: Fri, 04 Apr 2008 11:06:08 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <47F665E6.2010409@googlemail.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: Gabriel C <nix.or.die@googlemail.com>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Gabriel C <crazy@frugalware.org>
+Subject: Re: kernel/time.c: integer constant is too large for 'long' type
+ warnings
+References: <47F65AE6.4050500@googlemail.com>
+In-Reply-To: <47F65AE6.4050500@googlemail.com>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 04, 2008 at 07:31:18PM +0200, Gabriel C wrote:
+Gabriel C wrote:
 > Hi,
 > 
-> I noticed these warning on my randconfig logs of some builds :
+> with CONFIG_HZ_300=y I see these warnings :
 > 
-> ..
+> kernel/time.c: In function 'msecs_to_jiffies':                                                                                                               
+> kernel/time.c:472: warning: integer constant is too large for 'long' type                                                                                    
+> kernel/time.c: In function 'usecs_to_jiffies':                                                                                                               
+> kernel/time.c:487: warning: integer constant is too large for 'long' type
 > 
-> drivers/usb/core/hcd.c: In function 'usb_hcd_poll_rh_status':                                                                                                
-> include/asm/string_32.h:65: warning: array subscript is above array bounds
+> I think this was introduced by :
 > 
-> net/netfilter/nf_conntrack_proto_sctp.c: In function 'sctp_packet':                                                                                          
-> net/netfilter/nf_conntrack_proto_sctp.c:374: warning: array subscript is above array bounds
+> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=bdc807871d58285737d50dc6163d0feb72cb0dc2
 > 
-> drivers/acpi/tables/tbfadt.c: In function 'acpi_tb_create_local_fadt':                                                                                       
-> include/asm/string_32.h:65: warning: array subscript is above array bounds
+> If you need more infos let me know.
 > 
-> ...
 
-Sounds like a known and already fixed bug in gcc.
+There is a patch for this, already, but the bikeshed painters have been 
+whining about it.
 
-Can you confirm that they go away when you build your compiler from the 
-head of the gcc 4.3 SVN branch?
+The code is correct; it is a nuisance warning only.
 
-> Regards,
-> 
-> Gabriel
-
-cu
-Adrian
-
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+	-hpa
