@@ -1,277 +1,173 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758778AbYDDUR6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760097AbYDDUS2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758778AbYDDUR6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Apr 2008 16:17:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752876AbYDDURt
+	id S1760097AbYDDUS2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Apr 2008 16:18:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751031AbYDDUSO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Apr 2008 16:17:49 -0400
-Received: from e32.co.us.ibm.com ([32.97.110.150]:43715 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751031AbYDDURs (ORCPT
+	Fri, 4 Apr 2008 16:18:14 -0400
+Received: from nf-out-0910.google.com ([64.233.182.188]:25398 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758097AbYDDURz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Apr 2008 16:17:48 -0400
-Subject: [PATCH] Close small window for vsyscall time inconsistencies
-From: john stultz <johnstul@us.ibm.com>
-To: Thomas Gleixner <tglx@linutronix.de>, Paul Mackerras <paulus@samba.org>,
-       Tony Luck <tony.luck@intel.com>, Ingo Molnar <mingo@elte.hu>
-Cc: lkml <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Fri, 04 Apr 2008 13:17:44 -0700
-Message-Id: <1207340264.6222.17.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+	Fri, 4 Apr 2008 16:17:55 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=GtKW0hMk9a+59UD1gAI+iVQo6awZvYOiZYb4vnS3ToGJAVy6Et55kFgg+qD+0DXnv6E4OC4OgytoPfEhoV7AHh2npTzx+WmhxmN2LulkqUlRDz60ZsLtUWtXvfKTTsgPhgtlHbrzMN/rpgJ8/L8oSRYCK3Z+LQbo2WhIzslLqQ8=
+Message-ID: <47F68CA0.7090007@gmail.com>
+Date: Fri, 04 Apr 2008 22:16:32 +0200
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: linux-kernel@vger.kernel.org, Greg KH <gregkh@suse.de>,
+       linux-usb@vger.kernel.org
+Subject: usb unbind/bind => WARNING at fs/sysfs/dir.c [Was: 2.6.25-rc8-mm1]
+References: <20080401213214.8fbb6d6b.akpm@linux-foundation.org>
+In-Reply-To: <20080401213214.8fbb6d6b.akpm@linux-foundation.org>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-So Thomas and Ingo pointed out to me that they were occasionally seeing
-small 1ns inconsistencies from clock_gettime() (and more rarely, 1us
-inconsistencies from gettimeofday() when the 1ns inconsistency occurred
-on a us boundary)
+On 04/02/2008 06:32 AM, Andrew Morton wrote:
+> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.25-rc8/2.6.25-rc8-mm1/
 
-Looking over the code, the only possible reason I could find would be
-from an interaction with the vsyscall code.
+After
+$ echo -n 4-1.2 >/sys/bus/usb/drivers/usb/unbind
+$ echo -n 4-1.2 >/sys/bus/usb/drivers/usb/bind
 
-In update_wall_time(), if we read the hardware at time A and start
-accumulating time, and adjusting the clocksource frequency, slowing it
-for ntp. 
+I have this in logs:
 
-Right before we call update_vsyscall(), another processor makes a
-vsyscall gettimeofday call, reading the hardware at time B, but using
-the clocksource frequency and offsets from pre-time A. 
+sysfs: duplicate filename 'usbdev4.12_ep81' can not be created
+------------[ cut here ]------------
+WARNING: at /home/l/latest/xxx/fs/sysfs/dir.c:425 sysfs_add_one+0x99/0xc0()
+Modules linked in: usbhid hid nls_cp437 vfat fat usb_storage tun bitrev ipv6 
+arc4 ecb crypto_blkcipher cryptomgr crypto_algapi ath5k mac80211 sr_mod crc32 
+ohci1394 rtc_cmos cfg80211 ieee1394 floppy rtc_core ehci_hcd rtc_lib ff_memless 
+cdrom [last unloaded: hid]
+Pid: 539, comm: bash Tainted: G        W 2.6.25-rc8-mm1_64 #395
 
-The update_vsyscall then runs, and updates the clocksource frequency
-with a slower frequency.
+Call Trace:
+  [<ffffffff8022f07f>] warn_on_slowpath+0x5f/0x80
+  [<ffffffff80230197>] ? printk+0x67/0x70
+  [<ffffffff802d9bd0>] ? sysfs_ilookup_test+0x0/0x20
+  [<ffffffff802a12e8>] ? ifind+0x58/0xc0
+  [<ffffffff802d9bd0>] ? sysfs_ilookup_test+0x0/0x20
+  [<ffffffff802d9f49>] sysfs_add_one+0x99/0xc0
+  [<ffffffff802daf68>] sysfs_create_link+0xa8/0x130
+  [<ffffffff8038ebda>] device_add+0x2aa/0x4d0
+  [<ffffffff80310c26>] ? kobject_init+0x36/0x80
+  [<ffffffff8038ee19>] device_register+0x19/0x20
+  [<ffffffff803dbbec>] usb_create_ep_files+0x19c/0x320
+  [<ffffffff803dadb3>] usb_create_sysfs_intf_files+0xd3/0x100
+  [<ffffffff803d630c>] usb_set_configuration+0x3ac/0x5f0
+  [<ffffffff803df81a>] generic_probe+0x7a/0xb0
+  [<ffffffff803d83fa>] usb_probe_device+0x3a/0x40
+  [<ffffffff80390ceb>] driver_probe_device+0x9b/0x1a0
+  [<ffffffff803901b3>] driver_bind+0xb3/0x100
+  [<ffffffff8038f8a7>] drv_attr_store+0x27/0x30
+  [<ffffffff802d94ab>] sysfs_write_file+0xeb/0x140
+  [<ffffffff8028cc57>] vfs_write+0xc7/0x170
+  [<ffffffff8028d2f0>] sys_write+0x50/0x90
+  [<ffffffff8020b5eb>] system_call_after_swapgs+0x7b/0x80
 
-Another processor immediately calls vsyscall gettimeofday, reading the
-hardware (lets imagine its very slow hardware) at time B (or very
-shortly there after), and then uses the post-time A clocksource
-frequency which has been slowed. 
-
-Since we're using basically the same hardware value B, but using
-different frequencies, its possible for a very small 1ns time
-inconsistency to occur.
-
-The solution, is to block the vsyscall reads prior to the hardware read
-at time A. Basically synchronizing the vsyscall gettimeofday calls with
-the entire update_wall_time function() rather then just the
-update_vsyscall call. 
-
-Since each update_vsyscall is implemented in an arch specific way, we've
-added a update_vsyscall_lock/unlock function pair that can be called
-from arch generic code.
-
-Paul, Tony: I'd appreciate a careful review for the non-x86_64 bits, as
-I'm less familiar with the subtleties there.
-
-Build tested for x86_64, powerpc, ia64, and alpha.
-
-thanks
--john
-
-Signed-off-by: John Stultz <johnstul@us.ibm.com>
-
-diff --git a/arch/ia64/kernel/time.c b/arch/ia64/kernel/time.c
-index 17fda52..bc76c2e 100644
---- a/arch/ia64/kernel/time.c
-+++ b/arch/ia64/kernel/time.c
-@@ -349,11 +349,22 @@ void update_vsyscall_tz(void)
- {
- }
- 
--void update_vsyscall(struct timespec *wall, struct clocksource *c)
-+/* update_vsyscall_lock/unlock:
-+ *    methods for timekeeping core to block vsyscalls during update
-+ */
-+void update_vsyscall_lock(unsigned long *flags)
- {
--        unsigned long flags;
-+        write_seqlock_irqsave(&fsyscall_gtod_data.lock, *flags);
-+}
- 
--        write_seqlock_irqsave(&fsyscall_gtod_data.lock, flags);
-+void update_vsyscall_unlock(unsigned long *flags)
-+{
-+        write_sequnlock_irqrestore(&fsyscall_gtod_data.lock, *flags);
-+}
-+
-+/* Assumes fsyscall_gtod_data.lock has been taken via update_vsyscall_lock() */
-+void update_vsyscall(struct timespec *wall, struct clocksource *c)
-+{
- 
-         /* copy fsyscall clock data */
-         fsyscall_gtod_data.clk_mask = c->mask;
-@@ -375,7 +386,5 @@ void update_vsyscall(struct timespec *wall, struct clocksource *c)
- 		fsyscall_gtod_data.monotonic_time.tv_nsec -= NSEC_PER_SEC;
- 		fsyscall_gtod_data.monotonic_time.tv_sec++;
- 	}
--
--        write_sequnlock_irqrestore(&fsyscall_gtod_data.lock, flags);
- }
- 
-diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
-index 3b26fbd..c51d2f8 100644
---- a/arch/powerpc/kernel/time.c
-+++ b/arch/powerpc/kernel/time.c
-@@ -456,8 +456,6 @@ static inline void update_gtod(u64 new_tb_stamp, u64 new_stamp_xsec,
- 	vdso_data->tb_to_xs = new_tb_to_xs;
- 	vdso_data->wtom_clock_sec = wall_to_monotonic.tv_sec;
- 	vdso_data->wtom_clock_nsec = wall_to_monotonic.tv_nsec;
--	smp_wmb();
--	++(vdso_data->tb_update_count);
- }
- 
- #ifdef CONFIG_SMP
-@@ -801,6 +799,23 @@ static cycle_t timebase_read(void)
- 	return (cycle_t)get_tb();
- }
- 
-+/* update_vsyscall_lock/unlock:
-+ *    methods for timekeeping core to block vsyscalls during update
-+ */
-+void update_vsyscall_lock(unsigned long *flags)
-+{
-+	/* Make userspace gettimeofday spin until we're done. */
-+	++vdso_data->tb_update_count;
-+	smp_mb();
-+}
-+
-+void update_vsyscall_unlock(unsigned long *flags)
-+{
-+	smp_wmb();
-+	++(vdso_data->tb_update_count);
-+}
-+
-+/* Assumes update_vsyscall_lock() has been called */
- void update_vsyscall(struct timespec *wall_time, struct clocksource *clock)
- {
- 	u64 t2x, stamp_xsec;
-@@ -808,10 +823,6 @@ void update_vsyscall(struct timespec *wall_time, struct clocksource *clock)
- 	if (clock != &clocksource_timebase)
- 		return;
- 
--	/* Make userspace gettimeofday spin until we're done. */
--	++vdso_data->tb_update_count;
--	smp_mb();
--
- 	/* XXX this assumes clock->shift == 22 */
- 	/* 4611686018 ~= 2^(20+64-22) / 1e9 */
- 	t2x = (u64) clock->mult * 4611686018ULL;
-diff --git a/arch/x86/kernel/vsyscall_64.c b/arch/x86/kernel/vsyscall_64.c
-index edff4c9..8a2eb77 100644
---- a/arch/x86/kernel/vsyscall_64.c
-+++ b/arch/x86/kernel/vsyscall_64.c
-@@ -69,11 +69,22 @@ void update_vsyscall_tz(void)
- 	write_sequnlock_irqrestore(&vsyscall_gtod_data.lock, flags);
- }
- 
--void update_vsyscall(struct timespec *wall_time, struct clocksource *clock)
-+/* update_vsyscall_lock/unlock:
-+ *    methods for timekeeping core to block vsyscalls during update
-+ */
-+void update_vsyscall_lock(unsigned long *flags)
- {
--	unsigned long flags;
-+	write_seqlock_irqsave(&vsyscall_gtod_data.lock, *flags);
-+}
- 
--	write_seqlock_irqsave(&vsyscall_gtod_data.lock, flags);
-+void update_vsyscall_unlock(unsigned long *flags)
-+{
-+	write_sequnlock_irqrestore(&vsyscall_gtod_data.lock, *flags);
-+}
-+
-+/* Assumes vsyscall_gtod_data.lock has been taken via update_vsyscall_lock() */
-+void update_vsyscall(struct timespec *wall_time, struct clocksource *clock)
-+{
- 	/* copy vsyscall data */
- 	vsyscall_gtod_data.clock.vread = clock->vread;
- 	vsyscall_gtod_data.clock.cycle_last = clock->cycle_last;
-@@ -83,7 +94,6 @@ void update_vsyscall(struct timespec *wall_time, struct clocksource *clock)
- 	vsyscall_gtod_data.wall_time_sec = wall_time->tv_sec;
- 	vsyscall_gtod_data.wall_time_nsec = wall_time->tv_nsec;
- 	vsyscall_gtod_data.wall_to_monotonic = wall_to_monotonic;
--	write_sequnlock_irqrestore(&vsyscall_gtod_data.lock, flags);
- }
- 
- /* RED-PEN may want to readd seq locking, but then the variable should be
-diff --git a/include/linux/clocksource.h b/include/linux/clocksource.h
-index 85778a4..78d9bc0 100644
---- a/include/linux/clocksource.h
-+++ b/include/linux/clocksource.h
-@@ -221,9 +221,19 @@ extern void clocksource_change_rating(struct clocksource *cs, int rating);
- extern void clocksource_resume(void);
- 
- #ifdef CONFIG_GENERIC_TIME_VSYSCALL
-+void update_vsyscall_lock(unsigned long *flags);
-+void update_vsyscall_unlock(unsigned long *flags);
- extern void update_vsyscall(struct timespec *ts, struct clocksource *c);
- extern void update_vsyscall_tz(void);
- #else
-+static inline void update_vsyscall_lock(unsigned long *flags)
-+{
-+}
-+
-+static inline void update_vsyscall_unlock(unsigned long *flags)
-+{
-+}
-+
- static inline void update_vsyscall(struct timespec *ts, struct clocksource *c)
- {
- }
-diff --git a/kernel/time/timekeeping.c b/kernel/time/timekeeping.c
-index a3fa587..47ca292 100644
---- a/kernel/time/timekeeping.c
-+++ b/kernel/time/timekeeping.c
-@@ -129,7 +129,7 @@ EXPORT_SYMBOL(do_gettimeofday);
-  */
- int do_settimeofday(struct timespec *tv)
- {
--	unsigned long flags;
-+	unsigned long flags, vflags;
- 	time_t wtm_sec, sec = tv->tv_sec;
- 	long wtm_nsec, nsec = tv->tv_nsec;
- 
-@@ -137,6 +137,7 @@ int do_settimeofday(struct timespec *tv)
- 		return -EINVAL;
- 
- 	write_seqlock_irqsave(&xtime_lock, flags);
-+	update_vsyscall_lock(&vflags);
- 
- 	nsec -= __get_nsec_offset();
- 
-@@ -152,6 +153,7 @@ int do_settimeofday(struct timespec *tv)
- 
- 	update_vsyscall(&xtime, clock);
- 
-+	update_vsyscall_unlock(&vflags);
- 	write_sequnlock_irqrestore(&xtime_lock, flags);
- 
- 	/* signal hrtimers about time change */
-@@ -442,12 +444,15 @@ static void clocksource_adjust(s64 offset)
-  */
- void update_wall_time(void)
- {
-+	unsigned long flags;
- 	cycle_t offset;
- 
- 	/* Make sure we're fully resumed: */
- 	if (unlikely(timekeeping_suspended))
- 		return;
- 
-+	/* grab the vsyscall lock to block vsyscalls during update */
-+	update_vsyscall_lock(&flags);
- #ifdef CONFIG_GENERIC_TIME
- 	offset = (clocksource_read(clock) - clock->cycle_last) & clock->mask;
- #else
-@@ -487,6 +492,7 @@ void update_wall_time(void)
- 	/* check to see if there is a new clocksource to use */
- 	change_clocksource();
- 	update_vsyscall(&xtime, clock);
-+	update_vsyscall_unlock(&flags);
- }
- 
- /**
+---[ end trace 6ee6d593d4e510b4 ]---
 
 
+
+
+I think, this is a 2.6.25-rc5-mm1 regression, there
+while :; do
+   echo -n 4-1.2 >/sys/bus/usb/drivers/usb/unbind
+   echo -n 4-1.2 >/sys/bus/usb/drivers/usb/bind
+   usleep 10000
+done
+went just fine for about 2000 times. Also real disconnect/connect works just 
+fine (on disconnect the link disappears). Do you need kobject debug output?
+
+
+
+
+The dir looks like:
+...
+usbdev4.10_ep83 -> 
+../../devices/pci0000:00/0000:00:1d.0/usb4/4-1/4-1.3/4-1.3:1.0/usb_endpoint/usbdev4.10_ep83
+usbdev4.12_ep81 -> 
+../../devices/pci0000:00/0000:00:1d.0/usb4/4-1/4-1.2/4-1.2:1.0/usb_endpoint/usbdev4.12_ep81
+
+^^^^
+this is the unbound, the link is broken, there is no such device even after 
+binding it back.
+
+usbdev4.1_ep00 -> 
+../../devices/pci0000:00/0000:00:1d.0/usb4/usb_endpoint/usbdev4.1_ep00
+usbdev4.1_ep81 -> 
+../../devices/pci0000:00/0000:00:1d.0/usb4/4-0:1.0/usb_endpoint/usbdev4.1_ep81
+usbdev4.5_ep00 -> 
+../../devices/pci0000:00/0000:00:1d.0/usb4/4-1/usb_endpoint/usbdev4.5_ep00
+...
+
+
+The device is:
+Bus 004 Device 012: ID 045e:00f0 Microsoft Corp.
+Device Descriptor:
+   bLength                18
+   bDescriptorType         1
+   bcdUSB               2.00
+   bDeviceClass            0 (Defined at Interface level)
+   bDeviceSubClass         0
+   bDeviceProtocol         0
+   bMaxPacketSize0         8
+   idVendor           0x045e Microsoft Corp.
+   idProduct          0x00f0
+   bcdDevice            1.01
+   iManufacturer           1 Microsoft Corporation
+   iProduct                2 Microsoft � Laser Mouse 6000
+   iSerial                 0
+   bNumConfigurations      1
+   Configuration Descriptor:
+     bLength                 9
+     bDescriptorType         2
+     wTotalLength           34
+     bNumInterfaces          1
+     bConfigurationValue     1
+     iConfiguration          0
+     bmAttributes         0xa0
+       (Bus Powered)
+       Remote Wakeup
+     MaxPower              100mA
+     Interface Descriptor:
+       bLength                 9
+       bDescriptorType         4
+       bInterfaceNumber        0
+       bAlternateSetting       0
+       bNumEndpoints           1
+       bInterfaceClass         3 Human Interface Devices
+       bInterfaceSubClass      1 Boot Interface Subclass
+       bInterfaceProtocol      2 Mouse
+       iInterface              0
+         HID Device Descriptor:
+           bLength                 9
+           bDescriptorType        33
+           bcdHID               1.11
+           bCountryCode           33 US
+           bNumDescriptors         1
+           bDescriptorType        34 Report
+           wDescriptorLength      59
+          Report Descriptors:
+            ** UNAVAILABLE **
+       Endpoint Descriptor:
+         bLength                 7
+         bDescriptorType         5
+         bEndpointAddress     0x81  EP 1 IN
+         bmAttributes            3
+           Transfer Type            Interrupt
+           Synch Type               None
+           Usage Type               Data
+         wMaxPacketSize     0x0004  1x 4 bytes
+         bInterval              10
+Device Status:     0x0000
+   (Bus Powered)
