@@ -1,217 +1,151 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760575AbYDDAXg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758044AbYDDAbW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760575AbYDDAXg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Apr 2008 20:23:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755430AbYDDAXN
+	id S1758044AbYDDAbW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Apr 2008 20:31:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754042AbYDDAbM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Apr 2008 20:23:13 -0400
-Received: from adsl-76-233-236-102.dsl.pltn13.sbcglobal.net ([76.233.236.102]:40058
-	"EHLO mail.goop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752931AbYDDAXM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Apr 2008 20:23:12 -0400
-Content-Type: text/plain; charset="us-ascii"
+	Thu, 3 Apr 2008 20:31:12 -0400
+Received: from mga11.intel.com ([192.55.52.93]:29890 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752069AbYDDAbL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Apr 2008 20:31:11 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,600,1199692800"; 
+   d="scan'208";a="312488662"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Subject: [PATCH 1 of 6] hotplug-memory: refactor online_pages to separate zone
-	growth from page onlining
-X-Mercurial-Node: 5a397e7f3c1aeb7648b94de21e26382b63f51ee7
-Message-Id: <5a397e7f3c1aeb7648b9.1207267541@localhost>
-In-Reply-To: <patchbomb.1207267540@localhost>
-Date: Thu, 03 Apr 2008 17:05:41 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Yasunori Goto <y-goto@jp.fujitsu.com>,
-       Dave Hansen <dave@linux.vnet.ibm.com>
-Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Christoph Lameter <clameter@sgi.com>
+Content-Type: text/plain;
+	charset="utf-8"
+Subject: RE: [>=2.6.23][BUG] Oops on power disconnection
+Date: Thu, 3 Apr 2008 17:31:12 -0700
+Message-ID: <924EFEDD5F540B4284297C4DC59F3DEED0EA3C@orsmsx423.amr.corp.intel.com>
+In-Reply-To: <1207256678.6024.90.camel@linux-2bdv.site>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [>=2.6.23][BUG] Oops on power disconnection
+Thread-Index: AciVzlNbsKcQ5qbTSUmbH+3ZYOiklgAGohOA
+References: <5681ec900803300645l5369cda4g119957a4b7f05d17@mail.gmail.com> <5681ec900803300651m6e5f38deke1b7746236e5bb9@mail.gmail.com> <20080402001418.aad6eed2.akpm@linux-foundation.org> <5681ec900804020608o62be52c4ted172e18daf24f5b@mail.gmail.com> <1207147729.30061.9.camel@hammer1.suse.de> <5681ec900804020913t4adc38b1r2e424fa8bbdda241@mail.gmail.com> <1207159974.4700.6.camel@queen.suse.de> <5681ec900804030915w720f3ccfp74e5d501ca3d6b56@mail.gmail.com> <1207256678.6024.90.camel@linux-2bdv.site>
+From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+To: <trenn@suse.de>, "Sanjeev Aditya Naga" <sanjeev.kernel@gmail.com>
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       <linux-kernel@vger.kernel.org>, <linux-acpi@vger.kernel.org>,
+       "Li, Shaohua" <shaohua.li@intel.com>
+X-OriginalArrivalTime: 04 Apr 2008 00:28:53.0795 (UTC) FILETIME=[DCB75F30:01C895EA]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha id m340Vsnq017215
 
-The Xen balloon driver needs to separate the process of hot-installing
-memory into two phases: one to allocate the page structures and
-configure the zones, and another to actually online the pages of newly
-installed memory.
-
-This patch splits up the innards of online_pages() into two pieces
-which correspond to these two phases.  The behaviour of online_pages()
-itself is unchanged.
-
-Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Yasunori Goto <y-goto@jp.fujitsu.com>
-Cc: Christoph Lameter <clameter@sgi.com>
-Cc: Dave Hansen <dave@linux.vnet.ibm.com>
----
- include/linux/memory_hotplug.h |    3 +
- mm/memory_hotplug.c            |  102 ++++++++++++++++++++++++++--------------
- 2 files changed, 71 insertions(+), 34 deletions(-)
-
-diff --git a/include/linux/memory_hotplug.h b/include/linux/memory_hotplug.h
---- a/include/linux/memory_hotplug.h
-+++ b/include/linux/memory_hotplug.h
-@@ -57,7 +57,10 @@
- /* need some defines for these for archs that don't support it */
- extern void online_page(struct page *page);
- /* VM interface that may be used by firmware interface */
-+extern int prepare_online_pages(unsigned long pfn, unsigned long nr_pages);
-+extern unsigned long mark_pages_onlined(unsigned long pfn, unsigned long nr_pages);
- extern int online_pages(unsigned long, unsigned long);
-+
- extern void __offline_isolated_pages(unsigned long, unsigned long);
- extern int offline_pages(unsigned long, unsigned long, unsigned long);
- 
-diff --git a/mm/memory_hotplug.c b/mm/memory_hotplug.c
---- a/mm/memory_hotplug.c
-+++ b/mm/memory_hotplug.c
-@@ -134,10 +134,32 @@
- }
- EXPORT_SYMBOL_GPL(__add_pages);
- 
--static void grow_zone_span(struct zone *zone,
-+static void grow_pgdat_span(struct pglist_data *pgdat,
- 		unsigned long start_pfn, unsigned long end_pfn)
- {
-+	unsigned long old_pgdat_end_pfn =
-+		pgdat->node_start_pfn + pgdat->node_spanned_pages;
-+
-+	if (start_pfn < pgdat->node_start_pfn)
-+		pgdat->node_start_pfn = start_pfn;
-+
-+	pgdat->node_spanned_pages = max(old_pgdat_end_pfn, end_pfn) -
-+					pgdat->node_start_pfn;
-+}
-+
-+static void grow_zone_span(unsigned long start_pfn, unsigned long end_pfn)
-+{
- 	unsigned long old_zone_end_pfn;
-+	struct zone *zone;
-+	unsigned long flags;
-+
-+	/*
-+	 * This doesn't need a lock to do pfn_to_page().
-+	 * The section can't be removed here because of the
-+	 * memory_block->state_sem.
-+	 */
-+	zone = page_zone(pfn_to_page(start_pfn));
-+	pgdat_resize_lock(zone->zone_pgdat, &flags);
- 
- 	zone_span_writelock(zone);
- 
-@@ -149,19 +171,9 @@
- 				zone->zone_start_pfn;
- 
- 	zone_span_writeunlock(zone);
--}
- 
--static void grow_pgdat_span(struct pglist_data *pgdat,
--		unsigned long start_pfn, unsigned long end_pfn)
--{
--	unsigned long old_pgdat_end_pfn =
--		pgdat->node_start_pfn + pgdat->node_spanned_pages;
--
--	if (start_pfn < pgdat->node_start_pfn)
--		pgdat->node_start_pfn = start_pfn;
--
--	pgdat->node_spanned_pages = max(old_pgdat_end_pfn, end_pfn) -
--					pgdat->node_start_pfn;
-+	grow_pgdat_span(zone->zone_pgdat, start_pfn, end_pfn);
-+	pgdat_resize_unlock(zone->zone_pgdat, &flags);
- }
- 
- static int online_pages_range(unsigned long start_pfn, unsigned long nr_pages,
-@@ -180,16 +192,12 @@
- 	return 0;
- }
- 
--
--int online_pages(unsigned long pfn, unsigned long nr_pages)
-+/* Tell anyone who's interested that we're onlining some memory */
-+static int notify_going_online(unsigned long pfn, unsigned long nr_pages)
- {
--	unsigned long flags;
--	unsigned long onlined_pages = 0;
--	struct zone *zone;
--	int need_zonelists_rebuild = 0;
-+	struct memory_notify arg;
- 	int nid;
- 	int ret;
--	struct memory_notify arg;
- 
- 	arg.start_pfn = pfn;
- 	arg.nr_pages = nr_pages;
-@@ -201,20 +209,18 @@
- 
- 	ret = memory_notify(MEM_GOING_ONLINE, &arg);
- 	ret = notifier_to_errno(ret);
--	if (ret) {
-+	if (ret)
- 		memory_notify(MEM_CANCEL_ONLINE, &arg);
--		return ret;
--	}
--	/*
--	 * This doesn't need a lock to do pfn_to_page().
--	 * The section can't be removed here because of the
--	 * memory_block->state_sem.
--	 */
--	zone = page_zone(pfn_to_page(pfn));
--	pgdat_resize_lock(zone->zone_pgdat, &flags);
--	grow_zone_span(zone, pfn, pfn + nr_pages);
--	grow_pgdat_span(zone->zone_pgdat, pfn, pfn + nr_pages);
--	pgdat_resize_unlock(zone->zone_pgdat, &flags);
-+
-+	return ret;
-+}
-+
-+/* Mark a set of pages as online */
-+unsigned long mark_pages_onlined(unsigned long pfn, unsigned long nr_pages)
-+{
-+	struct zone *zone = page_zone(pfn_to_page(pfn));
-+	unsigned long onlined_pages = 0;
-+	int need_zonelists_rebuild = 0;
- 
- 	/*
- 	 * If this zone is not populated, then it is not in zonelist.
-@@ -240,10 +246,38 @@
- 	vm_total_pages = nr_free_pagecache_pages();
- 	writeback_set_ratelimit();
- 
--	if (onlined_pages)
-+	if (onlined_pages) {
-+		struct memory_notify arg;
-+
-+		arg.start_pfn = pfn;  /* ? */
-+		arg.nr_pages = onlined_pages;
-+		arg.status_change_nid = -1;  /* ? */
-+
- 		memory_notify(MEM_ONLINE, &arg);
-+	}
- 
-+	return onlined_pages;
-+}
-+
-+int prepare_online_pages(unsigned long pfn, unsigned long nr_pages)
-+{
-+	int ret = notify_going_online(pfn, nr_pages);
-+	if (ret)
-+		return ret;
-+
-+	grow_zone_span(pfn, pfn+nr_pages);
- 	return 0;
-+}
-+
-+int online_pages(unsigned long pfn, unsigned long nr_pages)
-+{
-+	int ret;
-+
-+	ret = prepare_online_pages(pfn, nr_pages);
-+	if (ret == 0)
-+		mark_pages_onlined(pfn, nr_pages);
-+
-+	return ret;
- }
- #endif /* CONFIG_MEMORY_HOTPLUG_SPARSE */
  
 
+>-----Original Message-----
+>From: Thomas Renninger [mailto:trenn@suse.de] 
+>Sent: Thursday, April 03, 2008 2:05 PM
+>To: Sanjeev Aditya Naga
+>Cc: Andrew Morton; linux-kernel@vger.kernel.org; 
+>linux-acpi@vger.kernel.org; Pallipadi, Venkatesh; Li, Shaohua
+>Subject: Re: [>=2.6.23][BUG] Oops on power disconnection
+>
+>
+>On Thu, 2008-04-03 at 21:45 +0530, Sanjeev Aditya Naga wrote:
+>> Hello Thomas,
+>> 
+>> On Wed, Apr 2, 2008 at 11:42 PM, Thomas Renninger 
+><trenn@suse.de> wrote:
+>> >
+>> > On Wed, 2008-04-02 at 21:43 +0530, Sanjeev Aditya Naga wrote:
+>> >  > Hello Thomas,
+>> >  >
+>> >  > > Hi,
+>> >  > >
+>> >  > >
+>> >  > >  On Wed, 2008-04-02 at 18:38 +0530, Sanjeev Aditya Naga wrote:
+>> >  > >  > Hello Andrew Morton,
+>> >  > >  >
+>> >  > >  > Greetings!
+>> >  > >  >
+>> >  > >  > Thank you for the update. Is there anything I can do
+>> >  > >  > from my side?
+>> >  > >  >
+>> >  > >  > I thought it was a acpi (dsdt) problem. And based on
+>> >  > >  > a tutorial, I have tried to extract, fix, 
+>recompile the dsdt
+>> >  > >  > and use it with the kernel. But still I have the 
+>same problem.
+>> >  > >  > Let me know if I shall attach the dsdt (original) 
+>decompiled
+>> >  > >  > code, if that helps.
+>> >  > >
+>> >  > >  this could be due a general memory corruption 
+>problem through ACPICA.
+>> >  > >  If you get different backtraces on reboots even you 
+>only modified things
+>> >  > >  that do not have to do with the problem, it's 
+>probably that and related
+>> >  > >  to:
+>> >  > >  ï»¿http://bugzilla.kernel.org/show_bug.cgi?id=10339
+>> >  > >
+>> >  > >  You might want to try the latest kernel or the patch 
+>posted there.
+>> >  >
+>> >  > Thank you for the update.
+>> >  > I have checked the bug and unfortunately its not the
+>> >  > same issue. Things work absolutely fine, when I'm
+>> >  > running on AC power. It even displays the exact
+>> >  > battery (and charging) status to me. It messes up
+>> >  > when suddenly AC power gets disconnected and
+>> >  > switches to battery mode (The time when I get Oops).
+>> >  > The system is still usable after switching to battery
+>> >  > mode and I still get correct battery stats until its
+>> >  > completely discharged. However most of the commands
+>> >  > like kill, poweroff, java doesn't work after the Oops.
+>> >  The bug is not related to battery, but to AML parsing and 
+>can therefore
+>> >  affect anything which is ACPI related.
+>> >
+>> >
+>> >  > BTW there is one similarity with the referenced bug.
+>> >  > If I boot the computer without AC Power, it gives the
+>> >  > same Oops and stops during booting itself.
+>> >  >
+>> >  > I shall try the latest kernel once and shall update you.
+>> >  That would be great.
+>> >  If it works, please give the patch there a try, IMO this 
+>one should see
+>> >  2.6.2[34].X stable kernels soon.
+>> 
+>> I have got the lastest kernel 2.6.25-rc8 today. I observed that
+>> the referenced patch is already in the kernel. However this didn't
+>> solve the problem in question. I get the same Oops on this kernel
+>> as well. Find the latest dmesg along with the Oops:
+>Ok.
+>Maybe best is you document the backtraces/oopses with kernel 
+>versions at
+>bugzilla.kernel.org and add dmesg and acpidump.
+>It seems your machine notifies OS that the C-state table changed.
+>AFAIK this is rare and there might be a general bug in the 
+>cpuidle layer
+>which I do not know well.
+>Best you add Venkatesh and Shaohua Li <shaohua.li@intel.com> to CC of
+>the bug.
+>While the backtrace shows a lot, cpuidle IMO is missing a general debug
+>option like in the cpufreq layer.
+>I couldn't find a single printk in the whole cpuidle/{cpuidle,sysfs}.c
+>files, even on error paths. ï»¿Also in the cpuidle specific parts of
+>drivers/acpi/processor_idle.c some debug printks may help for 
+>future bug
+>reports. It is very hard to guess what happened...
+>
 
+This looks like cpuidle and kobject interaction.
+The latest oops looks different from the original one. Latest one is a
+warn_on in lib/kref.c:43
+
+We (Me or Shaohua) will take a deeper look at get back on this.
+
+Thanks,
+Venki
+
+ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
