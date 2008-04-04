@@ -1,110 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759859AbYDDTM3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759349AbYDDTSh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759859AbYDDTM3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Apr 2008 15:12:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755370AbYDDTMW
+	id S1759349AbYDDTSh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Apr 2008 15:18:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754747AbYDDTS0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Apr 2008 15:12:22 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:9653 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752389AbYDDTMV (ORCPT
+	Fri, 4 Apr 2008 15:18:26 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:42911 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752389AbYDDTSZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Apr 2008 15:12:21 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=nWcgJYLDmM6jjQ9WKVdJnRglAeKdWUYxolB2Vyb/7qVFoSPSgZRJ3F+73eJ6gflUL
-	sy39w/PBT13OLMiwV6CSg==
-Message-ID: <6599ad830804041211r37848a6coaa900d8bdac40fbe@mail.gmail.com>
-Date: Fri, 4 Apr 2008 12:11:40 -0700
-From: "Paul Menage" <menage@google.com>
-To: balbir@linux.vnet.ibm.com
-Subject: Re: [-mm] Add an owner to the mm_struct (v8)
-Cc: "Pavel Emelianov" <xemul@openvz.org>, "Hugh Dickins" <hugh@veritas.com>,
-       "Sudhir Kumar" <skumar@linux.vnet.ibm.com>,
-       "YAMAMOTO Takashi" <yamamoto@valinux.co.jp>, lizf@cn.fujitsu.com,
-       linux-kernel@vger.kernel.org, taka@valinux.co.jp, linux-mm@kvack.org,
-       "David Rientjes" <rientjes@google.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <47F5F3FA.7060709@linux.vnet.ibm.com>
+	Fri, 4 Apr 2008 15:18:25 -0400
+Date: Fri, 4 Apr 2008 22:15:43 +0300 (EEST)
+From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
+X-X-Sender: ijjarvin@wrl-59.cs.helsinki.fi
+To: Georgi Chorbadzhiyski <gf@unixsol.org>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Netdev <netdev@vger.kernel.org>
+Subject: Re: Linux 2.6.25-rc6: WARNING: at net/ipv4/tcp_input.c:2510
+In-Reply-To: <47F5C7D1.1080906@unixsol.org>
+Message-ID: <Pine.LNX.4.64.0804042209530.415@wrl-59.cs.helsinki.fi>
+References: <47EBCB75.6030600@unixsol.org> <Pine.LNX.4.64.0804031315360.21524@wrl-59.cs.helsinki.fi>
+ <47F5C7D1.1080906@unixsol.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080404080544.26313.38199.sendpatchset@localhost.localdomain>
-	 <6599ad830804040112q3dd5333aodf6a170c78e61dc8@mail.gmail.com>
-	 <47F5E69C.9@linux.vnet.ibm.com>
-	 <6599ad830804040150j4946cf92h886bb26000319f3b@mail.gmail.com>
-	 <47F5F3FA.7060709@linux.vnet.ibm.com>
+Content-Type: MULTIPART/MIXED; BOUNDARY="-696208474-1742740919-1207336543=:415"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 4, 2008 at 2:25 AM, Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
->  >>  For other controllers,
->  >>  they'll need to monitor exit() callbacks to know when the leader is dead :( (sigh).
->  >
->  > That sounds like a nightmare ...
->  >
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
+
+---696208474-1742740919-1207336543=:415
+Content-Type: TEXT/PLAIN; charset=iso-8859-1
+Content-Transfer-Encoding: 8BIT
+
+On Fri, 4 Apr 2008, Georgi Chorbadzhiyski wrote:
+
+> Around 04/03/08 13:17, Ilpo Järvinen scribbled:
+> > On Thu, 27 Mar 2008, Georgi Chorbadzhiyski wrote:
+> > 
+> >> A week ago I updated one of my servers to 2.6.25-rc6 and today looking
+> >> through logs I've found these:
+> >>
+> >> [380219.823434] ------------[ cut here ]------------
+> >> [380219.823450] WARNING: at net/ipv4/tcp_input.c:2510 tcp_ack+0xc7e/0x177d()
+> > 
+> > Is this reproducable for you? If yes, is it possible for you to run 
+> 
+> Not in the moment.
 >
->  Yes, it would be, but worth the trouble. Is it really critical to move a dead
->  cgroup leader to init_css_set in cgroup_exit()?
+> I'm not getting such errors in the log since my last report. Today I'll 
+> update to latest -git and will restart the server.
 
-It struck me that this whole group leader optimization is broken as it
-stands since there could (in strange configurations) be multiple
-thread groups sharing the same mm.
+Yeah, the reason why these still happen is that they are quite hard to 
+hit.
 
-I wonder if we can't just delay the exit_mm() call of a group leader
-until all its threads have exited?
-
+> The machine that gave me this error is a http and ftp server handling not
+> very busy distro mirror (if this can give you any clues).
 >
->  > As long as we find someone to pass the mm to quickly, it shouldn't be
->  > too bad - I think we're already optimized for that case. Generally the
->  > group leader's first child will be the new owner, and any subsequent
->  > times the owner exits, they're unlikely to have any children so
->  > they'll go straight to the sibling check and pass the mm to the
->  > parent's first child.
->  >
->  > Unless they all exit in strict sibling order and hence pass the mm
->  > along the chain one by one, we should be fine. And if that exit
->  > ordering does turn out to be common, then simply walking the child and
->  > sibling lists in reverse order to find a victim will minimize the
->  > amount of passing.
->  >
->
->
->  Finding the next mm might not be all that bad, but doing it each time a task
->  exits, can be an overhead, specially for large multi threaded programs.
+> > processing expensive verification of TCP state (validates TCP write queue 
+> > invariants multiple times per ACK by scanning through the write queue) on 
+> > such machine?
+> 
+> How to run such a thing, can you give me some pointers?
 
-Right, but we only have that overhead if we actually end up passing
-the mm from one to another each time they exit. It would be
-interesting to know what order the threads in a large multi-threaded
-process exit typically (when the main process exits and all the
-threads die).
+I sent the patch recently to netdev/lkml:
 
-I guess it's likely to be one of:
+  http://marc.info/?l=linux-netdev&m=120733529216457&w=2
 
-- in thread creation order (i.e. in order of parent->children list),
-in which case we should try to throw the mm to the parent's last child
-- in reverse creation order, in which case we should try to throw the
-mm to the parent's first child
-- in random order depending on which threads the scheduler runs first
-(in which case we can expect that a small fraction of the threads will
-have to throw the mm whichever end we start from)
+But it's very expensive in processing wise so it might not be wise to put 
+it in if performance is important for you.
 
->  This can
->  get severe if the new mm->owner belongs to a different cgroup, in which case we
->  need to use callbacks as well.
->
->  If half the threads belonged to a different cgroup and the new mm->owner kept
->  switching between cgroups, the overhead would be really high, with the callbacks
->  and the mm->owner changing frequently.
 
-To me, it seems that setting up a *virtual address space* cgroup
-hierarchy and then putting half your threads in one group and half in
-the another is asking for trouble. We need to not break in that
-situation, but I'm not sure it's a case to optimize for.
-
-Paul
+-- 
+ i.
+---696208474-1742740919-1207336543=:415--
