@@ -1,85 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760224AbYDDSFs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760404AbYDDSGH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760224AbYDDSFs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Apr 2008 14:05:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759998AbYDDSFW
+	id S1760404AbYDDSGH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Apr 2008 14:06:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760076AbYDDSFd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Apr 2008 14:05:22 -0400
-Received: from g4t0015.houston.hp.com ([15.201.24.18]:23585 "EHLO
-	g4t0015.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759979AbYDDSFU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Apr 2008 14:05:20 -0400
-Date: Fri, 4 Apr 2008 12:05:18 -0600
-From: Alex Chiang <achiang@hp.com>
-To: Badari Pulavarty <pbadari@us.ibm.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.25-rc8-mm1 panic in rpaphp_register_slot()
-Message-ID: <20080404180518.GA12642@ldl.fc.hp.com>
-Mail-Followup-To: Alex Chiang <achiang@hp.com>,
-	Badari Pulavarty <pbadari@us.ibm.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	lkml <linux-kernel@vger.kernel.org>
-References: <1207331616.5916.15.camel@badari-desktop>
+	Fri, 4 Apr 2008 14:05:33 -0400
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:52893 "EHLO smtp5.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756771AbYDDSFa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Apr 2008 14:05:30 -0400
+Date: Fri, 4 Apr 2008 21:05:09 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Gabriel C <nix.or.die@googlemail.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Gabriel C <crazy@frugalware.org>, netdev <netdev@vger.kernel.org>,
+       linux-usb@vger.kernel.org, linux-acpi@vger.kernel.org
+Subject: Re: array subscript is above array bounds warnings with gcc4.3
+Message-ID: <20080404180509.GA1900@cs181133002.pp.htv.fi>
+References: <47F665E6.2010409@googlemail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <1207331616.5916.15.camel@badari-desktop>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <47F665E6.2010409@googlemail.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Badari,
-
-* Badari Pulavarty <pbadari@us.ibm.com>:
-> Hi Andrew & Alex,
+On Fri, Apr 04, 2008 at 07:31:18PM +0200, Gabriel C wrote:
+> Hi,
 > 
-> I get following panic in rpaphp_register_slot() on
-> 2.6.25-rc8-mm1. Known issue ?
-
-I know about it now... :-/
-
-Any chance you could turn debugging on for both rpaphp and
-pci_hotplug?
-
-Thanks.
-
-/ac
-
-> pci_hotplug: PCI Hot Plug PCI Core version: 0.5
-> rpaphp: RPA HOT Plug PCI Controller Driver version: 0.1
-> Unable to handle kernel paging request for data at address 0x00000070
-> Faulting instruction address: 0xc00000000031e4b8 
-> Oops: Kernel access of bad area, sig: 11 [#1]
-> SMP NR_CPUS=32 NUMA pSeries
-> Modules linked in:
-> NIP: c00000000031e4b8 LR: c00000000031dd60 CTR: 0000000000000000
-> REGS: c0000000700dba30 TRAP: 0300   Not tainted  (2.6.25-rc8-mm1)
-> MSR: 8000000000009032 <EE,ME,IR,DR>  CR: 42002022  XER: 20000009
-> DAR: 0000000000000070, DSISR: 0000000040000000
-> TASK = c0000000700d7990[1] 'swapper' THREAD: c0000000700d8000 CPU: 0
-> GPR00: c0000000006c6e90 c0000000700dbcb0 c000000000769140 c0000000703c1440
-> GPR04: c000000070226400 0000000000000000 0000000020000009 d000080080000004
-> GPR08: 0000000000000001 0000000000000000 c000000071fff1b8 0000000000000000
-> GPR12: 0000000000004000 c000000000690380 0000000000000000 0000000000000000
-> GPR16: 0000000000000000 0000000000000000 0000000000000000 0000000000000000
-> GPR20: 4000000001c00000 0000000000000000 0000000002247c38 0000000000000000
-> GPR24: 0000000002247ea8 c000000071fff1b8 0000000000000000 c0000000023e8f48
-> GPR28: c0000000703c1440 c000000070ff7780 c0000000006f7778 c0000000006c6e90
-> NIP [c00000000031e4b8] .rpaphp_register_slot+0xd8/0x164
-> LR [c00000000031dd60] .rpaphp_add_slot+0x1a4/0x260
-> Call Trace:
-> [c0000000700dbcb0] [c0000000700dbd70] 0xc0000000700dbd70 (unreliable)
-> [c0000000700dbd40] [c00000000031dd60] .rpaphp_add_slot+0x1a4/0x260
-> [c0000000700dbe20] [c000000000636864] .rpaphp_init+0x34/0x68
-> [c0000000700dbea0] [c0000000006103ec] .kernel_init+0x1f8/0x38c
-> [c0000000700dbf90] [c000000000023f80] .kernel_thread+0x4c/0x68
-> Instruction dump:
-> 48000020 e8bd0020 e89e8010 e87e8048 4bd38c09 60000000 3860fff5 48000080
-> e93d0028 e89d0030 7f83e378 e9290038 <e9290070> 80a90004 78a5eee2 4bffee7d
-> ---[ end trace 561bb236c800851f ]---
-> Kernel panic - not syncing: Attempted to kill init!
+> I noticed these warning on my randconfig logs of some builds :
 > 
+> ..
 > 
+> drivers/usb/core/hcd.c: In function 'usb_hcd_poll_rh_status':                                                                                                
+> include/asm/string_32.h:65: warning: array subscript is above array bounds
+> 
+> net/netfilter/nf_conntrack_proto_sctp.c: In function 'sctp_packet':                                                                                          
+> net/netfilter/nf_conntrack_proto_sctp.c:374: warning: array subscript is above array bounds
+> 
+> drivers/acpi/tables/tbfadt.c: In function 'acpi_tb_create_local_fadt':                                                                                       
+> include/asm/string_32.h:65: warning: array subscript is above array bounds
+> 
+> ...
+
+Sounds like a known and already fixed bug in gcc.
+
+Can you confirm that they go away when you build your compiler from the 
+head of the gcc 4.3 SVN branch?
+
+> Regards,
+> 
+> Gabriel
+
+cu
+Adrian
+
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
