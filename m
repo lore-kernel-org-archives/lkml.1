@@ -1,47 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762807AbYDDNJl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762877AbYDDNKA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762807AbYDDNJl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Apr 2008 09:09:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751031AbYDDNB5
+	id S1762877AbYDDNKA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Apr 2008 09:10:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760965AbYDDNCD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Apr 2008 09:01:57 -0400
-Received: from wine.ocn.ne.jp ([122.1.235.145]:50100 "EHLO smtp.wine.ocn.ne.jp"
+	Fri, 4 Apr 2008 09:02:03 -0400
+Received: from wine.ocn.ne.jp ([122.1.235.145]:50119 "EHLO smtp.wine.ocn.ne.jp"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761539AbYDDNBs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1761540AbYDDNBs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 4 Apr 2008 09:01:48 -0400
-Message-Id: <20080404122405.760775637@I-love.SAKURA.ne.jp>
+Message-Id: <20080404122406.566872635@I-love.SAKURA.ne.jp>
 References: <20080404122242.867070732@I-love.SAKURA.ne.jp>
 User-Agent: quilt/0.46-1
-Date: Fri, 04 Apr 2008 21:23:04 +0900
+Date: Fri, 04 Apr 2008 21:23:06 +0900
 From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
 To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
        linux-security-module@vger.kernel.org
 Cc: Kentaro Takeda <takedakn@nttdata.co.jp>,
        Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>,
        Toshiharu Harada <haradats@nttdata.co.jp>
-Subject: [TOMOYO #7 22/30] Conditional ACL support functions.
-Content-Disposition: inline; filename=tomoyo-conditional-acl-part.patch
+Subject: [TOMOYO #7 24/30] File operation restriction part.
+Content-Disposition: inline; filename=tomoyo-file-restriction-part.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-TOMOYO supports conditional permissions based on
-process's UID,GID etc. and/or requested pathname's UID/GID.
-Regarding execve(), you can use argv[] and envp[] conditions.
-
+This file controls file related operations.
 
 Signed-off-by: Kentaro Takeda <takedakn@nttdata.co.jp>
 Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
 Signed-off-by: Toshiharu Harada <haradats@nttdata.co.jp>
 ---
- fs/tomoyo_cond.c | 1380 +++++++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 1380 insertions(+)
+ fs/tomoyo_file.c | 1561 +++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 1561 insertions(+)
 
 --- /dev/null
-+++ linux-2.6.25-rc8-mm1/fs/tomoyo_cond.c
-@@ -0,0 +1,1380 @@
++++ linux-2.6.25-rc8-mm1/fs/tomoyo_file.c
+@@ -0,0 +1,1561 @@
 +/*
-+ * fs/tomoyo_cond.c
++ * fs/tomoyo_file.c
 + *
 + * Implementation of the Domain-Based Mandatory Access Control.
 + *
@@ -52,1373 +49,1554 @@ Signed-off-by: Toshiharu Harada <haradats@nttdata.co.jp>
 + */
 +
 +#include <linux/ccs_common.h>
-+#include <linux/realpath.h>
-+
 +#include <linux/tomoyo.h>
-+#include <linux/highmem.h>
++#include <linux/realpath.h>
 +#include <linux/binfmts.h>
++#define ACC_MODE(x) ("\000\004\002\006"[(x)&O_ACCMODE])
 +
-+/* Structure for argv[]. */
-+struct argv_entry {
-+	unsigned int index;
-+	const struct path_info *value;
-+	bool is_not;
-+};
-+
-+/* Structure for envp[]. */
-+struct envp_entry {
-+	const struct path_info *name;
-+	const struct path_info *value;
-+	bool is_not;
-+};
-+
-+/**
-+ * check_argv - Check argv[] in "struct linux_binbrm".
-+ *
-+ * @index:   Index number of @arg_ptr.
-+ * @arg_ptr: Contents of argv[@index].
-+ * @argc:    Length of @argv.
-+ * @argv:    Pointer to "struct argv_entry".
-+ * @checked: Set to true if @argv[@index] was found.
-+ *
-+ * Returns true on success, false otherwise.
-+ */
-+static bool check_argv(const unsigned int index, const char *arg_ptr,
-+		       const int argc, const struct argv_entry *argv,
-+		       u8 *checked)
-+{
-+	int i;
-+	struct path_info arg;
-+	arg.name = arg_ptr;
-+	for (i = 0; i < argc; argv++, checked++, i++) {
-+		bool result;
-+		if (index != argv->index)
-+			continue;
-+		*checked = 1;
-+		ccs_fill_path_info(&arg);
-+		result = ccs_path_matches_pattern(&arg, argv->value);
-+		if (argv->is_not)
-+			result = !result;
-+		if (!result)
-+			return false;
-+	}
-+	return true;
-+}
-+
-+/**
-+ * check_envp - Check envp[] in "struct linux_binbrm".
-+ *
-+ * @env_name:  The name of environment variable.
-+ * @env_value: The value of environment variable.
-+ * @envc:      Length of @envp.
-+ * @envp:      Pointer to "struct envp_entry".
-+ * @checked:   Set to true if @envp[@env_name] was found.
-+ *
-+ * Returns true on success, false otherwise.
-+ */
-+static bool check_envp(const char *env_name, const char *env_value,
-+		       const int envc, const struct envp_entry *envp,
-+		       u8 *checked)
-+{
-+	int i;
-+	struct path_info name;
-+	struct path_info value;
-+	name.name = env_name;
-+	ccs_fill_path_info(&name);
-+	value.name = env_value;
-+	ccs_fill_path_info(&value);
-+	for (i = 0; i < envc; envp++, checked++, i++) {
-+		bool result;
-+		if (!ccs_path_matches_pattern(&name, envp->name))
-+			continue;
-+		*checked = 1;
-+		if (envp->value) {
-+			result = ccs_path_matches_pattern(&value, envp->value);
-+			if (envp->is_not)
-+				result = !result;
-+		} else {
-+			result = true;
-+			if (!envp->is_not)
-+				result = !result;
-+		}
-+		if (!result)
-+			return false;
-+	}
-+	return true;
-+}
-+
-+/**
-+ * scan_bprm - Scan "struct linux_binprm".
-+ *
-+ * @bprm: Pointer to "struct linux_binprm".
-+ * @argc: Length of @argc.
-+ * @argv: Pointer to "struct argv_entry".
-+ * @envc: Length of @envp.
-+ * @envp: Poiner to "struct envp_entry".
-+ * @tmp:  Buffer for temporal use.
-+ *
-+ * Returns true on success, false otherwise.
-+ */
-+static bool scan_bprm(const struct linux_binprm *bprm,
-+		      const u16 argc, const struct argv_entry *argv,
-+		      const u16 envc, const struct envp_entry *envp,
-+		      struct ccs_page_buffer *tmp)
-+{
-+	/*
-+	  if exec.argc=3
-+	  if (argc == 3)
-+	  if exec.argv[1]="-c"
-+	  if (argc >= 2 && !strcmp(argv[1], "-c"))
-+	  if exec.argv[1]!="-c"
-+	  if (argc < 2 || strcmp(argv[1], "-c"))
-+	  if exec.envc=10-20
-+	  if (envc >= 10 && envc <= 20)
-+	  if exec.envc!=10-20
-+	  if (envc < 10 || envc > 20)
-+	  if exec.envp["HOME"]!=NULL
-+	  if (getenv("HOME"))
-+	  if exec.envp["HOME"]=NULL
-+	  if (!getenv("HOME"))
-+	  if exec.envp["HOME"]="/"
-+	  if (getenv("HOME") && !strcmp(getenv("HOME"), "/"))
-+	  if exec.envp["HOME"]!="/"
-+	  if (!getenv("HOME") || strcmp(getenv("HOME", "/"))
-+	*/
-+	char *arg_ptr = tmp->buffer;
-+	int arg_len = 0;
-+	unsigned long pos = bprm->p;
-+	int i = pos / PAGE_SIZE;
-+	int offset = pos % PAGE_SIZE;
-+	int argv_count = bprm->argc;
-+	int envp_count = bprm->envc;
-+	bool result = true;
-+	u8 local_checked[32];
-+	u8 *checked;
-+	if (argc + envc <= sizeof(local_checked)) {
-+		checked = local_checked;
-+		memset(local_checked, 0, sizeof(local_checked));
-+	} else {
-+		checked = ccs_alloc(argc + envc);
-+		if (!checked)
-+			return false;
-+	}
-+	while (argv_count || envp_count) {
-+		struct page *page;
-+		const char *kaddr;
-+#ifdef CONFIG_MMU
-+		if (get_user_pages(current, bprm->mm, pos, 1, 0, 1, &page,
-+				   NULL) <= 0) {
-+			printk(KERN_DEBUG "get_user_pages() failed\n");
-+			result = false;
-+			goto out;
-+		}
-+		pos += PAGE_SIZE - offset;
-+#else
-+		page = bprm->page[i];
-+#endif
-+		/* Map. */
-+		kaddr = kmap(page);
-+		if (!kaddr) { /* Mapping failed. */
-+#ifdef CONFIG_MMU
-+			put_page(page);
-+#endif
-+			printk(KERN_DEBUG "kmap() failed\n");
-+			result = false;
-+			goto out;
-+		}
-+		while (offset < PAGE_SIZE) {
-+			/* Read. */
-+			struct path_info arg;
-+			const unsigned char c = kaddr[offset++];
-+			arg.name = arg_ptr;
-+			if (c && arg_len < CCS_MAX_PATHNAME_LEN - 10) {
-+				if (c == '\\') {
-+					arg_ptr[arg_len++] = '\\';
-+					arg_ptr[arg_len++] = '\\';
-+				} else if (c > ' ' && c < 127) {
-+					arg_ptr[arg_len++] = c;
-+				} else {
-+					arg_ptr[arg_len++] = '\\';
-+					arg_ptr[arg_len++] = (c >> 6) + '0';
-+					arg_ptr[arg_len++] =
-+						((c >> 3) & 7) + '0';
-+					arg_ptr[arg_len++] = (c & 7) + '0';
-+				}
-+			} else {
-+				arg_ptr[arg_len] = '\0';
-+			}
-+			if (c)
-+				continue;
-+			/* Check. */
-+			if (argv_count) {
-+				if (!check_argv(bprm->argc - argv_count,
-+						arg_ptr, argc, argv,
-+						checked)) {
-+					result = false;
-+					break;
-+				}
-+				argv_count--;
-+			} else if (envp_count) {
-+				char *cp = strchr(arg_ptr, '=');
-+				if (cp) {
-+					*cp = '\0';
-+					if (!check_envp(arg_ptr, cp + 1,
-+							envc, envp,
-+							checked + argc)) {
-+						result = false;
-+						break;
-+					}
-+				}
-+				envp_count--;
-+			} else {
-+				break;
-+			}
-+			arg_len = 0;
-+		}
-+		/* Unmap. */
-+		kunmap(page);
-+#ifdef CONFIG_MMU
-+		put_page(page);
-+#endif
-+		i++;
-+		offset = 0;
-+		if (!result)
-+			break;
-+	}
-+ out:
-+	if (result) {
-+		/* Check not-yet-checked entries. */
-+		for (i = 0; i < argc; i++) {
-+			if (checked[i])
-+				continue;
-+			/*
-+			 * Return true only if all unchecked indexes in
-+			 * bprm->argv[] are not matched.
-+			 */
-+			if (argv[i].is_not)
-+				continue;
-+			result = false;
-+			break;
-+		}
-+		for (i = 0; i < envc; envp++, i++) {
-+			if (checked[argc + i])
-+				continue;
-+			/*
-+			 * Return true only if all unchecked environ variables
-+			 * in bprm->envp[] are either undefined or not matched.
-+			 */
-+			if ((!envp->value && !envp->is_not) ||
-+			    (envp->value && envp->is_not))
-+				continue;
-+			result = false;
-+			break;
-+		}
-+	}
-+	if (checked != local_checked)
-+		ccs_free(checked);
-+	return result;
-+}
-+
-+/* Value type definition. */
-+#define VALUE_TYPE_DECIMAL     1
-+#define VALUE_TYPE_OCTAL       2
-+#define VALUE_TYPE_HEXADECIMAL 3
-+
-+/**
-+ * parse_ulong - Parse an "unsigned long" value.
-+ *
-+ * @result: Pointer to "unsigned long".
-+ * @str:    Pointer to string to parse.
-+ *
-+ * Returns value type on success, 0 otherwise.
-+ *
-+ * The @src is updated to point the first character after the value
-+ * on success.
-+ */
-+static u8 parse_ulong(unsigned long *result, char **str)
-+{
-+	const char *cp = *str;
-+	char *ep;
-+	int base = 10;
-+	if (*cp == '0') {
-+		char c = *(cp + 1);
-+		if (c == 'x' || c == 'X') {
-+			base = 16;
-+			cp += 2;
-+		} else if (c >= '0' && c <= '7') {
-+			base = 8;
-+			cp++;
-+		}
-+	}
-+	*result = simple_strtoul(cp, &ep, base);
-+	if (cp == ep)
-+		return 0;
-+	*str = ep;
-+	switch (base) {
-+	case 16:
-+		return VALUE_TYPE_HEXADECIMAL;
-+	case 8:
-+		return VALUE_TYPE_OCTAL;
-+	default:
-+		return VALUE_TYPE_DECIMAL;
-+	}
-+}
-+
-+
-+/**
-+ * print_ulong - Print an "unsigned long" value.
-+ *
-+ * @buffer:     Pointer to buffer.
-+ * @buffer_len: Size of @buffer.
-+ * @value:      An "unsigned long" value.
-+ * @type:       Type of @value.
-+ *
-+ * Returns nothing.
-+ */
-+static void print_ulong(char *buffer, const int buffer_len,
-+			const unsigned long value, const int type)
-+{
-+	if (type == VALUE_TYPE_DECIMAL)
-+		snprintf(buffer, buffer_len, "%lu", value);
-+	else if (type == VALUE_TYPE_OCTAL)
-+		snprintf(buffer, buffer_len, "0%lo", value);
-+	else
-+		snprintf(buffer, buffer_len, "0x%lX", value);
-+}
-+
-+/* Structure for " if " and "; set" part. */
-+struct condition_list {
++/* Structure for "allow_read" keyword. */
++struct globally_readable_file_entry {
 +	struct list1_head list;
-+	u16 condc;
-+	u16 argc;
-+	u16 envc;
-+	u8 post_state[4];
-+	/* "unsigned long condition[condc]" follows here. */
-+	/* "struct argv_entry argv[argc]" follows here. */
-+	/* "struct envp_entry envp[envc]" follows here. */
++	const struct path_info *filename;
++	bool is_deleted;
++};
++
++/* Structure for "file_pattern" keyword. */
++struct pattern_entry {
++	struct list1_head list;
++	const struct path_info *pattern;
++	bool is_deleted;
++};
++
++/* Structure for "deny_rewrite" keyword. */
++struct no_rewrite_entry {
++	struct list1_head list;
++	const struct path_info *pattern;
++	bool is_deleted;
++};
++
++/* Keyword array for single path operations. */
++static const char *sp_keyword[MAX_SINGLE_PATH_OPERATION] = {
++	[TYPE_READ_WRITE_ACL] = "read/write",
++	[TYPE_EXECUTE_ACL]    = "execute",
++	[TYPE_READ_ACL]       = "read",
++	[TYPE_WRITE_ACL]      = "write",
++	[TYPE_CREATE_ACL]     = "create",
++	[TYPE_UNLINK_ACL]     = "unlink",
++	[TYPE_MKDIR_ACL]      = "mkdir",
++	[TYPE_RMDIR_ACL]      = "rmdir",
++	[TYPE_MKFIFO_ACL]     = "mkfifo",
++	[TYPE_MKSOCK_ACL]     = "mksock",
++	[TYPE_MKBLOCK_ACL]    = "mkblock",
++	[TYPE_MKCHAR_ACL]     = "mkchar",
++	[TYPE_TRUNCATE_ACL]   = "truncate",
++	[TYPE_SYMLINK_ACL]    = "symlink",
++	[TYPE_REWRITE_ACL]    = "rewrite",
++};
++
++/* Keyword array for double path operations. */
++static const char *dp_keyword[MAX_DOUBLE_PATH_OPERATION] = {
++	[TYPE_LINK_ACL]    = "link",
++	[TYPE_RENAME_ACL]  = "rename",
 +};
 +
 +/**
-+ * parse_argv - Parse an argv[] condition part.
++ * ccs_sp2keyword - Get the name of single path operation.
 + *
-+ * @start: String to parse.
-+ * @argv:  Pointer to "struct argv_entry".
++ * @operation: Type of operation.
++ *
++ * Returns the name of single path operation.
++ */
++const char *ccs_sp2keyword(const u8 operation)
++{
++	return (operation < MAX_SINGLE_PATH_OPERATION)
++		? sp_keyword[operation] : NULL;
++}
++
++/**
++ * ccs_dp2keyword - Get the name of double path operation.
++ *
++ * @operation: Type of operation.
++ *
++ * Returns the name of double path operation.
++ */
++const char *ccs_dp2keyword(const u8 operation)
++{
++	return (operation < MAX_DOUBLE_PATH_OPERATION)
++		? dp_keyword[operation] : NULL;
++}
++
++/**
++ * strendswith - Check whether the token ends with the given token.
++ *
++ * @name: The token to check.
++ * @tail: The token to find.
++ *
++ * Returns true if @name ends with @tail, false otherwise.
++ */
++static bool strendswith(const char *name, const char *tail)
++{
++	int len;
++	if (!name || !tail)
++		return false;
++	len = strlen(name) - strlen(tail);
++	return len >= 0 && !strcmp(name + len, tail);
++}
++
++/**
++ * ccs_get_path - Get realpath.
++ *
++ * @dentry: Pointer to "struct dentry".
++ * @mnt:    Pointer to "struct vfsmount".
++ *
++ * Returns pointer to "struct path_info" on success, NULL otherwise.
++ */
++static struct path_info *ccs_get_path(struct dentry *dentry,
++				      struct vfsmount *mnt)
++{
++	int error;
++	struct path_info_with_data *buf = ccs_alloc(sizeof(*buf));
++	if (!buf)
++		return NULL;
++	/* Preserve one byte for appending "/". */
++	error = ccs_realpath_from_dentry2(dentry, mnt, buf->body,
++					  sizeof(buf->body) - 2);
++	if (!error) {
++		buf->head.name = buf->body;
++		ccs_fill_path_info(&buf->head);
++		return &buf->head;
++	}
++	ccs_free(buf);
++	return NULL;
++}
++
++static int update_double_path_acl(const u8 type, const char *filename1,
++				  const char *filename2,
++				  struct domain_info * const domain,
++				  const struct condition_list *condition,
++				  const bool is_delete);
++static int update_single_path_acl(const u8 type, const char *filename,
++				  struct domain_info * const domain,
++				  const struct condition_list *condition,
++				  const bool is_delete);
++
++/**
++ * audit_file_log - Audit file related request log.
++ *
++ * @operation:  The name of operation.
++ * @filename1:  First pathname.
++ * @filename2:  Second pathname. May be NULL.
++ * @is_granted: True if this is a granted log.
++ * @profile:    Profile number used.
++ * @mode:       Access control mode used.
++ * @bprm:       Pointer to "struct linux_binprm". May be NULL.
++ *
++ * Returns 0 on success, negative value otherwise.
++ */
++static int audit_file_log(const char *operation,
++			  const struct path_info *filename1,
++			  const struct path_info *filename2,
++			  const bool is_granted, const u8 profile,
++			  const u8 mode, struct linux_binprm *bprm)
++{
++	char *buf;
++	int len;
++	int len2;
++	if (ccs_can_save_audit_log(is_granted) < 0)
++		return -ENOMEM;
++	len = strlen(operation) + filename1->total_len + 16;
++	if (filename2)
++		len += filename2->total_len;
++	buf = ccs_init_audit_log(&len, profile, mode, bprm);
++	if (!buf)
++		return -ENOMEM;
++	len2 = strlen(buf);
++	snprintf(buf + len2, len - len2 - 1, "allow_%s %s %s\n",
++		 operation, filename1->name, filename2 ? filename2->name : "");
++	return ccs_write_audit_log(buf, is_granted);
++}
++
++/* The list for "struct globally_readable_file_entry". */
++static LIST1_HEAD(globally_readable_list);
++
++/**
++ * update_globally_readable_entry - Update "struct globally_readable_file_entry" list.
++ *
++ * @filename:  Filename unconditionally permitted to open() for reading.
++ * @is_delete: True if it is a delete request.
++ *
++ * Returns 0 on success, negative value otherwise.
++ */
++static int update_globally_readable_entry(const char *filename,
++					  const bool is_delete)
++{
++	struct globally_readable_file_entry *new_entry;
++	struct globally_readable_file_entry *ptr;
++	static DEFINE_MUTEX(lock);
++	const struct path_info *saved_filename;
++	int error = -ENOMEM;
++	if (!ccs_is_correct_path(filename, 1, -1, -1, __func__))
++		return -EINVAL; /* No patterns allowed. */
++	saved_filename = ccs_save_name(filename);
++	if (!saved_filename)
++		return -ENOMEM;
++	mutex_lock(&lock);
++	list1_for_each_entry(ptr, &globally_readable_list, list) {
++		if (ptr->filename != saved_filename)
++			continue;
++		ptr->is_deleted = is_delete;
++		error = 0;
++		goto out;
++	}
++	if (is_delete) {
++		error = -ENOENT;
++		goto out;
++	}
++	new_entry = ccs_alloc_element(sizeof(*new_entry));
++	if (!new_entry)
++		goto out;
++	new_entry->filename = saved_filename;
++	list1_add_tail_mb(&new_entry->list, &globally_readable_list);
++	error = 0;
++ out:
++	mutex_unlock(&lock);
++	ccs_update_counter(CCS_UPDATES_COUNTER_EXCEPTION_POLICY);
++	return error;
++}
++
++/**
++ * is_globally_readable_file - Check if the file is unconditionnaly permitted to be open()ed for reading.
++ *
++ * @filename: The filename to check.
++ *
++ * Returns true if any domain can open @filename for reading, false otherwise.
++ */
++static bool is_globally_readable_file(const struct path_info *filename)
++{
++	struct globally_readable_file_entry *ptr;
++	list1_for_each_entry(ptr, &globally_readable_list, list) {
++		if (!ptr->is_deleted && !ccs_pathcmp(filename, ptr->filename))
++			return true;
++	}
++	return false;
++}
++
++/**
++ * ccs_write_globally_readable_policy - Write "struct globally_readable_file_entry" list.
++ *
++ * @data:      String to parse.
++ * @is_delete: True if it is a delete request.
++ *
++ * Returns 0 on success, negative value otherwise.
++ */
++int ccs_write_globally_readable_policy(char *data, const bool is_delete)
++{
++	return update_globally_readable_entry(data, is_delete);
++}
++
++/**
++ * ccs_read_globally_readable_policy - Read "struct globally_readable_file_entry" list.
++ *
++ * @head: Pointer to "struct ccs_io_buffer".
 + *
 + * Returns true on success, false otherwise.
 + */
-+static bool parse_argv(char *start, struct argv_entry *argv)
++bool ccs_read_globally_readable_policy(struct ccs_io_buffer *head)
 +{
-+	unsigned long index;
-+	const struct path_info *value;
-+	bool is_not;
-+	char c;
-+	char *cp;
-+	start += 10;
-+	if (parse_ulong(&index, &start) != VALUE_TYPE_DECIMAL)
-+		goto out;
-+	if (*start++ != ']')
-+		goto out;
-+	c = *start++;
-+	if (c == '=')
-+		is_not = false;
-+	else if (c == '!' && *start++ == '=')
-+		is_not = true;
-+	else
-+		goto out;
-+	if (*start++ != '"')
-+		goto out;
-+	cp = strchr(start, '\0') - 1;
-+	if (cp < start || *cp != '"')
-+		goto out;
-+	*cp = '\0';
-+	if (!ccs_is_correct_path(start, 0, 0, 0, __func__))
-+		goto out;
-+	value = ccs_save_name(start);
-+	if (!value)
-+		goto out;
-+	argv->index = index;
-+	argv->is_not = is_not;
-+	argv->value = value;
++	struct list1_head *pos;
++	list1_for_each_cookie(pos, head->read_var2, &globally_readable_list) {
++		struct globally_readable_file_entry *ptr;
++		ptr = list1_entry(pos, struct globally_readable_file_entry,
++				  list);
++		if (ptr->is_deleted)
++			continue;
++		if (!ccs_io_printf(head, KEYWORD_ALLOW_READ "%s\n",
++				   ptr->filename->name))
++			goto out;
++	}
 +	return true;
 + out:
 +	return false;
 +}
 +
-+/**
-+ * parse_envp - Parse an envp[] condition part.
-+ *
-+ * @start: String to parse.
-+ * @envp:  Pointer to "struct envp_entry".
-+ *
-+ * Returns true on success, false otherwise.
-+ */
-+static bool parse_envp(char *start, struct envp_entry *envp)
-+{
-+	const struct path_info *name;
-+	const struct path_info *value;
-+	bool is_not;
-+	char *cp;
-+	start += 11;
-+	cp = start;
-+	/*
-+	 * Since environment variable names don't
-+	 * contain '=', I can treat '"]=' and '"]!='
-+	 * sequences as delimiters.
-+	 */
-+	while (1) {
-+		if (!strncmp(start, "\"]=", 3)) {
-+			is_not = false;
-+			*start = '\0';
-+			start += 3;
-+			break;
-+		} else if (!strncmp(start, "\"]!=", 4)) {
-+			is_not = true;
-+			*start = '\0';
-+			start += 4;
-+			break;
-+		} else if (!*start++) {
-+			goto out;
-+		}
-+	}
-+	if (!*cp || !ccs_is_correct_path(cp, 0, 0, 0, __func__))
-+		goto out;
-+	name = ccs_save_name(cp);
-+	if (!name)
-+		goto out;
-+	if (!strcmp(start, "NULL")) {
-+		value = NULL;
-+	} else {
-+		if (*start++ != '"')
-+			goto out;
-+		cp = strchr(start, '\0') - 1;
-+		if (cp < start || *cp != '"')
-+			goto out;
-+		*cp = '\0';
-+		if (!ccs_is_correct_path(start, 0, 0, 0, __func__))
-+			goto out;
-+		value = ccs_save_name(start);
-+		if (!value)
-+			goto out;
-+	}
-+	envp->name = name;
-+	envp->is_not = is_not;
-+	envp->value = value;
-+	return true;
-+ out:
-+	return false;
-+}
-+
-+/* The list for "struct condition_list". */
-+static LIST1_HEAD(condition_list);
-+
-+#define TASK_UID          0
-+#define TASK_EUID         1
-+#define TASK_SUID         2
-+#define TASK_FSUID        3
-+#define TASK_GID          4
-+#define TASK_EGID         5
-+#define TASK_SGID         6
-+#define TASK_FSGID        7
-+#define TASK_PID          8
-+#define TASK_PPID         9
-+#define PATH1_UID        10
-+#define PATH1_GID        11
-+#define PATH1_INO        12
-+#define PATH1_PARENT_UID 13
-+#define PATH1_PARENT_GID 14
-+#define PATH1_PARENT_INO 15
-+#define PATH2_PARENT_UID 16
-+#define PATH2_PARENT_GID 17
-+#define PATH2_PARENT_INO 18
-+#define EXEC_ARGC        19
-+#define EXEC_ENVC        20
-+#define TASK_STATE_0     21
-+#define TASK_STATE_1     22
-+#define TASK_STATE_2     23
-+#define MAX_KEYWORD      24
-+
-+static struct {
-+	const char *keyword;
-+	const int keyword_len; /* strlen(keyword) */
-+} condition_control_keyword[MAX_KEYWORD] = {
-+	[TASK_UID]         = { "task.uid",           8 },
-+	[TASK_EUID]        = { "task.euid",          9 },
-+	[TASK_SUID]        = { "task.suid",          9 },
-+	[TASK_FSUID]       = { "task.fsuid",        10 },
-+	[TASK_GID]         = { "task.gid",           8 },
-+	[TASK_EGID]        = { "task.egid",          9 },
-+	[TASK_SGID]        = { "task.sgid",          9 },
-+	[TASK_FSGID]       = { "task.fsgid",        10 },
-+	[TASK_PID]         = { "task.pid",           8 },
-+	[TASK_PPID]        = { "task.ppid",          9 },
-+	[PATH1_UID]        = { "path1.uid",          9 },
-+	[PATH1_GID]        = { "path1.gid",          9 },
-+	[PATH1_INO]        = { "path1.ino",          9 },
-+	[PATH1_PARENT_UID] = { "path1.parent.uid",  16 },
-+	[PATH1_PARENT_GID] = { "path1.parent.gid",  16 },
-+	[PATH1_PARENT_INO] = { "path1.parent.ino",  16 },
-+	[PATH2_PARENT_UID] = { "path2.parent.uid",  16 },
-+	[PATH2_PARENT_GID] = { "path2.parent.gid",  16 },
-+	[PATH2_PARENT_INO] = { "path2.parent.ino",  16 },
-+	[EXEC_ARGC]        = { "exec.argc",          9 },
-+	[EXEC_ENVC]        = { "exec.envc",          9 },
-+	[TASK_STATE_0]     = { "task.state[0]",     13 },
-+	[TASK_STATE_1]     = { "task.state[1]",     13 },
-+	[TASK_STATE_2]     = { "task.state[2]",     13 },
-+};
++/* The list for "struct path_group_entry". */
++static LIST1_HEAD(path_group_list);
 +
 +/**
-+ * parse_post_condition - Parse post-condition part.
++ * update_path_group_entry - Update "struct path_group_entry" list.
 + *
-+ * @condition:  String to parse.
-+ * @post_state: Buffer to store post-condition part.
++ * @group_name:  The name of pathname group.
++ * @member_name: The name of group's member.
++ * @is_delete:   True if it is a delete request.
 + *
-+ * Returns true on success, false otherwise.
++ * Returns 0 on success, negative value otherwise.
 + */
-+static bool parse_post_condition(char * const condition, u8 post_state[4])
-+{
-+	char *start = strstr(condition, "; set ");
-+	if (!start)
-+		return true;
-+	*start = '\0';
-+	start += 6;
-+	while (1) {
-+		int i;
-+		unsigned long value;
-+		while (*start == ' ')
-+			start++;
-+		if (!*start)
-+			break;
-+		if (!strncmp(start, "task.state[0]=", 14))
-+			i = 0;
-+		else if (!strncmp(start, "task.state[1]=", 14))
-+			i = 1;
-+		else if (!strncmp(start, "task.state[2]=", 14))
-+			i = 2;
-+		else
-+			goto out;
-+		start += 14;
-+		if (post_state[3] & (1 << i))
-+			goto out;
-+		post_state[3] |= 1 << i;
-+		if (!parse_ulong(&value, &start) || value > 255)
-+			goto out;
-+		post_state[i] = (u8) value;
-+	}
-+	return true;
-+ out:
-+	return false;
-+}
-+
-+/**
-+ * find_same_condition - Search for same condition list.
-+ *
-+ * @new_ptr: Pointer to "struct condition_list".
-+ * @size:    Size of @new_ptr.
-+ *
-+ * Returns existing pointer to "struct condition_list" if the same entry was
-+ * found, NULL if memory allocation failed, @new_ptr otherwise.
-+ */
-+static struct condition_list *
-+find_same_condition(struct condition_list *new_ptr, const u32 size)
++static int update_path_group_entry(const char *group_name,
++				   const char *member_name,
++				   const bool is_delete)
 +{
 +	static DEFINE_MUTEX(lock);
-+	struct condition_list *ptr;
++	struct path_group_entry *new_group;
++	struct path_group_entry *group;
++	struct path_group_member *new_member;
++	struct path_group_member *member;
++	const struct path_info *saved_group_name;
++	const struct path_info *saved_member_name;
++	int error = -ENOMEM;
++	bool found = false;
++	if (!ccs_is_correct_path(group_name, 0, 0, 0, __func__) ||
++	    !group_name[0] ||
++	    !ccs_is_correct_path(member_name, 0, 0, 0, __func__) ||
++	    !member_name[0])
++		return -EINVAL;
++	saved_group_name = ccs_save_name(group_name);
++	saved_member_name = ccs_save_name(member_name);
++	if (!saved_group_name || !saved_member_name)
++		return -ENOMEM;
 +	mutex_lock(&lock);
-+	list1_for_each_entry(ptr, &condition_list, list) {
-+		/* Don't compare if size differs. */
-+		if (ptr->condc != new_ptr->condc ||
-+		    ptr->argc != new_ptr->argc ||
-+		    ptr->envc != new_ptr->envc)
++	list1_for_each_entry(group, &path_group_list, list) {
++		if (saved_group_name != group->group_name)
 +			continue;
-+		/*
-+		 * Compare ptr and new_ptr
-+		 * except ptr->list and new_ptr->list.
-+		 */
-+		if (memcmp(((u8 *) ptr) + sizeof(ptr->list),
-+			   ((u8 *) new_ptr) + sizeof(new_ptr->list),
-+			   size - sizeof(ptr->list)))
-+			continue;
-+		/* Same entry found. Share this entry. */
-+		ccs_free(new_ptr);
-+		new_ptr = ptr;
-+		goto ok;
++		list1_for_each_entry(member, &group->path_group_member_list,
++				     list) {
++			if (member->member_name != saved_member_name)
++				continue;
++			member->is_deleted = is_delete;
++			error = 0;
++			goto out;
++		}
++		found = true;
++		break;
 +	}
-+	/* Same entry not found. Save this entry. */
-+	ptr = ccs_alloc_element(size);
-+	if (ptr) {
-+		memmove(ptr, new_ptr, size);
-+		/* Append to chain. */
-+		list1_add_tail_mb(&ptr->list, &condition_list);
++	if (is_delete) {
++		error = -ENOENT;
++		goto out;
 +	}
-+	ccs_free(new_ptr);
-+	new_ptr = ptr;
-+ ok:
++	if (!found) {
++		new_group = ccs_alloc_element(sizeof(*new_group));
++		if (!new_group)
++			goto out;
++		INIT_LIST1_HEAD(&new_group->path_group_member_list);
++		new_group->group_name = saved_group_name;
++		list1_add_tail_mb(&new_group->list, &path_group_list);
++		group = new_group;
++	}
++	new_member = ccs_alloc_element(sizeof(*new_member));
++	if (!new_member)
++		goto out;
++	new_member->member_name = saved_member_name;
++	list1_add_tail_mb(&new_member->list, &group->path_group_member_list);
++	error = 0;
++ out:
 +	mutex_unlock(&lock);
-+	return new_ptr;
++	ccs_update_counter(CCS_UPDATES_COUNTER_EXCEPTION_POLICY);
++	return error;
 +}
 +
 +/**
-+ * ccs_find_or_assign_new_condition - Parse condition part.
++ * ccs_write_path_group_policy - Write "struct path_group_entry" list.
 + *
-+ * @condition: Pointer to string to parse.
++ * @data:      String to parse.
++ * @is_delete: True if it is a delete request.
 + *
-+ * Returns pointer to "struct condition_list" on success, NULL otherwise.
++ * Returns 0 on success, nagative value otherwise.
 + */
-+const struct condition_list *
-+ccs_find_or_assign_new_condition(char * const condition)
++int ccs_write_path_group_policy(char *data, const bool is_delete)
 +{
-+	char *start = condition;
-+	struct condition_list *new_ptr = NULL;
-+	unsigned long *ptr;
-+	struct argv_entry *argv;
-+	struct envp_entry *envp;
-+	u32 size;
-+	u8 left, right, i;
-+	unsigned long left_min = 0;
-+	unsigned long left_max = 0;
-+	unsigned long right_min = 0;
-+	unsigned long right_max = 0;
-+	u16 condc = 0;
-+	u16 argc = 0;
-+	u16 envc = 0;
-+	u8 post_state[4] = { 0, 0, 0, 0 };
-+	if (!parse_post_condition(start, post_state))
-+		goto out;
-+	start = condition;
-+	if (!strncmp(start, "if ", 3))
-+		start += 3;
-+	else if (*start)
-+		return NULL;
-+	while (1) {
-+		while (*start == ' ')
-+			start++;
-+		if (!*start)
-+			break;
-+		if (!strncmp(start, "exec.argv[", 10)) {
-+			argc++;
-+			start = strchr(start + 10, ' ');
-+			if (!start)
-+				break;
-+			continue;
-+		} else if (!strncmp(start, "exec.envp[\"", 11)) {
-+			envc++;
-+			start = strchr(start + 11, ' ');
-+			if (!start)
-+				break;
-+			continue;
++	char *cp = strchr(data, ' ');
++	if (!cp)
++		return -EINVAL;
++	*cp++ = '\0';
++	return update_path_group_entry(data, cp, is_delete);
++}
++
++/**
++ * find_or_assign_new_path_group - Create pathname group.
++ *
++ * @group_name: The name of pathname group.
++ *
++ * Returns pointer to "struct path_group_entry" if found, NULL otherwise.
++ */
++static struct path_group_entry *
++find_or_assign_new_path_group(const char *group_name)
++{
++	u8 i;
++	struct path_group_entry *group;
++	for (i = 0; i <= 1; i++) {
++		list1_for_each_entry(group, &path_group_list, list) {
++			if (!strcmp(group_name, group->group_name->name))
++				return group;
 +		}
-+		for (left = 0; left < MAX_KEYWORD; left++) {
-+			const int len =
-+				condition_control_keyword[left].keyword_len;
-+			if (strncmp(start,
-+				    condition_control_keyword[left].keyword,
-+				    len))
-+				continue;
-+			start += len;
-+			break;
-+		}
-+		if (left < MAX_KEYWORD)
-+			goto check_operator_1;
-+		if (!parse_ulong(&left_min, &start))
-+			goto out;
-+		condc++; /* body */
-+		if (*start != '-')
-+			goto check_operator_1;
-+		start++;
-+		if (!parse_ulong(&left_max, &start) || left_min > left_max)
-+			goto out;
-+		condc++; /* body */
-+ check_operator_1:
-+		if (strncmp(start, "!=", 2) == 0)
-+			start += 2;
-+		else if (*start == '=')
-+			start++;
-+		else
-+			goto out;
-+		condc++; /* header */
-+		for (right = 0; right < MAX_KEYWORD; right++) {
-+			const int len =
-+				condition_control_keyword[right].keyword_len;
-+			if (strncmp(start,
-+				    condition_control_keyword[right].keyword,
-+				    len))
-+				continue;
-+			start += len;
-+			break;
-+		}
-+		if (right < MAX_KEYWORD)
-+			continue;
-+		if (!parse_ulong(&right_min, &start))
-+			goto out;
-+		condc++; /* body */
-+		if (*start != '-')
-+			continue;
-+		start++;
-+		if (!parse_ulong(&right_max, &start) || right_min > right_max)
-+			goto out;
-+		condc++; /* body */
-+	}
-+	size = sizeof(*new_ptr)
-+		+ condc * sizeof(unsigned long)
-+		+ argc * sizeof(struct argv_entry)
-+		+ envc * sizeof(struct envp_entry);
-+	new_ptr = ccs_alloc(size);
-+	if (!new_ptr)
-+		return NULL;
-+	for (i = 0; i < 4; i++)
-+		new_ptr->post_state[i] = post_state[i];
-+	new_ptr->condc = condc;
-+	new_ptr->argc = argc;
-+	new_ptr->envc = envc;
-+	ptr = (unsigned long *) (new_ptr + 1);
-+	argv = (struct argv_entry *) (ptr + condc);
-+	envp = (struct envp_entry *) (argv + argc);
-+	start = condition;
-+	if (!strncmp(start, "if ", 3))
-+		start += 3;
-+	else if (*start)
-+		goto out;
-+	while (1) {
-+		u8 match = 0;
-+		u8 left_1_type = 0;
-+		u8 left_2_type = 0;
-+		u8 right_1_type = 0;
-+		u8 right_2_type = 0;
-+		while (*start == ' ')
-+			start++;
-+		if (!*start)
-+			break;
-+		if (!strncmp(start, "exec.argv[", 10)) {
-+			char *cp = strchr(start + 10, ' ');
-+			if (cp)
-+				*cp = '\0';
-+			if (!parse_argv(start, argv))
-+				goto out;
-+			argv++;
-+			argc--;
-+			if (cp)
-+				*cp = ' ';
-+			else
-+				break;
-+			start = cp;
-+			continue;
-+		} else if (!strncmp(start, "exec.envp[\"", 11)) {
-+			char *cp = strchr(start + 11, ' ');
-+			if (cp)
-+				*cp = '\0';
-+			if (!parse_envp(start, envp))
-+				goto out;
-+			envp++;
-+			envc--;
-+			if (cp)
-+				*cp = ' ';
-+			else
-+				break;
-+			start = cp;
-+			continue;
-+		}
-+		for (left = 0; left < MAX_KEYWORD; left++) {
-+			const int len =
-+				condition_control_keyword[left].keyword_len;
-+			if (strncmp(start,
-+				    condition_control_keyword[left].keyword,
-+				    len))
-+				continue;
-+			start += len;
-+			break;
-+		}
-+		if (left < MAX_KEYWORD)
-+			goto check_operator_2;
-+		left_1_type = parse_ulong(&left_min, &start);
-+		condc--; /* body */
-+		if (*start != '-')
-+			goto check_operator_2;
-+		start++;
-+		left_2_type = parse_ulong(&left_max, &start);
-+		condc--; /* body */
-+		left++;
-+ check_operator_2:
-+		if (!strncmp(start, "!=", 2)) {
-+			start += 2;
-+		} else if (*start == '=') {
-+			match |= 1;
-+			start++;
-+		} else {
-+			break; /* This shouldn't happen. */
-+		}
-+		condc--; /* header */
-+		for (right = 0; right < MAX_KEYWORD; right++) {
-+			const int len =
-+				condition_control_keyword[right].keyword_len;
-+			if (strncmp(start,
-+				    condition_control_keyword[right].keyword,
-+				    len))
-+				continue;
-+			start += len;
-+			break;
-+		}
-+		if (right < MAX_KEYWORD)
-+			goto store_value;
-+		right_1_type = parse_ulong(&right_min, &start);
-+		condc--; /* body */
-+		if (*start != '-')
-+			goto store_value;
-+		start++;
-+		right_2_type = parse_ulong(&right_max, &start);
-+		condc--; /* body */
-+		right++;
-+ store_value:
-+		*ptr = (((u32) match) << 16) |
-+			(((u32) left_1_type) << 18) |
-+			(((u32) left_2_type) << 20) |
-+			(((u32) right_1_type) << 22) |
-+			(((u32) right_2_type) << 24) |
-+			(((u32) left) << 8) |
-+			((u32) right);
-+		ptr++;
-+		if (left >= MAX_KEYWORD) {
-+			*ptr = left_min;
-+			ptr++;
-+		}
-+		if (left == MAX_KEYWORD + 1) {
-+			*ptr = left_max;
-+			ptr++;
-+		}
-+		if (right >= MAX_KEYWORD) {
-+			*ptr = right_min;
-+			ptr++;
-+		}
-+		if (right == MAX_KEYWORD + 1) {
-+			*ptr = right_max;
-+			ptr++;
++		if (!i) {
++			update_path_group_entry(group_name, "/", false);
++			update_path_group_entry(group_name, "/", true);
 +		}
 +	}
-+	/*
-+	  printk(KERN_DEBUG "argc=%u envc=%u condc=%u\n", argc, envc, condc);
-+	*/
-+	BUG_ON(argc);
-+	BUG_ON(envc);
-+	BUG_ON(condc);
-+	return find_same_condition(new_ptr, size);
-+ out:
-+	ccs_free(new_ptr);
 +	return NULL;
 +}
 +
 +/**
-+ * get_attributes - Revalidate "struct inode".
++ * path_matches_group - Check whether the given pathname matches members of the given pathname group.
 + *
-+ * @obj: Pointer to "struct obj_info".
++ * @pathname:        The name of pathname.
++ * @group:           Pointer to "struct path_group_entry".
++ * @may_use_pattern: True if wild card is permitted.
 + *
-+ * Returns nothing.
++ * Returns true if @pathname matches pathnames in @group, false otherwise.
 + */
-+static void get_attributes(struct obj_info *obj)
++static bool path_matches_group(const struct path_info *pathname,
++			       const struct path_group_entry *group,
++			       const bool may_use_pattern)
 +{
-+	struct vfsmount *mnt;
-+	struct dentry *dentry;
-+	struct inode *inode;
-+	struct kstat stat;
-+
-+	mnt = obj->path1_vfsmnt;
-+	dentry = obj->path1_dentry;
-+	inode = dentry->d_inode;
-+	if (inode) {
-+		if (!inode->i_op || vfs_getattr(mnt, dentry, &stat)) {
-+			/* Nothing to do. */
-+		} else {
-+			obj->path1_stat.uid = stat.uid;
-+			obj->path1_stat.gid = stat.gid;
-+			obj->path1_stat.ino = stat.ino;
-+			obj->path1_valid = true;
++	struct path_group_member *member;
++	list1_for_each_entry(member, &group->path_group_member_list, list) {
++		if (member->is_deleted)
++			continue;
++		if (!member->member_name->is_patterned) {
++			if (!ccs_pathcmp(pathname, member->member_name))
++				return true;
++		} else if (may_use_pattern) {
++			if (ccs_path_matches_pattern(pathname,
++						     member->member_name))
++				return true;
 +		}
 +	}
-+
-+	dentry = dget_parent(obj->path1_dentry);
-+	inode = dentry->d_inode;
-+	if (inode) {
-+		if (!inode->i_op || vfs_getattr(mnt, dentry, &stat)) {
-+			/* Nothing to do. */
-+		} else {
-+			obj->path1_parent_stat.uid = stat.uid;
-+			obj->path1_parent_stat.gid = stat.gid;
-+			obj->path1_parent_stat.ino = stat.ino;
-+			obj->path1_parent_valid = true;
-+		}
-+	}
-+	dput(dentry);
-+
-+	mnt = obj->path2_vfsmnt;
-+	if (mnt) {
-+		dentry = dget_parent(obj->path2_dentry);
-+		inode = dentry->d_inode;
-+		if (inode) {
-+			if (!inode->i_op || vfs_getattr(mnt, dentry, &stat)) {
-+				/* Nothing to do. */
-+			} else {
-+				obj->path2_parent_stat.uid = stat.uid;
-+				obj->path2_parent_stat.gid = stat.gid;
-+				obj->path2_parent_stat.ino = stat.ino;
-+				obj->path2_parent_valid = true;
-+			}
-+		}
-+		dput(dentry);
-+	}
++	return false;
 +}
 +
 +/**
-+ * ccs_check_condition - Check condition part.
-+ *
-+ * @acl: Pointer to "struct acl_info".
-+ * @obj: Pointer to "struct obj_info". May be NULL.
-+ *
-+ * Returns true on success, false otherwise.
-+ */
-+bool ccs_check_condition(const struct acl_info *acl, struct obj_info *obj)
-+{
-+	const struct task_struct *task = current;
-+	u32 i;
-+	unsigned long left_min = 0;
-+	unsigned long left_max = 0;
-+	unsigned long right_min = 0;
-+	unsigned long right_max = 0;
-+	const unsigned long *ptr;
-+	const struct argv_entry *argv;
-+	const struct envp_entry *envp;
-+	u16 condc;
-+	u16 argc;
-+	u16 envc;
-+	const struct condition_list *cond = ccs_get_condition_part(acl);
-+	const struct linux_binprm *bprm;
-+	if (!cond)
-+		return true;
-+	condc = cond->condc;
-+	argc = cond->argc;
-+	envc = cond->envc;
-+	bprm = obj ? obj->bprm : NULL;
-+	if (!bprm && (argc || envc))
-+		return false;
-+	ptr = (unsigned long *) (cond + 1);
-+	argv = (const struct argv_entry *) (ptr + condc);
-+	envp = (const struct envp_entry *) (argv + argc);
-+	for (i = 0; i < condc; i++) {
-+		const u32 header = *ptr;
-+		const bool match = (header >> 16) & 1;
-+		const u8 left = header >> 8;
-+		const u8 right = header;
-+		ptr++;
-+		if ((left >= PATH1_UID && left < MAX_KEYWORD) ||
-+		    (right >= PATH1_UID && right < MAX_KEYWORD)) {
-+			if (!obj)
-+				goto out;
-+			if (!obj->validate_done) {
-+				get_attributes(obj);
-+				obj->validate_done = true;
-+			}
-+		}
-+		switch (left) {
-+		case TASK_UID:
-+			left_max = task->uid;
-+			break;
-+		case TASK_EUID:
-+			left_max = task->euid;
-+			break;
-+		case TASK_SUID:
-+			left_max = task->suid;
-+			break;
-+		case TASK_FSUID:
-+			left_max = task->fsuid;
-+			break;
-+		case TASK_GID:
-+			left_max = task->gid;
-+			break;
-+		case TASK_EGID:
-+			left_max = task->egid;
-+			break;
-+		case TASK_SGID:
-+			left_max = task->sgid;
-+			break;
-+		case TASK_FSGID:
-+			left_max = task->fsgid;
-+			break;
-+		case TASK_PID:
-+			left_max = task->pid;
-+			break;
-+		case TASK_PPID:
-+			left_max = sys_getppid();
-+			break;
-+		case PATH1_UID:
-+			if (!obj->path1_valid)
-+				goto out;
-+			left_max = obj->path1_stat.uid;
-+			break;
-+		case PATH1_GID:
-+			if (!obj->path1_valid)
-+				goto out;
-+			left_max = obj->path1_stat.gid;
-+			break;
-+		case PATH1_INO:
-+			if (!obj->path1_valid)
-+				goto out;
-+			left_max = obj->path1_stat.ino;
-+			break;
-+		case PATH1_PARENT_UID:
-+			if (!obj->path1_parent_valid)
-+				goto out;
-+			left_max = obj->path1_parent_stat.uid;
-+			break;
-+		case PATH1_PARENT_GID:
-+			if (!obj->path1_parent_valid)
-+				goto out;
-+			left_max = obj->path1_parent_stat.gid;
-+			break;
-+		case PATH1_PARENT_INO:
-+			if (!obj->path1_parent_valid)
-+				goto out;
-+			left_max = obj->path1_parent_stat.ino;
-+			break;
-+		case PATH2_PARENT_UID:
-+			if (!obj->path2_parent_valid)
-+				goto out;
-+			left_max = obj->path2_parent_stat.uid;
-+			break;
-+		case PATH2_PARENT_GID:
-+			if (!obj->path2_parent_valid)
-+				goto out;
-+			left_max = obj->path2_parent_stat.gid;
-+			break;
-+		case PATH2_PARENT_INO:
-+			if (!obj->path2_parent_valid)
-+				goto out;
-+			left_max = obj->path2_parent_stat.ino;
-+			break;
-+		case EXEC_ARGC:
-+			if (!bprm)
-+				goto out;
-+			left_max = bprm->argc;
-+			i++;
-+			break;
-+		case EXEC_ENVC:
-+			if (!bprm)
-+				goto out;
-+			left_max = bprm->envc;
-+			i++;
-+			break;
-+		case TASK_STATE_0:
-+			left_max = (u8) (task->tomoyo_flags >> 24);
-+			break;
-+		case TASK_STATE_1:
-+			left_max = (u8) (task->tomoyo_flags >> 16);
-+			break;
-+		case TASK_STATE_2:
-+			left_max = (u8) (task->tomoyo_flags >> 8);
-+			break;
-+		case MAX_KEYWORD:
-+			left_max = *ptr;
-+			ptr++;
-+			i++;
-+			break;
-+		case MAX_KEYWORD + 1:
-+			left_min = *ptr;
-+			ptr++;
-+			left_max = *ptr;
-+			ptr++;
-+			i += 2;
-+			break;
-+		}
-+		if (left != MAX_KEYWORD + 1)
-+			left_min = left_max;
-+		switch (right) {
-+		case TASK_UID:
-+			right_max = task->uid;
-+			break;
-+		case TASK_EUID:
-+			right_max = task->euid;
-+			break;
-+		case TASK_SUID:
-+			right_max = task->suid;
-+			break;
-+		case TASK_FSUID:
-+			right_max = task->fsuid;
-+			break;
-+		case TASK_GID:
-+			right_max = task->gid;
-+			break;
-+		case TASK_EGID:
-+			right_max = task->egid;
-+			break;
-+		case TASK_SGID:
-+			right_max = task->sgid;
-+			break;
-+		case TASK_FSGID:
-+			right_max = task->fsgid;
-+			break;
-+		case TASK_PID:
-+			right_max = task->pid;
-+			break;
-+		case TASK_PPID:
-+			right_max = sys_getppid();
-+			break;
-+		case PATH1_UID:
-+			if (!obj->path1_valid)
-+				goto out;
-+			right_max = obj->path1_stat.uid;
-+			break;
-+		case PATH1_GID:
-+			if (!obj->path1_valid)
-+				goto out;
-+			right_max = obj->path1_stat.gid;
-+			break;
-+		case PATH1_INO:
-+			if (!obj->path1_valid)
-+				goto out;
-+			right_max = obj->path1_stat.ino;
-+			break;
-+		case PATH1_PARENT_UID:
-+			if (!obj->path1_parent_valid)
-+				goto out;
-+			right_max = obj->path1_parent_stat.uid;
-+			break;
-+		case PATH1_PARENT_GID:
-+			if (!obj->path1_parent_valid)
-+				goto out;
-+			right_max = obj->path1_parent_stat.gid;
-+			break;
-+		case PATH1_PARENT_INO:
-+			if (!obj->path1_parent_valid)
-+				goto out;
-+			right_max = obj->path1_parent_stat.ino;
-+			break;
-+		case PATH2_PARENT_UID:
-+			if (!obj->path2_parent_valid)
-+				goto out;
-+			right_max = obj->path2_parent_stat.uid;
-+			break;
-+		case PATH2_PARENT_GID:
-+			if (!obj->path2_parent_valid)
-+				goto out;
-+			right_max = obj->path2_parent_stat.gid;
-+			break;
-+		case PATH2_PARENT_INO:
-+			if (!obj->path2_parent_valid)
-+				goto out;
-+			right_max = obj->path2_parent_stat.ino;
-+			break;
-+		case EXEC_ARGC:
-+			if (!bprm)
-+				goto out;
-+			right_max = bprm->argc;
-+			i++;
-+			break;
-+		case EXEC_ENVC:
-+			if (!bprm)
-+				goto out;
-+			right_max = bprm->envc;
-+			i++;
-+			break;
-+		case TASK_STATE_0:
-+			right_max = (u8) (task->tomoyo_flags >> 24);
-+			break;
-+		case TASK_STATE_1:
-+			right_max = (u8) (task->tomoyo_flags >> 16);
-+			break;
-+		case TASK_STATE_2:
-+			right_max = (u8) (task->tomoyo_flags >> 8);
-+			break;
-+		case MAX_KEYWORD:
-+			right_max = *ptr;
-+			ptr++;
-+			i++;
-+			break;
-+		case MAX_KEYWORD + 1:
-+			right_min = *ptr;
-+			ptr++;
-+			right_max = *ptr;
-+			ptr++;
-+			i += 2;
-+			break;
-+		}
-+		if (right != MAX_KEYWORD + 1)
-+			right_min = right_max;
-+		if (match) {
-+			if (left_min <= right_max && left_max >= right_min)
-+				continue;
-+		} else {
-+			if (left_min > right_max || left_max < right_min)
-+				continue;
-+		}
-+ out:
-+		return false;
-+	}
-+	if (bprm && (argc || envc))
-+		return scan_bprm(bprm, argc, argv, envc, envp, obj->tmp);
-+	return true;
-+}
-+
-+/**
-+ * ccs_update_condition - Update the current process's condition.
-+ *
-+ * @acl: Pointer to "struct acl_info".
-+ *
-+ * Returns nothing.
-+ */
-+void ccs_update_condition(const struct acl_info *acl)
-+{
-+	/*
-+	 * Don't change the lowest byte because it is reserved for
-+	 * TOMOYO_CHECK_READ_FOR_OPEN_EXEC / CCS_DONT_SLEEP_ON_ENFORCE_ERROR /
-+	 * TOMOYO_TASK_IS_EXECUTE_HANDLER.
-+	 */
-+	const struct condition_list *ptr = ccs_get_condition_part(acl);
-+	struct task_struct *task;
-+	u32 tomoyo_flags = current->tomoyo_flags;
-+	const u8 flags = ptr ? ptr->post_state[3] : 0;
-+	if (!flags)
-+		return;
-+	task = current;
-+	tomoyo_flags = task->tomoyo_flags;
-+	if (flags & 1) {
-+		tomoyo_flags &= ~0xFF000000;
-+		tomoyo_flags |= ptr->post_state[0] << 24;
-+	}
-+	if (flags & 2) {
-+		tomoyo_flags &= ~0x00FF0000;
-+		tomoyo_flags |= ptr->post_state[1] << 16;
-+	}
-+	if (flags & 4) {
-+		tomoyo_flags &= ~0x0000FF00;
-+		tomoyo_flags |= ptr->post_state[2] << 8;
-+	}
-+	task->tomoyo_flags = tomoyo_flags;
-+}
-+
-+/**
-+ * ccs_print_condition - Print condition part.
++ * ccs_read_path_group_policy - Read "struct path_group_entry" list.
 + *
 + * @head: Pointer to "struct ccs_io_buffer".
-+ * @cond: Pointer to "struct condition_list". May be NULL.
 + *
 + * Returns true on success, false otherwise.
 + */
-+bool ccs_print_condition(struct ccs_io_buffer *head,
-+			 const struct condition_list *cond)
++bool ccs_read_path_group_policy(struct ccs_io_buffer *head)
 +{
-+	const unsigned long *ptr;
-+	const struct argv_entry *argv;
-+	const struct envp_entry *envp;
-+	u16 condc;
-+	u16 argc;
-+	u16 envc;
-+	u16 i;
-+	u16 j;
-+	char buffer[32];
-+	if (!cond)
-+		goto no_condition;
-+	condc = cond->condc;
-+	argc = cond->argc;
-+	envc = cond->envc;
-+	ptr = (const unsigned long *) (cond + 1);
-+	argv = (const struct argv_entry *) (ptr + condc);
-+	envp = (const struct envp_entry *) (argv + argc);
-+	memset(buffer, 0, sizeof(buffer));
-+	for (i = 0; i < condc; i++) {
-+		const u32 header = *ptr;
-+		const u8 match = (header >> 16) & 1;
-+		const u8 left_1_type = (header >> 18) & 3;
-+		const u8 left_2_type = (header >> 20) & 3;
-+		const u8 right_1_type = (header >> 22) & 3;
-+		const u8 right_2_type = (header >> 24) & 3;
-+		const u8 left = header >> 8;
-+		const u8 right = header;
-+		ptr++;
-+		if (!ccs_io_printf(head, "%s", i ? " " : " if "))
-+			goto out;
-+		if (left < MAX_KEYWORD) {
-+			const char *keyword
-+				= condition_control_keyword[left].keyword;
-+			if (!ccs_io_printf(head, "%s", keyword))
-+				goto out;
-+			goto print_operator;
-+		}
-+		print_ulong(buffer, sizeof(buffer) - 1, *ptr, left_1_type);
-+		ptr++;
-+		if (!ccs_io_printf(head, "%s", buffer))
-+			goto out;
-+		i++;
-+		if (left == MAX_KEYWORD)
-+			goto print_operator;
-+		print_ulong(buffer, sizeof(buffer) - 1, *ptr, left_2_type);
-+		ptr++;
-+		if (!ccs_io_printf(head, "-%s", buffer))
-+			goto out;
-+		i++;
-+ print_operator:
-+		if (!ccs_io_printf(head, "%s", match ? "=" : "!="))
-+			goto out;
-+		if (right < MAX_KEYWORD) {
-+			const char *keyword
-+				= condition_control_keyword[right].keyword;
-+			if (!ccs_io_printf(head, "%s", keyword))
-+				goto out;
-+			continue;
-+		}
-+		print_ulong(buffer, sizeof(buffer) - 1, *ptr, right_1_type);
-+		ptr++;
-+		if (!ccs_io_printf(head, "%s", buffer))
-+			goto out;
-+		i++;
-+		if (right == MAX_KEYWORD)
-+			continue;
-+		print_ulong(buffer, sizeof(buffer) - 1, *ptr, right_2_type);
-+		ptr++;
-+		if (!ccs_io_printf(head, "-%s", buffer))
-+			goto out;
-+		i++;
-+	}
-+
-+	if (!argc && !envc)
-+		goto post_condition;
-+	if (!condc && !ccs_io_printf(head, " if"))
-+		goto out;
-+	for (i = 0; i < argc; argv++, i++) {
-+		const char *op = argv->is_not ? "!=" : "=";
-+		if (!ccs_io_printf(head, " exec.argv[%u]%s\"%s\"", argv->index,
-+				   op, argv->value->name))
-+			goto out;
-+	}
-+	buffer[1] = '\0';
-+	for (i = 0; i < envc; envp++, i++) {
-+		const char *op = envp->is_not ? "!=" : "=";
-+		const char *value = envp->value ? envp->value->name : NULL;
-+		if (!ccs_io_printf(head, " exec.envp[\"%s\"]%s",
-+				   envp->name->name, op))
-+			goto out;
-+		if (value) {
-+			if (!ccs_io_printf(head, "\"%s\"", value))
-+				goto out;
-+		} else {
-+			if (!ccs_io_printf(head, "NULL"))
++	struct list1_head *gpos;
++	struct list1_head *mpos;
++	list1_for_each_cookie(gpos, head->read_var1, &path_group_list) {
++		struct path_group_entry *group;
++		group = list1_entry(gpos, struct path_group_entry, list);
++		list1_for_each_cookie(mpos, head->read_var2,
++				      &group->path_group_member_list) {
++			struct path_group_member *member;
++			member = list1_entry(mpos, struct path_group_member,
++					     list);
++			if (member->is_deleted)
++				continue;
++			if (!ccs_io_printf(head, KEYWORD_PATH_GROUP "%s %s\n",
++					   group->group_name->name,
++					   member->member_name->name))
 +				goto out;
 +		}
 +	}
-+ post_condition:
-+	i = cond->post_state[3];
-+	if (!i)
-+		goto no_condition;
-+	if (!ccs_io_printf(head, " ; set"))
-+		goto out;
-+	for (j = 0; j < 3; j++) {
-+		if (!(i & (1 << j)))
-+			continue;
-+		if (!ccs_io_printf(head, " task.state[%u]=%u", j,
-+				   cond->post_state[j]))
-+			goto out;
-+	}
-+ no_condition:
-+	if (ccs_io_printf(head, "\n"))
-+		return true;
++	return true;
 + out:
 +	return false;
++}
++
++/* The list for "struct pattern_entry". */
++static LIST1_HEAD(pattern_list);
++
++/**
++ * update_file_pattern_entry - Update "struct pattern_entry" list.
++ *
++ * @pattern:   Pathname pattern.
++ * @is_delete: True if it is a delete request.
++ *
++ * Returns 0 on success, negative value otherwise.
++ */
++static int update_file_pattern_entry(const char *pattern, const bool is_delete)
++{
++	struct pattern_entry *new_entry;
++	struct pattern_entry *ptr;
++	static DEFINE_MUTEX(lock);
++	const struct path_info *saved_pattern;
++	int error = -ENOMEM;
++	if (!ccs_is_correct_path(pattern, 0, 1, 0, __func__))
++		return -EINVAL;
++	saved_pattern = ccs_save_name(pattern);
++	if (!saved_pattern)
++		return -ENOMEM;
++	mutex_lock(&lock);
++	list1_for_each_entry(ptr, &pattern_list, list) {
++		if (saved_pattern != ptr->pattern)
++			continue;
++		ptr->is_deleted = is_delete;
++		error = 0;
++		goto out;
++	}
++	if (is_delete) {
++		error = -ENOENT;
++		goto out;
++	}
++	new_entry = ccs_alloc_element(sizeof(*new_entry));
++	if (!new_entry)
++		goto out;
++	new_entry->pattern = saved_pattern;
++	list1_add_tail_mb(&new_entry->list, &pattern_list);
++	error = 0;
++ out:
++	mutex_unlock(&lock);
++	ccs_update_counter(CCS_UPDATES_COUNTER_EXCEPTION_POLICY);
++	return error;
++}
++
++/**
++ * get_file_pattern - Get patterned pathname.
++ *
++ * @filename: The filename to find patterned pathname.
++ *
++ * Returns pointer to pathname pattern if matched, @filename otherwise.
++ */
++static const struct path_info *
++get_file_pattern(const struct path_info *filename)
++{
++	struct pattern_entry *ptr;
++	const struct path_info *pattern = NULL;
++	list1_for_each_entry(ptr, &pattern_list, list) {
++		if (ptr->is_deleted)
++			continue;
++		if (!ccs_path_matches_pattern(filename, ptr->pattern))
++			continue;
++		pattern = ptr->pattern;
++		if (strendswith(pattern->name, "/\\*")) {
++			/* Do nothing. Try to find the better match. */
++		} else {
++			/* This would be the better match. Use this. */
++			break;
++		}
++	}
++	if (pattern)
++		filename = pattern;
++	return filename;
++}
++
++/**
++ * ccs_write_pattern_policy - Write "struct pattern_entry" list.
++ *
++ * @data:      String to parse.
++ * @is_delete: True if it is a delete request.
++ *
++ * Returns 0 on success, negative value otherwise.
++ */
++int ccs_write_pattern_policy(char *data, const bool is_delete)
++{
++	return update_file_pattern_entry(data, is_delete);
++}
++
++/**
++ * ccs_read_file_pattern - Read "struct pattern_entry" list.
++ *
++ * @head: Pointer to "struct ccs_io_buffer".
++ *
++ * Returns true on success, false otherwise.
++ */
++bool ccs_read_file_pattern(struct ccs_io_buffer *head)
++{
++	struct list1_head *pos;
++	list1_for_each_cookie(pos, head->read_var2, &pattern_list) {
++		struct pattern_entry *ptr;
++		ptr = list1_entry(pos, struct pattern_entry, list);
++		if (ptr->is_deleted)
++			continue;
++		if (!ccs_io_printf(head, KEYWORD_FILE_PATTERN "%s\n",
++				   ptr->pattern->name))
++			goto out;
++	}
++	return true;
++ out:
++	return false;
++}
++
++/* The list for "struct no_rewrite_entry". */
++static LIST1_HEAD(no_rewrite_list);
++
++/**
++ * update_no_rewrite_entry - Update "struct no_rewrite_entry" list.
++ *
++ * @pattern:   Pathname pattern that are not rewritable by default.
++ * @is_delete: True if it is a delete request.
++ *
++ * Returns 0 on success, negative value otherwise.
++ */
++static int update_no_rewrite_entry(const char *pattern, const bool is_delete)
++{
++	struct no_rewrite_entry *new_entry, *ptr;
++	static DEFINE_MUTEX(lock);
++	const struct path_info *saved_pattern;
++	int error = -ENOMEM;
++	if (!ccs_is_correct_path(pattern, 0, 0, 0, __func__))
++		return -EINVAL;
++	saved_pattern = ccs_save_name(pattern);
++	if (!saved_pattern)
++		return -ENOMEM;
++	mutex_lock(&lock);
++	list1_for_each_entry(ptr, &no_rewrite_list, list) {
++		if (ptr->pattern != saved_pattern)
++			continue;
++		ptr->is_deleted = is_delete;
++		error = 0;
++		goto out;
++	}
++	if (is_delete) {
++		error = -ENOENT;
++		goto out;
++	}
++	new_entry = ccs_alloc_element(sizeof(*new_entry));
++	if (!new_entry)
++		goto out;
++	new_entry->pattern = saved_pattern;
++	list1_add_tail_mb(&new_entry->list, &no_rewrite_list);
++	error = 0;
++ out:
++	mutex_unlock(&lock);
++	ccs_update_counter(CCS_UPDATES_COUNTER_EXCEPTION_POLICY);
++	return error;
++}
++
++/**
++ * is_no_rewrite_file - Check if the given pathname is not permitted to be rewrited.
++ *
++ * @filename: Filename to check.
++ *
++ * Returns true if @filename is specified by "deny_rewrite" directive,
++ * false otherwise.
++ */
++static bool is_no_rewrite_file(const struct path_info *filename)
++{
++	struct no_rewrite_entry *ptr;
++	list1_for_each_entry(ptr, &no_rewrite_list, list) {
++		if (ptr->is_deleted)
++			continue;
++		if (!ccs_path_matches_pattern(filename, ptr->pattern))
++			continue;
++		return true;
++	}
++	return false;
++}
++
++/**
++ * ccs_write_no_rewrite_policy - Write "struct no_rewrite_entry" list.
++ *
++ * @data:      String to parse.
++ * @is_delete: True if it is a delete request.
++ *
++ * Returns 0 on success, negative value otherwise.
++ */
++int ccs_write_no_rewrite_policy(char *data, const bool is_delete)
++{
++	return update_no_rewrite_entry(data, is_delete);
++}
++
++/**
++ * ccs_read_no_rewrite_policy - Read "struct no_rewrite_entry" list.
++ *
++ * @head: Pointer to "struct ccs_io_buffer".
++ *
++ * Returns true on success, false otherwise.
++ */
++bool ccs_read_no_rewrite_policy(struct ccs_io_buffer *head)
++{
++	struct list1_head *pos;
++	list1_for_each_cookie(pos, head->read_var2, &no_rewrite_list) {
++		struct no_rewrite_entry *ptr;
++		ptr = list1_entry(pos, struct no_rewrite_entry, list);
++		if (ptr->is_deleted)
++			continue;
++		if (!ccs_io_printf(head, KEYWORD_DENY_REWRITE "%s\n",
++				   ptr->pattern->name))
++			goto out;
++	}
++	return true;
++ out:
++	return false;
++}
++
++/**
++ * update_file_acl - Update file's read/write/execute ACL.
++ *
++ * @filename:  Filename.
++ * @perm:      Permission (between 1 to 7).
++ * @domain:    Pointer to "struct domain_info".
++ * @condition: Pointer to "struct condition_list". May be NULL.
++ * @is_delete: True if it is a delete request.
++ *
++ * Returns 0 on success, negative value otherwise.
++ *
++ * This is legacy support interface for older policy syntax.
++ * Current policy syntax uses "allow_read/write" instead of "6",
++ * "allow_read" instead of "4", "allow_write" instead of "2",
++ * "allow_execute" instead of "1".
++ */
++static int update_file_acl(const char *filename, u8 perm,
++			   struct domain_info * const domain,
++			   const struct condition_list *condition,
++			   const bool is_delete)
++{
++	if (perm > 7 || !perm) {
++		printk(KERN_DEBUG "%s: Invalid permission '%d %s'\n",
++		       __func__, perm, filename);
++		return -EINVAL;
++	}
++	if (filename[0] != '@' && strendswith(filename, "/"))
++		/*
++		 * Only 'allow_mkdir' and 'allow_rmdir' are valid for
++		 * directory permissions.
++		 */
++		return 0;
++	if (perm & 4)
++		update_single_path_acl(TYPE_READ_ACL, filename, domain,
++				       condition, is_delete);
++	if (perm & 2)
++		update_single_path_acl(TYPE_WRITE_ACL, filename, domain,
++				       condition, is_delete);
++	if (perm & 1)
++		update_single_path_acl(TYPE_EXECUTE_ACL, filename, domain,
++				       condition, is_delete);
++	return 0;
++}
++
++/**
++ * check_single_path_acl2 - Check permission for single path operation.
++ *
++ * @filename:        Filename to check.
++ * @perm:            Permission.
++ * @obj:             Pointer to "struct obj_info".
++ * @may_use_pattern: True if patterned ACL is permitted.
++ *
++ * Returns 0 on success, -EPERM otherwise.
++ */
++static int check_single_path_acl2(const struct path_info *filename,
++				  const u16 perm, struct obj_info *obj,
++				  const bool may_use_pattern)
++{
++	const struct domain_info *domain = current->domain_info;
++	struct acl_info *ptr;
++	list1_for_each_entry(ptr, &domain->acl_info_list, list) {
++		struct single_path_acl_record *acl;
++		if (ccs_acl_type2(ptr) != TYPE_SINGLE_PATH_ACL)
++			continue;
++		acl = container_of(ptr, struct single_path_acl_record, head);
++		if (!(acl->perm & perm) || !ccs_check_condition(ptr, obj))
++			continue;
++		if (acl->u_is_group) {
++			if (!path_matches_group(filename, acl->u.group,
++						may_use_pattern))
++				continue;
++		} else if (may_use_pattern || !acl->u.filename->is_patterned) {
++			if (!ccs_path_matches_pattern(filename,
++						      acl->u.filename))
++				continue;
++		} else {
++			continue;
++		}
++		ccs_update_condition(ptr);
++		return 0;
++	}
++	return -EPERM;
++}
++
++/**
++ * check_file_acl - Check permission for opening files.
++ *
++ * @filename:  Filename to check.
++ * @operation: Mode ("read" or "write" or "read/write" or "execute").
++ * @obj:       Pointer to "struct obj_info".
++ *
++ * Returns 0 on success, -EPERM otherwise.
++ */
++static int check_file_acl(const struct path_info *filename, const u8 operation,
++			  struct obj_info *obj)
++{
++	u16 perm = 0;
++	if (!ccs_check_flags(CCS_TOMOYO_MAC_FOR_FILE))
++		return 0;
++	if (operation == 6)
++		perm = 1 << TYPE_READ_WRITE_ACL;
++	else if (operation == 4)
++		perm = 1 << TYPE_READ_ACL;
++	else if (operation == 2)
++		perm = 1 << TYPE_WRITE_ACL;
++	else if (operation == 1)
++		perm = 1 << TYPE_EXECUTE_ACL;
++	else
++		BUG();
++	return check_single_path_acl2(filename, perm, obj, operation != 1);
++}
++
++/**
++ * check_file_perm2 - Check permission for opening files.
++ *
++ * @filename:  Filename to check.
++ * @perm:      Mode ("read" or "write" or "read/write" or "execute").
++ * @operation: Operation name passed used for verbose mode.
++ * @obj:       Pointer to "struct obj_info". May be NULL.
++ * @profile:   Profile number passed to audit logs.
++ * @mode:      Access control mode.
++ *
++ * Returns 0 on success, negative value otherwise.
++ */
++static int check_file_perm2(const struct path_info *filename, const u8 perm,
++			    const char *operation, struct obj_info *obj,
++			    const u8 profile, const u8 mode)
++{
++	struct domain_info * const domain = current->domain_info;
++	const bool is_enforce = (mode == 3);
++	const char *msg = "<unknown>";
++	int error = 0;
++	if (!filename)
++		return 0;
++	error = check_file_acl(filename, perm, obj);
++	if (error && perm == 4 &&
++	    (domain->flags & DOMAIN_FLAGS_IGNORE_GLOBAL_ALLOW_READ) == 0 &&
++	    is_globally_readable_file(filename))
++		error = 0;
++	if (perm == 6)
++		msg = ccs_sp2keyword(TYPE_READ_WRITE_ACL);
++	else if (perm == 4)
++		msg = ccs_sp2keyword(TYPE_READ_ACL);
++	else if (perm == 2)
++		msg = ccs_sp2keyword(TYPE_WRITE_ACL);
++	else if (perm == 1)
++		msg = ccs_sp2keyword(TYPE_EXECUTE_ACL);
++	else
++		BUG();
++	audit_file_log(msg, filename, NULL, !error, profile, mode,
++		       obj ? obj->bprm : NULL);
++	if (!error)
++		return 0;
++	if (ccs_verbose_mode())
++		printk(KERN_WARNING "TOMOYO-%s: Access '%s(%s) %s' denied "
++		       "for %s\n", ccs_get_msg(is_enforce), msg, operation,
++		       filename->name, ccs_get_last_name(domain));
++	if (is_enforce)
++		return ccs_check_supervisor("%s\nallow_%s %s\n",
++					    domain->domainname->name,
++					    msg, filename->name);
++	if (mode == 1 && ccs_check_domain_quota(domain)) {
++		/* Don't use patterns for execute permission. */
++		const struct path_info *patterned_file = (perm != 1) ?
++			get_file_pattern(filename) : filename;
++		update_file_acl(patterned_file->name, perm,
++				domain, NULL, false);
++	}
++	return 0;
++}
++
++/**
++ * update_execute_handler - Update "struct execute_handler_record" list.
++ *
++ * @type:      Type of execute handler.
++ * @filename:  Pathname to the execute handler.
++ * @domain:    Pointer to "struct domain_info".
++ * @is_delete: True if it is a delete request.
++ *
++ * Returns 0 on success, negative value otherwise.
++ */
++static int update_execute_handler(const u8 type, const char *filename,
++				  struct domain_info * const domain,
++				  const bool is_delete)
++{
++	const struct path_info *saved_filename;
++	struct acl_info *ptr;
++	struct execute_handler_record *acl;
++	int error = -ENOMEM;
++	if (!domain)
++		return -EINVAL;
++	if (!ccs_is_correct_path(filename, 1, -1, -1, __func__))
++		return -EINVAL;
++	saved_filename = ccs_save_name(filename);
++	if (!saved_filename)
++		return -ENOMEM;
++	mutex_lock(&domain_acl_lock);
++	if (is_delete)
++		goto delete;
++	list1_for_each_entry(ptr, &domain->acl_info_list, list) {
++		if (ccs_acl_type1(ptr) != type)
++			continue;
++		/* Condition not supported. */
++		acl = container_of(ptr, struct execute_handler_record, head);
++		if (acl->handler != saved_filename)
++			continue;
++		/* Only one entry can exist in a domain. */
++		list1_for_each_entry(ptr, &domain->acl_info_list, list) {
++			if (ptr->type == type)
++				ptr->type |= ACL_DELETED;
++		}
++		error = ccs_add_domain_acl(NULL, &acl->head);
++		goto out;
++	}
++	/* Not found. Append it to the tail. */
++	acl = ccs_alloc_acl_element(type, NULL);
++	if (!acl)
++		goto out;
++	acl->handler = saved_filename;
++	/* Only one entry can exist in a domain. */
++	list1_for_each_entry(ptr, &domain->acl_info_list, list) {
++		if (ptr->type == type)
++			ptr->type |= ACL_DELETED;
++	}
++	error = ccs_add_domain_acl(domain, &acl->head);
++	goto out;
++ delete:
++	error = -ENOENT;
++	list1_for_each_entry(ptr, &domain->acl_info_list, list) {
++		if (ccs_acl_type2(ptr) != type)
++			continue;
++		/* Condition not supported. */
++		acl = container_of(ptr, struct execute_handler_record, head);
++		if (acl->handler != saved_filename)
++			continue;
++		error = ccs_del_domain_acl(ptr);
++		break;
++	}
++ out:
++	mutex_unlock(&domain_acl_lock);
++	return error;
++}
++
++/**
++ * ccs_write_file_policy - Update file related list.
++ *
++ * @data:      String to parse.
++ * @domain:    Pointer to "struct domain_info".
++ * @condition: Pointer to "struct condition_list". May be NULL.
++ * @is_delete: True if it is a delete request.
++ *
++ * Returns 0 on success, negative value otherwise.
++ */
++int ccs_write_file_policy(char *data, struct domain_info *domain,
++			  const struct condition_list *condition,
++			  const bool is_delete)
++{
++	char *filename = strchr(data, ' ');
++	char *filename2;
++	unsigned int perm;
++	u8 type;
++	if (!filename)
++		return -EINVAL;
++	*filename++ = '\0';
++	if (sscanf(data, "%u", &perm) == 1)
++		return update_file_acl(filename, (u8) perm, domain, condition,
++				       is_delete);
++	if (strncmp(data, "allow_", 6)) {
++		u8 type;
++		if (!strcmp(data, KEYWORD_EXECUTE_HANDLER))
++			type = TYPE_EXECUTE_HANDLER;
++		else if (!strcmp(data, KEYWORD_DENIED_EXECUTE_HANDLER))
++			type = TYPE_DENIED_EXECUTE_HANDLER;
++		else
++			goto out;
++		return update_execute_handler(type, filename,
++					      domain, is_delete);
++	}
++	data += 6;
++	for (type = 0; type < MAX_SINGLE_PATH_OPERATION; type++) {
++		if (strcmp(data, sp_keyword[type]))
++			continue;
++		return update_single_path_acl(type, filename, domain, condition,
++					      is_delete);
++	}
++	filename2 = strchr(filename, ' ');
++	if (!filename2)
++		goto out;
++	*filename2++ = '\0';
++	for (type = 0; type < MAX_DOUBLE_PATH_OPERATION; type++) {
++		if (strcmp(data, dp_keyword[type]))
++			continue;
++		return update_double_path_acl(type, filename, filename2, domain,
++					      condition, is_delete);
++	}
++ out:
++	return -EINVAL;
++}
++
++/**
++ * update_single_path_acl - Update "struct single_path_acl_record" list.
++ *
++ * @type:      Type of operation.
++ * @filename:  Filename.
++ * @domain:    Pointer to "struct domain_info".
++ * @condition: Pointer to "struct condition_list". May be NULL.
++ * @is_delete: True if it is a delete request.
++ *
++ * Returns 0 on success, negative value otherwise.
++ */
++static int update_single_path_acl(const u8 type, const char *filename,
++				  struct domain_info * const domain,
++				  const struct condition_list *condition,
++				  const bool is_delete)
++{
++	static const u16 rw_mask = (1 << TYPE_READ_ACL) | (1 << TYPE_WRITE_ACL);
++	const struct path_info *saved_filename;
++	struct acl_info *ptr;
++	struct single_path_acl_record *acl;
++	int error = -ENOMEM;
++	bool is_group = false;
++	const u16 perm = 1 << type;
++	if (!domain)
++		return -EINVAL;
++	if (!ccs_is_correct_path(filename, 0, 0, 0, __func__))
++		return -EINVAL;
++	if (filename[0] == '@') {
++		/*
++		 * This cast is OK because I don't dereference
++		 * in this function.
++		 */
++		saved_filename = (struct path_info *)
++			find_or_assign_new_path_group(filename + 1);
++		is_group = true;
++	} else {
++		saved_filename = ccs_save_name(filename);
++	}
++	if (!saved_filename)
++		return -ENOMEM;
++	mutex_lock(&domain_acl_lock);
++	if (is_delete)
++		goto delete;
++	list1_for_each_entry(ptr, &domain->acl_info_list, list) {
++		if (ccs_acl_type1(ptr) != TYPE_SINGLE_PATH_ACL)
++			continue;
++		if (ccs_get_condition_part(ptr) != condition)
++			continue;
++		acl = container_of(ptr, struct single_path_acl_record, head);
++		if (acl->u.filename != saved_filename)
++			continue;
++		/* Special case. Clear all bits if marked as deleted. */
++		if (ptr->type & ACL_DELETED)
++			acl->perm = 0;
++		acl->perm |= perm;
++		if ((acl->perm & rw_mask) == rw_mask)
++			acl->perm |= 1 << TYPE_READ_WRITE_ACL;
++		else if (acl->perm & (1 << TYPE_READ_WRITE_ACL))
++			acl->perm |= rw_mask;
++		error = ccs_add_domain_acl(NULL, ptr);
++		goto out;
++	}
++	/* Not found. Append it to the tail. */
++	acl = ccs_alloc_acl_element(TYPE_SINGLE_PATH_ACL, condition);
++	if (!acl)
++		goto out;
++	acl->perm = perm;
++	acl->u_is_group = is_group;
++	acl->u.filename = saved_filename;
++	error = ccs_add_domain_acl(domain, &acl->head);
++	goto out;
++ delete:
++	error = -ENOENT;
++	list1_for_each_entry(ptr, &domain->acl_info_list, list) {
++		if (ccs_acl_type2(ptr) != TYPE_SINGLE_PATH_ACL)
++			continue;
++		if (ccs_get_condition_part(ptr) != condition)
++			continue;
++		acl = container_of(ptr, struct single_path_acl_record, head);
++		if (acl->u.filename != saved_filename)
++			continue;
++		acl->perm &= ~perm;
++		if ((acl->perm & rw_mask) != rw_mask)
++			acl->perm &= ~(1 << TYPE_READ_WRITE_ACL);
++		else if (!(acl->perm & (1 << TYPE_READ_WRITE_ACL)))
++			acl->perm &= ~rw_mask;
++		error = ccs_del_domain_acl(acl->perm ? NULL : ptr);
++		break;
++	}
++ out:
++	mutex_unlock(&domain_acl_lock);
++	return error;
++}
++
++/**
++ * update_double_path_acl - Update "struct double_path_acl_record" list.
++ *
++ * @type:      Type of operation.
++ * @filename1: First filename.
++ * @filename2: Second filename.
++ * @domain:    Pointer to "struct domain_info".
++ * @condition: Pointer to "struct condition_list". May be NULL.
++ * @is_delete: True if it is a delete request.
++ *
++ * Returns 0 on success, negative value otherwise.
++ */
++static int update_double_path_acl(const u8 type, const char *filename1,
++				  const char *filename2,
++				  struct domain_info * const domain,
++				  const struct condition_list *condition,
++				  const bool is_delete)
++{
++	const struct path_info *saved_filename1;
++	const struct path_info *saved_filename2;
++	struct acl_info *ptr;
++	struct double_path_acl_record *acl;
++	int error = -ENOMEM;
++	bool is_group1 = false;
++	bool is_group2 = false;
++	const u8 perm = 1 << type;
++	if (!domain)
++		return -EINVAL;
++	if (!ccs_is_correct_path(filename1, 0, 0, 0, __func__) ||
++	    !ccs_is_correct_path(filename2, 0, 0, 0, __func__))
++		return -EINVAL;
++	if (filename1[0] == '@') {
++		/*
++		 * This cast is OK because I don't dereference
++		 * in this function.
++		 */
++		saved_filename1 = (struct path_info *)
++			find_or_assign_new_path_group(filename1 + 1);
++		is_group1 = true;
++	} else {
++		saved_filename1 = ccs_save_name(filename1);
++	}
++	if (filename2[0] == '@') {
++		/*
++		 * This cast is OK because I don't dereference
++		 * in this function.
++		 */
++		saved_filename2 = (struct path_info *)
++			find_or_assign_new_path_group(filename2 + 1);
++		is_group2 = true;
++	} else {
++		saved_filename2 = ccs_save_name(filename2);
++	}
++	if (!saved_filename1 || !saved_filename2)
++		return -ENOMEM;
++	mutex_lock(&domain_acl_lock);
++	if (is_delete)
++		goto delete;
++	list1_for_each_entry(ptr, &domain->acl_info_list, list) {
++		if (ccs_acl_type1(ptr) != TYPE_DOUBLE_PATH_ACL)
++			continue;
++		if (ccs_get_condition_part(ptr) != condition)
++			continue;
++		acl = container_of(ptr, struct double_path_acl_record, head);
++		if (acl->u1.filename1 != saved_filename1 ||
++		    acl->u2.filename2 != saved_filename2)
++			continue;
++		/* Special case. Clear all bits if marked as deleted. */
++		if (ptr->type & ACL_DELETED)
++			acl->perm = 0;
++		acl->perm |= perm;
++		error = ccs_add_domain_acl(NULL, ptr);
++		goto out;
++	}
++	/* Not found. Append it to the tail. */
++	acl = ccs_alloc_acl_element(TYPE_DOUBLE_PATH_ACL, condition);
++	if (!acl)
++		goto out;
++	acl->perm = perm;
++	acl->u1_is_group = is_group1;
++	acl->u2_is_group = is_group2;
++	acl->u1.filename1 = saved_filename1;
++	acl->u2.filename2 = saved_filename2;
++	error = ccs_add_domain_acl(domain, &acl->head);
++	goto out;
++ delete:
++	error = -ENOENT;
++	list1_for_each_entry(ptr, &domain->acl_info_list, list) {
++		if (ccs_acl_type2(ptr) != TYPE_DOUBLE_PATH_ACL)
++			continue;
++		if (ccs_get_condition_part(ptr) != condition)
++			continue;
++		acl = container_of(ptr, struct double_path_acl_record, head);
++		if (acl->u1.filename1 != saved_filename1 ||
++		    acl->u2.filename2 != saved_filename2)
++			continue;
++		acl->perm &= ~perm;
++		error = ccs_del_domain_acl(acl->perm ? NULL : ptr);
++		break;
++	}
++ out:
++	mutex_unlock(&domain_acl_lock);
++	return error;
++}
++
++/**
++ * check_single_path_acl - Check permission for single path operation.
++ *
++ * @type:     Type of operation.
++ * @filename: Filename to check.
++ * @obj:      Pointer to "struct obj_info".
++ *
++ * Returns 0 on success, negative value otherwise.
++ */
++static int check_single_path_acl(const u8 type,
++				 const struct path_info *filename,
++				 struct obj_info *obj)
++{
++	if (!ccs_check_flags(CCS_TOMOYO_MAC_FOR_FILE))
++		return 0;
++	return check_single_path_acl2(filename, 1 << type, obj, 1);
++}
++
++/**
++ * check_double_path_acl - Check permission for double path operation.
++ *
++ * @type:      Type of operation.
++ * @filename1: First filename to check.
++ * @filename2: Second filename to check.
++ * @obj:       Pointer to "struct obj_info".
++ *
++ * Returns 0 on success, -EPERM otherwise.
++ */
++static int check_double_path_acl(const u8 type,
++				 const struct path_info *filename1,
++				 const struct path_info *filename2,
++				 struct obj_info *obj)
++{
++	const struct domain_info *domain = current->domain_info;
++	struct acl_info *ptr;
++	const u8 perm = 1 << type;
++	if (!ccs_check_flags(CCS_TOMOYO_MAC_FOR_FILE))
++		return 0;
++	list1_for_each_entry(ptr, &domain->acl_info_list, list) {
++		struct double_path_acl_record *acl;
++		if (ccs_acl_type2(ptr) != TYPE_DOUBLE_PATH_ACL)
++			continue;
++		acl = container_of(ptr, struct double_path_acl_record, head);
++		if (!(acl->perm & perm) || !ccs_check_condition(ptr, obj))
++			continue;
++		if (acl->u1_is_group) {
++			if (!path_matches_group(filename1, acl->u1.group1,
++						true))
++				continue;
++		} else {
++			if (!ccs_path_matches_pattern(filename1,
++						      acl->u1.filename1))
++				continue;
++		}
++		if (acl->u2_is_group) {
++			if (!path_matches_group(filename2,
++						acl->u2.group2, true))
++				continue;
++		} else {
++			if (!ccs_path_matches_pattern(filename2,
++						      acl->u2.filename2))
++				continue;
++		}
++		ccs_update_condition(ptr);
++		return 0;
++	}
++	return -EPERM;
++}
++
++/**
++ * check_single_path_permission2 - Check permission for single path operation.
++ *
++ * @operation: Type of operation.
++ * @filename:  Filename to check.
++ * @obj:       Pointer to "struct obj_info".
++ * @profile:   Profile number passed to audit logs.
++ * @mode:      Access control mode.
++ *
++ * Returns 0 on success, negative value otherwise.
++ */
++static int check_single_path_permission2(u8 operation,
++					 const struct path_info *filename,
++					 struct obj_info *obj,
++					 const u8 profile, const u8 mode)
++{
++	const char *msg;
++	int error;
++	struct domain_info * const domain = current->domain_info;
++	const bool is_enforce = (mode == 3);
++	if (!mode)
++		return 0;
++ next:
++	error = check_single_path_acl(operation, filename, obj);
++	msg = ccs_sp2keyword(operation);
++	audit_file_log(msg, filename, NULL, !error, profile, mode, NULL);
++	if (!error)
++		goto ok;
++	if (ccs_verbose_mode())
++		printk(KERN_WARNING "TOMOYO-%s: Access '%s %s' denied for %s\n",
++		       ccs_get_msg(is_enforce), msg, filename->name,
++		       ccs_get_last_name(domain));
++	if (is_enforce)
++		error = ccs_check_supervisor("%s\nallow_%s %s\n",
++					     domain->domainname->name,
++					     msg, filename->name);
++	if (mode == 1 && ccs_check_domain_quota(domain))
++		update_single_path_acl(operation,
++				       get_file_pattern(filename)->name,
++				       domain, NULL, false);
++	if (!is_enforce)
++		error = 0;
++ ok:
++	/*
++	 * Since "allow_truncate" doesn't imply "allow_rewrite" permission,
++	 * we need to check "allow_rewrite" permission if the filename is
++	 * specified by "deny_rewrite" keyword.
++	 */
++	if (!error && operation == TYPE_TRUNCATE_ACL &&
++	    is_no_rewrite_file(filename)) {
++		operation = TYPE_REWRITE_ACL;
++		goto next;
++	}
++	return error;
++}
++
++/**
++ * ccs_check_file_perm - Check permission for sysctl()'s "read" and "write".
++ *
++ * @filename:  Filename to check.
++ * @perm:      Mode ("read" or "write" or "read/write").
++ * @operation: Always "sysctl".
++ *
++ * Returns 0 on success, negative value otherwise.
++ */
++int ccs_check_file_perm(const char *filename, const u8 perm,
++			const char *operation)
++{
++	struct path_info name;
++	const u8 profile = current->domain_info->profile;
++	const u8 mode = ccs_check_flags(CCS_TOMOYO_MAC_FOR_FILE);
++	if (!mode)
++		return 0;
++	name.name = filename;
++	ccs_fill_path_info(&name);
++	return check_file_perm2(&name, perm, operation, NULL, profile, mode);
++}
++
++/**
++ * ccs_check_exec_perm - Check permission for "execute".
++ *
++ * @filename: Check permission for "execute".
++ * @bprm:     Pointer to "struct linux_binprm".
++ * @tmp:      Buffer for temporal use.
++ *
++ * Returns 0 on success, negativevalue otherwise.
++ */
++int ccs_check_exec_perm(const struct path_info *filename,
++			struct linux_binprm *bprm, struct ccs_page_buffer *tmp)
++{
++	struct obj_info obj;
++	const u8 profile = current->domain_info->profile;
++	const u8 mode = ccs_check_flags(CCS_TOMOYO_MAC_FOR_FILE);
++	if (!mode)
++		return 0;
++	memset(&obj, 0, sizeof(obj));
++	obj.path1_dentry = bprm->file->f_dentry;
++	obj.path1_vfsmnt = bprm->file->f_vfsmnt;
++	obj.bprm = bprm;
++	obj.tmp = tmp;
++	return check_file_perm2(filename, 1, "do_execve", &obj, profile, mode);
++}
++
++/**
++ * ccs_check_open_permission - Check permission for "read" and "write".
++ *
++ * @dentry: Pointer to "struct dentry".
++ * @mnt:    Pointer to "struct vfsmount".
++ * @flag:   Flags for open().
++ *
++ * Returns 0 on success, negative value otherwise.
++ */
++int ccs_check_open_permission(struct dentry *dentry, struct vfsmount *mnt,
++			      const int flag)
++{
++	struct obj_info obj;
++	const u8 acc_mode = ACC_MODE(flag);
++	int error = -ENOMEM;
++	struct path_info *buf;
++	const u8 profile = current->domain_info->profile;
++	const u8 mode = ccs_check_flags(CCS_TOMOYO_MAC_FOR_FILE);
++	const bool is_enforce = (mode == 3);
++	if (!mode)
++		return 0;
++	if (acc_mode == 0)
++		return 0;
++	if (dentry->d_inode && S_ISDIR(dentry->d_inode->i_mode))
++		/*
++		 * I don't check directories here because mkdir() and rmdir()
++		 * don't call me.
++		 */
++		return 0;
++	buf = ccs_get_path(dentry, mnt);
++	if (!buf)
++		goto out;
++	memset(&obj, 0, sizeof(obj));
++	obj.path1_dentry = dentry;
++	obj.path1_vfsmnt = mnt;
++	error = 0;
++	/*
++	 * If the filename is specified by "deny_rewrite" keyword,
++	 * we need to check "allow_rewrite" permission when the filename is not
++	 * opened for append mode or the filename is truncated at open time.
++	 */
++	if ((acc_mode & MAY_WRITE) &&
++	    ((flag & O_TRUNC) || !(flag & O_APPEND))) {
++		if (is_no_rewrite_file(buf))
++			error = check_single_path_permission2(TYPE_REWRITE_ACL,
++							      buf, &obj,
++							      profile, mode);
++	}
++	if (!error)
++		error = check_file_perm2(buf, acc_mode, "open", &obj, profile,
++					 mode);
++	if (!error && (flag & O_TRUNC))
++		error = check_single_path_permission2(TYPE_TRUNCATE_ACL, buf,
++						      &obj, profile, mode);
++ out:
++	ccs_free(buf);
++	if (!is_enforce)
++		error = 0;
++	return error;
++}
++
++/**
++ * ccs_check_1path_perm - Check permission for "create", "unlink", "mkdir", "rmdir", "mkfifo", "mksock", "mkblock", "mkchar", "truncate" and "symlink".
++ *
++ * @operation: Type of operation.
++ * @dentry:    Pointer to "struct dentry".
++ * @mnt:       Pointer to "struct vfsmount".
++ *
++ * Returns 0 on success, negative value otherwise.
++ */
++int ccs_check_1path_perm(const u8 operation, struct dentry *dentry,
++			 struct vfsmount *mnt)
++{
++	struct obj_info obj;
++	int error = -ENOMEM;
++	struct path_info *buf;
++	const u8 profile = current->domain_info->profile;
++	const u8 mode = ccs_check_flags(CCS_TOMOYO_MAC_FOR_FILE);
++	const bool is_enforce = (mode == 3);
++	if (!mode)
++		return 0;
++	buf = ccs_get_path(dentry, mnt);
++	if (!buf)
++		goto out;
++	switch (operation) {
++	case TYPE_MKDIR_ACL:
++	case TYPE_RMDIR_ACL:
++		if (!buf->is_dir) {
++			/* ccs_get_path() preserves space for appending "/." */
++			strcat((char *) buf->name, "/");
++			ccs_fill_path_info(buf);
++		}
++	}
++	memset(&obj, 0, sizeof(obj));
++	obj.path1_dentry = dentry;
++	obj.path1_vfsmnt = mnt;
++	error = check_single_path_permission2(operation, buf, &obj, profile,
++					      mode);
++ out:
++	ccs_free(buf);
++	if (!is_enforce)
++		error = 0;
++	return error;
++}
++EXPORT_SYMBOL(ccs_check_1path_perm); /* for net/unix/af_unix.c  */
++
++/**
++ * ccs_check_rewrite_permission - Check permission for "rewrite".
++ *
++ * @filp: Pointer to "struct file".
++ *
++ * Returns 0 on success, negative value otherwise.
++ */
++int ccs_check_rewrite_permission(struct file *filp)
++{
++	struct obj_info obj;
++	int error = -ENOMEM;
++	const u8 profile = current->domain_info->profile;
++	const u8 mode = ccs_check_flags(CCS_TOMOYO_MAC_FOR_FILE);
++	const bool is_enforce = (mode == 3);
++	struct path_info *buf = ccs_get_path(filp->f_dentry, filp->f_vfsmnt);
++	if (!buf)
++		goto out;
++	if (!is_no_rewrite_file(buf)) {
++		error = 0;
++		goto out;
++	}
++	memset(&obj, 0, sizeof(obj));
++	obj.path1_dentry = filp->f_dentry;
++	obj.path1_vfsmnt = filp->f_vfsmnt;
++	error = check_single_path_permission2(TYPE_REWRITE_ACL, buf, &obj,
++					      profile, mode);
++ out:
++	ccs_free(buf);
++	if (!is_enforce)
++		error = 0;
++	return error;
++}
++
++/**
++ * ccs_check_2path_perm - Check permission for "rename" and "link".
++ *
++ * @operation: Type of operation.
++ * @dentry1:   Pointer to "struct dentry".
++ * @mnt1:      Pointer to "struct vfsmount".
++ * @dentry2:   Pointer to "struct dentry".
++ * @mnt2:      Pointer to "struct vfsmount".
++ *
++ * Returns 0 on success, negative value otherwise.
++ */
++int ccs_check_2path_perm(const u8 operation,
++				     struct dentry *dentry1,
++				     struct vfsmount *mnt1,
++				     struct dentry *dentry2,
++				     struct vfsmount *mnt2)
++{
++	int error = -ENOMEM;
++	struct path_info *buf1, *buf2;
++	struct domain_info * const domain = current->domain_info;
++	const u8 profile = current->domain_info->profile;
++	const u8 mode = ccs_check_flags(CCS_TOMOYO_MAC_FOR_FILE);
++	const bool is_enforce = (mode == 3);
++	const char *msg;
++	struct obj_info obj;
++	if (!mode)
++		return 0;
++	buf1 = ccs_get_path(dentry1, mnt1);
++	buf2 = ccs_get_path(dentry2, mnt2);
++	if (!buf1 || !buf2)
++		goto out;
++	if (operation == TYPE_RENAME_ACL) {
++		/* TYPE_LINK_ACL can't reach here for directory. */
++		if (dentry1->d_inode && S_ISDIR(dentry1->d_inode->i_mode)) {
++			/* ccs_get_path() preserves space for appending "/." */
++			if (!buf1->is_dir) {
++				strcat((char *) buf1->name, "/");
++				ccs_fill_path_info(buf1);
++			}
++			if (!buf2->is_dir) {
++				strcat((char *) buf2->name, "/");
++				ccs_fill_path_info(buf2);
++			}
++		}
++	}
++	memset(&obj, 0, sizeof(obj));
++	obj.path1_dentry = dentry1;
++	obj.path1_vfsmnt = mnt1;
++	obj.path2_dentry = dentry2;
++	obj.path2_vfsmnt = mnt2;
++	error = check_double_path_acl(operation, buf1, buf2, &obj);
++	msg = ccs_dp2keyword(operation);
++	audit_file_log(msg, buf1, buf2, !error, profile, mode, NULL);
++	if (!error)
++		goto out;
++	if (ccs_verbose_mode())
++		printk(KERN_WARNING "TOMOYO-%s: Access '%s %s %s' "
++		       "denied for %s\n", ccs_get_msg(is_enforce),
++		       msg, buf1->name, buf2->name, ccs_get_last_name(domain));
++	if (is_enforce)
++		error = ccs_check_supervisor("%s\nallow_%s %s %s\n",
++					     domain->domainname->name,
++					     msg, buf1->name, buf2->name);
++	else if (mode == 1 && ccs_check_domain_quota(domain))
++		update_double_path_acl(operation,
++				       get_file_pattern(buf1)->name,
++				       get_file_pattern(buf2)->name,
++				       domain, NULL, false);
++ out:
++	ccs_free(buf1);
++	ccs_free(buf2);
++	if (!is_enforce)
++		error = 0;
++	return error;
 +}
 
 -- 
