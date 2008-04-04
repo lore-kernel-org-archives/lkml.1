@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758085AbYDDJLq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759194AbYDDJMR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758085AbYDDJLq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Apr 2008 05:11:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751851AbYDDJLg
+	id S1759194AbYDDJMR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Apr 2008 05:12:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758718AbYDDJL6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Apr 2008 05:11:36 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:44113 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751841AbYDDJLf (ORCPT
+	Fri, 4 Apr 2008 05:11:58 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:53184 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758674AbYDDJLv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Apr 2008 05:11:35 -0400
-Message-ID: <47F5F099.20006@jp.fujitsu.com>
-Date: Fri, 04 Apr 2008 18:10:49 +0900
+	Fri, 4 Apr 2008 05:11:51 -0400
+Message-ID: <47F5F0BB.1080804@jp.fujitsu.com>
+Date: Fri, 04 Apr 2008 18:11:23 +0900
 From: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
 User-Agent: Thunderbird 2.0.0.12 (Windows/20080213)
 MIME-Version: 1.0
 To: linux-kernel@vger.kernel.org
 CC: Paul Jackson <pj@sgi.com>, Peter Zijlstra <peterz@infradead.org>,
        Ingo Molnar <mingo@elte.hu>, Andi Kleen <andi@firstfloor.org>
-Subject: [PATCH 1/2] Customize sched domain via cpuset (v2)
+Subject: [PATCH 2/2] Customize sched domain via cpuset (v2)
 References: <47F21BE3.5030705@jp.fujitsu.com>
 In-Reply-To: <47F21BE3.5030705@jp.fujitsu.com>
 Content-Type: text/plain; charset=ISO-2022-JP
@@ -27,118 +27,531 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Here comes v2!
+The implementation has some updates...
 
-This patch introduces new feature of cpuset - sched domain customization.
+>  - Add 2 new cpuset files:
+>      sched_wake_idle_far
+>      sched_balance_newidle_far
+    -> Merged into 1 file, having levels:
+         sched_relax_domain_level
 
-This version provides a per-cpuset file 'sched_relax_domain_level' that
-enable us to change the searching range of scheduler, which used to limit
-how many cpus the scheduler searches at some schedule events, such as
-wakening task and running out of runqueue.
+>  - Modify partition_sched_domains() and build_sched_domains()
+>    to take flags parameter passed from cpuset.
+    -> Changed to "attributes" rather than "flags."
 
-Thanks,
-H.Seto
+>  - Fill newidle_idx for node domains which currently unused but
+>    might be required for sched_balance_newidle_far.
+
+   + We can change the "default" level by boot option 'relax_domain_level='.
 
 Signed-off-by: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
 
 ---
- Documentation/cpusets.txt |   72 ++++++++++++++++++++++++++++++++++++++++++++--
- 1 file changed, 70 insertions(+), 2 deletions(-)
+ include/asm-ia64/topology.h |    2 -
+ include/asm-sh/topology.h   |    2 -
+ include/asm-x86/topology.h  |    2 -
+ include/linux/sched.h       |   23 +++++++++++-
+ kernel/cpuset.c             |   61 ++++++++++++++++++++++++++++++++
+ kernel/sched.c              |   82 +++++++++++++++++++++++++++++++++++++++++---
+ kernel/sched_fair.c         |    4 +-
+ 7 files changed, 165 insertions(+), 11 deletions(-)
 
-Index: GIT-torvalds/Documentation/cpusets.txt
+Index: GIT-torvalds/include/linux/sched.h
 ===================================================================
---- GIT-torvalds.orig/Documentation/cpusets.txt
-+++ GIT-torvalds/Documentation/cpusets.txt
-@@ -8,6 +8,7 @@ Portions Copyright (c) 2004-2006 Silicon
- Modified by Paul Jackson <pj@sgi.com>
- Modified by Christoph Lameter <clameter@sgi.com>
- Modified by Paul Menage <menage@google.com>
-+Modified by Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+--- GIT-torvalds.orig/include/linux/sched.h
++++ GIT-torvalds/include/linux/sched.h
+@@ -704,6 +704,7 @@ enum cpu_idle_type {
+ #define SD_POWERSAVINGS_BALANCE	256	/* Balance for power savings */
+ #define SD_SHARE_PKG_RESOURCES	512	/* Domain members share cpu pkg resources */
+ #define SD_SERIALIZE		1024	/* Only a single load balancing instance */
++#define SD_WAKE_IDLE_FAR	2048	/* Gain latency sacrificing cache hit */
 
- CONTENTS:
- =========
-@@ -20,7 +21,8 @@ CONTENTS:
-   1.5 What is memory_pressure ?
-   1.6 What is memory spread ?
-   1.7 What is sched_load_balance ?
--  1.8 How do I use cpusets ?
-+  1.8 What is sched_relax_domain_level ?
-+  1.9 How do I use cpusets ?
- 2. Usage Examples and Syntax
-   2.1 Basic Usage
-   2.2 Adding/removing cpus
-@@ -497,7 +499,73 @@ the cpuset code to update these sched do
- partition requested with the current, and updates its sched domains,
- removing the old and adding the new, for each change.
+ #define BALANCE_FOR_MC_POWER	\
+ 	(sched_smt_power_savings ? SD_POWERSAVINGS_BALANCE : 0)
+@@ -733,6 +734,24 @@ struct sched_group {
+ 	u32 reciprocal_cpu_power;
+ };
 
--1.8 How do I use cpusets ?
++enum sched_domain_level {
++	SD_LV_NONE = 0,
++	SD_LV_SIBLING,
++	SD_LV_MC,
++	SD_LV_CPU,
++	SD_LV_NODE,
++	SD_LV_ALLNODES,
++	SD_LV_MAX
++};
 +
-+1.8 What is sched_relax_domain_level ?
-+--------------------------------------
++struct sched_domain_attr {
++	int relax_domain_level;
++};
 +
-+In sched domain, the scheduler migrates tasks in 2 ways; periodic load
-+balance on tick, and at time of some schedule events.
++#define SD_ATTR_INIT	(struct sched_domain_attr) {	\
++	.relax_domain_level = -1,			\
++}
 +
-+When a task is woken up, scheduler try to move the task on idle CPU.
-+For example, if a task A running on CPU X activates another task B
-+on the same CPU X, and if CPU Y is X's sibling and performing idle,
-+then scheduler migrate task B to CPU Y so that task B can start on
-+CPU Y without waiting task A on CPU X.
-+
-+And if a CPU run out of tasks in its runqueue, the CPU try to pull
-+extra tasks from other busy CPUs to help them before it is going to
-+be idle.
-+
-+Of course it takes some searching cost to find movable tasks and/or
-+idle CPUs, the scheduler might not search all CPUs in the domain
-+everytime.  In fact, in some architectures, the searching ranges on
-+events are limited in the same socket or node where the CPU locates,
-+while the load balance on tick searches all.
-+
-+For example, assume CPU Z is relatively far from CPU X.  Even if CPU Z
-+is idle while CPU X and the siblings are busy, scheduler can't migrate
-+woken task B from X to Z since it is out of its searching range.
-+As the result, task B on CPU X need to wait task A or wait load balance
-+on the next tick.  For some applications in special situation, waiting
-+1 tick may be too long.
-+
-+The 'sched_relax_domain_level' file allows you to request changing
-+this searching range as you like.  This file takes int value which
-+indicates size of searching range in levels ideally as follows,
-+otherwise initial value -1 that indicates the cpuset has no request.
-+
-+  -1  : no request. use system default or follow request of others.
-+   0  : no search.
-+   1  : search siblings (hyperthreads in a core).
-+   2  : search cores in a package.
-+   3  : search cpus in a node [= system wide on non-NUMA system]
-+ ( 4  : search nodes in a chunk of node [on NUMA system] )
-+ ( 5~ : search system wide [on NUMA system])
-+
-+This file is per-cpuset and affect the sched domain where the cpuset
-+belongs to.  Therefore if the flag 'sched_load_balance' of a cpuset
-+is disabled, then 'sched_relax_domain_level' have no effect since
-+there is no sched domain belonging the cpuset.
-+
-+If multiple cpusets are overlapping and hence they form a single sched
-+domain, the largest value among those is used.  Be careful, if one
-+requests 0 and others are -1 then 0 is used.
-+
-+Note that modifying this file will have both good and bad effects,
-+and whether it is acceptable or not will be depend on your situation.
-+Don't modify this file if you are not sure.
-+
-+If your situation is:
-+ - The migration costs between each cpu can be assumed considerably
-+   small(for you) due to your special application's behavior or
-+   special hardware support for CPU cache etc.
-+ - The searching cost doesn't have impact(for you) or you can make
-+   the searching cost enough small by managing cpuset to compact etc.
-+ - The latency is required even it sacrifices cache hit rate etc.
-+then increasing 'sched_relax_domain_level' would benefit you.
-+
-+
-+1.9 How do I use cpusets ?
- --------------------------
+ struct sched_domain {
+ 	/* These fields must be setup */
+ 	struct sched_domain *parent;	/* top domain must be null terminated */
+@@ -750,6 +769,7 @@ struct sched_domain {
+ 	unsigned int wake_idx;
+ 	unsigned int forkexec_idx;
+ 	int flags;			/* See SD_* */
++	enum sched_domain_level level;
 
- In order to minimize the impact of cpusets on critical kernel
+ 	/* Runtime fields. */
+ 	unsigned long last_balance;	/* init to jiffies. units in jiffies */
+@@ -789,7 +809,8 @@ struct sched_domain {
+ #endif
+ };
+
+-extern void partition_sched_domains(int ndoms_new, cpumask_t *doms_new);
++extern void partition_sched_domains(int ndoms_new, cpumask_t *doms_new,
++				    struct sched_domain_attr *dattr_new);
+ extern int arch_reinit_sched_domains(void);
+
+ #endif	/* CONFIG_SMP */
+Index: GIT-torvalds/kernel/sched.c
+===================================================================
+--- GIT-torvalds.orig/kernel/sched.c
++++ GIT-torvalds/kernel/sched.c
+@@ -6582,11 +6582,42 @@ static void init_sched_groups_power(int
+ 	} while (group != child->groups);
+ }
+
++static int default_relax_domain_level = -1;
++
++static int __init setup_relax_domain_level(char *str)
++{
++	default_relax_domain_level = simple_strtoul(str, NULL, 0);
++	return 1;
++}
++__setup("relax_domain_level=", setup_relax_domain_level);
++
++static void set_domain_attribute(struct sched_domain *sd,
++				 struct sched_domain_attr *attr)
++{
++	int request;
++
++	if (!attr || attr->relax_domain_level < 0) {
++		if (default_relax_domain_level < 0)
++			return;
++		else
++			request = default_relax_domain_level;
++	} else
++		request = attr->relax_domain_level;
++	if (request < sd->level) {
++		/* turn off idle balance on this domain */
++		sd->flags &= ~(SD_WAKE_IDLE|SD_BALANCE_NEWIDLE);
++	} else {
++		/* turn on idle balance on this domain */
++		sd->flags |= (SD_WAKE_IDLE_FAR|SD_BALANCE_NEWIDLE);
++	}
++}
++
+ /*
+  * Build sched domains for a given set of cpus and attach the sched domains
+  * to the individual cpus
+  */
+-static int build_sched_domains(const cpumask_t *cpu_map)
++static int __build_sched_domains(const cpumask_t *cpu_map,
++				 struct sched_domain_attr *attr)
+ {
+ 	int i;
+ 	struct root_domain *rd;
+@@ -6626,7 +6657,9 @@ static int build_sched_domains(const cpu
+ 				SD_NODES_PER_DOMAIN*cpus_weight(nodemask)) {
+ 			sd = &per_cpu(allnodes_domains, i);
+ 			*sd = SD_ALLNODES_INIT;
++			sd->level = SD_LV_ALLNODES;
+ 			sd->span = *cpu_map;
++			set_domain_attribute(sd, attr);
+ 			cpu_to_allnodes_group(i, cpu_map, &sd->groups);
+ 			p = sd;
+ 			sd_allnodes = 1;
+@@ -6635,7 +6668,9 @@ static int build_sched_domains(const cpu
+
+ 		sd = &per_cpu(node_domains, i);
+ 		*sd = SD_NODE_INIT;
++		sd->level = SD_LV_NODE;
+ 		sd->span = sched_domain_node_span(cpu_to_node(i));
++		set_domain_attribute(sd, attr);
+ 		sd->parent = p;
+ 		if (p)
+ 			p->child = sd;
+@@ -6645,7 +6680,9 @@ static int build_sched_domains(const cpu
+ 		p = sd;
+ 		sd = &per_cpu(phys_domains, i);
+ 		*sd = SD_CPU_INIT;
++		sd->level = SD_LV_CPU;
+ 		sd->span = nodemask;
++		set_domain_attribute(sd, attr);
+ 		sd->parent = p;
+ 		if (p)
+ 			p->child = sd;
+@@ -6655,8 +6692,10 @@ static int build_sched_domains(const cpu
+ 		p = sd;
+ 		sd = &per_cpu(core_domains, i);
+ 		*sd = SD_MC_INIT;
++		sd->level = SD_LV_MC;
+ 		sd->span = cpu_coregroup_map(i);
+ 		cpus_and(sd->span, sd->span, *cpu_map);
++		set_domain_attribute(sd, attr);
+ 		sd->parent = p;
+ 		p->child = sd;
+ 		cpu_to_core_group(i, cpu_map, &sd->groups);
+@@ -6666,8 +6705,10 @@ static int build_sched_domains(const cpu
+ 		p = sd;
+ 		sd = &per_cpu(cpu_domains, i);
+ 		*sd = SD_SIBLING_INIT;
++		sd->level = SD_LV_SIBLING;
+ 		sd->span = per_cpu(cpu_sibling_map, i);
+ 		cpus_and(sd->span, sd->span, *cpu_map);
++		set_domain_attribute(sd, attr);
+ 		sd->parent = p;
+ 		p->child = sd;
+ 		cpu_to_cpu_group(i, cpu_map, &sd->groups);
+@@ -6840,8 +6881,15 @@ error:
+ #endif
+ }
+
++static int build_sched_domains(const cpumask_t *cpu_map)
++{
++	return __build_sched_domains(cpu_map, NULL);
++}
++
+ static cpumask_t *doms_cur;	/* current sched domains */
+ static int ndoms_cur;		/* number of sched domains in 'doms_cur' */
++static struct sched_domain_attr *dattr_cur;	/* attribues of custom domains
++						   in 'doms_cur' */
+
+ /*
+  * Special case: If a kmalloc of a doms_cur partition (array of
+@@ -6868,6 +6916,7 @@ static int arch_init_sched_domains(const
+ 	doms_cur = kmalloc(sizeof(cpumask_t), GFP_KERNEL);
+ 	if (!doms_cur)
+ 		doms_cur = &fallback_doms;
++	dattr_cur = NULL;
+ 	cpus_andnot(*doms_cur, *cpu_map, cpu_isolated_map);
+ 	err = build_sched_domains(doms_cur);
+ 	register_sched_domain_sysctl();
+@@ -6896,6 +6945,22 @@ static void detach_destroy_domains(const
+ 	arch_destroy_sched_domains(cpu_map);
+ }
+
++/* handle null as "default" */
++static int dattrs_equal(struct sched_domain_attr *cur, int idx_cur,
++			struct sched_domain_attr *new, int idx_new)
++{
++	struct sched_domain_attr tmp;
++
++	/* fast path */
++	if (!new && !cur)
++		return 1;
++
++	tmp = SD_ATTR_INIT;
++	return !memcmp(cur ? (cur + idx_cur) : &tmp,
++			new ? (new + idx_new) : &tmp,
++			sizeof(struct sched_domain_attr));
++}
++
+ /*
+  * Partition sched domains as specified by the 'ndoms_new'
+  * cpumasks in the array doms_new[] of cpumasks. This compares
+@@ -6917,7 +6982,8 @@ static void detach_destroy_domains(const
+  *
+  * Call with hotplug lock held
+  */
+-void partition_sched_domains(int ndoms_new, cpumask_t *doms_new)
++void partition_sched_domains(int ndoms_new, cpumask_t *doms_new,
++			     struct sched_domain_attr *dattr_new)
+ {
+ 	int i, j;
+
+@@ -6929,13 +6995,15 @@ void partition_sched_domains(int ndoms_n
+ 	if (doms_new == NULL) {
+ 		ndoms_new = 1;
+ 		doms_new = &fallback_doms;
++		dattr_new = NULL;
+ 		cpus_andnot(doms_new[0], cpu_online_map, cpu_isolated_map);
+ 	}
+
+ 	/* Destroy deleted domains */
+ 	for (i = 0; i < ndoms_cur; i++) {
+ 		for (j = 0; j < ndoms_new; j++) {
+-			if (cpus_equal(doms_cur[i], doms_new[j]))
++			if (cpus_equal(doms_cur[i], doms_new[j])
++			    && dattrs_equal(dattr_cur, i, dattr_new, j))
+ 				goto match1;
+ 		}
+ 		/* no match - a current sched domain not in new doms_new[] */
+@@ -6947,11 +7015,13 @@ match1:
+ 	/* Build new domains */
+ 	for (i = 0; i < ndoms_new; i++) {
+ 		for (j = 0; j < ndoms_cur; j++) {
+-			if (cpus_equal(doms_new[i], doms_cur[j]))
++			if (cpus_equal(doms_new[i], doms_cur[j])
++			    && dattrs_equal(dattr_new, i, dattr_cur, j))
+ 				goto match2;
+ 		}
+ 		/* no match - add a new doms_new */
+-		build_sched_domains(doms_new + i);
++		__build_sched_domains(doms_new + i,
++					dattr_new ? dattr_new + i : NULL);
+ match2:
+ 		;
+ 	}
+@@ -6959,7 +7029,9 @@ match2:
+ 	/* Remember the new sched domains */
+ 	if (doms_cur != &fallback_doms)
+ 		kfree(doms_cur);
++	kfree(dattr_cur);	/* kfree(NULL) is safe */
+ 	doms_cur = doms_new;
++	dattr_cur = dattr_new;
+ 	ndoms_cur = ndoms_new;
+
+ 	register_sched_domain_sysctl();
+Index: GIT-torvalds/kernel/sched_fair.c
+===================================================================
+--- GIT-torvalds.orig/kernel/sched_fair.c
++++ GIT-torvalds/kernel/sched_fair.c
+@@ -957,7 +957,9 @@ static int wake_idle(int cpu, struct tas
+ 		return cpu;
+
+ 	for_each_domain(cpu, sd) {
+-		if (sd->flags & SD_WAKE_IDLE) {
++		if ((sd->flags & SD_WAKE_IDLE)
++		    || ((sd->flags & SD_WAKE_IDLE_FAR)
++			&& !task_hot(p, task_rq(p)->clock, sd))) {
+ 			cpus_and(tmp, sd->span, p->cpus_allowed);
+ 			for_each_cpu_mask(i, tmp) {
+ 				if (idle_cpu(i)) {
+Index: GIT-torvalds/kernel/cpuset.c
+===================================================================
+--- GIT-torvalds.orig/kernel/cpuset.c
++++ GIT-torvalds/kernel/cpuset.c
+@@ -98,6 +98,9 @@ struct cpuset {
+ 	/* partition number for rebuild_sched_domains() */
+ 	int pn;
+
++	/* for custom sched domain */
++	int relax_domain_level;
++
+ 	/* used for walking a cpuset heirarchy */
+ 	struct list_head stack_list;
+ };
+@@ -478,6 +481,16 @@ static int cpusets_overlap(struct cpuset
+ 	return cpus_intersects(a->cpus_allowed, b->cpus_allowed);
+ }
+
++static void
++update_domain_attr(struct sched_domain_attr *dattr, struct cpuset *c)
++{
++	if (!dattr)
++		return;
++	if (dattr->relax_domain_level < c->relax_domain_level)
++		dattr->relax_domain_level = c->relax_domain_level;
++	return;
++}
++
+ /*
+  * rebuild_sched_domains()
+  *
+@@ -553,12 +566,14 @@ static void rebuild_sched_domains(void)
+ 	int csn;		/* how many cpuset ptrs in csa so far */
+ 	int i, j, k;		/* indices for partition finding loops */
+ 	cpumask_t *doms;	/* resulting partition; i.e. sched domains */
++	struct sched_domain_attr *dattr;  /* attributes for custom domains */
+ 	int ndoms;		/* number of sched domains in result */
+ 	int nslot;		/* next empty doms[] cpumask_t slot */
+
+ 	q = NULL;
+ 	csa = NULL;
+ 	doms = NULL;
++	dattr = NULL;
+
+ 	/* Special case for the 99% of systems with one, full, sched domain */
+ 	if (is_sched_load_balance(&top_cpuset)) {
+@@ -566,6 +581,11 @@ static void rebuild_sched_domains(void)
+ 		doms = kmalloc(sizeof(cpumask_t), GFP_KERNEL);
+ 		if (!doms)
+ 			goto rebuild;
++		dattr = kmalloc(sizeof(struct sched_domain_attr), GFP_KERNEL);
++		if (dattr) {
++			*dattr = SD_ATTR_INIT;
++			update_domain_attr(dattr, &top_cpuset);
++		}
+ 		*doms = top_cpuset.cpus_allowed;
+ 		goto rebuild;
+ 	}
+@@ -622,6 +642,7 @@ restart:
+ 	doms = kmalloc(ndoms * sizeof(cpumask_t), GFP_KERNEL);
+ 	if (!doms)
+ 		goto rebuild;
++	dattr = kmalloc(ndoms * sizeof(struct sched_domain_attr), GFP_KERNEL);
+
+ 	for (nslot = 0, i = 0; i < csn; i++) {
+ 		struct cpuset *a = csa[i];
+@@ -644,12 +665,15 @@ restart:
+ 			}
+
+ 			cpus_clear(*dp);
++			if (dattr)
++				*(dattr + nslot) = SD_ATTR_INIT;
+ 			for (j = i; j < csn; j++) {
+ 				struct cpuset *b = csa[j];
+
+ 				if (apn == b->pn) {
+ 					cpus_or(*dp, *dp, b->cpus_allowed);
+ 					b->pn = -1;
++					update_domain_attr(dattr, b);
+ 				}
+ 			}
+ 			nslot++;
+@@ -660,7 +684,7 @@ restart:
+ rebuild:
+ 	/* Have scheduler rebuild sched domains */
+ 	get_online_cpus();
+-	partition_sched_domains(ndoms, doms);
++	partition_sched_domains(ndoms, doms, dattr);
+ 	put_online_cpus();
+
+ done:
+@@ -668,6 +692,7 @@ done:
+ 		kfifo_free(q);
+ 	kfree(csa);
+ 	/* Don't kfree(doms) -- partition_sched_domains() does that. */
++	/* Don't kfree(dattr) -- partition_sched_domains() does that. */
+ }
+
+ static inline int started_after_time(struct task_struct *t1,
+@@ -1011,6 +1036,21 @@ static int update_memory_pressure_enable
+ 	return 0;
+ }
+
++static int update_relax_domain_level(struct cpuset *cs, char *buf)
++{
++	int val = simple_strtol(buf, NULL, 10);
++
++	if (val < 0)
++		val = -1;
++
++	if (val != cs->relax_domain_level) {
++		cs->relax_domain_level = val;
++		rebuild_sched_domains();
++	}
++
++	return 0;
++}
++
+ /*
+  * update_flag - read a 0 or a 1 in a file and update associated flag
+  * bit:	the bit to update (CS_CPU_EXCLUSIVE, CS_MEM_EXCLUSIVE,
+@@ -1202,6 +1242,7 @@ typedef enum {
+ 	FILE_CPU_EXCLUSIVE,
+ 	FILE_MEM_EXCLUSIVE,
+ 	FILE_SCHED_LOAD_BALANCE,
++	FILE_SCHED_RELAX_DOMAIN_LEVEL,
+ 	FILE_MEMORY_PRESSURE_ENABLED,
+ 	FILE_MEMORY_PRESSURE,
+ 	FILE_SPREAD_PAGE,
+@@ -1256,6 +1297,9 @@ static ssize_t cpuset_common_file_write(
+ 	case FILE_SCHED_LOAD_BALANCE:
+ 		retval = update_flag(CS_SCHED_LOAD_BALANCE, cs, buffer);
+ 		break;
++	case FILE_SCHED_RELAX_DOMAIN_LEVEL:
++		retval = update_relax_domain_level(cs, buffer);
++		break;
+ 	case FILE_MEMORY_MIGRATE:
+ 		retval = update_flag(CS_MEMORY_MIGRATE, cs, buffer);
+ 		break;
+@@ -1354,6 +1398,9 @@ static ssize_t cpuset_common_file_read(s
+ 	case FILE_SCHED_LOAD_BALANCE:
+ 		*s++ = is_sched_load_balance(cs) ? '1' : '0';
+ 		break;
++	case FILE_SCHED_RELAX_DOMAIN_LEVEL:
++		s += sprintf(s, "%d", cs->relax_domain_level);
++		break;
+ 	case FILE_MEMORY_MIGRATE:
+ 		*s++ = is_memory_migrate(cs) ? '1' : '0';
+ 		break;
+@@ -1424,6 +1471,13 @@ static struct cftype cft_sched_load_bala
+ 	.private = FILE_SCHED_LOAD_BALANCE,
+ };
+
++static struct cftype cft_sched_relax_domain_level = {
++	.name = "sched_relax_domain_level",
++	.read = cpuset_common_file_read,
++	.write = cpuset_common_file_write,
++	.private = FILE_SCHED_RELAX_DOMAIN_LEVEL,
++};
++
+ static struct cftype cft_memory_migrate = {
+ 	.name = "memory_migrate",
+ 	.read = cpuset_common_file_read,
+@@ -1475,6 +1529,9 @@ static int cpuset_populate(struct cgroup
+ 		return err;
+ 	if ((err = cgroup_add_file(cont, ss, &cft_sched_load_balance)) < 0)
+ 		return err;
++	if ((err = cgroup_add_file(cont, ss,
++					&cft_sched_relax_domain_level)) < 0)
++		return err;
+ 	if ((err = cgroup_add_file(cont, ss, &cft_memory_pressure)) < 0)
+ 		return err;
+ 	if ((err = cgroup_add_file(cont, ss, &cft_spread_page)) < 0)
+@@ -1559,6 +1616,7 @@ static struct cgroup_subsys_state *cpuse
+ 	cs->mems_allowed = NODE_MASK_NONE;
+ 	cs->mems_generation = cpuset_mems_generation++;
+ 	fmeter_init(&cs->fmeter);
++	cs->relax_domain_level = -1;
+
+ 	cs->parent = parent;
+ 	number_of_cpusets++;
+@@ -1631,6 +1689,7 @@ int __init cpuset_init(void)
+ 	fmeter_init(&top_cpuset.fmeter);
+ 	top_cpuset.mems_generation = cpuset_mems_generation++;
+ 	set_bit(CS_SCHED_LOAD_BALANCE, &top_cpuset.flags);
++	top_cpuset.relax_domain_level = -1;
+
+ 	err = register_filesystem(&cpuset_fs_type);
+ 	if (err < 0)
+Index: GIT-torvalds/include/asm-ia64/topology.h
+===================================================================
+--- GIT-torvalds.orig/include/asm-ia64/topology.h
++++ GIT-torvalds/include/asm-ia64/topology.h
+@@ -93,7 +93,7 @@ void build_cpu_to_node_map(void);
+ 	.cache_nice_tries	= 2,			\
+ 	.busy_idx		= 3,			\
+ 	.idle_idx		= 2,			\
+-	.newidle_idx		= 0, /* unused */	\
++	.newidle_idx		= 2,			\
+ 	.wake_idx		= 1,			\
+ 	.forkexec_idx		= 1,			\
+ 	.flags			= SD_LOAD_BALANCE	\
+Index: GIT-torvalds/include/asm-sh/topology.h
+===================================================================
+--- GIT-torvalds.orig/include/asm-sh/topology.h
++++ GIT-torvalds/include/asm-sh/topology.h
+@@ -16,7 +16,7 @@
+ 	.cache_nice_tries	= 2,			\
+ 	.busy_idx		= 3,			\
+ 	.idle_idx		= 2,			\
+-	.newidle_idx		= 0,			\
++	.newidle_idx		= 2,			\
+ 	.wake_idx		= 1,			\
+ 	.forkexec_idx		= 1,			\
+ 	.flags			= SD_LOAD_BALANCE	\
+Index: GIT-torvalds/include/asm-x86/topology.h
+===================================================================
+--- GIT-torvalds.orig/include/asm-x86/topology.h
++++ GIT-torvalds/include/asm-x86/topology.h
+@@ -129,7 +129,7 @@ extern unsigned long node_remap_size[];
+
+ # define SD_CACHE_NICE_TRIES	2
+ # define SD_IDLE_IDX		2
+-# define SD_NEWIDLE_IDX		0
++# define SD_NEWIDLE_IDX		2
+ # define SD_FORKEXEC_IDX	1
+
+ #endif
+
