@@ -1,78 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753843AbYDDEkS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753366AbYDDEvL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753843AbYDDEkS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Apr 2008 00:40:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751337AbYDDEkF
+	id S1753366AbYDDEvL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Apr 2008 00:51:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751338AbYDDEu7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Apr 2008 00:40:05 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:58958 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751159AbYDDEkE (ORCPT
+	Fri, 4 Apr 2008 00:50:59 -0400
+Received: from outbound.icp-qv1-irony-out1.iinet.net.au ([203.59.1.108]:26634
+	"EHLO outbound.icp-qv1-irony-out1.iinet.net.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751159AbYDDEu7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Apr 2008 00:40:04 -0400
-Date: Thu, 3 Apr 2008 21:39:37 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Lubos Lunak <l.lunak@suse.cz>,
-       Jan Kara <jack@suse.cz>, Petr Cvek <petr.cvek@tul.cz>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Adrian Bunk <bunk@kernel.org>, Natalie Protasevich <protasnb@gmail.com>
-Subject: Re: 2.6.25-rc8-git2: Reported regressions from 2.6.24
-Message-Id: <20080403213937.8344433e.akpm@linux-foundation.org>
-In-Reply-To: <alpine.LFD.1.00.0804031649470.14670@woody.linux-foundation.org>
-References: <pdj7pZVURbL.A.42H.kDW9HB@albercik>
-	<alpine.LFD.1.00.0804031649470.14670@woody.linux-foundation.org>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+	Fri, 4 Apr 2008 00:50:59 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AvgAANBQ9Ud8qMuH/2dsb2JhbAAIrA8
+X-IronPort-AV: E=Sophos;i="4.25,602,1199631600"; 
+   d="scan'208";a="311496795"
+Subject: Re: [patch/rfc 2/4] pcf875x I2C GPIO expander driver
+From: Ben Nizette <bn@niasdigital.com>
+To: Trent Piepho <tpiepho@freescale.com>
+Cc: David Brownell <david-b@pacbell.net>, Jean Delvare <khali@linux-fr.org>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       Mike Frysinger <vapier.adi@gmail.com>
+In-Reply-To: <Pine.LNX.4.64.0804032014190.20532@t2.domain.actdsltmp>
+References: <200710291809.29936.david-b@pacbell.net>
+	 <200711301040.54777.david-b@pacbell.net>
+	 <20071130211332.49a21a6b@hyperion.delvare>
+	 <200711301259.22666.david-b@pacbell.net>
+	 <Pine.LNX.4.64.0804031844500.11928@t2.domain.actdsltmp>
+	 <1207277135.4082.37.camel@moss.renham>
+	 <Pine.LNX.4.64.0804032014190.20532@t2.domain.actdsltmp>
+Content-Type: text/plain
+Organization: Nias Digital
+Date: Fri, 04 Apr 2008 15:57:56 +1100
+Message-Id: <1207285076.4082.75.camel@moss.renham>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.12.0 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 3 Apr 2008 16:59:02 -0700 (PDT) Linus Torvalds <torvalds@linux-foundation.org> wrote:
+
+On Thu, 2008-04-03 at 20:33 -0700, Trent Piepho wrote:
+
+> Always too slow posting my patches.  I wrote this two months ago when there
+> wasn't anything else.
+
+I've got something similar myself; mine's more complex, handles and
+reports IRQs but isn't near releasable.  Happens :-)
 
 > 
+> A char device allows better permissions and could be more efficient, if one
+> really wants to do extensive control of gpio lines from userspace.  I can see
+> how it might be preferrable in some instances.
 > 
-> On Fri, 4 Apr 2008, Rafael J. Wysocki wrote:
-> > 
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10390
-> > Subject		: Oops while reading /proc/ioports or /proc/iomem
-> > Submitter	: Jan Kara <jack@suse.cz>
-> > Date		: 2008-04-03 15:25 (1 days old)
-> > References	: http://lkml.org/lkml/2008/4/3/149
+> The nice thing about sysfs is that you don't need any extra software to
+> interact with it.  It's very convienent when you're just trying to debug the
+> gpio driver you're writing or verify that the gpio lines you just connected
+> are doing things.  It's also nice to be able to say something like:
+> # run these commands to un-write protect flash
+> echo out > /sys/class/gpio/MPC85XX:5/direction
+> echo 1 > /sys/class/gpio/MPC85XX:5/value
 > 
-> This sounds very much like some module registered IO ports/memory and was 
-> then unloaded without unregistering them.
-> 
-> It's a bit hard to guess which module it is, though. The oops says "[last 
-> unloaded: parport]", so that's likely to be the area.
-> 
-> So I *suspect* this patch might be relevant. Bug apparently introduced in 
-> f63fd7e299ee13da071ecfce2b90b58c5e1562b1 ("parport_pc: detection for 
-> SuperIO IT87XX POST") by Petr Cvek.
-> 
-> Petr?
-> 
-> 		Linus
-> 
-> ---
->  drivers/parport/parport_pc.c |    3 +--
->  1 files changed, 1 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/parport/parport_pc.c b/drivers/parport/parport_pc.c
-> index d76d37b..a858089 100644
-> --- a/drivers/parport/parport_pc.c
-> +++ b/drivers/parport/parport_pc.c
-> @@ -1568,9 +1568,8 @@ static void __devinit detect_and_report_it87(void)
->  		outb(r | 8, 0x2F);
->  		outb(0x02, 0x2E);	/* Lock */
->  		outb(0x02, 0x2F);
-> -
-> -		release_region(0x2e, 1);
->  	}
-> +	release_region(0x2e, 1);
->  }
->  #endif /* CONFIG_PARPORT_PC_SUPERIO */
+simple_gpio allows
+echo "O1" > /dev/gpioN
+to do what you've got above, no extra points there ;-)
 
-Looks very correct to me.
+> Instead of a complicated process that includes directions for creating the
+> correct device file, compiling a program that will set gpio lines, downloading
+> said program's source, and so on.
+
+Creating the device file is largely mdev/udev's job, most people don't
+have to worry about it.
+
+As I mentioned before (and in my review of simple_gpio) I really like
+the idea of having labels attached to the gpio numbers in some way; as
+it stands I see that as simple_gpio's only major weakness.
+
+David, you're kinda the gatekeeper here; any input from you on which
+approach is to be preferred, essential features etc?
+
+--Ben.
+
