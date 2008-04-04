@@ -1,62 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760710AbYDDM50@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760791AbYDDM5n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760710AbYDDM50 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Apr 2008 08:57:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759433AbYDDMzA
+	id S1760791AbYDDM5n (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Apr 2008 08:57:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759455AbYDDMzD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Apr 2008 08:55:00 -0400
-Received: from wine.ocn.ne.jp ([122.1.235.145]:63790 "EHLO smtp.wine.ocn.ne.jp"
+	Fri, 4 Apr 2008 08:55:03 -0400
+Received: from wine.ocn.ne.jp ([122.1.235.145]:63792 "EHLO smtp.wine.ocn.ne.jp"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757732AbYDDMys (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1757739AbYDDMys (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 4 Apr 2008 08:54:48 -0400
-Message-Id: <20080404122405.351321002@I-love.SAKURA.ne.jp>
+Message-Id: <20080404122407.851577589@I-love.SAKURA.ne.jp>
 References: <20080404122242.867070732@I-love.SAKURA.ne.jp>
 User-Agent: quilt/0.46-1
-Date: Fri, 04 Apr 2008 21:23:03 +0900
+Date: Fri, 04 Apr 2008 21:23:09 +0900
 From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
 To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
        linux-security-module@vger.kernel.org
 Cc: Kentaro Takeda <takedakn@nttdata.co.jp>,
        Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>,
        Toshiharu Harada <haradats@nttdata.co.jp>
-Subject: [TOMOYO #7 21/30] Capability restriction part.
-Content-Disposition: inline; filename=tomoyo-capability-restriction-part.patch
+Subject: [TOMOYO #7 27/30] Environment variable restriction part.
+Content-Disposition: inline; filename=tomoyo-environment-variable-restriction-part.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-TOMOYO Linux uses per-a-domain capability, an approach that associate
-capabilities with each domain, and assign a domain for each process.
-The advantages of this approach are that
+This file controls environment variable names that can be passed to execve().
 
-(1) Minimum capabilities required for a process is directly given
-    compared to setting/clearing/inheriting bit fields of a process's
-    capability value.
-
-(2) It can support as many types of capabilities as you want.
-    Regarding per-a-task capability, you need to allocate memory for
-    individual "task_struct". Thus, the number of supportable capabilities
-    is bound by the width of variable in bits (i.e. 32 or 64).
-    Regarding per-a-domain capability, you need to allocate memory for
-    individual domains. But you can allocate memory dynamically.
-    Thus, the number of supportable capabilities is not bounded to 32 or 64.
-
-I can support up to 65536 types of capability,
-but currently there are not so many capability hooks inserted.
-Adding more capability hooks is a future work.
+TOMOYO checks environment variable's names passed to execve()
+because some environment variables affect to the behavior of program
+like argv[0].
 
 Signed-off-by: Kentaro Takeda <takedakn@nttdata.co.jp>
 Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
 Signed-off-by: Toshiharu Harada <haradats@nttdata.co.jp>
 ---
- fs/tomoyo_capability.c |  223 +++++++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 223 insertions(+)
+ fs/tomoyo_env.c |  297 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 297 insertions(+)
 
 --- /dev/null
-+++ linux-2.6.25-rc8-mm1/fs/tomoyo_capability.c
-@@ -0,0 +1,223 @@
++++ linux-2.6.25-rc8-mm1/fs/tomoyo_env.c
+@@ -0,0 +1,297 @@
 +/*
-+ * fs/tomoyo_capability.c
++ * fs/tomoyo_env.c
 + *
 + * Implementation of the Domain-Based Mandatory Access Control.
 + *
@@ -71,133 +57,197 @@ Signed-off-by: Toshiharu Harada <haradats@nttdata.co.jp>
 +#include <linux/realpath.h>
 +
 +/**
-+ * cap_operation2name - Convert capability operation to capability message.
++ * audit_env_log - Audit environment variable name log.
 + *
-+ * @operation: Type of operation.
-+ *
-+ * Returns the name of capability.
-+ */
-+static const char *cap_operation2name(const u8 operation)
-+{
-+	static const char *capability_name[TOMOYO_MAX_CAPABILITY_INDEX] = {
-+		[TOMOYO_INET_STREAM_SOCKET_CREATE]  =
-+		"socket(PF_INET, SOCK_STREAM)",
-+		[TOMOYO_INET_STREAM_SOCKET_LISTEN]  =
-+		"listen(PF_INET, SOCK_STREAM)",
-+		[TOMOYO_INET_STREAM_SOCKET_CONNECT] =
-+		"connect(PF_INET, SOCK_STREAM)",
-+		[TOMOYO_USE_INET_DGRAM_SOCKET]      =
-+		"socket(PF_INET, SOCK_DGRAM)",
-+		[TOMOYO_USE_INET_RAW_SOCKET]        =
-+		"socket(PF_INET, SOCK_RAW)",
-+		[TOMOYO_USE_ROUTE_SOCKET]           = "socket(PF_ROUTE)",
-+		[TOMOYO_USE_PACKET_SOCKET]          = "socket(PF_PACKET)",
-+		[TOMOYO_SYS_MOUNT]                  = "sys_mount()",
-+		[TOMOYO_SYS_UMOUNT]                 = "sys_umount()",
-+		[TOMOYO_SYS_REBOOT]                 = "sys_reboot()",
-+		[TOMOYO_SYS_CHROOT]                 = "sys_chroot()",
-+		[TOMOYO_SYS_KILL]                   = "sys_kill()",
-+		[TOMOYO_SYS_VHANGUP]                = "sys_vhangup()",
-+		[TOMOYO_SYS_SETTIME]                = "sys_settimeofday()",
-+		[TOMOYO_SYS_NICE]                   = "sys_nice()",
-+		[TOMOYO_SYS_SETHOSTNAME]            = "sys_sethostname()",
-+		[TOMOYO_USE_KERNEL_MODULE]          = "kernel_module",
-+		[TOMOYO_CREATE_FIFO]                = "mknod(FIFO)",
-+		[TOMOYO_CREATE_BLOCK_DEV]           = "mknod(BDEV)",
-+		[TOMOYO_CREATE_CHAR_DEV]            = "mknod(CDEV)",
-+		[TOMOYO_CREATE_UNIX_SOCKET]         = "mknod(SOCKET)",
-+		[TOMOYO_SYS_LINK]                   = "sys_link()",
-+		[TOMOYO_SYS_SYMLINK]                = "sys_symlink()",
-+		[TOMOYO_SYS_RENAME]                 = "sys_rename()",
-+		[TOMOYO_SYS_UNLINK]                 = "sys_unlink()",
-+		[TOMOYO_SYS_CHMOD]                  = "sys_chmod()",
-+		[TOMOYO_SYS_CHOWN]                  = "sys_chown()",
-+		[TOMOYO_SYS_IOCTL]                  = "sys_ioctl()",
-+		[TOMOYO_SYS_KEXEC_LOAD]             = "sys_kexec_load()",
-+		[TOMOYO_SYS_PIVOT_ROOT]             = "sys_pivot_root()",
-+		[TOMOYO_SYS_PTRACE]                 = "sys_ptrace()",
-+	};
-+	if (operation < TOMOYO_MAX_CAPABILITY_INDEX)
-+		return capability_name[operation];
-+	return NULL;
-+}
-+
-+/**
-+ * audit_capability_log - Audit capability log.
-+ *
-+ * @operation:  Type of operation.
++ * @env:        The name of environment variable.
 + * @is_granted: True if this is a granted log.
 + * @profile:    Profile number used.
 + * @mode:       Access control mode used.
 + *
 + * Returns 0 on success, negative value otherwise.
 + */
-+static int audit_capability_log(const u8 operation, const bool is_granted,
-+				const u8 profile, const u8 mode)
++static int audit_env_log(const char *env, const bool is_granted,
++			 const u8 profile, const u8 mode)
 +{
 +	char *buf;
-+	int len = 64;
++	int len;
 +	int len2;
 +	if (ccs_can_save_audit_log(is_granted) < 0)
 +		return -ENOMEM;
++	len = strlen(env) + 64;
 +	buf = ccs_init_audit_log(&len, profile, mode, NULL);
 +	if (!buf)
 +		return -ENOMEM;
 +	len2 = strlen(buf);
-+	snprintf(buf + len2, len - len2 - 1, KEYWORD_ALLOW_CAPABILITY "%s\n",
-+		 ccs_cap2keyword(operation));
++	snprintf(buf + len2, len - len2 - 1, KEYWORD_ALLOW_ENV "%s\n", env);
 +	return ccs_write_audit_log(buf, is_granted);
 +}
 +
++/* Structure for "allow_env" keyword. */
++struct globally_usable_env_entry {
++	struct list1_head list;
++	const struct path_info *env;
++	bool is_deleted;
++};
++
++/* The list for "struct globally_usable_env_entry". */
++static LIST1_HEAD(globally_usable_env_list);
++
 +/**
-+ * update_capability_acl - Update "struct capability_acl_record" list.
++ * update_globally_usable_env_entry - Update "struct globally_usable_env_entry" list.
 + *
-+ * @operation: Type of operation.
++ * @env:       The name of environment variable.
++ * @is_delete: True if it is a delete request.
++ *
++ * Returns 0 on success, negative value otherwise.
++ */
++static int update_globally_usable_env_entry(const char *env,
++					    const bool is_delete)
++{
++	struct globally_usable_env_entry *new_entry;
++	struct globally_usable_env_entry *ptr;
++	static DEFINE_MUTEX(lock);
++	const struct path_info *saved_env;
++	int error = -ENOMEM;
++	if (!ccs_is_correct_path(env, 0, 0, 0, __func__) || strchr(env, '='))
++		return -EINVAL;
++	saved_env = ccs_save_name(env);
++	if (!saved_env)
++		return -ENOMEM;
++	mutex_lock(&lock);
++	list1_for_each_entry(ptr, &globally_usable_env_list, list) {
++		if (ptr->env != saved_env)
++			continue;
++		ptr->is_deleted = is_delete;
++		error = 0;
++		goto out;
++	}
++	if (is_delete) {
++		error = -ENOENT;
++		goto out;
++	}
++	new_entry = ccs_alloc_element(sizeof(*new_entry));
++	if (!new_entry)
++		goto out;
++	new_entry->env = saved_env;
++	list1_add_tail_mb(&new_entry->list, &globally_usable_env_list);
++	error = 0;
++ out:
++	mutex_unlock(&lock);
++	ccs_update_counter(CCS_UPDATES_COUNTER_EXCEPTION_POLICY);
++	return error;
++}
++
++/**
++ * is_globally_usable_env - Check whether the given environment variable is acceptable for all domains.
++ *
++ * @env: The name of environment variable.
++ *
++ * Returns true if @env is globally permitted environment variable's name,
++ * false otherwise.
++ */
++static bool is_globally_usable_env(const struct path_info *env)
++{
++	struct globally_usable_env_entry *ptr;
++	list1_for_each_entry(ptr, &globally_usable_env_list, list) {
++		if (!ptr->is_deleted && ccs_path_matches_pattern(env, ptr->env))
++			return true;
++	}
++	return false;
++}
++
++/**
++ * ccs_write_globally_usable_env_policy - Write "struct globally_usable_env_entry" list.
++ *
++ * @data:      String to parse.
++ * @is_delete: True if it is a delete request.
++ *
++ * Returns 0 on success, negative value otherwise.
++ */
++int ccs_write_globally_usable_env_policy(char *data, const bool is_delete)
++{
++	return update_globally_usable_env_entry(data, is_delete);
++}
++
++/**
++ * ccs_read_globally_usable_env_policy - Read "struct globally_usable_env_entry" list.
++ *
++ * @head: Pointer to "struct ccs_io_buffer".
++ *
++ * Returns 0 on success, false otherwise.
++ */
++bool ccs_read_globally_usable_env_policy(struct ccs_io_buffer *head)
++{
++	struct list1_head *pos;
++	list1_for_each_cookie(pos, head->read_var2,
++			      &globally_usable_env_list) {
++		struct globally_usable_env_entry *ptr;
++		ptr = list1_entry(pos, struct globally_usable_env_entry, list);
++		if (ptr->is_deleted)
++			continue;
++		if (!ccs_io_printf(head, KEYWORD_ALLOW_ENV "%s\n",
++				   ptr->env->name))
++			goto out;
++	}
++	return true;
++ out:
++	return false;
++}
++
++/**
++ * update_env_entry - Update "struct env_acl_record" list.
++ *
++ * @env:       The name of environment variable.
 + * @domain:    Pointer to "struct domain_info".
 + * @condition: Pointer to "struct condition_list". May be NULL.
 + * @is_delete: True if it is a delete request.
 + *
 + * Returns 0 on success, negative value otherwise.
 + */
-+static int update_capability_acl(const u8 operation, struct domain_info *domain,
-+				 const struct condition_list *condition,
-+				 const bool is_delete)
++static int update_env_entry(const char *env, struct domain_info *domain,
++			    const struct condition_list *condition,
++			    const bool is_delete)
 +{
 +	struct acl_info *ptr;
-+	struct capability_acl_record *acl;
++	struct env_acl_record *acl;
++	const struct path_info *saved_env;
 +	int error = -ENOMEM;
-+	if (!domain)
++	if (!ccs_is_correct_path(env, 0, 0, 0, __func__) || strchr(env, '='))
 +		return -EINVAL;
++	saved_env = ccs_save_name(env);
++	if (!saved_env)
++		return -ENOMEM;
++
 +	mutex_lock(&domain_acl_lock);
 +	if (is_delete)
 +		goto delete;
 +	list1_for_each_entry(ptr, &domain->acl_info_list, list) {
-+		if (ccs_acl_type1(ptr) != TYPE_CAPABILITY_ACL)
++		if (ccs_acl_type1(ptr) != TYPE_ENV_ACL)
 +			continue;
 +		if (ccs_get_condition_part(ptr) != condition)
 +			continue;
-+		acl = container_of(ptr, struct capability_acl_record, head);
-+		if (acl->operation != operation)
++		acl = container_of(ptr, struct env_acl_record, head);
++		if (acl->env != saved_env)
 +			continue;
 +		error = ccs_add_domain_acl(NULL, ptr);
 +		goto out;
 +	}
 +	/* Not found. Append it to the tail. */
-+	acl = ccs_alloc_acl_element(TYPE_CAPABILITY_ACL, condition);
++	acl = ccs_alloc_acl_element(TYPE_ENV_ACL, condition);
 +	if (!acl)
 +		goto out;
-+	acl->operation = operation;
++	acl->env = saved_env;
 +	error = ccs_add_domain_acl(domain, &acl->head);
 +	goto out;
 + delete:
 +	error = -ENOENT;
 +	list1_for_each_entry(ptr, &domain->acl_info_list, list) {
-+		if (ccs_acl_type2(ptr) != TYPE_CAPABILITY_ACL)
++		if (ccs_acl_type2(ptr) != TYPE_ENV_ACL)
 +			continue;
 +		if (ccs_get_condition_part(ptr) != condition)
 +			continue;
-+		acl = container_of(ptr, struct capability_acl_record, head);
-+		if (acl->operation != operation)
++		acl = container_of(ptr, struct env_acl_record, head);
++		if (acl->env != saved_env)
 +			continue;
 +		error = ccs_del_domain_acl(ptr);
 +		break;
@@ -208,54 +258,72 @@ Signed-off-by: Toshiharu Harada <haradats@nttdata.co.jp>
 +}
 +
 +/**
-+ * ccs_capable - Check permission for capability.
++ * check_env_acl - Check permission for environment variable's name.
 + *
-+ * @operation: Type of operation.
++ * @environ: The name of environment variable.
 + *
-+ * Returns true on success, false otherwise.
++ * Returns 0 on success, negative value otherwise.
 + */
-+bool ccs_capable(const u8 operation)
++static int check_env_acl(const char *environ)
 +{
-+	struct domain_info * const domain = current->domain_info;
++	const struct domain_info *domain = current->domain_info;
++	int error = -EPERM;
 +	struct acl_info *ptr;
-+	const u8 profile = current->domain_info->profile;
-+	const u8 mode = ccs_check_capability_flags(operation);
-+	const bool is_enforce = (mode == 3);
-+	bool found = false;
-+	if (!mode)
-+		return true;
++	struct path_info env;
++	env.name = environ;
++	ccs_fill_path_info(&env);
 +	list1_for_each_entry(ptr, &domain->acl_info_list, list) {
-+		struct capability_acl_record *acl;
-+		if (ccs_acl_type2(ptr) != TYPE_CAPABILITY_ACL)
++		struct env_acl_record *acl;
++		if (ccs_acl_type2(ptr) != TYPE_ENV_ACL)
 +			continue;
-+		acl = container_of(ptr, struct capability_acl_record, head);
-+		if (acl->operation != operation ||
-+		    !ccs_check_condition(ptr, NULL))
++		acl = container_of(ptr, struct env_acl_record, head);
++		if (!ccs_check_condition(ptr, NULL) ||
++		    !ccs_path_matches_pattern(&env, acl->env))
 +			continue;
 +		ccs_update_condition(ptr);
-+		found = true;
++		error = 0;
 +		break;
 +	}
-+	audit_capability_log(operation, found, profile, mode);
-+	if (found)
-+		return true;
-+	if (ccs_verbose_mode())
-+		printk(KERN_WARNING "TOMOYO-%s: %s denied for %s\n",
-+		       ccs_get_msg(is_enforce), cap_operation2name(operation),
-+		       ccs_get_last_name(domain));
-+	if (is_enforce)
-+		return !ccs_check_supervisor("%s\n"
-+					    KEYWORD_ALLOW_CAPABILITY "%s\n",
-+					    domain->domainname->name,
-+					    ccs_cap2keyword(operation));
-+	if (mode == 1 && ccs_check_domain_quota(domain))
-+		update_capability_acl(operation, domain, NULL, false);
-+	return true;
++	if (error &&
++	    (domain->flags & DOMAIN_FLAGS_IGNORE_GLOBAL_ALLOW_ENV) == 0 &&
++	    is_globally_usable_env(&env))
++		error = 0;
++	return error;
 +}
-+EXPORT_SYMBOL(ccs_capable); /* for net/unix/af_unix.c */
 +
 +/**
-+ * ccs_write_capability_policy - Write "struct capability_acl_record" list.
++ * ccs_check_env_perm - Check permission for environment variable's name.
++ *
++ * @env:     The name of environment variable.
++ * @profile: Profile number.
++ * @mode:    Access control mode.
++ *
++ * Returns 0 on success, negative value otherwise.
++ */
++int ccs_check_env_perm(const char *env, const u8 profile, const u8 mode)
++{
++	int error = 0;
++	struct domain_info * const domain = current->domain_info;
++	const bool is_enforce = (mode == 3);
++	if (!env || !*env)
++		return 0;
++	error = check_env_acl(env);
++	audit_env_log(env, !error, profile, mode);
++	if (!error)
++		return 0;
++	if (ccs_verbose_mode())
++		printk(KERN_WARNING "TOMOYO-%s: Environ %s denied for %s\n",
++		       ccs_get_msg(is_enforce), env, ccs_get_last_name(domain));
++	if (is_enforce)
++		return ccs_check_supervisor("%s\n" KEYWORD_ALLOW_ENV "%s\n",
++					    domain->domainname->name, env);
++	if (mode == 1 && ccs_check_domain_quota(domain))
++		update_env_entry(env, domain, NULL, false);
++	return 0;
++}
++
++/**
++ * ccs_write_env_policy - Write "struct env_acl_record" list.
 + *
 + * @data:      String to parse.
 + * @domain:    Pointer to "struct domain_info".
@@ -264,19 +332,11 @@ Signed-off-by: Toshiharu Harada <haradats@nttdata.co.jp>
 + *
 + * Returns 0 on success, negative value otherwise.
 + */
-+int ccs_write_capability_policy(char *data, struct domain_info *domain,
-+				const struct condition_list *condition,
-+				const bool is_delete)
++int ccs_write_env_policy(char *data, struct domain_info *domain,
++			 const struct condition_list *condition,
++			 const bool is_delete)
 +{
-+	u8 capability;
-+	for (capability = 0; capability < TOMOYO_MAX_CAPABILITY_INDEX;
-+	     capability++) {
-+		if (strcmp(data, ccs_cap2keyword(capability)))
-+			continue;
-+		return update_capability_acl(capability, domain, condition,
-+					     is_delete);
-+	}
-+	return -EINVAL;
++	return update_env_entry(data, domain, condition, is_delete);
 +}
 
 -- 
