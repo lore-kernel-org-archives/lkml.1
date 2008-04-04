@@ -1,91 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758580AbYDDJUG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757576AbYDDJWu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758580AbYDDJUG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Apr 2008 05:20:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751580AbYDDJTz
+	id S1757576AbYDDJWu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Apr 2008 05:22:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752295AbYDDJWm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Apr 2008 05:19:55 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:55166 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750925AbYDDJTy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Apr 2008 05:19:54 -0400
-Date: Fri, 4 Apr 2008 10:19:49 +0100
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Harvey Harrison <harvey.harrison@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, josh@freedesktop.org
-Subject: Re: [PATCH 7/7] asm-generic: suppress sparse warning in ioctl.h
-Message-ID: <20080404091949.GE9785@ZenIV.linux.org.uk>
-References: <1207182818.5740.26.camel@brick> <alpine.LFD.1.00.0804021752040.14670@woody.linux-foundation.org> <20080403013420.GV9785@ZenIV.linux.org.uk> <alpine.LFD.1.00.0804021848140.14670@woody.linux-foundation.org> <20080403015946.GX9785@ZenIV.linux.org.uk> <alpine.LFD.1.00.0804021950260.14670@woody.linux-foundation.org> <20080403025546.GB9785@ZenIV.linux.org.uk>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080403025546.GB9785@ZenIV.linux.org.uk>
-User-Agent: Mutt/1.4.2.3i
+	Fri, 4 Apr 2008 05:22:42 -0400
+Received: from smtp4-g19.free.fr ([212.27.42.30]:55230 "EHLO smtp4-g19.free.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752185AbYDDJWl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Apr 2008 05:22:41 -0400
+Message-ID: <47F5F35F.2020508@free.fr>
+Date: Fri, 04 Apr 2008 11:22:39 +0200
+From: John Sigler <linux.kernel@free.fr>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061108 SeaMonkey/1.0.6
+MIME-Version: 1.0
+To: linux-rt-users@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: Linux 11-minute mode (RTC update)
+References: <47F5E194.5040409@free.fr>
+In-Reply-To: <47F5E194.5040409@free.fr>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 03, 2008 at 03:55:46AM +0100, Al Viro wrote:
-> On Wed, Apr 02, 2008 at 07:51:08PM -0700, Linus Torvalds wrote:
-> > 
-> > 
-> > On Thu, 3 Apr 2008, Al Viro wrote:
-> > > 
-> > > Um...  But that's _not_ a link-time constant - simply an int variable not
-> > > defined in any object file...
-> > 
-> > Ahh, you're right, my bad. We could change it to take the address of it, 
-> > though. I assume gcc is happy with that too?
+John Sigler wrote:
+
+> I run Linux kernel 2.6.22.1-rt9 and ntpd 4.2.4p0
 > 
-> gcc might be, but what are you going to do with it?  Expression is an
-> integer one, after all - in cases that had triggered that thread it
-> was used (after & 0xff) as array index.
+> # adjtimex --print
+>          mode: 0
+>        offset: 77
+>     frequency: -1309904
+>      maxerror: 493576
+>      esterror: 50
+>        status: 1
+> time_constant: 6
+>     precision: 1
+>     tolerance: 33554432
+>          tick: 10000
+>      raw time:  1207230744s 183249us = 1207230744.183249
 > 
-> Besides, logically it's _not_ a constant at all - not even a base + constant,
-> after using it in such expression...
+> In my setup, STA_UNSYNC (0x0040, clock unsynchronized) is 0.
+> 
+> Thus, ntp_synced() returns 1.
+> 
+> Thus the kernel should write the system time to the RTC every
+> 11 minutes; but it does not.
+> 
+> The relevant code is in sync_cmos_clock()
+> 
+> http://lxr.linux.no/linux/kernel/time/ntp.c#L188
+> 
+> I've added several printk() to this function, and it appears
+> that it is never called.
+> 
+> The relevant timer is defined with the following macro.
+> 
+> static DEFINE_TIMER(sync_cmos_timer, sync_cmos_clock, 0, 0);
+> 
+> which expands to
+> 
+> static struct timer_list sync_cmos_timer =
+> {
+>   .function = sync_cmos_clock,
+>   .expires  = 0,
+>   .data     = 0,
+>   .base     = &boot_tvec_bases
+> };
+> 
+> The problem seems to be that this timer is never armed, to bootstrap
+> the process. It seems there should be a call to mod_timer() somewhere.
+> 
+> do_adjtimex() calls notify_cmos_timer() unconditionally.
+> 
+> static void notify_cmos_timer(void)
+> {
+>   if (no_sync_cmos_clock)
+>     mod_timer(&sync_cmos_timer, jiffies + 1);
+> }
+> 
+> What are the semantics of notify_cmos_timer?
+> What is it supposed to do?
+> 
+> And what is 'no_sync_cmos_clock' supposed to mean?
+> /* Disable the cmos update - used by virtualization and embedded */
+> int no_sync_cmos_clock  __read_mostly;
+> Why would we (re)arm the timer when 'no_sync_cmos_clock' is true?
 
-OK, I think I see how to do it.
-	* new bit in ->flags - Weak_Int_Const
-	* parser sets it by almost the same rules as Int_Const_Expr, except
-that ?:, || and && simply inherit it from the first argument.
-	* evaluate strips it in the same cases as Int_Const_Expr, except that
-recalculation for ?:, || and && ignores everything except the first argument.
-	* when expand sees VALUE && VALUE or VALUE || VALUE and the second
-argument is not to be ignored, Weak_Int_Const on node is removed unless the
-second argument also had it.
-	* when expand sees VALUE ? : and overwrites it with appropriate
-branch, have Weak_Int_Const on result iff both the original node and
-overwriting argument used to have it.
-	* bad_integer_constant_expression() checks either Int_Const_Expr or
-Weak_Int_Const, depending on flag set by -W<something>
+For those wondering what this "11-minute mode" is, I'll quote the
+man page for hwclock. ( http://linux.die.net/man/8/hwclock )
 
-Should work, AFAICS...  If expression has no Weak_Int_Const out of parser,
-it's definitely not an integer constant expression, even with lax rules.
-If expression loses Weak_Int_Const on evaluate, we must have a cast to
-something other than integer type in it => not an integer constant expression.
-If expression loses Weak_Int_Const on expand, we must have found a
-subexpression that _might_ be ignored, had not been an integer constant
-expression by weak rules and actually was not ignored => not an integer
-constant expression.
+<quote>
 
-In no case we could gain Weak_Int_Const and if expand ended up with
-EXPR_VALUE and no commas in evaluated subexpressions, having Weak_Int_Const
-is equivalent to what we want.
+Automatic Hardware Clock Synchronization By the Kernel
 
-Handling of expr->flags might get a bit clumsy, but other than that it seems
-to be easy enough...  Comments?
+You should be aware of another way that the Hardware Clock is kept 
+synchronized in some systems. The Linux kernel has a mode wherein it 
+copies the System Time to the Hardware Clock every 11 minutes. This is 
+a good mode to use when you are using something sophisticated like ntp 
+to keep your System Time synchronized. (ntp is a way to keep your 
+System Time synchronized either to a time server somewhere on the 
+network or to a radio clock hooked up to your system. See RFC 1305).
 
-One thing: behaviour of -Wall is getting more and more unpleasant.  On
-kernel builds sparse gets hit with it due to CFLAGS and that kills all
-defaults for sparse options.  That -Wall is there for gcc; having it make
-sparse to lose all defaults is wrong, especially since gcc does *not*
-turn each warning on on that.
+This mode (we'll call it "11 minute mode") is off until something 
+turns it on. The ntp daemon xntpd is one thing that turns it on. You 
+can turn it off by running anything, including hwclock --hctosys, that 
+sets the System Time the old fashioned way.
 
-For this flag it gets particulary nasty - we have two behaviours (strict
-C99 and relaxed one) and the former warns on the things that are OK by
-the latter.  So the natural thing to do would be to have -W<something>
-to trigger the former, right?  Now think what we'll get on the kernel
-build and recall what had started this thread...
+To see if it is on or off, use the command adjtimex --print and look 
+at the value of "status". If the "64" bit of this number (expressed in 
+binary) equal to 0, 11 minute mode is on. Otherwise, it is off.
+
+If your system runs with 11 minute mode on, don't use hwclock --adjust 
+or hwclock --hctosys. You'll just make a mess. It is acceptable to use 
+a hwclock --hctosys at startup time to get a reasonable System Time 
+until your system is able to set the System Time from the external 
+source and start 11 minute mode.
+
+</quote>
+
+Apparently, drivers using one or more timer_lists typically arm the 
+timer in their open or init function. My problem is: I don't think 
+there is an init function for the NTP sub-system.
+
+Regards.
