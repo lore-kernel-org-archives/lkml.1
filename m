@@ -1,542 +1,377 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757382AbYDDIGt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757882AbYDDIKI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757382AbYDDIGt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Apr 2008 04:06:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753640AbYDDIGe
+	id S1757882AbYDDIKI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Apr 2008 04:10:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754819AbYDDIJv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Apr 2008 04:06:34 -0400
-Received: from e35.co.us.ibm.com ([32.97.110.153]:34943 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752574AbYDDIGa (ORCPT
+	Fri, 4 Apr 2008 04:09:51 -0400
+Received: from zone0.gcu-squad.org ([212.85.147.21]:33186 "EHLO
+	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754817AbYDDIJs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Apr 2008 04:06:30 -0400
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: Paul Menage <menage@google.com>, Pavel Emelianov <xemul@openvz.org>
-Cc: Hugh Dickins <hugh@veritas.com>, Sudhir Kumar <skumar@linux.vnet.ibm.com>,
-       YAMAMOTO Takashi <yamamoto@valinux.co.jp>, lizf@cn.fujitsu.com,
-       linux-kernel@vger.kernel.org, taka@valinux.co.jp, linux-mm@kvack.org,
-       David Rientjes <rientjes@google.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Date: Fri, 04 Apr 2008 13:35:44 +0530
-Message-Id: <20080404080544.26313.38199.sendpatchset@localhost.localdomain>
-Subject: [-mm] Add an owner to the mm_struct (v8)
+	Fri, 4 Apr 2008 04:09:48 -0400
+Date: Fri, 4 Apr 2008 10:09:33 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: Trent Piepho <tpiepho@freescale.com>
+Cc: David Brownell <david-b@pacbell.net>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: [patch/rfc 2/4] pcf875x I2C GPIO expander driver
+Message-ID: <20080404100933.077bee33@hyperion.delvare>
+In-Reply-To: <Pine.LNX.4.64.0804031844500.11928@t2.domain.actdsltmp>
+References: <200710291809.29936.david-b@pacbell.net>
+	<200711301040.54777.david-b@pacbell.net>
+	<20071130211332.49a21a6b@hyperion.delvare>
+	<200711301259.22666.david-b@pacbell.net>
+	<Pine.LNX.4.64.0804031844500.11928@t2.domain.actdsltmp>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Trent,
 
+On Thu, 3 Apr 2008 19:06:27 -0700 (PDT), Trent Piepho wrote:
+> On Fri, 30 Nov 2007, David Brownell wrote:
+> > On Friday 30 November 2007, Jean Delvare wrote:
+> >>
+> >> So the user-space interface would be part of the generic GPIO
+> >> infrastructure? I like the idea.
+> >
+> > I thought that would make sense too! :)  Someone would need to
+> > write the code though.  Having such a mechanism would provide
+> > another "carrot" to migrate folk towards the gpiolib core.
+> 
+> Here's some code to do this.  It's not entirely perfect yet, but it is
+> usable.  I create a directory in sysfs (class/gpio/<name>:<num>) for each
+> gpio line.  The are files in this directory to allow reading/setting the
+> gpio value and direction.  One can also see the label associated with the
+> gpio if gpiolib is keeping track of labels (i.e.  debugfs is on).  sysfs
+> also creates a gpio directory under the device associated with the gpio
+> lines (this is a new thing one needs to add) with that device's gpios. 
+> Actually, think these are "real" sysfs directories, and the ones in
+> /sys/class are copies made by sysfs.
+> 
+> ----------------------------------------------------------------------------
+> From c65d0fb239b79de7f595e47edb2fb641217e7309 Mon Sep 17 00:00:00 2001
+> From: Trent Piepho <tpiepho@freescale.com>
+> Date: Thu, 3 Apr 2008 18:37:23 -0700
+> Subject: GPIO: Create a sysfs gpio class for messing with GPIOs from userspace
+> 
+> struct gpio_chip gets a new field, dev, which points to the struct device
+> of whatever the gpio lines are part of.  If this is non-NULL, gpio class
+> entries are created for this device when gpiochip_add() is called, by a new
+> function gpiochip_classdev_register().
+> 
+> It creates a sysfs directory for each gpio the chip defines.  Each device
+> has three attributes so far, direction, value, and label.  label is
+> read-only, and will only be present if DEBUG_FS is on, as without DEBUG_FS
+> the gpio layer doesn't keep track of any labels.
+> 
+> Maybe the value file should be changed to RO or WO depending on direction?
+> 
+> Setting the direction auto-allocates the gpio, which is not really what I
+> wanted.  Maybe I should call the chip set method directly?
+> 
+> There are almost certainly a bunch of races with gpio_desc access.
+> 
+> No code has been written yet to remove the devices from the class when the
+> class is removed.
+> 
+> The GPIO_CLASS define/ifdef code should either be removed, or turned into a
+> Kconfig variable that can be used turn this feature on and off.
 
-Changelog v7
-------------
-1. Make mm_need_new_owner() more readable
-2. Remove extra white space from init_task.h
+Purely technical review (I can't say whether this interface is better
+than what has been proposed elsewhere or not):
 
-Changelog v6
-------------
+> 
+> Signed-off-by: Trent Piepho <tpiepho@freescale.com>
+> ---
+>   drivers/gpio/gpiolib.c     |  188 ++++++++++++++++++++++++++++++++++++++++++++
+>   include/asm-generic/gpio.h |    2 +
+>   2 files changed, 190 insertions(+), 0 deletions(-)
+> 
+> diff --git a/drivers/gpio/gpiolib.c b/drivers/gpio/gpiolib.c
+> index d8db2f8..db0677d 100644
+> --- a/drivers/gpio/gpiolib.c
+> +++ b/drivers/gpio/gpiolib.c
+> @@ -18,6 +18,7 @@
+>    * only an instruction or two per bit.
+>    */
+> 
+> +#define GPIO_CLASS	1
+> 
+>   /* When debugging, extend minimal trust to callers and platform code.
+>    * Also emit diagnostic messages that may help initial bringup, when
+> @@ -47,6 +48,9 @@ struct gpio_desc {
+>   #ifdef CONFIG_DEBUG_FS
+>   	const char		*label;
+>   #endif
+> +#if GPIO_CLASS
+> +	struct device		*dev;
+> +#endif
+>   };
+>   static struct gpio_desc gpio_desc[ARCH_NR_GPIOS];
+> 
+> @@ -57,6 +61,174 @@ static inline void desc_set_label(struct gpio_desc *d, const char *label)
+>   #endif
+>   }
+> 
+> +#if GPIO_CLASS
+> +#include <linux/device.h>
+> +#include <linux/string.h>
+> +#include <linux/ctype.h>
+> +#include <linux/err.h>
+> +
+> +static struct class *gpio_class;
+> +
+> +static ssize_t gpio_direction_show(struct device *dev,
+> +		struct device_attribute *attr, char *buf)
+> +{
+> +	const struct gpio_desc *gdesc = dev_get_drvdata(dev);
+> +
+> +	strcpy(buf, test_bit(FLAG_IS_OUT, &gdesc->flags) ? "out\n" : "in\n\0");
+> +
+> +	return 5;
 
-1. Fix typos
-2. Document the use of delay_group_leader()
+Confusing construct... I suggest using sprintf instead, which will
+automatically return the correct number of bytes for you.
 
-Changelog v5
-------------
-Remove the hooks for .owner from init_task.h and move it to init/main.c
+> +}
+> +
+> +static ssize_t gpio_direction_store(struct device *dev,
+> +		struct device_attribute *attr, const char *buf, size_t size)
+> +{
+> +	const struct gpio_desc *gdesc = dev_get_drvdata(dev);
+> +	int d, n = gdesc - gpio_desc;
+> +
+> +	if (size >= 3 && !strncmp(buf, "out", 3)) {
+> +		d = 1;
+> +	} else if (size >= 2 && !strncmp(buf, "in", 2)) {
+> +		d = 0;
 
-Changelog v4
-------------
-1. Release rcu_read_lock() after acquiring task_lock(). Also get a reference
-   to the task_struct
-2. Change cgroup mm_owner_changed callback to callback only if the
-   cgroup of old and new task is different and to pass the old and new
-   cgroups instead of task pointers
-3. Port the patch to 2.6.25-rc8-mm1
+As far as I know, the string you receive from sysfs is guaranteed to be
+NUL-terminated, so the size checks are not needed.
 
-Changelog v3
-------------
+> +	} else {
+> +		d = simple_strtoul(buf, NULL, 0);
 
-1. Add mm->owner change callbacks using cgroups
+This exposes to user-space the so far internal-only decision to encode
+output as 1 and input as 0. I don't see much benefit in doing this, in
+particular when you don't check for errors so for example an input of
+"Out" would result in value 0 i.e. input mode. I'd rather support only
+"in" and "out" as valid values and return -EINVAL otherwise.
 
-This patch removes the mem_cgroup member from mm_struct and instead adds
-an owner. This approach was suggested by Paul Menage. The advantage of
-this approach is that, once the mm->owner is known, using the subsystem
-id, the cgroup can be determined. It also allows several control groups
-that are virtually grouped by mm_struct, to exist independent of the memory
-controller i.e., without adding mem_cgroup's for each controller,
-to mm_struct.
+> +	}
+> +
+> +	if (d)
+> +		gpio_direction_output(n, 0);
+> +	else
+> +		gpio_direction_input(n);
+> +
+> +	return size;
+> +}
+> +
+> +static DEVICE_ATTR(direction, 0644, gpio_direction_show, gpio_direction_store);
+> +
+> +static ssize_t gpio_value_show(struct device *dev,
+> +			       struct device_attribute *attr, char *buf)
+> +{
+> +	const struct gpio_desc *gdesc = dev_get_drvdata(dev);
+> +	int n = gdesc - gpio_desc;
+> +
+> +	if (test_bit(FLAG_IS_OUT, &gdesc->flags)) {
+> +		return -EINVAL;
+> +		/* strcpy(buf, "-1\n"); return 4; */ /* Or this? */
 
-A new config option CONFIG_MM_OWNER is added and the memory resource
-controller selects this config option.
+Why not just return gpio_get_value(n) in all cases? User might want to
+know which value is currently being output.
 
-This patch also adds cgroup callbacks to notify subsystems when mm->owner
-changes. The mm_cgroup_changed callback is called with the task_lock()
-of the new task held and is called just prior to changing the mm->owner.
+> +	}
+> +	return sprintf(buf, "%d\n", gpio_get_value(n)) + 1;
 
-I am indebted to Paul Menage for the several reviews of this patchset
-and helping me make it lighter and simpler.
+Why "+ 1"? As far as I know you are not supposed to return a trailing
+NUL to user-space.
 
-This patch was tested on a powerpc box, it was compiled with both the
-MM_OWNER config turned on and off.
+> +}
+> +
+> +static ssize_t gpio_value_store(struct device *dev,
+> +		struct device_attribute *attr, const char *buf, size_t size)
+> +{
+> +	const struct gpio_desc *gdesc = dev_get_drvdata(dev);
+> +	int v, n = gdesc - gpio_desc;
+> +
+> +	if (!test_bit(FLAG_IS_OUT, &gdesc->flags))
+> +		return -EINVAL;
+> +
+> +	v = simple_strtoul(buf, NULL, 0);
 
-After the thread group leader exits, it's moved to init_css_state by
-cgroup_exit(), thus all future charges from runnings threads would
-be redirected to the init_css_set's subsystem.
+We have strict_strtoul() now.
 
-Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
----
+> +	gpio_set_value(n, v);
+> +
+> +	return size;
+> +}
+> +
+> +static DEVICE_ATTR(value, 0644, gpio_value_show, gpio_value_store);
+> +
+> +#ifdef CONFIG_DEBUG_FS
+> +static ssize_t gpio_label_show(struct device *dev,
+> +			       struct device_attribute *attr, char *buf)
+> +{
+> +	const struct gpio_desc *gdesc = dev_get_drvdata(dev);
+> +
+> +	if (!gdesc->label) {
+> +		strcpy(buf, "free\n");
+> +		return 6;
 
- fs/exec.c                  |    1 
- include/linux/cgroup.h     |   15 +++++++
- include/linux/memcontrol.h |   16 +-------
- include/linux/mm_types.h   |    5 +-
- include/linux/sched.h      |   13 ++++++
- init/Kconfig               |   15 +++++++
- init/main.c                |    1 
- kernel/cgroup.c            |   30 +++++++++++++++
- kernel/exit.c              |   89 +++++++++++++++++++++++++++++++++++++++++++++
- kernel/fork.c              |   11 ++++-
- mm/memcontrol.c            |   24 +-----------
- 11 files changed, 181 insertions(+), 39 deletions(-)
+Again sprintf would seem safer than a hard-coded length.
 
-diff -puN fs/exec.c~memory-controller-add-mm-owner fs/exec.c
---- linux-2.6.25-rc8/fs/exec.c~memory-controller-add-mm-owner	2008-04-03 22:43:27.000000000 +0530
-+++ linux-2.6.25-rc8-balbir/fs/exec.c	2008-04-03 22:43:27.000000000 +0530
-@@ -735,6 +735,7 @@ static int exec_mmap(struct mm_struct *m
- 	tsk->active_mm = mm;
- 	activate_mm(active_mm, mm);
- 	task_unlock(tsk);
-+	mm_update_next_owner(mm);
- 	arch_pick_mmap_layout(mm);
- 	if (old_mm) {
- 		up_read(&old_mm->mmap_sem);
-diff -puN include/linux/cgroup.h~memory-controller-add-mm-owner include/linux/cgroup.h
---- linux-2.6.25-rc8/include/linux/cgroup.h~memory-controller-add-mm-owner	2008-04-03 22:43:27.000000000 +0530
-+++ linux-2.6.25-rc8-balbir/include/linux/cgroup.h	2008-04-03 22:43:27.000000000 +0530
-@@ -300,6 +300,12 @@ struct cgroup_subsys {
- 			struct cgroup *cgrp);
- 	void (*post_clone)(struct cgroup_subsys *ss, struct cgroup *cgrp);
- 	void (*bind)(struct cgroup_subsys *ss, struct cgroup *root);
-+	/*
-+	 * This routine is called with the task_lock of mm->owner held
-+	 */
-+	void (*mm_owner_changed)(struct cgroup_subsys *ss,
-+					struct cgroup *old,
-+					struct cgroup *new);
- 	int subsys_id;
- 	int active;
- 	int disabled;
-@@ -385,4 +391,13 @@ static inline int cgroupstats_build(stru
- 
- #endif /* !CONFIG_CGROUPS */
- 
-+#ifdef CONFIG_MM_OWNER
-+extern void
-+cgroup_mm_owner_callbacks(struct task_struct *old, struct task_struct *new);
-+#else /* !CONFIG_MM_OWNER */
-+static inline void
-+cgroup_mm_owner_callbacks(struct task_struct *old, struct task_struct *new)
-+{
-+}
-+#endif /* CONFIG_MM_OWNER */
- #endif /* _LINUX_CGROUP_H */
-diff -puN include/linux/init_task.h~memory-controller-add-mm-owner include/linux/init_task.h
-diff -puN include/linux/memcontrol.h~memory-controller-add-mm-owner include/linux/memcontrol.h
---- linux-2.6.25-rc8/include/linux/memcontrol.h~memory-controller-add-mm-owner	2008-04-03 22:43:27.000000000 +0530
-+++ linux-2.6.25-rc8-balbir/include/linux/memcontrol.h	2008-04-03 22:43:27.000000000 +0530
-@@ -27,9 +27,6 @@ struct mm_struct;
- 
- #ifdef CONFIG_CGROUP_MEM_RES_CTLR
- 
--extern void mm_init_cgroup(struct mm_struct *mm, struct task_struct *p);
--extern void mm_free_cgroup(struct mm_struct *mm);
--
- #define page_reset_bad_cgroup(page)	((page)->page_cgroup = 0)
- 
- extern struct page_cgroup *page_get_page_cgroup(struct page *page);
-@@ -48,8 +45,10 @@ extern unsigned long mem_cgroup_isolate_
- extern void mem_cgroup_out_of_memory(struct mem_cgroup *mem, gfp_t gfp_mask);
- int task_in_mem_cgroup(struct task_struct *task, const struct mem_cgroup *mem);
- 
-+extern struct mem_cgroup *mem_cgroup_from_task(struct task_struct *p);
-+
- #define mm_match_cgroup(mm, cgroup)	\
--	((cgroup) == rcu_dereference((mm)->mem_cgroup))
-+	((cgroup) == mem_cgroup_from_task((mm)->owner))
- 
- extern int mem_cgroup_prepare_migration(struct page *page);
- extern void mem_cgroup_end_migration(struct page *page);
-@@ -73,15 +72,6 @@ extern long mem_cgroup_calc_reclaim_inac
- 				struct zone *zone, int priority);
- 
- #else /* CONFIG_CGROUP_MEM_RES_CTLR */
--static inline void mm_init_cgroup(struct mm_struct *mm,
--					struct task_struct *p)
--{
--}
--
--static inline void mm_free_cgroup(struct mm_struct *mm)
--{
--}
--
- static inline void page_reset_bad_cgroup(struct page *page)
- {
- }
-diff -puN include/linux/mm_types.h~memory-controller-add-mm-owner include/linux/mm_types.h
---- linux-2.6.25-rc8/include/linux/mm_types.h~memory-controller-add-mm-owner	2008-04-03 22:43:27.000000000 +0530
-+++ linux-2.6.25-rc8-balbir/include/linux/mm_types.h	2008-04-03 22:43:27.000000000 +0530
-@@ -230,8 +230,9 @@ struct mm_struct {
- 	/* aio bits */
- 	rwlock_t		ioctx_list_lock;	/* aio lock */
- 	struct kioctx		*ioctx_list;
--#ifdef CONFIG_CGROUP_MEM_RES_CTLR
--	struct mem_cgroup *mem_cgroup;
-+#ifdef CONFIG_MM_OWNER
-+	struct task_struct *owner;	/* The thread group leader that */
-+					/* owns the mm_struct.		*/
- #endif
- 
- #ifdef CONFIG_PROC_FS
-diff -puN include/linux/sched.h~memory-controller-add-mm-owner include/linux/sched.h
---- linux-2.6.25-rc8/include/linux/sched.h~memory-controller-add-mm-owner	2008-04-03 22:43:27.000000000 +0530
-+++ linux-2.6.25-rc8-balbir/include/linux/sched.h	2008-04-03 22:43:27.000000000 +0530
-@@ -2144,6 +2144,19 @@ static inline void migration_init(void)
- 
- #define TASK_STATE_TO_CHAR_STR "RSDTtZX"
- 
-+#ifdef CONFIG_MM_OWNER
-+extern void mm_update_next_owner(struct mm_struct *mm);
-+extern void mm_init_owner(struct mm_struct *mm, struct task_struct *p);
-+#else
-+static inline void mm_update_next_owner(struct mm_struct *mm)
-+{
-+}
-+
-+static inline void mm_init_owner(struct mm_struct *mm, struct task_struct *p)
-+{
-+}
-+#endif /* CONFIG_MM_OWNER */
-+
- #endif /* __KERNEL__ */
- 
- #endif
-diff -puN init/Kconfig~memory-controller-add-mm-owner init/Kconfig
---- linux-2.6.25-rc8/init/Kconfig~memory-controller-add-mm-owner	2008-04-03 22:43:27.000000000 +0530
-+++ linux-2.6.25-rc8-balbir/init/Kconfig	2008-04-03 22:45:18.000000000 +0530
-@@ -371,9 +371,21 @@ config RESOURCE_COUNTERS
-           infrastructure that works with cgroups
- 	depends on CGROUPS
- 
-+config MM_OWNER
-+	bool "Enable ownership of mm structure"
-+	help
-+	  This option enables mm_struct's to have an owner. The advantage
-+	  of this approach is that it allows for several independent memory
-+	  based cgroup controllers to co-exist independently without too
-+	  much space overhead
-+
-+	  This feature adds fork/exit overhead. So enable this only if
-+	  you need resource controllers
-+
- config CGROUP_MEM_RES_CTLR
- 	bool "Memory Resource Controller for Control Groups"
- 	depends on CGROUPS && RESOURCE_COUNTERS
-+	select MM_OWNER
- 	help
- 	  Provides a memory resource controller that manages both page cache and
- 	  RSS memory.
-@@ -386,6 +398,9 @@ config CGROUP_MEM_RES_CTLR
- 	  Only enable when you're ok with these trade offs and really
- 	  sure you need the memory resource controller.
- 
-+	  This config option also selects MM_OWNER config option, which
-+	  could in turn add some fork/exit overhead.
-+
- config SYSFS_DEPRECATED
- 	bool
- 
-diff -puN kernel/cgroup.c~memory-controller-add-mm-owner kernel/cgroup.c
---- linux-2.6.25-rc8/kernel/cgroup.c~memory-controller-add-mm-owner	2008-04-03 22:43:27.000000000 +0530
-+++ linux-2.6.25-rc8-balbir/kernel/cgroup.c	2008-04-03 22:43:27.000000000 +0530
-@@ -118,6 +118,7 @@ static int root_count;
-  * be called.
-  */
- static int need_forkexit_callback;
-+static int need_mm_owner_callback;
- 
- /* convenient tests for these bits */
- inline int cgroup_is_removed(const struct cgroup *cgrp)
-@@ -2485,6 +2486,7 @@ static void __init cgroup_init_subsys(st
- 	}
- 
- 	need_forkexit_callback |= ss->fork || ss->exit;
-+	need_mm_owner_callback |= !!ss->mm_owner_changed;
- 
- 	ss->active = 1;
- }
-@@ -2721,6 +2723,34 @@ void cgroup_fork_callbacks(struct task_s
- 	}
- }
- 
-+#ifdef CONFIG_MM_OWNER
-+/**
-+ * cgroup_mm_owner_callbacks - run callbacks when the mm->owner changes
-+ * @p: the new owner
-+ *
-+ * Called on every change to mm->owner. mm_init_owner() does not
-+ * invoke this routine, since it assigns the mm->owner the first time
-+ * and does not change it.
-+ */
-+void cgroup_mm_owner_callbacks(struct task_struct *old, struct task_struct *new)
-+{
-+	struct cgroup *oldcgrp, *newcgrp;
-+
-+	if (need_mm_owner_callback) {
-+		int i;
-+		for (i = 0; i < CGROUP_SUBSYS_COUNT; i++) {
-+			struct cgroup_subsys *ss = subsys[i];
-+			oldcgrp = task_cgroup(old, ss->subsys_id);
-+			newcgrp = task_cgroup(new, ss->subsys_id);
-+			if (oldcgrp == newcgrp)
-+				continue;
-+			if (ss->mm_owner_changed)
-+				ss->mm_owner_changed(ss, oldcgrp, newcgrp);
-+		}
-+	}
-+}
-+#endif /* CONFIG_MM_OWNER */
-+
- /**
-  * cgroup_post_fork - called on a new task after adding it to the task list
-  * @child: the task in question
-diff -puN kernel/exit.c~memory-controller-add-mm-owner kernel/exit.c
---- linux-2.6.25-rc8/kernel/exit.c~memory-controller-add-mm-owner	2008-04-03 22:43:27.000000000 +0530
-+++ linux-2.6.25-rc8-balbir/kernel/exit.c	2008-04-04 00:56:51.000000000 +0530
-@@ -577,6 +577,94 @@ void exit_fs(struct task_struct *tsk)
- 
- EXPORT_SYMBOL_GPL(exit_fs);
- 
-+#ifdef CONFIG_MM_OWNER
-+/*
-+ * Task p is exiting and it owned p, so lets find a new owner for it
-+ */
-+static inline int
-+mm_need_new_owner(struct mm_struct *mm, struct task_struct *p)
-+{
-+	/*
-+	 * If there are other users of the mm and the owner (us) is exiting
-+	 * we need to find a new owner to take on the responsibility.
-+	 * When we use thread groups (CLONE_THREAD), the thread group
-+	 * leader is kept around in zombie state, even after it exits.
-+	 * delay_group_leader() ensures that if the group leader is around
-+	 * we need not select a new owner.
-+	 */
-+	if (!mm)
-+		return 0;
-+	if (atomic_read(&mm->mm_users) <= 1)
-+		return 0;
-+	if (mm->owner != p)
-+		return 0;
-+	if (delay_group_leader(p))
-+		return 0;
-+	return 1;
-+}
-+
-+void mm_update_next_owner(struct mm_struct *mm)
-+{
-+	struct task_struct *c, *g, *p = current;
-+
-+retry:
-+	if (!mm_need_new_owner(mm, p))
-+		return;
-+
-+	rcu_read_lock();
-+	/*
-+	 * Search in the children
-+	 */
-+	list_for_each_entry(c, &p->children, sibling) {
-+		if (c->mm == mm)
-+			goto assign_new_owner;
-+	}
-+
-+	/*
-+	 * Search in the siblings
-+	 */
-+	list_for_each_entry(c, &p->parent->children, sibling) {
-+		if (c->mm == mm)
-+			goto assign_new_owner;
-+	}
-+
-+	/*
-+	 * Search through everything else. We should not get
-+	 * here often
-+	 */
-+	do_each_thread(g, c) {
-+		if (c->mm == mm)
-+			goto assign_new_owner;
-+	} while_each_thread(g, c);
-+
-+	rcu_read_unlock();
-+	return;
-+
-+assign_new_owner:
-+	BUG_ON(c == p);
-+	get_task_struct(c);
-+	/*
-+	 * The task_lock protects c->mm from changing.
-+	 * We always want mm->owner->mm == mm
-+	 */
-+	task_lock(c);
-+	/*
-+ 	 * Delay rcu_read_unlock() till we have the task_lock()
-+ 	 * to ensure that c does not slip away underneath us
-+ 	 */
-+	rcu_read_unlock();
-+	if (c->mm != mm) {
-+		task_unlock(c);
-+		put_task_struct(c);
-+		goto retry;
-+	}
-+	cgroup_mm_owner_callbacks(mm->owner, c);
-+	mm->owner = c;
-+	task_unlock(c);
-+	put_task_struct(c);
-+}
-+#endif /* CONFIG_MM_OWNER */
-+
- /*
-  * Turn us into a lazy TLB process if we
-  * aren't already..
-@@ -616,6 +704,7 @@ static void exit_mm(struct task_struct *
- 	/* We don't want this task to be frozen prematurely */
- 	clear_freeze_flag(tsk);
- 	task_unlock(tsk);
-+	mm_update_next_owner(mm);
- 	mmput(mm);
- }
- 
-diff -puN kernel/fork.c~memory-controller-add-mm-owner kernel/fork.c
---- linux-2.6.25-rc8/kernel/fork.c~memory-controller-add-mm-owner	2008-04-03 22:43:27.000000000 +0530
-+++ linux-2.6.25-rc8-balbir/kernel/fork.c	2008-04-03 22:43:27.000000000 +0530
-@@ -358,14 +358,13 @@ static struct mm_struct * mm_init(struct
- 	mm->ioctx_list = NULL;
- 	mm->free_area_cache = TASK_UNMAPPED_BASE;
- 	mm->cached_hole_size = ~0UL;
--	mm_init_cgroup(mm, p);
-+	mm_init_owner(mm, p);
- 
- 	if (likely(!mm_alloc_pgd(mm))) {
- 		mm->def_flags = 0;
- 		return mm;
- 	}
- 
--	mm_free_cgroup(mm);
- 	free_mm(mm);
- 	return NULL;
- }
-@@ -416,7 +415,6 @@ void mmput(struct mm_struct *mm)
- 			spin_unlock(&mmlist_lock);
- 		}
- 		put_swap_token(mm);
--		mm_free_cgroup(mm);
- 		mmdrop(mm);
- 	}
- }
-@@ -996,6 +994,13 @@ static void rt_mutex_init_task(struct ta
- #endif
- }
- 
-+#ifdef CONFIG_MM_OWNER
-+void mm_init_owner(struct mm_struct *mm, struct task_struct *p)
-+{
-+	mm->owner = p;
-+}
-+#endif /* CONFIG_MM_OWNER */
-+
- /*
-  * This creates a new process as a copy of the old one,
-  * but does not actually start it yet.
-diff -puN mm/memcontrol.c~memory-controller-add-mm-owner mm/memcontrol.c
---- linux-2.6.25-rc8/mm/memcontrol.c~memory-controller-add-mm-owner	2008-04-03 22:43:27.000000000 +0530
-+++ linux-2.6.25-rc8-balbir/mm/memcontrol.c	2008-04-03 22:46:51.000000000 +0530
-@@ -238,26 +238,12 @@ static struct mem_cgroup *mem_cgroup_fro
- 				css);
- }
- 
--static struct mem_cgroup *mem_cgroup_from_task(struct task_struct *p)
-+struct mem_cgroup *mem_cgroup_from_task(struct task_struct *p)
- {
- 	return container_of(task_subsys_state(p, mem_cgroup_subsys_id),
- 				struct mem_cgroup, css);
- }
- 
--void mm_init_cgroup(struct mm_struct *mm, struct task_struct *p)
--{
--	struct mem_cgroup *mem;
--
--	mem = mem_cgroup_from_task(p);
--	css_get(&mem->css);
--	mm->mem_cgroup = mem;
--}
--
--void mm_free_cgroup(struct mm_struct *mm)
--{
--	css_put(&mm->mem_cgroup->css);
--}
--
- static inline int page_cgroup_locked(struct page *page)
- {
- 	return bit_spin_is_locked(PAGE_CGROUP_LOCK_BIT, &page->page_cgroup);
-@@ -478,6 +464,7 @@ unsigned long mem_cgroup_isolate_pages(u
- 	int zid = zone_idx(z);
- 	struct mem_cgroup_per_zone *mz;
- 
-+	BUG_ON(!mem_cont);
- 	mz = mem_cgroup_zoneinfo(mem_cont, nid, zid);
- 	if (active)
- 		src = &mz->active_list;
-@@ -576,7 +563,7 @@ retry:
- 		mm = &init_mm;
- 
- 	rcu_read_lock();
--	mem = rcu_dereference(mm->mem_cgroup);
-+	mem = mem_cgroup_from_task(rcu_dereference(mm->owner));
- 	/*
- 	 * For every charge from the cgroup, increment reference count
- 	 */
-@@ -1006,7 +993,6 @@ mem_cgroup_create(struct cgroup_subsys *
- 
- 	if (unlikely((cont->parent) == NULL)) {
- 		mem = &init_mem_cgroup;
--		init_mm.mem_cgroup = mem;
- 		page_cgroup_cache = KMEM_CACHE(page_cgroup, SLAB_PANIC);
- 	} else
- 		mem = kzalloc(sizeof(struct mem_cgroup), GFP_KERNEL);
-@@ -1087,10 +1073,6 @@ static void mem_cgroup_move_task(struct 
- 	if (!thread_group_leader(p))
- 		goto out;
- 
--	css_get(&mem->css);
--	rcu_assign_pointer(mm->mem_cgroup, mem);
--	css_put(&old_mem->css);
--
- out:
- 	mmput(mm);
- }
-diff -puN init/main.c~memory-controller-add-mm-owner init/main.c
---- linux-2.6.25-rc8/init/main.c~memory-controller-add-mm-owner	2008-04-03 22:43:27.000000000 +0530
-+++ linux-2.6.25-rc8-balbir/init/main.c	2008-04-03 22:43:27.000000000 +0530
-@@ -537,6 +537,7 @@ asmlinkage void __init start_kernel(void
- 	printk(KERN_NOTICE);
- 	printk(linux_banner);
- 	setup_arch(&command_line);
-+	mm_init_owner(&init_mm, &init_task);
- 	setup_command_line(command_line);
- 	unwind_setup();
- 	setup_per_cpu_areas();
-_
+> +	} else
+> +		return sprintf(buf, "%s\n", gdesc->label) + 1;
+> +}
+> +
+> +static DEVICE_ATTR(label, 0444, gpio_label_show, NULL);
+> +#endif
+> +
+> +static int gpiochip_classdev_register(const struct gpio_chip *chip)
+> +{
+> +	int ret, i;
+> +	struct gpio_desc *gdesc;
+> +
+> +	BUG_ON(!chip->dev);
+> +
+> +	for (i = chip->base; i < chip->base + chip->ngpio; i++) {
+> +		gdesc = gpio_desc + i;
+> +		gdesc->dev = device_create(gpio_class, chip->dev, 0, "%s:%d",
+> +					   chip->label, i);
+> +		if (IS_ERR(gdesc->dev)) {
+> +			ret = PTR_ERR(gdesc->dev);
+> +			i--;
+> +			goto fail;
+> +		}
+> +
+> +		dev_set_drvdata(gdesc->dev, gdesc);
+> +
+> +		ret = device_create_file(gdesc->dev, &dev_attr_direction);
+> +		if (ret)
+> +			goto fail_dev;
+> +		ret = device_create_file(gdesc->dev, &dev_attr_value);
+> +		if (ret)
+> +			goto fail_dir;
+> +#ifdef CONFIG_DEBUG_FS
+> +		ret = device_create_file(gdesc->dev, &dev_attr_label);
+> +		if (ret)
+> +			goto fail_value;
+> +#endif
+> +	}
+> +	return 0;
+> +
+> +fail:
+> +	for (; i >= chip->base; i--) {
+> +		gdesc = gpio_desc + i;
+> +
+> +#ifdef CONFIG_DEBUG_FS
+> +		device_remove_file(gdesc->dev, &dev_attr_label);
+> +
+> +fail_value:
+> +#endif
+> +		device_remove_file(gdesc->dev, &dev_attr_value);
+> +
+> +fail_dir:
+> +		device_remove_file(gdesc->dev, &dev_attr_direction);
+> +
+> +fail_dev:
+> +		device_unregister(gdesc->dev);
+> +		gdesc->dev = NULL;
+> +	}
+> +	return ret;
+> +}
+> +
+> +static int __init gpio_class_init(void)
+> +{
+> +	gpio_class = class_create(THIS_MODULE, "gpio");
+> +	if (IS_ERR(gpio_class))
+> +		return PTR_ERR(gpio_class);
+> +	return 0;
+> +}
+> +
+> +static void __exit gpio_class_exit(void)
+> +{
+> +	/* FIXME:  Code to remove all the sysfs devices and files created
+> +	 * should go here */
+
+Oh yes it really should ;)
+
+> +	class_destroy(gpio_class);
+> +}
+> +subsys_initcall(gpio_class_init);
+> +module_exit(gpio_class_exit);
+> +
+> +#else /* no class */
+> +
+> +/* I coulda been a contender, I coulda had class... */
+> +static inline int gpiochip_classdev_register(const struct gpio_chip *chip)
+> +{ return 0; }
+> +
+> +#endif
+> +
+> +
+>   /* Warn when drivers omit gpio_request() calls -- legal but ill-advised
+>    * when setting direction, and otherwise illegal.  Until board setup code
+>    * and drivers use explicit requests everywhere (which won't happen when
+> @@ -118,6 +290,22 @@ int gpiochip_add(struct gpio_chip *chip)
+>   	}
+> 
+>   	spin_unlock_irqrestore(&gpio_lock, flags);
+> +
+> +	if (status)
+> +		goto fail;
+> +
+> +	if (chip->dev) {
+> +		/* can sleep, so can't call with the spinlock held */
+
+You don't actually hold the spinlock at this point.
+
+> +		status = gpiochip_classdev_register(chip);
+> +		if (status) {
+> +			/* De-allocate GPIOs */
+> +			spin_lock_irqsave(&gpio_lock, flags);
+> +			for (id = chip->base; id < chip->base + chip->ngpio; id++)
+> +				gpio_desc[id].chip = NULL;
+> +			spin_unlock_irqrestore(&gpio_lock, flags);
+> +		}
+> +	}
+> +
+>   fail:
+>   	/* failures here can mean systems won't boot... */
+>   	if (status)
+> diff --git a/include/asm-generic/gpio.h b/include/asm-generic/gpio.h
+> index f29a502..b2a5262 100644
+> --- a/include/asm-generic/gpio.h
+> +++ b/include/asm-generic/gpio.h
+> @@ -29,6 +29,7 @@ struct seq_file;
+>    * @dbg_show: optional routine to show contents in debugfs; default code
+>    *	will be used when this is omitted, but custom code can show extra
+>    *	state (such as pullup/pulldown configuration).
+> + * @dev: optional device for the GPIO chip.  Used to create sysfs files.
+
+Broken indentation.
+
+>    * @base: identifies the first GPIO number handled by this chip; or, if
+>    *	negative during registration, requests dynamic ID allocation.
+>    * @ngpio: the number of GPIOs handled by this controller; the last GPIO
+> @@ -59,6 +60,7 @@ struct gpio_chip {
+>   						unsigned offset, int value);
+>   	void			(*dbg_show)(struct seq_file *s,
+>   						struct gpio_chip *chip);
+> +	struct device		*dev;
+>   	int			base;
+>   	u16			ngpio;
+>   	unsigned		can_sleep:1;
+
 
 -- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+Jean Delvare
