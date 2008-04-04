@@ -1,46 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760562AbYDDM4q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759319AbYDDM5H@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760562AbYDDM4q (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Apr 2008 08:56:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759252AbYDDMy4
+	id S1759319AbYDDM5H (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Apr 2008 08:57:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759381AbYDDMy6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Apr 2008 08:54:56 -0400
-Received: from wine.ocn.ne.jp ([122.1.235.145]:63726 "EHLO smtp.wine.ocn.ne.jp"
+	Fri, 4 Apr 2008 08:54:58 -0400
+Received: from wine.ocn.ne.jp ([122.1.235.145]:63729 "EHLO smtp.wine.ocn.ne.jp"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757186AbYDDMys (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1757191AbYDDMys (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 4 Apr 2008 08:54:48 -0400
-Message-Id: <20080404122404.191981507@I-love.SAKURA.ne.jp>
+Message-Id: <20080404122401.326400640@I-love.SAKURA.ne.jp>
 References: <20080404122242.867070732@I-love.SAKURA.ne.jp>
 User-Agent: quilt/0.46-1
-Date: Fri, 04 Apr 2008 21:23:00 +0900
+Date: Fri, 04 Apr 2008 21:22:53 +0900
 From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
 To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
        linux-security-module@vger.kernel.org
 Cc: Kentaro Takeda <takedakn@nttdata.co.jp>,
        Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>,
        Toshiharu Harada <haradats@nttdata.co.jp>
-Subject: [TOMOYO #7 18/30] pivot_root restriction part.
-Content-Disposition: inline; filename=tomoyo-pivot_root-restriction-part.patch
+Subject: [TOMOYO #7 11/30] /proc/ccs/ interface for policy management.
+Content-Disposition: inline; filename=tomoyo-proc-interface.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This file controls pivot_root() requests.
+This file handles entries in /proc/ccs/ directory.
+
+
+Kyle Moffett advised me not to use /proc/ , but I want to use /proc/ because
+
+(1) securityfs is not always ready at /sys/kernel/security/ .
+    I have to mount securityfs when /sbin/init starts.
+    But proc is always ready at /proc/ .
+(2) TOMOYO Linux doesn't require LSM.
+    TOMOYO Linux can be built without CONFIG_SECURITY=y .
+(3) TOMOYO Linux is not only a tool for access control
+    but also a tool for analyzing a system's behavior.
 
 Signed-off-by: Kentaro Takeda <takedakn@nttdata.co.jp>
 Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
 Signed-off-by: Toshiharu Harada <haradats@nttdata.co.jp>
 ---
- fs/sakura_pivot.c |  185 ++++++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 185 insertions(+)
+ fs/proc/ccs_proc.c |  156 +++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 156 insertions(+)
 
 --- /dev/null
-+++ linux-2.6.25-rc8-mm1/fs/sakura_pivot.c
-@@ -0,0 +1,185 @@
++++ linux-2.6.25-rc8-mm1/fs/proc/ccs_proc.c
+@@ -0,0 +1,156 @@
 +/*
-+ * fs/sakura_pivot.c
++ * fs/proc/ccs_proc.c
 + *
-+ * Implementation of the Domain-Free Mandatory Access Control.
++ * /proc interface for SAKURA and TOMOYO.
 + *
 + * Copyright (C) 2005-2008  NTT DATA CORPORATION
 + *
@@ -48,179 +59,150 @@ Signed-off-by: Toshiharu Harada <haradats@nttdata.co.jp>
 + *
 + */
 +
++#include <linux/types.h>
++#include <linux/kernel.h>
++#include <linux/io.h>
++#include <linux/proc_fs.h>
++#include <linux/module.h>
++#include <linux/ccs_proc.h>
 +#include <linux/ccs_common.h>
-+#include <linux/sakura.h>
-+#include <linux/realpath.h>
-+#include <linux/namei.h>
 +
-+/* Structure for "allow_pivot_root" keyword. */
-+struct pivot_root_entry {
-+	struct list1_head list;
-+	const struct path_info *old_root;
-+	const struct path_info *new_root;
-+	bool is_deleted;
++#if defined(CONFIG_SAKURA) || defined(CONFIG_TOMOYO)
++
++/**
++ * ccs_open - open() for /proc/ccs/ interface.
++ *
++ * @inode: Pointer to "struct inode".
++ * @file:  Pointer to "struct file".
++ *
++ * Returns 0 on success, negative value otherwise.
++ */
++static int ccs_open(struct inode *inode, struct file *file)
++{
++	return ccs_open_control(((u8 *) PDE(inode)->data) - ((u8 *) NULL),
++				file);
++}
++
++/**
++ * ccs_release - close() for /proc/ccs/ interface.
++ *
++ * @inode: Pointer to "struct inode".
++ * @file:  Pointer to "struct file".
++ *
++ * Returns 0 on success, negative value otherwise.
++ */
++static int ccs_release(struct inode *inode, struct file *file)
++{
++	return ccs_close_control(file);
++}
++
++/**
++ * ccs_poll - poll() for /proc/ccs/ interface.
++ *
++ * @file: Pointer to "struct file".
++ * @wait: Pointer to "poll_table".
++ *
++ * Returns 0 on success, negative value otherwise.
++ */
++static unsigned int ccs_poll(struct file *file, poll_table *wait)
++{
++	return ccs_poll_control(file, wait);
++}
++
++/**
++ * ccs_read - read() for /proc/ccs/ interface.
++ *
++ * @file:  Pointer to "struct file".
++ * @buf:   Pointer to buffer.
++ * @count: Size of @buf.
++ * @ppos:  Unused.
++ *
++ * Returns bytes read on success, negative value otherwise.
++ */
++static ssize_t ccs_read(struct file *file, char __user *buf, size_t count,
++			loff_t *ppos)
++{
++	return ccs_read_control(file, buf, count);
++}
++
++/**
++ * ccs_write - write() for /proc/ccs/ interface.
++ *
++ * @file:  Pointer to "struct file".
++ * @buf:   Pointer to buffer.
++ * @count: Size of @buf.
++ * @ppos:  Unused.
++ *
++ * Returns @count on success, negative value otherwise.
++ */
++static ssize_t ccs_write(struct file *file, const char __user *buf,
++			 size_t count, loff_t *ppos)
++{
++	return ccs_write_control(file, buf, count);
++}
++
++/* Operations for /proc/ccs/interface. */
++static struct file_operations ccs_operations = {
++	.open    = ccs_open,
++	.release = ccs_release,
++	.poll    = ccs_poll,
++	.read    = ccs_read,
++	.write   = ccs_write,
 +};
 +
-+/* The list for "struct pivot_root_entry". */
-+static LIST1_HEAD(pivot_root_list);
-+
 +/**
-+ * update_pivot_root_acl - Update "struct pivot_root_entry" list.
++ * create_entry - Create interface files under /proc/ccs/ directory.
 + *
-+ * @old_root:  The name of old root directory.
-+ * @new_root:  The name of new root directory.
-+ * @is_delete: True if it is a delete request.
++ * @name:   The name of the interface file.
++ * @mode:   The permission of the interface file.
++ * @parent: The parent directory.
++ * @key:    Type of interface.
 + *
-+ * Returns 0 on success, negative value otherwise.
++ * Returns nothing.
 + */
-+static int update_pivot_root_acl(const char *old_root, const char *new_root,
-+				 const bool is_delete)
++static void __init create_entry(const char *name, const mode_t mode,
++				struct proc_dir_entry *parent, const u8 key)
 +{
-+	struct pivot_root_entry *new_entry;
-+	struct pivot_root_entry *ptr;
-+	const struct path_info *saved_old_root;
-+	const struct path_info *saved_new_root;
-+	static DEFINE_MUTEX(lock);
-+	int error = -ENOMEM;
-+	if (!ccs_is_correct_path(old_root, 1, 0, 1, __func__) ||
-+	    !ccs_is_correct_path(new_root, 1, 0, 1, __func__))
-+		return -EINVAL;
-+	saved_old_root = ccs_save_name(old_root);
-+	saved_new_root = ccs_save_name(new_root);
-+	if (!saved_old_root || !saved_new_root)
-+		return -ENOMEM;
-+	mutex_lock(&lock);
-+	list1_for_each_entry(ptr, &pivot_root_list, list) {
-+		if (ptr->old_root != saved_old_root ||
-+		    ptr->new_root != saved_new_root)
-+			continue;
-+		ptr->is_deleted = is_delete;
-+		error = 0;
-+		goto out;
++	struct proc_dir_entry *entry = create_proc_entry(name, mode, parent);
++	if (entry) {
++		entry->proc_fops = &ccs_operations;
++		entry->data = ((u8 *) NULL) + key;
 +	}
-+	if (is_delete) {
-+		error = -ENOENT;
-+		goto out;
-+	}
-+	new_entry = ccs_alloc_element(sizeof(*new_entry));
-+	if (!new_entry)
-+		goto out;
-+	new_entry->old_root = saved_old_root;
-+	new_entry->new_root = saved_new_root;
-+	list1_add_tail_mb(&new_entry->list, &pivot_root_list);
-+	error = 0;
-+	printk(KERN_CONT "%sAllow pivot_root(%s, %s)\n", ccs_log_level,
-+	       new_root, old_root);
-+ out:
-+	mutex_unlock(&lock);
-+	ccs_update_counter(CCS_UPDATES_COUNTER_SYSTEM_POLICY);
-+	return error;
 +}
 +
 +/**
-+ * ccs_check_pivot_root_permission - Check permission for pivot_root().
++ * ccs_proc_init - Initialize /proc/ccs/ interface.
 + *
-+ * @old_nd: Pointer to "struct nameidata".
-+ * @new_nd: Pointer to "struct nameidata".
-+ *
-+ * Returns 0 on success, negative value otherwise.
++ * Returns 0.
 + */
-+int ccs_check_pivot_root_permission(struct nameidata *old_nd,
-+				    struct nameidata *new_nd)
++static int __init ccs_proc_init(void)
 +{
-+	int error = -EPERM;
-+	char *old_root, *new_root;
-+	const u8 mode = ccs_check_flags(CCS_SAKURA_RESTRICT_PIVOT_ROOT);
-+	if (!mode)
-+		return 0;
-+	old_root = ccs_realpath_from_dentry(old_nd->path.dentry,
-+					    old_nd->path.mnt);
-+	new_root = ccs_realpath_from_dentry(new_nd->path.dentry,
-+					    new_nd->path.mnt);
-+	if (old_root && new_root) {
-+		struct path_info old_root_dir, new_root_dir;
-+		old_root_dir.name = old_root;
-+		ccs_fill_path_info(&old_root_dir);
-+		new_root_dir.name = new_root;
-+		ccs_fill_path_info(&new_root_dir);
-+		if (old_root_dir.is_dir && new_root_dir.is_dir) {
-+			struct pivot_root_entry *ptr;
-+			list1_for_each_entry(ptr, &pivot_root_list, list) {
-+				if (ptr->is_deleted)
-+					continue;
-+				if (!ccs_path_matches_pattern(&old_root_dir,
-+							      ptr->old_root) ||
-+				    !ccs_path_matches_pattern(&new_root_dir,
-+							      ptr->new_root))
-+					continue;
-+				error = 0;
-+				break;
-+			}
-+		}
-+	}
-+	if (error) {
-+		const bool is_enforce = (mode == 3);
-+		const char *exename = ccs_get_exe();
-+		printk(KERN_WARNING "SAKURA-%s: pivot_root %s %s "
-+		       "(pid=%d:exe=%s): Permission denied.\n",
-+		       ccs_get_msg(is_enforce), new_root, old_root,
-+		       current->pid, exename);
-+		if (is_enforce)
-+			error = ccs_check_supervisor("# %s is requesting\n"
-+						     "pivot_root %s %s\n",
-+						     exename, new_root,
-+						     old_root);
-+		else
-+			error = 0;
-+		if (exename)
-+			ccs_free(exename);
-+		if (mode == 1 && old_root && new_root)
-+			update_pivot_root_acl(old_root, new_root, 0);
-+	}
-+	ccs_free(old_root);
-+	ccs_free(new_root);
-+	return error;
++	struct proc_dir_entry *ccs_dir = proc_mkdir("ccs", NULL);
++	create_entry("query",            0600, ccs_dir, CCS_QUERY);
++#ifdef CONFIG_SAKURA
++	create_entry("system_policy",    0600, ccs_dir, CCS_SYSTEMPOLICY);
++#endif
++#ifdef CONFIG_TOMOYO
++	create_entry("domain_policy",    0600, ccs_dir, CCS_DOMAINPOLICY);
++	create_entry("exception_policy", 0600, ccs_dir, CCS_EXCEPTIONPOLICY);
++	create_entry("grant_log",        0400, ccs_dir, CCS_GRANTLOG);
++	create_entry("reject_log",       0400, ccs_dir, CCS_REJECTLOG);
++#endif
++	create_entry("self_domain",      0400, ccs_dir, CCS_SELFDOMAIN);
++	create_entry(".domain_status",   0600, ccs_dir, CCS_DOMAIN_STATUS);
++	create_entry(".process_status",  0600, ccs_dir, CCS_PROCESS_STATUS);
++	create_entry("meminfo",          0400, ccs_dir, CCS_MEMINFO);
++	create_entry("profile",          0600, ccs_dir, CCS_PROFILE);
++	create_entry("manager",          0600, ccs_dir, CCS_MANAGER);
++	create_entry(".updates_counter", 0400, ccs_dir, CCS_UPDATESCOUNTER);
++	create_entry("version",          0400, ccs_dir, CCS_VERSION);
++	if (sizeof(struct ccs_page_buffer) <  CCS_MAX_PATHNAME_LEN - 16)
++		panic("Bad size!");
++	return 0;
 +}
 +
-+/**
-+ * ccs_write_pivot_root_policy - Write "struct pivot_root_entry" list.
-+ *
-+ * @data:      String to parse.
-+ * @is_delete: True if it is a delete request.
-+ *
-+ * Returns 0 on success, negative value otherwise.
-+ */
-+int ccs_write_pivot_root_policy(char *data, const bool is_delete)
-+{
-+	char *cp = strchr(data, ' ');
-+	if (!cp)
-+		return -EINVAL;
-+	*cp++ = '\0';
-+	return update_pivot_root_acl(cp, data, is_delete);
-+}
++security_initcall(ccs_proc_init);
 +
-+/**
-+ * ccs_read_pivot_root_policy - Read "struct pivot_root_entry" list.
-+ *
-+ * @head: Pointer to "struct ccs_io_buffer".
-+ *
-+ * Returns true on success, false otherwise.
-+ */
-+bool ccs_read_pivot_root_policy(struct ccs_io_buffer *head)
-+{
-+	struct list1_head *pos;
-+	list1_for_each_cookie(pos, head->read_var2, &pivot_root_list) {
-+		struct pivot_root_entry *ptr;
-+		ptr = list1_entry(pos, struct pivot_root_entry, list);
-+		if (ptr->is_deleted)
-+			continue;
-+		if (!ccs_io_printf(head, KEYWORD_ALLOW_PIVOT_ROOT "%s %s\n",
-+				   ptr->new_root->name, ptr->old_root->name))
-+			goto out;
-+	}
-+	return true;
-+ out:
-+	return false;
-+}
++#endif
 
 -- 
