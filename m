@@ -1,48 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755530AbYDDH2R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756141AbYDDHjQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755530AbYDDH2R (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Apr 2008 03:28:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750770AbYDDH2G
+	id S1756141AbYDDHjQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Apr 2008 03:39:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752574AbYDDHi6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Apr 2008 03:28:06 -0400
-Received: from fg-out-1718.google.com ([72.14.220.155]:8815 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751910AbYDDH2F (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Apr 2008 03:28:05 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=j3WeVgG/jmAsi72Vn5zkskeFddxmBatrfB7oVWGktRqRYTHSRsHOCNn2wpX9i9afr+u36JPX8PZcMRuqUWJ0qTyOutk8J97KdrWeJx1JWEQXnTHN5RYd4FngUQ1u4aiu6CAKHHRdA0+JD1iushPoRqYrRxhEcohQJgt1N5o1PU8=
-Message-ID: <29495f1d0804040028i795a9859y585ed0ca2413816a@mail.gmail.com>
-Date: Fri, 4 Apr 2008 00:28:03 -0700
-From: "Nish Aravamudan" <nish.aravamudan@gmail.com>
-To: "Gurudas Pai" <gurudas.pai@oracle.com>
-Subject: Re: [BUG]:2.6.25-rc7 memory leak with hugepages.
-Cc: "Ingo Molnar" <mingo@elte.hu>, linux-kernel@vger.kernel.org
-In-Reply-To: <29495f1d0804032040h56f39051lcd5f707660d3c06c@mail.gmail.com>
+	Fri, 4 Apr 2008 03:38:58 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:57755 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752433AbYDDHi5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Apr 2008 03:38:57 -0400
+Message-ID: <47F5DB08.2070405@garzik.org>
+Date: Fri, 04 Apr 2008 03:38:48 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Kuan Luo <kluo@nvidia.com>
+CC: Robert Hancock <hancockr@shaw.ca>, Tejun Heo <htejun@gmail.com>,
+       Zoltan Boszormenyi <zboszor@dunaweb.hu>, akpm@linux-foundation.org,
+       linux-ide@vger.kernel.org, Peer Chen <pchen@nvidia.com>,
+       Allen Martin <AMartin@nvidia.com>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [patch 3/3] ata: SWNCQ should be enabled by default
+References: <200803282133.m2SLXlWk011463@imap1.linux-foundation.org> <47EE465E.80401@gmail.com> <47EE88C9.3020805@dunaweb.hu> <47EEDACA.4060400@gmail.com> <15F501D1A78BD343BE8F4D8DB854566B1BFE2AF1@hkemmail01.nvidia.com> <47F069D7.3010702@gmail.com> <47F1A888.3020706@shaw.ca> <47F1AADC.1080104@shaw.ca> <15F501D1A78BD343BE8F4D8DB854566B1BFE2AF4@hkemmail01.nvidia.com>
+In-Reply-To: <15F501D1A78BD343BE8F4D8DB854566B1BFE2AF4@hkemmail01.nvidia.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <47EB4E2A.1040507@oracle.com> <20080327083849.GF15626@elte.hu>
-	 <47EB75C5.20207@oracle.com>
-	 <29495f1d0804032040h56f39051lcd5f707660d3c06c@mail.gmail.com>
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 4/3/08, Nish Aravamudan <nish.aravamudan@gmail.com> wrote:
-> On 3/27/08, Gurudas Pai <gurudas.pai@oracle.com> wrote:
->  >  Ingo Molnar wrote:
->  >  > * Gurudas Pai <gurudas.pai@oracle.com> wrote:
+Kuan Luo wrote:
+> Robert wrote:
+>> -Hotplug/hot-unplug fails to work properly, hotplug interrupts not 
+>> raised (seemingly only on certain boards/configurations as I can't 
+>> duplicate this problem). 
+>> http://bugzilla.kernel.org/show_bug.cgi?id=8421
+>>
+> I occasionly encountered this problem in one port under certain system,
+> but didn't see this issue under other systems in the same mainboard.
+> After adding the operation of manually clearing the added/removed
+> interrupt bit in NV_INT_STATUS_CK804 register 
+> in nv_adma_interrupt function,  i saw some improvement.  
+> 
+> The key problem is that no one who knows this controller comes to help
+> to solve these issue.
+> Given this disadvantage, i think disabling it maybe is a good choice.
+> I don't know whether we need to continue to provide patch for adma after
+> disabling adma function.
 
-<snip>
+Based on all these discussions and experiences, I just checked in the 
+following commit, setting adma_enabled to zero:
 
->  On another note, it is odd that we're using the dynamic pool, when it
->  is initially disabled...I'll have to think about that.
 
-What is the value in /proc/sys/vm/nr_overcommit_hugepages?
+     [libata] sata_nv: disable ADMA by default
 
-Thanks,
-Nish
+     Continues to have open issues, and engineering support is extremely
+	 difficult to come by, according to fellow NVIDIA engineers.
+
+     Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
+
