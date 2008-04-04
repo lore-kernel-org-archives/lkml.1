@@ -1,57 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759074AbYDDDOt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756662AbYDDDPG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759074AbYDDDOt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Apr 2008 23:14:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755770AbYDDDOl
+	id S1756662AbYDDDPG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Apr 2008 23:15:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759222AbYDDDOv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Apr 2008 23:14:41 -0400
-Received: from E23SMTP02.au.ibm.com ([202.81.18.163]:38068 "EHLO
-	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751187AbYDDDOk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Apr 2008 23:14:40 -0400
-Message-ID: <47F59D02.8060104@linux.vnet.ibm.com>
-Date: Fri, 04 Apr 2008 08:44:10 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: hugh@veritas.com, menage@google.com, kamezawa.hiroyu@jp.fujitsu.com,
-       xemul@openvz.org, skumar@linux.vnet.ibm.com, lizf@cn.fujitsu.com,
-       rientjes@google.com, yamamoto@valinux.co.jp,
+	Thu, 3 Apr 2008 23:14:51 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:39181 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1759086AbYDDDOt (ORCPT
+	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
+	Thu, 3 Apr 2008 23:14:49 -0400
+Date: Fri, 4 Apr 2008 13:14:17 +1000
+From: David Chinner <dgc@sgi.com>
+To: Jan Kara <jack@suse.cz>
+Cc: Erez Zadok <ezk@cs.sunysb.edu>, sct@redhat.com, akpm@linux-foundation.org,
+       adilger@clusterfs.com, linux-ext4@vger.kernel.org,
        linux-kernel@vger.kernel.org
-Subject: Re: cgroup_disable=memory for 2.6.25?
-References: <Pine.LNX.4.64.0804032055590.8157@blonde.site> <47F53DA2.3050403@linux.vnet.ibm.com> <20080403134153.d7476dda.akpm@linux-foundation.org>
-In-Reply-To: <20080403134153.d7476dda.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Subject: Re: ext3 lockdep warning in 2.6.25-rc6
+Message-ID: <20080404031417.GE103491721@sgi.com>
+References: <20080325182909.GD21732@atrey.karlin.mff.cuni.cz> <200804012123.m31LNY3T012962@agora.fsl.cs.sunysb.edu> <20080402081215.GA2716@duck.suse.cz>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080402081215.GA2716@duck.suse.cz>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Fri, 04 Apr 2008 01:57:14 +0530
-> Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-> 
->> I expected those patches to make it into 2.6.25.
-> 
-> My mind-ray receptors might need a tune-up.
-> 
+On Wed, Apr 02, 2008 at 10:12:15AM +0200, Jan Kara wrote:
+> On Tue 01-04-08 17:23:34, Erez Zadok wrote:
+>  <snip>
+<snip>
+> > Jan, I'll be happy to test this, but I don't understand two things about
+> > this patch:
+> > 
+> > 1. Is it safe to unlock and re-lock inode_lock temporarily within the loop?
+> > 
+> > 2. What's the motivation behind having the second toput_inode pointer?  It
+> >    appears that the first iteration through the loop, toput_inode will be
+> >    NULL, so we'll be iput'ing a NULL pointer (which is ok).  So you're
+> >    trying to iput the previous inode pointer that the list iterated over,
+> >    right?  Is that intended?
+>   I'll try to explain the locking here:
+> 1) We are not allowed to call into __invalidate_mapping_pages() with
+> inode_lock held - that it the bug lockdep is complaining about. Moreover it
+> leads to rather long waiting times for inode_lock (quite possibly several
+> seconds).
 
-I should have stressed a bit more on the priority.
+When you have tens of millions of cached inodes, it can take somewhat
+longer than a few seconds.... :/
 
->> Could we please push these patches upstream before 2.6.25? Or is it too late?
-> 
-> Should be OK.  I borrowed a bit of Hugh's email and stuck it in the changelog
-> so that it at least has some attempt to describe why it's an urgent change.
+Cheers,
 
-
-Thanks, Andrew!
-
+Dave.
 -- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+Dave Chinner
+Principal Engineer
+SGI Australian Software Group
