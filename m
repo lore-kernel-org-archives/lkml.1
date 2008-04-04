@@ -1,47 +1,34 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758896AbYDCO3i (ORCPT <rfc822;ralf@linux-mips.org>);
-	Thu, 3 Apr 2008 10:29:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757343AbYDCO32
+	id S1758079AbYDDInK (ORCPT <rfc822;ralf@linux-mips.org>);
+	Fri, 4 Apr 2008 04:43:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753162AbYDDIm4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Apr 2008 10:29:28 -0400
-Received: from mailfilter5.ihug.co.nz ([203.109.136.5]:43695 "EHLO
-	mailfilter5.ihug.co.nz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757415AbYDCO30 (ORCPT
+	Fri, 4 Apr 2008 04:42:56 -0400
+Received: from qmta08.westchester.pa.mail.comcast.net ([76.96.62.80]:34937
+	"EHLO QMTA08.westchester.pa.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753118AbYDDIm4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Apr 2008 10:29:26 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Am4fAE6G9EdRx6y4/2dsb2JhbAACghupdQ
-X-IronPort-AV: E=Sophos;i="4.25,599,1199617200"; 
-   d="scan'208";a="86293894"
-Ironport-Content-Filter: send-to-smtp
-Ironport-OCF: send-to-smtp
-MIME-Version: 1.0
-Date: Fri, 04 Apr 2008 02:29:30 +1200
-From: FreeLotto Company <info@freelotto.co.uk>
-To: info@freelotto.com
-Subject: Serial Number: F2-003-036
-Organization: FreeLotto Company
-Reply-To: mrjameskeegan.2008@hotmail.co.uK
-Message-ID: <961ee79547ad92df2059bdc45cc9a7a8@ihug.co.nz>
-SenderIP: 81.199.172.184
-User-Agent: Vodafone Webmail/0.1
-Content-Transfer-Encoding: 8bit
+	Fri, 4 Apr 2008 04:42:56 -0400
+X-Authority-Analysis: v=1.0 c=1 a=gbOavZVEiH5QMW3eFa0Cww==:17
+ a=uiDxtNrRHCEiG8wo_m4A:9 a=PoQiKgkq03v9o_c5T6UuVGuhA2oA:4 a=2guI-uaQSDUA:10
+ a=XF7b4UCPwd8A:10
+From: office_201@comcast.net
+Subject: CONGRATULATIONS!!!
+Date: Fri, 04 Apr 2008 08:42:48 +0000
+Message-Id: <040420080842.11274.47F5EA050005486400002C0A2216548686CECFCDA10A0C07000001@comcast.net>
+X-Mailer: AT&T Message Center Version 1 (Oct 30 2007)
+X-Authenticated-Sender: b2ZmaWNlXzIwMUBjb21jYXN0Lm5ldA==
+To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1758896AbYDCO3i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1758079AbYDDInK@vger.kernel.org>
 
-
-You won the sum of £2,000,000 USD from our MONTHLY PROGRAME, you are
-hereby advice to get back to us, to claim your prize.
-Contact  Mr.James Keegan.
-Email: mrjameskeegan.2008@hotmail.co.uK
-Claims Requirements:
-1.Full Name:......
-2.Sex......
-3.Phone Number:...
-4.Country Of Residence.....
-SIR GEORGE HARRIS.
-Promotions Manager.
+This is to inform you that you have won yourself 1million euro on the
+ on going powerball euro international 2008.
+CONTACT NAME: PETER RAYMUND 
+TELEPHONE: +447031916108
+EMAIL: powerball_claim14@yahoo.dk
+Sincerely, 
+Margaret Ferguson 
 
