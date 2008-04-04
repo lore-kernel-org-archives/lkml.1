@@ -1,60 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757537AbYDDQGg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757904AbYDDQKK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757537AbYDDQGg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Apr 2008 12:06:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754477AbYDDQG0
+	id S1757904AbYDDQKK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Apr 2008 12:10:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755464AbYDDQJ6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Apr 2008 12:06:26 -0400
-Received: from tomts16-srv.bellnexxia.net ([209.226.175.4]:42952 "EHLO
-	tomts16-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753582AbYDDQGZ (ORCPT
+	Fri, 4 Apr 2008 12:09:58 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:16450 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754408AbYDDQJ5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Apr 2008 12:06:25 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApsEAD7v9UdMQWoK/2dsb2JhbACBWqo7
-Date: Fri, 4 Apr 2008 12:06:23 -0400
-From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+	Fri, 4 Apr 2008 12:09:57 -0400
+Date: Fri, 4 Apr 2008 09:08:01 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
 To: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-Cc: LKML <linux-kernel@vger.kernel.org>, Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Mathieu Desnoyers <compudj@krystal.dyndns.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>
 Subject: Re: [PATCH] relay: add buffer-only functionality, allowing for
-	early kernel tracing
-Message-ID: <20080404160623.GC32126@Krystal>
-References: <20080404183303.2e239a20@linux360.ro>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+ early kernel tracing
+Message-Id: <20080404090801.c988f96f.randy.dunlap@oracle.com>
 In-Reply-To: <20080404183303.2e239a20@linux360.ro>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 12:01:19 up 35 days, 12:12,  7 users,  load average: 1.66, 0.70,
-	0.51
-User-Agent: Mutt/1.5.16 (2007-06-11)
+References: <20080404183303.2e239a20@linux360.ro>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Eduard - Gabriel Munteanu (eduard.munteanu@linux360.ro) wrote:
+On Fri, 4 Apr 2008 18:33:03 +0300 Eduard - Gabriel Munteanu wrote:
+
 > relay_open() can now handle NULL base_filename, to register a
 > buffer-only channel. Using a new function, relay_late_setup_files(), one
 > can assign files after creating the channel, thus allowing for doing
 > early tracing in the kernel, before VFS is up.
 > 
-
-I like this :) But could we trace event sooner if we did not depend on
-vmalloc to allocate the buffers ?
-
-I am thinking of receiving a kernel parameter that would reserve a
-buffer in the linear kernel mapping (kmalloc ?), or to compile-in a
-static buffer, which could be used by relay instead of the vmalloc'd
-buffer. That would permit to trace the memory allocator and some other
-very early stuff. Basically, relay would have it's "memory pool" to
-manage and would do its allocations from this fixed buffer. No free
-would be required.
-
-Mathieu
-
 > Signed-off-by: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
 > ---
 >  Documentation/filesystems/relay.txt |   11 ++++
@@ -85,34 +71,15 @@ Mathieu
 > +relay_open(NULL, NULL, ...). Such channels are useful in scenarios such
 > +as when doing early tracing in the kernel, before the VFS is up. In these
 > +cases, one may open a channel a buffer-only channel and then call
+                       ~~~~~~~~~
+d/a channel/
+
 > +relay_late_setup_files() when the kernel is ready to handle files, to expose
 > +the buffered data to the userspace.
 > +
 >  Channel 'modes'
 >  ---------------
 >  
-> diff --git a/include/linux/relay.h b/include/linux/relay.h
-> index 6cd8c44..ca9ee3f 100644
-> --- a/include/linux/relay.h
-> +++ b/include/linux/relay.h
-> @@ -68,6 +68,7 @@ struct rchan
->  	int is_global;			/* One global buffer ? */
->  	struct list_head list;		/* for channel list */
->  	struct dentry *parent;		/* parent dentry passed to open */
-> +	int has_base_filename;		/* has a filename associated? */
->  	char base_filename[NAME_MAX];	/* saved base filename */
->  };
->  
-> @@ -169,6 +170,9 @@ struct rchan *relay_open(const char *base_filename,
->  			 size_t n_subbufs,
->  			 struct rchan_callbacks *cb,
->  			 void *private_data);
-> +extern int relay_late_setup_files(struct rchan *chan,
-> +				  const char *base_filename,
-> +				  struct dentry *parent);
->  extern void relay_close(struct rchan *chan);
->  extern void relay_flush(struct rchan *chan);
->  extern void relay_subbufs_consumed(struct rchan *chan,
 > diff --git a/kernel/relay.c b/kernel/relay.c
 > index 4c035a8..4bea94a 100644
 > --- a/kernel/relay.c
@@ -140,6 +107,9 @@ Mathieu
 > +	
 > +	if (!dentry)
 > +		goto failed;
+
+above leaks tmpname ?
+
 > +	buf->dentry = dentry;
 > +
 > +	kfree(tmpname);
@@ -175,6 +145,9 @@ Mathieu
 > +
 > + 	if (chan->has_base_filename)
 > +		if (relay_setup_buf_file(chan, buf, cpu)) goto free_buf;
+
+Put 'goto free_buf;' on separate line.
+
 >  
 >   	buf->cpu = cpu;
 >   	__relay_reset(buf, 1);
@@ -203,55 +176,6 @@ Mathieu
 >  end:
 >  	return buf;
 >  }
-> @@ -508,8 +523,8 @@ static int __cpuinit relay_hotcpu_callback(struct notifier_block *nb,
->  
->  /**
->   *	relay_open - create a new relay channel
-> - *	@base_filename: base name of files to create
-> - *	@parent: dentry of parent directory, %NULL for root directory
-> + *	@base_filename: base name of files to create, %NULL for buffering only
-> + *	@parent: dentry of parent directory, %NULL for root directory or buffer
->   *	@subbuf_size: size of sub-buffers
->   *	@n_subbufs: number of sub-buffers
->   *	@cb: client callback functions
-> @@ -531,8 +546,6 @@ struct rchan *relay_open(const char *base_filename,
->  {
->  	unsigned int i;
->  	struct rchan *chan;
-> -	if (!base_filename)
-> -		return NULL;
->  
->  	if (!(subbuf_size && n_subbufs))
->  		return NULL;
-> @@ -547,12 +560,17 @@ struct rchan *relay_open(const char *base_filename,
->  	chan->alloc_size = FIX_SIZE(subbuf_size * n_subbufs);
->  	chan->parent = parent;
->  	chan->private_data = private_data;
-> -	strlcpy(chan->base_filename, base_filename, NAME_MAX);
-> +	if (base_filename) {
-> +		chan->has_base_filename = 1;
-> +		strlcpy(chan->base_filename, base_filename, NAME_MAX);
-> +	} else {
-> +		chan->has_base_filename = 0;
-> +	}
->  	setup_callbacks(chan, cb);
->  	kref_init(&chan->kref);
->  
->  	mutex_lock(&relay_channels_mutex);
-> -	for_each_online_cpu(i) {
-> +	for_each_present_cpu(i) {
->  		chan->buf[i] = relay_open_buf(chan, i);
->  		if (!chan->buf[i])
->  			goto free_bufs;
-> @@ -563,7 +581,7 @@ struct rchan *relay_open(const char *base_filename,
->  	return chan;
->  
->  free_bufs:
-> -	for_each_online_cpu(i) {
-> +	for_each_present_cpu(i) {
->  		if (!chan->buf[i])
->  			break;
->  		relay_close_buf(chan->buf[i]);
 > @@ -576,6 +594,38 @@ free_bufs:
 >  EXPORT_SYMBOL_GPL(relay_open);
 >  
@@ -262,6 +186,9 @@ Mathieu
 > + *	@parent: dentry of parent directory, %NULL for root directory
 > + *
 > + *	Returns 0 is successful, non-zero otherwise.
+
+s/is/if/
+
 > + *
 > + *	Use to setup files for a previously buffer-only channel.
 > + *	Useful to do early tracing in kernel, before VFS is up, for example.
@@ -291,11 +218,6 @@ Mathieu
 >   *	relay_switch_subbuf - switch to a new sub-buffer
 >   *	@buf: channel buffer
 >   *	@length: size of current event
-> -- 
-> 1.5.2.5
-> 
 
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+---
+~Randy
