@@ -1,607 +1,585 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763147AbYDDNLr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762785AbYDDNML@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763147AbYDDNLr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Apr 2008 09:11:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761525AbYDDNEJ
+	id S1762785AbYDDNML (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Apr 2008 09:12:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761736AbYDDNEM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Apr 2008 09:04:09 -0400
-Received: from wine.ocn.ne.jp ([122.1.235.145]:50867 "EHLO smtp.wine.ocn.ne.jp"
+	Fri, 4 Apr 2008 09:04:12 -0400
+Received: from wine.ocn.ne.jp ([122.1.235.145]:50884 "EHLO smtp.wine.ocn.ne.jp"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761733AbYDDNEG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1761722AbYDDNEG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 4 Apr 2008 09:04:06 -0400
-Message-Id: <20080404122401.840340526@I-love.SAKURA.ne.jp>
+Message-Id: <20080404122402.228330717@I-love.SAKURA.ne.jp>
 References: <20080404122242.867070732@I-love.SAKURA.ne.jp>
 User-Agent: quilt/0.46-1
-Date: Fri, 04 Apr 2008 21:22:54 +0900
+Date: Fri, 04 Apr 2008 21:22:55 +0900
 From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
 To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
        linux-security-module@vger.kernel.org
 Cc: Kentaro Takeda <takedakn@nttdata.co.jp>,
        Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>,
        Toshiharu Harada <haradats@nttdata.co.jp>
-Subject: [TOMOYO #7 12/30] Memory and pathname management functions.
-Content-Disposition: inline; filename=tomoyo-realpath.patch
+Subject: [TOMOYO #7 13/30] mount restriction part.
+Content-Disposition: inline; filename=tomoyo-mount-restriction-part.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-TOMOYO Linux performs pathname based access control.
-To remove factors that make pathname based access control difficult
-(e.g. symbolic links, "..", "//" etc.), TOMOYO Linux derives realpath
-of requested pathname from "struct dentry" and "struct vfsmount".
-
-The maximum length of string data is limited to 4000 including trailing '\0'.
-Since TOMOYO Linux uses '\ooo' style representation for non ASCII printable
-characters, may be TOMOYO Linux should be able to support 16336 (which means
-(NAME_MAX * (PATH_MAX / (NAME_MAX + 1)) * 4 + (PATH_MAX / (NAME_MAX + 1)))
-including trailing '\0'), but I think 4000 is enough for practical use.
+This file controls mount() requests.
 
 Signed-off-by: Kentaro Takeda <takedakn@nttdata.co.jp>
 Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
 Signed-off-by: Toshiharu Harada <haradats@nttdata.co.jp>
 ---
- fs/realpath.c |  557 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 557 insertions(+)
+ fs/sakura_mount.c |  544 ++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 544 insertions(+)
 
 --- /dev/null
-+++ linux-2.6.25-rc8-mm1/fs/realpath.c
-@@ -0,0 +1,557 @@
++++ linux-2.6.25-rc8-mm1/fs/sakura_mount.c
+@@ -0,0 +1,544 @@
 +/*
-+ * fs/realpath.c
++ * fs/sakura_mount.c
 + *
-+ * Get the canonicalized absolute pathnames. The basis for SAKURA and TOMOYO.
++ * Implementation of the Domain-Free Mandatory Access Control.
 + *
 + * Copyright (C) 2005-2008  NTT DATA CORPORATION
 + *
 + * Version: 1.6.0   2008/04/01
 + *
 + */
-+#include <linux/string.h>
-+#include <linux/mm.h>
-+#include <linux/utime.h>
-+#include <linux/file.h>
-+#include <linux/smp_lock.h>
-+#include <linux/module.h>
-+#include <linux/slab.h>
-+#include <linux/uaccess.h>
-+#include <asm/atomic.h>
-+#include <linux/namei.h>
-+#include <linux/mount.h>
-+#include <linux/realpath.h>
-+#include <linux/proc_fs.h>
++
 +#include <linux/ccs_common.h>
++#include <linux/sakura.h>
++#include <linux/realpath.h>
++#include <linux/namei.h>
++
++/* Keywords for mount restrictions. */
++
++/* Allow to call 'mount --bind /source_dir /dest_dir' */
++#define MOUNT_BIND_KEYWORD                               "--bind"
++/* Allow to call 'mount --move /old_dir    /new_dir ' */
++#define MOUNT_MOVE_KEYWORD                               "--move"
++/* Allow to call 'mount -o remount /dir             ' */
++#define MOUNT_REMOUNT_KEYWORD                            "--remount"
++/* Allow to call 'mount --make-unbindable /dir'       */
++#define MOUNT_MAKE_UNBINDABLE_KEYWORD                    "--make-unbindable"
++/* Allow to call 'mount --make-private /dir'          */
++#define MOUNT_MAKE_PRIVATE_KEYWORD                       "--make-private"
++/* Allow to call 'mount --make-slave /dir'            */
++#define MOUNT_MAKE_SLAVE_KEYWORD                         "--make-slave"
++/* Allow to call 'mount --make-shared /dir'           */
++#define MOUNT_MAKE_SHARED_KEYWORD                        "--make-shared"
++
++/* Structure for "allow_mount" keyword. */
++struct mount_entry {
++	struct list1_head list;
++	const struct path_info *dev_name;
++	const struct path_info *dir_name;
++	const struct path_info *fs_type;
++	unsigned long flags;
++	bool is_deleted;
++};
++
++/* The list for "struct mount_entry". */
++static LIST1_HEAD(mount_list);
 +
 +/**
-+ * get_absolute_path - Get the path of a dentry but ignores chroot'ed root.
++ * update_mount_acl - Update "struct mount_entry" list.
 + *
-+ * @dentry: Pointer to "struct dentry".
-+ * @vfsmnt: Pointer to "struct vfsmount".
-+ * @buffer: Pointer to buffer to return value in.
-+ * @buflen: Sizeof @buffer.
-+ *
-+ * Returns 0 on success, -ENOMEM otherwise.
-+ *
-+ * Caller holds the dcache_lock and vfsmount_lock.
-+ * Based on __d_path() in fs/dcache.c
-+ *
-+ * If dentry is a directory, trailing '/' is appended.
-+ * Characters out of 0x20 < c < 0x7F range are converted to
-+ * \ooo style octal string.
-+ * Character \ is converted to \\ string.
-+ */
-+static int get_absolute_path(struct dentry *dentry, struct vfsmount *vfsmnt,
-+			     char *buffer, int buflen)
-+{
-+	/***** CRITICAL SECTION START *****/
-+	char *start = buffer;
-+	char *end = buffer + buflen;
-+	bool is_dir = (dentry->d_inode && S_ISDIR(dentry->d_inode->i_mode));
-+
-+	if (buflen < 256)
-+		goto out;
-+
-+	*--end = '\0';
-+	buflen--;
-+
-+	for (;;) {
-+		struct dentry *parent;
-+
-+		if (dentry == vfsmnt->mnt_root || IS_ROOT(dentry)) {
-+			/* Global root? */
-+			if (vfsmnt->mnt_parent == vfsmnt)
-+				break;
-+			dentry = vfsmnt->mnt_mountpoint;
-+			vfsmnt = vfsmnt->mnt_parent;
-+			continue;
-+		}
-+		if (is_dir) {
-+			is_dir = false;
-+			*--end = '/';
-+			buflen--;
-+		}
-+		parent = dentry->d_parent;
-+		{
-+			const char *sp = dentry->d_name.name;
-+			const char *cp = sp + dentry->d_name.len - 1;
-+			unsigned char c;
-+
-+			/*
-+			 * Exception: Use /proc/self/ rather than
-+			 * /proc/\$/ for current process.
-+			 */
-+			if (IS_ROOT(parent) && *sp > '0' && *sp <= '9' &&
-+			    parent->d_sb &&
-+			    parent->d_sb->s_magic == PROC_SUPER_MAGIC) {
-+				char *ep;
-+				const pid_t pid
-+					= (pid_t) simple_strtoul(sp, &ep, 10);
-+				if (!*ep && pid == current->tgid) {
-+					sp = "self";
-+					cp = sp + 3;
-+				}
-+			}
-+
-+			while (sp <= cp) {
-+				c = *(unsigned char *) cp;
-+				if (c == '\\') {
-+					buflen -= 2;
-+					if (buflen < 0)
-+						goto out;
-+					*--end = '\\';
-+					*--end = '\\';
-+				} else if (c > ' ' && c < 127) {
-+					if (--buflen < 0)
-+						goto out;
-+					*--end = (char) c;
-+				} else {
-+					buflen -= 4;
-+					if (buflen < 0)
-+						goto out;
-+					*--end = (c & 7) + '0';
-+					*--end = ((c >> 3) & 7) + '0';
-+					*--end = (c >> 6) + '0';
-+					*--end = '\\';
-+				}
-+				cp--;
-+			}
-+			if (--buflen < 0)
-+				goto out;
-+			*--end = '/';
-+		}
-+		dentry = parent;
-+	}
-+	if (*end == '/') {
-+		buflen++;
-+		end++;
-+	}
-+	{
-+		const char *sp = dentry->d_name.name;
-+		const char *cp = sp + dentry->d_name.len - 1;
-+		unsigned char c;
-+		while (sp <= cp) {
-+			c = *(unsigned char *) cp;
-+			if (c == '\\') {
-+				buflen -= 2;
-+				if (buflen < 0)
-+					goto out;
-+				*--end = '\\';
-+				*--end = '\\';
-+			} else if (c > ' ' && c < 127) {
-+				if (--buflen < 0)
-+					goto out;
-+				*--end = (char) c;
-+			} else {
-+				buflen -= 4;
-+				if (buflen < 0)
-+					goto out;
-+				*--end = (c & 7) + '0';
-+				*--end = ((c >> 3) & 7) + '0';
-+				*--end = (c >> 6) + '0';
-+				*--end = '\\';
-+			}
-+			cp--;
-+		}
-+	}
-+	/* Move the pathname to the top of the buffer. */
-+	memmove(start, end, strlen(end) + 1);
-+	return 0;
-+ out:
-+	return -ENOMEM;
-+	/***** CRITICAL SECTION END *****/
-+}
-+
-+/**
-+ * ccs_realpath_from_dentry2 - Returns realpath(3) of the given dentry but ignores chroot'ed root.
-+ *
-+ * @dentry:      Pointer to "struct dentry".
-+ * @mnt:         Pointer to "struct vfsmount".
-+ * @newname:     Pointer to buffer to return value in.
-+ * @newname_len: Size of @newname.
++ * @dev_name:  Name of device file.
++ * @dir_name:  Name of mount point.
++ * @fs_type:   Name of filesystem.
++ * @flags:     Mount options.
++ * @is_delete: True if it is a delete request.
 + *
 + * Returns 0 on success, negative value otherwise.
 + */
-+int ccs_realpath_from_dentry2(struct dentry *dentry, struct vfsmount *mnt,
-+			      char *newname, int newname_len)
++static int update_mount_acl(const char *dev_name, const char *dir_name,
++			    const char *fs_type, const unsigned long flags,
++			    const bool is_delete)
 +{
-+	int error;
-+	struct dentry *d_dentry;
-+	struct vfsmount *d_mnt;
-+	if (!dentry || !mnt || !newname || newname_len <= 0)
++	struct file_system_type *type = NULL;
++	struct mount_entry *new_entry;
++	struct mount_entry *ptr;
++	const struct path_info *fs;
++	const struct path_info *dev;
++	const struct path_info *dir;
++	static DEFINE_MUTEX(lock);
++	int error = -ENOMEM;
++	fs = ccs_save_name(fs_type);
++	if (!fs)
 +		return -EINVAL;
-+	d_dentry = dget(dentry);
-+	d_mnt = mntget(mnt);
-+	/***** CRITICAL SECTION START *****/
-+	spin_lock(&dcache_lock);
-+	spin_lock(&vfsmount_lock);
-+	error = get_absolute_path(d_dentry, d_mnt, newname, newname_len);
-+	spin_unlock(&vfsmount_lock);
-+	spin_unlock(&dcache_lock);
-+	/***** CRITICAL SECTION END *****/
-+	dput(d_dentry);
-+	mntput(d_mnt);
-+	if (error)
-+		printk(KERN_WARNING "ccs_realpath: Pathname too long.\n");
++	if (!dev_name)
++		/* Map dev_name to "<NULL>" for if no dev_name given. */
++		dev_name = "<NULL>";
++	if (!strcmp(fs->name, MOUNT_REMOUNT_KEYWORD))
++		/* Fix dev_name to "any" for remount permission. */
++		dev_name = "any";
++	if (!strcmp(fs->name, MOUNT_MAKE_UNBINDABLE_KEYWORD) ||
++	    !strcmp(fs->name, MOUNT_MAKE_PRIVATE_KEYWORD) ||
++	    !strcmp(fs->name, MOUNT_MAKE_SLAVE_KEYWORD) ||
++	    !strcmp(fs->name, MOUNT_MAKE_SHARED_KEYWORD))
++		dev_name = "any";
++	if (!ccs_is_correct_path(dev_name, 0, 0, 0, __func__) ||
++	    !ccs_is_correct_path(dir_name, 0, 0, 0, __func__))
++		return -EINVAL;
++	dev = ccs_save_name(dev_name);
++	dir = ccs_save_name(dir_name);
++	if (!dev || !dir)
++		return -ENOMEM;
++	mutex_lock(&lock);
++	list1_for_each_entry(ptr, &mount_list, list) {
++		if (ptr->flags != flags ||
++		    ccs_pathcmp(ptr->dev_name, dev) ||
++		    ccs_pathcmp(ptr->dir_name, dir) ||
++		    ccs_pathcmp(ptr->fs_type, fs))
++			continue;
++		error = 0;
++		if (is_delete) {
++			ptr->is_deleted = true;
++			goto out;
++		} else {
++			if (ptr->is_deleted) {
++				ptr->is_deleted = false;
++				goto update;
++			}
++			goto out; /* No changes. */
++		}
++	}
++	if (is_delete) {
++		error = -ENOENT;
++		goto out;
++	}
++	new_entry = ccs_alloc_element(sizeof(*new_entry));
++	if (!new_entry)
++		goto out;
++	new_entry->dev_name = dev;
++	new_entry->dir_name = dir;
++	new_entry->fs_type = fs;
++	new_entry->flags = flags;
++	list1_add_tail_mb(&new_entry->list, &mount_list);
++	error = 0;
++	ptr = new_entry;
++ update:
++	if (!strcmp(fs->name, MOUNT_REMOUNT_KEYWORD)) {
++		printk(KERN_CONT "%sAllow remount %s with options 0x%lX.\n",
++		       ccs_log_level, dir->name, ptr->flags);
++	} else if (!strcmp(fs->name, MOUNT_BIND_KEYWORD)
++		   || !strcmp(fs->name, MOUNT_MOVE_KEYWORD)) {
++		printk(KERN_CONT "%sAllow mount %s %s %s with options 0x%lX\n",
++		       ccs_log_level, fs->name, dev->name, dir->name,
++		       ptr->flags);
++	} else if (!strcmp(fs->name, MOUNT_MAKE_UNBINDABLE_KEYWORD) ||
++		   !strcmp(fs->name, MOUNT_MAKE_PRIVATE_KEYWORD) ||
++		   !strcmp(fs->name, MOUNT_MAKE_SLAVE_KEYWORD) ||
++		   !strcmp(fs->name, MOUNT_MAKE_SHARED_KEYWORD)) {
++		printk(KERN_CONT "%sAllow mount %s %s with options 0x%lX.\n",
++		       ccs_log_level, fs->name, dir->name, ptr->flags);
++	} else {
++		type = get_fs_type(fs->name);
++		if (type && (type->fs_flags & FS_REQUIRES_DEV) != 0)
++			printk(KERN_CONT "%sAllow mount -t %s %s %s "
++			       "with options 0x%lX.\n", ccs_log_level,
++			       fs->name, dev->name, dir->name, ptr->flags);
++		else
++			printk(KERN_CONT "%sAllow mount %s on %s "
++			       "with options 0x%lX.\n", ccs_log_level,
++			       fs->name, dir->name, ptr->flags);
++	}
++	if (type)
++		put_filesystem(type);
++ out:
++	mutex_unlock(&lock);
++	ccs_update_counter(CCS_UPDATES_COUNTER_SYSTEM_POLICY);
 +	return error;
 +}
 +
 +/**
-+ * ccs_realpath_from_dentry - Returns realpath(3) of the given pathname but ignores chroot'ed root.
++ * print_success - Print success messages.
 + *
-+ * @dentry: Pointer to "struct dentry".
-+ * @mnt:    Pointer to "struct vfsmount".
-+ *
-+ * Returns the realpath of the given @dentry and @mnt on success,
-+ * NULL otherwise.
-+ *
-+ * These functions use ccs_alloc(), so caller must ccs_free()
-+ * if these functions didn't return NULL.
-+ */
-+char *ccs_realpath_from_dentry(struct dentry *dentry, struct vfsmount *mnt)
-+{
-+	char *buf = ccs_alloc(sizeof(struct ccs_page_buffer));
-+	if (buf && ccs_realpath_from_dentry2(dentry, mnt, buf,
-+					     CCS_MAX_PATHNAME_LEN - 1) == 0)
-+		return buf;
-+	ccs_free(buf);
-+	return NULL;
-+}
-+
-+/**
-+ * ccs_realpath - Get realpath of a pathname.
-+ *
-+ * @pathname: The pathname to solve.
-+ *
-+ * Returns the realpath of @pathname on success, NULL otherwise.
-+ */
-+char *ccs_realpath(const char *pathname)
-+{
-+	struct nameidata nd;
-+	if (pathname && path_lookup(pathname, LOOKUP_FOLLOW, &nd) == 0) {
-+		char *buf = ccs_realpath_from_dentry(nd.path.dentry,
-+						     nd.path.mnt);
-+		path_put(&nd.path);
-+		return buf;
-+	}
-+	return NULL;
-+}
-+
-+/**
-+ * ccs_realpath_nofollow - Get realpath of a pathname.
-+ *
-+ * @pathname: The pathname to solve.
-+ *
-+ * Returns the realpath of @pathname on success, NULL otherwise.
-+ */
-+char *ccs_realpath_nofollow(const char *pathname)
-+{
-+	struct nameidata nd;
-+	if (pathname && path_lookup(pathname, 0, &nd) == 0) {
-+		char *buf = ccs_realpath_from_dentry(nd.path.dentry,
-+						     nd.path.mnt);
-+		path_put(&nd.path);
-+		return buf;
-+	}
-+	return NULL;
-+}
-+
-+/**
-+ * round_up - Round up an integer so that the returned pointers are appropriately aligned.
-+ *
-+ * @size: Size in bytes.
-+ *
-+ * Returns rounded value of @size.
-+ *
-+ * FIXME: Are there more requirements that is needed for assigning value
-+ * atomically?
-+ */
-+static inline unsigned int round_up(const unsigned int size)
-+{
-+	if (sizeof(void *) >= sizeof(long))
-+		return ((size + sizeof(void *) - 1)
-+			/ sizeof(void *)) * sizeof(void *);
-+	else
-+		return ((size + sizeof(long) - 1)
-+			/ sizeof(long)) * sizeof(long);
-+}
-+
-+static unsigned int allocated_memory_for_elements;
-+
-+/**
-+ * ccs_get_memory_used_for_elements - Get memory used for keeping ACL structures.
-+ *
-+ * Returns memory used for keeping ACL structures.
-+ */
-+unsigned int ccs_get_memory_used_for_elements(void)
-+{
-+	return allocated_memory_for_elements;
-+}
-+
-+/**
-+ * ccs_alloc_element - Allocate permanent memory for structures.
-+ *
-+ * @size: Size in bytes.
-+ *
-+ * Returns pointer to allocated memory on success, NULL otherwise.
-+ *
-+ * The RAM is chunked, so NEVER try to kfree() the returned pointer.
-+ */
-+void *ccs_alloc_element(const unsigned int size)
-+{
-+	static DEFINE_MUTEX(lock);
-+	static char *buf;
-+	static unsigned int buf_used_len = PAGE_SIZE;
-+	char *ptr = NULL;
-+	const unsigned int word_aligned_size = round_up(size);
-+	if (word_aligned_size > PAGE_SIZE)
-+		return NULL;
-+	mutex_lock(&lock);
-+	if (buf_used_len + word_aligned_size > PAGE_SIZE) {
-+		ptr = kzalloc(PAGE_SIZE, GFP_KERNEL);
-+		if (!ptr) {
-+			printk(KERN_WARNING "ERROR: Out of memory "
-+			       "for ccs_alloc_element().\n");
-+			if (!sbin_init_started)
-+				panic("MAC Initialization failed.\n");
-+		} else {
-+			buf = ptr;
-+			allocated_memory_for_elements += PAGE_SIZE;
-+			buf_used_len = word_aligned_size;
-+			ptr = buf;
-+		}
-+	} else if (word_aligned_size) {
-+		int i;
-+		ptr = buf + buf_used_len;
-+		buf_used_len += word_aligned_size;
-+		for (i = 0; i < word_aligned_size; i++) {
-+			if (!ptr[i])
-+				continue;
-+			printk(KERN_ERR "WARNING: Reserved memory was tainted! "
-+			       "The system might go wrong.\n");
-+			ptr[i] = '\0';
-+		}
-+	}
-+	mutex_unlock(&lock);
-+	return ptr;
-+}
-+
-+static unsigned int allocated_memory_for_savename;
-+
-+/**
-+ * ccs_get_memory_used_for_save_name - Get memory used for keeping string data.
-+ *
-+ * Returns memory used for keeping string data.
-+ */
-+unsigned int ccs_get_memory_used_for_save_name(void)
-+{
-+	return allocated_memory_for_savename;
-+}
-+
-+#define MAX_HASH 256
-+
-+/* Structure for string data. */
-+struct name_entry {
-+	struct list1_head list;
-+	struct path_info entry;
-+};
-+
-+/* Structure for available memory region. */
-+struct free_memory_block_list {
-+	struct list_head list;
-+	char *ptr;             /* Pointer to a free area. */
-+	int len;               /* Length of the area.     */
-+};
-+
-+/* The list for "struct name_entry". */
-+static struct list1_head name_list[MAX_HASH];
-+
-+/**
-+ * ccs_save_name - Allocate permanent memory for string data.
-+ *
-+ * @name: The string to store into the permernent memory.
-+ *
-+ * Returns pointer to "struct path_info" on success, NULL otherwise.
-+ *
-+ * The RAM is shared, so NEVER try to modify or kfree() the returned name.
-+ */
-+const struct path_info *ccs_save_name(const char *name)
-+{
-+	static LIST_HEAD(fmb_list);
-+	static DEFINE_MUTEX(lock);
-+	struct name_entry *ptr;
-+	unsigned int hash;
-+	struct free_memory_block_list *fmb;
-+	int len;
-+	char *cp;
-+	if (!name)
-+		return NULL;
-+	len = strlen(name) + 1;
-+	if (len > CCS_MAX_PATHNAME_LEN) {
-+		printk(KERN_WARNING "ERROR: Name too long "
-+		       "for ccs_save_name().\n");
-+		return NULL;
-+	}
-+	hash = full_name_hash((const unsigned char *) name, len - 1);
-+	mutex_lock(&lock);
-+	list1_for_each_entry(ptr, &name_list[hash % MAX_HASH], list) {
-+		if (hash == ptr->entry.hash && !strcmp(name, ptr->entry.name))
-+			goto out;
-+	}
-+	list_for_each_entry(fmb, &fmb_list, list) {
-+		if (len <= fmb->len)
-+			goto ready;
-+	}
-+	cp = kzalloc(PAGE_SIZE, GFP_KERNEL);
-+	fmb = kzalloc(sizeof(*fmb), GFP_KERNEL);
-+	if (!cp || !fmb) {
-+		kfree(cp);
-+		kfree(fmb);
-+		printk(KERN_WARNING "ERROR: Out of memory "
-+		       "for ccs_save_name().\n");
-+		if (!sbin_init_started)
-+			panic("MAC Initialization failed.\n");
-+		ptr = NULL;
-+		goto out;
-+	}
-+	allocated_memory_for_savename += PAGE_SIZE;
-+	list_add(&fmb->list, &fmb_list);
-+	fmb->ptr = cp;
-+	fmb->len = PAGE_SIZE;
-+ ready:
-+	ptr = ccs_alloc_element(sizeof(*ptr));
-+	if (!ptr)
-+		goto out;
-+	ptr->entry.name = fmb->ptr;
-+	memmove(fmb->ptr, name, len);
-+	ccs_fill_path_info(&ptr->entry);
-+	fmb->ptr += len;
-+	fmb->len -= len;
-+	list1_add_tail_mb(&ptr->list, &name_list[hash % MAX_HASH]);
-+	if (fmb->len == 0) {
-+		list_del(&fmb->list);
-+		kfree(fmb);
-+	}
-+ out:
-+	mutex_unlock(&lock);
-+	return ptr ? &ptr->entry : NULL;
-+}
-+
-+/* Structure for temporarily allocated memory. */
-+struct cache_entry {
-+	struct list_head list;
-+	void *ptr;
-+	int size;
-+};
-+
-+static struct kmem_cache *ccs_cachep;
-+
-+/**
-+ * ccs_realpath_init - Initialize realpath related code.
-+ *
-+ * Returns 0.
-+ */
-+static int __init ccs_realpath_init(void)
-+{
-+	int i;
-+	if (CCS_MAX_PATHNAME_LEN > PAGE_SIZE)
-+		panic("Bad size.");
-+	ccs_cachep = kmem_cache_create("ccs_cache", sizeof(struct cache_entry),
-+				       0, 0, NULL);
-+	if (!ccs_cachep)
-+		panic("Can't create cache.\n");
-+	for (i = 0; i < MAX_HASH; i++)
-+		INIT_LIST1_HEAD(&name_list[i]);
-+	INIT_LIST1_HEAD(&KERNEL_DOMAIN.acl_info_list);
-+	KERNEL_DOMAIN.domainname = ccs_save_name(ROOT_NAME);
-+	list1_add_tail_mb(&KERNEL_DOMAIN.list, &domain_list);
-+	if (ccs_find_domain(ROOT_NAME) != &KERNEL_DOMAIN)
-+		panic("Can't register KERNEL_DOMAIN");
-+	return 0;
-+}
-+
-+security_initcall(ccs_realpath_init);
-+
-+/* The list for "struct cache_entry". */
-+static LIST_HEAD(cache_list);
-+
-+static DEFINE_SPINLOCK(cache_list_lock);
-+
-+static unsigned int dynamic_memory_size;
-+
-+/**
-+ * ccs_get_memory_used_for_dynamic - Get memory used for temporal purpose.
-+ *
-+ * Returns memory used for temporal purpose.
-+ */
-+unsigned int ccs_get_memory_used_for_dynamic(void)
-+{
-+	return dynamic_memory_size;
-+}
-+
-+/**
-+ * ccs_alloc - Allocate memory for temporal purpose.
-+ *
-+ * @size: Size in bytes.
-+ *
-+ * Returns pointer to allocated memory on success, NULL otherwise.
-+ */
-+void *ccs_alloc(const size_t size)
-+{
-+	struct cache_entry *new_entry;
-+	void *ret = kzalloc(size, GFP_KERNEL);
-+	if (!ret)
-+		goto out;
-+	new_entry = kmem_cache_alloc(ccs_cachep, GFP_KERNEL);
-+	if (!new_entry) {
-+		kfree(ret);
-+		ret = NULL;
-+		goto out;
-+	}
-+	INIT_LIST_HEAD(&new_entry->list);
-+	new_entry->ptr = ret;
-+	new_entry->size = ksize(ret);
-+	/***** CRITICAL SECTION START *****/
-+	spin_lock(&cache_list_lock);
-+	list_add_tail(&new_entry->list, &cache_list);
-+	dynamic_memory_size += new_entry->size;
-+	spin_unlock(&cache_list_lock);
-+	/***** CRITICAL SECTION END *****/
-+ out:
-+	return ret;
-+}
-+
-+/**
-+ * ccs_free - Release memory allocated by ccs_alloc().
-+ *
-+ * @p: Pointer returned by ccs_alloc(). May be NULL.
++ * @dev_name: Name of device file.
++ * @dir_name: Name of mount point.
++ * @type:     Name of filesystem type.
++ * @flags:    Mount options.
++ * @need_dev: Type of @dev_name.
 + *
 + * Returns nothing.
 + */
-+void ccs_free(const void *p)
++static void print_success(const char *dev_name, const char *dir_name,
++			  const char *type, const unsigned long flags,
++			  const int need_dev)
 +{
-+	struct list_head *v;
-+	struct cache_entry *entry = NULL;
-+	if (!p)
-+		return;
-+	/***** CRITICAL SECTION START *****/
-+	spin_lock(&cache_list_lock);
-+	list_for_each(v, &cache_list) {
-+		entry = list_entry(v, struct cache_entry, list);
-+		if (entry->ptr != p) {
-+			entry = NULL;
-+			continue;
-+		}
-+		list_del(&entry->list);
-+		dynamic_memory_size -= entry->size;
-+		break;
-+	}
-+	spin_unlock(&cache_list_lock);
-+	/***** CRITICAL SECTION END *****/
-+	if (entry) {
-+		kfree(p);
-+		kmem_cache_free(ccs_cachep, entry);
++	if (need_dev > 0) {
++		printk(KERN_DEBUG "SAKURA-NOTICE: "
++		       "'mount -t %s %s %s 0x%lX' accepted.\n",
++		       type, dev_name, dir_name, flags);
++	} else if (need_dev < 0) {
++		printk(KERN_DEBUG "SAKURA-NOTICE: "
++		       "'mount %s %s %s 0x%lX' accepted.\n",
++		       type, dev_name, dir_name, flags);
++	} else if (!strcmp(type, MOUNT_REMOUNT_KEYWORD)) {
++		printk(KERN_DEBUG "SAKURA-NOTICE: "
++		       "'mount -o remount %s 0x%lX' accepted.\n",
++		       dir_name, flags);
++	} else if (!strcmp(type, MOUNT_MAKE_UNBINDABLE_KEYWORD) ||
++		   !strcmp(type, MOUNT_MAKE_PRIVATE_KEYWORD) ||
++		   !strcmp(type, MOUNT_MAKE_SLAVE_KEYWORD) ||
++		   !strcmp(type, MOUNT_MAKE_SHARED_KEYWORD)) {
++		printk(KERN_DEBUG "SAKURA-NOTICE: "
++		       "'mount %s %s 0x%lX' accepted.\n",
++		       type, dir_name, flags);
 +	} else {
-+		printk(KERN_WARNING "BUG: ccs_free() with invalid pointer.\n");
++		printk(KERN_DEBUG "SAKURA-NOTICE: "
++		       "'mount %s on %s 0x%lX' accepted.\n",
++		       type, dir_name, flags);
 +	}
++}
++
++/**
++ * print_error - Print error messages.
++ *
++ * @dev_name:   Name of device file.
++ * @dir_name:   Name of mount point.
++ * @type:       Name of filesystem type.
++ * @flags:      Mount options.
++ * @is_enforce: True if it is enforcing mode.
++ * @error:      Error value.
++ *
++ * Returns 0 if permitted by the administrator's decision, negative value
++ * otherwise.
++ */
++static int print_error(const char *dev_name, const char *dir_name,
++		       const char *type, const unsigned long flags,
++		       const bool is_enforce, int error)
++{
++	const char *realname1 = ccs_realpath(dev_name);
++	const char *realname2 = ccs_realpath(dir_name);
++	const char *exename = ccs_get_exe();
++	if (!strcmp(type, MOUNT_REMOUNT_KEYWORD)) {
++		printk(KERN_WARNING "SAKURA-%s: mount -o remount %s 0x%lX "
++		       "(pid=%d:exe=%s): Permission denied.\n",
++		       ccs_get_msg(is_enforce),
++		       realname2 ? realname2 : dir_name,
++		       flags, current->pid, exename);
++		if (is_enforce)
++			error = ccs_check_supervisor("# %s is requesting\n"
++						     "mount -o remount %s "
++						     "0x%lX\n", exename,
++						     realname2 ? realname2
++						     : dir_name, flags);
++	} else if (!strcmp(type, MOUNT_BIND_KEYWORD)
++		   || !strcmp(type, MOUNT_MOVE_KEYWORD)) {
++		printk(KERN_WARNING "SAKURA-%s: mount %s %s %s 0x%lX "
++		       "(pid=%d:exe=%s): Permission denied.\n",
++		       ccs_get_msg(is_enforce), type,
++		       realname1 ? realname1 : dev_name,
++		       realname2 ? realname2 : dir_name,
++		       flags, current->pid, exename);
++		if (is_enforce)
++			error = ccs_check_supervisor("# %s is requesting\n"
++						     "mount %s %s %s 0x%lX\n",
++						     exename, type,
++						     realname1 ? realname1 :
++						     dev_name,
++						     realname2 ? realname2 :
++						     dir_name, flags);
++	} else if (!strcmp(type, MOUNT_MAKE_UNBINDABLE_KEYWORD) ||
++		   !strcmp(type, MOUNT_MAKE_PRIVATE_KEYWORD) ||
++		   !strcmp(type, MOUNT_MAKE_SLAVE_KEYWORD) ||
++		   !strcmp(type, MOUNT_MAKE_SHARED_KEYWORD)) {
++		printk(KERN_WARNING "SAKURA-%s: mount %s %s 0x%lX "
++		       "(pid=%d:exe=%s): Permission denied.\n",
++		       ccs_get_msg(is_enforce), type,
++		       realname2 ? realname2 : dir_name,
++		       flags, current->pid, exename);
++		if (is_enforce)
++			error = ccs_check_supervisor("# %s is requesting\n"
++						     "mount %s %s 0x%lX",
++						     exename, type,
++						     realname2 ? realname2 :
++						     dir_name, flags);
++	} else {
++		printk(KERN_WARNING "SAKURA-%s: mount -t %s %s %s 0x%lX "
++		       "(pid=%d:exe=%s): Permission denied.\n",
++		       ccs_get_msg(is_enforce), type,
++		       realname1 ? realname1 : dev_name,
++		       realname2 ? realname2 : dir_name,
++		       flags, current->pid, exename);
++		if (is_enforce)
++			error = ccs_check_supervisor("# %s is requesting\n"
++						     "mount -t %s %s %s "
++						     "0x%lX\n", exename, type,
++						     realname1 ? realname1 :
++						     dev_name,
++						     realname2 ? realname2 :
++						     dir_name, flags);
++	}
++	ccs_free(exename);
++	ccs_free(realname2);
++	ccs_free(realname1);
++	return error;
++}
++
++/**
++ * check_mount_permission2 - Check permission for mount() operation.
++ *
++ * @dev_name: Name of device file.
++ * @dir_name: Name of mount point.
++ * @type:     Name of filesystem type. May be NULL.
++ * @flags:    Mount options.
++ *
++ * Returns 0 on success, negative value otherwise.
++ */
++static int check_mount_permission2(char *dev_name, char *dir_name, char *type,
++				   unsigned long flags)
++{
++	const u8 mode = ccs_check_flags(CCS_SAKURA_RESTRICT_MOUNT);
++	const bool is_enforce = (mode == 3);
++	int error = -EPERM;
++	if (!mode)
++		return 0;
++	if (!type)
++		type = "<NULL>";
++	if ((flags & MS_MGC_MSK) == MS_MGC_VAL)
++		flags &= ~MS_MGC_MSK;
++	switch (flags & (MS_REMOUNT | MS_MOVE | MS_BIND)) {
++	case MS_REMOUNT:
++	case MS_MOVE:
++	case MS_BIND:
++	case 0:
++		break;
++	default:
++		printk(KERN_WARNING "SAKURA-ERROR: "
++		       "%s%s%sare given for single mount operation.\n",
++		       flags & MS_REMOUNT ? "'remount' " : "",
++		       flags & MS_MOVE    ? "'move' " : "",
++		       flags & MS_BIND    ? "'bind' " : "");
++		return -EINVAL;
++	}
++	switch (flags & (MS_UNBINDABLE | MS_PRIVATE | MS_SLAVE | MS_SHARED)) {
++	case MS_UNBINDABLE:
++	case MS_PRIVATE:
++	case MS_SLAVE:
++	case MS_SHARED:
++	case 0:
++		break;
++	default:
++		printk(KERN_WARNING "SAKURA-ERROR: "
++		       "%s%s%s%sare given for single mount operation.\n",
++		       flags & MS_UNBINDABLE ? "'unbindable' " : "",
++		       flags & MS_PRIVATE    ? "'private' " : "",
++		       flags & MS_SLAVE      ? "'slave' " : "",
++		       flags & MS_SHARED     ? "'shared' " : "");
++		return -EINVAL;
++	}
++	if (flags & MS_REMOUNT) {
++		error = check_mount_permission2(dev_name, dir_name,
++						MOUNT_REMOUNT_KEYWORD,
++						flags & ~MS_REMOUNT);
++	} else if (flags & MS_MOVE) {
++		error = check_mount_permission2(dev_name, dir_name,
++						MOUNT_MOVE_KEYWORD,
++						flags & ~MS_MOVE);
++	} else if (flags & MS_BIND) {
++		error = check_mount_permission2(dev_name, dir_name,
++						MOUNT_BIND_KEYWORD,
++						flags & ~MS_BIND);
++	} else if (flags & MS_UNBINDABLE) {
++		error = check_mount_permission2(dev_name, dir_name,
++						MOUNT_MAKE_UNBINDABLE_KEYWORD,
++						flags & ~MS_UNBINDABLE);
++	} else if (flags & MS_PRIVATE) {
++		error = check_mount_permission2(dev_name, dir_name,
++						MOUNT_MAKE_PRIVATE_KEYWORD,
++						flags & ~MS_PRIVATE);
++	} else if (flags & MS_SLAVE) {
++		error = check_mount_permission2(dev_name, dir_name,
++						MOUNT_MAKE_SLAVE_KEYWORD,
++						flags & ~MS_SLAVE);
++	} else if (flags & MS_SHARED) {
++		error = check_mount_permission2(dev_name, dir_name,
++						MOUNT_MAKE_SHARED_KEYWORD,
++						flags & ~MS_SHARED);
++	} else {
++		struct mount_entry *ptr;
++		struct file_system_type *fstype = NULL;
++		const char *requested_dir_name = NULL;
++		const char *requested_dev_name = NULL;
++		struct path_info rdev;
++		struct path_info rdir;
++		int need_dev = 0;
++
++		requested_dir_name = ccs_realpath(dir_name);
++		if (!requested_dir_name) {
++			error = -ENOENT;
++			goto cleanup;
++		}
++		rdir.name = requested_dir_name;
++		ccs_fill_path_info(&rdir);
++
++		/* Compare fs name. */
++		if (!strcmp(type, MOUNT_REMOUNT_KEYWORD)) {
++			/* Needn't to resolve dev_name */
++		} else if (!strcmp(type, MOUNT_MAKE_UNBINDABLE_KEYWORD) ||
++			   !strcmp(type, MOUNT_MAKE_PRIVATE_KEYWORD) ||
++			   !strcmp(type, MOUNT_MAKE_SLAVE_KEYWORD) ||
++			   !strcmp(type, MOUNT_MAKE_SHARED_KEYWORD)) {
++			/* Needn't to resolve dev_name */
++		} else if (!strcmp(type, MOUNT_BIND_KEYWORD) ||
++			   !strcmp(type, MOUNT_MOVE_KEYWORD)) {
++			requested_dev_name = ccs_realpath(dev_name);
++			if (!requested_dev_name) {
++				error = -ENOENT;
++				goto cleanup;
++			}
++			rdev.name = requested_dev_name;
++			ccs_fill_path_info(&rdev);
++			/* dev_name is a directory */
++			need_dev = -1;
++		} else {
++			fstype = get_fs_type(type);
++			if (fstype) {
++				if (fstype->fs_flags & FS_REQUIRES_DEV) {
++					requested_dev_name
++						= ccs_realpath(dev_name);
++					if (!requested_dev_name) {
++						error = -ENOENT;
++						goto cleanup;
++					}
++					rdev.name = requested_dev_name;
++					ccs_fill_path_info(&rdev);
++					/* dev_name is a block device file */
++					need_dev = 1;
++				}
++			} else {
++				error = -ENODEV;
++				goto cleanup;
++			}
++		}
++		list1_for_each_entry(ptr, &mount_list, list) {
++			if (ptr->is_deleted)
++				continue;
++
++			/* Compare options */
++			if (ptr->flags != flags)
++				continue;
++
++			/* Compare fs name. */
++			if (strcmp(type, ptr->fs_type->name))
++				continue;
++
++			/* Compare mount point. */
++			if (ccs_path_matches_pattern(&rdir, ptr->dir_name) == 0)
++				continue;
++
++			/* Compare device name. */
++			if (requested_dev_name &&
++			    ccs_path_matches_pattern(&rdev, ptr->dev_name) == 0)
++				continue;
++
++			/* OK. */
++			error = 0;
++			print_success(requested_dev_name, requested_dir_name,
++				      type, flags, need_dev);
++			break;
++		}
++		if (error)
++			error = print_error(dev_name, dir_name, type, flags,
++					    is_enforce, error);
++		if (error && mode == 1)
++			update_mount_acl(need_dev ?
++					 requested_dev_name : dev_name,
++					 requested_dir_name, type, flags, 0);
++ cleanup:
++		ccs_free(requested_dev_name);
++		ccs_free(requested_dir_name);
++		if (fstype)
++			put_filesystem(fstype);
++	}
++	if (!is_enforce)
++		error = 0;
++	return error;
++}
++
++/**
++ * ccs_check_mount_permission - Check permission for mount() operation.
++ *
++ * @dev_name: Name of device file.
++ * @dir_name: Name of mount point.
++ * @type:     Name of filesystem type. May be NULL.
++ * @flags:    Mount options.
++ *
++ * Returns 0 on success, negative value otherwise.
++ *
++ * This is a wrapper to allow use of 1.4.x patch for 1.5.x.
++ */
++int ccs_check_mount_permission(char *dev_name, char *dir_name, char *type,
++			       const unsigned long *flags)
++{
++	return check_mount_permission2(dev_name, dir_name, type, *flags);
++}
++
++/**
++ * ccs_write_mount_policy - Write "struct mount_entry" list.
++ *
++ * @data:      String to parse.
++ * @is_delete: True if it is a delete request.
++ *
++ * Returns 0 on success, negative value otherwise.
++ */
++int ccs_write_mount_policy(char *data, const bool is_delete)
++{
++	char *cp;
++	char *cp2;
++	const char *fs;
++	const char *dev;
++	const char *dir;
++	unsigned long flags = 0;
++	cp2 = data;
++	cp = strchr(cp2, ' ');
++	if (!cp)
++		return -EINVAL;
++	*cp = '\0';
++	dev = cp2;
++	cp2 = cp + 1;
++	cp = strchr(cp2, ' ');
++	if (!cp)
++		return -EINVAL;
++	*cp = '\0';
++	dir = cp2;
++	cp2 = cp + 1;
++	cp = strchr(cp2, ' ');
++	if (!cp)
++		return -EINVAL;
++	*cp = '\0';
++	fs = cp2;
++	flags = simple_strtoul(cp + 1, NULL, 0);
++	return update_mount_acl(dev, dir, fs, flags, is_delete);
++}
++
++/**
++ * ccs_read_mount_policy - Read "struct mount_entry" list.
++ *
++ * @head: Pointer to "struct ccs_io_buffer".
++ *
++ * Returns true on success, false otherwise.
++ */
++bool ccs_read_mount_policy(struct ccs_io_buffer *head)
++{
++	struct list1_head *pos;
++	list1_for_each_cookie(pos, head->read_var2, &mount_list) {
++		struct mount_entry *ptr;
++		ptr = list1_entry(pos, struct mount_entry, list);
++		if (ptr->is_deleted)
++			continue;
++		if (!ccs_io_printf(head, KEYWORD_ALLOW_MOUNT "%s %s %s 0x%lX\n",
++				   ptr->dev_name->name, ptr->dir_name->name,
++				   ptr->fs_type->name, ptr->flags))
++			goto out;
++	}
++	return true;
++ out:
++	return false;
 +}
 
 -- 
