@@ -1,86 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756194AbYDDLhP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756627AbYDDLsn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756194AbYDDLhP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Apr 2008 07:37:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751771AbYDDLhB
+	id S1756627AbYDDLsn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Apr 2008 07:48:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752682AbYDDLse
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Apr 2008 07:37:01 -0400
-Received: from moutng.kundenserver.de ([212.227.126.177]:63306 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751652AbYDDLhA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Apr 2008 07:37:00 -0400
-Date: Fri, 4 Apr 2008 13:35:48 +0200 (CEST)
-From: Bodo Eggert <7eggert@gmx.de>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-cc: 7eggert@gmx.de, Jeff Garzik <jeff@garzik.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Chris Snook <csnook@redhat.com>, Dave Jones <davej@codemonkey.org.uk>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       NetDev <netdev@vger.kernel.org>, David Miller <davem@davemloft.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: GFP_ATOMIC page allocation failures.
-In-Reply-To: <200804042159.54220.nickpiggin@yahoo.com.au>
-Message-ID: <Pine.LNX.4.58.0804041307500.9036@be10.lrz>
-References: <adYyJ-20N-11@gated-at.bofh.it> <aeqF6-45P-29@gated-at.bofh.it>
- <E1Jhib4-0000md-FP@be1.7eggert.dyndns.org> <200804042159.54220.nickpiggin@yahoo.com.au>
+	Fri, 4 Apr 2008 07:48:34 -0400
+Received: from mail.ift.unesp.br ([200.145.46.3]:51719 "EHLO mail.ift.unesp.br"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752121AbYDDLsd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Apr 2008 07:48:33 -0400
+Date: Fri, 4 Apr 2008 08:47:56 -0300
+From: "Carlos R. Mafra" <crmafra2@gmail.com>
+To: Ray Lee <ray-lk@madrabbit.org>
+Cc: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Pallipadi@ogre.sisk.pl, Soeren Sonnenburg <kernel@nn7.de>
+Subject: Re: 2.6.25-current-git hangs on boot unless CONFIG_CPU_IDLE=n -
+	Apple
+Message-ID: <20080404114756.GA3890@localhost.ift.unesp.br>
+References: <pdj7pZVURbL.A.42H.kDW9HB@albercik> <pdYe6zNQVl.A.AOB.6GW9HB@albercik> <924EFEDD5F540B4284297C4DC59F3DEED0EA1E@orsmsx423.amr.corp.intel.com> <20080404011053.GA21254@localhost.ift.unesp.br> <2c0942db0804032015y57e91811r37b729cd836cef6d@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
-X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
-X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
-X-Provags-ID: V01U2FsdGVkX18twWx/JW64xqlf74g6fJ4vrRdDHyvn/yQ+zCz
- oyCMVvmSdOH1cHC9PkMRaXZ5SzU+PMmfg8XTkM/SkuCiNXiVPQ
- lR7g/PNzGbLLyKzu4ZeJg==
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <2c0942db0804032015y57e91811r37b729cd836cef6d@mail.gmail.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 4 Apr 2008, Nick Piggin wrote:
-
-> On Friday 04 April 2008 20:52, Bodo Eggert wrote:
-> > Nick Piggin <nickpiggin@yahoo.com.au> wrote:
-> > > On Thursday 03 April 2008 05:18, Jeff Garzik wrote:
-> > >> Turning to Nick's comment,
-> > >>
-> > >> > It's still actually nice to know how often it is happening even for
-> > >> > these known good sites because too much can indicate a problem and
-> > >> > that you could actually bring performance up by tuning some things.
-> > >>
-> > >> then create a counter or acculuation buffer somewhere.
-> > >>
-> > >> We don't need spew every time there is memory pressure of this
-> > >> magnitude.
-> > >
-> > > Not a complete solution. Counter would be nice, but you need backtraces
-> > > and want a way to more proactively warn the user/tester/developer.
-> > >
-> > > I agree that I don't exactly like adding nowarns around, and I don't
-> > > think places like driver writers should have to know about this stuff.
+On Thu  3.Apr'08 at 20:15:02 -0700, Ray Lee wrote:
+> On Thu, Apr 3, 2008 at 6:10 PM, Carlos R. Mafra <crmafra2@gmail.com> wrote:
+> > On Thu  3.Apr'08 at 17:14:22 -0700, Pallipadi, Venkatesh wrote:
+> >  > >The following report is on the current list of known regressions
+> >  > >from 2.6.24.  Please verify if the issue is still present in the
+> >  > >mainline.
+> >  > >
+> >  > >
+> >  > >Bug-Entry    : http://bugzilla.kernel.org/show_bug.cgi?id=10093
+> >  > >Subject              : 2.6.25-current-git hangs on boot
+> >  > >unless CONFIG_CPU_IDLE=n - Apple
+> >  > >Submitter    : Soeren Sonnenburg <kernel@nn7.de>
+> >  > >Date         : 2008-02-23 18:55 (41 days old)
+> >  > >References   : http://lkml.org/lkml/2008/2/23/263
+> >  > >
+> >  > >http://marc.info/?l=linux-acpi&amp;m=120387537018467&amp;w=4
+> >  > >Handled-By   : Pallipadi, Venkatesh <venkatesh.pallipadi@intel.com>
+> >  > >
+> >  >
+> >  > Last comment I saw from Soeren says it does not really hang. It waits
+> >  > for 5-10 seconds sometimes before continuing. We are still trying to
+> >  > narrow this down with max_cstate etc..
 > >
-> > What about reverse ratelimiting: If the limit is reached, a backtrace will
-> > be generated (and, off cause, positively ratelimited)?
+> >  I should say that my laptop (Vaio) _hangs_ at boot (less than 10% of boots)
+> >  and this is the last message I see:
+> >
+> >  "ACPI: Processor [CPU1] (supports 8 throttling states)"
+> >
+> >  and it stays there "forever" (more than 1 or 2 minutes at least).
+> >
+> >  I am not using my laptop too much these days, and I thought this
+> >  bug had been solved because it didn't hang for the last week (but
+> >  I boot it once per day), however it hang last night (using some
+> >  post 2.6.25-rc7 kernel)
+> >
+> >  I have pictures of the screen while showing this last message at boot,
+> >  should I post it somewhere or that is not necessary?.
 > 
-> I was thinking about that. I got as far as writing a simple patch to
-> printk  so that it would not start to trigger until it gets a 2nd event
-> within 'n' jiffies of the first.
+> If the sysrq key still works when that happens, try to do a sysrq-t,
+> s, b to generate a trace, sync the filesystem, and reboot. If anything
+> made it to the logs, please post it.
 
-I think there was a standalone ratelimit function. I'd use it like this:
+Sysrq keys don't work when it hangs, I have to push the power button.
 
-static atomic_alloc_ratelimit; /* needs to be initialized ... */
+Another thing to notice is that when it happens, it usually happens
+more times in a row (like 3 times). And then it can take many boots to
+happen again.
 
-{
-	...
-	if (success)
-		return mem;
-	if(!debug && ratelimit(atomic_alloc_ratelimit))
-		return err_ptr(-ENOMEM);
-	if (printk_ratelimit(first line) > 0) {
-		printk(rest);
-	}
-}
+I've uploaded the picture where it hangs, it is in the very beginning
+of the boot process:
 
-> But actually developers do sometimes want see the event even if it is
-> relatively infrequent...
-
-You shouldn't frighten the users either. /proc/sys/vm/debug?
+http://www.ift.unesp.br/users/crmafra/dsc04673.jpg
