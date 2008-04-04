@@ -1,94 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752518AbYDDXfk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752777AbYDDXs5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752518AbYDDXfk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Apr 2008 19:35:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751286AbYDDXfb
+	id S1752777AbYDDXs5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Apr 2008 19:48:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751339AbYDDXsq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Apr 2008 19:35:31 -0400
-Received: from e36.co.us.ibm.com ([32.97.110.154]:60933 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751242AbYDDXfa (ORCPT
+	Fri, 4 Apr 2008 19:48:46 -0400
+Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:49128 "EHLO
+	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751242AbYDDXsp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Apr 2008 19:35:30 -0400
-Subject: Re: 2.6.25-rc8-mm1 panic in rpaphp_register_slot()
-From: Badari Pulavarty <pbadari@us.ibm.com>
-To: Alex Chiang <achiang@hp.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>, linas@austin.ibm.com
-In-Reply-To: <20080404224227.GA31436@ldl.fc.hp.com>
-References: <1207331616.5916.15.camel@badari-desktop>
-	 <20080404180518.GA12642@ldl.fc.hp.com>
-	 <1207340371.5916.23.camel@badari-desktop>
-	 <20080404224227.GA31436@ldl.fc.hp.com>
+	Fri, 4 Apr 2008 19:48:45 -0400
+Subject: Fix "buggy BIOS check" when CPUs are hot removed
+From: Alok Kataria <akataria@vmware.com>
+To: len.brown@intel.com, rui.zhang@intel.com
+Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Daniel Arai <arai@vmware.com>, Zachary Amsden <zach@vmware.com>
 Content-Type: text/plain
-Date: Fri, 04 Apr 2008 16:35:28 -0700
-Message-Id: <1207352128.5916.26.camel@badari-desktop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
+Organization: VMware, Inc.
+Date: Fri, 04 Apr 2008 16:48:44 -0700
+Message-Id: <1207352924.6294.29.camel@promb-2n-dhcp158.eng.vmware.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.0 (2.8.0-40.el5) 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Fixes a BUG in ACPI hotplugging.
 
-On Fri, 2008-04-04 at 16:42 -0600, Alex Chiang wrote:
-> * Badari Pulavarty <pbadari@us.ibm.com>:
-> > 
-> > On Fri, 2008-04-04 at 12:05 -0600, Alex Chiang wrote:
-> > > Hi Badari,
-> > > 
-> > > * Badari Pulavarty <pbadari@us.ibm.com>:
-> > > > Hi Andrew & Alex,
-> > > > 
-> > > > I get following panic in rpaphp_register_slot() on
-> > > > 2.6.25-rc8-mm1. Known issue ?
-> > > 
-> > > I know about it now... :-/
-> > > 
-> > > Any chance you could turn debugging on for both rpaphp and
-> > > pci_hotplug?
-> > > 
-> > 
-> > I did set "debug" variables in rpaphp_core.c and pci_hotplug_core.c
-> > to 1. But it didn't give any more information. How do I enable
-> > the debug ?
-> 
-> If those modules are built into your kernel, then you'll need to
-> modify the kernel command line to add:
-> 
-> 	rpaphp.debug=1 pci_hotplug.debug=1
-> 
-> If you're manually modprobing them:
-> 
-> 	$ modprobe pci_hotplug debug=1
-> 	$ modprobe rpaphp debug=1
-> 
-> > I just changed dbg() to printk() in rpaphp_register_slot() to
-> > print out more information.
-> > 
-> > Thanks,
-> > Badari
-> > 
-> > 
-> > pci_hotplug: PCI Hot Plug PCI Core version: 0.5
-> > rpaphp: RPA HOT Plug PCI Controller Driver version: 0.1
-> > rpaphp_register_slot registering slot:path[/pci@800000020000003/pci@2,4] index[22010003], name[U787E.001.AAA3015-P2-C1] pdomain[22010003] type[16]
-> > Unable to handle kernel paging request for data at address 0x00000070
-> 
-> Hrm, this is a little more information, but still not quite
-> enough. I'm going to take a stab in the dark and say I'm probably
-> doing something wrong on this line, maybe dereferencing a pointer
-> incorrectly:
-> 
->         retval = pci_hp_register(php_slot, slot->bus,
-> 				 PCI_SLOT(PCI_DN(slot->dn->child)->devfn));
-> 
+processor_device_array[pr->id] needs to be set to NULL when removing a
+CPU. Else the "buggy BIOS check" in acpi_processor_start mistakenly
+fires when a CPU is removed from the system and then later re-added.
 
-Sorry. I thought you knew this already. Disassembly clearly showed
-that slot->dn->child is NULL. 
+Signed-off-by: Alok N Kataria <akataria@vmware.com>
+Signed-off-by: Dan Arai <arai@vmware.com>
 
-I confirmed it by adding printk also.
+---
+drivers/acpi/processor_core.c |    1 +
+1 files changed, 1 insertions(+), 0 deletions(-)
 
-Thanks,
-Badari
+diff --git a/drivers/acpi/processor_core.c
+b/drivers/acpi/processor_core.c
+index 61450f4..0f95f26 100644
+--- a/drivers/acpi/processor_core.c
++++ b/drivers/acpi/processor_core.c
+@@ -828,6 +828,7 @@ static int acpi_processor_remove(struct acpi_device
+*device, int type)
+}
+
+processors[pr->id] = NULL;
++ processor_device_array[pr->id] = NULL;
+
+kfree(pr);
+
+-- 
+1.5.4
+
 
