@@ -1,60 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758015AbYDDJxU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756726AbYDDKB4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758015AbYDDJxU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Apr 2008 05:53:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752778AbYDDJxF
+	id S1756726AbYDDKB4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Apr 2008 06:01:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751337AbYDDKBp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Apr 2008 05:53:05 -0400
-Received: from moutng.kundenserver.de ([212.227.126.183]:64832 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752756AbYDDJxD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Apr 2008 05:53:03 -0400
-From: Bodo Eggert <7eggert@gmx.de>
-Subject: Re: GFP_ATOMIC page allocation failures.
-To: Nick Piggin <nickpiggin@yahoo.com.au>, Jeff Garzik <jeff@garzik.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Chris Snook <csnook@redhat.com>, Dave Jones <davej@codemonkey.org.uk>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       NetDev <netdev@vger.kernel.org>, David Miller <davem@davemloft.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Reply-To: 7eggert@gmx.de
-Date: Fri, 04 Apr 2008 11:52:34 +0200
-References: <adYyJ-20N-11@gated-at.bofh.it> <aef6w-6rx-45@gated-at.bofh.it> <aefJ9-7KR-15@gated-at.bofh.it> <aeqF6-45P-29@gated-at.bofh.it>
-User-Agent: KNode/0.10.4
+	Fri, 4 Apr 2008 06:01:45 -0400
+Received: from ns.unixsol.org ([193.110.159.2]:49724 "EHLO ns.unixsol.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751027AbYDDKBo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Apr 2008 06:01:44 -0400
+Message-ID: <47F5FC87.504@unixsol.org>
+Date: Fri, 04 Apr 2008 13:01:43 +0300
+From: Georgi Chorbadzhiyski <gf@unixsol.org>
+Organization: Unix Solutions Ltd. (http://unixsol.org)
+User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7Bit
-Message-Id: <E1Jhib4-0000md-FP@be1.7eggert.dyndns.org>
-X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
-X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
-X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
-X-Provags-ID: V01U2FsdGVkX19Pqd6uQU9Us49gWMIVLpzoPzdoGCmW2Cf+opU
- uMCN38UpbdikZlhhyu1p0pJE8ZzKXUNUTj5V8rV3BJpLneRuE+
- UKe+p4R8AhGKG6UCTuHWQ==
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       "Robin H. Johnson" <robbat2@gentoo.org>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org,
+       =?ISO-8859-1?Q?Ilpo_J=E4rvinen?= <ilpo.jarvinen@helsinki.fi>
+Subject: Re: WARNING: at net/ipv4/tcp_input.c:2173 tcp_mark_head_lost+0x173/0x1a0()
+References: <20080402224137.GB25768@curie-int.orbis-terrarum.net> <20080403211913.3a0c1d00.akpm@linux-foundation.org> <200804041150.34046.rjw@sisk.pl>
+In-Reply-To: <200804041150.34046.rjw@sisk.pl>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nick Piggin <nickpiggin@yahoo.com.au> wrote:
-> On Thursday 03 April 2008 05:18, Jeff Garzik wrote:
-
->> Turning to Nick's comment,
+Around 04/04/08 12:50, Rafael J. Wysocki scribbled:
+> On Friday, 4 of April 2008, Andrew Morton wrote:
+>> (cc netdev)
 >>
->> > It's still actually nice to know how often it is happening even for
->> > these known good sites because too much can indicate a problem and
->> > that you could actually bring performance up by tuning some things.
+>> (and Rafael - I assume 2.6.24 didn't do this..)
 >>
->> then create a counter or acculuation buffer somewhere.
->>
->> We don't need spew every time there is memory pressure of this magnitude.
+>> On Wed, 2 Apr 2008 15:41:37 -0700 "Robin H. Johnson" <robbat2@gentoo.org> wrote:
 > 
-> Not a complete solution. Counter would be nice, but you need backtraces
-> and want a way to more proactively warn the user/tester/developer.
+> That's http://bugzilla.kernel.org/show_bug.cgi?id=10346 , I think. 
 > 
-> I agree that I don't exactly like adding nowarns around, and I don't think
-> places like driver writers should have to know about this stuff.
+> Robin, please add yourself to the CC list in the bugzilla entry above.
 
-What about reverse ratelimiting: If the limit is reached, a backtrace will be
-generated (and, off cause, positively ratelimited)?
+No idea about 2.6.24 behavior. The kernel I was using before
+upgrading to 2.6.25-rc6 was 2.6.21-rc7.
 
+-- 
+Georgi Chorbadzhiyski
+http://georgi.unixsol.org/
