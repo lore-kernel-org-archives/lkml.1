@@ -1,62 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758560AbYDDO7r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758028AbYDDPAn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758560AbYDDO7r (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Apr 2008 10:59:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756679AbYDDO7j
+	id S1758028AbYDDPAn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Apr 2008 11:00:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756895AbYDDPAK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Apr 2008 10:59:39 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:42135 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756677AbYDDO7j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Apr 2008 10:59:39 -0400
-Date: Fri, 4 Apr 2008 12:02:42 -0300
-From: Marcelo Tosatti <mtosatti@redhat.com>
-To: Jan Kara <jack@suse.cz>
-Cc: Peter Zijlstra <peterz@infradead.org>, David Chinner <dgc@sgi.com>,
-       lkml <linux-kernel@vger.kernel.org>, marcelo <marcelo@kvack.org>
-Subject: Re: BUG: ext3 hang in transaction commit
-Message-ID: <20080404150242.GA30818@dmt>
-References: <20080326231612.GC103491721@sgi.com> <20080403100742.GA16314@atrey.karlin.mff.cuni.cz> <1207235335.8514.843.camel@twins> <20080403161500.GA21434@dmt> <20080404103450.GC477@atrey.karlin.mff.cuni.cz>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 4 Apr 2008 11:00:10 -0400
+Received: from mtaout01-winn.ispmail.ntl.com ([81.103.221.47]:29705 "EHLO
+	mtaout01-winn.ispmail.ntl.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1759247AbYDDPAI convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Apr 2008 11:00:08 -0400
+Date: Fri, 4 Apr 2008 16:00:01 +0100
+From: Ken Moffat <zarniwhoop@ntlworld.com>
+To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
+       Ingo Molnar <mingo@elte.hu>, lkml <linux-kernel@vger.kernel.org>
+Subject: Re: Regression in gdm-2.18 since 2.6.24
+Message-ID: <20080404150001.GA21753@deepthought>
+References: <20080403191916.GA30864@deepthought> <200804032156.54021.rjw@sisk.pl> <20080403210840.GA2292@deepthought> <200804032329.22483.rjw@sisk.pl> <20080403234839.GA5181@deepthought> <20080404144712.GA890@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <20080404103450.GC477@atrey.karlin.mff.cuni.cz>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <20080404144712.GA890@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.12-2006-07-14
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 04, 2008 at 12:34:50PM +0200, Jan Kara wrote:
-
-> >         Max throughput per process                      =   66393.62 KB/sec
-> >         Avg throughput per process                      =   26518.38 KB/sec
-> >         Min xfer                                        =   44424.00 KB
+On Fri, Apr 04, 2008 at 08:17:12PM +0530, Dhaval Giani wrote:
+> On Fri, Apr 04, 2008 at 12:48:39AM +0100, Ken Moffat wrote:
+> > On Thu, Apr 03, 2008 at 11:29:21PM +0200, Rafael J. Wysocki wrote:
+> > > 
+> > > Please unset CONFIG_GROUP_SCHED and retest.  It is known to cause problems
+> > > (see http://bugzilla.kernel.org/show_bug.cgi?id=9969, for example).
+> > > 
+> > > Thanks,
+> > > Rafael
+> >  Thanks for the suggestion.  Tried it on 2.6.24.4, and
+> > double-checked /proc/config.gz after booting -
 > > 
-> > And this is when fsync becomes nasty.
->   Could you get for me movies from Seekwatcher (taken on the host) -
-> http://oss.oracle.com/~mason/seekwatcher/
->   That should confirm my suspicion. Actually, if writing data in the bad
-> order is really the problem than my rewrite of ordered mode in JBD can
-> substantially help this workload (I can send you the patches if you dare
-> to try something really experimental ;).
-
-OK, will record the animation.
-
-Will be pleased to try your patches. Where can they be found?
-
-> > blktrace output shows that the maximum latency for a single write
-> > request io complete is 1.5 seconds, which is similar to what is seen
-> > under "writeback" mode.
+> > # CONFIG_FAIR_GROUP_SCHED is not set
 > > 
-> > I reduced hung_task_timeout_secs to 30 for this report, but vim and
-> > rsyslogd have been seen hung up to 120 seconds.
+> >  Unfortunately, the first test reboot failed in the same way.
 > > 
 > 
-> <snip traces of processes waiting for commit>
+> Just to confirm. The bug happens even when CONFIG_FAIR_GROUP_SCHED is
+> unset?
 > 
-> > As Peter mentioned it eventually gets out of this state (after several
-> > minutes) and fsync instances complete.
->   Yes, that is just a combined effect of *lots* of ordered data
-> accumulated in one transaction (we don't limit amount of ordered data in
-> a transaction in any way) and writing them out during transaction order
-> in a random order.
+> -- 
+> regards,
+> Dhaval
+ Yes.
+
+Ken
+-- 
+das eine Mal als Tragödie, das andere Mal als Farce
