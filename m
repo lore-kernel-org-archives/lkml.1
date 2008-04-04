@@ -1,50 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756726AbYDDBWv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757987AbYDDB1w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756726AbYDDBWv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Apr 2008 21:22:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752084AbYDDBWo
+	id S1757987AbYDDB1w (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Apr 2008 21:27:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754924AbYDDB1o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Apr 2008 21:22:44 -0400
-Received: from e33.co.us.ibm.com ([32.97.110.151]:52296 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751832AbYDDBWn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Apr 2008 21:22:43 -0400
-Subject: Re: [PATCH 4 of 6] hotplug-memory: use common online_page
-From: Dave Hansen <dave@linux.vnet.ibm.com>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Yasunori Goto <y-goto@jp.fujitsu.com>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Christoph Lameter <clameter@sgi.com>
-In-Reply-To: <47F58041.8080204@goop.org>
-References: <a2a6c0b2e3fdc19d18b4.1207267544@localhost>
-	 <1207270061.943.21.camel@nimitz.home.sr71.net> <47F57CA0.1000500@goop.org>
-	 <1207270805.943.33.camel@nimitz.home.sr71.net> <47F58041.8080204@goop.org>
-Content-Type: text/plain
-Date: Thu, 03 Apr 2008 18:22:38 -0700
-Message-Id: <1207272158.943.48.camel@nimitz.home.sr71.net>
+	Thu, 3 Apr 2008 21:27:44 -0400
+Received: from relay2.sgi.com ([192.48.171.30]:40619 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752831AbYDDB1n (ORCPT
+	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
+	Thu, 3 Apr 2008 21:27:43 -0400
+Date: Fri, 4 Apr 2008 11:27:35 +1000
+From: David Chinner <dgc@sgi.com>
+To: Jan Kara <jack@suse.cz>
+Cc: David Chinner <dgc@sgi.com>, lkml <linux-kernel@vger.kernel.org>
+Subject: Re: BUG: ext3 hang in transaction commit
+Message-ID: <20080404012735.GA103491721@sgi.com>
+References: <20080326231612.GC103491721@sgi.com> <20080403100742.GA16314@atrey.karlin.mff.cuni.cz>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080403100742.GA16314@atrey.karlin.mff.cuni.cz>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Thu, 2008-04-03 at 18:11 -0700, Jeremy Fitzhardinge wrote:
-> Dave Hansen wrote:
-> > I guess we could just make the copies conditional on CONFIG_HIGHMEM and
-> > define them both next to each other.  It's really a highmem thing more
-> > than a per-arch thing.
+On Thu, Apr 03, 2008 at 12:07:42PM +0200, Jan Kara wrote:
+>   Hi,
 > 
-> Sounds good to me.  On that subject, how different are the various 
-> arch_add_memory() functions really?  There seems to be a lot of common 
-> stuff in there.
+> > ia32 XFS QA machine, ext3 root on a raw partition. 2.6.25-rc3.
+> > 
+> > kjournald hung journal_commit_transaction():
+> > 
+> > Stack traceback for pid 2046
+> > 0xf6e0b350     2046        2  0    0   D  0xf6e0b550  kjournald
+> > esp        eip        Function (args)
+> > 0xf68d5e70 0xc04c20b2 schedule+0x51e
+> > 0xf68d5ec0 0xc04c2394 io_schedule+0x1d
+> > 0xf68d5ecc 0xc0179b64 sync_buffer+0x33 (invalid)
+> > 0xf68d5ed4 0xc04c2570 __wait_on_bit+0x36 (0xc2000b78, 0xf68d5f00, 0xc0179b31, 0x2)
+> > 0xf68d5ef0 0xc04c25ef out_of_line_wait_on_bit+0x58 (0xde89bc18, 0x2, 0xc0179b31, 0x2)
+> > 0xf68d5f2c 0xc0179adf __wait_on_buffer+0x19
+> > 0xf68d5f38 0xc01cecba journal_commit_transaction+0x40b (0xf6d94a00)
+> > 0xf68d5fa0 0xc01d180a kjournald+0xa4 (0xf6d94a00)
+> > 0xf68d5fd4 0xc01301f1 kthread+0x3b (invalid)
+> 
+>   I suppose this is wait_on_buffer() in line 444 in fs/jbd/commit.c, isn't it?
 
-Not to different last I looked.  But, they're small enough (like
-online_page()) that we didn't really care.  We waited for someone like
-you to come along and care enough to fix it up. :)
+No idea. I haven't looked at the code....
 
--- Dave
+> > We're waiting on the last page/buffer in the file, and it doesn't appear
+> > to be under writeback....
+>   We wait for write of ordered-data to finish. Which seems to never
+> happen. Page isn't under writeback, but that just means we submitted the
+> buffer from the commit code (that doesn't change the page state).
+>   Anyway, the cause is that either due to some bug IO never finished and
 
+Yes, I certainly beleive that is possible. We see it often enough with
+XFS....
+
+> so buffer never got unlocked, or we somewhere locked the buffer and
+> forgot to unlock it (but I've checked all the relevant places and think
+> they are correct). The traces of all the processes seem harmless - I see
+> no place trace where we are holding a buffer lock.
+>   If you happen to hit this again, please let me know and I'll look into
+> it further...
+
+Will do.
+
+Cheers,
+
+Dave.
+-- 
+Dave Chinner
+Principal Engineer
+SGI Australian Software Group
