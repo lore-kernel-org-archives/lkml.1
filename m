@@ -1,78 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760876AbYDDPCq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760117AbYDDPEB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760876AbYDDPCq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Apr 2008 11:02:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758032AbYDDPCe
+	id S1760117AbYDDPEB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Apr 2008 11:04:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757088AbYDDPDx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Apr 2008 11:02:34 -0400
-Received: from mtaout01-winn.ispmail.ntl.com ([81.103.221.47]:30705 "EHLO
-	mtaout01-winn.ispmail.ntl.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755150AbYDDPCd convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Apr 2008 11:02:33 -0400
-Date: Fri, 4 Apr 2008 16:02:21 +0100
-From: Ken Moffat <zarniwhoop@ntlworld.com>
-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
-       Ingo Molnar <mingo@elte.hu>, lkml <linux-kernel@vger.kernel.org>
-Subject: Re: Regression in gdm-2.18 since 2.6.24
-Message-ID: <20080404150221.GB21753@deepthought>
-References: <20080403191916.GA30864@deepthought> <200804032329.22483.rjw@sisk.pl> <20080403234839.GA5181@deepthought> <200804040220.00732.rjw@sisk.pl> <20080404123717.GA19045@deepthought> <20080404144825.GB890@linux.vnet.ibm.com>
+	Fri, 4 Apr 2008 11:03:53 -0400
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:59907 "EHLO
+	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752326AbYDDPDw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Apr 2008 11:03:52 -0400
+Message-ID: <47F6433D.8050206@bull.net>
+Date: Fri, 04 Apr 2008 17:03:25 +0200
+From: Nadia Derbey <Nadia.Derbey@bull.net>
+Organization: BULL/DT/OSwR&D/Linux
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.6) Gecko/20040115
+X-Accept-Language: en-us, en
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <20080404144825.GB890@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.12-2006-07-14
-Content-Transfer-Encoding: 8BIT
+To: Nadia Derbey <Nadia.Derbey@bull.net>
+Cc: Mike Galbraith <efault@gmx.de>, Manfred Spraul <manfred@colorfullife.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       paulmck@linux.vnet.ibm.com, Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Pavel Emelianov <xemul@openvz.org>,
+       NADIA DERBEY <Nadia.Derbey@bull.net>
+Subject: Re: Scalability requirements for sysv ipc (+namespaces broken with
+ SEM_UNDO)
+References: <47E382DB.70503@colorfullife.com> <47E3ADE3.4030304@bull.net>	 <47E3B924.3000304@colorfullife.com>	 <20080321141339.GB9618@linux.vnet.ibm.com>	 <47E3DD8C.4000904@colorfullife.com>	 <1206164608.3659.11.camel@marge.simson.net>	 <47E4DB06.3020003@colorfullife.com>	 <1206186832.4545.1.camel@marge.simson.net>	 <47E51637.8060102@colorfullife.com>  <47E55945.10109@colorfullife.com>	 <1206460206.4414.21.camel@marge.simson.net>	 <47EF9FC2.3050901@colorfullife.com> <1206897488.4593.11.camel@marge.simson.net> <47F6424F.9010405@bull.net>
+In-Reply-To: <47F6424F.9010405@bull.net>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 04, 2008 at 08:18:25PM +0530, Dhaval Giani wrote:
-> On Fri, Apr 04, 2008 at 01:37:17PM +0100, Ken Moffat wrote:
-> > On Fri, Apr 04, 2008 at 02:20:00AM +0200, Rafael J. Wysocki wrote:
-> > > On Friday, 4 of April 2008, Ken Moffat wrote:
-> > > > On Thu, Apr 03, 2008 at 11:29:21PM +0200, Rafael J. Wysocki wrote:
-> > > > > 
-> > > > > Please unset CONFIG_GROUP_SCHED and retest.  It is known to cause problems
-> > > > > (see http://bugzilla.kernel.org/show_bug.cgi?id=9969, for example).
-> > > > > 
-> > > > > Thanks,
-> > > > > Rafael
-> > > >  Thanks for the suggestion.  Tried it on 2.6.24.4, and
-> > > > double-checked /proc/config.gz after booting -
-> > > > 
-> > > > # CONFIG_FAIR_GROUP_SCHED is not set
-> > > > 
-> > > >  Unfortunately, the first test reboot failed in the same way.
-> > > 
-> > > Please unset CONFIG_GROUP_SCHED too.
-> > > 
-> > > Thanks,
-> > > Rafael
-> > 
-> >  Yet again, I'm confused.  I thought you'd missed a word in what you
-> > asked because the config for 2.6.24.4 doesn't show this.
-> > ken@bluesbreaker ~ $zgrep GROUP /proc/config.gz 
-> > # CONFIG_CGROUPS is not set
-> > # CONFIG_FAIR_GROUP_SCHED is not set
-> > ken@bluesbreaker ~ $
-> > 
-> >  I _can_ see it in the 2.6.25 configs (except for rc1).  Will retry
-> > rc8 with them both turned off.
-> > 
+Nadia Derbey wrote:
+> Mike Galbraith wrote:
 > 
-> Right, in 2.6.24 we called it CONFIG_FAIR_GROUP_SCHED since group
-> scheduling was available only for CFS. In 2.6.25 we have group
-> scheduling for RT as well, so it is called CONFIG_GROUP_SCHED now.
+>> On Sun, 2008-03-30 at 16:12 +0200, Manfred Spraul wrote:
+>>
+>>> Mike Galbraith wrote:
+>>>
+>>>> On Sat, 2008-03-22 at 20:08 +0100, Manfred Spraul wrote:
+>>>>
+>>>>  
+>>>>
+>>>>> just the normal performance of 2.6.25-rc3 is abyssimal, 55 to 60% 
+>>>>> slower than 2.6.18.8:
+>>>>>    
+>>>>
+>>>>
+>>>> After manually reverting 3e148c79938aa39035669c1cfa3ff60722134535,
+>>>> 2.6.25.git scaled linearly
+>>>
+>>>
+>>> We can't just revert that patch: with IDR, a global lock is mandatory 
+>>> :-(
+>>> We must either revert the whole idea of using IDR or live with the 
+>>> reduced scalability.
+>>
+>>
+>>
+>> Yeah, I looked at the problem, but didn't know what the heck to do about
+>> it, so just grabbed my axe to verify/quantify.
+>>
+>>
+>>> Actually, there are further bugs: the undo structures are not 
+>>> namespace-aware, thus semop with SEM_UNDO, unshare, create new array 
+>>> with same id, but more semaphores, another semop with SEM_UNDO will 
+>>> corrupt kernel memory :-(
+>>> I'll try to clean up the bugs first, then I'll look at the 
+>>> scalability again.
+>>
+>>
+>>
+>> Great!
+>>
+>>     -Mike
+>>
+>>
+>>
+>>
 > 
-> -- 
-> regards,
-> Dhaval
- OK, thanks for the explanation.  Just gave -rc8 the first test with
-CONFIG_GROUP_SCHED unset, and again it fails.
+> I could get better results with the following solution:
+> wrote an RCU-based idr api (layers allocation is managed similarly to 
+> the radix-tree one)
+> 
+> Using it in the ipc code makes me get rid of the read lock taken in 
+> ipc_lock() (the one introduced in 
+> 3e148c79938aa39035669c1cfa3ff60722134535).
+> 
+> You'll find the results in attachment (kernel is 2.6.25-rc3-mm1).
+> output.25_rc3_mm1.ref.8  --> pmsg output for the 2.6.25-rc3-mm1
+> plot.25_rc3_mm1.ref.8    --> previous file results for use by gnuplot
+> output.25_rc3_mm1.ridr.8 --> pmsg output for the 2.6.25-rc3-mm1
+>                              + rcu-based idrs
+> plot.25_rc3_mm1.ridr.8   --> previous file results for use by gnuplot
+> 
+> 
+> I think I should be able to send a patch next week. It is presently an 
+> uggly code: I copied idr.c and idr.h into ridr.c and ridr.h to go fast, 
+> so didn't do any code factorization.
+> 
+> Regards
+> Nadia
+> 
+> 
+> 
 
-Ken
--- 
-das eine Mal als Tragödie, das andere Mal als Farce
+Sorry forgot the command:
+
+for i in 1 2 3 4 5 6 7 8;do ./pmsg $i 5;done > output.25_rc3_mm1.ref.8
+
+
+Regards,
+Nadia
+
