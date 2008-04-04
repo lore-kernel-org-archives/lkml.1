@@ -1,120 +1,331 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757390AbYDDMsV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759418AbYDDMsf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757390AbYDDMsV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Apr 2008 08:48:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758827AbYDDMr1
+	id S1759418AbYDDMsf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Apr 2008 08:48:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758850AbYDDMr3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Apr 2008 08:47:27 -0400
-Received: from wine.ocn.ne.jp ([122.1.235.145]:49208 "EHLO smtp.wine.ocn.ne.jp"
+	Fri, 4 Apr 2008 08:47:29 -0400
+Received: from wine.ocn.ne.jp ([122.1.235.145]:49276 "EHLO smtp.wine.ocn.ne.jp"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758715AbYDDMrY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Apr 2008 08:47:24 -0400
-Message-Id: <20080404122242.867070732@I-love.SAKURA.ne.jp>
+	id S1758735AbYDDMrZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Apr 2008 08:47:25 -0400
+Message-Id: <20080404122356.780703936@I-love.SAKURA.ne.jp>
+References: <20080404122242.867070732@I-love.SAKURA.ne.jp>
 User-Agent: quilt/0.46-1
-Date: Fri, 04 Apr 2008 21:22:42 +0900
+Date: Fri, 04 Apr 2008 21:22:43 +0900
 From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
 To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
        linux-security-module@vger.kernel.org
-Subject: [TOMOYO #7 00/30] TOMOYO Linux 1.6.0 released
+Cc: Kentaro Takeda <takedakn@nttdata.co.jp>,
+       Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>,
+       Toshiharu Harada <haradats@nttdata.co.jp>
+Subject: [TOMOYO #7 01/30] TOMOYO Linux documentation.
+Content-Disposition: inline; filename=tomoyo-documentation.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-What is TOMOYO Linux for?
+Signed-off-by: Kentaro Takeda <takedakn@nttdata.co.jp>
+Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+Signed-off-by: Toshiharu Harada <haradats@nttdata.co.jp>
+---
+ Documentation/TOMOYO.txt |  292 +++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 292 insertions(+)
 
-  It is userland applications' charge to keep processes under control.
-  This includes that userland applications restrict what programs are
-  permitted to execute and what files are permitted to read/write
-  by the application.
-  Thus, the kernel does whatever asked by the userland applications.
+--- /dev/null
++++ linux-2.6.25-rc8-mm1/Documentation/TOMOYO.txt
+@@ -0,0 +1,292 @@
++Subject: TOMOYO Linux Security Goal
++
++This document is intended to specify the security goal that TOMOYO Linux is
++trying to achieve, so that users can evaluate whether TOMOYO Linux will meet
++their needs, and kernel developers can evaluate whether TOMOYO Linux deserved
++to be in-tree.
++
++1. About TOMOYO Linux
++
++Project Homepage: http://tomoyo.sourceforge.jp/index.html.en
++Project Wiki: http://elinux.org/TomoyoLinux
++
++TOMOYO Linux is a DIY tool for understanding and protecting your system.
++TOMOYO Linux policy definitions are absolutely readable to Linux users, and
++TOMOYO Linux supports unique policy learning mechanism which automatically
++gathers information and arranges the results as policy definitions.
++These things made it possible for users to write policy from scratch.
++Troubleshooting can be done by users.
++
++We put some TOMOYO Linux policy examples on our web site.
++http://tomoyo.sourceforge.jp/cgi-bin/lxr/source/etch/domain_policy.conf?v=policy-sample
++
++Here's our version of Linux security comparison table.
++http://tomoyo.sourceforge.jp/wiki-e/?WhatIs#comparison
++
++2. TOMOYO Linux Security Goal
++
++The TOMOYO Linux's security goal is to provide "MAC that covers practical
++requirements for most users and keeps usable for most administrators".
++TOMOYO Linux is not a tool for security professional but for average users
++and administrators. We keep TOMOYO Linux understandable and customizable
++so that end users (i.e. administrators) can configure policy for their systems.
++
++TOMOYO Linux can authorize part of kernel resources which SELinux can
++and part of other resources which SELinux can't.
++
++Currently, TOMOYO Linux can authorize
++
++  * execve() of programs.
++  * open() of files for reading/writing.
++  * creat()/link()/rename()/unlink()/symlink()/mkfifo()/mksock()/mkblock()/
++    mkchar()/truncate()/mkdir()/rmdir() of files and directries
++    that are visible to userland process's namespace.
++  * namespace manipulation. (i.e. mount()/umount()/pivot_root())
++  * TCP/IP networking operations based on IPv4/v6 addresses and port numbers.
++  * booleans for some operations. (Part of POSIX capability and TOMOYO Linux's
++    original capability.)
++  * signal transmissions.
++  * argv[0] passed to execve().
++  * environment variables' names passed to execve().
++
++TOMOYO Linux is purely restrictive. No requests which are denied by existent
++access control mechanisms (e.g. DAC) will be reversed by TOMOYO Linux.
++
++TOMOYO Linux is not intended to provide information flow control.
++Analyzing and restricting how information propagates are not the region of
++interest for TOMOYO Linux.
++
++3. Our Approach
++
++To meet the above goal, TOMOYO Linux attempts to make the system where
++everything is prearranged in an easy-to-understand way.
++
++  * Make the all subject's all access requests that will occur at least once
++    during the lifetime of the kernel known in advance.
++
++  * Let the administrator understand what access requests will each subject
++    raise in his/her system and write policy which only allows expected and
++    desirable access requests for his/her needs.
++
++Unlike AppArmor, TOMOYO Linux is intended to protect the whole system from
++attackers exploiting vulnerabilities in applications that the system hosts.
++The threat is that an attacker can cause a vulnerable application to do
++something unexpected and undesirable. TOMOYO Linux addresses this threat by
++recording all applications' behaviors in the test environment and forcing
++all applications behave within recorded behaviors in the production environment.
++
++TOMOYO Linux has a unique concept of "process invocation history"
++(in short, PIH). The PIH is a developmental lineage of a process.
++When a process executes a program, the process creates a copy with fork() and
++replace the copy with execve().
++TOMOYO Linux appends the pathname of the executed program to the PIH of
++the replaced process, and associates process's PIH (stored in task_struct)
++with a domain.
++As a result, the context switching (a.k.a. domain transition) is unidirectional.
++This rule allows administrator distinguish and manage fine-grained context.
++Domain transition forms tree structure like a directory tree of filesystems.
++Each domain has different set of permissions that are essential for that domain.
++
++TOMOYO Linux's region of interest is how to minimize means granted to each PIH,
++although not all permissions TOMOYO Linux can authorize.
++
++The "learning mode" is primary source of policy. TOMOYO Linux depends on change
++of behavior to detect intruders. All unprecedented behaviors should be detected
++and rejected. TOMOYO Linux's power comes from
++"know all and understand what requests can happen within your system".
++
++4. Things you can do with TOMOYO Linux.
++
++Create policy from scratch.
++
++  You want to use ready-made policy files supplied by somebody else
++  because testing all paths needed for your usage sounds boring?
++
++  OK, then you can choose other implementations that provide
++  ready-made policy files, but you should check whether these files
++  contain enough permissions for your usage or not. It is inevitable thing
++  to test all paths needed for your usage if you want to use white listing
++  access control.
++
++  Also, ready-made policy files tend to contain redundant permissions
++  for your usage which often leads to serious problem.
++
++  TOMOYO Linux is a DIY tool for understanding and protecting your Linux box.
++  TOMOYO Linux's "learning mode" will automatically generate
++  policy files with necessary and sufficient permissions for you.
++
++Understand all possible requests.
++
++  TOMOYO Linux reports what is happening within your Linux box.
++  You can have the security of knowing that no unexpected requests arise,
++  if you have tested all paths needed for your usage.
++
++  Please remember, we are not saying that
++  "You can have the security of knowing that no unexpected results happen".
++  Although TOMOYO Linux attempts to filter the request as hard as possible,
++  TOMOYO Linux can't guarantee the result.
++
++Analyze system's behavior.
++
++  TOMOYO Linux resembles to /usr/bin/strace .
++  TOMOYO Linux reports what programs are executed from each program and
++  what files/networks are accessed by each program.
++
++  You can use TOMOYO Linux for analyzing application's behavior
++  if you want to know "which configuration file does this daemon read?",
++  "what port numbers does this daemon require?" and so on.
++
++  This helps debugging program's behaviors and writing manuals.
++  TOMOYO Linux is also applicable for educational use.
++
++Provide per application firewall.
++
++  It is userland applications' businesses to perform pathname based access
++  control, but they sometimes make mistakes which are known as OS command
++  injection vulnerability or buffer overflow vulnerability.
++  TOMOYO Linux assists this access control in kernel space to reduce
++  the damage by restricting pathnames which each application can request.
++
++  TOMOYO Linux can perform TCP_Wrapper-like simple stateless
++  TCP/IP packet filtering based on IPv4/v6 address and ports.
++
++  TOMOYO Linux can restrict the list of environment variable's name
++  passed to execve() so that some dangerous environment variable
++  (e.g. LD_PRELOAD) won't be passed freely.
++
++  TOMOYO Linux also supports conditional permissions.
++  You can use uid/gid etc. of a process to restrict the combination of
++  user and accessible resources.
++
++Provide support for multi-call binary applications without patches.
++
++  A multi-call binary (e.g. /sbin/busybox) changes behaviors according to
++  the invocation name (in other words, argv[0] passed to execve()).
++  Users specify the invocation name using symbolic links or hard links.
++
++  TOMOYO Linux allows administrators to give execute permission and define PIH
++  using the pathname of a symbolic link, if the combination of
++  the pathname of a symbolic link and the pathname of the entity pointed
++  by the symbolic link is registered in the policy file.
++  You can use symbolic links as if they are hard links.
++
++  TOMOYO Linux supports restricting the combination of
++  path-to-executable-or-symbolic-link and basename-of-argv[0]
++  so that users can't pass different argv[0]
++  from path-to-executable-or-symbolic-link freely.
++
++  Please be aware that some multi-call binary programs change their behaviors
++  according to the command line parameters (i.e. argv[1] to argv[argc - 1]).
++  Regarding such programs, TOMOYO Linux can't restrict behaviors by restricting
++  the argv[0]. But TOMOYO Linux doesn't attempt to restrict all argv[] elements
++  passed to execve(), because doing so will make the system too inconvenient
++  and frustrating to use.
++
++Give different set of permissions to the same application.
++
++  There are some non-executable applications (e.g. Java's class files).
++  Such applications use the same program for executing (e.g. Java Runtime
++  Environment). Since TOMOYO Linux has PIH, you can give different set of
++  permissions for each application by separating PIH for each application.
++
++  Although TOMOYO Linux can switch context for every execve() requests,
++  it is preferable to be able to switch context without invoking execve().
++  So far, we are not providing APIs to switch context like AppArmor's
++  change_hat()/change_profile(). We'd like to introduce APIs to switch context
++  when distributors get ready to support TOMOYO Linux (in other words, after
++  TOMOYO Linux is merged into mainline).
++
++Provide DMZ for remote logins.
++
++  Recently, password brute-force attacks against SSH service are increasing.
++  But TOMOYO Linux's PIH can provide a room for deploying DMZ.
++
++  Why password or public-key authentication is possible for only once?
++  Why not give normal users a chance to beat back attackers who logged in
++  through brute-force attacks?
++
++  You can deploy extra login authentications that the only normal user knows
++  how to pass.
++
++Provide simple RBAC-like administrative task division.
++
++  TOMOYO Linux's PIH forms a tree structure.
++  This means that you can split one tree into several subtrees
++  and associate each subtree with each administrative task.
++  You can give each subtree necessary and sufficient permissions
++  for each administrative task.
++
++  You can deploy custom authentication at the entry point of each subtree
++  so that one administrator cannot proceed to other administrator's subtrees.
++
++Provide on-demand honey pot.
++
++  Since TOMOYO Linux's approach is
++  "know all essential requests in advance and create policy that permits only them",
++  you can treat anomalous requests as attacks (if you want to do so).
++
++  Common MAC implementations merely reject requests that violate policy.
++  But TOMOYO can trigger special handler for execve() requests that are not
++  permitted by policy.
++
++  Most attackers' purpose is to execute /bin/sh to start something malicious
++  rather than consume CPU resources to slow down the target system.
++
++  Attackers execute an exploit code using buffer overflow vulnerability
++  to steal control of a process.
++  TOMOYO can get back control if an exploit code requests execve()
++  that is not permitted by policy.
++  TOMOYO executes a different program (i.e. special handler prepared for
++  violation of execve() policy) instead of a program requested by attackers
++  to redirect attackers to somewhere else (e.g. honey pot).
++  This makes it possible to act your Linux box as an on-demand honey pot
++  while keeping regular services for your usage.
++
++  Of course, you may silently terminate a process who requests execve()
++  that is not permitted by policy using this redirection mechanism.
++  You may merely reject execve() requests like common MAC implementations.
++
++And more...
++
++  Your imagination invents new usage.
++
++
++Authors:
++  Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
++  Toshiharu Harada <haradats@nttdata.co.jp>
++  Kentaro Takeda <takedakn@nttdata.co.jp>
++
++
++Appendix 1 - Usability features of TOMOYO Linux
++
++TOMOYO Linux switches the context of a process whenever a process executes
++a program, but there are two exceptions.
++Administrator may relocate domain of a process if PIH is not meaningful for
++that process (e.g. daemon programs). This exception allows administrator
++restart daemon programs.
++Administrator may suppress domain transition if domain transition is not
++meaningful for that process (e.g. /bin/touch called from /etc/init.d/ scripts).
++This exception reduces memory usage for policy.
++
++TOMOYO Linux can apply access control over all userspace applications,
++but administrator can also apply access control over only specific userspace
++applications if he/she wishes so.
++
++TOMOYO Linux supports "delayed enforcing mode" that allows administrator
++interactively judge whether a request which is not defined in the policy
++should be permitted or rejected.
++This mode helps administrator adjust the policy after software updates.
++
++
++Appendix 2 - Presentation slides
++
++- PacSec2007: TOMOYO Linux: "A Practical Method to Understand and Protect
++                             Your Own Linux Box"
++  http://sourceforge.jp/projects/tomoyo/document/PacSec2007-en-demo.pdf
++
++- OLS2007: "TOMOYO Linux BoF"
++  http://sourceforge.jp/projects/tomoyo/document/ols2007-tomoyo-20070629.pdf
++
++- ELC2007: "TOMOYO Linux - A Lightweight and Manageable Security System
++            for PC and Embedded Linux"
++  http://sourceforge.jp/projects/tomoyo/document/elc2007-presentation-20070418-for_linux.pdf
 
-  But userland applications often make mistakes such as buffer overflow,
-  OS command injection, directory traversal etc.
-  As a result, they can't always keep processes under control.
-
-  TOMOYO Linux is developed to take partial charge of keeping processes
-  under control, by teaching the kernel what programs are
-  permitted to execute and what files are permitted to read/write
-  by the application and letting the kernel check it once again.
-
-Can TOMOYO Linux coexist with SELinux, SMACK, AppArmor etc. ?
-
-  Yes. TOMOYO Linux 1.x is not using LSM because I want don't want to disable
-  different access control implementations.
-
-  TOMOYO Linux is good at dealing with the subject's request chains,
-  while LSM is good at dealing with object's life-cycle.
-
-What are new features of this release?
-
-  This release reinforced execution parameter checks.
-
-  Introduced execute handler mechanism.
-
-    The usage of TOMOYO Linux is that understand what programs are executed and
-    what files are opened by individual applications and let the kernel
-    enforce them. Thus, assuming that all programs needed by individual
-    applications are known by the time of enforcing, attempts to execute
-    not ever observed application (e.g. /bin/sh) are considered to be attacks.
-
-    Some shellcode (an exploit code used to execute /bin/sh) attempts to
-    execute /bin/sh until the execution succeeds. One of such shellcodes is
-    Samba's trans2open exploit. It attempts to execute /bin/sh from infinite
-    loop. As a result, just rejecting execute request of /bin/sh triggers
-    CPU power consumption problem (all CPU powers are eaten by the shellcode's
-    infinite loop).
-
-    But by using execute handler, you can run different programs instead of
-    just rejecting execute request to redirect the process to somewhere else.
-
-    This redirection mechanism is useful for deploying on demand honey pot.
-    You can provide regular service in peacetime, and you can redirect
-    the attacker trying to start /bin/sh to honey pot in wartime.
-
-    Also, since the fact that a program which is different from the requested
-    one is executed by execute handler is not notified to the caller process,
-    you can use execute handler as a transparent validation interface
-    like "Web Application Firewall" or "AntiVirus". You can monitor
-    parameters passed to execve() and stdio to drop unwanted parameters or
-    reject the execution of the program requested by the caller process.
-
-  Introduced "struct linux_bprm" checks.
-
-    Proper codes tends to setting up argv[] and envp[] when executing
-    a new program. But shellcodes tend to not setting up argv[] and envp[]
-    when executed using buffer overflows.
-    Thus, it became possible to require specific argv[] and envp[] values
-    when executing a program.
-
-  Introduced environment variable names checks.
-
-    Some environment variables (e.g. LD_PRELOAD) are used by attackers to make
-    the application behave differently.
-    Thus, it became possible to restrict acceptable environment variable's
-    names passed to execve().
-
-  And various usability enhancement like more detailed access logs and
-  policy management by non root user.
-
-Is TOMOYO Linux architecture independent?
-
-  Yes. I think TOMOYO Linux doesn't contain architecture dependent code.
-  TOMOYO Linux touches only surface of the kernel code.
-
-Are older kernels supported?
-
-  Yes. From 2.4.30 to 2.4.36 and from 2.6.11 to 2.6.25-rc7 are supported.
-  Also, various distributions' latest kernels are supported.
-
-Where's the web page?
-
-  http://elinux.org/TomoyoLinux
-  http://tomoyo.sourceforge.jp/wiki-e/?WhatIs
-  http://sourceforge.jp/projects/tomoyo/document/fosdem2008.pdf
-
-  TOMOYO Linux is compact and suits well to PC servers and embedded systems.
-  There is a TOMOYO Linux presentation at CELF Embedded Linux Conference 2008
-  held in California from April 15th to the 17th.
-
-Thank you.
-
+-- 
