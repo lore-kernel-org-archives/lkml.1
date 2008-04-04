@@ -1,162 +1,226 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760413AbYDDM43@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760562AbYDDM4q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760413AbYDDM43 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Apr 2008 08:56:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758999AbYDDMyy
+	id S1760562AbYDDM4q (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Apr 2008 08:56:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759252AbYDDMy4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Apr 2008 08:54:54 -0400
-Received: from wine.ocn.ne.jp ([122.1.235.145]:63618 "EHLO smtp.wine.ocn.ne.jp"
+	Fri, 4 Apr 2008 08:54:56 -0400
+Received: from wine.ocn.ne.jp ([122.1.235.145]:63726 "EHLO smtp.wine.ocn.ne.jp"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756996AbYDDMyr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Apr 2008 08:54:47 -0400
-Message-Id: <20080404122408.585519579@I-love.SAKURA.ne.jp>
+	id S1757186AbYDDMys (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Apr 2008 08:54:48 -0400
+Message-Id: <20080404122404.191981507@I-love.SAKURA.ne.jp>
 References: <20080404122242.867070732@I-love.SAKURA.ne.jp>
 User-Agent: quilt/0.46-1
-Date: Fri, 04 Apr 2008 21:23:11 +0900
+Date: Fri, 04 Apr 2008 21:23:00 +0900
 From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
 To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
        linux-security-module@vger.kernel.org
 Cc: Kentaro Takeda <takedakn@nttdata.co.jp>,
        Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>,
        Toshiharu Harada <haradats@nttdata.co.jp>
-Subject: [TOMOYO #7 29/30] Kconfig and Makefile.
-Content-Disposition: inline; filename=tomoyo-kconfig-and-makefile.patch
+Subject: [TOMOYO #7 18/30] pivot_root restriction part.
+Content-Disposition: inline; filename=tomoyo-pivot_root-restriction-part.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This file contains Kconfig and Makefile.
+This file controls pivot_root() requests.
 
 Signed-off-by: Kentaro Takeda <takedakn@nttdata.co.jp>
 Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
 Signed-off-by: Toshiharu Harada <haradats@nttdata.co.jp>
 ---
- fs/Kconfig.ccs      |  112 ++++++++++++++++++++++++++++++++++++++++++++++++++++
- fs/Makefile-2.6.ccs |    5 ++
- 2 files changed, 117 insertions(+)
+ fs/sakura_pivot.c |  185 ++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 185 insertions(+)
 
 --- /dev/null
-+++ linux-2.6.25-rc8-mm1/fs/Kconfig.ccs
-@@ -0,0 +1,112 @@
-+config SAKURA
-+	bool "SAKURA (Domain-Free Mandatory Access Control) support"
-+	default y
-+	help
-+	  Say Y here to support the Domain-Free Mandatory Access Control.
++++ linux-2.6.25-rc8-mm1/fs/sakura_pivot.c
+@@ -0,0 +1,185 @@
++/*
++ * fs/sakura_pivot.c
++ *
++ * Implementation of the Domain-Free Mandatory Access Control.
++ *
++ * Copyright (C) 2005-2008  NTT DATA CORPORATION
++ *
++ * Version: 1.6.0   2008/04/01
++ *
++ */
 +
-+	  SAKURA stands for
-+	  "Security Advancement Know-how Upon Read-only Approach".
-+	  As the name shows, SAKURA was originally a methodology to make
-+	  root fs read-only to avoid tampering the system files.
-+	  But now, SAKURA is not only a methodology but also a kernel patch
-+	  that improves the system security with less effort.
++#include <linux/ccs_common.h>
++#include <linux/sakura.h>
++#include <linux/realpath.h>
++#include <linux/namei.h>
 +
-+	  SAKURA can restrict operations that affect systemwide.
++/* Structure for "allow_pivot_root" keyword. */
++struct pivot_root_entry {
++	struct list1_head list;
++	const struct path_info *old_root;
++	const struct path_info *new_root;
++	bool is_deleted;
++};
 +
-+config TOMOYO
-+	bool "TOMOYO (Domain-Based Mandatory Access Control) support"
-+	default y
-+	help
-+	  Say Y here to support the Domain-Based Mandatory Access Control.
++/* The list for "struct pivot_root_entry". */
++static LIST1_HEAD(pivot_root_list);
 +
-+	  TOMOYO stands for "Task Oriented Management Obviates Your Onus".
-+	  TOMOYO is intended to provide the Domain-Based MAC
-+	  utilizing task_struct.
++/**
++ * update_pivot_root_acl - Update "struct pivot_root_entry" list.
++ *
++ * @old_root:  The name of old root directory.
++ * @new_root:  The name of new root directory.
++ * @is_delete: True if it is a delete request.
++ *
++ * Returns 0 on success, negative value otherwise.
++ */
++static int update_pivot_root_acl(const char *old_root, const char *new_root,
++				 const bool is_delete)
++{
++	struct pivot_root_entry *new_entry;
++	struct pivot_root_entry *ptr;
++	const struct path_info *saved_old_root;
++	const struct path_info *saved_new_root;
++	static DEFINE_MUTEX(lock);
++	int error = -ENOMEM;
++	if (!ccs_is_correct_path(old_root, 1, 0, 1, __func__) ||
++	    !ccs_is_correct_path(new_root, 1, 0, 1, __func__))
++		return -EINVAL;
++	saved_old_root = ccs_save_name(old_root);
++	saved_new_root = ccs_save_name(new_root);
++	if (!saved_old_root || !saved_new_root)
++		return -ENOMEM;
++	mutex_lock(&lock);
++	list1_for_each_entry(ptr, &pivot_root_list, list) {
++		if (ptr->old_root != saved_old_root ||
++		    ptr->new_root != saved_new_root)
++			continue;
++		ptr->is_deleted = is_delete;
++		error = 0;
++		goto out;
++	}
++	if (is_delete) {
++		error = -ENOENT;
++		goto out;
++	}
++	new_entry = ccs_alloc_element(sizeof(*new_entry));
++	if (!new_entry)
++		goto out;
++	new_entry->old_root = saved_old_root;
++	new_entry->new_root = saved_new_root;
++	list1_add_tail_mb(&new_entry->list, &pivot_root_list);
++	error = 0;
++	printk(KERN_CONT "%sAllow pivot_root(%s, %s)\n", ccs_log_level,
++	       new_root, old_root);
++ out:
++	mutex_unlock(&lock);
++	ccs_update_counter(CCS_UPDATES_COUNTER_SYSTEM_POLICY);
++	return error;
++}
 +
-+	  The word "domain" in TOMOYO is a class that a process
-+	  (i.e. task_struct) belong to.
-+	  The domain of a process changes whenever the process
-+	  executes a program.
-+	  This allows you to classify at the finest level.
-+	  The access permission is granted to domains, not to processes.
-+	  Policy is defined as "Which domain can access to which resource.".
-+	  There is no concept of "user id" nor "role" like RBAC.
++/**
++ * ccs_check_pivot_root_permission - Check permission for pivot_root().
++ *
++ * @old_nd: Pointer to "struct nameidata".
++ * @new_nd: Pointer to "struct nameidata".
++ *
++ * Returns 0 on success, negative value otherwise.
++ */
++int ccs_check_pivot_root_permission(struct nameidata *old_nd,
++				    struct nameidata *new_nd)
++{
++	int error = -EPERM;
++	char *old_root, *new_root;
++	const u8 mode = ccs_check_flags(CCS_SAKURA_RESTRICT_PIVOT_ROOT);
++	if (!mode)
++		return 0;
++	old_root = ccs_realpath_from_dentry(old_nd->path.dentry,
++					    old_nd->path.mnt);
++	new_root = ccs_realpath_from_dentry(new_nd->path.dentry,
++					    new_nd->path.mnt);
++	if (old_root && new_root) {
++		struct path_info old_root_dir, new_root_dir;
++		old_root_dir.name = old_root;
++		ccs_fill_path_info(&old_root_dir);
++		new_root_dir.name = new_root;
++		ccs_fill_path_info(&new_root_dir);
++		if (old_root_dir.is_dir && new_root_dir.is_dir) {
++			struct pivot_root_entry *ptr;
++			list1_for_each_entry(ptr, &pivot_root_list, list) {
++				if (ptr->is_deleted)
++					continue;
++				if (!ccs_path_matches_pattern(&old_root_dir,
++							      ptr->old_root) ||
++				    !ccs_path_matches_pattern(&new_root_dir,
++							      ptr->new_root))
++					continue;
++				error = 0;
++				break;
++			}
++		}
++	}
++	if (error) {
++		const bool is_enforce = (mode == 3);
++		const char *exename = ccs_get_exe();
++		printk(KERN_WARNING "SAKURA-%s: pivot_root %s %s "
++		       "(pid=%d:exe=%s): Permission denied.\n",
++		       ccs_get_msg(is_enforce), new_root, old_root,
++		       current->pid, exename);
++		if (is_enforce)
++			error = ccs_check_supervisor("# %s is requesting\n"
++						     "pivot_root %s %s\n",
++						     exename, new_root,
++						     old_root);
++		else
++			error = 0;
++		if (exename)
++			ccs_free(exename);
++		if (mode == 1 && old_root && new_root)
++			update_pivot_root_acl(old_root, new_root, 0);
++	}
++	ccs_free(old_root);
++	ccs_free(new_root);
++	return error;
++}
 +
-+	  The biggest feature of TOMOYO is that TOMOYO has "learning mode".
-+	  The learning mode can automatically generate policy definition,
-+	  and dramatically reduces the policy definition labors.
++/**
++ * ccs_write_pivot_root_policy - Write "struct pivot_root_entry" list.
++ *
++ * @data:      String to parse.
++ * @is_delete: True if it is a delete request.
++ *
++ * Returns 0 on success, negative value otherwise.
++ */
++int ccs_write_pivot_root_policy(char *data, const bool is_delete)
++{
++	char *cp = strchr(data, ' ');
++	if (!cp)
++		return -EINVAL;
++	*cp++ = '\0';
++	return update_pivot_root_acl(cp, data, is_delete);
++}
 +
-+	  TOMOYO is much simpler and easier than SELinux.
-+
-+	  TOMOYO is applicable to figuring out the system's behavior, for
-+	  TOMOYO uses the canonicalized absolute pathnames and
-+	  TreeView style domain transitions.
-+
-+	  You can make custom root fs with minimum files
-+	  to run minimum applications with TOMOYO.
-+
-+config TOMOYO_MAX_ACCEPT_ENTRY
-+	int "Default maximal count for learning mode"
-+	default 2048
-+	range 0 2147483647
-+	depends on TOMOYO
-+	help
-+	  This is the default value for maximal ACL entries
-+	  that are automatically appended into policy at "learning mode".
-+	  Some programs access thousands of objects, so running
-+	  such programs in "learning mode" dulls the system response
-+	  and consumes much memory.
-+	  This is the safeguard for such programs.
-+
-+config TOMOYO_MAX_GRANT_LOG
-+	int "Default maximal count for grant log"
-+	default 1024
-+	range 0 2147483647
-+	depends on TOMOYO
-+	help
-+	  This is the default value for maximal entries for
-+	  access grant logs that the kernel can hold on memory.
-+	  You can read the log via /proc/ccs/grant_log.
-+	  If you don't need access grant logs,
-+	  you may set this value to 0.
-+
-+config TOMOYO_MAX_REJECT_LOG
-+	int "Default maximal count for reject log"
-+	default 1024
-+	range 0 2147483647
-+	depends on TOMOYO
-+	help
-+	  This is the default value for maximal entries for
-+	  access reject logs that the kernel can hold on memory.
-+	  You can read the log via /proc/ccs/reject_log.
-+	  If you don't need access reject logs,
-+	  you may set this value to 0.
-+
-+config SYAORAN
-+	tristate "SYAORAN (Tamper-Proof Device Filesystem) support"
-+	default m
-+	help
-+	  Say Y or M here to support the Tamper-Proof Device Filesystem.
-+
-+	  SYAORAN stands for
-+	  "Simple Yet All-important Object Realizing Abiding Nexus".
-+	  SYAORAN is a filesystem for /dev with Mandatory Access Control.
-+
-+	  SAKURA can make root fs read-only, but the system can't work
-+	  if /dev is read-only. Therefore you need to mount a writable
-+	  filesystem (such as tmpfs) for /dev if root fs is read-only.
-+
-+	  But the writable /dev means that files on /dev might be tampered.
-+	  For example, if /dev/null is deleted and re-created as a symbolic
-+	  link to /dev/hda by an attacker, the contents of the IDE HDD
-+	  will be destroyed at a blow.
-+
-+	  Also, TOMOYO controls file access by pathnames,
-+	  not by security labels.
-+	  Therefore /dev/null, for example, might be tampered
-+	  if a process have write permission to /dev/null .
-+
-+	  SYAORAN can ensure /dev/null is a character device file
-+	  with major=1 minor=3.
-+
-+	  You can use SAKURA to make /dev not unmountable.
---- /dev/null
-+++ linux-2.6.25-rc8-mm1/fs/Makefile-2.6.ccs
-@@ -0,0 +1,5 @@
-+obj-y += tomoyo_domain.o
-+obj-$(CONFIG_SAKURA) += ccs_common.o realpath.o sakura_mount.o sakura_chroot.o sakura_umount.o sakura_maymount.o sakura_pivot.o sakura_bind.o
-+obj-$(CONFIG_TOMOYO) += ccs_common.o realpath.o tomoyo_cond.o tomoyo_file.o tomoyo_exec.o tomoyo_network.o tomoyo_signal.o tomoyo_capability.o tomoyo_audit.o tomoyo_env.o
-+obj-$(CONFIG_SYAORAN) += syaoran.o
-+syaoran-objs := syaoran_2.6.o
++/**
++ * ccs_read_pivot_root_policy - Read "struct pivot_root_entry" list.
++ *
++ * @head: Pointer to "struct ccs_io_buffer".
++ *
++ * Returns true on success, false otherwise.
++ */
++bool ccs_read_pivot_root_policy(struct ccs_io_buffer *head)
++{
++	struct list1_head *pos;
++	list1_for_each_cookie(pos, head->read_var2, &pivot_root_list) {
++		struct pivot_root_entry *ptr;
++		ptr = list1_entry(pos, struct pivot_root_entry, list);
++		if (ptr->is_deleted)
++			continue;
++		if (!ccs_io_printf(head, KEYWORD_ALLOW_PIVOT_ROOT "%s %s\n",
++				   ptr->new_root->name, ptr->old_root->name))
++			goto out;
++	}
++	return true;
++ out:
++	return false;
++}
 
 -- 
