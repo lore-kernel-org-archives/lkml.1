@@ -1,82 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758359AbYDDBle@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758996AbYDDBmA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758359AbYDDBle (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Apr 2008 21:41:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751970AbYDDBl0
+	id S1758996AbYDDBmA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Apr 2008 21:42:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751913AbYDDBlv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Apr 2008 21:41:26 -0400
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:36177 "EHLO e6.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751910AbYDDBlZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Apr 2008 21:41:25 -0400
-Subject: Re: [PATCH 1 of 6] hotplug-memory: refactor online_pages to
-	separate zone growth from page onlining
-From: Dave Hansen <dave@linux.vnet.ibm.com>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Yasunori Goto <y-goto@jp.fujitsu.com>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Christoph Lameter <clameter@sgi.com>
-In-Reply-To: <47F58519.1060109@goop.org>
-References: <5a397e7f3c1aeb7648b9.1207267541@localhost>
-	 <1207271371.943.43.camel@nimitz.home.sr71.net>  <47F58519.1060109@goop.org>
-Content-Type: text/plain
-Date: Thu, 03 Apr 2008 18:41:21 -0700
-Message-Id: <1207273281.943.68.camel@nimitz.home.sr71.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 3 Apr 2008 21:41:51 -0400
+Received: from an-out-0708.google.com ([209.85.132.248]:41367 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751970AbYDDBlu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Apr 2008 21:41:50 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=h4p75CNgj4IWoqe5LFm0JufE4BYR0MSyWGMzxWcPnwKzyXvkYtTOFsIF5Hiwwuf0JFgE5uqnq3eonLOu2EPonC7r1FwbAR8jxU0MMmvCH+e/7trRPhBYmOVfN8/RSoVu1ZeA9NcoyF4r9jgk2gLb9TTT3ZT0G3TGAzkUYXqtL4k=
+Message-ID: <dd18b0c30804031841y43fa2391w57e1b1fc6724399b@mail.gmail.com>
+Date: Fri, 4 Apr 2008 01:41:29 +0000
+From: "Justin Mattock" <justinmattock@gmail.com>
+To: "=?ISO-8859-2?Q?Maciej_=AFenczykowski?=" <maze@tcs.uj.edu.pl>
+Subject: Re: Suspending and resuming a single PCI device (and bridge)
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <55a4f86e0804031713p5bc98992p866f2fff5433dd0f@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-2
+Content-Disposition: inline
+References: <55a4f86e0804031707j118d2f3atcb621b28dee29df0@mail.gmail.com>
+	 <55a4f86e0804031713p5bc98992p866f2fff5433dd0f@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha id m341g4nq018027
 
-On Thu, 2008-04-03 at 18:32 -0700, Jeremy Fitzhardinge wrote:
-> Dave Hansen wrote:
-> > On Thu, 2008-04-03 at 17:05 -0700, Jeremy Fitzhardinge wrote:
-> >> +int prepare_online_pages(unsigned long pfn, unsigned long nr_pages)
-> >> +{
-> >> +       int ret = notify_going_online(pfn, nr_pages);
-> >> +       if (ret)
-> >> +               return ret;
-> >> +
-> >> +       grow_zone_span(pfn, pfn+nr_pages);
-> >>         return 0;
-> >> +}
-> >>     
-> >
-> > OK, after seeing this used in the Xen driver, I'm even less a fan of the
-> > name.  Mostly because it doesn't actually prepare *pages* to be onlined.
-> > It prepares the zones/pgdats and notifies that pages might soon be
-> > online.  Can you think of any better names?
-> >
-> > grow_and_notify...??
-> 
-> Does it even need to be a separately visible function?  Could it just be 
-> part of add_memory()?  Is there any reason delay doing it until 
-> online_pages()?
+Hello; I noticed this with the macbook pro ati chipset as well(FIFOthing), you probably read somewhere but if you didn't tryiwpriv ath0 bgscan 0, and put that in /etc/rc.local for starting up.hope this solves the problem with ath0, also I notice with 2.6.25-rc1this happend quite a bit with the new madwifi, but usingmadwifi-dfs-r3221-20080119 seems to not produce that kind of problem.Hopefully this helps you out. (if this problem is more than above thenhopefully somebody else has the answer for you.)regards;                Justin P. Mattock
+On Fri, Apr 4, 2008 at 12:13 AM, Maciej ¯enczykowski <maze@tcs.uj.edu.pl> wrote:> I've got a wireless card (atheros 5418 on a MacBookPro3,1) which is>  (kind-of) supported by the madwifi driver (from head), however>  occasionally it gets stuck (long outstanding bug with lots of>  comments, but no fixes) - I've noticed that a suspend to ram and>  resume (almost?) always fixes the problem.>>  Thus, I'm wondering if there is a way to cause a pci device (and>  possibly the pci bridge/port it's connected to) to suspend/resume>  manually (or naturally, any other solution to the problem)...>>  The hardware in question:>>  # lspci -t | egrep 0b; lspci -vvnn -s 00:1c.4; lspci -vvnn -s 0b:00.0>>            +-1c.4-[0000:0b]----00.0>>  00:1c.4 PCI bridge [0604]: Intel Corporation 82801H (ICH8 Family) PCI>  Express Port 5 [8086:2847] (rev 03) (prog-if 00 [Normal decode])>         Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop->  ParErr- Stepping- SERR- FastB2B- DisINTx+>         Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort->  <TAbort- <MAbort- >SERR- <PERR- INTx->         Latency: 0, Cache Line Size: 256 bytes>         Bus: primary=00, secondary=0b, subordinate=0b, sec-latency=0>         Memory behind bridge: d7300000-d73fffff>         Secondary status: 66MHz- FastB2B- ParErr- DEVSEL=fast >TAbort->  <TAbort- <MAbort- <SERR- <PERR->         BridgeCtl: Parity- SERR- NoISA- VGA- MAbort- >Reset- FastB2B->                 PriDiscTmr- SecDiscTmr- DiscTmrStat- DiscTmrSERREn->         Capabilities: [40] Express (v1) Root Port (Slot+), MSI 00>                 DevCap: MaxPayload 128 bytes, PhantFunc 0, Latency L0s>  unlimited, L1 unlimited>                         ExtTag- RBE+ FLReset->                 DevCtl: Report errors: Correctable- Non-Fatal- Fatal->  Unsupported->                         RlxdOrd- ExtTag- PhantFunc- AuxPwr- NoSnoop->                         MaxPayload 128 bytes, MaxReadReq 128 bytes>                 DevSta: CorrErr- UncorrErr- FatalErr- UnsuppReq->  AuxPwr+ TransPend->                 LnkCap: Port #5, Speed 2.5GT/s, Width x1, ASPM L0s L1,>  Latency L0 <256ns, L1 <4us>                         ClockPM- Suprise- LLActRep+ BwNot->                 LnkCtl: ASPM L1 Enabled; RCB 64 bytes Disabled->  Retrain- CommClk+>                         ExtSynch- ClockPM- AutWidDis- BWInt- AutBWInt->                 LnkSta: Speed 2.5GT/s, Width x1, TrErr- Train->  SlotClk+ DLActive+ BWMgmt- ABWMgmt->                 SltCap: AttnBtn- PwrCtrl- MRL- AttnInd- PwrInd->  HotPlug+ Surpise+>                         Slot #  4, PowerLimit 6.500000; Interlock- NoCompl->                 SltCtl: Enable: AttnBtn- PwrFlt- MRL- PresDet->  CmdCplt- HPIrq- LinkChg->                         Control: AttnInd Unknown, PwrInd Unknown,>  Power- Interlock->                 SltSta: Status: AttnBtn- PowerFlt- MRL- CmdCplt->  PresDet+ Interlock->                         Changed: MRL- PresDet+ LinkState+>                 RootCtl: ErrCorrectable- ErrNon-Fatal- ErrFatal->  PMEIntEna- CRSVisible->                 RootCap: CRSVisible->                 RootSta: PME ReqID 0000, PMEStatus- PMEPending->         Capabilities: [80] Message Signalled Interrupts: Mask- 64bit->  Queue=0/0 Enable->                 Address: fee0300c  Data: 4179>         Capabilities: [90] Subsystem: Gammagraphx, Inc. Unknown device>  [0000:0000]>         Capabilities: [a0] Power Management version 2>                 Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA>  PME(D0+,D1-,D2-,D3hot+,D3cold+)>                 Status: D0 PME-Enable- DSel=0 DScale=0 PME->         Kernel driver in use: pcieport-driver>         Kernel modules: shpchp>>  0b:00.0 Network controller [0280]: Atheros Communications, Inc. AR5418>  802.11abgn Wireless PCI Express Adapter [168c:0024] (rev 01)>         Subsystem: Apple Computer Inc. Unknown device [106b:0087]>         Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop->  ParErr- Stepping- SERR- FastB2B- DisINTx->         Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort->  <TAbort- <MAbort- >SERR- <PERR- INTx->         Latency: 0, Cache Line Size: 256 bytes>         Interrupt: pin A routed to IRQ 16>         Region 0: Memory at d7300000 (64-bit, non-prefetchable) [size=64K]>         Capabilities: [40] Power Management version 2>                 Flags: PMEClk- DSI- D1+ D2- AuxCurrent=375mA>  PME(D0+,D1+,D2-,D3hot+,D3cold-)>                 Status: D0 PME-Enable- DSel=0 DScale=0 PME->         Capabilities: [50] Message Signalled Interrupts: Mask- 64bit->  Queue=0/0 Enable->                 Address: 00000000  Data: 0000>         Capabilities: [60] Express (v1) Legacy Endpoint, MSI 00>                 DevCap: MaxPayload 128 bytes, PhantFunc 0, Latency L0s>  <512ns, L1 <64us>                         ExtTag- AttnBtn- AttnInd- PwrInd- RBE- FLReset->                 DevCtl: Report errors: Correctable- Non-Fatal- Fatal->  Unsupported->                         RlxdOrd+ ExtTag- PhantFunc- AuxPwr- NoSnoop->                         MaxPayload 128 bytes, MaxReadReq 512 bytes>                 DevSta: CorrErr- UncorrErr+ FatalErr- UnsuppReq+>  AuxPwr- TransPend->                 LnkCap: Port #0, Speed 2.5GT/s, Width x1, ASPM L0s L1,>  Latency L0 <512ns, L1 <64us>                         ClockPM- Suprise- LLActRep- BwNot->                 LnkCtl: ASPM L1 Enabled; RCB 128 bytes Disabled->  Retrain- CommClk+>                         ExtSynch- ClockPM- AutWidDis- BWInt- AutBWInt->                 LnkSta: Speed 2.5GT/s, Width x1, TrErr- Train->  SlotClk+ DLActive- BWMgmt- ABWMgmt->         Capabilities: [90] MSI-X: Enable- Mask- TabSize=1>                 Vector table: BAR=0 offset=00000000>                 PBA: BAR=0 offset=00000000>         Kernel driver in use: ath_pci>         Kernel modules: ath5k, ath_pci>>  When the problem happens, the kernel driver reports:>  kernel: wifi0: ath_rxorn_tasklet: Receive FIFO overrun; resetting.>  kernel:last message repeated 92 times>>  I've noticed this seems to be correlated to <MAbort+ being asserted on>  the pci port (00:1c.4) and on the device itself (0b:00.0) - thus I>  think the above message is more of a symptom, than an actual>  problem...>>  Does anyone have any ideas (for example how [else] to clear MAbort)?>>  This is on kernel 2.6.24.4-74.fc8 from koji for fedora core 8 (also>  present on 2.6.24.3-*.fc8), but people have reported issues on pretty>  much everything (ubuntu, etc), any desired futher information>  available by request...>>  Not currently subscribed so please keep me CC'ed.>>  Thanks,>  Maciej>  -->  To unsubscribe from this list: send the line "unsubscribe linux-kernel" in>  the body of a message to majordomo@vger.kernel.org>  More majordomo info at  http://vger.kernel.org/majordomo-info.html>  Please read the FAQ at  http://www.tux.org/lkml/>
 
-Yeah, the add_memory() itself is supposed to be easily able to be rolled
-back.  Say the machine didn't actually need the memory, it could just
-give the memory back.  No danger of fragmentation or anything.
 
-But, at the same time, we don't want to have this memory sitting there
-being unused, but still being accounted for in the VM as real memory.
-It's not in use, and making it look in use (by growing the zone spans)
-could upset the VM watermarks.
-
-> > It's also a bit funky because you're calling the online notifiers, but
-> > you're not actually onlining the pages, yet.  Does that have any
-> > repercussions?
-> 
-> No.  It will always call the GOING_ONLINE notifier, but it will only 
-> call the ONLINE notifier if it actually bulk-onlines all the pages.  In 
-> my page-by-page case, it will never end up calling the ONLINE notifier.  
-> I could call it repeatedly for each page, but I'm not sure how useful 
-> that is (the lack of any users of the ONLINE notifier makes it hard to 
-> judge).
-
-Ahhh.  You're completely right.  I was confused by ONLINE and
-GOING_ONLINE.  Thanks for the reminder!
-
--- Dave
-
+-- Justin P. Mattockÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
