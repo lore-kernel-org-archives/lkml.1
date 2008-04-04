@@ -1,57 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756224AbYDDL1x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756194AbYDDLhP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756224AbYDDL1x (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Apr 2008 07:27:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751652AbYDDL1q
+	id S1756194AbYDDLhP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Apr 2008 07:37:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751771AbYDDLhB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Apr 2008 07:27:46 -0400
-Received: from smtp-out2.tiscali.nl ([195.241.79.177]:37723 "EHLO
-	smtp-out2.tiscali.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751759AbYDDL1p (ORCPT
+	Fri, 4 Apr 2008 07:37:01 -0400
+Received: from moutng.kundenserver.de ([212.227.126.177]:63306 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751652AbYDDLhA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Apr 2008 07:27:45 -0400
-Message-ID: <47F610AD.8070202@tiscali.nl>
-Date: Fri, 04 Apr 2008 13:27:41 +0200
-From: Roel Kluin <12o3l@tiscali.nl>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Fri, 4 Apr 2008 07:37:00 -0400
+Date: Fri, 4 Apr 2008 13:35:48 +0200 (CEST)
+From: Bodo Eggert <7eggert@gmx.de>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+cc: 7eggert@gmx.de, Jeff Garzik <jeff@garzik.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Chris Snook <csnook@redhat.com>, Dave Jones <davej@codemonkey.org.uk>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       NetDev <netdev@vger.kernel.org>, David Miller <davem@davemloft.net>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: GFP_ATOMIC page allocation failures.
+In-Reply-To: <200804042159.54220.nickpiggin@yahoo.com.au>
+Message-ID: <Pine.LNX.4.58.0804041307500.9036@be10.lrz>
+References: <adYyJ-20N-11@gated-at.bofh.it> <aeqF6-45P-29@gated-at.bofh.it>
+ <E1Jhib4-0000md-FP@be1.7eggert.dyndns.org> <200804042159.54220.nickpiggin@yahoo.com.au>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: nickpiggin@yahoo.com.au, lkml <linux-kernel@vger.kernel.org>
-Subject: [PATCH -mm] likely_prof: update to test_and_set_bit_lock / clear_bit_unlock
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
+X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
+X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
+X-Provags-ID: V01U2FsdGVkX18twWx/JW64xqlf74g6fJ4vrRdDHyvn/yQ+zCz
+ oyCMVvmSdOH1cHC9PkMRaXZ5SzU+PMmfg8XTkM/SkuCiNXiVPQ
+ lR7g/PNzGbLLyKzu4ZeJg==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Because the _lock routines are faster and provide a better example to follow.
+On Fri, 4 Apr 2008, Nick Piggin wrote:
 
-Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
----
-As suggested by Nick Piggin. To be applied after Daniels likeliness patches
-and my previous likeliness-accounting-change-and-cleanup.patch, 
-The patch was checkpatch.pl, compile, sparse and run tested (uml).
+> On Friday 04 April 2008 20:52, Bodo Eggert wrote:
+> > Nick Piggin <nickpiggin@yahoo.com.au> wrote:
+> > > On Thursday 03 April 2008 05:18, Jeff Garzik wrote:
+> > >> Turning to Nick's comment,
+> > >>
+> > >> > It's still actually nice to know how often it is happening even for
+> > >> > these known good sites because too much can indicate a problem and
+> > >> > that you could actually bring performance up by tuning some things.
+> > >>
+> > >> then create a counter or acculuation buffer somewhere.
+> > >>
+> > >> We don't need spew every time there is memory pressure of this
+> > >> magnitude.
+> > >
+> > > Not a complete solution. Counter would be nice, but you need backtraces
+> > > and want a way to more proactively warn the user/tester/developer.
+> > >
+> > > I agree that I don't exactly like adding nowarns around, and I don't
+> > > think places like driver writers should have to know about this stuff.
+> >
+> > What about reverse ratelimiting: If the limit is reached, a backtrace will
+> > be generated (and, off cause, positively ratelimited)?
+> 
+> I was thinking about that. I got as far as writing a simple patch to
+> printk  so that it would not start to trigger until it gets a 2nd event
+> within 'n' jiffies of the first.
 
-diff --git a/lib/likely_prof.c b/lib/likely_prof.c
-index c9a8d1d..0da3181 100644
---- a/lib/likely_prof.c
-+++ b/lib/likely_prof.c
-@@ -36,7 +36,7 @@ int do_check_likely(struct likeliness *likeliness, unsigned int ret)
- 		 * disable and it was a bit cleaner then using internal __raw
- 		 * spinlock calls.
- 		 */
--		if (!test_and_set_bit(0, &likely_lock)) {
-+		if (!test_and_set_bit_lock(0, &likely_lock)) {
- 			if (likeliness->label & LP_UNSEEN) {
- 				likeliness->label &= (~LP_UNSEEN);
- 				likeliness->next = likeliness_head;
-@@ -44,8 +44,7 @@ int do_check_likely(struct likeliness *likeliness, unsigned int ret)
- 				likeliness->caller = (unsigned long)
- 						__builtin_return_address(0);
- 			}
--			smp_mb__before_clear_bit();
--			clear_bit(0, &likely_lock);
-+			clear_bit_unlock(0, &likely_lock);
- 		}
- 	}
- 
+I think there was a standalone ratelimit function. I'd use it like this:
+
+static atomic_alloc_ratelimit; /* needs to be initialized ... */
+
+{
+	...
+	if (success)
+		return mem;
+	if(!debug && ratelimit(atomic_alloc_ratelimit))
+		return err_ptr(-ENOMEM);
+	if (printk_ratelimit(first line) > 0) {
+		printk(rest);
+	}
+}
+
+> But actually developers do sometimes want see the event even if it is
+> relatively infrequent...
+
+You shouldn't frighten the users either. /proc/sys/vm/debug?
