@@ -1,74 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759881AbYDDSE4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760066AbYDDSFb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759881AbYDDSE4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Apr 2008 14:04:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752909AbYDDSEn
+	id S1760066AbYDDSFb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Apr 2008 14:05:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754139AbYDDSFN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Apr 2008 14:04:43 -0400
-Received: from e34.co.us.ibm.com ([32.97.110.152]:60553 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751350AbYDDSEm (ORCPT
+	Fri, 4 Apr 2008 14:05:13 -0400
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:44383 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752518AbYDDSFM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Apr 2008 14:04:42 -0400
-Date: Fri, 4 Apr 2008 11:04:22 -0700
-From: Nishanth Aravamudan <nacc@us.ibm.com>
-To: Andy Whitcroft <apw@shadowen.org>
-Cc: Nish Aravamudan <nish.aravamudan@gmail.com>,
-       Gurudas Pai <gurudas.pai@oracle.com>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] hugetlbpage.txt: correct overcommit caveat [Was Re:
-	[BUG]:2.6.25-rc7 memory leak with hugepages.]
-Message-ID: <20080404180422.GA19896@us.ibm.com>
-References: <47EB4E2A.1040507@oracle.com> <20080327083849.GF15626@elte.hu> <47EB75C5.20207@oracle.com> <29495f1d0804032040h56f39051lcd5f707660d3c06c@mail.gmail.com> <20080404171638.GA17915@shadowen.org> <20080404173125.GE30117@us.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080404173125.GE30117@us.ibm.com>
-X-Operating-System: Linux 2.6.25-rc3 (x86_64)
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Fri, 4 Apr 2008 14:05:12 -0400
+To: ezk@cs.sunysb.edu
+CC: miklos@szeredi.hu, viro@zeniv.linux.org.uk, akpm@linux-foundation.org,
+       dave@linux.vnet.ibm.com, ezk@cs.sunysb.edu,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+In-reply-to: <200804041756.m34HuDmt019747@agora.fsl.cs.sunysb.edu> (message
+	from Erez Zadok on Fri, 4 Apr 2008 13:56:13 -0400)
+Subject: Re: [patch 07/10] vfs: add path_rename()
+References: <200804041756.m34HuDmt019747@agora.fsl.cs.sunysb.edu>
+Message-Id: <E1JhqH1-0003SX-Ia@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Fri, 04 Apr 2008 20:04:23 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 04.04.2008 [10:31:25 -0700], Nishanth Aravamudan wrote:
-> On 04.04.2008 [18:16:38 +0100], Andy Whitcroft wrote:
-> > On Thu, Apr 03, 2008 at 08:40:41PM -0700, Nish Aravamudan wrote:
+> > From: Miklos Szeredi <mszeredi@suse.cz>
 > > 
-> > > Hrm, fio is using SHM_HUGETLB. Does ipcs indicate maybe fio is not
-> > > cleaning up the shared memory segment? FWIW, it seems like each run is
-> > > using 400 hugepages in the SHM_HUGETLB segment, and then when you try
-> > > to force the pool to shrink, it converts those 800 (since you ran fio
-> > > twice) hugepages from static pool pages to dynamic (or overcommit)
-> > > pages.
-> > > 
-> > > On another note, it is odd that we're using the dynamic pool, when it
-> > > is initially disabled...I'll have to think about that.
-> > > 
-> > > I'll try and look at this later this evening or early tomorrow.
-> > 
-> > Yes that is an expected result.  We have no way to force the pool to
-> > shrink when pages are in-use.  When a request is made to redoce the pool
-> > below the number of in-use pages, we move the pages to surplus.  While
-> > this does temporarily violate the overcommit cap, it does provide the
-> > most utility as those pages will be returned to the buddy at the
-> > earliest oppotunity.
-> > 
-> > I suspect the documenation could do with a little clarification.
+> > Introduce path_rename().  Make vfs_rename() static.
+> [...]
+> > +int path_rename(struct path *old_dir_path, struct dentry *old_dentry,
+> > +		struct inode *new_dir, struct dentry *new_dentry)
+> > +{
+> > +	int error = mnt_want_write(old_dir_path->mnt);
+> > +
+> > +	if (!error) {
+> > +		struct inode *old_dir = old_dir_path->dentry->d_inode;
+> > +
+> > +		error = vfs_rename(old_dir, old_dentry, new_dir, new_dentry);
+> > +		mnt_drop_write(old_dir_path->mnt);
+> > +	}
+> > +
+> > +	return error;
+> > +}
+> > +EXPORT_SYMBOL(path_rename);
 > 
-> 
-> As shown by Gurudas Pai recently, we can put hugepages into the surplus
-> state (by echo 0 > /proc/sys/vm/nr_hugepages), even when
-> /proc/sys/vm/nr_overcommit_hugepages is 0. This is actually correct, to
-> allow the original goal (shrink the static pool to 0) to succeed when it
-> is possible for it two (we are converting hugepages to surplus because
+> You're grabbing a want_write ref on the source vfsmount only.  Shouldn't
+> path_rename() call mnt_want_write on *both* the source and destination
+> vfsmounts?
 
-s/when it is possible for it two//
+The source and the destination vfsmounts are always the same.
 
-Will fix in my copy.
+> If so, do we need to order the locks ala lock_rename()?
 
-Thanks,
-Nish
+These are counters (similar to reference counts), not locks.
 
--- 
-Nishanth Aravamudan <nacc@us.ibm.com>
-IBM Linux Technology Center
+Miklos
