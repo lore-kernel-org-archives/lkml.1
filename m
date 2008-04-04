@@ -1,56 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760041AbYDDMuq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759890AbYDDMvB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760041AbYDDMuq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Apr 2008 08:50:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758990AbYDDMrn
+	id S1759890AbYDDMvB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Apr 2008 08:51:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758800AbYDDMrk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Apr 2008 08:47:43 -0400
-Received: from wine.ocn.ne.jp ([122.1.235.145]:49848 "EHLO smtp.wine.ocn.ne.jp"
+	Fri, 4 Apr 2008 08:47:40 -0400
+Received: from wine.ocn.ne.jp ([122.1.235.145]:49845 "EHLO smtp.wine.ocn.ne.jp"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758715AbYDDMr2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1758836AbYDDMr2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 4 Apr 2008 08:47:28 -0400
-Message-Id: <20080404122359.971345294@I-love.SAKURA.ne.jp>
+Message-Id: <20080404122359.586796343@I-love.SAKURA.ne.jp>
 References: <20080404122242.867070732@I-love.SAKURA.ne.jp>
 User-Agent: quilt/0.46-1
-Date: Fri, 04 Apr 2008 21:22:50 +0900
+Date: Fri, 04 Apr 2008 21:22:49 +0900
 From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
 To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
        linux-security-module@vger.kernel.org
 Cc: Kentaro Takeda <takedakn@nttdata.co.jp>,
        Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>,
        Toshiharu Harada <haradats@nttdata.co.jp>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>
-Subject: [TOMOYO #7 08/30] Some of permission checks from VFS helper functions.
-Content-Disposition: inline; filename=tomoyo-tomoyo-vfs-header.patch
+       linux-netdev <netdev@vger.kernel.org>
+Subject: [TOMOYO #7 07/30] Some wrapper functions for socket operation.
+Content-Disposition: inline; filename=tomoyo-tomoyo-socket-header.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-TOMOYO Linux performs pathname based access control,
-but "struct vfsmount" is not passed to VFS helper functions
-which is needed for deriving requested pathname.
+These functions checks whether TOMOYO can do permission checks or not.
 
-Since I want to do conventional DAC's permission checks
-before TOMOYO Linux's permission checks, I copied some of
-permission checks from VFS helper functions.
-
-The side effect of this approach is that DAC permission checks
-are done twice. But the approach to pass "struct vfsmount" to
-VFS helper functions seems unacceptable.
+TOMOYO won't do permission checks if the process is a kernel thread
+or the process is not permitted to sleep.
 
 Signed-off-by: Kentaro Takeda <takedakn@nttdata.co.jp>
 Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
 Signed-off-by: Toshiharu Harada <haradats@nttdata.co.jp>
-Cc: linux-fsdevel <linux-fsdevel@vger.kernel.org>
+Cc: linux-netdev <netdev@vger.kernel.org>
 ---
- include/linux/tomoyo_vfs.h |  141 +++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 141 insertions(+)
+ include/linux/tomoyo_socket.h |  419 ++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 419 insertions(+)
 
 --- /dev/null
-+++ linux-2.6.25-rc8-mm1/include/linux/tomoyo_vfs.h
-@@ -0,0 +1,141 @@
++++ linux-2.6.25-rc8-mm1/include/linux/tomoyo_socket.h
+@@ -0,0 +1,419 @@
 +/*
-+ * include/linux/tomoyo_vfs.h
++ * include/linux/tomoyo_socket.h
 + *
 + * Implementation of the Domain-Based Mandatory Access Control.
 + *
@@ -60,134 +53,412 @@ Cc: linux-fsdevel <linux-fsdevel@vger.kernel.org>
 + *
 + */
 +
-+#ifndef _LINUX_TOMOYO_VFS_H
-+#define _LINUX_TOMOYO_VFS_H
++#ifndef _LINUX_TOMOYO_SOCKET_H
++#define _LINUX_TOMOYO_SOCKET_H
 +
-+/*
-+ * This file contains copy of some of VFS helper functions.
-+ *
-+ * Since TOMOYO Linux requires "struct vfsmount" parameter to calculate
-+ * an absolute pathname of the requested "struct dentry" parameter
-+ * but the VFS helper functions don't receive "struct vfsmount" parameter,
-+ * TOMOYO Linux checks permission outside VFS helper functions.
-+ * To keep the DAC's permission checks are performed before the
-+ * TOMOYO Linux's permission checks are performed, I'm manually inserting
-+ * these functions that performs the DAC's permission checks into fs/namei.c.
-+ *
-+ * The approach to obtain "struct vfsmount" parameter from
-+ * the "struct task_struct" doesn't work because it triggers deadlock.
-+ */
++#include <net/ip.h>
++#include <net/ipv6.h>
++#include <net/udp.h>
++#include <linux/uaccess.h>
 +
-+/*
-+ * Permission checks before security_inode_mknod() is called.
-+ *
-+ * This function is exported because
-+ * vfs_mknod() is called from net/unix/af_unix.c.
-+ */
-+int pre_vfs_mknod(struct inode *dir, struct dentry *dentry, int mode)
++#if defined(CONFIG_TOMOYO)
++
++#define false 0
++#define true 1
++
++#define MAX_SOCK_ADDR 128 /* net/socket.c */
++
++/* Check permission for creating a socket. */
++static inline int ccs_socket_create_permission(int family, int type,
++					       int protocol)
 +{
-+	int error = may_create(dir, dentry, NULL);
-+	if (error)
-+		return error;
-+	if ((S_ISCHR(mode) || S_ISBLK(mode)) && !capable(CAP_MKNOD))
-+		return -EPERM;
-+	if (!dir->i_op || !dir->i_op->mknod)
-+		return -EPERM;
-+	return 0;
-+}
-+EXPORT_SYMBOL(pre_vfs_mknod);
-+
-+/* Permission checks before security_inode_mkdir() is called. */
-+static inline int pre_vfs_mkdir(struct inode *dir, struct dentry *dentry)
-+{
-+	int error = may_create(dir, dentry, NULL);
-+	if (error)
-+		return error;
-+	if (!dir->i_op || !dir->i_op->mkdir)
-+		return -EPERM;
-+	return 0;
-+}
-+
-+/* Some of permission checks before security_inode_rmdir() is called. */
-+static inline int pre_vfs_rmdir(struct inode *dir, struct dentry *dentry)
-+{
-+	int error = may_delete(dir, dentry, 1);
-+	if (error)
-+		return error;
-+	if (!dir->i_op || !dir->i_op->rmdir)
-+		return -EPERM;
-+	return 0;
-+}
-+
-+/* Some of permission checks before security_inode_unlink() is called. */
-+static inline int pre_vfs_unlink(struct inode *dir, struct dentry *dentry)
-+{
-+	int error = may_delete(dir, dentry, 0);
-+	if (error)
-+		return error;
-+	if (!dir->i_op || !dir->i_op->unlink)
-+		return -EPERM;
-+	return 0;
-+}
-+
-+/* Permission checks before security_inode_link() is called. */
-+static inline int pre_vfs_link(struct dentry *old_dentry, struct inode *dir,
-+			       struct dentry *new_dentry)
-+{
-+	struct inode *inode = old_dentry->d_inode;
-+	int error;
-+	if (!inode)
-+		return -ENOENT;
-+	error = may_create(dir, new_dentry, NULL);
-+	if (error)
-+		return error;
-+	if (dir->i_sb != inode->i_sb)
-+		return -EXDEV;
-+	if (IS_APPEND(inode) || IS_IMMUTABLE(inode))
-+		return -EPERM;
-+	if (!dir->i_op || !dir->i_op->link)
-+		return -EPERM;
-+	if (S_ISDIR(old_dentry->d_inode->i_mode))
-+		return -EPERM;
-+	return 0;
-+}
-+
-+/* Permission checks before security_inode_symlink() is called. */
-+static inline int pre_vfs_symlink(struct inode *dir, struct dentry *dentry)
-+{
-+	int error = may_create(dir, dentry, NULL);
-+	if (error)
-+		return error;
-+	if (!dir->i_op || !dir->i_op->symlink)
-+		return -EPERM;
-+	return 0;
-+}
-+
-+/* Permission checks before security_inode_rename() is called. */
-+static inline int pre_vfs_rename(struct inode *old_dir,
-+				 struct dentry *old_dentry,
-+				 struct inode *new_dir,
-+				 struct dentry *new_dentry)
-+{
-+	int error;
-+	const int is_dir = S_ISDIR(old_dentry->d_inode->i_mode);
-+	if (old_dentry->d_inode == new_dentry->d_inode)
++	int error = 0;
++	/* Nothing to do if I am a kernel service. */
++	if (segment_eq(get_fs(), KERNEL_DS))
 +		return 0;
-+	error = may_delete(old_dir, old_dentry, is_dir);
-+	if (error)
-+		return error;
-+	if (!new_dentry->d_inode)
-+		error = may_create(new_dir, new_dentry, NULL);
-+	else
-+		error = may_delete(new_dir, new_dentry, is_dir);
-+	if (error)
-+		return error;
-+	if (!old_dir->i_op || !old_dir->i_op->rename)
++	if (family == PF_PACKET && !ccs_capable(TOMOYO_USE_PACKET_SOCKET))
 +		return -EPERM;
-+	if (is_dir && new_dir != old_dir)
-+		error = permission(old_dentry->d_inode, MAY_WRITE, NULL);
++	if (family == PF_ROUTE && !ccs_capable(TOMOYO_USE_ROUTE_SOCKET))
++		return -EPERM;
++	if (family != PF_INET && family != PF_INET6)
++		return 0;
++	switch (type) {
++	case SOCK_STREAM:
++		if (!ccs_capable(TOMOYO_INET_STREAM_SOCKET_CREATE))
++			error = -EPERM;
++		break;
++	case SOCK_DGRAM:
++		if (!ccs_capable(TOMOYO_USE_INET_DGRAM_SOCKET))
++			error = -EPERM;
++		break;
++	case SOCK_RAW:
++		if (!ccs_capable(TOMOYO_USE_INET_RAW_SOCKET))
++			error = -EPERM;
++		break;
++	}
 +	return error;
 +}
++
++/* Check permission for listening a TCP socket. */
++static inline int ccs_socket_listen_permission(struct socket *sock)
++{
++	int error = 0;
++	char addr[MAX_SOCK_ADDR];
++	int addr_len;
++	/* Nothing to do if I am a kernel service. */
++	if (segment_eq(get_fs(), KERNEL_DS))
++		return 0;
++	if (sock->type != SOCK_STREAM)
++		return 0;
++	switch (sock->sk->sk_family) {
++	case PF_INET:
++	case PF_INET6:
++		break;
++	default:
++		return 0;
++	}
++	if (!ccs_capable(TOMOYO_INET_STREAM_SOCKET_LISTEN))
++		return -EPERM;
++	if (sock->ops->getname(sock, (struct sockaddr *) addr, &addr_len, 0))
++		return -EPERM;
++	switch (((struct sockaddr *) addr)->sa_family) {
++		struct sockaddr_in6 *addr6;
++		struct sockaddr_in *addr4;
++	case AF_INET6:
++		addr6 = (struct sockaddr_in6 *) addr;
++		error = ccs_check_network_listen_acl(true,
++						     addr6->sin6_addr.s6_addr,
++						     addr6->sin6_port);
++		break;
++	case AF_INET:
++		addr4 = (struct sockaddr_in *) addr;
++		error = ccs_check_network_listen_acl(false,
++						     (u8 *) &addr4->sin_addr,
++						     addr4->sin_port);
++		break;
++	}
++	return error;
++}
++
++/* Check permission for setting the remote IP address/port pair of a socket. */
++static inline int ccs_socket_connect_permission(struct socket *sock,
++						struct sockaddr *addr,
++						int addr_len)
++{
++	int error = 0;
++	const unsigned int type = sock->type;
++	/* Nothing to do if I am a kernel service. */
++	if (segment_eq(get_fs(), KERNEL_DS))
++		return 0;
++	switch (type) {
++	case SOCK_STREAM:
++	case SOCK_DGRAM:
++	case SOCK_RAW:
++		break;
++	default:
++		return 0;
++	}
++	switch (addr->sa_family) {
++		struct sockaddr_in6 *addr6;
++		struct sockaddr_in *addr4;
++		u16 port;
++	case AF_INET6:
++		if (addr_len < SIN6_LEN_RFC2133)
++			break;
++		addr6 = (struct sockaddr_in6 *) addr;
++		if (type != SOCK_RAW)
++			port = addr6->sin6_port;
++		else
++			port = htons(sock->sk->sk_protocol);
++		error = ccs_check_network_connect_acl(true, type,
++						      addr6->sin6_addr.s6_addr,
++						      port);
++		break;
++	case AF_INET:
++		if (addr_len < sizeof(struct sockaddr_in))
++			break;
++		addr4 = (struct sockaddr_in *) addr;
++		if (type != SOCK_RAW)
++			port = addr4->sin_port;
++		else
++			port = htons(sock->sk->sk_protocol);
++		error = ccs_check_network_connect_acl(false, type,
++						      (u8 *) &addr4->sin_addr,
++						      port);
++		break;
++	}
++	if (type != SOCK_STREAM)
++		return error;
++	switch (sock->sk->sk_family) {
++	case PF_INET:
++	case PF_INET6:
++		if (!ccs_capable(TOMOYO_INET_STREAM_SOCKET_CONNECT))
++			error = -EPERM;
++		break;
++	}
++	return error;
++}
++
++/* Check permission for setting the local IP address/port pair of a socket. */
++static inline int ccs_socket_bind_permission(struct socket *sock,
++					     struct sockaddr *addr,
++					     int addr_len)
++{
++	int error = 0;
++	const unsigned int type = sock->type;
++	/* Nothing to do if I am a kernel service. */
++	if (segment_eq(get_fs(), KERNEL_DS))
++		return 0;
++	switch (type) {
++	case SOCK_STREAM:
++	case SOCK_DGRAM:
++	case SOCK_RAW:
++		break;
++	default:
++		return 0;
++	}
++	switch (addr->sa_family) {
++		struct sockaddr_in6 *addr6;
++		struct sockaddr_in *addr4;
++		u16 port;
++	case AF_INET6:
++		if (addr_len < SIN6_LEN_RFC2133)
++			break;
++		addr6 = (struct sockaddr_in6 *) addr;
++		if (type != SOCK_RAW)
++			port = addr6->sin6_port;
++		else
++			port = htons(sock->sk->sk_protocol);
++		error = ccs_check_network_bind_acl(true, type,
++						   addr6->sin6_addr.s6_addr,
++						   port);
++		break;
++	case AF_INET:
++		if (addr_len < sizeof(struct sockaddr_in))
++			break;
++		addr4 = (struct sockaddr_in *) addr;
++		if (type != SOCK_RAW)
++			port = addr4->sin_port;
++		else
++			port = htons(sock->sk->sk_protocol);
++		error = ccs_check_network_bind_acl(false, type,
++						   (u8 *) &addr4->sin_addr,
++						   port);
++		break;
++	}
++	return error;
++}
++
++/*
++ * Check permission for accepting a TCP socket.
++ *
++ * Currently, the LSM hook for this purpose is not provided.
++ */
++static inline int ccs_socket_accept_permission(struct socket *sock,
++					       struct sockaddr *addr)
++{
++	int error = 0;
++	int addr_len;
++	/* Nothing to do if I am a kernel service. */
++	if (segment_eq(get_fs(), KERNEL_DS))
++		return 0;
++	switch (sock->sk->sk_family) {
++	case PF_INET:
++	case PF_INET6:
++		break;
++	default:
++		return 0;
++	}
++	error = sock->ops->getname(sock, addr, &addr_len, 2);
++	if (error)
++		return error;
++	switch (addr->sa_family) {
++		struct sockaddr_in6 *addr6;
++		struct sockaddr_in *addr4;
++	case AF_INET6:
++		addr6 = (struct sockaddr_in6 *) addr;
++		error = ccs_check_network_accept_acl(true,
++						     addr6->sin6_addr.s6_addr,
++						     addr6->sin6_port);
++		break;
++	case AF_INET:
++		addr4 = (struct sockaddr_in *) addr;
++		error = ccs_check_network_accept_acl(false,
++						     (u8 *) &addr4->sin_addr,
++						     addr4->sin_port);
++		break;
++	}
++	return error;
++}
++
++/* Check permission for sending a datagram via a UDP or RAW socket. */
++static inline int ccs_socket_sendmsg_permission(struct socket *sock,
++						struct sockaddr *addr,
++						int addr_len)
++{
++	int error = 0;
++	const int type = sock->type;
++	/* Nothing to do if I am a kernel service. */
++	if (segment_eq(get_fs(), KERNEL_DS))
++		return 0;
++	if (!addr || (type != SOCK_DGRAM && type != SOCK_RAW))
++		return 0;
++	switch (addr->sa_family) {
++		struct sockaddr_in6 *addr6;
++		struct sockaddr_in *addr4;
++		u16 port;
++	case AF_INET6:
++		if (addr_len < SIN6_LEN_RFC2133)
++			break;
++		addr6 = (struct sockaddr_in6 *) addr;
++		if (type == SOCK_DGRAM)
++			port = addr6->sin6_port;
++		else
++			port = htons(sock->sk->sk_protocol);
++		error = ccs_check_network_sendmsg_acl(true, type,
++						      addr6->sin6_addr.s6_addr,
++						      port);
++		break;
++	case AF_INET:
++		if (addr_len < sizeof(struct sockaddr_in))
++			break;
++		addr4 = (struct sockaddr_in *) addr;
++		if (type == SOCK_DGRAM)
++			port = addr4->sin_port;
++		else
++			port = htons(sock->sk->sk_protocol);
++		error = ccs_check_network_sendmsg_acl(false, type,
++						      (u8 *) &addr4->sin_addr,
++						      port);
++		break;
++	}
++	return error;
++}
++
++/*
++ * Check permission for receiving a datagram via a UDP or RAW socket.
++ *
++ * Currently, the LSM hook for this purpose is not provided.
++ */
++static inline int ccs_socket_recv_datagram_permission(struct sock *sk,
++						      struct sk_buff *skb,
++						      const unsigned int flags)
++{
++	int error = 0;
++	const unsigned int type = sk->sk_type;
++	/* Nothing to do if I didn't receive a datagram. */
++	if (!skb)
++		return 0;
++	/* Nothing to do if I can't sleep. */
++	if (in_atomic())
++		return 0;
++	/* Nothing to do if I am a kernel service. */
++	if (segment_eq(get_fs(), KERNEL_DS))
++		return 0;
++	if (type != SOCK_DGRAM && type != SOCK_RAW)
++		return 0;
++
++	switch (sk->sk_family) {
++		struct in6_addr sin6;
++		struct in_addr sin4;
++		u16 port;
++	case PF_INET6:
++		if (type == SOCK_DGRAM) { /* UDP IPv6 */
++			if (skb->protocol == htons(ETH_P_IP)) {
++				ipv6_addr_set(&sin6, 0, 0, htonl(0xffff),
++					      ip_hdr(skb)->saddr);
++			} else {
++				ipv6_addr_copy(&sin6, &ipv6_hdr(skb)->saddr);
++			}
++			port = udp_hdr(skb)->source;
++		} else { /* RAW IPv6 */
++			ipv6_addr_copy(&sin6, &ipv6_hdr(skb)->saddr);
++			port = htons(sk->sk_protocol);
++		}
++		error = ccs_check_network_recvmsg_acl(true, type,
++						      (u8 *) &sin6, port);
++		break;
++	case PF_INET:
++		if (type == SOCK_DGRAM) { /* UDP IPv4 */
++			sin4.s_addr = ip_hdr(skb)->saddr;
++			port = udp_hdr(skb)->source;
++		} else { /* RAW IPv4 */
++			sin4.s_addr = ip_hdr(skb)->saddr;
++			port = htons(sk->sk_protocol);
++		}
++		error = ccs_check_network_recvmsg_acl(false, type,
++						      (u8 *) &sin4, port);
++		break;
++	}
++	if (!error)
++		return 0;
++	lock_sock(sk);
++	/*
++	 * Remove from queue if MSG_PEEK is used so that
++	 * the head message from unwanted source in receive queue will not
++	 * prevent the caller from picking up next message from wanted source
++	 * when the caller is using MSG_PEEK flag for picking up.
++	 */
++	if (flags & MSG_PEEK) {
++		unsigned long cpu_flags;
++		/***** CRITICAL SECTION START *****/
++		spin_lock_irqsave(&sk->sk_receive_queue.lock, cpu_flags);
++		if (skb == skb_peek(&sk->sk_receive_queue)) {
++			__skb_unlink(skb, &sk->sk_receive_queue);
++			atomic_dec(&skb->users);
++		}
++		spin_unlock_irqrestore(&sk->sk_receive_queue.lock, cpu_flags);
++		/***** CRITICAL SECTION END *****/
++	}
++	/* Drop reference count. */
++	skb_free_datagram(sk, skb);
++	release_sock(sk);
++	/* Hope less harmful than -EPERM. */
++	return -EAGAIN;
++}
++
++#else
++
++static inline int ccs_socket_create_permission(int family, int type,
++					       int protocol)
++{
++	return 0;
++}
++static inline int ccs_socket_listen_permission(struct socket *sock)
++{
++	return 0;
++}
++static inline int ccs_socket_connect_permission(struct socket *sock,
++						struct sockaddr *addr,
++						int addr_len)
++{
++	return 0;
++}
++static inline int ccs_socket_bind_permission(struct socket *sock,
++					     struct sockaddr *addr,
++					     int addr_len)
++{
++	return 0;
++}
++static inline int ccs_socket_accept_permission(struct socket *sock,
++					       struct sockaddr *addr)
++{
++	return 0;
++}
++static inline int ccs_socket_sendmsg_permission(struct socket *sock,
++						struct sockaddr *addr,
++						int addr_len)
++{
++	return 0;
++}
++static inline int ccs_socket_recv_datagram_permission(struct sock *sk,
++						      struct sk_buff *skb,
++						      const unsigned int flags)
++{
++	return 0;
++}
++
++#endif
 +
 +#endif
 
