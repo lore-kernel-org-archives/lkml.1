@@ -1,81 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752408AbYDDVU0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751844AbYDDVW5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752408AbYDDVU0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Apr 2008 17:20:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751188AbYDDVUR
+	id S1751844AbYDDVW5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Apr 2008 17:22:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751466AbYDDVWt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Apr 2008 17:20:17 -0400
-Received: from crystal.sipsolutions.net ([195.210.38.204]:38700 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751143AbYDDVUQ (ORCPT
+	Fri, 4 Apr 2008 17:22:49 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:20664 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751204AbYDDVWs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Apr 2008 17:20:16 -0400
-Subject: Re: debugfs_remove() vs. anything that is dynamic
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Greg KH <greg@kroah.com>
-Cc: Linux Kernel list <linux-kernel@vger.kernel.org>
-In-Reply-To: <1207342644.3625.4.camel@johannes.berg>
-References: <1207266986.19189.14.camel@johannes.berg>
-	 <20080404153402.GB16923@kroah.com>
-	 <1207323684.19189.54.camel@johannes.berg>
-	 <20080404202006.GB14016@kroah.com>  <1207342644.3625.4.camel@johannes.berg>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-4d20rFFssmgYnHRNMc9q"
-Date: Fri, 04 Apr 2008 23:20:12 +0200
-Message-Id: <1207344012.3625.7.camel@johannes.berg>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 
+	Fri, 4 Apr 2008 17:22:48 -0400
+Message-ID: <47F6AA07.70706@oracle.com>
+Date: Fri, 04 Apr 2008 17:21:59 -0500
+From: Richard Frank <richard.frank@oracle.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
+MIME-Version: 1.0
+To: Roland Dreier <rdreier@cisco.com>
+CC: tziporet@dev.mellanox.co.il, linux-kernel@vger.kernel.org,
+       general@lists.openfabrics.org
+Subject: Re: [ofa-general] InfiniBand/iWARP/RDMA merge plans for 2.6.26 (what's
+ in infiniband.git)
+References: <adave31bayd.fsf@cisco.com> <47F37CA4.8000109@mellanox.co.il>	<adahcek2pru.fsf@cisco.com> <47F68EDC.4050107@oracle.com> <adaiqyxs9b7.fsf@cisco.com>
+In-Reply-To: <adaiqyxs9b7.fsf@cisco.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Roland Dreier wrote:
+>  > We are very interested in these new operations and are moving in the
+>  > direction of tightly integrating RDMA along with atomics (if
+>  > available) into Oracle.  We plan on testing some early prototypes of
+>  > the these in the few months.
+>
+> And you need the ConnectX-only masked atomics?  Or do the standard IB
+> atomic operations work for you?  Of course using atomics at all means
+> that things don't work on iWARP.
+>
+>   
+We specifically asked for the masked operations.
 
---=-4d20rFFssmgYnHRNMc9q
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Yes, this means Oracle will not get the performance boost of atomics on 
+IWARP - but we still get rdma - and that's a real win / benefit for 
+Oracle today - and more so over the next few months.
 
+>  > Send with invalidate is an exact match for our current RDS V3 rdma
+>  > driver - and should be more efficient than the current background
+>  > syncing of the tpt  to ensure keys are invalidated.
+>
+> How does send with invalidate interact with the current IB FMR stuff?
+> Seems that you would run into trouble keeping the state of the FMR
+> straight if the remote side is invalidating them.
+>
+>   
+The model we implement is based on "use once" keys - we issue the key to 
+the rdma server and want to toss it as soon as the rdma is complete. 
+Today, we explicitly free the key after the rdma completes and we get a 
+message from the rdma server - saying rdma is complete. If the key is 
+auto invalidated by the recv'ing HCA then we do not need to do it in the 
+driver... which also meanswe do not need to issue the sync tpts to force 
+the HCA to be update its cache.
 
-> I think, however, it's not correct when you have a hard-link, and the
-> NULLing out of i_private must be done depending on (inode->i_nlink =3D=3D=
- 1)
-> instead of unconditionally. I will have to test that once I figure out
-> if (and if yes, how) you can even create inodes with nlink>1 with simple
-> attributes.
->=20
-> --- everything.orig/fs/libfs.c	2008-04-04 22:37:18.000000000 +0200
-> +++ everything/fs/libfs.c	2008-04-04 22:37:37.000000000 +0200
-> @@ -287,6 +287,7 @@ int simple_unlink(struct inode *dir, str
->  {
->  	struct inode *inode =3D dentry->d_inode;
-> =20
-> +	inode->i_private =3D NULL;
+At least this is how I think it works - Olaf is the divine source here.
 
-Hm, no, this is likely to conflict with other users of simple_unlink
-that use i_private afterwards and don't expect it to have been NULL'ed
-out. I haven't found a solution yet.
-
-johannes
-
---=-4d20rFFssmgYnHRNMc9q
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iQIVAwUAR/abi6Vg1VMiehFYAQJHQxAAoKfUIc6+WHOqYsyE7VwiY5gnoldVGx8V
-NaOhfnePl+vToIsUtBLQ/5EaqHyDyI18ATalf4eHXOpWqJm6lDuHjilLn7Tpf1AE
-t2vT95hy5Gwr1a4mz9PCECBF46lYAiKtaTTEYXnM7GYNiZ4rQyoZ3KY7bamISH8l
-k07lgbCBjGF4nbfJiKkW0cP0lTdaZrJQnM282rHTTre/GYeJyFAOV8MeJtSSDZWx
-hFVv6wHTSh6pIFXvNdTmiGWrMiMiNhPc0lVe5usUFFSrXsw9TJ8rI+8l3UpR9Bct
-kKULUm1YHHmhb8xZ9SiFLtuYFeIqpM8LxxqYYbNqCuCBzwdxpW5X5OcPo0HeXpYP
-BP77MS4zljAMqPOQK72WLOh1ixzh+BEt58na/ssaGNnxkFZII/E2z48Yk33MMsUb
-ahpdWa0O6xyOqzcW4tQeV14SpSDBjKlUzQtJryQo9EqeGKdbevQgZ70+r5enD9uL
-fp0UqqArlvjnhdEZMchoZhCLRA8W8OPYV8zvn5W3tqXQAKOnGauUpNFiDiKBqOZm
-I3bgHaP1hwtg/S8hCaXotjzev1jw6G4cZ5tk0tojvebD//Ui0ZppO8Gwr9vVJJIl
-p/f4GIEba7bVqMXTYlqLDZe3DXOEGlhh+KU2NK135Wepq6FeLZ8i8n3zSBmFqA1H
-kwtCgc+6tPc=
-=Xrya
------END PGP SIGNATURE-----
-
---=-4d20rFFssmgYnHRNMc9q--
-
+> Also I would think that send-with-invalidate would be much more
+> expensive than the current FMR method of batching up the invalidates,
+> since you don't get to amortize the cost of syncing up all the internal
+> HCA state.
+>
+>   
+This is the one piece we do not know - our plans are to test this and 
+see where the trade offs are. We will keep the current design / 
+implementation to run over NICs that do not support send-with-invalidate.
+>  - R.
+>   
