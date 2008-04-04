@@ -1,53 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759032AbYDDRqR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758942AbYDDRxY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759032AbYDDRqR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Apr 2008 13:46:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756728AbYDDRqD
+	id S1758942AbYDDRxY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Apr 2008 13:53:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756586AbYDDRxP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Apr 2008 13:46:03 -0400
-Received: from nn7.de ([85.214.94.156]:40571 "EHLO nn7.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756715AbYDDRqB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Apr 2008 13:46:01 -0400
-Subject: RE: 2.6.25-current-git hangs on boot unless CONFIG_CPU_IDLE=n-Apple
-From: Soeren Sonnenburg <kernel@nn7.de>
-To: "Pallipadi\, Venkatesh" <venkatesh.pallipadi@intel.com>
-Cc: "Carlos R\. Mafra" <crmafra2@gmail.com>, Ray Lee <ray-lk@madrabbit.org>,
-       "Rafael J\. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <924EFEDD5F540B4284297C4DC59F3DEED0ECFE@orsmsx423.amr.corp.intel.com>
-References: <pdj7pZVURbL.A.42H.kDW9HB@albercik>
-	 <pdYe6zNQVl.A.AOB.6GW9HB@albercik>
-	 <924EFEDD5F540B4284297C4DC59F3DEED0EA1E@orsmsx423.amr.corp.intel.com>
-	 <20080404011053.GA21254@localhost.ift.unesp.br>
-	 <2c0942db0804032015y57e91811r37b729cd836cef6d@mail.gmail.com>
-	 <20080404114756.GA3890@localhost.ift.unesp.br>
-	 <924EFEDD5F540B4284297C4DC59F3DEED0EB77@orsmsx423.amr.corp.intel.com>
-	 <20080404155155.GA6578@localhost.ift.unesp.br>
-	 <924EFEDD5F540B4284297C4DC59F3DEED0ECFE@orsmsx423.amr.corp.intel.com>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Fri, 04 Apr 2008 19:42:19 +0200
-Message-Id: <1207330939.5027.2.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.0 
+	Fri, 4 Apr 2008 13:53:15 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:35293 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751734AbYDDRxO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Apr 2008 13:53:14 -0400
+Date: Fri, 4 Apr 2008 10:50:31 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Ralf Baechle <ralf@linux-mips.org>
+cc: Sam Ravnborg <sam@ravnborg.org>, Andrew Morton <akpm@linux-foundation.org>,
+       dmitri.vorobiev@gmail.com, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.25-rc8-mm1 (mips build failure)
+In-Reply-To: <Pine.LNX.4.64.0804041035350.16065@schroedinger.engr.sgi.com>
+Message-ID: <Pine.LNX.4.64.0804041047010.16179@schroedinger.engr.sgi.com>
+References: <20080401213214.8fbb6d6b.akpm@linux-foundation.org>
+ <47F31C46.9000503@gmail.com> <20080401230322.331c50f4.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0804021031480.26938@schroedinger.engr.sgi.com>
+ <20080402112907.76e1c554.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0804021130040.28113@schroedinger.engr.sgi.com>
+ <20080402190623.GA23651@uranus.ravnborg.org> <20080403160230.GA17771@linux-mips.org>
+ <Pine.LNX.4.64.0804031515280.8986@schroedinger.engr.sgi.com>
+ <20080404102407.GA25892@linux-mips.org> <Pine.LNX.4.64.0804041035350.16065@schroedinger.engr.sgi.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-04-04 at 10:37 -0700, Pallipadi, Venkatesh wrote:
-[...]
-> >> Can you try the latest git and see whether this still is a problem?
-> >
-> >I've just updated to latest git, but it may take some time for it 
-> >to happen again (the first 3 boots were okay). Last time it happened
-> >with 2.6.25-rc7-00149-gaf8be4e (I checked now). 
-> >
-> >Do you have reasons to believe this issue was fixed since then?
-> 
-> Yes. I think the patch here should have fixed the problem....
-> Patch : http://marc.info/?l=linux-kernel&m=120674502201007&w=4
+On Fri, 4 Apr 2008, Christoph Lameter wrote:
 
-But this patch is not in the current mainstream... (yet?)
-Soeren
+> Why would kbuild have to handle comments?
+
+Ahh you want to insert comments into the generated 
+include/asm-*/asm-offsets.h. Hmmm, the header comments state that it was 
+generated so one would hopefully look at the source file instead ?
+
+If we want comments etc in there then we may want to do in some 
+standardized fashion that works across all arches. Most of the 
+arch/*/asm-offsets.c contents are exactly the same. Mips is deviating the 
+most. If we could put some of the common stuff into common header files 
+then this may turn out to be a nice code cleanup.
 
