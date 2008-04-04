@@ -1,90 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758827AbYDDIah@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758894AbYDDIeR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758827AbYDDIah (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Apr 2008 04:30:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755215AbYDDIaa
+	id S1758894AbYDDIeR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Apr 2008 04:34:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756377AbYDDIeG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Apr 2008 04:30:30 -0400
-Received: from s200aog17.obsmtp.com ([207.126.144.131]:46410 "EHLO
-	s200aog17.obsmtp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751923AbYDDIa2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Apr 2008 04:30:28 -0400
-Message-ID: <47F5E701.6020706@st.com>
-Date: Fri, 04 Apr 2008 10:29:53 +0200
-From: Richard MUSIL <richard.musil@st.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Fri, 4 Apr 2008 04:34:06 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:35587 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755215AbYDDIeF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Apr 2008 04:34:05 -0400
+Date: Fri, 4 Apr 2008 10:33:50 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Hugh Dickins <hugh@veritas.com>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86: MPSC should use P6 NOPs
+Message-ID: <20080404083350.GE31320@elte.hu>
+References: <Pine.LNX.4.64.0804032344260.28157@blonde.site>
 MIME-Version: 1.0
-To: Willy Tarreau <w@1wt.eu>
-Cc: linux-kernel@vger.kernel.org, Greg KH <greg@kroah.com>
-Subject: Re: Problem with accessing stable git over http
-References: <47EA26E4.8060602@st.com> <20080404050718.GE23796@1wt.eu>
-In-Reply-To: <20080404050718.GE23796@1wt.eu>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0804032344260.28157@blonde.site>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 4.4.2008 7:07, Willy Tarreau wrote:
-> On Wed, Mar 26, 2008 at 11:35:16AM +0100, Richard MUSIL wrote:
->> For some reason I cannot access stable kernel git branches over http
->> since version 2.6.23.y.
->>
->> HTTP access is working for 2.6.22.y
->> (http://www.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.6.22.y.git)
->> - I can fetch from it. It is also working for Linus' dev branch
->> (http://www.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git)
->> which I clone.
->> But for stable 2.6.23.y and 2.6.24.y, when I try fetch, I get in particular:
->>
->> HTTP GET
->> http://www.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.6.24.y.git/info/refs
->> HTTP/1.1
->> HTTP HTTP/1.1 404 Not Found (text/html)
->>
->> I am behind proxy and firewall and I cannot use git protocol.
->>
->> Does anyone know, what might be a problem? It kind of makes the sources
->> unreachable for me :(.
-> 
-> what version of git are you using ? Those files indeed do not exist in
-> either repository, so it would be good to find why git tries to fetch
-> them.
 
-I am usually using latest version compiled on gentoo from ~x86
-(currently it is 1.5.4.5).
+* Hugh Dickins <hugh@veritas.com> wrote:
 
-Interestingly those files exist for linux-2.6.22.y, i.e. accessing
-http://www.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.6.22.y.git/info/refs
-gives something and that is probably why I can fetch from 2.6.22.y branch.
+> I've now noticed that the machine I call MPENTIUM4 for 32-bit kernels 
+> is called MPSC for 64-bit kernels, and in that case it still doesn't 
+> get the P6 NOPs it ought to.  hpa explains that MK8 should still be 
+> excluded, so it's just a matter of including MPSC along with 
+> MPENTIUM4.
 
-Why git tries to access it is something beyond my understanding, I guess
-it is the way http access works.
+>  config X86_P6_NOP
+>  	def_bool y
+> -	depends on (X86_64 || !X86_GENERIC) && (M686 || MPENTIUMII || MPENTIUMIII || MPENTIUMM || MCORE2 || MPENTIUM4)
+> +	depends on (X86_64 || !X86_GENERIC) && (M686 || MPENTIUMII || MPENTIUMIII || MPENTIUMM || MCORE2 || MPENTIUM4 || MPSC)
 
-But I wonder, why the similar file is not present on 2.6.23.y and
-2.6.24.y branch. My git config for project looks like this:
+thanks Hugh, applied.
 
-> [core]
->         repositoryformatversion = 0
->         filemode = true
->         bare = false
->         logallrefupdates = true
-> [remote "origin"]
->         url = http://www.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git
->         fetch = +refs/heads/*:refs/remotes/origin/*
-> [branch "master"]
->         remote = origin
->         merge = refs/heads/master
-> [remote "linux-2.6.22.y"]
->         url = http://www.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.6.22.y.git
->         fetch = +refs/heads/*:refs/remotes/linux-2.6.22.y/*
-> [remote "linux-2.6.24.y"]
->         url = http://www.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.6.24.y.git
->         fetch = +refs/heads/*:refs/remotes/linux-2.6.24.y/*
-
-So there is clearly discrepancy between those two on the server, but
-whether this is a bug or intentional I do not know.
-
-Richard
+	Ingo
