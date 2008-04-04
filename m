@@ -1,67 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754487AbYDDXVj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752518AbYDDXfk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754487AbYDDXVj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Apr 2008 19:21:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751960AbYDDXVc
+	id S1752518AbYDDXfk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Apr 2008 19:35:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751286AbYDDXfb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Apr 2008 19:21:32 -0400
-Received: from py-out-1112.google.com ([64.233.166.179]:59371 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751133AbYDDXVc (ORCPT
+	Fri, 4 Apr 2008 19:35:31 -0400
+Received: from e36.co.us.ibm.com ([32.97.110.154]:60933 "EHLO
+	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751242AbYDDXfa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Apr 2008 19:21:32 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=sgsO8mRrywYPobtnq+qr/MS1CpkvAHNLDK0WR03zVV9yAmEASOa5F0OtOcLG4GvQoy5BqfS6YADVLcF653b7ECly3Q+/9Dxj7Hj3MGi19k7qeB8axPRotBgYOwNR0yCyOpmhT2wJ5sbnxh/5AJujDZxKhCTY0xZvTK/PHCRbCac=
-Subject: Re: [PATCH]  jffs2 summary allocation
-From: Josh Boyer <jwboyer@gmail.com>
-To: David Brownell <david-b@pacbell.net>
-Cc: linux-arm-kernel@lists.arm.linux.org.uk,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Michael Trimarchi <trimarchimichael@yahoo.it>, dwmw2@infradead.org,
-       spi-devel-general@lists.sourceforge.net, linux-mtd@lists.infradead.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <200804041609.41092.david-b@pacbell.net>
-References: <713171.37644.qm@web26213.mail.ukl.yahoo.com>
-	 <20080404124812.d39fa640.akpm@linux-foundation.org>
-	 <200804041609.41092.david-b@pacbell.net>
+	Fri, 4 Apr 2008 19:35:30 -0400
+Subject: Re: 2.6.25-rc8-mm1 panic in rpaphp_register_slot()
+From: Badari Pulavarty <pbadari@us.ibm.com>
+To: Alex Chiang <achiang@hp.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       lkml <linux-kernel@vger.kernel.org>, linas@austin.ibm.com
+In-Reply-To: <20080404224227.GA31436@ldl.fc.hp.com>
+References: <1207331616.5916.15.camel@badari-desktop>
+	 <20080404180518.GA12642@ldl.fc.hp.com>
+	 <1207340371.5916.23.camel@badari-desktop>
+	 <20080404224227.GA31436@ldl.fc.hp.com>
 Content-Type: text/plain
-Date: Fri, 04 Apr 2008 18:21:22 -0500
-Message-Id: <1207351282.3224.79.camel@vader.jdub.homelinux.org>
+Date: Fri, 04 Apr 2008 16:35:28 -0700
+Message-Id: <1207352128.5916.26.camel@badari-desktop>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.0 (2.22.0-4.fc9) 
+X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-04-04 at 16:09 -0700, David Brownell wrote:
-> On Friday 04 April 2008, Andrew Morton wrote:
-> 
-> > I'm assuming from the trace that the arm code tried to put that memory
-> > under DMA (or at least, passed it into part of the DMA management code to
-> > get the various caches sorted out) and that the arm DMA support code
-> > doesn't like being given vmalloced memory.
-> 
-> Actually, Documentation/DMA-Mapping.txt has a section right up
-> front called "What memory is DMA'able?" ... which despite its
-> ungrammatical title, says clearly:
-> 
->   ... This means specifically that you may _not_ use the
->   memory/addresses returned from vmalloc() for DMA.  ...
-> 
-> So I'm rather surprised to see *ANY* kernel code trying to do
-> that.  That rule has been in effect for many, many years now.
 
-I don't think it was intentional.  You're going through several layers
-here:
+On Fri, 2008-04-04 at 16:42 -0600, Alex Chiang wrote:
+> * Badari Pulavarty <pbadari@us.ibm.com>:
+> > 
+> > On Fri, 2008-04-04 at 12:05 -0600, Alex Chiang wrote:
+> > > Hi Badari,
+> > > 
+> > > * Badari Pulavarty <pbadari@us.ibm.com>:
+> > > > Hi Andrew & Alex,
+> > > > 
+> > > > I get following panic in rpaphp_register_slot() on
+> > > > 2.6.25-rc8-mm1. Known issue ?
+> > > 
+> > > I know about it now... :-/
+> > > 
+> > > Any chance you could turn debugging on for both rpaphp and
+> > > pci_hotplug?
+> > > 
+> > 
+> > I did set "debug" variables in rpaphp_core.c and pci_hotplug_core.c
+> > to 1. But it didn't give any more information. How do I enable
+> > the debug ?
+> 
+> If those modules are built into your kernel, then you'll need to
+> modify the kernel command line to add:
+> 
+> 	rpaphp.debug=1 pci_hotplug.debug=1
+> 
+> If you're manually modprobing them:
+> 
+> 	$ modprobe pci_hotplug debug=1
+> 	$ modprobe rpaphp debug=1
+> 
+> > I just changed dbg() to printk() in rpaphp_register_slot() to
+> > print out more information.
+> > 
+> > Thanks,
+> > Badari
+> > 
+> > 
+> > pci_hotplug: PCI Hot Plug PCI Core version: 0.5
+> > rpaphp: RPA HOT Plug PCI Controller Driver version: 0.1
+> > rpaphp_register_slot registering slot:path[/pci@800000020000003/pci@2,4] index[22010003], name[U787E.001.AAA3015-P2-C1] pdomain[22010003] type[16]
+> > Unable to handle kernel paging request for data at address 0x00000070
+> 
+> Hrm, this is a little more information, but still not quite
+> enough. I'm going to take a stab in the dark and say I'm probably
+> doing something wrong on this line, maybe dereferencing a pointer
+> incorrectly:
+> 
+>         retval = pci_hp_register(php_slot, slot->bus,
+> 				 PCI_SLOT(PCI_DN(slot->dn->child)->devfn));
+> 
 
-JFFS2 -> mtd parts -> mtd dataflash -> atmel_spi.
+Sorry. I thought you knew this already. Disassembly clearly showed
+that slot->dn->child is NULL. 
 
-Typically MTD drivers aren't doing DMAs to flash and JFFS2 has no idea
-which particular chip driver is being used because it's abstracted by
-MTD.
+I confirmed it by adding printk also.
 
-josh
+Thanks,
+Badari
 
