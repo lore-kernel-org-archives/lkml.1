@@ -1,73 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758672AbYDDBOI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759232AbYDDBOZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758672AbYDDBOI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Apr 2008 21:14:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755086AbYDDBN4
+	id S1759232AbYDDBOZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Apr 2008 21:14:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758126AbYDDBOF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Apr 2008 21:13:56 -0400
-Received: from gw.goop.org ([64.81.55.164]:35063 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754924AbYDDBN4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Apr 2008 21:13:56 -0400
-Message-ID: <47F5809A.7040307@goop.org>
-Date: Thu, 03 Apr 2008 18:12:58 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080315)
-MIME-Version: 1.0
-To: Dave Hansen <dave@linux.vnet.ibm.com>
-CC: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Yasunori Goto <y-goto@jp.fujitsu.com>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Christoph Lameter <clameter@sgi.com>
-Subject: Re: [PATCH 5 of 6] hotplug-memory: add section_ops
-References: <785fe0877fea0f488bc5.1207267545@localhost> <1207270272.943.27.camel@nimitz.home.sr71.net>
-In-Reply-To: <1207270272.943.27.camel@nimitz.home.sr71.net>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+	Thu, 3 Apr 2008 21:14:05 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:32833 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757396AbYDDBOD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Apr 2008 21:14:03 -0400
+Date: Fri, 4 Apr 2008 10:18:07 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: balbir@linux.vnet.ibm.com, hugh@veritas.com, menage@google.com,
+       xemul@openvz.org, skumar@linux.vnet.ibm.com, lizf@cn.fujitsu.com,
+       rientjes@google.com, yamamoto@valinux.co.jp,
+       linux-kernel@vger.kernel.org
+Subject: Re: cgroup_disable=memory for 2.6.25?
+Message-Id: <20080404101807.b9fa6a73.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20080403134153.d7476dda.akpm@linux-foundation.org>
+References: <Pine.LNX.4.64.0804032055590.8157@blonde.site>
+	<47F53DA2.3050403@linux.vnet.ibm.com>
+	<20080403134153.d7476dda.akpm@linux-foundation.org>
+Organization: Fujitsu
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dave Hansen wrote:
-> On Thu, 2008-04-03 at 17:05 -0700, Jeremy Fitzhardinge wrote:
->   
->> Add a per-section "section_ops" structure,  allowing each section to have
->> specific functions for onlining and offlining pages within the section.
->> This is used by the Xen balloon driver to make sure that pages are not
->> onlined without some physical memory backing them.
->>     
->
-> This is kinda a lot of code and mucking around for what we actually get
-> out of it, especially since you just condensed down all the actual
-> online_page() instances.
->   
+On Thu, 3 Apr 2008 13:41:53 -0700
+Andrew Morton <akpm@linux-foundation.org> wrote:
 
-I agree, but it seemed like the most straightforward and architecturally 
-cleanest approach to me.
+> On Fri, 04 Apr 2008 01:57:14 +0530
+> Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+> 
+> > I expected those patches to make it into 2.6.25.
+> 
+> My mind-ray receptors might need a tune-up.
+> 
+> > Could we please push these patches upstream before 2.6.25? Or is it too late?
+> 
+> Should be OK.  I borrowed a bit of Hugh's email and stuck it in the changelog
+> so that it at least has some attempt to describe why it's an urgent change.
 
-> I think it might just be nicer to have a global list of these handlers
-> somewhere.  The Xen driver can just say "put me on the list of
-> callbacks" and we'll call them at online_page().  I really don't think
-> we need to be passing an ops structure around.
->   
+For example. Unix bench's execl test result on x86_64 was
 
-Yes, but it seems a bit awkward.  If we assume that:
+== just after boot without mounting any cgroup fs.==
+mem_cgorup=off : Execl Throughput       43.0     3150.1      732.6
+mem_cgroup=on  : Execl Throughput       43.0     2932.6      682.0
+==
 
-   1. Xen will be the only user of the hook, and
-   2. Xen-balloon hotplug is exclusive of real memory hotplug
+I believe this is worth ot be urgent.
 
-then I guess its reasonable (though if that's the case it would be 
-simpler to just put a direct call under #ifdef CONFIG_XEN_BALLOON in there).
+I'm now trying performance improvement patches but it's too late.
 
-But if we think there can be multiple callbacks, and they all get called 
-on the online of each page, and there can be multiple kinds of hotplug 
-memory it gets pretty messy.  Each has to determine "why was I called on 
-this page?" and you'd to work out which one actually does the job of 
-onlining.  It just seems cleaner to say "this section needs to be 
-onlined like this", and there's no ambiguity.
+Thanks,
+-Kame
 
-I'm already anticipating using the ops mechanism to support another 
-class of Xen hotplug memory for managing large pages.
-
-    J
