@@ -1,157 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758531AbYDDQdj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757961AbYDDQoh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758531AbYDDQdj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Apr 2008 12:33:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753416AbYDDQdb
+	id S1757961AbYDDQoh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Apr 2008 12:44:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753990AbYDDQo2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Apr 2008 12:33:31 -0400
-Received: from serrano.cc.columbia.edu ([128.59.29.6]:35988 "EHLO
-	serrano.cc.columbia.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753272AbYDDQda (ORCPT
+	Fri, 4 Apr 2008 12:44:28 -0400
+Received: from nf-out-0910.google.com ([64.233.182.190]:41436 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753228AbYDDQo1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Apr 2008 12:33:30 -0400
-X-Greylist: delayed 2151 seconds by postgrey-1.27 at vger.kernel.org; Fri, 04 Apr 2008 12:33:30 EDT
-Message-ID: <47F64FBB.2080207@cs.columbia.edu>
-Date: Fri, 04 Apr 2008 11:56:43 -0400
-From: Oren Laadan <orenl@cs.columbia.edu>
-Organization: Columbia University
-User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
+	Fri, 4 Apr 2008 12:44:27 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:content-type:content-transfer-encoding;
+        b=QXloplfFy+cEztAoQy9W0xCJ4AlfPMXaQmhb29J+WNO+cbllN9WBDBseToHPf3tbb/f0xL43sfOkXpmgO98OKBs5Au3dPubPFzhXUjG1OrlSKIXn/pvvKF7MjPbBm3y7at8NRnoG6vhXfH+3F8IZJ9pFr2o3cCmdGGR4iDlZ970=
+Message-ID: <47F65AE6.4050500@googlemail.com>
+Date: Fri, 04 Apr 2008 18:44:22 +0200
+From: Gabriel C <nix.or.die@googlemail.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-To: Matt Helsley <matthltc@us.ibm.com>
-CC: Paul Menage <menage@google.com>,
-       Linux Containers <containers@lists.linux-foundation.org>,
-       Cedric Le Goater <clg@fr.ibm.com>,
-       Linux-Kernel <linux-kernel@vger.kernel.org>,
-       linux-pm@lists.linux-foundation.org
-Subject: Re: [Devel] [RFC PATCH 0/4] Container Freezer: Reuse Suspend Freezer
-References: <20080403210316.397506379@us.ibm.com>	<6599ad830804031649p6bbc60f3s59fb7c25a7260505@mail.gmail.com> <1207278180.30178.94.camel@localhost.localdomain>
-In-Reply-To: <1207278180.30178.94.camel@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+CC: "H. Peter Anvin" <hpa@zytor.com>, Gabriel C <crazy@frugalware.org>
+Subject: kernel/time.c: integer constant is too large for 'long' type warnings
+Content-Type: text/plain; charset=ISO-8859-15
 Content-Transfer-Encoding: 7bit
-X-No-Spam-Score: Local
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
+
+with CONFIG_HZ_300=y I see these warnings :
+
+...
+
+kernel/time.c: In function 'msecs_to_jiffies':                                                                                                               
+kernel/time.c:472: warning: integer constant is too large for 'long' type                                                                                    
+kernel/time.c: In function 'usecs_to_jiffies':                                                                                                               
+kernel/time.c:487: warning: integer constant is too large for 'long' type
+
+...
 
 
-Matt Helsley wrote:
-> On Thu, 2008-04-03 at 16:49 -0700, Paul Menage wrote:
->> On Thu, Apr 3, 2008 at 2:03 PM,  <matthltc@us.ibm.com> wrote:
->>>    * "freezer.kill"
->>>
->>>      writing <n> will send signal number <n> to all tasks
->>>
->> My first thought (not having looked at the code yet) is that sending a
->> signal doesn't really have anything to do with freezing, so it
->> shouldn't be in the same subsystem. Maybe a separate subsystem called
->> "signal"?
->>
->> And more than that, it's not something that requires any particular
->> per-process state, so there's no reason that the subsystem that
->> provides the "kill" functionality shouldn't be able to be mounted in
->> multiple hierarchies.
->>
->> How about if I added support for stateless subsystems, that could
->> potentially be mounted in multiple hierarchies at once? They wouldn't
->> need an entry in the css set, since they have no state.
-> 
-> 	This seems reasonable to me. A quick look at Cedric's patches suggests
-> there's no need for such cgroup subsystems to be tied together -- the
-> signalling is all done internally to the freeze_task(), refrigerator(),
-> and thaw_process() functions from what I recall.
-> 
->>>  * Usage :
->>>
->>>    # mkdir /containers/freezer
->>>    # mount -t container -ofreezer freezer  /containers/freezer
->>>    # mkdir /containers/freezer/0
->>>    # echo $some_pid > /containers/freezer/0/tasks
->>>
->>>  to get status of the freezer subsystem :
->>>
->>>    # cat /containers/freezer/0/freezer.freeze
->>>    RUNNING
->>>
->>>  to freeze all tasks in the container :
->>>
->>>    # echo 1 > /containers/freezer/0/freezer.freeze
->>>    # cat /containers/freezer/0/freezer.freeze
->>>    FREEZING
->>>    # cat /containers/freezer/0/freezer.freeze
->>>    FROZEN
->> Could we separate this out into two files? One called "freeze" that's
->> a 0/1 for whether we're intending to freeze the subsystem, and one
->> called "frozen" that indicates whether it is frozen? And maybe a
->> "state" file to report the RUNNING/FREEZING/FROZEN distinction in a
->> human-readable way?
-> 
-> 3 files seems like overkill. I think making them human-readable is good
-> and can be done with two files: "state" (read-only) and
-> "state-next" (read/write). Transitions between RUNNING and FROZEN are
-> obvious when state-next != state. I think the advantages are it's pretty
-> human-readable, you don't need separate strings and files for the
-> transitions, it's clear what's about to happen (IMHO), and it only
-> requires 2 files. Some examples:
-> 
-> To initiate freezing:
-> 
-> # cat /containers/freezer/0/freezer.state
-> RUNNING
-> # echo "FROZEN" > /containers/freezer/0/freezer.state-next
-> # cat /containers/freezer/0/freezer.state
-> RUNNING
-> # cat /containers/freezer/0/freezer.state-next
-> FROZEN
-> # sleep N
-> # cat /containers/freezer/0/freezer.state
-> FROZEN
-> # cat /containers/freezer/0/freezer.state-next
-> FROZEN
-> 
-> So to cancel freezing you might see something like:
-> 
-> # cat /containers/freezer/0/freezer.state
-> RUNNING
-> # cat /containers/freezer/0/freezer.state-next
-> FROZEN
-> # echo "RUNNING" > /containers/freezer/0/freezer.state-next
-> # cat /containers/freezer/0/freezer.state-next
-> RUNNING
-> 
-> If you wanted to know if a group was transitioning:
-> 
-> # diff /containers/freezer/0/freezer.state /containers/freezer/0/freezer.state-next
-> 
-> Or:
-> # current=`cat /containers/freezer/0/freezer.state`
-> # next=`cat /containers/freezer/0/freezer.state-next`
-> # [ "$current" != "$next" ] && echo "Transitioning"
-> # [ "$current" == "RUNNING" -a "$next" == "FROZEN" ] && echo "Freezing"
-> # [ "$current" == "FROZEN" -a "$next" == "RUNNING" ] && echo "Thawing"
-> # [ "$current" == "RUNNING" -a "$next" == "RUNNING" ] && echo "No-op"
-> # [ "$current" == "FROZEN" -a "$next" == "FROZEN" ] && echo "No-op"
+I think this was introduced by :
 
-First, I totally agree with Serge's comment (oh well, it's about my
-own suggestion, so I must) - for checkpoint/restart we'll need more
-states if we are to use the same subsystem.
+http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=bdc807871d58285737d50dc6163d0feb72cb0dc2
 
-Second, my gut feeling is that a single, atomic operation to get the
-status is preferred over multiple (non-atomic) operations. In other
-words, I suggest a single state file instead of two. You can encode
-every possible transition in a single state. It's not that the kernel
-doesn't know what's going on inside, so it can just as well report it
-directly. I don't see the benefit of using two files.
+If you need more infos let me know.
 
-Oren.
 
-> 
-> etc.
-> 
-> Cheers,
-> 	-Matt Helsley
-> 
-> _______________________________________________
-> Containers mailing list
-> Containers@lists.linux-foundation.org
-> https://lists.linux-foundation.org/mailman/listinfo/containers
+Regards,
+
+Gabriel
