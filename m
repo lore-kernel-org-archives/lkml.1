@@ -1,223 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757904AbYDDQKK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757478AbYDDQR1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757904AbYDDQKK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Apr 2008 12:10:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755464AbYDDQJ6
+	id S1757478AbYDDQR1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Apr 2008 12:17:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754477AbYDDQRR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Apr 2008 12:09:58 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:16450 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754408AbYDDQJ5 (ORCPT
+	Fri, 4 Apr 2008 12:17:17 -0400
+Received: from ajlill.sentex.ca ([64.7.134.25]:45681 "EHLO
+	freevo.ajlc.waterloo.on.ca" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1754090AbYDDQRQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Apr 2008 12:09:57 -0400
-Date: Fri, 4 Apr 2008 09:08:01 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-Cc: Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>
-Subject: Re: [PATCH] relay: add buffer-only functionality, allowing for
- early kernel tracing
-Message-Id: <20080404090801.c988f96f.randy.dunlap@oracle.com>
-In-Reply-To: <20080404183303.2e239a20@linux360.ro>
-References: <20080404183303.2e239a20@linux360.ro>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
+	Fri, 4 Apr 2008 12:17:16 -0400
+X-Greylist: delayed 409 seconds by postgrey-1.27 at vger.kernel.org; Fri, 04 Apr 2008 12:17:16 EDT
+Message-Id: <200804041609.m34G9PPM003350@freevo.ajlc.waterloo.on.ca>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: "Robin H. Johnson" <robbat2@gentoo.org>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: WARNING: at net/ipv4/tcp_input.c:2173
+ tcp_mark_head_lost+0x173/0x1a0()
+References: <20080402224137.GB25768@curie-int.orbis-terrarum.net>
+	<20080403211913.3a0c1d00.akpm@linux-foundation.org>
+From: Tony Lill <ajlill@ajlc.waterloo.on.ca>
 Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+In-Reply-To: <20080403211913.3a0c1d00.akpm@linux-foundation.org> (Andrew
+ Morton's message of "Thu, 3 Apr 2008 21:19:13 -0700")
+User-Agent: Gnus/5.1002 (Gnus v5.10.2) XEmacs/21.4 (Constant Variable,
+ linux)
+MIME-Version: 1.0
+Date: Fri, 04 Apr 2008 12:09:25 -0400
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 4 Apr 2008 18:33:03 +0300 Eduard - Gabriel Munteanu wrote:
+Andrew Morton <akpm@linux-foundation.org> writes:
 
-> relay_open() can now handle NULL base_filename, to register a
-> buffer-only channel. Using a new function, relay_late_setup_files(), one
-> can assign files after creating the channel, thus allowing for doing
-> early tracing in the kernel, before VFS is up.
-> 
-> Signed-off-by: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-> ---
->  Documentation/filesystems/relay.txt |   11 ++++
->  include/linux/relay.h               |    4 ++
->  kernel/relay.c                      |  102 ++++++++++++++++++++++++++---------
->  3 files changed, 91 insertions(+), 26 deletions(-)
-> 
-> diff --git a/Documentation/filesystems/relay.txt b/Documentation/filesystems/relay.txt
-> index 094f2d2..b59c228 100644
-> --- a/Documentation/filesystems/relay.txt
-> +++ b/Documentation/filesystems/relay.txt
-> @@ -161,6 +161,7 @@ TBD(curr. line MT:/API/)
->      relay_close(chan)
->      relay_flush(chan)
->      relay_reset(chan)
-> +    relay_late_setup_files(chan, base_filename, parent)
->  
->    channel management typically called on instigation of userspace:
->  
-> @@ -294,6 +295,16 @@ user-defined data with a channel, and is immediately available
->  (including in create_buf_file()) via chan->private_data or
->  buf->chan->private_data.
->  
-> +Buffer-only channels
-> +--------------------
-> +
-> +These channels have no files associated and can be created with
-> +relay_open(NULL, NULL, ...). Such channels are useful in scenarios such
-> +as when doing early tracing in the kernel, before the VFS is up. In these
-> +cases, one may open a channel a buffer-only channel and then call
-                       ~~~~~~~~~
-d/a channel/
+> (cc netdev)
+>
+> (and Rafael - I assume 2.6.24 didn't do this..)
+>
+> On Wed, 2 Apr 2008 15:41:37 -0700 "Robin H. Johnson" <robbat2@gentoo.org> wrote:
+>
+>> (Please CC, not on LKML).
+>> 
+>> One of the nodes in my web-serving cluster (isohunt.com) started showing this:
+>> 
+>> ------------[ cut here ]------------
+>> WARNING: at net/ipv4/tcp_input.c:2173 tcp_mark_head_lost+0x173/0x1a0()
+>> Modules linked in: lm85 hwmon_vid nfs lockd nfs_acl sunrpc bonding reiserfs k8temp hwmon i2c_nforce2 i2c_core sg
+>> Pid: 32500, comm: php-cgi Not tainted 2.6.25-rc4-git2 #7
 
-> +relay_late_setup_files() when the kernel is ready to handle files, to expose
-> +the buffered data to the userspace.
-> +
->  Channel 'modes'
->  ---------------
->  
-> diff --git a/kernel/relay.c b/kernel/relay.c
-> index 4c035a8..4bea94a 100644
-> --- a/kernel/relay.c
-> +++ b/kernel/relay.c
-> @@ -378,6 +378,35 @@ void relay_reset(struct rchan *chan)
->  }
->  EXPORT_SYMBOL_GPL(relay_reset);
->  
-> +static int relay_setup_buf_file(struct rchan *chan,
-> +				struct rchan_buf *buf,
-> +				unsigned int cpu)
-> +{
-> +	struct dentry *dentry;
-> + 	char *tmpname;
-> +
-> +	tmpname = kzalloc(NAME_MAX + 1, GFP_KERNEL);
-> +	if (!tmpname)
-> +		goto failed;
-> +	snprintf(tmpname, NAME_MAX, "%s%d", chan->base_filename, cpu);
-> +
-> +	/* Create file in fs */
-> +	dentry = chan->cb->create_buf_file(tmpname, chan->parent,
-> +					   S_IRUSR, buf, 
-> +					   &chan->is_global);
-> +	
-> +	if (!dentry)
-> +		goto failed;
+Are you talking about the warning in this particular module, or
+WARNINGS in tcp_input.c (and tcp_output.c) in general. 'Cause I've
+been getting them sporadically since moving from 2.6.23 to 2.6.24.
+At least I think that's the timeframe.
 
-above leaks tmpname ?
+Mar 28 23:42:40 matrix kernel: WARNING: at net/ipv4/tcp_output.c:1799 tcp_simple_retransmit()
+Mar 29 01:03:32 matrix kernel: WARNING: at net/ipv4/tcp_input.c:2413 tcp_fastretrans_alert()
+Mar 29 01:12:41 matrix kernel: WARNING: at net/ipv4/tcp_input.c:1675 tcp_enter_frto()
+Mar 29 03:03:04 matrix kernel: WARNING: at net/ipv4/tcp_input.c:2960 tcp_process_frto()
+Mar 29 03:03:04 matrix kernel: WARNING: at net/ipv4/tcp_input.c:2314 tcp_try_to_open()
 
-> +	buf->dentry = dentry;
-> +
-> +	kfree(tmpname);
-> +
-> +	return 0;
-> +
-> +failed:
-> +	return 1;
-> +}
-> +
->  /*
->   *	relay_open_buf - create a new relay channel buffer
->   *
-> @@ -386,44 +415,30 @@ EXPORT_SYMBOL_GPL(relay_reset);
->  static struct rchan_buf *relay_open_buf(struct rchan *chan, unsigned int cpu)
->  {
->   	struct rchan_buf *buf = NULL;
-> -	struct dentry *dentry;
-> - 	char *tmpname;
->  
->   	if (chan->is_global)
->  		return chan->buf[0];
->  
-> -	tmpname = kzalloc(NAME_MAX + 1, GFP_KERNEL);
-> - 	if (!tmpname)
-> - 		goto end;
-> - 	snprintf(tmpname, NAME_MAX, "%s%d", chan->base_filename, cpu);
-> -
->  	buf = relay_create_buf(chan);
->  	if (!buf)
-> - 		goto free_name;
-> + 		goto end;
-> +
-> + 	if (chan->has_base_filename)
-> +		if (relay_setup_buf_file(chan, buf, cpu)) goto free_buf;
+No user visble effects, and no messages since.
 
-Put 'goto free_buf;' on separate line.
-
->  
->   	buf->cpu = cpu;
->   	__relay_reset(buf, 1);
->  
-> -	/* Create file in fs */
-> - 	dentry = chan->cb->create_buf_file(tmpname, chan->parent, S_IRUSR,
-> - 					   buf, &chan->is_global);
-> - 	if (!dentry)
-> - 		goto free_buf;
-> -
-> -	buf->dentry = dentry;
-> -
->   	if(chan->is_global) {
->   		chan->buf[0] = buf;
->   		buf->cpu = 0;
->    	}
->  
-> - 	goto free_name;
-> + 	goto end;
->  
->  free_buf:
->   	relay_destroy_buf(buf);
->   	buf = NULL;
-> -free_name:
-> - 	kfree(tmpname);
->  end:
->  	return buf;
->  }
-> @@ -576,6 +594,38 @@ free_bufs:
->  EXPORT_SYMBOL_GPL(relay_open);
->  
->  /**
-> + *	relay_late_setup_files - triggers file creation
-> + *	@chan: channel to operate on
-> + *	@base_filename: base name of files to create
-> + *	@parent: dentry of parent directory, %NULL for root directory
-> + *
-> + *	Returns 0 is successful, non-zero otherwise.
-
-s/is/if/
-
-> + *
-> + *	Use to setup files for a previously buffer-only channel.
-> + *	Useful to do early tracing in kernel, before VFS is up, for example.
-> + */
-> +int relay_late_setup_files(struct rchan *chan,
-> +			   const char *base_filename,
-> +			   struct dentry *parent)
-> +{
-> +	unsigned int i;
-> +	
-> +	if (!chan || !base_filename)
-> +		return 1;
-> +	
-> +	strlcpy(chan->base_filename, base_filename, NAME_MAX);
-> +	chan->has_base_filename = 1;
-> +	chan->parent = parent;
-> +
-> +	mutex_lock(&relay_channels_mutex);
-> +	for_each_present_cpu(i)
-> +		relay_setup_buf_file(chan, chan->buf[i], i);
-> +	mutex_unlock(&relay_channels_mutex);
-> +
-> +	return 0;
-> +}
-> +		
-> +/**
->   *	relay_switch_subbuf - switch to a new sub-buffer
->   *	@buf: channel buffer
->   *	@length: size of current event
-
----
-~Randy
+-tony
