@@ -1,52 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758469AbYDDRO2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759194AbYDDRRA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758469AbYDDRO2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Apr 2008 13:14:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752615AbYDDROU
+	id S1759194AbYDDRRA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Apr 2008 13:17:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753143AbYDDRQw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Apr 2008 13:14:20 -0400
-Received: from gateway.drzeus.cx ([85.8.24.16]:58537 "EHLO smtp.drzeus.cx"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750783AbYDDROT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Apr 2008 13:14:19 -0400
-Date: Fri, 4 Apr 2008 19:13:50 +0200
-From: Pierre Ossman <drzeus-list@drzeus.cx>
-To: Greg KH <gregkh@suse.de>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: pci: add to global list before sysfs?
-Message-ID: <20080404191350.7f0183a5@mjolnir.drzeus.cx>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 4 Apr 2008 13:16:52 -0400
+Received: from hellhawk.shadowen.org ([80.68.90.175]:1721 "EHLO
+	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751230AbYDDRQw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Apr 2008 13:16:52 -0400
+Date: Fri, 4 Apr 2008 18:16:38 +0100
+From: Andy Whitcroft <apw@shadowen.org>
+To: Nish Aravamudan <nish.aravamudan@gmail.com>
+Cc: Gurudas Pai <gurudas.pai@oracle.com>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [BUG]:2.6.25-rc7 memory leak with hugepages.
+Message-ID: <20080404171638.GA17915@shadowen.org>
+References: <47EB4E2A.1040507@oracle.com> <20080327083849.GF15626@elte.hu> <47EB75C5.20207@oracle.com> <29495f1d0804032040h56f39051lcd5f707660d3c06c@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <29495f1d0804032040h56f39051lcd5f707660d3c06c@mail.gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Greg,
+On Thu, Apr 03, 2008 at 08:40:41PM -0700, Nish Aravamudan wrote:
 
-I have a PCI hotplug problem I was hoping you could provide some
-insight into.
+> Hrm, fio is using SHM_HUGETLB. Does ipcs indicate maybe fio is not
+> cleaning up the shared memory segment? FWIW, it seems like each run is
+> using 400 hugepages in the SHM_HUGETLB segment, and then when you try
+> to force the pool to shrink, it converts those 800 (since you ran fio
+> twice) hugepages from static pool pages to dynamic (or overcommit)
+> pages.
+> 
+> On another note, it is odd that we're using the dynamic pool, when it
+> is initially disabled...I'll have to think about that.
+> 
+> I'll try and look at this later this evening or early tomorrow.
 
-I want the PCI layer to make sure that all subfunctions of a newly
-added card are visible via pci_get_device() before any of them are
-binded to drivers. I.e. I want pci_bus_add_devices() to first make a
-pass and add the devices to the global list, then a second pass for
-device_add().
+Yes that is an expected result.  We have no way to force the pool to
+shrink when pages are in-use.  When a request is made to redoce the pool
+below the number of in-use pages, we move the pages to surplus.  While
+this does temporarily violate the overcommit cap, it does provide the
+most utility as those pages will be returned to the buddy at the
+earliest oppotunity.
 
-The reason I want this is because I have at least two chips where I
-need to know which other subfunctions are present on the card in order
-to correctly initalise the subfunction I'm currently probing. Right now
-that fails miserably as the driver does not see the other devices in
-its probe function.
+I suspect the documenation could do with a little clarification.
 
-Is it possible to do this or will things break left and right if I
-add them to the global list before I register them with the driver core?
-
-Rgds
--- 
-     -- Pierre Ossman
-
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  PulseAudio, core developer          http://pulseaudio.org
-  rdesktop, core developer          http://www.rdesktop.org
+-apw
