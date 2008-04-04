@@ -1,137 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760073AbYDDNAL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761054AbYDDNAj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760073AbYDDNAL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Apr 2008 09:00:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760247AbYDDMzz
+	id S1761054AbYDDNAj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Apr 2008 09:00:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760347AbYDDM4U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Apr 2008 08:55:55 -0400
-Received: from saeurebad.de ([85.214.36.134]:44737 "EHLO saeurebad.de"
+	Fri, 4 Apr 2008 08:56:20 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:52538 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760235AbYDDMzy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Apr 2008 08:55:54 -0400
-X-Mailbox-Line: From hannes@skyscraper.fehenstaub.lan Fri Apr  4 13:52:31 2008
-Message-Id: <20080404115231.016561421@skyscraper.fehenstaub.lan>
-References: <20080404115137.397502419@skyscraper.fehenstaub.lan>
-User-Agent: quilt/0.46-1
-Date: Fri, 04 Apr 2008 13:51:40 +0200
-From: hannes@saeurebad.de
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Richard Henderson <rth@twiddle.net>
-Subject: [patch 03/22 -v2] alpha: Use generic show_mem()
-Content-Disposition: inline; filename=alpha-use-generic-show_mem.patch
-X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
+	id S1760069AbYDDM4T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Apr 2008 08:56:19 -0400
+Date: Fri, 4 Apr 2008 14:55:43 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Jan Beulich <jbeulich@novell.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, hpa@kernel.org,
+       tglx@linutronix.de, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] i386: additional fix for making ioremap() accept
+	64-bit addresses
+Message-ID: <20080404125543.GA29423@elte.hu>
+References: <47F638FD.76E4.0078.0@novell.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <47F638FD.76E4.0078.0@novell.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Remove arch-specific show_mem() in favor of the generic version.
 
-This also removes the following redundant information display:
+* Jan Beulich <jbeulich@novell.com> wrote:
 
-	- free pages, printed by show_free_areas()
-	- pages in swapcache, printed by show_swap_cache_info()
+> The recent change to __ioremap()'s first parameter's type didn't yield 
+> the intended effect as the first conditional inside the function would 
+> still have filtered out any addresses with bits [63:32] set. Correct 
+> last_addr's type and at once also add a check that the address range 
+> doesn't extend into space hardware cannot support even theoretically.
 
-where show_mem() calls show_free_areas(), which calls
-show_swap_cache_info().
+i fixed this in x86.git more than a week ago, see:
 
-Signed-off-by: Johannes Weiner <hannes@saeurebad.de>
-CC: Richard Henderson <rth@twiddle.net>
----
+|  Subject: x86: ioremap of 64-bit resource on 32-bit kernel fix
+|  From: Ingo Molnar <mingo@elte.hu>
+|  Date: Tue, 25 Mar 2008 08:31:17 +0100
 
-Index: tree-linus/arch/alpha/Kconfig
-===================================================================
---- tree-linus.orig/arch/alpha/Kconfig
-+++ tree-linus/arch/alpha/Kconfig
-@@ -7,7 +7,6 @@ config ALPHA
- 	default y
- 	select HAVE_IDE
- 	select HAVE_OPROFILE
--	select HAVE_ARCH_SHOW_MEM
- 	help
- 	  The Alpha is a 64-bit general-purpose processor designed and
- 	  marketed by the Digital Equipment Corporation of blessed memory,
-Index: tree-linus/arch/alpha/mm/init.c
-===================================================================
---- tree-linus.orig/arch/alpha/mm/init.c
-+++ tree-linus/arch/alpha/mm/init.c
-@@ -94,35 +94,6 @@ __bad_page(void)
- 	return pte_mkdirty(mk_pte(virt_to_page(EMPTY_PGE), PAGE_SHARED));
- }
- 
--#ifndef CONFIG_DISCONTIGMEM
--void
--show_mem(void)
--{
--	long i,free = 0,total = 0,reserved = 0;
--	long shared = 0, cached = 0;
--
--	printk("\nMem-info:\n");
--	show_free_areas();
--	i = max_mapnr;
--	while (i-- > 0) {
--		total++;
--		if (PageReserved(mem_map+i))
--			reserved++;
--		else if (PageSwapCache(mem_map+i))
--			cached++;
--		else if (!page_count(mem_map+i))
--			free++;
--		else
--			shared += page_count(mem_map + i) - 1;
--	}
--	printk("%ld pages of RAM\n",total);
--	printk("%ld free pages\n",free);
--	printk("%ld reserved pages\n",reserved);
--	printk("%ld pages shared\n",shared);
--	printk("%ld pages swap cached\n",cached);
--}
--#endif
--
- static inline unsigned long
- load_PCB(struct pcb_struct *pcb)
- {
-Index: tree-linus/arch/alpha/mm/numa.c
-===================================================================
---- tree-linus.orig/arch/alpha/mm/numa.c
-+++ tree-linus/arch/alpha/mm/numa.c
-@@ -359,37 +359,3 @@ void __init mem_init(void)
- 	mem_stress();
- #endif
- }
--
--void
--show_mem(void)
--{
--	long i,free = 0,total = 0,reserved = 0;
--	long shared = 0, cached = 0;
--	int nid;
--
--	printk("\nMem-info:\n");
--	show_free_areas();
--	for_each_online_node(nid) {
--		unsigned long flags;
--		pgdat_resize_lock(NODE_DATA(nid), &flags);
--		i = node_spanned_pages(nid);
--		while (i-- > 0) {
--			struct page *page = nid_page_nr(nid, i);
--			total++;
--			if (PageReserved(page))
--				reserved++;
--			else if (PageSwapCache(page))
--				cached++;
--			else if (!page_count(page))
--				free++;
--			else
--				shared += page_count(page) - 1;
--		}
--		pgdat_resize_unlock(NODE_DATA(nid), &flags);
--	}
--	printk("%ld pages of RAM\n",total);
--	printk("%ld free pages\n",free);
--	printk("%ld reserved pages\n",reserved);
--	printk("%ld pages shared\n",shared);
--	printk("%ld pages swap cached\n",cached);
--}
+but since 64-bit resources never worked on 32-bit and the initiator 
+regression causing this discussion turned out to be something else, i 
+delayed this fix as .26 material.
 
--- 
+the PHYSICAL_MASK fix looks good as an additional check - could you 
+please resend it against x86.git/latest which has my fix already?
 
+	Ingo
