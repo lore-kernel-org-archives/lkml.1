@@ -1,77 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759349AbYDDTSh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759145AbYDDT1p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759349AbYDDTSh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Apr 2008 15:18:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754747AbYDDTS0
+	id S1759145AbYDDT1p (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Apr 2008 15:27:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751116AbYDDT1d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Apr 2008 15:18:26 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:42911 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752389AbYDDTSZ (ORCPT
+	Fri, 4 Apr 2008 15:27:33 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:63948 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754607AbYDDT1c (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Apr 2008 15:18:25 -0400
-Date: Fri, 4 Apr 2008 22:15:43 +0300 (EEST)
-From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
-X-X-Sender: ijjarvin@wrl-59.cs.helsinki.fi
-To: Georgi Chorbadzhiyski <gf@unixsol.org>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Netdev <netdev@vger.kernel.org>
-Subject: Re: Linux 2.6.25-rc6: WARNING: at net/ipv4/tcp_input.c:2510
-In-Reply-To: <47F5C7D1.1080906@unixsol.org>
-Message-ID: <Pine.LNX.4.64.0804042209530.415@wrl-59.cs.helsinki.fi>
-References: <47EBCB75.6030600@unixsol.org> <Pine.LNX.4.64.0804031315360.21524@wrl-59.cs.helsinki.fi>
- <47F5C7D1.1080906@unixsol.org>
+	Fri, 4 Apr 2008 15:27:32 -0400
+Message-ID: <47F68EDC.4050107@oracle.com>
+Date: Fri, 04 Apr 2008 15:26:04 -0500
+From: Richard Frank <richard.frank@oracle.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-696208474-1742740919-1207336543=:415"
+To: Roland Dreier <rdreier@cisco.com>
+CC: tziporet@dev.mellanox.co.il, linux-kernel@vger.kernel.org,
+       general@lists.openfabrics.org
+Subject: Re: [ofa-general] InfiniBand/iWARP/RDMA merge plans for 2.6.26 (what's
+ in infiniband.git)
+References: <adave31bayd.fsf@cisco.com> <47F37CA4.8000109@mellanox.co.il> <adahcek2pru.fsf@cisco.com>
+In-Reply-To: <adahcek2pru.fsf@cisco.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+ > We want to add send with invalidate & mask compare and swap.
+ > Eli will be able to send the patches next week and since they are
+ > small I think they can be in for 2.6.26
 
----696208474-1742740919-1207336543=:415
-Content-Type: TEXT/PLAIN; charset=iso-8859-1
-Content-Transfer-Encoding: 8BIT
+We are very interested in these new operations and are moving in the 
+direction of tightly integrating RDMA along with atomics (if available) 
+into Oracle.  We plan on testing some early prototypes of the these in 
+the few months.
 
-On Fri, 4 Apr 2008, Georgi Chorbadzhiyski wrote:
+Send with invalidate is an exact match for our current RDS V3 rdma 
+driver - and should be more efficient than the current background 
+syncing of the tpt  to ensure keys are invalidated.
 
-> Around 04/03/08 13:17, Ilpo Järvinen scribbled:
-> > On Thu, 27 Mar 2008, Georgi Chorbadzhiyski wrote:
-> > 
-> >> A week ago I updated one of my servers to 2.6.25-rc6 and today looking
-> >> through logs I've found these:
-> >>
-> >> [380219.823434] ------------[ cut here ]------------
-> >> [380219.823450] WARNING: at net/ipv4/tcp_input.c:2510 tcp_ack+0xc7e/0x177d()
-> > 
-> > Is this reproducable for you? If yes, is it possible for you to run 
-> 
-> Not in the moment.
+We intend on exposing the atomics via the RDS driver along with simple 
+low level rdma operations to Oracle's internal clients. If Oracle is 
+running over a transport which exports atomics and rdma - Oracle will 
+see a dramatic performance boost for several database operations.
+
+Roland Dreier wrote:
+>  > We want to add send with invalidate & mask compare and swap.
+>  > Eli will be able to send the patches next week and since they are
+>  > small I think they can be in for 2.6.26
 >
-> I'm not getting such errors in the log since my last report. Today I'll 
-> update to latest -git and will restart the server.
-
-Yeah, the reason why these still happen is that they are quite hard to 
-hit.
-
-> The machine that gave me this error is a http and ftp server handling not
-> very busy distro mirror (if this can give you any clues).
+> Send with invalidate should be OK.  Let's see about the masked atomics
+> stuff -- we have a ton of new verbs and I think we might want to slow
+> down and make sure it all makes sense.
 >
-> > processing expensive verification of TCP state (validates TCP write queue 
-> > invariants multiple times per ACK by scanning through the write queue) on 
-> > such machine?
-> 
-> How to run such a thing, can you give me some pointers?
-
-I sent the patch recently to netdev/lkml:
-
-  http://marc.info/?l=linux-netdev&m=120733529216457&w=2
-
-But it's very expensive in processing wise so it might not be wise to put 
-it in if performance is important for you.
-
-
--- 
- i.
----696208474-1742740919-1207336543=:415--
+>  > What about the split CQ for UD mode? It's improved the IPoIB
+>  > performance for small messages significantly.
+>
+> Oh yeah... I'll try to get that in too.
+>
+>  > mlx4- we plan to send patches for the low level driver only to enable
+>  > mlx4_en. These only affect our low level driver.
+>
+> No problem in principle, let's see the actual patches.
+>
+>  > I think we should try to push for XEC in 2.6.26 since there are
+>  > already MPI implementation that use it and this ties them to use OFED
+>  > only.
+>  > Also this feature is stable and now being defined in IBTA
+>  > Not taking it causing changes between OFED and the kernel and your
+>  > libibverbs and we wish to avoid such gaps.
+>  > Is there any thing we can do to help and make it into 2.6.26?
+>
+> I don't have a good feeling that the user-kernel interface is well
+> thought out, so I want to consider XRC + ehca LL stuff + new iWARP verbs
+> and make sure we have something that makes sense for the future.
+>
+>  - R.
+> _______________________________________________
+> general mailing list
+> general@lists.openfabrics.org
+> http://lists.openfabrics.org/cgi-bin/mailman/listinfo/general
+>
+> To unsubscribe, please visit http://openib.org/mailman/listinfo/openib-general
+>   
