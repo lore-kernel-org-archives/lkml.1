@@ -1,48 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760791AbYDDM5n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760890AbYDDM56@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760791AbYDDM5n (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Apr 2008 08:57:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759455AbYDDMzD
+	id S1760890AbYDDM56 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Apr 2008 08:57:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759479AbYDDMzG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Apr 2008 08:55:03 -0400
-Received: from wine.ocn.ne.jp ([122.1.235.145]:63792 "EHLO smtp.wine.ocn.ne.jp"
+	Fri, 4 Apr 2008 08:55:06 -0400
+Received: from wine.ocn.ne.jp ([122.1.235.145]:63784 "EHLO smtp.wine.ocn.ne.jp"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757739AbYDDMys (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1757745AbYDDMys (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 4 Apr 2008 08:54:48 -0400
-Message-Id: <20080404122407.851577589@I-love.SAKURA.ne.jp>
+Message-Id: <20080404122406.189810363@I-love.SAKURA.ne.jp>
 References: <20080404122242.867070732@I-love.SAKURA.ne.jp>
 User-Agent: quilt/0.46-1
-Date: Fri, 04 Apr 2008 21:23:09 +0900
+Date: Fri, 04 Apr 2008 21:23:05 +0900
 From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
 To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
        linux-security-module@vger.kernel.org
 Cc: Kentaro Takeda <takedakn@nttdata.co.jp>,
        Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>,
        Toshiharu Harada <haradats@nttdata.co.jp>
-Subject: [TOMOYO #7 27/30] Environment variable restriction part.
-Content-Disposition: inline; filename=tomoyo-environment-variable-restriction-part.patch
+Subject: [TOMOYO #7 23/30] argvrestriction part.
+Content-Disposition: inline; filename=tomoyo-argv0-restriction-part.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This file controls environment variable names that can be passed to execve().
+This file controls argv[0] passed to execve().
 
-TOMOYO checks environment variable's names passed to execve()
-because some environment variables affect to the behavior of program
-like argv[0].
+Multi call binary programs (e.g. busybox) behave differently depending on
+the invocation name (a.k.a. argv[0]).
+Thus, to prevent attackers from abusing multi call binary programs,
+TOMOYO checks the combination of filename and argv[0] passed to execve().
 
 Signed-off-by: Kentaro Takeda <takedakn@nttdata.co.jp>
 Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
 Signed-off-by: Toshiharu Harada <haradats@nttdata.co.jp>
 ---
- fs/tomoyo_env.c |  297 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 297 insertions(+)
+ fs/tomoyo_exec.c |  203 +++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 203 insertions(+)
 
 --- /dev/null
-+++ linux-2.6.25-rc8-mm1/fs/tomoyo_env.c
-@@ -0,0 +1,297 @@
++++ linux-2.6.25-rc8-mm1/fs/tomoyo_exec.c
+@@ -0,0 +1,203 @@
 +/*
-+ * fs/tomoyo_env.c
++ * fs/tomoyo_exec.c
 + *
 + * Implementation of the Domain-Based Mandatory Access Control.
 + *
@@ -57,197 +58,97 @@ Signed-off-by: Toshiharu Harada <haradats@nttdata.co.jp>
 +#include <linux/realpath.h>
 +
 +/**
-+ * audit_env_log - Audit environment variable name log.
++ * audit_argv0_log - Audit argv[0] log.
 + *
-+ * @env:        The name of environment variable.
++ * @filename:   The fullpath of program.
++ * @argv0:      The basename of argv[0].
 + * @is_granted: True if this is a granted log.
 + * @profile:    Profile number used.
 + * @mode:       Access control mode used.
 + *
 + * Returns 0 on success, negative value otherwise.
 + */
-+static int audit_env_log(const char *env, const bool is_granted,
-+			 const u8 profile, const u8 mode)
++static int audit_argv0_log(const struct path_info *filename, const char *argv0,
++			   const bool is_granted, const u8 profile,
++			   const u8 mode)
 +{
 +	char *buf;
 +	int len;
 +	int len2;
 +	if (ccs_can_save_audit_log(is_granted) < 0)
 +		return -ENOMEM;
-+	len = strlen(env) + 64;
++	len = filename->total_len + strlen(argv0) + 64;
 +	buf = ccs_init_audit_log(&len, profile, mode, NULL);
 +	if (!buf)
 +		return -ENOMEM;
 +	len2 = strlen(buf);
-+	snprintf(buf + len2, len - len2 - 1, KEYWORD_ALLOW_ENV "%s\n", env);
++	snprintf(buf + len2, len - len2 - 1,
++		 KEYWORD_ALLOW_ARGV0 "%s %s\n", filename->name, argv0);
 +	return ccs_write_audit_log(buf, is_granted);
 +}
 +
-+/* Structure for "allow_env" keyword. */
-+struct globally_usable_env_entry {
-+	struct list1_head list;
-+	const struct path_info *env;
-+	bool is_deleted;
-+};
-+
-+/* The list for "struct globally_usable_env_entry". */
-+static LIST1_HEAD(globally_usable_env_list);
-+
 +/**
-+ * update_globally_usable_env_entry - Update "struct globally_usable_env_entry" list.
++ * update_argv0_entry - Update "struct argv0_acl_record" list.
 + *
-+ * @env:       The name of environment variable.
-+ * @is_delete: True if it is a delete request.
-+ *
-+ * Returns 0 on success, negative value otherwise.
-+ */
-+static int update_globally_usable_env_entry(const char *env,
-+					    const bool is_delete)
-+{
-+	struct globally_usable_env_entry *new_entry;
-+	struct globally_usable_env_entry *ptr;
-+	static DEFINE_MUTEX(lock);
-+	const struct path_info *saved_env;
-+	int error = -ENOMEM;
-+	if (!ccs_is_correct_path(env, 0, 0, 0, __func__) || strchr(env, '='))
-+		return -EINVAL;
-+	saved_env = ccs_save_name(env);
-+	if (!saved_env)
-+		return -ENOMEM;
-+	mutex_lock(&lock);
-+	list1_for_each_entry(ptr, &globally_usable_env_list, list) {
-+		if (ptr->env != saved_env)
-+			continue;
-+		ptr->is_deleted = is_delete;
-+		error = 0;
-+		goto out;
-+	}
-+	if (is_delete) {
-+		error = -ENOENT;
-+		goto out;
-+	}
-+	new_entry = ccs_alloc_element(sizeof(*new_entry));
-+	if (!new_entry)
-+		goto out;
-+	new_entry->env = saved_env;
-+	list1_add_tail_mb(&new_entry->list, &globally_usable_env_list);
-+	error = 0;
-+ out:
-+	mutex_unlock(&lock);
-+	ccs_update_counter(CCS_UPDATES_COUNTER_EXCEPTION_POLICY);
-+	return error;
-+}
-+
-+/**
-+ * is_globally_usable_env - Check whether the given environment variable is acceptable for all domains.
-+ *
-+ * @env: The name of environment variable.
-+ *
-+ * Returns true if @env is globally permitted environment variable's name,
-+ * false otherwise.
-+ */
-+static bool is_globally_usable_env(const struct path_info *env)
-+{
-+	struct globally_usable_env_entry *ptr;
-+	list1_for_each_entry(ptr, &globally_usable_env_list, list) {
-+		if (!ptr->is_deleted && ccs_path_matches_pattern(env, ptr->env))
-+			return true;
-+	}
-+	return false;
-+}
-+
-+/**
-+ * ccs_write_globally_usable_env_policy - Write "struct globally_usable_env_entry" list.
-+ *
-+ * @data:      String to parse.
-+ * @is_delete: True if it is a delete request.
-+ *
-+ * Returns 0 on success, negative value otherwise.
-+ */
-+int ccs_write_globally_usable_env_policy(char *data, const bool is_delete)
-+{
-+	return update_globally_usable_env_entry(data, is_delete);
-+}
-+
-+/**
-+ * ccs_read_globally_usable_env_policy - Read "struct globally_usable_env_entry" list.
-+ *
-+ * @head: Pointer to "struct ccs_io_buffer".
-+ *
-+ * Returns 0 on success, false otherwise.
-+ */
-+bool ccs_read_globally_usable_env_policy(struct ccs_io_buffer *head)
-+{
-+	struct list1_head *pos;
-+	list1_for_each_cookie(pos, head->read_var2,
-+			      &globally_usable_env_list) {
-+		struct globally_usable_env_entry *ptr;
-+		ptr = list1_entry(pos, struct globally_usable_env_entry, list);
-+		if (ptr->is_deleted)
-+			continue;
-+		if (!ccs_io_printf(head, KEYWORD_ALLOW_ENV "%s\n",
-+				   ptr->env->name))
-+			goto out;
-+	}
-+	return true;
-+ out:
-+	return false;
-+}
-+
-+/**
-+ * update_env_entry - Update "struct env_acl_record" list.
-+ *
-+ * @env:       The name of environment variable.
++ * @filename:  The fullpath of the program.
++ * @argv0:     The basename of argv[0].
 + * @domain:    Pointer to "struct domain_info".
 + * @condition: Pointer to "struct condition_list". May be NULL.
 + * @is_delete: True if it is a delete request.
 + *
 + * Returns 0 on success, negative value otherwise.
 + */
-+static int update_env_entry(const char *env, struct domain_info *domain,
-+			    const struct condition_list *condition,
-+			    const bool is_delete)
++static int update_argv0_entry(const char *filename, const char *argv0,
++			      struct domain_info *domain,
++			      const struct condition_list *condition,
++			      const bool is_delete)
 +{
 +	struct acl_info *ptr;
-+	struct env_acl_record *acl;
-+	const struct path_info *saved_env;
++	struct argv0_acl_record *acl;
++	const struct path_info *saved_filename;
++	const struct path_info *saved_argv0;
 +	int error = -ENOMEM;
-+	if (!ccs_is_correct_path(env, 0, 0, 0, __func__) || strchr(env, '='))
++	if (!ccs_is_correct_path(filename, 1, 0, -1, __func__) ||
++	    !ccs_is_correct_path(argv0, -1, 0, -1, __func__) ||
++	    strchr(argv0, '/'))
 +		return -EINVAL;
-+	saved_env = ccs_save_name(env);
-+	if (!saved_env)
++	saved_filename = ccs_save_name(filename);
++	saved_argv0 = ccs_save_name(argv0);
++	if (!saved_filename || !saved_argv0)
 +		return -ENOMEM;
-+
 +	mutex_lock(&domain_acl_lock);
 +	if (is_delete)
 +		goto delete;
 +	list1_for_each_entry(ptr, &domain->acl_info_list, list) {
-+		if (ccs_acl_type1(ptr) != TYPE_ENV_ACL)
++		if (ccs_acl_type1(ptr) != TYPE_ARGV0_ACL)
 +			continue;
 +		if (ccs_get_condition_part(ptr) != condition)
 +			continue;
-+		acl = container_of(ptr, struct env_acl_record, head);
-+		if (acl->env != saved_env)
++		acl = container_of(ptr, struct argv0_acl_record, head);
++		if (acl->filename != saved_filename ||
++		    acl->argv0 != saved_argv0)
 +			continue;
 +		error = ccs_add_domain_acl(NULL, ptr);
 +		goto out;
 +	}
 +	/* Not found. Append it to the tail. */
-+	acl = ccs_alloc_acl_element(TYPE_ENV_ACL, condition);
++	acl = ccs_alloc_acl_element(TYPE_ARGV0_ACL, condition);
 +	if (!acl)
 +		goto out;
-+	acl->env = saved_env;
++	acl->filename = saved_filename;
++	acl->argv0 = saved_argv0;
 +	error = ccs_add_domain_acl(domain, &acl->head);
 +	goto out;
 + delete:
 +	error = -ENOENT;
 +	list1_for_each_entry(ptr, &domain->acl_info_list, list) {
-+		if (ccs_acl_type2(ptr) != TYPE_ENV_ACL)
++		if (ccs_acl_type2(ptr) != TYPE_ARGV0_ACL)
 +			continue;
 +		if (ccs_get_condition_part(ptr) != condition)
 +			continue;
-+		acl = container_of(ptr, struct env_acl_record, head);
-+		if (acl->env != saved_env)
++		acl = container_of(ptr, struct argv0_acl_record, head);
++		if (acl->filename != saved_filename ||
++		    acl->argv0 != saved_argv0)
 +			continue;
 +		error = ccs_del_domain_acl(ptr);
 +		break;
@@ -258,72 +159,74 @@ Signed-off-by: Toshiharu Harada <haradats@nttdata.co.jp>
 +}
 +
 +/**
-+ * check_env_acl - Check permission for environment variable's name.
++ * check_argv0_acl - Check permission for argv[0].
 + *
-+ * @environ: The name of environment variable.
++ * @filename: The fullpath of the program.
++ * @argv0:    The basename of argv[0].
 + *
-+ * Returns 0 on success, negative value otherwise.
++ * Returns 0 on success, -EPERM otherwise.
 + */
-+static int check_env_acl(const char *environ)
++static int check_argv0_acl(const struct path_info *filename, const char *argv0)
 +{
 +	const struct domain_info *domain = current->domain_info;
 +	int error = -EPERM;
 +	struct acl_info *ptr;
-+	struct path_info env;
-+	env.name = environ;
-+	ccs_fill_path_info(&env);
++	struct path_info argv_0;
++	argv_0.name = argv0;
++	ccs_fill_path_info(&argv_0);
 +	list1_for_each_entry(ptr, &domain->acl_info_list, list) {
-+		struct env_acl_record *acl;
-+		if (ccs_acl_type2(ptr) != TYPE_ENV_ACL)
++		struct argv0_acl_record *acl;
++		if (ccs_acl_type2(ptr) != TYPE_ARGV0_ACL)
 +			continue;
-+		acl = container_of(ptr, struct env_acl_record, head);
++		acl = container_of(ptr, struct argv0_acl_record, head);
 +		if (!ccs_check_condition(ptr, NULL) ||
-+		    !ccs_path_matches_pattern(&env, acl->env))
++		    !ccs_path_matches_pattern(filename, acl->filename) ||
++		    !ccs_path_matches_pattern(&argv_0, acl->argv0))
 +			continue;
 +		ccs_update_condition(ptr);
 +		error = 0;
 +		break;
 +	}
-+	if (error &&
-+	    (domain->flags & DOMAIN_FLAGS_IGNORE_GLOBAL_ALLOW_ENV) == 0 &&
-+	    is_globally_usable_env(&env))
-+		error = 0;
 +	return error;
 +}
 +
 +/**
-+ * ccs_check_env_perm - Check permission for environment variable's name.
++ * ccs_check_argv0_perm - Check permission for argv[0].
 + *
-+ * @env:     The name of environment variable.
-+ * @profile: Profile number.
-+ * @mode:    Access control mode.
++ * @filename: The fullpath of the program.
++ * @argv0:    The basename of argv[0].
 + *
 + * Returns 0 on success, negative value otherwise.
 + */
-+int ccs_check_env_perm(const char *env, const u8 profile, const u8 mode)
++int ccs_check_argv0_perm(const struct path_info *filename, const char *argv0)
 +{
 +	int error = 0;
 +	struct domain_info * const domain = current->domain_info;
++	const u8 profile = domain->profile;
++	const u8 mode = ccs_check_flags(CCS_TOMOYO_MAC_FOR_ARGV0);
 +	const bool is_enforce = (mode == 3);
-+	if (!env || !*env)
++	if (!filename || !argv0 || !*argv0)
 +		return 0;
-+	error = check_env_acl(env);
-+	audit_env_log(env, !error, profile, mode);
++	error = check_argv0_acl(filename, argv0);
++	audit_argv0_log(filename, argv0, !error, profile, mode);
 +	if (!error)
 +		return 0;
 +	if (ccs_verbose_mode())
-+		printk(KERN_WARNING "TOMOYO-%s: Environ %s denied for %s\n",
-+		       ccs_get_msg(is_enforce), env, ccs_get_last_name(domain));
++		printk(KERN_WARNING "TOMOYO-%s: Run %s as %s denied for %s\n",
++		       ccs_get_msg(is_enforce), filename->name, argv0,
++		       ccs_get_last_name(domain));
 +	if (is_enforce)
-+		return ccs_check_supervisor("%s\n" KEYWORD_ALLOW_ENV "%s\n",
-+					    domain->domainname->name, env);
++		return ccs_check_supervisor("%s\n"
++					    KEYWORD_ALLOW_ARGV0 "%s %s\n",
++					    domain->domainname->name,
++					    filename->name, argv0);
 +	if (mode == 1 && ccs_check_domain_quota(domain))
-+		update_env_entry(env, domain, NULL, false);
++		update_argv0_entry(filename->name, argv0, domain, NULL, false);
 +	return 0;
 +}
 +
 +/**
-+ * ccs_write_env_policy - Write "struct env_acl_record" list.
++ * ccs_write_argv0_policy - Write "struct argv0_acl_record" list.
 + *
 + * @data:      String to parse.
 + * @domain:    Pointer to "struct domain_info".
@@ -332,11 +235,15 @@ Signed-off-by: Toshiharu Harada <haradats@nttdata.co.jp>
 + *
 + * Returns 0 on success, negative value otherwise.
 + */
-+int ccs_write_env_policy(char *data, struct domain_info *domain,
-+			 const struct condition_list *condition,
-+			 const bool is_delete)
++int ccs_write_argv0_policy(char *data, struct domain_info *domain,
++			   const struct condition_list *condition,
++			   const bool is_delete)
 +{
-+	return update_env_entry(data, domain, condition, is_delete);
++	char *argv0 = strchr(data, ' ');
++	if (!argv0)
++		return -EINVAL;
++	*argv0++ = '\0';
++	return update_argv0_entry(data, argv0, domain, condition, is_delete);
 +}
 
 -- 
