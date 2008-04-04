@@ -1,25 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754709AbYDDFqQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756717AbYDDFqt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754709AbYDDFqQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Apr 2008 01:46:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751114AbYDDFqE
+	id S1756717AbYDDFqt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Apr 2008 01:46:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750960AbYDDFqe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Apr 2008 01:46:04 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:59864 "EHLO mail.dvmed.net"
+	Fri, 4 Apr 2008 01:46:34 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:59887 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750783AbYDDFqD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Apr 2008 01:46:03 -0400
-Message-ID: <47F5C097.9010801@pobox.com>
-Date: Fri, 04 Apr 2008 01:45:59 -0400
-From: Jeff Garzik <jgarzik@pobox.com>
+	id S1755482AbYDDFq0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Apr 2008 01:46:26 -0400
+Message-ID: <47F5C0AA.4000109@garzik.org>
+Date: Fri, 04 Apr 2008 01:46:18 -0400
+From: Jeff Garzik <jeff@garzik.org>
 User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-To: Adrian Bunk <bunk@kernel.org>
-CC: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [2.6 patch] net/tokenring/olympic.c section fixes
-References: <20080330224004.GC28445@cs181133002.pp.htv.fi>
-In-Reply-To: <20080330224004.GC28445@cs181133002.pp.htv.fi>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: Harvey Harrison <harvey.harrison@gmail.com>
+CC: Al Viro <viro@ZenIV.linux.org.uk>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 2/7] net: marvell.c fix sparse shadowed variable warning
+References: <1207182815.5740.21.camel@brick>
+In-Reply-To: <1207182815.5740.21.camel@brick>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 X-Spam-Score: -4.4 (----)
 X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
@@ -28,50 +30,28 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adrian Bunk wrote:
-> My previous section fix only turned one section problem into another 
-> section problem.
+Harvey Harrison wrote:
+> The other if blocks don't redeclare temp, remove the redeclaration in
+> the final if() block.
 > 
-> This patch fixes it for real.
+> drivers/net/phy/marvell.c:214:7: warning: symbol 'temp' shadows an earlier one
+> drivers/net/phy/marvell.c:160:6: originally declared here
 > 
-> Signed-off-by: Adrian Bunk <bunk@kernel.org>
-> 
+> Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
 > ---
+>  drivers/net/phy/marvell.c |    2 --
+>  1 files changed, 0 insertions(+), 2 deletions(-)
 > 
->  drivers/net/tokenring/olympic.c |    6 +++---
->  1 file changed, 3 insertions(+), 3 deletions(-)
-> 
-> 59aa404d6b07f60a839e06f3dc772c9de63f5eea diff --git a/drivers/net/tokenring/olympic.c b/drivers/net/tokenring/olympic.c
-> index 433c994..df2bbd7 100644
-> --- a/drivers/net/tokenring/olympic.c
-> +++ b/drivers/net/tokenring/olympic.c
-> @@ -117,7 +117,7 @@
->   * Official releases will only have an a.b.c version number format. 
->   */
+> diff --git a/drivers/net/phy/marvell.c b/drivers/net/phy/marvell.c
+> index 3353991..32a8503 100644
+> --- a/drivers/net/phy/marvell.c
+> +++ b/drivers/net/phy/marvell.c
+> @@ -211,8 +211,6 @@ static int m88e1111_config_init(struct phy_device *phydev)
+>  	}
 >  
-> -static char version[] __devinitdata = 
-> +static char version[] = 
->  "Olympic.c v1.0.5 6/04/02 - Peter De Schrijver & Mike Phillips" ; 
->  
->  static char *open_maj_error[]  = {"No error", "Lobe Media Test", "Physical Insertion",
-> @@ -290,7 +290,7 @@ op_disable_dev:
->  	return i;
->  }
->  
-> -static int __devinit olympic_init(struct net_device *dev)
-> +static int olympic_init(struct net_device *dev)
->  {
->      	struct olympic_private *olympic_priv;
->  	u8 __iomem *olympic_mmio, *init_srb,*adapter_addr;
-> @@ -434,7 +434,7 @@ static int __devinit olympic_init(struct net_device *dev)
->  
->  }
->  
-> -static int __devinit olympic_open(struct net_device *dev) 
-> +static int olympic_open(struct net_device *dev) 
->  {
->  	struct olympic_private *olympic_priv=netdev_priv(dev);
->  	u8 __iomem *olympic_mmio=olympic_priv->olympic_mmio,*init_srb;
+>  	if (phydev->interface == PHY_INTERFACE_MODE_SGMII) {
+> -		int temp;
+> -
 
 applied
 
