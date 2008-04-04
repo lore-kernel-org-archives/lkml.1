@@ -1,157 +1,158 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753870AbYDDWGd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753060AbYDDW1z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753870AbYDDWGd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Apr 2008 18:06:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752151AbYDDWGV
+	id S1753060AbYDDW1z (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Apr 2008 18:27:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751954AbYDDW1p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Apr 2008 18:06:21 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:49479 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752150AbYDDWGU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Apr 2008 18:06:20 -0400
-Date: Fri, 4 Apr 2008 15:06:18 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Andrea Arcangeli <andrea@qumranet.com>
-cc: Hugh Dickins <hugh@veritas.com>, Robin Holt <holt@sgi.com>,
-       Avi Kivity <avi@qumranet.com>, Izik Eidus <izike@qumranet.com>,
-       kvm-devel@lists.sourceforge.net,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, general@lists.openfabrics.org,
-       Steve Wise <swise@opengridcomputing.com>,
-       Roland Dreier <rdreier@cisco.com>, Kanoj Sarcar <kanojsarcar@yahoo.com>,
-       steiner@sgi.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       daniel.blueman@quadrics.com, Nick Piggin <npiggin@suse.de>
-Subject: Re: [PATCH] mmu notifier #v11
-In-Reply-To: <20080404202055.GA14784@duo.random>
-Message-ID: <Pine.LNX.4.64.0804041504310.12396@schroedinger.engr.sgi.com>
-References: <20080401205635.793766935@sgi.com> <20080402064952.GF19189@duo.random>
- <Pine.LNX.4.64.0804021048460.27214@schroedinger.engr.sgi.com>
- <Pine.LNX.4.64.0804021402190.30337@schroedinger.engr.sgi.com>
- <20080402220148.GV19189@duo.random> <Pine.LNX.4.64.0804021503320.31247@schroedinger.engr.sgi.com>
- <20080402221716.GY19189@duo.random> <Pine.LNX.4.64.0804021821230.639@schroedinger.engr.sgi.com>
- <20080403151908.GB9603@duo.random> <Pine.LNX.4.64.0804031215050.7480@schroedinger.engr.sgi.com>
- <20080404202055.GA14784@duo.random>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 4 Apr 2008 18:27:45 -0400
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:45627 "EHLO e1.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751912AbYDDW1o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Apr 2008 18:27:44 -0400
+Subject: Re: [Devel] [RFC PATCH 0/4] Container Freezer: Reuse Suspend
+	Freezer
+From: Matt Helsley <matthltc@us.ibm.com>
+To: Oren Laadan <orenl@cs.columbia.edu>
+Cc: Paul Menage <menage@google.com>,
+       Linux Containers <containers@lists.linux-foundation.org>,
+       Cedric Le Goater <clg@fr.ibm.com>,
+       Linux-Kernel <linux-kernel@vger.kernel.org>,
+       linux-pm@lists.linux-foundation.org
+In-Reply-To: <47F64FBB.2080207@cs.columbia.edu>
+References: <20080403210316.397506379@us.ibm.com>
+	 <6599ad830804031649p6bbc60f3s59fb7c25a7260505@mail.gmail.com>
+	 <1207278180.30178.94.camel@localhost.localdomain>
+	 <47F64FBB.2080207@cs.columbia.edu>
+Content-Type: text/plain
+Organization: IBM Linux Technology Center
+Date: Fri, 04 Apr 2008 15:27:40 -0700
+Message-Id: <1207348060.30178.166.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I am always the guy doing the cleanup after Andrea it seems. Sigh.
 
-Here is the mm_lock/mm_unlock logic separated out for easier review.
-Adds some comments. Still objectionable is the multiple ways of
-invalidating pages in #v11. Callout now has similar locking to emm.
+On Fri, 2008-04-04 at 11:56 -0400, Oren Laadan wrote:
+> 
+> Matt Helsley wrote:
+> > On Thu, 2008-04-03 at 16:49 -0700, Paul Menage wrote:
+> >> On Thu, Apr 3, 2008 at 2:03 PM,  <matthltc@us.ibm.com> wrote:
+> >>>    * "freezer.kill"
+> >>>
+> >>>      writing <n> will send signal number <n> to all tasks
+> >>>
+> >> My first thought (not having looked at the code yet) is that sending a
+> >> signal doesn't really have anything to do with freezing, so it
+> >> shouldn't be in the same subsystem. Maybe a separate subsystem called
+> >> "signal"?
+> >>
+> >> And more than that, it's not something that requires any particular
+> >> per-process state, so there's no reason that the subsystem that
+> >> provides the "kill" functionality shouldn't be able to be mounted in
+> >> multiple hierarchies.
+> >>
+> >> How about if I added support for stateless subsystems, that could
+> >> potentially be mounted in multiple hierarchies at once? They wouldn't
+> >> need an entry in the css set, since they have no state.
+> > 
+> > 	This seems reasonable to me. A quick look at Cedric's patches suggests
+> > there's no need for such cgroup subsystems to be tied together -- the
+> > signalling is all done internally to the freeze_task(), refrigerator(),
+> > and thaw_process() functions from what I recall.
+> > 
+> >>>  * Usage :
+> >>>
+> >>>    # mkdir /containers/freezer
+> >>>    # mount -t container -ofreezer freezer  /containers/freezer
+> >>>    # mkdir /containers/freezer/0
+> >>>    # echo $some_pid > /containers/freezer/0/tasks
+> >>>
+> >>>  to get status of the freezer subsystem :
+> >>>
+> >>>    # cat /containers/freezer/0/freezer.freeze
+> >>>    RUNNING
+> >>>
+> >>>  to freeze all tasks in the container :
+> >>>
+> >>>    # echo 1 > /containers/freezer/0/freezer.freeze
+> >>>    # cat /containers/freezer/0/freezer.freeze
+> >>>    FREEZING
+> >>>    # cat /containers/freezer/0/freezer.freeze
+> >>>    FROZEN
+> >> Could we separate this out into two files? One called "freeze" that's
+> >> a 0/1 for whether we're intending to freeze the subsystem, and one
+> >> called "frozen" that indicates whether it is frozen? And maybe a
+> >> "state" file to report the RUNNING/FREEZING/FROZEN distinction in a
+> >> human-readable way?
+> > 
+> > 3 files seems like overkill. I think making them human-readable is good
+> > and can be done with two files: "state" (read-only) and
+> > "state-next" (read/write). Transitions between RUNNING and FROZEN are
+> > obvious when state-next != state. I think the advantages are it's pretty
+> > human-readable, you don't need separate strings and files for the
+> > transitions, it's clear what's about to happen (IMHO), and it only
+> > requires 2 files. Some examples:
+> > 
+> > To initiate freezing:
+> > 
+> > # cat /containers/freezer/0/freezer.state
+> > RUNNING
+> > # echo "FROZEN" > /containers/freezer/0/freezer.state-next
+> > # cat /containers/freezer/0/freezer.state
+> > RUNNING
+> > # cat /containers/freezer/0/freezer.state-next
+> > FROZEN
+> > # sleep N
+> > # cat /containers/freezer/0/freezer.state
+> > FROZEN
+> > # cat /containers/freezer/0/freezer.state-next
+> > FROZEN
+> > 
+> > So to cancel freezing you might see something like:
+> > 
+> > # cat /containers/freezer/0/freezer.state
+> > RUNNING
+> > # cat /containers/freezer/0/freezer.state-next
+> > FROZEN
+> > # echo "RUNNING" > /containers/freezer/0/freezer.state-next
+> > # cat /containers/freezer/0/freezer.state-next
+> > RUNNING
+> > 
+> > If you wanted to know if a group was transitioning:
+> > 
+> > # diff /containers/freezer/0/freezer.state /containers/freezer/0/freezer.state-next
+> > 
+> > Or:
+> > # current=`cat /containers/freezer/0/freezer.state`
+> > # next=`cat /containers/freezer/0/freezer.state-next`
+> > # [ "$current" != "$next" ] && echo "Transitioning"
+> > # [ "$current" == "RUNNING" -a "$next" == "FROZEN" ] && echo "Freezing"
+> > # [ "$current" == "FROZEN" -a "$next" == "RUNNING" ] && echo "Thawing"
+> > # [ "$current" == "RUNNING" -a "$next" == "RUNNING" ] && echo "No-op"
+> > # [ "$current" == "FROZEN" -a "$next" == "FROZEN" ] && echo "No-op"
+> 
+> First, I totally agree with Serge's comment (oh well, it's about my
+> own suggestion, so I must) - for checkpoint/restart we'll need more
+> states if we are to use the same subsystem.
 
-From: Christoph Lameter <clameter@sgi.com>
-Subject: mm_lock: Lock a process against reclaim
+	I don't have an upper limit on how many more states we will need and I
+think that number impacts the interface significantly. Can you give us
+an estimate?
 
-Provide a way to lock an mm_struct against reclaim (try_to_unmap
-etc). This is necessary for the invalidate notifier approaches so
-that they can reliably add and remove a notifier.
+> Second, my gut feeling is that a single, atomic operation to get the
+> status is preferred over multiple (non-atomic) operations. In other
+> words, I suggest a single state file instead of two. You can encode
+> every possible transition in a single state. It's not that the kernel
 
-Signed-off-by: Andrea Arcangeli <andrea@qumranet.com>
-Signed-off-by: Christoph Lameter <clameter@sgi.com>
+	If the transitions are to be human-readable and there are more than a
+small number of states it may not be desirable to encode transitions as
+states. Paul's reason for suggesting the additional file(s), as best I
+could tell, was to keep the interface human-readable.
 
----
- include/linux/mm.h |   10 ++++++++
- mm/mmap.c          |   66 +++++++++++++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 76 insertions(+)
+Cheers,
+	-Matt Helsley
 
-Index: linux-2.6/include/linux/mm.h
-===================================================================
---- linux-2.6.orig/include/linux/mm.h	2008-04-02 11:41:47.741678873 -0700
-+++ linux-2.6/include/linux/mm.h	2008-04-04 15:02:17.660504756 -0700
-@@ -1050,6 +1050,16 @@ extern int install_special_mapping(struc
- 				   unsigned long addr, unsigned long len,
- 				   unsigned long flags, struct page **pages);
- 
-+/*
-+ * Locking and unlocking an mm against reclaim.
-+ *
-+ * mm_lock will take mmap_sem writably (to prevent additional vmas from being
-+ * added) and then take all mapping locks of the existing vmas. With that
-+ * reclaim is effectively stopped.
-+ */
-+extern void mm_lock(struct mm_struct *mm);
-+extern void mm_unlock(struct mm_struct *mm);
-+
- extern unsigned long get_unmapped_area(struct file *, unsigned long, unsigned long, unsigned long, unsigned long);
- 
- extern unsigned long do_mmap_pgoff(struct file *file, unsigned long addr,
-Index: linux-2.6/mm/mmap.c
-===================================================================
---- linux-2.6.orig/mm/mmap.c	2008-04-04 14:55:03.477593980 -0700
-+++ linux-2.6/mm/mmap.c	2008-04-04 14:59:05.505395402 -0700
-@@ -2242,3 +2242,69 @@ int install_special_mapping(struct mm_st
- 
- 	return 0;
- }
-+
-+static void mm_lock_unlock(struct mm_struct *mm, int lock)
-+{
-+	struct vm_area_struct *vma;
-+	spinlock_t *i_mmap_lock_last, *anon_vma_lock_last;
-+
-+	i_mmap_lock_last = NULL;
-+	for (;;) {
-+		spinlock_t *i_mmap_lock = (spinlock_t *) -1UL;
-+		for (vma = mm->mmap; vma; vma = vma->vm_next)
-+			if (vma->vm_file && vma->vm_file->f_mapping &&
-+			    (unsigned long) i_mmap_lock >
-+			    (unsigned long)
-+			    &vma->vm_file->f_mapping->i_mmap_lock &&
-+			    (unsigned long)
-+			    &vma->vm_file->f_mapping->i_mmap_lock >
-+			    (unsigned long) i_mmap_lock_last)
-+				i_mmap_lock =
-+					&vma->vm_file->f_mapping->i_mmap_lock;
-+		if (i_mmap_lock == (spinlock_t *) -1UL)
-+			break;
-+		i_mmap_lock_last = i_mmap_lock;
-+		if (lock)
-+			spin_lock(i_mmap_lock);
-+		else
-+			spin_unlock(i_mmap_lock);
-+	}
-+
-+	anon_vma_lock_last = NULL;
-+	for (;;) {
-+		spinlock_t *anon_vma_lock = (spinlock_t *) -1UL;
-+		for (vma = mm->mmap; vma; vma = vma->vm_next)
-+			if (vma->anon_vma &&
-+			    (unsigned long) anon_vma_lock >
-+			    (unsigned long) &vma->anon_vma->lock &&
-+			    (unsigned long) &vma->anon_vma->lock >
-+			    (unsigned long) anon_vma_lock_last)
-+				anon_vma_lock = &vma->anon_vma->lock;
-+		if (anon_vma_lock == (spinlock_t *) -1UL)
-+			break;
-+		anon_vma_lock_last = anon_vma_lock;
-+		if (lock)
-+			spin_lock(anon_vma_lock);
-+		else
-+			spin_unlock(anon_vma_lock);
-+	}
-+}
-+
-+/*
-+ * This operation locks against the VM for all pte/vma/mm related
-+ * operations that could ever happen on a certain mm. This includes
-+ * vmtruncate, try_to_unmap, and all page faults. The holder
-+ * must not hold any mm related lock. A single task can't take more
-+ * than one mm lock in a row or it would deadlock.
-+ */
-+void mm_lock(struct mm_struct * mm)
-+{
-+	down_write(&mm->mmap_sem);
-+	mm_lock_unlock(mm, 1);
-+}
-+
-+void mm_unlock(struct mm_struct *mm)
-+{
-+	mm_lock_unlock(mm, 0);
-+	up_write(&mm->mmap_sem);
-+}
 
