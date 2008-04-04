@@ -1,167 +1,321 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757235AbYDDUjx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752040AbYDDUmP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757235AbYDDUjx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Apr 2008 16:39:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755389AbYDDUjl
+	id S1752040AbYDDUmP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Apr 2008 16:42:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750749AbYDDUmA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Apr 2008 16:39:41 -0400
-Received: from mga09.intel.com ([134.134.136.24]:60983 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755359AbYDDUjk convert rfc822-to-8bit (ORCPT
+	Fri, 4 Apr 2008 16:42:00 -0400
+Received: from triton.rz.uni-saarland.de ([134.96.7.25]:4475 "EHLO
+	triton.rz.uni-saarland.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750764AbYDDUl7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Apr 2008 16:39:40 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,606,1199692800"; 
-   d="scan'208";a="312753481"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: 2.6.25-current-git hangs on boot unless CONFIG_CPU_IDLE=n-Apple
-Date: Fri, 4 Apr 2008 13:41:45 -0700
-Message-ID: <924EFEDD5F540B4284297C4DC59F3DEED0EEC6@orsmsx423.amr.corp.intel.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: 2.6.25-current-git hangs on boot unless CONFIG_CPU_IDLE=n-Apple
-Thread-Index: AciWbEVLakuw0LpFTkCNK8MnydGR4wADhHhQAAZzpJA=
-References: <pdj7pZVURbL.A.42H.kDW9HB@albercik> <pdYe6zNQVl.A.AOB.6GW9HB@albercik> <924EFEDD5F540B4284297C4DC59F3DEED0EA1E@orsmsx423.amr.corp.intel.com> <20080404011053.GA21254@localhost.ift.unesp.br> <2c0942db0804032015y57e91811r37b729cd836cef6d@mail.gmail.com> <20080404114756.GA3890@localhost.ift.unesp.br> <924EFEDD5F540B4284297C4DC59F3DEED0EB77@orsmsx423.amr.corp.intel.com> <20080404155155.GA6578@localhost.ift.unesp.br> 
-From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       "Carlos R. Mafra" <crmafra2@gmail.com>
-Cc: "Ray Lee" <ray-lk@madrabbit.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Soeren Sonnenburg" <kernel@nn7.de>
-X-OriginalArrivalTime: 04 Apr 2008 20:39:35.0067 (UTC) FILETIME=[FE49D6B0:01C89693]
+	Fri, 4 Apr 2008 16:41:59 -0400
+Date: Fri, 4 Apr 2008 22:40:27 +0200
+From: Alexander van Heukelum <heukelum@mailshack.com>
+To: Harvey Harrison <harvey.harrison@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Jeff Dike <jdike@addtoit.com>
+Cc: Andi Kleen <andi@firstfloor.org>, LKML <linux-kernel@vger.kernel.org>,
+       Alexander van Heukelum <heukelum@fastmail.fm>
+Subject: [PATCH] uml: cleanup: use def_bool in Kconfig files
+Message-ID: <20080404204027.GA9417@mailshack.com>
+References: <20080404184930.GA8978@mailshack.com> <20080404185147.GB8989@mailshack.com> <1207335610.18838.85.camel@brick>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1207335610.18838.85.camel@brick>
+User-Agent: Mutt/1.5.9i
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (triton.rz.uni-saarland.de [134.96.7.25]); Fri, 04 Apr 2008 22:41:28 +0200 (CEST)
+X-AntiVirus: checked by AntiVir MailGate (version: 2.1.2-14; AVE: 7.6.0.81; VDF: 7.0.3.121; host: AntiVir3)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Cleanup: use def_bool in User-mode Linux' Kconfig files.
+
+Signed-off-by: Alexander van Heukelum <heukelum@fastmail.fm>
+
+---
+
+Harvey Harrison wrote:
+> > +config GENERIC_FIND_FIRST_BIT
+> > +	bool
+> > +	default y
+> > +
+> 	def_bool y
+
+Indeed! But it is hardly the only occurence of the long version.
+Should we add this patch? If so, should it go via the -x86 tree,
+as this depends on changes I introduced for the bitops unification?
+
+Greetings,
+	Alexander
+
+ arch/um/Kconfig        |   50 +++++++++++++++++------------------------------
+ arch/um/Kconfig.char   |    6 +---
+ arch/um/Kconfig.i386   |   27 ++++++++-----------------
+ arch/um/Kconfig.x86_64 |   33 ++++++++++---------------------
+ 4 files changed, 40 insertions(+), 76 deletions(-)
+
+diff --git a/arch/um/Kconfig b/arch/um/Kconfig
+index dba8e05..bbbc198 100644
+--- a/arch/um/Kconfig
++++ b/arch/um/Kconfig
+@@ -5,16 +5,13 @@ config DEFCONFIG_LIST
  
+ # UML uses the generic IRQ subsystem
+ config GENERIC_HARDIRQS
+-	bool
+-	default y
++	def_bool y
+ 
+ config UML
+-	bool
+-	default y
++	def_bool y
+ 
+ config MMU
+-	bool
+-	default y
++	def_bool y
+ 
+ config NO_IOMEM
+ 	def_bool y
+@@ -22,51 +19,43 @@ config NO_IOMEM
+ mainmenu "Linux/Usermode Kernel Configuration"
+ 
+ config ISA
+-	bool
++	def_bool n
+ 
+ config SBUS
+-	bool
++	def_bool n
+ 
+ config PCI
+-	bool
++	def_bool n
+ 
+ config PCMCIA
+-	bool
++	def_bool n
+ 
+ # Yet to do!
+ config TRACE_IRQFLAGS_SUPPORT
+-	bool
+-	default n
++	def_bool n
+ 
+ config LOCKDEP_SUPPORT
+-	bool
+-	default y
++	def_bool y
+ 
+ config STACKTRACE_SUPPORT
+-	bool
+-	default n
++	def_bool n
+ 
+ config GENERIC_CALIBRATE_DELAY
+-	bool
+-	default y
++	def_bool y
+ 
+ config GENERIC_BUG
+-	bool
+-	default y
++	def_bool y
+ 	depends on BUG
+ 
+ config GENERIC_TIME
+-	bool
+-	default y
++	def_bool y
+ 
+ config GENERIC_CLOCKEVENTS
+-	bool
+-	default y
++	def_bool y
+ 
+ # Used in kernel/irq/manage.c and include/linux/irq.h
+ config IRQ_RELEASE_METHOD
+-	bool
+-	default y
++	def_bool y
+ 
+ config HZ
+ 	int
+@@ -90,13 +79,11 @@ source "mm/Kconfig"
+ source "kernel/time/Kconfig"
+ 
+ config LD_SCRIPT_STATIC
+-	bool
+-	default y
++	def_bool y
+ 	depends on STATIC_LINK
+ 
+ config LD_SCRIPT_DYN
+-	bool
+-	default y
++	def_bool y
+ 	depends on !LD_SCRIPT_STATIC
+ 
+ source "fs/Kconfig.binfmt"
+@@ -261,7 +248,6 @@ endif
+ 
+ #This is just to shut up some Kconfig warnings, so no prompt.
+ config INPUT
+-	bool
+-	default n
++	def_bool n
+ 
+ source "arch/um/Kconfig.debug"
+diff --git a/arch/um/Kconfig.char b/arch/um/Kconfig.char
+index 3a4b396..c51b3b3 100644
+--- a/arch/um/Kconfig.char
++++ b/arch/um/Kconfig.char
+@@ -8,8 +8,7 @@ config STDERR_CONSOLE
+ 	  console driver which dumps all printk messages to stderr.
+ 
+ config STDIO_CONSOLE
+-	bool
+-	default y
++	def_bool y
+ 
+ config SSL
+ 	bool "Virtual serial line"
+@@ -68,8 +67,7 @@ config XTERM_CHAN
+           It is safe to say 'Y' here.
+ 
+ config NOCONFIG_CHAN
+-	bool
+-	default !(XTERM_CHAN && TTY_CHAN && PTY_CHAN && PORT_CHAN && NULL_CHAN)
++	def_bool !(XTERM_CHAN && TTY_CHAN && PTY_CHAN && PORT_CHAN && NULL_CHAN)
+ 
+ config CON_ZERO_CHAN
+ 	string "Default main console channel initialization"
+diff --git a/arch/um/Kconfig.i386 b/arch/um/Kconfig.i386
+index f694cff..4d36f66 100644
+--- a/arch/um/Kconfig.i386
++++ b/arch/um/Kconfig.i386
+@@ -5,23 +5,19 @@ source "arch/x86/Kconfig.cpu"
+ endmenu
+ 
+ config UML_X86
+-	bool
+-	default y
++	def_bool y
+ 
+ config X86_32
+-       bool
+-       default y
++       def_bool y
+ 
+ config RWSEM_XCHGADD_ALGORITHM
+ 	def_bool y
+ 
+ config 64BIT
+-	bool
+-	default n
++	def_bool n
+ 
+ config SEMAPHORE_SLEEPERS
+-	bool
+-	default y
++	def_bool y
+ 
+ config 3_LEVEL_PGTABLES
+ 	bool "Three-level pagetables (EXPERIMENTAL)"
+@@ -36,24 +32,19 @@ config 3_LEVEL_PGTABLES
+ 	N (on x86-64 it's automatically enabled, instead, as it's safe there).
+ 
+ config ARCH_HAS_SC_SIGNALS
+-	bool
+-	default y
++	def_bool y
+ 
+ config ARCH_REUSE_HOST_VSYSCALL_AREA
+-	bool
+-	default y
++	def_bool y
+ 
+ config GENERIC_FIND_FIRST_BIT
+-	bool
+-	default y
++	def_bool y
+ 
+ config GENERIC_FIND_NEXT_BIT
+-	bool
+-	default y
++	def_bool y
+ 
+ config GENERIC_HWEIGHT
+-	bool
+-	default y
++	def_bool y
+ 
+ config ARCH_SUPPORTS_AOUT
+ 	def_bool y
+diff --git a/arch/um/Kconfig.x86_64 b/arch/um/Kconfig.x86_64
+index 84cefd5..42131b2 100644
+--- a/arch/um/Kconfig.x86_64
++++ b/arch/um/Kconfig.x86_64
+@@ -1,47 +1,36 @@
+ config UML_X86
+-	bool
+-	default y
++	def_bool y
+ 
+ config 64BIT
+-	bool
+-	default y
++	def_bool y
+ 
+ #XXX: this is so in the underlying arch, but it's wrong!!!
+ config RWSEM_GENERIC_SPINLOCK
+-	bool
+-	default y
++	def_bool y
+ 
+ config SEMAPHORE_SLEEPERS
+-	bool
+-	default y
++	def_bool y
+ 
+ config 3_LEVEL_PGTABLES
+-       bool
+-       default y
++       def_bool y
+ 
+ config ARCH_HAS_SC_SIGNALS
+-	bool
+-	default n
++	def_bool n
+ 
+ config ARCH_REUSE_HOST_VSYSCALL_AREA
+-	bool
+-	default n
++	def_bool n
+ 
+ config SMP_BROKEN
+-	bool
+-	default y
++	def_bool y
+ 
+ config GENERIC_FIND_FIRST_BIT
+-	bool
+-	default y
++	def_bool y
+ 
+ config GENERIC_FIND_NEXT_BIT
+-	bool
+-	default y
++	def_bool y
+ 
+ config GENERIC_HWEIGHT
+-	bool
+-	default y
++	def_bool y
+ 
+ config ARCH_SUPPORTS_AOUT
+ 	def_bool y
 
->-----Original Message-----
->From: Pallipadi, Venkatesh 
->Sent: Friday, April 04, 2008 10:37 AM
->To: 'Carlos R. Mafra'
->Cc: Ray Lee; Rafael J. Wysocki; Linux Kernel Mailing List; 
->Soeren Sonnenburg
->Subject: RE: 2.6.25-current-git hangs on boot unless 
->CONFIG_CPU_IDLE=n-Apple
->
-> 
->
->>-----Original Message-----
->>From: Carlos R. Mafra [mailto:crmafra2@gmail.com] 
->>Sent: Friday, April 04, 2008 8:52 AM
->>To: Pallipadi, Venkatesh
->>Cc: Ray Lee; Rafael J. Wysocki; Linux Kernel Mailing List; 
->>Pallipadi@ogre.sisk.pl; Soeren Sonnenburg
->>Subject: Re: 2.6.25-current-git hangs on boot unless 
->>CONFIG_CPU_IDLE=n-Apple
->>
->>On Fri  4.Apr'08 at  7:25:34 -0700, Pallipadi, Venkatesh wrote:
->>>  
->>> 
->>> >-----Original Message-----
->>> >From: linux-kernel-owner@vger.kernel.org 
->>> >[mailto:linux-kernel-owner@vger.kernel.org] On Behalf Of 
->>> >Carlos R. Mafra
->>> >Sent: Friday, April 04, 2008 4:48 AM
->>> >To: Ray Lee
->>> >Cc: Pallipadi, Venkatesh; Rafael J. Wysocki; Linux Kernel 
->>> >Mailing List; Pallipadi@ogre.sisk.pl; Soeren Sonnenburg
->>> >Subject: Re: 2.6.25-current-git hangs on boot unless 
->>> >CONFIG_CPU_IDLE=n -Apple
->>> >
->>> >On Thu  3.Apr'08 at 20:15:02 -0700, Ray Lee wrote:
->>> >> On Thu, Apr 3, 2008 at 6:10 PM, Carlos R. Mafra 
->>> ><crmafra2@gmail.com> wrote:
->>> >> > On Thu  3.Apr'08 at 17:14:22 -0700, Pallipadi, Venkatesh wrote:
->>> >> >  > >The following report is on the current list of known 
->>> >regressions
->>> >> >  > >from 2.6.24.  Please verify if the issue is still 
->>> >present in the
->>> >> >  > >mainline.
->>> >> >  > >
->>> >> >  > >
->>> >> >  > >Bug-Entry    : 
->>http://bugzilla.kernel.org/show_bug.cgi?id=10093
->>> >> >  > >Subject              : 2.6.25-current-git hangs on boot
->>> >> >  > >unless CONFIG_CPU_IDLE=n - Apple
->>> >> >  > >Submitter    : Soeren Sonnenburg <kernel@nn7.de>
->>> >> >  > >Date         : 2008-02-23 18:55 (41 days old)
->>> >> >  > >References   : http://lkml.org/lkml/2008/2/23/263
->>> >> >  > >
->>> >> >  > 
->>http://marc.info/?l=linux-acpi&amp;m=120387537018467&amp;w=4
->>> >> >  > >Handled-By   : Pallipadi, Venkatesh 
->>> ><venkatesh.pallipadi@intel.com>
->>> >> >  > >
->>> >> >  >
->>> >> >  > Last comment I saw from Soeren says it does not really 
->>> >hang. It waits
->>> >> >  > for 5-10 seconds sometimes before continuing. We are 
->>> >still trying to
->>> >> >  > narrow this down with max_cstate etc..
->>> >> >
->>> >> >  I should say that my laptop (Vaio) _hangs_ at boot (less 
->>> >than 10% of boots)
->>> >> >  and this is the last message I see:
->>> >> >
->>> >> >  "ACPI: Processor [CPU1] (supports 8 throttling states)"
->>> >> >
->>> >> >  and it stays there "forever" (more than 1 or 2 minutes 
->>at least).
->>> >> >
->>> >> >  I am not using my laptop too much these days, and I 
->>thought this
->>> >> >  bug had been solved because it didn't hang for the 
->>last week (but
->>> >> >  I boot it once per day), however it hang last night 
->(using some
->>> >> >  post 2.6.25-rc7 kernel)
->>> >> >
->>> >> >  I have pictures of the screen while showing this last 
->>> >message at boot,
->>> >> >  should I post it somewhere or that is not necessary?.
->>> >> 
->>> >> If the sysrq key still works when that happens, try to do 
->>a sysrq-t,
->>> >> s, b to generate a trace, sync the filesystem, and reboot. 
->>> >If anything
->>> >> made it to the logs, please post it.
->>> >
->>> >Sysrq keys don't work when it hangs, I have to push the 
->>power button.
->>> >
->>> >Another thing to notice is that when it happens, it usually happens
->>> >more times in a row (like 3 times). And then it can take 
->>many boots to
->>> >happen again.
->>> >
->>> >I've uploaded the picture where it hangs, it is in the very 
->>beginning
->>> >of the boot process:
->>> >
->>> >http://www.ift.unesp.br/users/crmafra/dsc04673.jpg
->>> 
->>> 
->>> Can you try the latest git and see whether this still is a problem?
->>
->>I've just updated to latest git, but it may take some time for it 
->>to happen again (the first 3 boots were okay). Last time it happened
->>with 2.6.25-rc7-00149-gaf8be4e (I checked now). 
->>
->>Do you have reasons to believe this issue was fixed since then?
->
->Yes. I think the patch here should have fixed the problem....
->Patch : http://marc.info/?l=linux-kernel&m=120674502201007&w=4
->
-
-Hmmmm.... Looking at latest git,
-The above patch is not yet in git. Can you please apply the above patch
-and see whether do you still see the problem.....
-
-Thanks,
-Venki
