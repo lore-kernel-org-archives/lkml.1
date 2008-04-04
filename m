@@ -1,96 +1,151 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752115AbYDDVwn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753053AbYDDWDs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752115AbYDDVwn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Apr 2008 17:52:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752213AbYDDVwS
+	id S1753053AbYDDWDs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Apr 2008 18:03:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751882AbYDDWDi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Apr 2008 17:52:18 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:38901 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751940AbYDDVwN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Apr 2008 17:52:13 -0400
-Message-ID: <47F6A305.7050809@garzik.org>
-Date: Fri, 04 Apr 2008 17:52:05 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	Fri, 4 Apr 2008 18:03:38 -0400
+Received: from wx-out-0506.google.com ([66.249.82.235]:62384 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751819AbYDDWDh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Apr 2008 18:03:37 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=ne84qp5PcAj84Dz5V2cTH0q8HB0grMspTafBNpMYo62PMJtq6cgCeO0JLi6eT9UJbON8IEi+elB2oN8zAYFmw5lY+TyVcjpOAG8ldEv6GqkFoWtCHoDEh7mFKW9WWvMRq3WzI1HQWu9fpLKWws+OM+tUIW9a320XJ9+iBcSdXIg=
+Message-ID: <5767b9100804041503o7395ff34nd13002c111e11c8a@mail.gmail.com>
+Date: Sat, 5 Apr 2008 06:03:32 +0800
+From: "Conke Hu" <conke.hu@gmail.com>
+To: linux-kernel@vger.kernel.org, hcegtvedt@atmel.com, rmk@arm.linux.org.uk
+Subject: [PATCH] add AT73C213 DAC support for AT91SAM9261
 MIME-Version: 1.0
-To: Dave Hansen <dave@linux.vnet.ibm.com>
-CC: "Kok, Auke" <auke-jan.h.kok@intel.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       NetDev <netdev@vger.kernel.org>,
-       e1000-list <e1000-devel@lists.sourceforge.net>,
-       linux-pci maillist <linux-pci@atrey.karlin.mff.cuni.cz>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "David S. Miller" <davem@davemloft.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Jesse Brandeburg <jesse.brandeburg@intel.com>,
-       "Ronciak, John" <john.ronciak@intel.com>,
-       "Allan, Bruce W" <bruce.w.allan@intel.com>, Greg KH <greg@kroah.com>,
-       Arjan van de Ven <arjan@linux.intel.com>
-Subject: Re: [ANNOUNCE] e1000 to e1000e migration of PCI Express devices
-References: <47F69965.7030303@intel.com> <1207344669.26869.33.camel@nimitz.home.sr71.net>
-In-Reply-To: <1207344669.26869.33.camel@nimitz.home.sr71.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dave Hansen wrote:
-> On Fri, 2008-04-04 at 14:11 -0700, Kok, Auke wrote:
->> >From kernel 2.6.26 onward all *PCI Express* device IDs previously
->> supported by e1000 will be moving to the e1000e driver.  This includes
->> ich8 and ich9 onboard LAN, server 5000 platform onboard LAN (es2) and
->> 82571/2/3 chipset based adapters and variants.
->>
->> If you have not already enabled CONFIG_E1000E make sure that you do so.
->> You can already do this with 2.6.25.  From 2.6.26 on this change will be
->> required if you have such a device.
-> 
-> I've been bitten by one or two of these in the past.  Can we do
-> something like this for a couple of releases?
-> 
-> Shouldn't this default the E1000E config option to the same thing that
-> people have the E1000 set as?  It should catch the dumb people like me
-> who's enter key gets held down during a 'make oldconfig'. :)
-> 
-> diff --git a/drivers/net/Kconfig b/drivers/net/Kconfig
-> index 3a0b20a..aa0fe14 100644
-> --- a/drivers/net/Kconfig
-> +++ b/drivers/net/Kconfig
-> @@ -2005,6 +2005,7 @@ config E1000_DISABLE_PACKET_SPLIT
->  config E1000E
->         tristate "Intel(R) PRO/1000 PCI-Express Gigabit Ethernet support"
->         depends on PCI
-> +       default E1000
->         ---help---
->           This driver supports the PCI-Express Intel(R) PRO/1000 gigabit
->           ethernet family of adapters. For PCI or PCI-X e1000 adapters,
+Many AT91SAM9261-based boards use AT73C213 as external audio DAC, this
+patch makes it work.
 
-That's not pretty for embedded folks who don't want an extra driver to 
-come along for the ride ;-)
+Signed-off-by: Conke Hu <conke.hu@gmail.com>
+---------------------------------------
+diff --git a/arch/arm/mach-at91/at91sam9261_devices.c
+b/arch/arm/mach-at91/at91sam9261_devices.c
+old mode 100644
+new mode 100755
+diff --git a/arch/arm/mach-at91/board-sam9261ek.c
+b/arch/arm/mach-at91/board-sam9261ek.c
+old mode 100644
+new mode 100755
+index 0ce38df..a739cfe
+--- a/arch/arm/mach-at91/board-sam9261ek.c
++++ b/arch/arm/mach-at91/board-sam9261ek.c
+@@ -30,6 +30,8 @@
+ #include <linux/fb.h>
+ #include <linux/gpio_keys.h>
+ #include <linux/input.h>
++#include <linux/clk.h>
++#include <linux/spi/at73c213.h>
 
-It's also been suggested, as an alternative, to add 'select E1000E' to 
-E1000's Kconfig entry.
+ #include <video/atmel_lcdc.h>
 
-Rather than doing that, I am hoping that education -- Auke's 
-announcements -- plus "ripping the band-aid off quickly", will be the 
-best approach.
+@@ -239,6 +241,45 @@ static void __init ek_add_device_ts(void) {}
+ #endif
 
-Most kernel distributions will have enabled both Kconfig options anyway, 
-so that leaves individual kernel hackers who missed the announcements as 
-the only target audience for the patch quoted above.
+ /*
++ * AT73C213 Audio
++ */
++#if defined(CONFIG_SND_AT73C213) || defined(CONFIG_SND_AT73C213_MODULE)
++static struct at73c213_board_info at73c213_info = {
++	.ssc_id    = 1,
++	.shortname = "at72c213",
++};
++
++static void __init at91_setup_at73c213(void)
++{
++	struct clk *mclk;
++	struct clk *plla;
++
++	mclk = clk_get(NULL, "pck2");
++	if (IS_ERR(mclk))
++		goto err_mclk;
++
++	plla = clk_get(NULL, "plla");
++	if (IS_ERR(plla))
++		goto err_plla;
++
++	if (clk_set_parent(mclk, plla))
++		goto err_clk;
++
++	at91_set_B_periph(AT91_PIN_PB31, 0);
++	at73c213_info.dac_clk = mclk;
++
++err_clk:
++	clk_put(plla);
++err_plla:
++	clk_put(mclk);
++err_mclk:
++	return;
++}
++#else
++static void __init at91_setup_at73c213(void) {}
++#endif
++
++/*
+  * SPI devices
+  */
+ static struct spi_board_info ek_spi_devices[] = {
+@@ -271,6 +312,8 @@ static struct spi_board_info ek_spi_devices[] = {
+ 		.chip_select	= 3,
+ 		.max_speed_hz	= 10 * 1000 * 1000,
+ 		.bus_num	= 0,
++		.platform_data = &at73c213_info,
++		.controller_data = (void*)AT91_PIN_PA29,
+ 	},
+ #endif
+ };
+@@ -477,6 +520,8 @@ static void __init ek_board_init(void)
 
-And as a side note...  we really really try not to do this very often. 
-Migrating users from one driver to another is not a seamless process in 
-Linux -- but unfortuantely the alternative solution, the same PCI ID in 
-multiple drivers, presents an even worse set of breakages and problems. 
-  This e1000->e1000e move is an exception to the rule.
+ 	/* spi0 and mmc/sd share the same PIO pins */
+ #if defined(CONFIG_SPI_ATMEL) || defined(CONFIG_SPI_ATMEL_MODULE)
++	/* Audio */
++	at91_setup_at73c213();
+ 	/* SPI */
+ 	at91_add_device_spi(ek_spi_devices, ARRAY_SIZE(ek_spi_devices));
+ 	/* Touchscreen */
+@@ -489,6 +534,10 @@ static void __init ek_board_init(void)
+ 	at91_add_device_lcdc(&ek_lcdc_data);
+ 	/* Push Buttons */
+ 	ek_add_device_buttons();
++	/* SSC */
++#if defined(CONFIG_ATMEL_SSC) || defined(CONFIG_ATMEL_SSC_MODULE)
++	at91_add_device_ssc(AT91SAM9261_ID_SSC1, ATMEL_SSC_TX);
++#endif
+ }
 
-	Jeff
-
-
-
+ MACHINE_START(AT91SAM9261EK, "Atmel AT91SAM9261-EK")
+diff --git a/sound/core/control.c b/sound/core/control.c
+old mode 100644
+new mode 100755
+diff --git a/sound/spi/at73c213.c b/sound/spi/at73c213.c
+old mode 100644
+new mode 100755
+index 89d6e9c..b8e43fe
+--- a/sound/spi/at73c213.c
++++ b/sound/spi/at73c213.c
+@@ -114,7 +114,11 @@ snd_at73c213_write_reg(struct snd_at73c213 *chip,
+u8 reg, u8 val)
+ static struct snd_pcm_hardware snd_at73c213_playback_hw = {
+ 	.info		= SNDRV_PCM_INFO_INTERLEAVED |
+ 			  SNDRV_PCM_INFO_BLOCK_TRANSFER,
++#ifdef __BIG_ENDIAN
+ 	.formats	= SNDRV_PCM_FMTBIT_S16_BE,
++#else
++	.formats	= SNDRV_PCM_FMTBIT_S16_LE,
++#endif
+ 	.rates		= SNDRV_PCM_RATE_CONTINUOUS,
+ 	.rate_min	= 8000,  /* Replaced by chip->bitrate later. */
+ 	.rate_max	= 50000, /* Replaced by chip->bitrate later. */
