@@ -1,85 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755520AbYDEW7g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755298AbYDEXVb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755520AbYDEW7g (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Apr 2008 18:59:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754158AbYDEW7S
+	id S1755298AbYDEXVb (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Apr 2008 19:21:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753625AbYDEXVV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Apr 2008 18:59:18 -0400
-Received: from smtp121.sbc.mail.sp1.yahoo.com ([69.147.64.94]:24262 "HELO
-	smtp121.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753766AbYDEW7R (ORCPT
+	Sat, 5 Apr 2008 19:21:21 -0400
+Received: from outbound.icp-qv1-irony-out1.iinet.net.au ([203.59.1.108]:57037
+	"EHLO outbound.icp-qv1-irony-out1.iinet.net.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751141AbYDEXVV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Apr 2008 18:59:17 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=TZzUsyOUu3mHWmfnuRB1rIUeF2V7uGaFLIeMoeGIhQZ5nFsE2cw7oHNrWXJl6SBriFlYKYFxy2hVFMigrz+9aqrIXTnS9BADDuCiCTE2Dw5cSd23Hd2v/jjHlB7zq9ZkWI5xXCoe2jDQBawD9oIXGAF4Q9wpNYjTmV6NdPGrEas=  ;
-X-YMail-OSG: CP_9QhwVM1kwoNAVjnjVq3Oc0hmcs7oHauD68ToxMoJcR.7sqDNvu.Lt1izCzV.lCdHkFdB8UQ--
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Ben Nizette <bn@niasdigital.com>, Mike Frysinger <vapier.adi@gmail.com>
-Subject: Re: [PATCH 1/1] [GPIO]: new arch-independent simple-gpio driver
-Date: Sat, 5 Apr 2008 15:58:09 -0700
-User-Agent: KMail/1.9.6
-Cc: Bryan Wu <cooloney@kernel.org>, lkml <linux-kernel@vger.kernel.org>
-References: <> <1206579921-22221-1-git-send-email-cooloney@kernel.org> <1206597150.3315.48.camel@moss.renham>
-In-Reply-To: <1206597150.3315.48.camel@moss.renham>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8bit
-Content-Disposition: inline
-Message-Id: <200804051558.09785.david-b@pacbell.net>
+	Sat, 5 Apr 2008 19:21:21 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AgIBAImm90d8qMuH/2dsb2JhbAAIqh+CHw
+X-IronPort-AV: E=Sophos;i="4.25,610,1199631600"; 
+   d="scan'208";a="312008310"
+Subject: [BUG, bisected] atmel_spi: hard lockups in transfer
+From: Ben Nizette <bn@niasdigital.com>
+To: kernel <kernel@avr32linux.org>, Haavard Skinnemoen <hskinnemoen@atmel.com>,
+       slipszi@gmail.com
+Cc: linux-kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Organization: Nias Digital
+Date: Sun, 06 Apr 2008 09:28:38 +1000
+Message-Id: <1207438118.3319.8.camel@moss.renham>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 26 March 2008, Ben Nizette wrote:
-> >  drivers/char/simple-gpio.c |  308 ++++++++++++++++++++++++++++++++++++++++++++
->
-> Considered putting this in drivers/gpio?  Not a real problem, up to you
-> (or David).
+Hi,
 
-I'd expect to see a generic GPIO mechanism like this
-in drivers/gpio, yes.  But it should be a bit more
-generic than this one is.
+For some weeks now there have been reports flying across the main AVR32
+support forum, avrfreaks [1], that atmel_spi now hard-hangs on most
+transfers.  The behaviour is not apparent in .23 and is in .24+.  One
+tester was good enough to bisect the problem and turned up
 
+154443c72f47169ebcb3a7befbff0e934c49bff3
+atmel_spi: chain DMA transfers
 
-> > +/**
-> > + *   simple_gpio_probe - setup the range of GPIOs
-> > + *
-> > + *   Create a character device for the range of GPIOs and have the minor be
-> > + *   used to specify the GPIO.
-> > + */
-> > +static int __devinit simple_gpio_probe(struct platform_device *pdev)
-> > +{
-> > +     int ret;
-> > +     struct group_data *group_data;
-> > +     struct resource *gpio_range = platform_get_resource(pdev, IORESOURCE_IRQ, 0);
-> > +     int gpio, gpio_max = gpio_range->end - gpio_range->start + 1;
-> > +
-> 
-> Was it a conscious thing to only allow 1 range of gpios per device?  I
-> can imagine that it's quite likely that people are going to want to
-> expose all unused gpios on a SoC to userspace.  This is going to mean
-> lots of small ranges split either side of pre-reserved pins and one
-> device per little range is gonna get cumbersome.
+as the culprit.  The tester also had to revert 
 
-As I said in the other thread, this is what I most dislike about
-this particular driver:  the need for board-specific setup.  The
-need for a character device inode per GPIO could probably be lived
-with, if that bigger issue were resolved.
+commit 8bacb219018a52e6f02a3cff6a7badf102ddfc44
+atmel_spi: fix dmachain oops with DEBUG enabled
 
-The userspace GPIO access scenarios which seem most compelling to
-me involve filling in gaps in board support.  Expecting the folk
-who created those gaps (by overlooking them, or not knowing enough
-about the system's eventual usage mode) to have enabled resolving
-them in this way ... seems unwise.    :)
+when they reverted 154443 as they were not confident enough to resolve
+the conflicts that resulted from just reverting the first one.
 
-Building on Ben's comment, it's not just unused SOC GPIOs, it's
-all the GPIOs on a board, some of which will be from a SOC and
-others of which will be from external chips.
+The discussion thread involving this can be seen at [2].
 
-- Dave
+As I say, this is present in .24+ so any fix will be a stable candidate
+as well as .25 material (if we haven't missed the boat by then).
 
+Thanks,
+	--Ben.
 
+[1] http://www.avrfreaks.net
+[2]
+http://www.avrfreaks.net/index.php?name=PNphpBB2&file=viewtopic&t=61891&start=20&sid=ef480fc809343ec9eff35b0cda643ffc
