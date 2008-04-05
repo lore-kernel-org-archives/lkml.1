@@ -1,118 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751882AbYDEDrN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751764AbYDEEF6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751882AbYDEDrN (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Apr 2008 23:47:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751289AbYDEDrD
+	id S1751764AbYDEEF6 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Apr 2008 00:05:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751230AbYDEEFu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Apr 2008 23:47:03 -0400
-Received: from netrider.rowland.org ([192.131.102.5]:2350 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751230AbYDEDrB (ORCPT
+	Sat, 5 Apr 2008 00:05:50 -0400
+Received: from smtp122.sbc.mail.sp1.yahoo.com ([69.147.64.95]:26003 "HELO
+	smtp122.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751193AbYDEEFt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Apr 2008 23:47:01 -0400
-Date: Fri, 4 Apr 2008 23:46:59 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@netrider.rowland.org
-To: Jiri Slaby <jirislaby@gmail.com>, Greg KH <greg@kroah.com>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       USB list <linux-usb@vger.kernel.org>
-Subject: Re: usb unbind/bind => WARNING at fs/sysfs/dir.c [Was: 2.6.25-rc8-mm1]
-In-Reply-To: <Pine.LNX.4.44L0.0804041721080.2175-100000@iolanthe.rowland.org>
-Message-ID: <Pine.LNX.4.44L0.0804042331460.16995-100000@netrider.rowland.org>
+	Sat, 5 Apr 2008 00:05:49 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=QHsgqAFgFNxaWGvKkd5wXuTVgL8WMcKItsqmGzdhRuFvmwbfPT95urRuv7M6nKQ0SCwutI1UXtiJxLuGYvH5ExKj4p0dq7wkCxAY/UKrShRovteiLnSwc7mfDGTYlWilYRU38/fLUvpV4D+3qo9xTaBvQgR95aa5O2MJaEDlkhs=  ;
+X-YMail-OSG: UaqgEesVM1lo2fFRhM.XBo8kkH2r7.GNZkJWhR8foRJiFUIyLfTjuInmp4vfn0fomPbYn4OtNQ--
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Ben Nizette <bn@niasdigital.com>
+Subject: Re: userspace GPIO access (WAS: [patch/rfc 2/4] pcf875x ...)
+Date: Fri, 4 Apr 2008 21:05:47 -0700
+User-Agent: KMail/1.9.6
+Cc: Trent Piepho <tpiepho@freescale.com>, Jean Delvare <khali@linux-fr.org>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       Mike Frysinger <vapier.adi@gmail.com>
+References: <200710291809.29936.david-b@pacbell.net> <Pine.LNX.4.64.0804032014190.20532@t2.domain.actdsltmp> <1207285076.4082.75.camel@moss.renham>
+In-Reply-To: <1207285076.4082.75.camel@moss.renham>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200804042105.47687.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 4 Apr 2008, Alan Stern wrote:
+On Thursday 03 April 2008, Ben Nizette wrote:
+> David, you're kinda the gatekeeper here; any input from you on which
+> approach is to be preferred, essential features etc?
 
-> On Fri, 4 Apr 2008, Greg KH wrote:
-> 
-> > On Fri, Apr 04, 2008 at 10:16:32PM +0200, Jiri Slaby wrote:
-> > > On 04/02/2008 06:32 AM, Andrew Morton wrote:
-> > >> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.25-rc8/2.6.25-rc8-mm1/
-> > >
-> > > After
-> > > $ echo -n 4-1.2 >/sys/bus/usb/drivers/usb/unbind
-> > > $ echo -n 4-1.2 >/sys/bus/usb/drivers/usb/bind
-> > >
-> > > I have this in logs:
-> > >
-> > > sysfs: duplicate filename 'usbdev4.12_ep81' can not be created
-> > 
-> > Does this also show up in 2.6.25-rc8 without -mm?
-> > 
-> > I thought I fixed this already, I don't see what slipped into -mm that
-> > would have caused it to come back.  Time to run some more tests...
-> > 
-> > Oh, also note that binding and unbinding the main "usb" driver is not
-> > encouraged, or even supported.  I'm amazed it works, as this is not
-> > something that any "real" user would do as it makes no sense at all
-> > because we have no "alternative" drivers yet for the main USB device.
-> 
-> It's a real bug.  I don't have time to track it down now.  Next week...
+I won't much care about /dev/... vs /sys/... though I'd
+probably have used sysfs myself (just because it's much
+simpler and doesn't need to imply mdev/udev and classes).
 
-Here's the answer.  The bug was introduced when the definition of 
-device_is_registered() in include/linux/device.h was changed.  The old 
-definition returned 0 when called inside a driver's remove method for a 
-device being unregistered, whereas the new definition returns 1.  I 
-don't know when this change was made.
+The configuration part of each driver bothers me:
 
-This patch ought to fix the problem.  Jiri, can you confirm that it 
-works?
+ - Mike's simple_gpio requires manual kernel config
+   to set up the platform_device nodes ... and thus
+   rules out the first usage scenarios I ever heard
+   of for such a userspace mechanism.
 
-Alan Stern
+ - Trent's gpio_class exposes all GPIOs, even ones
+   that are claimed by kernel drivers ... and thus
+   makes it easy to clobber kernel driver state.
+   (Plus it won't work on most built-in GPIOs, since
+   they by and large don't have parent devices.)
 
------------------------------------------------------------
+What I'd like to see is userspace config commands to
+cause the gpio_request() ... *maybe* something like
 
-Removing an interface's sysfs files before unregistering the interface
-doesn't work properly, because usb_unbind_interface() will reinstall
-altsetting 0 and thereby create new sysfs files.  This patch (as1074)
-removes the files after the unregistration is finished.  It's not
-quite as clean, but at least it works.
+    echo 42 foo 0 > .../gpio_config
 
-Also, there's no need to check if an interface has been registered
-before removing its sysfs files.  If it hasn't been registered then
-the files won't have been created, so usb_remove_sysfs_intf_files()
-will simply do nothing.
+	... causing error-checked versions of:
 
-Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
+    gpio_request(42, "foo")
+    gpio_direction_output(42, 0)
 
----
+	... then some .../gpio42 file, read/write, appears
 
-Index: usb-2.6/drivers/usb/core/message.c
-===================================================================
---- usb-2.6.orig/drivers/usb/core/message.c
-+++ usb-2.6/drivers/usb/core/message.c
-@@ -1089,8 +1089,8 @@ void usb_disable_device(struct usb_devic
- 				continue;
- 			dev_dbg(&dev->dev, "unregistering interface %s\n",
- 				interface->dev.bus_id);
--			usb_remove_sysfs_intf_files(interface);
- 			device_del(&interface->dev);
-+			usb_remove_sysfs_intf_files(interface);
- 		}
- 
- 		/* Now that the interfaces are unbound, nobody should
-@@ -1231,7 +1231,7 @@ int usb_set_interface(struct usb_device 
- 	 */
- 
- 	/* prevent submissions using previous endpoint settings */
--	if (iface->cur_altsetting != alt && device_is_registered(&iface->dev))
-+	if (iface->cur_altsetting != alt)
- 		usb_remove_sysfs_intf_files(iface);
- 	usb_disable_interface(dev, iface);
- 
-@@ -1330,8 +1330,7 @@ int usb_reset_configuration(struct usb_d
- 		struct usb_interface *intf = config->interface[i];
- 		struct usb_host_interface *alt;
- 
--		if (device_is_registered(&intf->dev))
--			usb_remove_sysfs_intf_files(intf);
-+		usb_remove_sysfs_intf_files(intf);
- 		alt = usb_altnum_to_altsetting(intf, 0);
- 
- 		/* No altsetting 0?  We'll assume the first altsetting.
+and
+
+    echo 84 bar in > .../gpio_config
+
+	... causing error-checked versions of:
+
+    gpio_request(84, "bar")
+    gpio_direction_input(84)
+
+	... then some .../gpio84 file, read-only, appears
+
+Though arguably the label could just always be "userspace"
+(it's mostly for /sys/kernel/debug/gpio), and the default could
+be to configure as an input (unless an output value was given).
+Plus, there should be some way to cause gpio_free() too.
+
+A potential advantage of the /dev/... node approach would be
+that it's easier to support an IRQ-backed poll() mechanism
+for inputs.
+
+- Dave
 
