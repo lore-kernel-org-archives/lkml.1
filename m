@@ -1,51 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754712AbYDETqX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754518AbYDEUiW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754712AbYDETqX (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Apr 2008 15:46:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753326AbYDETqQ
+	id S1754518AbYDEUiW (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Apr 2008 16:38:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753473AbYDEUiM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Apr 2008 15:46:16 -0400
-Received: from mail.tmr.com ([64.65.253.246]:59734 "EHLO gaimboi.tmr.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753260AbYDETqO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Apr 2008 15:46:14 -0400
-Message-ID: <47F7D7AE.6090702@tmr.com>
-Date: Sat, 05 Apr 2008 15:49:02 -0400
-From: Bill Davidsen <davidsen@tmr.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
+	Sat, 5 Apr 2008 16:38:12 -0400
+Received: from wf-out-1314.google.com ([209.85.200.175]:26936 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753463AbYDEUiL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 Apr 2008 16:38:11 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:organization:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=A2QTV5BYzO00rWHO2UgoUXkOH0b2TG1+/gA/LRAdR5eepBezzgdYWA7+J5qimIUQsJ820WI3ZS4vvz99CM9sKKTM68+8zPLx9Ue3QrOt9A7L3kCyYSTmAf2EpnUwlXqInnsB8sWLmuyRfVObwXMwL3MluKyQgr/g3kTInwFFOtE=
+From: Balaji Rao <balajirrao@gmail.com>
+Organization: National Institute of Technology Karnataka
+To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+Subject: Re: [RFC][-mm] [1/2] Simple stats for cpu resource controller
+Date: Sun, 6 Apr 2008 02:01:52 +0530
+User-Agent: KMail/1.9.6 (enterprise 0.20071012.724442)
+Cc: linux-kernel@vger.kernel.org, containers@lists.osdl.org, menage@google.com,
+       a.p.zijlstra@chello.nl, balbir@in.ibm.com,
+       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
+References: <200804052339.46632.balajirrao@gmail.com> <20080405194041.GB21279@linux.vnet.ibm.com>
+In-Reply-To: <20080405194041.GB21279@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andre Tomt <andre@tomt.net>,
-       Matthew Ranostay <mranostay@embeddedalley.com>
-Subject: Re: 2.6.25-git regression with snd-hda-intel on Dell XPS M1330, no
- analog sound
-References: <pdj7pZVURbL.A.42H.kDW9HB@albercik> <pdYe6zNQVl.A.Cu.0EW9HB@albercik>
-In-Reply-To: <pdYe6zNQVl.A.Cu.0EW9HB@albercik>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200804060201.52726.balajirrao@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rafael J. Wysocki wrote:
-> The following report is on the current list of known regressions
-> from 2.6.24.  Please verify if the issue is still present in the
-> mainline.
+On Sunday 06 April 2008 01:10:41 am Dhaval Giani wrote:
+<snip>
+> > 
+> > +#ifdef CONFIG_CGROUP_SCHED
+> > +enum cpu_cgroup_stat_index {
+> > +	CPU_CGROUP_STAT_UTIME, /* Usertime of the task group */
+> > +	CPU_CGROUP_STAT_STIME, /* Kerneltime of the task group */
+> > +
+> > +	CPU_CGROUP_STAT_NSTATS,
 > 
+> why the extra space?
+Just to keep things clearly separated. If you've not noticed, 
+CPU_CGROUP_STAT_NSTATS is not a stat.
 > 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10302
-> Subject		: 2.6.25-git regression with snd-hda-intel on Dell XPS M1330, no analog sound
-> Submitter	: Andre Tomt <andre@tomt.net>
-> Date		: 2008-03-21 20:03 (14 days old)
-> References	: http://lkml.org/lkml/2008/3/21/295
-> Handled-By	: Matthew Ranostay <mranostay@embeddedalley.com>
+> > +};
+> > +
+> > +struct cpu_cgroup_stat_cpu {
+> > +	s64 count[CPU_CGROUP_STAT_NSTATS];
 > 
+> u64? time does not go negative :)
+Right. But these stats are not only going to measure time. We need the same 
+variables for measuring other stats as well. I'm not sure if we would 
+encounter scheduler stats that would count negative.
+
+Balbir, what do you say ?
+
+> count also is not very clear? Can you give a more descriptive name?
 > 
-Is this by any chance related to the RTC old/new vs. sound problem noted 
-in another thread?
+ok. How does 'value' look  ?
+
+<snip>
+
+> > +static s64 cpu_cgroup_read_stat(struct cpu_cgroup_stat *stat,
+> > +		enum cpu_cgroup_stat_index idx)
+> > +{
+> > +	int cpu;
+> > +	s64 ret = 0;
+> > +	unsigned long flags;
+> 
+> > +
+> > +	local_irq_save(flags);
+> 
+> I am just wondering. Is local_irq_save() enough?
+> 
+Hmmm.. You are right.This does not prevent concurrent updates on other CPUs 
+from crossing a 32bit boundary. Am not sure how to do this in a safe way. I 
+can only think of using atomic64_t now..
+
+> > +	for_each_possible_cpu(cpu)
+> > +		ret += stat->cpustat[cpu].count[idx];
+> > +	local_irq_restore(flags);
+> > +
+> > +	return ret;
+> > +}
+> > +
+
+Thanks for the review.
 
 -- 
-Bill Davidsen <davidsen@tmr.com>
-   "We have more to fear from the bungling of the incompetent than from
-the machinations of the wicked."  - from Slashdot
+regards,
+Balaji Rao
+Dept. of Mechanical Engineering,
+National Institute of Technology Karnataka, India
