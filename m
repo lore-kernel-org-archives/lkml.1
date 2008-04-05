@@ -1,45 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751838AbYDEBLd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754628AbYDEBLo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751838AbYDEBLd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Apr 2008 21:11:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751829AbYDEBLG
+	id S1754628AbYDEBLo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Apr 2008 21:11:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751890AbYDEBLH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Apr 2008 21:11:06 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:56561 "EHLO
+	Fri, 4 Apr 2008 21:11:07 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:56565 "EHLO
 	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751579AbYDEBLD (ORCPT
+	with ESMTP id S1751642AbYDEBLD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 4 Apr 2008 21:11:03 -0400
-Message-Id: <20080405011101.534396000@polaris-admin.engr.sgi.com>
+Message-Id: <20080405011102.189956000@polaris-admin.engr.sgi.com>
 References: <20080405011100.720014000@polaris-admin.engr.sgi.com>
 User-Agent: quilt/0.46-1
-Date: Fri, 04 Apr 2008 18:11:04 -0700
+Date: Fri, 04 Apr 2008 18:11:08 -0700
 From: Mike Travis <travis@sgi.com>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: [PATCH 04/12] sched: Remove fixed NR_CPUS sized arrays in kernel_sched_c v2
-Content-Disposition: inline; filename=nr_cpus-in-kernel_sched
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Paul Jackson <pj@sgi.com>, Cliff Wickman <cpw@sgi.com>
+Subject: [PATCH 08/12] generic: reduce stack pressure in sched_affinity
+Content-Disposition: inline; filename=cpumask_affinity
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- * Change fixed size arrays to per_cpu variables or dynamically allocated
-   arrays in sched_init() and sched_init_smp().
+  * Modify sched_affinity functions to pass cpumask_t variables by reference
+    instead of by value.
 
-     (1) static struct sched_entity *init_sched_entity_p[NR_CPUS];
-     (1) static struct cfs_rq *init_cfs_rq_p[NR_CPUS];
-     (1) static struct sched_rt_entity *init_sched_rt_entity_p[NR_CPUS];
-     (1) static struct rt_rq *init_rt_rq_p[NR_CPUS];
-	 static struct sched_group **sched_group_nodes_bycpu[NR_CPUS];
+  * Use new set_cpus_allowed_ptr function.
 
-     (1) - these arrays are allocated via alloc_bootmem_low()
-
- * Change sched_domain_debug_one() to use cpulist_scnprintf instead of
-   cpumask_scnprintf.  This reduces the output buffer required and improves
-   readability when large NR_CPU count machines arrive.
-
- * In sched_create_group() we allocate new arrays based on nr_cpu_ids.
+Depends on:
+	[sched-devel]: sched: add new set_cpus_allowed_ptr function
 
 Based on:
 	git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git
@@ -47,198 +39,196 @@ Based on:
     +   sched-devel/latest  .../mingo/linux-2.6-sched-devel.git
 
 Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Paul Jackson <pj@sgi.com>
+Cc: Cliff Wickman <cpw@sgi.com>
+
 Signed-off-by: Mike Travis <travis@sgi.com>
 ---
-v2: Removed reference to cpumask_scnprintf_len().
----
- kernel/sched.c |   80 +++++++++++++++++++++++++++++++++++++--------------------
- 1 file changed, 52 insertions(+), 28 deletions(-)
+ arch/x86/kernel/cpu/mcheck/mce_amd_64.c |   46 ++++++++++++++++----------------
+ include/linux/sched.h                   |    2 -
+ kernel/compat.c                         |    2 -
+ kernel/rcupreempt.c                     |    4 +-
+ kernel/sched.c                          |    5 ++-
+ 5 files changed, 30 insertions(+), 29 deletions(-)
 
+--- linux-2.6.x86.orig/arch/x86/kernel/cpu/mcheck/mce_amd_64.c
++++ linux-2.6.x86/arch/x86/kernel/cpu/mcheck/mce_amd_64.c
+@@ -251,18 +251,18 @@ struct threshold_attr {
+ 	ssize_t(*store) (struct threshold_block *, const char *, size_t count);
+ };
+ 
+-static cpumask_t affinity_set(unsigned int cpu)
++static void affinity_set(unsigned int cpu, cpumask_t *oldmask,
++					   cpumask_t *newmask)
+ {
+-	cpumask_t oldmask = current->cpus_allowed;
+-	cpumask_t newmask = CPU_MASK_NONE;
+-	cpu_set(cpu, newmask);
+-	set_cpus_allowed(current, newmask);
+-	return oldmask;
++	*oldmask = current->cpus_allowed;
++	cpus_clear(*newmask);
++	cpu_set(cpu, *newmask);
++	set_cpus_allowed_ptr(current, newmask);
+ }
+ 
+-static void affinity_restore(cpumask_t oldmask)
++static void affinity_restore(const cpumask_t *oldmask)
+ {
+-	set_cpus_allowed(current, oldmask);
++	set_cpus_allowed_ptr(current, oldmask);
+ }
+ 
+ #define SHOW_FIELDS(name)                                           \
+@@ -277,15 +277,15 @@ static ssize_t store_interrupt_enable(st
+ 				      const char *buf, size_t count)
+ {
+ 	char *end;
+-	cpumask_t oldmask;
++	cpumask_t oldmask, newmask;
+ 	unsigned long new = simple_strtoul(buf, &end, 0);
+ 	if (end == buf)
+ 		return -EINVAL;
+ 	b->interrupt_enable = !!new;
+ 
+-	oldmask = affinity_set(b->cpu);
++	affinity_set(b->cpu, &oldmask, &newmask);
+ 	threshold_restart_bank(b, 0, 0);
+-	affinity_restore(oldmask);
++	affinity_restore(&oldmask);
+ 
+ 	return end - buf;
+ }
+@@ -294,7 +294,7 @@ static ssize_t store_threshold_limit(str
+ 				     const char *buf, size_t count)
+ {
+ 	char *end;
+-	cpumask_t oldmask;
++	cpumask_t oldmask, newmask;
+ 	u16 old;
+ 	unsigned long new = simple_strtoul(buf, &end, 0);
+ 	if (end == buf)
+@@ -306,9 +306,9 @@ static ssize_t store_threshold_limit(str
+ 	old = b->threshold_limit;
+ 	b->threshold_limit = new;
+ 
+-	oldmask = affinity_set(b->cpu);
++	affinity_set(b->cpu, &oldmask, &newmask);
+ 	threshold_restart_bank(b, 0, old);
+-	affinity_restore(oldmask);
++	affinity_restore(&oldmask);
+ 
+ 	return end - buf;
+ }
+@@ -316,10 +316,10 @@ static ssize_t store_threshold_limit(str
+ static ssize_t show_error_count(struct threshold_block *b, char *buf)
+ {
+ 	u32 high, low;
+-	cpumask_t oldmask;
+-	oldmask = affinity_set(b->cpu);
++	cpumask_t oldmask, newmask;
++	affinity_set(b->cpu, &oldmask, &newmask);
+ 	rdmsr(b->address, low, high);
+-	affinity_restore(oldmask);
++	affinity_restore(&oldmask);
+ 	return sprintf(buf, "%x\n",
+ 		       (high & 0xFFF) - (THRESHOLD_MAX - b->threshold_limit));
+ }
+@@ -327,10 +327,10 @@ static ssize_t show_error_count(struct t
+ static ssize_t store_error_count(struct threshold_block *b,
+ 				 const char *buf, size_t count)
+ {
+-	cpumask_t oldmask;
+-	oldmask = affinity_set(b->cpu);
++	cpumask_t oldmask, newmask;
++	affinity_set(b->cpu, &oldmask, &newmask);
+ 	threshold_restart_bank(b, 1, 0);
+-	affinity_restore(oldmask);
++	affinity_restore(&oldmask);
+ 	return 1;
+ }
+ 
+@@ -468,7 +468,7 @@ static __cpuinit int threshold_create_ba
+ {
+ 	int i, err = 0;
+ 	struct threshold_bank *b = NULL;
+-	cpumask_t oldmask = CPU_MASK_NONE;
++	cpumask_t oldmask, newmask;
+ 	char name[32];
+ 
+ 	sprintf(name, "threshold_bank%i", bank);
+@@ -519,10 +519,10 @@ static __cpuinit int threshold_create_ba
+ 
+ 	per_cpu(threshold_banks, cpu)[bank] = b;
+ 
+-	oldmask = affinity_set(cpu);
++	affinity_set(cpu, &oldmask, &newmask);
+ 	err = allocate_threshold_blocks(cpu, bank, 0,
+ 					MSR_IA32_MC0_MISC + bank * 4);
+-	affinity_restore(oldmask);
++	affinity_restore(&oldmask);
+ 
+ 	if (err)
+ 		goto out_free;
+--- linux-2.6.x86.orig/include/linux/sched.h
++++ linux-2.6.x86/include/linux/sched.h
+@@ -2086,7 +2086,7 @@ ftrace_special(unsigned long arg1, unsig
+ }
+ #endif
+ 
+-extern long sched_setaffinity(pid_t pid, cpumask_t new_mask);
++extern long sched_setaffinity(pid_t pid, const cpumask_t *new_mask);
+ extern long sched_getaffinity(pid_t pid, cpumask_t *mask);
+ 
+ extern int sched_mc_power_savings, sched_smt_power_savings;
+--- linux-2.6.x86.orig/kernel/compat.c
++++ linux-2.6.x86/kernel/compat.c
+@@ -446,7 +446,7 @@ asmlinkage long compat_sys_sched_setaffi
+ 	if (retval)
+ 		return retval;
+ 
+-	return sched_setaffinity(pid, new_mask);
++	return sched_setaffinity(pid, &new_mask);
+ }
+ 
+ asmlinkage long compat_sys_sched_getaffinity(compat_pid_t pid, unsigned int len,
+--- linux-2.6.x86.orig/kernel/rcupreempt.c
++++ linux-2.6.x86/kernel/rcupreempt.c
+@@ -1005,10 +1005,10 @@ void __synchronize_sched(void)
+ 	if (sched_getaffinity(0, &oldmask) < 0)
+ 		oldmask = cpu_possible_map;
+ 	for_each_online_cpu(cpu) {
+-		sched_setaffinity(0, cpumask_of_cpu(cpu));
++		sched_setaffinity(0, &cpumask_of_cpu(cpu));
+ 		schedule();
+ 	}
+-	sched_setaffinity(0, oldmask);
++	sched_setaffinity(0, &oldmask);
+ }
+ EXPORT_SYMBOL_GPL(__synchronize_sched);
+ 
 --- linux-2.6.x86.orig/kernel/sched.c
 +++ linux-2.6.x86/kernel/sched.c
-@@ -68,6 +68,7 @@
- #include <linux/hrtimer.h>
- #include <linux/ftrace.h>
- #include <linux/tick.h>
-+#include <linux/bootmem.h>
- 
- #include <asm/tlb.h>
- #include <asm/irq_regs.h>
-@@ -278,17 +279,11 @@ struct task_group {
- static DEFINE_PER_CPU(struct sched_entity, init_sched_entity);
- /* Default task group's cfs_rq on each cpu */
- static DEFINE_PER_CPU(struct cfs_rq, init_cfs_rq) ____cacheline_aligned_in_smp;
--
--static struct sched_entity *init_sched_entity_p[NR_CPUS];
--static struct cfs_rq *init_cfs_rq_p[NR_CPUS];
- #endif
- 
- #ifdef CONFIG_RT_GROUP_SCHED
- static DEFINE_PER_CPU(struct sched_rt_entity, init_sched_rt_entity);
- static DEFINE_PER_CPU(struct rt_rq, init_rt_rq) ____cacheline_aligned_in_smp;
--
--static struct sched_rt_entity *init_sched_rt_entity_p[NR_CPUS];
--static struct rt_rq *init_rt_rq_p[NR_CPUS];
- #endif
- 
- /* task_group_lock serializes add/remove of task groups and also changes to
-@@ -312,17 +307,7 @@ static int init_task_group_load = INIT_T
- /* Default task group.
-  *	Every task in system belong to this group at bootup.
-  */
--struct task_group init_task_group = {
--#ifdef CONFIG_FAIR_GROUP_SCHED
--	.se	= init_sched_entity_p,
--	.cfs_rq = init_cfs_rq_p,
--#endif
--
--#ifdef CONFIG_RT_GROUP_SCHED
--	.rt_se	= init_sched_rt_entity_p,
--	.rt_rq	= init_rt_rq_p,
--#endif
--};
-+struct task_group init_task_group;
- 
- /* return group to which a task belongs */
- static inline struct task_group *task_group(struct task_struct *p)
-@@ -3754,7 +3739,7 @@ static inline void trigger_load_balance(
- 			 */
- 			int ilb = first_cpu(nohz.cpu_mask);
- 
--			if (ilb != NR_CPUS)
-+			if (ilb < nr_cpu_ids)
- 				resched_cpu(ilb);
- 		}
- 	}
-@@ -5729,11 +5714,11 @@ static void move_task_off_dead_cpu(int d
- 		dest_cpu = any_online_cpu(mask);
- 
- 		/* On any allowed CPU? */
--		if (dest_cpu == NR_CPUS)
-+		if (dest_cpu >= nr_cpu_ids)
- 			dest_cpu = any_online_cpu(p->cpus_allowed);
- 
- 		/* No more Mr. Nice Guy. */
--		if (dest_cpu == NR_CPUS) {
-+		if (dest_cpu >= nr_cpu_ids) {
- 			cpumask_t cpus_allowed = cpuset_cpus_allowed_locked(p);
- 			/*
- 			 * Try to stay on the same cpuset, where the
-@@ -6188,9 +6173,9 @@ static int sched_domain_debug_one(struct
- {
- 	struct sched_group *group = sd->groups;
- 	cpumask_t groupmask;
--	char str[NR_CPUS];
-+	char str[256];
- 
--	cpumask_scnprintf(str, NR_CPUS, sd->span);
-+	cpulist_scnprintf(str, sizeof(str), sd->span);
- 	cpus_clear(groupmask);
- 
- 	printk(KERN_DEBUG "%*s domain %d: ", level, "", level);
-@@ -6243,7 +6228,7 @@ static int sched_domain_debug_one(struct
- 
- 		cpus_or(groupmask, groupmask, group->cpumask);
- 
--		cpumask_scnprintf(str, NR_CPUS, group->cpumask);
-+		cpulist_scnprintf(str, sizeof(str), group->cpumask);
- 		printk(KERN_CONT " %s", str);
- 
- 		group = group->next;
-@@ -6637,7 +6622,7 @@ cpu_to_phys_group(int cpu, const cpumask
-  * gets dynamically allocated.
-  */
- static DEFINE_PER_CPU(struct sched_domain, node_domains);
--static struct sched_group **sched_group_nodes_bycpu[NR_CPUS];
-+static struct sched_group ***sched_group_nodes_bycpu;
- 
- static DEFINE_PER_CPU(struct sched_domain, allnodes_domains);
- static DEFINE_PER_CPU(struct sched_group, sched_group_allnodes);
-@@ -7280,6 +7265,11 @@ void __init sched_init_smp(void)
- {
- 	cpumask_t non_isolated_cpus;
- 
-+#if defined(CONFIG_NUMA)
-+	sched_group_nodes_bycpu = kzalloc(nr_cpu_ids * sizeof(void **),
-+								GFP_KERNEL);
-+	BUG_ON(sched_group_nodes_bycpu == NULL);
-+#endif
- 	get_online_cpus();
- 	arch_init_sched_domains(&cpu_online_map);
- 	non_isolated_cpus = cpu_possible_map;
-@@ -7297,6 +7287,11 @@ void __init sched_init_smp(void)
- #else
- void __init sched_init_smp(void)
- {
-+#if defined(CONFIG_NUMA)
-+	sched_group_nodes_bycpu = kzalloc(nr_cpu_ids * sizeof(void **),
-+								GFP_KERNEL);
-+	BUG_ON(sched_group_nodes_bycpu == NULL);
-+#endif
- 	sched_init_granularity();
+@@ -4963,9 +4963,10 @@ out_unlock:
+ 	return retval;
  }
- #endif /* CONFIG_SMP */
-@@ -7393,6 +7388,35 @@ static void init_tg_rt_entry(struct rq *
- void __init sched_init(void)
+ 
+-long sched_setaffinity(pid_t pid, cpumask_t new_mask)
++long sched_setaffinity(pid_t pid, const cpumask_t *in_mask)
  {
- 	int i, j;
-+	unsigned long alloc_size = 0, ptr;
-+
-+#ifdef CONFIG_FAIR_GROUP_SCHED
-+	alloc_size += 2 * nr_cpu_ids * sizeof(void **);
-+#endif
-+#ifdef CONFIG_RT_GROUP_SCHED
-+	alloc_size += 2 * nr_cpu_ids * sizeof(void **);
-+#endif
-+	/*
-+	 * As sched_init() is called before page_alloc is setup,
-+	 * we use alloc_bootmem().
-+	 */
-+	if (alloc_size) {
-+		ptr = (unsigned long)alloc_bootmem_low(alloc_size);
-+
-+#ifdef CONFIG_FAIR_GROUP_SCHED
-+		init_task_group.se = (struct sched_entity **)ptr;
-+		ptr += nr_cpu_ids * sizeof(void **);
-+
-+		init_task_group.cfs_rq = (struct cfs_rq **)ptr;
-+		ptr += nr_cpu_ids * sizeof(void **);
-+#endif
-+#ifdef CONFIG_RT_GROUP_SCHED
-+		init_task_group.rt_se = (struct sched_rt_entity **)ptr;
-+		ptr += nr_cpu_ids * sizeof(void **);
-+
-+		init_task_group.rt_rq = (struct rt_rq **)ptr;
-+#endif
-+	}
+ 	cpumask_t cpus_allowed;
++	cpumask_t new_mask = *in_mask;
+ 	struct task_struct *p;
+ 	int retval;
  
- #ifdef CONFIG_SMP
- 	init_defrootdomain();
-@@ -7643,10 +7667,10 @@ static int alloc_fair_sched_group(struct
- 	struct rq *rq;
- 	int i;
+@@ -5046,7 +5047,7 @@ asmlinkage long sys_sched_setaffinity(pi
+ 	if (retval)
+ 		return retval;
  
--	tg->cfs_rq = kzalloc(sizeof(cfs_rq) * NR_CPUS, GFP_KERNEL);
-+	tg->cfs_rq = kzalloc(sizeof(cfs_rq) * nr_cpu_ids, GFP_KERNEL);
- 	if (!tg->cfs_rq)
- 		goto err;
--	tg->se = kzalloc(sizeof(se) * NR_CPUS, GFP_KERNEL);
-+	tg->se = kzalloc(sizeof(se) * nr_cpu_ids, GFP_KERNEL);
- 	if (!tg->se)
- 		goto err;
+-	return sched_setaffinity(pid, new_mask);
++	return sched_setaffinity(pid, &new_mask);
+ }
  
-@@ -7728,10 +7752,10 @@ static int alloc_rt_sched_group(struct t
- 	struct rq *rq;
- 	int i;
- 
--	tg->rt_rq = kzalloc(sizeof(rt_rq) * NR_CPUS, GFP_KERNEL);
-+	tg->rt_rq = kzalloc(sizeof(rt_rq) * nr_cpu_ids, GFP_KERNEL);
- 	if (!tg->rt_rq)
- 		goto err;
--	tg->rt_se = kzalloc(sizeof(rt_se) * NR_CPUS, GFP_KERNEL);
-+	tg->rt_se = kzalloc(sizeof(rt_se) * nr_cpu_ids, GFP_KERNEL);
- 	if (!tg->rt_se)
- 		goto err;
- 
+ /*
 
 -- 
