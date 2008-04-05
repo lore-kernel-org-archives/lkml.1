@@ -1,105 +1,216 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753773AbYDERGh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753926AbYDEROB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753773AbYDERGh (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Apr 2008 13:06:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752489AbYDERG2
+	id S1753926AbYDEROB (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Apr 2008 13:14:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752614AbYDERNw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Apr 2008 13:06:28 -0400
-Received: from ns.suse.de ([195.135.220.2]:43952 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752428AbYDERG1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Apr 2008 13:06:27 -0400
-Date: Sat, 5 Apr 2008 10:12:09 -0700
-From: Greg KH <gregkh@suse.de>
-To: Pierre Ossman <drzeus-list@drzeus.cx>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: pci: add to global list before sysfs?
-Message-ID: <20080405171209.GA28388@suse.de>
-References: <20080404191350.7f0183a5@mjolnir.drzeus.cx> <20080404210132.GA14418@suse.de> <20080405115727.1265e8a9@mjolnir.drzeus.cx> <20080405155323.GA27252@suse.de> <20080405185501.41ec42a7@mjolnir.drzeus.cx>
+	Sat, 5 Apr 2008 13:13:52 -0400
+Received: from yw-out-2324.google.com ([74.125.46.28]:45714 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752581AbYDERNt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 Apr 2008 13:13:49 -0400
+Message-ID: <47F7B345.1080200@codemonkey.ws>
+Date: Sat, 05 Apr 2008 12:13:41 -0500
+From: Anthony Liguori <anthony@codemonkey.ws>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080405185501.41ec42a7@mjolnir.drzeus.cx>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: Rusty Russell <rusty@rustcorp.com.au>
+CC: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       Max Krasnyansky <maxk@qualcomm.com>,
+       virtualization@lists.linux-foundation.org
+Subject: Re: [PATCH RFC 1/5] vringfd syscall
+References: <200804052202.09157.rusty__7324.67876882783$1207397085$gmane$org@rustcorp.com.au>
+In-Reply-To: <200804052202.09157.rusty__7324.67876882783$1207397085$gmane$org@rustcorp.com.au>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Apr 05, 2008 at 06:55:01PM +0200, Pierre Ossman wrote:
-> On Sat, 5 Apr 2008 08:53:23 -0700
-> Greg KH <gregkh@suse.de> wrote:
+Rusty Russell wrote:
+> For virtualization, we've developed virtio_ring for efficient communication.
+> This would also work well for userspace-kernel communication, particularly
+> for things like the tun device.  By using the same ABI, we can join guests
+> to the host kernel trivially.
 > 
-> > On Sat, Apr 05, 2008 at 11:57:27AM +0200, Pierre Ossman wrote:
-> > > 
-> > > Yes. Things work fine when the driver is loaded after the entire PCI
-> > > bus has been scanned, but not when new cards are hotplugged with the
-> > > driver already present. I'd like the behaviour to be the same in both
-> > > cases.
-> > 
-> > Why not just create a thread in your driver, or timer, and sleep until
-> > you see the other devices?  If after a certian time you never do, then
-> > bail out.
-> > 
-> > That should work properly for you for both cases (startup and loading
-> > later.)
-> > 
+> These patches are fairly alpha; I've seen some network stalls I have to
+> track down and there are some fixmes.
 > 
-> I'm not sure how that could be done in a clean way. Right now I have
-> the following:
+> Comments welcome!
+> Rusty.
 > 
->                 sd_dev = NULL;
->                 while ((sd_dev = pci_get_device(PCI_VENDOR_ID_JMICRON,
->                         PCI_DEVICE_ID_JMICRON_JMB38X_SD, sd_dev)) != NULL) {
->                         if ((PCI_SLOT(chip->pdev->devfn) ==
->                                 PCI_SLOT(sd_dev->devfn)) &&
->                                 (chip->pdev->bus == sd_dev->bus))
->                                 break;
->                 }
-> 
->                 if (sd_dev) {
->                         pci_dev_put(sd_dev);
->                         dev_info(&chip->pdev->dev, "Refusing to bind to "
->                                 "secondary interface.\n");
->                         return -ENODEV;
->                 }
-> 
-> If I do this threaded, I'd have to return success to the driver core
-> and then act like a possum later.
+> diff -r 99132ad16999 Documentation/test_vring.c
+> --- /dev/null	Thu Jan 01 00:00:00 1970 +0000
+> +++ b/Documentation/test_vring.c	Sat Apr 05 21:31:40 2008 +1100
+> @@ -0,0 +1,47 @@
+> +#include <unistd.h>
+> +#include <linux/virtio_ring.h>
+> +#include <stdio.h>
+> +#include <stdint.h>
+> +#include <err.h>
+> +#include <poll.h>
+> +
+> +#ifndef __NR_vringfd
+> +#define __NR_vringfd		327
+> +#endif
+> +
+> +int main()
+> +{
+> +	int fd, r;
+> +	struct vring vr;
+> +	uint16_t used = 0;
+> +	struct pollfd pfd;
+> +	void *buf = calloc(vring_size(256, getpagesize()), 0);
 
-Yes.
+Shouldn't this be calloc(1, vring_size(256, getpagesize()));?
 
-> Doable, but not very clean.
+> +	vring_init(&vr, 256, buf, getpagesize());
+> +
+> +	fd = syscall(__NR_vringfd, buf, 256, &used);
+> +	if (fd < 0)
+> +		err(1, "vringfd gave %i", fd);
+> +
+> +	pfd.fd = fd;
+> +	pfd.events = POLLIN;
+> +	r = poll(&pfd, 1, 0);
+> +	
+> +	if (r != 0)
+> +		err(1, "poll gave %i", r);
+> +
+> +	vr.used->idx++;
+> +	r = poll(&pfd, 1, 0);
+> +	
+> +	if (r != 1)
+> +		err(1, "poll after buf used gave %i", r);
+> +
+> +	used++;
+> +	r = poll(&pfd, 1, 0);
+> +	
+> +	if (r != 0)
+> +		err(1, "poll after used incremented gave %i", r);
 
-Hey, take it up with the hardware designers compensating for an
-"unclean" operating system :)
+I have a tough time seeing what you're demonstrating here.  Perhaps some 
+comments?
 
-> It could be solved if it was possible to sleep in probe functions, but
-> from what I can tell that will stop the probing of subsequent devices.
+> +	close(fd);
+> +	return 0;
+> +}
+> diff -r 99132ad16999 arch/x86/kernel/syscall_table_32.S
+> --- a/arch/x86/kernel/syscall_table_32.S	Sat Apr 05 21:20:32 2008 +1100
+> +++ b/arch/x86/kernel/syscall_table_32.S	Sat Apr 05 21:31:40 2008 +1100
+> @@ -326,3 +326,4 @@ ENTRY(sys_call_table)
+>  	.long sys_fallocate
+>  	.long sys_timerfd_settime	/* 325 */
+>  	.long sys_timerfd_gettime
+> +	.long sys_vringfd
+> diff -r 99132ad16999 fs/Kconfig
+> --- a/fs/Kconfig	Sat Apr 05 21:20:32 2008 +1100
+> +++ b/fs/Kconfig	Sat Apr 05 21:31:40 2008 +1100
+> @@ -2135,4 +2135,14 @@ source "fs/nls/Kconfig"
+>  source "fs/nls/Kconfig"
+>  source "fs/dlm/Kconfig"
+>  
+> +config VRINGFD
+> +       bool "vring fd support (EXPERIMENTAL)"
+> +       depends on EXPERIMENTAL
+> +       help
+> +         vring is a ringbuffer implementation for efficient I/O.  It is
+> +	 currently used by virtualization hosts (lguest, kvm) for efficient
+> +	 networking using the tun driver.
+> +
+> +	 If unsure, say N.
+> +
 
-Yes, you can sleep, but it will stop the probe of subsequent devices.  I
-did implement multiple threads for pci probing, but it ended up not
-saving any time and causing more problems than it was worth.
+Should select VIRTIO && VIRTIO_RING
 
-> Also, the timeout would introduce an inherent race. Which means either
-> putting a high timeout to make the race insignificant, or a low timeout
-> so users don't have to wait for their device to actually become usable.
-> 
-> Is it possible to write some routines that can walk the PCI device tree
-> without having any pci_dev structures to hang on to? To solve my basic
-> problem I just need to know how the tree looks like, not actually poke
-> any of the other devices.
+<snip>
 
-No, not in a sane way as all arches walk the pci device tree for
-discovery in many different ways.
+> +/* Returns an error, or 0 (no buffers), or an id for vring_used_buffer() */
+> +int vring_get_buffer(struct vring_info *vr,
+> +		     struct iovec *in_iov,
+> +		     unsigned int *num_in, unsigned long *in_len,
+> +		     struct iovec *out_iov,
+> +		     unsigned int *num_out, unsigned long *out_len)
+> +{
 
-I don't think that a time-out would be a big deal, it shouldn't be very
-long (a second or two).  Also note that all distros would not have this
-problem as they do pci discovery first, and then start loading all of
-the modules in the initramfs after the pci tree has been properly
-scanned.  So the very large majority of users would not have a problem.
+It seems unlikely that a caller could place both in_iov/out_iov on the 
+stack since to do it safely, you would have to use vring.num which is 
+determined by userspace.  Since you have to kmalloc() the buffers 
+anyway, why not just allocate a single data structure within this 
+function and return it.
 
-Or are you doing this on an embedded system?
+> +void vring_used_buffer_atomic(struct vring_info *vr, int id, u32 len)
+> +{
+> +	struct vring_used_elem *used;
+> +
+> +	BUG_ON(id <= 0 || id > vr->ring.num);
+> +	BUG_ON(!vr->used);
+> +
+> +	used = &vr->used->ring[vr->used->idx & vr->mask];
+> +	used->id = id - 1;
+> +	used->len = len;
+> +	/* Make sure buffer is written before we update index. */
+> +	wmb();
+> +	vr->used->idx++;
+> +}
+> +EXPORT_SYMBOL_GPL(vring_used_buffer_atomic);
 
-thanks,
+When is this actually safe to use?
 
-greg k-h
+> +
+> +void vring_wake(struct vring_info *vr)
+> +{
+> +	wake_up(&vr->poll_wait);
+> +}
+> +EXPORT_SYMBOL_GPL(vring_wake);
+> +
+> +struct vring_info *vring_attach(int fd, const struct vring_ops *ops,
+> +				void *data, bool atomic_use)
+> +{
+> +	struct file *filp;
+> +	struct vring_info *vr;
+> +
+> +	/* Must be a valid fd, and must be one of ours. */
+> +	filp = fget(fd);
+> +	if (!filp) {
+> +		vr = ERR_PTR(-EBADF);
+> +		goto out;
+> +	}
+> +
+> +	if (filp->f_op != &vring_fops) {
+> +		vr = ERR_PTR(-EBADF);
+> +		goto fput;
+> +	}
+> +
+> +	/* Mutex simply protects against parallel vring_attach. */
+> +	mutex_lock(&vring_lock);
+> +	vr = filp->private_data;
+> +	if (vr->ops) {
+> +		vr = ERR_PTR(-EBUSY);
+> +		goto unlock;
+> +	}
+> +
+> +	/* If they want to use atomically, we have to map the page. */
+> +	if (atomic_use) {
+> +		if (get_user_pages(current, current->mm,
+> +				   (unsigned long)vr->ring.used, 1, 1, 1,
+> +				   &vr->used_page, NULL) != 1) {
+> +			vr = ERR_PTR(-EFAULT);
+> +			goto unlock;
+> +		}
+
+Oh, this is when it's safe to use.  You don't seem to be acquiring 
+current->mm->mmap_sem here.  Also, this assumes the used ring fits 
+within a single page which isn't true with a ring > 512 elements.
+
+A consequence of this is that devices that interact with a ring queue 
+atomically now have an additional capability: pinning an arbitrary 
+amount of physical memory.
+
+I think this means that it's no longer safe to give a tap fd to an 
+unprivileged process regardless of how you're routing the traffic.
+
+Regards,
+
+Anthony Liguori
