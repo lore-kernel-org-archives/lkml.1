@@ -1,40 +1,48 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751942AbYDEENi (ORCPT <rfc822;ralf@linux-mips.org>);
-	Sat, 5 Apr 2008 00:13:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750883AbYDEENc
+	id S1755050AbYDEVBJ (ORCPT <rfc822;ralf@linux-mips.org>);
+	Sat, 5 Apr 2008 17:01:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753673AbYDEVAn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Apr 2008 00:13:32 -0400
-Received: from mtai01.charter.net ([209.225.8.181]:53883 "EHLO
-	mtai01.charter.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750766AbYDEENb (ORCPT
+	Sat, 5 Apr 2008 17:00:43 -0400
+Received: from fructidor.freesurf.fr ([212.43.206.30]:53955 "EHLO
+	smtp-out.freesurf.fr" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753491AbYDEVAj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Apr 2008 00:13:31 -0400
-Message-ID: <20080405001329.LY2P8.212192.root@fepweb04>
-Date: Fri, 4 Apr 2008 21:13:29 -0700
-From: UK BEDFORD <mamaw07@charter.net>
-Reply-To: osabohen@yahoo.com
-Subject: IMMEDIATELY,,,,,,  REPLY
+	Sat, 5 Apr 2008 17:00:39 -0400
+X-Greylist: delayed 1294 seconds by postgrey-1.27 at vger.kernel.org; Sat, 05 Apr 2008 17:00:38 EDT
+Message-ID: <20080405223515.26673ya8h0yff5wk@webmail-html.freesurf.fr>
+Date: Sat, 05 Apr 2008 22:35:15 +0200
+From: su17171@freesurf.fr
+To: undisclosed-recipients:;
+Subject: Dear Friend
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain;
+	charset=ISO-8859-1;
+	DelSp="Yes";
+	format="flowed"
+Content-Disposition: inline
 Content-Transfer-Encoding: 7bit
-X-Priority: 3 (Normal)
-Sensitivity: Normal
-X-Originating-IP: from 41.194.46.118 by webmail.charter.net; Sat, 5 Apr 2008 0:13:27 -0400
-X-Chzlrs: 0
-To: unlisted-recipients:; (no To-header on input)
+User-Agent: Internet Messaging Program (IMP) H3 (4.2-RC2)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1751942AbYDEENi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1755050AbYDEVBJ@vger.kernel.org>
 
+Dear Friend
 
-Are you in need of loans of anykind?
+I could not get connected to you on phone so I decided to send this  
+email to you.Presently, I am out of the country.Since, I could not  
+reach you before I travelled I lodged your money including the  
+interest with the correspondent Bank Cotonou-Benin, in respect of the  
+little assistance you rendered to me during the cost of transfering my  
+sum.
 
-Here is an opportunity to get your small and large loans to enhance  
-and start up your business of anykind.we give out loans to the public  
-at a very reduced interest rate.we are dynamic,reliable,efficient,and  
-trust worthy. Contact us now for your short and long term  
-loans.reply us now, for more information and application.
+The Account Officer Name,Dr. Ken Ibru is informed on this contact him  
+to receive your fund. His email is:
+( ken55@sify.com )
 
-Regards,
-OFLEX WAKE,
+Please I may not have time to respond your email, just contact Dr Ken  
+Ibru to release your payment.
+Best Regards,
+Dr.Andrew And Partners
+
