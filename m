@@ -1,49 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752743AbYDENPz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752984AbYDENXA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752743AbYDENPz (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Apr 2008 09:15:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751823AbYDENPo
+	id S1752984AbYDENXA (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Apr 2008 09:23:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751830AbYDENWu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Apr 2008 09:15:44 -0400
-Received: from wx-out-0506.google.com ([66.249.82.228]:32593 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751760AbYDENPo (ORCPT
+	Sat, 5 Apr 2008 09:22:50 -0400
+Received: from fg-out-1718.google.com ([72.14.220.156]:6641 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751823AbYDENWu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Apr 2008 09:15:44 -0400
+	Sat, 5 Apr 2008 09:22:50 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=pCu9dK+YT0DzIgQ0InYyzhXY0MWngDKYnEjjxZEbvGa5qvFEst+vdSVDY1YKXZu5ZlTdz5PbTqYdmIluR7tMnBKykSxrgE+J1c0O9XEy+UTh6VBeF21IRCVIZdHjlAzKirTUzw7vU7y4wx7MmA+8Z+PhsRGmF8jkqQxfwdyovPY=
-Message-ID: <5681ec900804050615y59bca042g648df348914b6062@mail.gmail.com>
-Date: Sat, 5 Apr 2008 18:45:42 +0530
-From: "Sanjeev Aditya Naga" <sanjeev.kernel@gmail.com>
-To: trenn@suse.de
-Subject: Re: [>=2.6.23][BUG] Oops on power disconnection
-Cc: "Andrew Morton" <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-acpi@vger.kernel.org,
-       "Venkatesh Pallipadi" <venkatesh.pallipadi@intel.com>,
-       "Li, Shaohua" <shaohua.li@intel.com>
-In-Reply-To: <1207256678.6024.90.camel@linux-2bdv.site>
+        h=message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=D+3kPr5YjOVdyK8rUpPMlItgf2MMcdgcFgQLWzwa9NmlWZCBZmVMWY2KidHSTKGQjMXUZenxy2/zyV1L1JuF34nO1Z2MdD7o6H9udNz+1gew4Le2fhtXhYr5BFrMoXZSJSRgpd1ldG+voDK58PO3Tqw7vpgTTbnukemY2BvZir0=
+Message-ID: <6101e8c40804050622k18fde2f5p73c42d27a3189fe3@mail.gmail.com>
+Date: Sat, 5 Apr 2008 15:22:48 +0200
+From: "Oliver Pinter" <oliver.pntr@gmail.com>
+To: stable@kernel.org, linux-kernel@vger.kernel.org
+Subject: [OP] linux v2.6.22.21-op1
+Cc: "Adrian Bunk" <bunk@kernel.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Dave Kleikamp" <shaggy@austin.ibm.com>,
+       "Przemyslaw Wegrzyn" <czajnik@czajsoft.pl>,
+       "Christoph Lameter" <clameter@sgi.com>,
+       "Joe Korty" <joe.korty@ccur.com>, "Neil Brown" <neilb@suse.de>,
+       "Steve French" <sfrench@us.ibm.com>,
+       "Suresh Jayaraman" <sjayaraman@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <5681ec900803300645l5369cda4g119957a4b7f05d17@mail.gmail.com>
-	 <5681ec900803300651m6e5f38deke1b7746236e5bb9@mail.gmail.com>
-	 <20080402001418.aad6eed2.akpm@linux-foundation.org>
-	 <5681ec900804020608o62be52c4ted172e18daf24f5b@mail.gmail.com>
-	 <1207147729.30061.9.camel@hammer1.suse.de>
-	 <5681ec900804020913t4adc38b1r2e424fa8bbdda241@mail.gmail.com>
-	 <1207159974.4700.6.camel@queen.suse.de>
-	 <5681ec900804030915w720f3ccfp74e5d501ca3d6b56@mail.gmail.com>
-	 <1207256678.6024.90.camel@linux-2bdv.site>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha id m35DGQnq016296
 
-Hello Thomas,
-On Fri, Apr 4, 2008 at 2:34 AM, Thomas Renninger <trenn@suse.de> wrote:>>>  On Thu, 2008-04-03 at 21:45 +0530, Sanjeev Aditya Naga wrote:>  > Hello Thomas,>  >>  > On Wed, Apr 2, 2008 at 11:42 PM, Thomas Renninger <trenn@suse.de> wrote:>  > >>  > > On Wed, 2008-04-02 at 21:43 +0530, Sanjeev Aditya Naga wrote:>  > >  > Hello Thomas,>  > >  >>  > >  > > Hi,>  > >  > >>  > >  > >>  > >  > >  On Wed, 2008-04-02 at 18:38 +0530, Sanjeev Aditya Naga wrote:>  > >  > >  > Hello Andrew Morton,>  > >  > >  >>  > >  > >  > Greetings!>  > >  > >  >>  > >  > >  > Thank you for the update. Is there anything I can do>  > >  > >  > from my side?>  > >  > >  >>  > >  > >  > I thought it was a acpi (dsdt) problem. And based on>  > >  > >  > a tutorial, I have tried to extract, fix, recompile the dsdt>  > >  > >  > and use it with the kernel. But still I have the same problem.>  > >  > >  > Let me know if I shall attach the dsdt (original) decompiled>  > >  > >  > code, if that helps.>  > >  > >>  > >  > >  this could be due a general memory corruption problem through ACPICA.>  > >  > >  If you get different backtraces on reboots even you only modified things>  > >  > >  that do not have to do with the problem, it's probably that and related>  > >  > >  to:>  > >  > >  Ôªøhttp://bugzilla.kernel.org/show_bug.cgi?id=10339>  > >  > >>  > >  > >  You might want to try the latest kernel or the patch posted there.>  > >  >>  > >  > Thank you for the update.>  > >  > I have checked the bug and unfortunately its not the>  > >  > same issue. Things work absolutely fine, when I'm>  > >  > running on AC power. It even displays the exact>  > >  > battery (and charging) status to me. It messes up>  > >  > when suddenly AC power gets disconnected and>  > >  > switches to battery mode (The time when I get Oops).>  > >  > The system is still usable after switching to battery>  > >  > mode and I still get correct battery stats until its>  > >  > completely discharged. However most of the commands>  > >  > like kill, poweroff, java doesn't work after the Oops.>  > >  The bug is not related to battery, but to AML parsing and can therefore>  > >  affect anything which is ACPI related.>  > >>  > >>  > >  > BTW there is one similarity with the referenced bug.>  > >  > If I boot the computer without AC Power, it gives the>  > >  > same Oops and stops during booting itself.>  > >  >>  > >  > I shall try the latest kernel once and shall update you.>  > >  That would be great.>  > >  If it works, please give the patch there a try, IMO this one should see>  > >  2.6.2[34].X stable kernels soon.>  >>  > I have got the lastest kernel 2.6.25-rc8 today. I observed that>  > the referenced patch is already in the kernel. However this didn't>  > solve the problem in question. I get the same Oops on this kernel>  > as well. Find the latest dmesg along with the Oops:>  Ok.>  Maybe best is you document the backtraces/oopses with kernel versions at>  bugzilla.kernel.org and add dmesg and acpidump.>  It seems your machine notifies OS that the C-state table changed.>  AFAIK this is rare and there might be a general bug in the cpuidle layer>  which I do not know well.>  Best you add Venkatesh and Shaohua Li <shaohua.li@intel.com> to CC of>  the bug.>  While the backtrace shows a lot, cpuidle IMO is missing a general debug>  option like in the cpufreq layer.>  I couldn't find a single printk in the whole cpuidle/{cpuidle,sysfs}.c>  files, even on error paths. ÔªøAlso in the cpuidle specific parts of>  drivers/acpi/processor_idle.c some debug printks may help for future bug>  reports. It is very hard to guess what happened...
-Thank you for the update:
-I have just registered a bug athttp://bugzilla.kernel.org/show_bug.cgi?id=10394as directed by you.
-Kind Regards,SanjeevˇÙË∫{.n«+â∑üÆâ≠Ü+%äÀˇ±È›∂•äwˇ∫{.n«+â∑•ä{±˛G´ùÈˇä{ay∫ á⁄ôÎ,j≠¢f£¢∑höèÔÅÍˇëÍÁz_ËÆ(≠Èöéä›¢j"ù˙∂mßˇˇæ´˛G´ùÈˇ¢∏?ô®Ë≠⁄&£¯ß~è·∂iOïÊ¨z∑övÿ^∂mßˇˇ√ˇ∂Ïˇ¢∏?ñI•
+I announced the v2.6.22.21-op1 "stable" kernel.
+
+gitweb: http://repo.or.cz/w/linux-2.6.22.y-op.git
+ git-tree: git://repo.or.cz/linux-2.6.22.y-op.git
+ patches-gitweb : http://repo.or.cz/w/linux-2.6.22.y-op-patches.git
+ tar-bz2: http://students.zipernowsky.hu/~oliverp/kernel-stable/v2.6.22.21-op1.tar.bz2
+ patch: http://students.zipernowsky.hu/~oliverp/kernel-stable/patch-v2.6.22.20-op1-v2.6.22.21-op1.bz2
+ chlog: http://students.zipernowsky.hu/~oliverp/kernel-stable/chlog-v2.6.22.21-op1
+ ======================================
+
+ Makefile                       |    2 +-
+ drivers/md/raid5.c             |   14 ++---
+ drivers/net/tulip/tulip_core.c |    4 +
+ fs/cifs/cifs_debug.c           |   92 +++--------------------------
+ fs/cifs/cifsglob.h             |   11 ++++
+ fs/cifs/cifsproto.h            |    4 +-
+ fs/cifs/cifssmb.c              |  130 ++++++++++++++++++----------------------
+ fs/cifs/connect.c              |    9 ++-
+ fs/cifs/file.c                 |   14 ++--
+ fs/cifs/sess.c                 |    3 +-
+ fs/cifs/transport.c            |   88 +++++++++++++++++++++------
+ mm/slab.c                      |    5 +-
+ 12 files changed, 174 insertions(+), 202 deletions(-)
+
+ ======================================
+gitweb: http://repo.or.cz/w/linux-2.6.22.y-op.git
+ git-tree: git://repo.or.cz/linux-2.6.22.y-op.git
+ patches-gitweb : http://repo.or.cz/w/linux-2.6.22.y-op-patches.git
+ tar-bz2: http://students.zipernowsky.hu/~oliverp/kernel-stable/v2.6.22.21-op1.tar.bz2
+ patch: http://students.zipernowsky.hu/~oliverp/kernel-stable/patch-v2.6.22.20-op1-v2.6.22.21-op1.bz2
+ chlog: http://students.zipernowsky.hu/~oliverp/kernel-stable/chlog-v2.6.22.21-op1
+ ======================================
+
+ Makefile                       |    2 +-
+ drivers/md/raid5.c             |   14 ++---
+ drivers/net/tulip/tulip_core.c |    4 +
+ fs/cifs/cifs_debug.c           |   92 +++--------------------------
+ fs/cifs/cifsglob.h             |   11 ++++
+ fs/cifs/cifsproto.h            |    4 +-
+ fs/cifs/cifssmb.c              |  130 ++++++++++++++++++----------------------
+ fs/cifs/connect.c              |    9 ++-
+ fs/cifs/file.c                 |   14 ++--
+ fs/cifs/sess.c                 |    3 +-
+ fs/cifs/transport.c            |   88 +++++++++++++++++++++------
+ mm/slab.c                      |    5 +-
+ 12 files changed, 174 insertions(+), 202 deletions(-)
+
+ ======================================
+
+Joe Korty (1):
+      slab: NUMA slab allocator migration bugfix
+
+NeilBrown (1):
+      md: fix an occasional deadlock in raid5
+
+Oliver Pinter (1):
+      v2.6.22.21-op1
+
+Steve French (2):
+      Fix buffer overflow if server sends corrupt response to small
+      Fix sign mount option and sign proc config setting
+
+andrew.patterson@hp.com (1):
+      MCA when shutting down tulip quad-NIC
+
+======================================
+ Thanks,
+ Oliver
+ /* http://students.zipernowsky.hu/~oliverp/ */
