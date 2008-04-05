@@ -1,49 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754985AbYDEVvt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755134AbYDEWI6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754985AbYDEVvt (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Apr 2008 17:51:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753695AbYDEVvj
+	id S1755134AbYDEWI6 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Apr 2008 18:08:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753695AbYDEWIs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Apr 2008 17:51:39 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:40853 "EHLO mail.dvmed.net"
+	Sat, 5 Apr 2008 18:08:48 -0400
+Received: from porco.dhbit.ca ([216.187.72.182]:32865 "EHLO porco.dhbit.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753625AbYDEVvi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Apr 2008 17:51:38 -0400
-Message-ID: <47F7F463.2060402@garzik.org>
-Date: Sat, 05 Apr 2008 17:51:31 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	id S1753625AbYDEWIs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 Apr 2008 18:08:48 -0400
+X-Greylist: delayed 1153 seconds by postgrey-1.27 at vger.kernel.org; Sat, 05 Apr 2008 18:08:47 EDT
+From: "Gabriel A. Devenyi" <ace@staticwave.ca>
+To: linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org
+Subject: Re: [REGRESSION] BCM4306 cannot associate with any version of b43 driver
+Date: Sat, 5 Apr 2008 17:49:24 -0400
+User-Agent: KMail/1.9.9
+Cc: bdm@fenrir.org.uk, fhimpe@telenet.be
+References: <200804031115.52596.ace@staticwave.ca>
+In-Reply-To: <200804031115.52596.ace@staticwave.ca>
 MIME-Version: 1.0
-To: Rich West <Rich.West@wesmo.com>
-CC: Wander Winkelhorst <w.winkelhorst@gmail.com>, linux-kernel@vger.kernel.org,
-       Linux IDE mailing list <linux-ide@vger.kernel.org>
-Subject: Re: sata_via
-References: <47F694C8.8020507@wesmo.com> <47F6A5E8.1030602@garzik.org>	 <47F6BD55.3090708@wesmo.com> <5699f8f00804050015kb1ebb1cpf3ab8b587580fffd@mail.gmail.com> <47F7982E.5080701@wesmo.com>
-In-Reply-To: <47F7982E.5080701@wesmo.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Disposition: inline
+Message-Id: <200804051749.24849.ace@staticwave.ca>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rich West wrote:
-> I was only curious as to what turning off power management support would 
-> buy with regard to the sata timeout issue.
+Brian Morrison wrote:
+>Which channel is your AP on?
 
+My AP is on channel 11.
 
-ACPI is not only power management.  It is all the information your 
-hardware conveys to your OS, about the setup and workings of your hardware.
+>Did you notice the old firmware message in the dmesg output you provided?
+>Have you tried the version 4 firmware?
 
-Without ACPI, non-PM things like SMP, laptop dock/undock, and many other 
-gadgets fail to function (or are configured sub-optimally).
+Comment #3 on the bug points this out, and in comment #4 I updated the firmware.
 
-ACPI sets up interrupt routing, and Linux history is _loaded_ with 
-_years_ of problem reports that appear as timeouts, only to be resolved 
-as ACPI interrupt bugs (aka BIOS bugs, since ACPI tables come from BIOS).
+Please add me to CC as I am not subscribed to the list
 
-	Jeff
-
-
+-- 
+Gabriel A. Devenyi B.Eng.
+ace@staticwave.ca
