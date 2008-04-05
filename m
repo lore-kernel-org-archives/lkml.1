@@ -1,124 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753155AbYDEAyS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753142AbYDEA6Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753155AbYDEAyS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Apr 2008 20:54:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751488AbYDEAyI
+	id S1753142AbYDEA6Q (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Apr 2008 20:58:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751378AbYDEA6E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Apr 2008 20:54:08 -0400
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:45433 "EHLO e6.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751068AbYDEAyH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Apr 2008 20:54:07 -0400
-Subject: Re: [Devel] [RFC PATCH 0/4] Container Freezer: Reuse
-	Suspend	Freezer
-From: Matt Helsley <matthltc@us.ibm.com>
-To: Oren Laadan <orenl@cs.columbia.edu>
-Cc: Paul Menage <menage@google.com>,
-       Linux Containers <containers@lists.linux-foundation.org>,
-       Cedric Le Goater <clg@fr.ibm.com>,
-       Linux-Kernel <linux-kernel@vger.kernel.org>,
-       linux-pm@lists.linux-foundation.org
-In-Reply-To: <47F6C829.4010109@cs.columbia.edu>
-References: <20080403210316.397506379@us.ibm.com>
-	 <6599ad830804031649p6bbc60f3s59fb7c25a7260505@mail.gmail.com>
-	 <1207278180.30178.94.camel@localhost.localdomain>
-	 <47F64FBB.2080207@cs.columbia.edu>
-	 <1207348060.30178.166.camel@localhost.localdomain>
-	 <47F6C829.4010109@cs.columbia.edu>
-Content-Type: text/plain
-Organization: IBM Linux Technology Center
-Date: Fri, 04 Apr 2008 17:54:03 -0700
-Message-Id: <1207356843.30178.180.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.2 
-Content-Transfer-Encoding: 7bit
+	Fri, 4 Apr 2008 20:58:04 -0400
+Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:38549
+	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751350AbYDEA6D (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Apr 2008 20:58:03 -0400
+Date: Sat, 5 Apr 2008 02:57:59 +0200
+From: Andrea Arcangeli <andrea@qumranet.com>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Robin Holt <holt@sgi.com>, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       kvm-devel@lists.sourceforge.net,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, general@lists.openfabrics.org,
+       steiner@sgi.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [patch 02/10] emm: notifier logic
+Message-ID: <20080405005759.GH14784@duo.random>
+References: <20080404223048.374852899@sgi.com> <20080404223131.469710551@sgi.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080404223131.469710551@sgi.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Apr 04, 2008 at 03:30:50PM -0700, Christoph Lameter wrote:
+> +	mm_lock(mm);
+> +	e->next = mm->emm_notifier;
+> +	/*
+> +	 * The update to emm_notifier (e->next) must be visible
+> +	 * before the pointer becomes visible.
+> +	 * rcu_assign_pointer() does exactly what we need.
+> +	 */
+> +	rcu_assign_pointer(mm->emm_notifier, e);
+> +	mm_unlock(mm);
 
-On Fri, 2008-04-04 at 20:30 -0400, Oren Laadan wrote:
-> 
-> Matt Helsley wrote:
+My mm_lock solution makes all rcu serialization an unnecessary
+overhead so you should remove it like I already did in #v11. If it
+wasn't the case, then mm_lock wouldn't be a definitive fix for the
+race.
 
-<snip>
+> +		e = rcu_dereference(e->next);
 
-> > 	I don't have an upper limit on how many more states we will need and I
-> > think that number impacts the interface significantly. Can you give us
-> > an estimate?
-> 
-> In Zap there are (using the current terminology):
-> RUNNING - running
-> FREEZING - transition to FROZEN
-> FROZEN - frozen
-> THAWING - transition to RUNNING
-> CKPTING - being checkpointed (needs special semantics* for some ops)
-> RSTRTING - being restarted (may need special semantics* for some ops)
-> ABORTING - transition to DEAD (mainly when aborting a failed restart)
-> DEAD - dead (but not fully cleaned up yet)
-> 
-> There is also "SPECIAL" in which some operations are not allowed;
-> this simplifies dealing with a bunch of races related to checkpoint/
-> restart, but I'm not sure it's a must. If anything, it only stays
-> for very short times (like an uninterruptible sleep) saying "don't
-> mess with this container now, it's busy".
-> 
-> I have very good justifications for almost all the states, a good
-> reasoning for DEAD, and a case for SPECIAL (although there may be
-> a way to do without it).
-> 
-> Despite the "many" states, there are very few transitions: CKPTING
-> can only be reached from- and changed to- FROZEN. A similar rule holds
-> for RSTRTING. ABORTING is reached from RSTRTING, and leads to DEAD.
-> The only one I don't cover is reaching DEAD from any other state
-> (except SPECIAL) but I never saw a reason to explicitly encode that.
-> Something like this (without SPECIAL):
-> 
->           ->  FREEZING  ->          <-> CKPTING
-> RUNNING                    FROZEN
->           <-  THAWING   <-          <-> RSTRTING -> ABORTING -> DEAD
-> 
-> Out of curiosity - why does the number of states impact the interface
-> so much ?
-
-	Only that, if you're trying to keep the interface human readable, then
-having too many names for things (states and transitions) can make the
-interface less than intuitive. Doesn't look like that's an issue for the
-above state machine though so I think you're right -- a single file with
-transitions encoded as states seems best.
-
-> > 
-> >> Second, my gut feeling is that a single, atomic operation to get the
-> >> status is preferred over multiple (non-atomic) operations. In other
-> >> words, I suggest a single state file instead of two. You can encode
-> >> every possible transition in a single state. It's not that the kernel
-> > 
-> > 	If the transitions are to be human-readable and there are more than a
-> > small number of states it may not be desirable to encode transitions as
-> > states. Paul's reason for suggesting the additional file(s), as best I
-> > could tell, was to keep the interface human-readable.
-> 
-> The scheme above has very few transitions. Whatever be the final scheme,
-> I would prefer not to have many possible transition (the full matrix).
-> It probably isn't necessary either.
-> 
-> The main idea behind limiting the transitions above, is that checkpoint
-> requires to first freeze the container to be able to capture a consistent
-> view of the state of its processes; that means, for example, that we also
-> would like to prevent signals from being delivered to tasks in a frozen
-> state (if you do want to signal - thaw it first).
-> 
-> There is also the issue of a pre-checkpoint (a.k.a live migration) where
-> significant state (mainly memory) of the container is recorded while the
-> container is still running, and when it's finally frozen little state
-> remains to be saved, reducing the application downtime. I didn't see a
-> need for a special state for this case; instead Zap uses a status flag
-> that belongs to the container.
-> 
-> Oren.
-
-Thanks for the explanation of the states.
-
-Cheers,
-	-Matt Helsley
-
+Same here.
