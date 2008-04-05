@@ -1,82 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754676AbYDEU7f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755282AbYDEVER@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754676AbYDEU7f (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Apr 2008 16:59:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753491AbYDEU70
+	id S1755282AbYDEVER (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Apr 2008 17:04:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753932AbYDEVED
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Apr 2008 16:59:26 -0400
-Received: from e28smtp03.in.ibm.com ([59.145.155.3]:38280 "EHLO
-	e28smtp03.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753473AbYDEU7Z (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Apr 2008 16:59:25 -0400
-Date: Sun, 6 Apr 2008 02:29:14 +0530
-From: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-To: Balaji Rao <balajirrao@gmail.com>
-Cc: linux-kernel@vger.kernel.org, containers@lists.osdl.org, menage@google.com,
-       a.p.zijlstra@chello.nl, balbir@in.ibm.com,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
-Subject: Re: [RFC][-mm] [1/2] Simple stats for cpu resource controller
-Message-ID: <20080405205914.GA25009@linux.vnet.ibm.com>
-Reply-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-References: <200804052339.46632.balajirrao@gmail.com> <20080405194041.GB21279@linux.vnet.ibm.com> <200804060201.52726.balajirrao@gmail.com>
+	Sat, 5 Apr 2008 17:04:03 -0400
+Received: from mtaout03-winn.ispmail.ntl.com ([81.103.221.49]:9279 "EHLO
+	mtaout03-winn.ispmail.ntl.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753674AbYDEVEB convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 Apr 2008 17:04:01 -0400
+Date: Sat, 5 Apr 2008 22:03:47 +0100
+From: Ken Moffat <zarniwhoop@ntlworld.com>
+To: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
+Cc: Ingo Molnar <mingo@elte.hu>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       lkml <linux-kernel@vger.kernel.org>, a.p.zijlstra@chello.nl,
+       aneesh.kumar@linux.vnet.ibm.com, dhaval@linux.vnet.ibm.com,
+       Balbir Singh <balbir@in.ibm.com>, skumar@linux.vnet.ibm.com
+Subject: Re: Regression in gdm-2.18 since 2.6.24
+Message-ID: <20080405210347.GA19097@deepthought>
+References: <20080403191916.GA30864@deepthought> <20080404143701.GA13042@linux.vnet.ibm.com> <20080404153232.GC21753@deepthought> <20080405144042.GB24075@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <200804060201.52726.balajirrao@gmail.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <20080405144042.GB24075@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.12-2006-07-14
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Apr 06, 2008 at 02:01:52AM +0530, Balaji Rao wrote:
-> On Sunday 06 April 2008 01:10:41 am Dhaval Giani wrote:
-> > > +};
-> > > +
-> > > +struct cpu_cgroup_stat_cpu {
-> > > +	s64 count[CPU_CGROUP_STAT_NSTATS];
-> > 
-> > u64? time does not go negative :)
-> Right. But these stats are not only going to measure time. We need the same 
-> variables for measuring other stats as well. I'm not sure if we would 
-> encounter scheduler stats that would count negative.
+On Sat, Apr 05, 2008 at 08:10:43PM +0530, Srivatsa Vaddagiri wrote:
 > 
-> Balbir, what do you say ?
-
-I would prefer to keep the stats logically separate. So something like
-struct cpu_cgroup_stat_cpu {
-	u64 time[];
-	s64 some_other_stat;
-}
-and so on. (I am not sure, is there some advantage gained by using
-structs?) Makes the code more maintainable imho.
-
+> Given that you seem to be seeing the problem even without
+> CONFIG_GROUP_SCHED, only the second hunk of the patch seems to be making
+> a difference for your problem i.e just the hunk below applied on
+> 2.6.25-rc8 (to kernel/sched_fair.c) should fix your problem too:
 > 
-> > count also is not very clear? Can you give a more descriptive name?
-> > 
-> ok. How does 'value' look  ?
+> @@ -1145,7 +1145,7 @@ static void check_preempt_wakeup(struct 
+>  	 * More easily preempt - nice tasks, while not making
+>  	 * it harder for + nice tasks.
+>  	 */
+> -	if (unlikely(se->load.weight > NICE_0_LOAD))
+> +	if (unlikely(se->load.weight != NICE_0_LOAD))
+>  		gran = calc_delta_fair(gran, &se->load);
+>  
+>  	if (pse->vruntime + gran < se->vruntime)
 > 
-> <snip>
+> [The first hunk is a no-op under !CONFIG_GROUP_SCHED, since
+> entity_is_task() is always 1 for !CONFIG_GROUP_SCHED]
 > 
-> > > +static s64 cpu_cgroup_read_stat(struct cpu_cgroup_stat *stat,
-> > > +		enum cpu_cgroup_stat_index idx)
-> > > +{
-> > > +	int cpu;
-> > > +	s64 ret = 0;
-> > > +	unsigned long flags;
-> > 
-> > > +
-> > > +	local_irq_save(flags);
-> > 
-> > I am just wondering. Is local_irq_save() enough?
-> > 
-> Hmmm.. You are right.This does not prevent concurrent updates on other CPUs 
-> from crossing a 32bit boundary. Am not sure how to do this in a safe way. I 
-> can only think of using atomic64_t now..
+> This second hunk changes how fast + or - niced tasks get preempted. 
+> 
+> 2.6.25-rc8 (Bad case):
+> 	Sets preempt granularity for + niced tasks at 5ms (1 CPU)
+> 
+> 2.6.25-rc8 + the hunk above (Good case):
+> 	Sets preempt granularity for + niced tasks at >5ms
+> 
+ Well, I'm no longer sure exactly what was in the config, but after
+I had confirmed the reversion would fix 2.6.24.4 I _did_ try just
+the second part of the patch applied to 2.6.25-rc8 and it gave a 60%
+success rate across 10 tests.
+> 
+> So bumping up preempt granularity for + niced tasks seems to make things
+> work for you. IMO the deeper problem lies somewhere else (perhaps is
+> some race issue in gdm itself), which is easily exposed with 2.6.25-rc8 
+> which lets + niced tasks be preempted quickly.
 > 
 
-I am going to answer that one when I am awake :-)
+ I agree this is probably exposing a problem somewhere else.
 
+> To help validate this, can you let us know the result of tuning preempt
+> granularity on native 2.6.25-rc8 (without any patches applied and
+> CONFIG_GROUP_SCHED disabled)?
+> 
+> 	# echo 100000000 > /proc/sys/kernel/sched_wakeup_granularity_ns
+> 
+> To check if echo command worked, do:
+> 
+> 	# cat /proc/sys/kernel/sched_wakeup_granularity_ns
+> 
+> It should return 100000000.
+> 
+> Now try shutting down thr' gdm and pls let me know if it makes a
+> difference.
+> 
+> -- 
+> Regards,
+> vatsa
+
+ Will do, but it might be a day or so before I can get to this.
+
+Thanks.
+
+Ken
 -- 
-regards,
-Dhaval
+das eine Mal als Tragödie, das andere Mal als Farce
