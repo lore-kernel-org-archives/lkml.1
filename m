@@ -1,51 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752407AbYDELJi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752216AbYDELpR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752407AbYDELJi (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Apr 2008 07:09:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751478AbYDELJ1
+	id S1752216AbYDELpR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Apr 2008 07:45:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751493AbYDELpF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Apr 2008 07:09:27 -0400
-Received: from ns.unixsol.org ([193.110.159.2]:44252 "EHLO ns.unixsol.org"
+	Sat, 5 Apr 2008 07:45:05 -0400
+Received: from tim.rpsys.net ([194.106.48.114]:47149 "EHLO tim.rpsys.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751476AbYDELJ0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Apr 2008 07:09:26 -0400
-Message-ID: <47F75DE5.4060407@unixsol.org>
-Date: Sat, 05 Apr 2008 14:09:25 +0300
-From: Georgi Chorbadzhiyski <gf@unixsol.org>
-Organization: Unix Solutions Ltd. (http://unixsol.org)
-User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
-MIME-Version: 1.0
-To: =?ISO-8859-1?Q?Ilpo_J=E4rvinen?= <ilpo.jarvinen@helsinki.fi>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Netdev <netdev@vger.kernel.org>
-Subject: Re: Linux 2.6.25-rc6: WARNING: at net/ipv4/tcp_input.c:2510
-References: <47EBCB75.6030600@unixsol.org> <Pine.LNX.4.64.0804031315360.21524@wrl-59.cs.helsinki.fi> <47F5C7D1.1080906@unixsol.org> <Pine.LNX.4.64.0804042209530.415@wrl-59.cs.helsinki.fi>
-In-Reply-To: <Pine.LNX.4.64.0804042209530.415@wrl-59.cs.helsinki.fi>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
+	id S1751491AbYDELpD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 Apr 2008 07:45:03 -0400
+Subject: Re: Clarifying platform_device_unregister
+From: Richard Purdie <rpurdie@rpsys.net>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: Jaya Kumar <jayakumar.lkml@gmail.com>,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>
+In-Reply-To: <20080401104533.ZZRA012@mailhub.coreip.homeip.net>
+References: <45a44e480803311814q22bc85dbx9a7d128d84b7db08@mail.gmail.com>
+	 <20080401051947.GD18041@anvil.corenet.prv>
+	 <45a44e480804010047m36a9b8e3p97910308ed5677fb@mail.gmail.com>
+	 <20080401104533.ZZRA012@mailhub.coreip.homeip.net>
+Content-Type: text/plain
+Date: Sat, 05 Apr 2008 12:44:52 +0100
+Message-Id: <1207395892.5021.20.camel@dax.rpnet.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Around 04/04/08 22:15, Ilpo Järvinen scribbled:
->> The machine that gave me this error is a http and ftp server handling not
->> very busy distro mirror (if this can give you any clues).
->>
->>> processing expensive verification of TCP state (validates TCP write queue 
->>> invariants multiple times per ACK by scanning through the write queue) on 
->>> such machine?
->> How to run such a thing, can you give me some pointers?
-> 
-> I sent the patch recently to netdev/lkml:
-> 
->   http://marc.info/?l=linux-netdev&m=120733529216457&w=2
-> 
-> But it's very expensive in processing wise so it might not be wise to put 
-> it in if performance is important for you.
 
-Ok, I patched the kernel and will let it run for a while. Performance is
-an issue but I think it's better to pinpoint the bug.
+On Tue, 2008-04-01 at 10:54 -0400, Dmitry Torokhov wrote:
+> On Tue, Apr 01, 2008 at 12:47:54AM -0700, Jaya Kumar wrote:
+> > That's interesting. I noticed though that a lot of platform device
+> > code assigns a statically allocated structure to platform_data. For
+> > example:
+> > 
+> > arch/arm/mach-pxa/corgi_pm.c
+> > static struct sharpsl_charger_machinfo corgi_pm_machinfo = {
+> > ...
+> > }
+> >         corgipm_device->dev.platform_data = &corgi_pm_machinfo;
+> > 
+> > same with spitz_pm.c.
+> > 
+> > egrep "platform_data.*=.*\&" *.c shows quite a lot of users doing
+> > that. I guess most of these below are probably okay since these
+> > drivers can't be rmmoded.
+> > 
+> 
+> Hmm, are you sure they can't be removed? Why do they all have
+> module_exit methods?
+> 
+> Even if they can't be unloaded the whole thing will blow to pieces
+> if registration fails. Consider this:
+> 
+> static int __devinit spitzpm_init(void)
+> {
+>         int ret;
+> 
+>         spitzpm_device = platform_device_alloc("sharpsl-pm", -1);
+>         if (!spitzpm_device)
+>                 return -ENOMEM;
+> 
+>         spitzpm_device->dev.platform_data = &spitz_pm_machinfo;
+>         ret = platform_device_add(spitzpm_device);
+> 
+>         if (ret)
+>                 platform_device_put(spitzpm_device);
+> 		^^^^^^^^^^^
+> This will try to kfree(spitzpm_device->dev.platform_data) and it gonna
+> blow. We need to do spitzpm_device->dev.platform_data = NULL before doing
+> put.
+> 
+> Also  spitzpm_init() shoudl be marked __init, not __devinit and
+> spitzpm_exit() should be __exit() if it is event needed at all.
+> 
+> Richard, I think you work with spitz and corgi, any comments?
 
--- 
-Georgi Chorbadzhiyski
-http://georgi.unixsol.org/
+Looking at this I agree there are some problems there.
+
+In the real world the spitz/corgi devices are pretty useless without
+power management and therefore these code paths aren't well used. I
+think this has happened since the platform data was a later addition to
+the code and the internal use of kfree on platform_data wasn't realised.
+
+I'll make sure some patches are submitted to address these issues.
+
+Cheers,
+
+Richard
+
+
