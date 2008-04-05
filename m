@@ -1,90 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754247AbYDESPX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754707AbYDESQQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754247AbYDESPX (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Apr 2008 14:15:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752756AbYDESPJ
+	id S1754707AbYDESQQ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Apr 2008 14:16:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752880AbYDESP7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Apr 2008 14:15:09 -0400
-Received: from nn7.de ([85.214.94.156]:46745 "EHLO nn7.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751551AbYDESPI convert rfc822-to-8bit (ORCPT
+	Sat, 5 Apr 2008 14:15:59 -0400
+Received: from wf-out-1314.google.com ([209.85.200.173]:50899 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752756AbYDESP6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Apr 2008 14:15:08 -0400
-Subject: Re: 2.6.25-rc8: WARNING: at net/ipv4/tcp_input.c:2173
-	tcp_mark_head_lost+0x11d/0x150()
-From: Soeren Sonnenburg <kernel@nn7.de>
-To: Ilpo =?ISO-8859-1?Q?J=E4rvinen?= <ilpo.jarvinen@helsinki.fi>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
-       Netdev <netdev@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.64.0804052043230.8668@wrl-59.cs.helsinki.fi>
-References: <1207199456.7616.3.camel@localhost>
-	 <Pine.LNX.4.64.0804031616330.21524@wrl-59.cs.helsinki.fi>
-	 <1207230008.4513.14.camel@localhost>
-	 <Pine.LNX.4.64.0804031744190.32094@wrl-59.cs.helsinki.fi>
-	 <1207413634.4597.4.camel@localhost>
-	 <Pine.LNX.4.64.0804052043230.8668@wrl-59.cs.helsinki.fi>
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 8BIT
-Date: Sat, 05 Apr 2008 20:14:43 +0200
-Message-Id: <1207419283.4597.12.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.0 
+	Sat, 5 Apr 2008 14:15:58 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:organization:to:subject:date:user-agent:cc:mime-version:content-disposition:content-type:content-transfer-encoding:message-id;
+        b=Zq1ARwJor97HoSEZGG5+4Wa2aoL9tlc0oFD309hEW0RzozS9d7FC4iY4INgbRn+cmir93JBdzP1kRk9ECphk80vQVhHfhTKeN4/QC4atPnXvPZesxWj5W83oD94OdfawJ6/mcELBkFLYVUDYQDKd3WAacE8gPZks2Q49+yaafvA=
+From: Balaji Rao <balajirrao@gmail.com>
+Organization: National Institute of Technology Karnataka
+To: linux-kernel@vger.kernel.org
+Subject: [RFC][-mm] [0/2] Basic stats for cgroups V2
+Date: Sat, 5 Apr 2008 23:39:42 +0530
+User-Agent: KMail/1.9.6 (enterprise 0.20071012.724442)
+Cc: containers@lists.osdl.org, dhaval@linux.vnet.ibm.com, balbir@in.ibm.com,
+       containers@lists.osdl.org, menage@google.com, a.p.zijlstra@chello.nl,
+       Ingo Molnar <mingo@elte.hu>
+MIME-Version: 1.0
+Content-Disposition: inline
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200804052339.42474.balajirrao@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2008-04-05 at 20:52 +0300, Ilpo Järvinen wrote:
-> On Sat, 5 Apr 2008, Soeren Sonnenburg wrote:
-> 
-> > On Fri, 2008-04-04 at 21:51 +0300, Ilpo Järvinen wrote:
-> > > On Thu, 3 Apr 2008, Soeren Sonnenburg wrote:
-> > > 
-> > > > On Thu, 2008-04-03 at 16:26 +0300, Ilpo Järvinen wrote:
-> > > > > On Thu, 3 Apr 2008, Soeren Sonnenburg wrote:
-> > > > > 
-> > > > > > trying to download things, I am seeing this (ignore the tainted, it is
-> > > > > > from madwifi and although the module is loaded the device was never
-> > > > > > used)
-> > > > > > 
-> > > > > > Could anyone make sense of this please?
-[...]
-> > > 
-> > > Here's a debug patch which expensively verifies TCP's state in a number
-> > > of places during ACK to find first spot where the actual bug occurs.
-> > 
-> > OK I am getting this now as the first spot:
-> > 
-> > P: 4 L: 2 vs 2 S: 0 vs 3 F: 0 vs 0 w: 4023500226-4023505874 (0)
-> > skb 0 f495c180
-> > skb 1 f480a180
-> > skb 2 f4994600
-> > head 3 f495c780
-> > skb 4 f5b32480
-> > TCP wq(s) LL  <
-> > WARNING: at net/ipv4/tcp_ipv4.c:240 tcp_verify_wq+0x319/0x3c0()
-> >
-> > another one:
-> > WARNING: at net/ipv4/tcp_output.c:1475 __tcp_push_pending_frames+0x70/0x830()
-> > 
-> > 
-> > P: 4 L: 2 vs 2 S: 0 vs 3 F: 0 vs 0 w: 4023500226-4023505874 (0)
-> > skb 0 f495c180
-> > skb 1 f480a180
-> > skb 2 f4994600
-> > head 3 f495c780
-> > skb 4 f5b32480
-> > TCP wq(s) LL  <
-> > TCP wq(h) +-++<
-> > l2 s3 f0 p4 seq: su4023500226 hs241530103 sn4023505874
-> > ------------[ cut here ]------------
-> > WARNING: at net/ipv4/tcp_ipv4.c:240 tcp_verify_wq+0x319/0x3c0()
-> 
-> Please don't cut the log! It is caught here because 2+3 > 4 :-) but I need 
-> the full log with stacktraces this time to figure it out.
+V1->V2
+- Fixed a possible race in cpu_cgroup_read_stat. Thank you Paul for pointing this out.
+- A few other naming changes.
 
-Look here 
-http://nn7.de/debugging/tcp.log :-)
+This patchset is a first step towards implementing stats for cgroup 
+subsystems. Only a few trivial stats for cpu and memory resource controller 
+have been implemented for now. Please provide comments on the general 
+direction and any suggestions on how you would like the cgroupstats framework 
+to be implemented.
 
-HTH,
-Soeren
+roadmap
+--------
+implement a generic statistics framework for cgroups,
+unification with taskstats/netlink interface,
+add more statistics
 
+-- 
+regards,
+Balaji Rao
+Dept. of Mechanical Engineering,
+National Institute of Technology Karnataka, India
