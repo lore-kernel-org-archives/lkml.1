@@ -1,114 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753173AbYDERxI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754646AbYDERyB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753173AbYDERxI (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Apr 2008 13:53:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753265AbYDERwn
+	id S1754646AbYDERyB (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Apr 2008 13:54:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752877AbYDERxx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Apr 2008 13:52:43 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:49844 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752877AbYDERwm (ORCPT
+	Sat, 5 Apr 2008 13:53:53 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:53553 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752864AbYDERxx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Apr 2008 13:52:42 -0400
-Date: Sat, 5 Apr 2008 20:52:32 +0300 (EEST)
-From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
-X-X-Sender: ijjarvin@wrl-59.cs.helsinki.fi
-To: Soeren Sonnenburg <kernel@nn7.de>
-cc: Linux Kernel <linux-kernel@vger.kernel.org>,
-       Netdev <netdev@vger.kernel.org>
-Subject: Re: 2.6.25-rc8: WARNING: at net/ipv4/tcp_input.c:2173
- tcp_mark_head_lost+0x11d/0x150()
-In-Reply-To: <1207413634.4597.4.camel@localhost>
-Message-ID: <Pine.LNX.4.64.0804052043230.8668@wrl-59.cs.helsinki.fi>
-References: <1207199456.7616.3.camel@localhost> 
- <Pine.LNX.4.64.0804031616330.21524@wrl-59.cs.helsinki.fi> 
- <1207230008.4513.14.camel@localhost>  <Pine.LNX.4.64.0804031744190.32094@wrl-59.cs.helsinki.fi>
- <1207413634.4597.4.camel@localhost>
+	Sat, 5 Apr 2008 13:53:53 -0400
+Date: Sat, 5 Apr 2008 19:54:37 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: John Sigler <linux.kernel@free.fr>
+Cc: linux-rt-users@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: Linux 11-minute mode (RTC update)
+Message-ID: <20080405175437.GA17016@elf.ucw.cz>
+References: <47F5E194.5040409@free.fr> <47F5F35F.2020508@free.fr>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-696208474-2098357438-1207417952=:8668"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <47F5F35F.2020508@free.fr>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+Hi!
 
----696208474-2098357438-1207417952=:8668
-Content-Type: TEXT/PLAIN; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-
-On Sat, 5 Apr 2008, Soeren Sonnenburg wrote:
-
-> On Fri, 2008-04-04 at 21:51 +0300, Ilpo Järvinen wrote:
-> > On Thu, 3 Apr 2008, Soeren Sonnenburg wrote:
-> > 
-> > > On Thu, 2008-04-03 at 16:26 +0300, Ilpo Järvinen wrote:
-> > > > On Thu, 3 Apr 2008, Soeren Sonnenburg wrote:
-> > > > 
-> > > > > trying to download things, I am seeing this (ignore the tainted, it is
-> > > > > from madwifi and although the module is loaded the device was never
-> > > > > used)
-> > > > > 
-> > > > > Could anyone make sense of this please?
-> > > > 
-> > > > ...I'm just trying to find out who and where invariants of the TCP code
-> > > > are broken. These were relatively recently enabled (pre-2.6.24 just didn't 
-> > > > care too much). A number of long standing issues plus bugs from my 
-> > > > modifications have been fixed because of the more rigid checking :-).
-> > > > 
-> > > > > ------------[ cut here ]------------
-> > > > > WARNING: at net/ipv4/tcp_input.c:2173 tcp_mark_head_lost+0x11d/0x150()
-> > > > 
-> > > > > ------------[ cut here ]------------
-> > > > > WARNING: at net/ipv4/tcp_input.c:1771 tcp_enter_frto+0x267/0x270()
-> > > > 
-> > > > > ------------[ cut here ]------------
-> > > > > WARNING: at net/ipv4/tcp_input.c:2532 tcp_ack+0x1a6f/0x1d60()
-> > > > 
-> > > > Can you reproduce it? 
-> > > 
-> > > Yes, by massively downloading things :-) But I have no real recipe to
-> > > make it easily reproducible...
-> > 
-> > Good :-), no need for recipes, just that you can trigger it more often 
-> > tha once per month or so :-). I probably couldn't trigger it anyway here 
-> > because they're often rather sensitive to network "weather", thus if you 
-> > have problems in reproducing, doing tests around the same phase of the 
-> > date cycle you saw it the first time might help.
-> > 
-> > Here's a debug patch which expensively verifies TCP's state in a number
-> > of places during ACK to find first spot where the actual bug occurs.
-> 
-> OK I am getting this now as the first spot:
-> 
-> P: 4 L: 2 vs 2 S: 0 vs 3 F: 0 vs 0 w: 4023500226-4023505874 (0)
-> skb 0 f495c180
-> skb 1 f480a180
-> skb 2 f4994600
-> head 3 f495c780
-> skb 4 f5b32480
-> TCP wq(s) LL  <
-> WARNING: at net/ipv4/tcp_ipv4.c:240 tcp_verify_wq+0x319/0x3c0()
+>> I run Linux kernel 2.6.22.1-rt9 and ntpd 4.2.4p0
+>>
+>> # adjtimex --print
+>>          mode: 0
+>>        offset: 77
+>>     frequency: -1309904
+>>      maxerror: 493576
+>>      esterror: 50
+>>        status: 1
+>> time_constant: 6
+>>     precision: 1
+>>     tolerance: 33554432
+>>          tick: 10000
+>>      raw time:  1207230744s 183249us = 1207230744.183249
+>>
+>> In my setup, STA_UNSYNC (0x0040, clock unsynchronized) is 0.
+>>
+>> Thus, ntp_synced() returns 1.
+>>
+>> Thus the kernel should write the system time to the RTC every
+>> 11 minutes; but it does not.
+>>
+>> The relevant code is in sync_cmos_clock()
+>>
+>> http://lxr.linux.no/linux/kernel/time/ntp.c#L188
+>>
+>> I've added several printk() to this function, and it appears
+>> that it is never called.
+>>
+>> The relevant timer is defined with the following macro.
+>>
+>> static DEFINE_TIMER(sync_cmos_timer, sync_cmos_clock, 0, 0);
+>>
+>> which expands to
+>>
+>> static struct timer_list sync_cmos_timer =
+>> {
+>>   .function = sync_cmos_clock,
+>>   .expires  = 0,
+>>   .data     = 0,
+>>   .base     = &boot_tvec_bases
+>> };
+>>
+>> The problem seems to be that this timer is never armed, to bootstrap
+>> the process. It seems there should be a call to mod_timer() somewhere.
+>>
+>> do_adjtimex() calls notify_cmos_timer() unconditionally.
+>>
+>> static void notify_cmos_timer(void)
+>> {
+>>   if (no_sync_cmos_clock)
+>>     mod_timer(&sync_cmos_timer, jiffies + 1);
+>> }
+>>
+>> What are the semantics of notify_cmos_timer?
+>> What is it supposed to do?
+>>
+>> And what is 'no_sync_cmos_clock' supposed to mean?
+>> /* Disable the cmos update - used by virtualization and embedded */
+>> int no_sync_cmos_clock  __read_mostly;
+>> Why would we (re)arm the timer when 'no_sync_cmos_clock' is true?
 >
-> another one:
-> WARNING: at net/ipv4/tcp_output.c:1475 __tcp_push_pending_frames+0x70/0x830()
-> 
-> 
-> P: 4 L: 2 vs 2 S: 0 vs 3 F: 0 vs 0 w: 4023500226-4023505874 (0)
-> skb 0 f495c180
-> skb 1 f480a180
-> skb 2 f4994600
-> head 3 f495c780
-> skb 4 f5b32480
-> TCP wq(s) LL  <
-> TCP wq(h) +-++<
-> l2 s3 f0 p4 seq: su4023500226 hs241530103 sn4023505874
-> ------------[ cut here ]------------
-> WARNING: at net/ipv4/tcp_ipv4.c:240 tcp_verify_wq+0x319/0x3c0()
+> For those wondering what this "11-minute mode" is, I'll quote the
+> man page for hwclock. ( http://linux.die.net/man/8/hwclock )
+>
+> <quote>
+>
+> Automatic Hardware Clock Synchronization By the Kernel
+>
+> You should be aware of another way that the Hardware Clock is kept 
+> synchronized in some systems. The Linux kernel has a mode wherein it copies 
+> the System Time to the Hardware Clock every 11 minutes. This is a good mode 
+> to use when you are using something sophisticated like ntp to keep your 
+> System Time synchronized. (ntp is a way to keep your System Time 
+> synchronized either to a time server somewhere on the network or to a radio 
+> clock hooked up to your system. See RFC 1305).
+>
+> This mode (we'll call it "11 minute mode") is off until something turns it 
+> on. The ntp daemon xntpd is one thing that turns it on. You can turn it off 
+> by running anything, including hwclock --hctosys, that sets the System Time 
+> the old fashioned way.
+>
+> To see if it is on or off, use the command adjtimex --print and look at the 
+> value of "status". If the "64" bit of this number (expressed in binary) 
+> equal to 0, 11 minute mode is on. Otherwise, it is off.
+>
+> If your system runs with 11 minute mode on, don't use hwclock --adjust or 
+> hwclock --hctosys. You'll just make a mess. It is acceptable to use a 
+> hwclock --hctosys at startup time to get a reasonable System Time until 
+> your system is able to set the System Time from the external source and 
+> start 11 minute mode.
 
-Please don't cut the log! It is caught here because 2+3 > 4 :-) but I need 
-the full log with stacktraces this time to figure it out.
+Does that even belong to kernel?
+
+If it is only useful with ntpd already running, ntpd should be able to
+do the RTC sync, too...
+
+Plus, that automatically means that 11-minutes updates stop when ntpd
+dies for some reason...
 
 -- 
- i.
----696208474-2098357438-1207417952=:8668--
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
