@@ -1,52 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752870AbYDENGQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752743AbYDENPz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752870AbYDENGQ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Apr 2008 09:06:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751798AbYDENGD
+	id S1752743AbYDENPz (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Apr 2008 09:15:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751823AbYDENPo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Apr 2008 09:06:03 -0400
-Received: from mail.ift.unesp.br ([200.145.46.3]:58307 "EHLO mail.ift.unesp.br"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751783AbYDENGB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Apr 2008 09:06:01 -0400
-Date: Sat, 5 Apr 2008 10:05:20 -0300
-From: "Carlos R. Mafra" <crmafra2@gmail.com>
-To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-Cc: Ray Lee <ray-lk@madrabbit.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Soeren Sonnenburg <kernel@nn7.de>
-Subject: Re: 2.6.25-current-git hangs on boot unless CONFIG_CPU_IDLE=n-Apple
-Message-ID: <20080405130520.GA8959@localhost.ift.unesp.br>
-References: <pdj7pZVURbL.A.42H.kDW9HB@albercik> <pdYe6zNQVl.A.AOB.6GW9HB@albercik> <924EFEDD5F540B4284297C4DC59F3DEED0EA1E@orsmsx423.amr.corp.intel.com> <20080404011053.GA21254@localhost.ift.unesp.br> <2c0942db0804032015y57e91811r37b729cd836cef6d@mail.gmail.com> <20080404114756.GA3890@localhost.ift.unesp.br> <924EFEDD5F540B4284297C4DC59F3DEED0EB77@orsmsx423.amr.corp.intel.com> <20080404155155.GA6578@localhost.ift.unesp.br> <924EFEDD5F540B4284297C4DC59F3DEED0EEC6@orsmsx423.amr.corp.intel.com>
+	Sat, 5 Apr 2008 09:15:44 -0400
+Received: from wx-out-0506.google.com ([66.249.82.228]:32593 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751760AbYDENPo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 Apr 2008 09:15:44 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=pCu9dK+YT0DzIgQ0InYyzhXY0MWngDKYnEjjxZEbvGa5qvFEst+vdSVDY1YKXZu5ZlTdz5PbTqYdmIluR7tMnBKykSxrgE+J1c0O9XEy+UTh6VBeF21IRCVIZdHjlAzKirTUzw7vU7y4wx7MmA+8Z+PhsRGmF8jkqQxfwdyovPY=
+Message-ID: <5681ec900804050615y59bca042g648df348914b6062@mail.gmail.com>
+Date: Sat, 5 Apr 2008 18:45:42 +0530
+From: "Sanjeev Aditya Naga" <sanjeev.kernel@gmail.com>
+To: trenn@suse.de
+Subject: Re: [>=2.6.23][BUG] Oops on power disconnection
+Cc: "Andrew Morton" <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-acpi@vger.kernel.org,
+       "Venkatesh Pallipadi" <venkatesh.pallipadi@intel.com>,
+       "Li, Shaohua" <shaohua.li@intel.com>
+In-Reply-To: <1207256678.6024.90.camel@linux-2bdv.site>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-In-Reply-To: <924EFEDD5F540B4284297C4DC59F3DEED0EEC6@orsmsx423.amr.corp.intel.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+References: <5681ec900803300645l5369cda4g119957a4b7f05d17@mail.gmail.com>
+	 <5681ec900803300651m6e5f38deke1b7746236e5bb9@mail.gmail.com>
+	 <20080402001418.aad6eed2.akpm@linux-foundation.org>
+	 <5681ec900804020608o62be52c4ted172e18daf24f5b@mail.gmail.com>
+	 <1207147729.30061.9.camel@hammer1.suse.de>
+	 <5681ec900804020913t4adc38b1r2e424fa8bbdda241@mail.gmail.com>
+	 <1207159974.4700.6.camel@queen.suse.de>
+	 <5681ec900804030915w720f3ccfp74e5d501ca3d6b56@mail.gmail.com>
+	 <1207256678.6024.90.camel@linux-2bdv.site>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha id m35DGQnq016296
 
-On Fri  4.Apr'08 at 13:41:45 -0700, Pallipadi, Venkatesh wrote:
-
-> >>> Can you try the latest git and see whether this still is a problem?
-> >>
-> >>I've just updated to latest git, but it may take some time for it 
-> >>to happen again (the first 3 boots were okay). Last time it happened
-> >>with 2.6.25-rc7-00149-gaf8be4e (I checked now). 
-> >>
-> >>Do you have reasons to believe this issue was fixed since then?
-> >
-> >Yes. I think the patch here should have fixed the problem....
-> >Patch : http://marc.info/?l=linux-kernel&m=120674502201007&w=4
-> >
-> 
-> Hmmmm.... Looking at latest git,
-> The above patch is not yet in git. Can you please apply the above patch
-> and see whether do you still see the problem.....
-
-OK, I will apply it manually and test it.
-
-For the record: yesterday my laptop hang at boot with v2.6.25-rc8-139-ge315c12
-(without the above patch).
-
+Hello Thomas,
+On Fri, Apr 4, 2008 at 2:34 AM, Thomas Renninger <trenn@suse.de> wrote:>>>  On Thu, 2008-04-03 at 21:45 +0530, Sanjeev Aditya Naga wrote:>  > Hello Thomas,>  >>  > On Wed, Apr 2, 2008 at 11:42 PM, Thomas Renninger <trenn@suse.de> wrote:>  > >>  > > On Wed, 2008-04-02 at 21:43 +0530, Sanjeev Aditya Naga wrote:>  > >  > Hello Thomas,>  > >  >>  > >  > > Hi,>  > >  > >>  > >  > >>  > >  > >  On Wed, 2008-04-02 at 18:38 +0530, Sanjeev Aditya Naga wrote:>  > >  > >  > Hello Andrew Morton,>  > >  > >  >>  > >  > >  > Greetings!>  > >  > >  >>  > >  > >  > Thank you for the update. Is there anything I can do>  > >  > >  > from my side?>  > >  > >  >>  > >  > >  > I thought it was a acpi (dsdt) problem. And based on>  > >  > >  > a tutorial, I have tried to extract, fix, recompile the dsdt>  > >  > >  > and use it with the kernel. But still I have the same problem.>  > >  > >  > Let me know if I shall attach the dsdt (original) decompiled>  > >  > >  > code, if that helps.>  > >  > >>  > >  > >  this could be due a general memory corruption problem through ACPICA.>  > >  > >  If you get different backtraces on reboots even you only modified things>  > >  > >  that do not have to do with the problem, it's probably that and related>  > >  > >  to:>  > >  > >  ï»¿http://bugzilla.kernel.org/show_bug.cgi?id=10339>  > >  > >>  > >  > >  You might want to try the latest kernel or the patch posted there.>  > >  >>  > >  > Thank you for the update.>  > >  > I have checked the bug and unfortunately its not the>  > >  > same issue. Things work absolutely fine, when I'm>  > >  > running on AC power. It even displays the exact>  > >  > battery (and charging) status to me. It messes up>  > >  > when suddenly AC power gets disconnected and>  > >  > switches to battery mode (The time when I get Oops).>  > >  > The system is still usable after switching to battery>  > >  > mode and I still get correct battery stats until its>  > >  > completely discharged. However most of the commands>  > >  > like kill, poweroff, java doesn't work after the Oops.>  > >  The bug is not related to battery, but to AML parsing and can therefore>  > >  affect anything which is ACPI related.>  > >>  > >>  > >  > BTW there is one similarity with the referenced bug.>  > >  > If I boot the computer without AC Power, it gives the>  > >  > same Oops and stops during booting itself.>  > >  >>  > >  > I shall try the latest kernel once and shall update you.>  > >  That would be great.>  > >  If it works, please give the patch there a try, IMO this one should see>  > >  2.6.2[34].X stable kernels soon.>  >>  > I have got the lastest kernel 2.6.25-rc8 today. I observed that>  > the referenced patch is already in the kernel. However this didn't>  > solve the problem in question. I get the same Oops on this kernel>  > as well. Find the latest dmesg along with the Oops:>  Ok.>  Maybe best is you document the backtraces/oopses with kernel versions at>  bugzilla.kernel.org and add dmesg and acpidump.>  It seems your machine notifies OS that the C-state table changed.>  AFAIK this is rare and there might be a general bug in the cpuidle layer>  which I do not know well.>  Best you add Venkatesh and Shaohua Li <shaohua.li@intel.com> to CC of>  the bug.>  While the backtrace shows a lot, cpuidle IMO is missing a general debug>  option like in the cpufreq layer.>  I couldn't find a single printk in the whole cpuidle/{cpuidle,sysfs}.c>  files, even on error paths. ï»¿Also in the cpuidle specific parts of>  drivers/acpi/processor_idle.c some debug printks may help for future bug>  reports. It is very hard to guess what happened...
+Thank you for the update:
+I have just registered a bug athttp://bugzilla.kernel.org/show_bug.cgi?id=10394as directed by you.
+Kind Regards,Sanjeevÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
