@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755355AbYDEXaB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755458AbYDEXbu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755355AbYDEXaB (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Apr 2008 19:30:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751239AbYDEX3v
+	id S1755458AbYDEXbu (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Apr 2008 19:31:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751306AbYDEXbn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Apr 2008 19:29:51 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:21218 "EHLO
+	Sat, 5 Apr 2008 19:31:43 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:21286 "EHLO
 	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751141AbYDEX3v (ORCPT
+	with ESMTP id S1751239AbYDEXbm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Apr 2008 19:29:51 -0400
+	Sat, 5 Apr 2008 19:31:42 -0400
 DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
 	h=received:message-id:date:from:to:subject:cc:in-reply-to:
 	mime-version:content-type:content-transfer-encoding:
 	content-disposition:references;
-	b=s39A/pNwm9C5Mj7svMZoonjPmpcSULN75mhSqjYQVzrju1XOSVmDImzq3+KBPk935
-	iUaHMVKNMQorfodNkj0Yw==
-Message-ID: <6599ad830804051629k3649dbc4na92bb3d0cd7a0492@mail.gmail.com>
-Date: Sat, 5 Apr 2008 16:29:35 -0700
+	b=Q0pU61U1xVg3SrTjq7K1831NWdbfuzrUVocb/QswdAxm98WPBGJ3cXMIZwrwqtCoD
+	hCX0bpzhQFGUlQy0GY54g==
+Message-ID: <6599ad830804051631g15363456s1952fda0bb4d395d@mail.gmail.com>
+Date: Sat, 5 Apr 2008 16:31:27 -0700
 From: "Paul Menage" <menage@google.com>
 To: balbir@linux.vnet.ibm.com
 Subject: Re: [-mm] Add an owner to the mm_struct (v8)
@@ -48,15 +48,22 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 On Sat, Apr 5, 2008 at 11:59 AM, Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
->  > But surely the performance of thread exits wouldn't be affected by the
->  > delay_group_leader(p) change, since none of the exiting threads would
->  > be a group leader. That optimization only matters when the entire
->  > process exits.
+>  >>  It's easier to set it up that way. Usually the end user gets the same SLA for
+>  >>  memory, CPU and other resources, so it makes sense to bind the controllers together.
+>  >>
+>  >
+>  > True - but in that case why wouldn't they have the same SLA for
+>  > virtual address space too?
 >  >
 >
->  On the client side, each JVM instance exits after the test. I see the thread
->  group leader exit as well through getdelays (I see TGID exits).
+>  Yes, mostly. That's why I had made the virtual address space patches as a config
+>  option on top of the memory controller :)
+>
 
-How long does the test run for? How many threads does each client have?
+*If* they want to use the virtual address space controller, that is.
+
+By that argument, you should make the memory and cpu controllers the
+same controller, since in your scenario they'll usually be used
+together..
 
 Paul
