@@ -1,104 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754407AbYDESlT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754178AbYDESmv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754407AbYDESlT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Apr 2008 14:41:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752975AbYDESlH
+	id S1754178AbYDESmv (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Apr 2008 14:42:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752928AbYDESmo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Apr 2008 14:41:07 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:56216 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752308AbYDESlF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Apr 2008 14:41:05 -0400
-Date: Sat, 5 Apr 2008 21:41:03 +0300 (EEST)
-From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
-X-X-Sender: ijjarvin@wrl-59.cs.helsinki.fi
-To: Soeren Sonnenburg <kernel@nn7.de>
-cc: Linux Kernel <linux-kernel@vger.kernel.org>,
-       Netdev <netdev@vger.kernel.org>
-Subject: Re: 2.6.25-rc8: WARNING: at net/ipv4/tcp_input.c:2173
- tcp_mark_head_lost+0x11d/0x150()
-In-Reply-To: <1207419283.4597.12.camel@localhost>
-Message-ID: <Pine.LNX.4.64.0804052136030.8813@wrl-59.cs.helsinki.fi>
-References: <1207199456.7616.3.camel@localhost> 
- <Pine.LNX.4.64.0804031616330.21524@wrl-59.cs.helsinki.fi> 
- <1207230008.4513.14.camel@localhost>  <Pine.LNX.4.64.0804031744190.32094@wrl-59.cs.helsinki.fi>
-  <1207413634.4597.4.camel@localhost>  <Pine.LNX.4.64.0804052043230.8668@wrl-59.cs.helsinki.fi>
- <1207419283.4597.12.camel@localhost>
+	Sat, 5 Apr 2008 14:42:44 -0400
+Received: from mga11.intel.com ([192.55.52.93]:56633 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752756AbYDESmn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 Apr 2008 14:42:43 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,609,1199692800"; 
+   d="scan'208";a="546255030"
+From: Dan Williams <dan.j.williams@intel.com>
+Subject: [RFC PATCH] sysfs: refill attribute buffer when reading from offset 0
+To: gregkh@suse.de
+Cc: linux-kernel@vger.kernel.org, htejun@gmail.com, neilb@suse.de
+Date: Sat, 05 Apr 2008 11:41:22 -0700
+Message-ID: <20080405184122.2816.35845.stgit@dwillia2-linux.ch.intel.com>
+User-Agent: StGIT/0.14.1
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; boundary="-696208474-548770356-1207420748=:8813"
-Content-ID: <Pine.LNX.4.64.0804052139510.8816@wrl-59.cs.helsinki.fi>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+Requiring userspace to close and re-open sysfs attributes has been the
+policy since before 2.6.12.  It allows userspace to get a consistent
+snapshot of kernel state and consume it with incremental reads and seeks.
 
----696208474-548770356-1207420748=:8813
-Content-Type: TEXT/PLAIN; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-Content-ID: <Pine.LNX.4.64.0804052139511.8816@wrl-59.cs.helsinki.fi>
+Now, if the file position is zero the kernel assumes userspace wants to see
+the new value.  The application for this change is to allow a userspace
+RAID metadata handler to check the state of an array without causing any
+memory allocations.  Thus not causing writeback to a raid array that might
+be blocked waiting for userspace to take action.
 
-On Sat, 5 Apr 2008, Soeren Sonnenburg wrote:
+Cc: NeilBrown <neilb@suse.de>
+Cc: Tejun Heo <htejun@gmail.com>
+Signed-off-by: Dan Williams <dan.j.williams@intel.com>
+---
 
-> On Sat, 2008-04-05 at 20:52 +0300, Ilpo Järvinen wrote:
-> > On Sat, 5 Apr 2008, Soeren Sonnenburg wrote:
-> > 
-> > > On Fri, 2008-04-04 at 21:51 +0300, Ilpo Järvinen wrote:
-> > > > On Thu, 3 Apr 2008, Soeren Sonnenburg wrote:
-> > > > 
-> > > > > On Thu, 2008-04-03 at 16:26 +0300, Ilpo Järvinen wrote:
-> > > > > > On Thu, 3 Apr 2008, Soeren Sonnenburg wrote:
-> > > > > > 
-> > > > > > > trying to download things, I am seeing this (ignore the tainted, it is
-> > > > > > > from madwifi and although the module is loaded the device was never
-> > > > > > > used)
-> > > > > > > 
-> > > > > > > Could anyone make sense of this please?
-> [...]
-> > > > 
-> > > > Here's a debug patch which expensively verifies TCP's state in a number
-> > > > of places during ACK to find first spot where the actual bug occurs.
-> > > 
-> > > OK I am getting this now as the first spot:
-> > > 
-> > > P: 4 L: 2 vs 2 S: 0 vs 3 F: 0 vs 0 w: 4023500226-4023505874 (0)
-> > > skb 0 f495c180
-> > > skb 1 f480a180
-> > > skb 2 f4994600
-> > > head 3 f495c780
-> > > skb 4 f5b32480
-> > > TCP wq(s) LL  <
-> > > WARNING: at net/ipv4/tcp_ipv4.c:240 tcp_verify_wq+0x319/0x3c0()
-> > >
-> > > another one:
-> > > WARNING: at net/ipv4/tcp_output.c:1475 __tcp_push_pending_frames+0x70/0x830()
-> > > 
-> > > 
-> > > P: 4 L: 2 vs 2 S: 0 vs 3 F: 0 vs 0 w: 4023500226-4023505874 (0)
-> > > skb 0 f495c180
-> > > skb 1 f480a180
-> > > skb 2 f4994600
-> > > head 3 f495c780
-> > > skb 4 f5b32480
-> > > TCP wq(s) LL  <
-> > > TCP wq(h) +-++<
-> > > l2 s3 f0 p4 seq: su4023500226 hs241530103 sn4023505874
-> > > ------------[ cut here ]------------
-> > > WARNING: at net/ipv4/tcp_ipv4.c:240 tcp_verify_wq+0x319/0x3c0()
-> > 
-> > Please don't cut the log! It is caught here because 2+3 > 4 :-) but I need 
-> > the full log with stacktraces this time to figure it out.
-> 
-> Look here 
-> http://nn7.de/debugging/tcp.log :-)
+ fs/sysfs/file.c |    5 ++---
+ 1 files changed, 2 insertions(+), 3 deletions(-)
 
-Thanks. I had already figured it out while waiting :-), it's GSO+NewReno 
-bad interaction, I'll fix it on Monday (unless somebody is faster than 
-me)... And once again, this ain't a regression. Thanks for helping out 
-enourmously.
 
--- 
- i.
----696208474-548770356-1207420748=:8813--
+diff --git a/fs/sysfs/file.c b/fs/sysfs/file.c
+index baa663e..0a26ba8 100644
+--- a/fs/sysfs/file.c
++++ b/fs/sysfs/file.c
+@@ -128,7 +128,7 @@ sysfs_read_file(struct file *file, char __user *buf, size_t count, loff_t *ppos)
+ 	ssize_t retval = 0;
+ 
+ 	mutex_lock(&buffer->mutex);
+-	if (buffer->needs_read_fill) {
++	if (buffer->needs_read_fill || *ppos == 0) {
+ 		retval = fill_read_buffer(file->f_path.dentry,buffer);
+ 		if (retval)
+ 			goto out;
+@@ -409,8 +409,7 @@ static int sysfs_release(struct inode *inode, struct file *filp)
+  * return POLLERR|POLLPRI, and select will return the fd whether
+  * it is waiting for read, write, or exceptions.
+  * Once poll/select indicates that the value has changed, you
+- * need to close and re-open the file, as simply seeking and reading
+- * again will not get new data, or reset the state of 'poll'.
++ * need to close and re-open the file, or seek to 0 and read again.
+  * Reminder: this only works for attributes which actively support
+  * it, and it is not possible to test an attribute from userspace
+  * to see if it supports poll (Neither 'poll' nor 'select' return
+
