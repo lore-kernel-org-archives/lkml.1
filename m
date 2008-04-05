@@ -1,17 +1,16 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755050AbYDEVBJ (ORCPT <rfc822;ralf@linux-mips.org>);
-	Sat, 5 Apr 2008 17:01:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753673AbYDEVAn
+	id S1755205AbYDEVD3 (ORCPT <rfc822;ralf@linux-mips.org>);
+	Sat, 5 Apr 2008 17:03:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753932AbYDEVDD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Apr 2008 17:00:43 -0400
-Received: from fructidor.freesurf.fr ([212.43.206.30]:53955 "EHLO
+	Sat, 5 Apr 2008 17:03:03 -0400
+Received: from fructidor.freesurf.fr ([212.43.206.30]:39821 "EHLO
 	smtp-out.freesurf.fr" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753491AbYDEVAj (ORCPT
+	with ESMTP id S1753536AbYDEVC5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Apr 2008 17:00:39 -0400
-X-Greylist: delayed 1294 seconds by postgrey-1.27 at vger.kernel.org; Sat, 05 Apr 2008 17:00:38 EDT
-Message-ID: <20080405223515.26673ya8h0yff5wk@webmail-html.freesurf.fr>
-Date: Sat, 05 Apr 2008 22:35:15 +0200
+	Sat, 5 Apr 2008 17:02:57 -0400
+Message-ID: <20080405223510.65231h8jjfpzpvgg@webmail-html.freesurf.fr>
+Date: Sat, 05 Apr 2008 22:35:10 +0200
 From: su17171@freesurf.fr
 To: undisclosed-recipients:;
 Subject: Dear Friend
@@ -26,7 +25,7 @@ User-Agent: Internet Messaging Program (IMP) H3 (4.2-RC2)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1755050AbYDEVBJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1755205AbYDEVD3@vger.kernel.org>
 
 Dear Friend
 
