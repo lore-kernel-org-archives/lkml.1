@@ -1,103 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752723AbYDEAu6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753155AbYDEAyS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752723AbYDEAu6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Apr 2008 20:50:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751369AbYDEAut
+	id S1753155AbYDEAyS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Apr 2008 20:54:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751488AbYDEAyI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Apr 2008 20:50:49 -0400
-Received: from fmmailgate05.web.de ([217.72.192.243]:39480 "EHLO
-	fmmailgate05.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751350AbYDEAus convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Apr 2008 20:50:48 -0400
-Date: Sat, 05 Apr 2008 02:50:47 +0200
-Message-Id: <226243507@web.de>
-MIME-Version: 1.0
-From: devzero@web.de
-To: rogerheflin@gmail.com
-Cc: dan.hecht@vmware.com, johnstul@us.ibm.com, linux-kernel@vger.kernel.org,
-       zippel@linux-m68k.org
-Subject: =?iso-8859-15?Q?Re:_Clock_has_stopped_(time/date_looping_over_5_second?=
- =?iso-8859-15?Q?s),_things_are?=
-Organization: http://freemail.web.de/
-X-Provags-Id: V01U2FsdGVkX18Ubf5AqZwOLuY1Dp13Kb0qP3VT1WAvPgtUpIaPtizpgf21Z
- nduGPWNpUknvbIojdj7sb6sBwzmz5n2wLfckRgHkhMxUHZCeAo=
-Content-Type: text/plain; charset=iso-8859-15
-Content-Transfer-Encoding: 8BIT
+	Fri, 4 Apr 2008 20:54:08 -0400
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:45433 "EHLO e6.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751068AbYDEAyH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Apr 2008 20:54:07 -0400
+Subject: Re: [Devel] [RFC PATCH 0/4] Container Freezer: Reuse
+	Suspend	Freezer
+From: Matt Helsley <matthltc@us.ibm.com>
+To: Oren Laadan <orenl@cs.columbia.edu>
+Cc: Paul Menage <menage@google.com>,
+       Linux Containers <containers@lists.linux-foundation.org>,
+       Cedric Le Goater <clg@fr.ibm.com>,
+       Linux-Kernel <linux-kernel@vger.kernel.org>,
+       linux-pm@lists.linux-foundation.org
+In-Reply-To: <47F6C829.4010109@cs.columbia.edu>
+References: <20080403210316.397506379@us.ibm.com>
+	 <6599ad830804031649p6bbc60f3s59fb7c25a7260505@mail.gmail.com>
+	 <1207278180.30178.94.camel@localhost.localdomain>
+	 <47F64FBB.2080207@cs.columbia.edu>
+	 <1207348060.30178.166.camel@localhost.localdomain>
+	 <47F6C829.4010109@cs.columbia.edu>
+Content-Type: text/plain
+Organization: IBM Linux Technology Center
+Date: Fri, 04 Apr 2008 17:54:03 -0700
+Message-Id: <1207356843.30178.180.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-so, this happens on real hardware for you?
 
-i could reproduce this with a linux virtual machine on vmware - whenever i suspended the windows host with a linux vm running in vmware, after resume the linux vm showed exactly this issue.
-after some investigation i found, that it would recover from that state after some time - and the time needed for recover was (more or less) proportional to that time the host was in suspend(hibernate) state.
+On Fri, 2008-04-04 at 20:30 -0400, Oren Laadan wrote:
+> 
+> Matt Helsley wrote:
 
-also see http://marc.info/?l=linux-kernel&m=120186717701371&w=2
+<snip>
 
-i thought that was vmware related and i gave a bug report to dan hecht - i didn`t hear anything since then, but i think it`s worth CC`ing him.
+> > 	I don't have an upper limit on how many more states we will need and I
+> > think that number impacts the interface significantly. Can you give us
+> > an estimate?
+> 
+> In Zap there are (using the current terminology):
+> RUNNING - running
+> FREEZING - transition to FROZEN
+> FROZEN - frozen
+> THAWING - transition to RUNNING
+> CKPTING - being checkpointed (needs special semantics* for some ops)
+> RSTRTING - being restarted (may need special semantics* for some ops)
+> ABORTING - transition to DEAD (mainly when aborting a failed restart)
+> DEAD - dead (but not fully cleaned up yet)
+> 
+> There is also "SPECIAL" in which some operations are not allowed;
+> this simplifies dealing with a bunch of races related to checkpoint/
+> restart, but I'm not sure it's a must. If anything, it only stays
+> for very short times (like an uninterruptible sleep) saying "don't
+> mess with this container now, it's busy".
+> 
+> I have very good justifications for almost all the states, a good
+> reasoning for DEAD, and a case for SPECIAL (although there may be
+> a way to do without it).
+> 
+> Despite the "many" states, there are very few transitions: CKPTING
+> can only be reached from- and changed to- FROZEN. A similar rule holds
+> for RSTRTING. ABORTING is reached from RSTRTING, and leads to DEAD.
+> The only one I don't cover is reaching DEAD from any other state
+> (except SPECIAL) but I never saw a reason to explicitly encode that.
+> Something like this (without SPECIAL):
+> 
+>           ->  FREEZING  ->          <-> CKPTING
+> RUNNING                    FROZEN
+>           <-  THAWING   <-          <-> RSTRTING -> ABORTING -> DEAD
+> 
+> Out of curiosity - why does the number of states impact the interface
+> so much ?
 
-not sure if 
-[PATCH 1/2] Introduce clocksource_forward_now -> http://marc.info/?l=linux-kernel&m=120716471203567&w=2
-[PATCH 2/2] Introduce CLOCK_MONOTONIC_RAW -> http://marc.info/?l=linux-kernel&m=120596518521892&w=2 
-is related ? (also CC`d the patch authors, they will probably know)
+	Only that, if you're trying to keep the interface human readable, then
+having too many names for things (states and transitions) can make the
+interface less than intuitive. Doesn't look like that's an issue for the
+above state machine though so I think you're right -- a single file with
+transitions encoded as states seems best.
 
-regards
-roland
+> > 
+> >> Second, my gut feeling is that a single, atomic operation to get the
+> >> status is preferred over multiple (non-atomic) operations. In other
+> >> words, I suggest a single state file instead of two. You can encode
+> >> every possible transition in a single state. It's not that the kernel
+> > 
+> > 	If the transitions are to be human-readable and there are more than a
+> > small number of states it may not be desirable to encode transitions as
+> > states. Paul's reason for suggesting the additional file(s), as best I
+> > could tell, was to keep the interface human-readable.
+> 
+> The scheme above has very few transitions. Whatever be the final scheme,
+> I would prefer not to have many possible transition (the full matrix).
+> It probably isn't necessary either.
+> 
+> The main idea behind limiting the transitions above, is that checkpoint
+> requires to first freeze the container to be able to capture a consistent
+> view of the state of its processes; that means, for example, that we also
+> would like to prevent signals from being delivered to tasks in a frozen
+> state (if you do want to signal - thaw it first).
+> 
+> There is also the issue of a pre-checkpoint (a.k.a live migration) where
+> significant state (mainly memory) of the container is recorded while the
+> container is still running, and when it's finally frozen little state
+> remains to be saved, reducing the application downtime. I didn't see a
+> need for a special state for this case; instead Zap uses a status flag
+> that belongs to the container.
+> 
+> Oren.
 
+Thanks for the explanation of the states.
 
-
-List:       linux-kernel
-Subject:    Clock has stopped (time/date looping over 5 seconds), things are
-From:       Roger Heflin <rogerheflin () gmail ! com>
-Date:       2008-04-04 21:27:11
-Message-ID: 47F69D2F.8010607 () gmail ! com
-[Download message RAW]
-
-So far what I have is that the clock is moving between
-10:01:03 to 10:01:07 (when it gets to 07 it goes back to 03), doing rdate -s
-results in things changing:
-
-16:12:38 to 16:12:43 (resets back to :38).
-
-Doing this:
-while true ; do date; usleep 1000000; done
-Fri Apr  4 16:12:39 CDT 2008
-Fri Apr  4 16:12:40 CDT 2008
-Fri Apr  4 16:12:41 CDT 2008
-Fri Apr  4 16:12:42 CDT 2008
-Fri Apr  4 16:12:43 CDT 2008
-
-It stops at :43, ^C is required, and you can then restart it with repeatable 
-results.
-
-This F7 - 2.6.23.15-80.fc7
-
-dmesg/messages contain nothing abnormal.
-
-This machine has done it several times, a freqency of maybe 1x per every couple 
-of weeks or so.   I believe it had also done this with: 2.6.22.9-91.fc7 so it
-has been doing this for a while.   It used to work with some older kernel (I 
-don't know which).
-
-Given what the clock is doing, things that sleep at the wrong time hang forever, 
-and a number of other things fail to work.
-
-vmstat 1 results in a single line being printed out, and then a floating point 
-exception.
-
-"shutdown -r now" fails to complete, power cycle is required to get the machine
-back up.
-
-I don't believe any hardware failure that I can think of would cause the clock 
-to do what mine is doing.
-
-Ideas?
-
-                                Roger
-_________________________________________________________________________
-Mit der Gruppen-SMS von WEB.DE FreeMail können Sie eine SMS an alle 
-Freunde gleichzeitig schicken: http://freemail.web.de/features/?mc=021179
-
-
+Cheers,
+	-Matt Helsley
 
