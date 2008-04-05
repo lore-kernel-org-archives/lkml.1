@@ -1,56 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752206AbYDELBo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752407AbYDELJi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752206AbYDELBo (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Apr 2008 07:01:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751466AbYDELBf
+	id S1752407AbYDELJi (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Apr 2008 07:09:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751478AbYDELJ1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Apr 2008 07:01:35 -0400
-Received: from gateway.drzeus.cx ([85.8.24.16]:33962 "EHLO smtp.drzeus.cx"
+	Sat, 5 Apr 2008 07:09:27 -0400
+Received: from ns.unixsol.org ([193.110.159.2]:44252 "EHLO ns.unixsol.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751476AbYDELBf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Apr 2008 07:01:35 -0400
-Date: Sat, 5 Apr 2008 13:01:02 +0200
-From: Pierre Ossman <drzeus-list@drzeus.cx>
-To: Rogier Stam <r_stam3108@yahoo.com>, Russell King <rmk@arm.linux.org.uk>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [MMC Stack] Partition limitation question
-Message-ID: <20080405130102.08c9be93@mjolnir.drzeus.cx>
-In-Reply-To: <904538.60285.qm@web33108.mail.mud.yahoo.com>
-References: <904538.60285.qm@web33108.mail.mud.yahoo.com>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1751476AbYDELJ0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 Apr 2008 07:09:26 -0400
+Message-ID: <47F75DE5.4060407@unixsol.org>
+Date: Sat, 05 Apr 2008 14:09:25 +0300
+From: Georgi Chorbadzhiyski <gf@unixsol.org>
+Organization: Unix Solutions Ltd. (http://unixsol.org)
+User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
+MIME-Version: 1.0
+To: =?ISO-8859-1?Q?Ilpo_J=E4rvinen?= <ilpo.jarvinen@helsinki.fi>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Netdev <netdev@vger.kernel.org>
+Subject: Re: Linux 2.6.25-rc6: WARNING: at net/ipv4/tcp_input.c:2510
+References: <47EBCB75.6030600@unixsol.org> <Pine.LNX.4.64.0804031315360.21524@wrl-59.cs.helsinki.fi> <47F5C7D1.1080906@unixsol.org> <Pine.LNX.4.64.0804042209530.415@wrl-59.cs.helsinki.fi>
+In-Reply-To: <Pine.LNX.4.64.0804042209530.415@wrl-59.cs.helsinki.fi>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 21 Mar 2008 04:38:04 -0700 (PDT)
-Rogier Stam <r_stam3108@yahoo.com> wrote:
-
-> Hi,
+Around 04/04/08 22:15, Ilpo Järvinen scribbled:
+>> The machine that gave me this error is a http and ftp server handling not
+>> very busy distro mirror (if this can give you any clues).
+>>
+>>> processing expensive verification of TCP state (validates TCP write queue 
+>>> invariants multiple times per ACK by scanning through the write queue) on 
+>>> such machine?
+>> How to run such a thing, can you give me some pointers?
 > 
-> I had a short question about the limitation of max. 8
-> partitions in the MMC stack. Before the kernel was
-> limited to 256 minor numbers, but I believe this is no
-> longer the case (65536 if I recall correctly). Is
-> there a way around this 8 partition limitation?
+> I sent the patch recently to netdev/lkml:
 > 
+>   http://marc.info/?l=linux-netdev&m=120733529216457&w=2
+> 
+> But it's very expensive in processing wise so it might not be wise to put 
+> it in if performance is important for you.
 
-Who in their right mind has more than 8 partitions? :)
-
-> I understand that simply renumbering all minor numbers
-> is not really a preferred situation as it would
-> require everyone to recreate their device nodes.
-
-Indeed. And some embedded systems might not be able to use 32-bit
-device nodes. Russell, do you have any insight to share?
-
-Rgds
+Ok, I patched the kernel and will let it run for a while. Performance is
+an issue but I think it's better to pinpoint the bug.
 
 -- 
-     -- Pierre Ossman
-
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  PulseAudio, core developer          http://pulseaudio.org
-  rdesktop, core developer          http://www.rdesktop.org
+Georgi Chorbadzhiyski
+http://georgi.unixsol.org/
