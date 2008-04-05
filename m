@@ -1,86 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754158AbYDER1T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753951AbYDERt0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754158AbYDER1T (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Apr 2008 13:27:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752675AbYDER1F
+	id S1753951AbYDERt0 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Apr 2008 13:49:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752756AbYDERtR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Apr 2008 13:27:05 -0400
-Received: from rn-out-0910.google.com ([64.233.170.185]:12257 "EHLO
-	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752591AbYDER1D (ORCPT
+	Sat, 5 Apr 2008 13:49:17 -0400
+Received: from e28smtp03.in.ibm.com ([59.145.155.3]:49889 "EHLO
+	e28smtp03.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752655AbYDERtR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Apr 2008 13:27:03 -0400
-Message-ID: <47F7B661.6090606@codemonkey.ws>
-Date: Sat, 05 Apr 2008 12:26:57 -0500
-From: Anthony Liguori <anthony@codemonkey.ws>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
+	Sat, 5 Apr 2008 13:49:17 -0400
+Message-ID: <47F7BB69.3000502@linux.vnet.ibm.com>
+Date: Sat, 05 Apr 2008 23:18:25 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-To: Rusty Russell <rusty@rustcorp.com.au>
-CC: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       Max Krasnyansky <maxk@qualcomm.com>,
-       virtualization@lists.linux-foundation.org
-Subject: Re: [PATCH RFC 3/5] tun: vringfd receive support.
-References: <200804052202.09157.rusty@rustcorp.com.au>	<200804052204.28518.rusty@rustcorp.com.au> <200804052205.43824.rusty__2650.41595926068$1207397436$gmane$org@rustcorp.com.au>
-In-Reply-To: <200804052205.43824.rusty__2650.41595926068$1207397436$gmane$org@rustcorp.com.au>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Paul Menage <menage@google.com>
+CC: Pavel Emelianov <xemul@openvz.org>, Hugh Dickins <hugh@veritas.com>,
+       Sudhir Kumar <skumar@linux.vnet.ibm.com>,
+       YAMAMOTO Takashi <yamamoto@valinux.co.jp>, lizf@cn.fujitsu.com,
+       linux-kernel@vger.kernel.org, taka@valinux.co.jp, linux-mm@kvack.org,
+       David Rientjes <rientjes@google.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Subject: Re: [-mm] Add an owner to the mm_struct (v8)
+References: <20080404080544.26313.38199.sendpatchset@localhost.localdomain> <6599ad830804040112q3dd5333aodf6a170c78e61dc8@mail.gmail.com> <47F5E69C.9@linux.vnet.ibm.com> <6599ad830804040150j4946cf92h886bb26000319f3b@mail.gmail.com> <47F5F3FA.7060709@linux.vnet.ibm.com> <6599ad830804041211r37848a6coaa900d8bdac40fbe@mail.gmail.com> <47F79102.6090406@linux.vnet.ibm.com> <6599ad830804051023v69caa3d4h6e26ccb420bca899@mail.gmail.com>
+In-Reply-To: <6599ad830804051023v69caa3d4h6e26ccb420bca899@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rusty Russell wrote:
-> This patch modifies tun to allow a vringfd to specify the receive
-> buffer.  Because we can't copy to userspace in bh context, we queue
-> like normal then use the "pull" hook to actually do the copy.
+Paul Menage wrote:
+> On Sat, Apr 5, 2008 at 7:47 AM, Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+>>  Repeating my question earlier
+>>
+>>  Can we delay setting task->cgroups = &init_css_set for the group_leader, until
+>>  all threads have exited?
 > 
-> More thought needs to be put into the possible races with ring
-> registration and a simultaneous close, for example (see FIXME).
+> Potentially, yes. It also might make more sense to move the
+> exit_cgroup() for all threads to a later point rather than special
+> case delayed group leaders.
 > 
-> We use struct virtio_net_hdr prepended to packets in the ring to allow
-> userspace to receive GSO packets in future (at the moment, the tun
-> driver doesn't tell the stack it can handle them, so these cases are
-> never taken).
+
+Yes, that makes sense. I think that patch should be independent of this one
+though? What do you think?
+
+>> If the user is unable to remove a cgroup node, it will
+>>  be due a valid reason, the group_leader is still around, since the threads are
+>>  still around. The user in that case should wait for notify_on_release.
+>>
+>>  >
+>>  > To me, it seems that setting up a *virtual address space* cgroup
+>>  > hierarchy and then putting half your threads in one group and half in
+>>  > the another is asking for trouble. We need to not break in that
+>>  > situation, but I'm not sure it's a case to optimize for.
+>>
+>>  That could potentially happen, if the virtual address space cgroup and cpu
+>>  control cgroup were bound together in the same hierarchy by the sysadmin.
 > 
-> Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+> Yes, I agree it could potentially happen. But it seems like a strange
+> thing to do if you're planning to be not have the same groupings for
+> cpu and va.
+> 
 
-<snip>
+It's easier to set it up that way. Usually the end user gets the same SLA for
+memory, CPU and other resources, so it makes sense to bind the controllers together.
 
-> +
-> +#ifdef CONFIG_VRINGFD
+>>  I measured the overhead of removing the delay_group_leader optimization and
+>>  found a 4% impact on throughput (with volanomark, that is one of the
+>>  multi-threaded benchmarks I know of).
+> 
+> Interesting, I thought (although I've never actually looked at the
+> code) that volanomark was more of a scheduling benchmark than a
+> process start/exit benchmark. How frequently does it have processes
+> (not threads) exiting?
+> 
 
-I think the rest of the code needs these for it to actually work without 
-VRINGFD.
+I could not find any other interesting benchmark for benchmarking fork/exits. I
+know that volanomark is heavily threaded, so I used it. The threads quickly exit
+after processing the messages, I thought that would be a good test to see the
+overhead.
 
-> +static void unset_recv(void *_tun)
-> +{
-> +	struct tun_struct *tun = _tun;
-> +
-> +	tun->inring = NULL;
-> +}
-> +
-> +/* Returns number of used buffers, or negative errno. */
-> +static int pull_recv_skbs(void *_tun)
-> +{
-> +	struct tun_struct *tun = _tun;
-> +	int err = 0, num_copied = 0;
-> +	struct sk_buff *skb;
-> +
-> +	while ((skb = skb_dequeue(&tun->readq)) != NULL) {
-> +		struct iovec iov[1+MAX_SKB_FRAGS];
-> +		struct virtio_net_hdr gso = { 0 }; /* no info leak */
-> +		unsigned int iovnum = ARRAY_SIZE(iov);
-> +		unsigned long len;
-> +		int id;
-> +
-> +		id = vring_get_buffer(tun->inring, iov, &iovnum, &len,
-> +				      NULL, NULL, NULL);
-> +		if (id <= 0) {
-> +			err = id;
-> +			break;
-> +		}
+> How many runs was that over? Ingo's recently posted volanomark tests
+> against -rc7 showed ~3% random variation between runs.
 
-Ah, I see now why you're passing something from the stack.
+I ran the test four times. I took the average of runs, I did see some variation
+between runs, I did not calculate the standard deviation.
 
-Regards,
-
-Anthony Liguori
+-- 
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
