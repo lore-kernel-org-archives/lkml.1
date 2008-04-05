@@ -1,34 +1,40 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758079AbYDDInK (ORCPT <rfc822;ralf@linux-mips.org>);
-	Fri, 4 Apr 2008 04:43:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753162AbYDDIm4
+	id S1751942AbYDEENi (ORCPT <rfc822;ralf@linux-mips.org>);
+	Sat, 5 Apr 2008 00:13:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750883AbYDEENc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Apr 2008 04:42:56 -0400
-Received: from qmta08.westchester.pa.mail.comcast.net ([76.96.62.80]:34937
-	"EHLO QMTA08.westchester.pa.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753118AbYDDIm4 (ORCPT
+	Sat, 5 Apr 2008 00:13:32 -0400
+Received: from mtai01.charter.net ([209.225.8.181]:53883 "EHLO
+	mtai01.charter.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750766AbYDEENb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Apr 2008 04:42:56 -0400
-X-Authority-Analysis: v=1.0 c=1 a=gbOavZVEiH5QMW3eFa0Cww==:17
- a=uiDxtNrRHCEiG8wo_m4A:9 a=PoQiKgkq03v9o_c5T6UuVGuhA2oA:4 a=2guI-uaQSDUA:10
- a=XF7b4UCPwd8A:10
-From: office_201@comcast.net
-Subject: CONGRATULATIONS!!!
-Date: Fri, 04 Apr 2008 08:42:48 +0000
-Message-Id: <040420080842.11274.47F5EA050005486400002C0A2216548686CECFCDA10A0C07000001@comcast.net>
-X-Mailer: AT&T Message Center Version 1 (Oct 30 2007)
-X-Authenticated-Sender: b2ZmaWNlXzIwMUBjb21jYXN0Lm5ldA==
+	Sat, 5 Apr 2008 00:13:31 -0400
+Message-ID: <20080405001329.LY2P8.212192.root@fepweb04>
+Date: Fri, 4 Apr 2008 21:13:29 -0700
+From: UK BEDFORD <mamaw07@charter.net>
+Reply-To: osabohen@yahoo.com
+Subject: IMMEDIATELY,,,,,,  REPLY
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
+X-Priority: 3 (Normal)
+Sensitivity: Normal
+X-Originating-IP: from 41.194.46.118 by webmail.charter.net; Sat, 5 Apr 2008 0:13:27 -0400
+X-Chzlrs: 0
 To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1758079AbYDDInK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1751942AbYDEENi@vger.kernel.org>
 
-This is to inform you that you have won yourself 1million euro on the
- on going powerball euro international 2008.
-CONTACT NAME: PETER RAYMUND 
-TELEPHONE: +447031916108
-EMAIL: powerball_claim14@yahoo.dk
-Sincerely, 
-Margaret Ferguson 
 
+Are you in need of loans of anykind?
+
+Here is an opportunity to get your small and large loans to enhance  
+and start up your business of anykind.we give out loans to the public  
+at a very reduced interest rate.we are dynamic,reliable,efficient,and  
+trust worthy. Contact us now for your short and long term  
+loans.reply us now, for more information and application.
+
+Regards,
+OFLEX WAKE,
