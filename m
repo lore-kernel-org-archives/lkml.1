@@ -1,188 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754553AbYDETlD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754712AbYDETqX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754553AbYDETlD (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Apr 2008 15:41:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753326AbYDETkx
+	id S1754712AbYDETqX (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Apr 2008 15:46:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753326AbYDETqQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Apr 2008 15:40:53 -0400
-Received: from E23SMTP04.au.ibm.com ([202.81.18.173]:44234 "EHLO
-	e23smtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753265AbYDETkw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Apr 2008 15:40:52 -0400
-Date: Sun, 6 Apr 2008 01:10:41 +0530
-From: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-To: Balaji Rao <balajirrao@gmail.com>
-Cc: linux-kernel@vger.kernel.org, containers@lists.osdl.org, menage@google.com,
-       a.p.zijlstra@chello.nl, balbir@in.ibm.com
-Subject: Re: [RFC][-mm] [1/2] Simple stats for cpu resource controller
-Message-ID: <20080405194041.GB21279@linux.vnet.ibm.com>
-Reply-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-References: <200804052339.46632.balajirrao@gmail.com>
+	Sat, 5 Apr 2008 15:46:16 -0400
+Received: from mail.tmr.com ([64.65.253.246]:59734 "EHLO gaimboi.tmr.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753260AbYDETqO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 Apr 2008 15:46:14 -0400
+Message-ID: <47F7D7AE.6090702@tmr.com>
+Date: Sat, 05 Apr 2008 15:49:02 -0400
+From: Bill Davidsen <davidsen@tmr.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200804052339.46632.balajirrao@gmail.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andre Tomt <andre@tomt.net>,
+       Matthew Ranostay <mranostay@embeddedalley.com>
+Subject: Re: 2.6.25-git regression with snd-hda-intel on Dell XPS M1330, no
+ analog sound
+References: <pdj7pZVURbL.A.42H.kDW9HB@albercik> <pdYe6zNQVl.A.Cu.0EW9HB@albercik>
+In-Reply-To: <pdYe6zNQVl.A.Cu.0EW9HB@albercik>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Apr 05, 2008 at 11:39:46PM +0530, Balaji Rao wrote:
-> This patch implements some trivial statistics for the CPU controller.
+Rafael J. Wysocki wrote:
+> The following report is on the current list of known regressions
+> from 2.6.24.  Please verify if the issue is still present in the
+> mainline.
 > 
-> As per our current requirements, we have decided to keep the stats tick based as opposed to using CFS precise accounting.
 > 
-> Signed-off-by: Balaji Rao <balajirrao@gmail.com>
-> CC: Balbir Singh <balbir@linux.vnet.ibm.com>
-> CC: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10302
+> Subject		: 2.6.25-git regression with snd-hda-intel on Dell XPS M1330, no analog sound
+> Submitter	: Andre Tomt <andre@tomt.net>
+> Date		: 2008-03-21 20:03 (14 days old)
+> References	: http://lkml.org/lkml/2008/3/21/295
+> Handled-By	: Matthew Ranostay <mranostay@embeddedalley.com>
 > 
-> diff --git a/kernel/sched.c b/kernel/sched.c
-> index 8206fda..e2acf06 100644
-> --- a/kernel/sched.c
-> +++ b/kernel/sched.c
-> @@ -164,10 +164,38 @@ struct cfs_rq;
 > 
->  static LIST_HEAD(task_groups);
-> 
-> +#ifdef CONFIG_CGROUP_SCHED
-> +enum cpu_cgroup_stat_index {
-> +	CPU_CGROUP_STAT_UTIME, /* Usertime of the task group */
-> +	CPU_CGROUP_STAT_STIME, /* Kerneltime of the task group */
-> +
-> +	CPU_CGROUP_STAT_NSTATS,
-
-why the extra space?
-
-> +};
-> +
-> +struct cpu_cgroup_stat_cpu {
-> +	s64 count[CPU_CGROUP_STAT_NSTATS];
-
-u64? time does not go negative :)
-count also is not very clear? Can you give a more descriptive name?
-
-> +} ____cacheline_aligned_in_smp;
-> +
-> +struct cpu_cgroup_stat {
-> +	struct cpu_cgroup_stat_cpu cpustat[NR_CPUS];
-> +};
-> +
-> +/* Called under irq disable. */
-> +static void __cpu_cgroup_stat_add(struct cpu_cgroup_stat *stat,
-> +		enum cpu_cgroup_stat_index idx, int val)
-> +{
-> +	int cpu = smp_processor_id();
-> +
-> +	BUG_ON(!irqs_disabled());
-> +	stat->cpustat[cpu].count[idx] += val;
-> +}
-> +#endif
-> +
->  /* task group related information */
->  struct task_group {
->  #ifdef CONFIG_CGROUP_SCHED
->  	struct cgroup_subsys_state css;
-> +	struct cpu_cgroup_stat stat;
->  #endif
-> 
->  #ifdef CONFIG_FAIR_GROUP_SCHED
-> @@ -3733,6 +3761,16 @@ void account_user_time(struct task_struct *p, cputime_t cputime)
->  		cpustat->nice = cputime64_add(cpustat->nice, tmp);
->  	else
->  		cpustat->user = cputime64_add(cpustat->user, tmp);
-> +
-> +	/* Charge the task's group */
-> +#ifdef CONFIG_CGROUP_SCHED
-> +	{
-> +	struct task_group *tg;
-> +	tg = task_group(p);
-> +	__cpu_cgroup_stat_add(&tg->stat, CPU_CGROUP_STAT_UTIME,
-> +			cputime_to_msecs(cputime));
-> +	}
-> +#endif
->  }
-> 
->  /*
-> @@ -3796,6 +3834,15 @@ void account_system_time(struct task_struct *p, int hardirq_offset,
->  		cpustat->idle = cputime64_add(cpustat->idle, tmp);
->  	/* Account for system time used */
->  	acct_update_integrals(p);
-> +
-> +#ifdef CONFIG_CGROUP_SCHED
-> +	{
-> +	struct task_group *tg;
-> +	tg = task_group(p);
-> +	__cpu_cgroup_stat_add(&tg->stat, CPU_CGROUP_STAT_STIME,
-> +			cputime_to_msecs(cputime));
-> +	}
-> +#endif
->  }
-> 
->  /*
-> @@ -8004,6 +8051,45 @@ static u64 cpu_shares_read_u64(struct cgroup *cgrp, struct cftype *cft)
-> 
->  	return (u64) tg->shares;
->  }
-> +
-> +static s64 cpu_cgroup_read_stat(struct cpu_cgroup_stat *stat,
-> +		enum cpu_cgroup_stat_index idx)
-> +{
-> +	int cpu;
-> +	s64 ret = 0;
-> +	unsigned long flags;
-> +
-> +	local_irq_save(flags);
-
-I am just wondering. Is local_irq_save() enough?
-
-> +	for_each_possible_cpu(cpu)
-> +		ret += stat->cpustat[cpu].count[idx];
-> +	local_irq_restore(flags);
-> +
-> +	return ret;
-> +}
-> +
-> +static const struct cpu_cgroup_stat_desc {
-> +	const char *msg;
-> +	u64 unit;
-> +} cpu_cgroup_stat_desc[] = {
-> +	[CPU_CGROUP_STAT_UTIME] = { "utime", 1, },
-> +	[CPU_CGROUP_STAT_STIME] = { "stime", 1, },
-> +};
-> +
-> +static int cpu_cgroup_stats_show(struct cgroup *cgrp, struct cftype *cft,
-> +				struct cgroup_map_cb *cb)
-> +{
-> +	struct task_group *tg = cgroup_tg(cgrp);
-> +	struct cpu_cgroup_stat *stat = &tg->stat;
-> +	int i;
-> +
-> +	for (i = 0; i < ARRAY_SIZE(stat->cpustat[0].count); i++) {
-> +		s64 val;
-> +		val = cpu_cgroup_read_stat(stat, i);
-> +		val *= cpu_cgroup_stat_desc[i].unit;
-> +		cb->fill(cb, cpu_cgroup_stat_desc[i].msg, val);
-> +	}
-> +	return 0;
-> +}
->  #endif
-> 
->  #ifdef CONFIG_RT_GROUP_SCHED
-> @@ -8026,6 +8112,11 @@ static struct cftype cpu_files[] = {
->  		.read_u64 = cpu_shares_read_u64,
->  		.write_u64 = cpu_shares_write_u64,
->  	},
-> +
-> +	{
-> +		.name = "stat",
-> +		.read_map = cpu_cgroup_stats_show,
-> +	},
->  #endif
->  #ifdef CONFIG_RT_GROUP_SCHED
->  	{
-> 
+Is this by any chance related to the RTC old/new vs. sound problem noted 
+in another thread?
 
 -- 
-regards,
-Dhaval
+Bill Davidsen <davidsen@tmr.com>
+   "We have more to fear from the bungling of the incompetent than from
+the machinations of the wicked."  - from Slashdot
