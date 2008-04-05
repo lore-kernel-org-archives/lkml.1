@@ -1,90 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751892AbYDEJ6M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752096AbYDEK3k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751892AbYDEJ6M (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Apr 2008 05:58:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751372AbYDEJ56
+	id S1752096AbYDEK3k (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Apr 2008 06:29:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751420AbYDEK3b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Apr 2008 05:57:58 -0400
-Received: from gateway.drzeus.cx ([85.8.24.16]:39765 "EHLO smtp.drzeus.cx"
+	Sat, 5 Apr 2008 06:29:31 -0400
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:35292 "EHLO smtp6.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751356AbYDEJ55 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Apr 2008 05:57:57 -0400
-Date: Sat, 5 Apr 2008 11:57:27 +0200
-From: Pierre Ossman <drzeus-list@drzeus.cx>
-To: Greg KH <gregkh@suse.de>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: pci: add to global list before sysfs?
-Message-ID: <20080405115727.1265e8a9@mjolnir.drzeus.cx>
-In-Reply-To: <20080404210132.GA14418@suse.de>
-References: <20080404191350.7f0183a5@mjolnir.drzeus.cx>
-	<20080404210132.GA14418@suse.de>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1751439AbYDEK3a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 Apr 2008 06:29:30 -0400
+Date: Sat, 5 Apr 2008 13:24:08 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>, sct@redhat.com,
+       akpm@linux-foundation.org, adilger@clusterfs.com, geert@linux-m68k.org,
+       zippel@linux-m68k.org
+Cc: linux-ext4@vger.kernel.org, linux-m68k@vger.kernel.org
+Subject: ext4 compile error on m68k
+Message-ID: <20080405102408.GB30987@cs181133002.pp.htv.fi>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 4 Apr 2008 14:01:32 -0700
-Greg KH <gregkh@suse.de> wrote:
+Commit aa02ad67d9b308290fde390682cd039b29f7ab85
+"ext4: Add ext4_find_next_bit()" causes the following regression:
 
-> 
-> What "global list"?  You mean the one that I just deleted with my
-> patchset that is in -mm and going to be in 2.6.26?  :)
-> 
+<--  snip  -->
 
-*gnn*
+...
+  CC [M]  fs/ext4/mballoc.o
+/home/bunk/linux/kernel-2.6/git/linux-2.6/fs/ext4/mballoc.c: In function 'mb_find_next_bit':
+/home/bunk/linux/kernel-2.6/git/linux-2.6/fs/ext4/mballoc.c:696: error: implicit declaration of function 'generic_find_next_le_bit'
+make[3]: *** [fs/ext4/mballoc.o] Error 1
 
-> 
-> How will changing the addition of the device to the list affect this
-> behavior?  Do you want to walk the list in your driver's probe function,
-> looking for the "subfunction" that is not yet added to the list?
-> 
+<--  snip  -->
 
-Yes. Things work fine when the driver is loaded after the entire PCI
-bus has been scanned, but not when new cards are hotplugged with the
-driver already present. I'd like the behaviour to be the same in both
-cases.
+cu
+Adrian
 
-> > Is it possible to do this or will things break left and right if I
-> > add them to the global list before I register them with the driver core?
-> 
-> As I mention above, the "global list" is now gone, so it's going to be a
-> bit harder to do this.  We now only keep one list of all PCI devices,
-> and that is with the driver core mechanisms as the duplicate list was
-> just sitting there doing nothing for the past 4 years.
-> 
-
-Talk about bad timing...
-
-> So is the problem that your driver need to bind to multiple pci devices
-> at the same time in order to work properly?
-> 
-
-More or less. Primarily it needs to know which other subfunctions are
-there, but in one of the two cases it also needs to fiddle some PCI
-config space registers.
-
-> Or is this just really broken hardware?
-> 
-
-It is. Deliberately broken in order to work with a certain other broken
-operating system.
-
-They have two interfaces for the same piece of hardware, and you need
-to make sure you only use one of them or things go south very quickly.
-To make things worse, you do not know which of the two will be
-available for any given card. Hence the need to scan the bus.
-
-In one of the cases we currently try to disable the secondary
-interface, which is done by PCI config space modifications on
-subfunction 0.
-
-Rgds
 -- 
-     -- Pierre Ossman
 
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  PulseAudio, core developer          http://pulseaudio.org
-  rdesktop, core developer          http://www.rdesktop.org
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
