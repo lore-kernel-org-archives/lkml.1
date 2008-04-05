@@ -1,49 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753142AbYDEA6Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753168AbYDEBG6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753142AbYDEA6Q (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Apr 2008 20:58:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751378AbYDEA6E
+	id S1753168AbYDEBG6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Apr 2008 21:06:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751488AbYDEBGq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Apr 2008 20:58:04 -0400
-Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:38549
-	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751350AbYDEA6D (ORCPT
+	Fri, 4 Apr 2008 21:06:46 -0400
+Received: from smtp112.mail.mud.yahoo.com ([209.191.84.65]:32722 "HELO
+	smtp112.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751372AbYDEBGp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Apr 2008 20:58:03 -0400
-Date: Sat, 5 Apr 2008 02:57:59 +0200
-From: Andrea Arcangeli <andrea@qumranet.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Robin Holt <holt@sgi.com>, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       kvm-devel@lists.sourceforge.net,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, general@lists.openfabrics.org,
-       steiner@sgi.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [patch 02/10] emm: notifier logic
-Message-ID: <20080405005759.GH14784@duo.random>
-References: <20080404223048.374852899@sgi.com> <20080404223131.469710551@sgi.com>
+	Fri, 4 Apr 2008 21:06:45 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=aUIce9Ghqji7GTs1SgJdxS3yv5EihPopLrEXXR7zqSuX3OkkmlamIiUKrkeHy+p55yIQrEzCobVQEypaX0rmFFR4sYygyiTy1MFLAFR0vjyTIy7mI+a+93JwCKtJ6Vog6GWv+wPK1dGMIh+sqImzNo4QUP5QVdFKE5pUO1W7mq8=  ;
+X-YMail-OSG: LrXZ0PcVM1mWYyamRX6Mv5bB.R7JfLVcUqPSlTpELUEo.XJsQyYCP0w0OrTC2CqrEABUe1g6Tg--
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Bodo Eggert <7eggert@gmx.de>
+Subject: Re: GFP_ATOMIC page allocation failures.
+Date: Sat, 5 Apr 2008 12:06:37 +1100
+User-Agent: KMail/1.9.5
+Cc: Jeff Garzik <jeff@garzik.org>, Andrew Morton <akpm@linux-foundation.org>,
+       Chris Snook <csnook@redhat.com>, Dave Jones <davej@codemonkey.org.uk>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       NetDev <netdev@vger.kernel.org>, David Miller <davem@davemloft.net>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+References: <adYyJ-20N-11@gated-at.bofh.it> <200804042159.54220.nickpiggin@yahoo.com.au> <Pine.LNX.4.58.0804041307500.9036@be10.lrz>
+In-Reply-To: <Pine.LNX.4.58.0804041307500.9036@be10.lrz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080404223131.469710551@sgi.com>
+Message-Id: <200804051206.37394.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 04, 2008 at 03:30:50PM -0700, Christoph Lameter wrote:
-> +	mm_lock(mm);
-> +	e->next = mm->emm_notifier;
-> +	/*
-> +	 * The update to emm_notifier (e->next) must be visible
-> +	 * before the pointer becomes visible.
-> +	 * rcu_assign_pointer() does exactly what we need.
-> +	 */
-> +	rcu_assign_pointer(mm->emm_notifier, e);
-> +	mm_unlock(mm);
+On Friday 04 April 2008 22:35, Bodo Eggert wrote:
+> On Fri, 4 Apr 2008, Nick Piggin wrote:
 
-My mm_lock solution makes all rcu serialization an unnecessary
-overhead so you should remove it like I already did in #v11. If it
-wasn't the case, then mm_lock wouldn't be a definitive fix for the
-race.
+> > But actually developers do sometimes want see the event even if it is
+> > relatively infrequent...
+>
+> You shouldn't frighten the users either. /proc/sys/vm/debug?
 
-> +		e = rcu_dereference(e->next);
-
-Same here.
+Hence changing the message a to make it clear that it is not a
+problem if it is infrequent.
