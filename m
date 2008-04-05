@@ -1,47 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754247AbYDERwv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753173AbYDERxI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754247AbYDERwv (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Apr 2008 13:52:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752817AbYDERwl
+	id S1753173AbYDERxI (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Apr 2008 13:53:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753265AbYDERwn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Apr 2008 13:52:41 -0400
-Received: from mtagate8.uk.ibm.com ([195.212.29.141]:49474 "EHLO
-	mtagate8.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752756AbYDERwk (ORCPT
+	Sat, 5 Apr 2008 13:52:43 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:49844 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752877AbYDERwm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Apr 2008 13:52:40 -0400
-Date: Sat, 5 Apr 2008 19:52:33 +0200
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
-To: Ralf Baechle <ralf@linux-mips.org>
-Cc: Johannes Weiner <hannes@saeurebad.de>, Sam Ravnborg <sam@ravnborg.org>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org, mingo@elte.hu,
-       davem@davemloft.net, hskinnemoen@atmel.com, cooloney@kernel.org,
-       starvik@axis.com, dhowells@redhat.com, ysato@users.sourceforge.net,
-       takata@linux-m32r.org, geert@linux-m68k.org, kyle@parisc-linux.org,
-       paulus@samba.org, schwidefsky@de.ibm.com, lethal@linux-sh.org,
-       jdike@addtoit.com, miles@gnu.org, chris@zankel.net,
-       rmk@arm.linux.org.uk, tony.luck@intel.com
-Subject: Re: [RFC 01/22] Generic show_mem() implementation
-Message-ID: <20080405175233.GA4421@osiris.boeblingen.de.ibm.com>
-References: <1207168839586-git-send-email-hannes@saeurebad.de> <20080403075545.GC4125@osiris.boeblingen.de.ibm.com> <20080403124820.GA30356@uranus.ravnborg.org> <871w5nouwp.fsf@saeurebad.de> <20080403181202.GA32319@uranus.ravnborg.org> <87prt6muux.fsf@saeurebad.de> <20080404213540.GA15535@uranus.ravnborg.org> <87d4p5kyhj.fsf@saeurebad.de> <20080405075108.GA6730@osiris.boeblingen.de.ibm.com> <20080405090403.GA24316@linux-mips.org>
+	Sat, 5 Apr 2008 13:52:42 -0400
+Date: Sat, 5 Apr 2008 20:52:32 +0300 (EEST)
+From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
+X-X-Sender: ijjarvin@wrl-59.cs.helsinki.fi
+To: Soeren Sonnenburg <kernel@nn7.de>
+cc: Linux Kernel <linux-kernel@vger.kernel.org>,
+       Netdev <netdev@vger.kernel.org>
+Subject: Re: 2.6.25-rc8: WARNING: at net/ipv4/tcp_input.c:2173
+ tcp_mark_head_lost+0x11d/0x150()
+In-Reply-To: <1207413634.4597.4.camel@localhost>
+Message-ID: <Pine.LNX.4.64.0804052043230.8668@wrl-59.cs.helsinki.fi>
+References: <1207199456.7616.3.camel@localhost> 
+ <Pine.LNX.4.64.0804031616330.21524@wrl-59.cs.helsinki.fi> 
+ <1207230008.4513.14.camel@localhost>  <Pine.LNX.4.64.0804031744190.32094@wrl-59.cs.helsinki.fi>
+ <1207413634.4597.4.camel@localhost>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080405090403.GA24316@linux-mips.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Type: MULTIPART/MIXED; BOUNDARY="-696208474-2098357438-1207417952=:8668"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Apr 05, 2008 at 10:04:03AM +0100, Ralf Baechle wrote:
-> On Sat, Apr 05, 2008 at 09:51:08AM +0200, Heiko Carstens wrote:
-> 
-> > But you can solve this problem with no ifdefs and config options at all,
-> > since you may as well just use __attribute__((weak)) for the generic
-> > implementation.
-> 
-> Which may result in the version of the function getting linked in but
-> staying unreferenced.
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-Oh, I assumed ld would support -dead_strip in the meantime to get rid of
-unreferenced functions. Looks like it still doesn't.
+---696208474-2098357438-1207417952=:8668
+Content-Type: TEXT/PLAIN; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+
+On Sat, 5 Apr 2008, Soeren Sonnenburg wrote:
+
+> On Fri, 2008-04-04 at 21:51 +0300, Ilpo Järvinen wrote:
+> > On Thu, 3 Apr 2008, Soeren Sonnenburg wrote:
+> > 
+> > > On Thu, 2008-04-03 at 16:26 +0300, Ilpo Järvinen wrote:
+> > > > On Thu, 3 Apr 2008, Soeren Sonnenburg wrote:
+> > > > 
+> > > > > trying to download things, I am seeing this (ignore the tainted, it is
+> > > > > from madwifi and although the module is loaded the device was never
+> > > > > used)
+> > > > > 
+> > > > > Could anyone make sense of this please?
+> > > > 
+> > > > ...I'm just trying to find out who and where invariants of the TCP code
+> > > > are broken. These were relatively recently enabled (pre-2.6.24 just didn't 
+> > > > care too much). A number of long standing issues plus bugs from my 
+> > > > modifications have been fixed because of the more rigid checking :-).
+> > > > 
+> > > > > ------------[ cut here ]------------
+> > > > > WARNING: at net/ipv4/tcp_input.c:2173 tcp_mark_head_lost+0x11d/0x150()
+> > > > 
+> > > > > ------------[ cut here ]------------
+> > > > > WARNING: at net/ipv4/tcp_input.c:1771 tcp_enter_frto+0x267/0x270()
+> > > > 
+> > > > > ------------[ cut here ]------------
+> > > > > WARNING: at net/ipv4/tcp_input.c:2532 tcp_ack+0x1a6f/0x1d60()
+> > > > 
+> > > > Can you reproduce it? 
+> > > 
+> > > Yes, by massively downloading things :-) But I have no real recipe to
+> > > make it easily reproducible...
+> > 
+> > Good :-), no need for recipes, just that you can trigger it more often 
+> > tha once per month or so :-). I probably couldn't trigger it anyway here 
+> > because they're often rather sensitive to network "weather", thus if you 
+> > have problems in reproducing, doing tests around the same phase of the 
+> > date cycle you saw it the first time might help.
+> > 
+> > Here's a debug patch which expensively verifies TCP's state in a number
+> > of places during ACK to find first spot where the actual bug occurs.
+> 
+> OK I am getting this now as the first spot:
+> 
+> P: 4 L: 2 vs 2 S: 0 vs 3 F: 0 vs 0 w: 4023500226-4023505874 (0)
+> skb 0 f495c180
+> skb 1 f480a180
+> skb 2 f4994600
+> head 3 f495c780
+> skb 4 f5b32480
+> TCP wq(s) LL  <
+> WARNING: at net/ipv4/tcp_ipv4.c:240 tcp_verify_wq+0x319/0x3c0()
+>
+> another one:
+> WARNING: at net/ipv4/tcp_output.c:1475 __tcp_push_pending_frames+0x70/0x830()
+> 
+> 
+> P: 4 L: 2 vs 2 S: 0 vs 3 F: 0 vs 0 w: 4023500226-4023505874 (0)
+> skb 0 f495c180
+> skb 1 f480a180
+> skb 2 f4994600
+> head 3 f495c780
+> skb 4 f5b32480
+> TCP wq(s) LL  <
+> TCP wq(h) +-++<
+> l2 s3 f0 p4 seq: su4023500226 hs241530103 sn4023505874
+> ------------[ cut here ]------------
+> WARNING: at net/ipv4/tcp_ipv4.c:240 tcp_verify_wq+0x319/0x3c0()
+
+Please don't cut the log! It is caught here because 2+3 > 4 :-) but I need 
+the full log with stacktraces this time to figure it out.
+
+-- 
+ i.
+---696208474-2098357438-1207417952=:8668--
