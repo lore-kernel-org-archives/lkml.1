@@ -1,51 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751742AbYDEGvo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751713AbYDEHPX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751742AbYDEGvo (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Apr 2008 02:51:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751116AbYDEGve
+	id S1751713AbYDEHPX (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Apr 2008 03:15:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751036AbYDEHPK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Apr 2008 02:51:34 -0400
-Received: from nn7.de ([85.214.94.156]:56024 "EHLO nn7.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751059AbYDEGvd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Apr 2008 02:51:33 -0400
-Subject: Re: 2.6.25 intended change: smc:kbd_backlight vs.
-	smc::kbd_backlight ?
-From: Soeren Sonnenburg <kernel@nn7.de>
-To: Justin Mattock <justinmattock@gmail.com>
-Cc: rpurdie@rpsys.net, Julien BLACHE <jb@jblache.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       "Rafael J\. Wysocki" <rjw@sisk.pl>
-In-Reply-To: <dd18b0c30804042344we0e62a0s8cd2c7e8137a9e8@mail.gmail.com>
-References: <1207162690.9669.11.camel@localhost>
-	 <1207292068.4511.10.camel@localhost>
-	 <dd18b0c30804040812x76f99af7o99fa57c9a1ec10bc@mail.gmail.com>
-	 <1207373556.10237.2.camel@localhost>
-	 <dd18b0c30804042344we0e62a0s8cd2c7e8137a9e8@mail.gmail.com>
-Content-Type: text/plain
+	Sat, 5 Apr 2008 03:15:10 -0400
+Received: from wf-out-1314.google.com ([209.85.200.168]:31958 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750897AbYDEHPJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 Apr 2008 03:15:09 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=LwDJucYrQI0Fv5VaYBm6uwOdDVLzD6MsDWwdUFRrkfNDux3L12WdqYjyqzous6YaaE22bWYr+8jD7oU0v9SjR5LYEBBguH7y0dPjDrbfKm21KEfe4TwQE3KR7dFD7/y/whvYq0ku2/7eo+bz9BOhmHugd7Xt2VojzsmtYwQkA0s=
+Message-ID: <5699f8f00804050015kb1ebb1cpf3ab8b587580fffd@mail.gmail.com>
+Date: Sat, 5 Apr 2008 09:15:06 +0200
+From: "Wander Winkelhorst" <w.winkelhorst@gmail.com>
+To: "Rich West" <Rich.West@wesmo.com>
+Subject: Re: sata_via
+Cc: "Jeff Garzik" <jeff@garzik.org>, linux-kernel@vger.kernel.org,
+       "Linux IDE mailing list" <linux-ide@vger.kernel.org>
+In-Reply-To: <47F6BD55.3090708@wesmo.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Date: Sat, 05 Apr 2008 08:51:30 +0200
-Message-Id: <1207378290.10237.5.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.0 
+Content-Disposition: inline
+References: <47F694C8.8020507@wesmo.com> <47F6A5E8.1030602@garzik.org>
+	 <47F6BD55.3090708@wesmo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2008-04-05 at 06:44 +0000, Justin Mattock wrote:
-> Hello; there must be some kind of reason for the change from ":" to
-> "::" smc::kbd_backlight, maybee something with the kernel spitting
-> out:
-> 
-> [  464.524630] applesmc: wait status failed: 5 != 4
-[...]
+On Sat, Apr 5, 2008 at 1:44 AM, Rich West <Rich.West@wesmo.com> wrote:
 
-> I'm tired of seeing this, how to get rid of this regression if you
-> want to call this that.?
-> regards;
+>  I'll give noapic a try, but (dumb question) what does acpi=off buy?
 
-The '::' is only a cosmetic thing and won't give you these messages.
-Anyway I am getting them too (but very very rarely) - but it is a
-completely different issue.
+acpi=off surprisingly turns off ACPI
+read more about acpi at:
+http://en.wikipedia.org/wiki/Acpi
 
-Soeren
+-Wander
