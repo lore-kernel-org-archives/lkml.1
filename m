@@ -1,118 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753535AbYDEAA1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752575AbYDEAXn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753535AbYDEAA1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Apr 2008 20:00:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751405AbYDEAAQ
+	id S1752575AbYDEAXn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Apr 2008 20:23:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751272AbYDEAXd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Apr 2008 20:00:16 -0400
-Received: from static-151-204-187-166.pskn.east.verizon.net ([151.204.187.166]:49972
-	"EHLO wesmo.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751439AbYDEAAP (ORCPT
+	Fri, 4 Apr 2008 20:23:33 -0400
+Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:60858
+	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750927AbYDEAXd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Apr 2008 20:00:15 -0400
-Message-ID: <47F6BD55.3090708@wesmo.com>
-Date: Fri, 04 Apr 2008 19:44:21 -0400
-From: Rich West <Rich.West@wesmo.com>
-User-Agent: Thunderbird 2.0.0.12 (Windows/20080213)
+	Fri, 4 Apr 2008 20:23:33 -0400
+Date: Sat, 5 Apr 2008 02:23:30 +0200
+From: Andrea Arcangeli <andrea@qumranet.com>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Hugh Dickins <hugh@veritas.com>, Robin Holt <holt@sgi.com>,
+       Avi Kivity <avi@qumranet.com>, Izik Eidus <izike@qumranet.com>,
+       kvm-devel@lists.sourceforge.net,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, general@lists.openfabrics.org,
+       Steve Wise <swise@opengridcomputing.com>,
+       Roland Dreier <rdreier@cisco.com>, Kanoj Sarcar <kanojsarcar@yahoo.com>,
+       steiner@sgi.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       daniel.blueman@quadrics.com, Nick Piggin <npiggin@suse.de>
+Subject: Re: [PATCH] mmu notifier #v11
+Message-ID: <20080405002330.GF14784@duo.random>
+References: <Pine.LNX.4.64.0804021048460.27214@schroedinger.engr.sgi.com> <Pine.LNX.4.64.0804021402190.30337@schroedinger.engr.sgi.com> <20080402220148.GV19189@duo.random> <Pine.LNX.4.64.0804021503320.31247@schroedinger.engr.sgi.com> <20080402221716.GY19189@duo.random> <Pine.LNX.4.64.0804021821230.639@schroedinger.engr.sgi.com> <20080403151908.GB9603@duo.random> <Pine.LNX.4.64.0804031215050.7480@schroedinger.engr.sgi.com> <20080404202055.GA14784@duo.random> <Pine.LNX.4.64.0804041504310.12396@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
-To: Jeff Garzik <jeff@garzik.org>
-CC: linux-kernel@vger.kernel.org,
-       Linux IDE mailing list <linux-ide@vger.kernel.org>
-Subject: Re: sata_via
-References: <47F694C8.8020507@wesmo.com> <47F6A5E8.1030602@garzik.org>
-In-Reply-To: <47F6A5E8.1030602@garzik.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (wesmo.com [127.0.0.1]); Fri, 04 Apr 2008 20:00:13 -0400 (EDT)
-X-Greylist: Sender succeeded SMTP AUTH, not delayed by milter-greylist-4.0 (wesmo.com [192.168.56.10]); Fri, 04 Apr 2008 19:44:21 -0400 (EDT)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0804041504310.12396@schroedinger.engr.sgi.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Apr 04, 2008 at 03:06:18PM -0700, Christoph Lameter wrote:
+> Adds some comments. Still objectionable is the multiple ways of
+> invalidating pages in #v11. Callout now has similar locking to emm.
 
+range_begin exists because range_end is called after the page has
+already been freed. invalidate_page is called _before_ the page is
+freed but _after_ the pte has been zapped.
 
-Jeff Garzik wrote:
-> Rich West wrote:
->> On my mythtv backend system, the recordings volume tends to get pounded
->> rather hard (up to 5 recordings (some HD) at once with multiple frontend
->> systems reading from that same volume).  I recently (4 months ago)
->> upgraded the system to a motherboard that happened to have the VIA
->> chipset on it.
->>
->> Since that time, I have had some bizarre problems with that volume. 
->> After a seemingly random amount of time, the kernel would report an
->> error with the volume and put it in read-only mode.  However, it would
->> not really be in read-only mode, but it would be completely
->> inaccessible.  Unmounting the volume would be successful, but
->> re-mounting the volume would fail.
->>
->> I've replaced the drive (with an identical one), tested memory, changed
->> filesystems (it was LVM + ext3, then just ext3) and the problem 
->> persists.
->>
->> Running 2.6.24.4-64 (Fedora 8).
->>
->> A larger snippet from the messages log is (dmesg gets cleared after 
->> reboot):
->> Apr  3 16:47:27 mythtv1 kernel: ata4.00: exception Emask 0x0 SAct 0x0
->> SErr 0x0 action 0x2 frozen
->> Apr  3 16:47:27 mythtv1 kernel: ata4.00: cmd
->> c8/00:00:77:31:21/00:00:00:00:00/e1 tag 0 dma 131072 in
->> Apr  3 16:47:27 mythtv1 kernel:          res
->> 40/00:01:00:4f:c2/00:00:00:00:00/00 Emask 0x4 (timeout)
->> Apr  3 16:47:27 mythtv1 kernel: ata4.00: status: { DRDY }
->> Apr  3 16:47:27 mythtv1 kernel: ata4: soft resetting link
->> Apr  3 16:47:57 mythtv1 kernel: ata4.00: qc timeout (cmd 0x27)
->> Apr  3 16:47:57 mythtv1 kernel: ata4.00: failed to read native max
->> address (err_mask=0x4)
->> Apr  3 16:47:57 mythtv1 kernel: ata4.00: HPA support seems broken, will
->> skip HPA handling
->> Apr  3 16:47:57 mythtv1 kernel: ata4.00: revalidation failed (errno=-5)
->> Apr  3 16:47:57 mythtv1 kernel: ata4: failed to recover some devices,
->> retrying in 5 secs
->> Apr  3 16:48:02 mythtv1 kernel: ata4: soft resetting link
->> Apr  3 16:48:02 mythtv1 kernel: ata4.00: configured for UDMA/133
->> Apr  3 16:48:02 mythtv1 kernel: ata4: EH complete
->> Apr  3 16:49:02 mythtv1 kernel: ata4.00: exception Emask 0x0 SAct 0x0
->> SErr 0x0 action 0x2 frozen
->> Apr  3 16:49:02 mythtv1 kernel: ata4.00: cmd
->> c8/00:00:77:31:21/00:00:00:00:00/e1 tag 0 dma 131072 in
->> Apr  3 16:49:02 mythtv1 kernel:          res
->> 40/00:01:00:4f:c2/00:00:00:00:00/00 Emask 0x4 (timeout)
->> Apr  3 16:49:02 mythtv1 kernel: ata4.00: status: { DRDY }
->> Apr  3 16:49:02 mythtv1 kernel: ata4: soft resetting link
->> Apr  3 16:49:03 mythtv1 kernel: ata4.00: configured for UDMA/133
->> Apr  3 16:49:03 mythtv1 kernel: ata4: EH complete
->>
->> It is almost as if I am hitting some bug that is causing the drive to
->> fall off, but I really don't know where else to look or where else to
->> turn...
->>
->> I'm tempted to just go back to using a PATA drive (smaller.  :(  ) to
->> avoid the problem.  I'm just at a loss as to how it can actually be 
->> solved.
->
-> This timeout/DRDY message has been a common one recently.  Some of the 
-> issues causing this may be resolved in 2.6.25-rc, can you try that?
->
-> Also, if you could build and test some older kernels to see when this 
-> behavior first appeared, that would be quite helpful.
->
-> Overall, a timeout _might_ be a problem with libata (the kernel SATA 
-> drivers), or it _might_ be a problem with your system's interrupt 
-> delivery (sometimes an ACPI or BIOS problem).  Try booting with 
-> 'noapic' or 'acpi=off'.
->
+In short when working with single pages it's a waste to block the
+secondary-mmu page fault, because it's zero cost to invalidate_page
+before put_page. Not even GRU need to do that.
 
-Thanks for the quick response.
+Instead for the multiple-pte-zapping we have to call range_end _after_
+the page is already freed. This is so that there is a single range_end
+call for an huge amount of address space. So we need a range_begin for
+the subsystems not using page pinning for example. When working with
+single pages (try_to_unmap_one, do_wp_page) invalidate_page avoids to
+block the secondary mmu page fault, and it's in turn faster.
 
-I know this problem was happening with all of the Fedora 7 supplied 
-kernels (from initial release up until about a week ago) and has 
-happened with each of the Fedora 8 supplied kernels.  I'll try rolling 
-2.6.25-rc to see if the problem resurfaces.  Unfortunately, I don't know 
-what collision of events causes this problem to erupt, but it usually 
-happens within 7 days of a reboot (some times within hours of a reboot).
-
-I'll give noapic a try, but (dumb question) what does acpi=off buy?
-
--Rich
+Besides avoiding need of serializing the secondary mmu page fault,
+invalidate_page also reduces the overhead when the mmu notifiers are
+disarmed (i.e. kvm not running).
