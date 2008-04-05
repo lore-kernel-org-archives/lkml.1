@@ -1,57 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753960AbYDERTU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754094AbYDERX6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753960AbYDERTU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Apr 2008 13:19:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752675AbYDERTG
+	id S1754094AbYDERX6 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Apr 2008 13:23:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752567AbYDERXv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Apr 2008 13:19:06 -0400
-Received: from rn-out-0910.google.com ([64.233.170.185]:60686 "EHLO
-	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752657AbYDERTF (ORCPT
+	Sat, 5 Apr 2008 13:23:51 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:9919 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752563AbYDERXu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Apr 2008 13:19:05 -0400
-Message-ID: <47F7B483.8090101@codemonkey.ws>
-Date: Sat, 05 Apr 2008 12:18:59 -0500
-From: Anthony Liguori <anthony@codemonkey.ws>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
+	Sat, 5 Apr 2008 13:23:50 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=yXBGD6qIbmznwEjcfslQ8kYOkmkP9RC0Ge49mQl+CMumvV4mePYyb922efNSo29/P
+	xesvE84H8Yx0+Wa+oxI6w==
+Message-ID: <6599ad830804051023v69caa3d4h6e26ccb420bca899@mail.gmail.com>
+Date: Sat, 5 Apr 2008 10:23:33 -0700
+From: "Paul Menage" <menage@google.com>
+To: balbir@linux.vnet.ibm.com
+Subject: Re: [-mm] Add an owner to the mm_struct (v8)
+Cc: "Pavel Emelianov" <xemul@openvz.org>, "Hugh Dickins" <hugh@veritas.com>,
+       "Sudhir Kumar" <skumar@linux.vnet.ibm.com>,
+       "YAMAMOTO Takashi" <yamamoto@valinux.co.jp>, lizf@cn.fujitsu.com,
+       linux-kernel@vger.kernel.org, taka@valinux.co.jp, linux-mm@kvack.org,
+       "David Rientjes" <rientjes@google.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <47F79102.6090406@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: Rusty Russell <rusty@rustcorp.com.au>
-CC: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       Max Krasnyansky <maxk@qualcomm.com>,
-       virtualization@lists.linux-foundation.org
-Subject: Re: [PATCH RFC 2/5] vringfd base/offset
-References: <200804052202.09157.rusty@rustcorp.com.au> <200804052204.28518.rusty__10896.9346424148$1207397431$gmane$org@rustcorp.com.au>
-In-Reply-To: <200804052204.28518.rusty__10896.9346424148$1207397431$gmane$org@rustcorp.com.au>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080404080544.26313.38199.sendpatchset@localhost.localdomain>
+	 <6599ad830804040112q3dd5333aodf6a170c78e61dc8@mail.gmail.com>
+	 <47F5E69C.9@linux.vnet.ibm.com>
+	 <6599ad830804040150j4946cf92h886bb26000319f3b@mail.gmail.com>
+	 <47F5F3FA.7060709@linux.vnet.ibm.com>
+	 <6599ad830804041211r37848a6coaa900d8bdac40fbe@mail.gmail.com>
+	 <47F79102.6090406@linux.vnet.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rusty Russell wrote:
-> It turns out the lguest (and possibly kvm) want the addresses in the
-> ring buffer to only cover a certain part of memory, and be offset.
-> 
-> It makes sense that this be an ioctl.
-> 
-> Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+On Sat, Apr 5, 2008 at 7:47 AM, Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
 >
+>  Repeating my question earlier
+>
+>  Can we delay setting task->cgroups = &init_css_set for the group_leader, until
+>  all threads have exited?
 
-<snip>
+Potentially, yes. It also might make more sense to move the
+exit_cgroup() for all threads to a later point rather than special
+case delayed group leaders.
 
-> @@ -208,12 +232,15 @@ int vring_get_buffer(struct vring_info *
->  		out_len = &dummy;
->  
->  	*in_len = *out_len = 0;
-> -	
-> -	if (unlikely(get_user(head, &vr->ring.avail->ring[head]) != 0))
-> +
-> +	if (unlikely(get_user(head, &vr->ring.avail->ring[vr->last_avail
-> +							  % vr->ring.num])))
+> If the user is unable to remove a cgroup node, it will
+>  be due a valid reason, the group_leader is still around, since the threads are
+>  still around. The user in that case should wait for notify_on_release.
+>
+>  >
+>  > To me, it seems that setting up a *virtual address space* cgroup
+>  > hierarchy and then putting half your threads in one group and half in
+>  > the another is asking for trouble. We need to not break in that
+>  > situation, but I'm not sure it's a case to optimize for.
+>
+>  That could potentially happen, if the virtual address space cgroup and cpu
+>  control cgroup were bound together in the same hierarchy by the sysadmin.
 
-Why not & with vr->mask for the sake of consistency with the rest of the 
-code.
+Yes, I agree it could potentially happen. But it seems like a strange
+thing to do if you're planning to be not have the same groupings for
+cpu and va.
 
-Regards,
+>
+>  I measured the overhead of removing the delay_group_leader optimization and
+>  found a 4% impact on throughput (with volanomark, that is one of the
+>  multi-threaded benchmarks I know of).
 
-Anthony Liguori
+Interesting, I thought (although I've never actually looked at the
+code) that volanomark was more of a scheduling benchmark than a
+process start/exit benchmark. How frequently does it have processes
+(not threads) exiting?
+
+How many runs was that over? Ingo's recently posted volanomark tests
+against -rc7 showed ~3% random variation between runs.
+
+Paul
