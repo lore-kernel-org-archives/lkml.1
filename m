@@ -1,101 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753571AbYDEQlU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753659AbYDEQzo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753571AbYDEQlU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Apr 2008 12:41:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752527AbYDEQlB
+	id S1753659AbYDEQzo (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Apr 2008 12:55:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752528AbYDEQzf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Apr 2008 12:41:01 -0400
-Received: from nn7.de ([85.214.94.156]:44481 "EHLO nn7.de"
+	Sat, 5 Apr 2008 12:55:35 -0400
+Received: from gateway.drzeus.cx ([85.8.24.16]:43044 "EHLO smtp.drzeus.cx"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752515AbYDEQlA convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Apr 2008 12:41:00 -0400
-Subject: Re: 2.6.25-rc8: WARNING: at net/ipv4/tcp_input.c:2173
-	tcp_mark_head_lost+0x11d/0x150()
-From: Soeren Sonnenburg <kernel@nn7.de>
-To: Ilpo =?ISO-8859-1?Q?J=E4rvinen?= <ilpo.jarvinen@helsinki.fi>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
-       Netdev <netdev@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.64.0804031744190.32094@wrl-59.cs.helsinki.fi>
-References: <1207199456.7616.3.camel@localhost>
-	 <Pine.LNX.4.64.0804031616330.21524@wrl-59.cs.helsinki.fi>
-	 <1207230008.4513.14.camel@localhost>
-	 <Pine.LNX.4.64.0804031744190.32094@wrl-59.cs.helsinki.fi>
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 8BIT
-Date: Sat, 05 Apr 2008 18:40:34 +0200
-Message-Id: <1207413634.4597.4.camel@localhost>
+	id S1752483AbYDEQze (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 Apr 2008 12:55:34 -0400
+Date: Sat, 5 Apr 2008 18:55:01 +0200
+From: Pierre Ossman <drzeus-list@drzeus.cx>
+To: Greg KH <gregkh@suse.de>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: pci: add to global list before sysfs?
+Message-ID: <20080405185501.41ec42a7@mjolnir.drzeus.cx>
+In-Reply-To: <20080405155323.GA27252@suse.de>
+References: <20080404191350.7f0183a5@mjolnir.drzeus.cx>
+	<20080404210132.GA14418@suse.de>
+	<20080405115727.1265e8a9@mjolnir.drzeus.cx>
+	<20080405155323.GA27252@suse.de>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; i386-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.0 
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-04-04 at 21:51 +0300, Ilpo Järvinen wrote:
-> On Thu, 3 Apr 2008, Soeren Sonnenburg wrote:
-> 
-> > On Thu, 2008-04-03 at 16:26 +0300, Ilpo Järvinen wrote:
-> > > On Thu, 3 Apr 2008, Soeren Sonnenburg wrote:
-> > > 
-> > > > trying to download things, I am seeing this (ignore the tainted, it is
-> > > > from madwifi and although the module is loaded the device was never
-> > > > used)
-> > > > 
-> > > > Could anyone make sense of this please?
-> > > 
-> > > ...I'm just trying to find out who and where invariants of the TCP code
-> > > are broken. These were relatively recently enabled (pre-2.6.24 just didn't 
-> > > care too much). A number of long standing issues plus bugs from my 
-> > > modifications have been fixed because of the more rigid checking :-).
-> > > 
-> > > > ------------[ cut here ]------------
-> > > > WARNING: at net/ipv4/tcp_input.c:2173 tcp_mark_head_lost+0x11d/0x150()
-> > > 
-> > > > ------------[ cut here ]------------
-> > > > WARNING: at net/ipv4/tcp_input.c:1771 tcp_enter_frto+0x267/0x270()
-> > > 
-> > > > ------------[ cut here ]------------
-> > > > WARNING: at net/ipv4/tcp_input.c:2532 tcp_ack+0x1a6f/0x1d60()
-> > > 
-> > > Can you reproduce it? 
+On Sat, 5 Apr 2008 08:53:23 -0700
+Greg KH <gregkh@suse.de> wrote:
+
+> On Sat, Apr 05, 2008 at 11:57:27AM +0200, Pierre Ossman wrote:
 > > 
-> > Yes, by massively downloading things :-) But I have no real recipe to
-> > make it easily reproducible...
+> > Yes. Things work fine when the driver is loaded after the entire PCI
+> > bus has been scanned, but not when new cards are hotplugged with the
+> > driver already present. I'd like the behaviour to be the same in both
+> > cases.
 > 
-> Good :-), no need for recipes, just that you can trigger it more often 
-> tha once per month or so :-). I probably couldn't trigger it anyway here 
-> because they're often rather sensitive to network "weather", thus if you 
-> have problems in reproducing, doing tests around the same phase of the 
-> date cycle you saw it the first time might help.
+> Why not just create a thread in your driver, or timer, and sleep until
+> you see the other devices?  If after a certian time you never do, then
+> bail out.
 > 
-> Here's a debug patch which expensively verifies TCP's state in a number
-> of places during ACK to find first spot where the actual bug occurs.
+> That should work properly for you for both cases (startup and loading
+> later.)
+> 
 
-OK I am getting this now as the first spot:
+I'm not sure how that could be done in a clean way. Right now I have
+the following:
 
-P: 4 L: 2 vs 2 S: 0 vs 3 F: 0 vs 0 w: 4023500226-4023505874 (0)
-skb 0 f495c180
-skb 1 f480a180
-skb 2 f4994600
-head 3 f495c780
-skb 4 f5b32480
-TCP wq(s) LL  <
-WARNING: at net/ipv4/tcp_ipv4.c:240 tcp_verify_wq+0x319/0x3c0()
+                sd_dev = NULL;
+                while ((sd_dev = pci_get_device(PCI_VENDOR_ID_JMICRON,
+                        PCI_DEVICE_ID_JMICRON_JMB38X_SD, sd_dev)) != NULL) {
+                        if ((PCI_SLOT(chip->pdev->devfn) ==
+                                PCI_SLOT(sd_dev->devfn)) &&
+                                (chip->pdev->bus == sd_dev->bus))
+                                break;
+                }
 
-another one:
-WARNING: at net/ipv4/tcp_output.c:1475 __tcp_push_pending_frames+0x70/0x830()
+                if (sd_dev) {
+                        pci_dev_put(sd_dev);
+                        dev_info(&chip->pdev->dev, "Refusing to bind to "
+                                "secondary interface.\n");
+                        return -ENODEV;
+                }
 
+If I do this threaded, I'd have to return success to the driver core
+and then act like a possum later. Doable, but not very clean. It could
+be solved if it was possible to sleep in probe functions, but from what
+I can tell that will stop the probing of subsequent devices.
 
-P: 4 L: 2 vs 2 S: 0 vs 3 F: 0 vs 0 w: 4023500226-4023505874 (0)
-skb 0 f495c180
-skb 1 f480a180
-skb 2 f4994600
-head 3 f495c780
-skb 4 f5b32480
-TCP wq(s) LL  <
-TCP wq(h) +-++<
-l2 s3 f0 p4 seq: su4023500226 hs241530103 sn4023505874
-------------[ cut here ]------------
-WARNING: at net/ipv4/tcp_ipv4.c:240 tcp_verify_wq+0x319/0x3c0()
+Also, the timeout would introduce an inherent race. Which means either
+putting a high timeout to make the race insignificant, or a low timeout
+so users don't have to wait for their device to actually become usable.
 
-Soeren
+Is it possible to write some routines that can walk the PCI device tree
+without having any pci_dev structures to hang on to? To solve my basic
+problem I just need to know how the tree looks like, not actually poke
+any of the other devices.
+
+Rgds
+-- 
+     -- Pierre Ossman
+
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  PulseAudio, core developer          http://pulseaudio.org
+  rdesktop, core developer          http://www.rdesktop.org
