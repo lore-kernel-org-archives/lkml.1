@@ -1,96 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753278AbYDEBrc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751997AbYDECHb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753278AbYDEBrc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Apr 2008 21:47:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751167AbYDEBrW
+	id S1751997AbYDECHb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Apr 2008 22:07:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751073AbYDECHV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Apr 2008 21:47:22 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:44716 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751073AbYDEBrV (ORCPT
+	Fri, 4 Apr 2008 22:07:21 -0400
+Received: from wa-out-1112.google.com ([209.85.146.183]:55004 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751027AbYDECHU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Apr 2008 21:47:21 -0400
-Date: Fri, 4 Apr 2008 18:46:15 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Kyungmin Park" <kmpark@infradead.org>
-Cc: "Josh Boyer" <jwboyer@gmail.com>, "David Brownell" <david-b@pacbell.net>,
-       linux-kernel@vger.kernel.org, linux-mtd@lists.infradead.org,
-       "Michael Trimarchi" <trimarchimichael@yahoo.it>,
-       spi-devel-general@lists.sourceforge.net, dwmw2@infradead.org,
-       linux-arm-kernel@lists.arm.linux.org.uk
-Subject: Re: [PATCH] jffs2 summary allocation
-Message-Id: <20080404184615.deaf3122.akpm@linux-foundation.org>
-In-Reply-To: <9c9fda240804041829r5a768b39n340926485aa12687@mail.gmail.com>
-References: <713171.37644.qm@web26213.mail.ukl.yahoo.com>
-	<200804041609.41092.david-b@pacbell.net>
-	<1207351282.3224.79.camel@vader.jdub.homelinux.org>
-	<200804041658.38499.david-b@pacbell.net>
-	<1207357870.3224.89.camel@vader.jdub.homelinux.org>
-	<9c9fda240804041829r5a768b39n340926485aa12687@mail.gmail.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 4 Apr 2008 22:07:20 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=SoTYH5hYU9eyukDmWnhkXiVSCkTKiLj0uG/wqa0GDlmPffpP7C4ugKkPf44ToST/Crr6usei9mJc0GBju0KiVgRyiJ6vB4gN4cPbO36eCJJmzfKdQqGi4kgMnnHREOtJzcb0vnTpukIRL9uDTzZtDgiHtzVtv4DOqJMxsni5Ql4=
+Message-ID: <47F6DEBA.4000500@gmail.com>
+Date: Fri, 04 Apr 2008 21:06:50 -0500
+From: Roger Heflin <rogerheflin@gmail.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+MIME-Version: 1.0
+To: devzero@web.de
+CC: dan.hecht@vmware.com, johnstul@us.ibm.com, linux-kernel@vger.kernel.org,
+       zippel@linux-m68k.org
+Subject: Re: Clock has stopped (time/date looping over 5 seconds), things
+ are
+References: <226243507@web.de>
+In-Reply-To: <226243507@web.de>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 5 Apr 2008 10:29:25 +0900 "Kyungmin Park" <kmpark@infradead.org> wrote:
+devzero@web.de wrote:
+> so, this happens on real hardware for you?
+> 
+> i could reproduce this with a linux virtual machine on vmware - whenever i suspended the windows host with a linux vm running in vmware, after resume the linux vm showed exactly this issue.
+> after some investigation i found, that it would recover from that state after some time - and the time needed for recover was (more or less) proportional to that time the host was in suspend(hibernate) state.
+> 
+> also see http://marc.info/?l=linux-kernel&m=120186717701371&w=2
+> 
+> i thought that was vmware related and i gave a bug report to dan hecht - i didn`t hear anything since then, but i think it`s worth CC`ing him.
+> 
+> not sure if 
+> [PATCH 1/2] Introduce clocksource_forward_now -> http://marc.info/?l=linux-kernel&m=120716471203567&w=2
+> [PATCH 2/2] Introduce CLOCK_MONOTONIC_RAW -> http://marc.info/?l=linux-kernel&m=120596518521892&w=2 
+> is related ? (also CC`d the patch authors, they will probably know)
+> 
+> regards
+> roland
+> 
+> 
 
-> On Sat, Apr 5, 2008 at 10:11 AM, Josh Boyer <jwboyer@gmail.com> wrote:
-> > On Fri, 2008-04-04 at 16:58 -0700, David Brownell wrote:
-> >  > On Friday 04 April 2008, Josh Boyer wrote:
-> >  > >
-> >  > > >   ... This means specifically that you may _not_ use the
-> >  > > >   memory/addresses returned from vmalloc() for DMA.  ...
-> >  > > >
-> >  > > > So I'm rather surprised to see *ANY* kernel code trying to do
-> >  > > > that.  That rule has been in effect for many, many years now.
-> >  > >
-> >  > > I don't think it was intentional.  You're going through several layers
-> >  > > here:
-> >  > >
-> >  > > JFFS2 -> mtd parts -> mtd dataflash -> atmel_spi.
-> >  > >
-> >  > > Typically MTD drivers aren't doing DMAs to flash and JFFS2 has no idea
-> >  > > which particular chip driver is being used because it's abstracted by
-> >  > > MTD.
-> >  >
-> >  > That's true ... although I can imagine using DMA to
-> >  > avoid dcache trashing if its setup cost is low enough,
-> >  > with either NAND or NOR chips.
-> >  >
-> >  > Still:  in this context vmalloc() is wrong.
-> >
-> >  Agreed.  One issue is that the summary code allocates a buffer that
-> >  equals the eraseblock size of the underlying MTD device.  For larger
-> >  NAND chips, that may be up to 256KiB.  I believe this is within the
-> >  allowable kmalloc size for most architectures these days, but the
-> >  summary code is 3 years old and was likely expecting a smaller limit.
-> >  And there is always the question on whether finding that much contiguous
-> >  memory will be an issue.
+This is real hardware, it is a always on desktop MB machine, nothing too weird, 
+right now I am putting 2.6.24.4 on it, and we will see in a few weeks if it does 
+it again.
 
-Yes.  This is why I'm reluctant to whizz this patch into 2.6.25.  It'll
-break more than it fixes.
+I am getting it fairly consistently, so any ideas of what to turn on, or watch 
+for in the next event would be useful.    I did try collect several samples of 
+information from /proc of things that looked useful, the most telling thing I 
+found was that it appeared that in /proc/timer_list
 
-> In MLC chips it goes up to 512KiB. It means it can't allocate the
-> eraseblock size memory with kmalloc().
-> In ARM environment I can't see the 256KiB or more memory allocation
-> with kmalloc().
-> So I now changed the kmalloc eraseblock to vmalloc at both jffs2 and mtd-utils.
+now at 7300171087468 nsecs (number was different).
 
-Does this eraseblock really really really need to be a single
-virtually-contiguous hunk of kernel memory?  Or was that just easy to do at
-the time?
+was actually looping similar to the time/date and not rising as it should have 
+been, this is a 32 bit on an AMD Sempron(tm) Processor 3400+, it is 64bit 
+capable. I did have files that containing several samples of /proc/timer_list, 
+but apparently the alt-sysrq-s then u before the b failed to save the 
+information or the general state of the machine was just so bad that it did not 
+get written out to disk, the last 2 times I have had this happen, it completely 
+failed to shutdown gracefully and s-u-b at least enabled me to force a reboot 
+without having to go to the machine and power cycle it.
+
+ From previous data, the shortest time is 14 days 11 hours, and the longest is 
+about 23 days.
+
+
+                                Roger
 
 
 
-This problem comes up pretty often.  Rather than open-coding it yet again
-it'd be nice to have a little bit of library code which manages an array of
-pages and which has accessors for common operations like
-read/write-u8/u16/u32/u64, memset, memcpy, etc.
 
-Then again, given that this memory is often fed into IO subsystems, perhaps
-we should do this by adding more accessors and helpers to
-scatterlists/sg_table.  Unfortunately they're not presently well set up for
-random access.
