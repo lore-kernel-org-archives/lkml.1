@@ -1,57 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753842AbYDFLWk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753810AbYDFLxZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753842AbYDFLWk (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Apr 2008 07:22:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750748AbYDFLWb
+	id S1753810AbYDFLxZ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Apr 2008 07:53:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750949AbYDFLxQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Apr 2008 07:22:31 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:53782 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750720AbYDFLWa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Apr 2008 07:22:30 -0400
-Date: Sun, 6 Apr 2008 13:22:08 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, Andi Kleen <ak@suse.de>,
-       "H. Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org,
-       lguest <lguest@ozlabs.org>, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH] Fix booting pentium+ with dodgy TSC
-Message-ID: <20080406112207.GA26510@elte.hu>
-References: <200804061723.38766.rusty@rustcorp.com.au>
+	Sun, 6 Apr 2008 07:53:16 -0400
+Received: from bzq-219-195-70.pop.bezeqint.net ([62.219.195.70]:48307 "EHLO
+	bh-buildlin1.bhalevy.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750752AbYDFLxP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Apr 2008 07:53:15 -0400
+Message-ID: <47F8B98A.1020704@panasas.com>
+Date: Sun, 06 Apr 2008 14:52:42 +0300
+From: Benny Halevy <bhalevy@panasas.com>
+Organization: Panasas, Inc.
+User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200804061723.38766.rusty@rustcorp.com.au>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Jan Engelhardt <jengelh@computergmbh.de>, apw@shadowen.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [patch] checkpatch: relax spacing and line length
+References: <alpine.LNX.1.10.0804060653020.30794@fbirervta.pbzchgretzou.qr> <20080405221822.376f0018.akpm@linux-foundation.org>
+In-Reply-To: <20080405221822.376f0018.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Apr. 06, 2008, 8:18 +0300, Andrew Morton <akpm@linux-foundation.org> wrote:
+> On Sun, 6 Apr 2008 06:54:54 +0200 (CEST) Jan Engelhardt <jengelh@computergmbh.de> wrote:
+> 
+>>      We all had the arguments about 80 columns, so here goes a relax.
+>>      Checking for 95 (or perhaps something better?), but of course we
+>>      print "80" in the output, because if you happened to get to 95, it's
+>>      "really time" to break it.
+> 
+> This will reduce the usefulness of checkpatch for those developers who
+> choose to observe an 80-column limit.
+> 
+>>      This also relaxes the tab doctrine, because spaces DO make sense --
+>>      especially when you view the code with a tab setting of not-8.
+> 
+> Non-tab-using code inevitably ends up having a mix of tabs and non-tabs
+> and looks a mess if tabstops are set to anything other than eight.
 
-* Rusty Russell <rusty@rustcorp.com.au> wrote:
+I humbly disagree.  If you use tabs for (logical) indentation and then trailing
+spaces for (graphical) alignment, not just a random mix of tabs and spaces the
+code looks fine with 8-character wide tabs or any other setup.  Only when you
+use tabs for graphical alignment, below fixed-width characters on the line above
+you marry yourself with a specific tab expansion width.
 
-> Linus please apply.  Almost by definition this patch can't make things 
-> worse.
+Benny
 
-well, while i agree with the patch it could make things worse. In this 
-case it can cause code that has been compiled to rely on TSC to 
-malfunction. For if sched_clock() was using cpu_has_tsc it could return 
-0 all the time, breaking the scheduler without the user having a clear 
-idea why it broke. It isnt, and sched_clock() will work fine, but still, 
-your "this cant make things worse" statement is not completely correct. 
+> 
+> God I wish I had not been cc'ed on this.
 
-In any case:
+The idea is *not* to open the flood gates, just to allow for a bit more
+flexibility to accommodate for a more robust indentation style.
 
- Acked-by: Ingo Molnar <mingo@elte.hu>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
-and i've also queued it up into the for-.25 queue of x86.git.
-
-	Ingo
