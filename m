@@ -1,53 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755505AbYDFPhq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755562AbYDFPsl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755505AbYDFPhq (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Apr 2008 11:37:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753290AbYDFPhh
+	id S1755562AbYDFPsl (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Apr 2008 11:48:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753810AbYDFPsb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Apr 2008 11:37:37 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:20490 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753278AbYDFPhg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Apr 2008 11:37:36 -0400
-Date: Sun, 6 Apr 2008 17:37:30 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Peter Teoh <htmldeveloper@gmail.com>
-Cc: linux-kernel@vger.kernel.org,
-       "kernelnewbies@nl.linux.org" <kernelnewbies@nl.linux.org>
-Subject: Re: blktrace debugging:   how to use it
-Message-ID: <20080406153728.GU12774@kernel.dk>
-References: <47F0418C.8080407@gmail.com>
+	Sun, 6 Apr 2008 11:48:31 -0400
+Received: from an-out-0708.google.com ([209.85.132.245]:3571 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753773AbYDFPsa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Apr 2008 11:48:30 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=CYmxEDC8YVrvf31PaHd94yefxuewz9lhzfWwOUlxf8IDgzRAkhaBJmtsrkrXrehCO56KYgFlkxOqKcu3ZC4p7HAjzS0vG0uK+a8FL9KCOJOgjRktoLrVRUJSYWHwT+MTV8j5lrU31Ae3Tg1gxbHnJ4wscMhbWLEbwqk4CpnWjRs=
+Message-ID: <dd18b0c30804060848r44b0370am2bd20e0738ab16f4@mail.gmail.com>
+Date: Sun, 6 Apr 2008 15:48:29 +0000
+From: "Justin Mattock" <justinmattock@gmail.com>
+To: "Soeren Sonnenburg" <kernel@nn7.de>
+Subject: Re: suspend issue
+Cc: "Linux Kernel" <linux-kernel@vger.kernel.org>
+In-Reply-To: <1207490104.4597.36.camel@localhost>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <47F0418C.8080407@gmail.com>
+References: <dd18b0c30804052103s7357bb86yf7bf11d38d2911b3@mail.gmail.com>
+	 <1207490104.4597.36.camel@localhost>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 31 2008, Peter Teoh wrote:
-> The is patch is to enable blktrace debugging in the kernel:
-> 
-> http://lkml.org/lkml/2006/8/1/405
-> 
-> Can anyone provide any guidelines or references on how to use this 
-> feature from userspace?   Any tools written to TEST and use this feature?
+Yeah; that's what I was contemplating as well.
 
-Just git clone the repo:
+Justin P. Mattock
 
-git://git.kernel.dk/blktrace.git
+On Sun, Apr 6, 2008 at 1:55 PM, Soeren Sonnenburg <kernel@nn7.de> wrote:
+>
+> On Sun, 2008-04-06 at 04:03 +0000, Justin Mattock wrote:
+>  > Hello; I seem to have discovered something with echo mem > /sys/power/state.
+>  > I recompile the kernel and had forgotten to compile fglrx, when
+>  > performing a suspend without fglrx I was confronted with the dreaded
+>  > blank screen and a reboot. then as a test I compiled fglrx and loaded,
+>  > and to my amazement suspend reacted properly again.
+>
+>  Yeah, but I it does not even work without X - console only!
+>
+>  s2ram -f -p used to work since at least 2.6.20 ... and is now not
+>  anymore in 2.6.25-*
+>
+>  Soeren
+>
 
-(which is mentioned in the Kconfig help entry for that kernel config
-option)
 
-or grab the latest snapshot here:
-
-http://brick.kernel.dk/snaps/blktrace-git-latest.tar.gz
-
-it comes with documentation and man pages (mostly thanks to others than
-myself :-) and also a nifty btt tool that can do lots of things that
-blkparse cannot.
 
 -- 
-Jens Axboe
-
+Justin P. Mattock
