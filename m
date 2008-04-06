@@ -1,24 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753416AbYDFRfV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753285AbYDFRt2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753416AbYDFRfV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Apr 2008 13:35:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752182AbYDFRfJ
+	id S1753285AbYDFRt2 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Apr 2008 13:49:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751623AbYDFRtS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Apr 2008 13:35:09 -0400
-Received: from [194.117.236.238] ([194.117.236.238]:53092 "EHLO
+	Sun, 6 Apr 2008 13:49:18 -0400
+Received: from [194.117.236.238] ([194.117.236.238]:50642 "EHLO
 	heracles.linux360.ro" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1752087AbYDFRfH (ORCPT
+	with ESMTP id S1751493AbYDFRtR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Apr 2008 13:35:07 -0400
-Date: Sun, 6 Apr 2008 20:34:26 +0300
+	Sun, 6 Apr 2008 13:49:17 -0400
+Date: Sun, 6 Apr 2008 20:48:53 +0300
 From: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
 To: Mathieu Desnoyers <compudj@krystal.dyndns.org>
 Cc: Pekka Enberg <penberg@cs.helsinki.fi>, LKML <linux-kernel@vger.kernel.org>,
        Randy Dunlap <randy.dunlap@oracle.com>,
        Tom Zanussi <zanussi@comcast.net>
-Subject: [PATCH] relay: add buffer-only functionality, for early kernel
+Subject: Re: [PATCH] relay: add buffer-only functionality, for early kernel
  tracing
-Message-ID: <20080406203426.40431e74@linux360.ro>
+Message-ID: <20080406204853.66a6f263@linux360.ro>
+In-Reply-To: <20080406203426.40431e74@linux360.ro>
+References: <20080406203426.40431e74@linux360.ro>
 X-Mailer: Claws Mail 3.3.0 (GTK+ 2.12.1; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -27,273 +29,299 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-relay_open() can now handle NULL base_filename, to register a
-buffer-only channel. Using a new function, relay_late_setup_files(), one
-can assign files after creating the channel, thus allowing for doing
-early tracing in the kernel, before VFS is up. This currently works for
-tracing just after kmem_init_cache() runs, no earlier.
 
-Signed-off-by: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+This is _not_ a patched intended for merging!
+
+Mathieu, please take a look (maybe test) and see if I didn't mess up
+the CPU hotplug stuff. AFAICS, it shoudn't be affected, but better be
+sure.
+
+I have also attached some sample code using this functionality. It
+currently logs some text on every kmalloc() (SLUB-only), so one can
+easily check for data corruption. Make sure you enable CONFIG_SLUB and
+CONFIG_KMEMTRACE.
+
+Oh, and I've tried Tom Zanussi's other e-mail address and Comcast
+rejects my mails. :(
+
 ---
- Documentation/filesystems/relay.txt |   11 ++++
- include/linux/relay.h               |    5 ++
- kernel/relay.c                      |  113 ++++++++++++++++++++++++++---------
- 3 files changed, 101 insertions(+), 28 deletions(-)
-
-diff --git a/Documentation/filesystems/relay.txt b/Documentation/filesystems/relay.txt
-index 094f2d2..b417f83 100644
---- a/Documentation/filesystems/relay.txt
-+++ b/Documentation/filesystems/relay.txt
-@@ -161,6 +161,7 @@ TBD(curr. line MT:/API/)
-     relay_close(chan)
-     relay_flush(chan)
-     relay_reset(chan)
-+    relay_late_setup_files(chan, base_filename, parent)
- 
-   channel management typically called on instigation of userspace:
- 
-@@ -294,6 +295,16 @@ user-defined data with a channel, and is immediately available
- (including in create_buf_file()) via chan->private_data or
- buf->chan->private_data.
- 
-+Buffer-only channels
-+--------------------
+diff --git a/include/linux/kmemtrace.h b/include/linux/kmemtrace.h
+new file mode 100644
+index 0000000..8b7eda9
+--- /dev/null
++++ b/include/linux/kmemtrace.h
+@@ -0,0 +1,42 @@
++/*
++ * Copyright (C) 2008 Eduard-Gabriel Munteanu
++ *
++ * This file is released under GPL version 2.
++ */
 +
-+These channels have no files associated and can be created with
-+relay_open(NULL, NULL, ...). Such channels are useful in scenarios such
-+as when doing early tracing in the kernel, before the VFS is up. In these
-+cases, one may open a buffer-only channel and then call 
-+relay_late_setup_files() when the kernel is ready to handle files,
-+to expose the buffered data to the userspace.
++#ifndef _LINUX_KMEMTRACE_H
++#define _LINUX_KMEMTRACE_H
 +
- Channel 'modes'
- ---------------
++#include <linux/cache.h>
++#include <linux/types.h>
++
++#ifdef __KERNEL__
++
++extern int kmemtrace_is_inited __read_mostly;
++
++extern void kmemtrace_init(void);
++extern void kmemtrace_track_alloc(void *call_site, const void *ptr, 
++				  unsigned long nr_req,
++				  unsigned long nr_alloc,
++				  gfp_t flags);
++extern void kmemtrace_track_free(void *call_site, const void *ptr);
++extern void kmemtrace_log_string(char *str);
++
++#endif /* __KERNEL__ */
++
++enum kmemtrace_event_id {
++	KMEM_ALLOC	= 0x01,
++	KMEM_FREE	= 0x02,
++};
++
++struct kmemtrace_event {
++	enum kmemtrace_event_id		event_id;
++	uintptr_t			call_site;
++	uintptr_t			ptr;
++	unsigned long			nr_req;
++	unsigned long			nr_alloc;
++	unsigned long			gfp_flags;
++};
++
++#endif /* _LINUX_KMEMTRACE_H */
++
+diff --git a/include/linux/slub_def.h b/include/linux/slub_def.h
+index b00c1c7..53e62f7 100644
+--- a/include/linux/slub_def.h
++++ b/include/linux/slub_def.h
+@@ -11,6 +11,10 @@
+ #include <linux/workqueue.h>
+ #include <linux/kobject.h>
  
-diff --git a/include/linux/relay.h b/include/linux/relay.h
-index 6cd8c44..953fc05 100644
---- a/include/linux/relay.h
-+++ b/include/linux/relay.h
-@@ -48,6 +48,7 @@ struct rchan_buf
- 	size_t *padding;		/* padding counts per sub-buffer */
- 	size_t prev_padding;		/* temporary variable */
- 	size_t bytes_consumed;		/* bytes consumed in cur read subbuf */
-+	size_t early_bytes;		/* bytes consumed before VFS inited */
- 	unsigned int cpu;		/* this buf's cpu */
- } ____cacheline_aligned;
++#ifdef CONFIG_KMEMTRACE
++#include <linux/kmemtrace.h>
++#endif
++
+ enum stat_item {
+ 	ALLOC_FASTPATH,		/* Allocation from cpu slab */
+ 	ALLOC_SLOWPATH,		/* Allocation by getting a new cpu slab */
+@@ -196,20 +200,36 @@ static __always_inline void *kmalloc_large(size_t size, gfp_t flags)
  
-@@ -68,6 +69,7 @@ struct rchan
- 	int is_global;			/* One global buffer ? */
- 	struct list_head list;		/* for channel list */
- 	struct dentry *parent;		/* parent dentry passed to open */
-+	int has_base_filename;		/* has a filename associated? */
- 	char base_filename[NAME_MAX];	/* saved base filename */
- };
+ static __always_inline void *kmalloc(size_t size, gfp_t flags)
+ {
+-	if (__builtin_constant_p(size)) {
+-		if (size > PAGE_SIZE)
+-			return kmalloc_large(size, flags);
++	void *ret = NULL;
++	size_t nr_alloc = 0;
  
-@@ -169,6 +171,9 @@ struct rchan *relay_open(const char *base_filename,
- 			 size_t n_subbufs,
- 			 struct rchan_callbacks *cb,
- 			 void *private_data);
-+extern int relay_late_setup_files(struct rchan *chan,
-+				  const char *base_filename,
-+				  struct dentry *parent);
- extern void relay_close(struct rchan *chan);
- extern void relay_flush(struct rchan *chan);
- extern void relay_subbufs_consumed(struct rchan *chan,
-diff --git a/kernel/relay.c b/kernel/relay.c
-index 4c035a8..c1f36f4 100644
---- a/kernel/relay.c
-+++ b/kernel/relay.c
-@@ -378,6 +378,35 @@ void relay_reset(struct rchan *chan)
+-		if (!(flags & SLUB_DMA)) {
++	if (__builtin_constant_p(size)) {
++		if (size > PAGE_SIZE) {
++			ret = kmalloc_large(size, flags);
++			nr_alloc = PAGE_SIZE << get_order(size);
++		} else if (!(flags & SLUB_DMA)) {
+ 			struct kmem_cache *s = kmalloc_slab(size);
+ 
+-			if (!s)
+-				return ZERO_SIZE_PTR;
+-
+-			return kmem_cache_alloc(s, flags);
++			if (!s) {
++				ret = ZERO_SIZE_PTR;
++				nr_alloc = 0;
++			} else {
++				ret = kmem_cache_alloc(s, flags);
++				nr_alloc = s->size;
++			}
+ 		}
++	} else {
++		ret = __kmalloc(size, flags);
++		nr_alloc = size;
+ 	}
+-	return __kmalloc(size, flags);
++
++#ifdef CONFIG_KMEMTRACE
++	if (kmemtrace_is_inited) /* Has kmemtrace been initialized yet? */
++		kmemtrace_track_alloc(__builtin_return_address(0), ret,
++				      size, nr_alloc, flags);
++#endif
++
++	return ret;
  }
- EXPORT_SYMBOL_GPL(relay_reset);
  
-+static int relay_setup_buf_file(struct rchan *chan,
-+				struct rchan_buf *buf,
-+				unsigned int cpu)
+ #ifdef CONFIG_NUMA
+diff --git a/init/main.c b/init/main.c
+index 99ce949..26db1c1 100644
+--- a/init/main.c
++++ b/init/main.c
+@@ -65,6 +65,10 @@
+ #include <asm/sections.h>
+ #include <asm/cacheflush.h>
+ 
++#ifdef CONFIG_KMEMTRACE
++#include <linux/kmemtrace.h>
++#endif
++
+ #ifdef CONFIG_X86_LOCAL_APIC
+ #include <asm/smp.h>
+ #endif
+@@ -610,6 +614,10 @@ asmlinkage void __init start_kernel(void)
+ 	enable_debug_pagealloc();
+ 	cpu_hotplug_init();
+ 	kmem_cache_init();
++#ifdef CONFIG_KMEMTRACE
++	kmemtrace_init();
++	kmemtrace_log_string("kmemtrace_init() just ran!\n");
++#endif
+ 	setup_per_cpu_pageset();
+ 	numa_policy_init();
+ 	if (late_time_init)
+diff --git a/mm/Kconfig b/mm/Kconfig
+index 0016ebd..b12555b 100644
+--- a/mm/Kconfig
++++ b/mm/Kconfig
+@@ -1,3 +1,8 @@
++config KMEMTRACE
++	bool "Kernel memory tracer"
++	depends on SLUB
++	default n
++
+ config SELECT_MEMORY_MODEL
+ 	def_bool y
+ 	depends on EXPERIMENTAL || ARCH_SELECT_MEMORY_MODEL
+diff --git a/mm/Makefile b/mm/Makefile
+index a5b0dd9..67aa3f4 100644
+--- a/mm/Makefile
++++ b/mm/Makefile
+@@ -33,4 +33,5 @@ obj-$(CONFIG_MIGRATION) += migrate.o
+ obj-$(CONFIG_SMP) += allocpercpu.o
+ obj-$(CONFIG_QUICKLIST) += quicklist.o
+ obj-$(CONFIG_CGROUP_MEM_RES_CTLR) += memcontrol.o
++obj-$(CONFIG_KMEMTRACE) += kmemtrace.o
+ 
+diff --git a/mm/kmemtrace.c b/mm/kmemtrace.c
+new file mode 100644
+index 0000000..4ecefc4
+--- /dev/null
++++ b/mm/kmemtrace.c
+@@ -0,0 +1,116 @@
++/*
++ * Copyright (C) 2008 Pekka Enberg, Eduard-Gabriel Munteanu
++ *
++ * This file is released under GPL version 2.
++ */
++
++#include <linux/kmemtrace.h>
++#include <linux/string.h>
++#include <linux/debugfs.h>
++#include <linux/relay.h>
++#include <linux/module.h>
++
++#define KMEMTRACE_SUBBUF_SIZE	262144
++#define KMEMTRACE_NR_SUBBUFS	4
++
++static struct rchan *kmemtrace_chan;
++
++static inline void kmemtrace_log_event(struct kmemtrace_event *event)
 +{
-+	struct dentry *dentry;
-+ 	char *tmpname;
++	relay_write(kmemtrace_chan, event, sizeof(struct kmemtrace_event));
++}
 +
-+	tmpname = kzalloc(NAME_MAX + 1, GFP_KERNEL);
-+	if (!tmpname)
++void kmemtrace_log_string(char *str)
++{
++	relay_write(kmemtrace_chan, str, strlen(str) + 1);
++}
++
++void kmemtrace_track_alloc(void *call_site, const void *ptr,
++			   unsigned long nr_req, unsigned long nr_alloc,
++			   gfp_t flags)
++{
++	struct kmemtrace_event ev = {
++		.event_id	= KMEM_ALLOC,
++		.call_site	= (uintptr_t) call_site,
++		.ptr		= (uintptr_t) ptr,
++		.nr_req		= nr_req,
++		.nr_alloc	= nr_alloc,
++		.gfp_flags	= flags,
++	};
++
++	/*kmemtrace_log_event(&ev);*/
++	kmemtrace_log_string("ABCDEFGHIJKLMNOPQRSTUVWXYZa");
++}
++EXPORT_SYMBOL(kmemtrace_track_alloc);
++
++void kmemtrace_track_free(void *call_site, const void *ptr)
++{
++	struct kmemtrace_event ev = {
++		.event_id	= KMEM_FREE,
++		.call_site	= (uintptr_t) call_site,
++		.ptr		= (uintptr_t) ptr,
++	};
++
++	kmemtrace_log_event(&ev);
++}
++EXPORT_SYMBOL(kmemtrace_track_free);
++
++
++static struct dentry
++*kmemtrace_create_buf_file(const char *filename, struct dentry *parent,
++			   int mode, struct rchan_buf *buf, int *is_global)
++{
++	return debugfs_create_file(filename, mode, parent, buf,
++				   &relay_file_operations);
++}
++
++static int kmemtrace_remove_buf_file(struct dentry *dentry)
++{
++	debugfs_remove(dentry);
++
++	return 0;
++}
++
++static struct rchan_callbacks relay_callbacks = {
++	.create_buf_file = kmemtrace_create_buf_file,
++	.remove_buf_file = kmemtrace_remove_buf_file,
++};
++
++static struct dentry *kmemtrace_dir;
++
++static int __init kmemtrace_setup_late(void)
++{
++	if (!kmemtrace_chan)
 +		goto failed;
-+	snprintf(tmpname, NAME_MAX, "%s%d", chan->base_filename, cpu);
-+
-+	/* Create file in fs */
-+	dentry = chan->cb->create_buf_file(tmpname, chan->parent,
-+					   S_IRUSR, buf, 
-+					   &chan->is_global);
 +	
-+	kfree(tmpname);
-+
-+	if (!dentry)
++	kmemtrace_dir = debugfs_create_dir("kmemtrace", NULL);
++	if (!kmemtrace_dir)
 +		goto failed;
-+	buf->dentry = dentry;
++
++	relay_late_setup_files(kmemtrace_chan, "cpu", kmemtrace_dir);
++
++	kmemtrace_log_string("Late setup ran!\n");
 +
 +	return 0;
 +
 +failed:
 +	return 1;
 +}
++late_initcall(kmemtrace_setup_late);
 +
- /*
-  *	relay_open_buf - create a new relay channel buffer
-  *
-@@ -386,44 +415,31 @@ EXPORT_SYMBOL_GPL(relay_reset);
- static struct rchan_buf *relay_open_buf(struct rchan *chan, unsigned int cpu)
- {
-  	struct rchan_buf *buf = NULL;
--	struct dentry *dentry;
-- 	char *tmpname;
- 
-  	if (chan->is_global)
- 		return chan->buf[0];
- 
--	tmpname = kzalloc(NAME_MAX + 1, GFP_KERNEL);
-- 	if (!tmpname)
-- 		goto end;
-- 	snprintf(tmpname, NAME_MAX, "%s%d", chan->base_filename, cpu);
--
- 	buf = relay_create_buf(chan);
- 	if (!buf)
-- 		goto free_name;
-+ 		goto end;
++int kmemtrace_is_inited __read_mostly = 0;
++EXPORT_SYMBOL(kmemtrace_is_inited);
 +
-+ 	if (chan->has_base_filename)
-+		if (relay_setup_buf_file(chan, buf, cpu)) 
-+			goto free_buf;
- 
-  	buf->cpu = cpu;
-  	__relay_reset(buf, 1);
- 
--	/* Create file in fs */
-- 	dentry = chan->cb->create_buf_file(tmpname, chan->parent, S_IRUSR,
-- 					   buf, &chan->is_global);
-- 	if (!dentry)
-- 		goto free_buf;
--
--	buf->dentry = dentry;
--
-  	if(chan->is_global) {
-  		chan->buf[0] = buf;
-  		buf->cpu = 0;
-   	}
- 
-- 	goto free_name;
-+ 	goto end;
- 
- free_buf:
-  	relay_destroy_buf(buf);
-  	buf = NULL;
--free_name:
-- 	kfree(tmpname);
- end:
- 	return buf;
- }
-@@ -508,8 +524,8 @@ static int __cpuinit relay_hotcpu_callback(struct notifier_block *nb,
- 
- /**
-  *	relay_open - create a new relay channel
-- *	@base_filename: base name of files to create
-- *	@parent: dentry of parent directory, %NULL for root directory
-+ *	@base_filename: base name of files to create, %NULL for buffering only
-+ *	@parent: dentry of parent directory, %NULL for root directory or buffer
-  *	@subbuf_size: size of sub-buffers
-  *	@n_subbufs: number of sub-buffers
-  *	@cb: client callback functions
-@@ -531,8 +547,6 @@ struct rchan *relay_open(const char *base_filename,
- {
- 	unsigned int i;
- 	struct rchan *chan;
--	if (!base_filename)
--		return NULL;
- 
- 	if (!(subbuf_size && n_subbufs))
- 		return NULL;
-@@ -547,12 +561,15 @@ struct rchan *relay_open(const char *base_filename,
- 	chan->alloc_size = FIX_SIZE(subbuf_size * n_subbufs);
- 	chan->parent = parent;
- 	chan->private_data = private_data;
--	strlcpy(chan->base_filename, base_filename, NAME_MAX);
-+	if (base_filename) {
-+		chan->has_base_filename = 1;
-+		strlcpy(chan->base_filename, base_filename, NAME_MAX);
-+	}
- 	setup_callbacks(chan, cb);
- 	kref_init(&chan->kref);
- 
- 	mutex_lock(&relay_channels_mutex);
--	for_each_online_cpu(i) {
-+	for_each_present_cpu(i) {
- 		chan->buf[i] = relay_open_buf(chan, i);
- 		if (!chan->buf[i])
- 			goto free_bufs;
-@@ -563,7 +580,7 @@ struct rchan *relay_open(const char *base_filename,
- 	return chan;
- 
- free_bufs:
--	for_each_online_cpu(i) {
-+	for_each_present_cpu(i) {
- 		if (!chan->buf[i])
- 			break;
- 		relay_close_buf(chan->buf[i]);
-@@ -576,6 +593,41 @@ free_bufs:
- EXPORT_SYMBOL_GPL(relay_open);
- 
- /**
-+ *	relay_late_setup_files - triggers file creation
-+ *	@chan: channel to operate on
-+ *	@base_filename: base name of files to create
-+ *	@parent: dentry of parent directory, %NULL for root directory
-+ *
-+ *	Returns 0 if successful, non-zero otherwise.
-+ *
-+ *	Use to setup files for a previously buffer-only channel.
-+ *	Useful to do early tracing in kernel, before VFS is up, for example.
-+ */
-+int relay_late_setup_files(struct rchan *chan,
-+			   const char *base_filename,
-+			   struct dentry *parent)
++void kmemtrace_init(void)
 +{
-+	unsigned int i;
-+	
-+	if (!chan || !base_filename)
-+		return 1;
-+	
-+	strlcpy(chan->base_filename, base_filename, NAME_MAX);
-+	chan->has_base_filename = 1;
-+	chan->parent = parent;
-+
-+	mutex_lock(&relay_channels_mutex);
-+	for_each_present_cpu(i) {
-+		relay_setup_buf_file(chan, chan->buf[i], i);
-+		chan->buf[i]->dentry->d_inode->i_size =
-+			chan->buf[i]->early_bytes;
++	kmemtrace_chan = relay_open(NULL, NULL, KMEMTRACE_SUBBUF_SIZE,
++				    KMEMTRACE_NR_SUBBUFS, &relay_callbacks, 
++				    NULL);
++	if (!kmemtrace_chan) {
++		printk("kmemtrace: could not open relay channel\n");
++		return;
 +	}
-+	mutex_unlock(&relay_channels_mutex);
 +
-+	return 0;
++	kmemtrace_is_inited = 1;
 +}
-+		
-+/**
-  *	relay_switch_subbuf - switch to a new sub-buffer
-  *	@buf: channel buffer
-  *	@length: size of current event
-@@ -598,8 +650,13 @@ size_t relay_switch_subbuf(struct rchan_buf *buf, size_t length)
- 		old_subbuf = buf->subbufs_produced % buf->chan->n_subbufs;
- 		buf->padding[old_subbuf] = buf->prev_padding;
- 		buf->subbufs_produced++;
--		buf->dentry->d_inode->i_size += buf->chan->subbuf_size -
--			buf->padding[old_subbuf];
-+		if (buf->dentry)
-+			buf->dentry->d_inode->i_size +=
-+				buf->chan->subbuf_size -
-+				buf->padding[old_subbuf];
-+		else
-+			buf->early_bytes += buf->chan->subbuf_size -
-+					    buf->padding[old_subbuf];
- 		smp_mb();
- 		if (waitqueue_active(&buf->read_wait))
- 			/*
--- 
-1.5.2.5
++
