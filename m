@@ -1,75 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756210AbYDFVoU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756421AbYDFVqE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756210AbYDFVoU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Apr 2008 17:44:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753537AbYDFVoJ
+	id S1756421AbYDFVqE (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Apr 2008 17:46:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754675AbYDFVpy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Apr 2008 17:44:09 -0400
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:37074 "EHLO smtp4.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753535AbYDFVoI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Apr 2008 17:44:08 -0400
-Date: Mon, 7 Apr 2008 00:43:33 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Toralf Feorster <toralf.foerster@gmx.de>
-Subject: Re: TUNER_TDA8290=y, VIDEO_DEV=n build error
-Message-ID: <20080406214333.GH30987@cs181133002.pp.htv.fi>
-References: <pdj7pZVURbL.A.42H.kDW9HB@albercik> <pdYe6zNQVl.A.iUB.YHW9HB@albercik> <20080404084754.GA10993@cs181133002.pp.htv.fi> <200804041137.40582.rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <200804041137.40582.rjw@sisk.pl>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Sun, 6 Apr 2008 17:45:54 -0400
+Received: from 136-022.dsl.labridge.com ([206.117.136.22]:1927 "EHLO
+	mail.perches.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1754275AbYDFVpx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Apr 2008 17:45:53 -0400
+Subject: [PATCH] drivers/ata/sata_via.c - Eliminate "may be used
+	uninitialized" warning
+From: Joe Perches <joe@perches.com>
+To: Jeff Garzik <jgarzik@pobox.com>
+Cc: linux-ide <linux-ide@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Sun, 06 Apr 2008 14:45:20 -0700
+Message-Id: <1207518320.1803.52.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3-1.2mdv2008.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 04, 2008 at 11:37:40AM +0200, Rafael J. Wysocki wrote:
-> On Friday, 4 of April 2008, Adrian Bunk wrote:
-> > On Fri, Apr 04, 2008 at 01:20:32AM +0200, Rafael J. Wysocki wrote:
-> > > The following report is on the current list of known regressions
-> > > from 2.6.24.  Please verify if the issue is still present in the
-> > > mainline.
-> > 
-> > When you asked me just 2 days ago exactly the same question in the 
-> > Bugzilla entry I immediately confirmed it's still present.
-> > 
-> > Was anything wrong with my answer (and the subsequent discussions) that 
-> > you now also ask Toralf for confirmation?
-> 
-> This text is automatically added to the messages sent in replies to the main
-> report.
-> 
-> Well, it probably could be better.  I'm open for suggestions. :-)
+Called by svia_init_one with a temporary,
+so there's no effective code change.
 
-First of all you try to get the tracking of all bugs into Bugzilla, and 
-now you've sent a batch of emails where the answers will not get into 
-Bugzilla automatically.
+Signed-off-by: Joe Perches <joe@perches.com>
 
-As an example, for the bug we are talking about the main value of you 
-asking me in Bugzilla was not that I confirmed it's still present, the 
-main value was that this caused Mauro to make a fix. What would have 
-happened if Toralf had answered in an email that the bug is still 
-present?
+ drivers/ata/sata_via.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-And especially for trickier stuff like suspend/resume problems it might 
-also make sense to send the email to all people who might possibly be 
-involved with the bug - even if this means putting all email addresses 
-from 5 MAINTAINERS entries into one email. It takes a bit more time when 
-writing the emails, but my experience was it's worth it.
+diff --git a/drivers/ata/sata_via.c b/drivers/ata/sata_via.c
+index 0d03f44..e01d2b1 100644
+--- a/drivers/ata/sata_via.c
++++ b/drivers/ata/sata_via.c
+@@ -406,10 +406,9 @@ static int vt6420_prepare_host(struct pci_dev *pdev, struct ata_host **r_host)
+ 	struct ata_host *host;
+ 	int rc;
+ 
+-	rc = ata_pci_prepare_sff_host(pdev, ppi, &host);
++	rc = ata_pci_prepare_sff_host(pdev, ppi, r_host);
+ 	if (rc)
+ 		return rc;
+-	*r_host = host;
+ 
+ 	rc = pcim_iomap_regions(pdev, 1 << 5, DRV_NAME);
+ 	if (rc) {
+@@ -417,6 +416,7 @@ static int vt6420_prepare_host(struct pci_dev *pdev, struct ata_host **r_host)
+ 		return rc;
+ 	}
+ 
++	host = *r_host;
+ 	host->ports[0]->ioaddr.scr_addr = svia_scr_addr(host->iomap[5], 0);
+ 	host->ports[1]->ioaddr.scr_addr = svia_scr_addr(host->iomap[5], 1);
+ 
 
-> Thanks,
-> Rafael
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
 
