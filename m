@@ -1,60 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754732AbYDFG0p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754345AbYDFGaU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754732AbYDFG0p (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Apr 2008 02:26:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752361AbYDFG0i
+	id S1754345AbYDFGaU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Apr 2008 02:30:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752269AbYDFGaH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Apr 2008 02:26:38 -0400
-Received: from e28smtp06.in.ibm.com ([59.145.155.6]:42579 "EHLO
-	e28smtp06.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751533AbYDFG0i (ORCPT
+	Sun, 6 Apr 2008 02:30:07 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:52667 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751551AbYDFGaG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Apr 2008 02:26:38 -0400
-Message-ID: <47F86CE3.9080705@linux.vnet.ibm.com>
-Date: Sun, 06 Apr 2008 11:55:39 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
-MIME-Version: 1.0
-To: Balaji Rao <balajirrao@gmail.com>
-CC: linux-kernel@vger.kernel.org, containers@lists.osdl.org,
-       dhaval@linux.vnet.ibm.com, balbir@in.ibm.com, menage@google.com,
-       a.p.zijlstra@chello.nl, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [RFC][-mm] [0/2] Basic stats for cgroups V2
-References: <200804052339.42474.balajirrao@gmail.com>
-In-Reply-To: <200804052339.42474.balajirrao@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Sun, 6 Apr 2008 02:30:06 -0400
+Date: Sat, 5 Apr 2008 23:29:59 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Dan Williams <dan.j.williams@intel.com>
+Cc: gregkh@suse.de, linux-kernel@vger.kernel.org, htejun@gmail.com,
+       neilb@suse.de
+Subject: Re: [RFC PATCH] sysfs: refill attribute buffer when reading from
+ offset 0
+Message-Id: <20080405232959.c6504be8.akpm@linux-foundation.org>
+In-Reply-To: <20080405184122.2816.35845.stgit@dwillia2-linux.ch.intel.com>
+References: <20080405184122.2816.35845.stgit@dwillia2-linux.ch.intel.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Balaji Rao wrote:
-> V1->V2
-> - Fixed a possible race in cpu_cgroup_read_stat. Thank you Paul for pointing this out.
-> - A few other naming changes.
+On Sat, 05 Apr 2008 11:41:22 -0700 Dan Williams <dan.j.williams@intel.com> wrote:
+
+> Requiring userspace to close and re-open sysfs attributes has been the
+> policy since before 2.6.12.  It allows userspace to get a consistent
+> snapshot of kernel state and consume it with incremental reads and seeks.
 > 
-> This patchset is a first step towards implementing stats for cgroup 
-> subsystems. Only a few trivial stats for cpu and memory resource controller 
-> have been implemented for now. Please provide comments on the general 
-> direction and any suggestions on how you would like the cgroupstats framework 
-> to be implemented.
+> Now, if the file position is zero the kernel assumes userspace wants to see
+> the new value.
+
+This does sound a sensible change.
+
+>  The application for this change is to allow a userspace
+> RAID metadata handler to check the state of an array without causing any
+> memory allocations.  Thus not causing writeback to a raid array that might
+> be blocked waiting for userspace to take action.
+
+Although that sounds like a rather, umm, optimistic application.  I guess
+if everything's mlocked you might get lucky.
+
+> Cc: NeilBrown <neilb@suse.de>
+> Cc: Tejun Heo <htejun@gmail.com>
+> Signed-off-by: Dan Williams <dan.j.williams@intel.com>
+> ---
 > 
-> roadmap
-> --------
-> implement a generic statistics framework for cgroups,
-> unification with taskstats/netlink interface,
-> add more statistics
+>  fs/sysfs/file.c |    5 ++---
+>  1 files changed, 2 insertions(+), 3 deletions(-)
+> 
+> 
+> diff --git a/fs/sysfs/file.c b/fs/sysfs/file.c
+> index baa663e..0a26ba8 100644
+> --- a/fs/sysfs/file.c
+> +++ b/fs/sysfs/file.c
+> @@ -128,7 +128,7 @@ sysfs_read_file(struct file *file, char __user *buf, size_t count, loff_t *ppos)
+>  	ssize_t retval = 0;
+>  
+>  	mutex_lock(&buffer->mutex);
+> -	if (buffer->needs_read_fill) {
+> +	if (buffer->needs_read_fill || *ppos == 0) {
+>  		retval = fill_read_buffer(file->f_path.dentry,buffer);
+>  		if (retval)
+>  			goto out;
+> @@ -409,8 +409,7 @@ static int sysfs_release(struct inode *inode, struct file *filp)
+>   * return POLLERR|POLLPRI, and select will return the fd whether
+>   * it is waiting for read, write, or exceptions.
+>   * Once poll/select indicates that the value has changed, you
+> - * need to close and re-open the file, as simply seeking and reading
+> - * again will not get new data, or reset the state of 'poll'.
+> + * need to close and re-open the file, or seek to 0 and read again.
+>   * Reminder: this only works for attributes which actively support
+>   * it, and it is not possible to test an attribute from userspace
+>   * to see if it supports poll (Neither 'poll' nor 'select' return
 > 
 
-I like the roadmap and the patches. We need these statistics quite urgently. We
-have lot of control and some statistics. We need more statistics to help make
-the decision making (resizing, moving task, etc.) easier
+Has this been tested with pread()?  That should work - doing an lseek+read
+is plain dopey.
 
+Can we now remove need_read_fill?  Not if we want to support
+open+lseek+read, I guess - this initial read might not be at offset
+zero.
 
--- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
