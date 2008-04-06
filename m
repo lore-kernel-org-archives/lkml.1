@@ -1,136 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756524AbYDFXaw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756627AbYDFXfw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756524AbYDFXaw (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Apr 2008 19:30:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754797AbYDFXan
+	id S1756627AbYDFXfw (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Apr 2008 19:35:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754917AbYDFXfp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Apr 2008 19:30:43 -0400
-Received: from py-out-1112.google.com ([64.233.166.182]:17804 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754474AbYDFXam (ORCPT
+	Sun, 6 Apr 2008 19:35:45 -0400
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:56882 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754797AbYDFXfo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Apr 2008 19:30:42 -0400
-From: nikosapi <me@nikosapi.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Suspend on Lenovo 3000 V200 - Linux 2.6.25rc8
-Date: Sun, 6 Apr 2008 19:30:49 -0400
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: linux-acpi@vger.kernel.org, Len Brown <lenb@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>
-References: <3e8fd0440804052010xbe8f59bw3268d8206b97ac3e@mail.gmail.com> <200804061810.08398.me@nikosapi.org> <200804070123.36912.rjw@sisk.pl>
-In-Reply-To: <200804070123.36912.rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+	Sun, 6 Apr 2008 19:35:44 -0400
+Subject: Re: [PATCH] scsi: fix sense_slab/bio swapping livelock
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Hugh Dickins <hugh@veritas.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Christoph Lameter <clameter@sgi.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Peter Zijlstra <a.p.ziljstra@chello.nl>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org
+In-Reply-To: <Pine.LNX.4.64.0804062348001.19446@blonde.site>
+References: <Pine.LNX.4.64.0804062348001.19446@blonde.site>
+Content-Type: text/plain
+Date: Sun, 06 Apr 2008 18:35:35 -0500
+Message-Id: <1207524935.3223.39.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-3.fc8) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200804061930.49659.me@nikosapi.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On April 6, 2008 19:23:36 Rafael J. Wysocki wrote:
-> On Monday, 7 of April 2008, nikosapi wrote:
-> > On April 6, 2008 16:21:57 Rafael J. Wysocki wrote:
-> > > On Sunday, 6 of April 2008, Nick Nobody wrote:
-> > > > Hello,
-> > >
-> > > Hi,
-> > >
-> > > > I'm trying to get suspend working properly on my Lenovo 3000 V200.
-> > > > I'm using Linux 2.6.25rc8 and the latest xf86-video-intel. Before I
-> > > > was using kernel-2.6.23.15-137.fc8, xorg-x11-drv-i810-2.1.1-8.fc8 and
-> > > > suspend worked perfectly.
-> > > >
-> > > > The laptop will go to sleep properly but it doesn't seem to enjoy
-> > > > waking up. When it starts up it will either display a black screen
-> > > > and remain frozen or I will end up at a virtual term login prompt but
-> > > > when I put in my username it never prompts me for my password.
-> > > >
-> > > > The only way to get suspend working reasonably well is to first
-> > > > hibernate and then suspend. After a hibernation suspend seems to work
-> > > > fine :S
-> > > >
-> > > > I'm a real noob when it comes to figuring out these sort of things,
-> > > > so any pointers on things I could try would be much appreciated.
-> > > >
-> > > > Here's what s2ram has to say about my hardware:
-> > > > Machine is unknown.
-> > > > This machine can be identified by:
-> > > >     sys_vendor   = "LENOVO"
-> > > >     sys_product  = "07642CU"
-> > > >     sys_version  = "LENOVO3000 V200"
-> > > >     bios_version = "65ET32WW (1.06 )"
-> > > >
-> > > > Here's the output of dmidecode: http://pastebin.ca/973442
-> > >
-> > > Can you try to run "echo mem > /sys/power/state" instead of s2ram and
-> > > see if the symptoms are the same?
-> > >
-> > > Also, please try reverting commit
-> > > 7c0ea45be4f114d85ee35caeead8e1660699c46f (reproduced below for
-> > > conveninence) and see if that helps.
-> > >
-> > > Thanks,
-> > > Rafael
-> > >
-> > > ---
-> > > commit 7c0ea45be4f114d85ee35caeead8e1660699c46f
-> > > Author: Zhao Yakui <yakui.zhao@intel.com>
-> > > Date:   Tue Mar 11 16:56:47 2008 +0800
-> > >
-> > >     ACPI: Ignore _BQC object when registering backlight device
-> > >
-> > >     According to acpi spec , the objects of  _BCL and _BCM are required
-> > > if integrated LCD is present and supports brightness level .The _BQC is
-> > > the optional object. So the _BQC object is ignored when the backlight
-> > > device is registered in ACPI video driver.
-> > >
-> > >     http://bugzilla.kernel.org/show_bug.cgi?id=10206
-> > >
-> > >     Signed-off-by: Zhao Yakui <yakui.zhao@intel.com>
-> > >     Signed-off-by: Zhang Rui  <rui.zhang@intel.com>
-> > >     Signed-off-by: Len Brown <len.brown@intel.com>
-> > >
-> > > diff --git a/drivers/acpi/video.c b/drivers/acpi/video.c
-> > > index 12cce69..ace958c 100644
-> > > --- a/drivers/acpi/video.c
-> > > +++ b/drivers/acpi/video.c
-> > > @@ -713,7 +713,7 @@ static void acpi_video_device_find_cap(struct
-> > > acpi_video_device *device)
-> > >
-> > >  	kfree(obj);
-> > >
-> > > -	if (device->cap._BCL && device->cap._BCM && device->cap._BQC &&
-> > > max_level
-> > >
-> > > > 0){ +	if (device->cap._BCL && device->cap._BCM && max_level > 0) {
-> > >
-> > >  		int result;
-> > >  		static int count = 0;
-> > >  		char *name;
-> > > --
-> > > To unsubscribe from this list: send the line "unsubscribe linux-acpi"
-> > > in the body of a message to majordomo@vger.kernel.org
-> > > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> >
-> > Hello Rafael,
-> >
-> > I tested with that patch and the problem persists, when the laptop
-> > resumes it locks up (with a black screen). If I add acpi_apic_instance=2
-> > acpi_osi=Linux as kernel boot options (as suggested by my dmesg) when it
-> > resumes I get back to a virtual term but I'm not able to log in. After
-> > entering my username it just hangs there.
->
-> Can you please test if the 2.6.24.4 kernel works, then?
->
-> Rafael
-> --
+On Sun, 2008-04-06 at 23:56 +0100, Hugh Dickins wrote:
+> Since 2.6.25-rc7, I've been seeing an occasional livelock on one
+> x86_64 machine, copying kernel trees to tmpfs, paging out to swap.
+> 
+> Signature: 6000 pages under writeback but never getting written;
+> most tasks of interest trying to reclaim, but each get_swap_bio
+> waiting for a bio in mempool_alloc's io_schedule_timeout(5*HZ);
+> every five seconds an atomic page allocation failure report from
+> kblockd failing to allocate a sense_buffer in __scsi_get_command.
+> 
+> __scsi_get_command has a (one item) free_list to protect against
+> this, but rc1's [SCSI] use dynamically allocated sense buffer
+> de25deb18016f66dcdede165d07654559bb332bc upset that slightly.
+> When it fails to allocate from the separate sense_slab, instead
+> of giving up, it must fall back to the command free_list, which
+> is sure to have a sense_buffer attached.
+> 
+> Either my earlier -rc testing missed this, or there's some recent
+> contributory factor.  One very significant factor is SLUB, which
+> merges slab caches when it can, and on 64-bit happens to merge
+> both bio cache and sense_slab cache into kmalloc's 128-byte cache:
+> so that under this swapping load, bios above are liable to gobble
+> up all the slots needed for scsi_cmnd sense_buffers below.
+> 
+> That's disturbing behaviour, and I tried a few things to fix it.
+> Adding a no-op constructor to the sense_slab inhibits SLUB from
+> merging it, and stops all the allocation failures I was seeing;
+> but it's rather a hack, and perhaps in different configurations
+> we have other caches on the swapout path which are ill-merged.
+> 
+> Another alternative is to revert the separate sense_slab, using
+> cache-line-aligned sense_buffer allocated beyond scsi_cmnd from
+> the one kmem_cache; but that might waste more memory, and is
+> only a way of diverting around the known problem.
+> 
+> While I don't like seeing the allocation failures, and hate the
+> idea of all those bios piled up above a scsi host working one by
+> one, it does seem to emerge fairly soon with the livelock fix.
+> So lacking better ideas, stick with that one clear fix for now.
+> 
+> Signed-off-by: Hugh Dickins <hugh@veritas.com>
 
-What a coincidence, I upgraded to kernel-2.6.24.4-64.fc8 this afternoon. 
-Suspend and hibernate work perfectly, even my wifi led works ;)
+This was sort of accidentally fixed in scsi-misc by commit 
 
-Could it be an error I made while configuring the 2.6.25rc8 kernel? Or maybe 
-some other software that needs to be upgraded?
+commit c5f73260b289cb974928eac05f2d84e58ddfc020
+Author: James Bottomley <James.Bottomley@HansenPartnership.com>
+Date:   Thu Mar 13 11:16:33 2008 -0500
 
-nick
+    [SCSI] consolidate command allocation in a single place
+
+Could you check that:
+
+master.kernel.org:/pub/scm/linux/kernel/git/jejb/scsi-misc-2.6.git
+
+and see if it alleviates the problem? ... if so, we can work out which
+pieces to backport.
+
+Thanks,
+
+James
+
+
