@@ -1,66 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756537AbYDFWBQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756594AbYDFWDl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756537AbYDFWBQ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Apr 2008 18:01:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753640AbYDFWBA
+	id S1756594AbYDFWDl (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Apr 2008 18:03:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754602AbYDFWDe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Apr 2008 18:01:00 -0400
-Received: from 136-022.dsl.labridge.com ([206.117.136.22]:1945 "EHLO
-	mail.perches.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1753535AbYDFWA7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Apr 2008 18:00:59 -0400
-Subject: Re: [PATCH] drivers/ata/sata_via.c - Eliminate "may be used
-	uninitialized" warning
-From: Joe Perches <joe@perches.com>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: Jeff Garzik <jgarzik@pobox.com>, linux-ide <linux-ide@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080406215054.GI30987@cs181133002.pp.htv.fi>
-References: <1207518320.1803.52.camel@localhost>
-	 <20080406215054.GI30987@cs181133002.pp.htv.fi>
-Content-Type: text/plain; charset=UTF-8
-Date: Sun, 06 Apr 2008 15:00:07 -0700
-Message-Id: <1207519207.1803.60.camel@localhost>
+	Sun, 6 Apr 2008 18:03:34 -0400
+Received: from nat-132.atmel.no ([80.232.32.132]:61700 "EHLO relay.atmel.no"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753640AbYDFWDd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Apr 2008 18:03:33 -0400
+Date: Sun, 6 Apr 2008 18:03:26 -0400
+From: Haavard Skinnemoen <hskinnemoen@atmel.com>
+To: hannes@saeurebad.de
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [patch 04/22 -v2] avr32: Use generic show_mem()
+Message-ID: <20080406180326.0f35b26f@siona.local>
+In-Reply-To: <20080404115231.162496419@skyscraper.fehenstaub.lan>
+References: <20080404115137.397502419@skyscraper.fehenstaub.lan>
+	<20080404115231.162496419@skyscraper.fehenstaub.lan>
+Organization: Atmel
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3-1.2mdv2008.0 
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-04-07 at 00:50 +0300, Adrian Bunk wrote:
-> On Sun, Apr 06, 2008 at 02:45:20PM -0700, Joe Perches wrote:
-> > Called by svia_init_one with a temporary,
-> > so there's no effective code change.
-> I'm not getting any warning here.
-> Are you using an older gcc?
+On Fri, 04 Apr 2008 13:51:41 +0200
+hannes@saeurebad.de wrote:
 
-Yes.  Slightly less than 4.3.0
+> Remove arch-specific show_mem() in favor of the generic version.
+> 
+> This also removes the following redundant information display:
+> 
+> 	- free pages, printed by show_free_areas()
+> 	- pages in slabs, printed by show_free_areas()
+> 	- pages in swapcache, printed by show_swap_cache_info()
+> 
+> where show_mem() calls show_free_areas(), which calls
+> show_swap_cache_info().
+> 
+> Signed-off-by: Johannes Weiner <hannes@saeurebad.de>
+> CC: Haavard Skinnemoen <hskinnemoen@atmel.com>
 
-$ gcc --version
-gcc (GCC) 4.2.2 20071128 (prerelease) (4.2.2-3.1mdv2008.0)
+Looks good to me. Thanks!
 
-$ git-show
-commit 6fdf5e67fe8d3c83500dad9acae985132c2459a3
-Merge: abd24df... e64a3cf...
-Author: Linus Torvalds <torvalds@linux-foundation.org>
-Date:   Fri Apr 4 15:09:44 2008 -0700
-
-    Merge branch 'upstream' of git://git.kernel.org/pub/scm/linux/kernel/git/ralf/upstream-linus
-    
-    * 'upstream' of git://git.kernel.org/pub/scm/linux/kernel/git/ralf/upstream-linus:
-      [MIPS] Make KGDB compile on UP
-      [MIPS] Pb1200: Fix header breakage
-
-$ make defconfig
-[]
-$ make clean
-[]
-$ make drivers/ata/sata_via.o
-[]
-  CC      drivers/ata/sata_via.o
-drivers/ata/sata_via.c: In function ‘svia_init_one’:
-drivers/ata/sata_via.c:504: warning: ‘host’ may be used uninitialized in this function
-
-
+Acked-by: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
