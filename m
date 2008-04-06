@@ -1,58 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755562AbYDFPsl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755472AbYDFQ0U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755562AbYDFPsl (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Apr 2008 11:48:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753810AbYDFPsb
+	id S1755472AbYDFQ0U (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Apr 2008 12:26:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753987AbYDFQ0K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Apr 2008 11:48:31 -0400
-Received: from an-out-0708.google.com ([209.85.132.245]:3571 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753773AbYDFPsa (ORCPT
+	Sun, 6 Apr 2008 12:26:10 -0400
+Received: from fg-out-1718.google.com ([72.14.220.157]:33473 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753766AbYDFQ0J (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Apr 2008 11:48:30 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=CYmxEDC8YVrvf31PaHd94yefxuewz9lhzfWwOUlxf8IDgzRAkhaBJmtsrkrXrehCO56KYgFlkxOqKcu3ZC4p7HAjzS0vG0uK+a8FL9KCOJOgjRktoLrVRUJSYWHwT+MTV8j5lrU31Ae3Tg1gxbHnJ4wscMhbWLEbwqk4CpnWjRs=
-Message-ID: <dd18b0c30804060848r44b0370am2bd20e0738ab16f4@mail.gmail.com>
-Date: Sun, 6 Apr 2008 15:48:29 +0000
-From: "Justin Mattock" <justinmattock@gmail.com>
-To: "Soeren Sonnenburg" <kernel@nn7.de>
-Subject: Re: suspend issue
-Cc: "Linux Kernel" <linux-kernel@vger.kernel.org>
-In-Reply-To: <1207490104.4597.36.camel@localhost>
+	Sun, 6 Apr 2008 12:26:09 -0400
+Message-ID: <47F8F99D.1070701@colorfullife.com>
+Date: Sun, 06 Apr 2008 18:26:05 +0200
+From: Manfred Spraul <manfred@colorfullife.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <dd18b0c30804052103s7357bb86yf7bf11d38d2911b3@mail.gmail.com>
-	 <1207490104.4597.36.camel@localhost>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+CC: "Serge E. Hallyn" <serue@us.ibm.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Pavel Emelyanov <xemul@openvz.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Sukadev Bhattiprolu <sukadev@us.ibm.com>
+Subject: [PATCH] fix SEM_UNDO with namespaces, take 2
+References: <47EFFD1C.5020204@colorfullife.com> <47F08ED6.1090103@openvz.org> <47F10DF7.5010702@colorfullife.com> <47F203EC.7090806@openvz.org> <m1od8tiom7.fsf@ebiederm.dsl.xmission.com> <20080403194418.GA11105@sergelap.austin.ibm.com> <20080404043902.GA14177@sergelap.austin.ibm.com> <47F8E824.6090600@colorfullife.com>
+In-Reply-To: <47F8E824.6090600@colorfullife.com>
+Content-Type: multipart/mixed;
+ boundary="------------010409080908030808020607"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Yeah; that's what I was contemplating as well.
+This is a multi-part message in MIME format.
+--------------010409080908030808020607
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-Justin P. Mattock
+Hi,
 
-On Sun, Apr 6, 2008 at 1:55 PM, Soeren Sonnenburg <kernel@nn7.de> wrote:
->
-> On Sun, 2008-04-06 at 04:03 +0000, Justin Mattock wrote:
->  > Hello; I seem to have discovered something with echo mem > /sys/power/state.
->  > I recompile the kernel and had forgotten to compile fglrx, when
->  > performing a suspend without fglrx I was confronted with the dreaded
->  > blank screen and a reboot. then as a test I compiled fglrx and loaded,
->  > and to my amazement suspend reacted properly again.
->
->  Yeah, but I it does not even work without X - console only!
->
->  s2ram -f -p used to work since at least 2.6.20 ... and is now not
->  anymore in 2.6.25-*
->
->  Soeren
->
+below is the second attempt to fix SEM_UNDO + unshare():
+lookup_undo (in ipc/sem.c) is not namespace-aware, thus all entries in 
+sysvsem.undo_list must be from the same namespace.
+The patch enforces that by detaching the current thread from 
+sysvsem.undo_list in switch_task_namespaces() if the ipc namespace is 
+changed.
 
+The patch boots and passes simple sysvsem+unshare tests.
 
+Signed-Off-By: Manfred Spraul <manfred@colorfullife.com>
 
--- 
-Justin P. Mattock
+--------------010409080908030808020607
+Content-Type: text/plain;
+ name="patch-namespace-detach"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="patch-namespace-detach"
+
+diff --git a/ipc/sem.c b/ipc/sem.c
+index 0b45a4d..35841bd 100644
+--- a/ipc/sem.c
++++ b/ipc/sem.c
+@@ -1298,6 +1298,7 @@ void exit_sem(struct task_struct *tsk)
+ 	undo_list = tsk->sysvsem.undo_list;
+ 	if (!undo_list)
+ 		return;
++	tsk->sysvsem.undo_list = NULL;
+ 
+ 	if (!atomic_dec_and_test(&undo_list->refcnt))
+ 		return;
+diff --git a/kernel/nsproxy.c b/kernel/nsproxy.c
+index f5d332c..ddeb9d1 100644
+--- a/kernel/nsproxy.c
++++ b/kernel/nsproxy.c
+@@ -211,6 +211,18 @@ void switch_task_namespaces(struct task_struct *p, struct nsproxy *new)
+ 
+ 	might_sleep();
+ 
++	if ((p->nsproxy == NULL && new != NULL) ||
++		(p->nsproxy != NULL && new == NULL) ||
++		(p->nsproxy != NULL && new != NULL && p->nsproxy->ipc_ns != new->ipc_ns)) {
++		/* switching the IPC namespace is considered equivalent to sys_exit() wrt.
++		 * to outstanding SEM_UNDO undos: After switching to the new IPC namespace,
++		 * the semaphore arrays from the old namespace are not accessible anymore.
++		 * 
++		 * Additionally, an implicit sys_unshare(CLONE_SYSVSEM) is performed.
++		 */
++		exit_sem(p);
++	}
++
+ 	ns = p->nsproxy;
+ 
+ 	rcu_assign_pointer(p->nsproxy, new);
+
+--------------010409080908030808020607--
