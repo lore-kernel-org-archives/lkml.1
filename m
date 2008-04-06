@@ -1,67 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753810AbYDFLxZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755054AbYDFMNB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753810AbYDFLxZ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Apr 2008 07:53:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750949AbYDFLxQ
+	id S1755054AbYDFMNB (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Apr 2008 08:13:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751520AbYDFMMu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Apr 2008 07:53:16 -0400
-Received: from bzq-219-195-70.pop.bezeqint.net ([62.219.195.70]:48307 "EHLO
-	bh-buildlin1.bhalevy.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750752AbYDFLxP (ORCPT
+	Sun, 6 Apr 2008 08:12:50 -0400
+Received: from moutng.kundenserver.de ([212.227.126.186]:56658 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751402AbYDFMMt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Apr 2008 07:53:15 -0400
-Message-ID: <47F8B98A.1020704@panasas.com>
-Date: Sun, 06 Apr 2008 14:52:42 +0300
-From: Benny Halevy <bhalevy@panasas.com>
-Organization: Panasas, Inc.
-User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
+	Sun, 6 Apr 2008 08:12:49 -0400
+Date: Sun, 6 Apr 2008 14:12:03 +0200 (CEST)
+From: Bodo Eggert <7eggert@gmx.de>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+cc: Bodo Eggert <7eggert@gmx.de>, Jeff Garzik <jeff@garzik.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Chris Snook <csnook@redhat.com>, Dave Jones <davej@codemonkey.org.uk>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       NetDev <netdev@vger.kernel.org>, David Miller <davem@davemloft.net>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: GFP_ATOMIC page allocation failures.
+In-Reply-To: <200804051206.37394.nickpiggin@yahoo.com.au>
+Message-ID: <alpine.LSU.0.999.0804061406380.3361@be1.lrz>
+References: <adYyJ-20N-11@gated-at.bofh.it> <200804042159.54220.nickpiggin@yahoo.com.au>
+ <Pine.LNX.4.58.0804041307500.9036@be10.lrz>
+ <200804051206.37394.nickpiggin@yahoo.com.au>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Jan Engelhardt <jengelh@computergmbh.de>, apw@shadowen.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [patch] checkpatch: relax spacing and line length
-References: <alpine.LNX.1.10.0804060653020.30794@fbirervta.pbzchgretzou.qr> <20080405221822.376f0018.akpm@linux-foundation.org>
-In-Reply-To: <20080405221822.376f0018.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=us-ascii
+X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
+X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
+X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
+X-Provags-ID: V01U2FsdGVkX19v3+EvzIsVS4p/mMWxG8NkzsJX+yVPHfn+Z3c
+ KGOSwAWjGn7hDS05sBP0rS2Xu6ssrHXh7ctZUWfIYbeC2gTF+/
+ x8uxNQzYnXLR0y1bV30XA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Apr. 06, 2008, 8:18 +0300, Andrew Morton <akpm@linux-foundation.org> wrote:
-> On Sun, 6 Apr 2008 06:54:54 +0200 (CEST) Jan Engelhardt <jengelh@computergmbh.de> wrote:
+On Sat, 5 Apr 2008, Nick Piggin wrote:
+> On Friday 04 April 2008 22:35, Bodo Eggert wrote:
+> > On Fri, 4 Apr 2008, Nick Piggin wrote:
+
+> > > But actually developers do sometimes want see the event even if it is
+> > > relatively infrequent...
+> >
+> > You shouldn't frighten the users either. /proc/sys/vm/debug?
 > 
->>      We all had the arguments about 80 columns, so here goes a relax.
->>      Checking for 95 (or perhaps something better?), but of course we
->>      print "80" in the output, because if you happened to get to 95, it's
->>      "really time" to break it.
-> 
-> This will reduce the usefulness of checkpatch for those developers who
-> choose to observe an 80-column limit.
-> 
->>      This also relaxes the tab doctrine, because spaces DO make sense --
->>      especially when you view the code with a tab setting of not-8.
-> 
-> Non-tab-using code inevitably ends up having a mix of tabs and non-tabs
-> and looks a mess if tabstops are set to anything other than eight.
+> Hence changing the message a to make it clear that it is not a
+> problem if it is infrequent.
 
-I humbly disagree.  If you use tabs for (logical) indentation and then trailing
-spaces for (graphical) alignment, not just a random mix of tabs and spaces the
-code looks fine with 8-character wide tabs or any other setup.  Only when you
-use tabs for graphical alignment, below fixed-width characters on the line above
-you marry yourself with a specific tab expansion width.
+If it's no problem when infrequent, and if it's possible and cheap (less 
+extra code than sizeof(explanation)) to not show a message if it's 
+infrequent, why should the users be bothered at all? The system needs less 
+than one ms to do the job, the admin needs five minutes to grep the logs.
 
-Benny
-
-> 
-> God I wish I had not been cc'ed on this.
-
-The idea is *not* to open the flood gates, just to allow for a bit more
-flexibility to accommodate for a more robust indentation style.
-
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-
+-- 
+Top 100 things you don't want the sysadmin to say:
+72. My leave starts tomorrow.
