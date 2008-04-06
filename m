@@ -1,93 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756423AbYDFUXy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756051AbYDFU3l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756423AbYDFUXy (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Apr 2008 16:23:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752972AbYDFUXn
+	id S1756051AbYDFU3l (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Apr 2008 16:29:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753057AbYDFU3d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Apr 2008 16:23:43 -0400
-Received: from gate.crashing.org ([63.228.1.57]:58374 "EHLO gate.crashing.org"
+	Sun, 6 Apr 2008 16:29:33 -0400
+Received: from ozlabs.org ([203.10.76.45]:56235 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752996AbYDFUXm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Apr 2008 16:23:42 -0400
-From: Segher Boessenkool <segher@kernel.crashing.org>
-To: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
-Cc: Segher Boessenkool <segher@kernel.crashing.org>,
-       Josh Boyer <jwboyer@linux.vnet.ibm.com>,
-       Sam Ravnborg <sam@ravnborg.org>
-Subject: [PATCH] make help: Show defconfig subdirs
-Date: Sun,  6 Apr 2008 22:16:07 +0200
-Message-Id: <f70d44df351c88b7754e2ca93c6075f9660d3a40.1207512931.git.segher@kernel.crashing.org>
-X-Mailer: git-send-email 1.5.4.4.604.g21d3
+	id S1753039AbYDFU3c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Apr 2008 16:29:32 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH] Fix booting pentium+ with dodgy TSC
+Date: Mon, 7 Apr 2008 06:29:07 +1000
+User-Agent: KMail/1.9.9
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, Andi Kleen <ak@suse.de>,
+       "H. Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org,
+       lguest <lguest@ozlabs.org>, Thomas Gleixner <tglx@linutronix.de>
+References: <200804061723.38766.rusty@rustcorp.com.au> <20080406112207.GA26510@elte.hu>
+In-Reply-To: <20080406112207.GA26510@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200804070629.07704.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-PowerPC will start moving board defconfigs into subarch-specific
-subdirs soon.  "make help" currently does not look in subdirs to
-find the defconfigs to show.  This is partially a good thing,
-since there are way too many defconfigs for one list.
+On Sunday 06 April 2008 21:22:08 Ingo Molnar wrote:
+> * Rusty Russell <rusty@rustcorp.com.au> wrote:
+> > Linus please apply.  Almost by definition this patch can't make things
+> > worse.
+>
+> well, while i agree with the patch it could make things worse. In this
+> case it can cause code that has been compiled to rely on TSC to
+> malfunction. For if sched_clock() was using cpu_has_tsc it could return
+> 0 all the time, breaking the scheduler without the user having a clear
+> idea why it broke. It isnt, and sched_clock() will work fine, but still,
+> your "this cant make things worse" statement is not completely correct.
 
-This patch makes the main "make help" display something like
+Hence the "almost".  It can't break machines, but it could make the problem 
+harder to diagnose.  Given that it will unbreak at least one machine, I'm 
+reasonably confident it's a win :)
 
-  help-40x         - Show 40x-specific targets
-  help-44x         - Show 44x-specific targets
-  help-boards      - Show all of the above
+>  Acked-by: Ingo Molnar <mingo@elte.hu>
 
-and wires up stuff so those new help-* commands actually work.
-
-Cc: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-Cc: Sam Ravnborg <sam@ravnborg.org>
-Signed-off-by: Segher Boessenkool <segher@kernel.crashing.org>
----
- Makefile |   21 +++++++++++++++++++++
- 1 files changed, 21 insertions(+), 0 deletions(-)
-
-diff --git a/Makefile b/Makefile
-index fec2a12..05d9fda 100644
---- a/Makefile
-+++ b/Makefile
-@@ -1172,6 +1172,8 @@ rpm: include/config/kernel.release FORCE
- 
- boards := $(wildcard $(srctree)/arch/$(ARCH)/configs/*_defconfig)
- boards := $(notdir $(boards))
-+board-dirs := $(dir $(wildcard $(srctree)/arch/$(ARCH)/configs/*/*_defconfig))
-+board-dirs := $(sort $(notdir $(board-dirs:/=)))
- 
- help:
- 	@echo  'Cleaning targets:'
-@@ -1225,6 +1227,11 @@ help:
- 		$(foreach b, $(boards), \
- 		printf "  %-24s - Build for %s\\n" $(b) $(subst _defconfig,,$(b));) \
- 		echo '')
-+	@$(if $(board-dirs), \
-+		$(foreach b, $(board-dirs), \
-+		printf "  %-16s - Show %s-specific targets\\n" help-$(b) $(b);) \
-+		printf "  %-16s - Show all of the above\\n" help-boards; \
-+		echo '')
- 
- 	@echo  '  make V=0|1 [targets] 0 => quiet build (default), 1 => verbose build'
- 	@echo  '  make V=2   [targets] 2 => give reason for rebuild of target'
-@@ -1236,6 +1243,20 @@ help:
- 	@echo  'For further info see the ./README file'
- 
- 
-+help-board-dirs := $(addprefix help-,$(board-dirs))
-+
-+help-boards: $(help-board-dirs)
-+
-+boards-per-dir = $(notdir $(wildcard $(srctree)/arch/$(ARCH)/configs/$*/*_defconfig))
-+
-+$(help-board-dirs): help-%:
-+	@echo  'Architecture specific targets ($(ARCH) $*):'
-+	@$(if $(boards-per-dir), \
-+		$(foreach b, $(boards-per-dir), \
-+		printf "  %-24s - Build for %s\\n" $*/$(b) $(subst _defconfig,,$(b));) \
-+		echo '')
-+
-+
- # Documentation targets
- # ---------------------------------------------------------------------------
- %docs: scripts_basic FORCE
--- 
-1.5.3.4.208.g805a
-
+Thanks!
+Rusty.
