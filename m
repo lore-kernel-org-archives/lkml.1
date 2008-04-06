@@ -1,69 +1,168 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756703AbYDFXvW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756725AbYDFX4j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756703AbYDFXvW (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Apr 2008 19:51:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755399AbYDFXvP
+	id S1756725AbYDFX4j (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Apr 2008 19:56:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755456AbYDFX43
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Apr 2008 19:51:15 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:40344 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755205AbYDFXvO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Apr 2008 19:51:14 -0400
-Date: Mon, 7 Apr 2008 00:51:12 +0100 (IST)
-From: Dave Airlie <airlied@linux.ie>
-X-X-Sender: airlied@skynet.skynet.ie
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-cc: LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH] fix IS_I9XX macro in i915 DRM driver
-In-Reply-To: <200804061155.04965.jbarnes@virtuousgeek.org>
-Message-ID: <alpine.DEB.0.82.0804070050330.17493@skynet.skynet.ie>
-References: <200804061155.04965.jbarnes@virtuousgeek.org>
+	Sun, 6 Apr 2008 19:56:29 -0400
+Received: from namei.org ([69.55.235.186]:55103 "EHLO us.intercode.com.au"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753536AbYDFX42 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Apr 2008 19:56:28 -0400
+Date: Mon, 7 Apr 2008 09:54:27 +1000 (EST)
+From: James Morris <jmorris@namei.org>
+X-X-Sender: jmorris@us.intercode.com.au
+To: Stephen Smalley <sds@tycho.nsa.gov>
+cc: Andrew Morton <akpm@linux-foundation.org>, Josef Bacik <jbacik@redhat.com>,
+       Valdis.Kletnieks@vt.edu, sct@redhat.com, jack@suse.cz,
+       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
+       eparis@redhat.com
+Subject: Re: 2.6.25-rc8-mm1 - BUG in fs/jbd/transaction.c
+In-Reply-To: <1207313165.27710.337.camel@moss-spartans.epoch.ncsc.mil>
+Message-ID: <Xine.LNX.4.64.0804070953550.4346@us.intercode.com.au>
+References: <20080401213214.8fbb6d6b.akpm@linux-foundation.org> 
+ <6495.1207163569@turing-police.cc.vt.edu>  <20080402192715.GA32454@unused.rdu.redhat.com>
+  <20080402123905.386c56f8.akpm@linux-foundation.org> 
+ <1207246695.27710.292.camel@moss-spartans.epoch.ncsc.mil> 
+ <Xine.LNX.4.64.0804041001410.23232@us.intercode.com.au>
+ <1207313165.27710.337.camel@moss-spartans.epoch.ncsc.mil>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Now that we're mapping registers in the DRM driver at load time, the driver 
-> actually checks the PCI ID, so we need to make sure the macros have all the 
-> right bits (and longer term use the DRM headers as the sole copy of the PCI & 
-> register definitions).
-> 
-> This patch adds 945GME support to the DRM headers, fixing a regression 
-> reported in http://bugzilla.kernel.org/show_bug.cgi?id=10395.
-> 
-> Dave, please ack asap so this will be fixed in 2.6.25 proper.
-> 
-> Thanks,
-> Jesse
-> 
-> Tested-by:  Alexander Oltu <alexander@all-2.com>
-> Signed-off-by:  Jesse Barnes <jesse.barnes@intel.com>
-
-Acked-by: Dave Airlie <airlied@linux.ie>
-
-Linus please get into 2.6.25 if possible.
-
-Dave.
+On Fri, 4 Apr 2008, Stephen Smalley wrote:
 
 > 
-> diff --git a/drivers/char/drm/i915_drv.h b/drivers/char/drm/i915_drv.h
-> index c10d128..675d88b 100644
-> --- a/drivers/char/drm/i915_drv.h
-> +++ b/drivers/char/drm/i915_drv.h
-> @@ -1092,8 +1092,8 @@ extern int i915_wait_ring(struct drm_device * dev, int 
-> n, const char *caller);
->  #define IS_I915G(dev) ((dev)->pci_device == 0x2582 || (dev)->pci_device == 
-> 0x258a)
->  #define IS_I915GM(dev) ((dev)->pci_device == 0x2592)
->  #define IS_I945G(dev) ((dev)->pci_device == 0x2772)
-> -#define IS_I945GM(dev) ((dev)->pci_device == 0x27A2)
-> -
-> +#define IS_I945GM(dev) ((dev)->pci_device == 0x27A2 ||\
-> +		        (dev)->pci_device == 0x27AE)
->  #define IS_I965G(dev) ((dev)->pci_device == 0x2972 || \
->  		       (dev)->pci_device == 0x2982 || \
->  		       (dev)->pci_device == 0x2992 || \
+> On Fri, 2008-04-04 at 10:02 +1100, James Morris wrote:
+> > On Thu, 3 Apr 2008, Stephen Smalley wrote:
+> > 
+> > > > > Try this patch, it will keep us from re-entering the fs when we aren't supposed
+> > > > > to.  cc'ing Eric Paris since he's the only selinux guy I know :).  I don't think
+> > 
+> > Please see the MAINTAINERS file.
+> > 
+> > > > > any of the other allocations in here need to be fixed, but I didn't look too
+> > > > > carefully.
+> > > > > 
+> > > > > Signed-off-by: Josef Bacik <jbacik@redhat.com>
+> > 
+> > Thanks, I'll push this to Linus, but note that further analysis is 
+> > required.
+> 
+> Please review.
+
+Looks good to me.
+
+> 
+> More cases where SELinux must not re-enter the fs code.
+> Called from the d_instantiate security hook.
+> 
+> Signed-off-by:  Stephen Smalley <sds@tycho.nsa.gov>
+> 
+> ---
+> 
+>  security/selinux/hooks.c            |    7 ++++---
+>  security/selinux/include/security.h |    3 ++-
+>  security/selinux/ss/services.c      |   12 +++++++-----
+>  3 files changed, 13 insertions(+), 9 deletions(-)
+> 
+> diff --git a/security/selinux/hooks.c b/security/selinux/hooks.c
+> index 41a049f..95b51b6 100644
+> --- a/security/selinux/hooks.c
+> +++ b/security/selinux/hooks.c
+> @@ -1143,7 +1143,7 @@ static int inode_doinit_with_dentry(struct inode *inode, struct dentry *opt_dent
+>  		}
+>  
+>  		len = INITCONTEXTLEN;
+> -		context = kmalloc(len, GFP_KERNEL);
+> +		context = kmalloc(len, GFP_NOFS);
+>  		if (!context) {
+>  			rc = -ENOMEM;
+>  			dput(dentry);
+> @@ -1161,7 +1161,7 @@ static int inode_doinit_with_dentry(struct inode *inode, struct dentry *opt_dent
+>  			}
+>  			kfree(context);
+>  			len = rc;
+> -			context = kmalloc(len, GFP_KERNEL);
+> +			context = kmalloc(len, GFP_NOFS);
+>  			if (!context) {
+>  				rc = -ENOMEM;
+>  				dput(dentry);
+> @@ -1185,7 +1185,8 @@ static int inode_doinit_with_dentry(struct inode *inode, struct dentry *opt_dent
+>  			rc = 0;
+>  		} else {
+>  			rc = security_context_to_sid_default(context, rc, &sid,
+> -			                                     sbsec->def_sid);
+> +							     sbsec->def_sid,
+> +							     GFP_NOFS);
+>  			if (rc) {
+>  				printk(KERN_WARNING "%s:  context_to_sid(%s) "
+>  				       "returned %d for dev=%s ino=%ld\n",
+> diff --git a/security/selinux/include/security.h b/security/selinux/include/security.h
+> index f7d2f03..44e12ec 100644
+> --- a/security/selinux/include/security.h
+> +++ b/security/selinux/include/security.h
+> @@ -86,7 +86,8 @@ int security_sid_to_context(u32 sid, char **scontext,
+>  int security_context_to_sid(char *scontext, u32 scontext_len,
+>  	u32 *out_sid);
+>  
+> -int security_context_to_sid_default(char *scontext, u32 scontext_len, u32 *out_sid, u32 def_sid);
+> +int security_context_to_sid_default(char *scontext, u32 scontext_len,
+> +				    u32 *out_sid, u32 def_sid, gfp_t gfp_flags);
+>  
+>  int security_get_user_sids(u32 callsid, char *username,
+>  			   u32 **sids, u32 *nel);
+> diff --git a/security/selinux/ss/services.c b/security/selinux/ss/services.c
+> index f374186..3f2bad2 100644
+> --- a/security/selinux/ss/services.c
+> +++ b/security/selinux/ss/services.c
+> @@ -680,7 +680,8 @@ out:
+>  
+>  }
+>  
+> -static int security_context_to_sid_core(char *scontext, u32 scontext_len, u32 *sid, u32 def_sid)
+> +static int security_context_to_sid_core(char *scontext, u32 scontext_len,
+> +					u32 *sid, u32 def_sid, gfp_t gfp_flags)
+>  {
+>  	char *scontext2;
+>  	struct context context;
+> @@ -709,7 +710,7 @@ static int security_context_to_sid_core(char *scontext, u32 scontext_len, u32 *s
+>  	   null suffix to the copy to avoid problems with the existing
+>  	   attr package, which doesn't view the null terminator as part
+>  	   of the attribute value. */
+> -	scontext2 = kmalloc(scontext_len+1,GFP_KERNEL);
+> +	scontext2 = kmalloc(scontext_len+1, gfp_flags);
+>  	if (!scontext2) {
+>  		rc = -ENOMEM;
+>  		goto out;
+> @@ -809,7 +810,7 @@ out:
+>  int security_context_to_sid(char *scontext, u32 scontext_len, u32 *sid)
+>  {
+>  	return security_context_to_sid_core(scontext, scontext_len,
+> -	                                    sid, SECSID_NULL);
+> +					    sid, SECSID_NULL, GFP_KERNEL);
+>  }
+>  
+>  /**
+> @@ -829,10 +830,11 @@ int security_context_to_sid(char *scontext, u32 scontext_len, u32 *sid)
+>   * Returns -%EINVAL if the context is invalid, -%ENOMEM if insufficient
+>   * memory is available, or 0 on success.
+>   */
+> -int security_context_to_sid_default(char *scontext, u32 scontext_len, u32 *sid, u32 def_sid)
+> +int security_context_to_sid_default(char *scontext, u32 scontext_len, u32 *sid,
+> +				    u32 def_sid, gfp_t gfp_flags)
+>  {
+>  	return security_context_to_sid_core(scontext, scontext_len,
+> -	                                    sid, def_sid);
+> +					    sid, def_sid, gfp_flags);
+>  }
+>  
+>  static int compute_sid_handle_invalid_context(
 > 
 > 
+
+-- 
+James Morris
+<jmorris@namei.org>
