@@ -1,53 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755601AbYDFQhn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754744AbYDFQiG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755601AbYDFQhn (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Apr 2008 12:37:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754103AbYDFQhd
+	id S1754744AbYDFQiG (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Apr 2008 12:38:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754103AbYDFQhx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Apr 2008 12:37:33 -0400
-Received: from twinlark.arctic.org ([208.69.40.136]:50001 "EHLO
-	twinlark.arctic.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753766AbYDFQhc (ORCPT
+	Sun, 6 Apr 2008 12:37:53 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:45405 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755836AbYDFQhs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Apr 2008 12:37:32 -0400
-Date: Sun, 6 Apr 2008 09:37:31 -0700 (PDT)
-From: dean gaudet <dean@arctic.org>
-To: Jack Harvard <jack.harvard@googlemail.com>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: How does Linux measure CPU frequency?
-In-Reply-To: <a72f6a3c0804060930l157ec1f5xc090dfdc3ca4a011@mail.gmail.com>
-Message-ID: <alpine.DEB.1.10.0804060935520.7751@twinlark.arctic.org>
-References: <a72f6a3c0804060930l157ec1f5xc090dfdc3ca4a011@mail.gmail.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Sun, 6 Apr 2008 12:37:48 -0400
+Message-ID: <47F8FC50.2010406@zytor.com>
+Date: Sun, 06 Apr 2008 09:37:36 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Marko Macek <Marko.Macek@gmx.net>
+CC: Jan Engelhardt <jengelh@computergmbh.de>, "John T." <j.thomast@yahoo.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: UTF-8 and Alt key in the console
+References: <205509.99433.qm@web45710.mail.sp1.yahoo.com> <alpine.LNX.1.00.0803231942380.3157@fbirervta.pbzchgretzou.qr> <47ED7EBD.8070009@zytor.com> <47F88DDB.30409@gmx.net>
+In-Reply-To: <47F88DDB.30409@gmx.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-linux knows what style of cpu it is running on and uses non-portable 
-techniques to read the time-stamp counter.
-
-lmbench uses some really nice tricks to estimate the cpu frequency in a 
-portable manner... all it requires is that at least two of the N code 
-sequences it times take a co-prime number of cycles.
-
--dean
-
-On Sun, 6 Apr 2008, Jack Harvard wrote:
-
-> Hi,
+Marko Macek wrote:
+> H. Peter Anvin wrote:
 > 
-> I want to find out how Linux calibrates the frequency of CPUs, and
-> want to compare with the way how lmbench measures processor frequency.
-> I had a thorough google search of this topic but didn't get too much
-> useful results.
+>> One would also like to distinguish, say, Backspace from Ctrl-H.  This 
+>> is trickier, because the termios settings don't permit compound keys.  
+>> The most obvious way to deal with that is an escape code for Ctrl-H, 
+>> but that has the risk of breaking a lot of other things.
 > 
-> Thanks a lot,
-> Jack
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+> Backspace is not a problem, since it generates ^? (DEL/127) on Linux 
+> since the early days.
 > 
+> It would be really nice to be able get arbitrary modifier combinations 
+> for all keys and a separate combination for the escape key.
+> 
+
+Yes; this probably needs to be modal, but we can probably live with that.
+
+	-hpa
