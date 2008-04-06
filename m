@@ -1,62 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756236AbYDFUw1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756308AbYDFU5E@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756236AbYDFUw1 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Apr 2008 16:52:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753396AbYDFUwT
+	id S1756308AbYDFU5E (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Apr 2008 16:57:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752934AbYDFU4y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Apr 2008 16:52:19 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:50483 "EHLO ogre.sisk.pl"
+	Sun, 6 Apr 2008 16:56:54 -0400
+Received: from mail.ift.unesp.br ([200.145.46.3]:46027 "EHLO mail.ift.unesp.br"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753285AbYDFUwT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Apr 2008 16:52:19 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: 2.6.25-rc1: volanoMark regression
-Date: Sun, 6 Apr 2008 22:52:07 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
-       Zhang Yanmin <yanmin_zhang@linux.intel.com>
-References: <pdYe6zNQVl.A.ieB.zIW9HB@albercik> <20080406110813.GA21838@elte.hu>
-In-Reply-To: <20080406110813.GA21838@elte.hu>
+	id S1753285AbYDFU4x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Apr 2008 16:56:53 -0400
+Date: Sun, 6 Apr 2008 17:56:10 -0300
+From: "Carlos R. Mafra" <crmafra2@gmail.com>
+To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+Cc: Ray Lee <ray-lk@madrabbit.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Soeren Sonnenburg <kernel@nn7.de>
+Subject: Re: 2.6.25-current-git hangs on boot unless CONFIG_CPU_IDLE=n-Apple
+Message-ID: <20080406205610.GA4647@localhost.ift.unesp.br>
+References: <pdj7pZVURbL.A.42H.kDW9HB@albercik> <pdYe6zNQVl.A.AOB.6GW9HB@albercik> <924EFEDD5F540B4284297C4DC59F3DEED0EA1E@orsmsx423.amr.corp.intel.com> <20080404011053.GA21254@localhost.ift.unesp.br> <2c0942db0804032015y57e91811r37b729cd836cef6d@mail.gmail.com> <20080404114756.GA3890@localhost.ift.unesp.br> <924EFEDD5F540B4284297C4DC59F3DEED0EB77@orsmsx423.amr.corp.intel.com> <20080404155155.GA6578@localhost.ift.unesp.br> <924EFEDD5F540B4284297C4DC59F3DEED0EEC6@orsmsx423.amr.corp.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200804062252.08149.rjw@sisk.pl>
+In-Reply-To: <924EFEDD5F540B4284297C4DC59F3DEED0EEC6@orsmsx423.amr.corp.intel.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday, 6 of April 2008, Ingo Molnar wrote:
+On Fri  4.Apr'08 at 13:41:45 -0700, Pallipadi, Venkatesh wrote:
+> [...]
+> >>> >I've uploaded the picture where it hangs, it is in the very 
+> >>beginning
+> >>> >of the boot process:
+> >>> >
+> >>> >http://www.ift.unesp.br/users/crmafra/dsc04673.jpg
+> >>> 
+> >>> 
+> >>> Can you try the latest git and see whether this still is a problem?
+> >>
+> >>I've just updated to latest git, but it may take some time for it 
+> >>to happen again (the first 3 boots were okay). Last time it happened
+> >>with 2.6.25-rc7-00149-gaf8be4e (I checked now). 
+> >>
+> >>Do you have reasons to believe this issue was fixed since then?
+> >
+> >Yes. I think the patch here should have fixed the problem....
+> >Patch : http://marc.info/?l=linux-kernel&m=120674502201007&w=4
+> >
 > 
-> * Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> 
-> > The following report is on the current list of known regressions
-> > from 2.6.24.  Please verify if the issue is still present in the
-> > mainline.
-> > 
-> > 
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=9978
-> > Subject		: 2.6.25-rc1: volanoMark regression
-> > Submitter	: Zhang, Yanmin <yanmin_zhang@linux.intel.com>
-> > Date		: 2008-02-13 10:30 (51 days old)
-> > References	: http://lkml.org/lkml/2008/2/13/128
-> > Handled-By	: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
-> 
-> the commit that got bisected there has been reverted 41 days ago:
-> 
-> | commit 62fb185130e4d420f71a30ff59d8b16b74ef5d2b
-> | Author: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> | Date:   Mon Feb 25 17:34:02 2008 +0100
-> |
-> |     sched: revert load_balance_monitor() changes
-> 
-> there might be other issues in that area but they should be tracked 
-> separately.
+> Hmmmm.... Looking at latest git,
+> The above patch is not yet in git. Can you please apply the above patch
+> and see whether do you still see the problem.....
 
-OK, I closed the bug.
+I applied Venkatesh's patch from the link above on top of 
+v2.6.25-rc8-139-ge315c12, but my laptop hung at the 11th boot with the
+same state show here:
+http://www.ift.unesp.br/users/crmafra/dsc04673.jpg
 
-Thanks,
-Rafael
+I waited 3'30" but the boot process never resumed, so I pressed
+the power button.
+
+Any further patches I might try?
