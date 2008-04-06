@@ -1,115 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755891AbYDFWyS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756056AbYDFW61@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755891AbYDFWyS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Apr 2008 18:54:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754090AbYDFWyD
+	id S1756056AbYDFW61 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Apr 2008 18:58:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754090AbYDFW6S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Apr 2008 18:54:03 -0400
-Received: from extu-mxob-1.symantec.com ([216.10.194.28]:46495 "EHLO
-	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753927AbYDFWyC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Apr 2008 18:54:02 -0400
-Date: Sun, 6 Apr 2008 23:56:57 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.site
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Christoph Lameter <clameter@sgi.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Peter Zijlstra <a.p.ziljstra@chello.nl>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org
-Subject: [PATCH] scsi: fix sense_slab/bio swapping livelock
-Message-ID: <Pine.LNX.4.64.0804062348001.19446@blonde.site>
+	Sun, 6 Apr 2008 18:58:18 -0400
+Received: from tac.ki.iif.hu ([193.6.222.43]:38025 "EHLO tac.ki.iif.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752655AbYDFW6R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Apr 2008 18:58:17 -0400
+X-Greylist: delayed 1938 seconds by postgrey-1.27 at vger.kernel.org; Sun, 06 Apr 2008 18:58:17 EDT
+From: Ferenc Wagner <wferi@niif.hu>
+To: linux-raid@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, wferi@niif.hu
+Subject: Re: how to disable partition search?
+References: <87ve39lngy.fsf@tac.ki.iif.hu>
+	<20080406103743.GA31334@percy.comedia.it>
+Date: Mon, 07 Apr 2008 00:25:56 +0200
+In-Reply-To: <20080406103743.GA31334@percy.comedia.it> (Luca Berra's message
+	of "Sun, 6 Apr 2008 12:37:43 +0200")
+Message-ID: <877ifaoc23.fsf@szonett.ki.iif.hu>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Since 2.6.25-rc7, I've been seeing an occasional livelock on one
-x86_64 machine, copying kernel trees to tmpfs, paging out to swap.
+Luca Berra <bluca@comedia.it> writes:
 
-Signature: 6000 pages under writeback but never getting written;
-most tasks of interest trying to reclaim, but each get_swap_bio
-waiting for a bio in mempool_alloc's io_schedule_timeout(5*HZ);
-every five seconds an atomic page allocation failure report from
-kblockd failing to allocate a sense_buffer in __scsi_get_command.
+> On Wed, Mar 26, 2008 at 12:43:41PM +0100, Ferenc Wagner wrote:
+>
+>> I use an FC SAN, which provides multiple pathes to multiple LUNs.
+>> These all come up as different sd* devices, exhausting single letter
+>> names.  I mean they are a LOT.  Using the md mulitpath driver
+>> everything works perfectly, no problems there.  However, during boot,
+>> the kernel tries to read the partition table from each device,
+>> spitting out hundreds of lines of error messages: most of the devices
+>> aren't even readable, and those which are, don't contain a valid
+>> partition table.  They never will.  So I'd like to disable partition
+>> detection, because these messages overflow the kernel message buffer,
+>> depriving syslog of gathering any useful boot messages, and also
+>> needlessly lengthening the boot process.  (Of course the noise alone
+>> is disturbing enough when one tries to troubleshoot a boot problem.)
+>> However, looking at the kernel sources didn't give me any hint.  Is
+>> this possible to disable at all?
+>
+> you could try bugging lkml until it dawns on them that partition
+> detection code should belong in userspace by default :)
 
-__scsi_get_command has a (one item) free_list to protect against
-this, but rc1's [SCSI] use dynamically allocated sense buffer
-de25deb18016f66dcdede165d07654559bb332bc upset that slightly.
-When it fails to allocate from the separate sense_slab, instead
-of giving up, it must fall back to the command free_list, which
-is sure to have a sense_buffer attached.
+:) Very well put.  Thanks for strenghtening my belief.
 
-Either my earlier -rc testing missed this, or there's some recent
-contributory factor.  One very significant factor is SLUB, which
-merges slab caches when it can, and on 64-bit happens to merge
-both bio cache and sense_slab cache into kmalloc's 128-byte cache:
-so that under this swapping load, bios above are liable to gobble
-up all the slots needed for scsi_cmnd sense_buffers below.
+> anyway you can rebuild your own kernel disabling it
+> just set PARTITION_ADVANCED, and disable all partition types.
 
-That's disturbing behaviour, and I tried a few things to fix it.
-Adding a no-op constructor to the sense_slab inhibits SLUB from
-merging it, and stops all the allocation failures I was seeing;
-but it's rather a hack, and perhaps in different configurations
-we have other caches on the swapout path which are ill-merged.
+Sounds like a good idea, will try that!  This makes bugging lkml
+unnecessary, if not for changing the default...  But that's more a
+distribution issue, I think.  And now that we have udev and kpartx,
+things will probably drift in this direction.
 
-Another alternative is to revert the separate sense_slab, using
-cache-line-aligned sense_buffer allocated beyond scsi_cmnd from
-the one kmem_cache; but that might waste more memory, and is
-only a way of diverting around the known problem.
+> you should be aware that doing this will disable partition detection on
+> all drives, so if you have partitioned drives (eg boot drives) you have
+> to run partx in initramfs or it wont be able to access them.
 
-While I don't like seeing the allocation failures, and hate the
-idea of all those bios piled up above a scsi host working one by
-one, it does seem to emerge fairly soon with the livelock fix.
-So lacking better ideas, stick with that one clear fix for now.
-
-Signed-off-by: Hugh Dickins <hugh@veritas.com>
----
-
- drivers/scsi/scsi.c |   22 ++++++++++++----------
- 1 file changed, 12 insertions(+), 10 deletions(-)
-
---- 2.6.25-rc8/drivers/scsi/scsi.c	2008-03-05 10:47:40.000000000 +0000
-+++ linux/drivers/scsi/scsi.c	2008-04-05 22:23:40.000000000 +0100
-@@ -181,6 +181,18 @@ struct scsi_cmnd *__scsi_get_command(str
- 	cmd = kmem_cache_alloc(shost->cmd_pool->cmd_slab,
- 			       gfp_mask | shost->cmd_pool->gfp_mask);
- 
-+	if (likely(cmd)) {
-+		buf = kmem_cache_alloc(shost->cmd_pool->sense_slab,
-+				       gfp_mask | shost->cmd_pool->gfp_mask);
-+		if (likely(buf)) {
-+			memset(cmd, 0, sizeof(*cmd));
-+			cmd->sense_buffer = buf;
-+		} else {
-+			kmem_cache_free(shost->cmd_pool->cmd_slab, cmd);
-+			cmd = NULL;
-+		}
-+	}
-+
- 	if (unlikely(!cmd)) {
- 		unsigned long flags;
- 
-@@ -197,16 +209,6 @@ struct scsi_cmnd *__scsi_get_command(str
- 			memset(cmd, 0, sizeof(*cmd));
- 			cmd->sense_buffer = buf;
- 		}
--	} else {
--		buf = kmem_cache_alloc(shost->cmd_pool->sense_slab,
--				       gfp_mask | shost->cmd_pool->gfp_mask);
--		if (likely(buf)) {
--			memset(cmd, 0, sizeof(*cmd));
--			cmd->sense_buffer = buf;
--		} else {
--			kmem_cache_free(shost->cmd_pool->cmd_slab, cmd);
--			cmd = NULL;
--		}
- 	}
- 
- 	return cmd;
+Not in this case.  I'm netbooting and getting / and co. from the SAN
+via multipath and LVM, not a single partition on the whole cluster...
+-- 
+Thanks for the tip!
+Feri.
