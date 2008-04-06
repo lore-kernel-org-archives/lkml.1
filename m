@@ -1,48 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756395AbYDFX2T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756524AbYDFXaw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756395AbYDFX2T (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Apr 2008 19:28:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754797AbYDFX2M
+	id S1756524AbYDFXaw (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Apr 2008 19:30:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754797AbYDFXan
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Apr 2008 19:28:12 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:37025 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754575AbYDFX2L (ORCPT
+	Sun, 6 Apr 2008 19:30:43 -0400
+Received: from py-out-1112.google.com ([64.233.166.182]:17804 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754474AbYDFXam (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Apr 2008 19:28:11 -0400
-Date: Mon, 7 Apr 2008 01:28:49 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Soeren Sonnenburg <kernel@nn7.de>
-Cc: Justin Mattock <justinmattock@gmail.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: suspend issue
-Message-ID: <20080406232849.GA789@elf.ucw.cz>
-References: <dd18b0c30804052103s7357bb86yf7bf11d38d2911b3@mail.gmail.com> <1207490104.4597.36.camel@localhost>
+	Sun, 6 Apr 2008 19:30:42 -0400
+From: nikosapi <me@nikosapi.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: Suspend on Lenovo 3000 V200 - Linux 2.6.25rc8
+Date: Sun, 6 Apr 2008 19:30:49 -0400
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: linux-acpi@vger.kernel.org, Len Brown <lenb@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>
+References: <3e8fd0440804052010xbe8f59bw3268d8206b97ac3e@mail.gmail.com> <200804061810.08398.me@nikosapi.org> <200804070123.36912.rjw@sisk.pl>
+In-Reply-To: <200804070123.36912.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1207490104.4597.36.camel@localhost>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Message-Id: <200804061930.49659.me@nikosapi.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun 2008-04-06 13:55:04, Soeren Sonnenburg wrote:
-> On Sun, 2008-04-06 at 04:03 +0000, Justin Mattock wrote:
-> > Hello; I seem to have discovered something with echo mem > /sys/power/state.
-> > I recompile the kernel and had forgotten to compile fglrx, when
-> > performing a suspend without fglrx I was confronted with the dreaded
-> > blank screen and a reboot. then as a test I compiled fglrx and loaded,
-> > and to my amazement suspend reacted properly again.
-> 
-> Yeah, but I it does not even work without X - console only!
-> 
-> s2ram -f -p used to work since at least 2.6.20 ... and is now not
-> anymore in 2.6.25-*
+On April 6, 2008 19:23:36 Rafael J. Wysocki wrote:
+> On Monday, 7 of April 2008, nikosapi wrote:
+> > On April 6, 2008 16:21:57 Rafael J. Wysocki wrote:
+> > > On Sunday, 6 of April 2008, Nick Nobody wrote:
+> > > > Hello,
+> > >
+> > > Hi,
+> > >
+> > > > I'm trying to get suspend working properly on my Lenovo 3000 V200.
+> > > > I'm using Linux 2.6.25rc8 and the latest xf86-video-intel. Before I
+> > > > was using kernel-2.6.23.15-137.fc8, xorg-x11-drv-i810-2.1.1-8.fc8 and
+> > > > suspend worked perfectly.
+> > > >
+> > > > The laptop will go to sleep properly but it doesn't seem to enjoy
+> > > > waking up. When it starts up it will either display a black screen
+> > > > and remain frozen or I will end up at a virtual term login prompt but
+> > > > when I put in my username it never prompts me for my password.
+> > > >
+> > > > The only way to get suspend working reasonably well is to first
+> > > > hibernate and then suspend. After a hibernation suspend seems to work
+> > > > fine :S
+> > > >
+> > > > I'm a real noob when it comes to figuring out these sort of things,
+> > > > so any pointers on things I could try would be much appreciated.
+> > > >
+> > > > Here's what s2ram has to say about my hardware:
+> > > > Machine is unknown.
+> > > > This machine can be identified by:
+> > > >     sys_vendor   = "LENOVO"
+> > > >     sys_product  = "07642CU"
+> > > >     sys_version  = "LENOVO3000 V200"
+> > > >     bios_version = "65ET32WW (1.06 )"
+> > > >
+> > > > Here's the output of dmidecode: http://pastebin.ca/973442
+> > >
+> > > Can you try to run "echo mem > /sys/power/state" instead of s2ram and
+> > > see if the symptoms are the same?
+> > >
+> > > Also, please try reverting commit
+> > > 7c0ea45be4f114d85ee35caeead8e1660699c46f (reproduced below for
+> > > conveninence) and see if that helps.
+> > >
+> > > Thanks,
+> > > Rafael
+> > >
+> > > ---
+> > > commit 7c0ea45be4f114d85ee35caeead8e1660699c46f
+> > > Author: Zhao Yakui <yakui.zhao@intel.com>
+> > > Date:   Tue Mar 11 16:56:47 2008 +0800
+> > >
+> > >     ACPI: Ignore _BQC object when registering backlight device
+> > >
+> > >     According to acpi spec , the objects of  _BCL and _BCM are required
+> > > if integrated LCD is present and supports brightness level .The _BQC is
+> > > the optional object. So the _BQC object is ignored when the backlight
+> > > device is registered in ACPI video driver.
+> > >
+> > >     http://bugzilla.kernel.org/show_bug.cgi?id=10206
+> > >
+> > >     Signed-off-by: Zhao Yakui <yakui.zhao@intel.com>
+> > >     Signed-off-by: Zhang Rui  <rui.zhang@intel.com>
+> > >     Signed-off-by: Len Brown <len.brown@intel.com>
+> > >
+> > > diff --git a/drivers/acpi/video.c b/drivers/acpi/video.c
+> > > index 12cce69..ace958c 100644
+> > > --- a/drivers/acpi/video.c
+> > > +++ b/drivers/acpi/video.c
+> > > @@ -713,7 +713,7 @@ static void acpi_video_device_find_cap(struct
+> > > acpi_video_device *device)
+> > >
+> > >  	kfree(obj);
+> > >
+> > > -	if (device->cap._BCL && device->cap._BCM && device->cap._BQC &&
+> > > max_level
+> > >
+> > > > 0){ +	if (device->cap._BCL && device->cap._BCM && max_level > 0) {
+> > >
+> > >  		int result;
+> > >  		static int count = 0;
+> > >  		char *name;
+> > > --
+> > > To unsubscribe from this list: send the line "unsubscribe linux-acpi"
+> > > in the body of a message to majordomo@vger.kernel.org
+> > > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> >
+> > Hello Rafael,
+> >
+> > I tested with that patch and the problem persists, when the laptop
+> > resumes it locks up (with a black screen). If I add acpi_apic_instance=2
+> > acpi_osi=Linux as kernel boot options (as suggested by my dmesg) when it
+> > resumes I get back to a virtual term but I'm not able to log in. After
+> > entering my username it just hangs there.
+>
+> Can you please test if the 2.6.24.4 kernel works, then?
+>
+> Rafael
+> --
 
-Can you do git bisect?
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+What a coincidence, I upgraded to kernel-2.6.24.4-64.fc8 this afternoon. 
+Suspend and hibernate work perfectly, even my wifi led works ;)
+
+Could it be an error I made while configuring the 2.6.25rc8 kernel? Or maybe 
+some other software that needs to be upgraded?
+
+nick
