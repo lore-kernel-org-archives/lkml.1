@@ -1,51 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755871AbYDFRD5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755825AbYDFRTk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755871AbYDFRD5 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Apr 2008 13:03:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754609AbYDFRDr
+	id S1755825AbYDFRTk (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Apr 2008 13:19:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754744AbYDFRTa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Apr 2008 13:03:47 -0400
-Received: from twinlark.arctic.org ([208.69.40.136]:50927 "EHLO
-	twinlark.arctic.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754567AbYDFRDo (ORCPT
+	Sun, 6 Apr 2008 13:19:30 -0400
+Received: from wx-out-0506.google.com ([66.249.82.226]:5247 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754585AbYDFRTa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Apr 2008 13:03:44 -0400
-Date: Sun, 6 Apr 2008 10:03:43 -0700 (PDT)
-From: dean gaudet <dean@arctic.org>
-To: Alexander van Heukelum <heukelum@mailshack.com>
-cc: Ingo Molnar <mingo@elte.hu>, Andi Kleen <andi@firstfloor.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Alexander van Heukelum <heukelum@fastmail.fm>
-Subject: Re: [PATCH] x86: generic versions of find_first_(zero_)bit, convert
- i386
-In-Reply-To: <20080401094618.GA24862@mailshack.com>
-Message-ID: <alpine.DEB.1.10.0804060958580.7751@twinlark.arctic.org>
-References: <20080331171506.GA24017@mailshack.com> <20080401084710.GB4787@elte.hu> <20080401094618.GA24862@mailshack.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Sun, 6 Apr 2008 13:19:30 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=KMGSMPO+iaXLnagXI95tpWwItxAqw2JIJzCLWTmGPm60KvJtrBUJ/Y5GRv0T4oKn50wMEIflxnMdiynaEGHba36YHUd8cdizKGNuBhXalvunf2MKL/0czfKxjRA/bx4xB7r8OE03ul+CO0zulxIdyOdaDtYA9hCOL05zrPEz48w=
+Message-ID: <86802c440804061019t1cc0e66ejee69b5d90f052b0d@mail.gmail.com>
+Date: Sun, 6 Apr 2008 10:19:28 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCHv3 1/3] x86: use ELF format in compressed images.
+Cc: "Ian Campbell" <ijc@hellion.org.uk>, "Ingo Molnar" <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, "Thomas Gleixner" <tglx@linutronix.de>,
+       "Ingo Molnar" <mingo@redhat.com>,
+       "Jeremy Fitzhardinge" <jeremy@goop.org>,
+       virtualization@lists.linux-foundation.org
+In-Reply-To: <47F8FC9C.9090603@zytor.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1202936100-30859-1-git-send-email-ijc@hellion.org.uk>
+	 <9d3a007a2bfe774201b6deed5115a0cc8182bbb4.1202935389.git.ijc@hellion.org.uk>
+	 <86802c440804060003q43f14122vd527514daf77cb89@mail.gmail.com>
+	 <47F8FC9C.9090603@zytor.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-fwiw there's a way to do ffz / ntz which can do lg(n) conditional moves in 
-parallel... i'm not sure what (non-x86) architectures this might be best 
-on, but it might be a good choice for the generic code... although maybe 
-the large number of constants required will be a burden on RISC 
-processors.
+On Sun, Apr 6, 2008 at 9:38 AM, H. Peter Anvin <hpa@zytor.com> wrote:
+> Yinghai Lu wrote:
+>
+> > so will cost every bzImage extra memory copy? that could be 18M or
+> > even more big.
+> >
+>
+>  I wouldn't worry about that.  You will typically have several copies of the
+> images during the execution of the boot loader.
 
-take a look at figure 5-17 here http://hackersdelight.org/revisions.pdf
+i put all drivers needed in kernel.
+1. bootloader copy bzImage (6M) to memory
+2. arch/x86/boot/compressed/head_32.S, will copy bzImage to end of
+buffer to do uncompress on possiton.
+3. parse_elf will copy the vmlinux (the uncompressed, that is some big, 18M)
 
-int ntz(unsigned x) {
-	unsigned y, bz, b4, b3, b2, b1, b0;
-	y = x & -x; // Isolate rightmost 1-bit.
-	bz = y ? 0 : 1; // 1 if y = 0.
-	b4 = (y & 0x0000FFFF) ? 0 : 16;
-	b3 = (y & 0x00FF00FF) ? 0 : 8;
-	b2 = (y & 0x0F0F0F0F) ? 0 : 4;
-	b1 = (y & 0x33333333) ? 0 : 2;
-	b0 = (y & 0x55555555) ? 0 : 1;
-	return bz + b4 + b3 + b2 + b1 + b0;
-}
+I suggest that could have special elf header, and will only have one
+PT_LOAD, and avoid the copy, and just offset start address of
+uncompressed kernel for jump later.
 
--dean
+YH
