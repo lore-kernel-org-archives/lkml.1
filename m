@@ -1,59 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755054AbYDFMNB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754989AbYDFMrz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755054AbYDFMNB (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Apr 2008 08:13:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751520AbYDFMMu
+	id S1754989AbYDFMrz (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Apr 2008 08:47:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751747AbYDFMrq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Apr 2008 08:12:50 -0400
-Received: from moutng.kundenserver.de ([212.227.126.186]:56658 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751402AbYDFMMt (ORCPT
+	Sun, 6 Apr 2008 08:47:46 -0400
+Received: from theia.rz.uni-saarland.de ([134.96.7.31]:5681 "EHLO
+	theia.rz.uni-saarland.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751566AbYDFMrp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Apr 2008 08:12:49 -0400
-Date: Sun, 6 Apr 2008 14:12:03 +0200 (CEST)
-From: Bodo Eggert <7eggert@gmx.de>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-cc: Bodo Eggert <7eggert@gmx.de>, Jeff Garzik <jeff@garzik.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Chris Snook <csnook@redhat.com>, Dave Jones <davej@codemonkey.org.uk>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       NetDev <netdev@vger.kernel.org>, David Miller <davem@davemloft.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: GFP_ATOMIC page allocation failures.
-In-Reply-To: <200804051206.37394.nickpiggin@yahoo.com.au>
-Message-ID: <alpine.LSU.0.999.0804061406380.3361@be1.lrz>
-References: <adYyJ-20N-11@gated-at.bofh.it> <200804042159.54220.nickpiggin@yahoo.com.au>
- <Pine.LNX.4.58.0804041307500.9036@be10.lrz>
- <200804051206.37394.nickpiggin@yahoo.com.au>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
-X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
-X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
-X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
-X-Provags-ID: V01U2FsdGVkX19v3+EvzIsVS4p/mMWxG8NkzsJX+yVPHfn+Z3c
- KGOSwAWjGn7hDS05sBP0rS2Xu6ssrHXh7ctZUWfIYbeC2gTF+/
- x8uxNQzYnXLR0y1bV30XA==
+	Sun, 6 Apr 2008 08:47:45 -0400
+Date: Sun, 6 Apr 2008 14:47:00 +0200
+From: Alexander van Heukelum <heukelum@mailshack.com>
+To: "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>
+Cc: LKML <linux-kernel@vger.kernel.org>, heukelum@fastmail.fm
+Subject: [PATCH] x86: remove superfluous initialisation in boot code.
+Message-ID: <20080406124700.GA26669@mailshack.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.9i
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (theia.rz.uni-saarland.de [134.96.7.31]); Sun, 06 Apr 2008 14:47:31 +0200 (CEST)
+X-AntiVirus: checked by AntiVir MailGate (version: 2.1.2-14; AVE: 7.6.0.81; VDF: 7.0.3.122; host: AntiVir1)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 5 Apr 2008, Nick Piggin wrote:
-> On Friday 04 April 2008 22:35, Bodo Eggert wrote:
-> > On Fri, 4 Apr 2008, Nick Piggin wrote:
+x86: remove superfluous initialisation in boot code.
 
-> > > But actually developers do sometimes want see the event even if it is
-> > > relatively infrequent...
-> >
-> > You shouldn't frighten the users either. /proc/sys/vm/debug?
-> 
-> Hence changing the message a to make it clear that it is not a
-> problem if it is infrequent.
+In arch/x86/boot/compressed/misc.c, the variable vidmem is
+the only variable that ends up in de data segment. It's also
+superfluous, because the first thing the code does is:
 
-If it's no problem when infrequent, and if it's possible and cheap (less 
-extra code than sizeof(explanation)) to not show a message if it's 
-infrequent, why should the users be bothered at all? The system needs less 
-than one ms to do the job, the admin needs five minutes to grep the logs.
+	if (RM_SCREEN_INFO.orig_video_mode == 7) {
+		vidmem = (char *) 0xb0000;
+		vidport = 0x3b4;
+	} else {
+		vidmem = (char *) 0xb8000;
+		vidport = 0x3d4;
+	}
 
--- 
-Top 100 things you don't want the sysadmin to say:
-72. My leave starts tomorrow.
+This patch removes the initialisation.
+
+---
+
+Tested on qemu (i386 and x86_64). The boot messages still
+appear as usual:
+
+Decompressing Linux... Parsing ELF... done.
+Booting the kernel.
+
+Greetings,
+	Alexander
+
+ arch/x86/boot/compressed/misc.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/arch/x86/boot/compressed/misc.c b/arch/x86/boot/compressed/misc.c
+index 9470a05..dad4e69 100644
+--- a/arch/x86/boot/compressed/misc.c
++++ b/arch/x86/boot/compressed/misc.c
+@@ -223,7 +223,7 @@ static memptr free_mem_end_ptr;
+ #define HEAP_SIZE             0x4000
+ #endif
+ 
+-static char *vidmem = (char *)0xb8000;
++static char *vidmem;
+ static int vidport;
+ static int lines, cols;
+ 
