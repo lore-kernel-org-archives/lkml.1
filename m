@@ -1,32 +1,51 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755228AbYDEW2z (ORCPT <rfc822;ralf@linux-mips.org>);
-	Sat, 5 Apr 2008 18:28:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753695AbYDEW2o
+	id S1755467AbYDFMBB (ORCPT <rfc822;ralf@linux-mips.org>);
+	Sun, 6 Apr 2008 08:01:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751468AbYDFMAu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Apr 2008 18:28:44 -0400
-Received: from ag-out-0708.google.com ([72.14.246.243]:18902 "EHLO
-	ag-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751032AbYDEW2n (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Apr 2008 18:28:43 -0400
-Message-ID: <39fe25bd0804051528g1eaa9319sf79fe792e67fe37a@mail.gmail.com>
-Date: Sun, 6 Apr 2008 06:28:35 +0800
-From: "=?BIG5?B?tsCyUbRm?=" <agw5mz7542y@gmail.com>
-To: linus.bbs@vlsi1.iie.ncku.edu.tw
-Subject: =?BIG5?B?MjAwOC80LzYgoa2hrqHQUEhQwco=?= =?BIG5?B?qquorrjqrsaud7r0r7ixTa7XobyhvD8gNjoyOA==?=
+	Sun, 6 Apr 2008 08:00:50 -0400
+Received: from tomts23-srv.bellnexxia.net ([209.226.175.185]:63023 "EHLO
+	tomts23-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751392AbYDFMAl convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Apr 2008 08:00:41 -0400
+Message-Id: <6k1gas$tcfav@toip40-bus.srvr.bell.ca>
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AuNEAOJX+EfR4q+H/2dsb2JhbACBXIZcgkSGGR4
+X-Mailer: Openwave WebEngine, version 2.8.11 (webedge20-101-194-20030622)
+X-Originating-IP: [200.51.41.29]
+From: ONLINE PROMOTION <yadsarahtor@bellnet.ca>
+Reply-To: mr.evans_johnson1@hotmail.com
+Organization: ONLINE PROMOTION
+To: <info@lottery.org>
+Subject: WINNER
+Date: Sun, 6 Apr 2008 8:00:37 -0400
 MIME-Version: 1.0
-Content-Type: text/plain; charset=BIG5
-Content-Transfer-Encoding: base64
-Content-Disposition: inline
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1755228AbYDEW2z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1755467AbYDFMBB@vger.kernel.org>
 
-MjAwOC00LTYgIC0gIDY6MjgKCqRz4L6s7KfeuvSttrNdrXAKCqfarcyquql2pq6hR6vIpOGquqhD
-o7il86RwqMaxoaFBs6OsT6Rz4L6quqRqqMaxoQoKp9qtzLJ7pmKxwKVYpfi3fqfOtki69K+4pV2n
-dKtlpXi69K22rPykdSur4aV4ut6yerV7pqEKCq2trsmtrbZxsU2u17v5pXWtbiQyNCw5MDAgICim
-YrBlo7imfjEwME1CpKOtrax5tnG69K+4qsW2oSkKCqfarcywtaq6pKOldaxPuvSvuKFBptOsT7F6
-pfi3fqq6pEqkZgoKo7it06Zuqrql+Ld+uvSvuLjqrsanWa7Jp/O3c6q6s3Sr16xPq9ytq61uqroK
-Cr/vvtykc+C+pqi0TrF6qrq52rdRCgrFd6rvqNO5cayiuN+2wLFNrfuhRzAqOSozKjgqNyo2KjQq
-Myo5KjUKCjRBMlFMZAo=
+You won the sum of =A31,000,000.00 from our yearly PROGRAME, you are he=
+re by advice to get back to us, to claim your prize.
+
+Contact Dr. Pinkett Griffin
+Email:drpinket_grifin@yahoo.co.uk=20
+Claims Requirements:
+
+1.Full Names:
+2.Home Address:
+3.Sex:
+4.Phone Number:
+5.Nationality
+
+Mrs. Rose Wood
+Promotions Manager.
+--
+To unsubscribe from this list: send the line "unsubscribe linux-kernel"=
+ in
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Please read the FAQ at  http://www.tux.org/lkml/
