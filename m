@@ -1,182 +1,208 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753926AbYDFGvu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753987AbYDFHDU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753926AbYDFGvu (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Apr 2008 02:51:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751193AbYDFGvl
+	id S1753987AbYDFHDU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Apr 2008 03:03:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751471AbYDFHDK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Apr 2008 02:51:41 -0400
-Received: from colo.lackof.org ([198.49.126.79]:48945 "EHLO colo.lackof.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751036AbYDFGvk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Apr 2008 02:51:40 -0400
-Date: Sun, 6 Apr 2008 00:51:28 -0600
-From: Grant Grundler <grundler@parisc-linux.org>
-To: Matti Linnanvuori <mattilinnanvuori@yahoo.com>
-Cc: linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz
-Subject: Re: [patch] [Bug 10397] DMA-mapping.txt code examples have
-	undeclared variables
-Message-ID: <20080406065128.GA25346@colo.lackof.org>
-References: <57809.86271.qm@web52004.mail.re2.yahoo.com>
+	Sun, 6 Apr 2008 03:03:10 -0400
+Received: from wx-out-0506.google.com ([66.249.82.225]:54180 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751396AbYDFHDH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Apr 2008 03:03:07 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=CAuagqHXK9Xxj8Jxqtu13PqmbTcDuQ4s5L54D3CmEnTSYr+uMtgxsy0eGBtgXklJw68zaidmvBmHIIibPNmSFMEplFqvyggIBP/vIG8N9XHChdScsyhFxhR7ofgtdXHRJ4And5jW0i8oHvBRrAN81eThHHUXFXI3/W/ncjiR7sc=
+Message-ID: <86802c440804060003q43f14122vd527514daf77cb89@mail.gmail.com>
+Date: Sun, 6 Apr 2008 00:03:05 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Ian Campbell" <ijc@hellion.org.uk>, "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: [PATCHv3 1/3] x86: use ELF format in compressed images.
+Cc: linux-kernel@vger.kernel.org, "Thomas Gleixner" <tglx@linutronix.de>,
+       "Ingo Molnar" <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       "Jeremy Fitzhardinge" <jeremy@goop.org>,
+       virtualization@lists.linux-foundation.org
+In-Reply-To: <9d3a007a2bfe774201b6deed5115a0cc8182bbb4.1202935389.git.ijc@hellion.org.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <57809.86271.qm@web52004.mail.re2.yahoo.com>
-X-Home-Page: http://www.parisc-linux.org/
-User-Agent: Mutt/1.5.16 (2007-06-11)
+References: <1202936100-30859-1-git-send-email-ijc@hellion.org.uk>
+	 <9d3a007a2bfe774201b6deed5115a0cc8182bbb4.1202935389.git.ijc@hellion.org.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Apr 05, 2008 at 09:34:42PM -0700, Matti Linnanvuori wrote:
-> From: Matti Linnanvuori <mattilinnanvuori@yahoo.com>
-> 
-> Fix undeclared variables.
+On Wed, Feb 13, 2008 at 1:54 PM, Ian Campbell <ijc@hellion.org.uk> wrote:
+> This allows other boot loaders such as the Xen domain builder the
+>  opportunity to extract the ELF file.
+>
+>  Signed-off-by: Ian Campbell <ijc@hellion.org.uk>
+>  Cc: Thomas Gleixner <tglx@linutronix.de>
+>  Cc: Ingo Molnar <mingo@redhat.com>
+>  Cc: H. Peter Anvin <hpa@zytor.com>
+>  Cc: Jeremy Fitzhardinge <jeremy@goop.org>
+>  Cc: virtualization@lists.linux-foundation.org
+>  ---
+>   Documentation/i386/boot.txt       |   18 ++++++++++++
+>   arch/x86/boot/Makefile            |   14 +++++++++
+>   arch/x86/boot/compressed/Makefile |    2 +-
+>   arch/x86/boot/compressed/misc.c   |   56 +++++++++++++++++++++++++++++++++++++
+>   arch/x86/boot/header.S            |    6 ++++
+>   5 files changed, 95 insertions(+), 1 deletions(-)
+>
+>  diff --git a/Documentation/i386/boot.txt b/Documentation/i386/boot.txt
+>  index fc49b79..b5f5ba1 100644
+>  --- a/Documentation/i386/boot.txt
+>  +++ b/Documentation/i386/boot.txt
+>  @@ -170,6 +170,8 @@ Offset      Proto   Name            Meaning
+>   0238/4 2.06+   cmdline_size    Maximum size of the kernel command line
+>   023C/4 2.07+   hardware_subarch Hardware subarchitecture
+>   0240/8 2.07+   hardware_subarch_data Subarchitecture-specific data
+>  +0248/4 2.08+   compressed_payload_offset
+>  +024C/4 2.08+   compressed_payload_length
+>
+>   (1) For backwards compatibility, if the setup_sects field contains 0, the
+>      real value is 4.
+>  @@ -512,6 +514,22 @@ Protocol:  2.07+
+>
+>    A pointer to data that is specific to hardware subarch
+>
+>  +Field name:    compressed_payload_offset
+>  +Type:          read
+>  +Offset/size:   0x248/4
+>  +Protocol:      2.08+
+>  +
+>  +  If non-zero then this field contains the offset from the end of the
+>  +  real-mode code to the compressed payload. The compression format
+>  +  should be determined using the standard magic number, currently only
+>  +  gzip is used.
+>  +
+>  +Field name:    compressed_payload_length
+>  +Type:          read
+>  +Offset/size:   0x24c/4
+>  +Protocol:      2.08+
+>  +
+>  +  The length of the compressed payload.
+>
+>   **** THE KERNEL COMMAND LINE
+>
+>  diff --git a/arch/x86/boot/Makefile b/arch/x86/boot/Makefile
+>  index f88458e..9695aff 100644
+>  --- a/arch/x86/boot/Makefile
+>  +++ b/arch/x86/boot/Makefile
+>  @@ -94,6 +94,20 @@ $(obj)/vmlinux.bin: $(obj)/compressed/vmlinux FORCE
+>
+>   SETUP_OBJS = $(addprefix $(obj)/,$(setup-y))
+>
+>  +sed-offsets := -e 's/^00*/0/' \
+>  +        -e 's/^\([0-9a-fA-F]*\) . \(input_data\|input_data_end\)$$/\#define \2 0x\1/p'
+>  +
+>  +quiet_cmd_offsets = OFFSETS $@
+>  +      cmd_offsets = $(NM) $< | sed -n $(sed-offsets) > $@
+>  +
+>  +$(obj)/offsets.h: $(obj)/compressed/vmlinux FORCE
+>  +       $(call if_changed,offsets)
+>  +
+>  +targets += offsets.h
+>  +
+>  +AFLAGS_header.o += -I$(obj)
+>  +$(obj)/header.o: $(obj)/offsets.h
+>  +
+>   LDFLAGS_setup.elf      := -T
+>   $(obj)/setup.elf: $(src)/setup.ld $(SETUP_OBJS) FORCE
+>         $(call if_changed,ld)
+>  diff --git a/arch/x86/boot/compressed/Makefile b/arch/x86/boot/compressed/Makefile
+>  index d2b9f3b..92fdd35 100644
+>  --- a/arch/x86/boot/compressed/Makefile
+>  +++ b/arch/x86/boot/compressed/Makefile
+>  @@ -22,7 +22,7 @@ $(obj)/vmlinux: $(src)/vmlinux_$(BITS).lds $(obj)/head_$(BITS).o $(obj)/misc.o $
+>         $(call if_changed,ld)
+>         @:
+>
+>  -OBJCOPYFLAGS_vmlinux.bin := -O binary -R .note -R .comment -S
+>  +OBJCOPYFLAGS_vmlinux.bin :=  -R .comment -S
+>   $(obj)/vmlinux.bin: vmlinux FORCE
+>         $(call if_changed,objcopy)
+>
+>  diff --git a/arch/x86/boot/compressed/misc.c b/arch/x86/boot/compressed/misc.c
+>  index 8182e32..69aec2f 100644
+>  --- a/arch/x86/boot/compressed/misc.c
+>  +++ b/arch/x86/boot/compressed/misc.c
+>  @@ -15,6 +15,10 @@
+>   * we just keep it from happening
+>   */
+>   #undef CONFIG_PARAVIRT
+>  +#ifdef CONFIG_X86_32
+>  +#define _ASM_DESC_H_ 1
+>  +#endif
+>  +
+>   #ifdef CONFIG_X86_64
+>   #define _LINUX_STRING_H_ 1
+>   #define __LINUX_BITMAP_H 1
+>  @@ -22,6 +26,7 @@
+>
+>   #include <linux/linkage.h>
+>   #include <linux/screen_info.h>
+>  +#include <linux/elf.h>
+>   #include <asm/io.h>
+>   #include <asm/page.h>
+>   #include <asm/boot.h>
+>  @@ -365,6 +370,56 @@ static void error(char *x)
+>                 asm("hlt");
+>   }
+>
+>  +static void parse_elf(void *output)
+>  +{
+>  +#ifdef CONFIG_X86_64
+>  +       Elf64_Ehdr ehdr;
+>  +       Elf64_Phdr *phdrs, *phdr;
+>  +#else
+>  +       Elf32_Ehdr ehdr;
+>  +       Elf32_Phdr *phdrs, *phdr;
+>  +#endif
+>  +       void *dest;
+>  +       int i;
+>  +
+>  +       memcpy(&ehdr, output, sizeof(ehdr));
+>  +       if(ehdr.e_ident[EI_MAG0] != ELFMAG0 ||
+>  +          ehdr.e_ident[EI_MAG1] != ELFMAG1 ||
+>  +          ehdr.e_ident[EI_MAG2] != ELFMAG2 ||
+>  +          ehdr.e_ident[EI_MAG3] != ELFMAG3)
+>  +       {
+>  +               error("Kernel is not a valid ELF file");
+>  +               return;
+>  +       }
+>  +
+>  +       putstr("Parsing ELF... ");
+>  +
+>  +       phdrs = malloc(sizeof(*phdrs) * ehdr.e_phnum);
+>  +       if (!phdrs)
+>  +               error("Failed to allocate space for phdrs");
+>  +
+>  +       memcpy(phdrs, output + ehdr.e_phoff, sizeof(*phdrs) * ehdr.e_phnum);
+>  +
+>  +       for (i=0; i<ehdr.e_phnum; i++) {
+>  +               phdr = &phdrs[i];
+>  +
+>  +               switch (phdr->p_type) {
+>  +               case PT_LOAD:
+>  +#ifdef CONFIG_RELOCATABLE
+>  +                       dest = output;
+>  +                       dest += (phdr->p_paddr - LOAD_PHYSICAL_ADDR);
+>  +#else
+>  +                       dest = (void*)(phdr->p_paddr);
+>  +#endif
+>  +                       memcpy(dest,
+>  +                              output + phdr->p_offset,
+>  +                              phdr->p_filesz);
+>  +                       break;
 
-Sorry? This changelog entry doesn't make sense to me since this patch
-is for documentation and not a compiler error.
+so will cost every bzImage extra memory copy? that could be 18M or
+even more big.
 
-If you prefer them declared as C code, please try it this way:
+wonder if can have one some other kind elf format, and offset load
+address to avoid that mem copy.
 
-+	struct pci_dev dev*;
-+	size_t size;
-	dma_addr_t dma_handle;
-
-	cpu_addr = pci_alloc_consistent(dev, size, &dma_handle);
-
-and delete the verbage (plain text) that defines the parameters.
-
-If you are confusing "dev" with "struct device *" and want to change
-all the references to "pdev", please do the above *and* write something
-like the following in the changelog:
-	To avoid confusion with struct device, rename ...
-
-thanks!
-grant
-
-> 
-> Signed-off-by: Matti Linnanvuori <mattilinnanvuori@yahoo.com>
-> 
-> ---
-> 
-> --- linux-2.6/Documentation/DMA-mapping.txt	2008-03-23 09:01:06.304511500 +0200
-> +++ linux/Documentation/DMA-mapping.txt	2008-04-06 06:56:11.821314500 +0300
-> @@ -315,9 +315,9 @@
->  
-
->  	dma_addr_t dma_handle;
->  
-> -	cpu_addr = pci_alloc_consistent(dev, size, &dma_handle);
-> +	cpu_addr = pci_alloc_consistent(pdev, size, &dma_handle);
->  
-> -where dev is a struct pci_dev *. You should pass NULL for PCI like buses
-> +where pdev is a struct pci_dev *. You should pass NULL for PCI like buses
->  where devices don't have struct pci_dev (like ISA, EISA).  This may be
->  called in interrupt context. 
->  
-> @@ -354,9 +354,9 @@
->  
->  To unmap and free such a DMA region, you call:
->  
-> -	pci_free_consistent(dev, size, cpu_addr, dma_handle);
-> +	pci_free_consistent(pdev, size, cpu_addr, dma_handle);
->  
-> -where dev, size are the same as in the above call and cpu_addr and
-> +where pdev, size are the same as in the above call and cpu_addr and
->  dma_handle are the values pci_alloc_consistent returned to you.
->  This function may not be called in interrupt context.
->  
-> @@ -371,9 +371,9 @@
->  
->  	struct pci_pool *pool;
->  
-> -	pool = pci_pool_create(name, dev, size, align, alloc);
-> +	pool = pci_pool_create(name, pdev, size, align, alloc);
->  
-> -The "name" is for diagnostics (like a kmem_cache name); dev and size
-> +The "name" is for diagnostics (like a kmem_cache name); pdev and size
->  are as above.  The device's hardware alignment requirement for this
->  type of data is "align" (which is expressed in bytes, and must be a
->  power of two).  If your device has no boundary crossing restrictions,
-> @@ -472,11 +472,11 @@
->  	void *addr = buffer->ptr;
->  	size_t size = buffer->len;
->  
-> -	dma_handle = pci_map_single(dev, addr, size, direction);
-> +	dma_handle = pci_map_single(pdev, addr, size, direction);
->  
->  and to unmap it:
->  
-> -	pci_unmap_single(dev, dma_handle, size, direction);
-> +	pci_unmap_single(pdev, dma_handle, size, direction);
->  
->  You should call pci_unmap_single when the DMA activity is finished, e.g.
->  from the interrupt which told you that the DMA transfer is done.
-> @@ -493,17 +493,17 @@
->  	unsigned long offset = buffer->offset;
->  	size_t size = buffer->len;
->  
-> -	dma_handle = pci_map_page(dev, page, offset, size, direction);
-> +	dma_handle = pci_map_page(pdev, page, offset, size, direction);
->  
->  	...
->  
-> -	pci_unmap_page(dev, dma_handle, size, direction);
-> +	pci_unmap_page(pdev, dma_handle, size, direction);
->  
->  Here, "offset" means byte offset within the given page.
->  
->  With scatterlists, you map a region gathered from several regions by:
->  
-> -	int i, count = pci_map_sg(dev, sglist, nents, direction);
-> +	int i, count = pci_map_sg(pdev, sglist, nents, direction);
->  	struct scatterlist *sg;
->  
->  	for_each_sg(sglist, sg, count, i) {
-> @@ -527,7 +527,7 @@
->  
->  To unmap a scatterlist, just call:
->  
-> -	pci_unmap_sg(dev, sglist, nents, direction);
-> +	pci_unmap_sg(pdev, sglist, nents, direction);
->  
->  Again, make sure DMA activity has already finished.
->  
-> @@ -550,11 +550,11 @@
->  So, firstly, just map it with pci_map_{single,sg}, and after each DMA
->  transfer call either:
->  
-> -	pci_dma_sync_single_for_cpu(dev, dma_handle, size, direction);
-> +	pci_dma_sync_single_for_cpu(pdev, dma_handle, size, direction);
->  
->  or:
->  
-> -	pci_dma_sync_sg_for_cpu(dev, sglist, nents, direction);
-> +	pci_dma_sync_sg_for_cpu(pdev, sglist, nents, direction);
->  
->  as appropriate.
->  
-> @@ -562,7 +562,7 @@
->  finish accessing the data with the cpu, and then before actually
->  giving the buffer to the hardware call either:
->  
-> -	pci_dma_sync_single_for_device(dev, dma_handle, size, direction);
-> +	pci_dma_sync_single_for_device(pdev, dma_handle, size, direction);
->  
->  or:
->  
-> @@ -739,7 +739,7 @@
->  
->  	dma_addr_t dma_handle;
->  
-> -	dma_handle = pci_map_single(dev, addr, size, direction);
-> +	dma_handle = pci_map_single(pdev, addr, size, direction);
->  	if (pci_dma_mapping_error(dma_handle)) {
->  		/*
->  		 * reduce current DMA mapping usage,
-> 
-> 
-> 
-> 
->       ____________________________________________________________________________________
-> You rock. That's why Blockbuster's offering you one month of Blockbuster Total Access, No Cost.  
-> http://tc.deals.yahoo.com/tc/blockbuster/text5.com
+YH
