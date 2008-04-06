@@ -1,47 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754744AbYDFQiG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755945AbYDFQnS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754744AbYDFQiG (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Apr 2008 12:38:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754103AbYDFQhx
+	id S1755945AbYDFQnS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Apr 2008 12:43:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754609AbYDFQnK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Apr 2008 12:37:53 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:45405 "EHLO
+	Sun, 6 Apr 2008 12:43:10 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:51555 "EHLO
 	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755836AbYDFQhs (ORCPT
+	with ESMTP id S1754585AbYDFQnJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Apr 2008 12:37:48 -0400
-Message-ID: <47F8FC50.2010406@zytor.com>
-Date: Sun, 06 Apr 2008 09:37:36 -0700
+	Sun, 6 Apr 2008 12:43:09 -0400
+Message-ID: <47F8FC9C.9090603@zytor.com>
+Date: Sun, 06 Apr 2008 09:38:52 -0700
 From: "H. Peter Anvin" <hpa@zytor.com>
 User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-To: Marko Macek <Marko.Macek@gmx.net>
-CC: Jan Engelhardt <jengelh@computergmbh.de>, "John T." <j.thomast@yahoo.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: UTF-8 and Alt key in the console
-References: <205509.99433.qm@web45710.mail.sp1.yahoo.com> <alpine.LNX.1.00.0803231942380.3157@fbirervta.pbzchgretzou.qr> <47ED7EBD.8070009@zytor.com> <47F88DDB.30409@gmx.net>
-In-Reply-To: <47F88DDB.30409@gmx.net>
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+CC: Ian Campbell <ijc@hellion.org.uk>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@redhat.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
+       virtualization@lists.linux-foundation.org
+Subject: Re: [PATCHv3 1/3] x86: use ELF format in compressed images.
+References: <1202936100-30859-1-git-send-email-ijc@hellion.org.uk>	 <9d3a007a2bfe774201b6deed5115a0cc8182bbb4.1202935389.git.ijc@hellion.org.uk> <86802c440804060003q43f14122vd527514daf77cb89@mail.gmail.com>
+In-Reply-To: <86802c440804060003q43f14122vd527514daf77cb89@mail.gmail.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Marko Macek wrote:
-> H. Peter Anvin wrote:
-> 
->> One would also like to distinguish, say, Backspace from Ctrl-H.  This 
->> is trickier, because the termios settings don't permit compound keys.  
->> The most obvious way to deal with that is an escape code for Ctrl-H, 
->> but that has the risk of breaking a lot of other things.
-> 
-> Backspace is not a problem, since it generates ^? (DEL/127) on Linux 
-> since the early days.
-> 
-> It would be really nice to be able get arbitrary modifier combinations 
-> for all keys and a separate combination for the escape key.
-> 
+Yinghai Lu wrote:
+> so will cost every bzImage extra memory copy? that could be 18M or
+> even more big.
 
-Yes; this probably needs to be modal, but we can probably live with that.
+I wouldn't worry about that.  You will typically have several copies of 
+the images during the execution of the boot loader.
 
 	-hpa
