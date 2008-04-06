@@ -1,93 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756004AbYDFEzJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756047AbYDFFN0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756004AbYDFEzJ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Apr 2008 00:55:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751896AbYDFEy5
+	id S1756047AbYDFFN0 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Apr 2008 01:13:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752647AbYDFFNQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Apr 2008 00:54:57 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:55766 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751225AbYDFEy4 (ORCPT
+	Sun, 6 Apr 2008 01:13:16 -0400
+Received: from e28smtp02.in.ibm.com ([59.145.155.2]:42013 "EHLO
+	e28smtp02.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752261AbYDFFNQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Apr 2008 00:54:56 -0400
-Date: Sun, 6 Apr 2008 06:54:54 +0200 (CEST)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: apw@shadowen.org
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [patch] checkpatch: relax spacing and line length
-Message-ID: <alpine.LNX.1.10.0804060653020.30794@fbirervta.pbzchgretzou.qr>
-User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
+	Sun, 6 Apr 2008 01:13:16 -0400
+Message-ID: <47F85BB1.8010503@linux.vnet.ibm.com>
+Date: Sun, 06 Apr 2008 10:42:17 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
+To: Balaji Rao <balajirrao@gmail.com>
+CC: Dhaval Giani <dhaval@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
+       containers@lists.osdl.org, menage@google.com, a.p.zijlstra@chello.nl,
+       balbir@in.ibm.com, Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
+Subject: Re: [RFC][-mm] [1/2] Simple stats for cpu resource controller
+References: <200804052339.46632.balajirrao@gmail.com> <200804060201.52726.balajirrao@gmail.com> <20080405205914.GA25009@linux.vnet.ibm.com> <200804060251.51635.balajirrao@gmail.com>
+In-Reply-To: <200804060251.51635.balajirrao@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-===
-total: 0 errors, 0 warnings, 36 lines checked
+Balaji Rao wrote:
+> On Sunday 06 April 2008 02:29:14 am Dhaval Giani wrote:
+>> On Sun, Apr 06, 2008 at 02:01:52AM +0530, Balaji Rao wrote:
+>>> On Sunday 06 April 2008 01:10:41 am Dhaval Giani wrote:
+>>>>> +};
+>>>>> +
+>>>>> +struct cpu_cgroup_stat_cpu {
+>>>>> +	s64 count[CPU_CGROUP_STAT_NSTATS];
+>>>> u64? time does not go negative :)
+>>> Right. But these stats are not only going to measure time. We need the 
+> same 
+>>> variables for measuring other stats as well. I'm not sure if we would 
+>>> encounter scheduler stats that would count negative.
+>>>
+>>> Balbir, what do you say ?
+>> I would prefer to keep the stats logically separate. So something like
+>> struct cpu_cgroup_stat_cpu {
+>> 	u64 time[];
+>> 	s64 some_other_stat;
+>> }
+>> and so on. (I am not sure, is there some advantage gained by using
+>> structs?) Makes the code more maintainable imho.
+>>
+> This would break the generic nature of __cpu_cgroup_stat_add. Its not a nice 
+> thing in my opinion.
+> 
 
-d27a9f5.diff has no obvious style problems and is ready for submission.
-===
-commit d27a9f5760fa231ab888f96e27355a001c88b239
-Author: Jan Engelhardt <jengelh@computergmbh.de>
-Date:   Sun Apr 6 06:49:01 2008 +0200
+I prefer keeping stats in the array as Balaji has done, it makes it easier to do
+batch processing on the stats.
 
-     checkpatch: relax spacing and line length
 
-     We all had the arguments about 80 columns, so here goes a relax.
-     Checking for 95 (or perhaps something better?), but of course we
-     print "80" in the output, because if you happened to get to 95, it's
-     "really time" to break it.
 
-     This also relaxes the tab doctrine, because spaces DO make sense --
-     especially when you view the code with a tab setting of not-8.
-
-     Signed-off-by: Jan Engelhardt <jengelh@computergmbh.de>
----
-  scripts/checkpatch.pl |   22 ++++++++++++++++------
-  1 files changed, 16 insertions(+), 6 deletions(-)
-
-diff --git a/scripts/checkpatch.pl b/scripts/checkpatch.pl
-index 58a9494..e5a96c1 100755
---- a/scripts/checkpatch.pl
-+++ b/scripts/checkpatch.pl
-@@ -1094,8 +1094,8 @@ sub process {
-  			my $herevet = "$here\n" . cat_vet($rawline) . "\n";
-  			ERROR("trailing whitespace\n" . $herevet);
-  		}
--#80 column limit
--		if ($line =~ /^\+/ && !($prevrawline=~/\/\*\*/) && $length > 80) {
-+#80 column limit (yes, testing for 95 is correct, we do not want to annoy)
-+		if ($line =~ /^\+/ && !($prevrawline=~/\/\*\*/) && $length >= 95) {
-  			WARN("line over 80 characters\n" . $herecurr);
-  		}
-
-@@ -1107,12 +1107,22 @@ sub process {
-  # check we are in a valid source file *.[hc] if not then ignore this hunk
-  		next if ($realfile !~ /\.[hc]$/);
-
-+		my $arg = qr/$Type(?: ?$Ident)?/;
-+		if ($rawline =~ /^\+ +($arg, )*$arg(?:,|\);?)$/) {
-+			# We are probably in a function parameter list.
-+			# Spaces ok -- used for align.
-+		} elsif ($rawline =~ /^\+\t+ *\S/) {
-+			# We are probably in a function or an array/struct
-+			# definition/initializer. Spaces ok -- used for align
-+			# on multiline statements.
-+		} else {
-  # at the beginning of a line any tabs must come first and anything
-  # more than 8 must use tabs.
--		if ($rawline =~ /^\+\s* \t\s*\S/ ||
--		    $rawline =~ /^\+\s*        \s*/) {
--			my $herevet = "$here\n" . cat_vet($rawline) . "\n";
--			ERROR("use tabs not spaces\n" . $herevet);
-+			if ($rawline =~ /^\+\s* \t\s*\S/ ||
-+			    $rawline =~ /^\+\s*        \s*/) {
-+				my $herevet = "$here\n" . cat_vet($rawline) . "\n";
-+				ERROR("use tabs not spaces\n" . $herevet);
-+			}
-  		}
-
-  # check for RCS/CVS revision markers
-
+-- 
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
