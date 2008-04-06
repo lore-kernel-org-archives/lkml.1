@@ -1,38 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755593AbYDFEDu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755874AbYDFEK1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755593AbYDFEDu (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Apr 2008 00:03:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751802AbYDFEDm
+	id S1755874AbYDFEK1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Apr 2008 00:10:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752322AbYDFEKP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Apr 2008 00:03:42 -0400
-Received: from an-out-0708.google.com ([209.85.132.249]:31841 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751225AbYDFEDl (ORCPT
+	Sun, 6 Apr 2008 00:10:15 -0400
+Received: from web52504.mail.re2.yahoo.com ([206.190.48.187]:22184 "HELO
+	web52504.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752193AbYDFEKP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Apr 2008 00:03:41 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=v1YZeP66kUGlXt929Wgqdy0X0sIQy3r7NT0i9Ef1HctUfK4+E5NdGe6NNA+U6Cmpnr55upieF3om5OB8dqUF7m2CWwTmIKrpo9pzDdRVdrvalWyFAYK1eLhTEkIJstL2WBuhA9d3ho0Xmf6I1r9PAByIUApyOCPlASdvjxL0+ec=
-Message-ID: <dd18b0c30804052103s7357bb86yf7bf11d38d2911b3@mail.gmail.com>
-Date: Sun, 6 Apr 2008 04:03:40 +0000
-From: "Justin Mattock" <justinmattock@gmail.com>
-To: "Soeren Sonnenburg" <kernel@nn7.de>
-Subject: suspend issue
-Cc: "Linux Kernel" <linux-kernel@vger.kernel.org>
+	Sun, 6 Apr 2008 00:10:15 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:Date:From:Subject:To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=XAqAxeCZhTQlYONla+amIosapIVLwqPnUYW3Lusgib9nTpAynB4iFqcozpG1tOUHPD4+tJFuYO7DzfYDIZFnWCEmqaOMVbxpogBrbIP60W53reSuiC91uPm9Z1ZRPs8P/xqQkI8GJ7Iz42WxrDoN1oNyPvTGI2PwpRp0sVtTHFE=;
+X-YMail-OSG: osrT1XkVM1mnZJmHc2C06HqPamu9Rwyypvfl0S80z5f2S4g_zvyH22GNT9NGSPuugf51cgjVq8K.9ey3iXW_6MTqfMJzSX88cK.F3kXc2053ksZMA55WDnq1qi8UzA--
+Date: Sat, 5 Apr 2008 21:10:13 -0700 (PDT)
+From: Marc Perkel <mperkel@yahoo.com>
+Subject: tee question [OT]
+To: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <96637.86039.qm@web52504.mail.re2.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello; I seem to have discovered something with echo mem > /sys/power/state.
-I recompile the kernel and had forgotten to compile fglrx, when
-performing a suspend without fglrx I was confronted with the dreaded
-blank screen and a reboot. then as a test I compiled fglrx and loaded,
-and to my amazement suspend reacted properly again.
+Just wondering if any of you experts know how to do
+this. I want to take an imput stream and produce two
+output streams to feed into two different pipes.
 
--- 
-Justin P. Mattock
+echo "1 2 3 4 5" | tee ...
+| cut -d \  -f -4 >> file1.txt
+| cut -d \  -f 1,2,5- >> file2.txt
+
+The idea being that file1.txt would get "1 2 3 4" and
+file2.txt would get "1 2 5"
+
+How do I do it? Tee wants a file as an argument and I
+want that file to be a process. Anyhow - I'm not very
+smart. 
+
+Thanks in advance.
+
+
+
+
+Marc Perkel
+Junk Email Filter dot com
+http://www.junkemailfilter.com
+
+
+      ____________________________________________________________________________________
+You rock. That's why Blockbuster's offering you one month of Blockbuster Total Access, No Cost.  
+http://tc.deals.yahoo.com/tc/blockbuster/text5.com
