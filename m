@@ -1,62 +1,182 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755484AbYDFGct@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753926AbYDFGvu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755484AbYDFGct (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Apr 2008 02:32:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752298AbYDFGcm
+	id S1753926AbYDFGvu (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Apr 2008 02:51:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751193AbYDFGvl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Apr 2008 02:32:42 -0400
-Received: from e28smtp05.in.ibm.com ([59.145.155.5]:50869 "EHLO
-	e28smtp05.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752261AbYDFGcm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Apr 2008 02:32:42 -0400
-Message-ID: <47F86E4F.2080103@linux.vnet.ibm.com>
-Date: Sun, 06 Apr 2008 12:01:43 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	Sun, 6 Apr 2008 02:51:41 -0400
+Received: from colo.lackof.org ([198.49.126.79]:48945 "EHLO colo.lackof.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751036AbYDFGvk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Apr 2008 02:51:40 -0400
+Date: Sun, 6 Apr 2008 00:51:28 -0600
+From: Grant Grundler <grundler@parisc-linux.org>
+To: Matti Linnanvuori <mattilinnanvuori@yahoo.com>
+Cc: linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz
+Subject: Re: [patch] [Bug 10397] DMA-mapping.txt code examples have
+	undeclared variables
+Message-ID: <20080406065128.GA25346@colo.lackof.org>
+References: <57809.86271.qm@web52004.mail.re2.yahoo.com>
 MIME-Version: 1.0
-To: Paul Menage <menage@google.com>
-CC: Pavel Emelianov <xemul@openvz.org>, Hugh Dickins <hugh@veritas.com>,
-       Sudhir Kumar <skumar@linux.vnet.ibm.com>,
-       YAMAMOTO Takashi <yamamoto@valinux.co.jp>, linux-kernel@vger.kernel.org,
-       taka@valinux.co.jp, linux-mm@kvack.org,
-       David Rientjes <rientjes@google.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: Re: [-mm] Add an owner to the mm_struct (v8)
-References: <20080404080544.26313.38199.sendpatchset@localhost.localdomain> <47F5E69C.9@linux.vnet.ibm.com> <6599ad830804040150j4946cf92h886bb26000319f3b@mail.gmail.com> <47F5F3FA.7060709@linux.vnet.ibm.com> <6599ad830804041211r37848a6coaa900d8bdac40fbe@mail.gmail.com> <47F79102.6090406@linux.vnet.ibm.com> <6599ad830804051023v69caa3d4h6e26ccb420bca899@mail.gmail.com> <47F7BB69.3000502@linux.vnet.ibm.com> <6599ad830804051057n2f2802e4w6179f2e108467494@mail.gmail.com> <47F7CC08.4090209@linux.vnet.ibm.com> <6599ad830804051631g15363456s1952fda0bb4d395d@mail.gmail.com>
-In-Reply-To: <6599ad830804051631g15363456s1952fda0bb4d395d@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <57809.86271.qm@web52004.mail.re2.yahoo.com>
+X-Home-Page: http://www.parisc-linux.org/
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul Menage wrote:
-> On Sat, Apr 5, 2008 at 11:59 AM, Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
->>  >>  It's easier to set it up that way. Usually the end user gets the same SLA for
->>  >>  memory, CPU and other resources, so it makes sense to bind the controllers together.
->>  >>
->>  >
->>  > True - but in that case why wouldn't they have the same SLA for
->>  > virtual address space too?
->>  >
->>
->>  Yes, mostly. That's why I had made the virtual address space patches as a config
->>  option on top of the memory controller :)
->>
+On Sat, Apr 05, 2008 at 09:34:42PM -0700, Matti Linnanvuori wrote:
+> From: Matti Linnanvuori <mattilinnanvuori@yahoo.com>
 > 
-> *If* they want to use the virtual address space controller, that is.
-> 
-> By that argument, you should make the memory and cpu controllers the
-> same controller, since in your scenario they'll usually be used
-> together..
+> Fix undeclared variables.
 
-Heh, Virtual address and memory are more closely interlinked than CPU and Memory.
--- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+Sorry? This changelog entry doesn't make sense to me since this patch
+is for documentation and not a compiler error.
+
+If you prefer them declared as C code, please try it this way:
+
++	struct pci_dev dev*;
++	size_t size;
+	dma_addr_t dma_handle;
+
+	cpu_addr = pci_alloc_consistent(dev, size, &dma_handle);
+
+and delete the verbage (plain text) that defines the parameters.
+
+If you are confusing "dev" with "struct device *" and want to change
+all the references to "pdev", please do the above *and* write something
+like the following in the changelog:
+	To avoid confusion with struct device, rename ...
+
+thanks!
+grant
+
+> 
+> Signed-off-by: Matti Linnanvuori <mattilinnanvuori@yahoo.com>
+> 
+> ---
+> 
+> --- linux-2.6/Documentation/DMA-mapping.txt	2008-03-23 09:01:06.304511500 +0200
+> +++ linux/Documentation/DMA-mapping.txt	2008-04-06 06:56:11.821314500 +0300
+> @@ -315,9 +315,9 @@
+>  
+
+>  	dma_addr_t dma_handle;
+>  
+> -	cpu_addr = pci_alloc_consistent(dev, size, &dma_handle);
+> +	cpu_addr = pci_alloc_consistent(pdev, size, &dma_handle);
+>  
+> -where dev is a struct pci_dev *. You should pass NULL for PCI like buses
+> +where pdev is a struct pci_dev *. You should pass NULL for PCI like buses
+>  where devices don't have struct pci_dev (like ISA, EISA).  This may be
+>  called in interrupt context. 
+>  
+> @@ -354,9 +354,9 @@
+>  
+>  To unmap and free such a DMA region, you call:
+>  
+> -	pci_free_consistent(dev, size, cpu_addr, dma_handle);
+> +	pci_free_consistent(pdev, size, cpu_addr, dma_handle);
+>  
+> -where dev, size are the same as in the above call and cpu_addr and
+> +where pdev, size are the same as in the above call and cpu_addr and
+>  dma_handle are the values pci_alloc_consistent returned to you.
+>  This function may not be called in interrupt context.
+>  
+> @@ -371,9 +371,9 @@
+>  
+>  	struct pci_pool *pool;
+>  
+> -	pool = pci_pool_create(name, dev, size, align, alloc);
+> +	pool = pci_pool_create(name, pdev, size, align, alloc);
+>  
+> -The "name" is for diagnostics (like a kmem_cache name); dev and size
+> +The "name" is for diagnostics (like a kmem_cache name); pdev and size
+>  are as above.  The device's hardware alignment requirement for this
+>  type of data is "align" (which is expressed in bytes, and must be a
+>  power of two).  If your device has no boundary crossing restrictions,
+> @@ -472,11 +472,11 @@
+>  	void *addr = buffer->ptr;
+>  	size_t size = buffer->len;
+>  
+> -	dma_handle = pci_map_single(dev, addr, size, direction);
+> +	dma_handle = pci_map_single(pdev, addr, size, direction);
+>  
+>  and to unmap it:
+>  
+> -	pci_unmap_single(dev, dma_handle, size, direction);
+> +	pci_unmap_single(pdev, dma_handle, size, direction);
+>  
+>  You should call pci_unmap_single when the DMA activity is finished, e.g.
+>  from the interrupt which told you that the DMA transfer is done.
+> @@ -493,17 +493,17 @@
+>  	unsigned long offset = buffer->offset;
+>  	size_t size = buffer->len;
+>  
+> -	dma_handle = pci_map_page(dev, page, offset, size, direction);
+> +	dma_handle = pci_map_page(pdev, page, offset, size, direction);
+>  
+>  	...
+>  
+> -	pci_unmap_page(dev, dma_handle, size, direction);
+> +	pci_unmap_page(pdev, dma_handle, size, direction);
+>  
+>  Here, "offset" means byte offset within the given page.
+>  
+>  With scatterlists, you map a region gathered from several regions by:
+>  
+> -	int i, count = pci_map_sg(dev, sglist, nents, direction);
+> +	int i, count = pci_map_sg(pdev, sglist, nents, direction);
+>  	struct scatterlist *sg;
+>  
+>  	for_each_sg(sglist, sg, count, i) {
+> @@ -527,7 +527,7 @@
+>  
+>  To unmap a scatterlist, just call:
+>  
+> -	pci_unmap_sg(dev, sglist, nents, direction);
+> +	pci_unmap_sg(pdev, sglist, nents, direction);
+>  
+>  Again, make sure DMA activity has already finished.
+>  
+> @@ -550,11 +550,11 @@
+>  So, firstly, just map it with pci_map_{single,sg}, and after each DMA
+>  transfer call either:
+>  
+> -	pci_dma_sync_single_for_cpu(dev, dma_handle, size, direction);
+> +	pci_dma_sync_single_for_cpu(pdev, dma_handle, size, direction);
+>  
+>  or:
+>  
+> -	pci_dma_sync_sg_for_cpu(dev, sglist, nents, direction);
+> +	pci_dma_sync_sg_for_cpu(pdev, sglist, nents, direction);
+>  
+>  as appropriate.
+>  
+> @@ -562,7 +562,7 @@
+>  finish accessing the data with the cpu, and then before actually
+>  giving the buffer to the hardware call either:
+>  
+> -	pci_dma_sync_single_for_device(dev, dma_handle, size, direction);
+> +	pci_dma_sync_single_for_device(pdev, dma_handle, size, direction);
+>  
+>  or:
+>  
+> @@ -739,7 +739,7 @@
+>  
+>  	dma_addr_t dma_handle;
+>  
+> -	dma_handle = pci_map_single(dev, addr, size, direction);
+> +	dma_handle = pci_map_single(pdev, addr, size, direction);
+>  	if (pci_dma_mapping_error(dma_handle)) {
+>  		/*
+>  		 * reduce current DMA mapping usage,
+> 
+> 
+> 
+> 
+>       ____________________________________________________________________________________
+> You rock. That's why Blockbuster's offering you one month of Blockbuster Total Access, No Cost.  
+> http://tc.deals.yahoo.com/tc/blockbuster/text5.com
