@@ -1,57 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756143AbYDFFj1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754062AbYDFGYl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756143AbYDFFj1 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Apr 2008 01:39:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751954AbYDFFjU
+	id S1754062AbYDFGYl (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Apr 2008 02:24:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752065AbYDFGYa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Apr 2008 01:39:20 -0400
-Received: from E23SMTP01.au.ibm.com ([202.81.18.162]:45758 "EHLO
-	e23smtp01.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751896AbYDFFjT (ORCPT
+	Sun, 6 Apr 2008 02:24:30 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:33204 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751533AbYDFGY2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Apr 2008 01:39:19 -0400
-Message-ID: <47F861C8.7080700@linux.vnet.ibm.com>
-Date: Sun, 06 Apr 2008 11:08:16 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
-MIME-Version: 1.0
-To: Paul Menage <menage@google.com>
-CC: Pavel Emelianov <xemul@openvz.org>, Hugh Dickins <hugh@veritas.com>,
-       Sudhir Kumar <skumar@linux.vnet.ibm.com>,
-       YAMAMOTO Takashi <yamamoto@valinux.co.jp>, linux-kernel@vger.kernel.org,
-       taka@valinux.co.jp, linux-mm@kvack.org,
-       David Rientjes <rientjes@google.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: Re: [-mm] Add an owner to the mm_struct (v8)
-References: <20080404080544.26313.38199.sendpatchset@localhost.localdomain> <47F5E69C.9@linux.vnet.ibm.com> <6599ad830804040150j4946cf92h886bb26000319f3b@mail.gmail.com> <47F5F3FA.7060709@linux.vnet.ibm.com> <6599ad830804041211r37848a6coaa900d8bdac40fbe@mail.gmail.com> <47F79102.6090406@linux.vnet.ibm.com> <6599ad830804051023v69caa3d4h6e26ccb420bca899@mail.gmail.com> <47F7BB69.3000502@linux.vnet.ibm.com> <6599ad830804051057n2f2802e4w6179f2e108467494@mail.gmail.com> <47F7CC08.4090209@linux.vnet.ibm.com> <6599ad830804051629k3649dbc4na92bb3d0cd7a0492@mail.gmail.com>
-In-Reply-To: <6599ad830804051629k3649dbc4na92bb3d0cd7a0492@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Sun, 6 Apr 2008 02:24:28 -0400
+Date: Sat, 5 Apr 2008 23:23:54 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Kasper Sandberg <lkml@metanurb.dk>
+Cc: LKML Mailinglist <linux-kernel@vger.kernel.org>,
+       linux-acpi@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: Realtek 8111c weirdness problems, apic/msi, and normal bug
+Message-Id: <20080405232354.57ff2fac.akpm@linux-foundation.org>
+In-Reply-To: <1207407804.14885.27.camel@localhost>
+References: <1207407804.14885.27.camel@localhost>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul Menage wrote:
-> On Sat, Apr 5, 2008 at 11:59 AM, Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
->>  > But surely the performance of thread exits wouldn't be affected by the
->>  > delay_group_leader(p) change, since none of the exiting threads would
->>  > be a group leader. That optimization only matters when the entire
->>  > process exits.
->>  >
->>
->>  On the client side, each JVM instance exits after the test. I see the thread
->>  group leader exit as well through getdelays (I see TGID exits).
+
+Let's add some cc's.
+
+On Sat, 05 Apr 2008 17:03:24 +0200 Kasper Sandberg <lkml@metanurb.dk> wrote:
+
+> Hello.
 > 
-> How long does the test run for? How many threads does each client have?
+> I have a Gigabyte-X48-DQ6 motherboard which contains two realtek 8111c
+> pci express gigabit ethernet controllers.
+> 
+> The driver for these are r8169
+> 
+> To cut to the results that matters(IMO) most, is that on .25-rc8-git3,
+> the driver detects these cards, both of them, on different interrupts,
+> however, none of the nics work if i have both msi and apic enabled. If i
+> boot with pci=nomsi, and apic is enabled, both ports work (however one
+> "insignificant" bug remains), if i boot with noapic boot parameter, but
+> msi is enabled, both controllers are again found, and they work, however
+> that insignificant bug is also present here.
+> 
+> The insignificant bug is, that one of the interfaces appears to always
+> report as link up, despite me not having any cable in it.
+> 
+> So apparently the conflict is if i have BOTH apic and msi.
+> 
+> That leads me to a question, untill this is resolved, which
+> configuration do i want? apic with no msi, or msi with no apic?
+> 
+> I also have some more information, however i do not know if its useful
+> at all: On a .23 livecd, which has both msi and apic, something
+> different happens. What happens is that both controllers are detected,
+> however only 1 of them works, ethtool reports that the working
+> controller properly detects link up/down, and that its TP with 1gbit.
+> This is the ethtool output for the .23 livecd with apic and msi:
+> Settings for eth0:
+>         Supported ports: [ TP ]
+>         Supported link modes:   10baseT/Half 10baseT/Full
+>                                 100baseT/Half 100baseT/Full
+>                                 1000baseT/Full
+>         Supports auto-negotiation: Yes
+>         Advertised link modes:  10baseT/Half 10baseT/Full
+>                                 100baseT/Half 100baseT/Full
+>                                 1000baseT/Full
+>         Advertised auto-negotiation: Yes
+>         Speed: 1000Mb/s
+>         Duplex: Full
+>         Port: Twisted Pair
+>         PHYAD: 0
+>         Transceiver: internal
+>         Auto-negotiation: on
+>         Supports Wake-on: pumbg
+>         Wake-on: g
+>         Current message level: 0x00000033 (51)
+>         Link detected: yes
+> 
+> 
+> Settings for eth1:
+>         Supported ports: [ FIBRE ]
+>         Supported link modes:   1000baseT/Full
+>         Supports auto-negotiation: Yes
+>         Advertised link modes:  Not reported
+>         Advertised auto-negotiation: Yes
+>         Speed: 1000Mb/s
+>         Duplex: Full
+>         Port: FIBRE
+>         PHYAD: 0
+>         Transceiver: internal
+>         Auto-negotiation: on
+>         Supports Wake-on: pumbg
+>         Wake-on: g
+>         Current message level: 0x00000033 (51)
+>         Link detected: no
+> 
+> and as you can see, eth1 is completely messed up, thinking its fibre,
+> and stuff..
+> 
+> it appears that on this configuration, both nic's were registered
+> in /proc/interrupts as IO-APIC-fasteoi.
+> ---
+> 
+> I realize that more information will probably be needed to fix this bug,
+> however, as you probably will want to cc linux-netdev or apic/msi or
+> what it is, i will refrain from posting that now.
+> 
+> However, i can pretty much provide/try anything, so what would you want
+> me to get?
+> /proc/interrupts, dmesg, ethtool on .25 apic/nomsi?
+> /proc/interrupts, dmesg, ethtool on .25 msi/noapic?
+> /proc/interrupts, dmesg, ethtool on .25 msi/apic?
+> i also saw a strange message with .25 msi/apic, where when i rmmod r8169
+> and modprobe it again, it couldnt parse something, should i try get this
+> again?
+> 
+> 
+> In any case, just let me know what information you want, or patches you
+> wish me to test, and it will be done.
+> 
 
-The test on each client side runs for about 10 seconds. I saw the client create
-up to 411 threads.
-
--- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
