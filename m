@@ -1,119 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756671AbYDFWKR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756603AbYDFWUF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756671AbYDFWKR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Apr 2008 18:10:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755683AbYDFWKE
+	id S1756603AbYDFWUF (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Apr 2008 18:20:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755683AbYDFWTz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Apr 2008 18:10:04 -0400
-Received: from yw-out-2324.google.com ([74.125.46.30]:56536 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755623AbYDFWKC (ORCPT
+	Sun, 6 Apr 2008 18:19:55 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:38058 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755516AbYDFWTy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Apr 2008 18:10:02 -0400
-From: nikosapi <me@nikosapi.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Suspend on Lenovo 3000 V200 - Linux 2.6.25rc8
-Date: Sun, 6 Apr 2008 18:10:08 -0400
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: linux-acpi@vger.kernel.org, Len Brown <lenb@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>
-References: <3e8fd0440804052010xbe8f59bw3268d8206b97ac3e@mail.gmail.com> <200804062221.59011.rjw@sisk.pl>
-In-Reply-To: <200804062221.59011.rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+	Sun, 6 Apr 2008 18:19:54 -0400
+Date: Sun, 6 Apr 2008 19:19:11 -0300
+From: Mauro Carvalho Chehab <mchehab@infradead.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       linux-dvb-maintainer@linuxtv.org, video4linux-list@redhat.com,
+       linux-kernel@vger.kernel.org
+Subject: [GIT PATCHES] V4L/DVB new USB ID's for 2.6.25-rc8
+Message-ID: <20080406191911.68aed9c6@gaivota>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; x86_64-mandriva-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200804061810.08398.me@nikosapi.org>
+X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On April 6, 2008 16:21:57 Rafael J. Wysocki wrote:
-> On Sunday, 6 of April 2008, Nick Nobody wrote:
-> > Hello,
->
-> Hi,
->
-> > I'm trying to get suspend working properly on my Lenovo 3000 V200. I'm
-> > using Linux 2.6.25rc8 and the latest xf86-video-intel. Before I was
-> > using kernel-2.6.23.15-137.fc8, xorg-x11-drv-i810-2.1.1-8.fc8 and
-> > suspend worked perfectly.
-> >
-> > The laptop will go to sleep properly but it doesn't seem to enjoy
-> > waking up. When it starts up it will either display a black screen and
-> > remain frozen or I will end up at a virtual term login prompt but when
-> > I put in my username it never prompts me for my password.
-> >
-> > The only way to get suspend working reasonably well is to first
-> > hibernate and then suspend. After a hibernation suspend seems to work
-> > fine :S
-> >
-> > I'm a real noob when it comes to figuring out these sort of things, so
-> > any pointers on things I could try would be much appreciated.
-> >
-> > Here's what s2ram has to say about my hardware:
-> > Machine is unknown.
-> > This machine can be identified by:
-> >     sys_vendor   = "LENOVO"
-> >     sys_product  = "07642CU"
-> >     sys_version  = "LENOVO3000 V200"
-> >     bios_version = "65ET32WW (1.06 )"
-> >
-> > Here's the output of dmidecode: http://pastebin.ca/973442
->
-> Can you try to run "echo mem > /sys/power/state" instead of s2ram and see
-> if the symptoms are the same?
->
-> Also, please try reverting commit 7c0ea45be4f114d85ee35caeead8e1660699c46f
-> (reproduced below for conveninence) and see if that helps.
->
-> Thanks,
-> Rafael
->
-> ---
-> commit 7c0ea45be4f114d85ee35caeead8e1660699c46f
-> Author: Zhao Yakui <yakui.zhao@intel.com>
-> Date:   Tue Mar 11 16:56:47 2008 +0800
->
->     ACPI: Ignore _BQC object when registering backlight device
->
->     According to acpi spec , the objects of  _BCL and _BCM are required if
->     integrated LCD is present and supports brightness level .The _BQC is
->     the optional object. So the _BQC object is ignored when the backlight
-> device is registered in ACPI video driver.
->
->     http://bugzilla.kernel.org/show_bug.cgi?id=10206
->
->     Signed-off-by: Zhao Yakui <yakui.zhao@intel.com>
->     Signed-off-by: Zhang Rui  <rui.zhang@intel.com>
->     Signed-off-by: Len Brown <len.brown@intel.com>
->
-> diff --git a/drivers/acpi/video.c b/drivers/acpi/video.c
-> index 12cce69..ace958c 100644
-> --- a/drivers/acpi/video.c
-> +++ b/drivers/acpi/video.c
-> @@ -713,7 +713,7 @@ static void acpi_video_device_find_cap(struct
-> acpi_video_device *device)
->
->  	kfree(obj);
->
-> -	if (device->cap._BCL && device->cap._BCM && device->cap._BQC && max_level
-> > 0){ +	if (device->cap._BCL && device->cap._BCM && max_level > 0) {
->  		int result;
->  		static int count = 0;
->  		char *name;
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-acpi" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Linus,
 
-Hello Rafael,
+Please pull from:
+        ssh://master.kernel.org/pub/scm/linux/kernel/git/mchehab/v4l-dvb.git pci_id_updates
 
-I tested with that patch and the problem persists, when the laptop resumes it 
-locks up (with a black screen). If I add acpi_apic_instance=2 acpi_osi=Linux 
-as kernel boot options (as suggested by my dmesg) when it resumes I get back 
-to a virtual term but I'm not able to log in. After entering my username it 
-just hangs there.
+For the following:
 
-nick
+   - pvrusb2: add new usb pid for 73xx and 75xxx models
+
+Those boards are about to be released by their vendor (Hauppauge). The already 
+committed changes for pvrusb2 were meant to address those new devices. However, 
+the vendor changed the usb sub ID's at the last moment. Those two patches adds 
+the newer ID's to allow kernel to properly detect the devices.
+
+Cheers,
+Mauro.
+
+---
+
+ drivers/media/video/pvrusb2/pvrusb2-devattr.c |   35 +++++++++++++++++++++++++
+ 1 files changed, 35 insertions(+), 0 deletions(-)
+
+Michael Krufky (2):
+      V4L/DVB (7496): pvrusb2: add new usb pid for 75xxx models
+      V4L/DVB (7497): pvrusb2: add new usb pid for 73xxx models
+
+---------------------------------------------------
+V4L/DVB development is hosted at http://linuxtv.org
