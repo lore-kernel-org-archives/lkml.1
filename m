@@ -1,73 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754609AbYDFTCb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755389AbYDFTLG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754609AbYDFTCb (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Apr 2008 15:02:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751898AbYDFTCY
+	id S1755389AbYDFTLG (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Apr 2008 15:11:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752611AbYDFTKw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Apr 2008 15:02:24 -0400
-Received: from gw.goop.org ([64.81.55.164]:35027 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751493AbYDFTCX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Apr 2008 15:02:23 -0400
-Message-ID: <47F91DFD.9030508@goop.org>
-Date: Sun, 06 Apr 2008 12:01:17 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080315)
+	Sun, 6 Apr 2008 15:10:52 -0400
+Received: from out4.smtp.messagingengine.com ([66.111.4.28]:58989 "EHLO
+	out4.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752067AbYDFTKv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Apr 2008 15:10:51 -0400
+Message-Id: <1207509050.21093.1246359933@webmail.messagingengine.com>
+X-Sasl-Enc: fOxi8w5uXH0Vy7iznGH7ZGMY7/0ysNTNe9FSaxhYdvR5 1207509050
+From: "Alexander van Heukelum" <heukelum@fastmail.fm>
+To: "Benny Halevy" <bhalevy@panasas.com>,
+       "Alexander van Heukelum" <heukelum@mailshack.com>
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       "linux-arch" <linux-arch@vger.kernel.org>,
+       "Ingo Molnar" <mingo@elte.hu>, "Andi Kleen" <andi@firstfloor.org>,
+       "LKML" <linux-kernel@vger.kernel.org>
+Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="ISO-8859-1"
 MIME-Version: 1.0
-To: =?ISO-8859-1?Q?Thomas_Hellstr=F6m?= <thomas@tungstengraphics.com>
-CC: Linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       dri-devel <dri-devel@lists.sourceforge.net>
-Subject: Re: [RFC] Use kernel_map_pages() to avoid illegal page aliasing.
-References: <47F8DA44.3070008@tungstengraphics.com>
-In-Reply-To: <47F8DA44.3070008@tungstengraphics.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
+X-Mailer: MessagingEngine.com Webmail Interface
+References: <20080315172913.GA21648@mailshack.com> <47F511BF.8090506@panasas.com>
+   <20080404142214.GA8322@mailshack.com> <47F8E64C.9030104@panasas.com>
+Subject: Re: [0/3] Improve generic fls64 for 64-bit machines
+In-Reply-To: <47F8E64C.9030104@panasas.com>
+Date: Sun, 06 Apr 2008 21:10:50 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thomas Hellström wrote:
-> Hi!
->
-> For a long time now, the agpgart module has been creating illegal 
-> mapping aliases, since the user-space mappings of the pages in the 
-> gart are usually write-combined, whereas the kernel linear mapping of 
-> the same pages are uc for x86, and may even be wb for some architectures.
->
-> In order to fix this, and to facilitate fast insertion and removal of 
-> pages into / from the gart I'd like to disable all default kernel 
-> mappings for those pages, which would in effect, make them behave as 
-> highmem pages from our point of view.
->
-> As prevously discussed, the x86 set_memory_xxx() interface wasn't 
-> suitable for this, since it handles only a single mapping, and the 
-> pages may have more than one default kernel mapping.
->
-> But it turns out that there is an interface that does exactly this. 
-> kernel_map_pages(). But it is only available  with 
-> CONFIG_DEBUG_PAGEALLOC. I'd like to make that function exported by 
-> default, but with some minor alterations as the original functions 
-> does some debug checks as well, that aren't desirable for the purpose 
-> mentioned above:
->
-> As with highmem pages, if the driver sets up user-space mappings with 
-> non-standard caching attributes, those mappings need to be killed at 
-> suspend time, since the suspend code would otherwise create temporary 
-> incompatible mappings.
->
-> On x86 this all would probably work fine. Does kernel_map_pages() work 
-> identically on other architectures? Specifically: Will it always work 
-> with a 4K page granularity?
+On Sun, 06 Apr 2008 18:03:40 +0300, "Benny Halevy" <bhalevy@panasas.com>
+said:
+> On Apr. 04, 2008, 17:22 +0300, Alexander van Heukelum
+> <heukelum@mailshack.com> wrote:
+> > On Thu, Apr 03, 2008 at 08:19:59PM +0300, Benny Halevy wrote:
+> >> On Mar. 15, 2008, 19:29 +0200, Alexander van Heukelum <heukelum@mailshack.com> wrote:
+> >>> This series of patches:
+> >>>
+> >>> [1/3] adds __fls.h to asm-generic
+> >>> [2/3] modifies asm-*/bitops.h for 64-bit archs to implement __fls
+> >>> [3/3] modifies asm-generic/fls64.h to make use of __fls
+> >> I strongly support this.
+> >>
+> >> I wish we'd also have a consistent naming convention for all
+> >> the bitops functions so it will be clearer what data type the
+> >> function is working on and is the result 0 or 1 based.
+> >>
+> >> It seems like what we currently have is:
+> >>
+> >> name	type	first bit#
+> >> ----	----	----------
+> >> ffs	int	1
+> >> fls	int	1
+> >> __ffs	ulong	0
+> >> __fls	ulong	0	# in your proposal
+> >> ffz	ulong	0
+> >> fls64	__u64	1
+> >>
+> >> so it seems like
+> >> - ffz is misnamed and is rather confusing.
+> >>   Apprently is should be renamed to __ffz.
+> >>
+> >> - (new) ffz(x) can be defined to ffs(~(x))
+> >>
+> >> - It'd be nice to have ffs64, and maybe ffz64.
+> >>
+> >> Benny
+> > 
+> > I think every programmer who thinks in terms of bits realises
+> > that ffz(x) == __ffs(~x) and ffz(~x) == __ffs(x) etc... so I
+> > would rather get rid of ffz entirely by converting all uses
+> > to __ffs. Patch (against current linus) below. After that all
+> > implementations of ffz could be removed.
+> 
+> Yeah, very few architectures have an optimized version of ffz
+> that will perform noticeably better than __ffs(~x).
+> (e.g. h8300, sh)
 
-Well, not all architectures use 4k as their base page size, but 
-kernel_map_pages should work at the smallest supported page size.
+Yeah, and these implementations seem to be based on a loop over
+all bits in the word. I don't think adding one extra not-operation
+to convert ffz to __ffs will hurt much ;).
 
-The disadvantage of this is that it will end up shattering any 
-large-page mappings the kernel has.  This is pretty much unavoidable 
-unless you can arrange to only allocate AGP pages in a physically 
-distinct area away from other kernel allocations (a mechanism to do this 
-might be generally useful, though I'm not sure what form it would take - 
-another zone perhaps?).
+> > ffs64 would be a good addition to complete the set of functions,
+> > but that would be the same as glibc's (and gcc-builtin) ffsll.
+> > 
+> > Looking into that... the relevant gcc builtins are __builtin_ffs
+> > (find first set bit), __builtin_clz (count leading zeroes),
+> > __builtin_ctz (count trailing zeroes), __builtin_popcount, maybe
+> > __builtin_parity and their -l and -ll variants. Maybe the kernel
+> > should be changed to use those names instead of the current
+> > ones? ffs would stay as it is. __ffs would become ctz, __fls
+> > would become something like 31-clz, and hweight would become
+> > popcount.
+> 
+> Interesting idea.  ctz much better than __ffs with regards to the
+> return value's first bit number, but unless you expose clz
+> and convert the code how do you get rid of the __fls vs. fls
+> confusion?
 
-    J
+Exposing clz/ctz on all architectures will be the harder part. Changing
+all current uses of ffs/fls (and __fls) will take some time. Mostly
+because converting code using fls to use clz instead needs to be
+done a bit carefully, because fls(0) has defined behaviour, while
+clz(0) is undefined.
+
+> (BTW for __fls, I'd use BITS_PER_LONG - 1, not 31 :)
+
+:)
+
+> I think that adopting libc's convention might make more sense,
+> i.e., define ffs, ffsl, ffsll, and fls, flsl, flsll, and have *all*
+> be 1-based.
+
+I agree that it makes sense for fls. For clz (and ctz) I would choose
+clz(unsigned long), clz32(u32), and clz64(u64).
+
+Greetings,
+    Alexander
+
+> Benny
+-- 
+  Alexander van Heukelum
+  heukelum@fastmail.fm
+
+-- 
+http://www.fastmail.fm - Choose from over 50 domains or use your own
+
