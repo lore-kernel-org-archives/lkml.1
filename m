@@ -1,58 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756603AbYDFWUF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756535AbYDFWWI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756603AbYDFWUF (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Apr 2008 18:20:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755683AbYDFWTz
+	id S1756535AbYDFWWI (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Apr 2008 18:22:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755683AbYDFWV5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Apr 2008 18:19:55 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:38058 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755516AbYDFWTy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Apr 2008 18:19:54 -0400
-Date: Sun, 6 Apr 2008 19:19:11 -0300
-From: Mauro Carvalho Chehab <mchehab@infradead.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       linux-dvb-maintainer@linuxtv.org, video4linux-list@redhat.com,
-       linux-kernel@vger.kernel.org
-Subject: [GIT PATCHES] V4L/DVB new USB ID's for 2.6.25-rc8
-Message-ID: <20080406191911.68aed9c6@gaivota>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; x86_64-mandriva-linux-gnu)
+	Sun, 6 Apr 2008 18:21:57 -0400
+Received: from smtpeu1.atmel.com ([195.65.72.27]:60763 "EHLO bagnes.atmel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755566AbYDFWV4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Apr 2008 18:21:56 -0400
+Date: Sun, 6 Apr 2008 18:18:17 -0400
+From: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
+To: Ben Nizette <bn@niasdigital.com>
+Cc: kernel <kernel@avr32linux.org>, slipszi@gmail.com,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [BUG, bisected] atmel_spi: hard lockups in transfer
+Message-ID: <20080406181817.5824f962@siona.local>
+In-Reply-To: <1207438118.3319.8.camel@moss.renham>
+References: <1207438118.3319.8.camel@moss.renham>
+Organization: Atmel
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+X-OriginalArrivalTime: 06 Apr 2008 22:19:24.0603 (UTC) FILETIME=[452800B0:01C89834]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus,
+On Sun, 06 Apr 2008 09:28:38 +1000
+Ben Nizette <bn@niasdigital.com> wrote:
 
-Please pull from:
-        ssh://master.kernel.org/pub/scm/linux/kernel/git/mchehab/v4l-dvb.git pci_id_updates
+> Hi,
+> 
+> For some weeks now there have been reports flying across the main AVR32
+> support forum, avrfreaks [1], that atmel_spi now hard-hangs on most
+> transfers.  The behaviour is not apparent in .23 and is in .24+.  One
+> tester was good enough to bisect the problem and turned up
 
-For the following:
+Thanks for reporting this.
 
-   - pvrusb2: add new usb pid for 73xx and 75xxx models
+> 154443c72f47169ebcb3a7befbff0e934c49bff3
+> atmel_spi: chain DMA transfers
+> 
+> as the culprit.  The tester also had to revert 
+> 
+> commit 8bacb219018a52e6f02a3cff6a7badf102ddfc44
+> atmel_spi: fix dmachain oops with DEBUG enabled
+> 
+> when they reverted 154443 as they were not confident enough to resolve
+> the conflicts that resulted from just reverting the first one.
 
-Those boards are about to be released by their vendor (Hauppauge). The already 
-committed changes for pvrusb2 were meant to address those new devices. However, 
-the vendor changed the usb sub ID's at the last moment. Those two patches adds 
-the newer ID's to allow kernel to properly detect the devices.
+That is indeed the correct way to resolve the conflict since the latter
+fixes a bug introduced by the former.
 
-Cheers,
-Mauro.
+> The discussion thread involving this can be seen at [2].
+> 
+> As I say, this is present in .24+ so any fix will be a stable candidate
+> as well as .25 material (if we haven't missed the boat by then).
 
----
+I'm afraid I don't have much time to look at this right now...but I'll
+see what I can do. It's strange that I never noticed this problem
+myself -- I did see some overrun issues, but I blamed it on the
+throughput improvements and just reduced the speed slightly.
 
- drivers/media/video/pvrusb2/pvrusb2-devattr.c |   35 +++++++++++++++++++++++++
- 1 files changed, 35 insertions(+), 0 deletions(-)
+Do you have any special debugging options enabled?
 
-Michael Krufky (2):
-      V4L/DVB (7496): pvrusb2: add new usb pid for 75xxx models
-      V4L/DVB (7497): pvrusb2: add new usb pid for 73xxx models
-
----------------------------------------------------
-V4L/DVB development is hosted at http://linuxtv.org
+Haavard
