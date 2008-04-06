@@ -1,49 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753396AbYDFUtA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756236AbYDFUw1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753396AbYDFUtA (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Apr 2008 16:49:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752996AbYDFUsx
+	id S1756236AbYDFUw1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Apr 2008 16:52:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753396AbYDFUwT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Apr 2008 16:48:53 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:50459 "EHLO ogre.sisk.pl"
+	Sun, 6 Apr 2008 16:52:19 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:50483 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752858AbYDFUsw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Apr 2008 16:48:52 -0400
+	id S1753285AbYDFUwT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Apr 2008 16:52:19 -0400
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Jasper Bryant-Greene <jasper@unix.geek.nz>
-Subject: Re: 2.6.25-rc1 on Sun Ultra 40- HPET clocksource which causes it to hang
-Date: Sun, 6 Apr 2008 22:49:05 +0200
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: 2.6.25-rc1: volanoMark regression
+Date: Sun, 6 Apr 2008 22:52:07 +0200
 User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <pdYe6zNQVl.A.XbB.vIW9HB@albercik> <1207512439.7405.1.camel@rhea.unix.geek.nz>
-In-Reply-To: <1207512439.7405.1.camel@rhea.unix.geek.nz>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
+       Zhang Yanmin <yanmin_zhang@linux.intel.com>
+References: <pdYe6zNQVl.A.ieB.zIW9HB@albercik> <20080406110813.GA21838@elte.hu>
+In-Reply-To: <20080406110813.GA21838@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-15"
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200804062249.06273.rjw@sisk.pl>
+Message-Id: <200804062252.08149.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday, 6 of April 2008, Jasper Bryant-Greene wrote:
-> No longer reproducible on 2.6.25-rc8.
+On Sunday, 6 of April 2008, Ingo Molnar wrote:
 > 
-> Jasper
+> * Rafael J. Wysocki <rjw@sisk.pl> wrote:
 > 
-> On Fri, 2008-04-04 at 01:05 +0200, Rafael J. Wysocki wrote:
 > > The following report is on the current list of known regressions
 > > from 2.6.24.  Please verify if the issue is still present in the
 > > mainline.
 > > 
 > > 
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=9980
-> > Subject		: 2.6.25-rc1 on Sun Ultra 40- HPET clocksource which causes it to hang
-> > Submitter	: Jasper Bryant-Greene <jasper@unix.geek.nz>
-> > Date		: 2008-02-13 12:25 (51 days old)
-> > References	: http://lkml.org/lkml/2008/2/13/181
+> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=9978
+> > Subject		: 2.6.25-rc1: volanoMark regression
+> > Submitter	: Zhang, Yanmin <yanmin_zhang@linux.intel.com>
+> > Date		: 2008-02-13 10:30 (51 days old)
+> > References	: http://lkml.org/lkml/2008/2/13/128
+> > Handled-By	: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
+> 
+> the commit that got bisected there has been reverted 41 days ago:
+> 
+> | commit 62fb185130e4d420f71a30ff59d8b16b74ef5d2b
+> | Author: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> | Date:   Mon Feb 25 17:34:02 2008 +0100
+> |
+> |     sched: revert load_balance_monitor() changes
+> 
+> there might be other issues in that area but they should be tracked 
+> separately.
 
-Thanks for the update, bug closed.
+OK, I closed the bug.
 
+Thanks,
 Rafael
