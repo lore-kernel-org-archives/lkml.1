@@ -1,48 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756233AbYDFVvg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756449AbYDFV7V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756233AbYDFVvg (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Apr 2008 17:51:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754673AbYDFVv2
+	id S1756449AbYDFV7V (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Apr 2008 17:59:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755139AbYDFV7M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Apr 2008 17:51:28 -0400
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:38022 "EHLO smtp6.pp.htv.fi"
+	Sun, 6 Apr 2008 17:59:12 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:50730 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753640AbYDFVv1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Apr 2008 17:51:27 -0400
-Date: Mon, 7 Apr 2008 00:50:54 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Joe Perches <joe@perches.com>
-Cc: Jeff Garzik <jgarzik@pobox.com>, linux-ide <linux-ide@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] drivers/ata/sata_via.c - Eliminate "may be used
-	uninitialized" warning
-Message-ID: <20080406215054.GI30987@cs181133002.pp.htv.fi>
-References: <1207518320.1803.52.camel@localhost>
+	id S1754007AbYDFV7L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Apr 2008 17:59:11 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Adrian Bunk <bunk@kernel.org>
+Subject: Re: TUNER_TDA8290=y, VIDEO_DEV=n build error
+Date: Sun, 6 Apr 2008 23:59:17 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Toralf Feorster <toralf.foerster@gmx.de>
+References: <pdj7pZVURbL.A.42H.kDW9HB@albercik> <200804041137.40582.rjw@sisk.pl> <20080406214333.GH30987@cs181133002.pp.htv.fi>
+In-Reply-To: <20080406214333.GH30987@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1207518320.1803.52.camel@localhost>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Message-Id: <200804062359.17915.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Apr 06, 2008 at 02:45:20PM -0700, Joe Perches wrote:
-> Called by svia_init_one with a temporary,
-> so there's no effective code change.
->...
+On Sunday, 6 of April 2008, Adrian Bunk wrote:
+> On Fri, Apr 04, 2008 at 11:37:40AM +0200, Rafael J. Wysocki wrote:
+> > On Friday, 4 of April 2008, Adrian Bunk wrote:
+> > > On Fri, Apr 04, 2008 at 01:20:32AM +0200, Rafael J. Wysocki wrote:
+> > > > The following report is on the current list of known regressions
+> > > > from 2.6.24.  Please verify if the issue is still present in the
+> > > > mainline.
+> > > 
+> > > When you asked me just 2 days ago exactly the same question in the 
+> > > Bugzilla entry I immediately confirmed it's still present.
+> > > 
+> > > Was anything wrong with my answer (and the subsequent discussions) that 
+> > > you now also ask Toralf for confirmation?
+> > 
+> > This text is automatically added to the messages sent in replies to the main
+> > report.
+> > 
+> > Well, it probably could be better.  I'm open for suggestions. :-)
+> 
+> First of all you try to get the tracking of all bugs into Bugzilla, and 
+> now you've sent a batch of emails where the answers will not get into 
+> Bugzilla automatically.
 
-I'm not getting any warning here.
+So?
 
-Are you using an older gcc?
+> As an example, for the bug we are talking about the main value of you 
+> asking me in Bugzilla was not that I confirmed it's still present, the 
+> main value was that this caused Mauro to make a fix. What would have 
+> happened if Toralf had answered in an email that the bug is still 
+> present?
 
-cu
-Adrian
+Most probably, I would add a reference to his reply to the bugzilla entry.
 
--- 
+> And especially for trickier stuff like suspend/resume problems it might 
+> also make sense to send the email to all people who might possibly be 
+> involved with the bug - even if this means putting all email addresses 
+> from 5 MAINTAINERS entries into one email. It takes a bit more time when 
+> writing the emails, but my experience was it's worth it.
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+Yes, I'm going to do that in the future.
 
+Thanks,
+Rafael
