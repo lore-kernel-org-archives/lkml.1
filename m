@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755627AbYDFLIx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753842AbYDFLWk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755627AbYDFLIx (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Apr 2008 07:08:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752507AbYDFLIq
+	id S1753842AbYDFLWk (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Apr 2008 07:22:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750748AbYDFLWb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Apr 2008 07:08:46 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:52458 "EHLO mx3.mail.elte.hu"
+	Sun, 6 Apr 2008 07:22:31 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:53782 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751640AbYDFLIp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Apr 2008 07:08:45 -0400
-Date: Sun, 6 Apr 2008 13:08:14 +0200
+	id S1750720AbYDFLWa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Apr 2008 07:22:30 -0400
+Date: Sun, 6 Apr 2008 13:22:08 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>, Zhang@ogre.sisk.pl,
-       Yanmin <yanmin_zhang@linux.intel.com>
-Subject: Re: 2.6.25-rc1: volanoMark regression
-Message-ID: <20080406110813.GA21838@elte.hu>
-References: <pdYe6zNQVl.A.ieB.zIW9HB@albercik>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, Andi Kleen <ak@suse.de>,
+       "H. Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org,
+       lguest <lguest@ozlabs.org>, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH] Fix booting pentium+ with dodgy TSC
+Message-ID: <20080406112207.GA26510@elte.hu>
+References: <200804061723.38766.rusty@rustcorp.com.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <pdYe6zNQVl.A.ieB.zIW9HB@albercik>
+In-Reply-To: <200804061723.38766.rusty@rustcorp.com.au>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -36,29 +36,22 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Rafael J. Wysocki <rjw@sisk.pl> wrote:
+* Rusty Russell <rusty@rustcorp.com.au> wrote:
 
-> The following report is on the current list of known regressions
-> from 2.6.24.  Please verify if the issue is still present in the
-> mainline.
-> 
-> 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=9978
-> Subject		: 2.6.25-rc1: volanoMark regression
-> Submitter	: Zhang, Yanmin <yanmin_zhang@linux.intel.com>
-> Date		: 2008-02-13 10:30 (51 days old)
-> References	: http://lkml.org/lkml/2008/2/13/128
-> Handled-By	: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
+> Linus please apply.  Almost by definition this patch can't make things 
+> worse.
 
-the commit that got bisected there has been reverted 41 days ago:
+well, while i agree with the patch it could make things worse. In this 
+case it can cause code that has been compiled to rely on TSC to 
+malfunction. For if sched_clock() was using cpu_has_tsc it could return 
+0 all the time, breaking the scheduler without the user having a clear 
+idea why it broke. It isnt, and sched_clock() will work fine, but still, 
+your "this cant make things worse" statement is not completely correct. 
 
-| commit 62fb185130e4d420f71a30ff59d8b16b74ef5d2b
-| Author: Peter Zijlstra <a.p.zijlstra@chello.nl>
-| Date:   Mon Feb 25 17:34:02 2008 +0100
-|
-|     sched: revert load_balance_monitor() changes
+In any case:
 
-there might be other issues in that area but they should be tracked 
-separately.
+ Acked-by: Ingo Molnar <mingo@elte.hu>
+
+and i've also queued it up into the for-.25 queue of x86.git.
 
 	Ingo
