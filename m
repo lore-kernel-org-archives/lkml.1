@@ -1,43 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754917AbYDFTsj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755901AbYDFTtT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754917AbYDFTsj (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Apr 2008 15:48:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751979AbYDFTsa
+	id S1755901AbYDFTtT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Apr 2008 15:49:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752723AbYDFTtJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Apr 2008 15:48:30 -0400
-Received: from ug-out-1314.google.com ([66.249.92.174]:26112 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751730AbYDFTs3 (ORCPT
+	Sun, 6 Apr 2008 15:49:09 -0400
+Received: from bzq-179-150-194.static.bezeqint.net ([212.179.150.194]:54326
+	"EHLO il.qumranet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751979AbYDFTtI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Apr 2008 15:48:29 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:subject:content-type:content-transfer-encoding;
-        b=Po6llLVdeSeRDkG9t1K6v/CfhrFjfTe2rLCADkRLB4jAjH29g4I45UTnrISbpviEQ9zQIqxCFDyMD7uqYC/iYdsDLIFWUcbFHNCl6okHmTlz7PvQ/qhGyg5ZRo0bsFcuEhjrFSGqSa2quce7mBm9iuw8wXFZURKTNJZrWXUlrys=
-Message-ID: <47F928FC.7000603@gmail.com>
-Date: Sun, 06 Apr 2008 14:48:12 -0500
-From: YM Yen <yminyen@gmail.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
+	Sun, 6 Apr 2008 15:49:08 -0400
+Message-ID: <47F9286E.8070901@qumranet.com>
+Date: Sun, 06 Apr 2008 22:45:50 +0300
+From: Avi Kivity <avi@qumranet.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Hooking to APIC timer on SMP 32-bit X86 system
+To: kvm-devel <kvm-devel@lists.sourceforge.net>
+CC: lkml <linux-kernel@vger.kernel.org>
+Subject: [ANNOUNCE] kvm-65 release
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0rc1 (firebolt.argo.co.il [0.0.0.0]); Sun, 06 Apr 2008 22:45:50 +0300 (IDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-hi,
+The big item (in more ways than one) for this release is the addition of 
+s390 support.  As it is not actually provided in the tarball, you will 
+need to use git to fetch it.  You will also need a mainframe.
 
-I am looking for a way to program the APIC timer in a kernel module so 
-that the module depends only on the hardware timer instead of the timer 
-provided by the kernel. Programming the LVT is easy, however I can't 
-find a way to have the Linux kernel to call my interrupt service routine 
-in addition to smp_apic_timer_interrupt().
+On x86, the most interesting change is the separation of timer and I/O 
+completion handling into a separate thread (these used to be serviced by 
+the same thread that executed vcpu 0).  The change should result in 
+improved responsiveness and better smp performance.
 
-Is doing this even possible? There doesn't seem to be any sort of hook 
-or notifier chain I can install a ISR to. Thanks in advance.
+Changes from kvm-64:
+- fix hotplug build for non-x86 (Xiantao Zhang)
+- ignore reads from the apic EOI register (Glauber Costa)
+   - fixes Linux 2.6.25-rclate bootup problems
+- compile fixes (Carlo Marcelo Arenas Belon)
+- fix ftruncate() on hugetlbfs use on older Linux hosts (Marcelo Tosatti)
+- endianness fix virtio-block (Anthony Liguori)
+   - fixes virtio-blk on ppc
+- refactor in-kernel PIT to be a separate device (Anthony Liguori)
+- separate thread for I/O completions and timers (Marcelo Tosatti)
+- fix vmmouse smp (Anthony Liguori)
+- fix loading uninitialized variable into apic registers (Marcelo Tosatti)
+   - fixes apic being disabled on smp Linux guests running X
+- disable kvm clock on Voyager or SGI Visual WS (Randy Dunlap)
+- s390 support (Carsten Otte, Martin Schwidefsky, Christian Borntraeger,
+                 Heiko Carstens)
+- fix large pages (Marcelo Tosatti)
+- speedup msr processing on Intel via msr bitmap (Sheng Yang)
+- add slab shrinker support (Izik Eidus)
+   - reduces nonswappable footprint under memory pressure
+- code cleanup (Joerg Roedel)
+- vm refcounting (Izik Eidus)
+- only mark a page as accessed if it was really accessed by the guest
+- drop slots_lock while in guest mode
+   - fixes long latencies with iothread
+- prepopulate guest pages only after write-protecting them (Marcelo Tosatti)
+   - fixes smp race leading to guest spinning
 
-Regards,
+Notes:
+      If you use the modules bundled with kvm-65, you can use any version
+of Linux from 2.6.17 upwards.
+      If you use the modules bundled with Linux 2.6.20, you need to use
+kvm-12.
+      If you use the modules bundled with Linux 2.6.21, you need to use
+kvm-17.
+      Modules from Linux 2.6.22 and up will work with any kvm version from
+kvm-22.  Some features may only be available in newer releases.
+      For best performance, use Linux 2.6.23-rc2 or later as the host.
 
-YM
+http://kvm.qumranet.com
+
