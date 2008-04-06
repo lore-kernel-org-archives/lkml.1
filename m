@@ -1,63 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754386AbYDFS4i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754609AbYDFTCb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754386AbYDFS4i (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Apr 2008 14:56:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752115AbYDFS4a
+	id S1754609AbYDFTCb (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Apr 2008 15:02:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751898AbYDFTCY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Apr 2008 14:56:30 -0400
-Received: from outbound-mail-115.bluehost.com ([69.89.24.5]:40127 "HELO
-	outbound-mail-115.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752067AbYDFS43 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Apr 2008 14:56:29 -0400
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] fix IS_I9XX macro in i915 DRM driver
-Date: Sun, 6 Apr 2008 11:55:04 -0700
-User-Agent: KMail/1.9.9
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Dave Airlie <airlied@linux.ie>
+	Sun, 6 Apr 2008 15:02:24 -0400
+Received: from gw.goop.org ([64.81.55.164]:35027 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751493AbYDFTCX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Apr 2008 15:02:23 -0400
+Message-ID: <47F91DFD.9030508@goop.org>
+Date: Sun, 06 Apr 2008 12:01:17 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080315)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200804061155.04965.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
+To: =?ISO-8859-1?Q?Thomas_Hellstr=F6m?= <thomas@tungstengraphics.com>
+CC: Linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       dri-devel <dri-devel@lists.sourceforge.net>
+Subject: Re: [RFC] Use kernel_map_pages() to avoid illegal page aliasing.
+References: <47F8DA44.3070008@tungstengraphics.com>
+In-Reply-To: <47F8DA44.3070008@tungstengraphics.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Now that we're mapping registers in the DRM driver at load time, the driver 
-actually checks the PCI ID, so we need to make sure the macros have all the 
-right bits (and longer term use the DRM headers as the sole copy of the PCI & 
-register definitions).
+Thomas Hellström wrote:
+> Hi!
+>
+> For a long time now, the agpgart module has been creating illegal 
+> mapping aliases, since the user-space mappings of the pages in the 
+> gart are usually write-combined, whereas the kernel linear mapping of 
+> the same pages are uc for x86, and may even be wb for some architectures.
+>
+> In order to fix this, and to facilitate fast insertion and removal of 
+> pages into / from the gart I'd like to disable all default kernel 
+> mappings for those pages, which would in effect, make them behave as 
+> highmem pages from our point of view.
+>
+> As prevously discussed, the x86 set_memory_xxx() interface wasn't 
+> suitable for this, since it handles only a single mapping, and the 
+> pages may have more than one default kernel mapping.
+>
+> But it turns out that there is an interface that does exactly this. 
+> kernel_map_pages(). But it is only available  with 
+> CONFIG_DEBUG_PAGEALLOC. I'd like to make that function exported by 
+> default, but with some minor alterations as the original functions 
+> does some debug checks as well, that aren't desirable for the purpose 
+> mentioned above:
+>
+> As with highmem pages, if the driver sets up user-space mappings with 
+> non-standard caching attributes, those mappings need to be killed at 
+> suspend time, since the suspend code would otherwise create temporary 
+> incompatible mappings.
+>
+> On x86 this all would probably work fine. Does kernel_map_pages() work 
+> identically on other architectures? Specifically: Will it always work 
+> with a 4K page granularity?
 
-This patch adds 945GME support to the DRM headers, fixing a regression 
-reported in http://bugzilla.kernel.org/show_bug.cgi?id=10395.
+Well, not all architectures use 4k as their base page size, but 
+kernel_map_pages should work at the smallest supported page size.
 
-Dave, please ack asap so this will be fixed in 2.6.25 proper.
+The disadvantage of this is that it will end up shattering any 
+large-page mappings the kernel has.  This is pretty much unavoidable 
+unless you can arrange to only allocate AGP pages in a physically 
+distinct area away from other kernel allocations (a mechanism to do this 
+might be generally useful, though I'm not sure what form it would take - 
+another zone perhaps?).
 
-Thanks,
-Jesse
-
-Tested-by:  Alexander Oltu <alexander@all-2.com>
-Signed-off-by:  Jesse Barnes <jesse.barnes@intel.com>
-
-diff --git a/drivers/char/drm/i915_drv.h b/drivers/char/drm/i915_drv.h
-index c10d128..675d88b 100644
---- a/drivers/char/drm/i915_drv.h
-+++ b/drivers/char/drm/i915_drv.h
-@@ -1092,8 +1092,8 @@ extern int i915_wait_ring(struct drm_device * dev, int 
-n, const char *caller);
- #define IS_I915G(dev) ((dev)->pci_device == 0x2582 || (dev)->pci_device == 
-0x258a)
- #define IS_I915GM(dev) ((dev)->pci_device == 0x2592)
- #define IS_I945G(dev) ((dev)->pci_device == 0x2772)
--#define IS_I945GM(dev) ((dev)->pci_device == 0x27A2)
--
-+#define IS_I945GM(dev) ((dev)->pci_device == 0x27A2 ||\
-+		        (dev)->pci_device == 0x27AE)
- #define IS_I965G(dev) ((dev)->pci_device == 0x2972 || \
- 		       (dev)->pci_device == 0x2982 || \
- 		       (dev)->pci_device == 0x2992 || \
+    J
