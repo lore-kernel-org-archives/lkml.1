@@ -1,44 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754635AbYDFSxo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754386AbYDFS4i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754635AbYDFSxo (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Apr 2008 14:53:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751898AbYDFSxh
+	id S1754386AbYDFS4i (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Apr 2008 14:56:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752115AbYDFS4a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Apr 2008 14:53:37 -0400
-Received: from 136-022.dsl.labridge.com ([206.117.136.22]:1769 "EHLO
-	mail.perches.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1751493AbYDFSxg (ORCPT
+	Sun, 6 Apr 2008 14:56:30 -0400
+Received: from outbound-mail-115.bluehost.com ([69.89.24.5]:40127 "HELO
+	outbound-mail-115.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752067AbYDFS43 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Apr 2008 14:53:36 -0400
-Subject: Re: [patch] checkpatch: relax spacing and line length
-From: Joe Perches <joe@perches.com>
-To: Benny Halevy <bhalevy@panasas.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Jan Engelhardt <jengelh@computergmbh.de>, apw@shadowen.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <47F8B98A.1020704@panasas.com>
-References: <alpine.LNX.1.10.0804060653020.30794@fbirervta.pbzchgretzou.qr>
-	 <20080405221822.376f0018.akpm@linux-foundation.org>
-	 <47F8B98A.1020704@panasas.com>
-Content-Type: text/plain
-Date: Sun, 06 Apr 2008 11:52:51 -0700
-Message-Id: <1207507971.1803.40.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3-1.2mdv2008.0 
+	Sun, 6 Apr 2008 14:56:29 -0400
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] fix IS_I9XX macro in i915 DRM driver
+Date: Sun, 6 Apr 2008 11:55:04 -0700
+User-Agent: KMail/1.9.9
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Dave Airlie <airlied@linux.ie>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200804061155.04965.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2008-04-06 at 14:52 +0300, Benny Halevy wrote:
-> The idea is [] to allow for a bit more flexibility to
->  accommodate for a more robust indentation style.
+Now that we're mapping registers in the DRM driver at load time, the driver 
+actually checks the PCI ID, so we need to make sure the macros have all the 
+right bits (and longer term use the DRM headers as the sole copy of the PCI & 
+register definitions).
 
-Isn't this an editor/tools issue more than a checkpatch one?
+This patch adds 945GME support to the DRM headers, fixing a regression 
+reported in http://bugzilla.kernel.org/show_bug.cgi?id=10395.
 
-I think you should first try to get the most frequently used
-code editors and pretty printers (vim/emacs/eclipse/indent, etc)
-to support the tabs to level, spaces to align style.
+Dave, please ack asap so this will be fixed in 2.6.25 proper.
 
-g'luck with that.
+Thanks,
+Jesse
 
+Tested-by:  Alexander Oltu <alexander@all-2.com>
+Signed-off-by:  Jesse Barnes <jesse.barnes@intel.com>
+
+diff --git a/drivers/char/drm/i915_drv.h b/drivers/char/drm/i915_drv.h
+index c10d128..675d88b 100644
+--- a/drivers/char/drm/i915_drv.h
++++ b/drivers/char/drm/i915_drv.h
+@@ -1092,8 +1092,8 @@ extern int i915_wait_ring(struct drm_device * dev, int 
+n, const char *caller);
+ #define IS_I915G(dev) ((dev)->pci_device == 0x2582 || (dev)->pci_device == 
+0x258a)
+ #define IS_I915GM(dev) ((dev)->pci_device == 0x2592)
+ #define IS_I945G(dev) ((dev)->pci_device == 0x2772)
+-#define IS_I945GM(dev) ((dev)->pci_device == 0x27A2)
+-
++#define IS_I945GM(dev) ((dev)->pci_device == 0x27A2 ||\
++		        (dev)->pci_device == 0x27AE)
+ #define IS_I965G(dev) ((dev)->pci_device == 0x2972 || \
+ 		       (dev)->pci_device == 0x2982 || \
+ 		       (dev)->pci_device == 0x2992 || \
