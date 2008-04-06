@@ -1,39 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755945AbYDFQnS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755871AbYDFRD5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755945AbYDFQnS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Apr 2008 12:43:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754609AbYDFQnK
+	id S1755871AbYDFRD5 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Apr 2008 13:03:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754609AbYDFRDr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Apr 2008 12:43:10 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:51555 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754585AbYDFQnJ (ORCPT
+	Sun, 6 Apr 2008 13:03:47 -0400
+Received: from twinlark.arctic.org ([208.69.40.136]:50927 "EHLO
+	twinlark.arctic.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754567AbYDFRDo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Apr 2008 12:43:09 -0400
-Message-ID: <47F8FC9C.9090603@zytor.com>
-Date: Sun, 06 Apr 2008 09:38:52 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	Sun, 6 Apr 2008 13:03:44 -0400
+Date: Sun, 6 Apr 2008 10:03:43 -0700 (PDT)
+From: dean gaudet <dean@arctic.org>
+To: Alexander van Heukelum <heukelum@mailshack.com>
+cc: Ingo Molnar <mingo@elte.hu>, Andi Kleen <andi@firstfloor.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Alexander van Heukelum <heukelum@fastmail.fm>
+Subject: Re: [PATCH] x86: generic versions of find_first_(zero_)bit, convert
+ i386
+In-Reply-To: <20080401094618.GA24862@mailshack.com>
+Message-ID: <alpine.DEB.1.10.0804060958580.7751@twinlark.arctic.org>
+References: <20080331171506.GA24017@mailshack.com> <20080401084710.GB4787@elte.hu> <20080401094618.GA24862@mailshack.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-CC: Ian Campbell <ijc@hellion.org.uk>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@redhat.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
-       virtualization@lists.linux-foundation.org
-Subject: Re: [PATCHv3 1/3] x86: use ELF format in compressed images.
-References: <1202936100-30859-1-git-send-email-ijc@hellion.org.uk>	 <9d3a007a2bfe774201b6deed5115a0cc8182bbb4.1202935389.git.ijc@hellion.org.uk> <86802c440804060003q43f14122vd527514daf77cb89@mail.gmail.com>
-In-Reply-To: <86802c440804060003q43f14122vd527514daf77cb89@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Yinghai Lu wrote:
-> so will cost every bzImage extra memory copy? that could be 18M or
-> even more big.
+fwiw there's a way to do ffz / ntz which can do lg(n) conditional moves in 
+parallel... i'm not sure what (non-x86) architectures this might be best 
+on, but it might be a good choice for the generic code... although maybe 
+the large number of constants required will be a burden on RISC 
+processors.
 
-I wouldn't worry about that.  You will typically have several copies of 
-the images during the execution of the boot loader.
+take a look at figure 5-17 here http://hackersdelight.org/revisions.pdf
 
-	-hpa
+int ntz(unsigned x) {
+	unsigned y, bz, b4, b3, b2, b1, b0;
+	y = x & -x; // Isolate rightmost 1-bit.
+	bz = y ? 0 : 1; // 1 if y = 0.
+	b4 = (y & 0x0000FFFF) ? 0 : 16;
+	b3 = (y & 0x00FF00FF) ? 0 : 8;
+	b2 = (y & 0x0F0F0F0F) ? 0 : 4;
+	b1 = (y & 0x33333333) ? 0 : 2;
+	b0 = (y & 0x55555555) ? 0 : 1;
+	return bz + b4 + b3 + b2 + b1 + b0;
+}
+
+-dean
