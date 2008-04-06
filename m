@@ -1,48 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755916AbYDFDI6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755926AbYDFDY1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755916AbYDFDI6 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Apr 2008 23:08:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751764AbYDFDIv
+	id S1755926AbYDFDY1 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Apr 2008 23:24:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755429AbYDFDYP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Apr 2008 23:08:51 -0400
-Received: from ozlabs.org ([203.10.76.45]:38828 "EHLO ozlabs.org"
+	Sat, 5 Apr 2008 23:24:15 -0400
+Received: from ozlabs.org ([203.10.76.45]:50062 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751598AbYDFDIu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Apr 2008 23:08:50 -0400
+	id S1752553AbYDFDYP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 Apr 2008 23:24:15 -0400
 From: Rusty Russell <rusty@rustcorp.com.au>
-To: Tom Horsley <tom.horsley@ccur.com>
-Subject: Re: module parameters versus kernel command line
-Date: Sun, 6 Apr 2008 13:08:30 +1000
+To: Anthony Liguori <anthony@codemonkey.ws>
+Subject: Re: [PATCH RFC 2/5] vringfd base/offset
+Date: Sun, 6 Apr 2008 13:23:53 +1000
 User-Agent: KMail/1.9.9
-Cc: Marc Pignat <marc.pignat@hevs.ch>, Randy Dunlap <randy.dunlap@oracle.com>,
-       linux-kernel@vger.kernel.org, Jon Masters <jonathan@jonmasters.org>
-References: <20080403090053.56f243df@tomh> <200804050829.00418.rusty@rustcorp.com.au> <20080405185444.2c433673@tomh>
-In-Reply-To: <20080405185444.2c433673@tomh>
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       Max Krasnyansky <maxk@qualcomm.com>,
+       virtualization@lists.linux-foundation.org
+References: <200804052202.09157.rusty@rustcorp.com.au> <200804052204.28518.rusty__10896.9346424148$1207397431$gmane$org@rustcorp.com.au> <47F7B483.8090101@codemonkey.ws>
+In-Reply-To: <47F7B483.8090101@codemonkey.ws>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200804061308.30921.rusty@rustcorp.com.au>
+Message-Id: <200804061323.53566.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 06 April 2008 08:54:44 Tom Horsley wrote:
-> On Sat, 5 Apr 2008 08:29:00 +1000
+On Sunday 06 April 2008 03:18:59 Anthony Liguori wrote:
+> Rusty Russell wrote:
+> > -	if (unlikely(get_user(head, &vr->ring.avail->ring[head]) != 0))
+> > +
+> > +	if (unlikely(get_user(head, &vr->ring.avail->ring[vr->last_avail
+> > +							  % vr->ring.num])))
 >
-> Rusty Russell <rusty@rustcorp.com.au> wrote:
-> > I like this idea, and also have module tools ship with
-> > a 'check-kernel-cmdline' tool which handles the warnings for unusable
-> > cmdline params.  Distributions can run this in their init scripts, and we
-> > can remove the warning from the kernel.
->
-> Or maybe not have the warning at all, after all, even if
-> sillymodule.sillyarg=1 doesn't make sense when I booted, who's to say I
-> can't download the source to sillymodule, compile it, and modprobe it after
-> boot time :-).
+> Why not & with vr->mask for the sake of consistency with the rest of the
+> code.
 
-I think it's worse not to have typo protection.  Of course, our logs are so 
-noisy they might miss the warning anyway.
+Thanks, fixed.
 
 Rusty.
