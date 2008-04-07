@@ -1,60 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757734AbYDGL3y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757605AbYDGLda@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757734AbYDGL3y (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Apr 2008 07:29:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754623AbYDGL3r
+	id S1757605AbYDGLda (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Apr 2008 07:33:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753590AbYDGLdT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Apr 2008 07:29:47 -0400
-Received: from smtp-out03.alice-dsl.net ([88.44.63.5]:26414 "EHLO
-	smtp-out03.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751930AbYDGL3q (ORCPT
+	Mon, 7 Apr 2008 07:33:19 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:54946 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753430AbYDGLdS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Apr 2008 07:29:46 -0400
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Roman Zippel <zippel@linux-m68k.org>, john stultz <johnstul@us.ibm.com>,
-       Paul Mackerras <paulus@samba.org>, Tony Luck <tony.luck@intel.com>,
-       Ingo Molnar <mingo@elte.hu>, lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Close small window for vsyscall time inconsistencies
-From: Andi Kleen <andi@firstfloor.org>
-References: <1207340264.6222.17.camel@localhost.localdomain>
-	<200804070255.22516.zippel@linux-m68k.org>
-	<alpine.LFD.1.10.0804070826390.3224@apollo.tec.linutronix.de>
-Date: Mon, 07 Apr 2008 13:29:44 +0200
-In-Reply-To: <alpine.LFD.1.10.0804070826390.3224@apollo.tec.linutronix.de> (Thomas Gleixner's message of "Mon, 7 Apr 2008 08:27:55 +0200 (CEST)")
-Message-ID: <873apxsy1j.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
+	Mon, 7 Apr 2008 07:33:18 -0400
+Date: Mon, 7 Apr 2008 14:33:16 +0300 (EEST)
+From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
+X-X-Sender: ijjarvin@wrl-59.cs.helsinki.fi
+To: David Miller <davem@davemloft.net>
+cc: Netdev <netdev@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "Robin H. Johnson" <robbat2@gentoo.org>,
+       Georgi Chorbadzhiyski <gf@unixsol.org>,
+       Soeren Sonnenburg <kernel@nn7.de>,
+       Denys Fedoryshchenko <denys@visp.net.lb>,
+       Alessandro Suardi <alessandro.suardi@gmail.com>
+Subject: Re: [PATCH net-2.6 1/3] [TCP]: Fix NewReno's fast rexmit/recovery
+ problems with GSOed skb
+In-Reply-To: <1207567537-16393-2-git-send-email-ilpo.jarvinen@helsinki.fi>
+Message-ID: <Pine.LNX.4.64.0804071432480.32028@wrl-59.cs.helsinki.fi>
+References: <1207567537-16393-1-git-send-email-ilpo.jarvinen@helsinki.fi>
+ <1207567537-16393-2-git-send-email-ilpo.jarvinen@helsinki.fi>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 07 Apr 2008 11:23:02.0170 (UTC) FILETIME=[BDCF5FA0:01C898A1]
+Content-Type: MULTIPART/MIXED; BOUNDARY="-696208474-1297057278-1207567996=:32028"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thomas Gleixner <tglx@linutronix.de> writes:
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
+
+---696208474-1297057278-1207567996=:32028
+Content-Type: TEXT/PLAIN; charset=iso-8859-1
+Content-Transfer-Encoding: 8BIT
+
+On Mon, 7 Apr 2008, Ilpo Järvinen wrote:
+
+> Fixes a long-standing bug which makes NewReno recovery crippled.
+> With GSO the whole head skb was marked as LOST which is in
+> violation of NewReno procedure that only wants to mark one packet
+> and ended up breaking our TCP code by causing counter overflow
+> because our code was built on top of assumption about valid
+> NewReno procedure. This manifested as triggering a WARN_ON for
+> the overflow in a number of places.
+> 
+> It seems relatively safe alternative to just do nothing if
+> tcp_fragment fails due to oom because another duplicate ACK is
+> likely to be received soon and the fragmentation will be retried.
+> 
+> Special thanks goes to Soeren Sonnenburg <kernel@nn7.de> who was
+> lucky enough to be able to reproduce this so that the warning
+> for the overflow was hit. It's not as easy task as it seems even
+> if this bug happens quite often because the amount of outstanding
+> data is pretty significant for the mismarkings to lead to an
+> overflow.
+> 
+> Because it's very late in 2.6.25-rc cycle (if this even makes in
+> time), I didn't want to touch anything with SACK enabled here.
+> Fragmenting might be useful for it as well but it's more or less
+> a policy decision rather than mandatory fix. Thus there's no need
+> to rush and we can postpone considering tcp_fragment with SACK
+> for 2.6.26.
+> 
+> In 2.6.24 and earlier, this very same bug existed but the effect
+> is slightly different because of a small changes in the if
+> conditions that fit to the patch's context. With them nothing
+> got lost marker and thus no retransmissions happened.
+> 
+> Signed-off-by: Ilpo Järvinen <ilpo.jarvinen@helsinki.fi>
+> ---
+>  net/ipv4/tcp_input.c |   22 ++++++++++++++++++----
+>  1 files changed, 18 insertions(+), 4 deletions(-)
+> 
+> diff --git a/net/ipv4/tcp_input.c b/net/ipv4/tcp_input.c
+> index 6e46b4c..58cad8b 100644
+> --- a/net/ipv4/tcp_input.c
+> +++ b/net/ipv4/tcp_input.c
+> @@ -2138,7 +2138,9 @@ static void tcp_mark_head_lost(struct sock *sk, int packets, int fast_rexmit)
+>  {
+>  	struct tcp_sock *tp = tcp_sk(sk);
+>  	struct sk_buff *skb;
+> -	int cnt;
+> +	int cnt, oldcnt;
+> +	int err;
+> +	unsigned int mss;
 >  
->> So instead of shooting in the dark, I'd suggest to collect some
->>  numbers first,
->
-> That's what we did and John's analysis of the problem is pretty
-> correct.
+>  	BUG_TRAP(packets <= tp->packets_out);
+>  	if (tp->lost_skb_hint) {
+> @@ -2157,13 +2159,25 @@ static void tcp_mark_head_lost(struct sock *sk, int packets, int fast_rexmit)
+>  		tp->lost_skb_hint = skb;
+>  		tp->lost_cnt_hint = cnt;
+>  
+> +		if (after(TCP_SKB_CB(skb)->end_seq, tp->high_seq))
+> +			break;
+> +
+> +		oldcnt = cnt;
+>  		if (tcp_is_fack(tp) || tcp_is_reno(tp) ||
+>  		    (TCP_SKB_CB(skb)->sacked & TCPCB_SACKED_ACKED))
+>  			cnt += tcp_skb_pcount(skb);
+>  
+> -		if (((!fast_rexmit || (tp->lost_out > 0)) && (cnt > packets)) ||
+> -		    after(TCP_SKB_CB(skb)->end_seq, tp->high_seq))
+> -			break;
+> +		if ((!fast_rexmit || (tp->lost_out > 0)) && (cnt > packets)) {
 
-The source of the problem is that RDTSC is not always 100% sync
-right?
+...Nah, this won't work too well. I'll repost soon.
 
-We debugged a similar problem a long time ago and in that case
-it was the CPU speculating around the RDTSC. That was stopped
-by adding the CPUIDs to sync the core.
+> +			if (tcp_is_sack(tp) || (oldcnt >= packets))
+> +				break;
+> +
+> +			mss = skb_shinfo(skb)->gso_size;
+> +			err = tcp_fragment(sk, skb, (packets - oldcnt) * mss, mss);
+> +			if (err < 0)
+> +				break;
+> +			cnt = packets;
+> +		}
+> +
+>  		if (!(TCP_SKB_CB(skb)->sacked & (TCPCB_SACKED_ACKED|TCPCB_LOST))) {
+>  			TCP_SKB_CB(skb)->sacked |= TCPCB_LOST;
+>  			tp->lost_out += tcp_skb_pcount(skb);
+> 
 
-I would double check that the CPUIDs are still executed as needed
-on the systems showing the issue.
-
-(the code to turn that on and off is somewhat subtle and breaks occasionally)
-
-Also it was assumed at some point it wasn't needed on P4, but that turned
-out to be wrong later. Perhaps the enable logic is still not quite
-right.
-
-Or perhaps the CPUIDs need to be moved inside or outside the 
-seqlocks?
-
--Andi
+-- 
+ i.
+---696208474-1297057278-1207567996=:32028--
