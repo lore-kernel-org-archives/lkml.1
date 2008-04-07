@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760574AbYDGPxX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760662AbYDGPxj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760574AbYDGPxX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Apr 2008 11:53:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759450AbYDGPug
+	id S1760662AbYDGPxj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Apr 2008 11:53:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759521AbYDGPun
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Apr 2008 11:50:36 -0400
-Received: from saeurebad.de ([85.214.36.134]:44770 "EHLO saeurebad.de"
+	Mon, 7 Apr 2008 11:50:43 -0400
+Received: from saeurebad.de ([85.214.36.134]:44779 "EHLO saeurebad.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752651AbYDGPue (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Apr 2008 11:50:34 -0400
+	id S1759515AbYDGPum (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Apr 2008 11:50:42 -0400
 X-Mailbox-Line: From hannes@skyscraper.fehenstaub.lan Mon Apr  7 16:42:41 2008
-Message-Id: <20080407144241.019128709@skyscraper.fehenstaub.lan>
+Message-Id: <20080407144241.165554254@skyscraper.fehenstaub.lan>
 References: <20080407144008.124362640@skyscraper.fehenstaub.lan>
 User-Agent: quilt/0.46-1
-Date: Mon, 07 Apr 2008 16:40:21 +0200
+Date: Mon, 07 Apr 2008 16:40:22 +0200
 From: Johannes Weiner <hannes@saeurebad.de>
 To: LKML <linux-kernel@vger.kernel.org>
-Cc: David Howells <dhowells@redhat.com>
-Subject: [patch 13/22 -v3] mn10300: Use generic show_mem()
-Content-Disposition: inline; filename=mn10300-use-generic-show_mem.patch
+Cc: Paul Mackerras <paulus@samba.org>
+Subject: [patch 14/22 -v3] powerpc: Use generic show_mem()
+Content-Disposition: inline; filename=powerpc-use-generic-show_mem.patch
 X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -28,66 +28,77 @@ Remove arch-specific show_mem() in favor of the generic version.
 
 This also removes the following redundant information display:
 
-	- free pages, printed by show_free_areas()
 	- pages in swapcache, printed by show_swap_cache_info()
 
 where show_mem() calls show_free_areas(), which calls
 show_swap_cache_info().
 
 Signed-off-by: Johannes Weiner <hannes@saeurebad.de>
-Acked-by: David Howells <dhowells@redhat.com>
+CC: Paul Mackerras <paulus@samba.org>
 ---
 
-Index: tree-linus/arch/mn10300/Kconfig
+Index: tree-linus/arch/powerpc/Kconfig
 ===================================================================
---- tree-linus.orig/arch/mn10300/Kconfig
-+++ tree-linus/arch/mn10300/Kconfig
-@@ -7,6 +7,7 @@ mainmenu "Linux Kernel Configuration"
- 
- config MN10300
- 	def_bool y
+--- tree-linus.orig/arch/powerpc/Kconfig
++++ tree-linus/arch/powerpc/Kconfig
+@@ -91,6 +91,7 @@ config PPC
+ 	select HAVE_OPROFILE
+ 	select HAVE_KPROBES
+ 	select HAVE_KRETPROBES
 +	select HAVE_GENERIC_SHOW_MEM
  
- config AM33
- 	def_bool y
-Index: tree-linus/arch/mn10300/mm/pgtable.c
+ config EARLY_PRINTK
+ 	bool
+Index: tree-linus/arch/powerpc/mm/mem.c
 ===================================================================
---- tree-linus.orig/arch/mn10300/mm/pgtable.c
-+++ tree-linus/arch/mn10300/mm/pgtable.c
-@@ -27,33 +27,6 @@
- #include <asm/tlb.h>
- #include <asm/tlbflush.h>
+--- tree-linus.orig/arch/powerpc/mm/mem.c
++++ tree-linus/arch/powerpc/mm/mem.c
+@@ -164,45 +164,6 @@ walk_memory_resource(unsigned long start
+ 
+ #endif /* CONFIG_MEMORY_HOTPLUG */
  
 -void show_mem(void)
 -{
+-	unsigned long total = 0, reserved = 0;
+-	unsigned long shared = 0, cached = 0;
+-	unsigned long highmem = 0;
+-	struct page *page;
+-	pg_data_t *pgdat;
 -	unsigned long i;
--	int free = 0, total = 0, reserved = 0, shared = 0;
 -
--	int cached = 0;
--	printk(KERN_INFO "Mem-info:\n");
+-	printk("Mem-info:\n");
 -	show_free_areas();
--	i = max_mapnr;
--	while (i-- > 0) {
--		total++;
--		if (PageReserved(mem_map + i))
--			reserved++;
--		else if (PageSwapCache(mem_map + i))
--			cached++;
--		else if (!page_count(mem_map + i))
--			free++;
--		else
--			shared += page_count(mem_map + i) - 1;
+-	for_each_online_pgdat(pgdat) {
+-		unsigned long flags;
+-		pgdat_resize_lock(pgdat, &flags);
+-		for (i = 0; i < pgdat->node_spanned_pages; i++) {
+-			if (!pfn_valid(pgdat->node_start_pfn + i))
+-				continue;
+-			page = pgdat_page_nr(pgdat, i);
+-			total++;
+-			if (PageHighMem(page))
+-				highmem++;
+-			if (PageReserved(page))
+-				reserved++;
+-			else if (PageSwapCache(page))
+-				cached++;
+-			else if (page_count(page))
+-				shared += page_count(page) - 1;
+-		}
+-		pgdat_resize_unlock(pgdat, &flags);
 -	}
--	printk(KERN_INFO "%d pages of RAM\n", total);
--	printk(KERN_INFO "%d free pages\n", free);
--	printk(KERN_INFO "%d reserved pages\n", reserved);
--	printk(KERN_INFO "%d pages shared\n", shared);
--	printk(KERN_INFO "%d pages swap cached\n", cached);
+-	printk("%ld pages of RAM\n", total);
+-#ifdef CONFIG_HIGHMEM
+-	printk("%ld pages of HIGHMEM\n", highmem);
+-#endif
+-	printk("%ld reserved pages\n", reserved);
+-	printk("%ld pages shared\n", shared);
+-	printk("%ld pages swap cached\n", cached);
 -}
 -
  /*
-  * Associate a large virtual page frame with a given physical page frame
-  * and protection flags for that frame. pfn is for the base of the page,
+  * Initialize the bootmem system and give it all the memory we
+  * have available.  If we are using highmem, we only put the
 
 -- 
 
