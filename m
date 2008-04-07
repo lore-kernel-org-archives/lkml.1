@@ -1,74 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754036AbYDGGsw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753863AbYDGHAO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754036AbYDGGsw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Apr 2008 02:48:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752158AbYDGGsm
+	id S1753863AbYDGHAO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Apr 2008 03:00:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752270AbYDGHAA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Apr 2008 02:48:42 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:58740 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750975AbYDGGsm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Apr 2008 02:48:42 -0400
-Date: Sun, 6 Apr 2008 23:48:14 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Valdis.Kletnieks@vt.edu
-Cc: mingo@redhat.com, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.25-rc8-mm1 - BUG: scheduling while atomic:
- swapper/0/0xffffffff
-Message-Id: <20080406234814.a40025fb.akpm@linux-foundation.org>
-In-Reply-To: <4487.1207549282@turing-police.cc.vt.edu>
-References: <20080401213214.8fbb6d6b.akpm@linux-foundation.org>
-	<4487.1207549282@turing-police.cc.vt.edu>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 7 Apr 2008 03:00:00 -0400
+Received: from sacred.ru ([62.205.161.221]:60528 "EHLO sacred.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752158AbYDGG77 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Apr 2008 02:59:59 -0400
+Message-ID: <47F9CB64.8040009@openvz.org>
+Date: Mon, 07 Apr 2008 11:21:08 +0400
+From: Pavel Emelyanov <xemul@openvz.org>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
+MIME-Version: 1.0
+To: Manfred Spraul <manfred@colorfullife.com>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "Serge E. Hallyn" <serue@us.ibm.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Sukadev Bhattiprolu <sukadev@us.ibm.com>
+Subject: Re: [PATCH] fix SEM_UNDO with namespaces, take 2
+References: <47EFFD1C.5020204@colorfullife.com> <47F08ED6.1090103@openvz.org> <47F10DF7.5010702@colorfullife.com> <47F203EC.7090806@openvz.org> <m1od8tiom7.fsf@ebiederm.dsl.xmission.com> <20080403194418.GA11105@sergelap.austin.ibm.com> <20080404043902.GA14177@sergelap.austin.ibm.com> <47F8E824.6090600@colorfullife.com> <47F8F99D.1070701@colorfullife.com>
+In-Reply-To: <47F8F99D.1070701@colorfullife.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Mon, 07 Apr 2008 10:57:32 +0400 (MSD)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 07 Apr 2008 02:21:22 -0400 Valdis.Kletnieks@vt.edu wrote:
-
-> On Tue, 01 Apr 2008 21:32:14 PDT, Andrew Morton said:
-> > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.25-rc8/2.6.25-rc8-mm1/
+Manfred Spraul wrote:
+> Hi,
 > 
-> Been seeing these crop up once in a while - can take hours after a reboot
-> before I see the first one, but once I see one, I'm likely to see more, at
-> a frequency of anywhere from ~5seconds to ~10 minutes between BUG msgs.
+> below is the second attempt to fix SEM_UNDO + unshare():
+> lookup_undo (in ipc/sem.c) is not namespace-aware, thus all entries in 
+> sysvsem.undo_list must be from the same namespace.
+> The patch enforces that by detaching the current thread from 
+> sysvsem.undo_list in switch_task_namespaces() if the ipc namespace is 
+> changed.
 > 
-> BUG: scheduling while atomic: swapper/0/0xffffffff
-> Pid: 0, comm: swapper Tainted: P          2.6.25-rc8-mm1 #4
+> The patch boots and passes simple sysvsem+unshare tests.
 > 
-> Call Trace:
->  [<ffffffff8020b2f4>] ? default_idle+0x0/0x74
->  [<ffffffff8022be19>] __schedule_bug+0x5d/0x61
->  [<ffffffff80552aea>] schedule+0x11a/0x9e4
->  [<ffffffff805536ce>] ? preempt_schedule+0x3c/0xaa
->  [<ffffffff802480f1>] ? hrtimer_forward+0x82/0x96
->  [<ffffffff804600a4>] ? cpuidle_idle_call+0x0/0xd5
->  [<ffffffff8020b2f4>] ? default_idle+0x0/0x74
->  [<ffffffff8020b2e0>] cpu_idle+0xf6/0x10a
->  [<ffffffff80540cb2>] rest_init+0x86/0x8a
+> Signed-Off-By: Manfred Spraul <manfred@colorfullife.com>
 > 
-> Eventually, I end up with a basically hung system, and need to alt-sysrq-B.
-> 
-> Yes, I know it's tainted, and it's possible the root cause is a self-inflicted
-> buggy module - but the traceback above seems odd.  Did some of my code manage
-> to idle the CPU while is_atomic was set, or is the path from cpu_idle on down
-> doing something it shouldn't be?
+> @@ -211,6 +211,18 @@ void switch_task_namespaces(struct task_struct *p, struct nsproxy *new)
+>  
+>  	might_sleep();
+>  
+> +	if ((p->nsproxy == NULL && new != NULL) ||
+> +		(p->nsproxy != NULL && new == NULL) ||
+> +		(p->nsproxy != NULL && new != NULL && p->nsproxy->ipc_ns != new->ipc_ns)) {
+> +		/* switching the IPC namespace is considered equivalent to sys_exit() wrt.
+> +		 * to outstanding SEM_UNDO undos: After switching to the new IPC namespace,
+> +		 * the semaphore arrays from the old namespace are not accessible anymore.
+> +		 * 
+> +		 * Additionally, an implicit sys_unshare(CLONE_SYSVSEM) is performed.
+> +		 */
+> +		exit_sem(p);
+> +	}
+> +
 
-I'd say that there's an unlock missing somewhere.
+No, switch_task_namespaces is the wrong place to do this. It is to be 
+done in copy_ipc_ns. If you need a task for which a new namespace is 
+being prepared, then pass one into it.
 
-> (I admit being confused - if my code was the source of the is_atomic error,
-> shouldn't it have been caught on the *previous* call to schedule - the one
-> that ran through all the queues and decided we should invoke idle?
-
-Sounds sane.  Perhaps preempt_count is getting mucked up in interrupt
-context?
-
-iirc there's some toy in either the recently-added tracing code or still in
-the -rt tree which would help find a missed unlock, but I forget what it was.
-Ingo will know...
-
+>  	ns = p->nsproxy;
+>  
+>  	rcu_assign_pointer(p->nsproxy, new);
 
