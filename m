@@ -1,13 +1,13 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755975AbYDGT5I@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756326AbYDGT5X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755975AbYDGT5I (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Apr 2008 15:57:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752331AbYDGT45
+	id S1756326AbYDGT5X (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Apr 2008 15:57:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752765AbYDGT45
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Mon, 7 Apr 2008 15:56:57 -0400
-Received: from smtp.wellnetcz.com ([212.24.148.102]:45217 "EHLO WNmonitoring"
+Received: from smtp.wellnetcz.com ([212.24.148.102]:45216 "EHLO WNmonitoring"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752124AbYDGT44 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1752167AbYDGT44 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 7 Apr 2008 15:56:56 -0400
 From: Jiri Slaby <jirislaby@gmail.com>
 To: linville@tuxdriver.com
@@ -15,107 +15,74 @@ Cc: Andrew Morton <akpm@linux-foundation.org>, linux-wireless@vger.kernel.org,
        linux-kernel@vger.kernel.org, Jiri Slaby <jirislaby@gmail.com>,
        Michael Wu <flamingice@sourmilk.net>,
        Johannes Berg <johannes@sipsolutions.net>, Jiri Benc <jbenc@suse.cz>
-Subject: [PATCH 2/2] mac80211: fix defined but not used
-Date: Mon,  7 Apr 2008 21:53:49 +0200
-Message-Id: <1207598029-20000-2-git-send-email-jirislaby@gmail.com>
+Subject: [PATCH 1/2] mac80211: fix recursive locking in ieee80211_sta_expire
+Date: Mon,  7 Apr 2008 21:53:48 +0200
+Message-Id: <1207598029-20000-1-git-send-email-jirislaby@gmail.com>
 X-Mailer: git-send-email 1.5.4.4
-In-Reply-To: <1207598029-20000-1-git-send-email-jirislaby@gmail.com>
-References: <1207598029-20000-1-git-send-email-jirislaby@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-These two symbols are used only in ifdeffed function. Move them to that
-section too.
-net/mac80211/sta_info.c:387: warning: `__sta_info_pin' defined but not used
-net/mac80211/sta_info.c:397: warning: `__sta_info_unpin' defined but not used
+Hi,
+
+it's against -mm, what's current mac80211 git tree? It seems that
+-mm has fresher material, than wireless-2.6...
+
+--
+
+ieee80211_sta_expire grabs local->sta_lock and calls sta_info_unlink
+which tries to grab the lock again. (make available) and use
+__sta_info_unlink variant instead.
 
 Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
 Cc: Michael Wu <flamingice@sourmilk.net>
 Cc: Johannes Berg <johannes@sipsolutions.net>
 Cc: Jiri Benc <jbenc@suse.cz>
 ---
- net/mac80211/sta_info.c |   60 +++++++++++++++++++++++-----------------------
- 1 files changed, 30 insertions(+), 30 deletions(-)
+ net/mac80211/ieee80211_sta.c |    2 +-
+ net/mac80211/sta_info.c      |    2 +-
+ net/mac80211/sta_info.h      |    2 ++
+ 3 files changed, 4 insertions(+), 2 deletions(-)
 
+diff --git a/net/mac80211/ieee80211_sta.c b/net/mac80211/ieee80211_sta.c
+index f9cf2f1..cfe6fcc 100644
+--- a/net/mac80211/ieee80211_sta.c
++++ b/net/mac80211/ieee80211_sta.c
+@@ -3081,7 +3081,7 @@ static void ieee80211_sta_expire(struct net_device *dev, unsigned long exp_time)
+ 		if (time_after(jiffies, sta->last_rx + exp_time)) {
+ 			printk(KERN_DEBUG "%s: expiring inactive STA %s\n",
+ 			       dev->name, print_mac(mac, sta->addr));
+-			sta_info_unlink(&sta);
++			__sta_info_unlink(&sta);
+ 			if (sta)
+ 				list_add(&sta->list, &tmp_list);
+ 		}
 diff --git a/net/mac80211/sta_info.c b/net/mac80211/sta_info.c
-index ba02b43..e30426e 100644
+index f708367..ba02b43 100644
 --- a/net/mac80211/sta_info.c
 +++ b/net/mac80211/sta_info.c
-@@ -379,36 +379,6 @@ void sta_info_clear_tim_bit(struct sta_info *sta)
- 	spin_unlock_irqrestore(&sta->local->sta_lock, flags);
+@@ -409,7 +409,7 @@ static struct sta_info *__sta_info_unpin(struct sta_info *sta)
+ 	return ret;
  }
  
--/*
-- * See comment in __sta_info_unlink,
-- * caller must hold local->sta_lock.
-- */
--static void __sta_info_pin(struct sta_info *sta)
--{
--	WARN_ON(sta->pin_status != STA_INFO_PIN_STAT_NORMAL);
--	sta->pin_status = STA_INFO_PIN_STAT_PINNED;
--}
--
--/*
-- * See comment in __sta_info_unlink, returns sta if it
-- * needs to be destroyed.
-- */
--static struct sta_info *__sta_info_unpin(struct sta_info *sta)
--{
--	struct sta_info *ret = NULL;
--	unsigned long flags;
--
--	spin_lock_irqsave(&sta->local->sta_lock, flags);
--	WARN_ON(sta->pin_status != STA_INFO_PIN_STAT_DESTROY &&
--		sta->pin_status != STA_INFO_PIN_STAT_PINNED);
--	if (sta->pin_status == STA_INFO_PIN_STAT_DESTROY)
--		ret = sta;
--	sta->pin_status = STA_INFO_PIN_STAT_NORMAL;
--	spin_unlock_irqrestore(&sta->local->sta_lock, flags);
--
--	return ret;
--}
--
- void __sta_info_unlink(struct sta_info **sta)
+-static void __sta_info_unlink(struct sta_info **sta)
++void __sta_info_unlink(struct sta_info **sta)
  {
  	struct ieee80211_local *local = (*sta)->local;
-@@ -565,6 +535,36 @@ static void sta_info_cleanup(unsigned long data)
- }
+ 	struct ieee80211_sub_if_data *sdata = (*sta)->sdata;
+diff --git a/net/mac80211/sta_info.h b/net/mac80211/sta_info.h
+index 5e39a41..3a89b28 100644
+--- a/net/mac80211/sta_info.h
++++ b/net/mac80211/sta_info.h
+@@ -347,6 +347,8 @@ int sta_info_insert(struct sta_info *sta);
+  * has already unlinked it.
+  */
+ void sta_info_unlink(struct sta_info **sta);
++/* no lock version */
++void __sta_info_unlink(struct sta_info **sta);
  
- #ifdef CONFIG_MAC80211_DEBUGFS
-+/*
-+ * See comment in __sta_info_unlink,
-+ * caller must hold local->sta_lock.
-+ */
-+static void __sta_info_pin(struct sta_info *sta)
-+{
-+	WARN_ON(sta->pin_status != STA_INFO_PIN_STAT_NORMAL);
-+	sta->pin_status = STA_INFO_PIN_STAT_PINNED;
-+}
-+
-+/*
-+ * See comment in __sta_info_unlink, returns sta if it
-+ * needs to be destroyed.
-+ */
-+static struct sta_info *__sta_info_unpin(struct sta_info *sta)
-+{
-+	struct sta_info *ret = NULL;
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&sta->local->sta_lock, flags);
-+	WARN_ON(sta->pin_status != STA_INFO_PIN_STAT_DESTROY &&
-+		sta->pin_status != STA_INFO_PIN_STAT_PINNED);
-+	if (sta->pin_status == STA_INFO_PIN_STAT_DESTROY)
-+		ret = sta;
-+	sta->pin_status = STA_INFO_PIN_STAT_NORMAL;
-+	spin_unlock_irqrestore(&sta->local->sta_lock, flags);
-+
-+	return ret;
-+}
-+
- static void sta_info_debugfs_add_work(struct work_struct *work)
- {
- 	struct ieee80211_local *local =
+ void sta_info_destroy(struct sta_info *sta);
+ void sta_info_set_tim_bit(struct sta_info *sta);
 -- 
 1.5.4.4
 
