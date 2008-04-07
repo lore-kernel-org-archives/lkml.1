@@ -1,51 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755392AbYDGUMQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752091AbYDGUQW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755392AbYDGUMQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Apr 2008 16:12:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752167AbYDGUMD
+	id S1752091AbYDGUQW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Apr 2008 16:16:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751333AbYDGUQO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Apr 2008 16:12:03 -0400
-Received: from ozlabs.org ([203.10.76.45]:51203 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752046AbYDGUMB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Apr 2008 16:12:01 -0400
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: virtualization@lists.linux-foundation.org
-Subject: Re: [PATCH] virtio: remove overzealous BUG_ON.
-Date: Tue, 8 Apr 2008 06:09:12 +1000
-User-Agent: KMail/1.9.9
-Cc: Anthony Liguori <anthony@codemonkey.ws>, virtualization@lists.osdl.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-References: <200804071430.28399.rusty__35361.6672721275$1207542780$gmane$org@rustcorp.com.au> <47FA26A0.3020701@codemonkey.ws>
-In-Reply-To: <47FA26A0.3020701@codemonkey.ws>
+	Mon, 7 Apr 2008 16:16:14 -0400
+Received: from wx-out-0506.google.com ([66.249.82.238]:1429 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752167AbYDGUQN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Apr 2008 16:16:13 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=dyGu8IfXWsXzF4QQaLc36W26EH4cJSobFCfC+NDcscSpKcqT7+Kz0iaoeV0f00r5YBAwELMSbfiBAsQBfKZSutVRdE3XXKiDoVfNIoHb9htk6+nAWeNNPoldnZOlJqkmyzkRS0zbwKIXu7v9ZwjiR988MV8TNDBUC4tQYTeWC6A=
+Date: Mon, 7 Apr 2008 16:16:05 -0400
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Bryan Wu <bryan.wu@analog.com>
+Cc: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Michael Hennerich <michael.hennerich@analog.com>
+Subject: Re: [PATCH 1/1] Input/Touchscreen Driver: add support AD7877
+	touchscreen driver
+Message-ID: <20080407161007.ZZRA012@mailhub.coreip.homeip.net>
+References: <1202980649-13309-1-git-send-email-bryan.wu@analog.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200804080609.12891.rusty@rustcorp.com.au>
+In-Reply-To: <1202980649-13309-1-git-send-email-bryan.wu@analog.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 07 April 2008 23:50:24 Anthony Liguori wrote:
-> Rusty Russell wrote:
-> > The 'disable_cb' callback is designed as an optimization to tell the host
-> > we don't need callbacks now.  As it is not reliable, the debug check is
-> > overzealous: it can happen on two CPUs at the same time.  Document this.
-> >
-> > Even if it were reliable, the virtio_net driver doesn't disable
-> > callbacks on transmit so the START_USE/END_USE debugging reentrance
-> > protection can be easily tripped even on UP.
-> >
-> > Thanks to Balaji Rao for the bug report and testing.
->
-> I think the printk() in start_xmit should be removed too (or at least
-> rate limited).
+Hi Bryan, Michael,
 
-Yep, please send patch.  I'm about to jump on a plane, so consider this a 
-pre-canned ack.
+On Thu, Feb 14, 2008 at 05:17:28PM +0800, Bryan Wu wrote:
+> From: Michael Hennerich <michael.hennerich@analog.com>
+> 
+> [try #3] Changlog (Add feedback from Dmitry Torokhov):
+>  - Change handling of spi_sync / spi_async return value handling
+>  - Remove depreciated dev->power.power_state
+>  - Fix error return path in ad7877_probe
+>  - delete pending kernel timer
+>  - Some minor cleanup (indention, use dev_err etc.)
 
-Thanks,
-Rusty.
+Sorry for the long silence... I have a couple of comments at the moment
+but I am sure i will have more ;)
+
+> +
+> +	status = spi_sync(spi, &req->msg);
+> +
+> +	if (status == 0)
+> +		status = req->msg.status;
+> +
+> +	kfree(req);
+> +	return status ? status : req->sample;
+
+Use after free here.
+
+> +
+> +	ts->irq_disabled = 1;
+> +	disable_irq(spi->irq);
+
+I am a bit uneasy here... do we need to wait for an async spi completion
+here before proceeding? Overall I have some concerns about the
+irq/spi/removal/sysfs iteractions, I will need some more time to look
+through the driver.
+
+> +	status = spi_sync(spi, &req->msg);
+> +	ts->irq_disabled = 0;
+> +	enable_irq(spi->irq);
+> +
+
+-- 
+Dmitry
