@@ -1,211 +1,214 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758714AbYDGMvj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758223AbYDGM5s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758714AbYDGMvj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Apr 2008 08:51:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752702AbYDGMva
+	id S1758223AbYDGM5s (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Apr 2008 08:57:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755456AbYDGM5k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Apr 2008 08:51:30 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:38222 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753106AbYDGMv3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Apr 2008 08:51:29 -0400
-Date: Mon, 07 Apr 2008 21:50:18 +0900
-From: Yasunori Goto <y-goto@jp.fujitsu.com>
-To: Badari Pulavarty <pbadari@us.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [Patch 005/005](memory hotplug) free memmaps allocated by bootmem
-Cc: Linux Kernel ML <linux-kernel@vger.kernel.org>,
-       linux-mm <linux-mm@kvack.org>, Yinghai Lu <yhlu.kernel@gmail.com>
-In-Reply-To: <20080407213519.886E.E1E9C6FF@jp.fujitsu.com>
-References: <20080407213519.886E.E1E9C6FF@jp.fujitsu.com>
-X-Mailer-Plugin: BkASPil for Becky!2 Ver.2.068
-Message-Id: <20080407214844.887A.E1E9C6FF@jp.fujitsu.com>
+	Mon, 7 Apr 2008 08:57:40 -0400
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:56927 "EHLO e3.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755435AbYDGM5j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Apr 2008 08:57:39 -0400
+From: Stefan Roscher <ossrosch@linux.vnet.ibm.com>
+To: ewg@lists.openfabrics.org, general@lists.openfabrics.org,
+       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       rolandd@cisco.com
+Subject: [PATCH] IB/ehca: extend query_device() and query_port() to support all values for ibv_devinfo
+Date: Mon, 7 Apr 2008 13:57:33 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: hnguyen@de.ibm.com, raisch@de.ibm.com, fenkes@de.ibm.com
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.45 [ja]
+Content-Disposition: inline
+Message-Id: <200804071457.36248.ossrosch@linux.vnet.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Also, introduce a few inline helper functions to make the code more readable.
 
-This patch is to free memmaps which is allocated by bootmem.
-
-Freeing usemap is not necessary. The pages of usemap may be necessary
-for other sections.
-
-If removing section is last section on the node,
-its section is the final user of usemap page.
-(usemaps are allocated on its section by previous patch.)
-But it shouldn't be freed too, because the section must be
-logical offline state which all pages are isolated against page allocater.
-If it is freed, page alloctor may use it which will be removed
-physically soon. It will be disaster.
-So, this patch keeps it as it is.
-
-
-Signed-off-by: Yasunori Goto <y-goto@jp.fujitsu.com>
-
+Signed-off-by: Stefan Roscher <stefan.roscher@de.ibm.com>
 ---
- mm/internal.h       |    3 +--
- mm/memory_hotplug.c |   11 +++++++++++
- mm/page_alloc.c     |    2 +-
- mm/sparse.c         |   51 +++++++++++++++++++++++++++++++++++++++++++++++----
- 4 files changed, 60 insertions(+), 7 deletions(-)
+ drivers/infiniband/hw/ehca/ehca_hca.c |  128 ++++++++++++++++++++------------
+ 1 files changed, 80 insertions(+), 48 deletions(-)
 
-Index: current/mm/sparse.c
-===================================================================
---- current.orig/mm/sparse.c	2008-04-07 20:13:25.000000000 +0900
-+++ current/mm/sparse.c	2008-04-07 20:27:20.000000000 +0900
-@@ -8,6 +8,7 @@
- #include <linux/module.h>
- #include <linux/spinlock.h>
- #include <linux/vmalloc.h>
-+#include "internal.h"
- #include <asm/dma.h>
- #include <asm/pgalloc.h>
- #include <asm/pgtable.h>
-@@ -360,6 +361,9 @@
- {
- 	return; /* XXX: Not implemented yet */
- }
-+static void free_map_bootmem(struct page *page, unsigned long nr_pages)
-+{
-+}
- #else
- static struct page *__kmalloc_section_memmap(unsigned long nr_pages)
- {
-@@ -397,17 +401,47 @@
- 		free_pages((unsigned long)memmap,
- 			   get_order(sizeof(struct page) * nr_pages));
- }
-+
-+static void free_map_bootmem(struct page *page, unsigned long nr_pages)
-+{
-+	unsigned long maps_section_nr, removing_section_nr, i;
-+	int magic;
-+
-+	for (i = 0; i < nr_pages; i++, page++) {
-+		magic = atomic_read(&page->_mapcount);
-+
-+		BUG_ON(magic == NODE_INFO);
-+
-+		maps_section_nr = pfn_to_section_nr(page_to_pfn(page));
-+		removing_section_nr = page->private;
-+
-+		/*
-+		 * When this function is called, the removing section is
-+		 * logical offlined state. This means all pages are isolated
-+		 * from page allocator. If removing section's memmap is placed
-+		 * on the same section, it must not be freed.
-+		 * If it is freed, page allocator may allocate it which will
-+		 * be removed physically soon.
-+		 */
-+		if (maps_section_nr != removing_section_nr)
-+			put_page_bootmem(page);
-+	}
-+}
- #endif /* CONFIG_SPARSEMEM_VMEMMAP */
+diff --git a/drivers/infiniband/hw/ehca/ehca_hca.c b/drivers/infiniband/hw/ehca/ehca_hca.c
+index 8832123..f89c5f8 100644
+--- a/drivers/infiniband/hw/ehca/ehca_hca.c
++++ b/drivers/infiniband/hw/ehca/ehca_hca.c
+@@ -43,6 +43,11 @@
+ #include "ehca_iverbs.h"
+ #include "hcp_if.h"
  
- static void free_section_usemap(struct page *memmap, unsigned long *usemap)
- {
-+	struct page *usemap_page;
-+	unsigned long nr_pages;
++static inline unsigned int limit_uint(unsigned int value)
++{
++	return min_t(unsigned int, value, INT_MAX);
++}
 +
- 	if (!usemap)
- 		return;
+ int ehca_query_device(struct ib_device *ibdev, struct ib_device_attr *props)
+ {
+ 	int i, ret = 0;
+@@ -83,37 +88,40 @@ int ehca_query_device(struct ib_device *ibdev, struct ib_device_attr *props)
+ 	props->vendor_id       = rblock->vendor_id >> 8;
+ 	props->vendor_part_id  = rblock->vendor_part_id >> 16;
+ 	props->hw_ver          = rblock->hw_ver;
+-	props->max_qp          = min_t(unsigned, rblock->max_qp, INT_MAX);
+-	props->max_qp_wr       = min_t(unsigned, rblock->max_wqes_wq, INT_MAX);
+-	props->max_sge         = min_t(unsigned, rblock->max_sge, INT_MAX);
+-	props->max_sge_rd      = min_t(unsigned, rblock->max_sge_rd, INT_MAX);
+-	props->max_cq          = min_t(unsigned, rblock->max_cq, INT_MAX);
+-	props->max_cqe         = min_t(unsigned, rblock->max_cqe, INT_MAX);
+-	props->max_mr          = min_t(unsigned, rblock->max_mr, INT_MAX);
+-	props->max_mw          = min_t(unsigned, rblock->max_mw, INT_MAX);
+-	props->max_pd          = min_t(unsigned, rblock->max_pd, INT_MAX);
+-	props->max_ah          = min_t(unsigned, rblock->max_ah, INT_MAX);
+-	props->max_fmr         = min_t(unsigned, rblock->max_mr, INT_MAX);
++	props->max_qp          = limit_uint(rblock->max_qp);
++	props->max_qp_wr       = limit_uint(rblock->max_wqes_wq);
++	props->max_sge         = limit_uint(rblock->max_sge);
++	props->max_sge_rd      = limit_uint(rblock->max_sge_rd);
++	props->max_cq          = limit_uint(rblock->max_cq);
++	props->max_cqe         = limit_uint(rblock->max_cqe);
++	props->max_mr          = limit_uint(rblock->max_mr);
++	props->max_mw          = limit_uint(rblock->max_mw);
++	props->max_pd          = limit_uint(rblock->max_pd);
++	props->max_ah          = limit_uint(rblock->max_ah);
++	props->max_ee          = limit_uint(rblock->max_rd_ee_context);
++	props->max_rdd         = limit_uint(rblock->max_rd_domain);
++	props->max_fmr         = limit_uint(rblock->max_mr);
++	props->local_ca_ack_delay  = limit_uint(rblock->local_ca_ack_delay);
++	props->max_qp_rd_atom  = limit_uint(rblock->max_rr_qp);
++	props->max_ee_rd_atom  = limit_uint(rblock->max_rr_ee_context);
++	props->max_res_rd_atom = limit_uint(rblock->max_rr_hca);
++	props->max_qp_init_rd_atom = limit_uint(rblock->max_act_wqs_qp);
++	props->max_ee_init_rd_atom = limit_uint(rblock->max_act_wqs_ee_context);
  
-+	usemap_page = virt_to_page(usemap);
- 	/*
- 	 * Check to see if allocation came from hot-plug-add
- 	 */
--	if (PageSlab(virt_to_page(usemap))) {
-+	if (PageSlab(usemap_page)) {
- 		kfree(usemap);
- 		if (memmap)
- 			__kfree_section_memmap(memmap, PAGES_PER_SECTION);
-@@ -415,10 +449,19 @@
+ 	if (EHCA_BMASK_GET(HCA_CAP_SRQ, shca->hca_cap)) {
+-		props->max_srq         = props->max_qp;
+-		props->max_srq_wr      = props->max_qp_wr;
++		props->max_srq         = limit_uint(props->max_qp);
++		props->max_srq_wr      = limit_uint(props->max_qp_wr);
+ 		props->max_srq_sge     = 3;
  	}
  
- 	/*
--	 * TODO: Allocations came from bootmem - how do I free up ?
-+	 * The usemap came from bootmem. This is packed with other usemaps
-+	 * on the section which has pgdat at boot time. Just keep it as is now.
- 	 */
--	printk(KERN_WARNING "Not freeing up allocations from bootmem "
--			"- leaking memory\n");
-+
-+	if (memmap) {
-+		struct page *memmap_page;
-+		memmap_page = virt_to_page(memmap);
-+
-+		nr_pages = PAGE_ALIGN(PAGES_PER_SECTION * sizeof(struct page))
-+			>> PAGE_SHIFT;
-+
-+		free_map_bootmem(memmap_page, nr_pages);
-+	}
+-	props->max_pkeys       = 16;
+-	props->local_ca_ack_delay
+-		= rblock->local_ca_ack_delay;
+-	props->max_raw_ipv6_qp
+-		= min_t(unsigned, rblock->max_raw_ipv6_qp, INT_MAX);
+-	props->max_raw_ethy_qp
+-		= min_t(unsigned, rblock->max_raw_ethy_qp, INT_MAX);
+-	props->max_mcast_grp
+-		= min_t(unsigned, rblock->max_mcast_grp, INT_MAX);
+-	props->max_mcast_qp_attach
+-		= min_t(unsigned, rblock->max_mcast_qp_attach, INT_MAX);
++	props->max_pkeys           = 16;
++	props->local_ca_ack_delay  = limit_uint(rblock->local_ca_ack_delay);
++	props->max_raw_ipv6_qp     = limit_uint(rblock->max_raw_ipv6_qp);
++	props->max_raw_ethy_qp     = limit_uint(rblock->max_raw_ethy_qp);
++	props->max_mcast_grp       = limit_uint(rblock->max_mcast_grp);
++	props->max_mcast_qp_attach = limit_uint(rblock->max_mcast_qp_attach);
+ 	props->max_total_mcast_qp_attach
+-		= min_t(unsigned, rblock->max_total_mcast_qp_attach, INT_MAX);
++		= limit_uint(rblock->max_total_mcast_qp_attach);
+ 
+ 	/* translate device capabilities */
+ 	props->device_cap_flags = IB_DEVICE_SYS_IMAGE_GUID |
+@@ -128,6 +136,46 @@ query_device1:
+ 	return ret;
  }
  
- /*
-Index: current/mm/page_alloc.c
-===================================================================
---- current.orig/mm/page_alloc.c	2008-04-07 20:12:55.000000000 +0900
-+++ current/mm/page_alloc.c	2008-04-07 20:13:29.000000000 +0900
-@@ -568,7 +568,7 @@
- /*
-  * permit the bootmem allocator to evade page validation on high-order frees
-  */
--void __init __free_pages_bootmem(struct page *page, unsigned int order)
-+void __free_pages_bootmem(struct page *page, unsigned int order)
- {
- 	if (order == 0) {
- 		__ClearPageReserved(page);
-Index: current/mm/internal.h
-===================================================================
---- current.orig/mm/internal.h	2008-04-07 20:12:55.000000000 +0900
-+++ current/mm/internal.h	2008-04-07 20:13:29.000000000 +0900
-@@ -34,8 +34,7 @@
- 	atomic_dec(&page->_count);
- }
- 
--extern void __init __free_pages_bootmem(struct page *page,
--						unsigned int order);
-+extern void __free_pages_bootmem(struct page *page, unsigned int order);
- 
- /*
-  * function for dealing with page's order in buddy system.
-Index: current/mm/memory_hotplug.c
-===================================================================
---- current.orig/mm/memory_hotplug.c	2008-04-07 20:12:55.000000000 +0900
-+++ current/mm/memory_hotplug.c	2008-04-07 20:13:29.000000000 +0900
-@@ -199,6 +199,16 @@
- 	return register_new_memory(__pfn_to_section(phys_start_pfn));
- }
- 
-+#ifdef CONFIG_SPARSEMEM_VMEMMAP
-+static int __remove_section(struct zone *zone, struct mem_section *ms)
++static inline int map_mtu(struct ehca_shca *shca, u32 fw_mtu)
 +{
-+	/*
-+	 * XXX: Freeing memmap with vmemmap is not implement yet.
-+	 *      This should be removed later.
-+	 */
-+	return -EBUSY;
++	switch (fw_mtu) {
++	case 0x1:
++		return IB_MTU_256;
++	case 0x2:
++		return IB_MTU_512;
++	case 0x3:
++		return IB_MTU_1024;
++	case 0x4:
++		return IB_MTU_2048;
++	case 0x5:
++		return IB_MTU_4096;
++	default:
++		ehca_err(&shca->ib_device, "Unknown MTU size: %x.",
++			 fw_mtu);
++		return 0;
++	}
 +}
-+#else
- static int __remove_section(struct zone *zone, struct mem_section *ms)
++
++static inline int map_number_of_vls(struct ehca_shca *shca, u32 vl_cap)
++{
++	switch (vl_cap) {
++	case 0x1:
++		return 1;
++	case 0x2:
++		return 2;
++	case 0x3:
++		return 4;
++	case 0x4:
++		return 8;
++	case 0x5:
++		return 15;
++	default:
++		ehca_err(&shca->ib_device, "invalid Vl Capability: %x.",
++			 vl_cap);
++		return 0;
++	}
++}
++
+ int ehca_query_port(struct ib_device *ibdev,
+ 		    u8 port, struct ib_port_attr *props)
  {
- 	unsigned long flags;
-@@ -217,6 +227,7 @@
- 	pgdat_resize_unlock(pgdat, &flags);
- 	return 0;
- }
-+#endif
+@@ -152,31 +200,14 @@ int ehca_query_port(struct ib_device *ibdev,
  
- /*
-  * Reasonably generic function for adding memory.  It is
-
+ 	memset(props, 0, sizeof(struct ib_port_attr));
+ 
+-	switch (rblock->max_mtu) {
+-	case 0x1:
+-		props->active_mtu = props->max_mtu = IB_MTU_256;
+-		break;
+-	case 0x2:
+-		props->active_mtu = props->max_mtu = IB_MTU_512;
+-		break;
+-	case 0x3:
+-		props->active_mtu = props->max_mtu = IB_MTU_1024;
+-		break;
+-	case 0x4:
+-		props->active_mtu = props->max_mtu = IB_MTU_2048;
+-		break;
+-	case 0x5:
+-		props->active_mtu = props->max_mtu = IB_MTU_4096;
+-		break;
+-	default:
+-		ehca_err(&shca->ib_device, "Unknown MTU size: %x.",
+-			 rblock->max_mtu);
+-		break;
+-	}
+-
++	props->active_mtu = props->max_mtu = map_mtu(shca, rblock->max_mtu);
+ 	props->port_cap_flags  = rblock->capability_mask;
+ 	props->gid_tbl_len     = rblock->gid_tbl_len;
+-	props->max_msg_sz      = rblock->max_msg_sz;
++	if (rblock->max_msg_sz) {
++		props->max_msg_sz      = rblock->max_msg_sz;
++	} else {
++		props->max_msg_sz      = 0x1 << 31;
++	}
+ 	props->bad_pkey_cntr   = rblock->bad_pkey_cntr;
+ 	props->qkey_viol_cntr  = rblock->qkey_viol_cntr;
+ 	props->pkey_tbl_len    = rblock->pkey_tbl_len;
+@@ -186,6 +217,7 @@ int ehca_query_port(struct ib_device *ibdev,
+ 	props->sm_sl           = rblock->sm_sl;
+ 	props->subnet_timeout  = rblock->subnet_timeout;
+ 	props->init_type_reply = rblock->init_type_reply;
++	props->max_vl_num      = map_number_of_vls(shca, rblock->vl_cap);
+ 
+ 	if (rblock->state && rblock->phys_width) {
+ 		props->phys_state      = rblock->phys_pstate;
 -- 
-Yasunori Goto 
-
+1.5.2
 
