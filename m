@@ -1,102 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752778AbYDGRkV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752985AbYDGRnz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752778AbYDGRkV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Apr 2008 13:40:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751523AbYDGRkK
+	id S1752985AbYDGRnz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Apr 2008 13:43:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751523AbYDGRnr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Apr 2008 13:40:10 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:56667 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751535AbYDGRkI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Apr 2008 13:40:08 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Mark Lord <lkml@rtr.ca>
-Subject: Re: 2.6.25-rc7/8: Another resume regression
-Date: Mon, 7 Apr 2008 19:40:27 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: LKML <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, david-b@pacbell.net,
-       oliver@neukum.org, Alan Stern <stern@rowland.harvard.edu>,
-       Dave Airlie <airlied@linux.ie>, Jesse Barnes <jesse.barnes@intel.com>,
-       Pavel Machek <pavel@ucw.cz>
-References: <200803220259.48534.rjw@sisk.pl> <200804071251.03147.rjw@sisk.pl> <47FA430A.2030908@rtr.ca>
-In-Reply-To: <47FA430A.2030908@rtr.ca>
+	Mon, 7 Apr 2008 13:43:47 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:24605 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751504AbYDGRnq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Apr 2008 13:43:46 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=jh8JXaAlr+gpFuT+EDyi+W7s0sDO1nW3ME7z2eYUqNlKG69AfQonQfsi5WkaCVRa/
+	cI4TOZRWKBGf90rIQF/kw==
+Message-ID: <6599ad830804071043j33212a6kbeb4ef7d79e17f5c@mail.gmail.com>
+Date: Mon, 7 Apr 2008 10:43:37 -0700
+From: "Paul Menage" <menage@google.com>
+To: "Balbir Singh" <balbir@linux.vnet.ibm.com>
+Subject: Re: [-mm] Disable the memory controller by default (v2)
+Cc: andi@firstfloor.org, "Andrew Morton" <akpm@linux-foundation.org>,
+       "YAMAMOTO Takashi" <yamamoto@valinux.co.jp>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       "Pavel Emelianov" <xemul@openvz.org>, hugh@veritas.com,
+       "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20080407130215.26565.81715.sendpatchset@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200804071940.28738.rjw@sisk.pl>
+References: <20080407130215.26565.81715.sendpatchset@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, 7 of April 2008, Mark Lord wrote:
-> Rafael J. Wysocki wrote:
-> > On Saturday, 5 of April 2008, Mark Lord wrote:
-> >> Mark Lord wrote:
-> >>> Hi,
-> >>>
-> >>> Okay, USB now works fine on resume after fixing the iaa_watchdog issue.
-> >>>
-> >>> But twice now, once before that fix, and again just a minute ago,
-> >>> my machine has failed completely to resume after suspend-to-RAM.
-> >>>
-> >>> Again, resume here is 100% reliable in 2.6.24 and earlier.
-> >>>
-> >>> Symptoms: the usual:
-> >>>
-> >>>  -- 2.6.25-rc8 (and -rc7 earlier), plus USB fix.
-> >>>  -- not reproduceable on demand.
-> >>>  -- black screen of death -- no backlight, no kernel messages.
-> >>>  -- no hard drive activity.
-> >>>  -- no alt-sysrq-anything.
-> >>>  -- 5 second hold of the power button to poweroff and then recover.
-> >>>
-> >>> Not much info to go on, but it's worth knowing there's an issue here 
-> >>> somewhere.
-> >> ..
-> >>
-> >> Mmmm... Now that 2.6.25-rc* is usable here, there's another symptom
-> >> that's been happening regularly enough that it's got to be a regression
-> >> of some sort.
-> >>
-> >> This machine has an ATI X1400 video card, which doesn't work with any
-> >> open source X server that I know of.  Maybe latest RadeonHD would work
-> >> but it didn't when I tried it in January.
-> >>
-> >> So I'm using the ATI binary fglrx X server, but without their kernel module,
-> >> so no 3D acceleration (fine.. only affects Google Earth, really).
-> >>
-> >> Now.. on 2.6.25, after a suspend/resume cycle (or three), the framebuffer
-> >> frequently starts going wonky.  "snowy" pixels appear, and stay.
-> >> Just a moment ago here, the entire background changed to zebra stripes.
-> >>
-> >> And so on..  Peculiar stuff.
-> >>
-> >> I'm wondering if something to do with video mode switching,
-> >> or video register save/restore, has changed since 2.6.24.
-> >> Because it's broken in 2.6.25, yet works fine in all earlier kernels.
-> > 
-> > Yes, that's probably related.
-> > 
-> > However, I'm unable to reproduce the breakage.  If you can do that, it would
-> > probably help a lot if you identified the commit causing that to happen.
-> ..
-> 
-> Well, it would help then if you identified the commits which hacked
-> at the video mode switching.  Then I can revert those and see what happens.
-> There's probably not many commits there, and since it doesn't do it consistently
-> (and sometimes the machine just doesn't resume at all with 2.6.25), 
-> it is tricky to bisect.
-> 
-> Works perfectly in 2.6.24, though, which is what I'm now running again.
+On Mon, Apr 7, 2008 at 6:02 AM, Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+>         return 1;
+>   }
+>   __setup("cgroup_disable=", cgroup_disable);
+>  +
+>  +static int __init cgroup_enable(char *str)
+>  +{
+>  +       int i;
+>  +       char *token;
+>  +
+>  +       while ((token = strsep(&str, ",")) != NULL) {
+>  +               if (!*token)
+>  +                       continue;
+>  +
+>  +               for (i = 0; i < CGROUP_SUBSYS_COUNT; i++) {
+>  +                       struct cgroup_subsys *ss = subsys[i];
+>  +
+>  +                       if (!strcmp(token, ss->name)) {
+>  +                               ss->disabled = 0;
+>  +                               printk(KERN_INFO "%s control group "
+>  +                                               "is enabled\n", ss->name);
+>  +                               break;
+>  +                       }
+>  +               }
+>  +       }
+>  +       return 1;
+>  +}
+>  +__setup("cgroup_enable=", cgroup_enable);
 
-I guess this is related to http://bugzilla.kernel.org/show_bug.cgi?id=10319 .
+Good idea - but you could just use the same handler function for both
+of these (with a one-line wrapper for each to pass disabled=1 or
+disabled=0)
 
-I have no idea what can cause that to happen.  It apparently is not related to
-CONFIG_DRM (that actually may help if you have an Intel graphics adapter),
-so it looks like an ACPI issue.
-
-Thanks,
-Rafael
+Paul
