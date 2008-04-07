@@ -1,64 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757653AbYDGMnp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758157AbYDGMoa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757653AbYDGMnp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Apr 2008 08:43:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752547AbYDGMnf
+	id S1758157AbYDGMoa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Apr 2008 08:44:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755456AbYDGMoW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Apr 2008 08:43:35 -0400
-Received: from ug-out-1314.google.com ([66.249.92.172]:6117 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752291AbYDGMne (ORCPT
+	Mon, 7 Apr 2008 08:44:22 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:35123 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752547AbYDGMoV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Apr 2008 08:43:34 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=HBjdy9YlGCoDhFv+cuRk4ZRhai/bFFv44D/0PKl7Wpw9c93EkzBUgRzvSyQ44x2av5FBSy8E9eGiEAxOF1XRpHZASb7rpaUm4oitvmQI3ITuicVKAId/+0yREm1+q8+pykTSg/cCO3bn+6H+T8RVVMvnITeqptPIaH+ug+ehVQ0=
-Message-ID: <47FA16DA.80700@gmail.com>
-Date: Mon, 07 Apr 2008 21:43:06 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	Mon, 7 Apr 2008 08:44:21 -0400
+Date: Mon, 07 Apr 2008 21:43:03 +0900
+From: Yasunori Goto <y-goto@jp.fujitsu.com>
+To: Badari Pulavarty <pbadari@us.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [Patch 000/005](memory hotplug) freeing pages allocated by bootmem for hotremove v3.
+Cc: Linux Kernel ML <linux-kernel@vger.kernel.org>,
+       linux-mm <linux-mm@kvack.org>, Yinghai Lu <yhlu.kernel@gmail.com>,
+       Yasunori Goto <y-goto@jp.fujitsu.com>
+X-Mailer-Plugin: BkASPil for Becky!2 Ver.2.068
+Message-Id: <20080407213519.886E.E1E9C6FF@jp.fujitsu.com>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Dan Williams <dan.j.williams@intel.com>, gregkh@suse.de,
-       linux-kernel@vger.kernel.org, neilb@suse.de
-Subject: Re: [RFC PATCH] sysfs: refill attribute buffer when reading from
- offset 0
-References: <20080405184122.2816.35845.stgit@dwillia2-linux.ch.intel.com> <20080405232959.c6504be8.akpm@linux-foundation.org>
-In-Reply-To: <20080405232959.c6504be8.akpm@linux-foundation.org>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.45 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
 
-Andrew Morton wrote:
->>  The application for this change is to allow a userspace
->> RAID metadata handler to check the state of an array without causing any
->> memory allocations.  Thus not causing writeback to a raid array that might
->> be blocked waiting for userspace to take action.
-> 
-> Although that sounds like a rather, umm, optimistic application.  I guess
-> if everything's mlocked you might get lucky.
-> 
->> Cc: NeilBrown <neilb@suse.de>
->> Cc: Tejun Heo <htejun@gmail.com>
->> Signed-off-by: Dan Williams <dan.j.williams@intel.com>
+Hello.
 
-Acked-by: Tejun Heo <htejun@gmail.com>
+This is v3 for freeing pages which is allocated by bootmem
+for memory hot-remove.
 
-> Has this been tested with pread()?  That should work - doing an lseek+read
-> is plain dopey.
-> 
-> Can we now remove need_read_fill?  Not if we want to support
-> open+lseek+read, I guess - this initial read might not be at offset
-> zero.
+Please apply.
 
-Heh.. needs_read_fill is set after read and poll regardless of file pos 
-and I bet there are applications depending on it.  :-(
+---
+This patch set is to free pages which is allocated by bootmem for
+memory-hotremove. Some structures of memory management are
+allocated by bootmem. ex) memmap, etc.
+To remove memory physically, some of them must be freed according
+to circumstance.
+This patch set makes basis to free those pages, and free memmaps.
+
+Basic my idea is using remain members of struct page to remember
+information of users of bootmem (section number or node id).
+When the section is removing, kernel can confirm it.
+By this information, some issues can be solved.
+
+  1) When the memmap of removing section is allocated on other
+     section by bootmem, it should/can be free. 
+  2) When the memmap of removing section is allocated on the
+     same section, it shouldn't be freed. Because the section has to be
+     logical memory offlined already and all pages must be isolated against
+     page allocater. If it is freed, page allocator may use it which will
+     be removed physically soon.
+  3) When removing section has other section's memmap, 
+     kernel will be able to show easily which section should be removed
+     before it for user. (Not implemented yet)
+  4) When the above case 2), the page isolation will be able to check and skip
+     memmap's page when logical memory offline (offline_pages()).
+     Current page isolation code fails in this case because this page is 
+     just reserved page and it can't distinguish this pages can be
+     removed or not. But, it will be able to do by this patch.
+     (Not implemented yet.)
+  5) The node information like pgdat has similar issues. But, this
+     will be able to be solved too by this.
+     (Not implemented yet, but, remembering node id in the pages.)
+
+Fortunately, current bootmem allocator just keeps PageReserved flags,
+and doesn't use any other members of page struct. The users of
+bootmem doesn't use them too.
+
+This patch set is for 2.6.25-rc8-mm1.
+
+Change log since v2.
+  - Rebase for 2.6.25-rc8-mm1.
+  - Fix panic at boot when CONFIG_SPARSEMEM_VMEMMAP is selected,
+    and kernel returns EBUSY for physical removing.
+    (This should be removed after it can do.)
+  - Change not good comments.
+
+Change log since v1.
+  - allocate usemap on same section of pgdat. usemap's page is hard to be removed
+    until other sections removing. This is avoid dependency problem between
+    sections.
+  - make alloc_bootmem_section() for above.
+  - fix compile error for other config.
+  - Add user counting. If a page is used by some user, it can be checked.
+
+Todo:
+  - for SPARSEMEM_VMEMMAP.
+    Freeing vmemmap's page is more diffcult than normal sparsemem.
+    Because not only memmap's page, but also the pages like page table must
+    be removed too. If removing section has pages for , then it must
+    be migrated too. Relocatable page table is necessary.
+    (Ross Biro-san is working for it.)
+    http://marc.info/?l=linux-mm&m=120110502617654&w=2
+
+
+
+Thanks.
+
+
 
 -- 
-tejun
+Yasunori Goto 
+
+
