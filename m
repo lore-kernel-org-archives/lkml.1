@@ -1,104 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757372AbYDGXnK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758796AbYDGXne@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757372AbYDGXnK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Apr 2008 19:43:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752614AbYDGXm5
+	id S1758796AbYDGXne (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Apr 2008 19:43:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752614AbYDGXnW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Apr 2008 19:42:57 -0400
-Received: from g5t0006.atlanta.hp.com ([15.192.0.43]:5310 "EHLO
-	g5t0006.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752113AbYDGXm4 (ORCPT
+	Mon, 7 Apr 2008 19:43:22 -0400
+Received: from artax.karlin.mff.cuni.cz ([195.113.31.125]:36460 "EHLO
+	artax.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758100AbYDGXnU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Apr 2008 19:42:56 -0400
-Date: Mon, 7 Apr 2008 17:42:55 -0600
-From: Alex Chiang <achiang@hp.com>
-To: Badari Pulavarty <pbadari@us.ibm.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>, linas@austin.ibm.com
-Subject: Re: 2.6.25-rc8-mm1 panic in rpaphp_register_slot()
-Message-ID: <20080407234255.GA22514@ldl.fc.hp.com>
-Mail-Followup-To: Alex Chiang <achiang@hp.com>,
-	Badari Pulavarty <pbadari@us.ibm.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	lkml <linux-kernel@vger.kernel.org>, linas@austin.ibm.com
-References: <1207331616.5916.15.camel@badari-desktop> <20080404180518.GA12642@ldl.fc.hp.com> <1207340371.5916.23.camel@badari-desktop> <20080404224227.GA31436@ldl.fc.hp.com> <1207352128.5916.26.camel@badari-desktop>
+	Mon, 7 Apr 2008 19:43:20 -0400
+Date: Tue, 8 Apr 2008 01:43:18 +0200 (CEST)
+From: Mikulas Patocka <mikulas@artax.karlin.mff.cuni.cz>
+To: linux-kernel@vger.kernel.org
+cc: linux-raid@vger.kernel.org,
+       device-mapper development <dm-devel@redhat.com>, agk@redhat.com,
+       mingo@redhat.com, neilb@suse.de
+Subject: Data corruption on software RAID
+Message-ID: <Pine.LNX.4.64.0804080033430.13352@artax.karlin.mff.cuni.cz>
+X-Personality-Disorder: Schizoid
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1207352128.5916.26.camel@badari-desktop>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Badari,
+Hi
 
-> > > pci_hotplug: PCI Hot Plug PCI Core version: 0.5
-> > > rpaphp: RPA HOT Plug PCI Controller Driver version: 0.1
-> > > rpaphp_register_slot registering slot:path[/pci@800000020000003/pci@2,4] index[22010003], name[U787E.001.AAA3015-P2-C1] pdomain[22010003] type[16]
-> > > Unable to handle kernel paging request for data at address 0x00000070
-> > 
-> > Hrm, this is a little more information, but still not quite
-> > enough. I'm going to take a stab in the dark and say I'm probably
-> > doing something wrong on this line, maybe dereferencing a pointer
-> > incorrectly:
-> > 
-> >         retval = pci_hp_register(php_slot, slot->bus,
-> > 				 PCI_SLOT(PCI_DN(slot->dn->child)->devfn));
-> 
-> Sorry. I thought you knew this already. Disassembly clearly showed
-> that slot->dn->child is NULL. 
-> 
-> I confirmed it by adding printk also.
+During source code review, I found an unprobable but possible data 
+corruption on RAID-1 and on DM-RAID-1. (I'm not sure about RAID-4,5,6).
 
-This patch is a complete guess on my part (since I've not been
-able to understand pseries architecture) but I think it should
-fix your issue.
+The RAID code was enhanced with bitmaps in 2.6.13.
 
-Can you give it a try and let me know? It applies on top of the
--mm tree that includes my physical pci_slot series.
+The bitmap tracks regions on the device that may be possibly out-of-sync. 
+The purpose of the bitmap is to avoid resynchronizing the whole array in 
+the case of crash. DM-raid uses similar bitmap too.
 
-Also, I'm hoping Linas will speak up and let me know what the
-real answer might be. ;)
+The write sequnce is usually:
+1. turn on bit in the bitmap (if it hasn't been on before).
+2. update the data.
+3. when writes to all devices finish, turn the bit may be turned off.
 
-Thanks.
+The developers assume that when all writes to the region finish, the 
+region is in-sync.
 
-/ac
+This assumption is wrong.
 
-From: Alex Chiang <achiang@hp.com>
-Subject: rpaphp: correctly call pci_hp_register for empty PCI slots
+Kernel writes data while they may be modified in many places. For example, 
+the pdflush daemon writes periodically pages and buffers without locking 
+them. Similarly, pages may be written while they are mapped for write to 
+the processes.
 
-Unpopulated device_node slots do not have children, and
-attempting to dereference them will result in a panic.
+Normally, there is no problem with modify-while-write. The write sequence 
+is something like:
+* turn off Dirty bit
+* write the buffer or page
+--- and if the buffer or page is modified while it's being written, the 
+Dirty bit is turned on again and the correct data are written later.
 
-Instead, attempt to derive the PCI slot number from the bus
-itself, and failing that, default to 0.
+But with RAID (since 2.6.13), it can produce corruption because when the 
+buffer is modified while being written, different versions of data can be 
+written to devices in the RAID array. For example:
 
-Signed-off-by: Alex Chiang <achiang@hp.com>
----
-diff --git a/drivers/pci/hotplug/rpaphp_slot.c b/drivers/pci/hotplug/rpaphp_slot.c
-index 0d4cfc7..91ce6a6 100644
---- a/drivers/pci/hotplug/rpaphp_slot.c
-+++ b/drivers/pci/hotplug/rpaphp_slot.c
-@@ -121,6 +121,7 @@ int rpaphp_register_slot(struct slot *slot)
- {
- 	struct hotplug_slot *php_slot = slot->hotplug_slot;
- 	int retval;
-+	int slot_nr;
- 
- 	dbg("%s registering slot:path[%s] index[%x], name[%s] pdomain[%x] type[%d]\n", 
- 		__FUNCTION__, slot->dn->full_name, slot->index, slot->name, 
-@@ -132,8 +133,11 @@ int rpaphp_register_slot(struct slot *slot)
- 		return -EAGAIN;
- 	}	
- 
--	retval = pci_hp_register(php_slot, slot->bus,
--				 PCI_SLOT(PCI_DN(slot->dn->child)->devfn));
-+	if (slot->bus->self)
-+		slot_nr = PCI_SLOT(slot->bus->self->devfn);
-+	else
-+		slot_nr = 0;
-+	retval = pci_hp_register(php_slot, slot->bus, slot_nr);
- 	if (retval) {
- 		err("pci_hp_register failed with error %d\n", retval);
- 		return retval;
+1. pdflush turns off a dirty bit on Ext2 bitmap buffer and starts writing 
+the buffer to RAID-1
+2. the kernel allocates some blocks in that Ext2 bitmap. One of RAID-1 
+devices writes new data, the other one gets old data.
+3. The kernel turns on the buffer dirty bit, so this buffer is scheduled 
+for next write.
+4. RAID-1 subsystem sees that both writes finished, it thinks that this 
+region is in-sync, turns off its dirty bit in its region bitmap and writes 
+the bitmap to disk.
+5. before pdflush writes the Ext2 bitmap buffer again, the system CRASHES
+
+6. after new boot, RAID-1 sees the bit for this region off, so it doesn't 
+resynchronize it.
+7. during fsck, RAID-1 reads the Ext2 bitmap from the device where the bit 
+is on. fsck sees that the bitmap is correct and doesn't touch it.
+8. some times later kernel reads the Ext2 bitmap from the other device. It 
+sees the bit off, allocates some data there and creates cross-linked 
+files.
+
+The same corruption may happen with some jorunaled filesystems (probably 
+not Ext3) or applications that do their own crash recovery (databases, 
+etc.). The key point is that an application expects that after a crash it 
+reads old data or new data, but it doesn't expect that subsequent reads to 
+the same place may alternatively return old or new data --- which may 
+happen on RAID-1.
+
+
+Possibilities how to fix it:
+
+1. lock the buffers and pages while they are being written --- this would 
+cause performance degradation (the most severe degradation would be in 
+case when one process does repeatedly sync() and other unrelated 
+process repeatedly writes to some file).
+
+Lock the buffers and pages only for RAID --- would create many special 
+cases and possible bugs.
+
+2. never turn the region dirty bit off until the filesystem is unmounted. 
+--- this is the simplest fix. If the computer crashes after a long 
+time, it resynchronizes the whole device. But there won't cause 
+application-visible or filesystem-visible data corruption.
+
+3. turn off the region bit if the region wasn't written in one pdflush 
+period --- requires an interaction with pdflush, rather complex. The 
+problem here is that pdflush makes its best effort to write data in 
+dirty_writeback_centisecs interval, but it is not guaranteed to do it.
+
+4. make more region states: Region has in-memory states CLEAN, DIRTY, 
+MAYBE_DIRTY, CLEAN_CANDIDATE.
+
+When you start writing to the region, it is always moved to DIRTY state 
+(and on-disk bit is turned on).
+
+When you finish all writes to the region, move it to MAYBE_DIRTY state, 
+but leave bit on disk on. We now don't know if the region is dirty or no.
+
+Run a helper thread that does periodically:
+Change MAYBE_DIRTY regions to CLEAN_CANDIDATE
+Issue sync()
+Change CLEAN_CANDIDATE regions to CLEAN state and clear their on-disk bit.
+
+The rationale is that if the above write-while-modify scenario happens, 
+the page is always dirty. Thus, sync() will write the page, kick the 
+region back from CLEAN_CANDIDATE to MAYBE_DIRTY state and we won't mark 
+the region as clean on disk.
+
+
+I'd like to know you ideas on this, before we start coding a solution.
+
+Mikulas
