@@ -1,65 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755614AbYDGVWe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756192AbYDGVZK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755614AbYDGVWe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Apr 2008 17:22:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752930AbYDGVWZ
+	id S1756192AbYDGVZK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Apr 2008 17:25:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753039AbYDGVY7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Apr 2008 17:22:25 -0400
-Received: from mu-out-0910.google.com ([209.85.134.186]:60723 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752719AbYDGVWY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Apr 2008 17:22:24 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=JWcyVBIzASfOanCaeo8YvQ8Ei6tUzXlJJtzh0Z4Ze6ky1PXO/bBF2nQ4x9LUz3hDsnGtJQFFdrMnb1EK+sxPI/PdrPufngDcmIwLmQXGyGO9PRSI0i3ZkRN2QDZZyJ/1db80PfSsYJmKLKgg7u7r/Y4JqRS9/45hdGdV/mzfBhE=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: [git patches] IDE fixes
-Date: Mon, 7 Apr 2008 23:32:34 +0200
-User-Agent: KMail/1.9.9
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
+	Mon, 7 Apr 2008 17:24:59 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:51077 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751964AbYDGVY6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Apr 2008 17:24:58 -0400
+Date: Mon, 7 Apr 2008 23:24:35 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: LKML <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Natalie Protasevich <protasnb@gmail.com>
+Subject: Re: 2.6.25-rc8-git5: Reported regressions from 2.6.24
+Message-ID: <20080407212434.GA27940@elte.hu>
+References: <200804071459.35628.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200804072332.34811.bzolnier@gmail.com>
+In-Reply-To: <200804071459.35628.rjw@sisk.pl>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-- make siimage driver work on PPC 44x
-  (Sergei Shtylyov & Valentine Barshak)
+* Rafael J. Wysocki <rjw@sisk.pl> wrote:
 
-Linus, please pull from:
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10410
+> Subject		: "x86: tsc prevent time going backwards" broke suspend
+> Submitter	: Alexey Fisher <bug-track@fisher-privat.net>
+> Date		: 2008-04-07 02:08 (1 days old)
 
-master.kernel.org:/pub/scm/linux/kernel/git/bart/ide-2.6.git/
+that's now reverted via 5b13d863573e746739ccfc24ac1a9473cfee8df1.
 
-to receive the following updates:
-
- drivers/ide/pci/siimage.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-
-Sergei Shtylyov (1):
-      siimage: fix kernel oops on PPC 44x
-
-
-diff --git a/drivers/ide/pci/siimage.c b/drivers/ide/pci/siimage.c
-index cc4be96..8d624af 100644
---- a/drivers/ide/pci/siimage.c
-+++ b/drivers/ide/pci/siimage.c
-@@ -492,7 +492,7 @@ static void proc_reports_siimage (struct pci_dev *dev, u8 clocking, const char *
-  
- static unsigned int setup_mmio_siimage (struct pci_dev *dev, const char *name)
- {
--	unsigned long bar5	= pci_resource_start(dev, 5);
-+	resource_size_t bar5	= pci_resource_start(dev, 5);
- 	unsigned long barsize	= pci_resource_len(dev, 5);
- 	u8 tmpbyte	= 0;
- 	void __iomem *ioaddr;
+	Ingo
