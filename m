@@ -1,119 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758617AbYDGNDl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758273AbYDGNOw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758617AbYDGNDl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Apr 2008 09:03:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757340AbYDGNDe
+	id S1758273AbYDGNOw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Apr 2008 09:14:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757395AbYDGNOo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Apr 2008 09:03:34 -0400
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:33112 "EHLO e5.ny.us.ibm.com"
+	Mon, 7 Apr 2008 09:14:44 -0400
+Received: from cnc.isely.net ([64.81.146.143]:33965 "EHLO cnc.isely.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757328AbYDGNDd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Apr 2008 09:03:33 -0400
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: andi@firstfloor.org, Andrew Morton <akpm@linux-foundation.org>
-Cc: YAMAMOTO Takashi <yamamoto@valinux.co.jp>, Paul Menage <menage@google.com>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       Pavel Emelianov <xemul@openvz.org>, hugh@veritas.com,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Date: Mon, 07 Apr 2008 18:32:15 +0530
-Message-Id: <20080407130215.26565.81715.sendpatchset@localhost.localdomain>
-Subject: [-mm] Disable the memory controller by default (v2)
+	id S1757377AbYDGNOn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Apr 2008 09:14:43 -0400
+Date: Mon, 7 Apr 2008 08:14:40 -0500 (CDT)
+From: Mike Isely <isely@isely.net>
+Reply-To: Mike Isely <isely@pobox.com>
+To: Meelis Roos <mroos@linux.ee>
+cc: Linux Kernel list <linux-kernel@vger.kernel.org>,
+       Michael Krufky <mkrufky@linuxtv.org>,
+       Mike Isely at pobox <isely@pobox.com>
+Subject: Re: pvrusb2 compile failure
+In-Reply-To: <Pine.SOC.4.64.0804070906490.15249@math.ut.ee>
+Message-ID: <Pine.LNX.4.64.0804070808120.23745@cnc.isely.net>
+References: <Pine.SOC.4.64.0804070906490.15249@math.ut.ee>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 7 Apr 2008, Meelis Roos wrote:
 
+> Got this in todays 2.6.25-rc8+git
+> 
+>   CC [M]  drivers/media/video/pvrusb2/pvrusb2-devattr.o
+> drivers/media/video/pvrusb2/pvrusb2-devattr.c:178: error: unknown field 'flag_has_analogtuner' specified in initializer
+> drivers/media/video/pvrusb2/pvrusb2-devattr.c:179: error: unknown field 'flag_has_composite' specified in initializer
+> drivers/media/video/pvrusb2/pvrusb2-devattr.c:180: error: unknown field 'flag_has_svideo' specified in initializer
+> drivers/media/video/pvrusb2/pvrusb2-devattr.c:182: error: unknown field 'digital_control_scheme' specified in initializer
+> drivers/media/video/pvrusb2/pvrusb2-devattr.c:182: error: 'PVR2_DIGITAL_SCHEME_HAUPPAUGE' undeclared here (not in a function)
+> drivers/media/video/pvrusb2/pvrusb2-devattr.c:183: error: unknown field 'led_scheme' specified in initializer
+> drivers/media/video/pvrusb2/pvrusb2-devattr.c:183: error: 'PVR2_LED_SCHEME_HAUPPAUGE' undeclared here (not in a function)
+> make[4]: *** [drivers/media/video/pvrusb2/pvrusb2-devattr.o] Error 1
 
-Changelog v1
+This was supposed to be a patch that added badly-needed USB IDs to the 
+driver (via insert into a devic attribute data table), however it had 
+been cherry-picked out of a more recent patch series for the driver 
+where those additional fields / identifiers had also been defined.  
+Mike Krufky last night fixed his patch and posted it.
 
-1. Split cgroup_disable into cgroup_disable and cgroup_enable
-2. Remove cgroup_toggle
-
-Due to the overhead of the memory controller. The
-memory controller is now disabled by default. This patch adds cgroup_enable.
-
-If everyone agrees on this approach and likes it, should we push this
-into 2.6.25?
-
-Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
----
-
- Documentation/kernel-parameters.txt |    3 +++
- kernel/cgroup.c                     |   28 ++++++++++++++++++++++++++--
- mm/memcontrol.c                     |    1 +
- 3 files changed, 30 insertions(+), 2 deletions(-)
-
-diff -puN kernel/cgroup.c~memory-controller-default-option-off kernel/cgroup.c
---- linux-2.6.25-rc8/kernel/cgroup.c~memory-controller-default-option-off	2008-04-07 16:24:28.000000000 +0530
-+++ linux-2.6.25-rc8-balbir/kernel/cgroup.c	2008-04-07 18:30:31.000000000 +0530
-@@ -3077,8 +3077,8 @@ static int __init cgroup_disable(char *s
- 
- 			if (!strcmp(token, ss->name)) {
- 				ss->disabled = 1;
--				printk(KERN_INFO "Disabling %s control group"
--					" subsystem\n", ss->name);
-+				printk(KERN_INFO "%s control group "
-+						"is disabled\n", ss->name);
- 				break;
- 			}
- 		}
-@@ -3086,3 +3086,27 @@ static int __init cgroup_disable(char *s
- 	return 1;
- }
- __setup("cgroup_disable=", cgroup_disable);
-+
-+static int __init cgroup_enable(char *str)
-+{
-+	int i;
-+	char *token;
-+
-+	while ((token = strsep(&str, ",")) != NULL) {
-+		if (!*token)
-+			continue;
-+
-+		for (i = 0; i < CGROUP_SUBSYS_COUNT; i++) {
-+			struct cgroup_subsys *ss = subsys[i];
-+
-+			if (!strcmp(token, ss->name)) {
-+				ss->disabled = 0;
-+				printk(KERN_INFO "%s control group "
-+						"is enabled\n", ss->name);
-+				break;
-+			}
-+		}
-+	}
-+	return 1;
-+}
-+__setup("cgroup_enable=", cgroup_enable);
-diff -puN mm/memcontrol.c~memory-controller-default-option-off mm/memcontrol.c
---- linux-2.6.25-rc8/mm/memcontrol.c~memory-controller-default-option-off	2008-04-07 16:24:28.000000000 +0530
-+++ linux-2.6.25-rc8-balbir/mm/memcontrol.c	2008-04-07 16:40:22.000000000 +0530
-@@ -1104,4 +1104,5 @@ struct cgroup_subsys mem_cgroup_subsys =
- 	.populate = mem_cgroup_populate,
- 	.attach = mem_cgroup_move_task,
- 	.early_init = 0,
-+	.disabled = 1,
- };
-diff -puN Documentation/kernel-parameters.txt~memory-controller-default-option-off Documentation/kernel-parameters.txt
---- linux-2.6.25-rc8/Documentation/kernel-parameters.txt~memory-controller-default-option-off	2008-04-07 16:38:25.000000000 +0530
-+++ linux-2.6.25-rc8-balbir/Documentation/kernel-parameters.txt	2008-04-07 17:53:28.000000000 +0530
-@@ -382,8 +382,11 @@ and is between 256 and 4096 characters. 
- 			See Documentation/s390/CommonIO for details.
- 
- 	cgroup_disable= [KNL] Disable a particular controller
-+	cgroup_enable=  [KNL] Enable a particular controller
-+			For both cgroup_enable and cgroup_enable
- 			Format: {name of the controller(s) to disable}
- 				{Currently supported controllers - "memory"}
-+				{Memory controller is disabled by default}
- 
- 	checkreqprot	[SELINUX] Set initial checkreqprot flag value.
- 			Format: { "0" | "1" }
-_
+  -Mike
 
 -- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+
+Mike Isely
+isely @ pobox (dot) com
+PGP: 03 54 43 4D 75 E5 CC 92 71 16 01 E2 B5 F5 C1 E8
