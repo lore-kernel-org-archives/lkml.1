@@ -1,59 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757876AbYDGMIb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758024AbYDGMLw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757876AbYDGMIb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Apr 2008 08:08:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753842AbYDGMIX
+	id S1758024AbYDGMLw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Apr 2008 08:11:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755679AbYDGMLm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Apr 2008 08:08:23 -0400
-Received: from qmta09.emeryville.ca.mail.comcast.net ([76.96.30.96]:60337 "EHLO
-	QMTA09.emeryville.ca.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753131AbYDGMIX (ORCPT
+	Mon, 7 Apr 2008 08:11:42 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:49910 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753842AbYDGMLm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Apr 2008 08:08:23 -0400
-X-Authority-Analysis: v=1.0 c=1 a=YDB0LWfh7ZDC7dLnGoEA:9
- a=0EiM3Gg3qjBtRUiFyjMSOK1N2m4A:4 a=gi0PWCVxevcA:10
-Subject: Build Error - 2.6.25-rc8-git5
-From: Chris Holvenstot <cholvenstot@comcast.net>
-To: Kernel List <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Date: Mon, 07 Apr 2008 07:08:29 -0500
-Message-Id: <1207570109.6218.67.camel@popeye>
+	Mon, 7 Apr 2008 08:11:42 -0400
+Date: Mon, 7 Apr 2008 14:16:00 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Balbir Singh <balbir@linux.vnet.ibm.com>
+Cc: Andi Kleen <andi@firstfloor.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
+       Paul Menage <menage@google.com>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, Pavel Emelianov <xemul@openvz.org>,
+       hugh@veritas.com, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Subject: Re: [-mm] Disable the memory controller by default
+Message-ID: <20080407121600.GC16647@one.firstfloor.org>
+References: <20080407115137.24124.59692.sendpatchset@localhost.localdomain> <20080407120340.GB16647@one.firstfloor.org> <47FA0D85.201@linux.vnet.ibm.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <47FA0D85.201@linux.vnet.ibm.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I received this error while building the x86 version of the rc8-git-6
-kernel.
+> The boot control options apply to all controllers and we want to allow
+> controllers to decide whether they should be turned on or off.
 
-root@popeye:/build/linux# make modules -j2
+Ok that's fine too (to have finer grained options), just those should
+be on/off too, not toggle.
 
-  CHK     include/linux/version.h
-  CHK     include/linux/utsrelease.h
-  CALL    scripts/checksyscalls.sh
-  LD [M]  drivers/media/video/zr36067.o
-  CC [M]  drivers/media/video/pvrusb2/pvrusb2-devattr.o
-drivers/media/video/pvrusb2/pvrusb2-devattr.c:178: error: unknown field
-‘flag_has_analogtuner’ specified in initializer
-drivers/media/video/pvrusb2/pvrusb2-devattr.c:179: error: unknown field
-‘flag_has_composite’ specified in initializer
-drivers/media/video/pvrusb2/pvrusb2-devattr.c:180: error: unknown field
-‘flag_has_svideo’ specified in initializer
-drivers/media/video/pvrusb2/pvrusb2-devattr.c:182: error: unknown field
-‘digital_control_scheme’ specified in initializer
-drivers/media/video/pvrusb2/pvrusb2-devattr.c:182: error:
-‘PVR2_DIGITAL_SCHEME_HAUPPAUGE’ undeclared here (not in a function)
-drivers/media/video/pvrusb2/pvrusb2-devattr.c:183: error: unknown field
-‘led_scheme’ specified in initializer
-drivers/media/video/pvrusb2/pvrusb2-devattr.c:183: error:
-‘PVR2_LED_SCHEME_HAUPPAUGE’ undeclared here (not in a function)
-make[4]: *** [drivers/media/video/pvrusb2/pvrusb2-devattr.o] Error 1
-make[3]: *** [drivers/media/video/pvrusb2] Error 2
-make[2]: *** [drivers/media/video] Error 2
-make[1]: *** [drivers/media] Error 2
-make: *** [drivers] Error 2
-make: *** Waiting for unfinished jobs....
+> documentation support in Documentation/kernel-parameters.txt, don't you think we
+> can expect this to work as the user intended?
 
+Even with documentation support semantics changes over releases are not nice.
+So "toggle" is bad, always have it absolute values.
 
+So if an user decides they want full cgroup support and stick in a option
+for .25 into their boot loader config they should always get full cgroup support in 
+all future kernels.  Similiar if someone decides they don't need it. 
+
+-Andi
