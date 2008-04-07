@@ -1,46 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758437AbYDGObk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757932AbYDGPOU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758437AbYDGObk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Apr 2008 10:31:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755976AbYDGOba
+	id S1757932AbYDGPOU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Apr 2008 11:14:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754086AbYDGPOK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Apr 2008 10:31:30 -0400
-Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:44706 "EHLO
-	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752438AbYDGOb3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Apr 2008 10:31:29 -0400
-Date: Mon, 7 Apr 2008 07:31:08 -0700
-From: Chris Wright <chrisw@sous-sol.org>
-To: Gabriel C <nix.or.die@googlemail.com>
-Cc: Lazy <lazy404@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       stable@kernel.org
-Subject: Re: [stable] 2.6.24.4 compilation error
-Message-ID: <20080407143107.GC31847@sequoia.sous-sol.org>
-References: <efeafa350804070321ka6cbb46pd49a62fc325eb4e0@mail.gmail.com> <47FA012C.7000509@googlemail.com>
+	Mon, 7 Apr 2008 11:14:10 -0400
+Received: from yw-out-2324.google.com ([74.125.46.28]:31389 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752419AbYDGPOJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Apr 2008 11:14:09 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:organization:to:subject:date:user-agent:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=ns9H++tO4quy5AYLbdxsi0KTnnSUxZxfFUbe5REcgpQXkk8HT4pjLbh0bdP25h4upsNrdx9SMVofk5up94agL4zJ3O1UsU1Xh8lNIg4dBZvA/E9C/v3mxiAuHYE0VpQu1PRpgnDeq76hnnQEKkeOnnBdVtoahQWW9CRNTtpTsPI=
+From: Balaji Rao <balajirrao@gmail.com>
+Organization: National Institute of Technology Karnataka
+To: Ke Wei <kewei@marvell.com>
+Subject: Trouble compiling kvm.git
+Date: Mon, 7 Apr 2008 20:37:07 +0530
+User-Agent: KMail/1.9.6 (enterprise 0.20071012.724442)
+Cc: linux-kernel@vger.kernel.org,
+       James Bottomley <James.Bottomley@hansenpartnership.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <47FA012C.7000509@googlemail.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Message-Id: <200804072037.08069.balajirrao@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Gabriel C (nix.or.die@googlemail.com) wrote:
-> Lazy wrote:
-> > kernel/built-in.o: In function `update_wall_time':
-> > (.text+0x23796): undefined reference to `__umoddi3'
-> > kernel/built-in.o: In function `update_wall_time':
-> > (.text+0x237b6): undefined reference to `__udivdi3'
-> > make: *** [.tmp_vmlinux1] Error 1
-> 
-> You'll need this patch :
-> 
-> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=38332cb98772f5ea757e6486bed7ed0381cb5f98
+Hi,
 
+I had trouble compiling kvm.git.
 
-This is already queued for 2.6.24.5
+  LD      drivers/scsi/built-in.o
+drivers/scsi/mvsas.o: In function `sas_ata_init_host_and_port':
+/kernels/git/kvm/include/scsi/sas_ata.h:50: multiple definition of `sas_ata_init_host_and_port'
+drivers/scsi/libsas/built-in.o:/kernels/git/kvm/include/scsi/sas_ata.h:50: first defined here
+drivers/scsi/mvsas.o: In function `sas_ata_task_abort':
+/kernels/git/kvm/include/scsi/sas_ata.h:54: multiple definition of `sas_ata_task_abort'
+drivers/scsi/libsas/built-in.o:/kernels/git/kvm/include/scsi/sas_ata.h:54: first defined here
+make[2]: *** [drivers/scsi/built-in.o] Error 1
+make[1]: *** [drivers/scsi] Error 2
+make: *** [drivers] Error 2
 
-thanks,
--chris
+git-bisect pointed me to the following commit.
+
+commit 0eb9ddd82a5cb08f3622345e723d236eefa0039f
+Author: Ke Wei <kewei@marvell.com>
+Date:   Thu Mar 27 14:53:24 2008 +0800
+
+    [SCSI] mvsas: fill in error info record and phy mode6 bits.
+    
+    and remove some unused members from struct.
+    
+    Signed-off-by: Ke Wei <kewei@marvell.com>
+    Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
+
+-- 
+regards,
+Balaji Rao
+Dept. of Mechanical Engineering,
+National Institute of Technology Karnataka, India
