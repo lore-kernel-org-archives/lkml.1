@@ -1,56 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758054AbYDGW3S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758701AbYDGW3b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758054AbYDGW3S (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Apr 2008 18:29:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753324AbYDGW3I
+	id S1758701AbYDGW3b (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Apr 2008 18:29:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758323AbYDGW3V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Apr 2008 18:29:08 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:47727 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753010AbYDGW3H (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Apr 2008 18:29:07 -0400
-Date: Mon, 7 Apr 2008 15:28:00 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: cooloney@kernel.org, torvalds@linux-foundation.org, davem@davemloft.net,
-       linux-kernel@vger.kernel.org, magnus.damm@gmail.com, damm@igel.co.jp,
-       lethal@linux-sh.org, nico@cam.org, vapier.adi@gmail.com
-Subject: Re: Blackfin STAMP537 compiling error in 2.6.25-rc8
-Message-Id: <20080407152800.1a8e37fc.akpm@linux-foundation.org>
-In-Reply-To: <47FA813D.6090505@garzik.org>
-References: <386072610804070057w1eb65db5taeca77f8f3e36627@mail.gmail.com>
-	<47F9D7BA.6080708@garzik.org>
-	<386072610804070115s57dfd49fgad01218e820167b@mail.gmail.com>
-	<47FA813D.6090505@garzik.org>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 7 Apr 2008 18:29:21 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:58167 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758149AbYDGW3T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Apr 2008 18:29:19 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Andi Kleen <andi@firstfloor.org>
+Subject: Re: BUG: using smp_processor_id() during suspend with 2.6.25-rc8
+Date: Tue, 8 Apr 2008 00:29:30 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Jiri Kosina <jkosina@suse.cz>, Zdenek Kabelac <zdenek.kabelac@gmail.com>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
+References: <c4e36d110804070625n17eb44e1nbb5558f500f13438@mail.gmail.com> <Pine.LNX.4.64.0804080008420.3896@jikos.suse.cz> <20080407222352.GG16647@one.firstfloor.org>
+In-Reply-To: <20080407222352.GG16647@one.firstfloor.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200804080029.31102.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 07 Apr 2008 16:17:01 -0400
-Jeff Garzik <jeff@garzik.org> wrote:
-
-> Since it was an arch patch to a driver I cannot build, I made the 
-> [mistaken] assumption that your sending it to me was an indication that 
-> it should actually be merged :)  Especially with a subject like "fix 
-> build breakage", for a platform I cannot easily build...
+On Tuesday, 8 of April 2008, Andi Kleen wrote:
+> On Tue, Apr 08, 2008 at 12:11:17AM +0200, Jiri Kosina wrote:
+> > On Tue, 8 Apr 2008, Andi Kleen wrote:
+> > 
+> > > > I know. However preempt_count is a little bit inconsistent in such cases 
+> > > > though.
+> > > And? interrupts off beats preempt count anyways. Why did you write the 
+> > > patch? Was there a (incorrect) warning triggered?
+> > 
+> > Reported at http://lkml.org/lkml/2008/4/7/130
+> > 
+> > BTW is also mce_init() (called from mce_resume()) guaranteed to run with 
+> > IRQs off?
 > 
-> Are there any process tweaks that could be made here?  Maybe -mm stuff 
-> sent to maintainers could be tagged, noting dependencies on other -mm 
-> patches that are not yet upstream?
+> [cc rafael]
+> 
+> The mce resume is a sysdev.
+> 
+> sysdevs were always supposed to run completely with interrupts off. If they 
+> don't anymore that's some kind of higher level resume code bug which you need 
+> to fix there, not hack around in the low level code.
 
-Well.  It really helps if submitters tell us that a patch fixes another
-pending patch, and which one that is.  Usually Ihave to ask if I can't work
-it out.
+They are executed with interrupts disabled, on one CPU.
 
+> If it does that it likely broke more code too.
+> 
+> Obviously turning on preemption anywhere around the machine check is
+> fatal because it touches CPU state and if you reschedule you could
+> switch to another CPU and change or access the wrong CPU's state.
 
-But if a) we weren't told that and b) I have no reason to think it's not a
-mainline problem and c) the patch applies to mainline and d) the patch
-affects an architecture which I'm not cross-compiling for, it's going to
-sneak through.
+FWIW, at the point when sysdevs are resumed we are single-threaded.
 
-Fortunately, a && b && c && d doesn't happen at all often.
+Thanks,
+Rafael
