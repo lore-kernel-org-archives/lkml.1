@@ -1,54 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755493AbYDGFOC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755847AbYDGF1L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755493AbYDGFOC (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Apr 2008 01:14:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751440AbYDGFNu
+	id S1755847AbYDGF1L (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Apr 2008 01:27:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752434AbYDGF05
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Apr 2008 01:13:50 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:45900 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751129AbYDGFNt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Apr 2008 01:13:49 -0400
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: rusty@rustcorp.com.au (Rusty Russell)
-Subject: Re: [PATCH RFC 4/5] tun: vringfd xmit support.
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       virtualization@lists.linux-foundation.org, maxk@qualcomm.com
-Organization: Core
-In-Reply-To: <200804052206.33922.rusty@rustcorp.com.au>
-X-Newsgroups: apana.lists.os.linux.kernel,apana.lists.os.linux.netdev,apana.lists.os.linux.virtualization
-User-Agent: tin/1.7.4-20040225 ("Benbecula") (UNIX) (Linux/2.6.17-rc4 (i686))
-Message-Id: <E1Jijfs-0004Lo-00@gondolin.me.apana.org.au>
-Date: Mon, 07 Apr 2008 13:13:44 +0800
+	Mon, 7 Apr 2008 01:26:57 -0400
+Received: from relay2.sgi.com ([192.48.171.30]:41340 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752297AbYDGF05 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Apr 2008 01:26:57 -0400
+Date: Sun, 6 Apr 2008 22:26:54 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Hugh Dickins <hugh@veritas.com>
+cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Peter Zijlstra <a.p.ziljstra@chello.nl>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] scsi: fix sense_slab/bio swapping livelock
+In-Reply-To: <Pine.LNX.4.64.0804062348001.19446@blonde.site>
+Message-ID: <Pine.LNX.4.64.0804062213230.18148@schroedinger.engr.sgi.com>
+References: <Pine.LNX.4.64.0804062348001.19446@blonde.site>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rusty Russell <rusty@rustcorp.com.au> wrote:
->
-> +/* We are done with this skb: put it in the used pile. */
-> +static void skb_finished(struct skb_shared_info *sinfo)
-> +{
-> +       struct skb_shinfo_tun *sht = (void *)(sinfo + 1);
-> +
-> +       /* FIXME: Race prevention */
-> +       vring_used_buffer_atomic(sht->tun->outring, sht->id, sht->len);
-> +       vring_wake(sht->tun->outring);
-> +
-> +       /* Release device. */
-> +       dev_put(sht->tun->dev);
-> +}
+On Sun, 6 Apr 2008, Hugh Dickins wrote:
 
-On second thought, this is not going to work.  The network stack
-can clone individual pages out of this skb and put it into a new
-skb.  Therefore whatever scheme we come up with will either need
-to be page-based, or add a flag to tell the network stack that it
-can't clone those pages.
+> __scsi_get_command has a (one item) free_list to protect against
+> this, but rc1's [SCSI] use dynamically allocated sense buffer
+> de25deb18016f66dcdede165d07654559bb332bc upset that slightly.
+> When it fails to allocate from the separate sense_slab, instead
+> of giving up, it must fall back to the command free_list, which
+> is sure to have a sense_buffer attached.
+> 
+> Either my earlier -rc testing missed this, or there's some recent
+> contributory factor.  One very significant factor is SLUB, which
+> merges slab caches when it can, and on 64-bit happens to merge
+> both bio cache and sense_slab cache into kmalloc's 128-byte cache:
+> so that under this swapping load, bios above are liable to gobble
+> up all the slots needed for scsi_cmnd sense_buffers below.
 
-Cheers,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+A reliance on free slots that the slab allocator may provide? That is a 
+rather bad dependency since it is up to the slab allocator to implement
+the storage layout for the objects and thus the availability of slots may
+vary depending on the layout for the objects chosen by the allocator.
+
+Looking at mempool_alloc: Mempools may be used to do atomic allocations 
+until they fail thereby exhausting reserves and available object in the 
+partial lists of slab caches?
+
+In order to make this a significant factor we need to have already 
+exhausted reserves right? Thus we are already operating at the boundary of 
+what memory there is. Any non atomic alloc will then allocate a new page 
+with N elements in order to get one object. The mempool_allocs from the 
+atomic context will then gooble up the N-1 remaining objects? So the
+nonatomic alloc will then have to hit the page allocator again...
+
