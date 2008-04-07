@@ -1,53 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756797AbYDGJVU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757259AbYDGJWS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756797AbYDGJVU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Apr 2008 05:21:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755898AbYDGJVM
+	id S1757259AbYDGJWS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Apr 2008 05:22:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751493AbYDGJWG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Apr 2008 05:21:12 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:53110 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755798AbYDGJVL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Apr 2008 05:21:11 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Frans Pop <elendil@planet.nl>
-Subject: Re: [rc8] Regression: key repeats and skips in music during compilation
-Date: Mon, 7 Apr 2008 11:21:03 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
-References: <200804041222.35025.elendil@planet.nl> <200804062239.44861.rjw@sisk.pl>
-In-Reply-To: <200804062239.44861.rjw@sisk.pl>
+	Mon, 7 Apr 2008 05:22:06 -0400
+Received: from web26202.mail.ukl.yahoo.com ([217.12.10.239]:44744 "HELO
+	web26202.mail.ukl.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752976AbYDGJWF convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Apr 2008 05:22:05 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.it;
+  h=X-YMail-OSG:Received:X-Mailer:Date:From:Reply-To:Subject:To:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=0uTgpNd2q85yzwUdQM4IWlDJS7KrlmHygEq3fzoXZl0fBJjb6ORVhzh94/WvfUIHiirLodjJujzaUiRiQ11Faycvkdhuh6LOwxI8GsQ/cVVp5k+GmoBvSIHhq7kckIDmNip9Dc7D9iq4AAeaUk4mP8IMKG/EjIbrrFWvtadvb8U=;
+X-YMail-OSG: gBgZZHMVM1keloDAjRaQ95Qu.4D0_hPQKfGj7oQtjG93s.6cQK.3krNbDLTp5zRqK6Al6uNgxTpLgTZ4RpY_jQP1HK0ijFtbHlHzEUOrySHYCgxi6wUsydCJg4Y-
+X-Mailer: YahooMailWebService/0.7.185
+Date: Mon, 7 Apr 2008 09:22:03 +0000 (GMT)
+From: Michael Trimarchi <trimarchimichael@yahoo.it>
+Reply-To: trimarchimichael@yahoo.it
+Subject: Re: [PATCH] atmel serial reduce trasmitting window & code style patch
+To: Haavard Skinnemoen <hskinnemoen@atmel.com>
+Cc: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200804071121.03888.rjw@sisk.pl>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8BIT
+Message-ID: <649693.333.qm@web26202.mail.ukl.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday, 6 of April 2008, Rafael J. Wysocki wrote:
-> On Friday, 4 of April 2008, Frans Pop wrote:
-> > While compiling glibc I am getting frequent short skips in music play 
-> > anddddddddddddddddd I have now three times seen key repeats (as in this 
-> > sentence). When there is a skip in the music, there is also a delay in 
-> > characters being typed appearing on the screen.
+Hi,
+
+> > the interrupt handler will be triggered as soon as we
+> > enable the TX
+> > interrupt. But perhaps we should avoid enabling the
+> > interrupt and
+> > schedule the tasklet since we _know_ there's a TX
+> > interrupt pending?
 > > 
-> > I have not seen these symptoms with earlier rc releases (at least, not since 
-> > rc1), but I have not really done many heavy compilations recently, so I'd 
-> > have to spend some time to verify where this started.
-> > 
-> > The problem seems somewhat different from what we had with rc1 as the mouse 
-> > is smooth.
-> > 
-> > System is dual core Pentium D (x86_64). During the compilation one processor 
-> > core is basically idle. The music files are being read from an NFS share.
+> Ok, you are right, schedule the tasklet is better. I do
+> some
+> test and post another patch. 
 > 
-> Can you test with CONFIG_GROUP_SCHED unset, please?
+Just a comment. I can't schedule the tasklet for the tasklet itself
+so maybe waiting for interrupt is a more clean solution.
+What do you think?
+> Michael
+> 
+> 
+>       Inviato da Yahoo! Mail. 
+> La casella di posta intelligente.
+> http://it.docs.yahoo.com/mail/overview/index.html
 
-I was able to reproduce this issue with -rc8 on one of my test systems, but I'm
-not any more with the current Linus' tree and CONFIG_GROUP_SCHED unset, FWIW.
 
-Thanks,
-Rafael
+      Inviato da Yahoo! Mail. 
+La casella di posta intelligente.
+http://it.docs.yahoo.com/mail/overview/index.html
