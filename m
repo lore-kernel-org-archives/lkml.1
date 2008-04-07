@@ -1,55 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756677AbYDGAYT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756835AbYDGA1k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756677AbYDGAYT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Apr 2008 20:24:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755501AbYDGAYI
+	id S1756835AbYDGA1k (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Apr 2008 20:27:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755573AbYDGA1c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Apr 2008 20:24:08 -0400
-Received: from wr-out-0506.google.com ([64.233.184.235]:53698 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755523AbYDGAYG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Apr 2008 20:24:06 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=MO8jl6pyEWwujttCWV3c7Drao00+v0SSsF0tepXgGYlSCMloTO4a+FP+x/DBPsG+o3S5dScMkCcDpmrYXyymHxqTLSmFQ+kzEMy86SLt3frcDzJnv+lMQdK64WLu/Blc3vwudrRfknrM6t1NrldTrCkmtf6E1GnM7Bs1/AV8odA=
-Message-ID: <ac67d9130804061724v74856a30ta8b128cc5b69cf80@mail.gmail.com>
-Date: Mon, 7 Apr 2008 02:24:04 +0200
-From: "Szilveszter Ordog" <slipszi@gmail.com>
-To: "Ben Nizette" <bn@niasdigital.com>
-Subject: Re: [BUG, bisected] atmel_spi: hard lockups in transfer
-Cc: kernel <kernel@avr32linux.org>,
-       "Haavard Skinnemoen" <hskinnemoen@atmel.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <1207438118.3319.8.camel@moss.renham>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1207438118.3319.8.camel@moss.renham>
+	Sun, 6 Apr 2008 20:27:32 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:46967 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755501AbYDGA1b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Apr 2008 20:27:31 -0400
+Date: Mon, 7 Apr 2008 10:27:16 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: v4l-dvb-maintainer@linuxtv.org, linux-next@vger.kernel.org,
+       Mauro Carvalho Chehab <mchehab@infradead.org>,
+       Michael Krufky <mkrufky@linuxtv.org>,
+       Linus <torvalds@linux-foundation.org>
+Subject: linux-next: origin build failure
+Message-Id: <20080407102716.2e2d3c7a.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.5.0beta1 (GTK+ 2.12.9; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Mon__7_Apr_2008_10_27_16_+1000_wLyXloWI18ZOzD92"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->  For some weeks now there have been reports flying across the main AVR32
->  support forum, avrfreaks [1], that atmel_spi now hard-hangs on most
->  transfers.  The behaviour is not apparent in .23 and is in .24+.  One
->  tester was good enough to bisect the problem and turned up
->
->  154443c72f47169ebcb3a7befbff0e934c49bff3
->  atmel_spi: chain DMA transfers
->
->  as the culprit.
+--Signature=_Mon__7_Apr_2008_10_27_16_+1000_wLyXloWI18ZOzD92
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Thanks for reporting this. Unfortunately it is difficult to test for
-me, since I do not have the hardware and there are no error messages.
-However, if you add the following line
+Hi all,
 
-#define DEBUG
+Today's linux-next build (Linus' tree only, powerpc ppc64_defconfig)
+fails like this:
 
-to the top of drivers/spi/atmel_spi.c (before the #include directives)
-and recompile the kernel, then you would get lots of debug output
-which could help us pinpoint the problem.
+drivers/media/video/pvrusb2/pvrusb2-devattr.c:178: error: unknown field 'fl=
+ag_has_analogtuner' specified in initializer
+drivers/media/video/pvrusb2/pvrusb2-devattr.c:179: error: unknown field 'fl=
+ag_has_composite' specified in initializer
+drivers/media/video/pvrusb2/pvrusb2-devattr.c:180: error: unknown field 'fl=
+ag_has_svideo' specified in initializer
+drivers/media/video/pvrusb2/pvrusb2-devattr.c:182: error: unknown field 'di=
+gital_control_scheme' specified in initializer
+drivers/media/video/pvrusb2/pvrusb2-devattr.c:182: error: 'PVR2_DIGITAL_SCH=
+EME_HAUPPAUGE' undeclared here (not in a function)
+drivers/media/video/pvrusb2/pvrusb2-devattr.c:183: error: unknown field 'le=
+d_scheme' specified in initializer
+drivers/media/video/pvrusb2/pvrusb2-devattr.c:183: error: 'PVR2_LED_SCHEME_=
+HAUPPAUGE' undeclared here (not in a function)
 
-Szilveszter
+Introduced by commit 92c9d07507f0a90b64172bfede7e6fa845e8e66b ("V4L/DVB
+(7497): pvrusb2: add new usb pid for 73xxx models").  I have reverted
+that commit for today's linux-next tree.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Mon__7_Apr_2008_10_27_16_+1000_wLyXloWI18ZOzD92
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFH+WpoTgG2atn1QN8RApbPAJ9qe7hEvMPZd7xiPU/VbyO1BuYGIQCfSzS1
+oMH7SQYbfHHnreuR1SqQKGo=
+=ImiU
+-----END PGP SIGNATURE-----
+
+--Signature=_Mon__7_Apr_2008_10_27_16_+1000_wLyXloWI18ZOzD92--
