@@ -1,60 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755053AbYDGQiQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755466AbYDGQlO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755053AbYDGQiQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Apr 2008 12:38:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752707AbYDGQiE
+	id S1755466AbYDGQlO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Apr 2008 12:41:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752381AbYDGQlD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Apr 2008 12:38:04 -0400
-Received: from bzq-219-195-70.pop.bezeqint.net ([62.219.195.70]:43981 "EHLO
-	bh-buildlin1.bhalevy.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752690AbYDGQiD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Apr 2008 12:38:03 -0400
-Message-ID: <47FA4DB0.6030804@panasas.com>
-Date: Mon, 07 Apr 2008 19:37:04 +0300
-From: Benny Halevy <bhalevy@panasas.com>
-Organization: Panasas, Inc.
-User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
+	Mon, 7 Apr 2008 12:41:03 -0400
+Received: from smtp101.sbc.mail.mud.yahoo.com ([68.142.198.200]:40608 "HELO
+	smtp101.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751956AbYDGQlC convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Apr 2008 12:41:02 -0400
+X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Mon, 07 Apr 2008 12:41:02 EDT
+X-YMail-OSG: raq4WbAVM1lhibdTgKaihKJ0rhVyehGUQ_HAP4qf4x6rrAUWwbh8hD.kEFKpK09Ow0EfsB9.IQ--
+X-Yahoo-Newman-Property: ymail-3
+Date: Mon, 7 Apr 2008 11:18:11 -0500
+From: Peter Samuelson <peter@p12n.org>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] Trivial: change %{_smp_flags} to {?_smp_mflags} in RPM
+	spec file
+Message-ID: <20080407161811.GA19755@p12n.org>
 MIME-Version: 1.0
-To: Sam Ravnborg <sam@ravnborg.org>
-CC: Adrian Bunk <bunk@kernel.org>, Jan Engelhardt <jengelh@computergmbh.de>,
-       apw@shadowen.org, Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [patch] checkpatch: relax spacing and line length
-References: <alpine.LNX.1.10.0804060653020.30794@fbirervta.pbzchgretzou.qr> <20080406100826.GD30987@cs181133002.pp.htv.fi> <20080406110823.GA18058@uranus.ravnborg.org>
-In-Reply-To: <20080406110823.GA18058@uranus.ravnborg.org>
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Content-Transfer-Encoding: 8BIT
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Apr. 06, 2008, 14:08 +0300, Sam Ravnborg <sam@ravnborg.org> wrote:
->>>     This also relaxes the tab doctrine, because spaces DO make sense --
->>>     especially when you view the code with a tab setting of not-8.
->>> ...
->> In the kernel all tabs are 8 spaces wide.
->>
->> When you view the code with a different setting that's your fault.
-> And for other kernel developers tabs are for indention, spaces for alignment.
-> 
-> Forget it - the world will not unify about this.
+Trivial: change %{_smp_flags} to {?_smp_mflags} in RPM spec file
 
-Resistance to change is only natural, but OTOH no change leads to stagnation.
-I completely agree that if we don't encourage this as an alternative it will
-indeed never happen but just saying "forget it" brings us nowhere.
+Seems to work, though I don't know the spec format well enough to
+explain the syntax change.
 
-I still believe that once people get used to this mentally they can see this
-method's merits and how its logic relates to the program's structure: syntax
-and coding style.
+Signed-off-by: Peter Samuelson <peter@p12n.org>
 
-Benny
-
-> 
-> 	Sam
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-
+diff --git a/scripts/package/mkspec b/scripts/package/mkspec
+index ffd61fe..3dfbf92 100755
+--- a/scripts/package/mkspec
++++ b/scripts/package/mkspec
+@@ -57,7 +57,7 @@ fi
+ echo "%build"
+ 
+ if ! $PREBUILT; then
+-echo "make clean && make %{_smp_mflags}"
++echo "make clean && make %{?_smp_mflags}"
+ echo ""
+ fi
+ 
+@@ -68,7 +68,7 @@ echo "%else"
+ echo 'mkdir -p $RPM_BUILD_ROOT/boot $RPM_BUILD_ROOT/lib/modules'
+ echo "%endif"
+ 
+-echo 'INSTALL_MOD_PATH=$RPM_BUILD_ROOT make %{_smp_mflags} modules_install'
++echo 'INSTALL_MOD_PATH=$RPM_BUILD_ROOT make %{?_smp_mflags} modules_install'
+ echo "%ifarch ia64"
+ echo 'cp $KBUILD_IMAGE $RPM_BUILD_ROOT'"/boot/efi/vmlinuz-$KERNELRELEASE"
+ echo 'ln -s '"efi/vmlinuz-$KERNELRELEASE" '$RPM_BUILD_ROOT'"/boot/"
