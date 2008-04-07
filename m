@@ -1,120 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758585AbYDGL5a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758050AbYDGL7b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758585AbYDGL5a (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Apr 2008 07:57:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757318AbYDGLz7
+	id S1758050AbYDGL7b (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Apr 2008 07:59:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753927AbYDGL7X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Apr 2008 07:55:59 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:51302 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757025AbYDGLzy (ORCPT
+	Mon, 7 Apr 2008 07:59:23 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:39058 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753842AbYDGL7W (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Apr 2008 07:55:54 -0400
-From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
-To: David Miller <davem@davemloft.net>
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       "Robin H. Johnson" <robbat2@gentoo.org>,
-       Georgi Chorbadzhiyski <gf@unixsol.org>,
-       Soeren Sonnenburg <kernel@nn7.de>,
-       Denys Fedoryshchenko <denys@visp.net.lb>,
-       Alessandro Suardi <alessandro.suardi@gmail.com>,
-       "=?utf-8?q?Ilpo=20J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
-Subject: [PATCHv2 net-2.6 2/4] [TCP]: Fix NewReno's fast rexmit/recovery problems with GSOed skb
-Date: Mon,  7 Apr 2008 14:55:42 +0300
-Message-Id: <1207569344-19687-3-git-send-email-ilpo.jarvinen@helsinki.fi>
-X-Mailer: git-send-email 1.5.4.2.156.ge3c5
-In-Reply-To: <1207569344-19687-2-git-send-email-ilpo.jarvinen@helsinki.fi>
-References: <1207569344-19687-1-git-send-email-ilpo.jarvinen@helsinki.fi>
- <1207569344-19687-2-git-send-email-ilpo.jarvinen@helsinki.fi>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
+	Mon, 7 Apr 2008 07:59:22 -0400
+Date: Mon, 7 Apr 2008 14:03:40 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Balbir Singh <balbir@linux.vnet.ibm.com>
+Cc: andi@firstfloor.org, Andrew Morton <akpm@linux-foundation.org>,
+       YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
+       Paul Menage <menage@google.com>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, Pavel Emelianov <xemul@openvz.org>,
+       hugh@veritas.com, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Subject: Re: [-mm] Disable the memory controller by default
+Message-ID: <20080407120340.GB16647@one.firstfloor.org>
+References: <20080407115137.24124.59692.sendpatchset@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080407115137.24124.59692.sendpatchset@localhost.localdomain>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fixes a long-standing bug which makes NewReno recovery crippled.
-With GSO the whole head skb was marked as LOST which is in
-violation of NewReno procedure that only wants to mark one packet
-and ended up breaking our TCP code by causing counter overflow
-because our code was built on top of assumption about valid
-NewReno procedure. This manifested as triggering a WARN_ON for
-the overflow in a number of places.
+On Mon, Apr 07, 2008 at 05:21:37PM +0530, Balbir Singh wrote:
+> 
+> 
+> Due to the overhead of the memory controller. The
+> memory controller is now disabled by default. This patch changes
+> cgroup_disable to cgroup_toggle, so that each controller can decide
+> whether it wants to be enabled/disabled by default.
+> 
+> If everyone agrees on this approach and likes it, should we push this
+> into 2.6.25?
 
-It seems relatively safe alternative to just do nothing if
-tcp_fragment fails due to oom because another duplicate ACK is
-likely to be received soon and the fragmentation will be retried.
+First I like the change to make it disabled by default.
 
-Special thanks goes to Soeren Sonnenburg <kernel@nn7.de> who was
-lucky enough to be able to reproduce this so that the warning
-for the overflow was hit. It's not as easy task as it seems even
-if this bug happens quite often because the amount of outstanding
-data is pretty significant for the mismarkings to lead to an
-overflow.
+I don't think "toggle" is good semantics for a user visible switch
+because that changes the meaning when the kernel default changes
+(which it will likely once the current default overhead is fixed)
 
-Because it's very late in 2.6.25-rc cycle (if this even makes in
-time), I didn't want to touch anything with SACK enabled here.
-Fragmenting might be useful for it as well but it's more or less
-a policy decision rather than mandatory fix. Thus there's no need
-to rush and we can postpone considering tcp_fragment with SACK
-for 2.6.26.
+It should be rather: cgroup=on/off 
 
-In 2.6.24 and earlier, this very same bug existed but the effect
-is slightly different because of a small changes in the if
-conditions that fit to the patch's context. With them nothing
-got lost marker and thus no retransmissions happened.
-
-Signed-off-by: Ilpo Järvinen <ilpo.jarvinen@helsinki.fi>
----
- net/ipv4/tcp_input.c |   22 ++++++++++++++++++----
- 1 files changed, 18 insertions(+), 4 deletions(-)
-
-diff --git a/net/ipv4/tcp_input.c b/net/ipv4/tcp_input.c
-index f82b573..f053bfe 100644
---- a/net/ipv4/tcp_input.c
-+++ b/net/ipv4/tcp_input.c
-@@ -2138,7 +2138,9 @@ static void tcp_mark_head_lost(struct sock *sk, int packets)
- {
- 	struct tcp_sock *tp = tcp_sk(sk);
- 	struct sk_buff *skb;
--	int cnt;
-+	int cnt, oldcnt;
-+	int err;
-+	unsigned int mss;
- 
- 	BUG_TRAP(packets <= tp->packets_out);
- 	if (tp->lost_skb_hint) {
-@@ -2157,13 +2159,25 @@ static void tcp_mark_head_lost(struct sock *sk, int packets)
- 		tp->lost_skb_hint = skb;
- 		tp->lost_cnt_hint = cnt;
- 
-+		if (after(TCP_SKB_CB(skb)->end_seq, tp->high_seq))
-+			break;
-+
-+		oldcnt = cnt;
- 		if (tcp_is_fack(tp) || tcp_is_reno(tp) ||
- 		    (TCP_SKB_CB(skb)->sacked & TCPCB_SACKED_ACKED))
- 			cnt += tcp_skb_pcount(skb);
- 
--		if ((cnt > packets) ||
--		    after(TCP_SKB_CB(skb)->end_seq, tp->high_seq))
--			break;
-+		if (cnt > packets) {
-+			if (tcp_is_sack(tp) || (oldcnt >= packets))
-+				break;
-+
-+			mss = skb_shinfo(skb)->gso_size;
-+			err = tcp_fragment(sk, skb, (packets - oldcnt) * mss, mss);
-+			if (err < 0)
-+				break;
-+			cnt = packets;
-+		}
-+
- 		if (!(TCP_SKB_CB(skb)->sacked & (TCPCB_SACKED_ACKED|TCPCB_LOST))) {
- 			TCP_SKB_CB(skb)->sacked |= TCPCB_LOST;
- 			tp->lost_out += tcp_skb_pcount(skb);
--- 
-1.5.2.2
-
+-Andi
