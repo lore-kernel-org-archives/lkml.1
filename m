@@ -1,97 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757897AbYDGLsS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757581AbYDGLxH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757897AbYDGLsS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Apr 2008 07:48:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755048AbYDGLsD
+	id S1757581AbYDGLxH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Apr 2008 07:53:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755048AbYDGLwz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Apr 2008 07:48:03 -0400
-Received: from styx.suse.cz ([82.119.242.94]:36707 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754131AbYDGLsB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Apr 2008 07:48:01 -0400
-Date: Mon, 7 Apr 2008 13:47:58 +0200
-From: Jan Kara <jack@suse.cz>
-To: Erez Zadok <ezk@cs.sunysb.edu>
-Cc: sct@redhat.com, akpm@linux-foundation.org, adilger@clusterfs.com,
-       linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: ext3 lockdep warning in 2.6.25-rc6
-Message-ID: <20080407114758.GE19286@duck.suse.cz>
-References: <20080325182909.GD21732@atrey.karlin.mff.cuni.cz> <200804041537.m34FbwBG009160@agora.fsl.cs.sunysb.edu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200804041537.m34FbwBG009160@agora.fsl.cs.sunysb.edu>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Mon, 7 Apr 2008 07:52:55 -0400
+Received: from e35.co.us.ibm.com ([32.97.110.153]:47689 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753927AbYDGLwz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Apr 2008 07:52:55 -0400
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: andi@firstfloor.org, Andrew Morton <akpm@linux-foundation.org>
+Cc: YAMAMOTO Takashi <yamamoto@valinux.co.jp>, Paul Menage <menage@google.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       Pavel Emelianov <xemul@openvz.org>, hugh@veritas.com,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Date: Mon, 07 Apr 2008 17:21:37 +0530
+Message-Id: <20080407115137.24124.59692.sendpatchset@localhost.localdomain>
+Subject: [-mm] Disable the memory controller by default
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri 04-04-08 11:37:58, Erez Zadok wrote:
-> In message <20080325182909.GD21732@atrey.karlin.mff.cuni.cz>, Jan Kara writes:
-> 
-> > > I was building a kernel using "make -j 4" inside a unionfs, mounted on top
-> > > of ext3.  The kernel is vanilla 2.6.25-rc6 plus unionfs patches.  At some
-> > > point I forced a cache flush using "echo 3 > /proc/sys/vm/drop_caches" and I
-> > > got the lockdep warning below.  Note that unionfs doesn't appear to be
-> > > involved in this lockdep warning at all, so I suspect this is probably an
-> > > issue between jbd and ext3 directly.
-> > > 
-> > > Let me know if I can be of more help.
-> >   Actually, I have a fix for that - attached. Can you try it? Thanks.
-> > 									Honza
-> [...]
-> 
-> > From f5e41087e345fa5c3b46ac36e6e4a654d2f7f624 Mon Sep 17 00:00:00 2001
-> > From: Jan Kara <jack@suse.cz>
-> > Date: Tue, 18 Mar 2008 14:38:06 +0100
-> > Subject: [PATCH] Fix drop_pagecache_sb() to not call __invalidate_mapping_pages() under
-> > inode_lock.
-> > 
-> > Signed-off-by: Jan Kara <jack@suse.cz>
-> > ---
-> >  fs/drop_caches.c |    8 +++++++-
-> >  1 files changed, 7 insertions(+), 1 deletions(-)
-> > 
-> > diff --git a/fs/drop_caches.c b/fs/drop_caches.c
-> > index 59375ef..f5aae26 100644
-> > --- a/fs/drop_caches.c
-> > +++ b/fs/drop_caches.c
-> > @@ -14,15 +14,21 @@ int sysctl_drop_caches;
-> >  
-> >  static void drop_pagecache_sb(struct super_block *sb)
-> >  {
-> > -	struct inode *inode;
-> > +	struct inode *inode, *toput_inode = NULL;
-> >  
-> >  	spin_lock(&inode_lock);
-> >  	list_for_each_entry(inode, &sb->s_inodes, i_sb_list) {
-> >  		if (inode->i_state & (I_FREEING|I_WILL_FREE))
-> >  			continue;
-> > +		__iget(inode);
-> > +		spin_unlock(&inode_lock);
-> >  		__invalidate_mapping_pages(inode->i_mapping, 0, -1, true);
-> > +		iput(toput_inode);
-> > +		toput_inode = inode;
-> > +		spin_lock(&inode_lock);
-> >  	}
-> >  	spin_unlock(&inode_lock);
-> > +	iput(toput_inode);
-> >  }
-> >  
-> >  void drop_pagecache(void)
-> 
-> Jan, I tried the above patch on top of v2.6.25-rc8-82-g49115b7, and using
-> the same setup and workloads that produced the warning before: running "make
-> -j 20" of the linux kernel 100 times, dual-CPU, SMP, PREEMPT, while running
-> flush_cache every few seconds.  The entire run took over 12 hours.  I'm
-> happy to report that so far I've not gotten the same lockdep warning as
-> before.
-  Great news, thanks.
 
-> Maybe this can now go to -mm for more testing?
-  Andrew has already merged it :).
 
-									Honza
+Due to the overhead of the memory controller. The
+memory controller is now disabled by default. This patch changes
+cgroup_disable to cgroup_toggle, so that each controller can decide
+whether it wants to be enabled/disabled by default.
+
+If everyone agrees on this approach and likes it, should we push this
+into 2.6.25?
+
+Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
+---
+
+ Documentation/kernel-parameters.txt |    5 +++--
+ kernel/cgroup.c                     |   11 ++++++-----
+ mm/memcontrol.c                     |    1 +
+ 3 files changed, 10 insertions(+), 7 deletions(-)
+
+diff -puN kernel/cgroup.c~memory-controller-default-option-off kernel/cgroup.c
+--- linux-2.6.25-rc8/kernel/cgroup.c~memory-controller-default-option-off	2008-04-07 16:24:28.000000000 +0530
++++ linux-2.6.25-rc8-balbir/kernel/cgroup.c	2008-04-07 16:47:48.000000000 +0530
+@@ -3063,7 +3063,7 @@ static void cgroup_release_agent(struct 
+ 	mutex_unlock(&cgroup_mutex);
+ }
+ 
+-static int __init cgroup_disable(char *str)
++static int __init cgroup_toggle(char *str)
+ {
+ 	int i;
+ 	char *token;
+@@ -3076,13 +3076,14 @@ static int __init cgroup_disable(char *s
+ 			struct cgroup_subsys *ss = subsys[i];
+ 
+ 			if (!strcmp(token, ss->name)) {
+-				ss->disabled = 1;
+-				printk(KERN_INFO "Disabling %s control group"
+-					" subsystem\n", ss->name);
++				ss->disabled = !ss->disabled;
++				if (ss->disabled)
++					printk(KERN_INFO "%s control group "
++						"is disabled", ss->name);
+ 				break;
+ 			}
+ 		}
+ 	}
+ 	return 1;
+ }
+-__setup("cgroup_disable=", cgroup_disable);
++__setup("cgroup_toggle=", cgroup_toggle);
+diff -puN mm/memcontrol.c~memory-controller-default-option-off mm/memcontrol.c
+--- linux-2.6.25-rc8/mm/memcontrol.c~memory-controller-default-option-off	2008-04-07 16:24:28.000000000 +0530
++++ linux-2.6.25-rc8-balbir/mm/memcontrol.c	2008-04-07 16:40:22.000000000 +0530
+@@ -1104,4 +1104,5 @@ struct cgroup_subsys mem_cgroup_subsys =
+ 	.populate = mem_cgroup_populate,
+ 	.attach = mem_cgroup_move_task,
+ 	.early_init = 0,
++	.disabled = 1,
+ };
+diff -puN Documentation/kernel-parameters.txt~memory-controller-default-option-off Documentation/kernel-parameters.txt
+--- linux-2.6.25-rc8/Documentation/kernel-parameters.txt~memory-controller-default-option-off	2008-04-07 16:38:25.000000000 +0530
++++ linux-2.6.25-rc8-balbir/Documentation/kernel-parameters.txt	2008-04-07 17:20:08.000000000 +0530
+@@ -381,9 +381,10 @@ and is between 256 and 4096 characters. 
+ 	ccw_timeout_log [S390]
+ 			See Documentation/s390/CommonIO for details.
+ 
+-	cgroup_disable= [KNL] Disable a particular controller
+-			Format: {name of the controller(s) to disable}
++	cgroup_toggle= [KNL] Toggle (enable/disable) a particular controller
++			Format: {name of the controller(s) to enable/disable}
+ 				{Currently supported controllers - "memory"}
++				{The memory controller is disabled by default}
+ 
+ 	checkreqprot	[SELINUX] Set initial checkreqprot flag value.
+ 			Format: { "0" | "1" }
+_
+
 -- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
