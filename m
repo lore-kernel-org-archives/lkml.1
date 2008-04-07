@@ -1,72 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755020AbYDGVRh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755614AbYDGVWe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755020AbYDGVRh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Apr 2008 17:17:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751785AbYDGVR0
+	id S1755614AbYDGVWe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Apr 2008 17:22:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752930AbYDGVWZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Apr 2008 17:17:26 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:59994 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751504AbYDGVR0 (ORCPT
+	Mon, 7 Apr 2008 17:22:25 -0400
+Received: from mu-out-0910.google.com ([209.85.134.186]:60723 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752719AbYDGVWY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Apr 2008 17:17:26 -0400
-Date: Mon, 7 Apr 2008 14:15:56 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-cc: Hugh Dickins <hugh@veritas.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Christoph Lameter <clameter@sgi.com>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Jens Axboe <jens.axboe@oracle.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+	Mon, 7 Apr 2008 17:22:24 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=JWcyVBIzASfOanCaeo8YvQ8Ei6tUzXlJJtzh0Z4Ze6ky1PXO/bBF2nQ4x9LUz3hDsnGtJQFFdrMnb1EK+sxPI/PdrPufngDcmIwLmQXGyGO9PRSI0i3ZkRN2QDZZyJ/1db80PfSsYJmKLKgg7u7r/Y4JqRS9/45hdGdV/mzfBhE=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: [git patches] IDE fixes
+Date: Mon, 7 Apr 2008 23:32:34 +0200
+User-Agent: KMail/1.9.9
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, linux-ide@vger.kernel.org,
        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] scsi: fix sense_slab/bio swapping livelock
-In-Reply-To: <47FA8CB0.6070106@cs.helsinki.fi>
-Message-ID: <alpine.LFD.1.00.0804071409150.2886@woody.linux-foundation.org>
-References: <Pine.LNX.4.64.0804062348001.19446@blonde.site>  <Pine.LNX.4.64.0804062213230.18148@schroedinger.engr.sgi.com>  <Pine.LNX.4.64.0804072000410.18591@blonde.site> <1207598115.29991.23.camel@lappy> <Pine.LNX.4.64.0804072121320.28744@blonde.site>
- <47FA8B5A.5090104@cs.helsinki.fi> <47FA8CB0.6070106@cs.helsinki.fi>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200804072332.34811.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
+- make siimage driver work on PPC 44x
+  (Sergei Shtylyov & Valentine Barshak)
 
-On Tue, 8 Apr 2008, Pekka Enberg wrote:
-> 
-> I wonder if we can get away with a SLAB_IO flag that you can use to annotate
-> caches that participate in writeout and the allocator could keep some spare
-> pages around that can be handed out for them in case of OOM...
+Linus, please pull from:
 
-Actually, I don't think this is SLAB-specific, since there are potentially 
-the same issues for pages.
+master.kernel.org:/pub/scm/linux/kernel/git/bart/ide-2.6.git/
 
-I suspect the right thing to do is not to mark them for "IO", but mark 
-them for "short-lived", and allow short-lived allocations that don't have 
-extended lifetimes to succeed even when a "real" allocation wouldn't.
+to receive the following updates:
 
-When we are under memory pressure, a normal allocation generally needs to 
-clear up enough memory from elsewhere to succeed. But a short-lived 
-allocation without any long-term lifetimes would be known to release its 
-memory back to the pool, so it can be allowed to go ahead when a normal 
-memory allocation would not.
+ drivers/ide/pci/siimage.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-Examples of short-lived allocations:
- - IO requests
- - temporary network packets that don't get queued up (eg "ACK" packet) as 
-   opposed to those that do get queued (incoming _or_ outgoing queues)
- - things like the temporary buffers for "getname()/putname()" etc.
 
-That said, even a lot of temporary allocations can at times have issues. 
-If your IO layer is dead, your IO request queues that _should_ have been 
-very temporary may end up staying around for a long time. But I do think 
-that it makes sense to prioritize allocations that are known to be short- 
-lived.
+Sergei Shtylyov (1):
+      siimage: fix kernel oops on PPC 44x
 
-(It might also allows us to allocate them from different pools and just 
-generally have other heuristics for cache behaviour - short-lived 
-allocations simply have different behaviour)
 
-			Linus
+diff --git a/drivers/ide/pci/siimage.c b/drivers/ide/pci/siimage.c
+index cc4be96..8d624af 100644
+--- a/drivers/ide/pci/siimage.c
++++ b/drivers/ide/pci/siimage.c
+@@ -492,7 +492,7 @@ static void proc_reports_siimage (struct pci_dev *dev, u8 clocking, const char *
+  
+ static unsigned int setup_mmio_siimage (struct pci_dev *dev, const char *name)
+ {
+-	unsigned long bar5	= pci_resource_start(dev, 5);
++	resource_size_t bar5	= pci_resource_start(dev, 5);
+ 	unsigned long barsize	= pci_resource_len(dev, 5);
+ 	u8 tmpbyte	= 0;
+ 	void __iomem *ioaddr;
