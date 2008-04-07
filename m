@@ -1,45 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756874AbYDGBa2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755819AbYDGBsE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756874AbYDGBa2 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Apr 2008 21:30:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756087AbYDGBaS
+	id S1755819AbYDGBsE (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Apr 2008 21:48:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753091AbYDGBrx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Apr 2008 21:30:18 -0400
-Received: from mta23.gyao.ne.jp ([125.63.38.249]:26287 "EHLO mx.gate01.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756086AbYDGBaR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Apr 2008 21:30:17 -0400
-Date: Mon, 7 Apr 2008 10:29:56 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: hannes@saeurebad.de
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [patch 17/22 -v2] sh: Use generic show_mem()
-Message-ID: <20080407012956.GA11221@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>, hannes@saeurebad.de,
-	LKML <linux-kernel@vger.kernel.org>
-References: <20080404115137.397502419@skyscraper.fehenstaub.lan> <20080404115233.063454998@skyscraper.fehenstaub.lan>
+	Sun, 6 Apr 2008 21:47:53 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:58241 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1752949AbYDGBrw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Apr 2008 21:47:52 -0400
+Message-ID: <47F97CD4.3020206@cn.fujitsu.com>
+Date: Mon, 07 Apr 2008 09:45:56 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080404115233.063454998@skyscraper.fehenstaub.lan>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Paul Menage <menage@google.com>, LKML <linux-kernel@vger.kernel.org>,
+       containers@lists.linux-foundation.org
+Subject: [PATCH -mm 2/3] cgroup: simplify init_subsys() (v2)
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 04, 2008 at 01:51:54PM +0200, hannes@saeurebad.de wrote:
-> Remove arch-specific show_mem() in favor of the generic version.
-> 
-> This also removes the following redundant information display:
-> 
-> 	- free pages, printed by show_free_areas()
-> 	- pages in slab, printed by show_free_areas()
-> 	- pages in swapcache, printed by show_swap_cache_info()
-> 
-> where show_mem() calls show_free_areas(), which calls
-> show_swap_cache_info().
-> 
-> Signed-off-by: Johannes Weiner <hannes@saeurebad.de>
-> CC: Paul Mundt <lethal@linux-sh.org>
+Changelog v2:
+-------------
+1. Add a BUG_ON() to insure no processes haved been forked before
+all subsystems have been registered.
+2. Update the document about the fork callback.
 
-Acked-by: Paul Mundt <lethal@linux-sh.org>
+We are at system boot and there is only 1 cgroup group (i,e,
+init_css_set), so we don't need to run through the css_set
+linked list. Neither do we need to run through the task list,
+since no processes have been created yet.
+
+Also referring to a comment in cgroup.h:
+
+struct css_set
+{
+	...
+	/*
+	 * Set of subsystem states, one for each subsystem. This array
+	 * is immutable after creation apart from the init_css_set
+	 * during subsystem registration (at boot time).
+	 */
+	struct cgroup_subsys_state *subsys[CGROUP_SUBSYS_COUNT];
+}
+
+Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+Reviewed-by: Paul Menage <menage@google.com>
+---
+
+I just resent this patch for Andrew. ;)
+
+One of the purposes of this patch is to be a preparation for the
+3rd patch. so this should be applied before that patch.
+
+---
+ Documentation/cgroups.txt |    3 +--
+ kernel/cgroup.c           |   35 +++++++++--------------------------
+ 2 files changed, 10 insertions(+), 28 deletions(-)
+
+diff --git a/Documentation/cgroups.txt b/Documentation/cgroups.txt
+index 31d12e2..c298a66 100644
+--- a/Documentation/cgroups.txt
++++ b/Documentation/cgroups.txt
+@@ -500,8 +500,7 @@ post-attachment activity that requires memory allocations or blocking.
+ 
+ void fork(struct cgroup_subsy *ss, struct task_struct *task)
+ 
+-Called when a task is forked into a cgroup. Also called during
+-registration for all existing tasks.
++Called when a task is forked into a cgroup.
+ 
+ void exit(struct cgroup_subsys *ss, struct task_struct *task)
+ 
+diff --git a/kernel/cgroup.c b/kernel/cgroup.c
+index f79e60d..250e28e 100644
+--- a/kernel/cgroup.c
++++ b/kernel/cgroup.c
+@@ -2471,7 +2471,6 @@ static int cgroup_rmdir(struct inode *unused_dir, struct dentry *dentry)
+ static void __init cgroup_init_subsys(struct cgroup_subsys *ss)
+ {
+ 	struct cgroup_subsys_state *css;
+-	struct list_head *l;
+ 
+ 	printk(KERN_INFO "Initializing cgroup subsys %s\n", ss->name);
+ 
+@@ -2482,35 +2481,19 @@ static void __init cgroup_init_subsys(struct cgroup_subsys *ss)
+ 	BUG_ON(IS_ERR(css));
+ 	init_cgroup_css(css, ss, dummytop);
+ 
+-	/* Update all cgroup groups to contain a subsys
++	/* Update the init_css_set to contain a subsys
+ 	 * pointer to this state - since the subsystem is
+-	 * newly registered, all tasks and hence all cgroup
+-	 * groups are in the subsystem's top cgroup. */
+-	write_lock(&css_set_lock);
+-	l = &init_css_set.list;
+-	do {
+-		struct css_set *cg =
+-			list_entry(l, struct css_set, list);
+-		cg->subsys[ss->subsys_id] = dummytop->subsys[ss->subsys_id];
+-		l = l->next;
+-	} while (l != &init_css_set.list);
+-	write_unlock(&css_set_lock);
+-
+- 	/* If this subsystem requested that it be notified with fork
+- 	 * events, we should send it one now for every process in the
+- 	 * system */
+-	if (ss->fork) {
+-		struct task_struct *g, *p;
+-
+-		read_lock(&tasklist_lock);
+-		do_each_thread(g, p) {
+-			ss->fork(ss, p);
+-		} while_each_thread(g, p);
+-		read_unlock(&tasklist_lock);
+-	}
++	 * newly registered, all tasks and hence the
++	 * init_css_set is in the subsystem's top cgroup. */
++	init_css_set.subsys[ss->subsys_id] = dummytop->subsys[ss->subsys_id];
+ 
+ 	need_forkexit_callback |= ss->fork || ss->exit;
+ 
++	/* At system boot, before all subsystems have been
++	 * registered, no tasks have been forked, so we don't
++	 * need to invoke fork callbacks here. */
++	BUG_ON(!list_empty(&init_task.tasks));
++
+ 	ss->active = 1;
+ }
+ 
+-- 
+1.5.4.rc3
