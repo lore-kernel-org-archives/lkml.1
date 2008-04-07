@@ -1,56 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753396AbYDGGUW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753058AbYDGGWR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753396AbYDGGUW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Apr 2008 02:20:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751688AbYDGGUL
+	id S1753058AbYDGGWR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Apr 2008 02:22:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752002AbYDGGWJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Apr 2008 02:20:11 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:35264 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751493AbYDGGUK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Apr 2008 02:20:10 -0400
-Date: Sun, 6 Apr 2008 23:20:08 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Andrea Arcangeli <andrea@qumranet.com>
-cc: Robin Holt <holt@sgi.com>, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       kvm-devel@lists.sourceforge.net,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, general@lists.openfabrics.org,
-       steiner@sgi.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [patch 02/10] emm: notifier logic
-In-Reply-To: <20080407060602.GE9309@duo.random>
-Message-ID: <Pine.LNX.4.64.0804062314080.18728@schroedinger.engr.sgi.com>
-References: <20080404223048.374852899@sgi.com> <20080404223131.469710551@sgi.com>
- <20080405005759.GH14784@duo.random> <Pine.LNX.4.64.0804062246030.18148@schroedinger.engr.sgi.com>
- <20080407060602.GE9309@duo.random>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 7 Apr 2008 02:22:09 -0400
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:34711 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751688AbYDGGWH (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Apr 2008 02:22:07 -0400
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Andrew Morton <akpm@linux-foundation.org>, mingo@redhat.com
+Cc: linux-kernel@vger.kernel.org
+Subject: 2.6.25-rc8-mm1 - BUG: scheduling while atomic: swapper/0/0xffffffff
+In-Reply-To: Your message of "Tue, 01 Apr 2008 21:32:14 PDT."
+             <20080401213214.8fbb6d6b.akpm@linux-foundation.org>
+From: Valdis.Kletnieks@vt.edu
+References: <20080401213214.8fbb6d6b.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1207549282_5425P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 7bit
+Date: Mon, 07 Apr 2008 02:21:22 -0400
+Message-ID: <4487.1207549282@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 7 Apr 2008, Andrea Arcangeli wrote:
+--==_Exmh_1207549282_5425P
+Content-Type: text/plain; charset=us-ascii
 
-> > > My mm_lock solution makes all rcu serialization an unnecessary
-> > > overhead so you should remove it like I already did in #v11. If it
-> > > wasn't the case, then mm_lock wouldn't be a definitive fix for the
-> > > race.
-> > 
-> > There still could be junk in the cache of one cpu. If you just read the 
-> > new pointer but use the earlier content pointed to then you have a 
-> > problem.
-> 
-> There can't be junk, spinlocks provides semantics of proper memory
-> barriers, just like rcu, so it's entirely superflous.
-> 
-> There could be junk only if any of the mmu_notifier_* methods would be
-> invoked _outside_ the i_mmap_lock and _outside_ the anon_vma and
-> outside the mmap_sem, that is never the case of course.
+On Tue, 01 Apr 2008 21:32:14 PDT, Andrew Morton said:
+> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.25-rc8/2.6.25-rc8-mm1/
 
-So we use other locks to perform serialization on the list chains? 
-Basically the list chains are protected by either mmap_sem or an rmap 
-lock? We need to document that.
+Been seeing these crop up once in a while - can take hours after a reboot
+before I see the first one, but once I see one, I'm likely to see more, at
+a frequency of anywhere from ~5seconds to ~10 minutes between BUG msgs.
 
-In that case we could also add an unregister function.
+BUG: scheduling while atomic: swapper/0/0xffffffff
+Pid: 0, comm: swapper Tainted: P          2.6.25-rc8-mm1 #4
 
+Call Trace:
+ [<ffffffff8020b2f4>] ? default_idle+0x0/0x74
+ [<ffffffff8022be19>] __schedule_bug+0x5d/0x61
+ [<ffffffff80552aea>] schedule+0x11a/0x9e4
+ [<ffffffff805536ce>] ? preempt_schedule+0x3c/0xaa
+ [<ffffffff802480f1>] ? hrtimer_forward+0x82/0x96
+ [<ffffffff804600a4>] ? cpuidle_idle_call+0x0/0xd5
+ [<ffffffff8020b2f4>] ? default_idle+0x0/0x74
+ [<ffffffff8020b2e0>] cpu_idle+0xf6/0x10a
+ [<ffffffff80540cb2>] rest_init+0x86/0x8a
+
+Eventually, I end up with a basically hung system, and need to alt-sysrq-B.
+
+Yes, I know it's tainted, and it's possible the root cause is a self-inflicted
+buggy module - but the traceback above seems odd.  Did some of my code manage
+to idle the CPU while is_atomic was set, or is the path from cpu_idle on down
+doing something it shouldn't be?
+
+(I admit being confused - if my code was the source of the is_atomic error,
+shouldn't it have been caught on the *previous* call to schedule - the one
+that ran through all the queues and decided we should invoke idle?
+
+
+--==_Exmh_1207549282_5425P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFH+b1icC3lWbTT17ARAtQHAJ916CNMzqH/AoUYIrbeQZNlNDFbGgCgzYKP
+mz55GG6B4KbTiB07zzyMYc0=
+=ip0K
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1207549282_5425P--
