@@ -1,59 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752541AbYDGRSW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752541AbYDGRfE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752541AbYDGRSW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Apr 2008 13:18:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751497AbYDGRSO
+	id S1752541AbYDGRfE (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Apr 2008 13:35:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751369AbYDGRex
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Apr 2008 13:18:14 -0400
-Received: from mail.issp.bas.bg ([195.96.236.10]:60614 "EHLO mail.issp.bas.bg"
+	Mon, 7 Apr 2008 13:34:53 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:56611 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751407AbYDGRSO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Apr 2008 13:18:14 -0400
-From: Marin Mitov <mitov@issp.bas.bg>
-Organization: Institute of Solid State Physics
-To: linux-kernel@vger.kernel.org
-Subject: [BUG] CONFIG_IRQBALANCE=y broken?
-Date: Mon, 7 Apr 2008 20:17:59 +0300
-User-Agent: KMail/1.9.7
-Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Stephen Hemminger <shemminger@linux-foundation.org>
+	id S1751080AbYDGRew (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Apr 2008 13:34:52 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: nikosapi <me@nikosapi.org>
+Subject: Re: Suspend on Lenovo 3000 V200 - Linux 2.6.25rc8
+Date: Mon, 7 Apr 2008 19:34:41 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: linux-acpi@vger.kernel.org, Len Brown <lenb@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>
+References: <3e8fd0440804052010xbe8f59bw3268d8206b97ac3e@mail.gmail.com> <200804071058.38141.rjw@sisk.pl> <200804071008.33879.me@nikosapi.org>
+In-Reply-To: <200804071008.33879.me@nikosapi.org>
 MIME-Version: 1.0
-Content-Disposition: inline
 Content-Type: text/plain;
-  charset="us-ascii"
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <200804072017.59428.mitov@issp.bas.bg>
+Content-Disposition: inline
+Message-Id: <200804071934.42121.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Ingo, Thomas,
+On Monday, 7 of April 2008, nikosapi wrote:
+> On April 7, 2008 04:58:37 Rafael J. Wysocki wrote:
+> > On Monday, 7 of April 2008, nikosapi wrote:
+> > > On April 6, 2008 19:23:36 Rafael J. Wysocki wrote:
+> > > > On Monday, 7 of April 2008, nikosapi wrote:
+> > > > > On April 6, 2008 16:21:57 Rafael J. Wysocki wrote:
+> > > > > > On Sunday, 6 of April 2008, Nick Nobody wrote:
+> >
+> > [--snip--]
+> >
+> > > > > Hello Rafael,
+> > > > >
+> > > > > I tested with that patch and the problem persists, when the laptop
+> > > > > resumes it locks up (with a black screen). If I add
+> > > > > acpi_apic_instance=2 acpi_osi=Linux as kernel boot options (as
+> > > > > suggested by my dmesg) when it resumes I get back to a virtual term
+> > > > > but I'm not able to log in. After entering my username it just hangs
+> > > > > there.
+> >
+> > Have you tried if doing "echo mem > /sys/power/state" instead of s2ram
+> > works?
+> >
+> > If you have, what graphics adapter is there in your machine?
+> >
+> > Rafael
+> > --
+> 
+> Yes, I've been using /sys/power/state to put the machine to sleep ever since 
+> you told me. 
+> 
+> Here's the output of lspci -d 8086:2a02 -vvvxxx 
+> 
+> 00:02.0 VGA compatible controller: Intel Corporation Mobile GM965/GL960 
+> Integrated Graphics Controller (rev 03) (prog-if 00 [VGA controller])
 
-When kernel-2.6.24.x is compiled with 
+Hm, Intel.  Do you use the i915 driver?
 
-CONFIG_IRQBALANCE=y, 
+Well, I think that what you see is another form of
+http://bugzilla.kernel.org/show_bug.cgi?id=10319
+so you can add yourself to the CC list in there.
 
-and heavy LAN (outbound) traffic, I experience LAN dying due to
-IRQ# masked at the IO_APIC (bit 16 is 1, for the corresponding irq
-vector) (SMP x86_32,  AMD X2), as described in my previous post:
-
-http://lkml.org/lkml/2008/3/25/165
-
-and links to previous posts there in. When
-
-CONFIG_IRQBALANCE is not set
-
-I am not able to reproduce the problem. That makes me think that 
-there is a race/bug somewhere in the irq balancing code that 
-leaves (rarely) the corresponding IRQ# masked at the IO-APIC.
-
-Any comments, suggestions, patches?
-
-Additional info?
-
-Thank you in advance for your answer.
-
-Regards
-
-Marin Mitov
-
+Thanks,
+Rafael
