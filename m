@@ -1,92 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761469AbYDGP41@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761559AbYDGP4n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761469AbYDGP41 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Apr 2008 11:56:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755881AbYDGPvh
+	id S1761559AbYDGP4n (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Apr 2008 11:56:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759894AbYDGPvk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Apr 2008 11:51:37 -0400
-Received: from saeurebad.de ([85.214.36.134]:44808 "EHLO saeurebad.de"
+	Mon, 7 Apr 2008 11:51:40 -0400
+Received: from rtr.ca ([76.10.145.34]:2658 "EHLO mail.rtr.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758784AbYDGPvf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Apr 2008 11:51:35 -0400
-X-Mailbox-Line: From hannes@skyscraper.fehenstaub.lan Mon Apr  7 16:42:42 2008
-Message-Id: <20080407144242.328903153@skyscraper.fehenstaub.lan>
-References: <20080407144008.124362640@skyscraper.fehenstaub.lan>
-User-Agent: quilt/0.46-1
-Date: Mon, 07 Apr 2008 16:40:30 +0200
-From: Johannes Weiner <hannes@saeurebad.de>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Chris Zankel <chris@zankel.net>
-Subject: [patch 22/22 -v3] xtensa: Use generic show_mem()
-Content-Disposition: inline; filename=xtensa-use-generic-show_mem.patch
-X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
+	id S1759886AbYDGPvj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Apr 2008 11:51:39 -0400
+Message-ID: <47FA430A.2030908@rtr.ca>
+Date: Mon, 07 Apr 2008 11:51:38 -0400
+From: Mark Lord <lkml@rtr.ca>
+Organization: Real-Time Remedies Inc.
+User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
+MIME-Version: 1.0
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: LKML <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, david-b@pacbell.net,
+       oliver@neukum.org, Alan Stern <stern@rowland.harvard.edu>,
+       Dave Airlie <airlied@linux.ie>, Jesse Barnes <jesse.barnes@intel.com>,
+       Pavel Machek <pavel@ucw.cz>
+Subject: Re: 2.6.25-rc7/8: Another resume regression
+References: <200803220259.48534.rjw@sisk.pl> <47F52AAC.8090005@rtr.ca> <47F6E393.10904@rtr.ca> <200804071251.03147.rjw@sisk.pl>
+In-Reply-To: <200804071251.03147.rjw@sisk.pl>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Remove arch-specific show_mem() in favor of the generic version.
+Rafael J. Wysocki wrote:
+> On Saturday, 5 of April 2008, Mark Lord wrote:
+>> Mark Lord wrote:
+>>> Hi,
+>>>
+>>> Okay, USB now works fine on resume after fixing the iaa_watchdog issue.
+>>>
+>>> But twice now, once before that fix, and again just a minute ago,
+>>> my machine has failed completely to resume after suspend-to-RAM.
+>>>
+>>> Again, resume here is 100% reliable in 2.6.24 and earlier.
+>>>
+>>> Symptoms: the usual:
+>>>
+>>>  -- 2.6.25-rc8 (and -rc7 earlier), plus USB fix.
+>>>  -- not reproduceable on demand.
+>>>  -- black screen of death -- no backlight, no kernel messages.
+>>>  -- no hard drive activity.
+>>>  -- no alt-sysrq-anything.
+>>>  -- 5 second hold of the power button to poweroff and then recover.
+>>>
+>>> Not much info to go on, but it's worth knowing there's an issue here 
+>>> somewhere.
+>> ..
+>>
+>> Mmmm... Now that 2.6.25-rc* is usable here, there's another symptom
+>> that's been happening regularly enough that it's got to be a regression
+>> of some sort.
+>>
+>> This machine has an ATI X1400 video card, which doesn't work with any
+>> open source X server that I know of.  Maybe latest RadeonHD would work
+>> but it didn't when I tried it in January.
+>>
+>> So I'm using the ATI binary fglrx X server, but without their kernel module,
+>> so no 3D acceleration (fine.. only affects Google Earth, really).
+>>
+>> Now.. on 2.6.25, after a suspend/resume cycle (or three), the framebuffer
+>> frequently starts going wonky.  "snowy" pixels appear, and stay.
+>> Just a moment ago here, the entire background changed to zebra stripes.
+>>
+>> And so on..  Peculiar stuff.
+>>
+>> I'm wondering if something to do with video mode switching,
+>> or video register save/restore, has changed since 2.6.24.
+>> Because it's broken in 2.6.25, yet works fine in all earlier kernels.
+> 
+> Yes, that's probably related.
+> 
+> However, I'm unable to reproduce the breakage.  If you can do that, it would
+> probably help a lot if you identified the commit causing that to happen.
+..
 
-This also removes the following redundant information display:
+Well, it would help then if you identified the commits which hacked
+at the video mode switching.  Then I can revert those and see what happens.
+There's probably not many commits there, and since it doesn't do it consistently
+(and sometimes the machine just doesn't resume at all with 2.6.25), 
+it is tricky to bisect.
 
-	- free pages, printed by show_free_areas()
-	- pages in swapcache, printed by show_swap_cache_info()
-
-where show_mem() calls show_free_areas(), which calls
-show_swap_cache_info().
-
-Signed-off-by: Johannes Weiner <hannes@saeurebad.de>
-CC: Chris Zankel <chris@zankel.net>
----
-
-Index: tree-linus/arch/xtensa/mm/init.c
-===================================================================
---- tree-linus.orig/arch/xtensa/mm/init.c
-+++ tree-linus/arch/xtensa/mm/init.c
-@@ -280,32 +280,6 @@ void free_initmem(void)
- 	       (&__init_end - &__init_begin) >> 10);
- }
+Works perfectly in 2.6.24, though, which is what I'm now running again.
  
--void show_mem(void)
--{
--	int i, free = 0, total = 0, reserved = 0;
--	int shared = 0, cached = 0;
--
--	printk("Mem-info:\n");
--	show_free_areas();
--	i = max_mapnr;
--	while (i-- > 0) {
--		total++;
--		if (PageReserved(mem_map+i))
--			reserved++;
--		else if (PageSwapCache(mem_map+i))
--			cached++;
--		else if (!page_count(mem_map + i))
--			free++;
--		else
--			shared += page_count(mem_map + i) - 1;
--	}
--	printk("%d pages of RAM\n", total);
--	printk("%d reserved pages\n", reserved);
--	printk("%d pages shared\n", shared);
--	printk("%d pages swap cached\n",cached);
--	printk("%d free pages\n", free);
--}
--
- struct kmem_cache *pgtable_cache __read_mostly;
- 
- static void pgd_ctor(struct kmem_cache *cache, void* addr)
-Index: tree-linus/arch/xtensa/Kconfig
-===================================================================
---- tree-linus.orig/arch/xtensa/Kconfig
-+++ tree-linus/arch/xtensa/Kconfig
-@@ -15,6 +15,7 @@ config XTENSA
- 	bool
- 	default y
- 	select HAVE_IDE
-+	select HAVE_GENERIC_SHOW_MEM
- 	help
- 	  Xtensa processors are 32-bit RISC machines designed by Tensilica
- 	  primarily for embedded systems.  These processors are both
-
--- 
-
+Thanks
