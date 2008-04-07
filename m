@@ -1,178 +1,192 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755350AbYDGUhM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755216AbYDGUjs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755350AbYDGUhM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Apr 2008 16:37:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752194AbYDGUhA
+	id S1755216AbYDGUjs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Apr 2008 16:39:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752194AbYDGUjl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Apr 2008 16:37:00 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:44698 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752111AbYDGUg7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Apr 2008 16:36:59 -0400
-Message-ID: <47FA85E4.5010005@sgi.com>
-Date: Mon, 07 Apr 2008 13:36:52 -0700
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Mon, 7 Apr 2008 16:39:41 -0400
+Received: from mail.fieldses.org ([66.93.2.214]:60228 "EHLO fieldses.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752111AbYDGUjk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Apr 2008 16:39:40 -0400
+Date: Mon, 7 Apr 2008 16:39:38 -0400
+To: Jonathan Corbet <corbet@lwn.net>
+Cc: Randy Dunlap <rdunlap@xenotime.net>, linux-kernel@vger.kernel.org
+Subject: [PATCH] Move sched-rt-group.txt to scheduler/
+Message-ID: <20080407203938.GC11219@fieldses.org>
+References: <1207598345-14295-1-git-send-email-bfields@citi.umich.edu> <26652.1207599992@vena.lwn.net> <20080407203158.GB11219@fieldses.org>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Christoph Lameter <clameter@sgi.com>
-Subject: Re: [PATCH 01/10] x86_64: Cleanup non-smp usage of cpu maps v2
-References: <20080325220650.835342000@polaris-admin.engr.sgi.com> <20080325220651.011213000@polaris-admin.engr.sgi.com> <20080326064045.GF18301@elte.hu>
-In-Reply-To: <20080326064045.GF18301@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080407203158.GB11219@fieldses.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Mike Travis <travis@sgi.com> wrote:
-> 
->> Cleanup references to the early cpu maps for the non-SMP configuration 
->> and remove some functions called for SMP configurations only.
-> 
-> thanks, applied.
-> 
-> one observation:
-> 
->> +#ifdef CONFIG_SMP
->>  extern int x86_cpu_to_node_map_init[];
->>  extern void *x86_cpu_to_node_map_early_ptr;
->> +#else
->> +#define x86_cpu_to_node_map_early_ptr NULL
->> +#endif
-> 
-> Right now all these early_ptrs are in essence open-coded "early 
-> per-cpu", right? But shouldnt we solve that in a much cleaner way: by 
-> explicitly adding an early-per-cpu types and accessors, and avoid all 
-> that #ifdeffery?
-> 
-> 	Ingo
+From: J. Bruce Fields <bfields@citi.umich.edu>
 
-How about something like the below? (I haven't tried compiling it yet.)
+Signed-off-by: J. Bruce Fields <bfields@citi.umich.edu>
 
-[I also thought about not restricting it to only NR_CPUS type variables
-to allow for example, node-local node maps/variables.]
+---
+ Documentation/sched-rt-group.txt           |   59 ----------------------------
+ Documentation/scheduler/00-INDEX           |    2 +
+ Documentation/scheduler/sched-rt-group.txt |   59 ++++++++++++++++++++++++++++
+ 3 files changed, 61 insertions(+), 59 deletions(-)
+ delete mode 100644 Documentation/sched-rt-group.txt
+ create mode 100644 Documentation/scheduler/sched-rt-group.txt
 
-Thanks,
-Mike
-------------------------------------------------------------
-include/linux/percpu.h:
+On Mon, Apr 07, 2008 at 04:31:58PM -0400, J. Bruce Fields wrote:
+> Thanks!  Oh, also, I just noticed one more.  But one could probably do
+> this all day....
 
-#ifdef CONFIG_SMP
-#define	DEFINE_EARLY_PER_CPU(type, name, initvalue)	\
-	DEFINE_PER_CPU(type, name) = initvalue;		\
-	type name##_early_map[NR_CPUS] __initdata =	\
-		{ [0 ... NR_CPUS-1] = initvalue; }	\
-	type *name##_early_ptr = name##_early_map
+Err--especially if I forget to "git add" a moved file.  Apologies!
 
-#define DECLARE_EARLY_PER_CPU(type, name)		\
-	DECLARE_PER_CPU(type, name);			\
-	extern type *name##_early_ptr;			\
-	extern type  name##_early_map[]
+--b.
 
-#define EXPORT_EARLY_PER_CPU(name)			\
-	EXPORT_PER_CPU(name)
+diff --git a/Documentation/sched-rt-group.txt b/Documentation/sched-rt-group.txt
+deleted file mode 100644
+index 1c6332f..0000000
+--- a/Documentation/sched-rt-group.txt
++++ /dev/null
+@@ -1,59 +0,0 @@
+-
+-
+-Real-Time group scheduling.
+-
+-The problem space:
+-
+-In order to schedule multiple groups of realtime tasks each group must
+-be assigned a fixed portion of the CPU time available. Without a minimum
+-guarantee a realtime group can obviously fall short. A fuzzy upper limit
+-is of no use since it cannot be relied upon. Which leaves us with just
+-the single fixed portion.
+-
+-CPU time is divided by means of specifying how much time can be spent
+-running in a given period. Say a frame fixed realtime renderer must
+-deliver 25 frames a second, which yields a period of 0.04s. Now say
+-it will also have to play some music and respond to input, leaving it
+-with around 80% for the graphics. We can then give this group a runtime
+-of 0.8 * 0.04s = 0.032s.
+-
+-This way the graphics group will have a 0.04s period with a 0.032s runtime
+-limit.
+-
+-Now if the audio thread needs to refill the DMA buffer every 0.005s, but
+-needs only about 3% CPU time to do so, it can do with a 0.03 * 0.005s
+-= 0.00015s.
+-
+-
+-The Interface:
+-
+-system wide:
+-
+-/proc/sys/kernel/sched_rt_period_ms
+-/proc/sys/kernel/sched_rt_runtime_us
+-
+-CONFIG_FAIR_USER_SCHED
+-
+-/sys/kernel/uids/<uid>/cpu_rt_runtime_us
+-
+-or
+-
+-CONFIG_FAIR_CGROUP_SCHED
+-
+-/cgroup/<cgroup>/cpu.rt_runtime_us
+-
+-[ time is specified in us because the interface is s32; this gives an
+-  operating range of ~35m to 1us ]
+-
+-The period takes values in [ 1, INT_MAX ], runtime in [ -1, INT_MAX - 1 ].
+-
+-A runtime of -1 specifies runtime == period, ie. no limit.
+-
+-New groups get the period from /proc/sys/kernel/sched_rt_period_us and
+-a runtime of 0.
+-
+-Settings are constrained to:
+-
+-   \Sum_{i} runtime_{i} / global_period <= global_runtime / global_period
+-
+-in order to keep the configuration schedulable.
+diff --git a/Documentation/scheduler/00-INDEX b/Documentation/scheduler/00-INDEX
+index b5f5ca0..fc234d0 100644
+--- a/Documentation/scheduler/00-INDEX
++++ b/Documentation/scheduler/00-INDEX
+@@ -12,5 +12,7 @@ sched-domains.txt
+ 	- information on scheduling domains.
+ sched-nice-design.txt
+ 	- How and why the scheduler's nice levels are implemented.
++sched-rt-group.txt
++	- real-time group scheduling.
+ sched-stats.txt
+ 	- information on schedstats (Linux Scheduler Statistics).
+diff --git a/Documentation/scheduler/sched-rt-group.txt b/Documentation/scheduler/sched-rt-group.txt
+new file mode 100644
+index 0000000..1c6332f
+--- /dev/null
++++ b/Documentation/scheduler/sched-rt-group.txt
+@@ -0,0 +1,59 @@
++
++
++Real-Time group scheduling.
++
++The problem space:
++
++In order to schedule multiple groups of realtime tasks each group must
++be assigned a fixed portion of the CPU time available. Without a minimum
++guarantee a realtime group can obviously fall short. A fuzzy upper limit
++is of no use since it cannot be relied upon. Which leaves us with just
++the single fixed portion.
++
++CPU time is divided by means of specifying how much time can be spent
++running in a given period. Say a frame fixed realtime renderer must
++deliver 25 frames a second, which yields a period of 0.04s. Now say
++it will also have to play some music and respond to input, leaving it
++with around 80% for the graphics. We can then give this group a runtime
++of 0.8 * 0.04s = 0.032s.
++
++This way the graphics group will have a 0.04s period with a 0.032s runtime
++limit.
++
++Now if the audio thread needs to refill the DMA buffer every 0.005s, but
++needs only about 3% CPU time to do so, it can do with a 0.03 * 0.005s
++= 0.00015s.
++
++
++The Interface:
++
++system wide:
++
++/proc/sys/kernel/sched_rt_period_ms
++/proc/sys/kernel/sched_rt_runtime_us
++
++CONFIG_FAIR_USER_SCHED
++
++/sys/kernel/uids/<uid>/cpu_rt_runtime_us
++
++or
++
++CONFIG_FAIR_CGROUP_SCHED
++
++/cgroup/<cgroup>/cpu.rt_runtime_us
++
++[ time is specified in us because the interface is s32; this gives an
++  operating range of ~35m to 1us ]
++
++The period takes values in [ 1, INT_MAX ], runtime in [ -1, INT_MAX - 1 ].
++
++A runtime of -1 specifies runtime == period, ie. no limit.
++
++New groups get the period from /proc/sys/kernel/sched_rt_period_us and
++a runtime of 0.
++
++Settings are constrained to:
++
++   \Sum_{i} runtime_{i} / global_period <= global_runtime / global_period
++
++in order to keep the configuration schedulable.
+-- 
+1.5.5.rc1
 
-/* rvalue only */
-#define	early_per_cpu(name, cpu) 			\
-	(name##ptr? name##ptr[cpu] : per_cpu(name, cpu))
-#define	early_per_cpu_ptr(name) (name##_early_ptr)
-#define	early_per_cpu_map(name, idx) (name##_early_map[idx])
-
-#else	/* !CONFIG_SMP */
-#define	DEFINE_EARLY_PER_CPU(type, name, initvalue)	\
-	DEFINE_PER_CPU(type, name) = initvalue
-
-#define DECLARE_EARLY_PER_CPU(name)			\
-	DECLARE_PER_CPU(name)
-
-#define EXPORT_EARLY_PER_CPU(name)			\
-	EXPORT_PER_CPU(name)
-
-#define	early_per_cpu(name, cpu) per_cpu(name, cpu) 
-#define	early_per_cpu_ptr(name) NULL
-/* no early_per_cpu_map() */
-
-#endif	/* !CONFIG_SMP */
-
-
-------------------------------------------------------------
-include/asm-x86/smp.h:
-
-DECLARE_EARLY_PER_CPU(u16, x86_cpu_to_apicid);
-DECLARE_EARLY_PER_CPU(u16, x86_bios_cpu_apicid);
-
-------------------------------------------------------------
-arch/x86/kernel/setup.c:
-
-/* which logical CPU number maps to which CPU (physical APIC ID) */
-DEFINE_EARLY_PER_CPU(u16, x86_cpu_to_apicid, BAD_APICID);
-DEFINE_EARLY_PER_CPU(u16, x86_bios_cpu_apicid, BAD_APICID);
-EXPORT_EARLY_PER_CPU(x86_cpu_to_apicid);
-EXPORT_EARLY_PER_CPU(x86_bios_cpu_apicid);
-
-#ifdef CONFIG_NUMA
-DEFINE_EARLY_PER_CPU(int, x86_cpu_to_node, NUMA_NO_NODE);
-EXPORT_EARLY_PER_CPU(x86_cpu_to_node);
-#endif
-
-...
-
-#if defined(CONFIG_HAVE_SETUP_PER_CPU_AREA) && defined(CONFIG_SMP)
-/*
- * Copy data used in early init routines from the initial arrays to the
- * per cpu data areas.  These arrays then become expendable and the
- * *_early_ptr's are zeroed indicating that the static arrays are gone.
- */
-static void __init setup_per_cpu_maps(void)
-{
-	int cpu;
-
-	for_each_possible_cpu(cpu) {
-		per_cpu(x86_cpu_to_apicid, cpu) =
-				early_per_cpu_map(x86_cpu_to_apicid, cpu);
-		per_cpu(x86_bios_cpu_apicid, cpu) =
-				early_per_cpu_map(x86_bios_cpu_apicid, cpu);
-#ifdef CONFIG_NUMA
-		per_cpu(x86_cpu_to_node_map, cpu) =
-				early_per_cpu_map(x86_cpu_to_node_map, cpu);
-#endif
-	}
-
-	/* indicate the early static arrays will soon be gone */
-	early_per_cpu_ptr(x86_cpu_to_apicid) = NULL;
-	early_per_cpu_ptr(x86_bios_cpu_apicid) = NULL;
-#ifdef CONFIG_NUMA
-	early_per_cpu_ptr(x86_cpu_to_node_map) = NULL;
-#endif
-	...
-
-------------------------------------------------------------
-arch/x86/mm/numa_64.c:
-
-void __cpuinit numa_set_node(int cpu, int node)
-{
-	int *cpu_to_node_map = early_per_cpu_ptr(x86_cpu_to_node_map);
-
-	if(cpu_to_node_map)
-		cpu_to_node_map[cpu] = node;
-	else if(per_cpu_offset(cpu))
-		per_cpu(x86_cpu_to_node_map, cpu) = node;
-...
-void __init init_cpu_to_node(void)
-{
-	int i;
-
-	for (i = 0; i < NR_CPUS; i++) {
-		int node;
-		u16 apicid = early_per_cpu(x86_cpu_to_apicid, i);
-
-		if (apicid == BAD_APICID)
-			continue;
-...
-
-------------------------------------------------------------
