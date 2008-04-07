@@ -1,66 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755991AbYDGVBy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756075AbYDGVDr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755991AbYDGVBy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Apr 2008 17:01:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752111AbYDGVBq
+	id S1756075AbYDGVDr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Apr 2008 17:03:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751990AbYDGVDl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Apr 2008 17:01:46 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:44851 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751504AbYDGVBp (ORCPT
+	Mon, 7 Apr 2008 17:03:41 -0400
+Received: from indigo.cs.bgu.ac.il ([132.72.42.23]:48104 "EHLO
+	indigo.cs.bgu.ac.il" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751896AbYDGVDk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Apr 2008 17:01:45 -0400
-Message-ID: <47FA8B5A.5090104@cs.helsinki.fi>
-Date: Tue, 08 Apr 2008 00:00:10 +0300
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-User-Agent: Thunderbird 2.0.0.12 (Macintosh/20080213)
+	Mon, 7 Apr 2008 17:03:40 -0400
+X-Greylist: delayed 1182 seconds by postgrey-1.27 at vger.kernel.org; Mon, 07 Apr 2008 17:03:40 EDT
+Date: Mon, 7 Apr 2008 23:45:15 +0300 (IDT)
+Message-Id: <200804072045.m37KjFEX016950@indigo.cs.bgu.ac.il>
+From: "eial@cs.bgu.ac.il" <eial@cs.bgu.ac.il>
+To: linux-kernel@vger.kernel.org
+Subject: keyboard disconnects with kernel 2.6.24-r4
 MIME-Version: 1.0
-To: Hugh Dickins <hugh@veritas.com>
-CC: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Christoph Lameter <clameter@sgi.com>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Jens Axboe <jens.axboe@oracle.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] scsi: fix sense_slab/bio swapping livelock
-References: <Pine.LNX.4.64.0804062348001.19446@blonde.site>  <Pine.LNX.4.64.0804062213230.18148@schroedinger.engr.sgi.com>  <Pine.LNX.4.64.0804072000410.18591@blonde.site> <1207598115.29991.23.camel@lappy> <Pine.LNX.4.64.0804072121320.28744@blonde.site>
-In-Reply-To: <Pine.LNX.4.64.0804072121320.28744@blonde.site>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Organization: CS Department
+X-Mailer: CS Webmail v3.10
+X-Priority: 3 (Normal)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Hugh,
 
-On Mon, 2008-04-07 at 20:40 +0100, Hugh Dickins wrote:
-> > > If we had a SLAB_NOMERGE flag, would we want to apply it to the
-> > > bio cache or to the scsi_sense_cache or to both?  My difficulty
-> > > in answering that makes me wonder whether such a flag is right.
+hello, I own a DV9000z, running gentoo and kernel 2.6.24-r3 on it, I'm not using r4 because while working with the computer, after a while, my keyboard disconnects. trying to shutdown the computer causes in system freeze.
+this do not happens in r3, the difference that I saw between r3 and r4 is that in r3 my inputs are labeled /class/input/input4 while in r4 they are labeled /devices/platform/i8042/serio0/input/input4.
+how can I fix it?
 
-On Mon, 7 Apr 2008, Peter Zijlstra wrote:
-> > If this is critical to avoid memory deadlocks, I would suggest using
-> > mempools (or my reserve framework).
+thanks.
 
-Hugh Dickins wrote:
-> No, the critical part of it has been dealt with (small fix to scsi
-> free_list handling: which resembles a mempool, but done its own way).
-> 
-> What remains is about "unsightly" behaviour, the system having a
-> tendency to collapse briefly into far-from-efficient operation
-> when out of memory.
 
-Although you weren't convinced by my arguments, I still have 
-difficulties understanding why this kind of bad behavior would be 
-acceptable in an embedded environment and why we don't need to fix it 
-for the SLOB case as well.
-
-But you do bring up a good point of SLUB changing the behavior on OOM 
-situations for which SLAB_NOMERGE sounds like a good-enough stop-gap 
-measure for the short term. I would prefer some other fix even if it 
-means getting rid of slab merging competely (which would suck as it's 
-very nice for making memory footprint smaller).
-
-		Pekka
