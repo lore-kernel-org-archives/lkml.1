@@ -1,73 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752541AbYDGRfE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752778AbYDGRkV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752541AbYDGRfE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Apr 2008 13:35:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751369AbYDGRex
+	id S1752778AbYDGRkV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Apr 2008 13:40:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751523AbYDGRkK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Apr 2008 13:34:53 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:56611 "EHLO ogre.sisk.pl"
+	Mon, 7 Apr 2008 13:40:10 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:56667 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751080AbYDGRew (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Apr 2008 13:34:52 -0400
+	id S1751535AbYDGRkI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Apr 2008 13:40:08 -0400
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: nikosapi <me@nikosapi.org>
-Subject: Re: Suspend on Lenovo 3000 V200 - Linux 2.6.25rc8
-Date: Mon, 7 Apr 2008 19:34:41 +0200
+To: Mark Lord <lkml@rtr.ca>
+Subject: Re: 2.6.25-rc7/8: Another resume regression
+Date: Mon, 7 Apr 2008 19:40:27 +0200
 User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: linux-acpi@vger.kernel.org, Len Brown <lenb@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>
-References: <3e8fd0440804052010xbe8f59bw3268d8206b97ac3e@mail.gmail.com> <200804071058.38141.rjw@sisk.pl> <200804071008.33879.me@nikosapi.org>
-In-Reply-To: <200804071008.33879.me@nikosapi.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, david-b@pacbell.net,
+       oliver@neukum.org, Alan Stern <stern@rowland.harvard.edu>,
+       Dave Airlie <airlied@linux.ie>, Jesse Barnes <jesse.barnes@intel.com>,
+       Pavel Machek <pavel@ucw.cz>
+References: <200803220259.48534.rjw@sisk.pl> <200804071251.03147.rjw@sisk.pl> <47FA430A.2030908@rtr.ca>
+In-Reply-To: <47FA430A.2030908@rtr.ca>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200804071934.42121.rjw@sisk.pl>
+Message-Id: <200804071940.28738.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, 7 of April 2008, nikosapi wrote:
-> On April 7, 2008 04:58:37 Rafael J. Wysocki wrote:
-> > On Monday, 7 of April 2008, nikosapi wrote:
-> > > On April 6, 2008 19:23:36 Rafael J. Wysocki wrote:
-> > > > On Monday, 7 of April 2008, nikosapi wrote:
-> > > > > On April 6, 2008 16:21:57 Rafael J. Wysocki wrote:
-> > > > > > On Sunday, 6 of April 2008, Nick Nobody wrote:
-> >
-> > [--snip--]
-> >
-> > > > > Hello Rafael,
-> > > > >
-> > > > > I tested with that patch and the problem persists, when the laptop
-> > > > > resumes it locks up (with a black screen). If I add
-> > > > > acpi_apic_instance=2 acpi_osi=Linux as kernel boot options (as
-> > > > > suggested by my dmesg) when it resumes I get back to a virtual term
-> > > > > but I'm not able to log in. After entering my username it just hangs
-> > > > > there.
-> >
-> > Have you tried if doing "echo mem > /sys/power/state" instead of s2ram
-> > works?
-> >
-> > If you have, what graphics adapter is there in your machine?
-> >
-> > Rafael
-> > --
+On Monday, 7 of April 2008, Mark Lord wrote:
+> Rafael J. Wysocki wrote:
+> > On Saturday, 5 of April 2008, Mark Lord wrote:
+> >> Mark Lord wrote:
+> >>> Hi,
+> >>>
+> >>> Okay, USB now works fine on resume after fixing the iaa_watchdog issue.
+> >>>
+> >>> But twice now, once before that fix, and again just a minute ago,
+> >>> my machine has failed completely to resume after suspend-to-RAM.
+> >>>
+> >>> Again, resume here is 100% reliable in 2.6.24 and earlier.
+> >>>
+> >>> Symptoms: the usual:
+> >>>
+> >>>  -- 2.6.25-rc8 (and -rc7 earlier), plus USB fix.
+> >>>  -- not reproduceable on demand.
+> >>>  -- black screen of death -- no backlight, no kernel messages.
+> >>>  -- no hard drive activity.
+> >>>  -- no alt-sysrq-anything.
+> >>>  -- 5 second hold of the power button to poweroff and then recover.
+> >>>
+> >>> Not much info to go on, but it's worth knowing there's an issue here 
+> >>> somewhere.
+> >> ..
+> >>
+> >> Mmmm... Now that 2.6.25-rc* is usable here, there's another symptom
+> >> that's been happening regularly enough that it's got to be a regression
+> >> of some sort.
+> >>
+> >> This machine has an ATI X1400 video card, which doesn't work with any
+> >> open source X server that I know of.  Maybe latest RadeonHD would work
+> >> but it didn't when I tried it in January.
+> >>
+> >> So I'm using the ATI binary fglrx X server, but without their kernel module,
+> >> so no 3D acceleration (fine.. only affects Google Earth, really).
+> >>
+> >> Now.. on 2.6.25, after a suspend/resume cycle (or three), the framebuffer
+> >> frequently starts going wonky.  "snowy" pixels appear, and stay.
+> >> Just a moment ago here, the entire background changed to zebra stripes.
+> >>
+> >> And so on..  Peculiar stuff.
+> >>
+> >> I'm wondering if something to do with video mode switching,
+> >> or video register save/restore, has changed since 2.6.24.
+> >> Because it's broken in 2.6.25, yet works fine in all earlier kernels.
+> > 
+> > Yes, that's probably related.
+> > 
+> > However, I'm unable to reproduce the breakage.  If you can do that, it would
+> > probably help a lot if you identified the commit causing that to happen.
+> ..
 > 
-> Yes, I've been using /sys/power/state to put the machine to sleep ever since 
-> you told me. 
+> Well, it would help then if you identified the commits which hacked
+> at the video mode switching.  Then I can revert those and see what happens.
+> There's probably not many commits there, and since it doesn't do it consistently
+> (and sometimes the machine just doesn't resume at all with 2.6.25), 
+> it is tricky to bisect.
 > 
-> Here's the output of lspci -d 8086:2a02 -vvvxxx 
-> 
-> 00:02.0 VGA compatible controller: Intel Corporation Mobile GM965/GL960 
-> Integrated Graphics Controller (rev 03) (prog-if 00 [VGA controller])
+> Works perfectly in 2.6.24, though, which is what I'm now running again.
 
-Hm, Intel.  Do you use the i915 driver?
+I guess this is related to http://bugzilla.kernel.org/show_bug.cgi?id=10319 .
 
-Well, I think that what you see is another form of
-http://bugzilla.kernel.org/show_bug.cgi?id=10319
-so you can add yourself to the CC list in there.
+I have no idea what can cause that to happen.  It apparently is not related to
+CONFIG_DRM (that actually may help if you have an Intel graphics adapter),
+so it looks like an ACPI issue.
 
 Thanks,
 Rafael
