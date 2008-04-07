@@ -1,124 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756987AbYDGWzO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758075AbYDGWzj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756987AbYDGWzO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Apr 2008 18:55:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752113AbYDGWzD
+	id S1758075AbYDGWzj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Apr 2008 18:55:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752129AbYDGWza
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Apr 2008 18:55:03 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:58266 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751927AbYDGWzB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Apr 2008 18:55:01 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Andi Kleen <andi@firstfloor.org>,
-       Zdenek Kabelac <zdenek.kabelac@gmail.com>
-Subject: Re: BUG: using smp_processor_id() during suspend with 2.6.25-rc8
-Date: Tue, 8 Apr 2008 00:54:27 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Jiri Kosina <jkosina@suse.cz>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
-References: <c4e36d110804070625n17eb44e1nbb5558f500f13438@mail.gmail.com> <200804080029.31102.rjw@sisk.pl> <20080407223540.GI16647@one.firstfloor.org>
-In-Reply-To: <20080407223540.GI16647@one.firstfloor.org>
+	Mon, 7 Apr 2008 18:55:30 -0400
+Received: from fk-out-0910.google.com ([209.85.128.184]:40722 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752113AbYDGWz3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Apr 2008 18:55:29 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=nceowqv+DsPFsuolHqEAPibCjyF3G6XEKtlqLIh9LCH1MCMkaHJuxsBks5GPhW9ke7kRjldeykdAewbW1FPs+SVExKktE7a3BccYlpqLPWSjUCBR+HSBD2UBGJfYris+rkV1EYkd5RlSnkryK86D+N/sF/RHeoDcd4Pq+BWySww=
+Message-ID: <2c0942db0804071555w2dc2e43fw7cce64d4a5ba004@mail.gmail.com>
+Date: Mon, 7 Apr 2008 15:55:27 -0700
+From: "Ray Lee" <ray-lk@madrabbit.org>
+To: "Tilman Schmidt" <tilman@imap.cc>
+Subject: Re: [2.6.25-rc6] possible regression: X server dying
+Cc: "Dave Airlie" <airlied@gmail.com>, linux-kernel@vger.kernel.org,
+       pavel@ucw.cz
+In-Reply-To: <47FA9EC2.6030801@imap.cc>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200804080054.28575.rjw@sisk.pl>
+References: <47E82D68.5070305@imap.cc>
+	 <21d7e9970803241622v10b887a6p869535102b486279@mail.gmail.com>
+	 <47E83D14.8070800@imap.cc>
+	 <21d7e9970803241753q433e7545pdd00eae189846a8@mail.gmail.com>
+	 <21d7e9970803302153s314d48d3o7120a56092eeaede@mail.gmail.com>
+	 <47F1FA3F.3010206@imap.cc> <47FA9EC2.6030801@imap.cc>
+X-Google-Sender-Auth: 47f25ac820a16d81
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday, 8 of April 2008, Andi Kleen wrote:
-> On Tue, Apr 08, 2008 at 12:29:30AM +0200, Rafael J. Wysocki wrote:
-> > On Tuesday, 8 of April 2008, Andi Kleen wrote:
-> > > On Tue, Apr 08, 2008 at 12:11:17AM +0200, Jiri Kosina wrote:
-> > > > On Tue, 8 Apr 2008, Andi Kleen wrote:
-> > > > 
-> > > > > > I know. However preempt_count is a little bit inconsistent in such cases 
-> > > > > > though.
-> > > > > And? interrupts off beats preempt count anyways. Why did you write the 
-> > > > > patch? Was there a (incorrect) warning triggered?
-> > > > 
-> > > > Reported at http://lkml.org/lkml/2008/4/7/130
-> > > > 
-> > > > BTW is also mce_init() (called from mce_resume()) guaranteed to run with 
-> > > > IRQs off?
-> > > 
-> > > [cc rafael]
-> > > 
-> > > The mce resume is a sysdev.
-> > > 
-> > > sysdevs were always supposed to run completely with interrupts off. If they 
-> > > don't anymore that's some kind of higher level resume code bug which you need 
-> > > to fix there, not hack around in the low level code.
-> > 
-> > They are executed with interrupts disabled, on one CPU.
-> 
-> Well then someone enables them incorrectly, see the report above.
+On Mon, Apr 7, 2008 at 3:22 PM, Tilman Schmidt <tilman@imap.cc> wrote:
+> This is still quite elusive. It only happens once every couple of days,
+>  and the only thing that seems to be clear is that it's triggered by a GL
+>  screensaver. So if it's ok I'll continue sharing X crash backtraces
+>  while I go on groping for a lead. Here's my next one, this time with
+>  kernel 2.6.25-rc8:
+>
+>
+>  0: /usr/bin/X(xf86SigHandler+0x81) [0x80e6d81]
+>  1: [0xb7f22400]
+>  2:
+>  /usr/lib/xorg/modules//extensions/libGLcore.so(_mesa_set_enable+0x1343)
+>  [0xb50aa673]
+>  3: /usr/lib/xorg/modules//extensions/libGLcore.so(_mesa_Disable+0x5a)
+>  [0xb50abc1a]
+>  4: /usr/lib/xorg/modules//extensions/libglx.so [0xb7ba8b98]
+>  5: /usr/lib/xorg/modules//extensions/libglx.so(DoRender+0xdd) [0xb7ba145d]
+>  6: /usr/lib/xorg/modules//extensions/libglx.so [0xb7ba157c]
+>  7: /usr/lib/xorg/modules//extensions/libglx.so [0xb7ba5a6d]
+>  8: /usr/bin/X [0x815809e]
+>
+> 9: /usr/bin/X(Dispatch+0x1af) [0x808f68f]
+>  10: /usr/bin/X(main+0x47e) [0x807717e]
+>  11: /lib/libc.so.6(__libc_start_main+0xe0) [0xb7cb6fe0]
+>  12: /usr/bin/X(FontFileCompleteXLFD+0x1e5) [0x8076501]
+>
+>  As for Pavel's suggestion of disabling heap randomization, given the
+>  current crash rate I'd have to try that for several weeks before I could
+>  be reasonably sure that it helped. I think it'll be more useful if I go
+>  on looking for a way to reproduce the crash more reliably. Perhaps I
+>  should start playing some GL based games. :-)
 
-Hm, well.  I really don't think that ACPI or the core does it, but anyway
-Zdenek, could you please apply the appended patch and see if it
-produces any additional warnings?
+If you think it's one of the screensavers but don't know which one,
+then open up a bash shell and do a
 
-If it doesn't, then probably one of the sysdevs does it in its ->resume()
-routine, which also will be easy to check against.
+for i in /usr/lib/xscreensaver/*; do echo $i; $i ; done
 
-> > 
-> > > If it does that it likely broke more code too.
-> > > 
-> > > Obviously turning on preemption anywhere around the machine check is
-> > > fatal because it touches CPU state and if you reschedule you could
-> > > switch to another CPU and change or access the wrong CPU's state.
-> > 
-> > FWIW, at the point when sysdevs are resumed we are single-threaded.
-> 
-> You mean single CPUed? Even a single thread could switch to another CPU.
-
-Signle CPUed too.
-
-Thanks,
-Rafael
-
----
----
- drivers/acpi/sleep/main.c |    8 ++++++++
- 1 file changed, 8 insertions(+)
-
-Index: linux-2.6/drivers/acpi/sleep/main.c
-===================================================================
---- linux-2.6.orig/drivers/acpi/sleep/main.c
-+++ linux-2.6/drivers/acpi/sleep/main.c
-@@ -141,9 +141,13 @@ static int acpi_pm_enter(suspend_state_t
- 		break;
- 	}
- 
-+	WARN_ON(!irqs_disabled());
-+
- 	/* Reprogram control registers and execute _BFS */
- 	acpi_leave_sleep_state_prep(acpi_state);
- 
-+	WARN_ON(!irqs_disabled());
-+
- 	/* ACPI 3.0 specs (P62) says that it's the responsibility
- 	 * of the OSPM to clear the status bit [ implying that the
- 	 * POWER_BUTTON event should not reach userspace ]
-@@ -158,6 +162,8 @@ static int acpi_pm_enter(suspend_state_t
- 	 */
- 	acpi_hw_disable_all_gpes();
- 
-+	WARN_ON(!irqs_disabled());
-+
- 	local_irq_restore(flags);
- 	printk(KERN_DEBUG "Back to C!\n");
- 
-@@ -165,6 +171,8 @@ static int acpi_pm_enter(suspend_state_t
- 	if (acpi_state == ACPI_STATE_S3)
- 		acpi_restore_state_mem();
- 
-+	WARN_ON(!irqs_disabled());
-+
- 	return ACPI_SUCCESS(status) ? 0 : -EFAULT;
- }
- 
+hitting control-c to break out of the screensaver when you think it's
+been cleared of any wrongdoing. They'll default to rendering in a
+window rather than the root window, but perhaps that'll be good enough
+to hit the bug (it also lets you see the name of the screensaver it
+just ran).
