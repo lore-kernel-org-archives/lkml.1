@@ -1,56 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758273AbYDGNOw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758739AbYDGNQP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758273AbYDGNOw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Apr 2008 09:14:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757395AbYDGNOo
+	id S1758739AbYDGNQP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Apr 2008 09:16:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757464AbYDGNQA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Apr 2008 09:14:44 -0400
-Received: from cnc.isely.net ([64.81.146.143]:33965 "EHLO cnc.isely.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757377AbYDGNOn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Apr 2008 09:14:43 -0400
-Date: Mon, 7 Apr 2008 08:14:40 -0500 (CDT)
-From: Mike Isely <isely@isely.net>
-Reply-To: Mike Isely <isely@pobox.com>
-To: Meelis Roos <mroos@linux.ee>
-cc: Linux Kernel list <linux-kernel@vger.kernel.org>,
-       Michael Krufky <mkrufky@linuxtv.org>,
-       Mike Isely at pobox <isely@pobox.com>
-Subject: Re: pvrusb2 compile failure
-In-Reply-To: <Pine.SOC.4.64.0804070906490.15249@math.ut.ee>
-Message-ID: <Pine.LNX.4.64.0804070808120.23745@cnc.isely.net>
-References: <Pine.SOC.4.64.0804070906490.15249@math.ut.ee>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 7 Apr 2008 09:16:00 -0400
+Received: from wr-out-0506.google.com ([64.233.184.228]:40422 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757395AbYDGNP7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Apr 2008 09:15:59 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=L10x4r4Eu1gEdLvThPBGujtCp3jH5fciEnv1pMl6FKsiWqzu2Vx/1fuyyOiKrg3gqez3OHJM90k9gYeRJpSIkkqBzJGsSMjE3G+BMxFPTqveMsBN6dOuOq7euILAQt8aTCbeIh8qJQUqDWDPTOpzuuX4cq0peBlCKbeNgFyOw30=
+Message-ID: <84144f020804070615y5c4b542s7165935c9d628e0e@mail.gmail.com>
+Date: Mon, 7 Apr 2008 16:15:55 +0300
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: 2.6.25-rc8-git5: Reported regressions from 2.6.24
+Cc: LKML <linux-kernel@vger.kernel.org>, "Adrian Bunk" <bunk@kernel.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Natalie Protasevich" <protasnb@gmail.com>,
+       "Kamalesh Babulal" <kamalesh@linux.vnet.ibm.com>,
+       "Paul Mackerras" <paulus@samba.org>
+In-Reply-To: <200804071459.35628.rjw@sisk.pl>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <200804071459.35628.rjw@sisk.pl>
+X-Google-Sender-Auth: 7de61dd52824ebc9
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 7 Apr 2008, Meelis Roos wrote:
+2008/4/7 Rafael J. Wysocki <rjw@sisk.pl>:
+>  Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=10082
+>  Subject         : 2.6.25-rc2-git4 - Kernel oops while running kernbench and tbench on powerpc
+>  Submitter       : Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+>  Date            : 2008-02-20 16:01 (48 days old)
+>  References      : http://lkml.org/lkml/2008/2/20/218
+>                   http://lkml.org/lkml/2008/1/18/71
 
-> Got this in todays 2.6.25-rc8+git
-> 
->   CC [M]  drivers/media/video/pvrusb2/pvrusb2-devattr.o
-> drivers/media/video/pvrusb2/pvrusb2-devattr.c:178: error: unknown field 'flag_has_analogtuner' specified in initializer
-> drivers/media/video/pvrusb2/pvrusb2-devattr.c:179: error: unknown field 'flag_has_composite' specified in initializer
-> drivers/media/video/pvrusb2/pvrusb2-devattr.c:180: error: unknown field 'flag_has_svideo' specified in initializer
-> drivers/media/video/pvrusb2/pvrusb2-devattr.c:182: error: unknown field 'digital_control_scheme' specified in initializer
-> drivers/media/video/pvrusb2/pvrusb2-devattr.c:182: error: 'PVR2_DIGITAL_SCHEME_HAUPPAUGE' undeclared here (not in a function)
-> drivers/media/video/pvrusb2/pvrusb2-devattr.c:183: error: unknown field 'led_scheme' specified in initializer
-> drivers/media/video/pvrusb2/pvrusb2-devattr.c:183: error: 'PVR2_LED_SCHEME_HAUPPAUGE' undeclared here (not in a function)
-> make[4]: *** [drivers/media/video/pvrusb2/pvrusb2-devattr.o] Error 1
-
-This was supposed to be a patch that added badly-needed USB IDs to the 
-driver (via insert into a devic attribute data table), however it had 
-been cherry-picked out of a more recent patch series for the driver 
-where those additional fields / identifiers had also been defined.  
-Mike Krufky last night fixed his patch and posted it.
-
-  -Mike
-
--- 
-
-Mike Isely
-isely @ pobox (dot) com
-PGP: 03 54 43 4D 75 E5 CC 92 71 16 01 E2 B5 F5 C1 E8
+Do a git bisect for this as the report isn't getting much attention?
