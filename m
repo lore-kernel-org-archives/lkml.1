@@ -1,49 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754542AbYDGTo3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755720AbYDGTqT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754542AbYDGTo3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Apr 2008 15:44:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751956AbYDGToW
+	id S1755720AbYDGTqT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Apr 2008 15:46:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751956AbYDGTqM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Apr 2008 15:44:22 -0400
-Received: from smtp-out01.alice-dsl.net ([88.44.60.11]:24129 "EHLO
-	smtp-out01.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751678AbYDGToV (ORCPT
+	Mon, 7 Apr 2008 15:46:12 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:37825 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751802AbYDGTqM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Apr 2008 15:44:21 -0400
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Cyrill Gorcunov <gorcunov@gmail.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       LKML <linux-kernel@vger.kernel.org>, Yinghai Lu <yhlu.kernel@gmail.com>
-Subject: Re: bootmem allocator
-From: Andi Kleen <andi@firstfloor.org>
-References: <20080407185613.GD9211@cvg> <20080407190904.GH12292@elte.hu>
-Date: Mon, 07 Apr 2008 21:44:04 +0200
-In-Reply-To: <20080407190904.GH12292@elte.hu> (Ingo Molnar's message of "Mon, 7 Apr 2008 21:09:04 +0200")
-Message-ID: <87iqytqwl7.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
+	Mon, 7 Apr 2008 15:46:12 -0400
+Date: Mon, 7 Apr 2008 15:46:11 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: kernel list <linux-kernel@vger.kernel.org>, kaszak@gmail.com,
+       lcostantino@gmail.com
+Subject: Re: w35und: more cleanups
+Message-ID: <20080407194611.GA8547@infradead.org>
+References: <20080407192812.GA18868@elf.ucw.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 07 Apr 2008 19:37:21.0357 (UTC) FILETIME=[CC1027D0:01C898E6]
+Content-Disposition: inline
+In-Reply-To: <20080407192812.GA18868@elf.ucw.cz>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar <mingo@elte.hu> writes:
+On Mon, Apr 07, 2008 at 09:28:12PM +0200, Pavel Machek wrote:
+> Next set of cleanups to bring kernel closer to kernel coding style...
 
-> * Cyrill Gorcunov <gorcunov@gmail.com> wrote:
->
->> Hi Ingo, Peter,
->> 
->> small question. It was a patch recently posted which removes memset(x, 
->> 0, x) after __alloc_bootmem call. There are a few another code 
->> snippets who still call memset(x, 0, x). And who is responsible for 
->> memory clearing? bootmem allocator or caller?
->
-> hm, bootmem allocator is supposed to clear memory. We have a couple of 
-> places that rely on that.
-
-I was actually considering to change that for the GB pages hugetlbfs
-patchkit, because memset for 1G is a little slow and not needed (will be cleared later
-anyways) and it might be a problem for very large systems with a lot of such
-pages at boot.
-
--Andi
+\Where is that driver coming from to start with?  I hope no one intends
+to send it to mainline in a shape like that?
+> 
