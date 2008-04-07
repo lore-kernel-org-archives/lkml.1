@@ -1,132 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755430AbYDGT4H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755975AbYDGT5I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755430AbYDGT4H (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Apr 2008 15:56:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752124AbYDGTzz
+	id S1755975AbYDGT5I (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Apr 2008 15:57:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752331AbYDGT45
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Apr 2008 15:55:55 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:51870 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752002AbYDGTzz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Apr 2008 15:55:55 -0400
-Subject: Re: [PATCH] scsi: fix sense_slab/bio swapping livelock
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Hugh Dickins <hugh@veritas.com>
-Cc: Christoph Lameter <clameter@sgi.com>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org
-In-Reply-To: <Pine.LNX.4.64.0804072000410.18591@blonde.site>
-References: <Pine.LNX.4.64.0804062348001.19446@blonde.site>
-	 <Pine.LNX.4.64.0804062213230.18148@schroedinger.engr.sgi.com>
-	 <Pine.LNX.4.64.0804072000410.18591@blonde.site>
-Content-Type: text/plain
-Date: Mon, 07 Apr 2008 21:55:15 +0200
-Message-Id: <1207598115.29991.23.camel@lappy>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.0 
-Content-Transfer-Encoding: 7bit
+	Mon, 7 Apr 2008 15:56:57 -0400
+Received: from smtp.wellnetcz.com ([212.24.148.102]:45217 "EHLO WNmonitoring"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752124AbYDGT44 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Apr 2008 15:56:56 -0400
+From: Jiri Slaby <jirislaby@gmail.com>
+To: linville@tuxdriver.com
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-wireless@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Jiri Slaby <jirislaby@gmail.com>,
+       Michael Wu <flamingice@sourmilk.net>,
+       Johannes Berg <johannes@sipsolutions.net>, Jiri Benc <jbenc@suse.cz>
+Subject: [PATCH 2/2] mac80211: fix defined but not used
+Date: Mon,  7 Apr 2008 21:53:49 +0200
+Message-Id: <1207598029-20000-2-git-send-email-jirislaby@gmail.com>
+X-Mailer: git-send-email 1.5.4.4
+In-Reply-To: <1207598029-20000-1-git-send-email-jirislaby@gmail.com>
+References: <1207598029-20000-1-git-send-email-jirislaby@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-04-07 at 20:40 +0100, Hugh Dickins wrote:
-> On Sun, 6 Apr 2008, Christoph Lameter wrote:
-> > On Sun, 6 Apr 2008, Hugh Dickins wrote:
-> > > 
-> > > One very significant factor is SLUB, which
-> > > merges slab caches when it can, and on 64-bit happens to merge
-> > > both bio cache and sense_slab cache into kmalloc's 128-byte cache:
-> > > so that under this swapping load, bios above are liable to gobble
-> > > up all the slots needed for scsi_cmnd sense_buffers below.
-> > 
-> > A reliance on free slots that the slab allocator may provide? That is a 
-> > rather bad dependency since it is up to the slab allocator to implement
-> > the storage layout for the objects and thus the availability of slots may
-> > vary depending on the layout for the objects chosen by the allocator.
-> 
-> I'm not sure that I understand you.  Yes, different slab allocators
-> may lay out slots differently.  But a significant departure from
-> existing behaviour may be a bad idea in some circumstances.
-> (Hmm, maybe I've written a content-free sentence there!).
-> 
-> > 
-> > Looking at mempool_alloc: Mempools may be used to do atomic allocations 
-> > until they fail thereby exhausting reserves and available object in the 
-> > partial lists of slab caches?
-> 
-> Mempools may be used for atomic allocations, but I think that's not
-> the case here.  swap_writepage's get_swap_bio says GFP_NOIO, which
-> allows (indeed is) __GFP_WAIT, and does not give access to __GFP_HIGH
-> reserves.
-> 
-> Whereas at the __scsi_get_command end, there are GFP_ATOMIC sense_slab
-> allocations, which do give access to __GFP_HIGH reserves.
-> 
-> My supposition is that once a page has been allocated from __GFP_HIGH
-> reserves to a scsi sense_slab, swap_writepages are liable to gobble up
-> the rest of the page with bio allocations which they wouldn't have had
-> access to traditionally (i.e. under SLAB).
-> 
-> So an unexpected behaviour emerges from SLUB's slab merging.
+These two symbols are used only in ifdeffed function. Move them to that
+section too.
+net/mac80211/sta_info.c:387: warning: `__sta_info_pin' defined but not used
+net/mac80211/sta_info.c:397: warning: `__sta_info_unpin' defined but not used
 
-Somewhere along the line of my swap over network patches I made
-'robustified' SLAB to ensure these sorts of things could not happen - it
-came at a cost though.
+Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+Cc: Michael Wu <flamingice@sourmilk.net>
+Cc: Johannes Berg <johannes@sipsolutions.net>
+Cc: Jiri Benc <jbenc@suse.cz>
+---
+ net/mac80211/sta_info.c |   60 +++++++++++++++++++++++-----------------------
+ 1 files changed, 30 insertions(+), 30 deletions(-)
 
-It would basically fail[*] allocations that had a higher low watermark
-than what was used to allocate the current slab.
-
-[*] - well, it would attempt to allocate a new slab to raise the current
-watermark, but failing that it would fail the allocation.
-
-> Though of course the same might happen in other circumstances, even
-> without slab merging: if some kmem_cache allocations are made with
-> GFP_ATOMIC, those can give access to reserves to non-__GFP_HIGH
-> allocations from the same kmem_cache.
-> 
-> Maybe PF_MEMALLOC and __GFP_NOMEMALLOC complicate the situation:
-> I've given little thought to mempool_alloc's fiddling with the
-> gfp_mask (beyond repeatedly misreading it).
-
-My latest series ensures that SLABs allocated using PF_MEMALLOC will not
-distribute objects to allocation contexts that are not entitled for as
-long as the memory shortage lasts.
-
-I'm not sure how applicable this is to the problem at hand, just letting
-you know whats there.
-
-> > In order to make this a significant factor we need to have already 
-> > exhausted reserves right? Thus we are already operating at the boundary of 
-> > what memory there is. Any non atomic alloc will then allocate a new page 
-> > with N elements in order to get one object. The mempool_allocs from the 
-> > atomic context will then gooble up the N-1 remaining objects? So the
-> > nonatomic alloc will then have to hit the page allocator again...
-
-Relying on this is highly dubious, who is to say that first __GFP_HIGH
-alloc came SCSI layer (there could be another merged slab).
-
-Also, when one of these users is PF_MEMALLOC the other users will gobble
-up our emergency memory - not as intended.
-
-> We need to have already exhausted reserves, yes: so this isn't an
-> issue hitting everyone all the time, and it may be nothing worse
-> than a surprising anomaly; but I'm pretty sure it's not how bio
-> and scsi command allocation is expected to interact.
-> 
-> What do you think a SLAB_NOMERGE flag?  The last time I suggested
-> something like that (but I was thinking of debug), your comment
-> was "Ohh..", which left me in some doubt ;)
-> 
-> If we had a SLAB_NOMERGE flag, would we want to apply it to the
-> bio cache or to the scsi_sense_cache or to both?  My difficulty
-> in answering that makes me wonder whether such a flag is right.
-
-If this is critical to avoid memory deadlocks, I would suggest using
-mempools (or my reserve framework).
+diff --git a/net/mac80211/sta_info.c b/net/mac80211/sta_info.c
+index ba02b43..e30426e 100644
+--- a/net/mac80211/sta_info.c
++++ b/net/mac80211/sta_info.c
+@@ -379,36 +379,6 @@ void sta_info_clear_tim_bit(struct sta_info *sta)
+ 	spin_unlock_irqrestore(&sta->local->sta_lock, flags);
+ }
+ 
+-/*
+- * See comment in __sta_info_unlink,
+- * caller must hold local->sta_lock.
+- */
+-static void __sta_info_pin(struct sta_info *sta)
+-{
+-	WARN_ON(sta->pin_status != STA_INFO_PIN_STAT_NORMAL);
+-	sta->pin_status = STA_INFO_PIN_STAT_PINNED;
+-}
+-
+-/*
+- * See comment in __sta_info_unlink, returns sta if it
+- * needs to be destroyed.
+- */
+-static struct sta_info *__sta_info_unpin(struct sta_info *sta)
+-{
+-	struct sta_info *ret = NULL;
+-	unsigned long flags;
+-
+-	spin_lock_irqsave(&sta->local->sta_lock, flags);
+-	WARN_ON(sta->pin_status != STA_INFO_PIN_STAT_DESTROY &&
+-		sta->pin_status != STA_INFO_PIN_STAT_PINNED);
+-	if (sta->pin_status == STA_INFO_PIN_STAT_DESTROY)
+-		ret = sta;
+-	sta->pin_status = STA_INFO_PIN_STAT_NORMAL;
+-	spin_unlock_irqrestore(&sta->local->sta_lock, flags);
+-
+-	return ret;
+-}
+-
+ void __sta_info_unlink(struct sta_info **sta)
+ {
+ 	struct ieee80211_local *local = (*sta)->local;
+@@ -565,6 +535,36 @@ static void sta_info_cleanup(unsigned long data)
+ }
+ 
+ #ifdef CONFIG_MAC80211_DEBUGFS
++/*
++ * See comment in __sta_info_unlink,
++ * caller must hold local->sta_lock.
++ */
++static void __sta_info_pin(struct sta_info *sta)
++{
++	WARN_ON(sta->pin_status != STA_INFO_PIN_STAT_NORMAL);
++	sta->pin_status = STA_INFO_PIN_STAT_PINNED;
++}
++
++/*
++ * See comment in __sta_info_unlink, returns sta if it
++ * needs to be destroyed.
++ */
++static struct sta_info *__sta_info_unpin(struct sta_info *sta)
++{
++	struct sta_info *ret = NULL;
++	unsigned long flags;
++
++	spin_lock_irqsave(&sta->local->sta_lock, flags);
++	WARN_ON(sta->pin_status != STA_INFO_PIN_STAT_DESTROY &&
++		sta->pin_status != STA_INFO_PIN_STAT_PINNED);
++	if (sta->pin_status == STA_INFO_PIN_STAT_DESTROY)
++		ret = sta;
++	sta->pin_status = STA_INFO_PIN_STAT_NORMAL;
++	spin_unlock_irqrestore(&sta->local->sta_lock, flags);
++
++	return ret;
++}
++
+ static void sta_info_debugfs_add_work(struct work_struct *work)
+ {
+ 	struct ieee80211_local *local =
+-- 
+1.5.4.4
 
