@@ -1,115 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752523AbYDGQl2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752101AbYDGQrO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752523AbYDGQl2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Apr 2008 12:41:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754068AbYDGQlL
+	id S1752101AbYDGQrO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Apr 2008 12:47:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751115AbYDGQq5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Apr 2008 12:41:11 -0400
-Received: from hs-out-0708.google.com ([64.233.178.245]:39108 "EHLO
-	hs-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753649AbYDGQlJ (ORCPT
+	Mon, 7 Apr 2008 12:46:57 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.155]:25356 "EHLO
+	imap.sh.mvista.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751097AbYDGQqw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Apr 2008 12:41:09 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=Ata8ikG4LpVp9k6aIa5Qbgeg/OUgRbEG/c4cNeHP6f1iX03uil15+Dm62wqGYBOcmoDE5ijYb1KmqaBx184v73N6i/7p+0Q2m4P4L/qB1mKUzaNFKo3MkanEEG6wSzFHXYiNddeT1dL/c9+b+MLddT+JONRaZmxGorZduVe/fUc=
-Message-ID: <dd18b0c30804070941r793fc61le564cc5dcbda7640@mail.gmail.com>
-Date: Mon, 7 Apr 2008 16:41:06 +0000
-From: "Justin Mattock" <justinmattock@gmail.com>
-To: "R. J. Wysocki" <Rafal.Wysocki@fuw.edu.pl>
-Subject: Re: suspend issue
-Cc: "Pavel Machek" <pavel@ucw.cz>, "Soeren Sonnenburg" <kernel@nn7.de>,
-       "Linux Kernel" <linux-kernel@vger.kernel.org>
-In-Reply-To: <200804071041.11899.Rafal.Wysocki@fuw.edu.pl>
+	Mon, 7 Apr 2008 12:46:52 -0400
+Message-ID: <47FA4FD2.8060808@ru.mvista.com>
+Date: Mon, 07 Apr 2008 20:46:10 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Organization: MontaVista Software Inc.
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
+X-Accept-Language: ru, en-us, en-gb
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Tejun Heo <htejun@gmail.com>
+Cc: jgarzik@pobox.com, gregkh@suse.de, alan@lxorguk.ukuu.org.uk,
+       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
+       linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 6/13] devres: implement managed iomap interface
+References: <11684073371547-git-send-email-htejun@gmail.com>
+In-Reply-To: <11684073371547-git-send-email-htejun@gmail.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <dd18b0c30804052103s7357bb86yf7bf11d38d2911b3@mail.gmail.com>
-	 <20080406232849.GA789@elf.ucw.cz>
-	 <dd18b0c30804061708h3fcf27b2t7411ff4f2244a48b@mail.gmail.com>
-	 <200804071041.11899.Rafal.Wysocki@fuw.edu.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I wouldn't mind trying out git. Hopefully I know what I'm doing.
-regards;
-                Justin P. Mattock
+Tejun Heo wrote:
 
-On Mon, Apr 7, 2008 at 8:41 AM, R. J. Wysocki <Rafal.Wysocki@fuw.edu.pl> wrote:
-> On Monday, 7 of April 2008, Justin Mattock wrote:
->  > Hello; I don't know how to do a git bisect(too much of a noob)
->  > regards;
->
->  First, please don't top post.  Looking at this message you can see why it
->  really doesn't make sense. :-)
->
->  Now, in short, to run a git bisection:
->
->  (1) clone the Linus' tree (see http://linux.yyz.us/git-howto.html#download_first_time)
->  (2) from within the kernel source code directory downloaded in (1) run
->         $ git bisect start
->         $ git bisect bad
->     (this will mark the last revision as a failing one)
->  (3) If you have already verified that 2.6.24 works correctly, run
->         $ git bisect good v2.6.24
->     (this will mark the 2.6.24 kernel as a good one)
->  (4) as a result of this, git will select a kernel revision between 2.6.24 and
->     the most recent one for testing.  Compile it, install it and check if it
->     works.  If it does, run
->         $ git bisect good
->     Otherwise, run
->         $ git bisect bad
->  (5) repeat (4) until there's no more revisions to test.
->
->  If you encounter any problems, please ask what to do next.
->
->  Thanks,
->  Rafael
->
->
->  > On Sun, Apr 6, 2008 at 11:28 PM, Pavel Machek <pavel@ucw.cz> wrote:
->  > > On Sun 2008-04-06 13:55:04, Soeren Sonnenburg wrote:
->  > >  > On Sun, 2008-04-06 at 04:03 +0000, Justin Mattock wrote:
->  > >  > > Hello; I seem to have discovered something with echo mem > /sys/power/state.
->  > >  > > I recompile the kernel and had forgotten to compile fglrx, when
->  > >  > > performing a suspend without fglrx I was confronted with the dreaded
->  > >  > > blank screen and a reboot. then as a test I compiled fglrx and loaded,
->  > >  > > and to my amazement suspend reacted properly again.
->  > >  >
->  > >  > Yeah, but I it does not even work without X - console only!
->  > >  >
->  > >  > s2ram -f -p used to work since at least 2.6.20 ... and is now not
->  > >  > anymore in 2.6.25-*
->  > >
->  > >  Can you do git bisect?
->  > >                                                                         Pavel
->  > >  --
->  > >  (english) http://www.livejournal.com/~pavelmachek
->  > >  (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
->  > >
->  >
->  >
->  >
->
->
->
->  --
->  Rafael J. Wysocki, Ph.D.
->  Institute of Theoretical Physics
->  Faculty of Physics of Warsaw University
->  ul. Hoza 69, 00-681 Warsaw
->  [tel: +48 22 55 32 263]
->  [mob: +48 60 50 53 693]
->  ----------------------------
->  One should not increase, beyond what is necessary,
->  the number of entities required to explain anything.
->                         -- William of Ockham
->
+> +/**
+> + * devm_ioremap - Managed ioremap()
+> + * @dev: Generic device to remap IO address for
+> + * @offset: BUS offset to map
+> + * @size: Size of map
+> + *
+> + * Managed ioremap().  Map is automatically unmapped on driver detach.
+> + */
+> +void __iomem *devm_ioremap(struct device *dev, unsigned long offset,
+> +			   unsigned long size)
+> +{
+> +	void __iomem **ptr, *addr;
+> +
+> +	ptr = devres_alloc(devm_ioremap_release, sizeof(*ptr), GFP_KERNEL);
+> +	if (!ptr)
+> +		return NULL;
+> +
+> +	addr = ioremap(offset, size);
+> +	if (addr) {
+> +		*ptr = addr;
+> +		devres_add(dev, ptr);
+> +	} else
+> +		devres_free(ptr);
+> +
+> +	return addr;
+> +}
+> +EXPORT_SYMBOL(devm_ioremap);
+> +
+> +/**
+> + * devm_ioremap_nocache - Managed ioremap_nocache()
+> + * @dev: Generic device to remap IO address for
+> + * @offset: BUS offset to map
+> + * @size: Size of map
+> + *
+> + * Managed ioremap_nocache().  Map is automatically unmapped on driver
+> + * detach.
+> + */
+> +void __iomem *devm_ioremap_nocache(struct device *dev, unsigned long offset,
+> +				   unsigned long size)
+> +{
+> +	void __iomem **ptr, *addr;
+> +
+> +	ptr = devres_alloc(devm_ioremap_release, sizeof(*ptr), GFP_KERNEL);
+> +	if (!ptr)
+> +		return NULL;
+> +
+> +	addr = ioremap_nocache(offset, size);
+> +	if (addr) {
+> +		*ptr = addr;
+> +		devres_add(dev, ptr);
+> +	} else
+> +		devres_free(ptr);
+> +
+> +	return addr;
+> +}
+> +EXPORT_SYMBOL(devm_ioremap_nocache);
 
+    A very late comment but nevertheless... :-)
+    Those functions are going to break on 32-bit platforms with extended 
+physical address (well, that's starting with Pentiums which had 36-bit PAE :-) 
+AND devices mapped beyond 4 GB (e.g. PowerPC 44x).  You should have used 
+resource_size_t for the 'offset' parameter. As this most probably means that 
+libata is broken on such platforms, I'm going to submit a patch...
 
-
--- 
-Justin P. Mattock
+WBR, Sergei
