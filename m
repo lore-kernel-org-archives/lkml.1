@@ -1,81 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755371AbYDGTEJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754562AbYDGTI1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755371AbYDGTEJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Apr 2008 15:04:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752300AbYDGTD4
+	id S1754562AbYDGTI1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Apr 2008 15:08:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752167AbYDGTIT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Apr 2008 15:03:56 -0400
-Received: from gw.goop.org ([64.81.55.164]:49040 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752244AbYDGTDz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Apr 2008 15:03:55 -0400
-Message-ID: <47FA6FDD.9060605@goop.org>
-Date: Mon, 07 Apr 2008 12:02:53 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080315)
+	Mon, 7 Apr 2008 15:08:19 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:58441 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752148AbYDGTIS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Apr 2008 15:08:18 -0400
+Date: Mon, 7 Apr 2008 21:08:55 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Andrew Morton <akpm@osdl.org>, kernel list <linux-kernel@vger.kernel.org>,
+       j@w1.fi, flamingice@sourmilk.net, dyoung@pobox.com,
+       Trivial patch monkey <trivial@kernel.org>
+Subject: adm8211: remove commented-out code
+Message-ID: <20080407190855.GA18799@elf.ucw.cz>
 MIME-Version: 1.0
-To: Andrea Arcangeli <andrea@qumranet.com>
-CC: Christoph Lameter <clameter@sgi.com>, Robin Holt <holt@sgi.com>,
-       kvm-devel@lists.sourceforge.net,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, general@lists.openfabrics.org,
-       steiner@sgi.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [patch 01/10] emm: mm_lock: Lock a process against reclaim
-References: <20080404223048.374852899@sgi.com> <20080404223131.271668133@sgi.com> <47F6B5EA.6060106@goop.org> <20080405004127.GG14784@duo.random>
-In-Reply-To: <20080405004127.GG14784@duo.random>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrea Arcangeli wrote:
-> On Fri, Apr 04, 2008 at 04:12:42PM -0700, Jeremy Fitzhardinge wrote:
->   
->> I think you can break this if() down a bit:
->>
->> 			if (!(vma->vm_file && vma->vm_file->f_mapping))
->> 				continue;
->>     
->
-> It makes no difference at runtime, coding style preferences are quite
-> subjective.
->   
+Remove some commented-out code from adm8211.
 
-Well, overall the formatting of that if statement is very hard to read.  
-Separating out the logically distinct pieces in to different ifs at 
-least shows the reader that they are distinct.
-Aside from that, doing some manual CSE to remove all the casts and 
-expose the actual thing you're testing for would help a lot (are the 
-casts even necessary?).
+Signed-off-by: Pavel Machek <pavel@suse.cz>
 
->> So this is an O(n^2) algorithm to take the i_mmap_locks from low to high 
->> order?  A comment would be nice.  And O(n^2)?  Ouch.  How often is it 
->> called?
->>     
->
-> It's called a single time when the mmu notifier is registered. It's a
-> very slow path of course. Any other approach to reduce the complexity
-> would require memory allocations and it would require
-> mmu_notifier_register to return -ENOMEM failure. It didn't seem worth
-> it.
->   
+diff --git a/drivers/net/wireless/adm8211.c b/drivers/net/wireless/adm8211.c
+index 7979618..b52b1b0 100644
+--- a/drivers/net/wireless/adm8211.c
++++ b/drivers/net/wireless/adm8211.c
+@@ -465,9 +465,6 @@ do {									   \
+ 	if (stsr & ADM8211_STSR_TCI)
+ 		adm8211_interrupt_tci(dev);
+ 
+-	/*ADM8211_INT(LinkOn);*/
+-	/*ADM8211_INT(LinkOff);*/
+-
+ 	ADM8211_INT(PCF);
+ 	ADM8211_INT(BCNTC);
+ 	ADM8211_INT(GPINT);
+@@ -477,7 +474,6 @@ do {									   \
+ 	ADM8211_INT(SQL);
+ 	ADM8211_INT(WEPTD);
+ 	ADM8211_INT(ATIME);
+-	/*ADM8211_INT(TBTT);*/
+ 	ADM8211_INT(TEIS);
+ 	ADM8211_INT(FBE);
+ 	ADM8211_INT(REIS);
+@@ -485,9 +481,6 @@ do {									   \
+ 	ADM8211_INT(RPS);
+ 	ADM8211_INT(RDU);
+ 	ADM8211_INT(TUF);
+-	/*ADM8211_INT(TRT);*/
+-	/*ADM8211_INT(TLT);*/
+-	/*ADM8211_INT(TDU);*/
+ 	ADM8211_INT(TPS);
+ 
+ 	return IRQ_HANDLED;
 
-It's per-mm though.  How many processes would need to have notifiers?
-
-
->> And is it necessary to mush lock and unlock together?  Unlock ordering 
->> doesn't matter, so you should just be able to have a much simpler loop, no?
->>     
->
-> That avoids duplicating .text. Originally they were separated. unlock
-> can't be a simpler loop because I didn't reserve vm_flags bitflags to
-> do a single O(N) loop for unlock. If you do malloc+fork+munmap two
-> vmas will point to the same anon-vma lock, that's why the unlock isn't
-> simpler unless I mark what I locked with a vm_flags bitflag.
-
-Well, its definitely going to need more comments then.  I assumed it 
-would end up locking everything, so unlocking everything would be 
-sufficient.
-
-    J
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
