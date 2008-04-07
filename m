@@ -1,76 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752091AbYDGUQW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754118AbYDGURW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752091AbYDGUQW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Apr 2008 16:16:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751333AbYDGUQO
+	id S1754118AbYDGURW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Apr 2008 16:17:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751883AbYDGURP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Apr 2008 16:16:14 -0400
-Received: from wx-out-0506.google.com ([66.249.82.238]:1429 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752167AbYDGUQN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Apr 2008 16:16:13 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=dyGu8IfXWsXzF4QQaLc36W26EH4cJSobFCfC+NDcscSpKcqT7+Kz0iaoeV0f00r5YBAwELMSbfiBAsQBfKZSutVRdE3XXKiDoVfNIoHb9htk6+nAWeNNPoldnZOlJqkmyzkRS0zbwKIXu7v9ZwjiR988MV8TNDBUC4tQYTeWC6A=
-Date: Mon, 7 Apr 2008 16:16:05 -0400
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Bryan Wu <bryan.wu@analog.com>
-Cc: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Michael Hennerich <michael.hennerich@analog.com>
-Subject: Re: [PATCH 1/1] Input/Touchscreen Driver: add support AD7877
-	touchscreen driver
-Message-ID: <20080407161007.ZZRA012@mailhub.coreip.homeip.net>
-References: <1202980649-13309-1-git-send-email-bryan.wu@analog.com>
+	Mon, 7 Apr 2008 16:17:15 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:53145 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750949AbYDGURO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Apr 2008 16:17:14 -0400
+Message-ID: <47FA813D.6090505@garzik.org>
+Date: Mon, 07 Apr 2008 16:17:01 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1202980649-13309-1-git-send-email-bryan.wu@analog.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: Bryan Wu <cooloney@kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Miller <davem@davemloft.net>
+CC: LKML <linux-kernel@vger.kernel.org>, magnus.damm@gmail.com,
+       damm@igel.co.jp, lethal@linux-sh.org, nico@cam.org,
+       Mike Frysinger <vapier.adi@gmail.com>
+Subject: Re: Blackfin STAMP537 compiling error in 2.6.25-rc8
+References: <386072610804070057w1eb65db5taeca77f8f3e36627@mail.gmail.com>	 <47F9D7BA.6080708@garzik.org> <386072610804070115s57dfd49fgad01218e820167b@mail.gmail.com>
+In-Reply-To: <386072610804070115s57dfd49fgad01218e820167b@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Bryan, Michael,
-
-On Thu, Feb 14, 2008 at 05:17:28PM +0800, Bryan Wu wrote:
-> From: Michael Hennerich <michael.hennerich@analog.com>
+Bryan Wu wrote:
+> On Mon, Apr 7, 2008 at 1:13 AM, Jeff Garzik <jeff@garzik.org> wrote:
+>> Bryan Wu wrote:
+>>
+>>> We found the latest kernel compile failed with Blackfin STAMP537
+>>> configuration on our daily build machine.
+>>> ---
+>>>  CC      drivers/net/smc91x.o
+>>> drivers/net/smc91x.c: In function 'smc_rcv':
+>>> drivers/net/smc91x.c:513: warning: passing argument 1 of 'insw' makes
+>>> integer from pointer without a cast
+>>> drivers/net/smc91x.c: In function 'smc_hardware_send_pkt':
+>>> drivers/net/smc91x.c:620: warning: passing argument 1 of 'outsw' makes
+>>> integer from pointer without a cast
+>>> drivers/net/smc91x.c:1859:32: error: macro "SMC_GET_MAC_ADDR" requires
+>>> 2 arguments, but only 1 given
+>>> drivers/net/smc91x.c: In function 'smc_probe':
+>>> drivers/net/smc91x.c:1859: error: 'SMC_GET_MAC_ADDR' undeclared (first
+>>> use in this function)
+>>> drivers/net/smc91x.c:1859: error: (Each undeclared identifier is
+>>> reported only once
+>>> drivers/net/smc91x.c:1859: error: for each function it appears in.)
+>>> make[2]: *** [drivers/net/smc91x.o] Error 1
+>>> make[1]: *** [drivers/net] Error 2
+>>> make: *** [drivers] Error 2
+>>> ---
+>>>
+>>> That is because my -mm tree fixing bug patch:
+>>>
+>> (http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=9e6db60825ef7e7999abc610ce256ba768e58162)
+>>> was merged into mainline before the smc91x API change patch in -mm:
+>>>
+>> http://www.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.25-rc5/2.6.25-rc5-mm1/broken-out/smc91x-pass-along-private-data-v2.patch
+>>> Did I miss something here? or this patch is on the way before 2.6.25
+>>> final release?
+>>>
+>>  It looks like I missed something...  I thought akpm was going to send the
+>> patch for -mm in?
+>>
+>>  If not, let's revert this one...
+>>
 > 
-> [try #3] Changlog (Add feedback from Dmitry Torokhov):
->  - Change handling of spi_sync / spi_async return value handling
->  - Remove depreciated dev->power.power_state
->  - Fix error return path in ad7877_probe
->  - delete pending kernel timer
->  - Some minor cleanup (indention, use dev_err etc.)
+> ok, no problem, it is ok for me.
 
-Sorry for the long silence... I have a couple of comments at the moment
-but I am sure i will have more ;)
+Cool.
 
-> +
-> +	status = spi_sync(spi, &req->msg);
-> +
-> +	if (status == 0)
-> +		status = req->msg.status;
-> +
-> +	kfree(req);
-> +	return status ? status : req->sample;
+David or Linus, please revert 9e6db60825ef7e7999abc610ce256ba768e58162
 
-Use after free here.
+It was merged without the API it needed, causing build breakage.
 
-> +
-> +	ts->irq_disabled = 1;
-> +	disable_irq(spi->irq);
+Acked-by: Jeff Garzik <jgarzik@redhat.com>
 
-I am a bit uneasy here... do we need to wait for an async spi completion
-here before proceeding? Overall I have some concerns about the
-irq/spi/removal/sysfs iteractions, I will need some more time to look
-through the driver.
 
-> +	status = spi_sync(spi, &req->msg);
-> +	ts->irq_disabled = 0;
-> +	enable_irq(spi->irq);
-> +
 
--- 
-Dmitry
+Andrew,
+
+Since it was an arch patch to a driver I cannot build, I made the 
+[mistaken] assumption that your sending it to me was an indication that 
+it should actually be merged :)  Especially with a subject like "fix 
+build breakage", for a platform I cannot easily build...
+
+Are there any process tweaks that could be made here?  Maybe -mm stuff 
+sent to maintainers could be tagged, noting dependencies on other -mm 
+patches that are not yet upstream?
+
+Thanks,
+
+	Jeff
+
+
