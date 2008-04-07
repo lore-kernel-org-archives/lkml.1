@@ -1,714 +1,484 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757141AbYDGT7p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757442AbYDGUAA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757141AbYDGT7p (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Apr 2008 15:59:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754229AbYDGT7P
+	id S1757442AbYDGUAA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Apr 2008 16:00:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754797AbYDGT7Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Apr 2008 15:59:15 -0400
-Received: from mail.fieldses.org ([66.93.2.214]:53365 "EHLO fieldses.org"
+	Mon, 7 Apr 2008 15:59:16 -0400
+Received: from mail.fieldses.org ([66.93.2.214]:53366 "EHLO fieldses.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752244AbYDGT7N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1752372AbYDGT7N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 7 Apr 2008 15:59:13 -0400
 From: "J. Bruce Fields" <bfields@citi.umich.edu>
 To: Jon Corbet <corbet@lwn.net>
 Cc: Randy Dunlap <rdunlap@xenotime.net>, linux-kernel@vger.kernel.org,
        "J. Bruce Fields" <bfields@citi.umich.edu>
-Subject: [PATCH] Documentation: move nfsroot.txt to filesystems/
-Date: Mon,  7 Apr 2008 15:59:03 -0400
-Message-Id: <1207598345-14295-2-git-send-email-bfields@citi.umich.edu>
+Subject: [PATCH] Documentation: move rpc-cache.txt to filesystems/
+Date: Mon,  7 Apr 2008 15:59:04 -0400
+Message-Id: <1207598345-14295-3-git-send-email-bfields@citi.umich.edu>
 X-Mailer: git-send-email 1.5.4.5
-In-Reply-To: <1207598345-14295-1-git-send-email-bfields@citi.umich.edu>
+In-Reply-To: <1207598345-14295-2-git-send-email-bfields@citi.umich.edu>
 References: <1207598345-14295-1-git-send-email-bfields@citi.umich.edu>
+ <1207598345-14295-2-git-send-email-bfields@citi.umich.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Documentation/ is a little large, and filesystems/ seems an obvious
-place for this file.
+This file is nfs-related.  (Maybe Documentation/filesystems/ would
+benefit from a separate nfs/ directory at some point.)
 
 Signed-off-by: J. Bruce Fields <bfields@citi.umich.edu>
 ---
- Documentation/00-INDEX                |    2 -
- Documentation/filesystems/00-INDEX    |    2 +
- Documentation/filesystems/nfsroot.txt |  270 +++++++++++++++++++++++++++++++++
- Documentation/kernel-parameters.txt   |    6 +-
- Documentation/nfsroot.txt             |  270 ---------------------------------
- fs/Kconfig                            |    8 +-
- net/ipv4/Kconfig                      |    8 +-
- net/ipv4/ipconfig.c                   |    2 +-
- 8 files changed, 284 insertions(+), 284 deletions(-)
- create mode 100644 Documentation/filesystems/nfsroot.txt
- delete mode 100644 Documentation/nfsroot.txt
+ Documentation/00-INDEX                  |    2 -
+ Documentation/filesystems/00-INDEX      |    2 +
+ Documentation/filesystems/rpc-cache.txt |  202 +++++++++++++++++++++++++++++++
+ Documentation/rpc-cache.txt             |  202 -------------------------------
+ 4 files changed, 204 insertions(+), 204 deletions(-)
+ create mode 100644 Documentation/filesystems/rpc-cache.txt
+ delete mode 100644 Documentation/rpc-cache.txt
 
 diff --git a/Documentation/00-INDEX b/Documentation/00-INDEX
-index fc8e7c7..08a39cd 100644
+index 08a39cd..e8fb246 100644
 --- a/Documentation/00-INDEX
 +++ b/Documentation/00-INDEX
-@@ -271,8 +271,6 @@ netlabel/
- 	- directory with information on the NetLabel subsystem.
- networking/
- 	- directory with info on various aspects of networking with Linux.
--nfsroot.txt
--	- short guide on setting up a diskless box with NFS root filesystem.
- nmi_watchdog.txt
- 	- info on NMI watchdog for SMP systems.
- nommu-mmap.txt
+@@ -319,8 +319,6 @@ robust-futexes.txt
+ 	- a description of what robust futexes are.
+ rocket.txt
+ 	- info on the Comtrol RocketPort multiport serial driver.
+-rpc-cache.txt
+-	- introduction to the caching mechanisms in the sunrpc layer.
+ rt-mutex-design.txt
+ 	- description of the RealTime mutex implementation design.
+ rt-mutex.txt
 diff --git a/Documentation/filesystems/00-INDEX b/Documentation/filesystems/00-INDEX
-index e68021c..b1b523b 100644
+index b1b523b..a2e5d5d 100644
 --- a/Documentation/filesystems/00-INDEX
 +++ b/Documentation/filesystems/00-INDEX
-@@ -66,6 +66,8 @@ mandatory-locking.txt
- 	- info on the Linux implementation of Sys V mandatory file locking.
- ncpfs.txt
- 	- info on Novell Netware(tm) filesystem using NCP protocol.
-+nfsroot.txt
-+	- short guide on setting up a diskless box with NFS root filesystem.
- ntfs.txt
- 	- info and mount options for the NTFS filesystem (Windows NT).
- ocfs2.txt
-diff --git a/Documentation/filesystems/nfsroot.txt b/Documentation/filesystems/nfsroot.txt
+@@ -84,6 +84,8 @@ relay.txt
+ 	- info on relay, for efficient streaming from kernel to user space.
+ romfs.txt
+ 	- description of the ROMFS filesystem.
++rpc-cache.txt
++	- introduction to the caching mechanisms in the sunrpc layer.
+ sharedsubtree.txt
+ 	- a description of shared subtrees for namespaces.
+ smbfs.txt
+diff --git a/Documentation/filesystems/rpc-cache.txt b/Documentation/filesystems/rpc-cache.txt
 new file mode 100644
-index 0000000..31b3291
+index 0000000..8a382be
 --- /dev/null
-+++ b/Documentation/filesystems/nfsroot.txt
-@@ -0,0 +1,270 @@
-+Mounting the root filesystem via NFS (nfsroot)
-+===============================================
-+
-+Written 1996 by Gero Kuhlmann <gero@gkminix.han.de>
-+Updated 1997 by Martin Mares <mj@atrey.karlin.mff.cuni.cz>
-+Updated 2006 by Nico Schottelius <nico-kernel-nfsroot@schottelius.org>
-+Updated 2006 by Horms <horms@verge.net.au>
-+
-+
-+
-+In order to use a diskless system, such as an X-terminal or printer server
-+for example, it is necessary for the root filesystem to be present on a
-+non-disk device. This may be an initramfs (see Documentation/filesystems/
-+ramfs-rootfs-initramfs.txt), a ramdisk (see Documentation/initrd.txt) or a
-+filesystem mounted via NFS. The following text describes on how to use NFS
-+for the root filesystem. For the rest of this text 'client' means the
-+diskless system, and 'server' means the NFS server.
-+
-+
-+
-+
-+1.) Enabling nfsroot capabilities
-+    -----------------------------
-+
-+In order to use nfsroot, NFS client support needs to be selected as
-+built-in during configuration. Once this has been selected, the nfsroot
-+option will become available, which should also be selected.
-+
-+In the networking options, kernel level autoconfiguration can be selected,
-+along with the types of autoconfiguration to support. Selecting all of
-+DHCP, BOOTP and RARP is safe.
-+
-+
-+
-+
-+2.) Kernel command line
-+    -------------------
-+
-+When the kernel has been loaded by a boot loader (see below) it needs to be
-+told what root fs device to use. And in the case of nfsroot, where to find
-+both the server and the name of the directory on the server to mount as root.
-+This can be established using the following kernel command line parameters:
-+
-+
-+root=/dev/nfs
-+
-+  This is necessary to enable the pseudo-NFS-device. Note that it's not a
-+  real device but just a synonym to tell the kernel to use NFS instead of
-+  a real device.
-+
-+
-+nfsroot=[<server-ip>:]<root-dir>[,<nfs-options>]
-+
-+  If the `nfsroot' parameter is NOT given on the command line,
-+  the default "/tftpboot/%s" will be used.
-+
-+  <server-ip>	Specifies the IP address of the NFS server.
-+		The default address is determined by the `ip' parameter
-+		(see below). This parameter allows the use of different
-+		servers for IP autoconfiguration and NFS.
-+
-+  <root-dir>	Name of the directory on the server to mount as root.
-+		If there is a "%s" token in the string, it will be
-+		replaced by the ASCII-representation of the client's
-+		IP address.
-+
-+  <nfs-options>	Standard NFS options. All options are separated by commas.
-+		The following defaults are used:
-+			port		= as given by server portmap daemon
-+			rsize		= 4096
-+			wsize		= 4096
-+			timeo		= 7
-+			retrans		= 3
-+			acregmin	= 3
-+			acregmax	= 60
-+			acdirmin	= 30
-+			acdirmax	= 60
-+			flags		= hard, nointr, noposix, cto, ac
-+
-+
-+ip=<client-ip>:<server-ip>:<gw-ip>:<netmask>:<hostname>:<device>:<autoconf>
-+
-+  This parameter tells the kernel how to configure IP addresses of devices
-+  and also how to set up the IP routing table. It was originally called
-+  `nfsaddrs', but now the boot-time IP configuration works independently of
-+  NFS, so it was renamed to `ip' and the old name remained as an alias for
-+  compatibility reasons.
-+
-+  If this parameter is missing from the kernel command line, all fields are
-+  assumed to be empty, and the defaults mentioned below apply. In general
-+  this means that the kernel tries to configure everything using
-+  autoconfiguration.
-+
-+  The <autoconf> parameter can appear alone as the value to the `ip'
-+  parameter (without all the ':' characters before).  If the value is
-+  "ip=off" or "ip=none", no autoconfiguration will take place, otherwise
-+  autoconfiguration will take place.  The most common way to use this
-+  is "ip=dhcp".
-+
-+  <client-ip>	IP address of the client.
-+
-+  		Default:  Determined using autoconfiguration.
-+
-+  <server-ip>	IP address of the NFS server. If RARP is used to determine
-+		the client address and this parameter is NOT empty only
-+		replies from the specified server are accepted.
-+
-+		Only required for for NFS root. That is autoconfiguration
-+		will not be triggered if it is missing and NFS root is not
-+		in operation.
-+
-+		Default: Determined using autoconfiguration.
-+		         The address of the autoconfiguration server is used.
-+
-+  <gw-ip>	IP address of a gateway if the server is on a different subnet.
-+
-+		Default: Determined using autoconfiguration.
-+
-+  <netmask>	Netmask for local network interface. If unspecified
-+		the netmask is derived from the client IP address assuming
-+		classful addressing.
-+
-+		Default:  Determined using autoconfiguration.
-+
-+  <hostname>	Name of the client. May be supplied by autoconfiguration,
-+  		but its absence will not trigger autoconfiguration.
-+
-+  		Default: Client IP address is used in ASCII notation.
-+
-+  <device>	Name of network device to use.
-+
-+		Default: If the host only has one device, it is used.
-+			 Otherwise the device is determined using
-+			 autoconfiguration. This is done by sending
-+			 autoconfiguration requests out of all devices,
-+			 and using the device that received the first reply.
-+
-+  <autoconf>	Method to use for autoconfiguration. In the case of options
-+                which specify multiple autoconfiguration protocols,
-+		requests are sent using all protocols, and the first one
-+		to reply is used.
-+
-+		Only autoconfiguration protocols that have been compiled
-+		into the kernel will be used, regardless of the value of
-+		this option.
-+
-+                  off or none: don't use autoconfiguration
-+				(do static IP assignment instead)
-+		  on or any:   use any protocol available in the kernel
-+			       (default)
-+		  dhcp:        use DHCP
-+		  bootp:       use BOOTP
-+		  rarp:        use RARP
-+		  both:        use both BOOTP and RARP but not DHCP
-+		               (old option kept for backwards compatibility)
-+
-+                Default: any
-+
-+
-+
-+
-+3.) Boot Loader
-+    ----------
-+
-+To get the kernel into memory different approaches can be used.
-+They depend on various facilities being available:
-+
-+
-+3.1)  Booting from a floppy using syslinux
-+
-+	When building kernels, an easy way to create a boot floppy that uses
-+	syslinux is to use the zdisk or bzdisk make targets which use
-+      	and bzimage images respectively. Both targets accept the
-+     	FDARGS parameter which can be used to set the kernel command line.
-+
-+	e.g.
-+	   make bzdisk FDARGS="root=/dev/nfs"
-+
-+   	Note that the user running this command will need to have
-+     	access to the floppy drive device, /dev/fd0
-+
-+     	For more information on syslinux, including how to create bootdisks
-+     	for prebuilt kernels, see http://syslinux.zytor.com/
-+
-+	N.B: Previously it was possible to write a kernel directly to
-+	     a floppy using dd, configure the boot device using rdev, and
-+	     boot using the resulting floppy. Linux no longer supports this
-+	     method of booting.
-+
-+3.2) Booting from a cdrom using isolinux
-+
-+     	When building kernels, an easy way to create a bootable cdrom that
-+     	uses isolinux is to use the isoimage target which uses a bzimage
-+     	image. Like zdisk and bzdisk, this target accepts the FDARGS
-+     	parameter which can be used to set the kernel command line.
-+
-+	e.g.
-+	  make isoimage FDARGS="root=/dev/nfs"
-+
-+     	The resulting iso image will be arch/<ARCH>/boot/image.iso
-+     	This can be written to a cdrom using a variety of tools including
-+     	cdrecord.
-+
-+	e.g.
-+	  cdrecord dev=ATAPI:1,0,0 arch/i386/boot/image.iso
-+
-+     	For more information on isolinux, including how to create bootdisks
-+     	for prebuilt kernels, see http://syslinux.zytor.com/
-+
-+3.2) Using LILO
-+	When using LILO all the necessary command line parameters may be
-+	specified using the 'append=' directive in the LILO configuration
-+	file.
-+
-+	However, to use the 'root=' directive you also need to create
-+	a dummy root device, which may be removed after LILO is run.
-+
-+	mknod /dev/boot255 c 0 255
-+
-+	For information on configuring LILO, please refer to its documentation.
-+
-+3.3) Using GRUB
-+	When using GRUB, kernel parameter are simply appended after the kernel
-+	specification: kernel <kernel> <parameters>
-+
-+3.4) Using loadlin
-+	loadlin may be used to boot Linux from a DOS command prompt without
-+	requiring a local hard disk to mount as root. This has not been
-+	thoroughly tested by the authors of this document, but in general
-+	it should be possible configure the kernel command line similarly
-+	to the configuration of LILO.
-+
-+	Please refer to the loadlin documentation for further information.
-+
-+3.5) Using a boot ROM
-+	This is probably the most elegant way of booting a diskless client.
-+	With a boot ROM the kernel is loaded using the TFTP protocol. The
-+	authors of this document are not aware of any no commercial boot
-+	ROMs that support booting Linux over the network. However, there
-+	are two free implementations of a boot ROM, netboot-nfs and
-+	etherboot, both of which are available on sunsite.unc.edu, and both
-+	of which contain everything you need to boot a diskless Linux client.
-+
-+3.6) Using pxelinux
-+	Pxelinux may be used to boot linux using the PXE boot loader
-+	which is present on many modern network cards.
-+
-+	When using pxelinux, the kernel image is specified using
-+	"kernel <relative-path-below /tftpboot>". The nfsroot parameters
-+	are passed to the kernel by adding them to the "append" line.
-+	It is common to use serial console in conjunction with pxeliunx,
-+	see Documentation/serial-console.txt for more information.
-+
-+	For more information on isolinux, including how to create bootdisks
-+	for prebuilt kernels, see http://syslinux.zytor.com/
-+
-+
-+
-+
-+4.) Credits
-+    -------
-+
-+  The nfsroot code in the kernel and the RARP support have been written
-+  by Gero Kuhlmann <gero@gkminix.han.de>.
-+
-+  The rest of the IP layer autoconfiguration code has been written
-+  by Martin Mares <mj@atrey.karlin.mff.cuni.cz>.
-+
-+  In order to write the initial version of nfsroot I would like to thank
-+  Jens-Uwe Mager <jum@anubis.han.de> for his help.
-diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
-index 508e2a2..57709e4 100644
---- a/Documentation/kernel-parameters.txt
-+++ b/Documentation/kernel-parameters.txt
-@@ -845,7 +845,7 @@ and is between 256 and 4096 characters. It is defined in the file
- 			arch/alpha/kernel/core_marvel.c.
- 
- 	ip=		[IP_PNP]
--			See Documentation/nfsroot.txt.
-+			See Documentation/filesystems/nfsroot.txt.
- 
- 	ip2=		[HW] Set IO/IRQ pairs for up to 4 IntelliPort boards
- 			See comment before ip2_setup() in
-@@ -1199,10 +1199,10 @@ and is between 256 and 4096 characters. It is defined in the file
- 			file if at all.
- 
- 	nfsaddrs=	[NFS]
--			See Documentation/nfsroot.txt.
-+			See Documentation/filesystems/nfsroot.txt.
- 
- 	nfsroot=	[NFS] nfs root filesystem for disk-less boxes.
--			See Documentation/nfsroot.txt.
-+			See Documentation/filesystems/nfsroot.txt.
- 
- 	nfs.callback_tcpport=
- 			[NFS] set the TCP port on which the NFSv4 callback
-diff --git a/Documentation/nfsroot.txt b/Documentation/nfsroot.txt
++++ b/Documentation/filesystems/rpc-cache.txt
+@@ -0,0 +1,202 @@
++	This document gives a brief introduction to the caching
++mechanisms in the sunrpc layer that is used, in particular,
++for NFS authentication.
++
++CACHES
++======
++The caching replaces the old exports table and allows for
++a wide variety of values to be caches.
++
++There are a number of caches that are similar in structure though
++quite possibly very different in content and use.  There is a corpus
++of common code for managing these caches.
++
++Examples of caches that are likely to be needed are:
++  - mapping from IP address to client name
++  - mapping from client name and filesystem to export options
++  - mapping from UID to list of GIDs, to work around NFS's limitation
++    of 16 gids.
++  - mappings between local UID/GID and remote UID/GID for sites that
++    do not have uniform uid assignment
++  - mapping from network identify to public key for crypto authentication.
++
++The common code handles such things as:
++   - general cache lookup with correct locking
++   - supporting 'NEGATIVE' as well as positive entries
++   - allowing an EXPIRED time on cache items, and removing
++     items after they expire, and are no longer in-use.
++   - making requests to user-space to fill in cache entries
++   - allowing user-space to directly set entries in the cache
++   - delaying RPC requests that depend on as-yet incomplete
++     cache entries, and replaying those requests when the cache entry
++     is complete.
++   - clean out old entries as they expire.
++
++Creating a Cache
++----------------
++
++1/ A cache needs a datum to store.  This is in the form of a
++   structure definition that must contain a
++     struct cache_head
++   as an element, usually the first.
++   It will also contain a key and some content.
++   Each cache element is reference counted and contains
++   expiry and update times for use in cache management.
++2/ A cache needs a "cache_detail" structure that
++   describes the cache.  This stores the hash table, some
++   parameters for cache management, and some operations detailing how
++   to work with particular cache items.
++   The operations requires are:
++   	struct cache_head *alloc(void)
++		This simply allocates appropriate memory and returns
++   		a pointer to the cache_detail embedded within the
++		structure
++	void cache_put(struct kref *)
++		This is called when the last reference to an item is
++		dropped.  The pointer passed is to the 'ref' field
++		in the cache_head.  cache_put should release any
++		references create by 'cache_init' and, if CACHE_VALID
++		is set, any references created by cache_update.
++		It should then release the memory allocated by
++   		'alloc'.
++        int match(struct cache_head *orig, struct cache_head *new)
++		test if the keys in the two structures match.  Return
++		1 if they do, 0 if they don't.
++	void init(struct cache_head *orig, struct cache_head *new)
++		Set the 'key' fields in 'new' from 'orig'.  This may
++		include taking references to shared objects.
++	void update(struct cache_head *orig, struct cache_head *new)
++		Set the 'content' fileds in 'new' from 'orig'.
++	int cache_show(struct seq_file *m, struct cache_detail *cd,
++			struct cache_head *h)
++		Optional.  Used to provide a /proc file that lists the
++		contents of a cache.  This should show one item,
++   		usually on just one line.
++	int cache_request(struct cache_detail *cd, struct cache_head *h,
++   		char **bpp, int *blen)
++		Format a request to be send to user-space for an item
++   		to be instantiated.  *bpp is a buffer of size *blen.
++		bpp should be moved forward over the encoded message,
++		and  *blen should be reduced to show how much free
++		space remains.  Return 0 on success or <0 if not
++		enough room or other problem.
++	int cache_parse(struct cache_detail *cd, char *buf, int len)
++		A message from user space has arrived to fill out a
++		cache entry.  It is in 'buf' of length 'len'.
++		cache_parse should parse this, find the item in the
++		cache with sunrpc_cache_lookup, and update the item
++		with sunrpc_cache_update.
++
++
++3/ A cache needs to be registered using cache_register().  This
++   includes it on a list of caches that will be regularly
++   cleaned to discard old data.
++
++Using a cache
++-------------
++
++To find a value in a cache, call sunrpc_cache_lookup passing a pointer
++to the cache_head in a sample item with the 'key' fields filled in.
++This will be passed to ->match to identify the target entry.  If no
++entry is found, a new entry will be create, added to the cache, and
++marked as not containing valid data.
++
++The item returned is typically passed to cache_check which will check
++if the data is valid, and may initiate an up-call to get fresh data.
++cache_check will return -ENOENT in the entry is negative or if an up
++call is needed but not possible, -EAGAIN if an upcall is pending,
++or 0 if the data is valid;
++
++cache_check can be passed a "struct cache_req *".  This structure is
++typically embedded in the actual request and can be used to create a
++deferred copy of the request (struct cache_deferred_req).  This is
++done when the found cache item is not uptodate, but the is reason to
++believe that userspace might provide information soon.  When the cache
++item does become valid, the deferred copy of the request will be
++revisited (->revisit).  It is expected that this method will
++reschedule the request for processing.
++
++The value returned by sunrpc_cache_lookup can also be passed to
++sunrpc_cache_update to set the content for the item.  A second item is
++passed which should hold the content.  If the item found by _lookup
++has valid data, then it is discarded and a new item is created.  This
++saves any user of an item from worrying about content changing while
++it is being inspected.  If the item found by _lookup does not contain
++valid data, then the content is copied across and CACHE_VALID is set.
++
++Populating a cache
++------------------
++
++Each cache has a name, and when the cache is registered, a directory
++with that name is created in /proc/net/rpc
++
++This directory contains a file called 'channel' which is a channel
++for communicating between kernel and user for populating the cache.
++This directory may later contain other files of interacting
++with the cache.
++
++The 'channel' works a bit like a datagram socket. Each 'write' is
++passed as a whole to the cache for parsing and interpretation.
++Each cache can treat the write requests differently, but it is
++expected that a message written will contain:
++  - a key
++  - an expiry time
++  - a content.
++with the intention that an item in the cache with the give key
++should be create or updated to have the given content, and the
++expiry time should be set on that item.
++
++Reading from a channel is a bit more interesting.  When a cache
++lookup fails, or when it succeeds but finds an entry that may soon
++expire, a request is lodged for that cache item to be updated by
++user-space.  These requests appear in the channel file.
++
++Successive reads will return successive requests.
++If there are no more requests to return, read will return EOF, but a
++select or poll for read will block waiting for another request to be
++added.
++
++Thus a user-space helper is likely to:
++  open the channel.
++    select for readable
++    read a request
++    write a response
++  loop.
++
++If it dies and needs to be restarted, any requests that have not been
++answered will still appear in the file and will be read by the new
++instance of the helper.
++
++Each cache should define a "cache_parse" method which takes a message
++written from user-space and processes it.  It should return an error
++(which propagates back to the write syscall) or 0.
++
++Each cache should also define a "cache_request" method which
++takes a cache item and encodes a request into the buffer
++provided.
++
++Note: If a cache has no active readers on the channel, and has had not
++active readers for more than 60 seconds, further requests will not be
++added to the channel but instead all lookups that do not find a valid
++entry will fail.  This is partly for backward compatibility: The
++previous nfs exports table was deemed to be authoritative and a
++failed lookup meant a definite 'no'.
++
++request/response format
++-----------------------
++
++While each cache is free to use it's own format for requests
++and responses over channel, the following is recommended as
++appropriate and support routines are available to help:
++Each request or response record should be printable ASCII
++with precisely one newline character which should be at the end.
++Fields within the record should be separated by spaces, normally one.
++If spaces, newlines, or nul characters are needed in a field they
++much be quoted.  two mechanisms are available:
++1/ If a field begins '\x' then it must contain an even number of
++   hex digits, and pairs of these digits provide the bytes in the
++   field.
++2/ otherwise a \ in the field must be followed by 3 octal digits
++   which give the code for a byte.  Other characters are treated
++   as them selves.  At the very least, space, newline, nul, and
++   '\' must be quoted in this way.
+diff --git a/Documentation/rpc-cache.txt b/Documentation/rpc-cache.txt
 deleted file mode 100644
-index 31b3291..0000000
---- a/Documentation/nfsroot.txt
+index 8a382be..0000000
+--- a/Documentation/rpc-cache.txt
 +++ /dev/null
-@@ -1,270 +0,0 @@
--Mounting the root filesystem via NFS (nfsroot)
--===============================================
--
--Written 1996 by Gero Kuhlmann <gero@gkminix.han.de>
--Updated 1997 by Martin Mares <mj@atrey.karlin.mff.cuni.cz>
--Updated 2006 by Nico Schottelius <nico-kernel-nfsroot@schottelius.org>
--Updated 2006 by Horms <horms@verge.net.au>
--
--
--
--In order to use a diskless system, such as an X-terminal or printer server
--for example, it is necessary for the root filesystem to be present on a
--non-disk device. This may be an initramfs (see Documentation/filesystems/
--ramfs-rootfs-initramfs.txt), a ramdisk (see Documentation/initrd.txt) or a
--filesystem mounted via NFS. The following text describes on how to use NFS
--for the root filesystem. For the rest of this text 'client' means the
--diskless system, and 'server' means the NFS server.
--
--
--
--
--1.) Enabling nfsroot capabilities
--    -----------------------------
--
--In order to use nfsroot, NFS client support needs to be selected as
--built-in during configuration. Once this has been selected, the nfsroot
--option will become available, which should also be selected.
--
--In the networking options, kernel level autoconfiguration can be selected,
--along with the types of autoconfiguration to support. Selecting all of
--DHCP, BOOTP and RARP is safe.
--
--
--
--
--2.) Kernel command line
--    -------------------
--
--When the kernel has been loaded by a boot loader (see below) it needs to be
--told what root fs device to use. And in the case of nfsroot, where to find
--both the server and the name of the directory on the server to mount as root.
--This can be established using the following kernel command line parameters:
--
--
--root=/dev/nfs
--
--  This is necessary to enable the pseudo-NFS-device. Note that it's not a
--  real device but just a synonym to tell the kernel to use NFS instead of
--  a real device.
--
--
--nfsroot=[<server-ip>:]<root-dir>[,<nfs-options>]
--
--  If the `nfsroot' parameter is NOT given on the command line,
--  the default "/tftpboot/%s" will be used.
--
--  <server-ip>	Specifies the IP address of the NFS server.
--		The default address is determined by the `ip' parameter
--		(see below). This parameter allows the use of different
--		servers for IP autoconfiguration and NFS.
--
--  <root-dir>	Name of the directory on the server to mount as root.
--		If there is a "%s" token in the string, it will be
--		replaced by the ASCII-representation of the client's
--		IP address.
--
--  <nfs-options>	Standard NFS options. All options are separated by commas.
--		The following defaults are used:
--			port		= as given by server portmap daemon
--			rsize		= 4096
--			wsize		= 4096
--			timeo		= 7
--			retrans		= 3
--			acregmin	= 3
--			acregmax	= 60
--			acdirmin	= 30
--			acdirmax	= 60
--			flags		= hard, nointr, noposix, cto, ac
--
--
--ip=<client-ip>:<server-ip>:<gw-ip>:<netmask>:<hostname>:<device>:<autoconf>
--
--  This parameter tells the kernel how to configure IP addresses of devices
--  and also how to set up the IP routing table. It was originally called
--  `nfsaddrs', but now the boot-time IP configuration works independently of
--  NFS, so it was renamed to `ip' and the old name remained as an alias for
--  compatibility reasons.
--
--  If this parameter is missing from the kernel command line, all fields are
--  assumed to be empty, and the defaults mentioned below apply. In general
--  this means that the kernel tries to configure everything using
--  autoconfiguration.
--
--  The <autoconf> parameter can appear alone as the value to the `ip'
--  parameter (without all the ':' characters before).  If the value is
--  "ip=off" or "ip=none", no autoconfiguration will take place, otherwise
--  autoconfiguration will take place.  The most common way to use this
--  is "ip=dhcp".
--
--  <client-ip>	IP address of the client.
--
--  		Default:  Determined using autoconfiguration.
--
--  <server-ip>	IP address of the NFS server. If RARP is used to determine
--		the client address and this parameter is NOT empty only
--		replies from the specified server are accepted.
--
--		Only required for for NFS root. That is autoconfiguration
--		will not be triggered if it is missing and NFS root is not
--		in operation.
--
--		Default: Determined using autoconfiguration.
--		         The address of the autoconfiguration server is used.
--
--  <gw-ip>	IP address of a gateway if the server is on a different subnet.
--
--		Default: Determined using autoconfiguration.
--
--  <netmask>	Netmask for local network interface. If unspecified
--		the netmask is derived from the client IP address assuming
--		classful addressing.
--
--		Default:  Determined using autoconfiguration.
--
--  <hostname>	Name of the client. May be supplied by autoconfiguration,
--  		but its absence will not trigger autoconfiguration.
--
--  		Default: Client IP address is used in ASCII notation.
--
--  <device>	Name of network device to use.
--
--		Default: If the host only has one device, it is used.
--			 Otherwise the device is determined using
--			 autoconfiguration. This is done by sending
--			 autoconfiguration requests out of all devices,
--			 and using the device that received the first reply.
--
--  <autoconf>	Method to use for autoconfiguration. In the case of options
--                which specify multiple autoconfiguration protocols,
--		requests are sent using all protocols, and the first one
--		to reply is used.
--
--		Only autoconfiguration protocols that have been compiled
--		into the kernel will be used, regardless of the value of
--		this option.
--
--                  off or none: don't use autoconfiguration
--				(do static IP assignment instead)
--		  on or any:   use any protocol available in the kernel
--			       (default)
--		  dhcp:        use DHCP
--		  bootp:       use BOOTP
--		  rarp:        use RARP
--		  both:        use both BOOTP and RARP but not DHCP
--		               (old option kept for backwards compatibility)
--
--                Default: any
--
--
--
--
--3.) Boot Loader
--    ----------
--
--To get the kernel into memory different approaches can be used.
--They depend on various facilities being available:
--
--
--3.1)  Booting from a floppy using syslinux
--
--	When building kernels, an easy way to create a boot floppy that uses
--	syslinux is to use the zdisk or bzdisk make targets which use
--      	and bzimage images respectively. Both targets accept the
--     	FDARGS parameter which can be used to set the kernel command line.
--
--	e.g.
--	   make bzdisk FDARGS="root=/dev/nfs"
--
--   	Note that the user running this command will need to have
--     	access to the floppy drive device, /dev/fd0
--
--     	For more information on syslinux, including how to create bootdisks
--     	for prebuilt kernels, see http://syslinux.zytor.com/
--
--	N.B: Previously it was possible to write a kernel directly to
--	     a floppy using dd, configure the boot device using rdev, and
--	     boot using the resulting floppy. Linux no longer supports this
--	     method of booting.
--
--3.2) Booting from a cdrom using isolinux
--
--     	When building kernels, an easy way to create a bootable cdrom that
--     	uses isolinux is to use the isoimage target which uses a bzimage
--     	image. Like zdisk and bzdisk, this target accepts the FDARGS
--     	parameter which can be used to set the kernel command line.
--
--	e.g.
--	  make isoimage FDARGS="root=/dev/nfs"
--
--     	The resulting iso image will be arch/<ARCH>/boot/image.iso
--     	This can be written to a cdrom using a variety of tools including
--     	cdrecord.
--
--	e.g.
--	  cdrecord dev=ATAPI:1,0,0 arch/i386/boot/image.iso
--
--     	For more information on isolinux, including how to create bootdisks
--     	for prebuilt kernels, see http://syslinux.zytor.com/
--
--3.2) Using LILO
--	When using LILO all the necessary command line parameters may be
--	specified using the 'append=' directive in the LILO configuration
--	file.
--
--	However, to use the 'root=' directive you also need to create
--	a dummy root device, which may be removed after LILO is run.
--
--	mknod /dev/boot255 c 0 255
--
--	For information on configuring LILO, please refer to its documentation.
--
--3.3) Using GRUB
--	When using GRUB, kernel parameter are simply appended after the kernel
--	specification: kernel <kernel> <parameters>
--
--3.4) Using loadlin
--	loadlin may be used to boot Linux from a DOS command prompt without
--	requiring a local hard disk to mount as root. This has not been
--	thoroughly tested by the authors of this document, but in general
--	it should be possible configure the kernel command line similarly
--	to the configuration of LILO.
--
--	Please refer to the loadlin documentation for further information.
--
--3.5) Using a boot ROM
--	This is probably the most elegant way of booting a diskless client.
--	With a boot ROM the kernel is loaded using the TFTP protocol. The
--	authors of this document are not aware of any no commercial boot
--	ROMs that support booting Linux over the network. However, there
--	are two free implementations of a boot ROM, netboot-nfs and
--	etherboot, both of which are available on sunsite.unc.edu, and both
--	of which contain everything you need to boot a diskless Linux client.
--
--3.6) Using pxelinux
--	Pxelinux may be used to boot linux using the PXE boot loader
--	which is present on many modern network cards.
--
--	When using pxelinux, the kernel image is specified using
--	"kernel <relative-path-below /tftpboot>". The nfsroot parameters
--	are passed to the kernel by adding them to the "append" line.
--	It is common to use serial console in conjunction with pxeliunx,
--	see Documentation/serial-console.txt for more information.
--
--	For more information on isolinux, including how to create bootdisks
--	for prebuilt kernels, see http://syslinux.zytor.com/
--
--
--
--
--4.) Credits
--    -------
--
--  The nfsroot code in the kernel and the RARP support have been written
--  by Gero Kuhlmann <gero@gkminix.han.de>.
--
--  The rest of the IP layer autoconfiguration code has been written
--  by Martin Mares <mj@atrey.karlin.mff.cuni.cz>.
--
--  In order to write the initial version of nfsroot I would like to thank
--  Jens-Uwe Mager <jum@anubis.han.de> for his help.
-diff --git a/fs/Kconfig b/fs/Kconfig
-index d731282..c509123 100644
---- a/fs/Kconfig
-+++ b/fs/Kconfig
-@@ -1744,10 +1744,10 @@ config ROOT_NFS
- 	  If you want your Linux box to mount its whole root file system (the
- 	  one containing the directory /) from some other computer over the
- 	  net via NFS (presumably because your box doesn't have a hard disk),
--	  say Y. Read <file:Documentation/nfsroot.txt> for details. It is
--	  likely that in this case, you also want to say Y to "Kernel level IP
--	  autoconfiguration" so that your box can discover its network address
--	  at boot time.
-+	  say Y. Read <file:Documentation/filesystems/nfsroot.txt> for
-+	  details. It is likely that in this case, you also want to say Y to
-+	  "Kernel level IP autoconfiguration" so that your box can discover
-+	  its network address at boot time.
- 
- 	  Most people say N here.
- 
-diff --git a/net/ipv4/Kconfig b/net/ipv4/Kconfig
-index 9c7e5ff..4670683 100644
---- a/net/ipv4/Kconfig
-+++ b/net/ipv4/Kconfig
-@@ -160,7 +160,7 @@ config IP_PNP_DHCP
- 
- 	  If unsure, say Y. Note that if you want to use DHCP, a DHCP server
- 	  must be operating on your network.  Read
--	  <file:Documentation/nfsroot.txt> for details.
-+	  <file:Documentation/filesystems/nfsroot.txt> for details.
- 
- config IP_PNP_BOOTP
- 	bool "IP: BOOTP support"
-@@ -175,7 +175,7 @@ config IP_PNP_BOOTP
- 	  does BOOTP itself, providing all necessary information on the kernel
- 	  command line, you can say N here. If unsure, say Y. Note that if you
- 	  want to use BOOTP, a BOOTP server must be operating on your network.
--	  Read <file:Documentation/nfsroot.txt> for details.
-+	  Read <file:Documentation/filesystems/nfsroot.txt> for details.
- 
- config IP_PNP_RARP
- 	bool "IP: RARP support"
-@@ -187,8 +187,8 @@ config IP_PNP_RARP
- 	  discovered automatically at boot time using the RARP protocol (an
- 	  older protocol which is being obsoleted by BOOTP and DHCP), say Y
- 	  here. Note that if you want to use RARP, a RARP server must be
--	  operating on your network. Read <file:Documentation/nfsroot.txt> for
--	  details.
-+	  operating on your network. Read
-+	  <file:Documentation/filesystems/nfsroot.txt> for details.
- 
- # not yet ready..
- #   bool '    IP: ARP support' CONFIG_IP_PNP_ARP		
-diff --git a/net/ipv4/ipconfig.c b/net/ipv4/ipconfig.c
-index 7c992fb..4824fe8 100644
---- a/net/ipv4/ipconfig.c
-+++ b/net/ipv4/ipconfig.c
-@@ -1411,7 +1411,7 @@ late_initcall(ip_auto_config);
- 
- /*
-  *  Decode any IP configuration options in the "ip=" or "nfsaddrs=" kernel
-- *  command line parameter.  See Documentation/nfsroot.txt.
-+ *  command line parameter.  See Documentation/filesystems/nfsroot.txt.
-  */
- static int __init ic_proto_name(char *name)
- {
+@@ -1,202 +0,0 @@
+-	This document gives a brief introduction to the caching
+-mechanisms in the sunrpc layer that is used, in particular,
+-for NFS authentication.
+-
+-CACHES
+-======
+-The caching replaces the old exports table and allows for
+-a wide variety of values to be caches.
+-
+-There are a number of caches that are similar in structure though
+-quite possibly very different in content and use.  There is a corpus
+-of common code for managing these caches.
+-
+-Examples of caches that are likely to be needed are:
+-  - mapping from IP address to client name
+-  - mapping from client name and filesystem to export options
+-  - mapping from UID to list of GIDs, to work around NFS's limitation
+-    of 16 gids.
+-  - mappings between local UID/GID and remote UID/GID for sites that
+-    do not have uniform uid assignment
+-  - mapping from network identify to public key for crypto authentication.
+-
+-The common code handles such things as:
+-   - general cache lookup with correct locking
+-   - supporting 'NEGATIVE' as well as positive entries
+-   - allowing an EXPIRED time on cache items, and removing
+-     items after they expire, and are no longer in-use.
+-   - making requests to user-space to fill in cache entries
+-   - allowing user-space to directly set entries in the cache
+-   - delaying RPC requests that depend on as-yet incomplete
+-     cache entries, and replaying those requests when the cache entry
+-     is complete.
+-   - clean out old entries as they expire.
+-
+-Creating a Cache
+-----------------
+-
+-1/ A cache needs a datum to store.  This is in the form of a
+-   structure definition that must contain a
+-     struct cache_head
+-   as an element, usually the first.
+-   It will also contain a key and some content.
+-   Each cache element is reference counted and contains
+-   expiry and update times for use in cache management.
+-2/ A cache needs a "cache_detail" structure that
+-   describes the cache.  This stores the hash table, some
+-   parameters for cache management, and some operations detailing how
+-   to work with particular cache items.
+-   The operations requires are:
+-   	struct cache_head *alloc(void)
+-		This simply allocates appropriate memory and returns
+-   		a pointer to the cache_detail embedded within the
+-		structure
+-	void cache_put(struct kref *)
+-		This is called when the last reference to an item is
+-		dropped.  The pointer passed is to the 'ref' field
+-		in the cache_head.  cache_put should release any
+-		references create by 'cache_init' and, if CACHE_VALID
+-		is set, any references created by cache_update.
+-		It should then release the memory allocated by
+-   		'alloc'.
+-        int match(struct cache_head *orig, struct cache_head *new)
+-		test if the keys in the two structures match.  Return
+-		1 if they do, 0 if they don't.
+-	void init(struct cache_head *orig, struct cache_head *new)
+-		Set the 'key' fields in 'new' from 'orig'.  This may
+-		include taking references to shared objects.
+-	void update(struct cache_head *orig, struct cache_head *new)
+-		Set the 'content' fileds in 'new' from 'orig'.
+-	int cache_show(struct seq_file *m, struct cache_detail *cd,
+-			struct cache_head *h)
+-		Optional.  Used to provide a /proc file that lists the
+-		contents of a cache.  This should show one item,
+-   		usually on just one line.
+-	int cache_request(struct cache_detail *cd, struct cache_head *h,
+-   		char **bpp, int *blen)
+-		Format a request to be send to user-space for an item
+-   		to be instantiated.  *bpp is a buffer of size *blen.
+-		bpp should be moved forward over the encoded message,
+-		and  *blen should be reduced to show how much free
+-		space remains.  Return 0 on success or <0 if not
+-		enough room or other problem.
+-	int cache_parse(struct cache_detail *cd, char *buf, int len)
+-		A message from user space has arrived to fill out a
+-		cache entry.  It is in 'buf' of length 'len'.
+-		cache_parse should parse this, find the item in the
+-		cache with sunrpc_cache_lookup, and update the item
+-		with sunrpc_cache_update.
+-
+-
+-3/ A cache needs to be registered using cache_register().  This
+-   includes it on a list of caches that will be regularly
+-   cleaned to discard old data.
+-
+-Using a cache
+--------------
+-
+-To find a value in a cache, call sunrpc_cache_lookup passing a pointer
+-to the cache_head in a sample item with the 'key' fields filled in.
+-This will be passed to ->match to identify the target entry.  If no
+-entry is found, a new entry will be create, added to the cache, and
+-marked as not containing valid data.
+-
+-The item returned is typically passed to cache_check which will check
+-if the data is valid, and may initiate an up-call to get fresh data.
+-cache_check will return -ENOENT in the entry is negative or if an up
+-call is needed but not possible, -EAGAIN if an upcall is pending,
+-or 0 if the data is valid;
+-
+-cache_check can be passed a "struct cache_req *".  This structure is
+-typically embedded in the actual request and can be used to create a
+-deferred copy of the request (struct cache_deferred_req).  This is
+-done when the found cache item is not uptodate, but the is reason to
+-believe that userspace might provide information soon.  When the cache
+-item does become valid, the deferred copy of the request will be
+-revisited (->revisit).  It is expected that this method will
+-reschedule the request for processing.
+-
+-The value returned by sunrpc_cache_lookup can also be passed to
+-sunrpc_cache_update to set the content for the item.  A second item is
+-passed which should hold the content.  If the item found by _lookup
+-has valid data, then it is discarded and a new item is created.  This
+-saves any user of an item from worrying about content changing while
+-it is being inspected.  If the item found by _lookup does not contain
+-valid data, then the content is copied across and CACHE_VALID is set.
+-
+-Populating a cache
+-------------------
+-
+-Each cache has a name, and when the cache is registered, a directory
+-with that name is created in /proc/net/rpc
+-
+-This directory contains a file called 'channel' which is a channel
+-for communicating between kernel and user for populating the cache.
+-This directory may later contain other files of interacting
+-with the cache.
+-
+-The 'channel' works a bit like a datagram socket. Each 'write' is
+-passed as a whole to the cache for parsing and interpretation.
+-Each cache can treat the write requests differently, but it is
+-expected that a message written will contain:
+-  - a key
+-  - an expiry time
+-  - a content.
+-with the intention that an item in the cache with the give key
+-should be create or updated to have the given content, and the
+-expiry time should be set on that item.
+-
+-Reading from a channel is a bit more interesting.  When a cache
+-lookup fails, or when it succeeds but finds an entry that may soon
+-expire, a request is lodged for that cache item to be updated by
+-user-space.  These requests appear in the channel file.
+-
+-Successive reads will return successive requests.
+-If there are no more requests to return, read will return EOF, but a
+-select or poll for read will block waiting for another request to be
+-added.
+-
+-Thus a user-space helper is likely to:
+-  open the channel.
+-    select for readable
+-    read a request
+-    write a response
+-  loop.
+-
+-If it dies and needs to be restarted, any requests that have not been
+-answered will still appear in the file and will be read by the new
+-instance of the helper.
+-
+-Each cache should define a "cache_parse" method which takes a message
+-written from user-space and processes it.  It should return an error
+-(which propagates back to the write syscall) or 0.
+-
+-Each cache should also define a "cache_request" method which
+-takes a cache item and encodes a request into the buffer
+-provided.
+-
+-Note: If a cache has no active readers on the channel, and has had not
+-active readers for more than 60 seconds, further requests will not be
+-added to the channel but instead all lookups that do not find a valid
+-entry will fail.  This is partly for backward compatibility: The
+-previous nfs exports table was deemed to be authoritative and a
+-failed lookup meant a definite 'no'.
+-
+-request/response format
+------------------------
+-
+-While each cache is free to use it's own format for requests
+-and responses over channel, the following is recommended as
+-appropriate and support routines are available to help:
+-Each request or response record should be printable ASCII
+-with precisely one newline character which should be at the end.
+-Fields within the record should be separated by spaces, normally one.
+-If spaces, newlines, or nul characters are needed in a field they
+-much be quoted.  two mechanisms are available:
+-1/ If a field begins '\x' then it must contain an even number of
+-   hex digits, and pairs of these digits provide the bytes in the
+-   field.
+-2/ otherwise a \ in the field must be followed by 3 octal digits
+-   which give the code for a byte.  Other characters are treated
+-   as them selves.  At the very least, space, newline, nul, and
+-   '\' must be quoted in this way.
 -- 
 1.5.5.rc1
 
