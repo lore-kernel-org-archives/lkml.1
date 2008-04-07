@@ -1,35 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756075AbYDGVDr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756722AbYDGVET@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756075AbYDGVDr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Apr 2008 17:03:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751990AbYDGVDl
+	id S1756722AbYDGVET (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Apr 2008 17:04:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753324AbYDGVEE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Apr 2008 17:03:41 -0400
-Received: from indigo.cs.bgu.ac.il ([132.72.42.23]:48104 "EHLO
-	indigo.cs.bgu.ac.il" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751896AbYDGVDk (ORCPT
+	Mon, 7 Apr 2008 17:04:04 -0400
+Received: from outbound-mail-27.bluehost.com ([69.89.17.193]:42012 "HELO
+	outbound-mail-27.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1756099AbYDGVED (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Apr 2008 17:03:40 -0400
-X-Greylist: delayed 1182 seconds by postgrey-1.27 at vger.kernel.org; Mon, 07 Apr 2008 17:03:40 EDT
-Date: Mon, 7 Apr 2008 23:45:15 +0300 (IDT)
-Message-Id: <200804072045.m37KjFEX016950@indigo.cs.bgu.ac.il>
-From: "eial@cs.bgu.ac.il" <eial@cs.bgu.ac.il>
-To: linux-kernel@vger.kernel.org
-Subject: keyboard disconnects with kernel 2.6.24-r4
+	Mon, 7 Apr 2008 17:04:03 -0400
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Arjan van de Ven <arjan@linux.intel.com>
+Subject: Re: [PATCH] x86: create array based interface to change page attribute
+Date: Mon, 7 Apr 2008 14:02:21 -0700
+User-Agent: KMail/1.9.9
+Cc: Thomas =?iso-8859-1?q?Hellstr=F6m?= <thomas@tungstengraphics.com>,
+       Andi Kleen <andi@firstfloor.org>, Dave Airlie <airlied@redhat.com>,
+       linux-kernel@vger.kernel.org, tglx@linutronix.de, mingo@redhat.com
+References: <1206940788.7250.13.camel@clockmaker.usersys.redhat.com> <200804071259.19743.jbarnes@virtuousgeek.org> <47FA8A69.6080402@linux.intel.com>
+In-Reply-To: <47FA8A69.6080402@linux.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Organization: CS Department
-X-Mailer: CS Webmail v3.10
-X-Priority: 3 (Normal)
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200804071402.21548.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Monday, April 07, 2008 1:56 pm Arjan van de Ven wrote:
+> Jesse Barnes wrote:
+> > Yeah, they're ioremapped now, but that's a problem since with the PAT
+> > patches they'll be mapped hard UC (right now it just happens to work).
+>
+> clearly this needs to use ioremap_wc(), I was assuming nothing else....
+> (code mapping things uncached and then frobbing the MTRR's underneath
+> really shouldn't be allowed to live from 2.6.26 and forward. Esp for the 3D
+> drivers we KNOW that we want _wc so that is a clear case of just fixing the
+> code to do the right thing)
 
-hello, I own a DV9000z, running gentoo and kernel 2.6.24-r3 on it, I'm not using r4 because while working with the computer, after a while, my keyboard disconnects. trying to shutdown the computer causes in system freeze.
-this do not happens in r3, the difference that I saw between r3 and r4 is that in r3 my inputs are labeled /class/input/input4 while in r4 they are labeled /devices/platform/i8042/serio0/input/input4.
-how can I fix it?
+Totally agreed, the AGP code needs to be specific about what it wants...
 
-thanks.
-
-
+Jesse
