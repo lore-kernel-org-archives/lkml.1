@@ -1,36 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758813AbYDGXAX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758671AbYDGXBe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758813AbYDGXAX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Apr 2008 19:00:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754835AbYDGXAG
+	id S1758671AbYDGXBe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Apr 2008 19:01:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755334AbYDGXB1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Apr 2008 19:00:06 -0400
-Received: from a-sasl-fastnet.sasl.smtp.pobox.com ([207.106.133.19]:42439 "EHLO
-	sasl.smtp.pobox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754458AbYDGXAF (ORCPT
+	Mon, 7 Apr 2008 19:01:27 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:46333 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753053AbYDGXB0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Apr 2008 19:00:05 -0400
-Date: Mon, 7 Apr 2008 17:59:49 -0500
-From: Nathan Lynch <ntl@pobox.com>
-To: Roel Kluin <12o3l@tiscali.nl>
-Cc: jwboyer@linux.vnet.ibm.com, linuxppc-dev@ozlabs.org,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/1 resend][PPC] replace logical by bitand in
- pci_process_ISA_OF_ranges(), arch/powerpc/kernel/isa-bridge.c
-Message-ID: <20080407225949.GW7137@localdomain>
-References: <47FA9FA6.8090201@tiscali.nl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47FA9FA6.8090201@tiscali.nl>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+	Mon, 7 Apr 2008 19:01:26 -0400
+Date: Mon, 7 Apr 2008 16:00:29 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Dmitry Baryshkov <dbaryshkov@gmail.com>
+Cc: linux-kernel@vger.kernel.org, haavard.skinnemoen@atmel.com,
+       rmk+lkml@arm.linux.org.uk, lethal@linux-sh.org, philipp.zabel@gmail.com,
+       pavel@ucw.cz, tony@atomide.com, paul@pwsan.com
+Subject: Re: [PATCH 5/6] Clocklib: Use correct clock for IrDA on pxa
+Message-Id: <20080407160029.f1f9ce4f.akpm@linux-foundation.org>
+In-Reply-To: <20080403132402.GA27008@doriath.ww600.siemens.net>
+References: <20080403132142.GA26882@doriath.ww600.siemens.net>
+	<20080403132402.GA27008@doriath.ww600.siemens.net>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Roel Kluin wrote:
-> replace logical by bit and for ISA_SPACE_MASK
+On Thu, 3 Apr 2008 17:24:02 +0400
+Dmitry Baryshkov <dbaryshkov@gmail.com> wrote:
 
-I think Paul has picked this up now:
+> Signed-off-by: Dmitry Baryshkov <dbaryshkov@gmail.com>
+> ---
+>  drivers/net/irda/pxaficp_ir.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/drivers/net/irda/pxaficp_ir.c b/drivers/net/irda/pxaficp_ir.c
+> index 8c09344..36d2ec0 100644
+> --- a/drivers/net/irda/pxaficp_ir.c
+> +++ b/drivers/net/irda/pxaficp_ir.c
+> @@ -814,7 +814,7 @@ static int pxa_irda_probe(struct platform_device *pdev)
+>  	si->dev = &pdev->dev;
+>  	si->pdata = pdev->dev.platform_data;
+>  
+> -	si->sir_clk = clk_get(&pdev->dev, "UARTCLK");
+> +	si->sir_clk = clk_get(&pdev->dev, "SIRCLK");
+>  	si->fir_clk = clk_get(&pdev->dev, "FICPCLK");
+>  	if (IS_ERR(si->sir_clk) || IS_ERR(si->fir_clk)) {
+>  		err = PTR_ERR(IS_ERR(si->sir_clk) ? si->sir_clk : si->fir_clk);
 
-http://ozlabs.org/pipermail/linuxppc-dev/2008-April/054103.html
+When fixing a bug, please describe what the bug is, and how the patch fixes
+it.
+
+A patch needs to be very very obvious to be able to get away with no
+changelog, and this one is not very very obvious.
+
