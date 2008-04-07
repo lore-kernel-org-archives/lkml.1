@@ -1,120 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757926AbYDGXh3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757372AbYDGXnK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757926AbYDGXh3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Apr 2008 19:37:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754382AbYDGXhU
+	id S1757372AbYDGXnK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Apr 2008 19:43:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752614AbYDGXm5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Apr 2008 19:37:20 -0400
-Received: from smtp118.sbc.mail.sp1.yahoo.com ([69.147.64.91]:34223 "HELO
-	smtp118.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754092AbYDGXhT (ORCPT
+	Mon, 7 Apr 2008 19:42:57 -0400
+Received: from g5t0006.atlanta.hp.com ([15.192.0.43]:5310 "EHLO
+	g5t0006.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752113AbYDGXm4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Apr 2008 19:37:19 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=SW0TIKgRcq41YUm/1+fQlxYggXXvimyPWeXxhg+vnZ3jKIMUQ1AXH1xSKb34n6Q/6qVba952YdYXqvxCBoXqobeWGX5OoWpgFccu4GK3qtCF6KEFzJ3eNw7EheePkaShzc86YTvWmYTHPjt1VUYrmxTK9IAnopFVb4Q+cMfAbQI=  ;
-X-YMail-OSG: sjKEX6kVM1kmNeYfs2aGs9OwvcLBrojbIu80BIO0Vi9kWetXOlPqGqmzbtfA8yXnaNGyVhSACA--
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH] usb ehci_iaa_watchdog fix
-Date: Mon, 7 Apr 2008 16:37:16 -0700
-User-Agent: KMail/1.9.6
-Cc: Mark Lord <lkml@rtr.ca>, pavel@suse.cz, oliver@neukum.org,
-       linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org, jikos@suse.cz,
-       gregkh@suse.de, akpm@linux-foundation.org
-References: <Pine.LNX.4.44L0.0804021658170.2107-100000@iolanthe.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0804021658170.2107-100000@iolanthe.rowland.org>
+	Mon, 7 Apr 2008 19:42:56 -0400
+Date: Mon, 7 Apr 2008 17:42:55 -0600
+From: Alex Chiang <achiang@hp.com>
+To: Badari Pulavarty <pbadari@us.ibm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       lkml <linux-kernel@vger.kernel.org>, linas@austin.ibm.com
+Subject: Re: 2.6.25-rc8-mm1 panic in rpaphp_register_slot()
+Message-ID: <20080407234255.GA22514@ldl.fc.hp.com>
+Mail-Followup-To: Alex Chiang <achiang@hp.com>,
+	Badari Pulavarty <pbadari@us.ibm.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	lkml <linux-kernel@vger.kernel.org>, linas@austin.ibm.com
+References: <1207331616.5916.15.camel@badari-desktop> <20080404180518.GA12642@ldl.fc.hp.com> <1207340371.5916.23.camel@badari-desktop> <20080404224227.GA31436@ldl.fc.hp.com> <1207352128.5916.26.camel@badari-desktop>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200804071637.16864.david-b@pacbell.net>
+In-Reply-To: <1207352128.5916.26.camel@badari-desktop>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 02 April 2008, Alan Stern wrote:
-> On Wed, 2 Apr 2008, David Brownell wrote:
-> 
-> > > It fixes the cause rather than the symptom.
+Hi Badari,
+
+> > > pci_hotplug: PCI Hot Plug PCI Core version: 0.5
+> > > rpaphp: RPA HOT Plug PCI Controller Driver version: 0.1
+> > > rpaphp_register_slot registering slot:path[/pci@800000020000003/pci@2,4] index[22010003], name[U787E.001.AAA3015-P2-C1] pdomain[22010003] type[16]
+> > > Unable to handle kernel paging request for data at address 0x00000070
 > > 
-> > I'm not sure I'd agree with that.
+> > Hrm, this is a little more information, but still not quite
+> > enough. I'm going to take a stab in the dark and say I'm probably
+> > doing something wrong on this line, maybe dereferencing a pointer
+> > incorrectly:
+> > 
+> >         retval = pci_hp_register(php_slot, slot->bus,
+> > 				 PCI_SLOT(PCI_DN(slot->dn->child)->devfn));
 > 
-> Really?  The logic seemed clear enough to me.
+> Sorry. I thought you knew this already. Disassembly clearly showed
+> that slot->dn->child is NULL. 
 > 
->      1. Evidently the ehci_iaa_watchdog routine was getting called at a 
-> 	time when the host controller wasn't running -- which had to
-> 	have been after it was suspended.
+> I confirmed it by adding printk also.
 
-The change to remove the HC_IS_RUNNING test meant that routine
-would then work when hcd->state is HC_STATE_SUSPENDED or possibly
-HC_STATE_RESUMING.  (Since those are the two states for which
-HC_IS_RUNNING fails, other than HC_STATE_HALTED which shouldn't
-be happening here...)
+This patch is a complete guess on my part (since I've not been
+able to understand pseries architecture) but I think it should
+fix your issue.
 
-Now, prior to the now-merged patch that was skipping some work,
-and that seemed to cause resume problems.  Making it not skip
-the work made the resume behave (as did the now-merged patch).
+Can you give it a try and let me know? It applies on top of the
+-mm tree that includes my physical pci_slot series.
 
+Also, I'm hoping Linas will speak up and let me know what the
+real answer might be. ;)
 
->      2. But ehci_bus_suspend() calls end_unlink_async(), which turns
-> 	off the IAA watchdog timer.
+Thanks.
 
-Not exactly.  First, ehci_bus_suspend() force the timer off all
-by itself ... way too early, while things can still retrigger it.
-That's a buggy idiom that should be fixed.  (As you've agreed,
-elsewhere.)
+/ac
 
-Second, it doesn't always call end_unlink_async() ... only when
-one or more async unlink is still pending.
+From: Alex Chiang <achiang@hp.com>
+Subject: rpaphp: correctly call pci_hp_register for empty PCI slots
 
-Third, if it *does* call end_unlink_async(), it can retriger
-the timer when it needs to do another unlink.  Only when the
-HC is halted (HC_STATE_HALT) is that logic bypassed, scrubbing
-several endpoints at once.  (And a minor fourth point, direct
-calls to end_unlink_async leaves the IAA IRQ machinery active.)
+Unpopulated device_node slots do not have children, and
+attempting to dereference them will result in a panic.
 
-I think your fix handles the "one pending unlink" case, but
-not the more general "N pending unlinks" ...
+Instead, attempt to derive the PCI slot number from the bus
+itself, and failing that, default to 0.
 
-
->      3. Hence the timer must have been restarted later on while 
-> 	ehci_bus_suspend() was still running.  The call to ehci_work() 
-> 	appeared to be the only place that could have happened.
-
-Removing the state check in the watchdog changed behavior, so the
-HC must have been in one of the two states I listed above when
-that watchdog fired (SUSPENDED or RESUMING).  And it had work to
-do, which (because of the state check) it didn't do.
-
-
->      4. Thus moving the end_unlink_async() call to after ehci_work()
-> 	(or just to be doubly safe, after ehci_halt() and the change
-> 	to HC_STATE_SUSPENDED) should take care of all pending QH
-> 	unlinks and leave none of them unfinished.
-
-It takes care of *ONE* pending QH unlink.  If there's more than
-one, it retriggers the timer, so this problem will reappear...
-
-
-> Strictly speaking, it would be best to move the del_timer_sync() calls
-> to after ehci_lock is released.  But it doesn't really matter if the
-> timer routines get invoked after the controller is suspended.
-
-When the timer would be retriggered, to finish additional unlinks,
-it does matter.  A complete fix for this would (a) disable the IAA
-watchdog timer later, once it can never be retriggered again, and
-(b) make end_unlink_async handle the multiple-unlinks case when the
-HC is suspended, including not retriggering the watchdog.
-
-- Dave
-
-
-> 
-> Alan Stern
-> 
-
-
+Signed-off-by: Alex Chiang <achiang@hp.com>
+---
+diff --git a/drivers/pci/hotplug/rpaphp_slot.c b/drivers/pci/hotplug/rpaphp_slot.c
+index 0d4cfc7..91ce6a6 100644
+--- a/drivers/pci/hotplug/rpaphp_slot.c
++++ b/drivers/pci/hotplug/rpaphp_slot.c
+@@ -121,6 +121,7 @@ int rpaphp_register_slot(struct slot *slot)
+ {
+ 	struct hotplug_slot *php_slot = slot->hotplug_slot;
+ 	int retval;
++	int slot_nr;
+ 
+ 	dbg("%s registering slot:path[%s] index[%x], name[%s] pdomain[%x] type[%d]\n", 
+ 		__FUNCTION__, slot->dn->full_name, slot->index, slot->name, 
+@@ -132,8 +133,11 @@ int rpaphp_register_slot(struct slot *slot)
+ 		return -EAGAIN;
+ 	}	
+ 
+-	retval = pci_hp_register(php_slot, slot->bus,
+-				 PCI_SLOT(PCI_DN(slot->dn->child)->devfn));
++	if (slot->bus->self)
++		slot_nr = PCI_SLOT(slot->bus->self->devfn);
++	else
++		slot_nr = 0;
++	retval = pci_hp_register(php_slot, slot->bus, slot_nr);
+ 	if (retval) {
+ 		err("pci_hp_register failed with error %d\n", retval);
+ 		return retval;
