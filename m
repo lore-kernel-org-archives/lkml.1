@@ -1,107 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757462AbYDGLrn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757897AbYDGLsS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757462AbYDGLrn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Apr 2008 07:47:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754131AbYDGLrc
+	id S1757897AbYDGLsS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Apr 2008 07:48:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755048AbYDGLsD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Apr 2008 07:47:32 -0400
-Received: from mail.ift.unesp.br ([200.145.46.3]:49185 "EHLO mail.ift.unesp.br"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753927AbYDGLrc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Apr 2008 07:47:32 -0400
-Date: Mon, 7 Apr 2008 08:46:53 -0300
-From: "Carlos R. Mafra" <crmafra2@gmail.com>
-To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-Cc: Ray Lee <ray-lk@madrabbit.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Soeren Sonnenburg <kernel@nn7.de>, rui.zhang@intel.com
-Subject: Re: 2.6.25-current-git hangs on boot unless CONFIG_CPU_IDLE=n-Apple
-Message-ID: <20080407114653.GA29733@localhost.ift.unesp.br>
-References: <pdYe6zNQVl.A.AOB.6GW9HB@albercik> <924EFEDD5F540B4284297C4DC59F3DEED0EA1E@orsmsx423.amr.corp.intel.com> <20080404011053.GA21254@localhost.ift.unesp.br> <2c0942db0804032015y57e91811r37b729cd836cef6d@mail.gmail.com> <20080404114756.GA3890@localhost.ift.unesp.br> <924EFEDD5F540B4284297C4DC59F3DEED0EB77@orsmsx423.amr.corp.intel.com> <20080404155155.GA6578@localhost.ift.unesp.br> <924EFEDD5F540B4284297C4DC59F3DEED0EEC6@orsmsx423.amr.corp.intel.com> <20080406205610.GA4647@localhost.ift.unesp.br> <924EFEDD5F540B4284297C4DC59F3DEED0F279@orsmsx423.amr.corp.intel.com>
+	Mon, 7 Apr 2008 07:48:03 -0400
+Received: from styx.suse.cz ([82.119.242.94]:36707 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754131AbYDGLsB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Apr 2008 07:48:01 -0400
+Date: Mon, 7 Apr 2008 13:47:58 +0200
+From: Jan Kara <jack@suse.cz>
+To: Erez Zadok <ezk@cs.sunysb.edu>
+Cc: sct@redhat.com, akpm@linux-foundation.org, adilger@clusterfs.com,
+       linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: ext3 lockdep warning in 2.6.25-rc6
+Message-ID: <20080407114758.GE19286@duck.suse.cz>
+References: <20080325182909.GD21732@atrey.karlin.mff.cuni.cz> <200804041537.m34FbwBG009160@agora.fsl.cs.sunysb.edu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <924EFEDD5F540B4284297C4DC59F3DEED0F279@orsmsx423.amr.corp.intel.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <200804041537.m34FbwBG009160@agora.fsl.cs.sunysb.edu>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun  6.Apr'08 at 22:31:17 -0700, Pallipadi, Venkatesh wrote:
-> >On Fri  4.Apr'08 at 13:41:45 -0700, Pallipadi, Venkatesh wrote:
-> >> [...]
-> >> >>> >I've uploaded the picture where it hangs, it is in the very 
-> >> >>beginning
-> >> >>> >of the boot process:
-> >> >>> >
-> >> >>> >http://www.ift.unesp.br/users/crmafra/dsc04673.jpg
-> >> >>> 
-> >> >>> 
-> >> >>> Can you try the latest git and see whether this still is 
-> >a problem?
-> >> >>
-> >> >>I've just updated to latest git, but it may take some time for it 
-> >> >>to happen again (the first 3 boots were okay). Last time 
-> >it happened
-> >> >>with 2.6.25-rc7-00149-gaf8be4e (I checked now). 
-> >> >>
-> >> >>Do you have reasons to believe this issue was fixed since then?
-> >> >
-> >> >Yes. I think the patch here should have fixed the problem....
-> >> >Patch : http://marc.info/?l=linux-kernel&m=120674502201007&w=4
-> >> >
-> >> 
-> >> Hmmmm.... Looking at latest git,
-> >> The above patch is not yet in git. Can you please apply the 
-> >above patch
-> >> and see whether do you still see the problem.....
-> >
-> >I applied Venkatesh's patch from the link above on top of 
-> >v2.6.25-rc8-139-ge315c12, but my laptop hung at the 11th boot with the
-> >same state show here:
-> >http://www.ift.unesp.br/users/crmafra/dsc04673.jpg
-> >
-> >I waited 3'30" but the boot process never resumed, so I pressed
-> >the power button.
-> >
-> >Any further patches I might try?
+On Fri 04-04-08 11:37:58, Erez Zadok wrote:
+> In message <20080325182909.GD21732@atrey.karlin.mff.cuni.cz>, Jan Kara writes:
 > 
-> Carlos,
+> > > I was building a kernel using "make -j 4" inside a unionfs, mounted on top
+> > > of ext3.  The kernel is vanilla 2.6.25-rc6 plus unionfs patches.  At some
+> > > point I forced a cache flush using "echo 3 > /proc/sys/vm/drop_caches" and I
+> > > got the lockdep warning below.  Note that unionfs doesn't appear to be
+> > > involved in this lockdep warning at all, so I suspect this is probably an
+> > > issue between jbd and ext3 directly.
+> > > 
+> > > Let me know if I can be of more help.
+> >   Actually, I have a fix for that - attached. Can you try it? Thanks.
+> > 									Honza
+> [...]
 > 
-> Hmm. So, we still have some bug hidden in there..
-> As this is similar to 10117, we should probably track this there.
-> 10093 is a different cpuidle specific bug looks like, as it happens at a
-> different place while switching between governors.
+> > From f5e41087e345fa5c3b46ac36e6e4a654d2f7f624 Mon Sep 17 00:00:00 2001
+> > From: Jan Kara <jack@suse.cz>
+> > Date: Tue, 18 Mar 2008 14:38:06 +0100
+> > Subject: [PATCH] Fix drop_pagecache_sb() to not call __invalidate_mapping_pages() under
+> > inode_lock.
+> > 
+> > Signed-off-by: Jan Kara <jack@suse.cz>
+> > ---
+> >  fs/drop_caches.c |    8 +++++++-
+> >  1 files changed, 7 insertions(+), 1 deletions(-)
+> > 
+> > diff --git a/fs/drop_caches.c b/fs/drop_caches.c
+> > index 59375ef..f5aae26 100644
+> > --- a/fs/drop_caches.c
+> > +++ b/fs/drop_caches.c
+> > @@ -14,15 +14,21 @@ int sysctl_drop_caches;
+> >  
+> >  static void drop_pagecache_sb(struct super_block *sb)
+> >  {
+> > -	struct inode *inode;
+> > +	struct inode *inode, *toput_inode = NULL;
+> >  
+> >  	spin_lock(&inode_lock);
+> >  	list_for_each_entry(inode, &sb->s_inodes, i_sb_list) {
+> >  		if (inode->i_state & (I_FREEING|I_WILL_FREE))
+> >  			continue;
+> > +		__iget(inode);
+> > +		spin_unlock(&inode_lock);
+> >  		__invalidate_mapping_pages(inode->i_mapping, 0, -1, true);
+> > +		iput(toput_inode);
+> > +		toput_inode = inode;
+> > +		spin_lock(&inode_lock);
+> >  	}
+> >  	spin_unlock(&inode_lock);
+> > +	iput(toput_inode);
+> >  }
+> >  
+> >  void drop_pagecache(void)
 > 
-> Can you attach your kernel config, acpidump output and dmesg when kernel
-> boots ok to that bugzilla.
+> Jan, I tried the above patch on top of v2.6.25-rc8-82-g49115b7, and using
+> the same setup and workloads that produced the warning before: running "make
+> -j 20" of the linux kernel 100 times, dual-CPU, SMP, PREEMPT, while running
+> flush_cache every few seconds.  The entire run took over 12 hours.  I'm
+> happy to report that so far I've not gotten the same lockdep warning as
+> before.
+  Great news, thanks.
 
-I uploaded the kernel config and dmesg to the bugzilla a few minutes ago.
-I don't have a copy of the acpidump with me right now (laptop is at home,
-I am at the physics institute now), but if there is urgency you can look
-at the acpidump I've sent here http://lkml.org/lkml/2008/2/11/364
+> Maybe this can now go to -mm for more testing?
+  Andrew has already merged it :).
 
-> Also, if you can please try processor.max_cstate=2 boot option and see
-> whether you still can reproduce the problem. If you can, then try
-> processor.max_cstate=1. For this boot option to work, you have to have
-> ACPI_PROCESSOR built into your kernel (and should not be a module).
-
-Ok, I will try them.
-
-> One more qn. Did you see this problem witj 2.6.24 as well or is this
-> something that you started seeing only recently?
-
-It started more or less at the same time as 2.6.25-rc1 was released.
-It was not there at 2.6.24.
-
-Well, at first I thought it was related to drivers/acpi/thermal.c, because
-the next kernel message (in a successfull boot) after the point in which it 
-fails is
-
-ACPI: LNXTHERM:01 is registered as thermal_zone0
-
-and there were some changes to that file a bit before -rc1 was out.
-For example, commits 3f655ef8 and ce44e19701.
-
-I don't know if this is recommended, but I added Zhang Rui to the Cc: list
-to exclude or confirm this possibility.
+									Honza
+-- 
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
