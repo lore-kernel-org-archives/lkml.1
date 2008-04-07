@@ -1,50 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757034AbYDGLWU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757422AbYDGLZ7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757034AbYDGLWU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Apr 2008 07:22:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751949AbYDGLWK
+	id S1757422AbYDGLZ7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Apr 2008 07:25:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753908AbYDGLZl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Apr 2008 07:22:10 -0400
-Received: from ug-out-1314.google.com ([66.249.92.170]:8884 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751634AbYDGLWJ (ORCPT
+	Mon, 7 Apr 2008 07:25:41 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:53225 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753616AbYDGLZk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Apr 2008 07:22:09 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=UPQIfR13wwJrJQ72TFKzmSPcaIddeWAjdDleGxWdVpZiu2VK7jN836NjyC5UEsYj0ZAzaOQrc67szgYFYZqT7PTdg3SMEa2Et4rPUyyhnq1usWLib8yH3ekRMA3g6YFgyx4trdZHqNlKNwi91TizLezErZT2IY+A/6dXuNtEHgk=
-Message-ID: <efeafa350804070422p7508073fkb40ffe9283464a71@mail.gmail.com>
-Date: Mon, 7 Apr 2008 13:22:07 +0200
-From: Lazy <lazy404@gmail.com>
-To: "Gabriel C" <nix.or.die@googlemail.com>
-Subject: Re: 2.6.24.4 compilation error
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <47FA012C.7000509@googlemail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <efeafa350804070321ka6cbb46pd49a62fc325eb4e0@mail.gmail.com>
-	 <47FA012C.7000509@googlemail.com>
+	Mon, 7 Apr 2008 07:25:40 -0400
+From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
+To: David Miller <davem@davemloft.net>
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "Robin H. Johnson" <robbat2@gentoo.org>,
+       Georgi Chorbadzhiyski <gf@unixsol.org>,
+       Soeren Sonnenburg <kernel@nn7.de>,
+       Denys Fedoryshchenko <denys@visp.net.lb>,
+       Alessandro Suardi <alessandro.suardi@gmail.com>
+Subject: [PATCH net-2.6 0/3]: TCP fixes
+Date: Mon,  7 Apr 2008 14:25:34 +0300
+Message-Id: <1207567537-16393-1-git-send-email-ilpo.jarvinen@helsinki.fi>
+X-Mailer: git-send-email 1.5.4.2.156.ge3c5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/4/7, Gabriel C <nix.or.die@googlemail.com>:
-> Lazy wrote:
+Hi Dave,
 
->  > kernel/built-in.o: In function `update_wall_time':
->  > (.text+0x23796): undefined reference to `__umoddi3'
->  > kernel/built-in.o: In function `update_wall_time':
->  > (.text+0x237b6): undefined reference to `__udivdi3'
->  > make: *** [.tmp_vmlinux1] Error 1
->
->
->
-> You'll need this patch :
->
->  http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=38332cb98772f5ea757e6486bed7ed0381cb5f98
+Here are some TCP fixes that resulted from the last weeks reports
+& debug. The first one is quite likely to hit but it's considerably
+harder to get it print an overflow warning, while I've seen two
+reports about the second one (one of them is for 2.6.24.y), please
+ignore the earlier version of the tcp_simple_retransmit patch. The
+FRTO patch is once again result of code review rather than some   
+report but seems necessary to avoid detection of some not that    
+likely cases as spurious RTOs when there were some other losses
+in the same window with the probe. Nevertheless, it should be safe
+to return non-FRTO behavior.
+
+...So far, they're just compile tested. I'll see if I find some time
+to boot them on the evening.
+
+There might still be one fackets_out miscounter awaiting detection
+with debug patch (I hope Georgi catches it) because none of these   
+seem an obvious reason for triggery of the !sacked_out && fackets_out
+trap.
+
+All of them are also valid for stables but please note that it won't
+be too easy, at least for the first & second patch, because of recent
+changes (especially if stable != 2.6.24.y). I'll try to do the
+adapted versions later on for the stable.
+
+--
+ i.
 
 
-thank You
