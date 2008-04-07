@@ -1,72 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758542AbYDGW5O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758734AbYDGW5d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758542AbYDGW5O (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Apr 2008 18:57:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753674AbYDGW47
+	id S1758734AbYDGW5d (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Apr 2008 18:57:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753674AbYDGW5W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Apr 2008 18:56:59 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:40661 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753324AbYDGW46 (ORCPT
+	Mon, 7 Apr 2008 18:57:22 -0400
+Received: from web36601.mail.mud.yahoo.com ([209.191.85.18]:29995 "HELO
+	web36601.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753324AbYDGW5U (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Apr 2008 18:56:58 -0400
-Date: Mon, 7 Apr 2008 15:55:59 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Dmitry Baryshkov <dbaryshkov@gmail.com>
-Cc: linux-kernel@vger.kernel.org, haavard.skinnemoen@atmel.com,
-       rmk+lkml@arm.linux.org.uk, lethal@linux-sh.org, philipp.zabel@gmail.com,
-       pavel@ucw.cz, tony@atomide.com, paul@pwsan.com
-Subject: Re: [PATCH 1/6] Clocklib: add generic framework for managing
- clocks.
-Message-Id: <20080407155559.cf7e2d24.akpm@linux-foundation.org>
-In-Reply-To: <20080403132329.GA26971@doriath.ww600.siemens.net>
-References: <20080403132142.GA26882@doriath.ww600.siemens.net>
-	<20080403132329.GA26971@doriath.ww600.siemens.net>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
+	Mon, 7 Apr 2008 18:57:20 -0400
+X-YMail-OSG: qJERYgQVM1mhNI_4PgYdjxxW9QI7DqSu6ieAuV1SzLAqcA6Kr19ycPfoZbaHpRcNH9xsiCRHHQ--
+X-RocketYMMF: rancidfat
+Date: Mon, 7 Apr 2008 15:57:16 -0700 (PDT)
+From: Casey Schaufler <casey@schaufler-ca.com>
+Reply-To: casey@schaufler-ca.com
+Subject: Re: [TOMOYO #7 30/30] Hooks for SAKURA and TOMOYO.
+To: Paul Moore <paul.moore@hp.com>,
+       Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org,
+       Kentaro Takeda <takedakn@nttdata.co.jp>,
+       Toshiharu Harada <haradats@nttdata.co.jp>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       linux-netdev <netdev@vger.kernel.org>
+In-Reply-To: <200804071140.59247.paul.moore@hp.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 7BIT
+Message-ID: <312131.8802.qm@web36601.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 3 Apr 2008 17:23:29 +0400
-Dmitry Baryshkov <dbaryshkov@gmail.com> wrote:
 
-> Provide a generic framework that platform may choose
-> to support clocks api. In particular this provides
-> platform-independant struct clk definition, a full
-> implementation of clocks api and a set of functions
-> for registering and unregistering clocks in a safe way.
+--- Paul Moore <paul.moore@hp.com> wrote:
+
+> On Friday 04 April 2008 8:23:12 am Tetsuo Handa wrote:
+> > This file contains modifications against kernel source code
+> > needed to use TOMOYO Linux 1.6.
+> >
+> > Although LSM hooks are provided for performing access control,
+> > TOMOYO Linux 1.6 doesn't use LSM because of the following reasons.
 > 
-> +static void __maybe_unused clks_unregister(struct clk **clks, size_t num)
-> +static int __must_check __maybe_unused clks_register(struct clk **clks, size_t num)
-> +static void __maybe_unused clk_free_functions(
-> +		struct clk_function *funcs,
-> +		int num)
-> +static int __must_check __maybe_unused clk_alloc_functions(
-> +		struct clk_function *funcs,
-> +		int num)
+> Hello,
+> 
+> I understand your frustration with the existing LSM hooks/API and your 
+> reasoning for abandoning LSM in favor of a new set of hooks, however, I 
+> think this sets a dangerous precedence which could result in an 
+> abundance of security related hooks scattered throughout the kernel.  I 
+> would much rather see the LSM API extended/tweaked to support the needs 
+> of SAKURA and TOMOYO than ignored and duplicated; I suspect several 
+> others will say the same.
 
-What are all these __maybe_unused markers doing here?
+The same.
 
-> ...
->
-> +int __must_check clk_alloc_function(const char *parent, struct clk *clk);
 
-This should be `static int'.  I'm surprised the compiler doesn't get
-upset.
 
-> +	for (i = num - 1; i >= 0; i--) {
-> +		clk_unregister(&funcs[i].clk);
-> +	}
->
-> ...
->
-> +	if (rc) {
-> +		kfree(clk);
-> +	}
-
-There are a few coding-style glitches in here.  Please run
-scripts/checkpatch.pl and consider its reportage.
-
+Casey Schaufler
+casey@schaufler-ca.com
