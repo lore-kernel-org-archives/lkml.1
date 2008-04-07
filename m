@@ -1,119 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758051AbYDGL0s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757733AbYDGL1I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758051AbYDGL0s (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Apr 2008 07:26:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755503AbYDGLZt
+	id S1757733AbYDGL1I (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Apr 2008 07:27:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757897AbYDGL0e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Apr 2008 07:25:49 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:59437 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753131AbYDGLZk (ORCPT
+	Mon, 7 Apr 2008 07:26:34 -0400
+Received: from E23SMTP05.au.ibm.com ([202.81.18.174]:59929 "EHLO
+	e23smtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756175AbYDGL0d (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Apr 2008 07:25:40 -0400
-From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
-To: David Miller <davem@davemloft.net>
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       "Robin H. Johnson" <robbat2@gentoo.org>,
-       Georgi Chorbadzhiyski <gf@unixsol.org>,
-       Soeren Sonnenburg <kernel@nn7.de>,
-       Denys Fedoryshchenko <denys@visp.net.lb>,
-       Alessandro Suardi <alessandro.suardi@gmail.com>,
-       "=?utf-8?q?Ilpo=20J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
-Subject: [PATCH net-2.6 1/3] [TCP]: Fix NewReno's fast rexmit/recovery problems with GSOed skb
-Date: Mon,  7 Apr 2008 14:25:35 +0300
-Message-Id: <1207567537-16393-2-git-send-email-ilpo.jarvinen@helsinki.fi>
-X-Mailer: git-send-email 1.5.4.2.156.ge3c5
-In-Reply-To: <1207567537-16393-1-git-send-email-ilpo.jarvinen@helsinki.fi>
-References: <1207567537-16393-1-git-send-email-ilpo.jarvinen@helsinki.fi>
+	Mon, 7 Apr 2008 07:26:33 -0400
+Date: Mon, 7 Apr 2008 16:54:59 +0530
+From: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Frans Pop <elendil@planet.nl>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>,
+       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [rc8] Regression: key repeats and skips in music during
+	compilation
+Message-ID: <20080407112459.GA11532@linux.vnet.ibm.com>
+Reply-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+References: <200804041222.35025.elendil@planet.nl> <200804071121.03888.rjw@sisk.pl> <200804071205.13369.elendil@planet.nl> <200804071229.27113.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200804071229.27113.rjw@sisk.pl>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fixes a long-standing bug which makes NewReno recovery crippled.
-With GSO the whole head skb was marked as LOST which is in
-violation of NewReno procedure that only wants to mark one packet
-and ended up breaking our TCP code by causing counter overflow
-because our code was built on top of assumption about valid
-NewReno procedure. This manifested as triggering a WARN_ON for
-the overflow in a number of places.
+On Mon, Apr 07, 2008 at 12:29:26PM +0200, Rafael J. Wysocki wrote:
+> On Monday, 7 of April 2008, Frans Pop wrote:
+> > On Monday 07 April 2008, Rafael J. Wysocki wrote:
+> > > On Sunday, 6 of April 2008, Rafael J. Wysocki wrote:
+> > > > On Friday, 4 of April 2008, Frans Pop wrote:
+> > > > > While compiling glibc I am getting frequent short skips in music play
+> > > > > anddddddddddddddddd I have now three times seen key repeats (as in
+> > > > > this sentence). When there is a skip in the music, there is also a
+> > > > > delay in characters being typed appearing on the screen.
+> > > >
+> > > > Can you test with CONFIG_GROUP_SCHED unset, please?
+> > >
+> > > I was able to reproduce this issue with -rc8 on one of my test systems,
+> > 
+> > Thanks Rafael.
+> > 
+> > In the mean time I have verified that the issue also existed in rc6, so it's 
+> > not a recent regression.
+> > 
+> > > but I'm not any more with the current Linus' tree and CONFIG_GROUP_SCHED
+> > > unset, FWIW.
+> > 
+> > Hmm. Does that mean that you _can_ reproduce it with git HEAD and 
+> > CONFIG_GROUP_SCHED set? That would mean it is still an issue in HEAD and 
+> > group scheduling is the culprit.
+> 
+> Well, CONFIG_GROUP_SCHED is known to cause problems, AFAICS, and some fixes
+> are scheduled for the 2.6.26 time frame.
+> 
 
-It seems relatively safe alternative to just do nothing if
-tcp_fragment fails due to oom because another duplicate ACK is
-likely to be received soon and the fragmentation will be retried.
+I thought we had most of the issues ironed out.
 
-Special thanks goes to Soeren Sonnenburg <kernel@nn7.de> who was
-lucky enough to be able to reproduce this so that the warning
-for the overflow was hit. It's not as easy task as it seems even
-if this bug happens quite often because the amount of outstanding
-data is pretty significant for the mismarkings to lead to an
-overflow.
+/me tries to reproduce.
 
-Because it's very late in 2.6.25-rc cycle (if this even makes in
-time), I didn't want to touch anything with SACK enabled here.
-Fragmenting might be useful for it as well but it's more or less
-a policy decision rather than mandatory fix. Thus there's no need
-to rush and we can postpone considering tcp_fragment with SACK
-for 2.6.26.
-
-In 2.6.24 and earlier, this very same bug existed but the effect
-is slightly different because of a small changes in the if
-conditions that fit to the patch's context. With them nothing
-got lost marker and thus no retransmissions happened.
-
-Signed-off-by: Ilpo Järvinen <ilpo.jarvinen@helsinki.fi>
----
- net/ipv4/tcp_input.c |   22 ++++++++++++++++++----
- 1 files changed, 18 insertions(+), 4 deletions(-)
-
-diff --git a/net/ipv4/tcp_input.c b/net/ipv4/tcp_input.c
-index 6e46b4c..58cad8b 100644
---- a/net/ipv4/tcp_input.c
-+++ b/net/ipv4/tcp_input.c
-@@ -2138,7 +2138,9 @@ static void tcp_mark_head_lost(struct sock *sk, int packets, int fast_rexmit)
- {
- 	struct tcp_sock *tp = tcp_sk(sk);
- 	struct sk_buff *skb;
--	int cnt;
-+	int cnt, oldcnt;
-+	int err;
-+	unsigned int mss;
- 
- 	BUG_TRAP(packets <= tp->packets_out);
- 	if (tp->lost_skb_hint) {
-@@ -2157,13 +2159,25 @@ static void tcp_mark_head_lost(struct sock *sk, int packets, int fast_rexmit)
- 		tp->lost_skb_hint = skb;
- 		tp->lost_cnt_hint = cnt;
- 
-+		if (after(TCP_SKB_CB(skb)->end_seq, tp->high_seq))
-+			break;
-+
-+		oldcnt = cnt;
- 		if (tcp_is_fack(tp) || tcp_is_reno(tp) ||
- 		    (TCP_SKB_CB(skb)->sacked & TCPCB_SACKED_ACKED))
- 			cnt += tcp_skb_pcount(skb);
- 
--		if (((!fast_rexmit || (tp->lost_out > 0)) && (cnt > packets)) ||
--		    after(TCP_SKB_CB(skb)->end_seq, tp->high_seq))
--			break;
-+		if ((!fast_rexmit || (tp->lost_out > 0)) && (cnt > packets)) {
-+			if (tcp_is_sack(tp) || (oldcnt >= packets))
-+				break;
-+
-+			mss = skb_shinfo(skb)->gso_size;
-+			err = tcp_fragment(sk, skb, (packets - oldcnt) * mss, mss);
-+			if (err < 0)
-+				break;
-+			cnt = packets;
-+		}
-+
- 		if (!(TCP_SKB_CB(skb)->sacked & (TCPCB_SACKED_ACKED|TCPCB_LOST))) {
- 			TCP_SKB_CB(skb)->sacked |= TCPCB_LOST;
- 			tp->lost_out += tcp_skb_pcount(skb);
 -- 
-1.5.2.2
-
+regards,
+Dhaval
