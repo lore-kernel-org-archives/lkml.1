@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758482AbYDGL5D@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758585AbYDGL5a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758482AbYDGL5D (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Apr 2008 07:57:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757278AbYDGLz5
+	id S1758585AbYDGL5a (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Apr 2008 07:57:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757318AbYDGLz7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Apr 2008 07:55:57 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:60044 "EHLO
+	Mon, 7 Apr 2008 07:55:59 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:51302 "EHLO
 	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756593AbYDGLzw (ORCPT
+	with ESMTP id S1757025AbYDGLzy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Apr 2008 07:55:52 -0400
+	Mon, 7 Apr 2008 07:55:54 -0400
 From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
 To: David Miller <davem@davemloft.net>
 Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
@@ -21,14 +21,13 @@ Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
        Denys Fedoryshchenko <denys@visp.net.lb>,
        Alessandro Suardi <alessandro.suardi@gmail.com>,
        "=?utf-8?q?Ilpo=20J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
-Subject: [PATCHv2 net-2.6 3/4] [TCP]: tcp_simple_retransmit can cause S+L
-Date: Mon,  7 Apr 2008 14:55:43 +0300
-Message-Id: <1207569344-19687-4-git-send-email-ilpo.jarvinen@helsinki.fi>
+Subject: [PATCHv2 net-2.6 2/4] [TCP]: Fix NewReno's fast rexmit/recovery problems with GSOed skb
+Date: Mon,  7 Apr 2008 14:55:42 +0300
+Message-Id: <1207569344-19687-3-git-send-email-ilpo.jarvinen@helsinki.fi>
 X-Mailer: git-send-email 1.5.4.2.156.ge3c5
-In-Reply-To: <1207569344-19687-3-git-send-email-ilpo.jarvinen@helsinki.fi>
+In-Reply-To: <1207569344-19687-2-git-send-email-ilpo.jarvinen@helsinki.fi>
 References: <1207569344-19687-1-git-send-email-ilpo.jarvinen@helsinki.fi>
  <1207569344-19687-2-git-send-email-ilpo.jarvinen@helsinki.fi>
- <1207569344-19687-3-git-send-email-ilpo.jarvinen@helsinki.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 8bit
@@ -36,122 +35,86 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This fixes Bugzilla #10384
+Fixes a long-standing bug which makes NewReno recovery crippled.
+With GSO the whole head skb was marked as LOST which is in
+violation of NewReno procedure that only wants to mark one packet
+and ended up breaking our TCP code by causing counter overflow
+because our code was built on top of assumption about valid
+NewReno procedure. This manifested as triggering a WARN_ON for
+the overflow in a number of places.
 
-tcp_simple_retransmit does L increment without any checking
-whatsoever for overflowing S+L when Reno is in use.
+It seems relatively safe alternative to just do nothing if
+tcp_fragment fails due to oom because another duplicate ACK is
+likely to be received soon and the fragmentation will be retried.
 
-The simplest scenario I can currently think of is rather
-complex in practice (there might be some more straightforward
-cases though). Ie., if mss is reduced during mtu probing, it
-may end up marking everything lost and if some duplicate ACKs
-arrived prior to that sacked_out will be non-zero as well,
-leading to S+L > packets_out, tcp_clean_rtx_queue on the next
-cumulative ACK or tcp_fastretrans_alert on the next duplicate
-ACK will fix the S counter.
+Special thanks goes to Soeren Sonnenburg <kernel@nn7.de> who was
+lucky enough to be able to reproduce this so that the warning
+for the overflow was hit. It's not as easy task as it seems even
+if this bug happens quite often because the amount of outstanding
+data is pretty significant for the mismarkings to lead to an
+overflow.
 
-More straightforward (but questionable) solution would be to
-just call tcp_reset_reno_sack() in tcp_simple_retransmit but
-it would negatively impact the probe's retransmission, ie.,
-the retransmissions would not occur if some duplicate ACKs
-had arrived.
+Because it's very late in 2.6.25-rc cycle (if this even makes in
+time), I didn't want to touch anything with SACK enabled here.
+Fragmenting might be useful for it as well but it's more or less
+a policy decision rather than mandatory fix. Thus there's no need
+to rush and we can postpone considering tcp_fragment with SACK
+for 2.6.26.
 
-So I had to add reno sacked_out reseting to CA_Loss state
-when the first cumulative ACK arrives (this stale sacked_out
-might actually be the explanation for the reports of left_out
-overflows in kernel prior to 2.6.23 and S+L overflow reports
-of 2.6.24). However, this alone won't be enough to fix kernel
-before 2.6.24 because it is building on top of the commit
-1b6d427bb7e ([TCP]: Reduce sacked_out with reno when purging
-write_queue) to keep the sacked_out from overflowing.
+In 2.6.24 and earlier, this very same bug existed but the effect
+is slightly different because of a small changes in the if
+conditions that fit to the patch's context. With them nothing
+got lost marker and thus no retransmissions happened.
 
 Signed-off-by: Ilpo Järvinen <ilpo.jarvinen@helsinki.fi>
-Reported-by: Alessandro Suardi <alessandro.suardi@gmail.com>
 ---
- include/net/tcp.h     |    2 ++
- net/ipv4/tcp_input.c  |   24 ++++++++++++++++++------
- net/ipv4/tcp_output.c |    3 +++
- 3 files changed, 23 insertions(+), 6 deletions(-)
+ net/ipv4/tcp_input.c |   22 ++++++++++++++++++----
+ 1 files changed, 18 insertions(+), 4 deletions(-)
 
-diff --git a/include/net/tcp.h b/include/net/tcp.h
-index 723b368..8f5fc52 100644
---- a/include/net/tcp.h
-+++ b/include/net/tcp.h
-@@ -760,6 +760,8 @@ static inline unsigned int tcp_packets_in_flight(const struct tcp_sock *tp)
- 	return tp->packets_out - tcp_left_out(tp) + tp->retrans_out;
- }
- 
-+extern int tcp_limit_reno_sacked(struct tcp_sock *tp);
-+
- /* If cwnd > ssthresh, we may raise ssthresh to be half-way to cwnd.
-  * The exception is rate halving phase, when cwnd is decreasing towards
-  * ssthresh.
 diff --git a/net/ipv4/tcp_input.c b/net/ipv4/tcp_input.c
-index f053bfe..a2a06d6 100644
+index f82b573..f053bfe 100644
 --- a/net/ipv4/tcp_input.c
 +++ b/net/ipv4/tcp_input.c
-@@ -1625,13 +1625,11 @@ out:
- 	return flag;
- }
- 
--/* If we receive more dupacks than we expected counting segments
-- * in assumption of absent reordering, interpret this as reordering.
-- * The only another reason could be bug in receiver TCP.
-+/* Limits sacked_out so that sum with lost_out isn't ever larger than
-+ * packets_out. Returns zero if sacked_out adjustement wasn't necessary.
-  */
--static void tcp_check_reno_reordering(struct sock *sk, const int addend)
-+int tcp_limit_reno_sacked(struct tcp_sock *tp)
+@@ -2138,7 +2138,9 @@ static void tcp_mark_head_lost(struct sock *sk, int packets)
  {
--	struct tcp_sock *tp = tcp_sk(sk);
- 	u32 holes;
+ 	struct tcp_sock *tp = tcp_sk(sk);
+ 	struct sk_buff *skb;
+-	int cnt;
++	int cnt, oldcnt;
++	int err;
++	unsigned int mss;
  
- 	holes = max(tp->lost_out, 1U);
-@@ -1639,8 +1637,20 @@ static void tcp_check_reno_reordering(struct sock *sk, const int addend)
+ 	BUG_TRAP(packets <= tp->packets_out);
+ 	if (tp->lost_skb_hint) {
+@@ -2157,13 +2159,25 @@ static void tcp_mark_head_lost(struct sock *sk, int packets)
+ 		tp->lost_skb_hint = skb;
+ 		tp->lost_cnt_hint = cnt;
  
- 	if ((tp->sacked_out + holes) > tp->packets_out) {
- 		tp->sacked_out = tp->packets_out - holes;
--		tcp_update_reordering(sk, tp->packets_out + addend, 0);
-+		return 1;
- 	}
-+	return 0;
-+}
++		if (after(TCP_SKB_CB(skb)->end_seq, tp->high_seq))
++			break;
 +
-+/* If we receive more dupacks than we expected counting segments
-+ * in assumption of absent reordering, interpret this as reordering.
-+ * The only another reason could be bug in receiver TCP.
-+ */
-+static void tcp_check_reno_reordering(struct sock *sk, const int addend)
-+{
-+	struct tcp_sock *tp = tcp_sk(sk);
-+	if (tcp_limit_reno_sacked(tp))
-+		tcp_update_reordering(sk, tp->packets_out + addend, 0);
- }
++		oldcnt = cnt;
+ 		if (tcp_is_fack(tp) || tcp_is_reno(tp) ||
+ 		    (TCP_SKB_CB(skb)->sacked & TCPCB_SACKED_ACKED))
+ 			cnt += tcp_skb_pcount(skb);
  
- /* Emulate SACKs for SACKless connection: account for a new dupack. */
-@@ -2600,6 +2610,8 @@ static void tcp_fastretrans_alert(struct sock *sk, int pkts_acked, int flag)
- 	case TCP_CA_Loss:
- 		if (flag & FLAG_DATA_ACKED)
- 			icsk->icsk_retransmits = 0;
-+		if (tcp_is_reno(tp) && flag & FLAG_SND_UNA_ADVANCED)
-+			tcp_reset_reno_sack(tp);
- 		if (!tcp_try_undo_loss(sk)) {
- 			tcp_moderate_cwnd(tp);
- 			tcp_xmit_retransmit_queue(sk);
-diff --git a/net/ipv4/tcp_output.c b/net/ipv4/tcp_output.c
-index 6e25540..441fdd3 100644
---- a/net/ipv4/tcp_output.c
-+++ b/net/ipv4/tcp_output.c
-@@ -1808,6 +1808,9 @@ void tcp_simple_retransmit(struct sock *sk)
- 	if (!lost)
- 		return;
- 
-+	if (tcp_is_reno(tp))
-+		tcp_limit_reno_sacked(tp);
+-		if ((cnt > packets) ||
+-		    after(TCP_SKB_CB(skb)->end_seq, tp->high_seq))
+-			break;
++		if (cnt > packets) {
++			if (tcp_is_sack(tp) || (oldcnt >= packets))
++				break;
 +
- 	tcp_verify_left_out(tp);
- 
- 	/* Don't muck with the congestion window here.
++			mss = skb_shinfo(skb)->gso_size;
++			err = tcp_fragment(sk, skb, (packets - oldcnt) * mss, mss);
++			if (err < 0)
++				break;
++			cnt = packets;
++		}
++
+ 		if (!(TCP_SKB_CB(skb)->sacked & (TCPCB_SACKED_ACKED|TCPCB_LOST))) {
+ 			TCP_SKB_CB(skb)->sacked |= TCPCB_LOST;
+ 			tp->lost_out += tcp_skb_pcount(skb);
 -- 
 1.5.2.2
 
