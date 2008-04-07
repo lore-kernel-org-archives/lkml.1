@@ -1,57 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753249AbYDGGC4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754142AbYDGGGi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753249AbYDGGC4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Apr 2008 02:02:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751779AbYDGGCq
+	id S1754142AbYDGGGi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Apr 2008 02:06:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751989AbYDGGGa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Apr 2008 02:02:46 -0400
-Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:54422
+	Mon, 7 Apr 2008 02:06:30 -0400
+Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:54441
 	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751688AbYDGGCp (ORCPT
+	with ESMTP id S1751749AbYDGGG3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Apr 2008 02:02:45 -0400
-Date: Mon, 7 Apr 2008 08:02:34 +0200
+	Mon, 7 Apr 2008 02:06:29 -0400
+Date: Mon, 7 Apr 2008 08:06:02 +0200
 From: Andrea Arcangeli <andrea@qumranet.com>
 To: Christoph Lameter <clameter@sgi.com>
-Cc: Hugh Dickins <hugh@veritas.com>, Robin Holt <holt@sgi.com>,
-       Avi Kivity <avi@qumranet.com>, Izik Eidus <izike@qumranet.com>,
+Cc: Robin Holt <holt@sgi.com>, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
        kvm-devel@lists.sourceforge.net,
        Peter Zijlstra <a.p.zijlstra@chello.nl>, general@lists.openfabrics.org,
-       Steve Wise <swise@opengridcomputing.com>,
-       Roland Dreier <rdreier@cisco.com>, Kanoj Sarcar <kanojsarcar@yahoo.com>,
-       steiner@sgi.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       daniel.blueman@quadrics.com, Nick Piggin <npiggin@suse.de>
-Subject: Re: [PATCH] mmu notifier #v11
-Message-ID: <20080407060234.GD9309@duo.random>
-References: <20080402220148.GV19189@duo.random> <Pine.LNX.4.64.0804021503320.31247@schroedinger.engr.sgi.com> <20080402221716.GY19189@duo.random> <Pine.LNX.4.64.0804021821230.639@schroedinger.engr.sgi.com> <20080403151908.GB9603@duo.random> <Pine.LNX.4.64.0804031215050.7480@schroedinger.engr.sgi.com> <20080404202055.GA14784@duo.random> <Pine.LNX.4.64.0804041504310.12396@schroedinger.engr.sgi.com> <20080405002330.GF14784@duo.random> <Pine.LNX.4.64.0804062244110.18148@schroedinger.engr.sgi.com>
+       steiner@sgi.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [patch 02/10] emm: notifier logic
+Message-ID: <20080407060602.GE9309@duo.random>
+References: <20080404223048.374852899@sgi.com> <20080404223131.469710551@sgi.com> <20080405005759.GH14784@duo.random> <Pine.LNX.4.64.0804062246030.18148@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0804062244110.18148@schroedinger.engr.sgi.com>
+In-Reply-To: <Pine.LNX.4.64.0804062246030.18148@schroedinger.engr.sgi.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Apr 06, 2008 at 10:45:41PM -0700, Christoph Lameter wrote:
-> That depends on what the notifier is being used for. Some serialization 
-> with the external mappings has to be done anyways. And its cleaner to have 
+On Sun, Apr 06, 2008 at 10:48:56PM -0700, Christoph Lameter wrote:
+> On Sat, 5 Apr 2008, Andrea Arcangeli wrote:
+> 
+> > > +	rcu_assign_pointer(mm->emm_notifier, e);
+> > > +	mm_unlock(mm);
+> > 
+> > My mm_lock solution makes all rcu serialization an unnecessary
+> > overhead so you should remove it like I already did in #v11. If it
+> > wasn't the case, then mm_lock wouldn't be a definitive fix for the
+> > race.
+> 
+> There still could be junk in the cache of one cpu. If you just read the 
+> new pointer but use the earlier content pointed to then you have a 
+> problem.
 
-As far as I can tell no, you don't need to serialize against the
-secondary mmu page fault in invalidate_page, like you instead have to
-do in range_begin if you don't unpin the pages in range_end.
+There can't be junk, spinlocks provides semantics of proper memory
+barriers, just like rcu, so it's entirely superflous.
 
-> one API that does a lock/unlock scheme. Atomic operations can easily lead
-> to races.
+There could be junk only if any of the mmu_notifier_* methods would be
+invoked _outside_ the i_mmap_lock and _outside_ the anon_vma and
+outside the mmap_sem, that is never the case of course.
 
-What races? Note that if you don't want to optimize XPMEM and GRU can
-feel free to implement their own invalidate_page as this:
+> So a memory fence / barrier is needed to guarantee that the contents 
+> pointed to are fetched after the pointer.
 
-     invalidate_page(mm, addr) {
-     	range_begin(mm, addr, addr+PAGE_SIZE)
-	range_end(mm, addr, addr+PAGE_SIZE)
-     }
-
-There's zero risk of adding races if they do this, but I doubt they
-want to run as slow as with EMM so I guess they'll exploit the
-optimization by going lock-free vs the spte page fault in
-invalidate_page.
+It's not needed... if you were right we could never possibly run a
+list_for_each inside any spinlock protected critical section and we'd
+always need to use the _rcu version instead. The _rcu version is
+needed only when the list walk happens outside the spinlock critical
+section of course (rcu = no spinlock cacheline exlusive write
+operation in the read side, here the read side takes the spinlock big time).
