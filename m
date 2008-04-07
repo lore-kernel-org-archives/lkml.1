@@ -1,70 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757733AbYDGL1I@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757594AbYDGL1m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757733AbYDGL1I (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Apr 2008 07:27:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757897AbYDGL0e
+	id S1757594AbYDGL1m (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Apr 2008 07:27:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755799AbYDGL1c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Apr 2008 07:26:34 -0400
-Received: from E23SMTP05.au.ibm.com ([202.81.18.174]:59929 "EHLO
-	e23smtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756175AbYDGL0d (ORCPT
+	Mon, 7 Apr 2008 07:27:32 -0400
+Received: from smtp-out03.alice-dsl.net ([88.44.63.5]:26060 "EHLO
+	smtp-out03.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752655AbYDGL1b (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Apr 2008 07:26:33 -0400
-Date: Mon, 7 Apr 2008 16:54:59 +0530
-From: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Frans Pop <elendil@planet.nl>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [rc8] Regression: key repeats and skips in music during
-	compilation
-Message-ID: <20080407112459.GA11532@linux.vnet.ibm.com>
-Reply-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-References: <200804041222.35025.elendil@planet.nl> <200804071121.03888.rjw@sisk.pl> <200804071205.13369.elendil@planet.nl> <200804071229.27113.rjw@sisk.pl>
+	Mon, 7 Apr 2008 07:27:31 -0400
+To: john stultz <johnstul@us.ibm.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Paul Mackerras <paulus@samba.org>,
+       Tony Luck <tony.luck@intel.com>, Ingo Molnar <mingo@elte.hu>,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Close small window for vsyscall time inconsistencies
+From: Andi Kleen <andi@firstfloor.org>
+References: <1207340264.6222.17.camel@localhost.localdomain>
+Date: Mon, 07 Apr 2008 13:27:28 +0200
+In-Reply-To: <1207340264.6222.17.camel@localhost.localdomain> (john stultz's message of "Fri, 04 Apr 2008 13:17:44 -0700")
+Message-ID: <874padsy5b.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200804071229.27113.rjw@sisk.pl>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+X-OriginalArrivalTime: 07 Apr 2008 11:20:45.0923 (UTC) FILETIME=[6C99BB30:01C898A1]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 07, 2008 at 12:29:26PM +0200, Rafael J. Wysocki wrote:
-> On Monday, 7 of April 2008, Frans Pop wrote:
-> > On Monday 07 April 2008, Rafael J. Wysocki wrote:
-> > > On Sunday, 6 of April 2008, Rafael J. Wysocki wrote:
-> > > > On Friday, 4 of April 2008, Frans Pop wrote:
-> > > > > While compiling glibc I am getting frequent short skips in music play
-> > > > > anddddddddddddddddd I have now three times seen key repeats (as in
-> > > > > this sentence). When there is a skip in the music, there is also a
-> > > > > delay in characters being typed appearing on the screen.
-> > > >
-> > > > Can you test with CONFIG_GROUP_SCHED unset, please?
-> > >
-> > > I was able to reproduce this issue with -rc8 on one of my test systems,
-> > 
-> > Thanks Rafael.
-> > 
-> > In the mean time I have verified that the issue also existed in rc6, so it's 
-> > not a recent regression.
-> > 
-> > > but I'm not any more with the current Linus' tree and CONFIG_GROUP_SCHED
-> > > unset, FWIW.
-> > 
-> > Hmm. Does that mean that you _can_ reproduce it with git HEAD and 
-> > CONFIG_GROUP_SCHED set? That would mean it is still an issue in HEAD and 
-> > group scheduling is the culprit.
-> 
-> Well, CONFIG_GROUP_SCHED is known to cause problems, AFAICS, and some fixes
-> are scheduled for the 2.6.26 time frame.
-> 
+john stultz <johnstul@us.ibm.com> writes:
+>
+> The update_vsyscall then runs, and updates the clocksource frequency
+> with a slower frequency.
 
-I thought we had most of the issues ironed out.
+In the new code TSC should be only used on fixed-pstate TSC systems
+(cpufreq always marks it unstable), so that cannot really happen.
 
-/me tries to reproduce.
+Jiri had his patchkit to fix that, but it never got merged.
 
--- 
-regards,
-Dhaval
+-Andi
