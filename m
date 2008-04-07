@@ -1,84 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757884AbYDGW71@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758793AbYDGW7m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757884AbYDGW71 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Apr 2008 18:59:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753792AbYDGW7T
+	id S1758793AbYDGW7m (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Apr 2008 18:59:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758363AbYDGW7b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Apr 2008 18:59:19 -0400
-Received: from rn-out-0910.google.com ([64.233.170.185]:56962 "EHLO
-	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753674AbYDGW7S (ORCPT
+	Mon, 7 Apr 2008 18:59:31 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:52762 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758323AbYDGW73 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Apr 2008 18:59:18 -0400
-From: nikosapi <me@nikosapi.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Suspend on Lenovo 3000 V200 - Linux 2.6.25rc8
-Date: Mon, 7 Apr 2008 18:59:24 -0400
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: linux-acpi@vger.kernel.org, Len Brown <lenb@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>
-References: <3e8fd0440804052010xbe8f59bw3268d8206b97ac3e@mail.gmail.com> <200804071008.33879.me@nikosapi.org> <200804071934.42121.rjw@sisk.pl>
-In-Reply-To: <200804071934.42121.rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+	Mon, 7 Apr 2008 18:59:29 -0400
+Date: Mon, 7 Apr 2008 15:59:01 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Dmitry Baryshkov <dbaryshkov@gmail.com>
+Cc: linux-kernel@vger.kernel.org, haavard.skinnemoen@atmel.com,
+       rmk+lkml@arm.linux.org.uk, lethal@linux-sh.org, philipp.zabel@gmail.com,
+       pavel@ucw.cz, tony@atomide.com, paul@pwsan.com,
+       Greg KH <greg@kroah.com>
+Subject: Re: [PATCH 2/6] Clocklib: debugfs support
+Message-Id: <20080407155901.c7431c3e.akpm@linux-foundation.org>
+In-Reply-To: <20080403132337.GA26981@doriath.ww600.siemens.net>
+References: <20080403132142.GA26882@doriath.ww600.siemens.net>
+	<20080403132337.GA26981@doriath.ww600.siemens.net>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200804071859.24899.me@nikosapi.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On April 7, 2008 13:34:41 Rafael J. Wysocki wrote:
-> On Monday, 7 of April 2008, nikosapi wrote:
-> > On April 7, 2008 04:58:37 Rafael J. Wysocki wrote:
-> > > On Monday, 7 of April 2008, nikosapi wrote:
-> > > > On April 6, 2008 19:23:36 Rafael J. Wysocki wrote:
-> > > > > On Monday, 7 of April 2008, nikosapi wrote:
-> > > > > > On April 6, 2008 16:21:57 Rafael J. Wysocki wrote:
-> > > > > > > On Sunday, 6 of April 2008, Nick Nobody wrote:
-> > >
-> > > [--snip--]
-> > >
-> > > > > > Hello Rafael,
-> > > > > >
-> > > > > > I tested with that patch and the problem persists, when the
-> > > > > > laptop resumes it locks up (with a black screen). If I add
-> > > > > > acpi_apic_instance=2 acpi_osi=Linux as kernel boot options (as
-> > > > > > suggested by my dmesg) when it resumes I get back to a virtual
-> > > > > > term but I'm not able to log in. After entering my username it
-> > > > > > just hangs there.
-> > >
-> > > Have you tried if doing "echo mem > /sys/power/state" instead of s2ram
-> > > works?
-> > >
-> > > If you have, what graphics adapter is there in your machine?
-> > >
-> > > Rafael
-> > > --
-> >
-> > Yes, I've been using /sys/power/state to put the machine to sleep ever
-> > since you told me.
-> >
-> > Here's the output of lspci -d 8086:2a02 -vvvxxx
-> >
-> > 00:02.0 VGA compatible controller: Intel Corporation Mobile GM965/GL960
-> > Integrated Graphics Controller (rev 03) (prog-if 00 [VGA controller])
->
-> Hm, Intel.  Do you use the i915 driver?
->
-> Well, I think that what you see is another form of
-> http://bugzilla.kernel.org/show_bug.cgi?id=10319
-> so you can add yourself to the CC list in there.
->
-> Thanks,
-> Rafael
+On Thu, 3 Apr 2008 17:23:37 +0400
+Dmitry Baryshkov <dbaryshkov@gmail.com> wrote:
 
-Good news! I was reading through the linux-kernel archives and I found this[1] 
-post. It suggested using 2.6.25rc8-git2, I installed git4 and suspend works!
+> Provide /sys/kernel/debug/clock to ease debugging.
+> 
 
-Thanks for your time, if you need anything else just ask.
+Plese fully document the proposed kernel->userspace interface in the
+changelog so that we can review it design.
 
-nick
+> diff --git a/include/linux/clklib.h b/include/linux/clklib.h
+> index 3d0ffaf..77514cc 100644
+> --- a/include/linux/clklib.h
+> +++ b/include/linux/clklib.h
+> @@ -19,6 +19,7 @@ struct seq_file;
+>   * @get_rate: obtain the current clock rate of a specified clock
+>   * @set_rate: set the clock rate for a specified clock
+>   * @round_rate: adjust a reate to the exact rate a clock can provide
+> + * @format: output any additional information for a clock
+>   *
+>   * This structure specifies clock operations that are used to configure
+>   * specific clock.
+> @@ -30,6 +31,7 @@ struct clk_ops {
+>  	unsigned long (*get_rate) (struct clk *clk);
+>  	int (*set_rate)  (struct clk *, unsigned long);
+>  	long (*round_rate) (struct clk *, unsigned long);
+> +	int (*format)	(struct clk *, struct seq_file *);
 
-[1] http://marc.info/?l=linux-kernel&m=120760390231799&w=2
+It's conventional to leave no space between the ) and the ( here.  Using a
+tab is quite unconventional.
+
+>  };
+>  
+>  /**
+> diff --git a/kernel/clklib.c b/kernel/clklib.c
+> index 012f845..8d872e1 100644
+> --- a/kernel/clklib.c
+> +++ b/kernel/clklib.c
+> @@ -324,3 +324,77 @@ out:
+>  	return rc;
+>  }
+>  EXPORT_SYMBOL(clk_alloc_function);
+> +
+> +#ifdef CONFIG_DEBUG_FS
+> +
+> +#include <linux/debugfs.h>
+> +#include <linux/seq_file.h>
+> +
+> +#define NAME_FIELD_LEN	20
+> +
+> +static void dump_clocks(struct seq_file *s, struct clk *parent, int nest)
+> +{
+> +	struct clk *clk;
+> +	int i;
+> +
+> +	list_for_each_entry(clk, &clocks, node) {
+> +		if (clk->parent == parent) {
+> +			for (i = 0; i < nest; i++) {
+> +				seq_putc(s, ' ');
+> +				seq_putc(s, ' ');
+> +			}
+> +			seq_puts(s, clk->name);
+> +
+> +			i = 2 * nest + strlen(clk->name);
+> +			if (i >= NAME_FIELD_LEN)
+> +				i = NAME_FIELD_LEN - 1;
+> +			for (; i < NAME_FIELD_LEN; i++) {
+> +				seq_putc(s, ' ');
+> +			}
+> +			seq_printf(s, "%c use=%d rate=%10lu Hz",
+> +				clk->ops && clk->ops->set_parent ? '*' : ' ',
+> +				clk->users,
+> +				__clk_get_rate(clk));
+> +			if (clk->ops && clk->ops->format)
+> +				clk->ops->format(clk, s);
+> +			seq_putc(s, '\n');
+> +
+> +			dump_clocks(s, clk, nest + 1);
+> +		}
+> +	}
+> +}
+
+hm, this would break the one-value-per-file rule, except that applies to
+sysfs, but this interface is implemented via debug fs, but it is proposed
+that it appear under /sys.  Tricky.
+
+
