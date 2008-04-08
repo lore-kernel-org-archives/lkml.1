@@ -1,62 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752837AbYDHGWK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752791AbYDHG2q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752837AbYDHGWK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Apr 2008 02:22:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751213AbYDHGV5
+	id S1752791AbYDHG2q (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Apr 2008 02:28:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751325AbYDHG2g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Apr 2008 02:21:57 -0400
-Received: from relay.gothnet.se ([82.193.160.251]:2823 "EHLO
-	GOTHNET-SMTP2.gothnet.se" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751170AbYDHGV4 convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Apr 2008 02:21:56 -0400
-Message-ID: <47FB0EE8.30001@tungstengraphics.com>
-Date: Tue, 08 Apr 2008 08:21:28 +0200
-From: =?ISO-8859-1?Q?Thomas_Hellstr=F6m?= <thomas@tungstengraphics.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080306)
+	Tue, 8 Apr 2008 02:28:36 -0400
+Received: from mail.gmx.net ([213.165.64.20]:35379 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751213AbYDHG2f convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Apr 2008 02:28:35 -0400
+X-Authenticated: #20450766
+X-Provags-ID: V01U2FsdGVkX18AsiNFr50AAhpnwmj/0UcdllR/soV2MpNKxKdsVe
+	HqvnCezSDajihI
+Date: Tue, 8 Apr 2008 08:28:37 +0200 (CEST)
+From: Guennadi Liakhovetski <g.liakhovetski@pengutronix.de>
+X-X-Sender: lyakh@axis700.grange
+To: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <Uwe.Kleine-Koenig@digi.com>
+cc: David Brownell <david-b@pacbell.net>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: gpio patches in mmotm
+In-Reply-To: <20080408060230.GA22071@digi.com>
+Message-ID: <Pine.LNX.4.64.0804080812420.3556@axis700.grange>
+References: <20080317173134.GA27282@digi.com> <Pine.LNX.4.64.0803171915020.8640@axis700.grange>
+ <20080318160316.GA31588@digi.com> <Pine.LNX.4.64.0803181717240.5022@axis700.grange>
+ <20080408060230.GA22071@digi.com>
 MIME-Version: 1.0
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-CC: Arjan van de Ven <arjan@linux.intel.com>, Andi Kleen <andi@firstfloor.org>,
-       Dave Airlie <airlied@redhat.com>, linux-kernel@vger.kernel.org,
-       tglx@linutronix.de, mingo@redhat.com
-Subject: Re: [PATCH] x86: create array based interface to change page attribute
-References: <1206940788.7250.13.camel@clockmaker.usersys.redhat.com> <200804071259.19743.jbarnes@virtuousgeek.org> <47FA8826.2060802@tungstengraphics.com> <200804071404.28691.jbarnes@virtuousgeek.org>
-In-Reply-To: <200804071404.28691.jbarnes@virtuousgeek.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-X-BitDefender-Scanner: Mail not scanned due to license constraints
+Content-Type: TEXT/PLAIN; charset=ISO-8859-15
 Content-Transfer-Encoding: 8BIT
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jesse Barnes wrote:
-> On Monday, April 07, 2008 1:46 pm Thomas Hellström wrote:
->   
->>> Why would we need to flush at all at unbind-read-bind time?  We should be
->>> able to leave pages in the WC state even when we unbind them, then when
->>> we need to bind them back into the GTT they'll be ready, but maybe I'm
->>> misunderstanding you here...
->>>       
->> We want to make the user-space mapping cache-coherent after unbind
->> during read, to have any serious read-speed, and the linear kernel map
->> has to follow, unless it's non-present. Even if it's non present, we
->> need to flush whatever was written through the user-space mapping from
->> the cache when rebinding. Having the user-space mapping read-only when
->> possible will help avoid this.
->>     
->
-> Ah, you actually want to *read* from memory?  Yeah that would be really slow 
-> if we left it UC or WC.  But I thought that was really only necessary for 
-> relocation, and keithp dealt with that with the "presumed offset" stuff?  Are 
-> you seeing other cases where we need to read back frequently?
->   
-While keithp's "presumed offset" is really good stuff, we should never 
-need to read from device memory during relocations, I think. I was 
-thinking of EXA and OpenGL software fallback cases, "download from 
-screen" and "readpixels" types of operation, as well as 
-pixel-buffer-object map in read mode.
+On Tue, 8 Apr 2008, Uwe Kleine-König wrote:
 
-/Thomas
+> > I'm storing the GPIO number locally, and if the system doesn't have a 
+> > valid GPIO for me, I'm storing an invalid GPIO number. Then at any time if 
+> > the GPIO has to be used, I just verify if gpio_is_valid(), and if not, 
+> > return an error code for this request, but the driver remains otherwise 
+> > functional.
+> OK, so in your driver you have:
+> 
+> 	if (gpio_is_valid(gpio)) {
+> 		/* We have a data bus switch. */
+> 		ret = gpio_request(gpio, "mt9m001");
+> 		if (ret < 0) {
+> 			dev_err(&mt9m001->client->dev, "Cannot get GPIO %u\n",
+> 				gpio);
+> 			return ret;
+> 		}
+> 		ret = gpio_direction_output(gpio, 0);
+> 		if (ret < 0) {
+> 			...
+> 
+> 
+> In my eyes the following is better:
+> 
+> 	/* Do we have a data bus switch? */
+> 	ret = gpio_request(gpio, "mt9m001");
+> 	if (ret < 0) {
+> 		if (ret != -EINVAL) {
+> 			dev_err(...);
+> 			return ret;
+> 		}
+> 	} else {
+> 		ret = gpio_direction_output(gpio, 0);
+> 		if (ret < 0) {
+> 			...
 
+Yes, you could do that. But then you have to test either before calling 
+gpio_set_value_cansleep() or inside it. And the test you have to perform 
+_is_ the validity check, so, you need it anyway.
 
+> Then you don't need to extend the API.  Moreover with your variant the
+> check that gpio is valid must be done twice[1].
 
+Actually three times. The one before gpio_free() is not actually needed, 
+right, it is anyway checked inside. But gpio_set_value_cansleep() doesn't 
+check, so, it would be rude to call it with an invalid value.
+
+> [1] OK, gpio_is_valid and gpio_request might be inline functions, but
+> for "my" architecture it is not.
+
+Which arch is it? As I said, you could simplify the two specific camera 
+drivers by removing the checks where they are redundant. But on other 
+occasions the checks have to be done anyway, so, it is not a question of 
+runtime performance (apart from maybe the difference between calling a 
+function and executing inline), but just of an extra API member, which you 
+can have different opinions about:-)
+
+Thanks
+Guennadi
+---
+Guennadi Liakhovetski
