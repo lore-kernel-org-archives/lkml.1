@@ -1,49 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758719AbYDHS6B@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758811AbYDHTB6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758719AbYDHS6B (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Apr 2008 14:58:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755492AbYDHS5v
+	id S1758811AbYDHTB6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Apr 2008 15:01:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757839AbYDHTBr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Apr 2008 14:57:51 -0400
-Received: from mga10.intel.com ([192.55.52.92]:39532 "EHLO
-	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753263AbYDHS5u (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Apr 2008 14:57:50 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,625,1199692800"; 
-   d="scan'208";a="547836466"
-Message-ID: <4602.134.134.163.87.1207681069.squirrel@linux.intel.com>
-Date: Tue, 8 Apr 2008 11:57:49 -0700 (PDT)
-Subject: Re: [ANN] WiMAX stack and drivers for Intel WiMAX Link 5050
-From: jayant@linux.intel.com
-To: stephen.hemminger@vyatta.com
-Cc: wimax@linuxwimax.org, linux-wireless@vger.kernel.org,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-User-Agent: SquirrelMail/1.4.8-4.0.1.el4.centos
+	Tue, 8 Apr 2008 15:01:47 -0400
+Received: from ra.tuxdriver.com ([70.61.120.52]:4590 "EHLO ra.tuxdriver.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757157AbYDHTBq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Apr 2008 15:01:46 -0400
+Date: Tue, 8 Apr 2008 14:35:56 -0400
+From: "John W. Linville" <linville@tuxdriver.com>
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-wireless@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Michael Wu <flamingice@sourmilk.net>,
+       Johannes Berg <johannes@sipsolutions.net>, Jiri Benc <jbenc@suse.cz>
+Subject: Re: [PATCH 1/2] mac80211: fix recursive locking in
+	ieee80211_sta_expire
+Message-ID: <20080408183556.GC8183@tuxdriver.com>
+References: <1207598029-20000-1-git-send-email-jirislaby@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Priority: 3 (Normal)
-Importance: Normal
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1207598029-20000-1-git-send-email-jirislaby@gmail.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Apr 07, 2008 at 09:53:48PM +0200, Jiri Slaby wrote:
+> Hi,
+> 
+> it's against -mm, what's current mac80211 git tree? It seems that
+> -mm has fresher material, than wireless-2.6...
 
->From: Stephen Hemminger [mailto:stephen.hemminger@vyatta.com]
+As it should.  The wireless-2.6 tree is for feeding the linux-2.6 tree
+(by way of the net-2.6 tree).  Similarly, wireless-2.6.26 feeds -mm
+by way of the net-2.6.26 tree.
 
->I notice that there is a binary supplicant required. After the
->experience with the ipw3945 driver lack of acceptance, I would
->hope that Intel would have learned that dependence on binary
->userspace components would limit acceptance especially
-> with other more hostile projects (OpenBSD).
+Please use the wireless-testing tree for development, as it contains
+both sets of patches (fixes for the current release and updates for the
+future) as well as a few extras (like drivers still in development).
+Plus it is somewhat more stable, being based off the most a recent
+-rc release rather than just whatever someone last pulled.
 
-This is a temporary situation with supplicant while we resolve some
-licensing issues. You should soon see us link with the opensource
-supplicant. Our intention is to use all open source components whenever
-available.
+Hth!
 
-rgds
-Jayant
-
+John
+-- 
+John W. Linville
+linville@tuxdriver.com
