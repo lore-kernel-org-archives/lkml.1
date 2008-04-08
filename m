@@ -1,53 +1,246 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755480AbYDHVNl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755999AbYDHVOj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755480AbYDHVNl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Apr 2008 17:13:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752511AbYDHVNd
+	id S1755999AbYDHVOj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Apr 2008 17:14:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752469AbYDHVOb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Apr 2008 17:13:33 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:36679 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751673AbYDHVNc (ORCPT
+	Tue, 8 Apr 2008 17:14:31 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:19064 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752091AbYDHVOa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Apr 2008 17:13:32 -0400
-Message-ID: <47FBDF9E.90102@cs.helsinki.fi>
-Date: Wed, 09 Apr 2008 00:11:58 +0300
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-User-Agent: Thunderbird 2.0.0.12 (Macintosh/20080213)
+	Tue, 8 Apr 2008 17:14:30 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:mime-version:
+	content-type:content-transfer-encoding:content-disposition;
+	b=DBIL3mmT8S4RzaO84pC37e2W2pHANPt7P26wZ5nl3US6nx5wetm2fgBv9IUgvLtNc
+	4ebNbTyE42J53E6EhVvyQ==
+Message-ID: <6599ad830804081414x7be75d2fte5b500a7f81df40c@mail.gmail.com>
+Date: Tue, 8 Apr 2008 14:14:08 -0700
+From: "Paul Menage" <menage@google.com>
+To: "Linux Containers" <containers@lists.linux-foundation.org>
+Subject: [RFC] Control Groups Roadmap ideas
+Cc: lkml <linux-kernel@vger.kernel.org>
 MIME-Version: 1.0
-To: Christoph Lameter <clameter@sgi.com>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       Hugh Dickins <hugh@veritas.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Jens Axboe <jens.axboe@oracle.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] scsi: fix sense_slab/bio swapping livelock
-References: <Pine.LNX.4.64.0804062348001.19446@blonde.site>  <Pine.LNX.4.64.0804062213230.18148@schroedinger.engr.sgi.com>  <Pine.LNX.4.64.0804072000410.18591@blonde.site> <1207598115.29991.23.camel@lappy> <Pine.LNX.4.64.0804072121320.28744@blonde.site> <47FA8B5A.5090104@cs.helsinki.fi> <47FA8CB0.6070106@cs.helsinki.fi> <alpine.LFD.1.00.0804071409150.2886@woody.linux-foundation.org> <47FA937E.6000009@cs.helsinki.fi> <47FA94AE.4070803@cs.helsinki.fi> <Pine.LNX.4.64.0804080104170.23980@sbz-30.cs.Helsinki.FI> <alpine.LFD.1.00.0804071515320.2886@woody.linux-foundation.org> <Pine.LNX.4.64.0804082340120.11104@sbz-30.cs.Helsinki.FI> <Pine.LNX.4.64.0804081344280.30874@schroedinger.engr.sgi.com>
-In-Reply-To: <Pine.LNX.4.64.0804081344280.30874@schroedinger.engr.sgi.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Lameter wrote:
-> Hmmmm... Peter has the most experience with these issues. Maybe the best 
-> would be to have this sort of logic in a more general way in the page 
-> allocator? Similar issues surely exist with the page allocator and a fix 
-> there would fix it for all users.
+This is a list of some of the sub-projects that I'm planning for
+Control Groups, or that I know others are planning on or working on.
+Any comments or suggestions are welcome.
 
-This needs some support in the slab allocator anyway. Keep in mind that 
-the patch is specifically addressing writeback in OOM conditions so we 
-must (1) prioritize GFP_TEMPORARY allocations over everyone else (which 
-just get NULL) and (2) use the remaining available memory as efficiently 
-as possible for _all_ GFP_TEMPORARY allocations.
 
-Peter is, however, bringing up a good point that my patch doesn't 
-actually _guarantee_ anything so I'm still wondering if this approach 
-makes any sense... But I sure do like Linus' ideas of marking 
-short-lived allocations and trying harder for them in OOM.
+1) Stateless subsystems
+-----
 
-			Pekka
+This was motivated by the recent "freezer" subsystem proposal, which
+included a facility for sending signals to all members of a cgroup.
+This wasn't specifically freezer-related, and wasn't even something
+that needed particular per-cgroup state - its only state is that set
+of processes, which is already tracked by crgoups. So it could
+theoretically be mounted on multiple hierarchies at once, and wouldn't
+need an entry in the css_set array.
+
+This would require a few internal plumbing changes in cgroups, in particular:
+
+- hashing css_set objects based on their cgroups rather than their css pointers
+- allowing stateless subsystems to be in multiple hierarchies
+- changing the way hierarchy ids are calculated - simply ORing
+together the subsystem would no longer work since that could result in
+duplicates
+
+
+2) More flexible binding/unbinding/rebinding
+-----
+
+Currently you can only add/remove subsystems to a hierarchy when it
+has just a single (root) cgroup. This is a bit inflexible, so I'm
+planning to support:
+
+- adding a subsystem to an existing hierarchy by automatically
+creating a subsys state object for the new subsystem for each existing
+cgroup in the hierarchy and doing the appropriate
+can_attach()/attach_tasks() callbacks for all tasks in the system
+
+- removing a subsystem from an existing hierarchy by moving all tasks
+to that subsystem's root cgroup and destroying the child subsystem
+state objects
+
+- merging two existing hierarchies that have identical cgroup trees
+
+- (maybe) splitting one hierarchy into two separate hierarchies
+
+Whether all these operations should be forced through the mount()
+system call, or whether they should be done via operations on cgroup
+control files, is something I've not figured out yet.
+
+
+3) Subsystem dependencies
+-----
+
+This would be a fairly simple change, essentially allowing one
+subsystem to require that it only be mounted on a hierarchy when some
+other subsystem was also present. The implementation would probably be
+a callback that allows a subsystem to confirm whether it's prepared to
+be included in a proposed hierarchy containing a specified subsystem
+bitmask; it would be able to prevent the hierarchy from being created
+by giving an error return. An example of a use for this would be a
+swap subsystem that is mostly independent of the memory controller,
+but uses the page-ownership tracking of the memory controller to
+determine which cgroup to charge swap pages to. Hence it would require
+that it only be mounted on a hierarchy that also included a memory
+controller. The memory controller would make no such requirement by
+itself, so could be used on its own without the swap controller.
+
+
+4) Subsystem Inheritance
+------
+
+This is an idea that I've been kicking around for a while trying to
+figure out whether its usefulness is worth the in-kernel complexity,
+versus doing it in userspace. It comes from the idea that although
+cgroups supports multiple hierarchies so that different subsystems can
+see different task groupings, one of the more common uses of this is
+(I believe) to support a setup where say we have separate groups A, B
+and C for one resource X, but for resource Y we want a group
+consisting of A+B+C. E.g. we want individual CPU limits for A, B and
+C, but for disk I/O we want them all to share a common limit. This can
+be done from userspace by mounting two hierarchies, one for CPU and
+one for disk I/O, and creating appropriate groupings, but it could
+also be done in the kernel as follows:
+
+- each subsystem "foo" would have a "foo.inherit" file provided by
+(and handled by) cgroups in each group directory
+
+- setting the foo.inherit flag (i.e. writing 1 to it) would cause
+tasks in that cgroup to share the "foo" subsystem state with the
+parent cgroup
+
+- from the subsystem's point of view, it would only need to worry
+about its own foo_cgroup objects  and which task was associated with
+each object; the subsystem wouldn't need to care about which tasks
+were part of each cgroup, and which cgroups were sharing state; that
+would all be taken care of by the cgroup framework
+
+I've mentioned this a couple of times on the containers list as part
+of other random discussions; at one point Serge Hallyn expressed some
+interest but there's not been much noise about it either way. I
+figured I'd include it on this list anyway to see what people think of
+it.
+
+
+5) "procs" control file
+-----
+
+This would be the equivalent of the "tasks" file, but acting/reporting
+on entire thread groups. Not sure exactly what the read semantics
+should be if a sub-thread of a process is in the cgroup, but not its
+thread group leader.
+
+
+6) Statistics / binary API
+----
+
+Balaji Rao is working on a generic way to gather per-subsystem
+statistics; it would also be interesting to construct an extensible
+binary API via taskstats. One possible way to do this (taken from my
+email earlier today) would be:
+
+With the taskstats interface, we could have operations to:
+
+- describe the API exported by a given subsystem (automatically
+generated, based on its registered control files and their access
+methods)
+
+- retrieve a specified set of stats in a binary format
+
+So as a concrete example, with the memory, cpuacct and cpu subsystems
+configured, the reported API might look something like (in pseudo-code
+form)
+
+0 : memory.usage_in_bytes : u64
+1 : memory.limit_in_bytes : u64
+2 : memory.failcnt : u64
+3 : memory.stat : map
+4 : cpuacct.usage : u64
+5 : cpu.shares : u64
+6 : cpu.rt_runtime_ms : s64
+7 : cpu.stat : map
+
+This list would be auto-generated by cgroups based on inspection of
+the control files.
+
+The user could then request stats 0, 3 and 7 for a cgroup to get the
+memory.usage_in_bytes, memory.stat and cpu.stat statistics.
+
+The stats could be returned in a binary format; the format for each
+individual stat would depend on the type of that stat, and these could
+be simply concatenated together.
+
+A u64 or s64 stat would simply be a 64-bit value in the data stream
+
+A map stat would be represented as a sequence of 64-bit values,
+representing the values in the map. There would be no need to include
+the size of the map or the key ordering in the binary format, since
+userspace could determine that by reading the ASCII version of the map
+control file once at startup.
+
+So in the case of the request above for stats 0, 3 & 7, the binary
+stats stream would be a sequence of 64-bit values consisting of:
+
+<memory.usage>
+<memory.stat.cache>
+<memory.stat.rss>
+<memory.stat.active>
+<memory.stat.inactive>
+<cpu.stat.utime>
+<cpu.stat.stime>
+
+If more stats were added to memory.stat or cpu.stat by a future
+version of the code, then they would automatically appear; any that
+userspace didn't understand it could ignore.
+
+The userspace side of this could be handled by libcg.
+
+8) Subsystems from modules
+------
+
+Having completely unknown subsystems registered at run time would
+involve adding a bunch of complexity and additional locking to cgroups
+- but allowing a subsystem to be known at compile time but just
+stubbed until first mounted (at which time its module would be loaded)
+should increase the flexibility of cgroups without hurting its
+complexity or performance.
+
+
+7) New subsystems
+-----
+
+- Swap, disk I/O - already being worked on by others
+
+- OOM handler. Exactly what semantics this should provide aren't 100%
+clear. At Google we have a useful OOM handler that allows root to
+intercept OOMs as they're about to happen, and take appropriate action
+such as killing some other lower-priority job to free up memory, etc.
+Another useful feature of this subsystem might be to allow a process
+in that cgroup to get an early notification that its cgroup is getting
+close to OOM. This needs to be a separate subsystem since it could be
+used to provide OOM notification/handling for localized OOMs caused
+either by cpusets or the memory controller.
+
+- network tx/rx isolation. The cleanest way that we've found to do
+this is to provide a per-cgroup id which can be exposed as a traffic
+filter for regular Linux traffic control - then you can construct
+arbitrary network queueing structures without requiring any new APIs,
+and tie flows from particular cgroups into the appropriate queues.
+
+
+8) per-mm owner field
+----
+
+To remove the need for per-subsystem counted references from the mm.
+Being developed by Balbir Singh
