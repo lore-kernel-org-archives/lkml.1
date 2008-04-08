@@ -1,95 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757324AbYDHTqS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757850AbYDHTt3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757324AbYDHTqS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Apr 2008 15:46:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753644AbYDHTqA
+	id S1757850AbYDHTt3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Apr 2008 15:49:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753105AbYDHTtU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Apr 2008 15:46:00 -0400
-Received: from mga09.intel.com ([134.134.136.24]:56219 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752947AbYDHTp7 convert rfc822-to-8bit (ORCPT
+	Tue, 8 Apr 2008 15:49:20 -0400
+Received: from wolverine02.qualcomm.com ([199.106.114.251]:49471 "EHLO
+	wolverine02.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751772AbYDHTtS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Apr 2008 15:45:59 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,625,1199692800"; 
-   d="scan'208";a="313848154"
-Content-class: urn:content-classes:message
+	Tue, 8 Apr 2008 15:49:18 -0400
+X-IronPort-AV: E=McAfee;i="5200,2160,5269"; a="2111490"
+Message-ID: <47FBCC3B.7080104@qualcomm.com>
+Date: Tue, 08 Apr 2008 12:49:15 -0700
+From: Max Krasnyansky <maxk@qualcomm.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Subject: RE: [regression] e1000e broke e1000 (was: Re: [ANNOUNCE] e1000 toe1000e migration of PCI Express devices)
-Date: Tue, 8 Apr 2008 12:43:00 -0700
-Message-ID: <36D9DB17C6DE9E40B059440DB8D95F5204E2A55C@orsmsx418.amr.corp.intel.com>
-In-Reply-To: <20080408183921.GA20803@elte.hu>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [regression] e1000e broke e1000 (was: Re: [ANNOUNCE] e1000 toe1000e migration of PCI Express devices)
-Thread-Index: AciZqK8ddXQSO8DBQcOLuBRTBuY5fQABCkiQ
-References: <47F69965.7030303@intel.com> <20080408083606.GA20863@elte.hu> <47FB9ABB.9080403@intel.com> <20080408183921.GA20803@elte.hu>
-From: "Brandeburg, Jesse" <jesse.brandeburg@intel.com>
-To: "Ingo Molnar" <mingo@elte.hu>,
-       "Kok, Auke-jan H" <auke-jan.h.kok@intel.com>
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "NetDev" <netdev@vger.kernel.org>,
-       "e1000-list" <e1000-devel@lists.sourceforge.net>,
-       "linux-pci maillist" <linux-pci@atrey.karlin.mff.cuni.cz>,
-       "Jeff Garzik" <jeff@garzik.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "David S. Miller" <davem@davemloft.net>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Ronciak, John" <john.ronciak@intel.com>,
-       "Allan, Bruce W" <bruce.w.allan@intel.com>, "Greg KH" <greg@kroah.com>,
-       "Arjan van de Ven" <arjan@linux.intel.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-X-OriginalArrivalTime: 08 Apr 2008 19:43:01.0039 (UTC) FILETIME=[C0F143F0:01C899B0]
+To: Rusty Russell <rusty@rustcorp.com.au>
+CC: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       virtualization@lists.linux-foundation.org
+Subject: Re: [PATCH RFC 3/5] tun: vringfd receive support.
+References: <200804052202.09157.rusty@rustcorp.com.au> <200804052204.28518.rusty@rustcorp.com.au> <200804052205.43824.rusty@rustcorp.com.au>
+In-Reply-To: <200804052205.43824.rusty@rustcorp.com.au>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Auke is out sick, so I'm responding...
+Rusty Russell wrote:
+> This patch modifies tun to allow a vringfd to specify the receive
+> buffer.  Because we can't copy to userspace in bh context, we queue
+> like normal then use the "pull" hook to actually do the copy.
+> 
+> More thought needs to be put into the possible races with ring
+> registration and a simultaneous close, for example (see FIXME).
+> 
+> We use struct virtio_net_hdr prepended to packets in the ring to allow
+> userspace to receive GSO packets in future (at the moment, the tun
+> driver doesn't tell the stack it can handle them, so these cases are
+> never taken).
 
-Ingo Molnar wrote:
-> this is a simple bzImage kernel, no modules at all. Here's the full
-> regression report:
+In general the code looks good. The only thing I could not convince myself in
+is whether having generic ring buffer makes sense or not.
+At least the TUN driver would be more efficient if it had its own simple ring
+ implementation. Less indirection, fewer callbacks, fewer if()s, etc. TUN
+already has the file descriptor and having two additional fds for rx and tx
+ring is a waste (think of a VPN server that has to have a bunch of TUN fds).
+Also as I mentioned before Jamal and I wanted to expose some of the SKB fields
+through TUN device. With the rx/tx rings the natural way of doing that would
+be the ring descriptor itself. It can of course be done the same way we copy
+proto info (PI) and GSO stuff before the packet but that means more
+copy_to_user() calls and yet more checks.
 
-then why are you compiling e1000e as a module?  no "=y" in your kernel
-means no support, and this kernel .config has e1000e supporting your
-hardware.
+So. What am I missing ? Why do we need generic ring for the TUN ? I looked at
+the lguest code a bit and it seems that we need a bunch of network specific
+code anyway. The cool thing is that you can now mmap the rings into the guest
+ directly but the same thing can be done with TUN specific rings.
 
-your expectation is that e1000 once loaded on this device in a previous
-kernel (2.6.24) so it should continue to work, right?  I see your point
-but we are trying to make general improvements to both drivers, and the
-best way forward was a split, in order to make the user experience
-better by eliminating chances for regressions on older hardware.  
- 
-> v2.6.25-rc8 regresses relative to v2.6.24, with the following config,
-> which config works fine in v2.6.24:
+Max
 
-> the eth0 interface is not detected at all:
->    http://redhat.com/~mingo/misc/dmesg.e1000.bad
 
-if you're running a no module kernel, you'll need to set CONFIG_E1000E=y
-for your device to be detected.  
 
-> so the pure presence of the e1000e module breaks the e1000 driver.
-> That 
-> is a regression and a bug that should be fixed.
-
-The device IDs moved to e1000e, we don't want collisions between drivers
-that support the same IDs, so to avoid those user support issues, we're
-trying to make the process as painless as possible with announcements
-and time.  The distros are already including the e1000e driver in their
-builds and new installs with the new ID layout will automatically select
-the correct driver for their hardware.
-
-Users that take an upgrade to their kernel (with e1000e enabled) might
-benefit if the distro upgrading that kernel included a post upgrade
-script that migrated e1000e devices previously using e1000 in
-modprobe.conf to alias ethX e1000e
-
-If there is a more reasonable solution you can come up with I am
-interested.
-
-Jesse
