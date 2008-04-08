@@ -1,431 +1,221 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753761AbYDHKpc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753394AbYDHK5O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753761AbYDHKpc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Apr 2008 06:45:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751883AbYDHKpX
+	id S1753394AbYDHK5O (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Apr 2008 06:57:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751920AbYDHK5D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Apr 2008 06:45:23 -0400
-Received: from fg-out-1718.google.com ([72.14.220.154]:15621 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752040AbYDHKpU (ORCPT
+	Tue, 8 Apr 2008 06:57:03 -0400
+Received: from theia.rz.uni-saarland.de ([134.96.7.31]:26880 "EHLO
+	theia.rz.uni-saarland.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752010AbYDHK5B (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Apr 2008 06:45:20 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:mime-version:content-type:message-id;
-        b=jApQfDlELEtdz+ZbxADDQdL0ciIkEN6pZOorr/5lQF9C8Eo008S7nUydfCeN23X1ILvg0P4Sl6w4ZuSadyaZVF6lwN1Hb1aSg9ddmE1kEGpV+9H6stb0DnU2C0BQUgOJSUrgQT50Vh/hf+OCiJhGhqFf+dYzMeR5YDDM6MI1E4E=
-From: Denys Vlasenko <vda.linux@googlemail.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: [PATCH] drivers/char/specialix.c: stop inlining largish static functions
-Date: Tue, 8 Apr 2008 12:44:53 +0200
-User-Agent: KMail/1.8.2
-Cc: linux-kernel@vger.kernel.org, linux-serial@vger.kernel.org,
-       R.E.Wolff@bitwizard.nl
-MIME-Version: 1.0
-Content-Type: Multipart/Mixed;
-  boundary="Boundary-00=_ly0+Hj1u0RL5Wex"
-Message-Id: <200804081244.53894.vda.linux@googlemail.com>
+	Tue, 8 Apr 2008 06:57:01 -0400
+Date: Tue, 8 Apr 2008 12:54:30 +0200
+From: Alexander van Heukelum <heukelum@mailshack.com>
+To: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>
+Cc: Mike Travis <travis@sgi.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       heukelum@fastmail.fm, Yinghai Lu <yhlu.kernel@gmail.com>
+Subject: [PATCH] x86: cleanup boot-heap usage
+Message-ID: <20080408105430.GA11595@mailshack.com>
+References: <20080405013014.478571000@polaris-admin.engr.sgi.com> <20080405013014.693571000@polaris-admin.engr.sgi.com> <20080405134626.GA15894@mailshack.com> <47FA6478.1070301@sgi.com> <20080407214434.GA5296@mailshack.com> <20080408082354.GA13940@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080408082354.GA13940@elte.hu>
+User-Agent: Mutt/1.5.9i
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (theia.rz.uni-saarland.de [134.96.7.31]); Tue, 08 Apr 2008 12:56:36 +0200 (CEST)
+X-AntiVirus: checked by AntiVir MailGate (version: 2.1.2-14; AVE: 7.6.0.81; VDF: 7.0.3.132; host: AntiVir1)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Boundary-00=_ly0+Hj1u0RL5Wex
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+The kernel decompressor wrapper uses memory located beyond the
+end of the image. This might lead to hard to debug problems,
+but even if it can be proven to be safe, it is at the very
+least unclean. I don't see any advantages either, unless you
+count it not being zeroed out as an advantage. This patch
+moves the boot-heap area to the bss segment.
 
-Hi Alan,
+Signed-off-by: Alexander van Heukelum <heukelum@fastmail.fm>
 
-drivers/char/specialix.c has unusually large number
-of static inline functions - 22.
+---
 
-I looked through them. The file is positively inline-happy.
-Inlines with udelay() calls. Inlines with complex loops.
-Nested inlines. Rarely called inlines (e.g. with request_region
-inside).
+On Tue, Apr 08, 2008 at 10:23:54AM +0200, Ingo Molnar wrote:
+> * Alexander van Heukelum <heukelum@mailshack.com> wrote:
+> > I did see that the malloc space that the inflate code is using is 
+> > taken from _after_ the end of the bss. I don't see how this is 
+> > protected from being used/overwritten. Changing the stack size changes 
+> > the memory layout a bit... maybe you were so unlucky to create a 
+> > vmlinux image that was just barely smaller than some threshold and 
+> > increasing the stack size made the decompression/relocation area be 
+> > located somewhere else?
+> > 
+> > Test patch follows.
+> 
+> that's a really interesting theory.
+> 
+> FWIIW, i've been booting allyesconfig bzImages for a long time (with 
+> only minimal amount of drivers disabled - mostly old ISA ones that 
+> assume the presence of the real hardware), and they boot and work fine 
+> on both 32-bit and 64-bit typical whitebox PCs. That means huge bzImages 
+> that decompresses into a ~41 MB kernel image. I'd expect that to be a 
+> rather severe test of the decompressor.
+> 
+> 	Ingo
 
-This patch removes "inline" from 15 static functions
-(regardless of number of callsites - gcc nowadays auto-inlines
-statics with one callsite).
+Hi Ingo,
 
-Size difference for 32bit x86:
-   text    data     bss     dec     hex filename
-  21669     204    8780   30653    77bd linux-2.6-ALLYES/drivers/char/specialix.o
-  18470     204    8780   27454    6b3e linux-2.6.inline-ALLYES/drivers/char/specialix.o
+Even if this patch might not solve the problem, I think it
+is a good clean-up that is suitable for -x86? qemu is happy
+with it.
 
+Greetings,
+	Alexander
 
-Signed-off-by: Denys Vlasenko <vda.linux@googlemail.com>
---
-vda
+ arch/x86/boot/compressed/head_32.S |   15 +++++++++------
+ arch/x86/boot/compressed/head_64.S |   22 +++++++++++++---------
+ arch/x86/boot/compressed/misc.c    |    8 +-------
+ include/asm-x86/boot.h             |    8 ++++++++
+ 4 files changed, 31 insertions(+), 22 deletions(-)
 
---Boundary-00=_ly0+Hj1u0RL5Wex
-Content-Type: text/x-diff;
-  charset="us-ascii";
-  name="deinline_specialix.diff"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
-	filename="deinline_specialix.diff"
-
-diff -urp -U 10 linux-2.6/drivers/char/specialix.c linux-2.6.inline/drivers/char/specialix.c
---- linux-2.6/drivers/char/specialix.c	2008-03-30 03:27:43.000000000 +0200
-+++ linux-2.6.inline/drivers/char/specialix.c	2008-04-08 12:32:23.000000000 +0200
-@@ -190,40 +190,46 @@ static struct specialix_board sx_board[S
- static struct specialix_port sx_port[SX_NBOARD * SX_NPORT];
+diff --git a/arch/x86/boot/compressed/head_32.S b/arch/x86/boot/compressed/head_32.S
+index 036e635..ba7736c 100644
+--- a/arch/x86/boot/compressed/head_32.S
++++ b/arch/x86/boot/compressed/head_32.S
+@@ -130,7 +130,7 @@ relocated:
+ /*
+  * Setup the stack for the decompressor
+  */
+-	leal stack_end(%ebx), %esp
++	leal boot_stack_end(%ebx), %esp
  
+ /*
+  * Do the decompression, and jump to the new kernel..
+@@ -142,8 +142,8 @@ relocated:
+ 	pushl %eax	# input_len
+ 	leal input_data(%ebx), %eax
+ 	pushl %eax	# input_data
+-	leal _end(%ebx), %eax
+-	pushl %eax	# end of the image as third argument
++	leal boot_heap(%ebx), %eax
++	pushl %eax	# heap area as third argument
+ 	pushl %esi	# real mode pointer as second arg
+ 	call decompress_kernel
+ 	addl $20, %esp
+@@ -181,7 +181,10 @@ relocated:
+ 	jmp *%ebp
  
- #ifdef SPECIALIX_TIMER
- static struct timer_list missed_irq_timer;
- static irqreturn_t sx_interrupt(int irq, void * dev_id);
- #endif
+ .bss
++/* Stack and heap for uncompression */
+ .balign 4
+-stack:
+-	.fill 4096, 1, 0
+-stack_end:
++boot_heap:
++	.fill BOOT_HEAP_SIZE, 1, 0
++boot_stack:
++	.fill BOOT_STACK_SIZE, 1, 0
++boot_stack_end:
+diff --git a/arch/x86/boot/compressed/head_64.S b/arch/x86/boot/compressed/head_64.S
+index e8657b9..7a212a6 100644
+--- a/arch/x86/boot/compressed/head_64.S
++++ b/arch/x86/boot/compressed/head_64.S
+@@ -28,6 +28,7 @@
+ #include <asm/segment.h>
+ #include <asm/pgtable.h>
+ #include <asm/page.h>
++#include <asm/boot.h>
+ #include <asm/msr.h>
+ #include <asm/asm-offsets.h>
  
+@@ -62,7 +63,7 @@ startup_32:
+ 	subl	$1b, %ebp
  
+ /* setup a stack and make sure cpu supports long mode. */
+-	movl	$user_stack_end, %eax
++	movl	$boot_stack_end, %eax
+ 	addl	%ebp, %eax
+ 	movl	%eax, %esp
  
--static inline int sx_paranoia_check(struct specialix_port const * port,
-+#ifdef SPECIALIX_PARANOIA_CHECK
-+static int sx_paranoia_check(const struct specialix_port *port,
- 				    char *name, const char *routine)
- {
--#ifdef SPECIALIX_PARANOIA_CHECK
--	static const char *badmagic =
-+	static const char badmagic[] =
- 		KERN_ERR "sx: Warning: bad specialix port magic number for device %s in %s\n";
--	static const char *badinfo =
-+	static const char badinfo[] =
- 		KERN_ERR "sx: Warning: null specialix port for device %s in %s\n";
+@@ -274,7 +275,7 @@ relocated:
+ 	stosb
  
- 	if (!port) {
- 		printk(badinfo, name, routine);
- 		return 1;
- 	}
- 	if (port->magic != SPECIALIX_MAGIC) {
- 		printk(badmagic, name, routine);
- 		return 1;
- 	}
+ 	/* Setup the stack */
+-	leaq	user_stack_end(%rip), %rsp
++	leaq	boot_stack_end(%rip), %rsp
+ 
+ 	/* zero EFLAGS after setting rsp */
+ 	pushq	$0
+@@ -285,7 +286,7 @@ relocated:
+  */
+ 	pushq	%rsi			# Save the real mode argument
+ 	movq	%rsi, %rdi		# real mode address
+-	leaq	_heap(%rip), %rsi	# _heap
++	leaq	boot_heap(%rip), %rsi	# malloc area for uncompression
+ 	leaq	input_data(%rip), %rdx  # input_data
+ 	movl	input_len(%rip), %eax
+ 	movq	%rax, %rcx		# input_len
+@@ -310,9 +311,12 @@ gdt:
+ 	.quad	0x0080890000000000	/* TS descriptor */
+ 	.quad   0x0000000000000000	/* TS continued */
+ gdt_end:
+-	.bss
+-/* Stack for uncompression */
+-	.balign 4
+-user_stack:
+-	.fill 4096,4,0
+-user_stack_end:
++
++.bss
++/* Stack and heap for uncompression */
++.balign 4
++boot_heap:
++	.fill BOOT_HEAP_SIZE, 1, 0
++boot_stack:
++	.fill BOOT_STACK_SIZE, 1, 0
++boot_stack_end:
+diff --git a/arch/x86/boot/compressed/misc.c b/arch/x86/boot/compressed/misc.c
+index dad4e69..90456ce 100644
+--- a/arch/x86/boot/compressed/misc.c
++++ b/arch/x86/boot/compressed/misc.c
+@@ -217,12 +217,6 @@ static void putstr(const char *);
+ static memptr free_mem_ptr;
+ static memptr free_mem_end_ptr;
+ 
+-#ifdef CONFIG_X86_64
+-#define HEAP_SIZE             0x7000
+-#else
+-#define HEAP_SIZE             0x4000
 -#endif
- 	return 0;
- }
+-
+ static char *vidmem;
+ static int vidport;
+ static int lines, cols;
+@@ -449,7 +443,7 @@ asmlinkage void decompress_kernel(void *rmode, memptr heap,
+ 
+ 	window = output;		/* Output buffer (Normally at 1M) */
+ 	free_mem_ptr     = heap;	/* Heap */
+-	free_mem_end_ptr = heap + HEAP_SIZE;
++	free_mem_end_ptr = heap + BOOT_HEAP_SIZE;
+ 	inbuf  = input_data;		/* Input buffer */
+ 	insize = input_len;
+ 	inptr  = 0;
+diff --git a/include/asm-x86/boot.h b/include/asm-x86/boot.h
+index ed8affb..2faed7e 100644
+--- a/include/asm-x86/boot.h
++++ b/include/asm-x86/boot.h
+@@ -17,4 +17,12 @@
+ 				+ (CONFIG_PHYSICAL_ALIGN - 1)) \
+ 				& ~(CONFIG_PHYSICAL_ALIGN - 1))
+ 
++#ifdef CONFIG_X86_64
++#define BOOT_HEAP_SIZE	0x7000
++#define BOOT_STACK_SIZE	0x4000
 +#else
-+static inline int sx_paranoia_check(const struct specialix_port *port,
-+				    char *name, const char *routine)
-+{
-+	return 0;
-+}
++#define BOOT_HEAP_SIZE	0x4000
++#define BOOT_STACK_SIZE	0x1000
 +#endif
- 
- 
- /*
-  *
-  *  Service functions for specialix IO8+ driver.
-  *
-  */
- 
- /* Get board number from pointer */
- static inline int board_No (struct specialix_board * bp)
-@@ -278,40 +284,40 @@ static inline unsigned char sx_in_off(st
- static inline void sx_out_off(struct specialix_board  * bp, unsigned short reg,
- 			  unsigned char val)
- {
- 	bp->reg = reg;
- 	outb (reg, bp->base + SX_ADDR_REG);
- 	outb (val, bp->base + SX_DATA_REG);
- }
- 
- 
- /* Wait for Channel Command Register ready */
--static inline void sx_wait_CCR(struct specialix_board  * bp)
-+static void sx_wait_CCR(struct specialix_board  * bp)
- {
- 	unsigned long delay, flags;
- 	unsigned char ccr;
- 
- 	for (delay = SX_CCR_TIMEOUT; delay; delay--) {
- 		spin_lock_irqsave(&bp->lock, flags);
- 		ccr = sx_in(bp, CD186x_CCR);
- 		spin_unlock_irqrestore(&bp->lock, flags);
- 		if (!ccr)
- 			return;
- 		udelay (1);
- 	}
- 
- 	printk(KERN_ERR "sx%d: Timeout waiting for CCR.\n", board_No(bp));
- }
- 
- 
- /* Wait for Channel Command Register ready */
--static inline void sx_wait_CCR_off(struct specialix_board  * bp)
-+static void sx_wait_CCR_off(struct specialix_board  * bp)
- {
- 	unsigned long delay;
- 	unsigned char crr;
- 	unsigned long flags;
- 
- 	for (delay = SX_CCR_TIMEOUT; delay; delay--) {
- 		spin_lock_irqsave(&bp->lock, flags);
- 		crr = sx_in_off(bp, CD186x_CCR);
- 		spin_unlock_irqrestore(&bp->lock, flags);
- 		if (!crr)
-@@ -320,29 +326,29 @@ static inline void sx_wait_CCR_off(struc
- 	}
- 
- 	printk(KERN_ERR "sx%d: Timeout waiting for CCR.\n", board_No(bp));
- }
- 
- 
- /*
-  *  specialix IO8+ IO range functions.
-  */
- 
--static inline int sx_request_io_range(struct specialix_board * bp)
-+static int sx_request_io_range(struct specialix_board * bp)
- {
- 	return request_region(bp->base,
- 		bp->flags & SX_BOARD_IS_PCI ? SX_PCI_IO_SPACE : SX_IO_SPACE,
- 		"specialix IO8+") == NULL;
- }
- 
- 
--static inline void sx_release_io_range(struct specialix_board * bp)
-+static void sx_release_io_range(struct specialix_board * bp)
- {
- 	release_region(bp->base,
- 	               bp->flags&SX_BOARD_IS_PCI?SX_PCI_IO_SPACE:SX_IO_SPACE);
- }
- 
- 
- /* Set the IRQ using the RTS lines that run to the PAL on the board.... */
- static int sx_set_irq ( struct specialix_board *bp)
- {
- 	int virq;
-@@ -592,21 +598,21 @@ static int sx_probe(struct specialix_boa
- 
- 	func_exit();
- 	return 0;
- }
- 
- /*
-  *
-  *  Interrupt processing routines.
-  * */
- 
--static inline struct specialix_port * sx_get_port(struct specialix_board * bp,
-+static struct specialix_port * sx_get_port(struct specialix_board * bp,
- 					       unsigned char const * what)
- {
- 	unsigned char channel;
- 	struct specialix_port * port = NULL;
- 
- 	channel = sx_in(bp, CD186x_GICR) >> GICR_CHAN_OFF;
- 	dprintk (SX_DEBUG_CHAN, "channel: %d\n", channel);
- 	if (channel < CD186x_NCH) {
- 		port = &sx_port[board_No(bp) * SX_NPORT + channel];
- 		dprintk (SX_DEBUG_CHAN, "port: %d %p flags: 0x%x\n",board_No(bp) * SX_NPORT + channel,  port, port->flags & ASYNC_INITIALIZED);
-@@ -616,21 +622,21 @@ static inline struct specialix_port * sx
- 			func_exit();
- 			return port;
- 		}
- 	}
- 	printk(KERN_INFO "sx%d: %s interrupt from invalid port %d\n",
- 	       board_No(bp), what, channel);
- 	return NULL;
- }
- 
- 
--static inline void sx_receive_exc(struct specialix_board * bp)
-+static void sx_receive_exc(struct specialix_board * bp)
- {
- 	struct specialix_port *port;
- 	struct tty_struct *tty;
- 	unsigned char status;
- 	unsigned char ch, flag;
- 
- 	func_enter();
- 
- 	port = sx_get_port(bp, "Receive");
- 	if (!port) {
-@@ -688,21 +694,21 @@ static inline void sx_receive_exc(struct
- 
- 	else
- 		flag = TTY_NORMAL;
- 
- 	if(tty_insert_flip_char(tty, ch, flag))
- 		tty_flip_buffer_push(tty);
- 	func_exit();
- }
- 
- 
--static inline void sx_receive(struct specialix_board * bp)
-+static void sx_receive(struct specialix_board * bp)
- {
- 	struct specialix_port *port;
- 	struct tty_struct *tty;
- 	unsigned char count;
- 
- 	func_enter();
- 
- 	if (!(port = sx_get_port(bp, "Receive"))) {
- 		dprintk (SX_DEBUG_RX, "Hmm, couldn't find port.\n");
- 		func_exit();
-@@ -716,21 +722,21 @@ static inline void sx_receive(struct spe
- 
- 	tty_buffer_request_room(tty, count);
- 
- 	while (count--)
- 		tty_insert_flip_char(tty, sx_in(bp, CD186x_RDR), TTY_NORMAL);
- 	tty_flip_buffer_push(tty);
- 	func_exit();
- }
- 
- 
--static inline void sx_transmit(struct specialix_board * bp)
-+static void sx_transmit(struct specialix_board * bp)
- {
- 	struct specialix_port *port;
- 	struct tty_struct *tty;
- 	unsigned char count;
- 
- 	func_enter();
- 	if (!(port = sx_get_port(bp, "Transmit"))) {
- 		func_exit();
- 		return;
- 	}
-@@ -794,21 +800,21 @@ static inline void sx_transmit(struct sp
- 		port->IER &= ~IER_TXRDY;
- 		sx_out(bp, CD186x_IER, port->IER);
- 	}
- 	if (port->xmit_cnt <= port->wakeup_chars)
-  		tty_wakeup(tty);
- 
- 	func_exit();
- }
- 
- 
--static inline void sx_check_modem(struct specialix_board * bp)
-+static void sx_check_modem(struct specialix_board * bp)
- {
- 	struct specialix_port *port;
- 	struct tty_struct *tty;
- 	unsigned char mcr;
- 	int msvr_cd;
- 
- 	dprintk (SX_DEBUG_SIGNALS, "Modem intr. ");
- 	if (!(port = sx_get_port(bp, "Modem")))
- 		return;
- 
-@@ -964,21 +970,21 @@ static void turn_ints_on (struct special
- 	}
- 	spin_lock_irqsave(&bp->lock, flags);
- 	(void) sx_in (bp, 0); /* Turn ON interrupts. */
- 	spin_unlock_irqrestore(&bp->lock, flags);
- 
- 	func_exit();
- }
- 
- 
- /* Called with disabled interrupts */
--static inline int sx_setup_board(struct specialix_board * bp)
-+static int sx_setup_board(struct specialix_board * bp)
- {
- 	int error;
- 
- 	if (bp->flags & SX_BOARD_ACTIVE)
- 		return 0;
- 
- 	if (bp->flags & SX_BOARD_IS_PCI)
- 		error = request_irq(bp->irq, sx_interrupt, IRQF_DISABLED | IRQF_SHARED, "specialix IO8+", bp);
- 	else
- 		error = request_irq(bp->irq, sx_interrupt, IRQF_DISABLED, "specialix IO8+", bp);
-@@ -987,21 +993,21 @@ static inline int sx_setup_board(struct 
- 		return error;
- 
- 	turn_ints_on (bp);
- 	bp->flags |= SX_BOARD_ACTIVE;
- 
- 	return 0;
- }
- 
- 
- /* Called with disabled interrupts */
--static inline void sx_shutdown_board(struct specialix_board *bp)
-+static void sx_shutdown_board(struct specialix_board *bp)
- {
- 	func_enter();
- 
- 	if (!(bp->flags & SX_BOARD_ACTIVE)) {
- 		func_exit();
- 		return;
- 	}
- 
- 	bp->flags &= ~SX_BOARD_ACTIVE;
- 
-@@ -1882,21 +1888,21 @@ static int sx_tiocmset(struct tty_struct
- 	spin_lock_irqsave(&bp->lock, flags);
- 	sx_out(bp, CD186x_CAR, port_No(port));
- 	sx_out(bp, CD186x_MSVR, port->MSVR);
- 	spin_unlock_irqrestore(&bp->lock, flags);
- 	spin_unlock_irqrestore(&port->lock, flags);
- 	func_exit();
- 	return 0;
- }
- 
- 
--static inline void sx_send_break(struct specialix_port * port, unsigned long length)
-+static void sx_send_break(struct specialix_port * port, unsigned long length)
- {
- 	struct specialix_board *bp = port_Board(port);
- 	unsigned long flags;
- 
- 	func_enter();
- 
- 	spin_lock_irqsave (&port->lock, flags);
- 	port->break_length = SPECIALIX_TPS / HZ * length;
- 	port->COR2 |= COR2_ETC;
- 	port->IER  |= IER_TXRDY;
-@@ -1909,21 +1915,21 @@ static inline void sx_send_break(struct 
- 	sx_wait_CCR(bp);
- 	spin_lock_irqsave(&bp->lock, flags);
- 	sx_out(bp, CD186x_CCR, CCR_CORCHG2);
- 	spin_unlock_irqrestore(&bp->lock, flags);
- 	sx_wait_CCR(bp);
- 
- 	func_exit();
- }
- 
- 
--static inline int sx_set_serial_info(struct specialix_port * port,
-+static int sx_set_serial_info(struct specialix_port * port,
-                                      struct serial_struct __user * newinfo)
- {
- 	struct serial_struct tmp;
- 	struct specialix_board *bp = port_Board(port);
- 	int change_speed;
- 
- 	func_enter();
- 	/*
- 	if (!access_ok(VERIFY_READ, (void *) newinfo, sizeof(tmp))) {
- 		func_exit();
-@@ -1971,21 +1977,21 @@ static inline int sx_set_serial_info(str
- 		port->custom_divisor = tmp.custom_divisor;
- 	}
- 	if (change_speed) {
- 		sx_change_speed(bp, port);
- 	}
- 	func_exit();
- 	return 0;
- }
- 
- 
--static inline int sx_get_serial_info(struct specialix_port * port,
-+static int sx_get_serial_info(struct specialix_port * port,
- 				     struct serial_struct __user *retinfo)
- {
- 	struct serial_struct tmp;
- 	struct specialix_board *bp = port_Board(port);
- 
- 	func_enter();
- 
- 	/*
- 	if (!access_ok(VERIFY_WRITE, (void *) retinfo, sizeof(tmp)))
- 		return -EFAULT;
++
+ #endif /* _ASM_BOOT_H */
 
---Boundary-00=_ly0+Hj1u0RL5Wex--
