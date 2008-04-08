@@ -1,48 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754087AbYDHNmb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754569AbYDHNoU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754087AbYDHNmb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Apr 2008 09:42:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752779AbYDHNmV
+	id S1754569AbYDHNoU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Apr 2008 09:44:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751985AbYDHNoN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Apr 2008 09:42:21 -0400
-Received: from moutng.kundenserver.de ([212.227.126.177]:58594 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751772AbYDHNmU convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Apr 2008 09:42:20 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: =?utf-8?q?J=C3=B6rn_Engel?= <joern@logfs.org>
-Subject: Re: [patch 1/15] Makefiles and Kconfig
-Date: Tue, 8 Apr 2008 15:41:59 +0200
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       linux-mtd@lists.infradead.org
-References: <20080401181308.512473173@logfs.org> <200804080230.17426.arnd@arndb.de> <20080408083316.GA31262@logfs.org>
-In-Reply-To: <20080408083316.GA31262@logfs.org>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Tue, 8 Apr 2008 09:44:13 -0400
+Received: from smtp2.it.da.ut.ee ([193.40.5.67]:56972 "EHLO smtp2.it.da.ut.ee"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751810AbYDHNoM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Apr 2008 09:44:12 -0400
+Date: Tue, 8 Apr 2008 16:44:11 +0300 (EEST)
+From: Meelis Roos <mroos@linux.ee>
+To: Linux Kernel list <linux-kernel@vger.kernel.org>,
+       Benjamin Herrenschmidt <benh@ozlabs.org>, Jeff Garzik <jeff@garzik.org>
+Subject: compile failure in pata_sil680.c
+Message-ID: <Pine.SOC.4.64.0804081640100.28938@math.ut.ee>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200804081542.00333.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1/Wj8B3TS+X0zFzWE1QIF3Cmgh62qPvLSlSJ1C
- oN9N3qbcO1QQLHgTI/1OwmgCimWIfFskoXcoRfrSTQ//m7o/w9
- pzC8EZbfo3gll/RF144Nw==
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 08 April 2008, Jörn Engel wrote:
-> "Logfs file system" might make sense.  LOGFS_FS is something I would
-> rather avoid.  For some reason my brain reacts strongly to repetition,
-> redundancy and superfluous information.
-> 
+commit 0f436eff54f90419ac1b8accfb3e6e17c4b49a4e introduces the following 
+compile failure on ppc (not powerpc), prep subarch. Seems that 
+machine_is is only defined in the new powerpc arch.
 
-How about LOG_FS then? I don't think there is a really good argument
-either way, but a large majority uses the *_FS notation in Kconfig.
+drivers/ata/pata_sil680.c: In function 'sil680_init_chip':
+drivers/ata/pata_sil680.c:274: error: implicit declaration of function 'machine_is'
+drivers/ata/pata_sil680.c:274: error: 'cell' undeclared (first use in this function)
+drivers/ata/pata_sil680.c:274: error: (Each undeclared identifier is reported only once
+drivers/ata/pata_sil680.c:274: error: for each function it appears in.)
+make[2]: *** [drivers/ata/pata_sil680.o] Error 1
 
-	Arnd <><
+-- 
+Meelis Roos (mroos@linux.ee)
