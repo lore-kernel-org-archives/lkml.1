@@ -1,42 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756506AbYDHUyk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755062AbYDHU43@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756506AbYDHUyk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Apr 2008 16:54:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752299AbYDHUya
+	id S1755062AbYDHU43 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Apr 2008 16:56:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752139AbYDHU4S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Apr 2008 16:54:30 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:39797 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752065AbYDHUy3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Apr 2008 16:54:29 -0400
-Message-ID: <47FBDB82.9000607@sgi.com>
-Date: Tue, 08 Apr 2008 13:54:26 -0700
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Tue, 8 Apr 2008 16:56:18 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:39510 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751776AbYDHU4S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Apr 2008 16:56:18 -0400
+Message-ID: <47FBDBE9.9040700@garzik.org>
+Date: Tue, 08 Apr 2008 16:56:09 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-To: Bert Wesarg <bert.wesarg@googlemail.com>
-CC: Ingo Molnar <mingo@elte.hu>, Paul Jackson <pj@sgi.com>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/3] x86: add cpus_scnprintf function v3
-References: <20080408184301.651388000@polaris-admin.engr.sgi.com> <36ca99e90804081233x2daef177u52a169d5382094df@mail.gmail.com>
-In-Reply-To: <36ca99e90804081233x2daef177u52a169d5382094df@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Ingo Molnar <mingo@elte.hu>
+CC: Matthew Wilcox <matthew@wil.cx>, "Kok, Auke" <auke-jan.h.kok@intel.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       NetDev <netdev@vger.kernel.org>,
+       e1000-list <e1000-devel@lists.sourceforge.net>,
+       linux-pci maillist <linux-pci@atrey.karlin.mff.cuni.cz>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "David S. Miller" <davem@davemloft.net>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Jesse Brandeburg <jesse.brandeburg@intel.com>,
+       "Ronciak, John" <john.ronciak@intel.com>,
+       "Allan, Bruce W" <bruce.w.allan@intel.com>, Greg KH <greg@kroah.com>,
+       Arjan van de Ven <arjan@linux.intel.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [regression] e1000e broke e1000
+References: <47F69965.7030303@intel.com> <20080408083606.GA20863@elte.hu> <47FB9ABB.9080403@intel.com> <20080408183921.GA20803@elte.hu> <20080408193245.GG11962@parisc-linux.org> <20080408195123.GA28148@elte.hu> <47FBCE00.2020309@garzik.org> <20080408200652.GC28148@elte.hu> <47FBD34A.6080508@garzik.org> <20080408203314.GA28952@elte.hu>
+In-Reply-To: <20080408203314.GA28952@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bert Wesarg wrote:
-> On Tue, Apr 8, 2008 at 8:43 PM, Mike Travis <travis@sgi.com> wrote:
->>   * Cleanup usages of cpumask_scprintf in the following files and add
->>     another interface to use cpulist_scnprintf where appropriate.
-> Great. Sometimes the simplest solution needs the longest way. ;-)
-> 
-> Thanks.
-> Bert
+Ingo Molnar wrote:
+> No other 
+> PCI driver breaks like this.
 
-I agree though sometimes "acceptance" is the hardest part... ;-)
+That's because PCI ID transitions are extremely, extremely rare.
 
-Thanks,
-Mike
+Not because this transition is particularly unusual.
+
+
+> We've got three thousand Kconfig options - 
+> it is clearly not realistic for users to keep such details in mind to 
+> avoid pitfalls.
+
+Agreed -- hence the multiple announcements, including in this thread, to 
+put said details into mind.
+
+It's an unusual situation, thus it received announcements so that people 
+are aware of the transition taking place, and what to do about it.
+
+
+> E1000=y && E1000E=m is uncommon but can easily happen. 
+> E1000=y && E1000E=m simply makes no sense in light of the PCI ID 
+> stealing that occurs if E1000E is enabled.
+
+"makes no sense"...  for your personal situation.
+
+They are two independent drivers, and that's a valid mix of Kconfig 
+settings.
+
+Someone could easily have an e1000 card in an e1000e machine, and come 
+up with that specific config mix.
+
+It is not denial to say "people other than Ingo might validly choose 
+that config mix."
+
+
+
+Overall, fundamentally, any transition of a user base from one driver to 
+another is going to be an ad-hoc process.  That's the nature of the 
+problem -- each case is different.
+
+So we avoid driver transitions if at all possible, as a general rule. 
+In this case, a rare exception to that rule, you have to hammer out a 
+user-education process as best you can.
+
+	Jeff
+
+
