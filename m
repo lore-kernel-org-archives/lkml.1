@@ -1,55 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756665AbYDHWGV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757195AbYDHWGl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756665AbYDHWGV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Apr 2008 18:06:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752628AbYDHWGL
+	id S1757195AbYDHWGl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Apr 2008 18:06:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755168AbYDHWGc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Apr 2008 18:06:11 -0400
-Received: from fg-out-1718.google.com ([72.14.220.159]:42507 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752432AbYDHWGK (ORCPT
+	Tue, 8 Apr 2008 18:06:32 -0400
+Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:56069
+	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752628AbYDHWGb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Apr 2008 18:06:10 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=WUsN888XQzZ+bBnnfgcSWWY1xxYcZWeag2cE1Y9g1h1ZFyxZCRf5zZF/YY89y7vxJTypsWSnbMFl8DjirHUgas0WLwNDCpSYdHZoLgkmZd2iaSPl1do3nXLOr96Wka/wpRSlK9ehKepg7KrslASYckDjZJahhwSDsLhAsIr/rUw=
-Message-ID: <47FBEC4B.7030205@gmail.com>
-Date: Wed, 09 Apr 2008 00:06:03 +0200
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
+	Tue, 8 Apr 2008 18:06:31 -0400
+Date: Wed, 9 Apr 2008 00:06:27 +0200
+From: Andrea Arcangeli <andrea@qumranet.com>
+To: Avi Kivity <avi@qumranet.com>
+Cc: Christoph Lameter <clameter@sgi.com>, akpm@linux-foundation.org,
+       Nick Piggin <npiggin@suse.de>, Steve Wise <swise@opengridcomputing.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-mm@kvack.org,
+       Kanoj Sarcar <kanojsarcar@yahoo.com>, Roland Dreier <rdreier@cisco.com>,
+       Jack Steiner <steiner@sgi.com>, linux-kernel@vger.kernel.org,
+       kvm-devel@lists.sourceforge.net, Robin Holt <holt@sgi.com>,
+       general@lists.openfabrics.org, Hugh Dickins <hugh@veritas.com>
+Subject: Re: [PATCH 0 of 9] mmu notifier #v12
+Message-ID: <20080408220627.GP10133@duo.random>
+References: <patchbomb.1207669443@duo.random> <47FBE7C9.9000701@qumranet.com>
 MIME-Version: 1.0
-To: "John W. Linville" <linville@tuxdriver.com>
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-wireless@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Michael Wu <flamingice@sourmilk.net>,
-       Johannes Berg <johannes@sipsolutions.net>, Jiri Benc <jbenc@suse.cz>
-Subject: Re: [PATCH 1/2] mac80211: fix recursive locking in	ieee80211_sta_expire
-References: <1207598029-20000-1-git-send-email-jirislaby@gmail.com> <20080408183556.GC8183@tuxdriver.com>
-In-Reply-To: <20080408183556.GC8183@tuxdriver.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <47FBE7C9.9000701@qumranet.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 04/08/2008 08:35 PM, John W. Linville wrote:
-> On Mon, Apr 07, 2008 at 09:53:48PM +0200, Jiri Slaby wrote:
->> Hi,
->>
->> it's against -mm, what's current mac80211 git tree? It seems that
->> -mm has fresher material, than wireless-2.6...
-> 
-> As it should.  The wireless-2.6 tree is for feeding the linux-2.6 tree
-> (by way of the net-2.6 tree).  Similarly, wireless-2.6.26 feeds -mm
-> by way of the net-2.6.26 tree.
+On Wed, Apr 09, 2008 at 12:46:49AM +0300, Avi Kivity wrote:
+> That's unusual.  What happens to the notifier?  Suppose I destroy a vm 
 
-Wow, too many trees even with their branches to know the ropes.
+Yes it's quite unusual.
 
-> Please use the wireless-testing tree for development, as it contains
-> both sets of patches (fixes for the current release and updates for the
-> future) as well as a few extras (like drivers still in development).
-> Plus it is somewhat more stable, being based off the most a recent
-> -rc release rather than just whatever someone last pulled.
+> without exiting the process, what happens if it fires?
 
-Ok, thanks.
+The mmu notifier ops should stop doing stuff (if there will be no
+memslots they will be noops), or the ops can be replaced atomically
+with null pointers. The important thing is that the module can't go
+away until ->release is invoked or until mmu_notifier_unregister
+returned 0.
+
+Previously there was no mmu_notifier_unregister, so adding it can't be
+a regression compared to #v11, even if it can fail and you may have to
+retry later after returning to userland. Retrying from userland is
+always safe in oom kill terms, only looping inside the kernel isn't
+safe as do_exit has no chance to run.
