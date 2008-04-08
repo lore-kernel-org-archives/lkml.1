@@ -1,21 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758087AbYDHUM5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758503AbYDHUNX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758087AbYDHUM5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Apr 2008 16:12:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756079AbYDHUMq
+	id S1758503AbYDHUNX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Apr 2008 16:13:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755556AbYDHUNI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Apr 2008 16:12:46 -0400
-Received: from colobus.isomerica.net ([216.93.242.10]:41024 "EHLO
-	colobus.isomerica.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755628AbYDHUMp (ORCPT
+	Tue, 8 Apr 2008 16:13:08 -0400
+Received: from g4t0015.houston.hp.com ([15.201.24.18]:17286 "EHLO
+	g4t0015.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758070AbYDHUNG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Apr 2008 16:12:45 -0400
-Message-ID: <47FBD1AD.1080700@isomerica.net>
-Date: Tue, 08 Apr 2008 16:12:29 -0400
-From: Dan Noe <dpn@isomerica.net>
-Reply-To: dpn@isomerica.net
-Organization: isomerica.net
-User-Agent: Thunderbird 2.0.0.12 (Macintosh/20080213)
+	Tue, 8 Apr 2008 16:13:06 -0400
+Message-ID: <47FBD1CD.6090009@hp.com>
+Date: Tue, 08 Apr 2008 13:13:01 -0700
+From: Rick Jones <rick.jones2@hp.com>
+User-Agent: Mozilla/5.0 (X11; U; HP-UX 9000/785; en-US; rv:1.7.13) Gecko/20060601
+X-Accept-Language: en-us, en
 MIME-Version: 1.0
 To: Matthew Wilcox <matthew@wil.cx>
 CC: Ingo Molnar <mingo@elte.hu>,
@@ -33,34 +32,55 @@ CC: Ingo Molnar <mingo@elte.hu>,
        "Allan, Bruce W" <bruce.w.allan@intel.com>, Greg KH <greg@kroah.com>,
        Arjan van de Ven <arjan@linux.intel.com>,
        "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [regression] e1000e broke e1000
-References: <47F69965.7030303@intel.com> <20080408083606.GA20863@elte.hu> <47FB9ABB.9080403@intel.com> <20080408183921.GA20803@elte.hu> <36D9DB17C6DE9E40B059440DB8D95F5204E2A55C@orsmsx418.amr.corp.intel.com> <20080408195949.GB28148@elte.hu> <20080408200417.GI11962@parisc-linux.org>
+Subject: showing which hardware is unclaimed
+References: <47F69965.7030303@intel.com> <20080408083606.GA20863@elte.hu>	<47FB9ABB.9080403@intel.com> <20080408183921.GA20803@elte.hu>	<36D9DB17C6DE9E40B059440DB8D95F5204E2A55C@orsmsx418.amr.corp.intel.com>	<20080408195949.GB28148@elte.hu> <20080408200417.GI11962@parisc-linux.org>
 In-Reply-To: <20080408200417.GI11962@parisc-linux.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Matthew Wilcox wrote:
+> On Tue, Apr 08, 2008 at 09:59:49PM +0200, Ingo Molnar wrote:
+> 
+>>Btw., a sidenote: this is another generally annoying property of Linux: 
+>>there's no easy and user-visible enumeration of PCI IDs (devices) that 
+>>we _could_ support but dont enable for some reason. It is a royal PITA 
+>>to track down when some driver decides to (silently) ignore a piece of 
+>>hardware.
+>>
+>>Having a seemingly dead piece of hardware component is one of the most 
+>>frustrating user experiences possible - the first instinctive reaction 
+>>is "did my hw break???". The kernel should proactively know about all 
+>>inactive pieces of hardware and should have a one-stop-shop for users 
+>>where they can reassure themselves which devices are not active and why.
+> 
+> 
 > It's almost trivial to add new string attributes to sysfs.  We could
 > have a file, say, /sys/bus/pci/devices/0000:07:03.0/broken which
 > lspci could read to see if anything's left a message for us.
 > 
 > Is that the kind of thing you had in mind?
 
-I would consider this a worthwhile addition to the kernel (and lspci). 
-It would be nice if lspci could display what driver had claimed a 
-particular device, and which devices were unclaimed by any driver or 
-otherwise had an error that prevented initialization.
+FWIW, this is what a command on "another OS" does with an unclaimed card:
 
-I don't have enough experience to gauge how invasive this would be, but 
-I'd be happy to contribute towards it if practical.
+# ioscan -fk -C lan
+Class     I  H/W Path  Driver  S/W State   H/W Type     Description
+====================================================================
+lan       0  0/0/3/0   intl100   CLAIMED     INTERFACE    Intel PCI Pro 
+10/100Tx Server Adapter
+lan       1  0/1/2/0   igelan    CLAIMED     INTERFACE    HP PCI 
+1000Base-T Core
+lan       2  0/2/1/0   iether    CLAIMED     INTERFACE    HP A7012-60001 
+PCI/PCI-X 1000Base-T Dual-port Adapter
+lan       3  0/2/1/1   iether    CLAIMED     INTERFACE    HP A7012-60001 
+PCI/PCI-X 1000Base-T Dual-port Adapter
+lan       4  0/3/1/0   ixgbe     UNCLAIMED   UNKNOWN      PCI-X Ethernet 
+(17d55831)
 
-Cheers,
-Dan
+I'd probably call that "unclaimed" rather than "broken" but that may 
+just be a preference thing.
 
--- 
-                     /--------------- - -  -  -   -   -
-                     |  Daniel Noe
-                     |  http://isomerica.net/~dpn/
+rick jones
+
