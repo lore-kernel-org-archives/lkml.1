@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756598AbYDHXti@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756210AbYDHXtA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756598AbYDHXti (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Apr 2008 19:49:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755664AbYDHXse
+	id S1756210AbYDHXtA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Apr 2008 19:49:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755157AbYDHXs1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Apr 2008 19:48:34 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:36708 "EHLO ogre.sisk.pl"
+	Tue, 8 Apr 2008 19:48:27 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:36703 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755604AbYDHXsd convert rfc822-to-8bit (ORCPT
+	id S1755057AbYDHXs0 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Apr 2008 19:48:33 -0400
-Cc: "David Brownell" <david-b@pacbell.net>, "H. Peter Anvin" <hpa@zytor.com>
+	Tue, 8 Apr 2008 19:48:26 -0400
+Cc: "Soeren Sonnenburg" <kernel@nn7.de>
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
 MIME-Version: 1.0
 Content-Disposition: inline
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8BIT
-Message-ID: <SvnMeM-aZi.A.9pF.MBA_HB@albercik>
-Subject: [Bug #10153] (regression) kernel/timeconst.h bugs with HZ=128
+Message-ID: <SvnMeM-aZi.A.oxF.hBA_HB@albercik>
+Subject: [Bug #10117] 2.6.25-current-git hangs on boot (pci=nommconf helps)
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Date: Wed,  9 Apr 2008 01:02:08 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -31,13 +31,11 @@ The following bug entry is on the current list of known regressions
 from 2.6.24.  Please verify if it still should be listed.
 
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10153
-Subject		: (regression) kernel/timeconst.h bugs with HZ=128
-Submitter	: David Brownell <david-b@pacbell.net>
-Date		: 2008-02-26 19:32 (43 days old)
-References	: http://lkml.org/lkml/2008/2/26/294
-Handled-By	: H. Peter Anvin <hpa@zytor.com>
-Patch		: http://bugzilla.kernel.org/attachment.cgi?id=15114&amp;action=view
-		  http://bugzilla.kernel.org/attachment.cgi?id=15115&amp;action=view
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10117
+Subject		: 2.6.25-current-git hangs on boot (pci=nommconf helps)
+Submitter	: Soeren Sonnenburg <kernel@nn7.de>
+Date		: 2008-02-23 18:55 (46 days old)
+References	: http://lkml.org/lkml/2008/2/23/263
+		  http://lkml.org/lkml/2008/4/4/41
 
 
