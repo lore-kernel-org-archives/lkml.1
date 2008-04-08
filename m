@@ -1,152 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758113AbYDHQD4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755881AbYDHQJb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758113AbYDHQD4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Apr 2008 12:03:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755111AbYDHQDj
+	id S1755881AbYDHQJb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Apr 2008 12:09:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752512AbYDHQJW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Apr 2008 12:03:39 -0400
-Received: from crystal.sipsolutions.net ([195.210.38.204]:45720 "EHLO
+	Tue, 8 Apr 2008 12:09:22 -0400
+Received: from crystal.sipsolutions.net ([195.210.38.204]:57394 "EHLO
 	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754771AbYDHQDi (ORCPT
+	with ESMTP id S1752434AbYDHQJW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Apr 2008 12:03:38 -0400
-Subject: [PATCH v6] introduce HAVE_EFFICIENT_UNALIGNED_ACCESS Kconfig symbol
+	Tue, 8 Apr 2008 12:09:22 -0400
+Subject: Re: Using sparse to catch invalid RCU dereferences?
 From: Johannes Berg <johannes@sipsolutions.net>
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Cc: Andrew Morton <akpm@osdl.org>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, sam <sam@ravnborg.org>
-In-Reply-To: <47FB920F.60503@s5r6.in-berlin.de>
-References: <1207667127.14253.42.camel@johannes.berg>
-	 <47FB920F.60503@s5r6.in-berlin.de>
-Content-Type: text/plain
-Date: Tue, 08 Apr 2008 18:03:31 +0200
-Message-Id: <1207670611.5550.9.camel@johannes.berg>
+To: paulmck@linux.vnet.ibm.com
+Cc: Linux Kernel list <linux-kernel@vger.kernel.org>,
+       linux-sparse <linux-sparse@vger.kernel.org>
+In-Reply-To: <20080408155259.GA8381@linux.vnet.ibm.com>
+References: <1207605856.12481.35.camel@johannes.berg>
+	 <20080408155259.GA8381@linux.vnet.ibm.com>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-68mHHPRgfvVX9k6pfAa6"
+Date: Tue, 08 Apr 2008 18:09:15 +0200
+Message-Id: <1207670955.5550.15.camel@johannes.berg>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.12.3 
-Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In many cases, especially in networking, it can be beneficial to
-know at compile time whether the architecture can do unaligned
-accesses efficiently. This patch introduces a new Kconfig symbol
-	HAVE_EFFICIENT_UNALIGNED_ACCESS
-for that purpose and adds it to the powerpc and x86 architectures.
-Also add some documentation about alignment and networking, and
-especially one intended use of this symbol.
 
-Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
-Acked-by: Sam Ravnborg <sam@ravnborg.org>
-Acked-by: Ingo Molnar <mingo@elte.hu> [x86 architecture part]
----
-v5: rename to HAVE_EFFICIENT_UNALIGNED_ACCESS
-v6: small text fixes
+--=-68mHHPRgfvVX9k6pfAa6
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-I have opted to not introduce any symbol associated with the cost
-of unaligned accesses, David Woodhouse once suggested that such a
-cost should be combined with a probability of (un-)alignment even
-in the get_unaligned/put_unaligned macros and I think this should
-be combined with a patch introducing a global cost constant.
 
-Also, this would require architecture changes because if some code
-knew the likelyhood of unaligned accesses was small enough over
-the cost of them, architectures that complain in the trap handle
-would still complain in that unlikely case although the code
-explicitly made a trade-off based on the cost/probability.
+> So the address_space attribute says what the pointer points to rather
+> than where the pointer resides, correct?
 
- Documentation/unaligned-memory-access.txt |   32 +++++++++++++++++++++++++++---
- arch/Kconfig                              |   19 +++++++++++++++++
- arch/powerpc/Kconfig                      |    1 
- arch/x86/Kconfig                          |    1 
- 4 files changed, 50 insertions(+), 3 deletions(-)
+Yeah. It's currently used for __user and __iomem. Using it for rcu
+wouldn't be quite the way it was intended, I think, but hey :)
 
---- everything.orig/Documentation/unaligned-memory-access.txt	2008-04-08 17:07:07.000000000 +0200
-+++ everything/Documentation/unaligned-memory-access.txt	2008-04-08 18:02:27.000000000 +0200
-@@ -218,9 +218,35 @@ If use of such macros is not convenient,
- where the source or destination (or both) are of type u8* or unsigned char*.
- Due to the byte-wise nature of this operation, unaligned accesses are avoided.
- 
-+
-+Alignment vs. Networking
-+========================
-+
-+On architectures that require aligned loads, networking requires that the IP
-+header is aligned on a four-byte boundary to optimise the IP stack. For
-+regular ethernet hardware, the constant NET_IP_ALIGN is used. On most
-+architectures this constant has the value 2 because the normal ethernet
-+header is 14 bytes long, so in order to get proper alignment one needs to
-+DMA to an address which can be expressed as 4*n + 2. One notable exception
-+here is powerpc which defines NET_IP_ALIGN to 0 because DMA to unaligned
-+addresses can be very expensive and dwarf the cost of unaligned loads.
-+
-+For some ethernet hardware that cannot DMA to unaligned addresses like
-+4*n+2 or non-ethernet hardware, this can be a problem, and it is then
-+required to copy the incoming frame into an aligned buffer. Because this is
-+unnecessary on architectures that can do unaligned accesses, the code can be
-+made dependent on CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS like so:
-+
-+#ifdef CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS
-+	skb = original skb
-+#else
-+	skb = copy skb
-+#endif
-+
- --
--Author: Daniel Drake <dsd@gentoo.org>
-+Authors: Daniel Drake <dsd@gentoo.org>,
-+         Johannes Berg <johannes@sipsolutions.net>
- With help from: Alan Cox, Avuton Olrich, Heikki Orsila, Jan Engelhardt,
--Johannes Berg, Kyle McMartin, Kyle Moffett, Randy Dunlap, Robert Hancock,
--Uli Kunitz, Vadim Lobanov
-+Kyle McMartin, Kyle Moffett, Randy Dunlap, Robert Hancock, Uli Kunitz,
-+Vadim Lobanov
- 
---- everything.orig/arch/powerpc/Kconfig	2008-04-08 17:09:41.000000000 +0200
-+++ everything/arch/powerpc/Kconfig	2008-04-08 17:09:42.000000000 +0200
-@@ -103,6 +103,7 @@ config PPC
- 	select HAVE_OPROFILE
- 	select HAVE_KPROBES
- 	select HAVE_KRETPROBES
-+	select HAVE_EFFICIENT_UNALIGNED_ACCESS
- 
- config EARLY_PRINTK
- 	bool
---- everything.orig/arch/x86/Kconfig	2008-04-08 17:07:07.000000000 +0200
-+++ everything/arch/x86/Kconfig	2008-04-08 17:09:42.000000000 +0200
-@@ -23,6 +23,7 @@ config X86
- 	select HAVE_KPROBES
- 	select HAVE_KRETPROBES
- 	select HAVE_KVM if ((X86_32 && !X86_VOYAGER && !X86_VISWS && !X86_NUMAQ) || X86_64)
-+	select HAVE_EFFICIENT_UNALIGNED_ACCESS
- 
- 
- config GENERIC_LOCKBREAK
---- everything.orig/arch/Kconfig	2008-04-08 17:07:07.000000000 +0200
-+++ everything/arch/Kconfig	2008-04-08 17:09:42.000000000 +0200
-@@ -36,3 +36,22 @@ config HAVE_KPROBES
- 
- config HAVE_KRETPROBES
- 	def_bool n
-+
-+config HAVE_EFFICIENT_UNALIGNED_ACCESS
-+	def_bool n
-+	help
-+	  Some architectures are unable to perform unaligned accesses
-+	  without the use of get_unaligned/put_unaligned. Others are
-+	  unable to perform such accesses efficiently (e.g. trap on
-+	  unaligned access and require fixing it up in the exception
-+	  handler.)
-+
-+	  This symbol should be selected by an architecture if it can
-+	  perform unaligned accesses efficiently to allow different
-+	  code paths to be selected for these cases. Some network
-+	  drivers, for example, could opt to not fix up alignment
-+	  problems with received packets if doing so would not help
-+	  much.
-+
-+	  See Documentation/unaligned-memory-access.txt for more
-+	  information on the topic of unaligned memory accesses.
+> It might be.  There are a number of places where it is legal to access
+> RCU-protected pointers directly, and all of these would need to be
+> changed.  For example, in the example above, one could do:
+>=20
+> 	foo =3D NULL;
 
+Yeah, all of those would lead to sparse warnings. Are we willing to
+change all that code?
+
+> I recently tried to modify rcu_assign_pointer() to issue the memory
+> memory barrier only when the pointer was non-NULL, but this ended badly.
+> Probably because I am not the greatest gcc expert around...  We ended
+> up having to define an rcu_assign_index() to handle the possibility of
+> assigning a zero-value array index, but my attempts to do type-checking
+> backfired, and I eventually gave it up.  Again, someone a bit more clued
+> in to gcc than I am could probably pull it off.
+
+I don't think I would be that person :)
+
+> In addition, it is legal to omit rcu_dereference() and rcu_assign_pointer=
+()
+> when holding the update-side lock.
+
+Right. Those too would lead to problems, unless we change that code to
+use those (or other) macros.
+
+> So I very much like this approach in general, but it will require some
+> care to implement.  I would be very happy to review and comment!!!
+
+I'll play with it a bit if I get around, was just reviewing some RCU
+usage and had the feeling that it should be possible to automate.
+
+johannes
+
+--=-68mHHPRgfvVX9k6pfAa6
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iQIVAwUAR/uYqqVg1VMiehFYAQKJIQ/+K4yei2vr3DtJpwjO+zSLA+QyDPzFGq8J
+FbYwZh9O7Bnq00Zst6RhZZSeP8Tj4HDnQEFIgxDJ1jM7oKveGaRRqW9siq69NDuW
+2EVnJfJvwcJH/D957CqwskATjMgkFhPnDzHiTEsbua3Jwsehm0pyFZhOhxMpqODb
+ZwAKGbNJRPU6ez/3UOwDj2XkidWQcJgie2FWhIN7w8J6ZpO48dfy6GiBP3q13vkQ
+hukw+jGIoOqkxkAYXvSmRoTVhwioZB+khUdck1ZbjOqjy2eeVAfmtXJTreBRp0aW
+IVdUXFP6gH2QipubNdeXYGd42NbJqdIC6hMhnmwbmdTXQRLxoKg9Uf2KFttZnUrw
+tgd2psj4WTYgOlI8XtQlDnGmfDNfapqNqMOeIZwT/adIV/PbqggSy+tn9UL3BJf4
+MF/0pAKsifte3XuFbuSymd4GsIumsbY+neIHNwvcjYUfJupZbwXqFrnIE3ikr8P+
+EYcOFje1Ec7cEIdK78xZRVUb4QvdXQoAhgID203NLlfmLC9q305ZEZJZSm4rUaSK
+XuBzSv9h8u0QGq4eVp2+WPAMgedGW8tM5VTkgf0NIlTjq2eQm6aJ3hR8UizwthuX
+cdoezNYE3jDvSBzeKibHkPcN7k3o9ahRD5e3yCedtKXbrY5HHpf/7AsYCLbKLThO
+GPz3j7USBqY=
+=BhbU
+-----END PGP SIGNATURE-----
+
+--=-68mHHPRgfvVX9k6pfAa6--
 
