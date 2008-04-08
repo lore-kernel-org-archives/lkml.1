@@ -1,26 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754073AbYDHKn6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754401AbYDHKoV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754073AbYDHKn6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Apr 2008 06:43:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752744AbYDHKnd
+	id S1754401AbYDHKoV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Apr 2008 06:44:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753607AbYDHKns
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Apr 2008 06:43:33 -0400
-Received: from os.eurotux.com ([216.75.63.6]:41814 "EHLO os.eurotux.com"
+	Tue, 8 Apr 2008 06:43:48 -0400
+Received: from os.eurotux.com ([216.75.63.6]:41815 "EHLO os.eurotux.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752040AbYDHKn0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Apr 2008 06:43:26 -0400
-X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Tue, 08 Apr 2008 06:43:25 EDT
+	id S1753560AbYDHKnl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Apr 2008 06:43:41 -0400
+X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Tue, 08 Apr 2008 06:43:41 EDT
 To: linux-kernel@vger.kernel.org
 Subject: proc_stack for x86_64 (spinning process)
 Content-Disposition: inline
-From: Nuno Pais Fernandes <npf@eurotux.com>
-Organization: Eurotux Informatica S.A.
-Date: Tue, 8 Apr 2008 11:36:41 +0100
+From: Nuno Fernandes <npf-mlists@eurotux.com>
+Date: Tue, 8 Apr 2008 11:36:58 +0100
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Message-Id: <200804081136.41876.npf@eurotux.com>
+Message-Id: <200804081136.58402.npf-mlists@eurotux.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
