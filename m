@@ -1,70 +1,191 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756173AbYDHVJm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755995AbYDHVKX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756173AbYDHVJm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Apr 2008 17:09:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753791AbYDHVJN
+	id S1755995AbYDHVKX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Apr 2008 17:10:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753785AbYDHVKF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Apr 2008 17:09:13 -0400
-Received: from jabberwock.ucw.cz ([89.250.246.4]:37229 "EHLO jabberwock.ucw.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752257AbYDHVJJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Apr 2008 17:09:09 -0400
-X-Greylist: delayed 1868 seconds by postgrey-1.27 at vger.kernel.org; Tue, 08 Apr 2008 17:09:08 EDT
-Date: Tue, 8 Apr 2008 22:35:55 +0200
-From: Martin Mares <mj@ucw.cz>
-To: Rick Jones <rick.jones2@hp.com>
-Cc: Matthew Wilcox <matthew@wil.cx>, Ingo Molnar <mingo@elte.hu>,
-       "Brandeburg, Jesse" <jesse.brandeburg@intel.com>,
-       "Kok, Auke-jan H" <auke-jan.h.kok@intel.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       NetDev <netdev@vger.kernel.org>,
-       e1000-list <e1000-devel@lists.sourceforge.net>,
-       linux-pci maillist <linux-pci@atrey.karlin.mff.cuni.cz>,
-       Jeff Garzik <jeff@garzik.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "David S. Miller" <davem@davemloft.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "Ronciak, John" <john.ronciak@intel.com>,
-       "Allan, Bruce W" <bruce.w.allan@intel.com>, Greg KH <greg@kroah.com>,
-       Arjan van de Ven <arjan@linux.intel.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: showing which hardware is unclaimed
-Message-ID: <mj+md-20080408.203457.10351.albireo@ucw.cz>
-References: <47F69965.7030303@intel.com> <20080408083606.GA20863@elte.hu> <47FB9ABB.9080403@intel.com> <20080408183921.GA20803@elte.hu> <36D9DB17C6DE9E40B059440DB8D95F5204E2A55C@orsmsx418.amr.corp.intel.com> <20080408195949.GB28148@elte.hu> <20080408200417.GI11962@parisc-linux.org> <47FBD1CD.6090009@hp.com>
+	Tue, 8 Apr 2008 17:10:05 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:37597 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752257AbYDHVKD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Apr 2008 17:10:03 -0400
+Date: Tue, 8 Apr 2008 16:10:02 -0500 (CDT)
+From: Alan Mayer <ajm@sgi.com>
+To: mingo@elte.hu, torvalds@linux-foundation.org
+Cc: linux-kernel list <linux-kernel@vger.kernel.org>
+Subject: [PATCH] x86_64: Change FIRST_SYSTEM_VECTOR to a variable.
+Message-ID: <Pine.SGI.3.96.1080408160826.8706317D-100000@fergus.americas.sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47FBD1CD.6090009@hp.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
 
-> FWIW, this is what a command on "another OS" does with an unclaimed card:
-> 
-> # ioscan -fk -C lan
-> Class     I  H/W Path  Driver  S/W State   H/W Type     Description
-> ====================================================================
-> lan       0  0/0/3/0   intl100   CLAIMED     INTERFACE    Intel PCI Pro 
-> 10/100Tx Server Adapter
-> lan       1  0/1/2/0   igelan    CLAIMED     INTERFACE    HP PCI 
-> 1000Base-T Core
-> lan       2  0/2/1/0   iether    CLAIMED     INTERFACE    HP A7012-60001 
-> PCI/PCI-X 1000Base-T Dual-port Adapter
-> lan       3  0/2/1/1   iether    CLAIMED     INTERFACE    HP A7012-60001 
-> PCI/PCI-X 1000Base-T Dual-port Adapter
-> lan       4  0/3/1/0   ixgbe     UNCLAIMED   UNKNOWN      PCI-X Ethernet 
-> (17d55831)
-> 
-> I'd probably call that "unclaimed" rather than "broken" but that may 
-> just be a preference thing.
+Subject: [PATCH] x86_64: Change FIRST_SYSTEM_VECTOR to a variable.
 
-`lspci -k' already reports which devices are claimed by which driver.
+From: Alan Mayer <ajm@sgi.com>
 
-				Have a nice fortnight
--- 
-Martin `MJ' Mares                          <mj@ucw.cz>   http://mj.ucw.cz/
-Faculty of Math and Physics, Charles University, Prague, Czech Rep., Earth
-MS has designed a perfect copy protection scheme: There is no reason to pirate Vista.
+The SGI UV system needs several more system vectors than a vanilla
+x86_64 system.  Rather than burden the other archs with extra system
+vectors that they don't use, change FIRST_SYSTEM_VECTOR to a variable,
+so that it can be dynamic.
+
+Signed-off-by: Alan Mayer <ajm@sgi.com>
+
+---
+Index: ingo/arch/x86/kernel/i8259_64.c
+===================================================================
+--- ingo.orig/arch/x86/kernel/i8259_64.c	2008-04-04 14:57:05.000000000 -0500
++++ ingo/arch/x86/kernel/i8259_64.c	2008-04-04 15:57:05.000000000 -0500
+@@ -22,6 +22,7 @@
+ #include <asm/desc.h>
+ #include <asm/apic.h>
+ #include <asm/i8259.h>
++#include <asm/genapic.h>
+ 
+ /*
+  * Common place to define all x86 IRQ vectors
+@@ -456,6 +457,22 @@
+ 	}
+ }
+ 
++#define SYS_VECTOR_FREE		0
++#define SYS_VECTOR_ALLOCED	1
++
++static char system_vectors[NR_VECTORS] = { [0 ... NR_VECTORS-1] = SYS_VECTOR_FREE};
++
++static int alloc_system_vector(int vector)
++{
++	if (system_vectors[vector] == SYS_VECTOR_FREE) {
++		system_vectors[vector] = SYS_VECTOR_ALLOCED;
++		if (vector < first_system_vector)
++			first_system_vector = vector;
++		return vector;
++	} else
++		BUG();
++}
++
+ void init_IRQ(void) __attribute__((weak, alias("native_init_IRQ")));
+ 
+ void __init native_init_IRQ(void)
+@@ -479,33 +496,37 @@
+ 	 * The reschedule interrupt is a CPU-to-CPU reschedule-helper
+ 	 * IPI, driven by wakeup.
+ 	 */
+-	set_intr_gate(RESCHEDULE_VECTOR, reschedule_interrupt);
++	set_intr_gate(alloc_system_vector(RESCHEDULE_VECTOR), reschedule_interrupt);
+ 
+ 	/* IPIs for invalidation */
+-	set_intr_gate(INVALIDATE_TLB_VECTOR_START+0, invalidate_interrupt0);
+-	set_intr_gate(INVALIDATE_TLB_VECTOR_START+1, invalidate_interrupt1);
+-	set_intr_gate(INVALIDATE_TLB_VECTOR_START+2, invalidate_interrupt2);
+-	set_intr_gate(INVALIDATE_TLB_VECTOR_START+3, invalidate_interrupt3);
+-	set_intr_gate(INVALIDATE_TLB_VECTOR_START+4, invalidate_interrupt4);
+-	set_intr_gate(INVALIDATE_TLB_VECTOR_START+5, invalidate_interrupt5);
+-	set_intr_gate(INVALIDATE_TLB_VECTOR_START+6, invalidate_interrupt6);
+-	set_intr_gate(INVALIDATE_TLB_VECTOR_START+7, invalidate_interrupt7);
++	set_intr_gate(alloc_system_vector(INVALIDATE_TLB_VECTOR_START+0), invalidate_interrupt0);
++	set_intr_gate(alloc_system_vector(INVALIDATE_TLB_VECTOR_START+1), invalidate_interrupt1);
++	set_intr_gate(alloc_system_vector(INVALIDATE_TLB_VECTOR_START+2), invalidate_interrupt2);
++	set_intr_gate(alloc_system_vector(INVALIDATE_TLB_VECTOR_START+3), invalidate_interrupt3);
++	set_intr_gate(alloc_system_vector(INVALIDATE_TLB_VECTOR_START+4), invalidate_interrupt4);
++	set_intr_gate(alloc_system_vector(INVALIDATE_TLB_VECTOR_START+5), invalidate_interrupt5);
++	set_intr_gate(alloc_system_vector(INVALIDATE_TLB_VECTOR_START+6), invalidate_interrupt6);
++	set_intr_gate(alloc_system_vector(INVALIDATE_TLB_VECTOR_START+7), invalidate_interrupt7);
+ 
+ 	/* IPI for generic function call */
+-	set_intr_gate(CALL_FUNCTION_VECTOR, call_function_interrupt);
++	set_intr_gate(alloc_system_vector(CALL_FUNCTION_VECTOR), call_function_interrupt);
+ 
+ 	/* Low priority IPI to cleanup after moving an irq */
+ 	set_intr_gate(IRQ_MOVE_CLEANUP_VECTOR, irq_move_cleanup_interrupt);
+ #endif
+-	set_intr_gate(THERMAL_APIC_VECTOR, thermal_interrupt);
+-	set_intr_gate(THRESHOLD_APIC_VECTOR, threshold_interrupt);
++	set_intr_gate(alloc_system_vector(THERMAL_APIC_VECTOR), thermal_interrupt);
++	set_intr_gate(alloc_system_vector(THRESHOLD_APIC_VECTOR), threshold_interrupt);
+ 
+ 	/* self generated IPI for local APIC timer */
+-	set_intr_gate(LOCAL_TIMER_VECTOR, apic_timer_interrupt);
++	set_intr_gate(alloc_system_vector(LOCAL_TIMER_VECTOR), apic_timer_interrupt);
+ 
+ 	/* IPI vectors for APIC spurious and error interrupts */
+-	set_intr_gate(SPURIOUS_APIC_VECTOR, spurious_interrupt);
+-	set_intr_gate(ERROR_APIC_VECTOR, error_interrupt);
++	set_intr_gate(alloc_system_vector(SPURIOUS_APIC_VECTOR), spurious_interrupt);
++	set_intr_gate(alloc_system_vector(ERROR_APIC_VECTOR), error_interrupt);
++	if (is_uv_system() ) {
++		alloc_system_vector(XPC_ACTIVATE);
++		alloc_system_vector(XPC_NOTIFY);
++	}
+ 
+ 	if (!acpi_ioapic)
+ 		setup_irq(2, &irq2);
+Index: ingo/arch/x86/kernel/io_apic_64.c
+===================================================================
+--- ingo.orig/arch/x86/kernel/io_apic_64.c	2008-04-04 14:57:05.000000000 -0500
++++ ingo/arch/x86/kernel/io_apic_64.c	2008-04-04 15:57:37.000000000 -0500
+@@ -82,6 +82,8 @@
+ 
+ static int assign_irq_vector(int irq, cpumask_t mask);
+ 
++int first_system_vector = 0xfe;
++
+ #define __apicdebuginit  __init
+ 
+ int sis_apic_bug; /* not actually supported, dummy for compile */
+@@ -717,7 +719,7 @@
+ 		offset = current_offset;
+ next:
+ 		vector += 8;
+-		if (vector >= FIRST_SYSTEM_VECTOR) {
++		if (vector >= first_system_vector) {
+ 			/* If we run out of vectors on large boxen, must share them. */
+ 			offset = (offset + 1) % 8;
+ 			vector = FIRST_DEVICE_VECTOR + offset;
+Index: ingo/include/asm-x86/hw_irq_64.h
+===================================================================
+--- ingo.orig/include/asm-x86/hw_irq_64.h	2008-04-04 14:59:42.000000000 -0500
++++ ingo/include/asm-x86/hw_irq_64.h	2008-04-04 15:58:05.000000000 -0500
+@@ -85,13 +85,16 @@
+  */
+ #define LOCAL_TIMER_VECTOR	0xef
+ 
++#define XPC_ACTIVATE		0xee
++#define XPC_NOTIFY		0xed
++
++
+ /*
+  * First APIC vector available to drivers: (vectors 0x30-0xee)
+  * we start at 0x41 to spread out vectors evenly between priority
+  * levels. (0x80 is the syscall vector)
+  */
+ #define FIRST_DEVICE_VECTOR	(IRQ15_VECTOR + 2)
+-#define FIRST_SYSTEM_VECTOR	0xef   /* duplicated in irq.h */
+ 
+ 
+ #ifndef __ASSEMBLY__
+@@ -115,6 +118,8 @@
+ void threshold_interrupt(void);
+ void i8254_timer_resume(void);
+ 
++extern int first_system_vector;
++
+ typedef int vector_irq_t[NR_VECTORS];
+ DECLARE_PER_CPU(vector_irq_t, vector_irq);
+ extern void __setup_vector_irq(int cpu);
+Index: ingo/include/asm-x86/irq_64.h
+===================================================================
+--- ingo.orig/include/asm-x86/irq_64.h	2008-04-04 14:59:42.000000000 -0500
++++ ingo/include/asm-x86/irq_64.h	2008-04-04 15:58:52.000000000 -0500
+@@ -31,7 +31,7 @@
+  */
+ #define NR_VECTORS 256
+ 
+-#define FIRST_SYSTEM_VECTOR	0xef   /* duplicated in hw_irq.h */
++extern int first_system_vector;
+ 
+ #if NR_CPUS < MAX_IO_APICS
+ #define NR_IRQS (NR_VECTORS + (32 * NR_CPUS))
+
