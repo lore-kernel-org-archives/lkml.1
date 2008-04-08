@@ -1,29 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758201AbYDHSv5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758580AbYDHS4V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758201AbYDHSv5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Apr 2008 14:51:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756288AbYDHSvt
+	id S1758580AbYDHS4V (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Apr 2008 14:56:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757221AbYDHS4J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Apr 2008 14:51:49 -0400
-Received: from perninha.conectiva.com.br ([200.140.247.100]:46537 "EHLO
-	perninha.conectiva.com.br" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753283AbYDHSvt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Apr 2008 14:51:49 -0400
-Date: Tue, 8 Apr 2008 15:51:42 -0300
-From: "Luiz Fernando N. Capitulino" <lcapitulino@mandriva.com.br>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Christoph Lameter <clameter@sgi.com>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [rfc] SLQB: YASA
-Message-ID: <20080408155142.4b421497@mandriva.com.br>
-In-Reply-To: <20080408115717.GB22687@wotan.suse.de>
-References: <20080403072550.GC25932@wotan.suse.de>
-	<Pine.LNX.4.64.0804031200530.7265@schroedinger.engr.sgi.com>
-	<20080408115717.GB22687@wotan.suse.de>
-Organization: Mandriva
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; i586-mandriva-linux-gnu)
+	Tue, 8 Apr 2008 14:56:09 -0400
+Received: from mail.vyatta.com ([216.93.170.194]:39899 "EHLO mail.vyatta.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757218AbYDHS4I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Apr 2008 14:56:08 -0400
+X-Spam-Flag: NO
+X-Spam-Score: -2.178
+Date: Tue, 8 Apr 2008 13:56:01 -0500
+From: Stephen Hemminger <stephen.hemminger@vyatta.com>
+To: Inaky Perez-Gonzalez <inaky@linux.intel.com>
+Cc: wimax@linuxwimax.org, linux-wireless@vger.kernel.org,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [ANN] WiMAX stack and drivers for Intel WiMAX Link 5050
+Message-ID: <20080408135601.5dad3566@speedy>
+In-Reply-To: <200804011107.38563.inaky@linux.intel.com>
+References: <200804011107.38563.inaky@linux.intel.com>
+Organization: Vyatta
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -31,48 +29,55 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Em Tue, 8 Apr 2008 13:57:17 +0200
-Nick Piggin <npiggin@suse.de> escreveu:
+This is the short (not in depth) code review of kernel component of Wimax.
 
-| Here is my more working version of SLQB. 
-| 
-| Was experimenting with a couple of different ways to do remote freeing,
-| but it is really hard to tune properly without having "real" workloads,
-| due to cache effects.
-| 
-| Anyway, same comments apply. Patch is against mainline.
+Generic stack: drivers/net/wimax
 
- I get the following error when compiling without CONFIG_SMP
+1. Why spread those over 8 files of 100 lines each. Better to have a single
+   file with 1000 lines and get reduced namespace and better compiler inlining
+   etc.
 
-"""
-In file included from include/linux/rcupdate.h:52,
-                 from include/linux/slqb_def.h:15,
-                 from include/linux/slab.h:121,
-                 from include/asm/pgtable_32.h:22,
-                 from include/asm/pgtable.h:241,
-                 from include/linux/mm.h:40,
-                 from arch/x86/kernel/pci-dma_32.c:12:
-include/linux/percpu.h: In function '__percpu_alloc_mask':
-include/linux/percpu.h:106: error: implicit declaration of function 'kzalloc'
-include/linux/percpu.h:106: warning: return makes pointer from integer without a cast
-In file included from include/asm/pgtable_32.h:22,
-                 from include/asm/pgtable.h:241,
-                 from include/linux/mm.h:40,
-                 from arch/x86/kernel/pci-dma_32.c:12:
-include/linux/slab.h: At top level:
-include/linux/slab.h:272: error: conflicting types for 'kzalloc'
-include/linux/percpu.h:106: error: previous implicit declaration of 'kzalloc' was here
-ICECC[27645] 15:49:30: Compiled on XXXXXXXX
-make[1]: *** [arch/x86/kernel/pci-dma_32.o] Error 1
-make: *** [arch/x86/kernel] Error 2
+2. The debug infrastructure is a mess of ugly macros that are unlikely
+   to accepted in the current form, rework or delete it.
 
-"""
+3. Use of sysfs for family and version ok, but why bother?
+   Please don't build sysfs version checks into the API.
 
- Could not figure out what the problem is.
+4. __wimax_flush_queue: is a nop, just remove
 
- Regarding performance tests, I saw that Christoph has some
-interesting test modules in his git repository. Do you think it's
-worth to run them?
+5. Stack is using generic netlink instead use newer netlink interface
+   for management of devices: newlink/dellink instead see macvlan
 
--- 
-Luiz Fernando N. Capitulino
+i2400m hardware driver
+
+1. sysfs
+  the inflight file is being used in a /proc style. Either change to
+  one value per file or move to /proc/net/i2400m/ethX or better yet use debugfs
+  /debugfs/i2400m/ethX/xxx
+
+2. Use internal dev->stats for network stats (may not need get_stats at all)
+
+3. No ioctl stub if not implemented
+
+4. Use netdev_alloc_skb rather than alloc_skb for new code.
+
+5. Use skb_copy_to_linear_data in i2400m_net_rx
+
+6. Since hardware has to copy every received frame. Don't bother with
+   checksum offload, the copy does the checksum for you and is safer.
+
+7. Fine grain file organization in i2400m is bogus, put in one file and use
+   proper name scope. Having 100 line files is unneeded
+
+8. Fix the FIXME's?
+
+9. Anyway to reuse existing usbnet infrastructure?
+
+10. Since device is USB, Rx is in workqueue, so no need to go through
+    netif_rx() softirq, should be able to go through netif_receive_skb
+
+11. net_device and private data are zero on allocation, so no need
+   for memset.
+
+12. Since this is new code elminate all legacy ifdef's
+
