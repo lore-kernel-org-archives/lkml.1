@@ -1,62 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754925AbYDHI45@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754925AbYDHI66@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754925AbYDHI45 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Apr 2008 04:56:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751781AbYDHI4u
+	id S1754925AbYDHI66 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Apr 2008 04:58:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752083AbYDHI6u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Apr 2008 04:56:50 -0400
-Received: from E23SMTP05.au.ibm.com ([202.81.18.174]:56580 "EHLO
-	e23smtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751912AbYDHI4t (ORCPT
+	Tue, 8 Apr 2008 04:58:50 -0400
+Received: from eazy.amigager.de ([213.239.192.238]:37340 "EHLO
+	eazy.amigager.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751290AbYDHI6t (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Apr 2008 04:56:49 -0400
-Date: Tue, 8 Apr 2008 14:26:37 +0530
-From: Gautham R Shenoy <ego@in.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: paulmck@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
-       mathieu.desnoyers@polymtl.ca, mingo@elte.hu, hch@infradead.org,
-       mmlnx@us.ibm.com, dipankar@in.ibm.com, dsmith@redhat.com,
-       rostedt@goodmis.org, adrian.bunk@movial.fi, a.p.zijlstra@chello.nl,
-       niv@us.ibm.com, dvhltc@us.ibm.com, rusty@au1.ibm.com,
-       jkenisto@linux.vnet.ibm.com, oleg@tv-sign.ru
-Subject: Re: [PATCH,RFC] Add call_rcu_sched()
-Message-ID: <20080408085637.GA30496@in.ibm.com>
-Reply-To: ego@in.ibm.com
-References: <20080321143615.GA936@linux.vnet.ibm.com> <20080321224026.GA10169@linux.vnet.ibm.com> <20080406213719.GA10533@linux.vnet.ibm.com> <20080408003449.873574d7.akpm@linux-foundation.org> <20080408081048.GA15001@in.ibm.com> <20080408013936.b84ae895.akpm@linux-foundation.org>
+	Tue, 8 Apr 2008 04:58:49 -0400
+Date: Tue, 8 Apr 2008 10:58:46 +0200
+From: Tino Keitel <tino.keitel@gmx.de>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Romano Giannetti <romanol@upcomillas.es>,
+       Soeren Sonnenburg <kernel@nn7.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       bugme-daemon@bugzilla.kernel.org, Jesse Barnes <jesse.barnes@intel.com>,
+       suspend-devel@lists.sourceforge.net
+Subject: Re: 2.6.25-rc6 regression - hang on resume [Bug 10319]
+Message-ID: <20080408085846.GA15403@dose.home.local>
+Mail-Followup-To: "Rafael J. Wysocki" <rjw@sisk.pl>,
+	Romano Giannetti <romanol@upcomillas.es>,
+	Soeren Sonnenburg <kernel@nn7.de>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	bugme-daemon@bugzilla.kernel.org,
+	Jesse Barnes <jesse.barnes@intel.com>,
+	suspend-devel@lists.sourceforge.net
+References: <pdj7pZVURbL.A.42H.kDW9HB@albercik> <1207290689.4511.1.camel@localhost> <1207552602.26185.13.camel@pern> <200804071110.39933.rjw@sisk.pl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080408013936.b84ae895.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+In-Reply-To: <200804071110.39933.rjw@sisk.pl>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 08, 2008 at 01:39:36AM -0700, Andrew Morton wrote:
-> On Tue, 8 Apr 2008 13:40:48 +0530 Gautham R Shenoy <ego@in.ibm.com> wrote:
+On Mon, Apr 07, 2008 at 11:10:39 +0200, Rafael J. Wysocki wrote:
+> On Monday, 7 of April 2008, Romano Giannetti wrote:
+> > 
+> > On Fri, 2008-04-04 at 08:31 +0200, Soeren Sonnenburg wrote:
+> > > On Fri, 2008-04-04 at 01:22 +0200, Rafael J. Wysocki wrote:
+> >>
+> > > Yes. The machine resumes and display stays black using s2ram -f -p
+> > > (blindly typing reboot etc on keyboard does what is expected). However
+> > > display comes back on 2.6.24.
+> > 
+> > I can add that on my laptop (toshiba U305, Intel 945GM chipset), s2ram
+> > -f -p -m which used to work ok, in X and console, in 2.6.24 stopped to
+> > work (I tested -rc8, but I think it's like that since a long time).
+> > Machine resumes but the screen stays off after that, although machine is
+> > working (exactly as Soeren said).
 > 
-> > > > +			rdp = RCU_DATA_CPU(cpu);
-> >                                                                <-- here ------\
-> > > > +			spin_lock_irqsave(&rdp->lock, flags);                   |
-> > > > +                                                                         |
-> > > > +			/*                                                      |
-> > > > +			 * We are running on this CPU irq-disabled, so no       |
-> > > > +			 * CPU can go offline until we re-enable irqs.          |
-> > >                                                                             |
-> > > but, but, but.  The cpu at `cpu' could have gone offline just before we     |
-> > > disabled local interrupts.                                                  |
-> >                                                                               |
-> > In that case the CPU_DEAD callback should have migrated the rcu-lists to      |
-> > a cpu which is online.                                                        |
->                                                                                 |
-> But local variable rdp might be pointing at the now-offlined CPU's data? -------/
+> Your graphics adapter is different from the Soeren's one and the fact that
+> "echo mem > /sys/power/state" works for you now is probably a result of the
+> recent changes in the i915 driver that is now supposed to handle suspend
+> and resume.
 
-Right. But then rdp wouldn't contain anything useful at this point.
-So, we may only end up taking the rdp->lock, observe that there's nothing to do,
-and move on.
+I tried to use vbetool to get my text console back with 2.6.24 after a
+suspend to RAM. As a result, I got a text working console, but a
+crashing X server sometimes after resume, and the only way to get X
+back was to reboot.
 
-Is there something else that I am missing?
+With 2.6.25-rc, the text console is fine after resume, due to the
+recent changes to the Intel i915 DRM driver. Maybe those people who
+used to use vbetool prior to 2.6.25 should check if this is still
+needed.
 
--- 
-Thanks and Regards
-gautham
+Regards,
+Tino
