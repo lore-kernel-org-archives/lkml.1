@@ -1,64 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753601AbYDHJrZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754351AbYDHJrr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753601AbYDHJrZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Apr 2008 05:47:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751734AbYDHJrR
+	id S1754351AbYDHJrr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Apr 2008 05:47:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751881AbYDHJri
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Apr 2008 05:47:17 -0400
-Received: from wr-out-0506.google.com ([64.233.184.232]:44679 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751683AbYDHJrQ (ORCPT
+	Tue, 8 Apr 2008 05:47:38 -0400
+Received: from py-out-1112.google.com ([64.233.166.183]:19253 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751683AbYDHJrh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Apr 2008 05:47:16 -0400
+	Tue, 8 Apr 2008 05:47:37 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=txwoZcVj4OsbOH6D6AVLGcmG/zvdr0819s2r/9V+Dt7HaNvck+R/uccjRX2phOQa2e5Luc+/wcgD5d8VrhPXm3Q/w9dncA0k+A+ZfZhHcPGb65lCPfsIJJfWH/SwO0cXcPI4gWdoGErlfGdrMMUpdsU5pncTZshzIw07tCdea6s=
-Message-ID: <f17812d70804080247k584ecacbvef5ee883f432aa89@mail.gmail.com>
-Date: Tue, 8 Apr 2008 17:47:14 +0800
-From: "eric miao" <eric.y.miao@gmail.com>
-To: "Russell King - ARM Linux" <linux@arm.linux.org.uk>
-Subject: Re: [PATCH 4/4] pxafb: preliminary smart panel interface support
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       "linux-arm-kernel email list" 
-	<linux-arm-kernel@lists.arm.linux.org.uk>,
-       linux-fbdev-devel@lists.sourceforge.net,
-       lkml <linux-kernel@vger.kernel.org>, "Daniel Mack" <daniel@caiaq.de>
-In-Reply-To: <20080408091635.GA23165@flint.arm.linux.org.uk>
+        b=TU51zV49SAiydOILRtZykVgyAd+WIKzOF0IBv97iH+JeLf5OFi6JfGQxuBQa6OVhl4S8t07RGH+iVMoqcqH9/ivxWRE/KheHSBUUuhu6V4nxFGB2TJ/Kpla31TeBy6i4UxWidHzwNgEtP/a//+5P/hkPzVxG9dkc/KCrbhlu5Fw=
+Message-ID: <bc64b4640804080247s82ba84chd740c08b2fbb9b1a@mail.gmail.com>
+Date: Tue, 8 Apr 2008 13:47:35 +0400
+From: Dmitry <dbaryshkov@gmail.com>
+To: "Russell King" <rmk+lkml@arm.linux.org.uk>
+Subject: Re: [PATCH 5/6] Clocklib: Use correct clock for IrDA on pxa
+Cc: "Andrew Morton" <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       haavard.skinnemoen@atmel.com, lethal@linux-sh.org,
+       philipp.zabel@gmail.com, pavel@ucw.cz, tony@atomide.com, paul@pwsan.com
+In-Reply-To: <20080407230434.GA525@flint.arm.linux.org.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <f17812d70804072107k77c2642ah23c8f2ce9535159f@mail.gmail.com>
-	 <20080408012359.d0a7d0c8.akpm@linux-foundation.org>
-	 <f17812d70804080134kaeefa59tf4dc583afcc384e7@mail.gmail.com>
-	 <20080408091635.GA23165@flint.arm.linux.org.uk>
+References: <20080403132142.GA26882@doriath.ww600.siemens.net>
+	 <20080403132402.GA27008@doriath.ww600.siemens.net>
+	 <20080407160029.f1f9ce4f.akpm@linux-foundation.org>
+	 <20080407230434.GA525@flint.arm.linux.org.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 8, 2008 at 5:16 PM, Russell King - ARM Linux
-<linux@arm.linux.org.uk> wrote:
-> On Tue, Apr 08, 2008 at 04:34:05PM +0800, eric miao wrote:
->
-> > >From 3b14d02739b98ed8be3904914dd8b9d4a39fff25 Mon Sep 17 00:00:00 2001
->  > From: Eric Miao <eric.miao@marvell.com>
->  > Date: Mon, 7 Apr 2008 15:57:56 +0800
->  > Subject: [PATCH] pxafb: preliminary smart panel interface support
->  >
->  > Signed-off-by: Daniel Mack <daniel@caiaq.de>
->  > Acked-by: Eric Miao <eric.miao@marvell.com>
->  > ---
->  > Andrew: please see if this modified version applies: FB_PXA_SMARTPANEL
->  > defaults to "n" and removed the cast to void *, thanks    - eric
->
->  No need to add an explicit "default n" - defaulting to 'n' is the
->  default unless otherwise set.
->
+Hi,
 
-Yes, indeed. I'd like to address this issue in the next patch to abstract
-the output interface.
+2008/4/8, Russell King <rmk+lkml@arm.linux.org.uk>:
+> On Mon, Apr 07, 2008 at 04:00:29PM -0700, Andrew Morton wrote:
+>  > On Thu, 3 Apr 2008 17:24:02 +0400
+>  > Dmitry Baryshkov <dbaryshkov@gmail.com> wrote:
+>  >
+>  > > Signed-off-by: Dmitry Baryshkov <dbaryshkov@gmail.com>
+>  > > ---
+>  > >  drivers/net/irda/pxaficp_ir.c |    2 +-
+>  > >  1 files changed, 1 insertions(+), 1 deletions(-)
+>  > >
+>  > > diff --git a/drivers/net/irda/pxaficp_ir.c b/drivers/net/irda/pxaficp_ir.c
+>  > > index 8c09344..36d2ec0 100644
+>  > > --- a/drivers/net/irda/pxaficp_ir.c
+>  > > +++ b/drivers/net/irda/pxaficp_ir.c
+>  > > @@ -814,7 +814,7 @@ static int pxa_irda_probe(struct platform_device *pdev)
+>  > >     si->dev = &pdev->dev;
+>  > >     si->pdata = pdev->dev.platform_data;
+>  > >
+>  > > -   si->sir_clk = clk_get(&pdev->dev, "UARTCLK");
+>  > > +   si->sir_clk = clk_get(&pdev->dev, "SIRCLK");
+>  > >     si->fir_clk = clk_get(&pdev->dev, "FICPCLK");
+>  > >     if (IS_ERR(si->sir_clk) || IS_ERR(si->fir_clk)) {
+>  > >             err = PTR_ERR(IS_ERR(si->sir_clk) ? si->sir_clk : si->fir_clk);
+>  >
+>  > When fixing a bug, please describe what the bug is, and how the patch fixes
+>  > it.
+>  >
+>  > A patch needs to be very very obvious to be able to get away with no
+>  > changelog, and this one is not very very obvious.
+>
+>
+> It's not a bug fix - it's a stupidity of the clock lib that the API
+>  doesn't really require.
+>
+>  I've not made up my mind what to do with this stuff, but if it requires
+>  drivers to work around its short comings, then I'm not in favour of it.
+>
+>  (We have the above code working as is.)
+
+Yes, it works currently. But there are a few problems: we declare
+STUART's UARTCLK with dev=NULL (all other UARTCLKs are declared with
+proper devices).
+Therefore,  I consider it as a hack and would like to remove it. As
+the clocklib allows
+to register multiple children clocks with different names, I'd propose
+to separate UARTCLK
+and SIRCLK functions of STUART clock. The UARTCLK will be used (as
+usual) by the pxa uart driver. And IrDA will use SIRCLK.
 
 -- 
-Cheers
-- eric
+With best wishes
+Dmitry
