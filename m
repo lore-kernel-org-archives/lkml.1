@@ -1,98 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756756AbYDHRya@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756957AbYDHR7R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756756AbYDHRya (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Apr 2008 13:54:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752003AbYDHRyW
+	id S1756957AbYDHR7R (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Apr 2008 13:59:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752439AbYDHR7H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Apr 2008 13:54:22 -0400
-Received: from wx-out-0506.google.com ([66.249.82.238]:13160 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751968AbYDHRyW (ORCPT
+	Tue, 8 Apr 2008 13:59:07 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:53375 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752003AbYDHR7G (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Apr 2008 13:54:22 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=kOVhreOzh5oSBbmEDdVWOlHK+/6c1cQpPLVzDTQhF4x/mvENywZkukBTIAviFvFHdKVXsGJswFSnxhHPpNB8/gszGyz5nXM/3jIIKQwIwaKeWBQJ7ZZdVlPnmRXW2AjPPZaM4iiqXFz5XeI/S8j4vzz0RKv+TSlVLmi52B/Z1dE=
-Message-ID: <86802c440804081054q46e6d872u4cfe61bd2836c26@mail.gmail.com>
-Date: Tue, 8 Apr 2008 10:54:15 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [PATCH 1/2] boot: increase stack size for kernel boot loader decompressor
-Cc: "Alexander van Heukelum" <heukelum@mailshack.com>,
-       "Mike Travis" <travis@sgi.com>, "Thomas Gleixner" <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, heukelum@fastmail.fm
-In-Reply-To: <20080408082354.GA13940@elte.hu>
+	Tue, 8 Apr 2008 13:59:06 -0400
+Date: Tue, 8 Apr 2008 19:59:02 +0200 (CEST)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: Andy Whitcroft <apw@shadowen.org>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/1] checkpatch: nested structs
+In-Reply-To: <20080408173548.GG17915@shadowen.org>
+Message-ID: <alpine.LNX.1.10.0804081957000.2229@fbirervta.pbzchgretzou.qr>
+References: <282cb105d4016d63a4c24442e244d157ef3aebe8.1207666528.git.jengelh@computergmbh.de> <20080408173548.GG17915@shadowen.org>
+User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080405013014.478571000@polaris-admin.engr.sgi.com>
-	 <20080405013014.693571000@polaris-admin.engr.sgi.com>
-	 <20080405134626.GA15894@mailshack.com> <47FA6478.1070301@sgi.com>
-	 <20080407214434.GA5296@mailshack.com> <20080408082354.GA13940@elte.hu>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 8, 2008 at 1:23 AM, Ingo Molnar <mingo@elte.hu> wrote:
+
+On Tuesday 2008-04-08 19:35, Andy Whitcroft wrote:
+>>  # on the line
+>> -		if ($line =~ /}(?!(?:,|;|\)))\S/) {
+>> +		if ($line =~ /}+(?!(?:,|;|\)))\S/) {
+>>  			ERROR("space required after that close brace '}'\n" . $herecurr);
+>>  		}
 >
->  * Alexander van Heukelum <heukelum@mailshack.com> wrote:
->
->  > I did see that the malloc space that the inflate code is using is
->  > taken from _after_ the end of the bss. I don't see how this is
->  > protected from being used/overwritten. Changing the stack size changes
->  > the memory layout a bit... maybe you were so unlucky to create a
->  > vmlinux image that was just barely smaller than some threshold and
->  > increasing the stack size made the decompression/relocation area be
->  > located somewhere else?
->  >
->  > Test patch follows.
->
->  that's a really interesting theory.
->
->  FWIIW, i've been booting allyesconfig bzImages for a long time (with
->  only minimal amount of drivers disabled - mostly old ISA ones that
->  assume the presence of the real hardware), and they boot and work fine
->  on both 32-bit and 64-bit typical whitebox PCs. That means huge bzImages
->  that decompresses into a ~41 MB kernel image. I'd expect that to be a
->  rather severe test of the decompressor.
+>If my eyes are not lying then you have added is a + after the first },
+>as this is an unanchored match I would expect that to match in exactly
+>the same places.  Hmm, well I guess that it would allow two or more close
+>braces to abutt.  Can you give me an example of somethign which would
+>require this?
 
-i don't that Alexander's patch is needed.
++#define E(a, b, c, d) \
++       {.ip6 = { \
++               __constant_htonl(a), __constant_htonl(b), \
++               __constant_htonl(c), __constant_htonl(d), \
++       }}
 
-also because Alex move heap before _end,
-we may need add some extra for buffer offset
-
-        /* Replace the compressed data size with the uncompressed size */
-        subl    input_len(%ebp), %ebx
-        movl    output_len(%ebp), %eax
-        addl    %eax, %ebx
-        /* Add 8 bytes for every 32K input block */
-        shrl    $12, %eax
-        addl    %eax, %ebx
-        /* Add 32K + 18 bytes of extra slack and align on a 4K boundary */
-        addl    $(32768 + 18 + 4095), %ebx
-        andl    $~4095, %ebx =============================> need add
-heap size too.
-....
-
-
-
-        /* Replace the compressed data size with the uncompressed size */
-        movl    input_len(%rip), %eax
-        subq    %rax, %rbx
-        movl    output_len(%rip), %eax
-        addq    %rax, %rbx
-        /* Add 8 bytes for every 32K input block */
-        shrq    $12, %rax
-        addq    %rax, %rbx
-        /* Add 32K + 18 bytes of extra slack and align on a 4K boundary */
-        addq    $(32768 + 18 + 4095), %rbx
-=============================> need add heap size too.
-        andq    $~4095, %rbx
-
-do we need to move pgtable before _end?
-
-YH
+static const struct union nf_inet_addr some_address = E(20010db8,0,13,17);
