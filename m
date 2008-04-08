@@ -1,58 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757533AbYDHP7p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757843AbYDHQAR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757533AbYDHP7p (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Apr 2008 11:59:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754668AbYDHP5K
+	id S1757843AbYDHQAR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Apr 2008 12:00:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754470AbYDHP74
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Apr 2008 11:57:10 -0400
-Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:42932
-	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754628AbYDHP5I (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Apr 2008 11:57:08 -0400
-Content-Type: text/plain; charset="us-ascii"
+	Tue, 8 Apr 2008 11:59:56 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:48721 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754668AbYDHP7y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Apr 2008 11:59:54 -0400
+Message-ID: <47FB9677.30109@garzik.org>
+Date: Tue, 08 Apr 2008 11:59:51 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Subject: [PATCH 9 of 9] This patch adds a lock ordering rule to avoid a
-	potential deadlock when
-X-Mercurial-Node: bd55023b22769ecb14b26c2347947f7d6d63bcea
-Message-Id: <bd55023b22769ecb14b2.1207669452@duo.random>
-In-Reply-To: <patchbomb.1207669443@duo.random>
-Date: Tue, 08 Apr 2008 17:44:12 +0200
-From: Andrea Arcangeli <andrea@qumranet.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: akpm@linux-foundation.org, Nick Piggin <npiggin@suse.de>,
-       Steve Wise <swise@opengridcomputing.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-mm@kvack.org,
-       Kanoj Sarcar <kanojsarcar@yahoo.com>, Roland Dreier <rdreier@cisco.com>,
-       Jack Steiner <steiner@sgi.com>, linux-kernel@vger.kernel.org,
-       Avi Kivity <avi@qumranet.com>, kvm-devel@lists.sourceforge.net,
-       Robin Holt <holt@sgi.com>, general@lists.openfabrics.org,
-       Hugh Dickins <hugh@veritas.com>
+To: =?ISO-8859-1?Q?=22J=2EA=2E_Magall=F3n=22?= <jamagallon@ono.com>
+CC: "Linux-Kernel, " <linux-kernel@vger.kernel.org>,
+       Linux IDE mailing list <linux-ide@vger.kernel.org>
+Subject: Re: DRDY errors again
+References: <20080408171311.69441c8b@werewolf>
+In-Reply-To: <20080408171311.69441c8b@werewolf>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-# HG changeset patch
-# User Andrea Arcangeli <andrea@qumranet.com>
-# Date 1207666972 -7200
-# Node ID bd55023b22769ecb14b26c2347947f7d6d63bcea
-# Parent  3b14e26a4e0491f00bb989be04d8b7e0755ed2d7
-This patch adds a lock ordering rule to avoid a potential deadlock when
-multiple mmap_sems need to be locked.
+J.A. Magallón wrote:
+> scsi4 : ata_piix
+> scsi5 : ata_piix
+> ata3: SATA max UDMA/133 cmd 0xc000 ctl 0xc400 bmdma 0xd000 irq 18
+> ata4: SATA max UDMA/133 cmd 0xc800 ctl 0xcc00 bmdma 0xd008 irq 18
 
-Signed-off-by: Dean Nelson <dcn@sgi.com>
+> ata4.00: ATA-8: ST3500820AS, SD25, max UDMA/133
+> ata4.00: 976773168 sectors, multi 16: LBA48 NCQ (depth 0/32)
+> ata4.00: configured for UDMA/133
 
-diff --git a/mm/filemap.c b/mm/filemap.c
---- a/mm/filemap.c
-+++ b/mm/filemap.c
-@@ -79,6 +79,9 @@
-  *
-  *  ->i_mutex			(generic_file_buffered_write)
-  *    ->mmap_sem		(fault_in_pages_readable->do_page_fault)
-+ *
-+ *    When taking multiple mmap_sems, one should lock the lowest-addressed
-+ *    one first proceeding on up to the highest-addressed one.
-  *
-  *  ->i_mutex
-  *    ->i_alloc_sem             (various)
+> ata4.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
+> ata4.00: cmd b0/d8:00:00:4f:c2/00:00:00:00:00/00 tag 0
+>          res 40/00:01:00:4f:c2/00:00:00:00:00/00 Emask 0x4 (timeout)
+> ata4.00: status: { DRDY }
+
+Can you bisect to see when this problem starts?  I'm pretty sure it's 
+software, either interrupt-related or the libata driver itself.
+
+See http://ata.wiki.kernel.org/index.php/Libata_error_messages for a 
+full explanation of that error message.
+
+Most notable:  "DRDY" == device ready == device says everything is OK, 
+from it's perspective.  "timeout" usually means an interrupt wasn't 
+delivered from your ATA controller, when we were expecting one.
+
+	Jeff
+
+
