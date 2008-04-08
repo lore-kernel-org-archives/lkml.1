@@ -1,75 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756866AbYDHTpQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757324AbYDHTqS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756866AbYDHTpQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Apr 2008 15:45:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751970AbYDHTpB
+	id S1757324AbYDHTqS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Apr 2008 15:46:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753644AbYDHTqA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Apr 2008 15:45:01 -0400
-Received: from senator.holtmann.net ([87.106.208.187]:51997 "EHLO
-	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751772AbYDHTpA (ORCPT
+	Tue, 8 Apr 2008 15:46:00 -0400
+Received: from mga09.intel.com ([134.134.136.24]:56219 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752947AbYDHTp7 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Apr 2008 15:45:00 -0400
-Cc: Inaky Perez-Gonzalez <inaky@linux.intel.com>, wimax@linuxwimax.org,
-       linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Message-Id: <FA91A8B7-CD77-439F-94EA-AC2742583E89@holtmann.org>
-From: Marcel Holtmann <marcel@holtmann.org>
-To: Stephen Hemminger <stephen.hemminger@vyatta.com>
-In-Reply-To: <20080408135601.5dad3566@speedy>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Content-Transfer-Encoding: 7bit
-Mime-Version: 1.0 (Apple Message framework v919.2)
-Subject: Re: [ANN] WiMAX stack and drivers for Intel WiMAX Link 5050
-Date: Tue, 8 Apr 2008 21:44:55 +0200
-References: <200804011107.38563.inaky@linux.intel.com> <20080408135601.5dad3566@speedy>
-X-Mailer: Apple Mail (2.919.2)
+	Tue, 8 Apr 2008 15:45:59 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,625,1199692800"; 
+   d="scan'208";a="313848154"
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Subject: RE: [regression] e1000e broke e1000 (was: Re: [ANNOUNCE] e1000 toe1000e migration of PCI Express devices)
+Date: Tue, 8 Apr 2008 12:43:00 -0700
+Message-ID: <36D9DB17C6DE9E40B059440DB8D95F5204E2A55C@orsmsx418.amr.corp.intel.com>
+In-Reply-To: <20080408183921.GA20803@elte.hu>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [regression] e1000e broke e1000 (was: Re: [ANNOUNCE] e1000 toe1000e migration of PCI Express devices)
+Thread-Index: AciZqK8ddXQSO8DBQcOLuBRTBuY5fQABCkiQ
+References: <47F69965.7030303@intel.com> <20080408083606.GA20863@elte.hu> <47FB9ABB.9080403@intel.com> <20080408183921.GA20803@elte.hu>
+From: "Brandeburg, Jesse" <jesse.brandeburg@intel.com>
+To: "Ingo Molnar" <mingo@elte.hu>,
+       "Kok, Auke-jan H" <auke-jan.h.kok@intel.com>
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "NetDev" <netdev@vger.kernel.org>,
+       "e1000-list" <e1000-devel@lists.sourceforge.net>,
+       "linux-pci maillist" <linux-pci@atrey.karlin.mff.cuni.cz>,
+       "Jeff Garzik" <jeff@garzik.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "David S. Miller" <davem@davemloft.net>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Ronciak, John" <john.ronciak@intel.com>,
+       "Allan, Bruce W" <bruce.w.allan@intel.com>, "Greg KH" <greg@kroah.com>,
+       "Arjan van de Ven" <arjan@linux.intel.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+X-OriginalArrivalTime: 08 Apr 2008 19:43:01.0039 (UTC) FILETIME=[C0F143F0:01C899B0]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Stephen,
+Auke is out sick, so I'm responding...
 
-> This is the short (not in depth) code review of kernel component of  
-> Wimax.
+Ingo Molnar wrote:
+> this is a simple bzImage kernel, no modules at all. Here's the full
+> regression report:
 
-many thanks for having a look at the source code.
+then why are you compiling e1000e as a module?  no "=y" in your kernel
+means no support, and this kernel .config has e1000e supporting your
+hardware.
 
-> Generic stack: drivers/net/wimax
+your expectation is that e1000 once loaded on this device in a previous
+kernel (2.6.24) so it should continue to work, right?  I see your point
+but we are trying to make general improvements to both drivers, and the
+best way forward was a split, in order to make the user experience
+better by eliminating chances for regressions on older hardware.  
+ 
+> v2.6.25-rc8 regresses relative to v2.6.24, with the following config,
+> which config works fine in v2.6.24:
 
-<snip>
+> the eth0 interface is not detected at all:
+>    http://redhat.com/~mingo/misc/dmesg.e1000.bad
 
-> 5. Stack is using generic netlink instead use newer netlink interface
->   for management of devices: newlink/dellink instead see macvlan
+if you're running a no module kernel, you'll need to set CONFIG_E1000E=y
+for your device to be detected.  
 
-I might have missed something in the latest code, but how it is using  
-generic netlink for device management. The current code is using  
-generic netlink for communication with the user space component. This  
-includes task like scanning and association. The current kernel/user  
-space API might need improvement, but I am not getting your point  
-here. Please explain what you mean.
+> so the pure presence of the e1000e module breaks the e1000 driver.
+> That 
+> is a regression and a bug that should be fixed.
 
-> i2400m hardware driver
+The device IDs moved to e1000e, we don't want collisions between drivers
+that support the same IDs, so to avoid those user support issues, we're
+trying to make the process as painless as possible with announcements
+and time.  The distros are already including the e1000e driver in their
+builds and new installs with the new ID layout will automatically select
+the correct driver for their hardware.
 
-<snip>
+Users that take an upgrade to their kernel (with e1000e enabled) might
+benefit if the distro upgrading that kernel included a post upgrade
+script that migrated e1000e devices previously using e1000 in
+modprobe.conf to alias ethX e1000e
 
-> 9. Anyway to reuse existing usbnet infrastructure?
+If there is a more reasonable solution you can come up with I am
+interested.
 
-I don't think so. WiMAX is not emulating an Ethernet device. It is an  
-IP only networking interface.
-
-> 10. Since device is USB, Rx is in workqueue, so no need to go through
->    netif_rx() softirq, should be able to go through netif_receive_skb
-
-You could have SDIO or PCI as a different transport.
-
-> 12. Since this is new code elminate all legacy ifdef's
-
-Don't worry. We will do this before submitting it for mainline  
-inclusion. It is a temporary solutions to help people that wanna test  
-it with older kernels.
-
-Regards
-
-Marcel
-
+Jesse
