@@ -1,109 +1,167 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757766AbYDHSnS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758007AbYDHSn3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757766AbYDHSnS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Apr 2008 14:43:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757245AbYDHSnE
+	id S1758007AbYDHSn3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Apr 2008 14:43:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757250AbYDHSnF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Apr 2008 14:43:04 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:37133 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754965AbYDHSnC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Apr 2008 14:43:02 -0400
-Message-Id: <20080408184301.842103000@polaris-admin.engr.sgi.com>
+	Tue, 8 Apr 2008 14:43:05 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:41282 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1757223AbYDHSnD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Apr 2008 14:43:03 -0400
+Message-Id: <20080408184302.113424000@polaris-admin.engr.sgi.com>
 References: <20080408184301.651388000@polaris-admin.engr.sgi.com>
 User-Agent: quilt/0.46-1
-Date: Tue, 08 Apr 2008 11:43:02 -0700
+Date: Tue, 08 Apr 2008 11:43:04 -0700
 From: Mike Travis <travis@sgi.com>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: Bert Wesarg <bert.wesarg@googlemail.com>, Paul Jackson <pj@sgi.com>,
        Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
        Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: [PATCH 1/3] x86: modify show_shared_cpu_map in intel_cacheinfo v3
-Content-Disposition: inline; filename=mod-intel_cacheinfo
+Subject: [PATCH 3/3] cpumask: add show cpu map functions v2
+Content-Disposition: inline; filename=add-cpu-show-map-funcs
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  * Removed kmalloc (or local array) in show_shared_cpu_map().
+  * Add cpu_sysdev_class functions to display the following maps
+    with cpulist_scnprintf().
 
-  * Added show_shared_cpu_list() function.
+	cpu_online_map
+	cpu_present_map
+	cpu_possible_map
+	cpu_system_map
+
+  * Small change to include/linux/sysdev.h to allow the attribute
+    name and label to be different (to avoid collision with the
+    "attr_online" entry for bringing cpus on- and off-line.)
 
 Based on:
 	git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git
     +   x86/latest          .../x86/linux-2.6-x86.git
     +   sched-devel/latest  .../mingo/linux-2.6-sched-devel.git
 
+# x86
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: H. Peter Anvin <hpa@zytor.com>
+
 Signed-off-by: Mike Travis <travis@sgi.com>
 ---
-v3:
-    Removed cpus_scnprintf() and all references.
 v2:
-    Renamed cpuset_scnprintf() to cpus_scnprintf to avoid confusion with
-    "cpusets", and changed the other names to match.
+    Removed cpus_scnprintf() and all references.
 ---
- arch/x86/kernel/cpu/intel_cacheinfo.c |   30 +++++++++++++++++++++++-------
- 1 file changed, 23 insertions(+), 7 deletions(-)
+ drivers/base/cpu.c     |   50 +++++++++++++++++++++++++++++++++++++++++++++++++
+ include/linux/sysdev.h |   17 ++++++++++------
+ 2 files changed, 61 insertions(+), 6 deletions(-)
 
---- linux-2.6.x86.sched.orig/arch/x86/kernel/cpu/intel_cacheinfo.c
-+++ linux-2.6.x86.sched/arch/x86/kernel/cpu/intel_cacheinfo.c
-@@ -591,20 +591,34 @@ static ssize_t show_size(struct _cpuid4_
- 	return sprintf (buf, "%luK\n", this_leaf->size / 1024);
- }
+--- linux-2.6.x86.sched.orig/drivers/base/cpu.c
++++ linux-2.6.x86.sched/drivers/base/cpu.c
+@@ -103,6 +103,53 @@ static SYSDEV_ATTR(crash_notes, 0400, sh
+ #endif
  
--static ssize_t show_shared_cpu_map(struct _cpuid4_info *this_leaf, char *buf)
-+static ssize_t show_shared_cpu_map_func(struct _cpuid4_info *this_leaf,
-+					int type, char *buf)
- {
-+	ptrdiff_t len = PTR_ALIGN(buf + PAGE_SIZE - 1, PAGE_SIZE) - buf;
- 	int n = 0;
--	int len = cpumask_scnprintf_len(nr_cpu_ids);
--	char *mask_str = kmalloc(len, GFP_KERNEL);
- 
--	if (mask_str) {
--		cpumask_scnprintf(mask_str, len, this_leaf->shared_cpu_map);
--		n = sprintf(buf, "%s\n", mask_str);
--		kfree(mask_str);
-+	if (len > 1) {
-+		cpumask_t *mask = &this_leaf->shared_cpu_map;
-+
-+		n = type?
-+			cpulist_scnprintf(buf, len-2, *mask):
-+			cpumask_scnprintf(buf, len-2, *mask);
-+		buf[n++] = '\n';
-+		buf[n] = '\0';
- 	}
- 	return n;
- }
- 
-+static inline ssize_t show_shared_cpu_map(struct _cpuid4_info *leaf, char *buf)
+ /*
++ * Print cpu online, possible, present, and system maps
++ */
++static ssize_t print_cpus_map(char *buf, cpumask_t *map)
 +{
-+	return show_shared_cpu_map_func(leaf, 0, buf);
++	int n = cpulist_scnprintf(buf, PAGE_SIZE-2, *map);
++
++	buf[n++] = '\n';
++	buf[n] = '\0';
++	return n;
 +}
 +
-+static inline ssize_t show_shared_cpu_list(struct _cpuid4_info *leaf, char *buf)
++#define	print_cpus_func(type) \
++static ssize_t print_cpus_##type(struct sysdev_class *class, char *buf)	\
++{									\
++	return print_cpus_map(buf, &cpu_##type##_map);			\
++}									\
++struct sysdev_class_attribute attr_##type##_map = 			\
++	_SYSDEV_CLASS_ATTR(type, 0444, print_cpus_##type, NULL)
++
++print_cpus_func(online);
++print_cpus_func(possible);
++print_cpus_func(present);
++print_cpus_func(system);
++
++struct sysdev_class_attribute *cpu_state_attr[] = {
++	&attr_online_map,
++	&attr_possible_map,
++	&attr_present_map,
++	&attr_system_map,
++};
++
++static int cpu_states_init(void)
 +{
-+	return show_shared_cpu_map_func(leaf, 1, buf);
++	int i;
++	int err = 0;
++
++	for (i = 0;  i < ARRAY_SIZE(cpu_state_attr); i++) {
++		int ret;
++		ret = sysdev_class_create_file(&cpu_sysdev_class,
++						cpu_state_attr[i]);
++		if (!err)
++			err = ret;
++	}
++	return err;
 +}
 +
- static ssize_t show_type(struct _cpuid4_info *this_leaf, char *buf) {
- 	switch(this_leaf->eax.split.type) {
- 	    case CACHE_TYPE_DATA:
-@@ -640,6 +654,7 @@ define_one_ro(ways_of_associativity);
- define_one_ro(number_of_sets);
- define_one_ro(size);
- define_one_ro(shared_cpu_map);
-+define_one_ro(shared_cpu_list);
++/*
+  * register_cpu - Setup a sysfs device for a CPU.
+  * @cpu - cpu->hotpluggable field set to 1 will generate a control file in
+  *	  sysfs for this CPU.
+@@ -147,6 +194,9 @@ int __init cpu_dev_init(void)
+ 	int err;
  
- static struct attribute * default_attrs[] = {
- 	&type.attr,
-@@ -650,6 +665,7 @@ static struct attribute * default_attrs[
- 	&number_of_sets.attr,
- 	&size.attr,
- 	&shared_cpu_map.attr,
-+	&shared_cpu_list.attr,
- 	NULL
+ 	err = sysdev_class_register(&cpu_sysdev_class);
++	if (!err)
++		err = cpu_states_init();
++
+ #if defined(CONFIG_SCHED_MC) || defined(CONFIG_SCHED_SMT)
+ 	if (!err)
+ 		err = sched_create_sysfs_power_savings_entries(&cpu_sysdev_class);
+--- linux-2.6.x86.sched.orig/include/linux/sysdev.h
++++ linux-2.6.x86.sched/include/linux/sysdev.h
+@@ -45,12 +45,16 @@ struct sysdev_class_attribute {
+ 	ssize_t (*store)(struct sysdev_class *, const char *, size_t);
  };
  
+-#define SYSDEV_CLASS_ATTR(_name,_mode,_show,_store) 		\
+-struct sysdev_class_attribute attr_##_name = { 			\
++#define _SYSDEV_CLASS_ATTR(_name,_mode,_show,_store) 		\
++{					 			\
+ 	.attr = {.name = __stringify(_name), .mode = _mode },	\
+ 	.show	= _show,					\
+ 	.store	= _store,					\
+-};
++}
++
++#define SYSDEV_CLASS_ATTR(_name,_mode,_show,_store) 		\
++	struct sysdev_class_attribute attr_##_name = 		\
++		_SYSDEV_CLASS_ATTR(_name,_mode,_show,_store)
+ 
+ 
+ extern int sysdev_class_register(struct sysdev_class *);
+@@ -100,15 +104,16 @@ struct sysdev_attribute { 
+ };
+ 
+ 
+-#define _SYSDEV_ATTR(_name,_mode,_show,_store)			\
++#define _SYSDEV_ATTR(_name, _mode, _show, _store)		\
+ {								\
+ 	.attr = { .name = __stringify(_name), .mode = _mode },	\
+ 	.show	= _show,					\
+ 	.store	= _store,					\
+ }
+ 
+-#define SYSDEV_ATTR(_name,_mode,_show,_store)		\
+-struct sysdev_attribute attr_##_name = _SYSDEV_ATTR(_name,_mode,_show,_store);
++#define SYSDEV_ATTR(_name, _mode, _show, _store)		\
++	struct sysdev_attribute attr_##_name =			\
++		_SYSDEV_ATTR(_name, _mode, _show, _store);
+ 
+ extern int sysdev_create_file(struct sys_device *, struct sysdev_attribute *);
+ extern void sysdev_remove_file(struct sys_device *, struct sysdev_attribute *);
 
 -- 
