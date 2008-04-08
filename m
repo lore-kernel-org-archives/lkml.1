@@ -1,87 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754491AbYDHJwv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752912AbYDHKAi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754491AbYDHJwv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Apr 2008 05:52:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751756AbYDHJwn
+	id S1752912AbYDHKAi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Apr 2008 06:00:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751732AbYDHKA3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Apr 2008 05:52:43 -0400
-Received: from py-out-1112.google.com ([64.233.166.183]:29724 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751686AbYDHJwm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Apr 2008 05:52:42 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=SpP7M+ExPetwSYHxlevxt0CLkyKMQ2Vf6qnbGyOWEOVyEJSShej3w2s/0yX2iRQSeiwHOjBKKVfWLCmgmsC6JnG32NgyFPp3vS7y4yGflP4SDShLPWX96dU2uCUgXJk6tz3ly2IfHF/Ogw5Kg9Nu0oFkrFwBEBlgGk9x/OpKPio=
-Message-ID: <bc64b4640804080252q6e295eeege7004013406ad3d8@mail.gmail.com>
-Date: Tue, 8 Apr 2008 13:52:41 +0400
-From: Dmitry <dbaryshkov@gmail.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: [PATCH 6/6] Clocklib: use correct name for 3,6MHz clock
-Cc: linux-kernel@vger.kernel.org, haavard.skinnemoen@atmel.com,
-       rmk+lkml@arm.linux.org.uk, lethal@linux-sh.org, philipp.zabel@gmail.com,
-       pavel@ucw.cz, tony@atomide.com, paul@pwsan.com
-In-Reply-To: <20080407160155.5e6d77f0.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 8 Apr 2008 06:00:29 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:52504 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750950AbYDHKA2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Apr 2008 06:00:28 -0400
+Subject: Re: [NFS] Increase size of struct fid raw buffer
+From: Steven Whitehouse <swhiteho@redhat.com>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Neil Brown <neilb@suse.de>,
+       "J. Bruce Fields" <bfields@fieldses.org>, Adrian Bunk <bunk@kernel.org>
+In-Reply-To: <20080408075807.GA8893@infradead.org>
+References: <1207561677.3635.166.camel@quoit>
+	 <alpine.LFD.1.00.0804070850310.11277@woody.linux-foundation.org>
+	 <1207641005.3635.238.camel@quoit>  <20080408075807.GA8893@infradead.org>
+Content-Type: text/plain
+Organization: Red Hat (UK) Ltd (Registered in England and Wales, No.
+	3798903) Registered office: Red Hat UK Ltd, Amberley Place, 107-111 Peascod
+	Street, Windsor, Berkshire, SL4 ITE
+Date: Tue, 08 Apr 2008 10:57:52 +0100
+Message-Id: <1207648672.3635.255.camel@quoit>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080403132142.GA26882@doriath.ww600.siemens.net>
-	 <20080403132411.GA27017@doriath.ww600.siemens.net>
-	 <20080407160155.5e6d77f0.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/4/8, Andrew Morton <akpm@linux-foundation.org>:
-> On Thu, 3 Apr 2008 17:24:11 +0400
->  Dmitry Baryshkov <dbaryshkov@gmail.com> wrote:
->
->  > Signed-off-by: Dmitry Baryshkov <dbaryshkov@gmail.com>
->  > ---
->  >  arch/arm/common/sa1111.c |    2 +-
->  >  1 files changed, 1 insertions(+), 1 deletions(-)
->  >
->  > diff --git a/arch/arm/common/sa1111.c b/arch/arm/common/sa1111.c
->  > index eb06d0b..282a4d9 100644
->  > --- a/arch/arm/common/sa1111.c
->  > +++ b/arch/arm/common/sa1111.c
->  > @@ -627,7 +627,7 @@ __sa1111_probe(struct device *me, struct resource *mem, int irq)
->  >       if (!sachip)
->  >               return -ENOMEM;
->  >
->  > -     sachip->clk = clk_get(me, "GPIO27_CLK");
->  > +     sachip->clk = clk_get(me, "3_6MHz_CLK");
->  >       if (!sachip->clk) {
->  >               ret = PTR_ERR(sachip->clk);
->  >               goto err_free;
->
->
-> Again, there's just not enough information for us (well: me) to be able to
->  evaluate this patch.
->
->  For example, if the current name is "incorrect" then why shouldn't we fix
->  it in 2.6.25?  2.6.24?  etc.
->
->
+Hi,
 
-The name GPIO27_CLK came from sa1100 arm sub-arch. There the 3.6 MHz
-clock was provided via GPIO 27. The PXA clocks code have copied the
-name for the clock (as it's used by sa1111 companion chip that can be
-used with both sa1100 and pxa). However on pxa the 3.6MHz clock is
-provided by different PIN. So the name GPIO27_CLK is misleading and
-incorrect for PXA.
+On Tue, 2008-04-08 at 03:58 -0400, Christoph Hellwig wrote:
+> On Tue, Apr 08, 2008 at 08:50:05AM +0100, Steven Whitehouse wrote:
+> > I'm happy with that solution, although I'd assumed that the reason this
+> > field had a size in the first place was that the NFS people had a plan
+> > to use the structure as an allocation entity in the future. Can an NFS
+> > developer please confirm/deny this?
+> > 
+> > If everybody is happy with the plan, then I'll send a patch to make the
+> > change as you suggest shortly,
+> 
+> I've introduce it and I don't plan to use it as allocation entity.  I
+> don't quite remember why I sized it either, so it's conceptually fine
+> to make it a VLA.  Just do some testing with that variant please.
 
-In my patchset I've changed the name of the clock to correct
-GPIO11_CLK and have made both sa1100 and pxa provide common clock name
-("3_6MHz_CLK").
+Then we get this:
 
-This isn't a matter of userspace interfaces or communication. It's a
-matter of logic and self-correctness.
+In file included from mm/shmem.c:30:
+include/linux/exportfs.h:46: error: flexible array member in union
+make[1]: *** [mm/shmem.o] Error 1
+make: *** [mm] Error 2
 
-If you wish I can put this information in the patch header.
+but we can have a zero length array though, so I'll test that and send a
+patch in due course,
 
--- 
-With best wishes
-Dmitry
+Steve.
+
+
