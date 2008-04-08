@@ -1,64 +1,187 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757048AbYDHQjV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754242AbYDHQ7p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757048AbYDHQjV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Apr 2008 12:39:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753072AbYDHQjJ
+	id S1754242AbYDHQ7p (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Apr 2008 12:59:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752527AbYDHQ7f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Apr 2008 12:39:09 -0400
-Received: from ug-out-1314.google.com ([66.249.92.171]:36666 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752837AbYDHQjG (ORCPT
+	Tue, 8 Apr 2008 12:59:35 -0400
+Received: from viefep20-int.chello.at ([62.179.121.40]:44939 "EHLO
+	viefep20-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752512AbYDHQ7f (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Apr 2008 12:39:06 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:organization:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=oIQaycgZM6457g1oK/On8Fg9wnNC5iI1prACHJW6P4vpPh66TuewIOrhitxUbHRG2NMUSJApVGmQvdI6Lq3CdnsPaVu0iCotR5UjJG/+Gxsvf3tcui1EurQAODHDk0k2WUWttQSp0tb5PvXXtdEAlgCHnnqb92wc1IWykOUj1Zg=
-From: Balaji Rao <balajirrao@gmail.com>
-Organization: National Institute of Technology Karnataka
-To: "Paul Menage" <menage@google.com>
-Subject: Re: [RFC][-mm] [0/2] Basic stats for cgroups V2
-Date: Tue, 8 Apr 2008 22:02:30 +0530
-User-Agent: KMail/1.9.6 (enterprise 0.20071012.724442)
-Cc: linux-kernel@vger.kernel.org, containers@lists.osdl.org,
-       dhaval@linux.vnet.ibm.com, balbir@in.ibm.com, a.p.zijlstra@chello.nl,
-       "Ingo Molnar" <mingo@elte.hu>
-References: <200804052339.42474.balajirrao@gmail.com> <200804081919.14601.balajirrao@gmail.com> <6599ad830804080752w15882801oaa4fb4b661e7302a@mail.gmail.com>
-In-Reply-To: <6599ad830804080752w15882801oaa4fb4b661e7302a@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Tue, 8 Apr 2008 12:59:35 -0400
+Subject: Re: [RFC PATCH 1/2] futex: rely on get_user_pages() for shared
+	futexes
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: Eric Dumazet <dada1@cosmosbay.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+In-Reply-To: <200804082140.04356.nickpiggin@yahoo.com.au>
+References: <20080404193332.348493000@chello.nl>
+	 <20080404193817.574188000@chello.nl>
+	 <200804082140.04356.nickpiggin@yahoo.com.au>
+Content-Type: text/plain
+Date: Tue, 08 Apr 2008 18:59:19 +0200
+Message-Id: <1207673959.15579.77.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.0 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200804082202.31150.balajirrao@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 08 April 2008 08:22:16 pm Paul Menage wrote:
-> On Tue, Apr 8, 2008 at 6:49 AM, Balaji Rao <balajirrao@gmail.com> wrote:
+On Tue, 2008-04-08 at 21:40 +1000, Nick Piggin wrote:
+> On Saturday 05 April 2008 06:33, Peter Zijlstra wrote:
+> > On the way of getting rid of the mmap_sem requirement for shared futexes,
+> > start by relying on get_user_pages().
 > >
-> >  We are also looking at a generic framework in cgroups that would delegate 
-the
-> >  job of handling statistics to the cgroup framework itself. This would 
-avoid
-> >  code duplication across various controllers.
+> > This requires we get the page associated with the key, and put the page
+> > when we're done with it.
 > 
-> Yes, avoiding code duplication is good.
+> Hi Peter,
 > 
-> On thing - when you say "statistics" do you mean all statistics (i.e.
-> all values that can be read from control files) or specifically
-> arrays/maps of values in specific control files? I'm using it to mean
-> the former, but you appear to be mostly referring to stats maps such
-> as "memory.stat" or "cpu.stat".
+> Cool.
+> 
+> I'm all for removing mmap_sem requirement from shared futexes...
+> Are there many apps which make a non-trivial use of them I wonder?
 
-Sorry for the confusion. You're right. I'm speaking about the "cpu.stat" 
-and "memory.stat" idea. What we want is, a layer above the generic file 
-presentation layer, that would collect and manage the statistics the 
-controllers would provide.
+No idea. I've heard some stories, but I've never seen any code..
 
--- 
-regards,
-Balaji Rao
-Dept. of Mechanical Engineering,
-National Institute of Technology Karnataka, India
+> I guess it will help legacy (pre-FUTEX_PRIVATE) usespaces in
+> performance too, though.
+
+Yeah, that was one of the motivations for this patch.
+
+> What I'm worried about with this is invalidate or truncate races.
+> With direct IO, it obviously doesn't matter because the only
+> requirement is that the page existed at the address at some point
+> during the syscall... 
+> 
+> So I'd really like you to not carry the page around in the key, but
+> just continue using the same key we have now. Also, lock the page
+> and ensure it hasn't been truncated before taking the inode from the
+> key and incrementing its count (page lock's extra atomics should be
+> more or less cancelled out by fewer mmap_sem atomic ops).
+> 
+> get_futex_key should look something like this I would have thought:?
+
+Does look nicer, will have to ponder it a bit though.
+
+I must admit to not fully understanding why we take inode/mm references
+in the key anyway as neither will stop unmapping the futex.
+
+Will make this into a nice patch.. thanks!
+
+> BTW. I like that it removes a lot of fshared crap from around
+> the place. And also this is a really good user of fast_gup
+> because I guess it should usually be faulted in. The problem is
+> that this could be a little more expensive for architectures that
+> don't implement fast_gup. Though most should be able to.
+
+Yeah, if that really becomes a problem (but I doubt it will) we could
+possibly make the old and new scheme work based on ARCH_HAVE_PTE_SPECIAL
+or something ugly like that.
+
+> @@ -191,7 +191,6 @@ static int get_futex_key(u32 __user *uad
+>  {
+>         unsigned long address = (unsigned long)uaddr;
+>         struct mm_struct *mm = current->mm;
+> -       struct vm_area_struct *vma;
+>         struct page *page;
+>         int err;
+> 
+> @@ -210,27 +209,26 @@ static int get_futex_key(u32 __user *uad
+>          * Note : We do have to check 'uaddr' is a valid user address,
+>          *        but access_ok() should be faster than find_vma()
+>          */
+> -       if (!fshared) {
+> +       if (likely(!fshared)) {
+>                 if (unlikely(!access_ok(VERIFY_WRITE, uaddr, sizeof(u32))))
+>                         return -EFAULT;
+>                 key->private.mm = mm;
+>                 key->private.address = address;
+>                 return 0;
+>         }
+> -       /*
+> -        * The futex is hashed differently depending on whether
+> -        * it's in a shared or private mapping.  So check vma first.
+> -        */
+> -       vma = find_extend_vma(mm, address);
+> -       if (unlikely(!vma))
+> -               return -EFAULT;
+> -
+> -       /*
+> -        * Permissions.
+> -        */
+> -       if (unlikely((vma->vm_flags & (VM_IO|VM_READ)) != VM_READ))
+> -               return (vma->vm_flags & VM_IO) ? -EPERM : -EACCES;
+> 
+> +again:
+> +       err = fast_gup(address, 1, 0, &page);
+> +       if (err < 0)
+> +               return err;
+> +
+> +       lock_page(page);
+> +       if (!page->mapping) { /* PageAnon pages shouldn't get caught here */
+> +               unlock_page(page);
+> +               put_page(page);
+> +               goto again;
+> +       }
+> +
+>         /*
+>          * Private mappings are handled in a simple way.
+>          *
+> @@ -240,38 +238,19 @@ static int get_futex_key(u32 __user *uad
+>          * VM_MAYSHARE here, not VM_SHARED which is restricted to shared
+>          * mappings of _writable_ handles.
+>          */
+> -       if (likely(!(vma->vm_flags & VM_MAYSHARE))) {
+> -               key->both.offset |= FUT_OFF_MMSHARED; /* reference taken on mm 
+> *
+> /
+> +       if (PageAnon(page)) {
+> +               key->both.offset |= FUT_OFF_MMSHARED; /* ref taken on mm */
+>                 key->private.mm = mm;
+>                 key->private.address = address;
+> -               return 0;
+> -       }
+> -
+> -       /*
+> -        * Linear file mappings are also simple.
+> -        */
+> -       key->shared.inode = vma->vm_file->f_path.dentry->d_inode;
+> -       key->both.offset |= FUT_OFF_INODE; /* inode-based key. */
+> -       if (likely(!(vma->vm_flags & VM_NONLINEAR))) {
+> -               key->shared.pgoff = (((address - vma->vm_start) >> PAGE_SHIFT)
+> -                                    + vma->vm_pgoff);
+> -               return 0;
+> -       }
+> -
+> -       /*
+> -        * We could walk the page table to read the non-linear
+> -        * pte, and get the page index without fetching the page
+> -        * from swap.  But that's a lot of code to duplicate here
+> -        * for a rare case, so we simply fetch the page.
+> -        */
+> -       err = get_user_pages(current, mm, address, 1, 0, 0, &page, NULL);
+> -       if (err >= 0) {
+> -               key->shared.pgoff =
+> -                       page->index << (PAGE_CACHE_SHIFT - PAGE_SHIFT);
+> -               put_page(page);
+> -               return 0;
+> +       } else {
+> +               key->both.offset |= FUT_OFF_INODE; /* inode-based key. */
+> +               key->shared.inode = page->mapping->inode;
+> +               key->shared.pgoff = page->index;
+>         }
+> -       return err;
+> +out:
+> +       unlock_page(page);
+> +       put_page(page);
+> +       return 0;
+>  }
+> 
+>  /*
+> 
+
