@@ -1,67 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754862AbYDHC4e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755837AbYDHDDT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754862AbYDHC4e (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Apr 2008 22:56:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751385AbYDHC4Y
+	id S1755837AbYDHDDT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Apr 2008 23:03:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751673AbYDHDDJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Apr 2008 22:56:24 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:57540 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751241AbYDHC4X (ORCPT
+	Mon, 7 Apr 2008 23:03:09 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:38586 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751646AbYDHDDI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Apr 2008 22:56:23 -0400
-Date: Mon, 7 Apr 2008 19:55:49 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: balbir@linux.vnet.ibm.com
-Cc: menage@google.com, xemul@openvz.org, hugh@veritas.com,
-       skumar@linux.vnet.ibm.com, yamamoto@valinux.co.jp, lizf@cn.fujitsu.com,
-       linux-kernel@vger.kernel.org, taka@valinux.co.jp, linux-mm@kvack.org,
-       rientjes@google.com, kamezawa.hiroyu@jp.fujitsu.com
-Subject: Re: [-mm] Add an owner to the mm_struct (v8)
-Message-Id: <20080407195549.beca617e.akpm@linux-foundation.org>
-In-Reply-To: <47FADAFD.7030202@linux.vnet.ibm.com>
-References: <20080404080544.26313.38199.sendpatchset@localhost.localdomain>
-	<20080407150956.9a29573a.akpm@linux-foundation.org>
-	<47FADAFD.7030202@linux.vnet.ibm.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 7 Apr 2008 23:03:08 -0400
+Date: Tue, 8 Apr 2008 05:03:07 +0200 (CEST)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: andy@greyhouse.net
+cc: LKML <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Natalie Protasevich <protasnb@gmail.com>
+Subject: Re: 2.6.25-rc8-git5: Reported regressions from 2.6.24
+In-Reply-To: <200804071459.35628.rjw@sisk.pl>
+Message-ID: <alpine.LNX.1.10.0804080459100.17722@fbirervta.pbzchgretzou.qr>
+References: <200804071459.35628.rjw@sisk.pl>
+User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 08 Apr 2008 08:09:57 +0530 Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
 
-> Andrew Morton wrote:
-> > On Fri, 04 Apr 2008 13:35:44 +0530
-> > Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-> > 
-> >> 1. Add mm->owner change callbacks using cgroups
-> >>
-> >> ...
-> >>
-> >> +config MM_OWNER
-> >> +	bool "Enable ownership of mm structure"
-> >> +	help
-> >> +	  This option enables mm_struct's to have an owner. The advantage
-> >> +	  of this approach is that it allows for several independent memory
-> >> +	  based cgroup controllers to co-exist independently without too
-> >> +	  much space overhead
-> >> +
-> >> +	  This feature adds fork/exit overhead. So enable this only if
-> >> +	  you need resource controllers
-> > 
-> > Do we really want to offer this option to people?  It's rather a low-level
-> > thing and it's likely to cause more confusion than it's worth.  Remember
-> > that most kernels get to our users via kernel vendors - to what will they
-> > be setting this config option?
-> > 
-> 
-> I suspect that this kernel option will not be explicitly set it. This option
-> will be selected by other config options (memory controller, swap namespace,
-> revoke*)
+On Monday 2008-04-07 14:59, Rafael J. Wysocki wrote:
+>
+>Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10323
+>Subject		: panic using bridging on linus kernel 2.6.25-rc6
+>Submitter	: Andy Gospodarek <andy@greyhouse.net>
+>Date		: 2008-03-25 11:40 (14 days old)
 
-I believe that the way to do this is to not give the option a `help'
-section.  Tht makes it a Kconfig-internal-only thing.
+>From BZ:
 
+	“It looks like 2.6.24 is good, I guess I'll start bisecting....”
+
+there have been two bridge-related patches between v2.6.24-rc6..v2.6.24:
+
+  2dc2f20... [NETFILTER]: bridge-netfilter: fix net_device refcnt leaks
+  2948d2e... [NETFILTER]: bridge: fix double POST_ROUTING invocation
+
+Maybe it helps to try 2dc.
+Not anymore a 2.6.25-rc issue it seems?
