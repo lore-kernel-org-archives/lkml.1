@@ -1,81 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755547AbYDHRYv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754609AbYDHRfX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755547AbYDHRYv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Apr 2008 13:24:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752590AbYDHRYl
+	id S1754609AbYDHRfX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Apr 2008 13:35:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751890AbYDHRfL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Apr 2008 13:24:41 -0400
-Received: from e36.co.us.ibm.com ([32.97.110.154]:50128 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751928AbYDHRYk (ORCPT
+	Tue, 8 Apr 2008 13:35:11 -0400
+Received: from nf-out-0910.google.com ([64.233.182.186]:12262 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751881AbYDHRfK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Apr 2008 13:24:40 -0400
-Date: Tue, 8 Apr 2008 10:24:36 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Johannes Berg <johannes@sipsolutions.net>
-Cc: Linux Kernel list <linux-kernel@vger.kernel.org>,
-       linux-sparse <linux-sparse@vger.kernel.org>
-Subject: Re: Using sparse to catch invalid RCU dereferences?
-Message-ID: <20080408172436.GE8381@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <1207605856.12481.35.camel@johannes.berg> <20080408155259.GA8381@linux.vnet.ibm.com> <1207670955.5550.15.camel@johannes.berg>
+	Tue, 8 Apr 2008 13:35:10 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=bILmlb5rpIbZOhK+7I+OQDZG9o6EHQDHw9BcKF5qaVO0Y9v5ftjt59128ODJFtTfP1Hwq4RgzxQ4aZaPVJLaH9jwxqzd2dq7N85di4T+MZHAyIj64S7L/kTywFzPrzRO04H6JHQfBB0hTZKc6mAcXmk9tvbhNCBKvvcwx8Rxqf4=
+Date: Tue, 8 Apr 2008 21:34:18 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       LKML <linux-kernel@vger.kernel.org>, Yinghai Lu <yhlu.kernel@gmail.com>
+Subject: Re: bootmem allocator
+Message-ID: <20080408173418.GD7656@cvg>
+References: <20080407185613.GD9211@cvg> <20080407190904.GH12292@elte.hu> <87iqytqwl7.fsf@basil.nowhere.org> <20080408080446.GA12308@elte.hu> <20080408081206.GL16647@one.firstfloor.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1207670955.5550.15.camel@johannes.berg>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20080408081206.GL16647@one.firstfloor.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 08, 2008 at 06:09:15PM +0200, Johannes Berg wrote:
-> 
-> > So the address_space attribute says what the pointer points to rather
-> > than where the pointer resides, correct?
-> 
-> Yeah. It's currently used for __user and __iomem. Using it for rcu
-> wouldn't be quite the way it was intended, I think, but hey :)
+[Andi Kleen - Tue, Apr 08, 2008 at 10:12:06AM +0200]
+| On Tue, Apr 08, 2008 at 10:04:46AM +0200, Ingo Molnar wrote:
+| > 
+| > * Andi Kleen <andi@firstfloor.org> wrote:
+| > 
+| > > > hm, bootmem allocator is supposed to clear memory. We have a couple 
+| > > > of places that rely on that.
+| > > 
+| > > I was actually considering to change that for the GB pages hugetlbfs 
+| > > patchkit, because memset for 1G is a little slow and not needed (will 
+| > > be cleared later anyways) and it might be a problem for very large 
+| > > systems with a lot of such pages at boot.
+| > 
+| > changing the default behavior of bootmem alloc to be non-clearing is a 
+| > really bad idea that will only cause unrobustness. The proper approach 
+| > is to add an _opt-in_ API that does not clear memory 
+| 
+| I was considering that too, but we have so many weird variants of bootmem
+| with opt in and opt out and even combinations of both now that the whole thing 
+| is starting to look really pear shaped (I admit I added some of them
+| in the past myself but I'm not proud). Would be a great project for
+| someone to consolidate that all a bit.
+| 
+| -Andi
+| 
 
-;-)
+Andi, could you a bit clarify what exactly do you mean?
 
-> > It might be.  There are a number of places where it is legal to access
-> > RCU-protected pointers directly, and all of these would need to be
-> > changed.  For example, in the example above, one could do:
-> > 
-> > 	foo = NULL;
-> 
-> Yeah, all of those would lead to sparse warnings. Are we willing to
-> change all that code?
-
-If it found some bugs, I would certainly be in favor!
-
-> > I recently tried to modify rcu_assign_pointer() to issue the memory
-> > memory barrier only when the pointer was non-NULL, but this ended badly.
-> > Probably because I am not the greatest gcc expert around...  We ended
-> > up having to define an rcu_assign_index() to handle the possibility of
-> > assigning a zero-value array index, but my attempts to do type-checking
-> > backfired, and I eventually gave it up.  Again, someone a bit more clued
-> > in to gcc than I am could probably pull it off.
-> 
-> I don't think I would be that person :)
-
-When it comes to gcc extensions and type-casting trickery, I am not all
-that clued in, to be honest...
-
-> > In addition, it is legal to omit rcu_dereference() and rcu_assign_pointer()
-> > when holding the update-side lock.
-> 
-> Right. Those too would lead to problems, unless we change that code to
-> use those (or other) macros.
-
-Yep.
-
-> > So I very much like this approach in general, but it will require some
-> > care to implement.  I would be very happy to review and comment!!!
-> 
-> I'll play with it a bit if I get around, was just reviewing some RCU
-> usage and had the feeling that it should be possible to automate.
-
-If it finds a few bugs, it would be worth it!
-
-							Thanx, Paul
+		- Cyrill -
