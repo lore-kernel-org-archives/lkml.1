@@ -1,50 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754880AbYDHVrd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755999AbYDHVrs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754880AbYDHVrd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Apr 2008 17:47:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752856AbYDHVrX
+	id S1755999AbYDHVrs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Apr 2008 17:47:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753999AbYDHVr3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Apr 2008 17:47:23 -0400
-Received: from fmmailgate02.web.de ([217.72.192.227]:37432 "EHLO
-	fmmailgate02.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752255AbYDHVrW (ORCPT
+	Tue, 8 Apr 2008 17:47:29 -0400
+Received: from bzq-179-150-194.static.bezeqint.net ([212.179.150.194]:39721
+	"EHLO il.qumranet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753873AbYDHVr2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Apr 2008 17:47:22 -0400
-Message-ID: <007901c899c2$1df6ae30$6400a8c0@bui.materna.com>
-From: "Roland" <devzero@web.de>
-To: <rogerheflin@gmail.com>, <joel.greene@catapult.com>
-Cc: <linux-kernel@vger.kernel.org>, <pavel@ucw.cz>
-Subject: Re: Clock has stopped (time/date looping over 5 secon
-Date: Tue, 8 Apr 2008 23:47:17 +0200
+	Tue, 8 Apr 2008 17:47:28 -0400
+Message-ID: <47FBE7C9.9000701@qumranet.com>
+Date: Wed, 09 Apr 2008 00:46:49 +0300
+From: Avi Kivity <avi@qumranet.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	format=flowed;
-	charset="iso-8859-1";
-	reply-type=original
+To: Andrea Arcangeli <andrea@qumranet.com>
+CC: Christoph Lameter <clameter@sgi.com>, akpm@linux-foundation.org,
+       Nick Piggin <npiggin@suse.de>, Steve Wise <swise@opengridcomputing.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-mm@kvack.org,
+       Kanoj Sarcar <kanojsarcar@yahoo.com>, Roland Dreier <rdreier@cisco.com>,
+       Jack Steiner <steiner@sgi.com>, linux-kernel@vger.kernel.org,
+       kvm-devel@lists.sourceforge.net, Robin Holt <holt@sgi.com>,
+       general@lists.openfabrics.org, Hugh Dickins <hugh@veritas.com>
+Subject: Re: [PATCH 0 of 9] mmu notifier #v12
+References: <patchbomb.1207669443@duo.random>
+In-Reply-To: <patchbomb.1207669443@duo.random>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Priority: 3
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook Express 6.00.2900.3138
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3198
-X-Provags-ID: V01U2FsdGVkX1+/8FT+Ym/d6lA/XD+mH475SS2TrGi/jGuo29Qe
-	5n9mT+md5B/iZbr4oY0OuwkfqFAY3rXFR34amqCael1IGPma2j
-	hkccPwisw=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> It _appears_ that there is a race in the kernel that can be triggered by
-> any number of hardware issues. There's another thread by Gregory Stark
-> with the same symptoms - he thinks his was fixed by replacing a bad
-> DIMM.
+Andrea Arcangeli wrote:
+> Note that mmu_notifier_unregister may also fail with -EINTR if there are
+> signal pending or the system runs out of vmalloc space or physical memory,
+> only exit_mmap guarantees that any kernel module can be unloaded in presence
+> of an oom condition.
+>
+>   
 
-i`d like to mention that we may have a repro-case (if it`s the same issue i 
-hit within vmware):
+That's unusual.  What happens to the notifier?  Suppose I destroy a vm 
+without exiting the process, what happens if it fires?
 
-see http://communities.vmware.com/message/909403
-
-regards
-roland
-
-
+-- 
+Any sufficiently difficult bug is indistinguishable from a feature.
 
