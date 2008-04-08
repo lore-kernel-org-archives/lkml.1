@@ -1,116 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755001AbYDHLr5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752923AbYDHLuR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755001AbYDHLr5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Apr 2008 07:47:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752700AbYDHLrq
+	id S1752923AbYDHLuR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Apr 2008 07:50:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752283AbYDHLuF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Apr 2008 07:47:46 -0400
-Received: from e36.co.us.ibm.com ([32.97.110.154]:60765 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752494AbYDHLrp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Apr 2008 07:47:45 -0400
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: andi@firstfloor.org, Andrew Morton <akpm@linux-foundation.org>
-Cc: YAMAMOTO Takashi <yamamoto@valinux.co.jp>, Paul Menage <menage@google.com>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       Pavel Emelianov <xemul@openvz.org>, hugh@veritas.com,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Date: Tue, 08 Apr 2008 17:16:13 +0530
-Message-Id: <20080408114613.8165.69030.sendpatchset@localhost.localdomain>
-Subject: [-mm] Disable the memory controller by default (v3)
+	Tue, 8 Apr 2008 07:50:05 -0400
+Received: from dtp.xs4all.nl ([80.126.206.180]:24682 "HELO abra2.bitwizard.nl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
+	id S1751683AbYDHLuD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Apr 2008 07:50:03 -0400
+Date: Tue, 8 Apr 2008 13:43:21 +0200
+From: Rogier Wolff <R.E.Wolff@BitWizard.nl>
+To: Denys Vlasenko <vda.linux@googlemail.com>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
+       linux-serial@vger.kernel.org, R.E.Wolff@BitWizard.nl
+Subject: Re: [PATCH] drivers/char/specialix.c: stop inlining largish static functions
+Message-ID: <20080408114321.GB1236@bitwizard.nl>
+References: <200804081244.53894.vda.linux@googlemail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200804081244.53894.vda.linux@googlemail.com>
+Organization: BitWizard.nl
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Apr 08, 2008 at 12:44:53PM +0200, Denys Vlasenko wrote:
+> Hi Alan,
+> 
+> drivers/char/specialix.c has unusually large number
+> of static inline functions - 22.
+> 
+> I looked through them. The file is positively inline-happy.
+> Inlines with udelay() calls. Inlines with complex loops.
+> Nested inlines. Rarely called inlines (e.g. with request_region
+> inside).
+> 
+> This patch removes "inline" from 15 static functions
+> (regardless of number of callsites - gcc nowadays auto-inlines
+> statics with one callsite).
+> 
+> Size difference for 32bit x86:
+>    text    data     bss     dec     hex filename
+>   21669     204    8780   30653    77bd linux-2.6-ALLYES/drivers/char/specialix.o
+>   18470     204    8780   27454    6b3e linux-2.6.inline-ALLYES/drivers/char/specialix.o
+> 
+> 
+> Signed-off-by: Denys Vlasenko <vda.linux@googlemail.com>
 
+Ack!
 
-Changelog v1
+Signed-off-by: Rogier Wolff <R.E.Wolff@BitWizard.nl> 
 
-1. Split cgroup_disable into cgroup_disable and cgroup_enable
-2. Remove cgroup_toggle
-
-Due to the overhead of the memory controller. The
-memory controller is now disabled by default. This patch adds cgroup_enable.
-
-If everyone agrees on this approach and likes it, should we push this
-into 2.6.25?
-
-Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
----
-
- Documentation/kernel-parameters.txt |    3 +++
- kernel/cgroup.c                     |   17 +++++++++++++----
- mm/memcontrol.c                     |    1 +
- 3 files changed, 17 insertions(+), 4 deletions(-)
-
-diff -puN kernel/cgroup.c~memory-controller-default-option-off kernel/cgroup.c
---- linux-2.6.25-rc8/kernel/cgroup.c~memory-controller-default-option-off	2008-04-07 16:24:28.000000000 +0530
-+++ linux-2.6.25-rc8-balbir/kernel/cgroup.c	2008-04-08 16:04:49.000000000 +0530
-@@ -3063,7 +3063,7 @@ static void cgroup_release_agent(struct 
- 	mutex_unlock(&cgroup_mutex);
- }
- 
--static int __init cgroup_disable(char *str)
-+static inline int __init cgroup_turnonoff(char *str, int disable)
- {
- 	int i;
- 	char *token;
-@@ -3076,13 +3076,22 @@ static int __init cgroup_disable(char *s
- 			struct cgroup_subsys *ss = subsys[i];
- 
- 			if (!strcmp(token, ss->name)) {
--				ss->disabled = 1;
--				printk(KERN_INFO "Disabling %s control group"
--					" subsystem\n", ss->name);
-+				ss->disabled = disable;
- 				break;
- 			}
- 		}
- 	}
- 	return 1;
- }
-+
-+static int __init cgroup_disable(char *str)
-+{
-+	return cgroup_turnonoff(str, 1);
-+}
- __setup("cgroup_disable=", cgroup_disable);
-+
-+static int __init cgroup_enable(char *str)
-+{
-+	return cgroup_turnonoff(str, 0);
-+}
-+__setup("cgroup_enable=", cgroup_enable);
-diff -puN mm/memcontrol.c~memory-controller-default-option-off mm/memcontrol.c
---- linux-2.6.25-rc8/mm/memcontrol.c~memory-controller-default-option-off	2008-04-07 16:24:28.000000000 +0530
-+++ linux-2.6.25-rc8-balbir/mm/memcontrol.c	2008-04-07 16:40:22.000000000 +0530
-@@ -1104,4 +1104,5 @@ struct cgroup_subsys mem_cgroup_subsys =
- 	.populate = mem_cgroup_populate,
- 	.attach = mem_cgroup_move_task,
- 	.early_init = 0,
-+	.disabled = 1,
- };
-diff -puN Documentation/kernel-parameters.txt~memory-controller-default-option-off Documentation/kernel-parameters.txt
---- linux-2.6.25-rc8/Documentation/kernel-parameters.txt~memory-controller-default-option-off	2008-04-07 16:38:25.000000000 +0530
-+++ linux-2.6.25-rc8-balbir/Documentation/kernel-parameters.txt	2008-04-07 17:53:28.000000000 +0530
-@@ -382,8 +382,11 @@ and is between 256 and 4096 characters. 
- 			See Documentation/s390/CommonIO for details.
- 
- 	cgroup_disable= [KNL] Disable a particular controller
-+	cgroup_enable=  [KNL] Enable a particular controller
-+			For both cgroup_enable and cgroup_enable
- 			Format: {name of the controller(s) to disable}
- 				{Currently supported controllers - "memory"}
-+				{Memory controller is disabled by default}
- 
- 	checkreqprot	[SELINUX] Set initial checkreqprot flag value.
- 			Format: { "0" | "1" }
-_
+	Roger. 
 
 -- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+** R.E.Wolff@BitWizard.nl ** http://www.BitWizard.nl/ ** +31-15-2600998 **
+**    Delftechpark 26 2628 XH  Delft, The Netherlands. KVK: 27239233    **
+*-- BitWizard writes Linux device drivers for any device you may have! --*
+Q: It doesn't work. A: Look buddy, doesn't work is an ambiguous statement. 
+Does it sit on the couch all day? Is it unemployed? Please be specific! 
+Define 'it' and what it isn't doing. --------- Adapted from lxrbot FAQ
