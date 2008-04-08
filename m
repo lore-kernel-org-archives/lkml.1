@@ -1,138 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755810AbYDHVsi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754919AbYDHVvE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755810AbYDHVsi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Apr 2008 17:48:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752772AbYDHVsa
+	id S1754919AbYDHVvE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Apr 2008 17:51:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752806AbYDHVuy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Apr 2008 17:48:30 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:37092 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752590AbYDHVs3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Apr 2008 17:48:29 -0400
-Message-ID: <47FBE828.3000303@sgi.com>
-Date: Tue, 08 Apr 2008 14:48:24 -0700
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Tue, 8 Apr 2008 17:50:54 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:36320 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752772AbYDHVux convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Apr 2008 17:50:53 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: "Alessandro Suardi" <alessandro.suardi@gmail.com>
+Subject: Re: 2.6.25-rc8-git5: Reported regressions from 2.6.24
+Date: Tue, 8 Apr 2008 23:50:43 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: LKML <linux-kernel@vger.kernel.org>, "Adrian Bunk" <bunk@kernel.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Natalie Protasevich" <protasnb@gmail.com>
+References: <200804071459.35628.rjw@sisk.pl> <5a4c581d0804071644u6922d412i943c0094dc7e2601@mail.gmail.com>
+In-Reply-To: <5a4c581d0804071644u6922d412i943c0094dc7e2601@mail.gmail.com>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Alexander van Heukelum <heukelum@mailshack.com>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       heukelum@fastmail.fm
-Subject: Re: [PATCH 1/2] boot: increase stack size for kernel boot loader
- decompressor
-References: <20080405013014.478571000@polaris-admin.engr.sgi.com> <20080405013014.693571000@polaris-admin.engr.sgi.com> <20080405134626.GA15894@mailshack.com> <47FA6478.1070301@sgi.com> <20080407214434.GA5296@mailshack.com> <20080408122007.GA11832@mailshack.com> <20080408134112.GA4277@elte.hu> <47FB8AD2.2040201@sgi.com> <20080408153942.GA26932@elte.hu>
-In-Reply-To: <20080408153942.GA26932@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200804082350.44166.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-
-> i've got a bugreport for you though: MAXSMP does not suspend+resume 
-> correctly ;-) It gets this far:
+On Tuesday, 8 of April 2008, Alessandro Suardi wrote:
+> 2008/4/7 Rafael J. Wysocki <rjw@sisk.pl>:
 > 
-> [  146.348790] PM: Syncing filesystems ... done.
-> [  146.353488] PM: Preparing system for mem sleep
-> [  146.360204] Freezing user space processes ... (elapsed 0.00 seconds) done.
-> [  146.367172] Freezing remaining freezable tasks ... (elapsed 0.93 seconds) done.
-> [  147.309618] PM: Entering mem sleep
-> [  147.313032] Suspending console(s)
+> >  Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=10384
+> >  Subject         : 2.6.25-rc6-git2: warn_on_slowpath for tcp_simple_retransmit
+> >  Submitter       : Alessandro Suardi <alessandro.suardi@gmail.com>
+> >  Date            : 2008-04-02 00:28 (6 days old)
+> >  References      : http://lkml.org/lkml/2008/4/1/408
+> >  Handled-By      : Ilpo Järvinen <ilpo.jarvinen@helsinki.fi>
+> >  Patch           : http://marc.info/?l=linux-netdev&amp;m=120756760521961&amp;w=2
 > 
-> then reboots spontaneously instead of resuming. (I use the 
-> suspend+resume self-test feature below to conduct automated 
-> suspend/resume tests.)
+> This one is very difficult to verify. It happened exactly once in
+>  now 20 days... I'll be away from the box until the weekend,
+>  when I'll compile whatever kernel-of-the-day with Ilpo's fix
+>  on top, if it isn't in mainline by then, and... well, keep the
+>  torrents alive with an eye on the kernel logs.
+> 
+> Not sure what's the best thing to do with such a hard to
+>  reproduce issue. Perhaps marking it fixed by Ilpo's patch,
+>  and if it pops up again file a new bug linking it to the entry
+>  in bugzilla ?
 
-Here are my test results.  It worked fine on the Intel box, but
-hung hard on the AMD box.  I'll do some further testing to narrow
-it down.
+Well, I will close it as "unreproducible".  You can always reopen it if the
+problem occurs again.
 
 Thanks,
-Mike
-
-------------------------------------------------------------
-Intel box:
-
-PM: test RTC wakeup from 'mem' suspend
-PM: test RTC wakeup from 'standby' suspend
-PM: Syncing filesystems ... done.
-PM: Preparing system for standby sleep
-Freezing user space processes ... (elapsed 0.00 seconds) done.
-Freezing remaining freezable tasks ... (elapsed 0.00 seconds) done.
-PM: Entering standby sleep
-Suspending console(s)
-        .
-<whole lot of suspend messages deleted>
-        .
-processor ACPI0007:07: suspend
-        .
-        .
-processor ACPI0007:00: suspend
-        .
-PM: suspend devices took 1.072 seconds
-ACPI: Preparing to enter system sleep state S1
-Disabling non-boot CPUs ...
-CPU0 attaching NULL sched-domain.
-        .
-        .
-CPU7 attaching NULL sched-domain.
-CPU 1 is now offline
-        .
-        .
-CPU 7 is now offline
-SMP alternatives: switching to UP code
-CPU0 attaching sched-domain:
- domain 0: span 0
-  groups: 0
-CPU7 is down
-        .
-        .
-pci 0000:00:00.0: LATE suspend
-Back to C!
-pci 0000:00:00.0: EARLY resume
-        .
-        .
-Enabling non-boot CPUs ...
-CPU0 attaching NULL sched-domain.
-SMP alternatives: switching to SMP code
-Booting processor 1/4 ip 6000
-Initializing CPU#1
-        .
-        .
-CPU1 is up
-        .
-        .
-CPU7 is up
-        .
-        .
-processor ACPI0007:00: resuming
-        .
-        .
-processor ACPI0007:07: resuming
-        .
-        .
-PM: resume devices took 7.256 seconds
-PM: Finishing wakeup.
-Restarting tasks ... done.
-
-
-------------------------------------------------------------
-AMD box:
-
-PM: test RTC wakeup from 'mem' suspend
-PM: Syncing filesystems ... done.
-PM: Preparing system for mem sleep
-Freezing user space processes ... (elapsed 0.00 seconds) done.
-Freezing remaining freezable tasks ... <7>PM: Adding info for No Bus:mouse0
-PM: Adding info for No Bus:event3
-PM: Adding info for ieee1394:00e0810000270e1d
-PM: Adding info for No Bus:00e0810000270e1d
-ieee1394: Host added: ID:BUS[0-00:1023]  GUID[00e0810000270e1d]
-(elapsed 0.20 seconds) done.
-PM: Entering mem sleep
-Suspending console(s)
-
-(and the system is hung hard, doesn't even accept sysreq input.)
-------------------------------------------------------------
+Rafael
