@@ -1,51 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758611AbYDHL2c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758715AbYDHL2s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758611AbYDHL2c (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Apr 2008 07:28:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754854AbYDHLTx
+	id S1758715AbYDHL2s (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Apr 2008 07:28:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754910AbYDHLTz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Apr 2008 07:19:53 -0400
-Received: from mailhub.sw.ru ([195.214.232.25]:9143 "EHLO relay.sw.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752648AbYDHLTw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Apr 2008 07:19:52 -0400
-From: "Denis V. Lunev" <den@openvz.org>
-To: akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, "Denis V. Lunev" <den@openvz.org>
-Subject: [PATCH 11/29] sound: use non-racy method for /proc/driver/snd-page-alloc creation
-Date: Tue,  8 Apr 2008 15:19:18 +0400
-Message-Id: <1207653576-12640-11-git-send-email-den@openvz.org>
-X-Mailer: git-send-email 1.5.3.7
-In-Reply-To: <1207653508.7171.18.camel@iris.sw.ru>
-References: <1207653508.7171.18.camel@iris.sw.ru>
+	Tue, 8 Apr 2008 07:19:55 -0400
+Received: from smtp-out03.alice-dsl.net ([88.44.63.5]:34647 "EHLO
+	smtp-out03.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754838AbYDHLTy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Apr 2008 07:19:54 -0400
+To: "Andreas K. Huettel" <mail@akhuettel.de>
+Cc: Peter Zijlstra <peterz@infradead.org>,
+       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [tainted,fglrx] page allocation failure: basic meaning of log messages?
+From: Andi Kleen <andi@firstfloor.org>
+References: <alpine.LNX.1.00.0804031117030.10277@localhost>
+	<20080403183021.028C.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	<alpine.LNX.1.00.0804031318480.10277@localhost>
+	<20080403144852.GD24239@csclub.uwaterloo.ca>
+	<1207234830.8514.838.camel@twins>
+	<alpine.LNX.1.00.0804081125140.22515@localhost>
+Date: Tue, 08 Apr 2008 13:19:49 +0200
+In-Reply-To: <alpine.LNX.1.00.0804081125140.22515@localhost> (Andreas K. Huettel's message of "Tue, 8 Apr 2008 11:39:38 +0200 (CEST)")
+Message-ID: <87r6dgpp9m.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 08 Apr 2008 11:13:06.0690 (UTC) FILETIME=[854A1620:01C89969]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use proc_create() to make sure that ->proc_fops be setup before gluing
-PDE to main tree.
+"Andreas K. Huettel" <A.K.Huettel@tudelft.nl> writes:
 
-Signed-off-by: Denis V. Lunev <den@openvz.org>
----
- sound/core/memalloc.c |    5 ++---
- 1 files changed, 2 insertions(+), 3 deletions(-)
+> Question - this seems to me not to be a kernel issue (correct me if I'm 
+> wrong) and thus I'd like to take it to the proper place...
+> Where should I file this as bug? Is this a hald problem or something more 
+> complicated?
 
-diff --git a/sound/core/memalloc.c b/sound/core/memalloc.c
-index 920e578..23b7bc0 100644
---- a/sound/core/memalloc.c
-+++ b/sound/core/memalloc.c
-@@ -629,9 +629,8 @@ static const struct file_operations snd_mem_proc_fops = {
- static int __init snd_mem_init(void)
- {
- #ifdef CONFIG_PROC_FS
--	snd_mem_proc = create_proc_entry(SND_MEM_PROC_FILE, 0644, NULL);
--	if (snd_mem_proc)
--		snd_mem_proc->proc_fops = &snd_mem_proc_fops;
-+	snd_mem_proc = proc_create(SND_MEM_PROC_FILE, 0644, NULL,
-+				   &snd_mem_proc_fops);
- #endif
- 	return 0;
- }
--- 
-1.5.3.rc5
+It is a firegl bug. You should report it to ATI
 
+-Andi
