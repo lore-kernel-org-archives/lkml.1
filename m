@@ -1,13 +1,13 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759589AbYDHQao@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759727AbYDHQa7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759589AbYDHQao (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Apr 2008 12:30:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758554AbYDHQ2L
+	id S1759727AbYDHQa7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Apr 2008 12:30:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756313AbYDHQ2N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Apr 2008 12:28:11 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:59767 "EHLO mx1.redhat.com"
+	Tue, 8 Apr 2008 12:28:13 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:59768 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758542AbYDHQ2K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1758538AbYDHQ2K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 8 Apr 2008 12:28:10 -0400
 From: Glauber Costa <gcosta@redhat.com>
 To: linux-kernel@vger.kernel.org
@@ -15,9 +15,9 @@ Cc: akpm@linux-foundation.org, glommer@gmail.com, mingo@elte.hu,
        tglx@linutronix.de, kvm-devel@lists.sourceforge.net,
        amit.shah@qumranet.com, avi@qumranet.com,
        Glauber Costa <gcosta@redhat.com>
-Subject: [PATCH 12/28] x86: move x86_64-specific to common code.
-Date: Tue,  8 Apr 2008 13:20:54 -0300
-Message-Id: <12076717503496-git-send-email-gcosta@redhat.com>
+Subject: [PATCH 13/28] x86: merge dma_supported
+Date: Tue,  8 Apr 2008 13:20:55 -0300
+Message-Id: <1207671757880-git-send-email-gcosta@redhat.com>
 X-Mailer: git-send-email 1.5.0.6
 In-Reply-To: <12076716702129-git-send-email-gcosta@redhat.com>
 References: <12076716702129-git-send-email-gcosta@redhat.com>
@@ -25,180 +25,174 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch moves the bootmem functions, that are largely
-x86_64-specific into pci-dma.c. The code goes inside an ifdef.
+The code for both arches are very similar, so this patch merge them.
 
 Signed-off-by: Glauber Costa <gcosta@redhat.com>
 ---
- arch/x86/kernel/pci-dma.c    |   73 ++++++++++++++++++++++++++++++++++++++++++
- arch/x86/kernel/pci-dma_64.c |   68 ---------------------------------------
- 2 files changed, 73 insertions(+), 68 deletions(-)
+ arch/x86/kernel/pci-dma.c    |   44 ++++++++++++++++++++++++++++++++++++++++++
+ arch/x86/kernel/pci-dma_32.c |   24 ----------------------
+ arch/x86/kernel/pci-dma_64.c |   44 +-----------------------------------------
+ 3 files changed, 45 insertions(+), 67 deletions(-)
 
 diff --git a/arch/x86/kernel/pci-dma.c b/arch/x86/kernel/pci-dma.c
-index e81e16f..f6d6a92 100644
+index f6d6a92..4289a9b 100644
 --- a/arch/x86/kernel/pci-dma.c
 +++ b/arch/x86/kernel/pci-dma.c
-@@ -1,7 +1,10 @@
- #include <linux/dma-mapping.h>
- #include <linux/dmar.h>
- #include <linux/pci.h>
-+#include <linux/bootmem.h>
+@@ -14,6 +14,8 @@ EXPORT_SYMBOL(forbid_dac);
+ const struct dma_mapping_ops *dma_ops;
+ EXPORT_SYMBOL(dma_ops);
  
-+#include <asm/proto.h>
-+#include <asm/dma.h>
- #include <asm/gart.h>
- #include <asm/calgary.h>
- 
-@@ -66,3 +69,73 @@ static __devinit void via_no_dac(struct pci_dev *dev)
++int iommu_sac_force __read_mostly = 0;
++
+ #ifdef CONFIG_IOMMU_DEBUG
+ int panic_on_overflow __read_mostly = 1;
+ int force_iommu __read_mostly = 1;
+@@ -33,6 +35,48 @@ int dma_set_mask(struct device *dev, u64 mask)
  }
- DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_VIA, PCI_ANY_ID, via_no_dac);
- #endif
-+
-+#ifdef CONFIG_X86_64
-+static __initdata void *dma32_bootmem_ptr;
-+static unsigned long dma32_bootmem_size __initdata = (128ULL<<20);
-+
-+static int __init parse_dma32_size_opt(char *p)
+ EXPORT_SYMBOL(dma_set_mask);
+ 
++int dma_supported(struct device *dev, u64 mask)
 +{
-+	if (!p)
-+		return -EINVAL;
-+	dma32_bootmem_size = memparse(p, &p);
-+	return 0;
-+}
-+early_param("dma32_size", parse_dma32_size_opt);
-+
-+void __init dma32_reserve_bootmem(void)
-+{
-+	unsigned long size, align;
-+	if (end_pfn <= MAX_DMA32_PFN)
-+		return;
-+
-+	align = 64ULL<<20;
-+	size = round_up(dma32_bootmem_size, align);
-+	dma32_bootmem_ptr = __alloc_bootmem_nopanic(size, align,
-+				 __pa(MAX_DMA_ADDRESS));
-+	if (dma32_bootmem_ptr)
-+		dma32_bootmem_size = size;
-+	else
-+		dma32_bootmem_size = 0;
-+}
-+static void __init dma32_free_bootmem(void)
-+{
-+	int node;
-+
-+	if (end_pfn <= MAX_DMA32_PFN)
-+		return;
-+
-+	if (!dma32_bootmem_ptr)
-+		return;
-+
-+	for_each_online_node(node)
-+		free_bootmem_node(NODE_DATA(node), __pa(dma32_bootmem_ptr),
-+				  dma32_bootmem_size);
-+
-+	dma32_bootmem_ptr = NULL;
-+	dma32_bootmem_size = 0;
-+}
-+
-+void __init pci_iommu_alloc(void)
-+{
-+	/* free the range so iommu could get some range less than 4G */
-+	dma32_free_bootmem();
-+	/*
-+	 * The order of these functions is important for
-+	 * fall-back/fail-over reasons
-+	 */
-+#ifdef CONFIG_GART_IOMMU
-+	gart_iommu_hole_init();
++#ifdef CONFIG_PCI
++	if (mask > 0xffffffff && forbid_dac > 0) {
++		printk(KERN_INFO "PCI: Disallowing DAC for device %s\n",
++				 dev->bus_id);
++		return 0;
++	}
 +#endif
 +
-+#ifdef CONFIG_CALGARY_IOMMU
-+	detect_calgary();
-+#endif
++	if (dma_ops->dma_supported)
++		return dma_ops->dma_supported(dev, mask);
 +
-+	detect_intel_iommu();
++	/* Copied from i386. Doesn't make much sense, because it will
++	   only work for pci_alloc_coherent.
++	   The caller just has to use GFP_DMA in this case. */
++	if (mask < DMA_24BIT_MASK)
++		return 0;
 +
-+#ifdef CONFIG_SWIOTLB
-+	pci_swiotlb_init();
-+#endif
++	/* Tell the device to use SAC when IOMMU force is on.  This
++	   allows the driver to use cheaper accesses in some cases.
++
++	   Problem with this is that if we overflow the IOMMU area and
++	   return DAC as fallback address the device may not handle it
++	   correctly.
++
++	   As a special case some controllers have a 39bit address
++	   mode that is as efficient as 32bit (aic79xx). Don't force
++	   SAC for these.  Assume all masks <= 40 bits are of this
++	   type. Normally this doesn't make any difference, but gives
++	   more gentle handling of IOMMU overflow. */
++	if (iommu_sac_force && (mask >= DMA_40BIT_MASK)) {
++		printk(KERN_INFO "%s: Force SAC with mask %Lx\n",
++				 dev->bus_id, mask);
++		return 0;
++	}
++
++	return 1;
 +}
-+#endif
++EXPORT_SYMBOL(dma_supported);
++
++
+ static int __init pci_iommu_init(void)
+ {
+ #ifdef CONFIG_CALGARY_IOMMU
+diff --git a/arch/x86/kernel/pci-dma_32.c b/arch/x86/kernel/pci-dma_32.c
+index 6543bb3..1d4091a 100644
+--- a/arch/x86/kernel/pci-dma_32.c
++++ b/arch/x86/kernel/pci-dma_32.c
+@@ -155,30 +155,6 @@ void *dma_mark_declared_memory_occupied(struct device *dev,
+ EXPORT_SYMBOL(dma_mark_declared_memory_occupied);
+ 
+ #ifdef CONFIG_PCI
+-/* Many VIA bridges seem to corrupt data for DAC. Disable it here */
+-
+-int
+-dma_supported(struct device *dev, u64 mask)
+-{
+-	/*
+-	 * we fall back to GFP_DMA when the mask isn't all 1s,
+-	 * so we can't guarantee allocations that must be
+-	 * within a tighter range than GFP_DMA..
+-	 */
+-	if (mask < 0x00ffffff)
+-		return 0;
+-
+-	/* Work around chipset bugs */
+-	if (forbid_dac > 0 && mask > 0xffffffffULL)
+-		return 0;
+-
+-	if (dma_ops->dma_supported)
+-		return dma_ops->dma_supported(dev, mask);
+-
+-	return 1;
+-}
+-EXPORT_SYMBOL(dma_supported);
+-
+ static int check_iommu(char *s)
+ {
+ 	if (!strcmp(s, "usedac")) {
 diff --git a/arch/x86/kernel/pci-dma_64.c b/arch/x86/kernel/pci-dma_64.c
-index e194460..7820675 100644
+index 7820675..c80da76 100644
 --- a/arch/x86/kernel/pci-dma_64.c
 +++ b/arch/x86/kernel/pci-dma_64.c
-@@ -268,71 +268,3 @@ static __init int iommu_setup(char *p)
- 	return 0;
+@@ -24,7 +24,7 @@ EXPORT_SYMBOL(bad_dma_address);
+ int iommu_bio_merge __read_mostly = 0;
+ EXPORT_SYMBOL(iommu_bio_merge);
+ 
+-static int iommu_sac_force __read_mostly = 0;
++extern int iommu_sac_force;
+ 
+ int no_iommu __read_mostly;
+ /* Set this to 1 if there is a HW IOMMU in the system */
+@@ -161,48 +161,6 @@ void dma_free_coherent(struct device *dev, size_t size,
  }
- early_param("iommu", iommu_setup);
--
--static __initdata void *dma32_bootmem_ptr;
--static unsigned long dma32_bootmem_size __initdata = (128ULL<<20);
--
--static int __init parse_dma32_size_opt(char *p)
+ EXPORT_SYMBOL(dma_free_coherent);
+ 
+-int dma_supported(struct device *dev, u64 mask)
 -{
--	if (!p)
--		return -EINVAL;
--	dma32_bootmem_size = memparse(p, &p);
--	return 0;
--}
--early_param("dma32_size", parse_dma32_size_opt);
+-#ifdef CONFIG_PCI
+-	if (mask > 0xffffffff && forbid_dac > 0) {
 -
--void __init dma32_reserve_bootmem(void)
--{
--	unsigned long size, align;
--	if (end_pfn <= MAX_DMA32_PFN)
--		return;
 -
--	align = 64ULL<<20;
--	size = round_up(dma32_bootmem_size, align);
--	dma32_bootmem_ptr = __alloc_bootmem_nopanic(size, align,
--				 __pa(MAX_DMA_ADDRESS));
--	if (dma32_bootmem_ptr)
--		dma32_bootmem_size = size;
--	else
--		dma32_bootmem_size = 0;
--}
--static void __init dma32_free_bootmem(void)
--{
--	int node;
 -
--	if (end_pfn <= MAX_DMA32_PFN)
--		return;
--
--	if (!dma32_bootmem_ptr)
--		return;
--
--	for_each_online_node(node)
--		free_bootmem_node(NODE_DATA(node), __pa(dma32_bootmem_ptr),
--				  dma32_bootmem_size);
--
--	dma32_bootmem_ptr = NULL;
--	dma32_bootmem_size = 0;
--}
--
--void __init pci_iommu_alloc(void)
--{
--	/* free the range so iommu could get some range less than 4G */
--	dma32_free_bootmem();
--	/*
--	 * The order of these functions is important for
--	 * fall-back/fail-over reasons
--	 */
--#ifdef CONFIG_GART_IOMMU
--	gart_iommu_hole_init();
+-		printk(KERN_INFO "PCI: Disallowing DAC for device %s\n", dev->bus_id);
+-		return 0;
+-	}
 -#endif
 -
--#ifdef CONFIG_CALGARY_IOMMU
--	detect_calgary();
--#endif
+-	if (dma_ops->dma_supported)
+-		return dma_ops->dma_supported(dev, mask);
 -
--	detect_intel_iommu();
+-	/* Copied from i386. Doesn't make much sense, because it will
+-	   only work for pci_alloc_coherent.
+-	   The caller just has to use GFP_DMA in this case. */
+-        if (mask < DMA_24BIT_MASK)
+-                return 0;
 -
--#ifdef CONFIG_SWIOTLB
--	pci_swiotlb_init();
--#endif
+-	/* Tell the device to use SAC when IOMMU force is on.  This
+-	   allows the driver to use cheaper accesses in some cases.
+-
+-	   Problem with this is that if we overflow the IOMMU area and
+-	   return DAC as fallback address the device may not handle it
+-	   correctly.
+-
+-	   As a special case some controllers have a 39bit address
+-	   mode that is as efficient as 32bit (aic79xx). Don't force
+-	   SAC for these.  Assume all masks <= 40 bits are of this
+-	   type. Normally this doesn't make any difference, but gives
+-	   more gentle handling of IOMMU overflow. */
+-	if (iommu_sac_force && (mask >= DMA_40BIT_MASK)) {
+-		printk(KERN_INFO "%s: Force SAC with mask %Lx\n", dev->bus_id,mask);
+-		return 0;
+-	}
+-
+-	return 1;
 -}
+-EXPORT_SYMBOL(dma_supported);
+-
+ /*
+  * See <Documentation/x86_64/boot-options.txt> for the iommu kernel parameter
+  * documentation.
 -- 
 1.5.0.6
 
