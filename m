@@ -1,170 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756503AbYDHVyF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756338AbYDHVzB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756503AbYDHVyF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Apr 2008 17:54:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752793AbYDHVxy
+	id S1756338AbYDHVzB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Apr 2008 17:55:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752658AbYDHVyu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Apr 2008 17:53:54 -0400
-Received: from wr-out-0506.google.com ([64.233.184.239]:2700 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752432AbYDHVxx (ORCPT
+	Tue, 8 Apr 2008 17:54:50 -0400
+Received: from e31.co.us.ibm.com ([32.97.110.149]:39984 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752628AbYDHVyu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Apr 2008 17:53:53 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=N/gvdGgPZmwwQRC/wNIp5cP93FaeMiNFquubLBF4ug7fzNe572liHf81UGDCGDmLLEGzrkt9nJIw9ldhv1FwV5EaUoAsLLsBFP5XS5K/d4hxyuWBEBp8qH4IwPW4OssbW9q9hu6gAh7U1ijergtycfnsC+EHHz6uGMbQAGPN65w=
-Message-ID: <86802c440804081453y1a0a8e1ds8aac6074b993c476@mail.gmail.com>
-Date: Tue, 8 Apr 2008 14:53:51 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Mike Travis" <travis@sgi.com>
-Subject: Re: [PATCH 0/2] NR_CPUS: increase maximum NR_CPUS to 4096
-Cc: "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20080405013014.478571000@polaris-admin.engr.sgi.com>
+	Tue, 8 Apr 2008 17:54:50 -0400
+Date: Tue, 8 Apr 2008 14:53:33 -0700
+From: sukadev@us.ibm.com
+To: linux-kernel@vger.kernel.org
+Cc: Containers <containers@lists.osdl.org>, Pavel Emelyanov <xemul@openvz.org>,
+       serue@us.ibm.com, clg@fr.ibm.com
+Subject: [RFC][PATCH 0/7] Clone PTS namespace
+Message-ID: <20080408215333.GA8799@us.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20080405013014.478571000@polaris-admin.engr.sgi.com>
+X-Operating-System: Linux 2.0.32 on an i486
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 4, 2008 at 6:30 PM, Mike Travis <travis@sgi.com> wrote:
->
->   * Increases the limit of NR_CPUS to 4096 and introduces a
->     boolean called "MAXSMP" which when set (e.g. "allyesconfig")
->     will set NR_CPUS = 4096 and NODES_SHIFT = 9 (512).
->
->     I've been running this config (4k NR_CPUS, 512 Max Nodes)
->     on an AMD box with 2 dual-cores and 4gb memory as well as an
->     Intel box with 4 single-core cpus and 8Mb.  I've also
->     successfully booted it in a simulated 2cpus/1Gb environment.
->
->  Based on:
->         git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git
->     +   x86/latest          .../x86/linux-2.6-x86.git
->     +   sched-devel/latest  .../mingo/linux-2.6-sched-devel.git
->
->  Signed-off-by: Mike Travis <travis@sgi.com>
 
-got
+Devpts namespace patchset
 
-------------[ cut here ]------------
-WARNING: at kernel/sched_fair.c:815 hrtick_start_fair+0x69/0x156()
-Modules linked in:
-Pid: 1, comm: swapper Not tainted
-2.6.25-rc8-x86-latest.git-smp-01033-ga39ae31-dirty #77
+In continuation of the implementation of containers in mainline, we need to
+support multiple PTY namespaces so that the PTY index (ie the tty names) in
+one container is independent of the PTY indices of other containers.  For
+instance this would allow each container to have a '/dev/pts/0' PTY and
+refer to different terminals.
 
-Call Trace:
- [<ffffffff802596ce>] warn_on_slowpath+0x67/0x8e
- [<ffffffff8024b266>] hrtick_start_fair+0x69/0x156
- [<ffffffff8024a619>] ? dequeue_entity+0x2a/0xf8
- [<ffffffff8025547d>] dequeue_task_fair+0x5f/0x7e
- [<ffffffff80248ea3>] dequeue_task+0x22/0x44
- [<ffffffff80248efe>] deactivate_task+0x39/0x69
- [<ffffffff80a57c31>] schedule+0x1b9/0x5c5
- [<ffffffff80270dff>] ? autoremove_wake_function+0x20/0x5e
- [<ffffffff80a58338>] schedule_timeout+0x31/0xd7
- [<ffffffff8024db1a>] ? __wake_up+0x52/0x75
- [<ffffffff80a578a3>] wait_for_common+0x103/0x189
- [<ffffffff8024f29b>] ? default_wake_function+0x0/0x36
- [<ffffffff80a57a62>] wait_for_completion+0x2b/0x41
- [<ffffffff8026c0d2>] call_usermodehelper_exec+0x87/0xe5
- [<ffffffff80561073>] kobject_uevent_env+0x3d0/0x424
- [<ffffffff805610e5>] kobject_uevent+0x1e/0x34
- [<ffffffff805f2dbd>] device_add+0x2f9/0x494
- [<ffffffff805f2f80>] device_register+0x28/0x43
- [<ffffffff80577abf>] pcie_port_device_register+0x3f1/0x43e
- [<ffffffff80972165>] ? pcibios_set_master+0x8d/0xa8
- [<ffffffff80a24a1c>] pcie_portdrv_probe+0x79/0xbb
- [<ffffffff80574173>] pci_call_probe+0xe5/0x146
- [<ffffffff80574331>] pci_device_probe+0x64/0xa2
- [<ffffffff805f5946>] driver_probe_device+0xcf/0x16d
- [<ffffffff8031d708>] ? sysfs_addrm_finish+0x2f/0x22b
- [<ffffffff805f5b0b>] ? __driver_attach+0x0/0xbe
- [<ffffffff805f5b79>] __driver_attach+0x6e/0xbe
- [<ffffffff805f4999>] bus_for_each_dev+0x5e/0xa2
- [<ffffffff805f571f>] driver_attach+0x2f/0x45
- [<ffffffff805f5430>] bus_add_driver+0xc6/0x226
- [<ffffffff805f45a4>] ? bus_put+0x29/0x3f
- [<ffffffff805f5e66>] driver_register+0x6d/0xfc
- [<ffffffff805745fa>] __pci_register_driver+0x62/0xb0
- [<ffffffff818b25db>] pcie_portdrv_init+0x4a/0x72
- [<ffffffff81890bcf>] kernel_init+0x1b4/0x340
- [<ffffffff80225308>] child_rip+0xa/0x12
- [<ffffffff81890a1b>] ? kernel_init+0x0/0x340
- [<ffffffff802252fe>] ? child_rip+0x0/0x12
+	[PATCH 1/7]: Propagate error code from devpts_pty_new
+	[PATCH 2/7]: Factor out PTY index allocation
+	[PATCH 3/7]: Enable multiple mounts of /dev/pts
+	[PATCH 4/7]: Allow mknod of ptmx and tty in devpts
+	[PATCH 5/7]: Implement get_pts_ns() and put_pts_ns()
+	[PATCH 6/7]: Determine pts_ns from a pty's inode
+	[PATCH 7/7]: Enable cloning PTY namespaces
 
----[ end trace e26645195698f5cf ]---
-BUG: unable to handle kernel NULL pointer dereference at 0000000000000148
-IP: [<ffffffff8024b3cf>] pick_next_task_fair+0x7c/0xbb
-PGD 0
-Oops: 0000 [1] SMP
-CPU 28
-Modules linked in:
-Pid: 1, comm: swapper Not tainted
-2.6.25-rc8-x86-latest.git-smp-01033-ga39ae31-dirty #77
-RIP: 0010:[<ffffffff8024b3cf>]  [<ffffffff8024b3cf>]
-pick_next_task_fair+0x7c/0xbb
-RSP: 0018:ffff81081cc5cd70  EFLAGS: 00010046
-RAX: 0000000000000000 RBX: ffff81383c21a280 RCX: 0000000000000000
-RDX: ffff81383c224080 RSI: ffff81383c224080 RDI: 0000000063e15417
-RBP: ffff81081cc5cda0 R08: 0000000000000000 R09: ffff81383c224108
-R10: 0000000000000001 R11: 0000000000000000 R12: 0000000000000000
-R13: ffff81383c224080 R14: ffff81383c224080 R15: 000000000000001c
-FS:  0000000000000000(0000) GS:ffff81401cc3c600(0000) knlGS:0000000000000000
-CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
-CR2: 0000000000000148 CR3: 0000000000201000 CR4: 00000000000006e0
-DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-Process swapper (pid: 1, threadinfo ffff81081cc5c000, task ffff81401cc52000)
-Stack:  ffff81081cc5cda0 0000000063e15417 ffffffff80a81840 0000000000000000
- 00000000fffeecfd ffff81383c224080 ffff81081cc5ce70 ffffffff80a57d28
- ffff81081cc5ce00 ffff81081cc5ce20 ffffffff81963080 ffffffff81963080
-Call Trace:
- [<ffffffff80a57d28>] schedule+0x2b0/0x5c5
- [<ffffffff80270dff>] ? autoremove_wake_function+0x20/0x5e
- [<ffffffff80a58338>] schedule_timeout+0x31/0xd7
- [<ffffffff8024db1a>] ? __wake_up+0x52/0x75
- [<ffffffff80a578a3>] wait_for_common+0x103/0x189
- [<ffffffff8024f29b>] ? default_wake_function+0x0/0x36
- [<ffffffff80a57a62>] wait_for_completion+0x2b/0x41
- [<ffffffff8026c0d2>] call_usermodehelper_exec+0x87/0xe5
- [<ffffffff80561073>] kobject_uevent_env+0x3d0/0x424
- [<ffffffff805610e5>] kobject_uevent+0x1e/0x34
- [<ffffffff805f2dbd>] device_add+0x2f9/0x494
- [<ffffffff805f2f80>] device_register+0x28/0x43
- [<ffffffff80577abf>] pcie_port_device_register+0x3f1/0x43e
- [<ffffffff80972165>] ? pcibios_set_master+0x8d/0xa8
- [<ffffffff80a24a1c>] pcie_portdrv_probe+0x79/0xbb
- [<ffffffff80574173>] pci_call_probe+0xe5/0x146
- [<ffffffff80574331>] pci_device_probe+0x64/0xa2
- [<ffffffff805f5946>] driver_probe_device+0xcf/0x16d
- [<ffffffff8031d708>] ? sysfs_addrm_finish+0x2f/0x22b
- [<ffffffff805f5b0b>] ? __driver_attach+0x0/0xbe
- [<ffffffff805f5b79>] __driver_attach+0x6e/0xbe
- [<ffffffff805f4999>] bus_for_each_dev+0x5e/0xa2
- [<ffffffff805f571f>] driver_attach+0x2f/0x45
- [<ffffffff805f5430>] bus_add_driver+0xc6/0x226
- [<ffffffff805f45a4>] ? bus_put+0x29/0x3f
- [<ffffffff805f5e66>] driver_register+0x6d/0xfc
- [<ffffffff805745fa>] __pci_register_driver+0x62/0xb0
- [<ffffffff818b25db>] pcie_portdrv_init+0x4a/0x72
- [<ffffffff81890bcf>] kernel_init+0x1b4/0x340
- [<ffffffff80225308>] child_rip+0xa/0x12
- [<ffffffff81890a1b>] ? kernel_init+0x0/0x340
- [<ffffffff802252fe>] ? child_rip+0x0/0x12
+Todo:
+	- This patchset depends on availability of additional clone flags.
+	  and relies on on Cedric's clone64 patchset. See
 
+		  http://marc.info/?l=linux-kernel&m=120272411925609&w=2
+	
+	- Needs some cleanup and more testing
 
-Code: 24 40 78 1c 8b 3d 36 05 b3 00 48 89 da be 00 04 00 00 e8 7a eb
-ff ff 49 39 c6 7f 04 4c 8b 63 48 4c 89 e6 4
-8 89 df e8 29 f1 ff ff <49> 8b 9c 24 48 01 00 00 48 85 db 75 a5 49 8d
-5c 24 c8 4c 89 ef
-RIP  [<ffffffff8024b3cf>] pick_next_task_fair+0x7c/0xbb
- RSP <ffff81081cc5cd70>
-CR2: 0000000000000148
----[ end trace e26645195698f5cf ]---
+	- Ensure patchset is bisect-safe
+
+---
+Changelogs from earlier posts to Containers@.
+
+Changelog[v2]:
+
+	 (Patches 4 and 6 differ significantly from [v1]. Others are mostly
+	 the same)
+
+	- [Alexey Dobriyan, Pavel Emelyanov] Removed the hack to check for
+	  user-space mount.
+
+	- [Serge Hallyn] Added rcu locking around access to sb->s_fs_info.
+
+	- [Serge Hallyn] Allow creation of /dev/pts/ptmx and /dev/pts/tty
+	  devices to simplify the process of finding the 'owning' pts-ns
+	  of the device (specially when accessed from parent-pts-ns)
+	  See patches 4 and 6 for details.
+
+Changelog[v1]:
+	- Fixed circular reference by not caching the pts_ns in sb->s_fs_info
+	  (without incrementing reference count) and clearing the sb->s_fs_info
+	  when destroying the pts_ns
+
+	- To allow access to a child container's ptys from parent container,
+	  determine the 'pts_ns' of a 'pty' from its inode.
+
+	- Added a check (hack) to ensure user-space mount of /dev/pts is
+	  done before creating PTYs in a new pts-ns.
+
+	- Reorganized the patchset and removed redundant changes.
+	
+	- Ported to work wih Cedric Le Goater's clone64() system call now
+	  that we are out of clone_flags.
+
+Changelog[v0]:
+
+	This patchset is based on earlier versions developed by Serge Hallyn
+	and Matt Helsley.
