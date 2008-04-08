@@ -1,96 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752791AbYDHG2q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753036AbYDHGcx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752791AbYDHG2q (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Apr 2008 02:28:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751325AbYDHG2g
+	id S1753036AbYDHGcx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Apr 2008 02:32:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751632AbYDHGcq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Apr 2008 02:28:36 -0400
-Received: from mail.gmx.net ([213.165.64.20]:35379 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751213AbYDHG2f convert rfc822-to-8bit (ORCPT
+	Tue, 8 Apr 2008 02:32:46 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:49066 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751325AbYDHGcp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Apr 2008 02:28:35 -0400
-X-Authenticated: #20450766
-X-Provags-ID: V01U2FsdGVkX18AsiNFr50AAhpnwmj/0UcdllR/soV2MpNKxKdsVe
-	HqvnCezSDajihI
-Date: Tue, 8 Apr 2008 08:28:37 +0200 (CEST)
-From: Guennadi Liakhovetski <g.liakhovetski@pengutronix.de>
-X-X-Sender: lyakh@axis700.grange
-To: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <Uwe.Kleine-Koenig@digi.com>
-cc: David Brownell <david-b@pacbell.net>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: gpio patches in mmotm
-In-Reply-To: <20080408060230.GA22071@digi.com>
-Message-ID: <Pine.LNX.4.64.0804080812420.3556@axis700.grange>
-References: <20080317173134.GA27282@digi.com> <Pine.LNX.4.64.0803171915020.8640@axis700.grange>
- <20080318160316.GA31588@digi.com> <Pine.LNX.4.64.0803181717240.5022@axis700.grange>
- <20080408060230.GA22071@digi.com>
+	Tue, 8 Apr 2008 02:32:45 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=BG0DQoluVRM4Uk5M/VCrBD6rp8p310hN9xr//prkNJUdCFneZ8929QFpwFiygLrCu
+	GDqHX7qbkJsCzNdT7U/0Q==
+Message-ID: <6599ad830804072332w712e11f4j74a57769ac211389@mail.gmail.com>
+Date: Mon, 7 Apr 2008 23:32:28 -0700
+From: "Paul Menage" <menage@google.com>
+To: balbir@linux.vnet.ibm.com
+Subject: Re: [-mm] Add an owner to the mm_struct (v8)
+Cc: "Pavel Emelianov" <xemul@openvz.org>, "Hugh Dickins" <hugh@veritas.com>,
+       "Sudhir Kumar" <skumar@linux.vnet.ibm.com>,
+       "YAMAMOTO Takashi" <yamamoto@valinux.co.jp>,
+       linux-kernel@vger.kernel.org, taka@valinux.co.jp, linux-mm@kvack.org,
+       "David Rientjes" <rientjes@google.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <47F86E4F.2080103@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=ISO-8859-15
-Content-Transfer-Encoding: 8BIT
-X-Y-GMX-Trusted: 0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080404080544.26313.38199.sendpatchset@localhost.localdomain>
+	 <47F5F3FA.7060709@linux.vnet.ibm.com>
+	 <6599ad830804041211r37848a6coaa900d8bdac40fbe@mail.gmail.com>
+	 <47F79102.6090406@linux.vnet.ibm.com>
+	 <6599ad830804051023v69caa3d4h6e26ccb420bca899@mail.gmail.com>
+	 <47F7BB69.3000502@linux.vnet.ibm.com>
+	 <6599ad830804051057n2f2802e4w6179f2e108467494@mail.gmail.com>
+	 <47F7CC08.4090209@linux.vnet.ibm.com>
+	 <6599ad830804051631g15363456s1952fda0bb4d395d@mail.gmail.com>
+	 <47F86E4F.2080103@linux.vnet.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 8 Apr 2008, Uwe Kleine-König wrote:
+On Sat, Apr 5, 2008 at 11:31 PM, Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+>  > *If* they want to use the virtual address space controller, that is.
+>  >
+>  > By that argument, you should make the memory and cpu controllers the
+>  > same controller, since in your scenario they'll usually be used
+>  > together..
+>
+>  Heh, Virtual address and memory are more closely interlinked than CPU and Memory.
 
-> > I'm storing the GPIO number locally, and if the system doesn't have a 
-> > valid GPIO for me, I'm storing an invalid GPIO number. Then at any time if 
-> > the GPIO has to be used, I just verify if gpio_is_valid(), and if not, 
-> > return an error code for this request, but the driver remains otherwise 
-> > functional.
-> OK, so in your driver you have:
-> 
-> 	if (gpio_is_valid(gpio)) {
-> 		/* We have a data bus switch. */
-> 		ret = gpio_request(gpio, "mt9m001");
-> 		if (ret < 0) {
-> 			dev_err(&mt9m001->client->dev, "Cannot get GPIO %u\n",
-> 				gpio);
-> 			return ret;
-> 		}
-> 		ret = gpio_direction_output(gpio, 0);
-> 		if (ret < 0) {
-> 			...
-> 
-> 
-> In my eyes the following is better:
-> 
-> 	/* Do we have a data bus switch? */
-> 	ret = gpio_request(gpio, "mt9m001");
-> 	if (ret < 0) {
-> 		if (ret != -EINVAL) {
-> 			dev_err(...);
-> 			return ret;
-> 		}
-> 	} else {
-> 		ret = gpio_direction_output(gpio, 0);
-> 		if (ret < 0) {
-> 			...
+If you consider virtual address space limits a useful way to limit
+swap usage, that's true.
 
-Yes, you could do that. But then you have to test either before calling 
-gpio_set_value_cansleep() or inside it. And the test you have to perform 
-_is_ the validity check, so, you need it anyway.
+But if you don't, then memory and CPU are more closely linked since
+they represent real resource usage, whereas virtual address space is a
+more abstract quantity.
 
-> Then you don't need to extend the API.  Moreover with your variant the
-> check that gpio is valid must be done twice[1].
-
-Actually three times. The one before gpio_free() is not actually needed, 
-right, it is anyway checked inside. But gpio_set_value_cansleep() doesn't 
-check, so, it would be rude to call it with an invalid value.
-
-> [1] OK, gpio_is_valid and gpio_request might be inline functions, but
-> for "my" architecture it is not.
-
-Which arch is it? As I said, you could simplify the two specific camera 
-drivers by removing the checks where they are redundant. But on other 
-occasions the checks have to be done anyway, so, it is not a question of 
-runtime performance (apart from maybe the difference between calling a 
-function and executing inline), but just of an extra API member, which you 
-can have different opinions about:-)
-
-Thanks
-Guennadi
----
-Guennadi Liakhovetski
+Paul
