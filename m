@@ -1,93 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756338AbYDHVzB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756237AbYDHV4k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756338AbYDHVzB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Apr 2008 17:55:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752658AbYDHVyu
+	id S1756237AbYDHV4k (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Apr 2008 17:56:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753184AbYDHV4c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Apr 2008 17:54:50 -0400
-Received: from e31.co.us.ibm.com ([32.97.110.149]:39984 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752628AbYDHVyu (ORCPT
+	Tue, 8 Apr 2008 17:56:32 -0400
+Received: from fg-out-1718.google.com ([72.14.220.158]:23743 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751814AbYDHV4b (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Apr 2008 17:54:50 -0400
-Date: Tue, 8 Apr 2008 14:53:33 -0700
-From: sukadev@us.ibm.com
-To: linux-kernel@vger.kernel.org
-Cc: Containers <containers@lists.osdl.org>, Pavel Emelyanov <xemul@openvz.org>,
-       serue@us.ibm.com, clg@fr.ibm.com
-Subject: [RFC][PATCH 0/7] Clone PTS namespace
-Message-ID: <20080408215333.GA8799@us.ibm.com>
+	Tue, 8 Apr 2008 17:56:31 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=sbG0qhqIvRye0/b4FGGJ1SPwoPEW4xVYClOd0qJqDVwXc/eeygiJdXjlbF0NVizIDtbRwZM2HwRdUZl1iqT6LQ7z+kthSnIcSTRjf4rOt4/8h9BvLt77NtuyfJLhXL0tLBDFXIPyWml0KKWfEtRaqFUi5kduweUfM/jyWe+GtJY=
+Message-ID: <47FBEA09.6090507@gmail.com>
+Date: Tue, 08 Apr 2008 23:56:25 +0200
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-X-Operating-System: Linux 2.0.32 on an i486
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: akpm@osdl.org, linux-kernel@vger.kernel.org,
+       Paul Hardwick <p.hardwick@option.com>
+Subject: Re: [PATCH] tty/serial: Lay the foundations for the next set of reworks
+References: <20080408165839.47df4517@core>
+In-Reply-To: <20080408165839.47df4517@core>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 04/08/2008 05:58 PM, Alan Cox wrote:
+> - Remove private put_char method that does a write call for one char - we
+> have that anyway
 
-Devpts namespace patchset
+> diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.25-rc8-mm1/drivers/char/nozomi.c linux-2.6.25-rc8-mm1/drivers/char/nozomi.c
+> --- linux.vanilla-2.6.25-rc8-mm1/drivers/char/nozomi.c	2008-04-08 11:34:51.000000000 +0100
+> +++ linux-2.6.25-rc8-mm1/drivers/char/nozomi.c	2008-04-08 11:44:09.000000000 +0100
+> @@ -1724,6 +1724,8 @@
+>  	const struct ctrl_dl *ctrl_dl = &port->ctrl_dl;
+>  	const struct ctrl_ul *ctrl_ul = &port->ctrl_ul;
+>  
+> +	/* Note: these could change under us but it is not clear this
+> +	   matters if so */
+>  	return	(ctrl_ul->RTS ? TIOCM_RTS : 0) |
+>  		(ctrl_ul->DTR ? TIOCM_DTR : 0) |
+>  		(ctrl_dl->DCD ? TIOCM_CAR : 0) |
+> @@ -1849,16 +1851,6 @@
+>  	spin_unlock_irqrestore(&dc->spin_mutex, flags);
+>  }
+>  
+> -/* just to discard single character writes */
+> -static void ntty_put_char(struct tty_struct *tty, unsigned char c)
+> -{
+> -	/*
+> -	 * card does not react correct when we write single chars
+> -	 * to the card, so we discard them
+> -	 */
+> -	DBG2("PUT CHAR Function: %c", c);
+> -}
+> -
+>  /* Returns number of chars in buffer, called by tty layer */
+>  static s32 ntty_chars_in_buffer(struct tty_struct *tty)
+>  {
+> @@ -1892,7 +1884,6 @@
+>  	.unthrottle = ntty_unthrottle,
+>  	.throttle = ntty_throttle,
+>  	.chars_in_buffer = ntty_chars_in_buffer,
+> -	.put_char = ntty_put_char,
+>  	.tiocmget = ntty_tiocmget,
+>  	.tiocmset = ntty_tiocmset,
+>  };
 
-In continuation of the implementation of containers in mainline, we need to
-support multiple PTY namespaces so that the PTY index (ie the tty names) in
-one container is independent of the PTY indices of other containers.  For
-instance this would allow each container to have a '/dev/pts/0' PTY and
-refer to different terminals.
+Well, how exactly the card behaves on 1 byte write? And how did the .write 
+protect against it?
 
-	[PATCH 1/7]: Propagate error code from devpts_pty_new
-	[PATCH 2/7]: Factor out PTY index allocation
-	[PATCH 3/7]: Enable multiple mounts of /dev/pts
-	[PATCH 4/7]: Allow mknod of ptmx and tty in devpts
-	[PATCH 5/7]: Implement get_pts_ns() and put_pts_ns()
-	[PATCH 6/7]: Determine pts_ns from a pty's inode
-	[PATCH 7/7]: Enable cloning PTY namespaces
-
-Todo:
-	- This patchset depends on availability of additional clone flags.
-	  and relies on on Cedric's clone64 patchset. See
-
-		  http://marc.info/?l=linux-kernel&m=120272411925609&w=2
-	
-	- Needs some cleanup and more testing
-
-	- Ensure patchset is bisect-safe
-
----
-Changelogs from earlier posts to Containers@.
-
-Changelog[v2]:
-
-	 (Patches 4 and 6 differ significantly from [v1]. Others are mostly
-	 the same)
-
-	- [Alexey Dobriyan, Pavel Emelyanov] Removed the hack to check for
-	  user-space mount.
-
-	- [Serge Hallyn] Added rcu locking around access to sb->s_fs_info.
-
-	- [Serge Hallyn] Allow creation of /dev/pts/ptmx and /dev/pts/tty
-	  devices to simplify the process of finding the 'owning' pts-ns
-	  of the device (specially when accessed from parent-pts-ns)
-	  See patches 4 and 6 for details.
-
-Changelog[v1]:
-	- Fixed circular reference by not caching the pts_ns in sb->s_fs_info
-	  (without incrementing reference count) and clearing the sb->s_fs_info
-	  when destroying the pts_ns
-
-	- To allow access to a child container's ptys from parent container,
-	  determine the 'pts_ns' of a 'pty' from its inode.
-
-	- Added a check (hack) to ensure user-space mount of /dev/pts is
-	  done before creating PTYs in a new pts-ns.
-
-	- Reorganized the patchset and removed redundant changes.
-	
-	- Ported to work wih Cedric Le Goater's clone64() system call now
-	  that we are out of clone_flags.
-
-Changelog[v0]:
-
-	This patchset is based on earlier versions developed by Serge Hallyn
-	and Matt Helsley.
