@@ -1,82 +1,186 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753363AbYDHUkq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754219AbYDHUmi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753363AbYDHUkq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Apr 2008 16:40:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752635AbYDHUkf
+	id S1754219AbYDHUmi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Apr 2008 16:42:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752165AbYDHUmb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Apr 2008 16:40:35 -0400
-Received: from mga02.intel.com ([134.134.136.20]:21685 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752156AbYDHUke (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Apr 2008 16:40:34 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,625,1199692800"; 
-   d="scan'208";a="368291961"
-Message-ID: <47FBD620.1080508@intel.com>
-Date: Tue, 08 Apr 2008 13:31:28 -0700
-From: "Kok, Auke" <auke-jan.h.kok@intel.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071125)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Jeff Garzik <jeff@garzik.org>, Matthew Wilcox <matthew@wil.cx>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       NetDev <netdev@vger.kernel.org>,
-       e1000-list <e1000-devel@lists.sourceforge.net>,
-       linux-pci maillist <linux-pci@atrey.karlin.mff.cuni.cz>,
+	Tue, 8 Apr 2008 16:42:31 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:41609 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751912AbYDHUma (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Apr 2008 16:42:30 -0400
+Date: Tue, 8 Apr 2008 23:42:27 +0300 (EEST)
+From: Pekka J Enberg <penberg@cs.helsinki.fi>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: Hugh Dickins <hugh@veritas.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Christoph Lameter <clameter@sgi.com>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
        Andrew Morton <akpm@linux-foundation.org>,
-       "David S. Miller" <davem@davemloft.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Jesse Brandeburg <jesse.brandeburg@intel.com>,
-       "Ronciak, John" <john.ronciak@intel.com>,
-       "Allan, Bruce W" <bruce.w.allan@intel.com>, Greg KH <greg@kroah.com>,
-       Arjan van de Ven <arjan@linux.intel.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [regression] e1000e broke e1000
-References: <47F69965.7030303@intel.com> <20080408083606.GA20863@elte.hu> <47FB9ABB.9080403@intel.com> <20080408183921.GA20803@elte.hu> <20080408193245.GG11962@parisc-linux.org> <20080408195123.GA28148@elte.hu> <47FBCE00.2020309@garzik.org> <20080408200652.GC28148@elte.hu>
-In-Reply-To: <20080408200652.GC28148@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       Jens Axboe <jens.axboe@oracle.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] scsi: fix sense_slab/bio swapping livelock
+In-Reply-To: <alpine.LFD.1.00.0804071515320.2886@woody.linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0804082340120.11104@sbz-30.cs.Helsinki.FI>
+References: <Pine.LNX.4.64.0804062348001.19446@blonde.site> 
+ <Pine.LNX.4.64.0804062213230.18148@schroedinger.engr.sgi.com> 
+ <Pine.LNX.4.64.0804072000410.18591@blonde.site> <1207598115.29991.23.camel@lappy>
+ <Pine.LNX.4.64.0804072121320.28744@blonde.site> <47FA8B5A.5090104@cs.helsinki.fi>
+ <47FA8CB0.6070106@cs.helsinki.fi> <alpine.LFD.1.00.0804071409150.2886@woody.linux-foundation.org>
+ <47FA937E.6000009@cs.helsinki.fi> <47FA94AE.4070803@cs.helsinki.fi>
+ <Pine.LNX.4.64.0804080104170.23980@sbz-30.cs.Helsinki.FI>
+ <alpine.LFD.1.00.0804071515320.2886@woody.linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Jeff Garzik <jeff@garzik.org> wrote:
-> 
->> Then disable E1000E in your kernel config, and the PCIE() macro will 
->> do the right thing...
-> 
-> it is an obvious regression that could and should be solved in the 
-> Kconfig space: do not allow E1000=y && E1000E=m.
+On Tue, 8 Apr 2008, Pekka J Enberg wrote:
+> > 
+> > So something like the following (totally untested) patch modulo the 
+> > pre-allocation bits.
 
-this is really not the solution imho, having e1000 builtin and e1000e as a module
-is a perfectly viable choice. They are two separate drivers that are completely
-independent.
+On Mon, 7 Apr 2008, Linus Torvalds wrote:
+> Hmm. I didn't check, but won't this cause problems on the freeing path 
+> when we call kmem_cache_free() on the result but with the wrong "struct 
+> kmem_cache" pointer?
 
-I also think that the word "regression" is way out of proportion. I did not
-complain myself when IDE/ATA->SATA driver merges broke all my systems and I was
-pleasantly provided with the 'cannot find root vfs' message. (that's what I get
-for running my own distro).
+So something like this fugly patch on top of the SLUB variable order 
+patches that let the allocator fall-back to smaller page orders. Survives 
+OOM in my testing and the box seems to be bit more responsive even under X 
+with this.
 
-> i repeat, it took me more than an hour to figure out why there's no 
-> networking on my laptop. Guess how much it takes for a plain user to 
-> figure out the same problem.
+		Pekka
 
-a plain user uses a distro which is aware of the issue and that will load e1000e
-automatically, because it was tested by the distro.
+---
+ mm/slub.c |   93 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 92 insertions(+), 1 deletion(-)
 
-that is just pushing the discussion to the wrong point. The decision has been made
-a long time ago to split e1000 in two. now that we have two drivers, we have a
-migration issue. you can't fix this migration issue by forcing a specific .config
-endresult on the user.
-
-I've seen suggestions that will alleviate the issue by adding a 'default E1000' to
-the e1000e Kconfig section, and something like that makes sense to me and I still
-would be happy to merge something like that.
-
-I do not think that hiding the existence of e1000e for any user by always enabling
-it will fix things at all however, and will just lead to a lot of other issues
-later on.
-
-
-Auke
+Index: slab-2.6/mm/slub.c
+===================================================================
+--- slab-2.6.orig/mm/slub.c	2008-04-08 22:52:02.000000000 +0300
++++ slab-2.6/mm/slub.c	2008-04-08 23:27:27.000000000 +0300
+@@ -1549,6 +1549,88 @@
+ }
+ 
+ /*
++ * Emergency caches are reserved for GFP_TEMPORARY allocations on OOM.
++ */
++
++#define MIN_EMERGENCY_SIZE 32
++#define NR_EMERGENCY_CACHES 4
++
++struct kmem_cache *emergency_caches[NR_EMERGENCY_CACHES];
++
++static void pre_alloc_cpu_slabs(struct kmem_cache *s)
++{
++	int cpu;
++
++	/*
++	 * FIXME: CPU hot-plug, stats, debug?
++	 */
++	for_each_online_cpu(cpu) {
++		struct kmem_cache_cpu *c;
++		struct page *new;
++		void **object;
++		int node;
++
++		c = get_cpu_slab(s, cpu);
++		node = cpu_to_node(cpu);
++
++		new = new_slab(s, GFP_KERNEL, node);
++		BUG_ON(!new);
++
++		slab_lock(new);
++		SetSlabFrozen(new);
++		c->page = new;
++		object = c->page->freelist;
++		c->freelist = object[c->offset];
++		c->page->inuse = c->page->objects;
++		c->page->freelist = NULL;
++		c->node = page_to_nid(c->page);
++		slab_unlock(c->page);
++	}
++}
++
++static void init_emergency_caches(void)
++{
++	unsigned long size = MIN_EMERGENCY_SIZE;
++	int i;
++
++	for (i = 0; i < NR_EMERGENCY_CACHES; i++) {
++		struct kmem_cache *cache;
++		char *name;
++
++		name = kasprintf(GFP_KERNEL, "kmalloc-%d", 1 << i);
++		BUG_ON(!name);
++
++		cache = kmem_cache_create(name, size, 0, 0, NULL);
++		BUG_ON(!cache);
++		kfree(name);
++
++		pre_alloc_cpu_slabs(cache);
++		emergency_caches[i] = cache;
++
++		size *= 2;
++	}
++}
++
++static void *emergency_alloc(struct kmem_cache *cache, gfp_t gfp)
++{
++	unsigned long cache_size = MIN_EMERGENCY_SIZE;
++	void *p = NULL;
++	int i;
++
++	for (i = 0; i < NR_EMERGENCY_CACHES; i++) {
++		if (cache->objsize < cache_size) {
++			p = kmem_cache_alloc(emergency_caches[i], gfp);
++			if (p)
++				break;
++		}
++		cache_size *= 2;
++	}
++	if (p && cache->ctor)
++		cache->ctor(cache, p);
++	return p;
++}
++
++/*
+  * Slow path. The lockless freelist is empty or we need to perform
+  * debugging duties.
+  *
+@@ -1626,6 +1708,14 @@
+ 		c->page = new;
+ 		goto load_freelist;
+ 	}
++
++	/*
++	 * We are really OOM. Let short-lived allocations dip into the reserves
++	 * to ensure writeback makes progress.
++	 */
++	if ((gfpflags & GFP_TEMPORARY) == GFP_TEMPORARY)
++		return emergency_alloc(s, gfpflags);
++
+ 	return NULL;
+ debug:
+ 	if (!alloc_debug_processing(s, c->page, object, addr))
+@@ -1791,7 +1881,7 @@
+ 
+ 	page = virt_to_head_page(x);
+ 
+-	slab_free(s, page, x, __builtin_return_address(0));
++	slab_free(page->slab, page, x, __builtin_return_address(0));
+ }
+ EXPORT_SYMBOL(kmem_cache_free);
+ 
+@@ -3225,6 +3315,7 @@
+ #else
+ 	kmem_size = sizeof(struct kmem_cache);
+ #endif
++	init_emergency_caches();
+ 
+ 	printk(KERN_INFO
+ 		"SLUB: Genslabs=%d, HWalign=%d, Order=%d-%d, MinObjects=%d,"
