@@ -1,43 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754493AbYDHI2y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754196AbYDHIcq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754493AbYDHI2y (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Apr 2008 04:28:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751872AbYDHI2r
+	id S1754196AbYDHIcq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Apr 2008 04:32:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751818AbYDHIci
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Apr 2008 04:28:47 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:38644 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751781AbYDHI2q (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Apr 2008 04:28:46 -0400
-Date: Tue, 8 Apr 2008 01:28:18 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "eric miao" <eric.y.miao@gmail.com>
-Cc: "linux-arm-kernel email list" 
-	<linux-arm-kernel@lists.arm.linux.org.uk>,
-       linux-fbdev-devel@lists.sourceforge.net,
-       lkml <linux-kernel@vger.kernel.org>,
-       "Russell King - ARM Linux" <linux@arm.linux.org.uk>
-Subject: Re: [PATCH 0/4] pxafb: add smartpanel support
-Message-Id: <20080408012818.abaaf799.akpm@linux-foundation.org>
-In-Reply-To: <f17812d70804072101u1244c864s2f8d2ec1c9f96239@mail.gmail.com>
-References: <f17812d70804072101u1244c864s2f8d2ec1c9f96239@mail.gmail.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 8 Apr 2008 04:32:38 -0400
+Received: from mail.hevs.ch ([153.109.23.10]:60964 "EHLO mail.hevs.ch"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751806AbYDHIci (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Apr 2008 04:32:38 -0400
+From: Marc Pignat <marc.pignat@hevs.ch>
+Organization: HEVs
+To: Michael Trimarchi <trimarchimichael@yahoo.it>
+Subject: Re: [PATCH] atmel serial reduce trasmitting window & code style patch
+Date: Tue, 8 Apr 2008 10:32:31 +0200
+User-Agent: KMail/1.9.7
+Cc: linux-kernel@vger.kernel.org, Haavard Skinnemoen <hskinnemoen@atmel.com>
+References: <524838.25009.qm@web26206.mail.ukl.yahoo.com>
+In-Reply-To: <524838.25009.qm@web26206.mail.ukl.yahoo.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200804081032.32883.marc.pignat@hevs.ch>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 8 Apr 2008 12:01:25 +0800 "eric miao" <eric.y.miao@gmail.com> wrote:
+Hi all!
 
-> There are 4 patches as listed below:
-> 
-> 0001 - pxafb: introduce lcd_{read,write}l() to wrap the __raw_{read,write}l()
-> 0002 - pxafb: use completion for LCD disable wait code
-> 0003 - pxafb: move parallel LCD timing setup into dedicate function
-> 0004 - pxafb: preliminary smart panel interface support
+I just inlined your second patch for commenting.
 
-I had to fix rather a lot of wordwrapping in these patches.  Please fix up
-your email client for next time, thanks.
+On Thursday 03 April 2008, Michael Trimarchi wrote:
+> Hi,
+...
+> http://it.docs.yahoo.com/mail/overview/index.html
+
+> diff --git a/drivers/serial/atmel_serial.c b/drivers/serial/atmel_serial.c
+> index 9f58eb3..511a0cc 100644
+> --- a/drivers/serial/atmel_serial.c
+> +++ b/drivers/serial/atmel_serial.c
+> @@ -123,6 +123,7 @@ struct atmel_uart_char {
+>  };
+>  
+>  #define ATMEL_SERIAL_RINGSIZE	1024
+> +#define ATMEL_SERIAL_TXSIZE	32
+>  
+>  /*
+>   * We wrap our port structure around the generic uart_port.
+> @@ -426,6 +427,7 @@ static void atmel_rx_chars(struct uart_port *port)
+>  static void atmel_tx_chars(struct uart_port *port)
+>  {
+>  	struct circ_buf *xmit = &port->info->xmit;
+> +	int count = 0;
+ 
+>  	if (port->x_char && UART_GET_CSR(port) & ATMEL_US_TXRDY) {
+>  		UART_PUT_CHAR(port, port->x_char);
+> @@ -435,10 +437,12 @@ static void atmel_tx_chars(struct uart_port *port)
+>  	if (uart_circ_empty(xmit) || uart_tx_stopped(port))
+>  		return;
+>  
+> -	while (UART_GET_CSR(port) & ATMEL_US_TXRDY) {
+> +	while (UART_GET_CSR(port) & ATMEL_US_TXRDY &&
+> +	       count < ATMEL_SERIAL_TXSIZE) {
+>  		UART_PUT_CHAR(port, xmit->buf[xmit->tail]);
+>  		xmit->tail = (xmit->tail + 1) & (UART_XMIT_SIZE - 1);
+>  		port->icount.tx++;
+> +		count++;
+>  		if (uart_circ_empty(xmit))
+>  			break;
+>  	}
+For me this loop will never run more than 2-3 times.
+The CPU is much faster than the serial transmitter, so after 2 loops
+UART_GET_CSR(port) & ATMEL_US_TXRDY will be false and the loop will exit.
+
+If your patch does something, I can't understand how!
+
+Best regards
+
+Marc
