@@ -1,85 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752602AbYDHGKw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752926AbYDHGNk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752602AbYDHGKw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Apr 2008 02:10:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751325AbYDHGKm
+	id S1752926AbYDHGNk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Apr 2008 02:13:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751325AbYDHGNd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Apr 2008 02:10:42 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:55418 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751230AbYDHGKm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Apr 2008 02:10:42 -0400
-Date: Mon, 7 Apr 2008 23:10:07 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Gerlof Langeveld <gerlof@ATComputing.nl>
-Cc: linux-kernel@vger.kernel.org, Balbir Singh <balbir@in.ibm.com>,
-       Pavel Emelyanov <xemul@openvz.org>
-Subject: Re: [PATCH 1/3] accounting: task counters for disk/network
-Message-Id: <20080407231007.4946410d.akpm@linux-foundation.org>
-In-Reply-To: <20080408054837.GA7103@atcmpg.ATComputing.nl>
-References: <20080402073037.GA8419@atcmpg.ATComputing.nl>
-	<20080403125416.ead5cd38.akpm@linux-foundation.org>
-	<20080408054837.GA7103@atcmpg.ATComputing.nl>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 8 Apr 2008 02:13:33 -0400
+Received: from relay.gothnet.se ([82.193.160.251]:4744 "EHLO
+	GOTHNET-SMTP2.gothnet.se" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751170AbYDHGNc convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Apr 2008 02:13:32 -0400
+Message-ID: <47FB0CDB.1090009@tungstengraphics.com>
+Date: Tue, 08 Apr 2008 08:12:43 +0200
+From: =?ISO-8859-1?Q?Thomas_Hellstr=F6m?= <thomas@tungstengraphics.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080306)
+MIME-Version: 1.0
+To: Arjan van de Ven <arjan@linux.intel.com>
+CC: Jesse Barnes <jbarnes@virtuousgeek.org>, Andi Kleen <andi@firstfloor.org>,
+       Dave Airlie <airlied@redhat.com>, linux-kernel@vger.kernel.org,
+       tglx@linutronix.de, mingo@redhat.com
+Subject: Re: [PATCH] x86: create array based interface to change page attribute
+References: <1206940788.7250.13.camel@clockmaker.usersys.redhat.com> <200804071123.27411.jbarnes@virtuousgeek.org> <47FA7B58.6040907@tungstengraphics.com> <200804071259.19743.jbarnes@virtuousgeek.org> <47FA8826.2060802@tungstengraphics.com> <47FA8AB4.7060605@linux.intel.com>
+In-Reply-To: <47FA8AB4.7060605@linux.intel.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+X-BitDefender-Scanner: Mail not scanned due to license constraints
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 8 Apr 2008 07:48:37 +0200 Gerlof Langeveld <gerlof@ATComputing.nl> wrote:
+Arjan van de Ven wrote:
+> Thomas Hellström wrote:
+>> Ouch, so we'll be needing an ioremap_wc(), I guess. We probably 
+>> shouldn't use the linear kernel map for this anyway, since that would 
+>> require a chipset flush for each ring commit.  We can actually use 
+>> vmap() with a wc page protection for that, but an ioremap_wc() would 
+>> certainly save us a lot of trouble.
+>
+> please don't use vmap() as a hack for mapping IO memory when you 
+> should use ioremap_wc()....
+I think you've misinterpreted. We must use vmap() if we need to map the 
+cpu side of the aperture, (real pages) and ioremap() if we map the 
+device side, which is io memory. Some devices accept both, but what I 
+was saying was we should try to avoid the vmap() alternative, since it, 
+like using the kernel mapping directly, requires a chipset flush after 
+update.
+> Lets get this thing right rather than finding whichever hack of the day
+> happens to work with the implementation from yesterday.
+/Thomas
 
-> > > --- linux-2.6.24.4-vanilla/block/ll_rw_blk.c	2008-03-24 19:49:18.000000000 +0100
-> > > +++ linux-2.6.24.4-modified/block/ll_rw_blk.c	2008-03-25 13:52:14.000000000 +0100
-> > > @@ -2739,6 +2739,19 @@ static void drive_stat_acct(struct reque
-> > >  		disk_round_stats(rq->rq_disk);
-> > >  		rq->rq_disk->in_flight++;
-> > >  	}
-> > > +
-> > > +#ifdef CONFIG_TASK_IO_ACCOUNTING
-> > > +	switch (rw) {
-> > > +	case READ:
-> > > +		current->group_leader->ioac.dsk_rio += new_io;
-> > > +		current->group_leader->ioac.dsk_rsz += rq->nr_sectors;
-> > > +		break;
-> > > +	case WRITE:
-> > > +		current->group_leader->ioac.dsk_wio += new_io;
-> > > +		current->group_leader->ioac.dsk_wsz += rq->nr_sectors;
-> > > +		break;
-> > > +	}
-> > > +#endif
-> > 
-> > For many workloads, this will cause almost all writeout to be accounted to
-> > pdflush and perhaps kswapd.  This makes the per-task write accounting
-> > largely unuseful.
-> 
-> There are several situations that writeouts are accounted to the user-process
-> itself, e.g. when issueing direct writes (open mode O_DIRECT) or synchronous
-> writes (open mode O_SYNC, syscall sync/fsync, synchronous file attribute,
-> synchronous mounted filesystem).
 
-yup.
-
-> Apart from that, swapping out of process pages by kswapd is currently not
-> accounted at all as shown by the following snapshot of 'atop' on a heavily
-> swapping system:
-
-Under heavy load, callers into alloc_pages() will themselves perform disk
-writeout.  So under the proposed scheme, process A will be accounted for
-writeout which was in fact caused by process B.
-
-> So the extra counters can be considered as a useful addition to the I/O 
-> counters that are currently maintained.
-
-mmm, maybe.  But if we implement a partial solution like this we really
-should have a plan to finish it off.
-
-There have been numerous attempts at this, which tend to involve adding
-backpointers to the pageframe structure and such.
-
-This sort of accounting will presumably be needed by a disk bandwidth
-cgroup controller.  Perhaps the containers/cgroup people have plans of code
-already?
 
