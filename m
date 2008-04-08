@@ -1,151 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756837AbYDHO4j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757223AbYDHO5r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756837AbYDHO4j (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Apr 2008 10:56:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752772AbYDHO4M
+	id S1757223AbYDHO5r (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Apr 2008 10:57:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752637AbYDHO5g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Apr 2008 10:56:12 -0400
-Received: from mailhub.sw.ru ([195.214.232.25]:24530 "EHLO relay.sw.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756500AbYDHO4K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Apr 2008 10:56:10 -0400
-From: Alexey Dobriyan <adobriyan@sw.ru>
-To: akpm@osdl.org
-Subject: [PATCH 05/12] proc: remove /proc/mac_iop
-Date: Tue, 8 Apr 2008 18:55:33 +0400
-User-Agent: KMail/1.9.9
-Cc: devel@openvz.org, linux-kernel@vger.kernel.org
+	Tue, 8 Apr 2008 10:57:36 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:31286 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753269AbYDHO5f (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Apr 2008 10:57:35 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=DcirP2sKUmVXitdy9KNOw3qftA58mXMZ3qUvlyzc84c6RZXCoKbE9xIyByW4xF+v1
+	/pqjdk6kdP/QlqE0IJhYA==
+Message-ID: <6599ad830804080757w7942e4ddtc1381230541613a2@mail.gmail.com>
+Date: Tue, 8 Apr 2008 07:57:15 -0700
+From: "Paul Menage" <menage@google.com>
+To: "Balbir Singh" <balbir@linux.vnet.ibm.com>
+Subject: Re: [-mm] Disable the memory controller by default (v3)
+Cc: andi@firstfloor.org, "Andrew Morton" <akpm@linux-foundation.org>,
+       "YAMAMOTO Takashi" <yamamoto@valinux.co.jp>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       "Pavel Emelianov" <xemul@openvz.org>, hugh@veritas.com,
+       "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20080408114613.8165.69030.sendpatchset@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200804081855.34300.adobriyan@sw.ru>
+References: <20080408114613.8165.69030.sendpatchset@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Entry creation was commented for a long time and right now it stands on
-the way of ->get_info removal, so unless nobody objects...
+On Tue, Apr 8, 2008 at 4:46 AM, Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+>  If everyone agrees on this approach and likes it, should we push this
+>  into 2.6.25?
+>
+>  Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
 
-Signed-off-by: Alexey Dobriyan <adobriyan@sw.ru>
----
+Looks good to me - although I wouldn't bother with the "inline" on
+cgroup_turnonoff()
 
- arch/m68k/mac/iop.c |   85 ----------------------------------------------------
- 1 file changed, 85 deletions(-)
+Acked-by: Paul Menage <menage@google.com>
 
---- a/arch/m68k/mac/iop.c
-+++ b/arch/m68k/mac/iop.c
-@@ -109,7 +109,6 @@
- #include <linux/mm.h>
- #include <linux/delay.h>
- #include <linux/init.h>
--#include <linux/proc_fs.h>
- #include <linux/interrupt.h>
- 
- #include <asm/bootinfo.h>
-@@ -124,10 +123,6 @@
- 
- int iop_scc_present,iop_ism_present;
- 
--#ifdef CONFIG_PROC_FS
--static int iop_get_proc_info(char *, char **, off_t, int);
--#endif /* CONFIG_PROC_FS */
--
- /* structure for tracking channel listeners */
- 
- struct listener {
-@@ -299,12 +294,6 @@ void __init iop_init(void)
- 		iop_listeners[IOP_NUM_ISM][i].devname = NULL;
- 		iop_listeners[IOP_NUM_ISM][i].handler = NULL;
- 	}
--
--#if 0	/* Crashing in 2.4 now, not yet sure why.   --jmt */
--#ifdef CONFIG_PROC_FS
--	create_proc_info_entry("mac_iop", 0, NULL, iop_get_proc_info);
--#endif
--#endif
- }
- 
- /*
-@@ -637,77 +626,3 @@ irqreturn_t iop_ism_irq(int irq, void *dev_id)
- 	}
- 	return IRQ_HANDLED;
- }
--
--#ifdef CONFIG_PROC_FS
--
--char *iop_chan_state(int state)
--{
--	switch(state) {
--		case IOP_MSG_IDLE	: return "idle      ";
--		case IOP_MSG_NEW	: return "new       ";
--		case IOP_MSG_RCVD	: return "received  ";
--		case IOP_MSG_COMPLETE	: return "completed ";
--		default			: return "unknown   ";
--	}
--}
--
--int iop_dump_one_iop(char *buf, int iop_num, char *iop_name)
--{
--	int i,len = 0;
--	volatile struct mac_iop *iop = iop_base[iop_num];
--
--	len += sprintf(buf+len, "%s IOP channel states:\n\n", iop_name);
--	len += sprintf(buf+len, "##  send_state  recv_state  device\n");
--	len += sprintf(buf+len, "------------------------------------------------\n");
--	for (i = 0 ; i < NUM_IOP_CHAN ; i++) {
--		len += sprintf(buf+len, "%2d  %10s  %10s  %s\n", i,
--			iop_chan_state(iop_readb(iop, IOP_ADDR_SEND_STATE+i)),
--			iop_chan_state(iop_readb(iop, IOP_ADDR_RECV_STATE+i)),
--			iop_listeners[iop_num][i].handler?
--				      iop_listeners[iop_num][i].devname : "");
--
--	}
--	len += sprintf(buf+len, "\n");
--	return len;
--}
--
--static int iop_get_proc_info(char *buf, char **start, off_t pos, int count)
--{
--	int len, cnt;
--
--	cnt = 0;
--	len =  sprintf(buf, "IOPs detected:\n\n");
--
--	if (iop_scc_present) {
--		len += sprintf(buf+len, "SCC IOP (%p): status %02X\n",
--				iop_base[IOP_NUM_SCC],
--				(uint) iop_base[IOP_NUM_SCC]->status_ctrl);
--	}
--	if (iop_ism_present) {
--		len += sprintf(buf+len, "ISM IOP (%p): status %02X\n\n",
--				iop_base[IOP_NUM_ISM],
--				(uint) iop_base[IOP_NUM_ISM]->status_ctrl);
--	}
--
--	if (iop_scc_present) {
--		len += iop_dump_one_iop(buf+len, IOP_NUM_SCC, "SCC");
--
--	}
--
--	if (iop_ism_present) {
--		len += iop_dump_one_iop(buf+len, IOP_NUM_ISM, "ISM");
--
--	}
--
--	if (len >= pos) {
--		if (!*start) {
--			*start = buf + pos;
--			cnt = len - pos;
--		} else {
--			cnt += len;
--		}
--	}
--	return (count > cnt) ? cnt : count;
--}
--
--#endif /* CONFIG_PROC_FS */
--- 
-1.5.4.3
-
+>  ---
+>
+>   Documentation/kernel-parameters.txt |    3 +++
+>   kernel/cgroup.c                     |   17 +++++++++++++----
+>   mm/memcontrol.c                     |    1 +
+>   3 files changed, 17 insertions(+), 4 deletions(-)
+>
+>  diff -puN kernel/cgroup.c~memory-controller-default-option-off kernel/cgroup.c
+>  --- linux-2.6.25-rc8/kernel/cgroup.c~memory-controller-default-option-off       2008-04-07 16:24:28.000000000 +0530
+>  +++ linux-2.6.25-rc8-balbir/kernel/cgroup.c     2008-04-08 16:04:49.000000000 +0530
+>  @@ -3063,7 +3063,7 @@ static void cgroup_release_agent(struct
+>         mutex_unlock(&cgroup_mutex);
+>   }
+>
+>  -static int __init cgroup_disable(char *str)
+>  +static inline int __init cgroup_turnonoff(char *str, int disable)
+>   {
+>         int i;
+>         char *token;
+>  @@ -3076,13 +3076,22 @@ static int __init cgroup_disable(char *s
+>                         struct cgroup_subsys *ss = subsys[i];
+>
+>                         if (!strcmp(token, ss->name)) {
+>  -                               ss->disabled = 1;
+>  -                               printk(KERN_INFO "Disabling %s control group"
+>  -                                       " subsystem\n", ss->name);
+>  +                               ss->disabled = disable;
+>                                 break;
+>                         }
+>                 }
+>         }
+>         return 1;
+>   }
+>  +
+>  +static int __init cgroup_disable(char *str)
+>  +{
+>  +       return cgroup_turnonoff(str, 1);
+>  +}
+>   __setup("cgroup_disable=", cgroup_disable);
+>  +
+>  +static int __init cgroup_enable(char *str)
+>  +{
+>  +       return cgroup_turnonoff(str, 0);
+>  +}
+>  +__setup("cgroup_enable=", cgroup_enable);
+>  diff -puN mm/memcontrol.c~memory-controller-default-option-off mm/memcontrol.c
+>  --- linux-2.6.25-rc8/mm/memcontrol.c~memory-controller-default-option-off       2008-04-07 16:24:28.000000000 +0530
+>  +++ linux-2.6.25-rc8-balbir/mm/memcontrol.c     2008-04-07 16:40:22.000000000 +0530
+>  @@ -1104,4 +1104,5 @@ struct cgroup_subsys mem_cgroup_subsys =
+>         .populate = mem_cgroup_populate,
+>         .attach = mem_cgroup_move_task,
+>         .early_init = 0,
+>  +       .disabled = 1,
+>   };
+>  diff -puN Documentation/kernel-parameters.txt~memory-controller-default-option-off Documentation/kernel-parameters.txt
+>  --- linux-2.6.25-rc8/Documentation/kernel-parameters.txt~memory-controller-default-option-off   2008-04-07 16:38:25.000000000 +0530
+>  +++ linux-2.6.25-rc8-balbir/Documentation/kernel-parameters.txt 2008-04-07 17:53:28.000000000 +0530
+>  @@ -382,8 +382,11 @@ and is between 256 and 4096 characters.
+>                         See Documentation/s390/CommonIO for details.
+>
+>         cgroup_disable= [KNL] Disable a particular controller
+>  +       cgroup_enable=  [KNL] Enable a particular controller
+>  +                       For both cgroup_enable and cgroup_enable
+>                         Format: {name of the controller(s) to disable}
+>                                 {Currently supported controllers - "memory"}
+>  +                               {Memory controller is disabled by default}
+>
+>         checkreqprot    [SELINUX] Set initial checkreqprot flag value.
+>                         Format: { "0" | "1" }
+>  _
+>
+>  --
+>         Warm Regards,
+>         Balbir Singh
+>         Linux Technology Center
+>         IBM, ISTL
+>
