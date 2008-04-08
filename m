@@ -1,92 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755671AbYDHJgt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755486AbYDHJjx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755671AbYDHJgt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Apr 2008 05:36:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752917AbYDHJgj
+	id S1755486AbYDHJjx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Apr 2008 05:39:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753396AbYDHJjp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Apr 2008 05:36:39 -0400
-Received: from nf-out-0910.google.com ([64.233.182.187]:50452 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752659AbYDHJgi (ORCPT
+	Tue, 8 Apr 2008 05:39:45 -0400
+Received: from mailservice.tudelft.nl ([130.161.131.5]:12178 "EHLO
+	mailservice.tudelft.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752372AbYDHJjo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Apr 2008 05:36:38 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:sender;
-        b=nkoUoeJ3q7Bac3oMq3Gf9Ll+HR00Z+VOmDVUOK4x8Elf2DVBVZjnH91jA5Uj5rk27oU1yAXZ8o+Xw4Eki+LgxiubDtriX9Qbt4FMWa6CttVo1FZjAZpALlKNsrePURiQlOLVp5BYWtQO0xaU3+BuBdUoMTd/FWDCzpP0YqygYKI=
-Date: Tue, 8 Apr 2008 11:40:29 +0200
-From: Richard Zidlicky <rz@linux-m68k.org>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>, linux-ide@vger.kernel.org,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       Linux/m68k <linux-m68k@vger.kernel.org>,
-       Michael Schmitz <schmitz@debian.org>
-Subject: Re: [PATCH 5/5] falconide/q40ide: add ->atapi_*put_bytes and
-	->ata_*put_data methods
-Message-ID: <20080408094029.GA1005@linux-m68k.org>
-References: <200803301714.04527.bzolnier@gmail.com> <200803302134.42569.bzolnier@gmail.com> <Pine.LNX.4.64.0803310750230.6871@anakin> <200804072113.42441.bzolnier@gmail.com>
+	Tue, 8 Apr 2008 05:39:44 -0400
+X-Spam-Flag: NO
+X-Spam-Score: -8.379
+Date: Tue, 8 Apr 2008 11:39:38 +0200 (CEST)
+From: "Andreas K. Huettel" <A.K.Huettel@tudelft.nl>
+X-X-Sender: huettel@localhost
+Reply-To: "Andreas K. Huettel" <mail@akhuettel.de>
+To: Peter Zijlstra <peterz@infradead.org>
+cc: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [tainted,fglrx] page allocation failure: basic meaning of log
+ messages?
+In-Reply-To: <1207234830.8514.838.camel@twins>
+Message-ID: <alpine.LNX.1.00.0804081125140.22515@localhost>
+References: <alpine.LNX.1.00.0804031117030.10277@localhost>  <20080403183021.028C.KOSAKI.MOTOHIRO@jp.fujitsu.com>  <alpine.LNX.1.00.0804031318480.10277@localhost>  <20080403144852.GD24239@csclub.uwaterloo.ca> <1207234830.8514.838.camel@twins>
+User-Agent: Alpine 1.00 (LNX 882 2007-12-20)
+X-Information: My public GPG key can be obtained at http://www.akhuettel.de/
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <200804072113.42441.bzolnier@gmail.com>
-User-Agent: Mutt/1.5.15 (2007-04-06)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 07, 2008 at 09:13:42PM +0200, Bartlomiej Zolnierkiewicz wrote:
-
-> 
-> v2:
-> * Add 'struct request *rq' argument to ->ata_{in,out}put_data methods
->   and don't byte-swap disk fs requests (we shouldn't un-swap fs requests
->   because fs itself is stored byte-swapped on the disk) - this is how
->   things were done before the patch (ideally device mapper should be
->   used instead but it would break existing setups and would have some
->   performance impact).
-
-I like the part about checking 'struct request *rq', will make a  clean
-distinction between ide command data and ide disk/medium data which is badly
-needed.
-
-However, not only FS data is byteswapped, complete disk including partition
-table and everything else is. Will "rq->cmd_type == REQ_TYPE_FS" also catch
-all these cases?
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: RIPEMD160
 
 
+#]> > #]> Apr  3 09:01:30 bellini hal-system-powe: page allocation failure. order:10, mode:0x4020
+#]> > #]> Apr  3 09:01:30 bellini Pid: 327, comm: hal-system-powe Tainted: PF       2.6.24-gentoo-r3 #1
+#]> > #]> Apr  3 09:01:30 bellini [<c0140c48>] __alloc_pages+0x2bd/0x2ce
+#]> > #]> Apr  3 09:01:30 bellini [<c0140c92>] __get_free_pages+0x39/0x47
+#]> > #]> Apr  3 09:01:30 bellini [<f8adcd9e>] firegl_cmmqs_save_fb+0x8e/0x200 [fglrx]
+#]> > #]
+#]> > #]this messages doesn't mean bug, merely indicate allocation failure.
+#]> > #]if any other bad thind doen't happend, you can ignore it.
+#]> > 
+#]> > Swapping like mad without any obvious cause (500M swap in use, 1.5G RAM 
+#]> > - - which is normally not such a big problem). This however stopped when 
+#]> > I closed some memory-intensive applications (firefox, vmware).
+#]> > 
+#]> > Since then the machine is running without problems. 
+(...)
+#]
+#]An order 10 alloc (4 mb contiguous) isn't likely to succeed by any
+#]measure. Lumpy reclaim will try very hard and likely cause that swap
+#]storm you taked about, but relying on order 10 allocs is insane.
 
-> Index: b/drivers/ide/legacy/falconide.c
-> ===================================================================
-> --- a/drivers/ide/legacy/falconide.c
-> +++ b/drivers/ide/legacy/falconide.c
-> @@ -44,6 +44,36 @@
->  int falconide_intr_lock;
->  EXPORT_SYMBOL(falconide_intr_lock);
->  
-> +static void falconide_atapi_input_bytes(ide_drive_t *drive, void *buf,
-> +					unsigned int len)
-> +{
-> +	insw_swapw(drive->hwif->io_ports.data_addr, buf, (len + 1) / 2);
-> +}
-> +
-> +static void falconide_atapi_output_bytes(ide_drive_t *drive, void *buf,
-> +					 unsigned int len)
-> +{
-> +	outsw_swapw(drive->hwif->io_ports.data_addr, buf, (len + 1) / 2);
-> +}
-> +
-> +static void falconide_ata_input_data(ide_drive_t *drive, struct request *rq,
-> +				     void *buf, unsigned int wcount)
-> +{
-> +	if (drive->media == ide_disk && rq && rq->cmd_type == REQ_TYPE_FS)
-> +		return insw(drive->hwif->io_ports.data_addr, buf, wcount * 2);
-> +
-> +	falconide_atapi_input_bytes(drive, buf, wcount * 4);
-> +}
 
-this will still do double swapping for disk access, although this is very
-easier to fix once the distinction between ide and disk data works fine.
+Question - this seems to me not to be a kernel issue (correct me if I'm 
+wrong) and thus I'd like to take it to the proper place...
+Where should I file this as bug? Is this a hald problem or something more 
+complicated?
 
-So IMHO despite the little concerns this is the way to go.
+The swap storm is perfectly reproducible with X/fglrx, compiz and vmware 
+workstation running - after resume from suspend2ram it starts. No compiz - 
+no problem. No vmware - no problem... Closing vmware -> swapping stops.
 
-Richard
+If you think this is hopeless since too much closed source software is 
+involved, tell me... :-]
+
+
+Thanks, Andreas
+
+
+
+
+- --
+This message is transmitted using 100% recycled electrons.
+- --
+- ---------------------------------------------------------------------
+Dr. Andreas K. Huettel                  tel. +31 15 27 88102  (univ.)
+Molecular Electronics and Devices            +31 6 42527466  (mobile)
+Kavli Institute of Nanoscience Delft
+Delft University of Technology                 A.K.Huettel@tudelft.nl
+PO Box 5046, 2600 GA Delft                          mail@akhuettel.de
+The Netherlands                     http://www.akhuettel.de/research/
+- ---------------------------------------------------------------------
+Please use GNUPG or PGP for signed and encrypted email. My public key
+can be found at  http://www.akhuettel.de/pgp_key.php
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.7 (GNU/Linux)
+
+iD8DBQFH+z1f3ao2Zwy3NWoRA8/iAJ0bLbIFJ9FfHolzuw4eOsNalMhMQACfTBxm
+IEKmTD381DwK2Atl4mJB/24=
+=jvjl
+-----END PGP SIGNATURE-----
