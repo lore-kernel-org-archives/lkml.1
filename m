@@ -1,50 +1,191 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755413AbYDHU61@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755999AbYDHU73@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755413AbYDHU61 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Apr 2008 16:58:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752704AbYDHU6U
+	id S1755999AbYDHU73 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Apr 2008 16:59:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752808AbYDHU7R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Apr 2008 16:58:20 -0400
-Received: from ozlabs.org ([203.10.76.45]:33559 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752490AbYDHU6T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Apr 2008 16:58:19 -0400
-Subject: Re: compile failure in pata_sil680.c
-From: Benjamin Herrenschmidt <benh@ozlabs.org>
-To: Meelis Roos <mroos@linux.ee>
-Cc: Linux Kernel list <linux-kernel@vger.kernel.org>,
-       Jeff Garzik <jeff@garzik.org>
-In-Reply-To: <Pine.SOC.4.64.0804081640100.28938@math.ut.ee>
-References: <Pine.SOC.4.64.0804081640100.28938@math.ut.ee>
-Content-Type: text/plain
-Date: Wed, 09 Apr 2008 06:55:36 +1000
-Message-Id: <1207688136.10388.542.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+	Tue, 8 Apr 2008 16:59:17 -0400
+Received: from mga05.intel.com ([192.55.52.89]:57657 "EHLO
+	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752704AbYDHU7Q (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Apr 2008 16:59:16 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,625,1199692800"; 
+   d="scan'208";a="547909041"
+From: Inaky Perez-Gonzalez <inaky@linux.intel.com>
+Organization: Intel Corporation
+To: Stephen Hemminger <stephen.hemminger@vyatta.com>
+Subject: Re: [ANN] WiMAX stack and drivers for Intel WiMAX Link 5050
+Date: Tue, 8 Apr 2008 13:59:03 -0700
+User-Agent: KMail/1.9.9
+Cc: wimax@linuxwimax.org, linux-wireless@vger.kernel.org,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <200804011107.38563.inaky@linux.intel.com> <20080408135601.5dad3566@speedy>
+In-Reply-To: <20080408135601.5dad3566@speedy>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200804081359.03611.inaky@linux.intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Tue, 2008-04-08 at 16:44 +0300, Meelis Roos wrote:
-> commit 0f436eff54f90419ac1b8accfb3e6e17c4b49a4e introduces the following 
-> compile failure on ppc (not powerpc), prep subarch. Seems that 
-> machine_is is only defined in the new powerpc arch.
+On Tuesday 08 April 2008, Stephen Hemminger wrote:
+> This is the short (not in depth) code review of kernel component of Wimax.
 > 
-> drivers/ata/pata_sil680.c: In function 'sil680_init_chip':
-> drivers/ata/pata_sil680.c:274: error: implicit declaration of function 'machine_is'
-> drivers/ata/pata_sil680.c:274: error: 'cell' undeclared (first use in this function)
-> drivers/ata/pata_sil680.c:274: error: (Each undeclared identifier is reported only once
-> drivers/ata/pata_sil680.c:274: error: for each function it appears in.)
-> make[2]: *** [drivers/ata/pata_sil680.o] Error 1
+> Generic stack: drivers/net/wimax
+> 
+> 1. Why spread those over 8 files of 100 lines each. Better to have a single
+>    file with 1000 lines and get reduced namespace and better compiler inlining
+>    etc.
 
-Argh. We still haven't got rid of arch/ppc...
+Style difference, simplifies maintenance. Each file is logically grouped. 
+Everything for doing X is in file X. I know you are a fan of big files, 
+I am not :)
 
-Fix is to replace CONFIG_PPC with CONFIG_PPC_MERGE.
+There is almost no inlining because each X only does stuff from itself. If
+there is a need for inlined stuff (I missed it) it should go to one of the
+header files --internal or external.
 
-I'll send a patch.
+> 2. The debug infrastructure is a mess of ugly macros that are unlikely
+>    to accepted in the current form, rework or delete it.
 
-Ben.
+Ok, I'll figure a way to clean it up. Need to move most to inlines,
+still making sure anything that is disabled is compiled out.
+ 
+> 3. Use of sysfs for family and version ok, but why bother?
+>    Please don't build sysfs version checks into the API.
 
+family ID: it makes it easy to map device<->family-id without
+expensive look ups the kernel like an attribute with the device 
+name would be. Rationale is most systems will have a single wimax
+device in the kernel. include/linux/wimax.h and drivers/net/wimax/id-table.c
+should have this documented...ouch, just remembered. The code drop
+out there shouldn't be as complete (documentation wise) as what
+I need to publish. Pls hold for it, will be available.
 
+version: I anticipate the wimax API exported to user space is
+going to undergo a lot of changes while we all agree on what
+is the best interface. Because things might break, I want to
+make sure user space stuff can detect that and fail cleanly. 
+Hence the versioning. 
+
+It is designed to be flexible so that adding new APIs allows 
+old code to work (however, changing existing APIs is where it 
+breaks). From the docs:
+
+ * Each WiMAX device exports two sysfs files declaring the generic
+ * netlink family ID associated to the interface and another one which
+ * version it supports. The version code has to fit in one byte
+ * (restrictions imposed by generic netlink); we use version / 10 for
+ * the major version and version % 10 for the minor. This gives 9
+ * minors for each major and 25 majors.
+ *
+ * The inexistence of any of this means the device does not support
+ * the WiMAX extensions.
+ *
+ * The version change protocol is as follow:
+ *
+>* - Major versions: needs to be increased if an existing message is
+>*   changed or removed. Doesn't need to be changed if a new message
+>*   is added.
+ *
+>* - Minor verion: needs to be increased if new messages are being
+>*   added or some other consideration that doesn't impact too much
+>*   (like some kind of bug fix) and that is kind of left up in the
+>*   air to common sense.
+ *
+ * Your user space code should not try to work if the major version it
+ * was compiled for differs from what the kernel offers. As well, it
+ * should not work if the minor version of the kernel interface is
+ * lower than the one the user space code was compiled for.
+ *
+ * libwimax's wimax_open() takes care of all this for you.
+
+> 
+> 4. __wimax_flush_queue: is a nop, just remove
+
+Removed in newer code.
+
+> 5. Stack is using generic netlink instead use newer netlink interface
+>    for management of devices: newlink/dellink instead see macvlan
+
+Geeze, I hide out for one week and a new system pops up? 
+
+What is the advantage of newlink dellink vs generic netlink? Pointers
+to doc? Generic netlink is fitting the bill pretty well as of now,
+so unless it is going away from the kernel, I feel we should not
+move it.
+ 
+> i2400m hardware driver
+> 
+> 1. sysfs
+>   the inflight file is being used in a /proc style. Either change to
+>   one value per file or move to /proc/net/i2400m/ethX or better yet use debugfs
+>   /debugfs/i2400m/ethX/xxx
+
+All that is gone from current tip.
+
+> 2. Use internal dev->stats for network stats (may not need get_stats at all)
+
+Noted, will do.
+
+> 3. No ioctl stub if not implemented
+
+Ack.
+
+> 4. Use netdev_alloc_skb rather than alloc_skb for new code.
+
+Any rationales for it? other than the padding and setting
+skb->dev, they seem the same.
+
+> 5. Use skb_copy_to_linear_data in i2400m_net_rx
+>
+> 6. Since hardware has to copy every received frame. Don't bother with
+>    checksum offload, the copy does the checksum for you and is safer.
+
+Current tip code receives data from the device to an skb and then 
+clones the different packets to deliver to netdev. This is not 
+needed/done any more.
+ 
+> 7. Fine grain file organization in i2400m is bogus, put in one file and use
+>    proper name scope. Having 100 line files is unneeded
+
+Again, style differences, a 10k file is already way too big for me.
+ 
+> 8. Fix the FIXME's?
+
+En route, most of them fixed in tip.
+ 
+> 9. Anyway to reuse existing usbnet infrastructure?
+
+Nope, the 2400 is a pure IP device (as Marcel mentioned). As well, we need
+to provide for using other bus connections (SDIO in the works), so that would
+break it up. OTOH, the hw protocol makes it different to plug into USBNET,
+as we can receive many packets in a single transaction.
+ 
+> 10. Since device is USB, Rx is in workqueue, so no need to go through
+>     netif_rx() softirq, should be able to go through netif_receive_skb
+
+Good point. Ack.
+ 
+> 11. net_device and private data are zero on allocation, so no need
+>    for memset.
+
+Ack
+ 
+> 12. Since this is new code elminate all legacy ifdef's
+
+Done in tip.
+
+We need to keep backwards compatibility to certain kernels for OSV support.
+]Trying to make that as unobstrusive as possible. The git tip tree will
+be mostly backward-stuff clean.
+
+Hey thanks a lot, this is great feedback
+
+-- 
+Inaky
