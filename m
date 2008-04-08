@@ -1,70 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752400AbYDHHaJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752551AbYDHHgp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752400AbYDHHaJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Apr 2008 03:30:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751445AbYDHH35
+	id S1752551AbYDHHgp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Apr 2008 03:36:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751426AbYDHHgf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Apr 2008 03:29:57 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:52566 "EHLO
+	Tue, 8 Apr 2008 03:36:35 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:52923 "EHLO
 	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751170AbYDHH34 (ORCPT
+	with ESMTP id S1751170AbYDHHgf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Apr 2008 03:29:56 -0400
+	Tue, 8 Apr 2008 03:36:35 -0400
 DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
 	h=received:message-id:date:from:to:subject:cc:in-reply-to:
 	mime-version:content-type:content-transfer-encoding:
 	content-disposition:references;
-	b=Qtkr6B+ANPcDpmHLY1d2kDcSbq9M6v7sAl4A7wbccQ09Y6jjiEcMzw9K4FWMEsUjX
-	hP4DdbpE+g3HCHa3x4XqA==
-Message-ID: <6599ad830804080029v1d8f2ff7g5254f32362fd7cb9@mail.gmail.com>
-Date: Tue, 8 Apr 2008 00:29:45 -0700
+	b=mjLoAgLu/qRqlG1k1dBxuzE7MknLTssg/cE3muHrHZ2/pDoVgQ9Zv0OuuzM4t+4dt
+	4pN6QJ82fBGbphQ/J0NYg==
+Message-ID: <6599ad830804080036h5496e3bdv9ac2dedf0f04f9bc@mail.gmail.com>
+Date: Tue, 8 Apr 2008 00:36:17 -0700
 From: "Paul Menage" <menage@google.com>
-To: balbir@linux.vnet.ibm.com
-Subject: Re: [-mm] Add an owner to the mm_struct (v8)
-Cc: "Pavel Emelianov" <xemul@openvz.org>, "Hugh Dickins" <hugh@veritas.com>,
-       "Sudhir Kumar" <skumar@linux.vnet.ibm.com>,
-       "YAMAMOTO Takashi" <yamamoto@valinux.co.jp>,
-       linux-kernel@vger.kernel.org, taka@valinux.co.jp, linux-mm@kvack.org,
-       "David Rientjes" <rientjes@google.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <47FB193A.8070801@linux.vnet.ibm.com>
+To: "Balaji Rao" <balajirrao@gmail.com>
+Subject: Re: [RFC][-mm] [0/2] Basic stats for cgroups V2
+Cc: linux-kernel@vger.kernel.org, containers@lists.osdl.org,
+       dhaval@linux.vnet.ibm.com, balbir@in.ibm.com, a.p.zijlstra@chello.nl,
+       "Ingo Molnar" <mingo@elte.hu>
+In-Reply-To: <200804052339.42474.balajirrao@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <20080404080544.26313.38199.sendpatchset@localhost.localdomain>
-	 <47F7BB69.3000502@linux.vnet.ibm.com>
-	 <6599ad830804051057n2f2802e4w6179f2e108467494@mail.gmail.com>
-	 <47F7CC08.4090209@linux.vnet.ibm.com>
-	 <6599ad830804051629k3649dbc4na92bb3d0cd7a0492@mail.gmail.com>
-	 <47F861C8.7080700@linux.vnet.ibm.com>
-	 <6599ad830804072337g2e7b4613hdcc05062dc2ca4e0@mail.gmail.com>
-	 <47FB162D.1020506@linux.vnet.ibm.com>
-	 <6599ad830804072357o2fd5e9bco3309d151e270e62e@mail.gmail.com>
-	 <47FB193A.8070801@linux.vnet.ibm.com>
+References: <200804052339.42474.balajirrao@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 8, 2008 at 12:05 AM, Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+On Sat, Apr 5, 2008 at 11:09 AM, Balaji Rao <balajirrao@gmail.com> wrote:
+> V1->V2
+>  - Fixed a possible race in cpu_cgroup_read_stat. Thank you Paul for pointing this out.
+>  - A few other naming changes.
 >
-> Paul Menage wrote:
->  > On Mon, Apr 7, 2008 at 11:52 PM, Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
->  >>  I agree, but like I said earlier, this was the easily available ready made
->  >>  application I found. Do you know of any other highly threaded micro benchmark?
->  >>
->  >
->  > How about a simple program that creates N threads that just sleep,
->  > then has the main thread exit?
->  >
->
->  That is not really representative of anything. I have that program handy. How do
->  we measure the impact on throughput?
+>  This patchset is a first step towards implementing stats for cgroup
+>  subsystems. Only a few trivial stats for cpu and memory resource controller
+>  have been implemented for now. Please provide comments on the general
+>  direction and any suggestions on how you would like the cgroupstats framework
+>  to be implemented.
 
-It's very representative of how much additional overhead in terms of
-mm->owner churn there is in a large multi-threaded application
-exiting, which is the thing that you're trying to optimize with the
-delayed thread group leader checks.
+This is sort of heading in the same way as the cgroup binary stats API
+that I mentioned a couple of months ago (when I proposed the
+"cgroup.api" file).
+
+Since the cgroup file API encourages subsystems to export values via
+abstract methods such as read_s64() or read_map() rather than having
+them handle the file I/O themselves, this gives the basis for a binary
+stats API - the same methods can be used to retrieve the information
+in a binary form rather than from regular ASCII-based file reads, and
+the subsystem doesn't have to care which is being used.
+
+I was originally thinking along the lines of having a special mode in
+which you could obtain a cgroupfs binary file for a cgroup directory
+that would report a requested set of binary stats each time it was
+read, but using the netlink/taskstats API might be a good approach
+too.
+
+One of the important API choices would be whether the stats API was
+fixed in header files shared with userspace, or whether it would be
+possible for stats to be added and dynamically discovered/used by
+userspace without needing fixed header file descriptions.
+
+The difference would be a bit like the old sysctl API (where each
+sysctl entry had to be enumerated in a header file) versus the newer
+/proc/sys approach where numerical values aren't used and userspace
+can determine which entries are supported at runtime, and even access
+new previously-unknown entries.
+
+Here's one possible way to do it:
+
+With the taskstats interface, we could have operations to:
+
+- describe the API exported by a given subsystem (automatically
+generated, based on its registered control files and their access
+methods)
+
+- retrieve a specified set of stats in a binary format
+
+So as a concrete example, with the memory, cpuacct and cpu subsystems
+configured, the reported API might look something like (in pseudo-code
+form)
+
+0 : memory.usage_in_bytes : u64
+1 : memory.limit_in_bytes : u64
+2 : memory.failcnt : u64
+3 : memory.stat : map
+4 : cpuacct.usage : u64
+5 : cpu.shares : u64
+6 : cpu.rt_runtime_ms : s64
+7 : cpu.stat : map
+
+This list would be auto-generated by cgroups based on inspection of
+the control files.
+
+The user could then request stats 0, 3 and 7 for a cgroup to get the
+memory.usage_in_bytes, memory.stat and cpu.stat statistics.
+
+The stats could be returned in a binary format; the format for each
+individual stat would depend on the type of that stat, and these could
+be simply concatenated together.
+
+A u64 or s64 stat would simply be a 64-bit value in the data stream
+
+A map stat would be represented as a sequence of 64-bit values,
+representing the values in the map. There would be no need to include
+the size of the map or the key ordering in the binary format, since
+userspace could determine that by reading the ASCII version of the map
+control file once at startup.
+
+So in the case of the request above for stats 0, 3 & 7, the binary
+stats stream would be a sequence of 64-bit values consisting of:
+
+<memory.usage>
+<memory.stat.cache>
+<memory.stat.rss>
+<memory.stat.active>
+<memory.stat.inactive>
+<cpu.stat.utime>
+<cpu.stat.stime>
+
+If more stats were added to memory.stat or cpu.stat by a future
+version of the code, then they would automatically appear; any that
+userspace didn't understand it could ignore.
+
+The userspace side of this could be handled by libcg.
+
+Thoughts?
 
 Paul
