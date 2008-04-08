@@ -1,62 +1,146 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753746AbYDHDW3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756602AbYDHDbW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753746AbYDHDW3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Apr 2008 23:22:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751241AbYDHDWT
+	id S1756602AbYDHDbW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Apr 2008 23:31:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752019AbYDHDbJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Apr 2008 23:22:19 -0400
-Received: from smtp.gentoo.org ([140.211.166.183]:58702 "EHLO smtp.gentoo.org"
+	Mon, 7 Apr 2008 23:31:09 -0400
+Received: from ra.tuxdriver.com ([70.61.120.52]:3980 "EHLO ra.tuxdriver.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751181AbYDHDWS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Apr 2008 23:22:18 -0400
-From: Mike Frysinger <vapier@gentoo.org>
-To: linux-kernel@vger.kernel.org, linux-input@vger.kernel.org,
-       akpm@linux-foundation.org
-Subject: [PATCH] export hid.h and hidraw.h to userspace
-Date: Mon,  7 Apr 2008 23:22:16 -0400
-Message-Id: <1207624936-16328-1-git-send-email-vapier@gentoo.org>
-X-Mailer: git-send-email 1.5.4.4
+	id S1751673AbYDHDbH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Apr 2008 23:31:07 -0400
+Date: Mon, 7 Apr 2008 23:06:51 -0400
+From: "John W. Linville" <linville@tuxdriver.com>
+To: davem@davemloft.net
+Cc: netdev@vger.kernel.org, linux-wireless@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: pull request: wireless-2.6 2008-04-07
+Message-ID: <20080408030651.GA8849@tuxdriver.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I have people whining about using these headers in userspace, and they have
-__KERNEL__ markings which implies they're supposed to be exported.  I also
-added the required linux/types.h include to hidraw.h since it uses the __u##
-kernel types.
+Dave,
 
-Signed-off-by: Mike Frysinger <vapier@gentoo.org>
+Here is another batch of fixes intended for 2.6.25 if at all possible.
+We are mostly down to a smattering of one-liners, but there is a little
+fix that keeps b43legacy from crashing with certain bcm4303 hardware.
+
+Let me know if there are problems!
+
+Thanks,
+
+John
+
 ---
- include/linux/Kbuild   |    2 ++
- include/linux/hidraw.h |    1 +
- 2 files changed, 3 insertions(+), 0 deletions(-)
 
-diff --git a/include/linux/Kbuild b/include/linux/Kbuild
-index 9cdd12a..346801b 100644
---- a/include/linux/Kbuild
-+++ b/include/linux/Kbuild
-@@ -209,7 +209,9 @@ unifdef-y += hdlcdrv.h
- unifdef-y += hdlc.h
- unifdef-y += hdreg.h
- unifdef-y += hdsmart.h
-+unifdef-y += hid.h
- unifdef-y += hiddev.h
-+unifdef-y += hidraw.h
- unifdef-y += hpet.h
- unifdef-y += i2c.h
- unifdef-y += i2c-dev.h
-diff --git a/include/linux/hidraw.h b/include/linux/hidraw.h
-index 0536f29..dbb5c8c 100644
---- a/include/linux/hidraw.h
-+++ b/include/linux/hidraw.h
-@@ -16,6 +16,7 @@
-  */
+Individual patches are available here:
+
+	http://www.kernel.org/pub/linux/kernel/people/linville/wireless-2.6/
+
+---
+
+The following changes since commit bfe87dbc7b4da5b05a1a78480e996787a500cc6f:
+  David S. Miller (1):
+        Merge branch 'upstream-davem' of master.kernel.org:/.../jgarzik/netdev-2.6
+
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/linville/wireless-2.6.git master
+
+Abhijeet Kolekar (1):
+      iwlwifi: fix n-band association problem
+
+Daniel Drake (1):
+      ipw2200: set MAC address on radiotap interface
+
+Holger Schurig (1):
+      libertas: fix mode initialization problem
+
+Johannes Berg (1):
+      nl80211: fix STA AID bug
+
+Stefano Brivio (1):
+      b43legacy: fix bcm4303 crash
+
+ drivers/net/wireless/ipw2200.c        |    1 +
+ drivers/net/wireless/iwlwifi/Kconfig  |    1 -
+ drivers/net/wireless/libertas/assoc.c |    2 +-
+ drivers/ssb/main.c                    |    6 ++++++
+ net/wireless/nl80211.c                |    2 +-
+ 5 files changed, 9 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/net/wireless/ipw2200.c b/drivers/net/wireless/ipw2200.c
+index a56d9fc..b34c275 100644
+--- a/drivers/net/wireless/ipw2200.c
++++ b/drivers/net/wireless/ipw2200.c
+@@ -11576,6 +11576,7 @@ static int ipw_prom_alloc(struct ipw_priv *priv)
+ 	priv->prom_priv->priv = priv;
  
- #include <linux/hid.h>
-+#include <linux/types.h>
+ 	strcpy(priv->prom_net_dev->name, "rtap%d");
++	memcpy(priv->prom_net_dev->dev_addr, priv->mac_addr, ETH_ALEN);
  
- struct hidraw_report_descriptor {
- 	__u32 size;
+ 	priv->prom_net_dev->type = ARPHRD_IEEE80211_RADIOTAP;
+ 	priv->prom_net_dev->open = ipw_prom_open;
+diff --git a/drivers/net/wireless/iwlwifi/Kconfig b/drivers/net/wireless/iwlwifi/Kconfig
+index b79a35a..b54ff71 100644
+--- a/drivers/net/wireless/iwlwifi/Kconfig
++++ b/drivers/net/wireless/iwlwifi/Kconfig
+@@ -35,7 +35,6 @@ config IWL4965_HT
+ 	bool "Enable 802.11n HT features in iwl4965 driver"
+ 	depends on EXPERIMENTAL
+ 	depends on IWL4965 && IWL4965_QOS
+-	depends on n
+ 	---help---
+ 	  This option enables IEEE 802.11n High Throughput features
+ 	  for the iwl4965 driver.
+diff --git a/drivers/net/wireless/libertas/assoc.c b/drivers/net/wireless/libertas/assoc.c
+index 87e145f..6a24ed6 100644
+--- a/drivers/net/wireless/libertas/assoc.c
++++ b/drivers/net/wireless/libertas/assoc.c
+@@ -541,7 +541,7 @@ void lbs_association_worker(struct work_struct *work)
+ 	}
+ 
+ 	if (find_any_ssid) {
+-		u8 new_mode;
++		u8 new_mode = assoc_req->mode;
+ 
+ 		ret = lbs_find_best_network_ssid(priv, assoc_req->ssid,
+ 				&assoc_req->ssid_len, assoc_req->mode, &new_mode);
+diff --git a/drivers/ssb/main.c b/drivers/ssb/main.c
+index bedb2b4..72017bf 100644
+--- a/drivers/ssb/main.c
++++ b/drivers/ssb/main.c
+@@ -1044,6 +1044,12 @@ int ssb_bus_may_powerdown(struct ssb_bus *bus)
+ 		goto out;
+ 
+ 	cc = &bus->chipco;
++
++	if (!cc->dev)
++		goto out;
++	if (cc->dev->id.revision < 5)
++		goto out;
++
+ 	ssb_chipco_set_clockmode(cc, SSB_CLKMODE_SLOW);
+ 	err = ssb_pci_xtal(bus, SSB_GPIO_XTAL | SSB_GPIO_PLL, 0);
+ 	if (err)
+diff --git a/net/wireless/nl80211.c b/net/wireless/nl80211.c
+index e3a214f..f68a5c8 100644
+--- a/net/wireless/nl80211.c
++++ b/net/wireless/nl80211.c
+@@ -945,7 +945,7 @@ static int nl80211_new_station(struct sk_buff *skb, struct genl_info *info)
+ 		nla_len(info->attrs[NL80211_ATTR_STA_SUPPORTED_RATES]);
+ 	params.listen_interval =
+ 		nla_get_u16(info->attrs[NL80211_ATTR_STA_LISTEN_INTERVAL]);
+-	params.listen_interval = nla_get_u16(info->attrs[NL80211_ATTR_STA_AID]);
++	params.aid = nla_get_u16(info->attrs[NL80211_ATTR_STA_AID]);
+ 
+ 	if (parse_station_flags(info->attrs[NL80211_ATTR_STA_FLAGS],
+ 				&params.station_flags))
 -- 
-1.5.4.4
-
+John W. Linville
+linville@tuxdriver.com
