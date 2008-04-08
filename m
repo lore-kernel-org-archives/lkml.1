@@ -1,150 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757377AbYDHPCs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757729AbYDHPDy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757377AbYDHPCs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Apr 2008 11:02:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752483AbYDHPCl
+	id S1757729AbYDHPDy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Apr 2008 11:03:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752776AbYDHPDp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Apr 2008 11:02:41 -0400
-Received: from mailhub.sw.ru ([195.214.232.25]:22067 "EHLO relay.sw.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751181AbYDHPCk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Apr 2008 11:02:40 -0400
-From: Alexey Dobriyan <adobriyan@sw.ru>
-To: akpm@osdl.org
-Subject: [PATCH 10/12] proc: switch /proc/ip2mem to seq_file interface
-Date: Tue, 8 Apr 2008 19:01:35 +0400
-User-Agent: KMail/1.9.9
-Cc: den@openvz.org, linux-kernel@vger.kernel.org
+	Tue, 8 Apr 2008 11:03:45 -0400
+Received: from wf-out-1314.google.com ([209.85.200.171]:2891 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752197AbYDHPDo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Apr 2008 11:03:44 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=amyrmzE5cQrkbOl1XQ2f4An2VMWiygUKpNZFCGWha/SswprEAP5zOrgCo6rcPGOj09XVMCnWWDSLOIuTrMu9ox6rBcjfESDsrVi7m3LEg7i/vaY3BEXnY3XpUheGPZfrN8S5QUtnqWIzzRKbmO5/eTPN62w2DjO6EXkY1MfkcqY=
+Message-ID: <47FB8948.9090302@gmail.com>
+Date: Wed, 09 Apr 2008 00:03:36 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+CC: jgarzik@pobox.com, gregkh@suse.de, alan@lxorguk.ukuu.org.uk,
+       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
+       linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 6/13] devres: implement managed iomap interface
+References: <11684073371547-git-send-email-htejun@gmail.com> <47FA4FD2.8060808@ru.mvista.com> <47FB85CB.2070506@gmail.com> <47FB8751.3040301@ru.mvista.com>
+In-Reply-To: <47FB8751.3040301@ru.mvista.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200804081901.36301.adobriyan@sw.ru>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-/******************************************/
-/* Remove useless comment, while I am it. */
-/******************************************/
+Sergei Shtylyov wrote:
+>> Yeah, right please go ahead.  But I wonder whether any BIOS was 
+>> actually crazy enough to map mmio region above 4G on 32bit machine.
+> 
+>    This is a *hardware* mapping on some non-x86 platforms (like PPC 44x 
+> or MIPS Alchemy). The arch/ppc/ and arch/mips/ kernels have special 
+> hooks called from ioremap() which help create an illusion that the PCI 
+> memory space on such platforms (not only it) is mapped below 4 GB; 
+> arch/powerpc/ kernel doesn't do this anymore -- hence this newly 
+> encountered issue.
 
-Signed-off-by: Alexey Dobriyan <adobriyan@sw.ru>
----
+Ah... I see.  Thanks for the clarification.
 
- drivers/char/ip2/ip2main.c |   53 +++++++++++++++++++++------------------------
- 1 file changed, 25 insertions(+), 28 deletions(-)
-
---- a/drivers/char/ip2/ip2main.c
-+++ b/drivers/char/ip2/ip2main.c
-@@ -133,8 +133,9 @@
-  *****************/
- 
- #include <linux/proc_fs.h>
-+#include <linux/seq_file.h>
- 
--static int ip2_read_procmem(char *, char **, off_t, int);
-+static const struct file_operations ip2mem_proc_fops;
- static int ip2_read_proc(char *, char **, off_t, int, int *, void * );
- 
- /********************/
-@@ -697,7 +698,7 @@ ip2_loadmain(int *iop, int *irqp, unsigned char *firmware, int firmsize)
- 		}
- 	}
- 	/* Register the read_procmem thing */
--	if (!create_proc_info_entry("ip2mem",0,NULL,ip2_read_procmem)) {
-+	if (!proc_create("ip2mem",0,NULL,&ip2mem_proc_fops)) {
- 		printk(KERN_ERR "IP2: failed to register read_procmem\n");
- 	} else {
- 
-@@ -2969,65 +2970,61 @@ ip2_ipl_open( struct inode *pInode, struct file *pFile )
- 	}
- 	return 0;
- }
--/******************************************************************************/
--/* Function:   ip2_read_procmem                                               */
--/* Parameters:                                                                */
--/*                                                                            */
--/* Returns: Length of output                                                  */
--/*                                                                            */
--/* Description:                                                               */
--/*   Supplies some driver operating parameters                                */
--/*	Not real useful unless your debugging the fifo							  */
--/*                                                                            */
--/******************************************************************************/
--
--#define LIMIT  (PAGE_SIZE - 120)
- 
- static int
--ip2_read_procmem(char *buf, char **start, off_t offset, int len)
-+proc_ip2mem_show(struct seq_file *m, void *v)
- {
- 	i2eBordStrPtr  pB;
- 	i2ChanStrPtr  pCh;
- 	PTTY tty;
- 	int i;
- 
--	len = 0;
--
- #define FMTLINE	"%3d: 0x%08x 0x%08x 0%011o 0%011o\n"
- #define FMTLIN2	"     0x%04x 0x%04x tx flow 0x%x\n"
- #define FMTLIN3	"     0x%04x 0x%04x rc flow\n"
- 
--	len += sprintf(buf+len,"\n");
-+	seq_printf(m,"\n");
- 
- 	for( i = 0; i < IP2_MAX_BOARDS; ++i ) {
- 		pB = i2BoardPtrTable[i];
- 		if ( pB ) {
--			len += sprintf(buf+len,"board %d:\n",i);
--			len += sprintf(buf+len,"\tFifo rem: %d mty: %x outM %x\n",
-+			seq_printf(m,"board %d:\n",i);
-+			seq_printf(m,"\tFifo rem: %d mty: %x outM %x\n",
- 				pB->i2eFifoRemains,pB->i2eWaitingForEmptyFifo,pB->i2eOutMailWaiting);
- 		}
- 	}
- 
--	len += sprintf(buf+len,"#: tty flags, port flags,     cflags,     iflags\n");
-+	seq_printf(m,"#: tty flags, port flags,     cflags,     iflags\n");
- 	for (i=0; i < IP2_MAX_PORTS; i++) {
--		if (len > LIMIT)
--			break;
- 		pCh = DevTable[i];
- 		if (pCh) {
- 			tty = pCh->pTTY;
- 			if (tty && tty->count) {
--				len += sprintf(buf+len,FMTLINE,i,(int)tty->flags,pCh->flags,
-+				seq_printf(m,FMTLINE,i,(int)tty->flags,pCh->flags,
- 									tty->termios->c_cflag,tty->termios->c_iflag);
- 
--				len += sprintf(buf+len,FMTLIN2,
-+				seq_printf(m,FMTLIN2,
- 						pCh->outfl.asof,pCh->outfl.room,pCh->channelNeeds);
--				len += sprintf(buf+len,FMTLIN3,pCh->infl.asof,pCh->infl.room);
-+				seq_printf(m,FMTLIN3,pCh->infl.asof,pCh->infl.room);
- 			}
- 		}
- 	}
--	return len;
-+	return 0;
-+}
-+
-+static int proc_ip2mem_open(struct inode *inode, struct file *file)
-+{
-+	return single_open(file, proc_ip2mem_show, NULL);
- }
- 
-+static const struct file_operations ip2mem_proc_fops = {
-+	.owner		= THIS_MODULE,
-+	.open		= proc_ip2mem_open,
-+	.read		= seq_read,
-+	.llseek		= seq_lseek,
-+	.release	= single_release,
-+};
-+
- /*
-  * This is the handler for /proc/tty/driver/ip2
-  *
 -- 
-1.5.4.3
-
+tejun
