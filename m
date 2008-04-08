@@ -1,52 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756008AbYDHTMj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753200AbYDHTcT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756008AbYDHTMj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Apr 2008 15:12:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751928AbYDHTMc
+	id S1753200AbYDHTcT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Apr 2008 15:32:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751970AbYDHTcD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Apr 2008 15:12:32 -0400
-Received: from smtp-vbr7.xs4all.nl ([194.109.24.27]:4052 "EHLO
-	smtp-vbr7.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751881AbYDHTMb (ORCPT
+	Tue, 8 Apr 2008 15:32:03 -0400
+Received: from py-out-1112.google.com ([64.233.166.181]:42529 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752017AbYDHTcC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Apr 2008 15:12:31 -0400
-From: Roman Zippel <zippel@linux-m68k.org>
-To: Johannes Berg <johannes@sipsolutions.net>
-Subject: Re: [PATCH] introduce HAVE_EFFICIENT_UNALIGNED_ACCESS Kconfig symbol
-Date: Tue, 8 Apr 2008 21:11:33 +0200
-User-Agent: KMail/1.9.9
-Cc: Andrew Morton <akpm@osdl.org>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, sam <sam@ravnborg.org>
-References: <1207667127.14253.42.camel@johannes.berg>
-In-Reply-To: <1207667127.14253.42.camel@johannes.berg>
+	Tue, 8 Apr 2008 15:32:02 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=uvt3fx+Q/GATHaYvafAwckXXJ6bHjdOR6AubcNsNWyuOOGnz5CEM51Xtj83MjcpX3KRk8RMHOSEGJlKlhkZP44mRktLR4+Wzg9/vX5iWXLrpibmyk6TdfZRIMoh6j05UWcnMPxj0JzlBGK2J+YN/PnEqvMbxqIb30QVqOF/osQs=
+Message-ID: <36ca99e90804081232iff9b19fp41e76c04cf140446@mail.gmail.com>
+Date: Tue, 8 Apr 2008 21:32:00 +0200
+From: "Bert Wesarg" <bert.wesarg@googlemail.com>
+To: "Mike Travis" <travis@sgi.com>
+Subject: Re: [PATCH 3/3] cpumask: add show cpu map functions v2
+Cc: "Ingo Molnar" <mingo@elte.hu>, "Paul Jackson" <pj@sgi.com>,
+       "Thomas Gleixner" <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20080408184302.113424000@polaris-admin.engr.sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200804082111.35944.zippel@linux-m68k.org>
+References: <20080408184301.651388000@polaris-admin.engr.sgi.com>
+	 <20080408184302.113424000@polaris-admin.engr.sgi.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Tue, Apr 8, 2008 at 8:43 PM, Mike Travis <travis@sgi.com> wrote:
+>   * Add cpu_sysdev_class functions to display the following maps
+>     with cpulist_scnprintf().
+>
+Could we add a cpumap_scnprintf() attribute too, just for consistency?
 
-On Tuesday 8. April 2008, Johannes Berg wrote:
-
-> In many cases, especially in networking, it can be beneficial to
-> know at compile time whether the architecture can do unaligned
-> accesses efficiently. This patch introduces a new Kconfig symbol
-> 	HAVE_EFFICIENT_UNALIGNED_ACCESS
-> for that purpose and adds it to the powerpc and x86 architectures.
-> Also add some documentation about alignment and networking, and
-> especially one intended use of this symbol.
-
-Please CC linux-arch@vger.kernel.org for such changes, so it's more likely 
-noticed by more arch maintainers, so a list can be compiled what is 
-appropriate for the various archs.
-The scope of this symbol is IMO a little unclear, is it intended for one-time 
-accesses to small object or also for repeated accesses to larger objects?
-Anyway, this probably should be set for m68k as well.
-
-bye, Roman
+Bert
