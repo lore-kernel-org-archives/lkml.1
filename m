@@ -1,71 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754675AbYDHJPJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755902AbYDHJPd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754675AbYDHJPJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Apr 2008 05:15:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751995AbYDHJO4
+	id S1755902AbYDHJPd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Apr 2008 05:15:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752889AbYDHJO5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Tue, 8 Apr 2008 05:14:57 -0400
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:33067 "EHLO smtp6.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751954AbYDHJO4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 8 Apr 2008 05:14:56 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:40186 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751946AbYDHJOz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Apr 2008 05:14:55 -0400
-Date: Tue, 8 Apr 2008 02:07:58 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: ego@in.ibm.com
-Cc: paulmck@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
-       mathieu.desnoyers@polymtl.ca, mingo@elte.hu, hch@infradead.org,
-       mmlnx@us.ibm.com, dipankar@in.ibm.com, dsmith@redhat.com,
-       rostedt@goodmis.org, adrian.bunk@movial.fi, a.p.zijlstra@chello.nl,
-       niv@us.ibm.com, dvhltc@us.ibm.com, rusty@au1.ibm.com,
-       jkenisto@linux.vnet.ibm.com, oleg@tv-sign.ru
-Subject: Re: [PATCH,RFC] Add call_rcu_sched()
-Message-Id: <20080408020758.1ed570af.akpm@linux-foundation.org>
-In-Reply-To: <20080408085637.GA30496@in.ibm.com>
-References: <20080321143615.GA936@linux.vnet.ibm.com>
-	<20080321224026.GA10169@linux.vnet.ibm.com>
-	<20080406213719.GA10533@linux.vnet.ibm.com>
-	<20080408003449.873574d7.akpm@linux-foundation.org>
-	<20080408081048.GA15001@in.ibm.com>
-	<20080408013936.b84ae895.akpm@linux-foundation.org>
-	<20080408085637.GA30496@in.ibm.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Date: Tue, 8 Apr 2008 12:14:14 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Jan Engelhardt <jengelh@computergmbh.de>
+Cc: andy@greyhouse.net, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Natalie Protasevich <protasnb@gmail.com>
+Subject: Re: 2.6.25-rc8-git5: Reported regressions from 2.6.24
+Message-ID: <20080408091414.GA24893@cs181133002.pp.htv.fi>
+References: <200804071459.35628.rjw@sisk.pl> <alpine.LNX.1.10.0804080459100.17722@fbirervta.pbzchgretzou.qr>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <alpine.LNX.1.10.0804080459100.17722@fbirervta.pbzchgretzou.qr>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 8 Apr 2008 14:26:37 +0530 Gautham R Shenoy <ego@in.ibm.com> wrote:
-
-> On Tue, Apr 08, 2008 at 01:39:36AM -0700, Andrew Morton wrote:
-> > On Tue, 8 Apr 2008 13:40:48 +0530 Gautham R Shenoy <ego@in.ibm.com> wrote:
-> > 
-> > > > > +			rdp = RCU_DATA_CPU(cpu);
-> > >                                                                <-- here ------\
-> > > > > +			spin_lock_irqsave(&rdp->lock, flags);                   |
-> > > > > +                                                                         |
-> > > > > +			/*                                                      |
-> > > > > +			 * We are running on this CPU irq-disabled, so no       |
-> > > > > +			 * CPU can go offline until we re-enable irqs.          |
-> > > >                                                                             |
-> > > > but, but, but.  The cpu at `cpu' could have gone offline just before we     |
-> > > > disabled local interrupts.                                                  |
-> > >                                                                               |
-> > > In that case the CPU_DEAD callback should have migrated the rcu-lists to      |
-> > > a cpu which is online.                                                        |
-> >                                                                                 |
-> > But local variable rdp might be pointing at the now-offlined CPU's data? -------/
+On Tue, Apr 08, 2008 at 05:03:07AM +0200, Jan Engelhardt wrote:
 > 
-> Right. But then rdp wouldn't contain anything useful at this point.
-> So, we may only end up taking the rdp->lock, observe that there's nothing to do,
-> and move on.
+> On Monday 2008-04-07 14:59, Rafael J. Wysocki wrote:
+> >
+> >Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10323
+> >Subject		: panic using bridging on linus kernel 2.6.25-rc6
+> >Submitter	: Andy Gospodarek <andy@greyhouse.net>
+> >Date		: 2008-03-25 11:40 (14 days old)
 > 
-> Is there something else that I am missing?
+> >From BZ:
+> 
+> 	“It looks like 2.6.24 is good, I guess I'll start bisecting....”
+> 
+> there have been two bridge-related patches between v2.6.24-rc6..v2.6.24:
+> 
+>   2dc2f20... [NETFILTER]: bridge-netfilter: fix net_device refcnt leaks
+>   2948d2e... [NETFILTER]: bridge: fix double POST_ROUTING invocation
+> 
+> Maybe it helps to try 2dc.
+> Not anymore a 2.6.25-rc issue it seems?
 
-erm, I guess that'll work OK.
+You seem to be confused by the fact that the submitter typoed
+"2.6.24-rc6" instead of "2.6.25-rc6" in his bug report?
 
-There were intentions to release the per-cpu memory during unplug, but
-nobody has threatened to do that for a while.
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
