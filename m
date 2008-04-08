@@ -1,52 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758811AbYDHTB6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758901AbYDHTEX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758811AbYDHTB6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Apr 2008 15:01:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757839AbYDHTBr
+	id S1758901AbYDHTEX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Apr 2008 15:04:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756013AbYDHTEM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Apr 2008 15:01:47 -0400
-Received: from ra.tuxdriver.com ([70.61.120.52]:4590 "EHLO ra.tuxdriver.com"
+	Tue, 8 Apr 2008 15:04:12 -0400
+Received: from mail.vyatta.com ([216.93.170.194]:40201 "EHLO mail.vyatta.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757157AbYDHTBq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Apr 2008 15:01:46 -0400
-Date: Tue, 8 Apr 2008 14:35:56 -0400
-From: "John W. Linville" <linville@tuxdriver.com>
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-wireless@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Michael Wu <flamingice@sourmilk.net>,
-       Johannes Berg <johannes@sipsolutions.net>, Jiri Benc <jbenc@suse.cz>
-Subject: Re: [PATCH 1/2] mac80211: fix recursive locking in
-	ieee80211_sta_expire
-Message-ID: <20080408183556.GC8183@tuxdriver.com>
-References: <1207598029-20000-1-git-send-email-jirislaby@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1207598029-20000-1-git-send-email-jirislaby@gmail.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	id S1753330AbYDHTEL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Apr 2008 15:04:11 -0400
+X-Spam-Flag: NO
+X-Spam-Score: -2.222
+Date: Tue, 8 Apr 2008 14:04:03 -0500
+From: Stephen Hemminger <stephen.hemminger@vyatta.com>
+To: Inaky Perez-Gonzalez <inaky@linux.intel.com>
+Cc: wimax@linuxwimax.org, linux-wireless@vger.kernel.org,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [ANN] WiMAX stack and drivers for Intel WiMAX Link 5050
+Message-ID: <20080408140403.3e7191bb@speedy>
+In-Reply-To: <200804011107.38563.inaky@linux.intel.com>
+References: <200804011107.38563.inaky@linux.intel.com>
+Organization: Vyatta
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 07, 2008 at 09:53:48PM +0200, Jiri Slaby wrote:
-> Hi,
-> 
-> it's against -mm, what's current mac80211 git tree? It seems that
-> -mm has fresher material, than wireless-2.6...
+Looking at the kernel/user interface: wimax-tools-1.1/lib/op-open.c
 
-As it should.  The wireless-2.6 tree is for feeding the linux-2.6 tree
-(by way of the net-2.6 tree).  Similarly, wireless-2.6.26 feeds -mm
-by way of the net-2.6.26 tree.
-
-Please use the wireless-testing tree for development, as it contains
-both sets of patches (fixes for the current release and updates for the
-future) as well as a few extras (like drivers still in development).
-Plus it is somewhat more stable, being based off the most a recent
--rc release rather than just whatever someone last pulled.
-
-Hth!
-
-John
--- 
-John W. Linville
-linville@tuxdriver.com
+This API is repeating the mistake of the old Linux Wireless API. It is putting version
+checks between kernel and library and this is a maintenance nightmare. Linux
+API's are not COM. Versioning is a mistake.  Use a TLA api like netlink so it
+can be extensible without version handshake.
