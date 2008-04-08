@@ -1,62 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753298AbYDHH5D@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753740AbYDHH6U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753298AbYDHH5D (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Apr 2008 03:57:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751791AbYDHH4y
+	id S1753740AbYDHH6U (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Apr 2008 03:58:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751791AbYDHH6N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Apr 2008 03:56:54 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:57730 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751778AbYDHH4x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Apr 2008 03:56:53 -0400
-Message-ID: <47FB24CF.40704@cn.fujitsu.com>
-Date: Tue, 08 Apr 2008 15:54:55 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Tue, 8 Apr 2008 03:58:13 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:47135 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751781AbYDHH6M (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Apr 2008 03:58:12 -0400
+Date: Tue, 8 Apr 2008 03:58:07 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: Steven Whitehouse <swhiteho@redhat.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Christoph Hellwig <hch@infradead.org>,
+       Neil Brown <neilb@suse.de>, "J. Bruce Fields" <bfields@fieldses.org>,
+       Adrian Bunk <bunk@kernel.org>
+Subject: Re: [NFS] Increase size of struct fid raw buffer
+Message-ID: <20080408075807.GA8893@infradead.org>
+References: <1207561677.3635.166.camel@quoit> <alpine.LFD.1.00.0804070850310.11277@woody.linux-foundation.org> <1207641005.3635.238.camel@quoit>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: LKML <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       David Rientjes <rientjes@google.com>
-Subject: [PATCH] oom_kill: remove unused parameter in badness()
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1207641005.3635.238.camel@quoit>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In commit 4c4a22148909e4c003562ea7ffe0a06e26919e3c, we moved the
-memcontroller-related code from badness() to select_bad_process(),
-so the parameter 'mem' in badness() is unused now.
+On Tue, Apr 08, 2008 at 08:50:05AM +0100, Steven Whitehouse wrote:
+> I'm happy with that solution, although I'd assumed that the reason this
+> field had a size in the first place was that the NFS people had a plan
+> to use the structure as an allocation entity in the future. Can an NFS
+> developer please confirm/deny this?
+> 
+> If everybody is happy with the plan, then I'll send a patch to make the
+> change as you suggest shortly,
 
-Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
----
- mm/oom_kill.c |    5 ++---
- 1 files changed, 2 insertions(+), 3 deletions(-)
-
-diff --git a/mm/oom_kill.c b/mm/oom_kill.c
-index f255eda..8be1baf 100644
---- a/mm/oom_kill.c
-+++ b/mm/oom_kill.c
-@@ -53,8 +53,7 @@ static DEFINE_SPINLOCK(zone_scan_mutex);
-  *    of least surprise ... (be careful when you change it)
-  */
- 
--unsigned long badness(struct task_struct *p, unsigned long uptime,
--			struct mem_cgroup *mem)
-+unsigned long badness(struct task_struct *p, unsigned long uptime)
- {
- 	unsigned long points, cpu_time, run_time, s;
- 	struct mm_struct *mm;
-@@ -254,7 +253,7 @@ static struct task_struct *select_bad_process(unsigned long *ppoints,
- 		if (p->oomkilladj == OOM_DISABLE)
- 			continue;
- 
--		points = badness(p, uptime.tv_sec, mem);
-+		points = badness(p, uptime.tv_sec);
- 		if (points > *ppoints || !chosen) {
- 			chosen = p;
- 			*ppoints = points;
--- 
-1.5.4.rc3
+I've introduce it and I don't plan to use it as allocation entity.  I
+don't quite remember why I sized it either, so it's conceptually fine
+to make it a VLA.  Just do some testing with that variant please.
