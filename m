@@ -1,67 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758934AbYDHCEv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758150AbYDHCI5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758934AbYDHCEv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Apr 2008 22:04:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757873AbYDHCEi
+	id S1758150AbYDHCI5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Apr 2008 22:08:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752987AbYDHCIu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Apr 2008 22:04:38 -0400
-Received: from ozlabs.org ([203.10.76.45]:36579 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756615AbYDHCEV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Apr 2008 22:04:21 -0400
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: David Miller <davem@davemloft.net>
-Subject: Re: [PATCH RFC 4/5] tun: vringfd xmit support.
-Date: Tue, 8 Apr 2008 11:51:43 +1000
-User-Agent: KMail/1.9.9
-Cc: herbert@gondor.apana.org.au, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, virtualization@lists.linux-foundation.org,
-       maxk@qualcomm.com
-References: <E1Jijfs-0004Lo-00@gondolin.me.apana.org.au> <200804071724.51781.rusty@rustcorp.com.au> <20080407.003528.96136816.davem@davemloft.net>
-In-Reply-To: <20080407.003528.96136816.davem@davemloft.net>
+	Mon, 7 Apr 2008 22:08:50 -0400
+Received: from yw-out-2324.google.com ([74.125.46.31]:26067 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751519AbYDHCIt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Apr 2008 22:08:49 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=jUwEl4gqyepy0chUdgbLv+IpGwblT2D0kgfv5P2c1XnUBoZUUe8137Ok4kO0btblMYT9msP+hpN18r6bpAGKRUg4dO0+jtisJzIHvkAVRNFzMjQxhO+UJjRkfrxfU4pKAnVlbzrCJ8IJzQZZX8xD5YeP4k4NsOn9WXVmvqy6Jls=
+Message-ID: <386072610804071908w5e4c6719m166c5b84d965a24c@mail.gmail.com>
+Date: Tue, 8 Apr 2008 10:08:48 +0800
+From: "Bryan Wu" <cooloney@kernel.org>
+To: "Jeff Garzik" <jeff@garzik.org>
+Subject: Re: Blackfin STAMP537 compiling error in 2.6.25-rc8
+Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "David Miller" <davem@davemloft.net>,
+       LKML <linux-kernel@vger.kernel.org>, magnus.damm@gmail.com,
+       damm@igel.co.jp, lethal@linux-sh.org, nico@cam.org,
+       "Mike Frysinger" <vapier.adi@gmail.com>
+In-Reply-To: <47FA813D.6090505@garzik.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200804081151.43599.rusty@rustcorp.com.au>
+References: <386072610804070057w1eb65db5taeca77f8f3e36627@mail.gmail.com>
+	 <47F9D7BA.6080708@garzik.org>
+	 <386072610804070115s57dfd49fgad01218e820167b@mail.gmail.com>
+	 <47FA813D.6090505@garzik.org>
+X-Google-Sender-Auth: b6a778d332f1d517
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 07 April 2008 17:35:28 David Miller wrote:
-> From: Rusty Russell <rusty@rustcorp.com.au>
-> Date: Mon, 7 Apr 2008 17:24:51 +1000
+On Tue, Apr 8, 2008 at 4:17 AM, Jeff Garzik <jeff@garzik.org> wrote:
 >
-> > On Monday 07 April 2008 15:13:44 Herbert Xu wrote:
-> > > On second thought, this is not going to work.  The network stack
-> > > can clone individual pages out of this skb and put it into a new
-> > > skb.  Therefore whatever scheme we come up with will either need
-> > > to be page-based, or add a flag to tell the network stack that it
-> > > can't clone those pages.
+> Bryan Wu wrote:
+>
+> > On Mon, Apr 7, 2008 at 1:13 AM, Jeff Garzik <jeff@garzik.org> wrote:
 > >
-> > Erk... I'll put in the latter for now.   A page-level solution is not
-> > really an option: if userspace hands us mmaped pages for example.
+> > > Bryan Wu wrote:
+> > >
+> > >
+> > > > We found the latest kernel compile failed with Blackfin STAMP537
+> > > > configuration on our daily build machine.
+> > > > ---
+> > > >  CC      drivers/net/smc91x.o
+> > > > drivers/net/smc91x.c: In function 'smc_rcv':
+> > > > drivers/net/smc91x.c:513: warning: passing argument 1 of 'insw' makes
+> > > > integer from pointer without a cast
+> > > > drivers/net/smc91x.c: In function 'smc_hardware_send_pkt':
+> > > > drivers/net/smc91x.c:620: warning: passing argument 1 of 'outsw' makes
+> > > > integer from pointer without a cast
+> > > > drivers/net/smc91x.c:1859:32: error: macro "SMC_GET_MAC_ADDR" requires
+> > > > 2 arguments, but only 1 given
+> > > > drivers/net/smc91x.c: In function 'smc_probe':
+> > > > drivers/net/smc91x.c:1859: error: 'SMC_GET_MAC_ADDR' undeclared (first
+> > > > use in this function)
+> > > > drivers/net/smc91x.c:1859: error: (Each undeclared identifier is
+> > > > reported only once
+> > > > drivers/net/smc91x.c:1859: error: for each function it appears in.)
+> > > > make[2]: *** [drivers/net/smc91x.o] Error 1
+> > > > make[1]: *** [drivers/net] Error 2
+> > > > make: *** [drivers] Error 2
+> > > > ---
+> > > >
+> > > > That is because my -mm tree fixing bug patch:
+> > > >
+> > > >
+> > >
+> (http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=9e6db60825ef7e7999abc610ce256ba768e58162)
+> > >
+> > > > was merged into mainline before the smc91x API change patch in -mm:
+> > > >
+> > > >
+> > >
+> http://www.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.25-rc5/2.6.25-rc5-mm1/broken-out/smc91x-pass-along-private-data-v2.patch
+> > >
+> > > > Did I miss something here? or this patch is on the way before 2.6.25
+> > > > final release?
+> > > >
+> > > >
+> > >  It looks like I missed something...  I thought akpm was going to send
+> the
+> > > patch for -mm in?
+> > >
+> > >  If not, let's revert this one...
+> > >
+> > >
+> >
+> > ok, no problem, it is ok for me.
+> >
 >
-> Keep in mind that the core of the TCP stack really depends
-> upon being able to slice and dice paged SKBs as is pleases
-> in order to send packets out.
+>  Cool.
 >
-> In fact, it also does such splitting during SACK processing.
+>  David or Linus, please revert 9e6db60825ef7e7999abc610ce256ba768e58162
 >
-> It really is a base requirement for efficient TSO support.
-> Otherwise the above operations would be so incredibly
-> expensive we might as well rip all of the TSO support out.
+>  It was merged without the API it needed, causing build breakage.
+>
+>  Acked-by: Jeff Garzik <jgarzik@redhat.com>
+>
+>
 
-In this case that's OK; these are only for packets coming from 
-userspace/guest, so the only interaction with the tcp code is possibly as a 
-recipient.
+Thanks a lot.
 
-If tcp wanted to do zero-copy aio xmit, I think we'd need something else.
+>
+>  Andrew,
+>
+>  Since it was an arch patch to a driver I cannot build, I made the
+> [mistaken] assumption that your sending it to me was an indication that it
+> should actually be merged :)  Especially with a subject like "fix build
+> breakage", for a platform I cannot easily build...
+>
+>  Are there any process tweaks that could be made here?  Maybe -mm stuff sent
+> to maintainers could be tagged, noting dependencies on other -mm patches
+> that are not yet upstream?
+>
 
-Cheers,
-Rusty.
+Oh, IMO, this confusing is initially introduced by me. I should choose
+more meaningful name of this patch.
+such as smc91x-pass-along-private-data-v2-fix-build-fail-on-blackfin.patch.
+Then things become more clear for everyone.
 
-
-
-
+-Bryan
