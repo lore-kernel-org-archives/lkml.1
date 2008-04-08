@@ -1,58 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758076AbYDHUTz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756076AbYDHUUg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758076AbYDHUTz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Apr 2008 16:19:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752137AbYDHUTb
+	id S1756076AbYDHUUg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Apr 2008 16:20:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752396AbYDHUUX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Apr 2008 16:19:31 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:52537 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752072AbYDHUT3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Apr 2008 16:19:29 -0400
-Message-ID: <47FBD34A.6080508@garzik.org>
-Date: Tue, 08 Apr 2008 16:19:22 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Matthew Wilcox <matthew@wil.cx>, "Kok, Auke" <auke-jan.h.kok@intel.com>,
+	Tue, 8 Apr 2008 16:20:23 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:37949 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752137AbYDHUUV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Apr 2008 16:20:21 -0400
+Date: Tue, 8 Apr 2008 14:20:04 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Dan Noe <dpn@isomerica.net>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       "Brandeburg, Jesse" <jesse.brandeburg@intel.com>,
+       "Kok, Auke-jan H" <auke-jan.h.kok@intel.com>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        NetDev <netdev@vger.kernel.org>,
        e1000-list <e1000-devel@lists.sourceforge.net>,
        linux-pci maillist <linux-pci@atrey.karlin.mff.cuni.cz>,
+       Jeff Garzik <jeff@garzik.org>,
        Andrew Morton <akpm@linux-foundation.org>,
        "David S. Miller" <davem@davemloft.net>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       Jesse Brandeburg <jesse.brandeburg@intel.com>,
        "Ronciak, John" <john.ronciak@intel.com>,
        "Allan, Bruce W" <bruce.w.allan@intel.com>, Greg KH <greg@kroah.com>,
        Arjan van de Ven <arjan@linux.intel.com>,
        "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: [regression] e1000e broke e1000
-References: <47F69965.7030303@intel.com> <20080408083606.GA20863@elte.hu> <47FB9ABB.9080403@intel.com> <20080408183921.GA20803@elte.hu> <20080408193245.GG11962@parisc-linux.org> <20080408195123.GA28148@elte.hu> <47FBCE00.2020309@garzik.org> <20080408200652.GC28148@elte.hu>
-In-Reply-To: <20080408200652.GC28148@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Message-ID: <20080408202003.GJ11962@parisc-linux.org>
+References: <47F69965.7030303@intel.com> <20080408083606.GA20863@elte.hu> <47FB9ABB.9080403@intel.com> <20080408183921.GA20803@elte.hu> <36D9DB17C6DE9E40B059440DB8D95F5204E2A55C@orsmsx418.amr.corp.intel.com> <20080408195949.GB28148@elte.hu> <20080408200417.GI11962@parisc-linux.org> <47FBD1AD.1080700@isomerica.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <47FBD1AD.1080700@isomerica.net>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> i repeat, it took me more than an hour to figure out why there's no 
-> networking on my laptop. Guess how much it takes for a plain user to 
-> figure out the same problem.
+On Tue, Apr 08, 2008 at 04:12:29PM -0400, Dan Noe wrote:
+> It would be nice if lspci could display what driver had claimed a 
+> particular device
 
-A plain user would have obtained a working distro kernel, putting this 
-rare problem purely in the laps of people with highly unusual kernel 
-configs...
+You need to upgrade to a more recent version of lspci -- it already does
+this ;-)
 
-But as noted in the announcement, the fix is for this is to continue in 
-the next step in the transition, then you only have one driver claiming 
-those IDs, for any given config.  No need for further Kconfig tweakage.
+Maybe 'status' would be a better name than 'broken'.  We could even
+default it to 'unclaimed' then.  Or 'driver_status' to avoid conflicting
+with some bus that might have a 'status' bit we try to report through
+sysfs.
 
-	Jeff
-
-
+-- 
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
