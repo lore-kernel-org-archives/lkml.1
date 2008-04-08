@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756051AbYDHP5y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756355AbYDHP6P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756051AbYDHP5y (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Apr 2008 11:57:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754219AbYDHP46
+	id S1756355AbYDHP6P (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Apr 2008 11:58:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754251AbYDHP47
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Apr 2008 11:56:58 -0400
+	Tue, 8 Apr 2008 11:56:59 -0400
 Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:59133
 	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754170AbYDHP45 (ORCPT
+	with ESMTP id S1754190AbYDHP46 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Apr 2008 11:56:57 -0400
+	Tue, 8 Apr 2008 11:56:58 -0400
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Subject: [PATCH 3 of 9] Moves all mmu notifier methods outside the PT lock
-	(first and not last
-X-Mercurial-Node: 33de2e17d0f5670515833bf8d3d2ea19e2a85b09
-Message-Id: <33de2e17d0f567051583.1207669446@duo.random>
+Subject: [PATCH 4 of 9] Move the tlb flushing into free_pgtables. The
+	conversion of the locks
+X-Mercurial-Node: 2c2ed514f294dbbfc66157f771bc900789ac6005
+Message-Id: <2c2ed514f294dbbfc661.1207669447@duo.random>
 In-Reply-To: <patchbomb.1207669443@duo.random>
-Date: Tue, 08 Apr 2008 17:44:06 +0200
+Date: Tue, 08 Apr 2008 17:44:07 +0200
 From: Andrea Arcangeli <andrea@qumranet.com>
 To: Christoph Lameter <clameter@sgi.com>
 Cc: akpm@linux-foundation.org, Nick Piggin <npiggin@suse.de>,
@@ -36,248 +36,98 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 # HG changeset patch
 # User Andrea Arcangeli <andrea@qumranet.com>
 # Date 1207666463 -7200
-# Node ID 33de2e17d0f5670515833bf8d3d2ea19e2a85b09
-# Parent  baceb322b45ed43280654dac6c964c9d3d8a936f
-Moves all mmu notifier methods outside the PT lock (first and not last
-step to make them sleep capable).
+# Node ID 2c2ed514f294dbbfc66157f771bc900789ac6005
+# Parent  33de2e17d0f5670515833bf8d3d2ea19e2a85b09
+Move the tlb flushing into free_pgtables. The conversion of the locks
+taken for reverse map scanning would require taking sleeping locks
+in free_pgtables(). Moving the tlb flushing into free_pgtables allows
+sleeping in parts of free_pgtables().
 
-Signed-off-by: Andrea Arcangeli <andrea@qumranet.com>
+This means that we do a tlb_finish_mmu() before freeing the page tables.
+Strictly speaking there may not be the need to do another tlb flush after
+freeing the tables. But its the only way to free a series of page table
+pages from the tlb list. And we do not want to call into the page allocator
+for performance reasons. Aim9 numbers look okay after this patch.
 
-diff --git a/include/linux/mmu_notifier.h b/include/linux/mmu_notifier.h
---- a/include/linux/mmu_notifier.h
-+++ b/include/linux/mmu_notifier.h
-@@ -117,27 +117,6 @@
- 	INIT_HLIST_HEAD(&mm->mmu_notifier_list);
- }
- 
--#define ptep_clear_flush_notify(__vma, __address, __ptep)		\
--({									\
--	pte_t __pte;							\
--	struct vm_area_struct *___vma = __vma;				\
--	unsigned long ___address = __address;				\
--	__pte = ptep_clear_flush(___vma, ___address, __ptep);		\
--	mmu_notifier_invalidate_page(___vma->vm_mm, ___address);	\
--	__pte;								\
--})
--
--#define ptep_clear_flush_young_notify(__vma, __address, __ptep)		\
--({									\
--	int __young;							\
--	struct vm_area_struct *___vma = __vma;				\
--	unsigned long ___address = __address;				\
--	__young = ptep_clear_flush_young(___vma, ___address, __ptep);	\
--	__young |= mmu_notifier_clear_flush_young(___vma->vm_mm,	\
--						  ___address);		\
--	__young;							\
--})
--
- #else /* CONFIG_MMU_NOTIFIER */
- 
- static inline void mmu_notifier_release(struct mm_struct *mm)
-@@ -169,9 +148,6 @@
- {
- }
- 
--#define ptep_clear_flush_young_notify ptep_clear_flush_young
--#define ptep_clear_flush_notify ptep_clear_flush
--
- #endif /* CONFIG_MMU_NOTIFIER */
- 
- #endif /* _LINUX_MMU_NOTIFIER_H */
-diff --git a/mm/filemap_xip.c b/mm/filemap_xip.c
---- a/mm/filemap_xip.c
-+++ b/mm/filemap_xip.c
-@@ -194,11 +194,13 @@
- 		if (pte) {
- 			/* Nuke the page table entry. */
- 			flush_cache_page(vma, address, pte_pfn(*pte));
--			pteval = ptep_clear_flush_notify(vma, address, pte);
-+			pteval = ptep_clear_flush(vma, address, pte);
- 			page_remove_rmap(page, vma);
- 			dec_mm_counter(mm, file_rss);
- 			BUG_ON(pte_dirty(pteval));
- 			pte_unmap_unlock(pte, ptl);
-+			/* must invalidate_page _before_ freeing the page */
-+			mmu_notifier_invalidate_page(mm, address);
- 			page_cache_release(page);
- 		}
- 	}
+Signed-off-by: Christoph Lameter <clameter@sgi.com>
+
+diff --git a/include/linux/mm.h b/include/linux/mm.h
+--- a/include/linux/mm.h
++++ b/include/linux/mm.h
+@@ -751,8 +751,8 @@
+ 		    void *private);
+ void free_pgd_range(struct mmu_gather **tlb, unsigned long addr,
+ 		unsigned long end, unsigned long floor, unsigned long ceiling);
+-void free_pgtables(struct mmu_gather **tlb, struct vm_area_struct *start_vma,
+-		unsigned long floor, unsigned long ceiling);
++void free_pgtables(struct vm_area_struct *start_vma, unsigned long floor,
++						unsigned long ceiling);
+ int copy_page_range(struct mm_struct *dst, struct mm_struct *src,
+ 			struct vm_area_struct *vma);
+ void unmap_mapping_range(struct address_space *mapping,
 diff --git a/mm/memory.c b/mm/memory.c
 --- a/mm/memory.c
 +++ b/mm/memory.c
-@@ -1626,9 +1626,10 @@
- 			 */
- 			page_table = pte_offset_map_lock(mm, pmd, address,
- 							 &ptl);
--			page_cache_release(old_page);
-+			new_page = NULL;
- 			if (!pte_same(*page_table, orig_pte))
- 				goto unlock;
-+			page_cache_release(old_page);
+@@ -272,9 +272,11 @@
+ 	} while (pgd++, addr = next, addr != end);
+ }
  
- 			page_mkwrite = 1;
+-void free_pgtables(struct mmu_gather **tlb, struct vm_area_struct *vma,
+-		unsigned long floor, unsigned long ceiling)
++void free_pgtables(struct vm_area_struct *vma, unsigned long floor,
++							unsigned long ceiling)
+ {
++	struct mmu_gather *tlb;
++
+ 	while (vma) {
+ 		struct vm_area_struct *next = vma->vm_next;
+ 		unsigned long addr = vma->vm_start;
+@@ -286,8 +288,10 @@
+ 		unlink_file_vma(vma);
+ 
+ 		if (is_vm_hugetlb_page(vma)) {
+-			hugetlb_free_pgd_range(tlb, addr, vma->vm_end,
++			tlb = tlb_gather_mmu(vma->vm_mm, 0);
++			hugetlb_free_pgd_range(&tlb, addr, vma->vm_end,
+ 				floor, next? next->vm_start: ceiling);
++			tlb_finish_mmu(tlb, addr, vma->vm_end);
+ 		} else {
+ 			/*
+ 			 * Optimization: gather nearby vmas into one call down
+@@ -299,8 +303,10 @@
+ 				anon_vma_unlink(vma);
+ 				unlink_file_vma(vma);
+ 			}
+-			free_pgd_range(tlb, addr, vma->vm_end,
++			tlb = tlb_gather_mmu(vma->vm_mm, 0);
++			free_pgd_range(&tlb, addr, vma->vm_end,
+ 				floor, next? next->vm_start: ceiling);
++			tlb_finish_mmu(tlb, addr, vma->vm_end);
  		}
-@@ -1644,6 +1645,7 @@
- 		if (ptep_set_access_flags(vma, address, page_table, entry,1))
- 			update_mmu_cache(vma, address, entry);
- 		ret |= VM_FAULT_WRITE;
-+		old_page = new_page = NULL;
- 		goto unlock;
+ 		vma = next;
  	}
- 
-@@ -1688,7 +1690,7 @@
- 		 * seen in the presence of one thread doing SMC and another
- 		 * thread doing COW.
- 		 */
--		ptep_clear_flush_notify(vma, address, page_table);
-+		ptep_clear_flush(vma, address, page_table);
- 		set_pte_at(mm, address, page_table, entry);
- 		update_mmu_cache(vma, address, entry);
- 		lru_cache_add_active(new_page);
-@@ -1700,12 +1702,18 @@
- 	} else
- 		mem_cgroup_uncharge_page(new_page);
- 
--	if (new_page)
-+unlock:
-+	pte_unmap_unlock(page_table, ptl);
-+
-+	if (new_page) {
-+		if (new_page == old_page)
-+			/* cow happened, notify before releasing old_page */
-+			mmu_notifier_invalidate_page(mm, address);
- 		page_cache_release(new_page);
-+	}
- 	if (old_page)
- 		page_cache_release(old_page);
--unlock:
--	pte_unmap_unlock(page_table, ptl);
-+
- 	if (dirty_page) {
- 		if (vma->vm_file)
- 			file_update_time(vma->vm_file);
-diff --git a/mm/rmap.c b/mm/rmap.c
---- a/mm/rmap.c
-+++ b/mm/rmap.c
-@@ -275,7 +275,7 @@
- 	unsigned long address;
- 	pte_t *pte;
- 	spinlock_t *ptl;
--	int referenced = 0;
-+	int referenced = 0, clear_flush_young = 0;
- 
- 	address = vma_address(page, vma);
- 	if (address == -EFAULT)
-@@ -288,8 +288,11 @@
- 	if (vma->vm_flags & VM_LOCKED) {
- 		referenced++;
- 		*mapcount = 1;	/* break early from loop */
--	} else if (ptep_clear_flush_young_notify(vma, address, pte))
--		referenced++;
-+	} else {
-+		clear_flush_young = 1;
-+		if (ptep_clear_flush_young(vma, address, pte))
-+			referenced++;
-+	}
- 
- 	/* Pretend the page is referenced if the task has the
- 	   swap token and is in the middle of a page fault. */
-@@ -299,6 +302,10 @@
- 
- 	(*mapcount)--;
- 	pte_unmap_unlock(pte, ptl);
-+
-+	if (clear_flush_young)
-+		referenced += mmu_notifier_clear_flush_young(mm, address);
-+
- out:
- 	return referenced;
- }
-@@ -457,7 +464,7 @@
- 		pte_t entry;
- 
- 		flush_cache_page(vma, address, pte_pfn(*pte));
--		entry = ptep_clear_flush_notify(vma, address, pte);
-+		entry = ptep_clear_flush(vma, address, pte);
- 		entry = pte_wrprotect(entry);
- 		entry = pte_mkclean(entry);
- 		set_pte_at(mm, address, pte, entry);
-@@ -465,6 +472,10 @@
- 	}
- 
- 	pte_unmap_unlock(pte, ptl);
-+
-+	if (ret)
-+		mmu_notifier_invalidate_page(mm, address);
-+
- out:
- 	return ret;
- }
-@@ -717,15 +728,14 @@
- 	 * If it's recently referenced (perhaps page_referenced
- 	 * skipped over this mm) then we should reactivate it.
- 	 */
--	if (!migration && ((vma->vm_flags & VM_LOCKED) ||
--			(ptep_clear_flush_young_notify(vma, address, pte)))) {
-+	if (!migration && (vma->vm_flags & VM_LOCKED)) {
- 		ret = SWAP_FAIL;
- 		goto out_unmap;
- 	}
- 
- 	/* Nuke the page table entry. */
- 	flush_cache_page(vma, address, page_to_pfn(page));
--	pteval = ptep_clear_flush_notify(vma, address, pte);
-+	pteval = ptep_clear_flush(vma, address, pte);
- 
- 	/* Move the dirty bit to the physical page now the pte is gone. */
- 	if (pte_dirty(pteval))
-@@ -780,6 +790,8 @@
- 
- out_unmap:
- 	pte_unmap_unlock(pte, ptl);
-+	if (ret != SWAP_FAIL)
-+		mmu_notifier_invalidate_page(mm, address);
- out:
- 	return ret;
- }
-@@ -818,7 +830,7 @@
- 	spinlock_t *ptl;
- 	struct page *page;
- 	unsigned long address;
--	unsigned long end;
-+	unsigned long start, end;
- 
- 	address = (vma->vm_start + cursor) & CLUSTER_MASK;
- 	end = address + CLUSTER_SIZE;
-@@ -839,6 +851,8 @@
- 	if (!pmd_present(*pmd))
- 		return;
- 
-+	start = address;
-+	mmu_notifier_invalidate_range_start(mm, start, end);
- 	pte = pte_offset_map_lock(mm, pmd, address, &ptl);
- 
- 	/* Update high watermark before we lower rss */
-@@ -850,12 +864,12 @@
- 		page = vm_normal_page(vma, address, *pte);
- 		BUG_ON(!page || PageAnon(page));
- 
--		if (ptep_clear_flush_young_notify(vma, address, pte))
-+		if (ptep_clear_flush_young(vma, address, pte))
- 			continue;
- 
- 		/* Nuke the page table entry. */
- 		flush_cache_page(vma, address, pte_pfn(*pte));
--		pteval = ptep_clear_flush_notify(vma, address, pte);
-+		pteval = ptep_clear_flush(vma, address, pte);
- 
- 		/* If nonlinear, store the file page offset in the pte. */
- 		if (page->index != linear_page_index(vma, address))
-@@ -871,6 +885,7 @@
- 		(*mapcount)--;
- 	}
- 	pte_unmap_unlock(pte - 1, ptl);
-+	mmu_notifier_invalidate_range_end(mm, start, end);
+diff --git a/mm/mmap.c b/mm/mmap.c
+--- a/mm/mmap.c
++++ b/mm/mmap.c
+@@ -1752,9 +1752,9 @@
+ 	mmu_notifier_invalidate_range_start(mm, start, end);
+ 	unmap_vmas(&tlb, vma, start, end, &nr_accounted, NULL);
+ 	vm_unacct_memory(nr_accounted);
+-	free_pgtables(&tlb, vma, prev? prev->vm_end: FIRST_USER_ADDRESS,
++	tlb_finish_mmu(tlb, start, end);
++	free_pgtables(vma, prev? prev->vm_end: FIRST_USER_ADDRESS,
+ 				 next? next->vm_start: 0);
+-	tlb_finish_mmu(tlb, start, end);
+ 	mmu_notifier_invalidate_range_end(mm, start, end);
  }
  
- static int try_to_unmap_anon(struct page *page, int migration)
+@@ -2051,8 +2051,8 @@
+ 	/* Use -1 here to ensure all VMAs in the mm are unmapped */
+ 	end = unmap_vmas(&tlb, vma, 0, -1, &nr_accounted, NULL);
+ 	vm_unacct_memory(nr_accounted);
+-	free_pgtables(&tlb, vma, FIRST_USER_ADDRESS, 0);
+ 	tlb_finish_mmu(tlb, 0, end);
++	free_pgtables(vma, FIRST_USER_ADDRESS, 0);
+ 
+ 	/*
+ 	 * Walk the list again, actually closing and freeing it,
