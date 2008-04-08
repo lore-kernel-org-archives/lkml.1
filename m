@@ -1,90 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755062AbYDHU43@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755413AbYDHU61@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755062AbYDHU43 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Apr 2008 16:56:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752139AbYDHU4S
+	id S1755413AbYDHU61 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Apr 2008 16:58:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752704AbYDHU6U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Apr 2008 16:56:18 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:39510 "EHLO mail.dvmed.net"
+	Tue, 8 Apr 2008 16:58:20 -0400
+Received: from ozlabs.org ([203.10.76.45]:33559 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751776AbYDHU4S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Apr 2008 16:56:18 -0400
-Message-ID: <47FBDBE9.9040700@garzik.org>
-Date: Tue, 08 Apr 2008 16:56:09 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Matthew Wilcox <matthew@wil.cx>, "Kok, Auke" <auke-jan.h.kok@intel.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       NetDev <netdev@vger.kernel.org>,
-       e1000-list <e1000-devel@lists.sourceforge.net>,
-       linux-pci maillist <linux-pci@atrey.karlin.mff.cuni.cz>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "David S. Miller" <davem@davemloft.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Jesse Brandeburg <jesse.brandeburg@intel.com>,
-       "Ronciak, John" <john.ronciak@intel.com>,
-       "Allan, Bruce W" <bruce.w.allan@intel.com>, Greg KH <greg@kroah.com>,
-       Arjan van de Ven <arjan@linux.intel.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [regression] e1000e broke e1000
-References: <47F69965.7030303@intel.com> <20080408083606.GA20863@elte.hu> <47FB9ABB.9080403@intel.com> <20080408183921.GA20803@elte.hu> <20080408193245.GG11962@parisc-linux.org> <20080408195123.GA28148@elte.hu> <47FBCE00.2020309@garzik.org> <20080408200652.GC28148@elte.hu> <47FBD34A.6080508@garzik.org> <20080408203314.GA28952@elte.hu>
-In-Reply-To: <20080408203314.GA28952@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	id S1752490AbYDHU6T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Apr 2008 16:58:19 -0400
+Subject: Re: compile failure in pata_sil680.c
+From: Benjamin Herrenschmidt <benh@ozlabs.org>
+To: Meelis Roos <mroos@linux.ee>
+Cc: Linux Kernel list <linux-kernel@vger.kernel.org>,
+       Jeff Garzik <jeff@garzik.org>
+In-Reply-To: <Pine.SOC.4.64.0804081640100.28938@math.ut.ee>
+References: <Pine.SOC.4.64.0804081640100.28938@math.ut.ee>
+Content-Type: text/plain
+Date: Wed, 09 Apr 2008 06:55:36 +1000
+Message-Id: <1207688136.10388.542.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> No other 
-> PCI driver breaks like this.
 
-That's because PCI ID transitions are extremely, extremely rare.
+On Tue, 2008-04-08 at 16:44 +0300, Meelis Roos wrote:
+> commit 0f436eff54f90419ac1b8accfb3e6e17c4b49a4e introduces the following 
+> compile failure on ppc (not powerpc), prep subarch. Seems that 
+> machine_is is only defined in the new powerpc arch.
+> 
+> drivers/ata/pata_sil680.c: In function 'sil680_init_chip':
+> drivers/ata/pata_sil680.c:274: error: implicit declaration of function 'machine_is'
+> drivers/ata/pata_sil680.c:274: error: 'cell' undeclared (first use in this function)
+> drivers/ata/pata_sil680.c:274: error: (Each undeclared identifier is reported only once
+> drivers/ata/pata_sil680.c:274: error: for each function it appears in.)
+> make[2]: *** [drivers/ata/pata_sil680.o] Error 1
 
-Not because this transition is particularly unusual.
+Argh. We still haven't got rid of arch/ppc...
 
+Fix is to replace CONFIG_PPC with CONFIG_PPC_MERGE.
 
-> We've got three thousand Kconfig options - 
-> it is clearly not realistic for users to keep such details in mind to 
-> avoid pitfalls.
+I'll send a patch.
 
-Agreed -- hence the multiple announcements, including in this thread, to 
-put said details into mind.
-
-It's an unusual situation, thus it received announcements so that people 
-are aware of the transition taking place, and what to do about it.
-
-
-> E1000=y && E1000E=m is uncommon but can easily happen. 
-> E1000=y && E1000E=m simply makes no sense in light of the PCI ID 
-> stealing that occurs if E1000E is enabled.
-
-"makes no sense"...  for your personal situation.
-
-They are two independent drivers, and that's a valid mix of Kconfig 
-settings.
-
-Someone could easily have an e1000 card in an e1000e machine, and come 
-up with that specific config mix.
-
-It is not denial to say "people other than Ingo might validly choose 
-that config mix."
-
-
-
-Overall, fundamentally, any transition of a user base from one driver to 
-another is going to be an ad-hoc process.  That's the nature of the 
-problem -- each case is different.
-
-So we avoid driver transitions if at all possible, as a general rule. 
-In this case, a rare exception to that rule, you have to hammer out a 
-user-education process as best you can.
-
-	Jeff
+Ben.
 
 
