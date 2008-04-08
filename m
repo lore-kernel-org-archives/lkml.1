@@ -1,79 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753973AbYDHUjr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753363AbYDHUkq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753973AbYDHUjr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Apr 2008 16:39:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752635AbYDHUjg
+	id S1753363AbYDHUkq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Apr 2008 16:40:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752635AbYDHUkf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Apr 2008 16:39:36 -0400
-Received: from colobus.isomerica.net ([216.93.242.10]:60629 "EHLO
-	colobus.isomerica.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752380AbYDHUjg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Apr 2008 16:39:36 -0400
-Message-ID: <47FBD7FE.1060507@isomerica.net>
-Date: Tue, 08 Apr 2008 16:39:26 -0400
-From: Dan Noe <dpn@isomerica.net>
-Reply-To: dpn@isomerica.net
-Organization: isomerica.net
-User-Agent: Thunderbird 2.0.0.12 (Macintosh/20080213)
+	Tue, 8 Apr 2008 16:40:35 -0400
+Received: from mga02.intel.com ([134.134.136.20]:21685 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752156AbYDHUke (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Apr 2008 16:40:34 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,625,1199692800"; 
+   d="scan'208";a="368291961"
+Message-ID: <47FBD620.1080508@intel.com>
+Date: Tue, 08 Apr 2008 13:31:28 -0700
+From: "Kok, Auke" <auke-jan.h.kok@intel.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071125)
 MIME-Version: 1.0
-To: Matthew Wilcox <matthew@wil.cx>
-CC: Ingo Molnar <mingo@elte.hu>,
-       "Brandeburg, Jesse" <jesse.brandeburg@intel.com>,
-       "Kok, Auke-jan H" <auke-jan.h.kok@intel.com>,
+To: Ingo Molnar <mingo@elte.hu>
+CC: Jeff Garzik <jeff@garzik.org>, Matthew Wilcox <matthew@wil.cx>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        NetDev <netdev@vger.kernel.org>,
        e1000-list <e1000-devel@lists.sourceforge.net>,
        linux-pci maillist <linux-pci@atrey.karlin.mff.cuni.cz>,
-       Jeff Garzik <jeff@garzik.org>,
        Andrew Morton <akpm@linux-foundation.org>,
        "David S. Miller" <davem@davemloft.net>,
        Linus Torvalds <torvalds@linux-foundation.org>,
+       Jesse Brandeburg <jesse.brandeburg@intel.com>,
        "Ronciak, John" <john.ronciak@intel.com>,
        "Allan, Bruce W" <bruce.w.allan@intel.com>, Greg KH <greg@kroah.com>,
        Arjan van de Ven <arjan@linux.intel.com>,
        "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: [regression] e1000e broke e1000
-References: <47F69965.7030303@intel.com> <20080408083606.GA20863@elte.hu> <47FB9ABB.9080403@intel.com> <20080408183921.GA20803@elte.hu> <36D9DB17C6DE9E40B059440DB8D95F5204E2A55C@orsmsx418.amr.corp.intel.com> <20080408195949.GB28148@elte.hu> <20080408200417.GI11962@parisc-linux.org> <47FBD1AD.1080700@isomerica.net> <20080408202003.GJ11962@parisc-linux.org>
-In-Reply-To: <20080408202003.GJ11962@parisc-linux.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+References: <47F69965.7030303@intel.com> <20080408083606.GA20863@elte.hu> <47FB9ABB.9080403@intel.com> <20080408183921.GA20803@elte.hu> <20080408193245.GG11962@parisc-linux.org> <20080408195123.GA28148@elte.hu> <47FBCE00.2020309@garzik.org> <20080408200652.GC28148@elte.hu>
+In-Reply-To: <20080408200652.GC28148@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Matthew Wilcox wrote:
-> On Tue, Apr 08, 2008 at 04:12:29PM -0400, Dan Noe wrote:
->> It would be nice if lspci could display what driver had claimed a 
->> particular device
+Ingo Molnar wrote:
+> * Jeff Garzik <jeff@garzik.org> wrote:
 > 
-> You need to upgrade to a more recent version of lspci -- it already does
-> this ;-)
+>> Then disable E1000E in your kernel config, and the PCIE() macro will 
+>> do the right thing...
+> 
+> it is an obvious regression that could and should be solved in the 
+> Kconfig space: do not allow E1000=y && E1000E=m.
 
-Hah, thanks.  That is useful and very new :)  I built a newer lspci and 
-I see it is now displayed with the -k option.
+this is really not the solution imho, having e1000 builtin and e1000e as a module
+is a perfectly viable choice. They are two separate drivers that are completely
+independent.
 
-> Maybe 'status' would be a better name than 'broken'.  We could even
-> default it to 'unclaimed' then.  Or 'driver_status' to avoid conflicting
-> with some bus that might have a 'status' bit we try to report through
-> sysfs.
+I also think that the word "regression" is way out of proportion. I did not
+complain myself when IDE/ATA->SATA driver merges broke all my systems and I was
+pleasantly provided with the 'cannot find root vfs' message. (that's what I get
+for running my own distro).
 
-I agree however that the opportunity for more status would be good.  And 
-status is a better name than "broken".  This way it is easy to scan all 
-devices on the system via sysfs and easily visualize via lspci or some 
-other tool:
+> i repeat, it took me more than an hour to figure out why there's no 
+> networking on my laptop. Guess how much it takes for a plain user to 
+> figure out the same problem.
 
-1) Unclaimed devices
+a plain user uses a distro which is aware of the issue and that will load e1000e
+automatically, because it was tested by the distro.
 
-2) Devices that aren't working properly - and why (please something more 
-than "This device is not working properly" :)
+that is just pushing the discussion to the wrong point. The decision has been made
+a long time ago to split e1000 in two. now that we have two drivers, we have a
+migration issue. you can't fix this migration issue by forcing a specific .config
+endresult on the user.
 
-3) Devices that are claimed and working properly
+I've seen suggestions that will alleviate the issue by adding a 'default E1000' to
+the e1000e Kconfig section, and something like that makes sense to me and I still
+would be happy to merge something like that.
 
-Cheers,
-Dan
+I do not think that hiding the existence of e1000e for any user by always enabling
+it will fix things at all however, and will just lead to a lot of other issues
+later on.
 
--- 
-                     /--------------- - -  -  -   -   -
-                     |  Daniel Noe
-                     |  http://isomerica.net/~dpn/
+
+Auke
