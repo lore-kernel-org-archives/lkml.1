@@ -1,126 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753980AbYDHPlv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754045AbYDHPxR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753980AbYDHPlv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Apr 2008 11:41:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753269AbYDHPlo
+	id S1754045AbYDHPxR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Apr 2008 11:53:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752111AbYDHPxG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Apr 2008 11:41:44 -0400
-Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:55047 "EHLO
-	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753109AbYDHPln (ORCPT
+	Tue, 8 Apr 2008 11:53:06 -0400
+Received: from e32.co.us.ibm.com ([32.97.110.150]:51577 "EHLO
+	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751700AbYDHPxF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Apr 2008 11:41:43 -0400
-Message-ID: <47FB920F.60503@s5r6.in-berlin.de>
-Date: Tue, 08 Apr 2008 17:41:03 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.12) Gecko/20080201 SeaMonkey/1.1.8
-MIME-Version: 1.0
+	Tue, 8 Apr 2008 11:53:05 -0400
+Date: Tue, 8 Apr 2008 08:52:59 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
 To: Johannes Berg <johannes@sipsolutions.net>
-CC: Andrew Morton <akpm@osdl.org>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, sam <sam@ravnborg.org>
-Subject: Re: [PATCH] introduce HAVE_EFFICIENT_UNALIGNED_ACCESS Kconfig symbol
-References: <1207667127.14253.42.camel@johannes.berg>
-In-Reply-To: <1207667127.14253.42.camel@johannes.berg>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Cc: Linux Kernel list <linux-kernel@vger.kernel.org>,
+       linux-sparse <linux-sparse@vger.kernel.org>
+Subject: Re: Using sparse to catch invalid RCU dereferences?
+Message-ID: <20080408155259.GA8381@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <1207605856.12481.35.camel@johannes.berg>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1207605856.12481.35.camel@johannes.berg>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Johannes Berg wrote:
-> --- everything.orig/Documentation/unaligned-memory-access.txt	2008-04-04 23:42:50.000000000 +0200
-> +++ everything/Documentation/unaligned-memory-access.txt	2008-04-04 23:52:15.000000000 +0200
-> @@ -218,9 +218,35 @@ If use of such macros is not convenient,
->  where the source or destination (or both) are of type u8* or unsigned char*.
->  Due to the byte-wise nature of this operation, unaligned accesses are avoided.
->  
-> +
-> +Alignment vs. Networking
-> +========================
-> +
-> +On architectures that require aligned loads, networking requires that the IP
-> +header is aligned on a four-byte boundary to optimise the IP stack. For
-> +regular ethernet hardware, the constant NET_IP_ALIGN is used, on most
+On Tue, Apr 08, 2008 at 12:04:16AM +0200, Johannes Berg wrote:
+> Hi,
+> 
+> Just a thought, I haven't tried this yet because I'm not entirely sure
+> it's actually correct. I was just thinking it should be possible to
+> introduce something like
+> 
+> 	#define __rcu	__attribute__((address_space(3)))
+> 
+> (for sparse only, of course) and then be able to say
+> 
+> 	struct myfoo *foo __rcu;
+> 
+> and sparse would warn on
+> 
+> 	struct myfoo *bar = foo;
+> 
+> but not on
+> 
+> 	struct myfoo *bar = rcu_dereference(foo);
 
-                                                               . On
+Ah, "address_space" is a sparse-ism, no wonder I couldn't find it in
+the gcc docs...
 
-> +architectures this constant has the value 2 because the normal ethernet
-> +header is 14 bytes long, so in order to get proper alignment one needs to
+So the address_space attribute says what the pointer points to rather
+than where the pointer resides, correct?
 
-                          . So
+> by way of using __force inside rcu_dereference(), rcu_assign_pointer()
+> etc.
+> 
+> Would this be feasible? Or should one actually use __bitwise/__force to
+> also get the warning when assigning between two variables both marked
+> __rcu?
 
-> +DMA to an address that is can be expressed as 4*n + 2. One notable exception
+It might be.  There are a number of places where it is legal to access
+RCU-protected pointers directly, and all of these would need to be
+changed.  For example, in the example above, one could do:
 
-                      which can
+	foo = NULL;
 
-> +here is powerpc which defines NET_IP_ALIGN to 0 because DMA to unaligned
-> +addresses can be very expensive and dwarf the cost of unaligned loads.
-> +
-> +For some ethernet hardware that cannot DMA to unaligned addresses like
-> +4*n+2 or non-ethernet hardware, this can be a problem, and it is then
-> +required to copy the incoming frame into an aligned buffer. Because this is
-> +unnecessary on architectures that can do unaligned accesses, the code can be
-> +made depend on CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS like so:
+I recently tried to modify rcu_assign_pointer() to issue the memory
+memory barrier only when the pointer was non-NULL, but this ended badly.
+Probably because I am not the greatest gcc expert around...  We ended
+up having to define an rcu_assign_index() to handle the possibility of
+assigning a zero-value array index, but my attempts to do type-checking
+backfired, and I eventually gave it up.  Again, someone a bit more clued
+in to gcc than I am could probably pull it off.
 
-   made dependent on
+In addition, it is legal to omit rcu_dereference() and rcu_assign_pointer()
+when holding the update-side lock.
 
-> +
-> +#ifdef CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS
-> +	skb = original skb
-> +#else
-> +	skb = copy skb
-> +#endif
-> +
->  --
-> -Author: Daniel Drake <dsd@gentoo.org>
-> +Authors: Daniel Drake <dsd@gentoo.org>,
-> +         Johannes Berg <johannes@sipsolutions.net>
->  With help from: Alan Cox, Avuton Olrich, Heikki Orsila, Jan Engelhardt,
-> -Johannes Berg, Kyle McMartin, Kyle Moffett, Randy Dunlap, Robert Hancock,
-> -Uli Kunitz, Vadim Lobanov
-> +Kyle McMartin, Kyle Moffett, Randy Dunlap, Robert Hancock, Uli Kunitz,
-> +Vadim Lobanov
->  
-> --- everything.orig/arch/powerpc/Kconfig	2008-04-04 23:42:53.000000000 +0200
-> +++ everything/arch/powerpc/Kconfig	2008-04-04 23:52:15.000000000 +0200
-> @@ -103,6 +103,7 @@ config PPC
->  	select HAVE_OPROFILE
->  	select HAVE_KPROBES
->  	select HAVE_KRETPROBES
-> +	select HAVE_EFFICIENT_UNALIGNED_ACCESS
->  
->  config EARLY_PRINTK
->  	bool
-> --- everything.orig/arch/x86/Kconfig	2008-04-04 23:42:50.000000000 +0200
-> +++ everything/arch/x86/Kconfig	2008-04-04 23:52:15.000000000 +0200
-> @@ -23,6 +23,7 @@ config X86
->  	select HAVE_KPROBES
->  	select HAVE_KRETPROBES
->  	select HAVE_KVM if ((X86_32 && !X86_VOYAGER && !X86_VISWS && !X86_NUMAQ) || X86_64)
-> +	select HAVE_EFFICIENT_UNALIGNED_ACCESS
->  
->  
->  config GENERIC_LOCKBREAK
-> --- everything.orig/arch/Kconfig	2008-04-04 23:42:50.000000000 +0200
-> +++ everything/arch/Kconfig	2008-04-04 23:52:15.000000000 +0200
-> @@ -36,3 +36,22 @@ config HAVE_KPROBES
->  
->  config HAVE_KRETPROBES
->  	def_bool n
-> +
-> +config HAVE_EFFICIENT_UNALIGNED_ACCESS
-> +	def_bool n
-> +	help
-> +	  Some architectures are unable to perform unaligned accesses
-> +	  without the use of get_unaligned/put_unaligned. Others are
-> +	  unable to perform such accesses efficiently (e.g. trap on
+So I very much like this approach in general, but it will require some
+care to implement.  I would be very happy to review and comment!!!
 
-Wouldn't a comment be more appropriate instead of a help text?  This
-option shouldn't be a visible make XYZconfig prompt.
-
-I have no comment on the option itself; it's not my domain.
--- 
-Stefan Richter
--=====-==--- -=-- -=---
-http://arcgraph.de/sr/
+							Thanx, Paul
