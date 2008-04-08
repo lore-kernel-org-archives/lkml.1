@@ -1,58 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755459AbYDHVBe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754953AbYDHVJY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755459AbYDHVBe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Apr 2008 17:01:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752880AbYDHVB1
+	id S1754953AbYDHVJY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Apr 2008 17:09:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753260AbYDHVJK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Apr 2008 17:01:27 -0400
-Received: from mail.gmx.net ([213.165.64.20]:55164 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752511AbYDHVB0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Apr 2008 17:01:26 -0400
-X-Authenticated: #20450766
-X-Provags-ID: V01U2FsdGVkX18R5WcXU/IRffQBtH2I1U9VBoVUhQ8e1k2p4pHVGu
-	1YAoDCnkfKKGKX
-Date: Tue, 8 Apr 2008 23:01:26 +0200 (CEST)
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-To: Dave Airlie <airlied@gmail.com>
-cc: Gerhard Pircher <gerhard_pircher@gmx.net>, linux-kernel@vger.kernel.org
-Subject: Re: [2.6.25-rc6] possible regression: X server dying
-In-Reply-To: <21d7e9970804071527g14402783j26bfdbd2beb1b026@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0804082256270.4987@axis700.grange>
-References: <47E82D68.5070305@imap.cc>  <21d7e9970803241622v10b887a6p869535102b486279@mail.gmail.com>
-  <47E83D14.8070800@imap.cc>  <21d7e9970803241753q433e7545pdd00eae189846a8@mail.gmail.com>
-  <21d7e9970803302153s314d48d3o7120a56092eeaede@mail.gmail.com> 
- <21d7e9970804060044i25b36802p1859ca25fa532494@mail.gmail.com> 
- <20080406143434.106940@gmx.net> <21d7e9970804071527g14402783j26bfdbd2beb1b026@mail.gmail.com>
+	Tue, 8 Apr 2008 17:09:10 -0400
+Received: from jabberwock.ucw.cz ([89.250.246.4]:37230 "EHLO jabberwock.ucw.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752388AbYDHVJJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Apr 2008 17:09:09 -0400
+Date: Tue, 8 Apr 2008 22:36:21 +0200
+From: Martin Mares <mj@ucw.cz>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Matthew Wilcox <matthew@wil.cx>, Dan Noe <dpn@isomerica.net>,
+       "Brandeburg, Jesse" <jesse.brandeburg@intel.com>,
+       "Kok, Auke-jan H" <auke-jan.h.kok@intel.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       NetDev <netdev@vger.kernel.org>,
+       e1000-list <e1000-devel@lists.sourceforge.net>,
+       linux-pci maillist <linux-pci@atrey.karlin.mff.cuni.cz>,
+       Jeff Garzik <jeff@garzik.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "David S. Miller" <davem@davemloft.net>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "Ronciak, John" <john.ronciak@intel.com>,
+       "Allan, Bruce W" <bruce.w.allan@intel.com>, Greg KH <greg@kroah.com>,
+       Arjan van de Ven <arjan@linux.intel.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [regression] e1000e broke e1000
+Message-ID: <mj+md-20080408.203606.10380.albireo@ucw.cz>
+References: <47F69965.7030303@intel.com> <20080408083606.GA20863@elte.hu> <47FB9ABB.9080403@intel.com> <20080408183921.GA20803@elte.hu> <36D9DB17C6DE9E40B059440DB8D95F5204E2A55C@orsmsx418.amr.corp.intel.com> <20080408195949.GB28148@elte.hu> <20080408200417.GI11962@parisc-linux.org> <47FBD1AD.1080700@isomerica.net> <20080408202003.GJ11962@parisc-linux.org> <20080408203507.GB28952@elte.hu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Y-GMX-Trusted: 0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080408203507.GB28952@elte.hu>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 8 Apr 2008, Dave Airlie wrote:
+> > You need to upgrade to a more recent version of lspci -- it already 
+> > does this ;-)
+> 
+> yes, but it does not (yet) display the negative condition and the reason 
+> for that. (if the kernel knows the reason - and in most cases it knows 
+> it)
 
-> On Mon, Apr 7, 2008 at 12:34 AM, Gerhard Pircher <gerhard_pircher@gmx.net> wrote:
-> >
-> >  Sorry for hijacking this thread, but I have a similar problem with the
-> >  Xorg X server. I'm using kernel 2.6.25-rc8 on my AmigaOne (PowerPC) and
-> >  the X server dies right on startup, but only if DRI/DRM is enabled.
-> >  I tested this with both Xorg 7.1 (Debian Etch version) and Xorg 7.2
-> >  (Lenny). The X server was working fine with kernel 2.6.25-rc6. I have
-> >  to mention that the AmigaOne uses uncached memory for DMA operations.
-> >  Benjamin Herrenschmidt fixed DRI recently for non cache coherent systems
-> >  and his patches are working fine (I applied them to kernel 2.6.25-rc6).
-> >  Please take a look at the attached Xorg.0.log file or at the excerpt
-> >  below:
+Yes, it would be nice to have.
 
-Hm, so looks like I'm not seeing some ghosts on mine either. 2.6.25-rc8 
-xorg runs under etch, but enters a tight (no syscalls) loop woth 100% CPU 
-load under lenny. A 2.6.24 based kernel works under both etch and lenny... 
-Haven't had time to try to localize the problem. Glint xorg driver, DRM 
-and AGP are off, CONFIG_FB_PM2=y.
-
-Thanks
-Guennadi
----
-Guennadi Liakhovetski
+				Have a nice fortnight
+-- 
+Martin `MJ' Mares                          <mj@ucw.cz>   http://mj.ucw.cz/
+Faculty of Math and Physics, Charles University, Prague, Czech Rep., Earth
+Noli tangere fila metalica, ne in solum incasa quidem.
