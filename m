@@ -1,82 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754196AbYDHIcq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755402AbYDHIdi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754196AbYDHIcq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Apr 2008 04:32:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751818AbYDHIci
+	id S1755402AbYDHIdi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Apr 2008 04:33:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752372AbYDHId3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Apr 2008 04:32:38 -0400
-Received: from mail.hevs.ch ([153.109.23.10]:60964 "EHLO mail.hevs.ch"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751806AbYDHIci (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Apr 2008 04:32:38 -0400
-From: Marc Pignat <marc.pignat@hevs.ch>
-Organization: HEVs
-To: Michael Trimarchi <trimarchimichael@yahoo.it>
-Subject: Re: [PATCH] atmel serial reduce trasmitting window & code style patch
-Date: Tue, 8 Apr 2008 10:32:31 +0200
-User-Agent: KMail/1.9.7
-Cc: linux-kernel@vger.kernel.org, Haavard Skinnemoen <hskinnemoen@atmel.com>
-References: <524838.25009.qm@web26206.mail.ukl.yahoo.com>
-In-Reply-To: <524838.25009.qm@web26206.mail.ukl.yahoo.com>
+	Tue, 8 Apr 2008 04:33:29 -0400
+Received: from lazybastard.de ([212.112.238.170]:55637 "EHLO
+	longford.logfs.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752091AbYDHId2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Apr 2008 04:33:28 -0400
+Date: Tue, 8 Apr 2008 10:33:17 +0200
+From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       linux-mtd@lists.infradead.org
+Subject: Re: [patch 1/15] Makefiles and Kconfig
+Message-ID: <20080408083316.GA31262@logfs.org>
+References: <20080401181308.512473173@logfs.org> <20080401181332.853833001@logfs.org> <200804080230.17426.arnd@arndb.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Message-Id: <200804081032.32883.marc.pignat@hevs.ch>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <200804080230.17426.arnd@arndb.de>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all!
+On Tue, 8 April 2008 02:30:16 +0200, Arnd Bergmann wrote:
+> On Tuesday 01 April 2008, joern@logfs.org wrote:
+> > --- linux-2.6.24logfs/fs/Kconfig~logfs	2008-03-24 12:39:10.190939342 +0100
+> > +++ linux-2.6.24logfs/fs/Kconfig	2008-04-01 19:48:18.517351063 +0200
+> > @@ -1385,6 +1385,23 @@ config JFFS2_CMODE_FAVOURLZO
+> >  
+> >  endchoice
+> >  
+> > +config LOGFS
+> > +	bool "Log Filesystem (EXPERIMENTAL)"
+> 
+> Is it really still the "Log Filesystem"? By now, I had the impression
+> that "logfs" is a name by itself, so it should be called the
+> "Logfs file system", and "config LOGFS_FS" respectively, like
+> JFFS2_FS, REISERFS_FS, AUTOFS_FS, UDF_FS etc.
 
-I just inlined your second patch for commenting.
+"Logfs file system" might make sense.  LOGFS_FS is something I would
+rather avoid.  For some reason my brain reacts strongly to repetition,
+redundancy and superfluous information.
 
-On Thursday 03 April 2008, Michael Trimarchi wrote:
-> Hi,
-...
-> http://it.docs.yahoo.com/mail/overview/index.html
+> You shouldn't add the Makefile and Kconfig before adding the actual
+> files, or you could cause git-bisect problems.
 
-> diff --git a/drivers/serial/atmel_serial.c b/drivers/serial/atmel_serial.c
-> index 9f58eb3..511a0cc 100644
-> --- a/drivers/serial/atmel_serial.c
-> +++ b/drivers/serial/atmel_serial.c
-> @@ -123,6 +123,7 @@ struct atmel_uart_char {
->  };
->  
->  #define ATMEL_SERIAL_RINGSIZE	1024
-> +#define ATMEL_SERIAL_TXSIZE	32
->  
->  /*
->   * We wrap our port structure around the generic uart_port.
-> @@ -426,6 +427,7 @@ static void atmel_rx_chars(struct uart_port *port)
->  static void atmel_tx_chars(struct uart_port *port)
->  {
->  	struct circ_buf *xmit = &port->info->xmit;
-> +	int count = 0;
- 
->  	if (port->x_char && UART_GET_CSR(port) & ATMEL_US_TXRDY) {
->  		UART_PUT_CHAR(port, port->x_char);
-> @@ -435,10 +437,12 @@ static void atmel_tx_chars(struct uart_port *port)
->  	if (uart_circ_empty(xmit) || uart_tx_stopped(port))
->  		return;
->  
-> -	while (UART_GET_CSR(port) & ATMEL_US_TXRDY) {
-> +	while (UART_GET_CSR(port) & ATMEL_US_TXRDY &&
-> +	       count < ATMEL_SERIAL_TXSIZE) {
->  		UART_PUT_CHAR(port, xmit->buf[xmit->tail]);
->  		xmit->tail = (xmit->tail + 1) & (UART_XMIT_SIZE - 1);
->  		port->icount.tx++;
-> +		count++;
->  		if (uart_circ_empty(xmit))
->  			break;
->  	}
-For me this loop will never run more than 2-3 times.
-The CPU is much faster than the serial transmitter, so after 2 loops
-UART_GET_CSR(port) & ATMEL_US_TXRDY will be false and the loop will exit.
+:)
 
-If your patch does something, I can't understand how!
+I keep hearing that and I also continue to forget it.  It shouldn't
+matter either way, because it simply makes no sense to merge 15 seperate
+patches file-by-file for something that is functionally one change.  The
+split is all about review and has nothing to do with merging.
 
-Best regards
+But if I finally remembered it, at least these comments would cease.
+I'll try.
 
-Marc
+Jörn
+
+-- 
+Beware of bugs in the above code; I have only proved it correct, but
+not tried it.
+-- Donald Knuth
