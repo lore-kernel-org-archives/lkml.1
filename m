@@ -1,147 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758127AbYDHPFt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757607AbYDHPIS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758127AbYDHPFt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Apr 2008 11:05:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752216AbYDHPFl
+	id S1757607AbYDHPIS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Apr 2008 11:08:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752561AbYDHPIK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Apr 2008 11:05:41 -0400
-Received: from crystal.sipsolutions.net ([195.210.38.204]:51878 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751780AbYDHPFk (ORCPT
+	Tue, 8 Apr 2008 11:08:10 -0400
+Received: from mjg.x.mythic-beasts.com ([93.93.128.6]:35543 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1752402AbYDHPIJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Apr 2008 11:05:40 -0400
-Subject: [PATCH] introduce HAVE_EFFICIENT_UNALIGNED_ACCESS Kconfig symbol
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Andrew Morton <akpm@osdl.org>
-Cc: Linux Kernel list <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, sam <sam@ravnborg.org>
-Content-Type: text/plain
-Date: Tue, 08 Apr 2008 17:05:27 +0200
-Message-Id: <1207667127.14253.42.camel@johannes.berg>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 
-Content-Transfer-Encoding: 7bit
+	Tue, 8 Apr 2008 11:08:09 -0400
+X-Greylist: delayed 1575 seconds by postgrey-1.27 at vger.kernel.org; Tue, 08 Apr 2008 11:08:08 EDT
+Date: Tue, 8 Apr 2008 15:41:12 +0100
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Romano Giannetti <romanol@upcomillas.es>
+Cc: Tino Keitel <tino.keitel@gmx.de>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Soeren Sonnenburg <kernel@nn7.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       bugme-daemon@bugzilla.kernel.org, Jesse Barnes <jesse.barnes@intel.com>,
+       suspend-devel@lists.sourceforge.net
+Message-ID: <20080408144112.GA18580@srcf.ucam.org>
+References: <pdj7pZVURbL.A.42H.kDW9HB@albercik> <1207290689.4511.1.camel@localhost> <1207552602.26185.13.camel@pern> <200804071110.39933.rjw@sisk.pl> <20080408085846.GA15403@dose.home.local> <1207658107.21698.17.camel@pern>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1207658107.21698.17.camel@pern>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+Subject: Re: 2.6.25-rc6 regression - hang on resume [Bug 10319]
+X-SA-Exim-Version: 4.2.1 (built Tue, 20 Jun 2006 01:35:45 +0000)
+X-SA-Exim-Scanned: Yes (on vavatch.codon.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In many cases, especially in networking, it can be beneficial to
-know at compile time whether the architecture can do unaligned
-accesses efficiently. This patch introduces a new Kconfig symbol
-	HAVE_EFFICIENT_UNALIGNED_ACCESS
-for that purpose and adds it to the powerpc and x86 architectures.
-Also add some documentation about alignment and networking, and
-especially one intended use of this symbol.
+On Tue, Apr 08, 2008 at 02:35:07PM +0200, Romano Giannetti wrote:
 
-Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
-Acked-by: Sam Ravnborg <sam@ravnborg.org>
-Acked-by: Ingo Molnar <mingo@elte.hu> [x86 architecture part]
----
-v5: rename to HAVE_EFFICIENT_UNALIGNED_ACCESS
+> So, people with a working suspend-to-ram setup (even using the whitelist
+> in s2ram, I mean, simply calling s2ram) will discover that 2.6.25 break
+> their machine. Removing the s2ram package and suspending with
+> kernel-only machinery will work, but... well, it's not user-friendly.
 
-I have opted to not introduce any symbol associated with the cost
-of unaligned accesses, David Woodhouse once suggested that such a
-cost should be combined with a probability of (un-)alignment even
-in the get_unaligned/put_unaligned macros and I think this should
-be combined with a patch introducing a global cost constant.
+The assumption that a static table of VBE-based quirks can be used 
+without paying attention to the capabilities of the video driver has 
+always been broken, though I'll freely admit that it's all my fault in 
+the first place...
 
-Also, this would require architecture changes because if some code
-knew the likelyhood of unaligned accesses was small enough over
-the cost of them, architectures that complain in the trap handle
-would still complain in that unlikely case although the code
-explicitly made a trade-off based on the cost/probability.
-
- Documentation/unaligned-memory-access.txt |   32 +++++++++++++++++++++++++++---
- arch/Kconfig                              |   19 +++++++++++++++++
- arch/powerpc/Kconfig                      |    1 
- arch/x86/Kconfig                          |    1 
- 4 files changed, 50 insertions(+), 3 deletions(-)
-
---- everything.orig/Documentation/unaligned-memory-access.txt	2008-04-04 23:42:50.000000000 +0200
-+++ everything/Documentation/unaligned-memory-access.txt	2008-04-04 23:52:15.000000000 +0200
-@@ -218,9 +218,35 @@ If use of such macros is not convenient,
- where the source or destination (or both) are of type u8* or unsigned char*.
- Due to the byte-wise nature of this operation, unaligned accesses are avoided.
- 
-+
-+Alignment vs. Networking
-+========================
-+
-+On architectures that require aligned loads, networking requires that the IP
-+header is aligned on a four-byte boundary to optimise the IP stack. For
-+regular ethernet hardware, the constant NET_IP_ALIGN is used, on most
-+architectures this constant has the value 2 because the normal ethernet
-+header is 14 bytes long, so in order to get proper alignment one needs to
-+DMA to an address that is can be expressed as 4*n + 2. One notable exception
-+here is powerpc which defines NET_IP_ALIGN to 0 because DMA to unaligned
-+addresses can be very expensive and dwarf the cost of unaligned loads.
-+
-+For some ethernet hardware that cannot DMA to unaligned addresses like
-+4*n+2 or non-ethernet hardware, this can be a problem, and it is then
-+required to copy the incoming frame into an aligned buffer. Because this is
-+unnecessary on architectures that can do unaligned accesses, the code can be
-+made depend on CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS like so:
-+
-+#ifdef CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS
-+	skb = original skb
-+#else
-+	skb = copy skb
-+#endif
-+
- --
--Author: Daniel Drake <dsd@gentoo.org>
-+Authors: Daniel Drake <dsd@gentoo.org>,
-+         Johannes Berg <johannes@sipsolutions.net>
- With help from: Alan Cox, Avuton Olrich, Heikki Orsila, Jan Engelhardt,
--Johannes Berg, Kyle McMartin, Kyle Moffett, Randy Dunlap, Robert Hancock,
--Uli Kunitz, Vadim Lobanov
-+Kyle McMartin, Kyle Moffett, Randy Dunlap, Robert Hancock, Uli Kunitz,
-+Vadim Lobanov
- 
---- everything.orig/arch/powerpc/Kconfig	2008-04-04 23:42:53.000000000 +0200
-+++ everything/arch/powerpc/Kconfig	2008-04-04 23:52:15.000000000 +0200
-@@ -103,6 +103,7 @@ config PPC
- 	select HAVE_OPROFILE
- 	select HAVE_KPROBES
- 	select HAVE_KRETPROBES
-+	select HAVE_EFFICIENT_UNALIGNED_ACCESS
- 
- config EARLY_PRINTK
- 	bool
---- everything.orig/arch/x86/Kconfig	2008-04-04 23:42:50.000000000 +0200
-+++ everything/arch/x86/Kconfig	2008-04-04 23:52:15.000000000 +0200
-@@ -23,6 +23,7 @@ config X86
- 	select HAVE_KPROBES
- 	select HAVE_KRETPROBES
- 	select HAVE_KVM if ((X86_32 && !X86_VOYAGER && !X86_VISWS && !X86_NUMAQ) || X86_64)
-+	select HAVE_EFFICIENT_UNALIGNED_ACCESS
- 
- 
- config GENERIC_LOCKBREAK
---- everything.orig/arch/Kconfig	2008-04-04 23:42:50.000000000 +0200
-+++ everything/arch/Kconfig	2008-04-04 23:52:15.000000000 +0200
-@@ -36,3 +36,22 @@ config HAVE_KPROBES
- 
- config HAVE_KRETPROBES
- 	def_bool n
-+
-+config HAVE_EFFICIENT_UNALIGNED_ACCESS
-+	def_bool n
-+	help
-+	  Some architectures are unable to perform unaligned accesses
-+	  without the use of get_unaligned/put_unaligned. Others are
-+	  unable to perform such accesses efficiently (e.g. trap on
-+	  unaligned access and require fixing it up in the exception
-+	  handler.)
-+
-+	  This symbol should be selected by an architecture if it can
-+	  perform unaligned accesses efficiently to allow different
-+	  code paths to be selected for these cases. Some network
-+	  drivers, for example, could opt to not fix up alignment
-+	  problems with received packets if doing so would not help
-+	  much.
-+
-+	  See Documentation/unaligned-memory-access.txt for more
-+	  information on the topic of unaligned memory accesses.
-
-
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
