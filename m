@@ -1,63 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752912AbYDHKAi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753270AbYDHKB4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752912AbYDHKAi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Apr 2008 06:00:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751732AbYDHKA3
+	id S1753270AbYDHKB4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Apr 2008 06:01:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751761AbYDHKBt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Apr 2008 06:00:29 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:52504 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750950AbYDHKA2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Apr 2008 06:00:28 -0400
-Subject: Re: [NFS] Increase size of struct fid raw buffer
-From: Steven Whitehouse <swhiteho@redhat.com>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Neil Brown <neilb@suse.de>,
-       "J. Bruce Fields" <bfields@fieldses.org>, Adrian Bunk <bunk@kernel.org>
-In-Reply-To: <20080408075807.GA8893@infradead.org>
-References: <1207561677.3635.166.camel@quoit>
-	 <alpine.LFD.1.00.0804070850310.11277@woody.linux-foundation.org>
-	 <1207641005.3635.238.camel@quoit>  <20080408075807.GA8893@infradead.org>
-Content-Type: text/plain
-Organization: Red Hat (UK) Ltd (Registered in England and Wales, No.
-	3798903) Registered office: Red Hat UK Ltd, Amberley Place, 107-111 Peascod
-	Street, Windsor, Berkshire, SL4 ITE
-Date: Tue, 08 Apr 2008 10:57:52 +0100
-Message-Id: <1207648672.3635.255.camel@quoit>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+	Tue, 8 Apr 2008 06:01:49 -0400
+Received: from wr-out-0506.google.com ([64.233.184.239]:58925 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751745AbYDHKBs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Apr 2008 06:01:48 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=CDiHlG2ScTJEJjddjzpfKMpCZsby0+O9dhxuJJ7ztM8VzTkbsGKT1pWyhG8Z+EurxFMv/l84NeXfKTlFU7w3AW3hOeAWniTmgnRcEL1mrPs8WWGc3Fbz+P6gaX2+njDY1Tw7Rc2D2aNin+xuVbaFLjhHzeAcH8ADODJkbhiaxLo=
+Message-ID: <f17812d70804080301j5670244dr21346e75c4744eab@mail.gmail.com>
+Date: Tue, 8 Apr 2008 18:01:46 +0800
+From: "eric miao" <eric.y.miao@gmail.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Subject: Re: [PATCH 3/4] pxafb: move parallel LCD timing setup into dedicate function
+Cc: "linux-arm-kernel email list" 
+	<linux-arm-kernel@lists.arm.linux.org.uk>,
+       linux-fbdev-devel@lists.sourceforge.net,
+       lkml <linux-kernel@vger.kernel.org>,
+       "Russell King - ARM Linux" <linux@arm.linux.org.uk>,
+       "Daniel Mack" <daniel@caiaq.de>
+In-Reply-To: <20080408012136.30b71560.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <f17812d70804072105r57413cc4gba7f66abb4724809@mail.gmail.com>
+	 <20080408012136.30b71560.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Tue, Apr 8, 2008 at 4:21 PM, Andrew Morton <akpm@linux-foundation.org> wrote:
+> On Tue, 8 Apr 2008 12:05:16 +0800 "eric miao" <eric.y.miao@gmail.com> wrote:
+>
+>  > @@ -636,61 +671,31 @@ static int pxafb_activate_var(struct
+>  > fb_var_screeninfo *var,
+>  >               printk(KERN_ERR "%s: invalid lower_margin %d\n",
+>  >                       fbi->fb.fix.id, var->lower_margin);
+>  >  #endif
+>  > +     /* Update shadow copy atomically */
+>  > +     local_irq_save(flags);
+>
+>  So this code will only ever work on uniprocessor machines?
+>
+>  Is this a safe and reasonable assumption?
+>
 
-On Tue, 2008-04-08 at 03:58 -0400, Christoph Hellwig wrote:
-> On Tue, Apr 08, 2008 at 08:50:05AM +0100, Steven Whitehouse wrote:
-> > I'm happy with that solution, although I'd assumed that the reason this
-> > field had a size in the first place was that the NFS people had a plan
-> > to use the structure as an allocation entity in the future. Can an NFS
-> > developer please confirm/deny this?
-> > 
-> > If everybody is happy with the plan, then I'll send a patch to make the
-> > change as you suggest shortly,
-> 
-> I've introduce it and I don't plan to use it as allocation entity.  I
-> don't quite remember why I sized it either, so it's conceptually fine
-> to make it a VLA.  Just do some testing with that variant please.
+Y, this is a reasonable assumption for PXA2xx/3xx, though as noted in
+the comment, it's too heavy for an local_irq_{save,restore} here, but
+a fix to this would involve more investigation, so I'd rather have this
+fixed later.
 
-Then we get this:
-
-In file included from mm/shmem.c:30:
-include/linux/exportfs.h:46: error: flexible array member in union
-make[1]: *** [mm/shmem.o] Error 1
-make: *** [mm] Error 2
-
-but we can have a zero length array though, so I'll test that and send a
-patch in due course,
-
-Steve.
-
-
+-- 
+Cheers
+- eric
