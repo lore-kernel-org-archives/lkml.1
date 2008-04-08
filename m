@@ -1,50 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755518AbYDHOx5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755835AbYDHOy0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755518AbYDHOx5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Apr 2008 10:53:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755116AbYDHOxm
+	id S1755835AbYDHOy0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Apr 2008 10:54:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752667AbYDHOyN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Apr 2008 10:53:42 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:30825 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755077AbYDHOxl (ORCPT
+	Tue, 8 Apr 2008 10:54:13 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:42193 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752527AbYDHOyL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Apr 2008 10:53:41 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=mbwZSazYLLvSZNXLrCHeHzAppKegTP4A/Jlv9qoy+ohpxSDwb100NbTnicqYxYvIY
-	eUplyOS6b1k0edWkp1vug==
-Message-ID: <6599ad830804080753g39736d73yae5c47b6881e1d2d@mail.gmail.com>
-Date: Tue, 8 Apr 2008 07:53:26 -0700
-From: "Paul Menage" <menage@google.com>
-To: balbir@linux.vnet.ibm.com
-Subject: Re: [RFC][-mm] [0/2] Basic stats for cgroups V2
-Cc: "Balaji Rao" <balajirrao@gmail.com>, linux-kernel@vger.kernel.org,
-       containers@lists.osdl.org, dhaval@linux.vnet.ibm.com, balbir@in.ibm.com,
-       a.p.zijlstra@chello.nl, "Ingo Molnar" <mingo@elte.hu>,
-       "Vivek Kashyap" <vivk@us.ibm.com>
-In-Reply-To: <47FB4932.8040706@linux.vnet.ibm.com>
+	Tue, 8 Apr 2008 10:54:11 -0400
+Date: Tue, 8 Apr 2008 07:53:15 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+cc: Roland McGrath <roland@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>, linux-s390@vger.kernel.org,
+       tony.luck@intel.com, linux-ia64@vger.kernel.org,
+       linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/4] set_restore_sigmask TIF_SIGPENDING
+In-Reply-To: <20080408113519.GA227@tv-sign.ru>
+Message-ID: <alpine.LFD.1.00.0804080748320.2886@woody.linux-foundation.org>
+References: <20080329001230.D013726FA1D@magilla.localdomain> <20080329001341.7F93826FA1D@magilla.localdomain> <alpine.LFD.1.00.0803281746480.14670@woody.linux-foundation.org> <20080408113519.GA227@tv-sign.ru>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200804052339.42474.balajirrao@gmail.com>
-	 <6599ad830804080036h5496e3bdv9ac2dedf0f04f9bc@mail.gmail.com>
-	 <47FB4932.8040706@linux.vnet.ibm.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 8, 2008 at 3:30 AM, Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
->
->  > Thoughts?
->
->  I like the overall approach, do you have a prototype implementation?
->
 
-No, nothing yet. Well, I posted a version of the API description file
-a couple of months ago but people didn't seem to like that.
 
-Paul
+On Tue, 8 Apr 2008, Oleg Nesterov wrote:
+> 
+> We only need this flag as an implicit parameter to the arch dependent do_signal()
+> which we can't call directly, and thus it must imply TIF_SIGPENDING, and it
+> is not valid after do_signal() (should be cleared). This all looks like
+> ERESTART_ magic, why should we add something else ?
+
+I think you're right. I didn't look at the actual code-paths, but my gut 
+feel says "yes, TIF_RESTORE_SIGMASK should actually have been 
+-ERESTARTSIGRESTORE". That sounds like the right thing to do.
+
+		Linus
