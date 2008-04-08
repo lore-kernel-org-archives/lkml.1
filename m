@@ -1,45 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755835AbYDHOy0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756028AbYDHOz0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755835AbYDHOy0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Apr 2008 10:54:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752667AbYDHOyN
+	id S1756028AbYDHOz0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Apr 2008 10:55:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752041AbYDHOzO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Apr 2008 10:54:13 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:42193 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752527AbYDHOyL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Apr 2008 10:54:11 -0400
-Date: Tue, 8 Apr 2008 07:53:15 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-cc: Roland McGrath <roland@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>, linux-s390@vger.kernel.org,
-       tony.luck@intel.com, linux-ia64@vger.kernel.org,
-       linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/4] set_restore_sigmask TIF_SIGPENDING
-In-Reply-To: <20080408113519.GA227@tv-sign.ru>
-Message-ID: <alpine.LFD.1.00.0804080748320.2886@woody.linux-foundation.org>
-References: <20080329001230.D013726FA1D@magilla.localdomain> <20080329001341.7F93826FA1D@magilla.localdomain> <alpine.LFD.1.00.0803281746480.14670@woody.linux-foundation.org> <20080408113519.GA227@tv-sign.ru>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+	Tue, 8 Apr 2008 10:55:14 -0400
+Received: from mailhub.sw.ru ([195.214.232.25]:17126 "EHLO relay.sw.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752658AbYDHOzN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Apr 2008 10:55:13 -0400
+From: Alexey Dobriyan <adobriyan@sw.ru>
+To: akpm@osdl.org
+Subject: [PATCH 04/12] proc: switch /proc/apm to seq_file interface
+Date: Tue, 8 Apr 2008 18:54:35 +0400
+User-Agent: KMail/1.9.9
+Cc: devel@openvz.org, linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200804081854.36523.adobriyan@sw.ru>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Signed-off-by: Alexey Dobriyan <adobriyan@sw.ru>
+---
 
+ careful, my cross-compile farm is currently defunct
 
-On Tue, 8 Apr 2008, Oleg Nesterov wrote:
-> 
-> We only need this flag as an implicit parameter to the arch dependent do_signal()
-> which we can't call directly, and thus it must imply TIF_SIGPENDING, and it
-> is not valid after do_signal() (should be cleared). This all looks like
-> ERESTART_ magic, why should we add something else ?
+ drivers/char/apm-emulation.c |   23 ++++++++++++++++++-----
+ 1 file changed, 18 insertions(+), 5 deletions(-)
 
-I think you're right. I didn't look at the actual code-paths, but my gut 
-feel says "yes, TIF_RESTORE_SIGMASK should actually have been 
--ERESTARTSIGRESTORE". That sounds like the right thing to do.
+--- a/drivers/char/apm-emulation.c
++++ b/drivers/char/apm-emulation.c
+@@ -14,6 +14,7 @@
+ #include <linux/poll.h>
+ #include <linux/slab.h>
+ #include <linux/proc_fs.h>
++#include <linux/seq_file.h>
+ #include <linux/miscdevice.h>
+ #include <linux/apm_bios.h>
+ #include <linux/capability.h>
+@@ -493,11 +494,10 @@ static struct miscdevice apm_device = {
+  *	-1: Unknown
+  *   8) min = minutes; sec = seconds
+  */
+-static int apm_get_info(char *buf, char **start, off_t fpos, int length)
++static int proc_apm_show(struct seq_file *m, void *v)
+ {
+ 	struct apm_power_info info;
+ 	char *units;
+-	int ret;
+ 
+ 	info.ac_line_status = 0xff;
+ 	info.battery_status = 0xff;
+@@ -515,14 +515,27 @@ static int apm_get_info(char *buf, char **start, off_t fpos, int length)
+ 	case 1: 	units = "sec";	break;
+ 	}
+ 
+-	ret = sprintf(buf, "%s 1.2 0x%02x 0x%02x 0x%02x 0x%02x %d%% %d %s\n",
++	seq_printf(m, "%s 1.2 0x%02x 0x%02x 0x%02x 0x%02x %d%% %d %s\n",
+ 		     driver_version, APM_32_BIT_SUPPORT,
+ 		     info.ac_line_status, info.battery_status,
+ 		     info.battery_flag, info.battery_life,
+ 		     info.time, units);
+ 
+-	return ret;
++	return 0;
+ }
++
++static int proc_apm_open(struct inode *inode, struct file *file)
++{
++	return single_open(file, proc_apm_show, NULL);
++}
++
++static const struct file_operations apm_proc_fops = {
++	.owner		= THIS_MODULE,
++	.open		= proc_apm_open,
++	.read		= seq_read,
++	.llseek		= seq_lseek,
++	.release	= single_release,
++};
+ #endif
+ 
+ static int kapmd(void *arg)
+@@ -593,7 +606,7 @@ static int __init apm_init(void)
+ 	wake_up_process(kapmd_tsk);
+ 
+ #ifdef CONFIG_PROC_FS
+-	create_proc_info_entry("apm", 0, NULL, apm_get_info);
++	proc_create("apm", 0, NULL, &apm_proc_fops);
+ #endif
+ 
+ 	ret = misc_register(&apm_device);
+-- 
+1.5.4.3
 
-		Linus
