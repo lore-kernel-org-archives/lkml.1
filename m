@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757526AbYDHLZw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757535AbYDHL0T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757526AbYDHLZw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Apr 2008 07:25:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754312AbYDHLTd
+	id S1757535AbYDHL0T (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Apr 2008 07:26:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754382AbYDHLTe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Apr 2008 07:19:33 -0400
-Received: from mailhub.sw.ru ([195.214.232.25]:3039 "EHLO relay.sw.ru"
+	Tue, 8 Apr 2008 07:19:34 -0400
+Received: from mailhub.sw.ru ([195.214.232.25]:45963 "EHLO relay.sw.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752993AbYDHLTa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1754104AbYDHLTa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 8 Apr 2008 07:19:30 -0400
 From: "Denis V. Lunev" <den@openvz.org>
 To: akpm@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org, "Denis V. Lunev" <den@openvz.org>
-Subject: [PATCH 29/29] drivers: use non-racy method for proc entries creation
-Date: Tue,  8 Apr 2008 15:19:36 +0400
-Message-Id: <1207653576-12640-29-git-send-email-den@openvz.org>
+Subject: [PATCH 24/29] net: use non-racy method for proc entries creation
+Date: Tue,  8 Apr 2008 15:19:31 +0400
+Message-Id: <1207653576-12640-24-git-send-email-den@openvz.org>
 X-Mailer: git-send-email 1.5.3.7
 In-Reply-To: <1207653508.7171.18.camel@iris.sw.ru>
 References: <1207653508.7171.18.camel@iris.sw.ru>
@@ -26,368 +26,318 @@ Use proc_create()/proc_create_data() to make sure that ->proc_fops and
 ->data be setup before gluing PDE to main tree.
 
 Signed-off-by: Denis V. Lunev <den@openvz.org>
-CC: Greg Kroah-Hartman <gregkh@suse.de>
+CC: Jeff Garzik <jgarzik@pobox.com>
 ---
- drivers/block/pktcdvd.c               |    7 +------
- drivers/cdrom/viocd.c                 |   10 +++-------
- drivers/ide/ide-proc.c                |    7 ++-----
- drivers/input/input.c                 |   12 ++++--------
- drivers/md/md.c                       |    6 +-----
- drivers/media/video/zoran_procfs.c    |    7 +++----
- drivers/message/i2o/i2o_proc.c        |    6 ++----
- drivers/misc/hdpuftrs/hdpu_cpustate.c |    5 +----
- drivers/misc/hdpuftrs/hdpu_nexus.c    |   13 ++++---------
- drivers/pci/proc.c                    |   13 ++++++-------
- drivers/pnp/isapnp/proc.c             |    7 +++----
- drivers/rapidio/rio.c                 |    6 +-----
- drivers/rtc/rtc-proc.c                |    8 +++-----
- 13 files changed, 34 insertions(+), 73 deletions(-)
+ drivers/net/bonding/bond_main.c |    9 +---
+ drivers/net/ibmveth.c           |    9 +---
+ drivers/net/irda/vlsi_ir.c      |    5 +-
+ drivers/net/pppoe.c             |    4 +-
+ drivers/net/pppol2tp.c          |    4 +-
+ drivers/net/wireless/airo.c     |   84 +++++++++++++++------------------------
+ 6 files changed, 43 insertions(+), 72 deletions(-)
 
-diff --git a/drivers/block/pktcdvd.c b/drivers/block/pktcdvd.c
-index 0431e59..fd04729 100644
---- a/drivers/block/pktcdvd.c
-+++ b/drivers/block/pktcdvd.c
-@@ -2744,7 +2744,6 @@ static int pkt_new_dev(struct pktcdvd_device *pd, dev_t dev)
- 	int i;
- 	int ret = 0;
- 	char b[BDEVNAME_SIZE];
--	struct proc_dir_entry *proc;
- 	struct block_device *bdev;
+diff --git a/drivers/net/bonding/bond_main.c b/drivers/net/bonding/bond_main.c
+index ecfaf14..fb47448 100644
+--- a/drivers/net/bonding/bond_main.c
++++ b/drivers/net/bonding/bond_main.c
+@@ -3284,17 +3284,14 @@ static int bond_create_proc_entry(struct bonding *bond)
+ 	struct net_device *bond_dev = bond->dev;
  
- 	if (pd->pkt_dev == dev) {
-@@ -2788,11 +2787,7 @@ static int pkt_new_dev(struct pktcdvd_device *pd, dev_t dev)
- 		goto out_mem;
+ 	if (bond_proc_dir) {
+-		bond->proc_entry = create_proc_entry(bond_dev->name,
+-						     S_IRUGO,
+-						     bond_proc_dir);
++		bond->proc_entry = proc_create_data(bond_dev->name,
++						    S_IRUGO, bond_proc_dir,
++						    &bond_info_fops, bond);
+ 		if (bond->proc_entry == NULL) {
+ 			printk(KERN_WARNING DRV_NAME
+ 			       ": Warning: Cannot create /proc/net/%s/%s\n",
+ 			       DRV_NAME, bond_dev->name);
+ 		} else {
+-			bond->proc_entry->data = bond;
+-			bond->proc_entry->proc_fops = &bond_info_fops;
+-			bond->proc_entry->owner = THIS_MODULE;
+ 			memcpy(bond->proc_file_name, bond_dev->name, IFNAMSIZ);
+ 		}
  	}
- 
--	proc = create_proc_entry(pd->name, 0, pkt_proc);
--	if (proc) {
--		proc->data = pd;
--		proc->proc_fops = &pkt_proc_fops;
--	}
-+	proc_create_data(pd->name, 0, pkt_proc, &pkt_proc_fops, pd);
- 	DPRINTK(DRIVER_NAME": writer %s mapped to %s\n", pd->name, bdevname(bdev, b));
- 	return 0;
- 
-diff --git a/drivers/cdrom/viocd.c b/drivers/cdrom/viocd.c
-index b74b6c2..5245a4a 100644
---- a/drivers/cdrom/viocd.c
-+++ b/drivers/cdrom/viocd.c
-@@ -144,6 +144,7 @@ static int proc_viocd_open(struct inode *inode, struct file *file)
- }
- 
- static const struct file_operations proc_viocd_operations = {
-+	.owner		= THIS_MODULE,
- 	.open		= proc_viocd_open,
- 	.read		= seq_read,
- 	.llseek		= seq_lseek,
-@@ -679,7 +680,6 @@ static struct vio_driver viocd_driver = {
- 
- static int __init viocd_init(void)
- {
--	struct proc_dir_entry *e;
- 	int ret = 0;
- 
- 	if (!firmware_has_feature(FW_FEATURE_ISERIES))
-@@ -719,12 +719,8 @@ static int __init viocd_init(void)
- 	if (ret)
- 		goto out_free_info;
- 
--	e = create_proc_entry("iSeries/viocd", S_IFREG|S_IRUGO, NULL);
--	if (e) {
--		e->owner = THIS_MODULE;
--		e->proc_fops = &proc_viocd_operations;
--	}
--
-+	proc_create("iSeries/viocd", S_IFREG|S_IRUGO, NULL,
-+		    &proc_viocd_operations);
- 	return 0;
- 
- out_free_info:
-diff --git a/drivers/ide/ide-proc.c b/drivers/ide/ide-proc.c
-index d9d98ac..5db5da1 100644
---- a/drivers/ide/ide-proc.c
-+++ b/drivers/ide/ide-proc.c
-@@ -830,6 +830,7 @@ static int ide_drivers_open(struct inode *inode, struct file *file)
- }
- 
- static const struct file_operations ide_drivers_operations = {
-+	.owner		= THIS_MODULE,
- 	.open		= ide_drivers_open,
- 	.read		= seq_read,
- 	.llseek		= seq_lseek,
-@@ -838,16 +839,12 @@ static const struct file_operations ide_drivers_operations = {
- 
- void proc_ide_create(void)
- {
--	struct proc_dir_entry *entry;
--
- 	proc_ide_root = proc_mkdir("ide", NULL);
- 
- 	if (!proc_ide_root)
- 		return;
- 
--	entry = create_proc_entry("drivers", 0, proc_ide_root);
--	if (entry)
--		entry->proc_fops = &ide_drivers_operations;
-+	proc_create("drivers", 0, proc_ide_root, &ide_drivers_operations);
- }
- 
- void proc_ide_destroy(void)
-diff --git a/drivers/input/input.c b/drivers/input/input.c
-index 1142660..27006fc 100644
---- a/drivers/input/input.c
-+++ b/drivers/input/input.c
-@@ -904,20 +904,16 @@ static int __init input_proc_init(void)
- 
- 	proc_bus_input_dir->owner = THIS_MODULE;
- 
--	entry = create_proc_entry("devices", 0, proc_bus_input_dir);
-+	entry = proc_create("devices", 0, proc_bus_input_dir,
-+			    &input_devices_fileops);
- 	if (!entry)
- 		goto fail1;
- 
--	entry->owner = THIS_MODULE;
--	entry->proc_fops = &input_devices_fileops;
--
--	entry = create_proc_entry("handlers", 0, proc_bus_input_dir);
-+	entry = proc_create("handlers", 0, proc_bus_input_dir,
-+			    &input_handlers_fileops);
- 	if (!entry)
- 		goto fail2;
- 
--	entry->owner = THIS_MODULE;
--	entry->proc_fops = &input_handlers_fileops;
--
- 	return 0;
- 
-  fail2:	remove_proc_entry("devices", proc_bus_input_dir);
-diff --git a/drivers/md/md.c b/drivers/md/md.c
-index 0f7ff94..1d4a396 100644
---- a/drivers/md/md.c
-+++ b/drivers/md/md.c
-@@ -5947,13 +5947,9 @@ static struct notifier_block md_notifier = {
- 
- static void md_geninit(void)
- {
--	struct proc_dir_entry *p;
--
- 	dprintk("md: sizeof(mdp_super_t) = %d\n", (int)sizeof(mdp_super_t));
- 
--	p = create_proc_entry("mdstat", S_IRUGO, NULL);
--	if (p)
--		p->proc_fops = &md_seq_fops;
-+	proc_create("mdstat", S_IRUGO, NULL, &md_seq_fops);
- }
- 
- static int __init md_init(void)
-diff --git a/drivers/media/video/zoran_procfs.c b/drivers/media/video/zoran_procfs.c
-index 328ed6e..870bc5a 100644
---- a/drivers/media/video/zoran_procfs.c
-+++ b/drivers/media/video/zoran_procfs.c
-@@ -180,6 +180,7 @@ static ssize_t zoran_write(struct file *file, const char __user *buffer,
- }
- 
- static const struct file_operations zoran_operations = {
-+	.owner		= THIS_MODULE,
- 	.open		= zoran_open,
- 	.read		= seq_read,
- 	.write		= zoran_write,
-@@ -195,10 +196,8 @@ zoran_proc_init (struct zoran *zr)
- 	char name[8];
- 
- 	snprintf(name, 7, "zoran%d", zr->id);
--	if ((zr->zoran_proc = create_proc_entry(name, 0, NULL))) {
--		zr->zoran_proc->data = zr;
--		zr->zoran_proc->owner = THIS_MODULE;
--		zr->zoran_proc->proc_fops = &zoran_operations;
-+	zr->zoran_proc = proc_create_data(name, 0, NULL, &zoran_operations, zr);
-+	if (zr->zoran_proc != NULL) {
- 		dprintk(2,
- 			KERN_INFO
- 			"%s: procfs entry /proc/%s allocated. data=%p\n",
-diff --git a/drivers/message/i2o/i2o_proc.c b/drivers/message/i2o/i2o_proc.c
-index 6fdd072..54a3016 100644
---- a/drivers/message/i2o/i2o_proc.c
-+++ b/drivers/message/i2o/i2o_proc.c
-@@ -1893,13 +1893,11 @@ static int i2o_proc_create_entries(struct proc_dir_entry *dir,
- 	struct proc_dir_entry *tmp;
- 
- 	while (i2o_pe->name) {
--		tmp = create_proc_entry(i2o_pe->name, i2o_pe->mode, dir);
-+		tmp = proc_create_data(i2o_pe->name, i2o_pe->mode, dir,
-+				       i2o_pe->fops, data);
- 		if (!tmp)
- 			return -1;
- 
--		tmp->data = data;
--		tmp->proc_fops = i2o_pe->fops;
--
- 		i2o_pe++;
- 	}
- 
-diff --git a/drivers/misc/hdpuftrs/hdpu_cpustate.c b/drivers/misc/hdpuftrs/hdpu_cpustate.c
-index 4ff3512..8a3b222 100644
---- a/drivers/misc/hdpuftrs/hdpu_cpustate.c
-+++ b/drivers/misc/hdpuftrs/hdpu_cpustate.c
-@@ -209,13 +209,10 @@ static int hdpu_cpustate_probe(struct platform_device *pdev)
- 		return ret;
- 	}
- 
--	proc_de = create_proc_entry("sky_cpustate", 0666, NULL);
-+	proc_de = proc_create("sky_cpustate", 0666, NULL, &proc_cpustate);
- 	if (!proc_de) {
- 		printk(KERN_WARNING "sky_cpustate: "
- 		       "Unable to create proc entry\n");
--	} else {
--		proc_de->proc_fops = &proc_cpustate;
--		proc_de->owner = THIS_MODULE;
- 	}
- 
- 	printk(KERN_INFO "Sky CPU State Driver v" SKY_CPUSTATE_VERSION "\n");
-diff --git a/drivers/misc/hdpuftrs/hdpu_nexus.c b/drivers/misc/hdpuftrs/hdpu_nexus.c
-index 4137022..40f1b20 100644
---- a/drivers/misc/hdpuftrs/hdpu_nexus.c
-+++ b/drivers/misc/hdpuftrs/hdpu_nexus.c
-@@ -101,22 +101,17 @@ static int hdpu_nexus_probe(struct platform_device *pdev)
- 		printk(KERN_ERR "sky_nexus: Could not map slot id\n");
- 	}
- 
--	hdpu_slot_id = create_proc_entry("sky_slot_id", 0666, NULL);
--	if (!hdpu_slot_id)
-+	hdpu_slot_id = proc_create("sky_slot_id", 0666, NULL, &proc_slot_id);
-+	if (!hdpu_slot_id) {
- 		printk(KERN_WARNING "sky_nexus: "
- 		       "Unable to create proc dir entry: sky_slot_id\n");
--	} else {
--		hdpu_slot_id->proc_fops = &proc_slot_id;
--		hdpu_slot_id->owner = THIS_MODULE;
- 	}
- 
--	hdpu_chassis_id = create_proc_entry("sky_chassis_id", 0666, NULL);
-+	hdpu_chassis_id = proc_create("sky_chassis_id", 0666, NULL,
-+				      &proc_chassis_id);
- 	if (!hdpu_chassis_id)
- 		printk(KERN_WARNING "sky_nexus: "
- 		       "Unable to create proc dir entry: sky_chassis_id\n");
--	} else {
--		hdpu_chassis_id->proc_fops = &proc_chassis_id;
--		hdpu_chassis_id->owner = THIS_MODULE;
- 	}
- 
- 	return 0;
-diff --git a/drivers/pci/proc.c b/drivers/pci/proc.c
-index 7b5e45b..963a976 100644
---- a/drivers/pci/proc.c
-+++ b/drivers/pci/proc.c
-@@ -293,6 +293,7 @@ static int proc_bus_pci_release(struct inode *inode, struct file *file)
- #endif /* HAVE_PCI_MMAP */
- 
- static const struct file_operations proc_bus_pci_operations = {
-+	.owner		= THIS_MODULE,
- 	.llseek		= proc_bus_pci_lseek,
- 	.read		= proc_bus_pci_read,
- 	.write		= proc_bus_pci_write,
-@@ -406,11 +407,10 @@ int pci_proc_attach_device(struct pci_dev *dev)
- 	}
- 
- 	sprintf(name, "%02x.%x", PCI_SLOT(dev->devfn), PCI_FUNC(dev->devfn));
--	e = create_proc_entry(name, S_IFREG | S_IRUGO | S_IWUSR, bus->procdir);
-+	e = proc_create_data(name, S_IFREG | S_IRUGO | S_IWUSR, bus->procdir,
-+			     &proc_bus_pci_operations, dev);
- 	if (!e)
- 		return -ENOMEM;
--	e->proc_fops = &proc_bus_pci_operations;
--	e->data = dev;
- 	e->size = dev->cfg_size;
- 	dev->procent = e;
- 
-@@ -462,6 +462,7 @@ static int proc_bus_pci_dev_open(struct inode *inode, struct file *file)
- 	return seq_open(file, &proc_bus_pci_devices_op);
- }
- static const struct file_operations proc_bus_pci_dev_operations = {
-+	.owner		= THIS_MODULE,
- 	.open		= proc_bus_pci_dev_open,
- 	.read		= seq_read,
- 	.llseek		= seq_lseek,
-@@ -470,12 +471,10 @@ static const struct file_operations proc_bus_pci_dev_operations = {
- 
- static int __init pci_proc_init(void)
- {
--	struct proc_dir_entry *entry;
- 	struct pci_dev *dev = NULL;
- 	proc_bus_pci_dir = proc_mkdir("bus/pci", NULL);
--	entry = create_proc_entry("devices", 0, proc_bus_pci_dir);
--	if (entry)
--		entry->proc_fops = &proc_bus_pci_dev_operations;
-+	proc_create("devices", 0, proc_bus_pci_dir,
-+		    &proc_bus_pci_dev_operations);
- 	proc_initialized = 1;
- 	while ((dev = pci_get_device(PCI_ANY_ID, PCI_ANY_ID, dev)) != NULL) {
- 		pci_proc_attach_device(dev);
-diff --git a/drivers/pnp/isapnp/proc.c b/drivers/pnp/isapnp/proc.c
-index e1d1f2a..3f94eda 100644
---- a/drivers/pnp/isapnp/proc.c
-+++ b/drivers/pnp/isapnp/proc.c
-@@ -85,6 +85,7 @@ static ssize_t isapnp_proc_bus_read(struct file *file, char __user * buf,
- }
- 
- static const struct file_operations isapnp_proc_bus_file_operations = {
-+	.owner	= THIS_MODULE,
- 	.llseek = isapnp_proc_bus_lseek,
- 	.read = isapnp_proc_bus_read,
- };
-@@ -102,12 +103,10 @@ static int isapnp_proc_attach_device(struct pnp_dev *dev)
- 			return -ENOMEM;
- 	}
- 	sprintf(name, "%02x", dev->number);
--	e = dev->procent = create_proc_entry(name, S_IFREG | S_IRUGO, de);
-+	e = dev->procent = proc_create_data(name, S_IFREG | S_IRUGO, de,
-+			&isapnp_proc_bus_file_operations, dev);
- 	if (!e)
- 		return -ENOMEM;
--	e->proc_fops = &isapnp_proc_bus_file_operations;
--	e->owner = THIS_MODULE;
--	e->data = dev;
- 	e->size = 256;
- 	return 0;
- }
-diff --git a/drivers/rapidio/rio.c b/drivers/rapidio/rio.c
-index 9bae341..e048ef6 100644
---- a/drivers/rapidio/rio.c
-+++ b/drivers/rapidio/rio.c
-@@ -984,11 +984,7 @@ static const struct file_operations proc_riores_operations = {
- 
- static int __init rioresources_init(void)
- {
--	struct proc_dir_entry *entry;
--
--	entry = create_proc_entry("riores", 0, NULL);
--	if (entry)
--		entry->proc_fops = &proc_riores_operations;
-+	proc_create("riores", 0, NULL, &proc_riores_operations);
- 	return 0;
- }
- __initcall(rioresources_init);
-diff --git a/drivers/rtc/rtc-proc.c b/drivers/rtc/rtc-proc.c
-index 8d300e6..0c6257a 100644
---- a/drivers/rtc/rtc-proc.c
-+++ b/drivers/rtc/rtc-proc.c
-@@ -108,12 +108,10 @@ void rtc_proc_add_device(struct rtc_device *rtc)
- 	if (rtc->id == 0) {
- 		struct proc_dir_entry *ent;
- 
--		ent = create_proc_entry("driver/rtc", 0, NULL);
--		if (ent) {
--			ent->proc_fops = &rtc_proc_fops;
-+		ent = proc_create_data("driver/rtc", 0, NULL,
-+				       &rtc_proc_fops, rtc);
-+		if (ent)
- 			ent->owner = rtc->owner;
--			ent->data = rtc;
+diff --git a/drivers/net/ibmveth.c b/drivers/net/ibmveth.c
+index bb31e09..a99a3ae 100644
+--- a/drivers/net/ibmveth.c
++++ b/drivers/net/ibmveth.c
+@@ -1303,13 +1303,10 @@ static void ibmveth_proc_register_adapter(struct ibmveth_adapter *adapter)
+ 	if (ibmveth_proc_dir) {
+ 		char u_addr[10];
+ 		sprintf(u_addr, "%x", adapter->vdev->unit_address);
+-		entry = create_proc_entry(u_addr, S_IFREG, ibmveth_proc_dir);
+-		if (!entry) {
++		entry = proc_create_data(u_addr, S_IFREG, ibmveth_proc_dir,
++					 &ibmveth_proc_fops, adapter);
++		if (!entry)
+ 			ibmveth_error_printk("Cannot create adapter proc entry");
+-		} else {
+-			entry->data = (void *) adapter;
+-			entry->proc_fops = &ibmveth_proc_fops;
 -		}
  	}
+ 	return;
  }
+diff --git a/drivers/net/irda/vlsi_ir.c b/drivers/net/irda/vlsi_ir.c
+index acd082a..d15e00b 100644
+--- a/drivers/net/irda/vlsi_ir.c
++++ b/drivers/net/irda/vlsi_ir.c
+@@ -1674,13 +1674,12 @@ vlsi_irda_probe(struct pci_dev *pdev, const struct pci_device_id *id)
+ 	if (vlsi_proc_root != NULL) {
+ 		struct proc_dir_entry *ent;
+ 
+-		ent = create_proc_entry(ndev->name, S_IFREG|S_IRUGO, vlsi_proc_root);
++		ent = proc_create_data(ndev->name, S_IFREG|S_IRUGO,
++				       vlsi_proc_root, VLSI_PROC_FOPS, ndev);
+ 		if (!ent) {
+ 			IRDA_WARNING("%s: failed to create proc entry\n",
+ 				     __FUNCTION__);
+ 		} else {
+-			ent->data = ndev;
+-			ent->proc_fops = VLSI_PROC_FOPS;
+ 			ent->size = 0;
+ 		}
+ 		idev->proc_entry = ent;
+diff --git a/drivers/net/pppoe.c b/drivers/net/pppoe.c
+index 4fad4dd..58a26a4 100644
+--- a/drivers/net/pppoe.c
++++ b/drivers/net/pppoe.c
+@@ -1052,11 +1052,9 @@ static int __init pppoe_proc_init(void)
+ {
+ 	struct proc_dir_entry *p;
+ 
+-	p = create_proc_entry("pppoe", S_IRUGO, init_net.proc_net);
++	p = proc_net_fops_create(&init_net, "pppoe", S_IRUGO, &pppoe_seq_fops);
+ 	if (!p)
+ 		return -ENOMEM;
+-
+-	p->proc_fops = &pppoe_seq_fops;
+ 	return 0;
+ }
+ #else /* CONFIG_PROC_FS */
+diff --git a/drivers/net/pppol2tp.c b/drivers/net/pppol2tp.c
+index 3d10ca0..244d783 100644
+--- a/drivers/net/pppol2tp.c
++++ b/drivers/net/pppol2tp.c
+@@ -2469,12 +2469,12 @@ static int __init pppol2tp_init(void)
+ 		goto out_unregister_pppol2tp_proto;
+ 
+ #ifdef CONFIG_PROC_FS
+-	pppol2tp_proc = create_proc_entry("pppol2tp", 0, init_net.proc_net);
++	pppol2tp_proc = proc_net_fops_create(&init_net, "pppol2tp", 0,
++					     &pppol2tp_proc_fops);
+ 	if (!pppol2tp_proc) {
+ 		err = -ENOMEM;
+ 		goto out_unregister_pppox_proto;
+ 	}
+-	pppol2tp_proc->proc_fops = &pppol2tp_proc_fops;
+ #endif /* CONFIG_PROC_FS */
+ 	printk(KERN_INFO "PPPoL2TP kernel driver, %s\n",
+ 	       PPPOL2TP_DRV_VERSION);
+diff --git a/drivers/net/wireless/airo.c b/drivers/net/wireless/airo.c
+index 6c395fc..d263eee 100644
+--- a/drivers/net/wireless/airo.c
++++ b/drivers/net/wireless/airo.c
+@@ -4347,24 +4347,28 @@ static int proc_config_open( struct inode *inode, struct file *file );
+ static int proc_wepkey_open( struct inode *inode, struct file *file );
+ 
+ static const struct file_operations proc_statsdelta_ops = {
++	.owner		= THIS_MODULE,
+ 	.read		= proc_read,
+ 	.open		= proc_statsdelta_open,
+ 	.release	= proc_close
+ };
+ 
+ static const struct file_operations proc_stats_ops = {
++	.owner		= THIS_MODULE,
+ 	.read		= proc_read,
+ 	.open		= proc_stats_open,
+ 	.release	= proc_close
+ };
+ 
+ static const struct file_operations proc_status_ops = {
++	.owner		= THIS_MODULE,
+ 	.read		= proc_read,
+ 	.open		= proc_status_open,
+ 	.release	= proc_close
+ };
+ 
+ static const struct file_operations proc_SSID_ops = {
++	.owner		= THIS_MODULE,
+ 	.read		= proc_read,
+ 	.write		= proc_write,
+ 	.open		= proc_SSID_open,
+@@ -4372,6 +4376,7 @@ static const struct file_operations proc_SSID_ops = {
+ };
+ 
+ static const struct file_operations proc_BSSList_ops = {
++	.owner		= THIS_MODULE,
+ 	.read		= proc_read,
+ 	.write		= proc_write,
+ 	.open		= proc_BSSList_open,
+@@ -4379,6 +4384,7 @@ static const struct file_operations proc_BSSList_ops = {
+ };
+ 
+ static const struct file_operations proc_APList_ops = {
++	.owner		= THIS_MODULE,
+ 	.read		= proc_read,
+ 	.write		= proc_write,
+ 	.open		= proc_APList_open,
+@@ -4386,6 +4392,7 @@ static const struct file_operations proc_APList_ops = {
+ };
+ 
+ static const struct file_operations proc_config_ops = {
++	.owner		= THIS_MODULE,
+ 	.read		= proc_read,
+ 	.write		= proc_write,
+ 	.open		= proc_config_open,
+@@ -4393,6 +4400,7 @@ static const struct file_operations proc_config_ops = {
+ };
+ 
+ static const struct file_operations proc_wepkey_ops = {
++	.owner		= THIS_MODULE,
+ 	.read		= proc_read,
+ 	.write		= proc_write,
+ 	.open		= proc_wepkey_open,
+@@ -4411,10 +4419,6 @@ struct proc_data {
+ 	void (*on_close) (struct inode *, struct file *);
+ };
+ 
+-#ifndef SETPROC_OPS
+-#define SETPROC_OPS(entry, ops) (entry)->proc_fops = &(ops)
+-#endif
+-
+ static int setup_proc_entry( struct net_device *dev,
+ 			     struct airo_info *apriv ) {
+ 	struct proc_dir_entry *entry;
+@@ -4430,100 +4434,76 @@ static int setup_proc_entry( struct net_device *dev,
+ 	apriv->proc_entry->owner = THIS_MODULE;
+ 
+ 	/* Setup the StatsDelta */
+-	entry = create_proc_entry("StatsDelta",
+-				  S_IFREG | (S_IRUGO&proc_perm),
+-				  apriv->proc_entry);
++	entry = proc_create_data("StatsDelta",
++				 S_IFREG | (S_IRUGO&proc_perm),
++				 apriv->proc_entry, &proc_statsdelta_ops, dev);
+ 	if (!entry)
+ 		goto fail_stats_delta;
+ 	entry->uid = proc_uid;
+ 	entry->gid = proc_gid;
+-	entry->data = dev;
+-	entry->owner = THIS_MODULE;
+-	SETPROC_OPS(entry, proc_statsdelta_ops);
+ 
+ 	/* Setup the Stats */
+-	entry = create_proc_entry("Stats",
+-				  S_IFREG | (S_IRUGO&proc_perm),
+-				  apriv->proc_entry);
++	entry = proc_create_data("Stats",
++				 S_IFREG | (S_IRUGO&proc_perm),
++				 apriv->proc_entry, &proc_stats_ops, dev);
+ 	if (!entry)
+ 		goto fail_stats;
+ 	entry->uid = proc_uid;
+ 	entry->gid = proc_gid;
+-	entry->data = dev;
+-	entry->owner = THIS_MODULE;
+-	SETPROC_OPS(entry, proc_stats_ops);
+ 
+ 	/* Setup the Status */
+-	entry = create_proc_entry("Status",
+-				  S_IFREG | (S_IRUGO&proc_perm),
+-				  apriv->proc_entry);
++	entry = proc_create_data("Status",
++				 S_IFREG | (S_IRUGO&proc_perm),
++				 apriv->proc_entry, &proc_status_ops, dev);
+ 	if (!entry)
+ 		goto fail_status;
+ 	entry->uid = proc_uid;
+ 	entry->gid = proc_gid;
+-	entry->data = dev;
+-	entry->owner = THIS_MODULE;
+-	SETPROC_OPS(entry, proc_status_ops);
+ 
+ 	/* Setup the Config */
+-	entry = create_proc_entry("Config",
+-				  S_IFREG | proc_perm,
+-				  apriv->proc_entry);
++	entry = proc_create_data("Config",
++				 S_IFREG | proc_perm,
++				 apriv->proc_entry, &proc_config_ops, dev);
+ 	if (!entry)
+ 		goto fail_config;
+ 	entry->uid = proc_uid;
+ 	entry->gid = proc_gid;
+-	entry->data = dev;
+-	entry->owner = THIS_MODULE;
+-	SETPROC_OPS(entry, proc_config_ops);
+ 
+ 	/* Setup the SSID */
+-	entry = create_proc_entry("SSID",
+-				  S_IFREG | proc_perm,
+-				  apriv->proc_entry);
++	entry = proc_create_data("SSID",
++				 S_IFREG | proc_perm,
++				 apriv->proc_entry, &proc_SSID_ops, dev);
+ 	if (!entry)
+ 		goto fail_ssid;
+ 	entry->uid = proc_uid;
+ 	entry->gid = proc_gid;
+-	entry->data = dev;
+-	entry->owner = THIS_MODULE;
+-	SETPROC_OPS(entry, proc_SSID_ops);
+ 
+ 	/* Setup the APList */
+-	entry = create_proc_entry("APList",
+-				  S_IFREG | proc_perm,
+-				  apriv->proc_entry);
++	entry = proc_create_data("APList",
++				 S_IFREG | proc_perm,
++				 apriv->proc_entry, &proc_APList_ops, dev);
+ 	if (!entry)
+ 		goto fail_aplist;
+ 	entry->uid = proc_uid;
+ 	entry->gid = proc_gid;
+-	entry->data = dev;
+-	entry->owner = THIS_MODULE;
+-	SETPROC_OPS(entry, proc_APList_ops);
+ 
+ 	/* Setup the BSSList */
+-	entry = create_proc_entry("BSSList",
+-				  S_IFREG | proc_perm,
+-				  apriv->proc_entry);
++	entry = proc_create_data("BSSList",
++				 S_IFREG | proc_perm,
++				 apriv->proc_entry, &proc_BSSList_ops, dev);
+ 	if (!entry)
+ 		goto fail_bsslist;
+ 	entry->uid = proc_uid;
+ 	entry->gid = proc_gid;
+-	entry->data = dev;
+-	entry->owner = THIS_MODULE;
+-	SETPROC_OPS(entry, proc_BSSList_ops);
+ 
+ 	/* Setup the WepKey */
+-	entry = create_proc_entry("WepKey",
+-				  S_IFREG | proc_perm,
+-				  apriv->proc_entry);
++	entry = proc_create_data("WepKey",
++				 S_IFREG | proc_perm,
++				 apriv->proc_entry, &proc_wepkey_ops, dev);
+ 	if (!entry)
+ 		goto fail_wepkey;
+ 	entry->uid = proc_uid;
+ 	entry->gid = proc_gid;
+-	entry->data = dev;
+-	entry->owner = THIS_MODULE;
+-	SETPROC_OPS(entry, proc_wepkey_ops);
+ 
+ 	return 0;
  
 -- 
 1.5.3.rc5
