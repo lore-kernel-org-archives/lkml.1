@@ -1,85 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751791AbYDHMyN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753105AbYDHNEX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751791AbYDHMyN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Apr 2008 08:54:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751644AbYDHMx6
+	id S1753105AbYDHNEX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Apr 2008 09:04:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751613AbYDHNEO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Apr 2008 08:53:58 -0400
-Received: from ozlabs.org ([203.10.76.45]:53966 "EHLO ozlabs.org"
+	Tue, 8 Apr 2008 09:04:14 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:52389 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751068AbYDHMx6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Apr 2008 08:53:58 -0400
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1751068AbYDHNEN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Apr 2008 09:04:13 -0400
+Subject: [NFS] Use a zero sized array for raw field in struct fid
+From: Steven Whitehouse <swhiteho@redhat.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Neil Brown <neilb@suse.de>,
+       "J. Bruce Fields" <bfields@fieldses.org>, Adrian Bunk <bunk@kernel.org>,
+       ChristophHellwig <hch@infradead.org>
+In-Reply-To: <20080408075807.GA8893@infradead.org>
+References: <1207561677.3635.166.camel@quoit>
+	 <alpine.LFD.1.00.0804070850310.11277@woody.linux-foundation.org>
+	 <1207641005.3635.238.camel@quoit>  <20080408075807.GA8893@infradead.org>
+Content-Type: text/plain
+Organization: Red Hat (UK) Ltd (Registered in England and Wales, No.
+	3798903) Registered office: Red Hat UK Ltd, Amberley Place, 107-111 Peascod
+	Street, Windsor, Berkshire, SL4 ITE
+Date: Tue, 08 Apr 2008 14:01:26 +0100
+Message-Id: <1207659686.3635.278.camel@quoit>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
 Content-Transfer-Encoding: 7bit
-Message-ID: <18427.27360.30297.84859@cargo.ozlabs.ibm.com>
-Date: Tue, 8 Apr 2008 22:53:52 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-Cc: kernel list <linux-kernel@vger.kernel.org>, linux-next@vger.kernel.org,
-       linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
-       Andy Whitcroft <apw@shadowen.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>, nacc@us.ibm.com
-Subject: Re: [BUG] 2.6.25-rc2-git4 - Regression Kernel oops  while running
- kernbench and tbench on powerpc
-In-Reply-To: <47FB5C5A.5020104@linux.vnet.ibm.com>
-References: <47BC40BC.3040405@linux.vnet.ibm.com>
-	<18427.11023.8067.795279@cargo.ozlabs.ibm.com>
-	<47FB5C5A.5020104@linux.vnet.ibm.com>
-X-Mailer: VM 7.19 under Emacs 22.1.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kamalesh Babulal writes:
+>From b8732f8bea4e8abc331b8fa58a4047c91e2e7d02 Mon Sep 17 00:00:00 2001
+From: Steven Whitehouse <swhiteho@redhat.com>
+Date: Tue, 8 Apr 2008 13:12:52 +0100
+Subject: [PATCH] [NFS] Use a zero sized array for raw field in struct fid
 
-> The kernel oops after applying the patch. Some time it takes more than
-> one run to reproduce it, it was reproducible in the second run this
-> time.
-> 
->  Unrecoverable exception 4100 at c000000000008c8c
-> Oops: Unrecoverable exception, sig: 6 [#1]
-> SMP NR_CPUS=128 NUMA pSeries
-> Modules linked in:
-> NIP: c000000000008c8c LR: 000000000ff0135c CTR: 000000000ff012f0
-> REGS: c000000772343bb0 TRAP: 4100   Not tainted  (2.6.25-rc8-autotest)
-> MSR: 8000000000001030 <ME,IR,DR>  CR: 44044228  XER: 00000000
-> TASK = c00000077cfa0900[13437] 'cc1' THREAD: c000000772340000 CPU: 2
-> GPR00: 0000000000004000 c000000772343e30 00000000000000bb 000000000000d032 
-> GPR04: 00000000000000bb 0000000000000400 000000000000000a 0000000000000002 
-> GPR08: 0000000000000000 0000000000000000 0000000000000000 0000000000000000 
-> GPR12: 0000000000000000 c000000000734000 0000000000000064 00000000ffe6df08 
-> GPR16: 00000000105b0000 00000000105b0000 0000000010440000 00000000105b0000 
-> GPR20: 00000000ffe6e008 00000000105b0000 00000000105b0000 000000000000000a 
-> GPR24: 000000000ffec408 0000000000000001 00000000ffe6ddca 0000000000000400 
-> GPR28: 000000000ffec408 00000000f7ff8000 000000000ffebff4 0000000000000400 
-> NIP [c000000000008c8c] restore+0x8c/0xc0
-> LR [000000000ff0135c] 0xff0135c
-> Call Trace:
-> [c000000772343e30] [c000000000008cd4] do_work+0x14/0x2c (unreliable)
-> Instruction dump:
-> 7c840078 7c810164 70604000 41820028 60000000 7c4c42e6 e88d01f0 f84d01f0 
-> 7c841050 e84d01e8 7c422214 f84d01e8 <e9a100d8> 7c7b03a6 e84101a0 7c4ff120 
-> 
-> (gdb) l *0xc000000000008cdc
-> 0xc000000000008cdc is at arch/powerpc/kernel/entry_64.S:608.
-> 603             mtmsrd  r10,1
-> 604
-> 605             andi.   r0,r4,_TIF_NEED_RESCHED
-> 606             beq     1f
-> 607             bl      .schedule
-> 608             b       .ret_from_except_lite
-> 609
-> 610     1:      bl      .save_nvgprs
-> 611             li      r3,0
-> 612             addi    r4,r1,STACK_FRAME_OVERHEAD
+The raw field's size can vary so we use a zero sized array since
+gcc will not allow a variable sized array inside a union. This
+has been tested with ext3 and gfs2 and relates to the bug
+report: http://lkml.org/lkml/2007/10/24/374 and discussion
+thread: http://lkml.org/lkml/2008/4/7/65
 
-The exception happened at c...8c8c but you looked at c...8cdc with
-gdb.  What's at c...8c8c?
+Signed-off-by: Steven Whitehouse <swhiteho@redhat.com>
+Cc: Christoph Hellwig <hch@infradead.org>
+Cc: Neil Brown <neilb@suse.de>
+Cc: J. Bruce Fields <bfields@fieldses.org>
+Cc: Adrian Bunk <bunk@kernel.org>
 
-> please let me know if you need more information.
+diff --git a/include/linux/exportfs.h b/include/linux/exportfs.h
+index adcbb05..de8387b 100644
+--- a/include/linux/exportfs.h
++++ b/include/linux/exportfs.h
+@@ -43,7 +43,7 @@ struct fid {
+ 			u32 parent_ino;
+ 			u32 parent_gen;
+ 		} i32;
+-		__u32 raw[6];
++		__u32 raw[0];
+ 	};
+ };
+ 
+-- 
+1.5.1.2
 
-The .config would be useful, but don't spam everyone on cc with it,
-just send it to me privately.
 
-Paul.
+
