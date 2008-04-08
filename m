@@ -1,99 +1,161 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755486AbYDHJjx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756477AbYDHJkT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755486AbYDHJjx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Apr 2008 05:39:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753396AbYDHJjp
+	id S1756477AbYDHJkT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Apr 2008 05:40:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756024AbYDHJj5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Apr 2008 05:39:45 -0400
-Received: from mailservice.tudelft.nl ([130.161.131.5]:12178 "EHLO
-	mailservice.tudelft.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752372AbYDHJjo (ORCPT
+	Tue, 8 Apr 2008 05:39:57 -0400
+Received: from lazybastard.de ([212.112.238.170]:34114 "EHLO
+	longford.logfs.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755810AbYDHJjy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Apr 2008 05:39:44 -0400
-X-Spam-Flag: NO
-X-Spam-Score: -8.379
-Date: Tue, 8 Apr 2008 11:39:38 +0200 (CEST)
-From: "Andreas K. Huettel" <A.K.Huettel@tudelft.nl>
-X-X-Sender: huettel@localhost
-Reply-To: "Andreas K. Huettel" <mail@akhuettel.de>
-To: Peter Zijlstra <peterz@infradead.org>
-cc: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [tainted,fglrx] page allocation failure: basic meaning of log
- messages?
-In-Reply-To: <1207234830.8514.838.camel@twins>
-Message-ID: <alpine.LNX.1.00.0804081125140.22515@localhost>
-References: <alpine.LNX.1.00.0804031117030.10277@localhost>  <20080403183021.028C.KOSAKI.MOTOHIRO@jp.fujitsu.com>  <alpine.LNX.1.00.0804031318480.10277@localhost>  <20080403144852.GD24239@csclub.uwaterloo.ca> <1207234830.8514.838.camel@twins>
-User-Agent: Alpine 1.00 (LNX 882 2007-12-20)
-X-Information: My public GPG key can be obtained at http://www.akhuettel.de/
+	Tue, 8 Apr 2008 05:39:54 -0400
+Date: Tue, 8 Apr 2008 11:39:46 +0200
+From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       linux-mtd@lists.infradead.org
+Subject: Re: [patch 2/15] fs/logfs/logfs_abi.h
+Message-ID: <20080408093946.GA31266@logfs.org>
+References: <20080401181308.512473173@logfs.org> <20080401181332.853833002@logfs.org> <200804080224.18014.arnd@arndb.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <200804080224.18014.arnd@arndb.de>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: RIPEMD160
+On Tue, 8 April 2008 02:24:17 +0200, Arnd Bergmann wrote:
+> 
+> Great to see a new version finally posted again!
 
+As Artem already noted, the transition to write-back caching was a
+significant change and initially caused a huge drop in quality.  Took a
+while.
 
-#]> > #]> Apr  3 09:01:30 bellini hal-system-powe: page allocation failure. order:10, mode:0x4020
-#]> > #]> Apr  3 09:01:30 bellini Pid: 327, comm: hal-system-powe Tainted: PF       2.6.24-gentoo-r3 #1
-#]> > #]> Apr  3 09:01:30 bellini [<c0140c48>] __alloc_pages+0x2bd/0x2ce
-#]> > #]> Apr  3 09:01:30 bellini [<c0140c92>] __get_free_pages+0x39/0x47
-#]> > #]> Apr  3 09:01:30 bellini [<f8adcd9e>] firegl_cmmqs_save_fb+0x8e/0x200 [fglrx]
-#]> > #]
-#]> > #]this messages doesn't mean bug, merely indicate allocation failure.
-#]> > #]if any other bad thind doen't happend, you can ignore it.
-#]> > 
-#]> > Swapping like mad without any obvious cause (500M swap in use, 1.5G RAM 
-#]> > - - which is normally not such a big problem). This however stopped when 
-#]> > I closed some memory-intensive applications (firefox, vmware).
-#]> > 
-#]> > Since then the machine is running without problems. 
-(...)
-#]
-#]An order 10 alloc (4 mb contiguous) isn't likely to succeed by any
-#]measure. Lumpy reclaim will try very hard and likely cause that swap
-#]storm you taked about, but relying on order 10 allocs is insane.
+> On Tuesday 01 April 2008, joern@logfs.org wrote:
+> > --- /dev/null	2008-04-02 16:29:12.813336657 +0200
+> > +++ linux-2.6.24logfs/fs/logfs/logfs_abi.h	2008-04-01 21:02:34.980239877 +0200
+> > @@ -0,0 +1,523 @@
+> > +/*
+> > + * fs/logfs/logfs.h
+> 
+> The comment doesn't match the file name, and the file name doesn't
+> match the purpose -- you are not defining an "application" binary
+> interface but rather the medium format, with the small exception
+> of the chattr flags.
 
+Now it matches the file name.  If you have a better name than "abi",
+I'll use that.
 
-Question - this seems to me not to be a kernel issue (correct me if I'm 
-wrong) and thus I'd like to take it to the proper place...
-Where should I file this as bug? Is this a hald problem or something more 
-complicated?
+> > +#ifndef fs_logfs_logfs_abi_h
+> > +#define fs_logfs_logfs_abi_h
+> 
+> Everyone else uses capital letters for these.
 
-The swap storm is perfectly reproducible with X/fglrx, compiz and vmware 
-workstation running - after resume from suspend2ram it starts. No compiz - 
-no problem. No vmware - no problem... Closing vmware -> swapping stops.
+Changed.
 
-If you think this is hopeless since too much closed source software is 
-involved, tell me... :-]
+> > +/*
+> > + * LOGFS_HEADERSIZE is the size of a single header in the object store,
+> > + * LOGFS_MAX_OBJECTSIZE the size of the largest possible object, including
+> > + * its header,
+> > + * LOGFS_SEGMENT_RESERVE is the amount of space reserved for each segment for
+> > + * its segment header and the padded space at the end when no further objects
+> > + * fit.
+> > + */
+> > +#define LOGFS_HEADERSIZE	(0x1c)
+> > +#define LOGFS_SEGMENT_HEADERSIZE (0x18)
+> > +#define LOGFS_MAX_OBJECTSIZE	(LOGFS_HEADERSIZE + LOGFS_BLOCKSIZE)
+> > +#define LOGFS_SEGMENT_RESERVE	(LOGFS_HEADERSIZE + LOGFS_MAX_OBJECTSIZE - 1)
+> 
+> The comment makes it sound like the last line should be
+> 
+> #define LOGFS_SEGMENT_RESERVE (LOGFS_SEGMENT_HEADERSIZE + LOGFS_MAX_OBJECTSIZE - 1)
 
+Correct.  Changed.
 
-Thanks, Andreas
+> > +/**
+> > + * struct logfs_disk_dentry - on-medium dentry structure
+> > + *
+> > + * @ino:			inode number
+> > + * @namelen:			length of file name
+> > + * @type:			file type, identical to bits 12..15 of mode
+> > + * @name:			file name
+> > + */
+> > +struct logfs_disk_dentry {
+> > +	__be64	ino;
+> > +	__be16	namelen;
+> > +	__u8	type;
+> > +	__u8	name[LOGFS_MAX_NAMELEN];
+> > +} __attribute__((packed));
+> 
+> With LOGFS_MAX_NAMELEN == 255, this data structure is not aligned to 64
+> bits, which means that accessing the inode number requires unaligned
+> memory accesses when you have an array of logfs_disk_dentry structures
+> on the medium. Is that intentional?
+> 
+> If you add another 32 bits here, you don't need the __packed any more.
 
+6 bytes, actually.  Not a bad idea.  I just have to make sure they are
+properly zeroed and don't cause an information leak.
 
+> > +/**
+> > + * struct logfs_object_header - per-object header in the ostore
+> > + *
+> > + * @crc:			crc32 of header, excluding data_crc
+> > + * @len:			length of data
+> > + * @type:			object type, see above
+> > + * @compr:			compression type
+> > + * @ino:			inode number
+> > + * @bix:			block index
+> > + * @data_crc:			crc32 of payload
+> > + */
+> > +struct logfs_object_header {
+> > +	__be32	crc;
+> > +	__be16	len;
+> > +	__u8	type;
+> > +	__u8	compr;
+> > +	__be64	ino;
+> > +	__be64	bix;
+> > +	__be32	data_crc;
+> > +} __attribute__((packed));
+> 
+> Similarly, this structure contains 8 byte members but has a smaller
+> size.
 
+I really don't want to enlarge the structure.  Every single block gets
+one of them, so they cause a significant overhead.  Adding padding for
+the in-memory structure and not copying it to/from the medium would make
+sense, but that's not a trivial change.  Needs more thought.
 
-- --
-This message is transmitted using 100% recycled electrons.
-- --
-- ---------------------------------------------------------------------
-Dr. Andreas K. Huettel                  tel. +31 15 27 88102  (univ.)
-Molecular Electronics and Devices            +31 6 42527466  (mobile)
-Kavli Institute of Nanoscience Delft
-Delft University of Technology                 A.K.Huettel@tudelft.nl
-PO Box 5046, 2600 GA Delft                          mail@akhuettel.de
-The Netherlands                     http://www.akhuettel.de/research/
-- ---------------------------------------------------------------------
-Please use GNUPG or PGP for signed and encrypted email. My public key
-can be found at  http://www.akhuettel.de/pgp_key.php
+For the record, I removed the __packed on all other structures and
+replaced it with something like this:
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.7 (GNU/Linux)
+#define SIZE_CHECK(type, size)					\
+static inline void check_##type(void)				\
+{								\
+	BUILD_BUG_ON(sizeof(struct type) != (size));		\
+}
 
-iD8DBQFH+z1f3ao2Zwy3NWoRA8/iAJ0bLbIFJ9FfHolzuw4eOsNalMhMQACfTBxm
-IEKmTD381DwK2Atl4mJB/24=
-=jvjl
------END PGP SIGNATURE-----
+...
+
+struct logfs_journal_header {
+	__be32	h_crc;
+	__be16	h_len;
+	__be16	h_datalen;
+	__be16	h_type;
+	__be16	h_version;
+	__u8	h_compr;
+	__u8	h_pad[3];
+};
+
+SIZE_CHECK(logfs_journal_header, 16);
+
+Jörn
+
+-- 
+Do not stop an army on its way home.
+-- Sun Tzu
