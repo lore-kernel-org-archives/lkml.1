@@ -1,119 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754579AbYDHV2h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754579AbYDHVao@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754579AbYDHV2h (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Apr 2008 17:28:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752091AbYDHV21
+	id S1754579AbYDHVao (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Apr 2008 17:30:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752377AbYDHVag
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Apr 2008 17:28:27 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:20716 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751673AbYDHV20 (ORCPT
+	Tue, 8 Apr 2008 17:30:36 -0400
+Received: from wx-out-0506.google.com ([66.249.82.232]:34563 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752091AbYDHVag (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Apr 2008 17:28:26 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:subject:from:to:cc:in-reply-to:references:
-	content-type:organization:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-	b=v9/28Gp1ZHMME5MAjU7SwlA4pV9gyV+fMLEvQ4J7/CAFA7v7zGssxyrU8v1Az25dv
-	PCg1r6lmROQN5+zgSnEYQ==
-Subject: Re: posix-cpu-timers revamp
-From: Frank Mayhar <fmayhar@google.com>
-To: Roland McGrath <roland@redhat.com>
-Cc: frank@exit.com, linux-kernel@vger.kernel.org
-In-Reply-To: <20080407200804.5541926F992@magilla.localdomain>
-References: <bug-9906-10286@http.bugzilla.kernel.org/>
-	 <20080206165045.89b809cc.akpm@linux-foundation.org>
-	 <1202345893.8525.33.camel@peace.smo.corp.google.com>
-	 <alpine.LRH.1.00.0802062148480.7445@mini.warudkars.net>
-	 <20080207162203.3e3cf5ab@Varda>
-	 <alpine.LRH.1.00.0802071040010.29320@mini.warudkars.net>
-	 <alpine.LRH.1.00.0802071054160.29320@mini.warudkars.net>
-	 <20080207165455.04ec490b@Varda>
-	 <alpine.LRH.1.00.0802071100230.29369@mini.warudkars.net>
-	 <alpine.LRH.1.00.0802071153130.15220@mini.warudkars.net>
-	 <1204314904.4850.23.camel@peace.smo.corp.google.com>
-	 <20080304070016.903E127010A@magilla.localdomain>
-	 <1204660376.9768.1.camel@bobble.smo.corp.google.com>
-	 <20080305040826.D0E6127010A@magilla.localdomain>
-	 <1204830243.20004.31.camel@bobble.smo.corp.google.com>
-	 <20080311075020.A93DB26F991@magilla.localdomain>
-	 <1205269507.23124.57.camel@bobble.smo.corp.google.com>
-	 <20080311213507.5BCDF26F991@magilla.localdomain>
-	 <1205455050.19551.16.camel@bobble.smo.corp.google.com>
-	 <20080321071846.1B22B26F9A7@magilla.localdomain>
-	 <1206122240.14638.31.camel@bobble.smo.corp.google.com>
-	 <20080322215829.D69D026F9A7@magilla.localdomain>
-	 <1206380079.21896.20.camel@bobble.smo.corp.google.com>
-	 <20080331054404.78CDB26F8E9@magilla.localdomain>
-	 <1206995072.14649.41.camel@bobble.smo.corp.google.com>
-	 <20080402020707.151E126F8DC@magilla.localdomain>
-	 <1207158164.11976.32.camel@bobble.smo.corp.google.com>
-	 <20080402194836.4933026F98A@magilla.localdomain>
-	 <1207168464.11976.48.camel@bobble.smo.corp.google.com>
-	 <20080404231739.7E25126F8DC@magilla.localdomain>
-	 <1207459608.94001.22.camel@jill.exit.com>
-	 <20080407200804.5541926F992@magilla.localdomain>
-Content-Type: text/plain
-Organization: Google, Inc.
-Date: Tue, 08 Apr 2008 14:27:54 -0700
-Message-Id: <1207690074.4687.18.camel@bobble.smo.corp.google.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
+	Tue, 8 Apr 2008 17:30:36 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=IUFC1kwVOB9BLIgYUo0aSCH2ZMLLuV4SmkVP37r8yAPrbLXkR3aeAfa1z7hPMXiSo4o6nZdQIJ/PUElI/Ixd3hgJTph6P5LEpDqjK+QfV1UtzzkWke2VZpJGVv7rPZzIAKY9DJ3Sx/YDY9V95RdUDbzwsc9REV4qo4RNGh0eGaY=
+Message-ID: <2f11576a0804081430q4283e6f2t1e573a8362ebecc@mail.gmail.com>
+Date: Wed, 9 Apr 2008 06:30:32 +0900
+From: "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>
+To: "Jack Harvard" <jack.harvard@googlemail.com>
+Subject: Re: lmbench memory bandwidth benchmark
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <a72f6a3c0804081045r6eb4c6awdae2f3be0ccc416e@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <a72f6a3c0804081045r6eb4c6awdae2f3be0ccc416e@mail.gmail.com>
+X-Google-Sender-Auth: cd87d094d6670028
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-04-07 at 13:08 -0700, Roland McGrath wrote:
-> > Regarding the second approach, without locking wouldn't that still be
-> > racy?  Couldn't exit_state change (and therefore __exit_signal() run)
-> > between the check and the dereference?
-> No.  current->exit_state can go from zero to nonzero only by current
-> running code in the do_exit path.  current does not progress on that
-> path while current is inside one update_process_times call.
+> hi, can someone help explain how bw_mem function works in lmbench? the
+>  source code doesn't seem very user friendly, the papers are too vague
+>  to help understand the code. an example for "bw_mem 512 frd" would be
+>  very helpful.
 
-Okay.  One of the paths to the update code is through update_curr() in
-sched_fair.c, which (in my tree) calls account_group_exec_runtime() to
-update the sum_exec_runtime field:
+maybe, "gcc -E" can help you.
 
-	delta_exec = (unsigned long)(now - curr->exec_start);
+e.g.
+ $ gcc -E bw_mem.c
 
-	__update_curr(cfs_rq, curr, delta_exec);
-	curr->exec_start = now;
+got below.
 
-	if (entity_is_task(curr)) {
-		struct task_struct *curtask = task_of(curr);
-
-		cpuacct_charge(curtask, delta_exec);
-		account_group_exec_runtime(curtask, delta_exec);
-	}
-
-To make sure that I understand what's going on, I put an invariant at
-the beginning of account_group_exec_runtime():
-
-static inline void account_group_exec_runtime(struct task_struct *tsk,
-					       unsigned long long ns)
+frd(iter_t iterations, void *cookie)
 {
-	struct signal_struct *sig = tsk->signal;
-	struct task_cputime *times;
+ state_t *state = (state_t *) cookie;
+ register int sum = 0;
+ register int *lastone = state->lastone;
 
-	BUG_ON(tsk != current);
-	if (unlikely(tsk->exit_state))
-		return;
-	if (!sig->cputime.totals)
-		return;
-	times = per_cpu_ptr(sig->cputime.totals, get_cpu());
-	times->sum_exec_runtime += ns;
-	put_cpu_no_resched();
+ while (iterations-- > 0) {
+     register int *p = state->buf;
+     while (p <= lastone) {
+  sum +=
+
+  p[0]+ p[1]+ p[2]+ p[3]+ p[4]+ p[5]+ p[6]+
+  p[7]+ p[8]+ p[9]+ p[10]+ p[11]+ p[12]+
+  p[13]+ p[14]+ p[15]+ p[16]+ p[17]+ p[18]+
+  p[19]+ p[20]+ p[21]+ p[22]+ p[23]+ p[24]+
+  p[25]+ p[26]+ p[27]+ p[28]+ p[29]+ p[30]+
+  p[31]+ p[32]+ p[33]+ p[34]+ p[35]+ p[36]+
+  p[37]+ p[38]+ p[39]+ p[40]+ p[41]+ p[42]+
+  p[43]+ p[44]+ p[45]+ p[46]+ p[47]+ p[48]+
+  p[49]+ p[50]+ p[51]+ p[52]+ p[53]+ p[54]+
+  p[55]+ p[56]+ p[57]+ p[58]+ p[59]+ p[60]+
+  p[61]+ p[62]+ p[63]+ p[64]+ p[65]+ p[66]+
+  p[67]+ p[68]+ p[69]+ p[70]+ p[71]+ p[72]+
+  p[73]+ p[74]+ p[75]+ p[76]+ p[77]+ p[78]+
+  p[79]+ p[80]+ p[81]+ p[82]+ p[83]+ p[84]+
+  p[85]+ p[86]+ p[87]+ p[88]+ p[89]+ p[90]+
+  p[91]+ p[92]+ p[93]+ p[94]+ p[95]+ p[96]+
+  p[97]+ p[98]+ p[99]+ p[100]+ p[101]+ p[102]+
+  p[103]+ p[104]+ p[105]+ p[106]+ p[107]+
+  p[108]+ p[109]+ p[110]+ p[111]+ p[112]+
+  p[113]+ p[114]+ p[115]+ p[116]+ p[117]+
+  p[118]+ p[119]+ p[120]+ p[121]+ p[122]+
+  p[123]+ p[124]+ p[125]+ p[126]+ p[127];
+  p += 128;
+     }
+ }
+ use_int(sum);
 }
-
-And, you guessed it, the invariant gets violated.  Apparently the passed
-task_struct isn't the same as "current" at this point.
-
-Any ideas?  Am I checking the wrong thing?  If we're really not updating
-current then the task we are updating could very easily be running
-through __exit_signal() on another CPU.  (And while I wait for your
-response I will of course continue to try to figure this out.)
--- 
-Frank Mayhar <fmayhar@google.com>
-Google, Inc.
-
