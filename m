@@ -1,59 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756511AbYDHO4K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756683AbYDHO41@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756511AbYDHO4K (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Apr 2008 10:56:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752779AbYDHOz4
+	id S1756683AbYDHO41 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Apr 2008 10:56:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752776AbYDHO4I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Apr 2008 10:55:56 -0400
-Received: from homer.mvista.com ([63.81.120.155]:41643 "EHLO
-	imap.sh.mvista.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752628AbYDHOzz (ORCPT
+	Tue, 8 Apr 2008 10:56:08 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:53838 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756432AbYDHO4G (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Apr 2008 10:55:55 -0400
-Message-ID: <47FB8751.3040301@ru.mvista.com>
-Date: Tue, 08 Apr 2008 18:55:13 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Organization: MontaVista Software Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
-X-Accept-Language: ru, en-us, en-gb
+	Tue, 8 Apr 2008 10:56:06 -0400
+Message-ID: <47FB8781.3050809@sgi.com>
+Date: Tue, 08 Apr 2008 07:56:01 -0700
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-To: Tejun Heo <htejun@gmail.com>
-Cc: jgarzik@pobox.com, gregkh@suse.de, alan@lxorguk.ukuu.org.uk,
-       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
-       linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 6/13] devres: implement managed iomap interface
-References: <11684073371547-git-send-email-htejun@gmail.com> <47FA4FD2.8060808@ru.mvista.com> <47FB85CB.2070506@gmail.com>
-In-Reply-To: <47FB85CB.2070506@gmail.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+To: Ingo Molnar <mingo@elte.hu>
+CC: Alexander van Heukelum <heukelum@mailshack.com>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       heukelum@fastmail.fm, Yinghai Lu <yhlu.kernel@gmail.com>
+Subject: Re: [PATCH 1/2] boot: increase stack size for kernel boot loader
+ decompressor
+References: <20080405013014.478571000@polaris-admin.engr.sgi.com> <20080405013014.693571000@polaris-admin.engr.sgi.com> <20080405134626.GA15894@mailshack.com> <47FA6478.1070301@sgi.com> <20080407214434.GA5296@mailshack.com> <20080408082354.GA13940@elte.hu>
+In-Reply-To: <20080408082354.GA13940@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tejun Heo wrote:
+Ingo Molnar wrote:
+> * Alexander van Heukelum <heukelum@mailshack.com> wrote:
+> 
+>> I did see that the malloc space that the inflate code is using is 
+>> taken from _after_ the end of the bss. I don't see how this is 
+>> protected from being used/overwritten. Changing the stack size changes 
+>> the memory layout a bit... maybe you were so unlucky to create a 
+>> vmlinux image that was just barely smaller than some threshold and 
+>> increasing the stack size made the decompression/relocation area be 
+>> located somewhere else?
+>>
+>> Test patch follows.
+> 
+> that's a really interesting theory.
+> 
+> FWIIW, i've been booting allyesconfig bzImages for a long time (with 
+> only minimal amount of drivers disabled - mostly old ISA ones that 
+> assume the presence of the real hardware), and they boot and work fine 
+> on both 32-bit and 64-bit typical whitebox PCs. That means huge bzImages 
+> that decompresses into a ~41 MB kernel image. I'd expect that to be a 
+> rather severe test of the decompressor.
+> 
+> 	Ingo
 
->>    A very late comment but nevertheless... :-)
+Well admittedly, I did discover this problem way early in booting
+up a 4k NR_CPU kernel (obviously ;-).  Once it booted, I haven't
+revisited that problem again.  I wonder if it's a pathological case
+of a single bitstream that causes expansion instead of compression?
+Note I was using the akpm2 config script with NR_CPUS=4096 and
+NODES_SHIFT=9 (plus some other tweaks specific to our AMD and Intel
+boxes.)
 
-> Better late than never.
-
-    :-)
-
->>    Those functions are going to break on 32-bit platforms with 
->> extended physical address (well, that's starting with Pentiums which 
->> had 36-bit PAE :-) AND devices mapped beyond 4 GB (e.g. PowerPC 44x).  
->> You should have used resource_size_t for the 'offset' parameter. As 
->> this most probably means that libata is broken on such platforms, I'm 
->> going to submit a patch...
-
-    It's broken with drivers using MMIO, I meant to say.
-
-> Yeah, right please go ahead.  But I wonder whether any BIOS was actually 
-> crazy enough to map mmio region above 4G on 32bit machine.
-
-    This is a *hardware* mapping on some non-x86 platforms (like PPC 44x or 
-MIPS Alchemy). The arch/ppc/ and arch/mips/ kernels have special hooks called 
-from ioremap() which help create an illusion that the PCI memory space on such 
-platforms (not only it) is mapped below 4 GB; arch/powerpc/ kernel doesn't do 
-this anymore -- hence this newly encountered issue.
-
-WBR, Sergei
+Thanks,
+Mike
