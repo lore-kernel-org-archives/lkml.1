@@ -1,68 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756701AbYDHRRl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755547AbYDHRYv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756701AbYDHRRl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Apr 2008 13:17:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754256AbYDHRRe
+	id S1755547AbYDHRYv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Apr 2008 13:24:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752590AbYDHRYl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Apr 2008 13:17:34 -0400
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:37411 "EHLO e3.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754239AbYDHRRd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Apr 2008 13:17:33 -0400
-Date: Tue, 8 Apr 2008 10:17:22 -0700
+	Tue, 8 Apr 2008 13:24:41 -0400
+Received: from e36.co.us.ibm.com ([32.97.110.154]:50128 "EHLO
+	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751928AbYDHRYk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Apr 2008 13:24:40 -0400
+Date: Tue, 8 Apr 2008 10:24:36 -0700
 From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: ego@in.ibm.com, linux-kernel@vger.kernel.org, mathieu.desnoyers@polymtl.ca,
-       mingo@elte.hu, hch@infradead.org, mmlnx@us.ibm.com, dipankar@in.ibm.com,
-       dsmith@redhat.com, rostedt@goodmis.org, adrian.bunk@movial.fi,
-       a.p.zijlstra@chello.nl, niv@us.ibm.com, dvhltc@us.ibm.com,
-       rusty@au1.ibm.com, jkenisto@linux.vnet.ibm.com, oleg@tv-sign.ru
-Subject: Re: [PATCH,RFC] Add call_rcu_sched()
-Message-ID: <20080408171722.GD8381@linux.vnet.ibm.com>
+To: Johannes Berg <johannes@sipsolutions.net>
+Cc: Linux Kernel list <linux-kernel@vger.kernel.org>,
+       linux-sparse <linux-sparse@vger.kernel.org>
+Subject: Re: Using sparse to catch invalid RCU dereferences?
+Message-ID: <20080408172436.GE8381@linux.vnet.ibm.com>
 Reply-To: paulmck@linux.vnet.ibm.com
-References: <20080321143615.GA936@linux.vnet.ibm.com> <20080321224026.GA10169@linux.vnet.ibm.com> <20080406213719.GA10533@linux.vnet.ibm.com> <20080408003449.873574d7.akpm@linux-foundation.org> <20080408081048.GA15001@in.ibm.com> <20080408013936.b84ae895.akpm@linux-foundation.org> <20080408085637.GA30496@in.ibm.com> <20080408020758.1ed570af.akpm@linux-foundation.org>
+References: <1207605856.12481.35.camel@johannes.berg> <20080408155259.GA8381@linux.vnet.ibm.com> <1207670955.5550.15.camel@johannes.berg>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080408020758.1ed570af.akpm@linux-foundation.org>
+In-Reply-To: <1207670955.5550.15.camel@johannes.berg>
 User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 08, 2008 at 02:07:58AM -0700, Andrew Morton wrote:
-> On Tue, 8 Apr 2008 14:26:37 +0530 Gautham R Shenoy <ego@in.ibm.com> wrote:
+On Tue, Apr 08, 2008 at 06:09:15PM +0200, Johannes Berg wrote:
 > 
-> > On Tue, Apr 08, 2008 at 01:39:36AM -0700, Andrew Morton wrote:
-> > > On Tue, 8 Apr 2008 13:40:48 +0530 Gautham R Shenoy <ego@in.ibm.com> wrote:
-> > > 
-> > > > > > +			rdp = RCU_DATA_CPU(cpu);
-> > > >                                                                <-- here ------\
-> > > > > > +			spin_lock_irqsave(&rdp->lock, flags);                   |
-> > > > > > +                                                                         |
-> > > > > > +			/*                                                      |
-> > > > > > +			 * We are running on this CPU irq-disabled, so no       |
-> > > > > > +			 * CPU can go offline until we re-enable irqs.          |
-> > > > >                                                                             |
-> > > > > but, but, but.  The cpu at `cpu' could have gone offline just before we     |
-> > > > > disabled local interrupts.                                                  |
-> > > >                                                                               |
-> > > > In that case the CPU_DEAD callback should have migrated the rcu-lists to      |
-> > > > a cpu which is online.                                                        |
-> > >                                                                                 |
-> > > But local variable rdp might be pointing at the now-offlined CPU's data? -------/
-> > 
-> > Right. But then rdp wouldn't contain anything useful at this point.
-> > So, we may only end up taking the rdp->lock, observe that there's nothing to do,
-> > and move on.
-> > 
-> > Is there something else that I am missing?
+> > So the address_space attribute says what the pointer points to rather
+> > than where the pointer resides, correct?
 > 
-> erm, I guess that'll work OK.
-> 
-> There were intentions to release the per-cpu memory during unplug, but
-> nobody has threatened to do that for a while.
+> Yeah. It's currently used for __user and __iomem. Using it for rcu
+> wouldn't be quite the way it was intended, I think, but hey :)
 
-That would be a bit painful in a number of situations...  :-/
+;-)
+
+> > It might be.  There are a number of places where it is legal to access
+> > RCU-protected pointers directly, and all of these would need to be
+> > changed.  For example, in the example above, one could do:
+> > 
+> > 	foo = NULL;
+> 
+> Yeah, all of those would lead to sparse warnings. Are we willing to
+> change all that code?
+
+If it found some bugs, I would certainly be in favor!
+
+> > I recently tried to modify rcu_assign_pointer() to issue the memory
+> > memory barrier only when the pointer was non-NULL, but this ended badly.
+> > Probably because I am not the greatest gcc expert around...  We ended
+> > up having to define an rcu_assign_index() to handle the possibility of
+> > assigning a zero-value array index, but my attempts to do type-checking
+> > backfired, and I eventually gave it up.  Again, someone a bit more clued
+> > in to gcc than I am could probably pull it off.
+> 
+> I don't think I would be that person :)
+
+When it comes to gcc extensions and type-casting trickery, I am not all
+that clued in, to be honest...
+
+> > In addition, it is legal to omit rcu_dereference() and rcu_assign_pointer()
+> > when holding the update-side lock.
+> 
+> Right. Those too would lead to problems, unless we change that code to
+> use those (or other) macros.
+
+Yep.
+
+> > So I very much like this approach in general, but it will require some
+> > care to implement.  I would be very happy to review and comment!!!
+> 
+> I'll play with it a bit if I get around, was just reviewing some RCU
+> usage and had the feeling that it should be possible to automate.
+
+If it finds a few bugs, it would be worth it!
 
 							Thanx, Paul
