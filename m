@@ -1,57 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754514AbYDHLrg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755001AbYDHLr5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754514AbYDHLrg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Apr 2008 07:47:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752494AbYDHLr1
+	id S1755001AbYDHLr5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Apr 2008 07:47:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752700AbYDHLrq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Apr 2008 07:47:27 -0400
-Received: from mu-out-0910.google.com ([209.85.134.187]:47183 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752257AbYDHLr0 (ORCPT
+	Tue, 8 Apr 2008 07:47:46 -0400
+Received: from e36.co.us.ibm.com ([32.97.110.154]:60765 "EHLO
+	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752494AbYDHLrp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Apr 2008 07:47:26 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=Vwk6bH9jLub5l7Ps//WYiuJix1s5Zj3UE8ARDnvZDB78Ro1gnu2OJzH/wcRWvogvk4tSgTQoml1Ns4/7mZRtzSzxDW8ikNTHwTxIwnilEWgKzQwyza4IJ1WdlqRxgldN597JiHPjIO+QdYCEnCZVaeRzDZUthHo/RY2V+NEqtFM=
-Date: Tue, 8 Apr 2008 13:46:43 +0200
-From: Marcin Slusarz <marcin.slusarz@gmail.com>
-To: "eial@cs.bgu.ac.il" <eial@cs.bgu.ac.il>
-Cc: Jiri Kosina <jkosina@suse.cz>, linux-kernel@vger.kernel.org
-Subject: Re: keyboard disconnects with kernel 2.6.24-r4
-Message-ID: <20080408114639.GA6554@joi>
-References: <Pine.LNX.4.64.0804072357280.26562@twin.jikos.cz> <200804080510.m385A7DF016568@indigo.cs.bgu.ac.il>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200804080510.m385A7DF016568@indigo.cs.bgu.ac.il>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Tue, 8 Apr 2008 07:47:45 -0400
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: andi@firstfloor.org, Andrew Morton <akpm@linux-foundation.org>
+Cc: YAMAMOTO Takashi <yamamoto@valinux.co.jp>, Paul Menage <menage@google.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       Pavel Emelianov <xemul@openvz.org>, hugh@veritas.com,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Date: Tue, 08 Apr 2008 17:16:13 +0530
+Message-Id: <20080408114613.8165.69030.sendpatchset@localhost.localdomain>
+Subject: [-mm] Disable the memory controller by default (v3)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 08, 2008 at 08:10:07AM +0300, eial@cs.bgu.ac.il wrote:
-> On Tue 08 Apr 0:58 2008 Jiri Kosina wrote:
-> > On Mon, 7 Apr 2008, eial@cs.bgu.ac.il wrote:
-> > 
-> > > hello, I own a DV9000z, running gentoo and kernel 2.6.24-r3 on it, I'm 
-> > > not using r4 because while working with the computer, after a while, my 
-> > > keyboard disconnects. trying to shutdown the computer causes in system 
-> > > freeze. this do not happens in r3, 
-> > 
-> > What are "r3" and "r4"? Do you mean -rc3 and -rc4? If so, please try to 
-> > reproduce with recent kernel first (we are now past 2.6.25-rc8), and 
-> > report back in case the problem still persists.
-> r3 and r4 are rc3 and rc4, currently, the stable version is rc4, I try to stay with the current stable version inorder to reduce bugs
-> cause I'm studying and dont have much free time on hand, can I disable this issue in rc4?
 
-2.6.24-r3 and 2.6.24-r4 are NOT 2.6.24-rc3 and 2.6.24-rc4
-2.6.24-r3 is 2.6.24.1 + some patches and
-2.6.24-r4 is 2.6.24.4 + some patches
 
-see:
-http://dev.gentoo.org/~dsd/genpatches/
-http://dev.gentoo.org/~dsd/genpatches/tarballs/
+Changelog v1
 
-ps: please don't top post
+1. Split cgroup_disable into cgroup_disable and cgroup_enable
+2. Remove cgroup_toggle
 
+Due to the overhead of the memory controller. The
+memory controller is now disabled by default. This patch adds cgroup_enable.
+
+If everyone agrees on this approach and likes it, should we push this
+into 2.6.25?
+
+Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
+---
+
+ Documentation/kernel-parameters.txt |    3 +++
+ kernel/cgroup.c                     |   17 +++++++++++++----
+ mm/memcontrol.c                     |    1 +
+ 3 files changed, 17 insertions(+), 4 deletions(-)
+
+diff -puN kernel/cgroup.c~memory-controller-default-option-off kernel/cgroup.c
+--- linux-2.6.25-rc8/kernel/cgroup.c~memory-controller-default-option-off	2008-04-07 16:24:28.000000000 +0530
++++ linux-2.6.25-rc8-balbir/kernel/cgroup.c	2008-04-08 16:04:49.000000000 +0530
+@@ -3063,7 +3063,7 @@ static void cgroup_release_agent(struct 
+ 	mutex_unlock(&cgroup_mutex);
+ }
+ 
+-static int __init cgroup_disable(char *str)
++static inline int __init cgroup_turnonoff(char *str, int disable)
+ {
+ 	int i;
+ 	char *token;
+@@ -3076,13 +3076,22 @@ static int __init cgroup_disable(char *s
+ 			struct cgroup_subsys *ss = subsys[i];
+ 
+ 			if (!strcmp(token, ss->name)) {
+-				ss->disabled = 1;
+-				printk(KERN_INFO "Disabling %s control group"
+-					" subsystem\n", ss->name);
++				ss->disabled = disable;
+ 				break;
+ 			}
+ 		}
+ 	}
+ 	return 1;
+ }
++
++static int __init cgroup_disable(char *str)
++{
++	return cgroup_turnonoff(str, 1);
++}
+ __setup("cgroup_disable=", cgroup_disable);
++
++static int __init cgroup_enable(char *str)
++{
++	return cgroup_turnonoff(str, 0);
++}
++__setup("cgroup_enable=", cgroup_enable);
+diff -puN mm/memcontrol.c~memory-controller-default-option-off mm/memcontrol.c
+--- linux-2.6.25-rc8/mm/memcontrol.c~memory-controller-default-option-off	2008-04-07 16:24:28.000000000 +0530
++++ linux-2.6.25-rc8-balbir/mm/memcontrol.c	2008-04-07 16:40:22.000000000 +0530
+@@ -1104,4 +1104,5 @@ struct cgroup_subsys mem_cgroup_subsys =
+ 	.populate = mem_cgroup_populate,
+ 	.attach = mem_cgroup_move_task,
+ 	.early_init = 0,
++	.disabled = 1,
+ };
+diff -puN Documentation/kernel-parameters.txt~memory-controller-default-option-off Documentation/kernel-parameters.txt
+--- linux-2.6.25-rc8/Documentation/kernel-parameters.txt~memory-controller-default-option-off	2008-04-07 16:38:25.000000000 +0530
++++ linux-2.6.25-rc8-balbir/Documentation/kernel-parameters.txt	2008-04-07 17:53:28.000000000 +0530
+@@ -382,8 +382,11 @@ and is between 256 and 4096 characters. 
+ 			See Documentation/s390/CommonIO for details.
+ 
+ 	cgroup_disable= [KNL] Disable a particular controller
++	cgroup_enable=  [KNL] Enable a particular controller
++			For both cgroup_enable and cgroup_enable
+ 			Format: {name of the controller(s) to disable}
+ 				{Currently supported controllers - "memory"}
++				{Memory controller is disabled by default}
+ 
+ 	checkreqprot	[SELINUX] Set initial checkreqprot flag value.
+ 			Format: { "0" | "1" }
+_
+
+-- 
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
