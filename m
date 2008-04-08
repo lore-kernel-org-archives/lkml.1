@@ -1,59 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757843AbYDHQAR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757937AbYDHQBn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757843AbYDHQAR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Apr 2008 12:00:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754470AbYDHP74
+	id S1757937AbYDHQBn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Apr 2008 12:01:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752793AbYDHQBe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Apr 2008 11:59:56 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:48721 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754668AbYDHP7y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Apr 2008 11:59:54 -0400
-Message-ID: <47FB9677.30109@garzik.org>
-Date: Tue, 08 Apr 2008 11:59:51 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
-MIME-Version: 1.0
-To: =?ISO-8859-1?Q?=22J=2EA=2E_Magall=F3n=22?= <jamagallon@ono.com>
-CC: "Linux-Kernel, " <linux-kernel@vger.kernel.org>,
-       Linux IDE mailing list <linux-ide@vger.kernel.org>
-Subject: Re: DRDY errors again
-References: <20080408171311.69441c8b@werewolf>
-In-Reply-To: <20080408171311.69441c8b@werewolf>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+	Tue, 8 Apr 2008 12:01:34 -0400
+Received: from crystal.sipsolutions.net ([195.210.38.204]:54125 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754042AbYDHQBe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Apr 2008 12:01:34 -0400
+Subject: Re: [PATCH] introduce HAVE_EFFICIENT_UNALIGNED_ACCESS Kconfig
+	symbol
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Cc: Andrew Morton <akpm@osdl.org>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, sam <sam@ravnborg.org>
+In-Reply-To: <47FB920F.60503@s5r6.in-berlin.de>
+References: <1207667127.14253.42.camel@johannes.berg>
+	 <47FB920F.60503@s5r6.in-berlin.de>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-DoSr0SYVcGbiKho2yzzH"
+Date: Tue, 08 Apr 2008 18:00:49 +0200
+Message-Id: <1207670449.5550.6.camel@johannes.berg>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-J.A. Magallón wrote:
-> scsi4 : ata_piix
-> scsi5 : ata_piix
-> ata3: SATA max UDMA/133 cmd 0xc000 ctl 0xc400 bmdma 0xd000 irq 18
-> ata4: SATA max UDMA/133 cmd 0xc800 ctl 0xcc00 bmdma 0xd008 irq 18
 
-> ata4.00: ATA-8: ST3500820AS, SD25, max UDMA/133
-> ata4.00: 976773168 sectors, multi 16: LBA48 NCQ (depth 0/32)
-> ata4.00: configured for UDMA/133
+--=-DoSr0SYVcGbiKho2yzzH
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-> ata4.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
-> ata4.00: cmd b0/d8:00:00:4f:c2/00:00:00:00:00/00 tag 0
->          res 40/00:01:00:4f:c2/00:00:00:00:00/00 Emask 0x4 (timeout)
-> ata4.00: status: { DRDY }
+Stefan,
 
-Can you bisect to see when this problem starts?  I'm pretty sure it's 
-software, either interrupt-related or the libata driver itself.
+Thanks for the text review. I'll follow up with a new version in a
+minute.
 
-See http://ata.wiki.kernel.org/index.php/Libata_error_messages for a 
-full explanation of that error message.
+> > --- everything.orig/arch/Kconfig	2008-04-04 23:42:50.000000000 +0200
+> > +++ everything/arch/Kconfig	2008-04-04 23:52:15.000000000 +0200
+> > @@ -36,3 +36,22 @@ config HAVE_KPROBES
+> > =20
+> >  config HAVE_KRETPROBES
+> >  	def_bool n
+> > +
+> > +config HAVE_EFFICIENT_UNALIGNED_ACCESS
+> > +	def_bool n
+> > +	help
+> > +	  Some architectures are unable to perform unaligned accesses
+> > +	  without the use of get_unaligned/put_unaligned. Others are
+> > +	  unable to perform such accesses efficiently (e.g. trap on
+>=20
+> Wouldn't a comment be more appropriate instead of a help text?  This
+> option shouldn't be a visible make XYZconfig prompt.
+>=20
+> I have no comment on the option itself; it's not my domain.
 
-Most notable:  "DRDY" == device ready == device says everything is OK, 
-from it's perspective.  "timeout" usually means an interrupt wasn't 
-delivered from your ATA controller, when we were expecting one.
+Note that the help text doesn't mean the option gets to be visible, only
+the one-line description does, as in
 
-	Jeff
+config XYZ
+	bool "description"
 
+vs.
+config XYZ
+	bool
+
+johannes
+
+--=-DoSr0SYVcGbiKho2yzzH
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iQIVAwUAR/uWsKVg1VMiehFYAQJ/OA//TC53B8iR2LTTp/HLOShJM/mjaN4fSXq3
+pfgpTIOKGGU7ygCWdXBQlvDBHGafpCKdmxI8MOtsQlozGm/YTRoe+uDqCH8z2CZ6
+7E2XSeGY6lII5rZDidtO46jGIkuFvwgjUQDL87zOJOPPe4O8nUrVBKdbym2jOHnG
+BlckWS0waU6QR+WPH8LayUCrIGxloT8csFHHCKjwfU4M5X2ctjUfxCrR7cexrrFl
+WlCDhxWAaGhIMMxolWmQJy11Gt+oNbTOkxwDaeVQwArsL56pNdeNLb5k112xL+6t
+6ukIqHxLLcNgcAV8QYafhRzMP1yHgoZlyRVfBf2XZUB98NIw8qimN5pKMeA6mXVY
+OfccqE+ivOmGf/diT+8nca/whI5YXbx52qzWTOAubPoyYRVP+CHkuasecgH7x2IR
+rjrhPeaLtBVOzKemD6BEIFFFDVIayRvPWK98VV5V98dvY9QDxYjNAbOjYX5mHgTj
+91JPHqKER1BGMrpxcaOrXzygfHNS5sqhjuqNG1lDNztc8MCOBMMYBSEljTT1vRa4
+4MBKRT9dT6U9zpe4MLt84Ev0zuUR2l7FNAtImQTRRvUNS2m+Ahd3eyuBX0yQCi18
+wE81YpmWk56h/PcKIyAiVDgXWwuyvf3cAl/Yyz69HC5GDvBQceWuP2XhcvGYRDTq
+2AYwuJUikcE=
+=1j5g
+-----END PGP SIGNATURE-----
+
+--=-DoSr0SYVcGbiKho2yzzH--
 
