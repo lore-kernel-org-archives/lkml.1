@@ -1,62 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755389AbYDHUsL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755683AbYDHUss@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755389AbYDHUsL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Apr 2008 16:48:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752972AbYDHUr5
+	id S1755683AbYDHUss (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Apr 2008 16:48:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753260AbYDHUsj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Apr 2008 16:47:57 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:33667 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752388AbYDHUrv (ORCPT
+	Tue, 8 Apr 2008 16:48:39 -0400
+Received: from web30203.mail.mud.yahoo.com ([209.191.69.50]:41531 "HELO
+	web30203.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752972AbYDHUsi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Apr 2008 16:47:51 -0400
-Date: Tue, 8 Apr 2008 13:46:13 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: lkml <linux-kernel@vger.kernel.org>, linux-kbuild@vger.kernel.org,
-       samr <sam@ravnborg.org>
-Subject: Re: [PATCH] documentation: build source files in Documentation
- sub-dir
-Message-Id: <20080408134613.a047a7b6.akpm@linux-foundation.org>
-In-Reply-To: <20080403124529.3f2efb79.randy.dunlap@oracle.com>
-References: <20080403124529.3f2efb79.randy.dunlap@oracle.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
+	Tue, 8 Apr 2008 16:48:38 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:Date:From:Subject:To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=t3LsBH3h/zsuvkuGOKFxNY0WUSQ11TBxxaSIdKi0ChQfeGf+Z0d9m30pRPs10Xm+hzaq0fhHjEWHhZ40SF2/KwdyW6wiZU1FXEey9GjeMkH3ph4fy6rOpwgRHf/IctjmEIc6udyYCVei6txB5fmUb35y7AFnipl2QPM/ijdbsmA=;
+X-YMail-OSG: 77OtXFEVM1kLG5D_B8L8KgXwSmf8EsCs3lI6.zzbrEMsOo8Vw99Krum849axteOIPQ--
+Date: Tue, 8 Apr 2008 13:41:58 -0700 (PDT)
+From: Rakesh <raksac@yahoo.com>
+Subject: megaraid sas driver
+To: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       megaraidlinux@lsi.com
+MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 7BIT
+Message-ID: <96296.65150.qm@web30203.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 3 Apr 2008 12:45:29 -0700 Randy Dunlap <randy.dunlap@oracle.com> wrote:
+I am curious to ask, why were these lines omitted from
+the megaraid SAS driver with kernel version 2.6.15
+onwards.
 
-> Currently source files in the Documentation/ sub-dir can easily bit-rot
-> since they are not generally buildable, either because they are hidden
-> in text files or because there are no Makefile rules for them.
-> This needs to be fixed so that the source files remain usable and good
-> examples of code instead of bad examples.
-> 
-> Add the ability to build source files that are in the Documentation/ dir.
-> Add to Kconfig as "BUILD_DOCSRC" config symbol.
-> 
-> Use "CONFIG_BUILD_DOCSRC=1 make ..." to build objects from the
-> Documentation/ sources.  Or enable BUILD_DOCSRC in the *config system.
-> 
-> The Makefiles use $objdir/usr/include for header files, so doing
-> "make headers_install" is required.  This is done for you if you enable
-> CONFIG_HEADERS_CHECK=y.
-> 
-> Note: needs documentation-move-spidev_fdx-example-to-its-own-source-file.patch
-> from -mm patchset.
+In my opinion these were blocking physical disks which
+were part of a RAID set on the controller from being
+visible to OS. Is this correct?
 
-argh, I'm getting several warnings and at least two build errors from this.
-One is:
+Thanks,
+Rakesh
 
-In file included from /usr/src/devel/usr/include/linux/netlink.h:5,
-                 from /usr/src/devel/usr/include/linux/genetlink.h:4,
-                 from Documentation/accounting/getdelays.c:26:
-/usr/src/devel/usr/include/linux/types.h:166: error: expected specifier-qualifier-list before '__kernel_daddr_t'
+----------------
+megaraid_sas.c
+                /*
+ 989                 * Don't export physical disk
+devices to mid-layer.
+ 990                 */
+ 991                if (!MEGASAS_IS_LOGICAL(cmd->scmd)
+&&
+ 992                    (hdr->cmd_status ==
+MFI_STAT_OK) &&
+ 993                    (cmd->scmd->cmnd[0] ==
+INQUIRY)) {
+ 994
+ 995                        if (((*(u8 *)
+cmd->scmd->request_buffer) & 0x1F) ==
+ 996                            TYPE_DISK) {
+ 997                                cmd->scmd->result
+= DID_BAD_TARGET << 16;
+ 998                                exception = 1;
+ 999                        }
+1000                }
 
-(i386 allmodconfig).
 
-I think I'll disable this patch for now..
+
+
+      ____________________________________________________________________________________
+You rock. That's why Blockbuster's offering you one month of Blockbuster Total Access, No Cost.  
+http://tc.deals.yahoo.com/tc/blockbuster/text5.com
