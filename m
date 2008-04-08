@@ -1,73 +1,143 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752893AbYDHK3d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753363AbYDHKbq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752893AbYDHK3d (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Apr 2008 06:29:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751761AbYDHK3Z
+	id S1753363AbYDHKbq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Apr 2008 06:31:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751940AbYDHKbh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Apr 2008 06:29:25 -0400
-Received: from e28smtp03.in.ibm.com ([59.145.155.3]:53621 "EHLO
-	e28smtp03.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751683AbYDHK3Y (ORCPT
+	Tue, 8 Apr 2008 06:31:37 -0400
+Received: from e28smtp01.in.ibm.com ([59.145.155.1]:47662 "EHLO
+	e28smtp01.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751836AbYDHKbg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Apr 2008 06:29:24 -0400
-Message-ID: <47FB48AE.3030207@linux.vnet.ibm.com>
-Date: Tue, 08 Apr 2008 15:57:58 +0530
+	Tue, 8 Apr 2008 06:31:36 -0400
+Message-ID: <47FB4932.8040706@linux.vnet.ibm.com>
+Date: Tue, 08 Apr 2008 16:00:10 +0530
 From: Balbir Singh <balbir@linux.vnet.ibm.com>
 Reply-To: balbir@linux.vnet.ibm.com
 Organization: IBM
 User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-To: Li Zefan <lizf@cn.fujitsu.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       David Rientjes <rientjes@google.com>
-Subject: Re: [PATCH] oom_kill: remove unused parameter in badness()
-References: <47FB24CF.40704@cn.fujitsu.com>
-In-Reply-To: <47FB24CF.40704@cn.fujitsu.com>
-Content-Type: text/plain; charset=UTF-8
+To: Paul Menage <menage@google.com>
+CC: Balaji Rao <balajirrao@gmail.com>, linux-kernel@vger.kernel.org,
+       containers@lists.osdl.org, dhaval@linux.vnet.ibm.com, balbir@in.ibm.com,
+       a.p.zijlstra@chello.nl, Ingo Molnar <mingo@elte.hu>,
+       Vivek Kashyap <vivk@us.ibm.com>
+Subject: Re: [RFC][-mm] [0/2] Basic stats for cgroups V2
+References: <200804052339.42474.balajirrao@gmail.com> <6599ad830804080036h5496e3bdv9ac2dedf0f04f9bc@mail.gmail.com>
+In-Reply-To: <6599ad830804080036h5496e3bdv9ac2dedf0f04f9bc@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Li Zefan wrote:
-> In commit 4c4a22148909e4c003562ea7ffe0a06e26919e3c, we moved the
-> memcontroller-related code from badness() to select_bad_process(),
-> so the parameter 'mem' in badness() is unused now.
+Paul Menage wrote:
+> On Sat, Apr 5, 2008 at 11:09 AM, Balaji Rao <balajirrao@gmail.com> wrote:
+>> V1->V2
+>>  - Fixed a possible race in cpu_cgroup_read_stat. Thank you Paul for pointing this out.
+>>  - A few other naming changes.
+>>
+>>  This patchset is a first step towards implementing stats for cgroup
+>>  subsystems. Only a few trivial stats for cpu and memory resource controller
+>>  have been implemented for now. Please provide comments on the general
+>>  direction and any suggestions on how you would like the cgroupstats framework
+>>  to be implemented.
 > 
-> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
-> ---
->  mm/oom_kill.c |    5 ++---
->  1 files changed, 2 insertions(+), 3 deletions(-)
+> This is sort of heading in the same way as the cgroup binary stats API
+> that I mentioned a couple of months ago (when I proposed the
+> "cgroup.api" file).
 > 
-> diff --git a/mm/oom_kill.c b/mm/oom_kill.c
-> index f255eda..8be1baf 100644
-> --- a/mm/oom_kill.c
-> +++ b/mm/oom_kill.c
-> @@ -53,8 +53,7 @@ static DEFINE_SPINLOCK(zone_scan_mutex);
->   *    of least surprise ... (be careful when you change it)
->   */
+> Since the cgroup file API encourages subsystems to export values via
+> abstract methods such as read_s64() or read_map() rather than having
+> them handle the file I/O themselves, this gives the basis for a binary
+> stats API - the same methods can be used to retrieve the information
+> in a binary form rather than from regular ASCII-based file reads, and
+> the subsystem doesn't have to care which is being used.
 > 
-> -unsigned long badness(struct task_struct *p, unsigned long uptime,
-> -			struct mem_cgroup *mem)
-> +unsigned long badness(struct task_struct *p, unsigned long uptime)
->  {
->  	unsigned long points, cpu_time, run_time, s;
->  	struct mm_struct *mm;
-> @@ -254,7 +253,7 @@ static struct task_struct *select_bad_process(unsigned long *ppoints,
->  		if (p->oomkilladj == OOM_DISABLE)
->  			continue;
+> I was originally thinking along the lines of having a special mode in
+> which you could obtain a cgroupfs binary file for a cgroup directory
+> that would report a requested set of binary stats each time it was
+> read, but using the netlink/taskstats API might be a good approach
+> too.
 > 
-> -		points = badness(p, uptime.tv_sec, mem);
-> +		points = badness(p, uptime.tv_sec);
->  		if (points > *ppoints || !chosen) {
->  			chosen = p;
->  			*ppoints = points;
+> One of the important API choices would be whether the stats API was
+> fixed in header files shared with userspace, or whether it would be
+> possible for stats to be added and dynamically discovered/used by
+> userspace without needing fixed header file descriptions.
+> 
+> The difference would be a bit like the old sysctl API (where each
+> sysctl entry had to be enumerated in a header file) versus the newer
+> /proc/sys approach where numerical values aren't used and userspace
+> can determine which entries are supported at runtime, and even access
+> new previously-unknown entries.
+> 
+> Here's one possible way to do it:
+> 
+> With the taskstats interface, we could have operations to:
+> 
+> - describe the API exported by a given subsystem (automatically
+> generated, based on its registered control files and their access
+> methods)
+> 
+> - retrieve a specified set of stats in a binary format
+> 
+> So as a concrete example, with the memory, cpuacct and cpu subsystems
+> configured, the reported API might look something like (in pseudo-code
+> form)
+> 
+> 0 : memory.usage_in_bytes : u64
+> 1 : memory.limit_in_bytes : u64
+> 2 : memory.failcnt : u64
+> 3 : memory.stat : map
+> 4 : cpuacct.usage : u64
+> 5 : cpu.shares : u64
+> 6 : cpu.rt_runtime_ms : s64
+> 7 : cpu.stat : map
+> 
+> This list would be auto-generated by cgroups based on inspection of
+> the control files.
+> 
+> The user could then request stats 0, 3 and 7 for a cgroup to get the
+> memory.usage_in_bytes, memory.stat and cpu.stat statistics.
+> 
 
-Looks good to be
+The user needs to inspect the reported API before requesting for statistics?
 
-Acked-by: Balbir Singh <balbir@linux.vnet.ibm.com>
+> The stats could be returned in a binary format; the format for each
+> individual stat would depend on the type of that stat, and these could
+> be simply concatenated together.
+> 
+> A u64 or s64 stat would simply be a 64-bit value in the data stream
+> 
+> A map stat would be represented as a sequence of 64-bit values,
+> representing the values in the map. There would be no need to include
+> the size of the map or the key ordering in the binary format, since
+> userspace could determine that by reading the ASCII version of the map
+> control file once at startup.
+> 
+> So in the case of the request above for stats 0, 3 & 7, the binary
+> stats stream would be a sequence of 64-bit values consisting of:
+> 
+> <memory.usage>
+> <memory.stat.cache>
+> <memory.stat.rss>
+> <memory.stat.active>
+> <memory.stat.inactive>
+> <cpu.stat.utime>
+> <cpu.stat.stime>
+> 
+> If more stats were added to memory.stat or cpu.stat by a future
+> version of the code, then they would automatically appear; any that
+> userspace didn't understand it could ignore.
+> 
+> The userspace side of this could be handled by libcg.
+> 
+
+That sounds nice.
+
+> Thoughts?
+
+I like the overall approach, do you have a prototype implementation?
 
 -- 
 	Warm Regards,
