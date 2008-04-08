@@ -1,40 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753981AbYDHIUR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754672AbYDHIU6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753981AbYDHIUR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Apr 2008 04:20:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751979AbYDHIUD
+	id S1754672AbYDHIU6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Apr 2008 04:20:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752091AbYDHIUt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Apr 2008 04:20:03 -0400
-Received: from sacred.ru ([62.205.161.221]:35990 "EHLO sacred.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751978AbYDHIUD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Apr 2008 04:20:03 -0400
-Message-ID: <47FB283C.6050509@openvz.org>
-Date: Tue, 08 Apr 2008 12:09:32 +0400
-From: Pavel Emelyanov <xemul@openvz.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
-MIME-Version: 1.0
-To: Manfred Spraul <manfred@colorfullife.com>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "Serge E. Hallyn" <serue@us.ibm.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Sukadev Bhattiprolu <sukadev@us.ibm.com>
-Subject: Re: [PATCH] fix SEM_UNDO with namespaces, take 2
-References: <47EFFD1C.5020204@colorfullife.com> <47F08ED6.1090103@openvz.org> <47F10DF7.5010702@colorfullife.com> <47F203EC.7090806@openvz.org> <m1od8tiom7.fsf@ebiederm.dsl.xmission.com> <20080403194418.GA11105@sergelap.austin.ibm.com> <20080404043902.GA14177@sergelap.austin.ibm.com> <47F8E824.6090600@colorfullife.com> <47F8F99D.1070701@colorfullife.com> <47F9CB64.8040009@openvz.org> <47FA53F1.1030509@colorfullife.com>
-In-Reply-To: <47FA53F1.1030509@colorfullife.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 8 Apr 2008 04:20:49 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:53457 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751979AbYDHIUt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Apr 2008 04:20:49 -0400
+Date: Tue, 8 Apr 2008 01:20:04 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "eric miao" <eric.y.miao@gmail.com>
+Cc: "linux-arm-kernel email list" 
+	<linux-arm-kernel@lists.arm.linux.org.uk>,
+       linux-fbdev-devel@lists.sourceforge.net,
+       lkml <linux-kernel@vger.kernel.org>,
+       "Russell King - ARM Linux" <linux@arm.linux.org.uk>
+Subject: Re: [PATCH 1/4] pxafb: introduce lcd_{read,write}l() to wrap the
+ __raw_{read,write}l()
+Message-Id: <20080408012004.013a2572.akpm@linux-foundation.org>
+In-Reply-To: <f17812d70804072103s4fa2b6d4t57abfcda9d8e0b11@mail.gmail.com>
+References: <f17812d70804072103s4fa2b6d4t57abfcda9d8e0b11@mail.gmail.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Tue, 08 Apr 2008 11:45:58 +0400 (MSD)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> +			if ((current->nsproxy == NULL && new_nsproxy != NULL) ||
-> +				(current->nsproxy != NULL && new_nsproxy == NULL) ||
-> +				(current->nsproxy != NULL && new_nsproxy != NULL && current->nsproxy->ipc_ns != new_nsproxy->ipc_ns)) {
+On Tue, 8 Apr 2008 12:03:16 +0800 "eric miao" <eric.y.miao@gmail.com> wrote:
 
-Is the if (unshare_flags & CLONE_NEWIPC) check not enough?
+> +#define lcd_readl(f, off)	__raw_readl((f)->mmio_base + (off))
+> +#define lcd_writel(f, off, v)	__raw_writel((v), (f)->mmio_base + (off))
 
-Thanks,
-Pavel
+Please implement things like this in C.  Probably inlined.
+
+Advantages:
+
+- C looks nicer
+
+- For some reason people are more likely to document their C than their macros
+
+- macros can sometimes reference their argument multiple times, causing
+  bugs when they are passed experssions with side-effects.
+
+- C functions have typechecking
+
+- C functions (whether inlined or not) count as a reference to their
+  argument, and can help to avoid unused-variable warnings.
+
+
