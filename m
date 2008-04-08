@@ -1,81 +1,170 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755697AbYDHVxZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756503AbYDHVyF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755697AbYDHVxZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Apr 2008 17:53:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752465AbYDHVxR
+	id S1756503AbYDHVyF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Apr 2008 17:54:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752793AbYDHVxy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Apr 2008 17:53:17 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:23605 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752118AbYDHVxQ (ORCPT
+	Tue, 8 Apr 2008 17:53:54 -0400
+Received: from wr-out-0506.google.com ([64.233.184.239]:2700 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752432AbYDHVxx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Apr 2008 17:53:16 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:subject:from:to:cc:in-reply-to:references:
-	content-type:organization:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-	b=XIpEb1cRlDRpefy6xaP0znw3vIbnhkzPB6RCcN89ZE/87q6W0kEajgKJWngyIV3xS
-	Y1no+8euqOG0GYM+ueuhA==
-Subject: Re: posix-cpu-timers revamp
-From: Frank Mayhar <fmayhar@google.com>
-To: Roland McGrath <roland@redhat.com>
-Cc: frank@exit.com, linux-kernel@vger.kernel.org
-In-Reply-To: <1207690074.4687.18.camel@bobble.smo.corp.google.com>
-References: <bug-9906-10286@http.bugzilla.kernel.org/>
-	 <20080206165045.89b809cc.akpm@linux-foundation.org>
-	 <1202345893.8525.33.camel@peace.smo.corp.google.com>
-	 <alpine.LRH.1.00.0802062148480.7445@mini.warudkars.net>
-	 <20080207162203.3e3cf5ab@Varda>
-	 <alpine.LRH.1.00.0802071040010.29320@mini.warudkars.net>
-	 <alpine.LRH.1.00.0802071054160.29320@mini.warudkars.net>
-	 <20080207165455.04ec490b@Varda>
-	 <alpine.LRH.1.00.0802071100230.29369@mini.warudkars.net>
-	 <alpine.LRH.1.00.0802071153130.15220@mini.warudkars.net>
-	 <1204314904.4850.23.camel@peace.smo.corp.google.com>
-	 <20080304070016.903E127010A@magilla.localdomain>
-	 <1204660376.9768.1.camel@bobble.smo.corp.google.com>
-	 <20080305040826.D0E6127010A@magilla.localdomain>
-	 <1204830243.20004.31.camel@bobble.smo.corp.google.com>
-	 <20080311075020.A93DB26F991@magilla.localdomain>
-	 <1205269507.23124.57.camel@bobble.smo.corp.google.com>
-	 <20080311213507.5BCDF26F991@magilla.localdomain>
-	 <1205455050.19551.16.camel@bobble.smo.corp.google.com>
-	 <20080321071846.1B22B26F9A7@magilla.localdomain>
-	 <1206122240.14638.31.camel@bobble.smo.corp.google.com>
-	 <20080322215829.D69D026F9A7@magilla.localdomain>
-	 <1206380079.21896.20.camel@bobble.smo.corp.google.com>
-	 <20080331054404.78CDB26F8E9@magilla.localdomain>
-	 <1206995072.14649.41.camel@bobble.smo.corp.google.com>
-	 <20080402020707.151E126F8DC@magilla.localdomain>
-	 <1207158164.11976.32.camel@bobble.smo.corp.google.com>
-	 <20080402194836.4933026F98A@magilla.localdomain>
-	 <1207168464.11976.48.camel@bobble.smo.corp.google.com>
-	 <20080404231739.7E25126F8DC@magilla.localdomain>
-	 <1207459608.94001.22.camel@jill.exit.com>
-	 <20080407200804.5541926F992@magilla.localdomain>
-	 <1207690074.4687.18.camel@bobble.smo.corp.google.com>
-Content-Type: text/plain
-Organization: Google, Inc.
-Date: Tue, 08 Apr 2008 14:52:41 -0700
-Message-Id: <1207691561.4687.20.camel@bobble.smo.corp.google.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
+	Tue, 8 Apr 2008 17:53:53 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=N/gvdGgPZmwwQRC/wNIp5cP93FaeMiNFquubLBF4ug7fzNe572liHf81UGDCGDmLLEGzrkt9nJIw9ldhv1FwV5EaUoAsLLsBFP5XS5K/d4hxyuWBEBp8qH4IwPW4OssbW9q9hu6gAh7U1ijergtycfnsC+EHHz6uGMbQAGPN65w=
+Message-ID: <86802c440804081453y1a0a8e1ds8aac6074b993c476@mail.gmail.com>
+Date: Tue, 8 Apr 2008 14:53:51 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Mike Travis" <travis@sgi.com>
+Subject: Re: [PATCH 0/2] NR_CPUS: increase maximum NR_CPUS to 4096
+Cc: "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20080405013014.478571000@polaris-admin.engr.sgi.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080405013014.478571000@polaris-admin.engr.sgi.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-04-08 at 14:27 -0700, Frank Mayhar wrote:
-> And, you guessed it, the invariant gets violated.  Apparently the passed
-> task_struct isn't the same as "current" at this point.
-> 
-> Any ideas?  Am I checking the wrong thing?  If we're really not updating
-> current then the task we are updating could very easily be running
-> through __exit_signal() on another CPU.  (And while I wait for your
-> response I will of course continue to try to figure this out.)
+On Fri, Apr 4, 2008 at 6:30 PM, Mike Travis <travis@sgi.com> wrote:
+>
+>   * Increases the limit of NR_CPUS to 4096 and introduces a
+>     boolean called "MAXSMP" which when set (e.g. "allyesconfig")
+>     will set NR_CPUS = 4096 and NODES_SHIFT = 9 (512).
+>
+>     I've been running this config (4k NR_CPUS, 512 Max Nodes)
+>     on an AMD box with 2 dual-cores and 4gb memory as well as an
+>     Intel box with 4 single-core cpus and 8Mb.  I've also
+>     successfully booted it in a simulated 2cpus/1Gb environment.
+>
+>  Based on:
+>         git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git
+>     +   x86/latest          .../x86/linux-2.6-x86.git
+>     +   sched-devel/latest  .../mingo/linux-2.6-sched-devel.git
+>
+>  Signed-off-by: Mike Travis <travis@sgi.com>
 
-Found the exception.  do_fork() violates the invariant when it's
-cranking up a new process.  Hmmm.
--- 
-Frank Mayhar <fmayhar@google.com>
-Google, Inc.
+got
 
+------------[ cut here ]------------
+WARNING: at kernel/sched_fair.c:815 hrtick_start_fair+0x69/0x156()
+Modules linked in:
+Pid: 1, comm: swapper Not tainted
+2.6.25-rc8-x86-latest.git-smp-01033-ga39ae31-dirty #77
+
+Call Trace:
+ [<ffffffff802596ce>] warn_on_slowpath+0x67/0x8e
+ [<ffffffff8024b266>] hrtick_start_fair+0x69/0x156
+ [<ffffffff8024a619>] ? dequeue_entity+0x2a/0xf8
+ [<ffffffff8025547d>] dequeue_task_fair+0x5f/0x7e
+ [<ffffffff80248ea3>] dequeue_task+0x22/0x44
+ [<ffffffff80248efe>] deactivate_task+0x39/0x69
+ [<ffffffff80a57c31>] schedule+0x1b9/0x5c5
+ [<ffffffff80270dff>] ? autoremove_wake_function+0x20/0x5e
+ [<ffffffff80a58338>] schedule_timeout+0x31/0xd7
+ [<ffffffff8024db1a>] ? __wake_up+0x52/0x75
+ [<ffffffff80a578a3>] wait_for_common+0x103/0x189
+ [<ffffffff8024f29b>] ? default_wake_function+0x0/0x36
+ [<ffffffff80a57a62>] wait_for_completion+0x2b/0x41
+ [<ffffffff8026c0d2>] call_usermodehelper_exec+0x87/0xe5
+ [<ffffffff80561073>] kobject_uevent_env+0x3d0/0x424
+ [<ffffffff805610e5>] kobject_uevent+0x1e/0x34
+ [<ffffffff805f2dbd>] device_add+0x2f9/0x494
+ [<ffffffff805f2f80>] device_register+0x28/0x43
+ [<ffffffff80577abf>] pcie_port_device_register+0x3f1/0x43e
+ [<ffffffff80972165>] ? pcibios_set_master+0x8d/0xa8
+ [<ffffffff80a24a1c>] pcie_portdrv_probe+0x79/0xbb
+ [<ffffffff80574173>] pci_call_probe+0xe5/0x146
+ [<ffffffff80574331>] pci_device_probe+0x64/0xa2
+ [<ffffffff805f5946>] driver_probe_device+0xcf/0x16d
+ [<ffffffff8031d708>] ? sysfs_addrm_finish+0x2f/0x22b
+ [<ffffffff805f5b0b>] ? __driver_attach+0x0/0xbe
+ [<ffffffff805f5b79>] __driver_attach+0x6e/0xbe
+ [<ffffffff805f4999>] bus_for_each_dev+0x5e/0xa2
+ [<ffffffff805f571f>] driver_attach+0x2f/0x45
+ [<ffffffff805f5430>] bus_add_driver+0xc6/0x226
+ [<ffffffff805f45a4>] ? bus_put+0x29/0x3f
+ [<ffffffff805f5e66>] driver_register+0x6d/0xfc
+ [<ffffffff805745fa>] __pci_register_driver+0x62/0xb0
+ [<ffffffff818b25db>] pcie_portdrv_init+0x4a/0x72
+ [<ffffffff81890bcf>] kernel_init+0x1b4/0x340
+ [<ffffffff80225308>] child_rip+0xa/0x12
+ [<ffffffff81890a1b>] ? kernel_init+0x0/0x340
+ [<ffffffff802252fe>] ? child_rip+0x0/0x12
+
+---[ end trace e26645195698f5cf ]---
+BUG: unable to handle kernel NULL pointer dereference at 0000000000000148
+IP: [<ffffffff8024b3cf>] pick_next_task_fair+0x7c/0xbb
+PGD 0
+Oops: 0000 [1] SMP
+CPU 28
+Modules linked in:
+Pid: 1, comm: swapper Not tainted
+2.6.25-rc8-x86-latest.git-smp-01033-ga39ae31-dirty #77
+RIP: 0010:[<ffffffff8024b3cf>]  [<ffffffff8024b3cf>]
+pick_next_task_fair+0x7c/0xbb
+RSP: 0018:ffff81081cc5cd70  EFLAGS: 00010046
+RAX: 0000000000000000 RBX: ffff81383c21a280 RCX: 0000000000000000
+RDX: ffff81383c224080 RSI: ffff81383c224080 RDI: 0000000063e15417
+RBP: ffff81081cc5cda0 R08: 0000000000000000 R09: ffff81383c224108
+R10: 0000000000000001 R11: 0000000000000000 R12: 0000000000000000
+R13: ffff81383c224080 R14: ffff81383c224080 R15: 000000000000001c
+FS:  0000000000000000(0000) GS:ffff81401cc3c600(0000) knlGS:0000000000000000
+CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
+CR2: 0000000000000148 CR3: 0000000000201000 CR4: 00000000000006e0
+DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+Process swapper (pid: 1, threadinfo ffff81081cc5c000, task ffff81401cc52000)
+Stack:  ffff81081cc5cda0 0000000063e15417 ffffffff80a81840 0000000000000000
+ 00000000fffeecfd ffff81383c224080 ffff81081cc5ce70 ffffffff80a57d28
+ ffff81081cc5ce00 ffff81081cc5ce20 ffffffff81963080 ffffffff81963080
+Call Trace:
+ [<ffffffff80a57d28>] schedule+0x2b0/0x5c5
+ [<ffffffff80270dff>] ? autoremove_wake_function+0x20/0x5e
+ [<ffffffff80a58338>] schedule_timeout+0x31/0xd7
+ [<ffffffff8024db1a>] ? __wake_up+0x52/0x75
+ [<ffffffff80a578a3>] wait_for_common+0x103/0x189
+ [<ffffffff8024f29b>] ? default_wake_function+0x0/0x36
+ [<ffffffff80a57a62>] wait_for_completion+0x2b/0x41
+ [<ffffffff8026c0d2>] call_usermodehelper_exec+0x87/0xe5
+ [<ffffffff80561073>] kobject_uevent_env+0x3d0/0x424
+ [<ffffffff805610e5>] kobject_uevent+0x1e/0x34
+ [<ffffffff805f2dbd>] device_add+0x2f9/0x494
+ [<ffffffff805f2f80>] device_register+0x28/0x43
+ [<ffffffff80577abf>] pcie_port_device_register+0x3f1/0x43e
+ [<ffffffff80972165>] ? pcibios_set_master+0x8d/0xa8
+ [<ffffffff80a24a1c>] pcie_portdrv_probe+0x79/0xbb
+ [<ffffffff80574173>] pci_call_probe+0xe5/0x146
+ [<ffffffff80574331>] pci_device_probe+0x64/0xa2
+ [<ffffffff805f5946>] driver_probe_device+0xcf/0x16d
+ [<ffffffff8031d708>] ? sysfs_addrm_finish+0x2f/0x22b
+ [<ffffffff805f5b0b>] ? __driver_attach+0x0/0xbe
+ [<ffffffff805f5b79>] __driver_attach+0x6e/0xbe
+ [<ffffffff805f4999>] bus_for_each_dev+0x5e/0xa2
+ [<ffffffff805f571f>] driver_attach+0x2f/0x45
+ [<ffffffff805f5430>] bus_add_driver+0xc6/0x226
+ [<ffffffff805f45a4>] ? bus_put+0x29/0x3f
+ [<ffffffff805f5e66>] driver_register+0x6d/0xfc
+ [<ffffffff805745fa>] __pci_register_driver+0x62/0xb0
+ [<ffffffff818b25db>] pcie_portdrv_init+0x4a/0x72
+ [<ffffffff81890bcf>] kernel_init+0x1b4/0x340
+ [<ffffffff80225308>] child_rip+0xa/0x12
+ [<ffffffff81890a1b>] ? kernel_init+0x0/0x340
+ [<ffffffff802252fe>] ? child_rip+0x0/0x12
+
+
+Code: 24 40 78 1c 8b 3d 36 05 b3 00 48 89 da be 00 04 00 00 e8 7a eb
+ff ff 49 39 c6 7f 04 4c 8b 63 48 4c 89 e6 4
+8 89 df e8 29 f1 ff ff <49> 8b 9c 24 48 01 00 00 48 85 db 75 a5 49 8d
+5c 24 c8 4c 89 ef
+RIP  [<ffffffff8024b3cf>] pick_next_task_fair+0x7c/0xbb
+ RSP <ffff81081cc5cd70>
+CR2: 0000000000000148
+---[ end trace e26645195698f5cf ]---
