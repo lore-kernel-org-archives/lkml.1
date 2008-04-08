@@ -1,36 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754569AbYDHNoU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753737AbYDHNwX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754569AbYDHNoU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Apr 2008 09:44:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751985AbYDHNoN
+	id S1753737AbYDHNwX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Apr 2008 09:52:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751985AbYDHNwN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Apr 2008 09:44:13 -0400
-Received: from smtp2.it.da.ut.ee ([193.40.5.67]:56972 "EHLO smtp2.it.da.ut.ee"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751810AbYDHNoM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Apr 2008 09:44:12 -0400
-Date: Tue, 8 Apr 2008 16:44:11 +0300 (EEST)
-From: Meelis Roos <mroos@linux.ee>
-To: Linux Kernel list <linux-kernel@vger.kernel.org>,
-       Benjamin Herrenschmidt <benh@ozlabs.org>, Jeff Garzik <jeff@garzik.org>
-Subject: compile failure in pata_sil680.c
-Message-ID: <Pine.SOC.4.64.0804081640100.28938@math.ut.ee>
+	Tue, 8 Apr 2008 09:52:13 -0400
+Received: from lazybastard.de ([212.112.238.170]:52184 "EHLO
+	longford.logfs.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751736AbYDHNwN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Apr 2008 09:52:13 -0400
+Date: Tue, 8 Apr 2008 15:52:04 +0200
+From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       linux-mtd@lists.infradead.org
+Subject: Re: [patch 1/15] Makefiles and Kconfig
+Message-ID: <20080408135203.GB670@logfs.org>
+References: <20080401181308.512473173@logfs.org> <200804080230.17426.arnd@arndb.de> <20080408083316.GA31262@logfs.org> <200804081542.00333.arnd@arndb.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <200804081542.00333.arnd@arndb.de>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-commit 0f436eff54f90419ac1b8accfb3e6e17c4b49a4e introduces the following 
-compile failure on ppc (not powerpc), prep subarch. Seems that 
-machine_is is only defined in the new powerpc arch.
+On Tue, 8 April 2008 15:41:59 +0200, Arnd Bergmann wrote:
+> On Tuesday 08 April 2008, Jörn Engel wrote:
+> > "Logfs file system" might make sense.  LOGFS_FS is something I would
+> > rather avoid.  For some reason my brain reacts strongly to repetition,
+> > redundancy and superfluous information.
+> > 
+> 
+> How about LOG_FS then? I don't think there is a really good argument
+> either way, but a large majority uses the *_FS notation in Kconfig.
 
-drivers/ata/pata_sil680.c: In function 'sil680_init_chip':
-drivers/ata/pata_sil680.c:274: error: implicit declaration of function 'machine_is'
-drivers/ata/pata_sil680.c:274: error: 'cell' undeclared (first use in this function)
-drivers/ata/pata_sil680.c:274: error: (Each undeclared identifier is reported only once
-drivers/ata/pata_sil680.c:274: error: for each function it appears in.)
-make[2]: *** [drivers/ata/pata_sil680.o] Error 1
+Fair enough.
+
+Jörn
 
 -- 
-Meelis Roos (mroos@linux.ee)
+Write programs that do one thing and do it well. Write programs to work
+together. Write programs to handle text streams, because that is a
+universal interface.
+-- Doug MacIlroy
