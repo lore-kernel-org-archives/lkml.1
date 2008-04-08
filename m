@@ -1,57 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758286AbYDHAvW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758661AbYDHA5g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758286AbYDHAvW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Apr 2008 20:51:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755364AbYDHAvM
+	id S1758661AbYDHA5g (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Apr 2008 20:57:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755746AbYDHA50
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Apr 2008 20:51:12 -0400
-Received: from mga11.intel.com ([192.55.52.93]:26854 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753324AbYDHAvL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Apr 2008 20:51:11 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,619,1199692800"; 
-   d="scan'208";a="547313784"
-Subject: Re: [PATCH] ACPI: check a return value correctly in
-	acpi_power_get_context()
-From: Zhao Yakui <yakui.zhao@intel.com>
-To: Li Zefan <lizf@cn.fujitsu.com>
-Cc: lenb@kernel.org, linux-acpi@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <47F9E1E2.5020506@cn.fujitsu.com>
-References: <47F9E1E2.5020506@cn.fujitsu.com>
+	Mon, 7 Apr 2008 20:57:26 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.158]:60851 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753699AbYDHA50 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Apr 2008 20:57:26 -0400
+Subject: Re: fully bisectable real time series
+From: Daniel Walker <dwalker@mvista.com>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: linux-rt-users@vger.kernel.org, linux-kernel@vger.kernel.org,
+       mingo@elte.hu
+In-Reply-To: <Pine.LNX.4.58.0804072027080.7121@gandalf.stny.rr.com>
+References: <1207611243.21308.167.camel@localhost.localdomain>
+	 <Pine.LNX.4.58.0804072027080.7121@gandalf.stny.rr.com>
 Content-Type: text/plain
-Date: Tue, 08 Apr 2008 16:38:26 +0800
-Message-Id: <1207643906.7387.0.camel@yakui_zhao.sh.intel.com>
+Date: Mon, 07 Apr 2008 17:57:24 -0700
+Message-Id: <1207616244.21308.174.camel@localhost.localdomain>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.0 (2.8.0-7.fc6) 
+X-Mailer: Evolution 2.12.3 (2.12.3-3.fc8) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-04-07 at 16:57 +0800, Li Zefan wrote:
-> We should check *resource != NULL rather than resource != NULL,
-> which will be always true.
-> 
-> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
-> ---
->  drivers/acpi/power.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/drivers/acpi/power.c b/drivers/acpi/power.c
-> index 76bf6d9..f2a76ac 100644
-> --- a/drivers/acpi/power.c
-> +++ b/drivers/acpi/power.c
-> @@ -121,7 +121,7 @@ acpi_power_get_context(acpi_handle handle,
->  	}
->  
->  	*resource = acpi_driver_data(device);
-> -	if (!resource)
-> +	if (!*resource)
->  		return -ENODEV;
->  
->  	return 0;
-agreed.
 
+On Mon, 2008-04-07 at 20:33 -0400, Steven Rostedt wrote:
+> On Mon, 7 Apr 2008, Daniel Walker wrote:
+> 
+> >
+> > I've re-worked the -rt series, and some of the core patches to make it
+> > all bisectable. I've done bisect updates in the past which really only
+> > scratched the surface.
+> >
+> 
+> Daniel,
+> 
+> Thanks, for doing this. I'll try to look at it when I get a chance. If you
+> can make a bisectable series that still gives a byte for byte identical
+> kernel with a make allyesconfig, I'll incorporate it.
+
+I haven't actually tested if it's byte for byte identical, I can or you
+can review it an decide what you think of it.. The executable code parts
+should be identical. I just moved patches around, patch split-ups, did
+name changes, and added macros ..
+
+Daniel
 
