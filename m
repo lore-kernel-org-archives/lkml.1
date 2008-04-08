@@ -1,43 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754052AbYDHNEy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754594AbYDHNF2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754052AbYDHNEy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Apr 2008 09:04:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751690AbYDHNEp
+	id S1754594AbYDHNF2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Apr 2008 09:05:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751985AbYDHNFQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Apr 2008 09:04:45 -0400
-Received: from wf-out-1314.google.com ([209.85.200.169]:54845 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751653AbYDHNEo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Apr 2008 09:04:44 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=d+cajSYDXDHfizBv/9BRX8t0+niEEa2ye1ecMwTL6ayGxavN5AEfNJaLNXZACYD7d7dmatMjdEnLzPrASwz9DujH4TbDlQ823TZj9PzdZtQSUfUZjHizL7DZKnb7ts2C7H/8XHYov6kjwHNr70gZB/FIeT6dCxFmyUIEQq43dkg=
-Message-ID: <b82a89170804080604r61521340k1086a6fb17bc42e4@mail.gmail.com>
-Date: Tue, 8 Apr 2008 18:34:43 +0530
-From: "Niraj kumar" <niraj17@gmail.com>
-To: linux-kernel <linux-kernel@vger.kernel.org>
-Subject: [Question] what is equivalent of inact_dirty and inact_clean in 2.6.x kernel
+	Tue, 8 Apr 2008 09:05:16 -0400
+Received: from mail.atmel.fr ([81.80.104.162]:50019 "EHLO atmel-es2.atmel.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751928AbYDHNFP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Apr 2008 09:05:15 -0400
+Message-ID: <47FB6D86.3050602@atmel.com>
+Date: Tue, 08 Apr 2008 15:05:10 +0200
+From: Nicolas Ferre <nicolas.ferre@atmel.com>
+Organization: atmel
+User-Agent: Thunderbird 2.0.0.12 (Windows/20080213)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: ARM Linux Mailing List <linux-arm-kernel@lists.arm.linux.org.uk>,
+       Stelian Pop <stelian@popies.net>, Andrew Victor <linux@maxim.org.za>
+CC: Nicolas Ferre <nicolas.ferre@atmel.com>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       Haavard Skinnemoen <hskinnemoen@atmel.com>
+Subject: Re: [PATCH] AT91 UDPHS driver: SAM9RL board and cpu integration.
+References: <47FA41C6.2040406@atmel.com>
+In-Reply-To: <47FA41C6.2040406@atmel.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Nicolas Ferre :
+> Adds support for the USB High Speed Device Port on the 
+> AT91SAM9RL system on chip. The AT91SAM9RL uses the same 
+> UDPHS IP as the AVR32 and the AT91CAP9 (atmel_usba_udc driver).
 
-I don't have much knowledge about VM subsystem, but I need to find
-out if in 2.6.x kernel there is any equivalent of inact_dirty and
-inact_clean fields
-which are present in /proc/meminfo in 2.4  kernels ?
+Submitted as 4940/1
 
-Maybe if there is nothing (in 2.6.x) equivalent then if
-there is anything which is closest in meaning to these fields?
-Maybe we can calculate these from other fields?
+Regards,
+-- 
+Nicolas Ferre
 
-
-Thanks
-Niraj
