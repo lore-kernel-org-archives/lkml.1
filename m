@@ -1,55 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754672AbYDHIU6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754903AbYDHIVo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754672AbYDHIU6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Apr 2008 04:20:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752091AbYDHIUt
+	id S1754903AbYDHIVo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Apr 2008 04:21:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752432AbYDHIVg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Apr 2008 04:20:49 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:53457 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751979AbYDHIUt (ORCPT
+	Tue, 8 Apr 2008 04:21:36 -0400
+Received: from wa-out-1112.google.com ([209.85.146.177]:28926 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752091AbYDHIVf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Apr 2008 04:20:49 -0400
-Date: Tue, 8 Apr 2008 01:20:04 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "eric miao" <eric.y.miao@gmail.com>
-Cc: "linux-arm-kernel email list" 
-	<linux-arm-kernel@lists.arm.linux.org.uk>,
-       linux-fbdev-devel@lists.sourceforge.net,
-       lkml <linux-kernel@vger.kernel.org>,
-       "Russell King - ARM Linux" <linux@arm.linux.org.uk>
-Subject: Re: [PATCH 1/4] pxafb: introduce lcd_{read,write}l() to wrap the
- __raw_{read,write}l()
-Message-Id: <20080408012004.013a2572.akpm@linux-foundation.org>
-In-Reply-To: <f17812d70804072103s4fa2b6d4t57abfcda9d8e0b11@mail.gmail.com>
-References: <f17812d70804072103s4fa2b6d4t57abfcda9d8e0b11@mail.gmail.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 8 Apr 2008 04:21:35 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=jctOx/YX3R9Sn929EO1ru7Cx+ZJR8FxLpNEQPzIphvyLgBKV+C9twybmORPRXRe7PW5C0p6579Lh0zkq5lz+4s+dY2zdZGxZGkMAUGrxTvj8liTr8sZzX7VH7ZAh6Vd3Z7OL4ZenJj1t0ewtf5/0VOpnu/UrVpjI3xjciAAZwfY=
+Message-ID: <b647ffbd0804080121l2bb1863fmb8ef85ec7d42b118@mail.gmail.com>
+Date: Tue, 8 Apr 2008 10:21:34 +0200
+From: "Dmitry Adamushko" <dmitry.adamushko@gmail.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Subject: Re: [PATCH] mtd/chips: add missing set_current_state() to cfi_{amdstd,staa}_sync()
+Cc: linux-mtd@lists.infradead.org, dwmw2@infradead.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20080407161555.3dd540f9.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1207251503.6300.9.camel@earth>
+	 <20080407161555.3dd540f9.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 8 Apr 2008 12:03:16 +0800 "eric miao" <eric.y.miao@gmail.com> wrote:
+On 08/04/2008, Andrew Morton <akpm@linux-foundation.org> wrote:
+> On Thu, 03 Apr 2008 21:38:23 +0200
+>  Dmitry Adamushko <dmitry.adamushko@gmail.com> wrote:
+>
+>  > From: Dmitry Adamushko <dmitry.adamushko@gmail.com>
+>  > Subject: [mtd/chips] add missing set_current_state() to cfi_{amdstd,staa}_sync()
+>  >
+>  > cfi_amdstd_sync() and cfi_staa_sync() call schedule() without changing
+>  > task's state appropriately.
+>  >
+>  > In case of e.g. chip->state == FL_ERASING, cfi_*_sync() will be busy-looping
+>  > either redundantly for a fixed interval of time (for SCHED_NORMAL tasks) or
+>  > possibly endlessly (for RT tasks and UP).
+>  >
+>  > Signed-off-by: Dmitry Adamushko <dmitry.adamushko@gmail.com>
+>  >
+>  > ---
+>  >
+>  > diff --git a/drivers/mtd/chips/cfi_cmdset_0002.c b/drivers/mtd/chips/cfi_cmdset_0002.c
+>  > index d072e87..458d477 100644
+>  > --- a/drivers/mtd/chips/cfi_cmdset_0002.c
+>  > +++ b/drivers/mtd/chips/cfi_cmdset_0002.c
+>  > @@ -1763,6 +1763,7 @@ static void cfi_amdstd_sync (struct mtd_info *mtd)
+>  >
+>  >               default:
+>  >                       /* Not an idle state */
+>  > +                     set_current_state(TASK_UNINTERRUPTIBLE);
+>  >                       add_wait_queue(&chip->wq, &wait);
+>  >
+>  >                       spin_unlock(chip->mutex);
+>  > diff --git a/drivers/mtd/chips/cfi_cmdset_0020.c b/drivers/mtd/chips/cfi_cmdset_0020.c
+>  > index b344ff8..492e2ab 100644
+>  > --- a/drivers/mtd/chips/cfi_cmdset_0020.c
+>  > +++ b/drivers/mtd/chips/cfi_cmdset_0020.c
+>  > @@ -1015,6 +1015,7 @@ static void cfi_staa_sync (struct mtd_info *mtd)
+>  >
+>  >               default:
+>  >                       /* Not an idle state */
+>  > +                     set_current_state(TASK_UNINTERRUPTIBLE);
+>  >                       add_wait_queue(&chip->wq, &wait);
+>  >
+>  >                       spin_unlock_bh(chip->mutex);
+>
+>
+> The change certainly looks correct.  Has it been runtime tested?
 
-> +#define lcd_readl(f, off)	__raw_readl((f)->mmio_base + (off))
-> +#define lcd_writel(f, off, v)	__raw_writel((v), (f)->mmio_base + (off))
+It has been tested with an oldish 2.6.8.1 where the problem initially
+occured. It was a RT task that happened to close an mtd fd (and
+resulting in ->sync() being called) and ran in the middle of the
+->erase op... resulting in a "nice" endless loop.
 
-Please implement things like this in C.  Probably inlined.
+The versions of cfi_{amdstd,staa}_sync() in the mainline look not that
+much different from the respective versions in 2.6.8.1.
 
-Advantages:
+I guess, it went unnoticed for so long time due to :
 
-- C looks nicer
-
-- For some reason people are more likely to document their C than their macros
-
-- macros can sometimes reference their argument multiple times, causing
-  bugs when they are passed experssions with side-effects.
-
-- C functions have typechecking
-
-- C functions (whether inlined or not) count as a reference to their
-  argument, and can help to avoid unused-variable warnings.
+(1) apps. don't often directly open/close() fd for mtd partitions;
+(2) a race against ->erase() (or smth else) is rare;
+(3) if (1) is not true, then an app. is still unlikely to be RT (in
+which case, a task just loops until its timeslice is gone).
 
 
+>
+>  Thanks.
+>
+
+-- 
+Best regards,
+Dmitry Adamushko
