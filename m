@@ -1,28 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755870AbYDJJIS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756518AbYDJJIf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755870AbYDJJIS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Apr 2008 05:08:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754864AbYDJJIF
+	id S1756518AbYDJJIf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Apr 2008 05:08:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755046AbYDJJIG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Apr 2008 05:08:05 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:2482 "EHLO spitz.ucw.cz"
+	Thu, 10 Apr 2008 05:08:06 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:2485 "EHLO spitz.ucw.cz"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750820AbYDJJIE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1753723AbYDJJIE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 10 Apr 2008 05:08:04 -0400
-Date: Wed, 9 Apr 2008 23:09:07 +0200
+Date: Wed, 9 Apr 2008 23:01:39 +0200
 From: Pavel Machek <pavel@ucw.cz>
-To: Tomasz Chmielewski <mangoo@wpkg.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, penberg@cs.helsinki.fi,
-       =?iso-8859-1?Q?J=F6rn?= Engel <joern@logfs.org>,
-       ext-adrian.hunter@nokia.com, jwboyer@gmail.com,
-       "Artem B. Bityutskiy" <dedekind@yandex.ru>
-Subject: Re: UBIFS vs Logfs (was [RFC PATCH] UBIFS - new flash file system)
-Message-ID: <20080409210907.GA9683@ucw.cz>
-References: <47F1EC20.6050600@wpkg.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Yinghai Lu <yhlu.kernel@gmail.com>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: build error on x86_64 with x86.git#latest
+Message-ID: <20080409210138.GA9660@ucw.cz>
+References: <86802c440804091036p3a3837e8td8f17d6195561aaf@mail.gmail.com> <20080409204250.GD18968@elte.hu>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <47F1EC20.6050600@wpkg.org>
+In-Reply-To: <20080409204250.GD18968@elte.hu>
 User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -30,29 +27,21 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Hi!
 
-> For me, the motivators to wait for LogFS are mainly the 
-> facts that it
-> can work on traditional block devices, and not only on 
-> pure flash:
+> > commit 0465ac59164eda30f4fe49006a67dd6d2c9fc3cf
+> > Author: Pavel Machek <pavel@suse.cz>
+> > Date:   Wed Feb 20 01:48:39 2008 +0100
+> > 
+> >     suspend: wakeup code in c
 > 
-> 1. It works on normal block devices and it supports 
-> transparent compression
+> oops, that was not meant to be pushed out at all - it was just a 
+> temporary merge which clearly needed more work.
 > 
-> Today, a 64 GB SSD/flash-based media costs ~about the 
-> same as a 1 TB
-> hard disk. This makes flash very expensive to use; 
-> compression can
-> compensate that cost a bit (will depend on the usage, of 
-> course).
-> 
-> I believe there is no other Linux filesystem which can 
-> do transparent
-> compression on block devices.
+> it's all fixed up now - please let me know if you still see any 
+> problems.
 
-I'd like compressed filesystem for maps and lingvistic data... but
-will the flash flesystems have 'reasonable' performance when used on
-harddrive?
-							Pavel
+Is there something I could do to pull this? Lu, could you post the patch
+to fix the first problem you hit?
+	
 -- 
 (english) http://www.livejournal.com/~pavelmachek
 (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
