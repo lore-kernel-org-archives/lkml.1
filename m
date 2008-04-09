@@ -1,56 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754965AbYDILTb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754119AbYDIL1h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754965AbYDILTb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Apr 2008 07:19:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752248AbYDILTY
+	id S1754119AbYDIL1h (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Apr 2008 07:27:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752259AbYDIL11
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Apr 2008 07:19:24 -0400
-Received: from el-out-1112.google.com ([209.85.162.176]:19892 "EHLO
-	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751035AbYDILTX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Apr 2008 07:19:23 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=h4bydn3pA3cYEK3ShORpJTD0oKDmYMtMgAQGK2XhOMfnzCfZA5tHH1dockUf9sAFoSEvcg+W7QU0xC3lRJEMxmbuQHFZrPVE8xXbTpngtJ7fVvdfBIdlJ8h1nXqf8mTi6MXaOZXXUqJ6NLGqybjH4yd8WerEWOd50BHxSA+LvlQ=
-Message-ID: <cf40c6a90804090419o59bc215cw6068b7f2118efcfe@mail.gmail.com>
-Date: Wed, 9 Apr 2008 13:19:22 +0200
-From: "Andreas Grimm" <agrimm61@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: Plenty of inactive memory
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+	Wed, 9 Apr 2008 07:27:27 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:57997 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752248AbYDIL11 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Apr 2008 07:27:27 -0400
+Date: Wed, 9 Apr 2008 21:27:19 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: "Jacek Luczak" <difrost.kernel@gmail.com>
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       Cyrill Gorcunov <gorcunov@gmail.com>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: linux-next: Tree for April 9
+Message-Id: <20080409212719.7d834c13.sfr@canb.auug.org.au>
+In-Reply-To: <20080409210936.ec8ea986.sfr@canb.auug.org.au>
+References: <20080409185309.b94c9d15.sfr@canb.auug.org.au>
+	<d711229d0804090400p1c92a158j381b86e207a6f38a@mail.gmail.com>
+	<20080409210936.ec8ea986.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.5.0beta1 (GTK+ 2.12.9; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Wed__9_Apr_2008_21_27_19_+1000_BnM0QHKEpe=LhqGR"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello everybody,
+--Signature=_Wed__9_Apr_2008_21_27_19_+1000_BnM0QHKEpe=LhqGR
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-i got a weird problem with one of my servers. It's a Intel SR2500AL
-with 32GB of RAM.
-Looking at the memory usage of the system, something is going totally
-wrong. The crucial numbers from /proc/meminfo are:
+Hi Jacek,
 
-MemTotal: 33265916 kB
-MemFree: 416168 kB
-Inactive: 24630428 kB (24GB? whooaaa)
+On Wed, 9 Apr 2008 21:09:36 +1000 Stephen Rothwell <sfr@canb.auug.org.au> w=
+rote:
+>
+> Thanks for the report, can you please send us your .config, please?
 
-Another system with only 16GB, same amount of users and load, shows a
-more normal behaviour:
+Don't worry about it, I found the problem.
 
-MemTotal: 16619808 kB
-MemFree: 6912676 kB
-Inactive: 1774364 kB
+It seems that commit 883a9fc4e5d9b0701f15d4e5a23608f942104721 ("x86:
+cleanup - rename VM_MASK to X86_VM_MASK") from the x86 tree seems to have
+missed some places.
 
-Why does the 32GB-System have this plenty of inactive memory. Is there
-a way to find out, what the kernel is holding in readiness?
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-OS: SLES 10 SP1
-Kernel : 2.6.16.27-0.9-bigsmp
+--Signature=_Wed__9_Apr_2008_21_27_19_+1000_BnM0QHKEpe=LhqGR
+Content-Type: application/pgp-signature
 
-Thanks in advance.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
 
-Andreas Grimm
+iD8DBQFH/KgcTgG2atn1QN8RAjdTAJwLFqB/LXZH/Dqt6j5JdzTzXrSy8QCfbpxA
+XZaDg+7OEldQjQQ1f1J4KgI=
+=DqFw
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__9_Apr_2008_21_27_19_+1000_BnM0QHKEpe=LhqGR--
