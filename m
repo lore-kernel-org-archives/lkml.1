@@ -1,61 +1,247 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754340AbYDIGoz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753648AbYDIGv3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754340AbYDIGoz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Apr 2008 02:44:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752523AbYDIGor
+	id S1753648AbYDIGv3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Apr 2008 02:51:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752303AbYDIGvR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Apr 2008 02:44:47 -0400
-Received: from mail164.messagelabs.com ([216.82.253.131]:51640 "HELO
-	mail164.messagelabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752519AbYDIGoq (ORCPT
+	Wed, 9 Apr 2008 02:51:17 -0400
+Received: from a-sasl-fastnet.sasl.smtp.pobox.com ([207.106.133.19]:48981 "EHLO
+	sasl.smtp.pobox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750996AbYDIGvP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Apr 2008 02:44:46 -0400
-X-VirusChecked: Checked
-X-Env-Sender: Uwe.Kleine-Koenig@digi.com
-X-Msg-Ref: server-14.tower-164.messagelabs.com!1207723480!13873434!21
-X-StarScan-Version: 5.5.12.14.2; banners=-,-,-
-X-Originating-IP: [66.77.174.21]
-Date: Wed, 9 Apr 2008 08:35:30 +0200
-From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <Uwe.Kleine-Koenig@digi.com>
-To: Guennadi Liakhovetski <g.liakhovetski@pengutronix.de>
-Cc: David Brownell <david-b@pacbell.net>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: gpio patches in mmotm
-Message-ID: <20080409063530.GA17538@digi.com>
-References: <20080317173134.GA27282@digi.com> <Pine.LNX.4.64.0803171915020.8640@axis700.grange> <20080318160316.GA31588@digi.com> <Pine.LNX.4.64.0803181717240.5022@axis700.grange> <20080408060230.GA22071@digi.com> <Pine.LNX.4.64.0804080812420.3556@axis700.grange> <20080408093305.GA8141@digi.com> <Pine.LNX.4.64.0804081227360.4987@axis700.grange>
+	Wed, 9 Apr 2008 02:51:15 -0400
+From: Junio C Hamano <gitster@pobox.com>
+To: git@vger.kernel.org
+Subject: [ANNOUNCE] GIT 1.5.5
+cc: linux-kernel@vger.kernel.org
+Date: Tue, 08 Apr 2008 23:51:00 -0700
+Message-ID: <7vtzibbjxn.fsf@gitster.siamese.dyndns.org>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <Pine.LNX.4.64.0804081227360.4987@axis700.grange>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-OriginalArrivalTime: 09 Apr 2008 06:35:30.0730 (UTC) FILETIME=[E7FA08A0:01C89A0B]
-X-TM-AS-Product-Ver: SMEX-8.0.0.1181-5.000.1023-15838.005
-X-TM-AS-Result: No--12.852000-8.000000-2
-X-TM-AS-User-Approved-Sender: No
-X-TM-AS-User-Blocked-Sender: No
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Guennadi,
+The latest feature release GIT 1.5.5 is available at the usual
+places:
 
-Guennadi Liakhovetski wrote:
->                      My original proposal was to introduce just one 
-> NO_GPIO macro to test against, however, David nicely managed to persuade 
-> me, that the gpio_is_valid approach is better. Unfortunately, I cannot 
-> argument as nicely as he did, maybe looking through his emails in LKML 
-> archives will help you:-)
-I'm unable to find these mails.  (Using gmane, looking for mails by
-David matching gpio_is_valid, the oldest post I can find is
-http://article.gmane.org/gmane.linux.kernel/637654.)
+  http://www.kernel.org/pub/software/scm/git/
 
-Can you please point out the discussion in the archives?
+  git-1.5.5.tar.{gz,bz2}			(tarball)
+  git-htmldocs-1.5.5.tar.{gz,bz2}		(preformatted docs)
+  git-manpages-1.5.5.tar.{gz,bz2}		(preformatted docs)
+  RPMS/$arch/git-*-1.5.5-1.$arch.rpm	(RPM)
 
-Best regards
-Uwe
+We kept this cycle just slightly over two months, as the previous 1.5.4
+cycle was painfully tooooo long.
 
--- 
-Uwe Kleine-König, Software Engineer
-Digi International GmbH Branch Breisach, Küferstrasse 8, 79206 Breisach, Germany
-Tax: 315/5781/0242 / VAT: DE153662976 / Reg. Amtsgericht Dortmund HRB 13962
+
+GIT v1.5.5 Release Notes
+========================
+
+Updates since v1.5.4
+--------------------
+
+(subsystems)
+
+ * Comes with git-gui 0.10.1
+
+(portability)
+
+ * We shouldn't ask for BSD group ownership semantics by setting g+s bit
+   on directories on older BSD systems that refuses chmod() by non root
+   users.  BSD semantics is the default there anyway.
+
+ * Bunch of portability improvement patches coming from an effort to port
+   to Solaris has been applied.
+
+(performance)
+
+ * On platforms with suboptimal qsort(3) implementation, there
+   is an option to use more reasonable substitute we ship with
+   our software.
+
+ * New configuration variable "pack.packsizelimit" can be used
+   in place of command line option --max-pack-size.
+
+ * "git fetch" over the native git protocol used to make a
+   connection to find out the set of current remote refs and
+   another to actually download the pack data.  We now use only
+   one connection for these tasks.
+
+ * "git commit" does not run lstat(2) more than necessary
+   anymore.
+
+(usability, bells and whistles)
+
+ * Bash completion script (in contrib) are aware of more commands and
+   options.
+
+ * You can be warned when core.autocrlf conversion is applied in
+   such a way that results in an irreversible conversion.
+
+ * A catch-all "color.ui" configuration variable can be used to
+   enable coloring of all color-capable commands, instead of
+   individual ones such as "color.status" and "color.branch".
+
+ * The commands refused to take absolute pathnames where they
+   require pathnames relative to the work tree or the current
+   subdirectory.  They now can take absolute pathnames in such a
+   case as long as the pathnames do not refer outside of the
+   work tree.  E.g. "git add $(pwd)/foo" now works.
+
+ * Error messages used to be sent to stderr, only to get hidden,
+   when $PAGER was in use.  They now are sent to stdout along
+   with the command output to be shown in the $PAGER.
+
+ * A pattern "foo/" in .gitignore file now matches a directory
+   "foo".  Pattern "foo" also matches as before.
+
+ * bash completion's prompt helper function can talk about
+   operation in-progress (e.g. merge, rebase, etc.).
+
+ * Configuration variables "url.<usethis>.insteadof = <otherurl>" can be
+   used to tell "git-fetch" and "git-push" to use different URL than what
+   is given from the command line.
+
+ * "git add -i" behaves better even before you make an initial commit.
+
+ * "git am" refused to run from a subdirectory without a good reason.
+
+ * After "git apply --whitespace=fix" fixes whitespace errors in a patch,
+   a line before the fix can appear as a context or preimage line in a
+   later patch, causing the patch not to apply.  The command now knows to
+   see through whitespace fixes done to context lines to successfully
+   apply such a patch series.
+
+ * "git branch" (and "git checkout -b") to branch from a local branch can
+   optionally set "branch.<name>.merge" to mark the new branch to build on
+   the other local branch, when "branch.autosetupmerge" is set to
+   "always", or when passing the command line option "--track" (this option
+   was ignored when branching from local branches).  By default, this does
+   not happen when branching from a local branch.
+
+ * "git checkout" to switch to a branch that has "branch.<name>.merge" set
+   (i.e. marked to build on another branch) reports how much the branch
+   and the other branch diverged.
+
+ * When "git checkout" has to update a lot of paths, it used to be silent
+   for 4 seconds before it showed any progress report.  It is now a bit
+   more impatient and starts showing progress report early.
+
+ * "git commit" learned a new hook "prepare-commit-msg" that can
+   inspect what is going to be committed and prepare the commit
+   log message template to be edited.
+
+ * "git cvsimport" can now take more than one -M options.
+
+ * "git describe" learned to limit the tags to be used for
+   naming with --match option.
+
+ * "git describe --contains" now barfs when the named commit
+   cannot be described.
+
+ * "git describe --exact-match" describes only commits that are tagged.
+
+ * "git describe --long" describes a tagged commit as $tag-0-$sha1,
+   instead of just showing the exact tagname.
+
+ * "git describe" warns when using a tag whose name and path contradict
+   with each other.
+
+ * "git diff" learned "--relative" option to limit and output paths
+   relative to the current directory when working in a subdirectory.
+
+ * "git diff" learned "--dirstat" option to show birds-eye-summary of
+   changes more concisely than "--diffstat".
+
+ * "git format-patch" learned --cover-letter option to generate a cover
+   letter template.
+
+ * "git gc" learned --quiet option.
+
+ * "git gc" now automatically prunes unreachable objects that are two
+   weeks old or older.
+
+ * "git gc --auto" can be disabled more easily by just setting gc.auto
+   to zero.  It also tolerates more packfiles by default.
+
+ * "git grep" now knows "--name-only" is a synonym for the "-l" option.
+
+ * "git help <alias>" now reports "'git <alias>' is alias to <what>",
+   instead of saying "No manual entry for git-<alias>".
+
+ * "git help" can use different backends to show manual pages and this can
+   be configured using "man.viewer" configuration.
+
+ * "gitk" does not restore window position from $HOME/.gitk anymore (it
+   still restores the size).
+
+ * "git log --grep=<what>" learned "--fixed-strings" option to look for
+   <what> without treating it as a regular expression.
+
+ * "git gui" learned an auto-spell checking.
+
+ * "git push <somewhere> HEAD" and "git push <somewhere> +HEAD" works as
+   expected; they push the current branch (and only the current branch).
+   In addition, HEAD can be written as the value of "remote.<there>.push"
+   configuration variable.
+
+ * When the configuration variable "pack.threads" is set to 0, "git
+   repack" auto detects the number of CPUs and uses that many threads.
+
+ * "git send-email" learned to prompt for passwords
+   interactively.
+
+ * "git send-email" learned an easier way to suppress CC
+   recipients.
+
+ * "git stash" learned "pop" command, that applies the latest stash and
+   removes it from the stash, and "drop" command to discard the named
+   stash entry.
+
+ * "git submodule" learned a new subcommand "summary" to show the
+   symmetric difference between the HEAD version and the work tree version
+   of the submodule commits.
+
+ * Various "git cvsimport", "git cvsexportcommit", "git cvsserver",
+   "git svn" and "git p4" improvements.
+
+(internal)
+
+ * Duplicated code between git-help and git-instaweb that
+   launches user's preferred browser has been refactored.
+
+ * It is now easier to write test scripts that records known
+   breakages.
+
+ * "git checkout" is rewritten in C.
+
+ * "git remote" is rewritten in C.
+
+ * Two conflict hunks that are separated by a very short span of common
+   lines are now coalesced into one larger hunk, to make the result easier
+   to read.
+
+ * Run-command API's use of file descriptors is documented clearer and
+   is more consistent now.
+
+ * diff output can be sent to FILE * that is different from stdout.  This
+   will help reimplementing more things in C.
+
+Fixes since v1.5.4
+------------------
+
+All of the fixes in v1.5.4 maintenance series are included in
+this release, unless otherwise noted.
+
+ * "git-http-push" did not allow deletion of remote ref with the usual
+   "push <remote> :<branch>" syntax.
+
+ * "git-rebase --abort" did not go back to the right location if
+   "git-reset" was run during the "git-rebase" session.
+
+ * "git imap-send" without setting imap.host did not error out but
+   segfaulted.
+
