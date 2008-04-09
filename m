@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754501AbYDIR6f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755522AbYDIR7u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754501AbYDIR6f (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Apr 2008 13:58:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752372AbYDIR61
+	id S1755522AbYDIR7u (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Apr 2008 13:59:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752372AbYDIR7m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Apr 2008 13:58:27 -0400
-Received: from wr-out-0506.google.com ([64.233.184.228]:29488 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751980AbYDIR60 (ORCPT
+	Wed, 9 Apr 2008 13:59:42 -0400
+Received: from el-out-1112.google.com ([209.85.162.179]:25758 "EHLO
+	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751980AbYDIR7m (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Apr 2008 13:58:26 -0400
+	Wed, 9 Apr 2008 13:59:42 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=QZQg4r53//BYrU15MqsYJccrBb5+z82YaoBOm3o+xH93d7H95v2OdtaqQtIa+MBXw6bsStO7qym6O5Nzn69Xbmp5GBEwuFTTXCnerj5qvJJzNB4rvguiJ3hm/mWv5EGiZnwflF/p20G++gIvdgVcHMfjBKuf9S/2iecCHJGCkjc=
-Message-ID: <86802c440804091058g3357adf9x63249ff20a00eb0c@mail.gmail.com>
-Date: Wed, 9 Apr 2008 10:58:21 -0700
+        b=MhnRwfznkKkpya1rOLuhkFzO8tiqe/C0uLkz2xcyY8yFAvKcW5KXWw489Fni80drQWtRT1RUKNWQ/Jmf4aZFLHCui9X8TMjAlUDbYNGYAlzVazMTlbOAbcmdOzw0/wx4PWgxKQwRbNJeu1c5geX1Q/dBI6+JB5e8K0idnyWff8M=
+Message-ID: <86802c440804091059l54592e07n4590b3ecebf5cb28@mail.gmail.com>
+Date: Wed, 9 Apr 2008 10:59:40 -0700
 From: "Yinghai Lu" <yhlu.kernel@gmail.com>
 To: "Alexander van Heukelum" <heukelum@fastmail.fm>
 Subject: Re: [PATCH 1/2] boot: increase stack size for kernel boot loader decompressor
@@ -104,25 +104,6 @@ On Wed, Apr 9, 2008 at 8:08 AM, Alexander van Heukelum
 >  already available (in the embedded gzip-file). The image is moved
 >  by this amount (rounded up to a page). So that part is fine.
 
-yes, that don't need to changed.
-
-...
->  > do we need to move pgtable before _end?
->
->  I just tried, but it fails: The pgtable is built and enabled in the
->  32-bit
->  setup code, but the kernel image is moved in the 64-bit part...
->  overwriting
->  the pagetable with zeroes ;).
->
->  I can't think of an obvious safe place to put the pagetables, though.
->  One
->  option is to move the image in the 32-bit code and tell the 64-bit part
->  somehow not to do it again... by calling into the 64-bit code at a
->  different
->  place, for example.
-
-current pgtable table is safe, before arch/x86/kernel/head_64.S using
-new pgtable.
+just wonder if Ingo have very big vmlinux, that +32K + 18 formula still works.
 
 YH
