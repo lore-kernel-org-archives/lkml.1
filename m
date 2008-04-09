@@ -1,182 +1,180 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759198AbYDIQ0k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758467AbYDIQ04@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759198AbYDIQ0k (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Apr 2008 12:26:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758211AbYDIQYM
+	id S1758467AbYDIQ04 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Apr 2008 12:26:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758224AbYDIQYN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Apr 2008 12:24:12 -0400
-Received: from smtp.polymtl.ca ([132.207.4.11]:59376 "EHLO smtp.polymtl.ca"
+	Wed, 9 Apr 2008 12:24:13 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:59377 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758206AbYDIQYK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1758207AbYDIQYK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 9 Apr 2008 12:24:10 -0400
-Message-Id: <20080409152050.389300996@polymtl.ca>
+Message-Id: <20080409152051.117322728@polymtl.ca>
 References: <20080409150829.855195878@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Wed, 09 Apr 2008 11:08:40 -0400
+Date: Wed, 09 Apr 2008 11:08:42 -0400
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
        linux-kernel@vger.kernel.org
 Cc: Andi Kleen <andi@firstfloor.org>, Rusty Russell <rusty@rustcorp.com.au>,
-       Jason Baron <jbaron@redhat.com>,
        Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Andi Kleen <ak@muc.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Chuck Ebbert <cebbert@redhat.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
        Adrian Bunk <bunk@stusta.de>, Alexey Dobriyan <adobriyan@gmail.com>,
-       Christoph Hellwig <hch@infradead.org>, akpm@osdl.org
-Subject: [patch 11/17] Implement immediate update via stop_machine_run
-Content-Disposition: inline; filename=implement-immediate-update-via-stop-machine-run.patch
-X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Wed,  9 Apr 2008 16:20:10 +0000
+       akpm@osdl.org
+Subject: [patch 13/17] Immediate Values - x86 Optimization
+Content-Disposition: inline; filename=immediate-values-x86-optimization.patch
+X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Wed,  9 Apr 2008 16:20:12 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
--Updating immediate values, cannot rely on smp_call_function() b/c synchronizing
- cpus using IPIs leads to deadlocks. Process A held a read lock on 
- tasklist_lock, then process B called apply_imv_update(). Process A received the 
- IPI and begins executing ipi_busy_loop(). Then process C takes a write lock 
- irq on the task list lock, before receiving the IPI. Thus, process A holds up 
- process C, and C can't get an IPI b/c interrupts are disabled. Solve this 
- problem by using a new 'ALL_CPUS' parameter to stop_machine_run(). Which 
- runs a function on all cpus after they are busy looping and have disabled 
- irqs. Since this is done in a new process context, we don't have to worry 
- about interrupted spin_locks. Also, less lines of code. Has survived 24 hours+
- of testing...
+x86 optimization of the immediate values which uses a movl with code patching
+to set/unset the value used to populate the register used as variable source.
 
-Signed-off-by: Jason Baron <jbaron@redhat.com>
+Changelog:
+- Use text_poke_early with cr0 WP save/restore to patch the bypass. We are doing
+  non atomic writes to a code region only touched by us (nobody can execute it
+  since we are protected by the imv_mutex).
+- Put imv_set and _imv_set in the architecture independent header.
+- Use $0 instead of %2 with (0) operand.
+- Add x86_64 support, ready for i386+x86_64 -> x86 merge.
+- Use asm-x86/asm.h.
+
+Ok, so the most flexible solution that I see, that should fit for both
+x86 and x86_64 would be :
+1 byte  :       "=q" : "a", "b", "c", or "d" register for the i386.  For
+                       x86-64 it is equivalent to "r" class (for 8-bit
+                       instructions that do not use upper halves).
+2, 4, 8 bytes : "=r" : A register operand is allowed provided that it is in a
+                       general register.
+
+- "Redux" immediate values : no need to put a breakpoint, therefore, no
+  need to know where the instruction starts. It's therefore OK to have a
+  REX prefix.
+
+- Bugfix : 8 bytes 64 bits immediate value was declared as "4 bytes" in the
+  immediate structure.
+- Change the immediate.c update code to support variable length opcodes.
+- Vastly simplified, using a busy looping IPI with interrupts disabled.
+  Does not protect against NMI nor MCE.
+- Pack the __imv section. Use smallest types required for size (char).
+- Use imv_* instead of immediate_*.
+
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+CC: Andi Kleen <ak@muc.de>
+CC: "H. Peter Anvin" <hpa@zytor.com>
+CC: Chuck Ebbert <cebbert@redhat.com>
+CC: Christoph Hellwig <hch@infradead.org>
+CC: Jeremy Fitzhardinge <jeremy@goop.org>
+CC: Thomas Gleixner <tglx@linutronix.de>
+CC: Ingo Molnar <mingo@redhat.com>
 CC: Rusty Russell <rusty@rustcorp.com.au>
 CC: Adrian Bunk <bunk@stusta.de>
-CC: Andi Kleen <andi@firstfloor.org>
 CC: Alexey Dobriyan <adobriyan@gmail.com>
-CC: Christoph Hellwig <hch@infradead.org>
-CC: mingo@elte.hu
 CC: akpm@osdl.org
 ---
+ arch/x86/Kconfig            |    1 
+ include/asm-x86/immediate.h |   77 ++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 78 insertions(+)
 
- kernel/immediate.c |   80 +++++++++++++----------------------------------------
- 1 file changed, 21 insertions(+), 59 deletions(-)
-
-
-Index: linux-2.6-lttng/kernel/immediate.c
+Index: linux-2.6-lttng/include/asm-x86/immediate.h
 ===================================================================
---- linux-2.6-lttng.orig/kernel/immediate.c	2008-03-03 10:22:06.000000000 -0500
-+++ linux-2.6-lttng/kernel/immediate.c	2008-03-03 10:42:38.000000000 -0500
-@@ -20,6 +20,7 @@
- #include <linux/immediate.h>
- #include <linux/memory.h>
- #include <linux/cpu.h>
-+#include <linux/stop_machine.h>
- 
- #include <asm/cacheflush.h>
- 
-@@ -27,48 +28,33 @@
-  * Kernel ready to execute the SMP update that may depend on trap and ipi.
-  */
- static int imv_early_boot_complete;
-+static int wrote_text;
- 
- extern const struct __imv __start___imv[];
- extern const struct __imv __stop___imv[];
- 
-+static int stop_machine_imv_update(void *imv_ptr)
-+{
-+	struct __imv *imv = imv_ptr;
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6-lttng/include/asm-x86/immediate.h	2008-03-06 08:55:22.000000000 -0500
+@@ -0,0 +1,77 @@
++#ifndef _ASM_X86_IMMEDIATE_H
++#define _ASM_X86_IMMEDIATE_H
 +
-+	if (!wrote_text) {
-+		text_poke((void *)imv->imv, (void *)imv->var, imv->size);
-+		wrote_text = 1;
-+		smp_wmb(); /* make sure other cpus see that this has run */
-+	} else
-+		sync_core();
++/*
++ * Immediate values. x86 architecture optimizations.
++ *
++ * (C) Copyright 2006 Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
++ *
++ * This file is released under the GPLv2.
++ * See the file COPYING for more details.
++ */
 +
-+	flush_icache_range(imv->imv, imv->imv + imv->size);
++#include <asm/asm.h>
 +
-+	return 0;
-+}
++/**
++ * imv_read - read immediate variable
++ * @name: immediate value name
++ *
++ * Reads the value of @name.
++ * Optimized version of the immediate.
++ * Do not use in __init and __exit functions. Use _imv_read() instead.
++ * If size is bigger than the architecture long size, fall back on a memory
++ * read.
++ *
++ * Make sure to populate the initial static 64 bits opcode with a value
++ * what will generate an instruction with 8 bytes immediate value (not the REX.W
++ * prefixed one that loads a sign extended 32 bits immediate value in a r64
++ * register).
++ */
++#define imv_read(name)							\
++	({								\
++		__typeof__(name##__imv) value;				\
++		BUILD_BUG_ON(sizeof(value) > 8);			\
++		switch (sizeof(value)) {				\
++		case 1:							\
++			asm(".section __imv,\"a\",@progbits\n\t"	\
++				_ASM_PTR "%c1, (3f)-%c2\n\t"		\
++				".byte %c2\n\t"				\
++				".previous\n\t"				\
++				"mov $0,%0\n\t"				\
++				"3:\n\t"				\
++				: "=q" (value)				\
++				: "i" (&name##__imv),			\
++				  "i" (sizeof(value)));			\
++			break;						\
++		case 2:							\
++		case 4:							\
++			asm(".section __imv,\"a\",@progbits\n\t"	\
++				_ASM_PTR "%c1, (3f)-%c2\n\t"		\
++				".byte %c2\n\t"				\
++				".previous\n\t"				\
++				"mov $0,%0\n\t"				\
++				"3:\n\t"				\
++				: "=r" (value)				\
++				: "i" (&name##__imv),			\
++				  "i" (sizeof(value)));			\
++			break;						\
++		case 8:							\
++			if (sizeof(long) < 8) {				\
++				value = name##__imv;			\
++				break;					\
++			}						\
++			asm(".section __imv,\"a\",@progbits\n\t"	\
++				_ASM_PTR "%c1, (3f)-%c2\n\t"		\
++				".byte %c2\n\t"				\
++				".previous\n\t"				\
++				"mov $0xFEFEFEFE01010101,%0\n\t" 	\
++				"3:\n\t"				\
++				: "=r" (value)				\
++				: "i" (&name##__imv),			\
++				  "i" (sizeof(value)));			\
++			break;						\
++		};							\
++		value;							\
++	})
 +
- /*
-  * imv_mutex nests inside module_mutex. imv_mutex protects builtin
-  * immediates and module immediates.
-  */
- static DEFINE_MUTEX(imv_mutex);
++#endif /* _ASM_X86_IMMEDIATE_H */
+Index: linux-2.6-lttng/arch/x86/Kconfig
+===================================================================
+--- linux-2.6-lttng.orig/arch/x86/Kconfig	2008-03-06 08:45:31.000000000 -0500
++++ linux-2.6-lttng/arch/x86/Kconfig	2008-03-06 08:55:47.000000000 -0500
+@@ -23,6 +23,7 @@ config X86
+ 	select HAVE_KPROBES
+ 	select HAVE_KRETPROBES
+ 	select HAVE_KVM if ((X86_32 && !X86_VOYAGER && !X86_VISWS && !X86_NUMAQ) || X86_64)
++	select HAVE_IMMEDIATE
  
--static atomic_t wait_sync;
--
--struct ipi_loop_data {
--	long value;
--	const struct __imv *imv;
--} loop_data;
--
--static void ipi_busy_loop(void *arg)
--{
--	unsigned long flags;
--
--	local_irq_save(flags);
--	atomic_dec(&wait_sync);
--	do {
--		/* Make sure the wait_sync gets re-read */
--		smp_mb();
--	} while (atomic_read(&wait_sync) > loop_data.value);
--	atomic_dec(&wait_sync);
--	do {
--		/* Make sure the wait_sync gets re-read */
--		smp_mb();
--	} while (atomic_read(&wait_sync) > 0);
--	/*
--	 * Issuing a synchronizing instruction must be done on each CPU before
--	 * reenabling interrupts after modifying an instruction. Required by
--	 * Intel's errata.
--	 */
--	sync_core();
--	flush_icache_range(loop_data.imv->imv,
--		loop_data.imv->imv + loop_data.imv->size);
--	local_irq_restore(flags);
--}
  
- /**
-  * apply_imv_update - update one immediate value
-@@ -82,9 +68,6 @@ static void ipi_busy_loop(void *arg)
-  */
- static int apply_imv_update(const struct __imv *imv)
- {
--	unsigned long flags;
--	long online_cpus;
--
- 	/*
- 	 * If the variable and the instruction have the same value, there is
- 	 * nothing to do.
-@@ -111,30 +94,9 @@ static int apply_imv_update(const struct
- 
- 	if (imv_early_boot_complete) {
- 		kernel_text_lock();
--		get_online_cpus();
--		online_cpus = num_online_cpus();
--		atomic_set(&wait_sync, 2 * online_cpus);
--		loop_data.value = online_cpus;
--		loop_data.imv = imv;
--		smp_call_function(ipi_busy_loop, NULL, 1, 0);
--		local_irq_save(flags);
--		atomic_dec(&wait_sync);
--		do {
--			/* Make sure the wait_sync gets re-read */
--			smp_mb();
--		} while (atomic_read(&wait_sync) > online_cpus);
--		text_poke((void *)imv->imv, (void *)imv->var,
--				imv->size);
--		/*
--		 * Make sure the modified instruction is seen by all CPUs before
--		 * we continue (visible to other CPUs and local interrupts).
--		 */
--		wmb();
--		atomic_dec(&wait_sync);
--		flush_icache_range(imv->imv,
--				imv->imv + imv->size);
--		local_irq_restore(flags);
--		put_online_cpus();
-+		wrote_text = 0;
-+		stop_machine_run(stop_machine_imv_update, (void *)imv,
-+					ALL_CPUS);
- 		kernel_text_unlock();
- 	} else
- 		text_poke_early((void *)imv->imv, (void *)imv->var,
+ config GENERIC_LOCKBREAK
 
 -- 
 Mathieu Desnoyers
