@@ -1,86 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754643AbYDILJx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754692AbYDILRF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754643AbYDILJx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Apr 2008 07:09:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753334AbYDILJp
+	id S1754692AbYDILRF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Apr 2008 07:17:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752268AbYDILQy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Apr 2008 07:09:45 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:36423 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752026AbYDILJo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Apr 2008 07:09:44 -0400
-Date: Wed, 9 Apr 2008 21:09:36 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: "Jacek Luczak" <difrost.kernel@gmail.com>
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: linux-next: Tree for April 9
-Message-Id: <20080409210936.ec8ea986.sfr@canb.auug.org.au>
-In-Reply-To: <d711229d0804090400p1c92a158j381b86e207a6f38a@mail.gmail.com>
-References: <20080409185309.b94c9d15.sfr@canb.auug.org.au>
-	<d711229d0804090400p1c92a158j381b86e207a6f38a@mail.gmail.com>
-X-Mailer: Sylpheed 2.5.0beta1 (GTK+ 2.12.9; i486-pc-linux-gnu)
+	Wed, 9 Apr 2008 07:16:54 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:36483 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752235AbYDILQw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Apr 2008 07:16:52 -0400
+Subject: Re: [PATCH 2/4] set_restore_sigmask TIF_SIGPENDING
+From: David Woodhouse <dwmw2@infradead.org>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Roland McGrath <roland@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>, linux-s390@vger.kernel.org,
+       tony.luck@intel.com, linux-ia64@vger.kernel.org,
+       linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20080408113519.GA227@tv-sign.ru>
+References: <20080329001230.D013726FA1D@magilla.localdomain>
+	 <20080329001341.7F93826FA1D@magilla.localdomain>
+	 <alpine.LFD.1.00.0803281746480.14670@woody.linux-foundation.org>
+	 <20080408113519.GA227@tv-sign.ru>
+Content-Type: text/plain
+Date: Wed, 09 Apr 2008 12:16:27 +0100
+Message-Id: <1207739787.27048.57.camel@shinybook.infradead.org>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Wed__9_Apr_2008_21_09_36_+1000_0bgJ191cKsp5fbTF"
+X-Mailer: Evolution 2.22.0 (2.22.0-4.fc9) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Wed__9_Apr_2008_21_09_36_+1000_0bgJ191cKsp5fbTF
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Tue, 2008-04-08 at 15:35 +0400, Oleg Nesterov wrote:
+> Why do we need any flag? It looks a bit ugly. Isn't it better to introduce
+> the new magic ERESTART_XXX which means ERESTARTNOHAND + restore-sigmask ?
+> 
+> We only need this flag as an implicit parameter to the arch dependent do_signal()
+> which we can't call directly, and thus it must imply TIF_SIGPENDING, and it
+> is not valid after do_signal() (should be cleared). This all looks like
+> ERESTART_ magic, why should we add something else ?
+> 
+> See also http://marc.info/?l=linux-kernel&m=113734458516136
+> 
+> Of course, probably it is too late to change the implementation even if
+> I am right, the question is: what I am missed?
 
-Hi Jacek,
+Q: When ppoll() is interrupted by a signal, what signal mask should be
+active when the signal handler is active?
 
-On Wed, 9 Apr 2008 13:00:37 +0200 "Jacek Luczak" <difrost.kernel@gmail.com>=
- wrote:
->
-> this tree fails to compile on my box with message:
->   CC      init/version.o
-> arch/x86/kernel/traps_32.c: In function 'do_general_protection':
-> arch/x86/kernel/traps_32.c:647: error: 'VM_MASK' undeclared (first use in
-> this function)
-> arch/x86/kernel/traps_32.c:647: error: (Each undeclared identifier is
-> reported only once
-> arch/x86/kernel/traps_32.c:647: error: for each function it appears in.)
-> arch/x86/kernel/traps_32.c: In function 'do_debug':
-> arch/x86/kernel/traps_32.c:926: error: 'VM_MASK' undeclared (first use in
-> this function)
-> arch/x86/kernel/traps_32.c: In function 'do_simd_coprocessor_error':
-> arch/x86/kernel/traps_32.c:1098: error: 'VM_MASK' undeclared (first use in
-> this function)
->=20
-> GCC version:
-> $ gcc -v
-> Reading specs from /usr/lib/gcc/i686-slackware-linux/4.2.2/specs
-> Target: i686-slackware-linux
-> Configured with: ../gcc-4.2.2/configure --prefix=3D/usr --enable-shared
-> --enable-threads=3Dposix --enable-__cxa_atexit --disable-checking
-> --with-gnu-ld --enable-languages=3Dc,c++ --enable-clocale=3Dgnu --verbose
-> --disable-multilib --with-tune=3Dprescott --disable-libstdcxx-pch
-> --disable-bootstrap --target=3Di686-slackware-linux
-> --host=3Di686-slackware-linux
-> Thread model: posix
-> gcc version 4.2.2
+I believe that the signal handler should run with the temporary sigmask
+which was set by ppoll(), and the original sigmask should be restored
+only when the handler completes -- and that's what we achieve with
+TIF_RESTORE_SIGMASK.
 
-Thanks for the report, can you please send us your .config, please?
+So a signal which was originally enabled but is temporarily disabled by
+the mask passed to ppoll() will not be able to interrupt the handler for
+the signal which interrupted ppoll().
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+Your version will restore the original signal mask _before_ invoking the
+signal handler which interrupted ppoll() -- which I believe is not the
+intended semantics. And IIRC that was the whole point in implementing
+ppoll() in kernel rather than trying to emulate it in userspace in the
+first place.
 
---Signature=_Wed__9_Apr_2008_21_09_36_+1000_0bgJ191cKsp5fbTF
-Content-Type: application/pgp-signature
+-- 
+dwmw2
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFH/KP2TgG2atn1QN8RAoA8AKCNaTNEyD/sGCQYd+i5hFWaSw52HwCffZcl
-e6aS3Bce3DTwYTAs+on4o4c=
-=SEGZ
------END PGP SIGNATURE-----
-
---Signature=_Wed__9_Apr_2008_21_09_36_+1000_0bgJ191cKsp5fbTF--
