@@ -1,51 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755948AbYDII7n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755135AbYDIJEf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755948AbYDII7n (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Apr 2008 04:59:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753330AbYDII7g
+	id S1755135AbYDIJEf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Apr 2008 05:04:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752465AbYDIJE0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Apr 2008 04:59:36 -0400
-Received: from nn7.de ([85.214.94.156]:49551 "EHLO nn7.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752974AbYDII7f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Apr 2008 04:59:35 -0400
-Subject: Re: [Bug #10093] 2.6.25-current-git blocks for 10-15 secs on boot
-	unless CONFIG_CPU_IDLE=n - Apple
-From: Soeren Sonnenburg <kernel@nn7.de>
-To: "Rafael J\. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "Pallipadi\, Venkatesh" <venkatesh.pallipadi@intel.com>
-In-Reply-To: <SvnMeM-aZi.A.e3F.yBA_HB@albercik>
-References: <SvnMeM-aZi.A.e3F.yBA_HB@albercik>
-Content-Type: text/plain
+	Wed, 9 Apr 2008 05:04:26 -0400
+Received: from wr-out-0506.google.com ([64.233.184.231]:57249 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752336AbYDIJE0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Apr 2008 05:04:26 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=uRH9Rcj14i8PiaPoQGGzcGE3xuBabM6IfP74Z0zsP3hANr6degD6OKVIOrzM3c3JqDEJ3RS0n0Xjbvp0DZsqeBWrcpBqkJXZUJErfTsLYFXyN6ERwdZd6C+/F/DDuIdmhp3y20iA24cMKkXojVOcoTQYX22fnYIA3/PFwDctl2U=
+Message-ID: <ac8af0be0804090204t79beaca2qe077a28fc4a515ad@mail.gmail.com>
+Date: Wed, 9 Apr 2008 17:04:24 +0800
+From: "Zhao Forrest" <forrest.zhao@gmail.com>
+To: "Andi Kleen" <andi@firstfloor.org>
+Subject: Re: Does Linux have plan to support memory hole remapping?
+Cc: discuss@x86-64.org, linux-kernel@vger.kernel.org, yhlu.kernel@gmail.com,
+       mingo@elte.hu, ak@suse.de
+In-Reply-To: <87iqyro3rc.fsf@basil.nowhere.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Date: Wed, 09 Apr 2008 10:59:30 +0200
-Message-Id: <1207731570.9487.49.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.0 
+Content-Disposition: inline
+References: <ac8af0be0804090054w47f48ddel387d80a0331d16e1@mail.gmail.com>
+	 <87iqyro3rc.fsf@basil.nowhere.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-04-09 at 01:02 +0200, Rafael J. Wysocki wrote:
-> This message has been generated automatically as a part of a report
-> of recent regressions.
-> 
-> The following bug entry is on the current list of known regressions
-> from 2.6.24.  Please verify if it still should be listed.
-> 
-> 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10093
-> Subject		: 2.6.25-current-git blocks for 10-15 secs on boot unless CONFIG_CPU_IDLE=n - Apple
-> Submitter	: Soeren Sonnenburg <kernel@nn7.de>
-> Date		: 2008-02-23 18:55 (46 days old)
-> References	: http://lkml.org/lkml/2008/2/23/263
-> 		  http://marc.info/?l=linux-acpi&m=120387537018467&w=4
-> 		  http://lkml.org/lkml/2008/4/5/34
-> Handled-By	: Pallipadi, Venkatesh <venkatesh.pallipadi@intel.com>
-> Patch		: http://marc.info/?l=linux-kernel&m=120674502201007&w=4
+On 4/9/08, Andi Kleen <andi@firstfloor.org> wrote:
+> "Zhao Forrest" <forrest.zhao@gmail.com> writes:
+> >
+> > As we can see from above information that the physical memory in system
+> > is 32768MB(32GB). However OS is only using about
+> > (32768-512)MB(MemTotal:     33010240 kB). Does this mean that this
+> > linux kernel can't use the physical memory remapped
+> > from (4G-512M, 4G) to (32G, 32G+512M)?
+>
+> The linux kernel can only use the memory passed to it by the BIOS.
+> Sometimes they need special BIOS setup options to enable remapping. If
+> there are no such options and you can't upgrade it you're out of luck
 
-It is much better (fixed?) with the patches from Venkatesh, though I
-still have to try his latest...
+Yes, I have enabled mem hole remapping in BIOS SETUP.
+After looking into dmesg, I found that all 32GB physical memory has
+been allocated to 8 nodes, but why MemTotal shows a less amount of
+memory than 32GB? Interesting......
+Does MemTotal means the amount of physical memory allocated to all
+nodes? Or it has different meanings?
 
-Soeren
+Thanks,
+Forrest
