@@ -1,52 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757504AbYDITjE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756503AbYDIT2v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757504AbYDITjE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Apr 2008 15:39:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753266AbYDITiu
+	id S1756503AbYDIT2v (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Apr 2008 15:28:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753846AbYDIT2l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Apr 2008 15:38:50 -0400
-Received: from smtp-out03.alice-dsl.net ([88.44.63.5]:15597 "EHLO
-	smtp-out03.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752048AbYDITit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Apr 2008 15:38:49 -0400
-To: Ingo Molnar <mingo@elte.hu>
-Cc: "Kok, Auke" <auke-jan.h.kok@intel.com>, Jeff Garzik <jeff@garzik.org>,
-       e1000-list <e1000-devel@lists.sourceforge.net>,
-       NetDev <netdev@vger.kernel.org>,
-       "Allan, Bruce W" <bruce.w.allan@intel.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "David S. Miller" <davem@davemloft.net>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Jesse Brandeburg <jesse.brandeburg@intel.com>,
-       "Ronciak, John" <john.ronciak@intel.com>,
-       Arjan van de Ven <arjan@linux.intel.com>, Greg KH <greg@kroah.com>,
-       linux-pci maillist <linux-pci@atrey.karlin.mff.cuni.cz>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [ANNOUNCE] e1000 to e1000e migration of PCI Express devices
-From: Andi Kleen <andi@firstfloor.org>
-References: <47F69965.7030303@intel.com> <20080408083606.GA20863@elte.hu>
-	<20080409190836.GA9276@elte.hu>
-Date: Wed, 09 Apr 2008 21:38:22 +0200
-In-Reply-To: <20080409190836.GA9276@elte.hu> (Ingo Molnar's message of "Wed, 9 Apr 2008 21:08:36 +0200")
-Message-ID: <87ej9eom35.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
+	Wed, 9 Apr 2008 15:28:41 -0400
+Received: from gw.goop.org ([64.81.55.164]:52827 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753648AbYDIT2l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Apr 2008 15:28:41 -0400
+Message-ID: <47FD18C5.6040709@goop.org>
+Date: Wed, 09 Apr 2008 14:28:05 -0500
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080407)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 09 Apr 2008 19:31:38.0699 (UTC) FILETIME=[54A631B0:01C89A78]
+To: Rusty Russell <rusty@rustcorp.com.au>
+CC: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       Max Krasnyansky <maxk@qualcomm.com>,
+       virtualization@lists.linux-foundation.org
+Subject: Re: [PATCH RFC 1/5] vringfd syscall
+References: <200804052202.09157.rusty@rustcorp.com.au>
+In-Reply-To: <200804052202.09157.rusty@rustcorp.com.au>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar <mingo@elte.hu> writes:
->
-> except for the E1000=y && E1000E=m regression that bit me - that should 
-> be solved and everyone will be happy.
+Rusty Russell wrote:
+> +asmlinkage long sys_vringfd(void __user *addr,
+> +			    unsigned num_descs,
+> +			    u16 __user *last_used)
+> +{
+> +	int fd, err;
+> +	struct file *filp;
+> +	struct vring_info *vr;
+> +
+> +	/* Must be a power of two, and representable by u16 */
+> +	if (!num_descs || (num_descs & (num_descs-1)) || num_descs > 65536) {
+>   
 
-Regarding getting bitten: could you please add E1000E to the x86 defconfigs?
-That bit me an hour ago or so.
+65536 doesn't fit in u16.
 
-Thanks,
-
--Andi
+    J
