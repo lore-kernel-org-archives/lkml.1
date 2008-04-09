@@ -1,73 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754754AbYDIN6i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754008AbYDIOHL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754754AbYDIN6i (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Apr 2008 09:58:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752193AbYDIN61
+	id S1754008AbYDIOHL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Apr 2008 10:07:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752020AbYDIOG5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Apr 2008 09:58:27 -0400
-Received: from hellhawk.shadowen.org ([80.68.90.175]:2615 "EHLO
-	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752126AbYDIN61 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Apr 2008 09:58:27 -0400
-Date: Wed, 9 Apr 2008 14:58:40 +0100
-From: Andy Whitcroft <apw@shadowen.org>
-To: Jan Engelhardt <jengelh@computergmbh.de>
-Cc: Andi Kleen <andi@firstfloor.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [patch] checkpatch: relax spacing and line length
-Message-ID: <20080409135840.GO17915@shadowen.org>
-References: <alpine.LNX.1.10.0804060653020.30794@fbirervta.pbzchgretzou.qr> <20080408171257.GF17915@shadowen.org> <87ej9gp6ol.fsf@basil.nowhere.org> <20080409081943.GI17915@shadowen.org> <20080409083013.GJ17915@shadowen.org> <20080409084606.GD19010@one.firstfloor.org> <20080409131420.GL17915@shadowen.org> <alpine.LNX.1.10.0804091517260.4411@fbirervta.pbzchgretzou.qr>
+	Wed, 9 Apr 2008 10:06:57 -0400
+Received: from rtr.ca ([76.10.145.34]:1872 "EHLO mail.rtr.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752076AbYDIOG4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Apr 2008 10:06:56 -0400
+Message-ID: <47FCCD7F.8010309@rtr.ca>
+Date: Wed, 09 Apr 2008 10:06:55 -0400
+From: Mark Lord <lkml@rtr.ca>
+Organization: Real-Time Remedies Inc.
+User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LNX.1.10.0804091517260.4411@fbirervta.pbzchgretzou.qr>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Network <linux-net@vger.kernel.org>
+Subject: Regression: 2.6.25-rc8: FTP transfer errors
+References: <SvnMeM-aZi.A.S3E.b-_-HB@albercik> <47FC4C87.1020705@rtr.ca> <47FCC6B5.70804@rtr.ca>
+In-Reply-To: <47FCC6B5.70804@rtr.ca>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 09, 2008 at 03:18:47PM +0200, Jan Engelhardt wrote:
+Mark Lord wrote:
+> Mark Lord wrote:
+>> Today I've been using 2.6.25-rc8 with an old embedded build system here
+>> for my empegs.  One shell script calls out to /usr/bin/ftp to transfer
+>> an image to a remote system, and then read it back again and compare.
+>>
+>> The compare is failing, most (but not all) of the time,
+>> but only on 2.6.25-rc8, not on 2.6.24.  Verified by switching
+>> back and forth between kernel versions for a short spell.
+>>
+>> The ftp client is netkit-ftp 0.17-16 on Kubuntu feisty.
+>>
+>> Switching to ncftpput/ncftpget avoids it on 2.6.25,
+>> but I wonder where the problem is.
 > 
-> On Wednesday 2008-04-09 15:14, Andy Whitcroft wrote:
-> >On Wed, Apr 09, 2008 at 10:46:06AM +0200, Andi Kleen wrote:
-> >> > Oh, and if people felt that the concensus was for something to be
-> >> > implemented and that you are waiting for me to implement the change in
-> >> > checkpatch; please say so.
-> >> 
-> >> Well at least I think the printk change is a good one to implement and there 
-> >> wasn't much protest to it at least.
-> >
-> >Ok.  will put this on my todo list.
+> Now verified that the data loss occurs in the outbound direction.
+> The readback data is the same, regardless of which client s/w is used.
 > 
-> Instead of
-> 
-> 	if (foo) {
-> 		if (baz) {
-> 			++x;
-> printk("Oh so long line makes my coding style go wary... nonsensical sentence\n");
-> 		}
-> 	}
-> 
-> I'd keep the indent and allow elongated lines:
-> 
-> 	if (foo) {
-> 		if (baz) {
-> 			++x;
-> 			printk("Oh so long line makes my coding style go wary... nonsensical sentence\n");
-> 		}
-> 	}
-> 
-> Or perhaps you just pointed out we need a smarter grep program! :)
+> So something in 2.6.25 is incompatible with the ftp client binary, or libs,
+> that are installed here.  Or some other problem.
+..
 
+Recap, with more info:
 
-My preference would be for the latter.  Keep the line indent consistent
-and allow the line to overspill.  But that would depend on the concensus
-obviously.  The originally suggested layout was:
+The host system is running 2.6.25-rc8-git.  It uses netkit-ftp to
+send a file to the remote system.  Using strace shows that the
+entire file was read, and passed to write() for the outbound socket.
 
-			printk(
-"Oh ....",
-				a, b);
+The remote system is running linux-2.2.xx, and is reporting -EPIPE
+from net/socket.c::sock_recvmsg() before all of the data has been received,
+and thus ends up with a short file, missing data at the end.
 
--apw
+This exact sequence, with the exact same software,
+works fine when the host system is NOT running 2.6.25-*,
+(eg. 2.6.11 through 2.6.24 are fine).
+
+Something may be broken here.
