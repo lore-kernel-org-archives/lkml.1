@@ -1,59 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758152AbYDIUKy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754076AbYDIUNT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758152AbYDIUKy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Apr 2008 16:10:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754556AbYDIUKr
+	id S1754076AbYDIUNT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Apr 2008 16:13:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752733AbYDIUNF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Apr 2008 16:10:47 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:42793 "EHLO mx1.redhat.com"
+	Wed, 9 Apr 2008 16:13:05 -0400
+Received: from mga02.intel.com ([134.134.136.20]:18373 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752325AbYDIUKq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Apr 2008 16:10:46 -0400
-Message-ID: <47FD2244.7010105@redhat.com>
-Date: Wed, 09 Apr 2008 16:08:36 -0400
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	id S1752216AbYDIUND (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Apr 2008 16:13:03 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,630,1199692800"; 
+   d="scan'208";a="268114737"
+Message-ID: <47FD2325.2030705@intel.com>
+Date: Wed, 09 Apr 2008 13:12:21 -0700
+From: "Kok, Auke" <auke-jan.h.kok@intel.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071125)
 MIME-Version: 1.0
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, Andi Kleen <andi@firstfloor.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       anil.s.keshavamurthy@intel.com, davem@davemloft.net
-Subject: Re: [patch 02/17] Kprobes - do not use kprobes mutex in arch code
-References: <20080409150829.855195878@polymtl.ca> <20080409152047.133203801@polymtl.ca>
-In-Reply-To: <20080409152047.133203801@polymtl.ca>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-2022-JP
+To: Ingo Molnar <mingo@elte.hu>
+CC: Jeff Garzik <jeff@garzik.org>, Matthew Wilcox <matthew@wil.cx>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       NetDev <netdev@vger.kernel.org>,
+       e1000-list <e1000-devel@lists.sourceforge.net>,
+       linux-pci maillist <linux-pci@atrey.karlin.mff.cuni.cz>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "David S. Miller" <davem@davemloft.net>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Jesse Brandeburg <jesse.brandeburg@intel.com>,
+       "Ronciak, John" <john.ronciak@intel.com>,
+       "Allan, Bruce W" <bruce.w.allan@intel.com>, Greg KH <greg@kroah.com>,
+       Arjan van de Ven <arjan@linux.intel.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [patch] e1000=y && e1000e=m regression fix
+References: <20080408083606.GA20863@elte.hu> <47FB9ABB.9080403@intel.com> <20080408183921.GA20803@elte.hu> <20080408193245.GG11962@parisc-linux.org> <20080408195123.GA28148@elte.hu> <47FBCE00.2020309@garzik.org> <20080408200652.GC28148@elte.hu> <47FBD34A.6080508@garzik.org> <20080408203314.GA28952@elte.hu> <47FBDBE9.9040700@garzik.org> <20080409193850.GA11763@elte.hu>
+In-Reply-To: <20080409193850.GA11763@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mathieu Desnoyers wrote:
-> Remove the kprobes mutex from kprobes.h, since it does not belong there. Also
-> remove all use of this mutex in the architecture specific code, replacing it by
-> a proper mutex lock/unlock in the architecture agnostic code.
+Ingo Molnar wrote:
+> * Jeff Garzik <jeff@garzik.org> wrote:
 > 
-> Changelog :
-> - remove unnecessary kprobe_mutex around arch_remove_kprobe()
+>>> We've got three thousand Kconfig options - it is clearly not 
+>>> realistic for users to keep such details in mind to avoid pitfalls.
+>> Agreed -- hence the multiple announcements, including in this thread, 
+>> to put said details into mind.
 > 
-> Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-> Acked-by: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-> CC: anil.s.keshavamurthy@intel.com
-> CC: davem@davemloft.net
+> which part of "it took a kernel developer more than an hour to figure 
+> out why his laptop had a dead network interface" did you not understand? 
+> Whatever you did, it was not apparent to me. I dont follow every tiny 
+> detail of the e1000 driver family, nor do 99%+ [*] of our users.
+> 
+> find the fix below, against current -git.
+> 
+> the current upstream behavior is the worst possible one and is just a 
+> plain bug, and the solution is dead-simple.
 
-Acked-by: Masami Hiramatsu <mhiramat@redhat.com>
 
-Thanks,
+If this makes people happy then I am happy to ack this.
 
--- 
-Masami Hiramatsu
+Acked-by: Auke Kok <auke-jan.h.kok@intel.com>
 
-Software Engineer
-Hitachi Computer Products (America) Inc.
-Software Solutions Division
-
-e-mail: mhiramat@redhat.com
-
+> 
+> 	Ingo
+> 
+> [*] guesstimate
+> 
+> --------------->
+> Subject: e1000=y && e1000e=m regression fix
+> From: Ingo Molnar <mingo@elte.hu>
+> Date: Wed Apr 09 21:09:35 CEST 2008
+> 
+> fix a regression from v2.6.24: do not transfer the e1000e PCI IDs from 
+> e1000 to e1000e if e1000 is built-in and e1000e is a module.
+> 
+> Built-in drivers take precedence over modules in many ways - and in this 
+> case it's clear that the user intended the e1000 driver to be the 
+> primary one. "Silently change behavior and break existing configs" is 
+> never a good migration strategy. Most users will use distro kernels that 
+> are not affected by this problem at all - nor are they affected by this 
+> patch - but this problem can hit users and developers who build their 
+> kernels themselves and migrate from v2.6.24 to v2.6.25.
+> 
+> this fixes: http://bugzilla.kernel.org/show_bug.cgi?id=10427
+> 
+> Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> ---
+>  drivers/net/Kconfig |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> Index: linux-x86.q/drivers/net/Kconfig
+> ===================================================================
+> --- linux-x86.q.orig/drivers/net/Kconfig
+> +++ linux-x86.q/drivers/net/Kconfig
+> @@ -2022,7 +2022,7 @@ config E1000E
+>  	  will be called e1000e.
+>  
+>  config E1000E_ENABLED
+> -	def_bool E1000E != n
+> +	def_bool E1000E = y || ((E1000E != n) && (E1000 = E1000E))
+>  
+>  config IP1000
+>  	tristate "IP1000 Gigabit Ethernet support"
 
