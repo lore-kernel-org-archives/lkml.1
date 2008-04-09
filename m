@@ -1,60 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753396AbYDIGAk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753263AbYDIGWH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753396AbYDIGAk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Apr 2008 02:00:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752141AbYDIGAc
+	id S1753263AbYDIGWH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Apr 2008 02:22:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751932AbYDIGV4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Apr 2008 02:00:32 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:33135 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751465AbYDIGAc (ORCPT
+	Wed, 9 Apr 2008 02:21:56 -0400
+Received: from antispam.upcomillas.es ([130.206.70.245]:59751 "EHLO
+	antispam.upcomillas.es" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751728AbYDIGV4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Apr 2008 02:00:32 -0400
-Message-ID: <47FC5B7C.3020504@sgi.com>
-Date: Tue, 08 Apr 2008 23:00:28 -0700
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Andi Kleen <andi@firstfloor.org>, Cyrill Gorcunov <gorcunov@gmail.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>,
-       Yinghai Lu <yhlu.kernel@gmail.com>, Eric Dumazet <dada1@cosmosbay.com>
-Subject: Re: bootmem allocator
-References: <20080407185613.GD9211@cvg> <20080407190904.GH12292@elte.hu> <87iqytqwl7.fsf@basil.nowhere.org> <20080408080446.GA12308@elte.hu>
-In-Reply-To: <20080408080446.GA12308@elte.hu>
+	Wed, 9 Apr 2008 02:21:56 -0400
+Subject: Re: [Bug #10300] volume wheel does not work in 2.6.25-rc6
+From: Romano Giannetti <romanol@upcomillas.es>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <SvnMeM-aZi.A.QWF.0__-HB@albercik>
+References: <SvnMeM-aZi.A.QWF.0__-HB@albercik>
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Date: Wed, 09 Apr 2008 08:21:54 +0200
+Message-Id: <1207722114.16938.1.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Andi Kleen <andi@firstfloor.org> wrote:
+
+
+On Wed, 2008-04-09 at 01:02 +0200, Rafael J. Wysocki wrote:
+> The following bug entry is on the current list of known regressions
+> from 2.6.24.  Please verify if it still should be listed.
 > 
->>> hm, bootmem allocator is supposed to clear memory. We have a couple 
->>> of places that rely on that.
->> I was actually considering to change that for the GB pages hugetlbfs 
->> patchkit, because memset for 1G is a little slow and not needed (will 
->> be cleared later anyways) and it might be a problem for very large 
->> systems with a lot of such pages at boot.
 > 
-> changing the default behavior of bootmem alloc to be non-clearing is a 
-> really bad idea that will only cause unrobustness. The proper approach 
-> is to add an _opt-in_ API that does not clear memory 
-> (bootmem_alloc_dontclear() or whatever), available to callers that know 
-> it for sure that they dont need the clearing.
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10300
+> Subject		: volume wheel does not work in 2.6.25-rc6
+> Submitter	: Romano Giannetti <romano.giannetti@gmail.com>
+> Date		: 2008-03-21 11:42 (19 days old)
+> 
 
-Yes, changing the default of bootmem_alloc is a bad idea.  I just changed
-a bunch of static arrays to bootmem alloc's and it was pointed out early
-that not only does bootmem_alloc clear memory, but also panics if it's not
-available.
+It was there with -rc8 (as I said on the bugzilla). Will try with a
+recent kernel, git-pulling now. 
 
-> Also take into account that alloc_bootmem_low() :
-> - calls panic() if not enough memory
-> - already clears allocated memory
-> Signed-off-by: Eric Dumazet <dada1@cosmosbay.com>
+Romano
+-- 
+Sorry for the disclaimer --- ¡I cannot stop it!
 
-A specialized call to bootmem_alloc probably needs it's own API... ;-)
 
-Thanks,
-Mike
+
+--
+La presente comunicación tiene carácter confidencial y es para el exclusivo uso del destinatario indicado en la misma. Si Ud. no es el destinatario indicado, le informamos que cualquier forma de distribución, reproducción o uso de esta comunicación y/o de la información contenida en la misma están estrictamente prohibidos por la ley. Si Ud. ha recibido esta comunicación por error, por favor, notifíquelo inmediatamente al remitente contestando a este mensaje y proceda a continuación a destruirlo. Gracias por su colaboración.
+
+This communication contains confidential information. It is for the exclusive use of the intended addressee. If you are not the intended addressee, please note that any form of distribution, copying or use of this communication or the information in it is strictly prohibited by law. If you have received this communication in error, please immediately notify the sender by reply e-mail and destroy this message. Thank you for your cooperation. 
