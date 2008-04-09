@@ -1,74 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755995AbYDIRjz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756135AbYDIRlY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755995AbYDIRjz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Apr 2008 13:39:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754229AbYDIRjq
+	id S1756135AbYDIRlY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Apr 2008 13:41:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753079AbYDIRlR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Apr 2008 13:39:46 -0400
-Received: from py-out-1112.google.com ([64.233.166.181]:24964 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752898AbYDIRjp (ORCPT
+	Wed, 9 Apr 2008 13:41:17 -0400
+Received: from outbound-mail-14.bluehost.com ([69.89.18.114]:50449 "HELO
+	outbound-mail-14.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752575AbYDIRlQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Apr 2008 13:39:45 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=tYX5JYhGiHghA9Afnf4b0hTcvBdtEBZaAApJPmv/cOpvaJQQs5Pm/V5nL/b6HyKKgUPC0y7oclOKQLrU4NSw7s6W3WslrNlyf3uGl4H98PmxO6KzZ2tP7ppRsFm0t2JNCyZBFXJ6uSc9egne6XflpiZmp+6e2Y5WM6PHIPt36dA=
-Message-ID: <36ca99e90804091039v6e1ad966yd738ed88b267f315@mail.gmail.com>
-Date: Wed, 9 Apr 2008 19:39:43 +0200
-From: "Bert Wesarg" <bert.wesarg@googlemail.com>
-To: "Mike Travis" <travis@sgi.com>
-Subject: Re: [PATCH 3/3] cpumask: add show cpu map functions v2
-Cc: "Ingo Molnar" <mingo@elte.hu>, "Paul Jackson" <pj@sgi.com>,
-       "Thomas Gleixner" <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <47FBDB0D.1010202@sgi.com>
+	Wed, 9 Apr 2008 13:41:16 -0400
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Alan Hourihane <alanh@fairlite.demon.co.uk>
+Subject: Re: DRM modesetting & sysfs
+Date: Wed, 9 Apr 2008 10:39:08 -0700
+User-Agent: KMail/1.9.9
+Cc: Jakob Bornecrantz <wallbraker@gmail.com>, dri-devel@lists.sourceforge.net,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <200804081317.43712.jbarnes@virtuousgeek.org> <200804090934.37219.jbarnes@virtuousgeek.org> <1207761826.14588.390.camel@localhost>
+In-Reply-To: <1207761826.14588.390.camel@localhost>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <20080408184301.651388000@polaris-admin.engr.sgi.com>
-	 <20080408184302.113424000@polaris-admin.engr.sgi.com>
-	 <36ca99e90804081232iff9b19fp41e76c04cf140446@mail.gmail.com>
-	 <47FBDB0D.1010202@sgi.com>
+Message-Id: <200804091039.09050.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 8, 2008 at 10:52 PM, Mike Travis <travis@sgi.com> wrote:
+On Wednesday, April 09, 2008 10:23 am Alan Hourihane wrote:
+> On Wed, 2008-04-09 at 09:34 -0700, Jesse Barnes wrote:
+> > On Wednesday, April 09, 2008 9:15 am Alan Hourihane wrote:
+> > > On Wed, 2008-04-09 at 08:17 -0700, Jesse Barnes wrote:
+> > > > On Wednesday, April 09, 2008 1:57 am Jakob Bornecrantz wrote:
+> > > > > I was going to suggest that you plug it into the hotplug_stage_two
+> > > > > function but it looks like you have already done that. Things might
+> > > > > be routed differently now then since the last time I looked at the
+> > > > > code, are you sure that stage_two is being run?
+> > > >
+> > > > I'll have to check, I'm not sure I'm even getting interrupts...
+> > >
+> > > Jesse,
+> > >
+> > > Is this i915 or i945/i965 you are testing on ??
+> >
+> > I've been testing on my i915 based laptop, haven't tried my other systems
+> > yet...
 >
-> Bert Wesarg wrote:
->  > On Tue, Apr 8, 2008 at 8:43 PM, Mike Travis <travis@sgi.com> wrote:
->  >>   * Add cpu_sysdev_class functions to display the following maps
->  >>     with cpulist_scnprintf().
->  >>
->  > Could we add a cpumap_scnprintf() attribute too, just for consistency?
->  >
->  > Bert
+> With VGA (i.e. ADPA) output ?
 >
->  Sure, I could add it.  But by not having it, the user is forced to
->  actually read libbitmask(3) to see a different way of parsing the
->  output, perhaps weaning them off of cpumask_scnprintf()... ;-)
->
->  Do you mind if I add them as:
->
->         /sys/devices/system/cpu/online_map
->         /sys/devices/system/cpu/possible_map
->         /sys/devices/system/cpu/present_map
->         /sys/devices/system/cpu/system_map
-Please go ahead.
+> If so, that's the problem. From what I can tell of i915 docs, they only
+> support hotplug for SDVO devices only, so that's how it's coded up at
+> the moment. For i945/i965 it can go the whole hog.
 
-Bert
+Ah, maybe that's it, yeah I'm using VGA via ADPA.  I don't see any IIR or 
+PIPEASTAT bits set when I plug in the display, so I guess we're stuck with 
+manually probing on these devices.
 
-PS: this is the only source I found for the libbitmask(3):
-
-ftp://ftp.cvut.cz/kernel/people/christoph/pmig/ray-mmigrate/
-
-but I suspect there is a more official place for this.
-
->
->  Thanks,
->  Mike
->
+Thanks,
+Jesse
