@@ -1,93 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755873AbYDISyy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755984AbYDISza@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755873AbYDISyy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Apr 2008 14:54:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752801AbYDISyo
+	id S1755984AbYDISza (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Apr 2008 14:55:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752248AbYDISzI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Apr 2008 14:54:44 -0400
-Received: from tomts43-srv.bellnexxia.net ([209.226.175.110]:45429 "EHLO
-	tomts43-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751432AbYDISyn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Apr 2008 14:54:43 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AlMFAC+t/EdMQWoK/2dsb2JhbACBXKpY
-Date: Wed, 9 Apr 2008 14:54:41 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Alexey Dobriyan <adobriyan@gmail.com>
-Cc: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, Andi Kleen <andi@firstfloor.org>,
-       Rusty Russell <rusty@rustcorp.com.au>, Jason Baron <jbaron@redhat.com>,
-       Adrian Bunk <bunk@stusta.de>, Christoph Hellwig <hch@infradead.org>,
-       akpm@osdl.org
-Subject: Re: [patch 09/17] Add all cpus option to stop machine run
-Message-ID: <20080409185441.GA30202@Krystal>
-References: <20080409150829.855195878@polymtl.ca> <20080409152049.513274847@polymtl.ca> <20080409181010.GA4924@martell.zuzino.mipt.ru>
-Mime-Version: 1.0
+	Wed, 9 Apr 2008 14:55:08 -0400
+Received: from relay2.sgi.com ([192.48.171.30]:56634 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1756141AbYDISzF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Apr 2008 14:55:05 -0400
+Date: Wed, 9 Apr 2008 13:55:00 -0500
+From: Robin Holt <holt@sgi.com>
+To: Andrea Arcangeli <andrea@qumranet.com>
+Cc: Robin Holt <holt@sgi.com>, Christoph Lameter <clameter@sgi.com>,
+       akpm@linux-foundation.org, Nick Piggin <npiggin@suse.de>,
+       Steve Wise <swise@opengridcomputing.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-mm@kvack.org,
+       Kanoj Sarcar <kanojsarcar@yahoo.com>, Roland Dreier <rdreier@cisco.com>,
+       Jack Steiner <steiner@sgi.com>, linux-kernel@vger.kernel.org,
+       Avi Kivity <avi@qumranet.com>, kvm-devel@lists.sourceforge.net,
+       general@lists.openfabrics.org, Hugh Dickins <hugh@veritas.com>
+Subject: Re: [PATCH 0 of 9] mmu notifier #v12
+Message-ID: <20080409185500.GT11364@sgi.com>
+References: <patchbomb.1207669443@duo.random> <20080409131709.GR11364@sgi.com> <20080409144401.GT10133@duo.random>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080409181010.GA4924@martell.zuzino.mipt.ru>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 14:44:17 up 40 days, 14:55,  6 users,  load average: 0.73, 0.83,
-	0.81
-User-Agent: Mutt/1.5.16 (2007-06-11)
+In-Reply-To: <20080409144401.GT10133@duo.random>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Alexey Dobriyan (adobriyan@gmail.com) wrote:
-> Please, stop Cc'ing me on this.
+On Wed, Apr 09, 2008 at 04:44:01PM +0200, Andrea Arcangeli wrote:
+> BTW, how did you implement invalidate_page? As this?
 > 
+>        	invalidate_page() {
+>        		invalidate_range_begin()
+> 		invalidate_range_end()
+> 	}
 
-Fixed.
+Essentially, I did the work of each step without releasing and
+reacquiring locks.
 
-> I continue to think that all this so-called "immediate" infrastructure
-> is an absolute overkill and declared D-cache line savings will _never_
-> matter and will never be measured on real life workloads. Right now you
-> claim 1 (one) cacheline saving in schedule() which can be trivially
-> moved under CONFIG_PROFILING umbrella. On the other hand is more ugly
-> assembler code. Sorry, people add infra with much better good/bad ratios.
+> If yes, I prefer to remind you that normally invalidate_range_begin is
+> always called before zapping the pte. In the invalidate_page case
+> instead, invalidate_range_begin is called _after_ the pte has been
+> zapped already.
 > 
-> Also, my gut feeling of a guy who is also on receiveing end of bugreports
-> at SWsoft that line with .text games was crossed by SMP alternatives and
-> fooprobes. The rest won't matter because programs like firefox will fuck
-> up L1, L2 caches in one blow just by showing animation.
-> 
+> Now there's no problem if the pte is established and the spte isn't
+> established. But it must never happen that the spte is established and
+> the pte isn't established (with page-pinning that means unswappable
+> memlock leak, without page-pinning it would mean memory corruption).
 
-I did not know the only thing we should ever care about as kernel
-developers was Firefox ? ;)
+I am not sure I follow what you are saying.  Here is a very terse
+breakdown of how PFNs flow through xpmem's structures.
 
-I find it quite amusing that at one end of the spectrum we have Ingo
-fearing about a few bytes added to the scheduler object even when they
-are never loaded in cache, and that at the complete other extreme we
-find people arguing that cache lines used by the kernel does not matter
-because this and this userspace app is-oh-so-bloated.
+We have a PFN table associated with our structure describing a grant.
+We use get_user_pages() to acquire information for that table and we
+fill the table in under a mutex.  Remote hosts (on the same numa network
+so they have direct access to the users memory) have a PROXY version of
+that structure.  It is filled out in a similar fashion to the local
+table.  PTEs are created for the other processes while holding the mutex
+for this table (either local or remote).  During the process of
+faulting, we have a simple linked list of ongoing faults that is
+maintained whenever the mutex is going to be released.
 
-Am I the only one interested in finally getting a tracer infrastructure
-in the Linux kernel ? (yes, this is the original objective behind
-immediate values by the way)
+Our version of a zap_page_range is called recall_PFNs.  The recall
+process grabs the mutex, scans the faulters list for any that cover the
+range and mark them as needing a retry.  It then calls zap_page_range
+for any processes that have attached the granted memory to clear out
+their page tables.  Finally, we release the mutex and proceed.
 
-Mathieu
+The locking is more complex than this, but that is the essential idea.
 
-> We don't need bugs when immediate update screwed up fighting for
-> cacheline.
-> 
-> And bugs when screwup happened out of the window of "Code:" printout, so
-> you won't have a chance to compare relevant vmlinux .text and printout.
-> 
-> And bugs when CPU executed bullshit and silently rebooted.
-> 
-> And so on.
-> 
-> 	Alexey, more and more liking OpenBSD
-> 		where such games won't even
-> 	        hit mailing lists
-> 
 
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+What that means for mmu_notifiers is we have a single reference on the
+page for all the remote processes using it.  When the callout to
+invalidate_page() is made, we will still have processes with that PTE in
+their page tables and potentially TLB entries.  When we return from the
+invalidate_page() callout, we will have removed all those page table
+entries, we will have no in-progress page table or tlb insertions that
+will complete, and we will have released all our references to the page.
+
+Does that meet your expectations?
+
+Thanks,
+Robin
+> 
+> So the range_begin must serialize against the secondary mmu page fault
+> so that it can't establish the spte on a pte that was zapped by the
+> rmap code after get_user_pages/follow_page returned. I think your
+> range_begin already does that so you should be ok but I wanted to
+> remind about this slight difference in implementing invalidate_page as
+> I suggested above in previous email just to be sure ;).
+> 
+> This is the race you must guard against in invalidate_page:
+> 
+> 
+>    	 CPU0 	     	      CPU1
+> 	 try_to_unmap on page
+> 			      secondary mmu page fault
+> 			      get_user_pages()/follow_page found a page
+>          ptep_clear_flush
+> 	 invalidate_page()
+> 	  invalidate_range_begin()
+>           invalidate_range_end()
+>           return from invalidate_page
+> 			      establish spte on page
+> 			      return from secodnary mmu page fault
+> 
+> If your range_begin already serializes in a hard way against the
+> secondary mmu page fault, my previously "trivial" suggested
+> implementation for invalidate_page should work just fine and this this
+> saves 1 branch for each try_to_unmap_one if compared to the emm
+> implementation. The branch check is inlined and it checks against the
+> mmu_notifier_head that is the hot cacheline, no new cachline is
+> checked just one branch is saved and so it worth it IMHO even if it
+> doesn't provide any other advantage if you implement it the way above.
