@@ -1,120 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755984AbYDISza@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757269AbYDITUd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755984AbYDISza (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Apr 2008 14:55:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752248AbYDISzI
+	id S1757269AbYDITUd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Apr 2008 15:20:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754991AbYDITUN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Apr 2008 14:55:08 -0400
-Received: from relay2.sgi.com ([192.48.171.30]:56634 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756141AbYDISzF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Apr 2008 14:55:05 -0400
-Date: Wed, 9 Apr 2008 13:55:00 -0500
-From: Robin Holt <holt@sgi.com>
-To: Andrea Arcangeli <andrea@qumranet.com>
-Cc: Robin Holt <holt@sgi.com>, Christoph Lameter <clameter@sgi.com>,
-       akpm@linux-foundation.org, Nick Piggin <npiggin@suse.de>,
-       Steve Wise <swise@opengridcomputing.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-mm@kvack.org,
-       Kanoj Sarcar <kanojsarcar@yahoo.com>, Roland Dreier <rdreier@cisco.com>,
-       Jack Steiner <steiner@sgi.com>, linux-kernel@vger.kernel.org,
-       Avi Kivity <avi@qumranet.com>, kvm-devel@lists.sourceforge.net,
-       general@lists.openfabrics.org, Hugh Dickins <hugh@veritas.com>
-Subject: Re: [PATCH 0 of 9] mmu notifier #v12
-Message-ID: <20080409185500.GT11364@sgi.com>
-References: <patchbomb.1207669443@duo.random> <20080409131709.GR11364@sgi.com> <20080409144401.GT10133@duo.random>
+	Wed, 9 Apr 2008 15:20:13 -0400
+Received: from smtp115.sbc.mail.re3.yahoo.com ([66.196.96.88]:21806 "HELO
+	smtp115.sbc.mail.re3.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1754789AbYDITUL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Apr 2008 15:20:11 -0400
+X-YMail-OSG: 5gFLY1cVM1ne_SuYLhOWH9JOUr.4.KoE17F3yq0SbQwCIHZzFhwTsz0AH6syXHc0tKw2oL19Rq0bA2W6Y3enZND4FMweTBn5gDeYZkWg0IVMPtZwNpEAkFxm5xpiZhJoGfRClUQfgXflCQ--
+X-Yahoo-Newman-Property: ymail-3
+Date: Wed, 9 Apr 2008 14:16:34 -0500
+From: serge@hallyn.com
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: sukadev@us.ibm.com, linux-kernel@vger.kernel.org,
+       Containers <containers@lists.osdl.org>,
+       Pavel Emelyanov <xemul@openvz.org>, serue@us.ibm.com, clg@fr.ibm.com
+Subject: Re: [RFC][PATCH 0/7] Clone PTS namespace
+Message-ID: <20080409191634.GA25220@vino.hallyn.com>
+References: <20080408215333.GA8799@us.ibm.com> <47FC138B.4070408@zytor.com> <20080409162353.GA14044@us.ibm.com> <47FD046C.6070804@zytor.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080409144401.GT10133@duo.random>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+In-Reply-To: <47FD046C.6070804@zytor.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 09, 2008 at 04:44:01PM +0200, Andrea Arcangeli wrote:
-> BTW, how did you implement invalidate_page? As this?
-> 
->        	invalidate_page() {
->        		invalidate_range_begin()
-> 		invalidate_range_end()
-> 	}
+Quoting H. Peter Anvin (hpa@zytor.com):
+> sukadev@us.ibm.com wrote:
+>> We want to provide isolation between containers, meaning PTYs in container
+>> C1 should not be accessible to processes in C2 (unless C2 is an ancestor).
+>
+> Yes, I certainly can understand the desire for isolation.  That wasn't what 
+> my question was about.
+>
+>> The other reason for this in the longer term is for checkpoint/restart.
+>> When restarting an application we want to make sure that the PTY indices
+>> it was using is available and isolated.
+>
+> OK, this would be the motivation for index isolation.
+>
+>> A complete device-namespace could solve this, but IIUC, is being planned
+>> in the longer term. We are hoping this would provide the isolation in the
+>> near-term without being too intrusive or impeding the implementation of
+>> the device namespace.
+>
+> I'm just worried about the accumulation of what feels like ad hoc 
+> namespaces, causing a very large combination matrix, a lot of which don't 
+> make sense.
 
-Essentially, I did the work of each step without releasing and
-reacquiring locks.
+Hmm, if we were to just call this CLONE_NEWDEV, would that (a) make
+sense and (b) suitably address your (certainly valid) concern?
 
-> If yes, I prefer to remind you that normally invalidate_range_begin is
-> always called before zapping the pte. In the invalidate_page case
-> instead, invalidate_range_begin is called _after_ the pte has been
-> zapped already.
-> 
-> Now there's no problem if the pte is established and the spte isn't
-> established. But it must never happen that the spte is established and
-> the pte isn't established (with page-pinning that means unswappable
-> memlock leak, without page-pinning it would mean memory corruption).
+Basically for now CLONE_NEWDEV wouldn't yet be fully implemented, only
+unsharing unix98 ptys...
 
-I am not sure I follow what you are saying.  Here is a very terse
-breakdown of how PFNs flow through xpmem's structures.
-
-We have a PFN table associated with our structure describing a grant.
-We use get_user_pages() to acquire information for that table and we
-fill the table in under a mutex.  Remote hosts (on the same numa network
-so they have direct access to the users memory) have a PROXY version of
-that structure.  It is filled out in a similar fashion to the local
-table.  PTEs are created for the other processes while holding the mutex
-for this table (either local or remote).  During the process of
-faulting, we have a simple linked list of ongoing faults that is
-maintained whenever the mutex is going to be released.
-
-Our version of a zap_page_range is called recall_PFNs.  The recall
-process grabs the mutex, scans the faulters list for any that cover the
-range and mark them as needing a retry.  It then calls zap_page_range
-for any processes that have attached the granted memory to clear out
-their page tables.  Finally, we release the mutex and proceed.
-
-The locking is more complex than this, but that is the essential idea.
-
-
-What that means for mmu_notifiers is we have a single reference on the
-page for all the remote processes using it.  When the callout to
-invalidate_page() is made, we will still have processes with that PTE in
-their page tables and potentially TLB entries.  When we return from the
-invalidate_page() callout, we will have removed all those page table
-entries, we will have no in-progress page table or tlb insertions that
-will complete, and we will have released all our references to the page.
-
-Does that meet your expectations?
-
-Thanks,
-Robin
-> 
-> So the range_begin must serialize against the secondary mmu page fault
-> so that it can't establish the spte on a pte that was zapped by the
-> rmap code after get_user_pages/follow_page returned. I think your
-> range_begin already does that so you should be ok but I wanted to
-> remind about this slight difference in implementing invalidate_page as
-> I suggested above in previous email just to be sure ;).
-> 
-> This is the race you must guard against in invalidate_page:
-> 
-> 
->    	 CPU0 	     	      CPU1
-> 	 try_to_unmap on page
-> 			      secondary mmu page fault
-> 			      get_user_pages()/follow_page found a page
->          ptep_clear_flush
-> 	 invalidate_page()
-> 	  invalidate_range_begin()
->           invalidate_range_end()
->           return from invalidate_page
-> 			      establish spte on page
-> 			      return from secodnary mmu page fault
-> 
-> If your range_begin already serializes in a hard way against the
-> secondary mmu page fault, my previously "trivial" suggested
-> implementation for invalidate_page should work just fine and this this
-> saves 1 branch for each try_to_unmap_one if compared to the emm
-> implementation. The branch check is inlined and it checks against the
-> mmu_notifier_head that is the hot cacheline, no new cachline is
-> checked just one branch is saved and so it worth it IMHO even if it
-> doesn't provide any other advantage if you implement it the way above.
+-serge
