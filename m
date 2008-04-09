@@ -1,51 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753475AbYDIOfi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754447AbYDIOma@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753475AbYDIOfi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Apr 2008 10:35:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754171AbYDIOfZ
+	id S1754447AbYDIOma (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Apr 2008 10:42:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752333AbYDIOmX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Apr 2008 10:35:25 -0400
-Received: from cerber.ds.pg.gda.pl ([153.19.208.18]:48943 "EHLO
-	cerber.ds.pg.gda.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752350AbYDIOfY (ORCPT
+	Wed, 9 Apr 2008 10:42:23 -0400
+Received: from barikada.upol.cz ([158.194.242.200]:43670 "EHLO
+	barikada.upol.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752278AbYDIOmW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Apr 2008 10:35:24 -0400
-Date: Wed, 9 Apr 2008 15:35:17 +0100 (BST)
-From: "Maciej W. Rozycki" <macro@linux-mips.org>
-To: Johannes Weiner <hannes@saeurebad.de>
-cc: Roel Kluin <12o3l@tiscali.nl>, lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] dz: test after postfix decrement fails in
- dz_console_putchar()
-In-Reply-To: <87ve2rqh6u.fsf@saeurebad.de>
-Message-ID: <alpine.SOC.1.00.0804091524290.6438@piorun>
-References: <47FC93BC.5020201@tiscali.nl> <87ve2rqh6u.fsf@saeurebad.de>
-User-Agent: Alpine 1.00 (SOC 882 2007-12-20)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 9 Apr 2008 10:42:22 -0400
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       kbuild devel list <linux-kbuild@vger.kernel.org>
+Subject: coloring stdout && stderr, small kbuild example
+Date: Wed, 9 Apr 2008 17:02:31 +0200
+Message-Id: <E1Jjbol-0002zS-4P@flower>
+From: Oleg Verych <olecom@flower.upol.cz>
+Organization: Palacky University in Olomouc, experimental physics department
+X-OS: x86_64-pc-linux-glibc-debian
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 9 Apr 2008, Johannes Weiner wrote:
+Those boring never-ending builds...
 
-> The intention was probably that this gets executed if the break in the
-> loop (trdy == dport->port.line) is reached.  Without your fix, this
-> branch is also taken if the while-loop terminates with loops == -1
-> because of the postfix dec.
+Can some dualCPU power be spent, if building is interactive (i.e. sent to
+terminal), to have them a bit colored?
 
- You are right about the intention -- you cannot send a character to the 
-transmitter unless the intended line has been reported as selected for 
-transmission by the serial controller.  Otherwise it will go to the wrong 
-line -- this is a serial multiplexer that selects transmission lines by 
-itself.
+My last rant about "colored printk()" led away from kernel developers
+and their solutions. But now, let me share something.
 
- It used to be the other kind of a "while" loop.  This is a cut & paste 
-bug -- I noticed the problem with the terminating condition of the loop 
-and correctly moved it to the end, but forgot to adjust the 
-decrementation.
+(maybe some terminal emulators have more colors, finally?) usage:
 
-> Your fix is correct but your changelog entry is wrong.
+olecom@flower:/tmp/blinux$ stty -tostop ; mkfifo stdout.pipe stderr.pipe
+olecom@flower:/tmp/blinux$ sh ./colorize-linux-build.sh <stdout.pipe &
+[1] 22070
+olecom@flower:/tmp/blinux$ COLORIZERR=y sh colorize-linux-build.sh <stderr.pipe &
+[2] 22145
+olecom@flower:/tmp/blinux$
+olecom@flower:/tmp/blinux$ LANG=C make >stdout.pipe 2>stderr.pipe
+make -C /mnt/zdev0/linux-2.6 O=/dev/shm/blinux/.
+  Using /mnt/zdev0/linux-2.6 as source for kernel
+  GEN     /dev/shm/blinux/Makefile
+  CHK     include/linux/version.h
+  CHK     include/linux/utsrelease.h
+  CALL    /mnt/zdev0/linux-2.6/scripts/checksyscalls.sh
+  CHK     include/linux/compile.h
+  VDSOSYM arch/x86/vdso/vdso-syms.lds
+  VDSOSYM arch/x86/vdso/vdso32-syscall-syms.lds
+  VDSOSYM arch/x86/vdso/vdso32-sysenter-syms.lds
+  VDSOSYM arch/x86/vdso/vdso32-syms.lds
+  LD      arch/x86/vdso/built-in.o
+  CC      mm/memory.o
 
- s/fails/incorrectly succeeds/
+olecom@flower:/tmp/blinux$
 
-  Maciej
+make[3]: *** [mm/memory.o] Interrupt
+make[2]: *** [mm] Interrupt
+make[1]: *** [sub-make] Interrupt
+make: *** [all] Interrupt
+
+[1]-  Done                    sh ./colorize-linux-build.sh <stdout.pipe
+[2]+  Done                    COLORIZERR=yes sh colorize-linux-build.sh <stderr.pipe
+olecom@flower:/tmp/blinux$
+
+________________________________________________________________________
+#!/bin/sh
+# colorize linux build
+
+# Time-stamp: Wed Apr  9 13:78:13 CEST 2008 olecom@flower.upol.cRAzY
+
+color() {
+    # $1 -- regex
+    # $2 -- color code
+    # $3 -- next color code (default is $D)
+    # $4 -- regex match number (s///flags)
+    printf %s "`eval echo $TERMINAL_OUTPUT`"
+}
+
+# for tty
+[ -t 1 ] && {
+    # escape symbol
+    E=`printf '\033'`
+    # default fg && bg rendering ; reset attributes
+    D="7" ; RESET="$E[0m"
+    # basic attributes (reset bg color and bold, set fg color)
+    V="$E[40;22;3"
+    # wrap regex with color ; goto exit
+    TERMINAL_OUTPUT='{s-"$1"-"$V$2m&$V${3-'$D'}m"-$4 ";" b}'
+}
+
+# process stdout
+
+[ -z "$COLORIZERR" ] && {
+    sed "
+/CC/` color CC '6;1'`
+/LD/` color LD '2;1'`
+/AS/` color AS '5;1'`
+/GEN/`color GEN '2;1'`
+/UPD/`color UPD '2;1'`
+/CHK/`color CHK '3;1'`
+/CA/` color CALL '6'`
+s-^-${V}2m-
+"
+    printf "$RESET
+"
+}
+
+# process stderr (once)
+
+while read ERROR
+do OUT=$OUT'
+'$ERROR
+done
+
+printf "\033[1;37;41m$OUT$RESET
+"
+exit
