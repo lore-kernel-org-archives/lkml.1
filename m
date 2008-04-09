@@ -1,128 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756069AbYDIQW6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757799AbYDIQXW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756069AbYDIQW6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Apr 2008 12:22:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755394AbYDIQVU
+	id S1757799AbYDIQXW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Apr 2008 12:23:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757109AbYDIQV7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Apr 2008 12:21:20 -0400
-Received: from smtp.polymtl.ca ([132.207.4.11]:58349 "EHLO smtp.polymtl.ca"
+	Wed, 9 Apr 2008 12:21:59 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:58601 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755238AbYDIQVT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Apr 2008 12:21:19 -0400
-Message-Id: <20080409152047.133203801@polymtl.ca>
+	id S1757078AbYDIQV6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Apr 2008 12:21:58 -0400
+Message-Id: <20080409152050.721310907@polymtl.ca>
 References: <20080409150829.855195878@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Wed, 09 Apr 2008 11:08:31 -0400
+Date: Wed, 09 Apr 2008 11:08:41 -0400
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
        linux-kernel@vger.kernel.org
 Cc: Andi Kleen <andi@firstfloor.org>, Rusty Russell <rusty@rustcorp.com.au>,
        Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       anil.s.keshavamurthy@intel.com, davem@davemloft.net
-Subject: [patch 02/17] Kprobes - do not use kprobes mutex in arch code
-Content-Disposition: inline; filename=kprobes-dont-use-kprobes-mutex-in-arch-code.patch
-X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Wed,  9 Apr 2008 16:20:07 +0000
+       Adrian Bunk <bunk@stusta.de>, Alexey Dobriyan <adobriyan@gmail.com>,
+       Christoph Hellwig <hch@infradead.org>, akpm@osdl.org
+Subject: [patch 12/17] Immediate Values - Kconfig menu in EMBEDDED
+Content-Disposition: inline; filename=immediate-values-kconfig-menu-in-embedded.patch
+X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Wed,  9 Apr 2008 16:20:10 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Remove the kprobes mutex from kprobes.h, since it does not belong there. Also
-remove all use of this mutex in the architecture specific code, replacing it by
-a proper mutex lock/unlock in the architecture agnostic code.
+Immediate values provide a way to use dynamic code patching to update variables
+sitting within the instruction stream. It saves caches lines normally used by
+static read mostly variables. Enable it by default, but let users disable it
+through the EMBEDDED menu with the "Disable immediate values" submenu entry.
 
-Changelog :
-- remove unnecessary kprobe_mutex around arch_remove_kprobe()
+Note: Since I think that I really should let embedded systems developers using
+RO memory the option to disable the immediate values, I choose to leave this
+menu option there, in the EMBEDDED menu. Also, the "CONFIG_IMMEDIATE" makes
+sense because we want to compile out all the immediate code when we decide not
+to use optimized immediate values at all (it removes otherwise unused code).
+
+Changelog:
+- Change ARCH_SUPPORTS_IMMEDIATE for ARCH_HAS_IMMEDIATE
 
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Acked-by: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-CC: anil.s.keshavamurthy@intel.com
-CC: davem@davemloft.net
+CC: Rusty Russell <rusty@rustcorp.com.au>
+CC: Adrian Bunk <bunk@stusta.de>
+CC: Andi Kleen <andi@firstfloor.org>
+CC: Alexey Dobriyan <adobriyan@gmail.com>
+CC: Christoph Hellwig <hch@infradead.org>
+CC: mingo@elte.hu
+CC: akpm@osdl.org
 ---
- arch/ia64/kernel/kprobes.c    |    2 --
- arch/powerpc/kernel/kprobes.c |    2 --
- arch/s390/kernel/kprobes.c    |    2 --
- arch/x86/kernel/kprobes.c     |    2 --
- include/linux/kprobes.h       |    2 --
- kernel/kprobes.c              |    2 ++
- 6 files changed, 2 insertions(+), 10 deletions(-)
+ init/Kconfig |   24 ++++++++++++++++++++++++
+ 1 file changed, 24 insertions(+)
 
-Index: linux-2.6-lttng.mm/include/linux/kprobes.h
+Index: linux-2.6-lttng.mm/init/Kconfig
 ===================================================================
---- linux-2.6-lttng.mm.orig/include/linux/kprobes.h	2008-04-09 10:43:10.000000000 -0400
-+++ linux-2.6-lttng.mm/include/linux/kprobes.h	2008-04-09 10:43:38.000000000 -0400
-@@ -35,7 +35,6 @@
- #include <linux/percpu.h>
- #include <linux/spinlock.h>
- #include <linux/rcupdate.h>
--#include <linux/mutex.h>
+--- linux-2.6-lttng.mm.orig/init/Kconfig	2008-04-09 10:28:21.000000000 -0400
++++ linux-2.6-lttng.mm/init/Kconfig	2008-04-09 10:55:11.000000000 -0400
+@@ -509,6 +509,20 @@ config CC_OPTIMIZE_FOR_SIZE
+ config SYSCTL
+ 	bool
  
- #ifdef CONFIG_KPROBES
- #include <asm/kprobes.h>
-@@ -202,7 +201,6 @@ static inline int init_test_probes(void)
- #endif /* CONFIG_KPROBES_SANITY_TEST */
++config IMMEDIATE
++	default y if !DISABLE_IMMEDIATE
++	depends on HAVE_IMMEDIATE
++	bool
++	help
++	  Immediate values are used as read-mostly variables that are rarely
++	  updated. They use code patching to modify the values inscribed in the
++	  instruction stream. It provides a way to save precious cache lines
++	  that would otherwise have to be used by these variables. They can be
++	  disabled through the EMBEDDED menu.
++
++config HAVE_IMMEDIATE
++	def_bool n
++
+ menuconfig EMBEDDED
+ 	bool "Configure standard kernel features (for small systems)"
+ 	help
+@@ -774,6 +788,16 @@ config PROC_PAGE_MONITOR
+ 	  /proc/kpagecount, and /proc/kpageflags. Disabling these
+           interfaces will reduce the size of the kernel by approximately 4kb.
  
- extern spinlock_t kretprobe_lock;
--extern struct mutex kprobe_mutex;
- extern int arch_prepare_kprobe(struct kprobe *p);
- extern void arch_arm_kprobe(struct kprobe *p);
- extern void arch_disarm_kprobe(struct kprobe *p);
-Index: linux-2.6-lttng.mm/arch/x86/kernel/kprobes.c
-===================================================================
---- linux-2.6-lttng.mm.orig/arch/x86/kernel/kprobes.c	2008-04-09 10:43:10.000000000 -0400
-+++ linux-2.6-lttng.mm/arch/x86/kernel/kprobes.c	2008-04-09 10:43:38.000000000 -0400
-@@ -376,9 +376,7 @@ void __kprobes arch_disarm_kprobe(struct
++config DISABLE_IMMEDIATE
++	default y if EMBEDDED
++	bool "Disable immediate values" if EMBEDDED
++	depends on HAVE_IMMEDIATE
++	help
++	  Disable code patching based immediate values for embedded systems. It
++	  consumes slightly more memory and requires to modify the instruction
++	  stream each time a variable is updated. Should really be disabled for
++	  embedded systems with read-only text.
++
+ endmenu		# General setup
  
- void __kprobes arch_remove_kprobe(struct kprobe *p)
- {
--	mutex_lock(&kprobe_mutex);
- 	free_insn_slot(p->ainsn.insn, (p->ainsn.boostable == 1));
--	mutex_unlock(&kprobe_mutex);
- }
- 
- static void __kprobes save_previous_kprobe(struct kprobe_ctlblk *kcb)
-Index: linux-2.6-lttng.mm/arch/ia64/kernel/kprobes.c
-===================================================================
---- linux-2.6-lttng.mm.orig/arch/ia64/kernel/kprobes.c	2008-04-09 10:43:10.000000000 -0400
-+++ linux-2.6-lttng.mm/arch/ia64/kernel/kprobes.c	2008-04-09 10:43:38.000000000 -0400
-@@ -672,9 +672,7 @@ void __kprobes arch_disarm_kprobe(struct
- 
- void __kprobes arch_remove_kprobe(struct kprobe *p)
- {
--	mutex_lock(&kprobe_mutex);
- 	free_insn_slot(p->ainsn.insn, p->ainsn.inst_flag & INST_FLAG_BOOSTABLE);
--	mutex_unlock(&kprobe_mutex);
- }
- /*
-  * We are resuming execution after a single step fault, so the pt_regs
-Index: linux-2.6-lttng.mm/arch/powerpc/kernel/kprobes.c
-===================================================================
---- linux-2.6-lttng.mm.orig/arch/powerpc/kernel/kprobes.c	2008-04-09 10:43:10.000000000 -0400
-+++ linux-2.6-lttng.mm/arch/powerpc/kernel/kprobes.c	2008-04-09 10:43:38.000000000 -0400
-@@ -88,9 +88,7 @@ void __kprobes arch_disarm_kprobe(struct
- 
- void __kprobes arch_remove_kprobe(struct kprobe *p)
- {
--	mutex_lock(&kprobe_mutex);
- 	free_insn_slot(p->ainsn.insn, 0);
--	mutex_unlock(&kprobe_mutex);
- }
- 
- static void __kprobes prepare_singlestep(struct kprobe *p, struct pt_regs *regs)
-Index: linux-2.6-lttng.mm/arch/s390/kernel/kprobes.c
-===================================================================
---- linux-2.6-lttng.mm.orig/arch/s390/kernel/kprobes.c	2008-04-09 10:43:10.000000000 -0400
-+++ linux-2.6-lttng.mm/arch/s390/kernel/kprobes.c	2008-04-09 10:43:38.000000000 -0400
-@@ -220,9 +220,7 @@ void __kprobes arch_disarm_kprobe(struct
- 
- void __kprobes arch_remove_kprobe(struct kprobe *p)
- {
--	mutex_lock(&kprobe_mutex);
- 	free_insn_slot(p->ainsn.insn, 0);
--	mutex_unlock(&kprobe_mutex);
- }
- 
- static void __kprobes prepare_singlestep(struct kprobe *p, struct pt_regs *regs)
+ config SLABINFO
 
 -- 
 Mathieu Desnoyers
