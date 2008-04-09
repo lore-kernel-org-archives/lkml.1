@@ -1,76 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755900AbYDITNq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757084AbYDISji@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755900AbYDITNq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Apr 2008 15:13:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753685AbYDITNg
+	id S1757084AbYDISji (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Apr 2008 14:39:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754806AbYDISip
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Apr 2008 15:13:36 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:47630 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752701AbYDITNe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Apr 2008 15:13:34 -0400
-Date: Wed, 9 Apr 2008 21:12:56 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: "Kok, Auke" <auke-jan.h.kok@intel.com>
-Cc: Jeff Garzik <jeff@garzik.org>, Matthew Wilcox <matthew@wil.cx>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       NetDev <netdev@vger.kernel.org>,
-       e1000-list <e1000-devel@lists.sourceforge.net>,
-       linux-pci maillist <linux-pci@atrey.karlin.mff.cuni.cz>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "David S. Miller" <davem@davemloft.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Jesse Brandeburg <jesse.brandeburg@intel.com>,
-       "Ronciak, John" <john.ronciak@intel.com>,
-       "Allan, Bruce W" <bruce.w.allan@intel.com>, Greg KH <greg@kroah.com>,
-       Arjan van de Ven <arjan@linux.intel.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [regression] e1000e broke e1000
-Message-ID: <20080409191256.GB9276@elte.hu>
-References: <47F69965.7030303@intel.com> <20080408083606.GA20863@elte.hu> <47FB9ABB.9080403@intel.com> <20080408183921.GA20803@elte.hu> <20080408193245.GG11962@parisc-linux.org> <20080408195123.GA28148@elte.hu> <47FBCE00.2020309@garzik.org> <20080408200652.GC28148@elte.hu> <47FBD620.1080508@intel.com>
+	Wed, 9 Apr 2008 14:38:45 -0400
+Received: from fk-out-0910.google.com ([209.85.128.186]:62571 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753574AbYDISic (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Apr 2008 14:38:32 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=F/fR+a7KaMiFgobSOFnIr3ZTnnS/zFHKmYG0xjLixvgfA9bKO9neauTk1Qc4KqAdLq4zRG4IujWTeBAPVZPOA7hZ52+VO/7Yhm8lccH20lWLgEcDPpXqUc83s7t0hLVXBGlytR0THZeFGVRoSd4fCUECgf3k03Ruh5zmTrMJT9g=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: linux-ide@vger.kernel.org
+Subject: [PATCH 3/3] siimage: remove proc_reports_siimage()
+Date: Wed, 9 Apr 2008 20:52:41 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <47FBD620.1080508@intel.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Message-Id: <200804092052.41806.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+* proc_reports_siimage() is now only called by init_chipset_siimage()
+  so inline it there.
 
-* Kok, Auke <auke-jan.h.kok@intel.com> wrote:
+* Use array instead of switch statement for reporting clock modes.
 
-> > it is an obvious regression that could and should be solved in the 
-> > Kconfig space: do not allow E1000=y && E1000E=m.
-> 
-> this is really not the solution imho, having e1000 builtin and e1000e 
-> as a module is a perfectly viable choice. They are two separate 
-> drivers that are completely independent.
+There should be no functional changes caused by this patch.
 
-you try to argue against a strong and established concept that Linux 
-always had from day one on: DRIVER_X=y means the user prefers that 
-driver so strongly that he has selected it built-in. Such drivers are 
-special in every sense: they run first before any of the module init, 
-they cannot be disabled, etc. etc.
+Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+---
+ drivers/ide/pci/siimage.c |   33 ++++++++-------------------------
+ 1 file changed, 8 insertions(+), 25 deletions(-)
 
-The only case where that should be overriden as the primary driver for 
-that piece of hardware if _another_ driver is built-in _too_.
-
-... which is exactly the E1000=y && E1000E=m regression that bit me and 
-the simple solution of forcing E1000E to follow the mode of the E1000 
-driver solves it.
-
-The most common distro setup is E1000=m and E1000E=m. The most common 
-embedded setup is _one_ of the two drivers as =y. So i'm not sure why 
-you are arguing about all this. Please just fix this bug, simple as 
-that.
-
-	Ingo
+Index: b/drivers/ide/pci/siimage.c
+===================================================================
+--- a/drivers/ide/pci/siimage.c
++++ b/drivers/ide/pci/siimage.c
+@@ -440,30 +440,6 @@ static void sil_sata_pre_reset(ide_drive
+ }
+ 
+ /**
+- *	proc_reports_siimage		-	add siimage controller to proc
+- *	@dev: PCI device
+- *	@clocking: SCSC value
+- *	@name: controller name
+- *
+- *	Report the clocking mode of the controller and add it to
+- *	the /proc interface layer
+- */
+- 
+-static void proc_reports_siimage (struct pci_dev *dev, u8 clocking, const char *name)
+-{
+-	if (!pdev_is_sata(dev)) {
+-		printk(KERN_INFO "%s: BASE CLOCK ", name);
+-		clocking &= 0x03;
+-		switch (clocking) {
+-			case 0x03: printk("DISABLED!\n"); break;
+-			case 0x02: printk("== 2X PCI\n"); break;
+-			case 0x01: printk("== 133\n"); break;
+-			case 0x00: printk("== 100\n"); break;
+-		}
+-	}
+-}
+-
+-/**
+  *	setup_mmio_siimage	-	switch an SI controller into MMIO
+  *	@dev: PCI device we are configuring
+  *	@name: device name
+@@ -585,7 +561,14 @@ static unsigned int __devinit init_chips
+ 		writel(0x00680000, ioaddr + 0x1C8);
+ 	}
+ 
+-	proc_reports_siimage(dev, tmp >> 4, name);
++	/* report the clocking mode of the controller */
++	if (!pdev_is_sata(dev)) {
++		static const char *clk_str[] =
++			{ "== 100", "== 133", "== 2X PCI", "DISABLED!" };
++
++		tmp >>= 4;
++		printk(KERN_INFO "%s: BASE CLOCK %s\n", name, clk_str[tmp & 3]);
++	}
+ 
+ 	return 0;
+ }
