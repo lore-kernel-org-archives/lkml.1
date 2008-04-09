@@ -1,91 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756013AbYDITqT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756352AbYDITul@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756013AbYDITqT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Apr 2008 15:46:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753266AbYDITqG
+	id S1756352AbYDITul (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Apr 2008 15:50:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754285AbYDITua
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Apr 2008 15:46:06 -0400
-Received: from rn-out-0910.google.com ([64.233.170.191]:42920 "EHLO
-	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753768AbYDITqF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Apr 2008 15:46:05 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=grEoJMIp6enKB2DT5MJHFkubgFbsBUvhnBjAxgMss8Bh+eBAP6znnldimDkQBsLZW4v3ShwZGOuUOyBRx4xSVv8vgQYJgRk66fGyLpm0+akT66GwjqSYWAWelkS6T7wOSNQ87M0cs6s0dWiu3TXBPa6uYwsIFKDqX6SfNrQ/EUQ=
-Subject: [PATCH] unaligned access, fix some includes
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
+	Wed, 9 Apr 2008 15:50:30 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:38897 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754059AbYDITu3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Apr 2008 15:50:29 -0400
+Message-ID: <47FD1DF6.2000007@garzik.org>
+Date: Wed, 09 Apr 2008 15:50:14 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: Matthew Wilcox <matthew@wil.cx>, "Kok, Auke" <auke-jan.h.kok@intel.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       NetDev <netdev@vger.kernel.org>,
+       e1000-list <e1000-devel@lists.sourceforge.net>,
+       linux-pci maillist <linux-pci@atrey.karlin.mff.cuni.cz>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "David S. Miller" <davem@davemloft.net>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-arch <linux-arch@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <1207765322.16220.8.camel@brick>
-References: <1207765322.16220.8.camel@brick>
-Content-Type: text/plain
-Date: Wed, 09 Apr 2008 12:46:20 -0700
-Message-Id: <1207770380.16220.19.camel@brick>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+       Jesse Brandeburg <jesse.brandeburg@intel.com>,
+       "Ronciak, John" <john.ronciak@intel.com>,
+       "Allan, Bruce W" <bruce.w.allan@intel.com>, Greg KH <greg@kroah.com>,
+       Arjan van de Ven <arjan@linux.intel.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [patch] e1000=y && e1000e=m regression fix
+References: <20080408083606.GA20863@elte.hu> <47FB9ABB.9080403@intel.com> <20080408183921.GA20803@elte.hu> <20080408193245.GG11962@parisc-linux.org> <20080408195123.GA28148@elte.hu> <47FBCE00.2020309@garzik.org> <20080408200652.GC28148@elte.hu> <47FBD34A.6080508@garzik.org> <20080408203314.GA28952@elte.hu> <47FBDBE9.9040700@garzik.org> <20080409193850.GA11763@elte.hu>
+In-Reply-To: <20080409193850.GA11763@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Missed a few includes when moving some files around, this makes it
-actually compile.
+Ingo Molnar wrote:
+> * Jeff Garzik <jeff@garzik.org> wrote:
+> 
+>>> We've got three thousand Kconfig options - it is clearly not 
+>>> realistic for users to keep such details in mind to avoid pitfalls.
+>> Agreed -- hence the multiple announcements, including in this thread, 
+>> to put said details into mind.
+> 
+> which part of "it took a kernel developer more than an hour to figure 
+> out why his laptop had a dead network interface" did you not understand? 
+> Whatever you did, it was not apparent to me. I dont follow every tiny 
+> detail of the e1000 driver family, nor do 99%+ [*] of our users.
 
-Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
----
-Applies on top of the unaligned access revamp, missed when moving files
-around.
+You do follow LKML, where multiple announcements have and are being posted.
 
- include/linux/unaligned/generic_be.h        |    2 +-
- include/linux/unaligned/generic_le.h        |    2 +-
- include/linux/unaligned/no_builtin_memcpy.h |    1 +
- 3 files changed, 3 insertions(+), 2 deletions(-)
-
-diff --git a/include/linux/unaligned/generic_be.h b/include/linux/unaligned/generic_be.h
-index ce42487..dd7e323 100644
---- a/include/linux/unaligned/generic_be.h
-+++ b/include/linux/unaligned/generic_be.h
-@@ -1,7 +1,7 @@
- #ifndef _LINUX_UNALIGNED_GENERIC_BE_H_
- #define _LINUX_UNALIGNED_GENERIC_BE_H_
- 
--#include <linux/unaligned/generic.h>
-+#include <linux/unaligned/cpu_endian.h>
- #include <linux/unaligned/little_endian.h>
- 
- #define get_unaligned	__get_unaligned_cpu
-diff --git a/include/linux/unaligned/generic_le.h b/include/linux/unaligned/generic_le.h
-index b57c818..7b7de52 100644
---- a/include/linux/unaligned/generic_le.h
-+++ b/include/linux/unaligned/generic_le.h
-@@ -1,7 +1,7 @@
- #ifndef _LINUX_UNALIGNED_GENERIC_LE_H_
- #define _LINUX_UNALIGNED_GENERIC_LE_H_
- 
--#include <linux/unaligned/generic.h>
-+#include <linux/unaligned/cpu_endian.h>
- #include <linux/unaligned/big_endian.h>
- 
- #define get_unaligned	__get_unaligned_cpu
-diff --git a/include/linux/unaligned/no_builtin_memcpy.h b/include/linux/unaligned/no_builtin_memcpy.h
-index 17a6e21..c117e78 100644
---- a/include/linux/unaligned/no_builtin_memcpy.h
-+++ b/include/linux/unaligned/no_builtin_memcpy.h
-@@ -1,6 +1,7 @@
- #ifndef _LINUX_UNALIGNED_NO_BUILTIN_MEMCPY_H_
- #define _LINUX_UNALIGNED_NO_BUILTIN_MEMCPY_H_
- 
-+#include <linux/kernel.h>
- #include <asm/byteorder.h>
- #include <asm/string.h>
- 
--- 
-1.5.5.144.g3e42
+	Jeff
 
 
 
