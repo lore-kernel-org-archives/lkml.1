@@ -1,71 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753404AbYDIHrm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753670AbYDIHyT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753404AbYDIHrm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Apr 2008 03:47:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752259AbYDIHre
+	id S1753670AbYDIHyT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Apr 2008 03:54:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752469AbYDIHyF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Apr 2008 03:47:34 -0400
-Received: from E23SMTP02.au.ibm.com ([202.81.18.163]:60718 "EHLO
-	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752252AbYDIHrd (ORCPT
+	Wed, 9 Apr 2008 03:54:05 -0400
+Received: from wx-out-0506.google.com ([66.249.82.224]:23725 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752447AbYDIHyD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Apr 2008 03:47:33 -0400
-Message-ID: <47FC7440.8070207@linux.vnet.ibm.com>
-Date: Wed, 09 Apr 2008 13:16:08 +0530
-From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-User-Agent: Thunderbird 1.5.0.14ubu (X11/20080306)
+	Wed, 9 Apr 2008 03:54:03 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=Boqd0Tuqd5HvAAgJrsipug4/UKEPvbCNjDrzx2suxR45o6gA4E5B634EKrRSRQnOEwswIhcWLnKFe6q8z8feFDj02NE+N1fs4C3QYUAps9Ehb2Aup9z6HsxxQZ9cUq4yYj/0fwCM8Dm4tDBNPPLT8a4yDQbI+xDeh0qorPStU74=
+Message-ID: <ac8af0be0804090054w47f48ddel387d80a0331d16e1@mail.gmail.com>
+Date: Wed, 9 Apr 2008 15:54:01 +0800
+From: "Zhao Forrest" <forrest.zhao@gmail.com>
+To: discuss@x86-64.org, linux-kernel@vger.kernel.org
+Subject: Does Linux have plan to support memory hole remapping?
+Cc: yhlu.kernel@gmail.com, mingo@elte.hu, ak@suse.de
 MIME-Version: 1.0
-To: Nish Aravamudan <nish.aravamudan@gmail.com>
-CC: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Paul Mackerras <paulus@samba.org>
-Subject: Re: [Bug #10082] 2.6.25-rc2-git4 - Kernel oops while running kernbench
- and tbench on powerpc
-References: <SvnMeM-aZi.A.E8F.BCA_HB@albercik> <29495f1d0804090007u17b0524cwe154434d62531083@mail.gmail.com>
-In-Reply-To: <29495f1d0804090007u17b0524cwe154434d62531083@mail.gmail.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nish Aravamudan wrote:
-> On 4/8/08, Rafael J. Wysocki <rjw@sisk.pl> wrote:
->> This message has been generated automatically as a part of a report
->>  of recent regressions.
->>
->>  The following bug entry is on the current list of known regressions
->>  from 2.6.24.  Please verify if it still should be listed.
-> 
-> From a separate thread and my own discussions with Kamalesh, I believe
-> this is not actually a regression in 2.6.25-rc*, as some 2.6.24-rc
-> kernel displayed the same problem. Unfortunately, it's a little tough
-> to automatically bisect as the oops happens intermittently. In the
-> other thread, though, Paul mentioned a patch which might fix the issue
-> was merged recently.
-> 
-> Kamalesh, any updates?
+Hi experts,
 
-Hi Nish,
+I ask this because I run kernel 2.6.25-rc8 on a x64 system with 32GB
+physical memory, and kernel only use (32GB-512MB) physical memory. See
+below related information:
+E820 table:
+BIOS-provided physical RAM map:
+ BIOS-e820: 0000000000000000 - 0000000000098c00 (usable)
+ BIOS-e820: 0000000000098c00 - 00000000000a0000 (reserved)
+ BIOS-e820: 00000000000e6000 - 0000000000100000 (reserved)
+ BIOS-e820: 0000000000100000 - 00000000dffa0000 (usable)
+ BIOS-e820: 00000000dffae000 - 00000000dffb0000 type 9
+ BIOS-e820: 00000000dffb0000 - 00000000dffbe000 (ACPI data)
+ BIOS-e820: 00000000dffbe000 - 00000000dfff0000 (ACPI NVS)
+ BIOS-e820: 00000000dfff0000 - 00000000dfffe000 (reserved)
+ BIOS-e820: 00000000e0000000 - 00000000f0000000 (reserved)
+ BIOS-e820: 00000000fec00000 - 00000000fec01000 (reserved)
+ BIOS-e820: 00000000fee00000 - 00000000fee01000 (reserved)
+ BIOS-e820: 00000000ff700000 - 0000000100000000 (reserved)
+ BIOS-e820: 0000000100000000 - 0000000820000000 (usable)
 
-I tested the 2.6.25-rc8 kernel which already has the patch in it, but still the oops is reproducible.
-The oops was reproducible in the second run though.
+/proc/mtrr:
+reg00: base=0x00000000 (   0MB), size=32768MB: write-back, count=1
+reg01: base=0x800000000 (32768MB), size= 512MB: write-back, count=1
+reg02: base=0xe0000000 (3584MB), size= 512MB: uncachable, count=1
 
-> 
->>  Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=10082
->>  Subject         : 2.6.25-rc2-git4 - Kernel oops while running kernbench and tbench on powerpc
->>  Submitter       : Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
->>  Date            : 2008-02-20 16:01 (49 days old)
->>  References      : http://lkml.org/lkml/2008/2/20/218
->>                   http://lkml.org/lkml/2008/1/18/71
->>  Handled-By      : Paul Mackerras <paulus@samba.org>
-> 
-> Thanks,
-> Nish
+/proc/meminfo:
+MemTotal:     33010240 kB
+MemFree:      32715924 kB
+Buffers:          1624 kB
+Cached:          31412 kB
+SwapCached:          0 kB
+Active:          22348 kB
+Inactive:        19728 kB
+SwapTotal:           0 kB
+SwapFree:            0 kB
+Dirty:               0 kB
+Writeback:           0 kB
+AnonPages:        9120 kB
+Mapped:           6408 kB
+Slab:            24828 kB
+SReclaimable:     8004 kB
+SUnreclaim:      16824 kB
+PageTables:       1296 kB
+NFS_Unstable:        0 kB
+Bounce:              0 kB
+CommitLimit:  16505120 kB
+Committed_AS:    16556 kB
+VmallocTotal: 34359738367 kB
+VmallocUsed:     73524 kB
+VmallocChunk: 34359664507 kB
+HugePages_Total:     0
+HugePages_Free:      0
+HugePages_Rsvd:      0
+HugePages_Surp:      0
+Hugepagesize:     2048 kB
 
+As we can see from above information that the physical memory in system
+is 32768MB(32GB). However OS is only using about
+(32768-512)MB(MemTotal:     33010240 kB). Does this mean that this
+linux kernel can't use the physical memory remapped
+from (4G-512M, 4G) to (32G, 32G+512M)?
 
--- 
-Thanks & Regards,
-Kamalesh Babulal,
-Linux Technology Center,
-IBM, ISTL.
+Thanks,
+Forrest
