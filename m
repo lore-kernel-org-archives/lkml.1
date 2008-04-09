@@ -1,80 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754110AbYDIHQF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754740AbYDIHRv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754110AbYDIHQF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Apr 2008 03:16:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752256AbYDIHPx
+	id S1754740AbYDIHRv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Apr 2008 03:17:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752992AbYDIHRn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Apr 2008 03:15:53 -0400
-Received: from py-out-1112.google.com ([64.233.166.181]:60860 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751178AbYDIHPx (ORCPT
+	Wed, 9 Apr 2008 03:17:43 -0400
+Received: from an-out-0708.google.com ([209.85.132.243]:63846 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752943AbYDIHRn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Apr 2008 03:15:53 -0400
+	Wed, 9 Apr 2008 03:17:43 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=k4ridOav/Hwc/wnAhtK5aOnGl2PkITWz+ZJko/Y4vi7J9JDWqxk8xwahZ3Mlrd4leRD+yLZqWWb8MOY9wDfq71O66+0UkvjNk/gjROn/k8cvNQme9OKwAKajMt7QQjnp2DSMb/UN8KjhjPux5k+ShfUDZqG0q7okARUc6lUCVMw=
-Message-ID: <bc64b4640804090015m7dd640d5j31c54b99007f09a7@mail.gmail.com>
-Date: Wed, 9 Apr 2008 11:15:51 +0400
-From: Dmitry <dbaryshkov@gmail.com>
-To: "Russell King" <rmk+lkml@arm.linux.org.uk>
-Subject: Re: [PATCH 5/6] Clocklib: Use correct clock for IrDA on pxa
-Cc: "Andrew Morton" <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       haavard.skinnemoen@atmel.com, lethal@linux-sh.org,
-       philipp.zabel@gmail.com, pavel@ucw.cz, tony@atomide.com, paul@pwsan.com
-In-Reply-To: <20080408193309.GA18053@flint.arm.linux.org.uk>
+        h=message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=RdJTxnDxKMq9U+Whhxj/0d8iwsaGs/WTHL0nZN6Ufi2qFmxfeQ9c+nPBkV/CfivHr8C4nlxqCL8jZjRwIHMDVwiJGfI2mcWNLixmAm7TdAJkkgp6PEgbTRlOVq3jRxafJkhxJGDo81UcsRmKRdjIhDx2DCM7HGVfVqIyqAPSbIc=
+Message-ID: <dd18b0c30804090017m75c97f81qf6428b377432f8b5@mail.gmail.com>
+Date: Wed, 9 Apr 2008 07:17:40 +0000
+From: "Justin Mattock" <justinmattock@gmail.com>
+To: "Linux Kernel" <linux-kernel@vger.kernel.org>
+Subject: mutex_unlock
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <20080403132142.GA26882@doriath.ww600.siemens.net>
-	 <20080403132402.GA27008@doriath.ww600.siemens.net>
-	 <20080407160029.f1f9ce4f.akpm@linux-foundation.org>
-	 <20080407230434.GA525@flint.arm.linux.org.uk>
-	 <bc64b4640804080247s82ba84chd740c08b2fbb9b1a@mail.gmail.com>
-	 <20080408193309.GA18053@flint.arm.linux.org.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Hello with testing out git(very cool); my first test was with
+2.6.25-rc8-00194-g4cac04d ran vary smoothly;
+then I decided to pull the latest git (2.6.25-rc8-00208-g7180c4c)and
+see what I might find.
+upon reboot the system starts up giving me this:
 
-2008/4/8, Russell King <rmk+lkml@arm.linux.org.uk>:
-> On Tue, Apr 08, 2008 at 01:47:35PM +0400, Dmitry wrote:
->  > Yes, it works currently. But there are a few problems: we declare
->  > STUART's UARTCLK with dev=NULL (all other UARTCLKs are declared with
->  > proper devices).  Therefore,  I consider it as a hack and would like
->  > to remove it.
->
->
-> I don't consider it a hack at all - it's a work around for the fact
->  that the PXA FIR driver shares the UART, but the FIR driver doesn't
->  bind to the UART itself.
+Starting up
+Decompressing Linux Done
+Booting the kernel
+__   <-------blinking
 
-Would you then accept the patch that still contains UARTCLK bound to
-pxa uart device, and IrDA requesting clock STUARTCLK?
+I waited a few seconds or minutes but nothing;
+after reading earlier posts about something with a mutex_unlock maybe
+this was what I was experiencing.
+when loading a live cd and recompiling the same kernel, I noticed
+under kernel hacking;
 
->  The _real_ issue is with IrDA itself, and is larger than just the
->  clock library.  Any serial port which supports IrDA, even on x86,
->  has to be shared between the serial driver and the IrDA driver -
->  there's no way for them to quietly co-exist and "just work" as
->  requested.
+RT Mutex debugging
+Built in scriptable tester for rt-mutexes
+Spinlock and rw-lock debugging
+Mutex debugging basic checks
+Lock debugging detect incorrect freeing of live locks
+Lock debugging prove locking correctness
+lock usage statistics
+Lock dependency engine debugging
+spinlock debugging sleep-inside-spinlock checking
+Locking API boot-time self-tests
 
-Yes. I wonder how this is solved in other platforms.
->
->  So, let's not work around the short comings of Serial/IrDA interactions
->  by adding additional complexity to random other layers which _shouldn't_
->  even be seeing the issue.
->
->  In addition, the point of the clock framework is that you ask for the
->  device plus clock NAME on _that_ device.  Inventing random other names
->  for the same physical clock on the same physical device is just nonsense -
->  even more so than the existing workaround.
+With not knowing what I was doing I chose yes to all of these options,
+then reboot -f,
+The system booted up properly,
 
-See my proposition above. I highly dislike the UARTCLK w/o device declared.
-Once it has already lead me to (small) problems due to messed other
-UARTCLKs  declarations on pxa25x.
+Is there a way where I can find out if this was what was going on?
+could this be something different?
+
+
 
 -- 
-With best wishes
-Dmitry
+Justin P. Mattock
