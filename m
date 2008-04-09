@@ -1,82 +1,150 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755403AbYDINpx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753888AbYDINvo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755403AbYDINpx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Apr 2008 09:45:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753051AbYDINpq
+	id S1753888AbYDINvo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Apr 2008 09:51:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752006AbYDINvg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Apr 2008 09:45:46 -0400
-Received: from crystal.sipsolutions.net ([195.210.38.204]:49508 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751973AbYDINpp (ORCPT
+	Wed, 9 Apr 2008 09:51:36 -0400
+Received: from viefep26-int.chello.at ([62.179.121.46]:12269 "EHLO
+	viefep26-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752076AbYDINvf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Apr 2008 09:45:45 -0400
-Subject: Re: [PATCH] introduce HAVE_EFFICIENT_UNALIGNED_ACCESS Kconfig
-	symbol
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Roman Zippel <zippel@linux-m68k.org>
-Cc: Andrew Morton <akpm@osdl.org>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, sam <sam@ravnborg.org>
-In-Reply-To: <200804082111.35944.zippel@linux-m68k.org>
-References: <1207667127.14253.42.camel@johannes.berg>
-	 <200804082111.35944.zippel@linux-m68k.org>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-kpF6x3sYdVbcYwHfQHYk"
-Date: Wed, 09 Apr 2008 15:43:43 +0200
-Message-Id: <1207748623.7442.14.camel@johannes.berg>
+	Wed, 9 Apr 2008 09:51:35 -0400
+X-SourceIP: 80.56.237.116
+Subject: Re: [RFC PATCH 1/2] futex: rely on get_user_pages() for shared
+	futexes
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: Eric Dumazet <dada1@cosmosbay.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+In-Reply-To: <200804082140.04356.nickpiggin@yahoo.com.au>
+References: <20080404193332.348493000@chello.nl>
+	 <20080404193817.574188000@chello.nl>
+	 <200804082140.04356.nickpiggin@yahoo.com.au>
+Content-Type: text/plain
+Date: Wed, 09 Apr 2008 15:51:18 +0200
+Message-Id: <1207749078.24562.4.camel@twins>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 
+X-Mailer: Evolution 2.22.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 2008-04-08 at 21:40 +1000, Nick Piggin wrote:
 
---=-kpF6x3sYdVbcYwHfQHYk
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+> @@ -191,7 +191,6 @@ static int get_futex_key(u32 __user *uad
+>  {
+>         unsigned long address = (unsigned long)uaddr;
+>         struct mm_struct *mm = current->mm;
+> -       struct vm_area_struct *vma;
+>         struct page *page;
+>         int err;
+> 
+> @@ -210,27 +209,26 @@ static int get_futex_key(u32 __user *uad
+>          * Note : We do have to check 'uaddr' is a valid user address,
+>          *        but access_ok() should be faster than find_vma()
+>          */
+> -       if (!fshared) {
+> +       if (likely(!fshared)) {
+>                 if (unlikely(!access_ok(VERIFY_WRITE, uaddr, sizeof(u32))))
+>                         return -EFAULT;
+>                 key->private.mm = mm;
+>                 key->private.address = address;
+>                 return 0;
+>         }
+> -       /*
+> -        * The futex is hashed differently depending on whether
+> -        * it's in a shared or private mapping.  So check vma first.
+> -        */
+> -       vma = find_extend_vma(mm, address);
+> -       if (unlikely(!vma))
+> -               return -EFAULT;
+> -
+> -       /*
+> -        * Permissions.
+> -        */
+> -       if (unlikely((vma->vm_flags & (VM_IO|VM_READ)) != VM_READ))
+> -               return (vma->vm_flags & VM_IO) ? -EPERM : -EACCES;
+> 
+> +again:
+> +       err = fast_gup(address, 1, 0, &page);
+> +       if (err < 0)
+> +               return err;
+> +
+> +       lock_page(page);
+> +       if (!page->mapping) { /* PageAnon pages shouldn't get caught here */
+> +               unlock_page(page);
+> +               put_page(page);
+> +               goto again;
+> +       }
+> +
+>         /*
+>          * Private mappings are handled in a simple way.
+>          *
+> @@ -240,38 +238,19 @@ static int get_futex_key(u32 __user *uad
+>          * VM_MAYSHARE here, not VM_SHARED which is restricted to shared
+>          * mappings of _writable_ handles.
+>          */
+> -       if (likely(!(vma->vm_flags & VM_MAYSHARE))) {
+> -               key->both.offset |= FUT_OFF_MMSHARED; /* reference taken on mm 
+> *
+> /
+> +       if (PageAnon(page)) {
+> +               key->both.offset |= FUT_OFF_MMSHARED; /* ref taken on mm */
+>                 key->private.mm = mm;
+>                 key->private.address = address;
+> -               return 0;
+> -       }
+> -
+> -       /*
+> -        * Linear file mappings are also simple.
+> -        */
+> -       key->shared.inode = vma->vm_file->f_path.dentry->d_inode;
+> -       key->both.offset |= FUT_OFF_INODE; /* inode-based key. */
+> -       if (likely(!(vma->vm_flags & VM_NONLINEAR))) {
+> -               key->shared.pgoff = (((address - vma->vm_start) >> PAGE_SHIFT)
+> -                                    + vma->vm_pgoff);
+> -               return 0;
+> -       }
+> -
+> -       /*
+> -        * We could walk the page table to read the non-linear
+> -        * pte, and get the page index without fetching the page
+> -        * from swap.  But that's a lot of code to duplicate here
+> -        * for a rare case, so we simply fetch the page.
+> -        */
+> -       err = get_user_pages(current, mm, address, 1, 0, 0, &page, NULL);
+> -       if (err >= 0) {
+> -               key->shared.pgoff =
+> -                       page->index << (PAGE_CACHE_SHIFT - PAGE_SHIFT);
+> -               put_page(page);
+> -               return 0;
+> +       } else {
+> +               key->both.offset |= FUT_OFF_INODE; /* inode-based key. */
+> +               key->shared.inode = page->mapping->inode;
+> +               key->shared.pgoff = page->index;
+>         }
+> -       return err;
+> +out:
+> +       unlock_page(page);
+> +       put_page(page);
+> +       return 0;
+>  }
 
-Hi,
+Right, so staring at this for a while makes me feel uneasy. The thing
+is, once we exit get_futex_key() there is nothing stopping the mm of
+inode from going away.
 
-> Please CC linux-arch@vger.kernel.org for such changes, so it's more likel=
-y=20
-> noticed by more arch maintainers, so a list can be compiled what is=20
-> appropriate for the various archs.
+So I'm going to have to take a ref while we have the page locked, and do
+the put_futex_key() thing to release it.
 
-Hah. I thought there was such a list but it didn't show up in
-MAINTAINERS so I thought I was wrong.
+Code at (uncompiled and untested):
+http://programming.kicks-ass.net/kernel-patches/futex-fast_gup/v2.6.24.4-rt4-2/
 
-> The scope of this symbol is IMO a little unclear, is it intended for one-=
-time=20
-> accesses to small object or also for repeated accesses to larger objects?
-> Anyway, this probably should be set for m68k as well.
+The thing is, it now needs to take a reference on a rather large object
+(mm/inode), giving a rather large opportunity to bounce that cacheline.
 
-Also for repeated accesses, for example network packets where the IPv4
-header might not always be aligned. That's why we want it to be
-"efficient", not just "possible" (as an earlier version of the patch
-called it.)
-
-johannes
-
---=-kpF6x3sYdVbcYwHfQHYk
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iQIVAwUAR/zIDqVg1VMiehFYAQLspQ/9GCcNILMzg6k5U/LsudZTw41Q0jLcDrcV
-IP7njVlTNPg5PTOzMzMkDuj/uCDTAE9WDEIjgeHQqGWyBak8Qhs5YqfW41FbbFkJ
-0ln+G2trSQNN/mt6S7eWE00y1ftavS8LXUkO7Sar/pupzFbODI6DeMVnUf//ZAFt
-pUrU9BnTa7yoPi3lD3okLxQBK0cvwkr7q9/sNdhGnN2grdS5GVKUCEI0zFtARC9b
-HBY2AP6daVHbs3uo0zLc+Sax76gwMa3xxrql/Rx5FRTPQfcqFsfNJC+Ox05TjT1R
-AMJ2uo4XrfsVvrBkaJL9Yux0NjNUH0G6OCvq8LGwCcWdQpFEbvhGtOw5d7reZJfB
-Ak+B5Y7tF1qz2PUDMtk389Pz5QtPpN/T+54cHhRWlCklKr1stHUHF3yk49B+IYRf
-+uIwhO6ClKQdNio4my8MzeLGJKgLjndpdZ0hKAZkalyFKANlm8RqigRciA5gbGcc
-E1dpY94D7pDu3qPf6LevU3T/dKfUr0IDL4JNdmiBEteGoUQSKYpEkDFP/xvoETDi
-WGqctvV2h2audL+q245FpaV44hKLm++e9spdnGniWC0lwLEtQ37/hr/VNKeRtJJ+
-sXRzcYrWHPZkX4bLRvrS2BZizw6x+6/AD9Rr6rHEH/jRwtrOPvmxtigbPy5MxzY1
-eGZ+g4+bz/Q=
-=1ksc
------END PGP SIGNATURE-----
-
---=-kpF6x3sYdVbcYwHfQHYk--
+What problems do you see with just keeping a ref on the page?
 
