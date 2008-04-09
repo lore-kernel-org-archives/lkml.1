@@ -1,62 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757146AbYDITxB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757280AbYDITfY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757146AbYDITxB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Apr 2008 15:53:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754134AbYDITwx
+	id S1757280AbYDITfY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Apr 2008 15:35:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753715AbYDITfL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Apr 2008 15:52:53 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:22566 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753768AbYDITww (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Apr 2008 15:52:52 -0400
-Date: Wed, 9 Apr 2008 21:52:44 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Miklos Szeredi <miklos@szeredi.hu>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, Allard Hoeve <allard@byte.nl>,
-       Neil Brown <neilb@suse.de>
-Subject: Re: [patch] fix infinite loop in generic_file_splice_read()
-Message-ID: <20080409195243.GR12774@kernel.dk>
-References: <E1JjcgO-0004q2-VJ@pomaz-ex.szeredi.hu> <20080409115702.79737d7f.akpm@linux-foundation.org>
+	Wed, 9 Apr 2008 15:35:11 -0400
+Received: from mail.gmx.net ([213.165.64.20]:32794 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1753523AbYDITfK convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Apr 2008 15:35:10 -0400
+X-Authenticated: #20450766
+X-Provags-ID: V01U2FsdGVkX18bo5MFOyYbU6OaBoTfZOu+amwS3gxsI7+TyyhaOB
+	hn5UfFRanLuSih
+Date: Wed, 9 Apr 2008 21:35:04 +0200 (CEST)
+From: Guennadi Liakhovetski <g.liakhovetski@pengutronix.de>
+X-X-Sender: lyakh@axis700.grange
+To: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <Uwe.Kleine-Koenig@digi.com>
+cc: David Brownell <david-b@pacbell.net>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: gpio patches in mmotm
+In-Reply-To: <20080409063530.GA17538@digi.com>
+Message-ID: <Pine.LNX.4.64.0804092133160.7315@axis700.grange>
+References: <20080317173134.GA27282@digi.com> <Pine.LNX.4.64.0803171915020.8640@axis700.grange>
+ <20080318160316.GA31588@digi.com> <Pine.LNX.4.64.0803181717240.5022@axis700.grange>
+ <20080408060230.GA22071@digi.com> <Pine.LNX.4.64.0804080812420.3556@axis700.grange>
+ <20080408093305.GA8141@digi.com> <Pine.LNX.4.64.0804081227360.4987@axis700.grange>
+ <20080409063530.GA17538@digi.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080409115702.79737d7f.akpm@linux-foundation.org>
+Content-Type: TEXT/PLAIN; charset=iso-8859-1
+Content-Transfer-Encoding: 8BIT
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 09 2008, Andrew Morton wrote:
-> On Wed, 09 Apr 2008 17:57:56 +0200
-> Miklos Szeredi <miklos@szeredi.hu> wrote:
+On Wed, 9 Apr 2008, Uwe Kleine-König wrote:
+
+> Hello Guennadi,
 > 
-> > generic_file_splice_read() goes into an infinite loop if it races with
-> > truncation.  I've found this with fsx-linux on NFS over fuse.
-> > 
-> > Perhaps the whole while() loop is bogus, but I can't tell from a
-> > cursory glance at __generic_file_splice_read() if it will return zero
-> > only on EOF, or it can do that for other reasons as well.  In the
-> > latter case the loop is obviously needed.
-> > 
-> > This simplistic patch fixes the issue for me.
-> > 
+> Guennadi Liakhovetski wrote:
+> >                      My original proposal was to introduce just one 
+> > NO_GPIO macro to test against, however, David nicely managed to persuade 
+> > me, that the gpio_is_valid approach is better. Unfortunately, I cannot 
+> > argument as nicely as he did, maybe looking through his emails in LKML 
+> > archives will help you:-)
+> I'm unable to find these mails.  (Using gmane, looking for mails by
+> David matching gpio_is_valid, the oldest post I can find is
+> http://article.gmane.org/gmane.linux.kernel/637654.)
 > 
-> We found suspicious-looking code in generic_file_splice_read() back in
-> February.  See http://lkml.org/lkml/2008/2/29/443.  I suspect that patch
-> (if it works) will address the truncate lockup as well - it zaps the loop
-> entirely.
-> 
-> Unfortunately Allard never got back to us (probably because he's running
-> 2.6.24 which has a quite different generic_file_splice_read()) and the
-> patch didn't get anywhere.
+> Can you please point out the discussion in the archives?
 
-Hmm strange, I was pretty sure I pushed my patch back then. I'll double
-check and make sure it gets upstream asap.
+See also
 
-> Nobody has tested this at all, to my knowledge.
+http://marc.info/?t=120179335100005&r=1&w=2
+http://marc.info/?t=120267097400002&r=1&w=2
 
-The original reporter did not, however others did.
-
--- 
-Jens Axboe
-
+Thanks
+Guennadi
+---
+Guennadi Liakhovetski
