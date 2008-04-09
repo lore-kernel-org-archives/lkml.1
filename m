@@ -1,100 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755586AbYDIXUu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756106AbYDIX3y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755586AbYDIXUu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Apr 2008 19:20:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753648AbYDIXUk
+	id S1756106AbYDIX3y (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Apr 2008 19:29:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754217AbYDIX3o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Apr 2008 19:20:40 -0400
-Received: from tomts16-srv.bellnexxia.net ([209.226.175.4]:38942 "EHLO
-	tomts16-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751432AbYDIXUj (ORCPT
+	Wed, 9 Apr 2008 19:29:44 -0400
+Received: from g1t0026.austin.hp.com ([15.216.28.33]:2233 "EHLO
+	g1t0026.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753847AbYDIX3o (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Apr 2008 19:20:39 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AlMFAHjs/EdMQWoK/2dsb2JhbACBXKsI
-Date: Wed, 9 Apr 2008 19:15:34 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, Andi Kleen <andi@firstfloor.org>,
-       Rusty Russell <rusty@rustcorp.com.au>, Andi Kleen <ak@muc.de>,
-       Chuck Ebbert <cebbert@redhat.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       Adrian Bunk <bunk@stusta.de>, Alexey Dobriyan <adobriyan@gmail.com>,
-       akpm@osdl.org
-Subject: Re: [patch 13/17] Immediate Values - x86 Optimization (updated)
-Message-ID: <20080409231534.GA7842@Krystal>
-References: <20080409150829.855195878@polymtl.ca> <20080409152051.117322728@polymtl.ca> <47FD0497.10303@zytor.com> <20080409202106.GA1675@Krystal> <47FD4424.20907@zytor.com>
+	Wed, 9 Apr 2008 19:29:44 -0400
+Subject: bdev size not updated correctly after underlying device is resized
+From: Andrew Patterson <andrew.patterson@hp.com>
+To: linux-kernel@vger.kernel.org, viro@zeniv.linux.org.uk, dm-devel@redhat.com
+Cc: axboe@kernel.dk, viro@zeniv.linux.org.uk, andmike@linux.vnet.ibm.com
+Content-Type: text/plain
+Date: Wed, 09 Apr 2008 17:29:42 -0600
+Message-Id: <1207783782.31821.80.camel@bluto.andrew>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <47FD4424.20907@zytor.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 19:09:49 up 40 days, 19:20,  6 users,  load average: 0.42, 0.61,
-	0.56
-User-Agent: Mutt/1.5.16 (2007-06-11)
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* H. Peter Anvin (hpa@zytor.com) wrote:
-> Mathieu Desnoyers wrote:
->> Hrm, since even the nmi-safe version supports REX-prefixed instructions,
->> there is no need for an =q constraint on single-byte immediate values
->> anymore. (thanks to your "discard" section used in the nmi-safe version)
->
-> WRONG!
->
-> Using =r for single-byte values is incorrect for 32-bit code -- that would 
-> permit %spl, %bpl, %sil, %dil which are illegal in 32-bit mode. That is not 
-> the incorrect bit, it's the description that is confused.
->
-> 	-hpa
+I ran into this problem while trying to resize a mounted file-system
+after growing/shrinking the size of the underlying block device (in this
+case, a fibre-channel LUN). The kernel recognizes the device size change
+when revalidate_disk() is called, but the bdev->bd_inode->i_size will
+not be updated for any new openers if there are already openers of the
+device.  In my case I was using LVM thusly:
 
-Ah, right. I remembered there was something that made us use =q, but
-could not remember what. I'll describe it correctly.
+     1. Create a volume group with a physical volume on something that
+        can be resized (usually some sort of SCSI RAID device).
+     2. Create a logical volume on that VG.  This holds the underlying
+        PV block device open as long at the LV is activated
+     3. Run blockdev --getsize <block dev>
+     4. Resize the underlying block device.
+     5. Get the OS to notice the change.  For fibre-channel LUN's you
+        can use /sys/class/scsi_device/<device>/device/rescan.
+     6. Size is correctly changed in /dev/block/<device>/size
+     7. Run blockdev --getsize again (no change in size reported)
+     8. Inactivate the LV (there are now no longer any openers on the
+        block device)
+     9. Run blockdev --getsize again.  Size is now correct as there are
+        no openers on the device when blockdev is run.
 
-Therefore, this updated patch is bogus. The original one was ok, given
-that we change the header to :
+This problem has been reported before at:
 
+  http://lkml.org/lkml/2007/7/3/83
 
-Immediate Values - x86 Optimization
+The following patch is a suggestion on how to fix this problem.  It is
+not a complete solution as it is probably a bad thing to change other
+openers device size without at least protecting the change with a lock.
+And user-apps and other sub-systems might not like the reported device
+size being changed underneath them. It looks like the following
+sub-systems access this value:
 
-x86 optimization of the immediate values which uses a movl with code patching
-to set/unset the value used to populate the register used as variable source.
-
-Note : a movb needs to get its value froma =q constraint.
-
-Quoting "H. Peter Anvin" <hpa@zytor.com>
-
-Using =r for single-byte values is incorrect for 32-bit code -- that would  
-permit %spl, %bpl, %sil, %dil which are illegal in 32-bit mode. 
-
-Changelog:
-- Use text_poke_early with cr0 WP save/restore to patch the bypass. We are doing
-  non atomic writes to a code region only touched by us (nobody can execute it
-  since we are protected by the imv_mutex).
-- Put imv_set and _imv_set in the architecture independent header.
-- Use $0 instead of %2 with (0) operand.
-- Add x86_64 support, ready for i386+x86_64 -> x86 merge.
-- Use asm-x86/asm.h.
-- Bugfix : 8 bytes 64 bits immediate value was declared as "4 bytes" in the
-  immediate structure.
-- Change the immediate.c update code to support variable length opcodes.
-- Vastly simplified, using a busy looping IPI with interrupts disabled.
-  Does not protect against NMI nor MCE.
-- Pack the __imv section. Use smallest types required for size (char).
-- Use imv_* instead of immediate_*.
+ndb
+dm
+md
+affs
+hfs
+jfs
+reiserfs
+udf
 
 
-Mathieu
+Subject: [PATCH] Reset bdev size regardless of other openers.
 
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+A block device may be resized while online.  If the revalidate_disk
+routine is called after the resize, the gendisk->capacity value is
+updated for the device.  However, the bdev->bd_inode->i_size is not
+updated when the block device is opened if there are any other openers
+on the device.  This means that apps like LVM are unlikely to see the
+size change as they tend to keep their block devices open.  There is a
+discussion of this problem at:
+
+  http://lkml.org/lkml/2007/7/3/83
+
+This patch changes block_dev.c:do_open() to call bd_set_size()
+regardless if there are other openers on the device.  It should not be
+applied in its existing state as changing i_size should be protected by
+a lock. Also, there needs to be some analysis on the effects of changing
+the device size underneath an app.
+
+Andrew Patterson
+
+Subject: [PATCH] Reset bdev size regardless of other openers.
+
+A block device may be resized while online.  If the revalidate_disk
+routine is called after the resize, the gendisk->capacity value is
+updated for the device.  However, the bdev->bd_inode->i_size is not
+updated when the block device is opened if there are any other openers
+on the device.  This means that apps like LVM are unlikely to see the
+size change as they tend to keep their block devices open.  There is a
+discussion of this problem at:
+
+  http://lkml.org/lkml/2007/7/3/83
+
+This patch changes block_dev.c:do_open() to call bd_set_size()
+regardless if there are other openers on the device.  It should not be
+applied in its existing state as changing i_size should be protected by
+a lock. Also, there needs to be some analysis on the effects of changing
+the device size underneath an app.
+
+diff --git a/fs/block_dev.c b/fs/block_dev.c
+index 7d822fa..d13a4e5 100644
+--- a/fs/block_dev.c
++++ b/fs/block_dev.c
+@@ -992,6 +992,9 @@ static int do_open(struct block_device *bdev, struct file *file, int for_part)
+ 				ret = bdev->bd_disk->fops->open(bdev->bd_inode, file);
+ 				if (ret)
+ 					goto out;
++				/* device may have been resized with revalidate_disk */
++				if (!part)
++					bd_set_size(bdev, (loff_t)get_capacity(disk)<<9);
+ 			}
+ 			if (bdev->bd_invalidated)
+ 				rescan_partitions(bdev->bd_disk, bdev);
+
+
