@@ -1,59 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755948AbYDINhy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756300AbYDINiP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755948AbYDINhy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Apr 2008 09:37:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754102AbYDINhg
+	id S1756300AbYDINiP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Apr 2008 09:38:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756064AbYDINh6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Apr 2008 09:37:36 -0400
-Received: from mx2.netapp.com ([216.240.18.37]:19596 "EHLO mx2.netapp.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754020AbYDINhf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Apr 2008 09:37:35 -0400
-X-IronPort-AV: E=Sophos;i="4.25,629,1199692800"; 
-   d="scan'208";a="25643759"
-Subject: Re: [GIT] Please pull NFS client fixes against linux-2.6.25-rc8
-From: Trond Myklebust <Trond.Myklebust@netapp.com>
-To: Christoph Hellwig <hch@infradead.org>, Bryan Wu <cooloney@kernel.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, linux-nfs@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20080409132721.GA23852@infradead.org>
-References: <1207703414.21370.1.camel@heimdal.trondhjem.org>
-	 <20080409082408.GA17458@infradead.org>
-	 <1207746758.8303.4.camel@heimdal.trondhjem.org>
-	 <20080409132721.GA23852@infradead.org>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Organization: Network Appliance Inc
-Date: Wed, 09 Apr 2008 09:37:31 -0400
-Message-Id: <1207748251.8303.31.camel@heimdal.trondhjem.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-X-OriginalArrivalTime: 09 Apr 2008 13:37:31.0861 (UTC) FILETIME=[DC8C0050:01C89A46]
+	Wed, 9 Apr 2008 09:37:58 -0400
+Received: from cerber.ds.pg.gda.pl ([153.19.208.18]:58686 "EHLO
+	cerber.ds.pg.gda.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756047AbYDINh5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Apr 2008 09:37:57 -0400
+Date: Wed, 9 Apr 2008 14:37:44 +0100 (BST)
+From: "Maciej W. Rozycki" <macro@linux-mips.org>
+To: Roel Kluin <12o3l@tiscali.nl>
+cc: lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] dz: test after postfix decrement fails in
+ dz_console_putchar()
+In-Reply-To: <47FC93BC.5020201@tiscali.nl>
+Message-ID: <alpine.SOC.1.00.0804091426571.6438@piorun>
+References: <47FC93BC.5020201@tiscali.nl>
+User-Agent: Alpine 1.00 (SOC 882 2007-12-20)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 9 Apr 2008, Roel Kluin wrote:
 
-On Wed, 2008-04-09 at 09:27 -0400, Christoph Hellwig wrote:
-> On Wed, Apr 09, 2008 at 09:12:38AM -0400, Trond Myklebust wrote:
-> > That is what this does. For the case of no mmu, generic_file_mmap()
-> > compiles into a 'return -ENOSYS;'
-> 
-> doh, I was under the impression we had a real implementation now.
-> Of course then it makes much more sense to just not set .mmap at all,
-> which gives the same effect in a more obvious way and without any
-> confusion to the reader.  (actually that one gives -ENODEV which I
-> assume is for some reason more appropinquate)
+> When loops reaches 0 the postfix decrement still subtracts, so the test 
+> fails
 
-I'm assuming there is a reason why the nommu folks want to return ENOSYS
-rather than ENODEV when mmap() is unsupported by the hardware.
+ You are right -- thanks for spotting it!
 
-Bryan, any comments to that?
+Acked-by: Maciej W. Rozycki <macro@linux-mips.org>
 
--- 
-Trond Myklebust
-Linux NFS client maintainer
+  Maciej
 
-NetApp
-Trond.Myklebust@netapp.com
-www.netapp.com
