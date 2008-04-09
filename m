@@ -1,71 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755055AbYDIHTt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753899AbYDIH1b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755055AbYDIHTt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Apr 2008 03:19:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752297AbYDIHTm
+	id S1753899AbYDIH1b (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Apr 2008 03:27:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751149AbYDIH1Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Apr 2008 03:19:42 -0400
-Received: from py-out-1112.google.com ([64.233.166.182]:2704 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751149AbYDIHTl (ORCPT
+	Wed, 9 Apr 2008 03:27:25 -0400
+Received: from fk-out-0910.google.com ([209.85.128.191]:43995 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750926AbYDIH1Y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Apr 2008 03:19:41 -0400
+	Wed, 9 Apr 2008 03:27:24 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=l6cF28stDwaY9CYGgUFiyZvWKIFcPc6qlpzr7rsR3PWELbL1fcMdkhoek/vNYQekd1ved9vdSZJUxw70boTqOZtFvI54A4CvQDE+ojlV+6DAv8OPQ5BVCKp32QpMKIRRz4JVU7ONlgpY7k+d93f9MTpKHC9SQvFmtZ6TmUAsW08=
-Message-ID: <bc64b4640804090019n2f895189i2efaf16401bc34f6@mail.gmail.com>
-Date: Wed, 9 Apr 2008 11:19:40 +0400
-From: Dmitry <dbaryshkov@gmail.com>
-To: "Russell King" <rmk+lkml@arm.linux.org.uk>
-Subject: Re: [PATCH 6/6] Clocklib: use correct name for 3,6MHz clock
-Cc: "Andrew Morton" <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       haavard.skinnemoen@atmel.com, lethal@linux-sh.org,
-       philipp.zabel@gmail.com, pavel@ucw.cz, tony@atomide.com, paul@pwsan.com
-In-Reply-To: <20080408200721.GC18053@flint.arm.linux.org.uk>
+        h=date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
+        b=EmWjyIaZIjpXF0VXvak6eXwIWYVaMDnDMauJoxcuaH/MFJWug6rYY4U1tvK5Zs30aI5CjaTqqXcV9/ittNbxYbN8R8U/ittzxFzxA11sdtWYiLAUX9q642FHjFxfTPYi9MLWYqqFnY+Ta/XG6uIbZEuvjcOj6QH9nH0bdqnhhX0=
+Date: Wed, 9 Apr 2008 15:32:24 +0800
+From: Dave Young <hidave.darkstar@gmail.com>
+To: akpm@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH -mm] snd_hda_intel : mutex_unlock balance fix
+Message-ID: <20080409073224.GA3572@darkstar.te-china.tietoenator.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20080403132142.GA26882@doriath.ww600.siemens.net>
-	 <20080403132411.GA27017@doriath.ww600.siemens.net>
-	 <20080407160155.5e6d77f0.akpm@linux-foundation.org>
-	 <bc64b4640804080252q6e295eeege7004013406ad3d8@mail.gmail.com>
-	 <20080408193502.GB18053@flint.arm.linux.org.uk>
-	 <bc64b4640804081258g318b69f7l6d5ea2b38edb53a2@mail.gmail.com>
-	 <20080408200721.GC18053@flint.arm.linux.org.uk>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+mutex lock/unlock balance problem detected by lockdep, see below info.
 
-2008/4/9, Russell King <rmk+lkml@arm.linux.org.uk>:
-> On Tue, Apr 08, 2008 at 11:58:11PM +0400, Dmitry wrote:
->  > 2008/4/8, Russell King <rmk+lkml@arm.linux.org.uk>:
->
-> > > So... what is the correct name.  Bear in mind what I said in the previous
->  > >  reply this evening - which says that it should be the name used by the
->  > >  SA1111.  Look in the data sheet - the pin itself to which the 3.6MHz
->  > >  clock is supplised will have a name.  That's the name which should be
->  > >  used.
->  >
->  > I use the same pin/clock for the tc6393xb driver. And I'm pretty sure
->  > the datasheets won't agree on the name of the pin. Which name should I
->  > use?
->
->
-> You missed the fundamental issue about the clock API - the _name_ is
->  not the clock name defined by the host.  It's the _device_ clock name.
->
->  So, you shouldn't be using the SA1111 clock name for the tc6393xb driver.
->  You should be using its own name.  The platform specific bit of the clock
->  API is then supposed to return you the struct clk corresponding with
->  that input, by using the platform knowledge that it's connected to GPIO27
->  or whatever.
+This patch moves the mutex_unlock into "if {}"
 
-I think I understood your idea. I'll repost updated patchset later.
+[  893.231878] =====================================
+[  893.231878] [ BUG: bad unlock balance detected! ]
+[  893.231878] -------------------------------------
+[  893.231878] firefox-bin/2796 is trying to release lock (&codec->spdif_mutex) at:
+[  893.231878] [<c03d7608>] mutex_unlock+0x8/0x10
+[  893.231878] but there are no more locks to release!
+[  893.231878] 
+[  893.231878] other info that might help us debug this:
+[  893.231878] 2 locks held by firefox-bin/2796:
+[  893.231878]  #0:  (&pcm->open_mutex){--..}, at: [<f892d093>] snd_pcm_open+0xc3/0x190 [snd_pcm]
+[  893.231878]  #1:  (&chip->open_mutex){--..}, at: [<f893bc57>] azx_pcm_open+0x37/0x1b0 [snd_hda_intel]
+[  893.231878] 
+[  893.231878] stack backtrace:
+[  893.231878] Pid: 2796, comm: firefox-bin Not tainted 2.6.25-rc8-mm1 #9
+[  893.231878]  [<c0128148>] ? printk+0x18/0x20
+[  893.231878]  [<c014bd49>] print_unlock_inbalance_bug+0xd9/0xf0
+[  893.231878]  [<c03d7608>] ? mutex_unlock+0x8/0x10
+[  893.231878]  [<c014be4a>] lock_release_non_nested+0x7a/0x170
+[  893.231878]  [<c014a7b9>] ? mark_lock_irq+0x209/0x3b0
+[  893.231878]  [<c014bf7c>] lock_release_nested+0x3c/0xf0
+[  893.231878]  [<c03d7608>] ? mutex_unlock+0x8/0x10
+[  893.231878]  [<c014c09b>] __lock_release+0x6b/0x70
+[  893.231878]  [<c03d7608>] ? mutex_unlock+0x8/0x10
+[  893.231878]  [<c014c2f6>] lock_release+0x56/0x80
+[  893.231878]  [<c03d7f2e>] __mutex_unlock_slowpath+0x5e/0x140
+[  893.231878]  [<c03d7608>] mutex_unlock+0x8/0x10
+[  893.231878]  [<f893f157>] snd_hda_multi_out_analog_open+0xd7/0x150 [snd_hda_intel]
+[  893.231878]  [<f894d749>] stac92xx_playback_pcm_open+0x19/0x20 [snd_hda_intel]
+[  893.231878]  [<f893bd6f>] azx_pcm_open+0x14f/0x1b0 [snd_hda_intel]
+[  893.231878]  [<f892ce94>] snd_pcm_open_substream+0x44/0x80 [snd_pcm]
+[  893.231878]  [<f892cefd>] snd_pcm_open_file+0x2d/0xa0 [snd_pcm]
+[  893.231878]  [<c013be0b>] ? add_wait_queue+0x3b/0x50
+[  893.231878]  [<f892d0b3>] snd_pcm_open+0xe3/0x190 [snd_pcm]
+[  893.231878]  [<c0121900>] ? default_wake_function+0x0/0x10
+[  893.231878]  [<c03d7608>] ? mutex_unlock+0x8/0x10
+[  893.231878]  [<f892cf93>] snd_pcm_playback_open+0x23/0x30 [snd_pcm]
+[  893.231878]  [<f88e3217>] snd_open+0x147/0x1f0 [snd]
+[  893.231878]  [<c018baf9>] chrdev_open+0xf9/0x1d0
+[  893.231878]  [<c0187c0c>] __dentry_open+0x18c/0x310
+[  893.231878]  [<c0187e2d>] nameidata_to_filp+0x2d/0x60
+[  893.231878]  [<c018ba00>] ? chrdev_open+0x0/0x1d0
+[  893.231878]  [<c0192850>] do_filp_open+0x190/0x620
+[  893.231878]  [<c0148720>] ? lock_release_holdtime+0x60/0x80
+[  893.231878]  [<c014c077>] ? __lock_release+0x47/0x70
+[  893.231878]  [<c0187fb8>] ? get_unused_fd_flags+0xb8/0xf0
+[  893.231878]  [<c03d94f7>] ? _spin_unlock+0x27/0x40
+[  893.231878]  [<c0187fb8>] ? get_unused_fd_flags+0xb8/0xf0
+[  893.231878]  [<c0188114>] do_sys_open+0x54/0xe0
+[  893.231878]  [<c0103edb>] ? restore_nocheck+0x12/0x15
+[  893.231878]  [<c01881bc>] sys_open+0x1c/0x20
+[  893.231878]  [<c0103e7a>] syscall_call+0x7/0xb
+[  893.231878]  =======================
 
--- 
-With best wishes
-Dmitry
+Signed-off-by: Dave Young <hidave.darkstar@gmail.com>
+
+---
+sound/pci/hda/hda_codec.c |    2 +-
+1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff -upr linux/sound/pci/hda/hda_codec.c linux.new/sound/pci/hda/hda_codec.c
+--- linux/sound/pci/hda/hda_codec.c	2008-04-09 15:08:21.000000000 +0800
++++ linux.new/sound/pci/hda/hda_codec.c	2008-04-09 15:09:20.000000000 +0800
+@@ -2665,8 +2665,8 @@ int snd_hda_multi_out_analog_open(struct
+ 			if (mout->spdif_maxbps < hinfo->maxbps)
+ 				hinfo->maxbps = mout->spdif_maxbps;
+ 		}
++		mutex_unlock(&codec->spdif_mutex);
+ 	}
+-	mutex_unlock(&codec->spdif_mutex);
+ 	return snd_pcm_hw_constraint_step(substream->runtime, 0,
+ 					  SNDRV_PCM_HW_PARAM_CHANNELS, 2);
+ }
