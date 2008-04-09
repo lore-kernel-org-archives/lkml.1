@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757959AbYDIQXh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754217AbYDIQXx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757959AbYDIQXh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Apr 2008 12:23:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756121AbYDIQWD
+	id S1754217AbYDIQXx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Apr 2008 12:23:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756050AbYDIQWG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Apr 2008 12:22:03 -0400
-Received: from smtp.polymtl.ca ([132.207.4.11]:58608 "EHLO smtp.polymtl.ca"
+	Wed, 9 Apr 2008 12:22:06 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:58617 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757103AbYDIQWA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Apr 2008 12:22:00 -0400
-Message-Id: <20080409152052.573366191@polymtl.ca>
+	id S1757126AbYDIQWD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Apr 2008 12:22:03 -0400
+Message-Id: <20080409152052.245356400@polymtl.ca>
 References: <20080409150829.855195878@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Wed, 09 Apr 2008 11:08:46 -0400
+Date: Wed, 09 Apr 2008 11:08:45 -0400
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
        linux-kernel@vger.kernel.org
@@ -20,19 +20,16 @@ Cc: Andi Kleen <andi@firstfloor.org>, Rusty Russell <rusty@rustcorp.com.au>,
        Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
        Adrian Bunk <bunk@stusta.de>, Alexey Dobriyan <adobriyan@gmail.com>,
        Christoph Hellwig <hch@infradead.org>, akpm@osdl.org
-Subject: [patch 17/17] Scheduler Profiling - Use Immediate Values
-Content-Disposition: inline; filename=scheduler-profiling-use-immediate-values.patch
+Subject: [patch 16/17] Immediate Values - Documentation
+Content-Disposition: inline; filename=immediate-values-documentation.patch
 X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Wed,  9 Apr 2008 16:20:12 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use immediate values with lower d-cache hit in optimized version as a
-condition for scheduler profiling call.
-
-Changelog :
+Changelog:
+- Remove imv_set_early (removed from API).
 - Use imv_* instead of immediate_*.
-- Follow the white rabbit : kvm_main.c which becomes x86.c.
 
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 CC: Rusty Russell <rusty@rustcorp.com.au>
@@ -43,164 +40,235 @@ CC: Christoph Hellwig <hch@infradead.org>
 CC: mingo@elte.hu
 CC: akpm@osdl.org
 ---
- arch/x86/kvm/x86.c      |    2 +-
- include/linux/profile.h |    5 +++--
- kernel/profile.c        |   22 +++++++++++-----------
- kernel/sched_fair.c     |    5 +----
- 4 files changed, 16 insertions(+), 18 deletions(-)
+ Documentation/immediate.txt |  221 ++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 221 insertions(+)
 
-Index: linux-2.6-lttng.mm/kernel/profile.c
+Index: linux-2.6-lttng/Documentation/immediate.txt
 ===================================================================
---- linux-2.6-lttng.mm.orig/kernel/profile.c	2008-04-09 10:23:26.000000000 -0400
-+++ linux-2.6-lttng.mm/kernel/profile.c	2008-04-09 10:55:53.000000000 -0400
-@@ -41,8 +41,8 @@ static int (*timer_hook)(struct pt_regs 
- static atomic_t *prof_buffer;
- static unsigned long prof_len, prof_shift;
- 
--int prof_on __read_mostly;
--EXPORT_SYMBOL_GPL(prof_on);
-+DEFINE_IMV(char, prof_on) __read_mostly;
-+EXPORT_IMV_SYMBOL_GPL(prof_on);
- 
- static cpumask_t prof_cpu_mask = CPU_MASK_ALL;
- #ifdef CONFIG_SMP
-@@ -60,7 +60,7 @@ static int __init profile_setup(char *st
- 
- 	if (!strncmp(str, sleepstr, strlen(sleepstr))) {
- #ifdef CONFIG_SCHEDSTATS
--		prof_on = SLEEP_PROFILING;
-+		imv_set(prof_on, SLEEP_PROFILING);
- 		if (str[strlen(sleepstr)] == ',')
- 			str += strlen(sleepstr) + 1;
- 		if (get_option(&str, &par))
-@@ -73,7 +73,7 @@ static int __init profile_setup(char *st
- 			"kernel sleep profiling requires CONFIG_SCHEDSTATS\n");
- #endif /* CONFIG_SCHEDSTATS */
- 	} else if (!strncmp(str, schedstr, strlen(schedstr))) {
--		prof_on = SCHED_PROFILING;
-+		imv_set(prof_on, SCHED_PROFILING);
- 		if (str[strlen(schedstr)] == ',')
- 			str += strlen(schedstr) + 1;
- 		if (get_option(&str, &par))
-@@ -82,7 +82,7 @@ static int __init profile_setup(char *st
- 			"kernel schedule profiling enabled (shift: %ld)\n",
- 			prof_shift);
- 	} else if (!strncmp(str, kvmstr, strlen(kvmstr))) {
--		prof_on = KVM_PROFILING;
-+		imv_set(prof_on, KVM_PROFILING);
- 		if (str[strlen(kvmstr)] == ',')
- 			str += strlen(kvmstr) + 1;
- 		if (get_option(&str, &par))
-@@ -92,7 +92,7 @@ static int __init profile_setup(char *st
- 			prof_shift);
- 	} else if (get_option(&str, &par)) {
- 		prof_shift = par;
--		prof_on = CPU_PROFILING;
-+		imv_set(prof_on, CPU_PROFILING);
- 		printk(KERN_INFO "kernel profiling enabled (shift: %ld)\n",
- 			prof_shift);
- 	}
-@@ -103,7 +103,7 @@ __setup("profile=", profile_setup);
- 
- void __init profile_init(void)
- {
--	if (!prof_on)
-+	if (!_imv_read(prof_on))
- 		return;
- 
- 	/* only text is profiled */
-@@ -290,7 +290,7 @@ void profile_hits(int type, void *__pc, 
- 	int i, j, cpu;
- 	struct profile_hit *hits;
- 
--	if (prof_on != type || !prof_buffer)
-+	if (!prof_buffer)
- 		return;
- 	pc = min((pc - (unsigned long)_stext) >> prof_shift, prof_len - 1);
- 	i = primary = (pc & (NR_PROFILE_GRP - 1)) << PROFILE_GRPSHIFT;
-@@ -400,7 +400,7 @@ void profile_hits(int type, void *__pc, 
- {
- 	unsigned long pc;
- 
--	if (prof_on != type || !prof_buffer)
-+	if (!prof_buffer)
- 		return;
- 	pc = ((unsigned long)__pc - (unsigned long)_stext) >> prof_shift;
- 	atomic_add(nr_hits, &prof_buffer[min(pc, prof_len - 1)]);
-@@ -557,7 +557,7 @@ static int __init create_hash_tables(voi
- 	}
- 	return 0;
- out_cleanup:
--	prof_on = 0;
-+	imv_set(prof_on, 0);
- 	smp_mb();
- 	on_each_cpu(profile_nop, NULL, 0, 1);
- 	for_each_online_cpu(cpu) {
-@@ -584,7 +584,7 @@ static int __init create_proc_profile(vo
- {
- 	struct proc_dir_entry *entry;
- 
--	if (!prof_on)
-+	if (!_imv_read(prof_on))
- 		return 0;
- 	if (create_hash_tables())
- 		return -1;
-Index: linux-2.6-lttng.mm/include/linux/profile.h
-===================================================================
---- linux-2.6-lttng.mm.orig/include/linux/profile.h	2008-04-09 10:28:31.000000000 -0400
-+++ linux-2.6-lttng.mm/include/linux/profile.h	2008-04-09 10:55:53.000000000 -0400
-@@ -5,10 +5,11 @@
- #include <linux/init.h>
- #include <linux/cpumask.h>
- #include <linux/cache.h>
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6-lttng/Documentation/immediate.txt	2008-02-01 07:42:01.000000000 -0500
+@@ -0,0 +1,221 @@
++		        Using the Immediate Values
++
++			    Mathieu Desnoyers
++
++
++This document introduces Immediate Values and their use.
++
++
++* Purpose of immediate values
++
++An immediate value is used to compile into the kernel variables that sit within
++the instruction stream. They are meant to be rarely updated but read often.
++Using immediate values for these variables will save cache lines.
++
++This infrastructure is specialized in supporting dynamic patching of the values
++in the instruction stream when multiple CPUs are running without disturbing the
++normal system behavior.
++
++Compiling code meant to be rarely enabled at runtime can be done using
++if (unlikely(imv_read(var))) as condition surrounding the code. The
++smallest data type required for the test (an 8 bits char) is preferred, since
++some architectures, such as powerpc, only allow up to 16 bits immediate values.
++
++
++* Usage
++
++In order to use the "immediate" macros, you should include linux/immediate.h.
++
 +#include <linux/immediate.h>
- 
- #include <asm/errno.h>
- 
--extern int prof_on __read_mostly;
-+DECLARE_IMV(char, prof_on) __read_mostly;
- 
- #define CPU_PROFILING	1
- #define SCHED_PROFILING	2
-@@ -36,7 +37,7 @@ static inline void profile_hit(int type,
- 	/*
- 	 * Speedup for the common (no profiling enabled) case:
- 	 */
--	if (unlikely(prof_on == type))
-+	if (unlikely(imv_read(prof_on) == type))
- 		profile_hits(type, ip, 1);
- }
- 
-Index: linux-2.6-lttng.mm/kernel/sched_fair.c
-===================================================================
---- linux-2.6-lttng.mm.orig/kernel/sched_fair.c	2008-04-09 10:26:45.000000000 -0400
-+++ linux-2.6-lttng.mm/kernel/sched_fair.c	2008-04-09 10:55:53.000000000 -0400
-@@ -455,11 +455,8 @@ static void enqueue_sleeper(struct cfs_r
- 		 * get a milliseconds-range estimation of the amount of
- 		 * time that the task spent sleeping:
- 		 */
--		if (unlikely(prof_on == SLEEP_PROFILING)) {
--
--			profile_hits(SLEEP_PROFILING, (void *)get_wchan(tsk),
-+		profile_hits(SLEEP_PROFILING, (void *)get_wchan(task_of(se)),
- 				     delta >> 20);
--		}
- 		account_scheduler_latency(tsk, delta >> 10, 0);
- 	}
- #endif
-Index: linux-2.6-lttng.mm/arch/x86/kvm/x86.c
-===================================================================
---- linux-2.6-lttng.mm.orig/arch/x86/kvm/x86.c	2008-04-09 10:26:33.000000000 -0400
-+++ linux-2.6-lttng.mm/arch/x86/kvm/x86.c	2008-04-09 10:55:53.000000000 -0400
-@@ -2814,7 +2814,7 @@ again:
- 	/*
- 	 * Profile KVM exit RIPs:
- 	 */
--	if (unlikely(prof_on == KVM_PROFILING)) {
-+	if (unlikely(imv_read(prof_on) == KVM_PROFILING)) {
- 		kvm_x86_ops->cache_regs(vcpu);
- 		profile_hit(KVM_PROFILING, (void *)vcpu->arch.rip);
- 	}
++
++DEFINE_IMV(char, this_immediate);
++EXPORT_IMV_SYMBOL(this_immediate);
++
++
++And use, in the body of a function:
++
++Use imv_set(this_immediate) to set the immediate value.
++
++Use imv_read(this_immediate) to read the immediate value.
++
++The immediate mechanism supports inserting multiple instances of the same
++immediate. Immediate values can be put in inline functions, inlined static
++functions, and unrolled loops.
++
++If you have to read the immediate values from a function declared as __init or
++__exit, you should explicitly use _imv_read(), which will fall back on a
++global variable read. Failing to do so will leave a reference to the __init
++section after it is freed (it would generate a modpost warning).
++
++You can choose to set an initial static value to the immediate by using, for
++instance:
++
++DEFINE_IMV(long, myptr) = 10;
++
++
++* Optimization for a given architecture
++
++One can implement optimized immediate values for a given architecture by
++replacing asm-$ARCH/immediate.h.
++
++
++* Performance improvement
++
++
++  * Memory hit for a data-based branch
++
++Here are the results on a 3GHz Pentium 4:
++
++number of tests: 100
++number of branches per test: 100000
++memory hit cycles per iteration (mean): 636.611
++L1 cache hit cycles per iteration (mean): 89.6413
++instruction stream based test, cycles per iteration (mean): 85.3438
++Just getting the pointer from a modulo on a pseudo-random value, doing
++  nothing with it, cycles per iteration (mean): 77.5044
++
++So:
++Base case:                      77.50 cycles
++instruction stream based test:  +7.8394 cycles
++L1 cache hit based test:        +12.1369 cycles
++Memory load based test:         +559.1066 cycles
++
++So let's say we have a ping flood coming at
++(14014 packets transmitted, 14014 received, 0% packet loss, time 1826ms)
++7674 packets per second. If we put 2 markers for irq entry/exit, it
++brings us to 15348 markers sites executed per second.
++
++(15348 exec/s) * (559 cycles/exec) / (3G cycles/s) = 0.0029
++We therefore have a 0.29% slowdown just on this case.
++
++Compared to this, the instruction stream based test will cause a
++slowdown of:
++
++(15348 exec/s) * (7.84 cycles/exec) / (3G cycles/s) = 0.00004
++For a 0.004% slowdown.
++
++If we plan to use this for memory allocation, spinlock, and all sorts of
++very high event rate tracing, we can assume it will execute 10 to 100
++times more sites per second, which brings us to 0.4% slowdown with the
++instruction stream based test compared to 29% slowdown with the memory
++load based test on a system with high memory pressure.
++
++
++
++  * Markers impact under heavy memory load
++
++Running a kernel with my LTTng instrumentation set, in a test that
++generates memory pressure (from userspace) by trashing L1 and L2 caches
++between calls to getppid() (note: syscall_trace is active and calls
++a marker upon syscall entry and syscall exit; markers are disarmed).
++This test is done in user-space, so there are some delays due to IRQs
++coming and to the scheduler. (UP 2.6.22-rc6-mm1 kernel, task with -20
++nice level)
++
++My first set of results: Linear cache trashing, turned out not to be
++very interesting, because it seems like the linearity of the memset on a
++full array is somehow detected and it does not "really" trash the
++caches.
++
++Now the most interesting result: Random walk L1 and L2 trashing
++surrounding a getppid() call.
++
++- Markers compiled out (but syscall_trace execution forced)
++number of tests: 10000
++No memory pressure
++Reading timestamps takes 108.033 cycles
++getppid: 1681.4 cycles
++With memory pressure
++Reading timestamps takes 102.938 cycles
++getppid: 15691.6 cycles
++
++
++- With the immediate values based markers:
++number of tests: 10000
++No memory pressure
++Reading timestamps takes 108.006 cycles
++getppid: 1681.84 cycles
++With memory pressure
++Reading timestamps takes 100.291 cycles
++getppid: 11793 cycles
++
++
++- With global variables based markers:
++number of tests: 10000
++No memory pressure
++Reading timestamps takes 107.999 cycles
++getppid: 1669.06 cycles
++With memory pressure
++Reading timestamps takes 102.839 cycles
++getppid: 12535 cycles
++
++The result is quite interesting in that the kernel is slower without
++markers than with markers. I explain it by the fact that the data
++accessed is not laid out in the same manner in the cache lines when the
++markers are compiled in or out. It seems that it aligns the function's
++data better to compile-in the markers in this case.
++
++But since the interesting comparison is between the immediate values and
++global variables based markers, and because they share the same memory
++layout, except for the movl being replaced by a movz, we see that the
++global variable based markers (2 markers) adds 742 cycles to each system
++call (syscall entry and exit are traced and memory locations for both
++global variables lie on the same cache line).
++
++
++- Test redone with less iterations, but with error estimates
++
++10 runs of 100 iterations each: Tests done on a 3GHz P4. Here I run getppid with
++syscall trace inactive, comparing the case with memory pressure and without
++memory pressure. (sorry, my system is not setup to execute syscall_trace this
++time, but it will make the point anyway).
++
++No memory pressure
++Reading timestamps:     150.92 cycles,     std dev.    1.01 cycles
++getppid:               1462.09 cycles,     std dev.   18.87 cycles
++
++With memory pressure
++Reading timestamps:     578.22 cycles,     std dev.  269.51 cycles
++getppid:              17113.33 cycles,     std dev. 1655.92 cycles
++
++
++Now for memory read timing: (10 runs, branches per test: 100000)
++Memory read based branch:
++                       644.09 cycles,      std dev.   11.39 cycles
++L1 cache hit based branch:
++                        88.16 cycles,      std dev.    1.35 cycles
++
++
++So, now that we have the raw results, let's calculate:
++
++Memory read:
++644.09±11.39 - 88.16±1.35 = 555.93±11.46 cycles
++
++Getppid without memory pressure:
++1462.09±18.87 - 150.92±1.01 = 1311.17±18.90 cycles
++
++Getppid with memory pressure:
++17113.33±1655.92 - 578.22±269.51 = 16535.11±1677.71 cycles
++
++Therefore, if we add 2 markers not based on immediate values to the getppid
++code, which would add 2 memory reads, we would add
++2 * 555.93±12.74 = 1111.86±25.48 cycles
++
++Therefore,
++
++1111.86±25.48 / 16535.11±1677.71 = 0.0672
++ relative error: sqrt(((25.48/1111.86)^2)+((1677.71/16535.11)^2))
++                     = 0.1040
++ absolute error: 0.1040 * 0.0672 = 0.0070
++
++Therefore: 0.0672±0.0070 * 100% = 6.72±0.70 %
++
++We can therefore affirm that adding 2 markers to getppid, on a system with high
++memory pressure, would have a performance hit of at least 6.0% on the system
++call time, all within the uncertainty limits of these tests. The same applies to
++other kernel code paths. The smaller those code paths are, the highest the
++impact ratio will be.
++
++Therefore, not only is it interesting to use the immediate values to dynamically
++activate dormant code such as the markers, but I think it should also be
++considered as a replacement for many of the "read-mostly" static variables.
 
 -- 
 Mathieu Desnoyers
