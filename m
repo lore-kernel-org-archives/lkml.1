@@ -1,61 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755538AbYDINmB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755403AbYDINpx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755538AbYDINmB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Apr 2008 09:42:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752935AbYDINly
+	id S1755403AbYDINpx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Apr 2008 09:45:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753051AbYDINpq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Apr 2008 09:41:54 -0400
-Received: from saeurebad.de ([85.214.36.134]:45291 "EHLO saeurebad.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752734AbYDINlx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Apr 2008 09:41:53 -0400
-From: Johannes Weiner <hannes@saeurebad.de>
-To: Roel Kluin <12o3l@tiscali.nl>
-Cc: "Maciej W. Rozycki" <macro@linux-mips.org>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] dz: test after postfix decrement fails in dz_console_putchar()
-References: <47FC93BC.5020201@tiscali.nl>
-Date: Wed, 09 Apr 2008 15:41:13 +0200
-In-Reply-To: <47FC93BC.5020201@tiscali.nl> (Roel Kluin's message of "Wed, 09
-	Apr 2008 12:00:28 +0200")
-Message-ID: <87ve2rqh6u.fsf@saeurebad.de>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
+	Wed, 9 Apr 2008 09:45:46 -0400
+Received: from crystal.sipsolutions.net ([195.210.38.204]:49508 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751973AbYDINpp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Apr 2008 09:45:45 -0400
+Subject: Re: [PATCH] introduce HAVE_EFFICIENT_UNALIGNED_ACCESS Kconfig
+	symbol
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Roman Zippel <zippel@linux-m68k.org>
+Cc: Andrew Morton <akpm@osdl.org>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, sam <sam@ravnborg.org>
+In-Reply-To: <200804082111.35944.zippel@linux-m68k.org>
+References: <1207667127.14253.42.camel@johannes.berg>
+	 <200804082111.35944.zippel@linux-m68k.org>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-kpF6x3sYdVbcYwHfQHYk"
+Date: Wed, 09 Apr 2008 15:43:43 +0200
+Message-Id: <1207748623.7442.14.camel@johannes.berg>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+
+--=-kpF6x3sYdVbcYwHfQHYk
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
+
 Hi,
 
-Roel Kluin <12o3l@tiscali.nl> writes:
+> Please CC linux-arch@vger.kernel.org for such changes, so it's more likel=
+y=20
+> noticed by more arch maintainers, so a list can be compiled what is=20
+> appropriate for the various archs.
 
-> When loops reaches 0 the postfix decrement still subtracts, so the test fails
->
-> Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
-> ---
-> diff --git a/drivers/serial/dz.c b/drivers/serial/dz.c
-> index 116211f..0dddd68 100644
-> --- a/drivers/serial/dz.c
-> +++ b/drivers/serial/dz.c
-> @@ -819,7 +819,7 @@ static void dz_console_putchar(struct uart_port *uport, int ch)
->  		dz_out(dport, DZ_TCR, mask);
->  		iob();
->  		udelay(2);
-> -	} while (loops--);
-> +	} while (--loops);
+Hah. I thought there was such a list but it didn't show up in
+MAINTAINERS so I thought I was wrong.
 
-It will run loops + 1 times.  After your change it does run loops times.
+> The scope of this symbol is IMO a little unclear, is it intended for one-=
+time=20
+> accesses to small object or also for repeated accesses to larger objects?
+> Anyway, this probably should be set for m68k as well.
 
->  	if (loops)				/* Cannot send otherwise. */
->  		dz_out(dport, DZ_TDR, ch);
+Also for repeated accesses, for example network packets where the IPv4
+header might not always be aligned. That's why we want it to be
+"efficient", not just "possible" (as an earlier version of the patch
+called it.)
 
-The intention was probably that this gets executed if the break in the
-loop (trdy == dport->port.line) is reached.  Without your fix, this
-branch is also taken if the while-loop terminates with loops == -1
-because of the postfix dec.
+johannes
 
-Your fix is correct but your changelog entry is wrong.
+--=-kpF6x3sYdVbcYwHfQHYk
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
 
-	Hannes
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iQIVAwUAR/zIDqVg1VMiehFYAQLspQ/9GCcNILMzg6k5U/LsudZTw41Q0jLcDrcV
+IP7njVlTNPg5PTOzMzMkDuj/uCDTAE9WDEIjgeHQqGWyBak8Qhs5YqfW41FbbFkJ
+0ln+G2trSQNN/mt6S7eWE00y1ftavS8LXUkO7Sar/pupzFbODI6DeMVnUf//ZAFt
+pUrU9BnTa7yoPi3lD3okLxQBK0cvwkr7q9/sNdhGnN2grdS5GVKUCEI0zFtARC9b
+HBY2AP6daVHbs3uo0zLc+Sax76gwMa3xxrql/Rx5FRTPQfcqFsfNJC+Ox05TjT1R
+AMJ2uo4XrfsVvrBkaJL9Yux0NjNUH0G6OCvq8LGwCcWdQpFEbvhGtOw5d7reZJfB
+Ak+B5Y7tF1qz2PUDMtk389Pz5QtPpN/T+54cHhRWlCklKr1stHUHF3yk49B+IYRf
++uIwhO6ClKQdNio4my8MzeLGJKgLjndpdZ0hKAZkalyFKANlm8RqigRciA5gbGcc
+E1dpY94D7pDu3qPf6LevU3T/dKfUr0IDL4JNdmiBEteGoUQSKYpEkDFP/xvoETDi
+WGqctvV2h2audL+q245FpaV44hKLm++e9spdnGniWC0lwLEtQ37/hr/VNKeRtJJ+
+sXRzcYrWHPZkX4bLRvrS2BZizw6x+6/AD9Rr6rHEH/jRwtrOPvmxtigbPy5MxzY1
+eGZ+g4+bz/Q=
+=1ksc
+-----END PGP SIGNATURE-----
+
+--=-kpF6x3sYdVbcYwHfQHYk--
+
