@@ -1,81 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754278AbYDIL6O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755357AbYDIL6y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754278AbYDIL6O (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Apr 2008 07:58:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752406AbYDIL56
+	id S1755357AbYDIL6y (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Apr 2008 07:58:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752956AbYDIL6q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Apr 2008 07:57:58 -0400
-Received: from mail.phnxsoft.com ([195.227.45.4]:4209 "EHLO
-	posthamster.phnxsoft.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752439AbYDIL55 (ORCPT
+	Wed, 9 Apr 2008 07:58:46 -0400
+Received: from fk-out-0910.google.com ([209.85.128.185]:50233 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752406AbYDIL6p (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Apr 2008 07:57:57 -0400
-Message-ID: <47FCAF35.4000500@imap.cc>
-Date: Wed, 09 Apr 2008 13:57:41 +0200
-From: Tilman Schmidt <tilman@imap.cc>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; de-AT; rv:1.8.1.13) Gecko/20080313 SeaMonkey/1.1.9 Mnenhy/0.7.5.666
+	Wed, 9 Apr 2008 07:58:45 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=MurODrVqRGtG8otsvDnOfQ9gHZvAUqP6OQVecM2b8iqyaWPpObOcvtwe7BLvDKtchHzISYqvBzuiGIxNHl+ZbsWXCgZTB9P18PdM3dcSFvr21cdXA7YPMbUHVt/QTiYmDm+d1okLxOJ0iCHCmPycVg57t6dRat8awlMoUcYp6+E=
+Message-ID: <47FCAEA3.5030004@gmail.com>
+Date: Wed, 09 Apr 2008 13:55:15 +0200
+From: Jacek Luczak <difrost.kernel@gmail.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-To: Ray Lee <ray-lk@madrabbit.org>
-CC: Dave Airlie <airlied@gmail.com>, linux-kernel@vger.kernel.org,
-       pavel@ucw.cz
-Subject: Re: [2.6.25-rc6] possible regression: X server dying
-References: <47E82D68.5070305@imap.cc>	 <21d7e9970803241622v10b887a6p869535102b486279@mail.gmail.com>	 <47E83D14.8070800@imap.cc>	 <21d7e9970803241753q433e7545pdd00eae189846a8@mail.gmail.com>	 <21d7e9970803302153s314d48d3o7120a56092eeaede@mail.gmail.com>	 <47F1FA3F.3010206@imap.cc> <47FA9EC2.6030801@imap.cc> <2c0942db0804071555w2dc2e43fw7cce64d4a5ba004@mail.gmail.com>
-In-Reply-To: <2c0942db0804071555w2dc2e43fw7cce64d4a5ba004@mail.gmail.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enigE45BC0E8597F0E0DFE8D2830"
+To: Ingo Molnar <mingo@elte.hu>
+CC: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>,
+       Cyrill Gorcunov <gorcunov@gmail.com>
+Subject: Re: linux-next: Tree for April 9
+References: <20080409185309.b94c9d15.sfr@canb.auug.org.au> <d711229d0804090400p1c92a158j381b86e207a6f38a@mail.gmail.com> <20080409210936.ec8ea986.sfr@canb.auug.org.au> <20080409212719.7d834c13.sfr@canb.auug.org.au> <47FCA7FA.3010008@gmail.com> <20080409113439.GA26174@elte.hu>
+In-Reply-To: <20080409113439.GA26174@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enigE45BC0E8597F0E0DFE8D2830
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: quoted-printable
+Ingo Molnar pisze:
+> * Jacek Luczak <difrost.kernel@gmail.com> wrote:
+> 
+>>> Don't worry about it, I found the problem.
+>>>
+>>> It seems that commit 883a9fc4e5d9b0701f15d4e5a23608f942104721 ("x86: 
+>>> cleanup - rename VM_MASK to X86_VM_MASK") from the x86 tree seems to 
+>>> have missed some places.
+>> Yep, I did the same. You can find patch, which renames changes VM_MASK 
+>> to X86_VM_MASK across all files in arch/x86/kernel, here: 
+>> http://pin.if.uz.zgora.pl/~difrost/linux-next/09042008/
+> 
+> ah, that again comes from x86/for-akpm missing a patch that comes later 
+> in x86/latest. I'll resort it.
 
-Ray Lee schrieb:
-> If you think it's one of the screensavers but don't know which one,
-> then open up a bash shell and do a
->=20
-> for i in /usr/lib/xscreensaver/*; do echo $i; $i ; done
->=20
-> hitting control-c to break out of the screensaver when you think it's
-> been cleared of any wrongdoing.
+X86_VM_MASK was already changed in one place in kernel/traps_32.c:
+  arch/x86/kernel/traps_32.c:502:    if (regs->flags & X86_VM_MASK) {
+and in mm/fault.c:
+  if (regs->flags & (X86_EFLAGS_IF | X86_VM_MASK))
 
-Good idea. I did one pass through the screensavers that way, letting
-each one run a couple of seconds until it seemed to become repetitive.
-None of this crashed my X server, which at least seems to tell me that
-it is not one particular screensaver always triggering the problem.
-
-But: twice during that test I was called away, left the thing running,
-and came back to find the X server had exited again, apparently after
-the "real" screensaver had kicked in. Twice in a day, that's much more
-than ever before. So you may have found me a way to trigger the crash
-with greater probability.
-
-Thanks,
-T.
-
---=20
-Tilman Schmidt                    E-Mail: tilman@imap.cc
-Bonn, Germany
-Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
-Unge=C3=B6ffnet mindestens haltbar bis: (siehe R=C3=BCckseite)
-
-
---------------enigE45BC0E8597F0E0DFE8D2830
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.4 (MingW32)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iD8DBQFH/K81Q3+did9BuFsRAu4NAJ99+GRIH+RUILQULVauRDUaQwVsZACfa3YI
-aH2T9paJdauuC/NtbC4JxPo=
-=NpvP
------END PGP SIGNATURE-----
-
---------------enigE45BC0E8597F0E0DFE8D2830--
+-Jacek
