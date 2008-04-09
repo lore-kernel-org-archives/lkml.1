@@ -1,86 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755835AbYDIVhz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755848AbYDIVkz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755835AbYDIVhz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Apr 2008 17:37:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753455AbYDIVhr
+	id S1755848AbYDIVkz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Apr 2008 17:40:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753584AbYDIVkp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Apr 2008 17:37:47 -0400
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:49521 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752980AbYDIVhq (ORCPT
+	Wed, 9 Apr 2008 17:40:45 -0400
+Received: from wx-out-0506.google.com ([66.249.82.231]:51558 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753264AbYDIVko (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Apr 2008 17:37:46 -0400
-Date: Wed, 9 Apr 2008 22:37:09 +0100
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Dmitry <dbaryshkov@gmail.com>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, haavard.skinnemoen@atmel.com,
-       lethal@linux-sh.org, philipp.zabel@gmail.com, pavel@ucw.cz,
-       tony@atomide.com, paul@pwsan.com
-Subject: Re: [PATCH 5/6] Clocklib: Use correct clock for IrDA on pxa
-Message-ID: <20080409213709.GC31386@flint.arm.linux.org.uk>
-References: <20080403132402.GA27008@doriath.ww600.siemens.net> <20080407160029.f1f9ce4f.akpm@linux-foundation.org> <20080407230434.GA525@flint.arm.linux.org.uk> <bc64b4640804080247s82ba84chd740c08b2fbb9b1a@mail.gmail.com> <20080408193309.GA18053@flint.arm.linux.org.uk> <bc64b4640804090015m7dd640d5j31c54b99007f09a7@mail.gmail.com> <20080409190504.GA13891@flint.arm.linux.org.uk> <20080409200916.78615f39@core> <20080409192009.GB13891@flint.arm.linux.org.uk> <20080409215233.1a1c0002@core>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 9 Apr 2008 17:40:44 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=hbTeGfXZmIkvv/j9R6AHAKGIdcPkRWQx/KFziqgKADd/yzhrXQT+eoig8yG+FZiPCuMI9tAGQT6w1uuXuKJcCGmB+IFXhyi4xKgDCfNzU6YXRgqe9mTz051HpTsltHUO0UHIclJs+k+nYcWexa6tf+dRQ/2Mg1GEo+PuQv1E1/8=
+Message-ID: <dd18b0c30804091440x6e029daes8dd5f4dd848f5154@mail.gmail.com>
+Date: Wed, 9 Apr 2008 21:40:42 +0000
+From: "Justin Mattock" <justinmattock@gmail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: mutex_unlock
+Cc: "Linux Kernel" <linux-kernel@vger.kernel.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Ingo Molnar" <mingo@elte.hu>,
+       "Peter Zijlstra" <a.p.zijlstra@chello.nl>
+In-Reply-To: <200804092240.26623.rjw@sisk.pl>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080409215233.1a1c0002@core>
-User-Agent: Mutt/1.4.2.1i
+References: <dd18b0c30804090017m75c97f81qf6428b377432f8b5@mail.gmail.com>
+	 <200804092240.26623.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 09, 2008 at 09:52:33PM +0100, Alan Cox wrote:
-> > > It's called a line discipline, we've had them for many years. We may need
-> > > a way for ldiscs and drivers to co-operate a bit more but these days we
-> > > support proper buffering and arbitary baud rates (except on a few
-> > > platforms whose maintainers are not paying attention ;)).
-> > 
-> > I feel that's a "it would be nice if" solution - and something worth
-> > aiming for, but the amount of work required to get there is not going
-> > to be insignificant.
-> 
-> The work required to fix up the existing FIR hacks is not insignifcant
-> either. Also right now the tty layer is getting a major rework so now is
-> actually the time to sort out anything extra that is needed.
-> 
-> If you want 4MBit please just use an ldisc and do
-> 
-> 	struct ktermios tmp;
-> 	mutex_lock(&tty->termios_mutex);
-> 	tmp = *tty->termios;
-> 	tty_encode_baud_rate(tty, 4000000, 4000000);
-> 	tty->driver->set_termios(tty, &tmp);
-> 	mutex_unlock(&tty->termios_mutex);
+On Wed, Apr 9, 2008 at 8:40 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+>
+> On Wednesday, 9 of April 2008, Justin Mattock wrote:
+>  > Hello with testing out git(very cool); my first test was with
+>  > 2.6.25-rc8-00194-g4cac04d ran vary smoothly;
+>  > then I decided to pull the latest git (2.6.25-rc8-00208-g7180c4c)and
+>  > see what I might find.
+>  > upon reboot the system starts up giving me this:
+>  >
+>  > Starting up
+>  > Decompressing Linux Done
+>  > Booting the kernel
+>  > __   <-------blinking
+>  >
+>  > I waited a few seconds or minutes but nothing;
+>  > after reading earlier posts about something with a mutex_unlock maybe
+>  > this was what I was experiencing.
+>  > when loading a live cd and recompiling the same kernel, I noticed
+>  > under kernel hacking;
+>  >
+>  > RT Mutex debugging
+>  > Built in scriptable tester for rt-mutexes
+>  > Spinlock and rw-lock debugging
+>  > Mutex debugging basic checks
+>  > Lock debugging detect incorrect freeing of live locks
+>  > Lock debugging prove locking correctness
+>  > lock usage statistics
+>  > Lock dependency engine debugging
+>  > spinlock debugging sleep-inside-spinlock checking
+>  > Locking API boot-time self-tests
+>  >
+>  > With not knowing what I was doing I chose yes to all of these options,
+>  > then reboot -f,
+>  > The system booted up properly,
+>  >
+>  > Is there a way where I can find out if this was what was going on?
+>  > could this be something different?
+>
+>  Hm, interesting.
+>
+>  It looks like our locking debugging code may hide some issues ...
+>
+>  Thanks,
+>  Rafael
+>
 
-There's more to FIR than just a baud rate change.  On PXA for instance,
-SIR is implemented using the standard UART device in "SIR" mode, but FIR
-is a completely separate hardware block with its own IRQs and clocks -
-you need to switch the pin muxing from the UART to the FIR device.
-
-So it's not just a matter of setting the baud rate to 4Mbps.
-
-However, you can't just say "have two separate drivers and only use
-one or the other" - all IrDA link negotiation is done at SIR at 9600
-baud and only when negotiation is complete will the selected rate
-become effective - be that SIR or FIR based.
-
-So yes, using a ldisc for SIR (with a hook into the driver to tell the
-driver to setup the port for IR) sounds ideal, but we're still going to
-need to deal with the FIR device and switch IrDA between that and the
-SIR UART ldisc.
-
-Note - there are other reasons for finally sorting this out as well -
-there are systems with IR which want to support both IrDA up to FIR
-and other uart-based IR applications.  IIRC this came up on the iPAQs.
-I forget exactly which applications but I believe lirc might fall into
-the "want a serial port not the FIR network device interface" class.
-Having SIR always go via ldiscs should sort that out nicely as well.
-(I'm thinking maybe we want some control to set a port into IR
-transmission/reception mode independent of selecting the IrDA ldisc -
-but I'd suggest further research first - I may be just handwaving
-about an already solved problem.)
+Maybe; weird  having something like that happen.(maybe it was
+something like what appletouch is doing i.g. could not do mode request
+error. The problem  is it very seldom, every X amount of boots)  I can
+go back in the kernel and see if I can find out what option really
+caused the system to boot properly(hopefully). Also with suspend; I
+update to the latest openGl to see if suspend works, but it seems to
+be worst with the latest release, i.g. a few days ago I update xorg to
+7.3 with sid, suspend would give me a blank screen but no reboot(I
+should of left my mouse on the terminal, then once the blank screen
+shows up issue dmesg > suspend), now with the latest update with
+openGL(today) I receive a blank screen and a reboot.
+Maybe openGl needs to have DRI enabled? in order for this to work...
 
 -- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+Justin P. Mattock
