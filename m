@@ -1,41 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756098AbYDIN1s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755336AbYDINbS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756098AbYDIN1s (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Apr 2008 09:27:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753049AbYDIN1j
+	id S1755336AbYDINbS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Apr 2008 09:31:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752832AbYDINbL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Apr 2008 09:27:39 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:36585 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751673AbYDIN1j (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Apr 2008 09:27:39 -0400
-Date: Wed, 9 Apr 2008 09:27:21 -0400
-From: Christoph Hellwig <hch@infradead.org>
-To: Trond Myklebust <Trond.Myklebust@netapp.com>
-Cc: Christoph Hellwig <hch@infradead.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-nfs@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [GIT] Please pull NFS client fixes against linux-2.6.25-rc8
-Message-ID: <20080409132721.GA23852@infradead.org>
-References: <1207703414.21370.1.camel@heimdal.trondhjem.org> <20080409082408.GA17458@infradead.org> <1207746758.8303.4.camel@heimdal.trondhjem.org>
+	Wed, 9 Apr 2008 09:31:11 -0400
+Received: from saeurebad.de ([85.214.36.134]:44885 "EHLO saeurebad.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752777AbYDINbK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Apr 2008 09:31:10 -0400
+From: Johannes Weiner <hannes@saeurebad.de>
+To: Roel Kluin <12o3l@tiscali.nl>
+Cc: linux-mm@kvack.org, lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] pagewalk: don't pte_unmap(NULL) in walk_pte_range()
+References: <47FC95AD.1070907@tiscali.nl>
+Date: Wed, 09 Apr 2008 15:30:30 +0200
+In-Reply-To: <47FC95AD.1070907@tiscali.nl> (Roel Kluin's message of "Wed, 09
+	Apr 2008 12:08:45 +0200")
+Message-ID: <87zls3qhop.fsf@saeurebad.de>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1207746758.8303.4.camel@heimdal.trondhjem.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 09, 2008 at 09:12:38AM -0400, Trond Myklebust wrote:
-> That is what this does. For the case of no mmu, generic_file_mmap()
-> compiles into a 'return -ENOSYS;'
+Hi,
 
-doh, I was under the impression we had a real implementation now.
-Of course then it makes much more sense to just not set .mmap at all,
-which gives the same effect in a more obvious way and without any
-confusion to the reader.  (actually that one gives -ENODEV which I
-assume is for some reason more appropinquate)
+Roel Kluin <12o3l@tiscali.nl> writes:
+
+> This is right isn't it?
+> ---
+> Don't pte_unmap a NULL pointer, but the previous.
+
+Which NULL pointer?
+
+> Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
+> ---
+> diff --git a/mm/pagewalk.c b/mm/pagewalk.c
+> index 1cf1417..6615f0b 100644
+> --- a/mm/pagewalk.c
+> +++ b/mm/pagewalk.c
+> @@ -15,7 +15,7 @@ static int walk_pte_range(pmd_t *pmd, unsigned long addr, unsigned long end,
+>  		       break;
+>  	} while (pte++, addr += PAGE_SIZE, addr != end);
+>  
+> -	pte_unmap(pte);
+> +	pte_unmap(pte - 1);
+>  	return err;
+>  }
+
+This does not make any sense to me.
+
+	Hannes
