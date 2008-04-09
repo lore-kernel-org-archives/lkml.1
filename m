@@ -1,75 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756176AbYDIPxs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756231AbYDIP6U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756176AbYDIPxs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Apr 2008 11:53:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752076AbYDIPxl
+	id S1756231AbYDIP6U (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Apr 2008 11:58:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752783AbYDIP6M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Apr 2008 11:53:41 -0400
-Received: from gv-out-0910.google.com ([216.239.58.191]:40496 "EHLO
-	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753203AbYDIPxl (ORCPT
+	Wed, 9 Apr 2008 11:58:12 -0400
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:54576 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752119AbYDIP6L (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Apr 2008 11:53:41 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=M281hXwug9epy70zHgj7E7GBaLgPlXQJcitKXOVbnhAyV7ujj5Fk83f4d4r6E/BwgoLFgcpy3v/zUThV91NIoWDXbd+3GVuCiXtqef767FUrPcHbti9qPoEQ77/8l+2arznRvRp5y/2ipa0loUobFMHf3hbHiex+TxhCeTcDHCk=
-Message-ID: <36ca99e90804090853xf62438ayfbfa6010f2d31747@mail.gmail.com>
-Date: Wed, 9 Apr 2008 17:53:38 +0200
-From: "Bert Wesarg" <bert.wesarg@googlemail.com>
-To: "Mike Travis" <travis@sgi.com>
-Subject: Re: [PATCH 2/3] cpumask: use new cpus_scnprintf function v3
-Cc: "Ingo Molnar" <mingo@elte.hu>, "Paul Jackson" <pj@sgi.com>,
-       "Thomas Gleixner" <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <47FBD99A.2080007@sgi.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080408184301.651388000@polaris-admin.engr.sgi.com>
-	 <20080408184301.975491000@polaris-admin.engr.sgi.com>
-	 <36ca99e90804081240q31516fbegadbcc98360813863@mail.gmail.com>
-	 <47FBD99A.2080007@sgi.com>
+	Wed, 9 Apr 2008 11:58:11 -0400
+To: akpm@linux-foundation.org, jens.axboe@oracle.com
+CC: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: [patch] fix infinite loop in generic_file_splice_read()
+Message-Id: <E1JjcgO-0004q2-VJ@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Wed, 09 Apr 2008 17:57:56 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 8, 2008 at 10:46 PM, Mike Travis <travis@sgi.com> wrote:
->
-> Bert Wesarg wrote:
->  > On Tue, Apr 8, 2008 at 8:43 PM, Mike Travis <travis@sgi.com> wrote:
->  >>  --- linux-2.6.x86.sched.orig/drivers/base/node.c
->  >>  +++ linux-2.6.x86.sched/drivers/base/node.c
->  >>  @@ -19,22 +19,34 @@ static struct sysdev_class node_class =
->  >>   };
->  >>
->  >>
->  >>  -static ssize_t node_read_cpumap(struct sys_device * dev, char * buf)
->  >>  +static ssize_t node_read_cpumap(struct sys_device *dev, int type, char *buf)
->  >>   {
->  >>         struct node *node_dev = to_node(dev);
->  >>         node_to_cpumask_ptr(mask, node_dev->sysdev.id);
->  >>         int len;
->  >>
->  >>  -       /* 2004/06/03: buf currently PAGE_SIZE, need > 1 char per 4 bits. */
->  >>  -       BUILD_BUG_ON(MAX_NUMNODES/4 > PAGE_SIZE/2);
->  >>  +       /* 2008/04/07: buf currently PAGE_SIZE, need 9 chars per 32 bits. */
->  >>  +       BUILD_BUG_ON((NR_CPUS/32 * 9) > (PAGE_SIZE-1));
->  > Is this right, that you switch from MAX_NUMNODES to NR_CPUS?
->  >
->  > Regards
->  > Bert
->
->  It's printing the number of cpus on a node, so the number of nodes is not
->  important, it's how many cpus can fit on the head of a node... ;-)
-Ahh, the old code was Just Plain Wrong.
+generic_file_splice_read() goes into an infinite loop if it races with
+truncation.  I've found this with fsx-linux on NFS over fuse.
 
-Thanks.
-Bert
->
->  Thanks,
->  Mike
->
+Perhaps the whole while() loop is bogus, but I can't tell from a
+cursory glance at __generic_file_splice_read() if it will return zero
+only on EOF, or it can do that for other reasons as well.  In the
+latter case the loop is obviously needed.
+
+This simplistic patch fixes the issue for me.
+
+Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
+---
+ fs/splice.c |   19 ++++++++++---------
+ 1 file changed, 10 insertions(+), 9 deletions(-)
+
+Index: linux/fs/splice.c
+===================================================================
+--- linux.orig/fs/splice.c	2008-04-02 13:34:58.000000000 +0200
++++ linux/fs/splice.c	2008-04-09 17:35:06.000000000 +0200
+@@ -481,19 +481,20 @@ ssize_t generic_file_splice_read(struct 
+ {
+ 	ssize_t spliced;
+ 	int ret;
+-	loff_t isize, left;
+-
+-	isize = i_size_read(in->f_mapping->host);
+-	if (unlikely(*ppos >= isize))
+-		return 0;
+-
+-	left = isize - *ppos;
+-	if (unlikely(left < len))
+-		len = left;
+ 
+ 	ret = 0;
+ 	spliced = 0;
+ 	while (len && !spliced) {
++		loff_t isize, left;
++
++		isize = i_size_read(in->f_mapping->host);
++		if (unlikely(*ppos >= isize))
++			return 0;
++
++		left = isize - *ppos;
++		if (unlikely(left < len))
++			len = left;
++
+ 		ret = __generic_file_splice_read(in, ppos, pipe, len, flags);
+ 
+ 		if (ret < 0)
