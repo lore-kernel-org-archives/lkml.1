@@ -1,62 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757280AbYDITfY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756071AbYDITF7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757280AbYDITfY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Apr 2008 15:35:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753715AbYDITfL
+	id S1756071AbYDITF7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Apr 2008 15:05:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752999AbYDITFt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Apr 2008 15:35:11 -0400
-Received: from mail.gmx.net ([213.165.64.20]:32794 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1753523AbYDITfK convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Apr 2008 15:35:10 -0400
-X-Authenticated: #20450766
-X-Provags-ID: V01U2FsdGVkX18bo5MFOyYbU6OaBoTfZOu+amwS3gxsI7+TyyhaOB
-	hn5UfFRanLuSih
-Date: Wed, 9 Apr 2008 21:35:04 +0200 (CEST)
-From: Guennadi Liakhovetski <g.liakhovetski@pengutronix.de>
-X-X-Sender: lyakh@axis700.grange
-To: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <Uwe.Kleine-Koenig@digi.com>
-cc: David Brownell <david-b@pacbell.net>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: gpio patches in mmotm
-In-Reply-To: <20080409063530.GA17538@digi.com>
-Message-ID: <Pine.LNX.4.64.0804092133160.7315@axis700.grange>
-References: <20080317173134.GA27282@digi.com> <Pine.LNX.4.64.0803171915020.8640@axis700.grange>
- <20080318160316.GA31588@digi.com> <Pine.LNX.4.64.0803181717240.5022@axis700.grange>
- <20080408060230.GA22071@digi.com> <Pine.LNX.4.64.0804080812420.3556@axis700.grange>
- <20080408093305.GA8141@digi.com> <Pine.LNX.4.64.0804081227360.4987@axis700.grange>
- <20080409063530.GA17538@digi.com>
+	Wed, 9 Apr 2008 15:05:49 -0400
+Received: from rtr.ca ([76.10.145.34]:2988 "EHLO mail.rtr.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752278AbYDITFs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Apr 2008 15:05:48 -0400
+Message-ID: <47FD138B.2060801@rtr.ca>
+Date: Wed, 09 Apr 2008 15:05:47 -0400
+From: Mark Lord <lkml@rtr.ca>
+Organization: Real-Time Remedies Inc.
+User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=iso-8859-1
-Content-Transfer-Encoding: 8BIT
-X-Y-GMX-Trusted: 0
+To: =?UTF-8?B?WU9TSElGVUpJIEhpZGVha2kgLyDlkInol6Toi7HmmI4=?= 
+	<yoshfuji@linux-ipv6.org>
+Cc: jeff@garzik.org, rjw@sisk.pl, linux-kernel@vger.kernel.org,
+       linux-net@vger.kernel.org
+Subject: Re: 2.6.25-rc8: FTP transfer errors
+References: <47FCC6B5.70804@rtr.ca>	<47FCF2DD.30705@garzik.org>	<47FCF9DD.6080007@rtr.ca> <20080410.023045.16227424.yoshfuji@linux-ipv6.org>
+In-Reply-To: <20080410.023045.16227424.yoshfuji@linux-ipv6.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 9 Apr 2008, Uwe Kleine-K�nig wrote:
-
-> Hello Guennadi,
+YOSHIFUJI Hideaki / 吉藤英明 wrote:
+> In article <47FCF9DD.6080007@rtr.ca> (at Wed, 09 Apr 2008 13:16:13 -0400), Mark Lord <lkml@rtr.ca> says:
 > 
-> Guennadi Liakhovetski wrote:
-> >                      My original proposal was to introduce just one 
-> > NO_GPIO macro to test against, however, David nicely managed to persuade 
-> > me, that the gpio_is_valid approach is better. Unfortunately, I cannot 
-> > argument as nicely as he did, maybe looking through his emails in LKML 
-> > archives will help you:-)
-> I'm unable to find these mails.  (Using gmane, looking for mails by
-> David matching gpio_is_valid, the oldest post I can find is
-> http://article.gmane.org/gmane.linux.kernel/637654.)
+>> I suppose a wireshark capture is next, once I dig out my ancient hub
+>> so we can sniff it from an independent box.
 > 
-> Can you please point out the discussion in the archives?
+> Or, you could do "git-bisect" if it is reproducible.
+..
 
-See also
+If I had the time right now, maybe.
 
-http://marc.info/?t=120179335100005&r=1&w=2
-http://marc.info/?t=120267097400002&r=1&w=2
+But it would be far more useful for whoever has been working on the stack
+to suggest some possible/likely commits to look at instead.
 
-Thanks
-Guennadi
----
-Guennadi Liakhovetski
+-ml
