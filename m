@@ -1,150 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753888AbYDINvo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753488AbYDIN6C@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753888AbYDINvo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Apr 2008 09:51:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752006AbYDINvg
+	id S1753488AbYDIN6C (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Apr 2008 09:58:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752126AbYDIN5w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Apr 2008 09:51:36 -0400
-Received: from viefep26-int.chello.at ([62.179.121.46]:12269 "EHLO
-	viefep26-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752076AbYDINvf (ORCPT
+	Wed, 9 Apr 2008 09:57:52 -0400
+Received: from yw-out-2324.google.com ([74.125.46.30]:41389 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752020AbYDIN5v (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Apr 2008 09:51:35 -0400
-X-SourceIP: 80.56.237.116
-Subject: Re: [RFC PATCH 1/2] futex: rely on get_user_pages() for shared
-	futexes
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: Eric Dumazet <dada1@cosmosbay.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-In-Reply-To: <200804082140.04356.nickpiggin@yahoo.com.au>
-References: <20080404193332.348493000@chello.nl>
-	 <20080404193817.574188000@chello.nl>
-	 <200804082140.04356.nickpiggin@yahoo.com.au>
-Content-Type: text/plain
-Date: Wed, 09 Apr 2008 15:51:18 +0200
-Message-Id: <1207749078.24562.4.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.0 
+	Wed, 9 Apr 2008 09:57:51 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=o4v1tWi5643Kfikt6miamSQKSUvnMWId6o1WLiwSQJfEK1+5JKHnSEKzLZaxSbDDu9eTLqZY/lxZCsBMpWV9fkX67a7mMf6HgoM00988RKQ5C7EYds+4qt4J6gTYFLi7mg97USXwd8ZbZ8F/NHkyxC1e5qYYzQb4OBZCO6DP1IY=
+Message-ID: <cf40c6a90804090657j7e76a84foeaf3c1c02d2a7b73@mail.gmail.com>
+Date: Wed, 9 Apr 2008 15:57:48 +0200
+From: "Andreas Grimm" <agrimm61@gmail.com>
+To: "Johannes Weiner" <hannes@saeurebad.de>
+Subject: Re: VM - a plenty of inactive memory
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <874pabrx6b.fsf@saeurebad.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <cf40c6a90804090213u55491ceay9b211d75d74dc29c@mail.gmail.com>
+	 <874pabrx6b.fsf@saeurebad.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-04-08 at 21:40 +1000, Nick Piggin wrote:
+Hi Johannes,
 
-> @@ -191,7 +191,6 @@ static int get_futex_key(u32 __user *uad
->  {
->         unsigned long address = (unsigned long)uaddr;
->         struct mm_struct *mm = current->mm;
-> -       struct vm_area_struct *vma;
->         struct page *page;
->         int err;
-> 
-> @@ -210,27 +209,26 @@ static int get_futex_key(u32 __user *uad
->          * Note : We do have to check 'uaddr' is a valid user address,
->          *        but access_ok() should be faster than find_vma()
->          */
-> -       if (!fshared) {
-> +       if (likely(!fshared)) {
->                 if (unlikely(!access_ok(VERIFY_WRITE, uaddr, sizeof(u32))))
->                         return -EFAULT;
->                 key->private.mm = mm;
->                 key->private.address = address;
->                 return 0;
->         }
-> -       /*
-> -        * The futex is hashed differently depending on whether
-> -        * it's in a shared or private mapping.  So check vma first.
-> -        */
-> -       vma = find_extend_vma(mm, address);
-> -       if (unlikely(!vma))
-> -               return -EFAULT;
-> -
-> -       /*
-> -        * Permissions.
-> -        */
-> -       if (unlikely((vma->vm_flags & (VM_IO|VM_READ)) != VM_READ))
-> -               return (vma->vm_flags & VM_IO) ? -EPERM : -EACCES;
-> 
-> +again:
-> +       err = fast_gup(address, 1, 0, &page);
-> +       if (err < 0)
-> +               return err;
-> +
-> +       lock_page(page);
-> +       if (!page->mapping) { /* PageAnon pages shouldn't get caught here */
-> +               unlock_page(page);
-> +               put_page(page);
-> +               goto again;
-> +       }
-> +
->         /*
->          * Private mappings are handled in a simple way.
->          *
-> @@ -240,38 +238,19 @@ static int get_futex_key(u32 __user *uad
->          * VM_MAYSHARE here, not VM_SHARED which is restricted to shared
->          * mappings of _writable_ handles.
->          */
-> -       if (likely(!(vma->vm_flags & VM_MAYSHARE))) {
-> -               key->both.offset |= FUT_OFF_MMSHARED; /* reference taken on mm 
-> *
-> /
-> +       if (PageAnon(page)) {
-> +               key->both.offset |= FUT_OFF_MMSHARED; /* ref taken on mm */
->                 key->private.mm = mm;
->                 key->private.address = address;
-> -               return 0;
-> -       }
-> -
-> -       /*
-> -        * Linear file mappings are also simple.
-> -        */
-> -       key->shared.inode = vma->vm_file->f_path.dentry->d_inode;
-> -       key->both.offset |= FUT_OFF_INODE; /* inode-based key. */
-> -       if (likely(!(vma->vm_flags & VM_NONLINEAR))) {
-> -               key->shared.pgoff = (((address - vma->vm_start) >> PAGE_SHIFT)
-> -                                    + vma->vm_pgoff);
-> -               return 0;
-> -       }
-> -
-> -       /*
-> -        * We could walk the page table to read the non-linear
-> -        * pte, and get the page index without fetching the page
-> -        * from swap.  But that's a lot of code to duplicate here
-> -        * for a rare case, so we simply fetch the page.
-> -        */
-> -       err = get_user_pages(current, mm, address, 1, 0, 0, &page, NULL);
-> -       if (err >= 0) {
-> -               key->shared.pgoff =
-> -                       page->index << (PAGE_CACHE_SHIFT - PAGE_SHIFT);
-> -               put_page(page);
-> -               return 0;
-> +       } else {
-> +               key->both.offset |= FUT_OFF_INODE; /* inode-based key. */
-> +               key->shared.inode = page->mapping->inode;
-> +               key->shared.pgoff = page->index;
->         }
-> -       return err;
-> +out:
-> +       unlock_page(page);
-> +       put_page(page);
-> +       return 0;
->  }
+i know this. But why the kernel locks that memory for a so long time
+(2 days now)? Is there a way to enforce the reclaiming? And how can i
+find out, which process owns that memory. The problem is, that i can't
+accept, that the free memory fell down to 50MB, when i have 24GB in
+the nirvana. The system was recently very close to the awkward
+situation to swap to disk, and i bet it will do so in the next few
+days, because it happened before. Unintelligible, if one got that much
+ram.
 
-Right, so staring at this for a while makes me feel uneasy. The thing
-is, once we exit get_futex_key() there is nothing stopping the mm of
-inode from going away.
+Bye, Andreas
 
-So I'm going to have to take a ref while we have the page locked, and do
-the put_futex_key() thing to release it.
 
-Code at (uncompiled and untested):
-http://programming.kicks-ass.net/kernel-patches/futex-fast_gup/v2.6.24.4-rt4-2/
-
-The thing is, it now needs to take a reference on a rather large object
-(mm/inode), giving a rather large opportunity to bounce that cacheline.
-
-What problems do you see with just keeping a ref on the page?
-
+2008/4/9, Johannes Weiner <hannes@saeurebad.de>:
+> Hi,
+>
+>
+>  "Andreas Grimm" <agrimm61@gmail.com> writes:
+>
+>  > Hello everybody,
+>  >
+>  > i got a weird problem with one of my servers. It's a Intel SR2500AL
+>  > with 32GB of RAM.
+>  > Looking at the memory usage of the system, something is going totally
+>  > wrong. The crucial numbers from /proc/meminfo are:
+>  >
+>  > MemTotal: 33265916 kB
+>  > MemFree: 416168 kB
+>  > Inactive: 24630428 kB (24GB? whooaaa)
+>  >
+>  > Another system with only 16GB, same amount of users and load, shows a
+>  > more normal behaviour:
+>  >
+>  > MemTotal: 16619808 kB
+>  > MemFree: 6912676 kB
+>  > Inactive: 1774364 kB
+>  >
+>  > Why does the 32GB-System have this plenty of inactive memory. Is there
+>  > a way to find out, what the kernel is holding in readiness (that's the
+>  > definition of inactive memory afaik)?
+>
+>
+> Inactive pages are marked in use but haven't been touched for some time.
+>  These are candidates for memory reclaiming.
+>
+>  If nothing memory consuming happens, the kswapd should reclaim them back
+>  eventually.
+>
+>         Hannes
+>
