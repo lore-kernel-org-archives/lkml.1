@@ -1,45 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753507AbYDIG2x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753396AbYDIGAk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753507AbYDIG2x (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Apr 2008 02:28:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752246AbYDIG2n
+	id S1753396AbYDIGAk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Apr 2008 02:00:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752141AbYDIGAc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Apr 2008 02:28:43 -0400
-Received: from qb-out-0506.google.com ([72.14.204.239]:16470 "EHLO
-	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752241AbYDIG2n (ORCPT
+	Wed, 9 Apr 2008 02:00:32 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:33135 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751465AbYDIGAc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Apr 2008 02:28:43 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=PmJCPHoO0yHIBkwRR+fV8J8RvZpXxl/g7FT7bWYyhLCwY8t3oS1NGOBz+ZYP5DDeUln2sP5MlievrTKqUJvC2qhMp1E0nqJzPPsEAH7aB9B+2r3MDVkSMU9heAa3/Frapz5KeETGB0vS95BANI8WUUjfEyohxr+2vjA+lBY3sTw=
-Message-ID: <a39a05170804082328q7910ea81ge2a3df3adeac36aa@mail.gmail.com>
-Date: Wed, 9 Apr 2008 14:28:37 +0800
-From: "gao vicky" <a5da33d2e@gmail.com>
-To: city_moon_light@yahoo.com.tw, lisa24668534@yahoo.com.tw,
-       pjy590621@yahoo.com.tw, playercd8@hotmail.com, puki5260tw@hotmail.com,
-       services@fclma.org, debian-bugs-dist@lists.debian.org,
-       tcctao@mars.seed.net.tw, mobilenews-source@google.com,
-       news-reportanissue@google.com, samuelsanchez@genealogia.org.mx,
-       linux-kernel@vger.kernel.org, avbox@swarthmore.edu, help@swarthmore.edu,
-       restech@swarthmore.edu, nospam@nospam.mobhappy.com,
-       askablogger@seedmediagroup.com, a0915111128@hotmail.com
-Subject: =?BIG5?B?JH6h0SCryKTht723vaSjtbQgodGh7qKp?= =?BIG5?B?ofahv6H3obsyMTI4obuh4qKpofSiqKH0oqk=?=
+	Wed, 9 Apr 2008 02:00:32 -0400
+Message-ID: <47FC5B7C.3020504@sgi.com>
+Date: Tue, 08 Apr 2008 23:00:28 -0700
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=BIG5
-Content-Disposition: inline
+To: Ingo Molnar <mingo@elte.hu>
+CC: Andi Kleen <andi@firstfloor.org>, Cyrill Gorcunov <gorcunov@gmail.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>,
+       Yinghai Lu <yhlu.kernel@gmail.com>, Eric Dumazet <dada1@cosmosbay.com>
+Subject: Re: bootmem allocator
+References: <20080407185613.GD9211@cvg> <20080407190904.GH12292@elte.hu> <87iqytqwl7.fsf@basil.nowhere.org> <20080408080446.GA12308@elte.hu>
+In-Reply-To: <20080408080446.GA12308@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id m396tVFd027614
 
-¡´¡á?¢©¢©%¡ğ=====¥ş²y¦¬³æ ¤j³°«H¥Î¥dª÷¿Ä¥d(¥~¥d+¤º¥d) ¬ü°ê¹B³q¥d ¤j¨Ó¥d VISA MASTER JBC=====?¢¨¢¨¡½¡º¢¨@¡÷¢©/¢©¡º1­Ó¤H¤½¥q§¡¥i¥Ó¿ì2.«H¥Î·å²«¡B¯S®í¦æ·~¥ç¥i¿ì²z3.¥i°ê»Ú¥æ©ö4.¾A¦Xºô©ç¡Bª½¾P¡B¥Á±J¡B¹A³õ¡B¤¤¥j¨®¦æ¡BSOHO±Ú¡B·Oµ½¹ÎÅé¡B·h®a¤½¥q¡B¶T©ö°Ó¡B¦ÛÀç°Ó¡B¬ü®e·~¡B¸É²ß¯Z¡B¸ôÃäÅu¡BÅK¥Ö«Î¡B.....¦U¦æ¦U·~5.»È¦æ°h¥ó¡B©î¾÷¡B©Ú¦¬¦æ·~³£¥i¨ü²z6.¥ş²y¦¬³æ==¼·´Ú  ¥i«ü©w¹ô§O¥ş²y¦¬³æ¥xÆW°Ï¥N²z==¤¤µØ¥|¤èºô¸ô¬ì§ŞªÑ¥÷¦³­­¤½¥q ¾G¸g²z 0915111128 0982678647¾A¤j¤¤µØ°Ï¥Í·N©¹¨Ó¨Ï¥Î ====Åı±z¥ş²y¤jµo¹F
+Ingo Molnar wrote:
+> * Andi Kleen <andi@firstfloor.org> wrote:
+> 
+>>> hm, bootmem allocator is supposed to clear memory. We have a couple 
+>>> of places that rely on that.
+>> I was actually considering to change that for the GB pages hugetlbfs 
+>> patchkit, because memset for 1G is a little slow and not needed (will 
+>> be cleared later anyways) and it might be a problem for very large 
+>> systems with a lot of such pages at boot.
+> 
+> changing the default behavior of bootmem alloc to be non-clearing is a 
+> really bad idea that will only cause unrobustness. The proper approach 
+> is to add an _opt-in_ API that does not clear memory 
+> (bootmem_alloc_dontclear() or whatever), available to callers that know 
+> it for sure that they dont need the clearing.
 
+Yes, changing the default of bootmem_alloc is a bad idea.  I just changed
+a bunch of static arrays to bootmem alloc's and it was pointed out early
+that not only does bootmem_alloc clear memory, but also panics if it's not
+available.
 
+> Also take into account that alloc_bootmem_low() :
+> - calls panic() if not enough memory
+> - already clears allocated memory
+> Signed-off-by: Eric Dumazet <dada1@cosmosbay.com>
 
+A specialized call to bootmem_alloc probably needs it's own API... ;-)
 
-
-
-¡¿#&¢©?¡õ¡¾¡î¡á¡´¡ó$~¢¨¡ô&¡ô/¢¨#¢¨¡ø¡ór7x ¡÷?$~¡ö%¢©¢¨¡´¡â¡ï/¡î$~¡ö¢©¡ğ¡â¢©¢¨¡÷ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
+Thanks,
+Mike
