@@ -1,62 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755822AbYDIQqg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755964AbYDIQya@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755822AbYDIQqg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Apr 2008 12:46:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752733AbYDIQq1
+	id S1755964AbYDIQya (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Apr 2008 12:54:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752559AbYDIQyW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Apr 2008 12:46:27 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:36740 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750993AbYDIQq1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Apr 2008 12:46:27 -0400
-Message-ID: <47FCF2DD.30705@garzik.org>
-Date: Wed, 09 Apr 2008 12:46:21 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
-MIME-Version: 1.0
-To: Mark Lord <lkml@rtr.ca>
-CC: "Rafael J. Wysocki" <rjw@sisk.pl>,
+	Wed, 9 Apr 2008 12:54:22 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:45747 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752471AbYDIQyW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Apr 2008 12:54:22 -0400
+Date: Wed, 9 Apr 2008 09:53:26 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Andy Whitcroft <apw@shadowen.org>
+Cc: Jan Engelhardt <jengelh@computergmbh.de>, Andi Kleen <andi@firstfloor.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.25-rc8: FTP transfer errors
-References: <SvnMeM-aZi.A.S3E.b-_-HB@albercik> <47FC4C87.1020705@rtr.ca> <47FCC6B5.70804@rtr.ca>
-In-Reply-To: <47FCC6B5.70804@rtr.ca>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Subject: Re: [patch] checkpatch: relax spacing and line length
+Message-Id: <20080409095326.8e306c41.akpm@linux-foundation.org>
+In-Reply-To: <20080409135840.GO17915@shadowen.org>
+References: <alpine.LNX.1.10.0804060653020.30794@fbirervta.pbzchgretzou.qr>
+	<20080408171257.GF17915@shadowen.org>
+	<87ej9gp6ol.fsf@basil.nowhere.org>
+	<20080409081943.GI17915@shadowen.org>
+	<20080409083013.GJ17915@shadowen.org>
+	<20080409084606.GD19010@one.firstfloor.org>
+	<20080409131420.GL17915@shadowen.org>
+	<alpine.LNX.1.10.0804091517260.4411@fbirervta.pbzchgretzou.qr>
+	<20080409135840.GO17915@shadowen.org>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mark Lord wrote:
-> Mark Lord wrote:
->> Today I've been using 2.6.25-rc8 with an old embedded build system here
->> for my empegs.  One shell script calls out to /usr/bin/ftp to transfer
->> an image to a remote system, and then read it back again and compare.
->>
->> The compare is failing, most (but not all) of the time,
->> but only on 2.6.25-rc8, not on 2.6.24.  Verified by switching
->> back and forth between kernel versions for a short spell.
->>
->> The ftp client is netkit-ftp 0.17-16 on Kubuntu feisty.
->>
->> Switching to ncftpput/ncftpget avoids it on 2.6.25,
->> but I wonder where the problem is.
-> ..
+On Wed, 9 Apr 2008 14:58:40 +0100 Andy Whitcroft <apw@shadowen.org> wrote:
+
+> The originally suggested layout was:
 > 
-> Now verified that the data loss occurs in the outbound direction.
-> The readback data is the same, regardless of which client s/w is used.
-> 
-> So something in 2.6.25 is incompatible with the ftp client binary, or libs,
-> that are installed here.  Or some other problem.
+> 			printk(
+> "Oh ....",
+> 				a, b);
 
-Or maybe it uses sendfile, and that is broken?
-
-Also, try using ethtool to turn off TSO and/or checksumming on your NIC 
-(if it is not wireless), and see if behavior changes...
-
-	Jeff
-
-
-
+Dunno about others, but when I see that idiom I fall over stunned and 
+can't get up again.
