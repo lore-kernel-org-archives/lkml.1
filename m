@@ -1,60 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755704AbYDIPs4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755964AbYDIPvr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755704AbYDIPs4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Apr 2008 11:48:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752582AbYDIPss
+	id S1755964AbYDIPvr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Apr 2008 11:51:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753806AbYDIPvk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Apr 2008 11:48:48 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:50376 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752483AbYDIPss (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Apr 2008 11:48:48 -0400
-Date: Wed, 9 Apr 2008 08:48:19 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Toralf =?ISO-8859-1?Q?F=F6rster?= <toralf.foerster@gmx.de>
-Cc: linux-kernel@vger.kernel.org, a.zummo@towertech.it,
-       akpm <akpm@linux-foundation.org>
-Subject: [PATCH] Re: build issue #470 for v2.6.25-rc8-166-g6fdf5e6
+	Wed, 9 Apr 2008 11:51:40 -0400
+Received: from mx0.towertech.it ([213.215.222.73]:55298 "HELO mx0.towertech.it"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752737AbYDIPvk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Apr 2008 11:51:40 -0400
+Date: Wed, 9 Apr 2008 17:51:37 +0200
+From: Alessandro Zummo <alessandro.zummo@towertech.it>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Toralf =?ISO-8859-1?Q?F=F6rster?= <toralf.foerster@gmx.de>,
+       linux-kernel@vger.kernel.org, akpm <akpm@linux-foundation.org>
+Subject: Re: [PATCH] Re: build issue #470 for v2.6.25-rc8-166-g6fdf5e6
  :rtc-s35390a.c:144: undefined reference to `byte_rev_table'
-Message-Id: <20080409084819.78eaa342.randy.dunlap@oracle.com>
-In-Reply-To: <200804090957.55929.toralf.foerster@gmx.de>
+Message-ID: <20080409175137.727807b1@i1501.lan.towertech.it>
+In-Reply-To: <20080409084819.78eaa342.randy.dunlap@oracle.com>
 References: <200804090957.55929.toralf.foerster@gmx.de>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+	<20080409084819.78eaa342.randy.dunlap@oracle.com>
+Organization: Tower Technologies
+X-Mailer: Sylpheed
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
+On Wed, 9 Apr 2008 08:48:19 -0700
+Randy Dunlap <randy.dunlap@oracle.com> wrote:
 
-rtc-s35390a uses BITREVERSE functions so it needs to select that
-config symbol to ensure that the functions are built.
+> From: Randy Dunlap <randy.dunlap@oracle.com>
+> 
+> rtc-s35390a uses BITREVERSE functions so it needs to select that
+> config symbol to ensure that the functions are built.
+> 
+> drivers/built-in.o: In function `s35390a_set_datetime':
+> linux-2.6.25-rc8-git7/drivers/rtc/rtc-s35390a.c:144: undefined reference to `byte_rev_table'
+> drivers/built-in.o: In function `s35390a_get_datetime':
+> linux-2.6.25-rc8-git7/drivers/rtc/rtc-s35390a.c:163: undefined reference to `byte_rev_table'
+> 
+> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
 
-drivers/built-in.o: In function `s35390a_set_datetime':
-linux-2.6.25-rc8-git7/drivers/rtc/rtc-s35390a.c:144: undefined reference to `byte_rev_table'
-drivers/built-in.o: In function `s35390a_get_datetime':
-linux-2.6.25-rc8-git7/drivers/rtc/rtc-s35390a.c:163: undefined reference to `byte_rev_table'
+ thanks Randy.
 
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
----
- drivers/rtc/Kconfig |    1 +
- 1 file changed, 1 insertion(+)
 
---- linux-2.6.25-rc8-git7.orig/drivers/rtc/Kconfig
-+++ linux-2.6.25-rc8-git7/drivers/rtc/Kconfig
-@@ -252,6 +252,7 @@ config RTC_DRV_TWL92330
- 
- config RTC_DRV_S35390A
- 	tristate "Seiko Instruments S-35390A"
-+	select BITREVERSE
- 	help
- 	  If you say yes here you will get support for the Seiko
- 	  Instruments S-35390A.
+ Acked-by: Alessandro Zummo <a.zummo@towertech.it>
+
+-- 
+
+ Best regards,
+
+ Alessandro Zummo,
+  Tower Technologies - Torino, Italy
+
+  http://www.towertech.it
+
