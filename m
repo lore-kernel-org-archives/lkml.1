@@ -1,95 +1,217 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755923AbYDIV2v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756030AbYDIVbT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755923AbYDIV2v (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Apr 2008 17:28:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754157AbYDIV2l
+	id S1756030AbYDIVbT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Apr 2008 17:31:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753584AbYDIVbM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Apr 2008 17:28:41 -0400
-Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:58634 "EHLO
-	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753455AbYDIV2l (ORCPT
+	Wed, 9 Apr 2008 17:31:12 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.158]:30698 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753446AbYDIVbL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Apr 2008 17:28:41 -0400
-Date: Wed, 9 Apr 2008 17:28:40 -0400
-To: Francis Moreau <francis.moro@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Disk geometry from /sys
-Message-ID: <20080409212840.GB2160@csclub.uwaterloo.ca>
-References: <38b2ab8a0804091353h3725ce29s196e27e8b4f1ff56@mail.gmail.com>
+	Wed, 9 Apr 2008 17:31:11 -0400
+Message-ID: <47FD359D.8030409@ct.jp.nec.com>
+Date: Wed, 09 Apr 2008 14:31:09 -0700
+From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+User-Agent: Thunderbird 2.0.0.12 (Windows/20080213)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <38b2ab8a0804091353h3725ce29s196e27e8b4f1ff56@mail.gmail.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
+To: linux-kernel@vger.kernel.org
+Subject: [RFC PATCH] ipc: add shm_locked for IPC shm
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 09, 2008 at 10:53:36PM +0200, Francis Moreau wrote:
-> I'm trying to know the geometry of my hard disk from a bash script
-> and that's the reason I'm looking in /sys. The reason is that I'd like
-> to figure out the size of a cylinder without doing a
-> ioctl(bdev, HDIO_GETGEO, &geo)
-> 
-> Unfortunately I can't find anything useful and this is certainly a sign
-> that I'm doing something wrong.
-> 
-> Or maybe can I simply assume from my script that the geometry
-> is always heads=255 and the number of sectors per track is 63 for all
-> disks.
+From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
 
-Many compact flash cards will report 16 heads, and 16 or 32 sectors
-per track.  Compact flash can of course connect as an IDE drive, so they
-are worth supporting (I keep trying to get the grub guys to accept my
-patch to fix their code that also assumed all disks have 63 sectors per
-track if they use LBA, but which is false since compact flash also
-supports LBA even with smaller sizes).
+Shared memory users probably don't think the shared memory is
+swapped out. But actually shared memory could be swapped out under
+memory pressure.
+Linux has SHM_LOCK feature for prevent shared memory swapping,
+and it can be used by shmctl() after create the shared memory.
+There are some needs that SHM_LOCK is default behavior.
 
-Simplest way to find out what geometry a disk pretents to have is to ask
-fdisk, and since the only use for the information is when creating
-partitions, then fdisk's opinion is really all that seems to matter.  Of
-course partitions can start and end anywhere so the total size is
-actually all that really matters.
+This patch adds shm_locked sysctl to turn SHM_LOCK on when creating.
+kernel.shm_locked = 0, is default and the behavior is not changed.
+kernel.shm_locked = 1, means shared memory will be locked when
+it's created.
 
-For example:
-# fdisk -l /dev/hda
+Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+---
+ include/linux/ipc_namespace.h |    1 +
+ include/linux/sysctl.h        |    1 +
+ ipc/ipc_sysctl.c              |    9 +++++
+ ipc/shm.c                     |   70 ++++++++++++++++++++++++----------------
+ kernel/sysctl_check.c         |    2 +
+ 5 files changed, 55 insertions(+), 28 deletions(-)
 
-Disk /dev/hda: 260 MB, 260571136 bytes
-16 heads, 32 sectors/track, 994 cylinders
-Units = cylinders of 512 * 512 = 262144 bytes
-
-   Device Boot      Start         End      Blocks   Id  System
- /dev/hda1               1          40       10224   83  Linux
- /dev/hda2              41          80       10240   83  Linux
- /dev/hda3              81         994      233984   83  Linux
-
-So no assuming 255 and 63 is not a good idea.  Large disks tend to do it
-since 255 heads and 63 sectors per track is the maximum supported, and
-hence allowed them to get as much space in each "cylinder".
-
-> Looking at parted(8) source code, I  can find this:
-> 
-> /* The GETGEO ioctl is no longer useful (as of linux 2.6.x).  We could
->  * still use it in 2.4.x, but this is contentious.  Perhaps we should
->  * move to EDD. */
-> 
-> Could anybody give me some advices ?
-
-Why do you want to know what cylinder size the hard disk pretents to
-have?  What use could it be?  Harddisks have varying numbers of sectors
-per cylinder depending on how far out you are from the center of the
-disk, but since software used to expect a simple X head, Y tracks, Z
-sectors per track, they lie about it and pretend to have some number of
-each (usually 255 heads (as if), 63 sectors per track (not likely with
-todays densities), and thousands of cylinders), and even with all that
-added up it still works out to less than the actual size of a modern
-drive.  All that matters on a modern drive is the total number of
-sectors since all access is done by requesting a specific sector number
-starting from the begining of the drive.  Where it is physically located
-is none of software's business, and it may not even be adjacent to the
-sector with a number right next to the requested one due to defect
-management and various optimizations.
-
+diff --git a/include/linux/ipc_namespace.h b/include/linux/ipc_namespace.h
+index e4451d1..1323985 100644
+--- a/include/linux/ipc_namespace.h
++++ b/include/linux/ipc_namespace.h
+@@ -29,6 +29,7 @@ struct ipc_namespace {
+ 	size_t		shm_ctlmax;
+ 	size_t		shm_ctlall;
+ 	int		shm_ctlmni;
++	int		shm_ctllocked;
+ 	int		shm_tot;
+ };
+ 
+diff --git a/include/linux/sysctl.h b/include/linux/sysctl.h
+index 571f01d..434c207 100644
+--- a/include/linux/sysctl.h
++++ b/include/linux/sysctl.h
+@@ -163,6 +163,7 @@ enum
+ 	KERN_MAX_LOCK_DEPTH=74,
+ 	KERN_NMI_WATCHDOG=75, /* int: enable/disable nmi watchdog */
+ 	KERN_PANIC_ON_NMI=76, /* int: whether we will panic on an unrecovered */
++	KERN_SHMLOCKED=77,	/* int: make shared memory locked */
+ };
+ 
+ 
+diff --git a/ipc/ipc_sysctl.c b/ipc/ipc_sysctl.c
+index 7f4235b..00d43b2 100644
+--- a/ipc/ipc_sysctl.c
++++ b/ipc/ipc_sysctl.c
+@@ -123,6 +123,15 @@ static struct ctl_table ipc_kern_table[] = {
+ 		.strategy	= sysctl_ipc_data,
+ 	},
+ 	{
++		.ctl_name	= KERN_SHMLOCKED,
++		.procname	= "shm_locked",
++		.data		= &init_ipc_ns.shm_ctllocked,
++		.maxlen		= sizeof (init_ipc_ns.shm_ctllocked),
++		.mode		= 0644,
++		.proc_handler	= proc_ipc_dointvec,
++		.strategy	= sysctl_ipc_data,
++	},
++	{
+ 		.ctl_name	= KERN_MSGMAX,
+ 		.procname	= "msgmax",
+ 		.data		= &init_ipc_ns.msg_ctlmax,
+diff --git a/ipc/shm.c b/ipc/shm.c
+index cc63fae..6078477 100644
+--- a/ipc/shm.c
++++ b/ipc/shm.c
+@@ -66,6 +66,7 @@ static int newseg(struct ipc_namespace *, struct ipc_params *);
+ static void shm_open(struct vm_area_struct *vma);
+ static void shm_close(struct vm_area_struct *vma);
+ static void shm_destroy (struct ipc_namespace *ns, struct shmid_kernel *shp);
++static int do_shmlock(struct shmid_kernel *shp, int cmd);
+ #ifdef CONFIG_PROC_FS
+ static int sysvipc_shm_proc_show(struct seq_file *s, void *it);
+ #endif
+@@ -75,6 +76,7 @@ void shm_init_ns(struct ipc_namespace *ns)
+ 	ns->shm_ctlmax = SHMMAX;
+ 	ns->shm_ctlall = SHMALL;
+ 	ns->shm_ctlmni = SHMMNI;
++	ns->shm_ctllocked = 0;
+ 	ns->shm_tot = 0;
+ 	ipc_init_ids(&ns->ids[IPC_SHM_IDS]);
+ }
+@@ -438,6 +440,9 @@ static int newseg(struct ipc_namespace *ns, struct ipc_params *params)
+ 	 */
+ 	file->f_dentry->d_inode->i_ino = shp->shm_perm.id;
+ 
++	if (ns->shm_ctllocked)
++		do_shmlock(shp, SHM_LOCK);
++
+ 	ns->shm_tot += numpages;
+ 	error = shp->shm_perm.id;
+ 	shm_unlock(shp);
+@@ -626,6 +631,42 @@ static void shm_get_stat(struct ipc_namespace *ns, unsigned long *rss,
+ 	}
+ }
+ 
++static int do_shmlock(struct shmid_kernel *shp, int cmd)
++{
++	int err;
++
++	if (!capable(CAP_IPC_LOCK)) {
++		err = -EPERM;
++		if (current->euid != shp->shm_perm.uid &&
++		    current->euid != shp->shm_perm.cuid)
++			goto out;
++		if (cmd == SHM_LOCK &&
++		    !current->signal->rlim[RLIMIT_MEMLOCK].rlim_cur)
++			goto out;
++	}
++
++	err = security_shm_shmctl(shp, cmd);
++	if (err)
++		goto out;
++
++	if (cmd == SHM_LOCK) {
++		struct user_struct * user = current->user;
++		if (!is_file_hugepages(shp->shm_file)) {
++			err = shmem_lock(shp->shm_file, 1, user);
++			if (!err && !(shp->shm_perm.mode & SHM_LOCKED)){
++				shp->shm_perm.mode |= SHM_LOCKED;
++				shp->mlock_user = user;
++			}
++		}
++	} else if (!is_file_hugepages(shp->shm_file)) {
++		shmem_lock(shp->shm_file, 0, shp->mlock_user);
++		shp->shm_perm.mode &= ~SHM_LOCKED;
++		shp->mlock_user = NULL;
++	}
++out:
++	return err;
++}
++
+ asmlinkage long sys_shmctl (int shmid, int cmd, struct shmid_ds __user *buf)
+ {
+ 	struct shm_setbuf setbuf;
+@@ -753,34 +794,7 @@ asmlinkage long sys_shmctl (int shmid, int cmd, struct shmid_ds __user *buf)
+ 		if (err)
+ 			goto out_unlock;
+ 
+-		if (!capable(CAP_IPC_LOCK)) {
+-			err = -EPERM;
+-			if (current->euid != shp->shm_perm.uid &&
+-			    current->euid != shp->shm_perm.cuid)
+-				goto out_unlock;
+-			if (cmd == SHM_LOCK &&
+-			    !current->signal->rlim[RLIMIT_MEMLOCK].rlim_cur)
+-				goto out_unlock;
+-		}
+-
+-		err = security_shm_shmctl(shp, cmd);
+-		if (err)
+-			goto out_unlock;
+-		
+-		if(cmd==SHM_LOCK) {
+-			struct user_struct * user = current->user;
+-			if (!is_file_hugepages(shp->shm_file)) {
+-				err = shmem_lock(shp->shm_file, 1, user);
+-				if (!err && !(shp->shm_perm.mode & SHM_LOCKED)){
+-					shp->shm_perm.mode |= SHM_LOCKED;
+-					shp->mlock_user = user;
+-				}
+-			}
+-		} else if (!is_file_hugepages(shp->shm_file)) {
+-			shmem_lock(shp->shm_file, 0, shp->mlock_user);
+-			shp->shm_perm.mode &= ~SHM_LOCKED;
+-			shp->mlock_user = NULL;
+-		}
++		err = do_shmlock(shp, cmd);
+ 		shm_unlock(shp);
+ 		goto out;
+ 	}
+diff --git a/kernel/sysctl_check.c b/kernel/sysctl_check.c
+index c09350d..3d13649 100644
+--- a/kernel/sysctl_check.c
++++ b/kernel/sysctl_check.c
+@@ -104,6 +104,8 @@ static const struct trans_ctl_table trans_kern_table[] = {
+ 	{ KERN_MAX_LOCK_DEPTH,		"max_lock_depth" },
+ 	{ KERN_NMI_WATCHDOG,		"nmi_watchdog" },
+ 	{ KERN_PANIC_ON_NMI,		"panic_on_unrecovered_nmi" },
++
++	{ KERN_SHMLOCKED,		"shm_locked" },
+ 	{}
+ };
+ 
 -- 
-Len Sorensen
+1.5.4.1
+
