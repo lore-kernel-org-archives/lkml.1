@@ -1,89 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756856AbYDIUQi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758213AbYDIUR3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756856AbYDIUQi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Apr 2008 16:16:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753021AbYDIUQc
+	id S1758213AbYDIUR3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Apr 2008 16:17:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753710AbYDIURV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Apr 2008 16:16:32 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:47481 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752896AbYDIUQb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Apr 2008 16:16:31 -0400
+	Wed, 9 Apr 2008 16:17:21 -0400
+Received: from hellhawk.shadowen.org ([80.68.90.175]:3531 "EHLO
+	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753244AbYDIURU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Apr 2008 16:17:20 -0400
+Date: Wed, 9 Apr 2008 21:16:52 +0100
+From: Andy Whitcroft <apw@shadowen.org>
+To: Benny Halevy <bhalevy@panasas.com>
+Cc: Jan Engelhardt <jengelh@computergmbh.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       SL Baur <steve@xemacs.org>, Randy Dunlap <rdunlap@xenotime.net>,
+       Richard Knutsson <ricknu-0@student.ltu.se>,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: Re: [patch] checkpatch: relax spacing and line length
+Message-ID: <20080409201652.GS17915@shadowen.org>
+References: <alpine.LNX.1.10.0804060653020.30794@fbirervta.pbzchgretzou.qr> <20080408171257.GF17915@shadowen.org> <47FCB458.3070403@panasas.com> <20080409132548.GM17915@shadowen.org> <47FCF6AF.8010703@panasas.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-X-Fcc: ~/Mail/linus
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/2] ptrace children revamp
-In-Reply-To: Oleg Nesterov's message of  Saturday, 5 April 2008 18:06:56 +0400 <20080405140656.GA109@tv-sign.ru>
-References: <20080329033412.120EE26FA1D@magilla.localdomain>
-	<20080329033542.BFF4526FA1D@magilla.localdomain>
-	<20080329103929.GB359@tv-sign.ru>
-	<20080329131019.GA472@tv-sign.ru>
-	<20080404210033.F26CC26F8DC@magilla.localdomain>
-	<20080405140656.GA109@tv-sign.ru>
-X-Antipastobozoticataclysm: When George Bush projectile vomits antipasto on the Japanese.
-Message-Id: <20080409201555.7D23626F98D@magilla.localdomain>
-Date: Wed,  9 Apr 2008 13:15:55 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <47FCF6AF.8010703@panasas.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Heh. You are right, the current kernel has the same (minor) bug.
-> I beleive it was introduced by b2b2cbc4b2a2f389442549399a993a8306420baf.
-
-I have a regression test program for that (the one I sent you).
-I've done a fix as a follow-on patch.
-
-> However, now I think your patch adds a more serious problem, we can really
-> leak a zombie. Suppose that that we are ->real_parent, the child was traced
-> by us, it is zombie now, and the child is not a group leader. No matter who
-> is the new parent, no matter what is the state of SIGCHLD, we must not reparent
-> the child: nobody can release it except us. It is not traced any longer,
-> its ->exit_signal == -1, eligible_child() doesn't like this.
+On Wed, Apr 09, 2008 at 08:02:39PM +0300, Benny Halevy wrote:
+> On Apr. 09, 2008, 16:25 +0300, Andy Whitcroft <apw@shadowen.org> wrote:
+> > On Wed, Apr 09, 2008 at 03:19:36PM +0300, Benny Halevy wrote:
+> >> On Apr. 08, 2008, 20:12 +0300, Andy Whitcroft <apw@shadowen.org> wrote:
+> >>> To justify changing checkpatch to loosen its checks I would hope to see
+> >>> an agreed to change to the CodingStyle detailing actually what is now
+> >>> acceptable.
+> >> For reference, here's Jan's proposal for Documentation/CodingStyle:
+> >> http://lkml.org/lkml/2008/2/26/462
+> > 
+> > Yes, seems reasonably well worded.  However, I see no consensus for its
+> > acceptance as a change.  I seem some near NAK's.
 > 
-> No?
+> but no definite one :)
+> > 
+> > -apw
+> 
+> Seriously, I'm not sure how significant or relevant they are though.
+> 
+> In http://lkml.org/lkml/2008/2/26/533,
+> SL Baur <steve <at> xemacs.org> said:
+> > The proposed two space change is ugly.  Can someone NAK it?
+> 
+> I'm not sure what "two space change" proposal this Steve referred to
+> and his rejection is based on not-to-sound aesthetic grounds.
+> 
+> The motivation behind our proposal is more than just aesthetic.
+> I believe that using tabs for indent and then spaces for alignment
+> is functionally better, works for everybody, and will eventually result
+> in a more readable code over time, hopefully leading to fewer bugs.
 
-(Yes!)  Ah, thanks for that.  I wrote a regression test program for this
-case that worked before and fails with my last version of the patch.
-I've fixed my new code so it passes again.
+I don't see it as really anything other than different.  It'll look better
+for you, sure.  But either we (tabs=8 people) will not be maintaining it
+as we edit leading to inconsistent indent, or we will be putting in lots
+of effort to maintain something we can't even see.
 
-> Well, I was thinking about another thread (the new parent) sleeping in
-> do_wait(__WNOTHREAD)... not sure this really matters, though.
+> Randy's answer, http://lkml.org/lkml/2008/2/27/7
+> says he won't NAK it since:
+> > I would gladly NAK it, but most recent email from Linus about
+> > coding style is that we are getting too detailed about it,
+> > so unless there is some overwhelming need to change anything in
+> > CodingStyle, I'm for no changes (or maybe even some removals).
+> 
+> My interpretation of that is the the current CodingStyle is too detailed
+> *now* therefore we need to relax it, not keep it the way it is.
+> It's true, that we add more details to relax the requirements but
+> overall we'd allow for more flexibility.  To do that with removing
+> details rather than adding any is dangerous IMO since it can easily
+> lead to indentation chaos that makes everybody's life harder...
 
-I'm pretty sure it doesn't matter in real life.  I doubt whoever uses
-__WNOTHREAD was relying on seeing some other thread's reparented
-children.  TBH, I don't care much about __WNOTHREAD and I don't know off
-hand of anything that actually uses it.  OTOH, an extra wakeup on
-wait_chldexit is always harmless.  And for pure anality, it seems proper
-to maintain the invariant that do_wait() wakes up promptly whenever
-interrupting and restarting it would complete without blocking.  But, we
-don't get that wakeup now and noone has complained, so all in all, I'm
-inclined to leave it as it is.
+But that is your option.  Right now the rule is simple, use tabs, only.
+Either we relax that and get inconsistent indent from the two camps _or_
+you add rules and we all have to follow your new spaces for align form.
 
-I've put the latest tweaked version of this same patch series at:
-	http://people.redhat.com/roland/kernel-patches/ptrace-cleanup.mbox
-That adds a fourth patch that fixes the aforementioned bug case that the
-current canonical kernel gets wrong.  I think that fix also incidentally
-covered the init-ignores-SIGCHLD case, but I didn't test that and I'm
-not really positive.
+> Richard Knutsson, in http://lkml.org/lkml/2008/2/28/356
+> adds an excellent point about needing smaller tab expansion
+> for narrow screens.
+> 
+> Stefan Richter in http://lkml.org/lkml/2008/2/26/523 commented:
+> > Jan Engelhardt, Benny Halevy, and Richard Knutsson wrote:
+> > > -Tabs are 8 characters, and thus indentations are also 8 characters.
+> > > -There are heretic movements that try to make indentations 4 (or even 2!)
+> > > -characters deep, and that is akin to trying to define the value of PI to
+> > > -be 3.
+> > 
+> > Don't do this
+> 
+> Again, I see no real reasons why not to besides being against Stefan's
+> preferences.  I repeat my point that the proposed style does not
+> necessarily encourage smaller tab expansion, it just makes it possible.
+> 
+> Well, enough said.
+> Back to fixin' bugs...
 
-I'm working on a variant of the ptrace revamp where all ptrace'd tasks
-go on a list (whether natural children or not).  (This was my original
-intent, but then I thought it might be more complication and change that
-way.  Now it's seeming attractive again.)  I tend towards this approach
-aesthetically because it makes ptrace bookkeeping more consistent across
-all kinds of tracees.  For the cases we've been talking about, it means
-ptrace_exit() would take care of zombies kept alive by ptrace uniformly
-before we get to the reparent_thread loop.  This means the init case is
-separate and needs a separate fix, but that kind of seems cleaner.  When
-I get the variant patch working, we can see which one looks best.  I'd
-like your opinion on that.
+Indeed.
 
-
-Thanks,
-Roland
+-apw
