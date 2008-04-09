@@ -1,53 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753239AbYDIORS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753488AbYDIO35@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753239AbYDIORS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Apr 2008 10:17:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752200AbYDIORI
+	id S1753488AbYDIO35 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Apr 2008 10:29:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752278AbYDIO3s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Apr 2008 10:17:08 -0400
-Received: from colobus.isomerica.net ([216.93.242.10]:34676 "EHLO
-	colobus.isomerica.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751794AbYDIORH (ORCPT
+	Wed, 9 Apr 2008 10:29:48 -0400
+Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:56605
+	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752048AbYDIO3r (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Apr 2008 10:17:07 -0400
-Message-ID: <47FCCF94.3000103@isomerica.net>
-Date: Wed, 09 Apr 2008 10:15:48 -0400
-From: Dan Noe <dpn@isomerica.net>
-Reply-To: dpn@isomerica.net
-Organization: isomerica.net
-User-Agent: Thunderbird 2.0.0.12 (Macintosh/20080213)
+	Wed, 9 Apr 2008 10:29:47 -0400
+Date: Wed, 9 Apr 2008 16:29:45 +0200
+From: Andrea Arcangeli <andrea@qumranet.com>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Robin Holt <holt@sgi.com>, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       kvm-devel@lists.sourceforge.net,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, general@lists.openfabrics.org,
+       steiner@sgi.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [patch 02/10] emm: notifier logic
+Message-ID: <20080409142945.GS10133@duo.random>
+References: <20080404223048.374852899@sgi.com> <20080404223131.469710551@sgi.com> <20080405005759.GH14784@duo.random> <Pine.LNX.4.64.0804062246030.18148@schroedinger.engr.sgi.com> <20080407060602.GE9309@duo.random> <Pine.LNX.4.64.0804062314080.18728@schroedinger.engr.sgi.com> <20080407071330.GH9309@duo.random> <Pine.LNX.4.64.0804081320160.30874@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
-To: Andreas Grimm <agrimm61@gmail.com>
-CC: Johannes Weiner <hannes@saeurebad.de>, linux-kernel@vger.kernel.org
-Subject: Re: VM - a plenty of inactive memory
-References: <cf40c6a90804090213u55491ceay9b211d75d74dc29c@mail.gmail.com>	 <874pabrx6b.fsf@saeurebad.de> <cf40c6a90804090657j7e76a84foeaf3c1c02d2a7b73@mail.gmail.com>
-In-Reply-To: <cf40c6a90804090657j7e76a84foeaf3c1c02d2a7b73@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0804081320160.30874@schroedinger.engr.sgi.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andreas Grimm wrote:
-> i know this. But why the kernel locks that memory for a so long time
-> (2 days now)? Is there a way to enforce the reclaiming? And how can i
-> find out, which process owns that memory. The problem is, that i can't
-> accept, that the free memory fell down to 50MB, when i have 24GB in
-> the nirvana. The system was recently very close to the awkward
-> situation to swap to disk, and i bet it will do so in the next few
-> days, because it happened before. Unintelligible, if one got that much
-> ram.
+On Tue, Apr 08, 2008 at 01:23:33PM -0700, Christoph Lameter wrote:
+> It may also be useful to allow invalidate_start() to fail in some contexts 
+> (try_to_unmap f.e., maybe if a certain flag is passed). This may allow the 
+> device to get out of tight situations (pending I/O f.e. or time out if 
+> there is no response for network communications). But then that 
+> complicates the API.
 
-Have you investigated the sys.vm.swappiness tunable?  It allows you to 
-control how readily the kernel swaps out unused mapped memory.  This 
-seems to be relevant to your issue.
+That also complicates the fact that there can't be a spte mapped and a
+pte not mapped or the spte would leak unswappable memory, so a failure
+should re-establish the pte and undo the ptep_clear_flush or
+equivalent... I think we can change the API later if needed. This is
+an internal-only API invisible to userland so it can change and break
+anytime to make the whole kernel faster and better (ask Greg for
+kernel internal APIs).
 
-See http://lwn.net/Articles/83588/
-
-Cheers,
-Dan
-
--- 
-                     /--------------- - -  -  -   -   -
-                     |  Daniel Noe
-                     |  http://isomerica.net/~dpn/
+One important detail is that because the secondary mmu page fault can
+happen concurrently against invaldiate_page (there wasn't a
+range_begin to block it), the secondary mmu page fault must ensure
+that the pte is still established, before establishing the spte (with
+proper locking that will block a concurrent invalidate_page). Having a
+range_begin before the ptep_clear_flush effectively make lifes a bit
+easier but it's not needed as those are locking issues that the driver
+can solve (unlike range_begin being missed, now fixed by mm_lock) and
+this allows for higher performance both when the lock is armed and
+disarmed. I'm going to solve all the locking for kvm with spinlocks
+and/or seqlocks to avoid any dependency on the patches that makes the
+mmu notifier sleep capable.
