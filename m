@@ -1,57 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756812AbYDIQVr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757423AbYDIQWn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756812AbYDIQVr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Apr 2008 12:21:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754557AbYDIQVP
+	id S1757423AbYDIQWn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Apr 2008 12:22:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755319AbYDIQVT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Apr 2008 12:21:15 -0400
-Received: from smtp.polymtl.ca ([132.207.4.11]:58335 "EHLO smtp.polymtl.ca"
+	Wed, 9 Apr 2008 12:21:19 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:58345 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754292AbYDIQVO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Apr 2008 12:21:14 -0400
-Message-Id: <20080409152047.477214070@polymtl.ca>
-References: <20080409150829.855195878@polymtl.ca>
+	id S1755204AbYDIQVS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Apr 2008 12:21:18 -0400
+Message-Id: <20080409150829.855195878@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Wed, 09 Apr 2008 11:08:32 -0400
+Date: Wed, 09 Apr 2008 11:08:29 -0400
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
        linux-kernel@vger.kernel.org
-Cc: Andi Kleen <andi@firstfloor.org>, Rusty Russell <rusty@rustcorp.com.au>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>, hch@infradead.org,
-       anil.s.keshavamurthy@intel.com, davem@davemloft.net
-Subject: [patch 03/17] Kprobes - declare kprobe_mutex static
-Content-Disposition: inline; filename=kprobes-declare-kprobes-mutex-static.patch
-X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Wed,  9 Apr 2008 16:20:07 +0000
+Cc: Andi Kleen <andi@firstfloor.org>, Rusty Russell <rusty@rustcorp.com.au>
+Subject: [patch 00/17] Text Edit Lock and Immediate Values for 2.6.25-rc8-mm1
+X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Wed,  9 Apr 2008 16:20:06 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Since it will not be used by other kernel objects, it makes sense to declare it
-static.
+Hi Andrew,
 
-Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Acked-by: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-CC: hch@infradead.org
-CC: anil.s.keshavamurthy@intel.com
-CC: davem@davemloft.net
----
- kernel/kprobes.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Here is the complete patchset required to get basic Immediate Values support
+ported to 2.6.25-rc8-mm1. It provides the "simple", non nmi-safe version of
+immediate values, which means that immediate values should not be used in code
+paths reachable by NMI or MCE handlers. This version also uses
+stop_machine_run() for immediate values updates, which is a very heavy lock.  In
+order to make incremental, easy to review, changes, I think we could start by
+this "simple" version as a first step before we switch to the nmi-safe version
+later.
 
-Index: linux-2.6-lttng/kernel/kprobes.c
-===================================================================
---- linux-2.6-lttng.orig/kernel/kprobes.c	2007-08-19 09:09:15.000000000 -0400
-+++ linux-2.6-lttng/kernel/kprobes.c	2007-08-19 17:18:07.000000000 -0400
-@@ -68,7 +68,7 @@ static struct hlist_head kretprobe_inst_
- /* NOTE: change this value only with kprobe_mutex held */
- static bool kprobe_enabled;
- 
--DEFINE_MUTEX(kprobe_mutex);		/* Protects kprobe_table */
-+static DEFINE_MUTEX(kprobe_mutex);	/* Protects kprobe_table */
- DEFINE_SPINLOCK(kretprobe_lock);	/* Protects kretprobe_inst_table */
- static DEFINE_PER_CPU(struct kprobe *, kprobe_instance) = NULL;
- 
+It applies at the end of your series files in the following order :
+
+# The following patches are required for any kind of immediate values
+# implementation
+kprobes-use-mutex-for-insn-pages.patch
+kprobes-dont-use-kprobes-mutex-in-arch-code.patch
+kprobes-declare-kprobes-mutex-static.patch
+
+x86-enhance-debug-rodata-support-alternatives.patch
+fix-text-poke-for-vmalloced-pages.patch
+x86-enhance-debug-rodata-support-for-hotplug-and-kprobes.patch
+
+text-edit-lock-architecture-independent-code.patch
+text-edit-lock-kprobes-architecture-independent-support.patch
+
+# The following patches provide non nmi-safe immediate values
+add-all-cpus-option-to-stop-machine-run.patch
+immediate-values-architecture-independent-code.patch
+implement-immediate-update-via-stop-machine-run.patch
+immediate-values-kconfig-menu-in-embedded.patch
+immediate-values-x86-optimization.patch
+add-text-poke-and-sync-core-to-powerpc.patch
+immediate-values-powerpc-optimization.patch
+immediate-values-documentation.patch
+
+#Those are the immediate values users
+scheduler-profiling-use-immediate-values.patch
+
+Thanks,
+
+Mathieu
 
 -- 
 Mathieu Desnoyers
