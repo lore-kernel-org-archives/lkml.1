@@ -1,62 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755712AbYDIMwc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755513AbYDIM5U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755712AbYDIMwc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Apr 2008 08:52:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753445AbYDIMwZ
+	id S1755513AbYDIM5U (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Apr 2008 08:57:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752255AbYDIM5J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Apr 2008 08:52:25 -0400
-Received: from antispam.upcomillas.es ([130.206.70.245]:43648 "EHLO
-	antispam.upcomillas.es" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750812AbYDIMwY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Apr 2008 08:52:24 -0400
-Subject: Re: [Bug #10300] volume wheel does not work in 2.6.25-rc6
-From: Romano Giannetti <romano@dea.icai.upcomillas.es>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       bugme-daemon <bugme-daemon@bugzilla.kernel.org>
-In-Reply-To: <1207722114.16938.1.camel@localhost>
-References: <SvnMeM-aZi.A.QWF.0__-HB@albercik>
-	 <1207722114.16938.1.camel@localhost>
-Content-Type: text/plain; charset=ISO-8859-15
-Date: Wed, 09 Apr 2008 14:52:12 +0200
-Message-Id: <1207745532.28652.3.camel@pern>
+	Wed, 9 Apr 2008 08:57:09 -0400
+Received: from styx.suse.cz ([82.119.242.94]:60646 "EHLO elijah.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751890AbYDIM5H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Apr 2008 08:57:07 -0400
+Subject: Re: [PATCH 2/4] set_restore_sigmask TIF_SIGPENDING
+From: Petr Tesarik <ptesarik@suse.cz>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Cc: David Woodhouse <dwmw2@infradead.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Roland McGrath <roland@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>, linux-s390@vger.kernel.org,
+       tony.luck@intel.com, linux-ia64@vger.kernel.org,
+       linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20080409113939.GA99@tv-sign.ru>
+References: <20080329001230.D013726FA1D@magilla.localdomain>
+	 <20080329001341.7F93826FA1D@magilla.localdomain>
+	 <alpine.LFD.1.00.0803281746480.14670@woody.linux-foundation.org>
+	 <20080408113519.GA227@tv-sign.ru>
+	 <1207739787.27048.57.camel@shinybook.infradead.org>
+	 <20080409113939.GA99@tv-sign.ru>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Organization: SuSE CR
+Date: Wed, 09 Apr 2008 14:57:04 +0200
+Message-Id: <1207745824.8604.16.camel@elijah.suse.cz>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 8bit
+X-Mailer: Evolution 2.6.0 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Wed, 2008-04-09 at 08:21 +0200, Romano Giannetti wrote:
+On Wed, 2008-04-09 at 15:39 +0400, Oleg Nesterov wrote:
+> On 04/09, David Woodhouse wrote:
+> >
+> > On Tue, 2008-04-08 at 15:35 +0400, Oleg Nesterov wrote:
+> > > Why do we need any flag? It looks a bit ugly. Isn't it better to introduce
+> > > the new magic ERESTART_XXX which means ERESTARTNOHAND + restore-sigmask ?
+> > > 
+> > > We only need this flag as an implicit parameter to the arch dependent do_signal()
+> > > which we can't call directly, and thus it must imply TIF_SIGPENDING, and it
+> > > is not valid after do_signal() (should be cleared). This all looks like
+> > > ERESTART_ magic, why should we add something else ?
+> > > 
+> > > See also http://marc.info/?l=linux-kernel&m=113734458516136
+> > > 
+> > > Of course, probably it is too late to change the implementation even if
+> > > I am right, the question is: what I am missed?
+> > 
+> > Q: When ppoll() is interrupted by a signal, what signal mask should be
+> > active when the signal handler is active?
+> > 
+> > I believe that the signal handler should run with the temporary sigmask
+> > which was set by ppoll(), and the original sigmask should be restored
+> > only when the handler completes -- and that's what we achieve with
+> > TIF_RESTORE_SIGMASK.
 > 
-> On Wed, 2008-04-09 at 01:02 +0200, Rafael J. Wysocki wrote:
-> > The following bug entry is on the current list of known regressions
-> > from 2.6.24.  Please verify if it still should be listed.
-> > 
-> > 
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10300
-> > Subject		: volume wheel does not work in 2.6.25-rc6
-> > Submitter	: Romano Giannetti <romano.giannetti@gmail.com>
-> > Date		: 2008-03-21 11:42 (19 days old)
-> > 
+> Yes sure.
 > 
-> It was there with -rc8 (as I said on the bugzilla). Will try with a
-> recent kernel, git-pulling now. 
+> > So a signal which was originally enabled but is temporarily disabled by
+> > the mask passed to ppoll() will not be able to interrupt the handler for
+> > the signal which interrupted ppoll().
+> > 
+> > Your version will restore the original signal mask _before_ invoking the
+> > signal handler which interrupted ppoll()
+> 
+> Why do you think so?
+> 
+> Please look at the "patch" below,
+> 
+> 	--- arch/x86/kernel/signal_32.c	2008-02-15 16:58:38.000000000 +0300
+> 	+++ -	2008-04-09 15:16:05.393510662 +0400
+> 	@@ -526,10 +526,14 @@ handle_signal(unsigned long sig, siginfo
+> 	 {
+> 		int ret;
+> 	 
+> 	+	oldset = &current->blocked;
+> 	+
+> 		/* Are we from a system call? */
+> 		if (regs->orig_ax >= 0) {
+> 			/* If so, check system call restarting.. */
+> 			switch (regs->ax) {
+> 	+			case -ERESTART_XXX:
+> 	+				oldset = &current->saved_sigmask;
+> 				case -ERESTART_RESTARTBLOCK:
+> 				case -ERESTARTNOHAND:
+> 					regs->ax = -EINTR;
+> 
+> We also need a similar change in do_signal(). Now,
+> 
+> 	--- fs/select.c	2008-02-15 16:59:15.000000000 +0300
+> 	+++ -	2008-04-09 15:19:29.015991911 +0400
+> 	@@ -805,9 +805,8 @@ asmlinkage long sys_ppoll(struct pollfd 
+> 			if (sigmask) {
+> 				memcpy(&current->saved_sigmask, &sigsaved,
+> 						sizeof(sigsaved));
+> 	-			set_thread_flag(TIF_RESTORE_SIGMASK);
+> 			}
+> 	-		ret = -ERESTARTNOHAND;
+> 	+		ret = -ERESTART_XXX;
+> 		} else if (sigmask)
+> 			sigprocmask(SIG_SETMASK, &sigsaved, NULL);
+> 
+> Perhaps I missed something else, though. Not that I really think it worth
+> changing, but I'll try to make a proof of concept patch on Weekend, on top
+> of Roland's cleanups.
+> 
+> As I see it, the main disadvantage of ERESTART_ approach is that we need 2
+> new ERESTART_ codes, one for ERESTARTNOHAND, another for ERESTART_RESTARTBLOCK.
+> And yes, while I personally think this is "more clean", it is very subjective.
 
-Still here with -rc8-208.  Not a big issue, really, but still here. 
+One error code more or less, that's cheap. Thread flags are a much more
+limited resource.
 
-Romano 
+Just my two cents,
+Petr Tesarik
 
--- 
-
-Romano Giannetti                            Dep. de Electrónica y Automática
-http://www.dea.icai.upcomillas.es/romano    Univ. Pontificia Comillas (MADRID)
-
-
---
-La presente comunicación tiene carácter confidencial y es para el exclusivo uso del destinatario indicado en la misma. Si Ud. no es el destinatario indicado, le informamos que cualquier forma de distribución, reproducción o uso de esta comunicación y/o de la información contenida en la misma están estrictamente prohibidos por la ley. Si Ud. ha recibido esta comunicación por error, por favor, notifíquelo inmediatamente al remitente contestando a este mensaje y proceda a continuación a destruirlo. Gracias por su colaboración.
-
-This communication contains confidential information. It is for the exclusive use of the intended addressee. If you are not the intended addressee, please note that any form of distribution, copying or use of this communication or the information in it is strictly prohibited by law. If you have received this communication in error, please immediately notify the sender by reply e-mail and destroy this message. Thank you for your cooperation. 
