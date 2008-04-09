@@ -1,66 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755188AbYDIOvx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754774AbYDIPBW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755188AbYDIOvx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Apr 2008 10:51:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752575AbYDIOvp
+	id S1754774AbYDIPBW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Apr 2008 11:01:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752620AbYDIPBP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Apr 2008 10:51:45 -0400
-Received: from ug-out-1314.google.com ([66.249.92.169]:4702 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752362AbYDIOvo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Apr 2008 10:51:44 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=wP5ajLxQRFTFB5JnlYqHwmh2Pm8h2CsBAe3zFsvBaNt0AyoDfcG81YjZzNcQ6svD0pttmnkxXWZQuk8gKdoSi0CrRh2nxfIWOGo79T5kPKd4De3CrobdXtHNnXiE8fSqV2iY/6ds7g4vpehvh9Ryw9FIbnnjrjMZKm1m5xa9jXk=
-Date: Wed, 9 Apr 2008 18:50:58 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
-       Jacek Luczak <difrost.kernel@gmail.com>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: linux-next: Tree for April 9
-Message-ID: <20080409145058.GA7648@cvg>
-References: <20080409185309.b94c9d15.sfr@canb.auug.org.au> <d711229d0804090400p1c92a158j381b86e207a6f38a@mail.gmail.com> <20080409210936.ec8ea986.sfr@canb.auug.org.au> <20080409212719.7d834c13.sfr@canb.auug.org.au> <20080409113109.GA25186@elte.hu>
+	Wed, 9 Apr 2008 11:01:15 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:40382 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752641AbYDIPBO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Apr 2008 11:01:14 -0400
+Date: Wed, 9 Apr 2008 16:59:45 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Alan Mayer <ajm@sgi.com>
+Cc: torvalds@linux-foundation.org,
+       linux-kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86_64: Change FIRST_SYSTEM_VECTOR to a variable.
+Message-ID: <20080409145945.GB17100@elte.hu>
+References: <Pine.SGI.3.96.1080408160826.8706317D-100000@fergus.americas.sgi.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080409113109.GA25186@elte.hu>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <Pine.SGI.3.96.1080408160826.8706317D-100000@fergus.americas.sgi.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.1
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.1 required=5.9 tests=BAYES_05 autolearn=no SpamAssassin version=3.2.3
+	-1.1 BAYES_05               BODY: Bayesian spam probability is 1 to 5%
+	[score: 0.0108]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Ingo Molnar - Wed, Apr 09, 2008 at 01:31:09PM +0200]
-| 
-| * Stephen Rothwell <sfr@canb.auug.org.au> wrote:
-| 
-| > Hi Jacek,
-| > 
-| > On Wed, 9 Apr 2008 21:09:36 +1000 Stephen Rothwell <sfr@canb.auug.org.au> wrote:
-| > >
-| > > Thanks for the report, can you please send us your .config, please?
-| > 
-| > Don't worry about it, I found the problem.
-| > 
-| > It seems that commit 883a9fc4e5d9b0701f15d4e5a23608f942104721 ("x86: 
-| > cleanup - rename VM_MASK to X86_VM_MASK") from the x86 tree seems to 
-| > have missed some places.
-| 
-| i think what happened is that some changes came in from other trees that 
-| reintroduced the old symbols?
 
-actually, that is the only explanation I could find. The last time I sent
-you patches to fixup *all* VM_MASK (wich were grep'ed on *latest branch over
-*all* sources inside x86). So this all were settled down by a few of my
-patches and /for shame on me/ yours fixups. So these fixups were missed
-on merging.
+* Alan Mayer <ajm@sgi.com> wrote:
 
-| 
-| if that's the case i'll add back the old symbol names to make the 
-| transition and integration easier.
-| 
-| 	Ingo
-| 
-		- Cyrill -
+> Subject: [PATCH] x86_64: Change FIRST_SYSTEM_VECTOR to a variable.
+> 
+> From: Alan Mayer <ajm@sgi.com>
+> 
+> The SGI UV system needs several more system vectors than a vanilla 
+> x86_64 system.  Rather than burden the other archs with extra system 
+> vectors that they don't use, change FIRST_SYSTEM_VECTOR to a variable, 
+> so that it can be dynamic.
+
+nice - but please split this up into two patches: first one that changes 
+the generic code to use a variable limit - this patch will (should) be a 
+functional NOP.
+
+then a second patch adds those two new UV vectors.
+
+Also, could you please also change the 32-bit side as well so that we at 
+least keep the two implementations roughly in sync?
+
+	Ingo
