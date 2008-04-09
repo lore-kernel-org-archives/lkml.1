@@ -1,57 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753488AbYDIO35@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754247AbYDIOar@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753488AbYDIO35 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Apr 2008 10:29:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752278AbYDIO3s
+	id S1754247AbYDIOar (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Apr 2008 10:30:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753446AbYDIOaj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Apr 2008 10:29:48 -0400
-Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:56605
-	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752048AbYDIO3r (ORCPT
+	Wed, 9 Apr 2008 10:30:39 -0400
+Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:2185 "EHLO
+	pd2mo1so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752278AbYDIOai (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Apr 2008 10:29:47 -0400
-Date: Wed, 9 Apr 2008 16:29:45 +0200
-From: Andrea Arcangeli <andrea@qumranet.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Robin Holt <holt@sgi.com>, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       kvm-devel@lists.sourceforge.net,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, general@lists.openfabrics.org,
-       steiner@sgi.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [patch 02/10] emm: notifier logic
-Message-ID: <20080409142945.GS10133@duo.random>
-References: <20080404223048.374852899@sgi.com> <20080404223131.469710551@sgi.com> <20080405005759.GH14784@duo.random> <Pine.LNX.4.64.0804062246030.18148@schroedinger.engr.sgi.com> <20080407060602.GE9309@duo.random> <Pine.LNX.4.64.0804062314080.18728@schroedinger.engr.sgi.com> <20080407071330.GH9309@duo.random> <Pine.LNX.4.64.0804081320160.30874@schroedinger.engr.sgi.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0804081320160.30874@schroedinger.engr.sgi.com>
+	Wed, 9 Apr 2008 10:30:38 -0400
+Date: Wed, 09 Apr 2008 08:31:00 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: Plenty of inactive memory
+In-reply-to: <fa.HIr5TAepu3mcAI6oLfBPL3wGwss@ifi.uio.no>
+To: Andreas Grimm <agrimm61@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Message-id: <47FCD324.8030100@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7bit
+References: <fa.HIr5TAepu3mcAI6oLfBPL3wGwss@ifi.uio.no>
+User-Agent: Thunderbird 2.0.0.12 (Windows/20080213)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 08, 2008 at 01:23:33PM -0700, Christoph Lameter wrote:
-> It may also be useful to allow invalidate_start() to fail in some contexts 
-> (try_to_unmap f.e., maybe if a certain flag is passed). This may allow the 
-> device to get out of tight situations (pending I/O f.e. or time out if 
-> there is no response for network communications). But then that 
-> complicates the API.
+Andreas Grimm wrote:
+> Hello everybody,
+> 
+> i got a weird problem with one of my servers. It's a Intel SR2500AL
+> with 32GB of RAM.
+> Looking at the memory usage of the system, something is going totally
+> wrong. The crucial numbers from /proc/meminfo are:
+> 
+> MemTotal: 33265916 kB
+> MemFree: 416168 kB
+> Inactive: 24630428 kB (24GB? whooaaa)
+> 
+> Another system with only 16GB, same amount of users and load, shows a
+> more normal behaviour:
+> 
+> MemTotal: 16619808 kB
+> MemFree: 6912676 kB
+> Inactive: 1774364 kB
+> 
+> Why does the 32GB-System have this plenty of inactive memory. Is there
+> a way to find out, what the kernel is holding in readiness?
+> 
+> OS: SLES 10 SP1
+> Kernel : 2.6.16.27-0.9-bigsmp
+> 
+> Thanks in advance.
 
-That also complicates the fact that there can't be a spte mapped and a
-pte not mapped or the spte would leak unswappable memory, so a failure
-should re-establish the pte and undo the ptep_clear_flush or
-equivalent... I think we can change the API later if needed. This is
-an internal-only API invisible to userland so it can change and break
-anytime to make the whole kernel faster and better (ask Greg for
-kernel internal APIs).
-
-One important detail is that because the secondary mmu page fault can
-happen concurrently against invaldiate_page (there wasn't a
-range_begin to block it), the secondary mmu page fault must ensure
-that the pte is still established, before establishing the spte (with
-proper locking that will block a concurrent invalidate_page). Having a
-range_begin before the ptep_clear_flush effectively make lifes a bit
-easier but it's not needed as those are locking issues that the driver
-can solve (unlike range_begin being missed, now fixed by mm_lock) and
-this allows for higher performance both when the lock is armed and
-disarmed. I'm going to solve all the locking for kvm with spinlocks
-and/or seqlocks to avoid any dependency on the patches that makes the
-mmu notifier sleep capable.
+Doesn't sound unreasonable that most of that memory is not in active 
+use, depending on the applications..
