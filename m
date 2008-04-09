@@ -1,68 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756259AbYDIQNf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753096AbYDIQOl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756259AbYDIQNf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Apr 2008 12:13:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752733AbYDIQN2
+	id S1753096AbYDIQOl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Apr 2008 12:14:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752733AbYDIQOc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Apr 2008 12:13:28 -0400
-Received: from mail.fieldses.org ([66.93.2.214]:49489 "EHLO fieldses.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752119AbYDIQN1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Apr 2008 12:13:27 -0400
-Date: Wed, 9 Apr 2008 12:13:19 -0400
-To: Steven Whitehouse <swhiteho@redhat.com>
+	Wed, 9 Apr 2008 12:14:32 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:47470 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752737AbYDIQOb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Apr 2008 12:14:31 -0400
+Subject: Re: [PATCH 2/4] set_restore_sigmask TIF_SIGPENDING
+From: David Woodhouse <dwmw2@infradead.org>
+To: Oleg Nesterov <oleg@tv-sign.ru>
 Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Neil Brown <neilb@suse.de>,
-       Adrian Bunk <bunk@kernel.org>, ChristophHellwig <hch@infradead.org>
-Subject: Re: [NFS] Use a zero sized array for raw field in struct fid
-Message-ID: <20080409161319.GC32475@fieldses.org>
-References: <1207561677.3635.166.camel@quoit> <alpine.LFD.1.00.0804070850310.11277@woody.linux-foundation.org> <1207641005.3635.238.camel@quoit> <20080408075807.GA8893@infradead.org> <1207659686.3635.278.camel@quoit>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1207659686.3635.278.camel@quoit>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-From: "J. Bruce Fields" <bfields@fieldses.org>
+       Roland McGrath <roland@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>, linux-s390@vger.kernel.org,
+       tony.luck@intel.com, linux-ia64@vger.kernel.org,
+       linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20080409113939.GA99@tv-sign.ru>
+References: <20080329001230.D013726FA1D@magilla.localdomain>
+	 <20080329001341.7F93826FA1D@magilla.localdomain>
+	 <alpine.LFD.1.00.0803281746480.14670@woody.linux-foundation.org>
+	 <20080408113519.GA227@tv-sign.ru>
+	 <1207739787.27048.57.camel@shinybook.infradead.org>
+	 <20080409113939.GA99@tv-sign.ru>
+Content-Type: text/plain
+Date: Wed, 09 Apr 2008 17:14:13 +0100
+Message-Id: <1207757653.27048.77.camel@shinybook.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.0 (2.22.0-4.fc9) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 08, 2008 at 02:01:26PM +0100, Steven Whitehouse wrote:
-> >From b8732f8bea4e8abc331b8fa58a4047c91e2e7d02 Mon Sep 17 00:00:00 2001
-> From: Steven Whitehouse <swhiteho@redhat.com>
-> Date: Tue, 8 Apr 2008 13:12:52 +0100
-> Subject: [PATCH] [NFS] Use a zero sized array for raw field in struct fid
-> 
-> The raw field's size can vary so we use a zero sized array since
-> gcc will not allow a variable sized array inside a union. This
-> has been tested with ext3 and gfs2 and relates to the bug
-> report: http://lkml.org/lkml/2007/10/24/374 and discussion
-> thread: http://lkml.org/lkml/2008/4/7/65
+On Wed, 2008-04-09 at 15:39 +0400, Oleg Nesterov wrote:
+> As I see it, the main disadvantage of ERESTART_ approach is that we need 2
+> new ERESTART_ codes, one for ERESTARTNOHAND, another for ERESTART_RESTARTBLOCK.
+> And yes, while I personally think this is "more clean", it is very subjective.
 
-OK; queued for 2.6.26.--b.
+Subjective, yeah.... personally, I don't like using ERESTART_xxx much,
+because you're _not_ necessarily restarting the system call. The
+separate flag for TIF_RESTORE_SIGMASK (or TLF_RESTORE_SIGMASK) seems
+cleaner to me -- especially once you observe that you need new codes for
+ERESTART_xxx_AND_RESTORE_SIGMASK for each ERESTART_xxx that you might
+want to use in conjunction with the flags.
 
-> 
-> Signed-off-by: Steven Whitehouse <swhiteho@redhat.com>
-> Cc: Christoph Hellwig <hch@infradead.org>
-> Cc: Neil Brown <neilb@suse.de>
-> Cc: J. Bruce Fields <bfields@fieldses.org>
-> Cc: Adrian Bunk <bunk@kernel.org>
-> 
-> diff --git a/include/linux/exportfs.h b/include/linux/exportfs.h
-> index adcbb05..de8387b 100644
-> --- a/include/linux/exportfs.h
-> +++ b/include/linux/exportfs.h
-> @@ -43,7 +43,7 @@ struct fid {
->  			u32 parent_ino;
->  			u32 parent_gen;
->  		} i32;
-> -		__u32 raw[6];
-> +		__u32 raw[0];
->  	};
->  };
->  
-> -- 
-> 1.5.1.2
-> 
-> 
-> 
+But I don't really care much either, if you want to change it and get
+the details right.
+
+One of the supposed advantages of TIF_RESTORE_SIGMASK in the first
+place, iirc, was that it allowed us to return a result code other than
+-EINTR as _well_ as restoring the signal mask. But we don't actually
+make use of that possibility now anyway.
+
+-- 
+dwmw2
+
