@@ -1,73 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757444AbYDIUxR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758113AbYDIUxp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757444AbYDIUxR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Apr 2008 16:53:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754145AbYDIUxD
+	id S1758113AbYDIUxp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Apr 2008 16:53:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756930AbYDIUxi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Apr 2008 16:53:03 -0400
-Received: from py-out-1112.google.com ([64.233.166.178]:43013 "EHLO
+	Wed, 9 Apr 2008 16:53:38 -0400
+Received: from py-out-1112.google.com ([64.233.166.181]:44613 "EHLO
 	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752843AbYDIUxB (ORCPT
+	with ESMTP id S1755636AbYDIUxh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Apr 2008 16:53:01 -0400
+	Wed, 9 Apr 2008 16:53:37 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=WJbAymqkMsnH8NDuzY3SiBVr7OwJJxLtD+fyOeM/S9F6LpXqsfS/jOAXEtiaTENKsRiuaEZ+FCTVMjOa9DOhpm7njhnQ7kIfVNQzA1S6m1wrAQAQIleHIQ0e1GCm50BiJkJmg1JucJoERtnEbqNt2ccrNp1cDuHMLTO9ieB9P9s=
-Message-ID: <36ca99e90804091352g4910fc6cr2d23279324e12cf1@mail.gmail.com>
-Date: Wed, 9 Apr 2008 22:52:58 +0200
-From: "Bert Wesarg" <bert.wesarg@googlemail.com>
-To: "Greg KH" <gregkh@suse.de>
-Subject: Re: [PATCH 0/3] x86: add cpus_scnprintf function v3
-Cc: "Mike Travis" <travis@sgi.com>, "Ingo Molnar" <mingo@elte.hu>,
-       "Paul Jackson" <pj@sgi.com>, "Thomas Gleixner" <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20080409203909.GA17183@suse.de>
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=cg+5rzdSDC5IGIoMPwDiLjjzzt1+Ox4JODz7yjM1lSNr4oUb2ieKoLWV0+PQWZL/azWpM71/+jeT6qYKKv0K93PMBboYTuhGvjIJHAs7/E9GUtEWfY4wxIGdK7zl2xzd4mp9Y0GMvaYboFxK9JoLrGqCBUpJwTmCjVCwhNzaaFk=
+Message-ID: <38b2ab8a0804091353h3725ce29s196e27e8b4f1ff56@mail.gmail.com>
+Date: Wed, 9 Apr 2008 22:53:36 +0200
+From: "Francis Moreau" <francis.moro@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: Disk geometry from /sys
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <20080408184301.651388000@polaris-admin.engr.sgi.com>
-	 <36ca99e90804091051k7c2cc97neba0ca1967625433@mail.gmail.com>
-	 <20080409203909.GA17183@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 9, 2008 at 10:39 PM, Greg KH <gregkh@suse.de> wrote:
->
-> On Wed, Apr 09, 2008 at 07:51:23PM +0200, Bert Wesarg wrote:
->  > On Tue, Apr 8, 2008 at 8:43 PM, Mike Travis <travis@sgi.com> wrote:
->  > >   * Cleanup usages of cpumask_scprintf in the following files and add
->  > >     another interface to use cpulist_scnprintf where appropriate.
->  >
->  > On Mon, Apr 7, 2008 at 8:22 PM, Mike Travis <travis@sgi.com> wrote:
->  > >  Part of the change is readability, but also looking towards the future
->  > >  of 16k/64k/??? # of cpus, the straight mask approach will overflow the
->  > >  PAGE_SIZE buffer provided (though some pathological cases will overflow
->  > >  the range method as well.)  So we'll need some advancement in the format
->  > >  of the printout.
->  >
->  > Btw, I think you can now push for a deprecation of the 'old' mask
->  > attributes, with the justification you have given above. The other
->  > possibility is to change sysfs to provide bigger attribute buffers
->  > (CCed Greg for this).
->
->  Huh?
->
->  sysfs is "one value per file", if you are getting close to PAGE_SIZE in
->  any sysfs file, then you are doing something very wrong.
->
->  What sysfs file currently is trying to output data this big?
-Currently none. But if NR_CPUS >= 16K and PAGE_SIZE == 4K, than any
-file with an cpumask_scnprintf().
+Hi,
 
-Thanks,
-Bert
->
->  thanks,
->
->  greg k-h
->
+I'm trying to know the geometry of my hard disk from a bash script
+and that's the reason I'm looking in /sys. The reason is that I'd like
+to figure out the size of a cylinder without doing a
+ioctl(bdev, HDIO_GETGEO, &geo)
+
+Unfortunately I can't find anything useful and this is certainly a sign
+that I'm doing something wrong.
+
+Or maybe can I simply assume from my script that the geometry
+is always heads=255 and the number of sectors per track is 63 for all
+disks.
+
+Looking at parted(8) source code, I  can find this:
+
+/* The GETGEO ioctl is no longer useful (as of linux 2.6.x).  We could
+ * still use it in 2.4.x, but this is contentious.  Perhaps we should
+ * move to EDD. */
+
+Could anybody give me some advices ?
+-- 
+Francis
