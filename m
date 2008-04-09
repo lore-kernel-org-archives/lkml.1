@@ -1,64 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754824AbYDISiq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755824AbYDIUFV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754824AbYDISiq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Apr 2008 14:38:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753685AbYDISic
+	id S1755824AbYDIUFV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Apr 2008 16:05:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752454AbYDIUFJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Apr 2008 14:38:32 -0400
-Received: from fk-out-0910.google.com ([209.85.128.184]:62222 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752701AbYDISi2 (ORCPT
+	Wed, 9 Apr 2008 16:05:09 -0400
+Received: from wf-out-1314.google.com ([209.85.200.169]:33314 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752452AbYDIUFH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Apr 2008 14:38:28 -0400
+	Wed, 9 Apr 2008 16:05:07 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-disposition:message-id:content-type:content-transfer-encoding;
-        b=vURMUc1fMdN1ldbHlcqvj197QW+GQQA6lOIaSbRk7RdXAwN/FIMrX7Q2nvZHRB4EXLjLqLfYnW9LC1iJEAD1QHv4EQUUZawhfo9ft4DnhLo86dsLr0pnl/7s1uWVWidLUjijnrmxdcpOGQHX/827Nv40qImHkxkgqq1Y11uxmjE=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Richard Zidlicky <rz@linux-m68k.org>
-Subject: Re: [PATCH 5/5] falconide/q40ide: add ->atapi_*put_bytes and ->ata_*put_data methods
-Date: Wed, 9 Apr 2008 20:49:25 +0200
-User-Agent: KMail/1.9.9
-Cc: Michael Schmitz <schmitz@zirkon.biophys.uni-duesseldorf.de>,
-       Geert Uytterhoeven <geert@linux-m68k.org>, linux-ide@vger.kernel.org,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       Linux/m68k <linux-m68k@vger.kernel.org>,
-       Michael Schmitz <schmitz@debian.org>
-References: <200803301714.04527.bzolnier@gmail.com> <alpine.DEB.1.00.0804090337110.19638@zirkon.biophys.uni-duesseldorf.de> <20080409181314.GA999@linux-m68k.org>
-In-Reply-To: <20080409181314.GA999@linux-m68k.org>
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=LTRWrpNBnrIRPoB3rhVuO9oSKEQLB02/VgACB9XUqvYPL5EbXAWX/Opqu9pqlExxoN504lz8ncX1xeccJbsEA0hnGPFR+Qe6B9AJGVmJk6N6HrrPAFkjmfyJnAGi+zTOnG8MdX9T7Upo16Wsu0nQeN7MEXYN94PujBCmXUlxfM4=
+Message-ID: <cf40c6a90804091305i455518d5iaaf5ca9f552c89f2@mail.gmail.com>
+Date: Wed, 9 Apr 2008 22:05:07 +0200
+From: "Andreas Grimm" <agrimm61@gmail.com>
+To: "Johannes Weiner" <hannes@saeurebad.de>
+Subject: Re: VM - a plenty of inactive memory
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <87myo2redk.fsf@saeurebad.de>
 MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200804092049.25594.bzolnier@gmail.com>
-Content-Type: text/plain;
-  charset="utf-8"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <cf40c6a90804090213u55491ceay9b211d75d74dc29c@mail.gmail.com>
+	 <874pabrx6b.fsf@saeurebad.de>
+	 <cf40c6a90804090657j7e76a84foeaf3c1c02d2a7b73@mail.gmail.com>
+	 <2f11576a0804090801s49587b26h115e8e1760ec7671@mail.gmail.com>
+	 <cf40c6a90804091108v522bd757nb81e9f97fdc132fc@mail.gmail.com>
+	 <87myo2redk.fsf@saeurebad.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Johnannes,
 
-Hi,
+of course:
+MemTotal:     33265916 kB
+MemFree:        438764 kB
+Buffers:         98544 kB
+Cached:        1837180 kB
+SwapCached:          0 kB
+Active:        7086300 kB
+Inactive:     25168628 kB
+HighTotal:    32631216 kB
+HighFree:       429252 kB
+LowTotal:       634700 kB
+LowFree:          9512 kB
+SwapTotal:     2104504 kB
+SwapFree:      2104504 kB
+Dirty:           14480 kB
+Writeback:           0 kB
+Mapped:         515524 kB
+Slab:           506636 kB
+CommitLimit:  18737460 kB
+Committed_AS: 16388640 kB
+PageTables:      37036 kB
+VmallocTotal:   112632 kB
+VmallocUsed:     15024 kB
+VmallocChunk:    95268 kB
+HugePages_Total:     0
+HugePages_Free:      0
+HugePages_Rsvd:      0
+Hugepagesize:     2048 kB
 
-On Wednesday 09 April 2008, Richard Zidlicky wrote:
-> On Wed, Apr 09, 2008 at 03:40:34AM +0200, Michael Schmitz wrote:
-> 
-> > > However, not only FS data is byteswapped, complete disk including partition
-> > > table and everything else is. Will "rq->cmd_type == REQ_TYPE_FS" also catch
-> > > all these cases?
-> > 
-> >  IIRC only identify data (and perhaps ATAPI data) need to be byteswapped 
-> >  twice (or not at all), so REQ_TYPE_FS should catch all other cases.
-> 
-> my main worry is whether REQ_TYPE_FS is set even when using raw disk access,
-> eg reading partition table or raw partitions.
+Here the meminfo from a "normal" system, nearly same amount of users,
+and stress, but only 16GB of ram:
 
-AFAIK direct I/O is also handled by REQ_TYPE_FS requests so it should be fine.
-
-Only special commands (identify, S.M.A.R.T., raw commands passed through
-taskfile ioctl) should be byte-swapped.
-
-I just merged the patch into IDE tree (together with few other changes)
-so some testing would be greatly appreciated.
+MemTotal:     16619808 kB
+MemFree:       5497672 kB
+Buffers:        422592 kB
+Cached:        7018072 kB
+SwapCached:          0 kB
+Active:        8769608 kB
+Inactive:      1979508 kB
+HighTotal:    15854036 kB
+HighFree:      5484136 kB
+LowTotal:       765772 kB
+LowFree:         13536 kB
+SwapTotal:     4200988 kB
+SwapFree:      4200828 kB
+Dirty:           16956 kB
+Writeback:           0 kB
+Mapped:         864284 kB
+Slab:           309456 kB
+CommitLimit:  12510892 kB
+Committed_AS: 14933584 kB
+PageTables:      33248 kB
+VmallocTotal:   112632 kB
+VmallocUsed:      9980 kB
+VmallocChunk:   102480 kB
+HugePages_Total:     0
+HugePages_Free:      0
+HugePages_Rsvd:      0
+Hugepagesize:     2048 kB
 
 Thanks,
-Bart
+Andreas
+
+2008/4/9, Johannes Weiner <hannes@saeurebad.de>:
+> Hi,
+>
+>  "Andreas Grimm" <agrimm61@gmail.com> writes:
+>
+>
+> > Hi Kosaki,
+>  >
+>  >>  # echo 3 > /proc/sys/vm/drop_caches
+>  >>
+>  > that frees exactly the 1,5Gigs in the buffers and the cache. Inactive
+>  > memory is still at 25GB.
+>  > Any other hint?
+>
+>
+> Could you supply the rest of /proc/meminfo?
+>
+>         Hannes
+>
