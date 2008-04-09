@@ -1,100 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756692AbYDIRDo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756870AbYDIRFm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756692AbYDIRDo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Apr 2008 13:03:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752896AbYDIRDg
+	id S1756870AbYDIRFm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Apr 2008 13:05:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754367AbYDIRFb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Apr 2008 13:03:36 -0400
-Received: from gw-colo-pa.panasas.com ([66.238.117.130]:27322 "EHLO
-	cassoulet.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752597AbYDIRDg (ORCPT
+	Wed, 9 Apr 2008 13:05:31 -0400
+Received: from fg-out-1718.google.com ([72.14.220.155]:25387 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753192AbYDIRFa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Apr 2008 13:03:36 -0400
-Message-ID: <47FCF6AF.8010703@panasas.com>
-Date: Wed, 09 Apr 2008 20:02:39 +0300
-From: Benny Halevy <bhalevy@panasas.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
+	Wed, 9 Apr 2008 13:05:30 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=xfUb560zXjW3Imi+myDn1UAEzD7Q6UySREmS2u8Kkpp6lAihHwkKJFOrqDIA9C7GIEzAYDjL5R7IRbNsNboIbDIjzjo98Nrb1/wTi/48kLDXeHCFutQjRRlkH4yT1c8JkfgtmRZKxB0WsNYQEJfYX4QSzc+GIbdQrf05mUpDx7o=
+Message-ID: <6101e8c40804091005k27e6f510h4385b6f709b6b5ed@mail.gmail.com>
+Date: Wed, 9 Apr 2008 19:05:28 +0200
+From: "Oliver Pinter" <oliver.pntr@gmail.com>
+To: "Miklos Szeredi" <miklos@szeredi.hu>
+Subject: Re: [patch] fix infinite loop in generic_file_splice_read()
+Cc: akpm@linux-foundation.org, jens.axboe@oracle.com,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+In-Reply-To: <E1JjcgO-0004q2-VJ@pomaz-ex.szeredi.hu>
 MIME-Version: 1.0
-To: Andy Whitcroft <apw@shadowen.org>
-CC: Jan Engelhardt <jengelh@computergmbh.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       SL Baur <steve@xemacs.org>, Randy Dunlap <rdunlap@xenotime.net>,
-       Richard Knutsson <ricknu-0@student.ltu.se>,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: Re: [patch] checkpatch: relax spacing and line length
-References: <alpine.LNX.1.10.0804060653020.30794@fbirervta.pbzchgretzou.qr> <20080408171257.GF17915@shadowen.org> <47FCB458.3070403@panasas.com> <20080409132548.GM17915@shadowen.org>
-In-Reply-To: <20080409132548.GM17915@shadowen.org>
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 09 Apr 2008 17:02:44.0345 (UTC) FILETIME=[875BF690:01C89A63]
+Content-Type: text/plain; charset=ISO-8859-2
+Content-Disposition: inline
+References: <E1JjcgO-0004q2-VJ@pomaz-ex.szeredi.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id m39H4mEB006204
 
-On Apr. 09, 2008, 16:25 +0300, Andy Whitcroft <apw@shadowen.org> wrote:
-> On Wed, Apr 09, 2008 at 03:19:36PM +0300, Benny Halevy wrote:
->> On Apr. 08, 2008, 20:12 +0300, Andy Whitcroft <apw@shadowen.org> wrote:
->>> To justify changing checkpatch to loosen its checks I would hope to see
->>> an agreed to change to the CodingStyle detailing actually what is now
->>> acceptable.
->> For reference, here's Jan's proposal for Documentation/CodingStyle:
->> http://lkml.org/lkml/2008/2/26/462
-> 
-> Yes, seems reasonably well worded.  However, I see no consensus for its
-> acceptance as a change.  I seem some near NAK's.
+Helló Miklós!
+ez a patch szükséges a 2.6.22.y kernelhez? (2.6.22.y-ba elsõ ránézésrehunk nélkül hozzáadható)vagy várjam meg, amig bekerül a mainline kernelbe?
+On 4/9/08, Miklos Szeredi <miklos@szeredi.hu> wrote:> generic_file_splice_read() goes into an infinite loop if it races with> truncation.  I've found this with fsx-linux on NFS over fuse.>> Perhaps the whole while() loop is bogus, but I can't tell from a> cursory glance at __generic_file_splice_read() if it will return zero> only on EOF, or it can do that for other reasons as well.  In the> latter case the loop is obviously needed.>> This simplistic patch fixes the issue for me.>> Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>> --->  fs/splice.c |   19 ++++++++++--------->  1 file changed, 10 insertions(+), 9 deletions(-)>> Index: linux/fs/splice.c> ===================================================================> --- linux.orig/fs/splice.c	2008-04-02 13:34:58.000000000 +0200> +++ linux/fs/splice.c	2008-04-09 17:35:06.000000000 +0200> @@ -481,19 +481,20 @@ ssize_t generic_file_splice_read(struct>  {>  	ssize_t spliced;>  	int ret;> -	loff_t isize, left;> -> -	isize = i_size_read(in->f_mapping->host);> -	if (unlikely(*ppos >= isize))> -		return 0;> -> -	left = isize - *ppos;> -	if (unlikely(left < len))> -		len = left;>>  	ret = 0;>  	spliced = 0;>  	while (len && !spliced) {> +		loff_t isize, left;> +> +		isize = i_size_read(in->f_mapping->host);> +		if (unlikely(*ppos >= isize))> +			return 0;> +> +		left = isize - *ppos;> +		if (unlikely(left < len))> +			len = left;> +>  		ret = __generic_file_splice_read(in, ppos, pipe, len, flags);>>  		if (ret < 0)> --> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in> the body of a message to majordomo@vger.kernel.org> More majordomo info at  http://vger.kernel.org/majordomo-info.html> Please read the FAQ at  http://www.tux.org/lkml/>
 
-but no definite one :)
-> 
-> -apw
-
-Seriously, I'm not sure how significant or relevant they are though.
-
-In http://lkml.org/lkml/2008/2/26/533,
-SL Baur <steve <at> xemacs.org> said:
-> The proposed two space change is ugly.  Can someone NAK it?
-
-I'm not sure what "two space change" proposal this Steve referred to
-and his rejection is based on not-to-sound aesthetic grounds.
-
-The motivation behind our proposal is more than just aesthetic.
-I believe that using tabs for indent and then spaces for alignment
-is functionally better, works for everybody, and will eventually result
-in a more readable code over time, hopefully leading to fewer bugs.
-
-
-Randy's answer, http://lkml.org/lkml/2008/2/27/7
-says he won't NAK it since:
-> I would gladly NAK it, but most recent email from Linus about
-> coding style is that we are getting too detailed about it,
-> so unless there is some overwhelming need to change anything in
-> CodingStyle, I'm for no changes (or maybe even some removals).
-
-My interpretation of that is the the current CodingStyle is too detailed
-*now* therefore we need to relax it, not keep it the way it is.
-It's true, that we add more details to relax the requirements but
-overall we'd allow for more flexibility.  To do that with removing
-details rather than adding any is dangerous IMO since it can easily
-lead to indentation chaos that makes everybody's life harder...
-
-Richard Knutsson, in http://lkml.org/lkml/2008/2/28/356
-adds an excellent point about needing smaller tab expansion
-for narrow screens.
-
-Stefan Richter in http://lkml.org/lkml/2008/2/26/523 commented:
-> Jan Engelhardt, Benny Halevy, and Richard Knutsson wrote:
-> > -Tabs are 8 characters, and thus indentations are also 8 characters.
-> > -There are heretic movements that try to make indentations 4 (or even 2!)
-> > -characters deep, and that is akin to trying to define the value of PI to
-> > -be 3.
-> 
-> Don't do this
-
-Again, I see no real reasons why not to besides being against Stefan's
-preferences.  I repeat my point that the proposed style does not
-necessarily encourage smaller tab expansion, it just makes it possible.
-
-Well, enough said.
-Back to fixin' bugs...
-
-Benny
+-- Thanks,Oliverÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
