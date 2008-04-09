@@ -1,21 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756352AbYDITul@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758011AbYDITjk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756352AbYDITul (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Apr 2008 15:50:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754285AbYDITua
+	id S1758011AbYDITjk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Apr 2008 15:39:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755400AbYDITj3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Apr 2008 15:50:30 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:38897 "EHLO mail.dvmed.net"
+	Wed, 9 Apr 2008 15:39:29 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:43691 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754059AbYDITu3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Apr 2008 15:50:29 -0400
-Message-ID: <47FD1DF6.2000007@garzik.org>
-Date: Wed, 09 Apr 2008 15:50:14 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Matthew Wilcox <matthew@wil.cx>, "Kok, Auke" <auke-jan.h.kok@intel.com>,
+	id S1757801AbYDITj1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Apr 2008 15:39:27 -0400
+Date: Wed, 9 Apr 2008 21:38:50 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Matthew Wilcox <matthew@wil.cx>, "Kok, Auke" <auke-jan.h.kok@intel.com>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        NetDev <netdev@vger.kernel.org>,
        e1000-list <e1000-devel@lists.sourceforge.net>,
@@ -28,34 +25,83 @@ CC: Matthew Wilcox <matthew@wil.cx>, "Kok, Auke" <auke-jan.h.kok@intel.com>,
        "Allan, Bruce W" <bruce.w.allan@intel.com>, Greg KH <greg@kroah.com>,
        Arjan van de Ven <arjan@linux.intel.com>,
        "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [patch] e1000=y && e1000e=m regression fix
-References: <20080408083606.GA20863@elte.hu> <47FB9ABB.9080403@intel.com> <20080408183921.GA20803@elte.hu> <20080408193245.GG11962@parisc-linux.org> <20080408195123.GA28148@elte.hu> <47FBCE00.2020309@garzik.org> <20080408200652.GC28148@elte.hu> <47FBD34A.6080508@garzik.org> <20080408203314.GA28952@elte.hu> <47FBDBE9.9040700@garzik.org> <20080409193850.GA11763@elte.hu>
-In-Reply-To: <20080409193850.GA11763@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Subject: [patch] e1000=y && e1000e=m regression fix (was: Re: [regression]
+	e1000e broke e1000)
+Message-ID: <20080409193850.GA11763@elte.hu>
+References: <20080408083606.GA20863@elte.hu> <47FB9ABB.9080403@intel.com> <20080408183921.GA20803@elte.hu> <20080408193245.GG11962@parisc-linux.org> <20080408195123.GA28148@elte.hu> <47FBCE00.2020309@garzik.org> <20080408200652.GC28148@elte.hu> <47FBD34A.6080508@garzik.org> <20080408203314.GA28952@elte.hu> <47FBDBE9.9040700@garzik.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <47FBDBE9.9040700@garzik.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Jeff Garzik <jeff@garzik.org> wrote:
-> 
->>> We've got three thousand Kconfig options - it is clearly not 
->>> realistic for users to keep such details in mind to avoid pitfalls.
->> Agreed -- hence the multiple announcements, including in this thread, 
->> to put said details into mind.
-> 
-> which part of "it took a kernel developer more than an hour to figure 
-> out why his laptop had a dead network interface" did you not understand? 
-> Whatever you did, it was not apparent to me. I dont follow every tiny 
-> detail of the e1000 driver family, nor do 99%+ [*] of our users.
 
-You do follow LKML, where multiple announcements have and are being posted.
+* Jeff Garzik <jeff@garzik.org> wrote:
 
-	Jeff
+>> We've got three thousand Kconfig options - it is clearly not 
+>> realistic for users to keep such details in mind to avoid pitfalls.
+>
+> Agreed -- hence the multiple announcements, including in this thread, 
+> to put said details into mind.
 
+which part of "it took a kernel developer more than an hour to figure 
+out why his laptop had a dead network interface" did you not understand? 
+Whatever you did, it was not apparent to me. I dont follow every tiny 
+detail of the e1000 driver family, nor do 99%+ [*] of our users.
 
+find the fix below, against current -git.
 
+the current upstream behavior is the worst possible one and is just a 
+plain bug, and the solution is dead-simple.
+
+	Ingo
+
+[*] guesstimate
+
+--------------->
+Subject: e1000=y && e1000e=m regression fix
+From: Ingo Molnar <mingo@elte.hu>
+Date: Wed Apr 09 21:09:35 CEST 2008
+
+fix a regression from v2.6.24: do not transfer the e1000e PCI IDs from 
+e1000 to e1000e if e1000 is built-in and e1000e is a module.
+
+Built-in drivers take precedence over modules in many ways - and in this 
+case it's clear that the user intended the e1000 driver to be the 
+primary one. "Silently change behavior and break existing configs" is 
+never a good migration strategy. Most users will use distro kernels that 
+are not affected by this problem at all - nor are they affected by this 
+patch - but this problem can hit users and developers who build their 
+kernels themselves and migrate from v2.6.24 to v2.6.25.
+
+this fixes: http://bugzilla.kernel.org/show_bug.cgi?id=10427
+
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ drivers/net/Kconfig |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+Index: linux-x86.q/drivers/net/Kconfig
+===================================================================
+--- linux-x86.q.orig/drivers/net/Kconfig
++++ linux-x86.q/drivers/net/Kconfig
+@@ -2022,7 +2022,7 @@ config E1000E
+ 	  will be called e1000e.
+ 
+ config E1000E_ENABLED
+-	def_bool E1000E != n
++	def_bool E1000E = y || ((E1000E != n) && (E1000 = E1000E))
+ 
+ config IP1000
+ 	tristate "IP1000 Gigabit Ethernet support"
