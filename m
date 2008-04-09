@@ -1,65 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758397AbYDIUR4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757504AbYDITjE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758397AbYDIUR4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Apr 2008 16:17:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754134AbYDIURq
+	id S1757504AbYDITjE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Apr 2008 15:39:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753266AbYDITiu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Apr 2008 16:17:46 -0400
-Received: from mga02.intel.com ([134.134.136.20]:31548 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752325AbYDIURp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Apr 2008 16:17:45 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,630,1199692800"; 
-   d="scan'208";a="268115448"
-From: Auke Kok <auke-jan.h.kok@intel.com>
-Subject: [PATCH] e1000e: set CONFIG_E1000E=y in x86 defconfigs
-To: torvalds@linux-foundation.org
-Cc: jeff@garzik.org, andi@firstfloor.org, netdev@vger.kernel.org,
-       e1000-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       davem@davemloft.net, akpm@linux-foundation.org, mingo@elte.hu
-Date: Wed, 09 Apr 2008 13:17:39 -0700
-Message-ID: <20080409201739.14581.7454.stgit@localhost.localdomain>
-User-Agent: StGIT/0.12.1
+	Wed, 9 Apr 2008 15:38:50 -0400
+Received: from smtp-out03.alice-dsl.net ([88.44.63.5]:15597 "EHLO
+	smtp-out03.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752048AbYDITit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Apr 2008 15:38:49 -0400
+To: Ingo Molnar <mingo@elte.hu>
+Cc: "Kok, Auke" <auke-jan.h.kok@intel.com>, Jeff Garzik <jeff@garzik.org>,
+       e1000-list <e1000-devel@lists.sourceforge.net>,
+       NetDev <netdev@vger.kernel.org>,
+       "Allan, Bruce W" <bruce.w.allan@intel.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "David S. Miller" <davem@davemloft.net>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Jesse Brandeburg <jesse.brandeburg@intel.com>,
+       "Ronciak, John" <john.ronciak@intel.com>,
+       Arjan van de Ven <arjan@linux.intel.com>, Greg KH <greg@kroah.com>,
+       linux-pci maillist <linux-pci@atrey.karlin.mff.cuni.cz>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [ANNOUNCE] e1000 to e1000e migration of PCI Express devices
+From: Andi Kleen <andi@firstfloor.org>
+References: <47F69965.7030303@intel.com> <20080408083606.GA20863@elte.hu>
+	<20080409190836.GA9276@elte.hu>
+Date: Wed, 09 Apr 2008 21:38:22 +0200
+In-Reply-To: <20080409190836.GA9276@elte.hu> (Ingo Molnar's message of "Wed, 9 Apr 2008 21:08:36 +0200")
+Message-ID: <87ej9eom35.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 09 Apr 2008 20:17:43.0986 (UTC) FILETIME=[C4E38120:01C89A7E]
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 09 Apr 2008 19:31:38.0699 (UTC) FILETIME=[54A631B0:01C89A78]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This adds to the already default CONFIG_E1000=y in these files.
+Ingo Molnar <mingo@elte.hu> writes:
+>
+> except for the E1000=y && E1000E=m regression that bit me - that should 
+> be solved and everyone will be happy.
 
-Signed-off-by: Auke Kok <auke-jan.h.kok@intel.com>
----
+Regarding getting bitten: could you please add E1000E to the x86 defconfigs?
+That bit me an hour ago or so.
 
- arch/x86/configs/i386_defconfig   |    1 +
- arch/x86/configs/x86_64_defconfig |    1 +
- 2 files changed, 2 insertions(+), 0 deletions(-)
+Thanks,
 
-diff --git a/arch/x86/configs/i386_defconfig b/arch/x86/configs/i386_defconfig
-index 3df340b..35f6308 100644
---- a/arch/x86/configs/i386_defconfig
-+++ b/arch/x86/configs/i386_defconfig
-@@ -814,6 +814,7 @@ CONFIG_NETDEV_1000=y
- CONFIG_E1000=y
- # CONFIG_E1000_NAPI is not set
- # CONFIG_E1000_DISABLE_PACKET_SPLIT is not set
-+CONFIG_E1000E=y
- # CONFIG_NS83820 is not set
- # CONFIG_HAMACHI is not set
- # CONFIG_YELLOWFIN is not set
-diff --git a/arch/x86/configs/x86_64_defconfig b/arch/x86/configs/x86_64_defconfig
-index eef98cb..2d078d7 100644
---- a/arch/x86/configs/x86_64_defconfig
-+++ b/arch/x86/configs/x86_64_defconfig
-@@ -740,6 +740,7 @@ CONFIG_NETDEV_1000=y
- CONFIG_E1000=y
- # CONFIG_E1000_NAPI is not set
- # CONFIG_E1000_DISABLE_PACKET_SPLIT is not set
-+CONFIG_E1000E=y
- # CONFIG_NS83820 is not set
- # CONFIG_HAMACHI is not set
- # CONFIG_YELLOWFIN is not set
-
+-Andi
