@@ -1,66 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754123AbYDIRTU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754292AbYDIRX5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754123AbYDIRTU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Apr 2008 13:19:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754052AbYDIRTM
+	id S1754292AbYDIRX5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Apr 2008 13:23:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752817AbYDIRXt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Apr 2008 13:19:12 -0400
-Received: from barikada.upol.cz ([158.194.242.200]:45909 "EHLO
-	barikada.upol.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753648AbYDIRTL (ORCPT
+	Wed, 9 Apr 2008 13:23:49 -0400
+Received: from fairlite.demon.co.uk ([80.176.228.186]:60252 "EHLO
+	fairlite.demon.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752101AbYDIRXt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Apr 2008 13:19:11 -0400
-Date: Wed, 9 Apr 2008 19:39:11 +0200
-To: Bernd Petrovitsch <bernd@firmix.at>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       kbuild devel list <linux-kbuild@vger.kernel.org>
-Subject: Re: coloring stdout && stderr, small kbuild example
-Message-ID: <20080409173911.GH24008@flower.upol.cz>
-References: <E1Jjbol-0002zS-4P@flower> <1207754040.6860.7.camel@tara.firmix.at>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1207754040.6860.7.camel@tara.firmix.at>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: Oleg Verych <olecom@flower.upol.cz>
-Organization: Palacky University in Olomouc, experimental physics department
-X-OS: x86_64-pc-linux-glibc-debian
+	Wed, 9 Apr 2008 13:23:49 -0400
+Subject: Re: DRM modesetting & sysfs
+From: Alan Hourihane <alanh@fairlite.demon.co.uk>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: Jakob Bornecrantz <wallbraker@gmail.com>, dri-devel@lists.sourceforge.net,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <200804090934.37219.jbarnes@virtuousgeek.org>
+References: <200804081317.43712.jbarnes@virtuousgeek.org>
+	 <200804090817.02836.jbarnes@virtuousgeek.org>
+	 <1207757730.14588.381.camel@localhost>
+	 <200804090934.37219.jbarnes@virtuousgeek.org>
+Content-Type: text/plain
+Date: Wed, 09 Apr 2008 18:23:46 +0100
+Message-Id: <1207761826.14588.390.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Time flies...
+On Wed, 2008-04-09 at 09:34 -0700, Jesse Barnes wrote:
+> On Wednesday, April 09, 2008 9:15 am Alan Hourihane wrote:
+> > On Wed, 2008-04-09 at 08:17 -0700, Jesse Barnes wrote:
+> > > On Wednesday, April 09, 2008 1:57 am Jakob Bornecrantz wrote:
+> > > > I was going to suggest that you plug it into the hotplug_stage_two
+> > > > function but it looks like you have already done that. Things might be
+> > > > routed differently now then since the last time I looked at the code,
+> > > > are you sure that stage_two is being run?
+> > >
+> > > I'll have to check, I'm not sure I'm even getting interrupts...
+> >
+> > Jesse,
+> >
+> > Is this i915 or i945/i965 you are testing on ??
+> 
+> I've been testing on my i915 based laptop, haven't tried my other systems 
+> yet...
 
-> > My last rant about "colored printk()" led away from kernel developers
-> > and their solutions. But now, let me share something.
+With VGA (i.e. ADPA) output ?
 
-That was about "The True Kernel Developer's Way to Coloring"
-by Jonathan Corbet October 9, 2007 http://lwn.net/Articles/253726/
+If so, that's the problem. From what I can tell of i915 docs, they only
+support hotplug for SDVO devices only, so that's how it's coded up at
+the moment. For i945/i965 it can go the whole hog.
 
-Bernd Petrovitsch @ Wed, Apr 09, 2008 at 05:14:00PM +0200:
+Alan.
 
-> I don't know if it's of any use for you but there is already
-> *) color-make - http://bre.klaki.net/programs/colormake/ - and
-> *) color-gcc - http://schlueters.de/colorgcc.html -
-> out there.
-
-Please, show those to http://udrepper.livejournal.com/17109.html
-`perl` is more welcome in Debian, btw.
-
-Free versions of color_proc_cpuinfo && color_meminfo:
-
-TERMINAL_OUTPUT='s-"$1"-"$V$2m&$V${3-'$D'}m"-$4'
-
-`color '[^:]*' 4 3`
-`color :       3 2`
-`color AMD     6 2`
-`color Intel   6 2`
-`color Athlon  '6;44' 2`
-`color Pentium '6;44' 2`
-
-Invent Your Own Easily(R)
---
-sed 'sed && sh + olecom = love' << ''
--o--=O`C
- #oo'L O
-<___=E M
