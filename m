@@ -1,76 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754186AbYDIHEb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754755AbYDIHGk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754186AbYDIHEb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Apr 2008 03:04:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752442AbYDIHEX
+	id S1754755AbYDIHGk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Apr 2008 03:06:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752252AbYDIHGc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Apr 2008 03:04:23 -0400
-Received: from havoc.gtf.org ([69.61.125.42]:47122 "EHLO havoc.gtf.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752259AbYDIHEW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Apr 2008 03:04:22 -0400
-Date: Wed, 9 Apr 2008 03:04:21 -0400
-From: Jeff Garzik <jeff@garzik.org>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-ide@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: [git patches] libata fixes
-Message-ID: <20080409070421.GA26759@havoc.gtf.org>
+	Wed, 9 Apr 2008 03:06:32 -0400
+Received: from x35.xmailserver.org ([64.71.152.41]:57363 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752091AbYDIHGc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Apr 2008 03:06:32 -0400
+X-AuthUser: davidel@xmailserver.org
+Date: Wed, 9 Apr 2008 00:06:23 -0700 (PDT)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: Michael Kerrisk <mtk.manpages@googlemail.com>
+cc: lkml <linux-kernel@vger.kernel.org>
+Subject: Re: signalfd() not handling sigqueue() sigval data correctly
+In-Reply-To: <cfd18e0f0804082331q520d335cgb46972d79a257b63@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0804090004000.5580@alien.or.mcafeemobile.com>
+References: <47FBDF12.8090400@gmail.com>  <Pine.LNX.4.64.0804081636450.28275@alien.or.mcafeemobile.com>
+ <cfd18e0f0804082331q520d335cgb46972d79a257b63@mail.gmail.com>
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 9 Apr 2008, Michael Kerrisk wrote:
 
-Please pull from 'upstream-linus' branch of
-master.kernel.org:/pub/scm/linux/kernel/git/jgarzik/libata-dev.git upstream-linus
+> On Wed, Apr 9, 2008 at 1:37 AM, Davide Libenzi <davidel@xmailserver.org> wrote:
+> > On Tue, 8 Apr 2008, Michael Kerrisk wrote:
+> >
+> > > Hi Davide,
+> > >
+> > > I was doing some playing about with signalfd(), and seem to have encountered a
+> > > bug: when a signalfd read() fetches data for a signal that was sent by
+> > > sigqueue(), the data accompanying the signal is not returned.  Instead
+> > > ssi_int/ssi_ptr is zero.
+> >
+> > Are you able to fetch those info with, say, sigtimedwait(2)?
+> 
+> Yes.
 
-to receive the following updates:
+Okie, found it. Tomorrow I'll post a patch. Thank you for reporting.
 
- drivers/ata/pata_sil680.c |    2 +-
- drivers/ata/sata_fsl.c    |    3 ---
- 2 files changed, 1 insertions(+), 4 deletions(-)
 
-Benjamin Herrenschmidt (1):
-      pata_sil680: Fix build on arch/ppc
 
-Johann Felix Soden (1):
-      ata/sata_fsl: Remove unused variable in sata_fsl_probe
+- Davide
 
-diff --git a/drivers/ata/pata_sil680.c b/drivers/ata/pata_sil680.c
-index 3988e44..7c5b2dd 100644
---- a/drivers/ata/pata_sil680.c
-+++ b/drivers/ata/pata_sil680.c
-@@ -270,7 +270,7 @@ static u8 sil680_init_chip(struct pci_dev *pdev, int *try_mmio)
- 		tmpbyte & 1, tmpbyte & 0x30);
- 
- 	*try_mmio = 0;
--#ifdef CONFIG_PPC
-+#ifdef CONFIG_PPC_MERGE
- 	if (machine_is(cell))
- 		*try_mmio = (tmpbyte & 1) || pci_resource_start(pdev, 5);
- #endif
-diff --git a/drivers/ata/sata_fsl.c b/drivers/ata/sata_fsl.c
-index 4c19855..9d1e3ca 100644
---- a/drivers/ata/sata_fsl.c
-+++ b/drivers/ata/sata_fsl.c
-@@ -1256,7 +1256,6 @@ static int sata_fsl_probe(struct of_device *ofdev,
- 	void __iomem *ssr_base = NULL;
- 	void __iomem *csr_base = NULL;
- 	struct sata_fsl_host_priv *host_priv = NULL;
--	struct resource *r;
- 	int irq;
- 	struct ata_host *host;
- 
-@@ -1266,8 +1265,6 @@ static int sata_fsl_probe(struct of_device *ofdev,
- 	dev_printk(KERN_INFO, &ofdev->dev,
- 		   "Sata FSL Platform/CSB Driver init\n");
- 
--	r = kmalloc(sizeof(struct resource), GFP_KERNEL);
--
- 	hcr_base = of_iomap(ofdev->node, 0);
- 	if (!hcr_base)
- 		goto error_exit_with_cleanup;
+
