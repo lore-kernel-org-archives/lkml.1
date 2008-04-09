@@ -1,61 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755421AbYDIQLx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756259AbYDIQNf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755421AbYDIQLx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Apr 2008 12:11:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753039AbYDIQLn
+	id S1756259AbYDIQNf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Apr 2008 12:13:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752733AbYDIQN2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Apr 2008 12:11:43 -0400
-Received: from ti-out-0910.google.com ([209.85.142.185]:41338 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753086AbYDIQLm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Apr 2008 12:11:42 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=g/9KFSnpzB8SsSlD8R35YyWA2aLl7eSFI3n3Ynh9qzkxP037G773nk+I8px29C+u7WeEEdHSZkTzfzVwk09p191Cc6hkQdq91JVobY7zJ5Xnlr0m6MJvfmwOeWvZ4zazTW857dIfdhkifpsor0SLxyg2elIYTzjRbwF/m04ScZg=
-Date: Wed, 9 Apr 2008 12:11:25 -0400
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: benh@kernel.crashing.org, Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: lockdep, false positive ?
-Message-ID: <20080409120803.ZZRA012@mailhub.coreip.homeip.net>
-References: <1207714607.9079.22.camel@pasglop> <1207734281.4110.46.camel@twins>
+	Wed, 9 Apr 2008 12:13:28 -0400
+Received: from mail.fieldses.org ([66.93.2.214]:49489 "EHLO fieldses.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752119AbYDIQN1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Apr 2008 12:13:27 -0400
+Date: Wed, 9 Apr 2008 12:13:19 -0400
+To: Steven Whitehouse <swhiteho@redhat.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Neil Brown <neilb@suse.de>,
+       Adrian Bunk <bunk@kernel.org>, ChristophHellwig <hch@infradead.org>
+Subject: Re: [NFS] Use a zero sized array for raw field in struct fid
+Message-ID: <20080409161319.GC32475@fieldses.org>
+References: <1207561677.3635.166.camel@quoit> <alpine.LFD.1.00.0804070850310.11277@woody.linux-foundation.org> <1207641005.3635.238.camel@quoit> <20080408075807.GA8893@infradead.org> <1207659686.3635.278.camel@quoit>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1207734281.4110.46.camel@twins>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <1207659686.3635.278.camel@quoit>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Peter,
+On Tue, Apr 08, 2008 at 02:01:26PM +0100, Steven Whitehouse wrote:
+> >From b8732f8bea4e8abc331b8fa58a4047c91e2e7d02 Mon Sep 17 00:00:00 2001
+> From: Steven Whitehouse <swhiteho@redhat.com>
+> Date: Tue, 8 Apr 2008 13:12:52 +0100
+> Subject: [PATCH] [NFS] Use a zero sized array for raw field in struct fid
+> 
+> The raw field's size can vary so we use a zero sized array since
+> gcc will not allow a variable sized array inside a union. This
+> has been tested with ext3 and gfs2 and relates to the bug
+> report: http://lkml.org/lkml/2007/10/24/374 and discussion
+> thread: http://lkml.org/lkml/2008/4/7/65
 
-On Wed, Apr 09, 2008 at 11:44:41AM +0200, Peter Zijlstra wrote:
-> 
-> Yes, if both locks are of the same class it will report this. Lockdep
-> does lock chain validation on classes, never on individual locks.
-> 
-> A class usually consists of all locks that share the lock init site; but
-> there are ways to explicity set another class.
-> 
-> In case of these recursions we have helpers like spin_lock_nested(&lock,
-> subclass) that allow you to annotate these. These sub-classes must then
-> always be taken in the same order; subclass < 8.
-> 
-> In this case its probably easier to explicity set a class, as the
-> nesting is not exposed to the input layer, so it doesn't know about it.
-> 
+OK; queued for 2.6.26.--b.
 
-Is there a way in lockdep to mark all instances of a given lock as distinct?
-I'd rather do that in input core once and be done with it.
-
-Also another question I've been meaning to ask - we have lockdep annotations
-in serio code and they work fine first time around but if you reload
-psmouse module lockdep will barf if you have SYnaptics touchpad with
-pass-through port. What gives?
-
--- 
-Dmitry
+> 
+> Signed-off-by: Steven Whitehouse <swhiteho@redhat.com>
+> Cc: Christoph Hellwig <hch@infradead.org>
+> Cc: Neil Brown <neilb@suse.de>
+> Cc: J. Bruce Fields <bfields@fieldses.org>
+> Cc: Adrian Bunk <bunk@kernel.org>
+> 
+> diff --git a/include/linux/exportfs.h b/include/linux/exportfs.h
+> index adcbb05..de8387b 100644
+> --- a/include/linux/exportfs.h
+> +++ b/include/linux/exportfs.h
+> @@ -43,7 +43,7 @@ struct fid {
+>  			u32 parent_ino;
+>  			u32 parent_gen;
+>  		} i32;
+> -		__u32 raw[6];
+> +		__u32 raw[0];
+>  	};
+>  };
+>  
+> -- 
+> 1.5.1.2
+> 
+> 
+> 
