@@ -1,64 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759480AbYDIQ1a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754740AbYDIQ2l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759480AbYDIQ1a (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Apr 2008 12:27:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756796AbYDIQZS
+	id S1754740AbYDIQ2l (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Apr 2008 12:28:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753190AbYDIQ2a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Apr 2008 12:25:18 -0400
-Received: from e34.co.us.ibm.com ([32.97.110.152]:33813 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758720AbYDIQZL (ORCPT
+	Wed, 9 Apr 2008 12:28:30 -0400
+Received: from wf-out-1314.google.com ([209.85.200.175]:14439 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753098AbYDIQ23 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Apr 2008 12:25:11 -0400
-Date: Wed, 9 Apr 2008 09:23:53 -0700
-From: sukadev@us.ibm.com
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: linux-kernel@vger.kernel.org, Containers <containers@lists.osdl.org>,
-       Pavel Emelyanov <xemul@openvz.org>, serue@us.ibm.com, clg@fr.ibm.com
-Subject: Re: [RFC][PATCH 0/7] Clone PTS namespace
-Message-ID: <20080409162353.GA14044@us.ibm.com>
-References: <20080408215333.GA8799@us.ibm.com> <47FC138B.4070408@zytor.com>
+	Wed, 9 Apr 2008 12:28:29 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=WDx626dJxrFBPet0FtqV8ahCN8yxx8z4FsYKPQ+gRRr1cQNJ+0chPJLvj4bak4X+wTskRAXCAgvIVbyaxjPkylBbsFl+4LEPRGkW7eePNLxY/6X4T2oDkZLsh7yDzbahduTyPbfGw2wudJSk/9LD5HgBGNQrJQhVPCES3UneOwY=
+Message-ID: <cf40c6a90804090928l5f2b70bdxfdb9e61cfae76f22@mail.gmail.com>
+Date: Wed, 9 Apr 2008 18:28:28 +0200
+From: "Andreas Grimm" <agrimm61@gmail.com>
+To: "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>
+Subject: Re: VM - a plenty of inactive memory
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <2f11576a0804090801s49587b26h115e8e1760ec7671@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <47FC138B.4070408@zytor.com>
-X-Operating-System: Linux 2.0.32 on an i486
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+References: <cf40c6a90804090213u55491ceay9b211d75d74dc29c@mail.gmail.com>
+	 <874pabrx6b.fsf@saeurebad.de>
+	 <cf40c6a90804090657j7e76a84foeaf3c1c02d2a7b73@mail.gmail.com>
+	 <2f11576a0804090801s49587b26h115e8e1760ec7671@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H. Peter Anvin [hpa@zytor.com] wrote:
-> sukadev@us.ibm.com wrote:
->> Devpts namespace patchset
->> In continuation of the implementation of containers in mainline, we need 
->> to
->> support multiple PTY namespaces so that the PTY index (ie the tty names) 
->> in
->> one container is independent of the PTY indices of other containers.  For
->> instance this would allow each container to have a '/dev/pts/0' PTY and
->> refer to different terminals.
+Hi,
+
+the output of free:
+-/+ buffers/cache:   30718212    2547704
+Information in frees man page is very sparse, what's the
+interpretation? I will try the drop_cache thing in the night.
+Thanks!
+
+2008/4/9, KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>:
+> Hi
 >
-> Why do we "need" this?  There isn't a fundamental need for this to be a 
-> dense numberspace (in fact, there are substantial reasons why it's a bad 
-> idea; the only reason the namespace is dense at the moment is because of 
-> the hideously bad handing of utmp in glibc.)  Other than indicies, this 
-> seems to be a more special case of device isolation across namespaces, 
-> would that be a more useful problem to solve across the board?
-
-We want to provide isolation between containers, meaning PTYs in container
-C1 should not be accessible to processes in C2 (unless C2 is an ancestor).
-
-The other reason for this in the longer term is for checkpoint/restart.
-When restarting an application we want to make sure that the PTY indices
-it was using is available and isolated.
-
-We started out with isolating just the indices but added the special-case
-handling for granting the host visibility into a child-container.
-
-A complete device-namespace could solve this, but IIUC, is being planned
-in the longer term. We are hoping this would provide the isolation in the
-near-term without being too intrusive or impeding the implementation of
-the device namespace.
-
-Sukadev
+>
+>  >  i know this. But why the kernel locks that memory for a so long time
+>  >  (2 days now)?
+>
+>
+> maybe, page cache consume it.
+>  it isn't mean that waste memory.
+>
+>  > Is there a way to enforce the reclaiming?
+>
+>  following command drop all cache. (but I don't reccomend it)
+>
+>  # echo 3 > /proc/sys/vm/drop_caches
+>
+>
+>
+>  >  And how can i
+>  >  find out, which process owns that memory.
+>
+>
+> please use free command and see second line(+ buffer/cache'ed free mem).
+>
+>
+>  >  The problem is, that i can't
+>  >  accept, that the free memory fell down to 50MB, when i have 24GB in
+>  >  the nirvana. The system was recently very close to the awkward
+>  >  situation to swap to disk, and i bet it will do so in the next few
+>  >  days, because it happened before. Unintelligible, if one got that much
+>  >  ram.
+>
+>
+> may be, it is not happend forever.
+>
