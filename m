@@ -1,125 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756106AbYDIX3y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755238AbYDIXvY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756106AbYDIX3y (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Apr 2008 19:29:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754217AbYDIX3o
+	id S1755238AbYDIXvY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Apr 2008 19:51:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752714AbYDIXvO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Apr 2008 19:29:44 -0400
-Received: from g1t0026.austin.hp.com ([15.216.28.33]:2233 "EHLO
-	g1t0026.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753847AbYDIX3o (ORCPT
+	Wed, 9 Apr 2008 19:51:14 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:39236 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752474AbYDIXvO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Apr 2008 19:29:44 -0400
-Subject: bdev size not updated correctly after underlying device is resized
-From: Andrew Patterson <andrew.patterson@hp.com>
-To: linux-kernel@vger.kernel.org, viro@zeniv.linux.org.uk, dm-devel@redhat.com
-Cc: axboe@kernel.dk, viro@zeniv.linux.org.uk, andmike@linux.vnet.ibm.com
-Content-Type: text/plain
-Date: Wed, 09 Apr 2008 17:29:42 -0600
-Message-Id: <1207783782.31821.80.camel@bluto.andrew>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
+	Wed, 9 Apr 2008 19:51:14 -0400
+Date: Wed, 9 Apr 2008 19:51:12 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: LKML <linux-kernel@vger.kernel.org>
+cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>, akpm@osdl.org,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Glauber de Oliveira Costa <gcosta@redhat.com>,
+       Jan Beulich <jbeulich@novell.com>, Andi Kleen <ak@suse.de>,
+       Thomas Gleixner <tglx@linutronix.de>, pinskia@gcc.gnu.org
+Subject: Re: [PATCH] pop previous section in alternative.c
+In-Reply-To: <Pine.LNX.4.58.0804091859400.31879@gandalf.stny.rr.com>
+Message-ID: <Pine.LNX.4.58.0804091906040.31970@gandalf.stny.rr.com>
+References: <Pine.LNX.4.58.0804091859400.31879@gandalf.stny.rr.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I ran into this problem while trying to resize a mounted file-system
-after growing/shrinking the size of the underlying block device (in this
-case, a fibre-channel LUN). The kernel recognizes the device size change
-when revalidate_disk() is called, but the bdev->bd_inode->i_size will
-not be updated for any new openers if there are already openers of the
-device.  In my case I was using LVM thusly:
 
-     1. Create a volume group with a physical volume on something that
-        can be resized (usually some sort of SCSI RAID device).
-     2. Create a logical volume on that VG.  This holds the underlying
-        PV block device open as long at the LV is activated
-     3. Run blockdev --getsize <block dev>
-     4. Resize the underlying block device.
-     5. Get the OS to notice the change.  For fibre-channel LUN's you
-        can use /sys/class/scsi_device/<device>/device/rescan.
-     6. Size is correctly changed in /dev/block/<device>/size
-     7. Run blockdev --getsize again (no change in size reported)
-     8. Inactivate the LV (there are now no longer any openers on the
-        block device)
-     9. Run blockdev --getsize again.  Size is now correct as there are
-        no openers on the device when blockdev is run.
+On Wed, 9 Apr 2008, Steven Rostedt wrote:
 
-This problem has been reported before at:
+>
+> gcc expects all toplevel assembly to return to the original section type.
+> The code in alteranative.c does not do this. This caused some strange bugs
+> in sched-devel where code would end up in the .rodata section and when
+> the kernel sets the NX bit on all .rodata, the kernel would crash when
+> executing this code.
+>
+> This patch adds a .previous marker to return the code back to the
+> original section.
+>
 
-  http://lkml.org/lkml/2007/7/3/83
+Oh, and this would not be complete without giving Andrew Pinski complete
+credit for telling me it wasn't a gcc bug but a bug in the toplevel asm
+code in the kernel. ;-)
 
-The following patch is a suggestion on how to fix this problem.  It is
-not a complete solution as it is probably a bad thing to change other
-openers device size without at least protecting the change with a lock.
-And user-apps and other sub-systems might not like the reported device
-size being changed underneath them. It looks like the following
-sub-systems access this value:
-
-ndb
-dm
-md
-affs
-hfs
-jfs
-reiserfs
-udf
-
-
-Subject: [PATCH] Reset bdev size regardless of other openers.
-
-A block device may be resized while online.  If the revalidate_disk
-routine is called after the resize, the gendisk->capacity value is
-updated for the device.  However, the bdev->bd_inode->i_size is not
-updated when the block device is opened if there are any other openers
-on the device.  This means that apps like LVM are unlikely to see the
-size change as they tend to keep their block devices open.  There is a
-discussion of this problem at:
-
-  http://lkml.org/lkml/2007/7/3/83
-
-This patch changes block_dev.c:do_open() to call bd_set_size()
-regardless if there are other openers on the device.  It should not be
-applied in its existing state as changing i_size should be protected by
-a lock. Also, there needs to be some analysis on the effects of changing
-the device size underneath an app.
-
-Andrew Patterson
-
-Subject: [PATCH] Reset bdev size regardless of other openers.
-
-A block device may be resized while online.  If the revalidate_disk
-routine is called after the resize, the gendisk->capacity value is
-updated for the device.  However, the bdev->bd_inode->i_size is not
-updated when the block device is opened if there are any other openers
-on the device.  This means that apps like LVM are unlikely to see the
-size change as they tend to keep their block devices open.  There is a
-discussion of this problem at:
-
-  http://lkml.org/lkml/2007/7/3/83
-
-This patch changes block_dev.c:do_open() to call bd_set_size()
-regardless if there are other openers on the device.  It should not be
-applied in its existing state as changing i_size should be protected by
-a lock. Also, there needs to be some analysis on the effects of changing
-the device size underneath an app.
-
-diff --git a/fs/block_dev.c b/fs/block_dev.c
-index 7d822fa..d13a4e5 100644
---- a/fs/block_dev.c
-+++ b/fs/block_dev.c
-@@ -992,6 +992,9 @@ static int do_open(struct block_device *bdev, struct file *file, int for_part)
- 				ret = bdev->bd_disk->fops->open(bdev->bd_inode, file);
- 				if (ret)
- 					goto out;
-+				/* device may have been resized with revalidate_disk */
-+				if (!part)
-+					bd_set_size(bdev, (loff_t)get_capacity(disk)<<9);
- 			}
- 			if (bdev->bd_invalidated)
- 				rescan_partitions(bdev->bd_disk, bdev);
-
+-- Steve
 
