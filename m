@@ -1,86 +1,178 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755550AbYDIIra@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754296AbYDIIxb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755550AbYDIIra (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Apr 2008 04:47:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752880AbYDIIrB
+	id S1754296AbYDIIxb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Apr 2008 04:53:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752410AbYDIIxU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Apr 2008 04:47:01 -0400
-Received: from mail164.messagelabs.com ([216.82.253.131]:42345 "HELO
-	mail164.messagelabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752766AbYDIIrA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Apr 2008 04:47:00 -0400
-X-VirusChecked: Checked
-X-Env-Sender: Uwe.Kleine-Koenig@digi.com
-X-Msg-Ref: server-7.tower-164.messagelabs.com!1207730817!3023732!3
-X-StarScan-Version: 5.5.12.14.2; banners=-,-,-
-X-Originating-IP: [66.77.174.21]
-From: =?utf-8?q?Uwe=20Kleine-K=C3=B6nig?= <Uwe.Kleine-Koenig@digi.com>
-To: Richard Purdie <rpurdie@rpsys.net>
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] leds: automatically request trigger module
-Date: Wed,  9 Apr 2008 10:46:31 +0200
-Message-Id: <1207730791-31326-2-git-send-email-Uwe.Kleine-Koenig@digi.com>
-X-Mailer: git-send-email 1.5.4.5
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-X-OriginalArrivalTime: 09 Apr 2008 08:46:32.0160 (UTC) FILETIME=[35C10E00:01C89A1E]
-X-TM-AS-Product-Ver: SMEX-8.0.0.1181-5.000.1023-15838.005
-X-TM-AS-Result: No--9.761000-8.000000-31
-X-TM-AS-User-Approved-Sender: No
-X-TM-AS-User-Blocked-Sender: No
+	Wed, 9 Apr 2008 04:53:20 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:43404 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752246AbYDIIxT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Apr 2008 04:53:19 -0400
+Date: Wed, 9 Apr 2008 18:53:09 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: linux-next@vger.kernel.org
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: linux-next: Tree for April 9
+Message-Id: <20080409185309.b94c9d15.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.5.0beta1 (GTK+ 2.12.9; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Wed__9_Apr_2008_18_53_09_+1000_4+64km_8tZf6vxeL"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This allows:
-	lala:/sys/class/leds/porta6# cat trigger
-	[none] heartbeat
-	lala:/sys/class/leds/porta6# echo timer > trigger
-	lala:/sys/class/leds/porta6# cat trigger
-	none heartbeat [timer]
+--Signature=_Wed__9_Apr_2008_18_53_09_+1000_4+64km_8tZf6vxeL
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Uwe Kleine-König <Uwe.Kleine-Koenig@digi.com>
----
-Hello,
+Hi all,
 
-this change is convenient but I'm not sure if it adds policy to the
-kernel.
+I have created today's linux-next tree at
+git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git
+(tar balls at
+http://www.kernel.org/pub/linux/kernel/people/sfr/linux-next/).
 
-What do you think about requesting ("ledtrig-%s", trigger_name)?  Maybe
-better use something like ("ledtrigger:%s", trigger_name)?  This looks
-better IMHO, but you would need to add module aliases to the trigger
-modules.
+You can see which trees have been included by looking in the Next/Trees
+file in the source.  There are also quilt-import.log and merge.log files
+in the Next directory.  Between each merge, the tree was built with
+a ppc64_defconfig for powerpc and an allmodconfig for x86_64.
 
-Best regards
-Uwe
+There were a few merge conflicts (fairly trivial) and couple of build
+failures (notified).  There is a know build failure with powerpc
+allyesconfig.  Below is a summary of the state of the merge.
 
- drivers/leds/led-triggers.c |    4 ++++
- 1 files changed, 4 insertions(+), 0 deletions(-)
+We are up to 55 trees, more are welcome (even if they are currently
+empty).  Thanks to those who have contributed, and to those who haven't,
+please do.
 
-diff --git a/drivers/leds/led-triggers.c b/drivers/leds/led-triggers.c
-index 13c9026..26cfeae 100644
---- a/drivers/leds/led-triggers.c
-+++ b/drivers/leds/led-triggers.c
-@@ -51,6 +51,8 @@ ssize_t led_trigger_store(struct device *dev, struct device_attribute *attr,
- 		return count;
- 	}
- 
-+	request_module("ledtrig-%s", trigger_name);
-+
- 	down_read(&triggers_list_lock);
- 	list_for_each_entry(trig, &trigger_list, next_trig) {
- 		if (!strcmp(trigger_name, trig->name)) {
-@@ -146,6 +148,8 @@ void led_trigger_set_default(struct led_classdev *led_cdev)
- 	if (!led_cdev->default_trigger)
- 		return;
- 
-+	request_module("ledtrig-%s", led_cdev->default_trigger);
-+
- 	down_read(&triggers_list_lock);
- 	down_write(&led_cdev->trigger_lock);
- 	list_for_each_entry(trig, &trigger_list, next_trig) {
--- 
-1.5.4.5
+Status of my local build tests will be at
+http://kisskb.ellerman.id.au/linux-next.  If maintainers want to give
+advice about cross compilers/configs that work, we are always open to add
+more builds.
 
+Thanks to Jan Dittmer for adding the linux-next tree to his build tests
+at http://l4x.org/k/ and the guys at http://test.kernel.org/.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+Merging origin/master
+Merging x86-fixes/for-linus
+Merging sched-fixes/for-linus
+Merging powerpc-merge/merge
+Merging scsi-rc-fixes/master
+Merging quilt/driver-core
+Merging quilt/pci
+Merging quilt/usb
+Merging x86/for-akpm
+Created commit 11876f8: Revert "x86: phase out forced inlining"
+Merging sched/for-akpm
+Merging quilt/device-mapper
+Merging hid/mm
+Merging quilt/i2c
+Merging quilt/kernel-doc
+Merging avr32/avr32-arch
+Merging v4l-dvb/stable
+Merging s390/features
+Merging sh/master
+Merging jfs/next
+Merging kbuild/master
+Merging quilt/ide
+CONFLICT (content): Merge conflict in Documentation/ide/ide.txt
+CONFLICT (content): Merge conflict in Documentation/kernel-parameters.txt
+CONFLICT (content): Merge conflict in drivers/ide/ide.c
+CONFLICT (content): Merge conflict in include/asm-x86/ide.h
+CONFLICT (content): Merge conflict in include/linux/Kbuild
+Merging libata/NEXT
+Applying libata-fix-1.patch
+Merging nfs/linux-next
+Merging xfs/master
+Merging infiniband/for-next
+CONFLICT (content): Merge conflict in drivers/infiniband/hw/amso1100/c2_pro=
+vider.c
+CONFLICT (content): Merge conflict in drivers/infiniband/hw/cxgb3/iwch_prov=
+ider.c
+CONFLICT (content): Merge conflict in drivers/infiniband/hw/nes/nes_verbs.c
+Applying infiniband-fix-2
+Merging acpi/test
+CONFLICT (content): Merge conflict in arch/x86/kernel/setup_64.c
+CONFLICT (delete/modify): arch/x86/kernel/smpboot_64.c deleted in HEAD and =
+modified in acpi/test. Version acpi/test of arch/x86/kernel/smpboot_64.c le=
+ft in tree.
+CONFLICT (delete/modify): include/asm-x86/smp_64.h deleted in HEAD and modi=
+fied in acpi/test. Version acpi/test of include/asm-x86/smp_64.h left in tr=
+ee.
+$ git rm arch/x86/kernel/smpboot_64.c include/asm-x86/smp_64.h
+Applying acpi-fix-1.patch
+Applying acpi-fix-2.patch
+Merging blackfin/for-linus
+Merging nfsd/nfsd-next
+Merging ieee1394/for-next
+CONFLICT (content): Merge conflict in lib/Kconfig.debug
+Merging hwmon/testing
+Merging ubi/master
+Merging kvm/master
+CONFLICT (add/add): Merge conflict in include/asm-s390/sysinfo.h
+CONFLICT (content): Merge conflict in include/asm-x86/kvm_host.h
+Merging dlm/next
+Merging scsi/master
+Merging ia64/test
+CONFLICT (content): Merge conflict in arch/ia64/mm/tlb.c
+Merging tests/master
+CONFLICT (content): Merge conflict in lib/Kconfig.debug
+Merging ocfs2/linux-next
+Merging selinux/for-akpm
+Merging quilt/m68k
+Merging powerpc/powerpc-next
+Merging hrt/mm
+Merging lblnet/master
+Merging ext4/next
+CONFLICT (content): Merge conflict in fs/jbd2/journal.c
+CONFLICT (content): Merge conflict in fs/jbd2/revoke.c
+Merging 4xx/next
+Merging async_tx/next
+Merging udf/for_next
+Merging security-testing/next
+Merging net/master
+CONFLICT (content): Merge conflict in Documentation/feature-removal-schedul=
+e.txt
+CONFLICT (content): Merge conflict in MAINTAINERS
+Merging galak/powerpc-next
+Merging mtd/master
+Merging wireless/master
+Merging crypto/master
+Merging vfs/vfs-2.6.25
+CONFLICT (content): Merge conflict in fs/xfs/linux-2.6/xfs_ioctl.c
+CONFLICT (content): Merge conflict in fs/xfs/xfs_ialloc.c
+CONFLICT (content): Merge conflict in fs/xfs/xfs_sb.h
+Merging semaphore/semaphore
+CONFLICT (delete/modify): include/asm-x86/semaphore_32.h deleted in semapho=
+re/semaphore and modified in HEAD. Version HEAD of include/asm-x86/semaphor=
+e_32.h left in tree.
+CONFLICT (delete/modify): include/asm-x86/semaphore_64.h deleted in semapho=
+re/semaphore and modified in HEAD. Version HEAD of include/asm-x86/semaphor=
+e_64.h left in tree.
+$ git rm include/asm-x86/semaphore_32.h include/asm-x86/semaphore_64.h
+Merging quilt/ldp
+Created commit 1d2b198: Revert "wusb: add the wireless usb stack to Linux"
+Applying parport_pc: wrap PNP probe code in #ifdef CONFIG_PNP
+Applying nsc-ircc: wrap PNP probe code in #ifdef CONFIG_PNP
+Applying smsc-ircc2: wrap PNP probe code in #ifdef CONFIG_PNP
+
+--Signature=_Wed__9_Apr_2008_18_53_09_+1000_4+64km_8tZf6vxeL
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFH/IP6TgG2atn1QN8RAjtoAJ0a2a6Te4sgAYSxrmh57yRP7hIQPQCfTNmE
+zJx2oHyYrAoQTJaSPmql5KI=
+=EiRR
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__9_Apr_2008_18_53_09_+1000_4+64km_8tZf6vxeL--
