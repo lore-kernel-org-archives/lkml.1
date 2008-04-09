@@ -1,48 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757103AbYDISQd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756547AbYDISUc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757103AbYDISQd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Apr 2008 14:16:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753301AbYDISQZ
+	id S1756547AbYDISUc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Apr 2008 14:20:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753464AbYDISUZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Apr 2008 14:16:25 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:48387 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753206AbYDISQY (ORCPT
+	Wed, 9 Apr 2008 14:20:25 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:46837 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753441AbYDISUY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Apr 2008 14:16:24 -0400
-Message-ID: <47FD0497.10303@zytor.com>
-Date: Wed, 09 Apr 2008 11:01:59 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
-MIME-Version: 1.0
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
+	Wed, 9 Apr 2008 14:20:24 -0400
+Date: Wed, 9 Apr 2008 20:24:54 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Alexey Dobriyan <adobriyan@gmail.com>
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
        linux-kernel@vger.kernel.org, Andi Kleen <andi@firstfloor.org>,
-       Rusty Russell <rusty@rustcorp.com.au>, Andi Kleen <ak@muc.de>,
-       Chuck Ebbert <cebbert@redhat.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       Adrian Bunk <bunk@stusta.de>, Alexey Dobriyan <adobriyan@gmail.com>,
+       Rusty Russell <rusty@rustcorp.com.au>, Jason Baron <jbaron@redhat.com>,
+       Adrian Bunk <bunk@stusta.de>, Christoph Hellwig <hch@infradead.org>,
        akpm@osdl.org
-Subject: Re: [patch 13/17] Immediate Values - x86 Optimization
-References: <20080409150829.855195878@polymtl.ca> <20080409152051.117322728@polymtl.ca>
-In-Reply-To: <20080409152051.117322728@polymtl.ca>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Subject: Re: [patch 09/17] Add all cpus option to stop machine run
+Message-ID: <20080409182454.GF30885@one.firstfloor.org>
+References: <20080409150829.855195878@polymtl.ca> <20080409152049.513274847@polymtl.ca> <20080409181010.GA4924@martell.zuzino.mipt.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080409181010.GA4924@martell.zuzino.mipt.ru>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mathieu Desnoyers wrote:
-> Ok, so the most flexible solution that I see, that should fit for both
-> x86 and x86_64 would be :
-> 1 byte  :       "=q" : "a", "b", "c", or "d" register for the i386.  For
->                        x86-64 it is equivalent to "r" class (for 8-bit
->                        instructions that do not use upper halves).
-> 2, 4, 8 bytes : "=r" : A register operand is allowed provided that it is in a
->                        general register.
+On Wed, Apr 09, 2008 at 10:10:10PM +0400, Alexey Dobriyan wrote:
+> I continue to think that all this so-called "immediate" infrastructure
+> is an absolute overkill and declared D-cache line savings will _never_
+> matter 
 
-Any reason to keep carrying this completely misleading comment chunk still?
+You are quite wrong on that.
 
-	-hpa
+> and will never be measured on real life workloads. Right now you
+> claim 1 (one) cacheline saving in schedule() which can be trivially
+
+That is just an example. Once the infrastructure is in a lot more
+flags would move it into it. I think eventually most sysctls
+should be immediate values for once.
+
+> Also, my gut feeling of a guy who is also on receiveing end of bugreports
+> at SWsoft that line with .text games was crossed by SMP alternatives and
+
+You already lost -- Linux regularly rewrites itself. Ok not quite yet
+but self modifying code is already wide spread and happens commonly
+(e.g. with alternatives and some other cases) 
+
+> 
+> And bugs when CPU executed bullshit and silently rebooted.
+
+So far nobody has seen that and the probably of it actually happening
+is rather remote too.
+
+
+> And so on.
+> 
+> 	Alexey, more and more liking OpenBSD
+> 		where such games won't even
+> 	        hit mailing lists
+
+Maybe that is why Linux scales to large systems and OpenBSD 
+doesn't ...
+
+-Andi
+
