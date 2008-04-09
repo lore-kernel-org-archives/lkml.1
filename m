@@ -1,95 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757084AbYDISji@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756722AbYDIS6F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757084AbYDISji (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Apr 2008 14:39:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754806AbYDISip
+	id S1756722AbYDIS6F (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Apr 2008 14:58:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753762AbYDIS5y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Apr 2008 14:38:45 -0400
-Received: from fk-out-0910.google.com ([209.85.128.186]:62571 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753574AbYDISic (ORCPT
+	Wed, 9 Apr 2008 14:57:54 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:37545 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752248AbYDIS5x (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Apr 2008 14:38:32 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=F/fR+a7KaMiFgobSOFnIr3ZTnnS/zFHKmYG0xjLixvgfA9bKO9neauTk1Qc4KqAdLq4zRG4IujWTeBAPVZPOA7hZ52+VO/7Yhm8lccH20lWLgEcDPpXqUc83s7t0hLVXBGlytR0THZeFGVRoSd4fCUECgf3k03Ruh5zmTrMJT9g=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: linux-ide@vger.kernel.org
-Subject: [PATCH 3/3] siimage: remove proc_reports_siimage()
-Date: Wed, 9 Apr 2008 20:52:41 +0200
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Wed, 9 Apr 2008 14:57:53 -0400
+Date: Wed, 9 Apr 2008 11:57:02 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: jens.axboe@oracle.com, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, Allard Hoeve <allard@byte.nl>,
+       Neil Brown <neilb@suse.de>
+Subject: Re: [patch] fix infinite loop in generic_file_splice_read()
+Message-Id: <20080409115702.79737d7f.akpm@linux-foundation.org>
+In-Reply-To: <E1JjcgO-0004q2-VJ@pomaz-ex.szeredi.hu>
+References: <E1JjcgO-0004q2-VJ@pomaz-ex.szeredi.hu>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200804092052.41806.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* proc_reports_siimage() is now only called by init_chipset_siimage()
-  so inline it there.
+On Wed, 09 Apr 2008 17:57:56 +0200
+Miklos Szeredi <miklos@szeredi.hu> wrote:
 
-* Use array instead of switch statement for reporting clock modes.
+> generic_file_splice_read() goes into an infinite loop if it races with
+> truncation.  I've found this with fsx-linux on NFS over fuse.
+> 
+> Perhaps the whole while() loop is bogus, but I can't tell from a
+> cursory glance at __generic_file_splice_read() if it will return zero
+> only on EOF, or it can do that for other reasons as well.  In the
+> latter case the loop is obviously needed.
+> 
+> This simplistic patch fixes the issue for me.
+> 
 
-There should be no functional changes caused by this patch.
+We found suspicious-looking code in generic_file_splice_read() back in
+February.  See http://lkml.org/lkml/2008/2/29/443.  I suspect that patch
+(if it works) will address the truncate lockup as well - it zaps the loop
+entirely.
 
-Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
----
- drivers/ide/pci/siimage.c |   33 ++++++++-------------------------
- 1 file changed, 8 insertions(+), 25 deletions(-)
+Unfortunately Allard never got back to us (probably because he's running
+2.6.24 which has a quite different generic_file_splice_read()) and the
+patch didn't get anywhere.
 
-Index: b/drivers/ide/pci/siimage.c
-===================================================================
---- a/drivers/ide/pci/siimage.c
-+++ b/drivers/ide/pci/siimage.c
-@@ -440,30 +440,6 @@ static void sil_sata_pre_reset(ide_drive
- }
+Here it is again.
+
+It needs a changelog.
+
+Nobody has tested this at all, to my knowledge.
+
+It's going to take some serious and sudden effort to get these bugs fixed
+for 2.6.25.
+
+
+ fs/splice.c |   31 ++++++-------------------------
+ 1 file changed, 6 insertions(+), 25 deletions(-)
+
+diff -puN fs/splice.c~generic_file_splice_read-fix-lockups fs/splice.c
+--- a/fs/splice.c~generic_file_splice_read-fix-lockups
++++ a/fs/splice.c
+@@ -370,8 +370,10 @@ __generic_file_splice_read(struct file *
+ 			 * for an in-flight io page
+ 			 */
+ 			if (flags & SPLICE_F_NONBLOCK) {
+-				if (TestSetPageLocked(page))
++				if (TestSetPageLocked(page)) {
++					error = -EAGAIN;
+ 					break;
++				}
+ 			} else
+ 				lock_page(page);
  
- /**
-- *	proc_reports_siimage		-	add siimage controller to proc
-- *	@dev: PCI device
-- *	@clocking: SCSC value
-- *	@name: controller name
-- *
-- *	Report the clocking mode of the controller and add it to
-- *	the /proc interface layer
-- */
-- 
--static void proc_reports_siimage (struct pci_dev *dev, u8 clocking, const char *name)
--{
--	if (!pdev_is_sata(dev)) {
--		printk(KERN_INFO "%s: BASE CLOCK ", name);
--		clocking &= 0x03;
--		switch (clocking) {
--			case 0x03: printk("DISABLED!\n"); break;
--			case 0x02: printk("== 2X PCI\n"); break;
--			case 0x01: printk("== 133\n"); break;
--			case 0x00: printk("== 100\n"); break;
--		}
--	}
--}
+@@ -479,9 +481,8 @@ ssize_t generic_file_splice_read(struct 
+ 				 struct pipe_inode_info *pipe, size_t len,
+ 				 unsigned int flags)
+ {
+-	ssize_t spliced;
+-	int ret;
+ 	loff_t isize, left;
++	int ret;
+ 
+ 	isize = i_size_read(in->f_mapping->host);
+ 	if (unlikely(*ppos >= isize))
+@@ -491,29 +492,9 @@ ssize_t generic_file_splice_read(struct 
+ 	if (unlikely(left < len))
+ 		len = left;
+ 
+-	ret = 0;
+-	spliced = 0;
+-	while (len && !spliced) {
+-		ret = __generic_file_splice_read(in, ppos, pipe, len, flags);
 -
--/**
-  *	setup_mmio_siimage	-	switch an SI controller into MMIO
-  *	@dev: PCI device we are configuring
-  *	@name: device name
-@@ -585,7 +561,14 @@ static unsigned int __devinit init_chips
- 		writel(0x00680000, ioaddr + 0x1C8);
- 	}
+-		if (ret < 0)
+-			break;
+-		else if (!ret) {
+-			if (spliced)
+-				break;
+-			if (flags & SPLICE_F_NONBLOCK) {
+-				ret = -EAGAIN;
+-				break;
+-			}
+-		}
+-
++	ret = __generic_file_splice_read(in, ppos, pipe, len, flags);
++	if (ret > 0)
+ 		*ppos += ret;
+-		len -= ret;
+-		spliced += ret;
+-	}
+-
+-	if (spliced)
+-		return spliced;
  
--	proc_reports_siimage(dev, tmp >> 4, name);
-+	/* report the clocking mode of the controller */
-+	if (!pdev_is_sata(dev)) {
-+		static const char *clk_str[] =
-+			{ "== 100", "== 133", "== 2X PCI", "DISABLED!" };
-+
-+		tmp >>= 4;
-+		printk(KERN_INFO "%s: BASE CLOCK %s\n", name, clk_str[tmp & 3]);
-+	}
- 
- 	return 0;
+ 	return ret;
  }
+_
+
