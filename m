@@ -1,61 +1,149 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755668AbYDINS4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755849AbYDINWu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755668AbYDINS4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Apr 2008 09:18:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752974AbYDINSt
+	id S1755849AbYDINWu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Apr 2008 09:22:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752974AbYDINWm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Apr 2008 09:18:49 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:39664 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752085AbYDINSs (ORCPT
+	Wed, 9 Apr 2008 09:22:42 -0400
+Received: from e31.co.us.ibm.com ([32.97.110.149]:36340 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752085AbYDINWl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Apr 2008 09:18:48 -0400
-Date: Wed, 9 Apr 2008 15:18:47 +0200 (CEST)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Andy Whitcroft <apw@shadowen.org>
-cc: Andi Kleen <andi@firstfloor.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [patch] checkpatch: relax spacing and line length
-In-Reply-To: <20080409131420.GL17915@shadowen.org>
-Message-ID: <alpine.LNX.1.10.0804091517260.4411@fbirervta.pbzchgretzou.qr>
-References: <alpine.LNX.1.10.0804060653020.30794@fbirervta.pbzchgretzou.qr> <20080408171257.GF17915@shadowen.org> <87ej9gp6ol.fsf@basil.nowhere.org> <20080409081943.GI17915@shadowen.org> <20080409083013.GJ17915@shadowen.org> <20080409084606.GD19010@one.firstfloor.org>
- <20080409131420.GL17915@shadowen.org>
-User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
+	Wed, 9 Apr 2008 09:22:41 -0400
+Date: Wed, 9 Apr 2008 08:22:38 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Toshiharu Harada <haradats@nttdata.co.jp>
+Cc: Paul Moore <paul.moore@hp.com>,
+       Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org,
+       Kentaro Takeda <takedakn@nttdata.co.jp>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       linux-netdev <netdev@vger.kernel.org>
+Subject: Re: [TOMOYO #7 30/30] Hooks for SAKURA and TOMOYO.
+Message-ID: <20080409132238.GB8489@sergelap.austin.ibm.com>
+References: <20080404122242.867070732@I-love.SAKURA.ne.jp> <20080404122408.986477936@I-love.SAKURA.ne.jp> <200804071140.59247.paul.moore@hp.com> <47FC8052.9070409@nttdata.co.jp>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <47FC8052.9070409@nttdata.co.jp>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Wednesday 2008-04-09 15:14, Andy Whitcroft wrote:
->On Wed, Apr 09, 2008 at 10:46:06AM +0200, Andi Kleen wrote:
->> > Oh, and if people felt that the concensus was for something to be
->> > implemented and that you are waiting for me to implement the change in
->> > checkpatch; please say so.
->> 
->> Well at least I think the printk change is a good one to implement and there 
->> wasn't much protest to it at least.
+Quoting Toshiharu Harada (haradats@nttdata.co.jp):
+> On 4/8/2008 12:40 AM, Paul Moore wrote:
+>> On Friday 04 April 2008 8:23:12 am Tetsuo Handa wrote:
+>>> This file contains modifications against kernel source code
+>>> needed to use TOMOYO Linux 1.6.
+>>>
+>>> Although LSM hooks are provided for performing access control,
+>>> TOMOYO Linux 1.6 doesn't use LSM because of the following reasons.
+>> Hello,
+>> I understand your frustration with the existing LSM hooks/API and your 
+>> reasoning for abandoning LSM in favor of a new set of hooks, however, I 
+>> think this sets a dangerous precedence which could result in an abundance 
+>> of security related hooks scattered throughout the kernel.  I would much 
+>> rather see the LSM API extended/tweaked to support the needs of SAKURA and 
+>> TOMOYO than ignored and duplicated; I suspect several others will say the 
+>> same.
+>> You have made good progress with TOMOYO so far and if I can remember 
+>> correctly you really only have one hurdle left, the VFS portion.  Please 
+>> continue to seek a solution to this that fits within the LSM framework.
+>> Thank you.
 >
->Ok.  will put this on my todo list.
+> Thank you for your comments and concern.
+>
+> I realized that we should have included the reason why we decided to
+> post non-LSM version.
 
-Instead of
+First let me point out that reviewing patches is always a lot of work.
+What you've done here by posting an entirely new 30-patch implementation
+of tomoyo when (I hope) you're not even serious about that is to
+basically tell us our time means nothing to you...
 
-	if (foo) {
-		if (baz) {
-			++x;
-printk("Oh so long line makes my coding style go wary... nonsensical sentence\n");
-		}
-	}
+If you *are* serious about it, than to whatever extent I can, which
+isn't very much, I say nack.
 
-I'd keep the indent and allow elongated lines:
+Like you say there appear to be no real remaining objections to the LSM,
+only to the VFS part.  You're going to try to get around the VFS
+objections by not being an LSM?
 
-	if (foo) {
-		if (baz) {
-			++x;
-			printk("Oh so long line makes my coding style go wary... nonsensical sentence\n");
-		}
-	}
+Look right now TOMOYO is an out of tree patch.  You want to get it in
+tree.  Don't be too hung up on getting it all in at once.  Why not
+push a subset of the patch without the vfs controls, which will help
+to motivate the vfs controls you need?  You can (1) keep a much smaller
+out of tree patch with your implementation of the vfs controls for your
+current customrs/installations, and/or (2) implement a temporary
+non-pathname-based alternative, say using xattrs to tag files at setup
+time - probably insufficient, but sufficient for people to play.
 
-Or perhaps you just pointed out we need a smarter grep program! :)
+The smaller patch would also be easier to review.
+
+> Let me explain the reason and the history.
+
+We remember the history.  On the one hand we feel for you, but on the
+other hand many of us have gone through the same thing, and if you'll
+notice Casey went through the same thing and persisted.
+
+> We started developing TOMOYO Linux as original patch sets against
+> 2.4 vanilla kernel. We understand the role of LSM, so we ported
+> TOMOYO Linux to use LSM and submitted it to the LKML on 13 June 2007.
+> We kept working to reflect feedbacks from the community and believe
+> no critical Nack remains.
+
+Right, at this point it's mainly a question of finding a way to upstream
+tomoyo.  (That's mainly *your* burden, but we do try to help :)
+
+> http://lwn.net/Articles/238049/
+> http://lwn.net/Articles/246930/
+> http://lwn.net/Articles/252652/
+> http://lwn.net/Articles/254503/
+> http://lwn.net/Articles/258905/
+> http://lwn.net/Articles/263179/
+> http://lwn.net/Articles/264187/
+> http://lwn.net/Articles/276603/
+>
+> Still there remains an issue of LSM limitation (vfsmount parameter
+> isn?t passed to LSM).
+>
+> LWN article 239962 says, "At the 2006 summit, Linus took a clear
+> position that the use of pathnames for security policies seemed
+> reasonable to him".
+
+Yes, but he didn't say you could implement it in a way that offends the
+affected maintainers.  Nor did he say it's those maintainers'
+responsibility to find you an acceptable solution.  They are in fact
+being very nice by offering you suggestions.
+
+Also, isn't Miklos helping you to try and find an acceptable approach?
+
+> Current LSM implementation is sufficient for SELinux
+> and other label based MACs but not for pathname-based MACs.
+> This has been argued in the AppAmor thread for quite a long time.
+> Though proposals had been posted by AppArmor and TOMOYO Linux project,
+> none has been merged until now.
+
+You're trying to make it sound like you've spent night and day for years
+trying to work with the relevant people to come up with something
+reasonable.  Yet for instance in the thread 
+	"vfs: add helpers to check r/o bind mounts"
+(april 2) where iiuc two reasonable approaches are discussed, you don't
+even take part.
+
+> We apologize for the confusion we caused in the last posting,
+> but we don't want to give up returning our work to the mainline. 
+
+I'm glad to hear that.  Please keep trying.
+
+> We cordially request LSM changes to pass vfsmount parameters.
+
+Again let me point out there is a difference between saying "Linus said
+we can have pathname-based access control, but you won't implement it
+for me" and doing the hard work to come up with something reasonable.
+I know you've tried a few times, but from what I've seen your impression
+of the work you've put into it is far different from my impression of
+it.
+
+-serge
