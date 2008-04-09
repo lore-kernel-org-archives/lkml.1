@@ -1,54 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754143AbYDIGbh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753983AbYDIGh0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754143AbYDIGbh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Apr 2008 02:31:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753584AbYDIGb0
+	id S1753983AbYDIGh0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Apr 2008 02:37:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752419AbYDIGhK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Apr 2008 02:31:26 -0400
-Received: from wx-out-0506.google.com ([66.249.82.224]:7151 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753857AbYDIGbZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Apr 2008 02:31:25 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=sSDLqvGFpTlCpx6rFDULJrxQE0SP8hgtkon+8LNjwIZVYexHo5osau/g+3DmV7OMnMkGvxh8QqJ8mJRJ4HKF//J2BkPS82882Hg2lDKeoA4deNjl9/34z9ay7hAQ3PQeP1rer8xv9UaaaY7jljbaoMxyvOR2cTt3yG8jfxFvYxs=
-Message-ID: <cfd18e0f0804082331q520d335cgb46972d79a257b63@mail.gmail.com>
-Date: Wed, 9 Apr 2008 08:31:20 +0200
-From: "Michael Kerrisk" <mtk.manpages@googlemail.com>
-To: "Davide Libenzi" <davidel@xmailserver.org>
-Subject: Re: signalfd() not handling sigqueue() sigval data correctly
-Cc: lkml <linux-kernel@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.64.0804081636450.28275@alien.or.mcafeemobile.com>
+	Wed, 9 Apr 2008 02:37:10 -0400
+Received: from blaine.gmane.org ([80.91.229.8]:41919 "EHLO hugh.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752416AbYDIGhJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Apr 2008 02:37:09 -0400
+X-Greylist: delayed 1557 seconds by postgrey-1.27 at vger.kernel.org; Wed, 09 Apr 2008 02:37:09 EDT
+To: Inaky Perez-Gonzalez 
+	<public-inaky-VuQAYsv1563Yd54FQh9/CA@hugh.gmane.org>
+Cc: Stephen Hemminger 
+	<public-stephen.hemminger-ZtmgI6mnKB3QT0dZR+AlfA@hugh.gmane.org>,
+       public-wimax-BPSAo7wm5JOHVYUYWc+uSQ@hugh.gmane.org,
+       public-linux-wireless-u79uwXL29TY76Z2rM5mHXA@hugh.gmane.org,
+       public-netdev-u79uwXL29TY76Z2rM5mHXA@hugh.gmane.org,
+       public-linux-kernel-u79uwXL29TY76Z2rM5mHXA@hugh.gmane.org
+Subject: Re: [ANN] WiMAX stack and drivers for Intel WiMAX Link 5050
+From: Andi Kleen <andi@firstfloor.org>
+References: <200804011107.38563.inaky@linux.intel.com>
+	<20080408135601.5dad3566@speedy>
+	<200804081359.03611.inaky@linux.intel.com>
+Date: Wed, 09 Apr 2008 08:10:23 +0200
+In-Reply-To: <200804081359.03611.inaky@linux.intel.com> (Inaky Perez-Gonzalez's message of "Tue, 8 Apr 2008 13:59:03 -0700")
+Message-ID: <871w5fpnhs.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <47FBDF12.8090400@gmail.com>
-	 <Pine.LNX.4.64.0804081636450.28275@alien.or.mcafeemobile.com>
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 09 Apr 2008 06:03:40.0444 (UTC) FILETIME=[755B85C0:01C89A07]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 9, 2008 at 1:37 AM, Davide Libenzi <davidel@xmailserver.org> wrote:
-> On Tue, 8 Apr 2008, Michael Kerrisk wrote:
+
+
+Inaky Perez-Gonzalez <inaky-VuQAYsv1563Yd54FQh9/CA@public.gmane.org> writes:
 >
-> > Hi Davide,
-> >
-> > I was doing some playing about with signalfd(), and seem to have encountered a
-> > bug: when a signalfd read() fetches data for a signal that was sent by
-> > sigqueue(), the data accompanying the signal is not returned.  Instead
-> > ssi_int/ssi_ptr is zero.
->
-> Are you able to fetch those info with, say, sigtimedwait(2)?
+> There is almost no inlining because each X only does stuff from itself. If
+> there is a need for inlined stuff (I missed it) it should go to one of the
+> header files --internal or external.
 
-Yes.
+Inlining gets more and more discouraged. Also longer term I would 
+expect that gcc will do inlining over files anyways (it already supports
+that, but needs special support in the Makefiles which the kernel
+doesn't have). So even with inlining you wouldn't need to merge files
+or move code into headers.
+
+> version: I anticipate the wimax API exported to user space is
+> going to undergo a lot of changes while we all agree on what
+> is the best interface. Because things might break, I want to
+> make sure user space stuff can detect that and fail cleanly. 
+> Hence the versioning. 
+
+It's still a bad way to do that (I agree with Stephen on that).
+Was also always a mess on wireless.
+
+If you don't want expandable TLAs another better alternative to 
+versions is ext2 style compatible/incompatible feature bitmaps.
+
+-Andi
 
 
--- 
-Michael Kerrisk
-Maintainer of the Linux man-pages project
-http://www.kernel.org/doc/man-pages/
-Want to report a man-pages bug? Look here:
-http://www.kernel.org/doc/man-pages/reporting_bugs.html
