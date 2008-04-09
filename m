@@ -1,66 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754008AbYDIOHL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753239AbYDIORS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754008AbYDIOHL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Apr 2008 10:07:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752020AbYDIOG5
+	id S1753239AbYDIORS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Apr 2008 10:17:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752200AbYDIORI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Apr 2008 10:06:57 -0400
-Received: from rtr.ca ([76.10.145.34]:1872 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752076AbYDIOG4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Apr 2008 10:06:56 -0400
-Message-ID: <47FCCD7F.8010309@rtr.ca>
-Date: Wed, 09 Apr 2008 10:06:55 -0400
-From: Mark Lord <lkml@rtr.ca>
-Organization: Real-Time Remedies Inc.
-User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
+	Wed, 9 Apr 2008 10:17:08 -0400
+Received: from colobus.isomerica.net ([216.93.242.10]:34676 "EHLO
+	colobus.isomerica.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751794AbYDIORH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Apr 2008 10:17:07 -0400
+Message-ID: <47FCCF94.3000103@isomerica.net>
+Date: Wed, 09 Apr 2008 10:15:48 -0400
+From: Dan Noe <dpn@isomerica.net>
+Reply-To: dpn@isomerica.net
+Organization: isomerica.net
+User-Agent: Thunderbird 2.0.0.12 (Macintosh/20080213)
 MIME-Version: 1.0
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Network <linux-net@vger.kernel.org>
-Subject: Regression: 2.6.25-rc8: FTP transfer errors
-References: <SvnMeM-aZi.A.S3E.b-_-HB@albercik> <47FC4C87.1020705@rtr.ca> <47FCC6B5.70804@rtr.ca>
-In-Reply-To: <47FCC6B5.70804@rtr.ca>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: Andreas Grimm <agrimm61@gmail.com>
+CC: Johannes Weiner <hannes@saeurebad.de>, linux-kernel@vger.kernel.org
+Subject: Re: VM - a plenty of inactive memory
+References: <cf40c6a90804090213u55491ceay9b211d75d74dc29c@mail.gmail.com>	 <874pabrx6b.fsf@saeurebad.de> <cf40c6a90804090657j7e76a84foeaf3c1c02d2a7b73@mail.gmail.com>
+In-Reply-To: <cf40c6a90804090657j7e76a84foeaf3c1c02d2a7b73@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mark Lord wrote:
-> Mark Lord wrote:
->> Today I've been using 2.6.25-rc8 with an old embedded build system here
->> for my empegs.  One shell script calls out to /usr/bin/ftp to transfer
->> an image to a remote system, and then read it back again and compare.
->>
->> The compare is failing, most (but not all) of the time,
->> but only on 2.6.25-rc8, not on 2.6.24.  Verified by switching
->> back and forth between kernel versions for a short spell.
->>
->> The ftp client is netkit-ftp 0.17-16 on Kubuntu feisty.
->>
->> Switching to ncftpput/ncftpget avoids it on 2.6.25,
->> but I wonder where the problem is.
-> 
-> Now verified that the data loss occurs in the outbound direction.
-> The readback data is the same, regardless of which client s/w is used.
-> 
-> So something in 2.6.25 is incompatible with the ftp client binary, or libs,
-> that are installed here.  Or some other problem.
-..
+Andreas Grimm wrote:
+> i know this. But why the kernel locks that memory for a so long time
+> (2 days now)? Is there a way to enforce the reclaiming? And how can i
+> find out, which process owns that memory. The problem is, that i can't
+> accept, that the free memory fell down to 50MB, when i have 24GB in
+> the nirvana. The system was recently very close to the awkward
+> situation to swap to disk, and i bet it will do so in the next few
+> days, because it happened before. Unintelligible, if one got that much
+> ram.
 
-Recap, with more info:
+Have you investigated the sys.vm.swappiness tunable?  It allows you to 
+control how readily the kernel swaps out unused mapped memory.  This 
+seems to be relevant to your issue.
 
-The host system is running 2.6.25-rc8-git.  It uses netkit-ftp to
-send a file to the remote system.  Using strace shows that the
-entire file was read, and passed to write() for the outbound socket.
+See http://lwn.net/Articles/83588/
 
-The remote system is running linux-2.2.xx, and is reporting -EPIPE
-from net/socket.c::sock_recvmsg() before all of the data has been received,
-and thus ends up with a short file, missing data at the end.
+Cheers,
+Dan
 
-This exact sequence, with the exact same software,
-works fine when the host system is NOT running 2.6.25-*,
-(eg. 2.6.11 through 2.6.24 are fine).
-
-Something may be broken here.
+-- 
+                     /--------------- - -  -  -   -   -
+                     |  Daniel Noe
+                     |  http://isomerica.net/~dpn/
