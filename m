@@ -1,157 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755481AbYDISaH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756553AbYDISad@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755481AbYDISaH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Apr 2008 14:30:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752406AbYDIS3w
+	id S1756553AbYDISad (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Apr 2008 14:30:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754725AbYDISaO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Apr 2008 14:29:52 -0400
-Received: from mail.tmr.com ([64.65.253.246]:34474 "EHLO gaimboi.tmr.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752248AbYDIS3u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Apr 2008 14:29:50 -0400
-Message-ID: <47FD0BE8.4070105@tmr.com>
-Date: Wed, 09 Apr 2008 14:33:12 -0400
-From: Bill Davidsen <davidsen@tmr.com>
-Organization: TMR Associates Inc, Schenectady NY
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
-MIME-Version: 1.0
-To: Mikulas Patocka <mikulas@artax.karlin.mff.cuni.cz>
-CC: linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org,
-       device-mapper development <dm-devel@redhat.com>, agk@redhat.com,
-       mingo@redhat.com, neilb@suse.de
-Subject: Re: Data corruption on software RAID
-References: <Pine.LNX.4.64.0804080033430.13352@artax.karlin.mff.cuni.cz>
-In-Reply-To: <Pine.LNX.4.64.0804080033430.13352@artax.karlin.mff.cuni.cz>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 9 Apr 2008 14:30:14 -0400
+Received: from rn-out-0910.google.com ([64.233.170.186]:41814 "EHLO
+	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755544AbYDISaL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Apr 2008 14:30:11 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=L+yomB2n6cMZmhgkG+AUQtoiRNe4CR7T4TARY1g3F/9QIT83EydHRsOKbOoiHynH6/uvIaqWuFzue8oRp4v8BsIiI1N/jl5oel1ZHL8STB3f9fC2QjRNZ2cH4Cy5dMEEASmO5TbQnkexpKk+cjCw08NRpz5eQ+uSfvT55CMYCf4=
+Subject: Re: [v4l-dvb-maintainer] [PATCH] media: replace remaining __FUNCT
+	ION__ occurences
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Michael Krufky <mkrufky@linuxtv.org>
+Cc: akpm@linux-foundation.org, v4l-dvb-maintainer@linuxtv.org,
+       linux-kernel@vger.kernel.org, abraham.manu@gmail.com,
+       mchehab@infradead.org
+In-Reply-To: <37219a840804091000y34ba76e2x4937600ae7bda3a5@mail.gmail.com>
+References: <1204613661.22933.110.camel@brick>
+	 <47F536FF.8060105@linuxtv.org>
+	 <37219a840804040809q470a64fdmed95e21bd51c23b0@mail.gmail.com>
+	 <37219a840804091000y34ba76e2x4937600ae7bda3a5@mail.gmail.com>
+Content-Type: text/plain
+Date: Wed, 09 Apr 2008 11:30:25 -0700
+Message-Id: <1207765825.16220.16.camel@brick>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mikulas Patocka wrote:
-> Hi
->
-> During source code review, I found an unprobable but possible data 
-> corruption on RAID-1 and on DM-RAID-1. (I'm not sure about RAID-4,5,6).
->
-> The RAID code was enhanced with bitmaps in 2.6.13.
->
-> The bitmap tracks regions on the device that may be possibly out-of-sync. 
-> The purpose of the bitmap is to avoid resynchronizing the whole array in 
-> the case of crash. DM-raid uses similar bitmap too.
->
-> The write sequnce is usually:
-> 1. turn on bit in the bitmap (if it hasn't been on before).
-> 2. update the data.
-> 3. when writes to all devices finish, turn the bit may be turned off.
->
-> The developers assume that when all writes to the region finish, the 
-> region is in-sync.
->
-> This assumption is wrong.
->
-> Kernel writes data while they may be modified in many places. For example, 
-> the pdflush daemon writes periodically pages and buffers without locking 
-> them. Similarly, pages may be written while they are mapped for write to 
-> the processes.
->
-> Normally, there is no problem with modify-while-write. The write sequence 
-> is something like:
-> * turn off Dirty bit
-> * write the buffer or page
-> --- and if the buffer or page is modified while it's being written, the 
-> Dirty bit is turned on again and the correct data are written later.
->
-> But with RAID (since 2.6.13), it can produce corruption because when the 
-> buffer is modified while being written, different versions of data can be 
-> written to devices in the RAID array. For example:
->
-> 1. pdflush turns off a dirty bit on Ext2 bitmap buffer and starts writing 
-> the buffer to RAID-1
-> 2. the kernel allocates some blocks in that Ext2 bitmap. One of RAID-1 
-> devices writes new data, the other one gets old data.
-> 3. The kernel turns on the buffer dirty bit, so this buffer is scheduled 
-> for next write.
-> 4. RAID-1 subsystem sees that both writes finished, it thinks that this 
-> region is in-sync, turns off its dirty bit in its region bitmap and writes 
-> the bitmap to disk.
-> 5. before pdflush writes the Ext2 bitmap buffer again, the system CRASHES
->
-> 6. after new boot, RAID-1 sees the bit for this region off, so it doesn't 
-> resynchronize it.
-> 7. during fsck, RAID-1 reads the Ext2 bitmap from the device where the bit 
-> is on. fsck sees that the bitmap is correct and doesn't touch it.
-> 8. some times later kernel reads the Ext2 bitmap from the other device. It 
-> sees the bit off, allocates some data there and creates cross-linked 
-> files.
->
-> The same corruption may happen with some jorunaled filesystems (probably 
-> not Ext3) or applications that do their own crash recovery (databases, 
-> etc.). The key point is that an application expects that after a crash it 
-> reads old data or new data, but it doesn't expect that subsequent reads to 
-> the same place may alternatively return old or new data --- which may 
-> happen on RAID-1.
->
->
-> Possibilities how to fix it:
->
-> 1. lock the buffers and pages while they are being written --- this would 
-> cause performance degradation (the most severe degradation would be in 
-> case when one process does repeatedly sync() and other unrelated 
-> process repeatedly writes to some file).
->
-> Lock the buffers and pages only for RAID --- would create many special 
-> cases and possible bugs.
->
-> 2. never turn the region dirty bit off until the filesystem is unmounted. 
-> --- this is the simplest fix. If the computer crashes after a long 
-> time, it resynchronizes the whole device. But there won't cause 
-> application-visible or filesystem-visible data corruption.
->
-> 3. turn off the region bit if the region wasn't written in one pdflush 
-> period --- requires an interaction with pdflush, rather complex. The 
-> problem here is that pdflush makes its best effort to write data in 
-> dirty_writeback_centisecs interval, but it is not guaranteed to do it.
->
-> 4. make more region states: Region has in-memory states CLEAN, DIRTY, 
-> MAYBE_DIRTY, CLEAN_CANDIDATE.
->
-> When you start writing to the region, it is always moved to DIRTY state 
-> (and on-disk bit is turned on).
->
-> When you finish all writes to the region, move it to MAYBE_DIRTY state, 
-> but leave bit on disk on. We now don't know if the region is dirty or no.
->
-> Run a helper thread that does periodically:
-> Change MAYBE_DIRTY regions to CLEAN_CANDIDATE
-> Issue sync()
-> Change CLEAN_CANDIDATE regions to CLEAN state and clear their on-disk bit.
->
-> The rationale is that if the above write-while-modify scenario happens, 
-> the page is always dirty. Thus, sync() will write the page, kick the 
-> region back from CLEAN_CANDIDATE to MAYBE_DIRTY state and we won't mark 
-> the region as clean on disk.
->
->
-> I'd like to know you ideas on this, before we start coding a solution.
->   
+On Wed, 2008-04-09 at 13:00 -0400, Michael Krufky wrote:
+> On Fri, Apr 4, 2008 at 11:09 AM, Michael Krufky <mkrufky@linuxtv.org> 
+> Harvey,
+> 
+> I have received your entire patchset.  Some patches have already been
+> merged into our development tree, others have been dropped, since some
+> of individual driver maintainers have decided to remove the
+> __FUNCTION__ macro from their source code altogether, rather than
+> accept this change.
+> 
+> I have merged the remaining pending patches into a mercurial tree,
+> hosted on linuxtv.org:
+> 
+> http://linuxtv.org/hg/~mkrufky/function-func
+> 
+> Please note that I had to manually apply patches 8, 11 and 13, since
+> you generated your changes against the git repository rather than the
+> official v4l-dvb development repository hosted on linuxtv.org.
 
-I looked at just this problem a while ago, and came to the conclusion 
-that what was needed was a COW bit, to show that there was i/o in 
-flight, and that before modification it needed to be copied. Since you 
-don't want to let that recurse, you don't start writing the copy until 
-the original is written and freed. Ideally you wouldn't bother to finish 
-writing the original, but that doesn't seem possible. That allows at 
-most two copies of a chunk to take up memory space at once, although 
-it's still ugly and can be a bottleneck.
+I don't know/use mercurial, sorry, I thought git-v4l's devel branch on
+kernel.org would be a mirror of the development tree...guess I was
+mistaken
 
-For reliable operation I would want all copies (and/or CRCs) to be 
-written on an fsync, by the time I bother to fsync I really, really, 
-want the data on the disk.
+> 
+> I must stress this -- all v4l-dvb patches, ESPECIALLY
+> codingstyle-cleanups (due to the nature of those patches, touching
+> many many files at once), should always be generated against the
+> v4l-dvb master development repository hosted on linuxtv.org.
+> 
+> Now, I have a question.....
+> 
+> About this change from __FUNCTION__ to __func__ , I understand that
+> this change is being done kernel-wide.  At first, I had blindly
+> accepted this change as a kernel-janitor "cleanup", until it was
+> pointed out to me last night, that older compilers do not support
+> __func__.  Sure, one can always do the following for compat:
+> 
+> #ifndef __func__
+>  #define __func__ __FUNCTION__
+> #endif /* __func__ */
 
--- 
-Bill Davidsen <davidsen@tmr.com>
-  "Woe unto the statesman who makes war without a reason that will still
-  be valid when the war is over..." Otto von Bismark 
+This is already done in kernel.h, so __func__ is already being passed to
+any compiler used on the kernel....
 
+/* Trap pasters of __FUNCTION__ at compile-time */
+#define __FUNCTION__ (__func__)
+
+> 
+> ...but the question is raised, why are we making this change in the first place?
+> 
+> Don't get me wrong -- as I said before, I understand that this change
+> is kernel-wide, and I am not arguing against it.  I will continue on
+> to have this merged into 2.6.26.  I would just like to see a link that
+> points to a discussion thread on LKML that explains the reasons for
+> this change, and where this change was globally agreed to.  Again -- I
+> am not challenging these patches.  I merely want to read more
+> information as to why we are making this move.
+> 
+> In the meanwhile, below is the checkpatch.pl fallout after applying
+> your __FUNCTION__ to __func__ series.  Since you are working on these
+> codingstyle cleanups anyway, I'd imagine that you won't mind fixing
+> these checkpatch.pl "errors" and "warnings" before we merge these
+> changes.
+
+For such a large set in v4l, it's a drastic increase in work to do so
+in this case as it is a simple sed s/__FUNCTION__/__func__/
+
+> 
+> I understand if you don't want to alter code that you may not be
+> directly involved in, but I am sure you will have no trouble at least
+> fixing the "comma after space" and "line over 80 characters" cases.
+> 
+> Please generate the additional cleanups against the mercurial tree
+> that I merged your previous series to:
+> 
+> http://linuxtv.org/hg/~mkrufky/function-func
+
+Do you have a git mirror somewhere?
+
+> 
+> Also, please generate the codingstyle cleanup patches individually
+> based on the directory structure, just as you did in your last series.
+> 
+> See below for the checkpatch.pl "errors" and "warnings".
+
+I can't say I have much enthusiasm for that, but if you'd really want
+such a patch, I will try to get to it this week.
+
+
+Harvey
 
