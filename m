@@ -1,84 +1,195 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757229AbYDITGX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756180AbYDITC3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757229AbYDITGX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Apr 2008 15:06:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756518AbYDITGL
+	id S1756180AbYDITC3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Apr 2008 15:02:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752778AbYDITCW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Apr 2008 15:06:11 -0400
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:55505 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754245AbYDITGK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Apr 2008 15:06:10 -0400
-Date: Wed, 9 Apr 2008 20:05:04 +0100
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Dmitry <dbaryshkov@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       haavard.skinnemoen@atmel.com, lethal@linux-sh.org,
-       philipp.zabel@gmail.com, pavel@ucw.cz, tony@atomide.com, paul@pwsan.com
-Subject: Re: [PATCH 5/6] Clocklib: Use correct clock for IrDA on pxa
-Message-ID: <20080409190504.GA13891@flint.arm.linux.org.uk>
-References: <20080403132142.GA26882@doriath.ww600.siemens.net> <20080403132402.GA27008@doriath.ww600.siemens.net> <20080407160029.f1f9ce4f.akpm@linux-foundation.org> <20080407230434.GA525@flint.arm.linux.org.uk> <bc64b4640804080247s82ba84chd740c08b2fbb9b1a@mail.gmail.com> <20080408193309.GA18053@flint.arm.linux.org.uk> <bc64b4640804090015m7dd640d5j31c54b99007f09a7@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <bc64b4640804090015m7dd640d5j31c54b99007f09a7@mail.gmail.com>
-User-Agent: Mutt/1.4.2.1i
+	Wed, 9 Apr 2008 15:02:22 -0400
+Received: from mail1.cray.com ([136.162.0.111]:39511 "EHLO mail1.cray.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751432AbYDITCV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Apr 2008 15:02:21 -0400
+X-Greylist: delayed 10611 seconds by postgrey-1.27 at vger.kernel.org; Wed, 09 Apr 2008 15:02:18 EDT
+Message-ID: <47FCE93D.4090509@cray.com>
+Date: Wed, 09 Apr 2008 11:05:17 -0500
+From: Andrew Hastings <abh@cray.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20070115 SeaMonkey/1.0.6
+MIME-Version: 1.0
+To: Andi Kleen <andi@firstfloor.org>
+CC: linux-kernel@vger.kernel.org, pj@sgi.com, linux-mm@kvack.org,
+       nickpiggin@yahoo.com.au
+Subject: Re: [PATCH] [12/18] Add support to allocate hugetlb pages that are
+ larger than MAX_ORDER
+References: <20080317258.659191058@firstfloor.org> <20080317015826.110AA1B41E0@basil.firstfloor.org>
+In-Reply-To: <20080317015826.110AA1B41E0@basil.firstfloor.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Cray-VirusStatus: clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 09, 2008 at 11:15:51AM +0400, Dmitry wrote:
-> 2008/4/8, Russell King <rmk+lkml@arm.linux.org.uk>:
-> > On Tue, Apr 08, 2008 at 01:47:35PM +0400, Dmitry wrote:
-> >  > Yes, it works currently. But there are a few problems: we declare
-> >  > STUART's UARTCLK with dev=NULL (all other UARTCLKs are declared with
-> >  > proper devices).  Therefore,  I consider it as a hack and would like
-> >  > to remove it.
-> >
-> > I don't consider it a hack at all - it's a work around for the fact
-> >  that the PXA FIR driver shares the UART, but the FIR driver doesn't
-> >  bind to the UART itself.
+Andi Kleen wrote:
+> This is needed on x86-64 to handle GB pages in hugetlbfs, because it is
+> not practical to enlarge MAX_ORDER to 1GB. 
 > 
-> Would you then accept the patch that still contains UARTCLK bound to
-> pxa uart device, and IrDA requesting clock STUARTCLK?
-
-See below - fixing the underlying issue makes this problem vanish.
-
-> >  The _real_ issue is with IrDA itself, and is larger than just the
-> >  clock library.  Any serial port which supports IrDA, even on x86,
-> >  has to be shared between the serial driver and the IrDA driver -
-> >  there's no way for them to quietly co-exist and "just work" as
-> >  requested.
+> Instead the 1GB pages are only allocated at boot using the bootmem
+> allocator using the hugepages=... option.
 > 
-> Yes. I wonder how this is solved in other platforms.
+> These 1G bootmem pages are never freed. In theory it would be possible
+> to implement that with some complications, but since it would be a one-way
+> street (> MAX_ORDER pages cannot be allocated later) I decided not to currently.
+> 
+> The > MAX_ORDER code is not ifdef'ed per architecture. It is not very big
+> and the ifdef uglyness seemed not be worth it.
 
-As I've suggested, it isn't.  On x86, for instance, you have to use
-setserial to deconfigure the serial port from the serial driver (by
-setserial /dev/ttyS1 uart none) and then load the IrDA driver.
+This looks like an off-by-one error here and in the code below -- it 
+should be ">= MAX_ORDER" not "> MAX_ORDER".  Cf alloc_pages() in gfp.h:
 
-Unfortunately, there's currently no way to properly hand off a real
-serial device to the IrDA layer when the UART is connected to an IrDA
-interface.
+         if (unlikely(order >= MAX_ORDER))
+                 return NULL;
 
-TBH, I'm not sure what the status of the kernel-side IrDA drivers are -
-maybe this is an issue which Samuel Ortiz could tackle if he has time.
-That would solve this issue on both 8250-based ports as well as SA11x0
-and PXA platforms.
+> Known problems: /proc/meminfo and "free" do not display the memory 
+> allocated for gb pages in "Total". This is a little confusing for the
+> user.
+> 
+> Signed-off-by: Andi Kleen <ak@suse.de>
+> 
+> ---
+>  mm/hugetlb.c |   64 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++--
+>  1 file changed, 62 insertions(+), 2 deletions(-)
+> 
+> Index: linux/mm/hugetlb.c
+> ===================================================================
+> --- linux.orig/mm/hugetlb.c
+> +++ linux/mm/hugetlb.c
+> @@ -14,6 +14,7 @@
+>  #include <linux/mempolicy.h>
+>  #include <linux/cpuset.h>
+>  #include <linux/mutex.h>
+> +#include <linux/bootmem.h>
+>  
+>  #include <asm/page.h>
+>  #include <asm/pgtable.h>
+> @@ -153,7 +154,7 @@ static void free_huge_page(struct page *
+>  	INIT_LIST_HEAD(&page->lru);
+>  
+>  	spin_lock(&hugetlb_lock);
+> -	if (h->surplus_huge_pages_node[nid]) {
+> +	if (h->surplus_huge_pages_node[nid] && h->order <= MAX_ORDER) {
+>  		update_and_free_page(h, page);
+>  		h->surplus_huge_pages--;
+>  		h->surplus_huge_pages_node[nid]--;
+> @@ -215,6 +216,9 @@ static struct page *alloc_fresh_huge_pag
+>  {
+>  	struct page *page;
+>  
+> +	if (h->order > MAX_ORDER)
+> +		return NULL;
+> +
+>  	page = alloc_pages_node(nid,
+>  		htlb_alloc_mask|__GFP_COMP|__GFP_THISNODE|__GFP_NOWARN,
+>  			huge_page_order(h));
+> @@ -271,6 +275,9 @@ static struct page *alloc_buddy_huge_pag
+>  	struct page *page;
+>  	unsigned int nid;
+>  
+> +	if (h->order > MAX_ORDER)
+> +		return NULL;
+> +
+>  	/*
+>  	 * Assume we will successfully allocate the surplus page to
+>  	 * prevent racing processes from causing the surplus to exceed
+> @@ -422,6 +429,10 @@ return_unused_surplus_pages(struct hstat
+>  	/* Uncommit the reservation */
+>  	h->resv_huge_pages -= unused_resv_pages;
+>  
+> +	/* Cannot return gigantic pages currently */
+> +	if (h->order > MAX_ORDER)
+> +		return;
+> +
+>  	nr_pages = min(unused_resv_pages, h->surplus_huge_pages);
+>  
+>  	while (nr_pages) {
+> @@ -499,6 +510,44 @@ static struct page *alloc_huge_page(stru
+>  	return page;
+>  }
+>  
+> +static __initdata LIST_HEAD(huge_boot_pages);
+> +
+> +struct huge_bm_page {
+> +	struct list_head list;
+> +	struct hstate *hstate;
+> +};
+> +
+> +static int __init alloc_bm_huge_page(struct hstate *h)
+> +{
+> +	struct huge_bm_page *m;
+> +	m = __alloc_bootmem_node_nopanic(NODE_DATA(h->hugetlb_next_nid),
+> +					huge_page_size(h), huge_page_size(h),
+> +					0);
+> +	if (!m)
+> +		return 0;
+> +	BUG_ON((unsigned long)virt_to_phys(m) & (huge_page_size(h) - 1));
+> +	/* Put them into a private list first because mem_map is not up yet */
+> +	list_add(&m->list, &huge_boot_pages);
+> +	m->hstate = h;
+> +	huge_next_node(h);
+> +	return 1;
+> +}
+> +
+> +/* Put bootmem huge pages into the standard lists after mem_map is up */
+> +static int __init huge_init_bm(void)
+> +{
+> +	struct huge_bm_page *m;
+> +	list_for_each_entry (m, &huge_boot_pages, list) {
+> +		struct page *page = virt_to_page(m);
+> +		struct hstate *h = m->hstate;
+> +		__ClearPageReserved(page);
+> +		prep_compound_page(page, h->order);
+> +		huge_new_page(h, page);
+> +	}
+> +	return 0;
+> +}
+> +__initcall(huge_init_bm);
+> +
+>  static int __init hugetlb_init_hstate(struct hstate *h)
+>  {
+>  	unsigned long i;
+> @@ -509,7 +558,10 @@ static int __init hugetlb_init_hstate(st
+>  	h->hugetlb_next_nid = first_node(node_online_map);
+>  
+>  	for (i = 0; i < max_huge_pages[h - hstates]; ++i) {
+> -		if (!alloc_fresh_huge_page(h))
+> +		if (h->order > MAX_ORDER) {
+> +			if (!alloc_bm_huge_page(h))
+> +				break;
+> +		} else if (!alloc_fresh_huge_page(h))
+>  			break;
+>  	}
+>  	max_huge_pages[h - hstates] = h->free_huge_pages = h->nr_huge_pages = i;
+> @@ -581,6 +633,9 @@ static void do_try_to_free_low(struct hs
+>  {
+>  	int i;
+>  
+> +	if (h->order > MAX_ORDER)
+> +		return;
+> +
+>  	for (i = 0; i < MAX_NUMNODES; ++i) {
+>  		struct page *page, *next;
+>  		struct list_head *freel = &h->hugepage_freelists[i];
+> @@ -618,6 +673,11 @@ set_max_huge_pages(struct hstate *h, uns
+>  
+>  	*err = 0;
+>  
+> +	if (h->order > MAX_ORDER) {
+> +		*err = -EINVAL;
+> +		return max_huge_pages[h - hstates];
+> +	}
+> +
+>  	/*
+>  	 * Increase the pool size
+>  	 * First take pages out of surplus state.  Then make up the
 
-Basically what I'm thinking is a serial_core function which could be
-called to say "I'm an IrDA driver, and I think I should be using the
-serial port located <here>, please give me control of it" and it'd
-pass over the various parameters including the struct device for it.
-Or something like that.
-
-> See my proposition above. I highly dislike the UARTCLK w/o device declared.
-> Once it has already lead me to (small) problems due to messed other
-> UARTCLKs  declarations on pxa25x.
-
-If we get the underlying issue fixed, that issue magically goes away.
-
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+-Andrew Hastings
+  Cray Inc.
