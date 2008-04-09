@@ -1,107 +1,305 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758011AbYDITjk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757451AbYDITgo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758011AbYDITjk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Apr 2008 15:39:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755400AbYDITj3
+	id S1757451AbYDITgo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Apr 2008 15:36:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754663AbYDITgg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Apr 2008 15:39:29 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:43691 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757801AbYDITj1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Apr 2008 15:39:27 -0400
-Date: Wed, 9 Apr 2008 21:38:50 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Matthew Wilcox <matthew@wil.cx>, "Kok, Auke" <auke-jan.h.kok@intel.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       NetDev <netdev@vger.kernel.org>,
-       e1000-list <e1000-devel@lists.sourceforge.net>,
-       linux-pci maillist <linux-pci@atrey.karlin.mff.cuni.cz>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "David S. Miller" <davem@davemloft.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Jesse Brandeburg <jesse.brandeburg@intel.com>,
-       "Ronciak, John" <john.ronciak@intel.com>,
-       "Allan, Bruce W" <bruce.w.allan@intel.com>, Greg KH <greg@kroah.com>,
-       Arjan van de Ven <arjan@linux.intel.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [patch] e1000=y && e1000e=m regression fix (was: Re: [regression]
-	e1000e broke e1000)
-Message-ID: <20080409193850.GA11763@elte.hu>
-References: <20080408083606.GA20863@elte.hu> <47FB9ABB.9080403@intel.com> <20080408183921.GA20803@elte.hu> <20080408193245.GG11962@parisc-linux.org> <20080408195123.GA28148@elte.hu> <47FBCE00.2020309@garzik.org> <20080408200652.GC28148@elte.hu> <47FBD34A.6080508@garzik.org> <20080408203314.GA28952@elte.hu> <47FBDBE9.9040700@garzik.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47FBDBE9.9040700@garzik.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Wed, 9 Apr 2008 15:36:36 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:43075 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753942AbYDITgf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Apr 2008 15:36:35 -0400
+Date: Wed, 9 Apr 2008 12:35:51 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: lkml <linux-kernel@vger.kernel.org>, linux-kbuild@vger.kernel.org,
+       samr <sam@ravnborg.org>
+Subject: [PATCH v2] documentation: build source files in Documentation
+ sub-dir
+Message-Id: <20080409123551.42c5da0d.randy.dunlap@oracle.com>
+In-Reply-To: <20080408134613.a047a7b6.akpm@linux-foundation.org>
+References: <20080403124529.3f2efb79.randy.dunlap@oracle.com>
+	<20080408134613.a047a7b6.akpm@linux-foundation.org>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 8 Apr 2008 13:46:13 -0700 Andrew Morton wrote:
 
-* Jeff Garzik <jeff@garzik.org> wrote:
+> On Thu, 3 Apr 2008 12:45:29 -0700 Randy Dunlap <randy.dunlap@oracle.com> wrote:
+> 
+> > Currently source files in the Documentation/ sub-dir can easily bit-rot
+> > since they are not generally buildable, either because they are hidden
+> > in text files or because there are no Makefile rules for them.
+> > This needs to be fixed so that the source files remain usable and good
+> > examples of code instead of bad examples.
+> > 
+> > Add the ability to build source files that are in the Documentation/ dir.
+> > Add to Kconfig as "BUILD_DOCSRC" config symbol.
+> > 
+> > Use "CONFIG_BUILD_DOCSRC=1 make ..." to build objects from the
+> > Documentation/ sources.  Or enable BUILD_DOCSRC in the *config system.
+> > 
+> > The Makefiles use $objdir/usr/include for header files, so doing
+> > "make headers_install" is required.  This is done for you if you enable
+> > CONFIG_HEADERS_CHECK=y.
+> > 
+> > Note: needs documentation-move-spidev_fdx-example-to-its-own-source-file.patch
+> > from -mm patchset.
+> 
+> argh, I'm getting several warnings and at least two build errors from this.
+> One is:
+> 
+> In file included from /usr/src/devel/usr/include/linux/netlink.h:5,
+>                  from /usr/src/devel/usr/include/linux/genetlink.h:4,
+>                  from Documentation/accounting/getdelays.c:26:
+> /usr/src/devel/usr/include/linux/types.h:166: error: expected specifier-qualifier-list before '__kernel_daddr_t'
+> 
+> (i386 allmodconfig).
+> 
+> I think I'll disable this patch for now..
 
->> We've got three thousand Kconfig options - it is clearly not 
->> realistic for users to keep such details in mind to avoid pitfalls.
->
-> Agreed -- hence the multiple announcements, including in this thread, 
-> to put said details into mind.
+Oh drat and curses.
 
-which part of "it took a kernel developer more than an hour to figure 
-out why his laptop had a dead network interface" did you not understand? 
-Whatever you did, it was not apparent to me. I dont follow every tiny 
-detail of the e1000 driver family, nor do 99%+ [*] of our users.
+Change all -I$(srctree) in Makefiles to -I$(objtree).
+New (full) patch file with only that change is below.
+I can send a patch with only those changes if you prefer that.
 
-find the fix below, against current -git.
-
-the current upstream behavior is the worst possible one and is just a 
-plain bug, and the solution is dead-simple.
-
-	Ingo
-
-[*] guesstimate
-
---------------->
-Subject: e1000=y && e1000e=m regression fix
-From: Ingo Molnar <mingo@elte.hu>
-Date: Wed Apr 09 21:09:35 CEST 2008
-
-fix a regression from v2.6.24: do not transfer the e1000e PCI IDs from 
-e1000 to e1000e if e1000 is built-in and e1000e is a module.
-
-Built-in drivers take precedence over modules in many ways - and in this 
-case it's clear that the user intended the e1000 driver to be the 
-primary one. "Silently change behavior and break existing configs" is 
-never a good migration strategy. Most users will use distro kernels that 
-are not affected by this problem at all - nor are they affected by this 
-patch - but this problem can hit users and developers who build their 
-kernels themselves and migrate from v2.6.24 to v2.6.25.
-
-this fixes: http://bugzilla.kernel.org/show_bug.cgi?id=10427
-
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Cross-build using O= works now.
 ---
- drivers/net/Kconfig |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Index: linux-x86.q/drivers/net/Kconfig
-===================================================================
---- linux-x86.q.orig/drivers/net/Kconfig
-+++ linux-x86.q/drivers/net/Kconfig
-@@ -2022,7 +2022,7 @@ config E1000E
- 	  will be called e1000e.
+From: Randy Dunlap <randy.dunlap@oracle.com>
+
+Currently source files in the Documentation/ sub-dir can easily bit-rot
+since they are not generally buildable, either because they are hidden
+in text files or because there are no Makefile rules for them.
+This needs to be fixed so that the source files remain usable and good
+examples of code instead of bad examples.
+
+Add the ability to build source files that are in the Documentation/ dir.
+Add to Kconfig as "BUILD_DOCSRC" config symbol.
+
+Use "CONFIG_BUILD_DOCSRC=1 make ..." to build objects from the
+Documentation/ sources.  Or enable BUILD_DOCSRC in the *config system.
+
+The Makefiles use $objdir/usr/include for header files, so doing
+"make headers_install" is required.  This is done for you if you enable
+CONFIG_HEADERS_CHECK=y.
+
+Note: needs documentation-move-spidev_fdx-example-to-its-own-source-file.patch
+from -mm patchset.
+
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+Reviewed-by: Sam Ravnborg <sam@ravnborg.org>
+---
+ Documentation/DocBook/Makefile              |    7 +++++++
+ Documentation/Makefile                      |    3 +++
+ Documentation/accounting/Makefile           |   10 ++++++++++
+ Documentation/auxdisplay/Makefile           |   10 ++++++++++
+ Documentation/connector/Makefile            |    9 +++++++++
+ Documentation/filesystems/configfs/Makefile |    1 +
+ Documentation/ia64/Makefile                 |    8 ++++++++
+ Documentation/networking/Makefile           |    8 ++++++++
+ Documentation/pcmcia/Makefile               |   10 ++++++++++
+ Documentation/spi/Makefile                  |   11 +++++++++++
+ Documentation/video4linux/Makefile          |    8 ++++++++
+ Documentation/vm/Makefile                   |    8 ++++++++
+ Documentation/watchdog/src/Makefile         |    8 ++++++++
+ Makefile                                    |    5 ++++-
+ lib/Kconfig.debug                           |    8 ++++++++
+ 15 files changed, 113 insertions(+), 1 deletion(-)
+ create mode 100644 Documentation/Makefile
+ create mode 100644 Documentation/accounting/Makefile
+
+--- /dev/null
++++ lin2625-rc8-docsrc/Documentation/Makefile
+@@ -0,0 +1,3 @@
++obj-m := DocBook/ accounting/ auxdisplay/ connector/ \
++	filesystems/configfs/ ia64/ networking/ \
++	pcmcia/ spi/ video4linux/ vm/ watchdog/src/
+--- /dev/null
++++ lin2625-rc8-docsrc/Documentation/accounting/Makefile
+@@ -0,0 +1,10 @@
++# kbuild trick to avoid linker error. Can be omitted if a module is built.
++obj- := dummy.o
++
++# List of programs to build
++hostprogs-y := getdelays
++
++# Tell kbuild to always build the programs
++always := $(hostprogs-y)
++
++HOSTCFLAGS_getdelays.o += -I$(objtree)/usr/include
+--- lin2625-rc8-docsrc.orig/Makefile
++++ lin2625-rc8-docsrc/Makefile
+@@ -806,6 +806,9 @@ endif
+ ifdef CONFIG_SAMPLES
+ 	$(Q)$(MAKE) $(build)=samples
+ endif
++ifdef CONFIG_BUILD_DOCSRC
++	$(Q)$(MAKE) $(build)=Documentation
++endif
+ 	$(call vmlinux-modpost)
+ 	$(call if_changed_rule,vmlinux__)
+ 	$(Q)rm -f .old_version
+@@ -1114,7 +1117,7 @@ MRPROPER_FILES += .config .config.old in
+ #
+ clean: rm-dirs  := $(CLEAN_DIRS)
+ clean: rm-files := $(CLEAN_FILES)
+-clean-dirs      := $(addprefix _clean_,$(srctree) $(vmlinux-alldirs))
++clean-dirs      := $(addprefix _clean_,$(srctree) $(vmlinux-alldirs) Documentation)
  
- config E1000E_ENABLED
--	def_bool E1000E != n
-+	def_bool E1000E = y || ((E1000E != n) && (E1000 = E1000E))
+ PHONY += $(clean-dirs) clean archclean
+ $(clean-dirs):
+--- lin2625-rc8-docsrc.orig/Documentation/DocBook/Makefile
++++ lin2625-rc8-docsrc/Documentation/DocBook/Makefile
+@@ -101,6 +101,13 @@ C-procfs-example = procfs_example.xml
+ C-procfs-example2 = $(addprefix $(obj)/,$(C-procfs-example))
+ $(obj)/procfs-guide.xml: $(C-procfs-example2)
  
- config IP1000
- 	tristate "IP1000 Gigabit Ethernet support"
++# List of programs to build
++##oops, this is a kernel module::hostprogs-y := procfs_example
++obj-m += procfs_example.o
++
++# Tell kbuild to always build the programs
++always := $(hostprogs-y)
++
+ notfoundtemplate = echo "*** You have to install docbook-utils or xmlto ***"; \
+ 		   exit 1
+ db2xtemplate = db2TYPE -o $(dir $@) $<
+--- /dev/null
++++ lin2625-rc8-docsrc/Documentation/auxdisplay/Makefile
+@@ -0,0 +1,10 @@
++# kbuild trick to avoid linker error. Can be omitted if a module is built.
++obj- := dummy.o
++
++# List of programs to build
++hostprogs-y := cfag12864b-example
++
++# Tell kbuild to always build the programs
++always := $(hostprogs-y)
++
++HOSTCFLAGS_cfag12864b-example.o += -I$(objtree)/usr/include
+--- /dev/null
++++ lin2625-rc8-docsrc/Documentation/connector/Makefile
+@@ -0,0 +1,9 @@
++obj-m += cn_test.o
++
++# List of programs to build
++hostprogs-y := ucon
++
++# Tell kbuild to always build the programs
++always := $(hostprogs-y)
++
++HOSTCFLAGS_ucon.o += -I$(objtree)/usr/include
+--- /dev/null
++++ lin2625-rc8-docsrc/Documentation/ia64/Makefile
+@@ -0,0 +1,8 @@
++# kbuild trick to avoid linker error. Can be omitted if a module is built.
++obj- := dummy.o
++
++# List of programs to build
++hostprogs-y := aliasing-test
++
++# Tell kbuild to always build the programs
++always := $(hostprogs-y)
+--- /dev/null
++++ lin2625-rc8-docsrc/Documentation/networking/Makefile
+@@ -0,0 +1,8 @@
++# kbuild trick to avoid linker error. Can be omitted if a module is built.
++obj- := dummy.o
++
++# List of programs to build
++hostprogs-y := ifenslave
++
++# Tell kbuild to always build the programs
++always := $(hostprogs-y)
+--- /dev/null
++++ lin2625-rc8-docsrc/Documentation/pcmcia/Makefile
+@@ -0,0 +1,10 @@
++# kbuild trick to avoid linker error. Can be omitted if a module is built.
++obj- := dummy.o
++
++# List of programs to build
++hostprogs-y := crc32hash
++
++# Tell kbuild to always build the programs
++always := $(hostprogs-y)
++
++HOSTCFLAGS_crc32hash.o += -I$(objtree)/usr/include
+--- /dev/null
++++ lin2625-rc8-docsrc/Documentation/spi/Makefile
+@@ -0,0 +1,11 @@
++# kbuild trick to avoid linker error. Can be omitted if a module is built.
++obj- := dummy.o
++
++# List of programs to build
++hostprogs-y := spidev_test spidev_fdx
++
++# Tell kbuild to always build the programs
++always := $(hostprogs-y)
++
++HOSTCFLAGS_spidev_test.o += -I$(objtree)/usr/include
++HOSTCFLAGS_spidev_fdx.o += -I$(objtree)/usr/include
+--- /dev/null
++++ lin2625-rc8-docsrc/Documentation/video4linux/Makefile
+@@ -0,0 +1,8 @@
++# kbuild trick to avoid linker error. Can be omitted if a module is built.
++obj- := dummy.o
++
++# List of programs to build
++hostprogs-y := v4lgrab
++
++# Tell kbuild to always build the programs
++always := $(hostprogs-y)
+--- /dev/null
++++ lin2625-rc8-docsrc/Documentation/vm/Makefile
+@@ -0,0 +1,8 @@
++# kbuild trick to avoid linker error. Can be omitted if a module is built.
++obj- := dummy.o
++
++# List of programs to build
++hostprogs-y := slabinfo
++
++# Tell kbuild to always build the programs
++always := $(hostprogs-y)
+--- /dev/null
++++ lin2625-rc8-docsrc/Documentation/watchdog/src/Makefile
+@@ -0,0 +1,8 @@
++# kbuild trick to avoid linker error. Can be omitted if a module is built.
++obj- := dummy.o
++
++# List of programs to build
++hostprogs-y := watchdog-simple watchdog-test
++
++# Tell kbuild to always build the programs
++always := $(hostprogs-y)
+--- /dev/null
++++ lin2625-rc8-docsrc/Documentation/filesystems/configfs/Makefile
+@@ -0,0 +1 @@
++obj-m += configfs_example.o
+--- lin2625-rc8-docsrc.orig/lib/Kconfig.debug
++++ lin2625-rc8-docsrc/lib/Kconfig.debug
+@@ -621,4 +621,12 @@ config PROVIDE_OHCI1394_DMA_INIT
+ 
+ 	  See Documentation/debugging-via-ohci1394.txt for more information.
+ 
++menuconfig BUILD_DOCSRC
++	bool "Build targets in Documentation/ tree"
++	help
++	  This option attempts to build objects from the source files in the
++	  kernel Documentation/ tree.
++
++	  Say N if you are unsure.
++
+ source "samples/Kconfig"
