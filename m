@@ -1,120 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754447AbYDIOma@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755404AbYDIOoR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754447AbYDIOma (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Apr 2008 10:42:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752333AbYDIOmX
+	id S1755404AbYDIOoR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Apr 2008 10:44:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753009AbYDIOoF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Apr 2008 10:42:23 -0400
-Received: from barikada.upol.cz ([158.194.242.200]:43670 "EHLO
-	barikada.upol.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752278AbYDIOmW (ORCPT
+	Wed, 9 Apr 2008 10:44:05 -0400
+Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:49453
+	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752650AbYDIOoE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Apr 2008 10:42:22 -0400
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       kbuild devel list <linux-kbuild@vger.kernel.org>
-Subject: coloring stdout && stderr, small kbuild example
-Date: Wed, 9 Apr 2008 17:02:31 +0200
-Message-Id: <E1Jjbol-0002zS-4P@flower>
-From: Oleg Verych <olecom@flower.upol.cz>
-Organization: Palacky University in Olomouc, experimental physics department
-X-OS: x86_64-pc-linux-glibc-debian
+	Wed, 9 Apr 2008 10:44:04 -0400
+Date: Wed, 9 Apr 2008 16:44:01 +0200
+From: Andrea Arcangeli <andrea@qumranet.com>
+To: Robin Holt <holt@sgi.com>
+Cc: Christoph Lameter <clameter@sgi.com>, akpm@linux-foundation.org,
+       Nick Piggin <npiggin@suse.de>, Steve Wise <swise@opengridcomputing.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-mm@kvack.org,
+       Kanoj Sarcar <kanojsarcar@yahoo.com>, Roland Dreier <rdreier@cisco.com>,
+       Jack Steiner <steiner@sgi.com>, linux-kernel@vger.kernel.org,
+       Avi Kivity <avi@qumranet.com>, kvm-devel@lists.sourceforge.net,
+       general@lists.openfabrics.org, Hugh Dickins <hugh@veritas.com>
+Subject: Re: [PATCH 0 of 9] mmu notifier #v12
+Message-ID: <20080409144401.GT10133@duo.random>
+References: <patchbomb.1207669443@duo.random> <20080409131709.GR11364@sgi.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080409131709.GR11364@sgi.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Those boring never-ending builds...
+On Wed, Apr 09, 2008 at 08:17:09AM -0500, Robin Holt wrote:
+> I applied this patch set with the xpmem version I am working up for
+> submission and the basic level-1 and level-2 tests passed.  The full mpi
+> regression test still tends to hang, but that appears to be a common
+> problem failure affecting either emm or mmu notifiers and therefore, I
+> am certain is a problem in my code.
+> 
+> Please note this is not an endorsement of one method over the other,
+> merely that under conditions where we would expect xpmem to pass the
+> regression tests, it does pass those tests.
 
-Can some dualCPU power be spent, if building is interactive (i.e. sent to
-terminal), to have them a bit colored?
+Thanks a lot for testing! #v12 works great with KVM too. (I'm now in
+the process of chagning the KVM patch to drop the page pinning)
 
-My last rant about "colored printk()" led away from kernel developers
-and their solutions. But now, let me share something.
+BTW, how did you implement invalidate_page? As this?
 
-(maybe some terminal emulators have more colors, finally?) usage:
+       	invalidate_page() {
+       		invalidate_range_begin()
+		invalidate_range_end()
+	}
 
-olecom@flower:/tmp/blinux$ stty -tostop ; mkfifo stdout.pipe stderr.pipe
-olecom@flower:/tmp/blinux$ sh ./colorize-linux-build.sh <stdout.pipe &
-[1] 22070
-olecom@flower:/tmp/blinux$ COLORIZERR=y sh colorize-linux-build.sh <stderr.pipe &
-[2] 22145
-olecom@flower:/tmp/blinux$
-olecom@flower:/tmp/blinux$ LANG=C make >stdout.pipe 2>stderr.pipe
-make -C /mnt/zdev0/linux-2.6 O=/dev/shm/blinux/.
-  Using /mnt/zdev0/linux-2.6 as source for kernel
-  GEN     /dev/shm/blinux/Makefile
-  CHK     include/linux/version.h
-  CHK     include/linux/utsrelease.h
-  CALL    /mnt/zdev0/linux-2.6/scripts/checksyscalls.sh
-  CHK     include/linux/compile.h
-  VDSOSYM arch/x86/vdso/vdso-syms.lds
-  VDSOSYM arch/x86/vdso/vdso32-syscall-syms.lds
-  VDSOSYM arch/x86/vdso/vdso32-sysenter-syms.lds
-  VDSOSYM arch/x86/vdso/vdso32-syms.lds
-  LD      arch/x86/vdso/built-in.o
-  CC      mm/memory.o
+If yes, I prefer to remind you that normally invalidate_range_begin is
+always called before zapping the pte. In the invalidate_page case
+instead, invalidate_range_begin is called _after_ the pte has been
+zapped already.
 
-olecom@flower:/tmp/blinux$
+Now there's no problem if the pte is established and the spte isn't
+established. But it must never happen that the spte is established and
+the pte isn't established (with page-pinning that means unswappable
+memlock leak, without page-pinning it would mean memory corruption).
 
-make[3]: *** [mm/memory.o] Interrupt
-make[2]: *** [mm] Interrupt
-make[1]: *** [sub-make] Interrupt
-make: *** [all] Interrupt
+So the range_begin must serialize against the secondary mmu page fault
+so that it can't establish the spte on a pte that was zapped by the
+rmap code after get_user_pages/follow_page returned. I think your
+range_begin already does that so you should be ok but I wanted to
+remind about this slight difference in implementing invalidate_page as
+I suggested above in previous email just to be sure ;).
 
-[1]-  Done                    sh ./colorize-linux-build.sh <stdout.pipe
-[2]+  Done                    COLORIZERR=yes sh colorize-linux-build.sh <stderr.pipe
-olecom@flower:/tmp/blinux$
+This is the race you must guard against in invalidate_page:
 
-________________________________________________________________________
-#!/bin/sh
-# colorize linux build
 
-# Time-stamp: Wed Apr  9 13:78:13 CEST 2008 olecom@flower.upol.cRAzY
+   	 CPU0 	     	      CPU1
+	 try_to_unmap on page
+			      secondary mmu page fault
+			      get_user_pages()/follow_page found a page
+         ptep_clear_flush
+	 invalidate_page()
+	  invalidate_range_begin()
+          invalidate_range_end()
+          return from invalidate_page
+			      establish spte on page
+			      return from secodnary mmu page fault
 
-color() {
-    # $1 -- regex
-    # $2 -- color code
-    # $3 -- next color code (default is $D)
-    # $4 -- regex match number (s///flags)
-    printf %s "`eval echo $TERMINAL_OUTPUT`"
-}
-
-# for tty
-[ -t 1 ] && {
-    # escape symbol
-    E=`printf '\033'`
-    # default fg && bg rendering ; reset attributes
-    D="7" ; RESET="$E[0m"
-    # basic attributes (reset bg color and bold, set fg color)
-    V="$E[40;22;3"
-    # wrap regex with color ; goto exit
-    TERMINAL_OUTPUT='{s-"$1"-"$V$2m&$V${3-'$D'}m"-$4 ";" b}'
-}
-
-# process stdout
-
-[ -z "$COLORIZERR" ] && {
-    sed "
-/CC/` color CC '6;1'`
-/LD/` color LD '2;1'`
-/AS/` color AS '5;1'`
-/GEN/`color GEN '2;1'`
-/UPD/`color UPD '2;1'`
-/CHK/`color CHK '3;1'`
-/CA/` color CALL '6'`
-s-^-${V}2m-
-"
-    printf "$RESET
-"
-}
-
-# process stderr (once)
-
-while read ERROR
-do OUT=$OUT'
-'$ERROR
-done
-
-printf "\033[1;37;41m$OUT$RESET
-"
-exit
+If your range_begin already serializes in a hard way against the
+secondary mmu page fault, my previously "trivial" suggested
+implementation for invalidate_page should work just fine and this this
+saves 1 branch for each try_to_unmap_one if compared to the emm
+implementation. The branch check is inlined and it checks against the
+mmu_notifier_head that is the hot cacheline, no new cachline is
+checked just one branch is saved and so it worth it IMHO even if it
+doesn't provide any other advantage if you implement it the way above.
