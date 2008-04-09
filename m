@@ -1,58 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756771AbYDIPOl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756804AbYDIPTR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756771AbYDIPOl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Apr 2008 11:14:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756651AbYDIPOd
+	id S1756804AbYDIPTR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Apr 2008 11:19:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752126AbYDIPTI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Apr 2008 11:14:33 -0400
-Received: from ns.firmix.at ([62.141.48.66]:1293 "EHLO ns.firmix.at"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756648AbYDIPOc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Apr 2008 11:14:32 -0400
-Subject: Re: coloring stdout && stderr, small kbuild example
-From: Bernd Petrovitsch <bernd@firmix.at>
-To: Oleg Verych <olecom@flower.upol.cz>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       kbuild devel list <linux-kbuild@vger.kernel.org>
-In-Reply-To: <E1Jjbol-0002zS-4P@flower>
-References: <E1Jjbol-0002zS-4P@flower>
-Content-Type: text/plain
-Organization: Firmix Software GmbH
-Date: Wed, 09 Apr 2008 17:14:00 +0200
-Message-Id: <1207754040.6860.7.camel@tara.firmix.at>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+	Wed, 9 Apr 2008 11:19:08 -0400
+Received: from outbound-mail-109.bluehost.com ([69.89.22.9]:37093 "HELO
+	outbound-mail-109.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752735AbYDIPTH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Apr 2008 11:19:07 -0400
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: "Jakob Bornecrantz" <wallbraker@gmail.com>
+Subject: Re: DRM modesetting & sysfs
+Date: Wed, 9 Apr 2008 08:17:02 -0700
+User-Agent: KMail/1.9.9
+Cc: dri-devel@lists.sourceforge.net,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+References: <200804081317.43712.jbarnes@virtuousgeek.org> <427ca1a20804090157t4fa1bbcei27d3bbea085aa9c3@mail.gmail.com>
+In-Reply-To: <427ca1a20804090157t4fa1bbcei27d3bbea085aa9c3@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-Firmix-Scanned-By: MIMEDefang 2.56 on ns.firmix.at
-X-Firmix-Spam-Score: -2.332 () AWL,BAYES_00,FORGED_RCVD_HELO,SPF_HELO_PASS,SPF_PASS
-X-Firmix-Spam-Status: No, hits=-2.332 required=5
-X-Spam-Score: -2.332 () AWL,BAYES_00,FORGED_RCVD_HELO,SPF_HELO_PASS,SPF_PASS
-X-Firmix-Envelope-From: <bernd@firmix.at>
-X-Firmix-Envelope-To: <linux-kernel@vger.kernel.org>
 Content-Disposition: inline
+Message-Id: <200804090817.02836.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mit, 2008-04-09 at 17:02 +0200, Oleg Verych wrote:
-> Those boring never-ending builds...
-> 
-> Can some dualCPU power be spent, if building is interactive (i.e. sent to
-> terminal), to have them a bit colored?
-> 
-> My last rant about "colored printk()" led away from kernel developers
-> and their solutions. But now, let me share something.
+On Wednesday, April 09, 2008 1:57 am Jakob Bornecrantz wrote:
+> I was going to suggest that you plug it into the hotplug_stage_two
+> function but it looks like you have already done that. Things might be
+> routed differently now then since the last time I looked at the code,
+> are you sure that stage_two is being run?
 
-I don't know if it's of any use for you but there is already
-*) color-make - http://bre.klaki.net/programs/colormake/ - and
-*) color-gcc - http://schlueters.de/colorgcc.html -
-out there.
+I'll have to check, I'm not sure I'm even getting interrupts...
 
-	Bernd
--- 
-Firmix Software GmbH                   http://www.firmix.at/
-mobil: +43 664 4416156                 fax: +43 1 7890849-55
-          Embedded Linux Development and Services
+> >  Any thoughts on the interface?  Anything in particular people would like
+> > to see?
+>
+> Looks good, can you write to dpms, that is turn a monitor on and of,
+> that would be slightly cool but not overly useful. On the whole I
+> think exporting properties are fine, but I don't think setting modes
+> and crtc's are to be done in sysfs. However it is entirely possible.
 
+Agreed.  I view this more as a way of exporting information about the DRM 
+configuration to userspace rather than a way to control the whole thing.  I 
+think we should stick with ioctls for the latter...  Anyway thanks for 
+checking it out.
 
+Jesse
