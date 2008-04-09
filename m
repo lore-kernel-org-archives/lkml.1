@@ -1,52 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754291AbYDIIlq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755017AbYDIIme@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754291AbYDIIlq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Apr 2008 04:41:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752465AbYDIIlj
+	id S1755017AbYDIIme (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Apr 2008 04:42:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752465AbYDIIm0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Apr 2008 04:41:39 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:46452 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752410AbYDIIlj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Apr 2008 04:41:39 -0400
-Date: Wed, 9 Apr 2008 10:46:06 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Andy Whitcroft <apw@shadowen.org>
-Cc: Andi Kleen <andi@firstfloor.org>, Jan Engelhardt <jengelh@computergmbh.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [patch] checkpatch: relax spacing and line length
-Message-ID: <20080409084606.GD19010@one.firstfloor.org>
-References: <alpine.LNX.1.10.0804060653020.30794@fbirervta.pbzchgretzou.qr> <20080408171257.GF17915@shadowen.org> <87ej9gp6ol.fsf@basil.nowhere.org> <20080409081943.GI17915@shadowen.org> <20080409083013.GJ17915@shadowen.org>
-Mime-Version: 1.0
+	Wed, 9 Apr 2008 04:42:26 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:52125 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751871AbYDIIm0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Apr 2008 04:42:26 -0400
+Date: Wed, 9 Apr 2008 10:42:00 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Roland McGrath <roland@redhat.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>,
+       Amnon Shiloh <u3557@miso.sublimeip.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/2] x86 vdso 32-bit vdso-disabling fixes
+Message-ID: <20080409084200.GA32466@elte.hu>
+References: <20080409082703.B805926F992@magilla.localdomain>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080409083013.GJ17915@shadowen.org>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <20080409082703.B805926F992@magilla.localdomain>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Oh, and if people felt that the concensus was for something to be
-> implemented and that you are waiting for me to implement the change in
-> checkpatch; please say so.
 
-Well at least I think the printk change is a good one to implement and there 
-wasn't much protest to it at least.
+* Roland McGrath <roland@redhat.com> wrote:
 
-If you're looking for another change request I think dropping the trailing
-white space check would be good a idea because a lot of maintainers already
-handle that automatically and it is not really worth bothering the "leaf
-developers" with because that can be trivially automated.
+> These two patches together address two potential bugs when trying to 
+> disable the 32-bit vDSO via sysctl or boot parameters (vdso32=0).
+> 
+> Currently, every 32-bit exec gets the vDSO mapped even if it's 
+> disabled (the process just doesn't get told about it).  Because it's 
+> in fact always there, the bug that patch 1/2 fixes cannot happen now.  
+> With patch 2/2, it won't be mapped at all when it's disabled, which is 
+> one of the things that people might really want when they disable it 
+> (so nothing they didn't ask for goes into their address space).
+> 
+> The 32-bit signal handler setup when SA_RESTORER is not used refers to 
+> current->mm->context.vdso without regard to whether the vDSO has been 
+> disabled when the process was exec'd.  Patch 1/2 fixes this not to use 
+> it when it's null, which becomes possible after patch 2/2.  (This 
+> never happens in normal use, because glibc's sigaction call uses 
+> SA_RESTORER unless glibc detected the vDSO.)
 
-Also I still think --file needs to go, or at least be replaced with
---file-force and warning. See the recent unpleasant incident it caused
-again, e.g.
+thanks Roland, applied.
 
-http://thread.gmane.org/gmane.linux.kernel/656847/focus=657003
-and 
-http://thread.gmane.org/gmane.linux.kernel/656847/focus=657003
-
--Andi
-
+	Ingo
