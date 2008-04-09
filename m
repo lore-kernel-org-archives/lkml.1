@@ -1,47 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755801AbYDIXyl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755534AbYDJAAV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755801AbYDIXyl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Apr 2008 19:54:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752483AbYDIXyd
+	id S1755534AbYDJAAV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Apr 2008 20:00:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753096AbYDJAAG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Apr 2008 19:54:33 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:30262 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751389AbYDIXyd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Apr 2008 19:54:33 -0400
-Message-ID: <47FD56FE.6070603@oracle.com>
-Date: Wed, 09 Apr 2008 16:53:34 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-User-Agent: Thunderbird 1.5.0.5 (X11/20060719)
+	Wed, 9 Apr 2008 20:00:06 -0400
+Received: from khc.piap.pl ([195.187.100.11]:35125 "EHLO khc.piap.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752835AbYDJAAF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Apr 2008 20:00:05 -0400
+To: Frans Pop <elendil@planet.nl>
+Cc: Ingo Molnar <mingo@elte.hu>, jeff@garzik.org, matthew@wil.cx,
+       auke-jan.h.kok@intel.com, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, e1000-devel@lists.sourceforge.net,
+       linux-pci@atrey.karlin.mff.cuni.cz, akpm@linux-foundation.org,
+       davem@davemloft.net, torvalds@linux-foundation.org,
+       jesse.brandeburg@intel.com, john.ronciak@intel.com,
+       bruce.w.allan@intel.com, greg@kroah.com, arjan@linux.intel.com,
+       rjw@sisk.pl
+Subject: Re: [patch] e1000=y && e1000e=m regression fix (was: Re: [regression] e1000e broke e1000)
+References: <20080408083606.GA20863@elte.hu> <47FB9ABB.9080403@intel.com>
+	<20080408183921.GA20803@elte.hu>
+	<20080408193245.GG11962@parisc-linux.org>
+	<20080408195123.GA28148@elte.hu> <47FBCE00.2020309@garzik.org>
+	<20080408200652.GC28148@elte.hu> <47FBD34A.6080508@garzik.org>
+	<20080408203314.GA28952@elte.hu> <47FBDBE9.9040700@garzik.org>
+	<47FBDBE9.9040700@garzik.org> <20080409193850.GA11763@elte.hu>
+	<200804092249.23111.elendil@planet.nl>
+From: Krzysztof Halasa <khc@pm.waw.pl>
+Date: Thu, 10 Apr 2008 01:59:59 +0200
+In-Reply-To: <200804092249.23111.elendil@planet.nl> (Frans Pop's message of "Wed\, 9 Apr 2008 22\:49\:20 +0200")
+Message-ID: <m363uqwpds.fsf@maximus.localdomain>
 MIME-Version: 1.0
-To: Nick Andrew <nick@nick-andrew.net>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>, linux-kbuild@vger.kernel.org,
-       samr <sam@ravnborg.org>
-Subject: Re: [PATCH v2] documentation: build source files in Documentation
- sub-dir
-References: <20080403124529.3f2efb79.randy.dunlap@oracle.com> <20080408134613.a047a7b6.akpm@linux-foundation.org> <20080409123551.42c5da0d.randy.dunlap@oracle.com> <20080409225229.GC18242@tull.net>
-In-Reply-To: <20080409225229.GC18242@tull.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nick Andrew wrote:
-> On Wed, Apr 09, 2008 at 12:35:51PM -0700, Randy Dunlap wrote:
->> +##oops, this is a kernel module::hostprogs-y := procfs_example
-> 
-> Is this intentional? It looks like you commented-out a mistake.
+Frans Pop <elendil@planet.nl> writes:
 
-Nope.  I have no idea where that came from.  Fixed in my patches.
+> Fairly experienced user wants a kernel which supports his hardware without 
+> having to load modules, but wants other modules available "just in case".
+> So he takes his distro kernel and selectively changes some modules to 
+> built-ins, including e1000.
+> Next he upgrades to 2.6.25 and finds his NIC no longer works.
 
-Thanks.
+Nope, udev with normal distro config will load e1000e just fine.
+A custom system, without automatic loading of modules (or with
+unavailable module) could have this problem. A root fs on NFS or
+something like that, too.
 
+But while it can be changed for 2.6.25 it will break with 2.6.26 again,
+definitely.
 -- 
-~Randy
+Krzysztof Halasa
