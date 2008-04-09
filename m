@@ -1,61 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755494AbYDINLZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755904AbYDINMW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755494AbYDINLZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Apr 2008 09:11:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752007AbYDINLR
+	id S1755904AbYDINMW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Apr 2008 09:12:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753372AbYDINMK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Apr 2008 09:11:17 -0400
-Received: from saeurebad.de ([85.214.36.134]:43984 "EHLO saeurebad.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751890AbYDINLR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Apr 2008 09:11:17 -0400
-From: Johannes Weiner <hannes@saeurebad.de>
-To: "Andreas Grimm" <agrimm61@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: VM - a plenty of inactive memory
-References: <cf40c6a90804090213u55491ceay9b211d75d74dc29c@mail.gmail.com>
-Date: Wed, 09 Apr 2008 15:10:36 +0200
-In-Reply-To: <cf40c6a90804090213u55491ceay9b211d75d74dc29c@mail.gmail.com>
-	(Andreas Grimm's message of "Wed, 9 Apr 2008 11:13:56 +0200")
-Message-ID: <874pabrx6b.fsf@saeurebad.de>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+	Wed, 9 Apr 2008 09:12:10 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:39988 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751928AbYDINMI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Apr 2008 09:12:08 -0400
+Date: Wed, 9 Apr 2008 07:11:52 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Toshiharu Harada <haradats@nttdata.co.jp>
+Cc: Paul Moore <paul.moore@hp.com>,
+       Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org,
+       Kentaro Takeda <takedakn@nttdata.co.jp>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       linux-netdev <netdev@vger.kernel.org>
+Subject: Re: [TOMOYO #7 30/30] Hooks for SAKURA and TOMOYO.
+Message-ID: <20080409131151.GK11962@parisc-linux.org>
+References: <20080404122242.867070732@I-love.SAKURA.ne.jp> <20080404122408.986477936@I-love.SAKURA.ne.jp> <200804071140.59247.paul.moore@hp.com> <47FC8052.9070409@nttdata.co.jp>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
+Content-Disposition: inline
+In-Reply-To: <47FC8052.9070409@nttdata.co.jp>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Wed, Apr 09, 2008 at 05:37:38PM +0900, Toshiharu Harada wrote:
+> LWN article 239962 says, "At the 2006 summit, Linus took a clear
+> position that the use of pathnames for security policies seemed
+> reasonable to him". Current LSM implementation is sufficient for SELinux
+> and other label based MACs but not for pathname-based MACs.
+> This has been argued in the AppAmor thread for quite a long time.
+> Though proposals had been posted by AppArmor and TOMOYO Linux project,
+> none has been merged until now.
 
-"Andreas Grimm" <agrimm61@gmail.com> writes:
+How about an approach which doesn't require the vfsmount to be passed
+down?
 
-> Hello everybody,
->
-> i got a weird problem with one of my servers. It's a Intel SR2500AL
-> with 32GB of RAM.
-> Looking at the memory usage of the system, something is going totally
-> wrong. The crucial numbers from /proc/meminfo are:
->
-> MemTotal: 33265916 kB
-> MemFree: 416168 kB
-> Inactive: 24630428 kB (24GB? whooaaa)
->
-> Another system with only 16GB, same amount of users and load, shows a
-> more normal behaviour:
->
-> MemTotal: 16619808 kB
-> MemFree: 6912676 kB
-> Inactive: 1774364 kB
->
-> Why does the 32GB-System have this plenty of inactive memory. Is there
-> a way to find out, what the kernel is holding in readiness (that's the
-> definition of inactive memory afaik)?
+When the rule is put in place, say "No modifications to /etc/passwd",
+look up the inode and major:minor of /etc/passwd.  If there's a rename,
+look up the new inode number.  If it's mounted elsewhere, it doesn't
+matter, they still can't modify it because it has the same
+major:minor:inode.
 
-Inactive pages are marked in use but haven't been touched for some time.
-These are candidates for memory reclaiming.
+Is this workable?
 
-If nothing memory consuming happens, the kswapd should reclaim them back
-eventually.
-
-	Hannes
+-- 
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
