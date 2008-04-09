@@ -1,62 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757741AbYDIU2Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758489AbYDIU2h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757741AbYDIU2Y (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Apr 2008 16:28:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752469AbYDIU2M
+	id S1758489AbYDIU2h (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Apr 2008 16:28:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757526AbYDIU2T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Apr 2008 16:28:12 -0400
-Received: from wr-out-0506.google.com ([64.233.184.227]:20076 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750942AbYDIU2L (ORCPT
+	Wed, 9 Apr 2008 16:28:19 -0400
+Received: from mk-outboundfilter-4.mail.uk.tiscali.com ([212.74.114.32]:20529
+	"EHLO mk-outboundfilter-4.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757376AbYDIU2R (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Apr 2008 16:28:11 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=gzMnZ7541HpViLd76Q70iy+cSCC/mufTIahgEJ9zwFFd/WRzj/OECkc54L+UbmavKru/hjIYn1WxTijK+a5vPy6LgkAkaXmTpzNBfloS7HpCaZyyRIniSI5nTnx6ICDHRSKsHobmdVhAvVYia4QunkH9SZiQR56IftCCXGA4PkA=
-Message-ID: <86802c440804091328s4127422dk593384c32ba56e88@mail.gmail.com>
-Date: Wed, 9 Apr 2008 13:28:09 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>, "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [PATCH] x86_64: Change FIRST_SYSTEM_VECTOR to a variable.
-Cc: "Alan Mayer" <ajm@sgi.com>, torvalds@linux-foundation.org,
-       "linux-kernel list" <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080409145945.GB17100@elte.hu>
+	Wed, 9 Apr 2008 16:28:17 -0400
+X-Greylist: delayed 611 seconds by postgrey-1.27 at vger.kernel.org; Wed, 09 Apr 2008 16:28:16 EDT
+X-Trace: 55605782/mk-outboundfilter-2.mail.uk.tiscali.com/F2S/$ACCEPTED/freedom2Surf-customers/83.67.11.44
+X-SBRS: None
+X-RemoteIP: 83.67.11.44
+X-IP-MAIL-FROM: tvrtko@ursulin.net
+X-IP-BHB: Once
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AlMFAFjB/EdTQwss/2dsb2JhbACBXKo+
+X-IP-Direction: IN
+From: "Tvrtko A. Ursulin" <tvrtko@ursulin.net>
+To: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Western Digital GreenPower drives and Linux
+Date: Wed, 9 Apr 2008 21:18:35 +0100
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <Pine.SGI.3.96.1080408160826.8706317D-100000@fergus.americas.sgi.com>
-	 <20080409145945.GB17100@elte.hu>
+Message-Id: <200804092118.35501.tvrtko@ursulin.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 9, 2008 at 7:59 AM, Ingo Molnar <mingo@elte.hu> wrote:
->
->  * Alan Mayer <ajm@sgi.com> wrote:
->
->  > Subject: [PATCH] x86_64: Change FIRST_SYSTEM_VECTOR to a variable.
->  >
->  > From: Alan Mayer <ajm@sgi.com>
->  >
->  > The SGI UV system needs several more system vectors than a vanilla
->  > x86_64 system.  Rather than burden the other archs with extra system
->  > vectors that they don't use, change FIRST_SYSTEM_VECTOR to a variable,
->  > so that it can be dynamic.
->
->  nice - but please split this up into two patches: first one that changes
->  the generic code to use a variable limit - this patch will (should) be a
->  functional NOP.
->
->  then a second patch adds those two new UV vectors.
->
->  Also, could you please also change the 32-bit side as well so that we at
->  least keep the two implementations roughly in sync?
->
 
-for x86_64, current from 0x20 to 0x2f, we only use one for irq migration.
+Hi all,
 
-wonder if you can use 2 from them for UV...
+The subject may be a bit misleading since I haven't investigated the whole 
+issue under other OS-es (nor do I plan to), but this is how the story goes..
 
-YH
+Those fancy new WD GreenPower drives seem to be heavily suffering from the 
+rapidly increasing head load/unload problem. And the bad thing is they don't 
+respond to 'hdparm -B', which would mean (I think) their power management 
+behaviour is solely up to their firmware.
+
+I got one of them (WD5000AACS) recently and to my horror after less than three 
+days of being power on this is what I saw:
+
+9 Power_On_Hours       0x0032 100 100 000 Old_age Always  - 66
+193 Load_Cycle_Count 0x0032 197 197 000 Old_age  Always  - 10233
+
+At this rate the disk would reach it's design limit for load/unload cycles in 
+around 80 days. Not good - so I implemented a lame workaround of keeping disk 
+busy every couple of seconds - hopefully that won't kill it sooner that 
+unloads would..
+
+I am also currently talking with first line of WD's tech support trying to get 
+some data on how exactly those drives manage head unloading, but that may not 
+lead anywhere useful.
+
+So in parallel I decided to ask here to see if someone knows something about 
+this?
+
+If it matters, I am running vanilla 2.6.24 on that box and sata_sil is driving 
+that disk. Otherwise it is a pretty basic Ubuntu 7.10, a mix of ext3 and jfs 
+filesystems, all mounted with noatime. More detailed information available on 
+request.
+
+Tvrtko
+
+
+
+
