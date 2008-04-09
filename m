@@ -1,53 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753260AbYDIITy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753585AbYDIIYW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753260AbYDIITy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Apr 2008 04:19:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751156AbYDIITp
+	id S1753585AbYDIIYW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Apr 2008 04:24:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751681AbYDIIYO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Apr 2008 04:19:45 -0400
-Received: from hellhawk.shadowen.org ([80.68.90.175]:1735 "EHLO
-	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750989AbYDIITo (ORCPT
+	Wed, 9 Apr 2008 04:24:14 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:56340 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751465AbYDIIYN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Apr 2008 04:19:44 -0400
-Date: Wed, 9 Apr 2008 09:19:53 +0100
-From: Andy Whitcroft <apw@shadowen.org>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Jan Engelhardt <jengelh@computergmbh.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [patch] checkpatch: relax spacing and line length
-Message-ID: <20080409081943.GI17915@shadowen.org>
-References: <alpine.LNX.1.10.0804060653020.30794@fbirervta.pbzchgretzou.qr> <20080408171257.GF17915@shadowen.org> <87ej9gp6ol.fsf@basil.nowhere.org>
+	Wed, 9 Apr 2008 04:24:13 -0400
+Date: Wed, 9 Apr 2008 04:24:08 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: Trond Myklebust <Trond.Myklebust@netapp.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, linux-nfs@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [GIT] Please pull NFS client fixes against linux-2.6.25-rc8
+Message-ID: <20080409082408.GA17458@infradead.org>
+References: <1207703414.21370.1.camel@heimdal.trondhjem.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <87ej9gp6ol.fsf@basil.nowhere.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <1207703414.21370.1.camel@heimdal.trondhjem.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 08, 2008 at 08:01:14PM +0200, Andi Kleen wrote:
-> Andy Whitcroft <apw@shadowen.org> writes:
-> >
-> > To justify changing checkpatch to loosen its checks I would hope to see
-> > an agreed to change to the CodingStyle detailing actually what is now
-> > acceptable.  
-> 
-> Here was a concrete proposal (with patch for CodingStyle) from my side some 
-> time ago:
-> 
-> http://article.gmane.org/gmane.linux.kernel/644306
+> +#ifdef CONFIG_MMU
+>  	.mmap		= nfs_file_mmap,
+> +#else
+> +	.mmap		= generic_file_mmap,
+> +#endif
 
-Yeah, that was a good example of how to go about changinging things.  As
-I said on that thread I would happily change checkpatch to follow suit.
-Oddly for a CodingStyle discussion there was very "discussion" at all.
-It feels like people are scared of the passion that often errupts in
-discussions over style.
-
-On that particular suggestion, I would probabally be in favour, and
-slightly happier to have the string on the printk line for consistency
-even though that would violate the "don't hide information" rule.
-
--apw
+This is with almost 100% chance wrong.  It might get you a kernel that
+compiles but none where mmap actually works.  Just disable mmap on nfs
+for mmu-less systems until someone hacks up a proper mmu-less mmap
+method for nfs.
