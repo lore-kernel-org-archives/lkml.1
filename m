@@ -1,78 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756718AbYDITcQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757077AbYDITdu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756718AbYDITcQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Apr 2008 15:32:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753527AbYDITcA
+	id S1757077AbYDITdu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Apr 2008 15:33:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753959AbYDITdk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Apr 2008 15:32:00 -0400
-Received: from wf-out-1314.google.com ([209.85.200.174]:46237 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753328AbYDITcA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Apr 2008 15:32:00 -0400
-Date: Wed, 9 Apr 2008 09:33:00 -1000 (HST)
-From: Jeff Roberson <jroberson@jroberson.net>
-X-X-Sender: jroberson@desktop
-To: Davide Libenzi <davidel@xmailserver.org>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       zach.brown@oracle.com, jroberson@chesapeake.net
-Subject: Re: [patch] eventfd/kaio integration fix
-In-Reply-To: <Pine.LNX.4.64.0804091217150.7000@alien.or.mcafeemobile.com>
-Message-ID: <20080409093150.P43186@desktop>
-References: <Pine.LNX.4.64.0804091138050.7000@alien.or.mcafeemobile.com>
- <20080409120812.cad8f173.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0804091217150.7000@alien.or.mcafeemobile.com>
+	Wed, 9 Apr 2008 15:33:40 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:40457 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753595AbYDITdj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Apr 2008 15:33:39 -0400
+Message-ID: <47FD19F5.9020509@garzik.org>
+Date: Wed, 09 Apr 2008 15:33:09 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+To: Ingo Molnar <mingo@elte.hu>
+CC: "Kok, Auke" <auke-jan.h.kok@intel.com>, Matthew Wilcox <matthew@wil.cx>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       NetDev <netdev@vger.kernel.org>,
+       e1000-list <e1000-devel@lists.sourceforge.net>,
+       linux-pci maillist <linux-pci@atrey.karlin.mff.cuni.cz>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "David S. Miller" <davem@davemloft.net>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Jesse Brandeburg <jesse.brandeburg@intel.com>,
+       "Ronciak, John" <john.ronciak@intel.com>,
+       "Allan, Bruce W" <bruce.w.allan@intel.com>, Greg KH <greg@kroah.com>,
+       Arjan van de Ven <arjan@linux.intel.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [regression] e1000e broke e1000
+References: <47F69965.7030303@intel.com> <20080408083606.GA20863@elte.hu> <47FB9ABB.9080403@intel.com> <20080408183921.GA20803@elte.hu> <20080408193245.GG11962@parisc-linux.org> <20080408195123.GA28148@elte.hu> <47FBCE00.2020309@garzik.org> <20080408200652.GC28148@elte.hu> <47FBD620.1080508@intel.com> <20080409191256.GB9276@elte.hu>
+In-Reply-To: <20080409191256.GB9276@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Ingo Molnar wrote:
+> The most common distro setup is E1000=m and E1000E=m. The most common 
+> embedded setup is _one_ of the two drivers as =y.
 
-On Wed, 9 Apr 2008, Davide Libenzi wrote:
+Agreed, and agreed.
 
-> On Wed, 9 Apr 2008, Andrew Morton wrote:
->
->> On Wed, 9 Apr 2008 11:45:47 -0700 (PDT)
->> Davide Libenzi <davidel@xmailserver.org> wrote:
->>
->>> Jeff Roberson discovered a race when using kaio eventfd based
->>> notifications. This patch fixes the race by moving the notification inside
->>> the spinlocked section of kaio.
->>
->> Missing information.
->>
->> What are the consequences of this race, when it occurs?
->
-> This was described in the original email. I posted a patch back then
-> (waiting for Jeff test feedback - that never came), but then I forgot
-> about it till now:
->
-> http://groups.google.com/group/linux.kernel/browse_thread/thread/e814b54c14198616
->
 
-I was thinking about stirring this up again myself.  Testing was 
-complicated by several factors.  None of them related to this patch. 
-However, I feel confident that this has solved our issue.
+> So i'm not sure why 
+> you are arguing about all this. Please just fix this bug, simple as 
+> that.
 
-Jeff
+I haven't said NAK, but I think the suggested fix is a waste of time because
 
->
->
->>> The operation is safe since eventfd
->>> spinlock and kaio one are unrelated.
->>
->> Yes, it's safe from that perspective.
->>
->> However with this patch applied, we will no longer run eventfd_signal() if
->> kiocbIsCancelled(iocb).  Convincing is needed, please?
->
-> This was the intended behaviour. No event was actually *ready*, so no need
-> to signal completion of an event.
->
->
->
-> - Davide
->
->
+1) it breaks (by disallowing) a valid setup based on one report
+
+2) it only happens to experienced kernel hackers with weird configs
+
+3) the suggested fix binds together more tightly two drivers we are 
+trying to keep separate
+
+4) it is a temporary situation that will go away in 2.6.26 anyway
+
+So from my point of view, your request is to pick the breakage you don't 
+care about (#1, above) to fix the breakage you do care about.
+
+It's a "pick your poison" choice, from my POV.
+
+Given that POV, that's why I lean towards avoiding your Kconfig fix -- 
+viewing this as a transition issue, and not something to be fixed by 
+limiting the choices of others.
+
+But if everyone strongly agrees with you... go ahead and patch, I won't 
+NAK it.
+
+I dislike the Kconfig system growing "temporary" hacks, which tend to 
+accumulate false dependencies over time.  But I readily admit that's a 
+general principle and not a hard rule...
+
+	Jeff
+
+
