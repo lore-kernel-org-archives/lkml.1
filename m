@@ -1,41 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755962AbYDIV5Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755826AbYDIWE1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755962AbYDIV5Z (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Apr 2008 17:57:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752333AbYDIV5S
+	id S1755826AbYDIWE1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Apr 2008 18:04:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753584AbYDIWES
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Apr 2008 17:57:18 -0400
-Received: from rtr.ca ([76.10.145.34]:3487 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752269AbYDIV5R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Apr 2008 17:57:17 -0400
-Message-ID: <47FD3BBB.406@rtr.ca>
-Date: Wed, 09 Apr 2008 17:57:15 -0400
-From: Mark Lord <lkml@rtr.ca>
-Organization: Real-Time Remedies Inc.
-User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
+	Wed, 9 Apr 2008 18:04:18 -0400
+Received: from relay2.sgi.com ([192.48.171.30]:49417 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752465AbYDIWER (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Apr 2008 18:04:17 -0400
+Date: Wed, 9 Apr 2008 16:35:04 -0500 (CDT)
+From: Alan Mayer <ajm@sgi.com>
+To: mingo@elte.hu, torvalds@linux-foundation.org
+Cc: linux-kernel list <linux-kernel@vger.kernel.org>
+Subject: [PATCH] x86_64: Add XPC interrupt vectors for SGIs UV system.
+Message-ID: <Pine.SGI.3.96.1080409163354.8706317M-100000@fergus.americas.sgi.com>
 MIME-Version: 1.0
-To: Francis Moreau <francis.moro@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Disk geometry from /sys
-References: <38b2ab8a0804091353h3725ce29s196e27e8b4f1ff56@mail.gmail.com>
-In-Reply-To: <38b2ab8a0804091353h3725ce29s196e27e8b4f1ff56@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Francis Moreau wrote:
-> Hi,
-> 
-> I'm trying to know the geometry of my hard disk from a bash script
-> and that's the reason I'm looking in /sys. The reason is that I'd like
-> to figure out the size of a cylinder without doing a
-> ioctl(bdev, HDIO_GETGEO, &geo)
 
-$ DEV=/dev/sda
-$ GEOM="`/sbin/hdparm -g $DEV | awk '{print $3}'`"
-$ echo $GEOM
-19457/255/63
-$
+Subject: [PATCH] x86_64: Add XPC interrupt vectors for SGIs UV system.
+
+From: Alan Mayer <ajm@sgi.com>
+
+The UV system needs two high priority interrupts for the XPC
+subsystem.  This adds them below the common system interrupt vectors.
+
+Signed-off-by: Alan Mayer <ajm@sgi.com>
+
+---
+
+Index: ingo/arch/x86/kernel/i8259_64.c
+===================================================================
+--- ingo.orig/arch/x86/kernel/i8259_64.c	2008-04-09 10:08:11.000000000 -0500
++++ ingo/arch/x86/kernel/i8259_64.c	2008-04-09 15:57:08.000000000 -0500
+@@ -524,6 +524,11 @@
+ 	set_intr_gate(alloc_system_vector(SPURIOUS_APIC_VECTOR), spurious_interrupt);
+ 	set_intr_gate(alloc_system_vector(ERROR_APIC_VECTOR), error_interrupt);
+ 
++	if (is_uv_system() ) {
++		alloc_system_vector(XPC_ACTIVATE);
++		alloc_system_vector(XPC_NOTIFY);
++	}
++
+ 	if (!acpi_ioapic)
+ 		setup_irq(2, &irq2);
+ }
+Index: ingo/include/asm-x86/hw_irq_64.h
+===================================================================
+--- ingo.orig/include/asm-x86/hw_irq_64.h	2008-04-09 10:08:53.000000000 -0500
++++ ingo/include/asm-x86/hw_irq_64.h	2008-04-09 15:55:47.000000000 -0500
+@@ -85,6 +85,10 @@
+  */
+ #define LOCAL_TIMER_VECTOR	0xef
+ 
++#define XPC_ACTIVATE		0xee
++#define XPC_NOTIFY		0xed
++
++
+ /*
+  * First APIC vector available to drivers: (vectors 0x30-0xee)
+  * we start at 0x41 to spread out vectors evenly between priority
+
