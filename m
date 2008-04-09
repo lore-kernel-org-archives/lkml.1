@@ -1,56 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755431AbYDILhQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754692AbYDILpu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755431AbYDILhQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Apr 2008 07:37:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753392AbYDILhE
+	id S1754692AbYDILpu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Apr 2008 07:45:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753238AbYDILpk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Apr 2008 07:37:04 -0400
-Received: from mtagate7.de.ibm.com ([195.212.29.156]:60552 "EHLO
-	mtagate7.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753330AbYDILhC (ORCPT
+	Wed, 9 Apr 2008 07:45:40 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:36491 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752898AbYDILpj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Apr 2008 07:37:02 -0400
-Subject: Re: [PATCH 1/3] hugetlbfs: architecture header cleanup
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Reply-To: schwidefsky@de.ibm.com
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Gerald Schaefer <gerald.schaefer@de.ibm.com>, linux-kernel@vger.kernel.org,
-       linux-s390@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       "David S. Miller" <davem@davemloft.net>,
-       Tony Luck <tony.luck@intel.com>, Paul Mackerras <paulus@samba.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Paul Mundt <lethal@linux-sh.org>
-In-Reply-To: <20080407205906.25bd06c6.akpm@linux-foundation.org>
-References: <1207327534.4605.18.camel@localhost.localdomain>
-	 <1207327790.4605.21.camel@localhost.localdomain>
-	 <20080407205906.25bd06c6.akpm@linux-foundation.org>
+	Wed, 9 Apr 2008 07:45:39 -0400
+Subject: Re: [PATCH 1/2] HAVE_SET_RESTORE_SIGMASK
+From: David Woodhouse <dwmw2@infradead.org>
+To: Roland McGrath <roland@redhat.com>
+Cc: "Linus Torvalds <torvalds@linux-foundation.org>Andrew Morton" 
+	<akpm@linux-foundation.org>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>, linux-s390@vger.kernel.org,
+       tony.luck@intel.com, linux-ia64@vger.kernel.org,
+       linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org, miles@gnu.org,
+       rmk+linux@arm.linux.org.uk, geert@linux-m68k.org, zippel@linux-m68k.org
+In-Reply-To: <20080329031146.6FF7126FA1D@magilla.localdomain>
+References: <20080329001230.D013726FA1D@magilla.localdomain>
+	 <20080329001341.7F93826FA1D@magilla.localdomain>
+	 <alpine.LFD.1.00.0803281746480.14670@woody.linux-foundation.org>
+	 <20080329022408.0DD4726FA1D@magilla.localdomain>
+	 <20080329031146.6FF7126FA1D@magilla.localdomain>
 Content-Type: text/plain
-Organization: IBM Corporation
-Date: Wed, 09 Apr 2008 13:35:55 +0200
-Message-Id: <1207740955.878.5.camel@localhost>
+Date: Wed, 09 Apr 2008 12:45:32 +0100
+Message-Id: <1207741532.27048.64.camel@shinybook.infradead.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 
+X-Mailer: Evolution 2.22.0 (2.22.0-4.fc9) 
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-04-07 at 20:59 -0700, Andrew Morton wrote: 
-> Seem that git-s390 is currently carrying the old versions of these patches.
-> 
-> I'll drop git-s390.  Which will presumably kick off a cascade of droppages
-> due to git-s390 versus git-kvm damage control.  All of which will need to
-> be undropped in some fashion when those trees come to their senses.  Ho
-> hum.
+On Fri, 2008-03-28 at 20:11 -0700, Roland McGrath wrote:
+> Change all the #ifdef TIF_RESTORE_SIGMASK conditionals in non-arch
+> code to #ifdef HAVE_SET_RESTORE_SIGMASK.
 
-Yes, git-s390 wasn't updated for a few days. I've dropped all the
-hugetlbfs patches since the version we will push upstream depends on the
-cleanup which will go in over -mm. I keep the fingers crossed that the
-git-s390 now works again.
+That ifdef was only supposed to be a temporary thing until all
+architectures had implemented TIF_RESTORE_SIGMASK anyway.
+
+It looks like only ARM, v850 and m68k which are still missing it; if
+those three architectures can catch up, then hopefully it can die off
+completely quite soon.
 
 -- 
-blue skies,
-  Martin.
-
-"Reality continues to ruin my life." - Calvin.
-
+dwmw2
 
