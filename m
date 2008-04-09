@@ -1,41 +1,141 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756210AbYDHXtA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751416AbYDIAQO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756210AbYDHXtA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Apr 2008 19:49:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755157AbYDHXs1
+	id S1751416AbYDIAQO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Apr 2008 20:16:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751290AbYDIAP5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Apr 2008 19:48:27 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:36703 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755057AbYDHXs0 convert rfc822-to-8bit (ORCPT
+	Tue, 8 Apr 2008 20:15:57 -0400
+Received: from wr-out-0506.google.com ([64.233.184.230]:51058 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751006AbYDIAP5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Apr 2008 19:48:26 -0400
-Cc: "Soeren Sonnenburg" <kernel@nn7.de>
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+	Tue, 8 Apr 2008 20:15:57 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=pJQC6s1Mm4QyNu+RuNl7qibRk+1asBFmMRx9oFRjyoVw733WsHlZPeYB4XmCoyVHnSTec0DlhpTkpbDRtUjORoN5wz5y9YmGIEPGpj3PaPPBXDCAwQ86xCcZdzbXe8Lreftt/KcWQLVZ41N5TU/Q3oHy1UyHDG12EekqrkFk8hM=
+Message-ID: <86802c440804081715t778e3c1cn1c21c88978fad934@mail.gmail.com>
+Date: Tue, 8 Apr 2008 17:15:55 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: linux-kernel@vger.kernel.org, "Andrew Morton" <akpm@linux-foundation.org>
+Subject: Re: + forcedeth-mac-address-fix.patch added to -mm tree
+Cc: mm-commits@vger.kernel.org, aabdulla@nvidia.com
+In-Reply-To: <200804012110.m31LAX2O013539@imap1.linux-foundation.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Message-ID: <SvnMeM-aZi.A.oxF.hBA_HB@albercik>
-Subject: [Bug #10117] 2.6.25-current-git hangs on boot (pci=nommconf helps)
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Date: Wed,  9 Apr 2008 01:02:08 +0200 (CEST)
+References: <200804012110.m31LAX2O013539@imap1.linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This message has been generated automatically as a part of a report
-of recent regressions.
+On Tue, Apr 1, 2008 at 2:10 PM,  <akpm@linux-foundation.org> wrote:
+>
+>  The patch titled
+>      forcedeth: mac address fix
+>  has been added to the -mm tree.  Its filename is
+>      forcedeth-mac-address-fix.patch
+>
+>  Before you just go and hit "reply", please:
+>    a) Consider who else should be cc'ed
+>    b) Prefer to cc a suitable mailing list as well
+>    c) Ideally: find the original patch on the mailing list and do a
+>       reply-to-all to that, adding suitable additional cc's
+>
+>  *** Remember to use Documentation/SubmitChecklist when testing your code ***
+>
+>  See http://www.zip.com.au/~akpm/linux/patches/stuff/added-to-mm.txt to find
+>  out what to do about this
+>
+>  The current -mm tree may be found at http://userweb.kernel.org/~akpm/mmotm/
+>
+>  ------------------------------------------------------
+>  Subject: forcedeth: mac address fix
+>  From: Ayaz Abdulla <aabdulla@nvidia.com>
+>
+>  This critical patch fixes a mac address issue recently introduced.  If the
+>  device's mac address was in correct order and the flag
+>  NVREG_TRANSMITPOLL_MAC_ADDR_REV was set, during nv_remove the flag would get
+>  cleared.  During next load, the mac address would get reversed because the
+>  flag is missing.
+>
+>  As it has been indicated previously, the flag is cleared across a low power
+>  transition.  Therefore, the driver should set the mac address back into the
+>  reversed order when clearing the flag.
+>
+>  Also, the driver should set back the flag after a low power transition to
+>  protect against kexec command calling nv_probe a second time.
+>
+>  Signed-off-by: Ayaz Abdulla <aabdulla@nvidia.com>
+>  Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+>  ---
+>
+>   drivers/net/forcedeth.c |   26 ++++++++++++++++++++++++--
+>   1 file changed, 24 insertions(+), 2 deletions(-)
+>
+>  diff -puN drivers/net/forcedeth.c~forcedeth-mac-address-fix drivers/net/forcedeth.c
+>  --- a/drivers/net/forcedeth.c~forcedeth-mac-address-fix
+>  +++ a/drivers/net/forcedeth.c
+>  @@ -5327,8 +5327,7 @@ static int __devinit nv_probe(struct pci
+>
+>         /* check the workaround bit for correct mac address order */
+>         txreg = readl(base + NvRegTransmitPoll);
+>  -       if ((txreg & NVREG_TRANSMITPOLL_MAC_ADDR_REV) ||
+>  -           (id->driver_data & DEV_HAS_CORRECT_MACADDR)) {
+>  +       if (id->driver_data & DEV_HAS_CORRECT_MACADDR) {
+>                 /* mac address is already in correct order */
+>                 dev->dev_addr[0] = (np->orig_mac[0] >>  0) & 0xff;
+>                 dev->dev_addr[1] = (np->orig_mac[0] >>  8) & 0xff;
+>  @@ -5336,6 +5335,22 @@ static int __devinit nv_probe(struct pci
+>                 dev->dev_addr[3] = (np->orig_mac[0] >> 24) & 0xff;
+>                 dev->dev_addr[4] = (np->orig_mac[1] >>  0) & 0xff;
+>                 dev->dev_addr[5] = (np->orig_mac[1] >>  8) & 0xff;
+>  +       } else if (txreg & NVREG_TRANSMITPOLL_MAC_ADDR_REV) {
+>  +               /* mac address is already in correct order */
+>  +               dev->dev_addr[0] = (np->orig_mac[0] >>  0) & 0xff;
+>  +               dev->dev_addr[1] = (np->orig_mac[0] >>  8) & 0xff;
+>  +               dev->dev_addr[2] = (np->orig_mac[0] >> 16) & 0xff;
+>  +               dev->dev_addr[3] = (np->orig_mac[0] >> 24) & 0xff;
+>  +               dev->dev_addr[4] = (np->orig_mac[1] >>  0) & 0xff;
+>  +               dev->dev_addr[5] = (np->orig_mac[1] >>  8) & 0xff;
+>  +               /*
+>  +                * Set orig mac address back to the reversed version.
+>  +                * This flag will be cleared during low power transition.
+>  +                * Therefore, we should always put back the reversed address.
+>  +                */
+>  +               np->orig_mac[0] = (dev->dev_addr[5] << 0) + (dev->dev_addr[4] << 8) +
+>  +                       (dev->dev_addr[3] << 16) + (dev->dev_addr[2] << 24);
+>  +               np->orig_mac[1] = (dev->dev_addr[1] << 0) + (dev->dev_addr[0] << 8);
+>         } else {
+>                 /* need to reverse mac address to correct order */
+>                 dev->dev_addr[0] = (np->orig_mac[1] >>  8) & 0xff;
+>  @@ -5606,7 +5621,9 @@ out:
+>   static int nv_resume(struct pci_dev *pdev)
+>   {
+>         struct net_device *dev = pci_get_drvdata(pdev);
+>  +       u8 __iomem *base = get_hwbase(dev);
+>         int rc = 0;
+>  +       u32 txreg;
+>
+>         if (!netif_running(dev))
+>                 goto out;
+>  @@ -5617,6 +5634,11 @@ static int nv_resume(struct pci_dev *pde
+>         pci_restore_state(pdev);
+>         pci_enable_wake(pdev, PCI_D0, 0);
+>
+>  +       /* restore mac address reverse flag */
+>  +       txreg = readl(base + NvRegTransmitPoll);
+>  +       txreg |= NVREG_TRANSMITPOLL_MAC_ADDR_REV;
+>  +       writel(txreg, base + NvRegTransmitPoll);
+>  +
+>         rc = nv_open(dev);
+>   out:
+>         return rc;
+>  _
+>
 
-The following bug entry is on the current list of known regressions
-from 2.6.24.  Please verify if it still should be listed.
+Andrew,
+how about this patch status? it should get into 2.6.25
 
-
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10117
-Subject		: 2.6.25-current-git hangs on boot (pci=nommconf helps)
-Submitter	: Soeren Sonnenburg <kernel@nn7.de>
-Date		: 2008-02-23 18:55 (46 days old)
-References	: http://lkml.org/lkml/2008/2/23/263
-		  http://lkml.org/lkml/2008/4/4/41
-
-
+YH
