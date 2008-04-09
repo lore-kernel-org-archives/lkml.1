@@ -1,66 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758329AbYDIU43@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757701AbYDIU7x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758329AbYDIU43 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Apr 2008 16:56:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754051AbYDIU4V
+	id S1757701AbYDIU7x (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Apr 2008 16:59:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754320AbYDIU7n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Apr 2008 16:56:21 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:36472 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753455AbYDIU4U (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Apr 2008 16:56:20 -0400
-Date: Wed, 9 Apr 2008 21:52:33 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Russell King <rmk+lkml@arm.linux.org.uk>
-Cc: Dmitry <dbaryshkov@gmail.com>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, haavard.skinnemoen@atmel.com,
-       lethal@linux-sh.org, philipp.zabel@gmail.com, pavel@ucw.cz,
-       tony@atomide.com, paul@pwsan.com
-Subject: Re: [PATCH 5/6] Clocklib: Use correct clock for IrDA on pxa
-Message-ID: <20080409215233.1a1c0002@core>
-In-Reply-To: <20080409192009.GB13891@flint.arm.linux.org.uk>
-References: <20080403132142.GA26882@doriath.ww600.siemens.net>
-	<20080403132402.GA27008@doriath.ww600.siemens.net>
-	<20080407160029.f1f9ce4f.akpm@linux-foundation.org>
-	<20080407230434.GA525@flint.arm.linux.org.uk>
-	<bc64b4640804080247s82ba84chd740c08b2fbb9b1a@mail.gmail.com>
-	<20080408193309.GA18053@flint.arm.linux.org.uk>
-	<bc64b4640804090015m7dd640d5j31c54b99007f09a7@mail.gmail.com>
-	<20080409190504.GA13891@flint.arm.linux.org.uk>
-	<20080409200916.78615f39@core>
-	<20080409192009.GB13891@flint.arm.linux.org.uk>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 9 Apr 2008 16:59:43 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:60740 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750959AbYDIU7m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Apr 2008 16:59:42 -0400
+Message-ID: <47FD2E3B.5010801@sgi.com>
+Date: Wed, 09 Apr 2008 13:59:39 -0700
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+MIME-Version: 1.0
+To: Greg KH <gregkh@suse.de>
+CC: Bert Wesarg <bert.wesarg@googlemail.com>, Ingo Molnar <mingo@elte.hu>,
+       Paul Jackson <pj@sgi.com>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/3] x86: add cpus_scnprintf function v3
+References: <20080408184301.651388000@polaris-admin.engr.sgi.com> <36ca99e90804091051k7c2cc97neba0ca1967625433@mail.gmail.com> <20080409203909.GA17183@suse.de>
+In-Reply-To: <20080409203909.GA17183@suse.de>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > It's called a line discipline, we've had them for many years. We may need
-> > a way for ldiscs and drivers to co-operate a bit more but these days we
-> > support proper buffering and arbitary baud rates (except on a few
-> > platforms whose maintainers are not paying attention ;)).
+Greg KH wrote:
+> On Wed, Apr 09, 2008 at 07:51:23PM +0200, Bert Wesarg wrote:
+>> On Tue, Apr 8, 2008 at 8:43 PM, Mike Travis <travis@sgi.com> wrote:
+>>>   * Cleanup usages of cpumask_scprintf in the following files and add
+>>>     another interface to use cpulist_scnprintf where appropriate.
+>> On Mon, Apr 7, 2008 at 8:22 PM, Mike Travis <travis@sgi.com> wrote:
+>>>  Part of the change is readability, but also looking towards the future
+>>>  of 16k/64k/??? # of cpus, the straight mask approach will overflow the
+>>>  PAGE_SIZE buffer provided (though some pathological cases will overflow
+>>>  the range method as well.)  So we'll need some advancement in the format
+>>>  of the printout.
+>> Btw, I think you can now push for a deprecation of the 'old' mask
+>> attributes, with the justification you have given above. The other
+>> possibility is to change sysfs to provide bigger attribute buffers
+>> (CCed Greg for this).
 > 
-> I feel that's a "it would be nice if" solution - and something worth
-> aiming for, but the amount of work required to get there is not going
-> to be insignificant.
+> Huh?
+> 
+> sysfs is "one value per file", if you are getting close to PAGE_SIZE in
+> any sysfs file, then you are doing something very wrong.
+> 
+> What sysfs file currently is trying to output data this big?
+> 
+> thanks,
+> 
+> greg k-h
 
-The work required to fix up the existing FIR hacks is not insignifcant
-either. Also right now the tty layer is getting a major rework so now is
-actually the time to sort out anything extra that is needed.
+Hi Greg,
 
-If you want 4MBit please just use an ldisc and do
+There's none at the moment.  The increase is coming from printing the
+cpuset for various attributes, like cpus on a node, etc.  Since it uses
+cpumask_scnprintf(), this prints a bit map representing a cpumask_t.
 
-	struct ktermios tmp;
-	mutex_lock(&tty->termios_mutex);
-	tmp = *tty->termios;
-	tty_encode_baud_rate(tty, 4000000, 4000000);
-	tty->driver->set_termios(tty, &tmp);
-	mutex_unlock(&tty->termios_mutex);
+With the increase to 4096 cpus, this string is now 1152 bytes long.  The
+next iteration will have 16384 cpus which will need 4608 bytes to fully
+display, overflowing a standard page.  I've added alternate interfaces
+that use cpulist_scnprintf() which has the advantage of collapsing the
+bits into ranges.  This though can result in a much larger output size
+if, for example only every other bit is set.
 
-Alan
+Btw, where does one value per file come from?  I see outputs like:
+
+# cat /proc/self/stat
+4313 (cat) R 4218 4313 4218 34816 4313 4194304 207 0 0 0 0 0 0 0 20 0 1 0 6802916 5672960 131 18446744073709551615 4194304 4212948 140735962676160 18446744073709551615 140499600349840 0 0 0 0 0 0 0 17 3 0 0 0 0 0
+
+Thanks,
+Mike
