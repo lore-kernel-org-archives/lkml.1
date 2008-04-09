@@ -1,64 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754087AbYDII3i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754544AbYDIIaP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754087AbYDII3i (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Apr 2008 04:29:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751871AbYDII3b
+	id S1754544AbYDIIaP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Apr 2008 04:30:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752394AbYDIIaB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Apr 2008 04:29:31 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:42413 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752241AbYDII3a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Apr 2008 04:29:30 -0400
+	Wed, 9 Apr 2008 04:30:01 -0400
+Received: from hellhawk.shadowen.org ([80.68.90.175]:3584 "EHLO
+	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752297AbYDIIaA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Apr 2008 04:30:00 -0400
+Date: Wed, 9 Apr 2008 09:30:13 +0100
+From: Andy Whitcroft <apw@shadowen.org>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Jan Engelhardt <jengelh@computergmbh.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [patch] checkpatch: relax spacing and line length
+Message-ID: <20080409083013.GJ17915@shadowen.org>
+References: <alpine.LNX.1.10.0804060653020.30794@fbirervta.pbzchgretzou.qr> <20080408171257.GF17915@shadowen.org> <87ej9gp6ol.fsf@basil.nowhere.org> <20080409081943.GI17915@shadowen.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
-Cc: Amnon Shiloh <u3557@miso.sublimeip.com>, linux-kernel@vger.kernel.org
-X-Fcc: ~/Mail/linus
-Subject: [PATCH 1/2] x86 vDSO: don't use disabled vDSO for signal trampoline
-In-Reply-To: Roland McGrath's message of  Wednesday, 9 April 2008 01:27:03 -0700 <20080409082703.B805926F992@magilla.localdomain>
-References: <20080409082703.B805926F992@magilla.localdomain>
-X-Windows: flawed beyond belief.
-Message-Id: <20080409082927.BD59E26F992@magilla.localdomain>
-Date: Wed,  9 Apr 2008 01:29:27 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <20080409081943.GI17915@shadowen.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-If the vDSO was not mapped, don't use it as the "restorer" for a signal
-handler.  Whether we have a pointer in mm->context.vdso depends on what
-happened at exec time, so we shouldn't check any global flags now.
+On Wed, Apr 09, 2008 at 09:19:43AM +0100, Andy Whitcroft wrote:
+> On Tue, Apr 08, 2008 at 08:01:14PM +0200, Andi Kleen wrote:
+> > Andy Whitcroft <apw@shadowen.org> writes:
+> > >
+> > > To justify changing checkpatch to loosen its checks I would hope to see
+> > > an agreed to change to the CodingStyle detailing actually what is now
+> > > acceptable.  
+> > 
+> > Here was a concrete proposal (with patch for CodingStyle) from my side some 
+> > time ago:
+> > 
+> > http://article.gmane.org/gmane.linux.kernel/644306
+> 
+> Yeah, that was a good example of how to go about changinging things.  As
+> I said on that thread I would happily change checkpatch to follow suit.
+> Oddly for a CodingStyle discussion there was very "discussion" at all.
+> It feels like people are scared of the passion that often errupts in
+> discussions over style.
+> 
+> On that particular suggestion, I would probabally be in favour, and
+> slightly happier to have the string on the printk line for consistency
+> even though that would violate the "don't hide information" rule.
 
-Signed-off-by: Roland McGrath <roland@redhat.com>
----
- arch/x86/ia32/ia32_signal.c |    2 +-
- arch/x86/kernel/signal_32.c |    2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+Oh, and if people felt that the concensus was for something to be
+implemented and that you are waiting for me to implement the change in
+checkpatch; please say so.
 
-diff --git a/arch/x86/ia32/ia32_signal.c b/arch/x86/ia32/ia32_signal.c
-index 5e7771a..05e155d 100644
---- a/arch/x86/ia32/ia32_signal.c
-+++ b/arch/x86/ia32/ia32_signal.c
-@@ -468,7 +468,7 @@ int ia32_setup_frame(int sig, struct k_sigaction *ka,
- 		restorer = ka->sa.sa_restorer;
- 	} else {
- 		/* Return stub is in 32bit vsyscall page */
--		if (current->binfmt->hasvdso)
-+		if (current->mm->context.vdso)
- 			restorer = VDSO32_SYMBOL(current->mm->context.vdso,
- 						 sigreturn);
- 		else
-diff --git a/arch/x86/kernel/signal_32.c b/arch/x86/kernel/signal_32.c
-index 0157a6f..011c62f 100644
---- a/arch/x86/kernel/signal_32.c
-+++ b/arch/x86/kernel/signal_32.c
-@@ -365,7 +365,7 @@ static int setup_frame(int sig, struct k_sigaction *ka,
- 			goto give_sigsegv;
- 	}
- 
--	if (current->binfmt->hasvdso)
-+	if (current->mm->context.vdso)
- 		restorer = VDSO32_SYMBOL(current->mm->context.vdso, sigreturn);
- 	else
- 		restorer = &frame->retcode;
+-apw
