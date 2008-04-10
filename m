@@ -1,90 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758263AbYDJQQp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757490AbYDJQUm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758263AbYDJQQp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Apr 2008 12:16:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756267AbYDJQQh
+	id S1757490AbYDJQUm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Apr 2008 12:20:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755867AbYDJQUe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Apr 2008 12:16:37 -0400
-Received: from yw-out-2324.google.com ([74.125.46.31]:19463 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756412AbYDJQQh (ORCPT
+	Thu, 10 Apr 2008 12:20:34 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:51359 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755573AbYDJQUd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Apr 2008 12:16:37 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:organization:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=mwv04xjLEoJrl9afdYXFS5a6Dud2aeyter1xLEp+NUlsIjFstyI+wHS8zAfAAa6ZrZN1/SR0WXZA72tnAZsH58VrM5APzkwTJledHQLH1/+dmYadflppTN08oQXWlQaHMl+5bRR2B2F//H7zT6Jy4hkktkQfCaO6GLVhGi6Jvp0=
-From: Balaji Rao <balajirrao@gmail.com>
-Organization: National Institute of Technology Karnataka
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [RFC][-mm] [1/2] Simple stats for cpu resource controller
-Date: Thu, 10 Apr 2008 21:39:59 +0530
-User-Agent: KMail/1.9.6 (enterprise 0.20071012.724442)
-Cc: Dhaval Giani <dhaval@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
-       containers@lists.osdl.org, menage@google.com, balbir@in.ibm.com,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
-References: <200804052339.46632.balajirrao@gmail.com> <200804060201.52726.balajirrao@gmail.com> <1207574693.15579.35.camel@twins>
-In-Reply-To: <1207574693.15579.35.camel@twins>
+	Thu, 10 Apr 2008 12:20:33 -0400
+Date: Thu, 10 Apr 2008 12:20:31 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: "H. Peter Anvin" <hpa@zytor.com>
+cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andi Kleen <andi@firstfloor.org>, Andy Whitcroft <apw@shadowen.org>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <peterz@infradead.org>, akpm@linux-foundation.org,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Glauber de Oliveira Costa <gcosta@redhat.com>,
+       Jan Beulich <jbeulich@novell.com>, Thomas Gleixner <tglx@linutronix.de>,
+       pinskia@gcc.gnu.org
+Subject: Re: [PATCH] pop previous section in alternative.c
+In-Reply-To: <47FE3B24.4020301@zytor.com>
+Message-ID: <Pine.LNX.4.58.0804101219170.7952@gandalf.stny.rr.com>
+References: <Pine.LNX.4.58.0804091859400.31879@gandalf.stny.rr.com>
+ <Pine.LNX.4.58.0804091906040.31970@gandalf.stny.rr.com> <47FD5D42.5000603@zytor.com>
+ <87wsn6m6zt.fsf@basil.nowhere.org> <20080410094637.GW17915@shadowen.org>
+ <Pine.LNX.4.58.0804101007510.5673@gandalf.stny.rr.com>
+ <20080410144114.GH10019@one.firstfloor.org>
+ <alpine.LFD.1.00.0804100741430.3143@woody.linux-foundation.org>
+ <20080410150544.GI10019@one.firstfloor.org>
+ <alpine.LFD.1.00.0804100811400.3143@woody.linux-foundation.org>
+ <47FE3B24.4020301@zytor.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200804102140.00078.balajirrao@gmail.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 07 April 2008 06:54:53 pm Peter Zijlstra wrote:
-> On Sun, 2008-04-06 at 02:01 +0530, Balaji Rao wrote:
-> 
-> > > > +static s64 cpu_cgroup_read_stat(struct cpu_cgroup_stat *stat,
-> > > > +		enum cpu_cgroup_stat_index idx)
-> > > > +{
-> > > > +	int cpu;
-> > > > +	s64 ret = 0;
-> > > > +	unsigned long flags;
-> > > 
-> > > > +
-> > > > +	local_irq_save(flags);
-> > > 
-> > > I am just wondering. Is local_irq_save() enough?
-> > > 
-> > Hmmm.. You are right.This does not prevent concurrent updates on other 
-CPUs 
-> > from crossing a 32bit boundary. Am not sure how to do this in a safe way. 
-I 
-> > can only think of using atomic64_t now..
-> > 
-> > > > +	for_each_possible_cpu(cpu)
-> > > > +		ret += stat->cpustat[cpu].count[idx];
-> > > > +	local_irq_restore(flags);
-> > > > +
-> > > > +	return ret;
-> > > > +}
-> > > > +
-> 
-> So many stats to steal code from,.. but you didn't :-(
-> 
-> Look at mm/vmstat.c, that is a rather complete example.
-> 
-> The trick to solving the above is to use per cpu deltas instead, the
-> deltas can be machine word size and are thus always read in an atomic
-> manner (provided they are also naturally aligned).
-> 
-> 
-Hi Peter,
 
-This wont work for time based statistics. At nsec granularity, a word can hold 
-a time value of up to ~4s. 
 
-I propose to solve this problem by using a lock to protect the statistics, but 
-only on 32bit architectures.
+On Thu, 10 Apr 2008, H. Peter Anvin wrote:
 
-I'm not sure how good a solution this is, but that's the best I can think of 
-ATM. 
--- 
-regards,
-Balaji Rao
-Dept. of Mechanical Engineering,
-National Institute of Technology Karnataka, India
+> Linus Torvalds wrote:
+> >
+> > That would mark gcc itself as buggy, because gcc will move some things
+> > into the #APP/#NO_APP thing, and sometimes doesn't end the #APP at all!
+> >
+>
+> That is quite buggy indeed, since the whole #APP and #NO_APP string set
+> are arbitrary strings that are part of the gcc configuration, marked as
+> "what to insert before user assembly" and "what to insert after user
+> assembly."  They are not guaranteed to be simple comments, in fact.
+>
+> In fact, gas *is* sensitive to #APP ... #NO_APP, so they are not simple
+> comments.
+
+Looking at the output below, shows that testing .sections in between
+#APP and #NO_APP would in fact catch this bug.
+
+-- Steve
+
+.Ltext0:
+#APP
+                .section .rodata, "a"
+intelnops: .byte 0x90
+.byte 0x89,0xf6
+.byte 0x8d,0x76,0x00
+.byte 0x8d,0x74,0x26,0x00
+.byte 0x90
+.byte 0x8d,0x74,0x26,0x00
+.byte 0x8d,0xb6,0x00,0x00,0x00,0x00
+.byte 0x8d,0xb4,0x26,0x00,0x00,0x00,0x00
+.byte 0x90
+.byte 0x8d,0xb4,0x26,0x00,0x00,0x00,0x00
+
+                .section .rodata, "a"
+k8nops: .byte 0x90
+.byte 0x66,0x90
+.byte 0x66,0x66,0x90
+.byte 0x66,0x66,0x66,0x90
+.byte 0x66,0x66,0x90
+.byte 0x66,0x90
+.byte 0x66,0x66,0x90
+.byte 0x66,0x66,0x90
+.byte 0x66,0x66,0x66,0x90
+.byte 0x66,0x66,0x90
+.byte 0x66,0x66,0x66,0x90
+.byte 0x66,0x66,0x66,0x90
+
+                .section .rodata, "a"
+k7nops: .byte 0x90
+.byte 0x8b,0xc0
+.byte 0x8d,0x04,0x20
+.byte 0x8d,0x44,0x20,0x00
+.byte 0x8d,0x44,0x20,0x00
+.byte 0x90
+.byte 0x8d,0x80,0,0,0,0
+.byte 0x8D,0x04,0x05,0,0,0,0
+.byte 0x8D,0x04,0x05,0,0,0,0
+.byte 0x90
+
+                .section .rodata, "a"
+p6nops: .byte 0x90
+.byte 0x66,0x90
+.byte 0x0f,0x1f,0x00
+.byte 0x0f,0x1f,0x40,0
+.byte 0x0f,0x1f,0x44,0x00,0
+.byte 0x66,0x0f,0x1f,0x44,0x00,0
+.byte 0x0f,0x1f,0x80,0,0,0,0
+.byte 0x0f,0x1f,0x84,0x00,0,0,0,0
+
+#NO_APP
+        .type   constant_test_bit, @function
+constant_test_bit:
+.LFB30:
+
