@@ -1,632 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755490AbYDJMDU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756750AbYDJMER@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755490AbYDJMDU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Apr 2008 08:03:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755258AbYDJMDH
+	id S1756750AbYDJMER (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Apr 2008 08:04:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755324AbYDJMEE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Apr 2008 08:03:07 -0400
-Received: from wine.ocn.ne.jp ([122.1.235.145]:56937 "EHLO smtp.wine.ocn.ne.jp"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755148AbYDJMDE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Apr 2008 08:03:04 -0400
-To: viro@zeniv.linux.org.uk
-Cc: miklos@szeredi.hu, ezk@cs.sunysb.edu, akpm@linux-foundation.org,
-       dave@linux.vnet.ibm.com, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH] Call LSM functions outside VFS helper functions.
-From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-References: <200804090053.m390rE9k007085@agora.fsl.cs.sunysb.edu>
-	<E1Jjug8-0006a2-Vs@pomaz-ex.szeredi.hu>
-In-Reply-To: <E1Jjug8-0006a2-Vs@pomaz-ex.szeredi.hu>
-Message-Id: <200804102102.JFI05247.OVJOFHFStLOFQM@I-love.SAKURA.ne.jp>
-X-Mailer: Winbiff [Version 2.50 PL2]
-X-Accept-Language: ja,en
-Date: Thu, 10 Apr 2008 21:02:57 +0900
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 10 Apr 2008 08:04:04 -0400
+Received: from fk-out-0910.google.com ([209.85.128.190]:42135 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755227AbYDJMEC (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Apr 2008 08:04:02 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=UG0PKuH3ulSIAX7Lz4iriRwf7Vph/u5R0m0gGBx1szkTstUb1GFDSt5uTHCyxegMHPuLcdNr9DiCm+PYZzVf2Jr2b/inLLvhhXIO9Dc7yNWnaQSORCAcgsvXqM921bv6ok9w1hYpAmkp7Wex+QyqFax5Yusv7M2LN6I9SGgd9yQ=
+Message-ID: <58cb370e0804100503u71014cdend6425efe14b8d88c@mail.gmail.com>
+Date: Thu, 10 Apr 2008 14:03:59 +0200
+From: "Bartlomiej Zolnierkiewicz" <bzolnier@gmail.com>
+To: "Kamalesh Babulal" <kamalesh@linux.vnet.ibm.com>
+Subject: Re: [BUG] linux-next: Tree for April 10 - kernel panic while loading ata driver on powermac
+Cc: "Stephen Rothwell" <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>,
+       "Andy Whitcroft" <apw@shadowen.org>
+In-Reply-To: <47FDEAFA.10407@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080410181404.b76939a6.sfr@canb.auug.org.au>
+	 <47FDEAFA.10407@linux.vnet.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+Hi,
 
-Miklos Szeredi wrote:
-> > Al, I'm not too pleased with the resulting additional code complexity to
-> > Unionfs, due to these new helpers.  See the diffstat below.  These VFS
-> > helpers have widened the gap between the f/s API and the VFS helpers': the
-> > helpers now need a struct path/vfsmount, but the most ->ops that a
-> > filesystem is being called with, don't have a path/vfsmount passed.
-> 
-> I'm not too pleased either ;)
-> 
+On Thu, Apr 10, 2008 at 12:24 PM, Kamalesh Babulal
+<kamalesh@linux.vnet.ibm.com> wrote:
+> Hi Stephen,
+>
+>  The next-20080410 kernel panics while bootup over the PowerMac G5 box, while
+>  loading the ATA driver.
+>
+>  [    3.704000] Faulting instruction address: 0xc0000000000222a8
+>  [    3.704000] Oops: Kernel access of bad area, sig: 11 [#1]
+>  [    3.704000] SMP NR_CPUS=32 NUMA PowerMac
+>  [    3.704000] Modules linked in:
+>  [    3.704000] NIP: c0000000000222a8 LR: c00000000021cd10 CTR: 0000000000000100
+>  [    3.704000] REGS: c0000002760db070 TRAP: 0300   Not tainted  (2.6.25-rc8-next-20080410-autokern1)
+>  [    3.704000] MSR: 9000000000009032 <EE,ME,IR,DR>  CR: 44000042  XER: 20000000
+>  [    3.704000] DAR: a0001000822fa000, DSISR: 0000000040000000
+>  [    3.704000] TASK = c0000002760d7100[1] 'swapper' THREAD: c0000002760d8000 CPU: 0
+>  [    3.704000] GPR00: 0000000000000100 c0000002760db2f0 c000000000498310 a0001000822fa000
+>  [    3.704000] GPR04: c000000274806a00 0000000000000100 0000000000000201 c00000000000fed4
+>  [    3.704000] GPR08: c0000002760daf20 c0000000003ee0d8 c0000000004f1428 0000000000000000
+>  [    3.704000] GPR12: 0000000000000000 c0000000003fa700 0000000000000000 0000000000000000
+>  [    3.704000] GPR16: 0000000000000000 0000000000000000 0000000000000000 0000000000000000
+>  [    3.704000] GPR20: 0000000000000001 0000000000000027 0000000000000027 0000000000000000
+>  [    3.704000] GPR24: c0000000004f1400 0000000000000000 0000000000000201 c0000000004f1490
+>  [    3.704000] GPR28: a0001000822fa000 0000000000000200 c00000000044cf50 c000000274806a00
+>  [    3.704000] NIP [c0000000000222a8] ._insw_ns+0x10/0x30
+>  [    3.704000] LR [c00000000021cd10] .ata_input_data+0x1f4/0x264
 
-I'm reading this thread on tenterhooks.
-If vfsmount is passed to VFS helper functions, that will make
-r/o bind mounts and AppArmor and TOMOYO Linux happy.
-But so far, it seems that "passing vfsmount makes things complicated".
+Could you please add printk() for 'hwif->host_flags', 'mmio' and 'io_32bit'
+to ide-iops.c::ata_input_data() so we know more on what is going on?
 
-If the conclusion became "vfsmount should not be passed to
-VFS helper functions", that's OK, but I want you to consider
-the below approach for AppArmor and TOMOYO Linux. This patch is a repost of
-http://kerneltrap.org/mailarchive/linux-fsdevel/2008/2/17/882024 .
-
-Regards.
-----------
-Subject: Call LSM functions outside VFS helper functions.
-
-This patch allows LSM to check permission using "struct vfsmount"
-without passing "struct vfsmount" to VFS helper functions.
-There is a side effect that conventional permission checks are done twice
-because I want to do DAC checks before MAC checks.
-
-Signed-off-by:   Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
----
- fs/namei.c               |  176 ++++++++++++++++++++++++++++++++++++++---------
- fs/open.c                |   11 ++
- include/linux/fs.h       |    1 
- include/linux/security.h |   63 ++++++++++++++++
- net/unix/af_unix.c       |    9 ++
- security/dummy.c         |   17 ++++
- security/security.c      |   15 ++++
- 7 files changed, 254 insertions(+), 38 deletions(-)
-
---- linux-2.6.25-rc8-mm1.orig/fs/namei.c
-+++ linux-2.6.25-rc8-mm1/fs/namei.c
-@@ -2021,18 +2021,24 @@ fail:
- }
- EXPORT_SYMBOL_GPL(lookup_create);
- 
--int vfs_mknod(struct inode *dir, struct dentry *dentry, int mode, dev_t dev)
-+int pre_vfs_mknod(struct inode *dir, struct dentry *dentry, int mode)
- {
- 	int error = may_create(dir, dentry, NULL);
--
- 	if (error)
- 		return error;
--
- 	if ((S_ISCHR(mode) || S_ISBLK(mode)) && !capable(CAP_MKNOD))
- 		return -EPERM;
--
- 	if (!dir->i_op || !dir->i_op->mknod)
- 		return -EPERM;
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(pre_vfs_mknod);
-+
-+int vfs_mknod(struct inode *dir, struct dentry *dentry, int mode, dev_t dev)
-+{
-+	int error = pre_vfs_mknod(dir, dentry, mode);
-+	if (error)
-+		return error;
- 
- 	error = devcgroup_inode_mknod(mode, dev);
- 	if (error)
-@@ -2097,14 +2103,39 @@ asmlinkage long sys_mknodat(int dfd, con
- 	if (error)
- 		goto out_dput;
- 	switch (mode & S_IFMT) {
-+		int type;
- 		case 0: case S_IFREG:
- 			error = vfs_create(nd.path.dentry->d_inode,dentry,mode,&nd);
- 			break;
- 		case S_IFCHR: case S_IFBLK:
-+			error = pre_vfs_mknod(nd.path.dentry->d_inode, dentry,
-+					      mode);
-+			if (error)
-+				break;
-+			if (S_ISCHR(mode))
-+				type = TYPE_MKCHAR_ACL;
-+			else
-+				type = TYPE_MKBLOCK_ACL;
-+			error = security_singlepath_permission(type, dentry,
-+							       nd.path.mnt);
-+			if (error)
-+				break;
- 			error = vfs_mknod(nd.path.dentry->d_inode,dentry,mode,
- 					new_decode_dev(dev));
- 			break;
- 		case S_IFIFO: case S_IFSOCK:
-+			error = pre_vfs_mknod(nd.path.dentry->d_inode, dentry,
-+					      mode);
-+			if (error)
-+				break;
-+			if (S_ISFIFO(mode))
-+				type = TYPE_MKFIFO_ACL;
-+			else
-+				type = TYPE_MKSOCK_ACL;
-+			error = security_singlepath_permission(type, dentry,
-+							       nd.path.mnt);
-+			if (error)
-+				break;
- 			error = vfs_mknod(nd.path.dentry->d_inode,dentry,mode,0);
- 			break;
- 	}
-@@ -2125,15 +2156,21 @@ asmlinkage long sys_mknod(const char __u
- 	return sys_mknodat(AT_FDCWD, filename, mode, dev);
- }
- 
--int vfs_mkdir(struct inode *dir, struct dentry *dentry, int mode)
-+static inline int pre_vfs_mkdir(struct inode *dir, struct dentry *dentry)
- {
- 	int error = may_create(dir, dentry, NULL);
--
- 	if (error)
- 		return error;
--
- 	if (!dir->i_op || !dir->i_op->mkdir)
- 		return -EPERM;
-+	return 0;
-+}
-+
-+int vfs_mkdir(struct inode *dir, struct dentry *dentry, int mode)
-+{
-+	int error = pre_vfs_mkdir(dir, dentry);
-+	if (error)
-+		return error;
- 
- 	mode &= (S_IRWXUGO|S_ISVTX);
- 	error = security_inode_mkdir(dir, dentry, mode);
-@@ -2172,7 +2209,12 @@ asmlinkage long sys_mkdirat(int dfd, con
- 	error = mnt_want_write(nd.path.mnt);
- 	if (error)
- 		goto out_dput;
--	error = vfs_mkdir(nd.path.dentry->d_inode, dentry, mode);
-+	error = pre_vfs_mkdir(nd.path.dentry->d_inode, dentry);
-+	if (!error)
-+		error = security_singlepath_permission(TYPE_MKDIR_ACL, dentry,
-+						       nd.path.mnt);
-+	if (!error)
-+		error = vfs_mkdir(nd.path.dentry->d_inode, dentry, mode);
- 	mnt_drop_write(nd.path.mnt);
- out_dput:
- 	dput(dentry);
-@@ -2217,15 +2259,21 @@ void dentry_unhash(struct dentry *dentry
- 	spin_unlock(&dcache_lock);
- }
- 
--int vfs_rmdir(struct inode *dir, struct dentry *dentry)
-+static inline int pre_vfs_rmdir(struct inode *dir, struct dentry *dentry)
- {
- 	int error = may_delete(dir, dentry, 1);
--
- 	if (error)
- 		return error;
--
- 	if (!dir->i_op || !dir->i_op->rmdir)
- 		return -EPERM;
-+	return 0;
-+}
-+
-+int vfs_rmdir(struct inode *dir, struct dentry *dentry)
-+{
-+	int error = pre_vfs_rmdir(dir, dentry);
-+	if (error)
-+		return error;
- 
- 	DQUOT_INIT(dir);
- 
-@@ -2284,7 +2332,12 @@ static long do_rmdir(int dfd, const char
- 	error = mnt_want_write(nd.path.mnt);
- 	if (error)
- 		goto exit3;
--	error = vfs_rmdir(nd.path.dentry->d_inode, dentry);
-+	error = pre_vfs_rmdir(nd.path.dentry->d_inode, dentry);
-+	if (!error)
-+		error = security_singlepath_permission(TYPE_RMDIR_ACL, dentry,
-+						       nd.path.mnt);
-+	if (!error)
-+		error = vfs_rmdir(nd.path.dentry->d_inode, dentry);
- 	mnt_drop_write(nd.path.mnt);
- exit3:
- 	dput(dentry);
-@@ -2302,15 +2355,21 @@ asmlinkage long sys_rmdir(const char __u
- 	return do_rmdir(AT_FDCWD, pathname);
- }
- 
--int vfs_unlink(struct inode *dir, struct dentry *dentry)
-+static inline int pre_vfs_unlink(struct inode *dir, struct dentry *dentry)
- {
- 	int error = may_delete(dir, dentry, 0);
--
- 	if (error)
- 		return error;
--
- 	if (!dir->i_op || !dir->i_op->unlink)
- 		return -EPERM;
-+	return 0;
-+}
-+
-+int vfs_unlink(struct inode *dir, struct dentry *dentry)
-+{
-+	int error = pre_vfs_unlink(dir, dentry);
-+	if (error)
-+		return error;
- 
- 	DQUOT_INIT(dir);
- 
-@@ -2370,7 +2429,13 @@ static long do_unlinkat(int dfd, const c
- 		error = mnt_want_write(nd.path.mnt);
- 		if (error)
- 			goto exit2;
--		error = vfs_unlink(nd.path.dentry->d_inode, dentry);
-+		error = pre_vfs_unlink(nd.path.dentry->d_inode, dentry);
-+		if (!error)
-+			error = security_singlepath_permission(TYPE_UNLINK_ACL,
-+							       dentry,
-+							       nd.path.mnt);
-+		if (!error)
-+			error = vfs_unlink(nd.path.dentry->d_inode, dentry);
- 		mnt_drop_write(nd.path.mnt);
- 	exit2:
- 		dput(dentry);
-@@ -2406,15 +2471,22 @@ asmlinkage long sys_unlink(const char __
- 	return do_unlinkat(AT_FDCWD, pathname);
- }
- 
--int vfs_symlink(struct inode *dir, struct dentry *dentry, const char *oldname, int mode)
-+static inline int pre_vfs_symlink(struct inode *dir, struct dentry *dentry)
- {
- 	int error = may_create(dir, dentry, NULL);
--
- 	if (error)
- 		return error;
--
- 	if (!dir->i_op || !dir->i_op->symlink)
- 		return -EPERM;
-+	return 0;
-+}
-+
-+int vfs_symlink(struct inode *dir, struct dentry *dentry, const char *oldname,
-+		int mode)
-+{
-+	int error = pre_vfs_symlink(dir, dentry);
-+	if (error)
-+		return error;
- 
- 	error = security_inode_symlink(dir, dentry, oldname);
- 	if (error)
-@@ -2455,7 +2527,13 @@ asmlinkage long sys_symlinkat(const char
- 	error = mnt_want_write(nd.path.mnt);
- 	if (error)
- 		goto out_dput;
--	error = vfs_symlink(nd.path.dentry->d_inode, dentry, from, S_IALLUGO);
-+	error = pre_vfs_symlink(nd.path.dentry->d_inode, dentry);
-+	if (!error)
-+		error = security_singlepath_permission(TYPE_SYMLINK_ACL,
-+						       dentry, nd.path.mnt);
-+	if (!error)
-+		error = vfs_symlink(nd.path.dentry->d_inode, dentry, from,
-+				    S_IALLUGO);
- 	mnt_drop_write(nd.path.mnt);
- out_dput:
- 	dput(dentry);
-@@ -2474,21 +2552,18 @@ asmlinkage long sys_symlink(const char _
- 	return sys_symlinkat(oldname, AT_FDCWD, newname);
- }
- 
--int vfs_link(struct dentry *old_dentry, struct inode *dir, struct dentry *new_dentry)
-+static inline int pre_vfs_link(struct dentry *old_dentry, struct inode *dir,
-+			       struct dentry *new_dentry)
- {
- 	struct inode *inode = old_dentry->d_inode;
- 	int error;
--
- 	if (!inode)
- 		return -ENOENT;
--
- 	error = may_create(dir, new_dentry, NULL);
- 	if (error)
- 		return error;
--
- 	if (dir->i_sb != inode->i_sb)
- 		return -EXDEV;
--
- 	/*
- 	 * A link to an append-only or immutable file cannot be created.
- 	 */
-@@ -2498,6 +2573,15 @@ int vfs_link(struct dentry *old_dentry, 
- 		return -EPERM;
- 	if (S_ISDIR(old_dentry->d_inode->i_mode))
- 		return -EPERM;
-+	return 0;
-+}
-+
-+int vfs_link(struct dentry *old_dentry, struct inode *dir,
-+	     struct dentry *new_dentry)
-+{
-+	int error = pre_vfs_link(old_dentry, dir, new_dentry);
-+	if (error)
-+		return error;
- 
- 	error = security_inode_link(old_dentry, dir, new_dentry);
- 	if (error)
-@@ -2555,7 +2639,16 @@ asmlinkage long sys_linkat(int olddfd, c
- 	error = mnt_want_write(nd.path.mnt);
- 	if (error)
- 		goto out_dput;
--	error = vfs_link(old_nd.path.dentry, nd.path.dentry->d_inode, new_dentry);
-+	error = pre_vfs_link(old_nd.path.dentry, nd.path.dentry->d_inode,
-+			     new_dentry);
-+	if (!error)
-+		error = security_doublepath_permission(TYPE_LINK_ACL,
-+						       old_nd.path.dentry,
-+						       nd.path.dentry,
-+						       old_nd.path.mnt);
-+	if (!error)
-+		error = vfs_link(old_nd.path.dentry, nd.path.dentry->d_inode,
-+				 new_dentry);
- 	mnt_drop_write(nd.path.mnt);
- out_dput:
- 	dput(new_dentry);
-@@ -2679,20 +2772,18 @@ static int vfs_rename_other(struct inode
- 	return error;
- }
- 
--int vfs_rename(struct inode *old_dir, struct dentry *old_dentry,
--	       struct inode *new_dir, struct dentry *new_dentry)
-+static inline int pre_vfs_rename(struct inode *old_dir,
-+				 struct dentry *old_dentry,
-+				 struct inode *new_dir,
-+				 struct dentry *new_dentry)
- {
- 	int error;
- 	int is_dir = S_ISDIR(old_dentry->d_inode->i_mode);
--	const char *old_name;
--
- 	if (old_dentry->d_inode == new_dentry->d_inode)
-  		return 0;
-- 
- 	error = may_delete(old_dir, old_dentry, is_dir);
- 	if (error)
- 		return error;
--
- 	if (!new_dentry->d_inode)
- 		error = may_create(new_dir, new_dentry, NULL);
- 	else
-@@ -2702,6 +2793,17 @@ int vfs_rename(struct inode *old_dir, st
- 
- 	if (!old_dir->i_op || !old_dir->i_op->rename)
- 		return -EPERM;
-+	return 0;
-+}
-+
-+int vfs_rename(struct inode *old_dir, struct dentry *old_dentry,
-+	       struct inode *new_dir, struct dentry *new_dentry)
-+{
-+	int error = pre_vfs_rename(old_dir, old_dentry, new_dir, new_dentry);
-+	int is_dir = S_ISDIR(old_dentry->d_inode->i_mode);
-+	const char *old_name;
-+	if (error)
-+		return error;
- 
- 	DQUOT_INIT(old_dir);
- 	DQUOT_INIT(new_dir);
-@@ -2786,7 +2888,15 @@ static int do_rename(int olddfd, const c
- 	error = mnt_want_write(oldnd.path.mnt);
- 	if (error)
- 		goto exit5;
--	error = vfs_rename(old_dir->d_inode, old_dentry,
-+	error = pre_vfs_rename(old_dir->d_inode, old_dentry, new_dir->d_inode,
-+			       new_dentry);
-+	if (!error)
-+		error = security_doublepath_permission(TYPE_RENAME_ACL,
-+						       oldnd.path.dentry,
-+						       newnd.path.dentry,
-+						       oldnd.path.mnt);
-+	if (!error)
-+		error = vfs_rename(old_dir->d_inode, old_dentry,
- 				   new_dir->d_inode, new_dentry);
- 	mnt_drop_write(oldnd.path.mnt);
- exit5:
---- linux-2.6.25-rc8-mm1.orig/include/linux/security.h
-+++ linux-2.6.25-rc8-mm1/include/linux/security.h
-@@ -110,6 +110,29 @@ struct request_sock;
- #define LSM_UNSAFE_PTRACE	2
- #define LSM_UNSAFE_PTRACE_CAP	4
- 
-+
-+/* singlepath_permission() and doublepath_permission() */
-+#define TYPE_READ_WRITE_ACL        0 /* open for reading/writing */
-+#define TYPE_EXECUTE_ACL           1 /* execute                  */
-+#define TYPE_READ_ACL              2 /* open for reading         */
-+#define TYPE_WRITE_ACL             3 /* open for writing         */
-+#define TYPE_CREATE_ACL            4 /* create                   */
-+#define TYPE_UNLINK_ACL            5 /* unlink                   */
-+#define TYPE_MKDIR_ACL             6 /* mkdir                    */
-+#define TYPE_RMDIR_ACL             7 /* rmdir                    */
-+#define TYPE_MKFIFO_ACL            8 /* mknod(S_IFIFO)           */
-+#define TYPE_MKSOCK_ACL            9 /* mknod(S_IFSOCK)          */
-+#define TYPE_MKBLOCK_ACL          10 /* mknod(S_IFBLK)           */
-+#define TYPE_MKCHAR_ACL           11 /* mknod(S_IFCHR)           */
-+#define TYPE_TRUNCATE_ACL         12 /* truncate                 */
-+#define TYPE_SYMLINK_ACL          13 /* symlink                  */
-+#define TYPE_REWRITE_ACL          14 /* open for overwriting     */
-+#define MAX_SINGLE_PATH_OPERATION 15
-+
-+#define TYPE_LINK_ACL             0  /* link                     */
-+#define TYPE_RENAME_ACL           1  /* rename                   */
-+#define MAX_DOUBLE_PATH_OPERATION 2
-+
- #ifdef CONFIG_SECURITY
- 
- struct security_mnt_opts {
-@@ -337,6 +360,19 @@ static inline void security_free_mnt_opt
-  *	Returns 0 if @name and @value have been successfully set,
-  *		-EOPNOTSUPP if no security attribute is needed, or
-  *		-ENOMEM on memory allocation failure.
-+ * @singlepath_permission:
-+ *	Check permission to operations that involve one pathname.
-+ *	@operation contains type of operation (e.g. mknod, mkdir, symlink).
-+ *	@dentry contains the dentry structure for the file.
-+ *	@mnt contains the vfsmount structure for the file.
-+ *	Return 0 if permission is granted.
-+ * @doublepath_permission:
-+ *	Check permission to operations that involve two pathnames.
-+ *	@operation contains type of operation (either link or rename).
-+ *	@old_dentry contains the dentry structure of the old file.
-+ *	@new_dentry contains the dentry structure of the new file.
-+ *	@mnt contains the vfsmount structure for the old file.
-+ *	Return 0 if permission is granted.
-  * @inode_create:
-  *	Check permission to create a regular file.
-  *	@dir contains inode structure of the parent of the new file.
-@@ -1355,6 +1391,11 @@ struct security_operations {
- 	void (*inode_free_security) (struct inode *inode);
- 	int (*inode_init_security) (struct inode *inode, struct inode *dir,
- 				    char **name, void **value, size_t *len);
-+	int (*singlepath_permission) (int operation, struct dentry *dentry,
-+				      struct vfsmount *mnt);
-+	int (*doublepath_permission) (int operation, struct dentry *old_dentry,
-+				      struct dentry *new_dentry,
-+				      struct vfsmount *mnt);
- 	int (*inode_create) (struct inode *dir,
- 	                     struct dentry *dentry, int mode);
- 	int (*inode_link) (struct dentry *old_dentry,
-@@ -1629,6 +1670,11 @@ int security_inode_alloc(struct inode *i
- void security_inode_free(struct inode *inode);
- int security_inode_init_security(struct inode *inode, struct inode *dir,
- 				  char **name, void **value, size_t *len);
-+int security_singlepath_permission(int operation, struct dentry *dentry,
-+				   struct vfsmount *mnt);
-+int security_doublepath_permission(int operation, struct dentry *old_dentry,
-+				   struct dentry *new_dentry,
-+				   struct vfsmount *mnt);
- int security_inode_create(struct inode *dir, struct dentry *dentry, int mode);
- int security_inode_link(struct dentry *old_dentry, struct inode *dir,
- 			 struct dentry *new_dentry);
-@@ -1966,7 +2012,22 @@ static inline int security_inode_init_se
- {
- 	return -EOPNOTSUPP;
- }
--	
-+
-+static inline int security_singlepath_permission(int operation,
-+						 struct dentry *dentry,
-+						 struct vfsmount *mnt)
-+{
-+	return 0;
-+}
-+
-+static inline int security_doublepath_permission(int operation,
-+						 struct dentry *old_dentry,
-+						 struct dentry *new_dentry,
-+						 struct vfsmount *mnt)
-+{
-+	return 0;
-+}
-+
- static inline int security_inode_create (struct inode *dir,
- 					 struct dentry *dentry,
- 					 int mode)
---- linux-2.6.25-rc8-mm1.orig/security/dummy.c
-+++ linux-2.6.25-rc8-mm1/security/dummy.c
-@@ -286,6 +286,21 @@ static int dummy_inode_init_security (st
- 	return -EOPNOTSUPP;
- }
- 
-+static inline int dummy_singlepath_permission(int operation,
-+					      struct dentry *dentry,
-+					      struct vfsmount *mnt)
-+{
-+	return 0;
-+}
-+
-+static inline int dummy_doublepath_permission(int operation,
-+					      struct dentry *old_dentry,
-+					      struct dentry *new_dentry,
-+					      struct vfsmount *mnt)
-+{
-+	return 0;
-+}
-+
- static int dummy_inode_create (struct inode *inode, struct dentry *dentry,
- 			       int mask)
- {
-@@ -1080,6 +1095,8 @@ void security_fixup_ops (struct security
- 	set_to_dummy_if_null(ops, inode_alloc_security);
- 	set_to_dummy_if_null(ops, inode_free_security);
- 	set_to_dummy_if_null(ops, inode_init_security);
-+	set_to_dummy_if_null(ops, singlepath_permission);
-+	set_to_dummy_if_null(ops, doublepath_permission);
- 	set_to_dummy_if_null(ops, inode_create);
- 	set_to_dummy_if_null(ops, inode_link);
- 	set_to_dummy_if_null(ops, inode_unlink);
---- linux-2.6.25-rc8-mm1.orig/security/security.c
-+++ linux-2.6.25-rc8-mm1/security/security.c
-@@ -388,6 +388,21 @@ int security_inode_init_security(struct 
- }
- EXPORT_SYMBOL(security_inode_init_security);
- 
-+int security_singlepath_permission(int operation, struct dentry *dentry,
-+				   struct vfsmount *mnt)
-+{
-+	return security_ops->singlepath_permission(operation, dentry, mnt);
-+}
-+EXPORT_SYMBOL(security_singlepath_permission);
-+
-+int security_doublepath_permission(int operation, struct dentry *old_dentry,
-+				   struct dentry *new_dentry,
-+				   struct vfsmount *mnt)
-+{
-+	return security_ops->doublepath_permission(operation, old_dentry,
-+						   new_dentry, mnt);
-+}
-+
- int security_inode_create(struct inode *dir, struct dentry *dentry, int mode)
- {
- 	if (unlikely(IS_PRIVATE(dir)))
---- linux-2.6.25-rc8-mm1.orig/net/unix/af_unix.c
-+++ linux-2.6.25-rc8-mm1/net/unix/af_unix.c
-@@ -822,7 +822,14 @@ static int unix_bind(struct socket *sock
- 		err = mnt_want_write(nd.path.mnt);
- 		if (err)
- 			goto out_mknod_dput;
--		err = vfs_mknod(nd.path.dentry->d_inode, dentry, mode, 0);
-+		err = pre_vfs_mknod(nd.path.dentry->d_inode, dentry, mode);
-+		if (!err)
-+			err = security_singlepath_permission(TYPE_MKSOCK_ACL,
-+							     dentry,
-+							     nd.path.mnt);
-+		if (!err)
-+			err = vfs_mknod(nd.path.dentry->d_inode, dentry,
-+					mode, 0);
- 		mnt_drop_write(nd.path.mnt);
- 		if (err)
- 			goto out_mknod_dput;
---- linux-2.6.25-rc8-mm1.orig/include/linux/fs.h
-+++ linux-2.6.25-rc8-mm1/include/linux/fs.h
-@@ -1125,6 +1125,7 @@ extern void unlock_super(struct super_bl
- extern int vfs_permission(struct nameidata *, int);
- extern int vfs_create(struct inode *, struct dentry *, int, struct nameidata *);
- extern int vfs_mkdir(struct inode *, struct dentry *, int);
-+extern int pre_vfs_mknod(struct inode *, struct dentry *, int);
- extern int vfs_mknod(struct inode *, struct dentry *, int, dev_t);
- extern int vfs_symlink(struct inode *, struct dentry *, const char *, int);
- extern int vfs_link(struct dentry *, struct inode *, struct dentry *);
---- linux-2.6.25-rc8-mm1.orig/fs/open.c
-+++ linux-2.6.25-rc8-mm1/fs/open.c
-@@ -267,8 +267,10 @@ static long do_sys_truncate(const char _
- 	error = break_lease(inode, FMODE_WRITE);
- 	if (error)
- 		goto put_write_and_out;
--
--	error = locks_verify_truncate(inode, NULL, length);
-+	error = security_singlepath_permission(TYPE_TRUNCATE_ACL,
-+					       nd.path.dentry, nd.path.mnt);
-+	if (!error)
-+		error = locks_verify_truncate(inode, NULL, length);
- 	if (!error) {
- 		DQUOT_INIT(inode);
- 		error = do_truncate(nd.path.dentry, length, 0, NULL);
-@@ -324,7 +326,10 @@ static long do_sys_ftruncate(unsigned in
- 	if (IS_APPEND(inode))
- 		goto out_putf;
- 
--	error = locks_verify_truncate(inode, file, length);
-+	error = security_singlepath_permission(TYPE_TRUNCATE_ACL, dentry,
-+					       file->f_path.mnt);
-+	if (!error)
-+		error = locks_verify_truncate(inode, file, length);
- 	if (!error)
- 		error = do_truncate(dentry, length, ATTR_MTIME|ATTR_CTIME, file);
- out_putf:
+Thanks,
+Bart
