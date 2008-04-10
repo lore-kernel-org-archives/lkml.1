@@ -1,63 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759359AbYDJUvd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759461AbYDJUw1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759359AbYDJUvd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Apr 2008 16:51:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757094AbYDJUvZ
+	id S1759461AbYDJUw1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Apr 2008 16:52:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757395AbYDJUwU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Apr 2008 16:51:25 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:55960 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757029AbYDJUvZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Apr 2008 16:51:25 -0400
-Date: Thu, 10 Apr 2008 22:51:06 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Anvin" <hpa@zytor.com>
-Subject: Re: x86 git tree broken
-Message-ID: <20080410205106.GB15440@elte.hu>
-References: <200804102159.14563.rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200804102159.14563.rjw@sisk.pl>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Thu, 10 Apr 2008 16:52:20 -0400
+Received: from el-out-1112.google.com ([209.85.162.176]:44023 "EHLO
+	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757394AbYDJUwT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Apr 2008 16:52:19 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=JnN2WCMUZBY4M2Smo7gfGBk9/4LcK2ELUCRLcSnrrUJ61FosluwvTwGPzltOYLziDRBGYBQsFoQg6jPatuGfBXY/JGyLFpcK4dktXTTvsFQLmSrL9IVPPBURxA3GZDamEIizi7O3CgjJZM2UedDHrqTxBeZL5IszgfS4sE3l/38=
+Subject: Re: [PATCH] lzo: fix possible typo in decompresor
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Richard Purdie <rpurdie@rpsys.net>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <alpine.LFD.1.00.0804101346240.3143@woody.linux-foundation.org>
+References: <1207859903.22001.36.camel@brick>
+	 <alpine.LFD.1.00.0804101346240.3143@woody.linux-foundation.org>
+Content-Type: text/plain
+Date: Thu, 10 Apr 2008 13:52:19 -0700
+Message-Id: <1207860739.22001.41.camel@brick>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 2008-04-10 at 13:49 -0700, Linus Torvalds wrote:
+> 
+> On Thu, 10 Apr 2008, Harvey Harrison wrote:
+> >
+> > Shift of a le value seems strange, probably meant to shift the cpu-order
+> > variable as in the prvious section of the switch statement.
+> 
+> Hmm. This patch looks ObviouslyCorrect(tm), but it worries me that 
+> apparently the old broken code has been around since last July, and afaik 
+> it can never have worked on big-endian machines.
+> 
+> So did nobody ever use it, or why hasn't this ever triggered? How did you 
+> find this? A sparse warning?
+> 
+> 		Linus
 
-* Rafael J. Wysocki <rjw@sisk.pl> wrote:
+When converting in tree users to my proposed unaligned byteswapping api.
+See the 8 patch series posted today to linux-arch.
 
-> Second, if I try to suspend the box to RAM, it enters a state it 
-> cannot leave until power is physically cut from it (using the power 
-> button to power off / power on the box doesn't help).
+Harvey
 
-i used your config on an AMD system here and s2ram works just fine, both 
-using CONFIG_PM_TEST_SUSPEND=y bootup suspend self-test [which x86.git 
-QA uses all the time], and using a manual pm-suspend command at the 
-console.
-
-you can also try your luck and remove the last 20% of x86.git [which is 
-always the newest stuff], by picking a commit 200 patches down the line, 
-via:
-
- git-rev-list x86/base..x86/latest | head -200 | tail -1
-
-and testing that. If that tree works, it's the last 200 commits that 
-break stuff.
-
-exactly what kind of system are you using? If you revert the trampoline 
-changes, does it get any better - but i guess it might be better to do a 
-bisection.
-
-	Ingo
