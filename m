@@ -1,41 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758808AbYDJQF2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758445AbYDJQGn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758808AbYDJQF2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Apr 2008 12:05:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758307AbYDJQE7
+	id S1758445AbYDJQGn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Apr 2008 12:06:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755964AbYDJQGf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Apr 2008 12:04:59 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:46213 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758245AbYDJQE7 (ORCPT
+	Thu, 10 Apr 2008 12:06:35 -0400
+Received: from 81-174-11-161.static.ngi.it ([81.174.11.161]:53231 "EHLO
+	mail.enneenne.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754203AbYDJQGf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Apr 2008 12:04:59 -0400
-Message-ID: <47FE3985.2060001@zytor.com>
-Date: Thu, 10 Apr 2008 09:00:05 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	Thu, 10 Apr 2008 12:06:35 -0400
+Date: Thu, 10 Apr 2008 18:06:30 +0200
+From: Rodolfo Giometti <giometti@enneenne.com>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       David Woodhouse <dwmw2@infradead.org>, Dave Jones <davej@redhat.com>,
+       Sam Ravnborg <sam@ravnborg.org>, Greg KH <greg@kroah.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Kay Sievers <kay.sievers@vrfy.org>
+Message-ID: <20080410160630.GA24885@enneenne.com>
+References: <20080410160122.GA24899@enneenne.com>
 MIME-Version: 1.0
-To: Cedric Le Goater <clg@fr.ibm.com>
-CC: sukadev@us.ibm.com, Andrew Morton <akpm@osdl.org>, serue@us.ibm.com,
-       "David C. Hansen" <haveblue@us.ibm.com>,
-       Pavel Emelyanov <xemul@openvz.org>,
-       Containers <containers@lists.osdl.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/3] clone64() and unshare64() system calls
-References: <20080409222611.GA28087@us.ibm.com> <47FD5899.2040206@zytor.com> <20080410010717.GA28477@us.ibm.com> <47FD6921.6090408@zytor.com> <47FE0906.8080102@fr.ibm.com>
-In-Reply-To: <47FE0906.8080102@fr.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080410160122.GA24899@enneenne.com>
+Organization: GNU/Linux Device Drivers, Embedded Systems and Courses
+X-PGP-Key: gpg --keyserver keyserver.linux.it --recv-keys D25A5633
+User-Agent: Mutt/1.5.16 (2007-06-11)
+X-SA-Exim-Connect-IP: 192.168.32.1
+X-SA-Exim-Mail-From: giometti@enneenne.com
+Subject: Re: [PATCH 5/7] PPS: serial clients support.
+X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
+X-SA-Exim-Scanned: Yes (on mail.enneenne.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Cedric Le Goater wrote:
-> 
-> OK. I didn't know that. I took sys_llseek() as an example of an interface 
-> to follow when coded clone64(). 
-> 
+On Thu, Apr 10, 2008 at 06:01:22PM +0200, Rodolfo Giometti wrote:
+> Adds support for the PPS sources connected with the CD (Carrier
+> Detect) pin of a serial port.
 
-llseek() was the first system call that took a doublewidth argument. 
-It's not the one you want to mimic.
+Should I resubmit the whole patch set?
 
-	-hpa
+Rodolfo
+
+-- 
+
+GNU/Linux Solutions                  e-mail:    giometti@enneenne.com
+Linux Device Driver                             giometti@linux.it
+Embedded Systems                     phone:	+39 349 2432127
+UNIX programming                     skype:     rodolfo.giometti
