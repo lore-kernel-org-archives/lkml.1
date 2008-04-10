@@ -1,50 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757654AbYDJQPc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757403AbYDJQP4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757654AbYDJQPc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Apr 2008 12:15:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757096AbYDJQPS
+	id S1757403AbYDJQP4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Apr 2008 12:15:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756802AbYDJQPr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Apr 2008 12:15:18 -0400
-Received: from styx.suse.cz ([82.119.242.94]:56177 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757045AbYDJQPQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Apr 2008 12:15:16 -0400
-Date: Thu, 10 Apr 2008 18:15:15 +0200
-From: Jan Kara <jack@suse.cz>
-To: Diego Calleja <diegocg@gmail.com>
-Cc: Jiri Kosina <jkosina@suse.cz>, Michal Hocko <mhocko@suse.cz>,
-       Meelis Roos <mroos@linux.ee>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: file offset corruption on 32-bit machines?
-Message-ID: <20080410161515.GG20656@duck.suse.cz>
-References: <Pine.SOC.4.64.0804081101430.28938@math.ut.ee> <200804101555.58643.mhocko@suse.cz> <Pine.LNX.4.64.0804101558280.26562@twin.jikos.cz> <20080410142700.GC6725@atrey.karlin.mff.cuni.cz> <Pine.LNX.4.64.0804101628000.3896@jikos.suse.cz> <20080410180335.6a748c78.diegocg@gmail.com>
+	Thu, 10 Apr 2008 12:15:47 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:45635 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756791AbYDJQPq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Apr 2008 12:15:46 -0400
+Message-ID: <47FE3C0C.4090101@zytor.com>
+Date: Thu, 10 Apr 2008 09:10:52 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20080410180335.6a748c78.diegocg@gmail.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Andi Kleen <andi@firstfloor.org>, Steven Rostedt <rostedt@goodmis.org>,
+       Andy Whitcroft <apw@shadowen.org>, LKML <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
+       akpm@linux-foundation.org, Rusty Russell <rusty@rustcorp.com.au>,
+       Glauber de Oliveira Costa <gcosta@redhat.com>,
+       Jan Beulich <jbeulich@novell.com>, Thomas Gleixner <tglx@linutronix.de>,
+       pinskia@gcc.gnu.org
+Subject: Re: [PATCH] pop previous section in alternative.c
+References: <Pine.LNX.4.58.0804091859400.31879@gandalf.stny.rr.com> <Pine.LNX.4.58.0804091906040.31970@gandalf.stny.rr.com> <47FD5D42.5000603@zytor.com> <87wsn6m6zt.fsf@basil.nowhere.org> <20080410094637.GW17915@shadowen.org> <Pine.LNX.4.58.0804101007510.5673@gandalf.stny.rr.com> <20080410144114.GH10019@one.firstfloor.org> <alpine.LFD.1.00.0804100741430.3143@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.1.00.0804100741430.3143@woody.linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu 10-04-08 18:03:35, Diego Calleja wrote:
-> El Thu, 10 Apr 2008 16:31:09 +0200 (CEST), Jiri Kosina <jkosina@suse.cz> escribió:
+Linus Torvalds wrote:
 > 
-> > I think this is worth fixing.
+> The thing is, we'd be much better off with some sanity checking in the 
+> assembler.
 > 
-> This question comes very often, and Linus even wrote a patch
-> (http://lkml.org/lkml/2006/4/13/124 , http://lkml.org/lkml/2006/4/13/130)
+> Which is likely not going to happen - oh well.
 > 
-> But apparently there's no much interest in fixing it, because it would
-> slow down some workloads...
-  Well, what Linus writes about is a different issue (and with a more
-costly solution). Here we are concerned just with the problem that
-  file->f_pos = pos;
-isn't atomic on some archs.
+> In particular, the assembler should see patterns like
+> 
+> 	.size function, .-function
+> 
+> and it should be _trivially_ able to check that "." and "function" are in 
+> the same section, and warn if they aren't. Because I don't see how it 
+> could ever be valid to have sizes that cross section boundaries (it's a 
+> totally nonsensical concept).
+> 
+> But it doesn't. Oh, well.
+> 
 
-									Honza
--- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
+Wow.  That is utterly braindamaged on the part of gas.
+
+> But maybe we can see it in the resulting object file somehow, and do the 
+> check there (the same way we do the init-section analysis). I assume the 
+> .size directive writes some debug info or similar, and we can create a big 
+> warning when a size is unexpectedly huge and crosses section size 
+> boundaries?
+
+I just tried it, and it output the difference across the sections, 
+without any consideration that the base was different.  Didn't know one 
+could write an assembler that dumb.
+
+	-hpa
+
