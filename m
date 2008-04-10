@@ -1,59 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755611AbYDJDjO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755985AbYDJDmR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755611AbYDJDjO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Apr 2008 23:39:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754348AbYDJDi7
+	id S1755985AbYDJDmR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Apr 2008 23:42:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754639AbYDJDmF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Apr 2008 23:38:59 -0400
-Received: from fg-out-1718.google.com ([72.14.220.159]:42174 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753590AbYDJDi6 (ORCPT
+	Wed, 9 Apr 2008 23:42:05 -0400
+Received: from fms-01.valinux.co.jp ([210.128.90.1]:41379 "EHLO
+	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754348AbYDJDmC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Apr 2008 23:38:58 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=cV/mIplEz2OWWmg7gq7wdjk2nPAtv275rSEQBZ7aJXVWnfMoaQQOCD4GhS1Xr23XzLVB5bNAZFnlL+LRhAVCNBDUglgguDqDrauWvauiQLf4/6J3mkHOa6NSpsdMmuj4Qa4wHHg3V4iEUlzRdbt9USA45nXBvyK/DeZJsAXljPU=
-Message-ID: <af3ea28a0804092038q59a5b907ndb3d9fa33a6be834@mail.gmail.com>
-Date: Thu, 10 Apr 2008 11:38:55 +0800
-From: "ye janboe" <janboe.ye@gmail.com>
-To: linux-kbuild@vger.kernel.org
-Subject: [PATCH]kbuild: add arm, mips and i386 macros
-Cc: linux-kernel <linux-kernel@vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 9 Apr 2008 23:42:02 -0400
+Date: Thu, 10 Apr 2008 12:41:58 +0900 (JST)
+Message-Id: <20080410.124158.115958557.taka@valinux.co.jp>
+To: gerlof@atcomputing.nl
+Cc: menage@google.com, akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       balbir@in.ibm.com, xemul@openvz.org
+Subject: Re: [PATCH 1/3] accounting: task counters for disk/network
+From: Hirokazu Takahashi <taka@valinux.co.jp>
+In-Reply-To: <6599ad830804072316q441a1816o11f39ee7f9b49c0f@mail.gmail.com>
+References: <20080408054837.GA7103@atcmpg.ATComputing.nl>
+	<20080407231007.4946410d.akpm@linux-foundation.org>
+	<6599ad830804072316q441a1816o11f39ee7f9b49c0f@mail.gmail.com>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-commit a80cc2fe14ce7e7a6de70b5927b9c0a6ee530805
-Author: janboe <janboe.ye@gmail.com>
-Date:   Thu Apr 10 11:18:03 2008 +0800
+Hi Gerlof,
 
-    the commits 56a974fa2d595fe6ebe433c525b8232ead539b76 and
-ae4ac12323c0ff80528cac3269151d580e23f923
-    involved additional macros but not available on cygwin.
-Signed-off-by: Janboe Ye <janboe.ye@gmail.com>
-diff --git a/scripts/mod/modpost.h b/scripts/mod/modpost.h
-index 09f58e3..f864ab8 100644
---- a/scripts/mod/modpost.h
-+++ b/scripts/mod/modpost.h
-@@ -42,6 +42,16 @@
- #define ELF_R_SYM   ELF64_R_SYM
- #define ELF_R_TYPE  ELF64_R_TYPE
- #endif
-+#define R_386_32           1            /* Direct 32 bit  */
-+#define R_386_PC32         2            /* PC relative 32 bit */
-+
-+#define R_ARM_PC24              1       /* PC relative 26 bit branch */
-+#define R_ARM_ABS32             2       /* Direct 32 bit  */
-+
-+#define R_MIPS_32               2       /* Direct 32 bit */
-+#define R_MIPS_26               4       /* Direct 26 bit shifted */
-+#define R_MIPS_HI16             5       /* High 16 bit */
-+#define R_MIPS_LO16             6       /* Low 16 bit */
+> >  This sort of accounting will presumably be needed by a disk bandwidth
+> >  cgroup controller.  Perhaps the containers/cgroup people have plans of code
+> >  already?
+> >
+> 
+> Yes, there have been various cgroup block-I/O subsystems proposed. I
+> know that at least the one posted by Hirokazu Takahashi
+> <taka@valinux.co.jp> uses the same per-page cgroup pointer as the
+> memory controller.
 
- /* The 64-bit MIPS ELF ABI uses an unusual reloc format. */
- typedef struct
+Yes, I'm working on this.
+
+linux-2.6.25-rc series now have the memory controller in them, which
+supports to get the cgroup from any pageframe. I made a block-I/O
+controller on it experimentally.
+
+If you use this controller with dm-ioband, which is an engine implemented
+as a device mapper module to control the bandwidth of block I/Os,
+you can also get "cgroup block I/O accounting" from it.
+
+I guess you can enhance this controller to track the I/Os per process
+if you really want to. But it will cause extra overhead which I think
+you may not ignore.
+
+Thanks,
+Hirokazu Takahashi.
+
+
+
