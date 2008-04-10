@@ -1,100 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758909AbYDJVFZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758841AbYDJVJD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758909AbYDJVFZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Apr 2008 17:05:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755971AbYDJVFP
+	id S1758841AbYDJVJD (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Apr 2008 17:09:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757284AbYDJVIw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Apr 2008 17:05:15 -0400
-Received: from rtr.ca ([76.10.145.34]:4613 "EHLO mail.rtr.ca"
+	Thu, 10 Apr 2008 17:08:52 -0400
+Received: from mx2.netapp.com ([216.240.18.37]:9008 "EHLO mx2.netapp.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753038AbYDJVFN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Apr 2008 17:05:13 -0400
-Message-ID: <47FE8107.4050400@rtr.ca>
-Date: Thu, 10 Apr 2008 17:05:11 -0400
-From: Mark Lord <lkml@rtr.ca>
-Organization: Real-Time Remedies Inc.
-User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
-MIME-Version: 1.0
-To: =?UTF-8?B?SWxwbyBKw6RydmluZW4=?= <ilpo.jarvinen@helsinki.fi>
-Cc: David Miller <davem@davemloft.net>, yoshfuji@linux-ipv6.org,
-       Jeff Garzik <jeff@garzik.org>, rjw@sisk.pl,
-       LKML <linux-kernel@vger.kernel.org>, linux-net@vger.kernel.org,
-       Netdev <netdev@vger.kernel.org>
-Subject: Re: 2.6.25-rc8: FTP transfer errors
-References: <47FCF9DD.6080007@rtr.ca> <20080410.023045.16227424.yoshfuji@linux-ipv6.org> <47FD138B.2060801@rtr.ca> <20080409.152933.132174258.davem@davemloft.net> <47FD590C.5020003@rtr.ca> <Pine.LNX.4.64.0804101147070.24841@wrl-59.cs.helsinki.fi>
-In-Reply-To: <Pine.LNX.4.64.0804101147070.24841@wrl-59.cs.helsinki.fi>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+	id S1752278AbYDJVIu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Apr 2008 17:08:50 -0400
+X-IronPort-AV: E=Sophos;i="4.25,637,1199692800"; 
+   d="scan'208";a="26798820"
+Subject: Re: nfs: infinite loop in fcntl(F_SETLKW)
+From: Trond Myklebust <Trond.Myklebust@netapp.com>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: neilb@suse.de, akpm@linux-foundation.org, linux-nfs@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+In-Reply-To: <1207861339.8180.14.camel@heimdal.trondhjem.org>
+References: <E1JjcgO-0004q2-VJ@pomaz-ex.szeredi.hu>
+	 <E1Jk2oI-0007UX-MS@pomaz-ex.szeredi.hu>
+	 <1207861339.8180.14.camel@heimdal.trondhjem.org>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Organization: Network Appliance Inc
+Date: Thu, 10 Apr 2008 17:07:41 -0400
+Message-Id: <1207861661.8180.18.camel@heimdal.trondhjem.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
+X-OriginalArrivalTime: 10 Apr 2008 21:07:42.0235 (UTC) FILETIME=[EA65BEB0:01C89B4E]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ilpo Järvinen wrote:
-> On Wed, 9 Apr 2008, Mark Lord wrote:
-> 
->> David Miller wrote:
->>> From: Mark Lord <lkml@rtr.ca>
->>> Date: Wed, 09 Apr 2008 15:05:47 -0400
->>>
->>>> But it would be far more useful for whoever has been working on the
->>>> stack to suggest some possible/likely commits to look at instead.
->>> Personally all I see is that one side closes the socket before all
->>> data packets received have been read into the application, resulting
->>> in a (correct) reset going out.
->>>
->>> I can't think of any change we've made over the course of this
->>> release that would change behvaior in that area.
->>>
->>> So you will likely need to bisect.
->> ..
->>
->> Or I can ignore it, like the net developers, since I have a workaround.
->> And then we'll see what other apps are broken upon 2.6.25 final release.
->>
->> Really, folks.  Bug reports are intended to *help* the developers,
->> not something to be thrown back in their faces.
->>
->> There do seem to have been a *lot* of changes around the tcp closing/close
->> code (as I see from diff'ing 2.6.24 against latest -git).
-..
-> I might help if would add netdev on cc list in case you really want to 
-> reac net developers, otherwise they might just end up "ignoring it"... ;-)
-..
 
-Oh.. I didn't know about that list.  How does that differ from linux-net ?
-(Thanks)
+On Thu, 2008-04-10 at 17:02 -0400, Trond Myklebust wrote:
+> On Thu, 2008-04-10 at 21:51 +0200, Miklos Szeredi wrote:
+> > Another infinite loop, this one involving both client and server.
+> > 
+> > Basically what happens is that on the server nlm_fopen() calls
+> > nfsd_open() which returns -EACCES, to which nlm_fopen() returns
+> > NLM_LCK_DENIED.
+> > 
+> > On the client this will turn into a -EAGAIN (nlm_stat_to_errno()),
+> > which in will cause fcntl_setlk() to retry forever.
+> > 
+> > I _think_ the solution is to turn NLM_LCK_DENIED into ENOLCK for
+> > blocking locks, as NLM_LCK_BLOCKED is for the contended case.  For
+> > testing the lock leave NLM_LCK_DENIED as EAGAIN.  That still could be
+> > misleading, but at least there's no infinite loop in that case.
+> > 
+> > I've minimally tested this patch to verify that it cures the lockup,
+> > and that simple blocking locks keep working.
+> > 
+> > Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
+> > ---
+> >  fs/lockd/clntproc.c |    3 +++
+> >  1 file changed, 3 insertions(+)
+> > 
+> > Index: linux/fs/lockd/clntproc.c
+> > ===================================================================
+> > --- linux.orig/fs/lockd/clntproc.c	2008-04-02 13:34:57.000000000 +0200
+> > +++ linux/fs/lockd/clntproc.c	2008-04-10 21:23:46.000000000 +0200
+> > @@ -536,6 +536,9 @@ again:
+> >  		up_read(&host->h_rwsem);
+> >  	}
+> >  	status = nlm_stat_to_errno(resp->status);
+> > +	/* Don't return EAGAIN, as that would make fcntl_setlk() loop */
+> > +	if (status == -EAGAIN)
+> > +		status = -ENOLCK;
+> >  out_unblock:
+> >  	nlmclnt_finish_block(block);
+> >  	/* Cancel the blocked request if it is still pending */
+> 
+> 
+> Wait. There is something really weird going on here.
+> 
+> According to the spec, LCK_DENIED means 'the request failed' (i.e.
+> ENOLCK is definitely correct)
+> 
+> OTOH, LCK_DENIED_NOLOCKS and LCK_DENIED_GRACE_PERIOD are both temporary
+> failures, the first because the server had a resource problem, and the
+> second because the server rebooted and is in the grace period (i.e.
+> EAGAIN would appear to be more appropriate). See
+> 
+> http://www.opengroup.org/onlinepubs/9629799/chap10.htm#tagcjh_11_02_02_02
+> 
+> AFAICS, the correct thing to do is to fix nlm_stat_to_errno() by
+> swapping the return values for NLM_LCK_DENIED and
+> NLM_LCK_DENIED_NOLOCKS/NLM_LCK_DENIED_GRACE_PERIOD.
+> 
+> The problem is that there appears to be a similar confusion on the Linux
+> server side in nlmsvc_lock(). :-(
 
-> 
->> reducing the mountain of commits to a big handful or two.
-> 
-> Those touching fin/close are mostly whitespace/move things, so I doubt 
-> that you find these useful but in case you insist, here's the list:
->
-> 056834d9f6f6eaf4cc7268569e53acab957aac27 [TCP]: cleanup tcp_{in,out}put.c style
-> 058dc3342b71ffb3531c4f9df7c35f943f392b8d [TCP]: reduce tcp_output's indentation levels a bit
-> 490d5046930276aae50dd16942649bfc626056f7 [TCP]: Uninline tcp_set_state
-> 
-> In addition, there's this one (...though I have read it number of times 
-> through and still cannot catch something that would cause the wrongness 
-> you're seeing):
-> 
-> e870a8efcddaaa3da7e180b6ae21239fb96aa2bb [TCP]: Perform setting of common 
-> control fields in one place
-> 
-> There's very little really on interesting side I can think of, mostly 
-> thinks are congestion control related changes... ...maybe either one of 
-> these could cause something unpleasant in some corner case:
-> 
-> bd515c3e48ececd774eb3128e81b669dbbd32637 [TCP]: Fix TSO deferring
-> 0e3a4803aa06cd7bc2cfc1d04289df4f6027640a [TCP]: Force TSO splits to MSS boundaries
-> 
-> ...e.g., if the latter causes a return with zero limit under some 
-> conditions, tso_fragment might generate, well, interesting packets and 
-> never finish if the condition persists but.
-..
+Duh... Sorry, EAGAIN is indeed the correct return value for fcntl() when
+the lock attempt failed. I should have reread the manpage/posix spec
+before replying.
 
-That matches my own assessment there, too: lot's of whitespace changes,
-and not much real code difference on most paths.  Bummer.  :)
+-- 
+Trond Myklebust
+Linux NFS client maintainer
 
--ml
-
+NetApp
+Trond.Myklebust@netapp.com
+www.netapp.com
