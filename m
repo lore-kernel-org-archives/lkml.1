@@ -1,63 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755844AbYDJLnI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756509AbYDJLok@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755844AbYDJLnI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Apr 2008 07:43:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754605AbYDJLmz
+	id S1756509AbYDJLok (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Apr 2008 07:44:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755065AbYDJLob
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Apr 2008 07:42:55 -0400
-Received: from smtp-out0.tiscali.nl ([195.241.79.175]:39940 "EHLO
-	smtp-out0.tiscali.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754497AbYDJLmz (ORCPT
+	Thu, 10 Apr 2008 07:44:31 -0400
+Received: from fk-out-0910.google.com ([209.85.128.187]:19314 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752737AbYDJLob (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Apr 2008 07:42:55 -0400
-Message-ID: <47FDFD3C.1030708@tiscali.nl>
-Date: Thu, 10 Apr 2008 13:42:52 +0200
-From: Roel Kluin <12o3l@tiscali.nl>
+	Thu, 10 Apr 2008 07:44:31 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:subject:content-type:content-transfer-encoding;
+        b=NfXHO4rQIandJH9cMYt4MULNKW4e6oq9FPM4daqAS9srK19JQgjy8nvKdfUBpfl+/4hrlm3eCZJqRCzKewN1QTDZhnm+o7yO5Upn0HFw/uqHT55i6elLO2ywEvrsPQn9jVlQyaz7ZuUs1xuEg9ahXZJsrRmmDAKlNK68w0nHhM4=
+Message-ID: <47FDFCC9.5070106@gmail.com>
+Date: Thu, 10 Apr 2008 13:40:57 +0200
+From: Jacek Luczak <difrost.kernel@gmail.com>
 User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-To: Johannes Weiner <hannes@saeurebad.de>
-CC: linux-mm@kvack.org, lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] pagewalk: don't pte_unmap(NULL) in walk_pte_range()
-References: <47FC95AD.1070907@tiscali.nl> <87zls3qhop.fsf@saeurebad.de>
-In-Reply-To: <87zls3qhop.fsf@saeurebad.de>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       linux-next@vger.kernel.org, tglx@linutronix.de
+Subject: [patch x86] e820_64: fix section mismatch warning
+Content-Type: text/plain; charset=ISO-8859-2; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Johannes Weiner wrote:
-> Hi,
-> 
-> Roel Kluin <12o3l@tiscali.nl> writes:
-> 
->> This is right isn't it?
->> ---
->> Don't pte_unmap a NULL pointer, but the previous.
-> 
-> Which NULL pointer?
-> 
->> Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
->> ---
->> diff --git a/mm/pagewalk.c b/mm/pagewalk.c
->> index 1cf1417..6615f0b 100644
->> --- a/mm/pagewalk.c
->> +++ b/mm/pagewalk.c
->> @@ -15,7 +15,7 @@ static int walk_pte_range(pmd_t *pmd, unsigned long addr, unsigned long end,
->>  		       break;
->>  	} while (pte++, addr += PAGE_SIZE, addr != end);
->>  
->> -	pte_unmap(pte);
->> +	pte_unmap(pte - 1);
->>  	return err;
->>  }
-> 
-> This does not make any sense to me.
+Hi Ingo,
 
-you are right, please ignore.
+this patch (against x86/latest) fixes section mismatch warnings which occurs on my x86_64 box while compiling 
+linux-next-20080410.
 
-> 	Hannes
+Warning messages:
 
-thanks,
+WARNING: arch/x86/kernel/built-in.o(.text+0x7bc2): Section mismatch in reference from the function bad_addr() to the 
+variable .init.data:early_res
+The function bad_addr() references
+the variable __initdata early_res.
+This is often because bad_addr lacks a __initdata
+annotation or the annotation of early_res is wrong.
 
-Roel
+WARNING: arch/x86/kernel/built-in.o(.text+0x7c3b): Section mismatch in reference from the function bad_addr_size() to 
+the variable .init.data:early_res
+The function bad_addr_size() references
+the variable __initdata early_res.
+This is often because bad_addr_size lacks a __initdata
+annotation or the annotation of early_res is wrong.
+
+Signed-off-by: Jacek Luczak <luczak.jacek@gmail.com>
+
+---
+  e820_64.c |    4 ++--
+  1 file changed, 2 insertions(+), 2 deletions(-)
+
+
+diff --git a/arch/x86/kernel/e820_64.c b/arch/x86/kernel/e820_64.c
+index 4f4b690..645ee5e 100644
+--- a/arch/x86/kernel/e820_64.c
++++ b/arch/x86/kernel/e820_64.c
+@@ -123,7 +123,7 @@ void __init early_res_to_bootmem(unsigned long start, unsigned long end)
+  }
+
+  /* Check for already reserved areas */
+-static inline int
++static inline int __init
+  bad_addr(unsigned long *addrp, unsigned long size, unsigned long align)
+  {
+  	int i;
+@@ -143,7 +143,7 @@ again:
+  }
+
+  /* Check for already reserved areas */
+-static inline int
++static inline int __init
+  bad_addr_size(unsigned long *addrp, unsigned long *sizep, unsigned long align)
+  {
+  	int i;
+
