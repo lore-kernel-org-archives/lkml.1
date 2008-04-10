@@ -1,47 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756716AbYDJM2A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756311AbYDJMdY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756716AbYDJM2A (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Apr 2008 08:28:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755061AbYDJM1w
+	id S1756311AbYDJMdY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Apr 2008 08:33:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755382AbYDJMdP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Apr 2008 08:27:52 -0400
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:57610 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754203AbYDJM1w (ORCPT
+	Thu, 10 Apr 2008 08:33:15 -0400
+Received: from mtagate3.de.ibm.com ([195.212.29.152]:16977 "EHLO
+	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755061AbYDJMdP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Apr 2008 08:27:52 -0400
-Date: Thu, 10 Apr 2008 13:27:06 +0100
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-To: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <Uwe.Kleine-Koenig@digi.com>
-Cc: =?iso-8859-1?Q?Hans-J=FCrgen?= Koch <hjk@linutronix.de>,
-       Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org,
-       linux-arm-kernel@lists.arm.linux.org.uk
-Subject: Re: [PATCH] arch/arm/Kconfig: Make UIO available on ARM architecture
-Message-ID: <20080410122706.GG26575@flint.arm.linux.org.uk>
-References: <20080207133805.13f092ff@dilbert.local> <20080207130222.GA8587@flint.arm.linux.org.uk> <20080207141236.00940d09@dilbert.local> <20080211092547.09bca061@dilbert.local> <20080410122127.GA8096@digi.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20080410122127.GA8096@digi.com>
-User-Agent: Mutt/1.4.2.1i
+	Thu, 10 Apr 2008 08:33:15 -0400
+Message-ID: <47FE0906.8080102@fr.ibm.com>
+Date: Thu, 10 Apr 2008 14:33:10 +0200
+From: Cedric Le Goater <clg@fr.ibm.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+MIME-Version: 1.0
+To: "H. Peter Anvin" <hpa@zytor.com>
+CC: sukadev@us.ibm.com, Andrew Morton <akpm@osdl.org>, serue@us.ibm.com,
+       "David C. Hansen" <haveblue@us.ibm.com>,
+       Pavel Emelyanov <xemul@openvz.org>,
+       Containers <containers@lists.osdl.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/3] clone64() and unshare64() system calls
+References: <20080409222611.GA28087@us.ibm.com> <47FD5899.2040206@zytor.com> <20080410010717.GA28477@us.ibm.com> <47FD6921.6090408@zytor.com>
+In-Reply-To: <47FD6921.6090408@zytor.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 10, 2008 at 02:21:27PM +0200, Uwe Kleine-König wrote:
-> Hello,
+H. Peter Anvin wrote:
+> sukadev@us.ibm.com wrote:
+>>>
+>>> If you're going to make it a 64-bit pass it in as a 64-bit number,
+>>> instead of breaking it into two numbers.
+>>
+>> Maybe I am missing your point. The glibc interface could take a 64bit
+>> parameter, but don't we need to pass 32-bit values into the system
+>> call on 32 bit systems ?
 > 
-> Hans-Jürgen Koch wrote:
-> > Am Thu, 7 Feb 2008 14:12:36 +0100
-> > schrieb Hans-Jürgen Koch <hjk@linutronix.de>:
-> > 
-> > AFAICT, this patch was neither rejected nor applied. It generated a
-> > long thread about changing the whole ARM Kconfig system. I feel not
-> > qualified to do that, but I still want UIO available on ARM ;-)
-> > What can I do to help?
-> Anything new here?
-> 
-> In my eyes this can be sent to the patch system.
+> Not as such, no.  The ABI handles that.  To make the ABI clean on some
+> architectures, it's good to consider a 64-bit value only in positions
+> where they map to an even:odd register pair once slotted in.
 
-I don't remember anything about this...
+OK. I didn't know that. I took sys_llseek() as an example of an interface 
+to follow when coded clone64(). 
+
+Thanks,
+
+C. 
