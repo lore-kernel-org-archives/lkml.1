@@ -1,73 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760136AbYDJPhb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760866AbYDJPhn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760136AbYDJPhb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Apr 2008 11:37:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756843AbYDJPhU
+	id S1760866AbYDJPhn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Apr 2008 11:37:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756261AbYDJPhf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Apr 2008 11:37:20 -0400
-Received: from styx.suse.cz ([82.119.242.94]:54724 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756973AbYDJPhT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Apr 2008 11:37:19 -0400
-From: Michal Hocko <mhocko@suse.cz>
-To: Jan Kara <jack@suse.cz>
-Subject: Re: file offset corruption on 32-bit machines?
-Date: Thu, 10 Apr 2008 17:37:16 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Jiri Kosina <jkosina@suse.cz>, Meelis Roos <mroos@linux.ee>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       linux-fsdevel@vger.kernel.org
-References: <Pine.SOC.4.64.0804081101430.28938@math.ut.ee> <Pine.LNX.4.64.0804101628000.3896@jikos.suse.cz> <20080410151945.GE6725@atrey.karlin.mff.cuni.cz>
-In-Reply-To: <20080410151945.GE6725@atrey.karlin.mff.cuni.cz>
+	Thu, 10 Apr 2008 11:37:35 -0400
+Received: from 81-174-11-161.static.ngi.it ([81.174.11.161]:59105 "EHLO
+	mail.enneenne.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760418AbYDJPhe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Apr 2008 11:37:34 -0400
+Date: Thu, 10 Apr 2008 17:36:59 +0200
+From: Rodolfo Giometti <giometti@enneenne.com>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       David Woodhouse <dwmw2@infradead.org>, Dave Jones <davej@redhat.com>,
+       Sam Ravnborg <sam@ravnborg.org>, Greg KH <greg@kroah.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Kay Sievers <kay.sievers@vrfy.org>
+Message-ID: <20080410153659.GF26777@enneenne.com>
+References: <1207840560-24015-1-git-send-email-giometti@linux.it> <1207840560-24015-2-git-send-email-giometti@linux.it> <1207840560-24015-3-git-send-email-giometti@linux.it> <1207840560-24015-4-git-send-email-giometti@linux.it> <1207840560-24015-5-git-send-email-giometti@linux.it> <1207840560-24015-6-git-send-email-giometti@linux.it> <20080410162812.39414ec5@core>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200804101737.16825.mhocko@suse.cz>
+In-Reply-To: <20080410162812.39414ec5@core>
+Organization: GNU/Linux Device Drivers, Embedded Systems and Courses
+X-PGP-Key: gpg --keyserver keyserver.linux.it --recv-keys D25A5633
+User-Agent: Mutt/1.5.16 (2007-06-11)
+X-SA-Exim-Connect-IP: 192.168.32.1
+X-SA-Exim-Mail-From: giometti@enneenne.com
+Subject: Re: [PATCH 5/7] PPS: serial clients support.
+X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
+X-SA-Exim-Scanned: Yes (on mail.enneenne.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 10 April 2008 05:19:45 pm Jan Kara wrote:
-> > On Thu, 10 Apr 2008, Jan Kara wrote:
-> > > > The f_pos races are in fact exploitable, we've already been there.
-> > > > See for example
-> > > > http://www.isec.pl/vulnerabilities/isec-0016-procleaks.txt
-> > >
-> > >   Well, this race is more subtle - the window is just one instruction
-> > > wide (stores to f_pos from CPU2 must come between the store of lower
-> > > and upper 32-bits of f_pos on CPU1). And the only result is that f_pos
-> > > has 32-bits from one file pointer and 32-bits from the other one. So I
-> > > can hardly imagine this would be exploitable...
-> >
-> > Supposing you are not holding any spinlock and are running with
-> > preemptible kernel (pretty common scenario nowadays), there is nothing
-> > that would prevent kernel from rescheduling between the two instructions,
-> > enlarging the race window to be more comfortable for attacker, right?
->
->   Yes, this is theoretically possible.
->
-> > I think this is worth fixing.
->
->   Hmm, maybe it is, although I still don't see how to exploit it :).
+On Thu, Apr 10, 2008 at 04:28:12PM +0100, Alan Cox wrote:
+> On Thu, 10 Apr 2008 17:15:58 +0200
+> Rodolfo Giometti <giometti@linux.it> wrote:
+> 
+> > Adds support for the PPS sources connected with the CD (Carrier
+> > Detect) pin of a serial port.
+> 
+> Ok why does this need to hack the driver layer ?
+> 
+> > -static void uart_change_speed(struct uart_state *state,
+> > -					struct ktermios *old_termios);
+> > +static void uart_change_speed(struct uart_state *state, struct ktermios *old_termios);
+> 
+> NAK. Please remove random formatting changes
 
-Maybe (just guess) some high priority malicious process could try to preempt 
-reading thread to always in the bad moment (when the half of the f_pos is 
-written) and thus forcing it to read bad data (you usually don't check that 
-file position is growing after each read and you wait only for end of the 
-file). 
-But do agree, I still don't see something with really security implications 
-(privileged processes usually don't work with such a big files).
+Sorry, this patch is wrong! I'll re-submit the right code. '-_-
 
->
-> 									Honza
+Thanks,
 
+Rodolfo
 
-Best regards
 -- 
-Michal Hocko
-SUSE LINUX s.r.o.
-Lihovarska 1060/12
-190 00 Praha 9    
-Czech Republic 
+
+GNU/Linux Solutions                  e-mail:    giometti@enneenne.com
+Linux Device Driver                             giometti@linux.it
+Embedded Systems                     phone:	+39 349 2432127
+UNIX programming                     skype:     rodolfo.giometti
