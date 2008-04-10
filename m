@@ -1,57 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760221AbYDKOvx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760193AbYDKO7U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760221AbYDKOvx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Apr 2008 10:51:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756958AbYDKOvo
+	id S1760193AbYDKO7U (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Apr 2008 10:59:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759463AbYDKO7E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Apr 2008 10:51:44 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:60376 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1758193AbYDKOvo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Apr 2008 10:51:44 -0400
-Date: Fri, 11 Apr 2008 15:46:52 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
-Cc: Rodolfo Giometti <giometti@enneenne.com>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Woodhouse <dwmw2@infradead.org>, Dave Jones <davej@redhat.com>,
-       Sam Ravnborg <sam@ravnborg.org>, Greg KH <greg@kroah.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Kay Sievers <kay.sievers@vrfy.org>
-Subject: Re: [PATCH 5/7] PPS: serial clients support.
-Message-ID: <20080411154652.4852b6d4@core>
-In-Reply-To: <20080411134724.GF2160@csclub.uwaterloo.ca>
-References: <20080410160630.GA24885@enneenne.com>
-	<1207851751-25703-1-git-send-email-giometti@linux.it>
-	<1207851751-25703-2-git-send-email-giometti@linux.it>
-	<1207851751-25703-3-git-send-email-giometti@linux.it>
-	<1207851751-25703-4-git-send-email-giometti@linux.it>
-	<1207851751-25703-5-git-send-email-giometti@linux.it>
-	<1207851751-25703-6-git-send-email-giometti@linux.it>
-	<20080410210918.3be98868@core>
-	<20080411075515.GH26777@enneenne.com>
-	<20080411092840.3cc4de67@core>
-	<20080411134724.GF2160@csclub.uwaterloo.ca>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 11 Apr 2008 10:59:04 -0400
+Received: from ozlabs.org ([203.10.76.45]:41411 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759295AbYDKO7D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Apr 2008 10:59:03 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Subject: Re: [patch 12/17] Immediate Values - Kconfig menu in EMBEDDED (updated)
+Date: Fri, 11 Apr 2008 07:54:09 +1000
+User-Agent: KMail/1.9.9
+Cc: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, Andi Kleen <andi@firstfloor.org>,
+       Adrian Bunk <bunk@stusta.de>, Christoph Hellwig <hch@infradead.org>,
+       akpm@osdl.org
+References: <20080409150829.855195878@polymtl.ca> <200804101323.56697.rusty@rustcorp.com.au> <20080410193226.GA22894@Krystal>
+In-Reply-To: <20080410193226.GA22894@Krystal>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200804110754.10706.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I thought it just required that the uart driver call
-> uart_handle_dcd_change when the state of the CD changes, and all the PPS
-> stuff happened in that function.
+On Friday 11 April 2008 05:32:26 Mathieu Desnoyers wrote:
+> +	  It consumes slightly more memory and requires to modify the
+> +	  instruction stream each time a variable is updated.
 
-uart_ is only used by some drivers. We have a whole army of drivers using
-the tty layer directly and another army of drivers using the USB layer.
+Sorry, I missed this grammar bug last time.  Also, probable don't want to 
+scare someone that we're changing instructions on every var change :)
 
-You also need a sensible way to talk to the devices, identify support and
-avoid clashing uses of carrier pins.
+	It consumes slightly more memory and modifies the instruction
+	stream each time any specially-marked variable is updated.
 
-Alan
+Thanks,
+Rusty.
