@@ -1,52 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758445AbYDJQGn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758892AbYDJQH2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758445AbYDJQGn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Apr 2008 12:06:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755964AbYDJQGf
+	id S1758892AbYDJQH2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Apr 2008 12:07:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756628AbYDJQHR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Apr 2008 12:06:35 -0400
-Received: from 81-174-11-161.static.ngi.it ([81.174.11.161]:53231 "EHLO
-	mail.enneenne.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754203AbYDJQGf (ORCPT
+	Thu, 10 Apr 2008 12:07:17 -0400
+Received: from fg-out-1718.google.com ([72.14.220.153]:12143 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755964AbYDJQHQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Apr 2008 12:06:35 -0400
-Date: Thu, 10 Apr 2008 18:06:30 +0200
-From: Rodolfo Giometti <giometti@enneenne.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       David Woodhouse <dwmw2@infradead.org>, Dave Jones <davej@redhat.com>,
-       Sam Ravnborg <sam@ravnborg.org>, Greg KH <greg@kroah.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Kay Sievers <kay.sievers@vrfy.org>
-Message-ID: <20080410160630.GA24885@enneenne.com>
-References: <20080410160122.GA24899@enneenne.com>
+	Thu, 10 Apr 2008 12:07:16 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=PJbg4rpKQMzo6LVhPRkHvEsN/qFw2wXHptDF6x3oi2FlDyoKR83QkrW/WvJo+ykwCvkB8ft4vaHkb51DrggaTR+E/N2hKR51+LrG2o29+3PmscWNrm4n4W0Sjipui3NgehdUKsKbLuYTSFZWiLCGQT5BbMEY+TieSWeSETIOSlM=
+Message-ID: <e2e108260804100907i58fa5d36ma0cb415c10054a2d@mail.gmail.com>
+Date: Thu, 10 Apr 2008 18:07:14 +0200
+From: "Bart Van Assche" <bart.vanassche@gmail.com>
+To: "Jack Harvard" <jack.harvard@googlemail.com>
+Subject: Re: gettimeofday() resolution in Linux?
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <a72f6a3c0804100740s687beacbh80653107f4a7b702@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080410160122.GA24899@enneenne.com>
-Organization: GNU/Linux Device Drivers, Embedded Systems and Courses
-X-PGP-Key: gpg --keyserver keyserver.linux.it --recv-keys D25A5633
-User-Agent: Mutt/1.5.16 (2007-06-11)
-X-SA-Exim-Connect-IP: 192.168.32.1
-X-SA-Exim-Mail-From: giometti@enneenne.com
-Subject: Re: [PATCH 5/7] PPS: serial clients support.
-X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
-X-SA-Exim-Scanned: Yes (on mail.enneenne.com)
+References: <a72f6a3c0804100740s687beacbh80653107f4a7b702@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 10, 2008 at 06:01:22PM +0200, Rodolfo Giometti wrote:
-> Adds support for the PPS sources connected with the CD (Carrier
-> Detect) pin of a serial port.
+On Thu, Apr 10, 2008 at 4:40 PM, Jack Harvard
+<jack.harvard@googlemail.com> wrote:
+>  I would like to ask a few questions about how Linux keeps time.
+>
+>  As far as I understand,
+>  1. Linux's time resolution is 10ms, as defined by HZ=100.
+>  2. gettimeofday() can get time in microseconds, but I'm not sure about
+>  the accuracy of the time finer than 10ms. Sometimes gettimeofday( )
+>  can even give me microseconds results rolled backwards in time, which
+>  I suspect could be caused by its accuracy. My question here is "how
+>  accurate is the time from gettimeofday()"
+>  3. If I want to increase the time resolution to 1ms, I can possibly
+>  change HZ=1000, but if I want 1usec resolution, how can I do that? It
+>  would be too busy for the processor to handle so frequent timer
+>  interrupts if I just increase HZ=1000000.
 
-Should I resubmit the whole patch set?
+You should use clock_gettime(CLOCK_MONOTONIC) instead of
+gettimeofday() for interval timing. As soon as NTP software is
+running, the result of gettimeofday() can jump forward or backward in
+time. The result of clock_gettime() is guaranteed to be monotonic, and
+additionally the resolution of clock_gettime() is higher than
+gettimeofday() -- 1 ns instead of 1 us.
 
-Rodolfo
+Changing HZ only makes sense on very old hardware that does not have a
+TSC or equivalent register (e.g. the Intel 486 CPU).
 
--- 
-
-GNU/Linux Solutions                  e-mail:    giometti@enneenne.com
-Linux Device Driver                             giometti@linux.it
-Embedded Systems                     phone:	+39 349 2432127
-UNIX programming                     skype:     rodolfo.giometti
+Bart.
