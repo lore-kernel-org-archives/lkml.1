@@ -1,51 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755899AbYDJJ5b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755540AbYDJKHQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755899AbYDJJ5b (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Apr 2008 05:57:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752948AbYDJJ5T
+	id S1755540AbYDJKHQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Apr 2008 06:07:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753032AbYDJKHE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Apr 2008 05:57:19 -0400
-Received: from ZSM1387.piap.pl ([195.187.100.11]:51726 "EHLO khc.piap.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752171AbYDJJ5R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Apr 2008 05:57:17 -0400
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Frans Pop <elendil@planet.nl>, Ingo Molnar <mingo@elte.hu>,
-       jeff@garzik.org, matthew@wil.cx, auke-jan.h.kok@intel.com,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       e1000-devel@lists.sourceforge.net, linux-pci@atrey.karlin.mff.cuni.cz,
-       akpm@linux-foundation.org, davem@davemloft.net,
-       jesse.brandeburg@intel.com, john.ronciak@intel.com,
-       bruce.w.allan@intel.com, greg@kroah.com, arjan@linux.intel.com,
-       rjw@sisk.pl
-Subject: Re: [patch] e1000=y && e1000e=m regression fix (was: Re: [regression] e1000e broke e1000)
-References: <20080408083606.GA20863@elte.hu> <47FB9ABB.9080403@intel.com>
-	<20080408183921.GA20803@elte.hu>
-	<20080408193245.GG11962@parisc-linux.org>
-	<20080408195123.GA28148@elte.hu> <47FBCE00.2020309@garzik.org>
-	<20080408200652.GC28148@elte.hu> <47FBD34A.6080508@garzik.org>
-	<20080408203314.GA28952@elte.hu> <47FBDBE9.9040700@garzik.org>
-	<47FBDBE9.9040700@garzik.org> <20080409193850.GA11763@elte.hu>
-	<200804092249.23111.elendil@planet.nl>
-	<m363uqwpds.fsf@maximus.localdomain>
-	<alpine.LFD.1.00.0804091838330.3143@woody.linux-foundation.org>
-From: Krzysztof Halasa <khc@pm.waw.pl>
-Date: Thu, 10 Apr 2008 11:57:15 +0200
-In-Reply-To: <alpine.LFD.1.00.0804091838330.3143@woody.linux-foundation.org> (Linus Torvalds's message of "Wed\, 9 Apr 2008 18\:40\:24 -0700 \(PDT\)")
-Message-ID: <m34paaav7o.fsf@maximus.localdomain>
+	Thu, 10 Apr 2008 06:07:04 -0400
+Received: from mail1.bur.st ([203.82.212.241]:46512 "EHLO creep.bur.st"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752265AbYDJKHD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Apr 2008 06:07:03 -0400
+Date: Thu, 10 Apr 2008 11:59:30 +0200
+From: Rodney Lorrimar <rodney@rodney.id.au>
+To: Pavel Machek <pavel@suse.cz>
+Cc: jikos@suse.cz, linux-kernel@vger.kernel.org,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Andrew McNabb <amcnabb@mcnabbs.org>
+Subject: Re: [PATCH] Input: adbhid - fix capslock key state after suspend
+Message-ID: <20080410095930.GA2945@solaria.local>
+References: <20080328001556.GA30148@solaria.local> <20080328105855.GA1686@elf.ucw.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="EeQfGwPcQSOJBaQU"
+Content-Disposition: inline
+In-Reply-To: <20080328105855.GA1686@elf.ucw.cz>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds <torvalds@linux-foundation.org> writes:
 
->> Nope, udev with normal distro config will load e1000e just fine.
->
-> Not for us that don't compile modules at all, or only modules for the 
-> devices we actually have.
+--EeQfGwPcQSOJBaQU
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-That would work, too.
--- 
-Krzysztof Halasa
+On Fri, Mar 28, 2008 at 11:58:55AM +0100, Pavel Machek wrote:
+> On Fri 2008-03-28 01:15:56, Rodney Lorrimar wrote:
+> > If the adbhid module parameter restore_capslock_events is used,
+> > sometimes capslock will get stuck down after resuming.
+>=20
+> Hmmm, why does that need to be a parameter? I mean... can we just do
+> the right thing?
+
+Hi Pavel,
+
+Sorry for taking so long to answer your questions. We can mostly do
+the right thing. I suppose it was a parameter so the quirk fixing
+didn't ruin the fun for the majority of users who don't remap their
+capslock. I know of two issues with the code:
+
+1. Under heavy capslock usage the capslock key will sometimes get
+   stuck down.
+2. If the capslock LED is on and the power button is pressed, a "power
+   button release" key event won't happen until capslock is pressed
+   again. So in some situations (e.g. with pbbuttonsd) the next time
+   capslock is hit the machine will suspend.
+
+
+I will send a patch for 2, and continue to investigate 1.
+
+Regarding the original patch, I think it's worth applying. If 1 is
+fixable then I will prepare two more patches to fix problem 1 and
+remove the parameter.
+
+
+Rodney
+
+--EeQfGwPcQSOJBaQU
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFH/eUCbBchLr+YxKcRAg2IAJ4gIuRbzkd5K+D66XB+FZHG+qtWXwCgmDik
+WhziST4pHKHJbgCPAb9kc9g=
+=M/6n
+-----END PGP SIGNATURE-----
+
+--EeQfGwPcQSOJBaQU--
