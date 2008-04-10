@@ -1,155 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756219AbYDJLr3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756219AbYDJLy1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756219AbYDJLr3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Apr 2008 07:47:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752737AbYDJLrW
+	id S1756219AbYDJLy1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Apr 2008 07:54:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755232AbYDJLyS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Apr 2008 07:47:22 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:52772 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752171AbYDJLrV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Apr 2008 07:47:21 -0400
-Date: Thu, 10 Apr 2008 21:47:11 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       Andy Whitcroft <apw@shadowen.org>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [BUG] linux-next: Tree for April 9 warning on
- CC_STACKPROTECTOR, followed by kernel panic
-Message-Id: <20080410214711.cf0c57c7.sfr@canb.auug.org.au>
-In-Reply-To: <47FDE045.4070509@linux.vnet.ibm.com>
-References: <20080409185309.b94c9d15.sfr@canb.auug.org.au>
-	<47FDE045.4070509@linux.vnet.ibm.com>
-X-Mailer: Sylpheed 2.5.0beta1 (GTK+ 2.12.9; i486-pc-linux-gnu)
+	Thu, 10 Apr 2008 07:54:18 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:33447 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754268AbYDJLyR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Apr 2008 07:54:17 -0400
+Date: Thu, 10 Apr 2008 12:32:30 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, Andy Whitcroft <apw@shadowen.org>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Linux IDE mailing list <linux-ide@vger.kernel.org>
+Subject: Re: [BUG] linux-next: Tree for April 10 - kernel panic while
+ loading ata driver on powermac
+Message-ID: <20080410123230.7203f626@core>
+In-Reply-To: <47FDEFC8.9070105@garzik.org>
+References: <20080410181404.b76939a6.sfr@canb.auug.org.au>
+	<47FDEAFA.10407@linux.vnet.ibm.com>
+	<47FDEFC8.9070105@garzik.org>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Thu__10_Apr_2008_21_47_11_+1000_j9o7Vi8==pqpi._0"
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Thu__10_Apr_2008_21_47_11_+1000_j9o7Vi8==pqpi._0
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Thu, 10 Apr 2008 06:45:28 -0400
+Jeff Garzik <jeff@garzik.org> wrote:
 
-CC to Ingo ...
+> Kamalesh Babulal wrote:
+> > Hi Stephen,
+> > 
+> > The next-20080410 kernel panics while bootup over the PowerMac G5 box, while
+> > loading the ATA driver.
+> 
+> IDE driver, you mean.
 
-On Thu, 10 Apr 2008 15:09:17 +0530 Kamalesh Babulal <kamalesh@linux.vnet.ib=
-m.com> wrote:
->
-> Hi Stephen,
->=20
-> The next-20080409 kernel warns while booting up on a x86_64 machine.
-> When compiled the kernel with CONFIG_CC_STACKPROTECTOR=3Dy, the warning
-> is followed by the kernel panic.
->=20
-> Testing -fstack-protector-all feature
-> No -fstack-protector-stack-frame!
-> -fstack-protector-all test failed
-> ------------[ cut here ]------------
-> WARNING: at kernel/panic.c:365 __stack_chk_test+0x4b/0x50()
-> Modules linked in:
-> Pid: 1, comm: swapper Not tainted 2.6.25-rc8-next-20080409-autotest #1
->=20
-> Call Trace:
->  [<ffffffff80231f5e>] warn_on_slowpath+0x51/0x63
->  [<ffffffff80232d93>] printk+0x4e/0x56
->  [<ffffffff80382fcd>] extract_entropy+0x47/0x90
->  [<ffffffff80230000>] dup_mm+0xca/0x3fd
->  [<ffffffff80231eba>] __stack_chk_test_func+0x21/0x32
->  [<ffffffff80231fbb>] __stack_chk_test+0x4b/0x50
->  [<ffffffff808ba8f1>] kernel_init+0x189/0x2f9
->  [<ffffffff804ee221>] _spin_unlock_irq+0x9/0xc
->  [<ffffffff8020cb88>] child_rip+0xa/0x12
->  [<ffffffff808ba768>] kernel_init+0x0/0x2f9
->  [<ffffffff8020cb7e>] child_rip+0x0/0x12
->=20
-> ---[ end trace d88d2f3a71e3b32c ]---
-> Freeing unused kernel memory: 368k freed
-> Write protecting the kernel read-only data: 4188k
-> BUG: unable to handle kernel NULL pointer dereference at 00000000000002e8
-> IP: [<ffffffff80286c11>] kmem_cache_alloc+0x19/0x6b
-> PGD 3e925067 PUD 3e924067 PMD 0=20
-> Oops: 0000 [1] SMP=20
-> last sysfs file:=20
-> CPU 0=20
-> Modules linked in:
-> Pid: 1, comm: init Not tainted 2.6.25-rc8-next-20080409-autotest #1
-> RIP: 0010:[<ffffffff80286c11>]  [<ffffffff80286c11>] kmem_cache_alloc+0x1=
-9/0x6b
-> RSP: 0000:ffff81003f9c9f08  EFLAGS: 00010046
-> RAX: 0000000000000000 RBX: 0000000000000246 RCX: ffffffff80211f7e
-> RDX: 00007fff1f89e710 RSI: 00000000000000d0 RDI: 0000000000000000
-> RBP: 00007fff1f89e6f8 R08: 000000000065e300 R09: 000000000065e2e8
-> R10: 000000000066d800 R11: 0000000000000203 R12: 00000000000000d0
-> R13: 000000000047c290 R14: 000000000047c250 R15: 0000000000000000
-> FS:  000000000066d870(0063) GS:ffffffff8067a000(0000) knlGS:0000000000000=
-000
-> CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
-> CR2: 00000000000002e8 CR3: 000000003e921000 CR4: 00000000000006e0
-> DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-> DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-> Process init (pid: 1, threadinfo ffff81003f9c8000, task ffff81003f9c6000)
-> Stack:  ffff81003f9c6000 00007fff1f89e6f8 0000000000000002 ffffffff80211f=
-7e
->  ffff81003e920060 ffffffff8033419c ffff81003f9c6000 ffffffff8020d96a
->  0000000000000000 ffffffff804ee379 0000000000000000 000000000047c250
-> Call Trace:
->  [<ffffffff80211f7e>] ? init_fpu+0x88/0xc9
->  [<ffffffff8033419c>] ? __up_read+0x13/0x8a
->  [<ffffffff8020d96a>] ? math_state_restore+0x19/0x5a
->  [<ffffffff804ee379>] ? error_exit+0x0/0x51
->=20
->=20
-> Code: 4b 18 31 c0 48 89 f7 fc f3 aa 5b 5d 41 5c 48 89 f0 c3 41 54 41 89 f=
-4 55 53 48 8b 4c 24 18 9c 5b fa 65 8b 04 25 24 00 00 00 48 98 <48> 8b ac c7=
- e8 02 00 00 48 8b 55 00 48 85 d2 75 10 83 ca ff 49=20
-> RIP  [<ffffffff80286c11>] kmem_cache_alloc+0x19/0x6b
->  RSP <ffff81003f9c9f08>
-> CR2: 00000000000002e8
-> ---[ end trace d88d2f3a71e3b32c ]---
-> Kernel panic - not syncing: Attempted to kill init!
-> Pid: 1, comm: init Tainted: G      D  2.6.25-rc8-next-20080409-autotest #1
->=20
-> Call Trace:
->  [<ffffffff8023225d>] panic+0x86/0x144
->  [<ffffffff80251911>] kallsyms_lookup+0x49/0x80
->  [<ffffffff80286c11>] kmem_cache_alloc+0x19/0x6b
->  [<ffffffff80232d93>] printk+0x4e/0x56
->  [<ffffffff80232d93>] printk+0x4e/0x56
->  [<ffffffff802351c9>] do_exit+0x71/0x682
->  [<ffffffff804ee731>] oops_begin+0x0/0x8c
->  [<ffffffff804f058d>] do_page_fault+0x738/0x7f3
->  [<ffffffff804ee379>] error_exit+0x0/0x51
->  [<ffffffff80211f7e>] init_fpu+0x88/0xc9
->  [<ffffffff80286c11>] kmem_cache_alloc+0x19/0x6b
->  [<ffffffff80211f7e>] init_fpu+0x88/0xc9
->  [<ffffffff8033419c>] __up_read+0x13/0x8a
->  [<ffffffff8020d96a>] math_state_restore+0x19/0x5a
->  [<ffffffff804ee379>] error_exit+0x0/0x51
->=20
-> --=20
-> Thanks & Regards,
-> Kamalesh Babulal,
-> Linux Technology Center,
-> IBM, ISTL.
+Jeff - we may in the kernel world use IDE v ATA to distinguish between
+the two drivers but both are still ATA drives and I don't think its too
+fair to respond this way, especially to someone who has gone to the
+trouble of capturing a very good trace.
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Thu__10_Apr_2008_21_47_11_+1000_j9o7Vi8==pqpi._0
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFH/f5FTgG2atn1QN8RAjYhAJ97DFoG89mSR3d8jIZnSY5lm08sCwCfQtGN
-JaMNoat7BiUuNRVmYaKVUmA=
-=7st/
------END PGP SIGNATURE-----
-
---Signature=_Thu__10_Apr_2008_21_47_11_+1000_j9o7Vi8==pqpi._0--
+Alan
