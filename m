@@ -1,75 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756105AbYDJAqK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756450AbYDJAs3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756105AbYDJAqK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Apr 2008 20:46:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752898AbYDJAp5
+	id S1756450AbYDJAs3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Apr 2008 20:48:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753491AbYDJAsV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Apr 2008 20:45:57 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:46716 "EHLO smtps.tip.net.au"
+	Wed, 9 Apr 2008 20:48:21 -0400
+Received: from main.gmane.org ([80.91.229.2]:36127 "EHLO ciao.gmane.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751996AbYDJAp4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Apr 2008 20:45:56 -0400
-Date: Thu, 10 Apr 2008 10:45:49 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>,
-       Linus <torvalds@linux-foundation.org>
-Subject: Re: linux-next: Tree for April 9
-Message-Id: <20080410104549.c2e1b645.sfr@canb.auug.org.au>
-In-Reply-To: <47FCF50E.9090703@s5r6.in-berlin.de>
-References: <20080409185309.b94c9d15.sfr@canb.auug.org.au>
-	<47FCF50E.9090703@s5r6.in-berlin.de>
-X-Mailer: Sylpheed 2.5.0beta1 (GTK+ 2.12.9; i486-pc-linux-gnu)
+	id S1753079AbYDJAsU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Apr 2008 20:48:20 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Bill Davidsen <davidsen@tmr.com>
+Subject: Re: [regression] e1000e broke e1000
+Date: Wed, 09 Apr 2008 20:52:05 -0400
+Message-ID: <47FD64B5.1050309@tmr.com>
+References: <47F69965.7030303@intel.com> <20080408083606.GA20863@elte.hu>	<47FB9ABB.9080403@intel.com> <20080408183921.GA20803@elte.hu>	<20080408193245.GG11962@parisc-linux.org> <20080408195123.GA28148@elte.hu>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Thu__10_Apr_2008_10_45_49_+1000_DLVG.IBeQWeZ1dqJ"
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Complaints-To: usenet@ger.gmane.org
+Cc: e1000-devel@lists.sourceforge.net, netdev@vger.kernel.org
+X-Gmane-NNTP-Posting-Host: pool-68-236-140-141.alb.east.verizon.net
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
+In-Reply-To: <20080408195123.GA28148@elte.hu>
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Thu__10_Apr_2008_10_45_49_+1000_DLVG.IBeQWeZ1dqJ
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Ingo Molnar wrote:
+> * Matthew Wilcox <matthew@wil.cx> wrote:
+> 
+>> On Tue, Apr 08, 2008 at 08:39:21PM +0200, Ingo Molnar wrote:
+>>> so the pure presence of the e1000e module breaks the e1000 driver. That 
+>>> is a regression and a bug that should be fixed.
+>> I think you've found the wrong problem ... it looks deliberate to me 
+>> that enabling e1000e disables e1000 from claiming the PCI IDs (see the 
+>> PCIE() macro right before the e1000_pci_tbl in 
+>> drivers/net/e1000/e1000_main.c).
+>>
+>> The question is why e1000e isn't claiming the device ...
+> 
+> because i have e1000 built-in and dont load the e1000e module at all. 
+> That worked before and doesnt work now.
+> 
+> the solution is rather straightforward: if E1000 is built-in then E1000E 
+> should be built-in as well or disabled (i.e. it should not be possible 
+> to build it as a module in that case) - because the PCI ID stealing 
+> trick now connects the two drivers unconditionally. [ If e1000 is a 
+> module then e1000e can be a module (or disabled) - this would be the 
+> most common configuration. ]
+> 
+And this would seem to break the most common means of testing a new 
+driver for existing (and working!) hardware, which is to build both 
+drivers as modules, install the new one, and if it appears to have 
+problems either remove and insert the old driver by hand, or boot 
+forcing the old driver.
 
-Hi Stefan,
+I can't be the only person who tests kernels on machines I wouldn't use 
+to build a kernel, and uses modprobe.conf to test new driver functionality.
 
-On Wed, 09 Apr 2008 18:55:42 +0200 Stefan Richter <stefanr@s5r6.in-berlin.d=
-e> wrote:
->
-> Stephen Rothwell wrote:
-> > There were a few merge conflicts (fairly trivial) and couple of build
-> > failures (notified).  There is a know build failure with powerpc
-> > allyesconfig.  Below is a summary of the state of the merge.
-> ...
-> > Merging ieee1394/for-next
-> > CONFLICT (content): Merge conflict in lib/Kconfig.debug
->=20
-> Would it be safe for me (and preferred by you) to merge sched/for-akpm
-> into ieee1394/for-next to resolve this conflict until next mainline merge?
+-- 
+Bill Davidsen <davidsen@tmr.com>
+   "We have more to fear from the bungling of the incompetent than from
+the machinations of the wicked."  - from Slashdot
 
-Actually, no, as sched/for-akpm gets rebased sometimes.  I only have to
-fix these trivial conflicts once as "git rerere" remembers the fix for me
-and they are so trivial that Linus will probably fix them the same way
-when he finally merges your tree.  Also, there is the possibility that he
-will merge your tree before sched/for-akpm ...
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Thu__10_Apr_2008_10_45_49_+1000_DLVG.IBeQWeZ1dqJ
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFH/WNBTgG2atn1QN8RAg1pAKCMzaR4XquHP6fvRWYDhr1DTseOGwCeNgKY
-Ad7t4k4l2OzxFMPJL4KElBw=
-=HURv
------END PGP SIGNATURE-----
-
---Signature=_Thu__10_Apr_2008_10_45_49_+1000_DLVG.IBeQWeZ1dqJ--
