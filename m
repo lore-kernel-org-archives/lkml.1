@@ -1,102 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755907AbYDJMXl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757200AbYDJMZp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755907AbYDJMXl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Apr 2008 08:23:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756756AbYDJMXZ
+	id S1757200AbYDJMZp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Apr 2008 08:25:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755382AbYDJMZi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Apr 2008 08:23:25 -0400
-Received: from spirit.analogic.com ([204.178.40.4]:1571 "EHLO
-	spirit.analogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756332AbYDJMXY convert rfc822-to-8bit (ORCPT
+	Thu, 10 Apr 2008 08:25:38 -0400
+Received: from mtagate2.de.ibm.com ([195.212.29.151]:3768 "EHLO
+	mtagate2.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755204AbYDJMZh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Apr 2008 08:23:24 -0400
+	Thu, 10 Apr 2008 08:25:37 -0400
+Message-ID: <47FE073B.3060007@fr.ibm.com>
+Date: Thu, 10 Apr 2008 14:25:31 +0200
+From: Cedric Le Goater <clg@fr.ibm.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-X-OriginalArrivalTime: 10 Apr 2008 12:22:49.0001 (UTC) FILETIME=[96F79990:01C89B05]
-Content-class: urn:content-classes:message
-Subject: Re: Disk geometry from /sys
-Date: Thu, 10 Apr 2008 08:22:48 -0400
-Message-ID: <Pine.LNX.4.61.0804100804260.25651@chaos.analogic.com>
-In-Reply-To: <38b2ab8a0804091353h3725ce29s196e27e8b4f1ff56@mail.gmail.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: Disk geometry from /sys
-thread-index: AcibBZb+NbjHpIipR1e3YsfvNHaz/g==
-References: <38b2ab8a0804091353h3725ce29s196e27e8b4f1ff56@mail.gmail.com>
-From: "linux-os (Dick Johnson)" <linux-os@analogic.com>
-To: "Francis Moreau" <francis.moro@gmail.com>
-Cc: <linux-kernel@vger.kernel.org>
-Reply-To: "linux-os (Dick Johnson)" <linux-os@analogic.com>
-X-TM-AS-Product-Ver: SMEX-8.0.0.1259-5.000.1023-15840.007
-X-TM-AS-Result: No--14.897000-8.000000-31
-X-TM-AS-User-Approved-Sender: No
-X-TM-AS-User-Blocked-Sender: No
+To: Andi Kleen <andi@firstfloor.org>
+CC: sukadev@us.ibm.com, Andrew Morton <akpm@osdl.org>, serue@us.ibm.com,
+       "David C. Hansen" <haveblue@us.ibm.com>,
+       Pavel Emelyanov <xemul@openvz.org>,
+       Containers <containers@lists.osdl.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/3] change clone_flags type to u64
+References: <20080409222611.GA28087@us.ibm.com> <20080409223231.GA28267@us.ibm.com> <871w5enmk7.fsf@basil.nowhere.org>
+In-Reply-To: <871w5enmk7.fsf@basil.nowhere.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello Andi,
 
-On Wed, 9 Apr 2008, Francis Moreau wrote:
+Andi Kleen wrote:
+> sukadev@us.ibm.com writes:
+> 
+>> From: Sukadev Bhattiprolu <sukadev@us.ibm.com>
+>> Subject: [lxc-dev] [patch -lxc 1/3] change clone_flags type to u64
+>>
+>> This is a preliminary patch changing the clone_flags type to 64bits
+>> for all the routines called by do_fork(). 
+> 
+> I must admit I was always a little sceptical of giving every tiny
+> namespaceable kernel feature its own CLONE flag (and it's own 
+> CONFIG option). What was the rationale for that again?
 
-> Hi,
->
-> I'm trying to know the geometry of my hard disk from a bash script
-> and that's the reason I'm looking in /sys. The reason is that I'd like
-> to figure out the size of a cylinder without doing a
-> ioctl(bdev, HDIO_GETGEO, &geo)
->
-> Unfortunately I can't find anything useful and this is certainly a sign
-> that I'm doing something wrong.
->
-> Or maybe can I simply assume from my script that the geometry
-> is always heads=255 and the number of sectors per track is 63 for all
-> disks.
->
-> Looking at parted(8) source code, I  can find this:
->
-> /* The GETGEO ioctl is no longer useful (as of linux 2.6.x).  We could
-> * still use it in 2.4.x, but this is contentious.  Perhaps we should
-> * move to EDD. */
->
-> Could anybody give me some advices ?
-> -- 
-> Francis
-> --
+I guess that was a development rationale. Most of the namespaces are in 
+use in the container projects like openvz, vserver and probably others 
+and we needed a way to activate the code.
 
-It becomes, as you say contentious, because with disk drives
-manufactured during the past ten or so years, anything about
-the physical geometry is fictitious. The PC BIOS continues to
-calculate C/H/S because that's what BIOS interrupt 0x13 uses
-to boot the machine. The boot code needs to know what the
-BIOS claims or else it may fail to boot. However, once Linux
-is up, there are no C/H/S unless they were invented --and
-hopefully, the same as what the BIOS claims.
+Not perfect I agree.
+ 
+> With your current strategy are you sure that even 64bit will
+> be enough in the end? For me it rather looks like you'll
+> go through those quickly too as more and more of the kernel
+> is namespaced.
 
-In the BIOS interrupt 0x13 code, the maximum number of heads
-that will fit in the register is 255. The maximum number of
-sectors that will fit in the partial register scheme is 63.
-That leaves the cylinders as the only remaining variable for
-large media. However, the BIOS only needs to boot the machine.
-There may be many more cylinders than your initial guess and
-the BIOS can only use 10 bits of the cylinder number. If you
-are writing boot code, perhaps making the next GRUB or whatever
-then you can use the numbers you suggested. However if not, you
-have no need to learn the actual disk geometry and it is not
-even shown in many disk-drive data sheets because the number
-of sectors on the outside tracks is now greater than the ones
-on the inside tracks to maintain the same areal bit density and
-maximize the storage capacity.
+well, we're reaching the end. I hope ! devpts is in progress and
+mq is just waiting for a clone flag.
+ 
+> Also I think the user interface is very unfriendly. How
+> is a non kernel hacker supposed to make sense of these 
+> myriads of flags? You'll be creating another 
+> CreateProcess123_extra_args_extended() 
+> in the end I fear.
 
-Cheers,
-Dick Johnson
-Penguin : Linux version 2.6.22.1 on an i686 machine (5588.28 BogoMips).
-My book : http://www.AbominableFirebug.com/
-_
+well, the clone interface is a not friendly interface anyway. glibc wraps 
+it and most users just use fork().
 
+We will need a user library, like we have a libphtread or a libaio, to
+effectively use the namespaces features. This is being worked on but
+it's another topic.
+ 
+> Wouldn't it be better to just partition all this into
+> fewer more understandable larger feature groups?  I think
+> that would be much nicer from pretty much all perspectives
+> (kernel maintenance, user interface sanity, not needing
+> clone128/256 in the end etc.) 
 
-****************************************************************
-The information transmitted in this message is confidential and may be privileged.  Any review, retransmission, dissemination, or other use of this information by persons or entities other than the intended recipient is prohibited.  If you are not the intended recipient, please notify Analogic Corporation immediately - by replying to this message or by sending an email to DeliveryErrors@analogic.com - and destroy all copies of this information, including any attachments, without reading or disclosing them.
+Yes. this make sense. Most of the namespaces have dependencies between
+each other.
 
-Thank you.
+> Some consolidation on the CONFIGs would be good too. I just
+> cannot imagine it really makes sense to configure everything
+> so fine grained and this is just asking for random compile
+> breakage on randconfig.
+
+yes. definitely agree.
+
+but we still need a way to extend the clone flags because none are left.
+would you say that the clone64 is the right way to go or should we rather 
+go in the direction hpa proposed :
+
+http://lkml.org/lkml/2008/4/9/318 :
+
+> If you're going to make it a 64-bit pass it in as a 64-bit number, 
+> instead of breaking it into two numbers.  Better yet, IMO, would 
+> be to pass a pointer to a structure like:
+>  
+> struct shared {
+>     unsigned long nwords;
+>     unsigned long flags[];
+> };
+> 
+> ... which can be expanded indefinitely.
+
+if we could agree on some new interface, we could then make sure we
+are not abusing it.
+
+Thanks,
+
+C.
+
