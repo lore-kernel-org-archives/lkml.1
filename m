@@ -1,127 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758737AbYDJSf0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757698AbYDJSkO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758737AbYDJSf0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Apr 2008 14:35:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753573AbYDJSfJ
+	id S1757698AbYDJSkO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Apr 2008 14:40:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751036AbYDJSkC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Apr 2008 14:35:09 -0400
-Received: from mga03.intel.com ([143.182.124.21]:24188 "EHLO mga03.intel.com"
+	Thu, 10 Apr 2008 14:40:02 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:56562 "EHLO pasmtpA.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756143AbYDJSfH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Apr 2008 14:35:07 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,637,1199692800"; 
-   d="scan'208";a="230046083"
-Message-ID: <47FE5C89.5060209@intel.com>
-Date: Thu, 10 Apr 2008 11:29:29 -0700
-From: "Kok, Auke" <auke-jan.h.kok@intel.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071125)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Jeff Garzik <jeff@garzik.org>, Matthew Wilcox <matthew@wil.cx>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       NetDev <netdev@vger.kernel.org>,
-       e1000-list <e1000-devel@lists.sourceforge.net>,
-       linux-pci maillist <linux-pci@atrey.karlin.mff.cuni.cz>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "David S. Miller" <davem@davemloft.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Jesse Brandeburg <jesse.brandeburg@intel.com>,
-       "Ronciak, John" <john.ronciak@intel.com>,
-       "Allan, Bruce W" <bruce.w.allan@intel.com>, Greg KH <greg@kroah.com>,
-       Arjan van de Ven <arjan@linux.intel.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [patch] e1000=y && e1000e=m regression fix
-References: <20080408083606.GA20863@elte.hu> <47FB9ABB.9080403@intel.com> <20080408183921.GA20803@elte.hu> <20080408193245.GG11962@parisc-linux.org> <20080408195123.GA28148@elte.hu> <47FBCE00.2020309@garzik.org> <20080408200652.GC28148@elte.hu> <47FBD34A.6080508@garzik.org> <20080408203314.GA28952@elte.hu> <47FBDBE9.9040700@garzik.org> <20080409193850.GA11763@elte.hu> <47FD2325.2030705@intel.com>
-In-Reply-To: <47FD2325.2030705@intel.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 10 Apr 2008 18:30:37.0398 (UTC) FILETIME=[F8C1BF60:01C89B38]
+	id S1750949AbYDJSkA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Apr 2008 14:40:00 -0400
+Date: Thu, 10 Apr 2008 20:40:27 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andi Kleen <andi@firstfloor.org>, Andy Whitcroft <apw@shadowen.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
+       akpm@linux-foundation.org, Rusty Russell <rusty@rustcorp.com.au>,
+       Glauber de Oliveira Costa <gcosta@redhat.com>,
+       Jan Beulich <jbeulich@novell.com>, Thomas Gleixner <tglx@linutronix.de>,
+       pinskia@gcc.gnu.org
+Subject: Re: [PATCH] pop previous section in alternative.c
+Message-ID: <20080410184027.GA21893@uranus.ravnborg.org>
+References: <Pine.LNX.4.58.0804091859400.31879@gandalf.stny.rr.com> <Pine.LNX.4.58.0804091906040.31970@gandalf.stny.rr.com> <47FD5D42.5000603@zytor.com> <87wsn6m6zt.fsf@basil.nowhere.org> <20080410094637.GW17915@shadowen.org> <Pine.LNX.4.58.0804101007510.5673@gandalf.stny.rr.com> <20080410144114.GH10019@one.firstfloor.org> <alpine.LFD.1.00.0804100741430.3143@woody.linux-foundation.org> <Pine.LNX.4.58.0804101054010.5673@gandalf.stny.rr.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.58.0804101054010.5673@gandalf.stny.rr.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kok, Auke wrote:
-> Ingo Molnar wrote:
->> * Jeff Garzik <jeff@garzik.org> wrote:
->>
->>>> We've got three thousand Kconfig options - it is clearly not 
->>>> realistic for users to keep such details in mind to avoid pitfalls.
->>> Agreed -- hence the multiple announcements, including in this thread, 
->>> to put said details into mind.
->> which part of "it took a kernel developer more than an hour to figure 
->> out why his laptop had a dead network interface" did you not understand? 
->> Whatever you did, it was not apparent to me. I dont follow every tiny 
->> detail of the e1000 driver family, nor do 99%+ [*] of our users.
->>
->> find the fix below, against current -git.
->>
->> the current upstream behavior is the worst possible one and is just a 
->> plain bug, and the solution is dead-simple.
+On Thu, Apr 10, 2008 at 10:55:44AM -0400, Steven Rostedt wrote:
+> 
+> On Thu, 10 Apr 2008, Linus Torvalds wrote:
+> >
+> > But maybe we can see it in the resulting object file somehow, and do the
+> > check there (the same way we do the init-section analysis). I assume the
+> > ..size directive writes some debug info or similar, and we can create a big
+> > warning when a size is unexpectedly huge and crosses section size
+> > boundaries?
+> 
+> I'm not sure how much this would help, but where I saw my red flag was
+> examining the objdump and seeing this:
+> 
+>   89:   bf 69 00 00 00          mov    $0x69,%edi
+>   8e:   e8 00 00 00 00          callq  93 <alternatives_smp_module_add+0x30>
+>                         8f: R_X86_64_PC32       .rodata+0x8c
 > 
 > 
-> If this makes people happy then I am happy to ack this.
-> 
-> Acked-by: Auke Kok <auke-jan.h.kok@intel.com>
-> 
->> 	Ingo
->>
->> [*] guesstimate
->>
->> --------------->
->> Subject: e1000=y && e1000e=m regression fix
->> From: Ingo Molnar <mingo@elte.hu>
->> Date: Wed Apr 09 21:09:35 CEST 2008
->>
->> fix a regression from v2.6.24: do not transfer the e1000e PCI IDs from 
->> e1000 to e1000e if e1000 is built-in and e1000e is a module.
->>
->> Built-in drivers take precedence over modules in many ways - and in this 
->> case it's clear that the user intended the e1000 driver to be the 
->> primary one. "Silently change behavior and break existing configs" is 
->> never a good migration strategy. Most users will use distro kernels that 
->> are not affected by this problem at all - nor are they affected by this 
->> patch - but this problem can hit users and developers who build their 
->> kernels themselves and migrate from v2.6.24 to v2.6.25.
->>
->> this fixes: http://bugzilla.kernel.org/show_bug.cgi?id=10427
->>
->> Signed-off-by: Ingo Molnar <mingo@elte.hu>
->> ---
->>  drivers/net/Kconfig |    2 +-
->>  1 file changed, 1 insertion(+), 1 deletion(-)
->>
->> Index: linux-x86.q/drivers/net/Kconfig
->> ===================================================================
->> --- linux-x86.q.orig/drivers/net/Kconfig
->> +++ linux-x86.q/drivers/net/Kconfig
->> @@ -2022,7 +2022,7 @@ config E1000E
->>  	  will be called e1000e.
->>  
->>  config E1000E_ENABLED
->> -	def_bool E1000E != n
->> +	def_bool E1000E = y || ((E1000E != n) && (E1000 = E1000E))
+> A call to .rodata??
+Did you have any relocation record reflecting this reference?
+The init_section stuff today rely purely on relocation
+records and is easy to extend.
 
-
-Matthew Wilcox wrote:
-> On Thu, Apr 10, 2008 at 11:55:03AM -0600, Grant Grundler wrote:
->> Agreed. I like Ingo's Kconfig patch which forces both drivers
->> (e1000 and e1000e) to be built the same way (ie both modules or both
->> builtin).
->
-> Uh, that's /not/ what Ingo's patch does.  His patch makes e1000 claim
-> the e1000e IDs if e1000 is built-in and e1000e is a module.
-
-
-
-so that's definately _not_ what I would like to see at all. Matthew points out
-that this will just prolong users to use e1000 instead of e1000e (which is what
-they should be encouraged to switch to in those cases).
-
-so I'm dropping my ACK
-
-this patch doesn't solve anything and we'll have the same issue back when 2.6.26
-ships which will have no PCI Express device IDs in e1000.
-
-Auke
-
+	Sam
