@@ -1,43 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757800AbYDJT2Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758303AbYDJT3h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757800AbYDJT2Y (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Apr 2008 15:28:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752843AbYDJT2Q
+	id S1758303AbYDJT3h (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Apr 2008 15:29:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751333AbYDJT30
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Apr 2008 15:28:16 -0400
-Received: from avas5.coqui.net ([196.28.61.131]:21711 "EHLO avas5.coqui.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752575AbYDJT2Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Apr 2008 15:28:16 -0400
-X-Greylist: delayed 598 seconds by postgrey-1.27 at vger.kernel.org; Thu, 10 Apr 2008 15:28:15 EDT
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AgpbAJAE/kfEHD1kX2dsb2JhbACRLBcZKR0qmSk
-X-IronPort-AV: E=Sophos;i="4.25,637,1199678400"; 
-   d="scan'208";a="1340092665"
-Message-ID: <20080410151628.p25zslph0f4k4wwo@webmail.coqui.net>
-Date: Thu, 10 Apr 2008 15:16:28 -0400
-From: TOSHIBA WHEEL E-GAME 2008 <info@toshiba.org>
-Reply-to: toshibadraws1@live.com
-To: undisclosed-recipients:;
-Subject: -- ONLINE GAME TOSHIBA AWARD --
+	Thu, 10 Apr 2008 15:29:26 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:53846 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751007AbYDJT3Z (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Apr 2008 15:29:25 -0400
+Date: Thu, 10 Apr 2008 12:27:45 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Grant Grundler <grundler@parisc-linux.org>
+cc: Krzysztof Halasa <khc@pm.waw.pl>, Frans Pop <elendil@planet.nl>,
+       Ingo Molnar <mingo@elte.hu>, jeff@garzik.org, matthew@wil.cx,
+       auke-jan.h.kok@intel.com, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, e1000-devel@lists.sourceforge.net,
+       linux-pci@atrey.karlin.mff.cuni.cz, akpm@linux-foundation.org,
+       davem@davemloft.net, jesse.brandeburg@intel.com, john.ronciak@intel.com,
+       bruce.w.allan@intel.com, greg@kroah.com, arjan@linux.intel.com,
+       rjw@sisk.pl
+Subject: Re: [patch] e1000=y && e1000e=m regression fix (was: Re: [regression]
+ e1000e broke e1000)
+In-Reply-To: <20080410175503.GA11440@colo.lackof.org>
+Message-ID: <alpine.LFD.1.00.0804101225570.3143@woody.linux-foundation.org>
+References: <47FBD34A.6080508@garzik.org> <20080408203314.GA28952@elte.hu> <47FBDBE9.9040700@garzik.org> <47FBDBE9.9040700@garzik.org> <20080409193850.GA11763@elte.hu> <200804092249.23111.elendil@planet.nl> <m363uqwpds.fsf@maximus.localdomain>
+ <alpine.LFD.1.00.0804091838330.3143@woody.linux-foundation.org> <m34paaav7o.fsf@maximus.localdomain> <alpine.LFD.1.00.0804100724220.3143@woody.linux-foundation.org> <20080410175503.GA11440@colo.lackof.org>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset=UTF-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
-User-Agent: Internet Messaging Program (IMP) H3 (4.0.3)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
 
-You are a winner of the total sum of 500,000.00 GBP & A Toshiba Laptop.Note you
-are to Forward the Following Informations,Full name,Contact address& Phone
-Number.do make contact to Mrs.Jossy Bryant Email:toshibadraws1@live.com
-Regards
-Tim Heinz
+On Thu, 10 Apr 2008, Grant Grundler wrote:
+> 
+> If e1000e is not getting compiled, my understanding was the original e1000
+> driver will claim whatever devices it historically has.
 
+Yes. And the patch to do so was done by yours truly, exactly because I hit 
+this thing ;)
 
-----------------------------------------------------------------
-This message was sent using http://webmail.coqui.net
+But it only works when the e1000e driver isn't enabled at all, which is 
+why the "e1000e=m" case ends up being different, and Ingo then hit that 
+one.
+
+		Linus
