@@ -1,53 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755180AbYDJBl7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754665AbYDJCAP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755180AbYDJBl7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Apr 2008 21:41:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753271AbYDJBlr
+	id S1754665AbYDJCAP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Apr 2008 22:00:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753155AbYDJB77
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Apr 2008 21:41:47 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:44571 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752248AbYDJBlq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Apr 2008 21:41:46 -0400
-Date: Wed, 9 Apr 2008 18:40:24 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Krzysztof Halasa <khc@pm.waw.pl>
-cc: Frans Pop <elendil@planet.nl>, Ingo Molnar <mingo@elte.hu>,
-       jeff@garzik.org, matthew@wil.cx, auke-jan.h.kok@intel.com,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       e1000-devel@lists.sourceforge.net, linux-pci@atrey.karlin.mff.cuni.cz,
-       akpm@linux-foundation.org, davem@davemloft.net,
-       jesse.brandeburg@intel.com, john.ronciak@intel.com,
-       bruce.w.allan@intel.com, greg@kroah.com, arjan@linux.intel.com,
-       rjw@sisk.pl
-Subject: Re: [patch] e1000=y && e1000e=m regression fix (was: Re: [regression]
- e1000e broke e1000)
-In-Reply-To: <m363uqwpds.fsf@maximus.localdomain>
-Message-ID: <alpine.LFD.1.00.0804091838330.3143@woody.linux-foundation.org>
-References: <20080408083606.GA20863@elte.hu> <47FB9ABB.9080403@intel.com> <20080408183921.GA20803@elte.hu> <20080408193245.GG11962@parisc-linux.org> <20080408195123.GA28148@elte.hu> <47FBCE00.2020309@garzik.org> <20080408200652.GC28148@elte.hu>
- <47FBD34A.6080508@garzik.org> <20080408203314.GA28952@elte.hu> <47FBDBE9.9040700@garzik.org> <47FBDBE9.9040700@garzik.org> <20080409193850.GA11763@elte.hu> <200804092249.23111.elendil@planet.nl> <m363uqwpds.fsf@maximus.localdomain>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+	Wed, 9 Apr 2008 21:59:59 -0400
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:45328 "EHLO e1.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752946AbYDJB77 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Apr 2008 21:59:59 -0400
+Date: Wed, 9 Apr 2008 20:59:55 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Containers <containers@lists.osdl.org>,
+       clg@fr.ibm.com, linux-kernel@vger.kernel.org,
+       Pavel Emelyanov <xemul@openvz.org>
+Subject: Re: [RFC][PATCH 0/7] Clone PTS namespace
+Message-ID: <20080410015955.GA18227@sergelap.austin.rr.com>
+References: <20080408215333.GA8799@us.ibm.com> <47FC138B.4070408@zytor.com> <1207779313.16926.12.camel@x61.ebiederm.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1207779313.16926.12.camel@x61.ebiederm.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Thu, 10 Apr 2008, Krzysztof Halasa wrote:
+Quoting Eric W. Biederman (ebiederm@xmission.com):
+> On Tue, 2008-04-08 at 17:53 -0700, H. Peter Anvin wrote:
+> > sukadev@us.ibm.com wrote:
+> > > Devpts namespace patchset
+> > > 
+> > > In continuation of the implementation of containers in mainline, we need to
+> > > support multiple PTY namespaces so that the PTY index (ie the tty names) in
+> > > one container is independent of the PTY indices of other containers.  For
+> > > instance this would allow each container to have a '/dev/pts/0' PTY and
+> > > refer to different terminals.
+> > > 
+> > 
+> > Why do we "need" this?  There isn't a fundamental need for this to be a 
+> > dense numberspace (in fact, there are substantial reasons why it's a bad 
+> > idea; the only reason the namespace is dense at the moment is because of 
+> > the hideously bad handing of utmp in glibc.)  Other than indicies, this 
+> > seems to be a more special case of device isolation across namespaces, 
+> > would that be a more useful problem to solve across the board?
 > 
-> Nope, udev with normal distro config will load e1000e just fine.
+> In short application migration.  When you move a running applicaiton
+> from one machine to another you want to be able to keep the same pseudo
+> devices.
+> 
+> The isolation that you have noticed is also an important application and
+> like the rest of the namespaces if we can solve the duplicate identifier
+> problem needed to restore checkpoints we also largely solve the
+> isolation problem.
+> 
+> This problem is much larger then ptys.  ptys are the really in your face
+> aspect of it.  There are a more pseudo devices in the kernel and it is
+> the device number to device mapping that we are abstracting.  So this
+> really should be done as a device namespace not a pty namespace.
+> 
+> I would be happy if the first version of the device namespace could not
+> map anything but pty's (assuming an incremental implementation path).  I
+> really don't think we should do a special case for each kind of device.
 
-Not for us that don't compile modules at all, or only modules for the 
-devices we actually have.
+Sounds like we're all agreed on this and just doing
+s/CLONE_NEWPTS/CLONE_NEWDEV/ on the current patchset suffices for now.
+But,
 
-Which should be about 99% of all kernel developers, because otherwise 
-you're just wasting your time.
+> Oh and just skimming the patch summary I'm pretty certain this
+> implementation breaks /sys/class/tty/ptyXX/uevent.  Which is another
+> reason why it would be good to have a single device namespace.  So we
+> only to capture one more namespace and figure out how to deal with it
+> when mounting sysfs. 
 
-I certainly want the configurations to be sane by default, because I'm not 
-in the insane camp that has every single module and depend on udev picking 
-the right one out.
+Feh, so of course sysfs would have the most interactions for a device
+namespace, but now we have pty, network, and user namespace all needing
+some sort of sysfs solution.  For a quickfix for
+CONFIG_USER_SCHED+CONFIG_USER_NS, I just moved /sys/kernel/uids/<uid>
+to /sys/kernel/uids/<userns_address>/<uid>.  But what would be a *good*
+general solution?
 
-			Linus
+ln -s /sys /proc/self/sys?
+
+-serge
