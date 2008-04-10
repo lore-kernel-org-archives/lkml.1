@@ -1,67 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758666AbYDJW1f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759563AbYDJW2R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758666AbYDJW1f (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Apr 2008 18:27:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752497AbYDJW10
+	id S1759563AbYDJW2R (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Apr 2008 18:28:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751465AbYDJW2B
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Apr 2008 18:27:26 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:50551 "EHLO ogre.sisk.pl"
+	Thu, 10 Apr 2008 18:28:01 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:50561 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750982AbYDJW1Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Apr 2008 18:27:25 -0400
+	id S1752497AbYDJW2A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Apr 2008 18:28:00 -0400
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
 To: Ingo Molnar <mingo@elte.hu>
 Subject: Re: x86 git tree broken
-Date: Fri, 11 Apr 2008 00:27:05 +0200
+Date: Fri, 11 Apr 2008 00:28:21 +0200
 User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
 Cc: Andrew Morton <akpm@linux-foundation.org>,
        LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Anvin" <hpa@zytor.com>
-References: <200804102159.14563.rjw@sisk.pl> <20080410205106.GB15440@elte.hu>
-In-Reply-To: <20080410205106.GB15440@elte.hu>
+       Thomas Gleixner <tglx@linutronix.de>, "H. Anvin" <hpa@zytor.com>,
+       Arjan van de Ven <arjan@infradead.org>
+References: <200804102159.14563.rjw@sisk.pl> <20080410202914.GD9582@elte.hu> <20080410203800.GA14560@elte.hu>
+In-Reply-To: <20080410203800.GA14560@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200804110027.06078.rjw@sisk.pl>
+Message-Id: <200804110028.22290.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 On Thursday, 10 of April 2008, Ingo Molnar wrote:
 > 
-> * Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> * Ingo Molnar <mingo@elte.hu> wrote:
 > 
-> > Second, if I try to suspend the box to RAM, it enters a state it 
-> > cannot leave until power is physically cut from it (using the power 
-> > button to power off / power on the box doesn't help).
-> 
-> i used your config on an AMD system here and s2ram works just fine, both 
-> using CONFIG_PM_TEST_SUSPEND=y bootup suspend self-test [which x86.git 
-> QA uses all the time], and using a manual pm-suspend command at the 
-> console.
-> 
-> you can also try your luck and remove the last 20% of x86.git [which is 
-> always the newest stuff], by picking a commit 200 patches down the line, 
-> via:
-> 
->  git-rev-list x86/base..x86/latest | head -200 | tail -1
-> 
-> and testing that. If that tree works, it's the last 200 commits that 
-> break stuff.
+> > > > > First, the X server doesn't want to start (it says it couldn't 
+> > > > > mmap the framebuffer).
+> > > > 
+> > > > could you send your .config?
+> > > 
+> > > Attached.
+> > 
+> > could you disable this option:
+> > 
+> >  CONFIG_NONPROMISC_DEVMEM=y
+> > 
+> > does it help with the X problem?
 
-Yes, I'll probably do that, but don't have that much time today.
+That didn't help.
 
-> exactly what kind of system are you using?
+> btw., Xorg works fine here on a comparable AMD system - but i use a 
+> rather new distro (Fedora 8) which has Xorg 7.2.
 
-It's an Athlon 64 X2 on an ULi-based AsRock motherboard with Radeon X300SE
-(PCIe).
+My system is an OpenSUSE 10.3 and it has Xorg 7.2 as well.
 
-> If you revert the trampoline changes, does it get any better - but i guess
-> it might be better to do a bisection.
-
-I'll try to figure out what is the last good commit.
+I think the problem is somehow related to the Radeon.
 
 Thanks,
 Rafael
