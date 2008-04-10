@@ -1,53 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758053AbYDJPUA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759360AbYDJPUq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758053AbYDJPUA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Apr 2008 11:20:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756784AbYDJPTu
+	id S1759360AbYDJPUq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Apr 2008 11:20:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756761AbYDJPUg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Apr 2008 11:19:50 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:55852 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756777AbYDJPTt (ORCPT
+	Thu, 10 Apr 2008 11:20:36 -0400
+Received: from posthamster.phnxsoft.com ([195.227.45.4]:4239 "EHLO
+	posthamster.phnxsoft.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756628AbYDJPUf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Apr 2008 11:19:49 -0400
-Date: Thu, 10 Apr 2008 17:19:45 +0200
-From: Jan Kara <jack@suse.cz>
-To: Jiri Kosina <jkosina@suse.cz>
-Cc: Michal Hocko <mhocko@suse.cz>, Meelis Roos <mroos@linux.ee>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: file offset corruption on 32-bit machines?
-Message-ID: <20080410151945.GE6725@atrey.karlin.mff.cuni.cz>
-References: <Pine.SOC.4.64.0804081101430.28938@math.ut.ee> <200804101555.58643.mhocko@suse.cz> <Pine.LNX.4.64.0804101558280.26562@twin.jikos.cz> <20080410142700.GC6725@atrey.karlin.mff.cuni.cz> <Pine.LNX.4.64.0804101628000.3896@jikos.suse.cz>
+	Thu, 10 Apr 2008 11:20:35 -0400
+Message-ID: <47FE3020.1070502@imap.cc>
+Date: Thu, 10 Apr 2008 17:20:00 +0200
+From: Tilman Schmidt <tilman@imap.cc>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; de-AT; rv:1.8.1.13) Gecko/20080313 SeaMonkey/1.1.9 Mnenhy/0.7.5.666
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0804101628000.3896@jikos.suse.cz>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: David Miller <davem@davemloft.net>
+CC: lkml@rtr.ca, yoshfuji@linux-ipv6.org, jeff@garzik.org, rjw@sisk.pl,
+       linux-kernel@vger.kernel.org, linux-net@vger.kernel.org
+Subject: Re: 2.6.25-rc8: FTP transfer errors
+References: <47FD138B.2060801@rtr.ca>	<20080409.152933.132174258.davem@davemloft.net>	<47FD590C.5020003@rtr.ca> <20080409.182228.193699767.davem@davemloft.net>
+In-Reply-To: <20080409.182228.193699767.davem@davemloft.net>
+X-Enigmail-Version: 0.95.6
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig001EA754A42113F06C2FF275"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Thu, 10 Apr 2008, Jan Kara wrote:
-> 
-> > > The f_pos races are in fact exploitable, we've already been there. See 
-> > > for example http://www.isec.pl/vulnerabilities/isec-0016-procleaks.txt
-> >   Well, this race is more subtle - the window is just one instruction
-> > wide (stores to f_pos from CPU2 must come between the store of lower and
-> > upper 32-bits of f_pos on CPU1). And the only result is that f_pos has
-> > 32-bits from one file pointer and 32-bits from the other one. So I can
-> > hardly imagine this would be exploitable...
-> 
-> Supposing you are not holding any spinlock and are running with 
-> preemptible kernel (pretty common scenario nowadays), there is nothing 
-> that would prevent kernel from rescheduling between the two instructions, 
-> enlarging the race window to be more comfortable for attacker, right?
-  Yes, this is theoretically possible.
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig001EA754A42113F06C2FF275
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: quoted-printable
 
-> I think this is worth fixing.
-  Hmm, maybe it is, although I still don't see how to exploit it :).
+David Miller schrieb:
+> From: Mark Lord <lkml@rtr.ca>
+> Date: Wed, 09 Apr 2008 20:02:20 -0400
+>=20
+>> Really, folks.  Bug reports are intended to *help* the developers,
+>> not something to be thrown back in their faces.
+>=20
+> It's a two way street, we asked for a bisect which helps us a lot.
+>=20
+> In fact, lately I notice a strong unwillingness to bisect on your
+> part, in particular.
 
-									Honza
--- 
-Jan Kara <jack@suse.cz>
-SuSE CR Labs
+Bisecting is a time-consuming process. If unwillingness to bisect
+is unacceptable in a bug reporter then people who don't have the
+time to bisect must stop reporting the problems they encounter.
+
+--=20
+Tilman Schmidt                    E-Mail: tilman@imap.cc
+Bonn, Germany
+Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
+Unge=F6ffnet mindestens haltbar bis: (siehe R=FCckseite)
+
+
+--------------enig001EA754A42113F06C2FF275
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.4 (MingW32)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+
+iD8DBQFH/jAgQ3+did9BuFsRAmrMAJ9hVadMs4gXgl/sZtszbU8Qnt4XAACcD5Al
+iSkk8McO+zjF+yE7HhOqRfI=
+=c8i8
+-----END PGP SIGNATURE-----
+
+--------------enig001EA754A42113F06C2FF275--
