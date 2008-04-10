@@ -1,54 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758087AbYDJTCR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756425AbYDJTC7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758087AbYDJTCR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Apr 2008 15:02:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751773AbYDJTCG
+	id S1756425AbYDJTC7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Apr 2008 15:02:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752020AbYDJTCw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Apr 2008 15:02:06 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:2482 "EHLO spitz.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751853AbYDJTCF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Apr 2008 15:02:05 -0400
-Date: Thu, 10 Apr 2008 12:02:34 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Soeren Sonnenburg <kernel@nn7.de>
-Cc: Justin Mattock <justinmattock@gmail.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: suspend issue
-Message-ID: <20080410100234.GB11084@ucw.cz>
-References: <dd18b0c30804052103s7357bb86yf7bf11d38d2911b3@mail.gmail.com> <1207490104.4597.36.camel@localhost> <20080406232849.GA789@elf.ucw.cz> <1207736730.4320.1.camel@localhost>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1207736730.4320.1.camel@localhost>
-User-Agent: Mutt/1.5.9i
+	Thu, 10 Apr 2008 15:02:52 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:51726 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752011AbYDJTCv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Apr 2008 15:02:51 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Date: Thu, 10 Apr 2008 21:02:26 +0200 (CEST)
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: Re: linux-next: Tree for April 9
+To: Ingo Molnar <mingo@elte.hu>
+cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20080410094853.GA12543@elte.hu>
+Message-ID: <tkrat.4f7ac5ca0bf58526@s5r6.in-berlin.de>
+References: <20080409185309.b94c9d15.sfr@canb.auug.org.au>
+ <47FCF50E.9090703@s5r6.in-berlin.de> <20080410065227.GB30066@elte.hu>
+ <20080410174418.ebfe76c3.sfr@canb.auug.org.au>
+ <20080410094853.GA12543@elte.hu>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; CHARSET=us-ascii
+Content-Disposition: INLINE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed 2008-04-09 12:25:30, Soeren Sonnenburg wrote:
-> On Mon, 2008-04-07 at 01:28 +0200, Pavel Machek wrote:
-> > On Sun 2008-04-06 13:55:04, Soeren Sonnenburg wrote:
-> > > On Sun, 2008-04-06 at 04:03 +0000, Justin Mattock wrote:
-> > > > Hello; I seem to have discovered something with echo mem > /sys/power/state.
-> > > > I recompile the kernel and had forgotten to compile fglrx, when
-> > > > performing a suspend without fglrx I was confronted with the dreaded
-> > > > blank screen and a reboot. then as a test I compiled fglrx and loaded,
-> > > > and to my amazement suspend reacted properly again.
-> > > 
-> > > Yeah, but I it does not even work without X - console only!
-> > > 
-> > > s2ram -f -p used to work since at least 2.6.20 ... and is now not
-> > > anymore in 2.6.25-*
-> > 
-> > Can you do git bisect?
+Ingo Molnar wrote:
+> * Stephen Rothwell <sfr@canb.auug.org.au> wrote:
 > 
-> I just tried, and the problem is that 25-rc1 already fails to suspend -
-> so I am not sure how I could get more insight into this failure *on
-> resume*... any ideas?
+>> On Thu, 10 Apr 2008 08:52:27 +0200 Ingo Molnar <mingo@elte.hu> wrote:
+>> >
+>> > what type of conflict do you have there? If it's a new entry then 
+>> > you might be able to fix it by moving the new entry elsewhere in the 
+>> > file. Or if i introduced a new entry close to an existing entry you 
+>> > modify then i could move my new entry elsewhere.
+>> 
+>> Commit 523a65f1a7a339e528ca6d6d808516fe195fde03 ("firewire: fw-ohci: 
+>> add option for remote debugging") in the ieee1394 tree adds a new 
+>> entry just where the sched tree adds
+>> 
+>> source kernel/trace/Kconfig
+> 
+> hm, i think in this specific case the new firewire entry should be added 
+> after the PROVIDE_OHCI1394_DMA_INIT section. (that's how we extend 
+> groups of Kconfig entries anyway) The new trace entries in the scheduler 
+> tree follow that pattern and add the new kernel/trace/Kconfig at the 
+> right place. So if the firewire entry is added that way this conflict 
+> could be avoided.
 
-Well, 2.6.20 worked, so bisect should be easy, right?
+Indeed, this order of the two options looks more logical now that you
+say it.  Update patch will appear on LKML in a minute.
 
+Stephen will still have a conflict in lib/Kconfig.debug when merging the
+tests tree, but this happens regardless what we two do because tests is
+based on 2.6.25-rc1, and mainline Kconfig.debug has changes post -rc1.
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Stefan Richter
+-=====-==--- -=-- -=-=-
+http://arcgraph.de/sr/
+
