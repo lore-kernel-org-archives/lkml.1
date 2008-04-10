@@ -1,58 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756910AbYDJMPO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756554AbYDJMRw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756910AbYDJMPO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Apr 2008 08:15:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755385AbYDJMPA
+	id S1756554AbYDJMRw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Apr 2008 08:17:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755238AbYDJMRn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Apr 2008 08:15:00 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:50509 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755382AbYDJMO7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Apr 2008 08:14:59 -0400
-Message-ID: <47FE04AF.1080103@garzik.org>
-Date: Thu, 10 Apr 2008 08:14:39 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	Thu, 10 Apr 2008 08:17:43 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:53408 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755073AbYDJMRm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Apr 2008 08:17:42 -0400
+Date: Thu, 10 Apr 2008 06:17:25 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+Cc: viro@zeniv.linux.org.uk, miklos@szeredi.hu, ezk@cs.sunysb.edu,
+       akpm@linux-foundation.org, dave@linux.vnet.ibm.com,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Call LSM functions outside VFS helper functions.
+Message-ID: <20080410121725.GP11962@parisc-linux.org>
+References: <200804090053.m390rE9k007085@agora.fsl.cs.sunysb.edu> <E1Jjug8-0006a2-Vs@pomaz-ex.szeredi.hu> <200804102102.JFI05247.OVJOFHFStLOFQM@I-love.SAKURA.ne.jp>
 MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, Andy Whitcroft <apw@shadowen.org>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Linux IDE mailing list <linux-ide@vger.kernel.org>
-Subject: Re: [BUG] linux-next: Tree for April 10 - kernel panic while loading
- ata driver on powermac
-References: <20080410181404.b76939a6.sfr@canb.auug.org.au>	<47FDEAFA.10407@linux.vnet.ibm.com>	<47FDEFC8.9070105@garzik.org> <20080410123230.7203f626@core>
-In-Reply-To: <20080410123230.7203f626@core>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200804102102.JFI05247.OVJOFHFStLOFQM@I-love.SAKURA.ne.jp>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox wrote:
-> On Thu, 10 Apr 2008 06:45:28 -0400
-> Jeff Garzik <jeff@garzik.org> wrote:
+On Thu, Apr 10, 2008 at 09:02:57PM +0900, Tetsuo Handa wrote:
+> If the conclusion became "vfsmount should not be passed to
+> VFS helper functions", that's OK, but I want you to consider
+> the below approach for AppArmor and TOMOYO Linux. This patch is a repost of
+> http://kerneltrap.org/mailarchive/linux-fsdevel/2008/2/17/882024 .
+
+I'm a little disappointed that you simply repost this patch rather than
+responding to my post from yesterday:
+
+> How about an approach which doesn't require the vfsmount to be passed
+> down?
 > 
->> Kamalesh Babulal wrote:
->>> Hi Stephen,
->>>
->>> The next-20080410 kernel panics while bootup over the PowerMac G5 box, while
->>> loading the ATA driver.
->> IDE driver, you mean.
+> When the rule is put in place, say "No modifications to /etc/passwd",
+> look up the inode and major:minor of /etc/passwd.  If there's a rename,
+> look up the new inode number.  If it's mounted elsewhere, it doesn't
+> matter, they still can't modify it because it has the same
+> major:minor:inode.
 > 
-> Jeff - we may in the kernel world use IDE v ATA to distinguish between
-> the two drivers but both are still ATA drives and I don't think its too
-> fair to respond this way, especially to someone who has gone to the
-> trouble of capturing a very good trace.
+> Is this workable?
 
-Sure.  The main goal was to copy Bart and linux-ide.  That was just an 
-aside.
+Could you respond to this please?
 
-	Jeff
-
-
-
+-- 
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
