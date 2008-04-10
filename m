@@ -1,67 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756133AbYDJHrq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755522AbYDJHwY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756133AbYDJHrq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Apr 2008 03:47:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754364AbYDJHri
+	id S1755522AbYDJHwY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Apr 2008 03:52:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752789AbYDJHwQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Apr 2008 03:47:38 -0400
-Received: from mk-outboundfilter-4.mail.uk.tiscali.com ([212.74.114.32]:56264
-	"EHLO mk-outboundfilter-4.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753871AbYDJHrh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Apr 2008 03:47:37 -0400
-X-Trace: 55861358/mk-outboundfilter-2.mail.uk.tiscali.com/F2S/$ACCEPTED/freedom2Surf-customers/83.67.11.44
-X-SBRS: None
-X-RemoteIP: 83.67.11.44
-X-IP-MAIL-FROM: tvrtko@ursulin.net
-X-IP-BHB: Once
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AkoFAA5j/UdTQwss/2dsb2JhbACBXakU
-X-IP-Direction: IN
-From: "Tvrtko A. Ursulin" <tvrtko@ursulin.net>
-To: linux-ide@vger.kernel.org
-Subject: Re: Western Digital GreenPower drives and Linux
-Date: Thu, 10 Apr 2008 08:48:08 +0100
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: linux-kernel@vger.kernel.org
-References: <200804092118.35501.tvrtko@ursulin.net>
-In-Reply-To: <200804092118.35501.tvrtko@ursulin.net>
+	Thu, 10 Apr 2008 03:52:16 -0400
+Received: from relay2.sgi.com ([192.48.171.30]:49051 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752480AbYDJHwQ (ORCPT
+	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
+	Thu, 10 Apr 2008 03:52:16 -0400
+Date: Thu, 10 Apr 2008 17:52:08 +1000
+To: torvalds@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org, xfs@oss.sgi.com, akpm@linux-foundation.org
+Subject: [GIT PULL] XFS update for 2.6.25-rc9
+User-Agent: nail 11.25 7/29/05
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200804100848.08442.tvrtko@ursulin.net>
+Message-Id: <20080410075208.C88B958C4C15@chook.melbourne.sgi.com>
+From: lachlan@sgi.com (Lachlan McIlroy)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 09 April 2008 21:18:35 Tvrtko A. Ursulin wrote:
-> I got one of them (WD5000AACS) recently and to my horror after less than
-> three days of being power on this is what I saw:
->
-> 9 Power_On_Hours       0x0032 100 100 000 Old_age Always  - 66
-> 193 Load_Cycle_Count 0x0032 197 197 000 Old_age  Always  - 10233
->
-> At this rate the disk would reach it's design limit for load/unload cycles
-> in around 80 days. Not good - so I implemented a lame workaround of keeping
-> disk busy every couple of seconds - hopefully that won't kill it sooner
-> that unloads would..
->
-> I am also currently talking with first line of WD's tech support trying to
-> get some data on how exactly those drives manage head unloading, but that
-> may not lead anywhere useful.
+Please pull from the for-linus branch:
+    git pull git://oss.sgi.com:8090/xfs/xfs-2.6.git for-linus
 
-I got back from WD's tech support and received a DOS utility which can control 
-this drive feature, apparently using vendor specific commands. With it head 
-unload timer can be disabled or set to a period between 100ms and 25.5s. 
+This will update the following files:
 
-Of course I asked for more than a DOS utility, but the question really is how 
-was this feature intended to work with Windows for example, is there 
-something there which would prevent such rapid load/unload cycle growth, and 
-why isn't it documented somewhere?
+ fs/xfs/linux-2.6/xfs_ioctl.c   |    2 +-
+ fs/xfs/quota/xfs_qm.c          |    6 +-
+ fs/xfs/quota/xfs_qm_bhv.c      |    2 +-
+ fs/xfs/quota/xfs_qm_syscalls.c |    4 +-
+ fs/xfs/xfs_attr_leaf.c         |    6 +-
+ fs/xfs/xfs_bmap.c              |   18 +++---
+ fs/xfs/xfs_bmap_btree.h        |    2 +-
+ fs/xfs/xfs_dir2.c              |    2 +-
+ fs/xfs/xfs_fsops.c             |   24 +++++-----
+ fs/xfs/xfs_ialloc.c            |    6 +-
+ fs/xfs/xfs_inode.c             |    6 +-
+ fs/xfs/xfs_inode_item.c        |    4 +-
+ fs/xfs/xfs_itable.c            |    2 +-
+ fs/xfs/xfs_log.c               |   14 +++---
+ fs/xfs/xfs_log_priv.h          |    4 +-
+ fs/xfs/xfs_log_recover.c       |   16 +++---
+ fs/xfs/xfs_mount.c             |   59 +++++++++++++++++-----
+ fs/xfs/xfs_sb.h                |  107 ++++++++++++++-------------------------
+ fs/xfs/xfs_utils.c             |    6 +-
+ fs/xfs/xfs_vfsops.c            |    9 ++--
+ fs/xfs/xfs_vnodeops.c          |    2 +-
+ 21 files changed, 153 insertions(+), 148 deletions(-)
 
-I am kind off hoping that someone from WD is reading this list and will notice 
-this in case my effort with tech support fails.
+through these commits:
 
-Tvrtko
+commit e6957ea48429aeda4f5d51af4238231d44b0dc4a
+Author: Eric Sandeen <sandeen@sandeen.net>
+Date:   Thu Apr 10 12:19:34 2008 +1000
+
+    [XFS] Ensure "both" features2 slots are consistent
+    
+    Since older kernels may look in the sb_bad_features2 slot for flags,
+    rather than zeroing it out on fixup, we should make it equal to the
+    sb_features2 value.
+    
+    Also, if the ATTR2 flag was not found prior to features2 fixup, it was not
+    set in the mount flags, so re-check after the fixup so that the current
+    session will use the feature.
+    
+    Also fix up the comments to reflect these changes.
+    
+    SGI-PV: 980085
+    SGI-Modid: xfs-linux-melb:xfs-kern:30778a
+    
+    Signed-off-by: Eric Sandeen <sandeen@sandeen.net>
+    Signed-off-by: David Chinner <dgc@sgi.com>
+    Signed-off-by: Lachlan McIlroy <lachlan@sgi.com>
+
+commit ee1c090825bf2f1cb9712489c234eabf69a9a78f
+Author: David Chinner <dgc@sgi.com>
+Date:   Thu Mar 6 13:45:50 2008 +1100
+
+    [XFS] Fix superblock features2 field alignment problem
+    
+    Due to the xfs_dsb_t structure not being 64 bit aligned, the last field of
+    the on-disk superblock can vary in location This causes problems when the
+    filesystem gets moved to a different platform, or there is a 32 bit
+    userspace and 64 bit kernel.
+    
+    This patch detects the defect at mount time, logs a warning such as:
+    
+    XFS: correcting sb_features alignment problem
+    
+    in dmesg and corrects the problem so that everything is OK. it also
+    blacklists the bad field in the superblock so it does not get used for
+    something else later on.
+    
+    SGI-PV: 977636
+    SGI-Modid: xfs-linux-melb:xfs-kern:30539a
+    
+    Signed-off-by: David Chinner <dgc@sgi.com>
+    Signed-off-by: Christoph Hellwig <hch@infradead.org>
+    Signed-off-by: Eric Sandeen <sandeen@sandeen.net>
+    Signed-off-by: Lachlan McIlroy <lachlan@sgi.com>
+
+commit 6211870992502efdccf9cd6bae155c83277835fa
+Author: Eric Sandeen <sandeen@sandeen.net>
+Date:   Thu Mar 6 13:44:28 2008 +1100
+
+    [XFS] remove shouting-indirection macros from xfs_sb.h
+    
+    Remove macro-to-small-function indirection from xfs_sb.h, and remove some
+    which are completely unused.
+    
+    SGI-PV: 976035
+    SGI-Modid: xfs-linux-melb:xfs-kern:30528a
+    
+    Signed-off-by: Eric Sandeen <sandeen@sandeen.net>
+    Signed-off-by: Donald Douwsma <donaldd@sgi.com>
+    Signed-off-by: Lachlan McIlroy <lachlan@sgi.com>
