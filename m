@@ -1,49 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756776AbYDJOX4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757124AbYDJO1S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756776AbYDJOX4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Apr 2008 10:23:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755149AbYDJOXr
+	id S1757124AbYDJO1S (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Apr 2008 10:27:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755513AbYDJO1D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Apr 2008 10:23:47 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:36644 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754812AbYDJOXr (ORCPT
+	Thu, 10 Apr 2008 10:27:03 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:56298 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754203AbYDJO1B (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Apr 2008 10:23:47 -0400
-Date: Thu, 10 Apr 2008 15:20:19 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Andres Salomon <dilinger@queued.net>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       info-linux@geode.amd.com, jordan.crouse@amd.com
-Subject: Re: [PATCH 2/3] x86: GEODE: add Virtual Systems Architecture
- detection
-Message-ID: <20080410152019.52c55686@core>
-In-Reply-To: <20080410094024.5111e108@ephemeral>
-References: <20080409223328.5774d6cf@ephemeral>
-	<20080410091057.45cbb938@core>
-	<20080410094024.5111e108@ephemeral>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 10 Apr 2008 10:27:01 -0400
+Date: Thu, 10 Apr 2008 16:27:00 +0200
+From: Jan Kara <jack@suse.cz>
+To: Jiri Kosina <jkosina@suse.cz>
+Cc: Michal Hocko <mhocko@suse.cz>, Meelis Roos <mroos@linux.ee>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: file offset corruption on 32-bit machines?
+Message-ID: <20080410142700.GC6725@atrey.karlin.mff.cuni.cz>
+References: <Pine.SOC.4.64.0804081101430.28938@math.ut.ee> <200804101555.58643.mhocko@suse.cz> <Pine.LNX.4.64.0804101558280.26562@twin.jikos.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0804101558280.26562@twin.jikos.cz>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > This is a check for *VSA2* which is not the same as VSA1 (Cyrix one) and
-> > for older systems that actually matters as you may have VSA1 or VSA2 and
-> > they are detected differently.
-> >
+> On Thu, 10 Apr 2008, Michal Hocko wrote:
 > 
-> Excellent point.  Can we extend this to check for a VSA1-specific
-> string, or does VSA1 not have a similar signature?
+> > > Jeff Robertson analyzes the behaviour of different operating systems'
+> > > 64-bit file offset implementation and concludes that on 32-bit
+> > > machines, Linux and Solaris lack any locking to keep the two 32-bit
+> > > halves in sync and this could cause rare file offset corruption.
+> > > http://jeffr-tech.livejournal.com/21014.html
+> > AFAICS, this race is theoretically possible, but it is very hard (almost 
+> > impossible) to trigger with a sane file usage pattern. Note that you 
+> > have to access shared struct file (same file descriptor) in different 
+> > threads which should be synchronized by caller anyway (*).
+> 
+> ... but not in cases the caller is an intentionally evil code, right? :)
+  Yes.
 
-VSA1 requires you grovelling around poking at the video registers to get
-a reliable answer and the only bits we need it for are the DMA bug (where
-we assume all have it) and the sound driver (which uses the PCI space to
-see what audio setup is there).
+> > I also don't see any security implications from this race, but maybe 
+> > someone with more knowlage about fs can see (f_pos is used at many 
+> > places in the kernel code).
+> 
+> The f_pos races are in fact exploitable, we've already been there. See 
+> for example http://www.isec.pl/vulnerabilities/isec-0016-procleaks.txt
+  Well, this race is more subtle - the window is just one instruction
+wide (stores to f_pos from CPU2 must come between the store of lower and
+upper 32-bits of f_pos on CPU1). And the only result is that f_pos has
+32-bits from one file pointer and 32-bits from the other one. So I can
+hardly imagine this would be exploitable...
 
-X cares but we don't currently.
+								Honza
+-- 
+Jan Kara <jack@suse.cz>
+SuSE CR Labs
