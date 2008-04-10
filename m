@@ -1,76 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759507AbYDJWJQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759592AbYDJWJr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759507AbYDJWJQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Apr 2008 18:09:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757089AbYDJWI7
+	id S1759592AbYDJWJr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Apr 2008 18:09:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756992AbYDJWJi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Apr 2008 18:08:59 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:54584 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759136AbYDJWI6 (ORCPT
+	Thu, 10 Apr 2008 18:09:38 -0400
+Received: from yw-out-2324.google.com ([74.125.46.31]:57971 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756691AbYDJWJh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Apr 2008 18:08:58 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <47FE8FC8.8000007@s5r6.in-berlin.de>
-Date: Fri, 11 Apr 2008 00:08:08 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.12) Gecko/20080219 SeaMonkey/1.1.8
+	Thu, 10 Apr 2008 18:09:37 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=uPlmjoSsHYjg6yZFyVaNy/ysNYsXAQsD3t/Ph2g40z+S9x4OyhWkEUvQkTydjqVUResXhbLn3lJ7TW1hUMUjnnxaZyHxbAALTdKjeEmR5gj4YjiLxG1aWXV/VkmtECFwI8MTWBfojF802HCzRROQLaIGFy6m69kc0c3bD08o1Zw=
+Message-ID: <9a8748490804101509l5d043ff8w565dc44dfeaf0072@mail.gmail.com>
+Date: Fri, 11 Apr 2008 00:09:11 +0200
+From: "Jesper Juhl" <jesper.juhl@gmail.com>
+To: "Tilman Schmidt" <tilman@imap.cc>
+Subject: Re: 2.6.25-rc8: FTP transfer errors
+Cc: "David Miller" <davem@davemloft.net>, lkml@rtr.ca, yoshfuji@linux-ipv6.org,
+       jeff@garzik.org, rjw@sisk.pl, linux-kernel@vger.kernel.org,
+       linux-net@vger.kernel.org
+In-Reply-To: <47FE3020.1070502@imap.cc>
 MIME-Version: 1.0
-To: linux1394-devel@lists.sourceforge.net
-CC: linux-kernel@vger.kernel.org, Stephen Rothwell <sfr@canb.auug.org.au>,
-       Ingo Molnar <mingo@elte.hu>, Randy Dunlap <randy.dunlap@oracle.com>,
-       Bernhard Kaindl <bk@suse.de>
-Subject: Re: [PATCH linux1394-2.6.git] firewire: fw-ohci: add option for remote
- debugging - amendment
-References: <20080409185309.b94c9d15.sfr@canb.auug.org.au> <47FCF50E.9090703@s5r6.in-berlin.de> <20080410065227.GB30066@elte.hu> <20080410174418.ebfe76c3.sfr@canb.auug.org.au> <tkrat.991b1750a56cf2e9@s5r6.in-berlin.de> <20080410095112.GB12543@elte.hu> <tkrat.88330c779367ee9d@s5r6.in-berlin.de>
-In-Reply-To: <tkrat.88330c779367ee9d@s5r6.in-berlin.de>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <47FD138B.2060801@rtr.ca>
+	 <20080409.152933.132174258.davem@davemloft.net>
+	 <47FD590C.5020003@rtr.ca>
+	 <20080409.182228.193699767.davem@davemloft.net>
+	 <47FE3020.1070502@imap.cc>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I wrote:
->   - Open the physical DMA filter in the top half of the IRQ handler
->     and flush the necessary MMIO writes.  This is to open the filter
->     as soon as possible after bus reset.
-...
-> --- linux.orig/drivers/firewire/fw-ohci.c
-> +++ linux/drivers/firewire/fw-ohci.c
-> @@ -1309,11 +1309,6 @@ static void bus_reset_tasklet(unsigned l
->  		reg_write(ohci, OHCI1394_ConfigROMhdr, ohci->next_header);
->  	}
->  
-> -#ifdef CONFIG_FIREWIRE_OHCI_REMOTE_DMA
-> -	reg_write(ohci, OHCI1394_PhyReqFilterHiSet, ~0);
-> -	reg_write(ohci, OHCI1394_PhyReqFilterLoSet, ~0);
-> -#endif
-> -
->  	spin_unlock_irqrestore(&ohci->lock, flags);
->  
->  	if (free_rom)
-> @@ -1341,8 +1336,14 @@ static irqreturn_t irq_handler(int irq, 
->  	reg_write(ohci, OHCI1394_IntEventClear, event & ~OHCI1394_busReset);
->  	log_irqs(event);
->  
-> -	if (event & OHCI1394_selfIDComplete)
-> +	if (event & OHCI1394_selfIDComplete) {
-> +#ifdef CONFIG_FIREWIRE_OHCI_REMOTE_DMA
-> +		reg_write(ohci, OHCI1394_PhyReqFilterHiSet, ~0);
-> +		reg_write(ohci, OHCI1394_PhyReqFilterLoSet, ~0);
-> +		flush_writes(ohci);
-> +#endif
->  		tasklet_schedule(&ohci->bus_reset_tasklet);
-> +	}
->  
+On 10/04/2008, Tilman Schmidt <tilman@imap.cc> wrote:
+<...>
+>
+>  Bisecting is a time-consuming process. If unwillingness to bisect
+>  is unacceptable in a bug reporter then people who don't have the
+>  time to bisect must stop reporting the problems they encounter.
+>
 
-I retract this part of the patch.  Writes to PhyReqFilter have no effect 
-as long as intEvent.busReset isn't cleared.  This happens in the bottom 
-half of the bus reset handler (bus_reset_tasklet).
+I hope that was a joke and that I just don't get it.
 
-The rest of the patch stays valid.
+Are you really saying that if somebody find a bug they shouldn't
+bother reporting it unless they are willing to spend hours and hours
+of work to get it fixed?
+
+The way I see it, the burden of debugging and fixing bugs is mainly on
+the developers of the code that breaks. You can't blame users for
+using the code, triggering bugs and then reporting the breakage.
+Users who report bugs are doing us all a great service regardless of
+their ability or willingness to do more work than just the initial
+report.
+
+If bugs don't get reported they'll never get fixed. Even a bad bug
+report with no follow up at all still allows us to use it to gauge how
+often a specific bug is being hit and thus how important it may be to
+fix it.
+
+You can't expect users to know how to debug a problem or even bisect
+it. A user may not even be able to compile a custom kernel but she may
+still hit a bug and do us the favour of reporting it. It should be the
+job of the developer of the code to investigate the bug following a
+users report.
+
+Sure it's great when users can bisect, provide test cases, debug the
+problem completely themselves or even provide a patch, but you can't
+expect that. And in my oppinion you certainly can't just hide behind
+"the user doesn't want to bisect so I won't fix this" and use that as
+an excuse for the code being buggy. I hope most people take bug
+reports more seriously than that.
+
+When people discover bugs in my own code I thank them and feel a bit
+ashamed that I didn't do my work properly and it then becomes very
+important to me to make sure I squash the bug.  The more the user can
+help the better, but if they cannot help beyond telling me what broke
+and how, then that's fine too. I still want to nail the bug and I'll
+just have to do more work myself, but it becomes a matter of personal
+and professional pride to hunt down the bug.
+
+We need to be grateful to users who report bugs - most of them don't bother.
+
 -- 
-Stefan Richter
--=====-==--- -=-- -=-==
-http://arcgraph.de/sr/
+Jesper Juhl <jesper.juhl@gmail.com>
+Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
+Plain text mails only, please      http://www.expita.com/nomime.html
