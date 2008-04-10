@@ -1,51 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757812AbYDJOpd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757884AbYDJOsl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757812AbYDJOpd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Apr 2008 10:45:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755332AbYDJOpY
+	id S1757884AbYDJOsl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Apr 2008 10:48:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756259AbYDJOsc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Apr 2008 10:45:24 -0400
-Received: from nikam-dmz.ms.mff.cuni.cz ([195.113.20.16]:40851 "EHLO
-	nikam.ms.mff.cuni.cz" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756143AbYDJOpX (ORCPT
+	Thu, 10 Apr 2008 10:48:32 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:55734 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755985AbYDJOsb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Apr 2008 10:45:23 -0400
-X-Greylist: delayed 2035 seconds by postgrey-1.27 at vger.kernel.org; Thu, 10 Apr 2008 10:45:23 EDT
-Date: Thu, 10 Apr 2008 16:11:24 +0200
-From: Martin Mares <mj@ucw.cz>
-To: Michal Hocko <mhocko@suse.cz>
-Cc: Meelis Roos <mroos@linux.ee>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: file offset corruption on 32-bit machines?
-Message-ID: <mj+md-20080410.140857.3331.nikam@ucw.cz>
-References: <Pine.SOC.4.64.0804081101430.28938@math.ut.ee> <200804101555.58643.mhocko@suse.cz>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200804101555.58643.mhocko@suse.cz>
-User-Agent: Mutt/1.5.9i
+	Thu, 10 Apr 2008 10:48:31 -0400
+Date: Thu, 10 Apr 2008 07:46:25 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Andi Kleen <andi@firstfloor.org>
+cc: Steven Rostedt <rostedt@goodmis.org>, Andy Whitcroft <apw@shadowen.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
+       akpm@linux-foundation.org, Rusty Russell <rusty@rustcorp.com.au>,
+       Glauber de Oliveira Costa <gcosta@redhat.com>,
+       Jan Beulich <jbeulich@novell.com>, Thomas Gleixner <tglx@linutronix.de>,
+       pinskia@gcc.gnu.org
+Subject: Re: [PATCH] pop previous section in alternative.c
+In-Reply-To: <20080410144114.GH10019@one.firstfloor.org>
+Message-ID: <alpine.LFD.1.00.0804100741430.3143@woody.linux-foundation.org>
+References: <Pine.LNX.4.58.0804091859400.31879@gandalf.stny.rr.com> <Pine.LNX.4.58.0804091906040.31970@gandalf.stny.rr.com> <47FD5D42.5000603@zytor.com> <87wsn6m6zt.fsf@basil.nowhere.org> <20080410094637.GW17915@shadowen.org> <Pine.LNX.4.58.0804101007510.5673@gandalf.stny.rr.com>
+ <20080410144114.GH10019@one.firstfloor.org>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello!
 
-> [*] file_pos_{read,write} (fs/read_write.c) are not called under lock (in 
-> sys_read, sys_write, ...), so even if f_pos is written atomically, you will 
-> be able to get races when accessing shared descriptor from different threads.
 
-There are however cases when such behavior is perfectly valid: For example
-you can have a file of records of a fixed size, whose order does not matter.
-Then multiple processes can produce the records in parallel, sharing
-a single fd.
+On Thu, 10 Apr 2008, Andi Kleen wrote:
+> 
+> So in summary valid section patterns are either
+> .section / .previous or .pushsection .section .popsection
 
-> I think that POSIX states, that behavior is undefined under these conditions.
+The thing is, we'd be much better off with some sanity checking in the 
+assembler.
 
-Do you have a pointer to that?
+Which is likely not going to happen - oh well.
 
-				Have a nice fortnight
--- 
-Martin `MJ' Mares                          <mj@ucw.cz>   http://mj.ucw.cz/
-Faculty of Math and Physics, Charles University, Prague, Czech Rep., Earth
-Mr. Worf, scan that ship."  "Aye, Captain... 600 DPI?
+In particular, the assembler should see patterns like
+
+	.size function, .-function
+
+and it should be _trivially_ able to check that "." and "function" are in 
+the same section, and warn if they aren't. Because I don't see how it 
+could ever be valid to have sizes that cross section boundaries (it's a 
+totally nonsensical concept).
+
+But it doesn't. Oh, well.
+
+But maybe we can see it in the resulting object file somehow, and do the 
+check there (the same way we do the init-section analysis). I assume the 
+.size directive writes some debug info or similar, and we can create a big 
+warning when a size is unexpectedly huge and crosses section size 
+boundaries?
+
+			Linus
