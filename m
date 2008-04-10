@@ -1,62 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755985AbYDJDmR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755954AbYDJDoR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755985AbYDJDmR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Apr 2008 23:42:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754639AbYDJDmF
+	id S1755954AbYDJDoR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Apr 2008 23:44:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754940AbYDJDoI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Apr 2008 23:42:05 -0400
-Received: from fms-01.valinux.co.jp ([210.128.90.1]:41379 "EHLO
-	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754348AbYDJDmC (ORCPT
+	Wed, 9 Apr 2008 23:44:08 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:59127 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754666AbYDJDoH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Apr 2008 23:42:02 -0400
-Date: Thu, 10 Apr 2008 12:41:58 +0900 (JST)
-Message-Id: <20080410.124158.115958557.taka@valinux.co.jp>
-To: gerlof@atcomputing.nl
-Cc: menage@google.com, akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       balbir@in.ibm.com, xemul@openvz.org
-Subject: Re: [PATCH 1/3] accounting: task counters for disk/network
-From: Hirokazu Takahashi <taka@valinux.co.jp>
-In-Reply-To: <6599ad830804072316q441a1816o11f39ee7f9b49c0f@mail.gmail.com>
-References: <20080408054837.GA7103@atcmpg.ATComputing.nl>
-	<20080407231007.4946410d.akpm@linux-foundation.org>
-	<6599ad830804072316q441a1816o11f39ee7f9b49c0f@mail.gmail.com>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Wed, 9 Apr 2008 23:44:07 -0400
+Message-ID: <47FD8C17.6040203@zytor.com>
+Date: Wed, 09 Apr 2008 20:40:07 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+MIME-Version: 1.0
+To: sukadev@us.ibm.com
+CC: Jakub Jelinek <jakub@redhat.com>, Andrew Morton <akpm@osdl.org>,
+       clg@fr.ibm.com, serue@us.ibm.com,
+       "David C. Hansen" <haveblue@us.ibm.com>,
+       Pavel Emelyanov <xemul@openvz.org>,
+       Containers <containers@lists.osdl.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/3] add the clone64() and unshare64() syscalls
+References: <20080409222611.GA28087@us.ibm.com> <20080409223459.GC28267@us.ibm.com> <20080409230733.GR20478@devserv.devel.redhat.com> <20080410021523.GB28477@us.ibm.com>
+In-Reply-To: <20080410021523.GB28477@us.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Gerlof,
-
-> >  This sort of accounting will presumably be needed by a disk bandwidth
-> >  cgroup controller.  Perhaps the containers/cgroup people have plans of code
-> >  already?
-> >
+sukadev@us.ibm.com wrote:
+> Jakub Jelinek [jakub@redhat.com] wrote:
+> | On Wed, Apr 09, 2008 at 03:34:59PM -0700, sukadev@us.ibm.com wrote:
+> | > From: Cedric Le Goater <clg@fr.ibm.com>
+> | > Subject: [PATCH 3/3] add the clone64() and unshare64() syscalls
+> | > 
+> | > This patch adds 2 new syscalls :
+> | > 
+> | >      long sys_clone64(unsigned long flags_high, unsigned long flags_low,
+> | > 		unsigned long newsp);
+> | > 
+> | >      long sys_unshare64(unsigned long flags_high, unsigned long flags_low);
+> | 
+> | Can you explain why are you adding it for 64-bit arches too?  unsigned long
+> | is there already 64-bit, and both sys_clone and sys_unshare have unsigned
+> | long flags, rather than unsigned int.
 > 
-> Yes, there have been various cgroup block-I/O subsystems proposed. I
-> know that at least the one posted by Hirokazu Takahashi
-> <taka@valinux.co.jp> uses the same per-page cgroup pointer as the
-> memory controller.
+> Hmm,
+> 
+> By simply resuing clone() on 64 bit and adding a new call for 32-bit won't
+> the semantics of clone() differ between the two ?
+> 
+> i.e clone() on 64 bit supports say CLONE_NEWPTS clone() on 32bit does not ?
+> 
+> Wouldn't it be simpler/cleaner if clone() and clone64() behaved the same
+> on both 32 and 64 bit systems ?
+> 
 
-Yes, I'm working on this.
+No, not really.  The way this work on the libc side is pretty much "use 
+clone64 if it exists, otherwise use clone".
 
-linux-2.6.25-rc series now have the memory controller in them, which
-supports to get the cgroup from any pageframe. I made a block-I/O
-controller on it experimentally.
-
-If you use this controller with dm-ioband, which is an engine implemented
-as a device mapper module to control the bandwidth of block I/Os,
-you can also get "cgroup block I/O accounting" from it.
-
-I guess you can enhance this controller to track the I/Os per process
-if you really want to. But it will cause extra overhead which I think
-you may not ignore.
-
-Thanks,
-Hirokazu Takahashi.
-
-
-
+	-hpa
