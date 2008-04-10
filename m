@@ -1,86 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756900AbYDJNw0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756698AbYDJNzQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756900AbYDJNw0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Apr 2008 09:52:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754812AbYDJNwS
+	id S1756698AbYDJNzQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Apr 2008 09:55:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755248AbYDJNzE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Apr 2008 09:52:18 -0400
-Received: from mtl.rackplans.net ([69.90.0.18]:40908 "EHLO mtl.rackplans.net"
+	Thu, 10 Apr 2008 09:55:04 -0400
+Received: from mail.tmr.com ([64.65.253.246]:35183 "EHLO gaimboi.tmr.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754756AbYDJNwR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Apr 2008 09:52:17 -0400
-Date: Thu, 10 Apr 2008 09:52:16 -0400 (EDT)
-From: Gerhard Mack <gmack@innerfire.net>
-X-X-Sender: gmack@mtl.rackplans.net
-To: Harvey Harrison <harvey.harrison@gmail.com>
-cc: Mark Lord <lkml@rtr.ca>, David Miller <davem@davemloft.net>,
-       yoshfuji@linux-ipv6.org, jeff@garzik.org, rjw@sisk.pl,
-       linux-kernel@vger.kernel.org, linux-net@vger.kernel.org
-Subject: Re: 2.6.25-rc8: FTP transfer errors
-In-Reply-To: <1207787848.16220.25.camel@brick>
-Message-ID: <alpine.DEB.1.10.0804100951190.21749@mtl.rackplans.net>
-References: <47FCF9DD.6080007@rtr.ca>  <20080410.023045.16227424.yoshfuji@linux-ipv6.org>  <47FD138B.2060801@rtr.ca> <20080409.152933.132174258.davem@davemloft.net>  <47FD590C.5020003@rtr.ca> <1207787848.16220.25.camel@brick>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	id S1754814AbYDJNzE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Apr 2008 09:55:04 -0400
+Message-ID: <47FE1D22.3020007@tmr.com>
+Date: Thu, 10 Apr 2008 09:58:58 -0400
+From: Bill Davidsen <davidsen@tmr.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Francis Moreau <francis.moro@gmail.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: Disk geometry from /sys
+References: <38b2ab8a0804091353h3725ce29s196e27e8b4f1ff56@mail.gmail.com>
+In-Reply-To: <38b2ab8a0804091353h3725ce29s196e27e8b4f1ff56@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 9 Apr 2008, Harvey Harrison wrote:
-
-> Date: Wed, 09 Apr 2008 17:37:28 -0700
-> From: Harvey Harrison <harvey.harrison@gmail.com>
-> To: Mark Lord <lkml@rtr.ca>
-> Cc: David Miller <davem@davemloft.net>, yoshfuji@linux-ipv6.org,
->     jeff@garzik.org, rjw@sisk.pl, linux-kernel@vger.kernel.org,
->     linux-net@vger.kernel.org
-> Subject: Re: 2.6.25-rc8: FTP transfer errors
+Francis Moreau wrote:
+> Hi,
 > 
-> On Wed, 2008-04-09 at 20:02 -0400, Mark Lord wrote:
-> > David Miller wrote:
-> > > From: Mark Lord <lkml@rtr.ca>
-> > > Date: Wed, 09 Apr 2008 15:05:47 -0400
-> > > 
-> > >> But it would be far more useful for whoever has been working on the
-> > >> stack to suggest some possible/likely commits to look at instead.
-> > > 
-> > > Personally all I see is that one side closes the socket before all
-> > > data packets received have been read into the application, resulting
-> > > in a (correct) reset going out.
-> > > 
-> > > I can't think of any change we've made over the course of this
-> > > release that would change behvaior in that area.
-> > > 
-> > > So you will likely need to bisect.
-> > ..
-> > 
-> > Or I can ignore it, like the net developers, since I have a workaround.
-> > And then we'll see what other apps are broken upon 2.6.25 final release.
-> > 
-> > Really, folks.  Bug reports are intended to *help* the developers,
-> > not something to be thrown back in their faces.
-> > 
-> > There do seem to have been a *lot* of changes around the tcp closing/close
-> > code (as I see from diff'ing 2.6.24 against latest -git).
-> > 
-> > *Somebody* is responsible for those changes.
-> > That particular *somebody* ought to volunteer some help here,
-> > reducing the mountain of commits to a big handful or two.
-> > 
+> I'm trying to know the geometry of my hard disk from a bash script
+> and that's the reason I'm looking in /sys. The reason is that I'd like
+> to figure out the size of a cylinder without doing a
+> ioctl(bdev, HDIO_GETGEO, &geo)
 > 
-> Could you do a poor-man's bisect and test 2.6.25-rc1 and -rc2, that
-> would probably help a lot to narrow it down.
+> Unfortunately I can't find anything useful and this is certainly a sign
+> that I'm doing something wrong.
+> 
+> Or maybe can I simply assume from my script that the geometry
+> is always heads=255 and the number of sectors per track is 63 for all
+> disks.
+> 
+> Looking at parted(8) source code, I  can find this:
+> 
+> /* The GETGEO ioctl is no longer useful (as of linux 2.6.x).  We could
+>  * still use it in 2.4.x, but this is contentious.  Perhaps we should
+>  * move to EDD. */
+> 
+> Could anybody give me some advices ?
 
+Given that the connection between any modern disk geometry and the 
+assumption of a fixed number of sectors per track is pretty tenuous, I'm 
+not sure any of the sizes, BIOS, boot program, or OS, are more than 
+convention anymore.
 
-Seeing as how your Canadian.. any way to make sure it's not ISP (bell or 
-bell wholesale) / rogers traffic shaping ?
-
-	Gerhard
-
---
-Gerhard Mack
-
-gmack@innerfire.net
-
-<>< As a computer I find your faith in technology amusing.
+-- 
+Bill Davidsen <davidsen@tmr.com>
+   "We have more to fear from the bungling of the incompetent than from
+the machinations of the wicked."  - from Slashdot
