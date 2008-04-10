@@ -1,55 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757362AbYDJOI0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757289AbYDJOLl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757362AbYDJOI0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Apr 2008 10:08:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755993AbYDJOIR
+	id S1757289AbYDJOLl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Apr 2008 10:11:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756104AbYDJOLe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Apr 2008 10:08:17 -0400
-Received: from moutng.kundenserver.de ([212.227.126.183]:50694 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755985AbYDJOIP convert rfc822-to-8bit (ORCPT
+	Thu, 10 Apr 2008 10:11:34 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:49696 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756083AbYDJOLd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Apr 2008 10:08:15 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: joern@logfs.org
-Subject: Re: [patch 10/15] fs/logfs/memtree.c
-Date: Thu, 10 Apr 2008 16:07:44 +0200
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       linux-mtd@lists.infradead.org
-References: <20080401181308.512473173@logfs.org> <20080401181332.853833010@logfs.org>
-In-Reply-To: <20080401181332.853833010@logfs.org>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Thu, 10 Apr 2008 10:11:33 -0400
+Date: Thu, 10 Apr 2008 10:11:30 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Andy Whitcroft <apw@shadowen.org>
+cc: Andi Kleen <andi@firstfloor.org>, "H. Peter Anvin" <hpa@zytor.com>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>, akpm@osdl.org,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Glauber de Oliveira Costa <gcosta@redhat.com>,
+       Jan Beulich <jbeulich@novell.com>, Thomas Gleixner <tglx@linutronix.de>,
+       pinskia@gcc.gnu.org
+Subject: Re: [PATCH] pop previous section in alternative.c
+In-Reply-To: <20080410094637.GW17915@shadowen.org>
+Message-ID: <Pine.LNX.4.58.0804101007510.5673@gandalf.stny.rr.com>
+References: <Pine.LNX.4.58.0804091859400.31879@gandalf.stny.rr.com>
+ <Pine.LNX.4.58.0804091906040.31970@gandalf.stny.rr.com> <47FD5D42.5000603@zytor.com>
+ <87wsn6m6zt.fsf@basil.nowhere.org> <20080410094637.GW17915@shadowen.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200804101607.45409.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX19PBWIzHVu/cncqtr/HwZxKt/OMQqFJEtS1Cqm
- WJkpt1efb3GjNPghz+PIcp65l0emIS42cZoNT4aqqwfSeV7BAV
- 1Hzalu/bEfP8af/YG3Ynw==
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 01 April 2008, joern@logfs.org wrote:
-> +#if BITS_PER_LONG == 32
-> +#define BTREE_NODES 20 /* 32bit, 240 byte nodes */
-> +#else
-> +#define BTREE_NODES 16 /* 64bit, 256 byte nodes */
-> +#endif
-> +
-> +struct btree_node {
-> +       u64 key;
-> +       struct btree_node *node;
-> +};
 
-On 32 bit platforms other than x86, your struct btree_node
-is 16 bytes long because of alignment requirements, rather
-than the 12 bytes you are assuming.
 
-	Arnd <><
+On Thu, 10 Apr 2008, Andy Whitcroft wrote:
+> >
+> > BTW it looks like the problem was added with 121d7bf5a246d282ba91234d03a4edf9ccc9c940,
+> > signed off by me, sorry for not catching it in review.
+> >
+> > Perhaps that is something that would make sense adding to checkpatch.pl?
+> > Complain for .section in inline assembler without .previous or popsection
+> > (cc Andy). I think such a check would make sense.
+>
+> Do you have an example of such a bad thing?  My only concern is this
+> sounds like a check which could potentially need to see more lines than are
+> available in the patch context and so the test might be rather unreliable.
+>
+
+>From commit 121d7bf5a246d282ba91234d03a4edf9ccc9c940:
+
+    get them easily into strings. */
+-asm("\t.data\nintelnops: "
++asm("\t.section .rodata, \"a\"\nintelnops: "
+        GENERIC_NOP1 GENERIC_NOP2 GENERIC_NOP3 GENERIC_NOP4 GENERIC_NOP5 GENERIC
+        GENERIC_NOP7 GENERIC_NOP8);
+-extern unsigned char intelnops[];
+
+
+I would say anytime there's a "^+.*\.section" there had better be a
+"^-.*\.section" or a "+.*.previous" matching it. Off hand I can't think of
+any exceptions to this rule although I may be wrong.
+
+-- Steve
+
+
