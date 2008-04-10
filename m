@@ -1,91 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757794AbYDJRTN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757841AbYDJRWJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757794AbYDJRTN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Apr 2008 13:19:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756380AbYDJRS4
+	id S1757841AbYDJRWJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Apr 2008 13:22:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755516AbYDJRV5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Apr 2008 13:18:56 -0400
-Received: from wolverine01.qualcomm.com ([199.106.114.254]:28579 "EHLO
-	wolverine01.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753404AbYDJRSy (ORCPT
+	Thu, 10 Apr 2008 13:21:57 -0400
+Received: from x35.xmailserver.org ([64.71.152.41]:41784 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755413AbYDJRV5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Apr 2008 13:18:54 -0400
-X-IronPort-AV: E=McAfee;i="5100,188,5271"; a="2345605"
-Message-ID: <47FE4BFC.6000705@qualcomm.com>
-Date: Thu, 10 Apr 2008 10:18:52 -0700
-From: Max Krasnyanskiy <maxk@qualcomm.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Thu, 10 Apr 2008 13:21:57 -0400
+X-AuthUser: davidel@xmailserver.org
+Date: Thu, 10 Apr 2008 10:21:54 -0700 (PDT)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: Michael Kerrisk <mtk.manpages@googlemail.com>
+cc: lkml <linux-kernel@vger.kernel.org>
+Subject: Re: signalfd() not handling sigqueue() sigval data correctly
+In-Reply-To: <cfd18e0f0804100332v5d5d9becqbd0a612ca81abfe8@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0804101019270.9405@alien.or.mcafeemobile.com>
+References: <47FBDF12.8090400@gmail.com>  <Pine.LNX.4.64.0804091256490.6235@alien.or.mcafeemobile.com>
+  <cfd18e0f0804092203s33f0ca5as92f47c4db0b0220f@mail.gmail.com>
+ <cfd18e0f0804100332v5d5d9becqbd0a612ca81abfe8@mail.gmail.com>
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
 MIME-Version: 1.0
-To: Rusty Russell <rusty@rustcorp.com.au>
-CC: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       virtualization@lists.linux-foundation.org
-Subject: Re: [PATCH RFC 3/5] tun: vringfd receive support.
-References: <200804052202.09157.rusty@rustcorp.com.au> <200804052205.43824.rusty@rustcorp.com.au> <47FBCC3B.7080104@qualcomm.com> <200804101544.17736.rusty@rustcorp.com.au>
-In-Reply-To: <200804101544.17736.rusty@rustcorp.com.au>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rusty Russell wrote:
-> On Wednesday 09 April 2008 05:49:15 Max Krasnyansky wrote:
->> Rusty Russell wrote:
->>> This patch modifies tun to allow a vringfd to specify the receive
->>> buffer.  Because we can't copy to userspace in bh context, we queue
->>> like normal then use the "pull" hook to actually do the copy.
->>>
->>> More thought needs to be put into the possible races with ring
->>> registration and a simultaneous close, for example (see FIXME).
->>>
->>> We use struct virtio_net_hdr prepended to packets in the ring to allow
->>> userspace to receive GSO packets in future (at the moment, the tun
->>> driver doesn't tell the stack it can handle them, so these cases are
->>> never taken).
->> In general the code looks good. The only thing I could not convince myself
->> in is whether having generic ring buffer makes sense or not.
->> At least the TUN driver would be more efficient if it had its own simple
->> ring implementation. Less indirection, fewer callbacks, fewer if()s, etc.
->> TUN already has the file descriptor and having two additional fds for rx
->> and tx ring is a waste (think of a VPN server that has to have a bunch of
->> TUN fds). Also as I mentioned before Jamal and I wanted to expose some of
->> the SKB fields through TUN device. With the rx/tx rings the natural way of
->> doing that would be the ring descriptor itself. It can of course be done
->> the same way we copy proto info (PI) and GSO stuff before the packet but
->> that means more copy_to_user() calls and yet more checks.
->>
->> So. What am I missing ? Why do we need generic ring for the TUN ? I looked
->> at the lguest code a bit and it seems that we need a bunch of network
->> specific code anyway. The cool thing is that you can now mmap the rings
->> into the guest directly but the same thing can be done with TUN specific
->> rings.
+On Thu, 10 Apr 2008, Michael Kerrisk wrote:
+
+> On Thu, Apr 10, 2008 at 7:03 AM, Michael Kerrisk
+> <mtk.manpages@googlemail.com> wrote:
+> > Hi Davide,
+> >
+> > > > I was doing some playing about with signalfd(), and seem to have encountered a
+> > > > bug: when a signalfd read() fetches data for a signal that was sent by
+> > > > sigqueue(), the data accompanying the signal is not returned.  Instead
+> > > > ssi_int/ssi_ptr is zero.
+> > >
+> > > Michael, can you give the patch below a spin? I tested it on my x86_64 box
+> > > and seems to be working fine:
+> > >
+> > > Got signal 44
+> > >   ssi_code= -1
+> > >   ssi_pid = 6314
+> > >   ssi_uid = 1000
+> > >   ssi_int = 123
+> > >   ssi_ptr = 7b
+> >
+> > This works for me on x86-32.  Thanks Davide!
 > 
-> I started modifying tun to do this directly, but it ended up with a whole heap 
-> of code just for the rings, and a lot of current code (eg. read, write, poll) 
-> ended up inside an 'if (tun->rings) ... else {'.  Having a natural poll() 
-> interface for the rings made more sense, so being their own fds fell out 
-> naturally.
-Hmm, the version that I sent you awhile ago (remember I sent you an attachment 
-with prototype of the new tun driver and user space code) was not that bad in 
-that area. It mean it did not touch existing read()/write() path. The 
-difference was that it allocated the rings and the data buffer in the kernel 
-and mapped into the user-space. Which is not what you guys need but that's a 
-separate thing.
+> Davide,
+> 
+> Are you going to get this pushed into 2.6.26?  I assume we can't get
+> it into 2.6.25...
 
-The fd thing could be an issue. As I mentioned the example would be a VPN 
-server (OpenVPN, etc) with a bunch of client connection (typically tun per 
-connection).
+I'll be sending it Andrew-bound today. I dunno where it'll land mainline.
 
-> I decided to float this version because it does minimal damage to tun, and I
-> know that other people have wanted rings before: I'd like to know if this is
-> likely to be generic enough for them.
-I see.
 
-I'll try to spend some time on this in a near future and take a crack at the 
-version with the TUN specific rings. Although I said that many times now and 
-it may not happen in the near enough future :). In the mean time if your 
-current version helps you guys a lot I do not mind us putting it in. We can 
-always add another mode or something that uses internal rings and gradually 
-obsolete old read()/write() and generic rings.
+- Davide
 
-Max
+
