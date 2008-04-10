@@ -1,58 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756154AbYDJNvP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756900AbYDJNw0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756154AbYDJNvP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Apr 2008 09:51:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752990AbYDJNvA
+	id S1756900AbYDJNw0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Apr 2008 09:52:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754812AbYDJNwS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Apr 2008 09:51:00 -0400
-Received: from mail29.messagelabs.com ([216.82.249.147]:21879 "HELO
-	mail29.messagelabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752418AbYDJNvA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Apr 2008 09:51:00 -0400
-X-VirusChecked: Checked
-X-Env-Sender: Uwe.Kleine-Koenig@digi.com
-X-Msg-Ref: server-13.tower-29.messagelabs.com!1207835446!10520688!11
-X-StarScan-Version: 5.5.12.14.2; banners=-,-,-
-X-Originating-IP: [66.77.174.21]
-Date: Thu, 10 Apr 2008 15:50:43 +0200
-From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <Uwe.Kleine-Koenig@digi.com>
-To: =?iso-8859-1?Q?Hans-J=FCrgen?= Koch <hjk@linutronix.de>
-Cc: Russell King - ARM Linux <linux@arm.linux.org.uk>,
-       Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org,
-       linux-arm-kernel@lists.arm.linux.org.uk
-Subject: Re: [PATCH] arch/arm/Kconfig: Make UIO available on ARM architecture
-Message-ID: <20080410135043.GA13680@digi.com>
-References: <20080207133805.13f092ff@dilbert.local> <20080207130222.GA8587@flint.arm.linux.org.uk> <20080207141236.00940d09@dilbert.local> <20080211092547.09bca061@dilbert.local> <20080410122127.GA8096@digi.com> <20080410122706.GG26575@flint.arm.linux.org.uk> <20080410125709.GA11038@digi.com> <20080410131058.GH26575@flint.arm.linux.org.uk>
+	Thu, 10 Apr 2008 09:52:18 -0400
+Received: from mtl.rackplans.net ([69.90.0.18]:40908 "EHLO mtl.rackplans.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754756AbYDJNwR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Apr 2008 09:52:17 -0400
+Date: Thu, 10 Apr 2008 09:52:16 -0400 (EDT)
+From: Gerhard Mack <gmack@innerfire.net>
+X-X-Sender: gmack@mtl.rackplans.net
+To: Harvey Harrison <harvey.harrison@gmail.com>
+cc: Mark Lord <lkml@rtr.ca>, David Miller <davem@davemloft.net>,
+       yoshfuji@linux-ipv6.org, jeff@garzik.org, rjw@sisk.pl,
+       linux-kernel@vger.kernel.org, linux-net@vger.kernel.org
+Subject: Re: 2.6.25-rc8: FTP transfer errors
+In-Reply-To: <1207787848.16220.25.camel@brick>
+Message-ID: <alpine.DEB.1.10.0804100951190.21749@mtl.rackplans.net>
+References: <47FCF9DD.6080007@rtr.ca>  <20080410.023045.16227424.yoshfuji@linux-ipv6.org>  <47FD138B.2060801@rtr.ca> <20080409.152933.132174258.davem@davemloft.net>  <47FD590C.5020003@rtr.ca> <1207787848.16220.25.camel@brick>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20080410131058.GH26575@flint.arm.linux.org.uk>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-OriginalArrivalTime: 10 Apr 2008 13:50:44.0204 (UTC) FILETIME=[DF3BB2C0:01C89B11]
-X-TM-AS-Product-Ver: SMEX-8.0.0.1181-5.000.1023-15840.007
-X-TM-AS-Result: No--12.641000-8.000000-4
-X-TM-AS-User-Approved-Sender: No
-X-TM-AS-User-Blocked-Sender: No
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Jürgen,
+On Wed, 9 Apr 2008, Harvey Harrison wrote:
 
-> > and the following post includes the last version of the patch:
-> > 
-> > 	http://lists.arm.linux.org.uk/lurker/message/20080207.131236.8c4f4569.en.html
+> Date: Wed, 09 Apr 2008 17:37:28 -0700
+> From: Harvey Harrison <harvey.harrison@gmail.com>
+> To: Mark Lord <lkml@rtr.ca>
+> Cc: David Miller <davem@davemloft.net>, yoshfuji@linux-ipv6.org,
+>     jeff@garzik.org, rjw@sisk.pl, linux-kernel@vger.kernel.org,
+>     linux-net@vger.kernel.org
+> Subject: Re: 2.6.25-rc8: FTP transfer errors
 > 
-> That looks fine.
-Do you want to post the patch to the patch system?  If yes you can add
-an Acked-by: me; if no I can do it, too.
+> On Wed, 2008-04-09 at 20:02 -0400, Mark Lord wrote:
+> > David Miller wrote:
+> > > From: Mark Lord <lkml@rtr.ca>
+> > > Date: Wed, 09 Apr 2008 15:05:47 -0400
+> > > 
+> > >> But it would be far more useful for whoever has been working on the
+> > >> stack to suggest some possible/likely commits to look at instead.
+> > > 
+> > > Personally all I see is that one side closes the socket before all
+> > > data packets received have been read into the application, resulting
+> > > in a (correct) reset going out.
+> > > 
+> > > I can't think of any change we've made over the course of this
+> > > release that would change behvaior in that area.
+> > > 
+> > > So you will likely need to bisect.
+> > ..
+> > 
+> > Or I can ignore it, like the net developers, since I have a workaround.
+> > And then we'll see what other apps are broken upon 2.6.25 final release.
+> > 
+> > Really, folks.  Bug reports are intended to *help* the developers,
+> > not something to be thrown back in their faces.
+> > 
+> > There do seem to have been a *lot* of changes around the tcp closing/close
+> > code (as I see from diff'ing 2.6.24 against latest -git).
+> > 
+> > *Somebody* is responsible for those changes.
+> > That particular *somebody* ought to volunteer some help here,
+> > reducing the mountain of commits to a big handful or two.
+> > 
+> 
+> Could you do a poor-man's bisect and test 2.6.25-rc1 and -rc2, that
+> would probably help a lot to narrow it down.
 
-Best regards
-Uwe
 
--- 
-Uwe Kleine-König, Software Engineer
-Digi International GmbH Branch Breisach, Küferstrasse 8, 79206 Breisach, Germany
-Tax: 315/5781/0242 / VAT: DE153662976 / Reg. Amtsgericht Dortmund HRB 13962
+Seeing as how your Canadian.. any way to make sure it's not ISP (bell or 
+bell wholesale) / rogers traffic shaping ?
+
+	Gerhard
+
+--
+Gerhard Mack
+
+gmack@innerfire.net
+
+<>< As a computer I find your faith in technology amusing.
