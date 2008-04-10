@@ -1,112 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756997AbYDJNSj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757334AbYDJNTS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756997AbYDJNSj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Apr 2008 09:18:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755332AbYDJNSa
+	id S1757334AbYDJNTS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Apr 2008 09:19:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755619AbYDJNTF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Apr 2008 09:18:30 -0400
-Received: from mtagate1.uk.ibm.com ([195.212.29.134]:12047 "EHLO
-	mtagate1.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755238AbYDJNSa (ORCPT
+	Thu, 10 Apr 2008 09:19:05 -0400
+Received: from rn-out-0910.google.com ([64.233.170.187]:19646 "EHLO
+	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755332AbYDJNTC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Apr 2008 09:18:30 -0400
-Message-ID: <47FE139C.9040100@fr.ibm.com>
-Date: Thu, 10 Apr 2008 15:18:20 +0200
-From: Cedric Le Goater <clg@fr.ibm.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	Thu, 10 Apr 2008 09:19:02 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=UmWOGz3u9Gb/ymZmA2rclCCPbCsNfiQ5c9u1vT0VdEfiEbIursIuWoPM24uGVITr0dMsCdvpHs2bk/5tGA2ilbwOTgEeOHHzZricc/h0x93IpG2TTUyYA2V8TcqCV2/3C8AyjqnsxpPpwGpDyDFCJMn8a9KDnDV6CHoEBcK8hkU=
+Message-ID: <5699f8f00804100619h3319fbdcy8adc60b45e2e7eec@mail.gmail.com>
+Date: Thu, 10 Apr 2008 15:19:01 +0200
+From: "Wander Winkelhorst" <w.winkelhorst@gmail.com>
+To: "Wappler Marcel" <Marcel.Wappler@bridgeco.net>
+Subject: Re: Starting point: Suspend to RAM on embedded devices?
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <83116F0A4FF67A4F97BA0B6E408C48E301E96266@zuerich.BC-Int.NET>
 MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-CC: sukadev@us.ibm.com, Andrew Morton <akpm@osdl.org>, serue@us.ibm.com,
-       "David C. Hansen" <haveblue@us.ibm.com>,
-       Pavel Emelyanov <xemul@openvz.org>,
-       Containers <containers@lists.osdl.org>, linux-kernel@vger.kernel.org,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [PATCH 1/3] change clone_flags type to u64
-References: <20080409222611.GA28087@us.ibm.com> <20080409223231.GA28267@us.ibm.com> <871w5enmk7.fsf@basil.nowhere.org> <47FE073B.3060007@fr.ibm.com> <20080410125205.GG10019@one.firstfloor.org>
-In-Reply-To: <20080410125205.GG10019@one.firstfloor.org>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <83116F0A4FF67A4F97BA0B6E408C48E301E96208@zuerich.BC-Int.NET>
+	 <5699f8f00804100123q2a9d278arf9b076c91efbbd56@mail.gmail.com>
+	 <83116F0A4FF67A4F97BA0B6E408C48E301E96234@zuerich.BC-Int.NET>
+	 <5699f8f00804100351q427b1a0dxdeb8254b370cb8ed@mail.gmail.com>
+	 <83116F0A4FF67A4F97BA0B6E408C48E301E96266@zuerich.BC-Int.NET>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
->> I guess that was a development rationale. 
-> 
-> But what rationale? It just doesn't make much sense to me.
+On Thu, Apr 10, 2008 at 3:04 PM, Wappler Marcel
+<Marcel.Wappler@bridgeco.net> wrote:
+> Wander Winkelhorst wrote:
+>  > Well, my tomtom one V2 takes a couple (5-10) of seconds to wake up
+>  > again. but that time includes reinitialising the bluetooth chip,
+>  > checking the SD card, restarting the GPS, loading AGPS data and
+>  > resuming the navigation software. If you don't have to do all those
+>  > things it would probably resume a lot faster.
+>
+>  So Wander,
+>
+>  I had a short look in to the opentom.org project and have got a lot of new questions:
 
-Let's add Eric in Cc:
+I can't anwser all of these questions, I'm not a part of the opentom
+project. If you want to ask more questions to the people who are,
+plase ask on the opentom mailing list.
 
->> Most of the namespaces are in 
->> use in the container projects like openvz, vserver and probably others 
->> and we needed a way to activate the code.
-> 
-> You could just have added it to feature groups over time.
+>  - does the opentom.org kernel support the original "suspend to RAM" functionality of TomToms kernel?
+I don't know, but IMHO it doesn't matter, because you can just use the
+TomTom kernel.
 
-Yes if the feature group had existed, that would have been a good
-option. 
+>  - is there anybody using this functionality?
+The Opentom project is a bit... quiet...
 
-Don't take me wrong. I agree with this group direction. Most 
-namespaces can't be safely decoupled from each other with a clone 
-flag.
+>  - has somebody measured the power consuption in the sleep mode?
+With the TomTom provided kernels, the power consumption is next to
+nothing. These devices are powered by a small battery, yet can stay
+suspended for weeks.
 
->> Not perfect I agree.
->>  
->>> With your current strategy are you sure that even 64bit will
->>> be enough in the end? For me it rather looks like you'll
->>> go through those quickly too as more and more of the kernel
->>> is namespaced.
->> well, we're reaching the end. I hope ! devpts is in progress and
->> mq is just waiting for a clone flag.
-> 
-> Are you sure?
+>  - the opentom kernel has a file "/arch/arm/kernel/apm.c" which is not in the normal Linux kernels. Where comes this file and other
+>  power saving infrastructure from, where can I grab it, is there anyone else out there using it, on which device?
+I don't know, sorry.
 
-I'm never sure ! :) That's what we have in plan for the moment.
-
->>> Also I think the user interface is very unfriendly. How
->>> is a non kernel hacker supposed to make sense of these 
->>> myriads of flags? You'll be creating another 
->>> CreateProcess123_extra_args_extended() 
->>> in the end I fear.
->> well, the clone interface is a not friendly interface anyway. glibc wraps 
->> it
-> 
-> But only for the stack setup which is just a minor detail. 
-> 
-> The basic clone() flags interface used to be pretty sane and usable 
-> before it could overloaded with so many tiny features.
-> 
-> I especially worry on how user land should keep track of changing kernel
-> here. If you add new feature flag for lots of kernel features it is
-> reasonable to expect that in the future there will be often new features.
-> 
-> Does this mean user land needs to be updated all the time? Will this
-> end up like another udev? 
-> 
->> We will need a user library, like we have a libphtread or a libaio, to
-> 
-> That doesn't make sense. The basic kernel syscalls should be usable,
-> not require some magic library that would likely need intimate 
-> knowledge of specific kernel versions to do any good.
-
-No magic there. but running a container will require some userland code 
-to be set up properly. 
-
->> but we still need a way to extend the clone flags because none are left.
-> 
-> Can we just take out some again that were added in the .25 cycle and
-> readd them once there is a properly thought out interface?  That would
-> leave at least one.
-
-well, CLONE_STOPPED is being recycle in 2.6.26. so we could use that one
-to group namespaces.
-
-and CLONE_NEWPID would probably be a good candidate to group namespaces.
-
-That would be fine for me but it would still leave clone with one to zero
-flags left. 
-
-Thanks,
-
-
-C.
+Wander.
