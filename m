@@ -1,91 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757610AbYDJQ6q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757440AbYDJRDF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757610AbYDJQ6q (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Apr 2008 12:58:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756440AbYDJQ6i
+	id S1757440AbYDJRDF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Apr 2008 13:03:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756355AbYDJRCx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Apr 2008 12:58:38 -0400
-Received: from fk-out-0910.google.com ([209.85.128.190]:61810 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756252AbYDJQ6h (ORCPT
+	Thu, 10 Apr 2008 13:02:53 -0400
+Received: from wolverine02.qualcomm.com ([199.106.114.251]:61561 "EHLO
+	wolverine02.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756255AbYDJRCv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Apr 2008 12:58:37 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-disposition:message-id:content-type:content-transfer-encoding;
-        b=CnZ10Gu4uqCaiwKR4IBl4ksy0D1XezFqp1cwvHWimER2J8ZvO9UKxWcKJZLTIemRKXhDUC75w6/BVi/RHoJsEGogsAGMoBuZGS1uoOYJ/1sL8/c1BuPAHueCVaBeVv+NU3uy8cpSKXWEoj87r9gsZ84BiIOSnsUHlwQoSsGsAwM=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: "Kamalesh Babulal" <kamalesh@linux.vnet.ibm.com>
-Subject: Re: [BUG] linux-next: Tree for April 10 - kernel panic while loading ata driver on powermac
-Date: Thu, 10 Apr 2008 19:14:04 +0200
-User-Agent: KMail/1.9.9
-Cc: "Stephen Rothwell" <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>,
-       "Andy Whitcroft" <apw@shadowen.org>
-References: <20080410181404.b76939a6.sfr@canb.auug.org.au> <47FDEAFA.10407@linux.vnet.ibm.com> <58cb370e0804100503u71014cdend6425efe14b8d88c@mail.gmail.com>
-In-Reply-To: <58cb370e0804100503u71014cdend6425efe14b8d88c@mail.gmail.com>
+	Thu, 10 Apr 2008 13:02:51 -0400
+X-IronPort-AV: E=McAfee;i="5200,2160,5271"; a="2166349"
+Message-ID: <47FE4839.6020904@qualcomm.com>
+Date: Thu, 10 Apr 2008 10:02:49 -0700
+From: Max Krasnyanskiy <maxk@qualcomm.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200804101914.04254.bzolnier@gmail.com>
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: dor.laor@qumranet.com
+CC: Rusty Russell <rusty@rustcorp.com.au>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, virtualization@lists.linux-foundation.org
+Subject: Re: [PATCH RFC 3/5] tun: vringfd receive support.
+References: <200804052202.09157.rusty@rustcorp.com.au>	 <200804052204.28518.rusty@rustcorp.com.au>	 <200804052205.43824.rusty@rustcorp.com.au>  <47FBCC3B.7080104@qualcomm.com> <1207745195.13196.10.camel@localhost.localdomain>
+In-Reply-To: <1207745195.13196.10.camel@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 10 April 2008, Bartlomiej Zolnierkiewicz wrote:
-> Hi,
+Dor Laor wrote:
+> On Tue, 2008-04-08 at 12:49 -0700, Max Krasnyansky wrote:
+>> Rusty Russell wrote:
+>>> This patch modifies tun to allow a vringfd to specify the receive
+>>> buffer.  Because we can't copy to userspace in bh context, we queue
+>>> like normal then use the "pull" hook to actually do the copy.
+>>>
+>>> More thought needs to be put into the possible races with ring
+>>> registration and a simultaneous close, for example (see FIXME).
+>>>
+>>> We use struct virtio_net_hdr prepended to packets in the ring to allow
+>>> userspace to receive GSO packets in future (at the moment, the tun
+>>> driver doesn't tell the stack it can handle them, so these cases are
+>>> never taken).
+>> In general the code looks good. The only thing I could not convince myself in
+>> is whether having generic ring buffer makes sense or not.
+>> At least the TUN driver would be more efficient if it had its own simple ring
+>>  implementation. Less indirection, fewer callbacks, fewer if()s, etc. TUN
+>> already has the file descriptor and having two additional fds for rx and tx
+>> ring is a waste (think of a VPN server that has to have a bunch of TUN fds).
+>> Also as I mentioned before Jamal and I wanted to expose some of the SKB fields
+>> through TUN device. With the rx/tx rings the natural way of doing that would
+>> be the ring descriptor itself. It can of course be done the same way we copy
+>> proto info (PI) and GSO stuff before the packet but that means more
+>> copy_to_user() calls and yet more checks.
+>>
+>> So. What am I missing ? Why do we need generic ring for the TUN ? I looked at
+>> the lguest code a bit and it seems that we need a bunch of network specific
+>> code anyway. The cool thing is that you can now mmap the rings into the guest
+>>  directly but the same thing can be done with TUN specific rings.
+>>
 > 
-> On Thu, Apr 10, 2008 at 12:24 PM, Kamalesh Babulal
-> <kamalesh@linux.vnet.ibm.com> wrote:
-> > Hi Stephen,
-> >
-> >  The next-20080410 kernel panics while bootup over the PowerMac G5 box, while
-> >  loading the ATA driver.
-> >
-> >  [    3.704000] Faulting instruction address: 0xc0000000000222a8
-> >  [    3.704000] Oops: Kernel access of bad area, sig: 11 [#1]
-> >  [    3.704000] SMP NR_CPUS=32 NUMA PowerMac
-> >  [    3.704000] Modules linked in:
-> >  [    3.704000] NIP: c0000000000222a8 LR: c00000000021cd10 CTR: 0000000000000100
-> >  [    3.704000] REGS: c0000002760db070 TRAP: 0300   Not tainted  (2.6.25-rc8-next-20080410-autokern1)
-> >  [    3.704000] MSR: 9000000000009032 <EE,ME,IR,DR>  CR: 44000042  XER: 20000000
-> >  [    3.704000] DAR: a0001000822fa000, DSISR: 0000000040000000
-> >  [    3.704000] TASK = c0000002760d7100[1] 'swapper' THREAD: c0000002760d8000 CPU: 0
-> >  [    3.704000] GPR00: 0000000000000100 c0000002760db2f0 c000000000498310 a0001000822fa000
-> >  [    3.704000] GPR04: c000000274806a00 0000000000000100 0000000000000201 c00000000000fed4
-> >  [    3.704000] GPR08: c0000002760daf20 c0000000003ee0d8 c0000000004f1428 0000000000000000
-> >  [    3.704000] GPR12: 0000000000000000 c0000000003fa700 0000000000000000 0000000000000000
-> >  [    3.704000] GPR16: 0000000000000000 0000000000000000 0000000000000000 0000000000000000
-> >  [    3.704000] GPR20: 0000000000000001 0000000000000027 0000000000000027 0000000000000000
-> >  [    3.704000] GPR24: c0000000004f1400 0000000000000000 0000000000000201 c0000000004f1490
-> >  [    3.704000] GPR28: a0001000822fa000 0000000000000200 c00000000044cf50 c000000274806a00
-> >  [    3.704000] NIP [c0000000000222a8] ._insw_ns+0x10/0x30
-> >  [    3.704000] LR [c00000000021cd10] .ata_input_data+0x1f4/0x264
-> 
-> Could you please add printk() for 'hwif->host_flags', 'mmio' and 'io_32bit'
-> to ide-iops.c::ata_input_data() so we know more on what is going on?
+> The idea was to use the same virtio ring that the guests use.
+> The thing with TUN specific ring is that the guests are the one
+> allocating the rings within their memory space and the opposite makes
+> life very complex.
 
-No longer needed - please test the hot-fix below instead:
+We can do the same thing with TUN rings. I mean have them allocated in the 
+guest space. With that we'd still have all of the advantages that I listed 
+above. ie We'd have ring descriptors that carry packet info, less indirection, 
+etc.
 
----
-thanks to Andrew for noticing me about the gcc warning
+Max
 
- drivers/ide/ppc/pmac.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-Index: b/drivers/ide/ppc/pmac.c
-===================================================================
---- a/drivers/ide/ppc/pmac.c
-+++ b/drivers/ide/ppc/pmac.c
-@@ -941,7 +941,7 @@ static const struct ide_port_info pmac_p
- 	.port_ops		= &pmac_ide_port_ops,
- 	.host_flags		= IDE_HFLAG_SET_PIO_MODE_KEEP_DMA |
- 				  IDE_HFLAG_POST_SET_MODE |
--				  IDE_HFLAG_UNMASK_IRQS,
-+				  IDE_HFLAG_UNMASK_IRQS |
- 				  IDE_HFLAG_MMIO,
- 	.pio_mask		= ATA_PIO4,
- 	.mwdma_mask		= ATA_MWDMA2,
 
