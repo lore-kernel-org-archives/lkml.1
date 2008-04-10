@@ -1,75 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757440AbYDJRDF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757283AbYDJRM3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757440AbYDJRDF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Apr 2008 13:03:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756355AbYDJRCx
+	id S1757283AbYDJRM3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Apr 2008 13:12:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754448AbYDJRMT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Apr 2008 13:02:53 -0400
-Received: from wolverine02.qualcomm.com ([199.106.114.251]:61561 "EHLO
-	wolverine02.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756255AbYDJRCv (ORCPT
+	Thu, 10 Apr 2008 13:12:19 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:60231 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753038AbYDJRMS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Apr 2008 13:02:51 -0400
-X-IronPort-AV: E=McAfee;i="5200,2160,5271"; a="2166349"
-Message-ID: <47FE4839.6020904@qualcomm.com>
-Date: Thu, 10 Apr 2008 10:02:49 -0700
-From: Max Krasnyanskiy <maxk@qualcomm.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Thu, 10 Apr 2008 13:12:18 -0400
+Message-ID: <47FE493C.2010709@zytor.com>
+Date: Thu, 10 Apr 2008 10:07:08 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-To: dor.laor@qumranet.com
-CC: Rusty Russell <rusty@rustcorp.com.au>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, virtualization@lists.linux-foundation.org
-Subject: Re: [PATCH RFC 3/5] tun: vringfd receive support.
-References: <200804052202.09157.rusty@rustcorp.com.au>	 <200804052204.28518.rusty@rustcorp.com.au>	 <200804052205.43824.rusty@rustcorp.com.au>  <47FBCC3B.7080104@qualcomm.com> <1207745195.13196.10.camel@localhost.localdomain>
-In-Reply-To: <1207745195.13196.10.camel@localhost.localdomain>
+To: Steven Rostedt <rostedt@goodmis.org>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andi Kleen <andi@firstfloor.org>, Andy Whitcroft <apw@shadowen.org>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <peterz@infradead.org>, akpm@linux-foundation.org,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Glauber de Oliveira Costa <gcosta@redhat.com>,
+       Jan Beulich <jbeulich@novell.com>, Thomas Gleixner <tglx@linutronix.de>,
+       pinskia@gcc.gnu.org
+Subject: Re: [PATCH] pop previous section in alternative.c
+References: <Pine.LNX.4.58.0804091859400.31879@gandalf.stny.rr.com> <Pine.LNX.4.58.0804091906040.31970@gandalf.stny.rr.com> <47FD5D42.5000603@zytor.com> <87wsn6m6zt.fsf@basil.nowhere.org> <20080410094637.GW17915@shadowen.org> <Pine.LNX.4.58.0804101007510.5673@gandalf.stny.rr.com> <20080410144114.GH10019@one.firstfloor.org> <alpine.LFD.1.00.0804100741430.3143@woody.linux-foundation.org> <20080410150544.GI10019@one.firstfloor.org> <alpine.LFD.1.00.0804100811400.3143@woody.linux-foundation.org> <47FE3B24.4020301@zytor.com> <Pine.LNX.4.58.0804101219170.7952@gandalf.stny.rr.com>
+In-Reply-To: <Pine.LNX.4.58.0804101219170.7952@gandalf.stny.rr.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dor Laor wrote:
-> On Tue, 2008-04-08 at 12:49 -0700, Max Krasnyansky wrote:
->> Rusty Russell wrote:
->>> This patch modifies tun to allow a vringfd to specify the receive
->>> buffer.  Because we can't copy to userspace in bh context, we queue
->>> like normal then use the "pull" hook to actually do the copy.
->>>
->>> More thought needs to be put into the possible races with ring
->>> registration and a simultaneous close, for example (see FIXME).
->>>
->>> We use struct virtio_net_hdr prepended to packets in the ring to allow
->>> userspace to receive GSO packets in future (at the moment, the tun
->>> driver doesn't tell the stack it can handle them, so these cases are
->>> never taken).
->> In general the code looks good. The only thing I could not convince myself in
->> is whether having generic ring buffer makes sense or not.
->> At least the TUN driver would be more efficient if it had its own simple ring
->>  implementation. Less indirection, fewer callbacks, fewer if()s, etc. TUN
->> already has the file descriptor and having two additional fds for rx and tx
->> ring is a waste (think of a VPN server that has to have a bunch of TUN fds).
->> Also as I mentioned before Jamal and I wanted to expose some of the SKB fields
->> through TUN device. With the rx/tx rings the natural way of doing that would
->> be the ring descriptor itself. It can of course be done the same way we copy
->> proto info (PI) and GSO stuff before the packet but that means more
->> copy_to_user() calls and yet more checks.
->>
->> So. What am I missing ? Why do we need generic ring for the TUN ? I looked at
->> the lguest code a bit and it seems that we need a bunch of network specific
->> code anyway. The cool thing is that you can now mmap the rings into the guest
->>  directly but the same thing can be done with TUN specific rings.
->>
+Steven Rostedt wrote:
 > 
-> The idea was to use the same virtio ring that the guests use.
-> The thing with TUN specific ring is that the guests are the one
-> allocating the rings within their memory space and the opposite makes
-> life very complex.
+> Looking at the output below, shows that testing .sections in between
+> #APP and #NO_APP would in fact catch this bug.
+> 
 
-We can do the same thing with TUN rings. I mean have them allocated in the 
-guest space. With that we'd still have all of the advantages that I listed 
-above. ie We'd have ring descriptors that carry packet info, less indirection, 
-etc.
+Of course, The Right Thing[TM] would be for gcc to emit .pushsection ... 
+.popsection around #APP ... #NO_APP.
 
-Max
-
-
+	-hpa
