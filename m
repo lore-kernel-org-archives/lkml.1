@@ -1,78 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756219AbYDJAip@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756053AbYDJAm3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756219AbYDJAip (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Apr 2008 20:38:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754237AbYDJAih
+	id S1756053AbYDJAm3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Apr 2008 20:42:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754433AbYDJAmW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Apr 2008 20:38:37 -0400
-Received: from out01.mta.xmission.com ([166.70.13.231]:58079 "EHLO
-	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754165AbYDJAig (ORCPT
+	Wed, 9 Apr 2008 20:42:22 -0400
+Received: from tomts20.bellnexxia.net ([209.226.175.74]:54038 "EHLO
+	tomts20-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754305AbYDJAmV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Apr 2008 20:38:36 -0400
-X-Greylist: delayed 8594 seconds by postgrey-1.27 at vger.kernel.org; Wed, 09 Apr 2008 20:38:36 EDT
-Subject: Re: [RFC][PATCH 0/7] Clone PTS namespace
-From: "Eric W. Biederman" <ebiederm@xmission.com>
+	Wed, 9 Apr 2008 20:42:21 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AkoFADf//EdMQWoK/2dsb2JhbACBXKsh
+Date: Wed, 9 Apr 2008 20:42:19 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: sukadev@us.ibm.com, Containers <containers@lists.osdl.org>, clg@fr.ibm.com,
-       linux-kernel@vger.kernel.org, Pavel Emelyanov <xemul@openvz.org>
-In-Reply-To: <47FC138B.4070408@zytor.com>
-References: <20080408215333.GA8799@us.ibm.com>  <47FC138B.4070408@zytor.com>
-Content-Type: text/plain
-Date: Wed, 09 Apr 2008 15:15:13 -0700
-Message-Id: <1207779313.16926.12.camel@x61.ebiederm.org>
+Cc: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, Andi Kleen <andi@firstfloor.org>,
+       Rusty Russell <rusty@rustcorp.com.au>, Andi Kleen <ak@muc.de>,
+       Chuck Ebbert <cebbert@redhat.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       Adrian Bunk <bunk@stusta.de>, Alexey Dobriyan <adobriyan@gmail.com>,
+       akpm@osdl.org
+Subject: Re: [patch 13/17] Immediate Values - x86 Optimization
+Message-ID: <20080410004219.GA10557@Krystal>
+References: <20080409150829.855195878@polymtl.ca> <20080409152051.117322728@polymtl.ca> <47FD0497.10303@zytor.com> <20080409190816.GB30202@Krystal> <47FD4442.3050000@zytor.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-SA-Exim-Connect-IP: 127.0.0.1
-X-SA-Exim-Rcpt-To: hpa@zytor.com, sukadev@us.ibm.com, containers@lists.osdl.org, clg@fr.ibm.com, linux-kernel@vger.kernel.org, xemul@openvz.org
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-SA-Exim-Scanned: No (on mgr1.xmission.com); SAEximRunCond expanded to false
+Content-Disposition: inline
+In-Reply-To: <47FD4442.3050000@zytor.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 20:39:14 up 40 days, 20:50,  6 users,  load average: 0.47, 0.44,
+	0.44
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-04-08 at 17:53 -0700, H. Peter Anvin wrote:
-> sukadev@us.ibm.com wrote:
-> > Devpts namespace patchset
-> > 
-> > In continuation of the implementation of containers in mainline, we need to
-> > support multiple PTY namespaces so that the PTY index (ie the tty names) in
-> > one container is independent of the PTY indices of other containers.  For
-> > instance this would allow each container to have a '/dev/pts/0' PTY and
-> > refer to different terminals.
-> > 
-> 
-> Why do we "need" this?  There isn't a fundamental need for this to be a 
-> dense numberspace (in fact, there are substantial reasons why it's a bad 
-> idea; the only reason the namespace is dense at the moment is because of 
-> the hideously bad handing of utmp in glibc.)  Other than indicies, this 
-> seems to be a more special case of device isolation across namespaces, 
-> would that be a more useful problem to solve across the board?
+* H. Peter Anvin (hpa@zytor.com) wrote:
+> Mathieu Desnoyers wrote:
+>> * H. Peter Anvin (hpa@zytor.com) wrote:
+>>> Mathieu Desnoyers wrote:
+>>>> Ok, so the most flexible solution that I see, that should fit for both
+>>>> x86 and x86_64 would be :
+>>>> 1 byte  :       "=q" : "a", "b", "c", or "d" register for the i386.  For
+>>>>                        x86-64 it is equivalent to "r" class (for 8-bit
+>>>>                        instructions that do not use upper halves).
+>>>> 2, 4, 8 bytes : "=r" : A register operand is allowed provided that it is 
+>>>> in a
+>>>>                        general register.
+>>> Any reason to keep carrying this completely misleading comment chunk 
+>>> still?
+>>>
+>>> 	-hpa
+>> This comment explains why I use the =q constraint for the 1 bytes
+>> immediate value. It makes sure we use an instruction with 1-byte opcode,
+>> without REX.R prefix, on x86_64.
+>
+> No, it doesn't.  That would be "=Q".
+>
+> 	-hpa
 
-In short application migration.  When you move a running applicaiton
-from one machine to another you want to be able to keep the same pseudo
-devices.
+Ok. Sorry, it's been a few months since we looked at this. So the =q
+opcode lets the compiler choose instructions with or without REX prefix.
+We can allow this because 
 
-The isolation that you have noticed is also an important application and
-like the rest of the namespaces if we can solve the duplicate identifier
-problem needed to restore checkpoints we also largely solve the
-isolation problem.
+- We don't need the opcode length in the stop_machine_run() version
+- we support variable length opcode in the nmi-safe version
 
-This problem is much larger then ptys.  ptys are the really in your face
-aspect of it.  There are a more pseudo devices in the kernel and it is
-the device number to device mapping that we are abstracting.  So this
-really should be done as a device namespace not a pty namespace.
+Am I remembering correctly now ?
 
-I would be happy if the first version of the device namespace could not
-map anything but pty's (assuming an incremental implementation path).  I
-really don't think we should do a special case for each kind of device.
+Mathieu
 
-Oh and just skimming the patch summary I'm pretty certain this
-implementation breaks /sys/class/tty/ptyXX/uevent.  Which is another
-reason why it would be good to have a single device namespace.  So we
-only to capture one more namespace and figure out how to deal with it
-when mounting sysfs. 
-
-Eric
-
+-- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
