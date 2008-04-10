@@ -1,66 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756425AbYDJTC7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757933AbYDJTGD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756425AbYDJTC7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Apr 2008 15:02:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752020AbYDJTCw
+	id S1757933AbYDJTGD (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Apr 2008 15:06:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751036AbYDJTFy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Apr 2008 15:02:52 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:51726 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752011AbYDJTCv (ORCPT
+	Thu, 10 Apr 2008 15:05:54 -0400
+Received: from wr-out-0506.google.com ([64.233.184.225]:59160 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750702AbYDJTFx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Apr 2008 15:02:51 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Date: Thu, 10 Apr 2008 21:02:26 +0200 (CEST)
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: Re: linux-next: Tree for April 9
-To: Ingo Molnar <mingo@elte.hu>
-cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080410094853.GA12543@elte.hu>
-Message-ID: <tkrat.4f7ac5ca0bf58526@s5r6.in-berlin.de>
-References: <20080409185309.b94c9d15.sfr@canb.auug.org.au>
- <47FCF50E.9090703@s5r6.in-berlin.de> <20080410065227.GB30066@elte.hu>
- <20080410174418.ebfe76c3.sfr@canb.auug.org.au>
- <20080410094853.GA12543@elte.hu>
+	Thu, 10 Apr 2008 15:05:53 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=IHFVUQUxo0HGIPKWJQD1WsdqUUCnsjrSaUkfKp7x0jo5oq5FrlGiyAM+t/WKCUcw/U9lURrAWfsiaiWVFVrmYGcUNdeewB+Aa2XLlxNHFzrjAxOX/Ys+3n7B9Gyv//DIy5Qis9r2IMUx1A7gW2uKBgnEKNXnSSR5n6k0eJ9+bk4=
+Message-ID: <38b2ab8a0804101205s1e0e4fa0l884286ec7ea9ccbd@mail.gmail.com>
+Date: Thu, 10 Apr 2008 21:05:50 +0200
+From: "Francis Moreau" <francis.moro@gmail.com>
+To: "Mark Lord" <lkml@rtr.ca>
+Subject: Re: Disk geometry from /sys
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <47FD3BBB.406@rtr.ca>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; CHARSET=us-ascii
-Content-Disposition: INLINE
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <38b2ab8a0804091353h3725ce29s196e27e8b4f1ff56@mail.gmail.com>
+	 <47FD3BBB.406@rtr.ca>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Stephen Rothwell <sfr@canb.auug.org.au> wrote:
-> 
->> On Thu, 10 Apr 2008 08:52:27 +0200 Ingo Molnar <mingo@elte.hu> wrote:
->> >
->> > what type of conflict do you have there? If it's a new entry then 
->> > you might be able to fix it by moving the new entry elsewhere in the 
->> > file. Or if i introduced a new entry close to an existing entry you 
->> > modify then i could move my new entry elsewhere.
->> 
->> Commit 523a65f1a7a339e528ca6d6d808516fe195fde03 ("firewire: fw-ohci: 
->> add option for remote debugging") in the ieee1394 tree adds a new 
->> entry just where the sched tree adds
->> 
->> source kernel/trace/Kconfig
-> 
-> hm, i think in this specific case the new firewire entry should be added 
-> after the PROVIDE_OHCI1394_DMA_INIT section. (that's how we extend 
-> groups of Kconfig entries anyway) The new trace entries in the scheduler 
-> tree follow that pattern and add the new kernel/trace/Kconfig at the 
-> right place. So if the firewire entry is added that way this conflict 
-> could be avoided.
+Hi
 
-Indeed, this order of the two options looks more logical now that you
-say it.  Update patch will appear on LKML in a minute.
+On Wed, Apr 9, 2008 at 11:57 PM, Mark Lord <lkml@rtr.ca> wrote:
+> > I'm trying to know the geometry of my hard disk from a bash script
+> > and that's the reason I'm looking in /sys. The reason is that I'd like
+> > to figure out the size of a cylinder without doing a
+> > ioctl(bdev, HDIO_GETGEO, &geo)
+> >
+>
+>  $ DEV=/dev/sda
+>  $ GEOM="`/sbin/hdparm -g $DEV | awk '{print $3}'`"
+>  $ echo $GEOM
+>  19457/255/63
+>  $
+>
 
-Stephen will still have a conflict in lib/Kconfig.debug when merging the
-tests tree, but this happens regardless what we two do because tests is
-based on 2.6.25-rc1, and mainline Kconfig.debug has changes post -rc1.
+Sure and you could the same with fdisk, sfdisk, parted outputs...
+
+But that wasn't my point, sorry if it wasn't clear.
+
+I was actually wondering why /sys/block/sda exports a lot of disk
+features but the disk geometry. I was wondering if somthing like
+
+/sys/block/sda/geometry/heads
+
+could be useful...
+
 -- 
-Stefan Richter
--=====-==--- -=-- -=-=-
-http://arcgraph.de/sr/
-
+Francis
