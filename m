@@ -1,53 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757509AbYDJOgs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755922AbYDJOiR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757509AbYDJOgs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Apr 2008 10:36:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755882AbYDJOgk
+	id S1755922AbYDJOiR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Apr 2008 10:38:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756014AbYDJOiF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Apr 2008 10:36:40 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:54849 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755757AbYDJOgj (ORCPT
+	Thu, 10 Apr 2008 10:38:05 -0400
+Received: from outbound-dub.frontbridge.com ([213.199.154.16]:18414 "EHLO
+	outbound1-dub-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755882AbYDJOiE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Apr 2008 10:36:39 -0400
-Date: Thu, 10 Apr 2008 16:41:14 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Andy Whitcroft <apw@shadowen.org>, Andi Kleen <andi@firstfloor.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>, akpm@osdl.org,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Glauber de Oliveira Costa <gcosta@redhat.com>,
-       Jan Beulich <jbeulich@novell.com>, Thomas Gleixner <tglx@linutronix.de>,
-       pinskia@gcc.gnu.org
-Subject: Re: [PATCH] pop previous section in alternative.c
-Message-ID: <20080410144114.GH10019@one.firstfloor.org>
-References: <Pine.LNX.4.58.0804091859400.31879@gandalf.stny.rr.com> <Pine.LNX.4.58.0804091906040.31970@gandalf.stny.rr.com> <47FD5D42.5000603@zytor.com> <87wsn6m6zt.fsf@basil.nowhere.org> <20080410094637.GW17915@shadowen.org> <Pine.LNX.4.58.0804101007510.5673@gandalf.stny.rr.com>
-Mime-Version: 1.0
+	Thu, 10 Apr 2008 10:38:04 -0400
+X-BigFish: VP
+X-MS-Exchange-Organization-Antispam-Report: OrigIP: 163.181.251.8;Service: EHS
+X-WSS-ID: 0JZ45WH-02-52F-01
+Date: Thu, 10 Apr 2008 08:42:00 -0600
+From: Jordan Crouse <jordan.crouse@amd.com>
+To: Andres Salomon <dilinger@queued.net>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       info-linux@geode.amd.com
+Subject: Re: x86: GEODE: add Virtual Systems Architecture detection
+Message-ID: <20080410144200.GF13663@cosmic.amd.com>
+References: <20080409223328.5774d6cf@ephemeral> <20080410091057.45cbb938@core> <20080410094024.5111e108@ephemeral>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.58.0804101007510.5673@gandalf.stny.rr.com>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <20080410094024.5111e108@ephemeral>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+X-OriginalArrivalTime: 10 Apr 2008 14:36:04.0268 (UTC) FILETIME=[348486C0:01C89B18]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I would say anytime there's a "^+.*\.section" there had better be a
-> "^-.*\.section" or a "+.*.previous" matching it. Off hand I can't think o
-> any exceptions to this rule although I may be wrong.
+On 10/04/08 09:40 -0400, Andres Salomon wrote:
+> On Thu, 10 Apr 2008 09:10:57 +0100
+> Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+> 
+> > On Wed, 9 Apr 2008 22:33:28 -0400
+> > Andres Salomon <dilinger@queued.net> wrote:
+> > 
+> > > 
+> > > This is generic VSA detection.  It's used by OLPC to determine whether or
+> > > not the BIOS contains VSA, but since other BIOSes are coming out that don't
+> > > use the VSA (ie, tinybios), it might end up being useful for others.
+> > 
+> > NAK - but minor
+> > 
+> > This is a check for *VSA2* which is not the same as VSA1 (Cyrix one) and
+> > for older systems that actually matters as you may have VSA1 or VSA2 and
+> > they are detected differently.
+> >
+> 
+> Excellent point.  Can we extend this to check for a VSA1-specific
+> string, or does VSA1 not have a similar signature?
 
+I don't think we need to worry about it.  99.99% of Geode systems run
+with VSA happily transparent in the background, and thus would have no
+good reason to check for it.  Certainly, there are no processors with VSA1
+that would care to check.
 
-Second section is wrong because the compiler expects that the same
-section is active afterwards and that can be different ones (like
-init.text vs normal text)
+But Alan does have a good point - we should name it vsa2 for 
+strict correctness.
 
-Also pushsection/popsection is also valid
-
-So in summary valid section patterns are either
-.section / .previous or .pushsection .section .popsection
-
--Andi
-
-
+Jordan
+-- 
+Jordan Crouse
+Systems Software Development Engineer 
+Advanced Micro Devices, Inc.
 
