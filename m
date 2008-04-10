@@ -1,57 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755375AbYDJGv4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755647AbYDJGwm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755375AbYDJGv4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Apr 2008 02:51:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753439AbYDJGvs
+	id S1755647AbYDJGwm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Apr 2008 02:52:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753803AbYDJGwd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Apr 2008 02:51:48 -0400
-Received: from wx-out-0506.google.com ([66.249.82.235]:28526 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753438AbYDJGvr (ORCPT
+	Thu, 10 Apr 2008 02:52:33 -0400
+Received: from smtp-out04.alice-dsl.net ([88.44.63.6]:26004 "EHLO
+	smtp-out04.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753769AbYDJGwc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Apr 2008 02:51:47 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=Tj2N/Afc09Xp71W5pFXEO4PQMWw6wa0GKMKhgiaP/5KSsnVi6KY+3JFXQMc76d1+l8tDz+DQrshravRvqViwDoMWNqZqe1N+ZRVNBJqtFih9MtbIhp2e5WA58djwN21MbFhp1NONS633jPxrvTbn+2g9n2yDxk/pa5M7a1Vlfo8=
-Message-ID: <ac8af0be0804092351g5388f75fr53cd4cf0774e0fd9@mail.gmail.com>
-Date: Thu, 10 Apr 2008 14:51:42 +0800
-From: "Zhao Forrest" <forrest.zhao@gmail.com>
-To: "Andi Kleen" <andi@firstfloor.org>
+	Thu, 10 Apr 2008 02:52:32 -0400
+To: Kasper Sandberg <lkml@metanurb.dk>
+Cc: Ingo Molnar <mingo@elte.hu>, Matti Aarnio <matti.aarnio@zmailer.org>,
+       Zhao Forrest <forrest.zhao@gmail.com>, discuss@x86-64.org,
+       linux-kernel@vger.kernel.org, yhlu.kernel@gmail.com, ak@suse.de
 Subject: Re: Does Linux have plan to support memory hole remapping?
-Cc: discuss@x86-64.org, linux-kernel@vger.kernel.org, yhlu.kernel@gmail.com,
-       mingo@elte.hu, ak@suse.de
-In-Reply-To: <20080409091307.GG19010@one.firstfloor.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+From: Andi Kleen <andi@firstfloor.org>
 References: <ac8af0be0804090054w47f48ddel387d80a0331d16e1@mail.gmail.com>
-	 <87iqyro3rc.fsf@basil.nowhere.org>
-	 <ac8af0be0804090204t79beaca2qe077a28fc4a515ad@mail.gmail.com>
-	 <20080409091307.GG19010@one.firstfloor.org>
+	<87iqyro3rc.fsf@basil.nowhere.org>
+	<20080409083700.GU3700@mea-ext.zmailer.org>
+	<20080409085440.GB32466@elte.hu> <1207787687.30698.97.camel@localhost>
+Date: Thu, 10 Apr 2008 08:51:28 +0200
+In-Reply-To: <1207787687.30698.97.camel@localhost> (Kasper Sandberg's message of "Thu, 10 Apr 2008 02:34:47 +0200")
+Message-ID: <87abk2nqxb.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 10 Apr 2008 06:44:45.0469 (UTC) FILETIME=[5D0A3CD0:01C89AD6]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> There is some loss of memory before MemTotal, both from the BIOS
-> (SMM, Frame Buffer for integrated graphics etc.) and from the kernel
-> (mem_map which costs a few percent and some other data structures
-> which are allocated early)
->
-> I covered this in detail in http://halobates.de/memorywaste.pdf
->
+Kasper Sandberg <lkml@metanurb.dk> writes:
 
-I read your paper, which is very helpful for us to understand the
-memory usage in Linux kernel.
-And I have a question about output of slabtop:
- Active / Total Objects (% used)    : 730986 / 750823 (97.4%)
- Active / Total Slabs (% used)      : 46124 / 46125 (100.0%)
- Active / Total Caches (% used)     : 99 / 149 (66.4%)
- Active / Total Size (% used)       : 169383.63K / 172467.11K (98.2%)
+> A somewhat related question is.. How come linux does not(as i understand
+> it) support talking to the chipsets to do these things? wouldnt this
+> also give other benefits, such as being able to more precisely control
+> interrupts and stuff?
 
-Could you please elaborate on Active / Total Caches? The meaning of
-other lines are obvious to me.
+Linux is an portable operating system and not a hardware specific BIOS. So it
+prefers to not know about some things.
 
-Thanks,
-Forrest
+-Andi
