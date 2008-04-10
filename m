@@ -1,90 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757021AbYDJMrk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757162AbYDJMtT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757021AbYDJMrk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Apr 2008 08:47:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755332AbYDJMrc
+	id S1757162AbYDJMtT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Apr 2008 08:49:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755499AbYDJMtK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Apr 2008 08:47:32 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:34606 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755299AbYDJMrc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Apr 2008 08:47:32 -0400
-Date: Thu, 10 Apr 2008 14:52:05 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Cedric Le Goater <clg@fr.ibm.com>
-Cc: Andi Kleen <andi@firstfloor.org>, sukadev@us.ibm.com,
-       Andrew Morton <akpm@osdl.org>, serue@us.ibm.com,
-       "David C. Hansen" <haveblue@us.ibm.com>,
-       Pavel Emelyanov <xemul@openvz.org>,
-       Containers <containers@lists.osdl.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/3] change clone_flags type to u64
-Message-ID: <20080410125205.GG10019@one.firstfloor.org>
-References: <20080409222611.GA28087@us.ibm.com> <20080409223231.GA28267@us.ibm.com> <871w5enmk7.fsf@basil.nowhere.org> <47FE073B.3060007@fr.ibm.com>
+	Thu, 10 Apr 2008 08:49:10 -0400
+Received: from relay2.sgi.com ([192.48.171.30]:43688 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755451AbYDJMtJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Apr 2008 08:49:09 -0400
+Date: Thu, 10 Apr 2008 07:49:04 -0500
+From: Paul Jackson <pj@sgi.com>
+To: "Bert Wesarg" <bert.wesarg@googlemail.com>
+Cc: travis@sgi.com, mingo@elte.hu, tglx@linutronix.de, hpa@zytor.com,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/3] cpumask: use new cpus_scnprintf function v3
+Message-Id: <20080410074904.2734e52f.pj@sgi.com>
+In-Reply-To: <36ca99e90804090853xf62438ayfbfa6010f2d31747@mail.gmail.com>
+References: <20080408184301.651388000@polaris-admin.engr.sgi.com>
+	<20080408184301.975491000@polaris-admin.engr.sgi.com>
+	<36ca99e90804081240q31516fbegadbcc98360813863@mail.gmail.com>
+	<47FBD99A.2080007@sgi.com>
+	<36ca99e90804090853xf62438ayfbfa6010f2d31747@mail.gmail.com>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47FE073B.3060007@fr.ibm.com>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I guess that was a development rationale. 
+Bert, responding to Mike:
+> >  It's printing the number of cpus on a node, so the number of nodes is not
+> >  important, it's how many cpus can fit on the head of a node... ;-)
+> Ahh, the old code was Just Plain Wrong.
 
-But what rationale? It just doesn't make much sense to me.
+Looks like the code originally had NR_CPUS, and that was changed to
+MAX_NUMNODES, perhaps as unintended collateral damage from some
+x86_64 node SLIT changes done in the patch:
 
-> Most of the namespaces are in 
-> use in the container projects like openvz, vserver and probably others 
-> and we needed a way to activate the code.
+  http://www.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.10-rc3/2.6.10-rc3-mm1/broken-out/x86_64-add-x86_64-support-for-jack-steiners-slit-sysfs.patch
 
-You could just have added it to feature groups over time.
-
-> 
-> Not perfect I agree.
->  
-> > With your current strategy are you sure that even 64bit will
-> > be enough in the end? For me it rather looks like you'll
-> > go through those quickly too as more and more of the kernel
-> > is namespaced.
-> 
-> well, we're reaching the end. I hope ! devpts is in progress and
-> mq is just waiting for a clone flag.
-
-Are you sure?
-
->  
-> > Also I think the user interface is very unfriendly. How
-> > is a non kernel hacker supposed to make sense of these 
-> > myriads of flags? You'll be creating another 
-> > CreateProcess123_extra_args_extended() 
-> > in the end I fear.
-> 
-> well, the clone interface is a not friendly interface anyway. glibc wraps 
-> it
-
-But only for the stack setup which is just a minor detail. 
-
-The basic clone() flags interface used to be pretty sane and usable 
-before it could overloaded with so many tiny features.
-
-I especially worry on how user land should keep track of changing kernel
-here. If you add new feature flag for lots of kernel features it is
-reasonable to expect that in the future there will be often new features.
-
-Does this mean user land needs to be updated all the time? Will this
-end up like another udev? 
-
-> We will need a user library, like we have a libphtread or a libaio, to
-
-That doesn't make sense. The basic kernel syscalls should be usable,
-not require some magic library that would likely need intimate 
-knowledge of specific kernel versions to do any good.
-
-> but we still need a way to extend the clone flags because none are left.
-
-Can we just take out some again that were added in the .25 cycle and
-readd them once there is a properly thought out interface?  That would
-leave at least one.
-
--Andi
+-- 
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.940.382.4214
