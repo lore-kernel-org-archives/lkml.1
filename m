@@ -1,53 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758652AbYDJOs4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758032AbYDJOxH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758652AbYDJOs4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Apr 2008 10:48:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757237AbYDJOsq
+	id S1758032AbYDJOxH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Apr 2008 10:53:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756560AbYDJOw4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Apr 2008 10:48:46 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:56566 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755985AbYDJOsp (ORCPT
+	Thu, 10 Apr 2008 10:52:56 -0400
+Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:41650 "EHLO
+	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756460AbYDJOw4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Apr 2008 10:48:45 -0400
-Date: Thu, 10 Apr 2008 08:48:39 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Jiri Kosina <jkosina@suse.cz>
-Cc: Jan Kara <jack@suse.cz>, Michal Hocko <mhocko@suse.cz>,
-       Meelis Roos <mroos@linux.ee>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: file offset corruption on 32-bit machines?
-Message-ID: <20080410144839.GQ11962@parisc-linux.org>
-References: <Pine.SOC.4.64.0804081101430.28938@math.ut.ee> <200804101555.58643.mhocko@suse.cz> <Pine.LNX.4.64.0804101558280.26562@twin.jikos.cz> <20080410142700.GC6725@atrey.karlin.mff.cuni.cz> <Pine.LNX.4.64.0804101628000.3896@jikos.suse.cz>
+	Thu, 10 Apr 2008 10:52:56 -0400
+Date: Thu, 10 Apr 2008 10:52:55 -0400
+To: Bernd Eckenfels <ecki@lina.inka.de>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Disk geometry from /sys
+Message-ID: <20080410145255.GC2160@csclub.uwaterloo.ca>
+References: <20080409212840.GB2160@csclub.uwaterloo.ca> <E1JjiaS-0005QV-00@calista.eckenfels.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0804101628000.3896@jikos.suse.cz>
+In-Reply-To: <E1JjiaS-0005QV-00@calista.eckenfels.net>
 User-Agent: Mutt/1.5.13 (2006-08-11)
+From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 10, 2008 at 04:31:09PM +0200, Jiri Kosina wrote:
-> >   Well, this race is more subtle - the window is just one instruction
-> > wide (stores to f_pos from CPU2 must come between the store of lower and
-> > upper 32-bits of f_pos on CPU1). And the only result is that f_pos has
-> > 32-bits from one file pointer and 32-bits from the other one. So I can
-> > hardly imagine this would be exploitable...
+On Thu, Apr 10, 2008 at 12:16:12AM +0200, Bernd Eckenfels wrote:
+> Unfortunatelly there is also bios' view of the geometry, which is especially
+> a problem for boot loaders. Just another hint:
 > 
-> Supposing you are not holding any spinlock and are running with 
-> preemptible kernel (pretty common scenario nowadays), there is nothing 
-> that would prevent kernel from rescheduling between the two instructions, 
-> enlarging the race window to be more comfortable for attacker, right?
+> # lilo -T geom
 > 
-> I think this is worth fixing.
+>     bios=0x00, cylinders=80, heads=2, sectors=18
+>         (  1.44Mb         2,880 sectors)        C:H:S supported (PC bios)
+> 
+> BIOS reports 2 hard drives
+>     bios=0x80, cylinders=527, heads=255, sectors=63     vol-ID: 2C731DD1
+>         (  4.33Gb     8,467,199 sectors)        LBA32 supported (EDD bios)
+>     bios=0x81, cylinders=527, heads=255, sectors=63
+>         (  4.33Gb     8,467,199 sectors)        LBA32 supported (EDD bios)
+> 
+> (um yes my system is somewhat outdated, thats an adaptec scsi bios.
 
-Seems a lot like reading jiffies to me.  Is the seqlock the right
-solution to use for fixing this?
+Just use LBA.  Both lilo and grub can, in which case they no longer care
+about the geometry at all.
 
 -- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+Len Sorensen
