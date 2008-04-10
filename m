@@ -1,91 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757308AbYDJOCx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757464AbYDJODn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757308AbYDJOCx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Apr 2008 10:02:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755573AbYDJOCq
+	id S1757464AbYDJODn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Apr 2008 10:03:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755573AbYDJODf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Apr 2008 10:02:46 -0400
-Received: from saeurebad.de ([85.214.36.134]:56228 "EHLO saeurebad.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755516AbYDJOCp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Apr 2008 10:02:45 -0400
-From: Johannes Weiner <hannes@saeurebad.de>
-To: Andreas Schwab <schwab@suse.de>
-Cc: Roel Kluin <12o3l@tiscali.nl>, linux-mm@kvack.org,
-       lkml <linux-kernel@vger.kernel.org>, akpm@linux-foundation.org
-Subject: [PATCH] Stay below upper pmd boundary on pte range walk
-References: <47FC95AD.1070907@tiscali.nl> <87zls3qhop.fsf@saeurebad.de>
-	<jer6dd9ajn.fsf@sykes.suse.de>
-Date: Thu, 10 Apr 2008 16:01:49 +0200
-In-Reply-To: <jer6dd9ajn.fsf@sykes.suse.de> (Andreas Schwab's message of "Thu,
-	10 Apr 2008 14:09:00 +0200")
-Message-ID: <878wzlzu42.fsf_-_@saeurebad.de>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
+	Thu, 10 Apr 2008 10:03:35 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:39238 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755516AbYDJODe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Apr 2008 10:03:34 -0400
+Date: Thu, 10 Apr 2008 09:03:31 -0500
+From: Paul Jackson <pj@sgi.com>
+To: Mike Travis <travis@sgi.com>
+Cc: bert.wesarg@googlemail.com, mingo@elte.hu, tglx@linutronix.de,
+       hpa@zytor.com, akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/3] x86: modify show_shared_cpu_map in intel_cacheinfo
+ v3
+Message-Id: <20080410090331.da1900c5.pj@sgi.com>
+In-Reply-To: <47FBD915.7020809@sgi.com>
+References: <20080408184301.651388000@polaris-admin.engr.sgi.com>
+	<20080408184301.842103000@polaris-admin.engr.sgi.com>
+	<36ca99e90804081236ifa3eecfue3dd211f9cdcb32a@mail.gmail.com>
+	<47FBD915.7020809@sgi.com>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Mike, in response to a suggestion from Bert, wrote:
+> I have to subvert the cpumask interface a bit, but the resultant
+> code size is about 7 instructions smaller.
 
-Andreas Schwab <schwab@suse.de> writes:
+I should have read ahead to this discussion, before responding
+a minute ago with my suggestion using:
 
-> Johannes Weiner <hannes@saeurebad.de> writes:
->
->>> Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
->>> ---
->>> diff --git a/mm/pagewalk.c b/mm/pagewalk.c
->>> index 1cf1417..6615f0b 100644
->>> --- a/mm/pagewalk.c
->>> +++ b/mm/pagewalk.c
->>> @@ -15,7 +15,7 @@ static int walk_pte_range(pmd_t *pmd, unsigned long addr, unsigned long end,
->>>  		       break;
->>>  	} while (pte++, addr += PAGE_SIZE, addr != end);
->>>  
->>> -	pte_unmap(pte);
->>> +	pte_unmap(pte - 1);
->>>  	return err;
->>>  }
->>
->> This does not make any sense to me.
->
-> There is something fishy here.  If the loop ends because addr == end
-> then pte has been incremented past the pmd page for addr, no?
+  typedef enum { print_as_mask, print_as_list } map_printer_t;
 
-Whoops, yes.  But Roel's fix breaks if the break is taken in the first
-iteration of the loop, because the pte is then out of the lower bounds
-of the pmd page.  Please see attached fix.
+I slightly dislike the subversion of the cpumask interface,
+and slightly -do- like the 7 instructions saved.
 
-	Hannes
+Either of these variants (my typedef or Berts function pointer)
+would be fine by me, as you prefer, Mike.
 
----
-
-After the loop in walk_pte_range() pte might point to the first address
-after the pmd it walks.  The pte_unmap() is then applied to something
-bad.
-
-Spotted by Roel Kluin and Andreas Schwab.
-
-Signed-off-by: Johannes Weiner <hannes@saeurebad.de>
----
-
-A bug is unlikely, though.  kunmap_atomic() looks up the kmap entry by
-map-type instead of the address the pte points.  So the worst thing I
-could find with a quick grep was that a wrong TLB entry is being
-flushed.  Still, the code is wrong :)
-
-diff --git a/mm/pagewalk.c b/mm/pagewalk.c
-index 1cf1417..cf3c004 100644
---- a/mm/pagewalk.c
-+++ b/mm/pagewalk.c
-@@ -13,7 +13,7 @@ static int walk_pte_range(pmd_t *pmd, unsigned long addr, unsigned long end,
- 		err = walk->pte_entry(pte, addr, addr + PAGE_SIZE, private);
- 		if (err)
- 		       break;
--	} while (pte++, addr += PAGE_SIZE, addr != end);
-+	} while (addr += PAGE_SIZE, addr != end && pte++);
- 
- 	pte_unmap(pte);
- 	return err;
+-- 
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.940.382.4214
