@@ -1,69 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755723AbYDJKpu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755971AbYDJKvY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755723AbYDJKpu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Apr 2008 06:45:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754631AbYDJKpk
+	id S1755971AbYDJKvY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Apr 2008 06:51:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754889AbYDJKvP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Apr 2008 06:45:40 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:38903 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754433AbYDJKpi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Apr 2008 06:45:38 -0400
-Message-ID: <47FDEFC8.9070105@garzik.org>
-Date: Thu, 10 Apr 2008 06:45:28 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	Thu, 10 Apr 2008 06:51:15 -0400
+Received: from E23SMTP02.au.ibm.com ([202.81.18.163]:41889 "EHLO
+	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754756AbYDJKvO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Apr 2008 06:51:14 -0400
+Message-ID: <47FDF11D.40407@linux.vnet.ibm.com>
+Date: Thu, 10 Apr 2008 16:21:09 +0530
+From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+User-Agent: Thunderbird 1.5.0.14ubu (X11/20080306)
 MIME-Version: 1.0
-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+To: Jacek Luczak <difrost.kernel@gmail.com>
 CC: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, Andy Whitcroft <apw@shadowen.org>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Linux IDE mailing list <linux-ide@vger.kernel.org>
-Subject: Re: [BUG] linux-next: Tree for April 10 - kernel panic while loading
- ata driver on powermac
-References: <20080410181404.b76939a6.sfr@canb.auug.org.au> <47FDEAFA.10407@linux.vnet.ibm.com>
-In-Reply-To: <47FDEAFA.10407@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+       LKML <linux-kernel@vger.kernel.org>, Andy Whitcroft <apw@shadowen.org>
+Subject: Re: [BUG] linux-next: Tree for April 9 warning on CC_STACKPROTECTOR,
+ followed by kernel panic
+References: <20080409185309.b94c9d15.sfr@canb.auug.org.au> <47FDE045.4070509@linux.vnet.ibm.com> <47FDE881.1030409@gmail.com>
+In-Reply-To: <47FDE881.1030409@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kamalesh Babulal wrote:
-> Hi Stephen,
+Jacek Luczak wrote:
+> Kamalesh Babulal pisze:
+>> Hi Stephen,
+>>
+>> The next-20080409 kernel warns while booting up on a x86_64 machine.
+>> When compiled the kernel with CONFIG_CC_STACKPROTECTOR=y, the warning
+>> is followed by the kernel panic.
+>>
+>> Testing -fstack-protector-all feature
+>> No -fstack-protector-stack-frame!
+>> -fstack-protector-all test failed
+>> ------------[ cut here ]------------
+>> WARNING: at kernel/panic.c:365 __stack_chk_test+0x4b/0x50()
+>> Modules linked in:
+>> Pid: 1, comm: swapper Not tainted 2.6.25-rc8-next-20080409-autotest #1
+>>
+>> Call Trace:
+>>  [<ffffffff80231f5e>] warn_on_slowpath+0x51/0x63
+>>  [<ffffffff80232d93>] printk+0x4e/0x56
+>>  [<ffffffff80382fcd>] extract_entropy+0x47/0x90
+>>  [<ffffffff80230000>] dup_mm+0xca/0x3fd
+>>  [<ffffffff80231eba>] __stack_chk_test_func+0x21/0x32
+>>  [<ffffffff80231fbb>] __stack_chk_test+0x4b/0x50
+>>  [<ffffffff808ba8f1>] kernel_init+0x189/0x2f9
+>>  [<ffffffff804ee221>] _spin_unlock_irq+0x9/0xc
+>>  [<ffffffff8020cb88>] child_rip+0xa/0x12
+>>  [<ffffffff808ba768>] kernel_init+0x0/0x2f9
+>>  [<ffffffff8020cb7e>] child_rip+0x0/0x12
+>>
+>> ---[ end trace d88d2f3a71e3b32c ]---
 > 
-> The next-20080410 kernel panics while bootup over the PowerMac G5 box, while
-> loading the ATA driver.
+> Hi,
+> 
+> what version of GCC are you using?
+> 
+> -Jacek
+Hi Jacek,
 
-IDE driver, you mean.
+I use the gcc version (GCC) 4.1.1 20060525 (Red Hat 4.1.1-1)
 
-
-> [    3.704000] NIP [c0000000000222a8] ._insw_ns+0x10/0x30
-> [    3.704000] LR [c00000000021cd10] .ata_input_data+0x1f4/0x264
-> [    3.704000] Call Trace:
-
-> [    3.704000] [c0000002760db3b0] [c00000000021fc34] .try_to_identify+0x298/0x690
-> [    3.704000] [c0000002760db470] [c000000000220168] .do_probe+0x13c/0x2f0
-> [    3.704000] [c0000002760db510] [c00000000022059c] .ide_probe_port+0x280/0x670
-> [    3.704000] [c0000002760db5e0] [c000000000220d84] .ide_device_add_all+0x2f8/0x670
-> [    3.704000] [c0000002760db690] [c000000000221160] .ide_device_add+0x64/0x74
-
-> [    3.704000] [c0000002760db930] [c00000000019241c] .pci_device_probe+0x10c/0x184
-> [    3.704000] [c0000002760db9e0] [c0000000002068ac] .driver_probe_device+0x120/0x1e4
-> [    3.704000] [c0000002760dba70] [c0000000002069d0] .__driver_attach+0x60/0xa4
-> [    3.704000] [c0000002760dbb00] [c0000000002050e8] .bus_for_each_dev+0x7c/0xcc
-> [    3.704000] [c0000002760dbbb0] [c000000000206388] .driver_attach+0x28/0x40
-> [    3.704000] [c0000002760dbc30] [c000000000206154] .bus_add_driver+0xd4/0x274
-> [    3.704000] [c0000002760dbcd0] [c000000000206f04] .driver_register+0x90/0x14c
-> [    3.704000] [c0000002760dbd70] [c000000000191c80] .__pci_register_driver+0x68/0xc8
-> [    3.704000] [c0000002760dbe10] [c0000000003ccfb8] .pmac_ide_probe+0x48/0x94
-
-Regards,
-
-	Jeff
-
-
-
+-- 
+Thanks & Regards,
+Kamalesh Babulal,
+Linux Technology Center,
+IBM, ISTL.
