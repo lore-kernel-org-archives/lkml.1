@@ -1,52 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759324AbYDJPaZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759836AbYDJPbZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759324AbYDJPaZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Apr 2008 11:30:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757308AbYDJPaM
+	id S1759836AbYDJPbZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Apr 2008 11:31:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758273AbYDJPbQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Apr 2008 11:30:12 -0400
-Received: from relay2.sgi.com ([192.48.171.30]:56298 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756050AbYDJPaL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Apr 2008 11:30:11 -0400
-Date: Thu, 10 Apr 2008 10:30:08 -0500
-From: Paul Jackson <pj@sgi.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: travis@sgi.com, tglx@linutronix.de, hpa@zytor.com,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/4] x86: add cpus_scnprintf function v2
-Message-Id: <20080410103008.e4c053b9.pj@sgi.com>
-In-Reply-To: <20080407081643.GC3066@elte.hu>
-References: <20080405012447.440875000@polaris-admin.engr.sgi.com>
-	<20080407030421.0c3f8033.pj@sgi.com>
-	<20080407081643.GC3066@elte.hu>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 10 Apr 2008 11:31:16 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:53874 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758109AbYDJPbP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Apr 2008 11:31:15 -0400
+Date: Thu, 10 Apr 2008 09:30:59 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Jan Kara <jack@suse.cz>
+Cc: Jiri Kosina <jkosina@suse.cz>, Michal Hocko <mhocko@suse.cz>,
+       Meelis Roos <mroos@linux.ee>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: file offset corruption on 32-bit machines?
+Message-ID: <20080410153058.GT11962@parisc-linux.org>
+References: <Pine.SOC.4.64.0804081101430.28938@math.ut.ee> <200804101555.58643.mhocko@suse.cz> <Pine.LNX.4.64.0804101558280.26562@twin.jikos.cz> <20080410142700.GC6725@atrey.karlin.mff.cuni.cz> <Pine.LNX.4.64.0804101628000.3896@jikos.suse.cz> <20080410144839.GQ11962@parisc-linux.org> <20080410152212.GF6725@atrey.karlin.mff.cuni.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080410152212.GF6725@atrey.karlin.mff.cuni.cz>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo, responding to Paul, three days ago:
-> i dont mind the old patch either (which did an ugly temporary 
-> allocation), if it keeps the ABI.
+On Thu, Apr 10, 2008 at 05:22:12PM +0200, Jan Kara wrote:
+>   You can get your inspiration in the implementation of i_size_read()
+> and i_size_write() functions :). They deal with exactly the same problem.
+> But in the case of f_pos, the number of readers and writers is balanced so
+> maybe a spinlock would be fine as well...
 
-But this v2 and earlier patch versions broke the kernel-user interface,
-incompatibly, for about a dozen different /sys and /proc files, and
-without even stating so very clearly in the patch commentary.  We'd
-have to be rather desperate before I'd agree to that.
+It's not quite balanced -- see sys_getdents() for a counterexample.
 
-Mike's latest v3 version of this cpus_scnprintf patchset has resolved
-these incompatibilities, by adding new *list files in /sys and /proc,
-and new *list line items in the /proc/<pid>/status files, rather than
-breaking existing files and lines.
-
-That is much better.  Better to add files and lines, than to change the
-format of existing ones.
+i_size_read/write use a seqcount rather than a seqlock, but the
+principle is the same.
 
 -- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.940.382.4214
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
