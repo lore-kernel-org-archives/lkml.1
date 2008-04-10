@@ -1,40 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756481AbYDJIXV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755358AbYDJIXf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756481AbYDJIXV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Apr 2008 04:23:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752789AbYDJIXN
+	id S1755358AbYDJIXf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Apr 2008 04:23:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756598AbYDJIXX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Apr 2008 04:23:13 -0400
-Received: from sacred.ru ([62.205.161.221]:37413 "EHLO sacred.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752418AbYDJIXN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Apr 2008 04:23:13 -0400
-Message-ID: <47FDD267.80700@openvz.org>
-Date: Thu, 10 Apr 2008 12:40:07 +0400
-From: Pavel Emelyanov <xemul@openvz.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
+	Thu, 10 Apr 2008 04:23:23 -0400
+Received: from wf-out-1314.google.com ([209.85.200.172]:2101 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756554AbYDJIXW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Apr 2008 04:23:22 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=voJZnToQ5dd8ZYFXcw8ecoNuB8QkxOeo4J8csqwesgR2uFL0O2bKETgK0na4hn3zncmbD3md1O4PGjg22cgwEcHukjmidy5hc701kjr/Nybl73oazuVTv6V1hJgr8w/Tl9QRFW/oDcmdPWEAweEby/zunyb9o9e+Iy27uar6VCQ=
+Message-ID: <5699f8f00804100123q2a9d278arf9b076c91efbbd56@mail.gmail.com>
+Date: Thu, 10 Apr 2008 10:23:15 +0200
+From: "Wander Winkelhorst" <w.winkelhorst@gmail.com>
+To: "Wappler Marcel" <Marcel.Wappler@bridgeco.net>
+Subject: Re: Starting point: Suspend to RAM on embedded devices?
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <83116F0A4FF67A4F97BA0B6E408C48E301E96208@zuerich.BC-Int.NET>
 MIME-Version: 1.0
-To: Oleg Nesterov <oleg@tv-sign.ru>, Sukadev Bhattiprolu <sukadev@us.ibm.com>,
-       Alexey Dobriyan <adobriyan@openvz.org>
-CC: Linux Containers <containers@lists.osdl.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH 0/10] Make bsd process accounting work in pid namespaces
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Thu, 10 Apr 2008 12:15:17 +0400 (MSD)
+Content-Disposition: inline
+References: <83116F0A4FF67A4F97BA0B6E408C48E301E96208@zuerich.BC-Int.NET>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-After I fixed access to task->tgid in kernel/acct.c, Oleg
-pointed out some bad side effects with this accounting vs
-pid namespaces interaction.
+On Thu, Apr 10, 2008 at 10:14 AM, Wappler Marcel
+<Marcel.Wappler@bridgeco.net> wrote:
 
-So here is the approach to make this accounting work with
-pid namespaces properly.
+>  - Is there a mainstream Linux platform (best if also ARM9 based) which has achieved this (a "suspend to RAM" like mode.) already?
 
-The idea is simple - when task dies it accounts itself in
-each namespace it is visible from. That was the summary,
-the details are in patches.
+The TomTom portable navigation devices (TomTom one, TomTom go etc.) do this.
+They are based around an ARM CPU from Samsung and run Linux. If you
+press the "power button" it actually does a suspend-to-ram.
+They use a somewhat custom linux kernel, the source is available on
+their website, www.tomtom.com/gpl
+There is a website that aims to run open source software on the tomtom
+(ie. not the tomtom navigation software) on http://www.opentom.org
 
-Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
+Hope this helps,
+
+Wander
