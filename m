@@ -1,55 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756670AbYDJNPv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756997AbYDJNSj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756670AbYDJNPv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Apr 2008 09:15:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755314AbYDJNPo
+	id S1756997AbYDJNSj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Apr 2008 09:18:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755332AbYDJNSa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Apr 2008 09:15:44 -0400
-Received: from co300216-co-outbound.net.avaya.com ([198.152.13.100]:24305 "EHLO
-	co300216-co-outbound.avaya.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755305AbYDJNPn convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Apr 2008 09:15:43 -0400
-X-Greylist: delayed 570 seconds by postgrey-1.27 at vger.kernel.org; Thu, 10 Apr 2008 09:15:43 EDT
-X-IronPort-AV: E=Sophos;i="4.25,635,1199682000"; 
-   d="scan'208";a="117105944"
-X-IronPort-AV: E=Sophos;i="4.25,635,1199682000"; 
-   d="scan'208";a="180341493"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Thu, 10 Apr 2008 09:18:30 -0400
+Received: from mtagate1.uk.ibm.com ([195.212.29.134]:12047 "EHLO
+	mtagate1.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755238AbYDJNSa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Apr 2008 09:18:30 -0400
+Message-ID: <47FE139C.9040100@fr.ibm.com>
+Date: Thu, 10 Apr 2008 15:18:20 +0200
+From: Cedric Le Goater <clg@fr.ibm.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: Kernel Oops on hot insertion of USB
-Date: Thu, 10 Apr 2008 15:06:05 +0200
-Message-ID: <11486DD9B957EA488E21C44BC8737EFC987F23@307622ANEX5.global.avaya.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: Kernel Oops on hot insertion of USB
-Thread-Index: AcibC6KN6rAzd6tkQsyPVCaDVIdXWQ==
-From: "Rachmel, Nir (Nir)" <rachmel@avaya.com>
-To: <linux-kernel@vger.kernel.org>
+To: Andi Kleen <andi@firstfloor.org>
+CC: sukadev@us.ibm.com, Andrew Morton <akpm@osdl.org>, serue@us.ibm.com,
+       "David C. Hansen" <haveblue@us.ibm.com>,
+       Pavel Emelyanov <xemul@openvz.org>,
+       Containers <containers@lists.osdl.org>, linux-kernel@vger.kernel.org,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: [PATCH 1/3] change clone_flags type to u64
+References: <20080409222611.GA28087@us.ibm.com> <20080409223231.GA28267@us.ibm.com> <871w5enmk7.fsf@basil.nowhere.org> <47FE073B.3060007@fr.ibm.com> <20080410125205.GG10019@one.firstfloor.org>
+In-Reply-To: <20080410125205.GG10019@one.firstfloor.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Andi Kleen wrote:
+>> I guess that was a development rationale. 
+> 
+> But what rationale? It just doesn't make much sense to me.
 
-	I am running linux kernel version 2.6.14.7, and have a problem
-when
-	inserting / removing a disk-on-key device from my system: I get
-a
-	"kernel oops". Using some debugging tools I managed to trace the
-	problem down to an event of "double free" that occurs within the
-hot
-	insertion module.
-	
-	googling didn't help much. Is this a known issue which is
-resolved in
-	later kernel versions?
-	
-	
-Thanks in advance,
+Let's add Eric in Cc:
 
-- Nir.
+>> Most of the namespaces are in 
+>> use in the container projects like openvz, vserver and probably others 
+>> and we needed a way to activate the code.
+> 
+> You could just have added it to feature groups over time.
+
+Yes if the feature group had existed, that would have been a good
+option. 
+
+Don't take me wrong. I agree with this group direction. Most 
+namespaces can't be safely decoupled from each other with a clone 
+flag.
+
+>> Not perfect I agree.
+>>  
+>>> With your current strategy are you sure that even 64bit will
+>>> be enough in the end? For me it rather looks like you'll
+>>> go through those quickly too as more and more of the kernel
+>>> is namespaced.
+>> well, we're reaching the end. I hope ! devpts is in progress and
+>> mq is just waiting for a clone flag.
+> 
+> Are you sure?
+
+I'm never sure ! :) That's what we have in plan for the moment.
+
+>>> Also I think the user interface is very unfriendly. How
+>>> is a non kernel hacker supposed to make sense of these 
+>>> myriads of flags? You'll be creating another 
+>>> CreateProcess123_extra_args_extended() 
+>>> in the end I fear.
+>> well, the clone interface is a not friendly interface anyway. glibc wraps 
+>> it
+> 
+> But only for the stack setup which is just a minor detail. 
+> 
+> The basic clone() flags interface used to be pretty sane and usable 
+> before it could overloaded with so many tiny features.
+> 
+> I especially worry on how user land should keep track of changing kernel
+> here. If you add new feature flag for lots of kernel features it is
+> reasonable to expect that in the future there will be often new features.
+> 
+> Does this mean user land needs to be updated all the time? Will this
+> end up like another udev? 
+> 
+>> We will need a user library, like we have a libphtread or a libaio, to
+> 
+> That doesn't make sense. The basic kernel syscalls should be usable,
+> not require some magic library that would likely need intimate 
+> knowledge of specific kernel versions to do any good.
+
+No magic there. but running a container will require some userland code 
+to be set up properly. 
+
+>> but we still need a way to extend the clone flags because none are left.
+> 
+> Can we just take out some again that were added in the .25 cycle and
+> readd them once there is a properly thought out interface?  That would
+> leave at least one.
+
+well, CLONE_STOPPED is being recycle in 2.6.26. so we could use that one
+to group namespaces.
+
+and CLONE_NEWPID would probably be a good candidate to group namespaces.
+
+That would be fine for me but it would still leave clone with one to zero
+flags left. 
+
+Thanks,
+
+
+C.
