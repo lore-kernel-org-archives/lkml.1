@@ -1,54 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756691AbYDJOBl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757308AbYDJOCx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756691AbYDJOBl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Apr 2008 10:01:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754812AbYDJOBc
+	id S1757308AbYDJOCx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Apr 2008 10:02:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755573AbYDJOCq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Apr 2008 10:01:32 -0400
-Received: from twin.jikos.cz ([213.151.79.26]:53914 "EHLO twin.jikos.cz"
+	Thu, 10 Apr 2008 10:02:46 -0400
+Received: from saeurebad.de ([85.214.36.134]:56228 "EHLO saeurebad.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752418AbYDJOBb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Apr 2008 10:01:31 -0400
-Date: Thu, 10 Apr 2008 16:01:27 +0200 (CEST)
-From: Jiri Kosina <jkosina@suse.cz>
-X-X-Sender: jikos@twin.jikos.cz
-To: Michal Hocko <mhocko@suse.cz>
-cc: Meelis Roos <mroos@linux.ee>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: file offset corruption on 32-bit machines?
-In-Reply-To: <200804101555.58643.mhocko@suse.cz>
-Message-ID: <Pine.LNX.4.64.0804101558280.26562@twin.jikos.cz>
-References: <Pine.SOC.4.64.0804081101430.28938@math.ut.ee>
- <200804101555.58643.mhocko@suse.cz>
+	id S1755516AbYDJOCp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Apr 2008 10:02:45 -0400
+From: Johannes Weiner <hannes@saeurebad.de>
+To: Andreas Schwab <schwab@suse.de>
+Cc: Roel Kluin <12o3l@tiscali.nl>, linux-mm@kvack.org,
+       lkml <linux-kernel@vger.kernel.org>, akpm@linux-foundation.org
+Subject: [PATCH] Stay below upper pmd boundary on pte range walk
+References: <47FC95AD.1070907@tiscali.nl> <87zls3qhop.fsf@saeurebad.de>
+	<jer6dd9ajn.fsf@sykes.suse.de>
+Date: Thu, 10 Apr 2008 16:01:49 +0200
+In-Reply-To: <jer6dd9ajn.fsf@sykes.suse.de> (Andreas Schwab's message of "Thu,
+	10 Apr 2008 14:09:00 +0200")
+Message-ID: <878wzlzu42.fsf_-_@saeurebad.de>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 10 Apr 2008, Michal Hocko wrote:
+Hi,
 
-> > Jeff Robertson analyzes the behaviour of different operating systems'
-> > 64-bit file offset implementation and concludes that on 32-bit
-> > machines, Linux and Solaris lack any locking to keep the two 32-bit
-> > halves in sync and this could cause rare file offset corruption.
-> > http://jeffr-tech.livejournal.com/21014.html
-> AFAICS, this race is theoretically possible, but it is very hard (almost 
-> impossible) to trigger with a sane file usage pattern. Note that you 
-> have to access shared struct file (same file descriptor) in different 
-> threads which should be synchronized by caller anyway (*).
+Andreas Schwab <schwab@suse.de> writes:
 
-... but not in cases the caller is an intentionally evil code, right? :)
+> Johannes Weiner <hannes@saeurebad.de> writes:
+>
+>>> Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
+>>> ---
+>>> diff --git a/mm/pagewalk.c b/mm/pagewalk.c
+>>> index 1cf1417..6615f0b 100644
+>>> --- a/mm/pagewalk.c
+>>> +++ b/mm/pagewalk.c
+>>> @@ -15,7 +15,7 @@ static int walk_pte_range(pmd_t *pmd, unsigned long addr, unsigned long end,
+>>>  		       break;
+>>>  	} while (pte++, addr += PAGE_SIZE, addr != end);
+>>>  
+>>> -	pte_unmap(pte);
+>>> +	pte_unmap(pte - 1);
+>>>  	return err;
+>>>  }
+>>
+>> This does not make any sense to me.
+>
+> There is something fishy here.  If the loop ends because addr == end
+> then pte has been incremented past the pmd page for addr, no?
 
-> I also don't see any security implications from this race, but maybe 
-> someone with more knowlage about fs can see (f_pos is used at many 
-> places in the kernel code).
+Whoops, yes.  But Roel's fix breaks if the break is taken in the first
+iteration of the loop, because the pte is then out of the lower bounds
+of the pmd page.  Please see attached fix.
 
-The f_pos races are in fact exploitable, we've already been there. See 
-for example http://www.isec.pl/vulnerabilities/isec-0016-procleaks.txt
+	Hannes
 
--- 
-Jiri Kosina
-SUSE Labs
+---
 
+After the loop in walk_pte_range() pte might point to the first address
+after the pmd it walks.  The pte_unmap() is then applied to something
+bad.
+
+Spotted by Roel Kluin and Andreas Schwab.
+
+Signed-off-by: Johannes Weiner <hannes@saeurebad.de>
+---
+
+A bug is unlikely, though.  kunmap_atomic() looks up the kmap entry by
+map-type instead of the address the pte points.  So the worst thing I
+could find with a quick grep was that a wrong TLB entry is being
+flushed.  Still, the code is wrong :)
+
+diff --git a/mm/pagewalk.c b/mm/pagewalk.c
+index 1cf1417..cf3c004 100644
+--- a/mm/pagewalk.c
++++ b/mm/pagewalk.c
+@@ -13,7 +13,7 @@ static int walk_pte_range(pmd_t *pmd, unsigned long addr, unsigned long end,
+ 		err = walk->pte_entry(pte, addr, addr + PAGE_SIZE, private);
+ 		if (err)
+ 		       break;
+-	} while (pte++, addr += PAGE_SIZE, addr != end);
++	} while (addr += PAGE_SIZE, addr != end && pte++);
+ 
+ 	pte_unmap(pte);
+ 	return err;
