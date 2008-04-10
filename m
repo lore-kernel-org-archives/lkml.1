@@ -1,82 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755540AbYDJKHQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755392AbYDJKOd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755540AbYDJKHQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Apr 2008 06:07:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753032AbYDJKHE
+	id S1755392AbYDJKOd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Apr 2008 06:14:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752789AbYDJKOZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Apr 2008 06:07:04 -0400
-Received: from mail1.bur.st ([203.82.212.241]:46512 "EHLO creep.bur.st"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752265AbYDJKHD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Apr 2008 06:07:03 -0400
-Date: Thu, 10 Apr 2008 11:59:30 +0200
-From: Rodney Lorrimar <rodney@rodney.id.au>
-To: Pavel Machek <pavel@suse.cz>
-Cc: jikos@suse.cz, linux-kernel@vger.kernel.org,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Andrew McNabb <amcnabb@mcnabbs.org>
-Subject: Re: [PATCH] Input: adbhid - fix capslock key state after suspend
-Message-ID: <20080410095930.GA2945@solaria.local>
-References: <20080328001556.GA30148@solaria.local> <20080328105855.GA1686@elf.ucw.cz>
+	Thu, 10 Apr 2008 06:14:25 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:40534 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752737AbYDJKOY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Apr 2008 06:14:24 -0400
+Date: Thu, 10 Apr 2008 12:14:11 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: astarikovskiy@suse.de, len.brown@intel.com, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: mpparse merge
+Message-ID: <20080410101408.GA12853@elte.hu>
+References: <20080410092947.GA32376@basil.nowhere.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="EeQfGwPcQSOJBaQU"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080328105855.GA1686@elf.ucw.cz>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <20080410092947.GA32376@basil.nowhere.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---EeQfGwPcQSOJBaQU
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+(Cc:-ing lkml because obviously others are interested in this topic too)
 
-On Fri, Mar 28, 2008 at 11:58:55AM +0100, Pavel Machek wrote:
-> On Fri 2008-03-28 01:15:56, Rodney Lorrimar wrote:
-> > If the adbhid module parameter restore_capslock_events is used,
-> > sometimes capslock will get stuck down after resuming.
->=20
-> Hmmm, why does that need to be a parameter? I mean... can we just do
-> the right thing?
+* Andi Kleen <andi@firstfloor.org> wrote:
 
-Hi Pavel,
+> Refering to 
+> 
+> commit 9d92083afb7cabe86c166dce9cc569eabbbd6f99
+> Author: Alexey Starikovskiy <astarikovskiy@suse.de>
+> Date:   Fri Apr 4 23:43:18 2008 +0400
+> 
+>     x86: merge mpparse_{32,64}.c
+> 
+> in linux-next.
+> 
+> About half of the ifdefs seem to be because 32bit does irq compression 
+> and 64bit does not. Len removed that at some point, but when the files 
+> are merged I would rather just readd 64bit irq compression (or move 
+> 64bit over to per cpu vectors) than have this ifdef jungle
 
-Sorry for taking so long to answer your questions. We can mostly do
-the right thing. I suppose it was a parameter so the quirk fixing
-didn't ruin the fun for the majority of users who don't remap their
-capslock. I know of two issues with the code:
+the way Alexey did it is the safest way of doing unifications: keep it 
+simple and finegrained first, keep the more complex steps to later. We 
+try to stick to that even if there's a temporary jungle of #ifdefs. In a 
+related discussion (which was unfortunately private too so no URLs) you 
+suggested to Alexey to redesign the mp-parsing code first, then unify 
+it. That's the worst possible approach to unification and i advise 
+everyone against doing it that way. I very much agree with unifying irq 
+vector management - it's not a simple task at all.
 
-1. Under heavy capslock usage the capslock key will sometimes get
-   stuck down.
-2. If the capslock LED is on and the power button is pressed, a "power
-   button release" key event won't happen until capslock is pressed
-   again. So in some situations (e.g. with pbbuttonsd) the next time
-   capslock is hit the machine will suspend.
-
-
-I will send a patch for 2, and continue to investigate 1.
-
-Regarding the original patch, I think it's worth applying. If 1 is
-fixable then I will prepare two more patches to fix problem 1 and
-remove the parameter.
-
-
-Rodney
-
---EeQfGwPcQSOJBaQU
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFH/eUCbBchLr+YxKcRAg2IAJ4gIuRbzkd5K+D66XB+FZHG+qtWXwCgmDik
-WhziST4pHKHJbgCPAb9kc9g=
-=M/6n
------END PGP SIGNATURE-----
-
---EeQfGwPcQSOJBaQU--
+	Ingo
