@@ -1,48 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757162AbYDJMtT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756640AbYDJM5G@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757162AbYDJMtT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Apr 2008 08:49:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755499AbYDJMtK
+	id S1756640AbYDJM5G (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Apr 2008 08:57:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755495AbYDJM4z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Apr 2008 08:49:10 -0400
-Received: from relay2.sgi.com ([192.48.171.30]:43688 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755451AbYDJMtJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Apr 2008 08:49:09 -0400
-Date: Thu, 10 Apr 2008 07:49:04 -0500
-From: Paul Jackson <pj@sgi.com>
-To: "Bert Wesarg" <bert.wesarg@googlemail.com>
-Cc: travis@sgi.com, mingo@elte.hu, tglx@linutronix.de, hpa@zytor.com,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/3] cpumask: use new cpus_scnprintf function v3
-Message-Id: <20080410074904.2734e52f.pj@sgi.com>
-In-Reply-To: <36ca99e90804090853xf62438ayfbfa6010f2d31747@mail.gmail.com>
-References: <20080408184301.651388000@polaris-admin.engr.sgi.com>
-	<20080408184301.975491000@polaris-admin.engr.sgi.com>
-	<36ca99e90804081240q31516fbegadbcc98360813863@mail.gmail.com>
-	<47FBD99A.2080007@sgi.com>
-	<36ca99e90804090853xf62438ayfbfa6010f2d31747@mail.gmail.com>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 10 Apr 2008 08:56:55 -0400
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:54374 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755215AbYDJM4y (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Apr 2008 08:56:54 -0400
+To: penguin-kernel@I-love.SAKURA.ne.jp
+CC: viro@zeniv.linux.org.uk, miklos@szeredi.hu, ezk@cs.sunysb.edu,
+       akpm@linux-foundation.org, dave@linux.vnet.ibm.com,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+In-reply-to: <200804102102.JFI05247.OVJOFHFStLOFQM@I-love.SAKURA.ne.jp>
+	(message from Tetsuo Handa on Thu, 10 Apr 2008 21:02:57 +0900)
+Subject: Re: [PATCH] Call LSM functions outside VFS helper functions.
+References: <200804090053.m390rE9k007085@agora.fsl.cs.sunysb.edu>
+	<E1Jjug8-0006a2-Vs@pomaz-ex.szeredi.hu> <200804102102.JFI05247.OVJOFHFStLOFQM@I-love.SAKURA.ne.jp>
+Message-Id: <E1JjwK1-0006ml-6c@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Thu, 10 Apr 2008 14:56:09 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bert, responding to Mike:
-> >  It's printing the number of cpus on a node, so the number of nodes is not
-> >  important, it's how many cpus can fit on the head of a node... ;-)
-> Ahh, the old code was Just Plain Wrong.
+Hi,
 
-Looks like the code originally had NR_CPUS, and that was changed to
-MAX_NUMNODES, perhaps as unintended collateral damage from some
-x86_64 node SLIT changes done in the patch:
+> I'm reading this thread on tenterhooks.
+> If vfsmount is passed to VFS helper functions, that will make
+> r/o bind mounts and AppArmor and TOMOYO Linux happy.
+> But so far, it seems that "passing vfsmount makes things complicated".
 
-  http://www.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.10-rc3/2.6.10-rc3-mm1/broken-out/x86_64-add-x86_64-support-for-jack-steiners-slit-sysfs.patch
+If done right, it shouldn't.  At least it didn't seem to complicate
+the parts that I've touched ;)
 
--- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.940.382.4214
+> If the conclusion became "vfsmount should not be passed to
+> VFS helper functions", that's OK, but I want you to consider
+> the below approach for AppArmor and TOMOYO Linux. This patch is a repost of
+> http://kerneltrap.org/mailarchive/linux-fsdevel/2008/2/17/882024 .
+
+I'm not a big fan of adding new security hooks.  Nor of moving the
+existing ones to callers.
+
+Miklos
