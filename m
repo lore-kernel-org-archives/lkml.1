@@ -1,57 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759233AbYDJVXp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759145AbYDJV1Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759233AbYDJVXp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Apr 2008 17:23:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757489AbYDJVXi
+	id S1759145AbYDJV1Z (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Apr 2008 17:27:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757532AbYDJV1Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Apr 2008 17:23:38 -0400
-Received: from www.tglx.de ([62.245.132.106]:36335 "EHLO www.tglx.de"
+	Thu, 10 Apr 2008 17:27:16 -0400
+Received: from mga11.intel.com ([192.55.52.93]:44201 "EHLO mga11.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757471AbYDJVXh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Apr 2008 17:23:37 -0400
-Date: Thu, 10 Apr 2008 23:23:29 +0200
-From: "Hans J. Koch" <hjk@linutronix.de>
-To: Greg KH <gregkh@suse.de>
-Cc: "Hans J. Koch" <hjk@linutronix.de>,
-       Uwe Kleine-K??nig <Uwe.Kleine-Koenig@digi.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/4] UIO: hold a reference to the device's owner while
-	the device is open
-Message-ID: <20080410212329.GH3193@local>
-References: <1207831023-8583-1-git-send-email-Uwe.Kleine-Koenig@digi.com> <1207831023-8583-2-git-send-email-Uwe.Kleine-Koenig@digi.com> <20080410210229.GF3193@local> <20080410211236.GA21251@suse.de>
+	id S1757530AbYDJV1P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Apr 2008 17:27:15 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,637,1199692800"; 
+   d="scan'208";a="314608591"
+Message-ID: <47FE8566.5040809@intel.com>
+Date: Thu, 10 Apr 2008 14:23:50 -0700
+From: "Kok, Auke" <auke-jan.h.kok@intel.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071125)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080410211236.GA21251@suse.de>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: Ingo Molnar <mingo@elte.hu>
+CC: "Kok, Auke" <auke-jan.h.kok@intel.com>, Jeff Garzik <jeff@garzik.org>,
+       Matthew Wilcox <matthew@wil.cx>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       NetDev <netdev@vger.kernel.org>,
+       e1000-list <e1000-devel@lists.sourceforge.net>,
+       linux-pci maillist <linux-pci@atrey.karlin.mff.cuni.cz>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "David S. Miller" <davem@davemloft.net>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Jesse Brandeburg <jesse.brandeburg@intel.com>,
+       "Ronciak, John" <john.ronciak@intel.com>,
+       "Allan, Bruce W" <bruce.w.allan@intel.com>, Greg KH <greg@kroah.com>,
+       Arjan van de Ven <arjan@linux.intel.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [patch] e1000=y && e1000e=m regression fix
+References: <20080408193245.GG11962@parisc-linux.org> <20080408195123.GA28148@elte.hu> <47FBCE00.2020309@garzik.org> <20080408200652.GC28148@elte.hu> <47FBD34A.6080508@garzik.org> <20080408203314.GA28952@elte.hu> <47FBDBE9.9040700@garzik.org> <20080409193850.GA11763@elte.hu> <47FD2325.2030705@intel.com> <47FE5C89.5060209@intel.com> <20080410192714.GA14055@elte.hu>
+In-Reply-To: <20080410192714.GA14055@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 10 Apr 2008 21:24:54.0705 (UTC) FILETIME=[51CC2A10:01C89B51]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 10, 2008 at 02:12:36PM -0700, Greg KH wrote:
-> On Thu, Apr 10, 2008 at 11:02:29PM +0200, Hans J. Koch wrote:
-> > On Thu, Apr 10, 2008 at 02:37:00PM +0200, Uwe Kleine-K??nig wrote:
-> > > Otherwise the device might just disappear while /dev/uioX is being used
-> > > which results in an Oops.
-> > 
-> > Hi Uwe,
-> > thanks for this one, good catch! Looks fine to me. There are some minor issues, see
-> > below.
-> > And I'd like to hear Greg's opinion: Do you agree we can omit
-> > try_module_get() in uio_mmap()?
+Ingo Molnar wrote:
+> * Kok, Auke <auke-jan.h.kok@intel.com> wrote:
 > 
-> If it's already been grabbed in the open() call, everything should be
-> safe, right?
-
-Yes, it looks quite clean to me. module_get in open(), module_put in
-release() and nothing of that sort anywhere else. Maybe it just looked
-toooo simple to me ;-)
-
-Thanks for your confirmation.
-
-Hans
-
+>>>>  config E1000E_ENABLED
+>>>> -	def_bool E1000E != n
+>>>> +	def_bool E1000E = y || ((E1000E != n) && (E1000 = E1000E))
+>>> Uh, that's /not/ what Ingo's patch does.  His patch makes e1000 
+>>> claim the e1000e IDs if e1000 is built-in and e1000e is a module.
+>> so that's definately _not_ what I would like to see at all. Matthew 
+>> points out that this will just prolong users to use e1000 instead of 
+>> e1000e (which is what they should be encouraged to switch to in those 
+>> cases).
+>>
+>> so I'm dropping my ACK
 > 
-> thanks,
-> 
-> greg k-h
+> why you want to cripple an existing, rather well working and popular 
+> Linux driver is beyond me.
+
+Because we decided a long time ago to do this driver split. And everyone at that
+time agreed with that, and we set out to do this. And part of that plan was to
+move (not copy) the device IDs over.
+
+We accepted that that might break some kernel developers' systems in the process
+and consulted several vendors and distros if they were OK with the change and they
+all agreed with the plan.
+
+I do not want people with PCI Express e1000 cards to use e1000 for any day longer
+than is strictly needed, and I certainly do not want to prolong the period where
+both drivers could work on their adapters. That will be a far bigger nightmare for
+me than just a few kernel developers having a bad day.
+
+I guarantee, I will get e-mails about 2.6.25+e1000(e) issues for far longer then
+you guys :)
+
+Users will outnumber us kernel developers in complaints if we keep the situation
+unclear to them, and we already told them that they need to switch to e1000e for
+their PCI Express devices. If we now do stuff like what you proposed in that
+patch, we just prolong this confusion. That cannot be good for anyone. Imagine if
+distro's start picking random device IDs or worse. Stuff like that is already
+happening, and discussions like these just add to the confusion.
+
+Again - If there is a way to auto-enable e1000e in the right way so that more
+systems migrate better then I'm all for it (even if forcing E1000E=y). But it
+seems that the various patches proposed don't cut it and frankly Kconfig is
+completely inadequate as a hardware enabling script since it knows absolutely
+nothing about the hardware in the first place. And it wasn't meant for that
+either. `make oldconfig` is not the answer ;).
+
+Again - this has happened before, I remember many of my boxes not booting because
+SATA Kconfig options changed and all my boxes failed to move the proper Kconfig
+symbols over when I ran `make oldconfig` myself. Somewhere around 2.6.20 or so.
+
+
+
+Auke
