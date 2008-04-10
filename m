@@ -1,87 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757454AbYDJTOU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758582AbYDJTP3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757454AbYDJTOU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Apr 2008 15:14:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751821AbYDJTON
+	id S1758582AbYDJTP3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Apr 2008 15:15:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752305AbYDJTPU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Apr 2008 15:14:13 -0400
-Received: from x35.xmailserver.org ([64.71.152.41]:42060 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751678AbYDJTOM (ORCPT
+	Thu, 10 Apr 2008 15:15:20 -0400
+Received: from wr-out-0506.google.com ([64.233.184.229]:2177 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752278AbYDJTPT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Apr 2008 15:14:12 -0400
-X-AuthUser: davidel@xmailserver.org
-Date: Thu, 10 Apr 2008 12:13:22 -0700 (PDT)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       mtk.manpages@googlemail.com, stable@kernel.org
-Subject: Re: [patch] signalfd fix for incorrect SI_QUEUE user data reporting
-In-Reply-To: <20080410120845.8e7132d8.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0804101212340.9668@alien.or.mcafeemobile.com>
-References: <Pine.LNX.4.64.0804101152090.9668@alien.or.mcafeemobile.com>
- <20080410120845.8e7132d8.akpm@linux-foundation.org>
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+	Thu, 10 Apr 2008 15:15:19 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=X/3HfrDn62LzOIq5dQVBkT2MRLX+p6vxAg279IYhP3YGo91lXaKKVF4FWkUTOT/82BOkXHUAbLzBNIaO1s0rqazoYxjb8CD69ALXMvYGg3ADCmEaG43YM5m2qZyeHMSJ0giq/UXXSyQaEpfFbvZMUL45ZEulKIBriwiuwE0es2Y=
+Message-ID: <38b2ab8a0804101215t3ac692c3k2a2d955ca17eba9b@mail.gmail.com>
+Date: Thu, 10 Apr 2008 21:15:15 +0200
+From: "Francis Moreau" <francis.moro@gmail.com>
+To: "linux-os (Dick Johnson)" <linux-os@analogic.com>
+Subject: Re: Disk geometry from /sys
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <Pine.LNX.4.61.0804100804260.25651@chaos.analogic.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <38b2ab8a0804091353h3725ce29s196e27e8b4f1ff56@mail.gmail.com>
+	 <Pine.LNX.4.61.0804100804260.25651@chaos.analogic.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 10 Apr 2008, Andrew Morton wrote:
+Hi,
 
-> On Thu, 10 Apr 2008 11:57:44 -0700 (PDT)
-> Davide Libenzi <davidel@xmailserver.org> wrote:
-> 
-> > Michael Kerrisk found out that signalfd was not reporting back user data 
-> > pushed using sigqueue:
-> > 
-> > http://groups.google.com/group/linux.kernel/msg/9397cab8551e3123
-> > 
-> > The following patch makes signalfd to report back the ssi_ptr and ssi_int 
-> > members of the signalfd_siginfo structure.
-> > 
-> > 
-> > 
-> > Signed-off-by: Davide Libenzi <davidel@xmailserver.org>
-> > 
-> > 
-> > - Davide
-> > 
-> > 
-> > ---
-> >  fs/signalfd.c |    7 ++++++-
-> >  1 file changed, 6 insertions(+), 1 deletion(-)
-> > 
-> > Index: linux-2.6.mod/fs/signalfd.c
-> > ===================================================================
-> > --- linux-2.6.mod.orig/fs/signalfd.c	2008-04-09 11:53:37.000000000 -0700
-> > +++ linux-2.6.mod/fs/signalfd.c	2008-04-09 12:05:46.000000000 -0700
-> > @@ -111,9 +111,14 @@
-> >  		err |= __put_user(kinfo->si_uid, &uinfo->ssi_uid);
-> >  		err |= __put_user((long) kinfo->si_ptr, &uinfo->ssi_ptr);
-> >  		break;
-> > -	default: /* this is just in case for now ... */
-> > +	default:
-> > +		/*
-> > +		 * This case catches also the signals queued by sigqueue().
-> > +		 */
-> >  		err |= __put_user(kinfo->si_pid, &uinfo->ssi_pid);
-> >  		err |= __put_user(kinfo->si_uid, &uinfo->ssi_uid);
-> > +		err |= __put_user((long) kinfo->si_ptr, &uinfo->ssi_ptr);
-> > +		err |= __put_user(kinfo->si_int, &uinfo->ssi_int);
-> >  		break;
-> >  	}
-> >  
-> 
-> I queued this for both 2.6.25 and 2.6.24.x.  Agree?
+On Thu, Apr 10, 2008 at 2:22 PM, linux-os (Dick Johnson)
+<linux-os@analogic.com> wrote:
+>
+>  It becomes, as you say contentious, because with disk drives
+>  manufactured during the past ten or so years, anything about
+>  the physical geometry is fictitious. The PC BIOS continues to
+>  calculate C/H/S because that's what BIOS interrupt 0x13 uses
+>  to boot the machine. The boot code needs to know what the
+>  BIOS claims or else it may fail to boot. However, once Linux
+>  is up, there are no C/H/S unless they were invented --and
+>  hopefully, the same as what the BIOS claims.
+>
 
-Looks safe for me.
+Some bootloaders want the partition starts to be aligned on a
+cylinder size boundary. Try for example to setup a disk partition
+table by using parted. It almost always complains about the
+the size of the parts I try to create and suggest me others. The
+same stands for sfdisk except that it just gives you some
+warnings.
 
-
-
-- Davide
-
-
+Thanks
+-- 
+Francis
