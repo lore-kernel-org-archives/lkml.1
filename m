@@ -1,13 +1,13 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758198AbYDJSXO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759013AbYDJSXb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758198AbYDJSXO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Apr 2008 14:23:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757412AbYDJSWo
+	id S1759013AbYDJSXb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Apr 2008 14:23:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757444AbYDJSWp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Apr 2008 14:22:44 -0400
-Received: from 81-174-11-161.static.ngi.it ([81.174.11.161]:50004 "EHLO
+	Thu, 10 Apr 2008 14:22:45 -0400
+Received: from 81-174-11-161.static.ngi.it ([81.174.11.161]:50006 "EHLO
 	mail.enneenne.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757125AbYDJSWm (ORCPT
+	with ESMTP id S1757175AbYDJSWm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 10 Apr 2008 14:22:42 -0400
 From: Rodolfo Giometti <giometti@linux.it>
@@ -18,225 +18,179 @@ Cc: Andrew Morton <akpm@linux-foundation.org>,
        Randy Dunlap <randy.dunlap@oracle.com>,
        Kay Sievers <kay.sievers@vrfy.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
        Rodolfo Giometti <giometti@linux.it>
-Date: Thu, 10 Apr 2008 20:22:28 +0200
-Message-Id: <1207851751-25703-5-git-send-email-giometti@linux.it>
+Date: Thu, 10 Apr 2008 20:22:31 +0200
+Message-Id: <1207851751-25703-8-git-send-email-giometti@linux.it>
 X-Mailer: git-send-email 1.5.4.3
-In-Reply-To: <1207851751-25703-4-git-send-email-giometti@linux.it>
+In-Reply-To: <1207851751-25703-7-git-send-email-giometti@linux.it>
 References: <20080410160630.GA24885@enneenne.com>
  <1207851751-25703-1-git-send-email-giometti@linux.it>
  <1207851751-25703-2-git-send-email-giometti@linux.it>
  <1207851751-25703-3-git-send-email-giometti@linux.it>
  <1207851751-25703-4-git-send-email-giometti@linux.it>
+ <1207851751-25703-5-git-send-email-giometti@linux.it>
+ <1207851751-25703-6-git-send-email-giometti@linux.it>
+ <1207851751-25703-7-git-send-email-giometti@linux.it>
 X-SA-Exim-Connect-IP: 192.168.32.1
 X-SA-Exim-Mail-From: giometti@enneenne.com
-Subject: [PATCH 4/7] PPS: LinuxPPS clients support.
+Subject: [PATCH 7/7] PPS: parallel port clients support.
 X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
 X-SA-Exim-Scanned: Yes (on mail.enneenne.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Each PPS source can be registered/deregistered into the system by
-using special modules called "clients". They simply define the PPS
-sources' attributes and implement the time signal registartion
-mechanism.
-
-This patch adds a special directory for such clients and adds a dummy
-client that can be useful to test system integrity on real systems.
+Adds support for the PPS sources connected with the interrupt pin of a
+parallel port.
 
 Signed-off-by: Rodolfo Giometti <giometti@linux.it>
 ---
- drivers/pps/Kconfig          |    2 +
- drivers/pps/Makefile         |    1 +
- drivers/pps/clients/Kconfig  |   18 +++++++
- drivers/pps/clients/Makefile |    9 +++
- drivers/pps/clients/ktimer.c |  114 ++++++++++++++++++++++++++++++++++++++++++
- 5 files changed, 144 insertions(+), 0 deletions(-)
- create mode 100644 drivers/pps/clients/Kconfig
- create mode 100644 drivers/pps/clients/Makefile
- create mode 100644 drivers/pps/clients/ktimer.c
+ drivers/char/lp.c           |   61 +++++++++++++++++++++++++++++++++++++++++++
+ drivers/pps/clients/Kconfig |   10 +++++++
+ include/linux/parport.h     |   12 ++++++++
+ 3 files changed, 83 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/pps/Kconfig b/drivers/pps/Kconfig
-index cc2eb8e..1afe4e0 100644
---- a/drivers/pps/Kconfig
-+++ b/drivers/pps/Kconfig
-@@ -30,4 +30,6 @@ config PPS_DEBUG
- 	  messages to the system log.  Select this if you are having a
- 	  problem with PPS support and want to see more of what is going on.
+diff --git a/drivers/char/lp.c b/drivers/char/lp.c
+index 60ac642..b201fed 100644
+--- a/drivers/char/lp.c
++++ b/drivers/char/lp.c
+@@ -746,6 +746,27 @@ static struct console lpcons = {
  
-+source drivers/pps/clients/Kconfig
-+
- endmenu
-diff --git a/drivers/pps/Makefile b/drivers/pps/Makefile
-index 19ea582..98960dd 100644
---- a/drivers/pps/Makefile
-+++ b/drivers/pps/Makefile
-@@ -4,5 +4,6 @@
+ #endif /* console on line printer */
  
- pps_core-y			:= pps.o kapi.o sysfs.o
- obj-$(CONFIG_PPS)		:= pps_core.o
-+obj-y				+= clients/
- 
- ccflags-$(CONFIG_PPS_DEBUG) := -DDEBUG
-diff --git a/drivers/pps/clients/Kconfig b/drivers/pps/clients/Kconfig
-new file mode 100644
-index 0000000..60b83be
---- /dev/null
-+++ b/drivers/pps/clients/Kconfig
-@@ -0,0 +1,18 @@
-+#
-+# PPS clients configuration
-+#
++/* Support for PPS signal on the line printer */
 +
-+if PPS
++#ifdef CONFIG_PPS_CLIENT_LP
 +
-+comment "PPS clients support"
-+
-+config PPS_CLIENT_KTIMER
-+	tristate "Kernel timer client (Testing client, use for debug)"
-+	help
-+	  If you say yes here you get support for a PPS debugging client
-+	  which uses a kernel timer to generate the PPS signal.
-+
-+	  This driver can also be built as a module.  If so, the module
-+	  will be called ktimer.ko.
-+
-+endif
-diff --git a/drivers/pps/clients/Makefile b/drivers/pps/clients/Makefile
-new file mode 100644
-index 0000000..f3c1e39
---- /dev/null
-+++ b/drivers/pps/clients/Makefile
-@@ -0,0 +1,9 @@
-+#
-+# Makefile for PPS clients.
-+#
-+
-+obj-$(CONFIG_PPS_CLIENT_KTIMER)	+= ktimer.o
-+
-+ifeq ($(CONFIG_PPS_DEBUG),y)
-+EXTRA_CFLAGS += -DDEBUG
-+endif
-diff --git a/drivers/pps/clients/ktimer.c b/drivers/pps/clients/ktimer.c
-new file mode 100644
-index 0000000..5845188
---- /dev/null
-+++ b/drivers/pps/clients/ktimer.c
-@@ -0,0 +1,114 @@
-+/*
-+ * ktimer.c -- kernel timer test client
-+ *
-+ *
-+ * Copyright (C) 2005-2006   Rodolfo Giometti <giometti@linux.it>
-+ *
-+ *   This program is free software; you can redistribute it and/or modify
-+ *   it under the terms of the GNU General Public License as published by
-+ *   the Free Software Foundation; either version 2 of the License, or
-+ *   (at your option) any later version.
-+ *
-+ *   This program is distributed in the hope that it will be useful,
-+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ *   GNU General Public License for more details.
-+ *
-+ *   You should have received a copy of the GNU General Public License
-+ *   along with this program; if not, write to the Free Software
-+ *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-+ */
-+
-+
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/init.h>
-+#include <linux/time.h>
-+#include <linux/timer.h>
-+
-+#include <linux/pps.h>
-+
-+/*
-+ * Global variables
-+ */
-+
-+static int source;
-+static struct timer_list ktimer;
-+
-+/*
-+ * The kernel timer
-+ */
-+
-+static void pps_ktimer_event(unsigned long ptr)
++static void lp_pps_echo(int source, int event, void *data)
 +{
-+	pr_info("PPS event at %lu\n", jiffies);
++	struct parport *port = data;
++	unsigned char status = parport_read_status(port);
 +
-+	pps_event(source, PPS_CAPTUREASSERT, NULL);
++	/* echo event via SEL bit */
++	parport_write_control(port,
++		parport_read_control(port) | PARPORT_CONTROL_SELECT);
 +
-+	mod_timer(&ktimer, jiffies + HZ);
++	/* signal no event */
++	if ((status & PARPORT_STATUS_ACK) != 0)
++		parport_write_control(port,
++			parport_read_control(port) & ~PARPORT_CONTROL_SELECT);
 +}
 +
-+/*
-+ * The echo function
-+ */
++#endif
 +
-+static void pps_ktimer_echo(int source, int event, void *data)
-+{
-+	pr_info("echo %s %s for source %d\n",
-+		event & PPS_CAPTUREASSERT ? "assert" : "",
-+		event & PPS_CAPTURECLEAR ? "clear" : "",
-+		source);
-+}
+ /* --- initialisation code ------------------------------------- */
+ 
+ static int parport_nr[LP_NO] = { [0 ... LP_NO-1] = LP_PARPORT_UNSPEC };
+@@ -816,6 +837,38 @@ static int lp_register(int nr, struct parport *port)
+ 	}
+ #endif
+ 
++#ifdef CONFIG_PPS_CLIENT_LP
++	port->pps_info.owner = THIS_MODULE;
++	port->pps_info.dev = port->dev;
++	snprintf(port->pps_info.path, PPS_MAX_NAME_LEN, "/dev/lp%d", nr);
 +
-+/*
-+ * The PPS info struct
-+ */
++	/* No PPS support if lp port has no IRQ line */
++	if (port->irq != PARPORT_IRQ_NONE) {
++		strncpy(port->pps_info.name, port->name, PPS_MAX_NAME_LEN);
 +
-+static struct pps_source_info pps_ktimer_info = {
-+	.name		= "ktimer",
-+	.path		= "",
-+	.mode		= PPS_CAPTUREASSERT | PPS_OFFSETASSERT | \
-+			  PPS_ECHOASSERT | \
-+			  PPS_CANWAIT | PPS_TSFMT_TSPEC,
-+	.echo 		= pps_ktimer_echo,
-+	.owner		= THIS_MODULE,
-+};
++		port->pps_info.mode = PPS_CAPTUREASSERT | PPS_OFFSETASSERT | \
++				PPS_ECHOASSERT | \
++				PPS_CANWAIT | PPS_TSFMT_TSPEC;
 +
-+/*
-+ * Module staff
-+ */
++		port->pps_info.echo = lp_pps_echo;
 +
-+static void __exit pps_ktimer_exit(void)
-+{
-+	del_timer_sync(&ktimer);
-+	pps_unregister_source(source);
-+
-+	pr_info("ktimer PPS source unregistered\n");
-+}
-+
-+static int __init pps_ktimer_init(void)
-+{
-+	int ret;
-+
-+	ret = pps_register_source(&pps_ktimer_info,
++		port->pps_source = pps_register_source(&(port->pps_info),
 +				PPS_CAPTUREASSERT | PPS_OFFSETASSERT);
-+	if (ret < 0) {
-+		printk(KERN_ERR "cannot register ktimer source\n");
-+		return ret;
++		if (port->pps_source < 0)
++			dev_err(port->dev,
++					"cannot register PPS source \"%s\"\n",
++					port->pps_info.path);
++		else
++			dev_info(port->dev, "PPS source #%d \"%s\" added\n",
++					port->pps_source, port->pps_info.path);
++	} else {
++		port->pps_source = -1;
++		dev_err(port->dev, "PPS support disabled because port \"%s\" "
++					"is in polling mode\n",
++					port->pps_info.path);
 +	}
-+	source = ret;
++#endif
 +
-+	setup_timer(&ktimer, pps_ktimer_event, 0);
-+	mod_timer(&ktimer, jiffies + HZ);
+ 	return 0;
+ }
+ 
+@@ -858,6 +911,14 @@ static void lp_detach (struct parport *port)
+ 		console_registered = NULL;
+ 	}
+ #endif /* CONFIG_LP_CONSOLE */
 +
-+	pr_info("ktimer PPS source registered at %d\n", source);
++#ifdef CONFIG_PPS_CLIENT_LP
++	if (port->pps_source >= 0) {
++		pps_unregister_source(port->pps_source);
++		dev_dbg(port->dev, "PPS source #%d \"%s\" removed\n",
++			port->pps_source, port->pps_info.path);
++	}
++#endif
+ }
+ 
+ static struct parport_driver lp_driver = {
+diff --git a/drivers/pps/clients/Kconfig b/drivers/pps/clients/Kconfig
+index 517c338..09ba5c3 100644
+--- a/drivers/pps/clients/Kconfig
++++ b/drivers/pps/clients/Kconfig
+@@ -25,4 +25,14 @@ config PPS_CLIENT_UART
+ 	  If you say yes here you get support for a PPS source connected
+ 	  with the CD (Carrier Detect) pin of your serial port.
+ 
++comment "Parallel printer support (forced off)"
++	depends on !( PRINTER != n && !(PPS = m && PRINTER = y))
 +
-+	return  0;
-+}
++config PPS_CLIENT_LP
++	bool "Parallel printer support"
++	depends on PRINTER != n && !(PPS = m && PRINTER = y)
++	help
++	  If you say yes here you get support for a PPS source connected
++	  with the interrupt pin of your parallel port.
 +
-+module_init(pps_ktimer_init);
-+module_exit(pps_ktimer_exit);
+ endif
+diff --git a/include/linux/parport.h b/include/linux/parport.h
+index d1ad546..501a9dc 100644
+--- a/include/linux/parport.h
++++ b/include/linux/parport.h
+@@ -100,6 +100,7 @@ typedef enum {
+ #include <linux/proc_fs.h>
+ #include <linux/spinlock.h>
+ #include <linux/wait.h>
++#include <linux/pps.h>
+ #include <linux/irqreturn.h>
+ #include <asm/system.h>
+ #include <asm/ptrace.h>
+@@ -328,6 +329,11 @@ struct parport {
+ 
+ 	struct list_head full_list;
+ 	struct parport *slaves[3];
 +
-+MODULE_AUTHOR("Rodolfo Giometti <giometti@linux.it>");
-+MODULE_DESCRIPTION("dummy PPS source by using a kernel timer (just for debug)");
-+MODULE_LICENSE("GPL");
++#ifdef CONFIG_PPS_CLIENT_LP
++	struct pps_source_info pps_info;
++	int pps_source;		/* PPS source ID */
++#endif
+ };
+ 
+ #define DEFAULT_SPIN_TIME 500 /* us */
+@@ -516,6 +522,12 @@ extern int parport_daisy_select (struct parport *port, int daisy, int mode);
+ /* Lowlevel drivers _can_ call this support function to handle irqs.  */
+ static inline void parport_generic_irq(struct parport *port)
+ {
++#ifdef CONFIG_PPS_CLIENT_LP
++	pps_event(port->pps_source, PPS_CAPTUREASSERT, port);
++	dev_dbg(port->dev, "PPS assert at %lu on source #%d\n",
++		jiffies, port->pps_source);
++#endif
++
+ 	parport_ieee1284_interrupt (port);
+ 	read_lock(&port->cad_lock);
+ 	if (port->cad && port->cad->irq_func)
 -- 
 1.5.4.3
 
