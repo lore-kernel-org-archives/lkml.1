@@ -1,56 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759461AbYDJUw1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759243AbYDJUz3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759461AbYDJUw1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Apr 2008 16:52:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757395AbYDJUwU
+	id S1759243AbYDJUz3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Apr 2008 16:55:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755589AbYDJUzX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Apr 2008 16:52:20 -0400
-Received: from el-out-1112.google.com ([209.85.162.176]:44023 "EHLO
-	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757394AbYDJUwT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Apr 2008 16:52:19 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=JnN2WCMUZBY4M2Smo7gfGBk9/4LcK2ELUCRLcSnrrUJ61FosluwvTwGPzltOYLziDRBGYBQsFoQg6jPatuGfBXY/JGyLFpcK4dktXTTvsFQLmSrL9IVPPBURxA3GZDamEIizi7O3CgjJZM2UedDHrqTxBeZL5IszgfS4sE3l/38=
-Subject: Re: [PATCH] lzo: fix possible typo in decompresor
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Richard Purdie <rpurdie@rpsys.net>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <alpine.LFD.1.00.0804101346240.3143@woody.linux-foundation.org>
-References: <1207859903.22001.36.camel@brick>
-	 <alpine.LFD.1.00.0804101346240.3143@woody.linux-foundation.org>
-Content-Type: text/plain
-Date: Thu, 10 Apr 2008 13:52:19 -0700
-Message-Id: <1207860739.22001.41.camel@brick>
+	Thu, 10 Apr 2008 16:55:23 -0400
+Received: from ns.suse.de ([195.135.220.2]:52576 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755516AbYDJUzW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Apr 2008 16:55:22 -0400
+Date: Thu, 10 Apr 2008 13:55:21 -0700
+From: Mark Fasheh <mfasheh@suse.com>
+To: Jon Corbet <corbet@lwn.net>
+Cc: linux-kernel@vger.kernel.org, Randy Dunlap <randy.dunlap@oracle.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] Add additional examples in Documentation/spinlocks.txt
+Message-ID: <20080410205520.GY21261@wotan.suse.de>
+Reply-To: Mark Fasheh <mfasheh@suse.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Organization: SUSE Labs, Novell, Inc
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-04-10 at 13:49 -0700, Linus Torvalds wrote:
-> 
-> On Thu, 10 Apr 2008, Harvey Harrison wrote:
-> >
-> > Shift of a le value seems strange, probably meant to shift the cpu-order
-> > variable as in the prvious section of the switch statement.
-> 
-> Hmm. This patch looks ObviouslyCorrect(tm), but it worries me that 
-> apparently the old broken code has been around since last July, and afaik 
-> it can never have worked on big-endian machines.
-> 
-> So did nobody ever use it, or why hasn't this ever triggered? How did you 
-> find this? A sparse warning?
-> 
-> 		Linus
+Checkpatch will throw an error if code doesn't use the correct initializers
+for static spinlocks:
 
-When converting in tree users to my proposed unaligned byteswapping api.
-See the 8 patch series posted today to linux-arch.
+ERROR: Use of SPIN_LOCK_UNLOCKED is deprecated: see Documentation/spinlocks.txt
 
-Harvey
+This is fine, but Documentation/spinlocks.txt isn't very clear on how to
+_use_ the new initializers for static variables. To save people time in the
+future, I added two small examples of how to fix old-style static
+initializers to be more lockdep friendly.
 
+Signed-off-by: Mark Fasheh <mfasheh@suse.com>
+
+diff --git a/Documentation/spinlocks.txt b/Documentation/spinlocks.txt
+index 471e753..619699d 100644
+--- a/Documentation/spinlocks.txt
++++ b/Documentation/spinlocks.txt
+@@ -5,6 +5,28 @@ Please use DEFINE_SPINLOCK()/DEFINE_RWLOCK() or
+ __SPIN_LOCK_UNLOCKED()/__RW_LOCK_UNLOCKED() as appropriate for static
+ initialization.
+ 
++Most of the time, you can simply turn:
++
++	static spinlock_t xxx_lock = SPIN_LOCK_UNLOCKED;
++
++into:
++
++	static DEFINE_SPINLOCK(xxx_lock);
++
++Static structure member variables go from:
++
++	struct foo bar {
++		.lock	=	SPIN_LOCK_UNLOCKED;
++	};
++
++to:
++
++	struct foo bar {
++		.lock	=	__SPIN_LOCK_UNLOCKED(bar.lock);
++	};
++
++Declaration of static rw_locks undergo a similar transformation.
++
+ Dynamic initialization, when necessary, may be performed as
+ demonstrated below.
+ 
