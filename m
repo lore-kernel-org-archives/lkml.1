@@ -1,71 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759174AbYDJRkB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759257AbYDJRle@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759174AbYDJRkB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Apr 2008 13:40:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756299AbYDJRjy
+	id S1759257AbYDJRle (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Apr 2008 13:41:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757532AbYDJRl0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Apr 2008 13:39:54 -0400
-Received: from cantor.suse.de ([195.135.220.2]:45200 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755844AbYDJRjx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Apr 2008 13:39:53 -0400
-Date: Thu, 10 Apr 2008 19:39:51 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, pj@sgi.com, kniht@linux.vnet.ibm.com
-Subject: Re: [patch 10/17] mm: fix bootmem alignment
-Message-ID: <20080410173951.GA9482@wotan.suse.de>
-References: <20080410170232.015351000@nick.local0.net> <20080410171101.395469000@nick.local0.net> <86802c440804101033p6e914cb4oacaeb6eca823d1cd@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 10 Apr 2008 13:41:26 -0400
+Received: from nf-out-0910.google.com ([64.233.182.186]:52417 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757377AbYDJRlZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Apr 2008 13:41:25 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=AF8DhIOXEnEzl7+Cv3oeoEpGtRkTxiQweLOIGi5Jbue08+C7ZMi1iJOoI5dvD4VI/aj/6sVjg6t7s4iu9/OC6xUlLFe8cLe1vSfimDeG56OtoGHyAxGrqYvxV9qWGPZWSZ5WgmMzdn4lVpsyX747G+vv7F4pEjLW71Cnfk2zDbo=
+Message-ID: <e2e108260804101041k411b5fcfgc418f4be1bf7edba@mail.gmail.com>
+Date: Thu, 10 Apr 2008 19:41:21 +0200
+From: "Bart Van Assche" <bart.vanassche@gmail.com>
+To: "Jack Harvard" <jack.harvard@googlemail.com>
+Subject: Re: gettimeofday() resolution in Linux?
+Cc: "Lennart Sorensen" <lsorense@csclub.uwaterloo.ca>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <a72f6a3c0804100859w4181d84ak1a63e7dec4d5b42f@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <86802c440804101033p6e914cb4oacaeb6eca823d1cd@mail.gmail.com>
-User-Agent: Mutt/1.5.9i
+References: <a72f6a3c0804100740s687beacbh80653107f4a7b702@mail.gmail.com>
+	 <20080410150424.GD2160@csclub.uwaterloo.ca>
+	 <a72f6a3c0804100859w4181d84ak1a63e7dec4d5b42f@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 10, 2008 at 10:33:50AM -0700, Yinghai Lu wrote:
-> On Thu, Apr 10, 2008 at 10:02 AM,  <npiggin@suse.de> wrote:
-> > Without this fix bootmem can return unaligned addresses when the start of a
-> >  node is not aligned to the align value. Needed for reliably allocating
-> >  gigabyte pages.
-> >
-> >  I removed the offset variable because all tests should align themself correctly
-> >  now. Slight drawback might be that the bootmem allocator will spend
-> >  some more time skipping bits in the bitmap initially, but that shouldn't
-> >  be a big issue.
-> >
-> 
-> 
-> this patch from Andi was obsoleted by the one in -mm
+On Thu, Apr 10, 2008 at 5:59 PM, Jack Harvard
+<jack.harvard@googlemail.com> wrote:
+>  Here is an example of gettimeofday results, the time rolls back sometimes.
 
-Ah, great thanks for letting me know.
+If the result of gettimeofday() rolls back, and there is no process on
+your system that sets the time (like ntpd or hwclock --hctosys) then
+this is a kernel bug. Which kernel version are you using, and which
+kernel patches have been applied to that kernel ?
 
- 
- 
-> The patch titled
->     mm: offset align in alloc_bootmem
-> has been added to the -mm tree.  Its filename is
->     mm-offset-align-in-alloc_bootmem.patch
-> 
-> ------------------------------------------------------
-> Subject: mm: offset align in alloc_bootmem
-> From: Yinghai Lu <yhlu.kernel.send@gmail.com>
-> 
-> Need offset alignment when node_boot_start's alignment is less than align
-> required
-> 
-> Use local node_boot_start to match align.  so don't add extra opteration in
-> search loop.
-> 
-> Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
-> Cc: Andi Kleen <ak@suse.de>
-> Cc: Yasunori Goto <y-goto@jp.fujitsu.com>
-> Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> Cc: Ingo Molnar <mingo@elte.hu>
-> Cc: Christoph Lameter <clameter@sgi.com>
-> Cc: Mel Gorman <mel@csn.ul.ie>
-> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Bart.
