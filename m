@@ -1,83 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759503AbYDJWNR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759042AbYDJWQN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759503AbYDJWNR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Apr 2008 18:13:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757439AbYDJWNF
+	id S1759042AbYDJWQN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Apr 2008 18:16:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753477AbYDJWP7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Apr 2008 18:13:05 -0400
-Received: from proxy3.bredband.net ([195.54.101.73]:44774 "EHLO
-	proxy3.bredband.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757045AbYDJWND (ORCPT
+	Thu, 10 Apr 2008 18:15:59 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:45176 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753226AbYDJWP7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Apr 2008 18:13:03 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AvdXAAcu/kfVchQtPGdsb2JhbACBXY9pAQEBATABmi4
-Message-ID: <49365.192.168.101.12.1207865580.squirrel@intranet>
-In-Reply-To: <20080410171453.GA7023@sergelap.ibm.com>
-References: <20080409222611.GA28087@us.ibm.com>
-    <20080409223231.GA28267@us.ibm.com> <871w5enmk7.fsf@basil.nowhere.org>
-    <47FE073B.3060007@fr.ibm.com>
-    <20080410125205.GG10019@one.firstfloor.org>
-    <20080410171453.GA7023@sergelap.ibm.com>
-Date: Fri, 11 Apr 2008 00:13:00 +0200 (CEST)
-Subject: Re: [PATCH 1/3] change clone_flags type to u64
-From: "Daniel Hokka Zakrisson" <daniel@hozac.com>
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-Cc: "Andi Kleen" <andi@firstfloor.org>,
-       "David C. Hansen" <haveblue@us.ibm.com>, linux-kernel@vger.kernel.org,
-       "Cedric Le Goater" <clg@fr.ibm.com>,
-       "Containers" <containers@lists.osdl.org>,
-       "Pavel Emelyanov" <xemul@openvz.org>
-User-Agent: SquirrelMail/1.4.10a-1.fc6
+	Thu, 10 Apr 2008 18:15:59 -0400
+Message-ID: <47FE9158.6060404@zytor.com>
+Date: Thu, 10 Apr 2008 15:14:48 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Priority: 3 (Normal)
-Importance: Normal
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+CC: Ingo Molnar <mingo@elte.hu>,
+       Alexander van Heukelum <heukelum@mailshack.com>,
+       Mike Travis <travis@sgi.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       heukelum@fastmail.fm
+Subject: Re: [PATCH 1/2] boot: increase stack size for kernel boot loader
+ decompressor -- payload_length
+References: <86802c440804101334j4b69373dv172ab72b072dc4a0@mail.gmail.com>	 <47FE7A6C.1070405@zytor.com>	 <86802c440804101415o55af93c8o8f4dc54dfad8662e@mail.gmail.com>	 <47FE8AB1.90506@zytor.com> <86802c440804101448n7fe5d04x315a30ba877774f4@mail.gmail.com>
+In-Reply-To: <86802c440804101448n7fe5d04x315a30ba877774f4@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Serge E. Hallyn wrote:
-> Quoting Andi Kleen (andi@firstfloor.org):
->> > I guess that was a development rationale.
->>
->> But what rationale? It just doesn't make much sense to me.
->>
->> > Most of the namespaces are in
->> > use in the container projects like openvz, vserver and probably others
->> > and we needed a way to activate the code.
->>
->> You could just have added it to feature groups over time.
->>
->> >
->> > Not perfect I agree.
->> >
->> > > With your current strategy are you sure that even 64bit will
->> > > be enough in the end? For me it rather looks like you'll
->> > > go through those quickly too as more and more of the kernel
->> > > is namespaced.
->> >
->> > well, we're reaching the end. I hope ! devpts is in progress and
->> > mq is just waiting for a clone flag.
->>
->> Are you sure?
->
-> Well for one thing we can take a somewhat different approach to new
-> clone flags.  I.e. we could extend CLONE_NEWIPC to do mq instead of
-> introducing a new clone flag.  The name doesn't have 'sysv' in it,
-> and globbing all ipc resources together makes some amount of sense.
-> Similarly has hpa+eric pointed out earlier, suka could use
-> CLONE_NEWDEV for ptys.  If we have net, pid, ipc, devices, that's a
-> pretty reasonable split imo.  Perhaps we tie user to devices and get
-> rid of CLONE_NEWUSER which I suspect noone is using atm (since only
-> Dave has run into the CONFIG_USER_SCHED problem).  Or not.  We could
-> roll uts into net, and give CLONE_NEWUTS a deprecation period.
+Yinghai Lu wrote:
+>>>
+>>  Sorry, I don't understand.
+> 
+> where can i find the unzip paload size from payload hdrs?
+> 
 
-Please don't. Then we'd need to re-add it in Linux-VServer to support
-guests where network namespaces aren't used...
+The size of the unzip payload you get by looking at the last four bytes 
+of the gzip payload (after verifying the existence of a gzip magic 
+number.)  For more specific details, look at the ELF segment headers.
 
-> -serge
-
--- 
-Daniel Hokka Zakrisson
+	-hpa
