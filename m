@@ -1,49 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754401AbYDJFNY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754509AbYDJFop@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754401AbYDJFNY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Apr 2008 01:13:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752366AbYDJFNP
+	id S1754509AbYDJFop (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Apr 2008 01:44:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752175AbYDJFoe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Apr 2008 01:13:15 -0400
-Received: from wx-out-0506.google.com ([66.249.82.233]:63867 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751733AbYDJFNO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Apr 2008 01:13:14 -0400
-Message-ID: <c42f92750804092213p7b2c5607sa48a83086d45a825@mail.gmail.com>
-Date: Thu, 10 Apr 2008 10:43:13 +0530
-From: "Shakul Mohideen Hameed" <smohideen@blackhole.labs.rootshell.ws>
-To: linux-kernel@vger.kernel.org
-Subject: [GIT] git-clone failure over http
+	Thu, 10 Apr 2008 01:44:34 -0400
+Received: from ozlabs.org ([203.10.76.45]:52783 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752081AbYDJFod (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Apr 2008 01:44:33 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Max Krasnyansky <maxk@qualcomm.com>
+Subject: Re: [PATCH RFC 3/5] tun: vringfd receive support.
+Date: Thu, 10 Apr 2008 15:44:17 +1000
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       virtualization@lists.linux-foundation.org
+References: <200804052202.09157.rusty@rustcorp.com.au> <200804052205.43824.rusty@rustcorp.com.au> <47FBCC3B.7080104@qualcomm.com>
+In-Reply-To: <47FBCC3B.7080104@qualcomm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
+Message-Id: <200804101544.17736.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I am getting errors while cloning few of the kernel sources over HTTP.
-Both proxy/direct modes are failing.
-Please advise.
-    - smohideen
+On Wednesday 09 April 2008 05:49:15 Max Krasnyansky wrote:
+> Rusty Russell wrote:
+> > This patch modifies tun to allow a vringfd to specify the receive
+> > buffer.  Because we can't copy to userspace in bh context, we queue
+> > like normal then use the "pull" hook to actually do the copy.
+> >
+> > More thought needs to be put into the possible races with ring
+> > registration and a simultaneous close, for example (see FIXME).
+> >
+> > We use struct virtio_net_hdr prepended to packets in the ring to allow
+> > userspace to receive GSO packets in future (at the moment, the tun
+> > driver doesn't tell the stack it can handle them, so these cases are
+> > never taken).
+>
+> In general the code looks good. The only thing I could not convince myself
+> in is whether having generic ring buffer makes sense or not.
+> At least the TUN driver would be more efficient if it had its own simple
+> ring implementation. Less indirection, fewer callbacks, fewer if()s, etc.
+> TUN already has the file descriptor and having two additional fds for rx
+> and tx ring is a waste (think of a VPN server that has to have a bunch of
+> TUN fds). Also as I mentioned before Jamal and I wanted to expose some of
+> the SKB fields through TUN device. With the rx/tx rings the natural way of
+> doing that would be the ring descriptor itself. It can of course be done
+> the same way we copy proto info (PI) and GSO stuff before the packet but
+> that means more copy_to_user() calls and yet more checks.
+>
+> So. What am I missing ? Why do we need generic ring for the TUN ? I looked
+> at the lguest code a bit and it seems that we need a bunch of network
+> specific code anyway. The cool thing is that you can now mmap the rings
+> into the guest directly but the same thing can be done with TUN specific
+> rings.
 
+I started modifying tun to do this directly, but it ended up with a whole heap 
+of code just for the rings, and a lot of current code (eg. read, write, poll) 
+ended up inside an 'if (tun->rings) ... else {'.  Having a natural poll() 
+interface for the rings made more sense, so being their own fds fell out 
+naturally.
 
-git version 1.5.0.6
+I decided to float this version because it does minimal damage to tun, and I 
+know that other people have wanted rings before: I'd like to know if this is 
+likely to be generic enough for them.
 
-
-[moin@tb32-tgw1 linux-kernel]$ git-clone
-http://www.kernel.org/pub/scm/linux/kernel/git/mingo/linux-2.6-sched-devel.git
-Initialized empty Git repository in
-/home/moin/linux-kernel/linux-2.6-sched-devel/.git/
-Getting alternates list for
-http://www.kernel.org/pub/scm/linux/kernel/git/mingo/linux-2.6-sched-devel.git/
-Also look at http://www.kernel.org/home/ftp/pub/scm/linux/kernel/git/torvalds/linux-2.6.git/
-Getting pack list for
-http://www.kernel.org/pub/scm/linux/kernel/git/mingo/linux-2.6-sched-devel.git/
-Getting index for pack ef5edbcc679c9e7e54731ae6e8835d1f9337cf60
-Getting pack list for
-http://www.kernel.org/home/ftp/pub/scm/linux/kernel/git/torvalds/linux-2.6.git/
-error: Unable to find 7180c4c9e09888db0a188f729c96c6d7bd61fa83 under
-http://www.kernel.org/pub/scm/linux/kernel/git/mingo/linux-2.6-sched-devel.git/
-Cannot obtain needed object 7180c4c9e09888db0a188f729c96c6d7bd61fa83
+Thanks!
+Rusty
