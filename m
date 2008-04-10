@@ -1,50 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755195AbYDJIPT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756376AbYDJIUK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755195AbYDJIPT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Apr 2008 04:15:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756249AbYDJIOf
+	id S1756376AbYDJIUK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Apr 2008 04:20:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755072AbYDJIT7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Apr 2008 04:14:35 -0400
-Received: from mx.bridgeco.net ([213.173.191.47]:2432 "EHLO mx.bridgeco.net"
+	Thu, 10 Apr 2008 04:19:59 -0400
+Received: from sacred.ru ([62.205.161.221]:36005 "EHLO sacred.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755982AbYDJIOd convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Apr 2008 04:14:33 -0400
-Content-class: urn:content-classes:message
+	id S1754364AbYDJIT6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Apr 2008 04:19:58 -0400
+Message-ID: <47FDD2BB.2030304@openvz.org>
+Date: Thu, 10 Apr 2008 12:41:31 +0400
+From: Pavel Emelyanov <xemul@openvz.org>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Subject: Starting point: Suspend to RAM on embedded devices?
-Date: Thu, 10 Apr 2008 10:14:30 +0200
-Message-ID: <83116F0A4FF67A4F97BA0B6E408C48E301E96208@zuerich.BC-Int.NET>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: Starting point: Suspend to RAM on embedded devices?
-Thread-Index: Ach0m4cSiApNdLdFScC3DSTHVH8H7w==
-From: "Wappler Marcel" <Marcel.Wappler@bridgeco.net>
-To: <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 10 Apr 2008 08:14:41.0600 (UTC) FILETIME=[ED627C00:01C89AE2]
+To: Oleg Nesterov <oleg@tv-sign.ru>, Sukadev Bhattiprolu <sukadev@us.ibm.com>,
+       Alexey Dobriyan <adobriyan@openvz.org>
+CC: Linux Containers <containers@lists.osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH 1/10] Bsdacct: rename acct_glbl structure
+References: <47FDD267.80700@openvz.org>
+In-Reply-To: <47FDD267.80700@openvz.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Thu, 10 Apr 2008 12:16:40 +0400 (MSD)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+It will be visible in pid_namespace.h file, so fixup its name first.
 
-I am looking for ways to let an ARM9 based embedded device running Linux go to a "suspend to RAM" like mode. In my opinion this
-could enable a HIFI equipement like "power-off" and "power-on" feeling with quick response (less than 2 seconds) and much less power
-consumption in the standby mode than during normal operation.
+Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
 
-- Is there public available documentation about APM like features on ARM architectures?
-- Is there a mainstream Linux platform (best if also ARM9 based) which has achieved this already?
-- I am also interested in experiences with applications running on such platforms, 
-  trigger like systems which inform the apps and so on...
+---
+ kernel/acct.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-Thank you Marcel
-(please CC me on replay)
---
-Marcel Wappler
-Bridgeco AG
-CH-8600 Dübendorf
-Switzerland
+diff --git a/kernel/acct.c b/kernel/acct.c
+index 91e1cfd..ee3e605 100644
+--- a/kernel/acct.c
++++ b/kernel/acct.c
+@@ -82,7 +82,7 @@ static void do_acct_process(struct pid_namespace *ns, struct file *);
+  * can be placed in the same cache line as the lock.  This primes
+  * the cache line to have the data after getting the lock.
+  */
+-struct acct_glbs {
++struct bsd_acct_struct {
+ 	spinlock_t		lock;
+ 	volatile int		active;
+ 	volatile int		needcheck;
+@@ -91,7 +91,7 @@ struct acct_glbs {
+ 	struct timer_list	timer;
+ };
+ 
+-static struct acct_glbs acct_globals __cacheline_aligned =
++static struct bsd_acct_struct acct_globals __cacheline_aligned =
+ 	{__SPIN_LOCK_UNLOCKED(acct_globals.lock)};
+ 
+ /*
+-- 
+1.5.3.4
+
