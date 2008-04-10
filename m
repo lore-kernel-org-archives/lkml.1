@@ -1,88 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757403AbYDJQZg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757897AbYDJQ1t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757403AbYDJQZg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Apr 2008 12:25:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755508AbYDJQZ2
+	id S1757897AbYDJQ1t (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Apr 2008 12:27:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755508AbYDJQ1m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Apr 2008 12:25:28 -0400
-Received: from viefep32-int.chello.at ([62.179.121.50]:35380 "EHLO
-	viefep32-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755248AbYDJQZ1 (ORCPT
+	Thu, 10 Apr 2008 12:27:42 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:43942 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755227AbYDJQ1l (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Apr 2008 12:25:27 -0400
-Subject: Re: [RFC][-mm] [1/2] Simple stats for cpu resource controller
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Balaji Rao <balajirrao@gmail.com>
-Cc: Dhaval Giani <dhaval@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
-       containers@lists.osdl.org, menage@google.com, balbir@in.ibm.com,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
-In-Reply-To: <200804102140.00078.balajirrao@gmail.com>
-References: <200804052339.46632.balajirrao@gmail.com>
-	 <200804060201.52726.balajirrao@gmail.com> <1207574693.15579.35.camel@twins>
-	 <200804102140.00078.balajirrao@gmail.com>
-Content-Type: text/plain
-Date: Thu, 10 Apr 2008 18:25:11 +0200
-Message-Id: <1207844711.7074.8.camel@twins>
+	Thu, 10 Apr 2008 12:27:41 -0400
+Date: Thu, 10 Apr 2008 11:27:36 -0500
+From: Paul Jackson <pj@sgi.com>
+To: "Bert Wesarg" <bert.wesarg@googlemail.com>
+Cc: travis@sgi.com, mingo@elte.hu, tglx@linutronix.de, hpa@zytor.com,
+       akpm@linux-foundation.org, gregkh@suse.de, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/3] x86: add cpus_scnprintf function v3
+Message-Id: <20080410112736.6c5ee654.pj@sgi.com>
+In-Reply-To: <36ca99e90804100914n4b08cc9di9a6ab8b936f25644@mail.gmail.com>
+References: <20080408184301.651388000@polaris-admin.engr.sgi.com>
+	<36ca99e90804091051k7c2cc97neba0ca1967625433@mail.gmail.com>
+	<20080410071009.a5232b12.pj@sgi.com>
+	<36ca99e90804100914n4b08cc9di9a6ab8b936f25644@mail.gmail.com>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.0 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-04-10 at 21:39 +0530, Balaji Rao wrote:
-> On Monday 07 April 2008 06:54:53 pm Peter Zijlstra wrote:
-> > On Sun, 2008-04-06 at 02:01 +0530, Balaji Rao wrote:
-> > 
-> > > > > +static s64 cpu_cgroup_read_stat(struct cpu_cgroup_stat *stat,
-> > > > > +		enum cpu_cgroup_stat_index idx)
-> > > > > +{
-> > > > > +	int cpu;
-> > > > > +	s64 ret = 0;
-> > > > > +	unsigned long flags;
-> > > > 
-> > > > > +
-> > > > > +	local_irq_save(flags);
-> > > > 
-> > > > I am just wondering. Is local_irq_save() enough?
-> > > > 
-> > > Hmmm.. You are right.This does not prevent concurrent updates on other 
-> CPUs 
-> > > from crossing a 32bit boundary. Am not sure how to do this in a safe way. 
-> I 
-> > > can only think of using atomic64_t now..
-> > > 
-> > > > > +	for_each_possible_cpu(cpu)
-> > > > > +		ret += stat->cpustat[cpu].count[idx];
-> > > > > +	local_irq_restore(flags);
-> > > > > +
-> > > > > +	return ret;
-> > > > > +}
-> > > > > +
-> > 
-> > So many stats to steal code from,.. but you didn't :-(
-> > 
-> > Look at mm/vmstat.c, that is a rather complete example.
-> > 
-> > The trick to solving the above is to use per cpu deltas instead, the
-> > deltas can be machine word size and are thus always read in an atomic
-> > manner (provided they are also naturally aligned).
-> > 
-> > 
-> Hi Peter,
-> 
-> This wont work for time based statistics. At nsec granularity, a word can hold 
-> a time value of up to ~4s. 
+Bert wrote:
+> My statement from above doesn't reflect my opinion. I'm still in
+> flavor with the mask output. And from this discussion, I found a new
+> point for the mask output: its bounded ;-)
 
-4 seconds is plenty for a delta, most increments are in the ms range.
+Ok
 
-> I propose to solve this problem by using a lock to protect the statistics, but 
-> only on 32bit architectures.
-> 
-> I'm not sure how good a solution this is, but that's the best I can think of 
-> ATM. 
+> I just wanted to note, that these new list attributes would be the
+> only way to 'change' the api, ie. introduce a new api and deprecate
+> the old one, and not change the format of the present api.
 
-Not needed, keep per cpu word deltas and fold into a global u64 counter
-while holding a lock.
+Agreed
 
-
+-- 
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.940.382.4214
