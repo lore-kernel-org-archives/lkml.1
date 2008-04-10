@@ -1,65 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758538AbYDJOnv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757812AbYDJOpd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758538AbYDJOnv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Apr 2008 10:43:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756145AbYDJOnm
+	id S1757812AbYDJOpd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Apr 2008 10:45:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755332AbYDJOpY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Apr 2008 10:43:42 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:33531 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755773AbYDJOnl (ORCPT
+	Thu, 10 Apr 2008 10:45:24 -0400
+Received: from nikam-dmz.ms.mff.cuni.cz ([195.113.20.16]:40851 "EHLO
+	nikam.ms.mff.cuni.cz" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756143AbYDJOpX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Apr 2008 10:43:41 -0400
-Date: Thu, 10 Apr 2008 10:43:39 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Andi Kleen <andi@firstfloor.org>
-cc: Andy Whitcroft <apw@shadowen.org>, "H. Peter Anvin" <hpa@zytor.com>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>, akpm@osdl.org,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Glauber de Oliveira Costa <gcosta@redhat.com>,
-       Jan Beulich <jbeulich@novell.com>, Thomas Gleixner <tglx@linutronix.de>,
-       pinskia@gcc.gnu.org
-Subject: Re: [PATCH] pop previous section in alternative.c
-In-Reply-To: <20080410144114.GH10019@one.firstfloor.org>
-Message-ID: <Pine.LNX.4.58.0804101041430.5673@gandalf.stny.rr.com>
-References: <Pine.LNX.4.58.0804091859400.31879@gandalf.stny.rr.com>
- <Pine.LNX.4.58.0804091906040.31970@gandalf.stny.rr.com> <47FD5D42.5000603@zytor.com>
- <87wsn6m6zt.fsf@basil.nowhere.org> <20080410094637.GW17915@shadowen.org>
- <Pine.LNX.4.58.0804101007510.5673@gandalf.stny.rr.com>
- <20080410144114.GH10019@one.firstfloor.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 10 Apr 2008 10:45:23 -0400
+X-Greylist: delayed 2035 seconds by postgrey-1.27 at vger.kernel.org; Thu, 10 Apr 2008 10:45:23 EDT
+Date: Thu, 10 Apr 2008 16:11:24 +0200
+From: Martin Mares <mj@ucw.cz>
+To: Michal Hocko <mhocko@suse.cz>
+Cc: Meelis Roos <mroos@linux.ee>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: file offset corruption on 32-bit machines?
+Message-ID: <mj+md-20080410.140857.3331.nikam@ucw.cz>
+References: <Pine.SOC.4.64.0804081101430.28938@math.ut.ee> <200804101555.58643.mhocko@suse.cz>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200804101555.58643.mhocko@suse.cz>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello!
 
-On Thu, 10 Apr 2008, Andi Kleen wrote:
+> [*] file_pos_{read,write} (fs/read_write.c) are not called under lock (in 
+> sys_read, sys_write, ...), so even if f_pos is written atomically, you will 
+> be able to get races when accessing shared descriptor from different threads.
 
-> > I would say anytime there's a "^+.*\.section" there had better be a
-> > "^-.*\.section" or a "+.*.previous" matching it. Off hand I can't think o
-> > any exceptions to this rule although I may be wrong.
->
->
-> Second section is wrong because the compiler expects that the same
-> section is active afterwards and that can be different ones (like
-> init.text vs normal text)
+There are however cases when such behavior is perfectly valid: For example
+you can have a file of records of a fixed size, whose order does not matter.
+Then multiple processes can produce the records in parallel, sharing
+a single fd.
 
-No the second section in my example is not wrong, because it starts with a
-"-", which in a patch would be a replacement of one .section with another,
-not an addition of two sections.
+> I think that POSIX states, that behavior is undefined under these conditions.
 
->
-> Also pushsection/popsection is also valid
->
-> So in summary valid section patterns are either
-> ..section / .previous or .pushsection .section .popsection
+Do you have a pointer to that?
 
-But you are right with this part. Yeah, either a .section is replaced, or
-is added with a .previous, or is encapsulated with push and popsections.
-
--- Steve
-
+				Have a nice fortnight
+-- 
+Martin `MJ' Mares                          <mj@ucw.cz>   http://mj.ucw.cz/
+Faculty of Math and Physics, Charles University, Prague, Czech Rep., Earth
+Mr. Worf, scan that ship."  "Aye, Captain... 600 DPI?
