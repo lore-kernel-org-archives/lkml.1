@@ -1,73 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758376AbYDJVPs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759102AbYDJVQ5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758376AbYDJVPs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Apr 2008 17:15:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756441AbYDJVPj
+	id S1759102AbYDJVQ5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Apr 2008 17:16:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756444AbYDJVQu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Apr 2008 17:15:39 -0400
-Received: from wx-out-0506.google.com ([66.249.82.233]:36757 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752278AbYDJVPi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Apr 2008 17:15:38 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=WLASSerdNnHsAFWE+D8IQVere/IBCrWcy6ZPUaBxF6qxhNap4AupG+ilfslgSrPYz6nEaTiJZRYm584gd3M7fSyEBYZP37YCmMVRUYb/uuX5rHEhB4AhDkCxaVpB+bPzjyiAWPHLdBtERBYuBc2XerkeEJ+9OO39N+qCK18azB4=
-Message-ID: <86802c440804101415o55af93c8o8f4dc54dfad8662e@mail.gmail.com>
-Date: Thu, 10 Apr 2008 14:15:31 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH 1/2] boot: increase stack size for kernel boot loader decompressor -- payload_length
-Cc: "Ingo Molnar" <mingo@elte.hu>,
-       "Alexander van Heukelum" <heukelum@mailshack.com>,
-       "Mike Travis" <travis@sgi.com>, "Thomas Gleixner" <tglx@linutronix.de>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, heukelum@fastmail.fm
-In-Reply-To: <47FE7A6C.1070405@zytor.com>
+	Thu, 10 Apr 2008 17:16:50 -0400
+Received: from ns.suse.de ([195.135.220.2]:55335 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752278AbYDJVQu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Apr 2008 17:16:50 -0400
+Date: Thu, 10 Apr 2008 14:12:36 -0700
+From: Greg KH <gregkh@suse.de>
+To: "Hans J. Koch" <hjk@linutronix.de>
+Cc: Uwe Kleine-K??nig <Uwe.Kleine-Koenig@digi.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/4] UIO: hold a reference to the device's owner while
+	the device is open
+Message-ID: <20080410211236.GA21251@suse.de>
+References: <1207831023-8583-1-git-send-email-Uwe.Kleine-Koenig@digi.com> <1207831023-8583-2-git-send-email-Uwe.Kleine-Koenig@digi.com> <20080410210229.GF3193@local>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <86802c440804101334j4b69373dv172ab72b072dc4a0@mail.gmail.com>
-	 <47FE7A6C.1070405@zytor.com>
+In-Reply-To: <20080410210229.GF3193@local>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 10, 2008 at 1:37 PM, H. Peter Anvin <hpa@zytor.com> wrote:
-> Yinghai Lu wrote:
->
-> >
-> > >
-> > >  FWIIW, i've been booting allyesconfig bzImages for a long time (with
-> > >  only minimal amount of drivers disabled - mostly old ISA ones that
-> > >  assume the presence of the real hardware), and they boot and work fine
-> > >  on both 32-bit and 64-bit typical whitebox PCs. That means huge
-> bzImages
-> > >  that decompresses into a ~41 MB kernel image. I'd expect that to be a
-> > >  rather severe test of the decompressor.
-> > >
-> >
-> > payload_offset and payload_length in arch/x86/boot/head.S
-> > seems to be used by bootloader  to seat the bzImage.  or just use size
-> > of bzImage
-> >
-> >
->
->  payload_offset/payload_length are used by loaders for nonstandard platform
-> loaders which don't actually load a bzImage.
->
->
->
-> > long term, should add one field after payload_length like
-> > payload_unzip_length to make bootloader or kexec what buffer size
-> > needed.
-> >
->
->  You can look at the payload headers for that.
->
+On Thu, Apr 10, 2008 at 11:02:29PM +0200, Hans J. Koch wrote:
+> On Thu, Apr 10, 2008 at 02:37:00PM +0200, Uwe Kleine-K??nig wrote:
+> > Otherwise the device might just disappear while /dev/uioX is being used
+> > which results in an Oops.
+> 
+> Hi Uwe,
+> thanks for this one, good catch! Looks fine to me. There are some minor issues, see
+> below.
+> And I'd like to hear Greg's opinion: Do you agree we can omit
+> try_module_get() in uio_mmap()?
 
-arch/x86/boot/compressed/head_64.S?
+If it's already been grabbed in the open() call, everything should be
+safe, right?
 
-YH
+thanks,
+
+greg k-h
