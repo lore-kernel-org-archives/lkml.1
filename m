@@ -1,59 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758773AbYDJVUl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759393AbYDJVVW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758773AbYDJVUl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Apr 2008 17:20:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755116AbYDJVUa
+	id S1759393AbYDJVVW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Apr 2008 17:21:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757502AbYDJVVI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Apr 2008 17:20:30 -0400
-Received: from zcars04f.nortel.com ([47.129.242.57]:43331 "EHLO
-	zcars04f.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756548AbYDJVU3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Apr 2008 17:20:29 -0400
-Message-ID: <47FE848D.6050700@nortel.com>
-Date: Thu, 10 Apr 2008 15:20:13 -0600
-From: "Chris Friesen" <cfriesen@nortel.com>
-User-Agent: Mozilla Thunderbird 1.0.2-6 (X11/20050513)
-X-Accept-Language: en-us, en
-MIME-Version: 1.0
-To: "Kok, Auke" <auke-jan.h.kok@intel.com>
-CC: Matthew Wilcox <matthew@wil.cx>,
-       Grant Grundler <grundler@parisc-linux.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Krzysztof Halasa <khc@pm.waw.pl>, Frans Pop <elendil@planet.nl>,
-       Ingo Molnar <mingo@elte.hu>, jeff@garzik.org,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       e1000-devel@lists.sourceforge.net, linux-pci@atrey.karlin.mff.cuni.cz,
-       akpm@linux-foundation.org, davem@davemloft.net,
-       jesse.brandeburg@intel.com, john.ronciak@intel.com,
-       bruce.w.allan@intel.com, greg@kroah.com, arjan@linux.intel.com,
-       rjw@sisk.pl
-Subject: Re: [patch] e1000=y && e1000e=m regression fix
-References: <20080408203314.GA28952@elte.hu> <47FBDBE9.9040700@garzik.org> <47FBDBE9.9040700@garzik.org> <20080409193850.GA11763@elte.hu> <200804092249.23111.elendil@planet.nl> <m363uqwpds.fsf@maximus.localdomain> <alpine.LFD.1.00.0804091838330.3143@woody.linux-foundation.org> <m34paaav7o.fsf@maximus.localdomain> <alpine.LFD.1.00.0804100724220.3143@woody.linux-foundation.org> <20080410175503.GA11440@colo.lackof.org> <20080410180412.GV11962@parisc-linux.org> <47FE5BE8.9000206@intel.com>
-In-Reply-To: <47FE5BE8.9000206@intel.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Thu, 10 Apr 2008 17:21:08 -0400
+Received: from pat.uio.no ([129.240.10.15]:54291 "EHLO pat.uio.no"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757096AbYDJVVH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Apr 2008 17:21:07 -0400
+Subject: Re: nfs: infinite loop in fcntl(F_SETLKW)
+From: Trond Myklebust <trond.myklebust@fys.uio.no>
+To: Miklos Szeredi <miklos@szeredi.hu>, Marc Eshel <eshel@almaden.ibm.com>,
+       "Dr. J. Bruce Fields" <bfields@citi.umich.edu>
+Cc: neilb@suse.de, akpm@linux-foundation.org, linux-nfs@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+In-Reply-To: <1207861661.8180.18.camel@heimdal.trondhjem.org>
+References: <E1JjcgO-0004q2-VJ@pomaz-ex.szeredi.hu>
+	 <E1Jk2oI-0007UX-MS@pomaz-ex.szeredi.hu>
+	 <1207861339.8180.14.camel@heimdal.trondhjem.org>
+	 <1207861661.8180.18.camel@heimdal.trondhjem.org>
+Content-Type: text/plain
+Date: Thu, 10 Apr 2008 17:20:36 -0400
+Message-Id: <1207862436.8180.30.camel@heimdal.trondhjem.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 10 Apr 2008 21:20:18.0343 (UTC) FILETIME=[AD12AB70:01C89B50]
+X-UiO-Resend: resent
+X-UiO-Spam-info: not spam, SpamAssassin (score=0.0, required=5.0, autolearn=disabled, none)
+X-UiO-Scanned: 9D67043068AB4589FE03CB9A13600BF7051D64F3
+X-UiO-SR-test: 2889983E636EF8C2AB5941A57ACF7C2C1987B6F6
+X-UiO-SPAM-Test: remote_host: 129.240.10.9 spam_score: 0 maxlevel 200 minaction 2 bait 0 mail/h: 215 total 7822605 max/h 8345 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kok, Auke wrote:
 
-> We want to move users over to e1000e, because with 2.6.26 they must (or at one
-> point in time anyway).
+On Thu, 2008-04-10 at 17:07 -0400, Trond Myklebust wrote:
+> On Thu, 2008-04-10 at 17:02 -0400, Trond Myklebust wrote:
+> > On Thu, 2008-04-10 at 21:51 +0200, Miklos Szeredi wrote:
+> > > Another infinite loop, this one involving both client and server.
+> > > 
+> > > Basically what happens is that on the server nlm_fopen() calls
+> > > nfsd_open() which returns -EACCES, to which nlm_fopen() returns
+> > > NLM_LCK_DENIED.
+> > > 
+> > > On the client this will turn into a -EAGAIN (nlm_stat_to_errno()),
+> > > which in will cause fcntl_setlk() to retry forever.
+> > > 
+> > > I _think_ the solution is to turn NLM_LCK_DENIED into ENOLCK for
+> > > blocking locks, as NLM_LCK_BLOCKED is for the contended case.  For
+> > > testing the lock leave NLM_LCK_DENIED as EAGAIN.  That still could be
+> > > misleading, but at least there's no infinite loop in that case.
+> > > 
+> > > I've minimally tested this patch to verify that it cures the lockup,
+> > > and that simple blocking locks keep working.
+> > > 
+> > > Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
+> > > ---
+> > >  fs/lockd/clntproc.c |    3 +++
+> > >  1 file changed, 3 insertions(+)
+> > > 
+> > > Index: linux/fs/lockd/clntproc.c
+> > > ===================================================================
+> > > --- linux.orig/fs/lockd/clntproc.c	2008-04-02 13:34:57.000000000 +0200
+> > > +++ linux/fs/lockd/clntproc.c	2008-04-10 21:23:46.000000000 +0200
+> > > @@ -536,6 +536,9 @@ again:
+> > >  		up_read(&host->h_rwsem);
+> > >  	}
+> > >  	status = nlm_stat_to_errno(resp->status);
+> > > +	/* Don't return EAGAIN, as that would make fcntl_setlk() loop */
+> > > +	if (status == -EAGAIN)
+> > > +		status = -ENOLCK;
+> > >  out_unblock:
+> > >  	nlmclnt_finish_block(block);
+> > >  	/* Cancel the blocked request if it is still pending */
+> > 
+> > 
+> > Wait. There is something really weird going on here.
+> > 
+> > According to the spec, LCK_DENIED means 'the request failed' (i.e.
+> > ENOLCK is definitely correct)
+> > 
+> > OTOH, LCK_DENIED_NOLOCKS and LCK_DENIED_GRACE_PERIOD are both temporary
+> > failures, the first because the server had a resource problem, and the
+> > second because the server rebooted and is in the grace period (i.e.
+> > EAGAIN would appear to be more appropriate). See
+> > 
+> > http://www.opengroup.org/onlinepubs/9629799/chap10.htm#tagcjh_11_02_02_02
+> > 
+> > AFAICS, the correct thing to do is to fix nlm_stat_to_errno() by
+> > swapping the return values for NLM_LCK_DENIED and
+> > NLM_LCK_DENIED_NOLOCKS/NLM_LCK_DENIED_GRACE_PERIOD.
+> > 
+> > The problem is that there appears to be a similar confusion on the Linux
+> > server side in nlmsvc_lock(). :-(
 > 
-> I'm all for making the move easier, but I'm really against prolonging these hacks
-> that make people just bump their noses later. If they hit the problem now instead
-> of when 2.6.26 ships, then it's all for the better IMHO.
+> Duh... Sorry, EAGAIN is indeed the correct return value for fcntl() when
+> the lock attempt failed. I should have reread the manpage/posix spec
+> before replying.
 
-Obviously e1000e hasn't been out for long enough to become common 
-knowledge.  (Both Ingo and Linus running into the problem is probably a 
-sign...)
+OK. So the correct fix here should really be applied to fcntl_setlk().
+There is absolutely no reason why we should be looping at all if the
+filesystem has a ->lock() method.
 
-Maybe it would make sense to have "e1000 implies setting e1000e to the 
-same as e1000" for a couple releases, so that word gets around a bit 
-more.  Then you can remove the auto-select of e1000e and anyone that 
-hasn't updated by then will get bit.
+In fact, this looping behaviour was introduced recently in commit
+7723ec9777d9832849b76475b1a21a2872a40d20. Marc, Bruce, why was this
+done, and how are filesystems now supposed to behave?
 
-Chris
