@@ -1,73 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758681AbYDJReA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758693AbYDJRgS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758681AbYDJReA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Apr 2008 13:34:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756724AbYDJRdx
+	id S1758693AbYDJRgS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Apr 2008 13:36:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754229AbYDJRgH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Apr 2008 13:33:53 -0400
-Received: from wx-out-0506.google.com ([66.249.82.239]:5551 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756670AbYDJRdw (ORCPT
+	Thu, 10 Apr 2008 13:36:07 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:46533 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756703AbYDJRgG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Apr 2008 13:33:52 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=SXMNSbwyBW7q3uAMhWCW3qjcQUcbjC/KR3f7Kymitx1PjPOGRNHOPFLqRUM7Lof+APt6tPg5+BlSRTFbN5IOvIcC00sFJyH74j3ftgm4ZfPxpM5P+XhZYiNH91wOjFU5WYUqAFMb6oq1CmJXutIy73UZGVHMEEufzpUhFHwj4UA=
-Message-ID: <86802c440804101033p6e914cb4oacaeb6eca823d1cd@mail.gmail.com>
-Date: Thu, 10 Apr 2008 10:33:50 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: npiggin@suse.de, "Andrew Morton" <akpm@linux-foundation.org>,
-       "Andi Kleen" <andi@firstfloor.org>
-Subject: Re: [patch 10/17] mm: fix bootmem alignment
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, pj@sgi.com,
-       kniht@linux.vnet.ibm.com
-In-Reply-To: <20080410171101.395469000@nick.local0.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 10 Apr 2008 13:36:06 -0400
+Date: Thu, 10 Apr 2008 12:36:02 -0500
+From: Paul Jackson <pj@sgi.com>
+To: "Bert Wesarg" <bert.wesarg@googlemail.com>
+Cc: travis@sgi.com, mingo@elte.hu, tglx@linutronix.de, hpa@zytor.com,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/3] x86: modify show_shared_cpu_map in intel_cacheinfo
+ v3
+Message-Id: <20080410123602.2b01f5d1.pj@sgi.com>
+In-Reply-To: <36ca99e90804101024y1f159b08ucaa52eab0bea6b88@mail.gmail.com>
+References: <20080408184301.651388000@polaris-admin.engr.sgi.com>
+	<20080408184301.842103000@polaris-admin.engr.sgi.com>
+	<36ca99e90804081236ifa3eecfue3dd211f9cdcb32a@mail.gmail.com>
+	<47FBD915.7020809@sgi.com>
+	<36ca99e90804101024y1f159b08ucaa52eab0bea6b88@mail.gmail.com>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080410170232.015351000@nick.local0.net>
-	 <20080410171101.395469000@nick.local0.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 10, 2008 at 10:02 AM,  <npiggin@suse.de> wrote:
-> Without this fix bootmem can return unaligned addresses when the start of a
->  node is not aligned to the align value. Needed for reliably allocating
->  gigabyte pages.
->
->  I removed the offset variable because all tests should align themself correctly
->  now. Slight drawback might be that the bootmem allocator will spend
->  some more time skipping bits in the bitmap initially, but that shouldn't
->  be a big issue.
->
+Bert wrote:
+> I think its easier to count the commas from a cpumask file. 
 
+My user level code determines NR_CPUS and MAX_NUMNODES from 32/9 times
+the strlen() of the values of the Cpus_allowed and Mems_allowed fields
+in /proc/self/status (being careful to -include- the trailing newline
+in the strlen.)
 
-this patch from Andi was obsoleted by the one in -mm
-
-
-The patch titled
-    mm: offset align in alloc_bootmem
-has been added to the -mm tree.  Its filename is
-    mm-offset-align-in-alloc_bootmem.patch
-
-------------------------------------------------------
-Subject: mm: offset align in alloc_bootmem
-From: Yinghai Lu <yhlu.kernel.send@gmail.com>
-
-Need offset alignment when node_boot_start's alignment is less than align
-required
-
-Use local node_boot_start to match align.  so don't add extra opteration in
-search loop.
-
-Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
-Cc: Andi Kleen <ak@suse.de>
-Cc: Yasunori Goto <y-goto@jp.fujitsu.com>
-Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Christoph Lameter <clameter@sgi.com>
-Cc: Mel Gorman <mel@csn.ul.ie>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+-- 
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.940.382.4214
