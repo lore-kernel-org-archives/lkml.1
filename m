@@ -1,122 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758556AbYDJVyp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758437AbYDJWDS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758556AbYDJVyp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Apr 2008 17:54:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755708AbYDJVyd
+	id S1758437AbYDJWDS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Apr 2008 18:03:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756888AbYDJWDE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Apr 2008 17:54:33 -0400
-Received: from mail.fieldses.org ([66.93.2.214]:40214 "EHLO fieldses.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754814AbYDJVyc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Apr 2008 17:54:32 -0400
-Date: Thu, 10 Apr 2008 17:54:10 -0400
-To: Trond Myklebust <trond.myklebust@fys.uio.no>
-Cc: Miklos Szeredi <miklos@szeredi.hu>, Marc Eshel <eshel@almaden.ibm.com>,
-       neilb@suse.de, akpm@linux-foundation.org, linux-nfs@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: nfs: infinite loop in fcntl(F_SETLKW)
-Message-ID: <20080410215410.GF22324@fieldses.org>
-References: <E1JjcgO-0004q2-VJ@pomaz-ex.szeredi.hu> <E1Jk2oI-0007UX-MS@pomaz-ex.szeredi.hu> <1207861339.8180.14.camel@heimdal.trondhjem.org> <1207861661.8180.18.camel@heimdal.trondhjem.org> <1207862436.8180.30.camel@heimdal.trondhjem.org>
+	Thu, 10 Apr 2008 18:03:04 -0400
+Received: from wf-out-1314.google.com ([209.85.200.170]:52276 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756884AbYDJWDC (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Apr 2008 18:03:02 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=reply-to:to:subject:date:user-agent:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id:from;
+        b=Wy0p0Vtez6NpWnOQJdJVsGy98lN361bGskZEfH17cVIC7biwaJ3tgcRLOXSv3FYgnJLS2VL6gLY9lLmlgGlktkX0HcsA5iTuzBuqj/LEJqcw2ONkWTR11SXDjaIowjrzz3FVk4Yvy9W+Z1Ii9tBJ/Yt4WaTo/lGY6mR7zV19+mE=
+Reply-To: yhlu.kernel@gmail.com
+To: Ingo Molnar <mingo@elte.hu>
+Subject: [PATCH] x86_64: change _end to end_before_pgt
+Date: Thu, 10 Apr 2008 15:06:38 -0700
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: kernel list <linux-kernel@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1207862436.8180.30.camel@heimdal.trondhjem.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-From: "J. Bruce Fields" <bfields@fieldses.org>
+Message-Id: <200804101506.38139.yhlu.kernel@gmail.com>
+From: Yinghai Lu <yhlu.kernel.send@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 10, 2008 at 05:20:36PM -0400, Trond Myklebust wrote:
-> 
-> On Thu, 2008-04-10 at 17:07 -0400, Trond Myklebust wrote:
-> > On Thu, 2008-04-10 at 17:02 -0400, Trond Myklebust wrote:
-> > > On Thu, 2008-04-10 at 21:51 +0200, Miklos Szeredi wrote:
-> > > > Another infinite loop, this one involving both client and server.
-> > > > 
-> > > > Basically what happens is that on the server nlm_fopen() calls
-> > > > nfsd_open() which returns -EACCES, to which nlm_fopen() returns
-> > > > NLM_LCK_DENIED.
-> > > > 
-> > > > On the client this will turn into a -EAGAIN (nlm_stat_to_errno()),
-> > > > which in will cause fcntl_setlk() to retry forever.
-> > > > 
-> > > > I _think_ the solution is to turn NLM_LCK_DENIED into ENOLCK for
-> > > > blocking locks, as NLM_LCK_BLOCKED is for the contended case.  For
-> > > > testing the lock leave NLM_LCK_DENIED as EAGAIN.  That still could be
-> > > > misleading, but at least there's no infinite loop in that case.
-> > > > 
-> > > > I've minimally tested this patch to verify that it cures the lockup,
-> > > > and that simple blocking locks keep working.
-> > > > 
-> > > > Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
-> > > > ---
-> > > >  fs/lockd/clntproc.c |    3 +++
-> > > >  1 file changed, 3 insertions(+)
-> > > > 
-> > > > Index: linux/fs/lockd/clntproc.c
-> > > > ===================================================================
-> > > > --- linux.orig/fs/lockd/clntproc.c	2008-04-02 13:34:57.000000000 +0200
-> > > > +++ linux/fs/lockd/clntproc.c	2008-04-10 21:23:46.000000000 +0200
-> > > > @@ -536,6 +536,9 @@ again:
-> > > >  		up_read(&host->h_rwsem);
-> > > >  	}
-> > > >  	status = nlm_stat_to_errno(resp->status);
-> > > > +	/* Don't return EAGAIN, as that would make fcntl_setlk() loop */
-> > > > +	if (status == -EAGAIN)
-> > > > +		status = -ENOLCK;
-> > > >  out_unblock:
-> > > >  	nlmclnt_finish_block(block);
-> > > >  	/* Cancel the blocked request if it is still pending */
-> > > 
-> > > 
-> > > Wait. There is something really weird going on here.
-> > > 
-> > > According to the spec, LCK_DENIED means 'the request failed' (i.e.
-> > > ENOLCK is definitely correct)
-> > > 
-> > > OTOH, LCK_DENIED_NOLOCKS and LCK_DENIED_GRACE_PERIOD are both temporary
-> > > failures, the first because the server had a resource problem, and the
-> > > second because the server rebooted and is in the grace period (i.e.
-> > > EAGAIN would appear to be more appropriate). See
-> > > 
-> > > http://www.opengroup.org/onlinepubs/9629799/chap10.htm#tagcjh_11_02_02_02
-> > > 
-> > > AFAICS, the correct thing to do is to fix nlm_stat_to_errno() by
-> > > swapping the return values for NLM_LCK_DENIED and
-> > > NLM_LCK_DENIED_NOLOCKS/NLM_LCK_DENIED_GRACE_PERIOD.
-> > > 
-> > > The problem is that there appears to be a similar confusion on the Linux
-> > > server side in nlmsvc_lock(). :-(
-> > 
-> > Duh... Sorry, EAGAIN is indeed the correct return value for fcntl() when
-> > the lock attempt failed. I should have reread the manpage/posix spec
-> > before replying.
-> 
-> OK. So the correct fix here should really be applied to fcntl_setlk().
-> There is absolutely no reason why we should be looping at all if the
-> filesystem has a ->lock() method.
-> 
-> In fact, this looping behaviour was introduced recently in commit
-> 7723ec9777d9832849b76475b1a21a2872a40d20.
 
-Apologies, that was indeed a behavioral change introduced in a commit
-that claimed just to be shuffling code around.
+change the _end in compressed vmlinux_64.lds.
 
-> Marc, Bruce, why was this
-> done, and how are filesystems now supposed to behave?
-> 
+also change _heap to _ebss that is not needed.
 
-The assumption must have been that -EAGAIN could only mean that we
-needed to keep blocking, and hence was a nonsensical return from a
-filesystem lock method that waited itself for the lock to become
-available--such a method would return 0, -EINTR (or some more exotic
-error), or continue waiting.
+Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
 
-If we agree that EAGAIN is actually a legimate error to return from a
-blocking lock, then, yes, we need take ->lock() back out of this loop.
-
-And I don't think there's any real reason we need the new behavior.  So
-we should probably revert that--I'll take a closer look tomorrow....
-
---b.
+diff --git a/arch/x86/boot/compressed/head_64.S b/arch/x86/boot/compressed/head_64.S
+index 7a212a6..d8819ef 100644
+--- a/arch/x86/boot/compressed/head_64.S
++++ b/arch/x86/boot/compressed/head_64.S
+@@ -244,9 +244,9 @@ ENTRY(startup_64)
+ /* Copy the compressed kernel to the end of our buffer
+  * where decompression in place becomes safe.
+  */
+-	leaq	_end(%rip), %r8
+-	leaq	_end(%rbx), %r9
+-	movq	$_end /* - $startup_32 */, %rcx
++	leaq	_end_before_pgt(%rip), %r8
++	leaq	_end_before_pgt(%rbx), %r9
++	movq	$_end_before_pgt /* - $startup_32 */, %rcx
+ 1:	subq	$8, %r8
+ 	subq	$8, %r9
+ 	movq	0(%r8), %rax
+@@ -268,7 +268,7 @@ relocated:
+  */
+ 	xorq	%rax, %rax
+ 	leaq    _edata(%rbx), %rdi
+-	leaq    _end(%rbx), %rcx
++	leaq    _end_before_pgt(%rbx), %rcx
+ 	subq	%rdi, %rcx
+ 	cld
+ 	rep
+diff --git a/arch/x86/boot/compressed/vmlinux_64.lds b/arch/x86/boot/compressed/vmlinux_64.lds
+index 7e5c720..bef1ac8 100644
+--- a/arch/x86/boot/compressed/vmlinux_64.lds
++++ b/arch/x86/boot/compressed/vmlinux_64.lds
+@@ -39,10 +39,10 @@ SECTIONS
+ 		*(.bss.*)
+ 		*(COMMON)
+ 		. = ALIGN(8);
+-		_end = . ;
++		_end_before_pgt = . ;
+ 		. = ALIGN(4096);
+ 		pgtable = . ;
+ 		. = . + 4096 * 6;
+-		_heap = .;
++		_ebss = .;
+ 	}
+ }
