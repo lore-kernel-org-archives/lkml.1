@@ -1,77 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757003AbYDJQil@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757045AbYDJQq3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757003AbYDJQil (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Apr 2008 12:38:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755882AbYDJQib
+	id S1757045AbYDJQq3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Apr 2008 12:46:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755966AbYDJQqU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Apr 2008 12:38:31 -0400
-Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:60596 "EHLO
-	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754812AbYDJQia (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Apr 2008 12:38:30 -0400
-Message-ID: <47FE425C.7060405@s5r6.in-berlin.de>
-Date: Thu, 10 Apr 2008 18:37:48 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.12) Gecko/20080201 SeaMonkey/1.1.8
+	Thu, 10 Apr 2008 12:46:20 -0400
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:44879 "EHLO e3.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755914AbYDJQqT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Apr 2008 12:46:19 -0400
+Date: Thu, 10 Apr 2008 11:44:36 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: "Serge E. Hallyn" <serue@us.ibm.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Containers <containers@lists.osdl.org>, clg@fr.ibm.com,
+       linux-kernel@vger.kernel.org, Pavel Emelyanov <xemul@openvz.org>
+Subject: Re: [RFC][PATCH 0/7] Clone PTS namespace
+Message-ID: <20080410164436.GA6434@sergelap.ibm.com>
+References: <20080408215333.GA8799@us.ibm.com> <47FC138B.4070408@zytor.com> <1207779313.16926.12.camel@x61.ebiederm.org> <20080410015955.GA18227@sergelap.austin.rr.com> <1207812980.7509.25.camel@x61.ebiederm.org>
 MIME-Version: 1.0
-To: Johannes Berg <johannes@sipsolutions.net>
-CC: linux-kernel@vger.kernel.org, Josh Triplett <josh@freedesktop.org>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       linux-wireless@vger.kernel.org, linux-sparse@vger.kernel.org
-Subject: Re: [RFC 1/3] add macros for new sparse features
-References: <20080410134810.629048000@sipsolutions.net> <20080410134827.771251000@sipsolutions.net>
-In-Reply-To: <20080410134827.771251000@sipsolutions.net>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1207812980.7509.25.camel@x61.ebiederm.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Johannes Berg wrote:
-> This patch adds kernel macros for a few new sparse features, namely
->  * checking try_lock functions and
->  * making a function or macro require a certain lock.
+Quoting Eric W. Biederman (ebiederm@xmission.com):
+> On Wed, 2008-04-09 at 20:59 -0500, Serge E. Hallyn wrote:
 > 
-> Still waiting to see what the sparse folks say to my patches.
+> > Feh, so of course sysfs would have the most interactions for a device
+> > namespace, but now we have pty, network, and user namespace all needing
+> > some sort of sysfs solution.  For a quickfix for
+> > CONFIG_USER_SCHED+CONFIG_USER_NS, I just moved /sys/kernel/uids/<uid>
+> > to /sys/kernel/uids/<userns_address>/<uid>.  But what would be a *good*
+> > general solution?
+> > 
+> > ln -s /sys /proc/self/sys?
 > 
-> Not-yet-signed-off-by: Johannes Berg <johannes@sipsolutions.net>
-> ---
->  include/linux/compiler.h |    6 ++++++
->  1 file changed, 6 insertions(+)
+> LOL
 > 
-> --- everything.orig/include/linux/compiler.h	2008-04-10 15:36:18.000000000 +0200
-> +++ everything/include/linux/compiler.h	2008-04-10 15:36:40.000000000 +0200
-> @@ -11,9 +11,12 @@
->  # define __nocast	__attribute__((nocast))
->  # define __iomem	__attribute__((noderef, address_space(2)))
->  # define __acquires(x)	__attribute__((context(x,0,1)))
-> +# define __try_acquires(x,t,f)	__attribute__((conditional_context(x,0,t,f)))
->  # define __releases(x)	__attribute__((context(x,1,0)))
->  # define __acquire(x)	__context__(x,1)
->  # define __release(x)	__context__(x,-1)
-> +# define __requires(x)	__attribute__((context(x,1,1)))
-> +# define __macro_requires(x)	__context__(x,0,1)
+> In /proc I prefer the /proc/self approach because we can do it and it is
+> just much easier to setup and use.  (Plus we have weird problems if we
+> try and capture more then the pid namespace).
+> 
+> For other filesystems the only really viable option is to capture
+> namespaces at mount time, as we are doing for devpts and proc with
+> respect to the pid namespace.
+> 
+> For the network namespace where it is very much more then a single
+> directory with symlinks from physical devices pointing at logical
+> network interfaces.
+> 
+> My last effort in that area was ok'd by Tejun lightly tested by a few
+> others and misplaced by gregkh so I don't think we have a real problem
+> with resurrecting those patches cleaning them up a bit and merging them.
+> 
+> The biggest gotcha with sysfs is that the VFS locking for the dcache
+> is in the wrong order for distributed filesystems, where we would like
+> to make the change atomically on the server and them make the change in
+> the local cache.  Or in this case the sysfs internal data structures.
+> The truly nasty case is supporting rename (as sysfs does) as the VFS
+> is not at all happy if you just punt and shoot down the dentries and 
+> instantiate new ones.
+> 
+> I'm hoping to be able to get back at this in the week or so as things
+> settle down from my move.  My last patches should be in my proof of
+> concept network namespace tree, if they don't show up elsewhere.
+> 
+> It isn't my perception that we have a design problem rather, we just
+> need to move an important piece of code in a subtle and moderately
+> uninteresting direction for it's primary maintainer.  
+> 
+> Further what I did for the network namespace should easily handle the
+> uid/gid namespace and should be a good starting place for a general
+> device namespace.
 
+Agreed.  What's the git url and which branch do i use for your proof
+of concept tree?  I'll do the userns patch on top of that.  I assume
+Suka will do the same for ptys?
 
-So, instead of
-
-  /* always call with host_lock held */
-  int foo(struct bar *b)
-  {
-
-we could write
-
-  int foo(struct bar *b) __requires(host_lock)
-  {
-
-and let sparse check the call chains... or how is it used?
-
-And what about dynamically allocated locks?
-E.g. b->lock
-Or struct host h* = container_of(b, struct host, m); with the necessity
-to hold h->lock...
--- 
-Stefan Richter
--=====-==--- -=-- -=-=-
-http://arcgraph.de/sr/
+thanks,
+-serge
