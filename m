@@ -1,54 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754696AbYDJGaQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754794AbYDJGl3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754696AbYDJGaQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Apr 2008 02:30:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752500AbYDJGaA
+	id S1754794AbYDJGl3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Apr 2008 02:41:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752454AbYDJGlV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Apr 2008 02:30:00 -0400
-Received: from gw.c1.byte.nl ([82.94.214.64]:59803 "EHLO smtp.byte.nl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752465AbYDJG37 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Apr 2008 02:29:59 -0400
-Date: Thu, 10 Apr 2008 08:29:57 +0200 (CEST)
-From: Allard Hoeve <allard@byte.nl>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Miklos Szeredi <miklos@szeredi.hu>, jens.axboe@oracle.com,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       Neil Brown <neilb@suse.de>, Gertjan Oude Lohuis <gertjan@byte.nl>
-Subject: Re: [patch] fix infinite loop in generic_file_splice_read()
-In-Reply-To: <20080409115702.79737d7f.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.62.0804100822240.12367@office2.c1.internal>
-References: <E1JjcgO-0004q2-VJ@pomaz-ex.szeredi.hu>
- <20080409115702.79737d7f.akpm@linux-foundation.org>
+	Thu, 10 Apr 2008 02:41:21 -0400
+Received: from hs-out-0708.google.com ([64.233.178.248]:29348 "EHLO
+	hs-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752680AbYDJGlU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Apr 2008 02:41:20 -0400
+Message-ID: <c42f92750804092341q7352ae77tc6e353a398724f59@mail.gmail.com>
+Date: Thu, 10 Apr 2008 12:11:18 +0530
+From: "Shakul Mohideen Hameed" <smohideen@blackhole.labs.rootshell.ws>
+To: linux-kernel@vger.kernel.org
+Subject: Re: [GIT] git-clone failure over http
+In-Reply-To: <c42f92750804092213p7b2c5607sa48a83086d45a825@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <c42f92750804092213p7b2c5607sa48a83086d45a825@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+I see issue while extracting Ingo's scheduler development branch only.
 
-Hallo Andrew, others,
+Doing a extract on Linus main branch doesnt arise any issue
+got f4be31ec9690cfe6e94fcbed6ae60a6a38b3c3ed
+walk f4be31ec9690cfe6e94fcbed6ae60a6a38b3c3ed
+got cb2e3ce144808fff867d043c58117f30cdf4c1f9
+got 44cad261025c04327fd7e847a7088fd3031b0c3e
+walk 44cad261025c04327fd7e847a7088fd3031b0c3e
+Getting alternates list for
+http://www.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git
 
-> We found suspicious-looking code in generic_file_splice_read() back in 
-> February.  See http://lkml.org/lkml/2008/2/29/443.  I suspect that patch 
-> (if it works) will address the truncate lockup as well - it zaps the 
-> loop entirely.
+
+
+
+On 4/10/08, Shakul Mohideen Hameed
+<smohideen@blackhole.labs.rootshell.ws> wrote:
+> I am getting errors while cloning few of the kernel sources over HTTP.
+> Both proxy/direct modes are failing.
+> Please advise.
+>    - smohideen
 >
-> Unfortunately Allard never got back to us (probably because he's running
-> 2.6.24 which has a quite different generic_file_splice_read()) and the
-> patch didn't get anywhere.
-
-Unfortunately, we cannot test the patch on the server that triggered the 
-bug in 2.6.24.2, because it's too critical for operation. On other similar 
-servers the bug hasn't been encountered and we were unable to reproduce 
-it, so it must be some combination of load and typical usage (NFS server).
-
-We are now running 2.6.22.x, which does fine. I hope you understand our 
-hesitation of running patched, known-bugged kernels on our fileservers :)
-
-Thanks for all the bughunting here. There is a maintenance window soon, 
-I'll try to put the original patch on the agenda.
-
-Regards,
-
-Allard Hoeve
+>
+> git version 1.5.0.6
+>
+>
+> [moin@tb32-tgw1 linux-kernel]$ git-clone
+> http://www.kernel.org/pub/scm/linux/kernel/git/mingo/linux-2.6-sched-devel.git
+> Initialized empty Git repository in
+> /home/moin/linux-kernel/linux-2.6-sched-devel/.git/
+> Getting alternates list for
+> http://www.kernel.org/pub/scm/linux/kernel/git/mingo/linux-2.6-sched-devel.git/
+> Also look at http://www.kernel.org/home/ftp/pub/scm/linux/kernel/git/torvalds/linux-2.6.git/
+> Getting pack list for
+> http://www.kernel.org/pub/scm/linux/kernel/git/mingo/linux-2.6-sched-devel.git/
+> Getting index for pack ef5edbcc679c9e7e54731ae6e8835d1f9337cf60
+> Getting pack list for
+> http://www.kernel.org/home/ftp/pub/scm/linux/kernel/git/torvalds/linux-2.6.git/
+> error: Unable to find 7180c4c9e09888db0a188f729c96c6d7bd61fa83 under
+> http://www.kernel.org/pub/scm/linux/kernel/git/mingo/linux-2.6-sched-devel.git/
+> Cannot obtain needed object 7180c4c9e09888db0a188f729c96c6d7bd61fa83
+>
