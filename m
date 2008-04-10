@@ -1,126 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758783AbYDJUKw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758939AbYDJUMX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758783AbYDJUKw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Apr 2008 16:10:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752918AbYDJUKp
+	id S1758939AbYDJUMX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Apr 2008 16:12:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757444AbYDJUMI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Apr 2008 16:10:45 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:38229 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752198AbYDJUKo (ORCPT
+	Thu, 10 Apr 2008 16:12:08 -0400
+Received: from mail29.messagelabs.com ([216.82.249.147]:14984 "HELO
+	mail29.messagelabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1757388AbYDJUMF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Apr 2008 16:10:44 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=c9BOj+oQZ/l++YFpQd03l/bfHPHjZEvoChIlD8FdSMCXDzT4Jig0XY7KjtH9YtjGn
-	fyxaPw1kfWL6eiAXn88lQ==
-Message-ID: <6599ad830804101310p297536aeld5931073598ec7e6@mail.gmail.com>
-Date: Thu, 10 Apr 2008 13:10:30 -0700
-From: "Paul Menage" <menage@google.com>
-To: "Li Zefan" <lizf@cn.fujitsu.com>
-Subject: Re: [RFC] Control Groups Roadmap ideas
-Cc: "Linux Containers" <containers@lists.linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>
-In-Reply-To: <47FC29BF.20701@cn.fujitsu.com>
+	Thu, 10 Apr 2008 16:12:05 -0400
+X-VirusChecked: Checked
+X-Env-Sender: Uwe.Kleine-Koenig@digi.com
+X-Msg-Ref: server-14.tower-29.messagelabs.com!1207858325!10563985!1
+X-StarScan-Version: 5.5.12.14.2; banners=-,-,-
+X-Originating-IP: [66.77.174.21]
+Date: Thu, 10 Apr 2008 22:11:03 +0200
+From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <Uwe.Kleine-Koenig@digi.com>
+To: "Hans J. Koch" <hjk@linutronix.de>, Greg Kroah-Hartman <gregkh@suse.de>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/4] UIO: hold a reference to the device's owner while the device is open
+Message-ID: <20080410201103.GB16292@digi.com>
+References: <1207831023-8583-1-git-send-email-Uwe.Kleine-Koenig@digi.com> <1207831023-8583-2-git-send-email-Uwe.Kleine-Koenig@digi.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-References: <6599ad830804081414x7be75d2fte5b500a7f81df40c@mail.gmail.com>
-	 <47FC29BF.20701@cn.fujitsu.com>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1207831023-8583-2-git-send-email-Uwe.Kleine-Koenig@digi.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-OriginalArrivalTime: 10 Apr 2008 20:11:03.0511 (UTC) FILETIME=[00999E70:01C89B47]
+X-TM-AS-Product-Ver: SMEX-8.0.0.1181-5.000.1023-15842.001
+X-TM-AS-Result: No--8.293000-8.000000-2
+X-TM-AS-User-Approved-Sender: No
+X-TM-AS-User-Blocked-Sender: No
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 8, 2008 at 7:28 PM, Li Zefan <lizf@cn.fujitsu.com> wrote:
->
->  Sounds good, and I wrote a prototype in a quick:
+Uwe Kleine-König wrote:
+> Otherwise the device might just disappear while /dev/uioX is being used
+> which results in an Oops.
+To help your understanding, without this patch I can trigger the Oops
+by starting an app that does
 
-Yes, that's pretty much what I was envisaging, thanks.
+	opening and mmapping /dev/uio0
+	while(1);
 
-Paul
+and then in another shell do 
 
->
->  diff --git a/include/linux/cgroup.h b/include/linux/cgroup.h
->  index a6a6035..091bc21 100644
->  --- a/include/linux/cgroup.h
->  +++ b/include/linux/cgroup.h
->  @@ -254,6 +254,7 @@ struct cgroup_subsys {
->                         struct cgroup *cgrp);
->         void (*post_clone)(struct cgroup_subsys *ss, struct cgroup *cgrp);
->         void (*bind)(struct cgroup_subsys *ss, struct cgroup *root);
->  +       int (*can_mount)(struct cgroup_subsys *ss, unsigned long subsys_bits);
->         int subsys_id;
->         int active;
->         int disabled;
->  diff --git a/kernel/cgroup.c b/kernel/cgroup.c
->  index 62f1a52..3d43ff2 100644
->  --- a/kernel/cgroup.c
->  +++ b/kernel/cgroup.c
->  @@ -824,6 +824,25 @@ static int parse_cgroupfs_options(char *data,
->         return 0;
->   }
->
->  +static int check_mount(unsigned long subsys_bits)
->  +{
->  +       int i;
->  +       int ret;
->  +       struct cgroup_subsys *ss;
->  +
->  +       for (i = 0; i < CGROUP_SUBSYS_COUNT; i++) {
->  +               ss = subsys[i];
->  +
->  +               if (test_bit(i, &subsys_bits) && ss->can_mount) {
->  +                       ret = ss->can_mount(ss, subsys_bits);
->  +                       if (ret)
->  +                               return ret;
->  +               }
->  +       }
->  +
->  +       return 0;
->  +}
->  +
->   static int cgroup_remount(struct super_block *sb, int *flags, char *data)
->   {
->         int ret = 0;
->  @@ -839,6 +858,10 @@ static int cgroup_remount(struct super_block *sb, int *flags, char *data)
->         if (ret)
->                 goto out_unlock;
->
->  +       ret = check_mount(opts.subsys_bits);
->  +       if (ret)
->  +               goto out_unlock;
->  +
->         /* Don't allow flags to change at remount */
->         if (opts.flags != root->flags) {
->                 ret = -EINVAL;
->  @@ -959,6 +982,13 @@ static int cgroup_get_sb(struct file_system_type *fs_type,
->                 return ret;
->         }
->
->  +       ret = check_mount(opts.subsys_bits);
->  +       if (ret) {
->  +               if (opts.release_agent)
->  +                       kfree(opts.release_agent);
->  +               return ret;
->  +       }
->  +
->         root = kzalloc(sizeof(*root), GFP_KERNEL);
->         if (!root) {
->                 if (opts.release_agent)
->  -------
->
->  for the example about swap controller and memory controller:
->
->  static int swap_cgroup_can_mount(struct cgroup_subsys *ss,
->                                 unsigned long subsys_bits)
->  {
->         if (!test_bit(mem_cgroup_subsys_id, &subsys_bits))
->                 return -EINVAL;
->         return 0;
->  }
->
->  'mem_cgroup_subsys_id' is a member of enum cgroup_subsys_id defined in cgroup.h
->
+	rmmod uio_pdrv
+
+Best regards
+Uwe
+
+-- 
+Uwe Kleine-König, Software Engineer
+Digi International GmbH Branch Breisach, Küferstrasse 8, 79206 Breisach, Germany
+Tax: 315/5781/0242 / VAT: DE153662976 / Reg. Amtsgericht Dortmund HRB 13962
