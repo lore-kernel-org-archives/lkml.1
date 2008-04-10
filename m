@@ -1,58 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759127AbYDJUii@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759219AbYDJUju@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759127AbYDJUii (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Apr 2008 16:38:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758632AbYDJUi2
+	id S1759219AbYDJUju (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Apr 2008 16:39:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755048AbYDJUjm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Apr 2008 16:38:28 -0400
-Received: from wa-out-1112.google.com ([209.85.146.179]:59396 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758683AbYDJUi1 (ORCPT
+	Thu, 10 Apr 2008 16:39:42 -0400
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:42022 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756830AbYDJUjm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Apr 2008 16:38:27 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=cOQ989lUvIw/NYOfA5aC8ikOJ8OsPzJW7osMR+oRZwKpCAoIadDMVl18dqNW2dcDQpdFN0HNxzu/tgO/14PNaGdhlZ1YhwErvY+zb+tQb8/fWP8aNV6WOJ9Z/R2cRC/vvtvLcaAggvl1QUyCVsgE41NWQC/WEb+tjy5OvyR3wJ0=
-Subject: [PATCH] lzo: fix possible typo in decompresor
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Richard Purdie <rpurdie@rpsys.net>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Thu, 10 Apr 2008 13:38:23 -0700
-Message-Id: <1207859903.22001.36.camel@brick>
+	Thu, 10 Apr 2008 16:39:42 -0400
+Date: Thu, 10 Apr 2008 21:32:50 +0100
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: Roland McGrath <roland@redhat.com>,
+       "Linus Torvalds <torvalds@linux-foundation.org>Andrew Morton" 
+	<akpm@linux-foundation.org>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>, linux-s390@vger.kernel.org,
+       tony.luck@intel.com, linux-ia64@vger.kernel.org,
+       linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org, miles@gnu.org,
+       geert@linux-m68k.org, zippel@linux-m68k.org
+Subject: Re: [PATCH 1/2] HAVE_SET_RESTORE_SIGMASK
+Message-ID: <20080410203250.GA21589@flint.arm.linux.org.uk>
+Mail-Followup-To: David Woodhouse <dwmw2@infradead.org>,
+	Roland McGrath <roland@redhat.com>,
+	"Linus Torvalds <torvalds@linux-foundation.org>Andrew Morton" <akpm@linux-foundation.org>,
+	Martin Schwidefsky <schwidefsky@de.ibm.com>,
+	linux-s390@vger.kernel.org, tony.luck@intel.com,
+	linux-ia64@vger.kernel.org, linux-arch@vger.kernel.org,
+	linux-kernel@vger.kernel.org, miles@gnu.org, geert@linux-m68k.org,
+	zippel@linux-m68k.org
+References: <20080329001230.D013726FA1D@magilla.localdomain> <20080329001341.7F93826FA1D@magilla.localdomain> <alpine.LFD.1.00.0803281746480.14670@woody.linux-foundation.org> <20080329022408.0DD4726FA1D@magilla.localdomain> <20080329031146.6FF7126FA1D@magilla.localdomain> <1207741532.27048.64.camel@shinybook.infradead.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1207741532.27048.64.camel@shinybook.infradead.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Shift of a le value seems strange, probably meant to shift the cpu-order
-variable as in the prvious section of the switch statement.
+On Wed, Apr 09, 2008 at 12:45:32PM +0100, David Woodhouse wrote:
+> On Fri, 2008-03-28 at 20:11 -0700, Roland McGrath wrote:
+> > Change all the #ifdef TIF_RESTORE_SIGMASK conditionals in non-arch
+> > code to #ifdef HAVE_SET_RESTORE_SIGMASK.
+> 
+> That ifdef was only supposed to be a temporary thing until all
+> architectures had implemented TIF_RESTORE_SIGMASK anyway.
+> 
+> It looks like only ARM, v850 and m68k which are still missing it; if
+> those three architectures can catch up, then hopefully it can die off
+> completely quite soon.
 
-Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
----
- lib/lzo/lzo1x_decompress.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+Well, we don't have the pselect/ppoll/epoll_wait syscalls and there's
+been no demand for them, so I don't particularly see the point of
+going to the trouble of adding support for something no one's
+interested in using.
 
-diff --git a/lib/lzo/lzo1x_decompress.c b/lib/lzo/lzo1x_decompress.c
-index 9dc7056..77f0f9b 100644
---- a/lib/lzo/lzo1x_decompress.c
-+++ b/lib/lzo/lzo1x_decompress.c
-@@ -158,7 +158,7 @@ match:
- 					t += 7 + *ip++;
- 				}
- 				m_pos -= le16_to_cpu(get_unaligned(
--					(const unsigned short *)ip) >> 2);
-+					(const unsigned short *)ip)) >> 2;
- 				ip += 2;
- 				if (m_pos == op)
- 					goto eof_found;
+I was going to suggest defining TIF_RESTORE_SIGMASK to zero to eliminate
+some of the code (and the ifdefs), but unfortunately its a bit position
+not a bitmask so that won't work.
+
 -- 
-1.5.5.144.g3e42
-
-
-
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
