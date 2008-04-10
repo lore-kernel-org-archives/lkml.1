@@ -1,54 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756511AbYDJNfB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756846AbYDJNiq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756511AbYDJNfB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Apr 2008 09:35:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755409AbYDJNew
+	id S1756846AbYDJNiq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Apr 2008 09:38:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755508AbYDJNij
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Apr 2008 09:34:52 -0400
-Received: from gw-colo-pa.panasas.com ([66.238.117.130]:10479 "EHLO
-	cassoulet.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755305AbYDJNev (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Apr 2008 09:34:51 -0400
-Message-ID: <47FE176D.4010901@panasas.com>
-Date: Thu, 10 Apr 2008 16:34:37 +0300
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
-MIME-Version: 1.0
-To: Daniel Phillips <phillips@phunq.net>
-CC: "Ph. Marek" <philipp.marek@bmlv.gv.at>, linux-kernel@vger.kernel.org
-Subject: Re: [RFC] Stacking bio support
-References: <200803110352.41479.phillips@phunq.net> <200803110507.10858.phillips@phunq.net> <47D67D3A.5030208@panasas.com> <200804100604.31822.phillips@phunq.net>
-In-Reply-To: <200804100604.31822.phillips@phunq.net>
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 10 Apr 2008 09:38:39 -0400
+Received: from mail.queued.net ([207.210.101.209]:4415 "EHLO mail.queued.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755434AbYDJNij (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Apr 2008 09:38:39 -0400
+Date: Thu, 10 Apr 2008 09:40:24 -0400
+From: Andres Salomon <dilinger@queued.net>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       info-linux@geode.amd.com, jordan.crouse@amd.com
+Subject: Re: [PATCH 2/3] x86: GEODE: add Virtual Systems Architecture
+ detection
+Message-ID: <20080410094024.5111e108@ephemeral>
+In-Reply-To: <20080410091057.45cbb938@core>
+References: <20080409223328.5774d6cf@ephemeral>
+	<20080410091057.45cbb938@core>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.12.0; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 10 Apr 2008 13:34:40.0855 (UTC) FILETIME=[A1084E70:01C89B0F]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 10 2008 at 16:04 +0300, Daniel Phillips <phillips@phunq.net> wrote:
-> On Tuesday 11 March 2008 05:38, Boaz Harrosh wrote:
->> Do you have a public git tree that we can inspect from time to time.
-> 
-> (long lag...)
-> 
-> Yes I do, here:
-> 
->    http://phunq.net/ddtree
-> 
-> And there will be a paper on the lvm3 design (for discussion) at Linuxtag
-> in Berlin, in May.
-> 
-> Regards,
-> 
-> Daniel
+On Thu, 10 Apr 2008 09:10:57 +0100
+Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
 
-Thanks I'll have a look. This is a brave and important work you are doing here
-I envision all kind of stuff that can be done with this. I wish you the smoothest
-possible way to get it accepted into the kernel.
+> On Wed, 9 Apr 2008 22:33:28 -0400
+> Andres Salomon <dilinger@queued.net> wrote:
+> 
+> > 
+> > This is generic VSA detection.  It's used by OLPC to determine whether or
+> > not the BIOS contains VSA, but since other BIOSes are coming out that don't
+> > use the VSA (ie, tinybios), it might end up being useful for others.
+> 
+> NAK - but minor
+> 
+> This is a check for *VSA2* which is not the same as VSA1 (Cyrix one) and
+> for older systems that actually matters as you may have VSA1 or VSA2 and
+> they are detected differently.
+>
 
-Tell me if there is any thing I can do to help.
+Excellent point.  Can we extend this to check for a VSA1-specific
+string, or does VSA1 not have a similar signature?
 
-Boaz
 
+
+
+ 
+> > +/* VSA magic values */
+> 
+> These should be VSA2 I think
+> 
+> > +static inline int geode_has_vsa(void)
+> 
+> has_vsa2
+> 
+> 
+> Alan (Keeper of the ancient cyrix docs ;))
