@@ -1,59 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756698AbYDJNzQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757216AbYDJN4S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756698AbYDJNzQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Apr 2008 09:55:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755248AbYDJNzE
+	id S1757216AbYDJN4S (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Apr 2008 09:56:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753032AbYDJN4F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Apr 2008 09:55:04 -0400
-Received: from mail.tmr.com ([64.65.253.246]:35183 "EHLO gaimboi.tmr.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754814AbYDJNzE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Apr 2008 09:55:04 -0400
-Message-ID: <47FE1D22.3020007@tmr.com>
-Date: Thu, 10 Apr 2008 09:58:58 -0400
-From: Bill Davidsen <davidsen@tmr.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
+	Thu, 10 Apr 2008 09:56:05 -0400
+Received: from styx.suse.cz ([82.119.242.94]:49587 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755248AbYDJN4D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Apr 2008 09:56:03 -0400
+From: Michal Hocko <mhocko@suse.cz>
+To: Meelis Roos <mroos@linux.ee>
+Subject: Re: file offset corruption on 32-bit machines?
+Date: Thu, 10 Apr 2008 15:55:58 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Linux Kernel list <linux-kernel@vger.kernel.org>,
+       linux-fsdevel@vger.kernel.org
+References: <Pine.SOC.4.64.0804081101430.28938@math.ut.ee>
+In-Reply-To: <Pine.SOC.4.64.0804081101430.28938@math.ut.ee>
 MIME-Version: 1.0
-To: Francis Moreau <francis.moro@gmail.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: Disk geometry from /sys
-References: <38b2ab8a0804091353h3725ce29s196e27e8b4f1ff56@mail.gmail.com>
-In-Reply-To: <38b2ab8a0804091353h3725ce29s196e27e8b4f1ff56@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200804101555.58643.mhocko@suse.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Francis Moreau wrote:
-> Hi,
-> 
-> I'm trying to know the geometry of my hard disk from a bash script
-> and that's the reason I'm looking in /sys. The reason is that I'd like
-> to figure out the size of a cylinder without doing a
-> ioctl(bdev, HDIO_GETGEO, &geo)
-> 
-> Unfortunately I can't find anything useful and this is certainly a sign
-> that I'm doing something wrong.
-> 
-> Or maybe can I simply assume from my script that the geometry
-> is always heads=255 and the number of sectors per track is 63 for all
-> disks.
-> 
-> Looking at parted(8) source code, I  can find this:
-> 
-> /* The GETGEO ioctl is no longer useful (as of linux 2.6.x).  We could
->  * still use it in 2.4.x, but this is contentious.  Perhaps we should
->  * move to EDD. */
-> 
-> Could anybody give me some advices ?
+[Adding fsdevel list]
 
-Given that the connection between any modern disk geometry and the 
-assumption of a fixed number of sectors per track is pretty tenuous, I'm 
-not sure any of the sizes, BIOS, boot program, or OS, are more than 
-convention anymore.
+On Tuesday 08 April 2008 10:05:47 am Meelis Roos wrote:
+> Jeff Robertson analyzes the behaviour of different operating systems'
+> 64-bit file offset implementation and concludes that on 32-bit
+> machines, Linux and Solaris lack any locking to keep the two 32-bit
+> halves in sync and this could cause rare file offset corruption.
+>
+> http://jeffr-tech.livejournal.com/21014.html
 
+AFAICS, this race is theoretically possible, but it is very hard (almost 
+impossible) to trigger with a sane file usage pattern. 
+Note that you have to access shared struct file (same file descriptor) in 
+different threads which should be synchronized by caller anyway (*).
+
+I also don't see any security implications from this race, but maybe someone 
+with more knowlage about fs can see (f_pos is used at many places in the 
+kernel code).
+
+I think that it is better to live with tiny-race-on-broken-patterns rather 
+than paying for synchronization which is not needed for correct paths. 
+
+[*] file_pos_{read,write} (fs/read_write.c) are not called under lock (in 
+sys_read, sys_write, ...), so even if f_pos is written atomically, you will 
+be able to get races when accessing shared descriptor from different threads.
+I think that POSIX states, that behavior is undefined under these conditions.
+
+Best regards
 -- 
-Bill Davidsen <davidsen@tmr.com>
-   "We have more to fear from the bungling of the incompetent than from
-the machinations of the wicked."  - from Slashdot
+Michal Hocko
+SUSE LINUX s.r.o.
+Lihovarska 1060/12
+190 00 Praha 9    
+Czech Republic 
