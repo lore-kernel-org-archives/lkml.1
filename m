@@ -1,67 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756539AbYDJJsV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756578AbYDJJtV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756539AbYDJJsV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Apr 2008 05:48:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753314AbYDJJsM
+	id S1756578AbYDJJtV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Apr 2008 05:49:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754524AbYDJJtN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Apr 2008 05:48:12 -0400
-Received: from hellhawk.shadowen.org ([80.68.90.175]:4523 "EHLO
-	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752265AbYDJJsL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Apr 2008 05:48:11 -0400
-Date: Thu, 10 Apr 2008 10:46:37 +0100
-From: Andy Whitcroft <apw@shadowen.org>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Steven Rostedt <rostedt@goodmis.org>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>, akpm@osdl.org,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Glauber de Oliveira Costa <gcosta@redhat.com>,
-       Jan Beulich <jbeulich@novell.com>, Thomas Gleixner <tglx@linutronix.de>,
-       pinskia@gcc.gnu.org
-Subject: Re: [PATCH] pop previous section in alternative.c
-Message-ID: <20080410094637.GW17915@shadowen.org>
-References: <Pine.LNX.4.58.0804091859400.31879@gandalf.stny.rr.com> <Pine.LNX.4.58.0804091906040.31970@gandalf.stny.rr.com> <47FD5D42.5000603@zytor.com> <87wsn6m6zt.fsf@basil.nowhere.org>
+	Thu, 10 Apr 2008 05:49:13 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:46207 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754557AbYDJJtM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Apr 2008 05:49:12 -0400
+Date: Thu, 10 Apr 2008 11:48:53 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: Stefan Richter <stefanr@s5r6.in-berlin.de>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: linux-next: Tree for April 9
+Message-ID: <20080410094853.GA12543@elte.hu>
+References: <20080409185309.b94c9d15.sfr@canb.auug.org.au> <47FCF50E.9090703@s5r6.in-berlin.de> <20080410065227.GB30066@elte.hu> <20080410174418.ebfe76c3.sfr@canb.auug.org.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <87wsn6m6zt.fsf@basil.nowhere.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20080410174418.ebfe76c3.sfr@canb.auug.org.au>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 10, 2008 at 10:47:18AM +0200, Andi Kleen wrote:
-> "H. Peter Anvin" <hpa@zytor.com> writes:
-> >>>
-> >> Oh, and this would not be complete without giving Andrew Pinski
-> >> complete
-> >> credit for telling me it wasn't a gcc bug but a bug in the toplevel asm
-> >> code in the kernel. ;-)
-> 
-> We've actually had such bugs before, it isn't the first time.
-> 
+
+* Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+
+> On Thu, 10 Apr 2008 08:52:27 +0200 Ingo Molnar <mingo@elte.hu> wrote:
 > >
-> > In many ways it's kind of silly for this even to be in assembly, since
-> > all it is is a sequence of comma-separated byte values; I guess it was
-> > the easiest way to deal with it given the ".byte" prefix, but still...
+> > what type of conflict do you have there? If it's a new entry then 
+> > you might be able to fix it by moving the new entry elsewhere in the 
+> > file. Or if i introduced a new entry close to an existing entry you 
+> > modify then i could move my new entry elsewhere.
 > 
-> The nops are primarily used in inline assembler statements (in alternative)
-> and only once in this table. Not using this would have meant to write
-> them all twice which would have been nasty. There is also no sane 
-> way to get standard arrays into inline assembler as instructions.
+> Commit 523a65f1a7a339e528ca6d6d808516fe195fde03 ("firewire: fw-ohci: 
+> add option for remote debugging") in the ieee1394 tree adds a new 
+> entry just where the sched tree adds
 > 
-> BTW it looks like the problem was added with 121d7bf5a246d282ba91234d03a4edf9ccc9c940,
-> signed off by me, sorry for not catching it in review.
-> 
-> Perhaps that is something that would make sense adding to checkpatch.pl?
-> Complain for .section in inline assembler without .previous or popsection
-> (cc Andy). I think such a check would make sense. 
+> source kernel/trace/Kconfig
 
-Do you have an example of such a bad thing?  My only concern is this
-sounds like a check which could potentially need to see more lines than are
-available in the patch context and so the test might be rather unreliable.
+hm, i think in this specific case the new firewire entry should be added 
+after the PROVIDE_OHCI1394_DMA_INIT section. (that's how we extend 
+groups of Kconfig entries anyway) The new trace entries in the scheduler 
+tree follow that pattern and add the new kernel/trace/Kconfig at the 
+right place. So if the firewire entry is added that way this conflict 
+could be avoided.
 
--apw
+	Ingo
