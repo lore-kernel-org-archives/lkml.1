@@ -1,67 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757403AbYDJQP4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758263AbYDJQQp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757403AbYDJQP4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Apr 2008 12:15:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756802AbYDJQPr
+	id S1758263AbYDJQQp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Apr 2008 12:16:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756267AbYDJQQh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Apr 2008 12:15:47 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:45635 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756791AbYDJQPq (ORCPT
+	Thu, 10 Apr 2008 12:16:37 -0400
+Received: from yw-out-2324.google.com ([74.125.46.31]:19463 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756412AbYDJQQh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Apr 2008 12:15:46 -0400
-Message-ID: <47FE3C0C.4090101@zytor.com>
-Date: Thu, 10 Apr 2008 09:10:52 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	Thu, 10 Apr 2008 12:16:37 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:organization:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=mwv04xjLEoJrl9afdYXFS5a6Dud2aeyter1xLEp+NUlsIjFstyI+wHS8zAfAAa6ZrZN1/SR0WXZA72tnAZsH58VrM5APzkwTJledHQLH1/+dmYadflppTN08oQXWlQaHMl+5bRR2B2F//H7zT6Jy4hkktkQfCaO6GLVhGi6Jvp0=
+From: Balaji Rao <balajirrao@gmail.com>
+Organization: National Institute of Technology Karnataka
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [RFC][-mm] [1/2] Simple stats for cpu resource controller
+Date: Thu, 10 Apr 2008 21:39:59 +0530
+User-Agent: KMail/1.9.6 (enterprise 0.20071012.724442)
+Cc: Dhaval Giani <dhaval@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
+       containers@lists.osdl.org, menage@google.com, balbir@in.ibm.com,
+       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
+References: <200804052339.46632.balajirrao@gmail.com> <200804060201.52726.balajirrao@gmail.com> <1207574693.15579.35.camel@twins>
+In-Reply-To: <1207574693.15579.35.camel@twins>
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Andi Kleen <andi@firstfloor.org>, Steven Rostedt <rostedt@goodmis.org>,
-       Andy Whitcroft <apw@shadowen.org>, LKML <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
-       akpm@linux-foundation.org, Rusty Russell <rusty@rustcorp.com.au>,
-       Glauber de Oliveira Costa <gcosta@redhat.com>,
-       Jan Beulich <jbeulich@novell.com>, Thomas Gleixner <tglx@linutronix.de>,
-       pinskia@gcc.gnu.org
-Subject: Re: [PATCH] pop previous section in alternative.c
-References: <Pine.LNX.4.58.0804091859400.31879@gandalf.stny.rr.com> <Pine.LNX.4.58.0804091906040.31970@gandalf.stny.rr.com> <47FD5D42.5000603@zytor.com> <87wsn6m6zt.fsf@basil.nowhere.org> <20080410094637.GW17915@shadowen.org> <Pine.LNX.4.58.0804101007510.5673@gandalf.stny.rr.com> <20080410144114.GH10019@one.firstfloor.org> <alpine.LFD.1.00.0804100741430.3143@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.1.00.0804100741430.3143@woody.linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200804102140.00078.balajirrao@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
+On Monday 07 April 2008 06:54:53 pm Peter Zijlstra wrote:
+> On Sun, 2008-04-06 at 02:01 +0530, Balaji Rao wrote:
 > 
-> The thing is, we'd be much better off with some sanity checking in the 
-> assembler.
+> > > > +static s64 cpu_cgroup_read_stat(struct cpu_cgroup_stat *stat,
+> > > > +		enum cpu_cgroup_stat_index idx)
+> > > > +{
+> > > > +	int cpu;
+> > > > +	s64 ret = 0;
+> > > > +	unsigned long flags;
+> > > 
+> > > > +
+> > > > +	local_irq_save(flags);
+> > > 
+> > > I am just wondering. Is local_irq_save() enough?
+> > > 
+> > Hmmm.. You are right.This does not prevent concurrent updates on other 
+CPUs 
+> > from crossing a 32bit boundary. Am not sure how to do this in a safe way. 
+I 
+> > can only think of using atomic64_t now..
+> > 
+> > > > +	for_each_possible_cpu(cpu)
+> > > > +		ret += stat->cpustat[cpu].count[idx];
+> > > > +	local_irq_restore(flags);
+> > > > +
+> > > > +	return ret;
+> > > > +}
+> > > > +
 > 
-> Which is likely not going to happen - oh well.
+> So many stats to steal code from,.. but you didn't :-(
 > 
-> In particular, the assembler should see patterns like
+> Look at mm/vmstat.c, that is a rather complete example.
 > 
-> 	.size function, .-function
+> The trick to solving the above is to use per cpu deltas instead, the
+> deltas can be machine word size and are thus always read in an atomic
+> manner (provided they are also naturally aligned).
 > 
-> and it should be _trivially_ able to check that "." and "function" are in 
-> the same section, and warn if they aren't. Because I don't see how it 
-> could ever be valid to have sizes that cross section boundaries (it's a 
-> totally nonsensical concept).
 > 
-> But it doesn't. Oh, well.
-> 
+Hi Peter,
 
-Wow.  That is utterly braindamaged on the part of gas.
+This wont work for time based statistics. At nsec granularity, a word can hold 
+a time value of up to ~4s. 
 
-> But maybe we can see it in the resulting object file somehow, and do the 
-> check there (the same way we do the init-section analysis). I assume the 
-> .size directive writes some debug info or similar, and we can create a big 
-> warning when a size is unexpectedly huge and crosses section size 
-> boundaries?
+I propose to solve this problem by using a lock to protect the statistics, but 
+only on 32bit architectures.
 
-I just tried it, and it output the difference across the sections, 
-without any consideration that the base was different.  Didn't know one 
-could write an assembler that dumb.
-
-	-hpa
-
+I'm not sure how good a solution this is, but that's the best I can think of 
+ATM. 
+-- 
+regards,
+Balaji Rao
+Dept. of Mechanical Engineering,
+National Institute of Technology Karnataka, India
