@@ -1,81 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759877AbYDJPMc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759974AbYDJPMq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759877AbYDJPMc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Apr 2008 11:12:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758341AbYDJPLk
+	id S1759974AbYDJPMq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Apr 2008 11:12:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759723AbYDJPMY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Apr 2008 11:11:40 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:37024 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758206AbYDJPLj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Apr 2008 11:11:39 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-	Directors: Michael Cunningham (USA), Charlie Peters (USA) and
-	David Owens (Ireland)
-From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 5/5] FRV: Don't make smp_{r, w,
-	}mb() interpolate MEMBAR when CONFIG_SMP=n [try #2]
-To: torvalds@osdl.org, akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, dhowells@redhat.com
-Date: Thu, 10 Apr 2008 16:11:05 +0100
-Message-ID: <20080410151105.3764.51970.stgit@warthog.procyon.org.uk>
-In-Reply-To: <20080410151044.3764.47511.stgit@warthog.procyon.org.uk>
-References: <20080410151044.3764.47511.stgit@warthog.procyon.org.uk>
-User-Agent: StGIT/0.14.1
+	Thu, 10 Apr 2008 11:12:24 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:42000 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759698AbYDJPMX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Apr 2008 11:12:23 -0400
+Date: Thu, 10 Apr 2008 17:12:18 +0200
+From: Jan Kara <jack@suse.cz>
+To: Martin Mares <mj@ucw.cz>
+Cc: Michal Hocko <mhocko@suse.cz>, Meelis Roos <mroos@linux.ee>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: file offset corruption on 32-bit machines?
+Message-ID: <20080410151218.GD6725@atrey.karlin.mff.cuni.cz>
+References: <Pine.SOC.4.64.0804081101430.28938@math.ut.ee> <200804101555.58643.mhocko@suse.cz> <mj+md-20080410.140857.3331.nikam@ucw.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <mj+md-20080410.140857.3331.nikam@ucw.cz>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: David Howells <dhowells@redhat.com>
+> Hello!
+> 
+> > [*] file_pos_{read,write} (fs/read_write.c) are not called under lock (in 
+> > sys_read, sys_write, ...), so even if f_pos is written atomically, you will 
+> > be able to get races when accessing shared descriptor from different threads.
+> 
+> There are however cases when such behavior is perfectly valid: For example
+> you can have a file of records of a fixed size, whose order does not matter.
+> Then multiple processes can produce the records in parallel, sharing
+> a single fd.
+  Well, but noone guarantees that both processes don't read the same
+data.
 
-Don't make smp_{r,w,}mb() interpolate a MEMBAR instruction when CONFIG_SMP=n as
-SMP memory barries on UP systems should interpolate a compiler barrier only.
+> > I think that POSIX states, that behavior is undefined under these conditions.
+> 
+> Do you have a pointer to that?
+  SUSv3 says:
+On files that support seeking (for example, a regular file), the read()
+shall start at a position in the file given by the file offset
+associated with fildes. The file offset shall be incremented by the
+number of bytes actually read.
 
-Signed-off-by: David Howells <dhowells@redhat.com>
----
+  But nowhere is specified when this happens so OS is perfectly free to
+advance f_pos after read finishes when read from the other process is
+already running. And Linux does exactly that - actually, we do:
+  pos = f_pos
+  do reading which advances pos
+  f_pos = pos
 
- include/asm-frv/system.h |   21 +++++++++++++++------
- 1 files changed, 15 insertions(+), 6 deletions(-)
+  So it can even in theory happen that one thread reads entries 1,2,3,2
+because the other thread in the mean time finished reading entry 1...
 
-
-diff --git a/include/asm-frv/system.h b/include/asm-frv/system.h
-index 2c57f47..30a67a9 100644
---- a/include/asm-frv/system.h
-+++ b/include/asm-frv/system.h
-@@ -179,14 +179,23 @@ do {							\
- #define mb()			asm volatile ("membar" : : :"memory")
- #define rmb()			asm volatile ("membar" : : :"memory")
- #define wmb()			asm volatile ("membar" : : :"memory")
--#define set_mb(var, value)	do { var = value; mb(); } while (0)
-+#define read_barrier_depends()	barrier()
- 
--#define smp_mb()		mb()
--#define smp_rmb()		rmb()
--#define smp_wmb()		wmb()
--
--#define read_barrier_depends()		do {} while(0)
-+#ifdef CONFIG_SMP
-+#define smp_mb()			mb()
-+#define smp_rmb()			rmb()
-+#define smp_wmb()			wmb()
- #define smp_read_barrier_depends()	read_barrier_depends()
-+#define set_mb(var, value) \
-+	do { xchg(&var, (value)); } while (0)
-+#else
-+#define smp_mb()			barrier()
-+#define smp_rmb()			barrier()
-+#define smp_wmb()			barrier()
-+#define smp_read_barrier_depends()	do {} while(0)
-+#define set_mb(var, value) \
-+	do { var = (value); barrier(); } while (0)
-+#endif
- 
- #define HARD_RESET_NOW()			\
- do {						\
-
+									Honza
+-- 
+Jan Kara <jack@suse.cz>
+SuSE CR Labs
