@@ -1,98 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755914AbYDJDHo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755449AbYDJDYK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755914AbYDJDHo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Apr 2008 23:07:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753328AbYDJDHc
+	id S1755449AbYDJDYK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Apr 2008 23:24:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752406AbYDJDX7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Apr 2008 23:07:32 -0400
-Received: from artax.karlin.mff.cuni.cz ([195.113.31.125]:37354 "EHLO
-	artax.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751038AbYDJDHb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Apr 2008 23:07:31 -0400
-Date: Thu, 10 Apr 2008 05:07:30 +0200 (CEST)
-From: Mikulas Patocka <mikulas@artax.karlin.mff.cuni.cz>
-To: Bill Davidsen <davidsen@tmr.com>
-cc: linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org,
-       device-mapper development <dm-devel@redhat.com>, agk@redhat.com,
-       mingo@redhat.com, neilb@suse.de
-Subject: Re: Data corruption on software RAID
-In-Reply-To: <47FD0BE8.4070105@tmr.com>
-Message-ID: <Pine.LNX.4.64.0804100503160.26713@artax.karlin.mff.cuni.cz>
-References: <Pine.LNX.4.64.0804080033430.13352@artax.karlin.mff.cuni.cz>
- <47FD0BE8.4070105@tmr.com>
-X-Personality-Disorder: Schizoid
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 9 Apr 2008 23:23:59 -0400
+Received: from ozlabs.org ([203.10.76.45]:56346 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752076AbYDJDX6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Apr 2008 23:23:58 -0400
+To: <linux-kernel@vger.kernel.org>
+CC: Paul Mackerras <paulus@samba.org>, <linuxppc-dev@ozlabs.org>,
+       <takata@linux-m32r.org>, <linux-m32r@ml.linux-m32r.org>,
+       Linux-Arch <linux-arch@vger.kernel.org>
+From: Benjamin Herrenschmidt <benh@ozlabs.org>
+Date: Thu, 10 Apr 2008 13:22:56 +1000
+Subject: [PATCH 1/2] Add thread_info_cache_init() to all archs
+Message-Id: <20080410032354.90CB1DDF0F@ozlabs.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > Possibilities how to fix it:
-> >
-> > 1. lock the buffers and pages while they are being written --- this would
-> > cause performance degradation (the most severe degradation would be in case
-> > when one process does repeatedly sync() and other unrelated process
-> > repeatedly writes to some file).
-> >
-> > Lock the buffers and pages only for RAID --- would create many special cases
-> > and possible bugs.
-> >
-> > 2. never turn the region dirty bit off until the filesystem is unmounted.
-> > --- this is the simplest fix. If the computer crashes after a long time, it
-> > resynchronizes the whole device. But there won't cause application-visible
-> > or filesystem-visible data corruption.
-> >
-> > 3. turn off the region bit if the region wasn't written in one pdflush
-> > period --- requires an interaction with pdflush, rather complex. The problem
-> > here is that pdflush makes its best effort to write data in
-> > dirty_writeback_centisecs interval, but it is not guaranteed to do it.
-> >
-> > 4. make more region states: Region has in-memory states CLEAN, DIRTY,
-> > MAYBE_DIRTY, CLEAN_CANDIDATE.
-> >
-> > When you start writing to the region, it is always moved to DIRTY state (and
-> > on-disk bit is turned on).
-> >
-> > When you finish all writes to the region, move it to MAYBE_DIRTY state, but
-> > leave bit on disk on. We now don't know if the region is dirty or no.
-> >
-> > Run a helper thread that does periodically:
-> > Change MAYBE_DIRTY regions to CLEAN_CANDIDATE
-> > Issue sync()
-> > Change CLEAN_CANDIDATE regions to CLEAN state and clear their on-disk bit.
-> >
-> > The rationale is that if the above write-while-modify scenario happens, the
-> > page is always dirty. Thus, sync() will write the page, kick the region back
-> > from CLEAN_CANDIDATE to MAYBE_DIRTY state and we won't mark the region as
-> > clean on disk.
-> >
-> >
-> > I'd like to know you ideas on this, before we start coding a solution.
-> >   
-> 
-> I looked at just this problem a while ago, and came to the conclusion that
-> what was needed was a COW bit, to show that there was i/o in flight, and that
-> before modification it needed to be copied. Since you don't want to let that
-> recurse, you don't start writing the copy until the original is written and
-> freed. Ideally you wouldn't bother to finish writing the original, but that
-> doesn't seem possible. That allows at most two copies of a chunk to take up
-> memory space at once, although it's still ugly and can be a bottleneck.
+Some architecture need to maintain a kmem cache for thread info
+structures. (next patch adds that to powerpc to fix an alignment
+problem).
 
-Copying the data would be performance overkill. You can really write 
-different data to different disks, you just must not forget to resync them 
-after a crash. The filesystem/application will recover with either old or 
-new data --- it just won't recover when it's reading old and new data from 
-the same location.
+There is no good arch callback to use to initialize that cache
+that I can find, so this adds a new one and adds an empty macro
+for when it's not implemented.
 
->From my point of view that trick with thread doing sync() and turning off 
-region bits looks best. I'd like to know if that solution doesn't have any 
-other flaw.
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
 
-> For reliable operation I would want all copies (and/or CRCs) to be written on
-> an fsync, by the time I bother to fsync I really, really, want the data on the
-> disk.
+So we have the choice here between:
 
-fsync already works this way.
+ - the ifdef on the func name that I did, consistent with what
+I did before for iomap, which iirc Linus liked
 
-Mikulas
+ - add some more ARCH_HAS_* or HAVE_* (yuck)
+
+ - add an empty definition to all archs .h (pain in the neck but I
+can do it, though it will be an annoying patch to keep around)
+
+ - do a weak function (will slightly bloat everybody for no good reason)
+
+So unless there is strong complaints, I'd like to stick to my
+current approach.
+
+ include/linux/sched.h |    4 ++++
+ init/main.c           |    1 +
+ 2 files changed, 5 insertions(+)
+
+--- linux-work.orig/init/main.c	2008-04-10 13:11:06.000000000 +1000
++++ linux-work/init/main.c	2008-04-10 13:11:19.000000000 +1000
+@@ -623,6 +623,7 @@ asmlinkage void __init start_kernel(void
+ 	if (efi_enabled)
+ 		efi_enter_virtual_mode();
+ #endif
++	thread_info_cache_init();
+ 	fork_init(num_physpages);
+ 	proc_caches_init();
+ 	buffer_init();
+Index: linux-work/include/linux/sched.h
+===================================================================
+--- linux-work.orig/include/linux/sched.h	2008-04-10 13:11:44.000000000 +1000
++++ linux-work/include/linux/sched.h	2008-04-10 13:12:05.000000000 +1000
+@@ -1893,6 +1893,10 @@ static inline unsigned long *end_of_stac
+ 
+ #endif
+ 
++#ifndef thread_info_cache_init
++#define thread_info_cache_init	do { } while(0)
++#endif
++
+ /* set thread flags in other task's structures
+  * - see asm/thread_info.h for TIF_xxxx flags available
+  */
