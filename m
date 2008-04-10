@@ -1,42 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756672AbYDJJBl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756823AbYDJJCF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756672AbYDJJBl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Apr 2008 05:01:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755035AbYDJJBb
+	id S1756823AbYDJJCF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Apr 2008 05:02:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755731AbYDJJBx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Apr 2008 05:01:31 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:45080
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752480AbYDJJBa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Apr 2008 05:01:30 -0400
-Date: Thu, 10 Apr 2008 02:01:31 -0700 (PDT)
-Message-Id: <20080410.020131.264375762.davem@davemloft.net>
-To: ramirose@gmail.com
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH net-2.6.26] [IPV6] Remove three method declarations in
- include/net/ndisc.h.
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <eb3ff54b0804010433v67f0ea60w4681b3a3400c3484@mail.gmail.com>
-References: <eb3ff54b0804010433v67f0ea60w4681b3a3400c3484@mail.gmail.com>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Thu, 10 Apr 2008 05:01:53 -0400
+Received: from sacred.ru ([62.205.161.221]:60008 "EHLO sacred.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752198AbYDJJBw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Apr 2008 05:01:52 -0400
+Message-ID: <47FDD3A8.3010901@openvz.org>
+Date: Thu, 10 Apr 2008 12:45:28 +0400
+From: Pavel Emelyanov <xemul@openvz.org>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
+MIME-Version: 1.0
+To: Oleg Nesterov <oleg@tv-sign.ru>, Sukadev Bhattiprolu <sukadev@us.ibm.com>,
+       Alexey Dobriyan <adobriyan@openvz.org>
+CC: Linux Containers <containers@lists.osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH 4/10] Bsdacct: fix bogus comment near acct_process
+References: <47FDD267.80700@openvz.org>
+In-Reply-To: <47FDD267.80700@openvz.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Thu, 10 Apr 2008 12:20:37 +0400 (MSD)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: "Rami Rosen" <ramirose@gmail.com>
-Date: Tue, 1 Apr 2008 14:33:54 +0300
+It does not accept any arguments :)
 
-> Hi,
-> This patch removes two unused method declarations in include/net/ndisc.h:
-> ndisc_forwarding_on(void) and  ndisc_forwarding_off(void);
-> Also igmp6_cleanup(void) appears twice in this header, so one
-> igmp6_cleanup(void)
-> declaration is removed.
-> 
-> Signed-off-by: Rami Rosen <ramirose@gmail.com>
+Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
 
-Applied to net-2.6.26, thanks.
+---
+ kernel/acct.c |    1 -
+ 1 files changed, 0 insertions(+), 1 deletions(-)
+
+diff --git a/kernel/acct.c b/kernel/acct.c
+index ee3e605..d9ee183 100644
+--- a/kernel/acct.c
++++ b/kernel/acct.c
+@@ -579,7 +579,6 @@ void acct_collect(long exitcode, int group_dead)
+ 
+ /**
+  * acct_process - now just a wrapper around do_acct_process
+- * @exitcode: task exit code
+  *
+  * handles process accounting for an exiting task
+  */
+-- 
+1.5.3.4
+
