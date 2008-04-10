@@ -1,78 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755449AbYDJDYK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756152AbYDJDYk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755449AbYDJDYK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Apr 2008 23:24:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752406AbYDJDX7
+	id S1756152AbYDJDYk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Apr 2008 23:24:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755582AbYDJDY2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Apr 2008 23:23:59 -0400
-Received: from ozlabs.org ([203.10.76.45]:56346 "EHLO ozlabs.org"
+	Wed, 9 Apr 2008 23:24:28 -0400
+Received: from ozlabs.org ([203.10.76.45]:56350 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752076AbYDJDX6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Apr 2008 23:23:58 -0400
+	id S1754746AbYDJDYA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Apr 2008 23:24:00 -0400
 To: <linux-kernel@vger.kernel.org>
 CC: Paul Mackerras <paulus@samba.org>, <linuxppc-dev@ozlabs.org>,
        <takata@linux-m32r.org>, <linux-m32r@ml.linux-m32r.org>,
        Linux-Arch <linux-arch@vger.kernel.org>
 From: Benjamin Herrenschmidt <benh@ozlabs.org>
-Date: Thu, 10 Apr 2008 13:22:56 +1000
-Subject: [PATCH 1/2] Add thread_info_cache_init() to all archs
-Message-Id: <20080410032354.90CB1DDF0F@ozlabs.org>
+Date: Thu, 10 Apr 2008 13:22:58 +1000
+Subject: [PATCH 2/2] [POWERPC] Fix kernel stack allocation alignment
+Message-Id: <20080410032356.5D810DDF12@ozlabs.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Some architecture need to maintain a kmem cache for thread info
-structures. (next patch adds that to powerpc to fix an alignment
-problem).
+The powerpc kernel stacks need to be naturally aligned, as they
+contain the thread info at the bottom, which is obtained by
+clearing the low bits of the stack pointer.
 
-There is no good arch callback to use to initialize that cache
-that I can find, so this adds a new one and adds an empty macro
-for when it's not implemented.
+However, when using 64K pages (the stack is smaller than a page),
+we use kmalloc to allocate it, which doesn't provide that guarantee.
+
+It appeared to work so far... until one enables SLUB debugging
+which then returns unaligned pointers. Ooops...
+
+This patch fixes it by using a slab cache with enforced alignment
+for those. It replies on my previous patch that adds a
+thread_info_cache_init() callback.
 
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+
 ---
+Note that m32r seems to also have this problem.
 
-So we have the choice here between:
+ arch/powerpc/kernel/process.c     |   31 +++++++++++++++++++++++++++++++
+ include/asm-powerpc/thread_info.h |   10 ++++------
+ 2 files changed, 35 insertions(+), 6 deletions(-)
 
- - the ifdef on the func name that I did, consistent with what
-I did before for iomap, which iirc Linus liked
-
- - add some more ARCH_HAS_* or HAVE_* (yuck)
-
- - add an empty definition to all archs .h (pain in the neck but I
-can do it, though it will be an annoying patch to keep around)
-
- - do a weak function (will slightly bloat everybody for no good reason)
-
-So unless there is strong complaints, I'd like to stick to my
-current approach.
-
- include/linux/sched.h |    4 ++++
- init/main.c           |    1 +
- 2 files changed, 5 insertions(+)
-
---- linux-work.orig/init/main.c	2008-04-10 13:11:06.000000000 +1000
-+++ linux-work/init/main.c	2008-04-10 13:11:19.000000000 +1000
-@@ -623,6 +623,7 @@ asmlinkage void __init start_kernel(void
- 	if (efi_enabled)
- 		efi_enter_virtual_mode();
+--- linux-work.orig/arch/powerpc/kernel/process.c	2008-04-10 13:11:05.000000000 +1000
++++ linux-work/arch/powerpc/kernel/process.c	2008-04-10 13:14:29.000000000 +1000
+@@ -1052,3 +1052,34 @@ void ppc64_runlatch_off(void)
+ 	}
+ }
  #endif
-+	thread_info_cache_init();
- 	fork_init(num_physpages);
- 	proc_caches_init();
- 	buffer_init();
-Index: linux-work/include/linux/sched.h
-===================================================================
---- linux-work.orig/include/linux/sched.h	2008-04-10 13:11:44.000000000 +1000
-+++ linux-work/include/linux/sched.h	2008-04-10 13:12:05.000000000 +1000
-@@ -1893,6 +1893,10 @@ static inline unsigned long *end_of_stac
- 
- #endif
- 
-+#ifndef thread_info_cache_init
-+#define thread_info_cache_init	do { } while(0)
-+#endif
 +
- /* set thread flags in other task's structures
-  * - see asm/thread_info.h for TIF_xxxx flags available
-  */
++#if THREAD_SHIFT < PAGE_SHIFT
++
++static struct kmem_cache *thread_info_cache;
++
++struct thread_info *alloc_thread_info(struct task_struct *tsk)
++{
++	struct thread_info *ti;
++
++	ti = kmem_cache_alloc(thread_info_cache, GFP_KERNEL);
++	if (unlikely(ti == NULL))
++		return NULL;
++#ifdef CONFIG_DEBUG_STACK_USAGE
++	memset(ti, 0, THREAD_SIZE);
++#endif
++	return ti;
++}
++
++void free_thread_info(struct thread_info *ti)
++{
++	kmem_cache_free(thread_info_cache, ti);
++}
++
++void thread_info_cache_init(void)
++{
++	thread_info_cache = kmem_cache_create("thread_info", THREAD_SIZE,
++					      THREAD_SIZE, 0, NULL);
++	BUG_ON(thread_info_cache == NULL);
++}
++
++#endif /* THREAD_SHIFT < PAGE_SHIFT */
+Index: linux-work/include/asm-powerpc/thread_info.h
+===================================================================
+--- linux-work.orig/include/asm-powerpc/thread_info.h	2008-04-10 13:11:05.000000000 +1000
++++ linux-work/include/asm-powerpc/thread_info.h	2008-04-10 13:14:47.000000000 +1000
+@@ -80,12 +80,10 @@ struct thread_info {
+ 
+ #else /* THREAD_SHIFT < PAGE_SHIFT */
+ 
+-#ifdef CONFIG_DEBUG_STACK_USAGE
+-#define alloc_thread_info(tsk)	kzalloc(THREAD_SIZE, GFP_KERNEL)
+-#else
+-#define alloc_thread_info(tsk)	kmalloc(THREAD_SIZE, GFP_KERNEL)
+-#endif
+-#define free_thread_info(ti)	kfree(ti)
++extern struct thread_info *alloc_thread_info(struct task_struct *tsk);
++extern void free_thread_info(struct thread_info *ti);
++extern void thread_info_cache_init(void);
++#define thread_info_cache_init thread_info_cache_init
+ 
+ #endif /* THREAD_SHIFT < PAGE_SHIFT */
+ 
