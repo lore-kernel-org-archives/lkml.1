@@ -1,75 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759128AbYDJWIn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759507AbYDJWJQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759128AbYDJWIn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Apr 2008 18:08:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755943AbYDJWIf
+	id S1759507AbYDJWJQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Apr 2008 18:09:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757089AbYDJWI7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Apr 2008 18:08:35 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:39408 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753830AbYDJWIe (ORCPT
+	Thu, 10 Apr 2008 18:08:59 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:54584 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759136AbYDJWI6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Apr 2008 18:08:34 -0400
-Date: Thu, 10 Apr 2008 15:07:48 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       mingo <mingo@redhat.com>
-Subject: Re: linux-next: Tree for April 10 (ftrace)
-Message-Id: <20080410150748.1bf2a8a8.randy.dunlap@oracle.com>
-In-Reply-To: <20080410181404.b76939a6.sfr@canb.auug.org.au>
-References: <20080410181404.b76939a6.sfr@canb.auug.org.au>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 10 Apr 2008 18:08:58 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <47FE8FC8.8000007@s5r6.in-berlin.de>
+Date: Fri, 11 Apr 2008 00:08:08 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.12) Gecko/20080219 SeaMonkey/1.1.8
+MIME-Version: 1.0
+To: linux1394-devel@lists.sourceforge.net
+CC: linux-kernel@vger.kernel.org, Stephen Rothwell <sfr@canb.auug.org.au>,
+       Ingo Molnar <mingo@elte.hu>, Randy Dunlap <randy.dunlap@oracle.com>,
+       Bernhard Kaindl <bk@suse.de>
+Subject: Re: [PATCH linux1394-2.6.git] firewire: fw-ohci: add option for remote
+ debugging - amendment
+References: <20080409185309.b94c9d15.sfr@canb.auug.org.au> <47FCF50E.9090703@s5r6.in-berlin.de> <20080410065227.GB30066@elte.hu> <20080410174418.ebfe76c3.sfr@canb.auug.org.au> <tkrat.991b1750a56cf2e9@s5r6.in-berlin.de> <20080410095112.GB12543@elte.hu> <tkrat.88330c779367ee9d@s5r6.in-berlin.de>
+In-Reply-To: <tkrat.88330c779367ee9d@s5r6.in-berlin.de>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 10 Apr 2008 18:14:04 +1000 Stephen Rothwell wrote:
+I wrote:
+>   - Open the physical DMA filter in the top half of the IRQ handler
+>     and flush the necessary MMIO writes.  This is to open the filter
+>     as soon as possible after bus reset.
+...
+> --- linux.orig/drivers/firewire/fw-ohci.c
+> +++ linux/drivers/firewire/fw-ohci.c
+> @@ -1309,11 +1309,6 @@ static void bus_reset_tasklet(unsigned l
+>  		reg_write(ohci, OHCI1394_ConfigROMhdr, ohci->next_header);
+>  	}
+>  
+> -#ifdef CONFIG_FIREWIRE_OHCI_REMOTE_DMA
+> -	reg_write(ohci, OHCI1394_PhyReqFilterHiSet, ~0);
+> -	reg_write(ohci, OHCI1394_PhyReqFilterLoSet, ~0);
+> -#endif
+> -
+>  	spin_unlock_irqrestore(&ohci->lock, flags);
+>  
+>  	if (free_rom)
+> @@ -1341,8 +1336,14 @@ static irqreturn_t irq_handler(int irq, 
+>  	reg_write(ohci, OHCI1394_IntEventClear, event & ~OHCI1394_busReset);
+>  	log_irqs(event);
+>  
+> -	if (event & OHCI1394_selfIDComplete)
+> +	if (event & OHCI1394_selfIDComplete) {
+> +#ifdef CONFIG_FIREWIRE_OHCI_REMOTE_DMA
+> +		reg_write(ohci, OHCI1394_PhyReqFilterHiSet, ~0);
+> +		reg_write(ohci, OHCI1394_PhyReqFilterLoSet, ~0);
+> +		flush_writes(ohci);
+> +#endif
+>  		tasklet_schedule(&ohci->bus_reset_tasklet);
+> +	}
+>  
 
-> Hi all,
-> 
-> [I have been asked to provide a summary of changes before the biolerplate
-> so here goes (please tell me if this is what you want or not).  I am not
-> going to try to describe the changes in the individual trees, just the
-> interactions between them.]
-> 
-> Changes since next-20080410:
-> 
-> I no longer revert "x86: phase out forced inlining".
-> There is a new conflict in arch/s390/lib/uaccess_pt.c between the s390 and
-> 	kvm trees.
-> There is a new trivial white space conflict in arch/ia64/kernel/mca.c.
-> I no longer need to revert "wusb: add the wireless usb stack to Linux".
-> 
-> Today's Next/Trees file is lying: the x86-latest and sched-latest trees
-> did not merge/build correctly so have not been included.
-> 
-> ----------------------------------------------------------------------------
-> 
-> I have created today's linux-next tree at
-> git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git
-> (tar balls at
-> http://www.kernel.org/pub/linux/kernel/people/sfr/linux-next/).
+I retract this part of the patch.  Writes to PhyReqFilter have no effect 
+as long as intEvent.busReset isn't cleared.  This happens in the bottom 
+half of the bus reset handler (bus_reset_tasklet).
 
-trace selftest build fails when CONFIG_RT_MUTEXES=n:
-
-next-20080410/kernel/trace/trace_selftest.c:413: error: implicit declaration of function 'rt_mutex_setprio'
-make[3]: *** [kernel/trace/trace.o] Error 1
-
-Possible fixes:
-
-kernel/trace/Kconfig: SCHED_TRACER can depend on RT_MUTEXES
-or there can be a stub for rt_mutex_setprio() when RT_MUTEXES=n
-
-And kernel/trace/trace_selftest.c still needs #include <sched.h> added to it.
-
----
-~Randy
+The rest of the patch stays valid.
+-- 
+Stefan Richter
+-=====-==--- -=-- -=-==
+http://arcgraph.de/sr/
