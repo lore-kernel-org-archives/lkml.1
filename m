@@ -1,66 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755993AbYDJHoe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756133AbYDJHrq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755993AbYDJHoe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Apr 2008 03:44:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754630AbYDJHo0
+	id S1756133AbYDJHrq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Apr 2008 03:47:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754364AbYDJHri
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Apr 2008 03:44:26 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:53348 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753096AbYDJHoZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Apr 2008 03:44:25 -0400
-Date: Thu, 10 Apr 2008 17:44:18 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Stefan Richter <stefanr@s5r6.in-berlin.de>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: linux-next: Tree for April 9
-Message-Id: <20080410174418.ebfe76c3.sfr@canb.auug.org.au>
-In-Reply-To: <20080410065227.GB30066@elte.hu>
-References: <20080409185309.b94c9d15.sfr@canb.auug.org.au>
-	<47FCF50E.9090703@s5r6.in-berlin.de>
-	<20080410065227.GB30066@elte.hu>
-X-Mailer: Sylpheed 2.5.0beta1 (GTK+ 2.12.9; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Thu__10_Apr_2008_17_44_18_+1000_xFXuyCfHOoJkys_4"
+	Thu, 10 Apr 2008 03:47:38 -0400
+Received: from mk-outboundfilter-4.mail.uk.tiscali.com ([212.74.114.32]:56264
+	"EHLO mk-outboundfilter-4.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753871AbYDJHrh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Apr 2008 03:47:37 -0400
+X-Trace: 55861358/mk-outboundfilter-2.mail.uk.tiscali.com/F2S/$ACCEPTED/freedom2Surf-customers/83.67.11.44
+X-SBRS: None
+X-RemoteIP: 83.67.11.44
+X-IP-MAIL-FROM: tvrtko@ursulin.net
+X-IP-BHB: Once
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AkoFAA5j/UdTQwss/2dsb2JhbACBXakU
+X-IP-Direction: IN
+From: "Tvrtko A. Ursulin" <tvrtko@ursulin.net>
+To: linux-ide@vger.kernel.org
+Subject: Re: Western Digital GreenPower drives and Linux
+Date: Thu, 10 Apr 2008 08:48:08 +0100
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: linux-kernel@vger.kernel.org
+References: <200804092118.35501.tvrtko@ursulin.net>
+In-Reply-To: <200804092118.35501.tvrtko@ursulin.net>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200804100848.08442.tvrtko@ursulin.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Thu__10_Apr_2008_17_44_18_+1000_xFXuyCfHOoJkys_4
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-On Thu, 10 Apr 2008 08:52:27 +0200 Ingo Molnar <mingo@elte.hu> wrote:
+On Wednesday 09 April 2008 21:18:35 Tvrtko A. Ursulin wrote:
+> I got one of them (WD5000AACS) recently and to my horror after less than
+> three days of being power on this is what I saw:
 >
-> what type of conflict do you have there? If it's a new entry then you=20
-> might be able to fix it by moving the new entry elsewhere in the file.=20
-> Or if i introduced a new entry close to an existing entry you modify=20
-> then i could move my new entry elsewhere.
+> 9 Power_On_Hours       0x0032 100 100 000 Old_age Always  - 66
+> 193 Load_Cycle_Count 0x0032 197 197 000 Old_age  Always  - 10233
+>
+> At this rate the disk would reach it's design limit for load/unload cycles
+> in around 80 days. Not good - so I implemented a lame workaround of keeping
+> disk busy every couple of seconds - hopefully that won't kill it sooner
+> that unloads would..
+>
+> I am also currently talking with first line of WD's tech support trying to
+> get some data on how exactly those drives manage head unloading, but that
+> may not lead anywhere useful.
 
-Commit 523a65f1a7a339e528ca6d6d808516fe195fde03 ("firewire: fw-ohci: add
-option for remote debugging") in the ieee1394 tree adds a new entry just
-where the sched tree adds
+I got back from WD's tech support and received a DOS utility which can control 
+this drive feature, apparently using vendor specific commands. With it head 
+unload timer can be disabled or set to a period between 100ms and 25.5s. 
 
-source kernel/trace/Kconfig
+Of course I asked for more than a DOS utility, but the question really is how 
+was this feature intended to work with Windows for example, is there 
+something there which would prevent such rapid load/unload cycle growth, and 
+why isn't it documented somewhere?
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+I am kind off hoping that someone from WD is reading this list and will notice 
+this in case my effort with tech support fails.
 
---Signature=_Thu__10_Apr_2008_17_44_18_+1000_xFXuyCfHOoJkys_4
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFH/cVWTgG2atn1QN8RAlyWAKCGG7rORWKNOxi28nrGVoZIaEWNgACgjrjA
-+aBefjDyyvGTm+yeWk1GoDQ=
-=tqoi
------END PGP SIGNATURE-----
-
---Signature=_Thu__10_Apr_2008_17_44_18_+1000_xFXuyCfHOoJkys_4--
+Tvrtko
