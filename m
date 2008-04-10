@@ -1,48 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754926AbYDJBPP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755479AbYDJBWk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754926AbYDJBPP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Apr 2008 21:15:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752597AbYDJBPA
+	id S1755479AbYDJBWk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Apr 2008 21:22:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753079AbYDJBW2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Apr 2008 21:15:00 -0400
-Received: from wr-out-0506.google.com ([64.233.184.225]:49638 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752024AbYDJBO7 (ORCPT
+	Wed, 9 Apr 2008 21:22:28 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:47145
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752835AbYDJBW1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Apr 2008 21:14:59 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=jOWvQTS26dvflkLr9hnjL/+YALojSE388YXsteJwV7bBUpUOdynpmZQ4jGfa9cYWFxhTKFqVVRzKFarxf8AezvneA7cU5JwWLuvVNvo4dvjqG6oWOQdDcvhDr/vLcPzZvA06j8v8Mi6CkwseLM4pp1rvG0nB3vdplgl4fsUzKbk=
-Message-ID: <75b66ecd0804091814x659c07f8q68693d1b088e4c21@mail.gmail.com>
-Date: Wed, 9 Apr 2008 21:14:57 -0400
-From: "Lee Revell" <rlrevell@joe-job.com>
-To: "Andreas Grimm" <agrimm61@yahoo.com>
-Subject: Re:
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <293246.57980.qm@web45116.mail.sp1.yahoo.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 9 Apr 2008 21:22:27 -0400
+Date: Wed, 09 Apr 2008 18:22:28 -0700 (PDT)
+Message-Id: <20080409.182228.193699767.davem@davemloft.net>
+To: lkml@rtr.ca
+Cc: yoshfuji@linux-ipv6.org, jeff@garzik.org, rjw@sisk.pl,
+       linux-kernel@vger.kernel.org, linux-net@vger.kernel.org
+Subject: Re: 2.6.25-rc8: FTP transfer errors
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <47FD590C.5020003@rtr.ca>
+References: <47FD138B.2060801@rtr.ca>
+	<20080409.152933.132174258.davem@davemloft.net>
+	<47FD590C.5020003@rtr.ca>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <293246.57980.qm@web45116.mail.sp1.yahoo.com>
-X-Google-Sender-Auth: 60b865eeb955165d
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 9, 2008 at 4:45 AM, Andreas Grimm <agrimm61@yahoo.com> wrote:
-> Hello everybody,
->
->   i got a weird problem with one of my servers. It's a Intel SR2500AL with 32GB of RAM.
->   Looking at the memory usage of the system, something is going totally wrong. The crucial numbers from /proc/meminfo are:
->
->   MemTotal:     33265916 kB
->   MemFree:        416168 kB
->   Inactive:     24630428 kB   (24GB? whooaaa)
->
+From: Mark Lord <lkml@rtr.ca>
+Date: Wed, 09 Apr 2008 20:02:20 -0400
 
-Why did you start 3 separate threads for this issue?  That's more
-likely to annoy people than to get them to help you.
+> Really, folks.  Bug reports are intended to *help* the developers,
+> not something to be thrown back in their faces.
 
-Lee
+It's a two way street, we asked for a bisect which helps us a lot.
+
+In fact, lately I notice a strong unwillingness to bisect on your
+part, in particular.
