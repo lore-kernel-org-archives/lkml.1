@@ -1,151 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759471AbYDJUNN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759542AbYDJUNp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759471AbYDJUNN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Apr 2008 16:13:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758914AbYDJUMV
+	id S1759542AbYDJUNp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Apr 2008 16:13:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757485AbYDJUNg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Apr 2008 16:12:21 -0400
-Received: from nf-out-0910.google.com ([64.233.182.190]:27884 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757581AbYDJUMT (ORCPT
+	Thu, 10 Apr 2008 16:13:36 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:33178 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757208AbYDJUNf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Apr 2008 16:12:19 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:mime-version:content-disposition:message-id:content-type:content-transfer-encoding;
-        b=obcAUceM9251Ga/9IWZSB9jOEcDRVylRAyXR5s5Yt0iCQDdqciKoEpCfT4drMRSWheDDBVGMS/l22yRGGyOnmNNyGa2tFaO1rPQkIOMjhg9+aUrXcnuiUEOOVXoc5tXwLZ9d5UL5W5WxmXC7344GIzRyusNaMIcKFqKRV9rJc0M=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: linux-ide@vger.kernel.org
-Subject: [PATCH 3/3] ide: add ide_execute_pkt_cmd() helper
-Date: Thu, 10 Apr 2008 22:26:52 +0200
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org
-MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200804102226.52658.bzolnier@gmail.com>
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Thu, 10 Apr 2008 16:13:35 -0400
+Date: Thu, 10 Apr 2008 21:09:18 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Rodolfo Giometti <giometti@linux.it>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       David Woodhouse <dwmw2@infradead.org>, Dave Jones <davej@redhat.com>,
+       Sam Ravnborg <sam@ravnborg.org>, Greg KH <greg@kroah.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Kay Sievers <kay.sievers@vrfy.org>,
+       Rodolfo Giometti <giometti@linux.it>
+Subject: Re: [PATCH 5/7] PPS: serial clients support.
+Message-ID: <20080410210918.3be98868@core>
+In-Reply-To: <1207851751-25703-6-git-send-email-giometti@linux.it>
+References: <20080410160630.GA24885@enneenne.com>
+	<1207851751-25703-1-git-send-email-giometti@linux.it>
+	<1207851751-25703-2-git-send-email-giometti@linux.it>
+	<1207851751-25703-3-git-send-email-giometti@linux.it>
+	<1207851751-25703-4-git-send-email-giometti@linux.it>
+	<1207851751-25703-5-git-send-email-giometti@linux.it>
+	<1207851751-25703-6-git-send-email-giometti@linux.it>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add ide_execute_pkt_cmd() helper for executing PACKET command,
-then convert ATAPI device drivers to use it.
+On Thu, 10 Apr 2008 20:22:29 +0200
+Rodolfo Giometti <giometti@linux.it> wrote:
 
-As a nice side-effect this fixes ide-{floppy,tape,scsi} w.r.t.
-ide_lock taking (ide-cd was OK).
+> Adds support for the PPS sources connected with the CD (Carrier
+> Detect) pin of a serial port.
 
-Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
----
- drivers/ide/ide-cd.c     |    9 +--------
- drivers/ide/ide-floppy.c |    4 +---
- drivers/ide/ide-iops.c   |   12 +++++++++++-
- drivers/ide/ide-tape.c   |    4 +---
- drivers/scsi/ide-scsi.c  |    4 +---
- include/linux/ide.h      |    2 ++
- 6 files changed, 17 insertions(+), 18 deletions(-)
+Better and now readable but this is definitely in the wrong place and
+should be pushed up the stack so it can be generalised for all serial
+devices as an ldisc or similar.
 
-Index: b/drivers/ide/ide-cd.c
-===================================================================
---- a/drivers/ide/ide-cd.c
-+++ b/drivers/ide/ide-cd.c
-@@ -555,14 +555,7 @@ static ide_startstop_t cdrom_start_packe
- 				    ATAPI_WAIT_PC, cdrom_timer_expiry);
- 		return ide_started;
- 	} else {
--		unsigned long flags;
--
--		/* packet command */
--		spin_lock_irqsave(&ide_lock, flags);
--		hwif->OUTBSYNC(drive, WIN_PACKETCMD,
--			       hwif->io_ports.command_addr);
--		ndelay(400);
--		spin_unlock_irqrestore(&ide_lock, flags);
-+		ide_execute_pkt_cmd(drive);
- 
- 		return (*handler) (drive);
- 	}
-Index: b/drivers/ide/ide-floppy.c
-===================================================================
---- a/drivers/ide/ide-floppy.c
-+++ b/drivers/ide/ide-floppy.c
-@@ -696,9 +696,7 @@ static ide_startstop_t idefloppy_issue_p
- 		return ide_started;
- 	} else {
- 		/* Issue the packet command */
--		hwif->OUTBSYNC(drive, WIN_PACKETCMD,
--			       hwif->io_ports.command_addr);
--		ndelay(400);
-+		ide_execute_pkt_cmd(drive);
- 		return (*pkt_xfer_routine) (drive);
- 	}
- }
-Index: b/drivers/ide/ide-iops.c
-===================================================================
---- a/drivers/ide/ide-iops.c
-+++ b/drivers/ide/ide-iops.c
-@@ -801,9 +801,19 @@ void ide_execute_command(ide_drive_t *dr
- 	ndelay(400);
- 	spin_unlock_irqrestore(&ide_lock, flags);
- }
--
- EXPORT_SYMBOL(ide_execute_command);
- 
-+void ide_execute_pkt_cmd(ide_drive_t *drive)
-+{
-+	ide_hwif_t *hwif = drive->hwif;
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&ide_lock, flags);
-+	hwif->OUTBSYNC(drive, WIN_PACKETCMD, hwif->io_ports.command_addr);
-+	ndelay(400);
-+	spin_unlock_irqrestore(&ide_lock, flags);
-+}
-+EXPORT_SYMBOL_GPL(ide_execute_pkt_cmd);
- 
- /* needed below */
- static ide_startstop_t do_reset1 (ide_drive_t *, int);
-Index: b/drivers/ide/ide-tape.c
-===================================================================
---- a/drivers/ide/ide-tape.c
-+++ b/drivers/ide/ide-tape.c
-@@ -1056,9 +1056,7 @@ static ide_startstop_t idetape_issue_pc(
- 				    IDETAPE_WAIT_CMD, NULL);
- 		return ide_started;
- 	} else {
--		hwif->OUTBSYNC(drive, WIN_PACKETCMD,
--			       hwif->io_ports.command_addr);
--		ndelay(400);
-+		ide_execute_pkt_cmd(drive);
- 		return idetape_transfer_pc(drive);
- 	}
- }
-Index: b/drivers/scsi/ide-scsi.c
-===================================================================
---- a/drivers/scsi/ide-scsi.c
-+++ b/drivers/scsi/ide-scsi.c
-@@ -574,9 +574,7 @@ static ide_startstop_t idescsi_issue_pc(
- 		return ide_started;
- 	} else {
- 		/* Issue the packet command */
--		hwif->OUTBSYNC(drive, WIN_PACKETCMD,
--			       hwif->io_ports.command_addr);
--		ndelay(400);
-+		ide_execute_pkt_cmd(drive);
- 		return idescsi_transfer_pc(drive);
- 	}
- }
-Index: b/include/linux/ide.h
-===================================================================
---- a/include/linux/ide.h
-+++ b/include/linux/ide.h
-@@ -811,6 +811,8 @@ extern void ide_set_handler (ide_drive_t
- void ide_execute_command(ide_drive_t *, u8, ide_handler_t *, unsigned int,
- 			 ide_expiry_t *);
- 
-+void ide_execute_pkt_cmd(ide_drive_t *);
-+
- ide_startstop_t __ide_error(ide_drive_t *, struct request *, u8, u8);
- 
- ide_startstop_t ide_error (ide_drive_t *drive, const char *msg, byte stat);
+This bit is definitely not ready to go upstream but the general PPS
+stuff looks fairly sane.
