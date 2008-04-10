@@ -1,56 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759762AbYDJPEe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757520AbYDJPH2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759762AbYDJPEe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Apr 2008 11:04:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754756AbYDJPEZ
+	id S1757520AbYDJPH2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Apr 2008 11:07:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756326AbYDJPHU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Apr 2008 11:04:25 -0400
-Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:39100 "EHLO
-	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752918AbYDJPEZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Apr 2008 11:04:25 -0400
-Date: Thu, 10 Apr 2008 11:04:24 -0400
-To: Jack Harvard <jack.harvard@googlemail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: gettimeofday() resolution in Linux?
-Message-ID: <20080410150424.GD2160@csclub.uwaterloo.ca>
-References: <a72f6a3c0804100740s687beacbh80653107f4a7b702@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <a72f6a3c0804100740s687beacbh80653107f4a7b702@mail.gmail.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
+	Thu, 10 Apr 2008 11:07:20 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:60450 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753032AbYDJPHS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Apr 2008 11:07:18 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <20080410150020.30046.84293.stgit@warthog.procyon.org.uk>
+References: <20080410150020.30046.84293.stgit@warthog.procyon.org.uk>
+Cc: dhowells@redhat.com, torvalds@osdl.org, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/5] FRV: Handle update_mmu_cache() being called when current->mm is NULL
+X-Mailer: MH-E 8.0.3+cvs; nmh 1.2-20070115cvs; GNU Emacs 23.0.50
+Date: Thu, 10 Apr 2008 16:06:43 +0100
+Message-ID: <849.1207840003@redhat.com>
+To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 10, 2008 at 03:40:59PM +0100, Jack Harvard wrote:
-> I would like to ask a few questions about how Linux keeps time.
-> 
-> As far as I understand,
-> 1. Linux's time resolution is 10ms, as defined by HZ=100.
+David Howells <dhowells@redhat.com> wrote:
 
-The timer resolution, not the time resolution.
+> --- a/Makefile
+> +++ b/Makefile
+> @@ -501,11 +501,12 @@ endif # $(dot-config)
+>  # Defaults vmlinux but it is usually overridden in the arch makefile
+>  all: vmlinux
+>  
+> -ifdef CONFIG_CC_OPTIMIZE_FOR_SIZE
+> -KBUILD_CFLAGS	+= -Os
+> -else
+> -KBUILD_CFLAGS	+= -O2
+> -endif
+> +#ifdef CONFIG_CC_OPTIMIZE_FOR_SIZE
+> +#KBUILD_CFLAGS	+= -Os
+> +#else
+> +#KBUILD_CFLAGS	+= -O2
+> +#endif
+> +KBUILD_CFLAGS	+= -O1
 
-> 2. gettimeofday() can get time in microseconds, but I'm not sure about
-> the accuracy of the time finer than 10ms. Sometimes gettimeofday( )
-> can even give me microseconds results rolled backwards in time, which
-> I suspect could be caused by its accuracy. My question here is "how
-> accurate is the time from gettimeofday()"
+Oops.  Don't use this patch.  I forgot to delete this bit.
 
-On many systems gettimeofday uses the TSC, but on many multicore systems
-the TSC on each core may be out of sync, in which case the cpu you are
-running on may give a different gettimeofday result than another cpu,
-which is probably a bad thing for some processes.
-
-> 3. If I want to increase the time resolution to 1ms, I can possibly
-> change HZ=1000, but if I want 1usec resolution, how can I do that? It
-> would be too busy for the processor to handle so frequent timer
-> interrupts if I just increase HZ=1000000.
-
-I don't think that would work well.
-
--- 
-Len Sorensen
+David
