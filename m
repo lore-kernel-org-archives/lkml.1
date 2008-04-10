@@ -1,67 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753894AbYDJIZz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755607AbYDJI07@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753894AbYDJIZz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Apr 2008 04:25:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752508AbYDJIZr
+	id S1755607AbYDJI07 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Apr 2008 04:26:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752198AbYDJI0t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Apr 2008 04:25:47 -0400
-Received: from smtp-out01.alice-dsl.net ([88.44.60.11]:27055 "EHLO
-	smtp-out01.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752465AbYDJIZq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Apr 2008 04:25:46 -0400
-To: sukadev@us.ibm.com
-Cc: Andrew Morton <akpm@osdl.org>, clg@fr.ibm.com, serue@us.ibm.com,
-       "David C. Hansen" <haveblue@us.ibm.com>,
-       Pavel Emelyanov <xemul@openvz.org>,
-       Containers <containers@lists.osdl.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/3] change clone_flags type to u64
-From: Andi Kleen <andi@firstfloor.org>
-References: <20080409222611.GA28087@us.ibm.com>
-	<20080409223231.GA28267@us.ibm.com>
-Date: Thu, 10 Apr 2008 10:25:44 +0200
-In-Reply-To: <20080409223231.GA28267@us.ibm.com> (sukadev@us.ibm.com's message of "Wed, 9 Apr 2008 15:32:31 -0700")
-Message-ID: <871w5enmk7.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
+	Thu, 10 Apr 2008 04:26:49 -0400
+Received: from sacred.ru ([62.205.161.221]:38034 "EHLO sacred.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750794AbYDJI0t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Apr 2008 04:26:49 -0400
+Message-ID: <47FDD326.8070105@openvz.org>
+Date: Thu, 10 Apr 2008 12:43:18 +0400
+From: Pavel Emelyanov <xemul@openvz.org>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 10 Apr 2008 08:19:00.0304 (UTC) FILETIME=[87959500:01C89AE3]
+To: Oleg Nesterov <oleg@tv-sign.ru>, Sukadev Bhattiprolu <sukadev@us.ibm.com>,
+       Alexey Dobriyan <adobriyan@openvz.org>
+CC: Linux Containers <containers@lists.osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH 2/10] Pidns: use kzalloc to allocate new pid namespace
+References: <47FDD267.80700@openvz.org>
+In-Reply-To: <47FDD267.80700@openvz.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Thu, 10 Apr 2008 12:18:27 +0400 (MSD)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-sukadev@us.ibm.com writes:
+It makes many fields initialization implicit, fixes void * = 0
+(the ns->pidmap[i].page = 0) noise and will help in auto-setting 
+to NULL bsd-acct related field.
 
-> From: Sukadev Bhattiprolu <sukadev@us.ibm.com>
-> Subject: [lxc-dev] [patch -lxc 1/3] change clone_flags type to u64
->
-> This is a preliminary patch changing the clone_flags type to 64bits
-> for all the routines called by do_fork(). 
+Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
 
-I must admit I was always a little sceptical of giving every tiny
-namespaceable kernel feature its own CLONE flag (and it's own 
-CONFIG option). What was the rationale for that again?
+---
+ kernel/pid_namespace.c |    8 ++------
+ 1 files changed, 2 insertions(+), 6 deletions(-)
 
-With your current strategy are you sure that even 64bit will
-be enough in the end? For me it rather looks like you'll
-go through those quickly too as more and more of the kernel
-is namespaced.
+diff --git a/kernel/pid_namespace.c b/kernel/pid_namespace.c
+index cb17497..06331cc 100644
+--- a/kernel/pid_namespace.c
++++ b/kernel/pid_namespace.c
+@@ -71,7 +71,7 @@ static struct pid_namespace *create_pid_namespace(unsigned int level)
+ 	struct pid_namespace *ns;
+ 	int i;
+ 
+-	ns = kmem_cache_alloc(pid_ns_cachep, GFP_KERNEL);
++	ns = kmem_cache_zalloc(pid_ns_cachep, GFP_KERNEL);
+ 	if (ns == NULL)
+ 		goto out;
+ 
+@@ -84,17 +84,13 @@ static struct pid_namespace *create_pid_namespace(unsigned int level)
+ 		goto out_free_map;
+ 
+ 	kref_init(&ns->kref);
+-	ns->last_pid = 0;
+-	ns->child_reaper = NULL;
+ 	ns->level = level;
+ 
+ 	set_bit(0, ns->pidmap[0].page);
+ 	atomic_set(&ns->pidmap[0].nr_free, BITS_PER_PAGE - 1);
+ 
+-	for (i = 1; i < PIDMAP_ENTRIES; i++) {
+-		ns->pidmap[i].page = 0;
++	for (i = 1; i < PIDMAP_ENTRIES; i++)
+ 		atomic_set(&ns->pidmap[i].nr_free, BITS_PER_PAGE);
+-	}
+ 
+ 	return ns;
+ 
+-- 
+1.5.3.4
 
-Also I think the user interface is very unfriendly. How
-is a non kernel hacker supposed to make sense of these 
-myriads of flags? You'll be creating another 
-CreateProcess123_extra_args_extended() 
-in the end I fear.
-
-Wouldn't it be better to just partition all this into
-fewer more understandable larger feature groups?  I think
-that would be much nicer from pretty much all perspectives
-(kernel maintenance, user interface sanity, not needing
-clone128/256 in the end etc.) 
-
-Some consolidation on the CONFIGs would be good too. I just
-cannot imagine it really makes sense to configure everything
-so fine grained and this is just asking for random compile
-breakage on randconfig.
-
--Andi
