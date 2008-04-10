@@ -1,83 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759154AbYDJPBW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759490AbYDJPCB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759154AbYDJPBW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Apr 2008 11:01:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758736AbYDJPAk
+	id S1759490AbYDJPCB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Apr 2008 11:02:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759337AbYDJPBl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Apr 2008 11:00:40 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:42656 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758567AbYDJPAj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Apr 2008 11:00:39 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-	Directors: Michael Cunningham (USA), Charlie Peters (USA) and
-	David Owens (Ireland)
-From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 4/5] FRV: Make NOMMU-mode work with base addresses other than
-	0xC0000000
-To: torvalds@osdl.org, akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, dhowells@redhat.com
-Date: Thu, 10 Apr 2008 16:00:35 +0100
-Message-ID: <20080410150035.30046.93080.stgit@warthog.procyon.org.uk>
-In-Reply-To: <20080410150020.30046.84293.stgit@warthog.procyon.org.uk>
-References: <20080410150020.30046.84293.stgit@warthog.procyon.org.uk>
-User-Agent: StGIT/0.14.1
+	Thu, 10 Apr 2008 11:01:41 -0400
+Received: from wr-out-0506.google.com ([64.233.184.237]:31223 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759321AbYDJPBk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Apr 2008 11:01:40 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=P6rTckGzMNPZ9eZ+twiGu0qsBUVu42RYY1jdxygkLpHvgWwaebDw8Ou/K+PdC+h4Tgi/ZOZU8lszZgbvggil/CPmXGwna77aLuSEaJ7NvdloB8IgWh23iLPEHwV3KlSuXWu6CZDXbgCa765Ufjs4S8/IJ5lzw0QbFEIdSHK9Cg4=
+Message-ID: <bb145bd20804100801y157b4a34m82f084d27f1e0586@mail.gmail.com>
+Date: Thu, 10 Apr 2008 17:01:38 +0200
+From: "Christian Pernegger" <pernegger@gmail.com>
+To: "Tvrtko A. Ursulin" <tvrtko@ursulin.net>
+Subject: Re: Western Digital GreenPower drives and Linux
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <1207831481.1514.8.camel@localhost>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <200804092118.35501.tvrtko@ursulin.net>
+	 <200804100848.08442.tvrtko@ursulin.net>
+	 <1207831481.1514.8.camel@localhost>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: David Howells <dhowells@redhat.com>
+[ Keep me CCd on this, please. ]
 
-Make NOMMU-mode work with base addresses other than 0xC0000000 by:
+>  Those fancy new WD GreenPower drives seem to be heavily suffering from the
+>  rapidly increasing head load/unload problem. [...] I got one of them
+>  (WD5000AACS) recently and to my horror [...]
 
- (1) Giving the code that sets up the protection registers the right address
-     in __sdram_base.  Rather than being hard coded to 0xC0000000, the value
-     of __page_offset is obtained from the linker script.
+I have the same disks, only with more warranty and supposedly
+"enterprise" firmware (WD1000FYPS). The bug is the same, though, on
+all four of them (~ 9 cycles /hour):
 
- (2) Eliminate the check in __switch_to() that verifies the current thread
-     info is in the 0xCxxxxxxx region.
+  9 Power_On_Hours          0x0032   099   099   000    Old_age
+Always       -       917
+193 Load_Cycle_Count        0x0032   198   198   000    Old_age
+Always       -       8025
 
-Signed-off-by: David Howells <dhowells@redhat.com>
----
+  9 Power_On_Hours          0x0032   099   099   000    Old_age
+Always       -       906
+193 Load_Cycle_Count        0x0032   198   198   000    Old_age
+Always       -       7908
 
- arch/frv/kernel/head.inc    |    2 +-
- arch/frv/kernel/switch_to.S |    7 -------
- 2 files changed, 1 insertions(+), 8 deletions(-)
+  9 Power_On_Hours          0x0032   099   099   000    Old_age
+Always       -       907
+193 Load_Cycle_Count        0x0032   198   198   000    Old_age
+Always       -       8051
 
+  9 Power_On_Hours          0x0032   099   099   000    Old_age
+Always       -       918
+193 Load_Cycle_Count        0x0032   198   198   000    Old_age
+Always       -       7869
 
-diff --git a/arch/frv/kernel/head.inc b/arch/frv/kernel/head.inc
-index d424cd2..bff6662 100644
---- a/arch/frv/kernel/head.inc
-+++ b/arch/frv/kernel/head.inc
-@@ -46,5 +46,5 @@
- #ifdef CONFIG_MMU
- __sdram_base = 0x00000000		/* base address to which SDRAM relocated */
- #else
--__sdram_base = 0xc0000000		/* base address to which SDRAM relocated */
-+__sdram_base = __page_offset		/* base address to which SDRAM relocated */
- #endif
-diff --git a/arch/frv/kernel/switch_to.S b/arch/frv/kernel/switch_to.S
-index b5275fa..b066686 100644
---- a/arch/frv/kernel/switch_to.S
-+++ b/arch/frv/kernel/switch_to.S
-@@ -102,13 +102,6 @@ __switch_to:
- 	movgs		gr14,lr
- 	bar
- 
--	srli		gr15,#28,gr5
--	subicc		gr5,#0xc,gr0,icc0
--	beq		icc0,#0,111f
--	break
--	nop
--111:
--
- 	# jump to __switch_back or ret_from_fork as appropriate
- 	# - move prev to GR8
- 	movgs		gr4,psr
+>  I got the _DOS_ utility from WD which issues vendor specific commands to
+>  control that feature.
 
+Have they confirmed it's a bug? I have no idea how often the disks
+should do that.
+
+>  [...] With it the unload feature can be either disabled or timer set from
+>  100ms to 25.5 seconds. But obviously I can't try it...
+
+Why? Using a DOS boot disk once would not be that bad as a workaround,
+would it? Or is the setting not persistent? Either way I'd prefer to
+be able to leave the feature on (in usable form), eventually.
+
+The bigger question is - why the rapid loads / unloads? In my case the
+disks are idle hours at a time. No system files on there, just bulk
+data. Does / could the controller (sata_sil24 in my case) have any
+influence on this kind of power management?
+
+Thanks,
+
+C.
