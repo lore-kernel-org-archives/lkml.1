@@ -1,65 +1,271 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758548AbYDJSVm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758683AbYDJSWy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758548AbYDJSVm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Apr 2008 14:21:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758075AbYDJSVa
+	id S1758683AbYDJSWy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Apr 2008 14:22:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757373AbYDJSWn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Apr 2008 14:21:30 -0400
-Received: from gate.crashing.org ([63.228.1.57]:46716 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758012AbYDJSV2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Apr 2008 14:21:28 -0400
-Cc: Tejun Heo <htejun@gmail.com>, linux-ide@vger.kernel.org, gregkh@suse.de,
-       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       jgarzik@pobox.com, alan@lxorguk.ukuu.org.uk
-Message-Id: <59A939C7-75AF-4C0F-8199-4C31D174AEA9@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-In-Reply-To: <47FE46AC.5000901@ru.mvista.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Content-Transfer-Encoding: 7bit
-Mime-Version: 1.0 (Apple Message framework v919.2)
-Subject: Re: [PATCH 6/13] devres: implement managed iomap interface
-Date: Thu, 10 Apr 2008 12:44:12 -0500
-References: <11684073371547-git-send-email-htejun@gmail.com>	<47FA4FD2.8060808@ru.mvista.com> <47FB85CB.2070506@gmail.com> <47FB8751.3040301@ru.mvista.com> <47FE46AC.5000901@ru.mvista.com>
-X-Mailer: Apple Mail (2.919.2)
+	Thu, 10 Apr 2008 14:22:43 -0400
+Received: from 81-174-11-161.static.ngi.it ([81.174.11.161]:50000 "EHLO
+	mail.enneenne.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756777AbYDJSWm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Apr 2008 14:22:42 -0400
+From: Rodolfo Giometti <giometti@linux.it>
+To: linux-kernel@vger.kernel.org
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       David Woodhouse <dwmw2@infradead.org>, Dave Jones <davej@redhat.com>,
+       Sam Ravnborg <sam@ravnborg.org>, Greg KH <greg@kroah.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Kay Sievers <kay.sievers@vrfy.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Rodolfo Giometti <giometti@linux.it>
+Date: Thu, 10 Apr 2008 20:22:27 +0200
+Message-Id: <1207851751-25703-4-git-send-email-giometti@linux.it>
+X-Mailer: git-send-email 1.5.4.3
+In-Reply-To: <1207851751-25703-3-git-send-email-giometti@linux.it>
+References: <20080410160630.GA24885@enneenne.com>
+ <1207851751-25703-1-git-send-email-giometti@linux.it>
+ <1207851751-25703-2-git-send-email-giometti@linux.it>
+ <1207851751-25703-3-git-send-email-giometti@linux.it>
+X-SA-Exim-Connect-IP: 192.168.32.1
+X-SA-Exim-Mail-From: giometti@enneenne.com
+Subject: [PATCH 3/7] PPS: documentation programs and examples.
+X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
+X-SA-Exim-Scanned: Yes (on mail.enneenne.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Here some utilities and examples about the PPS API and the LinuxPPS
+support.
 
-On Apr 10, 2008, at 11:56 AM, Sergei Shtylyov wrote:
-> Hello, I wrote:
->
->>>>   Those functions are going to break on 32-bit platforms with  
->>>> extended physical address (well, that's starting with Pentiums  
->>>> which had 36-bit PAE :-) AND devices mapped beyond 4 GB (e.g.  
->>>> PowerPC 44x).  You should have used resource_size_t for the  
->>>> 'offset' parameter. As this most probably means that libata is  
->>>> broken on such platforms, I'm going to submit a patch...
->
->>   It's broken with drivers using MMIO, I meant to say.
->
->   Oops, I meant PCI drivers here, at least for the time being. And  
-> it looks like that was a false alarm. :-]
->
->>> Yeah, right please go ahead.  But I wonder whether any BIOS was  
->>> actually crazy enough to map mmio region above 4G on 32bit machine.
->
->>   This is a *hardware* mapping on some non-x86 platforms (like PPC  
->> 44x or MIPS Alchemy). The arch/ppc/ and arch/mips/ kernels have  
->> special hooks called from ioremap() which help create an illusion  
->> that the PCI memory space on such platforms (not only it) is mapped  
->> below 4 GB; arch/powerpc/ kernel doesn't do this anymore -- hence  
->> this newly encountered issue.
->
->   I thought that pcim_iomap() used devm_ioremap() or something --  
-> which of course turned to be wrong. devm_ioremap() alone is yet safe  
-> since there are no users for it amongst PPC 44x platform device  
-> drivers...
+* ppstest.c implements an useful testing program, while
 
-but there is no reason not to make it work properly.  For example I  
-believe libata uses devm_* and the fsl SATA driver (non-PCI) will need  
-to work in cases similar to the 44x.
+* ppsfind tries to help the user into finding a specific PPS source by
+  using its name or path.
 
-- k
+Signed-off-by: Rodolfo Giometti <giometti@linux.it>
+---
+ Documentation/pps/Makefile  |   27 ++++++++
+ Documentation/pps/ppsfind   |   17 +++++
+ Documentation/pps/ppstest.c |  151 +++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 195 insertions(+), 0 deletions(-)
+ create mode 100644 Documentation/pps/Makefile
+ create mode 100644 Documentation/pps/ppsfind
+ create mode 100644 Documentation/pps/ppstest.c
+
+diff --git a/Documentation/pps/Makefile b/Documentation/pps/Makefile
+new file mode 100644
+index 0000000..af4f9b4
+--- /dev/null
++++ b/Documentation/pps/Makefile
+@@ -0,0 +1,27 @@
++TARGETS = ppstest
++
++CFLAGS += -Wall -O2 -D_GNU_SOURCE
++CFLAGS += -I .
++CFLAGS += -ggdb
++
++# -- Actions section --
++
++.PHONY : all depend dep
++
++all : .depend $(TARGETS)
++
++.depend depend dep :
++	$(CC) $(CFLAGS) -M $(TARGETS:=.c) > .depend
++
++ifeq (.depend,$(wildcard .depend))
++include .depend
++endif
++
++
++# -- Clean section --
++
++.PHONY : clean
++
++clean :
++	rm -f *.o *~ core .depend
++	rm -f ${TARGETS}
+diff --git a/Documentation/pps/ppsfind b/Documentation/pps/ppsfind
+new file mode 100644
+index 0000000..93c0e17
+--- /dev/null
++++ b/Documentation/pps/ppsfind
+@@ -0,0 +1,17 @@
++#!/bin/sh
++
++SYS="/sys/class/pps/"
++
++if [ $# -lt 1 ] ; then
++	echo "usage: ppsfind <name>" >&2
++	exit 1
++fi
++
++for d in $(ls $SYS) ; do
++	if grep $1 $SYS/$d/name >& /dev/null || \
++	   grep $1 $SYS/$d/path >& /dev/null ; then
++		echo "$d: name=$(cat $SYS/$d/name) path=$(cat $SYS/$d/path)"
++	fi
++done
++
++exit 0
+diff --git a/Documentation/pps/ppstest.c b/Documentation/pps/ppstest.c
+new file mode 100644
+index 0000000..d125ffa
+--- /dev/null
++++ b/Documentation/pps/ppstest.c
+@@ -0,0 +1,151 @@
++#include <stdio.h>
++#include <stdlib.h>
++#include <unistd.h>
++#include <errno.h>
++#include <string.h>
++#include <sys/types.h>
++#include <sys/stat.h>
++#include <fcntl.h>
++
++#include <timepps.h>
++
++int find_source(char *path, pps_handle_t *handle, int *avail_mode)
++{
++	pps_params_t params;
++	int ret;
++
++	printf("trying PPS source \"%s\"\n", path);
++
++	/* Try to find the source by using the supplied "path" name */
++	ret = open(path, O_RDWR);
++	if (ret < 0) {
++		fprintf(stderr, "unable to open device \"%s\" (%m)\n", path);
++		return ret;
++	}
++
++	/* Open the PPS source (and check the file descriptor) */
++	ret = time_pps_create(ret, handle);
++	if (ret < 0) {
++		fprintf(stderr, "cannot create a PPS source from device "
++				"\"%s\" (%m)\n", path);
++		return -1;
++	}
++	printf("found PPS source \"%s\"\n", path);
++
++	/* Find out what features are supported */
++	ret = time_pps_getcap(*handle, avail_mode);
++	if (ret < 0) {
++		fprintf(stderr, "cannot get capabilities (%m)\n");
++		return -1;
++	}
++	if ((*avail_mode & PPS_CAPTUREASSERT) == 0) {
++		fprintf(stderr, "cannot CAPTUREASSERT\n");
++		return -1;
++	}
++	if ((*avail_mode & PPS_OFFSETASSERT) == 0) {
++		fprintf(stderr, "cannot OFFSETASSERT\n");
++		return -1;
++	}
++
++	/* Capture assert timestamps, and compensate for a 675 nsec
++	 * propagation delay */
++	ret = time_pps_getparams(*handle, &params);
++	if (ret < 0) {
++		fprintf(stderr, "cannot get parameters (%m)\n");
++		return -1;
++	}
++	params.assert_offset.tv_sec = 0;
++	params.assert_offset.tv_nsec = 675;
++	params.mode |= PPS_CAPTUREASSERT | PPS_OFFSETASSERT;
++	ret = time_pps_setparams(*handle, &params);
++	if (ret < 0) {
++		fprintf(stderr, "cannot set parameters (%m)\n");
++		return -1;
++	}
++
++	return 0;
++}
++
++int fetch_source(int i, pps_handle_t *handle, int *avail_mode)
++{
++	struct timespec timeout;
++	pps_info_t infobuf;
++	int ret;
++
++	/* create a zero-valued timeout */
++	timeout.tv_sec = 3;
++	timeout.tv_nsec = 0;
++
++retry:
++	if (*avail_mode & PPS_CANWAIT) /* waits for the next event */
++		ret = time_pps_fetch(*handle, PPS_TSFMT_TSPEC, &infobuf,
++				   &timeout);
++	else {
++		sleep(1);
++		ret = time_pps_fetch(*handle, PPS_TSFMT_TSPEC, &infobuf,
++				   &timeout);
++	}
++	if (ret < 0) {
++		if (ret == -EINTR) {
++			fprintf(stderr, "time_pps_fetch() got a signal!\n");
++			goto retry;
++		}
++
++		fprintf(stderr, "time_pps_fetch() error %d (%m)\n", ret);
++		return -1;
++	}
++
++	printf("source %d - "
++	       "assert %ld.%09ld, sequence: %ld - "
++	       "clear  %ld.%09ld, sequence: %ld\n",
++	       i,
++	       infobuf.assert_timestamp.tv_sec,
++	       infobuf.assert_timestamp.tv_nsec,
++	       infobuf.assert_sequence,
++	       infobuf.clear_timestamp.tv_sec,
++	       infobuf.clear_timestamp.tv_nsec, infobuf.clear_sequence);
++
++	return 0;
++}
++
++void usage(char *name)
++{
++	fprintf(stderr, "usage: %s <ppsdev> [<ppsdev> ...]\n", name);
++	exit(EXIT_FAILURE);
++}
++
++int main(int argc, char *argv[])
++{
++	int num;
++	pps_handle_t handle[4];
++	int avail_mode[4];
++	int i = 0;
++	int ret;
++
++	/* Check the command line */
++	if (argc < 2)
++		usage(argv[0]);
++
++	for (i = 1; i < argc && i <= 4; i++) {
++		ret = find_source(argv[i], &handle[i - 1], &avail_mode[i - 1]);
++		if (ret < 0)
++			exit(EXIT_FAILURE);
++	}
++
++	num = i - 1;
++	printf("ok, found %d source(s), now start fetching data...\n", num);
++
++	/* loop, printing the most recent timestamp every second or so */
++	while (1) {
++		for (i = 0; i < num; i++) {
++			ret = fetch_source(i, &handle[i], &avail_mode[i]);
++			if (ret < 0 && errno != ETIMEDOUT)
++				exit(EXIT_FAILURE);
++		}
++	}
++
++	for (; i >= 0; i--)
++		time_pps_destroy(handle[i]);
++
++	return 0;
++}
+-- 
+1.5.4.3
+
