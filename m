@@ -1,184 +1,213 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755589AbYDJHBR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756429AbYDJHBd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755589AbYDJHBR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Apr 2008 03:01:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752256AbYDJHBG
+	id S1756429AbYDJHBd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Apr 2008 03:01:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755985AbYDJHBT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Apr 2008 03:01:06 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:47464 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751744AbYDJHBF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Apr 2008 03:01:05 -0400
-Date: Thu, 10 Apr 2008 09:00:08 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>, akpm@osdl.org,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Glauber de Oliveira Costa <gcosta@redhat.com>,
-       Jan Beulich <jbeulich@novell.com>, Andi Kleen <ak@suse.de>,
-       Thomas Gleixner <tglx@linutronix.de>, pinskia@gcc.gnu.org
-Subject: Re: [PATCH] pop previous section in alternative.c
-Message-ID: <20080410070008.GC30066@elte.hu>
-References: <Pine.LNX.4.58.0804091859400.31879@gandalf.stny.rr.com> <Pine.LNX.4.58.0804091906040.31970@gandalf.stny.rr.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.58.0804091906040.31970@gandalf.stny.rr.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Thu, 10 Apr 2008 03:01:19 -0400
+Received: from usaga01-in.huawei.com ([206.16.17.211]:13992 "EHLO
+	usaga01-in.huawei.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755902AbYDJHBS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Apr 2008 03:01:18 -0400
+X-Greylist: delayed 601 seconds by postgrey-1.27 at vger.kernel.org; Thu, 10 Apr 2008 03:01:18 EDT
+Date: Thu, 10 Apr 2008 14:51:06 +0800
+From: fangxiaozhi 00110321 <huananhu@huawei.com>
+Subject: [PATCH 10/4]linux-usb: To support more Huawei data card product IDs,
+ fix kernel 2.6.24.4
+To: linux-usb@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, johann.wilhelm@student.tugraz.at,
+       zihan@huawei.com, Lin.Lei@huawei.com
+Message-id: <f989c26a7a8c3.7a8c3f989c26a@huawei.com>
+MIME-version: 1.0
+X-Mailer: iPlanet Messenger Express 5.2 HotFix 2.14 (built Aug  8 2006)
+Content-type: text/plain; charset=us-ascii
+Content-language: zh-CN
+Content-transfer-encoding: 7BIT
+Content-disposition: inline
+X-Accept-Language: zh-CN
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-* Steven Rostedt <rostedt@goodmis.org> wrote:
-
-
-
-> On Wed, 9 Apr 2008, Steven Rostedt wrote:
-
-> 
-
-> > gcc expects all toplevel assembly to return to the original section 
-
-> > type. The code in alteranative.c does not do this. This caused some 
-
-> > strange bugs in sched-devel where code would end up in the .rodata 
-
-> > section and when the kernel sets the NX bit on all .rodata, the 
-
-> > kernel would crash when executing this code.
-
-> >
-
-> > This patch adds a .previous marker to return the code back to the 
-
-> > original section.
-
-> 
-
-> Oh, and this would not be complete without giving Andrew Pinski 
-
-> complete credit for telling me it wasn't a gcc bug but a bug in the 
-
-> toplevel asm code in the kernel. ;-)
-
-
-
-thanks Steve and Andrew for resolving this so quickly! For the record, 
-
-here's the original, mysterious-looking crash that Peter saw with ftrace 
-
-enabled, under sched-devel:
-
-
-
----------->
-
-ACPI: PCI Interrupt 0000:01:0e.1[A] -> GSI 11 (level, low) -> IRQ 11
-
-Waiting for driver initialization.
-
-Loading shpchp.ko module
-
-BUG: unable to handle kernel paging request at ffffffff8054f06a
-
-IP: [<ffffffff8054f06a>] constant_test_bit+0x0/0x26
-
-PGD 203067 PUD 207063 PMD 7f81d163 PTE 800000000054f161
-
-Oops: 0011 [1] PREEMPT SMP 
-
-CPU 0 
-
-Modules linked in: sata_svw ata_generic
-
-Pid: 565, comm: insmod Not tainted 2.6.25-rc8-sched-devel.git-x86-latest.git #177
-
-RIP: 0010:[<ffffffff8054f06a>]  [<ffffffff8054f06a>] constant_test_bit+0x0/0x26
-
-RSP: 0018:ffff81007d693d40  EFLAGS: 00010246
-
-RAX: ffff81007f805db0 RBX: ffff81007d4e5b80 RCX: 0000000000000000
-
-RDX: ffff81007d4e5bb0 RSI: ffffffff8074c114 RDI: 0000000000000069
-
-RBP: ffff81007d693d88 R08: ffffffff80964770 R09: 0000000000000000
-
-R10: 000000037d693c78 R11: ffff81007d693cd8 R12: ffffffffa000b464
-
-R13: ffffffffa0008000 R14: ffffffffa000cdc0 R15: ffffffffa000cda0
-
-FS:  00007f96cec7d6f0(0000) GS:ffffffff8072a000(0000) knlGS:0000000000000000
-
-CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
-
-CR2: ffffffff8054f06a CR3: 000000007d5c8000 CR4: 00000000000006e0
-
-DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-
-DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-
-Process insmod (pid: 565, threadinfo ffff81007d692000, task ffff81007d690000)
-
-Stack:  ffffffff802125c9 ffff81007d693d78 ffffffffa0010998 ffffffffa0010980
-
- ffffc20000032790 ffffc20000031f1d 0000000000000000 ffffc20000032010
-
- ffffc2000002b000 ffff81007d693de8 ffffffff8022359f ffffffffa0010980
-
-Call Trace:
-
- [<ffffffff802125c9>] ? alternatives_smp_module_add+0x117/0x14e
-
- [<ffffffff8022359f>] module_finalize+0x118/0x136
-
- [<ffffffff80268b08>] sys_init_module+0x1496/0x1a79
-
- [<ffffffff8053c61a>] ? _spin_unlock_irqrestore+0x6b/0x79
-
- [<ffffffff80383ba5>] ? acpi_get_hp_params_from_firmware+0x0/0x50b
-
- [<ffffffff8053b88d>] ? trace_hardirqs_on_thunk+0x3a/0x3f
-
- [<ffffffff8053b88d>] ? trace_hardirqs_on_thunk+0x3a/0x3f
-
- [<ffffffff8025ee36>] ? trace_hardirqs_on_caller+0x109/0x12d
-
- [<ffffffff8053b88d>] ? trace_hardirqs_on_thunk+0x3a/0x3f
-
- [<ffffffff8020c41b>] system_call_after_swapgs+0x7b/0x80
-
-
-
-Code: 00 00 0f 1f 80 00 00 00 00 0f 1f 84 00 00 00 00 00 55 48 89 e5 e8 d7 d1 cb ff 89 f8 c1 f8 05 48 98 48 8d 04 86 f0 0f b3 3e c9 c3 <55> 48 89 e5 e8 bd d1 cb ff 89 f9 bf 40 00 00 00 89 c8 99 f7 ff 
-
-RIP  [<ffffffff8054f06a>] constant_test_bit+0x0/0x26
-
- RSP <ffff81007d693d40>
-
-CR2: ffffffff8054f06a
-
----[ end trace 778e504de7e3b1e3 ]---
-
-note: insmod[565] exited with preempt_count 1
-
-BUG: sleeping function called from invalid context at /mnt/md0/src/linux-2.6-2/kernel/rwsem.c:21
-
-
-
-(it only triggered on Peter's hardware)
-
-
-
-	Ingo
-
+From: fangxiaozhi <huananhu@huawei.com>
+
+1. This patch is based on the kernel of 2.6.24.4
+2. To declare the unusal device for Huawei data card devices in unusual_devs.h
+3. To disable the product ID matching for Huawei data card devices in usb_match_device function of driver.c
+4. To declare the product IDs in option.c.
+
+Signed-off-by: fangxiaozhi <huananhu@huawei.com>
+---------------------------------------------------------------------------------
+
+diff -uprN -X linux-2.6.24.4-vanilla/Documentation/dontdiff linux-2.6.24.4-vanilla/drivers/usb/serial/option.c linux-2.6.24.4/drivers/usb/serial/option.c
+--- linux-2.6.24.4-vanilla/drivers/usb/serial/option.c	2008-03-25 02:49:18.000000000 +0800
++++ linux-2.6.24.4/drivers/usb/serial/option.c	2008-04-10 11:12:42.000000000 +0800
+@@ -109,6 +109,25 @@ static int  option_send_setup(struct usb
+ #define HUAWEI_PRODUCT_E600			0x1001
+ #define HUAWEI_PRODUCT_E220			0x1003
+ #define HUAWEI_PRODUCT_E220BIS			0x1004
++/* Reported by fangxiaozhi <huananhu@huawei.com>
++ * New supported product IDs of HuaWei data card devices
++ */
++#define HUAWEI_PRODUCT_E1401			0x1401
++#define HUAWEI_PRODUCT_E1403			0x1403
++#define HUAWEI_PRODUCT_E1405			0x1405
++#define HUAWEI_PRODUCT_E1406			0x1406
++#define HUAWEI_PRODUCT_E1408			0x1408
++#define HUAWEI_PRODUCT_E1409			0x1409
++#define HUAWEI_PRODUCT_E1410			0x1410
++#define HUAWEI_PRODUCT_E1411			0x1411
++#define HUAWEI_PRODUCT_E1412			0x1412
++#define HUAWEI_PRODUCT_E1413			0x1413
++#define HUAWEI_PRODUCT_E1414			0x1414
++#define HUAWEI_PRODUCT_E1415			0x1415
++#define HUAWEI_PRODUCT_E1416			0x1416
++#define HUAWEI_PRODUCT_E1417			0x1417
++#define HUAWEI_PRODUCT_E1418			0x1418
++#define HUAWEI_PRODUCT_E1419			0x1419
+ 
+ #define NOVATELWIRELESS_VENDOR_ID		0x1410
+ #define DELL_VENDOR_ID				0x413C
+@@ -160,6 +179,22 @@ static struct usb_device_id option_ids[]
+ 	{ USB_DEVICE(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E600) },
+ 	{ USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E220, 0xff, 0xff, 0xff) },
+ 	{ USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E220BIS, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E1401) },
++	{ USB_DEVICE(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E1403) },
++	{ USB_DEVICE(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E1405) },
++	{ USB_DEVICE(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E1406) },
++	{ USB_DEVICE(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E1408) },
++	{ USB_DEVICE(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E1409) },
++	{ USB_DEVICE(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E1410) },
++	{ USB_DEVICE(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E1411) },
++	{ USB_DEVICE(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E1412) },
++	{ USB_DEVICE(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E1413) },
++	{ USB_DEVICE(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E1414) },
++	{ USB_DEVICE(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E1415) },
++	{ USB_DEVICE(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E1416) },
++	{ USB_DEVICE(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E1417) },
++	{ USB_DEVICE(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E1418) },
++	{ USB_DEVICE(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E1419) },
+ 	{ USB_DEVICE(NOVATELWIRELESS_VENDOR_ID, 0x1100) }, /* Novatel Merlin XS620/S640 */
+ 	{ USB_DEVICE(NOVATELWIRELESS_VENDOR_ID, 0x1110) }, /* Novatel Merlin S620 */
+ 	{ USB_DEVICE(NOVATELWIRELESS_VENDOR_ID, 0x1120) }, /* Novatel Merlin EX720 */
+ 	
+ 	
+diff -uprN -X linux-2.6.24.4-vanilla/Documentation/dontdiff linux-2.6.24.4-vanilla/drivers/usb/storage/unusual_devs.h linux-2.6.24.4/drivers/usb/storage/unusual_devs.h
+--- linux-2.6.24.4-vanilla/drivers/usb/storage/unusual_devs.h	2008-03-25 02:49:18.000000000 +0800
++++ linux-2.6.24.4/drivers/usb/storage/unusual_devs.h	2008-04-10 11:07:36.000000000 +0800
+@@ -1498,16 +1498,104 @@ UNUSUAL_DEV(  0x1210, 0x0003, 0x0100, 0x
+ 		US_SC_DEVICE, US_PR_DEVICE, NULL,
+ 		US_FL_IGNORE_RESIDUE ),
+ 
+-/* Reported by fangxiaozhi <fangxiaozhi60675@huawei.com>
+- * and by linlei <linlei83@huawei.com>
+- * Patch reworked by Johann Wilhelm <johann.wilhelm@student.tugraz.at>
+- * This brings the HUAWEI E220 devices into multi-port mode
++/* Reported by fangxiaozhi <huananhu@huawei.com>
++ * This brings the HUAWEI data card devices into multi-port mode
+  */
++UNUSUAL_DEV( 0x12d1, 0x1001, 0x0000, 0x0000,
++		"HUAWEI MOBILE",
++		"Mass Storage",
++		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
++		0),
+ UNUSUAL_DEV( 0x12d1, 0x1003, 0x0000, 0x0000,
+ 		"HUAWEI MOBILE",
+ 		"Mass Storage",
+ 		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
+ 		0),
++UNUSUAL_DEV( 0x12d1, 0x1004, 0x0000, 0x0000,
++		"HUAWEI MOBILE",
++		"Mass Storage",
++		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
++		0),
++UNUSUAL_DEV( 0x12d1, 0x1401, 0x0000, 0x0000,
++		"HUAWEI MOBILE",
++		"Mass Storage",
++		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
++		0),
++UNUSUAL_DEV( 0x12d1, 0x1403, 0x0000, 0x0000,
++		"HUAWEI MOBILE",
++		"Mass Storage",
++		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
++		0),
++UNUSUAL_DEV( 0x12d1, 0x1405, 0x0000, 0x0000,
++		"HUAWEI MOBILE",
++		"Mass Storage",
++		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
++		0),
++UNUSUAL_DEV( 0x12d1, 0x1406, 0x0000, 0x0000,
++		"HUAWEI MOBILE",
++		"Mass Storage",
++		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
++		0),
++UNUSUAL_DEV( 0x12d1, 0x1408, 0x0000, 0x0000,
++		"HUAWEI MOBILE",
++		"Mass Storage",
++		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
++		0),
++UNUSUAL_DEV( 0x12d1, 0x1409, 0x0000, 0x0000,
++		"HUAWEI MOBILE",
++		"Mass Storage",
++		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
++		0),
++UNUSUAL_DEV( 0x12d1, 0x1410, 0x0000, 0x0000,
++		"HUAWEI MOBILE",
++		"Mass Storage",
++		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
++		0),
++UNUSUAL_DEV( 0x12d1, 0x1411, 0x0000, 0x0000,
++		"HUAWEI MOBILE",
++		"Mass Storage",
++		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
++		0),
++UNUSUAL_DEV( 0x12d1, 0x1412, 0x0000, 0x0000,
++		"HUAWEI MOBILE",
++		"Mass Storage",
++		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
++		0),
++UNUSUAL_DEV( 0x12d1, 0x1413, 0x0000, 0x0000,
++		"HUAWEI MOBILE",
++		"Mass Storage",
++		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
++		0),
++UNUSUAL_DEV( 0x12d1, 0x1414, 0x0000, 0x0000,
++		"HUAWEI MOBILE",
++		"Mass Storage",
++		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
++		0),
++UNUSUAL_DEV( 0x12d1, 0x1415, 0x0000, 0x0000,
++		"HUAWEI MOBILE",
++		"Mass Storage",
++		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
++		0),
++UNUSUAL_DEV( 0x12d1, 0x1416, 0x0000, 0x0000,
++		"HUAWEI MOBILE",
++		"Mass Storage",
++		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
++		0),
++UNUSUAL_DEV( 0x12d1, 0x1417, 0x0000, 0x0000,
++		"HUAWEI MOBILE",
++		"Mass Storage",
++		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
++		0),
++UNUSUAL_DEV( 0x12d1, 0x1418, 0x0000, 0x0000,
++		"HUAWEI MOBILE",
++		"Mass Storage",
++		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
++		0),
++UNUSUAL_DEV( 0x12d1, 0x1419, 0x0000, 0x0000,
++		"HUAWEI MOBILE",
++		"Mass Storage",
++		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
++		0),
+ 
+ /* Reported by Vilius Bilinkevicius <vilisas AT xxx DOT lt) */
+ UNUSUAL_DEV(  0x132b, 0x000b, 0x0001, 0x0001,
+
+******************************************************************************************
+ This email and its attachments contain confidential information from HUAWEI, which is intended only for the person or entity whose address is listed above. Any use of the information contained herein in any way (including, but not limited to, total or partial disclosure, reproduction, or dissemination) by persons other than the intended recipient(s) is prohibited. If you receive this e-mail in error, please notify the sender by phone or em
+ail immediately and delete it!
+ *****************************************************************************************
