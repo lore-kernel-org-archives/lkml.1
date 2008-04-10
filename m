@@ -1,196 +1,535 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756345AbYDJJO3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755598AbYDJJSA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756345AbYDJJO3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Apr 2008 05:14:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753696AbYDJJOW
+	id S1755598AbYDJJSA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Apr 2008 05:18:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750820AbYDJJRw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Apr 2008 05:14:22 -0400
-Received: from mailrelay005.isp.belgacom.be ([195.238.6.171]:4593 "EHLO
-	mailrelay005.isp.belgacom.be" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753032AbYDJJOV (ORCPT
+	Thu, 10 Apr 2008 05:17:52 -0400
+Received: from e33.co.us.ibm.com ([32.97.110.151]:35564 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752465AbYDJJRv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Apr 2008 05:14:21 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AscFAIN2/UfCTsYx/2dsb2JhbACBXakk
-From: Laurent Pinchart <laurentp@cse-semaphore.com>
-Organization: CSE Semaphore
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 19 5/5] Convert pfc8563 i2c driver from old style to new style
-Date: Thu, 10 Apr 2008 11:14:15 +0200
-User-Agent: KMail/1.9.5
-Cc: Jon Smirl <jonsmirl@gmail.com>, i2c@lm-sensors.org,
-       linux-kernel@vger.kernel.org
-References: <20080112024737.7023.61680.stgit@terra.home> <20080112024748.7023.90680.stgit@terra.home>
-In-Reply-To: <20080112024748.7023.90680.stgit@terra.home>
-MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart1317648.bgjo6COaZL";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200804101114.18325.laurentp@cse-semaphore.com>
+	Thu, 10 Apr 2008 05:17:51 -0400
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: Paul Menage <menage@google.com>, Pavel Emelianov <xemul@openvz.org>
+Cc: Hugh Dickins <hugh@veritas.com>, Sudhir Kumar <skumar@linux.vnet.ibm.com>,
+       YAMAMOTO Takashi <yamamoto@valinux.co.jp>, linux-kernel@vger.kernel.org,
+       taka@valinux.co.jp, linux-mm@kvack.org,
+       David Rientjes <rientjes@google.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Date: Thu, 10 Apr 2008 14:46:02 +0530
+Message-Id: <20080410091602.4472.32172.sendpatchset@localhost.localdomain>
+Subject: [-mm] Add an owner to the mm_struct (v9)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart1317648.bgjo6COaZL
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
 
-Hi Jon,
 
-On Saturday 12 January 2008 03:47, Jon Smirl wrote:
-> Convert pfc8563 i2c driver from old style to new style. The
-> driver is also modified to support device tree names via the
-> i2c mod alias mechanism.
+Changelog v8
+------------
+1. CONFIG_MM_OWNER has no help, it is an internal option to be used by
+   other configuration controls.
+2. Added __read_mostly for cgroup_mm_owner_callback
+3. Removed delay_group_leader() optimization
 
-The patch breaks the pfc8563 driver.
+Changelog v7
+------------
+1. Make mm_need_new_owner() more readable
+2. Remove extra white space from init_task.h
 
-The old style driver allocated memory for a pcf8563 structure that
-encapsulated an i2c_client instance. Various functions use container_of
-on an i2c_client instance to get a pointer to the pcf8563 structure.
+Changelog v6
+------------
 
-The new style driver gets rid of the pcf8563 structure allocation, as the
-i2c_client structure is now allocated by I2C code.
+1. Fix typos
+2. Document the use of delay_group_leader()
 
-Here is an incremental patch that fixes the issue.
+Changelog v5
+------------
+Remove the hooks for .owner from init_task.h and move it to init/main.c
 
-=46rom 1eac5a8e10e085c3a77c6ba7ed9dac9a39024915 Mon Sep 17 00:00:00 2001
-=46rom: Laurent Pinchart <laurentp@cse-semaphore.com>
-Date: Thu, 10 Apr 2008 11:12:25 +0200
-Subject: [PATCH] Fix pcf8563 breakage introduced by the conversion from old=
- style to new style
+Changelog v4
+------------
+1. Release rcu_read_lock() after acquiring task_lock(). Also get a reference
+   to the task_struct
+2. Change cgroup mm_owner_changed callback to callback only if the
+   cgroup of old and new task is different and to pass the old and new
+   cgroups instead of task pointers
+3. Port the patch to 2.6.25-rc8-mm1
 
-The old style I2C driver used to allocate a pcf8563 instance that encapsula=
-ted
-an i2c_client instance. The i2c_client instance is now allocated by I2C cor=
-e.
+Changelog v3
+------------
 
-This patch fixes the driver by storing the pcf8563 instance in the I2C clie=
-nt
-data field.
+1. Add mm->owner change callbacks using cgroups
 
-Signed-off-by: Laurent Pinchart <laurentp@cse-semaphore.com>
-=2D--
- drivers/rtc/rtc-pcf8563.c |   29 ++++++++++++++++++-----------
- 1 files changed, 18 insertions(+), 11 deletions(-)
+This patch removes the mem_cgroup member from mm_struct and instead adds
+an owner. This approach was suggested by Paul Menage. The advantage of
+this approach is that, once the mm->owner is known, using the subsystem
+id, the cgroup can be determined. It also allows several control groups
+that are virtually grouped by mm_struct, to exist independent of the memory
+controller i.e., without adding mem_cgroup's for each controller,
+to mm_struct.
 
-diff --git a/drivers/rtc/rtc-pcf8563.c b/drivers/rtc/rtc-pcf8563.c
-index e1ea2a0..7aab24e 100644
-=2D-- a/drivers/rtc/rtc-pcf8563.c
-+++ b/drivers/rtc/rtc-pcf8563.c
-@@ -50,7 +50,7 @@
- #define PCF8563_MO_C		0x80 /* century */
-=20
- struct pcf8563 {
-=2D	struct i2c_client client;
-+	struct rtc_device *rtc;
- 	/*
- 	 * The meaning of MO_C bit varies by the chip type.
- 	 * From PCF8563 datasheet: this bit is toggled when the years
-@@ -74,7 +74,7 @@ struct pcf8563 {
-  */
- static int pcf8563_get_datetime(struct i2c_client *client, struct rtc_time=
- *tm)
- {
-=2D	struct pcf8563 *pcf8563 =3D container_of(client, struct pcf8563, client=
-);
-+	struct pcf8563 *pcf8563 =3D i2c_get_clientdata(client);
- 	unsigned char buf[13] =3D { PCF8563_REG_ST1 };
-=20
- 	struct i2c_msg msgs[] =3D {
-@@ -131,7 +131,7 @@ static int pcf8563_get_datetime(struct i2c_client *clie=
-nt, struct rtc_time *tm)
-=20
- static int pcf8563_set_datetime(struct i2c_client *client, struct rtc_time=
- *tm)
- {
-=2D	struct pcf8563 *pcf8563 =3D container_of(client, struct pcf8563, client=
-);
-+	struct pcf8563 *pcf8563 =3D i2c_get_clientdata(client);
- 	int i, err;
- 	unsigned char buf[9];
-=20
-@@ -252,10 +252,10 @@ static const struct rtc_class_ops pcf8563_rtc_ops =3D=
- {
-=20
- static int pcf8563_remove(struct i2c_client *client)
- {
-=2D	struct rtc_device *rtc =3D i2c_get_clientdata(client);
-+	struct pcf8563 *pcf8563 =3D i2c_get_clientdata(client);
-=20
-=2D	if (rtc)
-=2D		rtc_device_unregister(rtc);
-+	if (pcf8563->rtc)
-+		rtc_device_unregister(pcf8563->rtc);
-=20
- 	return 0;
- }
-@@ -274,26 +274,33 @@ static struct i2c_driver pcf8563_driver =3D {
- 		.name	=3D "rtc-pcf8563",
- 	},
- 	.id		=3D I2C_DRIVERID_PCF8563,
-=2D	.probe =3D &pcf8563_probe,
-=2D	.remove =3D &pcf8563_remove,
-+	.probe		=3D &pcf8563_probe,
-+	.remove		=3D &pcf8563_remove,
- 	.id_table	=3D pcf8563_id,
- };
-=20
- static int pcf8563_probe(struct i2c_client *client, const struct i2c_devic=
-e_id *id)
- {
-=2D	int result;
-+	struct pcf8563 *pcf8563;
- 	struct rtc_device *rtc;
-+	int result;
-=20
- 	result =3D pcf8563_validate_client(client);
- 	if (result)
- 		return result;
-=20
-+	if ((pcf8563 =3D kzalloc(sizeof(*pcf8563), GFP_KERNEL)) =3D=3D NULL)
-+		return -ENOMEM;
+A new config option CONFIG_MM_OWNER is added and the memory resource
+controller selects this config option.
+
+This patch also adds cgroup callbacks to notify subsystems when mm->owner
+changes. The mm_cgroup_changed callback is called with the task_lock()
+of the new task held and is called just prior to changing the mm->owner.
+
+I am indebted to Paul Menage for the several reviews of this patchset
+and helping me make it lighter and simpler.
+
+This patch was tested on a powerpc box, it was compiled with both the
+MM_OWNER config turned on and off.
+
+After the thread group leader exits, it's moved to init_css_state by
+cgroup_exit(), thus all future charges from runnings threads would
+be redirected to the init_css_set's subsystem.
+
+Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
+---
+
+ fs/exec.c                  |    1 
+ include/linux/cgroup.h     |   15 ++++++++
+ include/linux/memcontrol.h |   16 +-------
+ include/linux/mm_types.h   |    5 +-
+ include/linux/sched.h      |   13 +++++++
+ init/Kconfig               |    7 +++
+ init/main.c                |    1 
+ kernel/cgroup.c            |   30 ++++++++++++++++
+ kernel/exit.c              |   83 +++++++++++++++++++++++++++++++++++++++++++++
+ kernel/fork.c              |   11 ++++-
+ mm/memcontrol.c            |   24 +------------
+ 11 files changed, 167 insertions(+), 39 deletions(-)
+
+diff -puN fs/exec.c~memory-controller-add-mm-owner fs/exec.c
+--- linux-2.6.25-rc8/fs/exec.c~memory-controller-add-mm-owner	2008-04-08 17:23:20.000000000 +0530
++++ linux-2.6.25-rc8-balbir/fs/exec.c	2008-04-08 17:23:20.000000000 +0530
+@@ -735,6 +735,7 @@ static int exec_mmap(struct mm_struct *m
+ 	tsk->active_mm = mm;
+ 	activate_mm(active_mm, mm);
+ 	task_unlock(tsk);
++	mm_update_next_owner(mm);
+ 	arch_pick_mmap_layout(mm);
+ 	if (old_mm) {
+ 		up_read(&old_mm->mmap_sem);
+diff -puN include/linux/cgroup.h~memory-controller-add-mm-owner include/linux/cgroup.h
+--- linux-2.6.25-rc8/include/linux/cgroup.h~memory-controller-add-mm-owner	2008-04-08 17:23:20.000000000 +0530
++++ linux-2.6.25-rc8-balbir/include/linux/cgroup.h	2008-04-08 17:23:20.000000000 +0530
+@@ -300,6 +300,12 @@ struct cgroup_subsys {
+ 			struct cgroup *cgrp);
+ 	void (*post_clone)(struct cgroup_subsys *ss, struct cgroup *cgrp);
+ 	void (*bind)(struct cgroup_subsys *ss, struct cgroup *root);
++	/*
++	 * This routine is called with the task_lock of mm->owner held
++	 */
++	void (*mm_owner_changed)(struct cgroup_subsys *ss,
++					struct cgroup *old,
++					struct cgroup *new);
+ 	int subsys_id;
+ 	int active;
+ 	int disabled;
+@@ -385,4 +391,13 @@ static inline int cgroupstats_build(stru
+ 
+ #endif /* !CONFIG_CGROUPS */
+ 
++#ifdef CONFIG_MM_OWNER
++extern void
++cgroup_mm_owner_callbacks(struct task_struct *old, struct task_struct *new);
++#else /* !CONFIG_MM_OWNER */
++static inline void
++cgroup_mm_owner_callbacks(struct task_struct *old, struct task_struct *new)
++{
++}
++#endif /* CONFIG_MM_OWNER */
+ #endif /* _LINUX_CGROUP_H */
+diff -puN include/linux/init_task.h~memory-controller-add-mm-owner include/linux/init_task.h
+diff -puN include/linux/memcontrol.h~memory-controller-add-mm-owner include/linux/memcontrol.h
+--- linux-2.6.25-rc8/include/linux/memcontrol.h~memory-controller-add-mm-owner	2008-04-08 17:23:20.000000000 +0530
++++ linux-2.6.25-rc8-balbir/include/linux/memcontrol.h	2008-04-08 17:23:20.000000000 +0530
+@@ -27,9 +27,6 @@ struct mm_struct;
+ 
+ #ifdef CONFIG_CGROUP_MEM_RES_CTLR
+ 
+-extern void mm_init_cgroup(struct mm_struct *mm, struct task_struct *p);
+-extern void mm_free_cgroup(struct mm_struct *mm);
+-
+ #define page_reset_bad_cgroup(page)	((page)->page_cgroup = 0)
+ 
+ extern struct page_cgroup *page_get_page_cgroup(struct page *page);
+@@ -48,8 +45,10 @@ extern unsigned long mem_cgroup_isolate_
+ extern void mem_cgroup_out_of_memory(struct mem_cgroup *mem, gfp_t gfp_mask);
+ int task_in_mem_cgroup(struct task_struct *task, const struct mem_cgroup *mem);
+ 
++extern struct mem_cgroup *mem_cgroup_from_task(struct task_struct *p);
 +
- 	rtc =3D rtc_device_register(pcf8563_driver.driver.name, &client->dev,
- 				&pcf8563_rtc_ops, THIS_MODULE);
-=2D	if (IS_ERR(rtc))
-+	if (IS_ERR(rtc)) {
-+		kfree(pcf8563);
- 		return PTR_ERR(rtc);
-+	}
-=20
-=2D	i2c_set_clientdata(client, rtc);
-+	pcf8563->rtc =3D rtc;
-+	i2c_set_clientdata(client, pcf8563);
-=20
- 	return 0;
+ #define mm_match_cgroup(mm, cgroup)	\
+-	((cgroup) == rcu_dereference((mm)->mem_cgroup))
++	((cgroup) == mem_cgroup_from_task((mm)->owner))
+ 
+ extern int mem_cgroup_prepare_migration(struct page *page);
+ extern void mem_cgroup_end_migration(struct page *page);
+@@ -73,15 +72,6 @@ extern long mem_cgroup_calc_reclaim_inac
+ 				struct zone *zone, int priority);
+ 
+ #else /* CONFIG_CGROUP_MEM_RES_CTLR */
+-static inline void mm_init_cgroup(struct mm_struct *mm,
+-					struct task_struct *p)
+-{
+-}
+-
+-static inline void mm_free_cgroup(struct mm_struct *mm)
+-{
+-}
+-
+ static inline void page_reset_bad_cgroup(struct page *page)
+ {
  }
-=2D-=20
-1.5.0
+diff -puN include/linux/mm_types.h~memory-controller-add-mm-owner include/linux/mm_types.h
+--- linux-2.6.25-rc8/include/linux/mm_types.h~memory-controller-add-mm-owner	2008-04-08 17:23:20.000000000 +0530
++++ linux-2.6.25-rc8-balbir/include/linux/mm_types.h	2008-04-08 17:23:20.000000000 +0530
+@@ -230,8 +230,9 @@ struct mm_struct {
+ 	/* aio bits */
+ 	rwlock_t		ioctx_list_lock;	/* aio lock */
+ 	struct kioctx		*ioctx_list;
+-#ifdef CONFIG_CGROUP_MEM_RES_CTLR
+-	struct mem_cgroup *mem_cgroup;
++#ifdef CONFIG_MM_OWNER
++	struct task_struct *owner;	/* The thread group leader that */
++					/* owns the mm_struct.		*/
+ #endif
+ 
+ #ifdef CONFIG_PROC_FS
+diff -puN include/linux/sched.h~memory-controller-add-mm-owner include/linux/sched.h
+--- linux-2.6.25-rc8/include/linux/sched.h~memory-controller-add-mm-owner	2008-04-08 17:23:20.000000000 +0530
++++ linux-2.6.25-rc8-balbir/include/linux/sched.h	2008-04-08 17:23:20.000000000 +0530
+@@ -2144,6 +2144,19 @@ static inline void migration_init(void)
+ 
+ #define TASK_STATE_TO_CHAR_STR "RSDTtZX"
+ 
++#ifdef CONFIG_MM_OWNER
++extern void mm_update_next_owner(struct mm_struct *mm);
++extern void mm_init_owner(struct mm_struct *mm, struct task_struct *p);
++#else
++static inline void mm_update_next_owner(struct mm_struct *mm)
++{
++}
++
++static inline void mm_init_owner(struct mm_struct *mm, struct task_struct *p)
++{
++}
++#endif /* CONFIG_MM_OWNER */
++
+ #endif /* __KERNEL__ */
+ 
+ #endif
+diff -puN init/Kconfig~memory-controller-add-mm-owner init/Kconfig
+--- linux-2.6.25-rc8/init/Kconfig~memory-controller-add-mm-owner	2008-04-08 17:23:20.000000000 +0530
++++ linux-2.6.25-rc8-balbir/init/Kconfig	2008-04-08 17:31:38.000000000 +0530
+@@ -371,9 +371,13 @@ config RESOURCE_COUNTERS
+           infrastructure that works with cgroups
+ 	depends on CGROUPS
+ 
++config MM_OWNER
++	bool
++
+ config CGROUP_MEM_RES_CTLR
+ 	bool "Memory Resource Controller for Control Groups"
+ 	depends on CGROUPS && RESOURCE_COUNTERS
++	select MM_OWNER
+ 	help
+ 	  Provides a memory resource controller that manages both page cache and
+ 	  RSS memory.
+@@ -386,6 +390,9 @@ config CGROUP_MEM_RES_CTLR
+ 	  Only enable when you're ok with these trade offs and really
+ 	  sure you need the memory resource controller.
+ 
++	  This config option also selects MM_OWNER config option, which
++	  could in turn add some fork/exit overhead.
++
+ config SYSFS_DEPRECATED
+ 	bool
+ 
+diff -puN kernel/cgroup.c~memory-controller-add-mm-owner kernel/cgroup.c
+--- linux-2.6.25-rc8/kernel/cgroup.c~memory-controller-add-mm-owner	2008-04-08 17:23:20.000000000 +0530
++++ linux-2.6.25-rc8-balbir/kernel/cgroup.c	2008-04-08 17:29:45.000000000 +0530
+@@ -118,6 +118,7 @@ static int root_count;
+  * be called.
+  */
+ static int need_forkexit_callback;
++static int need_mm_owner_callback __read_mostly;
+ 
+ /* convenient tests for these bits */
+ inline int cgroup_is_removed(const struct cgroup *cgrp)
+@@ -2485,6 +2486,7 @@ static void __init cgroup_init_subsys(st
+ 	}
+ 
+ 	need_forkexit_callback |= ss->fork || ss->exit;
++	need_mm_owner_callback |= !!ss->mm_owner_changed;
+ 
+ 	ss->active = 1;
+ }
+@@ -2721,6 +2723,34 @@ void cgroup_fork_callbacks(struct task_s
+ 	}
+ }
+ 
++#ifdef CONFIG_MM_OWNER
++/**
++ * cgroup_mm_owner_callbacks - run callbacks when the mm->owner changes
++ * @p: the new owner
++ *
++ * Called on every change to mm->owner. mm_init_owner() does not
++ * invoke this routine, since it assigns the mm->owner the first time
++ * and does not change it.
++ */
++void cgroup_mm_owner_callbacks(struct task_struct *old, struct task_struct *new)
++{
++	struct cgroup *oldcgrp, *newcgrp;
++
++	if (need_mm_owner_callback) {
++		int i;
++		for (i = 0; i < CGROUP_SUBSYS_COUNT; i++) {
++			struct cgroup_subsys *ss = subsys[i];
++			oldcgrp = task_cgroup(old, ss->subsys_id);
++			newcgrp = task_cgroup(new, ss->subsys_id);
++			if (oldcgrp == newcgrp)
++				continue;
++			if (ss->mm_owner_changed)
++				ss->mm_owner_changed(ss, oldcgrp, newcgrp);
++		}
++	}
++}
++#endif /* CONFIG_MM_OWNER */
++
+ /**
+  * cgroup_post_fork - called on a new task after adding it to the task list
+  * @child: the task in question
+diff -puN kernel/exit.c~memory-controller-add-mm-owner kernel/exit.c
+--- linux-2.6.25-rc8/kernel/exit.c~memory-controller-add-mm-owner	2008-04-08 17:23:20.000000000 +0530
++++ linux-2.6.25-rc8-balbir/kernel/exit.c	2008-04-10 14:42:11.000000000 +0530
+@@ -577,6 +577,88 @@ void exit_fs(struct task_struct *tsk)
+ 
+ EXPORT_SYMBOL_GPL(exit_fs);
+ 
++#ifdef CONFIG_MM_OWNER
++/*
++ * Task p is exiting and it owned mm, lets find a new owner for it
++ */
++static inline int
++mm_need_new_owner(struct mm_struct *mm, struct task_struct *p)
++{
++	/*
++	 * If there are other users of the mm and the owner (us) is exiting
++	 * we need to find a new owner to take on the responsibility.
++	 */
++	if (!mm)
++		return 0;
++	if (atomic_read(&mm->mm_users) <= 1)
++		return 0;
++	if (mm->owner != p)
++		return 0;
++	return 1;
++}
++
++void mm_update_next_owner(struct mm_struct *mm)
++{
++	struct task_struct *c, *g, *p = current;
++
++retry:
++	if (!mm_need_new_owner(mm, p))
++		return;
++
++	read_lock(&tasklist_lock);
++	/*
++	 * Search in the children
++	 */
++	list_for_each_entry(c, &p->children, sibling) {
++		if (c->mm == mm)
++			goto assign_new_owner;
++	}
++
++	/*
++	 * Search in the siblings
++	 */
++	list_for_each_entry(c, &p->parent->children, sibling) {
++		if (c->mm == mm)
++			goto assign_new_owner;
++	}
++
++	/*
++	 * Search through everything else. We should not get
++	 * here often
++	 */
++	do_each_thread(g, c) {
++		if (c->mm == mm)
++			goto assign_new_owner;
++	} while_each_thread(g, c);
++
++	read_unlock(&tasklist_lock);
++	return;
++
++assign_new_owner:
++	BUG_ON(c == p);
++	get_task_struct(c);
++	/*
++	 * The task_lock protects c->mm from changing.
++	 * We always want mm->owner->mm == mm
++	 */
++	task_lock(c);
++	/*
++	 * Delay read_unlock() till we have the task_lock()
++	 * to ensure that c does not slip away underneath us
++	 */
++	read_unlock(&tasklist_lock);
++	if (c->mm != mm) {
++		task_unlock(c);
++		put_task_struct(c);
++		goto retry;
++	}
++	cgroup_mm_owner_callbacks(mm->owner, c);
++	mm->owner = c;
++	task_unlock(c);
++	put_task_struct(c);
++}
++#endif /* CONFIG_MM_OWNER */
++
+ /*
+  * Turn us into a lazy TLB process if we
+  * aren't already..
+@@ -616,6 +698,7 @@ static void exit_mm(struct task_struct *
+ 	/* We don't want this task to be frozen prematurely */
+ 	clear_freeze_flag(tsk);
+ 	task_unlock(tsk);
++	mm_update_next_owner(mm);
+ 	mmput(mm);
+ }
+ 
+diff -puN kernel/fork.c~memory-controller-add-mm-owner kernel/fork.c
+--- linux-2.6.25-rc8/kernel/fork.c~memory-controller-add-mm-owner	2008-04-08 17:23:20.000000000 +0530
++++ linux-2.6.25-rc8-balbir/kernel/fork.c	2008-04-08 17:23:20.000000000 +0530
+@@ -358,14 +358,13 @@ static struct mm_struct * mm_init(struct
+ 	mm->ioctx_list = NULL;
+ 	mm->free_area_cache = TASK_UNMAPPED_BASE;
+ 	mm->cached_hole_size = ~0UL;
+-	mm_init_cgroup(mm, p);
++	mm_init_owner(mm, p);
+ 
+ 	if (likely(!mm_alloc_pgd(mm))) {
+ 		mm->def_flags = 0;
+ 		return mm;
+ 	}
+ 
+-	mm_free_cgroup(mm);
+ 	free_mm(mm);
+ 	return NULL;
+ }
+@@ -416,7 +415,6 @@ void mmput(struct mm_struct *mm)
+ 			spin_unlock(&mmlist_lock);
+ 		}
+ 		put_swap_token(mm);
+-		mm_free_cgroup(mm);
+ 		mmdrop(mm);
+ 	}
+ }
+@@ -996,6 +994,13 @@ static void rt_mutex_init_task(struct ta
+ #endif
+ }
+ 
++#ifdef CONFIG_MM_OWNER
++void mm_init_owner(struct mm_struct *mm, struct task_struct *p)
++{
++	mm->owner = p;
++}
++#endif /* CONFIG_MM_OWNER */
++
+ /*
+  * This creates a new process as a copy of the old one,
+  * but does not actually start it yet.
+diff -puN mm/memcontrol.c~memory-controller-add-mm-owner mm/memcontrol.c
+--- linux-2.6.25-rc8/mm/memcontrol.c~memory-controller-add-mm-owner	2008-04-08 17:23:20.000000000 +0530
++++ linux-2.6.25-rc8-balbir/mm/memcontrol.c	2008-04-08 17:23:20.000000000 +0530
+@@ -238,26 +238,12 @@ static struct mem_cgroup *mem_cgroup_fro
+ 				css);
+ }
+ 
+-static struct mem_cgroup *mem_cgroup_from_task(struct task_struct *p)
++struct mem_cgroup *mem_cgroup_from_task(struct task_struct *p)
+ {
+ 	return container_of(task_subsys_state(p, mem_cgroup_subsys_id),
+ 				struct mem_cgroup, css);
+ }
+ 
+-void mm_init_cgroup(struct mm_struct *mm, struct task_struct *p)
+-{
+-	struct mem_cgroup *mem;
+-
+-	mem = mem_cgroup_from_task(p);
+-	css_get(&mem->css);
+-	mm->mem_cgroup = mem;
+-}
+-
+-void mm_free_cgroup(struct mm_struct *mm)
+-{
+-	css_put(&mm->mem_cgroup->css);
+-}
+-
+ static inline int page_cgroup_locked(struct page *page)
+ {
+ 	return bit_spin_is_locked(PAGE_CGROUP_LOCK_BIT, &page->page_cgroup);
+@@ -478,6 +464,7 @@ unsigned long mem_cgroup_isolate_pages(u
+ 	int zid = zone_idx(z);
+ 	struct mem_cgroup_per_zone *mz;
+ 
++	BUG_ON(!mem_cont);
+ 	mz = mem_cgroup_zoneinfo(mem_cont, nid, zid);
+ 	if (active)
+ 		src = &mz->active_list;
+@@ -576,7 +563,7 @@ retry:
+ 		mm = &init_mm;
+ 
+ 	rcu_read_lock();
+-	mem = rcu_dereference(mm->mem_cgroup);
++	mem = mem_cgroup_from_task(rcu_dereference(mm->owner));
+ 	/*
+ 	 * For every charge from the cgroup, increment reference count
+ 	 */
+@@ -1006,7 +993,6 @@ mem_cgroup_create(struct cgroup_subsys *
+ 
+ 	if (unlikely((cont->parent) == NULL)) {
+ 		mem = &init_mem_cgroup;
+-		init_mm.mem_cgroup = mem;
+ 		page_cgroup_cache = KMEM_CACHE(page_cgroup, SLAB_PANIC);
+ 	} else
+ 		mem = kzalloc(sizeof(struct mem_cgroup), GFP_KERNEL);
+@@ -1087,10 +1073,6 @@ static void mem_cgroup_move_task(struct 
+ 	if (!thread_group_leader(p))
+ 		goto out;
+ 
+-	css_get(&mem->css);
+-	rcu_assign_pointer(mm->mem_cgroup, mem);
+-	css_put(&old_mem->css);
+-
+ out:
+ 	mmput(mm);
+ }
+diff -puN init/main.c~memory-controller-add-mm-owner init/main.c
+--- linux-2.6.25-rc8/init/main.c~memory-controller-add-mm-owner	2008-04-08 17:23:20.000000000 +0530
++++ linux-2.6.25-rc8-balbir/init/main.c	2008-04-08 17:23:20.000000000 +0530
+@@ -537,6 +537,7 @@ asmlinkage void __init start_kernel(void
+ 	printk(KERN_NOTICE);
+ 	printk(linux_banner);
+ 	setup_arch(&command_line);
++	mm_init_owner(&init_mm, &init_task);
+ 	setup_command_line(command_line);
+ 	unwind_setup();
+ 	setup_per_cpu_areas();
+_
 
-=2D-=20
-Laurent Pinchart
-CSE Semaphore Belgium
-
-Chaussee de Bruxelles, 732A
-B-1410 Waterloo
-Belgium
-
-T +32 (2) 387 42 59
-=46 +32 (2) 387 42 75
-
---nextPart1317648.bgjo6COaZL
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.5 (GNU/Linux)
-
-iD8DBQBH/dpq8y9gWxC9vpcRAmsjAJ4g3CJ/+8xY/kocuw2EWrHYen902gCgti3Y
-EtYl7MvLc8nWqd8PskVQlTw=
-=7XiV
------END PGP SIGNATURE-----
-
---nextPart1317648.bgjo6COaZL--
+-- 
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
