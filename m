@@ -1,91 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759592AbYDJWJr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758690AbYDJWKy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759592AbYDJWJr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Apr 2008 18:09:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756992AbYDJWJi
+	id S1758690AbYDJWKy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Apr 2008 18:10:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756364AbYDJWKq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Apr 2008 18:09:38 -0400
-Received: from yw-out-2324.google.com ([74.125.46.31]:57971 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756691AbYDJWJh (ORCPT
+	Thu, 10 Apr 2008 18:10:46 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:40763 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755862AbYDJWKp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Apr 2008 18:09:37 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=uPlmjoSsHYjg6yZFyVaNy/ysNYsXAQsD3t/Ph2g40z+S9x4OyhWkEUvQkTydjqVUResXhbLn3lJ7TW1hUMUjnnxaZyHxbAALTdKjeEmR5gj4YjiLxG1aWXV/VkmtECFwI8MTWBfojF802HCzRROQLaIGFy6m69kc0c3bD08o1Zw=
-Message-ID: <9a8748490804101509l5d043ff8w565dc44dfeaf0072@mail.gmail.com>
-Date: Fri, 11 Apr 2008 00:09:11 +0200
-From: "Jesper Juhl" <jesper.juhl@gmail.com>
-To: "Tilman Schmidt" <tilman@imap.cc>
-Subject: Re: 2.6.25-rc8: FTP transfer errors
-Cc: "David Miller" <davem@davemloft.net>, lkml@rtr.ca, yoshfuji@linux-ipv6.org,
-       jeff@garzik.org, rjw@sisk.pl, linux-kernel@vger.kernel.org,
-       linux-net@vger.kernel.org
-In-Reply-To: <47FE3020.1070502@imap.cc>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 10 Apr 2008 18:10:45 -0400
+Date: Thu, 10 Apr 2008 15:09:50 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>, mingo <mingo@redhat.com>,
+       tglx <tglx@linutronix.de>
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: linux-next: Tree for April 10 (arch/x86)
+Message-Id: <20080410150950.5913b16a.randy.dunlap@oracle.com>
+In-Reply-To: <20080410181404.b76939a6.sfr@canb.auug.org.au>
+References: <20080410181404.b76939a6.sfr@canb.auug.org.au>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <47FD138B.2060801@rtr.ca>
-	 <20080409.152933.132174258.davem@davemloft.net>
-	 <47FD590C.5020003@rtr.ca>
-	 <20080409.182228.193699767.davem@davemloft.net>
-	 <47FE3020.1070502@imap.cc>
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/04/2008, Tilman Schmidt <tilman@imap.cc> wrote:
-<...>
->
->  Bisecting is a time-consuming process. If unwillingness to bisect
->  is unacceptable in a bug reporter then people who don't have the
->  time to bisect must stop reporting the problems they encounter.
->
+Has the printk format warning in arch/x86/mm/ioremap.c already been fixed
+somewhere else (and not in linux-next merges)?
 
-I hope that was a joke and that I just don't get it.
+---
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
-Are you really saying that if somebody find a bug they shouldn't
-bother reporting it unless they are willing to spend hours and hours
-of work to get it fixed?
+Fix printk formats in x86/mm/ioremap.c:
 
-The way I see it, the burden of debugging and fixing bugs is mainly on
-the developers of the code that breaks. You can't blame users for
-using the code, triggering bugs and then reporting the breakage.
-Users who report bugs are doing us all a great service regardless of
-their ability or willingness to do more work than just the initial
-report.
+next-20080410/arch/x86/mm/ioremap.c:137: warning: format '%llx' expects type 'long long unsigned int', but argument 2 has type 'resource_size_t'
+next-20080410/arch/x86/mm/ioremap.c:188: warning: format '%llx' expects type 'long long unsigned int', but argument 2 has type 'resource_size_t'
+next-20080410/arch/x86/mm/ioremap.c:188: warning: format '%llx' expects type 'long long unsigned int', but argument 3 has type 'long unsigned int'
 
-If bugs don't get reported they'll never get fixed. Even a bad bug
-report with no follow up at all still allows us to use it to gauge how
-often a specific bug is being hit and thus how important it may be to
-fix it.
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+---
+ arch/x86/mm/ioremap.c |    5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
-You can't expect users to know how to debug a problem or even bisect
-it. A user may not even be able to compile a custom kernel but she may
-still hit a bug and do us the favour of reporting it. It should be the
-job of the developer of the code to investigate the bug following a
-users report.
-
-Sure it's great when users can bisect, provide test cases, debug the
-problem completely themselves or even provide a patch, but you can't
-expect that. And in my oppinion you certainly can't just hide behind
-"the user doesn't want to bisect so I won't fix this" and use that as
-an excuse for the code being buggy. I hope most people take bug
-reports more seriously than that.
-
-When people discover bugs in my own code I thank them and feel a bit
-ashamed that I didn't do my work properly and it then becomes very
-important to me to make sure I squash the bug.  The more the user can
-help the better, but if they cannot help beyond telling me what broke
-and how, then that's fine too. I still want to nail the bug and I'll
-just have to do more work myself, but it becomes a matter of personal
-and professional pride to hunt down the bug.
-
-We need to be grateful to users who report bugs - most of them don't bother.
-
--- 
-Jesper Juhl <jesper.juhl@gmail.com>
-Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
-Plain text mails only, please      http://www.expita.com/nomime.html
+--- next-20080410.orig/arch/x86/mm/ioremap.c
++++ next-20080410/arch/x86/mm/ioremap.c
+@@ -134,7 +134,7 @@ static void __iomem *__ioremap(resource_
+ 
+ 	if (!phys_addr_valid(phys_addr)) {
+ 		printk(KERN_WARNING "ioremap: invalid physical address %llx\n",
+-		       phys_addr);
++		       (unsigned long long)phys_addr);
+ 		WARN_ON_ONCE(1);
+ 		return NULL;
+ 	}
+@@ -187,7 +187,8 @@ static void __iomem *__ioremap(resource_
+ 		     new_prot_val == _PAGE_CACHE_WB)) {
+ 			pr_debug(
+ 		"ioremap error for 0x%llx-0x%llx, requested 0x%lx, got 0x%lx\n",
+-				phys_addr, phys_addr + size,
++				(unsigned long long)phys_addr,
++				(unsigned long long)(phys_addr + size),
+ 				prot_val, new_prot_val);
+ 			free_memtype(phys_addr, phys_addr + size);
+ 			return NULL;
