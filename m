@@ -1,69 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758736AbYDJWWf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758666AbYDJW1f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758736AbYDJWWf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Apr 2008 18:22:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753294AbYDJWW1
+	id S1758666AbYDJW1f (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Apr 2008 18:27:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752497AbYDJW10
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Apr 2008 18:22:27 -0400
-Received: from el-out-1112.google.com ([209.85.162.182]:35688 "EHLO
-	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750982AbYDJWW0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Apr 2008 18:22:26 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=LijgqG1Bh8ytBw82T3jeBZucwtVIK4i495jYrgpZT+PV5i2wUemeaOXUXV8RPTyQK5uNKHe0iqDzc6PpBWvPht6NSZjxUkpTb9kRuvguIf38rrl7Q2gEIHM/9IohQWRezd+2Y8x0+ArQLjk5n89Pm/Bt1sYJN2W4thSk+G3cHvU=
-Subject: Re: [PATCH] lzo: fix possible typo in decompresor
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Richard Purdie <rpurdie@rpsys.net>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <1207865888.4969.103.camel@dax.rpnet.com>
-References: <1207859903.22001.36.camel@brick>
-	 <alpine.LFD.1.00.0804101346240.3143@woody.linux-foundation.org>
-	 <1207865888.4969.103.camel@dax.rpnet.com>
-Content-Type: text/plain
-Date: Thu, 10 Apr 2008 15:22:26 -0700
-Message-Id: <1207866146.22001.55.camel@brick>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+	Thu, 10 Apr 2008 18:27:26 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:50551 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750982AbYDJW1Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Apr 2008 18:27:25 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: x86 git tree broken
+Date: Fri, 11 Apr 2008 00:27:05 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Anvin" <hpa@zytor.com>
+References: <200804102159.14563.rjw@sisk.pl> <20080410205106.GB15440@elte.hu>
+In-Reply-To: <20080410205106.GB15440@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200804110027.06078.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-04-10 at 23:18 +0100, Richard Purdie wrote:
-> On Thu, 2008-04-10 at 13:49 -0700, Linus Torvalds wrote:
-> > On Thu, 10 Apr 2008, Harvey Harrison wrote:
-> > >
-> > > Shift of a le value seems strange, probably meant to shift the cpu-order
-> > > variable as in the prvious section of the switch statement.
-> > 
-> > Hmm. This patch looks ObviouslyCorrect(tm), but it worries me that 
-> > apparently the old broken code has been around since last July, and afaik 
-> > it can never have worked on big-endian machines.
-> > 
-> > So did nobody ever use it, or why hasn't this ever triggered? How did you 
-> > find this? A sparse warning?
+On Thursday, 10 of April 2008, Ingo Molnar wrote:
 > 
-> The heaviest users of the lzo code I know of are little-endian ARM
-> devices through jffs2. When the code was merged there was a lot of
-> discussion about the best way to handle the endian issues and unaligned
-> accesses and whilst I seem to remember someone posting big-endian test
-> results it could have been before some of the later changes were made.
+> * Rafael J. Wysocki <rjw@sisk.pl> wrote:
 > 
-> So yes its possible its not been run on BE until now or that isn't a
-> common code path. I've checked this against the external LZO library its
-> based on and the patch is correct
+> > Second, if I try to suspend the box to RAM, it enters a state it 
+> > cannot leave until power is physically cut from it (using the power 
+> > button to power off / power on the box doesn't help).
 > 
-> Acked-by: Richard Purdie <rpurdie@rpsys.net>
+> i used your config on an AMD system here and s2ram works just fine, both 
+> using CONFIG_PM_TEST_SUSPEND=y bootup suspend self-test [which x86.git 
+> QA uses all the time], and using a manual pm-suspend command at the 
+> console.
 > 
+> you can also try your luck and remove the last 20% of x86.git [which is 
+> always the newest stuff], by picking a commit 200 patches down the line, 
+> via:
+> 
+>  git-rev-list x86/base..x86/latest | head -200 | tail -1
+> 
+> and testing that. If that tree works, it's the last 200 commits that 
+> break stuff.
 
-This is one of the reasons I thought about for adding the new api, the
-bracketing is just too easy to get wrong when you throw
-get/put_unaligned into the mix.
+Yes, I'll probably do that, but don't have that much time today.
 
-Harvey
+> exactly what kind of system are you using?
 
+It's an Athlon 64 X2 on an ULi-based AsRock motherboard with Radeon X300SE
+(PCIe).
+
+> If you revert the trampoline changes, does it get any better - but i guess
+> it might be better to do a bisection.
+
+I'll try to figure out what is the last good commit.
+
+Thanks,
+Rafael
