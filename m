@@ -1,88 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757144AbYDJN5w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756691AbYDJOBl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757144AbYDJN5w (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Apr 2008 09:57:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755516AbYDJN5o
+	id S1756691AbYDJOBl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Apr 2008 10:01:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754812AbYDJOBc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Apr 2008 09:57:44 -0400
-Received: from relay2.sgi.com ([192.48.171.30]:51292 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753032AbYDJN5o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Apr 2008 09:57:44 -0400
-Date: Thu, 10 Apr 2008 08:57:40 -0500
-From: Paul Jackson <pj@sgi.com>
-To: Mike Travis <travis@sgi.com>
-Cc: mingo@elte.hu, bert.wesarg@googlemail.com, tglx@linutronix.de,
-       hpa@zytor.com, akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/3] x86: modify show_shared_cpu_map in intel_cacheinfo
- v3
-Message-Id: <20080410085740.a7e08672.pj@sgi.com>
-In-Reply-To: <20080408184301.842103000@polaris-admin.engr.sgi.com>
-References: <20080408184301.651388000@polaris-admin.engr.sgi.com>
-	<20080408184301.842103000@polaris-admin.engr.sgi.com>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 10 Apr 2008 10:01:32 -0400
+Received: from twin.jikos.cz ([213.151.79.26]:53914 "EHLO twin.jikos.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752418AbYDJOBb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Apr 2008 10:01:31 -0400
+Date: Thu, 10 Apr 2008 16:01:27 +0200 (CEST)
+From: Jiri Kosina <jkosina@suse.cz>
+X-X-Sender: jikos@twin.jikos.cz
+To: Michal Hocko <mhocko@suse.cz>
+cc: Meelis Roos <mroos@linux.ee>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: file offset corruption on 32-bit machines?
+In-Reply-To: <200804101555.58643.mhocko@suse.cz>
+Message-ID: <Pine.LNX.4.64.0804101558280.26562@twin.jikos.cz>
+References: <Pine.SOC.4.64.0804081101430.28938@math.ut.ee>
+ <200804101555.58643.mhocko@suse.cz>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mike wrote:
-+		n = type?
-+			cpulist_scnprintf(buf, len-2, *mask):
-+			cpumask_scnprintf(buf, len-2, *mask);
+On Thu, 10 Apr 2008, Michal Hocko wrote:
 
-I suspect most of us would find the following variant easier to read:
+> > Jeff Robertson analyzes the behaviour of different operating systems'
+> > 64-bit file offset implementation and concludes that on 32-bit
+> > machines, Linux and Solaris lack any locking to keep the two 32-bit
+> > halves in sync and this could cause rare file offset corruption.
+> > http://jeffr-tech.livejournal.com/21014.html
+> AFAICS, this race is theoretically possible, but it is very hard (almost 
+> impossible) to trigger with a sane file usage pattern. Note that you 
+> have to access shared struct file (same file descriptor) in different 
+> threads which should be synchronized by caller anyway (*).
 
-		if (type)
-			n = cpulist_scnprintf(buf, len - 2, *mask);
-		else
-			n = cpumask_scnprintf(buf, len - 2, *mask);
+... but not in cases the caller is an intentionally evil code, right? :)
 
+> I also don't see any security implications from this race, but maybe 
+> someone with more knowlage about fs can see (f_pos is used at many 
+> places in the kernel code).
 
-Then, going further, the rather too vague "type" parameter name,
-without comment and taking just bare constant values 0 or 1, seems
-more opaque than necessary.
-
-I can imagine this being easier to read as something like:
-
-
-typedef enum { print_as_mask, print_as_list } map_printer_t;
-
-static ssize_t show_shared_cpu_map_func(struct _cpuid4_info *this_leaf,
-				       map_printer_t mpt, char *buf)
-{
-       ptrdiff_t len = PTR_ALIGN(buf + PAGE_SIZE - 1, PAGE_SIZE) - buf;
-       int n = 0;
-
-       if (len > 1) {
-		cpumask_t *mask = &this_leaf->shared_cpu_map;
-
-		if (mpt == print_as_mask)
-			n = cpumask_scnprintf(buf, len - 2, *mask);
-		else
-			n = cpulist_scnprintf(buf, len - 2, *mask);
-		buf[n++] = '\n';
-		buf[n] = '\0';
-       }
-       return n;
-}
-
-static inline ssize_t show_shared_cpu_map(struct _cpuid4_info *leaf, char *buf)
-{
-       return show_shared_cpu_map_func(leaf, print_as_mask, buf);
-}
-
-static inline ssize_t show_shared_cpu_list(struct _cpuid4_info *leaf, char *buf)
-{
-       return show_shared_cpu_map_func(leaf, print_as_list, buf);
-}
-
-
+The f_pos races are in fact exploitable, we've already been there. See 
+for example http://www.isec.pl/vulnerabilities/isec-0016-procleaks.txt
 
 -- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.940.382.4214
+Jiri Kosina
+SUSE Labs
+
