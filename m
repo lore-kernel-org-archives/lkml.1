@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758216AbYDJPAd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758838AbYDJPAq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758216AbYDJPAd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Apr 2008 11:00:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756171AbYDJPA0
+	id S1758838AbYDJPAq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Apr 2008 11:00:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757692AbYDJPAa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Apr 2008 11:00:26 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:42645 "EHLO mx1.redhat.com"
+	Thu, 10 Apr 2008 11:00:30 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:42648 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755513AbYDJPAZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Apr 2008 11:00:25 -0400
+	id S1757538AbYDJPA3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Apr 2008 11:00:29 -0400
 Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
 	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
 	Kingdom.
@@ -16,12 +16,13 @@ Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
 	Directors: Michael Cunningham (USA), Charlie Peters (USA) and
 	David Owens (Ireland)
 From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 1/5] FRV: Handle update_mmu_cache() being called when
-	current->mm is NULL
+Subject: [PATCH 2/5] FRV: Move STACK_TOP_MAX up
 To: torvalds@osdl.org, akpm@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org, dhowells@redhat.com
-Date: Thu, 10 Apr 2008 16:00:20 +0100
-Message-ID: <20080410150020.30046.84293.stgit@warthog.procyon.org.uk>
+Date: Thu, 10 Apr 2008 16:00:25 +0100
+Message-ID: <20080410150025.30046.4301.stgit@warthog.procyon.org.uk>
+In-Reply-To: <20080410150020.30046.84293.stgit@warthog.procyon.org.uk>
+References: <20080410150020.30046.84293.stgit@warthog.procyon.org.uk>
 User-Agent: StGIT/0.14.1
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -32,76 +33,27 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: David Howells <dhowells@redhat.com>
 
-Handle update_mmu_cache() being called when current->mm is NULL.
-
-We cache static TLB mappings for the current page table in DAMPR4 and DAMPR5
-on the theory that the next data lookup is likely to be in the same general
-region, and thus is likely to be mapped by the same page table.  However, we
-can't get this information if we can't access the appropriate mm_struct.
-
-If current->mm is NULL, we just clear the cache in the knowledge that the TLB
-miss handlers will load it.
+Move STACK_TOP_MAX up so that we don't try moving the stack above it as that
+causes setup_arg_pages() to malfunction.
 
 Signed-off-by: David Howells <dhowells@redhat.com>
 ---
 
- Makefile                  |   11 ++++++-----
- include/asm-frv/pgtable.h |   19 ++++++++++++++-----
- 2 files changed, 20 insertions(+), 10 deletions(-)
+ include/asm-frv/mem-layout.h |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
 
-diff --git a/Makefile b/Makefile
-index fec2a12..54d4fb2 100644
---- a/Makefile
-+++ b/Makefile
-@@ -501,11 +501,12 @@ endif # $(dot-config)
- # Defaults vmlinux but it is usually overridden in the arch makefile
- all: vmlinux
- 
--ifdef CONFIG_CC_OPTIMIZE_FOR_SIZE
--KBUILD_CFLAGS	+= -Os
--else
--KBUILD_CFLAGS	+= -O2
--endif
-+#ifdef CONFIG_CC_OPTIMIZE_FOR_SIZE
-+#KBUILD_CFLAGS	+= -Os
-+#else
-+#KBUILD_CFLAGS	+= -O2
-+#endif
-+KBUILD_CFLAGS	+= -O1
- 
- # Force gcc to behave correct even for buggy distributions
- # Arch Makefiles may override this setting
-diff --git a/include/asm-frv/pgtable.h b/include/asm-frv/pgtable.h
-index 6c0682e..4e21904 100644
---- a/include/asm-frv/pgtable.h
-+++ b/include/asm-frv/pgtable.h
-@@ -507,13 +507,22 @@ static inline int pte_file(pte_t pte)
+diff --git a/include/asm-frv/mem-layout.h b/include/asm-frv/mem-layout.h
+index 8353225..734a1d0 100644
+--- a/include/asm-frv/mem-layout.h
++++ b/include/asm-frv/mem-layout.h
+@@ -60,7 +60,7 @@
   */
- static inline void update_mmu_cache(struct vm_area_struct *vma, unsigned long address, pte_t pte)
- {
-+	struct mm_struct *mm;
- 	unsigned long ampr;
--	pgd_t *pge = pgd_offset(current->mm, address);
--	pud_t *pue = pud_offset(pge, address);
--	pmd_t *pme = pmd_offset(pue, address);
+ #define BRK_BASE			__UL(2 * 1024 * 1024 + PAGE_SIZE)
+ #define STACK_TOP			__UL(2 * 1024 * 1024)
+-#define STACK_TOP_MAX	STACK_TOP
++#define STACK_TOP_MAX			__UL(0xc0000000)
  
--	ampr = pme->ste[0] & 0xffffff00;
--	ampr |= xAMPRx_L | xAMPRx_SS_16Kb | xAMPRx_S | xAMPRx_C | xAMPRx_V;
-+	mm = current->mm;
-+	if (mm) {
-+		pgd_t *pge = pgd_offset(mm, address);
-+		pud_t *pue = pud_offset(pge, address);
-+		pmd_t *pme = pmd_offset(pue, address);
-+
-+		ampr = pme->ste[0] & 0xffffff00;
-+		ampr |= xAMPRx_L | xAMPRx_SS_16Kb | xAMPRx_S | xAMPRx_C |
-+			xAMPRx_V;
-+	} else {
-+		address = ULONG_MAX;
-+		ampr = 0;
-+	}
- 
- 	asm volatile("movgs %0,scr0\n"
- 		     "movgs %0,scr1\n"
+ /* userspace process size */
+ #ifdef CONFIG_MMU
 
