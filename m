@@ -1,48 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757924AbYDJQDq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758552AbYDJQFD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757924AbYDJQDq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Apr 2008 12:03:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755629AbYDJQDh
+	id S1758552AbYDJQFD (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Apr 2008 12:05:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755589AbYDJQEx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Apr 2008 12:03:37 -0400
-Received: from fg-out-1718.google.com ([72.14.220.152]:4393 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755508AbYDJQDg convert rfc822-to-8bit (ORCPT
+	Thu, 10 Apr 2008 12:04:53 -0400
+Received: from wx-out-0506.google.com ([66.249.82.226]:40761 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755508AbYDJQEx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Apr 2008 12:03:36 -0400
+	Thu, 10 Apr 2008 12:04:53 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer:mime-version:content-type:content-transfer-encoding;
-        b=qxqv1+9PKzH3a7WFXHZ8VDz7N0IFQ6wspBaZOh/W0I4Bz9tFC3aNsnmazdFSwEBknmBp/RaaL3b5GE1y+IXhltg/x8s9+3ZWFl5zTOjD8VW1EcYwTUlKxoAkWhSZKLwG0bbG9z8dk1q1okp5Nd2hqvvV1G+d6J+UKp3p0j3kjo0=
-Date: Thu, 10 Apr 2008 18:03:35 +0200
-From: Diego Calleja <diegocg@gmail.com>
-To: Jiri Kosina <jkosina@suse.cz>
-Cc: Jan Kara <jack@suse.cz>, Michal Hocko <mhocko@suse.cz>,
-       Meelis Roos <mroos@linux.ee>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: file offset corruption on 32-bit machines?
-Message-Id: <20080410180335.6a748c78.diegocg@gmail.com>
-In-Reply-To: <Pine.LNX.4.64.0804101628000.3896@jikos.suse.cz>
-References: <Pine.SOC.4.64.0804081101430.28938@math.ut.ee>
-	<200804101555.58643.mhocko@suse.cz>
-	<Pine.LNX.4.64.0804101558280.26562@twin.jikos.cz>
-	<20080410142700.GC6725@atrey.karlin.mff.cuni.cz>
-	<Pine.LNX.4.64.0804101628000.3896@jikos.suse.cz>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=AJiltTDsJTeveE67ipsslD/R30WjGvYeL+v1QKy1Wrbo5GdI5+ES0LmDGK9gRqswjxmOXfGPKBOofLjxsJguz3K3AY02ttvpg9M9Hg4eJTTaZFmS8PCewCsLI20yGNeMdatVcQomIWfh8OTdiyytenvaCzXqyau1xzzM0AcwB90=
+Message-ID: <dd18b0c30804100904k459d2a6fp33c02672213898e2@mail.gmail.com>
+Date: Thu, 10 Apr 2008 16:04:51 +0000
+From: "Justin Mattock" <justinmattock@gmail.com>
+To: "Pavel Machek" <pavel@ucw.cz>
+Subject: Re: suspend issue
+Cc: "Soeren Sonnenburg" <kernel@nn7.de>,
+       "Linux Kernel" <linux-kernel@vger.kernel.org>
+In-Reply-To: <20080410100234.GB11084@ucw.cz>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <dd18b0c30804052103s7357bb86yf7bf11d38d2911b3@mail.gmail.com>
+	 <1207490104.4597.36.camel@localhost> <20080406232849.GA789@elf.ucw.cz>
+	 <1207736730.4320.1.camel@localhost> <20080410100234.GB11084@ucw.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-El Thu, 10 Apr 2008 16:31:09 +0200 (CEST), Jiri Kosina <jkosina@suse.cz> escribió:
+On Thu, Apr 10, 2008 at 10:02 AM, Pavel Machek <pavel@ucw.cz> wrote:
+> On Wed 2008-04-09 12:25:30, Soeren Sonnenburg wrote:
+>  > On Mon, 2008-04-07 at 01:28 +0200, Pavel Machek wrote:
+>  > > On Sun 2008-04-06 13:55:04, Soeren Sonnenburg wrote:
+>  > > > On Sun, 2008-04-06 at 04:03 +0000, Justin Mattock wrote:
+>  > > > > Hello; I seem to have discovered something with echo mem > /sys/power/state.
+>  > > > > I recompile the kernel and had forgotten to compile fglrx, when
+>  > > > > performing a suspend without fglrx I was confronted with the dreaded
+>  > > > > blank screen and a reboot. then as a test I compiled fglrx and loaded,
+>  > > > > and to my amazement suspend reacted properly again.
+>  > > >
+>  > > > Yeah, but I it does not even work without X - console only!
+>  > > >
+>  > > > s2ram -f -p used to work since at least 2.6.20 ... and is now not
+>  > > > anymore in 2.6.25-*
+>  > >
+>  > > Can you do git bisect?
+>  >
+>  > I just tried, and the problem is that 25-rc1 already fails to suspend -
+>  > so I am not sure how I could get more insight into this failure *on
+>  > resume*... any ideas?
+>
+>  Well, 2.6.20 worked, so bisect should be easy, right?
+>
+>  --
+>  (english) http://www.livejournal.com/~pavelmachek
+>  (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+>
 
-> I think this is worth fixing.
+Using git is all new to me, so learning how to do a bisect, is
+probably not a bad idea.
 
-This question comes very often, and Linus even wrote a patch
-(http://lkml.org/lkml/2006/4/13/124 , http://lkml.org/lkml/2006/4/13/130)
 
-But apparently there's no much interest in fixing it, because it would
-slow down some workloads...
+-- 
+Justin P. Mattock
