@@ -1,50 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756704AbYDJNXS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756511AbYDJNfB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756704AbYDJNXS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Apr 2008 09:23:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755522AbYDJNXK
+	id S1756511AbYDJNfB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Apr 2008 09:35:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755409AbYDJNew
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Apr 2008 09:23:10 -0400
-Received: from mtagate4.uk.ibm.com ([195.212.29.137]:16704 "EHLO
-	mtagate4.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755258AbYDJNXJ (ORCPT
+	Thu, 10 Apr 2008 09:34:52 -0400
+Received: from gw-colo-pa.panasas.com ([66.238.117.130]:10479 "EHLO
+	cassoulet.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755305AbYDJNev (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Apr 2008 09:23:09 -0400
-Message-ID: <47FE14B4.4090705@fr.ibm.com>
-Date: Thu, 10 Apr 2008 15:23:00 +0200
-From: Cedric Le Goater <clg@fr.ibm.com>
+	Thu, 10 Apr 2008 09:34:51 -0400
+Message-ID: <47FE176D.4010901@panasas.com>
+Date: Thu, 10 Apr 2008 16:34:37 +0300
+From: Boaz Harrosh <bharrosh@panasas.com>
 User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-To: Kirill Korotaev <dev@parallels.com>
-CC: Andi Kleen <andi@firstfloor.org>, "David C. Hansen" <haveblue@us.ibm.com>,
-       linux-kernel@vger.kernel.org, Containers <containers@lists.osdl.org>,
-       Pavel Emelyanov <xemul@openvz.org>
-Subject: Re: [PATCH 1/3] change clone_flags type to u64
-References: <20080409222611.GA28087@us.ibm.com>	<20080409223231.GA28267@us.ibm.com>	<871w5enmk7.fsf@basil.nowhere.org> <47FE073B.3060007@fr.ibm.com> <20080410125205.GG10019@one.firstfloor.org> <47FE1219.5010405@parallels.com>
-In-Reply-To: <47FE1219.5010405@parallels.com>
+To: Daniel Phillips <phillips@phunq.net>
+CC: "Ph. Marek" <philipp.marek@bmlv.gv.at>, linux-kernel@vger.kernel.org
+Subject: Re: [RFC] Stacking bio support
+References: <200803110352.41479.phillips@phunq.net> <200803110507.10858.phillips@phunq.net> <47D67D3A.5030208@panasas.com> <200804100604.31822.phillips@phunq.net>
+In-Reply-To: <200804100604.31822.phillips@phunq.net>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 10 Apr 2008 13:34:40.0855 (UTC) FILETIME=[A1084E70:01C89B0F]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kirill Korotaev wrote:
-> The was no real rationale except for some people seeing "clone" functionality
-> as the match and the fact that FS_NAMESCAPE was done so made them believe it 
-> is a good way to go.
-> And I warned about flags limitation at the beginning.
+On Thu, Apr 10 2008 at 16:04 +0300, Daniel Phillips <phillips@phunq.net> wrote:
+> On Tuesday 11 March 2008 05:38, Boaz Harrosh wrote:
+>> Do you have a public git tree that we can inspect from time to time.
+> 
+> (long lag...)
+> 
+> Yes I do, here:
+> 
+>    http://phunq.net/ddtree
+> 
+> And there will be a paper on the lvm3 design (for discussion) at Linuxtag
+> in Berlin, in May.
+> 
+> Regards,
+> 
+> Daniel
 
-yes and now, we've hit the clone wall but that's a good thing.
+Thanks I'll have a look. This is a brave and important work you are doing here
+I envision all kind of stuff that can be done with this. I wish you the smoothest
+possible way to get it accepted into the kernel.
 
-> Both OpenVZ/vserver suggested to use a special syscall for handling this.
+Tell me if there is any thing I can do to help.
 
-most projects do it that way.
+Boaz
 
-> Maybe it is a good point to switch to it now finally and stop worring about all 
-> this?
-
-what would be the interface ? 
-
-C. 
-
- 
