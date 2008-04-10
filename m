@@ -1,47 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756640AbYDJM5G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755995AbYDJM5n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756640AbYDJM5G (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Apr 2008 08:57:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755495AbYDJM4z
+	id S1755995AbYDJM5n (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Apr 2008 08:57:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755385AbYDJM5e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Apr 2008 08:56:55 -0400
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:54374 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755215AbYDJM4y (ORCPT
+	Thu, 10 Apr 2008 08:57:34 -0400
+Received: from mail164.messagelabs.com ([216.82.253.131]:35129 "HELO
+	mail164.messagelabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1755314AbYDJM5d (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Apr 2008 08:56:54 -0400
-To: penguin-kernel@I-love.SAKURA.ne.jp
-CC: viro@zeniv.linux.org.uk, miklos@szeredi.hu, ezk@cs.sunysb.edu,
-       akpm@linux-foundation.org, dave@linux.vnet.ibm.com,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-In-reply-to: <200804102102.JFI05247.OVJOFHFStLOFQM@I-love.SAKURA.ne.jp>
-	(message from Tetsuo Handa on Thu, 10 Apr 2008 21:02:57 +0900)
-Subject: Re: [PATCH] Call LSM functions outside VFS helper functions.
-References: <200804090053.m390rE9k007085@agora.fsl.cs.sunysb.edu>
-	<E1Jjug8-0006a2-Vs@pomaz-ex.szeredi.hu> <200804102102.JFI05247.OVJOFHFStLOFQM@I-love.SAKURA.ne.jp>
-Message-Id: <E1JjwK1-0006ml-6c@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Thu, 10 Apr 2008 14:56:09 +0200
+	Thu, 10 Apr 2008 08:57:33 -0400
+X-VirusChecked: Checked
+X-Env-Sender: Uwe.Kleine-Koenig@digi.com
+X-Msg-Ref: server-9.tower-164.messagelabs.com!1207832251!14105506!1
+X-StarScan-Version: 5.5.12.14.2; banners=-,-,-
+X-Originating-IP: [66.77.174.21]
+Date: Thu, 10 Apr 2008 14:57:09 +0200
+From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <Uwe.Kleine-Koenig@digi.com>
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: =?iso-8859-1?Q?Hans-J=FCrgen?= Koch <hjk@linutronix.de>,
+       Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org,
+       linux-arm-kernel@lists.arm.linux.org.uk
+Subject: Re: [PATCH] arch/arm/Kconfig: Make UIO available on ARM architecture
+Message-ID: <20080410125709.GA11038@digi.com>
+References: <20080207133805.13f092ff@dilbert.local> <20080207130222.GA8587@flint.arm.linux.org.uk> <20080207141236.00940d09@dilbert.local> <20080211092547.09bca061@dilbert.local> <20080410122127.GA8096@digi.com> <20080410122706.GG26575@flint.arm.linux.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20080410122706.GG26575@flint.arm.linux.org.uk>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-OriginalArrivalTime: 10 Apr 2008 12:57:10.0193 (UTC) FILETIME=[63888A10:01C89B0A]
+X-TM-AS-Product-Ver: SMEX-8.0.0.1181-5.000.1023-15840.007
+X-TM-AS-Result: No--15.955000-8.000000-31
+X-TM-AS-User-Approved-Sender: No
+X-TM-AS-User-Blocked-Sender: No
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Hi Russell,
 
-> I'm reading this thread on tenterhooks.
-> If vfsmount is passed to VFS helper functions, that will make
-> r/o bind mounts and AppArmor and TOMOYO Linux happy.
-> But so far, it seems that "passing vfsmount makes things complicated".
+Russell King - ARM Linux wrote:
+> On Thu, Apr 10, 2008 at 02:21:27PM +0200, Uwe Kleine-König wrote:
+> > Hello,
+> > 
+> > Hans-Jürgen Koch wrote:
+> > > Am Thu, 7 Feb 2008 14:12:36 +0100
+> > > schrieb Hans-Jürgen Koch <hjk@linutronix.de>:
+> > > 
+> > > AFAICT, this patch was neither rejected nor applied. It generated a
+> > > long thread about changing the whole ARM Kconfig system. I feel not
+> > > qualified to do that, but I still want UIO available on ARM ;-)
+> > > What can I do to help?
+> > Anything new here?
+> > 
+> > In my eyes this can be sent to the patch system.
+> 
+> I don't remember anything about this...
+I don't know how I should understand your statement.  Does this only
+comment on my suggestion to send it to the patch system or on the patch
+itself?
 
-If done right, it shouldn't.  At least it didn't seem to complicate
-the parts that I've touched ;)
+After Hans-Jürgen addressed your concerns about the order in
+arch/arm/Kconfig compared to drivers/Kconfig there was no addional
+feedback (apart from the discussion about including drivers/Kconfig in
+arch/arm/Kconfig).
 
-> If the conclusion became "vfsmount should not be passed to
-> VFS helper functions", that's OK, but I want you to consider
-> the below approach for AppArmor and TOMOYO Linux. This patch is a repost of
-> http://kerneltrap.org/mailarchive/linux-fsdevel/2008/2/17/882024 .
+I consider the patch good until arch/arm/Kconfig includes
+drivers/Kconfig (if ever).
 
-I'm not a big fan of adding new security hooks.  Nor of moving the
-existing ones to callers.
+As it is a while that the discussion took place, here is the thread in
+the archive:
 
-Miklos
+	http://lists.arm.linux.org.uk/lurker/thread/20080207.125824.348cd1bd.en.html
+
+and the following post includes the last version of the patch:
+
+	http://lists.arm.linux.org.uk/lurker/message/20080207.131236.8c4f4569.en.html
+
+Best regards
+Uwe
+
+-- 
+Uwe Kleine-König, Software Engineer
+Digi International GmbH Branch Breisach, Küferstrasse 8, 79206 Breisach, Germany
+Tax: 315/5781/0242 / VAT: DE153662976 / Reg. Amtsgericht Dortmund HRB 13962
