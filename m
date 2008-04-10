@@ -1,60 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757440AbYDJQ5K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757610AbYDJQ6q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757440AbYDJQ5K (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Apr 2008 12:57:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755596AbYDJQ44
+	id S1757610AbYDJQ6q (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Apr 2008 12:58:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756440AbYDJQ6i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Apr 2008 12:56:56 -0400
-Received: from homer.mvista.com ([63.81.120.155]:21617 "EHLO
-	imap.sh.mvista.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755413AbYDJQ44 (ORCPT
+	Thu, 10 Apr 2008 12:58:38 -0400
+Received: from fk-out-0910.google.com ([209.85.128.190]:61810 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756252AbYDJQ6h (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Apr 2008 12:56:56 -0400
-Message-ID: <47FE46AC.5000901@ru.mvista.com>
-Date: Thu, 10 Apr 2008 20:56:12 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Organization: MontaVista Software Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
-X-Accept-Language: ru, en-us, en-gb
+	Thu, 10 Apr 2008 12:58:37 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-disposition:message-id:content-type:content-transfer-encoding;
+        b=CnZ10Gu4uqCaiwKR4IBl4ksy0D1XezFqp1cwvHWimER2J8ZvO9UKxWcKJZLTIemRKXhDUC75w6/BVi/RHoJsEGogsAGMoBuZGS1uoOYJ/1sL8/c1BuPAHueCVaBeVv+NU3uy8cpSKXWEoj87r9gsZ84BiIOSnsUHlwQoSsGsAwM=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: "Kamalesh Babulal" <kamalesh@linux.vnet.ibm.com>
+Subject: Re: [BUG] linux-next: Tree for April 10 - kernel panic while loading ata driver on powermac
+Date: Thu, 10 Apr 2008 19:14:04 +0200
+User-Agent: KMail/1.9.9
+Cc: "Stephen Rothwell" <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>,
+       "Andy Whitcroft" <apw@shadowen.org>
+References: <20080410181404.b76939a6.sfr@canb.auug.org.au> <47FDEAFA.10407@linux.vnet.ibm.com> <58cb370e0804100503u71014cdend6425efe14b8d88c@mail.gmail.com>
+In-Reply-To: <58cb370e0804100503u71014cdend6425efe14b8d88c@mail.gmail.com>
 MIME-Version: 1.0
-To: Tejun Heo <htejun@gmail.com>
-Cc: linuxppc-dev@ozlabs.org, gregkh@suse.de, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org, jgarzik@pobox.com, alan@lxorguk.ukuu.org.uk
-Subject: Re: [PATCH 6/13] devres: implement managed iomap interface
-References: <11684073371547-git-send-email-htejun@gmail.com>	<47FA4FD2.8060808@ru.mvista.com> <47FB85CB.2070506@gmail.com> <47FB8751.3040301@ru.mvista.com>
-In-Reply-To: <47FB8751.3040301@ru.mvista.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Disposition: inline
+Message-Id: <200804101914.04254.bzolnier@gmail.com>
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello, I wrote:
+On Thursday 10 April 2008, Bartlomiej Zolnierkiewicz wrote:
+> Hi,
+> 
+> On Thu, Apr 10, 2008 at 12:24 PM, Kamalesh Babulal
+> <kamalesh@linux.vnet.ibm.com> wrote:
+> > Hi Stephen,
+> >
+> >  The next-20080410 kernel panics while bootup over the PowerMac G5 box, while
+> >  loading the ATA driver.
+> >
+> >  [    3.704000] Faulting instruction address: 0xc0000000000222a8
+> >  [    3.704000] Oops: Kernel access of bad area, sig: 11 [#1]
+> >  [    3.704000] SMP NR_CPUS=32 NUMA PowerMac
+> >  [    3.704000] Modules linked in:
+> >  [    3.704000] NIP: c0000000000222a8 LR: c00000000021cd10 CTR: 0000000000000100
+> >  [    3.704000] REGS: c0000002760db070 TRAP: 0300   Not tainted  (2.6.25-rc8-next-20080410-autokern1)
+> >  [    3.704000] MSR: 9000000000009032 <EE,ME,IR,DR>  CR: 44000042  XER: 20000000
+> >  [    3.704000] DAR: a0001000822fa000, DSISR: 0000000040000000
+> >  [    3.704000] TASK = c0000002760d7100[1] 'swapper' THREAD: c0000002760d8000 CPU: 0
+> >  [    3.704000] GPR00: 0000000000000100 c0000002760db2f0 c000000000498310 a0001000822fa000
+> >  [    3.704000] GPR04: c000000274806a00 0000000000000100 0000000000000201 c00000000000fed4
+> >  [    3.704000] GPR08: c0000002760daf20 c0000000003ee0d8 c0000000004f1428 0000000000000000
+> >  [    3.704000] GPR12: 0000000000000000 c0000000003fa700 0000000000000000 0000000000000000
+> >  [    3.704000] GPR16: 0000000000000000 0000000000000000 0000000000000000 0000000000000000
+> >  [    3.704000] GPR20: 0000000000000001 0000000000000027 0000000000000027 0000000000000000
+> >  [    3.704000] GPR24: c0000000004f1400 0000000000000000 0000000000000201 c0000000004f1490
+> >  [    3.704000] GPR28: a0001000822fa000 0000000000000200 c00000000044cf50 c000000274806a00
+> >  [    3.704000] NIP [c0000000000222a8] ._insw_ns+0x10/0x30
+> >  [    3.704000] LR [c00000000021cd10] .ata_input_data+0x1f4/0x264
+> 
+> Could you please add printk() for 'hwif->host_flags', 'mmio' and 'io_32bit'
+> to ide-iops.c::ata_input_data() so we know more on what is going on?
 
->>>    Those functions are going to break on 32-bit platforms with 
->>> extended physical address (well, that's starting with Pentiums which 
->>> had 36-bit PAE :-) AND devices mapped beyond 4 GB (e.g. PowerPC 
->>> 44x).  You should have used resource_size_t for the 'offset' 
->>> parameter. As this most probably means that libata is broken on such 
->>> platforms, I'm going to submit a patch...
+No longer needed - please test the hot-fix below instead:
 
->    It's broken with drivers using MMIO, I meant to say.
+---
+thanks to Andrew for noticing me about the gcc warning
 
-    Oops, I meant PCI drivers here, at least for the time being. And it looks 
-like that was a false alarm. :-]
+ drivers/ide/ppc/pmac.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
->> Yeah, right please go ahead.  But I wonder whether any BIOS was 
->> actually crazy enough to map mmio region above 4G on 32bit machine.
+Index: b/drivers/ide/ppc/pmac.c
+===================================================================
+--- a/drivers/ide/ppc/pmac.c
++++ b/drivers/ide/ppc/pmac.c
+@@ -941,7 +941,7 @@ static const struct ide_port_info pmac_p
+ 	.port_ops		= &pmac_ide_port_ops,
+ 	.host_flags		= IDE_HFLAG_SET_PIO_MODE_KEEP_DMA |
+ 				  IDE_HFLAG_POST_SET_MODE |
+-				  IDE_HFLAG_UNMASK_IRQS,
++				  IDE_HFLAG_UNMASK_IRQS |
+ 				  IDE_HFLAG_MMIO,
+ 	.pio_mask		= ATA_PIO4,
+ 	.mwdma_mask		= ATA_MWDMA2,
 
->    This is a *hardware* mapping on some non-x86 platforms (like PPC 44x 
-> or MIPS Alchemy). The arch/ppc/ and arch/mips/ kernels have special 
-> hooks called from ioremap() which help create an illusion that the PCI 
-> memory space on such platforms (not only it) is mapped below 4 GB; 
-> arch/powerpc/ kernel doesn't do this anymore -- hence this newly 
-> encountered issue.
-
-    I thought that pcim_iomap() used devm_ioremap() or something -- which of 
-course turned to be wrong. devm_ioremap() alone is yet safe since there are no 
-users for it amongst PPC 44x platform device drivers...
-
-MBR, Sergei
