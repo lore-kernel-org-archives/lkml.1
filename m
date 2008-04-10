@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759013AbYDJSXb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759229AbYDJSXp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759013AbYDJSXb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Apr 2008 14:23:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757444AbYDJSWp
+	id S1759229AbYDJSXp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Apr 2008 14:23:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757471AbYDJSWp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Thu, 10 Apr 2008 14:22:45 -0400
-Received: from 81-174-11-161.static.ngi.it ([81.174.11.161]:50006 "EHLO
+Received: from 81-174-11-161.static.ngi.it ([81.174.11.161]:50009 "EHLO
 	mail.enneenne.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757175AbYDJSWm (ORCPT
+	with ESMTP id S1757344AbYDJSWn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Apr 2008 14:22:42 -0400
+	Thu, 10 Apr 2008 14:22:43 -0400
 From: Rodolfo Giometti <giometti@linux.it>
 To: linux-kernel@vger.kernel.org
 Cc: Andrew Morton <akpm@linux-foundation.org>,
@@ -18,179 +18,236 @@ Cc: Andrew Morton <akpm@linux-foundation.org>,
        Randy Dunlap <randy.dunlap@oracle.com>,
        Kay Sievers <kay.sievers@vrfy.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
        Rodolfo Giometti <giometti@linux.it>
-Date: Thu, 10 Apr 2008 20:22:31 +0200
-Message-Id: <1207851751-25703-8-git-send-email-giometti@linux.it>
+Date: Thu, 10 Apr 2008 20:22:26 +0200
+Message-Id: <1207851751-25703-3-git-send-email-giometti@linux.it>
 X-Mailer: git-send-email 1.5.4.3
-In-Reply-To: <1207851751-25703-7-git-send-email-giometti@linux.it>
+In-Reply-To: <1207851751-25703-2-git-send-email-giometti@linux.it>
 References: <20080410160630.GA24885@enneenne.com>
  <1207851751-25703-1-git-send-email-giometti@linux.it>
  <1207851751-25703-2-git-send-email-giometti@linux.it>
- <1207851751-25703-3-git-send-email-giometti@linux.it>
- <1207851751-25703-4-git-send-email-giometti@linux.it>
- <1207851751-25703-5-git-send-email-giometti@linux.it>
- <1207851751-25703-6-git-send-email-giometti@linux.it>
- <1207851751-25703-7-git-send-email-giometti@linux.it>
 X-SA-Exim-Connect-IP: 192.168.32.1
 X-SA-Exim-Mail-From: giometti@enneenne.com
-Subject: [PATCH 7/7] PPS: parallel port clients support.
+Subject: [PATCH 2/7] PPS: userland header file for PPS API.
 X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
 X-SA-Exim-Scanned: Yes (on mail.enneenne.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adds support for the PPS sources connected with the interrupt pin of a
-parallel port.
+This patch adds into the PPS's documentation directory a possible
+implementation of the PPS API (RFC 2783) by using the LinuxPPS's char
+devices.
+
+This file is not just an example but it can be used into real
+systems. :)
 
 Signed-off-by: Rodolfo Giometti <giometti@linux.it>
 ---
- drivers/char/lp.c           |   61 +++++++++++++++++++++++++++++++++++++++++++
- drivers/pps/clients/Kconfig |   10 +++++++
- include/linux/parport.h     |   12 ++++++++
- 3 files changed, 83 insertions(+), 0 deletions(-)
+ Documentation/pps/timepps.h |  195 +++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 195 insertions(+), 0 deletions(-)
+ create mode 100644 Documentation/pps/timepps.h
 
-diff --git a/drivers/char/lp.c b/drivers/char/lp.c
-index 60ac642..b201fed 100644
---- a/drivers/char/lp.c
-+++ b/drivers/char/lp.c
-@@ -746,6 +746,27 @@ static struct console lpcons = {
- 
- #endif /* console on line printer */
- 
-+/* Support for PPS signal on the line printer */
+diff --git a/Documentation/pps/timepps.h b/Documentation/pps/timepps.h
+new file mode 100644
+index 0000000..2372949
+--- /dev/null
++++ b/Documentation/pps/timepps.h
+@@ -0,0 +1,195 @@
++/*
++ * timepps.h -- PPS API main header
++ *
++ * Copyright (C) 2005-2007   Rodolfo Giometti <giometti@linux.it>
++ *
++ *   This program is free software; you can redistribute it and/or modify
++ *   it under the terms of the GNU General Public License as published by
++ *   the Free Software Foundation; either version 2 of the License, or
++ *   (at your option) any later version.
++ *
++ *   This program is distributed in the hope that it will be useful,
++ *   but WITHOUT ANY WARRANTY; without even the implied warranty of
++ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ *   GNU General Public License for more details.
++ *
++ *   You should have received a copy of the GNU General Public License
++ *   along with this program; if not, write to the Free Software
++ *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
++ */
 +
-+#ifdef CONFIG_PPS_CLIENT_LP
++#ifndef _SYS_TIMEPPS_H_
++#define _SYS_TIMEPPS_H_
 +
-+static void lp_pps_echo(int source, int event, void *data)
++#include <sys/syscall.h>
++#include <unistd.h>
++#include <errno.h>
++#include <linux/pps.h>
++
++#define LINUXPPS	1		/* signal we are using LinuxPPS */
++
++/*
++ * New data structures
++ */
++
++struct ntp_fp {
++	unsigned int integral;
++	unsigned int fractional;
++};
++
++union pps_timeu {
++	struct timespec tspec;
++	struct ntp_fp ntpfp;
++	unsigned long longpad[3];
++};
++
++struct pps_info {
++	unsigned long assert_sequence;	/* seq. num. of assert event */
++	unsigned long clear_sequence;	/* seq. num. of clear event */
++	union pps_timeu assert_tu;	/* time of assert event */
++	union pps_timeu clear_tu;	/* time of clear event */
++	int current_mode;		/* current mode bits */
++};
++
++struct pps_params {
++	int api_version;		/* API version # */
++	int mode;			/* mode bits */
++	union pps_timeu assert_off_tu;	/* offset compensation for assert */
++	union pps_timeu clear_off_tu;	/* offset compensation for clear */
++};
++
++typedef int pps_handle_t;		/* represents a PPS source */
++typedef unsigned long pps_seq_t;	/* sequence number */
++typedef struct ntp_fp ntp_fp_t;		/* NTP-compatible time stamp */
++typedef union pps_timeu pps_timeu_t;	/* generic data type for time stamps */
++typedef struct pps_info pps_info_t;
++typedef struct pps_params pps_params_t;
++
++#define assert_timestamp        assert_tu.tspec
++#define clear_timestamp         clear_tu.tspec
++
++#define assert_timestamp_ntpfp  assert_tu.ntpfp
++#define clear_timestamp_ntpfp   clear_tu.ntpfp
++
++#define assert_offset		assert_off_tu.tspec
++#define clear_offset		clear_off_tu.tspec
++
++#define assert_offset_ntpfp     assert_off_tu.ntpfp
++#define clear_offset_ntpfp      clear_off_tu.ntpfp
++
++/*
++ * The PPS API
++ */
++
++static __inline int time_pps_create(int source, pps_handle_t *handle)
 +{
-+	struct parport *port = data;
-+	unsigned char status = parport_read_status(port);
++	int ret;
 +
-+	/* echo event via SEL bit */
-+	parport_write_control(port,
-+		parport_read_control(port) | PARPORT_CONTROL_SELECT);
++	if (!handle) {
++		errno = EINVAL;
++		return -1;
++	}
 +
-+	/* signal no event */
-+	if ((status & PARPORT_STATUS_ACK) != 0)
-+		parport_write_control(port,
-+			parport_read_control(port) & ~PARPORT_CONTROL_SELECT);
++	/* First we check if current device is a PPS valid PPS one...
++	 */
++	ret = ioctl(source, PPS_CHECK);
++	if (ret) {
++		errno = EOPNOTSUPP;
++		return -1;
++	}
++
++	/* ... then since in LinuxPPS there are no differences between a
++	 * "PPS source" and a "PPS handle", we simply return the same value.
++	 */
++	*handle = source;
++
++	return 0;
 +}
 +
-+#endif
++static __inline int time_pps_destroy(pps_handle_t handle)
++{
++	return close(handle);
++}
 +
- /* --- initialisation code ------------------------------------- */
- 
- static int parport_nr[LP_NO] = { [0 ... LP_NO-1] = LP_PARPORT_UNSPEC };
-@@ -816,6 +837,38 @@ static int lp_register(int nr, struct parport *port)
- 	}
- #endif
- 
-+#ifdef CONFIG_PPS_CLIENT_LP
-+	port->pps_info.owner = THIS_MODULE;
-+	port->pps_info.dev = port->dev;
-+	snprintf(port->pps_info.path, PPS_MAX_NAME_LEN, "/dev/lp%d", nr);
++static __inline int time_pps_getparams(pps_handle_t handle,
++					pps_params_t *ppsparams)
++{
++	int ret;
++	struct pps_kparams __ppsparams;
 +
-+	/* No PPS support if lp port has no IRQ line */
-+	if (port->irq != PARPORT_IRQ_NONE) {
-+		strncpy(port->pps_info.name, port->name, PPS_MAX_NAME_LEN);
++	ret = ioctl(handle, PPS_GETPARAMS, &__ppsparams);
 +
-+		port->pps_info.mode = PPS_CAPTUREASSERT | PPS_OFFSETASSERT | \
-+				PPS_ECHOASSERT | \
-+				PPS_CANWAIT | PPS_TSFMT_TSPEC;
++	ppsparams->api_version = __ppsparams.api_version;
++	ppsparams->mode = __ppsparams.mode;
++	ppsparams->assert_off_tu.tspec.tv_sec = __ppsparams.assert_off_tu.sec;
++	ppsparams->assert_off_tu.tspec.tv_nsec = __ppsparams.assert_off_tu.nsec;
++	ppsparams->clear_off_tu.tspec.tv_sec = __ppsparams.clear_off_tu.sec;
++	ppsparams->clear_off_tu.tspec.tv_nsec = __ppsparams.clear_off_tu.nsec;
 +
-+		port->pps_info.echo = lp_pps_echo;
++	return ret;
++}
 +
-+		port->pps_source = pps_register_source(&(port->pps_info),
-+				PPS_CAPTUREASSERT | PPS_OFFSETASSERT);
-+		if (port->pps_source < 0)
-+			dev_err(port->dev,
-+					"cannot register PPS source \"%s\"\n",
-+					port->pps_info.path);
-+		else
-+			dev_info(port->dev, "PPS source #%d \"%s\" added\n",
-+					port->pps_source, port->pps_info.path);
-+	} else {
-+		port->pps_source = -1;
-+		dev_err(port->dev, "PPS support disabled because port \"%s\" "
-+					"is in polling mode\n",
-+					port->pps_info.path);
++static __inline int time_pps_setparams(pps_handle_t handle,
++					const pps_params_t *ppsparams)
++{
++	struct pps_kparams __ppsparams;
++
++	__ppsparams.api_version = ppsparams->api_version;
++	__ppsparams.mode = ppsparams->mode;
++	__ppsparams.assert_off_tu.sec = ppsparams->assert_off_tu.tspec.tv_sec;
++	__ppsparams.assert_off_tu.nsec = ppsparams->assert_off_tu.tspec.tv_nsec;
++	__ppsparams.clear_off_tu.sec = ppsparams->clear_off_tu.tspec.tv_sec;
++	__ppsparams.clear_off_tu.nsec = ppsparams->clear_off_tu.tspec.tv_nsec;
++
++	return ioctl(handle, PPS_SETPARAMS, &__ppsparams);
++}
++
++/* Get capabilities for handle */
++static __inline int time_pps_getcap(pps_handle_t handle, int *mode)
++{
++	return ioctl(handle, PPS_GETCAP, mode);
++}
++
++static __inline int time_pps_fetch(pps_handle_t handle, const int tsformat,
++					pps_info_t *ppsinfobuf,
++					const struct timespec *timeout)
++{
++	struct pps_fdata __fdata;
++	int ret;
++
++	/* Sanity checks */
++	if (tsformat != PPS_TSFMT_TSPEC) {
++		errno = EINVAL;
++		return -1;
 +	}
-+#endif
 +
- 	return 0;
- }
- 
-@@ -858,6 +911,14 @@ static void lp_detach (struct parport *port)
- 		console_registered = NULL;
- 	}
- #endif /* CONFIG_LP_CONSOLE */
++	if (timeout) {
++		__fdata.timeout.sec = timeout->tv_sec;
++		__fdata.timeout.nsec = timeout->tv_nsec;
++		__fdata.timeout.flags = ~PPS_TIME_INVALID;
++	} else
++		__fdata.timeout.flags = PPS_TIME_INVALID;
 +
-+#ifdef CONFIG_PPS_CLIENT_LP
-+	if (port->pps_source >= 0) {
-+		pps_unregister_source(port->pps_source);
-+		dev_dbg(port->dev, "PPS source #%d \"%s\" removed\n",
-+			port->pps_source, port->pps_info.path);
-+	}
-+#endif
- }
- 
- static struct parport_driver lp_driver = {
-diff --git a/drivers/pps/clients/Kconfig b/drivers/pps/clients/Kconfig
-index 517c338..09ba5c3 100644
---- a/drivers/pps/clients/Kconfig
-+++ b/drivers/pps/clients/Kconfig
-@@ -25,4 +25,14 @@ config PPS_CLIENT_UART
- 	  If you say yes here you get support for a PPS source connected
- 	  with the CD (Carrier Detect) pin of your serial port.
- 
-+comment "Parallel printer support (forced off)"
-+	depends on !( PRINTER != n && !(PPS = m && PRINTER = y))
++	ret = ioctl(handle, PPS_FETCH, &__fdata);
 +
-+config PPS_CLIENT_LP
-+	bool "Parallel printer support"
-+	depends on PRINTER != n && !(PPS = m && PRINTER = y)
-+	help
-+	  If you say yes here you get support for a PPS source connected
-+	  with the interrupt pin of your parallel port.
++	ppsinfobuf->assert_sequence = __fdata.info.assert_sequence;
++	ppsinfobuf->clear_sequence = __fdata.info.clear_sequence;
++	ppsinfobuf->assert_tu.tspec.tv_sec = __fdata.info.assert_tu.sec;
++	ppsinfobuf->assert_tu.tspec.tv_nsec = __fdata.info.assert_tu.nsec;
++	ppsinfobuf->clear_tu.tspec.tv_sec = __fdata.info.clear_tu.sec;
++	ppsinfobuf->clear_tu.tspec.tv_nsec = __fdata.info.clear_tu.nsec;
++	ppsinfobuf->current_mode = __fdata.info.current_mode;
 +
- endif
-diff --git a/include/linux/parport.h b/include/linux/parport.h
-index d1ad546..501a9dc 100644
---- a/include/linux/parport.h
-+++ b/include/linux/parport.h
-@@ -100,6 +100,7 @@ typedef enum {
- #include <linux/proc_fs.h>
- #include <linux/spinlock.h>
- #include <linux/wait.h>
-+#include <linux/pps.h>
- #include <linux/irqreturn.h>
- #include <asm/system.h>
- #include <asm/ptrace.h>
-@@ -328,6 +329,11 @@ struct parport {
- 
- 	struct list_head full_list;
- 	struct parport *slaves[3];
++	return ret;
++}
 +
-+#ifdef CONFIG_PPS_CLIENT_LP
-+	struct pps_source_info pps_info;
-+	int pps_source;		/* PPS source ID */
-+#endif
- };
- 
- #define DEFAULT_SPIN_TIME 500 /* us */
-@@ -516,6 +522,12 @@ extern int parport_daisy_select (struct parport *port, int daisy, int mode);
- /* Lowlevel drivers _can_ call this support function to handle irqs.  */
- static inline void parport_generic_irq(struct parport *port)
- {
-+#ifdef CONFIG_PPS_CLIENT_LP
-+	pps_event(port->pps_source, PPS_CAPTUREASSERT, port);
-+	dev_dbg(port->dev, "PPS assert at %lu on source #%d\n",
-+		jiffies, port->pps_source);
-+#endif
++static __inline int time_pps_kcbind(pps_handle_t handle,
++					const int kernel_consumer,
++					const int edge, const int tsformat)
++{
++	/* LinuxPPS doesn't implement kernel consumer feature */
++	errno = EOPNOTSUPP;
++	return -1;
++}
 +
- 	parport_ieee1284_interrupt (port);
- 	read_lock(&port->cad_lock);
- 	if (port->cad && port->cad->irq_func)
++#endif				/* _SYS_TIMEPPS_H_ */
 -- 
 1.5.4.3
 
