@@ -1,70 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759896AbYDJS0H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758920AbYDJS1w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759896AbYDJS0H (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Apr 2008 14:26:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757344AbYDJSZi
+	id S1758920AbYDJS1w (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Apr 2008 14:27:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754229AbYDJS1o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Apr 2008 14:25:38 -0400
-Received: from homer.mvista.com ([63.81.120.155]:22491 "EHLO
-	imap.sh.mvista.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757350AbYDJSZh (ORCPT
+	Thu, 10 Apr 2008 14:27:44 -0400
+Received: from e34.co.us.ibm.com ([32.97.110.152]:50528 "EHLO
+	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755371AbYDJS1n (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Apr 2008 14:25:37 -0400
-Message-ID: <47FE5B76.40409@ru.mvista.com>
-Date: Thu, 10 Apr 2008 22:24:54 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Organization: MontaVista Software Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
-X-Accept-Language: ru, en-us, en-gb
+	Thu, 10 Apr 2008 14:27:43 -0400
+Date: Thu, 10 Apr 2008 11:26:16 -0700
+From: sukadev@us.ibm.com
+To: Paul Menage <menage@google.com>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Andrew Morton <akpm@osdl.org>,
+       clg@fr.ibm.com, serue@us.ibm.com,
+       "David C. Hansen" <haveblue@us.ibm.com>,
+       Pavel Emelyanov <xemul@openvz.org>,
+       Containers <containers@lists.osdl.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/3] clone64() and unshare64() system calls
+Message-ID: <20080410182616.GF28477@us.ibm.com>
+References: <20080409222611.GA28087@us.ibm.com> <47FD5899.2040206@zytor.com> <20080410010717.GA28477@us.ibm.com> <47FD6921.6090408@zytor.com> <20080410023818.GD28477@us.ibm.com> <6599ad830804091943j1f8a4500w5eda7774adfba69f@mail.gmail.com>
 MIME-Version: 1.0
-To: Kumar Gala <galak@kernel.crashing.org>
-Cc: Tejun Heo <htejun@gmail.com>, linux-ide@vger.kernel.org, gregkh@suse.de,
-       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       jgarzik@pobox.com, alan@lxorguk.ukuu.org.uk
-Subject: Re: [PATCH 6/13] devres: implement managed iomap interface
-References: <11684073371547-git-send-email-htejun@gmail.com>	<47FA4FD2.8060808@ru.mvista.com> <47FB85CB.2070506@gmail.com> <47FB8751.3040301@ru.mvista.com> <47FE46AC.5000901@ru.mvista.com> <59A939C7-75AF-4C0F-8199-4C31D174AEA9@kernel.crashing.org>
-In-Reply-To: <59A939C7-75AF-4C0F-8199-4C31D174AEA9@kernel.crashing.org>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <6599ad830804091943j1f8a4500w5eda7774adfba69f@mail.gmail.com>
+X-Operating-System: Linux 2.0.32 on an i486
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kumar Gala wrote:
+Paul Menage [menage@google.com] wrote:
+| On Wed, Apr 9, 2008 at 7:38 PM,  <sukadev@us.ibm.com> wrote:
+| >
+| >  But as Jon Corbet pointed out in the the thread above, it looked like
+| >  adding a new system call has been the "traditional" way of solving this
+| >  in Linux so far and there has been no consensus on a newer approach.
+| >
+| 
+| I thought that the consensus was that adding a new system call was
+| better than trying to force extensibility on to the existing
+| non-extensible system call.
 
->>>>>   Those functions are going to break on 32-bit platforms with  
->>>>> extended physical address (well, that's starting with Pentiums  
->>>>> which had 36-bit PAE :-) AND devices mapped beyond 4 GB (e.g.  
->>>>> PowerPC 44x).  You should have used resource_size_t for the  
->>>>> 'offset' parameter. As this most probably means that libata is  
->>>>> broken on such platforms, I'm going to submit a patch...
+There were couple of objections to extensible system calls like
+sys_indirect() and to Pavel's approach.
 
->>>   It's broken with drivers using MMIO, I meant to say.
+| 
+| But if we are adding a new system call, why not make the new one
+| extensible to reduce the need for yet another new call in the future?
 
->>   Oops, I meant PCI drivers here, at least for the time being. And  it 
->> looks like that was a false alarm. :-]
+hypothetically, can we make a variant of clone() extensible to the point
+of requiring a copy_from_user() ?
 
->>>> Yeah, right please go ahead.  But I wonder whether any BIOS was  
->>>> actually crazy enough to map mmio region above 4G on 32bit machine.
-
->>>   This is a *hardware* mapping on some non-x86 platforms (like PPC  
->>> 44x or MIPS Alchemy). The arch/ppc/ and arch/mips/ kernels have  
->>> special hooks called from ioremap() which help create an illusion  
->>> that the PCI memory space on such platforms (not only it) is mapped  
->>> below 4 GB; arch/powerpc/ kernel doesn't do this anymore -- hence  
->>> this newly encountered issue.
-
->>   I thought that pcim_iomap() used devm_ioremap() or something --  
->> which of course turned to be wrong. devm_ioremap() alone is yet safe  
->> since there are no users for it amongst PPC 44x platform device  
->> drivers...
-
-> but there is no reason not to make it work properly.  For example I  
-> believe libata uses devm_* and the fsl SATA driver (non-PCI) will need  
-> to work in cases similar to the 44x.
-
-    Well, as for sata_fsl, it calls of_iomap() which does The Right Thing.
-
-> - k
-
-WBR, Sergei
+| 
+| Paul
