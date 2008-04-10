@@ -1,59 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758776AbYDJOzx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758216AbYDJPAd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758776AbYDJOzx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Apr 2008 10:55:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756219AbYDJOzq
+	id S1758216AbYDJPAd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Apr 2008 11:00:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756171AbYDJPA0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Apr 2008 10:55:46 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:42990 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755971AbYDJOzp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Apr 2008 10:55:45 -0400
-Date: Thu, 10 Apr 2008 10:55:44 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: Andi Kleen <andi@firstfloor.org>, Andy Whitcroft <apw@shadowen.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
-       akpm@linux-foundation.org, Rusty Russell <rusty@rustcorp.com.au>,
-       Glauber de Oliveira Costa <gcosta@redhat.com>,
-       Jan Beulich <jbeulich@novell.com>, Thomas Gleixner <tglx@linutronix.de>,
-       pinskia@gcc.gnu.org
-Subject: Re: [PATCH] pop previous section in alternative.c
-In-Reply-To: <alpine.LFD.1.00.0804100741430.3143@woody.linux-foundation.org>
-Message-ID: <Pine.LNX.4.58.0804101054010.5673@gandalf.stny.rr.com>
-References: <Pine.LNX.4.58.0804091859400.31879@gandalf.stny.rr.com>
- <Pine.LNX.4.58.0804091906040.31970@gandalf.stny.rr.com> <47FD5D42.5000603@zytor.com>
- <87wsn6m6zt.fsf@basil.nowhere.org> <20080410094637.GW17915@shadowen.org>
- <Pine.LNX.4.58.0804101007510.5673@gandalf.stny.rr.com>
- <20080410144114.GH10019@one.firstfloor.org>
- <alpine.LFD.1.00.0804100741430.3143@woody.linux-foundation.org>
+	Thu, 10 Apr 2008 11:00:26 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:42645 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755513AbYDJPAZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Apr 2008 11:00:25 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+	Directors: Michael Cunningham (USA), Charlie Peters (USA) and
+	David Owens (Ireland)
+From: David Howells <dhowells@redhat.com>
+Subject: [PATCH 1/5] FRV: Handle update_mmu_cache() being called when
+	current->mm is NULL
+To: torvalds@osdl.org, akpm@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org, dhowells@redhat.com
+Date: Thu, 10 Apr 2008 16:00:20 +0100
+Message-ID: <20080410150020.30046.84293.stgit@warthog.procyon.org.uk>
+User-Agent: StGIT/0.14.1
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: David Howells <dhowells@redhat.com>
 
-On Thu, 10 Apr 2008, Linus Torvalds wrote:
->
-> But maybe we can see it in the resulting object file somehow, and do the
-> check there (the same way we do the init-section analysis). I assume the
-> ..size directive writes some debug info or similar, and we can create a big
-> warning when a size is unexpectedly huge and crosses section size
-> boundaries?
+Handle update_mmu_cache() being called when current->mm is NULL.
 
-I'm not sure how much this would help, but where I saw my red flag was
-examining the objdump and seeing this:
+We cache static TLB mappings for the current page table in DAMPR4 and DAMPR5
+on the theory that the next data lookup is likely to be in the same general
+region, and thus is likely to be mapped by the same page table.  However, we
+can't get this information if we can't access the appropriate mm_struct.
 
-  89:   bf 69 00 00 00          mov    $0x69,%edi
-  8e:   e8 00 00 00 00          callq  93 <alternatives_smp_module_add+0x30>
-                        8f: R_X86_64_PC32       .rodata+0x8c
+If current->mm is NULL, we just clear the cache in the knowledge that the TLB
+miss handlers will load it.
+
+Signed-off-by: David Howells <dhowells@redhat.com>
+---
+
+ Makefile                  |   11 ++++++-----
+ include/asm-frv/pgtable.h |   19 ++++++++++++++-----
+ 2 files changed, 20 insertions(+), 10 deletions(-)
 
 
-A call to .rodata??
-
--- Steve
+diff --git a/Makefile b/Makefile
+index fec2a12..54d4fb2 100644
+--- a/Makefile
++++ b/Makefile
+@@ -501,11 +501,12 @@ endif # $(dot-config)
+ # Defaults vmlinux but it is usually overridden in the arch makefile
+ all: vmlinux
+ 
+-ifdef CONFIG_CC_OPTIMIZE_FOR_SIZE
+-KBUILD_CFLAGS	+= -Os
+-else
+-KBUILD_CFLAGS	+= -O2
+-endif
++#ifdef CONFIG_CC_OPTIMIZE_FOR_SIZE
++#KBUILD_CFLAGS	+= -Os
++#else
++#KBUILD_CFLAGS	+= -O2
++#endif
++KBUILD_CFLAGS	+= -O1
+ 
+ # Force gcc to behave correct even for buggy distributions
+ # Arch Makefiles may override this setting
+diff --git a/include/asm-frv/pgtable.h b/include/asm-frv/pgtable.h
+index 6c0682e..4e21904 100644
+--- a/include/asm-frv/pgtable.h
++++ b/include/asm-frv/pgtable.h
+@@ -507,13 +507,22 @@ static inline int pte_file(pte_t pte)
+  */
+ static inline void update_mmu_cache(struct vm_area_struct *vma, unsigned long address, pte_t pte)
+ {
++	struct mm_struct *mm;
+ 	unsigned long ampr;
+-	pgd_t *pge = pgd_offset(current->mm, address);
+-	pud_t *pue = pud_offset(pge, address);
+-	pmd_t *pme = pmd_offset(pue, address);
+ 
+-	ampr = pme->ste[0] & 0xffffff00;
+-	ampr |= xAMPRx_L | xAMPRx_SS_16Kb | xAMPRx_S | xAMPRx_C | xAMPRx_V;
++	mm = current->mm;
++	if (mm) {
++		pgd_t *pge = pgd_offset(mm, address);
++		pud_t *pue = pud_offset(pge, address);
++		pmd_t *pme = pmd_offset(pue, address);
++
++		ampr = pme->ste[0] & 0xffffff00;
++		ampr |= xAMPRx_L | xAMPRx_SS_16Kb | xAMPRx_S | xAMPRx_C |
++			xAMPRx_V;
++	} else {
++		address = ULONG_MAX;
++		ampr = 0;
++	}
+ 
+ 	asm volatile("movgs %0,scr0\n"
+ 		     "movgs %0,scr1\n"
 
