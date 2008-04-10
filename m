@@ -1,50 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757897AbYDJQ1t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757003AbYDJQil@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757897AbYDJQ1t (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Apr 2008 12:27:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755508AbYDJQ1m
+	id S1757003AbYDJQil (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Apr 2008 12:38:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755882AbYDJQib
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Apr 2008 12:27:42 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:43942 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755227AbYDJQ1l (ORCPT
+	Thu, 10 Apr 2008 12:38:31 -0400
+Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:60596 "EHLO
+	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754812AbYDJQia (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Apr 2008 12:27:41 -0400
-Date: Thu, 10 Apr 2008 11:27:36 -0500
-From: Paul Jackson <pj@sgi.com>
-To: "Bert Wesarg" <bert.wesarg@googlemail.com>
-Cc: travis@sgi.com, mingo@elte.hu, tglx@linutronix.de, hpa@zytor.com,
-       akpm@linux-foundation.org, gregkh@suse.de, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/3] x86: add cpus_scnprintf function v3
-Message-Id: <20080410112736.6c5ee654.pj@sgi.com>
-In-Reply-To: <36ca99e90804100914n4b08cc9di9a6ab8b936f25644@mail.gmail.com>
-References: <20080408184301.651388000@polaris-admin.engr.sgi.com>
-	<36ca99e90804091051k7c2cc97neba0ca1967625433@mail.gmail.com>
-	<20080410071009.a5232b12.pj@sgi.com>
-	<36ca99e90804100914n4b08cc9di9a6ab8b936f25644@mail.gmail.com>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 10 Apr 2008 12:38:30 -0400
+Message-ID: <47FE425C.7060405@s5r6.in-berlin.de>
+Date: Thu, 10 Apr 2008 18:37:48 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.12) Gecko/20080201 SeaMonkey/1.1.8
+MIME-Version: 1.0
+To: Johannes Berg <johannes@sipsolutions.net>
+CC: linux-kernel@vger.kernel.org, Josh Triplett <josh@freedesktop.org>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       linux-wireless@vger.kernel.org, linux-sparse@vger.kernel.org
+Subject: Re: [RFC 1/3] add macros for new sparse features
+References: <20080410134810.629048000@sipsolutions.net> <20080410134827.771251000@sipsolutions.net>
+In-Reply-To: <20080410134827.771251000@sipsolutions.net>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bert wrote:
-> My statement from above doesn't reflect my opinion. I'm still in
-> flavor with the mask output. And from this discussion, I found a new
-> point for the mask output: its bounded ;-)
+Johannes Berg wrote:
+> This patch adds kernel macros for a few new sparse features, namely
+>  * checking try_lock functions and
+>  * making a function or macro require a certain lock.
+> 
+> Still waiting to see what the sparse folks say to my patches.
+> 
+> Not-yet-signed-off-by: Johannes Berg <johannes@sipsolutions.net>
+> ---
+>  include/linux/compiler.h |    6 ++++++
+>  1 file changed, 6 insertions(+)
+> 
+> --- everything.orig/include/linux/compiler.h	2008-04-10 15:36:18.000000000 +0200
+> +++ everything/include/linux/compiler.h	2008-04-10 15:36:40.000000000 +0200
+> @@ -11,9 +11,12 @@
+>  # define __nocast	__attribute__((nocast))
+>  # define __iomem	__attribute__((noderef, address_space(2)))
+>  # define __acquires(x)	__attribute__((context(x,0,1)))
+> +# define __try_acquires(x,t,f)	__attribute__((conditional_context(x,0,t,f)))
+>  # define __releases(x)	__attribute__((context(x,1,0)))
+>  # define __acquire(x)	__context__(x,1)
+>  # define __release(x)	__context__(x,-1)
+> +# define __requires(x)	__attribute__((context(x,1,1)))
+> +# define __macro_requires(x)	__context__(x,0,1)
 
-Ok
 
-> I just wanted to note, that these new list attributes would be the
-> only way to 'change' the api, ie. introduce a new api and deprecate
-> the old one, and not change the format of the present api.
+So, instead of
 
-Agreed
+  /* always call with host_lock held */
+  int foo(struct bar *b)
+  {
 
+we could write
+
+  int foo(struct bar *b) __requires(host_lock)
+  {
+
+and let sparse check the call chains... or how is it used?
+
+And what about dynamically allocated locks?
+E.g. b->lock
+Or struct host h* = container_of(b, struct host, m); with the necessity
+to hold h->lock...
 -- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.940.382.4214
+Stefan Richter
+-=====-==--- -=-- -=-=-
+http://arcgraph.de/sr/
