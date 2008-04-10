@@ -1,104 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756152AbYDJDYk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755384AbYDJDZF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756152AbYDJDYk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Apr 2008 23:24:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755582AbYDJDY2
+	id S1755384AbYDJDZF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Apr 2008 23:25:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752406AbYDJDYw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Apr 2008 23:24:28 -0400
-Received: from ozlabs.org ([203.10.76.45]:56350 "EHLO ozlabs.org"
+	Wed, 9 Apr 2008 23:24:52 -0400
+Received: from ozlabs.org ([203.10.76.45]:56912 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754746AbYDJDYA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Apr 2008 23:24:00 -0400
-To: <linux-kernel@vger.kernel.org>
-CC: Paul Mackerras <paulus@samba.org>, <linuxppc-dev@ozlabs.org>,
-       <takata@linux-m32r.org>, <linux-m32r@ml.linux-m32r.org>,
-       Linux-Arch <linux-arch@vger.kernel.org>
-From: Benjamin Herrenschmidt <benh@ozlabs.org>
-Date: Thu, 10 Apr 2008 13:22:58 +1000
-Subject: [PATCH 2/2] [POWERPC] Fix kernel stack allocation alignment
-Message-Id: <20080410032356.5D810DDF12@ozlabs.org>
+	id S1754348AbYDJDYv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Apr 2008 23:24:51 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Subject: Re: [patch 12/17] Immediate Values - Kconfig menu in EMBEDDED
+Date: Thu, 10 Apr 2008 13:23:55 +1000
+User-Agent: KMail/1.9.9
+Cc: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, Andi Kleen <andi@firstfloor.org>,
+       Adrian Bunk <bunk@stusta.de>, Christoph Hellwig <hch@infradead.org>,
+       akpm@osdl.org
+References: <20080409150829.855195878@polymtl.ca> <20080409152050.721310907@polymtl.ca>
+In-Reply-To: <20080409152050.721310907@polymtl.ca>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200804101323.56697.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The powerpc kernel stacks need to be naturally aligned, as they
-contain the thread info at the bottom, which is obtained by
-clearing the low bits of the stack pointer.
+On Thursday 10 April 2008 01:08:41 Mathieu Desnoyers wrote:
+> +config IMMEDIATE
+> +	default y if !DISABLE_IMMEDIATE
 
-However, when using 64K pages (the stack is smaller than a page),
-we use kmalloc to allocate it, which doesn't provide that guarantee.
+Wouldn't it be simlpler to roll DISABLE_IMMEDIATE into this?
 
-It appeared to work so far... until one enables SLUB debugging
-which then returns unaligned pointers. Ooops...
+ie.
+	default y
+	depends on HAVE_IMMEDIATE
+	bool "Immediate value optimization" if EMBEDDED
+	help
+	  Immediate values are used as read-mostly variables that are rarely
+	  updated. They use code patching to modify the values inscribed in the
+	  instruction stream. It provides a way to save precious cache lines
+	  that would otherwise have to be used by these variables.
 
-This patch fixes it by using a slab cache with enforced alignment
-for those. It replies on my previous patch that adds a
-thread_info_cache_init() callback.
+	  It consumes slightly more memory and requires to modify the instruction
+	  stream each time a variable is updated. Should really be disabled for
+	  embedded systems with read-only text.
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-
----
-Note that m32r seems to also have this problem.
-
- arch/powerpc/kernel/process.c     |   31 +++++++++++++++++++++++++++++++
- include/asm-powerpc/thread_info.h |   10 ++++------
- 2 files changed, 35 insertions(+), 6 deletions(-)
-
---- linux-work.orig/arch/powerpc/kernel/process.c	2008-04-10 13:11:05.000000000 +1000
-+++ linux-work/arch/powerpc/kernel/process.c	2008-04-10 13:14:29.000000000 +1000
-@@ -1052,3 +1052,34 @@ void ppc64_runlatch_off(void)
- 	}
- }
- #endif
-+
-+#if THREAD_SHIFT < PAGE_SHIFT
-+
-+static struct kmem_cache *thread_info_cache;
-+
-+struct thread_info *alloc_thread_info(struct task_struct *tsk)
-+{
-+	struct thread_info *ti;
-+
-+	ti = kmem_cache_alloc(thread_info_cache, GFP_KERNEL);
-+	if (unlikely(ti == NULL))
-+		return NULL;
-+#ifdef CONFIG_DEBUG_STACK_USAGE
-+	memset(ti, 0, THREAD_SIZE);
-+#endif
-+	return ti;
-+}
-+
-+void free_thread_info(struct thread_info *ti)
-+{
-+	kmem_cache_free(thread_info_cache, ti);
-+}
-+
-+void thread_info_cache_init(void)
-+{
-+	thread_info_cache = kmem_cache_create("thread_info", THREAD_SIZE,
-+					      THREAD_SIZE, 0, NULL);
-+	BUG_ON(thread_info_cache == NULL);
-+}
-+
-+#endif /* THREAD_SHIFT < PAGE_SHIFT */
-Index: linux-work/include/asm-powerpc/thread_info.h
-===================================================================
---- linux-work.orig/include/asm-powerpc/thread_info.h	2008-04-10 13:11:05.000000000 +1000
-+++ linux-work/include/asm-powerpc/thread_info.h	2008-04-10 13:14:47.000000000 +1000
-@@ -80,12 +80,10 @@ struct thread_info {
- 
- #else /* THREAD_SHIFT < PAGE_SHIFT */
- 
--#ifdef CONFIG_DEBUG_STACK_USAGE
--#define alloc_thread_info(tsk)	kzalloc(THREAD_SIZE, GFP_KERNEL)
--#else
--#define alloc_thread_info(tsk)	kmalloc(THREAD_SIZE, GFP_KERNEL)
--#endif
--#define free_thread_info(ti)	kfree(ti)
-+extern struct thread_info *alloc_thread_info(struct task_struct *tsk);
-+extern void free_thread_info(struct thread_info *ti);
-+extern void thread_info_cache_init(void);
-+#define thread_info_cache_init thread_info_cache_init
- 
- #endif /* THREAD_SHIFT < PAGE_SHIFT */
- 
+Cheers,
+Rusty.
