@@ -1,73 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759243AbYDJUz3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758860AbYDJU7a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759243AbYDJUz3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Apr 2008 16:55:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755589AbYDJUzX
+	id S1758860AbYDJU7a (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Apr 2008 16:59:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755182AbYDJU7X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Apr 2008 16:55:23 -0400
-Received: from ns.suse.de ([195.135.220.2]:52576 "EHLO mx1.suse.de"
+	Thu, 10 Apr 2008 16:59:23 -0400
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:49080 "EHLO e3.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755516AbYDJUzW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Apr 2008 16:55:22 -0400
-Date: Thu, 10 Apr 2008 13:55:21 -0700
-From: Mark Fasheh <mfasheh@suse.com>
-To: Jon Corbet <corbet@lwn.net>
-Cc: linux-kernel@vger.kernel.org, Randy Dunlap <randy.dunlap@oracle.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH] Add additional examples in Documentation/spinlocks.txt
-Message-ID: <20080410205520.GY21261@wotan.suse.de>
-Reply-To: Mark Fasheh <mfasheh@suse.com>
-Mime-Version: 1.0
+	id S1757245AbYDJU7W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Apr 2008 16:59:22 -0400
+Date: Thu, 10 Apr 2008 13:58:00 -0700
+From: sukadev@us.ibm.com
+To: "Serge E. Hallyn" <serue@us.ibm.com>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Containers <containers@lists.osdl.org>, clg@fr.ibm.com,
+       linux-kernel@vger.kernel.org, Pavel Emelyanov <xemul@openvz.org>
+Subject: Re: [RFC][PATCH 0/7] Clone PTS namespace
+Message-ID: <20080410205800.GA12960@us.ibm.com>
+References: <20080408215333.GA8799@us.ibm.com> <47FC138B.4070408@zytor.com> <1207779313.16926.12.camel@x61.ebiederm.org> <20080410015955.GA18227@sergelap.austin.rr.com> <1207812980.7509.25.camel@x61.ebiederm.org> <20080410164436.GA6434@sergelap.ibm.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Organization: SUSE Labs, Novell, Inc
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <20080410164436.GA6434@sergelap.ibm.com>
+X-Operating-System: Linux 2.0.32 on an i486
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Checkpatch will throw an error if code doesn't use the correct initializers
-for static spinlocks:
+Serge E. Hallyn [serue@us.ibm.com] wrote:
+| > 
+| > Further what I did for the network namespace should easily handle the
+| > uid/gid namespace and should be a good starting place for a general
+| > device namespace.
+| 
+| Agreed.  What's the git url and which branch do i use for your proof
+| of concept tree?  I'll do the userns patch on top of that.  I assume
+| Suka will do the same for ptys?
+| 
 
-ERROR: Use of SPIN_LOCK_UNLOCKED is deprecated: see Documentation/spinlocks.txt
+Sure.
 
-This is fine, but Documentation/spinlocks.txt isn't very clear on how to
-_use_ the new initializers for static variables. To save people time in the
-future, I added two small examples of how to fix old-style static
-initializers to be more lockdep friendly.
+BTW, can we push the following 3 helper patches in the set. I believe
+they will be required to support multiple pts namespaces, even if
+the actual way we do it is not final yet.
 
-Signed-off-by: Mark Fasheh <mfasheh@suse.com>
+        [PATCH 1/7]: Propagate error code from devpts_pty_new
+        [PATCH 2/7]: Factor out PTY index allocation
+        [PATCH 3/7]: Enable multiple mounts of /dev/pts
 
-diff --git a/Documentation/spinlocks.txt b/Documentation/spinlocks.txt
-index 471e753..619699d 100644
---- a/Documentation/spinlocks.txt
-+++ b/Documentation/spinlocks.txt
-@@ -5,6 +5,28 @@ Please use DEFINE_SPINLOCK()/DEFINE_RWLOCK() or
- __SPIN_LOCK_UNLOCKED()/__RW_LOCK_UNLOCKED() as appropriate for static
- initialization.
- 
-+Most of the time, you can simply turn:
-+
-+	static spinlock_t xxx_lock = SPIN_LOCK_UNLOCKED;
-+
-+into:
-+
-+	static DEFINE_SPINLOCK(xxx_lock);
-+
-+Static structure member variables go from:
-+
-+	struct foo bar {
-+		.lock	=	SPIN_LOCK_UNLOCKED;
-+	};
-+
-+to:
-+
-+	struct foo bar {
-+		.lock	=	__SPIN_LOCK_UNLOCKED(bar.lock);
-+	};
-+
-+Declaration of static rw_locks undergo a similar transformation.
-+
- Dynamic initialization, when necessary, may be performed as
- demonstrated below.
- 
+Sukadev
