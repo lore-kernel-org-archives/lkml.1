@@ -1,82 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755211AbYDJLCm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755907AbYDJLL1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755211AbYDJLCm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Apr 2008 07:02:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755117AbYDJLCa
+	id S1755907AbYDJLL1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Apr 2008 07:11:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754203AbYDJLLS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Apr 2008 07:02:30 -0400
-Received: from e28smtp01.in.ibm.com ([59.145.155.1]:44155 "EHLO
-	e28smtp01.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756171AbYDJLC3 (ORCPT
+	Thu, 10 Apr 2008 07:11:18 -0400
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:36345 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752737AbYDJLLR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Apr 2008 07:02:29 -0400
-Message-ID: <47FDF3B8.4080300@linux.vnet.ibm.com>
-Date: Thu, 10 Apr 2008 16:32:16 +0530
-From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-User-Agent: Thunderbird 1.5.0.14ubu (X11/20080306)
-MIME-Version: 1.0
-To: Jeff Garzik <jeff@garzik.org>
-CC: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, Andy Whitcroft <apw@shadowen.org>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Linux IDE mailing list <linux-ide@vger.kernel.org>
-Subject: Re: [BUG] linux-next: Tree for April 10 - kernel panic while loading
- ata driver on powermac
-References: <20080410181404.b76939a6.sfr@canb.auug.org.au> <47FDEAFA.10407@linux.vnet.ibm.com> <47FDEFC8.9070105@garzik.org>
-In-Reply-To: <47FDEFC8.9070105@garzik.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Thu, 10 Apr 2008 07:11:17 -0400
+To: ezk@cs.sunysb.edu
+CC: miklos@szeredi.hu, viro@zeniv.linux.org.uk, akpm@linux-foundation.org,
+       dave@linux.vnet.ibm.com, ezk@cs.sunysb.edu,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+In-reply-to: <200804090053.m390rE9k007085@agora.fsl.cs.sunysb.edu> (message
+	from Erez Zadok on Tue, 8 Apr 2008 20:53:14 -0400)
+Subject: Re: [PATCH] Unionfs: use the new path_* VFS helpers
+References: <200804090053.m390rE9k007085@agora.fsl.cs.sunysb.edu>
+Message-Id: <E1Jjug8-0006a2-Vs@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Thu, 10 Apr 2008 13:10:52 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Garzik wrote:
-> Kamalesh Babulal wrote:
->> Hi Stephen,
->>
->> The next-20080410 kernel panics while bootup over the PowerMac G5 box, while
->> loading the ATA driver.
-> 
-> IDE driver, you mean.
-> 
-> 
->> [    3.704000] NIP [c0000000000222a8] ._insw_ns+0x10/0x30
->> [    3.704000] LR [c00000000021cd10] .ata_input_data+0x1f4/0x264
->> [    3.704000] Call Trace:
-> 
->> [    3.704000] [c0000002760db3b0] [c00000000021fc34] .try_to_identify+0x298/0x690
->> [    3.704000] [c0000002760db470] [c000000000220168] .do_probe+0x13c/0x2f0
->> [    3.704000] [c0000002760db510] [c00000000022059c] .ide_probe_port+0x280/0x670
->> [    3.704000] [c0000002760db5e0] [c000000000220d84] .ide_device_add_all+0x2f8/0x670
->> [    3.704000] [c0000002760db690] [c000000000221160] .ide_device_add+0x64/0x74
-> 
->> [    3.704000] [c0000002760db930] [c00000000019241c] .pci_device_probe+0x10c/0x184
->> [    3.704000] [c0000002760db9e0] [c0000000002068ac] .driver_probe_device+0x120/0x1e4
->> [    3.704000] [c0000002760dba70] [c0000000002069d0] .__driver_attach+0x60/0xa4
->> [    3.704000] [c0000002760dbb00] [c0000000002050e8] .bus_for_each_dev+0x7c/0xcc
->> [    3.704000] [c0000002760dbbb0] [c000000000206388] .driver_attach+0x28/0x40
->> [    3.704000] [c0000002760dbc30] [c000000000206154] .bus_add_driver+0xd4/0x274
->> [    3.704000] [c0000002760dbcd0] [c000000000206f04] .driver_register+0x90/0x14c
->> [    3.704000] [c0000002760dbd70] [c000000000191c80] .__pci_register_driver+0x68/0xc8
->> [    3.704000] [c0000002760dbe10] [c0000000003ccfb8] .pmac_ide_probe+0x48/0x94
-> 
-> Regards,
-> 
-> 	Jeff
-Hi Jeff,
+> As promised, here is a patch for Unionfs to use the new path_* VFS helpers
+> which now take a struct path *.  I've used Al's vfs git tree plus all 12
+> patches you've outlined (ten path_* patches + 2 others).  I've run Unionfs
+> through my basic regression suite; I haven't done more extensive testing
+> yet.  This patch can be used in -mm if/when your path_* patches make it
+> there (this patch will be a standalone one to be used on top of my
+> unionfs.git tree).
 
-Looking at the boot log before the kernel oops, I suspected it to be the ide driver causing
-the kernel oops, I am trying reproduce the crash with debug info compiled into the kernel.
+Thanks.
 
-[    2.236136] Uniform Multi-Platform E-IDE driver
-[    2.248211] ide-pmac 0001:03:0d.0: enabling device (0014 -> 0016)
-[    3.284006] ide0: Found Apple K2 ATA-6 controller, bus ID 3, irq 39
-[    3.700012] Unable to handle kernel paging request for data at address 0xa0001000822fa000
-[    3.704000] Faulting instruction address: 0xc0000000000222a8
-[    3.704000] Oops: Kernel access of bad area, sig: 11 [#1]
-[    3.704000] SMP NR_CPUS=32 NUMA PowerMac
--- 
-Thanks & Regards,
-Kamalesh Babulal,
-Linux Technology Center,
-IBM, ISTL.
+> Al, I'm not too pleased with the resulting additional code complexity to
+> Unionfs, due to these new helpers.  See the diffstat below.  These VFS
+> helpers have widened the gap between the f/s API and the VFS helpers': the
+> helpers now need a struct path/vfsmount, but the most ->ops that a
+> filesystem is being called with, don't have a path/vfsmount passed.
+
+I'm not too pleased either ;)
+
+What I think would be much cleaner if for example you had functions
+like this:
+
+void unionfs_lower_path_index(struct dentry *dentry, int bindex,
+				struct path *path_out);
+
+Etc.  If you are dealing with paths, you should not be handling
+vfsmounts separately.  That part is ugly and just invitation for bugs.
+
+> You've said before that a filesystems has no business dealing with vfsmounts
+> (with the exception of follow_link).  Fine.  But the irony now is that the
+> new vfs helpers that a filesystems is likely to use, FORCE you to know a lot
+> more about vfsmounts!  If indeed a filesystem shouldn't have to know or deal
+> with vfsmounts, then none of the VFS helpers should require a struct
+> vfsmount (or a struct path, or a nameidata, which embed a vfsmount+dentry
+> pair).  Otherwise, let's admit that some filesystems have to know about
+> vfsmounts and hence let's pass them to all appropriate fs ->ops.
+
+How would that help?  AFAICS the vfsmounts on the lower layers should
+have _absolutetly nothing_ to do with the vfsmount on the top layer.
+
+So no, passing down vfsmounts to the filesystem is wrong (with the
+exception of follow_link, and even in that case only very specialized
+filesystems like proc will ever have a valid use for it).
+
+>  (BTW, if
+> that's done, then it'd also be helpful for a struct vfsmount to have a "void
+> *private" into which a stacked f/s can store "lower objects").
+
+Oh, please!  I think you are confused about the role that vfsmounts
+play in stacking.  Vfsmounts place filesystems in the global and
+private mount namespaces.  But each and every instance of that
+placement should behave exactly the same (modulo such flags as
+per-mount r/o, etc), and so stacking filesystems, just like any other
+filesystem, should have no need for the knowledge about where they are
+placed in the namespace.
+
+On the other hand, they _should_ have knowledge of the placement of
+the filesystems they are operating on.  So when accessing the lower
+layers, they can conform to the same rules as anything else accessing
+the filesystems.  I.e. they shouldn't meddle directly with the
+filesystem, without going through the namespace layer first.
+
+This is already enforced for dentry_open(), and I don't see the big
+issue with enfocing it for the rest of the vfs_* operations.
+
+Miklos
