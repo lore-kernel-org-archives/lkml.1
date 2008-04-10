@@ -1,23 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759974AbYDJPMq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759057AbYDJPOW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759974AbYDJPMq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Apr 2008 11:12:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759723AbYDJPMY
+	id S1759057AbYDJPOW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Apr 2008 11:14:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756441AbYDJPON
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Apr 2008 11:12:24 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:42000 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759698AbYDJPMX (ORCPT
+	Thu, 10 Apr 2008 11:14:13 -0400
+Received: from mail2.shareable.org ([80.68.89.115]:46060 "EHLO
+	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756029AbYDJPOM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Apr 2008 11:12:23 -0400
-Date: Thu, 10 Apr 2008 17:12:18 +0200
-From: Jan Kara <jack@suse.cz>
+	Thu, 10 Apr 2008 11:14:12 -0400
+Date: Thu, 10 Apr 2008 16:14:06 +0100
+From: Jamie Lokier <jamie@shareable.org>
 To: Martin Mares <mj@ucw.cz>
 Cc: Michal Hocko <mhocko@suse.cz>, Meelis Roos <mroos@linux.ee>,
        Linux Kernel list <linux-kernel@vger.kernel.org>,
        linux-fsdevel@vger.kernel.org
 Subject: Re: file offset corruption on 32-bit machines?
-Message-ID: <20080410151218.GD6725@atrey.karlin.mff.cuni.cz>
+Message-ID: <20080410151406.GA17051@shareable.org>
+Mail-Followup-To: Martin Mares <mj@ucw.cz>, Michal Hocko <mhocko@suse.cz>,
+	Meelis Roos <mroos@linux.ee>,
+	Linux Kernel list <linux-kernel@vger.kernel.org>,
+	linux-fsdevel@vger.kernel.org
 References: <Pine.SOC.4.64.0804081101430.28938@math.ut.ee> <200804101555.58643.mhocko@suse.cz> <mj+md-20080410.140857.3331.nikam@ucw.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -28,39 +32,23 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Hello!
-> 
-> > [*] file_pos_{read,write} (fs/read_write.c) are not called under lock (in 
-> > sys_read, sys_write, ...), so even if f_pos is written atomically, you will 
-> > be able to get races when accessing shared descriptor from different threads.
+Martin Mares wrote:
+> > [*] file_pos_{read,write} (fs/read_write.c) are not called under
+> > lock (in sys_read, sys_write, ...), so even if f_pos is written
+> > atomically, you will be able to get races when accessing shared
+> > descriptor from different threads.
 > 
 > There are however cases when such behavior is perfectly valid: For example
 > you can have a file of records of a fixed size, whose order does not matter.
 > Then multiple processes can produce the records in parallel, sharing
 > a single fd.
-  Well, but noone guarantees that both processes don't read the same
-data.
 
-> > I think that POSIX states, that behavior is undefined under these conditions.
-> 
-> Do you have a pointer to that?
-  SUSv3 says:
-On files that support seeking (for example, a regular file), the read()
-shall start at a position in the file given by the file offset
-associated with fildes. The file offset shall be incremented by the
-number of bytes actually read.
+A rather more common thing:
 
-  But nowhere is specified when this happens so OS is perfectly free to
-advance f_pos after read finishes when read from the other process is
-already running. And Linux does exactly that - actually, we do:
-  pos = f_pos
-  do reading which advances pos
-  f_pos = pos
+Does this problem apply when appending lines or records to a log file,
+with or without O_APPEND?
 
-  So it can even in theory happen that one thread reads entries 1,2,3,2
-because the other thread in the mean time finished reading entry 1...
+Also, can this problem affect programs doing concurrent reads/writes
+using pread/pwrite (or the AIO equivalents)?
 
-									Honza
--- 
-Jan Kara <jack@suse.cz>
-SuSE CR Labs
+-- Jamie
