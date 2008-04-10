@@ -1,113 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757200AbYDJMZp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756716AbYDJM2A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757200AbYDJMZp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Apr 2008 08:25:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755382AbYDJMZi
+	id S1756716AbYDJM2A (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Apr 2008 08:28:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755061AbYDJM1w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Apr 2008 08:25:38 -0400
-Received: from mtagate2.de.ibm.com ([195.212.29.151]:3768 "EHLO
-	mtagate2.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755204AbYDJMZh (ORCPT
+	Thu, 10 Apr 2008 08:27:52 -0400
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:57610 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754203AbYDJM1w (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Apr 2008 08:25:37 -0400
-Message-ID: <47FE073B.3060007@fr.ibm.com>
-Date: Thu, 10 Apr 2008 14:25:31 +0200
-From: Cedric Le Goater <clg@fr.ibm.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
-MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-CC: sukadev@us.ibm.com, Andrew Morton <akpm@osdl.org>, serue@us.ibm.com,
-       "David C. Hansen" <haveblue@us.ibm.com>,
-       Pavel Emelyanov <xemul@openvz.org>,
-       Containers <containers@lists.osdl.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/3] change clone_flags type to u64
-References: <20080409222611.GA28087@us.ibm.com> <20080409223231.GA28267@us.ibm.com> <871w5enmk7.fsf@basil.nowhere.org>
-In-Reply-To: <871w5enmk7.fsf@basil.nowhere.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Thu, 10 Apr 2008 08:27:52 -0400
+Date: Thu, 10 Apr 2008 13:27:06 +0100
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <Uwe.Kleine-Koenig@digi.com>
+Cc: =?iso-8859-1?Q?Hans-J=FCrgen?= Koch <hjk@linutronix.de>,
+       Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org,
+       linux-arm-kernel@lists.arm.linux.org.uk
+Subject: Re: [PATCH] arch/arm/Kconfig: Make UIO available on ARM architecture
+Message-ID: <20080410122706.GG26575@flint.arm.linux.org.uk>
+References: <20080207133805.13f092ff@dilbert.local> <20080207130222.GA8587@flint.arm.linux.org.uk> <20080207141236.00940d09@dilbert.local> <20080211092547.09bca061@dilbert.local> <20080410122127.GA8096@digi.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20080410122127.GA8096@digi.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Andi,
-
-Andi Kleen wrote:
-> sukadev@us.ibm.com writes:
+On Thu, Apr 10, 2008 at 02:21:27PM +0200, Uwe Kleine-König wrote:
+> Hello,
 > 
->> From: Sukadev Bhattiprolu <sukadev@us.ibm.com>
->> Subject: [lxc-dev] [patch -lxc 1/3] change clone_flags type to u64
->>
->> This is a preliminary patch changing the clone_flags type to 64bits
->> for all the routines called by do_fork(). 
+> Hans-Jürgen Koch wrote:
+> > Am Thu, 7 Feb 2008 14:12:36 +0100
+> > schrieb Hans-Jürgen Koch <hjk@linutronix.de>:
+> > 
+> > AFAICT, this patch was neither rejected nor applied. It generated a
+> > long thread about changing the whole ARM Kconfig system. I feel not
+> > qualified to do that, but I still want UIO available on ARM ;-)
+> > What can I do to help?
+> Anything new here?
 > 
-> I must admit I was always a little sceptical of giving every tiny
-> namespaceable kernel feature its own CLONE flag (and it's own 
-> CONFIG option). What was the rationale for that again?
+> In my eyes this can be sent to the patch system.
 
-I guess that was a development rationale. Most of the namespaces are in 
-use in the container projects like openvz, vserver and probably others 
-and we needed a way to activate the code.
-
-Not perfect I agree.
- 
-> With your current strategy are you sure that even 64bit will
-> be enough in the end? For me it rather looks like you'll
-> go through those quickly too as more and more of the kernel
-> is namespaced.
-
-well, we're reaching the end. I hope ! devpts is in progress and
-mq is just waiting for a clone flag.
- 
-> Also I think the user interface is very unfriendly. How
-> is a non kernel hacker supposed to make sense of these 
-> myriads of flags? You'll be creating another 
-> CreateProcess123_extra_args_extended() 
-> in the end I fear.
-
-well, the clone interface is a not friendly interface anyway. glibc wraps 
-it and most users just use fork().
-
-We will need a user library, like we have a libphtread or a libaio, to
-effectively use the namespaces features. This is being worked on but
-it's another topic.
- 
-> Wouldn't it be better to just partition all this into
-> fewer more understandable larger feature groups?  I think
-> that would be much nicer from pretty much all perspectives
-> (kernel maintenance, user interface sanity, not needing
-> clone128/256 in the end etc.) 
-
-Yes. this make sense. Most of the namespaces have dependencies between
-each other.
-
-> Some consolidation on the CONFIGs would be good too. I just
-> cannot imagine it really makes sense to configure everything
-> so fine grained and this is just asking for random compile
-> breakage on randconfig.
-
-yes. definitely agree.
-
-but we still need a way to extend the clone flags because none are left.
-would you say that the clone64 is the right way to go or should we rather 
-go in the direction hpa proposed :
-
-http://lkml.org/lkml/2008/4/9/318 :
-
-> If you're going to make it a 64-bit pass it in as a 64-bit number, 
-> instead of breaking it into two numbers.  Better yet, IMO, would 
-> be to pass a pointer to a structure like:
->  
-> struct shared {
->     unsigned long nwords;
->     unsigned long flags[];
-> };
-> 
-> ... which can be expanded indefinitely.
-
-if we could agree on some new interface, we could then make sure we
-are not abusing it.
-
-Thanks,
-
-C.
-
+I don't remember anything about this...
