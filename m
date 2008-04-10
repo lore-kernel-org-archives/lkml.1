@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756578AbYDJJtV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756210AbYDJJvh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756578AbYDJJtV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Apr 2008 05:49:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754524AbYDJJtN
+	id S1756210AbYDJJvh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Apr 2008 05:51:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754154AbYDJJv3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Apr 2008 05:49:13 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:46207 "EHLO mx2.mail.elte.hu"
+	Thu, 10 Apr 2008 05:51:29 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:34832 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754557AbYDJJtM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Apr 2008 05:49:12 -0400
-Date: Thu, 10 Apr 2008 11:48:53 +0200
+	id S1754109AbYDJJv3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Apr 2008 05:51:29 -0400
+Date: Thu, 10 Apr 2008 11:51:12 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: Stefan Richter <stefanr@s5r6.in-berlin.de>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: linux-next: Tree for April 9
-Message-ID: <20080410094853.GA12543@elte.hu>
-References: <20080409185309.b94c9d15.sfr@canb.auug.org.au> <47FCF50E.9090703@s5r6.in-berlin.de> <20080410065227.GB30066@elte.hu> <20080410174418.ebfe76c3.sfr@canb.auug.org.au>
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Cc: linux-kernel@vger.kernel.org, linux-next@vger.kernel.org,
+       Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: debug Kconfig option (was Re: linux-next: Tree for April 9)
+Message-ID: <20080410095112.GB12543@elte.hu>
+References: <20080409185309.b94c9d15.sfr@canb.auug.org.au> <47FCF50E.9090703@s5r6.in-berlin.de> <20080410065227.GB30066@elte.hu> <20080410174418.ebfe76c3.sfr@canb.auug.org.au> <tkrat.991b1750a56cf2e9@s5r6.in-berlin.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080410174418.ebfe76c3.sfr@canb.auug.org.au>
+In-Reply-To: <tkrat.991b1750a56cf2e9@s5r6.in-berlin.de>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -35,26 +35,24 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+* Stefan Richter <stefanr@s5r6.in-berlin.de> wrote:
 
-> On Thu, 10 Apr 2008 08:52:27 +0200 Ingo Molnar <mingo@elte.hu> wrote:
-> >
-> > what type of conflict do you have there? If it's a new entry then 
-> > you might be able to fix it by moving the new entry elsewhere in the 
-> > file. Or if i introduced a new entry close to an existing entry you 
-> > modify then i could move my new entry elsewhere.
+> > Commit 523a65f1a7a339e528ca6d6d808516fe195fde03 ("firewire: fw-ohci: 
+> > add option for remote debugging") in the ieee1394 tree adds a new 
+> > entry just where the sched tree adds
+> > 
+> > source kernel/trace/Kconfig
 > 
-> Commit 523a65f1a7a339e528ca6d6d808516fe195fde03 ("firewire: fw-ohci: 
-> add option for remote debugging") in the ieee1394 tree adds a new 
-> entry just where the sched tree adds
-> 
-> source kernel/trace/Kconfig
+> I grab this opportunity to ask the list: Would you prefer the remote 
+> debugging option in the kernel hacking menu (as in the commit), or 
+> rather in the respective driver submenu?
 
-hm, i think in this specific case the new firewire entry should be added 
-after the PROVIDE_OHCI1394_DMA_INIT section. (that's how we extend 
-groups of Kconfig entries anyway) The new trace entries in the scheduler 
-tree follow that pattern and add the new kernel/trace/Kconfig at the 
-right place. So if the firewire entry is added that way this conflict 
-could be avoided.
+it's great stuff! I very much think it's fine in lib/Kconfig.debug - we 
+need prominence of debugging options. (they are used way too 
+infrequently)
+
+My only suggestion would be to move the new entry below the existing 
+firewire entry (PROVIDE_OHCI1394_DMA_INIT) there - which also happens to 
+avoid this particular merge conflict.
 
 	Ingo
