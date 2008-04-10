@@ -1,56 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755879AbYDJAgW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756150AbYDJAh1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755879AbYDJAgW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Apr 2008 20:36:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754052AbYDJAgO
+	id S1756150AbYDJAh1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Apr 2008 20:37:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754134AbYDJAhN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Apr 2008 20:36:14 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:60503 "EHLO pasmtpA.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752268AbYDJAgN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Apr 2008 20:36:13 -0400
-Subject: Re: Does Linux have plan to support memory hole remapping?
-From: Kasper Sandberg <lkml@metanurb.dk>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Matti Aarnio <matti.aarnio@zmailer.org>,
-       Zhao Forrest <forrest.zhao@gmail.com>, Andi Kleen <andi@firstfloor.org>,
-       discuss@x86-64.org, linux-kernel@vger.kernel.org, yhlu.kernel@gmail.com,
-       ak@suse.de
-In-Reply-To: <20080409085440.GB32466@elte.hu>
-References: <ac8af0be0804090054w47f48ddel387d80a0331d16e1@mail.gmail.com>
-	 <87iqyro3rc.fsf@basil.nowhere.org>
-	 <20080409083700.GU3700@mea-ext.zmailer.org>
-	 <20080409085440.GB32466@elte.hu>
+	Wed, 9 Apr 2008 20:37:13 -0400
+Received: from wr-out-0506.google.com ([64.233.184.231]:19746 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750959AbYDJAhL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Apr 2008 20:37:11 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=UfjeXLua190xNhzQRjtdeKo3N/JC3nEVxxmPTimEikze/4Usi4aL6Y4X+YgL+0HTTu2a85rtYe5t/WickOIE5ni/igzqk03iNAOXOM2PoTLRCYEeM9kvkkL3xMmZJqm05+vQTwZWEhFMKbVztL6ZyA+C97JswHJNsvFXST9mIBA=
+Subject: Re: 2.6.25-rc8: FTP transfer errors
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Mark Lord <lkml@rtr.ca>
+Cc: David Miller <davem@davemloft.net>, yoshfuji@linux-ipv6.org,
+       jeff@garzik.org, rjw@sisk.pl, linux-kernel@vger.kernel.org,
+       linux-net@vger.kernel.org
+In-Reply-To: <47FD590C.5020003@rtr.ca>
+References: <47FCF9DD.6080007@rtr.ca>
+	 <20080410.023045.16227424.yoshfuji@linux-ipv6.org>
+	 <47FD138B.2060801@rtr.ca> <20080409.152933.132174258.davem@davemloft.net>
+	 <47FD590C.5020003@rtr.ca>
 Content-Type: text/plain
-Date: Thu, 10 Apr 2008 02:34:47 +0200
-Message-Id: <1207787687.30698.97.camel@localhost>
+Date: Wed, 09 Apr 2008 17:37:28 -0700
+Message-Id: <1207787848.16220.25.camel@brick>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.4.0 
+X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-04-09 at 10:54 +0200, Ingo Molnar wrote:
-[..]
+On Wed, 2008-04-09 at 20:02 -0400, Mark Lord wrote:
+> David Miller wrote:
+> > From: Mark Lord <lkml@rtr.ca>
+> > Date: Wed, 09 Apr 2008 15:05:47 -0400
+> > 
+> >> But it would be far more useful for whoever has been working on the
+> >> stack to suggest some possible/likely commits to look at instead.
+> > 
+> > Personally all I see is that one side closes the socket before all
+> > data packets received have been read into the application, resulting
+> > in a (correct) reset going out.
+> > 
+> > I can't think of any change we've made over the course of this
+> > release that would change behvaior in that area.
+> > 
+> > So you will likely need to bisect.
+> ..
 > 
-> having said that - but we'll still consider sane looking patches that 
-> allow the remapping of otherwise inactive RAM. [ We might not even have 
-> to touch the system chipset beyond what Linux already knows about it: in 
-A somewhat related question is.. How come linux does not(as i understand
-it) support talking to the chipsets to do these things? wouldnt this
-also give other benefits, such as being able to more precisely control
-interrupts and stuff?
+> Or I can ignore it, like the net developers, since I have a workaround.
+> And then we'll see what other apps are broken upon 2.6.25 final release.
+> 
+> Really, folks.  Bug reports are intended to *help* the developers,
+> not something to be thrown back in their faces.
+> 
+> There do seem to have been a *lot* of changes around the tcp closing/close
+> code (as I see from diff'ing 2.6.24 against latest -git).
+> 
+> *Somebody* is responsible for those changes.
+> That particular *somebody* ought to volunteer some help here,
+> reducing the mountain of commits to a big handful or two.
+> 
 
-> theory someone might want to try a hack to GART remap such RAM areas and 
-> use a sparse mem map entry to map it to Linux - if the identity of that 
-> RAM is crystal-clear and there's enough GART space available. But even 
-> then it's probably still at best a dangerous and fragile hack. ]
-> 
-> 	Ingo
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+Could you do a poor-man's bisect and test 2.6.25-rc1 and -rc2, that
+would probably help a lot to narrow it down.
+
+Harvey
 
