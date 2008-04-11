@@ -1,99 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761297AbYDKSnj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761477AbYDKSqi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761297AbYDKSnj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Apr 2008 14:43:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760556AbYDKSna
+	id S1761477AbYDKSqi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Apr 2008 14:46:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760556AbYDKSqa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Apr 2008 14:43:30 -0400
-Received: from e31.co.us.ibm.com ([32.97.110.149]:39054 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760349AbYDKSn3 (ORCPT
+	Fri, 11 Apr 2008 14:46:30 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:45361 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760569AbYDKSq3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Apr 2008 14:43:29 -0400
-Date: Fri, 11 Apr 2008 11:43:27 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Johannes Berg <johannes@sipsolutions.net>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       linux-sparse <linux-sparse@vger.kernel.org>
-Subject: Re: Using sparse to catch invalid RCU dereferences?
-Message-ID: <20080411184327.GD29878@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <1207605856.12481.35.camel@johannes.berg> <20080408155259.GA8381@linux.vnet.ibm.com> <1207937922.7524.17.camel@twins>
+	Fri, 11 Apr 2008 14:46:29 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=pJ/r3Urtb+0lAqQl5Kd03nM/sMaaAga26lK8SleSAXOTSwlI/GGy4FRqqeAGZeiM0
+	lIFAbiL7QeI3V24iXQUvg==
+Message-ID: <6599ad830804111146k2c3db442y3708f95a3fbee83@mail.gmail.com>
+Date: Fri, 11 Apr 2008 11:46:18 -0700
+From: "Paul Menage" <menage@google.com>
+To: "Peter Zijlstra" <peterz@infradead.org>
+Subject: =?WINDOWS-1252?Q?Re:_2.6.25-rc8-mm2_--_kernel/sched.c:8294:_error:_?= =?WINDOWS-1252?Q?unknown_field_=91read=5Fuint=92_specified_in_initializer?=
+Cc: "Miles Lane" <miles.lane@gmail.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, "Ingo Molnar" <mingo@elte.hu>
+In-Reply-To: <1207932902.7157.4.camel@twins>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1207937922.7524.17.camel@twins>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+References: <a44ae5cd0804110648g3256805fob917f31eeff4f6db@mail.gmail.com>
+	 <1207932902.7157.4.camel@twins>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 11, 2008 at 08:18:42PM +0200, Peter Zijlstra wrote:
-> On Tue, 2008-04-08 at 08:52 -0700, Paul E. McKenney wrote:
-> > On Tue, Apr 08, 2008 at 12:04:16AM +0200, Johannes Berg wrote:
-> > > Hi,
-> > > 
-> > > Just a thought, I haven't tried this yet because I'm not entirely sure
-> > > it's actually correct. I was just thinking it should be possible to
-> > > introduce something like
-> > > 
-> > > 	#define __rcu	__attribute__((address_space(3)))
-> > > 
-> > > (for sparse only, of course) and then be able to say
-> > > 
-> > > 	struct myfoo *foo __rcu;
-> > > 
-> > > and sparse would warn on
-> > > 
-> > > 	struct myfoo *bar = foo;
-> > > 
-> > > but not on
-> > > 
-> > > 	struct myfoo *bar = rcu_dereference(foo);
-> > 
-> > Ah, "address_space" is a sparse-ism, no wonder I couldn't find it in
-> > the gcc docs...
-> > 
-> > So the address_space attribute says what the pointer points to rather
-> > than where the pointer resides, correct?
-> > 
-> > > by way of using __force inside rcu_dereference(), rcu_assign_pointer()
-> > > etc.
-> > > 
-> > > Would this be feasible? Or should one actually use __bitwise/__force to
-> > > also get the warning when assigning between two variables both marked
-> > > __rcu?
-> > 
-> > It might be.  There are a number of places where it is legal to access
-> > RCU-protected pointers directly, and all of these would need to be
-> > changed.  For example, in the example above, one could do:
-> > 
-> > 	foo = NULL;
-> > 
-> > I recently tried to modify rcu_assign_pointer() to issue the memory
-> > memory barrier only when the pointer was non-NULL, but this ended badly.
-> > Probably because I am not the greatest gcc expert around...  We ended
-> > up having to define an rcu_assign_index() to handle the possibility of
-> > assigning a zero-value array index, but my attempts to do type-checking
-> > backfired, and I eventually gave it up.  Again, someone a bit more clued
-> > in to gcc than I am could probably pull it off.
-> > 
-> > In addition, it is legal to omit rcu_dereference() and rcu_assign_pointer()
-> > when holding the update-side lock.
-> 
-> We could start by annotating those as well, for example:
-> 
->  __rcu spinlock_t tree_lock;
-> 
-> Then we would know that when tree lock is held the data structure is
-> stable and we can ommit the rcu_*() functions.
+On Fri, Apr 11, 2008 at 9:55 AM, Peter Zijlstra <peterz@infradead.org> wrote:
+> On Fri, 2008-04-11 at 09:48 -0400, Miles Lane wrote:
+>  > CC      kernel/sched.o
+>  > kernel/sched.c:8294: error: unknown field 'read_uint' specified in initializer
+>  > kernel/sched.c:8294: warning: initialization makes integer from
+>  > pointer without a cast
+>  > kernel/sched.c:8295: error: unknown field 'write_uint' specified in initializer
+>  > kernel/sched.c:8295: warning: initialization from incompatible pointer type
+>
+>  someone mucked around with the cgroup api; this should fix it:
+>
+>  Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+>  ---
+>  diff --git a/kernel/sched.c b/kernel/sched.c
+>  index 7119895..8b4e0b6 100644
+>  --- a/kernel/sched.c
+>  +++ b/kernel/sched.c
+>  @@ -8291,8 +8291,8 @@ static struct cftype cpu_files[] = {
+>         },
+>         {
+>                 .name = "rt_period_us",
+>  -               .read_uint = cpu_rt_period_read_uint,
+>  -               .write_uint = cpu_rt_period_write_uint,
+>  +               .read_u64 = cpu_rt_period_read_uint,
+>  +               .write_u64 = cpu_rt_period_write_uint,
+>         },
+>   #endif
+>
 
-Good point!  Though IIRC there are are cases where we are updating
-one RCU-protected data structure while in an RCU read-side critical
-section with respect to another RCU-protected data structure.
+Sorry - this change was in my original API patch (plus renaming the
+read/write functions to have u64 suffices) but I think it collided
+with the git-sched instability around the end of February.
 
-But it would probably best to start as you say rather than trying
-to classify different RCU uses.  :-)
-
-						Thanx, Paul
+Paul
