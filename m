@@ -1,82 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760953AbYDKRxe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761140AbYDKRz3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760953AbYDKRxe (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Apr 2008 13:53:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759085AbYDKRxX
+	id S1761140AbYDKRz3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Apr 2008 13:55:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760379AbYDKRzW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Apr 2008 13:53:23 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:41632 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758817AbYDKRxW (ORCPT
+	Fri, 11 Apr 2008 13:55:22 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:60996 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759125AbYDKRzV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Apr 2008 13:53:22 -0400
-Date: Fri, 11 Apr 2008 11:53:05 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Christoph Hellwig <hch@infradead.org>,
-       "Kok, Auke" <auke-jan.h.kok@intel.com>, Ingo Molnar <mingo@elte.hu>,
-       Jeff Garzik <jeff@garzik.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       NetDev <netdev@vger.kernel.org>,
-       e1000-list <e1000-devel@lists.sourceforge.net>,
-       linux-pci maillist <linux-pci@atrey.karlin.mff.cuni.cz>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "David S. Miller" <davem@davemloft.net>,
-       Jesse Brandeburg <jesse.brandeburg@intel.com>,
-       "Ronciak, John" <john.ronciak@intel.com>,
-       "Allan, Bruce W" <bruce.w.allan@intel.com>, Greg KH <greg@kroah.com>,
-       Arjan van de Ven <arjan@linux.intel.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [patch] e1000=y && e1000e=m regression fix
-Message-ID: <20080411175304.GF11962@parisc-linux.org>
-References: <47FD2325.2030705@intel.com> <47FE5C89.5060209@intel.com> <20080410192714.GA14055@elte.hu> <47FE8566.5040809@intel.com> <20080411112653.GC9205@elte.hu> <20080411113644.GA7767@infradead.org> <20080411121606.GA25661@elte.hu> <47FF9060.5040202@intel.com> <20080411164542.GA4066@infradead.org> <alpine.LFD.1.00.0804111028540.3143@woody.linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.00.0804111028540.3143@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Fri, 11 Apr 2008 13:55:21 -0400
+Subject: Re: VM - a plenty of inactive memory
+From: Peter Zijlstra <peterz@infradead.org>
+To: Andreas Grimm <agrimm61@gmail.com>
+Cc: Johannes Weiner <hannes@saeurebad.de>, linux-kernel@vger.kernel.org
+In-Reply-To: <cf40c6a90804090657j7e76a84foeaf3c1c02d2a7b73@mail.gmail.com>
+References: <cf40c6a90804090213u55491ceay9b211d75d74dc29c@mail.gmail.com>
+	 <874pabrx6b.fsf@saeurebad.de>
+	 <cf40c6a90804090657j7e76a84foeaf3c1c02d2a7b73@mail.gmail.com>
+Content-Type: text/plain
+Date: Fri, 11 Apr 2008 19:55:15 +0200
+Message-Id: <1207936515.7524.13.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 11, 2008 at 10:34:01AM -0700, Linus Torvalds wrote:
-> Here's a suggested patch. Not much tested, but it's fairly obvious.
+On Wed, 2008-04-09 at 15:57 +0200, Andreas Grimm wrote:
+> Hi Johannes,
 > 
-> It basically makes one top-level config option (E1000) to pick the driver 
-> at all, and two sub-options (E1000_PCI and E1000_PCIE) that you can choose 
-> between.
+> i know this. But why the kernel locks that memory for a so long time
+> (2 days now)?
 
-I think it's a little over-engineered ... why not simply:
+It should not be locked (being on the inactive list does not imply that
+in any way). Being on the inactive list just means its first in line to
+be looked at when memory needs to be reclaimed.
 
-config E1000_SUPPORT
-	bool "Intel(R) PRO/1000 Gigabit Ethernet support"
-	depends on PCI
+>  Is there a way to enforce the reclaiming? 
 
-config E1000
-	depends on E1000_SUPPORT
-	tristate "E1000 PCI support"
-	help
-	  Include support for Conventional PCI devices.  This includes
-	  chips built into motherboards ... blah blah, if unsure say "Y"
-	  or "M"
+Why would you want to do that for? Would you not rather have a copy of
+some page in memory than having to go back to disk to fetch it? Free
+memory is a waste, better have something in it that might potentially be
+used again.
 
-config E1000E
-	depends on E1000_SUPPORT
-	tristate "E1000 PCI Express support"
-	help
-	  Include support for PCI Express devices.  This includes chips
-	  built into motherboards such as ICH9 ... blah blah, if unsure
-	  say "Y" or "M".
+> And how can i
+> find out, which process owns that memory. The problem is, that i can't
+> accept, that the free memory fell down to 50MB, when i have 24GB in
+> the nirvana. 
 
-and get rid of the PCIE() macros from the e1000 driver.  While it does
-allow someone like Ingo to create a E1000=y and E1000E=m situation
-(which won't bind to an ethernet card that E1000 used to), having the
-E1000_SUPPORT symbol means that oldconfig will stop and ask you which
-hopefully makes it obvious enough that things have changed here and you
-need to pay attention.
+See above, free memory is a waste. Really, you don't want 24GB of free
+memory.
 
--- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+> The system was recently very close to the awkward
+> situation to swap to disk, and i bet it will do so in the next few
+> days, because it happened before. Unintelligible, if one got that much
+> ram.
+
+If it really would have hit swap then it just means you have a _lot_ of
+anonymous memory and little page cache pages on that inactive list.
+Check Cached and AnonPages.
+
