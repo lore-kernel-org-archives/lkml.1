@@ -1,119 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760639AbYDKPOQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760199AbYDKPTR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760639AbYDKPOQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Apr 2008 11:14:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758527AbYDKPOD
+	id S1760199AbYDKPTR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Apr 2008 11:19:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758114AbYDKPS6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Apr 2008 11:14:03 -0400
-Received: from el-out-1112.google.com ([209.85.162.181]:9852 "EHLO
-	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759521AbYDKPOB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Apr 2008 11:14:01 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=oR2JZ3e6wu3SqWr84pwogyAyZbgmAHgW1GXPee9NR00KkAVkzrJjx5jaeKY5bodEYRkBKRP/xOg2qMAR5iTu+MXe/ZHy0MlvZi5PhUyRPYpLanJlM7zsKXMYfBTdgyiwCWosn/mTxUHdX6a7aSD5gq4t6VLOZ9I4Kxwsrh2eGeY=
-Message-ID: <e4957ae10804110813y159019c1p84296058bcc769cf@mail.gmail.com>
-Date: Fri, 11 Apr 2008 18:13:59 +0300
-From: "Uladzislau Rezki" <urezki@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: Kernel Oops within Linux Fedore Core 5
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Fri, 11 Apr 2008 11:18:58 -0400
+Received: from relay.2ka.mipt.ru ([194.85.82.65]:50335 "EHLO 2ka.mipt.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751042AbYDKPS6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Apr 2008 11:18:58 -0400
+Date: Fri, 11 Apr 2008 19:18:21 +0400
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: Mark Lord <lkml@rtr.ca>
+Cc: Ilpo =?utf-8?B?SsOkcnZpbmVu?= <ilpo.jarvinen@helsinki.fi>,
+       David Miller <davem@davemloft.net>, jesper.juhl@gmail.com,
+       tilman@imap.cc, yoshfuji@linux-ipv6.org, Jeff Garzik <jeff@garzik.org>,
+       rjw@sisk.pl, LKML <linux-kernel@vger.kernel.org>,
+       Netdev <netdev@vger.kernel.org>
+Subject: Re: 2.6.25-rc8: FTP transfer errors
+Message-ID: <20080411151821.GA32398@2ka.mipt.ru>
+References: <47FEADCB.7070104@rtr.ca> <20080410.172453.44434205.davem@davemloft.net> <47FEB062.3020003@rtr.ca> <20080410.173911.179180620.davem@davemloft.net> <47FEBDAA.7010305@rtr.ca> <Pine.LNX.4.64.0804110849520.28360@wrl-59.cs.helsinki.fi> <47FF6555.50004@rtr.ca> <20080411143537.GA27874@2ka.mipt.ru> <47FF7CED.9090601@rtr.ca>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <47FF7CED.9090601@rtr.ca>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-HI,
+On Fri, Apr 11, 2008 at 10:59:57AM -0400, Mark Lord (lkml@rtr.ca) wrote:
+> >If you do not care about bug, why do you ever bothered filling it?
+> ..
+> 
+> Because I care, about Linux's reputation and performance.
+> I care about basic networking operations, and knew that this bug
+> would probably affect other applications once widely deployed.
+> 
+> I care about Linux.  That's why.
 
-I am running linux Fedore Core 5 with 2.6.15 linux kernel.
+Blah-blah-blah, you care so much, that pissed people off which suggested
+you how to really help Linux. And then you returned with besiect
+results. You helped, but if you just cared, you had missed first part.
 
-So , the problem is that, while loading my own kernel module, kernel gets Oops.
+> >If you do not want to help fixing it ...
+> 
+> Where the hell did I *ever* say that?
+> I did nothing but offer help, and respond quickly.
 
----> usbfs
----> tmpfs
----> binfmt_misc
----> rpc_pipefs
----> autofs
-Unable to handle kernel paging request at virtual address dead4ead
-printing eip:
-c7034018
-*pde = 00000000
-Oops: 0000 [#1]
-last sysfs file: /class/net/sit0/address
-Modules linked in: sb_show(U) ipv6 autofs4 hidp rfcomm l2cap bluetooth
-sunrpc dm_mirror dm_mod video button battery ac lp parport_pc parport
-floppy nvram sg i2c_piix4 pcnet32 mii i2c_core ext3 jbd mptspi
-mptscsih sd_mod scsi_mod mptbase
-CPU: 0
-EIP: 0060:[<c7034018>] Not tainted VLI
-EFLAGS: 00010282 (2.6.15-1.2054_FC5.root #1)
-EIP is at sb_show_init+0x18/0x41 [sb_show]
-eax: dead4ead ebx: c0344740 ecx: c5877d90 edx: c7006096
-esi: c1304e00 edi: c57d2b68 ebp: c70065c8 esp: c3962e6c
-ds: 007b es: 007b ss: 0068
-Process insmod (pid: 1675, threadinfo=c3962000 task=c621d000)
-Stack: <0>c57d2b58 c7006580 c0130506 0001027a 00000550 00000320
-c7006580 00000000
-00000000 00000000 00000000 00000000 00000000 00000000 c72205fc 00000000
-c59e78c0 c721b8ec c721b5cc c721b914 c720b000 00000004 0000000a 00000000
-Call Trace:
-[<c0130506>] sys_init_module+0x1382/0x1514 [<c015240f>] do_sync_read+0xb8/0xf3
-[<c01511f1>] nameidata_to_filp+0x19/0x28 [<c012a17b>]
-autoremove_wake_function+0x0/0x2d
-[<c014620e>] vma_link+0x4a/0xc2 [<c01c066e>] _atomic_dec_and_lock+0x22/0x2c
-[<c0169c2e>] mntput_no_expire+0x11/0x6d [<c0102bc1>] syscall_call+0x7/0xb
-Code: Bad EIP value.
-Continuing in 1 seconds.
+Citations:
+> So you will likely need to bisect.
 
-here is source:
+Or I can ignore it, like the net developers, since I have a workaround.
+And then we'll see what other apps are broken upon 2.6.25 final release.
 
-#include <linux/module.h>
-#include <linux/kernel.h>
-#include <linux/init.h>
+*Somebody* is responsible for those changes.
+That particular *somebody* ought to volunteer some help here,
+reducing the mountain of commits to a big handful or two.
 
-#include <linux/fs.h>
-#include <linux/sched.h>
-#include <linux/mount.h>
+-----
 
-static int __init
-sb_show_init (void)
-{
-    struct super_block *init_sb = NULL;
-    struct task_struct *init = NULL;
-    struct list_head *list_sb = NULL;
-    struct vfsmount *root_mnt;
+I can proceed - just reread a thread.
 
-    /*
-     * The init_task struct describes
-     * init process.
-    */
-    init = &init_task;
-    root_mnt = init->fs->rootmnt;
-    init_sb = root_mnt->mnt_sb;
+> The one thing I did not have time for initially,
+> was a painstaking blunt instrument binary search of
+> every commit since v2.6.24.
 
-    list_for_each(list_sb, &init_sb->s_list) {
-        struct super_block *sb = sb_entry(list_sb);
+If you do not know math, binary search takes log2(N), so you
+would only need to check at most around dozen commits. That's lot
+of time to run 'git bisect good/bad', especially for man, who
+"care about Linux".
 
-        mutex_lock(&s->s_lock);
-        printk(KERN_ERR "---> %s\n", sb->s_id);
-        mutex_unlock(&s->s_lock);
-    }
+> There are other ways to debug things and find the causes
+> quickly, with less impact upon the reporters of bugs.
 
-    return 0;
-}
+I know one. It is guessing.
 
-static void __exit
-sb_show_exit (void)
-{
-    printk(KERN_ERR "By-by.\n");
-}
+I will start: did you start hearing voices after 2.6.24 upgrade?
+Or did you observed meteorites hitting wires between you machines?
 
-I try just go through the list of super blocks and printing "s_id" as
-a result get Oops. it works fine with 2.6.18/22/24 kernels. Maybe this
-problem concerns just Fedore Core kernel? Or maybe my code is wrong?
+> The current generation of kernel "code submitters" here
+> seems to have never learned those.  Bummer.
 
-thanks.
+Next time I will ask soothsayer, she really knows how to debug network
+bug with following description: "it worked before I changed a kernel
+version. you have to return my puppets back".
+
+-- 
+	Evgeniy Polyakov
