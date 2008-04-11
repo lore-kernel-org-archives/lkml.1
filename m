@@ -1,51 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759524AbYDKIIy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758228AbYDKIV2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759524AbYDKIIy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Apr 2008 04:08:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750743AbYDKIIj
+	id S1758228AbYDKIV2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Apr 2008 04:21:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754100AbYDKIVP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Apr 2008 04:08:39 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:49677 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757799AbYDKIIi (ORCPT
+	Fri, 11 Apr 2008 04:21:15 -0400
+Received: from wx-out-0506.google.com ([66.249.82.234]:61116 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753220AbYDKIVN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Apr 2008 04:08:38 -0400
-Date: Fri, 11 Apr 2008 10:13:17 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: npiggin@suse.de
-Cc: akpm@linux-foundation.org, Andi Kleen <ak@suse.de>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org, pj@sgi.com,
-       andi@firstfloor.org, kniht@linux.vnet.ibm.com
-Subject: Re: [patch 11/17] hugetlbfs: support larger than MAX_ORDER
-Message-ID: <20080411081317.GQ10019@one.firstfloor.org>
-References: <20080410170232.015351000@nick.local0.net> <20080410171101.551336000@nick.local0.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 11 Apr 2008 04:21:13 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=EJqxmYG2TnYP/OuRNS9ej7VBWaed+3pNhSEaumvOZA+FHhgEHhrOBZzfCVPeMF0O5SFcrQJ5s2MTDdDcx4XQK3+SRk2V63ifPUk1yUMmFjZmNSvGwJ3X11Z5BDQKtxHrWQO0t3GH+PlxX5IM9AX/CzODLEzSAsi/1NJPhsnnKtU=
+Message-ID: <84144f020804110121l8444aafl4631071b34c458fe@mail.gmail.com>
+Date: Fri, 11 Apr 2008 11:21:09 +0300
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: [bug] mm/slab.c boot crash in -git, "kernel BUG at mm/slab.c:2103!"
+Cc: linux-kernel@vger.kernel.org, "Christoph Lameter" <clameter@sgi.com>,
+       "Mel Gorman" <mel@csn.ul.ie>, "Nick Piggin" <npiggin@suse.de>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>
+In-Reply-To: <20080411074145.GA4944@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080410171101.551336000@nick.local0.net>
-User-Agent: Mutt/1.4.2.1i
+References: <20080411074145.GA4944@elte.hu>
+X-Google-Sender-Auth: 82923d80cbc5a16b
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->  	spin_lock(&hugetlb_lock);
-> -	if (h->surplus_huge_pages_node[nid]) {
-> +	if (h->surplus_huge_pages_node[nid] && h->order <= MAX_ORDER) {
+Hi Ingo,
 
-As Andrew Hastings pointed out earlier this all needs to be h->order < MAX_ORDER
-[got pretty much all the checks wrong off by one]. It won't affect anything
-on x86-64 but might cause problems on archs which have exactly MAX_ORDER
-sized huge pages.
+On Fri, Apr 11, 2008 at 10:41 AM, Ingo Molnar <mingo@elte.hu> wrote:
+>  our x86.git randconfig auto-qa found a mm/slab.c early-bootup crash in
+>  mainline that got introduced since v2.6.24.
+>
+>   http://redhat.com/~mingo/misc/log-Thu_Apr_10_10_41_16_CEST_2008.bad
+>   http://redhat.com/~mingo/misc/config-Thu_Apr_10_10_41_16_CEST_2008.bad
+>
+>  Note, the very same bzImage does not crash on other testboxes - only on
+>  this 8-way box with 4GB of RAM.
+>
+>  i tried a "use v2.6.24's slab.c" revert (with a few API fixes needed for
+>  it to build on .25) but that didnt solve the problem either.
 
->  		update_and_free_page(h, page);
->  		h->surplus_huge_pages--;
->  		h->surplus_huge_pages_node[nid]--;
-> @@ -220,6 +221,9 @@ static struct page *alloc_fresh_huge_pag
->  {
->  	struct page *page;
->  
-> +	if (h->order > MAX_ORDER)
-
->= etc.
-
--Andi
+As mentioned privately, I suspect it's the page allocator changes that
+went into 2.6.24. Mel, Christoph, any ideas?
