@@ -1,56 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761626AbYDKRlu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761858AbYDKRnS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761626AbYDKRlu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Apr 2008 13:41:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760424AbYDKRln
+	id S1761858AbYDKRnS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Apr 2008 13:43:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760659AbYDKRnH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Apr 2008 13:41:43 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:45478 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760086AbYDKRlm (ORCPT
+	Fri, 11 Apr 2008 13:43:07 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:46480
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1760086AbYDKRnH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Apr 2008 13:41:42 -0400
-Subject: Re: CFS rq lock question
-From: Peter Zijlstra <peterz@infradead.org>
-To: Dan Upton <upton.dan.linux@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <1207935421.7524.3.camel@twins>
-References: <ba7d8f720804111021v25cc4688mf6e36f571fd2b388@mail.gmail.com>
-	 <1207935421.7524.3.camel@twins>
-Content-Type: text/plain
-Date: Fri, 11 Apr 2008 19:41:40 +0200
-Message-Id: <1207935700.7524.4.camel@twins>
+	Fri, 11 Apr 2008 13:43:07 -0400
+Date: Fri, 11 Apr 2008 10:43:06 -0700 (PDT)
+Message-Id: <20080411.104306.93639801.davem@davemloft.net>
+To: jochen@scram.de
+Cc: galak@kernel.crashing.org, khali@linux-fr.org, scottwood@freescale.com,
+       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       i2c@lm-sensors.org, jonsmirl@gmail.com, laurentp@cse-semaphore.com
+Subject: Re: [PATCH3/7] i2c: OF helpers for the i2c API
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <47FF710D.2040208@scram.de>
+References: <47FF710D.2040208@scram.de>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.0 
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-04-11 at 19:37 +0200, Peter Zijlstra wrote:
-> On Fri, 2008-04-11 at 13:21 -0400, Dan Upton wrote:
-> > I'm poking around with some scheduler stuff, and there's something I'm
-> > not clear on for the CFS runqueue locks.  The comments before
-> > __load_balance_iterator(...) in sched_fair.c suggests things can be
-> > dequeued even though the runqueue lock is held.  Can things also be
-> > added to the queue while the lock is held?  (Also, either way, what's
-> > the rationale that dequeueing is a safe procedure when somebody else
-> > holds a lock?)
-> 
-> /*
->  * Load-balancing iterator. Note: while the runqueue stays locked
->  * during the whole iteration, the current task might be
->  * dequeued so the iterator has to be dequeue-safe. Here we
->  * achieve that by always pre-iterating before returning
->  * the current task:
->  */
-> 
-> I don't think this comment is correct, but if it were, it would only
-> apply to rq->curr, not for any enqueue/dequeue.
-> 
+From: Jochen Friedrich <jochen@scram.de>
+Date: Fri, 11 Apr 2008 16:09:17 +0200
 
-D'oh, I'm silly..
+> +
+> +config OF_I2C
+> +	def_bool y
+> +	depends on OF && PPC_OF && I2C
+> +	help
+> +	  OpenFirmware I2C accessors
 
-the task can be dequeued because we move it to another cpu.
+I wouldn't mind trying to use this infrastructure on
+sparc64, and I don't see any powerpc specific interfaces
+being invoked, so if you could remove the PPC_OF
+requirement I'd appreciate it.
 
-
+Thanks.
