@@ -1,67 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761410AbYDKQ7D@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761539AbYDKQ76@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761410AbYDKQ7D (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Apr 2008 12:59:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760740AbYDKQ6y
+	id S1761539AbYDKQ76 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Apr 2008 12:59:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761443AbYDKQ7r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Apr 2008 12:58:54 -0400
-Received: from 81-174-11-161.static.ngi.it ([81.174.11.161]:52163 "EHLO
-	mail.enneenne.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760604AbYDKQ6x (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Apr 2008 12:58:53 -0400
-Date: Fri, 11 Apr 2008 18:58:36 +0200
-From: Rodolfo Giometti <giometti@enneenne.com>
-To: Serge Belyshev <belyshev@depni.sinp.msu.ru>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Woodhouse <dwmw2@infradead.org>, Dave Jones <davej@redhat.com>,
-       Sam Ravnborg <sam@ravnborg.org>, Greg KH <greg@kroah.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Kay Sievers <kay.sievers@vrfy.org>
-Message-ID: <20080411165836.GY26777@enneenne.com>
-References: <1207851751-25703-2-git-send-email-giometti@linux.it> <1207851751-25703-3-git-send-email-giometti@linux.it> <1207851751-25703-4-git-send-email-giometti@linux.it> <1207851751-25703-5-git-send-email-giometti@linux.it> <1207851751-25703-6-git-send-email-giometti@linux.it> <20080410210918.3be98868@core> <20080411075515.GH26777@enneenne.com> <20080411092840.3cc4de67@core> <20080411084903.GK26777@enneenne.com> <87prsw78qs.fsf@depni.sinp.msu.ru>
+	Fri, 11 Apr 2008 12:59:47 -0400
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:35912 "EHLO e4.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761441AbYDKQ7q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Apr 2008 12:59:46 -0400
+In-Reply-To: <20080411135544.GG2160@csclub.uwaterloo.ca>
+To: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
+Cc: Bodo Eggert <7eggert@gmx.de>, Diego Calleja <diegocg@gmail.com>,
+       Jan Kara <jack@suse.cz>, Jiri Kosina <jkosina@suse.cz>,
+       linux-fsdevel@vger.kernel.org,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       Michal Hocko <mhocko@suse.cz>, Meelis Roos <mroos@linux.ee>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <87prsw78qs.fsf@depni.sinp.msu.ru>
-Organization: GNU/Linux Device Drivers, Embedded Systems and Courses
-X-PGP-Key: gpg --keyserver keyserver.linux.it --recv-keys D25A5633
-User-Agent: Mutt/1.5.16 (2007-06-11)
-X-SA-Exim-Connect-IP: 192.168.32.1
-X-SA-Exim-Mail-From: giometti@enneenne.com
-Subject: Re: [PATCH 5/7] PPS: serial clients support.
-X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
-X-SA-Exim-Scanned: Yes (on mail.enneenne.com)
+Subject: Re: file offset corruption on 32-bit machines?
+X-Mailer: Lotus Notes Release 7.0 HF277 June 21, 2006
+Message-ID: <OF861D7F24.6F60C82D-ON88257428.005C1DA4-88257428.005D5D80@us.ibm.com>
+From: Bryan Henderson <hbryan@us.ibm.com>
+Date: Fri, 11 Apr 2008 09:59:45 -0700
+X-MIMETrack: Serialize by Router on D01ML604/01/M/IBM(Release 8.0.1|February 07, 2008) at
+ 04/11/2008 12:59:44,
+	Serialize complete at 04/11/2008 12:59:44
+Content-Type: text/plain; charset="US-ASCII"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 11, 2008 at 06:43:07PM +0400, Serge Belyshev wrote:
-> Rodolfo Giometti <giometti@enneenne.com> writes:
-> 
-> > The problem is that deferencing the pps_event() call will cause severe
-> > problems to PPS accuracy... here you can find some considerations on
-> > this topic:
-> >
-> >    http://ml.enneenne.com/pipermail/linuxpps/2008-April/001738.html
-> >
-> 
-> What about adding precise timestamping to the lowest possible irq
-> handling level ( arch/*/entry*.S ) and then export that information
-> in a general way so it is useful for other applications?
+>So if you write multithreaded code and don't understand what locking
+>around shared resources is for, then your application might break.
 
-The problem is that at such level you cannot easily retrieve info
-about where your serial port is connected to and which PPS source you
-should manage...
+I think I know what locking around shared resources is for, which is why 
+I'm surprised the kernel doesn't do it.
 
-Ciao,
+Is it normal for a kernel resource not to be thread-safe (i.e. you don't 
+get advertised/sensible results if two threads access it at the same 
+time)?
 
-Rodolfo
+>Can you give an example where locking is being used correctly where this 
+can
+>possibly fail?
 
--- 
+I could accept (though I haven't thought about it) that there aren't any 
+real-world applications that do simultaneous reads and writes through the 
+same file pointer.  I might even accept that there can be no useful 
+application that does.  But can you say such an application is incorrect?
 
-GNU/Linux Solutions                  e-mail:    giometti@enneenne.com
-Linux Device Driver                             giometti@linux.it
-Embedded Systems                     phone:	+39 349 2432127
-UNIX programming                     skype:     rodolfo.giometti
+--
+Bryan Henderson                     IBM Almaden Research Center
+San Jose CA                         Filesystems
+
