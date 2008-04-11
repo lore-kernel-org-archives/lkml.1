@@ -1,95 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760032AbYDKOam@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760130AbYDKOeV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760032AbYDKOam (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Apr 2008 10:30:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758114AbYDKOac
+	id S1760130AbYDKOeV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Apr 2008 10:34:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758114AbYDKOeO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Apr 2008 10:30:32 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:55615 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751807AbYDKOab (ORCPT
+	Fri, 11 Apr 2008 10:34:14 -0400
+Received: from odyssey.analogic.com ([204.178.40.5]:1908 "EHLO
+	odyssey.analogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757774AbYDKOeN convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Apr 2008 10:30:31 -0400
-Date: Fri, 11 Apr 2008 08:30:13 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-Cc: paul.moore@hp.com, akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org, takedakn@nttdata.co.jp,
-       linux-fsdevel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [TOMOYO #7 30/30] Hooks for SAKURA and TOMOYO.
-Message-ID: <20080411143013.GB11962@parisc-linux.org>
-References: <20080404122242.867070732@I-love.SAKURA.ne.jp> <20080404122408.986477936@I-love.SAKURA.ne.jp> <200804071140.59247.paul.moore@hp.com> <47FC8052.9070409@nttdata.co.jp> <20080409131151.GK11962@parisc-linux.org> <200804112312.HGE69734.LFOOHQOSFFMJtV@I-love.SAKURA.ne.jp>
+	Fri, 11 Apr 2008 10:34:13 -0400
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200804112312.HGE69734.LFOOHQOSFFMJtV@I-love.SAKURA.ne.jp>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+X-OriginalArrivalTime: 11 Apr 2008 14:34:10.0358 (UTC) FILETIME=[1B08FD60:01C89BE1]
+Content-class: urn:content-classes:message
+Subject: Re: VM - a plenty of inactive memory
+Date: Fri, 11 Apr 2008 10:34:10 -0400
+Message-ID: <Pine.LNX.4.61.0804111024020.4784@chaos.analogic.com>
+In-Reply-To: <cf40c6a90804110613v46de93f2nea1b2376bbd48953@mail.gmail.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: VM - a plenty of inactive memory
+thread-index: Acib4RsQuyNfC+e0T0yXhxe8Ce9V4Q==
+References: <cf40c6a90804090213u55491ceay9b211d75d74dc29c@mail.gmail.com> <874pabrx6b.fsf@saeurebad.de> <cf40c6a90804110613v46de93f2nea1b2376bbd48953@mail.gmail.com>
+From: "linux-os (Dick Johnson)" <linux-os@analogic.com>
+To: "Andreas Grimm" <agrimm61@gmail.com>
+Cc: "Johannes Weiner" <hannes@saeurebad.de>, <linux-kernel@vger.kernel.org>
+Reply-To: "linux-os (Dick Johnson)" <linux-os@analogic.com>
+X-TM-AS-Product-Ver: SMEX-8.0.0.1259-5.000.1023-15842.003
+X-TM-AS-Result: No--13.031700-8.000000-31
+X-TM-AS-User-Approved-Sender: No
+X-TM-AS-User-Blocked-Sender: No
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 11, 2008 at 11:12:27PM +0900, Tetsuo Handa wrote:
-> Matthew Wilcox wrote:
-> > When the rule is put in place, say "No modifications to /etc/passwd",
-> > look up the inode and major:minor of /etc/passwd.  If there's a rename,
-> > look up the new inode number.  If it's mounted elsewhere, it doesn't
-> > matter, they still can't modify it because it has the same
-> > major:minor:inode.
-> 
-> If write access is denied because of a rule "No modifications to /etc/passwd",
-> a rule "Allow modifications to /tmp/passwd" can no longer be enforced after
-> "mount --bind /etc/ /tmp/" or "mount --bind /etc/passwd /tmp/passwd" or
-> "mv /etc/passwd /tmp/passwd" or "ln /etc/passwd /tmp/passwd" is done.
 
-That's a fundamental limitation of pathname-based security though.
-If the same file exists in two places, you have to resolve the question
-of which rule overrides the other.
+On Fri, 11 Apr 2008, Andreas Grimm wrote:
 
-In my role as a sysadmin, I would consider it a flaw if someone could
-edit a file I'd marked uneditable -- simply by creating a hard-link to it.
-If we look at existing systems, such as the immutable bit, those apply to
-inodes, not to paths, so they can't be evaded.  If a system such as TOMOYA
-allows evasion this easily, then it doesn't seem like an improvement.
+> Hi everybody,
+>
+> i investigated this further. The tunables swappiness, drop_caches etc.
+> are no options to solve this. The problem is becoming very unpleasent,
+> because the system isn't able to cache that much:
+>
+> The 16GB system (expected behaviour):
+> MemTotal:     16619808 kB
+> MemFree:       4490032 kB
+> Cached:        6929448 kB
+> Inactive:      1670812 kB
+>
+> The 32GB system :
+> MemTotal:     33265916 kB
+> MemFree:        600000 kB
+> Cached:        1561124 kB
+> Inactive:     25873128 kB
+>
+> Don't you think this is insane? Wasting 25GB at the expense of caching
+> (compare the cached value)? I'm clueless about this issue. Who (which
+> process) owns that memory? Is there a way to flush this inactive
+> memory? I assume that this memory hasn't been reclaimed for days,
+> because the amount of inactive memory is at this level for days now.
+>
+> All values in /proc/sys/vm are at the defaults again, on both systems.
+>
+> Any help would be appreciated.
+>
+> Andreas
 
-So when considering your problem, I worked from the point of view of the
-attacker "Oh, I can't modify /etc/passwd?  In that case, I'll create
-a new name to the same file", and then figured out a defense to it.
-I did not consider the case where the admin /wants/ to allow access
-through different pathnames to the same file that's denied access.
-That doesn't seem like a secure system to me.
+Wasting 25GB? It looks to me as though the kernel cached
+(didn't write pages to disk yet) just about all it needed,
+and there is lots of memory that it just doesn't need
+  --yet! This means that if you have tasks that need memory
+in a hurry, they'll get it without any disk accesses.
 
-In short, if a file is named as protected, I think the admin clearly
-means to protect that file -- no matter what name is used to address it.
+The kernel doesn't expand to use all the memory just to
+spread itself all over the place. It uses what it needs,
+caches some buffered data, and keepts track of all the
+memory it has. If you want to use more cache, do '-lsR /'.
+That'll read every directory into memory. It probably
+won't go away until someody needs more memory.
 
-> If rules are described like "No modifications to passwd_t",
-> it is correct to deny modifications of the file when the file
-> with passwd_t was renamed or bind-mounted or hard-linked.
-> Those who want to do access restriction based on the entity of the file
-> prefer rules described using inodes (or labels).
-> 
-> If rules are described like "No modifications to /etc/passwd" and
-> "Allow modifications to /tmp/passwd", it is wrong to deny modifications of
-> the file when /etc/passwd was renamed or bind-mounted or hard-linked to
-> /tmp/passwd .
-> Those who want to do access restriction based on the location of the file
-> prefer rules described using pathnames.
 
-My impression of pathname-based security was that it was preferred
-because it's easier to administer than setting labels and making sure
-everything has the right capabilities.  But from what you're saying,
-it seems like it's no additional security at all.
+Cheers,
+Dick Johnson
+Penguin : Linux version 2.6.22.1 on an i686 machine (5588.29 BogoMips).
+My book : http://www.AbominableFirebug.com/
+_
 
-Let's take an example.  We have the two rules "nobody can edit
-/etc/passwd" and "root can edit /tmp/passwd".  A daemon running as root
-is compromised.  Instead of being able to simply write to /etc/passwd,
-the attacker has to "ln /etc/passwd /tmp" first.  There's no additional
-security here, just obfuscation.
 
-So I say a 'DENY' rule must always override an 'ALLOW' rule where two
-filenames happen to map to the same file.  Or it's just snake-oil.
+****************************************************************
+The information transmitted in this message is confidential and may be privileged.  Any review, retransmission, dissemination, or other use of this information by persons or entities other than the intended recipient is prohibited.  If you are not the intended recipient, please notify Analogic Corporation immediately - by replying to this message or by sending an email to DeliveryErrors@analogic.com - and destroy all copies of this information, including any attachments, without reading or disclosing them.
 
--- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+Thank you.
