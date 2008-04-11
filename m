@@ -1,165 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760756AbYDKXWq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760510AbYDKXXq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760756AbYDKXWq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Apr 2008 19:22:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756053AbYDKXWi
+	id S1760510AbYDKXXq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Apr 2008 19:23:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756625AbYDKXXe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Apr 2008 19:22:38 -0400
-Received: from wf-out-1314.google.com ([209.85.200.174]:39408 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755946AbYDKXWh (ORCPT
+	Fri, 11 Apr 2008 19:23:34 -0400
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:45495 "EHLO
+	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756053AbYDKXXd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Apr 2008 19:22:37 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=reply-to:to:subject:date:user-agent:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id:from;
-        b=LfFlwo/ADC+BZ2FtlS7wFfBlb8XV+5Srxkn4iooqUpvFAZXYU2YPPt/efZCYjqoePmK9RW40MLGcKBzHQN5k6NJ17vrKQPY95r8kjP+RKJbOpd72UbEpNc9WoDBlLcENWE+343yfB1a3UmttOWD9A5rnfsJyRprpHWqjshWI0MY=
-Reply-To: yhlu.kernel@gmail.com
-To: Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: [PATCH] x86_64: restore mask_bits in msi shutdown
-Date: Fri, 11 Apr 2008 16:26:11 -0700
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Jeff Garzik <jeff@garzik.org>, Ayaz Abdulla <aabdulla@nvidia.com>,
-       kernel list <linux-kernel@vger.kernel.org>
+	Fri, 11 Apr 2008 19:23:33 -0400
+X-Sasl-enc: jhmzm4YqcWQQckgD0P/CRY649XbyRzE8jdhVjJbh6TdD 1207956211
+Message-ID: <47FFF2E5.9040807@imap.cc>
+Date: Sat, 12 Apr 2008 01:23:17 +0200
+From: Tilman Schmidt <tilman@imap.cc>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200804111626.11232.yhlu.kernel@gmail.com>
-From: Yinghai Lu <yhlu.kernel.send@gmail.com>
+To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+CC: Mark Lord <lkml@rtr.ca>,
+       =?ISO-8859-1?Q?Ilpo_J=E4rvinen?= <ilpo.jarvinen@helsinki.fi>,
+       David Miller <davem@davemloft.net>, jesper.juhl@gmail.com,
+       yoshfuji@linux-ipv6.org, Jeff Garzik <jeff@garzik.org>, rjw@sisk.pl,
+       LKML <linux-kernel@vger.kernel.org>, Netdev <netdev@vger.kernel.org>
+Subject: Re: 2.6.25-rc8: FTP transfer errors
+References: <47FEADCB.7070104@rtr.ca> <20080410.172453.44434205.davem@davemloft.net> <47FEB062.3020003@rtr.ca> <20080410.173911.179180620.davem@davemloft.net> <47FEBDAA.7010305@rtr.ca> <Pine.LNX.4.64.0804110849520.28360@wrl-59.cs.helsinki.fi> <47FF6555.50004@rtr.ca> <20080411143537.GA27874@2ka.mipt.ru> <47FFE33C.1000707@imap.cc> <20080411222536.GA25893@2ka.mipt.ru>
+In-Reply-To: <20080411222536.GA25893@2ka.mipt.ru>
+X-Enigmail-Version: 0.95.6
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enigA7986C66DA18ED8DFC32FB07"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I can not kexec RHEL 5.1 from 2.6.25-rc3 later
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enigA7986C66DA18ED8DFC32FB07
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-caused by:
-commit 89d694b9dbe769ca1004e01db0ca43964806a611
-Author: Thomas Gleixner <tglx@linutronix.de>
-Date:   Mon Feb 18 18:25:17 2008 +0100
+On Sat, 12 Apr 2008 02:25:36 +0400, Evgeniy Polyakov wrote:
+> On Sat, Apr 12, 2008 at 12:16:28AM +0200, Tilman Schmidt (tilman@imap.c=
+c) wrote:
+>> So I was right after all? Bug reports from people who (for whatever
+>> reason, including having to earn their living) cannot do a bisect are
+>> not welcome?
+>=20
+> You got it wrong.
 
-    genirq: do not leave interupts enabled on free_irq
+Did I really? Let's see ...
 
-    The default_disable() function was changed in commit:
+> If bug is subtle and developers can not reproduce it, there are only tw=
+o
+> ways out of the problem: to help developers or not to help.
+>=20
+> In the latter case bug report is useless (except that to show that it
+> exists, since practically no one can fix it until some new details
+> added).
 
-     76d2160147f43f982dfe881404cfde9fd0a9da21
-     genirq: do not mask interrupts by default
+Looks like you're saying I was right after all. Useless bug reports
+shouldn't be submitted.
 
-    It removed the mask function in favour of the default delayed
-    interrupt disabling. Unfortunately this also broke the shutdown in
-    free_irq() when the last handler is removed from the interrupt for
-    those architectures which rely on the default implementations. Now we
-    can end up with a enabled interrupt line after the last handler was
-    removed, which can result in spurious interrupts.
+So please answer this simple question: If I know beforehand that I won't
+have the time to do a bisect (or other similarly time-consuming task the
+maintainers might ask from me), should I report the bug, or should I
+keep my knowledge to myself?
 
-    Fix this by adding a default_shutdown function, which is only
-    installed, when the irqchip implementation does provide neither a
-    shutdown nor a disable function.
+This question is not theoretical. It's a situation I find myself in
+quite regularly, because I allow myself the luxury of building most rc
+kernels and even the odd mm kernel just for fun even though I have a
+daytime job and a family to feed. It would be quite easy to look the
+other way if I encounter a problem in one of those, hoping someone else
+with more time on his or her hands will also come across it and report
+it. So far my conscience told me not to do that. But if reporting it
+without being able to follow up on it is considered useless then my
+conscience was apparently wrong. Just say the word, and I'll stop what
+I'm doing. I'll have no problem finding other things to do with my time.
 
-    [@stable: affected versions: .21 - .24 ]
+> Bisection was just an example of the help, reporter can provide.
+
+Sure. It's not about bisection specifically, but about the time a
+reporter is able to invest in addition to what went into the report
+already. But bisection is is a good example, because it's the most
+time-consuming of all the tasks routinely asked from bug reporters.
+
+> If you can not proceed with what was suggested, then do
+> not piss anyone off because you were told to do something to help.
+
+If a polite "sorry, I don't have the time" already counts as pissing
+off, the only choice left is to avoid the situation in which I'd have to
+say that. IOW, don't report bugs if I don't have the time to follow
+through. Again: if that is what you want, I have no problem with it.
+
+> If you go to the doctor because of aching throat and he asks you to
+> open a mouth, you will not blame him for asking you to do that.
+
+That analogy is wrong on so many accounts. It is not my throat that's
+aching. A doctor would not insult me for not wanting to open my mouth
+but rather ask if there was perhaps a valid reason for that. Not to
+mention that opening my mouth takes substantially less time than a Linux
+kernel bisection ...
+
+A better analogy would be if I see an object lying on the highway, and I
+stop at the next service area to call the police and alert them about
+the possible danger. If they'd ask me to drive back to the place where I
+saw it in order to describe precisely where it lay and what it looked
+like, I think I might indeed become a bit upset.
+
+HTH
+T.
+
+PS: I'll shut my big mouth now. The topic has been beaten to death.
 
 
+--------------enigA7986C66DA18ED8DFC32FB07
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
-for MSI, default_shutdown will call mask_bit for msi device. so all mask bits will
-left disabled after free_irq.
-then if kexec next kernel that only can use msi_enable bit.
-all device's MSI can not be used.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.4-svn0 (GNU/Linux)
+Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
 
-So try to restore MSI mask bits that is saved before using msi in first kernel.
+iD8DBQFH//LwQ3+did9BuFsRAkCOAJ0criWknfNgcuWBFsN/4piArg8mzgCeO6zf
+kOBtgl8qybMb7Q9L8HfHYIg=
+=hquZ
+-----END PGP SIGNATURE-----
 
-Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
-
-Index: linux-2.6/arch/x86/kernel/io_apic_64.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/io_apic_64.c
-+++ linux-2.6/arch/x86/kernel/io_apic_64.c
-@@ -2003,6 +2003,14 @@ static void set_msi_irq_affinity(unsigne
- }
- #endif /* CONFIG_SMP */
- 
-+static void msi_shutdown(unsigned int irq)
-+{
-+	struct irq_desc *desc = irq_desc + irq;
-+
-+	msi_restore_mask_bits(irq);
-+	desc->status |= IRQ_MASKED;
-+}
-+
- /*
-  * IRQ Chip for MSI PCI/PCI-X/PCI-Express Devices,
-  * which implement the MSI or MSI-X Capability Structure.
-@@ -2012,6 +2020,7 @@ static struct irq_chip msi_chip = {
- 	.unmask		= unmask_msi_irq,
- 	.mask		= mask_msi_irq,
- 	.ack		= ack_apic_edge,
-+	.shutdown	= msi_shutdown,
- #ifdef CONFIG_SMP
- 	.set_affinity	= set_msi_irq_affinity,
- #endif
-Index: linux-2.6/drivers/pci/msi.c
-===================================================================
---- linux-2.6.orig/drivers/pci/msi.c
-+++ linux-2.6/drivers/pci/msi.c
-@@ -123,6 +123,31 @@ static void msix_flush_writes(unsigned i
- 	}
- }
- 
-+void msi_restore_mask_bits(unsigned int irq)
-+{
-+	struct msi_desc *entry;
-+
-+	entry = get_irq_msi(irq);
-+	BUG_ON(!entry || !entry->dev);
-+	switch (entry->msi_attrib.type) {
-+	case PCI_CAP_ID_MSI:
-+		if (entry->msi_attrib.maskbit) {
-+			int pos;
-+			u32 mask_bits;
-+
-+			pos = (long)entry->mask_base;
-+			mask_bits = entry->orig_mask_bits;
-+			pci_write_config_dword(entry->dev, pos, mask_bits);
-+		}
-+		break;
-+	case PCI_CAP_ID_MSIX:
-+		break;
-+	default:
-+		BUG();
-+		break;
-+	}
-+}
-+
- static void msi_set_mask_bit(unsigned int irq, int flag)
- {
- 	struct msi_desc *entry;
-@@ -376,6 +401,7 @@ static int msi_capability_init(struct pc
- 		pci_read_config_dword(dev,
- 			msi_mask_bits_reg(pos, is_64bit_address(control)),
- 			&maskbits);
-+		entry->orig_mask_bits = maskbits;
- 		temp = (1 << multi_msi_capable(control));
- 		temp = ((temp - 1) & ~temp);
- 		maskbits |= temp;
-Index: linux-2.6/include/linux/msi.h
-===================================================================
---- linux-2.6.orig/include/linux/msi.h
-+++ linux-2.6/include/linux/msi.h
-@@ -14,6 +14,7 @@ extern void mask_msi_irq(unsigned int ir
- extern void unmask_msi_irq(unsigned int irq);
- extern void read_msi_msg(unsigned int irq, struct msi_msg *msg);
- extern void write_msi_msg(unsigned int irq, struct msi_msg *msg);
-+extern void msi_restore_mask_bits(unsigned int irq);
- 
- struct msi_desc {
- 	struct {
-@@ -30,6 +31,7 @@ struct msi_desc {
- 	struct list_head list;
- 
- 	void __iomem *mask_base;
-+	u32 orig_mask_bits;  /* restoring it for freeing */
- 	struct pci_dev *dev;
- 
- 	/* Last set MSI message */
+--------------enigA7986C66DA18ED8DFC32FB07--
