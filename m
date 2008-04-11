@@ -1,53 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760244AbYDKKtE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760057AbYDKKvb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760244AbYDKKtE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Apr 2008 06:49:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759395AbYDKKsy
+	id S1760057AbYDKKvb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Apr 2008 06:51:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758952AbYDKKvY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Apr 2008 06:48:54 -0400
-Received: from mail164.messagelabs.com ([216.82.253.131]:11917 "HELO
-	mail164.messagelabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1758944AbYDKKsx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Apr 2008 06:48:53 -0400
-X-VirusChecked: Checked
-X-Env-Sender: Uwe.Kleine-Koenig@digi.com
-X-Msg-Ref: server-3.tower-164.messagelabs.com!1207910932!12587900!1
-X-StarScan-Version: 5.5.12.14.2; banners=-,-,-
-X-Originating-IP: [66.77.174.21]
-Date: Fri, 11 Apr 2008 12:48:35 +0200
-From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <Uwe.Kleine-Koenig@digi.com>
-To: "Hans J. Koch" <hjk@linutronix.de>
-Cc: Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 4/4 v2] [RFC] UIO: generic platform driver
-Message-ID: <20080411104835.GB19973@digi.com>
-References: <1207831023-8583-1-git-send-email-Uwe.Kleine-Koenig@digi.com> <1207831023-8583-2-git-send-email-Uwe.Kleine-Koenig@digi.com> <1207831023-8583-3-git-send-email-Uwe.Kleine-Koenig@digi.com> <1207831023-8583-4-git-send-email-Uwe.Kleine-Koenig@digi.com> <1207831023-8583-5-git-send-email-Uwe.Kleine-Koenig@digi.com> <20080410224804.GI3193@local> <20080411062106.GA18096@digi.com> <20080411092158.GB31625@digi.com>
+	Fri, 11 Apr 2008 06:51:24 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:46623 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758939AbYDKKvX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Apr 2008 06:51:23 -0400
+Date: Fri, 11 Apr 2008 12:51:09 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Jiri Kosina <jkosina@suse.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Andi Kleen <andi@firstfloor.org>,
+       Zdenek Kabelac <zdenek.kabelac@gmail.com>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: BUG: using smp_processor_id() during suspend with 2.6.25-rc8
+Message-ID: <20080411105108.GA1844@elte.hu>
+References: <c4e36d110804070625n17eb44e1nbb5558f500f13438@mail.gmail.com> <Pine.LNX.4.64.0804080008420.3896@jikos.suse.cz> <20080407222352.GG16647@one.firstfloor.org> <200804080029.31102.rjw@sisk.pl> <Pine.LNX.4.64.0804080030500.3896@jikos.suse.cz> <20080410094554.GA10321@ucw.cz> <Pine.LNX.4.64.0804110122470.3896@jikos.suse.cz> <20080411104902.GA8734@elf.ucw.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20080411092158.GB31625@digi.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-OriginalArrivalTime: 11 Apr 2008 10:48:35.0271 (UTC) FILETIME=[977E9D70:01C89BC1]
-X-TM-AS-Product-Ver: SMEX-8.0.0.1181-5.000.1023-15842.003
-X-TM-AS-Result: No--11.286000-8.000000-31
-X-TM-AS-User-Approved-Sender: No
-X-TM-AS-User-Blocked-Sender: No
+In-Reply-To: <20080411104902.GA8734@elf.ucw.cz>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
 
-Uwe Kleine-König wrote:
-> +			dev_warn(&pdev->dev, "device has more than "
-> +					stringify(MAX_UIO_MAPS)
-This must read __stringify(MAX_UIO_MAPS).  Sorry, I didn't compile test
-that.
+* Pavel Machek <pavel@ucw.cz> wrote:
 
-Uwe
+> diff --git a/lib/smp_processor_id.c b/lib/smp_processor_id.c
+> index 6c90fb9..8195c37 100644
+> --- a/lib/smp_processor_id.c
+> +++ b/lib/smp_processor_id.c
+> @@ -35,6 +35,13 @@ unsigned int debug_smp_processor_id(void
+>  		goto out;
+>  
+>  	/*
+> +	 * It is valid to assume CPU-locality if there's just one
+> +	 * CPU active
+> +	 */
+> +	if (num_online_cpus() == 1)
+> +		goto out;
 
--- 
-Uwe Kleine-König, Software Engineer
-Digi International GmbH Branch Breisach, Küferstrasse 8, 79206 Breisach, Germany
-Tax: 315/5781/0242 / VAT: DE153662976 / Reg. Amtsgericht Dortmund HRB 13962
+thanks Pavel, i picked this up into sched-devel.git - it makes sense 
+independently of whether it solves the warning.
+
+	Ingo
