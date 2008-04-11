@@ -1,47 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760793AbYDKLd2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760271AbYDKLh3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760793AbYDKLd2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Apr 2008 07:33:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759786AbYDKLdJ
+	id S1760271AbYDKLh3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Apr 2008 07:37:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759588AbYDKLhP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Apr 2008 07:33:09 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:35509 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760497AbYDKLdI (ORCPT
+	Fri, 11 Apr 2008 07:37:15 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:57209 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757547AbYDKLhO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Apr 2008 07:33:08 -0400
-Date: Fri, 11 Apr 2008 13:37:46 +0200
-From: Andi Kleen <andi@firstfloor.org>
+	Fri, 11 Apr 2008 07:37:14 -0400
+Date: Fri, 11 Apr 2008 07:36:44 -0400
+From: Christoph Hellwig <hch@infradead.org>
 To: Ingo Molnar <mingo@elte.hu>
-Cc: Pavel Machek <pavel@ucw.cz>, Jiri Kosina <jkosina@suse.cz>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Andi Kleen <andi@firstfloor.org>,
-       Zdenek Kabelac <zdenek.kabelac@gmail.com>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: BUG: using smp_processor_id() during suspend with 2.6.25-rc8
-Message-ID: <20080411113746.GV10019@one.firstfloor.org>
-References: <c4e36d110804070625n17eb44e1nbb5558f500f13438@mail.gmail.com> <Pine.LNX.4.64.0804080008420.3896@jikos.suse.cz> <20080407222352.GG16647@one.firstfloor.org> <200804080029.31102.rjw@sisk.pl> <Pine.LNX.4.64.0804080030500.3896@jikos.suse.cz> <20080410094554.GA10321@ucw.cz> <Pine.LNX.4.64.0804110122470.3896@jikos.suse.cz> <20080411104902.GA8734@elf.ucw.cz> <20080411105108.GA1844@elte.hu>
-Mime-Version: 1.0
+Cc: "Kok, Auke" <auke-jan.h.kok@intel.com>, Jeff Garzik <jeff@garzik.org>,
+       Matthew Wilcox <matthew@wil.cx>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       NetDev <netdev@vger.kernel.org>,
+       e1000-list <e1000-devel@lists.sourceforge.net>,
+       linux-pci maillist <linux-pci@atrey.karlin.mff.cuni.cz>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "David S. Miller" <davem@davemloft.net>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Jesse Brandeburg <jesse.brandeburg@intel.com>,
+       "Ronciak, John" <john.ronciak@intel.com>,
+       "Allan, Bruce W" <bruce.w.allan@intel.com>, Greg KH <greg@kroah.com>,
+       Arjan van de Ven <arjan@linux.intel.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [patch] e1000=y && e1000e=m regression fix
+Message-ID: <20080411113644.GA7767@infradead.org>
+References: <20080408200652.GC28148@elte.hu> <47FBD34A.6080508@garzik.org> <20080408203314.GA28952@elte.hu> <47FBDBE9.9040700@garzik.org> <20080409193850.GA11763@elte.hu> <47FD2325.2030705@intel.com> <47FE5C89.5060209@intel.com> <20080410192714.GA14055@elte.hu> <47FE8566.5040809@intel.com> <20080411112653.GC9205@elte.hu>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080411105108.GA1844@elte.hu>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <20080411112653.GC9205@elte.hu>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> thanks Pavel, i picked this up into sched-devel.git - it makes sense 
-> independently of whether it solves the warning.
+On Fri, Apr 11, 2008 at 01:26:53PM +0200, Ingo Molnar wrote:
+> really, just because you do exceedingly good things to Linux does not 
+> give you a free card to do something bad to Linux in exchange. The two 
+> do not cancel out each other - because the bad things _add up_ and drive 
+> away users, irreversibly. To you e1000 is the center of the universe so 
+> you feel the price is worth paying. For others it is not. We want the 
+> good things from you and we'll say no thanks to the bad ideas. Kernel 
+> developers, especially old-timers, regularly forget about that.
 
-This means the CPU preempt sanity checking is effectively disabled
-on UP kernels. Even though more and more people should run multi-core
-now there is still a sizeable user base left on single core.
+Hey, hey calm down.  The device moving over to e1000e shouldn never
+have been added to e1000.  They're totally differnet and the only reason
+they got added in thefirst time was because soemone talked intel into
+it.
 
-Don't think this is a good idea. We need even the UP testers.
+We discussed this a long time and came to a wide agreement it should
+move out.  Now the actual transition could and should have been handled
+better, but with all the pci-e hardware in a separate driver we're all
+off better in the long term.
 
-If he wants this for suspend or machine check/oops (always useful there
-to disable such warnings) then there should
-be separate checks for this. Perhaps system_state could be enhanced for this?
+And this is not really comparable to the libata transition at all,
+there's no user-visible changed.  For every distro kernel that just
+builds both driver it's a completely seamless transition, and for
+people who build their own kernel we should find some Kconfig trickery
+to make the transition easier.  For example we could just built e1000e
+when CONFIG_E1000 is set and spill a warning that starting from 1.1.2009
+you will have to have CONFIG_E1000E set aswell.
 
--Andi
-
+> 
+> 	Ingo
+> --
+> To unsubscribe from this list: send the line "unsubscribe netdev" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+---end quoted text---
