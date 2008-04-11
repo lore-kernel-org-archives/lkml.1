@@ -1,61 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760110AbYDKOrm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760221AbYDKOvx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760110AbYDKOrm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Apr 2008 10:47:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756958AbYDKOrc
+	id S1760221AbYDKOvx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Apr 2008 10:51:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756958AbYDKOvo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Apr 2008 10:47:32 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:46886 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754604AbYDKOrb (ORCPT
+	Fri, 11 Apr 2008 10:51:44 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:60376 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1758193AbYDKOvo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Apr 2008 10:47:31 -0400
-Date: Fri, 11 Apr 2008 07:46:48 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Heiko Carstens <heiko.carstens@de.ibm.com>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       Jakub Jelinek <jakub@redhat.com>, Dave Jones <davej@redhat.com>,
-       drepper@redhat.com, mingo@redhat.com, tglx@redhat.com,
-       linux-kernel@vger.kernel.org, Roland McGrath <roland@redhat.com>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: Re: [PATCH] Fix compile breakage caused by asmlinkage_protect
-In-Reply-To: <20080411114654.GA12270@osiris.boeblingen.de.ibm.com>
-Message-ID: <alpine.LFD.1.00.0804110744100.3143@woody.linux-foundation.org>
-References: <alpine.LFD.1.00.0804101447240.3143@woody.linux-foundation.org> <20080410223738.80A8326F992@magilla.localdomain> <20080411114654.GA12270@osiris.boeblingen.de.ibm.com>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 11 Apr 2008 10:51:44 -0400
+Date: Fri, 11 Apr 2008 15:46:52 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
+Cc: Rodolfo Giometti <giometti@enneenne.com>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Woodhouse <dwmw2@infradead.org>, Dave Jones <davej@redhat.com>,
+       Sam Ravnborg <sam@ravnborg.org>, Greg KH <greg@kroah.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Kay Sievers <kay.sievers@vrfy.org>
+Subject: Re: [PATCH 5/7] PPS: serial clients support.
+Message-ID: <20080411154652.4852b6d4@core>
+In-Reply-To: <20080411134724.GF2160@csclub.uwaterloo.ca>
+References: <20080410160630.GA24885@enneenne.com>
+	<1207851751-25703-1-git-send-email-giometti@linux.it>
+	<1207851751-25703-2-git-send-email-giometti@linux.it>
+	<1207851751-25703-3-git-send-email-giometti@linux.it>
+	<1207851751-25703-4-git-send-email-giometti@linux.it>
+	<1207851751-25703-5-git-send-email-giometti@linux.it>
+	<1207851751-25703-6-git-send-email-giometti@linux.it>
+	<20080410210918.3be98868@core>
+	<20080411075515.GH26777@enneenne.com>
+	<20080411092840.3cc4de67@core>
+	<20080411134724.GF2160@csclub.uwaterloo.ca>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> I thought it just required that the uart driver call
+> uart_handle_dcd_change when the state of the CD changes, and all the PPS
+> stuff happened in that function.
 
+uart_ is only used by some drivers. We have a whole army of drivers using
+the tty layer directly and another army of drivers using the USB layer.
 
-On Fri, 11 Apr 2008, Heiko Carstens wrote:
-> 
-> git commit 54a015104136974262afa4b8ddd943ea70dec8a2
-> "asmlinkage_protect replaces prevent_tail_call" causes this build failure
-> on s390:
-> 
->   AS      arch/s390/kernel/entry64.o
-> In file included from arch/s390/kernel/entry64.S:14:
-> include/linux/linkage.h:34: error: syntax error in macro parameter list
-> make[1]: *** [arch/s390/kernel/entry64.o] Error 1
-> make: *** [arch/s390/kernel] Error 2
+You also need a sensible way to talk to the devices, identify support and
+avoid clashing uses of carrier pins.
 
-Ok, that's just _odd_.
-
-> So just surround the new define with an #ifndef __ASSEMBLY__ to prevent
-> any side effects on asm code.
-
-There are no side effects on asm code. It just adds a #define that 
-obviously won't be used.
-
-Is the s390 assembler using some strange C pre-processor that is different 
-from the main C preprocessor and doesn't understand this pattern?
-
-I really think you should fix *that*, because otherwise you'll hit these 
-kinds of bugs occasionally. There aren't that many asm files, it's not 
-worth it optimizing them to use some faster-but-stupider preprocessor.
-
-			Linus
+Alan
