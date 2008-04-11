@@ -1,65 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760409AbYDKL7A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758825AbYDKMLu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760409AbYDKL7A (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Apr 2008 07:59:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751301AbYDKL6x
+	id S1758825AbYDKMLu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Apr 2008 08:11:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752663AbYDKMLk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Apr 2008 07:58:53 -0400
-Received: from cantor.suse.de ([195.135.220.2]:47730 "EHLO mx1.suse.de"
+	Fri, 11 Apr 2008 08:11:40 -0400
+Received: from nn7.de ([85.214.94.156]:35819 "EHLO nn7.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750853AbYDKL6w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Apr 2008 07:58:52 -0400
-Date: Fri, 11 Apr 2008 13:58:48 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, pj@sgi.com, kniht@linux.vnet.ibm.com
-Subject: Re: [patch 10/17] mm: fix bootmem alignment
-Message-ID: <20080411115848.GB15481@wotan.suse.de>
-References: <20080410170232.015351000@nick.local0.net> <20080410171101.395469000@nick.local0.net> <86802c440804101033p6e914cb4oacaeb6eca823d1cd@mail.gmail.com>
+	id S1751915AbYDKMLk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Apr 2008 08:11:40 -0400
+Subject: Re: suspend issue
+From: Soeren Sonnenburg <kernel@nn7.de>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Justin Mattock <justinmattock@gmail.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <20080411105712.GC18770@elf.ucw.cz>
+References: <dd18b0c30804052103s7357bb86yf7bf11d38d2911b3@mail.gmail.com>
+	 <1207490104.4597.36.camel@localhost> <20080406232849.GA789@elf.ucw.cz>
+	 <1207736730.4320.1.camel@localhost> <20080410100234.GB11084@ucw.cz>
+	 <1207865152.21472.2.camel@localhost>  <20080411105712.GC18770@elf.ucw.cz>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Fri, 11 Apr 2008 14:11:29 +0200
+Message-Id: <1207915890.4526.32.camel@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <86802c440804101033p6e914cb4oacaeb6eca823d1cd@mail.gmail.com>
-User-Agent: Mutt/1.5.9i
+X-Mailer: Evolution 2.22.0 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 10, 2008 at 10:33:50AM -0700, Yinghai Lu wrote:
-> On Thu, Apr 10, 2008 at 10:02 AM,  <npiggin@suse.de> wrote:
-> > Without this fix bootmem can return unaligned addresses when the start of a
-> >  node is not aligned to the align value. Needed for reliably allocating
-> >  gigabyte pages.
-> >
-> >  I removed the offset variable because all tests should align themself correctly
-> >  now. Slight drawback might be that the bootmem allocator will spend
-> >  some more time skipping bits in the bitmap initially, but that shouldn't
-> >  be a big issue.
-> >
+On Fri, 2008-04-11 at 12:57 +0200, Pavel Machek wrote:
+> On Fri 2008-04-11 00:05:52, Soeren Sonnenburg wrote:
+[...]
+> > > Well, 2.6.20 worked, so bisect should be easy, right?
+> > 
+> > I don't quite understand... 2.6.24 worked yes, but 2.6.25-rc1 didn't
+> > even *suspend*. However the problem lies not in suspending but no
+> > display on *resume*. So the bug is hidden by the hang on suspend and I
+> > don't see how I can check when resume broke.
 > 
+> Hmm, you could bisect the resume regression, revert that, and then go
+> on to find the suspend regression.
 > 
-> this patch from Andi was obsoleted by the one in -mm
+> ...ok, not easy, I see.
 > 
-> 
-> The patch titled
->     mm: offset align in alloc_bootmem
-> has been added to the -mm tree.  Its filename is
->     mm-offset-align-in-alloc_bootmem.patch
-> 
-> ------------------------------------------------------
-> Subject: mm: offset align in alloc_bootmem
-> From: Yinghai Lu <yhlu.kernel.send@gmail.com>
-> 
-> Need offset alignment when node_boot_start's alignment is less than align
-> required
-> 
-> Use local node_boot_start to match align.  so don't add extra opteration in
-> search loop.
+> Do you have kernel.org bugzilla # I could look at? Perhaps this can be
+> debugged using printks or something...
 
-Ah, with this patch I'm actually able to allocate 2 1GB pages (on my 4GB
-box), so it must be doing something right ;) Will be helpful for my
-testing, thanks.
+http://bugzilla.kernel.org/show_bug.cgi?id=10319
 
-
+Soeren
