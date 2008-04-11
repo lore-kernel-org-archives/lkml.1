@@ -1,49 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759107AbYDKVrb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758271AbYDKVuy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759107AbYDKVrb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Apr 2008 17:47:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756080AbYDKVrW
+	id S1758271AbYDKVuy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Apr 2008 17:50:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754366AbYDKVuq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Apr 2008 17:47:22 -0400
-Received: from ug-out-1314.google.com ([66.249.92.172]:17104 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756062AbYDKVrV (ORCPT
+	Fri, 11 Apr 2008 17:50:46 -0400
+Received: from rv-out-0708.google.com ([209.85.198.248]:17962 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752771AbYDKVup (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Apr 2008 17:47:21 -0400
+	Fri, 11 Apr 2008 17:50:45 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=nq7kgUbQ95UGhNzF7wLkNnR/Za98H0TcdYyZ4Iz+bBpzEHkO0LgkmP4jhsbD7q33/hYc3OpFPbSdeORgEtlJnFS59BVLM7Rdr9RnaElcpb+Zn8Dgz55ZATcWAu9XeW/F8V4MqfpOY8UL686pAtUmhKohY/7qecF0MnU0tEKmDq8=
-Date: Sat, 12 Apr 2008 01:42:57 +0400
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: Bongani Hlope <bonganilinux@mweb.co.za>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Shutdown and Reboot Regression 2.6.25-rc[78]
-Message-ID: <20080411214257.GA4979@martell.zuzino.mipt.ru>
-References: <200804112241.44626.bonganilinux@mweb.co.za>
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=P1dq7NpSsugD2ZZvfHLIwhNIHepeOujRgzinWhVbFGGMs90qrd1w6qnN5S6MAbrAGiGvVgB0NT5w0jDX4zxrYrjxvLMcavn0wTBUlHVPDyxFPpLOSROzQYDWQQlQ8W+Gxd8gG12ofmFS1RVqkheOerOrFSteV0Z46vW6WZZ+tYI=
+Message-ID: <bdcb599c0804111450y32b226d6k2076247e0fe0cfed@mail.gmail.com>
+Date: Fri, 11 Apr 2008 23:50:45 +0200
+From: "=?UTF-8?Q?Antonio_=C3=81vila?=" <aavilagallego@gmail.com>
+To: "Adrian Bunk" <bunk@kernel.org>
+Subject: Re: Error using "make KBUILD_OUTPUT=path" or "make O=path"
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20080411130056.GA3821@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200804112241.44626.bonganilinux@mweb.co.za>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+References: <bdcb599c0804110514y7f07bd6aqfc3cb9ce6f52b08b@mail.gmail.com>
+	 <bdcb599c0804110538h6a9c0247vcfc0ae39dd55908a@mail.gmail.com>
+	 <20080411130056.GA3821@cs181133002.pp.htv.fi>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 11, 2008 at 10:41:44PM +0200, Bongani Hlope wrote:
-> I found a regression in version 2.6.25-rc7, which causes my computer not to 
-> shutdown or reboot. I get a complete lock up (no keyboard and Sys-Rq) just 
-> before it normally shuts down the alsa service.
-> 
-> I did a git bisect and it points to this reversion: 
-> [266c2e0abeca649fa6667a1a427ad1da507c6375] Make printk() console semaphore 
-> accesses sensible
+D'oh!
 
-Is it 100% reproducable? I mean sometimes I also have complete lockup right
-after one of eth interfaces shutdown during shutdown sequence. And it's
-also recent.
+Many thanks, I could repeat this again and again and I wouldn't have noticed :S
 
-But it triggers ~1 time in 10 subjectively..
+cu
 
+Anthony
