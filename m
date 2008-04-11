@@ -1,46 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760634AbYDKPsZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760677AbYDKPvL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760634AbYDKPsZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Apr 2008 11:48:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759981AbYDKPsR
+	id S1760677AbYDKPvL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Apr 2008 11:51:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760086AbYDKPu5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Apr 2008 11:48:17 -0400
-Received: from yw-out-2324.google.com ([74.125.46.31]:16736 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759941AbYDKPsR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Apr 2008 11:48:17 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=HsISY+OrXpwu+UOEvlMxQ6W6R3QjrbKUkhabnSDZR2M3n06Si48tYAMV5ntYhEO6e5upbgEhx0wVXObGxl5msRVtX8ik3GxWq5uxGG5SqdwupM9ezq0a2lfUlbUyMtIJEQaOYIG/XIQMbXeho/49Oh9Mo3UluaTWajI2W9dxtU4=
-Message-ID: <a44ae5cd0804110847q2ef30aa4r9f318d5e9443c123@mail.gmail.com>
-Date: Fri, 11 Apr 2008 11:47:42 -0400
-From: "Miles Lane" <miles.lane@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: =?WINDOWS-1252?Q?Re:_2.6.25-rc8-mm2_--_kernel/sched.c:8294:_error:_?= =?WINDOWS-1252?Q?unknown_field_=91read=5Fuint=92_specified_in_initializer?=
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <a44ae5cd0804110829j7104ce43q21360078b7291032@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <a44ae5cd0804110648g3256805fob917f31eeff4f6db@mail.gmail.com>
-	 <20080411135555.GA14342@elte.hu>
-	 <a44ae5cd0804110829j7104ce43q21360078b7291032@mail.gmail.com>
+	Fri, 11 Apr 2008 11:50:57 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:56496 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759639AbYDKPu4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Apr 2008 11:50:56 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <1207927166.22001.91.camel@brick>
+References: <1207927166.22001.91.camel@brick> <1207885132.22001.85.camel@brick> <15208.1207908688@redhat.com>
+To: Harvey Harrison <harvey.harrison@gmail.com>
+Cc: dhowells@redhat.com, Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       linux-arch <linux-arch@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH 2/2] kernel: Move arches to use common unaligned access
+X-Mailer: MH-E 8.0.3+cvs; nmh 1.2-20070115cvs; GNU Emacs 23.0.50
+Date: Fri, 11 Apr 2008 16:50:50 +0100
+Message-ID: <2225.1207929050@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->  I tried a "make mrproper" before compiling the 2.6.25-rc8-mm2 tree and it
->  still gave the same error.  This seems to be something specific to the latest
->  MM tree.
+Harvey Harrison <harvey.harrison@gmail.com> wrote:
 
-This seems to be the option that causes the error to trigger:
+> Consistency with every other arch..no other reason.
 
-      CONFIG_CGROUP_SCHED=y
+But not M68K(NOMMU), Alpha, Blackfin, Cris, H8300, MN10300, ..., but generally
+consistent with the other FRV headers (some other people have added differ).
 
-If I switch to USER_SCHED, the build continues.
+Hmmm...  It looks like MIPS is weird.  That says __ASM_GENERIC_UNALIGNED_H,
+which is probably wrong.
 
-       Miles
+David
