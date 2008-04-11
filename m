@@ -1,86 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758106AbYDKA5W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759053AbYDKA5j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758106AbYDKA5W (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Apr 2008 20:57:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751736AbYDKA5K
+	id S1759053AbYDKA5j (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Apr 2008 20:57:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758397AbYDKA52
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Apr 2008 20:57:10 -0400
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:49321 "EHLO
-	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751213AbYDKA5I (ORCPT
+	Thu, 10 Apr 2008 20:57:28 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:11605 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758418AbYDKA5Y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Apr 2008 20:57:08 -0400
-X-Sasl-enc: 8tI9owBDiRqsb7AtiTiPG+Zqg52RQLV2G8KZQMRH7x2X 1207875426
-Message-ID: <47FEB751.7040703@imap.cc>
-Date: Fri, 11 Apr 2008 02:56:49 +0200
-From: Tilman Schmidt <tilman@imap.cc>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
-MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-CC: lkml@rtr.ca, jesper.juhl@gmail.com, yoshfuji@linux-ipv6.org,
-       jeff@garzik.org, rjw@sisk.pl, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: 2.6.25-rc8: FTP transfer errors
-References: <9a8748490804101509l5d043ff8w565dc44dfeaf0072@mail.gmail.com>	<20080410.154651.101700010.davem@davemloft.net>	<47FEADCB.7070104@rtr.ca> <20080410.172453.44434205.davem@davemloft.net>
-In-Reply-To: <20080410.172453.44434205.davem@davemloft.net>
-X-Enigmail-Version: 0.95.6
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig40C9103EC9432D9674B44DBE"
+	Thu, 10 Apr 2008 20:57:24 -0400
+Date: Thu, 10 Apr 2008 17:56:30 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-kbuild@vger.kernel.org,
+       sam@ravnborg.org, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH v2] documentation: build source files in Documentation
+ sub-dir
+Message-Id: <20080410175630.d862af9e.randy.dunlap@oracle.com>
+In-Reply-To: <20080409145409.615cd236.akpm@linux-foundation.org>
+References: <20080403124529.3f2efb79.randy.dunlap@oracle.com>
+	<20080408134613.a047a7b6.akpm@linux-foundation.org>
+	<20080409123551.42c5da0d.randy.dunlap@oracle.com>
+	<20080409145409.615cd236.akpm@linux-foundation.org>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig40C9103EC9432D9674B44DBE
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+On Wed, 9 Apr 2008 14:54:09 -0700 Andrew Morton wrote:
 
-David Miller schrieb:
-> From: Mark Lord <lkml@rtr.ca>
-> Date: Thu, 10 Apr 2008 20:16:11 -0400
->=20
->> Duh.. more like, "If I take 5-8 hours to attempt a bisect (which may n=
-ot
->> even work), then that's 5-8 hours I do not get paid for."
->=20
-> And if I invest my spare time on your bug how does this statement
-> apply to me?  Or does it only apply to you?
->=20
-> Every single argument you make that supports why you should not be
-> investing the necessary time into the bug applies equally to the
-> very developers you are so quickly to quip at and want help from.
+> On Wed, 9 Apr 2008 12:35:51 -0700
+> Randy Dunlap <randy.dunlap@oracle.com> wrote:
+> 
+> > On Tue, 8 Apr 2008 13:46:13 -0700 Andrew Morton wrote:
+> > 
+> > > On Thu, 3 Apr 2008 12:45:29 -0700 Randy Dunlap <randy.dunlap@oracle.com> wrote:
+> > > 
+> > > > Currently source files in the Documentation/ sub-dir can easily bit-rot
+> > > > since they are not generally buildable, either because they are hidden
+> > > > in text files or because there are no Makefile rules for them.
+> > > > This needs to be fixed so that the source files remain usable and good
+> > > > examples of code instead of bad examples.
+> > > > 
+> > > > Add the ability to build source files that are in the Documentation/ dir.
+> > > > Add to Kconfig as "BUILD_DOCSRC" config symbol.
+> > > > 
+> > > > Use "CONFIG_BUILD_DOCSRC=1 make ..." to build objects from the
+> > > > Documentation/ sources.  Or enable BUILD_DOCSRC in the *config system.
+> > > > 
+> > > > The Makefiles use $objdir/usr/include for header files, so doing
+> > > > "make headers_install" is required.  This is done for you if you enable
+> > > > CONFIG_HEADERS_CHECK=y.
+> > > > 
+> > > > Note: needs documentation-move-spidev_fdx-example-to-its-own-source-file.patch
+> > > > from -mm patchset.
+> > > 
+> > > argh, I'm getting several warnings and at least two build errors from this.
+> > > One is:
+> > > 
+> > > In file included from /usr/src/devel/usr/include/linux/netlink.h:5,
+> > >                  from /usr/src/devel/usr/include/linux/genetlink.h:4,
+> > >                  from Documentation/accounting/getdelays.c:26:
+> > > /usr/src/devel/usr/include/linux/types.h:166: error: expected specifier-qualifier-list before '__kernel_daddr_t'
+> > > 
+> > > (i386 allmodconfig).
+> > > 
+> > > I think I'll disable this patch for now..
+> > 
+> > Oh drat and curses.
+> > 
+> > Change all -I$(srctree) in Makefiles to -I$(objtree).
+> > New (full) patch file with only that change is below.
+> > I can send a patch with only those changes if you prefer that.
+> > 
+> > Cross-build using O= works now.
+> 
+> I wasn't using O=.
+> 
+> It turns out that this is breakage introduced by git-x86.patch. 
+> Reproducible via:
+> 
+> setenv ARCH i386
+> make mrproper
+> make allmodconfig
+> gcc -I$(/bin/pwd)/include Documentation/accounting/getdelays.c -o getdelays
+> 
+> In file included from /usr/src/devel/include/linux/netlink.h:5,
+>                  from /usr/src/devel/include/linux/genetlink.h:4,
+>                  from Documentation/accounting/getdelays.c:26:
+> /usr/src/devel/include/linux/types.h:203: error: expected specifier-qualifier-list before '__kernel_daddr_t'
 
-I think you got it backwards. Mark and other bug reporters (including,
-at times, yours truly) are helping you and other developers to make
-Linux better. Most of the times I report a bug, I am not asking for help
-- I have no personal need to get it fixed, as I can easily avoid it, and
-I only report it to give developers like you a chance to fix it before
-it really hurts someone - and I gather that Mark has been in a similar
-position wrt to the bug in question.
 
-So what would you have us do? Not report the bugs we find so that you
-don't have to invest your spare time on "our" bugs? Report them and
-accept a rebuke for our "unwillingness" to do even more benevolent work
-than we already did? Report only those for which we really need a fix,
-and are consequently willing to invest additional time?
+Those __kernel_* types shouldn't be used outside of the #ifdef __KERNEL__
+block, should they?
 
-Thanks,
-Tilman
+Patch below fixes kernel side for me.  Don't have any idea what it
+may do to userspace users of the header file.
 
+---
+ include/linux/types.h |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
---------------enig40C9103EC9432D9674B44DBE
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.4-svn0 (GNU/Linux)
-Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
-
-iD8DBQFH/rdfQ3+did9BuFsRAs/qAJ9nUM42Vci9MoLh0ffXZav9jxHn9ACbBFlz
-AvcVqBJoHOAcvecMN7ox+OE=
-=/5bk
------END PGP SIGNATURE-----
-
---------------enig40C9103EC9432D9674B44DBE--
+--- mmotm-2008-0410-0157.orig/include/linux/types.h
++++ mmotm-2008-0410-0157/include/linux/types.h
+@@ -200,8 +200,8 @@ typedef u32 resource_size_t;
+ #endif	/* __KERNEL__ */
+ 
+ struct ustat {
+-	__kernel_daddr_t	f_tfree;
+-	__kernel_ino_t		f_tinode;
++	daddr_t			f_tfree;
++	ino_t			f_tinode;
+ 	char			f_fname[6];
+ 	char			f_fpack[6];
+ };
