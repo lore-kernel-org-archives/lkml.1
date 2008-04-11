@@ -1,345 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761901AbYDKROm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761987AbYDKRPq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761901AbYDKROm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Apr 2008 13:14:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761102AbYDKROJ
+	id S1761987AbYDKRPq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Apr 2008 13:15:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761260AbYDKRPg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Apr 2008 13:14:09 -0400
-Received: from keg.few.vu.nl ([130.37.24.4]:46264 "EHLO keg.few.vu.nl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761048AbYDKROG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Apr 2008 13:14:06 -0400
-Date: Fri, 11 Apr 2008 18:57:22 +0200 (CEST)
-From: Erik Bosman <ebn310@few.vu.nl>
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Andrea Arcangeli <andrea@cpushare.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH 3/3] Add tests for prctl PR_GET_TSC and PR_SET_TSC
-Message-ID: <Pine.GSO.4.56.0804111856370.16676@keg.few.vu.nl>
+	Fri, 11 Apr 2008 13:15:36 -0400
+Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:45444 "EHLO
+	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1761102AbYDKRPf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Apr 2008 13:15:35 -0400
+Date: Fri, 11 Apr 2008 13:15:34 -0400
+To: Bryan Henderson <hbryan@us.ibm.com>
+Cc: Bodo Eggert <7eggert@gmx.de>, Diego Calleja <diegocg@gmail.com>,
+       Jan Kara <jack@suse.cz>, Jiri Kosina <jkosina@suse.cz>,
+       linux-fsdevel@vger.kernel.org,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       Michal Hocko <mhocko@suse.cz>, Meelis Roos <mroos@linux.ee>
+Subject: Re: file offset corruption on 32-bit machines?
+Message-ID: <20080411171534.GO2158@csclub.uwaterloo.ca>
+References: <20080411135544.GG2160@csclub.uwaterloo.ca> <OF861D7F24.6F60C82D-ON88257428.005C1DA4-88257428.005D5D80@us.ibm.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <OF861D7F24.6F60C82D-ON88257428.005C1DA4-88257428.005D5D80@us.ibm.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Apr 11, 2008 at 09:59:45AM -0700, Bryan Henderson wrote:
+> >So if you write multithreaded code and don't understand what locking
+> >around shared resources is for, then your application might break.
+> 
+> I think I know what locking around shared resources is for, which is why 
+> I'm surprised the kernel doesn't do it.
+> 
+> Is it normal for a kernel resource not to be thread-safe (i.e. you don't 
+> get advertised/sensible results if two threads access it at the same 
+> time)?
 
-    This patch adds three tests that test whether the PR_GET_TSC and
-    PR_SET_TSC commands have the desirable effect.
+If two threads are changing one filehandle at the same time, then the
+program is broken.  I can't see how the kernel making updates to 64bit
+filehandles "atomic" helps.  You could still seek in one thread, then
+seek in another and then start the write in the first and get a wrong
+result.  Changes to a shared filehandle of any kind requires locking to
+work reliably, so additional slow downs and locking in the kernel won't
+fix anything.
 
-    The tests check whether the control register is updated correctly
-    at context switches and try to discover bugs while enabling/disabling
-    the timestamp counter.
+> I could accept (though I haven't thought about it) that there aren't any 
+> real-world applications that do simultaneous reads and writes through the 
+> same file pointer.  I might even accept that there can be no useful 
+> application that does.  But can you say such an application is incorrect?
 
-	Signed-off-by: Erik Bosman <ejbosman@cs.vu.nl>
----
- .../prctl/disable-tsc-ctxt-sw-stress-test.c        |   96 ++++++++++++++++++++
- .../prctl/disable-tsc-on-off-stress-test.c         |   95 +++++++++++++++++++
- Documentation/prctl/disable-tsc-test.c             |   94 +++++++++++++++++++
- 3 files changed, 285 insertions(+), 0 deletions(-)
+Unless the application has it's own locking to ensure multiple threads
+don't screw up each other's fileposition, it simply wouldn't work.
 
-diff --git a/Documentation/prctl/disable-tsc-ctxt-sw-stress-test.c b/Documentation/prctl/disable-tsc-ctxt-sw-stress-test.c
-new file mode 100644
-index 0000000..83f4564
---- /dev/null
-+++ b/Documentation/prctl/disable-tsc-ctxt-sw-stress-test.c
-@@ -0,0 +1,96 @@
-+/*
-+ * Tests for prctl(PR_GET_TSC, ...) / prctl(PR_SET_TSC, ...)
-+ *
-+ * Tests if the control register is updated correctly
-+ * at context switches
-+ *
-+ * Warning: this test will cause a very high load for a few seconds
-+ *
-+ */
-+
-+#include <stdio.h>
-+#include <stdlib.h>
-+#include <unistd.h>
-+#include <signal.h>
-+#include <inttypes.h>
-+#include <wait.h>
-+
-+
-+#include <sys/prctl.h>
-+#include <linux/prctl.h>
-+
-+/* Get/set the process' ability to use the timestamp counter instruction */
-+#ifndef PR_GET_TSC
-+#define PR_GET_TSC 25
-+#define PR_SET_TSC 26
-+# define PR_TSC_ENABLE		1   /* allow the use of the timestamp counter */
-+# define PR_TSC_SIGSEGV		2   /* throw a SIGSEGV instead of reading the TSC */
-+#endif
-+
-+uint64_t rdtsc() {
-+uint32_t lo, hi;
-+/* We cannot use "=A", since this would use %rax on x86_64 */
-+__asm__ __volatile__ ("rdtsc" : "=a" (lo), "=d" (hi));
-+return (uint64_t)hi << 32 | lo;
-+}
-+
-+void sigsegv_expect(int sig)
-+{
-+	/* */
-+}
-+
-+void segvtask(void)
-+{
-+	if (prctl(PR_SET_TSC, PR_TSC_SIGSEGV) < 0)
-+	{
-+		perror("prctl");
-+		exit(0);
-+	}
-+	signal(SIGSEGV, sigsegv_expect);
-+	alarm(10);
-+	rdtsc();
-+	fprintf(stderr, "FATAL ERROR, rdtsc() succeeded while disabled\n");
-+	exit(0);
-+}
-+
-+
-+void sigsegv_fail(int sig)
-+{
-+	fprintf(stderr, "FATAL ERROR, rdtsc() failed while enabled\n");
-+	exit(0);
-+}
-+
-+void rdtsctask(void)
-+{
-+	if (prctl(PR_SET_TSC, PR_TSC_ENABLE) < 0)
-+	{
-+		perror("prctl");
-+		exit(0);
-+	}
-+	signal(SIGSEGV, sigsegv_fail);
-+	alarm(10);
-+	for(;;) rdtsc();
-+}
-+
-+
-+int main(int argc, char **argv)
-+{
-+	int n_tasks = 100, i;
-+
-+	fprintf(stderr, "[No further output means we're allright]\n");
-+
-+	for (i=0; i<n_tasks; i++)
-+		if (fork() == 0)
-+		{
-+			if (i & 1)
-+				segvtask();
-+			else
-+				rdtsctask();
-+		}
-+
-+	for (i=0; i<n_tasks; i++)
-+		wait(NULL);
-+
-+	exit(0);
-+}
-+
-diff --git a/Documentation/prctl/disable-tsc-on-off-stress-test.c b/Documentation/prctl/disable-tsc-on-off-stress-test.c
-new file mode 100644
-index 0000000..5d1d055
---- /dev/null
-+++ b/Documentation/prctl/disable-tsc-on-off-stress-test.c
-@@ -0,0 +1,95 @@
-+/*
-+ * Tests for prctl(PR_GET_TSC, ...) / prctl(PR_SET_TSC, ...)
-+ *
-+ * Tests if the control register is updated correctly
-+ * when set with prctl()
-+ *
-+ * Warning: this test will cause a very high load for a few seconds
-+ *
-+ */
-+
-+#include <stdio.h>
-+#include <stdlib.h>
-+#include <unistd.h>
-+#include <signal.h>
-+#include <inttypes.h>
-+#include <wait.h>
-+
-+
-+#include <sys/prctl.h>
-+#include <linux/prctl.h>
-+
-+/* Get/set the process' ability to use the timestamp counter instruction */
-+#ifndef PR_GET_TSC
-+#define PR_GET_TSC 25
-+#define PR_SET_TSC 26
-+# define PR_TSC_ENABLE		1   /* allow the use of the timestamp counter */
-+# define PR_TSC_SIGSEGV		2   /* throw a SIGSEGV instead of reading the TSC */
-+#endif
-+
-+/* snippet from wikipedia :-) */
-+
-+uint64_t rdtsc() {
-+uint32_t lo, hi;
-+/* We cannot use "=A", since this would use %rax on x86_64 */
-+__asm__ __volatile__ ("rdtsc" : "=a" (lo), "=d" (hi));
-+return (uint64_t)hi << 32 | lo;
-+}
-+
-+int should_segv = 0;
-+
-+void sigsegv_cb(int sig)
-+{
-+	if (!should_segv)
-+	{
-+		fprintf(stderr, "FATAL ERROR, rdtsc() failed while enabled\n");
-+		exit(0);
-+	}
-+	if (prctl(PR_SET_TSC, PR_TSC_ENABLE) < 0)
-+	{
-+		perror("prctl");
-+		exit(0);
-+	}
-+	should_segv = 0;
-+
-+	rdtsc();
-+}
-+
-+void task(void)
-+{
-+	signal(SIGSEGV, sigsegv_cb);
-+	alarm(10);
-+	for(;;)
-+	{
-+		rdtsc();
-+		if (should_segv)
-+		{
-+			fprintf(stderr, "FATAL ERROR, rdtsc() succeeded while disabled\n");
-+			exit(0);
-+		}
-+		if (prctl(PR_SET_TSC, PR_TSC_SIGSEGV) < 0)
-+		{
-+			perror("prctl");
-+			exit(0);
-+		}
-+		should_segv = 1;
-+	}
-+}
-+
-+
-+int main(int argc, char **argv)
-+{
-+	int n_tasks = 100, i;
-+
-+	fprintf(stderr, "[No further output means we're allright]\n");
-+
-+	for (i=0; i<n_tasks; i++)
-+		if (fork() == 0)
-+			task();
-+
-+	for (i=0; i<n_tasks; i++)
-+		wait(NULL);
-+
-+	exit(0);
-+}
-+
-diff --git a/Documentation/prctl/disable-tsc-test.c b/Documentation/prctl/disable-tsc-test.c
-new file mode 100644
-index 0000000..843c81e
---- /dev/null
-+++ b/Documentation/prctl/disable-tsc-test.c
-@@ -0,0 +1,94 @@
-+/*
-+ * Tests for prctl(PR_GET_TSC, ...) / prctl(PR_SET_TSC, ...)
-+ *
-+ * Basic test to test behaviour of PR_GET_TSC and PR_SET_TSC
-+ */
-+
-+#include <stdio.h>
-+#include <stdlib.h>
-+#include <unistd.h>
-+#include <signal.h>
-+#include <inttypes.h>
-+
-+
-+#include <sys/prctl.h>
-+#include <linux/prctl.h>
-+
-+/* Get/set the process' ability to use the timestamp counter instruction */
-+#ifndef PR_GET_TSC
-+#define PR_GET_TSC 25
-+#define PR_SET_TSC 26
-+# define PR_TSC_ENABLE		1   /* allow the use of the timestamp counter */
-+# define PR_TSC_SIGSEGV		2   /* throw a SIGSEGV instead of reading the TSC */
-+#endif
-+
-+const char *tsc_names[] =
-+{
-+	[0] = "[not set]",
-+	[PR_TSC_ENABLE] = "PR_TSC_ENABLE",
-+	[PR_TSC_SIGSEGV] = "PR_TSC_SIGSEGV",
-+};
-+
-+uint64_t rdtsc() {
-+uint32_t lo, hi;
-+/* We cannot use "=A", since this would use %rax on x86_64 */
-+__asm__ __volatile__ ("rdtsc" : "=a" (lo), "=d" (hi));
-+return (uint64_t)hi << 32 | lo;
-+}
-+
-+void sigsegv_cb(int sig)
-+{
-+	int tsc_val = 0;
-+
-+	printf("[ SIG_SEGV ]\n");
-+	printf("prctl(PR_GET_TSC, &tsc_val); ");
-+	fflush(stdout);
-+
-+	if ( prctl(PR_GET_TSC, &tsc_val) == -1)
-+		perror("prctl");
-+
-+	printf("tsc_val == %s\n", tsc_names[tsc_val]);
-+	printf("prctl(PR_SET_TSC, PR_TSC_ENABLE)\n");
-+	fflush(stdout);
-+	if ( prctl(PR_SET_TSC, PR_TSC_ENABLE) == -1)
-+		perror("prctl");
-+
-+	printf("rdtsc() == ");
-+}
-+
-+int main(int argc, char **argv)
-+{
-+	int tsc_val = 0;
-+
-+	signal(SIGSEGV, sigsegv_cb);
-+
-+	printf("rdtsc() == %llu\n", (unsigned long long)rdtsc());
-+	printf("prctl(PR_GET_TSC, &tsc_val); ");
-+	fflush(stdout);
-+
-+	if ( prctl(PR_GET_TSC, &tsc_val) == -1)
-+		perror("prctl");
-+
-+	printf("tsc_val == %s\n", tsc_names[tsc_val]);
-+	printf("rdtsc() == %llu\n", (unsigned long long)rdtsc());
-+	printf("prctl(PR_SET_TSC, PR_TSC_ENABLE)\n");
-+	fflush(stdout);
-+
-+	if ( prctl(PR_SET_TSC, PR_TSC_ENABLE) == -1)
-+		perror("prctl");
-+
-+	printf("rdtsc() == %llu\n", (unsigned long long)rdtsc());
-+	printf("prctl(PR_SET_TSC, PR_TSC_SIGSEGV)\n");
-+	fflush(stdout);
-+
-+	if ( prctl(PR_SET_TSC, PR_TSC_SIGSEGV) == -1)
-+		perror("prctl");
-+
-+	printf("rdtsc() == ");
-+	fflush(stdout);
-+	printf("%llu\n", (unsigned long long)rdtsc());
-+	fflush(stdout);
-+
-+	exit(EXIT_SUCCESS);
-+}
-+
+What is the difference between doing:
+
+threadA: seek(positionA)
+threadB: seel(positionB)
+threadA: write
+threadB: write
+
+versus
+
+threadA: seek(posisionA) but only set half the 64bits
+threadB: seek(positionB) set all 64bits
+threadA: complete seek operation setting the other half of the bits
+threadA: write
+threadB: write
+
+either way you end up writing to the wrong file location even though the
+first case the kernel made the setting of the fileposition atomic and in
+the second case it wasn't.
+
+The application has to do:
+threadA: lock access to filehandle
+threadA: seek(positionA)
+threadB: try to get lock and wait
+threadA: write
+threadA: unlock
+threadB: get lock finally
+threadB: seek(positionB)
+threadB: write
+threadB: unlock
+
+Once the application does locking, it doesn't matter if the setting of
+the fileposition is atomic or not since no other thread can touch the
+filehandle anyhow.
+
+Doesn't matter if you read or write.  If it's a shared filehandle you
+have only one current position so to share it you have to lock access
+while doing a seek + read or write operation if you want predictable
+results.
+
+-- 
+Len Sorensen
