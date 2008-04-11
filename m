@@ -1,98 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759322AbYDKHzF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759442AbYDKHze@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759322AbYDKHzF (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Apr 2008 03:55:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756084AbYDKHyv
+	id S1759442AbYDKHze (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Apr 2008 03:55:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756084AbYDKHzM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Apr 2008 03:54:51 -0400
-Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:62345 "EHLO
-	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758826AbYDKHyt (ORCPT
+	Fri, 11 Apr 2008 03:55:12 -0400
+Received: from smtp-out04.alice-dsl.net ([88.44.63.6]:27139 "EHLO
+	smtp-out04.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759343AbYDKHzK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Apr 2008 03:54:49 -0400
-Message-ID: <47FF190B.6030406@ah.jp.nec.com>
-Date: Fri, 11 Apr 2008 16:53:47 +0900
-From: Takenori Nagano <t-nagano@ah.jp.nec.com>
-User-Agent: Thunderbird 2.0.0.12 (Windows/20080213)
+	Fri, 11 Apr 2008 03:55:10 -0400
+To: Randy Dunlap <rdunlap@xenotime.net>
+Cc: "Kok, Auke" <auke-jan.h.kok@intel.com>, Ingo Molnar <mingo@elte.hu>,
+       Jeff Garzik <jeff@garzik.org>, Matthew Wilcox <matthew@wil.cx>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       NetDev <netdev@vger.kernel.org>,
+       e1000-list <e1000-devel@lists.sourceforge.net>,
+       linux-pci maillist <linux-pci@atrey.karlin.mff.cuni.cz>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "David S. Miller" <davem@davemloft.net>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Jesse Brandeburg <jesse.brandeburg@intel.com>,
+       "Ronciak, John" <john.ronciak@intel.com>,
+       "Allan, Bruce W" <bruce.w.allan@intel.com>, Greg KH <greg@kroah.com>,
+       Arjan van de Ven <arjan@linux.intel.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [patch] e1000=y && e1000e=m regression fix
+From: Andi Kleen <andi@firstfloor.org>
+References: <20080408193245.GG11962@parisc-linux.org>
+	<20080408195123.GA28148@elte.hu> <47FBCE00.2020309@garzik.org>
+	<20080408200652.GC28148@elte.hu> <47FBD34A.6080508@garzik.org>
+	<20080408203314.GA28952@elte.hu> <47FBDBE9.9040700@garzik.org>
+	<20080409193850.GA11763@elte.hu> <47FD2325.2030705@intel.com>
+	<47FE5C89.5060209@intel.com> <20080410192714.GA14055@elte.hu>
+	<47FE8566.5040809@intel.com>
+	<20080410144409.6a1da266.rdunlap@xenotime.net>
+Date: Fri, 11 Apr 2008 09:54:35 +0200
+In-Reply-To: <20080410144409.6a1da266.rdunlap@xenotime.net> (Randy Dunlap's message of "Thu, 10 Apr 2008 14:44:09 -0700")
+Message-ID: <87y77kltc4.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-CC: kdb@oss.sgi.com, vgoyal@in.ibm.com,
-       "Eric W. Biederman" <ebiederm@xmission.com>, k-miyoshi@cb.jp.nec.com,
-       kexec@lists.infradead.org, Bernhard Walle <bwalle@suse.de>,
-       Keith Owens <kaos@ocs.com.au>, nickpiggin@yahoo.com.au,
-       Randy Dunlap <rdunlap@xenotime.net>, greg@kroah.com
-Subject: [PATCH 0/2] add new notifier function ,take3
-Content-Type: text/plain; charset=ISO-2022-JP
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 11 Apr 2008 07:47:51.0548 (UTC) FILETIME=[5821CBC0:01C89BA8]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Randy Dunlap <rdunlap@xenotime.net> writes:
+>
+> to defconfig ... and also to change
+> CONFIG_FUSION=y
+> to
+> CONFIG_FUSION=n
+> while there  :)
 
-A big thanks to everybody who read and replied to previous version.
+In my experience with FUSION=y and AIC78xx=y most of the relatively
+modern (2000+) pre SAS SCSI systems are covered, at least near all
+those without special RAID controllers. That is why I kept both of
+those enabled in the defconfigs originally.
 
-changelog take2 -> take3
+Might actually make sense to update this for SAS, but I don't have
+a good feeling what chipsets are really popular here.
 
-- Rebased 2.6.25-rc8-mm1
-- comment updated
-- renamed the notifiner name "tunable_notifier" to "tunable_atomic_notifier"
-- fixed typo
-- move control files debugfs to /sys/kernel
-
-These patches add new notifier function and implement it to panic_notifier_list.
-We used the hardcoded notifier chain so far, but it was not flexible. New
-notifier is very flexible, because user can change a list of order by control files.
-
-Example)
-
-# cd /sys/kernel/notifiers/
-# ls
-panic_notifier_list
-# cd panic_notifier_list/
-# ls
-ipmi_msghandler  ipmi_wdog
-# insmod notifier_test.ko
-# ls
-ipmi_msghandler  ipmi_wdog  notifier_test1  notifier_test2
-# cat */priority
-200
-150
-500
-1000
-Kernel panic - not syncing: Panic by panic_module.
-__tunable_atomic_notifier_call_chain enter
-notifier_test: notifier_test_panic2() is called.
-notifier_test: notifier_test_panic() is called.
-msg_handler:panic_event was called.
-ipmi_wdog:wdog_panic_handler was called.
-
-.....(reboot)
-
-# cd /sys/kernel/notifiers/panic_notifier_list/
-# ls
-ipmi_msghandler  ipmi_wdog  notifier_test1  notifier_test2
-# cat */priority
-200
-150
-500
-1000
-# echo 10000 > ipmi_msghandler/priority
-# echo 5000 > ipmi_wdog/priority
-# echo 3000 > notifier_test1/priority
-# echo 1500 > notifier_test2/priority
-# cat */priority
-10000
-5000
-3000
-1500
-Kernel panic - not syncing: Panic by panic_module.
-__tunable_atomic_notifier_call_chain enter
-msg_handler:panic_event was called.
-ipmi_wdog:wdog_panic_handler was called.
-notifier_test: notifier_test_panic() is called.
-notifier_test: notifier_test_panic2() is called.
-
---
-Takenori Nagano <t-nagano@ah.jp.nec.com>
-
+-Andi
