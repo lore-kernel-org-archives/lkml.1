@@ -1,30 +1,45 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759602AbYDKKDt (ORCPT <rfc822;ralf@linux-mips.org>);
-	Fri, 11 Apr 2008 06:03:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757449AbYDKKDi
+	id S1760324AbYDKObM (ORCPT <rfc822;ralf@linux-mips.org>);
+	Fri, 11 Apr 2008 10:31:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760155AbYDKOav
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Apr 2008 06:03:38 -0400
-Received: from po-out-1718.google.com ([72.14.252.156]:12715 "EHLO
-	po-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757276AbYDKKDh (ORCPT
+	Fri, 11 Apr 2008 10:30:51 -0400
+Received: from qb-out-0506.google.com ([72.14.204.231]:22066 "EHLO
+	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760000AbYDKOau (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Apr 2008 06:03:37 -0400
-Message-ID: <6ad6efd60804110303l67efe589m4e2952d052e3ecda@mail.gmail.com>
-Date: Fri, 11 Apr 2008 18:03:28 +0800
-From: "=?BIG5?B?sWmozqzV?=" <k80u4cq208o@gmail.com>
-To: linkalei@pchome.com.tw
-Subject: =?BIG5?B?rtW26br0uPSkR6TirtGpsS3Fd6rvp0Go07RNxF8=?=
+	Fri, 11 Apr 2008 10:30:50 -0400
+Message-ID: <00f0d274$39549$0b844789100463@peargent-604a2f>
+Reply-To: "Dpto de Marketing - AnuncieOnline.Net" <neto@riodesigner.com>
+To: linux-kernel@vger.kernel.org
+Subject: Divulgue seu Site ou =??Q?Servi=E7o GR=C1TIS:?= www.anuncieonline.net
+Date: Fri, 11 Apr 2008 11:30:50 -0300
 MIME-Version: 1.0
-Content-Type: text/plain; charset=BIG5
-Content-Transfer-Encoding: base64
-Content-Disposition: inline
+Content-Type: text/plain
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+X-Priority: 3
+X-MSMail-Priority: Normal
+X-Mailer: My e-mail client v1.0
+From: "Dpto de Marketing - AnuncieOnline.Net" 
+	<pearzin@elementsproducoes.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1759602AbYDKKDt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1760324AbYDKObM@vger.kernel.org>
 
-ofU/ob+h+KG7ob+h0aHwCgqh4q7Vtum69Lj0pEek4q7RqbEtxXeq76dBqNO0TcRfofUKCmh0dHA6
-Ly9ib29rLnNhbS5jb20udHcvCgqzb6xPpECt06e5pf6nS7ZPtn2p8aq6pEek4q7RtlK95qWtpXgK
-snumYrX5pVXB2bBlMSwwMDDCSbX5pVWq9yis27ftqfOleLn0JDEsMDAws+EpCgqms67RrW6lWLJN
-qrrFd6rvUE+kV6jTveanYV4uXgoKt+21TbdRtlKu0aq6pEikXcV3qu+kV6jTtE3EX6r8Xl4KCqHv
-P6H2ob2h86G/oe+h8go=
+ANUNCIE SEU SITE OU SERVI=C7O ON-LINE E GR=C1TIS
+
+Divulgue seu SITE ou Produto de Gra=E7a no site: HTTP://WWW.ANUNCIEONLI=
+NE.NET
+
+Em segundos coloque o produto que quer vender ou adicione seu site para=
+ que todos na internet vejam.
+
+Powered By WwW.RioDesigner.Com=20
+
+--
+To unsubscribe from this list: send the line "unsubscribe linux-kernel"=
+ in
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Please read the FAQ at  http://www.tux.org/lkml/
