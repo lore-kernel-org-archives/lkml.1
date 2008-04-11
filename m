@@ -1,43 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761585AbYDKT3I@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761372AbYDKTba@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761585AbYDKT3I (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Apr 2008 15:29:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758305AbYDKT2z
+	id S1761372AbYDKTba (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Apr 2008 15:31:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758617AbYDKTbT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Apr 2008 15:28:55 -0400
-Received: from relay2.sgi.com ([192.48.171.30]:50888 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1758520AbYDKT2y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Apr 2008 15:28:54 -0400
-Date: Fri, 11 Apr 2008 12:28:53 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Ingo Molnar <mingo@elte.hu>
-cc: Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org,
-       Mel Gorman <mel@csn.ul.ie>, Nick Piggin <npiggin@suse.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
+	Fri, 11 Apr 2008 15:31:19 -0400
+Received: from 1wt.eu ([62.212.114.60]:2315 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758454AbYDKTbT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Apr 2008 15:31:19 -0400
+Date: Fri, 11 Apr 2008 21:25:19 +0200
+From: Willy Tarreau <w@1wt.eu>
+To: Matthew Wilcox <matthew@wil.cx>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Christoph Hellwig <hch@infradead.org>,
+       "Kok, Auke" <auke-jan.h.kok@intel.com>, Ingo Molnar <mingo@elte.hu>,
+       Jeff Garzik <jeff@garzik.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       NetDev <netdev@vger.kernel.org>,
+       e1000-list <e1000-devel@lists.sourceforge.net>,
+       linux-pci maillist <linux-pci@atrey.karlin.mff.cuni.cz>,
        Andrew Morton <akpm@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Yinghai.Lu@sun.com
-Subject: Re: [bug] mm/slab.c boot crash in -git, "kernel BUG at mm/slab.c:2103!"
-In-Reply-To: <20080411092452.GE10801@elte.hu>
-Message-ID: <Pine.LNX.4.64.0804111228100.20334@schroedinger.engr.sgi.com>
-References: <20080411074145.GA4944@elte.hu> <84144f020804110121l8444aafl4631071b34c458fe@mail.gmail.com>
- <84144f020804110150q367260f6k473380a1309db878@mail.gmail.com>
- <20080411085411.GA10181@elte.hu> <84144f020804110205u3d073e76lbcdd36ec293a169b@mail.gmail.com>
- <84144f020804110208m41414c0h2ed71b85efbb426c@mail.gmail.com>
- <84144f020804110211w4ae41414od24cf2de72453e13@mail.gmail.com>
- <20080411092452.GE10801@elte.hu>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+       "David S. Miller" <davem@davemloft.net>,
+       Jesse Brandeburg <jesse.brandeburg@intel.com>,
+       "Ronciak, John" <john.ronciak@intel.com>,
+       "Allan, Bruce W" <bruce.w.allan@intel.com>, Greg KH <greg@kroah.com>,
+       Arjan van de Ven <arjan@linux.intel.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [patch] e1000=y && e1000e=m regression fix
+Message-ID: <20080411192519.GA8474@1wt.eu>
+References: <47FE8566.5040809@intel.com> <20080411112653.GC9205@elte.hu> <20080411113644.GA7767@infradead.org> <20080411121606.GA25661@elte.hu> <47FF9060.5040202@intel.com> <20080411164542.GA4066@infradead.org> <alpine.LFD.1.00.0804111028540.3143@woody.linux-foundation.org> <20080411175304.GF11962@parisc-linux.org> <alpine.LFD.1.00.0804111146450.3143@woody.linux-foundation.org> <20080411190128.GG11962@parisc-linux.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080411190128.GG11962@parisc-linux.org>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 11 Apr 2008, Ingo Molnar wrote:
+On Fri, Apr 11, 2008 at 01:01:28PM -0600, Matthew Wilcox wrote:
+> On Fri, Apr 11, 2008 at 11:51:07AM -0700, Linus Torvalds wrote:
+> > Because your version has exactly the same problem that the current code 
+> > has: it asks questions that aren't sensible to people who don't care. It 
+> > also keeps the old E1000 name for "PCI chips only", which means that 
+> > people who just use an old config and ignore new questions will suddenly 
+> > lose their ability to use the E1000 driver if they have a PCI-E card.
+> 
+> We only support people keeping their old configs after they run 'make
+> oldconfig', right?  At which point they'd be prompted for E1000_SUPPORT.
+> Presumably they'd think "That's odd.  I'm sure I had that selected
+> before", then select it.  Then oldconfig skips over CONFIG_E1000 because
+> it already knows the answer to that one and they're prompted with a
+> question about PCIe support.  Now something is clearly strange.  Perhaps
+> they look at the help text at this point and it says to go with 'Y' or
+> 'M' if they're not sure.
 
-> if this is a zone setup bug then a sanity-check could catch it right 
-> where it happens - not much later in the slab code or so.
+I don't think this will happen like that. People will simply think as
+usual "ah, they have added support for new hardware, but since everything
+in my machine was supported, I don't need it".
 
-Could you post the zone setup of the system that fails? A memory map would 
-be useful and full dmesg output up to the failure.
+I think that the correct solution to help people is not at build time,
+but at run time. The e1000 driver should just *check* if there are PCI-IDs
+that it used to manage and that it does not anymore, for unclaimed devices,
+and report a warning message clearly indicating that these devices are not
+handled anymore and that for this, the user must load e1000e. It will :
+
+  a) help people know what to load if they need to update modprobe.conf
+  b) just require a new "make menuconfig;make modules" after the poor guy
+     has been caught.
+
+It's not a problem to have to tweak the config and reboot several times,
+provided that the user is guided. Almost none of us has ever blindly
+upgraded without a few post-boot adjustments.
+
+> That's the most important bit of help texts for me.  Do I want Control
+> Groups?  Will my machine break if I don't select them?  I have no idea
+> what a 'process cgroup subsystem' is, and I don't care.  But the help
+> text tells me I can say "n" and nothing will break.
+
+Here if people don't know, they will reply "no" too.
+
+> > So most users:
+> >  - want to just say "E1000", and not care about type.
+> >  - want to have old configurations continue working (ie if you haev had 
+> >    "E1000" driving your hardware before, it should _continue_ to do so, 
+> >    with no need to select a _new_ E1000E question!
+> > 
+> > Nobody wants to care deeply whether it's a PCI-E or PCI chip. In fact, 
+> > it's almost impossible to tell. Here, quickly, tell me which one mine is 
+> > (this is from /sbin/lspci):
+> > 
+> > 	00:19.0 Ethernet controller: Intel Corporation 82566DM Gigabit Network Connection (rev 02)
+> 
+> I quite agree.  I have no idea either.  All I know is that my ICH9 box
+> didn't work until e1000e was released ;-)
+
+I'm pretty sure it's PCI-E, because Linus got caught first ;-) But of
+course, that should not be an accepted guess method.
+
+Willy
 
