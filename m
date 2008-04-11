@@ -1,63 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760279AbYDKN4V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760034AbYDKOGj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760279AbYDKN4V (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Apr 2008 09:56:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760069AbYDKN4M
+	id S1760034AbYDKOGj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Apr 2008 10:06:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759271AbYDKOGb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Apr 2008 09:56:12 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:41579 "EHLO mx2.mail.elte.hu"
+	Fri, 11 Apr 2008 10:06:31 -0400
+Received: from mail0.scram.de ([78.47.204.202]:38223 "EHLO mail.scram.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758765AbYDKN4K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Apr 2008 09:56:10 -0400
-Date: Fri, 11 Apr 2008 15:55:55 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Miles Lane <miles.lane@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.25-rc8-mm2 -- =?utf-8?Q?kernel=2Fs?=
-	=?utf-8?Q?ched=2Ec=3A8294=3A_error=3A_unknown_field_=E2=80=98read=5Fuint?=
-	=?utf-8?B?4oCZ?= specified in initializer
-Message-ID: <20080411135555.GA14342@elte.hu>
-References: <a44ae5cd0804110648g3256805fob917f31eeff4f6db@mail.gmail.com>
+	id S1759269AbYDKOGa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Apr 2008 10:06:30 -0400
+X-Spam-Score: -4.219
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+ * -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
+ *      [score: 0.0000]
+ *  0.2 AWL AWL: From: address is in the auto white-list
+Message-ID: <47FF705C.9040404@scram.de>
+Date: Fri, 11 Apr 2008 16:06:20 +0200
+From: Jochen Friedrich <jochen@scram.de>
+User-Agent: Mozilla-Thunderbird 2.0.0.9 (X11/20080110)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <a44ae5cd0804110648g3256805fob917f31eeff4f6db@mail.gmail.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Kumar Gala <galak@kernel.crashing.org>
+CC: Jean Delvare <khali@linux-fr.org>, Scott Wood <scottwood@freescale.com>,
+       "Kernel, Linux" <linux-kernel@vger.kernel.org>,
+       linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+       Linux I2C <i2c@lm-sensors.org>, Jon Smirl <jonsmirl@gmail.com>,
+       Laurent Pinchart <laurentp@cse-semaphore.com>
+Subject: [PATCH0/7] OF support for i2c bus drivers
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This series of patches implements the framework needed by of_platform_driver i2c bus drivers.
+i2c-mpc is then converted to an of_platform_driver and i2c-cpm is added as new driver.
 
-* Miles Lane <miles.lane@gmail.com> wrote:
+This is based on earlier work by Jon Smirl and Jean Delvare.
 
->   CC      kernel/sched.o
-> kernel/sched.c:8294: error: unknown field 'read_uint' specified in initializer
-> kernel/sched.c:8294: warning: initialization makes integer from
-> pointer without a cast
-> kernel/sched.c:8295: error: unknown field 'write_uint' specified in initializer
-> kernel/sched.c:8295: warning: initialization from incompatible pointer type
+[PATCH1/7] i2c: Add support for device alias names
+[PATCH2/7] i2c: Convert all new-style drivers to use module aliasing
+[PATCH3/7] i2c: OF helpers for the i2c API
+[PATCH4/7] i2c: Convert PowerPC MPC i2c to of_platform_driver from platform_driver
+[PATCH5/7] i2c: Kill the old driver matching scheme
+[PATCH6/7] i2c: adds support for i2c bus on Freescale CPM1/CPM2 controllers
+[PATCH7/7] [POWERPC] Add i2c pins to dts and board setup
 
-cannot reproduce it in sched-devel/for-akpm (which -mm is based off) nor 
-in sched-devel/latest, using your config. Could you check sched-devel 
-via:
-
-  http://people.redhat.com/mingo/sched-devel.git/README
-
-or maybe it's some other sched.c change in -mm? That line is around the 
-control groups code and maybe that got changed in -mm?
-
-meanwhile i built and successfully booted your config on a testsystem on 
-sched-devel/latest. So if sched-devel/latest still fails for you then 
-it's some build environment related detail that triggers the bug. If not 
-then it's other changes in -mm.
-
-	Ingo
+Thanks,
+Jochen
