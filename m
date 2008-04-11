@@ -1,60 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760746AbYDKPn0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760634AbYDKPsZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760746AbYDKPn0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Apr 2008 11:43:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759521AbYDKPnT
+	id S1760634AbYDKPsZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Apr 2008 11:48:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759981AbYDKPsR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Apr 2008 11:43:19 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:3046 "EHLO spitz.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1759113AbYDKPnS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Apr 2008 11:43:18 -0400
-Date: Fri, 11 Apr 2008 17:43:10 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, Andi Kleen <ak@suse.de>,
-       "H. Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, lguest <lguest@ozlabs.org>
-Subject: Re: [PATCH] Fix booting pentium+ with dodgy TSC
-Message-ID: <20080411154310.GA4492@ucw.cz>
-References: <200804061723.38766.rusty@rustcorp.com.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 11 Apr 2008 11:48:17 -0400
+Received: from yw-out-2324.google.com ([74.125.46.31]:16736 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759941AbYDKPsR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Apr 2008 11:48:17 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=HsISY+OrXpwu+UOEvlMxQ6W6R3QjrbKUkhabnSDZR2M3n06Si48tYAMV5ntYhEO6e5upbgEhx0wVXObGxl5msRVtX8ik3GxWq5uxGG5SqdwupM9ezq0a2lfUlbUyMtIJEQaOYIG/XIQMbXeho/49Oh9Mo3UluaTWajI2W9dxtU4=
+Message-ID: <a44ae5cd0804110847q2ef30aa4r9f318d5e9443c123@mail.gmail.com>
+Date: Fri, 11 Apr 2008 11:47:42 -0400
+From: "Miles Lane" <miles.lane@gmail.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: =?WINDOWS-1252?Q?Re:_2.6.25-rc8-mm2_--_kernel/sched.c:8294:_error:_?= =?WINDOWS-1252?Q?unknown_field_=91read=5Fuint=92_specified_in_initializer?=
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <a44ae5cd0804110829j7104ce43q21360078b7291032@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200804061723.38766.rusty@rustcorp.com.au>
-User-Agent: Mutt/1.5.9i
+References: <a44ae5cd0804110648g3256805fob917f31eeff4f6db@mail.gmail.com>
+	 <20080411135555.GA14342@elte.hu>
+	 <a44ae5cd0804110829j7104ce43q21360078b7291032@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun 2008-04-06 17:23:38, Rusty Russell wrote:
-> Linus please apply.  Almost by definition this patch can't make things worse.
-> 
-> We handle a broken tsc these days, so no need to panic.  We clear the TSC bit
-> when tsc_init decides it's unreliable (eg. under lguest w/ bad host TSC),
-> leading to bogus panic.
-> 
-> Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
-> 
-> diff -r 5e0a39f4d07b arch/x86/kernel/cpu/bugs.c
-> --- a/arch/x86/kernel/cpu/bugs.c	Sun Apr 06 13:40:39 2008 +1000
-> +++ b/arch/x86/kernel/cpu/bugs.c	Sun Apr 06 17:14:12 2008 +1000
-> @@ -143,14 +143,6 @@ static void __init check_config(void)
->  #endif
->  
->  /*
-> - * If we configured ourselves for a TSC, we'd better have one!
-> - */
-> -#ifdef CONFIG_X86_TSC
-> -	if (!cpu_has_tsc)
-> -		panic("Kernel compiled for Pentium+, requires TSC feature!");
-> -#endif
-> -
+>  I tried a "make mrproper" before compiling the 2.6.25-rc8-mm2 tree and it
+>  still gave the same error.  This seems to be something specific to the latest
+>  MM tree.
 
-CONFIG_X86_TSC means 'cpu has _some_ tsc, rdmsr will work'. If you are
-confident noone will read broken tsc, please also remove the config
-option. It is meaningless after your patch.
-							Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+This seems to be the option that causes the error to trigger:
+
+      CONFIG_CGROUP_SCHED=y
+
+If I switch to USER_SCHED, the build continues.
+
+       Miles
