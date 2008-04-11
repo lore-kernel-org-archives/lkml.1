@@ -1,64 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761575AbYDKVIG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761952AbYDKVIY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761575AbYDKVIG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Apr 2008 17:08:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760715AbYDKVHw
+	id S1761952AbYDKVIY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Apr 2008 17:08:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761064AbYDKVH6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Apr 2008 17:07:52 -0400
-Received: from mail.ttlc.net ([66.94.32.4]:3372 "EHLO mail.ttlc.net"
+	Fri, 11 Apr 2008 17:07:58 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:57210 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760704AbYDKVHv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Apr 2008 17:07:51 -0400
-X-Greylist: delayed 335 seconds by postgrey-1.27 at vger.kernel.org; Fri, 11 Apr 2008 17:07:51 EDT
-Message-ID: <47FFD192.6060707@isomerica.net>
-Date: Fri, 11 Apr 2008 17:01:06 -0400
-From: Dan Noe <dpn@isomerica.net>
-User-Agent: Thunderbird 2.0.0.12 (Windows/20080213)
+	id S1760553AbYDKVH5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Apr 2008 17:07:57 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Soeren Sonnenburg <kernel@nn7.de>
+Subject: Re: 2.6.25-rc6 regression - hang on resume
+Date: Fri, 11 Apr 2008 23:08:19 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Pavel Machek <pavel@ucw.cz>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <pdj7pZVURbL.A.42H.kDW9HB@albercik> <1207290689.4511.1.camel@localhost> <20080411210400.GA1533@elf.ucw.cz>
+In-Reply-To: <20080411210400.GA1533@elf.ucw.cz>
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Matthew Wilcox <matthew@wil.cx>, Christoph Hellwig <hch@infradead.org>,
-       "Kok, Auke" <auke-jan.h.kok@intel.com>, Ingo Molnar <mingo@elte.hu>,
-       Jeff Garzik <jeff@garzik.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       NetDev <netdev@vger.kernel.org>,
-       e1000-list <e1000-devel@lists.sourceforge.net>,
-       linux-pci maillist <linux-pci@atrey.karlin.mff.cuni.cz>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "David S. Miller" <davem@davemloft.net>,
-       Jesse Brandeburg <jesse.brandeburg@intel.com>,
-       "Ronciak, John" <john.ronciak@intel.com>,
-       "Allan, Bruce W" <bruce.w.allan@intel.com>, Greg KH <greg@kroah.com>,
-       Arjan van de Ven <arjan@linux.intel.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [patch] e1000=y && e1000e=m regression fix
-References: <47FD2325.2030705@intel.com> <47FE5C89.5060209@intel.com> <20080410192714.GA14055@elte.hu> <47FE8566.5040809@intel.com> <20080411112653.GC9205@elte.hu> <20080411113644.GA7767@infradead.org> <20080411121606.GA25661@elte.hu> <47FF9060.5040202@intel.com> <20080411164542.GA4066@infradead.org> <alpine.LFD.1.00.0804111028540.3143@woody.linux-foundation.org> <20080411175304.GF11962@parisc-linux.org> <alpine.LFD.1.00.0804111146450.3143@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.1.00.0804111146450.3143@woody.linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200804112308.19994.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 4/11/2008 14:51, Linus Torvalds wrote:
-> Nobody wants to care deeply whether it's a PCI-E or PCI chip. In fact, 
-> it's almost impossible to tell. Here, quickly, tell me which one mine is 
-> (this is from /sbin/lspci):
+On Friday, 11 of April 2008, Pavel Machek wrote:
+> On Fri 2008-04-04 08:31:29, Soeren Sonnenburg wrote:
+> > On Fri, 2008-04-04 at 01:22 +0200, Rafael J. Wysocki wrote:
+> > > The following report is on the current list of known regressions
+> > > from 2.6.24.  Please verify if the issue is still present in the
+> > > mainline.
+> > > 
+> > > 
+> > > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10319
+> > > Subject		: 2.6.25-rc6 regression - hang on resume
+> > > Submitter	: Soeren Sonnenburg <kernel@nn7.de>
+> > > Date		: 2008-03-25 04:44 (10 days old)
+> > 
+> > Yes. The machine resumes and display stays black using s2ram -f -p
+> > (blindly typing reboot etc on keyboard does what is expected). However
+> > display comes back on 2.6.24.
 > 
-> 	00:19.0 Ethernet controller: Intel Corporation 82566DM Gigabit Network Connection (rev 02)
-> 
-> and tell me how you knew..
+> Could you get us any debugging output from s2ram? Or maybe even strace
+> it in both working and broken case, and comparing them? (You may want
+> to disable randomization so that results are comparable).
 
-lspci -vv will tell you (if you're root :)!
+Please also test the kernel with the patch from
+http://bugzilla.kernel.org/attachment.cgi?id=15736&action=view
+applied.
 
-Yet, the only part of that output that makes it even somewhat obvious is 
-the "Link: Speed 2.5Gb/s, Width x1" which clearly makes no sense for 
-legacy PCI.
-
-Cheers,
-Dan
-
--- 
-                     /--------------- - -  -  -   -   -
-                     |  Dan Noe
-                     |  http://isomerica.net/~dpn/
-
+Thanks,
+Rafael
