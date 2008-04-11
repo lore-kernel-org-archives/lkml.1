@@ -1,192 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758649AbYDKHgj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758827AbYDKHiT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758649AbYDKHgj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Apr 2008 03:36:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755294AbYDKHgb
+	id S1758827AbYDKHiT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Apr 2008 03:38:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757394AbYDKHiL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Apr 2008 03:36:31 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:54798 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757293AbYDKHga (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Apr 2008 03:36:30 -0400
-Date: Fri, 11 Apr 2008 17:36:22 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: linux-next@vger.kernel.org
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: linux-next: Tree for April 11
-Message-Id: <20080411173622.ea3f3624.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.5.0beta1 (GTK+ 2.12.9; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Fri__11_Apr_2008_17_36_22_+1000_krQB=iDqoCcKgWnD"
+	Fri, 11 Apr 2008 03:38:11 -0400
+Received: from wa-out-1112.google.com ([209.85.146.177]:10196 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755294AbYDKHiK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Apr 2008 03:38:10 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=a0Gnd6rFW5dvEAaz6Zb72+aaWKZDsvG8SP0f6hYA4jxULdU1XJgHqC1nmhQR9HfTAuebhQQqzjOvHFNopjhj/uUedNtD79+G1+T3k38JjSgkqXedA/hrEO4nLM1jiVqN8y3FxKO+sTBTZu4OmCKVYEeWshQXTg1SVOpfjr2Vl3A=
+Message-ID: <cfd18e0f0804110038q3b7740c9q1a96858d9531ab92@mail.gmail.com>
+Date: Fri, 11 Apr 2008 09:38:09 +0200
+From: "Michael Kerrisk" <mtk.manpages@googlemail.com>
+To: "Peter Zijlstra" <a.p.zijlstra@chello.nl>
+Subject: Re: [PATCH] proc: Add RLIMIT_RTTIME to /proc/<pid>/limits
+Cc: "Michael Kerrisk" <mtk.manpages@gmail.com>,
+       "Eugene Teo" <eugeneteo@kernel.sg>, linux-kernel@vger.kernel.org,
+       "Neil Horman" <nhorman@tuxdriver.com>, "Ingo Molnar" <mingo@elte.hu>
+In-Reply-To: <1204213821.12120.15.camel@twins>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080208145950.GA3910@kernel.sg> <1202483445.6292.1.camel@lappy>
+	 <517f3f820802280712o3d756b4fq46461b226515e1f2@mail.gmail.com>
+	 <1204212100.12120.9.camel@twins>
+	 <cfd18e0f0802280744q18ccad3at3c88bac166806118@mail.gmail.com>
+	 <1204213821.12120.15.camel@twins>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Fri__11_Apr_2008_17_36_22_+1000_krQB=iDqoCcKgWnD
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Thu, Feb 28, 2008 at 5:50 PM, Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+>
+> On Thu, 2008-02-28 at 16:44 +0100, Michael Kerrisk wrote:
+> > Peter,
+> >
+> > Thanks for the text.
+> >
+> > On Thu, Feb 28, 2008 at 4:21 PM, Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+> > >
+> > >  On Thu, 2008-02-28 at 16:12 +0100, Michael Kerrisk wrote:
+> > >  > Peter,
+> > >  >
+> > >  > Could you please provide some text describing RLIMIT_RTTIMEfor the
+> > >  > getrlimit.2 man page.
+> > >
+> > >  The rlimit sets a timeout in [us] for SCHED_RR and SCHED_FIFO tasks.
+> > >  This time is measured between sleeps, so a schedule in RR or a
+> > >  preemption in either is not a sleep - the task needs to be dequeued and
+> > >  enqueued for the timer to reset.
+> >
+> > Just to clarify: sleep here means a call to some blocking syscall
+> > (e.g., nanosleep(), read(), select(), etc.), right?  Is there anything
+> > else that falls under the category of "sleep"?  What about a call to
+> > sched_yield() where the process explicitly lets go of the CPU?
+>
+> Yes, and yes, others would be blocking on futexes and the like.
 
-Hi all,
+Peter,
 
-Changes since next-20080411:
+I've been testing this patch.  Above you seemed to be saying that
+doing a sched_yield() would be equivalent to a sleep, causing the rt
+counter to be reset to zero.  Howver, the results I'm seeing suggest
+that a sched_yield() does not cause the counter to be reset to zero
+(i.e., despite calling sched_yield() at frequent intervals, the
+process still encounters the RLIM_RTTIME soft limit and gets SIGXCPU).
+ Can you comment?
 
-No need for libata-fix-1 (a typo fixup)
-New conflicts in XFS (caused by some XFS patches being merged upstream and
-	also existing in the xfs tree - trivial).
-Added a small Kconfig patch for powerpc to make allmodconfig build (I expect
-	to be added to the powerpc next tree shortly).
-
-----------------------------------------------------------------------------
-
-I have created today's linux-next tree at
-git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git
-(tar balls at
-http://www.kernel.org/pub/linux/kernel/people/sfr/linux-next/).
-
-You can see which trees have been included by looking in the Next/Trees
-file in the source.  There are also quilt-import.log and merge.log files
-in the Next directory.  Between each merge, the tree was built with
-a ppc64_defconfig for powerpc and an allmodconfig for x86_64.
-
-There were a few merge conflicts (fairly trivial) and couple of build
-failures (notified).  Below is a summary of the state of the merge.
-
-We are up to 55 trees, more are welcome (even if they are currently
-empty).  Thanks to those who have contributed, and to those who haven't,
-please do.
-
-Status of my local build tests will be at
-http://kisskb.ellerman.id.au/linux-next.  If maintainers want to give
-advice about cross compilers/configs that work, we are always open to add
-more builds.
-
-Thanks to Jan Dittmer for adding the linux-next tree to his build tests
-at http://l4x.org/k/ and the guys at http://test.kernel.org/.
-
---=20
 Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
 
-Merging origin/master
-Merging x86-fixes/for-linus
-Merging sched-fixes/for-linus
-Merging powerpc-merge/merge
-Merging scsi-rc-fixes/master
-Merging quilt/driver-core
-Merging quilt/pci
-Merging quilt/usb
-Merging x86/for-akpm
-Merging sched/for-akpm
-Merging quilt/device-mapper
-Merging hid/mm
-Merging quilt/i2c
-Merging quilt/kernel-doc
-Merging avr32/avr32-arch
-Merging v4l-dvb/stable
-Merging s390/features
-Merging sh/master
-Merging jfs/next
-Merging kbuild/master
-Merging quilt/ide
-CONFLICT (content): Merge conflict in Documentation/ide/ide.txt
-CONFLICT (content): Merge conflict in Documentation/kernel-parameters.txt
-CONFLICT (content): Merge conflict in drivers/ide/ide.c
-CONFLICT (content): Merge conflict in include/asm-x86/ide.h
-CONFLICT (content): Merge conflict in include/linux/Kbuild
-Merging libata/NEXT
-Merging nfs/linux-next
-Merging xfs/master
-CONFLICT (content): Merge conflict in fs/xfs/linux-2.6/xfs_ioctl.c
-CONFLICT (content): Merge conflict in fs/xfs/quota/xfs_qm_syscalls.c
-CONFLICT (content): Merge conflict in fs/xfs/xfs_ialloc.c
-CONFLICT (content): Merge conflict in fs/xfs/xfs_mount.c
-Merging infiniband/for-next
-CONFLICT (content): Merge conflict in drivers/infiniband/hw/amso1100/c2_pro=
-vider.c
-CONFLICT (content): Merge conflict in drivers/infiniband/hw/cxgb3/iwch_prov=
-ider.c
-CONFLICT (content): Merge conflict in drivers/infiniband/hw/nes/nes_verbs.c
-Applying infiniband-fix-2
-Merging acpi/test
-CONFLICT (content): Merge conflict in arch/x86/kernel/setup_64.c
-CONFLICT (delete/modify): arch/x86/kernel/smpboot_64.c deleted in HEAD and =
-modified in acpi/test. Version acpi/test of arch/x86/kernel/smpboot_64.c le=
-ft in tree.
-CONFLICT (delete/modify): include/asm-x86/smp_64.h deleted in HEAD and modi=
-fied in acpi/test. Version acpi/test of include/asm-x86/smp_64.h left in tr=
-ee.
-$ git rm arch/x86/kernel/smpboot_64.c include/asm-x86/smp_64.h
-Applying acpi-fix-1
-Applying acpi-fix-2
-Merging blackfin/for-linus
-Merging nfsd/nfsd-next
-Merging ieee1394/for-next
-CONFLICT (content): Merge conflict in lib/Kconfig.debug
-Merging hwmon/testing
-Merging ubi/master
-Merging kvm/master
-CONFLICT (content): Merge conflict in arch/s390/lib/uaccess_pt.c
-CONFLICT (add/add): Merge conflict in include/asm-s390/sysinfo.h
-CONFLICT (content): Merge conflict in include/asm-x86/kvm_host.h
-Merging dlm/next
-Merging scsi/master
-Merging ia64/test
-CONFLICT (content): Merge conflict in arch/ia64/kernel/mca.c
-CONFLICT (content): Merge conflict in arch/ia64/mm/tlb.c
-Merging tests/master
-CONFLICT (content): Merge conflict in lib/Kconfig.debug
-Merging ocfs2/linux-next
-Merging selinux/for-akpm
-Merging quilt/m68k
-Merging powerpc/powerpc-next
-Merging hrt/mm
-Merging lblnet/master
-Merging ext4/next
-CONFLICT (content): Merge conflict in fs/jbd2/journal.c
-CONFLICT (content): Merge conflict in fs/jbd2/revoke.c
-Merging 4xx/next
-Merging async_tx/next
-Merging udf/for_next
-Merging security-testing/next
-Merging net/master
-CONFLICT (content): Merge conflict in Documentation/feature-removal-schedul=
-e.txt
-CONFLICT (content): Merge conflict in MAINTAINERS
-Merging galak/powerpc-next
-Merging mtd/master
-Merging wireless/master
-Merging crypto/master
-Merging vfs/vfs-2.6.25
-CONFLICT (content): Merge conflict in fs/xfs/linux-2.6/xfs_ioctl.c
-CONFLICT (content): Merge conflict in fs/xfs/quota/xfs_qm_syscalls.c
-CONFLICT (content): Merge conflict in fs/xfs/xfs_ialloc.c
-CONFLICT (content): Merge conflict in fs/xfs/xfs_sb.h
-Merging semaphore/semaphore
-CONFLICT (delete/modify): include/asm-x86/semaphore_32.h deleted in semapho=
-re/semaphore and modified in HEAD. Version HEAD of include/asm-x86/semaphor=
-e_32.h left in tree.
-CONFLICT (delete/modify): include/asm-x86/semaphore_64.h deleted in semapho=
-re/semaphore and modified in HEAD. Version HEAD of include/asm-x86/semaphor=
-e_64.h left in tree.
-$ git rm include/asm-x86/semaphore_32.h include/asm-x86/semaphore_64.h
-Merging quilt/ldp
-Applying parport_pc: wrap PNP probe code in #ifdef CONFIG_PNP
-Applying nsc-ircc: wrap PNP probe code in #ifdef CONFIG_PNP
-Applying smsc-ircc2: wrap PNP probe code in #ifdef CONFIG_PNP
-Applying Fix MAX_ORDER config problem
-
---Signature=_Fri__11_Apr_2008_17_36_22_+1000_krQB=iDqoCcKgWnD
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFH/xT6TgG2atn1QN8RApR4AJ9w1mLvFHgXj0/ucuxf7bBqg1Hk7QCgglVz
-8BTfeYYjEnx10BB8zqA1amY=
-=w9p7
------END PGP SIGNATURE-----
-
---Signature=_Fri__11_Apr_2008_17_36_22_+1000_krQB=iDqoCcKgWnD--
+Michael
+-- 
+Michael Kerrisk
+Maintainer of the Linux man-pages project
+http://www.kernel.org/doc/man-pages/
+Want to report a man-pages bug? Look here:
+http://www.kernel.org/doc/man-pages/reporting_bugs.html
