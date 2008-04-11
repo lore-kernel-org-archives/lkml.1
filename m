@@ -1,78 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760377AbYDKPAT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759915AbYDKPAj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760377AbYDKPAT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Apr 2008 11:00:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759785AbYDKO77
+	id S1759915AbYDKPAj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Apr 2008 11:00:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760570AbYDKPAQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Apr 2008 10:59:59 -0400
-Received: from rtr.ca ([76.10.145.34]:2999 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759366AbYDKO77 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Apr 2008 10:59:59 -0400
-Message-ID: <47FF7CED.9090601@rtr.ca>
-Date: Fri, 11 Apr 2008 10:59:57 -0400
-From: Mark Lord <lkml@rtr.ca>
-Organization: Real-Time Remedies Inc.
-User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
+	Fri, 11 Apr 2008 11:00:16 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:41915 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1760479AbYDKPAP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Apr 2008 11:00:15 -0400
+Date: Fri, 11 Apr 2008 07:58:56 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Kyle McMartin <kyle@mcmartin.ca>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Roland McGrath <roland@redhat.com>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>
+Subject: Re: [PATCH] reorganize <linux/linkage.h>
+In-Reply-To: <20080411050019.GC27073@phobos.i.cabal.ca>
+Message-ID: <alpine.LFD.1.00.0804110747370.3143@woody.linux-foundation.org>
+References: <20080411050019.GC27073@phobos.i.cabal.ca>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
 MIME-Version: 1.0
-To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-Cc: =?UTF-8?B?SWxwbyBKw6RydmluZW4=?= <ilpo.jarvinen@helsinki.fi>,
-       David Miller <davem@davemloft.net>, jesper.juhl@gmail.com,
-       tilman@imap.cc, yoshfuji@linux-ipv6.org, Jeff Garzik <jeff@garzik.org>,
-       rjw@sisk.pl, LKML <linux-kernel@vger.kernel.org>,
-       Netdev <netdev@vger.kernel.org>
-Subject: Re: 2.6.25-rc8: FTP transfer errors
-References: <47FEADCB.7070104@rtr.ca> <20080410.172453.44434205.davem@davemloft.net> <47FEB062.3020003@rtr.ca> <20080410.173911.179180620.davem@davemloft.net> <47FEBDAA.7010305@rtr.ca> <Pine.LNX.4.64.0804110849520.28360@wrl-59.cs.helsinki.fi> <47FF6555.50004@rtr.ca> <20080411143537.GA27874@2ka.mipt.ru>
-In-Reply-To: <20080411143537.GA27874@2ka.mipt.ru>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Evgeniy Polyakov wrote:
-> On Fri, Apr 11, 2008 at 09:19:17AM -0400, Mark Lord (lkml@rtr.ca) wrote:
->>>> Or I can ignore it, like the net developers, since I have a workaround.
->>>> And then we'll see what other apps are broken upon 2.6.25 final release.
->> That's not demanding, that's quite relaxed.  I had a good workaround,
->> and didn't really care any more at that point.  Just though it was rather
->> odd that none of the developers seemed interested in tracking it down.
->> I offered tons of help, gave it, and said I didn't have time for a full
->> bisect at that juncture.
->>
->> For that, I get repeatedly slammed by the netdev folks.
->> Even after I put aside *paid* work to submit to your demands.
->>
->> Next time around, I won't bother reporting bugs to you folks,
->> that's for damned sure.
-> 
-> Actually that will be the best decision from evolutional point of view. 
-> 
-> Bugs, which 'are thrown back to your face' like what you did with this
-> one, are useless. Developers already know, that bugs exist. 
-> 
-> If you do not care about bug, why do you ever bothered filling it?
-..
 
-Because I care, about Linux's reputation and performance.
-I care about basic networking operations, and knew that this bug
-would probably affect other applications once widely deployed.
+On Fri, 11 Apr 2008, Kyle McMartin wrote:
+>
+> Commit 54a015104136974262afa4b8ddd943ea70dec8a2 adds some new magic
+> asmlinkage_protect gizmo, but that can only be used from C code, not
+> assembly. Protect relevant bits of <linux/linkage.h> with !__ASSEMBLY__
+> so this can't leak into assembly source.
 
-I care about Linux.  That's why.
+Ok, so s390 had a similar issue, and I assumed that they were just usign a 
+broken C pre-processor for asm, but now I'm starting to wonder about it.
 
-> If you do not want to help fixing it ...
+Why cannot your pre-processor handle that thing?
 
-Where the hell did I *ever* say that?
-I did nothing but offer help, and respond quickly.
+It doesn't matter if it is C or assembly, the pre-processor should be the 
+same. That #define isn't used for asm, so it shouldn't _matter_ for asm. 
+What's going on?
 
-The one thing I did not have time for initially,
-was a painstaking blunt instrument binary search of
-every commit since v2.6.24.
+I'm starting to suspect that it's the fact that some architectures still 
+have
 
-There are other ways to debug things and find the causes
-quickly, with less impact upon the reporters of bugs.
+	EXTRA_AFLAGS  := -traditional
 
-The current generation of kernel "code submitters" here
-seems to have never learned those.  Bummer.
+or equivalent and I'm wondering whether that is really necessary. IIRC x86 
+got rid of the use of --traditional a long time ago, exactly because it 
+caused problems with any fancier C preprocessor things.
 
-Cheers
+It would probably be much better to try to lose that -traditional from 
+affected architectures, because otherwise issues like this will keep 
+popping up just because the most common architecture doesn't use the 
+limited preprocessor..
+
+		Linus
