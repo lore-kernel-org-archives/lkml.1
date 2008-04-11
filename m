@@ -1,77 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757449AbYDKFce@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757597AbYDKGG2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757449AbYDKFce (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Apr 2008 01:32:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752179AbYDKFcX
+	id S1757597AbYDKGG2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Apr 2008 02:06:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753360AbYDKGGR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Apr 2008 01:32:23 -0400
-Received: from nn7.de ([85.214.94.156]:54118 "EHLO nn7.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752094AbYDKFcX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Apr 2008 01:32:23 -0400
-Subject: Re: suspend issue
-From: Soeren Sonnenburg <kernel@nn7.de>
-To: Justin Mattock <justinmattock@gmail.com>
-Cc: Pavel Machek <pavel@ucw.cz>, Linux Kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <dd18b0c30804102218m1fe4f1bao285640e66bc95da7@mail.gmail.com>
-References: <dd18b0c30804052103s7357bb86yf7bf11d38d2911b3@mail.gmail.com>
-	 <1207490104.4597.36.camel@localhost> <20080406232849.GA789@elf.ucw.cz>
-	 <1207736730.4320.1.camel@localhost> <20080410100234.GB11084@ucw.cz>
-	 <1207865152.21472.2.camel@localhost>
-	 <dd18b0c30804102218m1fe4f1bao285640e66bc95da7@mail.gmail.com>
-Content-Type: text/plain
+	Fri, 11 Apr 2008 02:06:17 -0400
+Received: from qb-out-0506.google.com ([72.14.204.229]:62290 "EHLO
+	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753336AbYDKGGQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Apr 2008 02:06:16 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=CIrox5juC+SWPciFs6fbIQa3N5K4nvPhDnELSvJtiKlaFnNacktoz1x2hu/sScAKiby5Ch/tkYJRAkD1tqA9AXR19tl4Coa98hJiewiIyVlXHsmNVl0D15v0JuxcOw5bCfpZ/Y7dHB/uEIRSIg0wFStxqF6jcHzqh6rf2+9KrmM=
+Message-ID: <47FEFFC6.4@gmail.com>
+Date: Fri, 11 Apr 2008 15:05:58 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+MIME-Version: 1.0
+To: Volker Armin Hemmann <volker.armin.hemmann@tu-clausthal.de>
+CC: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
+       Peer Chen <pchen@nvidia.com>, Kuan Luo <kluo@nvidia.com>
+Subject: Re: 2.6.24.X: SATA/AHCI related boot delay. - not with 2.6.24.3
+References: <200803091922.33083.volker.armin.hemmann@tu-clausthal.de> <200804030704.21480.volker.armin.hemmann@tu-clausthal.de> <47F46A74.504@gmail.com> <200804031347.20352.volker.armin.hemmann@tu-clausthal.de>
+In-Reply-To: <200804031347.20352.volker.armin.hemmann@tu-clausthal.de>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Date: Fri, 11 Apr 2008 07:32:12 +0200
-Message-Id: <1207891933.21472.4.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.0 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-04-11 at 05:18 +0000, Justin Mattock wrote:
-> On Thu, Apr 10, 2008 at 10:05 PM, Soeren Sonnenburg <kernel@nn7.de> wrote:
-> > On Thu, 2008-04-10 at 12:02 +0200, Pavel Machek wrote:
-> >  > On Wed 2008-04-09 12:25:30, Soeren Sonnenburg wrote:
-> >  > > On Mon, 2008-04-07 at 01:28 +0200, Pavel Machek wrote:
-> >  > > > On Sun 2008-04-06 13:55:04, Soeren Sonnenburg wrote:
-> >  > > > > On Sun, 2008-04-06 at 04:03 +0000, Justin Mattock wrote:
-> >  > > > > > Hello; I seem to have discovered something with echo mem > /sys/power/state.
-> >  > > > > > I recompile the kernel and had forgotten to compile fglrx, when
-> >  > > > > > performing a suspend without fglrx I was confronted with the dreaded
-> >  > > > > > blank screen and a reboot. then as a test I compiled fglrx and loaded,
-> >  > > > > > and to my amazement suspend reacted properly again.
-> >  > > > >
-> >  > > > > Yeah, but I it does not even work without X - console only!
-> >  > > > >
-> >  > > > > s2ram -f -p used to work since at least 2.6.20 ... and is now not
-> >  > > > > anymore in 2.6.25-*
-> >  > > >
-> >  > > > Can you do git bisect?
-> >  > >
-> >  > > I just tried, and the problem is that 25-rc1 already fails to suspend -
-> >  > > so I am not sure how I could get more insight into this failure *on
-> >  > > resume*... any ideas?
-> >  >
-> >  > Well, 2.6.20 worked, so bisect should be easy, right?
-> >
-> >  I don't quite understand... 2.6.24 worked yes, but 2.6.25-rc1 didn't
-> >  even *suspend*. However the problem lies not in suspending but no
-> >  display on *resume*. So the bug is hidden by the hang on suspend and I
-> >  don't see how I can check when resume broke.
-> >
-> >  Soeren
-> >
+Volker Armin Hemmann wrote:
+> From systemrescuecd, ahci in bios, no nomsi:
+>            CPU0       CPU1       
+>   0:        147          1   IO-APIC-edge      timer
+>   1:          0        607   IO-APIC-edge      i8042
+>   8:          0         61   IO-APIC-edge      rtc
+>   9:          0          1   IO-APIC-fasteoi   acpi
+>  12:          0          4   IO-APIC-edge      i8042
+>  14:          0          0   IO-APIC-edge      libata
+>  15:          0          0   IO-APIC-edge      libata
+>  18:          0         16   IO-APIC-fasteoi   aic7xxx
+>  21:          0          0   IO-APIC-fasteoi   ohci_hcd:usb2
+>  22:          2       8428   IO-APIC-fasteoi   ehci_hcd:usb1
+> 1274:          0          0   PCI-MSI-edge      ahci
+> 1275:          0        222   PCI-MSI-edge      eth0
+> NMI:          0          0   Non-maskable interrupts
+> LOC:      14777      16785   Local timer interrupts
+> RES:       7250       6100   Rescheduling interrupts
+> CAL:         41         52   function call interrupts
+> TLB:       1866       1876   TLB shootdowns
+> TRM:          0          0   Thermal event interrupts
+> THR:          0          0   Threshold APIC interrupts
+> SPU:          0          0   Spurious interrupts
+> ERR:          6
 > 
-> Do you think the problem may be with the xserver? Did you upgrade to 7.3?
-> Over here I did the upgrade to 7.3, but with testing with vesa there
-> seems to be no module with the xserver for vesa
-> or at least I haven't located it yet. On a positive note suspend does
-> work with the ati driver installer, the negative side is
-> it doesn't work without it. So from my perspective over here, Does
-> xserver(7.3) have vesa support?
+> With my 'own' kernel, AHCI has interrupt 315. I will try and make a more 
+> monolithic kernel so I might be able to boot from a usb-flash device.
+> .
+> .
+> .
+> which didn't work. Hm, I am too stupid for that today...
 
-lets focus on console only - no Xserver - no X - because already for
-that it doesn't work.
+Hmmm...
 
-Soeren
+>>> I will reboot from systemresucecd later today and post some results with
+>>> ahci-mode set, no nomsi. Just can't try patches that way.
+>> Is sytemrescuecd using the same kernel?  Otherwise, it will only add
+>> more to the confusion.
+> 
+> almost.  A heavily patched 2.6.24.2. That is why I don't sent a dmesg ... just 
+> cat /proc/interrupts. I can send you lspci -vv and dmesg from systemrescuecd 
+> if you want.
+
+Aiee.... Can you please try 2.6.25-rc8 with both configurations?  And 
+w/o systemrescuecd?  Just seeing whether things mount properly or not is 
+good enough.  There isn't much risk of losing data.
+
+-- 
+tejun
