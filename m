@@ -1,61 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760120AbYDKKec@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760212AbYDKKep@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760120AbYDKKec (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Apr 2008 06:34:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758949AbYDKKeW
+	id S1760212AbYDKKep (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Apr 2008 06:34:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760108AbYDKKeb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Apr 2008 06:34:22 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:39740 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758229AbYDKKeV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Apr 2008 06:34:21 -0400
-Subject: Re: 2.6.25-rc8-mm2
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Christoph Lameter <clameter@sgi.com>
-In-Reply-To: <20080411192346.6872472a.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20080410203354.f0a6f464.akpm@linux-foundation.org>
-	 <20080411185703.a5407940.kamezawa.hiroyu@jp.fujitsu.com>
-	 <20080411192346.6872472a.kamezawa.hiroyu@jp.fujitsu.com>
-Date: Fri, 11 Apr 2008 13:34:18 +0300
-Message-Id: <1207910058.7212.1.camel@haji>
+	Fri, 11 Apr 2008 06:34:31 -0400
+Received: from mail.suse.de ([195.135.220.2]:58552 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760098AbYDKKea (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Apr 2008 06:34:30 -0400
+Date: Fri, 11 Apr 2008 12:34:28 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org,
+       Christoph Lameter <clameter@sgi.com>, Mel Gorman <mel@csn.ul.ie>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Yinghai.Lu@sun.com
+Subject: Re: [bug] mm/slab.c boot crash in -git, "kernel BUG at mm/slab.c:2103!"
+Message-ID: <20080411103428.GA15481@wotan.suse.de>
+References: <20080411074145.GA4944@elte.hu> <84144f020804110121l8444aafl4631071b34c458fe@mail.gmail.com> <84144f020804110150q367260f6k473380a1309db878@mail.gmail.com> <20080411085411.GA10181@elte.hu> <84144f020804110205u3d073e76lbcdd36ec293a169b@mail.gmail.com> <84144f020804110208m41414c0h2ed71b85efbb426c@mail.gmail.com> <84144f020804110211w4ae41414od24cf2de72453e13@mail.gmail.com> <20080411092452.GE10801@elte.hu>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 7bit
-X-Mailer: Evolution 2.12.1 
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080411092452.GE10801@elte.hu>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-04-11 at 19:23 +0900, KAMEZAWA Hiroyuki wrote:
-> On Fri, 11 Apr 2008 18:57:03 +0900
-> KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+On Fri, Apr 11, 2008 at 11:24:52AM +0200, Ingo Molnar wrote:
 > 
-> > On Thu, 10 Apr 2008 20:33:54 -0700
-> > Andrew Morton <akpm@linux-foundation.org> wrote:
-> > 
-> > > 
+> * Pekka Enberg <penberg@cs.helsinki.fi> wrote:
+> 
+> > On Fri, Apr 11, 2008 at 12:05 PM, Pekka Enberg <penberg@cs.helsinki.fi> wrote:
+> > >  >  Right. Then you probably want to look into any changes in arch/x86/
+> > >  >  related to setting up the zonelists. I'm fairly certain this is not a
+> > >  >  slab bug and I don't see any recent changes to the page allocator
+> > >  >  either that would explain this.
 > > >
-> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.25-rc8/2.6.25-rc8-mm2/
-> > > 
-> > > - Compilation is busted on mips due to the page-flags patches
-> > > 
-> > On ia64/NUMA box (which has empty nodes.)
+> > >  I'd be willing to put some money on this:
+> > >
+> > >  http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=b7ad149d62ffffaccb9f565dfe7e5bae739d6836
 > > 
-> > CONFIG_SLAB ..... booted well
-> > CONFIG_SLUB ..... can't boot
-> > CONFIG_SLUB + CONFIG_SLUB_DEBUG_ON .... booted. Hmm?
-> > 
-> > I'll dig more if I can.
-> > 
-> with slub_nomerge , booted.
+> > And I'd lose as you're 32-bit. Oh well, that's the price to pay for 
+> > pretending to know x86 arch internals.
+> 
+> yeah, sorry - we are working hard to unify generic bits like that, but 
+> it's a huge architecture.
 
-What happens when it doesn't boot? Does it hang or do you get an oops?
-Can you reproduce it with the 'for-mm' branch of:
+BTW. I think I'm seeing some problems perhaps related to change page
+attr stuff for DEBUG_PAGEALLOC on x86-64. And I don't know if it is the
+same thing, but some general instability around either the page allocator
+or slab allocator.
 
- git://git.kernel.org/pub/scm/linux/kernel/git/penberg/slab-2.6.git
+The debug pagealloc problems seem to be that a thread suddenly get stuck
+in the kernel spinning in cpa (usually on one of the locks) and never
+seems to recover. Once it seemed to be spinning in clear_page_... too,
+but perhaps could it be messing up the page attributes and running so
+slowly that it just appears to be hanging? I'll try to get more info here
+but it is hard to reproduce.
 
-			Pekka
+The general instability -- I've just seen an oops or two in the page
+allocation path in slub recently. Nothing reportable because I've been
+running my own patches and/or been unable to reproduce... but it is a bit
+unusual and I'll keep an eye out.
+
+Anyway, I'd suggest cooking this kernel a bit longer before release...
 
