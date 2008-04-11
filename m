@@ -1,72 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757987AbYDKBey@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758273AbYDKBhX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757987AbYDKBey (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Apr 2008 21:34:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752619AbYDKBeo
+	id S1758273AbYDKBhX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Apr 2008 21:37:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752378AbYDKBhM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Apr 2008 21:34:44 -0400
-Received: from outbound.icp-qv1-irony-out3.iinet.net.au ([203.59.1.148]:47432
-	"EHLO outbound.icp-qv1-irony-out3.iinet.net.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752598AbYDKBen (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Apr 2008 21:34:43 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Av8AAJpd/kd8qMLf/2dsb2JhbAAIq0g
-X-IronPort-AV: E=Sophos;i="4.25,638,1199631600"; 
-   d="scan'208";a="248542701"
-Subject: Re: [PATCH 4/4] [RFC] UIO: generic platform driver
-From: Ben Nizette <bn@niasdigital.com>
-To: "Hans J. Koch" <hjk@linutronix.de>
-Cc: Uwe =?ISO-8859-1?Q?Kleine-K=F6nig?= <Uwe.Kleine-Koenig@digi.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org
-In-Reply-To: <20080410211717.GG3193@local>
-References: <1207831023-8583-1-git-send-email-Uwe.Kleine-Koenig@digi.com>
-	 <1207831023-8583-2-git-send-email-Uwe.Kleine-Koenig@digi.com>
-	 <1207831023-8583-3-git-send-email-Uwe.Kleine-Koenig@digi.com>
-	 <1207831023-8583-4-git-send-email-Uwe.Kleine-Koenig@digi.com>
-	 <1207831023-8583-5-git-send-email-Uwe.Kleine-Koenig@digi.com>
-	 <20080410195438.GE3193@local> <20080410200819.GA16292@digi.com>
-	 <20080410211717.GG3193@local>
-Content-Type: text/plain; charset=utf-8
-Organization: Nias Digital
-Date: Fri, 11 Apr 2008 11:34:34 +1000
-Message-Id: <1207877674.3827.21.camel@moss.renham>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
-Content-Transfer-Encoding: 8bit
+	Thu, 10 Apr 2008 21:37:12 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:51762 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751736AbYDKBhL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Apr 2008 21:37:11 -0400
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] powerpc TLF_RESTORE_SIGMASK
+In-Reply-To: Andrew Morton's message of  Wednesday, 9 April 2008 23:51:56 -0700 <20080409235156.33ee33f2.akpm@linux-foundation.org>
+X-Fcc: ~/Mail/linus
+References: <20080403210842.6C88C26F98D@magilla.localdomain>
+	<20080409235156.33ee33f2.akpm@linux-foundation.org>
+X-Shopping-List: (1) Illustrious adhesive rain
+   (2) Abrupt lip sofas
+   (3) Olympic Ruinous battalions
+Message-Id: <20080411013635.1F4B126F992@magilla.localdomain>
+Date: Thu, 10 Apr 2008 18:36:35 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> This crashes my powerpc mac g5.
 
-On Thu, 2008-04-10 at 23:17 +0200, Hans J. Koch wrote:
-> On Thu, Apr 10, 2008 at 10:08:19PM +0200, Uwe Kleine-König wrote:
-> > On Thu, Apr 10, 2008 at 02:37:03PM +0200, Uwe Kleine-König wrote:
-> > > Signed-off-by: Uwe Kleine-König <Uwe.Kleine-Koenig@digi.com>
-> > > ---
-> > >  drivers/uio/Kconfig    |    7 ++
-> > >  drivers/uio/Makefile   |    1 +
-> > >  drivers/uio/uio_pdrv.c |  165 ++++++++++++++++++++++++++++++++++++++++++++++++
-> > >  3 files changed, 173 insertions(+), 0 deletions(-)
-> > >  create mode 100644 drivers/uio/uio_pdrv.c
-> > 
-> > I'm a bit slow today, I don't really understand what this is good for.
-> > It's to complicated to serve as a template, and it doesn't support
-> > interrupts, so it's not good for any real device, too. So the only
-> > usecase would be an irq-less platform_device that just needs its memory
-> > mapped. Is this what you intended? What do _you_ use it for?
+It worked fine on mine.
 
-I've seen this kind of thing hacked up by a few people already, mainly
-as a replacement for /dev/mem.  Many people are being scared off
-using /dev/mem (and rightly so) because
-- They've seen discussions regarding future plans whereby /dev/mem
-wouldn't be allowed access to physical memory
-- They don't have anything like X forcing them to have /dev/mem and
-therefore want to disable it completely for (perceived?) security
-reasons.
+> It happens after the boot, during the first login-over-ssh.
 
-I like it, it'll sure be used.
+Mine did lots of stuff fine.
 
-	--Ben.
+> This is with most of the rest of the -mm poopile applied.  i386 and x86_64
+> seem OK.
+
+I had only tested with Linus's tree plus the small handful of post-2.6.25
+cleanup patches I've posted in the last few weeks.  To be precise it was
+9597362d354f8655ece324b01d0c640a0e99c077 plus several of my cleanup patches
+(that are probably all in -mm, but I'm not sure off hand).
+
+I'd rebased my tree today to 783e391b7b5b273cd20856d8f6f4878da8ec31b3
+anyway.  I just tried the new kernel with the sigmask cleanups and only 
+a few other patches, and have no problems.
+
+The details of your crash make it look pretty unrelated to this code.
+Off hand I would guess that it's some other bug from other -mm patches
+that just happens only to bite you on powerpc.  If the crash is not
+intermittent and you bisected it to this one change, then I am at a
+loss to see what might be happening.  I'd have to leave it to Paul et
+al to figure out if there is some strange powerpc juju going on.
 
 
+Thanks,
+Roland
