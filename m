@@ -1,70 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758755AbYDKBRA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758129AbYDKBYK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758755AbYDKBRA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Apr 2008 21:17:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753377AbYDKBQw
+	id S1758129AbYDKBYK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Apr 2008 21:24:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751333AbYDKBX6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Apr 2008 21:16:52 -0400
-Received: from tomts5.bellnexxia.net ([209.226.175.25]:34360 "EHLO
-	tomts5-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752862AbYDKBQv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Apr 2008 21:16:51 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AhgFACZZ/kdMQWoK/2dsb2JhbACBXal3
-Date: Thu, 10 Apr 2008 21:16:47 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, Andi Kleen <andi@firstfloor.org>,
-       Adrian Bunk <bunk@stusta.de>, Alexey Dobriyan <adobriyan@gmail.com>,
-       Christoph Hellwig <hch@infradead.org>, akpm@osdl.org
-Subject: Re: [patch 16/17] Immediate Values - Documentation
-Message-ID: <20080411011647.GA2785@Krystal>
-References: <20080409150829.855195878@polymtl.ca> <20080409152052.245356400@polymtl.ca> <200804101333.36419.rusty@rustcorp.com.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 10 Apr 2008 21:23:58 -0400
+Received: from rtr.ca ([76.10.145.34]:2178 "EHLO mail.rtr.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750949AbYDKBX5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Apr 2008 21:23:57 -0400
+Message-ID: <47FEBDAA.7010305@rtr.ca>
+Date: Thu, 10 Apr 2008 21:23:54 -0400
+From: Mark Lord <lkml@rtr.ca>
+Organization: Real-Time Remedies Inc.
+User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
+MIME-Version: 1.0
+To: David Miller <davem@davemloft.net>
+Cc: jesper.juhl@gmail.com, tilman@imap.cc, yoshfuji@linux-ipv6.org,
+       jeff@garzik.org, rjw@sisk.pl, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: 2.6.25-rc8: FTP transfer errors
+References: <47FEADCB.7070104@rtr.ca>	<20080410.172453.44434205.davem@davemloft.net>	<47FEB062.3020003@rtr.ca> <20080410.173911.179180620.davem@davemloft.net>
+In-Reply-To: <20080410.173911.179180620.davem@davemloft.net>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <200804101333.36419.rusty@rustcorp.com.au>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 21:13:11 up 41 days, 21:24,  6 users,  load average: 0.47, 0.49,
-	0.50
-User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Rusty Russell (rusty@rustcorp.com.au) wrote:
-> On Thursday 10 April 2008 01:08:45 Mathieu Desnoyers wrote:
-> > If you have to read the immediate values from a function declared as
-> > __init or __exit, you should explicitly use _imv_read(), which will fall
-> > back on a global variable read. Failing to do so will leave a reference to
-> > the __init section after it is freed (it would generate a modpost
-> > warning).
+David Miller wrote:
+> From: Mark Lord <lkml@rtr.ca>
+> Date: Thu, 10 Apr 2008 20:27:14 -0400
 > 
-> That's a real usability wart.  Couldn't we skip these in the patching loop if 
-> required and revert so noone can make this mistake?
+>> It's *your* bug -- you signed off on the commit.
 > 
+> I sign off on basically every networking commit, does that mean I have
+> to fix every networking bug and every networking bug is "mine"?
+..
 
-Yeah, I know :(
+Absolutely, though to a varying degree.  That's the responsibility
+that goes with the role of a subsystem maintainer.  I once had
+such a role, and gave it up when I felt I could no longer keep up.  
 
-Well, only if we can find a way to detect the macro is put within a init
-or exit section. Is there some assembly trickery that would permit us to
-do that ?
+You still keep refering to it as "your (my) bug".
+It's not.  I had nothing to do with it, other than stumbling over it.
 
-Otherwise, given the memory freed from the init section could be reused
-later by the kernel, I don't see how we can detect the pointer leads to
-a freed init section and, say, a module.
+When people stumble over a libata bug, I look hard to see if my code
+could possibly cause it.  Jeff looks even harder, because he's the
+current subsystem dude for libata.
 
-Mathieu
+I never suggest a user search through a mountain of unrelated commits
+for something I've screwed up on.  I give more directed help, patches
+to collect more relevant information, and patches to try and resolve it.
 
-> Thanks,
-> Rusty.
+The last thing I'd ever do, is diss the reporter.
 
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Regards.
