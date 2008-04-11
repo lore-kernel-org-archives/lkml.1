@@ -1,70 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761455AbYDKS44@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761052AbYDKTB6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761455AbYDKS44 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Apr 2008 14:56:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760563AbYDKS4s
+	id S1761052AbYDKTB6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Apr 2008 15:01:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758793AbYDKTBq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Apr 2008 14:56:48 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:56490 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760474AbYDKS4r (ORCPT
+	Fri, 11 Apr 2008 15:01:46 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:52063 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758285AbYDKTBp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Apr 2008 14:56:47 -0400
-Subject: Re: 2.6.25-rc8-mm2 -- kernel/sched.c:8294: error: unknown field
-	=?UTF-8?Q?=E2=80=98read=5Fuint=E2=80=99?= specified in initializer
-From: Peter Zijlstra <peterz@infradead.org>
-To: Paul Menage <menage@google.com>
-Cc: Miles Lane <miles.lane@gmail.com>,
+	Fri, 11 Apr 2008 15:01:45 -0400
+Date: Fri, 11 Apr 2008 13:01:28 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Christoph Hellwig <hch@infradead.org>,
+       "Kok, Auke" <auke-jan.h.kok@intel.com>, Ingo Molnar <mingo@elte.hu>,
+       Jeff Garzik <jeff@garzik.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       NetDev <netdev@vger.kernel.org>,
+       e1000-list <e1000-devel@lists.sourceforge.net>,
+       linux-pci maillist <linux-pci@atrey.karlin.mff.cuni.cz>,
        Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <6599ad830804111146k2c3db442y3708f95a3fbee83@mail.gmail.com>
-References: <a44ae5cd0804110648g3256805fob917f31eeff4f6db@mail.gmail.com>
-	 <1207932902.7157.4.camel@twins>
-	 <6599ad830804111146k2c3db442y3708f95a3fbee83@mail.gmail.com>
-Content-Type: text/plain
-Date: Fri, 11 Apr 2008 20:55:24 +0200
-Message-Id: <1207940124.7427.1.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.0 
-Content-Transfer-Encoding: 7bit
+       "David S. Miller" <davem@davemloft.net>,
+       Jesse Brandeburg <jesse.brandeburg@intel.com>,
+       "Ronciak, John" <john.ronciak@intel.com>,
+       "Allan, Bruce W" <bruce.w.allan@intel.com>, Greg KH <greg@kroah.com>,
+       Arjan van de Ven <arjan@linux.intel.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [patch] e1000=y && e1000e=m regression fix
+Message-ID: <20080411190128.GG11962@parisc-linux.org>
+References: <20080410192714.GA14055@elte.hu> <47FE8566.5040809@intel.com> <20080411112653.GC9205@elte.hu> <20080411113644.GA7767@infradead.org> <20080411121606.GA25661@elte.hu> <47FF9060.5040202@intel.com> <20080411164542.GA4066@infradead.org> <alpine.LFD.1.00.0804111028540.3143@woody.linux-foundation.org> <20080411175304.GF11962@parisc-linux.org> <alpine.LFD.1.00.0804111146450.3143@woody.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.1.00.0804111146450.3143@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-04-11 at 11:46 -0700, Paul Menage wrote:
-> On Fri, Apr 11, 2008 at 9:55 AM, Peter Zijlstra <peterz@infradead.org> wrote:
-> > On Fri, 2008-04-11 at 09:48 -0400, Miles Lane wrote:
-> >  > CC      kernel/sched.o
-> >  > kernel/sched.c:8294: error: unknown field 'read_uint' specified in initializer
-> >  > kernel/sched.c:8294: warning: initialization makes integer from
-> >  > pointer without a cast
-> >  > kernel/sched.c:8295: error: unknown field 'write_uint' specified in initializer
-> >  > kernel/sched.c:8295: warning: initialization from incompatible pointer type
-> >
-> >  someone mucked around with the cgroup api; this should fix it:
-> >
-> >  Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> >  ---
-> >  diff --git a/kernel/sched.c b/kernel/sched.c
-> >  index 7119895..8b4e0b6 100644
-> >  --- a/kernel/sched.c
-> >  +++ b/kernel/sched.c
-> >  @@ -8291,8 +8291,8 @@ static struct cftype cpu_files[] = {
-> >         },
-> >         {
-> >                 .name = "rt_period_us",
-> >  -               .read_uint = cpu_rt_period_read_uint,
-> >  -               .write_uint = cpu_rt_period_write_uint,
-> >  +               .read_u64 = cpu_rt_period_read_uint,
-> >  +               .write_u64 = cpu_rt_period_write_uint,
-> >         },
-> >   #endif
-> >
+On Fri, Apr 11, 2008 at 11:51:07AM -0700, Linus Torvalds wrote:
+> Because your version has exactly the same problem that the current code 
+> has: it asks questions that aren't sensible to people who don't care. It 
+> also keeps the old E1000 name for "PCI chips only", which means that 
+> people who just use an old config and ignore new questions will suddenly 
+> lose their ability to use the E1000 driver if they have a PCI-E card.
+
+We only support people keeping their old configs after they run 'make
+oldconfig', right?  At which point they'd be prompted for E1000_SUPPORT.
+Presumably they'd think "That's odd.  I'm sure I had that selected
+before", then select it.  Then oldconfig skips over CONFIG_E1000 because
+it already knows the answer to that one and they're prompted with a
+question about PCIe support.  Now something is clearly strange.  Perhaps
+they look at the help text at this point and it says to go with 'Y' or
+'M' if they're not sure.
+
+That's the most important bit of help texts for me.  Do I want Control
+Groups?  Will my machine break if I don't select them?  I have no idea
+what a 'process cgroup subsystem' is, and I don't care.  But the help
+text tells me I can say "n" and nothing will break.
+
+> So most users:
+>  - want to just say "E1000", and not care about type.
+>  - want to have old configurations continue working (ie if you haev had 
+>    "E1000" driving your hardware before, it should _continue_ to do so, 
+>    with no need to select a _new_ E1000E question!
 > 
-> Sorry - this change was in my original API patch (plus renaming the
-> read/write functions to have u64 suffices) but I think it collided
-> with the git-sched instability around the end of February.
+> Nobody wants to care deeply whether it's a PCI-E or PCI chip. In fact, 
+> it's almost impossible to tell. Here, quickly, tell me which one mine is 
+> (this is from /sbin/lspci):
+> 
+> 	00:19.0 Ethernet controller: Intel Corporation 82566DM Gigabit Network Connection (rev 02)
 
-Yeah, no worries, I recognised it the moment I looked at it. This is
-just a merge artefact from changes in different trees.
+I quite agree.  I have no idea either.  All I know is that my ICH9 box
+didn't work until e1000e was released ;-)
 
+-- 
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
