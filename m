@@ -1,39 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761364AbYDKSzj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761455AbYDKS44@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761364AbYDKSzj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Apr 2008 14:55:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760563AbYDKSzc
+	id S1761455AbYDKS44 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Apr 2008 14:56:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760563AbYDKS4s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Apr 2008 14:55:32 -0400
-Received: from adsl-67-120-171-161.dsl.lsan03.pacbell.net ([67.120.171.161]:51127
-	"HELO linuxace.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1760223AbYDKSzb (ORCPT
+	Fri, 11 Apr 2008 14:56:48 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:56490 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760474AbYDKS4r (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Apr 2008 14:55:31 -0400
-Date: Fri, 11 Apr 2008 11:55:30 -0700
-From: Phil Oester <kernel@linuxace.com>
-To: linux-kernel@vger.kernel.org
-Subject: PCI probe order changes after 2.6.22
-Message-ID: <20080411185530.GA20746@linuxace.com>
+	Fri, 11 Apr 2008 14:56:47 -0400
+Subject: Re: 2.6.25-rc8-mm2 -- kernel/sched.c:8294: error: unknown field
+	=?UTF-8?Q?=E2=80=98read=5Fuint=E2=80=99?= specified in initializer
+From: Peter Zijlstra <peterz@infradead.org>
+To: Paul Menage <menage@google.com>
+Cc: Miles Lane <miles.lane@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <6599ad830804111146k2c3db442y3708f95a3fbee83@mail.gmail.com>
+References: <a44ae5cd0804110648g3256805fob917f31eeff4f6db@mail.gmail.com>
+	 <1207932902.7157.4.camel@twins>
+	 <6599ad830804111146k2c3db442y3708f95a3fbee83@mail.gmail.com>
+Content-Type: text/plain
+Date: Fri, 11 Apr 2008 20:55:24 +0200
+Message-Id: <1207940124.7427.1.camel@twins>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.2.2i
+X-Mailer: Evolution 2.22.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In commit 08f1c192c3c32797068bfe97738babb3295bbf42 (x86-64: introduce
-struct pci_sysdata to facilitate sharing of ->sysdata), a change was
-made from using pcibios_scan_root to pci_scan_bus_parented.  pcibios_scan_root
-applies some quirks to various systems via pciprobe_dmi_table, including a
-number of Dell PowerEdge servers.  The similarly named acpi_pciprobe_dmi_table,
-however, does not apply the same set_bf_sort quirk, so between .22 and .23, the
-onboard Broadcom nics reversed their probe order.
+On Fri, 2008-04-11 at 11:46 -0700, Paul Menage wrote:
+> On Fri, Apr 11, 2008 at 9:55 AM, Peter Zijlstra <peterz@infradead.org> wrote:
+> > On Fri, 2008-04-11 at 09:48 -0400, Miles Lane wrote:
+> >  > CC      kernel/sched.o
+> >  > kernel/sched.c:8294: error: unknown field 'read_uint' specified in initializer
+> >  > kernel/sched.c:8294: warning: initialization makes integer from
+> >  > pointer without a cast
+> >  > kernel/sched.c:8295: error: unknown field 'write_uint' specified in initializer
+> >  > kernel/sched.c:8295: warning: initialization from incompatible pointer type
+> >
+> >  someone mucked around with the cgroup api; this should fix it:
+> >
+> >  Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> >  ---
+> >  diff --git a/kernel/sched.c b/kernel/sched.c
+> >  index 7119895..8b4e0b6 100644
+> >  --- a/kernel/sched.c
+> >  +++ b/kernel/sched.c
+> >  @@ -8291,8 +8291,8 @@ static struct cftype cpu_files[] = {
+> >         },
+> >         {
+> >                 .name = "rt_period_us",
+> >  -               .read_uint = cpu_rt_period_read_uint,
+> >  -               .write_uint = cpu_rt_period_write_uint,
+> >  +               .read_u64 = cpu_rt_period_read_uint,
+> >  +               .write_u64 = cpu_rt_period_write_uint,
+> >         },
+> >   #endif
+> >
+> 
+> Sorry - this change was in my original API patch (plus renaming the
+> read/write functions to have u64 suffices) but I think it collided
+> with the git-sched instability around the end of February.
 
-Any chance this can get fixed?  The brainless fix would be to duplicate all
-the pciprobe_dmi_table fixups in acpi_pciprobe_dmi_table, but perhaps there
-is a better approach which could reuse the code?
+Yeah, no worries, I recognised it the moment I looked at it. This is
+just a merge artefact from changes in different trees.
 
-Thanks,
-Phil
