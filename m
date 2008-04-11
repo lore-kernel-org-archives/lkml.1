@@ -1,89 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759453AbYDKMVP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759603AbYDKMY5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759453AbYDKMVP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Apr 2008 08:21:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756958AbYDKMU7
+	id S1759603AbYDKMY5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Apr 2008 08:24:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757862AbYDKMYs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Apr 2008 08:20:59 -0400
-Received: from crystal.sipsolutions.net ([195.210.38.204]:57976 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750803AbYDKMU6 (ORCPT
+	Fri, 11 Apr 2008 08:24:48 -0400
+Received: from moutng.kundenserver.de ([212.227.126.188]:63292 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756958AbYDKMYr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Apr 2008 08:20:58 -0400
-Subject: Re: [RFC 1/3] add macros for new sparse features
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Cc: linux-kernel@vger.kernel.org, Josh Triplett <josh@freedesktop.org>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       linux-wireless@vger.kernel.org, linux-sparse@vger.kernel.org
-In-Reply-To: <47FE425C.7060405@s5r6.in-berlin.de>
-References: <20080410134810.629048000@sipsolutions.net>
-	 <20080410134827.771251000@sipsolutions.net>
-	 <47FE425C.7060405@s5r6.in-berlin.de>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-8pjRjQXmdm/TnsTbuq52"
-Date: Fri, 11 Apr 2008 14:20:39 +0200
-Message-Id: <1207916439.13354.68.camel@johannes.berg>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.0 
+	Fri, 11 Apr 2008 08:24:47 -0400
+From: Bodo Eggert <7eggert@gmx.de>
+Subject: Re: file offset corruption on 32-bit machines?
+To: Diego Calleja <diegocg@gmail.com>, Jiri Kosina <jkosina@suse.cz>,
+       Jan Kara <jack@suse.cz>, Michal Hocko <mhocko@suse.cz>,
+       Meelis Roos <mroos@linux.ee>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       linux-fsdevel@vger.kernel.org
+Reply-To: 7eggert@gmx.de
+Date: Fri, 11 Apr 2008 14:24:34 +0200
+References: <agh4d-6yc-35@gated-at.bofh.it> <ah5tY-3lR-7@gated-at.bofh.it> <ah5DA-3X9-9@gated-at.bofh.it> <ah5X5-4tl-13@gated-at.bofh.it> <ah66A-4Nk-7@gated-at.bofh.it> <ah7vN-7Wz-9@gated-at.bofh.it>
+User-Agent: KNode/0.10.4
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8Bit
+Message-Id: <E1JkIJ0-0000tG-LV@be1.7eggert.dyndns.org>
+X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
+X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
+X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
+X-Provags-ID: V01U2FsdGVkX19/MXdH4zw5MyzVccb23D9y6L3heNEj54vCgN1
+ CQDTVzoXOhX7vabAyL8w71BbO3PFcIKJw6u8R2hDbPfmZUqeXf
+ o1TMWj2IwsKQSDabSwatQ==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Diego Calleja <diegocg@gmail.com> wrote:
 
---=-8pjRjQXmdm/TnsTbuq52
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+> El Thu, 10 Apr 2008 16:31:09 +0200 (CEST), Jiri Kosina <jkosina@suse.cz>
+> escribió:
+> 
+>> I think this is worth fixing.
+> 
+> This question comes very often, and Linus even wrote a patch
+> (http://lkml.org/lkml/2006/4/13/124 , http://lkml.org/lkml/2006/4/13/130)
+> 
+> But apparently there's no much interest in fixing it, because it would
+> slow down some workloads...
+
+AS far as I understand, the race is e.g.:
+
+fpos := A:a, we want to make process/thread a read A:b or B:a without it
+being a correct value in fpos. a!=b!=c, A!=B, A!=C.
+
+a: read fpos.high (A:?)
+b: write fpos (B:b)
+a: read fpos.low (A:b)
 
 
-> So, instead of
->=20
->   /* always call with host_lock held */
->   int foo(struct bar *b)
->   {
->=20
-> we could write
->=20
->   int foo(struct bar *b) __requires(host_lock)
->   {
->=20
-> and let sparse check the call chains... or how is it used?
+If you change this to 
 
-Yes.
+a: read fpos.high
+a: read fpos.low
+a: read fpos.high
+a: read fpos.low
 
-> And what about dynamically allocated locks?
-> E.g. b->lock
-> Or struct host h* =3D container_of(b, struct host, m); with the necessity
-> to hold h->lock...
+and compare the results, you need to
 
-I was looking at making sparse check that certain variable references
-are under rcu, but it's not as easy. Also, the lock context is just an
-arbitrary name, there's no way to actually link it to a certain variable
-or so to differentiate between them. I think that's not really solvable
-in sparse, look at the things lockdep has to do.
+a: read fpos.high (A:?)
+b: write fpos (B:b)
+a: read fpos.low (A:b)
+b: write fpos (A:c)
+a: read fpos.high (A:b),(A:?)
+b: write fpos (C:b)
+a: read fpos.low (A:b),(A:b)
 
-johannes
+That would be winning three races in order to hit the bug. 
 
---=-8pjRjQXmdm/TnsTbuq52
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
 
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
+OTOH, writers MUST NOT be interrupted, because:
 
-iQIVAwUAR/9XlqVg1VMiehFYAQKk0w//fRspT04ACbb1HUS5P21pbENuirTgrIFv
-jYz/UomtBkbuJrqZwL1OFO70jrBK3jt1UwzZENub162DHI6pzFgiKFlU5c5uYs7c
-d9zzpqF6SnPG2Ox2f9BUgGdqBdulXBXAlrT9W8MBW8fwuKngS0iQE3zkGjYB+nY5
-x7br69bWMK01h+tqMcfHaI76E+BGqlLhaomCAJe4VDhIXZJkKS95oevnHm9fHh2a
-NrxV+f+DvFyR4MezX3mVRpOBd0obtdcbquws/etOCcLofAWJWNFMccY4UKpU5CWO
-QoemmQIsAYYNfu96y8nwZaBaYwN8RP0pChneK+hpqHs2eQuynT8bIBpQPhASCKvC
-mKvqx9ANT+UYsfHj3gj8XZms/m7XGuf5n8KR2HwiLsqCmle3Jwoy/2y3P7JA2Xwi
-Asa7UBJmHcOpkGFAZb4ilA3cgp5CmFwijeWIHIEKLjM67VYnpyoSMg77tY89A7dU
-z8v1+vDQJfaEjBMXQL0x0W6rsazR41orXhFilgOXEhvL7hBHbZC4S618eRur4mxY
-Y1oRoH2ABKRPCMgmH5ZRjaADzRDdLQ0oSy49yvDKu1yWp6oxvH5MquaJ1owOaKNg
-d89eWSG0BrdX/b/hbvfqTUxEiC1eXVHP4RjGUgm7143/4Cjn5ewspAzZVHBHJjmN
-DAUgK98qcAc=
-=4MWs
------END PGP SIGNATURE-----
+b: write fpos.high (B:a)
+a: read fpos.high (B:?)
+a: read fpos.low (B:a)
+a: read fpos.high (B:a),(B:?)
+a: read fpos.low (B:a),(B:a)
+b: write fpos.low (B:b)
 
---=-8pjRjQXmdm/TnsTbuq52--
 
