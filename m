@@ -1,41 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758220AbYDKT1P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761823AbYDKT1d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758220AbYDKT1P (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Apr 2008 15:27:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757690AbYDKT07
+	id S1761823AbYDKT1d (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Apr 2008 15:27:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760846AbYDKT1E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Apr 2008 15:26:59 -0400
-Received: from relay2.sgi.com ([192.48.171.30]:50813 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756886AbYDKT07 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Apr 2008 15:26:59 -0400
-Date: Fri, 11 Apr 2008 12:26:56 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Mel Gorman <mel@csn.ul.ie>, Nick Piggin <npiggin@suse.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Yinghai.Lu@Sun.COM
-Subject: Re: [bug] mm/slab.c boot crash in -git, "kernel BUG at mm/slab.c:2103!"
-In-Reply-To: <84144f020804110208m41414c0h2ed71b85efbb426c@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0804111226120.20334@schroedinger.engr.sgi.com>
-References: <20080411074145.GA4944@elte.hu>  <84144f020804110121l8444aafl4631071b34c458fe@mail.gmail.com>
-  <84144f020804110150q367260f6k473380a1309db878@mail.gmail.com> 
- <20080411085411.GA10181@elte.hu>  <84144f020804110205u3d073e76lbcdd36ec293a169b@mail.gmail.com>
- <84144f020804110208m41414c0h2ed71b85efbb426c@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 11 Apr 2008 15:27:04 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:51846
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1760738AbYDKT1D (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Apr 2008 15:27:03 -0400
+Date: Fri, 11 Apr 2008 12:27:03 -0700 (PDT)
+Message-Id: <20080411.122703.229192951.davem@davemloft.net>
+To: jochen@scram.de
+Cc: galak@kernel.crashing.org, khali@linux-fr.org, scottwood@freescale.com,
+       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       i2c@lm-sensors.org, jonsmirl@gmail.com, laurentp@cse-semaphore.com
+Subject: Re: [PATCHv2 3/7] i2c: OF helpers for the i2c API
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <47FFBA7B.8050900@scram.de>
+References: <47FFBA7B.8050900@scram.de>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 11 Apr 2008, Pekka Enberg wrote:
+From: Jochen Friedrich <jochen@scram.de>
+Date: Fri, 11 Apr 2008 21:22:35 +0200
 
-> I'd be willing to put some money on this:
+> This patch implements various helpers to support OF bindings for
+> the i2c API.
 > 
-> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=b7ad149d62ffffaccb9f565dfe7e5bae739d6836
+> Signed-off-by: Jochen Friedrich <jochen@scram.de>
 
-Allowing systems without node 0 is a major change for x86.
-
+Acked-by: David S. Miller <davem@davemloft.net>
