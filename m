@@ -1,50 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760006AbYDKJIv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759881AbYDKJJr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760006AbYDKJIv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Apr 2008 05:08:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758831AbYDKJIm
+	id S1759881AbYDKJJr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Apr 2008 05:09:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758104AbYDKJJg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Apr 2008 05:08:42 -0400
-Received: from rv-out-0708.google.com ([209.85.198.242]:6078 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1758710AbYDKJIl (ORCPT
+	Fri, 11 Apr 2008 05:09:36 -0400
+Received: from yue.linux-ipv6.org ([203.178.140.15]:33299 "EHLO
+	yue.st-paulia.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758102AbYDKJJf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Apr 2008 05:08:41 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=MlcabJ2lkOut4BboEdQrlLWgL0swswwKu2pavHqCgyg1maXlXkhAs4fUF4qrCimKO3FhHkUNmGlXea31dpXljIAdXuYIvxkyZ6gOfRTTpIk10AOxP+u+14E/pKZ/PxQi/rEead/mDDzCDRbbdE2I0gbERHlL2qv4/o9CrZtN2pk=
-Message-ID: <84144f020804110208m41414c0h2ed71b85efbb426c@mail.gmail.com>
-Date: Fri, 11 Apr 2008 12:08:40 +0300
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [bug] mm/slab.c boot crash in -git, "kernel BUG at mm/slab.c:2103!"
-Cc: linux-kernel@vger.kernel.org, "Christoph Lameter" <clameter@sgi.com>,
-       "Mel Gorman" <mel@csn.ul.ie>, "Nick Piggin" <npiggin@suse.de>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Yinghai.Lu@Sun.COM
-In-Reply-To: <84144f020804110205u3d073e76lbcdd36ec293a169b@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 11 Apr 2008 05:09:35 -0400
+Date: Fri, 11 Apr 2008 18:11:19 +0900 (JST)
+Message-Id: <20080411.181119.12087415.yoshfuji@linux-ipv6.org>
+To: ramirose@gmail.com
+Cc: davem@davemloft.net, netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       yoshfuji@linux-ipv6.org
+Subject: Re: [PATCH net-2.6.26] [IPV6] Adjust IPV6 multicast routing module
+ (ip6mr.c) to use mroute6 header declarations .
+From: YOSHIFUJI Hideaki / =?iso-2022-jp?B?GyRCNUhGIzFRTEAbKEI=?= 
+	<yoshfuji@linux-ipv6.org>
+In-Reply-To: <eb3ff54b0804100240x2cc3d21el3ce06b21ce7b5320@mail.gmail.com>
+References: <eb3ff54b0804100240x2cc3d21el3ce06b21ce7b5320@mail.gmail.com>
+Organization: USAGI/WIDE Project
+X-URL: http://www.yoshifuji.org/%7Ehideaki/
+X-Fingerprint: 9022 65EB 1ECF 3AD1 0BDF  80D8 4807 F894 E062 0EEA
+X-PGP-Key-URL: http://www.yoshifuji.org/%7Ehideaki/hideaki@yoshifuji.org.asc
+X-Face: "5$Al-.M>NJ%a'@hhZdQm:."qn~PA^gq4o*>iCFToq*bAi#4FRtx}enhuQKz7fNqQz\BYU]
+ $~O_5m-9'}MIs`XGwIEscw;e5b>n"B_?j/AkL~i/MEa<!5P`&C$@oP>ZBLP
+X-Mailer: Mew version 3.3 on Emacs 20.7 / Mule 4.1 (AOI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080411074145.GA4944@elte.hu>
-	 <84144f020804110121l8444aafl4631071b34c458fe@mail.gmail.com>
-	 <84144f020804110150q367260f6k473380a1309db878@mail.gmail.com>
-	 <20080411085411.GA10181@elte.hu>
-	 <84144f020804110205u3d073e76lbcdd36ec293a169b@mail.gmail.com>
-X-Google-Sender-Auth: 804c5c4f0bec29b0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 11, 2008 at 12:05 PM, Pekka Enberg <penberg@cs.helsinki.fi> wrote:
->  Right. Then you probably want to look into any changes in arch/x86/
->  related to setting up the zonelists. I'm fairly certain this is not a
->  slab bug and I don't see any recent changes to the page allocator
->  either that would explain this.
+In article <eb3ff54b0804100240x2cc3d21el3ce06b21ce7b5320@mail.gmail.com> (at Thu, 10 Apr 2008 12:40:10 +0300), "Rami Rosen" <ramirose@gmail.com> says:
 
-I'd be willing to put some money on this:
+> Hi,
+> - This patch adjusts IPv6 multicast routing module, net/ipv6/ip6mr.c,
+> to use mroute6 header definitions instead of mroute.
+>  (MFC6_LINES instead of MFC_LINES, MAXMIFS instead of MAXVIFS, mifi_t
+> instead of vifi_t.)
+> 
+> - In addition, inclusion of some headers was removed as it is not needed.
+> 
+> Regards,
+> Rami Rosen
 
-http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=b7ad149d62ffffaccb9f565dfe7e5bae739d6836
+Applied, thanks.
+
+--yoshfuji
