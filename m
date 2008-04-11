@@ -1,79 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760557AbYDKP5z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760603AbYDKQEf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760557AbYDKP5z (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Apr 2008 11:57:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759907AbYDKP5r
+	id S1760603AbYDKQEf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Apr 2008 12:04:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760119AbYDKQE0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Apr 2008 11:57:47 -0400
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:38508 "EHLO
-	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759537AbYDKP5r (ORCPT
+	Fri, 11 Apr 2008 12:04:26 -0400
+Received: from mtagate8.de.ibm.com ([195.212.29.157]:23644 "EHLO
+	mtagate8.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760105AbYDKQE0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Apr 2008 11:57:47 -0400
-X-Sasl-enc: 6WdE5oA75BXAxWmQSlhCoOqRn/KJHYGkGj+5rEkxjRqM 1207929465
-Message-ID: <47FF8A74.4000002@ladisch.de>
-Date: Fri, 11 Apr 2008 17:57:40 +0200
-From: Clemens Ladisch <clemens@ladisch.de>
-User-Agent: Thunderbird 2.0.0.12 (Windows/20080213)
-MIME-Version: 1.0
-To: Dimitri Gorokhovik <dimitri.gorokhovik@leacom.fr>
-CC: tglx@linutronix.de, linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC][PATCH] HPET: register additional counter-only char device
-References: <1207904307.13216.15.camel@laphroaig>	 <47FF658E.2040808@ladisch.de> <1207922810.26014.33.camel@laphroaig>
-In-Reply-To: <1207922810.26014.33.camel@laphroaig>
-Content-Type: text/plain; charset=us-ascii
+	Fri, 11 Apr 2008 12:04:26 -0400
+Subject: Re: [PATCH] Fix compile breakage caused by asmlinkage_protect
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Reply-To: schwidefsky@de.ibm.com
+To: Kyle McMartin <kyle@mcmartin.ca>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Al Viro <viro@ZenIV.linux.org.uk>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jakub Jelinek <jakub@redhat.com>, Dave Jones <davej@redhat.com>,
+       drepper@redhat.com, mingo@redhat.com, tglx@redhat.com,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Roland McGrath <roland@redhat.com>
+In-Reply-To: <20080411153728.GG27073@phobos.i.cabal.ca>
+References: <alpine.LFD.1.00.0804101447240.3143@woody.linux-foundation.org>
+	 <20080410223738.80A8326F992@magilla.localdomain>
+	 <20080411114654.GA12270@osiris.boeblingen.de.ibm.com>
+	 <alpine.LFD.1.00.0804110744100.3143@woody.linux-foundation.org>
+	 <20080411151156.GJ9785@ZenIV.linux.org.uk>
+	 <alpine.LFD.1.00.0804110821400.3143@woody.linux-foundation.org>
+	 <20080411153728.GG27073@phobos.i.cabal.ca>
+Content-Type: text/plain
+Organization: IBM Corporation
+Date: Fri, 11 Apr 2008 18:03:07 +0200
+Message-Id: <1207929787.21379.5.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dimitri Gorokhovik wrote:
-> On Fri, 2008-04-11 at 15:20 +0200, Clemens Ladisch wrote:
-> > Dimitri Gorokhovik wrote:
-> > > I need to have many processes all reading from userspace the counter register
-> > > of the (same) HPET hardware.  [...]
-> > > What would be the right way to implement such a support? For now, I simply
-> > > register a new misc device, '/dev/hpetctr', along with '/dev/hpet', for the same
-> > > ACPI device and on the same occasion.
-> >
-> > Your patch circumvents CONFIG_HPET_MMAP.
->
-> Right. I hesitated to put it in, but multiple #ifdef/endif clutter too
-> much the resulting code. Something better should be devised in this
-> case, like separating the added code into another file, changing a
-> couple of symbols from static to extern etc.
->
-> However, why people wanted the original 'mmap' of /dev/hpet to be
-> disabled? Probably to prevent the HPET registers from poking with?
+On Fri, 2008-04-11 at 11:37 -0400, Kyle McMartin wrote:
+> On Fri, Apr 11, 2008 at 08:25:05AM -0700, Linus Torvalds wrote:
+> > On Fri, 11 Apr 2008, Al Viro wrote:
+> > > and that gets us -traditional-cpp passed to cc1, with obvious resulting
+> > > unhappiness from vararg macro.
+> > 
+> > Yeah, I figured it out eventually. 
+> > 
+> > I do think the architectures should try to avoid it, if only because x86 
+> > doesn't use -traditional (so they'll hit things like this unnecessarily 
+> > otherwise), but I'll apply Heiko's minimal patch in the meantime.
+> > 
+> 
+> Cool with me; I'll try to puzzle out why removing -traditional breaks on
+> those two specific files. Ugh, big cleanups likely.
 
-Reading HPET registers should not be dangerous in any way, but it might
-be possible to read other devices' registers that happen to lie inside
-the same memory page (HPET registers are only 1024 bytes).
+So there is at least one architecture that really requires -traditional,
+it is not an option to just remove them. For s390 the kernel compiles
+fine without -traditional on the AFLAGS so we can as well remove them.
+I'll queue the patch below. In the meantime Heikos patch will have to
+do.
 
-> > Another possibility would be to allow the device to be opened
-> > infinitely many times but not to allocate a hardware timer until one of
-> > the ioctls is called.  This means that opening /dev/hpet does not
-> > guarantee that a timer is available, but this has already been possible
-> > previously because request_irq() might fail.
->
-> Good point. The patch would be much more intrusive and voluminous (and
-> coming from a total newcomer). Would there be an interest for such a
-> patch?
+-- 
+blue skies,
+  Martin.
 
-Yes, definitely.  I've wanted to do this patch for some time but haven't
-found the time.
+"Reality continues to ruin my life." - Calvin.
 
-> -- to me, /dev/hpet is primarily a timer, not just a counter. It seems
-> wrong to me if it, once opened, would mostly fail to its primary
-> function (but this of course is all subjective matter).
+---
+[PATCH] s390: remove -traditional from AFLAGS
 
-There are at least as many available timers as before the change -- a
-program that tries to use a timer will still get a timer, and now this
-will succeed even if there are other programs that use only the counter.
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
+---
 
-Even now, for most programs using /dev/hpet, it actually is just a
-counter.
+diff --git a/arch/s390/kernel/Makefile b/arch/s390/kernel/Makefile
+index 4d3e383..cfb6ccc 100644
+--- a/arch/s390/kernel/Makefile
++++ b/arch/s390/kernel/Makefile
+@@ -2,7 +2,7 @@
+ # Makefile for the linux kernel.
+ #
+ 
+-EXTRA_AFLAGS	:= -traditional
++EXTRA_AFLAGS	:= 
+ 
+ #
+ # Passing null pointers is ok for smp code, since we access the lowcore here.
+diff --git a/arch/s390/lib/Makefile b/arch/s390/lib/Makefile
+index 5208443..dd6f9f5 100644
+--- a/arch/s390/lib/Makefile
++++ b/arch/s390/lib/Makefile
+@@ -2,7 +2,7 @@
+ # Makefile for s390-specific library files..
+ #
+ 
+-EXTRA_AFLAGS := -traditional
++EXTRA_AFLAGS := 
+ 
+ lib-y += delay.o string.o uaccess_std.o uaccess_pt.o
+ obj-$(CONFIG_32BIT) += div64.o qrnnd.o
+diff --git a/arch/s390/math-emu/Makefile b/arch/s390/math-emu/Makefile
+index 73b3e72..42828d3 100644
+--- a/arch/s390/math-emu/Makefile
++++ b/arch/s390/math-emu/Makefile
+@@ -5,4 +5,4 @@
+ obj-$(CONFIG_MATHEMU) := math.o
+ 
+ EXTRA_CFLAGS := -I$(src) -Iinclude/math-emu -w
+-EXTRA_AFLAGS := -traditional
++EXTRA_AFLAGS := 
 
 
-Regards,
-Clemens
