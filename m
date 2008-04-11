@@ -1,63 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757142AbYDKVnR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758677AbYDKVoG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757142AbYDKVnR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Apr 2008 17:43:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755157AbYDKVnG
+	id S1758677AbYDKVoG (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Apr 2008 17:44:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755336AbYDKVn4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Apr 2008 17:43:06 -0400
-Received: from mail-07.jhb.wbs.co.za ([196.2.97.4]:23019 "EHLO
-	mail-07.jhb.wbs.co.za" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752174AbYDKVnF (ORCPT
+	Fri, 11 Apr 2008 17:43:56 -0400
+Received: from wx-out-0506.google.com ([66.249.82.231]:24779 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752616AbYDKVnz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Apr 2008 17:43:05 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AoQAALp4/0fEAmHEh2dsb2JhbACRUwEBAQoFCQUYmSE
-From: Bongani Hlope <bonganilinux@mweb.co.za>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: Shutdown and Reboot Regression 2.6.25-rc[78]
-Date: Fri, 11 Apr 2008 23:42:48 +0200
-User-Agent: KMail/1.9.9
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>
-References: <200804112241.44626.bonganilinux@mweb.co.za> <alpine.LFD.1.00.0804111352390.3143@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.1.00.0804111352390.3143@woody.linux-foundation.org>
+	Fri, 11 Apr 2008 17:43:55 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=rMphKxUv+2N8bQbVT77Qr2k+njI4qKXtrwJgie4pdIkSBcrcW7tPHc4WMcy8PeJvuokWvlLVMkrlHmSCtGNHrnEc/4Prim4hXaBawGScLQubPasKfgPmLnThgdrFfkaB86xoOw2JC6q29Dcav1SloIBEa3W8CyuW7dxBsPdG08g=
+Message-ID: <7b97a12b0804111443j5ecacfe8i753f54a39093a1ed@mail.gmail.com>
+Date: Fri, 11 Apr 2008 18:43:52 -0300
+From: "Gary Shi" <garyu.shi@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: get a still sysrq-t call trace, not a moving one
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200804112342.48830.bonganilinux@mweb.co.za>
-X-Original-Subject: Re: Shutdown and Reboot Regression 2.6.25-rc[78]
-X-Scan-Signature: 0f89e3e24af1c5e0150dd7bf19b00837
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 11 April 2008 22:58:12 Linus Torvalds wrote:
-> On Fri, 11 Apr 2008, Bongani Hlope wrote:
-> > I found a regression in version 2.6.25-rc7, which causes my computer not
-> > to shutdown or reboot. I get a complete lock up (no keyboard and Sys-Rq)
-> > just before it normally shuts down the alsa service.
-> >
-> > I did a git bisect and it points to this reversion:
-> > [266c2e0abeca649fa6667a1a427ad1da507c6375] Make printk() console
-> > semaphore accesses sensible
->
-> Interesting. That commit _should_ have just moved code around with no
-> actual semantic changes.
->
-> Can you verify that undoing just that one commit makes current git (-rc9)
-> work for you? Ie just try a
->
-> 	git revert 266c2e0abeca649fa6667a1a427ad1da507c6375
->
-> on top of the current tree. I just want to check, because even after
-> looking at that diff again, I'm not seeing what it could actually change.
->
+Hi friends,
 
-After about 4 restarts and 4 reboots, 2.6.25-rc9 seems to work fine with and 
-without the revert. I'll do some more testing.  The assembly output files for 
-kernel/printk.c don't seem that different between rc9 and rc7. I'll see what 
-else I can test.
+when I read sysrq-t call trace, I find the collected call trace for
+some cases is not a still snapshot, but a moving one. After checking
+show_state src, I realize other cpus are not frozen when one cpu is
+doing show_state; thus some task switching can occur among those cpus,
+even the cpu doing sysrq for some kind of kernels.
+
+This moving call traces make debugging much more difficult, or even
+impossible for some cases, since some tasks have been switched in/out
+which make us lose the trace of some important data, like who is
+holding a lock when lots of threads are blocked on the lock.
+
+In order to get a still image of sysrq-t call trace,  I'd like to
+suggest freezing all other cpus  and disabling irq of local cpu.
+
+Any ideas about this?
 
 Thanx
+-gys
+
+pls cc me when you reply since I haven't subscribed to the mailing list.
