@@ -1,91 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760010AbYDKL0W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760202AbYDKL1n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760010AbYDKL0W (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Apr 2008 07:26:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751016AbYDKL0L
+	id S1760202AbYDKL1n (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Apr 2008 07:27:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759289AbYDKL1d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Apr 2008 07:26:11 -0400
-Received: from mail29.messagelabs.com ([216.82.249.147]:52580 "HELO
-	mail29.messagelabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751001AbYDKL0K (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Apr 2008 07:26:10 -0400
-X-VirusChecked: Checked
-X-Env-Sender: Uwe.Kleine-Koenig@digi.com
-X-Msg-Ref: server-2.tower-29.messagelabs.com!1207913169!986862!1
-X-StarScan-Version: 5.5.12.14.2; banners=-,-,-
-X-Originating-IP: [66.77.174.21]
-Date: Fri, 11 Apr 2008 13:25:43 +0200
-From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <Uwe.Kleine-Koenig@digi.com>
-To: "Hans J. Koch" <hjk@linutronix.de>
-Cc: Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org,
-       Russell King - ARM Linux <linux@arm.linux.org.uk>
-Subject: Re: [PATCH 4/4 v2] [RFC] UIO: generic platform driver
-Message-ID: <20080411112543.GA23221@digi.com>
-References: <1207831023-8583-2-git-send-email-Uwe.Kleine-Koenig@digi.com> <1207831023-8583-3-git-send-email-Uwe.Kleine-Koenig@digi.com> <1207831023-8583-4-git-send-email-Uwe.Kleine-Koenig@digi.com> <1207831023-8583-5-git-send-email-Uwe.Kleine-Koenig@digi.com> <20080410224804.GI3193@local> <20080411062106.GA18096@digi.com> <20080411092158.GB31625@digi.com> <20080411103346.GC3185@local> <20080411110358.GC19973@digi.com> <20080411111703.GD3185@local>
+	Fri, 11 Apr 2008 07:27:33 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:41005 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751016AbYDKL1b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Apr 2008 07:27:31 -0400
+Date: Fri, 11 Apr 2008 13:26:53 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: "Kok, Auke" <auke-jan.h.kok@intel.com>
+Cc: Jeff Garzik <jeff@garzik.org>, Matthew Wilcox <matthew@wil.cx>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       NetDev <netdev@vger.kernel.org>,
+       e1000-list <e1000-devel@lists.sourceforge.net>,
+       linux-pci maillist <linux-pci@atrey.karlin.mff.cuni.cz>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "David S. Miller" <davem@davemloft.net>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Jesse Brandeburg <jesse.brandeburg@intel.com>,
+       "Ronciak, John" <john.ronciak@intel.com>,
+       "Allan, Bruce W" <bruce.w.allan@intel.com>, Greg KH <greg@kroah.com>,
+       Arjan van de Ven <arjan@linux.intel.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [patch] e1000=y && e1000e=m regression fix
+Message-ID: <20080411112653.GC9205@elte.hu>
+References: <47FBCE00.2020309@garzik.org> <20080408200652.GC28148@elte.hu> <47FBD34A.6080508@garzik.org> <20080408203314.GA28952@elte.hu> <47FBDBE9.9040700@garzik.org> <20080409193850.GA11763@elte.hu> <47FD2325.2030705@intel.com> <47FE5C89.5060209@intel.com> <20080410192714.GA14055@elte.hu> <47FE8566.5040809@intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20080411111703.GD3185@local>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-OriginalArrivalTime: 11 Apr 2008 11:25:43.0757 (UTC) FILETIME=[C7C697D0:01C89BC6]
-X-TM-AS-Product-Ver: SMEX-8.0.0.1181-5.000.1023-15842.003
-X-TM-AS-Result: No--14.996000-8.000000-31
-X-TM-AS-User-Approved-Sender: No
-X-TM-AS-User-Blocked-Sender: No
+In-Reply-To: <47FE8566.5040809@intel.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
 
-[Added Russell King to Cc:]
+* Kok, Auke <auke-jan.h.kok@intel.com> wrote:
 
-Hans J. Koch wrote:
-> On Fri, Apr 11, 2008 at 01:03:58PM +0200, Uwe Kleine-König wrote:
-> > Hello,
-> > 
-> > Hans J. Koch wrote:
-> > > On Fri, Apr 11, 2008 at 11:21:58AM +0200, Uwe Kleine-König wrote:
-> > > > 
-> > > > Below is a new version that uses linux/stringify and zeros size for
-> > > > unused mappings (line 102ff).
-> > > 
-> > > Thanks, but it doesn't compile, neither with -rc8 nor with Linus' git.
-> > > 
-> > > One problem can easily be fixed, the macro is called __stringify, not
-> > > stringify.
-> > I just notice that, too.  My mail address that and your's just crossed
-> > each other.
-> >  
-> > > But what about this:
-> > > 
-> > > ERROR: "clk_get" [drivers/uio/uio_pdrv.ko] undefined!
-> > > ERROR: "clk_enable" [drivers/uio/uio_pdrv.ko] undefined!
-> > > ERROR: "clk_disable" [drivers/uio/uio_pdrv.ko] undefined!
-> > > ERROR: "clk_put" [drivers/uio/uio_pdrv.ko] undefined!
-> > > 
-> > > Do you have any extra patches applied?
-> > Yes I have, but nothing special.  This is part of a generic API defined
-> > in include/linux/clk.h.  One of it's use it to abstract away some
-> > platform dependencies.  There are several architectures that define
-> > it[1].
-> 
-> I know. Unfortunately, I tested on x86_64, and it doesn't compile.
-> If it's depending on something, then this dependency should be added in
-> Kconfig. If it can be selected in the configuration, I expect it to
-> compile (and work).
-Maybe adding a dummy implementation that is compiled for machines that
-don't provide a native one.  Currently there is no cpp symbol that tells
-if an machine supports the API.
+> Again - this has happened before, I remember many of my boxes not 
+> booting because SATA Kconfig options changed and all my boxes failed 
+> to move the proper Kconfig symbols over when I ran `make oldconfig` 
+> myself. Somewhere around 2.6.20 or so.
 
-@Russell: Do you have an opinion regarding this!?
+that's an insane argument ... because we messed up in the past and have 
+hurt users (and probably lost users) you feel like it gives you a free 
+card to mess up again???
 
-Best regards
-Uwe
+The IDE -> SATA migration, while i like the new SATA code and find it 
+excellent and well-maintained (many kudos for that to Tejun, Jeff, Alan 
+& co), caused a lot of trouble for users in one specific area, for no 
+good reasons other than stupid personality conflicts: /dev/hda worked 
+just as well as /dev/sda, the _name_ of the device should never have 
+been changed.
 
--- 
-Uwe Kleine-König, Software Engineer
-Digi International GmbH Branch Breisach, Küferstrasse 8, 79206 Breisach, Germany
-Tax: 315/5781/0242 / VAT: DE153662976 / Reg. Amtsgericht Dortmund HRB 13962
+So if you use _that_ aspect of the (otherwise cool) SATA/PATA code as a 
+blueprint for the e1000 -> e1000e migration then you are on the worst 
+possible track in terms of picking a role model ;-) It's as if you 
+adored Sylvester Stallone for his vivid mimics, Jean-Claude Van Damne 
+for his excellent acting skills and Paris Hilton for her brillant brain.
+
+really, just because you do exceedingly good things to Linux does not 
+give you a free card to do something bad to Linux in exchange. The two 
+do not cancel out each other - because the bad things _add up_ and drive 
+away users, irreversibly. To you e1000 is the center of the universe so 
+you feel the price is worth paying. For others it is not. We want the 
+good things from you and we'll say no thanks to the bad ideas. Kernel 
+developers, especially old-timers, regularly forget about that.
+
+	Ingo
