@@ -1,72 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760350AbYDKKwe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760464AbYDKKxU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760350AbYDKKwe (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Apr 2008 06:52:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759346AbYDKKw0
+	id S1760464AbYDKKxU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Apr 2008 06:53:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759085AbYDKKxM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Apr 2008 06:52:26 -0400
-Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:34407 "EHLO
-	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758952AbYDKKwZ (ORCPT
+	Fri, 11 Apr 2008 06:53:12 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:36516 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759385AbYDKKxK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Apr 2008 06:52:25 -0400
-Message-ID: <47FF42BE.8030005@s5r6.in-berlin.de>
-Date: Fri, 11 Apr 2008 12:51:42 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.12) Gecko/20080201 SeaMonkey/1.1.8
-MIME-Version: 1.0
-To: monstr@seznam.cz
-CC: linux-kernel@vger.kernel.org
-Subject: Re: microblaze: Merge window + git
-References: <47FF183D.8060408@seznam.cz>
-In-Reply-To: <47FF183D.8060408@seznam.cz>
-Content-Type: text/plain; charset=ISO-8859-2
+	Fri, 11 Apr 2008 06:53:10 -0400
+Date: Fri, 11 Apr 2008 19:57:38 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Christoph Lameter <clameter@sgi.com>
+Subject: Re: 2.6.25-rc8-mm2
+Message-Id: <20080411195738.16e9ef92.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <1207910058.7212.1.camel@haji>
+References: <20080410203354.f0a6f464.akpm@linux-foundation.org>
+	<20080411185703.a5407940.kamezawa.hiroyu@jp.fujitsu.com>
+	<20080411192346.6872472a.kamezawa.hiroyu@jp.fujitsu.com>
+	<1207910058.7212.1.camel@haji>
+Organization: Fujitsu
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Michal Simek wrote:
-> Can you tell me when is open next merge window?
-
-When 2.6.25 is being released.
-
-> and my next question is about GIT.
+On Fri, 11 Apr 2008 13:34:18 +0300
+Pekka Enberg <penberg@cs.helsinki.fi> wrote:
+> > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.25-rc8/2.6.25-rc8-mm2/
+> > > > 
+> > > > - Compilation is busted on mips due to the page-flags patches
+> > > > 
+> > > On ia64/NUMA box (which has empty nodes.)
+> > > 
+> > > CONFIG_SLAB ..... booted well
+> > > CONFIG_SLUB ..... can't boot
+> > > CONFIG_SLUB + CONFIG_SLUB_DEBUG_ON .... booted. Hmm?
+> > > 
+> > > I'll dig more if I can.
+> > > 
+> > with slub_nomerge , booted.
 > 
-> I have second release at my git server and I have some changes which you
-> reported. I would like to collect all changes in the same set of patches.
+> What happens when it doesn't boot? Does it hang or do you get an oops?
+just hangs. before showing anything.
+
+
+> Can you reproduce it with the 'for-mm' branch of:
 > 
-> I mean I have patch with 4 files and I did next changes. I would like to
-> integrate these changes to the same patches. Is it possible to do it?
-> It is easier to review all changes together.
+>  git://git.kernel.org/pub/scm/linux/kernel/git/penberg/slab-2.6.git
 > 
-> I think it is no good way to send first release with reported bugs and new diffs.
 
-You can combine several commits into one in a few ways.  Of course the
-combined commit is an entirely new one (with its own SHA1 etc.).  One
-possible way:
+will try. 
 
-# you are at <commit0>
-$ git cherry-pick --no-commit <commit1>   # apply but don't commit yet
-$ git cherry-pick --edit <commit2>   # apply, edit the changelog, commit
+Thanks,
+-Kame
 
-There will now be a <commit3> whose parent is <commit0>.  <commit3>
-incorporates changes of <commit1> and <commit2>.
-
-Another way:
-
-# you are at <commit0>
-$ patch < ~/diff-from-somewhere
-$ git commit --amend   # replace <commit0> by new amended commit
-
-There will now be a <commit4> instead of <commit0>, with the same
-parent(s) which <commit0> had.  <commit4> incorporates changes of
-<commit0> and the diff.
-
-However, I am no expert on doing these things in git since I only
-develop with quilt.  I use git only to publish the state of development
-and the state for upstream merge.
--- 
-Stefan Richter
--=====-==--- -=-- -=-==
-http://arcgraph.de/sr/
