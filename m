@@ -1,112 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758898AbYDKIpS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759450AbYDKIpj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758898AbYDKIpS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Apr 2008 04:45:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753801AbYDKIpF
+	id S1759450AbYDKIpj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Apr 2008 04:45:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759321AbYDKIp0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Apr 2008 04:45:05 -0400
-Received: from www.tglx.de ([62.245.132.106]:47268 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751278AbYDKIpD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Apr 2008 04:45:03 -0400
-Date: Fri, 11 Apr 2008 10:44:55 +0200
-From: "Hans J. Koch" <hjk@linutronix.de>
-To: Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <Uwe.Kleine-Koenig@digi.com>
-Cc: "Hans J. Koch" <hjk@linutronix.de>, Greg Kroah-Hartman <gregkh@suse.de>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/4] UIO: hold a reference to the device's owner while
-	the device is open
-Message-ID: <20080411084454.GA3185@local>
-References: <1207831023-8583-1-git-send-email-Uwe.Kleine-Koenig@digi.com> <1207831023-8583-2-git-send-email-Uwe.Kleine-Koenig@digi.com> <20080410210229.GF3193@local> <20080411065027.GB18096@digi.com>
+	Fri, 11 Apr 2008 04:45:26 -0400
+Received: from proxy3.bredband.net ([195.54.101.73]:45759 "EHLO
+	proxy3.bredband.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753801AbYDKIpY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Apr 2008 04:45:24 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ArNJACfC/kfVchQtPGdsb2JhbACBXYZbiQ0BAQEBMAGaKA
+Message-ID: <37248.192.168.101.12.1207903522.squirrel@intranet>
+In-Reply-To: <20080410224947.GA8346@sergelap.austin.ibm.com>
+References: <20080409222611.GA28087@us.ibm.com>
+    <20080409223231.GA28267@us.ibm.com> <871w5enmk7.fsf@basil.nowhere.org>
+    <47FE073B.3060007@fr.ibm.com>
+    <20080410125205.GG10019@one.firstfloor.org>
+    <20080410171453.GA7023@sergelap.ibm.com>
+    <49365.192.168.101.12.1207865580.squirrel@intranet>
+    <20080410224947.GA8346@sergelap.austin.ibm.com>
+Date: Fri, 11 Apr 2008 10:45:22 +0200 (CEST)
+Subject: Re: [PATCH 1/3] change clone_flags type to u64
+From: "Daniel Hokka Zakrisson" <daniel@hozac.com>
+To: "Serge E. Hallyn" <serue@us.ibm.com>
+Cc: "Serge E. Hallyn" <serue@us.ibm.com>, "Andi Kleen" <andi@firstfloor.org>,
+       "David C. Hansen" <haveblue@us.ibm.com>, linux-kernel@vger.kernel.org,
+       "Cedric Le Goater" <clg@fr.ibm.com>,
+       "Containers" <containers@lists.osdl.org>,
+       "Pavel Emelyanov" <xemul@openvz.org>
+User-Agent: SquirrelMail/1.4.10a-1.fc6
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20080411065027.GB18096@digi.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 11, 2008 at 08:50:27AM +0200, Uwe Kleine-König wrote:
-> > And I'd like to hear Greg's opinion: Do you agree we can omit
-> > try_module_get() in uio_mmap()?
-> As Greg already pointed out, mmap only works for open files and so the
-> reference is already hold there.
+Serge E. Hallyn wrote:
+> Quoting Daniel Hokka Zakrisson (daniel@hozac.com):
+>> Serge E. Hallyn wrote:
+>> > Quoting Andi Kleen (andi@firstfloor.org):
+>> >> > I guess that was a development rationale.
+>> >>
+>> >> But what rationale? It just doesn't make much sense to me.
+>> >>
+>> >> > Most of the namespaces are in
+>> >> > use in the container projects like openvz, vserver and probably
+>> others
+>> >> > and we needed a way to activate the code.
+>> >>
+>> >> You could just have added it to feature groups over time.
+>> >>
+>> >> >
+>> >> > Not perfect I agree.
+>> >> >
+>> >> > > With your current strategy are you sure that even 64bit will
+>> >> > > be enough in the end? For me it rather looks like you'll
+>> >> > > go through those quickly too as more and more of the kernel
+>> >> > > is namespaced.
+>> >> >
+>> >> > well, we're reaching the end. I hope ! devpts is in progress and
+>> >> > mq is just waiting for a clone flag.
+>> >>
+>> >> Are you sure?
+>> >
+>> > Well for one thing we can take a somewhat different approach to new
+>> > clone flags.  I.e. we could extend CLONE_NEWIPC to do mq instead of
+>> > introducing a new clone flag.  The name doesn't have 'sysv' in it,
+>> > and globbing all ipc resources together makes some amount of sense.
+>> > Similarly has hpa+eric pointed out earlier, suka could use
+>> > CLONE_NEWDEV for ptys.  If we have net, pid, ipc, devices, that's a
+>> > pretty reasonable split imo.  Perhaps we tie user to devices and get
+>> > rid of CLONE_NEWUSER which I suspect noone is using atm (since only
+>> > Dave has run into the CONFIG_USER_SCHED problem).  Or not.  We could
+>> > roll uts into net, and give CLONE_NEWUTS a deprecation period.
+>>
+>> Please don't. Then we'd need to re-add it in Linux-VServer to support
+>> guests where network namespaces aren't used...
+>
+> So these are networked vservers with a different hostname?  Just
+> curious, what would be a typical use for these?
 
-Yes, that's OK.
+Layer 3 isolation will continue to be the default for Linux-VServer.
 
->  
-> > >  	if (idev->info->open) {
-> > > -		if (!try_module_get(idev->owner))
-> > > -			return -ENODEV;
-> > >  		ret = idev->info->open(idev->info, inode);
-> > > -		module_put(idev->owner);
-> > > -	}
-> > > +		if (ret) {
-> > > +			kfree(listener);
-> > > +err_alloc_listener:
-> > >  
-> > > -	if (ret)
-> > > -		kfree(listener);
-> > > +			module_put(idev->owner);
-> > > +err_module_get:
-> > >  
-> > > -	return ret;
-> > > +			return ret;
-> > > +		}
-> > > +	}
-> > > +
-> > > +	return 0;
-> > >  }
-> > 
-> > I really don't like these labels inside the if-block. I find it hard to
-> > read. What about this:
-> > 
-> > 
-> > if (idev->info->open) {
-> > 	ret = idev->info->open(idev->info, inode);
-> > 	if (ret)
-> > 		kfree(listener);
-> > 	return ret;
-> > }
-> > 
-> > err_alloc_listener:
-> > 	module_put(idev->owner);
-> > err_module_get:
-> > 	return ret;
-> With that you leak a reference to idev->owner if idev->info->open() fails.
-> Things like that don't happen that easy if all error handing is in one
-> place.
+> Anyway then I guess we won't :)  Do you have other suggestions for
+> ns clone flags which ought to be combined?  Do the rest of what I
+> listed make sense to you?  (If not, then I guess I'll step out of the
+> way and let you and Andi fight it out :)
 
-Maybe. It's merely an example to explain what I mean.
-Documentation/CodingStyle says nothing about how to place labels, but I
-find it best to have all error path exits at the end of a function. All
-the UIO code does it that way.
+I think putting mq under CLONE_NEWIPC makes sense, as well as using
+CLONE_NEWDEV for the ptys. If CLONE_NEWUSER is to be combined with
+anything, I think it makes more sense to combine it with CLONE_NEWPID than
+CLONE_NEWDEV.
 
->  
-> > The label err_module_get should probably be omitted because it's used only
-> > once and has just one line of code. You could simply write "return ret"
-> > instead of "goto err_module_get".
-> This makes code shuffling easier.  For example if someone decides that
-> try_module_get should be done after allocating listener then you only
-> have to exchange the two corresponding code blocks and the two groups
-> (label + cleanup) in the error handling block.
-> If the error handling is spread over the whole functions you can easily
-> miss something---as happend above. :-)
+> thanks,
+> -serge
+>
 
-Well, it depends. It's all about readability. Any function should be
-written in a way that makes it as clear as possible what it does. Your
-code is certainly not critical regarding that aspect, but I think it can
-still be improved. And a label that is used only once and contains only
-one line of code is definetly unnecessary. I don't follow the
-maybe-one-day-in-the-future-it-might-be-useful philosophy. I like code
-that is as clean and readable as possible _now_. And as this patch is
-not just a driver but affects the UIO core, this is even more important.
-
-Could you please send an updated patch?
-
-Thanks,
-Hans
-
-
+-- 
+Daniel Hokka Zakrisson
