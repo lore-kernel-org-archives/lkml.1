@@ -1,99 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760861AbYDKRtx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760953AbYDKRxe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760861AbYDKRtx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Apr 2008 13:49:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760299AbYDKRto
+	id S1760953AbYDKRxe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Apr 2008 13:53:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759085AbYDKRxX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Apr 2008 13:49:44 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:53536 "EHLO pasmtpA.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760297AbYDKRto (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Apr 2008 13:49:44 -0400
-Date: Fri, 11 Apr 2008 19:50:06 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Jacek Luczak <difrost.kernel@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       tglx@linutronix.de
-Subject: Re: [PATCH] x86: setup_trampoline() - fix section mismatch warning
-Message-ID: <20080411175006.GA31716@uranus.ravnborg.org>
-References: <47FE6799.9030606@gmail.com>
-Mime-Version: 1.0
+	Fri, 11 Apr 2008 13:53:23 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:41632 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758817AbYDKRxW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Apr 2008 13:53:22 -0400
+Date: Fri, 11 Apr 2008 11:53:05 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Christoph Hellwig <hch@infradead.org>,
+       "Kok, Auke" <auke-jan.h.kok@intel.com>, Ingo Molnar <mingo@elte.hu>,
+       Jeff Garzik <jeff@garzik.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       NetDev <netdev@vger.kernel.org>,
+       e1000-list <e1000-devel@lists.sourceforge.net>,
+       linux-pci maillist <linux-pci@atrey.karlin.mff.cuni.cz>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "David S. Miller" <davem@davemloft.net>,
+       Jesse Brandeburg <jesse.brandeburg@intel.com>,
+       "Ronciak, John" <john.ronciak@intel.com>,
+       "Allan, Bruce W" <bruce.w.allan@intel.com>, Greg KH <greg@kroah.com>,
+       Arjan van de Ven <arjan@linux.intel.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [patch] e1000=y && e1000e=m regression fix
+Message-ID: <20080411175304.GF11962@parisc-linux.org>
+References: <47FD2325.2030705@intel.com> <47FE5C89.5060209@intel.com> <20080410192714.GA14055@elte.hu> <47FE8566.5040809@intel.com> <20080411112653.GC9205@elte.hu> <20080411113644.GA7767@infradead.org> <20080411121606.GA25661@elte.hu> <47FF9060.5040202@intel.com> <20080411164542.GA4066@infradead.org> <alpine.LFD.1.00.0804111028540.3143@woody.linux-foundation.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <47FE6799.9030606@gmail.com>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <alpine.LFD.1.00.0804111028540.3143@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jacek
+On Fri, Apr 11, 2008 at 10:34:01AM -0700, Linus Torvalds wrote:
+> Here's a suggested patch. Not much tested, but it's fairly obvious.
+> 
+> It basically makes one top-level config option (E1000) to pick the driver 
+> at all, and two sub-options (E1000_PCI and E1000_PCIE) that you can choose 
+> between.
 
-On Thu, Apr 10, 2008 at 09:16:41PM +0200, Jacek Luczak wrote:
-> Hi Ingo,
-> 
-> this patch fixes section mismatch warnings (on x86_64 host) in setup_trampoline(),
-> which was referencing __initdata variables trampoline_data and trampoline_end.
-> 
-> Patch is against x86/latest.
-> 
-> Warning messages:
-> WARNING: arch/x86/kernel/built-in.o(.cpuinit.text+0x2b6a): Section mismatch in reference from the function setup_trampoline()
-> to the variable .init.data:trampoline_data
-> The function __cpuinit setup_trampoline() references
-> a variable __initdata trampoline_data.
-> If trampoline_data is only used by setup_trampoline then
-> annotate trampoline_data with a matching annotation.
-> 
-> WARNING: arch/x86/kernel/built-in.o(.cpuinit.text+0x2b71): Section mismatch in reference from the function setup_trampoline()
-> to the variable .init.data:trampoline_end
-> The function __cpuinit setup_trampoline() references
-> a variable __initdata trampoline_end.
-> If trampoline_end is only used by setup_trampoline then
-> annotate trampoline_end with a matching annotation. 
-> 
-> -Jacek
-> 
-> PS: Hope that my email client won't break patch this time. In case it does - patch attached.
-> 
-> ---
-> 
-> diff --git a/arch/x86/kernel/trampoline_64.S b/arch/x86/kernel/trampoline_64.S
-> index 4aedd0b..2a07e67 100644
-> --- a/arch/x86/kernel/trampoline_64.S
-> +++ b/arch/x86/kernel/trampoline_64.S
-> @@ -32,7 +32,7 @@
->  
->  /* We can free up trampoline after bootup if cpu hotplug is not supported. */
->  #ifndef CONFIG_HOTPLUG_CPU
-> -.section .init.data, "aw", @progbits
-> +.section .cpuinit.data, "aw", @progbits
->  #else
->  .section .rodata, "a", @progbits
->  #endif
+I think it's a little over-engineered ... why not simply:
 
-The correct fix would be to drop the
-preprocessor directves and use __CPUINITDATA
+config E1000_SUPPORT
+	bool "Intel(R) PRO/1000 Gigabit Ethernet support"
+	depends on PCI
 
-Like this: (hand edited):
+config E1000
+	depends on E1000_SUPPORT
+	tristate "E1000 PCI support"
+	help
+	  Include support for Conventional PCI devices.  This includes
+	  chips built into motherboards ... blah blah, if unsure say "Y"
+	  or "M"
 
-> diff --git a/arch/x86/kernel/trampoline_64.S b/arch/x86/kernel/trampoline_64.S
-> index 4aedd0b..2a07e67 100644
-> --- a/arch/x86/kernel/trampoline_64.S
-> +++ b/arch/x86/kernel/trampoline_64.S
-> @@ -32,7 +32,7 @@
->  
->  /* We can free up trampoline after bootup if cpu hotplug is not supported. */
->  #ifndef CONFIG_HOTPLUG_CPU
-> -.section .init.data, "aw", @progbits
-> -#else
-> -.section .rodata, "a", @progbits
-> -#endif
-> +__CPUINITDATA
+config E1000E
+	depends on E1000_SUPPORT
+	tristate "E1000 PCI Express support"
+	help
+	  Include support for PCI Express devices.  This includes chips
+	  built into motherboards such as ICH9 ... blah blah, if unsure
+	  say "Y" or "M".
 
-If your testing confirms this then please apply similar fix to the _32.S
-version of the file too.
+and get rid of the PCIE() macros from the e1000 driver.  While it does
+allow someone like Ingo to create a E1000=y and E1000E=m situation
+(which won't bind to an ethernet card that E1000 used to), having the
+E1000_SUPPORT symbol means that oldconfig will stop and ask you which
+hopefully makes it obvious enough that things have changed here and you
+need to pay attention.
 
-Nore that this looses the @progbits annotation but it should be OK to do so.
-I may later add it to init.h.
-
-	Sam
+-- 
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
