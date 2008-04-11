@@ -1,47 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760287AbYDKKfB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760334AbYDKKfl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760287AbYDKKfB (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Apr 2008 06:35:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760108AbYDKKeu
+	id S1760334AbYDKKfl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Apr 2008 06:35:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759211AbYDKKfb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Apr 2008 06:34:50 -0400
-Received: from styx.suse.cz ([82.119.242.94]:56752 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1759019AbYDKKet (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Apr 2008 06:34:49 -0400
-Date: Fri, 11 Apr 2008 12:34:48 +0200 (CEST)
-From: Jiri Kosina <jkosina@suse.cz>
-To: Ingo Molnar <mingo@elte.hu>
-cc: Zdenek Kabelac <zdenek.kabelac@gmail.com>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: BUG: using smp_processor_id() during suspend with 2.6.25-rc8
-In-Reply-To: <20080411102548.GO10801@elte.hu>
-Message-ID: <Pine.LNX.4.64.0804111229020.3896@jikos.suse.cz>
-References: <c4e36d110804070625n17eb44e1nbb5558f500f13438@mail.gmail.com>
- <Pine.LNX.4.64.0804072348050.26562@twin.jikos.cz> <20080411102548.GO10801@elte.hu>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 11 Apr 2008 06:35:31 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:36304 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759147AbYDKKfb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Apr 2008 06:35:31 -0400
+Subject: Re: 2.6.25-rc8-mm2: boot hang after "ACPI: using IOAPIC for
+	interrupt routing"
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: Alexey Dobriyan <adobriyan@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Christoph Lameter <clameter@sgi.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20080411062928.GB4748@martell.zuzino.mipt.ru>
+References: <20080410203354.f0a6f464.akpm@linux-foundation.org>
+	 <20080411062928.GB4748@martell.zuzino.mipt.ru>
+Date: Fri, 11 Apr 2008 13:35:28 +0300
+Message-Id: <1207910128.7212.4.camel@haji>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.12.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 11 Apr 2008, Ingo Molnar wrote:
+On Fri, 2008-04-11 at 10:29 +0400, Alexey Dobriyan wrote:
+> On Thu, Apr 10, 2008 at 08:33:54PM -0700, Andrew Morton wrote:
+> > - git-slub has been temporarily replaced by git-pekka.  Pekka is standing in
+> >   while Christoph is away.
+> 
+> I bisected boot hang after "ACPI: using IOAPIC for interrupt routing"
+> down to git-pekka.
+> 
+> normal dmesg from 2.6.25-rc8-something and .config snippets for -mm
 
-> > [ CCs added ]
-> thanks Jiri, i've applied both patches of yours. (let me know if there 
-> are any updated patches) do they solve the problem?
+Alexey, can you try passing the 'slub_nomerge' option to the kernel to
+see if the hang goes away with that?
 
-Hi Ingo,
+			Pekka
 
-thanks, but I don't think they are the proper fix anymore. We'd rather 
-figure out why interrupts were enabled in the first place while the code 
-was running.
-
-Which is quite difficult, because Zdenek doesn't seem to be able to 
-reproduce it, so we even don't know whether it has been caused by KVM or 
-not.
-
--- 
-Jiri Kosina
-SUSE Labs
