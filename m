@@ -1,107 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758688AbYDKGka@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758785AbYDKGoG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758688AbYDKGka (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Apr 2008 02:40:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753329AbYDKGkP
+	id S1758785AbYDKGoG (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Apr 2008 02:44:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753545AbYDKGnz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Apr 2008 02:40:15 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:35360 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752910AbYDKGkO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Apr 2008 02:40:14 -0400
-Date: Fri, 11 Apr 2008 09:40:08 +0300 (EEST)
-From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
-X-X-Sender: ijjarvin@wrl-59.cs.helsinki.fi
-To: Mark Lord <lkml@rtr.ca>
-cc: David Miller <davem@davemloft.net>, jesper.juhl@gmail.com, tilman@imap.cc,
-       yoshfuji@linux-ipv6.org, Jeff Garzik <jeff@garzik.org>, rjw@sisk.pl,
-       LKML <linux-kernel@vger.kernel.org>, Netdev <netdev@vger.kernel.org>
-Subject: Re: 2.6.25-rc8: FTP transfer errors
-In-Reply-To: <47FEBDAA.7010305@rtr.ca>
-Message-ID: <Pine.LNX.4.64.0804110849520.28360@wrl-59.cs.helsinki.fi>
-References: <47FEADCB.7070104@rtr.ca> <20080410.172453.44434205.davem@davemloft.net>
- <47FEB062.3020003@rtr.ca> <20080410.173911.179180620.davem@davemloft.net>
- <47FEBDAA.7010305@rtr.ca>
-Mime-Version: 1.0
+	Fri, 11 Apr 2008 02:43:55 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:60178 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753463AbYDKGnz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Apr 2008 02:43:55 -0400
+Date: Fri, 11 Apr 2008 08:43:36 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Anvin" <hpa@zytor.com>
+Subject: Re: x86 git tree broken
+Message-ID: <20080411064336.GA8082@elte.hu>
+References: <200804102159.14563.rjw@sisk.pl> <20080410205106.GB15440@elte.hu> <200804110027.06078.rjw@sisk.pl>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <200804110027.06078.rjw@sisk.pl>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0002]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 10 Apr 2008, Mark Lord wrote:
 
-> David Miller wrote:
-> > From: Mark Lord <lkml@rtr.ca>
-> > Date: Thu, 10 Apr 2008 20:27:14 -0400
-> > 
-> > > It's *your* bug -- you signed off on the commit.
-> > 
-> > I sign off on basically every networking commit, does that mean I have
-> > to fix every networking bug and every networking bug is "mine"?
-> ..
+* Rafael J. Wysocki <rjw@sisk.pl> wrote:
+
+> > exactly what kind of system are you using?
 > 
-> Absolutely, though to a varying degree.  That's the responsibility
-> that goes with the role of a subsystem maintainer.  I once had
-> such a role, and gave it up when I felt I could no longer keep up.  
-> You still keep refering to it as "your (my) bug".
-> It's not.  I had nothing to do with it, other than stumbling over it.
+> It's an Athlon 64 X2 on an ULi-based AsRock motherboard with Radeon 
+> X300SE (PCIe).
 
-This bug is perfect example where bisect clearly was useful :-). Nobody 
-knew whose bug it actually was until your bisect gave directions.
+hm, that's very close to the system i tried: Athlon64 X2 with Radeon 
+X300SE (PCIe), 1GB RAM. (Asus A8N-E mobo)
 
-> When people stumble over a libata bug, I look hard to see if my code
-> could possibly cause it.  Jeff looks even harder, because he's the
-> current subsystem dude for libata.
->
-> I never suggest a user search through a mountain of unrelated commits
-> for something I've screwed up on.
-
-But it is ok for you to ask an innocent net developer to do that (even 
-with your terms as I hadn't signed off _anything_ related to that one),
-hmm?
-
-...You had this pretty demanding tone earlier:
-
-> Or I can ignore it, like the net developers, since I have a workaround.
-> And then we'll see what other apps are broken upon 2.6.25 final release.
->
-> Really, folks.  Bug reports are intended to *help* the developers,
-> not something to be thrown back in their faces.
->
-> There do seem to have been a *lot* of changes around the tcp closing/close
-> code (as I see from diff'ing 2.6.24 against latest -git).
->
-> *Somebody* is responsible for those changes.
-> That particular *somebody* ought to volunteer some help here,
-> reducing the mountain of commits to a big handful or two.
-
-...and also...
-
-> > Anyways, here's five hours of free consulting for you
-
-...Sure I could use similar words, but you might use the not-mine
-bug approach again to deflect... :-( ...No, I don't mind really :-).
-I well understand that I occassionally end up chasing things 
-which are bugs that other people have caused, that's part of the
-game.
-
-> I give more directed help, patches to collect more relevant information, 
-> and patches to try and resolve it.
-
-Now that you have, as stated earlier, first looked the diffs (tcp*.c stuff 
-mainly I suppose?!?), and the bisected it and found the breaker, and even 
-patch is available already... Seriously, knowing all what's now available, 
-how could we have solved _this particular case_ without that very useful 
-help (bisect) from your side?
-
-Yes, I went through the commit list (maybe you did as well), I'm not sure 
-if Dave did as well. In addition, I checked a number of individual diffs 
-too but this just isn't something very obvious (I have to admit though 
-that I don't really understand all those namespace things, so I didn't 
-even know how to look them too carefully).
-
-
--- 
- i.
+	Ingo
