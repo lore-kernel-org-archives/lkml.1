@@ -1,96 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752847AbYDKEt6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758278AbYDKEul@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752847AbYDKEt6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Apr 2008 00:49:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752132AbYDKEte
+	id S1758278AbYDKEul (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Apr 2008 00:50:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752132AbYDKEud
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Apr 2008 00:49:34 -0400
-Received: from e28smtp06.in.ibm.com ([59.145.155.6]:36691 "EHLO
-	e28smtp06.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751619AbYDKEtd (ORCPT
+	Fri, 11 Apr 2008 00:50:33 -0400
+Received: from wa-out-1112.google.com ([209.85.146.179]:57611 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751904AbYDKEuc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Apr 2008 00:49:33 -0400
-Message-ID: <47FEED67.1080006@linux.vnet.ibm.com>
-Date: Fri, 11 Apr 2008 10:17:35 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	Fri, 11 Apr 2008 00:50:32 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=hRIupchtBvOfXh3BdkN/Qo1NCuf+ciIZs0YLZarNooaAJAJ1+1QTIu97VGNjqzzGQ1HDqXdic+aJJNuZo61eKt2UvMWG42EF2VPDbSl++GSE6J5/oIVVVe9dA9JCsuz2UY6+FE4SDrJYO4u6cINqjWtvTVmdumEQoyAQ6bdoK3s=
+Message-ID: <47FEEE0E.6020206@gmail.com>
+Date: Fri, 11 Apr 2008 13:50:22 +0900
+From: KOSAKI Motohiro <kosaki.motohiro@gmail.com>
+User-Agent: Thunderbird 2.0.0.12 (Windows/20080213)
 MIME-Version: 1.0
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-CC: Paul Menage <menage@google.com>, Pavel Emelianov <xemul@openvz.org>,
-       Hugh Dickins <hugh@veritas.com>,
-       Sudhir Kumar <skumar@linux.vnet.ibm.com>,
-       YAMAMOTO Takashi <yamamoto@valinux.co.jp>, linux-kernel@vger.kernel.org,
-       taka@valinux.co.jp, linux-mm@kvack.org,
-       David Rientjes <rientjes@google.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [-mm] Add an owner to the mm_struct (v9)
-References: <20080410091602.4472.32172.sendpatchset@localhost.localdomain> <20080411123339.89aea319.kamezawa.hiroyu@jp.fujitsu.com> <47FEE89A.1010102@linux.vnet.ibm.com> <20080411134739.1aae8bae.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20080411134739.1aae8bae.kamezawa.hiroyu@jp.fujitsu.com>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, Andi Kleen <andi@firstfloor.org>,
+       Rusty Russell <rusty@rustcorp.com.au>, Jason Baron <jbaron@redhat.com>,
+       Adrian Bunk <bunk@stusta.de>, Alexey Dobriyan <adobriyan@gmail.com>,
+       Christoph Hellwig <hch@infradead.org>, akpm@osdl.org,
+       linuxdev-kanex@ml.css.fujitsu.com
+Subject: Re: [patch 11/17] Implement immediate update via stop_machine_run
+References: <20080409150829.855195878@polymtl.ca> <20080409152050.389300996@polymtl.ca> <20080410164159.2327.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20080410200153.GB22894@Krystal>
+In-Reply-To: <20080410200153.GB22894@Krystal>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-KAMEZAWA Hiroyuki wrote:
-> On Fri, 11 Apr 2008 09:57:06 +0530
-> Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-> 
->> KAMEZAWA Hiroyuki wrote:
->>> maybe I don't undestand correctlly...
->>>
->>> On Thu, 10 Apr 2008 14:46:02 +0530
->>> Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
->>>
->>>>  
->>>> +config MM_OWNER
->>>> +	bool
->>>> +
->>> no default is ok here  ? what value will this have if not selected ?
->>> I'm sorry if I misunderstand Kconfig.
->>>
->> The way this works is
+Hi  Mathieu,
+>> it seems this patch is must, Why do you separate patch [10/17] and [11/17]?
+>> this patch remove almost portion of [10/17].
+>> IMHO these patch merge into 1 patch is better.
 >>
->> If I select memory resource controller, CONFIG_MM_OWNER is set to y, else it
->> does not even show up in the .config
+>>     
+>
+> Hi Kosaki,
+>
+> You are right, I will merge them and resend them in the following post.
+>   
+Thanks
+
+>>> +static int stop_machine_imv_update(void *imv_ptr)
+>>> +{
+>>> +	struct __imv *imv = imv_ptr;
+>>> +
+>>> +	if (!wrote_text) {
+>>>       
+>> it seems racy.
+>> Why don't need test_and_set?
 >>
-> ok, sorry for noise.
-> 
+>> I think your stop_machine_run(ALL_CPUS) call fn concurrency...
+>>     
+> The answer to this mistery is in include/linux/stop_machine.h modified
+> by add-all-cpus-option-to-stop-machine-run.patch :
+>
+>
+>  /**
+>   * stop_machine_run: freeze the machine on all CPUs and run this function
+>   * @fn: the function to run
+>   * @data: the data ptr for the @fn()
+> - * @cpu: the cpu to run @fn() on (or any, if @cpu == NR_CPUS.
+> + * @cpu: if @cpu == n, run @fn() on cpu n
+> + *       if @cpu == NR_CPUS, run @fn() on any cpu
+> + *       if @cpu == ALL_CPUS, run @fn() first on the calling cpu, and then
+> + *       concurrently on all the other cpus
+>   *
+>   * Description: This causes a thread to be scheduled on every other cpu,
+>   * each of which disables interrupts, and finally interrupts are disabled
+>
+> Therefore, the first execution of the function is done before all other
+> executions.
+>
+>   
+Ah, OK. I understand.
+Thanks.
 
-No problem at all, please feel free to question anything.
 
->>>> +	/*
->>>> +	 * Search through everything else. We should not get
->>>> +	 * here often
->>>> +	 */
->>>> +	do_each_thread(g, c) {
->>>> +		if (c->mm == mm)
->>>> +			goto assign_new_owner;
->>>> +	} while_each_thread(g, c);
->>>> +
->>> Again, do_each_thread() is suitable here ?
->>> for_each_process() ?
->>>
->> do_each_thread(), while_each_thread() walks all processes and threads of those
->> processes in the system. It is a common pattern used in the kernel (see
->> try_to_freeze_tasks() or oom_kill_task() for example).
->>
-> 
-> What you want is finding a thread which has the "mm_struct". Why search all
-> threads ? I think you only have to search processes(i.e. thread-group-leaders).
-> 
-> try_to_freeze_tasks()/oom_kill_task() have to chase all threads because
-> it have to check flags in task_structs in a process.
-> 
-
-Good question. It is possible that clone() was called with CLONE_VM without
-CLONE_THREAD. In which case we have threads sharing the VM without a thread
-group leader. Please see zap_threads() for a similar search pattern.
-
--- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
