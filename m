@@ -1,74 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760208AbYDKOgs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760110AbYDKOrm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760208AbYDKOgs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Apr 2008 10:36:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758600AbYDKOgg
+	id S1760110AbYDKOrm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Apr 2008 10:47:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756958AbYDKOrc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Apr 2008 10:36:36 -0400
-Received: from relay.2ka.mipt.ru ([194.85.82.65]:41823 "EHLO 2ka.mipt.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758488AbYDKOgg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Apr 2008 10:36:36 -0400
-Date: Fri, 11 Apr 2008 18:35:37 +0400
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-To: Mark Lord <lkml@rtr.ca>
-Cc: Ilpo =?utf-8?B?SsOkcnZpbmVu?= <ilpo.jarvinen@helsinki.fi>,
-       David Miller <davem@davemloft.net>, jesper.juhl@gmail.com,
-       tilman@imap.cc, yoshfuji@linux-ipv6.org, Jeff Garzik <jeff@garzik.org>,
-       rjw@sisk.pl, LKML <linux-kernel@vger.kernel.org>,
-       Netdev <netdev@vger.kernel.org>
-Subject: Re: 2.6.25-rc8: FTP transfer errors
-Message-ID: <20080411143537.GA27874@2ka.mipt.ru>
-References: <47FEADCB.7070104@rtr.ca> <20080410.172453.44434205.davem@davemloft.net> <47FEB062.3020003@rtr.ca> <20080410.173911.179180620.davem@davemloft.net> <47FEBDAA.7010305@rtr.ca> <Pine.LNX.4.64.0804110849520.28360@wrl-59.cs.helsinki.fi> <47FF6555.50004@rtr.ca>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47FF6555.50004@rtr.ca>
-User-Agent: Mutt/1.5.9i
+	Fri, 11 Apr 2008 10:47:32 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:46886 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754604AbYDKOrb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Apr 2008 10:47:31 -0400
+Date: Fri, 11 Apr 2008 07:46:48 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Heiko Carstens <heiko.carstens@de.ibm.com>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Jakub Jelinek <jakub@redhat.com>, Dave Jones <davej@redhat.com>,
+       drepper@redhat.com, mingo@redhat.com, tglx@redhat.com,
+       linux-kernel@vger.kernel.org, Roland McGrath <roland@redhat.com>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>
+Subject: Re: [PATCH] Fix compile breakage caused by asmlinkage_protect
+In-Reply-To: <20080411114654.GA12270@osiris.boeblingen.de.ibm.com>
+Message-ID: <alpine.LFD.1.00.0804110744100.3143@woody.linux-foundation.org>
+References: <alpine.LFD.1.00.0804101447240.3143@woody.linux-foundation.org> <20080410223738.80A8326F992@magilla.localdomain> <20080411114654.GA12270@osiris.boeblingen.de.ibm.com>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 11, 2008 at 09:19:17AM -0400, Mark Lord (lkml@rtr.ca) wrote:
-> >>Or I can ignore it, like the net developers, since I have a workaround.
-> >>And then we'll see what other apps are broken upon 2.6.25 final release.
+
+
+On Fri, 11 Apr 2008, Heiko Carstens wrote:
 > 
-> That's not demanding, that's quite relaxed.  I had a good workaround,
-> and didn't really care any more at that point.  Just though it was rather
-> odd that none of the developers seemed interested in tracking it down.
-> I offered tons of help, gave it, and said I didn't have time for a full
-> bisect at that juncture.
+> git commit 54a015104136974262afa4b8ddd943ea70dec8a2
+> "asmlinkage_protect replaces prevent_tail_call" causes this build failure
+> on s390:
 > 
-> For that, I get repeatedly slammed by the netdev folks.
-> Even after I put aside *paid* work to submit to your demands.
-> 
-> Next time around, I won't bother reporting bugs to you folks,
-> that's for damned sure.
+>   AS      arch/s390/kernel/entry64.o
+> In file included from arch/s390/kernel/entry64.S:14:
+> include/linux/linkage.h:34: error: syntax error in macro parameter list
+> make[1]: *** [arch/s390/kernel/entry64.o] Error 1
+> make: *** [arch/s390/kernel] Error 2
 
-Actually that will be the best decision from evolutional point of view. 
+Ok, that's just _odd_.
 
-Bugs, which 'are thrown back to your face' like what you did with this
-one, are useless. Developers already know, that bugs exist. 
+> So just surround the new define with an #ifndef __ASSEMBLY__ to prevent
+> any side effects on asm code.
 
-If you do not care about bug, why do you ever bothered filling it?
-You expected that anyone will start running to fix it for you.
-You were wrong. Developers only fix bugs, which do not require
-mind-reading and magnetic quantification of your brain.
+There are no side effects on asm code. It just adds a #define that 
+obviously won't be used.
 
-If you do not want to help fixing it, do not expect it will be fixed at
-all. Sentence, that you will probably understand better: no one get paid
-to fix it.
+Is the s390 assembler using some strange C pre-processor that is different 
+from the main C preprocessor and doesn't understand this pattern?
 
-No one get fun fixing something with description you provided
-(not sure about David though, probably he has some masochistic
-propensities doing that and trying to get some bits of information
-from reportes for years).
-You were suggested some simple checks, they did not help.
-Developers can not remotely control electrons in your wires, so next
-sugestion was bisecting, which ended up with some crap from your point.
+I really think you should fix *that*, because otherwise you'll hit these 
+kinds of bugs occasionally. There aren't that many asm files, it's not 
+worth it optimizing them to use some faster-but-stupider preprocessor.
 
-If you want bug got fixed, provide info and if it is not enough, help by
-trying what you are being suggested, if you do not want, stop.
-
--- 
-	Evgeniy Polyakov
+			Linus
