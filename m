@@ -1,64 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759986AbYDKKrD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760152AbYDKKsX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759986AbYDKKrD (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Apr 2008 06:47:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758939AbYDKKqy
+	id S1760152AbYDKKsX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Apr 2008 06:48:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758944AbYDKKsQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Apr 2008 06:46:54 -0400
-Received: from mail164.messagelabs.com ([216.82.253.131]:51803 "HELO
-	mail164.messagelabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1758374AbYDKKqx (ORCPT
+	Fri, 11 Apr 2008 06:48:16 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:45672 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758771AbYDKKsP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Apr 2008 06:46:53 -0400
-X-VirusChecked: Checked
-X-Env-Sender: Uwe.Kleine-Koenig@digi.com
-X-Msg-Ref: server-7.tower-164.messagelabs.com!1207910812!3233190!1
-X-StarScan-Version: 5.5.12.14.2; banners=-,-,-
-X-Originating-IP: [66.77.174.21]
-Date: Fri, 11 Apr 2008 12:46:04 +0200
-From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <Uwe.Kleine-Koenig@digi.com>
-To: David Brownell <dbrownell@users.sourceforge.net>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] GPIO: #include <linux/kernel.h> for might_sleep
-Message-ID: <20080411104604.GA19973@digi.com>
-References: <1207902290-25381-1-git-send-email-Uwe.Kleine-Koenig@digi.com>
+	Fri, 11 Apr 2008 06:48:15 -0400
+Date: Fri, 11 Apr 2008 12:49:02 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Jiri Kosina <jkosina@suse.cz>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Andi Kleen <andi@firstfloor.org>,
+       Zdenek Kabelac <zdenek.kabelac@gmail.com>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: BUG: using smp_processor_id() during suspend with 2.6.25-rc8
+Message-ID: <20080411104902.GA8734@elf.ucw.cz>
+References: <c4e36d110804070625n17eb44e1nbb5558f500f13438@mail.gmail.com> <Pine.LNX.4.64.0804080008420.3896@jikos.suse.cz> <20080407222352.GG16647@one.firstfloor.org> <200804080029.31102.rjw@sisk.pl> <Pine.LNX.4.64.0804080030500.3896@jikos.suse.cz> <20080410094554.GA10321@ucw.cz> <Pine.LNX.4.64.0804110122470.3896@jikos.suse.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1207902290-25381-1-git-send-email-Uwe.Kleine-Koenig@digi.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-OriginalArrivalTime: 11 Apr 2008 10:46:05.0210 (UTC) FILETIME=[3E0D1FA0:01C89BC1]
-X-TM-AS-Product-Ver: SMEX-8.0.0.1181-5.000.1023-15842.003
-X-TM-AS-Result: No--15.073000-8.000000-31
-X-TM-AS-User-Approved-Sender: No
-X-TM-AS-User-Blocked-Sender: No
+In-Reply-To: <Pine.LNX.4.64.0804110122470.3896@jikos.suse.cz>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello again,
-
-Uwe Kleine-König wrote:
-> Signed-off-by: Uwe Kleine-König <Uwe.Kleine-Koenig@digi.com>
-> ---
-> Hello David,
+On Fri 2008-04-11 01:25:13, Jiri Kosina wrote:
+> On Thu, 10 Apr 2008, Pavel Machek wrote:
 > 
-> I like having headers being independend of the order of inclusion.
-> Usually I order all includes alphabetically (and grouped by linux/,
-> asm/, etc.).  This doesn't work with gpio.h because then kernel.h is
-> included to late.
-I just noticed that you need include/asm/types.h also for the
-CONFIG_HAVE_GPIO_LIB=y case.  So the #include can better go to the top
-of include/asm-generic/gpio.h.
+> > > > > sysdevs were always supposed to run completely with interrupts off. If they 
+> > > > > don't anymore that's some kind of higher level resume code bug which you need 
+> > > > > to fix there, not hack around in the low level code.
+> > > > They are executed with interrupts disabled, on one CPU.
+> > > So, any idea why mce_resume() -> mce_init() -> debug_smp_processor_id() 
+> > > triggers the warning? Apparently preempt_count is zero, irqs_disabled() 
+> > > returns false, and cpumask_of_cpu() is not equal to current->cpus_allowed.
 
-I won't send a new version untill you say if it's OK for you to add
-#includes to that header.
+...that is okay in case of just one CPU.
 
-Best regards
-Uwe
+> > We are single-threaded because we 'unplugged' all the other cpus... but 
+> > I'm not sure the BUG() code realises that...
+> 
+> That's unrelated, right? The real problem here is that irqs_disabled() 
+> call inside debug_smp_processor_id() signalized that interrupts are 
+> enabled, and that (correctly) triggered the bug.
+
+Well, we can discuss it personally.
+
+Yes, it is probably bug that interrupts are enabled there. No, the bug
+can't potentially bite the user because there should be just one CPU
+"plugged in"... so it is kind of false-positive, too..
+
+Does the warning go away with this?
+
+
+									Pavel
+
+diff --git a/lib/smp_processor_id.c b/lib/smp_processor_id.c
+index 6c90fb9..8195c37 100644
+--- a/lib/smp_processor_id.c
++++ b/lib/smp_processor_id.c
+@@ -35,6 +35,13 @@ unsigned int debug_smp_processor_id(void
+ 		goto out;
+ 
+ 	/*
++	 * It is valid to assume CPU-locality if there's just one
++	 * CPU active
++	 */
++	if (num_online_cpus() == 1)
++		goto out;
++
++	/*
+ 	 * Avoid recursion:
+ 	 */
+ 	preempt_disable();
 
 -- 
-Uwe Kleine-König, Software Engineer
-Digi International GmbH Branch Breisach, Küferstrasse 8, 79206 Breisach, Germany
-Tax: 315/5781/0242 / VAT: DE153662976 / Reg. Amtsgericht Dortmund HRB 13962
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
