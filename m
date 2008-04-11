@@ -1,78 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758907AbYDKIkq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758898AbYDKIpS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758907AbYDKIkq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Apr 2008 04:40:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756932AbYDKIkg
+	id S1758898AbYDKIpS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Apr 2008 04:45:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753801AbYDKIpF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Apr 2008 04:40:36 -0400
-Received: from wx-out-0506.google.com ([66.249.82.237]:14932 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756662AbYDKIkf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Apr 2008 04:40:35 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=IDoDhug5yf/uPET69U+rGGS2qg9EK+0Ue9S9M0cpE0v4bSoDSsWTGqip6xiSGqSifFP3thQyLgUmUiFMOGCb4taE0TmXZuYt4J5/t9ZJWqtVWGi+sXL+1Q/7EHLtxEGE+g8/+/6u1tXyRIPRyDTD0U0qiwDetyw/YjK63sTO4Bw=
-Message-ID: <86802c440804110140i7752e0ayadca550cdddfd599@mail.gmail.com>
-Date: Fri, 11 Apr 2008 01:40:33 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: regression caused by: genirq: do not leave interupts enabled on free_irq
-Cc: "Thomas Gleixner" <tglx@linutronix.de>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Ingo Molnar" <mingo@elte.hu>, "Jeff Garzik" <jeff@garzik.org>,
-       "Ayaz Abdulla" <aabdulla@nvidia.com>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <1207899030.15605.1.camel@x61.ebiederm.org>
+	Fri, 11 Apr 2008 04:45:05 -0400
+Received: from www.tglx.de ([62.245.132.106]:47268 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751278AbYDKIpD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Apr 2008 04:45:03 -0400
+Date: Fri, 11 Apr 2008 10:44:55 +0200
+From: "Hans J. Koch" <hjk@linutronix.de>
+To: Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <Uwe.Kleine-Koenig@digi.com>
+Cc: "Hans J. Koch" <hjk@linutronix.de>, Greg Kroah-Hartman <gregkh@suse.de>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/4] UIO: hold a reference to the device's owner while
+	the device is open
+Message-ID: <20080411084454.GA3185@local>
+References: <1207831023-8583-1-git-send-email-Uwe.Kleine-Koenig@digi.com> <1207831023-8583-2-git-send-email-Uwe.Kleine-Koenig@digi.com> <20080410210229.GF3193@local> <20080411065027.GB18096@digi.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-References: <86802c440804102313k4546cd73s7bffb30a14239472@mail.gmail.com>
-	 <alpine.LFD.1.10.0804110841370.3261@apollo.tec.linutronix.de>
-	 <86802c440804110014j44b32d16ubfaa0f327c3a384f@mail.gmail.com>
-	 <86802c440804110017y62938d90x7e3e32df25a60d1@mail.gmail.com>
-	 <1207899030.15605.1.camel@x61.ebiederm.org>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20080411065027.GB18096@digi.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 11, 2008 at 12:30 AM, Eric W. Biederman
-<ebiederm@xmission.com> wrote:
->
->
->  On Fri, 2008-04-11 at 00:17 -0700, Yinghai Lu wrote:
->  > On Fri, Apr 11, 2008 at 12:14 AM, Yinghai Lu <yhlu.kernel@gmail.com> wrote:
->  > > On Fri, Apr 11, 2008 at 12:01 AM, Thomas Gleixner <tglx@linutronix.de> wrote:
->  > >  > On Thu, 10 Apr 2008, Yinghai Lu wrote:
->  > >  >  > last week found:
->  > >  >  > after latest kernel kexec RHEL 5.1 or other stack kernel, the nvidia
->  > >  >  > forcedeth doesn't work anymore.
->  > >  >  >
->  > >  >  > I stared at forcedeth.c two days. and revert every patches about that
->  > >  >  > doesn't help.
->  > >  >
->  > >  >  So forcedeth does not come up again, when you kexec from linus.git
->  > >  >  into an older distro kernel. Or is it the other way round ?
->  > >  RHEL 5.1 kexec RHEL 5.1 : works
->  > >  RHEL 5.1 kexec linus kernel: works
->  > >  linus (after -rc2) kexec linus tree: works:
->  > >  linus  (after -rc2) kexec RHEL 5.1 : forcedeth will not come up
->  > >  linus ( before -rc2 include rc2) kexec RHEL 5.1 works
->  > >
->  > the forcedeth can not get IP address...
->
->  Sounds like you are not getting any interrupts when you receive a
->  packet.  (i.e. The interrupt line is staying disabled).
->
->  Is MSI an option here?  I'm wondering if we disable the MSI and
->  something is not enabling it.
+On Fri, Apr 11, 2008 at 08:50:27AM +0200, Uwe Kleine-König wrote:
+> > And I'd like to hear Greg's opinion: Do you agree we can omit
+> > try_module_get() in uio_mmap()?
+> As Greg already pointed out, mmap only works for open files and so the
+> reference is already hold there.
 
-mcp55 is using msi for forcedeth
+Yes, that's OK.
 
-MSI.. will look at the driver in RHEL 5.1
+>  
+> > >  	if (idev->info->open) {
+> > > -		if (!try_module_get(idev->owner))
+> > > -			return -ENODEV;
+> > >  		ret = idev->info->open(idev->info, inode);
+> > > -		module_put(idev->owner);
+> > > -	}
+> > > +		if (ret) {
+> > > +			kfree(listener);
+> > > +err_alloc_listener:
+> > >  
+> > > -	if (ret)
+> > > -		kfree(listener);
+> > > +			module_put(idev->owner);
+> > > +err_module_get:
+> > >  
+> > > -	return ret;
+> > > +			return ret;
+> > > +		}
+> > > +	}
+> > > +
+> > > +	return 0;
+> > >  }
+> > 
+> > I really don't like these labels inside the if-block. I find it hard to
+> > read. What about this:
+> > 
+> > 
+> > if (idev->info->open) {
+> > 	ret = idev->info->open(idev->info, inode);
+> > 	if (ret)
+> > 		kfree(listener);
+> > 	return ret;
+> > }
+> > 
+> > err_alloc_listener:
+> > 	module_put(idev->owner);
+> > err_module_get:
+> > 	return ret;
+> With that you leak a reference to idev->owner if idev->info->open() fails.
+> Things like that don't happen that easy if all error handing is in one
+> place.
 
-it seems that another server with ck804 works because it is using ioapic.
+Maybe. It's merely an example to explain what I mean.
+Documentation/CodingStyle says nothing about how to place labels, but I
+find it best to have all error path exits at the end of a function. All
+the UIO code does it that way.
 
-YH
+>  
+> > The label err_module_get should probably be omitted because it's used only
+> > once and has just one line of code. You could simply write "return ret"
+> > instead of "goto err_module_get".
+> This makes code shuffling easier.  For example if someone decides that
+> try_module_get should be done after allocating listener then you only
+> have to exchange the two corresponding code blocks and the two groups
+> (label + cleanup) in the error handling block.
+> If the error handling is spread over the whole functions you can easily
+> miss something---as happend above. :-)
+
+Well, it depends. It's all about readability. Any function should be
+written in a way that makes it as clear as possible what it does. Your
+code is certainly not critical regarding that aspect, but I think it can
+still be improved. And a label that is used only once and contains only
+one line of code is definetly unnecessary. I don't follow the
+maybe-one-day-in-the-future-it-might-be-useful philosophy. I like code
+that is as clean and readable as possible _now_. And as this patch is
+not just a driver but affects the UIO core, this is even more important.
+
+Could you please send an updated patch?
+
+Thanks,
+Hans
+
+
