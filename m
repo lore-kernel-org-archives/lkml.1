@@ -1,80 +1,276 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759859AbYDKJVd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759834AbYDKJXM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759859AbYDKJVd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Apr 2008 05:21:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758708AbYDKJVZ
+	id S1759834AbYDKJXM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Apr 2008 05:23:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758874AbYDKJW7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Apr 2008 05:21:25 -0400
-Received: from viefep18-int.chello.at ([213.46.255.22]:57026 "EHLO
-	viefep19-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1758234AbYDKJVZ (ORCPT
+	Fri, 11 Apr 2008 05:22:59 -0400
+Received: from mail164.messagelabs.com ([216.82.253.131]:17063 "HELO
+	mail164.messagelabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1758749AbYDKJW5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Apr 2008 05:21:25 -0400
-Subject: Re: [PATCH] proc: Add RLIMIT_RTTIME to /proc/<pid>/limits
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Michael Kerrisk <mtk.manpages@googlemail.com>
-Cc: Michael Kerrisk <mtk.manpages@gmail.com>, Eugene Teo <eugeneteo@kernel.sg>,
-       linux-kernel@vger.kernel.org, Neil Horman <nhorman@tuxdriver.com>,
-       Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <cfd18e0f0804110216l3c679bb6ned83f5d58d1c9d66@mail.gmail.com>
-References: <20080208145950.GA3910@kernel.sg>
-	 <1202483445.6292.1.camel@lappy>
-	 <517f3f820802280712o3d756b4fq46461b226515e1f2@mail.gmail.com>
-	 <1204212100.12120.9.camel@twins>
-	 <cfd18e0f0804110156l658107e5x1f2695cacfc3ac75@mail.gmail.com>
-	 <1207904485.7074.28.camel@twins>
-	 <cfd18e0f0804110216l3c679bb6ned83f5d58d1c9d66@mail.gmail.com>
-Content-Type: text/plain
-Date: Fri, 11 Apr 2008 11:21:08 +0200
-Message-Id: <1207905668.7074.32.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.0 
-Content-Transfer-Encoding: 7bit
+	Fri, 11 Apr 2008 05:22:57 -0400
+X-VirusChecked: Checked
+X-Env-Sender: Uwe.Kleine-Koenig@digi.com
+X-Msg-Ref: server-12.tower-164.messagelabs.com!1207905775!19769722!1
+X-StarScan-Version: 5.5.12.14.2; banners=-,-,-
+X-Originating-IP: [66.77.174.21]
+Date: Fri, 11 Apr 2008 11:21:58 +0200
+From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <Uwe.Kleine-Koenig@digi.com>
+To: "Hans J. Koch" <hjk@linutronix.de>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org
+Subject: [PATCH 4/4 v2] [RFC] UIO: generic platform driver
+Message-ID: <20080411092158.GB31625@digi.com>
+References: <1207831023-8583-1-git-send-email-Uwe.Kleine-Koenig@digi.com> <1207831023-8583-2-git-send-email-Uwe.Kleine-Koenig@digi.com> <1207831023-8583-3-git-send-email-Uwe.Kleine-Koenig@digi.com> <1207831023-8583-4-git-send-email-Uwe.Kleine-Koenig@digi.com> <1207831023-8583-5-git-send-email-Uwe.Kleine-Koenig@digi.com> <20080410224804.GI3193@local> <20080411062106.GA18096@digi.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20080411062106.GA18096@digi.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-OriginalArrivalTime: 11 Apr 2008 09:21:58.0445 (UTC) FILETIME=[7DF1E5D0:01C89BB5]
+X-TM-AS-Product-Ver: SMEX-8.0.0.1181-5.000.1023-15842.003
+X-TM-AS-Result: No--17.959000-8.000000-31
+X-TM-AS-User-Approved-Sender: No
+X-TM-AS-User-Blocked-Sender: No
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-04-11 at 11:16 +0200, Michael Kerrisk wrote:
-> On Fri, Apr 11, 2008 at 11:01 AM, Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
-> > On Fri, 2008-04-11 at 10:56 +0200, Michael Kerrisk wrote:
-> > > On Thu, Feb 28, 2008 at 5:21 PM, Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
-> > > >
-> > > > On Thu, 2008-02-28 at 16:12 +0100, Michael Kerrisk wrote:
-> > > > > Peter,
-> > > > >
-> > > > > Could you please provide some text describing RLIMIT_RTTIMEfor the
-> > > > > getrlimit.2 man page.
-> > > >
-> > > > The rlimit sets a timeout in [us] for SCHED_RR and SCHED_FIFO tasks.
-> > > > This time is measured between sleeps, so a schedule in RR or a
-> > > > preemption in either is not a sleep - the task needs to be dequeued and
-> > > > enqueued for the timer to reset.
-> > > >
-> > > > Upon reaching the cur limit we start giving SIGXCPU every second, upon
-> > > > reaching the hard limit we give SIGKILL - matching RLIMIT_CPU.
-> > > >
-> > > > Time is measured in tick granularity (for now).
-> > >
-> > > So I have another question: why is the granularity of this rlimit
-> > > microseconds?  On the one hand, specifying limits down at the
-> > > microsecond level seems (to my naive eye) unlikely to be useful.  (But
-> > > perhaps I have missed a thread where this was explained.)  On the
-> > > other hand, it means that on 32-bit the largest time limit we can set
-> > > is ~4000 seconds, and I wonder if there are scenarios where it might
-> > > be useful to have larger limits than that.
-> > >
-> > > Why not, for example, have a granularity of milliseconds?
-> >
-> > The us scale seemed the best fit in that it allows sub-ms granularity
-> > while still allowing for quite long periods too. I'd preferred ns scale
-> > as that is what we use throughout the scheduler where possible - but
-> > that seemed too restrictive at the high end.
-> >
-> > No real hard arguments either way.
-> 
-> I'm curious: what scenarios require sub-millisecond timeouts?
+Signed-off-by: Uwe Kleine-König <Uwe.Kleine-Koenig@digi.com>
+---
+Hello,
 
-I'm not sure, nor will they actually work atm since its tick based. But
-I'm not wanting to exclude too many things, and 4k second upper limit is
-plenty large.
+> > > +	for (i = 0; i < pdev->num_resources; ++i) {
+> > > +		struct resource *r = &pdev->resource[i];
+> > > +
+> > > +		if (r->flags != IORESOURCE_MEM)
+> > > +			continue;
+> > > +
+> > > +		if (uiomem >= &uioinfo->mem[MAX_UIO_MAPS]) {
+> > 
+> > I'd prefer this:
+> > 		if (i >= MAX_UIO_MAPS) {
+> > 		...
+> OK.
+While reworking the code I saw that your variant is not correct because
+if pdev has resources with flags != IORESOURCE_MEM the constraint
 
+	uiomem == &uioinfo->mem[i]
+
+doesn't hold.
+
+Below is a new version that uses linux/stringify and zeros size for
+unused mappings (line 102ff).
+
+Best regards
+Uwe
+
+ drivers/uio/Kconfig    |    7 ++
+ drivers/uio/Makefile   |    1 +
+ drivers/uio/uio_pdrv.c |  163 ++++++++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 171 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/uio/uio_pdrv.c
+
+diff --git a/drivers/uio/Kconfig b/drivers/uio/Kconfig
+index 6bc2891..5ec353f 100644
+--- a/drivers/uio/Kconfig
++++ b/drivers/uio/Kconfig
+@@ -26,4 +26,11 @@ config UIO_CIF
+ 	  To compile this driver as a module, choose M here: the module
+ 	  will be called uio_cif.
+ 
++config UIO_PDRV
++	tristate "Userspace I/O platform driver"
++	help
++	  Generic platform driver for Userspace I/O devices.
++
++	  If you don't know what to do here, say N.
++
+ endif
+diff --git a/drivers/uio/Makefile b/drivers/uio/Makefile
+index 7fecfb4..a6dcb99 100644
+--- a/drivers/uio/Makefile
++++ b/drivers/uio/Makefile
+@@ -1,2 +1,3 @@
+ obj-$(CONFIG_UIO)	+= uio.o
+ obj-$(CONFIG_UIO_CIF)	+= uio_cif.o
++obj-$(CONFIG_UIO_PDRV) += uio_pdrv.o
+diff --git a/drivers/uio/uio_pdrv.c b/drivers/uio/uio_pdrv.c
+new file mode 100644
+index 0000000..47506aa
+--- /dev/null
++++ b/drivers/uio/uio_pdrv.c
+@@ -0,0 +1,163 @@
++/*
++ * drivers/uio/uio_pdrv.c
++ *
++ * Copyright (C) 2008 by Digi International Inc.
++ * All rights reserved.
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU General Public License version 2 as published by
++ * the Free Software Foundation.
++ */
++#include <linux/clk.h>
++#include <linux/platform_device.h>
++#include <linux/uio_driver.h>
++#include <linux/stringify.h>
++
++#define DRIVER_NAME "uio"
++
++struct uio_platdata {
++	struct uio_info *uioinfo;
++	struct clk *clk;
++};
++
++static int uio_pdrv_open(struct uio_info *info, struct inode *inode)
++{
++	struct uio_platdata *pdata = info->priv;
++	int ret;
++
++	BUG_ON(pdata->uioinfo != info);
++
++	ret = clk_enable(pdata->clk);
++	if (ret)
++		/* XXX: better use dev_dbg, but which device should I use?
++		 * info->uio_dev->dev isn't accessible here as struct uio_device
++		 * is opaque.
++		 */
++		pr_debug("%s: err_clk_enable -> %d\n", __func__, ret);
++
++	return ret;
++}
++
++static int uio_pdrv_release(struct uio_info *info, struct inode *inode)
++{
++	struct uio_platdata *pdata = info->priv;
++
++	BUG_ON(pdata->uioinfo != info);
++
++	clk_disable(pdata->clk);
++
++	return 0;
++}
++
++static int uio_pdrv_probe(struct platform_device *pdev)
++{
++	struct uio_info *uioinfo = pdev->dev.platform_data;
++	struct uio_platdata *pdata;
++	struct uio_mem *uiomem;
++	int ret = -ENODEV;
++	int i;
++
++	if (!uioinfo || !uioinfo->name || !uioinfo->version) {
++		dev_dbg(&pdev->dev, "%s: err_uioinfo\n", __func__);
++		goto err_uioinfo;
++	}
++
++	pdata = kzalloc(sizeof(*pdata), GFP_KERNEL);
++	if (!pdata) {
++		ret = -ENOMEM;
++		dev_dbg(&pdev->dev, "%s: err_alloc_pdata\n", __func__);
++		goto err_alloc_pdata;
++	}
++
++	pdata->uioinfo = uioinfo;
++
++	pdata->clk = clk_get(&pdev->dev, DRIVER_NAME);
++	if (IS_ERR(pdata->clk)) {
++		ret = PTR_ERR(pdata->clk);
++		dev_dbg(&pdev->dev, "%s: err_clk_get -> %d\n", __func__, ret);
++		goto err_clk_get;
++	}
++
++	uiomem = &uioinfo->mem[0];
++
++	for (i = 0; i < pdev->num_resources; ++i) {
++		struct resource *r = &pdev->resource[i];
++
++		if (r->flags != IORESOURCE_MEM)
++			continue;
++
++		if (uiomem >= &uioinfo->mem[MAX_UIO_MAPS]) {
++			dev_warn(&pdev->dev, "device has more than "
++					stringify(MAX_UIO_MAPS)
++					" I/O memory resources.\n");
++			break;
++		}
++
++		uiomem->memtype = UIO_MEM_PHYS;
++		uiomem->addr = r->start;
++		uiomem->size = r->end - r->start + 1;
++		++uiomem;
++	}
++
++	while (uiomem < &uioinfo->mem[MAX_UIO_MAPS]) {
++		uiomem->size = 0;
++		++uiomem;
++	}
++
++	pdata->uioinfo->open = uio_pdrv_open;
++	pdata->uioinfo->release = uio_pdrv_release;
++	pdata->uioinfo->priv = pdata;
++
++	ret = uio_register_device(&pdev->dev, pdata->uioinfo);
++
++	if (ret) {
++		clk_put(pdata->clk);
++err_clk_get:
++
++		kfree(pdata);
++err_alloc_pdata:
++err_uioinfo:
++		return ret;
++	}
++
++	platform_set_drvdata(pdev, pdata);
++
++	return 0;
++}
++
++static int uio_pdrv_remove(struct platform_device *pdev)
++{
++	struct uio_platdata *pdata = platform_get_drvdata(pdev);
++
++	uio_unregister_device(pdata->uioinfo);
++
++	clk_put(pdata->clk);
++
++	return 0;
++}
++
++static struct platform_driver uio_pdrv = {
++	.probe = uio_pdrv_probe,
++	.remove = uio_pdrv_remove,
++	.driver = {
++		.name = DRIVER_NAME,
++		.owner = THIS_MODULE,
++	},
++};
++
++static int __init uio_pdrv_init(void)
++{
++	return platform_driver_register(&uio_pdrv);
++}
++
++static void __exit uio_pdrv_exit(void)
++{
++	platform_driver_unregister(&uio_pdrv);
++}
++module_init(uio_pdrv_init);
++module_exit(uio_pdrv_exit);
++
++MODULE_AUTHOR("Uwe Kleine-Koenig");
++MODULE_DESCRIPTION("Userspace I/O platform driver");
++MODULE_LICENSE("GPL");
++MODULE_ALIAS("platform:" DRIVER_NAME);
+-- 
+1.5.4.5
+
+
+
+-- 
+Uwe Kleine-König, Software Engineer
+Digi International GmbH Branch Breisach, Küferstrasse 8, 79206 Breisach, Germany
+Tax: 315/5781/0242 / VAT: DE153662976 / Reg. Amtsgericht Dortmund HRB 13962
