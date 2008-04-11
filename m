@@ -1,67 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761421AbYDKUay@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761082AbYDKUhk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761421AbYDKUay (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Apr 2008 16:30:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759574AbYDKUap
+	id S1761082AbYDKUhk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Apr 2008 16:37:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759550AbYDKUh3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Apr 2008 16:30:45 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:37043 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759273AbYDKUao (ORCPT
+	Fri, 11 Apr 2008 16:37:29 -0400
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:43079 "EHLO
+	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1759211AbYDKUh2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Apr 2008 16:30:44 -0400
-Date: Fri, 11 Apr 2008 13:29:22 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Krzysztof Halasa <khc@pm.waw.pl>
-cc: Matthew Wilcox <matthew@wil.cx>, Christoph Hellwig <hch@infradead.org>,
-       "Kok, Auke" <auke-jan.h.kok@intel.com>, Ingo Molnar <mingo@elte.hu>,
-       Jeff Garzik <jeff@garzik.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       NetDev <netdev@vger.kernel.org>,
-       e1000-list <e1000-devel@lists.sourceforge.net>,
-       linux-pci maillist <linux-pci@atrey.karlin.mff.cuni.cz>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "David S. Miller" <davem@davemloft.net>,
-       Jesse Brandeburg <jesse.brandeburg@intel.com>,
-       "Ronciak, John" <john.ronciak@intel.com>,
-       "Allan, Bruce W" <bruce.w.allan@intel.com>, Greg KH <greg@kroah.com>,
-       Arjan van de Ven <arjan@linux.intel.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [patch] e1000=y && e1000e=m regression fix
-In-Reply-To: <m3fxtsp2eq.fsf@maximus.localdomain>
-Message-ID: <alpine.LFD.1.00.0804111327200.3143@woody.linux-foundation.org>
-References: <47FD2325.2030705@intel.com> <47FE5C89.5060209@intel.com> <20080410192714.GA14055@elte.hu> <47FE8566.5040809@intel.com> <20080411112653.GC9205@elte.hu> <20080411113644.GA7767@infradead.org> <20080411121606.GA25661@elte.hu> <47FF9060.5040202@intel.com>
- <20080411164542.GA4066@infradead.org> <alpine.LFD.1.00.0804111028540.3143@woody.linux-foundation.org> <20080411175304.GF11962@parisc-linux.org> <alpine.LFD.1.00.0804111146450.3143@woody.linux-foundation.org> <m3fxtsp2eq.fsf@maximus.localdomain>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 11 Apr 2008 16:37:28 -0400
+X-Sasl-enc: MEXalaVMBMon3XUfu+cy1Vjk//EB/Yj5mgIxDJsVAYJR 1207946247
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: linux-kernel@vger.kernel.org
+Cc: Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
+       Ivo van Doorn <IvDoorn@gmail.com>,
+       "John W. Linville" <linville@tuxdriver.com>,
+       Dmitry Torokhov <dtor@mail.ru>
+Subject: [PATCH 1/8] rfkill: clarify meaning of rfkill states
+Date: Fri, 11 Apr 2008 17:37:17 -0300
+Message-Id: <1207946244-14525-2-git-send-email-hmh@hmh.eng.br>
+X-Mailer: git-send-email 1.5.4.4
+In-Reply-To: <1207946244-14525-1-git-send-email-hmh@hmh.eng.br>
+References: <1207946244-14525-1-git-send-email-hmh@hmh.eng.br>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+rfkill really should have been named rfswitch.  As it is, one can get
+confused whether RFKILL_STATE_ON means the KILL switch is on (and
+therefore, the radio is being *blocked* from operating), or whether it
+means the RADIO rf output is on.
 
+Clearly state that RFKILL_STATE_ON means the radio is *unblocked* from
+operating (i.e. there is no rf killing going on).
 
-On Fri, 11 Apr 2008, Krzysztof Halasa wrote:
+Signed-off-by: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Cc: Ivo van Doorn <IvDoorn@gmail.com>
+Cc: John W. Linville <linville@tuxdriver.com>
+Cc: Dmitry Torokhov <dtor@mail.ru>
+---
+ include/linux/rfkill.h |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
 
-> Linus Torvalds <torvalds@linux-foundation.org> writes:
-> 
-> > Nobody wants to care deeply whether it's a PCI-E or PCI chip. In fact, 
-> > it's almost impossible to tell. Here, quickly, tell me which one mine is 
-> > (this is from /sbin/lspci):
-> >
-> > 	00:19.0 Ethernet controller: Intel Corporation 82566DM Gigabit Network Connection (rev 02)
-> >
-> > and tell me how you knew..
-> 
-> I guess PCIE. You already came across a similar problem.
-> 
-> Have I won something? :-)
+diff --git a/include/linux/rfkill.h b/include/linux/rfkill.h
+index e3ab21d..ca89ae1 100644
+--- a/include/linux/rfkill.h
++++ b/include/linux/rfkill.h
+@@ -44,8 +44,8 @@ enum rfkill_type {
+ };
+ 
+ enum rfkill_state {
+-	RFKILL_STATE_OFF	= 0,
+-	RFKILL_STATE_ON		= 1,
++	RFKILL_STATE_OFF	= 0,	/* Radio output blocked */
++	RFKILL_STATE_ON		= 1,	/* Radio output active */
+ };
+ 
+ /**
+@@ -53,7 +53,7 @@ enum rfkill_state {
+  * @name: Name of the switch.
+  * @type: Radio type which the button controls, the value stored
+  *	here should be a value from enum rfkill_type.
+- * @state: State of the switch (on/off).
++ * @state: State of the switch, "ON" means radio can operate.
+  * @user_claim_unsupported: Whether the hardware supports exclusive
+  *	RF-kill control by userspace. Set this before registering.
+  * @user_claim: Set when the switch is controlled exlusively by userspace.
+-- 
+1.5.4.4
 
-Nope. You apparently guessed just because I had told earlier about how the 
-E1000 changes screwed over my setup.
-
-The fact is, people don't know. And they shouldn't care. If the E1000 
-driver worked before, we simply shouldn't break that from a configuration 
-standpoint.
-
-			Linus
