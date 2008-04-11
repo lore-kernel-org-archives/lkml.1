@@ -1,53 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759821AbYDKWyo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759107AbYDKW6z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759821AbYDKWyo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Apr 2008 18:54:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756736AbYDKWyb
+	id S1759107AbYDKW6z (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Apr 2008 18:58:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756866AbYDKW6s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Apr 2008 18:54:31 -0400
-Received: from www.tglx.de ([62.245.132.106]:37775 "EHLO www.tglx.de"
+	Fri, 11 Apr 2008 18:58:48 -0400
+Received: from www.tglx.de ([62.245.132.106]:54993 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758113AbYDKWyL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Apr 2008 18:54:11 -0400
-Date: Sat, 12 Apr 2008 00:54:02 +0200
+	id S1756736AbYDKW6r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Apr 2008 18:58:47 -0400
+Date: Sat, 12 Apr 2008 00:58:38 +0200
 From: "Hans J. Koch" <hjk@linutronix.de>
 To: Greg KH <greg@kroah.com>
-Cc: Uwe Kleine-K?nig <Uwe.Kleine-Koenig@digi.com>,
-       "Hans J. Koch" <hjk@linutronix.de>, Greg Kroah-Hartman <gregkh@suse.de>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 4/4 v2] [RFC] UIO: generic platform driver
-Message-ID: <20080411225401.GN3185@local>
-References: <1207831023-8583-1-git-send-email-Uwe.Kleine-Koenig@digi.com> <1207831023-8583-2-git-send-email-Uwe.Kleine-Koenig@digi.com> <1207831023-8583-3-git-send-email-Uwe.Kleine-Koenig@digi.com> <1207831023-8583-4-git-send-email-Uwe.Kleine-Koenig@digi.com> <1207831023-8583-5-git-send-email-Uwe.Kleine-Koenig@digi.com> <20080410224804.GI3193@local> <20080411062106.GA18096@digi.com> <20080411092158.GB31625@digi.com> <20080411104835.GB19973@digi.com> <20080411214134.GC32522@kroah.com>
+Cc: "Hans J. Koch" <hjk@linutronix.de>,
+       Uwe Kleine-K??nig <Uwe.Kleine-Koenig@digi.com>,
+       Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/4] UIO: use menuconfig
+Message-ID: <20080411225838.GO3185@local>
+References: <1207831023-8583-1-git-send-email-Uwe.Kleine-Koenig@digi.com> <1207831023-8583-2-git-send-email-Uwe.Kleine-Koenig@digi.com> <1207831023-8583-3-git-send-email-Uwe.Kleine-Koenig@digi.com> <20080410193951.GC3193@local> <20080411213608.GA32522@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080411214134.GC32522@kroah.com>
+In-Reply-To: <20080411213608.GA32522@kroah.com>
 User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 11, 2008 at 02:41:34PM -0700, Greg KH wrote:
-> On Fri, Apr 11, 2008 at 12:48:35PM +0200, Uwe Kleine-K?nig wrote:
-> > Hello,
+On Fri, Apr 11, 2008 at 02:36:08PM -0700, Greg KH wrote:
+> On Thu, Apr 10, 2008 at 09:39:51PM +0200, Hans J. Koch wrote:
+> > On Thu, Apr 10, 2008 at 02:37:01PM +0200, Uwe Kleine-K??nig wrote:
+> > > This allows configuring CONFIG_UIO without changing into the UIO submenu
 > > 
-> > Uwe Kleine-K?nig wrote:
-> > > +			dev_warn(&pdev->dev, "device has more than "
-> > > +					stringify(MAX_UIO_MAPS)
-> > This must read __stringify(MAX_UIO_MAPS).  Sorry, I didn't compile test
-> > that.
+> > I like it.
+> > 
+> > Signed-off-by: Hans J Koch <hjk@linutronix.de>
 > 
-> Care to send the latest version of this, I'm a bit lost as to what
-> people want me to apply...
+> You like it so much you already acked this same change from someone
+> else, which is in my tree at:
+> 	http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/gregkh-01-driver-core/uio-kconfig-improvements.patch
+> 
+> :)
 
-Hi Greg,
-PATCH 4/4 still has a problem. It uses some clock framework functions
-not available on every architecture. E.g. on x86_64 you can select this
-driver in menuconfig, but it won't compile.
-
-The first three patches are OK in my opinion. Uwe provided a second
-version of PATCH 1/4, PATCH 2/4 and PATCH 3/4 were alright in their
-original version. I added my Signed-off-by to 1-3, but not to 4.
+Hey, I just wanted to improve my Signed-off-by statistics :-) Damn it,
+one less...
+No, seriously, it looked somehow familiar but I didn't remember. Sorry.
 
 Thanks,
 Hans
