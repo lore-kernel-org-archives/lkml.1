@@ -1,158 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760806AbYDKOMc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760914AbYDKOMv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760806AbYDKOMc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Apr 2008 10:12:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760121AbYDKOMP
+	id S1760914AbYDKOMv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Apr 2008 10:12:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760467AbYDKOMf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Apr 2008 10:12:15 -0400
-Received: from mail0.scram.de ([78.47.204.202]:60392 "EHLO mail.scram.de"
+	Fri, 11 Apr 2008 10:12:35 -0400
+Received: from wine.ocn.ne.jp ([122.1.235.145]:55775 "EHLO smtp.wine.ocn.ne.jp"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760026AbYDKOMO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Apr 2008 10:12:14 -0400
-X-Spam-Score: -4.229
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
- * -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
- *      [score: 0.0000]
- *  0.2 AWL AWL: From: address is in the auto white-list
-Message-ID: <47FF71B1.9070907@scram.de>
-Date: Fri, 11 Apr 2008 16:12:01 +0200
-From: Jochen Friedrich <jochen@scram.de>
-User-Agent: Mozilla-Thunderbird 2.0.0.9 (X11/20080110)
-MIME-Version: 1.0
-To: Kumar Gala <galak@kernel.crashing.org>
-CC: Jean Delvare <khali@linux-fr.org>, Scott Wood <scottwood@freescale.com>,
-       "Kernel, Linux" <linux-kernel@vger.kernel.org>,
-       linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-       Linux I2C <i2c@lm-sensors.org>, Jon Smirl <jonsmirl@gmail.com>,
-       Laurent Pinchart <laurentp@cse-semaphore.com>
-Subject: [PATCH7/7] [POWERPC] Add i2c pins to dts and board setup
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
+	id S1760810AbYDKOMd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Apr 2008 10:12:33 -0400
+To: matthew@wil.cx
+Cc: paul.moore@hp.com, penguin-kernel@I-love.SAKURA.ne.jp,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org, takedakn@nttdata.co.jp,
+       linux-fsdevel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [TOMOYO #7 30/30] Hooks for SAKURA and TOMOYO.
+From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+References: <20080404122242.867070732@I-love.SAKURA.ne.jp>
+	<20080404122408.986477936@I-love.SAKURA.ne.jp>
+	<200804071140.59247.paul.moore@hp.com>
+	<47FC8052.9070409@nttdata.co.jp>
+	<20080409131151.GK11962@parisc-linux.org>
+In-Reply-To: <20080409131151.GK11962@parisc-linux.org>
+Message-Id: <200804112312.HGE69734.LFOOHQOSFFMJtV@I-love.SAKURA.ne.jp>
+X-Mailer: Winbiff [Version 2.50 PL2]
+X-Accept-Language: ja,en
+Date: Fri, 11 Apr 2008 23:12:27 +0900
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Initialize I2C pins on boards with CPM1/CPM2 controllers.
+Sorry for slow response.
 
-Signed-off-by: Jochen Friedrich <jochen@scram.de>
----
- arch/powerpc/boot/dts/mpc8272ads.dts         |   10 ++++++++++
- arch/powerpc/boot/dts/mpc866ads.dts          |   10 ++++++++++
- arch/powerpc/boot/dts/mpc885ads.dts          |   10 ++++++++++
- arch/powerpc/platforms/82xx/mpc8272_ads.c    |    4 ++++
- arch/powerpc/platforms/8xx/mpc86xads_setup.c |    4 ++++
- arch/powerpc/platforms/8xx/mpc885ads_setup.c |    3 +++
- 6 files changed, 41 insertions(+), 0 deletions(-)
+Matthew Wilcox wrote:
+> When the rule is put in place, say "No modifications to /etc/passwd",
+> look up the inode and major:minor of /etc/passwd.  If there's a rename,
+> look up the new inode number.  If it's mounted elsewhere, it doesn't
+> matter, they still can't modify it because it has the same
+> major:minor:inode.
 
-diff --git a/arch/powerpc/boot/dts/mpc8272ads.dts b/arch/powerpc/boot/dts/mpc8272ads.dts
-index 7285ca1..7273996 100644
---- a/arch/powerpc/boot/dts/mpc8272ads.dts
-+++ b/arch/powerpc/boot/dts/mpc8272ads.dts
-@@ -215,6 +215,16 @@
- 				linux,network-index = <1>;
- 				fsl,cpm-command = <16200300>;
- 			};
-+
-+			i2c@11860 {
-+				compatible = "fsl,mpc8248-i2c",
-+					     "fsl,cpm2-i2c",
-+					     "fsl,cpm-i2c";
-+				reg = <11860 20 8afc 2>;
-+				interrupts = <1 8>;
-+				interrupt-parent = <&PIC>;
-+				fsl,cpm-command = <29600000>;
-+			};
- 		};
- 
- 		PIC: interrupt-controller@10c00 {
-diff --git a/arch/powerpc/boot/dts/mpc866ads.dts b/arch/powerpc/boot/dts/mpc866ads.dts
-index daf9433..d669049 100644
---- a/arch/powerpc/boot/dts/mpc866ads.dts
-+++ b/arch/powerpc/boot/dts/mpc866ads.dts
-@@ -169,6 +169,16 @@
- 				fsl,cpm-command = <0000>;
- 				linux,network-index = <1>;
- 			};
-+
-+			i2c@860 {
-+				compatible = "fsl,mpc866-i2c",
-+					     "fsl,cpm1-i2c",
-+					     "fsl,cpm-i2c";
-+				reg = <860 20 3c80 30>;
-+				interrupts = <10>;
-+				interrupt-parent = <&CPM_PIC>;
-+				fsl,cpm-command = <0010>;
-+			};
- 		};
- 	};
- 
-diff --git a/arch/powerpc/boot/dts/mpc885ads.dts b/arch/powerpc/boot/dts/mpc885ads.dts
-index d84a012..d3ddda7 100644
---- a/arch/powerpc/boot/dts/mpc885ads.dts
-+++ b/arch/powerpc/boot/dts/mpc885ads.dts
-@@ -214,6 +214,16 @@
- 				fsl,cpm-command = <0080>;
- 				linux,network-index = <2>;
- 			};
-+
-+			i2c@860 {
-+				compatible = "fsl,mpc885-i2c",
-+					     "fsl,cpm1-i2c",
-+					     "fsl,cpm-i2c";
-+				reg = <860 20 3c80 30>;
-+				interrupts = <10>;
-+				interrupt-parent = <&CPM_PIC>;
-+				fsl,cpm-command = <0010>;
-+			};
- 		};
- 	};
- 
-diff --git a/arch/powerpc/platforms/82xx/mpc8272_ads.c b/arch/powerpc/platforms/82xx/mpc8272_ads.c
-index 7d30187..8054c68 100644
---- a/arch/powerpc/platforms/82xx/mpc8272_ads.c
-+++ b/arch/powerpc/platforms/82xx/mpc8272_ads.c
-@@ -96,6 +96,10 @@ static struct cpm_pin mpc8272_ads_pins[] = {
- 	{1, 31, CPM_PIN_OUTPUT | CPM_PIN_PRIMARY},
- 	{2, 16, CPM_PIN_INPUT | CPM_PIN_PRIMARY},
- 	{2, 17, CPM_PIN_INPUT | CPM_PIN_PRIMARY},
-+
-+	/* I2C */
-+	{3, 14, CPM_PIN_INPUT | CPM_PIN_SECONDARY | CPM_PIN_OPENDRAIN},
-+	{3, 15, CPM_PIN_INPUT | CPM_PIN_SECONDARY | CPM_PIN_OPENDRAIN},
- };
- 
- static void __init init_ioports(void)
-diff --git a/arch/powerpc/platforms/8xx/mpc86xads_setup.c b/arch/powerpc/platforms/8xx/mpc86xads_setup.c
-index c028a5b..caaec29 100644
---- a/arch/powerpc/platforms/8xx/mpc86xads_setup.c
-+++ b/arch/powerpc/platforms/8xx/mpc86xads_setup.c
-@@ -65,6 +65,10 @@ static struct cpm_pin mpc866ads_pins[] = {
- 	{CPM_PORTD, 13, CPM_PIN_OUTPUT},
- 	{CPM_PORTD, 14, CPM_PIN_OUTPUT},
- 	{CPM_PORTD, 15, CPM_PIN_OUTPUT},
-+
-+	/* I2C */
-+	{CPM_PORTB, 26, CPM_PIN_INPUT | CPM_PIN_OPENDRAIN},
-+	{CPM_PORTB, 27, CPM_PIN_INPUT | CPM_PIN_OPENDRAIN},
- };
- 
- static void __init init_ioports(void)
-diff --git a/arch/powerpc/platforms/8xx/mpc885ads_setup.c b/arch/powerpc/platforms/8xx/mpc885ads_setup.c
-index 6e7ded0..45ed6cd 100644
---- a/arch/powerpc/platforms/8xx/mpc885ads_setup.c
-+++ b/arch/powerpc/platforms/8xx/mpc885ads_setup.c
-@@ -158,6 +158,9 @@ static struct cpm_pin mpc885ads_pins[] = {
- 	{CPM_PORTE, 28, CPM_PIN_OUTPUT},
- 	{CPM_PORTE, 29, CPM_PIN_OUTPUT},
- #endif
-+	/* I2C */
-+	{CPM_PORTB, 26, CPM_PIN_INPUT | CPM_PIN_OPENDRAIN},
-+	{CPM_PORTB, 27, CPM_PIN_INPUT | CPM_PIN_OPENDRAIN},
- };
- 
- static void __init init_ioports(void)
--- 
-1.5.4.5
+If write access is denied because of a rule "No modifications to /etc/passwd",
+a rule "Allow modifications to /tmp/passwd" can no longer be enforced after
+"mount --bind /etc/ /tmp/" or "mount --bind /etc/passwd /tmp/passwd" or
+"mv /etc/passwd /tmp/passwd" or "ln /etc/passwd /tmp/passwd" is done.
 
+"No modifications" (i.e. "forbid modifications") and
+"Allow modifications" (i.e. "don't forbid modifications") are incompatible
+rules as long as the rules are described using pathnames but the judgment is
+done using inodes (or labels).
 
+If rules are described like "No modifications to passwd_t",
+it is correct to deny modifications of the file when the file
+with passwd_t was renamed or bind-mounted or hard-linked.
+Those who want to do access restriction based on the entity of the file
+prefer rules described using inodes (or labels).
+
+If rules are described like "No modifications to /etc/passwd" and
+"Allow modifications to /tmp/passwd", it is wrong to deny modifications of
+the file when /etc/passwd was renamed or bind-mounted or hard-linked to
+/tmp/passwd .
+Those who want to do access restriction based on the location of the file
+prefer rules described using pathnames.
+
+SELinux and Smack are the former.
+AppArmor and TOMOYO Linux are the latter.
+
+> Is this workable?
+I'm afraid it is unlikely.
+
+Thank you.
