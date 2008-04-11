@@ -1,93 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761560AbYDKVVo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761011AbYDKVZb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761560AbYDKVVo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Apr 2008 17:21:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759623AbYDKVVd
+	id S1761011AbYDKVZb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Apr 2008 17:25:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754571AbYDKVZX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Apr 2008 17:21:33 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:57264 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758793AbYDKVVd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Apr 2008 17:21:33 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: "Yinghai Lu" <yhlu.kernel@gmail.com>
-Subject: Re: x86 git tree broken (bisected)
-Date: Fri, 11 Apr 2008 23:21:51 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: "Ingo Molnar" <mingo@elte.hu>, "Andrew Morton" <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, "Pavel Machek" <pavel@ucw.cz>,
-       "Thomas Gleixner" <tglx@linutronix.de>, "H. Anvin" <hpa@zytor.com>,
-       "Arjan van de Ven" <arjan@infradead.org>
-References: <200804102159.14563.rjw@sisk.pl> <200804112251.09769.rjw@sisk.pl> <86802c440804111411s74758aabm573de938371b11ce@mail.gmail.com>
-In-Reply-To: <86802c440804111411s74758aabm573de938371b11ce@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Fri, 11 Apr 2008 17:25:23 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:58543 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753880AbYDKVZX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Apr 2008 17:25:23 -0400
+Date: Sat, 12 Apr 2008 00:25:21 +0300 (EEST)
+From: Pekka J Enberg <penberg@cs.helsinki.fi>
+To: Alexey Dobriyan <adobriyan@gmail.com>
+cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Christoph Lameter <clameter@sgi.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Subject: Re: 2.6.25-rc8-mm2: boot hang after "ACPI: using IOAPIC for	interrupt
+ routing"
+In-Reply-To: <20080411210715.GA4851@martell.zuzino.mipt.ru>
+Message-ID: <Pine.LNX.4.64.0804120024470.18799@sbz-30.cs.Helsinki.FI>
+References: <20080410203354.f0a6f464.akpm@linux-foundation.org>
+ <20080411062928.GB4748@martell.zuzino.mipt.ru> <1207910128.7212.4.camel@haji>
+ <20080411210715.GA4851@martell.zuzino.mipt.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200804112321.53106.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday, 11 of April 2008, Yinghai Lu wrote:
-> On Fri, Apr 11, 2008 at 1:51 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> >
-> > On Friday, 11 of April 2008, Yinghai Lu wrote:
-> >  > On Fri, Apr 11, 2008 at 12:26 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> >  > > On Friday, 11 of April 2008, Rafael J. Wysocki wrote:
-> >  > >  > On Thursday, 10 of April 2008, Ingo Molnar wrote:
-> >  > >  > >
-> >  > >  > > * Ingo Molnar <mingo@elte.hu> wrote:
-> >  > >  > >
-> >  > >  > > > > > > First, the X server doesn't want to start (it says it couldn't
-> >  > >  > > > > > > mmap the framebuffer).
-> >  > >  > > > > >
-> >  > >  > > > > > could you send your .config?
-> >  > >  > > > >
-> >  > >  > > > > Attached.
-> >  > >  > > >
-> >  > >  > > > could you disable this option:
-> >  > >  > > >
-> >  > >  > > >  CONFIG_NONPROMISC_DEVMEM=y
-> >  > >  > > >
-> >  > >  > > > does it help with the X problem?
-> >  > >  >
-> >  > >  > That didn't help.
-> >  > >  >
-> >  > >  > > btw., Xorg works fine here on a comparable AMD system - but i use a
-> >  > >  > > rather new distro (Fedora 8) which has Xorg 7.2.
-> >  > >  >
-> >  > >  > My system is an OpenSUSE 10.3 and it has Xorg 7.2 as well.
-> >  > >  >
-> >  > >  > I think the problem is somehow related to the Radeon.
-> >  > >
-> >  > >  The bisection turned up commit ea1441bdf53692c3dc1fd2658addcf1205629661
-> >  > >  "x86: use bus conf in NB conf fun1 to get bus range on, on 64-bit"  as the one
-> >  > >  causing problems.
-> >  > >
-> >  > >  Unfortunately, I can't revert cleanly it, because there are two more commits
-> >  > >  depending on it in a highly nontrivial fashion, so I have reverted all three
-> >  > >  commits
-> >  > >
-> >  > >  a365998cd2cecfb827469dbd57c29602c106cb83
-> >  > >  44f7f90fbe7a3a99aab082f765346514b7b5c705
-> >  > >  ea1441bdf53692c3dc1fd2658addcf1205629661
-> >  > >
-> >  > >  and X starts again.  Also, suspend to RAM works from under X.
-> >  >
-> >  > please keep the three patches and applied the two attached debug patches.
-> >  >
-> >  > i wonder if there is some io allocation overlapping with your system.
-> >
-> >  Attached is a boot dmesg output from the current x86 git tree with your two
-> >  patches applied.
-> >
-> can you put boot in your command line?
+On Sat, 12 Apr 2008, Alexey Dobriyan wrote:
+> > Alexey, can you try passing the 'slub_nomerge' option to the kernel to
+> > see if the hang goes away with that?
+> 
+> nomerge doesn't help as well as turning on combinations of SLUB debug options.
 
-I'm not quite sure what you mean.
+Does the following patch fix it?
 
-Can you please tell me what exactly you want me to do?
+			Pekka
 
-Thanks,
-Rafael
+>From 7c7e7e5e7ec07c0a47705b2d21c779c39ba02252 Mon Sep 17 00:00:00 2001
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+Date: Fri, 11 Apr 2008 17:17:43 +0300
+Subject: [PATCH] slub: add missing slab_unlock() to __kmem_cache_shrink()
+
+If page is not kickable, remember to slab_unlock() before continuing the loop.
+
+Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
+---
+ mm/slub.c |    4 +++-
+ 1 files changed, 3 insertions(+), 1 deletions(-)
+
+diff --git a/mm/slub.c b/mm/slub.c
+index 4b694a7..f09f1fb 100644
+--- a/mm/slub.c
++++ b/mm/slub.c
+@@ -2926,8 +2926,10 @@ static unsigned long __kmem_cache_shrink(struct kmem_cache *s, int node,
+ 			continue;
+ 
+ 		if (page->inuse) {
+-			if (!SlabKickable(page))
++			if (!SlabKickable(page)) {
++				slab_unlock(page);
+ 				continue;
++			}
+ 
+ 			if (page->inuse * 100 >=
+ 					s->defrag_ratio * page->objects) {
+-- 
+1.5.2.5
+
+
+
