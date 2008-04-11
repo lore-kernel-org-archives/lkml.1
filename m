@@ -1,90 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760701AbYDKP31@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760898AbYDKPaP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760701AbYDKP31 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Apr 2008 11:29:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759960AbYDKP3T
+	id S1760898AbYDKPaP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Apr 2008 11:30:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760032AbYDKPaC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Apr 2008 11:29:19 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:55790 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759781AbYDKP3S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Apr 2008 11:29:18 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Pavel Machek <pavel@ucw.cz>
-Subject: Re: BUG: using smp_processor_id() during suspend with 2.6.25-rc8
-Date: Fri, 11 Apr 2008 17:29:46 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Ingo Molnar <mingo@elte.hu>, Jiri Kosina <jkosina@suse.cz>,
-       Andi Kleen <andi@firstfloor.org>,
-       Zdenek Kabelac <zdenek.kabelac@gmail.com>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-References: <c4e36d110804070625n17eb44e1nbb5558f500f13438@mail.gmail.com> <20080411105108.GA1844@elte.hu> <20080411105445.GB18770@elf.ucw.cz>
-In-Reply-To: <20080411105445.GB18770@elf.ucw.cz>
+	Fri, 11 Apr 2008 11:30:02 -0400
+Received: from rn-out-0910.google.com ([64.233.170.186]:10343 "EHLO
+	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759960AbYDKPaA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Apr 2008 11:30:00 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=Up1oApay7F5swTRs/Ui0czLYG02TJ3TOHjL2h4e565ldr+7JKyGvQfAuhg4ELi56C7eo3RZVoNWW78YZ/bx8RR74/pV8S81NfBygTN5Op5hBGJZ3HBP7qK44cUYlPfhNUAhn81ojd8ekpTVyC2Nd+J15sPVGD1SGT3U87lGQ0Gs=
+Message-ID: <a44ae5cd0804110829j7104ce43q21360078b7291032@mail.gmail.com>
+Date: Fri, 11 Apr 2008 11:29:56 -0400
+From: "Miles Lane" <miles.lane@gmail.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: =?WINDOWS-1252?Q?Re:_2.6.25-rc8-mm2_--_kernel/sched.c:8294:_error:_?= =?WINDOWS-1252?Q?unknown_field_=91read=5Fuint=92_specified_in_initializer?=
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20080411135555.GA14342@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200804111729.47190.rjw@sisk.pl>
+References: <a44ae5cd0804110648g3256805fob917f31eeff4f6db@mail.gmail.com>
+	 <20080411135555.GA14342@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday, 11 of April 2008, Pavel Machek wrote:
-> On Fri 2008-04-11 12:51:09, Ingo Molnar wrote:
-> > 
-> > * Pavel Machek <pavel@ucw.cz> wrote:
-> > 
-> > > diff --git a/lib/smp_processor_id.c b/lib/smp_processor_id.c
-> > > index 6c90fb9..8195c37 100644
-> > > --- a/lib/smp_processor_id.c
-> > > +++ b/lib/smp_processor_id.c
-> > > @@ -35,6 +35,13 @@ unsigned int debug_smp_processor_id(void
-> > >  		goto out;
-> > >  
-> > >  	/*
-> > > +	 * It is valid to assume CPU-locality if there's just one
-> > > +	 * CPU active
-> > > +	 */
-> > > +	if (num_online_cpus() == 1)
-> > > +		goto out;
-> > 
-> > thanks Pavel, i picked this up into sched-devel.git - it makes sense 
-> > independently of whether it solves the warning.
-> 
-> Thanks!
-> 
-> (I just want to fix the underlying problem in suspend, too. I guess
-> I'll just do something like
-> 
-> diff --git a/drivers/base/sys.c b/drivers/base/sys.c
-> index 8e13fd9..adb7850 100644
-> --- a/drivers/base/sys.c
-> +++ b/drivers/base/sys.c
-> @@ -367,6 +367,7 @@ int sysdev_suspend(pm_message_t state)
->  			/* Call auxillary drivers first */
->  			list_for_each_entry(drv, &cls->drivers, entry) {
->  				if (drv->suspend) {
-> +					BUG_ON(!in_interrupt());
->  					ret = drv->suspend(sysdev, state);
->  					if (ret)
->  						goto aux_driver;
-> @@ -442,6 +443,7 @@ int sysdev_resume(void)
->  		list_for_each_entry(sysdev, &cls->kset.list, kobj.entry) {
->  			pr_debug(" %s\n", kobject_name(&sysdev->kobj));
->  
-> +			BUG_ON(!in_interrupt());
->  			__sysdev_resume(sysdev);
->  		}
->  	}
-> 
-> ...to catch this kind of problems early).
+On Fri, Apr 11, 2008 at 9:55 AM, Ingo Molnar <mingo@elte.hu> wrote:
+>
+>  * Miles Lane <miles.lane@gmail.com> wrote:
+>
+>  >   CC      kernel/sched.o
+>  > kernel/sched.c:8294: error: unknown field 'read_uint' specified in initializer
+>  > kernel/sched.c:8294: warning: initialization makes integer from
+>  > pointer without a cast
+>  > kernel/sched.c:8295: error: unknown field 'write_uint' specified in initializer
+>  > kernel/sched.c:8295: warning: initialization from incompatible pointer type
+>
+>  cannot reproduce it in sched-devel/for-akpm (which -mm is based off) nor
+>  in sched-devel/latest, using your config. Could you check sched-devel
+>  via:
+>
+>   http://people.redhat.com/mingo/sched-devel.git/README
 
-Well, I'd say the BUG_ON()s are over the top in here (why to crash the system
-even if it wouldn't have crashed otherwise?).
+That tree compiled fine after running "make oldconfig".
 
-WARN_ON_ONCE() should be enough.
+>  or maybe it's some other sched.c change in -mm? That line is around the
+>  control groups code and maybe that got changed in -mm?
 
-Thanks,
-Rafael
+I tried a "make mrproper" before compiling the 2.6.25-rc8-mm2 tree and it
+still gave the same error.  This seems to be something specific to the latest
+MM tree.
+
+    Miles
