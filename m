@@ -1,52 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760640AbYDKPlR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760944AbYDKPla@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760640AbYDKPlR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Apr 2008 11:41:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751042AbYDKPlF
+	id S1760944AbYDKPla (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Apr 2008 11:41:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760132AbYDKPlM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Apr 2008 11:41:05 -0400
-Received: from yoi5.greathalifaxhome.com ([66.180.172.116]:50919 "HELO
-	vps1.tull.net" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with SMTP
-	id S1759217AbYDKPlF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Apr 2008 11:41:05 -0400
-X-Spam-Check-By: mail.local.tull.net
-Date: Sat, 12 Apr 2008 01:40:53 +1000
-From: Nick Andrew <nick@nick-andrew.net>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [RFC] x86: Cleanup prose of Documentation/i386/IO-APIC.txt
-Message-ID: <20080411154053.GD18242@tull.net>
+	Fri, 11 Apr 2008 11:41:12 -0400
+Received: from zrtps0kp.nortel.com ([47.140.192.56]:55329 "EHLO
+	zrtps0kp.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760086AbYDKPlK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Apr 2008 11:41:10 -0400
+Message-ID: <47FF8667.7090202@nortel.com>
+Date: Fri, 11 Apr 2008 09:40:23 -0600
+From: "Chris Friesen" <cfriesen@nortel.com>
+User-Agent: Mozilla Thunderbird 1.0.2-6 (X11/20050513)
+X-Accept-Language: en-us, en
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-SMTPD: qpsmtpd/0.26, http://develooper.com/code/qpsmtpd/
+To: Ingo Molnar <mingo@elte.hu>
+CC: Jeff Garzik <jeff@garzik.org>, "Kok, Auke" <auke-jan.h.kok@intel.com>,
+       Matthew Wilcox <matthew@wil.cx>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       NetDev <netdev@vger.kernel.org>,
+       e1000-list <e1000-devel@lists.sourceforge.net>,
+       linux-pci maillist <linux-pci@atrey.karlin.mff.cuni.cz>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "David S. Miller" <davem@davemloft.net>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Jesse Brandeburg <jesse.brandeburg@intel.com>,
+       "Ronciak, John" <john.ronciak@intel.com>,
+       "Allan, Bruce W" <bruce.w.allan@intel.com>, Greg KH <greg@kroah.com>,
+       Arjan van de Ven <arjan@linux.intel.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [regression] e1000e broke e1000
+References: <20080408083606.GA20863@elte.hu> <47FB9ABB.9080403@intel.com> <20080408183921.GA20803@elte.hu> <20080408193245.GG11962@parisc-linux.org> <20080408195123.GA28148@elte.hu> <47FBCE00.2020309@garzik.org> <20080408200652.GC28148@elte.hu> <47FBD620.1080508@intel.com> <20080409191256.GB9276@elte.hu> <47FD19F5.9020509@garzik.org> <20080411113018.GD9205@elte.hu>
+In-Reply-To: <20080411113018.GD9205@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 11 Apr 2008 15:40:29.0367 (UTC) FILETIME=[5EB59470:01C89BEA]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I'm doing a couple of cleanups to Documentation/i386/IO-APIC.txt
-and I have a problem with this line, which is supposed to compute
-a sample pirq= kernel parameter:
+Ingo Molnar wrote:
 
-   echo -n pirq=; echo `scanpci | grep T_L | cut -c56-` | sed 's/ /,/g'
+> well, your 2.6.26 plans, if i understand them correctly, is to move 
+> currently working PCI IDs from e1000 to e1000e, like you attempted to d 
+> it in v2.6.24, which Linus reverted - correct? I.e. e1000 simply wont 
+> support eth0 on my T60 from 2.6.26 on? That is still an incredibly 
+> stupid plan, and no amount of announcement on lkml will make it any less 
+> stupid.
 
-The 'scanpci' command used to be part of xutils and/or XFree86.
-Xorg implements "Xorg -scanpci" but the output is different and it won't
-run while X is running.
+It seems like you're saying that once hardware is supported by a 
+particular config option, it can never ever be split out to another 
+config option, even if it makes both drivers cleaner.
 
-Firstly I propose using the $( ) construct rather than backticks, since
-it is easier to read:
+A similar situation happened when the sk98lin driver was split into skge 
+and sky2...I don't remember a big fuss back then.  Is it just that no 
+major developers were using the hardware so they didn't notice?
 
-   echo -n pirq=; echo $( scanpci | grep T_L | cut -c56- ) | sed 's/ /,/g'
-
-Inside the backtics, instead of scanpci, I could do:
-
-   lspci -v | grep IRQ | sed -e 's/.* IRQ \(\w\+\)/\1/'
-
-Is this an acceptable substitution?
-
-Nick.
--- 
-PGP Key ID = 0x418487E7                      http://www.nick-andrew.net/
-PGP Key fingerprint = B3ED 6894 8E49 1770 C24A  67E3 6266 6EB9 4184 87E7
+Chris
