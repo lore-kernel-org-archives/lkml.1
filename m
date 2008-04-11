@@ -1,105 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756487AbYDKBvu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757986AbYDKCIy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756487AbYDKBvu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Apr 2008 21:51:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758205AbYDKBvl
+	id S1757986AbYDKCIy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Apr 2008 22:08:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753032AbYDKCIn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Apr 2008 21:51:41 -0400
-Received: from mail.queued.net ([207.210.101.209]:1073 "EHLO mail.queued.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752670AbYDKBvk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Apr 2008 21:51:40 -0400
-Date: Thu, 10 Apr 2008 21:53:24 -0400
-From: Andres Salomon <dilinger@queued.net>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       info-linux@geode.amd.com, jordan.crouse@amd.com
-Subject: Re: [PATCH 2/3] x86: GEODE: add Virtual Systems Architecture
- detection
-Message-ID: <20080410215324.521324c7@ephemeral>
-In-Reply-To: <20080410152019.52c55686@core>
-References: <20080409223328.5774d6cf@ephemeral>
-	<20080410091057.45cbb938@core>
-	<20080410094024.5111e108@ephemeral>
-	<20080410152019.52c55686@core>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.12.0; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 10 Apr 2008 22:08:43 -0400
+Received: from po-out-1718.google.com ([72.14.252.155]:63070 "EHLO
+	po-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752619AbYDKCIm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Apr 2008 22:08:42 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=daAEVGOGlSDstJgA/1TMzoKWPvvMNtgfjRjXdxBKL1/CbHRf5ZcBAzK/SfjEcxtgFICBCPNwrs5ZzYndZXkT0iulLP35Kqj8Zp3YoMn41LtD4TbCkR3CNkywHJ8D0k3qbSAxr2sWOoBzzjrUWx/i+dIn/Cky0VMUSTk+vL+KSXo=
+Message-ID: <47FEC823.9000100@gmail.com>
+Date: Fri, 11 Apr 2008 11:08:35 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+MIME-Version: 1.0
+To: Kumar Gala <galak@kernel.crashing.org>
+CC: Sergei Shtylyov <sshtylyov@ru.mvista.com>, linux-ide@vger.kernel.org,
+       gregkh@suse.de, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       jgarzik@pobox.com, alan@lxorguk.ukuu.org.uk
+Subject: Re: [PATCH 6/13] devres: implement managed iomap interface
+References: <11684073371547-git-send-email-htejun@gmail.com>	<47FA4FD2.8060808@ru.mvista.com> <47FB85CB.2070506@gmail.com> <47FB8751.3040301@ru.mvista.com> <47FE46AC.5000901@ru.mvista.com> <59A939C7-75AF-4C0F-8199-4C31D174AEA9@kernel.crashing.org> <47FE5B76.40409@ru.mvista.com> <A567023C-17FC-402D-9394-29DFFA816891@kernel.crashing.org>
+In-Reply-To: <A567023C-17FC-402D-9394-29DFFA816891@kernel.crashing.org>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 10 Apr 2008 15:20:19 +0100
-Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
-
-> > > This is a check for *VSA2* which is not the same as VSA1 (Cyrix one) and
-> > > for older systems that actually matters as you may have VSA1 or VSA2 and
-> > > they are detected differently.
-> > >
-> > 
-> > Excellent point.  Can we extend this to check for a VSA1-specific
-> > string, or does VSA1 not have a similar signature?
+Kumar Gala wrote:
+>>> but there is no reason not to make it work properly.  For example I  
+>>> believe libata uses devm_* and the fsl SATA driver (non-PCI) will 
+>>> need  to work in cases similar to the 44x.
+>>
+>>   Well, as for sata_fsl, it calls of_iomap() which does The Right Thing.
 > 
-> VSA1 requires you grovelling around poking at the video registers to get
-> a reliable answer and the only bits we need it for are the DMA bug (where
-> we assume all have it) and the sound driver (which uses the PCI space to
-> see what audio setup is there).
-> 
-> X cares but we don't currently.
+> Fair, but I don't see why we should introduce new APIs that are already 
+> "broken".  We went through a lot of effort to clean up and introduce 
+> resource_t (and clearly still have some bugs) for the >32-bit physical 
+> address problem.
 
-How about this?
+Yes, please go ahead.  In case it wasn't clear, I wasn't objecting to 
+the fix at all.  I was just curious what could actually happen on x86.
 
-
-
-
-
-This is generic VSA2 detection.  It's used by OLPC to determine whether or
-not the BIOS contains VSA2, but since other BIOSes are coming out that don't
-use the VSA (ie, tinybios), it might end up being useful for others.
-
-Signed-off-by: Andres Salomon <dilinger@debian.org>
----
- include/asm-x86/geode.h |   19 +++++++++++++++++++
- 1 files changed, 19 insertions(+), 0 deletions(-)
-
-diff --git a/include/asm-x86/geode.h b/include/asm-x86/geode.h
-index c208398..6cded63 100644
---- a/include/asm-x86/geode.h
-+++ b/include/asm-x86/geode.h
-@@ -103,6 +103,14 @@ extern int geode_get_dev_base(unsigned int dev);
- #define PM_AWKD			0x50
- #define PM_SSC			0x54
- 
-+/* VSA2 magic values */
-+
-+#define VSA_VRC_INDEX		0xAC1C
-+#define VSA_VRC_DATA		0xAC1E
-+#define VSA_VR_UNLOCK		0xFC53	/* unlock virtual register */
-+#define VSA_VR_SIGNATURE	0x0003
-+#define VSA_SIG			0x4132	/* signature is ascii 'VSA2' */
-+
- /* GPIO */
- 
- #define GPIO_OUTPUT_VAL		0x00
-@@ -174,6 +182,17 @@ static inline int is_geode(void)
- 	return (is_geode_gx() || is_geode_lx());
- }
- 
-+/*
-+ * The VSA has virtual registers that we can query for a signature.
-+ */
-+static inline int geode_has_vsa2(void)
-+{
-+	outw(VSA_VR_UNLOCK, VSA_VRC_INDEX);
-+	outw(VSA_VR_SIGNATURE, VSA_VRC_INDEX);
-+
-+	return (inw(VSA_VRC_DATA) == VSA_SIG);
-+}
-+
- /* MFGPTs */
- 
- #define MFGPT_MAX_TIMERS	8
 -- 
-1.5.4.2
-
+tejun
