@@ -1,56 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760791AbYDKPyY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760640AbYDKPlR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760791AbYDKPyY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Apr 2008 11:54:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759537AbYDKPyQ
+	id S1760640AbYDKPlR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Apr 2008 11:41:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751042AbYDKPlF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Apr 2008 11:54:16 -0400
-Received: from hellhawk.shadowen.org ([80.68.90.175]:2520 "EHLO
-	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760069AbYDKPyQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Apr 2008 11:54:16 -0400
-Date: Fri, 11 Apr 2008 16:54:21 +0100
-From: Andy Whitcroft <apw@shadowen.org>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Jan Engelhardt <jengelh@computergmbh.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [patch] checkpatch: relax spacing and line length
-Message-ID: <20080411155421.GB29759@shadowen.org>
-References: <20080408171257.GF17915@shadowen.org> <87ej9gp6ol.fsf@basil.nowhere.org> <20080409081943.GI17915@shadowen.org> <20080409083013.GJ17915@shadowen.org> <20080409084606.GD19010@one.firstfloor.org> <20080409131420.GL17915@shadowen.org> <alpine.LNX.1.10.0804091517260.4411@fbirervta.pbzchgretzou.qr> <20080409135840.GO17915@shadowen.org> <20080409095326.8e306c41.akpm@linux-foundation.org> <20080409200746.GR17915@shadowen.org>
+	Fri, 11 Apr 2008 11:41:05 -0400
+Received: from yoi5.greathalifaxhome.com ([66.180.172.116]:50919 "HELO
+	vps1.tull.net" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with SMTP
+	id S1759217AbYDKPlF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Apr 2008 11:41:05 -0400
+X-Spam-Check-By: mail.local.tull.net
+Date: Sat, 12 Apr 2008 01:40:53 +1000
+From: Nick Andrew <nick@nick-andrew.net>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [RFC] x86: Cleanup prose of Documentation/i386/IO-APIC.txt
+Message-ID: <20080411154053.GD18242@tull.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080409200746.GR17915@shadowen.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-SMTPD: qpsmtpd/0.26, http://develooper.com/code/qpsmtpd/
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 09, 2008 at 09:07:55PM +0100, Andy Whitcroft wrote:
-> On Wed, Apr 09, 2008 at 09:53:26AM -0700, Andrew Morton wrote:
-> > On Wed, 9 Apr 2008 14:58:40 +0100 Andy Whitcroft <apw@shadowen.org> wrote:
-> > 
-> > > The originally suggested layout was:
-> > > 
-> > > 			printk(
-> > > "Oh ....",
-> > > 				a, b);
-> > 
-> > Dunno about others, but when I see that idiom I fall over stunned and 
-> > can't get up again.
-> 
-> That remains me of nethack.  I'll start with the width breaker.
+I'm doing a couple of cleanups to Documentation/i386/IO-APIC.txt
+and I have a problem with this line, which is supposed to compute
+a sample pirq= kernel parameter:
 
-Ok.  I've just pushed out a testing version of checkpatch which is
-identicle the 0.18 delta I just pushed to Andrew with the printk width
-restriction lifted.  Perhaps those interested might test it to see if it
-whines appropriatly:
+   echo -n pirq=; echo `scanpci | grep T_L | cut -c56-` | sed 's/ /,/g'
 
-  http://www.kernel.org/pub/linux/kernel/people/apw/checkpatch/checkpatch.pl-testing
+The 'scanpci' command used to be part of xutils and/or XFree86.
+Xorg implements "Xorg -scanpci" but the output is different and it won't
+run while X is running.
 
-I am going to be off next week, but will likely be dipping into email
-now and again.
+Firstly I propose using the $( ) construct rather than backticks, since
+it is easier to read:
 
--apw
+   echo -n pirq=; echo $( scanpci | grep T_L | cut -c56- ) | sed 's/ /,/g'
+
+Inside the backtics, instead of scanpci, I could do:
+
+   lspci -v | grep IRQ | sed -e 's/.* IRQ \(\w\+\)/\1/'
+
+Is this an acceptable substitution?
+
+Nick.
+-- 
+PGP Key ID = 0x418487E7                      http://www.nick-andrew.net/
+PGP Key fingerprint = B3ED 6894 8E49 1770 C24A  67E3 6266 6EB9 4184 87E7
