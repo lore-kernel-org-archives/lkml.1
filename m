@@ -1,93 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755300AbYDKEna@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757033AbYDKEqk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755300AbYDKEna (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Apr 2008 00:43:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750729AbYDKEnU
+	id S1757033AbYDKEqk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Apr 2008 00:46:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751423AbYDKEqc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Apr 2008 00:43:20 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:55799 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750744AbYDKEnU (ORCPT
+	Fri, 11 Apr 2008 00:46:32 -0400
+Received: from smtp116.sbc.mail.sp1.yahoo.com ([69.147.64.89]:29455 "HELO
+	smtp116.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751228AbYDKEqb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Apr 2008 00:43:20 -0400
-Date: Fri, 11 Apr 2008 13:47:39 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: balbir@linux.vnet.ibm.com
-Cc: Paul Menage <menage@google.com>, Pavel Emelianov <xemul@openvz.org>,
-       Hugh Dickins <hugh@veritas.com>,
-       Sudhir Kumar <skumar@linux.vnet.ibm.com>,
-       YAMAMOTO Takashi <yamamoto@valinux.co.jp>, linux-kernel@vger.kernel.org,
-       taka@valinux.co.jp, linux-mm@kvack.org,
-       David Rientjes <rientjes@google.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [-mm] Add an owner to the mm_struct (v9)
-Message-Id: <20080411134739.1aae8bae.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <47FEE89A.1010102@linux.vnet.ibm.com>
-References: <20080410091602.4472.32172.sendpatchset@localhost.localdomain>
-	<20080411123339.89aea319.kamezawa.hiroyu@jp.fujitsu.com>
-	<47FEE89A.1010102@linux.vnet.ibm.com>
-Organization: Fujitsu
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 11 Apr 2008 00:46:31 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=PDdYZkzvyXErM0Sn6RjdoK37f3BE/eUHQAzj4axAarRoPjK1rnfpPYJ/xn2vUPu9VrXsa8MjiUsRWaVUCMMtMX8etdyXPnfFlPKZ/3eJ87lt+Pgvk0DZF6qvFH2hkB4I4wMxZS7bRbRThxLt841d1q26ua+/NYurFGhpkx9Nw1E=  ;
+X-YMail-OSG: fr0TbWUVM1lKr_B0za6mhDpnX3li_8DOEkr0wLGn4W5Wx6qC0gd82fFxsVTTfAH634Zo9nPnIg--
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Pierre Ossman <drzeus-mmc@drzeus.cx>
+Subject: [patch 2.6.25-rc8] mmc: fix platform driver hotplug/coldplug
+Date: Thu, 10 Apr 2008 21:46:28 -0700
+User-Agent: KMail/1.9.6
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       lkml <linux-kernel@vger.kernel.org>, Kay Sievers <kay.sievers@vrfy.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Content-Disposition: inline
+Message-Id: <200804102146.29393.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 11 Apr 2008 09:57:06 +0530
-Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+From: Kay Sievers <kay.sievers@vrfy.org>
 
-> KAMEZAWA Hiroyuki wrote:
-> > maybe I don't undestand correctlly...
-> > 
-> > On Thu, 10 Apr 2008 14:46:02 +0530
-> > Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-> > 
-> >>  
-> >> +config MM_OWNER
-> >> +	bool
-> >> +
-> > no default is ok here  ? what value will this have if not selected ?
-> > I'm sorry if I misunderstand Kconfig.
-> > 
-> 
-> The way this works is
-> 
-> If I select memory resource controller, CONFIG_MM_OWNER is set to y, else it
-> does not even show up in the .config
-> 
-ok, sorry for noise.
+Since 43cc71eed1250755986da4c0f9898f9a635cb3bf, the platform
+modalias is prefixed with "platform:". Add MODULE_ALIAS() to the
+hotpluggable MMC host platform drivers, to re-enable auto loading.
 
-> > 
-> >> +	/*
-> >> +	 * Search through everything else. We should not get
-> >> +	 * here often
-> >> +	 */
-> >> +	do_each_thread(g, c) {
-> >> +		if (c->mm == mm)
-> >> +			goto assign_new_owner;
-> >> +	} while_each_thread(g, c);
-> >> +
-> > 
-> > Again, do_each_thread() is suitable here ?
-> > for_each_process() ?
-> > 
-> 
-> do_each_thread(), while_each_thread() walks all processes and threads of those
-> processes in the system. It is a common pattern used in the kernel (see
-> try_to_freeze_tasks() or oom_kill_task() for example).
-> 
+Also, add missing owner declarations in driver init.
 
-What you want is finding a thread which has the "mm_struct". Why search all
-threads ? I think you only have to search processes(i.e. thread-group-leaders).
+[ dbrownell@users.sourceforge.net: registration fixes ]
+Signed-off-by: Kay Sievers <kay.sievers@vrfy.org>
+Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
+---
+ drivers/mmc/host/at91_mci.c |    1 +
+ drivers/mmc/host/au1xmmc.c  |    2 ++
+ drivers/mmc/host/imxmmc.c   |    2 ++
+ drivers/mmc/host/omap.c     |    3 ++-
+ drivers/mmc/host/pxamci.c   |    2 ++
+ drivers/mmc/host/wbsd.c     |    1 +
+ 6 files changed, 10 insertions(+), 1 deletion(-)
 
-try_to_freeze_tasks()/oom_kill_task() have to chase all threads because
-it have to check flags in task_structs in a process.
-
-
-Thanks,
--Kame
-
-
-
+--- g26.orig/drivers/mmc/host/at91_mci.c	2008-04-10 21:36:18.000000000 -0700
++++ g26/drivers/mmc/host/at91_mci.c	2008-04-10 21:36:50.000000000 -0700
+@@ -1075,3 +1075,4 @@ module_exit(at91_mci_exit);
+ MODULE_DESCRIPTION("AT91 Multimedia Card Interface driver");
+ MODULE_AUTHOR("Nick Randell");
+ MODULE_LICENSE("GPL");
++MODULE_ALIAS("platform:at91_mci");
+--- g26.orig/drivers/mmc/host/au1xmmc.c	2008-04-10 21:36:18.000000000 -0700
++++ g26/drivers/mmc/host/au1xmmc.c	2008-04-10 21:40:36.000000000 -0700
+@@ -998,6 +998,7 @@ static struct platform_driver au1xmmc_dr
+ 	.resume        = NULL,
+ 	.driver        = {
+ 		.name  = DRIVER_NAME,
++		.owner = THIS_MODULE,
+ 	},
+ };
+ 
+@@ -1018,5 +1019,6 @@ module_exit(au1xmmc_exit);
+ MODULE_AUTHOR("Advanced Micro Devices, Inc");
+ MODULE_DESCRIPTION("MMC/SD driver for the Alchemy Au1XXX");
+ MODULE_LICENSE("GPL");
++MODULE_ALIAS("platform:au1xxx-mmc");
+ #endif
+ 
+--- g26.orig/drivers/mmc/host/imxmmc.c	2008-04-10 21:36:18.000000000 -0700
++++ g26/drivers/mmc/host/imxmmc.c	2008-04-10 21:40:44.000000000 -0700
+@@ -1128,6 +1128,7 @@ static struct platform_driver imxmci_dri
+ 	.resume		= imxmci_resume,
+ 	.driver		= {
+ 		.name		= DRIVER_NAME,
++		.owner		= THIS_MODULE,
+ 	}
+ };
+ 
+@@ -1147,3 +1148,4 @@ module_exit(imxmci_exit);
+ MODULE_DESCRIPTION("i.MX Multimedia Card Interface Driver");
+ MODULE_AUTHOR("Sascha Hauer, Pengutronix");
+ MODULE_LICENSE("GPL");
++MODULE_ALIAS("platform:imx-mmc");
+--- g26.orig/drivers/mmc/host/omap.c	2008-04-10 21:36:18.000000000 -0700
++++ g26/drivers/mmc/host/omap.c	2008-04-10 21:40:49.000000000 -0700
+@@ -1255,6 +1255,7 @@ static struct platform_driver mmc_omap_d
+ 	.resume		= mmc_omap_resume,
+ 	.driver		= {
+ 		.name	= DRIVER_NAME,
++		.owner	= THIS_MODULE,
+ 	},
+ };
+ 
+@@ -1273,5 +1274,5 @@ module_exit(mmc_omap_exit);
+ 
+ MODULE_DESCRIPTION("OMAP Multimedia Card driver");
+ MODULE_LICENSE("GPL");
+-MODULE_ALIAS(DRIVER_NAME);
++MODULE_ALIAS("platform:" DRIVER_NAME);
+ MODULE_AUTHOR("Juha Yrjölä");
+--- g26.orig/drivers/mmc/host/pxamci.c	2008-04-10 21:36:18.000000000 -0700
++++ g26/drivers/mmc/host/pxamci.c	2008-04-10 21:40:53.000000000 -0700
+@@ -693,6 +693,7 @@ static struct platform_driver pxamci_dri
+ 	.resume		= pxamci_resume,
+ 	.driver		= {
+ 		.name	= DRIVER_NAME,
++		.owner	= THIS_MODULE,
+ 	},
+ };
+ 
+@@ -711,3 +712,4 @@ module_exit(pxamci_exit);
+ 
+ MODULE_DESCRIPTION("PXA Multimedia Card Interface Driver");
+ MODULE_LICENSE("GPL");
++MODULE_ALIAS("platform:pxa2xx-mci");
+--- g26.orig/drivers/mmc/host/wbsd.c	2008-04-10 21:38:42.000000000 -0700
++++ g26/drivers/mmc/host/wbsd.c	2008-04-10 21:41:07.000000000 -0700
+@@ -1948,6 +1948,7 @@ static struct platform_driver wbsd_drive
+ 	.resume		= wbsd_platform_resume,
+ 	.driver		= {
+ 		.name	= DRIVER_NAME,
++		.owner	= THIS_MODULE,
+ 	},
+ };
+ 
