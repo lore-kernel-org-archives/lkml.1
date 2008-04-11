@@ -1,50 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759733AbYDKJwm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759482AbYDKKLr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759733AbYDKJwm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Apr 2008 05:52:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757506AbYDKJwe
+	id S1759482AbYDKKLr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Apr 2008 06:11:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757718AbYDKKLg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Apr 2008 05:52:34 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:41840 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757304AbYDKJwe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Apr 2008 05:52:34 -0400
-Date: Fri, 11 Apr 2008 18:57:03 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, penberg@cs.helsinki.fi
-Subject: Re: 2.6.25-rc8-mm2
-Message-Id: <20080411185703.a5407940.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20080410203354.f0a6f464.akpm@linux-foundation.org>
-References: <20080410203354.f0a6f464.akpm@linux-foundation.org>
-Organization: Fujitsu
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 11 Apr 2008 06:11:36 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:32850 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757449AbYDKKLf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Apr 2008 06:11:35 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <1207885132.22001.85.camel@brick>
+References: <1207885132.22001.85.camel@brick>
+To: Harvey Harrison <harvey.harrison@gmail.com>
+Cc: dhowells@redhat.com, Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       linux-arch <linux-arch@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH 2/2] kernel: Move arches to use common unaligned access
+X-Mailer: MH-E 8.0.3+cvs; nmh 1.2-20070115cvs; GNU Emacs 23.0.50
+Date: Fri, 11 Apr 2008 11:11:28 +0100
+Message-ID: <15208.1207908688@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 10 Apr 2008 20:33:54 -0700
-Andrew Morton <akpm@linux-foundation.org> wrote:
+Harvey Harrison <harvey.harrison@gmail.com> wrote:
 
-> 
-> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.25-rc8/2.6.25-rc8-mm2/
-> 
-> - Compilation is busted on mips due to the page-flags patches
-> 
-On ia64/NUMA box (which has empty nodes.)
+> -#ifndef _ASM_UNALIGNED_H
+> -#define _ASM_UNALIGNED_H
+> -
+> +#ifndef _ASM_FRV_UNALIGNED_H_
+> +#define _ASM_FRV_UNALIGNED_H_
 
-CONFIG_SLAB ..... booted well
-CONFIG_SLUB ..... can't boot
-CONFIG_SLUB + CONFIG_SLUB_DEBUG_ON .... booted. Hmm?
+Why?
 
-I'll dig more if I can.
+> - * impractical.  So, now we fall back to using memcpy.
+> + * impractical.  So, now we fall back to using memmov.
 
-2.6.25-rc8-mm1 had no troubles.
+That's memmove, not memmov.  Any why memmove, not memcpy?  Is __tmp likely to
+overlap with *ptr?
 
-Thanks,
--Kame
+Also, for FRV, I think calling memmove/memcpy for MMU kernels may be the wrong
+thing to do...  I'm sort of leaning towards doing the same thing as NOMMU
+kernels and just using your inline ones.
 
+The advantage of the inline ones is that they are quicker and probably involve
+fewer instructions executed; whereas using memcpy/memmove may end up with
+smaller, but slower code.  Hmmm...  Maybe key on CONFIG_CC_OPTIMIZE_FOR_SIZE?
+
+David
