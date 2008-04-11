@@ -1,58 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760401AbYDKLdC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760793AbYDKLd2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760401AbYDKLdC (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Apr 2008 07:33:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760643AbYDKLco
+	id S1760793AbYDKLd2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Apr 2008 07:33:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759786AbYDKLdJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Apr 2008 07:32:44 -0400
-Received: from ug-out-1314.google.com ([66.249.92.169]:42726 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759703AbYDKLcn (ORCPT
+	Fri, 11 Apr 2008 07:33:09 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:35509 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760497AbYDKLdI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Apr 2008 07:32:43 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:subject:content-type:content-transfer-encoding;
-        b=jWG0IMhIlPOmez/8USL2RPFk8X5bF8mxwwuUPZYK/IoNo/5kgr6VVINsXhx16HQ4fIRb/hbcplhN43NvngY5pRKvEFWJzttZGBxhhTZT/zAR0Yub8HfjsRDm2cZtjVNdddR+0t9er/rX78YnFTStRG/QXTsXb77kalp0zrAUysQ=
-Message-ID: <47FF4B80.2060400@gmail.com>
-Date: Fri, 11 Apr 2008 13:29:04 +0200
-From: Jacek Luczak <difrost.kernel@gmail.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       linux-next@vger.kernel.org, tglx@linutronix.de
-Subject: [PATCH 3/3] x86: Section mismatch fixes
-Content-Type: text/plain; charset=ISO-8859-2
-Content-Transfer-Encoding: 7bit
+	Fri, 11 Apr 2008 07:33:08 -0400
+Date: Fri, 11 Apr 2008 13:37:46 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Pavel Machek <pavel@ucw.cz>, Jiri Kosina <jkosina@suse.cz>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Andi Kleen <andi@firstfloor.org>,
+       Zdenek Kabelac <zdenek.kabelac@gmail.com>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: BUG: using smp_processor_id() during suspend with 2.6.25-rc8
+Message-ID: <20080411113746.GV10019@one.firstfloor.org>
+References: <c4e36d110804070625n17eb44e1nbb5558f500f13438@mail.gmail.com> <Pine.LNX.4.64.0804080008420.3896@jikos.suse.cz> <20080407222352.GG16647@one.firstfloor.org> <200804080029.31102.rjw@sisk.pl> <Pine.LNX.4.64.0804080030500.3896@jikos.suse.cz> <20080410094554.GA10321@ucw.cz> <Pine.LNX.4.64.0804110122470.3896@jikos.suse.cz> <20080411104902.GA8734@elf.ucw.cz> <20080411105108.GA1844@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080411105108.GA1844@elte.hu>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch fixes section mismatch warnings in unlock_ExtINT_logic().
+> thanks Pavel, i picked this up into sched-devel.git - it makes sense 
+> independently of whether it solves the warning.
 
-WARNING: arch/x86/kernel/built-in.o(.text+0x14a92): Section mismatch in reference from the function unlock_ExtINT_logic()
-to the function .init.text:find_isa_irq_pin()
-The function unlock_ExtINT_logic() references
-the function __init find_isa_irq_pin().
-This is often because unlock_ExtINT_logic lacks a __init
-annotation or the annotation of find_isa_irq_pin is wrong. 
+This means the CPU preempt sanity checking is effectively disabled
+on UP kernels. Even though more and more people should run multi-core
+now there is still a sizeable user base left on single core.
 
-Signed-off-by: Jacek Luczak <luczak.jacek@gmail.com>
+Don't think this is a good idea. We need even the UP testers.
 
----
- io_apic_64.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+If he wants this for suspend or machine check/oops (always useful there
+to disable such warnings) then there should
+be separate checks for this. Perhaps system_state could be enhanced for this?
 
-diff --git a/arch/x86/kernel/io_apic_64.c b/arch/x86/kernel/io_apic_64.c
-index 9ba11d0..ef1a8df 100644
---- a/arch/x86/kernel/io_apic_64.c
-+++ b/arch/x86/kernel/io_apic_64.c
-@@ -1599,7 +1599,7 @@ static void __init setup_nmi(void)
-  * cycles as some i82489DX-based boards have glue logic that keeps the
-  * 8259A interrupt line asserted until INTA.  --macro
-  */
--static inline void unlock_ExtINT_logic(void)
-+static inline void __init unlock_ExtINT_logic(void)
- {
- 	int apic, pin, i;
- 	struct IO_APIC_route_entry entry0, entry1;
+-Andi
+
