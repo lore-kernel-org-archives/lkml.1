@@ -1,74 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760642AbYDKXNt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760259AbYDKXPe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760642AbYDKXNt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Apr 2008 19:13:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757325AbYDKXNj
+	id S1760259AbYDKXPe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Apr 2008 19:15:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758113AbYDKXPY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Apr 2008 19:13:39 -0400
-Received: from ug-out-1314.google.com ([66.249.92.175]:28482 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759282AbYDKXNi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Apr 2008 19:13:38 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=D53bFTm4fGaZn7gw+Vdug4+a6YzlJtw23C8nbohdReNjy2VsTWjYaEJSGMg5Ms3H6Z1IMxMwnpgmBLOLQxl1Zoosk7k4fl7l3aBVFdAbJ8BmF+66qOdX8MB+941n2ECMDWvXwNq7EAj+mCQCR6O7c1+C6n+r6ixV/qnW2o1kG6U=
-Date: Sat, 12 Apr 2008 03:09:11 +0400
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: Pekka J Enberg <penberg@cs.helsinki.fi>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Christoph Lameter <clameter@sgi.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: Re: 2.6.25-rc8-mm2: boot hang after "ACPI: using IOAPIC for
-	interrupt routing"
-Message-ID: <20080411230911.GA4733@martell.zuzino.mipt.ru>
-References: <20080410203354.f0a6f464.akpm@linux-foundation.org> <20080411062928.GB4748@martell.zuzino.mipt.ru> <1207910128.7212.4.camel@haji> <20080411210715.GA4851@martell.zuzino.mipt.ru> <Pine.LNX.4.64.0804120024470.18799@sbz-30.cs.Helsinki.FI>
+	Fri, 11 Apr 2008 19:15:24 -0400
+Received: from iabervon.org ([66.92.72.58]:41216 "EHLO iabervon.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757325AbYDKXPX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Apr 2008 19:15:23 -0400
+Date: Fri, 11 Apr 2008 19:15:21 -0400 (EDT)
+From: Daniel Barkalow <barkalow@iabervon.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: Christoph Hellwig <hch@infradead.org>,
+       "Kok, Auke" <auke-jan.h.kok@intel.com>, Ingo Molnar <mingo@elte.hu>,
+       Jeff Garzik <jeff@garzik.org>, Matthew Wilcox <matthew@wil.cx>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       NetDev <netdev@vger.kernel.org>,
+       e1000-list <e1000-devel@lists.sourceforge.net>,
+       linux-pci maillist <linux-pci@atrey.karlin.mff.cuni.cz>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "David S. Miller" <davem@davemloft.net>,
+       Jesse Brandeburg <jesse.brandeburg@intel.com>,
+       "Ronciak, John" <john.ronciak@intel.com>,
+       "Allan, Bruce W" <bruce.w.allan@intel.com>, Greg KH <greg@kroah.com>,
+       Arjan van de Ven <arjan@linux.intel.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [patch] e1000=y && e1000e=m regression fix
+In-Reply-To: <alpine.LFD.1.00.0804111556200.3143@woody.linux-foundation.org>
+Message-ID: <alpine.LNX.1.00.0804111905420.19665@iabervon.org>
+References: <47FBDBE9.9040700@garzik.org> <20080409193850.GA11763@elte.hu> <47FD2325.2030705@intel.com> <47FE5C89.5060209@intel.com> <20080410192714.GA14055@elte.hu> <47FE8566.5040809@intel.com> <20080411112653.GC9205@elte.hu> <20080411113644.GA7767@infradead.org>
+ <20080411121606.GA25661@elte.hu> <47FF9060.5040202@intel.com> <20080411164542.GA4066@infradead.org> <alpine.LFD.1.00.0804111028540.3143@woody.linux-foundation.org> <alpine.LNX.1.00.0804111700550.19665@iabervon.org>
+ <alpine.LFD.1.00.0804111556200.3143@woody.linux-foundation.org>
+User-Agent: Alpine 1.00 (LNX 882 2007-12-20)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0804120024470.18799@sbz-30.cs.Helsinki.FI>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Apr 12, 2008 at 12:25:21AM +0300, Pekka J Enberg wrote:
-> On Sat, 12 Apr 2008, Alexey Dobriyan wrote:
-> > > Alexey, can you try passing the 'slub_nomerge' option to the kernel to
-> > > see if the hang goes away with that?
+On Fri, 11 Apr 2008, Linus Torvalds wrote:
+
+> 
+> 
+> On Fri, 11 Apr 2008, Daniel Barkalow wrote:
 > > 
-> > nomerge doesn't help as well as turning on combinations of SLUB debug options.
+> > Wouldn't it make more sense to turn E1000 into a option that does nothing 
+> > except select both E1000E and E1000_PCI, and have those two be the options 
+> > that build drivers?
 > 
-> Does the following patch fix it?
+> Yes, that sounds fine too. Although you need to add a
 > 
-> 			Pekka
+> 	depends on PCI
 > 
-> From 7c7e7e5e7ec07c0a47705b2d21c779c39ba02252 Mon Sep 17 00:00:00 2001
-> From: Pekka Enberg <penberg@cs.helsinki.fi>
-> Date: Fri, 11 Apr 2008 17:17:43 +0300
-> Subject: [PATCH] slub: add missing slab_unlock() to __kmem_cache_shrink()
-> 
-> If page is not kickable, remember to slab_unlock() before continuing the loop.
-> 
-> Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
-> ---
->  mm/slub.c |    4 +++-
->  1 files changed, 3 insertions(+), 1 deletions(-)
-> 
-> diff --git a/mm/slub.c b/mm/slub.c
-> index 4b694a7..f09f1fb 100644
-> --- a/mm/slub.c
-> +++ b/mm/slub.c
-> @@ -2926,8 +2926,10 @@ static unsigned long __kmem_cache_shrink(struct kmem_cache *s, int node,
->  			continue;
->  
->  		if (page->inuse) {
-> -			if (!SlabKickable(page))
-> +			if (!SlabKickable(page)) {
-> +				slab_unlock(page);
->  				continue;
-> +			}
+> to the E1000 thing (because the "select" would not honor the dependencies 
+> that E1000E and E1000_PCI have).
 
-Yes, it helps. Now I have some more bugs to report. :-(
+Oh, right.
 
+> However:
+> 
+> > Then, after a while, we drop the E1000 option entirely
+> 
+> I agree we could, but as I tried to explain, I fundamentally don't think 
+> we _should_.
+> 
+> Why should people _ever_ be asked about whether they want "E1000 PCI 
+> support" vs "E1000 PCI-E" support, when it's almost impossible to tell 
+> which kind of card you have?
+> 
+> In other words, I suspect that anybody who selects E1000 support would 
+> actually want the "support both" case, and simply not care. Unless they 
+> were _really_ deeply aware of their hardware.
+
+Eh, they'll both default to Y on PCs individually, so it's only people who 
+are turning unused stuff off who will even look, and they'll probably ask 
+/sys/class/net/eth0/device/driver or lsmod.
+
+	-Daniel
+*This .sig left intentionally blank*
