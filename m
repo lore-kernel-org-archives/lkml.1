@@ -1,70 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759240AbYDKIgA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758907AbYDKIkq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759240AbYDKIgA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Apr 2008 04:36:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757611AbYDKIfw
+	id S1758907AbYDKIkq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Apr 2008 04:40:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756932AbYDKIkg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Apr 2008 04:35:52 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:37329 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756984AbYDKIfw (ORCPT
+	Fri, 11 Apr 2008 04:40:36 -0400
+Received: from wx-out-0506.google.com ([66.249.82.237]:14932 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756662AbYDKIkf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Apr 2008 04:35:52 -0400
-Date: Fri, 11 Apr 2008 10:40:29 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Guillaume Chazarain <guichaz@gmail.com>
-Cc: Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>,
-       Karsten Wiese <fzu@wemgehoertderstaat.de>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] x86: set_cyc2ns_scale() remove tsc_now and ns_now
-Message-ID: <20080411084029.GT10019@one.firstfloor.org>
-References: <200804102331.11815.fzu@wemgehoertderstaat.de> <873apsn8g7.fsf@basil.nowhere.org> <20080411075554.GA6834@elte.hu> <20080411080617.GP10019@one.firstfloor.org> <3d8471ca0804110125r1b4e97c0ua419587a64c9b1c7@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 11 Apr 2008 04:40:35 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=IDoDhug5yf/uPET69U+rGGS2qg9EK+0Ue9S9M0cpE0v4bSoDSsWTGqip6xiSGqSifFP3thQyLgUmUiFMOGCb4taE0TmXZuYt4J5/t9ZJWqtVWGi+sXL+1Q/7EHLtxEGE+g8/+/6u1tXyRIPRyDTD0U0qiwDetyw/YjK63sTO4Bw=
+Message-ID: <86802c440804110140i7752e0ayadca550cdddfd599@mail.gmail.com>
+Date: Fri, 11 Apr 2008 01:40:33 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: regression caused by: genirq: do not leave interupts enabled on free_irq
+Cc: "Thomas Gleixner" <tglx@linutronix.de>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Ingo Molnar" <mingo@elte.hu>, "Jeff Garzik" <jeff@garzik.org>,
+       "Ayaz Abdulla" <aabdulla@nvidia.com>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <1207899030.15605.1.camel@x61.ebiederm.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <3d8471ca0804110125r1b4e97c0ua419587a64c9b1c7@mail.gmail.com>
-User-Agent: Mutt/1.4.2.1i
+References: <86802c440804102313k4546cd73s7bffb30a14239472@mail.gmail.com>
+	 <alpine.LFD.1.10.0804110841370.3261@apollo.tec.linutronix.de>
+	 <86802c440804110014j44b32d16ubfaa0f327c3a384f@mail.gmail.com>
+	 <86802c440804110017y62938d90x7e3e32df25a60d1@mail.gmail.com>
+	 <1207899030.15605.1.camel@x61.ebiederm.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 11, 2008 at 10:25:09AM +0200, Guillaume Chazarain wrote:
-> On Fri, Apr 11, 2008 at 10:06 AM, Andi Kleen <andi@firstfloor.org> wrote:
-> >  At some point you have to generate an offset to something and that
-> >  offset must be different for different frequencies, otherwise
-> >  you get large systematic errors
-> 
-> This offset is already there, represented by rq->clock - sched_clock()
+On Fri, Apr 11, 2008 at 12:30 AM, Eric W. Biederman
+<ebiederm@xmission.com> wrote:
+>
+>
+>  On Fri, 2008-04-11 at 00:17 -0700, Yinghai Lu wrote:
+>  > On Fri, Apr 11, 2008 at 12:14 AM, Yinghai Lu <yhlu.kernel@gmail.com> wrote:
+>  > > On Fri, Apr 11, 2008 at 12:01 AM, Thomas Gleixner <tglx@linutronix.de> wrote:
+>  > >  > On Thu, 10 Apr 2008, Yinghai Lu wrote:
+>  > >  >  > last week found:
+>  > >  >  > after latest kernel kexec RHEL 5.1 or other stack kernel, the nvidia
+>  > >  >  > forcedeth doesn't work anymore.
+>  > >  >  >
+>  > >  >  > I stared at forcedeth.c two days. and revert every patches about that
+>  > >  >  > doesn't help.
+>  > >  >
+>  > >  >  So forcedeth does not come up again, when you kexec from linus.git
+>  > >  >  into an older distro kernel. Or is it the other way round ?
+>  > >  RHEL 5.1 kexec RHEL 5.1 : works
+>  > >  RHEL 5.1 kexec linus kernel: works
+>  > >  linus (after -rc2) kexec linus tree: works:
+>  > >  linus  (after -rc2) kexec RHEL 5.1 : forcedeth will not come up
+>  > >  linus ( before -rc2 include rc2) kexec RHEL 5.1 works
+>  > >
+>  > the forcedeth can not get IP address...
+>
+>  Sounds like you are not getting any interrupts when you receive a
+>  packet.  (i.e. The interrupt line is staying disabled).
+>
+>  Is MSI an option here?  I'm wondering if we disable the MSI and
+>  something is not enabling it.
 
-Same issue. Think about it.  Perhaps I should have written
-the complicated proof :)
+mcp55 is using msi for forcedeth
 
-You really have to compute the offset before the scaling, otherwise it 
-is useless.
+MSI.. will look at the driver in RHEL 5.1
 
-TSC is a counter that adds up time units. Now when the frequency
-changes the time units change, but counter doesn't reset.
+it seems that another server with ck804 works because it is using ioapic.
 
-Now the full absolue value of the counter is useless for exact time 
-because there is no way to reconstruct what the lengths of the different 
-time units meshed together in the single counter value were
-and how long it ticked at the different frequencies.
-
-So after a frequency change the only way to get anything 
-approaching a sane time is to take a snapshot of the counter
-already ticking at the new frequency (but before it is scaled!) 
-and then only work with current TSC - snapshot and only scale
-after that.
-
-Then there is also the issue that you don't know when exactly
-the counter changes and any measurements during that time
-might be dodgy (but system is not usually fully stopped during
-it). 
-
-The rewritten sched_clock handled this by having a unstable period 
-between cpufreq starting to change, cpufreq reporting end of change 
-and falling back to another clock during this instable period.
-
-Also there are of course other users, like printk who
-don't have rq->clock.
-
--Andi
+YH
