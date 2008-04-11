@@ -1,35 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760089AbYDKLM0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760202AbYDKLNc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760089AbYDKLM0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Apr 2008 07:12:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759370AbYDKLMQ
+	id S1760202AbYDKLNc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Apr 2008 07:13:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759490AbYDKLNY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Apr 2008 07:12:16 -0400
-Received: from public.bindows.net ([66.135.40.169]:41044 "EHLO
-	public.bindows.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759323AbYDKLMP (ORCPT
+	Fri, 11 Apr 2008 07:13:24 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:37155 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759492AbYDKLNW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Apr 2008 07:12:15 -0400
-Message-ID: <47FF4781.3040506@better.se>
-Date: Fri, 11 Apr 2008 13:12:01 +0200
-From: Marcus Better <marcus@better.se>
-User-Agent: Mozilla-Thunderbird 2.0.0.12 (X11/20080406)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: stefanr@s5r6.in-berlin.de, bugme-daemon@bugzilla.kernel.org,
-       linux-kernel@vger.kernel.org, linux-input@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: [Bug 10327] New: keyboard stops responding after "ifdown eth0"
-References: <bug-10327-10286@http.bugzilla.kernel.org/>	<20080325143941.300d415f.akpm@linux-foundation.org>	<47E9721C.2000306@better.se>	<47E99258.3060005@s5r6.in-berlin.de>	<20080325171608.509f4ca7.akpm@linux-foundation.org>	<47EA152C.6000008@better.se> <20080326102931.484285f3.akpm@linux-foundation.org>
-In-Reply-To: <20080326102931.484285f3.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Fri, 11 Apr 2008 07:13:22 -0400
+Date: Fri, 11 Apr 2008 20:17:24 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Christoph Lameter <clameter@sgi.com>
+Subject: Re: 2.6.25-rc8-mm2
+Message-Id: <20080411201724.e820122b.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20080411195738.16e9ef92.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20080410203354.f0a6f464.akpm@linux-foundation.org>
+	<20080411185703.a5407940.kamezawa.hiroyu@jp.fujitsu.com>
+	<20080411192346.6872472a.kamezawa.hiroyu@jp.fujitsu.com>
+	<1207910058.7212.1.camel@haji>
+	<20080411195738.16e9ef92.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: Fujitsu
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> I'd suggest running (and perhaps suitably modifying) this:
+On Fri, 11 Apr 2008 19:57:38 +0900
+KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
 
-This doesn't seem to help, it freezes without printing anything, and 
-there is nothing in the logs either.
+> > What happens when it doesn't boot? Does it hang or do you get an oops?
+> just hangs. before showing anything.
+> 
+> 
+> > Can you reproduce it with the 'for-mm' branch of:
+> > 
+> >  git://git.kernel.org/pub/scm/linux/kernel/git/penberg/slab-2.6.git
+> > 
+> 
+> will try. 
+> 
+slab-2.6.git booted well :(
+Hmm, It seems I have to dig somewhere different...
+
+Thanks,
+-Kame 
+
