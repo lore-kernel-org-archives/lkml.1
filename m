@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758303AbYDKGdW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758769AbYDKGeO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758303AbYDKGdW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Apr 2008 02:33:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753321AbYDKGdO
+	id S1758769AbYDKGeO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Apr 2008 02:34:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753512AbYDKGd7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Apr 2008 02:33:14 -0400
-Received: from ug-out-1314.google.com ([66.249.92.170]:45605 "EHLO
+	Fri, 11 Apr 2008 02:33:59 -0400
+Received: from ug-out-1314.google.com ([66.249.92.171]:46941 "EHLO
 	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752755AbYDKGdM (ORCPT
+	with ESMTP id S1753321AbYDKGd5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Apr 2008 02:33:12 -0400
+	Fri, 11 Apr 2008 02:33:57 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=BsOs4xl0bj2ZxBukZmg+i/gcbCq88akm6Rv7QyXAGwuT7CgUMwrg1f048OQAuOYl0Pgyzcmt0enJzE6Gr6TUkNFB1svBAkbVJnhghadvaXxMFcm2ketO6K7VGtQVcniO6EyRrp5EJRZmSoMcmB6KxoAs5zBRiaSa7fA8UQCsdbs=
-Date: Fri, 11 Apr 2008 10:28:45 +0400
+        b=s9vu35cizx+EMn5Dv1OfTmyNFVF5EiAkuSFAJN3n7GUfhj9YVua71u5jtCCFe+W7q7acrtfBgeYkbdDOCXqgI6/Ub5L22F5FPVWdm6oLI5zxGr8+4414BhSIG8X0w3U/O4matS8k40Yelxh4fQLOpKaCvYapO4E856xCwKX1EV8=
+Date: Fri, 11 Apr 2008 10:29:28 +0400
 From: Alexey Dobriyan <adobriyan@gmail.com>
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, Pekka Enberg <penberg@cs.helsinki.fi>
 Subject: 2.6.25-rc8-mm2: boot hang after "ACPI: using IOAPIC for interrupt
 	routing"
-Message-ID: <20080411062845.GA4748@martell.zuzino.mipt.ru>
+Message-ID: <20080411062928.GB4748@martell.zuzino.mipt.ru>
 References: <20080410203354.f0a6f464.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
