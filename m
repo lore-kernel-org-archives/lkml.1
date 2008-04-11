@@ -1,55 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761539AbYDKQ76@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761619AbYDKRGO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761539AbYDKQ76 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Apr 2008 12:59:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761443AbYDKQ7r
+	id S1761619AbYDKRGO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Apr 2008 13:06:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760223AbYDKRF7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Apr 2008 12:59:47 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:35912 "EHLO e4.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761441AbYDKQ7q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Apr 2008 12:59:46 -0400
-In-Reply-To: <20080411135544.GG2160@csclub.uwaterloo.ca>
-To: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
-Cc: Bodo Eggert <7eggert@gmx.de>, Diego Calleja <diegocg@gmail.com>,
-       Jan Kara <jack@suse.cz>, Jiri Kosina <jkosina@suse.cz>,
-       linux-fsdevel@vger.kernel.org,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       Michal Hocko <mhocko@suse.cz>, Meelis Roos <mroos@linux.ee>
+	Fri, 11 Apr 2008 13:05:59 -0400
+Received: from smtp119.sbc.mail.sp1.yahoo.com ([69.147.64.92]:43916 "HELO
+	smtp119.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1760214AbYDKRF6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Apr 2008 13:05:58 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=pf+wtYSfD6y+qY1S7o4Ae5dvxiyr9VtqSSKkdRnWk7mMQXy1ekOzjoCVwjBl1vkt2QhOsR6TUCU7ZVItoaneszeeiHm2VBKId5AqP2q3vhy8OtlE/Ev2fKtFP0m+4XCgWd1JHQXlYeJdhr1V5wqQV/Aj86zdejwob7bs6li4gQg=  ;
+X-YMail-OSG: d4F_aakVM1m5zqZ6f6fW3nPGjJswYdmmq66dQsdemVBdvHiZkV5PFzashdy0.fV0cr1zQ3Iz4g--
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Uwe =?iso-8859-1?q?Kleine-K=F6nig?= <Uwe.Kleine-Koenig@digi.com>
+Subject: Re: [PATCH] GPIO: #include <linux/kernel.h> for might_sleep
+Date: Fri, 11 Apr 2008 10:05:51 -0700
+User-Agent: KMail/1.9.6
+Cc: linux-kernel@vger.kernel.org
+References: <1207902290-25381-1-git-send-email-Uwe.Kleine-Koenig@digi.com>
+In-Reply-To: <1207902290-25381-1-git-send-email-Uwe.Kleine-Koenig@digi.com>
 MIME-Version: 1.0
-Subject: Re: file offset corruption on 32-bit machines?
-X-Mailer: Lotus Notes Release 7.0 HF277 June 21, 2006
-Message-ID: <OF861D7F24.6F60C82D-ON88257428.005C1DA4-88257428.005D5D80@us.ibm.com>
-From: Bryan Henderson <hbryan@us.ibm.com>
-Date: Fri, 11 Apr 2008 09:59:45 -0700
-X-MIMETrack: Serialize by Router on D01ML604/01/M/IBM(Release 8.0.1|February 07, 2008) at
- 04/11/2008 12:59:44,
-	Serialize complete at 04/11/2008 12:59:44
-Content-Type: text/plain; charset="US-ASCII"
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8bit
+Content-Disposition: inline
+Message-Id: <200804111005.52041.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->So if you write multithreaded code and don't understand what locking
->around shared resources is for, then your application might break.
+On Friday 11 April 2008, Uwe Kleine-König wrote:
+> I like having headers being independend of the order of inclusion.
 
-I think I know what locking around shared resources is for, which is why 
-I'm surprised the kernel doesn't do it.
+That's a pretty unusual policy.  Not one that's generally
+followed in the kernel, either ... 
 
-Is it normal for a kernel resource not to be thread-safe (i.e. you don't 
-get advertised/sensible results if two threads access it at the same 
-time)?
 
->Can you give an example where locking is being used correctly where this 
-can
->possibly fail?
+> Usually I order all includes alphabetically (and grouped by linux/,
+> asm/, etc.). 
 
-I could accept (though I haven't thought about it) that there aren't any 
-real-world applications that do simultaneous reads and writes through the 
-same file pointer.  I might even accept that there can be no useful 
-application that does.  But can you say such an application is incorrect?
+If you like alphabetical, why the exception for <asm/...> ??
+:)
 
---
-Bryan Henderson                     IBM Almaden Research Center
-San Jose CA                         Filesystems
 
+> This doesn't work with gpio.h because then kernel.h is 
+> included to late.
+
+So include <linux/kernel.h> first.  There *is* a policy
+of avoiding extra #includes ... extras slow down builds.
+
+- Dave
