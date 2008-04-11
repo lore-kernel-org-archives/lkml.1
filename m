@@ -1,75 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760853AbYDKPTt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760631AbYDKPVV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760853AbYDKPTt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Apr 2008 11:19:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760691AbYDKPT2
+	id S1760631AbYDKPVV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Apr 2008 11:21:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759639AbYDKPVK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Apr 2008 11:19:28 -0400
-Received: from rn-out-0910.google.com ([64.233.170.189]:58316 "EHLO
-	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759777AbYDKPT1 (ORCPT
+	Fri, 11 Apr 2008 11:21:10 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:19700 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754139AbYDKPVJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Apr 2008 11:19:27 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=tezWMtkvhGNfm4vKfyHaFvxEnZgJHVylDfE2GSCrKLHVmO9N9oIAqBV0yWnasAFH+ayDN46zSHqzgCyvRyTVdVa2a+ddRWoAQOZm53yuyF5axk96myexzMEau0IBmzxTu5hSt1rn8FfDfBysN+gA3sGFzjwol9+PaGPx7LwCzAc=
-Subject: Re: [PATCH 2/2] kernel: Move arches to use common unaligned access
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: David Howells <dhowells@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       linux-arch <linux-arch@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-In-Reply-To: <15208.1207908688@redhat.com>
-References: <1207885132.22001.85.camel@brick>  <15208.1207908688@redhat.com>
-Content-Type: text/plain
-Date: Fri, 11 Apr 2008 08:19:26 -0700
-Message-Id: <1207927166.22001.91.camel@brick>
+	Fri, 11 Apr 2008 11:21:09 -0400
+Date: Fri, 11 Apr 2008 08:19:01 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, mingo <mingo@redhat.com>,
+       tglx <tglx@linutronix.de>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: linux-next: Tree for April 10 (arch/x86)
+Message-Id: <20080411081901.f56f5180.randy.dunlap@oracle.com>
+In-Reply-To: <20080411074631.GB6410@elte.hu>
+References: <20080410181404.b76939a6.sfr@canb.auug.org.au>
+	<20080410150950.5913b16a.randy.dunlap@oracle.com>
+	<20080411074631.GB6410@elte.hu>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-04-11 at 11:11 +0100, David Howells wrote:
-> Harvey Harrison <harvey.harrison@gmail.com> wrote:
-> 
-> > -#ifndef _ASM_UNALIGNED_H
-> > -#define _ASM_UNALIGNED_H
-> > -
-> > +#ifndef _ASM_FRV_UNALIGNED_H_
-> > +#define _ASM_FRV_UNALIGNED_H_
-> 
-> Why?
-
-Consistency with every other arch..no other reason.
+On Fri, 11 Apr 2008 09:46:31 +0200 Ingo Molnar wrote:
 
 > 
-> > - * impractical.  So, now we fall back to using memcpy.
-> > + * impractical.  So, now we fall back to using memmov.
+> * Randy Dunlap <randy.dunlap@oracle.com> wrote:
 > 
-> That's memmove, not memmov.  Any why memmove, not memcpy?  Is __tmp likely to
-> overlap with *ptr?
+> > Fix printk formats in x86/mm/ioremap.c:
+> > 
+> > next-20080410/arch/x86/mm/ioremap.c:137: warning: format '%llx' expects type 'long long unsigned int', but argument 2 has type 'resource_size_t'
+> > next-20080410/arch/x86/mm/ioremap.c:188: warning: format '%llx' expects type 'long long unsigned int', but argument 2 has type 'resource_size_t'
+> > next-20080410/arch/x86/mm/ioremap.c:188: warning: format '%llx' expects type 'long long unsigned int', but argument 3 has type 'long unsigned int'
 > 
-> Also, for FRV, I think calling memmove/memcpy for MMU kernels may be the wrong
-> thing to do...  I'm sort of leaning towards doing the same thing as NOMMU
-> kernels and just using your inline ones.
-
-OK, just let me know what you decide.  I'm stil open to bringing back
-the frv asm versions if the do end up being faster.
-
+> thanks, applied.
 > 
-> The advantage of the inline ones is that they are quicker and probably involve
-> fewer instructions executed; whereas using memcpy/memmove may end up with
-> smaller, but slower code.  Hmmm...  Maybe key on CONFIG_CC_OPTIMIZE_FOR_SIZE?
+> >  	if (!phys_addr_valid(phys_addr)) {
+> >  		printk(KERN_WARNING "ioremap: invalid physical address %llx\n",
+> > -		       phys_addr);
+> > +		       (unsigned long long)phys_addr);
 > 
+> is there really no way to solve this more cleanly than a forced cast?
 
-I suppose an out-of-line version could be easily added to accomplish
-this.  It would be identical to the byteshifting implementation-wise.
+I haven't seen any other decent solutions.  This is what we do
+all over the kernel.
 
-Let me know if you'd like me to spin such a patch.
+> It
+> is a totally uninteresting warning that we pass in a narrower type to 
+> printk(). It cannot ever cause any bugs or problems. Why does gcc warn 
+> about it?
 
-Harvey
+No idea about that part.
 
+---
+~Randy
