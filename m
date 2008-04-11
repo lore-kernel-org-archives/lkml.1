@@ -1,76 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758598AbYDKWJp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758295AbYDKWLW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758598AbYDKWJp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Apr 2008 18:09:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756158AbYDKWJh
+	id S1758295AbYDKWLW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Apr 2008 18:11:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756178AbYDKWLO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Apr 2008 18:09:37 -0400
-Received: from web52502.mail.re2.yahoo.com ([206.190.48.185]:20913 "HELO
-	web52502.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1756025AbYDKWJg (ORCPT
+	Fri, 11 Apr 2008 18:11:14 -0400
+Received: from wa-out-1112.google.com ([209.85.146.178]:44823 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756158AbYDKWLN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Apr 2008 18:09:36 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=X-YMail-OSG:Received:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=UJCA5mBTFFK9066/o1WZaHFP+oqUCWeSzOwMgE1BhCGyAZ4g8CGfHGR7BGObpIwjfrZPG6/mx90JBa2JV+g2TBDL9+E66uXYXYWgVYmPjRoiM5kgsIcE68N0TQPBjUL/Ixr5Z7H9o6CZkxroL5rrbHSon58uOxbgJy6G0pOYSsE=;
-X-YMail-OSG: zh2AnvsVM1l9wOo77K0aAToUVn87lUz0tC32hK1ttgeIwoa7.SqZvwPr34h6tQezvhw7nXdNOKvhcjkuiLxh7rEfw3AdfbUuYEsCf0LMvoZl2NE.YicLigkElJo7gwL4_vHaCaow6_3ySFXD7IHDPjkp
-Date: Fri, 11 Apr 2008 15:09:35 -0700 (PDT)
-From: Marc Perkel <mperkel@yahoo.com>
-Subject: Re: AMD Quad Core clock problem?
-To: Chris Snook <csnook@redhat.com>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <47FFD3F3.50107@redhat.com>
+	Fri, 11 Apr 2008 18:11:13 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=reply-to:to:subject:date:user-agent:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id:from;
+        b=C4GKscyhd8irOc4IG1VlbQjMpnmLu1g+VFpkWNtcmjFjT4RrZvDvw5JxQ2dGA/uY2zpjmMI/ISSIZSfAUa52h3IujCOaJWIvFN7zoC6T6TysPv/6DIzC1EWkJutdszKvFlgMucK0acPx51RMDhk5SO01xEBWSUd6h2AtYtdygXs=
+Reply-To: yhlu.kernel@gmail.com
+To: "Rafael J. Wysocki" <rjw@sisk.pl>, Ingo Molnar <mingo@elte.hu>
+Subject: [PATCH] x86_64: don't need set default res if only have one root bus
+Date: Fri, 11 Apr 2008 15:14:52 -0700
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: kernel list <linux-kernel@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <735874.9676.qm@web52502.mail.re2.yahoo.com>
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200804111514.53680.yhlu.kernel@gmail.com>
+From: Yinghai Lu <yhlu.kernel.send@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+only one root bus, don't need to split that root resources.
 
---- Chris Snook <csnook@redhat.com> wrote:
+Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
 
-> If it's steadily losing a few seconds every hour,
-> it's probably just 
-> slightly mis-calibrated hardware.  ntp should fix
-> this right up.  If the 
-> drift is more extreme than ntp can correct for, or
-> the drift keeps 
-> changing, or time is jumping around, that is
-> definitely something that 
-> could be a bug.
-> 
-> > hpet clockevent registered
-> > TSC calibrated against HPET
-> > Marking TSC unstable due to TSCs unsynchronized
-> 
-> It's possible that in future kernels we'll be a few
-> clock cycles more 
-> accurate in calibrating this on Barcelona chips, but
-> calibration is only 
-> as good as the standard of comparison.  There will
-> always be hardware 
-> that's slightly off, so run ntp, or use a nightly
-> ntpdate cronjob.  If 
-> your time starts drifting drastically or jumping
-> around, please yell 
-> really loud.
-> 
-> -- Chris
-> 
-
-Is it possible due to calibration that ntpd isn't able
-to correct the problem? Is there a setting to make ntp
-more agressive?
-
-
-Marc Perkel
-Junk Email Filter dot com
-http://www.junkemailfilter.com
-
-__________________________________________________
-Do You Yahoo!?
-Tired of spam?  Yahoo! Mail has the best spam protection around 
-http://mail.yahoo.com 
+diff --git a/arch/x86/pci/k8-bus_64.c b/arch/x86/pci/k8-bus_64.c
+index 7ed7f51..c433982 100644
+--- a/arch/x86/pci/k8-bus_64.c
++++ b/arch/x86/pci/k8-bus_64.c
+@@ -69,7 +69,8 @@ void set_pci_bus_resources_arch_default(struct pci_bus *b)
+ 	int j;
+ 	struct pci_root_info *info;
+ 
+-	if (!pci_root_num)
++	/* if only one root bus, don't need to anything */
++	if (pci_root_num < 2)
+ 		return;
+ 
+ 	for (i = 0; i < pci_root_num; i++) {
