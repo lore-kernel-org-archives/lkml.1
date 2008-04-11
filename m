@@ -1,65 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759955AbYDKUXS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761366AbYDKUXc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759955AbYDKUXS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Apr 2008 16:23:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760631AbYDKUW4
+	id S1761366AbYDKUXc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Apr 2008 16:23:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761147AbYDKUXV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Apr 2008 16:22:56 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:46240 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1760413AbYDKUWy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Apr 2008 16:22:54 -0400
-Date: Fri, 11 Apr 2008 13:21:52 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Matthew Wilcox <matthew@wil.cx>
-cc: Christoph Hellwig <hch@infradead.org>,
-       "Kok, Auke" <auke-jan.h.kok@intel.com>, Ingo Molnar <mingo@elte.hu>,
-       Jeff Garzik <jeff@garzik.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       NetDev <netdev@vger.kernel.org>,
-       e1000-list <e1000-devel@lists.sourceforge.net>,
-       linux-pci maillist <linux-pci@atrey.karlin.mff.cuni.cz>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "David S. Miller" <davem@davemloft.net>,
-       Jesse Brandeburg <jesse.brandeburg@intel.com>,
-       "Ronciak, John" <john.ronciak@intel.com>,
-       "Allan, Bruce W" <bruce.w.allan@intel.com>, Greg KH <greg@kroah.com>,
-       Arjan van de Ven <arjan@linux.intel.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [patch] e1000=y && e1000e=m regression fix
-In-Reply-To: <20080411190128.GG11962@parisc-linux.org>
-Message-ID: <alpine.LFD.1.00.0804111307440.3143@woody.linux-foundation.org>
-References: <20080410192714.GA14055@elte.hu> <47FE8566.5040809@intel.com> <20080411112653.GC9205@elte.hu> <20080411113644.GA7767@infradead.org> <20080411121606.GA25661@elte.hu> <47FF9060.5040202@intel.com> <20080411164542.GA4066@infradead.org>
- <alpine.LFD.1.00.0804111028540.3143@woody.linux-foundation.org> <20080411175304.GF11962@parisc-linux.org> <alpine.LFD.1.00.0804111146450.3143@woody.linux-foundation.org> <20080411190128.GG11962@parisc-linux.org>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+	Fri, 11 Apr 2008 16:23:21 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:56995 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761101AbYDKUXV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Apr 2008 16:23:21 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: x86 git tree broken (bisected)
+Date: Fri, 11 Apr 2008 22:23:13 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Yinghai Lu <yinghai.lu@sun.com>, Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Anvin" <hpa@zytor.com>,
+       Arjan van de Ven <arjan@infradead.org>
+References: <200804102159.14563.rjw@sisk.pl> <200804110028.22290.rjw@sisk.pl> <200804112126.29455.rjw@sisk.pl>
+In-Reply-To: <200804112126.29455.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200804112223.14160.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Fri, 11 Apr 2008, Matthew Wilcox wrote:
+On Friday, 11 of April 2008, Rafael J. Wysocki wrote:
+> On Friday, 11 of April 2008, Rafael J. Wysocki wrote:
+> > On Thursday, 10 of April 2008, Ingo Molnar wrote:
+> > > 
+> > > * Ingo Molnar <mingo@elte.hu> wrote:
+> > > 
+> > > > > > > First, the X server doesn't want to start (it says it couldn't 
+> > > > > > > mmap the framebuffer).
+> > > > > > 
+> > > > > > could you send your .config?
+> > > > > 
+> > > > > Attached.
+> > > > 
+> > > > could you disable this option:
+> > > > 
+> > > >  CONFIG_NONPROMISC_DEVMEM=y
+> > > > 
+> > > > does it help with the X problem?
+> > 
+> > That didn't help.
+> > 
+> > > btw., Xorg works fine here on a comparable AMD system - but i use a 
+> > > rather new distro (Fedora 8) which has Xorg 7.2.
+> > 
+> > My system is an OpenSUSE 10.3 and it has Xorg 7.2 as well.
+> > 
+> > I think the problem is somehow related to the Radeon.
 > 
-> We only support people keeping their old configs after they run 'make
-> oldconfig', right?  At which point they'd be prompted for E1000_SUPPORT.
-> Presumably they'd think "That's odd.
+> The bisection turned up commit ea1441bdf53692c3dc1fd2658addcf1205629661
+> "x86: use bus conf in NB conf fun1 to get bus range on, on 64-bit"  as the one
+> causing problems.
+> 
+> Unfortunately, I can't revert cleanly it, because there are two more commits
+> depending on it in a highly nontrivial fashion, so I have reverted all three
+> commits
+> 
+> a365998cd2cecfb827469dbd57c29602c106cb83
+> 44f7f90fbe7a3a99aab082f765346514b7b5c705
+> ea1441bdf53692c3dc1fd2658addcf1205629661
+> 
+> and X starts again.  Also, suspend to RAM works from under X.
 
-Ok, I'm not even interested in discussing this.
+Update:
 
-Have you followed the discussion at all? Did you even notice _why_ we're 
-discussing it?
+With the above three commits reverted both X itself and suspend to RAM from
+X also work with the current x86-git (as of HEAD equal to
+1192aeb957402b45f311895f124e4ca41206843c).
 
-Here's a damn big hint: teh thing you say "Presumably they'd think" is 
-exactly what we're talking about, AND HELL NO THEY DIDN'T!
-
-That goes for both me and Ingo.
-
-So stop blathering. The _fact_ is that two kernel developers were really 
-upset about the fact that their machines stopped working with old 
-configurations. Stop the inane ".. but that would never happen", because 
-the whole discussion is because IT DID HAPPEN!
-
-		Linus
+Thanks,
+Rafael
