@@ -1,49 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760731AbYDKP0R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760892AbYDKP0a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760731AbYDKP0R (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Apr 2008 11:26:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759823AbYDKP0G
+	id S1760892AbYDKP0a (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Apr 2008 11:26:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760770AbYDKP0T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Apr 2008 11:26:06 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:44322 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759251AbYDKP0E (ORCPT
+	Fri, 11 Apr 2008 11:26:19 -0400
+Received: from az33egw01.freescale.net ([192.88.158.102]:49487 "EHLO
+	az33egw01.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760752AbYDKP0R (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Apr 2008 11:26:04 -0400
-Date: Fri, 11 Apr 2008 08:25:05 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Al Viro <viro@ZenIV.linux.org.uk>
-cc: Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jakub Jelinek <jakub@redhat.com>, Dave Jones <davej@redhat.com>,
-       drepper@redhat.com, mingo@redhat.com, tglx@redhat.com,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Roland McGrath <roland@redhat.com>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Kyle McMartin <kyle@mcmartin.ca>
-Subject: Re: [PATCH] Fix compile breakage caused by asmlinkage_protect
-In-Reply-To: <20080411151156.GJ9785@ZenIV.linux.org.uk>
-Message-ID: <alpine.LFD.1.00.0804110821400.3143@woody.linux-foundation.org>
-References: <alpine.LFD.1.00.0804101447240.3143@woody.linux-foundation.org> <20080410223738.80A8326F992@magilla.localdomain> <20080411114654.GA12270@osiris.boeblingen.de.ibm.com> <alpine.LFD.1.00.0804110744100.3143@woody.linux-foundation.org>
- <20080411151156.GJ9785@ZenIV.linux.org.uk>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+	Fri, 11 Apr 2008 11:26:17 -0400
+Message-ID: <47FF7D9B.4060306@freescale.com>
+Date: Fri, 11 Apr 2008 10:02:51 -0500
+From: Scott Wood <scottwood@freescale.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.9 (X11/20080110)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Jochen Friedrich <jochen@scram.de>
+CC: Kumar Gala <galak@kernel.crashing.org>, Jean Delvare <khali@linux-fr.org>,
+       "Kernel, Linux" <linux-kernel@vger.kernel.org>,
+       linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+       Linux I2C <i2c@lm-sensors.org>, Jon Smirl <jonsmirl@gmail.com>,
+       Laurent Pinchart <laurentp@cse-semaphore.com>
+Subject: Re: [PATCH7/7] [POWERPC] Add i2c pins to dts and board setup
+References: <47FF71B1.9070907@scram.de>
+In-Reply-To: <47FF71B1.9070907@scram.de>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Jochen Friedrich wrote:
+> diff --git a/arch/powerpc/boot/dts/mpc8272ads.dts b/arch/powerpc/boot/dts/mpc8272ads.dts
+> index 7285ca1..7273996 100644
+> --- a/arch/powerpc/boot/dts/mpc8272ads.dts
+> +++ b/arch/powerpc/boot/dts/mpc8272ads.dts
+> @@ -215,6 +215,16 @@
+>  				linux,network-index = <1>;
+>  				fsl,cpm-command = <16200300>;
+>  			};
+> +
+> +			i2c@11860 {
+> +				compatible = "fsl,mpc8248-i2c",
 
+mpc8272-i2c
 
-On Fri, 11 Apr 2008, Al Viro wrote:
-> 
-> and that gets us -traditional-cpp passed to cc1, with obvious resulting
-> unhappiness from vararg macro.
-
-Yeah, I figured it out eventually. 
-
-I do think the architectures should try to avoid it, if only because x86 
-doesn't use -traditional (so they'll hit things like this unnecessarily 
-otherwise), but I'll apply Heiko's minimal patch in the meantime.
-
-		Linus
+-Scott
