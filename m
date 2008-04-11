@@ -1,131 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759323AbYDKNME@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758813AbYDKNMj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759323AbYDKNME (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Apr 2008 09:12:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751791AbYDKNLx
+	id S1758813AbYDKNMj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Apr 2008 09:12:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751881AbYDKNMa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Apr 2008 09:11:53 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.155]:33743 "EHLO
-	imap.sh.mvista.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751767AbYDKNLw (ORCPT
+	Fri, 11 Apr 2008 09:12:30 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:41165 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750882AbYDKNM3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Apr 2008 09:11:52 -0400
-Message-ID: <47FF636E.4070903@ru.mvista.com>
-Date: Fri, 11 Apr 2008 17:11:10 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Organization: MontaVista Software Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
-X-Accept-Language: ru, en-us, en-gb
-MIME-Version: 1.0
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/4] ide: add struct ide_dma_ops
-References: <200803091700.46136.bzolnier@gmail.com> <47D82EB9.1060603@ru.mvista.com> <200803181512.50134.bzolnier@gmail.com>
-In-Reply-To: <200803181512.50134.bzolnier@gmail.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+	Fri, 11 Apr 2008 09:12:29 -0400
+Date: Fri, 11 Apr 2008 22:17:14 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Christoph Lameter <clameter@sgi.com>
+Subject: Re: 2.6.25-rc8-mm2
+Message-Id: <20080411221714.5f917a72.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20080411201724.e820122b.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20080410203354.f0a6f464.akpm@linux-foundation.org>
+	<20080411185703.a5407940.kamezawa.hiroyu@jp.fujitsu.com>
+	<20080411192346.6872472a.kamezawa.hiroyu@jp.fujitsu.com>
+	<1207910058.7212.1.camel@haji>
+	<20080411195738.16e9ef92.kamezawa.hiroyu@jp.fujitsu.com>
+	<20080411201724.e820122b.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: Fujitsu
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+On Fri, 11 Apr 2008 20:17:24 +0900
+KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> slab-2.6.git booted well :(
+> Hmm, It seems I have to dig somewhere different...
+> 
+Sorry, I tested *master* branch ;), under *testing* branch it reproduced.
 
-Bartlomiej Zolnierkiewicz wrote:
+bisected. (see below)
 
->>    Now where is the code which selects the correct dma_ops for the 
->>> HPT36x/370/372/372N chip with device ID 4 I'm asking you?  :-) 
+I'm sorry I can't use my box for next 2 days. I can test possible fix
+on Monday (in Japan). 
 
-> fixed
+==bisect result==
+831d78b552aade2c383cf8d75b180dd35f81a4e3 is first bad commit
+commit 831d78b552aade2c383cf8d75b180dd35f81a4e3
+Author: Christoph Lameter <clameter@sgi.com>
+Date:   Tue Apr 8 22:26:30 2008 +0300
 
-    Not actually... :-/
+    SLUB: Add KICKABLE to avoid repeated kick() attempts
 
-> From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> Subject: [PATCH] ide: add struct ide_dma_ops (take 2)
+    Add a flag KICKABLE to be set on slabs with a defragmentation method
 
-> Add struct ide_dma_ops and convert core code + drivers to use it.
+    Clear the flag if a kick action is not successful in reducing the
+    number of objects in a slab. This will avoid future attempts to
+    kick objects out.
 
-> While at it:
+    The KICKABLE flag is set again when all objects of the slab have been
+    allocated (Occurs during removal of a slab from the partial lists).
 
-> * Drop "ide_" prefix from ->ide_dma_end and ->ide_dma_test_irq methods.
+    Reviewed-by: Rik van Riel <riel@redhat.com>
+    Signed-off-by: Christoph Lameter <clameter@sgi.com>
+    Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
 
-> * Drop "ide_" "infixes" from DMA methods.
+:040000 040000 b75802b6e7f1f27589f8242a824a4a24773a56d4 c935aae1a02277f0e605069d397d315f6db430b6 M      mm
 
-> * au1xxx-ide.c:
->   - use auide_dma_{test_irq,end}() directly in auide_dma_timeout()
+== bisect log ==
 
-> * pdc202xx_old.c:
->   - drop "old_" "infixes" from DMA methods
+git-bisect start
+# good: [0e81a8ae37687845f7cdfa2adce14ea6a5f1dd34] Linux 2.6.25-rc8
+git-bisect good 0e81a8ae37687845f7cdfa2adce14ea6a5f1dd34
+# bad: [28e4b71a66881df1ac343f13d06395fa01021e8e] slub: use typedefs for ->get and ->kick functions
+git-bisect bad 28e4b71a66881df1ac343f13d06395fa01021e8e
+# good: [9597362d354f8655ece324b01d0c640a0e99c077] Merge git://git.kernel.org/pub/scm/linux/kernel/git/gregkh/usb-2.6
+git-bisect good 9597362d354f8655ece324b01d0c640a0e99c077
+# good: [28b8383d5d4d9b636c3734c993563bafdc2ab3c3] Merge git://git.kernel.org/pub/scm/linux/kernel/git/mchehab/v4l-dvb
+git-bisect good 28b8383d5d4d9b636c3734c993563bafdc2ab3c3
+# good: [869ab5147e1eead890245cfd4f652ba282b6ac26] SELinux: more GFP_NOFS fixups to prevent selinux from re-entering the fs code
+git-bisect good 869ab5147e1eead890245cfd4f652ba282b6ac26
+# good: [acd49c885e03f087c31f49e7c42ccb8befbf4009] slub: Make the order configurable for each slab cache
+git-bisect good acd49c885e03f087c31f49e7c42ccb8befbf4009
+# skip: [24337bca6e77ab48f459e35690b32ef20a34bda5] SLUB: Replace ctor field with ops field in /sys/slab/*
+git-bisect skip 24337bca6e77ab48f459e35690b32ef20a34bda5
+# good: [66892337435a0d88996057af221e8c18ff91bc14] SLUB: Add get() and kick() methods
+git-bisect good 66892337435a0d88996057af221e8c18ff91bc14
+# bad: [171250363fe803b4dc61301276c2693cce3e5684] SLUB: Extend slabinfo to support -D and -F options
+git-bisect bad 171250363fe803b4dc61301276c2693cce3e5684
+# good: [c963d891d875a9bd39ae44da623c421bc0140937] SLUB: Slab defrag core
+git-bisect good c963d891d875a9bd39ae44da623c421bc0140937
+# bad: [831d78b552aade2c383cf8d75b180dd35f81a4e3] SLUB: Add KICKABLE to avoid repeated kick() attempts
+git-bisect bad 831d78b552aade2c383cf8d75b180dd35f81a4e3
+==
 
-> * siimage.c:
->   - add siimage_dma_test_irq() helper
->   - print SATA warning in siimage_init_one()
+Thanks,
+-Kame
 
-> * Remove no longer needed ->init_hwif implementations.
-
-> v2:
-> * Changes based on review from Sergei:
->   - s/siimage_ide_dma_test_irq/siimage_dma_test_irq/
->   - s/drive->hwif/hwif/ in idefloppy_pc_intr().
->   - fix patch description w.r.t. au1xxx-ide changes
->   - fix au1xxx-ide build
->   - fix naming for cmd64*_dma_ops
->   - drop "ide_" and "old_" infixes
->   - s/hpt3xxx_dma_ops/hpt37x_dma_ops/
->   - s/hpt370x_dma_ops/hpt370_dma_ops/
->   - use correct DMA ops for HPT302/N, HPT371/N and HPT374
->   - s/it821x_smart_dma_ops/it821x_pass_through_dma_ops/
-
-> Cc: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-
-    Unfortunately, you'll have to try one more... ;-)
-
-> Index: b/drivers/ide/pci/hpt366.c
-> ===================================================================
-> --- a/drivers/ide/pci/hpt366.c
-> +++ b/drivers/ide/pci/hpt366.c
-[...]
-> @@ -1428,6 +1415,21 @@ static const struct ide_port_ops hpt3xx_
->  	.cable_detect		= hpt3xx_cable_detect,
->  };
->  
-> +static struct ide_dma_ops hpt37x_dma_ops = {
-> +	.dma_end		= hpt374_dma_end,
-> +	.dma_test_irq		= hpt374_dma_test_irq,
-> +};
-> +
-> +static struct ide_dma_ops hpt370_dma_ops = {
-> +	.dma_start		= hpt370_dma_start,
-> +	.dma_end		= hpt370_dma_end,
-> +	.dma_timeout		= hpt370_dma_timeout,
-> +};
-> +
-> +static struct ide_dma_ops hpt36x_dma_ops = {
-> +	.dma_lost_irq		= hpt366_dma_lost_irq,
-> +};
-> +
->  static const struct ide_port_info hpt366_chipsets[] __devinitdata = {
->  	{	/* 0 */
->  		.name		= "HPT36x",
-> @@ -1442,6 +1444,7 @@ static const struct ide_port_info hpt366
->  		 */
->  		.enablebits	= {{0x50,0x10,0x10}, {0x54,0x04,0x04}},
->  		.port_ops	= &hpt3xx_port_ops,
-> +		.dma_ops	= &hpt36x_dma_ops,
->  		.host_flags	= IDE_HFLAGS_HPT3XX | IDE_HFLAG_SINGLE,
->  		.pio_mask	= ATA_PIO4,
->  		.mwdma_mask	= ATA_MWDMA2,
-
-    I'm still not seeing the code to deals with the PCI device ID 4 which may 
-be HPT36x, or HPT370, or HPT372[N] depending on revision -- you're always 
-giving hpt36x_dma_ops to it...
-
-> @@ -1483,6 +1489,7 @@ static const struct ide_port_info hpt366
->  		.enablebits	= {{0x50,0x04,0x04}, {0x54,0x04,0x04}},
->  		.udma_mask	= ATA_UDMA5,
->  		.port_ops	= &hpt3xx_port_ops,
-> +		.dma_ops	= &hpt370_dma_ops,
-
-    Wrong -- HPT374 should have hpt37x_dma_ops...
-
-MBR, Sergei
